@@ -121,12 +121,13 @@ MacOSXVMRunner.java
 EPL:
 SerializableMultiStatus.java
 
-GNU LGPL
+GNU LGPL:
 StatementMap.java 
 
 Summary
 =======
-Apache (c): 2705 java files
-EPL (c): 5 
-Public Domain and LGPL (c): 2
+* Apache (c): 2705 java files
+* EPL (c): 5 
+* Public Domain and LGPL (c): 2
+
 Total of 2721 files.
