@@ -1,0 +1,53 @@
+package org.protege.editor.owl.ui.ontology.wizard.move;
+
+import java.awt.Dimension;
+import java.util.Set;
+
+import org.protege.editor.owl.OWLEditorKit;
+import org.protege.editor.owl.ui.ontology.wizard.AbstractSelectOntologiesPage;
+import org.semanticweb.owlapi.model.OWLOntology;
+
+
+/**
+ * Author: Matthew Horridge<br> The University Of Manchester<br> Information Management Group<br> Date:
+ * 11-Sep-2008<br><br>
+ */
+public class SelectSourceOntologiesPanel extends AbstractSelectOntologiesPage {
+
+    public static final String ID = "SelectSourceOntologiesPanel";
+
+    public SelectSourceOntologiesPanel(OWLEditorKit owlEditorKit) {
+        super(ID, owlEditorKit, "Select source ontology");
+        setInstructions("Select the ontology that you want to extract axioms from");
+    }
+
+
+    public Object getNextPanelDescriptor() {
+        return SelectKitPanel.ID;
+    }
+
+
+    public Object getBackPanelDescriptor() {
+        return null;
+    }
+
+
+    protected Set<OWLOntology> getDefaultOntologies() {
+        return getOWLModelManager().getActiveOntologies();
+    }
+
+
+    public void aboutToHidePanel() {
+        super.aboutToHidePanel();
+        ((MoveAxiomsWizard) getWizard()).setSourceOntologies(getOntologies());
+    }
+
+    protected boolean isMultiSelect() {
+        return false;
+    }
+
+
+    public Dimension getPreferredSize() {
+        return new Dimension(1200, 800);
+    }
+}

@@ -1,0 +1,145 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.4"?>
+<plugin>
+   <extension-point id="changeProcessorFactory" name="changeProcessorFactory" schema="schema/changeProcessorFactory.exsd"/>
+   <extension-point id="serviceConfigJob" name="serviceConfigJob" schema="schema/serviceConfigJob.exsd"/>
+   <extension-point id="revisionCacheWarmerJob" name="revisionCacheWarmerJob" schema="schema/revisionCacheWarmerJob.exsd"/>
+   <extension-point id="connectionFactory" name="connectionFactory" schema="schema/connectionFactory.exsd"/>
+   <extension-point id="protocolFactory" name="Net4j Client Protocol Factory" schema="schema/protocolFactory.exsd"/>
+   <extension-point id="repository" name="Repository" schema="schema/repository.exsd"/>
+   <extension-point id="taskContext" name="Task Context" schema="schema/taskContext.exsd"/>
+   <extension-point id="versioningManager" name="versioningManager" schema="schema/versioningManager.exsd"/>
+   <extension-point id="nodeTransformer" name="nodeTransformer" schema="schema/nodeTransformer.exsd"/>
+   <extension-point id="contentAvailabilityInfoProvider" name="Content Availability Info Provider" schema="schema/contentAvailabilityInfoProvider.exsd"/>
+   <extension-point id="cdoRootResourceNameProvider" name="CDO root resource" schema="schema/cdoRootResourceNameProvider.exsd"/>
+   <extension
+         point="com.b2international.snowowl.datastore.serviceConfigJob">
+      <serviceConfigJob
+            class="com.b2international.snowowl.datastore.personalization.PreviousPicksManagerConfigJob"
+            id="com.b2international.snowowl.datastore.personalization.PreviousPicksManagerConfigJob"
+            terminologyId="UNSPECIFIED">
+      </serviceConfigJob>
+      <serviceConfigJob
+            class="com.b2international.snowowl.datastore.personalization.BookmarksManagerConfigJob"
+            id="com.b2international.snowowl.datastore.personalization.BookmarksManagerConfigJob"
+            terminologyId="UNSPECIFIED">
+      </serviceConfigJob>
+      <serviceConfigJob
+            class="com.b2international.snowowl.datastore.CDOBranchManagerConfigJob"
+            id="com.b2international.snowowl.datastore.CDOBranchManagerConfigJob"
+            terminologyId="UNSPECIFIED">
+      </serviceConfigJob>
+      <serviceConfigJob
+            class="com.b2international.snowowl.datastore.tasks.TaskStateManagerClientConfigJob"
+            id="com.b2international.snowowl.datastore.tasks.TaskStateManagerConfigJob"
+            terminologyId="UNSPECIFIED">
+      </serviceConfigJob>
+      <serviceConfigJob
+            class="com.b2international.snowowl.datastore.version.TagServiceClientConfigJob"
+            id="com.b2international.snowowl.datastore.version.TagServiceClientConfigJob"
+            terminologyId="UNSPECIFIED">
+      </serviceConfigJob>
+            <serviceConfigJob
+            class="com.b2international.snowowl.datastore.version.VersioningManagerClientConfigJob"
+            id="com.b2international.snowowl.datastore.version.UnversionedComponentProviderClientConfigJob"
+            terminologyId="UNSPECIFIED">
+      </serviceConfigJob>
+      <serviceConfigJob
+            class="com.b2international.snowowl.datastore.oplock.impl.DatastoreLockManagerClientConfigJob"
+            id="com.b2international.snowowl.datastore.oplock.impl.DatastoreLockManagerClientConfigJob"
+            terminologyId="UNSPECIFIED">
+      </serviceConfigJob>
+      <serviceConfigJob
+            class="com.b2international.snowowl.datastore.remotejobs.RemoteJobClientServiceConfigJob"
+            id="com.b2international.snowowl.datastore.remotejobs.RemoteJobClientServiceConfigJob"
+            terminologyId="UNSPECIFIED">
+      </serviceConfigJob>
+      <serviceConfigJob
+            class="com.b2international.snowowl.datastore.index.diff.IndexDifferServiceClientConfigJob"
+            id="com.b2international.snowowl.datastore.index.diff.IndexDifferServiceClientConfigJob"
+            terminologyId="UNSPECIFIED">
+      </serviceConfigJob>
+      <serviceConfigJob
+            class="com.b2international.snowowl.datastore.version.VersionCompareServiceClientConfigJob"
+            id="com.b2international.snowowl.datastore.version.VersionCompareServiceClientConfigJob"
+            terminologyId="UNSPECIFIED">
+      </serviceConfigJob>
+      <serviceConfigJob
+            class="com.b2international.snowowl.datastore.version.NodeTransformerServiceClientConfigJob"
+            id="com.b2international.snowowl.datastore.version.NodeTransformerServiceClientConfigJob"
+            terminologyId="UNSPECIFIED">
+      </serviceConfigJob>
+      <serviceConfigJob
+            class="com.b2international.snowowl.datastore.quicksearch.QuickSearchClientServiceConfigJob"
+            id="com.b2international.snowowl.datastore.quicksearch.QuickSearchClientServiceConfigJob"
+            terminologyId="UNSPECIFIED">
+      </serviceConfigJob>
+      <serviceConfigJob
+            class="com.b2international.snowowl.datastore.serviceconfig.CodeSystemServiceClientConfigJob"
+            id="com.b2international.snowowl.datastore.serviceconfig.CodeSystemServiceClientConfigJob"
+            terminologyId="UNSPECIFIED">
+      </serviceConfigJob>
+      <serviceConfigJob
+            class="com.b2international.snowowl.datastore.version.VersionCompareExporterServiceClientConfigJob"
+            id="com.b2international.snowowl.datastore.version.VersionCompareExporterServiceClientConfigJob"
+            terminologyId="UNSPECIFIED">
+      </serviceConfigJob>
+      <serviceConfigJob
+            class="com.b2international.snowowl.datastore.version.GlobalPublishClientConfigJob"
+            id="com.b2international.snowowl.datastore.version.GlobalPublishClientConfigJob"
+            terminologyId="UNSPECIFIED">
+      </serviceConfigJob>
+      <serviceConfigJob
+            class="com.b2international.snowowl.datastore.serviceconfig.HistoryServiceClientConfigJob"
+            id="com.b2international.snowowl.datastore.serviceconfig.HistoryServiceClientConfigJob"
+            terminologyId="UNSPECIFIED">
+      </serviceConfigJob>
+   </extension>
+   <extension
+         point="com.b2international.snowowl.datastore.connectionFactory">
+      <connectionFactory
+            class="com.b2international.snowowl.datastore.cdo.CDOConnectionFactory"
+            id="com.b2international.snowowl.datastore.cdo.CDOConnectionFactory">
+      </connectionFactory>
+   </extension>
+   <extension
+         point="com.b2international.snowowl.datastore.protocolFactory">
+      <protocolFactory
+            class="com.b2international.snowowl.datastore.net4j.push.PushClientProtocol$Factory"
+            id="com.b2international.snowowl.datastore.net4j.push.PushClientProtocol$Factory">
+      </protocolFactory>
+   </extension>
+      <extension
+         point="org.eclipse.core.expressions.propertyTesters">
+      <propertyTester
+            class="com.b2international.snowowl.datastore.ActiveBranchPropertyTester"
+            id="com.b2international.snowowl.datastore.ActiveBranchPropertyTester"
+            namespace="com.b2international.snowowl.datastore"
+            properties="activeBranchPropertyTester"
+            type="java.lang.Object">
+      </propertyTester>
+      <propertyTester
+            class="com.b2international.snowowl.datastore.expressions.TaskContextBasedPropertyTester"
+            id="com.b2international.snowowl.datastore.expressions.TaskContextBasedPropertyTester"
+            namespace="com.b2international.snowowl.datastore.expressions"
+            properties="taskContext"
+            type="java.lang.Object">
+      </propertyTester>
+      <propertyTester
+            class="com.b2international.snowowl.datastore.propertytester.OsPropertyTester"
+            id="com.b2international.snowowl.datastore.propertytester.OsPopertyTester"
+            namespace="com.b2international.snowowl.datastore.propertytester.os"
+            properties="mac,windows"
+            type="java.lang.Object">
+      </propertyTester>
+   </extension>
+      <extension
+            point="com.b2international.snowowl.core.bootstrapFragments">
+         <bootstrapFragment
+               class="com.b2international.snowowl.datastore.setup.RepositoryBootstrap">
+         </bootstrapFragment>
+         <bootstrapFragment
+               class="com.b2international.snowowl.datastore.connection.RepositoryConnectionBootstrap">
+         </bootstrapFragment>
+      </extension>
+</plugin>

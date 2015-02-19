@@ -1,0 +1,90 @@
+/*
+ * Copyright 2011-2015 B2i Healthcare Pte Ltd, http://b2i.sg
+ * 
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package com.b2international.snowowl.snomed.importer.rf2.validation;
+
+import java.net.URL;
+import java.util.List;
+import java.util.Set;
+
+import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
+import com.b2international.snowowl.snomed.importer.net4j.ImportConfiguration;
+import com.b2international.snowowl.snomed.importer.net4j.SnomedValidationDefect;
+import com.b2international.snowowl.snomed.importer.net4j.SnomedValidationDefect.DefectType;
+import com.b2international.snowowl.snomed.importer.release.ReleaseFileSet.ReleaseComponentType;
+import com.b2international.snowowl.snomed.importer.rf2.model.ComponentImportType;
+import com.b2international.snowowl.snomed.importer.rf2.util.ValidationUtil;
+import com.google.common.collect.Sets;
+
+/**
+ * Represents a release file validator that validates the description type reference set.
+ * 
+ */
+public class SnomedDescriptionTypeRefSetValidator extends SnomedRefSetValidator {
+
+	private Set<String> descriptionFormatNotExist;
+	private Set<String> descriptionLengthIsEmpty;
+
+	public SnomedDescriptionTypeRefSetValidator(ImportConfiguration configuration, URL releaseUrl, Set<SnomedValidationDefect> defects, ValidationUtil validationUtil) {
+		super(configuration, releaseUrl, ComponentImportType.DESCRIPTION_TYPE_REFSET, defects, validationUtil, SnomedRf2Headers.DESCRIPTION_TYPE_HEADER.length);
+	}
+	
+	@Override
+	protected void doValidate(List<String> row, int lineNumber) {
+		super.doValidate(row, lineNumber);
+		
+		validateDescriptionFormat(row, lineNumber);
+		validateDescriptionLength(row, lineNumber);
+	}
+	
+	@Override
+	protected void addDefects() {
+		super.addDefects();
+		
+		addDefects(new SnomedValidationDefect(DefectType.DESCRIPTION_TYPE_DESCRIPTION_FORMAT_NOT_EXIST, descriptionFormatNotExist),
+				new SnomedValidationDefect(DefectType.DESCRIPTION_TYPE_DESCRIPTION_LENGTH_IS_EMPTY, descriptionLengthIsEmpty));
+	}
+
+	@Override
+	protected String getName() {
+		return "description type";
+	}
+
+	@Override
+	protected String[] getExpectedHeader() {
+		return SnomedRf2Headers.DESCRIPTION_TYPE_HEADER;
+	}
+
+	private void validateDescriptionFormat(List<String> row, int lineNumber) {
+		if (isComponentNotExist(row.get(6), ReleaseComponentType.CONCEPT)) {
+			if (null == descriptionFormatNotExist) {
+				descriptionFormatNotExist = Sets.newHashSet();
+			}
+			
+			addDefectDescription(descriptionFormatNotExist, lineNumber, row.get(6));
+		}
+	}
+	
+	private void validateDescriptionLength(List<String> row, int lineNumber) {
+		if (row.get(7).isEmpty()) {
+			if (null == descriptionLengthIsEmpty) {
+				descriptionLengthIsEmpty = Sets.newHashSet();
+			}
+			
+			addDefectDescription(descriptionLengthIsEmpty, lineNumber);
+		}
+	}
+
+}

@@ -1,0 +1,2 @@
+# This project needs the bin folder to be managed in the repository
+!bin/

@@ -1,0 +1,198 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!-- Schema file written by PDE -->
+<schema targetNamespace="org.eclipse.core.runtime" xmlns="http://www.w3.org/2001/XMLSchema">
+<annotation>
+      <appInfo>
+         <meta.schema plugin="org.eclipse.core.runtime" id="preferences" name="Preferences"/>
+      </appInfo>
+      <documentation>
+         The preferences extension point allows bundles to add new preference scopes to the Eclipse preference mechanism as well as specify the class to run to initialize default preference values at runtime.
+      </documentation>
+   </annotation>
+
+   <element name="extension">
+      <annotation>
+         <appInfo>
+            <meta.element />
+         </appInfo>
+      </annotation>
+      <complexType>
+         <sequence>
+            <element ref="scope" minOccurs="0" maxOccurs="unbounded"/>
+            <element ref="initializer" minOccurs="0" maxOccurs="unbounded"/>
+            <element ref="modifier" minOccurs="0" maxOccurs="unbounded"/>
+         </sequence>
+         <attribute name="point" type="string" use="required">
+            <annotation>
+               <documentation>
+                  
+               </documentation>
+            </annotation>
+         </attribute>
+         <attribute name="id" type="string">
+            <annotation>
+               <documentation>
+                  
+               </documentation>
+            </annotation>
+         </attribute>
+         <attribute name="name" type="string">
+            <annotation>
+               <documentation>
+                  
+               </documentation>
+               <appInfo>
+                  <meta.attribute translatable="true"/>
+               </appInfo>
+            </annotation>
+         </attribute>
+      </complexType>
+   </element>
+
+   <element name="scope">
+      <annotation>
+         <documentation>
+            Element describing a client&apos;s definiton of a new preference scope.
+         </documentation>
+      </annotation>
+      <complexType>
+         <attribute name="name" type="string" use="required">
+            <annotation>
+               <documentation>
+                  The name of the scope.
+               </documentation>
+            </annotation>
+         </attribute>
+         <attribute name="class" type="string">
+            <annotation>
+               <documentation>
+                  The name of the class.
+               </documentation>
+               <appInfo>
+                  <meta.attribute kind="java" basedOn="IScope"/>
+               </appInfo>
+            </annotation>
+         </attribute>
+         <attribute name="storage" type="string">
+            <annotation>
+               <documentation>
+                  The class which implements the preference storage.
+               </documentation>
+               <appInfo>
+                  <meta.attribute kind="java" basedOn="org.eclipse.core.runtime.preferences.AbstractPreferenceStorage:"/>
+               </appInfo>
+            </annotation>
+         </attribute>
+      </complexType>
+   </element>
+
+   <element name="initializer">
+      <annotation>
+         <documentation>
+            Element which defines the class to use for runtime preference initialization.
+         </documentation>
+      </annotation>
+      <complexType>
+         <attribute name="class" type="string" use="required">
+            <annotation>
+               <documentation>
+                  The name of the class.
+               </documentation>
+               <appInfo>
+                  <meta.attribute kind="java" basedOn="org.eclipse.core.runtime.preferences.AbstractPreferenceInitializer"/>
+               </appInfo>
+            </annotation>
+         </attribute>
+      </complexType>
+   </element>
+
+   <element name="modifier">
+      <annotation>
+         <documentation>
+            Element which defines the class to use for preference modification listening.
+         </documentation>
+      </annotation>
+      <complexType>
+         <attribute name="class" type="string" use="required">
+            <annotation>
+               <documentation>
+                  The name of the class.
+               </documentation>
+               <appInfo>
+                  <meta.attribute kind="java" basedOn="org.eclipse.core.runtime.preferences.PreferenceModifyListener"/>
+               </appInfo>
+            </annotation>
+         </attribute>
+      </complexType>
+   </element>
+
+   <annotation>
+      <appInfo>
+         <meta.section type="since"/>
+      </appInfo>
+      <documentation>
+         3.0
+      </documentation>
+   </annotation>
+
+   <annotation>
+      <appInfo>
+         <meta.section type="examples"/>
+      </appInfo>
+      <documentation>
+         Following is an example of a preference scope declaration.  This example declares that this plug-in will provide a preference implementation for the scope &quot;foo&quot;. It also declares that when the default values are loaded for this plug-in, the class &quot;MyPreferenceInitializer&quot; contains code to be run to initialize preference default values at runtime.
+&lt;p&gt;
+   &lt;pre&gt;
+      &lt;extension point=&quot;org.eclipse.equinox.preferences.preferences&quot;&gt;
+         &lt;scope name=&quot;foo&quot; class=&quot;com.example.FooPrefs&quot;/&gt;
+         &lt;initializer class=&quot;com.example.MyPreferenceInitializer&quot;/&gt;
+         &lt;modifier class=&quot;com.example.MyModifyListener&quot;/&gt;
+      &lt;/extension&gt;
+   &lt;/pre&gt;
+&lt;/p&gt;
+
+If the client chooses let the Eclipse Platform handle the preference nodes but wishes to define a custom location/mechanism for persisting the data, then they are able to set the &quot;storage&quot; attribute on the &quot;scope&quot; element. Note that only one of the &quot;class&quot; and &quot;storage&quot; attributes can be defined at the same time. The class referenced in the &quot;storage&quot; attribute must extend the AbstractPreferenceStorage class. In the following example the &quot;FooStorage&quot; class handles the loading/saving for the &quot;foo&quot; preferences.
+&lt;p&gt;
+   &lt;pre&gt;
+      &lt;extension point=&quot;org.eclipse.equinox.preferences.preferences&quot;&gt;
+         &lt;scope name=&quot;foo&quot; storage=&quot;com.example.FooStorage&quot;/&gt;
+         &lt;initializer class=&quot;com.example.MyPreferenceInitializer&quot;/&gt;
+         &lt;modifier class=&quot;com.example.MyModifyListener&quot;/&gt;
+      &lt;/extension&gt;
+   &lt;/pre&gt;
+&lt;/p&gt;
+      </documentation>
+   </annotation>
+
+   <annotation>
+      <appInfo>
+         <meta.section type="apiInfo"/>
+      </appInfo>
+      <documentation>
+         The preference service (the OSGi service &lt;code&gt;org.eclipse.core.runtime.preferences.IPreferencesService&lt;/code&gt;) is the hook into the Eclipse preference mechanism.
+      </documentation>
+   </annotation>
+
+   <annotation>
+      <appInfo>
+         <meta.section type="implementation"/>
+      </appInfo>
+      <documentation>
+         The org.eclipse.equinox.preferences bundle provides preference implementations for the &quot;configuration&quot;, &quot;instance&quot;, and &quot;default&quot; scopes.  The org.eclipse.core.resources bundle provides an implementation for &quot;project&quot; preferences.
+      </documentation>
+   </annotation>
+
+   <annotation>
+      <appInfo>
+         <meta.section type="copyright"/>
+      </appInfo>
+      <documentation>
+         Copyright (c) 2004, 2012 IBM Corporation and others.&lt;br&gt;
+All rights reserved. This program and the accompanying materials are made 
+available under the terms of the Eclipse Public License v1.0 which 
+accompanies this distribution, and is available at 
+&lt;a href=&quot;http://www.eclipse.org/legal/epl-v10.html&quot;&gt;http://www.eclipse.org/legal/epl-v10.html&lt;/a&gt;
+      </documentation>
+   </annotation>
+
+</schema>

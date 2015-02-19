@@ -1,0 +1,34 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: Snow Owl SCG Core
+Bundle-Vendor: B2i Healthcare
+Bundle-Version: 3.9.0.qualifier
+Bundle-SymbolicName: com.b2international.snowowl.snomed.scg;singleton:=true
+Bundle-ActivationPolicy: lazy
+Require-Bundle: org.eclipse.xtext,
+ org.eclipse.xtext.util,
+ org.eclipse.emf.ecore,
+ org.eclipse.emf.common,
+ com.b2international.snowowl.snomed.dsl,
+ com.b2international.snowowl.snomed.model,
+ com.b2international.snowowl.core;bundle-version="2.1.0",
+ com.b2international.snowowl.datastore;bundle-version="2.1.0",
+ com.b2international.snowowl.snomed.datastore;bundle-version="2.1.0",
+ com.b2international.snowowl.snomed.mrcm.core;bundle-version="2.1.0",
+ org.eclipse.xtext.generator;bundle-version="2.0.1",
+ org.antlr.runtime,
+ com.b2international.commons;bundle-version="2.0.0",
+ com.b2international.snowowl.snomed.mrcm.model;bundle-version="2.1.0",
+ org.eclipse.core.runtime;bundle-version="3.7.0",
+ com.b2international.snowowl.snomed.common;bundle-version="2.6.0"
+Import-Package: org.slf4j;version="1.7.2"
+Bundle-RequiredExecutionEnvironment: JavaSE-1.7
+Export-Package: com.b2international.snowowl.dsl,com.b2international.sn
+ owowl.dsl.expressionextractor,com.b2international.snowowl.dsl.parseTr
+ eeConstruction,com.b2international.snowowl.dsl.parser.antlr,com.b2int
+ ernational.snowowl.dsl.parser.antlr.internal,com.b2international.snow
+ owl.dsl.scg,com.b2international.snowowl.dsl.scg.impl,com.b2internatio
+ nal.snowowl.dsl.services,com.b2international.snowowl.dsl.util,com.b2i
+ nternational.snowowl.dsl.validation,com.b2international.snowowl.dsl.s
+ cg.util,com.b2international.snowowl.dsl.scoping,com.b2international.s
+ nowowl.dsl.formatting

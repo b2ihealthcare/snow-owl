@@ -1,0 +1,36 @@
+/*
+ * Copyright 2011-2015 B2i Healthcare Pte Ltd, http://b2i.sg
+ * 
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package com.b2international.snowowl.api.admin;
+
+/**
+ * An interface definition for the Messaging Service.
+ * <p>
+ * The following operations are supported:
+ * <ul>
+ * <li>{@link #sendMessage(String) <em>Send message to connected users</em>}
+ * </ul>
+ * 
+ */
+public interface IMessagingService {
+
+	/**
+	 * Sends an informational message to all connected users; the message is displayed in the desktop application
+	 * immediately.
+	 * 
+	 * @param message the message to send (may not be {@code null})
+	 */
+	void sendMessage(String message);
+}

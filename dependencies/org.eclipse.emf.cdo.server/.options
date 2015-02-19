@@ -1,0 +1,11 @@
+# Debugging and tracing options
+
+org.eclipse.emf.cdo.server/debug = true
+org.eclipse.emf.cdo.server/debug.protocol = true
+org.eclipse.emf.cdo.server/debug.repository = true
+org.eclipse.emf.cdo.server/debug.session = true
+org.eclipse.emf.cdo.server/debug.transaction = true
+org.eclipse.emf.cdo.server/debug.revision = true
+org.eclipse.emf.cdo.server/debug.resource = true
+org.eclipse.emf.cdo.server/debug.store = true
+org.eclipse.emf.cdo.server/debug.types = true

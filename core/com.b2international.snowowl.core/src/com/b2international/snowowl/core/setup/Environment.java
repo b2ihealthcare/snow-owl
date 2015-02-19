@@ -1,0 +1,189 @@
+/*
+ * Copyright 2011-2015 B2i Healthcare Pte Ltd, http://b2i.sg
+ * 
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package com.b2international.snowowl.core.setup;
+
+import java.io.File;
+
+import org.eclipse.net4j.util.container.IManagedContainer;
+import org.eclipse.net4j.util.container.IPluginContainer;
+import org.osgi.service.prefs.PreferencesService;
+
+import com.b2international.commons.platform.PlatformUtil;
+import com.b2international.snowowl.core.ApplicationContext;
+import com.b2international.snowowl.core.api.preferences.FileBasedPreferencesService;
+import com.b2international.snowowl.core.config.ClientPreferences;
+import com.b2international.snowowl.core.config.SnowOwlConfiguration;
+
+/**
+ * @since 3.3
+ */
+public final class Environment {
+
+	private final ApplicationContext context = ApplicationContext.getInstance();
+
+	private final IManagedContainer container = IPluginContainer.INSTANCE;
+
+	private File installationDirectory;
+	private File configDirectory;
+	private File resourcesDirectory;
+	private File defaultsDirectory;
+
+	public Environment(final Bootstrap bootstrap, final SnowOwlConfiguration configuration) throws Exception {
+		initializeEnvironmentDirectories(bootstrap.getInstallationDirectory(), configuration);
+		services().registerService(PreferencesService.class,
+				PlatformUtil.getPreferencesService(bootstrap.getBundleContext()));
+		services().registerService(FileBasedPreferencesService.class,
+				new FileBasedPreferencesService(getConfigDirectory()));
+		services().registerService(SnowOwlConfiguration.class, configuration);
+	}
+	
+	private void initializeEnvironmentDirectories(File installationDirectory, SnowOwlConfiguration configuration) throws Exception {
+		this.installationDirectory = installationDirectory;
+		// TODO check if the configuration uses an absolute path
+		this.configDirectory = createDirectory(installationDirectory, configuration.getConfigurationDirectory());
+		this.resourcesDirectory = createDirectory(installationDirectory, configuration.getResourceDirectory());
+		this.defaultsDirectory = createDirectory(installationDirectory, configuration.getDefaultsDirectory());
+		// set resolved directory paths to configuration
+		configuration.setInstallationDirectory(this.installationDirectory.getAbsolutePath());
+		configuration.setConfigurationDirectory(this.configDirectory.getAbsolutePath());
+		configuration.setResourceDirectory(this.resourcesDirectory.getAbsolutePath());
+		configuration.setDefaultsDirectory(this.defaultsDirectory.getAbsolutePath());
+	}
+
+	/**
+	 * Returns the {@link ApplicationContext} instance to register/retrieve
+	 * services.
+	 * 
+	 * @return
+	 */
+	public ApplicationContext services() {
+		return context;
+	}
+
+	/**
+	 * Returns the {@link IManagedContainer} to register Net4J and CDO services.
+	 * 
+	 * @return
+	 */
+	public IManagedContainer container() {
+		return container;
+	}
+
+	/**
+	 * Returns the global {@link FileBasedPreferencesService}.
+	 * 
+	 * @return
+	 */
+	public FileBasedPreferencesService filePreferences() {
+		return service(FileBasedPreferencesService.class);
+	}
+
+	/**
+	 * Returns the current installation directory.
+	 * 
+	 * @return
+	 */
+	public File getInstallationDirectory() {
+		return installationDirectory;
+	}
+
+	/**
+	 * Returns the config directory location.
+	 * 
+	 * @return
+	 */
+	public File getConfigDirectory() {
+		return configDirectory;
+	}
+
+	/**
+	 * Returns the data directory location.
+	 * 
+	 * @return
+	 */
+	public File getDataDirectory() {
+		return resourcesDirectory;
+	}
+
+	/**
+	 * Returns the defaults directory location.
+	 * 
+	 * @return
+	 */
+	public File getDefaultsDirectory() {
+		return defaultsDirectory;
+	}
+
+	/**
+	 * Returns the {@link PreferencesService} from the
+	 * {@link ApplicationContext}.
+	 * 
+	 * @return
+	 */
+	public PreferencesService preferences() {
+		return services().getServiceChecked(PreferencesService.class);
+	}
+
+	/**
+	 * Returns the given service or throws an exception if none found in the
+	 * current {@link ApplicationContext}.
+	 * 
+	 * @param type
+	 * @return
+	 */
+	public <T> T service(Class<T> type) {
+		return services().getServiceChecked(type);
+	}
+
+	/**
+	 * Returns if Snow Owl running in embedded mode or not.
+	 * 
+	 * @return
+	 */
+	public boolean isEmbedded() {
+		return service(ClientPreferences.class).isClientEmbedded();
+	}
+
+	/**
+	 * Returns <code>true</code> if Snow Owl is running on a client environment.
+	 * 
+	 * @return
+	 */
+	public boolean isClient() {
+		return !isServer();
+	}
+
+	/**
+	 * Returns <code>true</code> if Snow Owl is running on a server environment.
+	 * 
+	 * @return
+	 */
+	public boolean isServer() {
+		return services().isServerMode();
+	}
+
+	private File createDirectory(File parent, String path) throws Exception {
+		return createDirectory(new File(parent, path));
+	}
+	
+	private File createDirectory(File directory) {
+		if (!directory.exists()) {
+			directory.mkdirs();
+		}
+		return directory;
+	}
+
+}

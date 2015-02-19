@@ -1,0 +1,25 @@
+#
+# Copyright 2015 B2i Healthcare Pte Ltd, http://b2i.sg
+#
+
+authentication:
+  type: LDAP
+
+repository:
+  host: 0.0.0.0
+  port: 2036
+  # Index timeout (default)
+  # indexTimeout=240
+  database:
+    type: b2i_mysql
+    datasource: com.mysql.jdbc.jdbc2.optional.MysqlDataSource
+    driver: com.mysql.jdbc.Driver
+    scheme: jdbc:mysql://
+    location: localhost:3306/
+    settings: ?useServerPrepStmts=true&useCursorFetch=true
+    username: snowowl
+    password: snowowl
+    
+snomed:
+  language: en-sg
+  defaultReasoner: uk.ac.manchester.cs.owl.factplusplus.factplusplus-factory

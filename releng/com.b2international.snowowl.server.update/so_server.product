@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?pde version="3.5"?>
+
+<product name="Snow Owl Server" uid="com.b2international.snowowl.server" id="com.b2international.snowowl.server.product.product" application="com.b2international.snowowl.server.product.SnowOwlServer" version="3.9.0.qualifier" useFeatures="true" includeLaunchers="true">
+
+   <configIni use="default">
+   </configIni>
+
+   <launcherArgs>
+      <programArgs>-console -consoleLog
+      </programArgs>
+      <vmArgs>-Dosgi.requiredJavaVersion=1.5 -XX:MaxPermSize=256m -Xms8g -Xmx10g -server -Declipse.ignoreApp=true -Dosgi.noShutdown=true -Dorg.osgi.service.http.port=8080 -Dorg.vaadin.osgi.widgetset=com.b2international.snowowl.web.vaadin.widgetset.SnowOwlWidgetset -XX:+AlwaysLockClassLoader -Dosgi.classloader.type=nonparallel
+      </vmArgs>
+      <vmArgsMac>-XstartOnFirstThread -Dorg.eclipse.swt.internal.carbon.smallFonts
+      </vmArgsMac>
+   </launcherArgs>
+
+   <windowImages/>
+
+   <launcher name="SnowOwlServer">
+      <solaris/>
+      <win useIco="false">
+         <bmp/>
+      </win>
+   </launcher>
+
+   <vm>
+   </vm>
+
+   <plugins>
+   </plugins>
+
+   <features>
+      <feature id="com.b2international.snowowl.server.core.feature" version="3.9.0.qualifier"/>
+      <feature id="com.b2international.snowowl.server.product.feature" version="3.9.0.qualifier"/>
+      <feature id="com.b2international.snowowl.scripting.server.feature" version="3.9.0.qualifier"/>
+      <feature id="com.b2international.snowowl.snomed.core.feature" version="3.9.0.qualifier"/>
+      <feature id="com.b2international.snowowl.server.dependencies.feature" version="3.9.0.qualifier"/>
+   </features>
+
+   <configurations>
+      <plugin id="com.b2international.snowowl.authentication.ldap" autoStart="true" startLevel="0" />
+      <plugin id="com.b2international.snowowl.server.console" autoStart="true" startLevel="0" />
+      <plugin id="com.b2international.snowowl.server.product" autoStart="true" startLevel="0" />
+      <plugin id="org.eclipse.core.contenttype" autoStart="false" startLevel="3" />
+      <plugin id="org.eclipse.core.runtime" autoStart="true" startLevel="3" />
+      <plugin id="org.eclipse.equinox.cm" autoStart="true" startLevel="0" />
+      <plugin id="org.eclipse.equinox.common" autoStart="true" startLevel="2" />
+      <plugin id="org.eclipse.equinox.ds" autoStart="true" startLevel="1" />
+      <plugin id="org.eclipse.equinox.http.jetty" autoStart="true" startLevel="0" />
+      <plugin id="org.eclipse.equinox.p2.reconciler.dropins" autoStart="true" startLevel="0" />
+      <plugin id="org.eclipse.osgi" autoStart="true" startLevel="0" />
+   </configurations>
+
+</product>

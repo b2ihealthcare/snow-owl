@@ -1,0 +1,230 @@
+/*
+ * Copyright 2011-2015 B2i Healthcare Pte Ltd, http://b2i.sg
+ * 
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package com.b2international.snowowl.datastore.cdo;
+
+import static com.b2international.snowowl.datastore.BranchPathUtils.isBasePath;
+import static com.b2international.snowowl.datastore.BranchPathUtils.isMain;
+import static com.b2international.snowowl.datastore.BranchPointUtils.create;
+import static com.b2international.snowowl.datastore.BranchPointUtils.createBase;
+import static com.google.common.base.Preconditions.checkNotNull;
+import static java.util.Collections.emptyList;
+
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+
+import javax.annotation.Nullable;
+
+import org.eclipse.emf.cdo.common.branch.CDOBranch;
+import org.eclipse.emf.cdo.common.model.CDOPackageRegistry;
+import org.eclipse.emf.cdo.net4j.CDONet4jSession;
+import org.eclipse.emf.cdo.net4j.CDONet4jSessionConfiguration;
+import org.eclipse.emf.cdo.session.CDOSession;
+import org.eclipse.emf.cdo.transaction.CDOTransaction;
+import org.eclipse.emf.cdo.util.CDOUtil;
+import org.eclipse.emf.cdo.view.CDOView;
+import org.eclipse.net4j.util.lifecycle.LifecycleUtil;
+import org.eclipse.net4j.util.ref.ReferenceType;
+
+import com.b2international.commons.CompareUtils;
+import com.b2international.snowowl.core.ApplicationContext;
+import com.b2international.snowowl.core.api.IBranchPath;
+import com.b2international.snowowl.core.api.IBranchPoint;
+import com.b2international.snowowl.core.config.SnowOwlConfiguration;
+import com.b2international.snowowl.core.users.User;
+import com.b2international.snowowl.datastore.PostStoreUpdateManager;
+import com.b2international.snowowl.datastore.cdo.ICDOBranchManager.BranchPathPredicate;
+import com.b2international.snowowl.datastore.connection.RepositoryConnectionConfiguration;
+import com.google.common.base.Preconditions;
+import com.google.common.collect.Iterables;
+import com.google.common.collect.Lists;
+
+/**
+ * The CDOConnection object wraps the client side elements of the connection to the server:
+ * <li>the {@link CDOSession}
+ * <li>the {@link User} credentials
+ * <li>the custom client side {@link SnowowlClientProtocol} for net4j communication
+ * <li>{@link ICDOBranchManager}
+ * <li>{@link PostStoreUpdateManager}
+ *
+ */
+/*default*/ class CDOConnection extends CDOManagedItem<ICDOConnection> implements ICDOConnection {
+
+	private static final int COMMIT_MONITOR_TIMEOUT_SECONDS = 1000;
+
+	/*default*/ CDOConnection(final String repositoryUuid, @Nullable final String repositoryName, final byte namespaceId, 
+			@Nullable final String toolingId, @Nullable final String dependsOnRepositoryUuid, final boolean meta) {
+		super(repositoryUuid, repositoryName, namespaceId, toolingId, dependsOnRepositoryUuid, meta);
+	}
+	
+	@Override
+	public CDOView createView() {
+		return createView(getMainBranch());
+	}
+	
+	@Override
+	public CDOView createView(final IBranchPoint branchPoint) {
+		
+		Preconditions.checkNotNull(branchPoint, "Branch point argument cannot be null.");
+		
+		final CDOBranch branch = Preconditions.checkNotNull(
+				getBranch(branchPoint.getBranchPath()), 
+				"Branch does not exist. Path: '" + branchPoint.getBranchPath().getPath() + "'.");
+		
+		return createView(branch, branchPoint.getTimestamp());
+	}
+	
+	@Override
+	public CDOView createView(final IBranchPath branchPath) {
+		if (isBasePath(checkNotNull(branchPath, "branchPath"))) {
+			return createView(createBase(getUuid(), branchPath));
+		} else {
+			return createView(create(getUuid(), branchPath));
+		}
+	}
+	
+	@Override
+	public CDOView createView(final CDOBranch branch) {
+		return getSession().openView(branch);
+	}
+
+	@Override
+	public CDOView createView(final CDOBranch branch, final long timeStamp) {
+		return createView(branch, timeStamp, true);
+	}
+	
+	@Override
+	public CDOView createView(final CDOBranch branch, final long timeStamp, final boolean shouldInvalidate) {
+		return getSession().openView(branch, timeStamp, shouldInvalidate);
+	}
+	
+	@Override
+	public CDOTransaction createTransaction(final CDOBranch branch) {
+		final CDOTransaction transaction = getSession().openTransaction(branch);
+		transaction.options().setCacheReferenceType(ReferenceType.WEAK);
+		return transaction;
+	}
+	
+	@Override
+	public CDOTransaction createTransaction(final IBranchPath branchPath) {
+		Preconditions.checkNotNull(branchPath, "Branch path argument cannot be null.");
+		final CDOBranch branch = Preconditions.checkNotNull(getBranch(branchPath), "Branch does not exist. Path: '" + branchPath.getPath() + "'.");
+		return createTransaction(branch);
+	}
+	
+	@Override
+	public CDONet4jSession getSession() {
+		return getSessionConfiguration().openNet4jSession();
+	}
+
+	@Override
+	public CDOBranch getMainBranch() {
+		return getSession().getBranchManager().getMainBranch();
+	}
+
+	@Override
+	public CDOBranch getBranch(final IBranchPath branchPath) {
+		Preconditions.checkNotNull(branchPath, "Branch path argument cannot be null.");
+		if (isMain(branchPath)) {
+			return getMainBranch();
+		} else {
+			final List<CDOBranch> $ = getBranches(branchPath, true);
+			return CompareUtils.isEmpty($) ? null : Iterables.getLast($);
+		}
+	}
+	
+	@Override
+	public CDOBranch getOldestBranch(final IBranchPath branchPath) {
+		Preconditions.checkNotNull(branchPath, "Branch path argument cannot be null.");
+		if (isMain(branchPath)) {
+			return getMainBranch();
+		} else {
+			final List<CDOBranch> $ = getBranches(branchPath, false);
+			return CompareUtils.isEmpty($) ? null : Iterables.getLast($);
+		}
+	}
+	
+	@Override
+	public CDOPackageRegistry getPackageRegistry() {
+		return getSession().getPackageRegistry();
+	}
+	
+	@Override
+	public String toString() {
+		return getRepositoryName();
+	}
+	
+	@Override
+	protected void doDeactivate() throws Exception {
+		LifecycleUtil.deactivate(getSession());
+	}
+
+	@Override
+	protected void doActivate() throws Exception {
+		openCdoSession();
+	}
+
+	@Override
+	protected CDOConnectionManager getContainer() {
+		return (CDOConnectionManager) super.getContainer();
+	}
+	
+	private CDONet4jSessionConfiguration getSessionConfiguration() {
+		return getContainer().getSessionConfiguration(this);
+	}
+	
+	/*returns with the branches associated with the given path. in this context most recent is the branch where timestamp is the greatest.*/
+	private List<CDOBranch> getBranches(final IBranchPath branchPath, final boolean oldestFirst) {
+		Preconditions.checkArgument(!isMain(branchPath), "Branch path must not be MAIN branch.");
+		final CDOBranch parentBranch = getBranch(branchPath.getParent());
+		if (null == parentBranch) {
+			return emptyList();
+		}
+		final List<CDOBranch> $ = Lists.newArrayList(Iterables.filter(Arrays.asList(parentBranch.getBranches()), new BranchPathPredicate(branchPath)));
+		Collections.sort($, ICDOBranchManager.BRANCH_BASE_COMPARATOR);
+		
+		if (!oldestFirst) {
+			Collections.reverse($);
+		}
+		
+		return $;
+	}
+
+	private CDONet4jSession openCdoSession() {
+		
+		// Open the CDO session while the signal timeout is still set to the same value as the connection timeout
+		final CDONet4jSession cdoSession = getSession();
+		final CDONet4jSession.Options cdoSessionOptions = cdoSession.options();
+		final RepositoryConnectionConfiguration configuration = getRepositoryConfiguration();
+
+		/*
+		 * Update signal timeout to the configured value, allow commit progress monitor to stall for a longer time (when
+		 * committing lots of changes with MySQL, the monitor can not be updated every 10 seconds as the default value
+		 * would require).
+		 */
+		cdoSessionOptions.getNet4jProtocol().setTimeout(configuration.getSignalTimeout());
+		cdoSessionOptions.setCommitTimeout(COMMIT_MONITOR_TIMEOUT_SECONDS);
+
+		// Adjust collection loading policy; it needs to be the same both on the client and the server
+		cdoSessionOptions.setCollectionLoadingPolicy(CDOUtil.createCollectionLoadingPolicy(0, 10));
+		
+		return cdoSession;
+	}
+
+	private RepositoryConnectionConfiguration getRepositoryConfiguration() {
+		return ApplicationContext.getServiceForClass(SnowOwlConfiguration.class).getModuleConfig(RepositoryConnectionConfiguration.class);
+	}
+}

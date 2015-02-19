@@ -1,0 +1,24 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: Snow Owl SNOMED CT Reference Set Exporter
+Bundle-SymbolicName: com.b2international.snowowl.snomed.exporter.server;singleton:=true
+Bundle-Version: 3.9.0.qualifier
+Bundle-Activator: com.b2international.snowowl.snomed.exporter.server.SnomedExporterActivator
+Bundle-Vendor: B2i Healthcare
+Require-Bundle: org.eclipse.core.runtime;bundle-version="[3.8.0,3.9.0)",
+ org.eclipse.net4j;bundle-version="4.0.0",
+ org.codehaus.groovy;bundle-version="[2.0.7,2.1.0)",
+ org.eclipse.emf.cdo.net4j,
+ org.eclipse.emf.cdo.server.db;bundle-version="4.1.1",
+ com.b2international.snowowl.snomed.datastore,
+ com.b2international.snowowl.datastore.server,
+ com.b2international.snowowl.snomed.exporter,
+ com.b2international.snowowl.dependencies
+Bundle-RequiredExecutionEnvironment: JavaSE-1.7
+Bundle-ActivationPolicy: lazy
+Export-Package: com.b2international.snowowl.snomed.exporter.server,
+ com.b2international.snowowl.snomed.exporter.server.core,
+ com.b2international.snowowl.snomed.exporter.server.net4j,
+ com.b2international.snowowl.snomed.exporter.server.refset,
+ com.b2international.snowowl.snomed.exporter.server.sandbox
+Import-Package: org.slf4j;version="1.7.2"

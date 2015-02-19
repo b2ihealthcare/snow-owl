@@ -1,0 +1,15 @@
+#
+# Copyright 2015 B2i Healthcare Pte Ltd, http://b2i.sg
+#
+
+authentication:
+  type: PROP_FILE
+
+fileAuth:
+  users:
+    -
+      username: snowowl
+      password: snowowl
+
+repository:
+  port: 2036

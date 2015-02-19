@@ -1,0 +1,150 @@
+package org.protege.editor.owl.ui.framelist;
+
+import java.awt.event.ActionEvent;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+
+import org.protege.editor.owl.model.util.ClosureAxiomFactory;
+import org.protege.editor.owl.ui.frame.OWLFrameSectionRow;
+import org.semanticweb.owlapi.model.AddAxiom;
+import org.semanticweb.owlapi.model.OWLAxiom;
+import org.semanticweb.owlapi.model.OWLClass;
+import org.semanticweb.owlapi.model.OWLClassExpression;
+import org.semanticweb.owlapi.model.OWLDataFactory;
+import org.semanticweb.owlapi.model.OWLEquivalentClassesAxiom;
+import org.semanticweb.owlapi.model.OWLObject;
+import org.semanticweb.owlapi.model.OWLObjectExactCardinality;
+import org.semanticweb.owlapi.model.OWLObjectHasValue;
+import org.semanticweb.owlapi.model.OWLObjectIntersectionOf;
+import org.semanticweb.owlapi.model.OWLObjectMinCardinality;
+import org.semanticweb.owlapi.model.OWLObjectProperty;
+import org.semanticweb.owlapi.model.OWLObjectSomeValuesFrom;
+import org.semanticweb.owlapi.model.OWLOntology;
+import org.semanticweb.owlapi.model.OWLOntologyChange;
+import org.semanticweb.owlapi.model.OWLSubClassOfAxiom;
+import org.semanticweb.owlapi.util.OWLObjectVisitorAdapter;
+
+/**
+ * Author: drummond<br>
+ * http://www.cs.man.ac.uk/~drummond/<br><br>
+ * <p/>
+ * The University Of Manchester<br>
+ * Bio Health Informatics Group<br>
+ * Date: Nov 24, 2008<br><br>
+ */
+public class CreateClosureAxiomAction extends OWLFrameListPopupMenuAction<OWLClass> {
+
+
+    protected String getName() {
+        return "Create closure axiom";
+    }
+
+
+    protected void initialise() throws Exception {
+    }
+
+
+    protected void dispose() throws Exception {
+    }
+
+
+    private Set<OWLObjectProperty> getPropertiesFromSelection() {
+        ClosureSourceIdentifier closureSourceIdentifier = new ClosureSourceIdentifier();
+        for (Object selVal : getFrameList().getSelectedValues()){
+            if (selVal instanceof OWLFrameSectionRow) {
+                OWLAxiom ax = ((OWLFrameSectionRow) selVal).getAxiom();
+                ax.accept(closureSourceIdentifier);
+            }
+        }
+        return closureSourceIdentifier.getPropertiesToClose();
+    }
+
+
+    protected void updateState() {
+        setEnabled(!getPropertiesFromSelection().isEmpty());
+    }
+
+
+    public void actionPerformed(ActionEvent e) {
+        List<OWLOntologyChange> changes = new ArrayList<OWLOntologyChange>();
+
+        final OWLOntology activeOnt = getOWLModelManager().getActiveOntology();
+        final Set<OWLOntology> activeOnts = getOWLModelManager().getActiveOntologies();
+        final OWLDataFactory df = getOWLModelManager().getOWLDataFactory();
+        final OWLClass root = getRootObject();
+
+        for (OWLObjectProperty prop : getPropertiesFromSelection()){
+            OWLAxiom ax = ClosureAxiomFactory.getClosureAxiom(root, prop, df, activeOnts);
+            if (ax != null && !activeOnt.containsAxiom(ax)){
+                changes.add(new AddAxiom(activeOnt, ax));
+            }
+        }
+        if (!changes.isEmpty()){
+            getOWLModelManager().applyChanges(changes);
+        }
+    }
+
+
+    /**
+     * Gets the properties of some, min and exact restrictions from super or equivalent class axioms
+     */
+    class ClosureSourceIdentifier extends OWLObjectVisitorAdapter {
+
+        private final Set<OWLObjectProperty> propertiesToClose = new HashSet<OWLObjectProperty>();
+
+        private Set<OWLObject> visited = new HashSet<OWLObject>();
+
+
+        public Set<OWLObjectProperty> getPropertiesToClose() {
+            return propertiesToClose;
+        }
+
+
+        public void visit(OWLSubClassOfAxiom owlSubClassAxiom) {
+            if (!visited.contains(owlSubClassAxiom)){
+                visited.add(owlSubClassAxiom);
+                owlSubClassAxiom.getSuperClass().accept(this);
+            }
+        }
+
+
+        public void visit(OWLEquivalentClassesAxiom owlEquivalentClassesAxiom) {
+            if (!visited.contains(owlEquivalentClassesAxiom)){
+                visited.add(owlEquivalentClassesAxiom);
+                for (OWLClassExpression op : owlEquivalentClassesAxiom.getClassExpressions()){
+                    op.accept(this);
+                }
+            }
+        }
+
+
+        public void visit(OWLObjectIntersectionOf owlObjectIntersectionOf) {
+            for (OWLClassExpression op : owlObjectIntersectionOf.getOperands()){
+                op.accept(this);
+            }
+        }
+
+
+        public void visit(OWLObjectSomeValuesFrom restr) {
+            restr.getProperty().accept(this);
+        }
+
+        public void visit(OWLObjectMinCardinality restr) {
+            restr.getProperty().accept(this);
+        }
+
+        public void visit(OWLObjectExactCardinality restr) {
+            restr.getProperty().accept(this);
+        }
+
+        public void visit(OWLObjectHasValue restr) {
+            restr.getProperty().accept(this);
+        }
+
+        public void visit(OWLObjectProperty owlObjectProperty) {
+            propertiesToClose.add(owlObjectProperty);
+        }
+    }
+}

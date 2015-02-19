@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.6"?>
+<plugin>
+   <extension
+         id="com.b2international.snowowl.server.product.SnowOwlServer"
+         name="Snow Owl Server"
+         point="org.eclipse.core.runtime.applications">
+      <application
+            cardinality="*"
+            thread="any"
+            visible="true">
+         <run
+               class="com.b2international.snowowl.server.product.ServerApplication">
+         </run>
+      </application>
+   </extension>
+   <extension
+         id="product"
+         point="org.eclipse.core.runtime.products">
+      <product
+            application="com.b2international.snowowl.server.product.SnowOwlServer"
+            description="OSGi based Snow Owl server runtime"
+            name="Snow Owl server">
+         <property
+               name="appName"
+               value="Snow Owl server">
+         </property>
+         <property
+               name="serverMode"
+               value="true">
+         </property>
+      </product>
+   </extension>
+</plugin>

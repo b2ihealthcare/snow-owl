@@ -1,0 +1,120 @@
+/*
+ * Copyright 2011-2015 B2i Healthcare Pte Ltd, http://b2i.sg
+ * 
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package com.b2international.snowowl.snomed.reasoner.classification.entry;
+
+import com.b2international.snowowl.core.api.IComponentWithIconId;
+
+/**
+ * Represents a reasoner change entry about a relationship.
+ */
+public class RelationshipChangeEntry extends RelationshipChangeEntryBase {
+
+	private static final long serialVersionUID = 1L;
+
+	private final byte group;
+	private final byte unionGroup;
+	private final IComponentWithIconId<Long> modifier;
+	private final boolean destinationNegated;
+
+	/**
+	 * Creates a new relationship change entry with the specified arguments.
+	 * @param nature the change nature
+	 * @param source the source component
+	 * @param type the type component
+	 * @param destination the destination component
+	 * @param group the relationship's group
+	 * @param unionGroup the relationship's union group
+	 * @param modifier the modifier component
+	 * @param destinationNegated {@code true} if the destination component is to be negated, {@code false} otherwise
+	 */
+	public RelationshipChangeEntry(final Nature nature, final IComponentWithIconId<Long> source, final IComponentWithIconId<Long> type,
+			final IComponentWithIconId<Long> destination, final byte group, final byte unionGroup, final IComponentWithIconId<Long> modifier,
+			final boolean destinationNegated) {
+		super(nature, source, type, destination);
+		this.group = group;
+		this.unionGroup = unionGroup;
+		this.modifier = modifier;
+		this.destinationNegated = destinationNegated;
+	}
+
+	/**
+	 * @return the relationship's group
+	 */
+	public byte getGroup() {
+		return group;
+	}
+
+	/**
+	 * @return the relationship's union group
+	 */
+	public byte getUnionGroup() {
+		return unionGroup;
+	}
+
+	/**
+	 * @return the modifier component
+	 */
+	public IComponentWithIconId<Long> getModifier() {
+		return modifier;
+	}
+
+	/**
+	 * @return {@code true} if the destination component is to be negated, {@code false} otherwise
+	 */
+	public boolean isDestinationNegated() {
+		return destinationNegated;
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see com.b2international.snowowl.snomed.reasoner.classification.entry.RelationshipChangeEntryBase#hashCode()
+	 */
+	@Override public int hashCode() {
+		final int prime = 31;
+		int result = super.hashCode();
+		result = prime * result + (destinationNegated ? 1231 : 1237);
+		result = prime * result + group;
+		result = prime * result + ((modifier == null) ? 0 : modifier.hashCode());
+		result = prime * result + unionGroup;
+		return result;
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see com.b2international.snowowl.snomed.reasoner.classification.entry.RelationshipChangeEntryBase#equals(java.lang.Object)
+	 */
+	@Override public boolean equals(final Object obj) {
+		if (this == obj)
+			return true;
+		if (!super.equals(obj))
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		final RelationshipChangeEntry other = (RelationshipChangeEntry) obj;
+		if (destinationNegated != other.destinationNegated)
+			return false;
+		if (group != other.group)
+			return false;
+		if (modifier == null) {
+			if (other.modifier != null)
+				return false;
+		} else if (!modifier.equals(other.modifier))
+			return false;
+		if (unionGroup != other.unionGroup)
+			return false;
+		return true;
+	}
+}

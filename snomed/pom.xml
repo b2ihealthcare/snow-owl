@@ -1,0 +1,66 @@
+<?xml version="1.0"?>
+<project
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd"
+	xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+	<modelVersion>4.0.0</modelVersion>
+	<artifactId>snomed-parent</artifactId>
+	<packaging>pom</packaging>
+	
+	<parent>
+		<groupId>com.b2international.snowowl</groupId>
+		<artifactId>snowowl-parent</artifactId>
+		<version>3.9.0-SNAPSHOT</version>
+	</parent>
+	
+	<modules>
+		<!-- SNOMED CT API modules -->
+		<module>com.b2international.snowowl.snomed.api</module>
+		<module>com.b2international.snowowl.snomed.api.impl</module>
+		<module>com.b2international.snowowl.snomed.api.rest</module>
+		<module>com.b2international.snowowl.snomed.api.rest.tests</module>
+		
+		<!-- SNOMED CT Models -->
+		<module>com.b2international.snowowl.snomed.model</module>
+		<module>com.b2international.snowowl.snomed.refset.model</module>
+		
+		<!-- SNOMED CT Core modules -->
+		<module>com.b2international.snowowl.snomed.common</module>
+		<module>com.b2international.snowowl.snomed.datastore</module>
+		<module>com.b2international.snowowl.snomed.datastore.server</module>
+		<module>com.b2international.snowowl.snomed.refset.core</module>
+		
+		<!-- SNOMED CT Classification Support -->
+		<module>com.b2international.snowowl.snomed.reasoner</module>
+		<module>com.b2international.snowowl.snomed.reasoner.server</module>
+		
+		<!-- SNOMED CT Validation -->
+		<module>com.b2international.snowowl.snomed.validation</module>
+		<module>com.b2international.snowowl.snomed.validation.constraints</module>
+		
+		<!-- SNOMED CT SemanticEngine -->
+		<module>com.b2international.snowowl.snomed.semanticengine</module>
+		<module>com.b2international.snowowl.snomed.semanticengine.test</module>
+		<module>com.b2international.snowowl.snomed.semanticengine.simpleast</module>
+		<module>com.b2international.snowowl.snomed.semanticengine.simpleast.test</module>
+		
+		<!-- SNOMED CT MRCM Support -->
+		<module>com.b2international.snowowl.snomed.mrcm.core</module>
+		<module>com.b2international.snowowl.snomed.mrcm.core.server</module>
+		<module>com.b2international.snowowl.snomed.mrcm.model</module>
+		
+		<!-- SNOMED CT Import-Export -->
+		<module>com.b2international.snowowl.snomed.exporter</module>
+		<module>com.b2international.snowowl.snomed.exporter.server</module>
+		<module>com.b2international.snowowl.snomed.importer</module>
+		<module>com.b2international.snowowl.snomed.importer.rf2</module>
+		
+		<!-- SNOMED CT DSLs -->
+		<module>com.b2international.snowowl.snomed.dsl</module>
+		<module>com.b2international.snowowl.snomed.escg</module>
+		<module>com.b2international.snowowl.snomed.scg</module>
+		
+		<!-- SNOMED CT Core Features -->
+		<module>com.b2international.snowowl.snomed.core.feature</module>
+	</modules>
+	
+</project>

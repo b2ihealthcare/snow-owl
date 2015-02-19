@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<site>
+   <feature url="features/com.b2international.snowowl.scripting.server.feature_3.9.0.qualifier.jar" id="com.b2international.snowowl.scripting.server.feature" version="3.9.0.qualifier">
+      <category name="scripting"/>
+   </feature>
+   <feature url="features/com.b2international.snowowl.server.core.feature_3.9.0.qualifier.jar" id="com.b2international.snowowl.server.core.feature" version="3.9.0.qualifier">
+      <category name="server-core"/>
+   </feature>
+   <feature url="features/com.b2international.snowowl.server.product.feature_3.9.0.qualifier.jar" id="com.b2international.snowowl.server.product.feature" version="3.9.0.qualifier">
+      <category name="server-core"/>
+   </feature>
+   <feature url="features/com.b2international.snowowl.snomed.core.feature_3.9.0.qualifier.jar" id="com.b2international.snowowl.snomed.core.feature" version="3.9.0.qualifier">
+      <category name="snomed-core"/>
+   </feature>
+   <category-def name="server-core" label="Snow Owl Server Common"/>
+   <category-def name="scripting" label="Snow Owl Scripting"/>
+   <category-def name="snomed-core" label="Snow Owl SNOMED CT extension"/>
+</site>

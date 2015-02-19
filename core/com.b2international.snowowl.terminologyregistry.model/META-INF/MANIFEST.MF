@@ -1,0 +1,16 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: %pluginName
+Bundle-SymbolicName: com.b2international.snowowl.terminologyregistry.model;singleton:=true
+Bundle-Version: 3.9.0.qualifier
+Bundle-ClassPath: .
+Bundle-Vendor: %providerName
+Bundle-Localization: plugin
+Bundle-RequiredExecutionEnvironment: JavaSE-1.7
+Export-Package: com.b2international.snowowl.terminologymetadata,com.b2
+ international.snowowl.terminologymetadata.impl,com.b2international.sn
+ owowl.terminologymetadata.util
+Require-Bundle: org.eclipse.core.runtime,
+ org.eclipse.emf.ecore;visibility:=reexport,
+ org.eclipse.emf.cdo;visibility:=reexport
+Bundle-ActivationPolicy: lazy

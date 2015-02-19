@@ -1,0 +1,5 @@
+globalParameter: Test
+
+config:
+  attribute: SomeAttr
+  valid: true

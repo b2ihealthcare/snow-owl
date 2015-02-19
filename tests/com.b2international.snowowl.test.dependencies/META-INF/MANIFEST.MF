@@ -1,0 +1,23 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: Test Dependencies
+Bundle-SymbolicName: com.b2international.snowowl.test.dependencies
+Bundle-Version: 3.9.0.qualifier
+Bundle-Vendor: B2iHealthcare
+Bundle-RequiredExecutionEnvironment: JavaSE-1.7
+Bundle-ClassPath: .,
+ contiperf-2.3.2.jar,
+ jukito-1.2.jar
+Export-Package: org.databene.contiperf,
+ org.databene.contiperf.clock,
+ org.databene.contiperf.junit,
+ org.databene.contiperf.log,
+ org.databene.contiperf.report,
+ org.databene.contiperf.sensor,
+ org.databene.contiperf.timer,
+ org.databene.contiperf.util,
+ org.databene.profile,
+ org.databene.stat,
+ org.jukito
+Require-Bundle: org.junit;bundle-version="4.8.2",
+ org.codehaus.groovy;bundle-version="[2.0.7,2.1.0)"

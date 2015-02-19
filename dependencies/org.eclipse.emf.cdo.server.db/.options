@@ -1,0 +1,3 @@
+# Debugging and tracing options
+
+org.eclipse.emf.cdo.server.db/debug = true
