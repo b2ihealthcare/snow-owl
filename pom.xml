@@ -79,6 +79,20 @@
 						</filter>
 						<filter>
 							<type>eclipse-plugin</type>
+							<id>org.eclipse.emf.mwe2.runtime</id>
+							<restrictTo>
+								<versionRange>[2.6.0,2.7.0)</versionRange>
+							</restrictTo>
+						</filter>
+						<filter>
+							<type>eclipse-plugin</type>
+							<id>org.eclipse.emf.mwe2.lib</id>
+							<restrictTo>
+								<versionRange>[2.6.0,2.7.0)</versionRange>
+							</restrictTo>
+						</filter>
+						<filter>
+							<type>eclipse-plugin</type>
 							<id>com.ibm.icu</id>
 							<restrictTo>
 								<versionRange>[4.4.2,4.4.3)</versionRange>
