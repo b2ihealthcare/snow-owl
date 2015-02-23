@@ -43,21 +43,21 @@ class RestExtensions {
 
 	def static RequestSpecification givenUnauthenticatedRequest(String api) {
 		Preconditions.checkArgument(api.startsWith("/"), "Api param should start with a forward slash: '/'")
-		given().basePath(CONTEXT + api)
+		given().port(getPort()).basePath(CONTEXT + api)
 	}
 
 	def static RequestSpecification givenAuthenticatedRequest(String api) {
 		givenRequestWithPassword(api, PASS)
 	}
-	
+
 	def static RequestSpecification givenInvalidPasswordRequest(String api) {
 		givenRequestWithPassword(api, WRONG_PASS)
 	}
-	
+
 	def private static RequestSpecification givenRequestWithPassword(String api, String password) {
 		givenUnauthenticatedRequest(api).auth().basic(USER, password)
 	}
-	
+
 	def static RequestSpecification withJson(RequestSpecification it, Map<String, ? extends Object> properties) {
 		contentType(ContentType.JSON).body(properties.asJson)
 	}
@@ -69,24 +69,32 @@ class RestExtensions {
 	def static String location(Response it) {
 		header(LOCATION)
 	}
-	
+
 	def static String renderWithFields(String it, Object object) {
 		it.render(object.fieldValueMap)
 	}
-	
+
 	def static Map<String, Object> getFieldValueMap(Object object) {
 		object.class.fields.toMap[name].mapValues[get(object)]
 	}
-	
+
 	def static String render(String it, Map<String, Object> fieldValueMap) {
 		new StrSubstitutor(fieldValueMap).replace(it)
 	}
-	
+
 	/**
 	 * Asserts whether a JSON body inside the given Response object have the same "state" field as the given state parameter.
 	 */
 	def static inState(Response it, String state) {
 		then.body("state", CoreMatchers.equalTo(state))
 	}
-	
+
+	/**
+	 * Returns the port used in the test environment, this is equivalent with the jetty.port configuration parameter, or with 8080 if no jetty.port parameter found.
+	 */
+	def static int getPort() {
+		val jettyPortProp = System.getProperty("jetty.port")
+		return if(jettyPortProp != null) Integer.valueOf(jettyPortProp) else 8080
+	}
+
 }
