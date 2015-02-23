@@ -79,6 +79,13 @@
 						</filter>
 						<filter>
 							<type>eclipse-plugin</type>
+							<id>com.ibm.icu</id>
+							<restrictTo>
+								<versionRange>[4.4.2,4.4.3)</versionRange>
+							</restrictTo>
+						</filter>
+						<filter>
+							<type>eclipse-plugin</type>
 							<id>org.codehaus.groovy</id>
 							<restrictTo>
 								<versionRange>[2.0.0,2.1.0)</versionRange>
