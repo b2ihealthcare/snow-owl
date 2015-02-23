@@ -13,7 +13,21 @@
 	
 	<modules>
 		<module>system.bundle.package.exporter</module>
-		<module>com.b2international.snowowl.server.update</module>
 	</modules>
+	
+	<profiles>
+		<profile>
+			<id>target_site</id>
+			<modules>
+				<module>com.b2international.snowowl.server.target.update</module>
+			</modules>
+		</profile>
+		<profile>
+			<id>site</id>
+			<modules>
+				<module>com.b2international.snowowl.server.update</module>
+			</modules>
+		</profile>
+	</profiles>
 	
 </project>
