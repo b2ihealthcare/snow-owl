@@ -36,6 +36,7 @@
       <feature id="com.b2international.snowowl.scripting.server.feature" version="3.9.0.qualifier"/>
       <feature id="com.b2international.snowowl.snomed.core.feature" version="3.9.0.qualifier"/>
       <feature id="com.b2international.snowowl.server.dependencies.feature" version="3.9.0.qualifier"/>
+      <feature id="com.b2international.snowowl.api.feature" version="1.0.0.qualifier"/>
    </features>
 
    <configurations>
