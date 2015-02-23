@@ -488,5 +488,22 @@
 			</repositories>
 		</profile>
 	</profiles>
+	
+	<distributionManagement>
+		<repository>
+			<id>nexus_deployment</id>
+			<url>http://jenkins:8081/nexus/content/repositories/releases/</url>
+		</repository>
+		<snapshotRepository>
+			<id>nexus_deployment</id>
+			<url>http://jenkins:8081/nexus/content/repositories/snapshots/</url>
+		</snapshotRepository>
+	</distributionManagement>
+	
+	<scm>
+		<url>https://github.com/b2ihealthcare/snow-owl</url>
+		<connection>scm:git:ssh://github.com/b2ihealthcare/snow-owl.git</connection>
+		<developerConnection>scm:git:ssh@github.com:b2ihealthcare/snow-owl.git</developerConnection>
+	</scm>
 
 </project>
