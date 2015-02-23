@@ -5,12 +5,14 @@
       version="3.9.0.qualifier"
       provider-name="B2i Healthcare">
 
-      <description url="http://b2i.sg">
-Snow Owl Terminology Server SNOMED CT core feature.
+   <description url="http://b2i.sg">
+      Snow Owl Terminology Server SNOMED CT core feature.
 Visit us at http://b2i.sg
    </description>
 
-   <copyright>Copyright 2011-2015 B2i Healthcare Pte Ltd, http://b2i.sg</copyright>
+   <copyright>
+      Copyright 2011-2015 B2i Healthcare Pte Ltd, http://b2i.sg
+   </copyright>
 
    <license url="http://www.example.com/license">
       [Enter License Description here]
@@ -184,27 +186,6 @@ Visit us at http://b2i.sg
 
    <plugin
          id="com.b2international.snowowl.snomed.scg"
-         download-size="0"
-         install-size="0"
-         version="0.0.0"
-         unpack="false"/>
-
-   <plugin
-         id="com.b2international.snowowl.snomed.api"
-         download-size="0"
-         install-size="0"
-         version="0.0.0"
-         unpack="false"/>
-
-   <plugin
-         id="com.b2international.snowowl.snomed.api.impl"
-         download-size="0"
-         install-size="0"
-         version="0.0.0"
-         unpack="false"/>
-
-   <plugin
-         id="com.b2international.snowowl.snomed.api.rest"
          download-size="0"
          install-size="0"
          version="0.0.0"

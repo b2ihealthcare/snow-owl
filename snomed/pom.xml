@@ -18,6 +18,7 @@
 		<module>com.b2international.snowowl.snomed.api.impl</module>
 		<module>com.b2international.snowowl.snomed.api.rest</module>
 		<module>com.b2international.snowowl.snomed.api.rest.tests</module>
+		<module>com.b2international.snowowl.snomed.api.feature</module>
 		
 		<!-- SNOMED CT Models -->
 		<module>com.b2international.snowowl.snomed.model</module>
