@@ -513,11 +513,11 @@
 	<distributionManagement>
 		<repository>
 			<id>nexus_deployment</id>
-			<url>http://jenkins:8081/nexus/content/repositories/releases/</url>
+			<url>${nexus.releases.url}</url>
 		</repository>
 		<snapshotRepository>
 			<id>nexus_deployment</id>
-			<url>http://jenkins:8081/nexus/content/repositories/snapshots/</url>
+			<url>${nexus.snapshots.url}</url>
 		</snapshotRepository>
 	</distributionManagement>
 	
