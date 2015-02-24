@@ -78,6 +78,13 @@
 							</restrictTo>
 						</filter>
 						<filter>
+							<type>p2-installable-unit</type>
+							<id>org.eclipse.emf</id>
+							<restrictTo>
+								<versionRange>[2.10.0,2.10.1)</versionRange>
+							</restrictTo>
+						</filter>
+						<filter>
 							<type>eclipse-plugin</type>
 							<id>org.eclipse.emf.mwe2.runtime</id>
 							<restrictTo>
