@@ -78,10 +78,17 @@
 							</restrictTo>
 						</filter>
 						<filter>
-							<type>p2-installable-unit</type>
-							<id>org.eclipse.emf</id>
+							<type>eclipse-plugin</type>
+							<id>org.eclipse.emf.mwe.core</id>
 							<restrictTo>
-								<versionRange>[2.10.0,2.10.1)</versionRange>
+								<versionRange>[1.3.3,1.3.4)</versionRange>
+							</restrictTo>
+						</filter>
+						<filter>
+							<type>eclipse-plugin</type>
+							<id>org.eclipse.emf.mwe.utils</id>
+							<restrictTo>
+								<versionRange>[1.3.3,1.3.4)</versionRange>
 							</restrictTo>
 						</filter>
 						<filter>
@@ -511,6 +518,16 @@
 				<repository>
 					<id>groovy</id>
 					<url>https://b2ihealthcare.github.io/snow-owl/updates/groovy_2.8.0</url>
+					<layout>p2</layout>
+				</repository>
+			</repositories>
+		</profile>
+		<profile>
+			<id>tp_dependencies</id>
+			<repositories>
+				<repository>
+					<id>tp</id>
+					<url>${target.platform.url}</url>
 					<layout>p2</layout>
 				</repository>
 			</repositories>
