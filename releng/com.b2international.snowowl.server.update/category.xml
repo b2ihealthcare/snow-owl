@@ -18,7 +18,11 @@
    <feature url="features/com.b2international.snowowl.snomed.api.feature_1.0.0.qualifier.jar" id="com.b2international.snowowl.snomed.api.feature" version="1.0.0.qualifier">
       <category name="snomed-core"/>
    </feature>
+   <feature url="features/com.b2international.snowowl.test.feature_3.9.0.qualifier.jar" id="com.b2international.snowowl.test.feature" version="3.9.0.qualifier">
+      <category name="tests"/>
+   </feature>
    <category-def name="server-core" label="Snow Owl Server Common"/>
    <category-def name="scripting" label="Snow Owl Scripting"/>
    <category-def name="snomed-core" label="Snow Owl SNOMED CT extension"/>
+   <category-def name="tests" label="Snow Owl Test Framework"/>
 </site>
