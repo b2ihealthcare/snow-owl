@@ -312,9 +312,13 @@ public class SnomedConceptHistoryInfoDetailsBuilder extends AbstractHistoryInfoD
 						getReferencedComponentLabel((SnomedRefSetMember) changedObject)).toString();
 
 			} else if (ACCEPTABILITY_ID_FEATURE_NAME.equals(featureName)) {
-				//we intentionally ignore this. IHTSDO is changing the acceptability of a language member in case of 
-				//PT changes on a concept. The new member will show that particular change.
-				return null;
+				// IHTSDO is changing the acceptability of existing language members in case of PT changes on a concept. 
+				// We have to show the change if it is changing to PREFERRED.
+				if (Concepts.REFSET_DESCRIPTION_ACCEPTABILITY_PREFERRED.equals(featureValue)) {
+					return getRefSetChangeDescription((SnomedRefSetMember)changedObject, beforeView, currentView, "");
+				} else {
+					return null;
+				}
 			}
 			
 		} else if (changedObject instanceof SnomedMappingRefSet) {
