@@ -16,8 +16,8 @@
 package com.b2international.snowowl.api.task.exception;
 
 /**
- * Thrown when an editing task could not be synchronized with the parent version's contents because of conflicting edits. 
- * 
+ * Thrown when an editing task could not be synchronized with the parent version's contents because of conflicting
+ * edits.
  */
 public class TaskSynchronizationConflictException extends TaskSynchronizationException {
 

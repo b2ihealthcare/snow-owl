@@ -19,7 +19,6 @@ import com.b2international.snowowl.api.exception.NotFoundException;
 
 /**
  * Thrown when a code system can not be found for the given short name.
- * 
  */
 public class CodeSystemNotFoundException extends NotFoundException {
 

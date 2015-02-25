@@ -16,25 +16,22 @@
 package com.b2international.snowowl.api.domain;
 
 /**
- * Represents a terminology independent statement element with a source and a destination identifier.
- * <p>
- * The following features are supported:
- * <ul>
- *   <li>{@link #getSourceRef() <em>Get source identifier</em>}</li>
- *   <li>{@link #getDestinationRef() <em>Get destination identifier</em>}</li>
- * </ul>
- *
+ * Represents a graph edge with a source and a destination identifier for the connected graph nodes.
+ * 
+ * @see IComponentNode
  */
 public interface IComponentEdge {
 
 	/**
 	 * Returns the source component identifier.
+	 * 
 	 * @return the source component identifier
 	 */
 	String getSourceId();
 
 	/**
 	 * Returns the destination component identifier.
+	 * 
 	 * @return the destination component identifier
 	 */
 	String getDestinationId();

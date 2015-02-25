@@ -18,21 +18,23 @@ package com.b2international.snowowl.api.domain;
 import java.util.List;
 
 /**
- * TODO document
+ * Represents a partial list of components, in which the total number of components is stored separately.
  * 
  * @param <C> the component type
  */
 public interface IComponentList<C> {
 
 	/**
-	 * TODO document
-	 * @return
+	 * Returns the number of total members of this list, which is the upper limit of the number of elements in {@link #getMembers()}.
+	 *   
+	 * @return the number of total members of this list
 	 */
 	int getTotalMembers();
 
 	/**
-	 * TODO document
-	 * @return
+	 * Returns the partial list of members for this component list.
+	 * 
+	 * @return the partial list of members
 	 */
 	List<C> getMembers();
 }

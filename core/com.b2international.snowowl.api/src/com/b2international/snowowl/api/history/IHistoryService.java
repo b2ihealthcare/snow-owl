@@ -17,26 +17,34 @@ package com.b2international.snowowl.api.history;
 
 import java.util.List;
 
+import com.b2international.snowowl.api.codesystem.exception.CodeSystemNotFoundException;
+import com.b2international.snowowl.api.codesystem.exception.CodeSystemVersionNotFoundException;
 import com.b2international.snowowl.api.domain.IComponentRef;
 import com.b2international.snowowl.api.exception.ComponentNotFoundException;
 import com.b2international.snowowl.api.history.domain.IHistoryInfo;
+import com.b2international.snowowl.api.task.exception.TaskNotFoundException;
 
 /**
- * Terminology independent interface of the History Service.
+ * History service implementations provide a list of past modifications for a particular component type.
  * <p>
- * The following features are supported:
- * <ul>
- *   <li>{@link #getHistory(IComponentRef) <em>Retrieve history information</em>}</li>
- * </ul>
- * 
+ * The detail of the returned list can be coarse eg. for RF2 imports and promoted tasks (which usually have a single,
+ * large commit), or more fine-grained in case of edits on a task (described with multiple, smaller commits).
  */
 public interface IHistoryService {
 
 	/**
-	 * Returns information about all historical modifications made on the specified component.
-	 * @param ref the reference pointing to the component (may not be {@code null})
+	 * Collects component history, which describes past modifications for the specified component.
+	 * 
+	 * @param ref the {@code IComponentRef} pointing to the component (may not be {@code null})
+	 * 
 	 * @return an object wrapping historical information, describing all changes made to the component
-	 * @throws ComponentNotFoundException if the component reference can not be resolved
+	 * 
+	 * @throws CodeSystemNotFoundException        if a code system with the given short name is not registered
+	 * @throws CodeSystemVersionNotFoundException if a code system version for the code system with the given identifier
+	 *                                            is not registered
+	 * @throws TaskNotFoundException              if the task identifier does not correspond to a task for the given 
+	 *                                            code system version
+	 * @throws ComponentNotFoundException         if the component identifier does not match any component on the given task
 	 */
-	List<IHistoryInfo> getHistory(final IComponentRef ref);
+	List<IHistoryInfo> getHistory(IComponentRef ref);
 }

@@ -17,62 +17,112 @@ package com.b2international.snowowl.api;
 
 import java.util.List;
 
+import com.b2international.snowowl.api.codesystem.exception.CodeSystemNotFoundException;
+import com.b2international.snowowl.api.codesystem.exception.CodeSystemVersionNotFoundException;
 import com.b2international.snowowl.api.domain.IComponentList;
 import com.b2international.snowowl.api.domain.IComponentNode;
 import com.b2international.snowowl.api.domain.IComponentRef;
 import com.b2international.snowowl.api.domain.IStorageRef;
+import com.b2international.snowowl.api.exception.ComponentNotFoundException;
+import com.b2international.snowowl.api.task.exception.TaskNotFoundException;
 
 /**
- * Terminology independent interface of the Component Node Service.
+ * Component node service implementations allow browsing components of a code system as a directed, acyclic graph (DAG)
+ * or tree.
  * <p>
- * The following features are supported:
- * <ul>
- *   <li>{@link #getRootNodes() <em>Retrieve root nodes</em>}</li>
- *   <li>{@link #getNode(IComponentRef) <em>Retrieve single node by component reference</em>}</li>
- *   <li>{@link #getDescendants(IComponentRef, boolean) <em>Retrieve descendant nodes</em>}</li>
- *   <li>{@link #getAncestors(IComponentRef, boolean) <em>Retrieve ancestor nodes</em>}</li>
- * </ul>
+ * Individual edges connecting graph nodes can be queried by {@link IComponentEdgeService}.
+ * {@code IComponentNodeService} is only concerned with one particular edge type, usually corresponding to the
+ * {@code IS A} relationship between two concepts of the code system, denoting inheritance.
+ * <p>
+ * Component representation as a graph node can differ from the result returned by the {@link IComponentService} for the
+ * same component type.
  * 
  * @param <N> the concrete component node type (must implement {@link IComponentNode})
- * 
  */
 public interface IComponentNodeService<N extends IComponentNode> {
 
 	/**
-	 * Returns the root nodes of the graph, serving as a starting point for further exploration. Root nodes have no
-	 * inbound edges.
-	 * @return a list of root nodes
+	 * Returns the root nodes of the graph, serving as a starting point for further exploration.
+	 * Root nodes have no ancestors.
+	 * 
+	 * @param ref the {@code IStorageRef} pointing to a version (and optionally, task) to read (may not be {@code null})
+	 * 
+	 * @return the list of root nodes for the given location
+	 * 
+	 * @throws CodeSystemNotFoundException        if a code system with the given short name is not registered
+	 * @throws CodeSystemVersionNotFoundException if a code system version for the code system with the given identifier
+	 *                                            is not registered
+	 * @throws TaskNotFoundException              if the task identifier does not correspond to a task for the given 
+	 *                                            code system version
 	 */
-	List<N> getRootNodes(final IStorageRef ref);
+	List<N> getRootNodes(IStorageRef ref);
 
 	/**
-	 * Retrieves a single node with the specified component reference, if it exists.
-	 * @param nodeRef the component reference to look for (may not be {@code null})
-	 * @return the node standing in for the component pointed to by the reference
+	 * Retrieves a single node for the specified {@link IComponentRef component reference}, if it exists.
+	 * 
+	 * @param ref the {@code IComponentRef} pointing to the component graph node to read (may not be {@code null})
+	 * 
+	 * @return the graph node standing in for the referenced component
+	 * 
+	 * @throws CodeSystemNotFoundException        if a code system with the given short name is not registered
+	 * @throws CodeSystemVersionNotFoundException if a code system version for the code system with the given identifier
+	 *                                            is not registered
+	 * @throws TaskNotFoundException              if the task identifier does not correspond to a task for the given 
+	 *                                            code system version
+	 * @throws ComponentNotFoundException         if the component identifier does not match any component on the given
+	 * 											  version, task
 	 */
-	N getNode(IComponentRef nodeRef);
+	N getNode(IComponentRef ref);
 
 	/**
-	 * Returns the descendant nodes of the node with the specified component reference. Descendants are reachable by
-	 * following inbound edges of a pre-determined type in the reverse direction.
-	 * @param nodeRef the component reference to look for (may not be {@code null})
+	 * Returns the descendant nodes of the node with the specified component reference.
+	 * <p>
+	 * Descendants will be collected by following inbound active {@code IS A} edges in the reverse direction.
+	 * <p>
+	 * This method supports paging: the returned {@link IComponentList} will include the total number of ancestors, 
+	 * but can be restricted to only hold a subset of all ancestor nodes with the {@code offset} and {@code limit} parameters.
+	 *  
+	 * @param ref    the {@code IComponentRef} of the component to inspect for descendants (may not be {@code null})
 	 * @param direct {@code true} if only direct descendants should be returned, {@code false} if inbound edges should
-	 * be followed recursively
+	 *               be followed recursively
 	 * @param offset the starting offset in the list (may not be negative)
-	 * @param limit the maximum number of results to return (may not be negative)
+	 * @param limit  the maximum number of results to return (may not be negative)
+	 * 
 	 * @return a list of descendants for the component node
+	 * 
+	 * @throws CodeSystemNotFoundException        if a code system with the given short name is not registered
+	 * @throws CodeSystemVersionNotFoundException if a code system version for the code system with the given identifier
+	 *                                            is not registered
+	 * @throws TaskNotFoundException              if the task identifier does not correspond to a task for the given 
+	 *                                            code system version
+	 * @throws ComponentNotFoundException         if the component identifier does not match any component on the given
+	 * 											  version, task
 	 */
-	IComponentList<N> getDescendants(IComponentRef nodeRef, boolean direct, int offset, int limit);
+	IComponentList<N> getDescendants(IComponentRef ref, boolean direct, int offset, int limit);
 
 	/**
-	 * Returns the ancestor nodes of the node with the specified component reference. Ancestors are reachable by
-	 * following outbound edges of a pre-determined type in the standard direction.
-	 * @param nodeRef the component reference to look for (may not be {@code null})
+	 * Returns the ancestor nodes of the node with the specified component reference.
+	 * <p>
+	 * Ancestors will be collected by following outbound active {@code IS A} edges in the forward direction.
+	 * <p>
+	 * This method supports paging: the returned {@link IComponentList} will include the total number of ancestors, 
+	 * but can be restricted to only hold a subset of all ancestor nodes with the {@code offset} and {@code limit} parameters.
+	 * 
+	 * @param ref    the {@code IComponentRef} of the component to inspect for descendants (may not be {@code null})
 	 * @param direct {@code true} if only direct ancestors should be returned, {@code false} if outbound edges should
-	 * be followed recursively
+	 *               be followed recursively
 	 * @param offset the starting offset in the list (may not be negative)
-	 * @param limit the maximum number of results to return (may not be negative)
+	 * @param limit  the maximum number of results to return (may not be negative)
+	 * 
 	 * @return a list of ancestors for the component node
+	 * 
+	 * @throws CodeSystemNotFoundException        if a code system with the given short name is not registered
+	 * @throws CodeSystemVersionNotFoundException if a code system version for the code system with the given identifier
+	 *                                            is not registered
+	 * @throws TaskNotFoundException              if the task identifier does not correspond to a task for the given 
+	 *                                            code system version
+	 * @throws ComponentNotFoundException         if the component identifier does not match any component on the given
+	 * 											  version, task
 	 */
-	IComponentList<N> getAncestors(IComponentRef nodeRef, boolean direct, int offset, int limit);
+	IComponentList<N> getAncestors(IComponentRef ref, boolean direct, int offset, int limit);
 }

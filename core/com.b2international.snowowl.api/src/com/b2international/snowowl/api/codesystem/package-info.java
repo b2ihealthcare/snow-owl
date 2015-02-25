@@ -16,10 +16,5 @@
 
 /**
  * Contains interfaces for services related to code system metadata.
- * 
- * @see com.b2international.snowowl.api.codesystem.ICodeSystemService
- * @see com.b2international.snowowl.api.codesystem.ICodeSystemVersionService
- * @see com.b2international.snowowl.rest.service.codesystem.ICodeSystemComponentTypeService
- * 
  */
 package com.b2international.snowowl.api.codesystem;

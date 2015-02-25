@@ -18,31 +18,34 @@ package com.b2international.snowowl.api.task.domain;
 import java.util.Date;
 
 /**
- * Captures information about an editing task.
- * 
+ * Captures information about the current state of an editing task.
  */
 public interface ITask {
 
 	/**
 	 * Returns the task's description.
+	 * 
 	 * @return the task description, eg. "{@code Inactivate relationship on Clinical finding}"
 	 */
 	String getDescription();
-	
+
 	/**
 	 * Returns the identifier of this task, typically assigned by an external system.
+	 * 
 	 * @return the identifier of this task, eg. "{@code 1245}"
 	 */
 	String getTaskId();
 
 	/**
-	 * Returns the creation or last synchronization time of this task. 
+	 * Returns the creation or last synchronization time of this task.
+	 *  
 	 * @return the creation or last synchronization time of this task, eg. "{@code 2014-05-09T08:03:55Z}"
 	 */
 	Date getBaseTimestamp();
 
 	/**
-	 * Returns the last update time for this task. 
+	 * Returns the last update time for this task.
+	 *  
 	 * @return the last update time for this task, eg. "{@code 2014-05-09T11:17:31Z}"
 	 */
 	Date getLastUpdatedTimestamp();
@@ -50,8 +53,7 @@ public interface ITask {
 	/**
 	 * Returns the task's current state.
 	 * 
-	 * @return
+	 * @return the task's current state, eg. "{@link TaskState#SYNCHRONIZED SYNCHRONIZED}"
 	 */
 	TaskState getState();
-	
 }

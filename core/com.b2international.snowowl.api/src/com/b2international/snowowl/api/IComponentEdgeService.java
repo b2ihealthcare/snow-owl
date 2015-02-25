@@ -15,39 +15,64 @@
  */
 package com.b2international.snowowl.api;
 
+import com.b2international.snowowl.api.codesystem.exception.CodeSystemNotFoundException;
+import com.b2international.snowowl.api.codesystem.exception.CodeSystemVersionNotFoundException;
 import com.b2international.snowowl.api.domain.IComponentEdge;
 import com.b2international.snowowl.api.domain.IComponentList;
 import com.b2international.snowowl.api.domain.IComponentRef;
+import com.b2international.snowowl.api.exception.ComponentNotFoundException;
+import com.b2international.snowowl.api.task.exception.TaskNotFoundException;
 
 /**
- * Terminology independent interface of the Component Edge Service.
+ * Component edge service implementations allow exploring the connecting edges of a code system's graph view.
  * <p>
- * The following features are supported:
- * <ul>
- *   <li>{@link #getInboundEdges(IComponentRef) <em>Retrieve inbound edges</em>}</li>
- *   <li>{@link #getOutboundEdges(IComponentRef) <em>Retrieve outbound edges</em>}</li>
- * </ul>
+ * Nodes of the graph can be retrieved using an implementation of {@link IComponentNodeService}.
  * 
- * @param <E> the concrete component edge type (must implement {@link IComponentEdge}
- * 
+ * @param <E> the concrete component edge type (must implement {@link IComponentEdge})
  */
 public interface IComponentEdgeService<E extends IComponentEdge> {
 
 	/**
-	 * Retrieves a segment of the list of inbound edges for the specified component reference.
-	 * @param nodeRef the component reference to look for (may not be {@code null})
+	 * Retrieves inbound edges for the node with the specified component reference.
+	 * <p>
+	 * This method supports paging: the returned {@link IComponentList} will include the total number of edges, 
+	 * but can be restricted to only hold a subset of edges with the {@code offset} and {@code limit} parameters.
+	 * 
+	 * @param ref    the {@code IComponentRef} of the component to inspect for inbound edges (may not be {@code null})
 	 * @param offset the starting offset in the list (may not be negative)
-	 * @param limit the maximum number of results to return (may not be negative)
-	 * @return the list of inbound edges for the component, sorted by source component reference (never {@code null}) 
+	 * @param limit  the maximum number of results to return (may not be negative)
+	 * 
+	 * @return the list of inbound edges for the component, sorted by source component identifier (never {@code null})
+	 * 
+	 * @throws CodeSystemNotFoundException        if a code system with the given short name is not registered
+	 * @throws CodeSystemVersionNotFoundException if a code system version for the code system with the given identifier
+	 *                                            is not registered
+	 * @throws TaskNotFoundException              if the task identifier does not correspond to a task for the given 
+	 *                                            code system version
+	 * @throws ComponentNotFoundException         if the component identifier does not match any component on the given
+	 * 											  version, task
 	 */
-	IComponentList<E> getInboundEdges(IComponentRef nodeRef, int offset, int limit);
+	IComponentList<E> getInboundEdges(IComponentRef ref, int offset, int limit);
 
 	/**
-	 * Retrieves a segment of the list of outbound edges for the specified component reference.
-	 * @param nodeRef the component reference to look for (may not be {@code null})
+	 * Retrieves outbound edges for the node with the specified component reference.
+	 * <p>
+	 * This method supports paging: the returned {@link IComponentList} will include the total number of edges, 
+	 * but can be restricted to only hold a subset of edges with the {@code offset} and {@code limit} parameters.
+	 * 
+	 * @param ref    the {@code IComponentRef} of the component to inspect for outbound edges (may not be {@code null})
 	 * @param offset the starting offset in the list (may not be negative)
-	 * @param limit the maximum number of results to return (may not be negative)
-	 * @return the list of outbound edges for the component, sorted by target component reference (never {@code null}) 
+	 * @param limit  the maximum number of results to return (may not be negative)
+	 * 
+	 * @return the list of outbound edges for the component, sorted by target component identifier (never {@code null})
+	 * 
+	 * @throws CodeSystemNotFoundException        if a code system with the given short name is not registered
+	 * @throws CodeSystemVersionNotFoundException if a code system version for the code system with the given identifier
+	 *                                            is not registered
+	 * @throws TaskNotFoundException              if the task identifier does not correspond to a task for the given 
+	 *                                            code system version
+	 * @throws ComponentNotFoundException         if the component identifier does not match any component on the given
+	 * 											  version, task
 	 */
-	IComponentList<E> getOutboundEdges(IComponentRef nodeRef, int offset, int limit);
+	IComponentList<E> getOutboundEdges(IComponentRef ref, int offset, int limit);
 }

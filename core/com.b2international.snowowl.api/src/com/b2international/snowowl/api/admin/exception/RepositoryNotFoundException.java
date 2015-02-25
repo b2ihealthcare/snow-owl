@@ -19,7 +19,6 @@ import com.b2international.snowowl.api.exception.NotFoundException;
 
 /**
  * Thrown when a terminology repository can not be found for a given repository unique identifier.
- * 
  */
 public class RepositoryNotFoundException extends NotFoundException {
 

@@ -16,6 +16,5 @@
 
 /**
  * Contains domain model objects related to task-based editing.
- * 
  */
 package com.b2international.snowowl.api.task.domain;

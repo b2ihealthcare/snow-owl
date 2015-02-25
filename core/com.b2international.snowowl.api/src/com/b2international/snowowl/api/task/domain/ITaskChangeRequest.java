@@ -16,14 +16,20 @@
 package com.b2international.snowowl.api.task.domain;
 
 /**
+ * Encapsulates a request to change the state of an existing editing task.
  */
 public interface ITaskChangeRequest {
 
 	/**
-	 * Returns the desired state of the task.
+	 * Returns the desired new state of the task.
+	 * <p>
+	 * The following state transitions are allowed:
+	 * <ul>
+	 * <li>{@link TaskState#NOT_SYNCHRONIZED NOT_SYNCHRONIZED} &rarr; {@link TaskState#SYNCHRONIZED SYNCHRONIZED} (synchronize changes)
+	 * <li>{@link TaskState#SYNCHRONIZED SYNCHRONIZED} &rarr; {@link TaskState#PROMOTED PROMOTED} (promote changes)
+	 * </ul>
 	 * 
-	 * @return
+	 * @return the desired new state of the task
 	 */
 	TaskState getState();
-
 }

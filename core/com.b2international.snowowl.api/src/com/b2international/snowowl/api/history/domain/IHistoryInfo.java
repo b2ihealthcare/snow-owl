@@ -17,59 +17,44 @@ package com.b2international.snowowl.api.history.domain;
 
 import java.util.List;
 
-
 /**
- * Represents a history information element. This element provides detailed information about some 
- * historical modifications made on an element in the past.
- * 
- * <p>
- * The following features are supported:
- * <ul>
- *   <li>{@link IHistoryInfo#getVersion() <em>Version</em>}</li>
- *   <li>{@link IHistoryInfo#getTimestamp() <em>Timestamp</em>}</li>
- *   <li>{@link IHistoryInfo#getAuthor() <em>Author</em>}</li>
- *   <li>{@link IHistoryInfo#getComments() <em>Comments</em>}</li>
- *   <li>{@link IHistoryInfo#getDetails() <em>History information details</em>}</li>
- * </ul>
- * </p>
- * @see IHistoryVersion
- * @see IHistoryInfoDetails 
+ * Contains the change version number, the commit time, author and comments along with detailed changes for a single
+ * commit.
  */
 public interface IHistoryInfo {
 
 	/**
-	 * Returns with the version of the historical modification.
-	 * @return the version.
-	 * @see IHistoryInfo
- 	 */
+	 * Returns the change version of this commit.
+	 * 
+	 * @return the version
+	 */
 	IHistoryVersion getVersion();
-	
+
 	/**
-	 * Returns with the timestamp of the historical modification, expressed 
-	 * in milliseconds since January 1, 1970, 00:00:00 GMT.
-	 * @return the timestamp.
-	 * @see IHistoryInfo
+	 * Returns the timestamp of this commit.
+	 * 
+	 * @return the commit timestamp
 	 */
 	long getTimestamp();
 
 	/**
-	 * Returns with the name of the author.
-	 * @return the name of the author.
-	 * @see IHistoryInfo
+	 * Returns the name of the author of this commit.
+	 * 
+	 * @return the author name
 	 */
 	String getAuthor();
 
 	/**
-	 * Returns with the comment entered by the author, which may provide additional details about the modification.
-	 * @return the author's comment associated with the historical modification.
-	 * @see IHistoryInfo
+	 * Returns the comment entered by the author for this commit, which may provide additional details about the modification.
+	 * 
+	 * @return the author's commit comment
 	 */
 	String getComments();
 
 	/**
-	 * Returns with a {@link List list} of {@link IHistoryInfoDetails detailed information} about the historical modification.
-	 * @return a {@link List} of detailed history information.
-	 * @see IHistoryInfo
+	 * Returns the list of {@link IHistoryInfoDetails detailed changes} contained within this commit.
+	 * 
+	 * @return the list of changes
 	 */
 	List<IHistoryInfoDetails> getDetails();
 }

@@ -19,12 +19,17 @@ import com.b2international.snowowl.api.domain.ComponentCategory;
 
 /**
  * Thrown when a terminology component can not be found for a given component identifier.
- * 
  */
 public class ComponentNotFoundException extends NotFoundException {
 
 	private static final long serialVersionUID = 1L;
 
+	/**
+	 * Creates a new exception instance with the specified category and component identifier.
+	 * 
+	 * @param category the category of the missing component (may not be {@code null})
+	 * @param key      the identifier of the missing component (may not be {@code null})
+	 */
 	public ComponentNotFoundException(final ComponentCategory category, final String key) {
 		super(category.getDisplayName(), key);
 	}

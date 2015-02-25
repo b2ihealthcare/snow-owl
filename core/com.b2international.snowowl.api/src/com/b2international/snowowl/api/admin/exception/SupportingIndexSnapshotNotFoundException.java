@@ -19,7 +19,6 @@ import com.b2international.snowowl.api.exception.NotFoundException;
 
 /**
  * Thrown when an index snapshot for a supporting index can not be found for a given snapshot identifier.
- * 
  */
 public class SupportingIndexSnapshotNotFoundException extends NotFoundException {
 

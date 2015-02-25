@@ -16,6 +16,5 @@
 
 /**
  * Contains exception classes related to code system metadata in the Snow Owl RESTful API.
- * 
  */
 package com.b2international.snowowl.api.codesystem.exception;

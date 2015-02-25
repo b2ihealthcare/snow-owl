@@ -17,7 +17,6 @@ package com.b2international.snowowl.api.admin.exception;
 
 /**
  * Thrown when an operation lock can not be acquired or released.
- * 
  */
 public class LockException extends RuntimeException {
 
@@ -25,6 +24,7 @@ public class LockException extends RuntimeException {
 
 	/**
 	 * Creates a new exception instance with the specified message.
+	 * 
 	 * @param message the exception message
 	 */
 	public LockException(final String message) {

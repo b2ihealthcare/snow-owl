@@ -17,12 +17,17 @@ package com.b2international.snowowl.api.domain;
 
 /**
  * Represents a component node in a component graph.
- *
+ * <p>
+ * Component node representations can be different from {@link IComponent component representations}; the former is
+ * usually a subset of the latter.
+ * 
+ * @see IComponentEdge
  */
 public interface IComponentNode {
 
 	/**
 	 * Returns the component identifier.
+	 * 
 	 * @return the component identifier
 	 */
 	String getId();

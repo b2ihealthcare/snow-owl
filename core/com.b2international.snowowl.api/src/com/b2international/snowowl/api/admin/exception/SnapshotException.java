@@ -17,7 +17,6 @@ package com.b2international.snowowl.api.admin.exception;
 
 /**
  * Thrown when an operation related to snapshots fails for a supporting index.
- * 
  */
 public abstract class SnapshotException extends RuntimeException {
 

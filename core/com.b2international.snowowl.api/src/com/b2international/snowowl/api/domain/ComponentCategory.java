@@ -19,12 +19,11 @@ import com.b2international.commons.StringUtils;
 
 /**
  * Enumerates high-level component categories which can exist in any code system.
- * 
  */
 public enum ComponentCategory {
 
 	/** 
-	 * Represents a category for ideas, physical objects or events. 
+	 * A category for ideas, physical objects or events. 
 	 */
 	CONCEPT,
 
@@ -34,7 +33,7 @@ public enum ComponentCategory {
 	DESCRIPTION,
 
 	/** 
-	 * Represents a typed connection between two concepts. 
+	 * A typed connection between two concepts. 
 	 */
 	RELATIONSHIP,
 
@@ -65,8 +64,10 @@ public enum ComponentCategory {
 	MAP_MEMBER;
 
 	/**
-	 * TODO document
-	 * @return
+	 * Returns the human-readable name of this category, obtained by converting the original name of the enum value to lower case,
+	 * changing underscore characters to whitespace separators, and changing the first letter to upper case.
+	 * 
+	 * @return the display name of this category
 	 */
 	public String getDisplayName() {
 		return StringUtils.capitalizeFirstLetter(name().replace('_', ' ').toLowerCase());

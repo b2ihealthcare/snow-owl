@@ -19,7 +19,6 @@ import com.b2international.snowowl.api.exception.NotFoundException;
 
 /**
  * Thrown when a component type within a code system can not be found for a given type identifier.
- * 
  */
 public class CodeSystemComponentTypeNotFoundException extends NotFoundException {
 

@@ -16,18 +16,12 @@
 package com.b2international.snowowl.api.admin;
 
 /**
- * An interface definition for the Messaging Service.
- * <p>
- * The following operations are supported:
- * <ul>
- * <li>{@link #sendMessage(String) <em>Send message to connected users</em>}
- * </ul>
- * 
+ * Implementations of the messaging service can be used to send informational messages to connected desktop clients.
  */
 public interface IMessagingService {
 
 	/**
-	 * Sends an informational message to all connected users; the message is displayed in the desktop application
+	 * Sends an informational message to all connected thick clients; the message is displayed in the desktop application
 	 * immediately.
 	 * 
 	 * @param message the message to send (may not be {@code null})

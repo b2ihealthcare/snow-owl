@@ -16,6 +16,5 @@
 
 /**
  * Contains exceptions thrown from task-based editing service methods.
- * 
  */
 package com.b2international.snowowl.api.task.exception;

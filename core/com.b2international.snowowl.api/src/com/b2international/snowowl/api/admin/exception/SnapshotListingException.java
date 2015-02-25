@@ -17,7 +17,6 @@ package com.b2international.snowowl.api.admin.exception;
 
 /**
  * Thrown when index snapshot contents can not be listed for a supporting index.
- * 
  */
 public class SnapshotListingException extends SnapshotException {
 

@@ -17,14 +17,17 @@ package com.b2international.snowowl.api.exception;
 
 /**
  * Thrown when the supplied query parameters are not acceptable.
- *
  */
 public class IllegalQueryParameterException extends BadRequestException {
 
 	private static final long serialVersionUID = 1L;
 
+	/**
+	 * Creates a new exception instance with the specified message.
+	 * 
+	 * @param message the exception message
+	 */
 	public IllegalQueryParameterException(final String message) {
 		super(message);
 	}
-
 }

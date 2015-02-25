@@ -22,19 +22,8 @@ import com.b2international.snowowl.api.admin.exception.RepositoryNotFoundExcepti
 import com.b2international.snowowl.api.admin.exception.RepositoryVersionNotFoundException;
 
 /**
- * An interface definition for the Repository Service.
- * <p>
- * The following operations are supported:
- * <ul>
- * <li>{@link #getRepositoryUuids() <em>Retrieve all repository identifiers</em>}
- * <li>{@link #lockGlobal(int) <em>Lock all repositories</em>}
- * <li>{@link #unlockGlobal() <em>Unlock all repositories</em>}
- * <li>{@link #lockRepository(String, int) <em>Lock single repository</em>}
- * <li>{@link #unlockRepository(String) <em>Unlock single repository</em>}
- * <li>{@link #getRepositoryVersionIds(String) <em>Retrieve all version identifiers for a repository</em>}
- * <li>{@link #getRepositoryVersionIndexFiles(String, String) <em>Retrieve all repository version index file paths</em>}
- * </ul>
- * 
+ * Implementations of the repository service allow creating on-line backups of terminology content repositories by
+ * preventing further modifications while the backup takes place.
  */
 public interface IRepositoryService {
 
@@ -51,8 +40,9 @@ public interface IRepositoryService {
 	 * {@code 0}, it returns immediately.
 	 * 
 	 * @param timeoutMillis lock timeout in milliseconds (may not be negative)
+	 * 
 	 * @throws LockException if the global lock could not be acquired for any reason (including cases when a conflicting
-	 * lock is already held by someone else)
+	 *                       lock is already held by someone else)
 	 */
 	void lockGlobal(int timeoutMillis);
 
@@ -69,10 +59,11 @@ public interface IRepositoryService {
 	 * {@code timeoutMillis} is set to {@code 0}, it returns immediately.
 	 * 
 	 * @param repositoryUuid a unique identifier pointing to a particular repository (may not be {@code null})
-	 * @param timeoutMillis lock timeout in milliseconds (may not be negative)
+	 * @param timeoutMillis  lock timeout in milliseconds (may not be negative)
+	 * 
 	 * @throws RepositoryNotFoundException if the specified repository UUID does not correspond to any repository
-	 * @throws LockException if the repository lock could not be acquired for any reason (including cases when a
-	 * conflicting lock is already held by someone else)
+	 * @throws LockException               if the repository lock could not be acquired for any reason (including cases when a
+	 *                                     conflicting lock is already held by someone else)
 	 */
 	void lockRepository(String repositoryUuid, int timeoutMillis);
 
@@ -80,9 +71,10 @@ public interface IRepositoryService {
 	 * Releases a previously acquired repository-level lock on the repository identified by {@code repositoryUuid}.
 	 * 
 	 * @param repositoryUuid a unique identifier pointing to a particular repository (may not be {@code null})
+	 * 
 	 * @throws RepositoryNotFoundException if the specified repository UUID does not correspond to any repository
-	 * @throws LockException if the repository lock could not be released for any reason (including cases when it was
-	 * not held)
+	 * @throws LockException               if the repository lock could not be released for any reason (including cases when it was
+	 *                                     not held)
 	 */
 	void unlockRepository(String repositoryUuid);
 
@@ -90,7 +82,9 @@ public interface IRepositoryService {
 	 * Retrieves all version identifiers for the specified repository.
 	 * 
 	 * @param repositoryUuid a unique identifier pointing to a particular repository (may not be {@code null})
+	 * 
 	 * @return a list of repository version identifiers, in alphabetical order (never {@code null})
+	 * 
 	 * @throws RepositoryNotFoundException if the specified repository UUID does not correspond to any repository
 	 */
 	List<String> getRepositoryVersionIds(String repositoryUuid);
@@ -98,12 +92,14 @@ public interface IRepositoryService {
 	/**
 	 * Retrieves the relative path of all files that make up the index of the specified repository and version.
 	 * 
-	 * @param repositoryUuid a unique identifier pointing to a particular repository (may not be {@code null})
+	 * @param repositoryUuid      a unique identifier pointing to a particular repository (may not be {@code null})
 	 * @param repositoryVersionId the identifier of a repository version, as returned by {@link #getRepositoryVersionIds(String)} (may not be {@code null})
+	 * 
 	 * @return a list of relative paths to files which make up the index of the given version, in alphabetical order (never {@code null})
-	 * @throws RepositoryNotFoundException if the specified repository UUID does not correspond to any repository
+	 * 
+	 * @throws RepositoryNotFoundException        if the specified repository UUID does not correspond to any repository
 	 * @throws RepositoryVersionNotFoundException if the specified version identifier does not correspond to a version
-	 * in the repository
+	 *                                            in the repository
 	 */
 	List<String> getRepositoryVersionIndexFiles(String repositoryUuid, String repositoryVersionId);
 }

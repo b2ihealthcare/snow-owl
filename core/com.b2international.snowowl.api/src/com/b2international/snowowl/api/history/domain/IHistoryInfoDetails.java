@@ -16,40 +16,30 @@
 package com.b2international.snowowl.api.history.domain;
 
 /**
- * Provides detailed information about some historical modifications made on an element in the past.
- * 
+ * Provides detailed information about a single commit.
  * <p>
- * The following features are supported:
- * <ul>
- *   <li>{@link IHistoryInfoDetails#getComponentType() <em>Component type</em>}</li>
- *   <li>{@link IHistoryInfoDetails#getDescription() <em>Description</em>}</li>
- *   <li>{@link IHistoryInfoDetails#getChangeType() <em>Change type</em>}</li>
- * </ul>
- * </p>
- * @see ChangeType
- * @see IHistoryInfo 
+ * Any edited component part of the commit will have a separate detail object appended.
  */
 public interface IHistoryInfoDetails {
 
 	/**
-	 * Returns with a human readable representation of the modified element's type.
-	 * @return the human readable representation of the modified element's type.
-	 * @see IHistoryInfoDetails
+	 * Returns with the modified element's type.
+	 * 
+	 * @return the human readable representation of the modified element's type
 	 */
 	String getComponentType();
 
 	/**
-	 * Returns with a detailed description of the modification that has been made on the element.
-	 * @return a human readable detailed description of the modification.
-	 * @see IHistoryInfoDetails
+	 * Returns a detailed description of the modification that has been made on the element.
+	 * 
+	 * @return a human readable description of the modification
 	 */
 	String getDescription();
 
 	/**
-	 * Returns with the {@link ChangeType type} of the modification. 
-	 * @return the change type.
-	 * @see IHistoryInfoDetails
+	 * Returns the type of the modification.
+	 *  
+	 * @return the change type ({@link ChangeType#NEW NEW}, {@link ChangeType#CHANGED CHANGED} or {@link ChangeType#DETACHED DETACHED})
 	 */
 	ChangeType getChangeType();
-	
 }

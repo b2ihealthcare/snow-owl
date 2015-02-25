@@ -19,7 +19,6 @@ import com.b2international.snowowl.api.exception.NotFoundException;
 
 /**
  * Thrown when a supporting index can not be found for a given index identifier.
- * 
  */
 public class SupportingIndexNotFoundException extends NotFoundException {
 

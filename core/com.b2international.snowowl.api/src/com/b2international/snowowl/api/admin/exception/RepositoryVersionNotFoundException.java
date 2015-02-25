@@ -19,7 +19,6 @@ import com.b2international.snowowl.api.exception.NotFoundException;
 
 /**
  * Thrown when a version within a repository can not be found for a given version identifier.
- * 
  */
 public class RepositoryVersionNotFoundException extends NotFoundException {
 

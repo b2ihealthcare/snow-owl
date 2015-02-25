@@ -21,7 +21,6 @@ import java.text.MessageFormat;
 
 /**
  * Thrown when a requested item could not be found.
- * 
  */
 public abstract class NotFoundException extends RuntimeException {
 
@@ -40,7 +39,7 @@ public abstract class NotFoundException extends RuntimeException {
 	 * Creates a new instance with the specified type and key.
 	 * 
 	 * @param type the type of the item which was not found (may not be {@code null})
-	 * @param key the unique key of the item which was not found (may not be {@code null})
+	 * @param key  the unique key of the item which was not found (may not be {@code null})
 	 */
 	protected NotFoundException(final String type, final String key) {
 		super(getMessage(type, key));
@@ -49,6 +48,8 @@ public abstract class NotFoundException extends RuntimeException {
 	}
 
 	/**
+	 * Returns the type of the item which was not found.
+	 * 
 	 * @return the type of the missing item
 	 */
 	public String getType() {
@@ -56,6 +57,8 @@ public abstract class NotFoundException extends RuntimeException {
 	}
 
 	/**
+	 * Returns the identifier of the item which was not found.
+	 * 
 	 * @return the unique key of the missing item
 	 */
 	public String getKey() {

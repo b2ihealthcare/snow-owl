@@ -16,14 +16,21 @@
 package com.b2international.snowowl.api.exception;
 
 /**
+ * Thrown when the same component is modified concurrently by multiple clients, or the request is based on an outdated
+ * version of a component.
+ * 
  * @since 1.0
  */
 public class ConflictException extends RuntimeException {
 
 	private static final long serialVersionUID = -2887608541911973086L;
-	
+
+	/**
+	 * Creates a new exception instance with the specified message.
+	 * 
+	 * @param message the exception message
+	 */
 	public ConflictException(String message) {
 		super(message);
 	}
-
 }

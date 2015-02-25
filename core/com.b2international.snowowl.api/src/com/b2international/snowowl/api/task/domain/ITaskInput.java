@@ -17,7 +17,6 @@ package com.b2international.snowowl.api.task.domain;
 
 /**
  * Captures information about a task which should be supplied at creation time.
- * 
  */
 public interface ITaskInput {
 
@@ -29,9 +28,9 @@ public interface ITaskInput {
 	String getDescription();
 
 	/**
-	 * Returns the task's unique identifier.
+	 * Returns the identifier of this task, typically assigned by an external system.
 	 * 
-	 * @return
-	 */
+	 * @return the identifier of this task, eg. "{@code 1245}"
+	 */	
 	String getTaskId();
 }

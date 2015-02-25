@@ -26,20 +26,22 @@ public interface ICodeSystemVersionProperties {
 
 	/**
 	 * Returns the description of this code system version.
+	 * 
 	 * @return the description of this code system version, eg. "{@code International RF2 Release 2014-07-31}"
 	 */
 	String getDescription();
 
 	/**
-	 * Returns the identifier of this code system version, which is unique within the containing code system. 
-	 * @return the code system version identifier, eg. "{@code 2014-07-31}"
+	 * Returns the identifier of this code system version, which is unique within the containing code system.
+	 *  
+	 * @return the code system version identifier, eg. "{@code V3}" or "{@code 2014-07-31}"
 	 */
 	String getVersion();
 
 	/**
-	 * Returns the date on which this code system version will become effective. 
+	 * Returns the date on which this code system version will become effective.
+	 *  
 	 * @return the effective date of this code system version (can be {@code null})
 	 */
 	Date getEffectiveDate();
-
 }

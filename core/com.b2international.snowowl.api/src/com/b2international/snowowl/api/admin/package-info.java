@@ -16,11 +16,5 @@
 
 /**
  * Contains interfaces for the administrative services of Snow Owl's RESTful API.
- * 
- * @see com.b2international.snowowl.api.admin.IMessagingService
- * @see com.b2international.snowowl.api.admin.IRepositoryService
- * @see com.b2international.snowowl.api.admin.ISupportingIndexService
- * @see com.b2international.snowowl.api.service.admin.IElasticsearchExportService
- * 
  */
 package com.b2international.snowowl.api.admin;

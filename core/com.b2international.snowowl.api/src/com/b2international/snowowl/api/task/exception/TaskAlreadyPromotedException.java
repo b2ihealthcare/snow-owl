@@ -18,8 +18,7 @@ package com.b2international.snowowl.api.task.exception;
 import com.b2international.snowowl.api.exception.BadRequestException;
 
 /**
- * Thrown when an editing task can not be written because it is already promoted and closed for modification.
- * 
+ * Thrown when an editing task can not be updated because it is already promoted and closed for modification.
  */
 public class TaskAlreadyPromotedException extends BadRequestException {
 

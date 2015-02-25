@@ -21,14 +21,7 @@ import com.b2international.snowowl.api.codesystem.domain.ICodeSystem;
 import com.b2international.snowowl.api.codesystem.exception.CodeSystemNotFoundException;
 
 /**
- * Groups methods related to browsing code system metadata.
- * <p>
- * The following operations are supported:
- * <ul>
- * <li>{@link #getCodeSystems() <em>Retrieve all code systems</em>}
- * <li>{@link #getCodeSystemByShortNameOrOid(String) <em>Retrieve code system by short name or OID</em>}
- * </ul>
- * 
+ * Implementations of this interface allow browsing code system metadata.
  */
 public interface ICodeSystemService {
 
@@ -43,7 +36,9 @@ public interface ICodeSystemService {
 	 * Retrieves a single code system matches the given shortName or object identifier (OID) parameter, if it exists.
 	 * 
 	 * @param shortNameOrOid the code system short name or OID to look for, eg. "{@code SNOMEDCT}" or "{@code 3.4.5.6.10000}" (may not be {@code null})
+	 * 
 	 * @return the requested code system
+	 * 
 	 * @throws CodeSystemNotFoundException if a code system with the given short name or OID is not registered
 	 */
 	ICodeSystem getCodeSystemByShortNameOrOid(String shortNameOrOid);

@@ -16,6 +16,5 @@
 
 /**
  * Contains domain model objects related to component history.
- * 
  */
 package com.b2international.snowowl.api.history.domain;

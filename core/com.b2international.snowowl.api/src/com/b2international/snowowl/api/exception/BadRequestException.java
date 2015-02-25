@@ -16,14 +16,21 @@
 package com.b2international.snowowl.api.exception;
 
 /**
+ * Thrown when a request contains incorrect parameters or is otherwise malformed.
+ * 
  * @since 1.0
  */
 public class BadRequestException extends RuntimeException {
 
 	private static final long serialVersionUID = 7998450893448621719L;
 
-	public BadRequestException(String message, Object...args) {
+	/**
+	 * Creates a new instance with the specified format string and arguments.
+	 * 
+	 * @param message the format string for the returned message
+	 * @param args    the format string arguments
+	 */
+	public BadRequestException(final String message, final Object...args) {
 		super(String.format(message, args));
 	}
-	
 }

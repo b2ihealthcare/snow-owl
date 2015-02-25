@@ -18,20 +18,27 @@ package com.b2international.snowowl.api.exception;
 import static com.google.common.base.Preconditions.checkNotNull;
 
 /**
+ * Thrown when an item to be created already exists in the system.
+ * 
  * @since 1.0
  */
 public class AlreadyExistsException extends ConflictException {
 
 	private static final long serialVersionUID = 6347436684320140303L;
 
-	public AlreadyExistsException(String type, String id) {
+	/**
+	 * Creates a new exception instance with the specified arguments. 
+	 * 
+	 * @param type the type of the existing item
+	 * @param id   the identifier of the existing item
+	 */
+	public AlreadyExistsException(final String type, final String id) {
 		super(formatMessage(type, id));
 	}
 
-	private static String formatMessage(String type, String id) {
+	private static String formatMessage(final String type, final String id) {
 		checkNotNull(type, "type");
 		checkNotNull(id, "id");
 		return String.format("%s with %s identifier already exists.", type, id);
 	}
-	
 }

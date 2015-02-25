@@ -17,7 +17,6 @@ package com.b2international.snowowl.api.admin.exception;
 
 /**
  * Thrown when an index snapshot for a supporting index can not be released for any reason.
- * 
  */
 public class SnapshotReleaseException extends SnapshotException {
 

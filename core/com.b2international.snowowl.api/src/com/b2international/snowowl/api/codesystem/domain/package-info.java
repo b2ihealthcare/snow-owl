@@ -16,6 +16,5 @@
 
 /**
  * Contains domain model objects related to code system metadata.
- * 
  */
 package com.b2international.snowowl.api.codesystem.domain;

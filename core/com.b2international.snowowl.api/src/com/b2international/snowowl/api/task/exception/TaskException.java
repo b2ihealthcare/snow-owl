@@ -17,7 +17,6 @@ package com.b2international.snowowl.api.task.exception;
 
 /**
  * Common superclass for task maintenance-related exceptions.
- * 
  */
 public abstract class TaskException extends RuntimeException {
 

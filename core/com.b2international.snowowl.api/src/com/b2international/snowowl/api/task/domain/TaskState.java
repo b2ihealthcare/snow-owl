@@ -16,11 +16,24 @@
 package com.b2international.snowowl.api.task.domain;
 
 /**
- * Enum literals to indicate task states.
- * 
+ * Enumerates possible task states.
  */
 public enum TaskState {
 
-	NOT_SYNCHRONIZED, SYNCHRONIZED, PROMOTED
+	/**
+	 * Parent branch for this task has moved forward since this task was created; synchronization is necessary before
+	 * promoting.
+	 */
+	NOT_SYNCHRONIZED, 
 
+	/**
+	 * No changes on the parent branch since task creation or last synchronization. Promotion of changes on this task
+	 * is allowed. 
+	 */
+	SYNCHRONIZED, 
+
+	/**
+	 * Task promoted and closed for further modifications.
+	 */
+	PROMOTED;
 }

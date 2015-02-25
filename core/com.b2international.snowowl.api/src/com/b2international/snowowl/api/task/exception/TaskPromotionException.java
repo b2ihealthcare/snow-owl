@@ -17,7 +17,6 @@ package com.b2international.snowowl.api.task.exception;
 
 /**
  * Thrown when changes on a task could not be promoted to the parent version successfully.
- * 
  */
 public class TaskPromotionException extends TaskException {
 

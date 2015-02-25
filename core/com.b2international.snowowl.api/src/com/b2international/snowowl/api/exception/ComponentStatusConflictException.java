@@ -16,7 +16,7 @@
 package com.b2international.snowowl.api.exception;
 
 /**
- * Specific {@link StoreException} denoting that a component has been already inactivated in a previous request.
+ * Thrown when a component has been already inactivated in a previous request.
  * 
  * @since 1.0
  */
@@ -24,8 +24,13 @@ public class ComponentStatusConflictException extends ConflictException {
 
 	private static final long serialVersionUID = -8674961206384074905L;
 
+	/**
+	 * Creates a new exception instance with the specified component identifier and active status.
+	 * 
+	 * @param componentId     the identifier of the component to report
+	 * @param componentStatus {@code true} if the component is currently active, {@code false} if it is inactive
+	 */
 	public ComponentStatusConflictException(String componentId, boolean componentStatus) {
 		super(String.format("Component %s is already %s.", componentId, componentStatus ? "active" : "inactive"));
 	}
-
 }

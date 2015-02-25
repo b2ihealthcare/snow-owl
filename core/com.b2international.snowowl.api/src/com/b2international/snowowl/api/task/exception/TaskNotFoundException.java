@@ -19,7 +19,6 @@ import com.b2international.snowowl.api.exception.NotFoundException;
 
 /**
  * Thrown when a task can not be found for a given task identifier.
- * 
  */
 public class TaskNotFoundException extends NotFoundException {
 
@@ -30,7 +29,7 @@ public class TaskNotFoundException extends NotFoundException {
 	 * 
 	 * @param taskId the identifier of the task which could not be found for a code system version (may not be {@code null})
 	 */
-	public TaskNotFoundException(String taskId) {
+	public TaskNotFoundException(final String taskId) {
 		super("Task", taskId);
 	}
 }

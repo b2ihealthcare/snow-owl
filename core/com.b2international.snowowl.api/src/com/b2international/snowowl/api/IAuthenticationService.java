@@ -16,14 +16,18 @@
 package com.b2international.snowowl.api;
 
 /**
- * TODO
+ * Implementations of this interface are responsible for checking incoming HTTP request credentials for the terminology
+ * server's REST services.
  */
 public interface IAuthenticationService {
 
 	/**
-	 * @param username
-	 * @param password
-	 * @return
+	 * Authenticates the request's originating user using the supplied user identifier and password.
+	 * 
+	 * @param username the identifier of the user to authenticate
+	 * @param password the user's supplied password
+	 * 
+	 * @return {@code true} if the user exists and the entered password matches the stored one, {@code false} otherwise
 	 */
 	boolean authenticate(String username, String password);
 }

@@ -16,21 +16,21 @@
 package com.b2international.snowowl.api.domain;
 
 /**
- * Represents an identifiable component instance of a code system.
- * 
+ * Represents an identifiable component of a code system.
  */
 public interface IComponent {
 
 	/**
 	 * Returns the component identifier.
+	 * 
 	 * @return the component identifier
 	 */
 	String getId();
-	
+
 	/**
-	 * Checks the component's release status.
-	 * @return {@code true} if the component has already been released as part of a version (and so it is discouraged to
-	 * delete it in later versions), {@code false} otherwise
+	 * Checks if the component is released.
+	 * 
+	 * @return {@code true} if the component has already been released as part of a version, {@code false} otherwise
 	 */
 	boolean isReleased();
 }

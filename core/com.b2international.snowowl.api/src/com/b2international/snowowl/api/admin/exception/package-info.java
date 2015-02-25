@@ -16,6 +16,5 @@
 
 /**
  * Contains exception classes thrown from administrative services of the Snow Owl RESTful API.
- * 
  */
 package com.b2international.snowowl.api.admin.exception;

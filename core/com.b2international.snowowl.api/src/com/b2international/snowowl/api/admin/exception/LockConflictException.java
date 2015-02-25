@@ -17,7 +17,6 @@ package com.b2international.snowowl.api.admin.exception;
 
 /**
  * Thrown when an operation lock can not be acquired because someone else has already taken a conflicting lock.
- * 
  */
 public class LockConflictException extends LockException {
 
@@ -25,6 +24,7 @@ public class LockConflictException extends LockException {
 
 	/**
 	 * Creates a new exception instance with the specified message.
+	 * 
 	 * @param message the exception message
 	 */
 	public LockConflictException(final String message) {

@@ -16,8 +16,8 @@
 package com.b2international.snowowl.api.exception;
 
 /**
- * Specific {@link StoreException} when the transaction cannot be processed due to a lock existing on the underlying repository. The requester has to
- * sent the request again, after the locked was released.
+ * Thrown when a request can not be processed due to a lock existing on the underlying repository. The client
+ * has to send the request again, after the lock was released.
  * 
  * @since 1.0
  */
@@ -25,8 +25,12 @@ public class LockedException extends ConflictException {
 
 	private static final long serialVersionUID = 185734899707722505L;
 
-	public LockedException(String message) {
+	/**
+	 * Creates a new exception instance with the specified message.
+	 * 
+	 * @param message the exception message
+	 */
+	public LockedException(final String message) {
 		super(message);
 	}
-
 }
