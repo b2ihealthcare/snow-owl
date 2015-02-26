@@ -23,12 +23,6 @@
 		<target.platform.version>3.9.0</target.platform.version>
 		<!-- Versioning -->
 		<forceContextQualifier>${maven.build.timestamp}</forceContextQualifier>
-		<!-- Releases locations -->
-		<webserver.context>/var/www</webserver.context>
-		<repository.name>latest</repository.name>
-		<update.site>composite</update.site>
-		<repository.path>updates/${update.site}/${repository.name}/</repository.path>
-		<download.publish.path>${webserver.context}/${repository.path}</download.publish.path>
 	</properties>
 
 	<modules>
