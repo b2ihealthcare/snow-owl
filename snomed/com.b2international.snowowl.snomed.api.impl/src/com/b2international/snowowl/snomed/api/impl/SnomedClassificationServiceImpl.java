@@ -231,7 +231,6 @@ public class SnomedClassificationServiceImpl implements ISnomedClassificationSer
 
 		final StorageRef storageRef = createStorageRef(version, taskId);
 
-		// TODO: actually honor the reasoner ID
 		final ClassificationRequest classificationRequest = new ClassificationRequest(userId, storageRef.getBranchPath())
 		.withParentContextDescription(DatastoreLockContextDescriptions.ROOT)
 		.withReasonerId(reasonerId);
