@@ -20,10 +20,10 @@
       <product
             application="com.b2international.snowowl.server.product.SnowOwlServer"
             description="OSGi based Snow Owl server runtime"
-            name="Snow Owl server">
+            name="Snow Owl Server">
          <property
                name="appName"
-               value="Snow Owl server">
+               value="Snow Owl Server">
          </property>
          <property
                name="serverMode"
