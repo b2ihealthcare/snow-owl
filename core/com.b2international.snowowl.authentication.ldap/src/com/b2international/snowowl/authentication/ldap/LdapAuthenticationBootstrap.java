@@ -15,7 +15,7 @@
  */
 package com.b2international.snowowl.authentication.ldap;
 
-import static com.google.common.base.Preconditions.checkNotNull;
+import static com.google.common.base.Preconditions.checkState;
 
 import com.b2international.snowowl.authentication.AuthenticationConfiguration;
 import com.b2international.snowowl.core.config.SnowOwlConfiguration;
@@ -33,7 +33,7 @@ public class LdapAuthenticationBootstrap extends DefaultBootstrapFragment {
 	@Override
 	public void init(SnowOwlConfiguration configuration, Environment env) throws Exception {
 		if ("LDAP".equals(configuration.getModuleConfig(AuthenticationConfiguration.class).getType())) {
-			checkNotNull(env.services().getService(IUserManager.class), "Another IUserManager implemententation is already registered");
+			checkState(env.services().getService(IUserManager.class) == null, "Another IUserManager implemententation is already registered");
 			env.services().registerService(IUserManager.class, new LdapUserManager());
 		}
 	}
