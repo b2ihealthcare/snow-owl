@@ -64,42 +64,42 @@ Visit us at http://b2i.sg
          id="org.eclipse.emf.cdo"
          download-size="0"
          install-size="0"
-         version="0.0.0"
+         version="4.1.1.b2i"
          unpack="false"/>
 
    <plugin
          id="org.eclipse.emf.cdo.common"
          download-size="0"
          install-size="0"
-         version="0.0.0"
+         version="4.1.1.b2i"
          unpack="false"/>
 
    <plugin
          id="org.eclipse.emf.cdo.net4j"
          download-size="0"
          install-size="0"
-         version="0.0.0"
+         version="4.1.1.b2i"
          unpack="false"/>
 
    <plugin
          id="org.eclipse.emf.cdo.server"
          download-size="0"
          install-size="0"
-         version="0.0.0"
+         version="4.1.1.b2i"
          unpack="false"/>
 
    <plugin
          id="org.eclipse.emf.cdo.server.db"
          download-size="0"
          install-size="0"
-         version="0.0.0"
+         version="4.1.1.b2i"
          unpack="false"/>
 
    <plugin
          id="org.eclipse.emf.cdo.server.net4j"
          download-size="0"
          install-size="0"
-         version="0.0.0"
+         version="4.1.1.b2i"
          unpack="false"/>
 
    <plugin
@@ -155,7 +155,7 @@ Visit us at http://b2i.sg
          id="org.eclipse.equinox.preferences"
          download-size="0"
          install-size="0"
-         version="0.0.0"
+         version="3.5.2.b2i"
          unpack="false"/>
 
    <plugin
@@ -176,7 +176,7 @@ Visit us at http://b2i.sg
          id="org.eclipse.net4j"
          download-size="0"
          install-size="0"
-         version="0.0.0"
+         version="4.1.1.b2i"
          unpack="false"/>
 
    <plugin
@@ -204,7 +204,7 @@ Visit us at http://b2i.sg
          id="org.eclipse.net4j.util"
          download-size="0"
          install-size="0"
-         version="0.0.0"
+         version="3.2.1.b2i"
          unpack="false"/>
 
    <plugin
@@ -553,7 +553,7 @@ Visit us at http://b2i.sg
          id="org.supercsv"
          download-size="0"
          install-size="0"
-         version="0.0.0"
+         version="1.0.0.b2i"
          unpack="false"/>
 
    <plugin
@@ -830,7 +830,7 @@ Visit us at http://b2i.sg
          id="com.b2international.snowowl.hibernate.validator"
          download-size="0"
          install-size="0"
-         version="0.0.0"
+         version="5.1.1.Final-b2i"
          unpack="false"/>
 
    <plugin
@@ -844,7 +844,7 @@ Visit us at http://b2i.sg
          id="org.eclipse.net4j.db.mysql"
          download-size="0"
          install-size="0"
-         version="0.0.0"
+         version="4.0.200.v20130710-2145-b2i"
          unpack="false"/>
 
    <plugin
@@ -858,7 +858,7 @@ Visit us at http://b2i.sg
          id="com.b2international.org.apache.lucene"
          download-size="0"
          install-size="0"
-         version="0.0.0"/>
+         version="4.9.0.b2i"/>
 
    <plugin
          id="org.emfjson.core"

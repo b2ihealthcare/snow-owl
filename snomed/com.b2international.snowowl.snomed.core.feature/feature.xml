@@ -104,28 +104,28 @@ Visit us at http://b2i.sg
          id="org.protege.common"
          download-size="0"
          install-size="0"
-         version="0.0.0"
+         version="4.1.0.b2i"
          unpack="false"/>
 
    <plugin
          id="org.protege.editor.core.application"
          download-size="0"
          install-size="0"
-         version="0.0.0"
+         version="4.1.0.b2i"
          unpack="false"/>
 
    <plugin
          id="org.protege.editor.owl"
          download-size="0"
          install-size="0"
-         version="0.0.0"
+         version="4.1.0.b2i"
          unpack="false"/>
 
    <plugin
          id="org.semanticweb.owl.owlapi"
          download-size="0"
          install-size="0"
-         version="0.0.0"
+         version="3.2.2.b2i"
          unpack="false"/>
 
    <plugin
