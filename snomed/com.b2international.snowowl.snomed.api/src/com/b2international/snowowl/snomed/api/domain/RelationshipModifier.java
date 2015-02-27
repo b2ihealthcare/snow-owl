@@ -19,6 +19,9 @@ import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 
 /**
  * Enumerates allowed relationship modifiers and maps them to concept identifiers.
+ * 
+ * @see <a href="http://www.snomed.org/tig?t=tsg2_metadata_enumeration_modifier">Concept enumerations for modifierId
+ * (Technical Implementation Guide)</a>
  */
 public enum RelationshipModifier implements ConceptEnum {
 

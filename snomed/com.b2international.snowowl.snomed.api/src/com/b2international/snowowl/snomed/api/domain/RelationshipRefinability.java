@@ -21,6 +21,9 @@ import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 
 /**
  * Enumerates allowed relationship refinability values and maps them to concept identifiers.
+ * 
+ * @see <a href="http://www.snomed.org/tig?t=tsg2_metadata_refset_status_relref">Relationship Refinability Reference Set
+ * (Technical Implementation Guide)</a>
  */
 public enum RelationshipRefinability {
 
