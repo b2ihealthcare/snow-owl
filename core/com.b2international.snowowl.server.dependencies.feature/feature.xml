@@ -5,12 +5,14 @@
       version="3.9.0.qualifier"
       provider-name="B2i Healthcare">
 
-      <description url="http://b2i.sg">
-Snow Owl Terminology Server dependencies feature.
+   <description url="http://b2i.sg">
+      Snow Owl Terminology Server dependencies feature.
 Visit us at http://b2i.sg
    </description>
 
-   <copyright>Copyright 2011-2015 B2i Healthcare Pte Ltd, http://b2i.sg</copyright>
+   <copyright>
+      Copyright 2011-2015 B2i Healthcare Pte Ltd, http://b2i.sg
+   </copyright>
 
    <includes
          id="org.codehaus.groovy20.feature"
@@ -759,14 +761,6 @@ Visit us at http://b2i.sg
          download-size="0"
          install-size="0"
          version="0.0.0"
-         unpack="false"/>
-
-   <plugin
-         id="org.eclipse.equinox.console.jaas.fragment"
-         download-size="0"
-         install-size="0"
-         version="0.0.0"
-         fragment="true"
          unpack="false"/>
 
    <plugin
