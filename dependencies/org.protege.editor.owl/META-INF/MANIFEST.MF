@@ -124,7 +124,7 @@ Export-Package: org.protege.editor.owl,
  org.protege.owlapi.inference,
  org.protege.owlapi.inference.orphan,
  org.protege.owlapi.model
-Bundle-Version: 4.1.0.qualifier
+Bundle-Version: 4.1.0.b2i
 Require-Bundle: org.eclipse.equinox.registry,
  org.eclipse.equinox.common,
  org.protege.editor.core.application;bundle-version="4.1.0",

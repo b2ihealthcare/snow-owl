@@ -2,7 +2,7 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: %pluginName
 Bundle-SymbolicName: org.eclipse.equinox.preferences; singleton:=true
-Bundle-Version: 3.5.2.qualifier
+Bundle-Version: 3.5.2.b2i
 Bundle-Activator: org.eclipse.core.internal.preferences.Activator
 Bundle-Vendor: %providerName
 Bundle-Localization: plugin

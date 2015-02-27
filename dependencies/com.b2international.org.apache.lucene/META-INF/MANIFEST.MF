@@ -2,7 +2,7 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: Apache Lucene
 Bundle-SymbolicName: com.b2international.org.apache.lucene
-Bundle-Version: 4.9.0.qualifier
+Bundle-Version: 4.9.0.b2i
 Bundle-ClassPath: .,
  lucene_libs/common-logging-1.1.1.jar,
  lucene_libs/httpclient-4.2.3.jar,
