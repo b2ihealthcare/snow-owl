@@ -19,7 +19,7 @@ Visit us at http://b2i.sg
    </license>
 
    <includes
-         id="org.codehaus.groovy.headless.feature"
+         id="org.codehaus.groovy20.feature"
          version="0.0.0"/>
 
    <requires>
