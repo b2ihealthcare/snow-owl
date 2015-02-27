@@ -20,7 +20,8 @@ import com.b2international.snowowl.snomed.api.domain.ISnomedRelationshipInput;
 import com.b2international.snowowl.snomed.api.domain.ISnomedRelationshipUpdate;
 
 /**
- * TODO document
+ * SNOMED CT relationship service implementations provide methods for <b>c</b>reating, <b>r</b>eading, <b>u</b>pdating and
+ * <b>d</b>eleting individual relationships.
  */
 public interface ISnomedRelationshipService extends ISnomedComponentService<ISnomedRelationshipInput, ISnomedRelationship, ISnomedRelationshipUpdate> {
 	// Empty interface body

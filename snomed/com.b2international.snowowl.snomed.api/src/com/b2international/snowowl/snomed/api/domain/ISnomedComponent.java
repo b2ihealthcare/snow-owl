@@ -20,25 +20,28 @@ import java.util.Date;
 import com.b2international.snowowl.api.domain.IComponent;
 
 /**
- * TODO document
+ * Holds common properties of SNOMED CT components.
  */
 public interface ISnomedComponent extends IComponent {
 
 	/**
-	 * TODO document
-	 * @return
+	 * Returns the component's current status as a boolean value.
+	 *  
+	 * @return {@code true} if the component is active, {@code false} if it is inactive
 	 */
 	boolean isActive();
 
 	/**
-	 * TODO document
-	 * @return
+	 * Returns the date at which the current state of the component becomes effective.
+	 * 
+	 * @return the component's effective time
 	 */
 	Date getEffectiveTime();
 
 	/**
-	 * TODO document
-	 * @return
+	 * Returns the containing module's concept identifier.
+	 * 
+	 * @return the module identifier for the component
 	 */
 	String getModuleId();
 }

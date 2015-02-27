@@ -18,31 +18,35 @@ package com.b2international.snowowl.snomed.api.domain.classification;
 import java.util.Date;
 
 /**
- * TODO
+ * Reflects the current state of a classification run.
  */
 public interface IClassificationRun extends IClassificationInput {
 
 	/**
+	 * Returns the unique identifier of this classification.
 	 * 
-	 * @return
+	 * @return the classification identifier
 	 */
 	String getId();
 
 	/**
+	 * Returns the current status of this classification.
 	 * 
-	 * @return
+	 * @return the classification's status
 	 */
 	ClassificationStatus getStatus();
 
 	/**
+	 * Returns the starting date of this classification, or {@code null} if the classification hasn't started yet.
 	 * 
-	 * @return
+	 * @return the classification starting date
 	 */
 	Date getCreationDate();
 
 	/**
+	 * Returns the completion date of this classification, or {@code null} if the classification hasn't finished yet.
 	 * 
-	 * @return the date of completion, or {@code null} if this classification run has not finished yet
+	 * @return the classification completion date
 	 */
 	Date getCompletionDate();
 }

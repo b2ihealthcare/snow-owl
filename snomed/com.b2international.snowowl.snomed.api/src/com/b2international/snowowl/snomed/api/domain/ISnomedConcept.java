@@ -19,50 +19,39 @@ import com.b2international.snowowl.api.domain.IComponentNode;
 import com.google.common.collect.Multimap;
 
 /**
- * TODO: review documentation
- * 
- * This interface represents a SNOMED CT specific concept with a unique SNOMED CT identifier, 
- * a human readable preferred term, its child and parent concepts. Due to its SNOMED CT specific nature it, also has some additional 
- * SNOMED CT specific meta-data: <i>module</i>, <i>effective time</i>, <i>definition status</i> and <i>status</i> .
- * 
+ * Represents a SNOMED CT concept.
  * <p>
- * The following features are supported:
- * <ul>
- *   <li>{@link IIdentifiedElement#getId() <em>Identifier</em>}</li>
- *   <li>{@link INamedElement#getLabel() <em>Label</em>}</li>
- *   <li>{@link IContainerElement#getChildCount() <em>Child count</em>}</li>
- *   <li>{@link IParentElement#getChildren() <em>Children</em>}</li>
- *   <li>{@link IChildElement#getParents() <em>Parents</em>}</li>
- *   <li>{@link ISnomedElement#getModule() <em>Module</em>}</li>
- *   <li>{@link ISnomedElement#getEffectiveTime() <em>Effective Time</em>}</li>
- *   <li>{@link ISnomedElement#isActive() <em>Status</em>}</li>
- * </ul>
- * </p>
- * 
+ * If the component status is not active, additional information about the inactivation reason and associated concepts
+ * can also be retrieved from this object.
  */
 public interface ISnomedConcept extends ISnomedComponent, IComponentNode {
 
 	/**
-	 * TODO document
-	 * @return
+	 * Returns the definition status of the concept.
+	 * 
+	 * @return the concept definition status
 	 */
 	DefinitionStatus getDefinitionStatus();
 
 	/**
-	 * TODO document
-	 * @return
+	 * Returns the subclass definition status of the concept.
+	 * 
+	 * @return {@link SubclassDefinitionStatus#DISJOINT_SUBCLASSES} if the subclasses form a disjoint union,
+	 * {@link SubclassDefinitionStatus#NON_DISJOINT_SUBCLASSES} otherwise
 	 */
 	SubclassDefinitionStatus getSubclassDefinitionStatus();
 
 	/**
-	 * TODO document
-	 * @return
+	 * Returns the concept's corresponding inactivation indicator member value.
+	 * 
+	 * @return the inactivation indicator value, or {@code null} if the concept is still active
 	 */
 	InactivationIndicator getInactivationIndicator();
 
 	/**
-	 * TODO document
-	 * @return
+	 * Returns association reference set member targets keyed by the association type.
+	 * 
+	 * @return related association targets, or {@code null} if the concept is still active
 	 */
 	Multimap<AssociationType, String> getAssociationTargets();
 }

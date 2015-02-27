@@ -16,17 +16,14 @@
 package com.b2international.snowowl.snomed.api.domain;
 
 /**
- * Representation of a SNOMED&nbsp;CT reference set export configuration.
- * @see ISnomedExportConfiguration
- *
+ * Represents the configuration object used for SNOMED CT reference set exports.
  */
 public interface ISnomedRefSetExportConfiguration extends ISnomedExportConfiguration {
 
 	/**
-	 * Returns with the SNOMED&nbsp;CT identifier concept ID of the reference set 
-	 * that has to be exported into RF2 release format.
-	 * @return the identifier concept ID of the reference set.
+	 * Returns the identifier of the reference set to be exported in RF2 release format.
+	 * 
+	 * @return the identifier of the reference set to export
 	 */
 	String getRefSetId();
-	
 }

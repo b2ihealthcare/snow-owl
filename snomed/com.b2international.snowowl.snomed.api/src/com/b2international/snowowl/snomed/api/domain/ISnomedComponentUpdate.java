@@ -16,19 +16,22 @@
 package com.b2international.snowowl.snomed.api.domain;
 
 /**
- * TODO document
+ * Holds common updatable properties of SNOMED CT components.
  */
 public interface ISnomedComponentUpdate {
 
 	/**
-	 * TODO document
-	 * @return
+	 * Returns the identifier of the component's requested new module.
+	 * 
+	 * @return the requested new module identifier for the component
 	 */
 	String getModuleId();
-	
+
 	/**
-	 * TODO document
-	 * @return
+	 * Returns the component's requested new status as a tri-state value.
+	 * 
+	 * @return {@code true} if the component should be re-activated, {@code false} if it is about to be deactivated,
+	 * {@code null} if the component status should be unchanged
 	 */
 	Boolean isActive();
 }

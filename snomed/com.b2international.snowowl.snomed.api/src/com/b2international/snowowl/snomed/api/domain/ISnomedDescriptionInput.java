@@ -18,43 +18,52 @@ package com.b2international.snowowl.snomed.api.domain;
 import java.util.Map;
 
 /**
- * TODO document
+ * Contains properties required for creating SNOMED CT descriptions.
  */
 public interface ISnomedDescriptionInput extends ISnomedComponentInput {
 
 	/**
-	 * TODO document
-	 * @return
+	 * Returns the new description's associated concept identifier, eg. "{@code 363698007}".
+	 * 
+	 * @return the concept identifier
 	 */
 	String getConceptId();
-	
+
 	/**
-	 * TODO document
-	 * @return
+	 * Returns the new description's type identifier, eg. "{@code 900000000000013009}".
+	 * 
+	 * @return the type identifier
 	 */
 	String getTypeId();
 
 	/**
-	 * TODO document
-	 * @return
+	 * Returns the new description's term, eg. "{@code Finding site}".
+	 * 
+	 * @return the description term
 	 */
 	String getTerm();
 
 	/**
-	 * TODO document
-	 * @return
+	 * Returns the new description's language code, not including any dialects or variations, eg. "{@code en}".
+	 * 
+	 * @return the language code of this description
 	 */
 	String getLanguageCode();
 
 	/**
-	 * TODO document
-	 * @return
+	 * Returns the new description's case significance attribute, indicating whether character case within the term should
+	 * be preserved or is interchangeable.
+	 * 
+	 * @return the case significance of this description
 	 */
 	CaseSignificance getCaseSignificance();
-	
+
 	/**
+	 * Returns the new descriptions's language reference set member acceptability values for this description, keyed by language reference set identifier.
+	 * <p>
+	 * Language reference set members will be created along with the description in accordance with the map values.
 	 * 
-	 * @return
+	 * @return the acceptability map for this description
 	 */
 	Map<String, Acceptability> getAcceptability();
 }

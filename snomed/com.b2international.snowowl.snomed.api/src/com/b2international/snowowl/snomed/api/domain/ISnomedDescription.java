@@ -17,57 +17,62 @@ package com.b2international.snowowl.snomed.api.domain;
 
 import java.util.Map;
 
-import javax.annotation.Nullable;
-
 /**
- * TODO document
+ * Represents a SNOMED CT description.
+ * <p>
+ * Information about the inactivation reason can also be retrieved from this object if applicable.
  */
 public interface ISnomedDescription extends ISnomedComponent {
 
 	/**
-	 * TODO document
-	 * @return
+	 * Returns the associated concept's identifier, eg. "{@code 363698007}".
+	 * 
+	 * @return the concept identifier
 	 */
 	String getConceptId();
-	
+
 	/**
-	 * TODO document
-	 * @return
+	 * Returns the description type identifier, eg. "{@code 900000000000013009}".
+	 * 
+	 * @return the type identifier
 	 */
 	String getTypeId();
 
 	/**
-	 * TODO document
-	 * @return
+	 * Returns the description term, eg. "{@code Finding site}".
+	 * 
+	 * @return the description term
 	 */
 	String getTerm();
 
 	/**
-	 * TODO document
-	 * @return
+	 * Returns the description's language code, not including any dialects or variations, eg. "{@code en}".
+	 * 
+	 * @return the language code of this description
 	 */
 	String getLanguageCode();
 
 	/**
-	 * TODO document
-	 * @return
+	 * Returns the description's case significance attribute, indicating whether character case within the term should
+	 * be preserved or is interchangeable.
+	 * 
+	 * @return the case significance of this description
 	 */
 	CaseSignificance getCaseSignificance();
-	
+
 	/**
-	 * TODO document
-	 * @return
+	 * Returns language reference set member acceptability values for this description, keyed by language reference set identifier.
+	 * 
+	 * @return the acceptability map for this description
 	 */
 	Map<String, Acceptability> getAcceptabilityMap();
 
 	/**
-	 * Returns with the inactivation indicator (if any) of the description
-	 * that can be used to identify the reason why the current description has
-	 * been inactivated. 
-	 * <p>May return with {@code null} even if the description is 
-	 * inactive this means no reason was given for the inactivation.
-	 * @return the inactivation reason. Or {@code null} if not available.
-	 * @see DescriptionInactivationIndicator
+	 * Returns the inactivation indicator (if any) of the description that can be used to identify the reason why the
+	 * current description has been deactivated.
+	 * 
+	 * @return the inactivation reason for this description, or {@code null} if the description is still active, or no
+	 * reason has been given
 	 */
-	@Nullable DescriptionInactivationIndicator getDescriptionInactivationIndicator();
+	DescriptionInactivationIndicator getDescriptionInactivationIndicator();
 }

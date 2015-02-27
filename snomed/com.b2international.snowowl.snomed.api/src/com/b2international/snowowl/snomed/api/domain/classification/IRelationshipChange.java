@@ -18,55 +18,65 @@ package com.b2international.snowowl.snomed.api.domain.classification;
 import com.b2international.snowowl.snomed.api.domain.RelationshipModifier;
 
 /**
- * TODO
+ * Contains a subset of relationship properties which makes it possible to identify an existing redundant relationship
+ * for deletion/deactivation, or create a inferred relationship based on it.
  */
 public interface IRelationshipChange {
 
 	/**
+	 * Returns the nature of the change (inferred or redundant).
 	 * 
-	 * @return
+	 * @return the change nature
 	 */
 	ChangeNature getChangeNature();
 
 	/**
+	 * Returns the source concept identifier of this relationship.
 	 * 
-	 * @return
+	 * @return the source concept identifier
 	 */
 	String getSourceId();
 
 	/**
+	 * Returns the type identifier of this relationship.
 	 * 
-	 * @return
+	 * @return the type identifier
 	 */
 	String getTypeId();
 
 	/**
+	 * Returns the destination concept identifier of this relationship.
 	 * 
-	 * @return
+	 * @return the destination concept identifier
 	 */
 	String getDestinationId();
 
 	/**
+	 * Returns the negation flag for the relationship's destination concept.
 	 * 
-	 * @return
+	 * @return {@code true} if the destination concept should be considered negated, {@code false} otherwise
 	 */
 	boolean isDestinationNegated();
 
 	/**
+	 * Returns the relationship's group number.
 	 * 
-	 * @return
+	 * @return the relationship group, or 0 if this relationship can not be grouped, or is in an unnumbered, singleton
+	 * group
 	 */
 	int getGroup();
 
 	/**
+	 * Returns the relationship's union group number.
 	 * 
-	 * @return
+	 * @return the relationship union group, or 0 if this relationship is not part of a disjunction
 	 */
 	int getUnionGroup();
 
 	/**
+	 * Returns the relationship's modifier value.
 	 * 
-	 * @return
+	 * @return the relationship modifier
 	 */
 	RelationshipModifier getModifier();
 }

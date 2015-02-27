@@ -18,14 +18,22 @@ package com.b2international.snowowl.snomed.api.domain;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 
 /**
- * TODO document
+ * Enumerates allowed concept definition status values and their corresponding concept identifiers.
+ * 
+ * @see <a href="http://www.snomed.org/tig?t=tsg2_metadata_enumeration_definition">Concept enumerations for
+ * definitionStatusId (Technical Implementation Guide)</a>
  */
 public enum DefinitionStatus implements ConceptEnum {
 
-	/** Primitive concept */
+	/**
+	 * The concept's defining relationships do not define the concept in full; the missing parts are not known, not
+	 * expressible in SNOMED CT's terms or are otherwise not present.
+	 */
 	PRIMITIVE(Concepts.PRIMITIVE),
 
-	/**	Fully defined concept */
+	/**
+	 * The concept's defining relationships make up a complete definition of the concept.
+	 */
 	FULLY_DEFINED(Concepts.FULLY_DEFINED);
 
 	private final String conceptId;
@@ -34,6 +42,11 @@ public enum DefinitionStatus implements ConceptEnum {
 		this.conceptId = conceptId;
 	}
 
+	/**
+	 * Retrieves the concept identifier for this definition status.
+	 * 
+	 * @return the concept identifier corresponding to the definition status constant
+	 */
 	@Override
 	public String getConceptId() {
 		return conceptId;

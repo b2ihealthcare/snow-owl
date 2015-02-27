@@ -18,22 +18,24 @@ package com.b2international.snowowl.snomed.api;
 import java.io.File;
 
 import com.b2international.snowowl.snomed.api.domain.ISnomedExportConfiguration;
+import com.b2international.snowowl.snomed.api.exception.SnomedExportException;
 
 /**
- * Representation of an export service for the SNOMEd&nbsp;CT ontology.
- * This service is responsible for generating RF2 release format from the
- * state of the underlying SNOMED&nbsp;CT ontology.
- *
+ * Implementations of this interface are responsible for generating export archive in RF2 release format from the state
+ * of the underlying SNOMED CT ontology.
  */
 public interface ISnomedExportService {
 
 	/**
-	 * Generates an RF2 release format by exporting the state of the SNOMED&nbsp;CT ontology
-	 * based on the export configuration argument.
-	 * @param configuration the configuration for the RF2 export.
-	 * @return the RF2 release format export file.
+	 * Generates an export archive file in RF2 release format using the specified configuration object.
+	 * <p>
+	 * Exporting is a long-running process; this method call will not return until the export finishes.
+	 * 
+	 * @param configuration the configuration for the RF2 export run
+	 * 
+	 * @return the generated export file
+	 * 
+	 * @throws SnomedExportException if the configuration is invalid, or the export fails for some reason
 	 */
-	File export(final ISnomedExportConfiguration configuration);
-	
-	
+	File export(ISnomedExportConfiguration configuration);
 }

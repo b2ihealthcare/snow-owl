@@ -16,17 +16,17 @@
 package com.b2international.snowowl.snomed.api.domain.classification;
 
 /**
- * TODO
+ * Enumerates possible change types for a particular relationship listed as an {@link IRelationshipChange}.
  */
 public enum ChangeNature {
 
 	/**
-	 * 
+	 * The relationship does not exist yet, and it should be created as an inferred relationship
 	 */
 	INFERRED,
 
 	/**
-	 * 
+	 * The relationship exists, and it should be removed or deactivated, depending on whether it has been published earlier
 	 */
 	REDUNDANT;
 }

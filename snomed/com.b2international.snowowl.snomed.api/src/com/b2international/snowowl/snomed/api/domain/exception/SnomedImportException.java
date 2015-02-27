@@ -16,8 +16,7 @@
 package com.b2international.snowowl.snomed.api.domain.exception;
 
 /**
- * Class indicating that cause of a failed SNOMED&nbsp;CT RF2 import process.
- *
+ * Thrown when the SNOMED CT RF2 import process fails to start for some reason.
  */
 public class SnomedImportException extends RuntimeException {
 
@@ -25,10 +24,10 @@ public class SnomedImportException extends RuntimeException {
 
 	/**
 	 * Creates a new exception instance with the given message.
-	 * @param message the message of the exception.
+	 * 
+	 * @param message the message of the exception
 	 */
 	public SnomedImportException(final String message) {
 		super(message);
 	}
-	
 }

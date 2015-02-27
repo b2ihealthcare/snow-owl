@@ -20,17 +20,20 @@ import java.text.MessageFormat;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 
 /**
- * TODO document
+ * Enumerates allowed acceptability values and maps them to concept identifiers.
+ * 
+ * @see <a href="http://www.snomed.org/tig?t=tsg2_metadata_refset_language">Language Reference Sets (Technical
+ * Implementation Guide)</a>
  */
 public enum Acceptability {
 
 	/**
-	 * TODO document
+	 * Description is acceptable in language or dialect
 	 */
 	ACCEPTABLE(Concepts.REFSET_DESCRIPTION_ACCEPTABILITY_ACCEPTABLE),
 
 	/**
-	 * TODO document
+	 * Description is preferred in language or dialect
 	 */
 	PREFERRED(Concepts.REFSET_DESCRIPTION_ACCEPTABILITY_PREFERRED);
 
@@ -40,10 +43,23 @@ public enum Acceptability {
 		this.conceptId = conceptId;
 	}
 
+	/**
+	 * Retrieves the concept identifier for this acceptability value.
+	 * 
+	 * @return the concept identifier corresponding to the acceptability constant
+	 */
 	public String getConceptId() {
 		return conceptId;
 	}
 
+	/**
+	 * Performs a reverse lookup by concept identifier and returns the matching acceptability value.
+	 * 
+	 * @param conceptId the concept identifier to look for
+	 * 
+	 * @return the resolved {@link Acceptability}
+	 * @throws IllegalArgumentException if no acceptability value matches the specified concept identifier
+	 */
 	public static Acceptability getByConceptId(final String conceptId) {
 		for (final Acceptability candidate : values()) {
 			if (candidate.getConceptId().equals(conceptId)) {

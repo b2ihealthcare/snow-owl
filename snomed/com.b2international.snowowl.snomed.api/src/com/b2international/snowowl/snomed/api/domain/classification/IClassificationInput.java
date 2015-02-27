@@ -16,19 +16,21 @@
 package com.b2international.snowowl.snomed.api.domain.classification;
 
 /**
- * TODO
+ * Holds required properties for initiating a classification run.
  */
 public interface IClassificationInput {
 
 	/**
+	 * Returns the identifier of the reasoner to use for this run.
 	 * 
 	 * @return the identifier of the reasoner to use, or {@code null} if the server default should be used instead
 	 */
 	String getReasonerId();
 
 	/**
+	 * Returns the requesting user's identifier.
 	 * 
-	 * @return
+	 * @return the user identifier for this classification
 	 */
 	String getUserId();
 }

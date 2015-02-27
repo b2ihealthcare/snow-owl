@@ -18,19 +18,22 @@ package com.b2international.snowowl.snomed.api.domain;
 import com.b2international.snowowl.api.domain.IComponentInput;
 
 /**
- * TODO document
+ * Holds common properties required for creating SNOMED CT components.
  */
 public interface ISnomedComponentInput extends IComponentInput {
 
 	/**
-	 * TODO document 
-	 * @return
+	 * Returns the component identifier generation strategy for this component (and optionally other, nested components,
+	 * eg. descriptions of a concept).
+	 * 
+	 * @return the component identifier generation strategy
 	 */
 	IdGenerationStrategy getIdGenerationStrategy();
 
 	/**
-	 * TODO document
-	 * @return
+	 * Returns the identifier of the component's module.
+	 * 
+	 * @return the module identifier for the component
 	 */
 	String getModuleId();
 }

@@ -16,55 +16,64 @@
 package com.b2international.snowowl.snomed.api.domain;
 
 /**
- * TODO document
+ * Contains properties required for creating SNOMED CT relationships.
  */
 public interface ISnomedRelationshipInput extends ISnomedComponentInput {
 
 	/**
-	 * TODO document
-	 * @return
+	 * Returns the new relationship's source concept identifier.
+	 * 
+	 * @return the source identifier
 	 */
 	String getSourceId();
-	
+
 	/**
-	 * TODO document
-	 * @return
+	 * Returns the new relationship's destination concept identifier.
+	 * 
+	 * @return the destination identifier
 	 */
 	String getDestinationId();
-	
+
 	/**
-	 * TODO document
-	 * @return
+	 * Returns the negation flag for the new relationship's destination concept.
+	 * 
+	 * @return {@code true} if the destination concept should be considered negated, {@code false} otherwise
 	 */
 	boolean isDestinationNegated();
 
 	/**
-	 * TODO document
-	 * @return
+	 * Returns the new relationship's type identifier.
+	 * 
+	 * @return the type identifier
 	 */
 	String getTypeId();
 
 	/**
-	 * TODO document
-	 * @return
+	 * Returns the new relationship's group number.
+	 * 
+	 * @return the relationship group, or 0 if this relationship can not be grouped, or is in an unnumbered, singleton
+	 * group
 	 */
 	int getGroup();
 
 	/**
-	 * TODO document
-	 * @return
+	 * Returns the new relationship's union group number.
+	 * 
+	 * @return the relationship union group, or 0 if this relationship is not part of a disjunction
 	 */
 	int getUnionGroup();
 
 	/**
-	 * TODO document
-	 * @return
+	 * Returns the new relationship's characteristic type value.
+	 * 
+	 * @return the characteristic type
 	 */
 	CharacteristicType getCharacteristicType();
 
 	/**
-	 * TODO document
-	 * @return
+	 * Returns the new relationship's modifier value.
+	 * 
+	 * @return the relationship modifier
 	 */
 	RelationshipModifier getModifier();
 }

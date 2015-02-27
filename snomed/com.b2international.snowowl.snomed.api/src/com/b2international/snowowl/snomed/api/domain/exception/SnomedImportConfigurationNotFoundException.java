@@ -22,17 +22,18 @@ import java.util.UUID;
 import com.b2international.snowowl.api.exception.NotFoundException;
 
 /**
- * Exception indicating the absence of a SNOMED&nbsp;CT configuration for a particular
- * import identifier.
- *
+ * Thrown when a SNOMED CT import configuration with a particular identifier could not be found.
  */
 public class SnomedImportConfigurationNotFoundException extends NotFoundException {
 
 	private static final long serialVersionUID = 4991544292465337742L;
 
+	/**
+	 * Creates a new exception instance with the specified parameters.
+	 * 
+	 * @param importId the identifier of the import configuration
+	 */
 	public SnomedImportConfigurationNotFoundException(final UUID importId) {
 		super("SNOMED CT import configuration", checkNotNull(importId, "importId").toString());
 	}
-
-
 }

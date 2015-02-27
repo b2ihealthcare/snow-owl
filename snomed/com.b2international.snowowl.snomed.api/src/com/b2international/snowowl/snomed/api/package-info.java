@@ -15,6 +15,6 @@
  */
 
 /**
- * TODO add javadoc
+ * Contains service interfaces for Snow Owl's RESTful API for SNOMED CT.
  */
 package com.b2international.snowowl.snomed.api;

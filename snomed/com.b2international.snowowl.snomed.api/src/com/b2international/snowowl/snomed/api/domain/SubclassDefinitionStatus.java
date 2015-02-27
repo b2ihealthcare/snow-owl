@@ -16,27 +16,33 @@
 package com.b2international.snowowl.snomed.api.domain;
 
 /**
- * TODO document
+ * Enumerates assertions about direct subclasses.
  */
 public enum SubclassDefinitionStatus {
 
 	/**
-	 * TODO document
+	 * Direct subclasses of the concept form a disjoint union.
 	 */
 	DISJOINT_SUBCLASSES(true),
 
 	/**
-	 * TODO document
+	 * Direct subclasses of the concept can be incomplete, and their definition can overlap each other.
 	 */
 	NON_DISJOINT_SUBCLASSES(false);
 
-	final boolean exhaustive;
+	private final boolean exhaustive;
 
 	private SubclassDefinitionStatus(final boolean exhaustive) {
 		this.exhaustive = exhaustive;
 	}
 
+	/**
+	 * Converts the definition status to a boolean.
+	 * 
+	 * @return {@code true} if direct subclasses of this concept form a disjoint union (in OWL terms), {@code false}
+	 * otherwise
+	 */
 	public boolean isExhaustive() {
-		return false;
+		return exhaustive;
 	}
 }

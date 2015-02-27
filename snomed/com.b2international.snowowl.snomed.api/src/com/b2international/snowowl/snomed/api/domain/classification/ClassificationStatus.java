@@ -16,52 +16,54 @@
 package com.b2international.snowowl.snomed.api.domain.classification;
 
 /**
- * TODO
+ * Enumerates possible states of a single classification run.
  */
 public enum ClassificationStatus {
 
 	/**
-	 * 
+	 * The classification run was requested to run, but has no free reasoner instance to use.  
 	 */
 	SCHEDULED,
 
 	/**
-	 * 
+	 * The classification is running.
 	 */
 	RUNNING,
 
 	/**
-	 * 
+	 * The computational stages of the classification were completed; equivalent concepts and suggested changes can be
+	 * retrieved for review.
 	 */
 	COMPLETED,
 
 	/**
-	 * 
+	 * The computation failed for this run.
 	 */
 	FAILED,
 
 	/**
-	 * 
+	 * The computation was canceled by the user.
 	 */
 	CANCELED,
-	
+
 	/**
-	 * 
+	 * The computation completed, but an incoming commit changed the repository's state, so changes can no longer be
+	 * saved. It is still possible to review suggestions, though.
 	 */
 	STALE,
 
 	/**
-	 * 
+	 * The suggested changes are being saved.
 	 */
 	SAVING_IN_PROGRESS,
-	
+
 	/**
-	 * 
+	 * Changes were successfully committed to the terminology store.
 	 */
 	SAVED, 
-	
+
 	/**
-	 * 
+	 * Changes could not be saved successfully.
 	 */
 	SAVE_FAILED;
 }
