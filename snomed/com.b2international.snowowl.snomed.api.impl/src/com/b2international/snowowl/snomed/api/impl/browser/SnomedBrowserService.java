@@ -139,7 +139,7 @@ public class SnomedBrowserService implements ISnomedBrowserService {
 		result.setEffectiveTime(new Date(concept.getEffectiveTimeAsLong()));
 		result.setModuleId(concept.getModuleId());
 
-		result.setLeafInferred(inferredDescendantCount < 1);
+		result.setIsLeafInferred(inferredDescendantCount < 1);
 
 		result.setDescriptions(convertDescriptions(descriptions));
 		

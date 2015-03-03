@@ -54,7 +54,7 @@ public class SnomedBrowserConcept extends SnomedBrowserComponent implements ISno
 	}
 
 	@Override
-	public boolean isLeafInferred() {
+	public boolean getIsLeafInferred() {
 		return leafInferred;
 	}
 
@@ -84,7 +84,7 @@ public class SnomedBrowserConcept extends SnomedBrowserComponent implements ISno
 		this.preferredSynonym = preferredSynonym;
 	}
 
-	public void setLeafInferred(final boolean leafInferred) {
+	public void setIsLeafInferred(final boolean leafInferred) {
 		this.leafInferred = leafInferred;
 	}
 

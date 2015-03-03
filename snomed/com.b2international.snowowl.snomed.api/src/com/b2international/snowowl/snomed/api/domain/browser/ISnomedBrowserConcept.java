@@ -26,7 +26,7 @@ public interface ISnomedBrowserConcept extends ISnomedBrowserComponent, IConcept
 	String getPreferredSynonym();
 	
 	/** @return {@code true} if this concept has no children in the inferred view of the tree, {@code false} otherwise */
-	boolean isLeafInferred();
+	boolean getIsLeafInferred();
 	
 	/** @return the list of descriptions associated with this concept */
 	List<ISnomedBrowserDescription> getDescriptions();
