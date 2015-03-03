@@ -318,10 +318,7 @@ public class SnomedBrowserService implements ISnomedBrowserService {
 		final Collection<SnomedDescriptionIndexEntry> descriptionIndexEntries = getIndexService().search(branchPath, descriptionQueryAdapter, offset, limit);
 
 		final SnomedConceptFullQueryAdapter conceptQueryAdapter = new SnomedConceptFullQueryAdapter(query, 
-				SnomedConceptFullQueryAdapter.SEARCH_BY_FSN 
-				| SnomedConceptFullQueryAdapter.SEARCH_BY_LABEL 
-				| SnomedConceptFullQueryAdapter.SEARCH_BY_SYNONYM 
-				| SnomedConceptFullQueryAdapter.SEARCH_BY_OTHER);
+				SnomedConceptFullQueryAdapter.SEARCH_BY_FSN | SnomedConceptFullQueryAdapter.SEARCH_BY_SYNONYM);
 		
 		final Collection<SnomedConceptIndexEntry> conceptIndexEntries = getIndexService().searchUnsorted(branchPath, conceptQueryAdapter);
 		final Map<String, SnomedConceptIndexEntry> conceptMap = Maps.uniqueIndex(conceptIndexEntries, new Function<SnomedConceptIndexEntry, String>() {
