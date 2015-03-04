@@ -61,7 +61,7 @@ import com.wordnik.swagger.annotations.ApiResponses;
  */
 @RestController
 @RequestMapping(
-		value="/{version}/exports", produces = { AbstractRestService.V1_MEDIA_TYPE, MediaType.APPLICATION_JSON_VALUE })
+		value="/{version}/exports", produces = { AbstractRestService.V1_MEDIA_TYPE })
 @Api("SNOMED CT Export")
 public class SnomedExportRestService extends AbstractSnomedRestService {
 

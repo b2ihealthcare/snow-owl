@@ -48,7 +48,7 @@ import com.wordnik.swagger.annotations.ApiResponses;
 @Api("IHTSDO SNOMED CT Browser")
 @Controller
 @RequestMapping(
-		value="/browser/{version}", 
+		value="/{version}", 
 		produces={ SnomedBrowserRestService.IHTSDO_V1_MEDIA_TYPE, MediaType.APPLICATION_JSON_VALUE })
 public class SnomedBrowserRestService extends AbstractSnomedRestService {
 
