@@ -52,7 +52,7 @@ import com.wordnik.swagger.annotations.ApiResponses;
 @Api("SNOMED CT Concepts")
 @RestController
 @RequestMapping(
-		value="/snomed-ct/{version}",
+		value="/{version}",
 		produces={ AbstractRestService.V1_MEDIA_TYPE })
 public class SnomedConceptSubResourcesController extends AbstractSnomedRestService {
 
