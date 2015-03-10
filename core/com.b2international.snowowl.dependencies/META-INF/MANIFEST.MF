@@ -80,3 +80,5 @@ Export-Package: org.apache.poi,
  org.xmlpull.v1.wrapper.classic
 Bundle-RequiredExecutionEnvironment: JavaSE-1.7
 Bundle-Vendor: B2i Healthcare
+Require-Bundle: org.apache.xmlbeans;bundle-version="2.3.0",
+ org.dom4j;bundle-version="1.6.1"
