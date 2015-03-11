@@ -1246,6 +1246,7 @@ public class SnomedRf2IndexInitializer extends Job {
 		}
 			
 		doc.add(new LongField(COMPONENT_ICON_ID, Long.valueOf(iconId), Store.YES));
+		doc.add(new NumericDocValuesField(COMPONENT_ICON_ID, Long.valueOf(iconId)));
 
 		final List<TermWithType> descriptions = getImportIndexService().getConceptDescriptions(conceptId);
 		

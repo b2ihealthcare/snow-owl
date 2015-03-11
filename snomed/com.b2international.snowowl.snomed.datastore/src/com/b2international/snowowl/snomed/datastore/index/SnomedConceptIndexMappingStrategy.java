@@ -184,6 +184,7 @@ public abstract class SnomedConceptIndexMappingStrategy extends AbstractIndexMap
 		doc.add(new NumericDocValuesField(COMPONENT_STORAGE_KEY, storageKey));
 		doc.add(new NumericDocValuesField(COMPONENT_ID, Long.valueOf(conceptId)));
 		doc.add(new NumericDocValuesField(COMPONENT_COMPARE_UNIQUE_KEY, indexAsRelevantForCompare ? storageKey : CDOUtils.NO_STORAGE_KEY));
+		doc.add(new NumericDocValuesField(COMPONENT_ICON_ID, Long.valueOf(iconId)));
 		if (!indexAsRelevantForCompare) {
 			doc.add(new NumericDocValuesField(COMPONENT_IGNORE_COMPARE_UNIQUE_KEY, storageKey));
 		}
