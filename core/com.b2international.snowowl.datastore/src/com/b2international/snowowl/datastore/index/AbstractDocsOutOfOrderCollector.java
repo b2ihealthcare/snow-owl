@@ -17,6 +17,9 @@ package com.b2international.snowowl.datastore.index;
 
 import java.io.IOException;
 
+import org.apache.lucene.index.AtomicReader;
+import org.apache.lucene.index.AtomicReaderContext;
+import org.apache.lucene.search.CollectionTerminatedException;
 import org.apache.lucene.search.Collector;
 import org.apache.lucene.search.Scorer;
 
@@ -25,20 +28,37 @@ import org.apache.lucene.search.Scorer;
  */
 public abstract class AbstractDocsOutOfOrderCollector extends Collector {
 
-	/* (non-Javadoc)
-	 * @see org.apache.lucene.search.Collector#setScorer(org.apache.lucene.search.Scorer)
-	 */
 	@Override
-	public void setScorer(final Scorer scorer) throws IOException {
-		//intentionally ignored
+	public final void setScorer(final Scorer scorer) throws IOException {
+		return;
 	}
 
-	/* (non-Javadoc)
-	 * @see org.apache.lucene.search.Collector#acceptsDocsOutOfOrder()
-	 */
 	@Override
 	public final boolean acceptsDocsOutOfOrder() {
-		return true; //intentionally true, doc order does not matter.
+		return true;
 	}
 
+	@Override
+	public final void setNextReader(final AtomicReaderContext context) throws IOException {
+		initDocValues(context.reader());
+
+		if (!isLeafCollectible()) {
+			throw new CollectionTerminatedException();
+		}
+	}
+
+	/**
+	 * Initializes docvalues using the specified leaf reader.
+	 * 
+	 * @param leafReader the {@link AtomicReader} to use for retrieving docvalues
+	 */
+	protected abstract void initDocValues(AtomicReader leafReader) throws IOException;
+
+	/**
+	 * Checks whether all required fields are available for reading.
+	 * 
+	 * @return {@code true} if the current reader can be used to collect docvalues using {@code docId}s from the
+	 * callback method, {@code false} otherwise
+	 */
+	protected abstract boolean isLeafCollectible();
 }
