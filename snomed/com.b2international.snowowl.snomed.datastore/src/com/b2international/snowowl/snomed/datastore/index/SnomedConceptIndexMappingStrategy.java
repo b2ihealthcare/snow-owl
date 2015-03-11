@@ -42,6 +42,7 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.Set;
 
+import org.apache.lucene.document.BinaryDocValuesField;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.Field.Store;
 import org.apache.lucene.document.FloatField;
@@ -51,12 +52,12 @@ import org.apache.lucene.document.NumericDocValuesField;
 import org.apache.lucene.document.StoredField;
 import org.apache.lucene.document.StringField;
 import org.apache.lucene.document.TextField;
+import org.apache.lucene.util.BytesRef;
 
 import bak.pcj.LongIterator;
 import bak.pcj.set.LongSet;
 
 import com.b2international.snowowl.core.ApplicationContext;
-import com.b2international.snowowl.core.api.index.CommonIndexConstants;
 import com.b2international.snowowl.core.api.index.IIndexMappingStrategy;
 import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.datastore.BranchPathUtils;
@@ -175,7 +176,7 @@ public abstract class SnomedConceptIndexMappingStrategy extends AbstractIndexMap
 		doc.add(new IntField(CONCEPT_PRIMITIVE, primitive ? 1 : 0, Store.YES));
 		doc.add(new StoredField(COMPONENT_RELEASED, released ? 1 : 0));
 		doc.add(new TextField(COMPONENT_LABEL, label, Store.YES));
-		doc.add(new StringField(CommonIndexConstants.COMPONENT_LABEL_SINGLE, label, Store.NO));
+		doc.add(new BinaryDocValuesField(COMPONENT_LABEL, new BytesRef(label)));
 		doc.add(new StringField(COMPONENT_LABEL_SORT_KEY, IndexUtils.getSortKey(label), Store.YES));
 		doc.add(new FloatField(CONCEPT_DEGREE_OF_INTEREST, degreeOfInterest, Store.YES));
 		doc.add(new LongField(CONCEPT_MODULE_ID, Long.valueOf(moduleId), Store.YES));

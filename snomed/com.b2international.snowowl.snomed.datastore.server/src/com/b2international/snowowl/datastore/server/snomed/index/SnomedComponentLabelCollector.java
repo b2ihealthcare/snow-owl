@@ -87,7 +87,7 @@ public class SnomedComponentLabelCollector extends AbstractDocsOutOfOrderCollect
 	@Override
 	protected void initDocValues(final AtomicReader leafReader) throws IOException {
 		idDocValues = leafReader.getNumericDocValues(CommonIndexConstants.COMPONENT_ID);
-		labelDocValues = leafReader.getBinaryDocValues(CommonIndexConstants.COMPONENT_LABEL_SINGLE);
+		labelDocValues = leafReader.getBinaryDocValues(CommonIndexConstants.COMPONENT_LABEL);
 	}
 
 	@Override
