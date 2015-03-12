@@ -153,7 +153,7 @@ public class WidgetBeanUpdater implements IWidgetBeanUpdater {
 			// uninitialized mappings should be added if the value is set
 			if (MappingWidgetBean.UNINITIALIZED.equals(referenceSetMemberId)) {
 				if (!NullComponent.isNullComponent(selectedValue)) {
-					addSimpleMapReferenceSetMember(context, Concepts.INGREDIENT_TO_ATC_STATED_SIMPLE_MAP, concept, mapping);
+					addSimpleMapReferenceSetMember(context, mapping.getModel().getTargetReferenceSetId(), concept, mapping);
 				}
 				unvisitedMappings.remove(mapping);
 			} else {
@@ -193,7 +193,7 @@ public class WidgetBeanUpdater implements IWidgetBeanUpdater {
 							SnomedModelExtensions.removeOrDeactivate(member);
 						} else if (!member.getMapTargetComponentId().equals(selectedValue.getId())) {
 							SnomedModelExtensions.removeOrDeactivate(member);
-							addSimpleMapReferenceSetMember(context, Concepts.INGREDIENT_TO_ATC_STATED_SIMPLE_MAP, concept, mapping);
+							addSimpleMapReferenceSetMember(context, mapping.getModel().getTargetReferenceSetId(), concept, mapping);
 						}
 						unvisitedMappings.remove(mapping);
 					} else {
@@ -240,13 +240,14 @@ public class WidgetBeanUpdater implements IWidgetBeanUpdater {
 	}
 
 	private void addSimpleMapReferenceSetMember(final SnomedEditingContext context, final String targetReferenceSet, final Concept concept, final MappingWidgetBean mapping) {
+		checkNotNull(targetReferenceSet, "MappingWidgetBean should define the target reference set identifier");
 		final SnomedRefSetEditingContext refSetEditingContext = context.getRefSetEditingContext();
 		final ILookupService<String, Object, Object> refsetLookUpService = CoreTerminologyBroker.getInstance().getLookupService(SnomedTerminologyComponentConstants.REFSET);
 		final long targetReferenceSetStorageKey = refsetLookUpService.getStorageKey(BranchPathUtils.createActivePath(SnomedPackage.eINSTANCE), targetReferenceSet);
 		EObject component = refSetEditingContext.lookupIfExists(targetReferenceSetStorageKey);
-		// the selected target reference set is deleted, or missing, try creating a new one
+		// the selected target reference set is deleted, or missing, try creating it a new one
 		if (component == null) {
-			component = refSetEditingContext.createSnomedSimpleMapRefSet("Ingredient reference set ATC mappings", SnomedTerminologyComponentConstants.CONCEPT);
+			component = refSetEditingContext.createSnomedSimpleMapRefSet(mapping.getModel().getTargetReferenceSetLabel(), SnomedTerminologyComponentConstants.CONCEPT);
 		}
 		if (component instanceof SnomedMappingRefSet) {
 			final SnomedMappingRefSet mappingRefSet = (SnomedMappingRefSet) component;
