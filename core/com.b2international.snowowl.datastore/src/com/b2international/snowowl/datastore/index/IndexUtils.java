@@ -36,6 +36,7 @@ import org.apache.lucene.document.Field;
 import org.apache.lucene.document.Field.Store;
 import org.apache.lucene.document.FieldType;
 import org.apache.lucene.document.IntField;
+import org.apache.lucene.document.SortedDocValuesField;
 import org.apache.lucene.document.StringField;
 import org.apache.lucene.index.AtomicReaderContext;
 import org.apache.lucene.index.FieldInfo.IndexOptions;
@@ -77,7 +78,6 @@ import com.google.common.primitives.Ints;
 
 /**
  * Contains utility methods for easier handling of Lucene's various aspects.
- * 
  */
 public abstract class IndexUtils {
 
@@ -333,6 +333,19 @@ public abstract class IndexUtils {
 	}
 	
 	/**
+	 * Registers a sort key both as an indexed {@link StringField} as well as a {@link SortedDocValuesField} on the
+	 * specified document.
+	 * 
+	 * @param doc the document to append to
+	 * @param sortKeySource the source text for the sort key
+	 */
+	public static void addSortKey(final Document doc, final String sortKeySource) {
+		final String sortKey = getSortKey(sortKeySource);
+		doc.add(new StringField(CommonIndexConstants.COMPONENT_LABEL_SORT_KEY, sortKey, Store.NO));
+		doc.add(new SortedDocValuesField(CommonIndexConstants.COMPONENT_LABEL_SORT_KEY, new BytesRef(sortKey)));
+	}
+	
+	/**
 	 * Converts the specified integer value to prefix coded bits.
 	 * 
 	 * @see NumericUtils#intToPrefixCoded(int, int, BytesRef)
@@ -444,7 +457,5 @@ public abstract class IndexUtils {
 				}
 			}
 		});
-		
 	}
-	
 }

@@ -24,7 +24,6 @@ import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBr
 import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.COMPONENT_ID;
 import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.COMPONENT_IGNORE_COMPARE_UNIQUE_KEY;
 import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.COMPONENT_LABEL;
-import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.COMPONENT_LABEL_SORT_KEY;
 import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.COMPONENT_REFERRING_PREDICATE;
 import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.COMPONENT_RELEASED;
 import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.COMPONENT_STORAGE_KEY;
@@ -204,7 +203,6 @@ import com.google.common.collect.Sets;
 
 /**
  * RF2 based incremental index initializer job.
- *
  */
 public class SnomedRf2IndexInitializer extends Job {
 
@@ -769,7 +767,7 @@ public class SnomedRf2IndexInitializer extends Job {
 					
 					final String label = importIndexService.getConceptLabel(refSetId);
 					refSetDoc.add(new TextField(COMPONENT_LABEL, label, Store.YES));
-					refSetDoc.add(new StringField(COMPONENT_LABEL_SORT_KEY, IndexUtils.getSortKey(label), Store.YES));
+					IndexUtils.addSortKey(refSetDoc, label);
 					
 					final String moduleId;
 					final SnomedConceptIndexEntry identifierConcept = ApplicationContext.getInstance().getService(SnomedTerminologyBrowser.class).getConcept(branchPath, refSetId);
@@ -894,7 +892,7 @@ public class SnomedRf2IndexInitializer extends Job {
 				doc.add(new LongField(REFERENCE_SET_MEMBER_EFFECTIVE_TIME, timestampLong, Store.YES));
 				
 				doc.add(new TextField(COMPONENT_LABEL, label, Store.YES));
-				doc.add(new StringField(COMPONENT_LABEL_SORT_KEY, IndexUtils.getSortKey(label), Store.YES));
+				IndexUtils.addSortKey(doc, label);
 				
 				switch (refSetType) {
 					
@@ -1096,7 +1094,7 @@ public class SnomedRf2IndexInitializer extends Job {
 				doc.add(new LongField(COMPONENT_ID, sctId, Store.YES));
 				doc.add(new IntField(COMPONENT_TYPE, SnomedTerminologyComponentConstants.DESCRIPTION_NUMBER, Store.YES));
 				doc.add(new TextField(COMPONENT_LABEL, term, Store.YES));
-				doc.add(new StringField(COMPONENT_LABEL_SORT_KEY, IndexUtils.getSortKey(term), Store.YES));
+				IndexUtils.addSortKey(doc, term);
 				doc.add(new BinaryDocValuesField(COMPONENT_LABEL, new BytesRef(term)));
 				doc.add(new IntField(COMPONENT_ACTIVE, active ? 1 : 0, Store.YES));
 				doc.add(new LongField(COMPONENT_STORAGE_KEY, storageKey, Store.YES));
@@ -1253,7 +1251,7 @@ public class SnomedRf2IndexInitializer extends Job {
 		final String preferredTerm = Iterables.getFirst(descriptions, null).term;
 		doc.add(new TextField(COMPONENT_LABEL, preferredTerm, Store.YES));
 		doc.add(new BinaryDocValuesField(COMPONENT_LABEL, new BytesRef(preferredTerm)));
-		doc.add(new StringField(COMPONENT_LABEL_SORT_KEY, IndexUtils.getSortKey(preferredTerm), Store.YES));
+		IndexUtils.addSortKey(doc, preferredTerm);
 		
 		if (conceptIdToPredicateMap.containsKey(conceptId)) {
 			final Collection<String> predicateKeys = conceptIdToPredicateMap.get(conceptId);
@@ -1371,5 +1369,4 @@ public class SnomedRf2IndexInitializer extends Job {
 			throw new IllegalArgumentException(MessageFormat.format("Could not determine if concept is primitive: {0}", conceptId));
 		}
 	}
-	
 }

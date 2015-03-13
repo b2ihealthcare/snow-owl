@@ -16,12 +16,10 @@
 package com.b2international.snowowl.snomed.datastore.index;
 
 import static com.b2international.snowowl.datastore.cdo.CDOIDUtils.asLong;
-import static com.b2international.snowowl.datastore.index.IndexUtils.getSortKey;
 import static com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants.DESCRIPTION_NUMBER;
 import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.COMPONENT_ACTIVE;
 import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.COMPONENT_ID;
 import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.COMPONENT_LABEL;
-import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.COMPONENT_LABEL_SORT_KEY;
 import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.COMPONENT_RELEASED;
 import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.COMPONENT_STORAGE_KEY;
 import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.COMPONENT_TYPE;
@@ -40,17 +38,16 @@ import org.apache.lucene.document.IntField;
 import org.apache.lucene.document.LongField;
 import org.apache.lucene.document.NumericDocValuesField;
 import org.apache.lucene.document.StoredField;
-import org.apache.lucene.document.StringField;
 import org.apache.lucene.document.TextField;
 import org.apache.lucene.util.BytesRef;
 
 import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.datastore.index.AbstractIndexMappingStrategy;
+import com.b2international.snowowl.datastore.index.IndexUtils;
 import com.b2international.snowowl.snomed.Description;
 
 /**
  * Mapping strategy for SNOMED CT descriptions.
- * 
  */
 public class SnomedDescriptionIndexMappingStrategy extends AbstractIndexMappingStrategy {
 	
@@ -77,7 +74,7 @@ public class SnomedDescriptionIndexMappingStrategy extends AbstractIndexMappingS
 		doc.add(new LongField(COMPONENT_ID, parseLong(descriptionId), YES));
 		doc.add(new IntField(COMPONENT_TYPE, DESCRIPTION_NUMBER, YES));
 		doc.add(new TextField(COMPONENT_LABEL, term, YES));
-		doc.add(new StringField(COMPONENT_LABEL_SORT_KEY, getSortKey(term), YES));
+		IndexUtils.addSortKey(doc, term);
 		doc.add(new BinaryDocValuesField(COMPONENT_LABEL, new BytesRef(term)));
 		doc.add(new IntField(COMPONENT_ACTIVE, active ? 1 : 0, YES));
 		doc.add(new LongField(COMPONENT_STORAGE_KEY, storageKey, YES));

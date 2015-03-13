@@ -21,7 +21,6 @@ import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBr
 import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.COMPONENT_ID;
 import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.COMPONENT_IGNORE_COMPARE_UNIQUE_KEY;
 import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.COMPONENT_LABEL;
-import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.COMPONENT_LABEL_SORT_KEY;
 import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.COMPONENT_REFERRING_PREDICATE;
 import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.COMPONENT_RELEASED;
 import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.COMPONENT_STORAGE_KEY;
@@ -71,7 +70,6 @@ import com.b2international.snowowl.snomed.datastore.services.SnomedConceptNamePr
 
 /**
  * Mapping strategy to transform a SNOMED CT concept into a {@link Document document} of the index.
- * 
  * 
  * @see IIndexMappingStrategy
  * @see SnomedConceptNameProvider
@@ -177,7 +175,7 @@ public abstract class SnomedConceptIndexMappingStrategy extends AbstractIndexMap
 		doc.add(new StoredField(COMPONENT_RELEASED, released ? 1 : 0));
 		doc.add(new TextField(COMPONENT_LABEL, label, Store.YES));
 		doc.add(new BinaryDocValuesField(COMPONENT_LABEL, new BytesRef(label)));
-		doc.add(new StringField(COMPONENT_LABEL_SORT_KEY, IndexUtils.getSortKey(label), Store.YES));
+		IndexUtils.addSortKey(doc, label);
 		doc.add(new FloatField(CONCEPT_DEGREE_OF_INTEREST, degreeOfInterest, Store.YES));
 		doc.add(new LongField(CONCEPT_MODULE_ID, Long.valueOf(moduleId), Store.YES));
 		doc.add(new LongField(COMPONENT_ICON_ID, Long.valueOf(iconId), Store.YES));
