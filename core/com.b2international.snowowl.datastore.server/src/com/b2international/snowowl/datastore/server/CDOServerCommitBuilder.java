@@ -92,6 +92,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.b2international.commons.CompareUtils;
+import com.b2international.commons.StringUtils;
 import com.b2international.snowowl.datastore.cdo.CDOCommitInfoUtils;
 import com.b2international.snowowl.datastore.cdo.CDOTransactionAggregator;
 import com.b2international.snowowl.datastore.cdo.CDOTransactionAggregatorUtils;
@@ -996,7 +997,11 @@ public class CDOServerCommitBuilder {
 
 		this.transactionAggregator = transactionAggregator;
 		this.userId = userId;
-		this.comment = comment;
+		final String truncatedMessage = StringUtils.truncate(comment, 255 - UUID.randomUUID().toString().length());
+		if (!truncatedMessage.equals(comment)) {
+			LOGGER.warn("Truncated commit message (original message: {})", comment);
+		}
+		this.comment = truncatedMessage;
 	}
 
 	public CDOServerCommitBuilder notifyWriteAccessHandlers(final boolean value) {
