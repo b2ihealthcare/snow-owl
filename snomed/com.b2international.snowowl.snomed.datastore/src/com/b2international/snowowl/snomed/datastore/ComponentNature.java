@@ -38,4 +38,13 @@ public enum ComponentNature {
 		int natureDigit = componentId.charAt(componentId.length() - 2) - '0';
 		return (natureDigit == ordinal());
 	}
+
+	public static ComponentNature getByOrdinal(int componentIdentifier) {
+		for (ComponentNature c : values()) {
+			if (c.ordinal() == componentIdentifier) {
+				return c;
+			}
+		}
+		throw new IllegalArgumentException("Unknown componentIdentifier: " + componentIdentifier);
+	}
 }
