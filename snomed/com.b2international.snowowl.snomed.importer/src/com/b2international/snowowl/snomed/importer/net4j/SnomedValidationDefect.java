@@ -74,7 +74,8 @@ public class SnomedValidationDefect implements Serializable {
 		UNKOWN_REFSET_TYPE("Unknown reference set type"), 
 		INVALID_EFFECTIVE_TIME_FORMAT("Effective time format is not valid. Acceptable effective time format is 'yyyyMMdd'."),
 		INCONSISTENT_TAXONOMY("The concepts below are referenced in active relationships. The newly imported version inactivates " + 
-				"these concepts but leaves the other end of the relationship active, which is invalid.");
+				"these concepts but leaves the other end of the relationship active, which is invalid."),
+		IO_PROBLEM("Encountered an I/O error while running validation.");
 		
 		private String label;
 		
