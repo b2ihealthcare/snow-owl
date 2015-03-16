@@ -19,7 +19,7 @@ import static extension com.b2international.snowowl.test.commons.rest.RestExtens
 import com.jayway.restassured.response.Response
 import com.b2international.snowowl.snomed.api.rest.concept.*
 import static com.b2international.snowowl.snomed.SnomedConstants.Concepts.*
-import com.b2international.snowowl.snomed.datastore.id.SnomedIdentifiers
+import com.b2international.snowowl.snomed.api.id.SnomedIdentifiers
 import java.util.UUID
 import java.util.Date
 
