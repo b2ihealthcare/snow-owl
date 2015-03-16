@@ -125,6 +125,12 @@ public abstract class IndexUtils {
 	public static final FieldType TYPE_PRECISE_LONG_NOT_STORED = createFieldType(FieldType.NumericType.LONG, false);
 
 	/**
+	 * A {@link FieldType} for long fields which shouldn't be indexed as multiple terms with decreasing
+	 * numeric precision. Fields with this type are <b>stored</b>.
+	 */
+	public static final FieldType TYPE_PRECISE_LONG_STORED = createFieldType(FieldType.NumericType.LONG, true);
+
+	/**
 	 * A {@link FieldType} for integer fields which shouldn't be indexed as multiple terms with decreasing
 	 * numeric precision. Fields with this type are <b>stored</b>.
 	 */
@@ -153,7 +159,7 @@ public abstract class IndexUtils {
 	public static final Function<BytesRef, String> STRING_CONVERTER = new Function<BytesRef, String>() { @Override public String apply(final BytesRef input) {
 		return input.utf8ToString();
 	}};
-	
+
 	/** Creates an FSDirectory instance, trying to pick the
 	 *  best implementation given the current environment.
 	 *  The directory returned uses the {@link NativeFSLockFactory}.

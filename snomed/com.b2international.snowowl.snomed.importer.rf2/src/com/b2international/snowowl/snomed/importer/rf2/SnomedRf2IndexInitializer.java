@@ -113,7 +113,6 @@ import org.apache.lucene.document.BinaryDocValuesField;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.Field.Store;
 import org.apache.lucene.document.FloatDocValuesField;
-import org.apache.lucene.document.FloatField;
 import org.apache.lucene.document.IntField;
 import org.apache.lucene.document.LongField;
 import org.apache.lucene.document.NumericDocValuesField;
@@ -163,6 +162,7 @@ import com.b2international.snowowl.datastore.server.snomed.index.NamespaceMappin
 import com.b2international.snowowl.datastore.server.snomed.index.SnomedIndexServerService;
 import com.b2international.snowowl.datastore.server.snomed.index.init.DoiInitializer;
 import com.b2international.snowowl.datastore.server.snomed.index.init.ImportIndexServerService;
+import com.b2international.snowowl.datastore.server.snomed.index.init.ImportIndexServerService.TermType;
 import com.b2international.snowowl.datastore.server.snomed.index.init.ImportIndexServerService.TermWithType;
 import com.b2international.snowowl.datastore.server.snomed.index.init.MrcmIndexInitializer;
 import com.b2international.snowowl.datastore.server.snomed.index.init.Rf2BasedSnomedTaxonomyBuilder;
@@ -1247,7 +1247,7 @@ public class SnomedRf2IndexInitializer extends Job {
 		doc.add(new LongField(COMPONENT_ICON_ID, Long.valueOf(iconId), Store.YES));
 		doc.add(new NumericDocValuesField(COMPONENT_ICON_ID, Long.valueOf(iconId)));
 
-		final List<TermWithType> descriptions = getImportIndexService().getConceptDescriptions(conceptId);
+		final List<TermWithType> descriptions = getImportIndexService().getConceptDescriptions(String.valueOf(conceptId));
 		
 		final String preferredTerm = Iterables.getFirst(descriptions, null).term;
 		doc.add(new TextField(COMPONENT_LABEL, preferredTerm, Store.YES));
@@ -1290,24 +1290,24 @@ public class SnomedRf2IndexInitializer extends Job {
 		for (final TermWithType termWithType : descriptions) {
 			
 			final String term = termWithType.term;
+			final TermType type = termWithType.type;
 			
-			switch (termWithType.termTypeOrdinal) {
-				
-				case 1 /*TermType.FSN.ordinal()*/:
+			switch (type) {
+				case FSN:
 					doc.add(new TextField(CONCEPT_FULLY_SPECIFIED_NAME, term, Store.YES));
 					break;
-					
-				case 0 /*TermType.PT.ordinal()*/: //$FALL-THROUGH$
-				case 2 /*TermType.SYNONYM_AND_DESCENDANTS.ordinal()*/:
+
+				case SYNONYM_AND_DESCENDANTS:
 					doc.add(new TextField(CONCEPT_SYNONYM, term, Store.YES));
 					break;
-					
-				default: 
+
+				case OTHER:
 					doc.add(new TextField(CONCEPT_OTHER_DESCRIPTION, term, Store.YES));
 					break;
-				
+					
+				default:
+					throw new IllegalStateException(MessageFormat.format("Unhandled term type ''{0}''.", type.name()));
 			}
-			
 		}
 			
 		float doi = doiData.get(conceptId);
@@ -1315,7 +1315,6 @@ public class SnomedRf2IndexInitializer extends Job {
 			doi = DEFAULT_DOI;
 		}
 		
-		// add default DOI
 		doc.add(new StoredField(CONCEPT_DEGREE_OF_INTEREST, doi));
 		doc.add(new FloatDocValuesField(CONCEPT_DEGREE_OF_INTEREST, doi));
 		return doc;
