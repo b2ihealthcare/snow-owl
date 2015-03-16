@@ -135,7 +135,7 @@ public class ImportIndexServerService extends FSIndexServerService<IIndexEntry> 
 
     private static final Set<String> DESCRIPTION_FIELDS = ImmutableSet.of(DESCRIPTION_ID, CONCEPT_ID, TERM, ACTIVE, TERM_TYPE, PREFERRED_MEMBER_ID, ACCEPTABLE_MEMBER_ID);
     private static final Set<String> TERM_ONLY = ImmutableSet.of(TERM);
-    private static final Set<String> TERM_AND_TYPE_ONLY = ImmutableSet.of(TERM, TERM_TYPE);
+    private static final Set<String> TERM_TYPE_AND_ACCEPTABILITY_ONLY = ImmutableSet.of(TERM, TERM_TYPE, PREFERRED_MEMBER_ID, ACCEPTABLE_MEMBER_ID);
 
     private static final Sort TERM_TYPE_SORT = new Sort(new SortField(TERM_TYPE, SortField.Type.INT));
 
@@ -449,18 +449,19 @@ public class ImportIndexServerService extends FSIndexServerService<IIndexEntry> 
             final TotalHitCountCollector hitCountCollector = new TotalHitCountCollector();
             searcher.search(containerConceptQuery, hitCountCollector);
 
-            final TopFieldDocs topDocs = searcher.search(containerConceptQuery, hitCountCollector.getTotalHits() > 0 ? hitCountCollector.getTotalHits() : 1, TERM_TYPE_SORT);
-
             // If the concept does not have any indexed descriptions, use the FSN
-            if (null == topDocs || CompareUtils.isEmpty(topDocs.scoreDocs)) {
+            final int totalHits = hitCountCollector.getTotalHits();
+            
+			if (totalHits < 1) {
                 return Collections.singletonList(new TermWithType(getConceptLabel(conceptId), TermType.FSN));
             }
 
+            final TopFieldDocs topDocs = searcher.search(containerConceptQuery, totalHits, TERM_TYPE_SORT);
             final List<TermWithType> conceptDescriptions = newArrayListWithCapacity(topDocs.scoreDocs.length);
             boolean labelPlacedFirst = false;
             
             for (final ScoreDoc scoreDoc : topDocs.scoreDocs) {
-                final Document doc = searcher.doc(scoreDoc.doc, TERM_AND_TYPE_ONLY);
+                final Document doc = searcher.doc(scoreDoc.doc, TERM_TYPE_AND_ACCEPTABILITY_ONLY);
 
                 final String term = doc.get(TERM);
                 final TermType termType = getTermType(doc);
