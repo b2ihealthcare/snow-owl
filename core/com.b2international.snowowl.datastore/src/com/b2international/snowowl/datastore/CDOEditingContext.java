@@ -425,11 +425,6 @@ public abstract class CDOEditingContext implements AutoCloseable {
 		}
 	}
 	
-//	@Override
-//	public void close() {
-//		deactivate(cdoTransaction);
-//	}
-
 	private static IBranchPath getActivePath(EPackage ePackage) {
 		return getTaskManager().getActiveBranch(getConnection(ePackage).getUuid());
 	}
@@ -441,7 +436,9 @@ public abstract class CDOEditingContext implements AutoCloseable {
 	
 	/*creates an new CDO transaction instance on the HEAD of the given branch*/
 	private static CDOTransaction createTransaction(final EPackage ePackage, final IBranchPath branchPath) {
-		return getConnection(ePackage).createTransaction(branchPath);
+		final CDOTransaction transaction = getConnection(ePackage).createTransaction(branchPath);
+		transaction.options().setLockNotificationEnabled(true);
+		return transaction;
 	}
 
 	private static TaskManager getTaskManager() {
