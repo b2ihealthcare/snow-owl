@@ -20,6 +20,7 @@
 		<module>com.b2international.snowowl.api.rest</module>
 		<module>com.b2international.snowowl.api.rest.tests</module>
 		<module>com.b2international.snowowl.api.feature</module>
+		<module>com.b2international.snowowl.api.rest.feature</module>
 		
 		<!-- Auth modules -->
 		<module>com.b2international.snowowl.authentication</module>
