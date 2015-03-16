@@ -8,7 +8,7 @@ import java.util.Date
 import static org.hamcrest.CoreMatchers.*;
 
 import com.b2international.snowowl.snomed.api.rest.concept.*
-import com.b2international.snowowl.snomed.api.id.SnomedIdentifiers
+import com.b2international.snowowl.snomed.datastore.id.SnomedIdentifiers
 
 import static com.b2international.snowowl.snomed.SnomedConstants.Concepts.*
 import static extension com.b2international.snowowl.test.commons.rest.RestExtensions.*
