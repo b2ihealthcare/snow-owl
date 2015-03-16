@@ -32,8 +32,8 @@ public interface ISnomedIdentifierService {
 	 * Generates a single SNOMED CT ID for the defined {@link ComponentNature} without extension namespace.
 	 * 
 	 * @param component
-	 *            - the component type to generate ID for
-	 * @return a valid SNOMED CT identifier
+	 *            - the component type to generate ID for, cannot be <code>null</code>
+	 * @return a valid SNOMED CT identifier, never <code>null</code>
 	 */
 	String generateId(ComponentNature component);
 
@@ -41,10 +41,10 @@ public interface ISnomedIdentifierService {
 	 * Generates a single SNOMED CT ID for the defined {@link ComponentNature} with the defined extension namespace.
 	 * 
 	 * @param component
-	 *            - the component type to generate ID for
+	 *            - the component type to generate ID for, cannot be <code>null</code>
 	 * @param namespace
-	 *            - the extension namespace to use when generating the ID
-	 * @return a valid SNOMED CT identifier
+	 *            - the extension namespace to use when generating the ID, may be <code>null</code>
+	 * @return a valid SNOMED CT identifier, never <code>null</code>
 	 */
 	String generateId(ComponentNature component, String namespace);
 
