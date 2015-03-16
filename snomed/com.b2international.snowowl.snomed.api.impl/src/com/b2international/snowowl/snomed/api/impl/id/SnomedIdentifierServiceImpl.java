@@ -15,22 +15,49 @@
  */
 package com.b2international.snowowl.snomed.api.impl.id;
 
+import static com.google.common.base.Preconditions.checkNotNull;
+
+import com.b2international.commons.VerhoeffCheck;
 import com.b2international.snowowl.snomed.datastore.ComponentNature;
 import com.b2international.snowowl.snomed.datastore.id.ISnomedIdentifierService;
+import com.b2international.snowowl.snomed.datastore.id.ItemIdGenerationStrategy;
+import com.google.common.base.Strings;
 
 /**
+ * SNOMED CT Identifiers v0.4:
+ * <p />
+ * <i>An item identifier can have a lowest permissible value of 100 (three digits) and a highest permissible value of 99999999 (8 digits) for short
+ * format identifiers or 999999999999999 (15 digits) for long format identifiers. Leading zeros are not permitted in the item identifier.<//>
+ * 
  * @since 1.0
  */
 public class SnomedIdentifierServiceImpl implements ISnomedIdentifierService {
 
+	private ItemIdGenerationStrategy itemIdGenerationStrategy = ItemIdGenerationStrategy.RANDOM;
+	
 	@Override
 	public String generateId(ComponentNature component) {
-		throw new UnsupportedOperationException("Not implemented yet");
+		return generateId(component, null);
 	}
 
 	@Override
 	public String generateId(ComponentNature component, String namespace) {
-		throw new UnsupportedOperationException("Not implemented yet");
+		checkNotNull(component, "componentNature");
+		final StringBuilder buf = new StringBuilder();
+		// generate the SCT Item ID
+		buf.append(itemIdGenerationStrategy.generateItemId());
+		// append namespace and the first part of the partition-identifier
+		if (Strings.isNullOrEmpty(namespace)) {
+			buf.append('0');
+		} else {
+			buf.append(namespace);
+			buf.append('1');
+		}
+		// append the second part of the partition-identifier
+		buf.append(component.ordinal());
+		// calc check-digit
+		buf.append(VerhoeffCheck.calculateChecksum(buf, false));
+		return buf.toString();
 	}
-
+	
 }
