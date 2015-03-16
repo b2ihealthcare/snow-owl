@@ -13,9 +13,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.snomed.datastore.id;
+package com.b2international.snowowl.snomed.datastore.id.gen;
 
-import java.util.Random;
 
 /**
  * Determines an algorithm on how to generate a valid SNOMED CT Item identifier without extension namespace-identifier, partition-identifier and
@@ -35,13 +34,6 @@ public interface ItemIdGenerationStrategy {
 	/**
 	 * {@link ItemIdGenerationStrategy} implementation which generates a random Item identifier.
 	 */
-	ItemIdGenerationStrategy RANDOM = new ItemIdGenerationStrategy() {
-
-		@Override
-		public String generateItemId() {
-			// nextInt excludes top value, add 1 to make it inclusive
-			return Integer.toString(new Random().nextInt(99999999 - 100 + 1) + 100);
-		}
-	};
+	ItemIdGenerationStrategy RANDOM = new RandomItemIdGenerationStrategy();
 
 }
