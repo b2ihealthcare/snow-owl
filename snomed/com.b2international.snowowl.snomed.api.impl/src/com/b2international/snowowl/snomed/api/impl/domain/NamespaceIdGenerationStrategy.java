@@ -20,7 +20,7 @@ import java.text.MessageFormat;
 import com.b2international.snowowl.api.domain.ComponentCategory;
 import com.b2international.snowowl.core.SnowOwlApplication;
 import com.b2international.snowowl.snomed.api.domain.IdGenerationStrategy;
-import com.b2international.snowowl.snomed.datastore.SnomedEditingContext.ComponentNature;
+import com.b2international.snowowl.snomed.datastore.ComponentNature;
 import com.b2international.snowowl.snomed.datastore.config.SnomedCoreConfiguration;
 import com.b2international.snowowl.snomed.datastore.id.SnomedIdentifiers;
 

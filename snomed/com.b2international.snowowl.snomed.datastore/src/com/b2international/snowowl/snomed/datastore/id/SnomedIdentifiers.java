@@ -18,7 +18,7 @@ package com.b2international.snowowl.snomed.datastore.id;
 import java.util.Random;
 
 import com.b2international.commons.VerhoeffCheck;
-import com.b2international.snowowl.snomed.datastore.SnomedEditingContext;
+import com.b2international.snowowl.snomed.datastore.ComponentNature;
 import com.google.common.base.Strings;
 
 /**
@@ -38,7 +38,7 @@ public class SnomedIdentifiers {
 	 * @return a valid, randomly generated SCT ID.
 	 */
 	public static String generateConceptId() {
-		return generateComponentId(null, SnomedEditingContext.ComponentNature.CONCEPT);
+		return generateComponentId(null, ComponentNature.CONCEPT);
 	}
 	
 	/**
@@ -49,7 +49,7 @@ public class SnomedIdentifiers {
 	 * @return a valid, randomly generated SCT ID.
 	 */
 	public static String generateConceptId(String nameSpaceId) {
-		return generateComponentId(nameSpaceId, SnomedEditingContext.ComponentNature.CONCEPT);
+		return generateComponentId(nameSpaceId, ComponentNature.CONCEPT);
 	}
 
 	/**
@@ -59,7 +59,7 @@ public class SnomedIdentifiers {
 	 * @param componentNature
 	 * @return a valid, randomly generated SCT ID.
 	 */
-	public static String generateComponentId(String nameSpaceId, SnomedEditingContext.ComponentNature componentNature) {
+	public static String generateComponentId(String nameSpaceId, ComponentNature componentNature) {
 		StringBuilder buf = new StringBuilder();
 		buf.append(generateRandomItemIndentifier());
 		if (Strings.isNullOrEmpty(nameSpaceId)) {

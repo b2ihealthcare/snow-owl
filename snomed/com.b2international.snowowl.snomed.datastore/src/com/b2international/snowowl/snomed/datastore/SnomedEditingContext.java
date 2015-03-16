@@ -123,33 +123,6 @@ import com.google.common.collect.Sets;
  */
 public class SnomedEditingContext extends BaseSnomedEditingContext {
 	
-	// XXX: component nature names are used as table suffixes in SnomedTerminologyQueries
-	public static enum ComponentNature {
-		CONCEPT,
-		DESCRIPTION,
-		RELATIONSHIP;
-		
-		/**
-		 * Checks if the specified component identifier corresponds to this
-		 * component nature (determined by its last-but-one digit).
-		 * 
-		 * @param componentId
-		 *            the component identifier to check
-		 *            
-		 * @return {@code true} if the specified identifier is of this nature,
-		 *         {@code false} otherwise
-		 */
-		public boolean isNatureId(String componentId) {
-			
-			if (componentId == null || componentId.length() < 6 || componentId.length() > 18) {
-				return false;
-			}
-			
-			int natureDigit = componentId.charAt(componentId.length() - 2) - '0';
-			return (natureDigit == ordinal());
-		}
-	}
-	
 	protected final SnomedRefSetEditingContext refSetEditingContext;
 	protected Concept moduleConcept;
 	private String nameSpace;
@@ -921,7 +894,7 @@ public class SnomedEditingContext extends BaseSnomedEditingContext {
 		
 		
 		Relationship relationship = SnomedFactory.eINSTANCE.createRelationship();
-		relationship.setId(SnomedIdentifiers.generateComponentId(namespace, SnomedEditingContext.ComponentNature.RELATIONSHIP));
+		relationship.setId(SnomedIdentifiers.generateComponentId(namespace, ComponentNature.RELATIONSHIP));
 		relationship.setType(type);
 		relationship.setActive(true);
 		relationship.setCharacteristicType(characteristicType);
@@ -957,7 +930,7 @@ public class SnomedEditingContext extends BaseSnomedEditingContext {
 	public Relationship buildEmptyRelationship(final String namespace) {
 
 		Relationship relationship = SnomedFactory.eINSTANCE.createRelationship();
-		relationship.setId(SnomedIdentifiers.generateComponentId(namespace, SnomedEditingContext.ComponentNature.RELATIONSHIP));
+		relationship.setId(SnomedIdentifiers.generateComponentId(namespace, ComponentNature.RELATIONSHIP));
 
 		return relationship;
 	}
@@ -993,7 +966,7 @@ public class SnomedEditingContext extends BaseSnomedEditingContext {
 	/*builds a description with the specified description type, module concept, language code and namespace.*/
 	private Description buildDefaultDescription(String term, final String nameSpace, final Concept type, final Concept moduleConcept, final String languageCode) {
 		Description description = SnomedFactory.eINSTANCE.createDescription();
-		description.setId(SnomedIdentifiers.generateComponentId(nameSpace, SnomedEditingContext.ComponentNature.DESCRIPTION));
+		description.setId(SnomedIdentifiers.generateComponentId(nameSpace, ComponentNature.DESCRIPTION));
 		description.setActive(true);
 		description.setCaseSignificance(findConceptById(ENTIRE_TERM_CASE_INSENSITIVE));
 		description.setType(type);
