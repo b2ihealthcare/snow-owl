@@ -112,6 +112,7 @@ import java.util.Set;
 import org.apache.lucene.document.BinaryDocValuesField;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.Field.Store;
+import org.apache.lucene.document.FloatDocValuesField;
 import org.apache.lucene.document.FloatField;
 import org.apache.lucene.document.IntField;
 import org.apache.lucene.document.LongField;
@@ -1315,7 +1316,8 @@ public class SnomedRf2IndexInitializer extends Job {
 		}
 		
 		// add default DOI
-		doc.add(new FloatField(CONCEPT_DEGREE_OF_INTEREST, doi, Store.YES));
+		doc.add(new StoredField(CONCEPT_DEGREE_OF_INTEREST, doi));
+		doc.add(new FloatDocValuesField(CONCEPT_DEGREE_OF_INTEREST, doi));
 		return doc;
 	}
 	

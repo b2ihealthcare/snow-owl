@@ -44,7 +44,7 @@ import java.util.Set;
 import org.apache.lucene.document.BinaryDocValuesField;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.Field.Store;
-import org.apache.lucene.document.FloatField;
+import org.apache.lucene.document.FloatDocValuesField;
 import org.apache.lucene.document.IntField;
 import org.apache.lucene.document.LongField;
 import org.apache.lucene.document.NumericDocValuesField;
@@ -176,7 +176,8 @@ public abstract class SnomedConceptIndexMappingStrategy extends AbstractIndexMap
 		doc.add(new TextField(COMPONENT_LABEL, label, Store.YES));
 		doc.add(new BinaryDocValuesField(COMPONENT_LABEL, new BytesRef(label)));
 		IndexUtils.addSortKey(doc, label);
-		doc.add(new FloatField(CONCEPT_DEGREE_OF_INTEREST, degreeOfInterest, Store.YES));
+		doc.add(new StoredField(CONCEPT_DEGREE_OF_INTEREST, degreeOfInterest));
+		doc.add(new FloatDocValuesField(CONCEPT_DEGREE_OF_INTEREST, degreeOfInterest));
 		doc.add(new LongField(CONCEPT_MODULE_ID, Long.valueOf(moduleId), Store.YES));
 		doc.add(new LongField(COMPONENT_ICON_ID, Long.valueOf(iconId), Store.YES));
 		doc.add(new NumericDocValuesField(COMPONENT_STORAGE_KEY, storageKey));
