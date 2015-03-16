@@ -88,7 +88,7 @@ import com.b2international.snowowl.snomed.Relationship;
 import com.b2international.snowowl.snomed.SnomedFactory;
 import com.b2international.snowowl.snomed.SnomedPackage;
 import com.b2international.snowowl.snomed.datastore.NormalFormWrapper.AttributeConceptGroupWrapper;
-import com.b2international.snowowl.snomed.datastore.id.SnomedIdentifiers;
+import com.b2international.snowowl.snomed.datastore.id.ISnomedIdentifierService;
 import com.b2international.snowowl.snomed.datastore.index.SnomedClientIndexService;
 import com.b2international.snowowl.snomed.datastore.index.SnomedDescriptionIndexEntry;
 import com.b2international.snowowl.snomed.datastore.index.SnomedDescriptionIndexQueryAdapter;
@@ -122,7 +122,8 @@ import com.google.common.collect.Sets;
  * 
  */
 public class SnomedEditingContext extends BaseSnomedEditingContext {
-	
+
+	private ISnomedIdentifierService identifiers = ApplicationContext.getInstance().getServiceChecked(ISnomedIdentifierService.class);
 	protected final SnomedRefSetEditingContext refSetEditingContext;
 	protected Concept moduleConcept;
 	private String nameSpace;
@@ -626,7 +627,7 @@ public class SnomedEditingContext extends BaseSnomedEditingContext {
 		add(concept);
 		
 		// set concept properties
-		concept.setId(SnomedIdentifiers.generateComponentId(namespace, ComponentNature.CONCEPT));
+		concept.setId(identifiers.generateId(ComponentNature.CONCEPT, namespace));
 		concept.setActive(true);
 		concept.setDefinitionStatus(findConceptById(PRIMITIVE));
 		concept.setModule(moduleConcept);
@@ -867,23 +868,7 @@ public class SnomedEditingContext extends BaseSnomedEditingContext {
 	 * @return a valid relationship populated with default values and the specified properties
 	 */
 	public Relationship buildDefaultRelationship(Concept source, Concept type, Concept destination, Concept characteristicType) {
-		// default is stated
-		if (characteristicType == null) {
-			characteristicType = findConceptById(STATED_RELATIONSHIP);
-		}
-		
-		
-		Relationship relationship = SnomedFactory.eINSTANCE.createRelationship();
-		relationship.setId(generateComponentId(relationship));
-		relationship.setType(type);
-		relationship.setActive(true);
-		relationship.setCharacteristicType(characteristicType);
-		relationship.setSource(source);
-		relationship.setDestination(destination);
-		relationship.setGroup(0);
-		relationship.setModifier(findConceptById(EXISTENTIAL_RESTRICTION_MODIFIER));
-		relationship.setModule(getDefaultModuleConcept());
-		return relationship;
+		return buildDefaultRelationship(source, type, destination, characteristicType, getDefaultModuleConcept(), null);
 	}
 	
 	public Relationship buildDefaultRelationship(final Concept source, final Concept type, final Concept destination, Concept characteristicType, final Concept module, final String namespace) {
@@ -892,9 +877,7 @@ public class SnomedEditingContext extends BaseSnomedEditingContext {
 			characteristicType = findConceptById(STATED_RELATIONSHIP);
 		}
 		
-		
-		Relationship relationship = SnomedFactory.eINSTANCE.createRelationship();
-		relationship.setId(SnomedIdentifiers.generateComponentId(namespace, ComponentNature.RELATIONSHIP));
+		final Relationship relationship = buildEmptyRelationship(namespace);
 		relationship.setType(type);
 		relationship.setActive(true);
 		relationship.setCharacteristicType(characteristicType);
@@ -913,11 +896,7 @@ public class SnomedEditingContext extends BaseSnomedEditingContext {
 	 * @return a relationship instance that only has a generated component identifier
 	 */
 	public Relationship buildEmptyRelationship() {
-
-		Relationship relationship = SnomedFactory.eINSTANCE.createRelationship();
-		relationship.setId(generateComponentId(relationship));
-
-		return relationship;
+		return buildEmptyRelationship(null);
 	}
 	
 	/**
@@ -928,10 +907,8 @@ public class SnomedEditingContext extends BaseSnomedEditingContext {
 	 * @return a relationship instance that only has a generated component identifier
 	 */
 	public Relationship buildEmptyRelationship(final String namespace) {
-
-		Relationship relationship = SnomedFactory.eINSTANCE.createRelationship();
-		relationship.setId(SnomedIdentifiers.generateComponentId(namespace, ComponentNature.RELATIONSHIP));
-
+		final Relationship relationship = SnomedFactory.eINSTANCE.createRelationship();
+		relationship.setId(identifiers.generateId(ComponentNature.RELATIONSHIP, namespace));
 		return relationship;
 	}
 	
@@ -942,15 +919,7 @@ public class SnomedEditingContext extends BaseSnomedEditingContext {
 	 * @return a valid description populated with default values, the specified term and description type
 	 */
 	public Description buildDefaultDescription(String term, Concept type) {
-		Description description = SnomedFactory.eINSTANCE.createDescription();
-		description.setId(generateComponentId(description));
-		description.setActive(true);
-		description.setCaseSignificance(findConceptById(ENTIRE_TERM_CASE_INSENSITIVE));
-		description.setType(type);
-		description.setTerm(term);
-		description.setLanguageCode(getDefaultLanguageCode());
-		description.setModule(getDefaultModuleConcept());
-		return description;
+		return buildDefaultDescription(term, null, type, getDefaultModuleConcept());
 	}
 	
 	/**
@@ -966,7 +935,7 @@ public class SnomedEditingContext extends BaseSnomedEditingContext {
 	/*builds a description with the specified description type, module concept, language code and namespace.*/
 	private Description buildDefaultDescription(String term, final String nameSpace, final Concept type, final Concept moduleConcept, final String languageCode) {
 		Description description = SnomedFactory.eINSTANCE.createDescription();
-		description.setId(SnomedIdentifiers.generateComponentId(nameSpace, ComponentNature.DESCRIPTION));
+		description.setId(identifiers.generateId(ComponentNature.DESCRIPTION, nameSpace));
 		description.setActive(true);
 		description.setCaseSignificance(findConceptById(ENTIRE_TERM_CASE_INSENSITIVE));
 		description.setType(type);
@@ -1554,15 +1523,16 @@ public class SnomedEditingContext extends BaseSnomedEditingContext {
 	 * @param validator the component uniqueness validator.
 	 * 
 	 * @return SNOMED CT component Id
+	 * @deprecated - use new {@link ISnomedIdentifierService}
 	 */
 	public String generateComponentId(final ComponentNature componentNature, final String namespace, final ComponentIdUniquenessValidator validator) {
 		checkNotNull(componentNature, "componentNature");
 		checkNotNull(validator, "validator");
 
-		String componentId = SnomedIdentifiers.generateComponentId(namespace, componentNature);
+		String componentId = identifiers.generateId(componentNature, namespace);
 		//generate it until it is unique
 		while (!validator.isUniqueInDatabase(componentId)) {
-			componentId = SnomedIdentifiers.generateComponentId(namespace, componentNature);
+			componentId = identifiers.generateId(componentNature, namespace);
 		}
 		return componentId;
 	}
@@ -1574,6 +1544,7 @@ public class SnomedEditingContext extends BaseSnomedEditingContext {
 	 * 
 	 * @param componentNature type of the component (Concept|Description|Relationship)
 	 * @return SNOMED CT component Id
+	 * @deprecated - use new {@link ISnomedIdentifierService}
 	 */
 	public String generateComponentId(final ComponentNature componentNature) {
 		return generateComponentId(componentNature, getNamespace(), new ComponentIdUniquenessValidator(this));
@@ -1673,6 +1644,7 @@ public class SnomedEditingContext extends BaseSnomedEditingContext {
 	 * @see #generateComponentId(ComponentNature, String)
 	 * @throws NullPointerException
 	 *             - if the given component was <code>null</code>.
+	 * @deprecated - use new {@link ISnomedIdentifierService}
 	 */
 	public String generateComponentId(Component component) {
 		checkNotNull(component, "component");

@@ -18,11 +18,12 @@ package com.b2international.snowowl.snomed.api.impl.domain;
 import java.text.MessageFormat;
 
 import com.b2international.snowowl.api.domain.ComponentCategory;
+import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.SnowOwlApplication;
 import com.b2international.snowowl.snomed.api.domain.IdGenerationStrategy;
 import com.b2international.snowowl.snomed.datastore.ComponentNature;
 import com.b2international.snowowl.snomed.datastore.config.SnomedCoreConfiguration;
-import com.b2international.snowowl.snomed.datastore.id.SnomedIdentifiers;
+import com.b2international.snowowl.snomed.datastore.id.ISnomedIdentifierService;
 
 public class NamespaceIdGenerationStrategy implements IdGenerationStrategy {
 
@@ -53,7 +54,7 @@ public class NamespaceIdGenerationStrategy implements IdGenerationStrategy {
 
 	@Override
 	public String getId() {
-		return SnomedIdentifiers.generateComponentId(getNamespaceIdOrDefault(), toComponentNature(category));
+		return ApplicationContext.getServiceForClass(ISnomedIdentifierService.class).generateId(toComponentNature(category), getNamespaceIdOrDefault());
 	}
 
 	private String getNamespaceIdOrDefault() {
