@@ -429,15 +429,6 @@ public class InitialReasonerTaxonomyBuilder extends AbstractReasonerTaxonomyBuil
 	 * Creates a taxonomy builder instance.
 	 *
 	 * @param branchPath the branch path where the instance should be constructed.
-	 */
-	public InitialReasonerTaxonomyBuilder(final IBranchPath branchPath) {
-		this(branchPath, false);
-	}
-
-	/**
-	 * Creates a taxonomy builder instance.
-	 *
-	 * @param branchPath the branch path where the instance should be constructed.
 	 * @param includeAdditionalStatementConcreteDomains when {@code true}, retrieves all concrete domain members where the referenced component is a relationship;
 	 * when set to {@code false}, only members with non-additional characteristic type will be collected.
 	 */
