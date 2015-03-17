@@ -58,5 +58,20 @@ public class SnomedIdentifierReservationServiceImplTest {
 		this.reservationService.create(RANGE_RESERVATION, range);
 		assertThat(this.reservationService.getReservations()).containsOnly(single, range);
 	}
+	
+	@Test
+	public void whenCreatingSingleIDReservation_ThenReturnIsReservedTrueForThatID() throws Exception {
+		final Reservation single = Reservations.single(Concepts.ROOT_CONCEPT);
+		this.reservationService.create(SINGLE_RESERVATION, single);
+		assertThat(this.reservationService.isReserved(Concepts.ROOT_CONCEPT)).isTrue();
+	}
+	
+	@Test
+	public void whenDeletingReservation_ThenReturnNullAndAllowIDToBeUsed() throws Exception {
+		whenCreatingSingleIDReservation_ThenReturnIsReservedTrueForThatID();
+		this.reservationService.delete(SINGLE_RESERVATION);
+		assertThat(this.reservationService.getReservation(SINGLE_RESERVATION)).isNull();
+		assertThat(this.reservationService.isReserved(Concepts.ROOT_CONCEPT)).isFalse();
+	}
 
 }

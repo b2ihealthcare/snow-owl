@@ -21,6 +21,8 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Map;
 
+import com.b2international.snowowl.snomed.datastore.id.SnomedIdentifier;
+import com.b2international.snowowl.snomed.datastore.id.SnomedIdentifiers;
 import com.b2international.snowowl.snomed.datastore.id.reservations.ISnomedIdentiferReservationService;
 import com.b2international.snowowl.snomed.datastore.id.reservations.Reservation;
 import com.google.common.base.Strings;
@@ -59,6 +61,19 @@ public class SnomedIdentifierReservationServiceImpl implements ISnomedIdentiferR
 
 	private void checkName(String reservationName) {
 		checkArgument(!Strings.isNullOrEmpty(reservationName), "Name must be defined");
+	}
+
+	@Override
+	public boolean isReserved(String componentId) {
+		final SnomedIdentifier identifier = SnomedIdentifiers.of(componentId);
+		synchronized (reservations) {
+			for (Reservation reservation : getReservations()) {
+				if (reservation.conflicts(identifier)) {
+					return true;
+				}
+			}
+		}
+		return false;
 	}
 
 }

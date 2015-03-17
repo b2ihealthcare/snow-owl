@@ -55,4 +55,12 @@ public interface ISnomedIdentiferReservationService {
 	 */
 	void delete(String reservationName);
 
+	/**
+	 * Returns whether the given componentId is reserved for later use or not.
+	 * 
+	 * @param componentId - the ID to check
+	 * @return <code>true</code> if reserved, <code>false</code> otherwise
+	 */
+	boolean isReserved(String componentId);
+
 }
