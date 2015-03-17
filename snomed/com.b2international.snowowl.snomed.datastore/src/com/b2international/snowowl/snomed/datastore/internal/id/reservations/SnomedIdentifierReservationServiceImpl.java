@@ -21,6 +21,10 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Map;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.b2international.snowowl.core.api.SnowowlRuntimeException;
 import com.b2international.snowowl.snomed.datastore.id.SnomedIdentifier;
 import com.b2international.snowowl.snomed.datastore.id.SnomedIdentifiers;
 import com.b2international.snowowl.snomed.datastore.id.reservations.ISnomedIdentiferReservationService;
@@ -34,13 +38,18 @@ import com.google.common.collect.Maps;
  */
 public class SnomedIdentifierReservationServiceImpl implements ISnomedIdentiferReservationService {
 
+	private static final Logger LOG = LoggerFactory.getLogger(ISnomedIdentiferReservationService.class);
 	private final Map<String, Reservation> reservations = Collections.synchronizedMap(Maps.<String, Reservation>newHashMap());
 	
 	@Override
 	public void create(String reservationName, Reservation reservation) {
 		checkName(reservationName);
 		checkArgument(reservation != null, "Reservation must be defined");
+		if (reservations.containsKey(reservationName)) {
+			throw new SnowowlRuntimeException("Reservation already defined: " + reservationName);
+		}
 		reservations.put(reservationName, reservation);
+		LOG.info("Added SNOMED CT Identifier Reservation: {} -> {}", reservationName, reservation);
 	}
 
 	@Override
@@ -50,7 +59,10 @@ public class SnomedIdentifierReservationServiceImpl implements ISnomedIdentiferR
 
 	@Override
 	public void delete(String reservationName) {
-		reservations.remove(reservationName);
+		final Reservation removed = reservations.remove(reservationName);
+		if (removed != null) {
+			LOG.info("Removed SNOMED CT Identifier Reservation: {} -> {}", reservationName, removed);
+		}
 	}
 
 	@Override
