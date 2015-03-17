@@ -21,7 +21,9 @@ import com.b2international.snowowl.core.config.SnowOwlConfiguration;
 import com.b2international.snowowl.core.setup.BootstrapFragment;
 import com.b2international.snowowl.core.setup.Environment;
 import com.b2international.snowowl.snomed.datastore.id.ISnomedIdentifierService;
+import com.b2international.snowowl.snomed.datastore.id.reservations.ISnomedIdentiferReservationService;
 import com.b2international.snowowl.snomed.datastore.internal.id.SnomedIdentifierServiceImpl;
+import com.b2international.snowowl.snomed.datastore.internal.id.reservations.SnomedIdentifierReservationServiceImpl;
 
 /**
  * @since 4.0
@@ -30,7 +32,10 @@ public class SnomedDatastoreBootstrap implements BootstrapFragment {
 
 	@Override
 	public void init(SnowOwlConfiguration configuration, Environment env) throws Exception {
-		env.services().registerService(ISnomedIdentifierService.class, new SnomedIdentifierServiceImpl());
+		final ISnomedIdentiferReservationService reservationService = new SnomedIdentifierReservationServiceImpl();
+		final ISnomedIdentifierService idService = new SnomedIdentifierServiceImpl(reservationService);
+		env.services().registerService(ISnomedIdentiferReservationService.class, reservationService);
+		env.services().registerService(ISnomedIdentifierService.class, idService);
 	}
 
 	@Override
