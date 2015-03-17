@@ -132,7 +132,7 @@ public class PersistChangesRemoteJob extends AbstractRemoteJob {
 
 		try (final SnomedEditingContext editingContext = new SnomedEditingContext(branchPath)) {
 
-			final InitialReasonerTaxonomyBuilder reasonerTaxonomyBuilder = new InitialReasonerTaxonomyBuilder(branchPath);
+			final InitialReasonerTaxonomyBuilder reasonerTaxonomyBuilder = new InitialReasonerTaxonomyBuilder(branchPath, false);
 
 			final RelationshipNormalFormGenerator relationshipGenerator = new RelationshipNormalFormGenerator(taxonomy, reasonerTaxonomyBuilder);
 			relationshipGenerator.collectNormalFormChanges(subMonitor.newChild(1), new RelationshipPersister(editingContext, OntologyChange.Nature.ADD));

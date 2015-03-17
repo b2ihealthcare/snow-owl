@@ -291,7 +291,7 @@ public class SnomedReasonerServerService extends CollectingService<Reasoner, Cla
 	private GetResultResponseChanges doGetResult(final UUID classificationId, final ReasonerTaxonomy taxonomy) {
 		
 		final IBranchPath branchPath = taxonomy.getBranchPath();
-		final InitialReasonerTaxonomyBuilder reasonerTaxonomyBuilder = new InitialReasonerTaxonomyBuilder(branchPath);
+		final InitialReasonerTaxonomyBuilder reasonerTaxonomyBuilder = new InitialReasonerTaxonomyBuilder(branchPath, false);
 		final SnomedTerminologyBrowser terminologyBrowser = getTerminologyBrowser();
 		
 		final ImmutableList.Builder<RelationshipChangeEntry> relationshipBuilder = ImmutableList.builder();
