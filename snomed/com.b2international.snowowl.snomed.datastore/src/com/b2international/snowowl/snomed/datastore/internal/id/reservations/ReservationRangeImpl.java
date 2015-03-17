@@ -46,23 +46,19 @@ public class ReservationRangeImpl implements Reservation {
 		this.components = components;
 	}
 	
-	@Override
-	public long getItemIdMin() {
+	private long getItemIdMin() {
 		return this.itemIdRange.lowerEndpoint();
 	}
 
-	@Override
-	public long getItemIdMax() {
+	private long getItemIdMax() {
 		return this.itemIdRange.upperEndpoint();
 	}
 
-	@Override
-	public String getNamespace() {
+	private String getNamespace() {
 		return namespace;
 	}
 
-	@Override
-	public Collection<ComponentNature> getComponents() {
+	private Collection<ComponentNature> getComponents() {
 		return components;
 	}
 

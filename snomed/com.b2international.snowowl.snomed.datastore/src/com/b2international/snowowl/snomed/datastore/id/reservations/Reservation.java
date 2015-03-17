@@ -15,9 +15,6 @@
  */
 package com.b2international.snowowl.snomed.datastore.id.reservations;
 
-import java.util.Collection;
-
-import com.b2international.snowowl.snomed.datastore.ComponentNature;
 import com.b2international.snowowl.snomed.datastore.id.SnomedIdentifier;
 
 /**
@@ -27,35 +24,6 @@ import com.b2international.snowowl.snomed.datastore.id.SnomedIdentifier;
  * @since 4.0
  */
 public interface Reservation {
-
-	/**
-	 * Returns the minimum SNOMED CT Item Identifier number, which is reserved by this {@link Reservation}.
-	 * 
-	 * @return
-	 */
-	long getItemIdMin();
-
-	/**
-	 * Returns the maximum SNOMED CT Item Identifier number, which is reserved by this {@link Reservation}.
-	 * 
-	 * @return
-	 */
-	long getItemIdMax();
-
-	/**
-	 * Returns the namespace ID of this {@link Reservation}. May return <code>null</code>, which means that this {@link Reservation} affects
-	 * international SNOMED CT Identifiers.
-	 * 
-	 * @return
-	 */
-	String getNamespace();
-
-	/**
-	 * Returns the affected component types.
-	 * 
-	 * @return
-	 */
-	Collection<ComponentNature> getComponents();
 
 	/**
 	 * Returns <code>true</code> if the given identifier is conflicting with this {@link Reservation}'s range.
