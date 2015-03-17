@@ -21,6 +21,7 @@ import com.b2international.commons.VerhoeffCheck;
 import com.b2international.snowowl.snomed.datastore.ComponentNature;
 import com.b2international.snowowl.snomed.datastore.id.ISnomedIdentifierService;
 import com.b2international.snowowl.snomed.datastore.id.gen.ItemIdGenerationStrategy;
+import com.b2international.snowowl.snomed.datastore.id.reservations.ISnomedIdentiferReservationService;
 import com.google.common.base.Strings;
 
 /**
@@ -34,12 +35,14 @@ import com.google.common.base.Strings;
 public class SnomedIdentifierServiceImpl implements ISnomedIdentifierService {
 
 	private ItemIdGenerationStrategy itemIdGenerationStrategy;
+	private ISnomedIdentiferReservationService reservationService;
 
-	public SnomedIdentifierServiceImpl() {
-		this(ItemIdGenerationStrategy.RANDOM);
+	public SnomedIdentifierServiceImpl(final ISnomedIdentiferReservationService reservationService) {
+		this(reservationService, ItemIdGenerationStrategy.RANDOM);
 	}
 	
-	public SnomedIdentifierServiceImpl(ItemIdGenerationStrategy itemIdGenerationStrategy) {
+	public SnomedIdentifierServiceImpl(final ISnomedIdentiferReservationService reservationService, ItemIdGenerationStrategy itemIdGenerationStrategy) {
+		this.reservationService = checkNotNull(reservationService, "reservationService");
 		this.itemIdGenerationStrategy = checkNotNull(itemIdGenerationStrategy, "itemIdGenerationStrategy");
 	}
 	
@@ -51,6 +54,14 @@ public class SnomedIdentifierServiceImpl implements ISnomedIdentifierService {
 	@Override
 	public String generateId(ComponentNature component, String namespace) {
 		checkNotNull(component, "componentNature");
+		String newId = generateComponentId(component, namespace);
+		while (reservationService.isReserved(newId)) {
+			newId = generateComponentId(component, namespace);
+		}
+		return newId;
+	}
+
+	private String generateComponentId(ComponentNature component, String namespace) {
 		final StringBuilder buf = new StringBuilder();
 		// generate the SCT Item ID
 		buf.append(itemIdGenerationStrategy.generateItemId());
