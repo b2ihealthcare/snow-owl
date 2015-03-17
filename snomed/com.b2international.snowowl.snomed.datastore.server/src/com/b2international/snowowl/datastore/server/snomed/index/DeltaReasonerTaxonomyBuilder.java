@@ -262,7 +262,7 @@ public final class DeltaReasonerTaxonomyBuilder extends AbstractReasonerTaxonomy
 
 	private void addRelationshipConcreteDomainMember(final SnomedConcreteDataTypeRefSetMember member) {
 
-		// Ignore additional relationship concrete domains, unless the flag is set
+		// Ignore additional relationship concrete domain members, unless the flag is set
 		if (!includeAdditionalStatementConcreteDomains && Concepts.ADDITIONAL_RELATIONSHIP.equals(member.getCharacteristicTypeId())) {
 			return;
 		}
@@ -273,6 +273,12 @@ public final class DeltaReasonerTaxonomyBuilder extends AbstractReasonerTaxonomy
 	}
 
 	private void addConceptConcreteDomainMember(final SnomedConcreteDataTypeRefSetMember member) {
+		
+		// Additional concept concrete domain members are always ignored
+		if (Concepts.ADDITIONAL_RELATIONSHIP.equals(member.getCharacteristicTypeId())) {
+			return;
+		}
+
 		final long conceptId = Long.valueOf(member.getReferencedComponentId());
 		final ConcreteDomainFragment fragment = createFragment(member);
 		addToMultimap(conceptIdToConcreteDomain, conceptId, fragment);
