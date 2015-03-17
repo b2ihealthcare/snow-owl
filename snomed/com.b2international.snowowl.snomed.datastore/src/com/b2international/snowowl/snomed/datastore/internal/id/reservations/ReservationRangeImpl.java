@@ -71,5 +71,10 @@ public class ReservationRangeImpl implements Reservation {
 		checkNotNull(identifier, "identifier");
 		return itemIdRange.contains(identifier.getItemId()) && Objects.equal(identifier.getNamespace(), getNamespace()) && getComponents().contains(identifier.getComponentNature());
 	}
+	
+	@Override
+	public String toString() {
+		return String.format("Reservation[%s-%s, namespace=%s, components=%s]", getItemIdMin(), getItemIdMax(), getNamespace(), getComponents());
+	}
 
 }
