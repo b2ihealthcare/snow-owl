@@ -29,7 +29,6 @@ import org.apache.lucene.search.SortField.Type;
 import org.apache.lucene.util.BytesRef;
 
 import com.b2international.commons.ClassUtils;
-import com.b2international.snowowl.api.domain.ComponentCategory;
 import com.b2international.snowowl.api.domain.IComponentList;
 import com.b2international.snowowl.api.domain.IComponentRef;
 import com.b2international.snowowl.api.domain.IStorageRef;
@@ -39,6 +38,7 @@ import com.b2international.snowowl.api.impl.domain.InternalStorageRef;
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.api.index.CommonIndexConstants;
+import com.b2international.snowowl.core.terminology.ComponentCategory;
 import com.b2international.snowowl.datastore.index.IndexQueryBuilder;
 import com.b2international.snowowl.datastore.index.IndexUtils;
 import com.b2international.snowowl.snomed.api.ISnomedConceptService;

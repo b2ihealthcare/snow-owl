@@ -16,10 +16,10 @@
 package com.b2international.snowowl.snomed.api.impl;
 
 import com.b2international.commons.ClassUtils;
-import com.b2international.snowowl.api.domain.ComponentCategory;
 import com.b2international.snowowl.api.domain.IComponentRef;
 import com.b2international.snowowl.api.impl.domain.InternalComponentRef;
 import com.b2international.snowowl.core.api.IBranchPath;
+import com.b2international.snowowl.core.terminology.ComponentCategory;
 import com.b2international.snowowl.snomed.Relationship;
 import com.b2international.snowowl.snomed.SnomedFactory;
 import com.b2international.snowowl.snomed.api.ISnomedRelationshipService;

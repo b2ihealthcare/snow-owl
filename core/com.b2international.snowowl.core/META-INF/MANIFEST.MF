@@ -32,6 +32,7 @@ Export-Package: com.b2international.snowowl.core,
  com.b2international.snowowl.core.propertytester,
  com.b2international.snowowl.core.quicksearch,
  com.b2international.snowowl.core.setup,
+ com.b2international.snowowl.core.terminology,
  com.b2international.snowowl.core.uri,
  com.b2international.snowowl.core.users,
  com.b2international.snowowl.core.validation

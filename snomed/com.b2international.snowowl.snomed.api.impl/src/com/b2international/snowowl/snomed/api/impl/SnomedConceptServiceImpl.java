@@ -35,7 +35,6 @@ import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.emf.common.util.EList;
 
 import com.b2international.commons.ClassUtils;
-import com.b2international.snowowl.api.domain.ComponentCategory;
 import com.b2international.snowowl.api.domain.IComponentList;
 import com.b2international.snowowl.api.domain.IComponentRef;
 import com.b2international.snowowl.api.exception.BadRequestException;
@@ -47,6 +46,7 @@ import com.b2international.snowowl.api.impl.domain.InternalStorageRef;
 import com.b2international.snowowl.api.impl.domain.StorageRef;
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.api.IBranchPath;
+import com.b2international.snowowl.core.terminology.ComponentCategory;
 import com.b2international.snowowl.datastore.BranchPathUtils;
 import com.b2international.snowowl.snomed.Concept;
 import com.b2international.snowowl.snomed.Description;

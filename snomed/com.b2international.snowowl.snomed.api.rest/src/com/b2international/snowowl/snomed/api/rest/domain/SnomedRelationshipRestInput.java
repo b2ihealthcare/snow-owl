@@ -15,7 +15,7 @@
  */
 package com.b2international.snowowl.snomed.api.rest.domain;
 
-import com.b2international.snowowl.api.domain.ComponentCategory;
+import com.b2international.snowowl.core.terminology.ComponentCategory;
 import com.b2international.snowowl.snomed.api.domain.CharacteristicType;
 import com.b2international.snowowl.snomed.api.domain.RelationshipModifier;
 import com.b2international.snowowl.snomed.api.impl.domain.SnomedRelationshipInput;

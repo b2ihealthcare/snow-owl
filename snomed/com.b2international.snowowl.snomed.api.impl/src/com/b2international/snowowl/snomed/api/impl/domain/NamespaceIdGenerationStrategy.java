@@ -17,9 +17,9 @@ package com.b2international.snowowl.snomed.api.impl.domain;
 
 import java.text.MessageFormat;
 
-import com.b2international.snowowl.api.domain.ComponentCategory;
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.SnowOwlApplication;
+import com.b2international.snowowl.core.terminology.ComponentCategory;
 import com.b2international.snowowl.snomed.api.domain.IdGenerationStrategy;
 import com.b2international.snowowl.snomed.datastore.ComponentNature;
 import com.b2international.snowowl.snomed.datastore.config.SnomedCoreConfiguration;
