@@ -349,26 +349,45 @@ public class ImportIndexServerService extends FSIndexServerService<IIndexEntry> 
                 pendingDescriptionDocuments.put(longDescriptionId, pendingDescriptionDoc);
             }
 
-            final String fieldToInspect = preferred ? PREFERRED_MEMBER_ID : ACCEPTABLE_MEMBER_ID;
+            final String fieldToAdd = preferred ? PREFERRED_MEMBER_ID : ACCEPTABLE_MEMBER_ID;
             boolean found = false;
 
             for (final Iterator<IndexableField> itr = pendingDescriptionDoc.getFields().iterator(); itr.hasNext(); /* emtpy */) {
 
                 final IndexableField field = itr.next();
-                if (field.name().equals(fieldToInspect) && field.stringValue().equals(memberId)) {
+                final String fieldName = field.name();
+                final String fieldValue = field.stringValue();
+                
+                // Skip fields not related to acceptability
+				if (!fieldName.equals(PREFERRED_MEMBER_ID) && !fieldName.equals(ACCEPTABLE_MEMBER_ID)) {
+					continue;
+				}
+				
+				// Skip fields not containing information about the specified member
+				if (!fieldValue.equals(memberId)) {
+					continue;
+				}
 
-                    if (!active) {
-                        itr.remove();
-                        return;
-                    } else {
-                        found = true;
-                        break;
-                    }
+				// If the member is inactive, previously registered information should be removed
+				if (!active) {
+					itr.remove();
+					continue;
+				}
+                
+				/* 
+				 * If the member is active, and it is recorded with the correct acceptability, set the flag, otherwise
+				 * remove it from the opposite acceptability
+				 */
+				if (fieldName.equals(fieldToAdd)) {
+                    found = true;
+                } else {
+                	itr.remove();
                 }
             }
 
+            // If the member was not found, but should be added, add it
             if (!found && active) {
-                pendingDescriptionDoc.add(new StringField(fieldToInspect, memberId, Store.YES));
+                pendingDescriptionDoc.add(new StringField(fieldToAdd, memberId, Store.YES));
             }
 
         } catch (final IOException e) {
