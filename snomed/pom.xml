@@ -28,6 +28,7 @@
 		<!-- SNOMED CT Core modules -->
 		<module>com.b2international.snowowl.snomed.common</module>
 		<module>com.b2international.snowowl.snomed.datastore</module>
+		<module>com.b2international.snowowl.snomed.datastore.tests</module>
 		<module>com.b2international.snowowl.snomed.datastore.server</module>
 		<module>com.b2international.snowowl.snomed.refset.core</module>
 		
