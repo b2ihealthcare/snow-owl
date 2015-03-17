@@ -21,7 +21,7 @@ import java.util.Collections;
 import com.b2international.snowowl.snomed.datastore.ComponentNature;
 import com.b2international.snowowl.snomed.datastore.id.SnomedIdentifier;
 import com.b2international.snowowl.snomed.datastore.id.SnomedIdentifiers;
-import com.b2international.snowowl.snomed.datastore.internal.id.ReservationRangeImpl;
+import com.b2international.snowowl.snomed.datastore.internal.id.reservations.ReservationRangeImpl;
 
 /**
  * @since 4.0

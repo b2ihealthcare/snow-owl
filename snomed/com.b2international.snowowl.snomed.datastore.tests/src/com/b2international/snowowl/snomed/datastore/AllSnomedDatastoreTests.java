@@ -19,8 +19,8 @@ import org.junit.runner.RunWith;
 import org.junit.runners.Suite;
 import org.junit.runners.Suite.SuiteClasses;
 
-import com.b2international.snowowl.snomed.datastore.internal.id.ReservationImplTest;
 import com.b2international.snowowl.snomed.datastore.internal.id.SnomedIdentifierTest;
+import com.b2international.snowowl.snomed.datastore.internal.id.reservations.ReservationImplTest;
 
 /**
  * @since 4.0
