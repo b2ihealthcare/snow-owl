@@ -15,13 +15,19 @@
  */
 package com.b2international.snowowl.snomed.datastore.id;
 
+import static com.google.common.base.Preconditions.checkArgument;
+
 import com.b2international.snowowl.snomed.datastore.ComponentNature;
 import com.b2international.snowowl.snomed.datastore.id.gen.SingleItemIdGenerationStrategy;
 import com.b2international.snowowl.snomed.datastore.internal.id.SnomedIdentifierImpl;
 import com.b2international.snowowl.snomed.datastore.internal.id.SnomedIdentifierServiceImpl;
+import com.b2international.snowowl.snomed.datastore.internal.id.reservations.SnomedIdentifierReservationServiceImpl;
+import com.google.common.base.Strings;
 
 /**
  * Shortcut methods to create SNOMED CT Identifiers.
+ * <p><i>TODO: add support to track/take into account global reservations, currently it uses internal ID and Reservation services</i></p>
+ * <p>Mostly used from test cases</p> 
  * 
  * @since 4.0
  */
@@ -59,7 +65,7 @@ public class SnomedIdentifiers {
 	}
 
 	private static ISnomedIdentifierService getSnomedIdentifierService() {
-		return new SnomedIdentifierServiceImpl();
+		return new SnomedIdentifierServiceImpl(new SnomedIdentifierReservationServiceImpl());
 	}
 
 	/**
@@ -69,6 +75,8 @@ public class SnomedIdentifiers {
 	 * @return
 	 */
 	public static SnomedIdentifier of(String componentId) {
+		checkArgument(!Strings.isNullOrEmpty(componentId), "ComponentId must be defined");
+		checkArgument(componentId.length() >= 6 && componentId.length() <= 18, "ComponentID's length should be between 6-18 character length");
 		final int checkDigit = Character.getNumericValue(componentId.charAt(componentId.length() - 1));
 		final int componentIdentifier = Character.getNumericValue(componentId.charAt(componentId.length() - 2));
 		final int partitionIdentifier = Character.getNumericValue(componentId.charAt(componentId.length() - 3));
@@ -87,7 +95,7 @@ public class SnomedIdentifiers {
 	 *            - the component type to use
 	 * @return
 	 */
-	public static String generateFrom(int itemId, ComponentNature component) {
+	public static SnomedIdentifier generateFrom(int itemId, ComponentNature component) {
 		return generateFrom(itemId, null, component);
 	}
 
@@ -102,8 +110,8 @@ public class SnomedIdentifiers {
 	 *            - the component type to use
 	 * @return
 	 */
-	public static String generateFrom(int itemId, String namespace, ComponentNature component) {
-		return new SnomedIdentifierServiceImpl(new SingleItemIdGenerationStrategy(String.valueOf(itemId))).generateId(component, namespace);
+	public static SnomedIdentifier generateFrom(int itemId, String namespace, ComponentNature component) {
+		return of(new SnomedIdentifierServiceImpl(new SnomedIdentifierReservationServiceImpl(), new SingleItemIdGenerationStrategy(String.valueOf(itemId))).generateId(component, namespace));
 	}
 
 }

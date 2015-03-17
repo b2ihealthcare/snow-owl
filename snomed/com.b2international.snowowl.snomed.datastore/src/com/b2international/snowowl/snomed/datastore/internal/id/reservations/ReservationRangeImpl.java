@@ -16,12 +16,12 @@
 package com.b2international.snowowl.snomed.datastore.internal.id.reservations;
 
 import static com.google.common.base.Preconditions.checkArgument;
+import static com.google.common.base.Preconditions.checkNotNull;
 
 import java.util.Collection;
 
 import com.b2international.snowowl.snomed.datastore.ComponentNature;
 import com.b2international.snowowl.snomed.datastore.id.SnomedIdentifier;
-import com.b2international.snowowl.snomed.datastore.id.SnomedIdentifiers;
 import com.b2international.snowowl.snomed.datastore.id.reservations.Reservation;
 import com.google.common.base.Objects;
 import com.google.common.base.Strings;
@@ -67,9 +67,9 @@ public class ReservationRangeImpl implements Reservation {
 	}
 
 	@Override
-	public boolean conflicts(String componentId) {
-		final SnomedIdentifier id = SnomedIdentifiers.of(componentId);
-		return itemIdRange.contains(id.getItemId()) && Objects.equal(id.getNamespace(), getNamespace()) && getComponents().contains(id.getComponentNature());
+	public boolean conflicts(SnomedIdentifier identifier) {
+		checkNotNull(identifier, "identifier");
+		return itemIdRange.contains(identifier.getItemId()) && Objects.equal(identifier.getNamespace(), getNamespace()) && getComponents().contains(identifier.getComponentNature());
 	}
 
 }

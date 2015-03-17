@@ -18,6 +18,7 @@ package com.b2international.snowowl.snomed.datastore.id.reservations;
 import java.util.Collection;
 
 import com.b2international.snowowl.snomed.datastore.ComponentNature;
+import com.b2international.snowowl.snomed.datastore.id.SnomedIdentifier;
 
 /**
  * Represents a SNOMEDT CT Identifier reservation. A reservation is a range of SNOMED CT Identifiers, which are reserved for later use, therefore they
@@ -57,11 +58,11 @@ public interface Reservation {
 	Collection<ComponentNature> getComponents();
 
 	/**
-	 * Returns <code>true</code> if the given componentId is conflicting with this {@link Reservation}'s range.
+	 * Returns <code>true</code> if the given identifier is conflicting with this {@link Reservation}'s range.
 	 * 
-	 * @param componentId
+	 * @param identifier
 	 * @return
 	 */
-	boolean conflicts(String componentId);
+	boolean conflicts(SnomedIdentifier identifier);
 
 }

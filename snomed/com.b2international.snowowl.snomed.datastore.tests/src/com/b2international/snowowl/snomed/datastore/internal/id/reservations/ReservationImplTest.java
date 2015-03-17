@@ -37,9 +37,9 @@ public class ReservationImplTest {
 	@Test
 	public void whenReservingSingleID_ThenItShouldConflictWithThatIDOnly() throws Exception {
 		final Reservation single = Reservations.single(Concepts.ROOT_CONCEPT);
-		assertTrue(single.conflicts(Concepts.ROOT_CONCEPT));
-		assertFalse(single.conflicts(Concepts.FULLY_DEFINED));
-		assertFalse(single.conflicts(Concepts.ADDITIONAL_RELATIONSHIP));
+		assertTrue(single.conflicts(SnomedIdentifiers.of(Concepts.ROOT_CONCEPT)));
+		assertFalse(single.conflicts(SnomedIdentifiers.of(Concepts.FULLY_DEFINED)));
+		assertFalse(single.conflicts(SnomedIdentifiers.of(Concepts.ADDITIONAL_RELATIONSHIP)));
 	}
 	
 	@Test
@@ -47,7 +47,7 @@ public class ReservationImplTest {
 		final Set<ComponentNature> components = Collections.singleton(ComponentNature.CONCEPT);
 		final Reservation range = Reservations.range(200, 300, null, components);
 		for (int i = 200; i <= 300; i++) {
-			assertTrue(range.conflicts(SnomedIdentifiers.generateFrom(i, null, ComponentNature.CONCEPT)));
+			assertTrue(range.conflicts(SnomedIdentifiers.generateFrom(i, ComponentNature.CONCEPT)));
 		}
 	}
 	
