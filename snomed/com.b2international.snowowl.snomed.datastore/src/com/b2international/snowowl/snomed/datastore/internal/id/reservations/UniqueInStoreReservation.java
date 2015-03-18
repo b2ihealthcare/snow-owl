@@ -38,7 +38,7 @@ public class UniqueInStoreReservation implements Reservation {
 	
 	@Override
 	public boolean conflicts(SnomedIdentifier identifier) {
-		return browser.get().isUniqueId(BranchPathUtils.createMainPath(), identifier.toString());
+		return !browser.get().isUniqueId(BranchPathUtils.createMainPath(), identifier.toString());
 	}
 
 }

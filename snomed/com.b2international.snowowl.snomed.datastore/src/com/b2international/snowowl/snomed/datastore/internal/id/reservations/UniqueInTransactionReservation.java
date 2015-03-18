@@ -35,7 +35,7 @@ public class UniqueInTransactionReservation implements Reservation {
 	private SnomedEditingContext context;
 
 	public UniqueInTransactionReservation(SnomedEditingContext context) {
-		checkArgument(context != null && context.isClosed(), "Given context (%s) was null or its transaction was already closed");
+		checkArgument(context != null && !context.isClosed(), "Given context (%s) was null or its transaction was already closed", context);
 		this.context = context;
 	}
 
