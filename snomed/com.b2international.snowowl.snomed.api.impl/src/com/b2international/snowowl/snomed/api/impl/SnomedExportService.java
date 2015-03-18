@@ -16,8 +16,6 @@
 package com.b2international.snowowl.snomed.api.impl;
 
 import static com.b2international.commons.StringUtils.isEmpty;
-import static com.b2international.snowowl.datastore.BranchPathUtils.createPath;
-import static com.b2international.snowowl.datastore.BranchPathUtils.createVersionPath;
 import static com.b2international.snowowl.snomed.common.ContentSubType.DELTA;
 import static com.b2international.snowowl.snomed.common.ContentSubType.FULL;
 import static com.b2international.snowowl.snomed.common.ContentSubType.SNAPSHOT;
@@ -31,6 +29,7 @@ import java.util.Map;
 
 import org.eclipse.core.runtime.NullProgressMonitor;
 
+import com.b2international.snowowl.api.impl.domain.StorageRef;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.snomed.api.ISnomedExportService;
 import com.b2international.snowowl.snomed.api.domain.ISnomedExportConfiguration;
@@ -82,7 +81,14 @@ public class SnomedExportService implements ISnomedExportService {
 		
 		checkNotNull(configuration, "Configuration was missing for the export operation.");
 		final ContentSubType contentSubType = convertType(configuration.getRf2ReleaseType());
-		final IBranchPath exportBranchPath = getExportBranchPath(configuration);
+		
+		final StorageRef exportStorageRef = new StorageRef();
+		
+		exportStorageRef.setShortName("SNOMEDCT");
+		exportStorageRef.setVersion(configuration.getVersion());
+		exportStorageRef.setTaskId(configuration.getTaskId());
+		
+		final IBranchPath exportBranchPath = exportStorageRef.getBranchPath();
 		
 		final SnomedRf2ExportModel model;
 		if (configuration instanceof ISnomedRefSetExportConfiguration) {
@@ -103,19 +109,7 @@ public class SnomedExportService implements ISnomedExportService {
 		
 		return model; 
 	}
-	
-	private IBranchPath getExportBranchPath(final ISnomedExportConfiguration configuration) {
-		checkNotNull(configuration, "Configuration was missing for the export operation.");
-		final String version = configuration.getVersion();
-		final String taskId = configuration.getTaskId();
-		
-		checkNotNull(version, "Code system version was missing from the export configuration.");
-		final IBranchPath branchPathSuffix = createVersionPath(version);
-		return isEmpty(taskId) 
-			? branchPathSuffix 
-			: createPath(branchPathSuffix, taskId);
-	}
-	
+
 	private ContentSubType convertType(final Rf2ReleaseType typeToConvert) {
 		checkNotNull(typeToConvert, "RF2 release type was missing from the export configuration.");
 		final ContentSubType type = TYPE_MAPPING.get(typeToConvert);

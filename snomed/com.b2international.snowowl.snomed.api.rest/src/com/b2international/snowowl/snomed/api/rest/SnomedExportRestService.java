@@ -44,7 +44,11 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.b2international.snowowl.api.codesystem.ICodeSystemVersionService;
+import com.b2international.snowowl.api.exception.BadRequestException;
+import com.b2international.snowowl.api.impl.domain.StorageRef;
 import com.b2international.snowowl.snomed.api.ISnomedExportService;
+import com.b2international.snowowl.snomed.api.domain.Rf2ReleaseType;
+import com.b2international.snowowl.snomed.api.exception.ExportRunNotFoundException;
 import com.b2international.snowowl.snomed.api.impl.domain.SnomedExportConfiguration;
 import com.b2international.snowowl.snomed.api.rest.domain.SnomedExportRestConfiguration;
 import com.b2international.snowowl.snomed.api.rest.domain.SnomedExportRestRun;
@@ -61,66 +65,77 @@ import com.wordnik.swagger.annotations.ApiResponses;
  */
 @RestController
 @RequestMapping(
-		value="/{version}/exports", produces = { AbstractRestService.V1_MEDIA_TYPE })
+		value="/exports", produces = { AbstractRestService.V1_MEDIA_TYPE })
 @Api("SNOMED CT Export")
 public class SnomedExportRestService extends AbstractSnomedRestService {
 
 	@Autowired
-	private ISnomedExportService delegate;
+	private ISnomedExportService exportService;
 	
 	@Autowired
-	private ICodeSystemVersionService codeSystemVersions;
+	private ICodeSystemVersionService codeSystemVersionService;
 	
 	private ConcurrentMap<UUID, SnomedExportRestRun> exports = new MapMaker().makeMap();
 	
 	@ApiOperation(
 			value="Initiates a SNOMED CT export", 
-			notes="Returns a location header pointing to the state of the export on the given version branch.")
+			notes="Registers the specified export configuration and returns a location header pointing to the stored export run.")
 	@ApiResponses({
 		@ApiResponse(code=201, message="Created"),
-		@ApiResponse(code=404, message="Code system version not found")
+		@ApiResponse(code=404, message="Code system version and/or task not found")
 	})
-	@RequestMapping(method=RequestMethod.POST, consumes = { AbstractRestService.V1_MEDIA_TYPE })
+	@RequestMapping(method=RequestMethod.POST, consumes = { AbstractRestService.V1_MEDIA_TYPE, MediaType.APPLICATION_JSON_VALUE })
 	@ResponseStatus(HttpStatus.CREATED)
 	public ResponseEntity<Void> beginExport(
-			@ApiParam(value="The code system version")
-			@PathVariable(value="version") 
-			final String version,
-			
 			@ApiParam(value="Export configuration")
 			@RequestBody
 			final SnomedExportRestConfiguration configuration) throws IOException {
-		if (!"MAIN".equals(version)) {
-			codeSystemVersions.getCodeSystemVersionById("SNOMEDCT", version);
+
+		if (!Rf2ReleaseType.DELTA.equals(configuration.getType())) {
+			if (configuration.getDeltaStartEffectiveTime() != null || configuration.getDeltaEndEffectiveTime() != null) {
+				throw new BadRequestException("Export date ranges can only be set if the export mode is set to DELTA.");
+			}
 		}
-		final SnomedExportRestRun run = new SnomedExportRestRun();
-		BeanUtils.copyProperties(configuration, run);
+
+		final StorageRef exportStorageRef = new StorageRef();
+		
+		exportStorageRef.setShortName("SNOMEDCT");
+		exportStorageRef.setVersion(configuration.getVersion());
+		exportStorageRef.setTaskId(configuration.getTaskId());
+		
+		// Check version and branch existence
+		exportStorageRef.checkStorageExists();
+		
 		final UUID id = UUID.randomUUID();
+		final SnomedExportRestRun run = new SnomedExportRestRun();
+		
+		BeanUtils.copyProperties(configuration, run);
 		run.setId(id);
 		exports.put(id, run);
-		return Responses.created(getExportRunURI(version, id)).build();
+		
+		return Responses.created(getExportRunURI(id)).build();
 	}
 	
 	@ApiOperation(
 			value="Retrieve export run resource", 
-			notes="Returns a export run resource from the given version branch.")
+			notes="Returns an export run resource by identifier.")
 	@ApiResponses({
 		@ApiResponse(code=200, message="OK"),
-		@ApiResponse(code=404, message="Code system version not found")
+		@ApiResponse(code=404, message="Export run not found")
 	})
 	@RequestMapping(value="/{id}", method=RequestMethod.GET)
 	public SnomedExportRestRun getExport(
-			@ApiParam(value="The code system version")
-			@PathVariable(value="version") 
-			String version,
-			
-			@ApiParam(value="Export run ID")
+			@ApiParam(value="Export run identifier")
 			@PathVariable(value="id")
 			UUID exportId) {
-		if (!"MAIN".equals(version)) {
-			codeSystemVersions.getCodeSystemVersionById("SNOMEDCT", version);
+
+		final SnomedExportRestRun restRun = exports.get(exportId);
+		
+		if (restRun == null) {
+			throw new ExportRunNotFoundException(exportId.toString());
+		} else {
+			return restRun;
 		}
-		return exports.get(exportId);
 	}
 	
 	@ApiOperation(
@@ -128,7 +143,7 @@ public class SnomedExportRestService extends AbstractSnomedRestService {
 			notes="Returns the export archive from a completed export run on the given version branch.")
 	@ApiResponses({
 		@ApiResponse(code=200, message="OK"),
-		@ApiResponse(code=404, message="Code system version not found")
+		@ApiResponse(code=404, message="Export run not found")
 	})
 	@RequestMapping(value="/{id}/archive", method=RequestMethod.GET, produces = { MediaType.APPLICATION_OCTET_STREAM_VALUE })
 	public void getArchive(
@@ -141,11 +156,9 @@ public class SnomedExportRestService extends AbstractSnomedRestService {
 			final UUID exportId,
 			
 			final HttpServletResponse response) throws IOException {
-		if (!"MAIN".equals(version)) {
-			codeSystemVersions.getCodeSystemVersionById("SNOMEDCT", version);
-		}
-		final SnomedExportRestRun export = getExport(version, exportId);
-		final File exportZipFile = delegate.export(toExportConfiguration(version, export));
+
+		final SnomedExportRestRun export = getExport(exportId);
+		final File exportZipFile = exportService.export(toExportConfiguration(export));
 		final FileSystemResource exportZipResource = new FileSystemResource(exportZipFile);
 		
 		response.setStatus(HttpServletResponse.SC_OK);
@@ -158,18 +171,20 @@ public class SnomedExportRestService extends AbstractSnomedRestService {
 		}
 
 		response.getOutputStream().flush();
+		exports.remove(exportId);
 	}
-		
 	
-	private SnomedExportConfiguration toExportConfiguration(final String version, final SnomedExportRestConfiguration configuration) {
-		final SnomedExportConfiguration conf = new SnomedExportConfiguration(configuration.getType(), version, configuration.getNamespaceId(), configuration.getModuleIds());
-		conf.setDeltaExportStartEffectiveTime(configuration.getDeltaStartEffectiveTime());
-		conf.setDeltaExportEndEffectiveTime(configuration.getDeltaEndEffectiveTime());
+	private SnomedExportConfiguration toExportConfiguration(final SnomedExportRestConfiguration configuration) {
+		final SnomedExportConfiguration conf = new SnomedExportConfiguration(
+				configuration.getType(), 
+				configuration.getVersion(), configuration.getTaskId(),
+				configuration.getNamespaceId(), configuration.getModuleIds(),
+				configuration.getDeltaStartEffectiveTime(), configuration.getDeltaEndEffectiveTime());
+
 		return conf;
 	}
 	
-	private URI getExportRunURI(String version, UUID exportId) {
-		return linkTo(methodOn(SnomedExportRestService.class).getExport(version, exportId)).toUri();
+	private URI getExportRunURI(UUID exportId) {
+		return linkTo(methodOn(SnomedExportRestService.class).getExport(exportId)).toUri();
 	}
-	
 }
