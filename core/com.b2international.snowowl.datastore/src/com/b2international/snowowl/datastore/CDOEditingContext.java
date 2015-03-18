@@ -262,7 +262,15 @@ public abstract class CDOEditingContext implements AutoCloseable {
 	public void close() {
 		transaction.close();
 	}
-
+	
+	/**
+	 * Returns whether this {@link CDOEditingContext} is already closed (<code>false</code>) or it's still open (<code>true</code>).
+	 * @return
+	 */
+	public boolean isClosed() {
+		return transaction.isClosed();
+	}
+	
 	/**
 	 * @return true if the underlying transaction is dirty, false otherwise
 	 */
