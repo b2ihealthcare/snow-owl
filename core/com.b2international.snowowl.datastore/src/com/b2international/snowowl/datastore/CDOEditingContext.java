@@ -363,6 +363,11 @@ public abstract class CDOEditingContext implements AutoCloseable {
 	 */
 	protected abstract String getMetaRootResourceName();
 	
+	@Override
+	public String toString() {
+		return String.format("%s[%s]", getClass().getSimpleName(), getTransaction());
+	}
+	
 	/**
 	 * 
 	 * Convenience method for committing the object graph found in the {@link CDOEditingContext} to file. 
