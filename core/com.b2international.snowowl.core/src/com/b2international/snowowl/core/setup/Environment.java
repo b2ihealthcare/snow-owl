@@ -26,6 +26,7 @@ import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.api.preferences.FileBasedPreferencesService;
 import com.b2international.snowowl.core.config.ClientPreferences;
 import com.b2international.snowowl.core.config.SnowOwlConfiguration;
+import com.google.inject.Provider;
 
 /**
  * @since 3.3
@@ -142,10 +143,27 @@ public final class Environment {
 	 * current {@link ApplicationContext}.
 	 * 
 	 * @param type
-	 * @return
+	 * @return the currently registered service implementation for the given service interface, never <code>null</code>
 	 */
 	public <T> T service(Class<T> type) {
 		return services().getServiceChecked(type);
+	}
+	
+	/**
+	 * Returns a {@link Provider} to provide the given type when needed by using {@link #service(Class)}, so the returned
+	 * {@link Provider} will never return <code>null</code> instances, instead it throws exception, which may indicate application
+	 * bootstrapping/initialization problems.
+	 * 
+	 * @param type
+	 * @return
+	 */
+	public <T> Provider<T> provider(final Class<T> type) {
+		return new Provider<T>() {
+			@Override
+			public T get() {
+				return service(type);
+			}
+		};
 	}
 
 	/**
