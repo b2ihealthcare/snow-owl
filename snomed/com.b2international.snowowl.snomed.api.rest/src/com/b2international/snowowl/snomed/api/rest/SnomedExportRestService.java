@@ -22,6 +22,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.UUID;
@@ -79,7 +80,7 @@ public class SnomedExportRestService extends AbstractSnomedRestService {
 	private ConcurrentMap<UUID, SnomedExportRestRun> exports = new MapMaker().makeMap();
 	
 	@ApiOperation(
-			value="Initiates a SNOMED CT export", 
+			value="Initiate a SNOMED CT export", 
 			notes="Registers the specified export configuration and returns a location header pointing to the stored export run.")
 	@ApiResponses({
 		@ApiResponse(code=201, message="Created"),
@@ -106,6 +107,9 @@ public class SnomedExportRestService extends AbstractSnomedRestService {
 		if (Strings.isNullOrEmpty(configuration.getNamespaceId())) {
 			throw new BadRequestException("Namespace ID was missing from the export configuration.");
 		}
+		
+		final String transientEffectiveTime = configuration.getTransientEffectiveTime();
+		validateTransientEffectiveTime(transientEffectiveTime);
 
 		final StorageRef exportStorageRef = new StorageRef();
 		
@@ -126,6 +130,21 @@ public class SnomedExportRestService extends AbstractSnomedRestService {
 		return Responses.created(getExportRunURI(id)).build();
 	}
 	
+	private void validateTransientEffectiveTime(final String transientEffectiveTime) {
+		
+		if (Strings.isNullOrEmpty(transientEffectiveTime) || "LEAVE_EMPTY".equals(transientEffectiveTime)) {
+			return;
+		} else if ("NOW".equals(transientEffectiveTime)) {
+			return;
+		}
+
+		try {
+			new SimpleDateFormat("yyyyMMdd").parse(transientEffectiveTime);
+		} catch (ParseException e) {
+			throw new BadRequestException("Transient effective time '%s' was not empty, 'LEAVE_EMPTY', 'NOW' or a date in the expected format.", transientEffectiveTime);
+		}
+	}
+
 	@ApiOperation(
 			value="Retrieve export run resource", 
 			notes="Returns an export run resource by identifier.")
@@ -157,10 +176,6 @@ public class SnomedExportRestService extends AbstractSnomedRestService {
 	})
 	@RequestMapping(value="/{id}/archive", method=RequestMethod.GET, produces = { MediaType.APPLICATION_OCTET_STREAM_VALUE })
 	public void getArchive(
-			@ApiParam(value="The code system version")
-			@PathVariable(value="version")
-			final String version,
-			
 			@ApiParam(value="Export run ID")
 			@PathVariable(value="id")
 			final UUID exportId,
