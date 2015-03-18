@@ -19,7 +19,6 @@ import java.io.File;
 
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.SubMonitor;
-import org.eclipse.net4j.signal.RemoteException;
 import org.eclipse.net4j.util.om.monitor.EclipseMonitor;
 
 import com.b2international.commons.StringUtils;
@@ -44,30 +43,28 @@ public class SnomedExportService {
 	 */
 	public File export(SnomedRf2ExportModel model, IProgressMonitor monitor) throws Exception {
 		monitor.beginTask("Exporting SNOMED CT into RF2 format...", IProgressMonitor.UNKNOWN);
-		// FIXME is it ok to create a new protocol on every export
+
 		if (StringUtils.isEmpty(model.getNamespace())) {
 			model.setNamespace(getNamespace());			
 		}
+		
 		final SnomedExportClientRequest snomedExportClientRequest = new SnomedExportClientRequest(SnomedClientProtocol.getInstance(), model);
 		final StringBuilder sb = new StringBuilder("Performing SNOMED CT publication into ");
-		if (model.isExportToRf1())
+		
+		if (model.isExportToRf1()) {
 			sb.append("RF1 and ");
-		sb.append("RF2 release format...");
-		final SubMonitor subMonitor = SubMonitor.convert(monitor, sb.toString(), 1000).newChild(1000,
-				SubMonitor.SUPPRESS_ALL_LABELS);
-		subMonitor.worked(5);
-		try {
-			final File resultFile = snomedExportClientRequest.send(new EclipseMonitor(subMonitor));
-			
-			final SnomedExportResult result = snomedExportClientRequest.getExportResult();
-			model.getExportResult().setResultAndMessage(result.getResult(), result.getMessage());
-			
-			return resultFile;
-		} catch (RemoteException e) {
-			throw e;
-		} catch (Exception e) {
-			throw e;
 		}
+		
+		sb.append("RF2 release format...");
+		
+		final SubMonitor subMonitor = SubMonitor.convert(monitor, sb.toString(), 1000).newChild(1000, SubMonitor.SUPPRESS_ALL_LABELS);
+		subMonitor.worked(5);
+		
+		final File resultFile = snomedExportClientRequest.send(new EclipseMonitor(subMonitor));
+		final SnomedExportResult result = snomedExportClientRequest.getExportResult();
+		model.getExportResult().setResultAndMessage(result.getResult(), result.getMessage());
+
+		return resultFile;
 	}
 
 	/**
