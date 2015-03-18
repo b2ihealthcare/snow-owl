@@ -66,6 +66,8 @@ import org.eclipse.emf.common.util.EList;
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.EPackage;
 import org.eclipse.emf.ecore.util.EcoreUtil;
+import org.eclipse.net4j.util.lifecycle.ILifecycle;
+import org.eclipse.net4j.util.lifecycle.LifecycleEventAdapter;
 
 import bak.pcj.set.LongSet;
 
@@ -522,19 +524,16 @@ public class SnomedEditingContext extends BaseSnomedEditingContext {
 		this.refSetEditingContext = new SnomedRefSetEditingContext(this);
 		setNamespace(namespace);
 		// register Unique In Transaction Restriction to identifier reservations
-		this.reservationName = String.format("reservations_%s", transaction); 
+		this.reservationName = String.format("reservations_%s", this);
 		this.reservations.create(this.reservationName, Reservations.uniqueInTransaction(this));
+		getTransaction().addListener(new LifecycleEventAdapter() {
+			@Override
+			protected void onDeactivated(ILifecycle lifecycle) {
+				reservations.delete(reservationName);
+			}
+		});
 	}
 
-	@Override
-	public void close() {
-		try {
-			super.close();
-		} finally {
-			this.reservations.delete(this.reservationName);
-		}
-	}
-	
 	private void setNamespace(String nameSpace) {
 		this.nameSpace = checkNotNull(nameSpace, "No namespace configured");
 	}
@@ -1677,7 +1676,21 @@ public class SnomedEditingContext extends BaseSnomedEditingContext {
 	}
 
 	public boolean isUniqueInTransaction(SnomedIdentifier identifier) {
-		throw new UnsupportedOperationException("Implement");
+		for (Component component : Iterables.filter(getTransaction().getNewObjects().values(), getSnomedComponentClass(identifier.getComponentCategory()))) {
+			if (identifier.toString().equals(component.getId())) {
+				return false;
+			}
+		}
+		return true;
+	}
+
+	private Class<? extends Component> getSnomedComponentClass(ComponentCategory category) {
+		switch (category) {
+		case CONCEPT: return Concept.class;
+		case DESCRIPTION: return Description.class;
+		case RELATIONSHIP: return Relationship.class;
+		default: throw new UnsupportedOperationException("Unrecognized component category: " + category);
+		}
 	}
 
 }
