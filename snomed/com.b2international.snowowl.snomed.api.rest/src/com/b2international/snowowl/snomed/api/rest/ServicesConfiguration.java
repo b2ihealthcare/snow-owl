@@ -36,6 +36,7 @@ import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 import org.springframework.web.servlet.config.annotation.PathMatchConfigurer;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurerAdapter;
 
+import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.snomed.api.domain.ISnomedComponent;
 import com.b2international.snowowl.snomed.api.domain.browser.ISnomedBrowserComponent;
 import com.b2international.snowowl.snomed.api.rest.domain.ISnomedComponentMixin;
@@ -155,6 +156,11 @@ public class ServicesConfiguration extends WebMvcConfigurerAdapter {
 		objectMapper.addMixInAnnotations(ISnomedComponent.class, ISnomedComponentMixin.class);
 		objectMapper.addMixInAnnotations(ISnomedBrowserComponent.class, ISnomedComponentMixin.class);
 		return objectMapper;
+	}
+	
+	@Bean
+	public IEventBus eventBus() {
+		return com.b2international.snowowl.core.ApplicationContext.getInstance().getServiceChecked(IEventBus.class);
 	}
 
 	@Override

@@ -21,6 +21,7 @@ import com.b2international.snowowl.core.config.SnowOwlConfiguration;
 import com.b2international.snowowl.core.setup.DefaultBootstrapFragment;
 import com.b2international.snowowl.core.setup.Environment;
 import com.b2international.snowowl.core.setup.ModuleConfig;
+import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.snomed.datastore.SnomedTerminologyBrowser;
 import com.b2international.snowowl.snomed.datastore.config.SnomedCoreConfiguration;
 import com.b2international.snowowl.snomed.datastore.id.ISnomedIdentifierService;
@@ -35,12 +36,12 @@ import com.google.inject.Provider;
  */
 @ModuleConfig(fieldName = "snomed", type = SnomedCoreConfiguration.class)
 public class SnomedCoreBootstrap extends DefaultBootstrapFragment {
-	
+
 	private static final String STORE_RESERVATIONS = "internal_store_reservations";
 
 	@Override
 	public void init(SnowOwlConfiguration configuration, Environment env) throws Exception {
-		final Provider<SnomedTerminologyBrowser> browser = env.provider(SnomedTerminologyBrowser.class); 
+		final Provider<SnomedTerminologyBrowser> browser = env.provider(SnomedTerminologyBrowser.class);
 		final ISnomedIdentiferReservationService reservationService = new SnomedIdentifierReservationServiceImpl();
 		reservationService.create(STORE_RESERVATIONS, Reservations.uniqueInStore(browser));
 		final ISnomedIdentifierService idService = new SnomedIdentifierServiceImpl(reservationService);
@@ -50,6 +51,10 @@ public class SnomedCoreBootstrap extends DefaultBootstrapFragment {
 
 	@Override
 	public void run(SnowOwlConfiguration configuration, Environment env, IProgressMonitor monitor) throws Exception {
+		// TODO figure out how to properly register Handler to specific endpoints in core services,
+		// It would be nice to use a framework like reactor
+		// Also if we stick with the current IEventBus impl, we should definitely implement
+		env.service(IEventBus.class).registerHandler("/snomed-ct/ids", new SnomedIdentifierServiceEventHandler(env.provider(ISnomedIdentifierService.class)));
 	}
-	
+
 }
