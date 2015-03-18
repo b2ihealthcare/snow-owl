@@ -15,8 +15,9 @@
  */
 package com.b2international.snowowl.snomed.datastore.internal.id;
 
-import com.b2international.snowowl.snomed.datastore.ComponentNature;
+import com.b2international.snowowl.core.terminology.ComponentCategory;
 import com.b2international.snowowl.snomed.datastore.id.SnomedIdentifier;
+import com.google.common.base.Strings;
 
 /**
  * Representing a SNOMED CT Identifier in a Java POJO form, extracts parts of the SNOMED CT Identifer and stores them for later use.
@@ -25,6 +26,7 @@ import com.b2international.snowowl.snomed.datastore.id.SnomedIdentifier;
  */
 public final class SnomedIdentifierImpl implements SnomedIdentifier {
 
+	private String id;
 	private long itemId;
 	private String namespace;
 	private int partitionIdentifier;
@@ -60,8 +62,16 @@ public final class SnomedIdentifierImpl implements SnomedIdentifier {
 		return checkDigit;
 	}
 
-	public ComponentNature getComponentNature() {
-		return ComponentNature.getByOrdinal(getComponentIdentifier());
+	public ComponentCategory getComponentCategory() {
+		return ComponentCategory.getByOrdinal(getComponentIdentifier());
+	}
+	
+	@Override
+	public String toString() {
+		if (id == null) {
+			id = String.format("%s%s%s%s%s", itemId, Strings.nullToEmpty(namespace), partitionIdentifier, componentIdentifier, checkDigit);
+		}
+		return id;
 	}
 
 }

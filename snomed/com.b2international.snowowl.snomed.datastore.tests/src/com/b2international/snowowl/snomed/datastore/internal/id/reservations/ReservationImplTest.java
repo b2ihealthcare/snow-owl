@@ -23,8 +23,8 @@ import java.util.Set;
 
 import org.junit.Test;
 
+import com.b2international.snowowl.core.terminology.ComponentCategory;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
-import com.b2international.snowowl.snomed.datastore.ComponentNature;
 import com.b2international.snowowl.snomed.datastore.id.SnomedIdentifiers;
 import com.b2international.snowowl.snomed.datastore.id.reservations.Reservation;
 import com.b2international.snowowl.snomed.datastore.id.reservations.Reservations;
@@ -44,10 +44,10 @@ public class ReservationImplTest {
 	
 	@Test
 	public void whenReservingRangeOfIDs_ThenItShouldConflictWithAllIDsInThatRangeIncludingBoundaries() throws Exception {
-		final Set<ComponentNature> components = Collections.singleton(ComponentNature.CONCEPT);
+		final Set<ComponentCategory> components = Collections.singleton(ComponentCategory.CONCEPT);
 		final Reservation range = Reservations.range(200, 300, null, components);
 		for (int i = 200; i <= 300; i++) {
-			assertTrue(range.conflicts(SnomedIdentifiers.generateFrom(i, ComponentNature.CONCEPT)));
+			assertTrue(range.conflicts(SnomedIdentifiers.generateFrom(i, ComponentCategory.CONCEPT)));
 		}
 	}
 	

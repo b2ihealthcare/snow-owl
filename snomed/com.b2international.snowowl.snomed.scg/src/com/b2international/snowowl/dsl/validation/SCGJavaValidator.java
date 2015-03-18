@@ -38,7 +38,6 @@ import com.b2international.snowowl.dsl.scg.Group;
 import com.b2international.snowowl.dsl.scg.ScgPackage;
 import com.b2international.snowowl.dsl.util.ScgAttributeFinderVisitor;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
-import com.b2international.snowowl.snomed.datastore.ComponentNature;
 import com.b2international.snowowl.snomed.datastore.ConceptParentAdapter;
 import com.b2international.snowowl.snomed.datastore.NormalFormWrapper;
 import com.b2international.snowowl.snomed.datastore.NormalFormWrapper.AttributeConceptGroupWrapper;
@@ -127,7 +126,7 @@ public class SCGJavaValidator extends AbstractSCGJavaValidator {
 
 		SnomedEditingContext editingContext = new SnomedEditingContext();
 		com.b2international.snowowl.snomed.Concept concept = SnomedEditingContext.buildDraftConceptFromNormalForm(
-				editingContext, normalForm, editingContext.generateComponentId(ComponentNature.CONCEPT));
+				editingContext, normalForm);
 		concept.eAdapters().add(new ConceptParentAdapter(extractor.getFocusConceptIdList()));
 		IClientWidgetModelProvider widgetModelProvider = ApplicationContext.getInstance().getService(IClientWidgetModelProvider.class);
 		ConceptWidgetModel conceptWidgetModel = widgetModelProvider.createConceptWidgetModel(extractor.getFocusConceptIdList(), null);

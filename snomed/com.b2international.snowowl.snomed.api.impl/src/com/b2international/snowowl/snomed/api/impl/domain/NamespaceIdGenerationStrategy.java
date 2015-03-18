@@ -15,30 +15,14 @@
  */
 package com.b2international.snowowl.snomed.api.impl.domain;
 
-import java.text.MessageFormat;
-
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.SnowOwlApplication;
 import com.b2international.snowowl.core.terminology.ComponentCategory;
 import com.b2international.snowowl.snomed.api.domain.IdGenerationStrategy;
-import com.b2international.snowowl.snomed.datastore.ComponentNature;
 import com.b2international.snowowl.snomed.datastore.config.SnomedCoreConfiguration;
 import com.b2international.snowowl.snomed.datastore.id.ISnomedIdentifierService;
 
 public class NamespaceIdGenerationStrategy implements IdGenerationStrategy {
-
-	private static ComponentNature toComponentNature(final ComponentCategory category) {
-		switch (category) {
-			case CONCEPT:
-				return ComponentNature.CONCEPT;
-			case DESCRIPTION:
-				return ComponentNature.DESCRIPTION;
-			case RELATIONSHIP:
-				return ComponentNature.RELATIONSHIP;
-			default:
-				throw new UnsupportedOperationException(MessageFormat.format("Unsupported category: ''{0}''.", category));
-		}
-	}
 
 	private final ComponentCategory category;
 	private final String namespaceId;
@@ -54,7 +38,7 @@ public class NamespaceIdGenerationStrategy implements IdGenerationStrategy {
 
 	@Override
 	public String getId() {
-		return ApplicationContext.getServiceForClass(ISnomedIdentifierService.class).generateId(toComponentNature(category), getNamespaceIdOrDefault());
+		return ApplicationContext.getServiceForClass(ISnomedIdentifierService.class).generateId(category, getNamespaceIdOrDefault());
 	}
 
 	private String getNamespaceIdOrDefault() {

@@ -15,7 +15,7 @@
  */
 package com.b2international.snowowl.snomed.datastore.id;
 
-import com.b2international.snowowl.snomed.datastore.ComponentNature;
+import com.b2international.snowowl.core.terminology.ComponentCategory;
 
 /**
  * SNOMED CT Identifier service interface. It is capable of generating valid SNOMED CT Identifiers according to the Technical Implementation Guide.
@@ -34,8 +34,9 @@ public interface ISnomedIdentifierService {
 	 * @param component
 	 *            - the component type to generate ID for, cannot be <code>null</code>
 	 * @return a valid SNOMED CT identifier, never <code>null</code>
+	 * @throws IllegalArgumentException - if the given {@link ComponentCategory} is cannot be used for new SNOMED CT Identifier generation
 	 */
-	String generateId(ComponentNature component);
+	String generateId(ComponentCategory component);
 
 	/**
 	 * Generates a single SNOMED CT ID for the defined {@link ComponentNature} with the defined extension namespace.
@@ -45,7 +46,8 @@ public interface ISnomedIdentifierService {
 	 * @param namespace
 	 *            - the extension namespace to use when generating the ID, may be <code>null</code>
 	 * @return a valid SNOMED CT identifier, never <code>null</code>
+	 * @throws IllegalArgumentException - if the given {@link ComponentCategory} is cannot be used for new SNOMED CT Identifier generation
 	 */
-	String generateId(ComponentNature component, String namespace);
+	String generateId(ComponentCategory component, String namespace);
 
 }

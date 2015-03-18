@@ -15,7 +15,7 @@
  */
 package com.b2international.snowowl.snomed.datastore.id;
 
-import com.b2international.snowowl.snomed.datastore.ComponentNature;
+import com.b2international.snowowl.core.terminology.ComponentCategory;
 
 /**
  * @since 4.0
@@ -32,6 +32,6 @@ public interface SnomedIdentifier {
 
 	public int getCheckDigit();
 
-	public ComponentNature getComponentNature();
+	public ComponentCategory getComponentCategory();
 	
 }

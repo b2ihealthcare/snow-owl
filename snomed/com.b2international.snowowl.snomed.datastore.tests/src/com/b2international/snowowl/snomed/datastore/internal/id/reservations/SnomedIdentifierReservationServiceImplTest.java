@@ -22,8 +22,8 @@ import java.util.Collections;
 import org.junit.Before;
 import org.junit.Test;
 
+import com.b2international.snowowl.core.terminology.ComponentCategory;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
-import com.b2international.snowowl.snomed.datastore.ComponentNature;
 import com.b2international.snowowl.snomed.datastore.id.reservations.Reservation;
 import com.b2international.snowowl.snomed.datastore.id.reservations.Reservations;
 
@@ -53,7 +53,7 @@ public class SnomedIdentifierReservationServiceImplTest {
 	@Test
 	public void whenCreatingMoreThanOneReservation_ThenServiceMustStoreThem() throws Exception {
 		final Reservation single = Reservations.single(Concepts.ROOT_CONCEPT);
-		final Reservation range = Reservations.range(100, 200, null, Collections.singleton(ComponentNature.CONCEPT));
+		final Reservation range = Reservations.range(100, 200, null, Collections.singleton(ComponentCategory.CONCEPT));
 		this.reservationService.create(SINGLE_RESERVATION, single);
 		this.reservationService.create(RANGE_RESERVATION, range);
 		assertThat(this.reservationService.getReservations()).containsOnly(single, range);

@@ -15,10 +15,11 @@
  */
 package com.b2international.snowowl.snomed.datastore.internal.id;
 
+import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
 
 import com.b2international.commons.VerhoeffCheck;
-import com.b2international.snowowl.snomed.datastore.ComponentNature;
+import com.b2international.snowowl.core.terminology.ComponentCategory;
 import com.b2international.snowowl.snomed.datastore.id.ISnomedIdentifierService;
 import com.b2international.snowowl.snomed.datastore.id.gen.ItemIdGenerationStrategy;
 import com.b2international.snowowl.snomed.datastore.id.reservations.ISnomedIdentiferReservationService;
@@ -47,13 +48,14 @@ public class SnomedIdentifierServiceImpl implements ISnomedIdentifierService {
 	}
 	
 	@Override
-	public String generateId(ComponentNature component) {
+	public String generateId(ComponentCategory component) {
 		return generateId(component, null);
 	}
 
 	@Override
-	public String generateId(ComponentNature component, String namespace) {
+	public String generateId(ComponentCategory component, String namespace) {
 		checkNotNull(component, "componentNature");
+		checkCategory(component);
 		String newId = generateComponentId(component, namespace);
 		while (reservationService.isReserved(newId)) {
 			newId = generateComponentId(component, namespace);
@@ -61,7 +63,11 @@ public class SnomedIdentifierServiceImpl implements ISnomedIdentifierService {
 		return newId;
 	}
 
-	private String generateComponentId(ComponentNature component, String namespace) {
+	private void checkCategory(ComponentCategory component) {
+		checkArgument(component == ComponentCategory.CONCEPT || component == ComponentCategory.DESCRIPTION || component == ComponentCategory.RELATIONSHIP, "Cannot generate ID for componentCategory %s", component);
+	}
+
+	private String generateComponentId(ComponentCategory component, String namespace) {
 		final StringBuilder buf = new StringBuilder();
 		// generate the SCT Item ID
 		buf.append(itemIdGenerationStrategy.generateItemId());

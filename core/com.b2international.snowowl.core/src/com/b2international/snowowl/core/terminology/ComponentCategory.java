@@ -22,54 +22,70 @@ import com.b2international.commons.StringUtils;
  */
 public enum ComponentCategory {
 
-	/** 
-	 * A category for ideas, physical objects or events. 
+	/**
+	 * A category for ideas, physical objects or events.
 	 */
 	CONCEPT,
 
-	/** 
-	 * A label or other textual representation for a concept. 
+	/**
+	 * A label or other textual representation for a concept.
 	 */
 	DESCRIPTION,
 
-	/** 
-	 * A typed connection between two concepts. 
+	/**
+	 * A typed connection between two concepts.
 	 */
 	RELATIONSHIP,
 
-	/** 
-	 * A scalar value or measurement associated with another component. 
+	/**
+	 * A scalar value or measurement associated with another component.
 	 */
 	CONCRETE_DOMAIN,
 
-	/** 
-	 * A set of unique set members. 
+	/**
+	 * A set of unique set members.
 	 */
 	SET,
 
-	/** 
-	 * Points to another component, indicating that it is part of the member's parent set. 
-	 */ 
+	/**
+	 * Points to another component, indicating that it is part of the member's parent set.
+	 */
 	SET_MEMBER,
 
-	/** 
-	 * A set of unique map members. 
+	/**
+	 * A set of unique map members.
 	 */
 	MAP,
 
 	/**
-	 * Points to a source and a target component, indicating that a mapping exists between the two in the context of the
-	 * member's parent map.
+	 * Points to a source and a target component, indicating that a mapping exists between the two in the context of the member's parent map.
 	 */
 	MAP_MEMBER;
 
 	/**
-	 * Returns the human-readable name of this category, obtained by converting the original name of the enum value to lower case,
-	 * changing underscore characters to whitespace separators, and changing the first letter to upper case.
+	 * Returns the human-readable name of this category, obtained by converting the original name of the enum value to lower case, changing underscore
+	 * characters to whitespace separators, and changing the first letter to upper case.
 	 * 
 	 * @return the display name of this category
 	 */
 	public String getDisplayName() {
 		return StringUtils.capitalizeFirstLetter(name().replace('_', ' ').toLowerCase());
+	}
+
+	/**
+	 * Returns the {@link ComponentCategory} for the given ordinal, or throws an {@link IllegalArgumentException} if not found.
+	 * 
+	 * @param ordinal
+	 * @return
+	 * @throws IllegalArgumentException
+	 *             - if {@link ComponentCategory} not found for the given ordinal
+	 */
+	public static ComponentCategory getByOrdinal(int ordinal) {
+		for (ComponentCategory c : values()) {
+			if (c.ordinal() == ordinal) {
+				return c;
+			}
+		}
+		throw new IllegalArgumentException("Unknown componentCategory ordinal: " + ordinal);
 	}
 }

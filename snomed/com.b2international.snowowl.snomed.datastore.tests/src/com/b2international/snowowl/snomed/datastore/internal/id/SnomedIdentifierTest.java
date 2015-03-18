@@ -20,8 +20,8 @@ import static org.junit.Assert.assertNull;
 
 import org.junit.Test;
 
+import com.b2international.snowowl.core.terminology.ComponentCategory;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
-import com.b2international.snowowl.snomed.datastore.ComponentNature;
 import com.b2international.snowowl.snomed.datastore.id.SnomedIdentifier;
 import com.b2international.snowowl.snomed.datastore.id.SnomedIdentifiers;
 
@@ -38,7 +38,7 @@ public class SnomedIdentifierTest {
 		assertEquals(0, id.getPartitionIdentifier());
 		assertEquals(0, id.getComponentIdentifier());
 		assertEquals(5, id.getCheckDigit());
-		assertEquals(ComponentNature.CONCEPT, id.getComponentNature());
+		assertEquals(ComponentCategory.CONCEPT, id.getComponentCategory());
 	}
 	
 	@Test
@@ -49,7 +49,7 @@ public class SnomedIdentifierTest {
 		assertEquals(0, id.getPartitionIdentifier());
 		assertEquals(0, id.getComponentIdentifier());
 		assertEquals(5, id.getCheckDigit());
-		assertEquals(ComponentNature.CONCEPT, id.getComponentNature());
+		assertEquals(ComponentCategory.CONCEPT, id.getComponentCategory());
 	}
 	
 	@Test
@@ -60,7 +60,7 @@ public class SnomedIdentifierTest {
 		assertEquals(0, id.getPartitionIdentifier());
 		assertEquals(0, id.getComponentIdentifier());
 		assertEquals(6, id.getCheckDigit());
-		assertEquals(ComponentNature.CONCEPT, id.getComponentNature());
+		assertEquals(ComponentCategory.CONCEPT, id.getComponentCategory());
 	}
 	
 	@Test
@@ -71,7 +71,7 @@ public class SnomedIdentifierTest {
 		assertEquals(0, id.getPartitionIdentifier());
 		assertEquals(1, id.getComponentIdentifier());
 		assertEquals(5, id.getCheckDigit());
-		assertEquals(ComponentNature.DESCRIPTION, id.getComponentNature());
+		assertEquals(ComponentCategory.DESCRIPTION, id.getComponentCategory());
 	}
 	
 	@Test
@@ -82,7 +82,7 @@ public class SnomedIdentifierTest {
 		assertEquals(0, id.getPartitionIdentifier());
 		assertEquals(2, id.getComponentIdentifier());
 		assertEquals(9, id.getCheckDigit());
-		assertEquals(ComponentNature.RELATIONSHIP, id.getComponentNature());
+		assertEquals(ComponentCategory.RELATIONSHIP, id.getComponentCategory());
 	}
 
 	@Test
@@ -93,7 +93,7 @@ public class SnomedIdentifierTest {
 		assertEquals(1, id.getPartitionIdentifier());
 		assertEquals(1, id.getComponentIdentifier());
 		assertEquals(7, id.getCheckDigit());
-		assertEquals(ComponentNature.DESCRIPTION, id.getComponentNature());
+		assertEquals(ComponentCategory.DESCRIPTION, id.getComponentCategory());
 	}
 	
 	@Test
@@ -104,7 +104,7 @@ public class SnomedIdentifierTest {
 		assertEquals(1, id.getPartitionIdentifier());
 		assertEquals(2, id.getComponentIdentifier());
 		assertEquals(6, id.getCheckDigit());
-		assertEquals(ComponentNature.RELATIONSHIP, id.getComponentNature());
+		assertEquals(ComponentCategory.RELATIONSHIP, id.getComponentCategory());
 	}
 	
 	@Test
@@ -115,7 +115,7 @@ public class SnomedIdentifierTest {
 		assertEquals(1, id.getPartitionIdentifier());
 		assertEquals(0, id.getComponentIdentifier());
 		assertEquals(4, id.getCheckDigit());
-		assertEquals(ComponentNature.CONCEPT, id.getComponentNature());
+		assertEquals(ComponentCategory.CONCEPT, id.getComponentCategory());
 	}
 	
 }

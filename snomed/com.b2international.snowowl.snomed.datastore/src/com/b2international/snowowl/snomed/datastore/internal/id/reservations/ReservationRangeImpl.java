@@ -20,7 +20,7 @@ import static com.google.common.base.Preconditions.checkNotNull;
 
 import java.util.Collection;
 
-import com.b2international.snowowl.snomed.datastore.ComponentNature;
+import com.b2international.snowowl.core.terminology.ComponentCategory;
 import com.b2international.snowowl.snomed.datastore.id.SnomedIdentifier;
 import com.b2international.snowowl.snomed.datastore.id.reservations.Reservation;
 import com.google.common.base.Objects;
@@ -34,9 +34,9 @@ public class ReservationRangeImpl implements Reservation {
 
 	private Range<Long> itemIdRange;
 	private String namespace;
-	private Collection<ComponentNature> components;
+	private Collection<ComponentCategory> components;
 	
-	public ReservationRangeImpl(long itemIdMin, long itemIdMax, String namespace, Collection<ComponentNature> components) {
+	public ReservationRangeImpl(long itemIdMin, long itemIdMax, String namespace, Collection<ComponentCategory> components) {
 		checkArgument(components.size() >= 1, "At least one ComponentNature must be defined");
 		final int minItemIdMin = Strings.isNullOrEmpty(namespace) ? 100 : 1;
 		checkArgument(itemIdMin >= minItemIdMin, "ItemIdMin should be greater than or equal to %s", minItemIdMin);
@@ -58,14 +58,14 @@ public class ReservationRangeImpl implements Reservation {
 		return namespace;
 	}
 
-	private Collection<ComponentNature> getComponents() {
+	private Collection<ComponentCategory> getComponents() {
 		return components;
 	}
 
 	@Override
 	public boolean conflicts(SnomedIdentifier identifier) {
 		checkNotNull(identifier, "identifier");
-		return itemIdRange.contains(identifier.getItemId()) && Objects.equal(identifier.getNamespace(), getNamespace()) && getComponents().contains(identifier.getComponentNature());
+		return itemIdRange.contains(identifier.getItemId()) && Objects.equal(identifier.getNamespace(), getNamespace()) && getComponents().contains(identifier.getComponentCategory());
 	}
 	
 	@Override

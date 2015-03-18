@@ -17,7 +17,7 @@ package com.b2international.snowowl.snomed.datastore.id;
 
 import static com.google.common.base.Preconditions.checkArgument;
 
-import com.b2international.snowowl.snomed.datastore.ComponentNature;
+import com.b2international.snowowl.core.terminology.ComponentCategory;
 import com.b2international.snowowl.snomed.datastore.id.gen.SingleItemIdGenerationStrategy;
 import com.b2international.snowowl.snomed.datastore.internal.id.SnomedIdentifierImpl;
 import com.b2international.snowowl.snomed.datastore.internal.id.SnomedIdentifierServiceImpl;
@@ -41,7 +41,7 @@ public class SnomedIdentifiers {
 	}
 
 	public static String generateConceptId(String namespace) {
-		return generateComponentId(ComponentNature.CONCEPT, namespace);
+		return generateComponentId(ComponentCategory.CONCEPT, namespace);
 	}
 
 	public static String generateRelationshipId() {
@@ -49,7 +49,7 @@ public class SnomedIdentifiers {
 	}
 
 	public static String generateRelationshipId(String namespace) {
-		return generateComponentId(ComponentNature.RELATIONSHIP, namespace);
+		return generateComponentId(ComponentCategory.RELATIONSHIP, namespace);
 	}
 
 	public static String generateDescriptionId() {
@@ -57,10 +57,10 @@ public class SnomedIdentifiers {
 	}
 
 	public static String generateDescriptionId(String namespace) {
-		return generateComponentId(ComponentNature.DESCRIPTION, namespace);
+		return generateComponentId(ComponentCategory.DESCRIPTION, namespace);
 	}
 
-	private static String generateComponentId(ComponentNature component, String namespace) {
+	private static String generateComponentId(ComponentCategory component, String namespace) {
 		return getSnomedIdentifierService().generateId(component, namespace);
 	}
 
@@ -95,7 +95,7 @@ public class SnomedIdentifiers {
 	 *            - the component type to use
 	 * @return
 	 */
-	public static SnomedIdentifier generateFrom(int itemId, ComponentNature component) {
+	public static SnomedIdentifier generateFrom(int itemId, ComponentCategory component) {
 		return generateFrom(itemId, null, component);
 	}
 
@@ -110,7 +110,7 @@ public class SnomedIdentifiers {
 	 *            - the component type to use
 	 * @return
 	 */
-	public static SnomedIdentifier generateFrom(int itemId, String namespace, ComponentNature component) {
+	public static SnomedIdentifier generateFrom(int itemId, String namespace, ComponentCategory component) {
 		return of(new SnomedIdentifierServiceImpl(new SnomedIdentifierReservationServiceImpl(), new SingleItemIdGenerationStrategy(String.valueOf(itemId))).generateId(component, namespace));
 	}
 

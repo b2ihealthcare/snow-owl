@@ -77,6 +77,7 @@ import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.api.SnowowlRuntimeException;
 import com.b2international.snowowl.core.api.browser.IClientTerminologyBrowser;
 import com.b2international.snowowl.core.api.index.IIndexEntry;
+import com.b2international.snowowl.core.terminology.ComponentCategory;
 import com.b2international.snowowl.datastore.BranchPathUtils;
 import com.b2international.snowowl.datastore.CDOEditingContext;
 import com.b2international.snowowl.datastore.cdo.CDOUtils;
@@ -89,6 +90,9 @@ import com.b2international.snowowl.snomed.SnomedFactory;
 import com.b2international.snowowl.snomed.SnomedPackage;
 import com.b2international.snowowl.snomed.datastore.NormalFormWrapper.AttributeConceptGroupWrapper;
 import com.b2international.snowowl.snomed.datastore.id.ISnomedIdentifierService;
+import com.b2international.snowowl.snomed.datastore.id.SnomedIdentifier;
+import com.b2international.snowowl.snomed.datastore.id.reservations.ISnomedIdentiferReservationService;
+import com.b2international.snowowl.snomed.datastore.id.reservations.Reservations;
 import com.b2international.snowowl.snomed.datastore.index.SnomedClientIndexService;
 import com.b2international.snowowl.snomed.datastore.index.SnomedDescriptionIndexEntry;
 import com.b2international.snowowl.snomed.datastore.index.SnomedDescriptionIndexQueryAdapter;
@@ -124,9 +128,12 @@ import com.google.common.collect.Sets;
 public class SnomedEditingContext extends BaseSnomedEditingContext {
 
 	private ISnomedIdentifierService identifiers = ApplicationContext.getInstance().getServiceChecked(ISnomedIdentifierService.class);
-	protected final SnomedRefSetEditingContext refSetEditingContext;
+	private ISnomedIdentiferReservationService reservations = ApplicationContext.getInstance().getServiceChecked(ISnomedIdentiferReservationService.class);
+	
+	protected SnomedRefSetEditingContext refSetEditingContext;
 	protected Concept moduleConcept;
 	private String nameSpace;
+	private String reservationName;
 
 	/**returns with a set of allowed concepts' ID. concept is allowed as preferred description type concept if 
 	 * has an associated active description type reference set member and is synonym or descendant of the synonym */
@@ -178,6 +185,10 @@ public class SnomedEditingContext extends BaseSnomedEditingContext {
 
 	private static SnomedClientIndexService getIndexService() {
 		return ApplicationContext.getInstance().getService(SnomedClientIndexService.class);
+	}
+	
+	public static Concept buildDraftConceptFromNormalForm(final SnomedEditingContext editingContext, final NormalFormWrapper normalForm) {
+		return buildDraftConceptFromNormalForm(editingContext, normalForm, null);
 	}
 	
 	/**
@@ -481,9 +492,9 @@ public class SnomedEditingContext extends BaseSnomedEditingContext {
 	 */
 	public SnomedEditingContext() {
 		super();
-		refSetEditingContext = new SnomedRefSetEditingContext(this);
-		setNamespace(getDefaultNamespace());
+		init(getDefaultNamespace());
 	}
+
 
 	/**
 	 * Creates a new SNOMED CT core components editing context on the specified branch of the SNOMED CT repository.
@@ -504,11 +515,27 @@ public class SnomedEditingContext extends BaseSnomedEditingContext {
 	 */
 	public SnomedEditingContext(IBranchPath branchPath, String nameSpace) {
 		super(branchPath);
-		refSetEditingContext = new SnomedRefSetEditingContext(this);
-		setNamespace(nameSpace);
+		init(nameSpace);
 	}
 	
-	public void setNamespace(String nameSpace) {
+	private void init(final String namespace) {
+		this.refSetEditingContext = new SnomedRefSetEditingContext(this);
+		setNamespace(namespace);
+		// register Unique In Transaction Restriction to identifier reservations
+		this.reservationName = String.format("reservations_%s", transaction); 
+		this.reservations.create(this.reservationName, Reservations.uniqueInTransaction(this));
+	}
+
+	@Override
+	public void close() {
+		try {
+			super.close();
+		} finally {
+			this.reservations.delete(this.reservationName);
+		}
+	}
+	
+	private void setNamespace(String nameSpace) {
 		this.nameSpace = checkNotNull(nameSpace, "No namespace configured");
 	}
 	
@@ -627,7 +654,7 @@ public class SnomedEditingContext extends BaseSnomedEditingContext {
 		add(concept);
 		
 		// set concept properties
-		concept.setId(identifiers.generateId(ComponentNature.CONCEPT, namespace));
+		concept.setId(identifiers.generateId(ComponentCategory.CONCEPT, namespace));
 		concept.setActive(true);
 		concept.setDefinitionStatus(findConceptById(PRIMITIVE));
 		concept.setModule(moduleConcept);
@@ -908,7 +935,7 @@ public class SnomedEditingContext extends BaseSnomedEditingContext {
 	 */
 	public Relationship buildEmptyRelationship(final String namespace) {
 		final Relationship relationship = SnomedFactory.eINSTANCE.createRelationship();
-		relationship.setId(identifiers.generateId(ComponentNature.RELATIONSHIP, namespace));
+		relationship.setId(identifiers.generateId(ComponentCategory.RELATIONSHIP, namespace));
 		return relationship;
 	}
 	
@@ -935,7 +962,7 @@ public class SnomedEditingContext extends BaseSnomedEditingContext {
 	/*builds a description with the specified description type, module concept, language code and namespace.*/
 	private Description buildDefaultDescription(String term, final String nameSpace, final Concept type, final Concept moduleConcept, final String languageCode) {
 		Description description = SnomedFactory.eINSTANCE.createDescription();
-		description.setId(identifiers.generateId(ComponentNature.DESCRIPTION, nameSpace));
+		description.setId(identifiers.generateId(ComponentCategory.DESCRIPTION, nameSpace));
 		description.setActive(true);
 		description.setCaseSignificance(findConceptById(ENTIRE_TERM_CASE_INSENSITIVE));
 		description.setType(type);
@@ -1495,11 +1522,11 @@ public class SnomedEditingContext extends BaseSnomedEditingContext {
 		return nameSpace;
 	}
 
-	private static String getDefaultNamespace() {
+	public static String getDefaultNamespace() {
 		return getSnomedConfiguration().getNamespaces().getDefaultChildKey();
 	}
 	
-	private static SnomedConfiguration getSnomedConfiguration() {
+	public static SnomedConfiguration getSnomedConfiguration() {
 		return ApplicationContext.getInstance().getService(SnomedConfiguration.class);
 	}
 	
@@ -1525,7 +1552,7 @@ public class SnomedEditingContext extends BaseSnomedEditingContext {
 	 * @return SNOMED CT component Id
 	 * @deprecated - use new {@link ISnomedIdentifierService}
 	 */
-	public String generateComponentId(final ComponentNature componentNature, final String namespace, final ComponentIdUniquenessValidator validator) {
+	private String generateComponentId(final ComponentCategory componentNature, final String namespace, final ComponentIdUniquenessValidator validator) {
 		checkNotNull(componentNature, "componentNature");
 		checkNotNull(validator, "validator");
 
@@ -1535,19 +1562,6 @@ public class SnomedEditingContext extends BaseSnomedEditingContext {
 			componentId = identifiers.generateId(componentNature, namespace);
 		}
 		return componentId;
-	}
-	
-	/**
-	 * Returns a unique SNOMED CT component Id.
-	 * The method does not take into account components in the transaction, only in
-	 * the db.
-	 * 
-	 * @param componentNature type of the component (Concept|Description|Relationship)
-	 * @return SNOMED CT component Id
-	 * @deprecated - use new {@link ISnomedIdentifierService}
-	 */
-	public String generateComponentId(final ComponentNature componentNature) {
-		return generateComponentId(componentNature, getNamespace(), new ComponentIdUniquenessValidator(this));
 	}
 	
 	@Override
@@ -1640,8 +1654,6 @@ public class SnomedEditingContext extends BaseSnomedEditingContext {
 	 *            - the component to generate ID for
 	 * @return
 	 * @see #getNamespace()
-	 * @see #generateComponentId(ComponentNature)
-	 * @see #generateComponentId(ComponentNature, String)
 	 * @throws NullPointerException
 	 *             - if the given component was <code>null</code>.
 	 * @deprecated - use new {@link ISnomedIdentifierService}
@@ -1655,13 +1667,13 @@ public class SnomedEditingContext extends BaseSnomedEditingContext {
 		checkNotNull(component, "component");
 		checkNotNull(validator, "validator");
 		if (component instanceof Relationship) {
-			return generateComponentId(ComponentNature.RELATIONSHIP, getNamespace(), validator);
+			return generateComponentId(ComponentCategory.RELATIONSHIP, getNamespace(), validator);
 		} else if (component instanceof Concept) {
-			return generateComponentId(ComponentNature.CONCEPT, getNamespace(), validator);
+			return generateComponentId(ComponentCategory.CONCEPT, getNamespace(), validator);
 		} else if (component instanceof Description) {
-			return generateComponentId(ComponentNature.DESCRIPTION, getNamespace(), validator);
+			return generateComponentId(ComponentCategory.DESCRIPTION, getNamespace(), validator);
 		}
 		throw new IllegalArgumentException(MessageFormat.format("Unexpected component class ''{0}''.", component.getClass()));
 	}
-	
+
 }
