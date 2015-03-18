@@ -88,5 +88,5 @@ public interface ISnomedExportConfiguration {
 	 * 
 	 * @return a collection of module identifiers
 	 */
-	Collection<String> getModuleDependencyIds();
+	Collection<String> getModuleIds();
 }

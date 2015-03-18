@@ -46,9 +46,9 @@ public class SnomedExportConfiguration implements ISnomedExportConfiguration {
 		
 		this.type = checkNotNull(type, "type");
 		this.version = checkNotNull(version, "version");
-		this.taskId = checkNotNull(taskId, "taskId");
 		this.namespaceId = checkNotNull(namespaceId, "namespaceId");
 		
+		this.taskId = taskId;
 		this.moduleIds = moduleIds == null ? Collections.<String>emptySet() : moduleIds;
 		this.deltaExportStartEffectiveTime = deltaExportStartEffectiveTime;
 		this.deltaExportEndEffectiveTime = deltaExportEndEffectiveTime;
@@ -86,7 +86,7 @@ public class SnomedExportConfiguration implements ISnomedExportConfiguration {
 	}
 
 	@Override
-	public Collection<String> getModuleDependencyIds() {
+	public Collection<String> getModuleIds() {
 		return moduleIds;
 	}
 	
