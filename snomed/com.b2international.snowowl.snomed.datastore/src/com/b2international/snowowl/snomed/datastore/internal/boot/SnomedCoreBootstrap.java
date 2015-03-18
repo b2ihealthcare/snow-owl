@@ -21,11 +21,14 @@ import com.b2international.snowowl.core.config.SnowOwlConfiguration;
 import com.b2international.snowowl.core.setup.DefaultBootstrapFragment;
 import com.b2international.snowowl.core.setup.Environment;
 import com.b2international.snowowl.core.setup.ModuleConfig;
+import com.b2international.snowowl.snomed.datastore.SnomedTerminologyBrowser;
 import com.b2international.snowowl.snomed.datastore.config.SnomedCoreConfiguration;
 import com.b2international.snowowl.snomed.datastore.id.ISnomedIdentifierService;
 import com.b2international.snowowl.snomed.datastore.id.reservations.ISnomedIdentiferReservationService;
+import com.b2international.snowowl.snomed.datastore.id.reservations.Reservations;
 import com.b2international.snowowl.snomed.datastore.internal.id.SnomedIdentifierServiceImpl;
 import com.b2international.snowowl.snomed.datastore.internal.id.reservations.SnomedIdentifierReservationServiceImpl;
+import com.google.inject.Provider;
 
 /**
  * @since 3.4
@@ -33,9 +36,13 @@ import com.b2international.snowowl.snomed.datastore.internal.id.reservations.Sno
 @ModuleConfig(fieldName = "snomed", type = SnomedCoreConfiguration.class)
 public class SnomedCoreBootstrap extends DefaultBootstrapFragment {
 	
+	private static final String STORE_RESERVATIONS = "internal_store_reservations";
+
 	@Override
 	public void init(SnowOwlConfiguration configuration, Environment env) throws Exception {
+		final Provider<SnomedTerminologyBrowser> browser = env.provider(SnomedTerminologyBrowser.class); 
 		final ISnomedIdentiferReservationService reservationService = new SnomedIdentifierReservationServiceImpl();
+		reservationService.create(STORE_RESERVATIONS, Reservations.uniqueInStore(browser));
 		final ISnomedIdentifierService idService = new SnomedIdentifierServiceImpl(reservationService);
 		env.services().registerService(ISnomedIdentiferReservationService.class, reservationService);
 		env.services().registerService(ISnomedIdentifierService.class, idService);
