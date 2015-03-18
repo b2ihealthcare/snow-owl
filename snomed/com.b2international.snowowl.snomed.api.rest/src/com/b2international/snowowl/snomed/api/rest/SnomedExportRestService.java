@@ -20,7 +20,6 @@ import static org.springframework.hateoas.mvc.ControllerLinkBuilder.methodOn;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
 import java.net.URI;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -28,19 +27,19 @@ import java.util.Date;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentMap;
 
-import javax.servlet.http.HttpServletResponse;
-
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.FileSystemResource;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.util.StreamUtils;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -174,29 +173,26 @@ public class SnomedExportRestService extends AbstractSnomedRestService {
 		@ApiResponse(code=200, message="OK"),
 		@ApiResponse(code=404, message="Export run not found")
 	})
-	@RequestMapping(value="/{id}/archive", method=RequestMethod.GET, produces = { MediaType.APPLICATION_OCTET_STREAM_VALUE })
-	public void getArchive(
+	@RequestMapping(value="/{id}/archive", method=RequestMethod.GET)
+	public @ResponseBody ResponseEntity<?> getArchive(
 			@ApiParam(value="Export run ID")
 			@PathVariable(value="id")
 			final UUID exportId,
 			
-			final HttpServletResponse response) throws IOException {
+			@RequestHeader
+			final HttpHeaders headers) throws IOException {
 
 		final SnomedExportRestRun export = getExport(exportId);
 		final File exportZipFile = exportService.export(toExportConfiguration(export));
 		final FileSystemResource exportZipResource = new FileSystemResource(exportZipFile);
 		
-		response.setStatus(HttpServletResponse.SC_OK);
-		response.setContentType(MediaType.APPLICATION_OCTET_STREAM_VALUE);
+		final HttpHeaders httpHeaders = new HttpHeaders();
 		final String timestamp = new SimpleDateFormat("yyyyMMdd").format(new Date());
-		response.setHeader(com.google.common.net.HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"snomed_export_" + timestamp + ".zip\"");
+		httpHeaders.setContentType(MediaType.APPLICATION_OCTET_STREAM);
+		httpHeaders.set("Content-Disposition", "attachment; filename=\"snomed_export_" + timestamp + ".zip\"");
 
-		try (final InputStream in = exportZipResource.getInputStream()) {
-			StreamUtils.copy(in, response.getOutputStream());
-		}
-
-		response.getOutputStream().flush();
 		exports.remove(exportId);
+		return new ResponseEntity<FileSystemResource>(exportZipResource, httpHeaders, HttpStatus.OK);
 	}
 	
 	private SnomedExportConfiguration toExportConfiguration(final SnomedExportRestConfiguration configuration) {
