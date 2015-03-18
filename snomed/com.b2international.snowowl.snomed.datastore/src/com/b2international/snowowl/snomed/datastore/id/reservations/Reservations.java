@@ -18,10 +18,15 @@ package com.b2international.snowowl.snomed.datastore.id.reservations;
 import java.util.Collection;
 import java.util.Collections;
 
-import com.b2international.snowowl.snomed.datastore.ComponentNature;
+import com.b2international.snowowl.core.terminology.ComponentCategory;
+import com.b2international.snowowl.snomed.datastore.SnomedEditingContext;
+import com.b2international.snowowl.snomed.datastore.SnomedTerminologyBrowser;
 import com.b2international.snowowl.snomed.datastore.id.SnomedIdentifier;
 import com.b2international.snowowl.snomed.datastore.id.SnomedIdentifiers;
 import com.b2international.snowowl.snomed.datastore.internal.id.reservations.ReservationRangeImpl;
+import com.b2international.snowowl.snomed.datastore.internal.id.reservations.UniqueInStoreReservation;
+import com.b2international.snowowl.snomed.datastore.internal.id.reservations.UniqueInTransactionReservation;
+import com.google.inject.Provider;
 
 /**
  * @since 4.0
@@ -39,7 +44,7 @@ public class Reservations {
 	 */
 	public static Reservation single(final String componentId) {
 		final SnomedIdentifier id = SnomedIdentifiers.of(componentId);
-		return new ReservationRangeImpl(id.getItemId(), id.getItemId(), id.getNamespace(), Collections.singleton(id.getComponentNature()));
+		return new ReservationRangeImpl(id.getItemId(), id.getItemId(), id.getNamespace(), Collections.singleton(id.getComponentCategory()));
 	}
 
 	/**
@@ -55,8 +60,29 @@ public class Reservations {
 	 *            - the compenent types affected, cannot be empty.
 	 * @return
 	 */
-	public static Reservation range(final long itemIdMin, final long itemIdMax, final String namespace, final Collection<ComponentNature> components) {
+	public static Reservation range(final long itemIdMin, final long itemIdMax, final String namespace, final Collection<ComponentCategory> components) {
 		return new ReservationRangeImpl(itemIdMin, itemIdMax, namespace, components);
+	}
+
+	/**
+	 * Creates a new {@link Reservation} instance for the given {@link SnomedEditingContext}. The returned {@link Reservation} will conflict with
+	 * {@link SnomedIdentifier} which are already taken by new components in the given {@link SnomedEditingContext}.
+	 * 
+	 * @param context
+	 * @return
+	 */
+	public static Reservation uniqueInTransaction(SnomedEditingContext context) {
+		return new UniqueInTransactionReservation(context);
+	}
+
+	/**
+	 * Creates a {@link Reservation} instance to reserve all SNOMED CT Identifiers when generating new IDs.
+	 * 
+	 * @param browser - the browser to use as source when querying for ID conflict
+	 * @return
+	 */
+	public static Reservation uniqueInStore(Provider<SnomedTerminologyBrowser> browser) {
+		return new UniqueInStoreReservation(browser);
 	}
 
 }

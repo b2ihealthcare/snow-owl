@@ -1676,4 +1676,8 @@ public class SnomedEditingContext extends BaseSnomedEditingContext {
 		throw new IllegalArgumentException(MessageFormat.format("Unexpected component class ''{0}''.", component.getClass()));
 	}
 
+	public boolean isUniqueInTransaction(SnomedIdentifier identifier) {
+		throw new UnsupportedOperationException("Implement");
+	}
+
 }
