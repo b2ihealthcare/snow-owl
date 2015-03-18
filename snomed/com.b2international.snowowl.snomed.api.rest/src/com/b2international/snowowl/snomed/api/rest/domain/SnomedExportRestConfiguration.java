@@ -34,6 +34,7 @@ public class SnomedExportRestConfiguration {
 	private Date deltaStartEffectiveTime;
 	private Date deltaEndEffectiveTime;
 	private String namespaceId = "INT";
+	private String transientEffectiveTime = "NOW";
 
 	/**
 	 * Returns with the RF2 release type of the current export configuration.
@@ -126,5 +127,19 @@ public class SnomedExportRestConfiguration {
 	
 	public void setModuleIds(Collection<String> moduleIds) {
 		this.moduleIds = moduleIds;
+	}
+	
+	/**
+	 * Returns the transient effective time to use for unpublished components.
+	 * 
+	 * @return the transient effective time, or {@code null} if the default {@code UNPUBLISHED} value should be printed
+	 * for unpublished components
+	 */
+	public String getTransientEffectiveTime() {
+		return transientEffectiveTime;
+	}
+
+	public void setTransientEffectiveTime(String transientEffectiveTime) {
+		this.transientEffectiveTime = transientEffectiveTime;
 	}
 }

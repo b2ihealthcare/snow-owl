@@ -33,6 +33,14 @@ public interface ISnomedExportConfiguration {
 	Rf2ReleaseType getRf2ReleaseType();
 
 	/**
+	 * Returns the transient effective time to use for unpublished components.
+	 * 
+	 * @return the transient effective time, or {@code null} if the default {@code UNPUBLISHED} value should be printed
+	 * for unpublished components
+	 */
+	String getTransientEffectiveTime();
+	
+	/**
 	 * Returns the code system version identifier, eg. "{@code 2014-01-31}".
 	 * 
 	 * @return the code system version identifier

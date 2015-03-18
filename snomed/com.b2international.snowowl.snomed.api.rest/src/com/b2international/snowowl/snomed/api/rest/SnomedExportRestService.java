@@ -53,6 +53,7 @@ import com.b2international.snowowl.snomed.api.impl.domain.SnomedExportConfigurat
 import com.b2international.snowowl.snomed.api.rest.domain.SnomedExportRestConfiguration;
 import com.b2international.snowowl.snomed.api.rest.domain.SnomedExportRestRun;
 import com.b2international.snowowl.snomed.api.rest.util.Responses;
+import com.google.common.base.Strings;
 import com.google.common.collect.MapMaker;
 import com.wordnik.swagger.annotations.Api;
 import com.wordnik.swagger.annotations.ApiOperation;
@@ -82,6 +83,7 @@ public class SnomedExportRestService extends AbstractSnomedRestService {
 			notes="Registers the specified export configuration and returns a location header pointing to the stored export run.")
 	@ApiResponses({
 		@ApiResponse(code=201, message="Created"),
+		@ApiResponse(code=400, message="Configuration object failed validation"),
 		@ApiResponse(code=404, message="Code system version and/or task not found")
 	})
 	@RequestMapping(method=RequestMethod.POST, consumes = { AbstractRestService.V1_MEDIA_TYPE, MediaType.APPLICATION_JSON_VALUE })
@@ -91,10 +93,18 @@ public class SnomedExportRestService extends AbstractSnomedRestService {
 			@RequestBody
 			final SnomedExportRestConfiguration configuration) throws IOException {
 
+		if (configuration.getType() == null) {
+			throw new BadRequestException("RF2 release type was missing from the export configuration.");
+		}
+
 		if (!Rf2ReleaseType.DELTA.equals(configuration.getType())) {
 			if (configuration.getDeltaStartEffectiveTime() != null || configuration.getDeltaEndEffectiveTime() != null) {
 				throw new BadRequestException("Export date ranges can only be set if the export mode is set to DELTA.");
 			}
+		}
+		
+		if (Strings.isNullOrEmpty(configuration.getNamespaceId())) {
+			throw new BadRequestException("Namespace ID was missing from the export configuration.");
 		}
 
 		final StorageRef exportStorageRef = new StorageRef();
@@ -179,7 +189,8 @@ public class SnomedExportRestService extends AbstractSnomedRestService {
 				configuration.getType(), 
 				configuration.getVersion(), configuration.getTaskId(),
 				configuration.getNamespaceId(), configuration.getModuleIds(),
-				configuration.getDeltaStartEffectiveTime(), configuration.getDeltaEndEffectiveTime());
+				configuration.getDeltaStartEffectiveTime(), configuration.getDeltaEndEffectiveTime(),
+				configuration.getTransientEffectiveTime());
 
 		return conf;
 	}
