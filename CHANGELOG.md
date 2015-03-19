@@ -4,16 +4,21 @@ All notable changes to this project will be documented in this file.
 ## 2015-03-19
 ### Added
 - `WRP-135`: added properties `taskId` and `versionId` to the export configuration object to allow exporting content from task branches. URLs for exporting no longer include the version segment.
+  * version/taskId is accepted, but not applicable (no tasks on versions)
+  * when taskId left out, it means MAIN or head of a particular version
 - Added the `transientEffectiveTime` property to the export configuration object for specifying 
 effective time values in export files, if unpublished components are present. Valid values are:
   * `""` or not setting the property: uses `Unpublished` in exported files
-  * `"NOW"`: uses the current date in exported files
+  * `"NOW"`: uses the current server date in exported files
   * dates in `yyyyMMdd` format, eg. `"20150319"`: uses the specified date in exported files
-  
+  * anything else result in return code 400 bad request, date is not validated in terms of earlier/later (only proper format)
   Note: unpublished components are filtered out from `DELTA` exports if the export configuration specifies an ending effective time.
 
 ### Changed
 - Changed the export service to export components from _all_ modules if the `moduleIds` property of the export configuration object is not set. The previous behavior resulted in empty export files under the assumption that _no_ modules should be exported.
+
+- querying or exporting a non-existent export config returns now code 404 as opposed to 200 and an empty object
+- after downloading the export result, the export config is cleaned up
 
 ## DEV2.1 - 2015-03-05
 ### Changed
