@@ -11,28 +11,9 @@
 		<version>4.0.0-SNAPSHOT</version>
 	</parent>
 
-	<properties>
-		<customer>community</customer>
-		<build.qualifier>${maven.build.timestamp}</build.qualifier>
-		<build.version>${parsedVersion.majorVersion}.${parsedVersion.minorVersion}.${parsedVersion.incrementalVersion}.${build.qualifier}</build.version>
-	</properties>
-
 	<build>
 		<finalName>snowowl-${customer}_${build.version}</finalName>
 		<plugins>
-			<plugin>
-				<groupId>org.codehaus.mojo</groupId>
-				<artifactId>build-helper-maven-plugin</artifactId>
-				<version>1.9.1</version>
-				<executions>
-					<execution>
-						<id>parse-version</id>
-						<goals>
-							<goal>parse-version</goal>
-						</goals>
-					</execution>
-				</executions>
-			</plugin>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-antrun-plugin</artifactId>

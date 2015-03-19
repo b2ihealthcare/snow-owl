@@ -23,6 +23,7 @@
 		<target.platform.version>3.9.0</target.platform.version>
 		<!-- Versioning -->
 		<forceContextQualifier>${maven.build.timestamp}</forceContextQualifier>
+		<customer>community</customer>
 	</properties>
 
 	<modules>
