@@ -1,6 +1,6 @@
 # Snow Owl
 
-## Legalese
+## Legal
 
 Public domain:
 Base64.java
