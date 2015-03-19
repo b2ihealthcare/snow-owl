@@ -34,7 +34,7 @@ public class SnomedExportRestConfiguration {
 	private Date deltaStartEffectiveTime;
 	private Date deltaEndEffectiveTime;
 	private String namespaceId = "INT";
-	private String transientEffectiveTime = "NOW";
+	private String transientEffectiveTime;
 
 	/**
 	 * Returns with the RF2 release type of the current export configuration.

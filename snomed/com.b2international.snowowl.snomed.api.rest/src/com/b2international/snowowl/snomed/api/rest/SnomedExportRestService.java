@@ -131,7 +131,7 @@ public class SnomedExportRestService extends AbstractSnomedRestService {
 	
 	private void validateTransientEffectiveTime(final String transientEffectiveTime) {
 		
-		if (Strings.isNullOrEmpty(transientEffectiveTime) || "LEAVE_EMPTY".equals(transientEffectiveTime)) {
+		if (Strings.isNullOrEmpty(transientEffectiveTime)) {
 			return;
 		} else if ("NOW".equals(transientEffectiveTime)) {
 			return;
@@ -140,7 +140,7 @@ public class SnomedExportRestService extends AbstractSnomedRestService {
 		try {
 			new SimpleDateFormat("yyyyMMdd").parse(transientEffectiveTime);
 		} catch (ParseException e) {
-			throw new BadRequestException("Transient effective time '%s' was not empty, 'LEAVE_EMPTY', 'NOW' or a date in the expected format.", transientEffectiveTime);
+			throw new BadRequestException("Transient effective time '%s' was not empty, 'NOW' or a date in the expected format.", transientEffectiveTime);
 		}
 	}
 
