@@ -173,7 +173,7 @@ public class SnomedExportRestService extends AbstractSnomedRestService {
 		@ApiResponse(code=200, message="OK"),
 		@ApiResponse(code=404, message="Export run not found")
 	})
-	@RequestMapping(value="/{id}/archive", method=RequestMethod.GET)
+	@RequestMapping(value="/{id}/archive", method=RequestMethod.GET, produces = { AbstractRestService.V1_MEDIA_TYPE, MediaType.APPLICATION_OCTET_STREAM_VALUE })
 	public @ResponseBody ResponseEntity<?> getArchive(
 			@ApiParam(value="Export run ID")
 			@PathVariable(value="id")
