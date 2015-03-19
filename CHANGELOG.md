@@ -1,6 +1,20 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
+## 2015-03-19
+### Added
+- `WRP-135`: added properties `taskId` and `versionId` to the export configuration object to allow exporting content from task branches. URLs for exporting no longer include the version segment.
+- Added the `transientEffectiveTime` property to the export configuration object for specifying 
+effective time values in export files, if unpublished components are present. Valid values are:
+  * `""` or not setting the property: uses `Unpublished` in exported files
+  * `"NOW"`: uses the current date in exported files
+  * dates in `yyyyMMdd` format, eg. `"20150319"`: uses the specified date in exported files
+  
+  Note: unpublished components are filtered out from `DELTA` exports if the export configuration specifies an ending effective time.
+
+### Changed
+- Changed the export service to export components from _all_ modules if the `moduleIds` property of the export configuration object is not set. The previous behavior resulted in empty export files under the assumption that _no_ modules should be exported.
+
 ## DEV2.1 - 2015-03-05
 ### Changed
 - Make the `Accept` header mandatory for requests to "B2i" URLs, and produce `application/json` 
