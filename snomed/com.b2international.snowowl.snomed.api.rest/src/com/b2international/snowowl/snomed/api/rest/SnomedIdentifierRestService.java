@@ -58,7 +58,7 @@ public class SnomedIdentifierRestService extends AbstractRestService {
 	@ResponseStatus(value = HttpStatus.CREATED)
 	public DeferredResult<SnomedIdentifierResponse> generate(@RequestBody final SnomedIdentifierRequest request) {
 		final DeferredResult<SnomedIdentifierResponse> result = new DeferredResult<SnomedIdentifierResponse>();
-		bus.send("/snomed-ct/ids", new SnomedIdentifierRequestEvent(request.getType()), new IHandler<IMessage>() {
+		bus.send("/snomed-ct/ids", new SnomedIdentifierRequestEvent(request.getType(), request.getNamespace()), new IHandler<IMessage>() {
 			@Override
 			public void handle(IMessage message) {
 				if (message.isSucceeded()) {
