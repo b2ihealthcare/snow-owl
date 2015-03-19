@@ -53,8 +53,7 @@ import com.google.common.base.Predicate;
 import com.google.common.base.Supplier;
 
 /**
- * Export configuration for the SNOMED&nbsp;CT export process.
- *
+ * Export configuration for the SNOMED CT export process.
  */
 public class SnomedExportConfigurationImpl implements SnomedExportConfiguration {
 
@@ -62,6 +61,8 @@ public class SnomedExportConfigurationImpl implements SnomedExportConfiguration 
 	
 	private final IBranchPath currentBranchPath;
 	private final ContentSubType contentSubType;
+	private final String unsetEffectiveTimeLabel;
+
 	private final Date deltaExportStartEffectiveTime;
 	private final Date deltaExportEndEffectiveTime;
 
@@ -107,11 +108,16 @@ public class SnomedExportConfigurationImpl implements SnomedExportConfiguration 
 					return unmodifiableMap(branchPathToSegmentNamesMapping);
 				}
 		});
-	
-	public SnomedExportConfigurationImpl(final IBranchPath currentBranchPath, final ContentSubType contentSubType, 
-			@Nullable final Date deltaExportStartEffectiveTime, @Nullable final Date deltaExportEndEffectiveTime) {
+
+	public SnomedExportConfigurationImpl(final IBranchPath currentBranchPath,
+			final ContentSubType contentSubType,
+			final String unsetEffectiveTimeLabel,
+			@Nullable final Date deltaExportStartEffectiveTime, 
+			@Nullable final Date deltaExportEndEffectiveTime) {
+
 		this.currentBranchPath = checkNotNull(currentBranchPath, "currentBranchPath");
 		this.contentSubType = checkNotNull(contentSubType, "contentSubType");
+		this.unsetEffectiveTimeLabel = checkNotNull(unsetEffectiveTimeLabel, "unsetEffectiveTimeLabel");
 		this.deltaExportStartEffectiveTime = deltaExportStartEffectiveTime;
 		this.deltaExportEndEffectiveTime = deltaExportEndEffectiveTime;
 	}
@@ -126,6 +132,11 @@ public class SnomedExportConfigurationImpl implements SnomedExportConfiguration 
 		return contentSubType;
 	}
 
+	@Override
+	public String getUnsetEffectiveTimeLabel() {
+		return unsetEffectiveTimeLabel;
+	}
+	
 	@Override
 	@Nullable public Date getDeltaExportStartEffectiveTime() {
 		return deltaExportStartEffectiveTime;
@@ -144,5 +155,4 @@ public class SnomedExportConfigurationImpl implements SnomedExportConfiguration 
 	private List<ICodeSystemVersion> getAllVersion() {
 		return getServiceForClass(CodeSystemService.class).getAllTagsWithHead(REPOSITORY_UUID);
 	}
-
 }

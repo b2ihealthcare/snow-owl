@@ -31,16 +31,28 @@ public class SnomedExportConfiguration implements ISnomedExportConfiguration {
 
 	private Rf2ReleaseType type;
 	private String version;
+	private String taskId;
 	private String namespaceId;
 	private Collection<String> moduleIds;
 	private Date deltaExportStartEffectiveTime;
 	private Date deltaExportEndEffectiveTime;
+	private String transientEffectiveTime;
 
-	public SnomedExportConfiguration(Rf2ReleaseType type, String version, String namespaceId, Collection<String> moduleIds) {
+	public SnomedExportConfiguration(Rf2ReleaseType type, 
+			String version, String taskId, 
+			String namespaceId, Collection<String> moduleIds,
+			Date deltaExportStartEffectiveTime, Date deltaExportEndEffectiveTime, 
+			String transientEffectiveTime) {
+		
 		this.type = checkNotNull(type, "type");
 		this.version = checkNotNull(version, "version");
 		this.namespaceId = checkNotNull(namespaceId, "namespaceId");
+		
+		this.taskId = taskId;
 		this.moduleIds = moduleIds == null ? Collections.<String>emptySet() : moduleIds;
+		this.deltaExportStartEffectiveTime = deltaExportStartEffectiveTime;
+		this.deltaExportEndEffectiveTime = deltaExportEndEffectiveTime;
+		this.transientEffectiveTime = transientEffectiveTime;
 	}
 	
 	@Override
@@ -55,7 +67,7 @@ public class SnomedExportConfiguration implements ISnomedExportConfiguration {
 
 	@Override
 	public String getTaskId() {
-		return null; // XXX Exporting on tasks are not allowed
+		return taskId;
 	}
 
 	@Override
@@ -63,27 +75,23 @@ public class SnomedExportConfiguration implements ISnomedExportConfiguration {
 		return deltaExportStartEffectiveTime;
 	}
 	
-	public void setDeltaExportStartEffectiveTime(Date deltaExportStartEffectiveTime) {
-		this.deltaExportStartEffectiveTime = deltaExportStartEffectiveTime;
-	}
-	
 	@Override
 	public Date getDeltaExportEndEffectiveTime() {
 		return deltaExportEndEffectiveTime;
 	}
 	
-	public void setDeltaExportEndEffectiveTime(Date deltaExportEndEffectiveTime) {
-		this.deltaExportEndEffectiveTime = deltaExportEndEffectiveTime;
-	}
-
 	@Override
 	public String getNamespaceId() {
 		return namespaceId;
 	}
 
 	@Override
-	public Collection<String> getModuleDependencyIds() {
+	public Collection<String> getModuleIds() {
 		return moduleIds;
 	}
-
+	
+	@Override
+	public String getTransientEffectiveTime() {
+		return transientEffectiveTime;
+	}
 }

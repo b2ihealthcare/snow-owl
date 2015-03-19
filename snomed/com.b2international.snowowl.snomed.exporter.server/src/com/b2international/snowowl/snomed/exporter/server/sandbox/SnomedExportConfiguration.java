@@ -22,12 +22,12 @@ import java.util.Map;
 import javax.annotation.Nullable;
 
 import com.b2international.snowowl.core.api.IBranchPath;
+import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.snomed.common.ContentSubType;
 
 /**
  * Wraps several configuration attributes for the SNOMED&nbsp;CT 
  * export process.
- *
  */
 public interface SnomedExportConfiguration {
 
@@ -62,5 +62,10 @@ public interface SnomedExportConfiguration {
 	 * @return a mapping between branch paths and index segment names.
 	 */
 	Map<IBranchPath, Collection<String>> getVersionPathToSegmentNameMappings();
-	
+
+	/**
+	 * Returns the label to use when a component does not have an effective time assigned. Defaults to {@link EffectiveTimes#UNSET_EFFECTIVE_TIME_LABEL}. 
+	 * @return the effective time label for unpublished components
+	 */
+	String getUnsetEffectiveTimeLabel();
 }
