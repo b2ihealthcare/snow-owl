@@ -228,15 +228,19 @@ public final class ImportUtil {
 	}
 
 	public SnomedImportResult doImport(final String requestingUserId, final ImportConfiguration configuration, final IProgressMonitor monitor) throws ImportException {
+		try (SnomedImportContext context = new SnomedImportContext()) {
+			return doImportInternal(context, requestingUserId, configuration, monitor); 
+		} catch (Exception e) {
+			throw new ImportException(e);
+		}
+	}
 
+	private SnomedImportResult doImportInternal(final SnomedImportContext context, final String requestingUserId, final ImportConfiguration configuration, final IProgressMonitor monitor) {
+		final SubMonitor subMonitor = SubMonitor.convert(monitor, "Importing release files...", 17);
 		final SnomedImportResult result = new SnomedImportResult();
 		final IBranchPath branchPath = BranchPathUtils.createPath(configuration.getBranchPath());
-
 		LogUtils.logImportActivity(IMPORT_LOGGER, requestingUserId, branchPath, "SNOMED CT import started from RF2 release format.");
-
-		final SnomedImportContext context = new SnomedImportContext();
-		final SubMonitor subMonitor = SubMonitor.convert(monitor, "Importing release files...", 17);
-
+		
 		if (!isContentValid(result, requestingUserId, configuration, branchPath, subMonitor)) {
 			return result;
 		}
@@ -371,7 +375,7 @@ public final class ImportUtil {
 			throw new ImportException(e.getCause());
 		}
 		
-		return resultHolder[0]; 
+		return resultHolder[0];
 	}
 
 	private SnomedImportResult doImportLocked(final String requestingUserId, final ImportConfiguration configuration,
