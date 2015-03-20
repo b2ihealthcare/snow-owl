@@ -101,7 +101,7 @@ public class SnomedIdentifiers {
 	 */
 	public static void validate(String componentId) throws IllegalArgumentException {
 		checkArgument(!Strings.isNullOrEmpty(componentId), "ComponentId must be defined");
-		checkArgument(componentId.startsWith("0"), "ComponentId can't start with leading zeros");
+		checkArgument(!componentId.startsWith("0"), "ComponentId can't start with leading zeros");
 		checkArgument(componentId.length() >= 6 && componentId.length() <= 18, "ComponentId's length should be between 6-18 character length");
 		try {
 			Long.parseLong(componentId);
