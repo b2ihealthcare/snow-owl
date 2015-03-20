@@ -123,7 +123,7 @@ import com.google.common.io.InputSupplier;
 public final class ImportUtil {
 
 	private static final org.slf4j.Logger IMPORT_LOGGER = org.slf4j.LoggerFactory.getLogger(ImportUtil.class);
-	private static final String SNOMED_IMPORT_POST_PROCESSOR_EXTENSION = "com.b2international.snowowl.snomed.importer.rf2.snomedImportPostProcessor";
+	private static final String SNOMED_IMPORT_POST_PROCESSOR_EXTENSION = "com.b2international.snowowl.snomed.datastore.snomedImportPostProcessor";
 
 	public SnomedImportResult doImport(final IBranchPath branchPath, final String languageRefSetId, 
 			final ContentSubType contentSubType, final File releaseArchive, final boolean shouldCreateVersions) throws Exception {
