@@ -32,22 +32,20 @@ import org.apache.lucene.document.Field;
 import org.apache.lucene.document.Field.Store;
 import org.apache.lucene.document.IntField;
 import org.apache.lucene.document.LongField;
-import org.apache.lucene.document.NumericDocValuesField;
 import org.apache.lucene.document.StringField;
 import org.apache.lucene.index.IndexableField;
 import org.apache.lucene.index.Term;
+import org.apache.lucene.search.BooleanClause.Occur;
+import org.apache.lucene.search.BooleanQuery;
 import org.apache.lucene.search.CachingWrapperFilter;
 import org.apache.lucene.search.Filter;
 import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.ReferenceManager;
 import org.apache.lucene.search.ScoreDoc;
-import org.apache.lucene.search.Sort;
-import org.apache.lucene.search.SortField;
 import org.apache.lucene.search.TermQuery;
 import org.apache.lucene.search.TermRangeFilter;
 import org.apache.lucene.search.TopDocs;
-import org.apache.lucene.search.TopFieldDocs;
 import org.apache.lucene.search.TotalHitCountCollector;
 import org.eclipse.emf.cdo.common.id.CDOID;
 import org.eclipse.emf.cdo.common.id.CDOIDUtil;
@@ -135,9 +133,7 @@ public class ImportIndexServerService extends FSIndexServerService<IIndexEntry> 
 
     private static final Set<String> DESCRIPTION_FIELDS = ImmutableSet.of(DESCRIPTION_ID, CONCEPT_ID, TERM, ACTIVE, TERM_TYPE, PREFERRED_MEMBER_ID, ACCEPTABLE_MEMBER_ID);
     private static final Set<String> TERM_ONLY = ImmutableSet.of(TERM);
-    private static final Set<String> TERM_TYPE_AND_ACCEPTABILITY_ONLY = ImmutableSet.of(TERM, TERM_TYPE, PREFERRED_MEMBER_ID, ACCEPTABLE_MEMBER_ID);
-
-    private static final Sort TERM_TYPE_SORT = new Sort(new SortField(TERM_TYPE, SortField.Type.INT));
+    private static final Set<String> TERM_AND_TYPE_ONLY = ImmutableSet.of(TERM, TERM_TYPE);
 
     private static final String DIRECTORY_PATH = "sct_import";
     private static final IBranchPath SUPPORTING_INDEX_BRANCH_PATH = BranchPathUtils.createMainPath();
@@ -296,20 +292,79 @@ public class ImportIndexServerService extends FSIndexServerService<IIndexEntry> 
     }
 
     public void registerDescription(final String descriptionId, final String conceptId, final String term, final TermType type, final boolean active) {
-        final Document doc = new Document();
+        
+    	Document doc = getDescriptionDocument(descriptionId);
+    	
+    	if (doc == null) {
+    		doc = new Document();
+    		
+    		doc.add(new StringField(DESCRIPTION_ID, descriptionId, Store.YES));
+    		doc.add(new StringField(CONCEPT_ID, conceptId, Store.YES));
+    		doc.add(new IntField(TERM_TYPE, type.ordinal(), TYPE_PRECISE_INT_STORED));
+    		
+    		pendingDescriptionDocuments.put(Long.parseLong(descriptionId), doc);
+    	} else {
+    		doc.removeField(TERM);
+    		doc.removeField(ACTIVE);
+    	}
 
-        doc.add(new StringField(DESCRIPTION_ID, descriptionId, Store.YES));
-        doc.add(new StringField(CONCEPT_ID, conceptId, Store.YES));
-        doc.add(new StringField(TERM, term, Store.YES));
-        doc.add(new StringField(ACTIVE, Boolean.toString(active), Store.YES));
-        addTermType(doc, type);
-        // XXX: no acceptability field is added at this time
-
-        index(SUPPORTING_INDEX_BRANCH_PATH, doc, new Term(DESCRIPTION_ID, descriptionId));
+		doc.add(new StringField(TERM, term, Store.YES));
+		doc.add(new StringField(ACTIVE, Boolean.toString(active), Store.YES));
     }
 
     public void registerAcceptability(final String descriptionId, final String memberId, final boolean preferred, final boolean active) {
 
+        final Document pendingDescriptionDoc = getDescriptionDocument(descriptionId);
+
+        if (pendingDescriptionDoc == null) {
+            LOGGER.warn("Document for description '{}' does not exist. Skipping acceptability registration.", descriptionId);
+            return;
+        }
+        
+        final String fieldToAdd = preferred ? PREFERRED_MEMBER_ID : ACCEPTABLE_MEMBER_ID;
+        boolean found = false;
+
+        for (final Iterator<IndexableField> itr = pendingDescriptionDoc.getFields().iterator(); itr.hasNext(); /* emtpy */) {
+
+            final IndexableField field = itr.next();
+            final String fieldName = field.name();
+            final String fieldValue = field.stringValue();
+            
+            // Skip fields not related to acceptability
+			if (!fieldName.equals(PREFERRED_MEMBER_ID) && !fieldName.equals(ACCEPTABLE_MEMBER_ID)) {
+				continue;
+			}
+			
+			// Skip fields not containing information about the specified member
+			if (!fieldValue.equals(memberId)) {
+				continue;
+			}
+
+			// If the member is inactive, previously registered information should be removed
+			if (!active) {
+				itr.remove();
+				continue;
+			}
+            
+			/* 
+			 * If the member is active, and it is recorded with the correct acceptability, set the flag, otherwise
+			 * remove it from the opposite acceptability
+			 */
+			if (fieldName.equals(fieldToAdd)) {
+                found = true;
+            } else {
+            	itr.remove();
+            }
+        }
+
+        // If the member was not found, but should be added, add it
+        if (!found && active) {
+            pendingDescriptionDoc.add(new StringField(fieldToAdd, memberId, Store.YES));
+        }
+    }
+
+    private Document getDescriptionDocument(final String descriptionId) {
+    	
         ReferenceManager<IndexSearcher> manager = null;
         IndexSearcher searcher = null;
 
@@ -317,84 +372,44 @@ public class ImportIndexServerService extends FSIndexServerService<IIndexEntry> 
 
             manager = getManager(SUPPORTING_INDEX_BRANCH_PATH);
             searcher = manager.acquire();
+            
+	        final long longDescriptionId = Long.parseLong(descriptionId);
+	        Document pendingDescriptionDoc = (Document) pendingDescriptionDocuments.get(longDescriptionId);
+	
+	        if (pendingDescriptionDoc == null) {
+	            final Query descriptionIdQuery = createDescriptionQuery(descriptionId);
+	            final TopDocs descriptionTopDocs = searcher.search(descriptionIdQuery, 1);
+	
+	            if (null == descriptionTopDocs || CompareUtils.isEmpty(descriptionTopDocs.scoreDocs)) {
+	            	return null;
+	            }
+	
+	            final int descriptionDocId = descriptionTopDocs.scoreDocs[0].doc;
+	            final Document descriptionDoc = searcher.doc(descriptionDocId, DESCRIPTION_FIELDS);
+	
+	            pendingDescriptionDoc = new Document();
+	            pendingDescriptionDoc.add(new StringField(DESCRIPTION_ID, descriptionDoc.get(DESCRIPTION_ID), Store.YES));
+	            pendingDescriptionDoc.add(new StringField(CONCEPT_ID, descriptionDoc.get(CONCEPT_ID), Store.YES));
+	            pendingDescriptionDoc.add(new StringField(TERM, descriptionDoc.get(TERM), Store.YES));
+	            pendingDescriptionDoc.add(new StringField(ACTIVE, descriptionDoc.get(ACTIVE), Store.YES));
+	            pendingDescriptionDoc.add(new IntField(TERM_TYPE, IndexUtils.getIntValue(descriptionDoc.getField(TERM_TYPE)), TYPE_PRECISE_INT_STORED));
+	
+	            for (final String preferredId : descriptionDoc.getValues(PREFERRED_MEMBER_ID)) {
+	                pendingDescriptionDoc.add(new StringField(PREFERRED_MEMBER_ID, preferredId, Store.YES));
+	            }
+	
+	            for (final String acceptableId : descriptionDoc.getValues(ACCEPTABLE_MEMBER_ID)) {
+	                pendingDescriptionDoc.add(new StringField(ACCEPTABLE_MEMBER_ID, acceptableId, Store.YES));
+	            }
+	
+	            pendingDescriptionDocuments.put(longDescriptionId, pendingDescriptionDoc);
+	        }
 
-            final long longDescriptionId = Long.parseLong(descriptionId);
-            Document pendingDescriptionDoc = (Document) pendingDescriptionDocuments.get(longDescriptionId);
-
-            if (pendingDescriptionDoc == null) {
-                final Query descriptionIdQuery = createDescriptionQuery(descriptionId);
-                final TopDocs descriptionTopDocs = searcher.search(descriptionIdQuery, 1);
-
-                if (null == descriptionTopDocs || CompareUtils.isEmpty(descriptionTopDocs.scoreDocs)) {
-                    LOGGER.warn("Document for description '{}' does not exist. Skipping acceptability registration.", descriptionId);
-                    return;
-                }
-
-                final int descriptionDocId = descriptionTopDocs.scoreDocs[0].doc;
-                final Document descriptionDoc = searcher.doc(descriptionDocId, DESCRIPTION_FIELDS);
-
-                pendingDescriptionDoc = new Document();
-                pendingDescriptionDoc.add(new StringField(DESCRIPTION_ID, descriptionDoc.get(DESCRIPTION_ID), Store.YES));
-                pendingDescriptionDoc.add(new StringField(CONCEPT_ID, descriptionDoc.get(CONCEPT_ID), Store.YES));
-                pendingDescriptionDoc.add(new StringField(TERM, descriptionDoc.get(TERM), Store.YES));
-                pendingDescriptionDoc.add(new StringField(ACTIVE, descriptionDoc.get(ACTIVE), Store.YES));
-                addTermType(pendingDescriptionDoc, getTermType(descriptionDoc));
-
-                for (final String preferredId : descriptionDoc.getValues(PREFERRED_MEMBER_ID)) {
-                    pendingDescriptionDoc.add(new StringField(PREFERRED_MEMBER_ID, preferredId, Store.YES));
-                }
-
-                for (final String acceptableId : descriptionDoc.getValues(ACCEPTABLE_MEMBER_ID)) {
-                    pendingDescriptionDoc.add(new StringField(ACCEPTABLE_MEMBER_ID, acceptableId, Store.YES));
-                }
-
-                pendingDescriptionDocuments.put(longDescriptionId, pendingDescriptionDoc);
-            }
-
-            final String fieldToAdd = preferred ? PREFERRED_MEMBER_ID : ACCEPTABLE_MEMBER_ID;
-            boolean found = false;
-
-            for (final Iterator<IndexableField> itr = pendingDescriptionDoc.getFields().iterator(); itr.hasNext(); /* emtpy */) {
-
-                final IndexableField field = itr.next();
-                final String fieldName = field.name();
-                final String fieldValue = field.stringValue();
-                
-                // Skip fields not related to acceptability
-				if (!fieldName.equals(PREFERRED_MEMBER_ID) && !fieldName.equals(ACCEPTABLE_MEMBER_ID)) {
-					continue;
-				}
-				
-				// Skip fields not containing information about the specified member
-				if (!fieldValue.equals(memberId)) {
-					continue;
-				}
-
-				// If the member is inactive, previously registered information should be removed
-				if (!active) {
-					itr.remove();
-					continue;
-				}
-                
-				/* 
-				 * If the member is active, and it is recorded with the correct acceptability, set the flag, otherwise
-				 * remove it from the opposite acceptability
-				 */
-				if (fieldName.equals(fieldToAdd)) {
-                    found = true;
-                } else {
-                	itr.remove();
-                }
-            }
-
-            // If the member was not found, but should be added, add it
-            if (!found && active) {
-                pendingDescriptionDoc.add(new StringField(fieldToAdd, memberId, Store.YES));
-            }
+	        return pendingDescriptionDoc;
 
         } catch (final IOException e) {
 
-            LOGGER.error("Error while registering acceptability for description '{}'.", descriptionId);
+            LOGGER.error("Error while retrieving document for description '{}'.", descriptionId);
             throw new SnowowlRuntimeException(e);
 
         } finally {
@@ -409,9 +424,9 @@ public class ImportIndexServerService extends FSIndexServerService<IIndexEntry> 
                 }
             }
         }
-    }
+	}
 
-    public String getRelationshipLabel(final String relationshipId) {
+	public String getRelationshipLabel(final String relationshipId) {
 
         return CDOUtils.apply(new CDOViewFunction<String, CDOView>(getConnection(), importTargetBranchPath) {
             @Override protected String apply(final CDOView view) {
@@ -427,11 +442,15 @@ public class ImportIndexServerService extends FSIndexServerService<IIndexEntry> 
 
     public String getConceptLabel(final String conceptId) {
 
-        final Query conceptLabelQuery = createContainerConceptQuery(conceptId);
+        final BooleanQuery conceptLabelQuery = new BooleanQuery(true); 
+        conceptLabelQuery.add(createActiveQuery(), Occur.MUST);
+        conceptLabelQuery.add(createContainerConceptQuery(conceptId), Occur.MUST);
+        conceptLabelQuery.add(new TermQuery(new Term(TERM_TYPE, IndexUtils.intToPrefixCoded(TermType.SYNONYM_AND_DESCENDANTS.ordinal()))), Occur.MUST);
+        
         final Filter preferredExistsFilter = getPreferredExistsFilter(); 
         
         // Try to find a preferred description first (PT or FSN, whichever comes first in the sorted set of documents)
-        final List<DocumentWithScore> preferredDescriptionDocuments = search(SUPPORTING_INDEX_BRANCH_PATH, conceptLabelQuery, preferredExistsFilter, TERM_TYPE_SORT, 1);
+        final List<DocumentWithScore> preferredDescriptionDocuments = search(SUPPORTING_INDEX_BRANCH_PATH, conceptLabelQuery, preferredExistsFilter, null, 1);
 
         if (!CompareUtils.isEmpty(preferredDescriptionDocuments)) {
             final DocumentWithScore preferredDocument = Iterables.getFirst(preferredDescriptionDocuments, null);
@@ -465,55 +484,31 @@ public class ImportIndexServerService extends FSIndexServerService<IIndexEntry> 
             manager = getManager(SUPPORTING_INDEX_BRANCH_PATH);
             searcher = manager.acquire();
 
-            final Query containerConceptQuery = createContainerConceptQuery(conceptId);
-            final TotalHitCountCollector hitCountCollector = new TotalHitCountCollector();
-            searcher.search(containerConceptQuery, hitCountCollector);
+            final BooleanQuery conceptActiveDescriptionsQuery = new BooleanQuery(true); 
+            conceptActiveDescriptionsQuery.add(createActiveQuery(), Occur.MUST);
+            conceptActiveDescriptionsQuery.add(createContainerConceptQuery(conceptId), Occur.MUST);
 
-            // If the concept does not have any indexed descriptions, use the FSN
+            final TotalHitCountCollector hitCountCollector = new TotalHitCountCollector();
+            searcher.search(conceptActiveDescriptionsQuery, hitCountCollector);
+
             final int totalHits = hitCountCollector.getTotalHits();
             
 			if (totalHits < 1) {
-                return Collections.singletonList(new TermWithType(getConceptLabel(conceptId), TermType.FSN));
+                return Collections.emptyList();
             }
 
-            final TopFieldDocs topDocs = searcher.search(containerConceptQuery, totalHits, TERM_TYPE_SORT);
+            final TopDocs topDocs = searcher.search(conceptActiveDescriptionsQuery, totalHits);
             final List<TermWithType> conceptDescriptions = newArrayListWithCapacity(topDocs.scoreDocs.length);
-            boolean labelPlacedFirst = false;
             
             for (final ScoreDoc scoreDoc : topDocs.scoreDocs) {
-                final Document doc = searcher.doc(scoreDoc.doc, TERM_TYPE_AND_ACCEPTABILITY_ONLY);
+                final Document doc = searcher.doc(scoreDoc.doc, TERM_AND_TYPE_ONLY);
 
                 final String term = doc.get(TERM);
                 final TermType termType = getTermType(doc);
-                final boolean preferred = doc.getFields(PREFERRED_MEMBER_ID).length > 0;
                 final TermWithType termWithType = new TermWithType(term, termType);
-                
-                // The first preferred SYN description we find should be the first in the returned list
-                if (!labelPlacedFirst && preferred && TermType.SYNONYM_AND_DESCENDANTS.equals(termType)) {
-                	conceptDescriptions.add(0, termWithType);
-                	labelPlacedFirst = true;
-                } else {
-                	conceptDescriptions.add(termWithType);
-                }
+                conceptDescriptions.add(termWithType);
             }
-            
-            // Put an FSN to the front if no PT could be found
-            if (!labelPlacedFirst) {
-            	final int size = conceptDescriptions.size();
-            	for (int i = 0; i < size; i++) {
-					if (TermType.FSN.equals(conceptDescriptions.get(i).type)) {
-						final TermWithType fsnTermWithType = conceptDescriptions.remove(i);
-						conceptDescriptions.add(0, fsnTermWithType);
-						labelPlacedFirst = true;
-						break;
-					}
-				}
-            }
-            
-            if (!labelPlacedFirst) {
-            	LOGGER.warn("Neither PT nor FSN could be set as display label for concept '{}'.", conceptId);
-            }
-
+ 
             return conceptDescriptions;
 
         } catch (final IOException e) {
@@ -541,6 +536,10 @@ public class ImportIndexServerService extends FSIndexServerService<IIndexEntry> 
 
     private TermQuery createDescriptionQuery(final String descriptionId) {
         return new TermQuery(new Term(DESCRIPTION_ID, descriptionId));
+    }
+    
+    private TermQuery createActiveQuery() {
+    	return new TermQuery(new Term(ACTIVE, Boolean.TRUE.toString()));
     }
 
     private Filter getPreferredExistsFilter() {
@@ -597,12 +596,6 @@ public class ImportIndexServerService extends FSIndexServerService<IIndexEntry> 
                 }
             }
         }
-    }
-
-    private void addTermType(final Document doc, final TermType type) {
-        final int typeOrdinal = type.ordinal();
-        doc.add(new IntField(TERM_TYPE, typeOrdinal, TYPE_PRECISE_INT_STORED));
-        doc.add(new NumericDocValuesField(TERM_TYPE, typeOrdinal));
     }
 
     private TermType getTermType(final Document doc) {

@@ -197,7 +197,6 @@ import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType;
 import com.google.common.base.Objects;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.HashMultimap;
-import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Multimap;
@@ -1245,9 +1244,7 @@ public class SnomedRf2IndexInitializer extends Job {
 		doc.add(new LongField(COMPONENT_ICON_ID, Long.valueOf(iconId), Store.YES));
 		doc.add(new NumericDocValuesField(COMPONENT_ICON_ID, Long.valueOf(iconId)));
 
-		final List<TermWithType> descriptions = getImportIndexService().getConceptDescriptions(String.valueOf(conceptId));
-		
-		final String preferredTerm = Iterables.getFirst(descriptions, null).term;
+		final String preferredTerm = getImportIndexService().getConceptLabel(conceptIdString);
 		doc.add(new TextField(COMPONENT_LABEL, preferredTerm, Store.YES));
 		doc.add(new BinaryDocValuesField(COMPONENT_LABEL, new BytesRef(preferredTerm)));
 		SortKeyMode.SORT_ONLY.add(doc, preferredTerm);
@@ -1285,6 +1282,7 @@ public class SnomedRf2IndexInitializer extends Job {
 			doc.add(new LongField(CONCEPT_ANCESTOR, ancestorIdIterator.next(), Store.YES));
 		}
 		
+		final List<TermWithType> descriptions = getImportIndexService().getConceptDescriptions(String.valueOf(conceptId));
 		for (final TermWithType termWithType : descriptions) {
 			
 			final String term = termWithType.term;
