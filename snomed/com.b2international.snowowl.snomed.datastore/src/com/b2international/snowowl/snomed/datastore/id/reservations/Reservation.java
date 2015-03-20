@@ -26,11 +26,11 @@ import com.b2international.snowowl.snomed.datastore.id.SnomedIdentifier;
 public interface Reservation {
 
 	/**
-	 * Returns <code>true</code> if the given identifier is conflicting with this {@link Reservation}'s range.
+	 * Returns <code>true</code> if the given identifier is included in this {@link Reservation}'s range.
 	 * 
 	 * @param identifier
 	 * @return
 	 */
-	boolean conflicts(SnomedIdentifier identifier);
+	boolean includes(SnomedIdentifier identifier);
 
 }

@@ -63,7 +63,7 @@ public class ReservationRangeImpl implements Reservation {
 	}
 
 	@Override
-	public boolean conflicts(SnomedIdentifier identifier) {
+	public boolean includes(SnomedIdentifier identifier) {
 		checkNotNull(identifier, "identifier");
 		return itemIdRange.contains(identifier.getItemId()) && Objects.equal(identifier.getNamespace(), getNamespace()) && getComponents().contains(identifier.getComponentCategory());
 	}

@@ -80,7 +80,7 @@ public class SnomedIdentifierReservationServiceImpl implements ISnomedIdentiferR
 		final SnomedIdentifier identifier = SnomedIdentifiers.of(componentId);
 		synchronized (reservations) {
 			for (Reservation reservation : getReservations()) {
-				if (reservation.conflicts(identifier)) {
+				if (reservation.includes(identifier)) {
 					return true;
 				}
 			}

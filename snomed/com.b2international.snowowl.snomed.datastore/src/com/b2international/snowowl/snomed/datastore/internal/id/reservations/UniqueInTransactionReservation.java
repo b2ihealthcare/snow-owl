@@ -40,7 +40,7 @@ public class UniqueInTransactionReservation implements Reservation {
 	}
 
 	@Override
-	public boolean conflicts(SnomedIdentifier identifier) {
+	public boolean includes(SnomedIdentifier identifier) {
 		return context.isUniqueInTransaction(identifier);
 	}
 }
