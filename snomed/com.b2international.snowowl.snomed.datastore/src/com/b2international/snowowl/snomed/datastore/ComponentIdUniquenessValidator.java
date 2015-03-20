@@ -44,7 +44,7 @@ import com.google.common.base.Supplier;
 /**
  * Class to validate the uniqueness of a SNOMED CT component's ID, and replace it if needed.
  */
-public final class ComponentIdUniquenessValidator {
+final class ComponentIdUniquenessValidator {
 	
 	private static final int NEW_COMPONENT_COUNT_THRESHOLD = 1_000;
 	private final SnomedEditingContext editingContext;
@@ -53,7 +53,7 @@ public final class ComponentIdUniquenessValidator {
 	private final Supplier<Iterable<SnomedRefSet>> newRefSetsSupplier;
 	private final LongSet existingCoreComponentIds;
 
-	public ComponentIdUniquenessValidator(final SnomedEditingContext editingContext) {
+	/*package*/ ComponentIdUniquenessValidator(final SnomedEditingContext editingContext) {
 		this.editingContext = checkNotNull(editingContext, "editingContext");
 		branchPath = createPath(check(this.editingContext.getTransaction()));
 		newComponentIdsInTransaction = newHashSet();

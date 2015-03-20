@@ -19,6 +19,7 @@
 		<module>com.b2international.snowowl.snomed.api.rest</module>
 		<module>com.b2international.snowowl.snomed.api.rest.tests</module>
 		<module>com.b2international.snowowl.snomed.api.feature</module>
+		<module>com.b2international.snowowl.snomed.api.rest.feature</module>
 		
 		<!-- SNOMED CT Models -->
 		<module>com.b2international.snowowl.snomed.model</module>
@@ -27,6 +28,7 @@
 		<!-- SNOMED CT Core modules -->
 		<module>com.b2international.snowowl.snomed.common</module>
 		<module>com.b2international.snowowl.snomed.datastore</module>
+		<module>com.b2international.snowowl.snomed.datastore.tests</module>
 		<module>com.b2international.snowowl.snomed.datastore.server</module>
 		<module>com.b2international.snowowl.snomed.refset.core</module>
 		

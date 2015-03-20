@@ -15,7 +15,7 @@
  */
 package com.b2international.snowowl.snomed.api.rest.domain;
 
-import com.b2international.snowowl.api.domain.ComponentCategory;
+import com.b2international.snowowl.core.terminology.ComponentCategory;
 import com.b2international.snowowl.snomed.api.domain.IdGenerationStrategy;
 import com.b2international.snowowl.snomed.api.impl.domain.AbstractSnomedComponentInput;
 import com.b2international.snowowl.snomed.api.impl.domain.NamespaceIdGenerationStrategy;

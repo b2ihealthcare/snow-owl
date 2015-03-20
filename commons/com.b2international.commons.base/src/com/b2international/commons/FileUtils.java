@@ -17,6 +17,7 @@ package com.b2international.commons;
 
 import static com.b2international.commons.CompareUtils.isEmpty;
 import static com.b2international.commons.StringUtils.isEmpty;
+import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static java.util.UUID.randomUUID;
 
@@ -247,7 +248,7 @@ public final class FileUtils {
 	}
 
 	private static void zip(File directory, final File zipFile) throws IOException {
-		checkNotNull(directory, "directory");
+		checkArgument(directory != null && directory.isDirectory() && directory.canWrite(), "The given directory %s is not found or it's read-only", directory);
 		checkNotNull(zipFile, "zipFile");
 
 		try (FileOutputStream fos = new FileOutputStream(zipFile)) {
@@ -258,19 +259,23 @@ public final class FileUtils {
 
 				while (!queue.isEmpty()) {
 					File first = queue.pop();
-					for (File file : first.listFiles()) {
-						String relativeName = getRelativeName(directory, file);
-						if (file.isDirectory()) {
-							zos.putNextEntry(new ZipEntry(relativeName));
-							queue.push(file);
-						} else {
-							zos.putNextEntry(new ZipEntry(relativeName));
-							try (FileInputStream fis = new FileInputStream(file)) {
-								copy(fis, zos);
+					final File[] content = first.listFiles();
+					if (content != null) {
+						for (File file : content) {
+							String relativeName = getRelativeName(directory, file);
+							if (file.isDirectory()) {
+								zos.putNextEntry(new ZipEntry(relativeName));
+								queue.push(file);
+							} else {
+								zos.putNextEntry(new ZipEntry(relativeName));
+								try (FileInputStream fis = new FileInputStream(file)) {
+									copy(fis, zos);
+								}
 							}
+							zos.closeEntry();
 						}
-						zos.closeEntry();
 					}
+					// TODO include empty dirs???
 				}
 			}
 		}

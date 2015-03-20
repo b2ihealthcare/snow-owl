@@ -21,7 +21,6 @@ import org.eclipse.emf.cdo.transaction.CDOTransaction;
 import org.eclipse.emf.ecore.util.EcoreUtil;
 
 import com.b2international.commons.ClassUtils;
-import com.b2international.snowowl.api.domain.ComponentCategory;
 import com.b2international.snowowl.api.domain.IComponentRef;
 import com.b2international.snowowl.api.exception.AlreadyExistsException;
 import com.b2international.snowowl.api.exception.BadRequestException;
@@ -29,6 +28,7 @@ import com.b2international.snowowl.api.exception.ComponentNotFoundException;
 import com.b2international.snowowl.api.impl.AbstractComponentServiceImpl;
 import com.b2international.snowowl.api.impl.domain.InternalComponentRef;
 import com.b2international.snowowl.core.api.IBranchPath;
+import com.b2international.snowowl.core.terminology.ComponentCategory;
 import com.b2international.snowowl.snomed.Component;
 import com.b2international.snowowl.snomed.Concept;
 import com.b2international.snowowl.snomed.api.ISnomedComponentService;

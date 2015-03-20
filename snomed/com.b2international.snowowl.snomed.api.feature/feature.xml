@@ -5,17 +5,14 @@
       version="1.0.0.qualifier"
       provider-name="B2i Healthcare">
 
-   <description url="http://www.example.com/description">
-      [Enter Feature Description here.]
+   <description url="http://b2i.sg">
+      Snow Owl Terminology Server SNOMED CT Java API feature.
+Visit us at http://b2i.sg
    </description>
 
-   <copyright url="http://www.example.com/copyright">
-      [Enter Copyright Description here.]
+   <copyright>
+      Copyright 2011-2015 B2i Healthcare Pte Ltd, http://b2i.sg
    </copyright>
-
-   <license url="http://www.example.com/license">
-      [Enter License Description here.]
-   </license>
 
    <requires>
       <import feature="com.b2international.snowowl.snomed.core.feature" version="3.9.0.qualifier"/>
@@ -30,13 +27,6 @@
 
    <plugin
          id="com.b2international.snowowl.snomed.api.impl"
-         download-size="0"
-         install-size="0"
-         version="0.0.0"
-         unpack="false"/>
-
-   <plugin
-         id="com.b2international.snowowl.snomed.api.rest"
          download-size="0"
          install-size="0"
          version="0.0.0"

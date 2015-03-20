@@ -15,6 +15,8 @@
  */
 package com.b2international.snowowl.snomed.importer.rf2.validation;
 
+import static com.google.common.collect.Lists.newArrayList;
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -41,12 +43,12 @@ import com.b2international.commons.FileUtils;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.api.SnowowlRuntimeException;
 import com.b2international.snowowl.core.date.EffectiveTimes;
+import com.b2international.snowowl.core.terminology.ComponentCategory;
 import com.b2international.snowowl.datastore.BranchPathUtils;
 import com.b2international.snowowl.importer.ImportException;
 import com.b2international.snowowl.snomed.SnomedConstants;
 import com.b2international.snowowl.snomed.datastore.SnomedConceptLookupService;
 import com.b2international.snowowl.snomed.datastore.SnomedDescriptionLookupService;
-import com.b2international.snowowl.snomed.datastore.SnomedEditingContext.ComponentNature;
 import com.b2international.snowowl.snomed.datastore.SnomedRelationshipLookupService;
 import com.b2international.snowowl.snomed.importer.net4j.ImportConfiguration;
 import com.b2international.snowowl.snomed.importer.net4j.SnomedValidationDefect;
@@ -306,8 +308,8 @@ public abstract class AbstractSnomedValidator {
 			return true;
 		}
 		
-		for (final ComponentNature nature : ComponentNature.values()) {
-			if (nature.isNatureId(componentId)) {
+		for (final ComponentCategory nature : newArrayList(ComponentCategory.CONCEPT, ComponentCategory.DESCRIPTION, ComponentCategory.RELATIONSHIP)) {
+			if (isNatureId(nature, componentId)) {
 				switch (nature) {
 					case CONCEPT:
 						return isConceptNotExist(componentId);
@@ -322,6 +324,24 @@ public abstract class AbstractSnomedValidator {
 		}
 		
 		return false;
+	}
+	
+	/**
+	 * Checks if the specified component identifier corresponds to this component nature (determined by its last-but-one digit).
+	 * 
+	 * @param componentId
+	 *            the component identifier to check
+	 * 
+	 * @return {@code true} if the specified identifier is of this nature, {@code false} otherwise
+	 */
+	public boolean isNatureId(ComponentCategory category, String componentId) {
+
+		if (componentId == null || componentId.length() < 6 || componentId.length() > 18) {
+			return false;
+		}
+
+		int natureDigit = componentId.charAt(componentId.length() - 2) - '0';
+		return (natureDigit == category.ordinal());
 	}
 	
 	/**

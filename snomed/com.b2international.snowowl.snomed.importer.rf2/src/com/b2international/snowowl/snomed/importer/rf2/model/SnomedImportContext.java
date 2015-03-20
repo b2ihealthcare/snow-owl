@@ -45,7 +45,7 @@ import com.google.common.collect.ImmutableSortedSet;
  * Collects common import state objects and makes them available to importers.
  *
  */
-public class SnomedImportContext implements ISnomedPostProcessorContext {
+public class SnomedImportContext implements ISnomedPostProcessorContext, AutoCloseable {
 
 	private String commitMessage;
 	private ComponentLookup<Component> componentLookup;
@@ -68,6 +68,11 @@ public class SnomedImportContext implements ISnomedPostProcessorContext {
 	private long commitTime = CDOBranchPoint.UNSPECIFIED_DATE;
 	private long previousTime = CDOBranchPoint.UNSPECIFIED_DATE;
 	private boolean createVersions;
+	
+	@Override
+	public void close() throws Exception {
+		getEditingContext().close();
+	}
 	
 	/**
 	 * @return the languageRefSetId

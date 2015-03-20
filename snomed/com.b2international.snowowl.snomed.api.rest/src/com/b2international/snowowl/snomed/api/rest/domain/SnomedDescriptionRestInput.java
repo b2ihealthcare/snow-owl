@@ -17,7 +17,7 @@ package com.b2international.snowowl.snomed.api.rest.domain;
 
 import java.util.Map;
 
-import com.b2international.snowowl.api.domain.ComponentCategory;
+import com.b2international.snowowl.core.terminology.ComponentCategory;
 import com.b2international.snowowl.snomed.api.domain.Acceptability;
 import com.b2international.snowowl.snomed.api.domain.CaseSignificance;
 import com.b2international.snowowl.snomed.api.impl.domain.SnomedDescriptionInput;

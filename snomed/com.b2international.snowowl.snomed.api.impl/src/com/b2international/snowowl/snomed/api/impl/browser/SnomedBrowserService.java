@@ -30,7 +30,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.b2international.commons.ClassUtils;
-import com.b2international.snowowl.api.domain.ComponentCategory;
 import com.b2international.snowowl.api.domain.IComponentRef;
 import com.b2international.snowowl.api.domain.IStorageRef;
 import com.b2international.snowowl.api.exception.ComponentNotFoundException;
@@ -39,6 +38,7 @@ import com.b2international.snowowl.api.impl.domain.InternalComponentRef;
 import com.b2international.snowowl.api.impl.domain.InternalStorageRef;
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.api.IBranchPath;
+import com.b2international.snowowl.core.terminology.ComponentCategory;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.api.browser.ISnomedBrowserService;
 import com.b2international.snowowl.snomed.api.domain.CaseSignificance;

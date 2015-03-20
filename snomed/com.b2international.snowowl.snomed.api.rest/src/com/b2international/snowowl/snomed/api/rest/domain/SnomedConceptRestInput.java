@@ -20,7 +20,7 @@ import static com.google.common.collect.Lists.newArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import com.b2international.snowowl.api.domain.ComponentCategory;
+import com.b2international.snowowl.core.terminology.ComponentCategory;
 import com.b2international.snowowl.snomed.api.impl.domain.SnomedConceptInput;
 import com.b2international.snowowl.snomed.api.impl.domain.SnomedDescriptionInput;
 

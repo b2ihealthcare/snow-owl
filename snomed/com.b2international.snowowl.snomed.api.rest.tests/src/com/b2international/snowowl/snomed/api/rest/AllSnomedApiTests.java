@@ -25,6 +25,7 @@ import com.b2international.commons.platform.PlatformUtil;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.api.rest.concept.SnomedConceptCreateOnTaskApiFeature;
 import com.b2international.snowowl.snomed.api.rest.concept.SnomedConceptCreateOnVersionApiFeature;
+import com.b2international.snowowl.snomed.api.rest.id.SnomedIdentifierRESTfulAPIFeature;
 import com.b2international.snowowl.snomed.api.rest.tasks.SnomedTasksApiFeature;
 import com.b2international.snowowl.snomed.common.ContentSubType;
 import com.b2international.snowowl.test.commons.BundleStartRule;
@@ -39,7 +40,8 @@ import com.b2international.snowowl.test.commons.SnowOwlAppRule;
 @SuiteClasses({ 
 	SnomedConceptCreateOnTaskApiFeature.class,
 	SnomedConceptCreateOnVersionApiFeature.class,
-	SnomedTasksApiFeature.class
+	SnomedTasksApiFeature.class,
+	SnomedIdentifierRESTfulAPIFeature.class
 })
 public class AllSnomedApiTests {
 
