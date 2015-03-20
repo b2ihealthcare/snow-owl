@@ -14,10 +14,6 @@ Visit us at http://b2i.sg
       Copyright 2011-2015 B2i Healthcare Pte Ltd, http://b2i.sg
    </copyright>
 
-   <license url="http://www.example.com/license">
-      [Enter License Description here.]
-   </license>
-
    <plugin
          id="com.b2international.snowowl.snomed.api.rest"
          download-size="0"
