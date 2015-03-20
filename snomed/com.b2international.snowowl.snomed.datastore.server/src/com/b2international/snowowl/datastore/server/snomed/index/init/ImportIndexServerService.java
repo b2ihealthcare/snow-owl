@@ -36,16 +36,16 @@ import org.apache.lucene.document.NumericDocValuesField;
 import org.apache.lucene.document.StringField;
 import org.apache.lucene.index.IndexableField;
 import org.apache.lucene.index.Term;
-import org.apache.lucene.search.BooleanClause.Occur;
-import org.apache.lucene.search.BooleanQuery;
+import org.apache.lucene.search.CachingWrapperFilter;
+import org.apache.lucene.search.Filter;
 import org.apache.lucene.search.IndexSearcher;
-import org.apache.lucene.search.PrefixQuery;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.ReferenceManager;
 import org.apache.lucene.search.ScoreDoc;
 import org.apache.lucene.search.Sort;
 import org.apache.lucene.search.SortField;
 import org.apache.lucene.search.TermQuery;
+import org.apache.lucene.search.TermRangeFilter;
 import org.apache.lucene.search.TopDocs;
 import org.apache.lucene.search.TopFieldDocs;
 import org.apache.lucene.search.TotalHitCountCollector;
@@ -144,6 +144,8 @@ public class ImportIndexServerService extends FSIndexServerService<IIndexEntry> 
 
     private final IBranchPath importTargetBranchPath;
     private final LongKeyMap pendingDescriptionDocuments = new LongKeyOpenHashMap();
+	
+    private Filter preferredExistsFilter;
 
     /**
      * A set containing the storage keys of the Synonym description type concept and its all descendant.
@@ -303,7 +305,7 @@ public class ImportIndexServerService extends FSIndexServerService<IIndexEntry> 
         addTermType(doc, type);
         // XXX: no acceptability field is added at this time
 
-        index(SUPPORTING_INDEX_BRANCH_PATH, doc, new Term(DESCRIPTION_ID, IndexUtils.longToPrefixCoded(descriptionId)));
+        index(SUPPORTING_INDEX_BRANCH_PATH, doc, new Term(DESCRIPTION_ID, descriptionId));
     }
 
     public void registerAcceptability(final String descriptionId, final String memberId, final boolean preferred, final boolean active) {
@@ -425,12 +427,11 @@ public class ImportIndexServerService extends FSIndexServerService<IIndexEntry> 
 
     public String getConceptLabel(final String conceptId) {
 
-        final BooleanQuery conceptLabelQuery = new BooleanQuery(true);
-        conceptLabelQuery.add(createContainerConceptQuery(conceptId), Occur.MUST);
-        conceptLabelQuery.add(createPreferredQuery(), Occur.MUST);
-
+        final Query conceptLabelQuery = createContainerConceptQuery(conceptId);
+        final Filter preferredExistsFilter = getPreferredExistsFilter(); 
+        
         // Try to find a preferred description first (PT or FSN, whichever comes first in the sorted set of documents)
-        final List<DocumentWithScore> preferredDescriptionDocuments = search(SUPPORTING_INDEX_BRANCH_PATH, conceptLabelQuery, null, TERM_TYPE_SORT, 1);
+        final List<DocumentWithScore> preferredDescriptionDocuments = search(SUPPORTING_INDEX_BRANCH_PATH, conceptLabelQuery, preferredExistsFilter, TERM_TYPE_SORT, 1);
 
         if (!CompareUtils.isEmpty(preferredDescriptionDocuments)) {
             final DocumentWithScore preferredDocument = Iterables.getFirst(preferredDescriptionDocuments, null);
@@ -542,11 +543,15 @@ public class ImportIndexServerService extends FSIndexServerService<IIndexEntry> 
         return new TermQuery(new Term(DESCRIPTION_ID, descriptionId));
     }
 
-    private PrefixQuery createPreferredQuery() {
-        return new PrefixQuery(new Term(PREFERRED_MEMBER_ID));
-    }
+    private Filter getPreferredExistsFilter() {
+		if (preferredExistsFilter == null) {
+			preferredExistsFilter = new CachingWrapperFilter(TermRangeFilter.newStringRange(PREFERRED_MEMBER_ID, null, null, true, true));
+		}
+		
+		return preferredExistsFilter;
+	}
 
-    public String getDescriptionLabel(final String descriptionId) {
+	public String getDescriptionLabel(final String descriptionId) {
 
         ReferenceManager<IndexSearcher> manager = null;
         IndexSearcher searcher = null;
@@ -627,6 +632,8 @@ public class ImportIndexServerService extends FSIndexServerService<IIndexEntry> 
     	}
     	
     	pendingDescriptionDocuments.clear();
+    	preferredExistsFilter = null;
+    	
         super.commit(SUPPORTING_INDEX_BRANCH_PATH);
     }
 
