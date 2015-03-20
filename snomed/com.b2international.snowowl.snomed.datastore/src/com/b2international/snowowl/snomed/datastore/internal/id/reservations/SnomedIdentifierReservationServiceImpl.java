@@ -78,11 +78,9 @@ public class SnomedIdentifierReservationServiceImpl implements ISnomedIdentiferR
 	@Override
 	public boolean isReserved(String componentId) {
 		final SnomedIdentifier identifier = SnomedIdentifiers.of(componentId);
-		synchronized (reservations) {
-			for (Reservation reservation : getReservations()) {
-				if (reservation.includes(identifier)) {
-					return true;
-				}
+		for (Reservation reservation : getReservations()) {
+			if (reservation.includes(identifier)) {
+				return true;
 			}
 		}
 		return false;
