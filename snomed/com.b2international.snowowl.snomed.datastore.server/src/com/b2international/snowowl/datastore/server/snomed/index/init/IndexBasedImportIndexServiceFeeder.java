@@ -16,7 +16,6 @@
 package com.b2international.snowowl.datastore.server.snomed.index.init;
 
 import java.io.IOException;
-import java.util.Collections;
 import java.util.Set;
 
 import org.apache.lucene.document.Document;
@@ -26,12 +25,14 @@ import org.apache.lucene.search.Query;
 import org.apache.lucene.search.ReferenceManager;
 import org.apache.lucene.search.TermQuery;
 import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.emf.cdo.common.id.CDOID;
 import org.eclipse.emf.cdo.common.id.CDOIDUtil;
 import org.eclipse.emf.cdo.view.CDOView;
 
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.api.SnowowlRuntimeException;
+import com.b2international.snowowl.core.api.index.CommonIndexConstants;
 import com.b2international.snowowl.datastore.BranchPathUtils;
 import com.b2international.snowowl.datastore.cdo.CDOUtils;
 import com.b2international.snowowl.datastore.cdo.CDOViewFunction;
@@ -39,7 +40,7 @@ import com.b2international.snowowl.datastore.index.DocIdCollector;
 import com.b2international.snowowl.datastore.index.DocIdCollector.DocIdsIterator;
 import com.b2international.snowowl.datastore.index.IndexUtils;
 import com.b2international.snowowl.datastore.server.index.IndexServerService;
-import com.b2international.snowowl.datastore.server.snomed.index.init.ImportIndexServerService.IDescriptionTypePredicate;
+import com.b2international.snowowl.datastore.server.snomed.index.init.ImportIndexServerService.TermType;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.datastore.ILanguageConfigurationProvider;
 import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
@@ -50,7 +51,7 @@ import com.b2international.snowowl.snomed.datastore.services.ISnomedComponentSer
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSet;
 import com.google.common.base.Supplier;
 import com.google.common.base.Suppliers;
-import com.google.common.collect.Sets;
+import com.google.common.collect.ImmutableSet;
 
 /**
  * 
@@ -95,11 +96,12 @@ public class IndexBasedImportIndexServiceFeeder implements IImportIndexServiceFe
 		service.commit();
 	}
 
-	private static final Set<String> LANGUAGE_MEMBER_FIELDS_TO_LOAD = Collections.unmodifiableSet(Sets.newHashSet(
+	private static final Set<String> LANGUAGE_MEMBER_FIELDS_TO_LOAD = ImmutableSet.of(
 			SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_REFERENCED_COMPONENT_ID,
 			SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_ACCEPTABILITY_ID,
-			SnomedIndexBrowserConstants.COMPONENT_ACTIVE
-			));
+			SnomedIndexBrowserConstants.COMPONENT_ACTIVE,
+			CommonIndexConstants.COMPONENT_ID
+	);
 	
 	@SuppressWarnings("unchecked")
 	private void registerAcceptability(final ImportIndexServerService service, final IBranchPath branchPath) {
@@ -126,35 +128,29 @@ public class IndexBasedImportIndexServiceFeeder implements IImportIndexServiceFe
 				
 				final Document doc = searcher.doc(itr.getDocID(), LANGUAGE_MEMBER_FIELDS_TO_LOAD);
 				
-				service.registerConcept(
-						doc.get(SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_REFERENCED_COMPONENT_ID),
-						doc.get(SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_ACCEPTABILITY_ID),
-						IndexUtils.getBooleanValue(doc.getField(SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_REFERENCED_COMPONENT_ID)));
+				final String memberId = doc.get(CommonIndexConstants.COMPONENT_ID);
+				final String descriptionId = doc.get(SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_REFERENCED_COMPONENT_ID);
+				final String acceptabilityId = doc.get(SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_ACCEPTABILITY_ID);
+				
+				final boolean preferred = Concepts.REFSET_DESCRIPTION_ACCEPTABILITY_PREFERRED.equals(acceptabilityId);
+				final boolean active = IndexUtils.getBooleanValue(doc.getField(SnomedIndexBrowserConstants.COMPONENT_ACTIVE));
+				
+				service.registerAcceptability(descriptionId, memberId, preferred, active);
 			}
-
 			
 		} catch (final IOException e) {
-			
 			throw new SnowowlRuntimeException(e);
-			
 		} finally {
 			
 			if (null != manager && null != searcher) {
 				
 				try {
-					
 					manager.release(searcher);
-					
 				} catch (final IOException e) {
-					
 					throw new SnowowlRuntimeException(e);
-					
 				}
-				
 			}
-			
 		}
-		
 	}
 
 	private void registerDescriptionProperties(final ImportIndexServerService service, final IBranchPath branchPath, final ISnomedComponentService componentService) {
@@ -169,18 +165,27 @@ public class IndexBasedImportIndexServiceFeeder implements IImportIndexServiceFe
 		
 		for (final String[] property : descriptionProperties) {
 			
-			service.registerComponent(property[0], /* descriptionId */ CDOIDUtil.createLong(Long.parseLong(property[4] /*storage key*/)));
+			final String descriptionId = property[0];
+			final String conceptId = property[1];
+			final TermType termType = getTermType(synonymAndDescendantIds, property[2]);
+			final String term = property[3];
+			final CDOID descriptionCdoId = CDOIDUtil.createLong(Long.parseLong(property[4]));
+			
+			service.registerComponent(descriptionId, descriptionCdoId);
 			
 			// XXX: Assumes that nothing has been added to this import index service yet, as inactive descriptions are not populated at all.
-			service.registerDescription(property[0], /* descriptionId */ 
-					property[1], /* conceptId */
-					property[3], /* term */
-					new IDescriptionTypePredicate() { /* typeId */
-						@Override public boolean isSynonymOrDescendant() { return synonymAndDescendantIds.contains(property[2]); }
-						@Override public boolean isFsn() { return Concepts.FULLY_SPECIFIED_NAME.equals(property[2]); }
-					}, 
-					true);
+			service.registerDescription(descriptionId, conceptId, term, termType, true);
 		}
 	}
 
+	private TermType getTermType(final Set<String> synonymAndDescendantIds, final String typeId) {
+
+		if (Concepts.FULLY_SPECIFIED_NAME.equals(typeId)) {
+			return TermType.FSN;
+		} else if (synonymAndDescendantIds.contains(typeId)) {
+			return TermType.SYNONYM_AND_DESCENDANTS;
+		} else {
+			return TermType.OTHER;
+		}
+	}
 }

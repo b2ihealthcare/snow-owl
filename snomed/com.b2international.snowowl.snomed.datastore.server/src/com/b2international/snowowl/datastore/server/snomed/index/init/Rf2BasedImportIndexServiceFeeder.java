@@ -36,13 +36,12 @@ import com.b2international.snowowl.core.api.SnowowlServiceException;
 import com.b2international.snowowl.datastore.BranchPathUtils;
 import com.b2international.snowowl.datastore.cdo.CDOUtils;
 import com.b2international.snowowl.datastore.cdo.CDOViewFunction;
-import com.b2international.snowowl.datastore.server.snomed.index.init.ImportIndexServerService.IDescriptionTypePredicate;
+import com.b2international.snowowl.datastore.server.snomed.index.init.ImportIndexServerService.TermType;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.datastore.ILanguageConfigurationProvider;
 import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 import com.b2international.snowowl.snomed.datastore.SnomedRefSetLookupService;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSet;
-import com.google.common.io.Closeables;
 
 /**
  * {@link ImportIndexServerService Import index service} content initializer. This class uses RF2 files for the content initialization.
@@ -80,49 +79,40 @@ public class Rf2BasedImportIndexServiceFeeder implements IImportIndexServiceFeed
 
 		final AtomicInteger i = new AtomicInteger();
 
-		FileReader reader = null;
-
 		if (null != descriptionFilePath) {
 		
-			try {
+			try (final FileReader reader = new FileReader(new File(descriptionFilePath))) {
 	
-				reader = new FileReader(new File(descriptionFilePath));
 				new CsvParser(reader, CSV_SETTINGS, new RecordParserCallback<String>() {
 	
 					@Override
 					public void handleRecord(final int recordCount, final List<String> record) {
 	
 						final boolean active = "1".equals(record.get(2));
-						service.registerDescription(record.get(0), record.get(4), record.get(7), getDescriptionTypePredicate(record.get(6)), active);
+						final TermType termType = getTermType(record.get(6));
+						
+						service.registerDescription(record.get(0), record.get(4), record.get(7), termType, active);
 						if (0 == i.incrementAndGet() % 10000) {
 							service.commit();
 						}
 	
 					}
+
 				}, 9).parse();
 	
 			} catch (final IOException e) {
 				throw new SnowowlRuntimeException("Error while parsing description RF2 file. File: " + descriptionFilePath, e);
 			} finally {
-	
-				if (null != reader) {
-					Closeables.closeQuietly(reader);
-				}
-	
 				service.commit();
 			}
-			
 		}
 		
 		i.set(0);
-		
-		reader = null;
 
 		if (null != languageRefSetFilePath) {
 			
-			try {
+			try (final FileReader reader = new FileReader(new File(languageRefSetFilePath))) {
 	
-				reader = new FileReader(new File(languageRefSetFilePath));
 				new CsvParser(reader, CSV_SETTINGS, new RecordParserCallback<String>() {
 	
 					@Override
@@ -131,44 +121,31 @@ public class Rf2BasedImportIndexServiceFeeder implements IImportIndexServiceFeed
 						if (languageRefSetId.equals(record.get(4))) {
 							
 							final boolean active = "1".equals(record.get(2));
-							service.registerConcept(record.get(5), record.get(6), active);
+							final boolean preferred = Concepts.REFSET_DESCRIPTION_ACCEPTABILITY_PREFERRED.equals(record.get(6));
+							service.registerAcceptability(record.get(5), record.get(0), preferred, active);
 							if (0 == i.incrementAndGet() % 10000) {
 								service.commit();
 							}
-							
-							
 						}
-						
-	
 					}
 				}, 7).parse();
 	
 			} catch (final IOException e) {
 				throw new SnowowlRuntimeException("Error while parsing language reference set RF2 file. File: " + languageRefSetFilePath, e);
 			} finally {
-	
-				if (null != reader) {
-					Closeables.closeQuietly(reader);
-				}
-	
 				service.commit();
-				
 			}
-			
 		}
-		
-		
-	}
-
-	private IDescriptionTypePredicate getDescriptionTypePredicate(final String typeId) {
-		if (Concepts.FULLY_SPECIFIED_NAME.equals(typeId)) {
-			return FSN_PREDICATE;
-		} else if (synonymAndDescendantIds.contains(typeId)) {
-			return SYNONYM_OR_DESCENDANT_PREDICATE;
-		} else {
-			return OTHER_DESCRIPTION_PREDICATE;
-		}
-				
 	}
 	
+	private TermType getTermType(final String typeId) {
+		
+		if (Concepts.FULLY_SPECIFIED_NAME.equals(typeId)) {
+			return TermType.FSN;
+		} else if (synonymAndDescendantIds.contains(typeId)) {
+			return TermType.SYNONYM_AND_DESCENDANTS;
+		} else {
+			return TermType.OTHER;
+		}
+	}
 }

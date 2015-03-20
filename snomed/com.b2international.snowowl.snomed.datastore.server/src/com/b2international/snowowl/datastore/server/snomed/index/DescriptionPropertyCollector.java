@@ -29,17 +29,12 @@ import org.apache.lucene.index.NumericDocValues;
 import bak.pcj.LongCollection;
 
 /**
- * Collector for gathering the container concept ID, the description type ID and the 
- * case significance concept IDs of a description.
- * <p>This collector supplies a mapping between description storage keys and 
- * properties. Properties are represented as an array of primitive longs.
- * The first item is the owner concept ID, then the description module ID, description type concept ID, 
- * finally the case significance concept ID.   
- *
+ * Collector for gathering the container concept ID, the description type ID and the case significance concept IDs of each
+ * description.
  */
 public class DescriptionPropertyCollector extends ComponentPropertyCollector {
 
-	private NumericDocValues concpetIds;
+	private NumericDocValues conceptIds;
 	private NumericDocValues typeIds;
 	private NumericDocValues caseSignificanceIds;
 	private NumericDocValues moduleIds;
@@ -49,31 +44,30 @@ public class DescriptionPropertyCollector extends ComponentPropertyCollector {
 	}
 
 	@Override
-	protected void setNextReader(final AtomicReader reader) throws IOException {
-		super.setNextReader(reader);
-		concpetIds = reader.getNumericDocValues(DESCRIPTION_CONCEPT_ID);
-		moduleIds = reader.getNumericDocValues(DESCRIPTION_MODULE_ID);
-		typeIds = reader.getNumericDocValues(DESCRIPTION_TYPE_ID);
-		caseSignificanceIds = reader.getNumericDocValues(DESCRIPTION_CASE_SIGNIFICANCE_ID);
-	}
-	
-	@Override
-	protected boolean check() {
-		return null != caseSignificanceIds 
-			&& null != typeIds 
-			&& null != concpetIds 
-			&& null != storageKeys
-			&& null != moduleIds;
-	}
-	
-	@Override
-	protected long[] initProperties(final int doc) {
-		return new long[] { 
-			concpetIds.get(doc),
-			moduleIds.get(doc),
-			typeIds.get(doc), 
-			caseSignificanceIds.get(doc) 
-		};
+	protected void initDocValues(final AtomicReader leafReader) throws IOException {
+		super.initDocValues(leafReader);
+		conceptIds = leafReader.getNumericDocValues(DESCRIPTION_CONCEPT_ID);
+		moduleIds = leafReader.getNumericDocValues(DESCRIPTION_MODULE_ID);
+		typeIds = leafReader.getNumericDocValues(DESCRIPTION_TYPE_ID);
+		caseSignificanceIds = leafReader.getNumericDocValues(DESCRIPTION_CASE_SIGNIFICANCE_ID);
 	}
 
+	@Override
+	protected boolean isLeafCollectible() {
+		return super.isLeafCollectible()
+				&& conceptIds != null
+				&& moduleIds != null
+				&& typeIds != null
+				&& caseSignificanceIds != null;
+	}
+
+	@Override
+	protected long[] collectProperties(final int docId) {
+		return new long[] { 
+				conceptIds.get(docId), 
+				moduleIds.get(docId), 
+				typeIds.get(docId), 
+				caseSignificanceIds.get(docId) 
+		};
+	}
 }

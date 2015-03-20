@@ -17,7 +17,7 @@ package com.b2international.snowowl.datastore.server.snomed.index;
 
 import java.io.IOException;
 
-import org.apache.lucene.index.AtomicReaderContext;
+import org.apache.lucene.index.AtomicReader;
 import org.apache.lucene.index.NumericDocValues;
 
 import bak.pcj.map.LongKeyLongMap;
@@ -25,9 +25,12 @@ import bak.pcj.map.LongKeyLongOpenHashMap;
 
 import com.b2international.snowowl.datastore.index.AbstractDocsOutOfOrderCollector;
 import com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants;
-import com.google.common.base.Preconditions;
 
 /**
+ * Collects destination concept identifiers keyed by source concept identifiers for relationships of a particular type.
+ * <p>
+ * Note that only single outbound relationships are allowed per source concept; multiple results for the same source
+ * concept will overwrite each other.
  */
 public class StatementDestinationIdCollector extends AbstractDocsOutOfOrderCollector {
 
@@ -38,8 +41,8 @@ public class StatementDestinationIdCollector extends AbstractDocsOutOfOrderColle
 
 	private final LongKeyLongMap sourceToDestinationIds;
 
-	private NumericDocValues valueIdsValues;
-	private NumericDocValues objectIdsValues;
+	private NumericDocValues sourceIdsValues;
+	private NumericDocValues destinationIdsValues;
 
 	/**
 	 * Creates a new collector instance with the default expected size.
@@ -51,69 +54,36 @@ public class StatementDestinationIdCollector extends AbstractDocsOutOfOrderColle
 	/**
 	 * Creates a collector instance with the given expected size.
 	 * 
-	 * @param expectedSize
-	 *            the expected size.
+	 * @param expectedSize the expected number of source-destination pairs, or <= 0 to use the built-in defaults
 	 */
 	public StatementDestinationIdCollector(final int expectedSize) {
-		sourceToDestinationIds = 0 > expectedSize ? new LongKeyLongOpenHashMap(expectedSize)
-				: new LongKeyLongOpenHashMap();
+		this.sourceToDestinationIds = (0 > expectedSize) ? new LongKeyLongOpenHashMap(expectedSize) : new LongKeyLongOpenHashMap();
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see org.apache.lucene.search.Collector#collect(int)
-	 */
 	@Override
-	public void collect(final int doc) throws IOException {
-		if (!checkValues()) { //sources cannot be referenced
-			return;
-		}
-		sourceToDestinationIds.put(objectIdsValues.get(doc), valueIdsValues.get(doc));
+	public void collect(final int docId) throws IOException {
+		final long sourceId = sourceIdsValues.get(docId);
+		final long destinationId = destinationIdsValues.get(docId);
+		sourceToDestinationIds.put(sourceId, destinationId);
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see org.apache.lucene.search.Collector#setNextReader(org.apache.lucene.index.AtomicReaderContext)
-	 */
 	@Override
-	public void setNextReader(final AtomicReaderContext context) throws IOException {
+	protected void initDocValues(final AtomicReader leafReader) throws IOException {
+		sourceIdsValues = leafReader.getNumericDocValues(SnomedIndexBrowserConstants.RELATIONSHIP_OBJECT_ID);
+		destinationIdsValues = leafReader.getNumericDocValues(SnomedIndexBrowserConstants.RELATIONSHIP_VALUE_ID);
+	}
 
-		Preconditions.checkNotNull(context, "Atomic reader context argument cannot be null.");
-
-		valueIdsValues = context.reader().getNumericDocValues(SnomedIndexBrowserConstants.RELATIONSHIP_VALUE_ID);
-		if (null == valueIdsValues) {
-			resetValues();
-			return;
-		}
-
-		objectIdsValues = context.reader().getNumericDocValues(SnomedIndexBrowserConstants.RELATIONSHIP_OBJECT_ID);
-		if (null == objectIdsValues) {
-			resetValues();
-			return;
-		}
-
+	@Override
+	protected boolean isLeafCollectible() {
+		return sourceIdsValues != null && destinationIdsValues != null;
 	}
 
 	/**
-	 * Returns with a set of object, value and attribute concept IDs.
+	 * Returns the mapped source-destination concept identifier pairs.
 	 * 
-	 * @return the concept IDs.
+	 * @return a map of destination identifiers, keyed by source identifiers
 	 */
 	public LongKeyLongMap getIds() {
 		return sourceToDestinationIds;
 	}
-
-	/* sets the reference on the values to null */
-	private void resetValues() {
-		valueIdsValues = null;
-		objectIdsValues = null;
-	}
-
-	/* returns true only and if only all the backing values can be referenced */
-	private boolean checkValues() {
-		return null != valueIdsValues && null != objectIdsValues;
-	}
-
 }

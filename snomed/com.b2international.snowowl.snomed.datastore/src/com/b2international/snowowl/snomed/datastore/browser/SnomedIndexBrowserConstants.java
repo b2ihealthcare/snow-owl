@@ -31,7 +31,6 @@ abstract public class SnomedIndexBrowserConstants {
 	public static final String COMPONENT_STORAGE_KEY = CommonIndexConstants.COMPONENT_STORAGE_KEY;
 	public static final String COMPONENT_COMPARE_UNIQUE_KEY = CommonIndexConstants.COMPONENT_COMPARE_UNIQUE_KEY;
 	public static final String COMPONENT_TYPE = CommonIndexConstants.COMPONENT_TYPE;
-	public static final String COMPONENT_LABEL_SORT_KEY = CommonIndexConstants.COMPONENT_LABEL_SORT_KEY;
 	public static final String COMPONENT_ICON_ID = CommonIndexConstants.COMPONENT_ICON_ID;
 	public static final String COMPONENT_IGNORE_COMPARE_UNIQUE_KEY = CommonIndexConstants.COMPONENT_IGNORE_COMPARE_UNIQUE_KEY;
 	

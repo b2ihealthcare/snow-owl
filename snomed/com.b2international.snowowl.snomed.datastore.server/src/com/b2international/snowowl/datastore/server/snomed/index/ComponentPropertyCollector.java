@@ -15,94 +15,87 @@
  */
 package com.b2international.snowowl.datastore.server.snomed.index;
 
-import static com.b2international.commons.pcj.LongHashFunctionAdapter.hashOf;
 import static com.google.common.base.Preconditions.checkNotNull;
-import static com.google.common.hash.Hashing.murmur3_32;
 
 import java.io.IOException;
 
-import javax.annotation.OverridingMethodsMustInvokeSuper;
-
 import org.apache.lucene.index.AtomicReader;
-import org.apache.lucene.index.AtomicReaderContext;
 import org.apache.lucene.index.NumericDocValues;
 
 import bak.pcj.LongCollection;
 import bak.pcj.map.LongKeyMap;
 import bak.pcj.map.LongKeyOpenHashMap;
 
+import com.b2international.commons.pcj.LongHashFunctionAdapter;
 import com.b2international.snowowl.datastore.index.AbstractDocsOutOfOrderCollector;
 import com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants;
+import com.google.common.hash.Hashing;
 
 /**
- * Abstract implementation of a SNOMED&nbsp;CT component property collector.
- *
+ * Abstract implementation of a SNOMED CT component property collector.
  */
 public abstract class ComponentPropertyCollector extends AbstractDocsOutOfOrderCollector {
 
-	protected LongCollection acceptedIds;
+	protected LongCollection acceptedStorageKeys;
 	protected LongKeyOpenHashMap mapping;
 	protected NumericDocValues storageKeys;
 
-	public ComponentPropertyCollector(final LongCollection acceptedIds) {
-		this.acceptedIds = checkNotNull(acceptedIds, "acceptedIds");
-		mapping = new LongKeyOpenHashMap(hashOf(murmur3_32()));
-	}
-	
-	@Override
-	public void setNextReader(final AtomicReaderContext context) throws IOException {
-		setNextReader(context.reader());
+	public ComponentPropertyCollector(final LongCollection acceptedStorageKeys) {
+		this.acceptedStorageKeys = checkNotNull(acceptedStorageKeys, "acceptedStorageKeys");
+		this.mapping = new LongKeyOpenHashMap(LongHashFunctionAdapter.hashOf(Hashing.murmur3_32()));
 	}
 
-	
 	@Override
-	public void collect(final int doc) throws IOException {
-		if (check()) {
-			final long storageKey = getStorageKey(doc);
-			if (isAccepted(storageKey)) {
-				mapping.put(storageKey, initProperties(doc));
-			}
-		}
+	protected void initDocValues(final AtomicReader leafReader) throws IOException {
+		storageKeys = leafReader.getNumericDocValues(SnomedIndexBrowserConstants.COMPONENT_STORAGE_KEY);
 	}
 
 	/**
-	 * Returns with the mappings for the components collected by this collector instance.
+	 * {@inheritDoc}
+	 * <p>
+	 * <b>Note:</b> Overriding methods must invoke {@code super.isLeafCollectible()} as part of their return value
+	 * expression.
+	 */
+	@Override
+	protected boolean isLeafCollectible() {
+		return storageKeys != null;
+	}
+
+	@Override
+	public void collect(final int docId) throws IOException {
+		final long storageKey = getStorageKey(docId);
+		if (isStorageKeyAccepted(storageKey)) {
+			registerMapping(storageKey, docId);
+		}
+	}
+
+	private long getStorageKey(final int docId) {
+		return storageKeys.get(docId);
+	}
+
+	private boolean isStorageKeyAccepted(final long storageKey) {
+		return acceptedStorageKeys.contains(storageKey);
+	}
+
+	private void registerMapping(final long storageKey, final int docId) {
+		mapping.put(storageKey, collectProperties(docId));
+	}
+
+	/**
+	 * Collects component properties for the specified document identifier.
+	 * 
+	 * @param docId the segment-relative document identifier to use for collection
+	 * 
+	 * @return the collected long values in a {@code long[]}
+	 */
+	protected abstract long[] collectProperties(int docId);
+
+	/**
+	 * Returns collected long values, keyed by storage key.
+	 * 
+	 * @return the created storage key mapping
 	 */
 	public LongKeyMap getMapping() {
 		return mapping;
 	}
-	
-	/**
-	 * Creates the {@link NumericDocValues} based on the reader argument.
-	 */
-	@OverridingMethodsMustInvokeSuper
-	protected void setNextReader(final AtomicReader reader) throws IOException {
-		storageKeys = reader.getNumericDocValues(SnomedIndexBrowserConstants.COMPONENT_STORAGE_KEY);
-	}
-
-	/**
-	 * Initialize and returns with the component properties.
-	 */
-	protected abstract Object initProperties(int doc);
-
-	/**
-	 * Returns with {@code true} if the given storage key argument has
-	 * to be processed.
-	 */
-	protected boolean isAccepted(long storageKey) {
-		return acceptedIds.contains(storageKey);
-	}
-
-	/**
-	 * Checks the underlying {@link NumericDocValues} if any.
-	 * <br>Returns with {@code true} by default.
-	 */
-	protected boolean check() {
-		return true;
-	}
-
-	private long getStorageKey(final int doc) {
-		return storageKeys.get(doc);
-	}
-	
 }

@@ -2110,7 +2110,7 @@ public class SnomedComponentService implements ISnomedComponentService, IPostSto
 		
 		final BooleanQuery query = new BooleanQuery(true);
 		query.add(SnomedIndexQueries.ACTIVE_COMPONENT_QUERY, MUST);
-		query.add(new TermQuery(new Term(COMPONENT_LABEL_SORT_KEY, concreteDomainName)), MUST);
+		query.add(new TermQuery(new Term(COMPONENT_LABEL_SORT_KEY, IndexUtils.getSortKey(concreteDomainName))), MUST);
 		
 		final AtomicReference<IndexSearcher> searcher = new AtomicReference<IndexSearcher>();
 		final DocIdCollector collector = DocIdCollector.create(getIndexServerService().maxDoc(branchPath));

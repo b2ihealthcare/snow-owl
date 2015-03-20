@@ -26,6 +26,10 @@ import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBr
 import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.RELATIONSHIP_ATTRIBUTE_ID;
 import static org.apache.lucene.search.BooleanClause.Occur.MUST;
 
+import java.io.IOException;
+import java.text.MessageFormat;
+
+import org.apache.lucene.index.AtomicReader;
 import org.apache.lucene.index.NumericDocValues;
 import org.apache.lucene.index.Term;
 import org.apache.lucene.search.BooleanQuery;
@@ -39,18 +43,22 @@ import org.apache.lucene.search.TermQuery;
 public enum StatementCollectionMode {
 
 	NO_IDS {
-		@Override public boolean checkIdsValuesPresent(final NumericDocValues idsValues) {
+		@Override public NumericDocValues getNumericDocValues(final AtomicReader leafReader) throws IOException {
+			return null;
+		}
+
+		@Override public boolean isLeafCollectible(final NumericDocValues idsValues) {
 			return true;
 		}
 
-		@Override public boolean collectsIdValues() {
-			return false;
+		@Override public long getIdValue(final NumericDocValues idsValues, final int docId) {
+			return -1L;
 		}
 
 		@Override public IsAStatement createStatement(final long sourceId, final long destinationId, final long idOrKey) {
 			return new SnomedIsAStatement(sourceId, destinationId);
 		}
-		
+
 		@Override public IsAStatement[] createArray(final int expectedSize) {
 			return new SnomedIsAStatement[expectedSize];
 		}
@@ -65,7 +73,7 @@ public enum StatementCollectionMode {
 		public IsAStatementWithId createStatement(final long sourceId, final long destinationId, final long idOrKey) {
 			return new SnomedIsAStatementWithId(sourceId, destinationId, idOrKey);
 		}
-		
+
 		@Override public IsAStatement[] createArray(final int expectedSize) {
 			return new SnomedIsAStatementWithId[expectedSize];
 		}
@@ -79,18 +87,17 @@ public enum StatementCollectionMode {
 		@Override public IsAStatementWithKey createStatement(final long sourceId, final long destinationId, final long idOrKey) {
 			return new SnomedIsAStatementWithKey(sourceId, destinationId, idOrKey);
 		}
-		
+
 		@Override public IsAStatement[] createArray(final int expectedSize) {
 			return new SnomedIsAStatementWithKey[expectedSize];
 		}
 	},
-	
-	ALL_TYPES_NO_IDS {
 
+	ALL_TYPES_NO_IDS {
 		@Override public String getIdValuesField() {
 			return RELATIONSHIP_ATTRIBUTE_ID;
 		}
-		
+
 		@Override public IsAStatement createStatement(final long sourceId, final long destinationId, final long idOrKey) {
 			return new SnomedStatement(sourceId, idOrKey, destinationId);
 		}
@@ -98,32 +105,37 @@ public enum StatementCollectionMode {
 		@Override public IsAStatement[] createArray(final int expectedSize) {
 			return new SnomedStatement[expectedSize];
 		}
-		
+
 		@Override public Query getQuery() {
 			final BooleanQuery query = new BooleanQuery(true);
 			query.add(new TermQuery(new Term(COMPONENT_TYPE, intToPrefixCoded(RELATIONSHIP_NUMBER))), MUST);
 			query.add(new TermQuery(new Term(COMPONENT_ACTIVE, intToPrefixCoded(1))), MUST);
 			return query;
 		}
-		
+
 	};
 
 	/**
 	 * @param idsValues the docvalues source to check
+	 * 
 	 * @return {@code true} if the docvalues source is not {@code null}, {@code false} otherwise
 	 */
-	public boolean checkIdsValuesPresent(final NumericDocValues idsValues) {
-		return (null != idsValues);
-	}
-
-	public boolean collectsIdValues() {
-		return true;
+	public boolean isLeafCollectible(final NumericDocValues idsValues) {
+		return idsValues != null;
 	}
 
 	public String getIdValuesField() {
-		throw new IllegalStateException();
+		throw new IllegalStateException(MessageFormat.format("No ID field specified for collection mode {0}.", name()));
 	}
-	
+
+	public NumericDocValues getNumericDocValues(final AtomicReader leafReader) throws IOException {
+		return leafReader.getNumericDocValues(getIdValuesField());
+	}
+
+	public long getIdValue(final NumericDocValues idsValues, final int docId) {
+		return idsValues.get(docId);
+	}
+
 	/**Returns with the index query to collect all relevant relationships.
 	 *<p>By default returns with a query that accepts active relationships with IS_A type.*/
 	public Query getQuery() {
@@ -140,7 +152,7 @@ public enum StatementCollectionMode {
 	 * @param idOrKey
 	 * @return
 	 */
-	public abstract IsAStatement createStatement(long sourceId, long destinationId, final long idOrKey);
+	public abstract IsAStatement createStatement(long sourceId, long destinationId, long idOrKey);
 
 	public abstract IsAStatement[] createArray(int expectedSize);
 }

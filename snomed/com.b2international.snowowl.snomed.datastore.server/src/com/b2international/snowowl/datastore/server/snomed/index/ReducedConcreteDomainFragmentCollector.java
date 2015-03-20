@@ -19,112 +19,67 @@ import static org.apache.lucene.util.BytesRef.deepCopyOf;
 
 import java.io.IOException;
 
-import org.apache.lucene.index.AtomicReaderContext;
+import org.apache.lucene.index.AtomicReader;
 import org.apache.lucene.index.BinaryDocValues;
 import org.apache.lucene.index.NumericDocValues;
-import org.apache.lucene.util.ByteBlockPool;
-import org.apache.lucene.util.ByteBlockPool.DirectAllocator;
 import org.apache.lucene.util.BytesRefHash;
 
 import com.b2international.snowowl.datastore.index.AbstractDocsOutOfOrderCollector;
 import com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants;
 import com.b2international.snowowl.snomed.mrcm.DataType;
-import com.google.common.base.Preconditions;
 
 /**
- * Collector gathering concrete domains with distinct labels. The gathered labels 
- * will be grouped by the {@link DataType data type type}. 
+ * Collector gathering concrete domains with distinct labels. The gathered labels will be grouped by {@link DataType
+ * concrete data type}.
  */
 public class ReducedConcreteDomainFragmentCollector extends AbstractDocsOutOfOrderCollector {
-	
-	private final BytesRefHash booleanLabels;
-	private final BytesRefHash dateLabels;
-	private final BytesRefHash floatLabels;
-	private final BytesRefHash integerLabels;
-	private final BytesRefHash stringLabels;
-	
+
+	private final BytesRefHash booleanLabels = new BytesRefHash();
+	private final BytesRefHash dateLabels = new BytesRefHash();
+	private final BytesRefHash floatLabels = new BytesRefHash();
+	private final BytesRefHash integerLabels = new BytesRefHash();
+	private final BytesRefHash stringLabels = new BytesRefHash();
+
 	private BinaryDocValues labelValues;
 	private NumericDocValues typeValues;
-	
-	public ReducedConcreteDomainFragmentCollector() {
-		booleanLabels = new BytesRefHash(new ByteBlockPool(new DirectAllocator()));
-		dateLabels = new BytesRefHash(new ByteBlockPool(new DirectAllocator()));
-		floatLabels = new BytesRefHash(new ByteBlockPool(new DirectAllocator()));
-		integerLabels = new BytesRefHash(new ByteBlockPool(new DirectAllocator()));
-		stringLabels = new BytesRefHash(new ByteBlockPool(new DirectAllocator()));
-	}
-	
-	/* (non-Javadoc)
-	 * @see org.apache.lucene.search.Collector#collect(int)
-	 */
+
 	@Override
-	public void collect(final int doc) throws IOException {
-
-		if (!checkSources()) {
-			return; //cannot references direct sources
-		}
-		
-		final byte type = (byte) typeValues.get(doc);
-		getMrcmDataTypeToRefHash(type).add(deepCopyOf(labelValues.get(doc)));
-		
+	protected void initDocValues(final AtomicReader leafReader) throws IOException {
+		labelValues = leafReader.getBinaryDocValues(SnomedIndexBrowserConstants.COMPONENT_LABEL);
+		typeValues = leafReader.getNumericDocValues(SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_DATA_TYPE_VALUE);
 	}
 
-	/* (non-Javadoc)
-	 * @see org.apache.lucene.search.Collector#setNextReader(org.apache.lucene.index.AtomicReaderContext)
-	 */
 	@Override
-	public void setNextReader(final AtomicReaderContext context) throws IOException {
+	protected boolean isLeafCollectible() {
+		return labelValues != null && typeValues != null;
+	}
 
-		Preconditions.checkNotNull(context, "Atomic reader context argument cannot be null.");
-		
-		labelValues = context.reader().getBinaryDocValues(SnomedIndexBrowserConstants.COMPONENT_LABEL);
-		if (null == labelValues) {
-			resetValues();
-			return;
-		}
-		
-		typeValues = context.reader().getNumericDocValues(SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_DATA_TYPE_VALUE);
-		if (null == typeValues) {
-			resetValues();
-			return;
-		}
-		
-	}
-	
-	/*sets the reference on the sources to null*/
-	private void resetValues() {
-		labelValues = null;
-		typeValues = null;
-	}
-	
-	/*returns true only and if only all the backing sources can be referenced*/
-	private boolean checkSources() {
-		return null != labelValues
-			&& null != typeValues;
+	@Override
+	public void collect(final int docId) throws IOException {
+		final byte type = (byte) typeValues.get(docId);
+		getBytesRefHash(type).add(deepCopyOf(labelValues.get(docId)));
 	}
 
 	/**
-	 * Returns with all distinct labels for the given {@link DataType data types}.
-	 * @param dataType the data type.
-	 * @return 
+	 * Returns all distinct labels for the given {@link DataType data type}.
+	 * 
+	 * @param dataType the data type to check
+	 * @return labels associated with the data type
 	 */
 	public BytesRefHash getLabels(final DataType dataType) {
-		return getMrcmDataTypeToRefHash((byte) dataType.ordinal());
+		return getBytesRefHash((byte) dataType.ordinal());
 	}
-	
-	/*returns with the proper bytes ref hash for the given MRCM data type ordinal*/
-	private BytesRefHash getMrcmDataTypeToRefHash(final byte dataTypeOrdinal) {
-		
+
+	private BytesRefHash getBytesRefHash(final byte dataTypeOrdinal) {
+
 		switch (dataTypeOrdinal) {
-			
 			case 0: return booleanLabels;
 			case 1: return dateLabels;
 			case 2: return floatLabels;
 			case 3: return integerLabels;
 			case 4: return stringLabels;
+
 			default: throw new IllegalArgumentException("Cannot specify MRCM data type based on its ordinal: " + dataTypeOrdinal);
-			
- 		}		
+		}		
 	}
-	
 }

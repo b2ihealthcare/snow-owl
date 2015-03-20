@@ -32,7 +32,7 @@ import javax.annotation.Nullable;
 
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.Field.Store;
-import org.apache.lucene.document.LongField;
+import org.apache.lucene.document.NumericDocValuesField;
 import org.apache.lucene.document.StringField;
 import org.apache.lucene.index.Term;
 import org.apache.lucene.search.BooleanClause.Occur;
@@ -149,7 +149,7 @@ public abstract class AbstractComponentSetManager extends SingleDirectoryIndexSe
 		document.add(new StringField(FIELD_ID, componentIdentifierPair.getComponentId(), Store.YES));
 		document.add(new StringField(FIELD_TERMINOLOGY_COMPONENT_ID, componentIdentifierPair.getTerminologyComponentId(), Store.YES));
 		document.add(new StringField(FIELD_USER_ID, userId, Store.NO));
-		document.add(new LongField(FIELD_DATE_ADDED, System.currentTimeMillis(), Store.YES));
+		document.add(new NumericDocValuesField(FIELD_DATE_ADDED, System.currentTimeMillis()));
 		
 		try {
 			writer.addDocument(document);

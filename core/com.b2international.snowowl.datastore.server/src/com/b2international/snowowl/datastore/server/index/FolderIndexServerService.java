@@ -176,7 +176,7 @@ public abstract class FolderIndexServerService extends FSIndexServerService<Pare
 		
 		final Query query = new IndexQueryBuilder()
 			.requireExactTerm(CommonIndexConstants.COMPONENT_PARENT, CommonIndexConstants.ROOT_ID)
-			.requireExactTerm(CommonIndexConstants.COMPONENT_LABEL_SORT_KEY, folderName)
+			.requireExactTerm(CommonIndexConstants.COMPONENT_LABEL_SORT_KEY, IndexUtils.getSortKey(folderName))
 			.requireExactTerm(CommonIndexConstants.COMPONENT_TYPE, IndexUtils.intToPrefixCoded(getTerminologyFolderComponentNumber())).toQuery();
 	
 		return createSingleFolderResultObject(branchPath, search(branchPath, query, 1));
