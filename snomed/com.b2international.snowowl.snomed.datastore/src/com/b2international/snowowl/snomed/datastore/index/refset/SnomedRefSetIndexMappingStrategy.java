@@ -39,7 +39,6 @@ import org.apache.lucene.document.TextField;
 import com.b2international.snowowl.datastore.cdo.CDOIDUtils;
 import com.b2international.snowowl.datastore.cdo.CDOUtils;
 import com.b2international.snowowl.datastore.index.AbstractIndexMappingStrategy;
-import com.b2international.snowowl.datastore.index.IndexUtils;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.snomed.datastore.SnomedConceptLookupService;
 import com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants;
@@ -85,7 +84,6 @@ public class SnomedRefSetIndexMappingStrategy extends AbstractIndexMappingStrate
 		
 		final String label = SnomedConceptNameProvider.INSTANCE.getText(refSet.getIdentifierId(), refSet.cdoView());
 		doc.add(new TextField(COMPONENT_LABEL, label, Store.YES));
-		IndexUtils.addSortKey(doc, label);
 		doc.add(new NumericDocValuesField(COMPONENT_COMPARE_UNIQUE_KEY, indexAsRelevantForCompare ? storageKey : CDOUtils.NO_STORAGE_KEY));
 		
 		if (!indexAsRelevantForCompare) {

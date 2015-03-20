@@ -43,7 +43,7 @@ import org.apache.lucene.util.BytesRef;
 
 import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.datastore.index.AbstractIndexMappingStrategy;
-import com.b2international.snowowl.datastore.index.IndexUtils;
+import com.b2international.snowowl.datastore.index.SortKeyMode;
 import com.b2international.snowowl.snomed.Description;
 
 /**
@@ -74,7 +74,7 @@ public class SnomedDescriptionIndexMappingStrategy extends AbstractIndexMappingS
 		doc.add(new LongField(COMPONENT_ID, parseLong(descriptionId), YES));
 		doc.add(new IntField(COMPONENT_TYPE, DESCRIPTION_NUMBER, YES));
 		doc.add(new TextField(COMPONENT_LABEL, term, YES));
-		IndexUtils.addSortKey(doc, term);
+		SortKeyMode.SEARCH_ONLY.add(doc, term);
 		doc.add(new BinaryDocValuesField(COMPONENT_LABEL, new BytesRef(term)));
 		doc.add(new IntField(COMPONENT_ACTIVE, active ? 1 : 0, YES));
 		doc.add(new LongField(COMPONENT_STORAGE_KEY, storageKey, YES));

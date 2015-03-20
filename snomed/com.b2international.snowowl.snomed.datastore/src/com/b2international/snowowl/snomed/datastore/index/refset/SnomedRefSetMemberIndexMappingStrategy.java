@@ -93,6 +93,7 @@ import com.b2international.snowowl.datastore.CodeSystemUtils;
 import com.b2international.snowowl.datastore.cdo.CDOIDUtils;
 import com.b2international.snowowl.datastore.index.AbstractIndexMappingStrategy;
 import com.b2international.snowowl.datastore.index.IndexUtils;
+import com.b2international.snowowl.datastore.index.SortKeyMode;
 import com.b2international.snowowl.datastore.utils.ComponentUtils2;
 import com.b2international.snowowl.snomed.Component;
 import com.b2international.snowowl.snomed.Description;
@@ -279,7 +280,6 @@ public class SnomedRefSetMemberIndexMappingStrategy extends AbstractIndexMapping
 		}
 		
 		doc.add(new TextField(COMPONENT_LABEL, this.label, Store.YES));
-		IndexUtils.addSortKey(doc, label);
 		
 		switch (member.getRefSet().getType()) {
 			
@@ -383,6 +383,7 @@ public class SnomedRefSetMemberIndexMappingStrategy extends AbstractIndexMapping
 				
 				if (null != label) {
 					doc.add(new BinaryDocValuesField(COMPONENT_LABEL, new BytesRef(label)));
+					SortKeyMode.SEARCH_ONLY.add(doc, label);
 				}
 				
 				doc.add(new NumericDocValuesField(REFERENCE_SET_MEMBER_REFERENCED_COMPONENT_ID, Long.parseLong(member.getReferencedComponentId())));

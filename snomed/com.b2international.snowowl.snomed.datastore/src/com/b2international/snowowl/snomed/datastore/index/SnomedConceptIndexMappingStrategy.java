@@ -62,7 +62,7 @@ import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.datastore.BranchPathUtils;
 import com.b2international.snowowl.datastore.cdo.CDOUtils;
 import com.b2international.snowowl.datastore.index.AbstractIndexMappingStrategy;
-import com.b2international.snowowl.datastore.index.IndexUtils;
+import com.b2international.snowowl.datastore.index.SortKeyMode;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants;
 import com.b2international.snowowl.snomed.datastore.services.ISnomedComponentService;
@@ -175,7 +175,7 @@ public abstract class SnomedConceptIndexMappingStrategy extends AbstractIndexMap
 		doc.add(new StoredField(COMPONENT_RELEASED, released ? 1 : 0));
 		doc.add(new TextField(COMPONENT_LABEL, label, Store.YES));
 		doc.add(new BinaryDocValuesField(COMPONENT_LABEL, new BytesRef(label)));
-		IndexUtils.addSortKey(doc, label);
+		SortKeyMode.SORT_ONLY.add(doc, label);
 		doc.add(new StoredField(CONCEPT_DEGREE_OF_INTEREST, degreeOfInterest));
 		doc.add(new FloatDocValuesField(CONCEPT_DEGREE_OF_INTEREST, degreeOfInterest));
 		doc.add(new LongField(CONCEPT_MODULE_ID, Long.valueOf(moduleId), Store.YES));

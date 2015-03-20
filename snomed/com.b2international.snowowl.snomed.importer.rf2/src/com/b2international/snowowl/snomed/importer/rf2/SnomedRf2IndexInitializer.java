@@ -158,6 +158,7 @@ import com.b2international.snowowl.datastore.cdo.CDOViewFunction;
 import com.b2international.snowowl.datastore.cdo.ICDOConnection;
 import com.b2international.snowowl.datastore.cdo.ICDOConnectionManager;
 import com.b2international.snowowl.datastore.index.IndexUtils;
+import com.b2international.snowowl.datastore.index.SortKeyMode;
 import com.b2international.snowowl.datastore.server.snomed.index.NamespaceMapping;
 import com.b2international.snowowl.datastore.server.snomed.index.SnomedIndexServerService;
 import com.b2international.snowowl.datastore.server.snomed.index.init.DoiInitializer;
@@ -768,7 +769,6 @@ public class SnomedRf2IndexInitializer extends Job {
 					
 					final String label = importIndexService.getConceptLabel(refSetId);
 					refSetDoc.add(new TextField(COMPONENT_LABEL, label, Store.YES));
-					IndexUtils.addSortKey(refSetDoc, label);
 					
 					final String moduleId;
 					final SnomedConceptIndexEntry identifierConcept = ApplicationContext.getInstance().getService(SnomedTerminologyBrowser.class).getConcept(branchPath, refSetId);
@@ -891,13 +891,11 @@ public class SnomedRf2IndexInitializer extends Job {
 				doc.add(new LongField(REFERENCE_SET_MEMBER_MODULE_ID, module, Store.YES));
 				doc.add(new LongField(REFERENCE_SET_MEMBER_REFERENCE_SET_ID, Long.valueOf(refSetId), Store.YES));
 				doc.add(new LongField(REFERENCE_SET_MEMBER_EFFECTIVE_TIME, timestampLong, Store.YES));
-				
 				doc.add(new TextField(COMPONENT_LABEL, label, Store.YES));
-				IndexUtils.addSortKey(doc, label);
 				
 				switch (refSetType) {
 					
-					case SIMPLE : 
+					case SIMPLE: 
 						break;
 						
 					case ASSOCIATION:
@@ -993,9 +991,9 @@ public class SnomedRf2IndexInitializer extends Job {
 						final com.b2international.snowowl.snomed.mrcm.DataType dataType = SnomedRefSetUtil.getDataType(refSetId);
 						doc.add(new NumericDocValuesField(REFERENCE_SET_MEMBER_DATA_TYPE_VALUE, (byte) dataType.ordinal()));
 						
-						
 						if (null != label) {
 							doc.add(new BinaryDocValuesField(COMPONENT_LABEL, new BytesRef(label)));
+							SortKeyMode.SEARCH_ONLY.add(doc, label);
 						}
 						
 						doc.add(new NumericDocValuesField(REFERENCE_SET_MEMBER_REFERENCED_COMPONENT_ID, Long.parseLong(refComponentId)));
@@ -1095,7 +1093,7 @@ public class SnomedRf2IndexInitializer extends Job {
 				doc.add(new LongField(COMPONENT_ID, sctId, Store.YES));
 				doc.add(new IntField(COMPONENT_TYPE, SnomedTerminologyComponentConstants.DESCRIPTION_NUMBER, Store.YES));
 				doc.add(new TextField(COMPONENT_LABEL, term, Store.YES));
-				IndexUtils.addSortKey(doc, term);
+				SortKeyMode.SEARCH_ONLY.add(doc, term);
 				doc.add(new BinaryDocValuesField(COMPONENT_LABEL, new BytesRef(term)));
 				doc.add(new IntField(COMPONENT_ACTIVE, active ? 1 : 0, Store.YES));
 				doc.add(new LongField(COMPONENT_STORAGE_KEY, storageKey, Store.YES));
@@ -1252,7 +1250,7 @@ public class SnomedRf2IndexInitializer extends Job {
 		final String preferredTerm = Iterables.getFirst(descriptions, null).term;
 		doc.add(new TextField(COMPONENT_LABEL, preferredTerm, Store.YES));
 		doc.add(new BinaryDocValuesField(COMPONENT_LABEL, new BytesRef(preferredTerm)));
-		IndexUtils.addSortKey(doc, preferredTerm);
+		SortKeyMode.SORT_ONLY.add(doc, preferredTerm);
 		
 		if (conceptIdToPredicateMap.containsKey(conceptId)) {
 			final Collection<String> predicateKeys = conceptIdToPredicateMap.get(conceptId);
