@@ -17,6 +17,7 @@ package com.b2international.snowowl.snomed.datastore.id;
 
 import static com.google.common.base.Preconditions.checkArgument;
 
+import com.b2international.commons.VerhoeffCheck;
 import com.b2international.snowowl.core.terminology.ComponentCategory;
 import com.b2international.snowowl.snomed.datastore.id.gen.SingleItemIdGenerationStrategy;
 import com.b2international.snowowl.snomed.datastore.internal.id.SnomedIdentifierImpl;
@@ -75,8 +76,7 @@ public class SnomedIdentifiers {
 	 * @return
 	 */
 	public static SnomedIdentifier of(String componentId) {
-		checkArgument(!Strings.isNullOrEmpty(componentId), "ComponentId must be defined");
-		checkArgument(componentId.length() >= 6 && componentId.length() <= 18, "ComponentID's length should be between 6-18 character length");
+		validate(componentId);
 		final int checkDigit = Character.getNumericValue(componentId.charAt(componentId.length() - 1));
 		final int componentIdentifier = Character.getNumericValue(componentId.charAt(componentId.length() - 2));
 		final int partitionIdentifier = Character.getNumericValue(componentId.charAt(componentId.length() - 3));
@@ -84,6 +84,31 @@ public class SnomedIdentifiers {
 		final long itemId = partitionIdentifier == 0 ? Long.parseLong(componentId.substring(0, componentId.length() - 3)) : Long
 				.parseLong(componentId.substring(0, componentId.length() - 10));
 		return new SnomedIdentifierImpl(itemId, namespace, partitionIdentifier, componentIdentifier, checkDigit);
+	}
+
+	/**
+	 * Validates the given componentId by using the rules defined in the latest SNOMED CT Identifier specification, which are the following constraints:
+	 * <ul>
+	 * 	<li>Can't start with leading zeros</li>
+	 * 	<li>Lengths should be between 6 and 18 characters</li>
+	 * 	<li>Should parse to a long value</li>
+	 * 	<li>Should pass the Verhoeff check-digit test</li>
+	 * </ul>
+	 * 
+	 * @param componentId
+	 * @see VerhoeffCheck
+	 * @throws IllegalArgumentException - if the given componentId is invalid according to the SNOMED CT Identifier specification
+	 */
+	public static void validate(String componentId) throws IllegalArgumentException {
+		checkArgument(!Strings.isNullOrEmpty(componentId), "ComponentId must be defined");
+		checkArgument(componentId.startsWith("0"), "ComponentId can't start with leading zeros");
+		checkArgument(componentId.length() >= 6 && componentId.length() <= 18, "ComponentId's length should be between 6-18 character length");
+		try {
+			Long.parseLong(componentId);
+		} catch (NumberFormatException e) {
+			throw new IllegalArgumentException("ComponentId should parse to a Long");
+		}
+		checkArgument(VerhoeffCheck.validateLastChecksumDigit(componentId), "ComponentId should pass Verhoeff check-digit test");
 	}
 
 	/**
