@@ -88,6 +88,7 @@ public class SnomedExportServerIndication extends IndicationWithMonitoring {
 
 	private boolean coreComponentExport;
 	private ContentSubType releaseType;
+	private String unsetEffectiveTimeLabel;
 	private boolean includeRf1;
 	private boolean includeExtendedDescriptionTypes;
 	private Set<String> modulesToExport;
@@ -136,7 +137,15 @@ public class SnomedExportServerIndication extends IndicationWithMonitoring {
 		deltaExportStartEffectiveTime = deltaExportStartEffectiveTimeString.equals("") ? null : convertRF2StringToDate(deltaExportStartEffectiveTimeString);
 		deltaExportEndEffectiveTime = deltaExportEndEffectiveTimeString.equals("") ? null : convertRF2StringToDate(deltaExportEndEffectiveTimeString);
 		releaseType = ContentSubType.getByValue(in.readInt());
-		configuration = new SnomedExportConfigurationImpl(branchPath, releaseType, deltaExportStartEffectiveTime, deltaExportEndEffectiveTime);
+		unsetEffectiveTimeLabel = in.readUTF();
+		
+		configuration = new SnomedExportConfigurationImpl(
+				branchPath, 
+				releaseType, 
+				unsetEffectiveTimeLabel,
+				deltaExportStartEffectiveTime, 
+				deltaExportEndEffectiveTime);
+		
 		includeRf1 = in.readBoolean();
 		includeExtendedDescriptionTypes = in.readBoolean();
 

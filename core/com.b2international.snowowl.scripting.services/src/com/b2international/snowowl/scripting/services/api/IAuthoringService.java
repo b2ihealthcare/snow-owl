@@ -274,87 +274,106 @@ public interface IAuthoringService {
 			final Object value, final String moduleId, final String characteristicTypeId);
 		
 	/**
-	 * Adds a concrete domain data type to a SNOMED&nbsp;CT relationship.
-	 * The method uses the default moduleId, which can be set in the preferences page.
-	 * The method does not persist the changes in the repository, the caller explicitly needs to call editingContext.commit() to persist the changes.
+	 * Adds a concrete domain data type to a SNOMED&nbsp;CT relationship. The method uses the default moduleId, which can be set in the preferences
+	 * page. The method does not persist the changes in the repository, the caller explicitly needs to call editingContext.commit() to persist the
+	 * changes.
 	 * 
-	 * @param editingContext the editing context for the changes to be performed on
+	 * @param editingContext
+	 *            the editing context for the changes to be performed on
 	 * @param relationship
 	 *            SNOMED&nbsp;CT relationship to add the concrete domain data type to. Cannot be {@code null}.
 	 * @param concreteDomainAttributeName
-	 *            the name of the attribute. The format should be camelcase. Cannot be {@code null}
-	 *            Example: {@code startDate}.
-	 * @param concreteDomainAttributeType the concrete domain type, see {@link ConcreteDomainDataType}
-	 * @param value value of the concrete data type
-	 * @param characteristicTypeId the characteristic type SNOMED CT id of the concrete domain element (Defining, etc.)	
-	 *            
+	 *            the name of the attribute. The format should be camelcase. Cannot be {@code null} Example: {@code startDate}.
+	 * @param concreteDomainAttributeType
+	 *            the concrete domain type, see {@link ConcreteDomainDataType}
+	 * @param value
+	 *            value of the concrete domain
+	 * @param characteristicTypeId
+	 *            the characteristic type SNOMED CT id of the concrete domain element (Defining, etc.)
+	 * 
 	 */
 	void addConcreteDomainDataTypeToRelationship(SnomedEditingContext editingContext, final Relationship relationship,
-			final String concreteDomainAttributeName, final ConcreteDomainDataType concreteDomainAttributeType, final Object value, 
+			final String concreteDomainAttributeName, final ConcreteDomainDataType concreteDomainAttributeType, final Object value,
 			final String characteristicTypeId);
-	
+
 	/**
-	 * Adds a concrete domain data type to a SNOMED&nbsp;CT relationship, the method uses the given moduleId as module.
-	 * The method does not persist the changes in the repository, the caller explicitly needs to call editingContext.commit() to persist the changes.
+	 * Adds a concrete domain data type to a SNOMED&nbsp;CT relationship, the method uses the given moduleId as module. The method does not persist
+	 * the changes in the repository, the caller explicitly needs to call editingContext.commit() to persist the changes.
 	 * 
-	 * @param editingContext the editing context for the changes to be performed on
+	 * @param editingContext
+	 *            the editing context for the changes to be performed on
 	 * @param relationship
 	 *            SNOMED&nbsp;CT relationship to add the concrete domain data type to. Cannot be {@code null}.
 	 * @param concreteDomainAttributeName
-	 *            the name of the attribute. The format should be camelcase. Cannot be {@code null}
-	 *            Example: {@code startDate}.
-	 * @param concreteDomainAttributeType the concrete domain type, see {@link ConcreteDomainDataType}
-	 * @param value value of the concrete data type
-	 * @param moduleId the SNOMED&nbsp;CT ID of the module concept to use
-	 * @param characteristicTypeId the characteristic type SNOMED CT id of the concrete domain element (Defining, etc.)	
-	 *            
+	 *            the name of the attribute. The format should be camelcase. Cannot be {@code null} Example: {@code startDate}.
+	 * @param concreteDomainAttributeType
+	 *            the concrete domain type, see {@link ConcreteDomainDataType}
+	 * @param value
+	 *            value of the concrete domain
+	 * @param moduleId
+	 *            the SNOMED&nbsp;CT ID of the module concept to use
+	 * @param characteristicTypeId
+	 *            the characteristic type SNOMED CT id of the concrete domain element (Defining, etc.)
+	 * 
 	 */
 	void addConcreteDomainDataTypeToRelationship(SnomedEditingContext editingContext, final Relationship relationship,
-			final String concreteDomainAttributeName, final ConcreteDomainDataType concreteDomainAttributeType, final Object value, 
+			final String concreteDomainAttributeName, final ConcreteDomainDataType concreteDomainAttributeType, final Object value,
 			final String moduleId, final String characteristicTypeId);
 
 	/**
-	 * Adds a concrete domain data type to a SNOMED&nbsp;CT relationship.
-	 * The method uses the default moduleId, which can be set in the preferences page.
-	 * The method does not persist the changes in the repository, the caller explicitly needs to call editingContext.commit() to persist the changes.
+	 * Adds a concrete domain data type to a SNOMED&nbsp;CT relationship with additional operator and unit of measurement information. The method uses
+	 * the default moduleId, which can be set in the preferences page. The method does not persist the changes in the repository, the caller
+	 * explicitly needs to call editingContext.commit() to persist the changes.
 	 * 
-	 * @param editingContext the editing context for the changes to be performed on
-	 * @param value the numerical value of the concrete data type
-	 * @param uomId the conceptId of the UOM
-	 * @param operatorId the conceptId of the operator of the
-	 * @param characteristicTypeId the characteristic type SNOMED CT id of the concrete domain element (Defining, etc.)	 
-	 * @param concept
+	 * @param editingContext
+	 *            the editing context for the changes to be performed on
+	 * @param relationship
 	 *            SNOMED&nbsp;CT relationship to add the concrete domain data type to. Cannot be {@code null}.
 	 * @param concreteDomainAttributeName
-	 *            the name of the attribute. The format should be camelcase. Cannot be {@code null}
-	 *            Example: {@code startDate}.
-	 * @param concreteDomainAttributeType the concrete domain type, see {@link ConcreteDomainDataType}
-	 *            
+	 *            the name of the attribute. The format should be camelcase. Cannot be {@code null} Example: {@code startDate}.
+	 * @param concreteDomainAttributeType
+	 *            the concrete domain type, see {@link ConcreteDomainDataType}
+	 * @param value
+	 *            the value of the concrete domain
+	 * @param uomId
+	 *            the SNOMED CT id of the Unit Of Measurement
+	 * @param operatorId
+	 *            the SNOMED CT id of the operator (e.g. =, <=, <>, etc.)
+	 * @param characteristicTypeId
+	 *            the characteristic type SNOMED CT id of the concrete domain element (defining, etc.)
+	 * 
 	 */
-	void addConcreteDomainDataTypeToRelationship(SnomedEditingContext editingContext, Relationship relationship,
-			String attributeName, final ConcreteDomainDataType concreteDomainAttributeDatatype, Object value, long uomId, String operatorId, 
-			final String characteristicTypeId);
-	
+	void addConcreteDomainDataTypeToRelationship(SnomedEditingContext editingContext, final Relationship relationship,
+			final String concreteDomainAttributeName, final ConcreteDomainDataType concreteDomainAttributeType, final Object value,
+			final String uomId, final String operatorId, final String characteristicTypeId);
+
 	/**
-	 * Adds a concrete domain data type to a SNOMED&nbsp;CT relationship.
-	 * The method does not persist the changes in the repository, the caller explicitly needs to call editingContext.commit() to persist the changes.
+	 * Adds a concrete domain data type to a SNOMED&nbsp;CT relationship with additional operator and unit of measurement information and uses the
+	 * given moduleId as module. The method does not persist the changes in the repository, the caller explicitly needs to call
+	 * editingContext.commit() to persist the changes.
 	 * 
-	 * @param editingContext the editing context for the changes to be performed on
-	 * @param value the numerical value of the concrete data type
-	 * @param uomId the conceptId of the UOM
-	 * @param operatorId the conceptId of the operator of the
-	 * @param characteristicTypeId the characteristic type SNOMED CT id of the concrete domain element (Defining, etc.)	 
-	 * @param concept
+	 * @param editingContext
+	 *            the editing context for the changes to be performed on
+	 * @param relationship
 	 *            SNOMED&nbsp;CT relationship to add the concrete domain data type to. Cannot be {@code null}.
 	 * @param concreteDomainAttributeName
-	 *            the name of the attribute. The format should be camelcase. Cannot be {@code null}
-	 *            Example: {@code startDate}.
-	 * @param concreteDomainAttributeType the concrete domain type, see {@link ConcreteDomainDataType}
-	 * @param moduleId the SNOMED&nbsp;CT ID of the module concept to use
-	 *            
+	 *            the name of the attribute. The format should be camelcase. Cannot be {@code null} Example: {@code startDate}.
+	 * @param concreteDomainAttributeType
+	 *            the concrete domain type, see {@link ConcreteDomainDataType}
+	 * @param value
+	 *            the value of the concrete domain
+	 * @param uomId
+	 *            the SNOMED CT id of the Unit Of Measurement
+	 * @param operatorId
+	 *            the SNOMED CT id of the operator (e.g. =, <=, <>, etc.)
+	 * @param moduleId
+	 *            the SNOMED&nbsp;CT ID of the module concept to use
+	 * @param characteristicTypeId
+	 *            the characteristic type SNOMED CT id of the concrete domain element (defining, etc.)
+	 * 
 	 */
-	void addConcreteDomainDataTypeToRelationship(SnomedEditingContext editingContext, Relationship relationship,
-			String attributeName, final ConcreteDomainDataType concreteDomainAttributeDatatype, Object value, long uomId, String operatorId, 
-			final String moduleId, final String characteristicTypeId);
+	void addConcreteDomainDataTypeToRelationship(SnomedEditingContext editingContext, final Relationship relationship,
+			final String concreteDomainAttributeName, final ConcreteDomainDataType concreteDomainAttributeType, final Object value,
+			final String uomId, final String operatorId, final String moduleId, final String characteristicTypeId);
 	
 }

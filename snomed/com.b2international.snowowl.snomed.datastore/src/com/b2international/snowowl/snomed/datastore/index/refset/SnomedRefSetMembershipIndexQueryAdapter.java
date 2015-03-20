@@ -54,6 +54,7 @@ import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.datastore.ILanguageConfigurationProvider;
 import com.b2international.snowowl.snomed.datastore.SnomedRefSetUtil;
 import com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants;
+import com.b2international.snowowl.snomed.datastore.browser.SnomedIndexQueries;
 import com.b2international.snowowl.snomed.datastore.services.SnomedRefSetMembershipLookupService;
 import com.b2international.snowowl.snomed.mrcm.DataType;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType;
@@ -361,6 +362,7 @@ public class SnomedRefSetMembershipIndexQueryAdapter extends SnomedRefSetMemberI
 					final int componentTypeValue = CoreTerminologyBroker.getInstance().getTerminologyComponentIdAsInt(componentType);
 					query.add(new TermQuery(new Term(REFERENCE_SET_MEMBER_REFERENCE_SET_TYPE, IndexUtils.intToPrefixCoded(SnomedRefSetType.CONCRETE_DATA_TYPE_VALUE))), Occur.MUST);
 					query.add(new TermQuery(new Term(REFERENCE_SET_MEMBER_REFERENCED_COMPONENT_TYPE, IndexUtils.intToPrefixCoded(componentTypeValue))), Occur.MUST);
+					query.add(SnomedIndexQueries.ACTIVE_COMPONENT_QUERY, Occur.MUST);
 					final List<String> ids = Lists.newArrayList(referencedComponentIds);
 					if (ids.size() > 1) {
 						query.add(createComponentIdQuery(referencedComponentIds), Occur.MUST);

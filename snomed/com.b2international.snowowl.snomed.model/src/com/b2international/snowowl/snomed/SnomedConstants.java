@@ -309,8 +309,6 @@ public abstract class SnomedConstants {
 
 		public static final String DEFAULT_UNIT = "258666001";
 		
-		public static final String INGREDIENT_TO_ATC_STATED_SIMPLE_MAP = "260987201000132106";
-		
 		public static final String NAMESPACE_ROOT = "370136006";
 		public static final String SINGAPORE_NATIONAL_EXTENSION = "443855003";
 		public static final String SINGAPORE_DRUG_DICTIONARY_EXTENSION = "443856002";

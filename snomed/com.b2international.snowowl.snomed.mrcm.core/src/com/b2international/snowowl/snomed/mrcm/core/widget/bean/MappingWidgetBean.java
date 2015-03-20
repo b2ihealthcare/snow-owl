@@ -17,7 +17,10 @@ package com.b2international.snowowl.snomed.mrcm.core.widget.bean;
 
 import java.io.Serializable;
 
+import com.b2international.snowowl.core.CoreTerminologyBroker;
+import com.b2international.snowowl.core.api.ExtendedComponentImpl;
 import com.b2international.snowowl.core.api.IComponent;
+import com.b2international.snowowl.core.api.IconIdProvider;
 import com.b2international.snowowl.core.api.NullComponent;
 import com.b2international.snowowl.snomed.mrcm.core.widget.model.MappingWidgetModel;
 import com.b2international.snowowl.snomed.mrcm.core.widget.model.WidgetModel;
@@ -85,7 +88,8 @@ public class MappingWidgetBean extends LeafWidgetBean implements Serializable {
 	public void setSelectedValue(final IComponent<String> newSelectedValue) {
 		final String oldSelectedValue = this.selectedValue;
 		this.selectedValue = newSelectedValue.getId();
-		getConcept().add(newSelectedValue);
+		final String iconId = newSelectedValue instanceof IconIdProvider ? ((IconIdProvider<String>) newSelectedValue).getIconId() : null;
+		getConcept().add(new ExtendedComponentImpl(newSelectedValue.getId(), newSelectedValue.getLabel(), iconId, CoreTerminologyBroker.getInstance().getTerminologyComponentIdAsShort(newSelectedValue)));
 		firePropertyChange(PROP_SELECTED_VALUE, oldSelectedValue, newSelectedValue);
 	}
 	

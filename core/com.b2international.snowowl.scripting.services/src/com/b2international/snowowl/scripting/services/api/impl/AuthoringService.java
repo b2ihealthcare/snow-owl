@@ -77,7 +77,7 @@ public enum AuthoringService implements IAuthoringService {
 	 * Map for navigating between the {@link ConcreteDomainDataType} and the
 	 * {@link DataType} enumerations.
 	 */
-	private static final BiMap<ConcreteDomainDataType, DataType> DATA_TYPE_BIMAP = ImmutableBiMap
+	public static final BiMap<ConcreteDomainDataType, DataType> DATA_TYPE_BIMAP = ImmutableBiMap
 			.<ConcreteDomainDataType, DataType> builder().put(ConcreteDomainDataType.BOOLEAN, DataType.BOOLEAN)
 			.put(ConcreteDomainDataType.DATE, DataType.DATE).put(ConcreteDomainDataType.DECIMAL, DataType.DECIMAL)
 			.put(ConcreteDomainDataType.INTEGER, DataType.INTEGER).put(ConcreteDomainDataType.STRING, DataType.STRING).build();
@@ -210,28 +210,30 @@ public enum AuthoringService implements IAuthoringService {
 		// attach it to the relationship
 		relationship.getConcreteDomainRefSetMembers().add(member);
 	}
-
+	
 	@Override
-	public void addConcreteDomainDataTypeToRelationship(final SnomedEditingContext editingContext, final Relationship relationship,
-			final String concreteDomainAttributeName, final ConcreteDomainDataType concreteDomainAttributeType, final Object value, final long uomId, final String operatorId, 
-			final String characteristicTypeId) {
+	public void addConcreteDomainDataTypeToRelationship(SnomedEditingContext editingContext, Relationship relationship,
+			String concreteDomainAttributeName, ConcreteDomainDataType concreteDomainAttributeType, Object value, String uomId, String operatorId,
+			String characteristicTypeId) {
+		addConcreteDomainDataTypeToRelationship(editingContext, relationship, concreteDomainAttributeName, concreteDomainAttributeType, value, uomId,
+				operatorId, getModuleId(editingContext), characteristicTypeId);
 	}
 	
 	@Override
-	public void addConcreteDomainDataTypeToRelationship(final SnomedEditingContext editingContext, final Relationship relationship,
-			final String concreteDomainAttributeName, final ConcreteDomainDataType concreteDomainAttributeType, final Object value, final long uomId, final String operatorId, 
-			final String moduleId, final String characteristicTypeId) {
+	public void addConcreteDomainDataTypeToRelationship(SnomedEditingContext editingContext, Relationship relationship,
+			String concreteDomainAttributeName, ConcreteDomainDataType concreteDomainAttributeType, Object value, String uomId, String operatorId,
+			String moduleId, String characteristicTypeId) {
 		checkModuleId(moduleId);
 		final SnomedRefSetEditingContext context = editingContext.getRefSetEditingContext();
 		final DataType dataType = getDataType(concreteDomainAttributeType);
 		final String identifierConceptId = getIdentifierConceptId(dataType);
 		final SnomedConcreteDataTypeRefSet refSet = getRefSet(context.getTransaction(), identifierConceptId);
-
+		
 		final ComponentType componentType = ComponentType.RELATIONSHIP;
-
+		
 		final SnomedConcreteDataTypeRefSetMember member = checkNotNull(context.createConcreteDataTypeRefSetMember(
 				componentType.getComponentIdentifierPair(Long.valueOf(relationship.getId())),
-				String.valueOf(uomId), 
+				uomId, 
 				operatorId,
 				value,
 				characteristicTypeId,
@@ -241,7 +243,6 @@ public enum AuthoringService implements IAuthoringService {
 		
 		// attach it to the relationship
 		relationship.getConcreteDomainRefSetMembers().add(member);
-
 	}
 
 	private void checkModuleId(final String moduleId) {

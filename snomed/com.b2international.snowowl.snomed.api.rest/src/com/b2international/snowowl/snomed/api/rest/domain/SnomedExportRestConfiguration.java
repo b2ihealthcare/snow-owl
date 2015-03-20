@@ -28,10 +28,13 @@ import com.fasterxml.jackson.annotation.JsonFormat.Shape;
 public class SnomedExportRestConfiguration {
 
 	private Rf2ReleaseType type;
+	private String version;
+	private String taskId;
 	private Collection<String> moduleIds;
 	private Date deltaStartEffectiveTime;
 	private Date deltaEndEffectiveTime;
 	private String namespaceId = "INT";
+	private String transientEffectiveTime;
 
 	/**
 	 * Returns with the RF2 release type of the current export configuration.
@@ -43,6 +46,30 @@ public class SnomedExportRestConfiguration {
 	
 	public void setType(Rf2ReleaseType type) {
 		this.type = type;
+	}
+	
+	/** 
+	 * Returns the version to run the export on.
+	 * @return the version to export
+	 */
+	public String getVersion() {
+		return version;
+	}
+	
+	public void setVersion(String version) {
+		this.version = version;
+	}
+	
+	/**
+	 * Returns the identifier of the task from which content should be exported.
+	 * @return the task identifier, or {@code null} when exporting from a version
+	 */
+	public String getTaskId() {
+		return taskId;
+	}
+	
+	public void setTaskId(String taskId) {
+		this.taskId = taskId;
 	}
 	
 	/**
@@ -102,4 +129,17 @@ public class SnomedExportRestConfiguration {
 		this.moduleIds = moduleIds;
 	}
 	
+	/**
+	 * Returns the transient effective time to use for unpublished components.
+	 * 
+	 * @return the transient effective time, or {@code null} if the default {@code UNPUBLISHED} value should be printed
+	 * for unpublished components
+	 */
+	public String getTransientEffectiveTime() {
+		return transientEffectiveTime;
+	}
+
+	public void setTransientEffectiveTime(String transientEffectiveTime) {
+		this.transientEffectiveTime = transientEffectiveTime;
+	}
 }
