@@ -31,17 +31,6 @@ import com.b2international.snowowl.snomed.datastore.id.SnomedIdentifiers;
 public class SnomedIdentifierTest {
 
 	@Test
-	public void whenCreatingShortestConceptIdentifierInShortFormat_ThenItShouldBeCreated() throws Exception {
-		final SnomedIdentifier id = SnomedIdentifiers.of("100005");
-		assertEquals(100L, id.getItemId());
-		assertNull(id.getNamespace());
-		assertEquals(0, id.getPartitionIdentifier());
-		assertEquals(0, id.getComponentIdentifier());
-		assertEquals(5, id.getCheckDigit());
-		assertEquals(ComponentCategory.CONCEPT, id.getComponentCategory());
-	}
-	
-	@Test
 	public void whenCreatingBasicConceptIdentifierInShortFormat_ThenItShouldBeCreated() throws Exception {
 		final SnomedIdentifier id = SnomedIdentifiers.of(Concepts.ROOT_CONCEPT);
 		assertEquals(138875L, id.getItemId());
@@ -53,7 +42,18 @@ public class SnomedIdentifierTest {
 	}
 	
 	@Test
-	public void whenCreatingSCTIdentifierFromLongestShortForm_ThenItShouldBeCreated() throws Exception {
+	public void whenCreatingShortestConceptIdentifierInShortFormat_ThenItShouldBeCreated() throws Exception {
+		final SnomedIdentifier id = SnomedIdentifiers.of("100005");
+		assertEquals(100L, id.getItemId());
+		assertNull(id.getNamespace());
+		assertEquals(0, id.getPartitionIdentifier());
+		assertEquals(0, id.getComponentIdentifier());
+		assertEquals(5, id.getCheckDigit());
+		assertEquals(ComponentCategory.CONCEPT, id.getComponentCategory());
+	}
+	
+	@Test
+	public void whenCreatingLongestConceptIdentifierInShortFormat_ThenItShouldBeCreated() throws Exception {
 		final SnomedIdentifier id = SnomedIdentifiers.of(Concepts.DEFINITION_STATUS_ROOT);
 		assertEquals(900000000000444L, id.getItemId());
 		assertNull(id.getNamespace());
