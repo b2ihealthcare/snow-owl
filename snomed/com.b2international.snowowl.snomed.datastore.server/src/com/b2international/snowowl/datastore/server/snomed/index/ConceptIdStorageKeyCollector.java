@@ -71,8 +71,8 @@ public class ConceptIdStorageKeyCollector extends AbstractDocsOutOfOrderCollecto
 
 	@Override
 	public void collect(final int docId) throws IOException {
-		final long conceptId = conceptIds.get(docId);
-		final long storageKey = storageKeys.get(docId);
+		final long conceptId = conceptIdValues.get(docId);
+		final long storageKey = storageKeyValues.get(docId);
 
 		conceptIds.add(conceptId);
 		storageKeys.add(storageKey);
