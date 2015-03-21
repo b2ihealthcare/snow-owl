@@ -32,7 +32,6 @@ import org.eclipse.emf.cdo.view.CDOView;
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.api.SnowowlRuntimeException;
-import com.b2international.snowowl.core.api.index.CommonIndexConstants;
 import com.b2international.snowowl.datastore.BranchPathUtils;
 import com.b2international.snowowl.datastore.cdo.CDOUtils;
 import com.b2international.snowowl.datastore.cdo.CDOViewFunction;
@@ -97,10 +96,10 @@ public class IndexBasedImportIndexServiceFeeder implements IImportIndexServiceFe
 	}
 
 	private static final Set<String> LANGUAGE_MEMBER_FIELDS_TO_LOAD = ImmutableSet.of(
+			SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_UUID,
 			SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_REFERENCED_COMPONENT_ID,
 			SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_ACCEPTABILITY_ID,
-			SnomedIndexBrowserConstants.COMPONENT_ACTIVE,
-			CommonIndexConstants.COMPONENT_ID
+			SnomedIndexBrowserConstants.COMPONENT_ACTIVE
 	);
 	
 	@SuppressWarnings("unchecked")
@@ -128,7 +127,7 @@ public class IndexBasedImportIndexServiceFeeder implements IImportIndexServiceFe
 				
 				final Document doc = searcher.doc(itr.getDocID(), LANGUAGE_MEMBER_FIELDS_TO_LOAD);
 				
-				final String memberId = doc.get(CommonIndexConstants.COMPONENT_ID);
+				final String memberId = doc.get(SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_UUID);
 				final String descriptionId = doc.get(SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_REFERENCED_COMPONENT_ID);
 				final String acceptabilityId = doc.get(SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_ACCEPTABILITY_ID);
 				
