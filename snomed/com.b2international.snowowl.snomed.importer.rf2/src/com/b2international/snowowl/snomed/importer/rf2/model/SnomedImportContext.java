@@ -71,7 +71,9 @@ public class SnomedImportContext implements ISnomedPostProcessorContext, AutoClo
 	
 	@Override
 	public void close() throws Exception {
-		getEditingContext().close();
+		if (getEditingContext() != null) {
+			getEditingContext().close();
+		}
 	}
 	
 	/**
