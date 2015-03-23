@@ -23,25 +23,16 @@ import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.eclipse.core.runtime.IProgressMonitor;
-import org.eclipse.emf.cdo.view.CDOView;
 
 import com.b2international.commons.csv.CsvLexer.EOL;
 import com.b2international.commons.csv.CsvParser;
 import com.b2international.commons.csv.CsvSettings;
 import com.b2international.commons.csv.RecordParserCallback;
-import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.api.SnowowlRuntimeException;
 import com.b2international.snowowl.core.api.SnowowlServiceException;
-import com.b2international.snowowl.datastore.BranchPathUtils;
-import com.b2international.snowowl.datastore.cdo.CDOUtils;
-import com.b2international.snowowl.datastore.cdo.CDOViewFunction;
 import com.b2international.snowowl.datastore.server.snomed.index.init.ImportIndexServerService.TermType;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
-import com.b2international.snowowl.snomed.datastore.ILanguageConfigurationProvider;
-import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
-import com.b2international.snowowl.snomed.datastore.SnomedRefSetLookupService;
-import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSet;
 
 /**
  * {@link ImportIndexServerService Import index service} content initializer. This class uses RF2 files for the content initialization.
@@ -51,24 +42,13 @@ public class Rf2BasedImportIndexServiceFeeder implements IImportIndexServiceFeed
 	private static final CsvSettings CSV_SETTINGS = new CsvSettings('\0', '\t', EOL.LF, true);
 	
 	private final String descriptionFilePath;
-	private final String languageRefSetFilePath;
+	private final Set<String> languageRefSetFilePaths;
 	private final Set<String> synonymAndDescendantIds;
-	private final String languageRefSetId;
 	
-	public Rf2BasedImportIndexServiceFeeder(final String descriptionFilePath, final String languageRefSetFilePath, final Set<String> synonymAndDescendantIds, final String languageRefSetId, final IBranchPath branchPath) {
+	public Rf2BasedImportIndexServiceFeeder(final String descriptionFilePath, final Set<String> languageRefSetFilePaths, final Set<String> synonymAndDescendantIds, final IBranchPath branchPath) {
 		this.descriptionFilePath = descriptionFilePath;
-		this.languageRefSetFilePath = languageRefSetFilePath;
+		this.languageRefSetFilePaths = languageRefSetFilePaths;
 		this.synonymAndDescendantIds = synonymAndDescendantIds;
-		this.languageRefSetId = CDOUtils.apply(new CDOViewFunction<String, CDOView>(SnomedDatastoreActivator.REPOSITORY_UUID, branchPath) {
-			@Override protected String apply(final CDOView view) {
-				final SnomedRefSet refSet = new SnomedRefSetLookupService().getComponent(languageRefSetId, view);
-				return null == refSet ? getFallbackLanguageRefSetId(view) : languageRefSetId;
-			}
-			private String getFallbackLanguageRefSetId(final CDOView view) {
-				return ApplicationContext.getInstance().getService(ILanguageConfigurationProvider.class).getLanguageConfiguration().getLanguageRefSetId(BranchPathUtils.createPath(view));
-			}
-		});
-		
 	}
 
 	/* (non-Javadoc)
@@ -109,29 +89,29 @@ public class Rf2BasedImportIndexServiceFeeder implements IImportIndexServiceFeed
 		
 		i.set(0);
 
-		if (null != languageRefSetFilePath) {
-			
-			try (final FileReader reader = new FileReader(new File(languageRefSetFilePath))) {
-	
+		for (final String languageRefSetFile : languageRefSetFilePaths) {
+			try (final FileReader reader = new FileReader(new File(languageRefSetFile))) {
 				new CsvParser(reader, CSV_SETTINGS, new RecordParserCallback<String>() {
 	
 					@Override
 					public void handleRecord(final int recordCount, final List<String> record) {
-	
-						if (languageRefSetId.equals(record.get(4))) {
-							
-							final boolean active = "1".equals(record.get(2));
-							final boolean preferred = Concepts.REFSET_DESCRIPTION_ACCEPTABILITY_PREFERRED.equals(record.get(6));
-							service.registerAcceptability(record.get(5), record.get(0), preferred, active);
-							if (0 == i.incrementAndGet() % 10000) {
-								service.commit();
-							}
+
+						final String refSetId = record.get(4);
+						final String descriptionId = record.get(5);
+						
+						final boolean active = "1".equals(record.get(2));
+						final boolean preferred = Concepts.REFSET_DESCRIPTION_ACCEPTABILITY_PREFERRED.equals(record.get(6));
+						
+						service.registerAcceptability(descriptionId, refSetId, preferred, active);
+						
+						if (0 == i.incrementAndGet() % 10000) {
+							service.commit();
 						}
 					}
 				}, 7).parse();
 	
 			} catch (final IOException e) {
-				throw new SnowowlRuntimeException("Error while parsing language reference set RF2 file. File: " + languageRefSetFilePath, e);
+				throw new SnowowlRuntimeException("Error while parsing language reference set RF2 file. File: " + languageRefSetFile, e);
 			} finally {
 				service.commit();
 			}

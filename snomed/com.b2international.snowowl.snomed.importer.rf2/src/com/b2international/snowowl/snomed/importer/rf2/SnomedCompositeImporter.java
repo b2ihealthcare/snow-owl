@@ -18,6 +18,7 @@ package com.b2international.snowowl.snomed.importer.rf2;
 import static com.b2international.commons.FileUtils.copyContentToTempFile;
 import static com.b2international.snowowl.datastore.cdo.CDOUtils.check;
 import static com.google.common.base.Preconditions.checkNotNull;
+import static com.google.common.collect.Sets.newHashSet;
 
 import java.io.File;
 import java.net.MalformedURLException;
@@ -164,8 +165,8 @@ public class SnomedCompositeImporter extends AbstractLoggingImporter {
 				
 				subMonitor.setWorkRemaining(size + 1);
 	
-				final ImportIndexServerService importIndexServerService = new ImportIndexServerService(branchPath);
-				final IndexBasedImportIndexServiceFeeder feeder = new IndexBasedImportIndexServiceFeeder(importContext.getLanguageRefSetId(), branchPath);
+				final ImportIndexServerService importIndexServerService = new ImportIndexServerService(branchPath, importContext.getLanguageRefSetId());
+				final IndexBasedImportIndexServiceFeeder feeder = new IndexBasedImportIndexServiceFeeder();
 				feeder.initContent(importIndexServerService, branchPath, subMonitor.newChild(1, SubMonitor.SUPPRESS_NONE));
 				
 				ApplicationContext.getInstance().registerService(ImportIndexServerService.class, importIndexServerService);
@@ -269,7 +270,7 @@ public class SnomedCompositeImporter extends AbstractLoggingImporter {
 		String conceptFilePath = null;
 		String descriptionFilePath = null;
 		String relationshipFilePath = null;
-		String languageFilePath = null;
+		Set<String> languageFilePaths = newHashSet();
 		
 		for (final ComponentImportUnit unit : units) {
 			
@@ -280,13 +281,11 @@ public class SnomedCompositeImporter extends AbstractLoggingImporter {
 				switch (unit.getType()) {
 					case CONCEPT: if (null == conceptFilePath) conceptFilePath = path;  break;
 					case DESCRIPTION: if (null == descriptionFilePath) descriptionFilePath = path; break;
-					case LANGUAGE_TYPE_REFSET: if (null == languageFilePath) languageFilePath = path; break;
+					case LANGUAGE_TYPE_REFSET: languageFilePaths.add(path); break;
 					case RELATIONSHIP: if (null == relationshipFilePath) relationshipFilePath = path; break;
 					default: /*intentionally ignored*/ break;
 				}
-				
 			}
-			
 		}
 		
 		Rf2BasedSnomedTaxonomyBuilder currentBuilder = ApplicationContext.getInstance().getService(Rf2BasedSnomedTaxonomyBuilder.class);
@@ -325,9 +324,8 @@ public class SnomedCompositeImporter extends AbstractLoggingImporter {
 		
 		final Rf2BasedImportIndexServiceFeeder feeder = new Rf2BasedImportIndexServiceFeeder(
 				descriptionFilePath, 
-				languageFilePath, 
+				languageFilePaths, 
 				synonymAndDescendants, 
-				importContext.getLanguageRefSetId(),
 				getImportBranchPath());
 		
 		try {

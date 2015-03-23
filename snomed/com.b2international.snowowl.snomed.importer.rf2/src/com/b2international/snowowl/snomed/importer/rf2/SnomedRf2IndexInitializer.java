@@ -127,7 +127,6 @@ import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.SubMonitor;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.emf.cdo.transaction.CDOTransaction;
-import org.eclipse.emf.cdo.view.CDOView;
 
 import bak.pcj.LongCollection;
 import bak.pcj.LongIterator;
@@ -150,11 +149,9 @@ import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.api.SnowowlRuntimeException;
 import com.b2international.snowowl.core.date.DateFormats;
 import com.b2international.snowowl.core.date.EffectiveTimes;
-import com.b2international.snowowl.datastore.BranchPathUtils;
 import com.b2international.snowowl.datastore.cdo.CDOIDUtils;
 import com.b2international.snowowl.datastore.cdo.CDOTransactionFunction;
 import com.b2international.snowowl.datastore.cdo.CDOUtils;
-import com.b2international.snowowl.datastore.cdo.CDOViewFunction;
 import com.b2international.snowowl.datastore.cdo.ICDOConnection;
 import com.b2international.snowowl.datastore.cdo.ICDOConnectionManager;
 import com.b2international.snowowl.datastore.index.IndexUtils;
@@ -174,13 +171,11 @@ import com.b2international.snowowl.snomed.Relationship;
 import com.b2international.snowowl.snomed.SnomedConstants;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
-import com.b2international.snowowl.snomed.datastore.ILanguageConfigurationProvider;
 import com.b2international.snowowl.snomed.datastore.SnomedConceptIndexEntry;
 import com.b2international.snowowl.snomed.datastore.SnomedConceptLookupService;
 import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 import com.b2international.snowowl.snomed.datastore.SnomedIconProvider;
 import com.b2international.snowowl.snomed.datastore.SnomedRefSetBrowser;
-import com.b2international.snowowl.snomed.datastore.SnomedRefSetLookupService;
 import com.b2international.snowowl.snomed.datastore.SnomedRefSetUtil;
 import com.b2international.snowowl.snomed.datastore.SnomedTerminologyBrowser;
 import com.b2international.snowowl.snomed.datastore.index.ISnomedTaxonomyBuilder;
@@ -192,7 +187,6 @@ import com.b2international.snowowl.snomed.datastore.services.ISnomedComponentSer
 import com.b2international.snowowl.snomed.importer.rf2.model.ComponentImportType;
 import com.b2international.snowowl.snomed.importer.rf2.model.ComponentImportUnit;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedLanguageRefSetMember;
-import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSet;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType;
 import com.google.common.base.Objects;
 import com.google.common.base.Preconditions;
@@ -216,7 +210,6 @@ public class SnomedRf2IndexInitializer extends Job {
 	private final Date effectiveTime;
 	private final List<ComponentImportUnit> importUnit;
 	private final IBranchPath branchPath;
-	private final String languageRefSetId;
 
 	private Multimap<Long, String> conceptIdToPredicateMap;
 	private Multimap<Long, String> refSetIdToPredicateMap;
@@ -241,18 +234,6 @@ public class SnomedRf2IndexInitializer extends Job {
 		this.branchPath = branchPath;
 		this.slicingDisabled = slicingDisabled;
 		this.effectiveTime = effectiveTime;
-		
-		this.languageRefSetId = CDOUtils.apply(new CDOViewFunction<String, CDOView>(SnomedDatastoreActivator.REPOSITORY_UUID, branchPath) {
-			@Override protected String apply(final CDOView view) {
-				final SnomedRefSet refSet = new SnomedRefSetLookupService().getComponent(languageRefSetId, view);
-				return null == refSet ? getFallbackLanguageRefSetId(view) : languageRefSetId;
-			}
-
-			private String getFallbackLanguageRefSetId(final CDOView view) {
-				return ApplicationContext.getInstance().getService(ILanguageConfigurationProvider.class).getLanguageConfiguration().getLanguageRefSetId(BranchPathUtils.createPath(view));
-			}
-		});
-		
 		this.importUnit = Collections.unmodifiableList(units);
 		//check services
 		getImportIndexService();
@@ -383,15 +364,13 @@ public class SnomedRf2IndexInitializer extends Job {
 			@Override
 			public void handleRecord(final int recordCount, final List<String> record) {
 				
-				if (languageRefSetId.equals(record.get(4))) {
-					final String descriptionId = record.get(5);
-					String conceptId = descriptiptionsToConceptIds.get(descriptionId);
-					if (StringUtils.isEmpty(conceptId)) {
-						conceptId = ApplicationContext.getInstance().getService(ISnomedComponentService.class).getDescriptionProperties(branchPath, descriptionId)[0];
-					}
-					visitedConceptsViaLanguageMemberships.add(conceptId);
+				final String descriptionId = record.get(5);
+				String conceptId = descriptiptionsToConceptIds.get(descriptionId);
+				if (StringUtils.isEmpty(conceptId)) {
+					conceptId = ApplicationContext.getInstance().getService(ISnomedComponentService.class).getDescriptionProperties(branchPath, descriptionId)[0];
 				}
-	
+				
+				visitedConceptsViaLanguageMemberships.add(conceptId);
 			}
 		});
 	}

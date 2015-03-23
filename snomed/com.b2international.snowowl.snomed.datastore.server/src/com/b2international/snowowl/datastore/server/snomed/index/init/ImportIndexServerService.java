@@ -37,14 +37,11 @@ import org.apache.lucene.index.IndexableField;
 import org.apache.lucene.index.Term;
 import org.apache.lucene.search.BooleanClause.Occur;
 import org.apache.lucene.search.BooleanQuery;
-import org.apache.lucene.search.CachingWrapperFilter;
-import org.apache.lucene.search.Filter;
 import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.ReferenceManager;
 import org.apache.lucene.search.ScoreDoc;
 import org.apache.lucene.search.TermQuery;
-import org.apache.lucene.search.TermRangeFilter;
 import org.apache.lucene.search.TopDocs;
 import org.apache.lucene.search.TotalHitCountCollector;
 import org.eclipse.emf.cdo.common.id.CDOID;
@@ -74,12 +71,11 @@ import com.b2international.snowowl.datastore.index.DocumentWithScore;
 import com.b2international.snowowl.datastore.index.IndexUtils;
 import com.b2international.snowowl.datastore.server.index.FSIndexServerService;
 import com.b2international.snowowl.datastore.server.index.IIndexPostProcessor;
-import com.b2international.snowowl.snomed.Concept;
 import com.b2international.snowowl.snomed.Description;
 import com.b2international.snowowl.snomed.Relationship;
+import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.SnomedPackage;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
-import com.b2international.snowowl.snomed.datastore.SnomedConceptLookupService;
 import com.b2international.snowowl.snomed.datastore.SnomedDescriptionLookupService;
 import com.b2international.snowowl.snomed.datastore.SnomedRefSetBrowser;
 import com.b2international.snowowl.snomed.datastore.SnomedRelationshipLookupService;
@@ -128,10 +124,10 @@ public class ImportIndexServerService extends FSIndexServerService<IIndexEntry> 
     private static final String TERM = "term";
     private static final String ACTIVE = "active";
     private static final String TERM_TYPE = "termType";
-    private static final String PREFERRED_MEMBER_ID = "preferredMemberId";
-    private static final String ACCEPTABLE_MEMBER_ID = "acceptableMemberId";
+    private static final String PREFERRED_REFSET_ID = "preferredRefSetId";
+    private static final String ACCEPTABLE_REFSET_ID = "acceptableRefSetId";
 
-    private static final Set<String> DESCRIPTION_FIELDS = ImmutableSet.of(DESCRIPTION_ID, CONCEPT_ID, TERM, ACTIVE, TERM_TYPE, PREFERRED_MEMBER_ID, ACCEPTABLE_MEMBER_ID);
+    private static final Set<String> DESCRIPTION_FIELDS = ImmutableSet.of(DESCRIPTION_ID, CONCEPT_ID, TERM, ACTIVE, TERM_TYPE, PREFERRED_REFSET_ID, ACCEPTABLE_REFSET_ID);
     private static final Set<String> TERM_ONLY = ImmutableSet.of(TERM);
     private static final Set<String> TERM_AND_TYPE_ONLY = ImmutableSet.of(TERM, TERM_TYPE);
 
@@ -141,16 +137,19 @@ public class ImportIndexServerService extends FSIndexServerService<IIndexEntry> 
     private final IBranchPath importTargetBranchPath;
     private final LongKeyMap pendingDescriptionDocuments = new LongKeyOpenHashMap();
 	
-    private Filter preferredExistsFilter;
+	private String languageRefSetId;
 
     /**
      * A set containing the storage keys of the Synonym description type concept and its all descendant.
-     * @param synonymAndDescendantCdoIds
-     * @param fsnCdoId unique storage key of the FSN description type concept
+     * 
+     * @param importTargetBranchPath
+     * @param languageRefSetId
+     * 
      */
-    public ImportIndexServerService(final IBranchPath importTargetBranchPath) {
+    public ImportIndexServerService(final IBranchPath importTargetBranchPath, final String languageRefSetId) {
         super(getDirectoryFolder());
         this.importTargetBranchPath = importTargetBranchPath;
+        this.languageRefSetId = languageRefSetId;
         getManager(SUPPORTING_INDEX_BRANCH_PATH); //triggers directory creation
     }
 
@@ -312,7 +311,7 @@ public class ImportIndexServerService extends FSIndexServerService<IIndexEntry> 
 		doc.add(new StringField(ACTIVE, Boolean.toString(active), Store.YES));
     }
 
-    public void registerAcceptability(final String descriptionId, final String memberId, final boolean preferred, final boolean active) {
+    public void registerAcceptability(final String descriptionId, final String refSetId, final boolean preferred, final boolean active) {
 
         final Document pendingDescriptionDoc = getDescriptionDocument(descriptionId);
 
@@ -321,7 +320,7 @@ public class ImportIndexServerService extends FSIndexServerService<IIndexEntry> 
             return;
         }
         
-        final String fieldToAdd = preferred ? PREFERRED_MEMBER_ID : ACCEPTABLE_MEMBER_ID;
+        final String fieldToAdd = preferred ? PREFERRED_REFSET_ID : ACCEPTABLE_REFSET_ID;
         boolean found = false;
 
         for (final Iterator<IndexableField> itr = pendingDescriptionDoc.getFields().iterator(); itr.hasNext(); /* emtpy */) {
@@ -331,12 +330,12 @@ public class ImportIndexServerService extends FSIndexServerService<IIndexEntry> 
             final String fieldValue = field.stringValue();
             
             // Skip fields not related to acceptability
-			if (!fieldName.equals(PREFERRED_MEMBER_ID) && !fieldName.equals(ACCEPTABLE_MEMBER_ID)) {
+			if (!fieldName.equals(PREFERRED_REFSET_ID) && !fieldName.equals(ACCEPTABLE_REFSET_ID)) {
 				continue;
 			}
 			
 			// Skip fields not containing information about the specified member
-			if (!fieldValue.equals(memberId)) {
+			if (!fieldValue.equals(refSetId)) {
 				continue;
 			}
 
@@ -359,7 +358,7 @@ public class ImportIndexServerService extends FSIndexServerService<IIndexEntry> 
 
         // If the member was not found, but should be added, add it
         if (!found && active) {
-            pendingDescriptionDoc.add(new StringField(fieldToAdd, memberId, Store.YES));
+            pendingDescriptionDoc.add(new StringField(fieldToAdd, refSetId, Store.YES));
         }
     }
 
@@ -394,12 +393,12 @@ public class ImportIndexServerService extends FSIndexServerService<IIndexEntry> 
 	            pendingDescriptionDoc.add(new StringField(ACTIVE, descriptionDoc.get(ACTIVE), Store.YES));
 	            pendingDescriptionDoc.add(new IntField(TERM_TYPE, IndexUtils.getIntValue(descriptionDoc.getField(TERM_TYPE)), TYPE_PRECISE_INT_STORED));
 	
-	            for (final String preferredId : descriptionDoc.getValues(PREFERRED_MEMBER_ID)) {
-	                pendingDescriptionDoc.add(new StringField(PREFERRED_MEMBER_ID, preferredId, Store.YES));
+	            for (final String preferredId : descriptionDoc.getValues(PREFERRED_REFSET_ID)) {
+	                pendingDescriptionDoc.add(new StringField(PREFERRED_REFSET_ID, preferredId, Store.YES));
 	            }
 	
-	            for (final String acceptableId : descriptionDoc.getValues(ACCEPTABLE_MEMBER_ID)) {
-	                pendingDescriptionDoc.add(new StringField(ACCEPTABLE_MEMBER_ID, acceptableId, Store.YES));
+	            for (final String acceptableId : descriptionDoc.getValues(ACCEPTABLE_REFSET_ID)) {
+	                pendingDescriptionDoc.add(new StringField(ACCEPTABLE_REFSET_ID, acceptableId, Store.YES));
 	            }
 	
 	            pendingDescriptionDocuments.put(longDescriptionId, pendingDescriptionDoc);
@@ -440,17 +439,34 @@ public class ImportIndexServerService extends FSIndexServerService<IIndexEntry> 
 
     }
 
-    public String getConceptLabel(final String conceptId) {
+	@Deprecated
+	public String getConceptLabel(final String conceptId) {
+
+		String label = getConceptLabel(conceptId, languageRefSetId);
+		if (label != null) {
+			return label;
+		}
+		
+		// XXX: fallback to UK language reference set
+		label = getConceptLabel(conceptId, Concepts.REFSET_LANGUAGE_TYPE_UK);
+		if (label != null) {
+			return label;
+		}
+
+        // Use the concept identifier as the label
+        return conceptId;
+	}
+
+    public String getConceptLabel(final String conceptId, final String languageRefSetId) {
 
         final BooleanQuery conceptLabelQuery = new BooleanQuery(true); 
         conceptLabelQuery.add(createActiveQuery(), Occur.MUST);
         conceptLabelQuery.add(createContainerConceptQuery(conceptId), Occur.MUST);
         conceptLabelQuery.add(new TermQuery(new Term(TERM_TYPE, IndexUtils.intToPrefixCoded(TermType.SYNONYM_AND_DESCENDANTS.ordinal()))), Occur.MUST);
-        
-        final Filter preferredExistsFilter = getPreferredExistsFilter(); 
+        conceptLabelQuery.add(new TermQuery(new Term(PREFERRED_REFSET_ID, languageRefSetId)), Occur.MUST);
         
         // Try to find a preferred description first (PT or FSN, whichever comes first in the sorted set of documents)
-        final List<DocumentWithScore> preferredDescriptionDocuments = search(SUPPORTING_INDEX_BRANCH_PATH, conceptLabelQuery, preferredExistsFilter, null, 1);
+        final List<DocumentWithScore> preferredDescriptionDocuments = search(SUPPORTING_INDEX_BRANCH_PATH, conceptLabelQuery, null, null, 1);
 
         if (!CompareUtils.isEmpty(preferredDescriptionDocuments)) {
             final DocumentWithScore preferredDocument = Iterables.getFirst(preferredDescriptionDocuments, null);
@@ -458,20 +474,7 @@ public class ImportIndexServerService extends FSIndexServerService<IIndexEntry> 
             return unwrappedDocument.get(TERM);
         }
 
-        // Get the FSN from CDO directly
-        final String fsn = CDOUtils.apply(new CDOViewFunction<String, CDOView>(getConnection(), importTargetBranchPath) {
-            @Override protected String apply(final CDOView view) {
-                final Concept component = new SnomedConceptLookupService().getComponent(conceptId, view);
-                return null == component ? String.valueOf(conceptId) : component.getFullySpecifiedName();
-            }
-        });
-
-        if (!StringUtil.isEmpty(fsn)) {
-            return fsn;
-        }
-
-        // Use the concept identifier as the label
-        return conceptId;
+        return null;
     }
 
     public List<TermWithType> getConceptDescriptions(final String conceptId) {
@@ -541,14 +544,6 @@ public class ImportIndexServerService extends FSIndexServerService<IIndexEntry> 
     private TermQuery createActiveQuery() {
     	return new TermQuery(new Term(ACTIVE, Boolean.TRUE.toString()));
     }
-
-    private Filter getPreferredExistsFilter() {
-		if (preferredExistsFilter == null) {
-			preferredExistsFilter = new CachingWrapperFilter(TermRangeFilter.newStringRange(PREFERRED_MEMBER_ID, null, null, true, true));
-		}
-		
-		return preferredExistsFilter;
-	}
 
 	public String getDescriptionLabel(final String descriptionId) {
 
@@ -625,8 +620,6 @@ public class ImportIndexServerService extends FSIndexServerService<IIndexEntry> 
     	}
     	
     	pendingDescriptionDocuments.clear();
-    	preferredExistsFilter = null;
-    	
         super.commit(SUPPORTING_INDEX_BRANCH_PATH);
     }
 
