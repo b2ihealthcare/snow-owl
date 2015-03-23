@@ -21,7 +21,7 @@ Here are few tips to improve the quality of the default build process.
 
 #### Nexus
 
-We highly recommend to install a local artifactory (`Nexus OSS` is supported), so the build can deploy and reuse (in downstream projects) `Maven` and `p2` artifacts.
+We highly recommend to install a local artifact repository (`Nexus OSS` is supported), so the build can deploy and reuse (in downstream projects) `Maven` and `p2` artifacts.
 
 1. Download and install Nexus OSS or Professional (http://www.sonatype.org/nexus/go/).
 2. Install `Nexus Unzip Plugin` to easily reference p2 repositories deployed as zip: https://wiki.eclipse.org/Tycho/Nexus_Unzip_Plugin
