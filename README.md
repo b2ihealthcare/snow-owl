@@ -15,11 +15,11 @@ To run the test cases, simply run:
 
 The distribution package can be found in the `releng/distribution/target` folder, when the build completes.
 
-## Additional Build Improvements
+### Additional Build Improvements
 
 Here are few tips to improve the quality of the default build process.
 
-### Use Nexus
+#### Nexus
 
 We highly recommend to install a local artifactory (`Nexus OSS` is supported), so the build can deploy and reuse (in downstream projects) `Maven` and `p2` artifacts.
 
@@ -30,7 +30,7 @@ We highly recommend to install a local artifactory (`Nexus OSS` is supported), s
 5. Use `mvn clean deploy` instead of `mvn clean verify` when you execute the process.
 6. *Optional: deploy only if build succeeds (requires a `Jenkins CI` job with post build step to deploy artifacts to `Nexus`*
 
-### Use prefetched target platform
+#### Prefetched target platform
 
 The `-Pdependencies` profile includes all required third party repositories and modules as part of the build process using Tycho's p2 and Maven dependency resolution capabilities. 
 While this should be enough to run the process, in production builds we recommend using a prefetched target platform, as it will ensure consistent third party versions and reduces the execution time significantly.
