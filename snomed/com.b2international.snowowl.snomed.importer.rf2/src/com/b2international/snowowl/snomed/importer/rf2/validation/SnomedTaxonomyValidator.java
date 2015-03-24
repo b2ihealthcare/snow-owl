@@ -90,11 +90,11 @@ public class SnomedTaxonomyValidator {
 	/*
 	 * Two major use cases exist:
 	 *  |
-	 *  + - content is already exists for SCT -> full import cannot occur but delta or snapshot
+	 *  + - snapshot import
 	 *  | |
 	 *  | +-> build taxonomy based on the content and apply the changes from the release files.
 	 *  |
-	 *  + - content does not exist -> snapshot or full import but no delta
+	 *  + - full or delta import
 	 *    |
 	 *    +-> build the taxonomy from the file. in case of full import split the files based effective times.
 	 *  
@@ -102,19 +102,7 @@ public class SnomedTaxonomyValidator {
 	private Collection<SnomedValidationDefect> doValidate() {
 		try {
 			
-			if (isSnomedContentAvailable()) {
-				
-				LOGGER.info("Validating RF2 release files against the current state of the SNOMED CT ontology...");
-				
-				final String conceptsFilePath = removeConceptHeader();
-				final String relationshipsFilePath = removeRelationshipHeader();
-				
-				final Rf2BasedSnomedTaxonomyBuilder builder = createBuilder(conceptsFilePath, relationshipsFilePath);
-				builder.applyNodeChanges(conceptsFilePath);
-				builder.applyEdgeChanges(relationshipsFilePath);
-				builder.build();
-				
-			} else if (isSnapshot()) {
+			if (isSnapshot()) {
 				
 				LOGGER.info("Validating SNOMED CT ontology based on the given RF2 release files...");
 				
@@ -135,8 +123,6 @@ public class SnomedTaxonomyValidator {
 				Rf2BasedSnomedTaxonomyBuilder builder = null;
 				final List<String> effectiveTimes = newArrayList(newHashSet(concat(conceptFiles.keySet(), relationshipFiles.keySet())));
 				sort(effectiveTimes);
-				
-				LOGGER.info("Validating SNOMED CT ontology based on the given RF2 release files...");
 				
 				for (final String effectiveTime : effectiveTimes) {
 					
