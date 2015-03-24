@@ -370,8 +370,21 @@ public class SnomedCompositeImporter extends AbstractLoggingImporter {
 				group.getCodeSystems().add(new SnomedCodeSystemFactory().createNewCodeSystem());
 			}
 			
+			boolean existingVersionFound = false;
+			
 			if (shouldCreateVersionAndTag) {
-				group.getCodeSystemVersions().add(createVersion(formattedTagEffectiveTime, tagEffectiveTime));
+				for (final CodeSystemVersion codeSystemVersion : group.getCodeSystemVersions()) {
+					if (codeSystemVersion.getEffectiveDate().equals(tagEffectiveTime)) {
+						existingVersionFound = true;
+						break;
+					}
+				}
+				
+				if (!existingVersionFound) {
+					group.getCodeSystemVersions().add(createVersion(formattedTagEffectiveTime, tagEffectiveTime));
+				} else {
+					getLogger().warn("Not adding code system version entry for {}, a previous entry with the same effective time exists.", formattedTagEffectiveTime);
+				}
 			}
 			
 			new CDOServerCommitBuilder(importContext.getUserId(), importContext.getCommitMessage(), aggregator)
@@ -379,7 +392,7 @@ public class SnomedCompositeImporter extends AbstractLoggingImporter {
 					.parentContextDescription(DatastoreLockContextDescriptions.IMPORT)
 					.commit();
 			
-			if (shouldCreateVersionAndTag) {
+			if (!existingVersionFound && shouldCreateVersionAndTag) {
 				final IBranchPath snomedBranchPath = BranchPathUtils.createPath(transaction);
 				
 				final ITagConfiguration configuration = TagConfigurationBuilder.createForRepositoryUuid(SnomedDatastoreActivator.REPOSITORY_UUID, formattedTagEffectiveTime)
