@@ -37,83 +37,102 @@ import com.b2international.snowowl.snomed.importer.rf2.util.EffectiveTimeBaseTra
 import com.b2international.snowowl.snomed.importer.rf2.util.ImportUtil;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSet;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetMember;
-import com.google.common.base.Preconditions;
 import com.google.common.base.Supplier;
-import com.google.common.collect.ImmutableSortedSet;
 
 /**
  * Collects common import state objects and makes them available to importers.
- *
  */
 public class SnomedImportContext implements ISnomedPostProcessorContext, AutoCloseable {
 
-	private String commitMessage;
+	private Logger logger;
+
 	private ComponentLookup<Component> componentLookup;
-	private SnomedEditingContext editingContext;
-	private org.slf4j.Logger logger;
 	private ComponentLookup<SnomedRefSet> refSetLookup;
 	private RefSetMemberLookup<SnomedRefSetMember> refSetMemberLookup;
-	private boolean slicingDisabled;
-	private String[] sortedIgnoredRefSetIds;
-	private File stagingDirectoryRoot;
-	private String languageRefSetId;
-	private Connection connection;
+
 	private String userId;
-	
-	private final LongSet visitedConcepts = new LongSet();
-	private final LongSet visitedRefSets = new LongSet();
-	private ContentSubType contentSubType;
-	private boolean sendCommitNotificaion;
+	private String commitMessage;
+
+	private Connection connection;
+	private SnomedEditingContext editingContext;
 	private Supplier<ICDOTransactionAggregator> aggregatorSupplier;
+	private boolean commitNotificationEnabled;
+
 	private long commitTime = CDOBranchPoint.UNSPECIFIED_DATE;
 	private long previousTime = CDOBranchPoint.UNSPECIFIED_DATE;
-	private boolean createVersions;
-	
+
+	private ContentSubType contentSubType;
+	private boolean versionCreationEnabled;
+
+	private String[] sortedIgnoredRefSetIds;
+	private File stagingDirectory;
+	private String languageRefSetId;
+
+	private final LongSet visitedConcepts = new LongSet();
+	private final LongSet visitedRefSets = new LongSet();
+
 	@Override
 	public void close() throws Exception {
+		clear();
+
 		if (getEditingContext() != null) {
 			getEditingContext().close();
 		}
 	}
-	
+
 	/**
-	 * @return the languageRefSetId
+	 * Returns the primary language reference set identifier, used for determining component labels.
+	 * 
+	 * @return the primary language reference set identifier
 	 */
 	public String getLanguageRefSetId() {
 		return languageRefSetId;
 	}
 
 	/**
-	 * @return the commitTime
+	 * Sets a new primary language reference set identifier for the import context.
+	 * 
+	 * @param languageRefSetId the primary language reference set identifier to set
+	 */
+	public void setLanguageRefSetId(final String languageRefSetId) {
+		this.languageRefSetId = languageRefSetId;
+	}
+
+	/**
+	 * Returns the last commit timestamp issued to the SNOMED CT repository.
+	 * 
+	 * @return the last commit timestamp, or {@link CDOBranchPoint#UNSPECIFIED_DATE} if no commit timestamp was set
 	 */
 	public long getCommitTime() {
 		return commitTime;
 	}
 
 	/**
-	 * @param commitTime the commitTime to set
+	 * Sets a new commit timestamp after committing to the SNOMED CT repository; the previous value gets stored, and it
+	 * can be retrieved later via {@link #getPreviousTime()}.
+	 * 
+	 * @param commitTime the new commit timestamp to set
 	 */
-	public void setCommitTime(long commitTime) {
+	public void setCommitTime(final long commitTime) {
+		this.previousTime = this.commitTime;
 		this.commitTime = commitTime;
 	}
 
 	/**
-	 * @return the previousTime
+	 * Returns the previously set commit timestamp after a call to {@link #setCommitTime(long)}.
+	 * 
+	 * @return the previous commit timestamp, or {@link CDOBranchPoint#UNSPECIFIED_DATE} if the commit time has not been
+	 * updated yet
 	 */
 	public long getPreviousTime() {
 		return previousTime;
 	}
 
 	/**
-	 * @param previousTime the previousTime to set
-	 */
-	public void setPreviousTime(long previousTime) {
-		this.previousTime = previousTime;
-	}
-
-	/**
-	 * Returns with the requesting user ID.
-	 * @return the user ID.
+	 * Returns the identifier of the user requesting the import (appearing as the author for import-related commit log
+	 * entries).
+	 * 
+	 * @return the importing user's identifier
 	 */
 	@Override
 	public String getUserId() {
@@ -121,175 +140,325 @@ public class SnomedImportContext implements ISnomedPostProcessorContext, AutoClo
 	}
 
 	/**
-	 * Sets the user ID.
-	 * @param userId the requesting user ID.
+	 * Sets the identifier of the user requesting the import.
+	 * 
+	 * @param userId the new user identifier to set
 	 */
-	public void setUserId(String userId) {
+	public void setUserId(final String userId) {
 		this.userId = userId;
 	}
 
 	/**
-	 * @param languageRefSetId the languageRefSetId to set
+	 * Returns the commit message to use for import commits.
+	 * 
+	 * @return the import commit message
 	 */
-	public void setLanguageRefSetId(final String languageRefSetId) {
-		this.languageRefSetId = languageRefSetId;
-	}
-
 	public String getCommitMessage() {
 		return commitMessage;
 	}
 
+	/**
+	 * Sets the commit message to use for import commits.
+	 * 
+	 * @param commitMessage the new import commit message to set (may not be {@code null})
+	 */
+	public void setCommitMessage(final String commitMessage) {
+		this.commitMessage = checkNotNull(commitMessage, "Commit message argument may not be null.");
+	}
+
+	/**
+	 * Returns the in-memory component lookup map used during the import, which maps component identifiers to unsaved
+	 * components/persisted storage keys.
+	 * 
+	 * @return the component lookup map
+	 */
 	public ComponentLookup<Component> getComponentLookup() {
 		return componentLookup;
 	}
 
+	/**
+	 * Returns the in-memory reference set lookup map used during the import, which maps reference set identifiers to
+	 * unsaved reference sets/persisted storage keys.
+	 * 
+	 * @return the reference set lookup map
+	 */
+	public ComponentLookup<SnomedRefSet> getRefSetLookup() {
+		return refSetLookup;
+	}
+
+	/**
+	 * Returns the in-memory reference set member lookup map used during the import, which maps reference set member
+	 * UUIDs to unsaved reference set members/persisted storage keys.
+	 * 
+	 * @return the reference set member lookup map
+	 */
+	public RefSetMemberLookup<SnomedRefSetMember> getRefSetMemberLookup() {
+		return refSetMemberLookup;
+	}
+
+	/**
+	 * Clears up the lookup maps associated with this import context.
+	 */
+	public void clear() {
+
+		if (null != componentLookup) {
+			componentLookup.clear();
+		}
+
+		if (null != refSetLookup) {
+			refSetLookup.clear();
+		}
+
+		if (null != refSetMemberLookup) {
+			refSetMemberLookup.clear();
+		}
+	}
+
+	/**
+	 * Returns the editing context used for applying modifications on the SNOMED CT terminology, based on the incoming
+	 * import files.
+	 * 
+	 * @return the editing context for this import run
+	 */
 	@Override
 	public SnomedEditingContext getEditingContext() {
 		return editingContext;
 	}
 
-	public void setAggregatorSupplier(Supplier<ICDOTransactionAggregator> aggregatorSupplier) {
+	/**
+	 * Sets a new editing context to use for this import run, and initializes lookup mappings.
+	 * 
+	 * @param editingContext the new editing context to use (may not be {@code null})
+	 */
+	public void setEditingContext(final SnomedEditingContext editingContext) {
+		this.editingContext = checkNotNull(editingContext, "Editing context argument may not be null.");
+
+		componentLookup = new ComponentLookup<Component>(editingContext, Component.class);
+		refSetLookup = new ComponentLookup<SnomedRefSet>(editingContext, SnomedRefSet.class);
+		refSetMemberLookup = new RefSetMemberLookup<SnomedRefSetMember>(editingContext);
+	}
+
+	/**
+	 * Checks whether commit notifications should be broadcast to connected clients, or if the import should remain
+	 * "silent" until the very end of the process.
+	 * 
+	 * @return {@code true} if commit notifications should be sent on each import commit, {@code false} otherwise
+	 */
+	public boolean isCommitNotificationEnabled() {
+		return commitNotificationEnabled;
+	}
+
+	/**
+	 * Enables or disables commit notifications for this import run.
+	 * 
+	 * @param commitNotificationEnabled the desired new state for commit notifications
+	 */
+	public void setCommitNotificationEnabled(final boolean commitNotificationEnabled) {
+		this.commitNotificationEnabled = commitNotificationEnabled;
+	}
+
+	/**
+	 * Checks whether a tag should be created on each effective time transition, or at the end of the import process,
+	 * depending on the import type.
+	 * <p>
+	 * A corresponding code system version is also registered as part of the tagging process.
+	 * 
+	 * @return {@code true} if {@code FULL} and {@code DELTA} imports should be tagged on each effective time transition
+	 * and {@code SNAPSHOT} imports at the end, {@code false} if no version should be created
+	 */
+	public boolean isVersionCreationEnabled() {
+		return versionCreationEnabled;
+	}
+
+	/**
+	 * Enables or disables tag creation for this import run.
+	 * 
+	 * @param versionCreationEnabled the desired new state for tag creation
+	 */
+	public void setVersionCreationEnabled(final boolean versionCreationEnabled) {
+		this.versionCreationEnabled = versionCreationEnabled;
+	}
+
+	/**
+	 * Returns an active database connection to the SNOMED CT repository, used for managing database indexes.
+	 * 
+	 * @return the JDBC connection to the SNOMED CT repository
+	 */
+	public Connection getConnection() {
+		return connection;
+	}
+
+	/**
+	 * Registers a new database connection instance for this import run.
+	 * 
+	 * @param connection the JDBC connection to use
+	 */
+	public void setConnection(final Connection connection) {
+		this.connection = connection;
+	}
+
+	/**
+	 * Sets a {@link Supplier} returning a {@link ICDOTransactionAggregator transaction aggregator} for grouping
+	 * separate CDO commits as a single entry.
+	 * 
+	 * @param aggregatorSupplier the new transaction aggregator supplier to set
+	 */
+	public void setAggregatorSupplier(final Supplier<ICDOTransactionAggregator> aggregatorSupplier) {
 		this.aggregatorSupplier = aggregatorSupplier;
 	}
 
-	public synchronized ICDOTransactionAggregator getAggragator(final String effectiveTime) {
-		
-		Preconditions.checkNotNull(effectiveTime, "Effective time argument cannot be null.");
-		Preconditions.checkNotNull(effectiveTime, "Aggregator supplier should be specified before getting transaction aggregator.");
-			
+	/**
+	 * Returns a {@link ICDOTransactionAggregator transaction aggregator} instance for the specified effective time,
+	 * which is either re-used for all collected effective times throughout the import (for {@code SNAPSHOT}s), or
+	 * re-initalized on each effective time transition (for {@code FULL} imports and {@code DELTA}s).
+	 * 
+	 * @see #isSlicingEnabled()
+	 * @param effectiveTime the effective time key for the aggregator to retrieve
+	 * @return the transaction aggregator to use for committing changes
+	 */
+	public synchronized ICDOTransactionAggregator getAggregator(final String effectiveTime) {
+		checkNotNull(effectiveTime, "Effective time argument cannot be null.");
+		checkNotNull(aggregatorSupplier, "Aggregator supplier should be specified before getting transaction aggregator.");
+
 		if (aggregatorSupplier instanceof EffectiveTimeBaseTransactionAggregatorSupplier) {
-			
 			return ((EffectiveTimeBaseTransactionAggregatorSupplier) aggregatorSupplier).get(effectiveTime);
-			
 		}
-		
+
 		return aggregatorSupplier.get();
-		
 	}
 
+	/**
+	 * Returns a {@link Logger} instance, which can be used to report diagnostic messages throughout the import process.
+	 * 
+	 * @return the logger to use for reporting messages
+	 */
 	@Override
 	public Logger getLogger() {
 		return logger;
 	}
 
-	public ComponentLookup<SnomedRefSet> getRefSetLookup() {
-		return refSetLookup;
+	/**
+	 * Sets a new {@link Logger} instance to use during the import.
+	 * 
+	 * @param logger the new logger to use (may not be {@code null})
+	 */
+	public void setLogger(final Logger logger) {
+		this.logger = checkNotNull(logger, "Logger argument may not be null.");
 	}
 
-	public File getStagingDirectoryRoot() {
-		return stagingDirectoryRoot;
+	/**
+	 * Returns the (usually temporary) directory in which split segments of import files are placed.
+	 * 
+	 * @return the staging directory for this import run 
+	 */
+	public File getStagingDirectory() {
+		return stagingDirectory;
 	}
 
+	/**
+	 * Registers a new staging directory for use during the import.
+	 * 
+	 * @param stagingDirectory the new staging directory to use (may not be {@code null})
+	 */
+	public void setStagingDirectory(final File stagingDirectory) {
+		this.stagingDirectory = checkNotNull(stagingDirectory, "Staging directory argument may not be null.");
+	}
+
+	/**
+	 * Checks whether the reference set with the specified identifier should be imported.
+	 * 
+	 * @param refSetId the reference set identifier to check
+	 * @return {@code true} if contents for the given reference set should be ignored, {@code false} otherwise
+	 */
 	public boolean isRefSetIgnored(final String refSetId) {
 		return Arrays.binarySearch(sortedIgnoredRefSetIds, refSetId) >= 0;
 	}
 
-	public boolean isSlicingDisabled() {
-		return slicingDisabled;
-	}
-
-	public void setCommitMessage(final String commitMessage) {
-		this.commitMessage = checkNotNull(commitMessage, "commitMessage");
-	}
-
-	public void setEditingContext(final SnomedEditingContext editingContext) {
-		this.editingContext = checkNotNull(editingContext, "editingContext");
-		componentLookup = new ComponentLookup<Component>(editingContext, Component.class);
-		refSetLookup = new ComponentLookup<SnomedRefSet>(editingContext, SnomedRefSet.class);
-		refSetMemberLookup = new RefSetMemberLookup<SnomedRefSetMember>(editingContext);
-	}
-	
-	public void setIgnoredRefSetIds(final Collection<String> ignoredRefSetIds) {
-		final ImmutableSortedSet<String> sortedSet = ImmutableSortedSet.copyOf(checkNotNull(ignoredRefSetIds, "ignoredRefSetIds"));
-		this.sortedIgnoredRefSetIds = sortedSet.toArray(new String[sortedSet.size()]);
-	}
-	
-	public void setLogger(final Logger logger) {
-		this.logger = checkNotNull(logger, "logger");
-	}
-	
-	public void setSlicingDisabled(final boolean slicingDisabled) {
-		this.slicingDisabled = slicingDisabled;
-	}
-	
-	public void setStagingDirectoryRoot(final File stagingDirectoryRoot) {
-		this.stagingDirectoryRoot = checkNotNull(stagingDirectoryRoot, "stagingDirectoryRoot");
-	}
-	
-	public void conceptVisited(final String conceptId) {
-		visitedConcepts.add(ImportUtil.parseLong(conceptId));
-	}
-	
-	public void refSetVisited(final String refSetId) {
-		visitedRefSets.add(ImportUtil.parseLong(refSetId));
-	}
-	
-	public LongSet getVisitedConcepts() {
-		return visitedConcepts;
-	}
-	
-	public LongSet getVisitedRefSets() {
-		return visitedRefSets;
-	}
-	
-	public RefSetMemberLookup<SnomedRefSetMember> getRefSetMemberLookup() {
-		return refSetMemberLookup;
-	}
-	
-	public Connection getConnection() {
-		return connection;
-	}
-
-	public void setConnection(Connection connection) {
-		this.connection = connection;
-	}
-	
 	/**
-	 * Cleans up the underlying lookup services.
+	 * Specifies a new collections of reference sets to ignore.
+	 * 
+	 * @param ignoredRefSetIds the reference sets to ignore (may not be {@code null})
 	 */
-	public void clears() {
-		
-		if (null != componentLookup) {
-			
-			componentLookup.clear();
-			
-		}
-		
-		if (null != refSetLookup) {
-			
-			refSetLookup.clear();
-			
-		}
-		
-		if (null != refSetMemberLookup) {
-			
-			refSetMemberLookup.clear();
-			
-		}
-		
+	public void setIgnoredRefSetIds(final Collection<String> ignoredRefSetIds) {
+		checkNotNull(ignoredRefSetIds, "Ignored reference set identifiers collection may not be null.");
+		final String[] sortedIgnoredRefSetIds = ignoredRefSetIds.toArray(new String[ignoredRefSetIds.size()]);
+		Arrays.sort(sortedIgnoredRefSetIds);
+
+		this.sortedIgnoredRefSetIds = sortedIgnoredRefSetIds;
 	}
 
-	public void setContentSubType(ContentSubType contentSubTypes) {
-		this.contentSubType = contentSubTypes;
-	}
-	
+	/**
+	 * Returns the currently set content subtype (import release type) for the import.
+	 * 
+	 * @see <a href="http://www.snomed.org/tig?t=tsg2_release_type_comp">7.2.1.1 Release Types</a> in the IHTSDO
+	 * Technical Implementation Guide
+	 * @return the content subtype for this import run
+	 */
 	public ContentSubType getContentSubType() {
 		return contentSubType;
 	}
 
-	public void setSendCommitNotificaion(boolean sendCommitNotificaion) {
-		this.sendCommitNotificaion = sendCommitNotificaion;
+	/**
+	 * Sets a new content subtype (import release type) for this import run.
+	 * 
+	 * @param contentSubTypes the new content subtype to use
+	 */
+	public void setContentSubType(final ContentSubType contentSubTypes) {
+		this.contentSubType = contentSubTypes;
 	}
-	
-	public boolean isSendCommitNotificaion() {
-		return sendCommitNotificaion;
+
+	/**
+	 * Checks whether incoming release files should be split based on effective time values, and the split files should
+	 * be processed on an effective time-by-effective time basis.
+	 * 
+	 * @return {@code true} for {@code FULL} and {@code DELTA} imports, {@code false} for {@code SNAPSHOT}s (which must
+	 * be processed in whole)
+	 */
+	public boolean isSlicingEnabled() {
+		return !ContentSubType.SNAPSHOT.equals(contentSubType);
 	}
-	
-	public void setCreateVersions(boolean createVersions) {
-		this.createVersions = createVersions;
+
+	/**
+	 * Registers a concept which was "touched" by the import run. Visited concepts can be retrieved later for an import
+	 * summary.
+	 * <p>
+	 * Concepts are registered here if an RF2 row for the concept, or an associated description or relationship appears
+	 * in incoming release files, and any of the mentioned components is changed as a result.
+	 * 
+	 * @param conceptId the identifier of the visited concept
+	 */
+	public void conceptVisited(final String conceptId) {
+		visitedConcepts.add(ImportUtil.parseLong(conceptId));
 	}
-	
-	public boolean isCreateVersions() {
-		return createVersions;
+
+	/**
+	 * Registers a reference set which was "touched" by the import run. Visited reference sets can be retrieved later
+	 * for an import summary.
+	 * <p>
+	 * Reference sets are registered here if an RF2 row for a reference set member appears in incoming release files,
+	 * and the reference set or the member is changed as a result.
+	 * 
+	 * @param refSetId the identifier of the visited reference set
+	 */
+	public void refSetVisited(final String refSetId) {
+		visitedRefSets.add(ImportUtil.parseLong(refSetId));
+	}
+
+	/**
+	 * Returns a set of concept identifiers visited by the importer.
+	 * 
+	 * @return a set of visited concept identifiers
+	 */
+	public LongSet getVisitedConcepts() {
+		return visitedConcepts;
+	}
+
+	/**
+	 * Returns a set of reference set identifiers visited by the importer.
+	 * 
+	 * @return a set of visited reference set identifiers
+	 */
+	public LongSet getVisitedRefSets() {
+		return visitedRefSets;
 	}
 }

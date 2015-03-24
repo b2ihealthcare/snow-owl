@@ -180,7 +180,7 @@ public class SnomedCompositeImporter extends AbstractLoggingImporter {
 						
 						updateInfrastructure(units, branchPath, tagEffectiveTime);
 	
-						updateCodeSystemMetadata(tagEffectiveTime, shouldCreateVersion());
+						updateCodeSystemMetadata(tagEffectiveTime, importContext.isVersionCreationEnabled());
 						
 						tagEffectiveTime = subUnit.getEffectiveTime();
 					}
@@ -190,13 +190,13 @@ public class SnomedCompositeImporter extends AbstractLoggingImporter {
 				
 				updateInfrastructure(units, branchPath, tagEffectiveTime);
 				
-				if (!terminologyAvailable && !shouldCreateVersion()) {
+				if (!terminologyAvailable && !importContext.isVersionCreationEnabled()) {
 					//always create version if terminology content did not exist before the import process
 					//but use maximum of the effective times
 					updateCodeSystemMetadata(findMaximumEffectiveTime(units), true);
 					
 				} else {
-					updateCodeSystemMetadata(tagEffectiveTime, shouldCreateVersion());
+					updateCodeSystemMetadata(tagEffectiveTime, importContext.isVersionCreationEnabled());
 				}
 				
 			
@@ -237,10 +237,6 @@ public class SnomedCompositeImporter extends AbstractLoggingImporter {
 		return BranchPathUtils.createPath(importContext.getEditingContext().getTransaction());
 	}
 
-	private boolean shouldCreateVersion() {
-		return !importContext.isSlicingDisabled() && importContext.isCreateVersions();
-	}
-
 	private boolean isRefSetImport(final Iterable<? extends ComponentImportUnit> units) {
 		for (final ComponentImportUnit unit : units) {
 			if (!ComponentImportType.isRefSetType(unit.getType())) {
@@ -274,7 +270,8 @@ public class SnomedCompositeImporter extends AbstractLoggingImporter {
 		
 		for (final ComponentImportUnit unit : units) {
 			
-			if (importContext.isSlicingDisabled() || Objects.equal(effectiveTime, unit.getEffectiveTime())) {
+			// Consider all reference set files if importing a SNAPSHOT, check matching effective time otherwise 
+			if (!importContext.isSlicingEnabled() || Objects.equal(effectiveTime, unit.getEffectiveTime())) {
 
 				final String path = unit.getUnitFile().getAbsolutePath();
 				
@@ -331,7 +328,7 @@ public class SnomedCompositeImporter extends AbstractLoggingImporter {
 		try {
 			feeder.initContent(importIndexService, branchPath, new NullProgressMonitor());
 			importMrcmRules(effectiveTime);
-			initializeIndex(branchPath, importContext.isSlicingDisabled(), effectiveTime, units);
+			initializeIndex(branchPath, importContext.isSlicingEnabled(), effectiveTime, units);
 			
 		} catch (final SnowowlServiceException e) {
 			throw new ImportException(e);
@@ -346,23 +343,23 @@ public class SnomedCompositeImporter extends AbstractLoggingImporter {
 		if (null != mrcmFileUri) {
 			try {
 				final File mrcmFile = copyContentToTempFile(mrcmFileUri.toURL());
-				MrcmImporter.INSTANCE.doImport(userId, mrcmFile, false, importContext.getAggragator(EffectiveTimes.format(effectiveTime)));
+				MrcmImporter.INSTANCE.doImport(userId, mrcmFile, false, importContext.getAggregator(EffectiveTimes.format(effectiveTime)));
 			} catch (final MalformedURLException e) {
 				getLogger().warn("Error while trying to load the content of the MRCM file. Ignoring MRCM import for SNOMED CT.", e);
 			}
 		}
 	}
 
-	private void initializeIndex(final IBranchPath branchPath, final boolean slicingDisabled, final Date effectiveTime, final List<ComponentImportUnit> units) {
+	private void initializeIndex(final IBranchPath branchPath, final boolean slicingEnabled, final Date effectiveTime, final List<ComponentImportUnit> units) {
 
-		final SnomedRf2IndexInitializer snomedRf2IndexInitializer = new SnomedRf2IndexInitializer(branchPath, slicingDisabled, effectiveTime, units, importContext.getLanguageRefSetId());
+		final SnomedRf2IndexInitializer snomedRf2IndexInitializer = new SnomedRf2IndexInitializer(branchPath, slicingEnabled, effectiveTime, units, importContext.getLanguageRefSetId());
 		snomedRf2IndexInitializer.run(new NullProgressMonitor());
 	}
 
 	private void updateCodeSystemMetadata(final Date tagEffectiveTime, final boolean shouldCreateVersionAndTag) {
 			final String formattedTagEffectiveTime = EffectiveTimes.format(tagEffectiveTime);
 			final ICDOTransactionAggregator aggregator = 
-					importContext.getAggragator(formattedTagEffectiveTime);
+					importContext.getAggregator(formattedTagEffectiveTime);
 			
 			final SnomedEditingContext editingContext = importContext.getEditingContext();
 			final CDOTransaction transaction = editingContext.getTransaction();
@@ -400,7 +397,6 @@ public class SnomedCompositeImporter extends AbstractLoggingImporter {
 				throw new ImportException("Cannot create tag for SNOMED CT " + formattedTagEffectiveTime, e);
 			} finally {
 				
-				importContext.setPreviousTime(importContext.getCommitTime());
 				importContext.setCommitTime(CDOServerUtils.getLastCommitTime(editingContext.getTransaction().getBranch()));
 				final CDOCommitInfo commitInfo = createCommitInfo(importContext.getCommitTime(), importContext.getPreviousTime());
 				CDOServerUtils.sendCommitNotification(commitInfo);
