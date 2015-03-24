@@ -632,7 +632,7 @@ public abstract class AbstractSnomedImporter<T extends AbstractComponentRow, C e
 	 * @throws SnowowlServiceException when preparing the commit failed.
 	 */
 	protected void preCommit(final InternalCDOTransaction transaction) throws SnowowlServiceException {
-		System.out.println();
+		return;
 	}
 	
 	private ImportAction checkCommitException(final SnowowlServiceException e) {
