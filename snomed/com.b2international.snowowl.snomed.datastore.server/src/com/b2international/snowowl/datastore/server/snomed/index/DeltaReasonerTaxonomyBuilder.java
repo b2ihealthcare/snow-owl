@@ -48,9 +48,8 @@ import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetPackage;
 import com.google.common.collect.ImmutableSet;
 
 /**
- * Stores the state of the SNOMED&nbsp;CT ontology after change processing. This class should be used for retracting OWL axioms and creating new ones
+ * Stores the state of the SNOMED CT ontology after change processing. This class should be used for retracting OWL axioms and creating new ones
  * if reasoner change processing is enabled.
- * 
  */
 public final class DeltaReasonerTaxonomyBuilder extends AbstractReasonerTaxonomyBuilder {
 
@@ -61,17 +60,24 @@ public final class DeltaReasonerTaxonomyBuilder extends AbstractReasonerTaxonomy
 
 	private final LongSet conceptIdsToRemove = new LongOpenHashSet();
 	private final LongSet conceptIdsToAdd = new LongOpenHashSet();
+	private final boolean includeAdditionalStatementConcreteDomains;
 	
 	/**
 	 * Creates a new {@link DeltaReasonerTaxonomyBuilder} instance with the specified arguments.
 	 * 
 	 * @param source the taxonomy builder used as a baseline for changes (may not be {@code null})
 	 * @param changeSet the change set to apply (may not be {@code null})
+	 * @param includeAdditionalStatementConcreteDomains {@code true} if statement concrete domains with additional
+	 * characteristic type should be tracked, {@code false} otherwise
 	 */
-	public DeltaReasonerTaxonomyBuilder(final AbstractReasonerTaxonomyBuilder source, final ICDOCommitChangeSet changeSet) {
+	public DeltaReasonerTaxonomyBuilder(final AbstractReasonerTaxonomyBuilder source, final ICDOCommitChangeSet changeSet, 
+			final boolean includeAdditionalStatementConcreteDomains) {
+		
 		super(checkNotNull(source, "source"));
 		checkNotNull(changeSet, "changeSet");
-		
+
+		this.includeAdditionalStatementConcreteDomains = includeAdditionalStatementConcreteDomains;
+
 		for (final Entry<CDOID, EClass> detachedComponent : changeSet.getDetachedComponents().entrySet()) {
 			if (TRACKED_ECLASSES.contains(detachedComponent.getValue())) {
 				registerRemove(detachedComponent.getKey(), detachedComponent.getValue(), true);
@@ -255,12 +261,24 @@ public final class DeltaReasonerTaxonomyBuilder extends AbstractReasonerTaxonomy
 	}
 
 	private void addRelationshipConcreteDomainMember(final SnomedConcreteDataTypeRefSetMember member) {
+
+		// Ignore additional relationship concrete domain members, unless the flag is set
+		if (!includeAdditionalStatementConcreteDomains && Concepts.ADDITIONAL_RELATIONSHIP.equals(member.getCharacteristicTypeId())) {
+			return;
+		}
+		
 		final long statementId = Long.valueOf(member.getReferencedComponentId());
 		final ConcreteDomainFragment fragment = createFragment(member);
 		addToMultimap(statementIdToConcreteDomain, statementId, fragment);
 	}
 
 	private void addConceptConcreteDomainMember(final SnomedConcreteDataTypeRefSetMember member) {
+		
+		// Additional concept concrete domain members are always ignored
+		if (Concepts.ADDITIONAL_RELATIONSHIP.equals(member.getCharacteristicTypeId())) {
+			return;
+		}
+
 		final long conceptId = Long.valueOf(member.getReferencedComponentId());
 		final ConcreteDomainFragment fragment = createFragment(member);
 		addToMultimap(conceptIdToConcreteDomain, conceptId, fragment);

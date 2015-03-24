@@ -86,8 +86,8 @@ public class SnomedReasonerChangeProcessor implements ICDOChangeProcessor {
 			LOGGER.info(">>> Processing OWL ontology changes");
 			final Stopwatch changeProcessorStopwatch = Stopwatch.createStarted();
 
-			final InitialReasonerTaxonomyBuilder oldReasonerTaxonomy = new InitialReasonerTaxonomyBuilder(branchPath);
-			final DeltaReasonerTaxonomyBuilder newReasonerTaxonomy = new DeltaReasonerTaxonomyBuilder(oldReasonerTaxonomy, commitChangeSet);
+			final InitialReasonerTaxonomyBuilder oldReasonerTaxonomy = new InitialReasonerTaxonomyBuilder(branchPath, false);
+			final DeltaReasonerTaxonomyBuilder newReasonerTaxonomy = new DeltaReasonerTaxonomyBuilder(oldReasonerTaxonomy, commitChangeSet, false);
 			
 			for (final LongIterator itr = newReasonerTaxonomy.getConceptIdsToRemove().iterator(); itr.hasNext(); /* empty */) {
 				final long conceptId = itr.next();

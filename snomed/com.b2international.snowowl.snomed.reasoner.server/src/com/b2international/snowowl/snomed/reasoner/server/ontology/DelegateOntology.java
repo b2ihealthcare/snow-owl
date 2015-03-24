@@ -1223,7 +1223,7 @@ public class DelegateOntology extends OWLObjectImpl implements OWLMutableOntolog
 	private InitialReasonerTaxonomyBuilder getReasonerTaxonomyBuilder() {
 
 		if (null == reasonerTaxonomyBuilder) {
-			reasonerTaxonomyBuilder = new InitialReasonerTaxonomyBuilder(branchPath);
+			reasonerTaxonomyBuilder = new InitialReasonerTaxonomyBuilder(branchPath, false);
 		}
 
 		return reasonerTaxonomyBuilder;
