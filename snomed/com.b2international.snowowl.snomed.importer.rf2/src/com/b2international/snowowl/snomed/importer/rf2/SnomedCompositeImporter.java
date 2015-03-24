@@ -374,7 +374,7 @@ public class SnomedCompositeImporter extends AbstractLoggingImporter {
 			
 			if (shouldCreateVersionAndTag) {
 				for (final CodeSystemVersion codeSystemVersion : group.getCodeSystemVersions()) {
-					if (codeSystemVersion.getEffectiveDate().equals(tagEffectiveTime)) {
+					if (tagEffectiveTime.equals(codeSystemVersion.getEffectiveDate())) {
 						existingVersionFound = true;
 						break;
 					}
