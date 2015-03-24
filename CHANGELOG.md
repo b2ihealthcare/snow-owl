@@ -1,6 +1,14 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
+## 2015-03-26
+### Added
+- `WRP-89`: both `FULL` and `DELTA` imports are now separating incoming import files into "layers" based on the effective time columns, and individual layers get imported in order. This enables importing the `20150131` INT RF2 release delta, which includes components from `20140731` as well. The import process can now create versions after importing each "layer" for all import types.
+  
+  Note that the above mentioned `20150131` release would require "re-tagging" of an already released `20140731` version, which is not supported, or placing the additional content on the existing `20140731` version branch as a patch. This, however, would make the extra `20140731` content available on that version and that version **only**; it would be visible neither from `MAIN`, nor from `20150131`.
+  
+  The current implementation issues a warning when such cases are encountered; the extra content will become visible on `MAIN` and `20150131`, but not on version `20140731`, which is left untouched. A possible workaround is to import `20140731` from a delta with disabled version creation, then import the `20150131` delta with enabled version creation.
+
 ## 2015-03-19
 ### Added
 - `WRP-135`: added properties `taskId` and `versionId` to the export configuration object to allow exporting content from task branches. URLs for exporting no longer include the version segment.
@@ -16,9 +24,8 @@ effective time values in export files, if unpublished components are present. Va
 
 ### Changed
 - Changed the export service to export components from _all_ modules if the `moduleIds` property of the export configuration object is not set. The previous behavior resulted in empty export files under the assumption that _no_ modules should be exported.
-
-- querying or exporting a non-existent export config returns now code 404 as opposed to 200 and an empty object
-- after downloading the export result, the export config is cleaned up
+- Querying or exporting a non-existent export config returns now code 404 as opposed to 200 and an empty object.
+- After downloading the export result, the export config is cleaned up.
 
 ## DEV2.1 - 2015-03-05
 ### Changed
