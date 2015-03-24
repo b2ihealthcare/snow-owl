@@ -173,20 +173,23 @@ public class SnomedTaxonomyValidator {
 				}
 				
 				String sourceLabel = SnomedConceptNameProvider.INSTANCE.getComponentLabel(branchPath, sourceId);
-				if (isEmpty(sourceLabel)) {
-					sourceLabel = sourceId;
-				}
-				
 				String destinationLabel = SnomedConceptNameProvider.INSTANCE.getComponentLabel(branchPath, destinationId);
-				if (isEmpty(destinationLabel)) {
-					destinationLabel = destinationId;
-				}
 				
 				final StringBuilder sb = new StringBuilder();
 				sb.append("Source concept '");
-				sb.append(sourceLabel);
+				sb.append(sourceId);
+				if (!isEmpty(sourceLabel)) {
+					sb.append("|");
+					sb.append(sourceLabel);
+					sb.append("|");
+				}
 				sb.append("' is referencing to a concept that would be inactivated with the current import. Destination concept: '");
-				sb.append(destinationLabel);
+				sb.append(destinationId);
+				if (!isEmpty(destinationLabel)) {
+					sb.append("|");
+					sb.append(destinationLabel);
+					sb.append("|");
+				}
 				sb.append("'.");
 				defects.add(sb.toString());
 			}
@@ -194,7 +197,6 @@ public class SnomedTaxonomyValidator {
 			final SnomedValidationDefect defect = new SnomedIncompleteTaxonomyValidationDefect(defects, conceptIdsToInactivate);
 			return Collections.<SnomedValidationDefect>singleton(defect);
 		}
-		
 		
 		LOGGER.info("SNOMED CT ontology validation successfully finished. No errors where found.");
 		return emptySet();
