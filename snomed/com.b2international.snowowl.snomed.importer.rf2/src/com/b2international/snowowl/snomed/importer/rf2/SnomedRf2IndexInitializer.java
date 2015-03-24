@@ -252,8 +252,13 @@ public class SnomedRf2IndexInitializer extends Job {
 		final List<ComponentImportUnit> importUnits = collectImportUnits();
 		
 		delegateMonitor.beginTask("Indexing SNOMED CT...", importUnits.size() + 3);
-		final String formettedDate = EffectiveTimes.format(effectiveTime);
-		LOGGER.info("Initializing SNOMED CT semantic content from RF2 release format for '" + formettedDate + "'...");
+		
+		final String formattedDate = EffectiveTimes.format(effectiveTime);
+		if (slicingEnabled) {
+			LOGGER.info("Initializing SNOMED CT semantic content from RF2 release format for '{}'...", formattedDate);
+		} else {
+			LOGGER.info("Initializing SNOMED CT semantic content from RF2 release format...");
+		}
 		
 		LOGGER.info("Pre-processing phase [1 of 3]...");
 		
@@ -289,7 +294,7 @@ public class SnomedRf2IndexInitializer extends Job {
 		LOGGER.info("Indexing phase [2 of 3]...");
 		doImport(importUnits, delegateMonitor);
 		
-		LOGGER.info("SNOMED CT semantic content for '" + formettedDate + "' have been successfully initialized.");
+		LOGGER.info("SNOMED CT semantic content for '" + formattedDate + "' have been successfully initialized.");
 		
 		return Status.OK_STATUS;
 		
