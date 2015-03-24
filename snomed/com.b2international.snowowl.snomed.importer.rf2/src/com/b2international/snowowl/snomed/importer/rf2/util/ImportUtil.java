@@ -54,7 +54,6 @@ import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.core.runtime.SubMonitor;
 import org.eclipse.emf.cdo.common.branch.CDOBranch;
 
-import com.b2international.commons.CompareUtils;
 import com.b2international.commons.ConsoleProgressMonitor;
 import com.b2international.commons.platform.Extensions;
 import com.b2international.snowowl.core.ApplicationContext;
@@ -316,26 +315,21 @@ public final class ImportUtil {
 			}	
 		}
 
-		//check if index initialization is required
-		//updated with the change processors after each individual CDO transaction commits
-		if (!ApplicationContext.getInstance().getService(SnomedTerminologyBrowser.class).isTerminologyAvailable(BranchPathUtils.createMainPath()) //XXX if MAIN exists tasks must exists as well. 
-				|| !CompareUtils.isEmpty(Iterables.filter(importers, Predicates.not(Predicates.instanceOf(AbstractSnomedRefSetImporter.class))))) { //NOT only reference sets have been imported
-			
-			context.setCommitNotificationEnabled(false);
-			
-		} else { //do nothing as described above
-			context.setCommitNotificationEnabled(true);
-		}
+		final boolean terminologyExistsBeforeImport = ApplicationContext.getInstance().getService(SnomedTerminologyBrowser.class).isTerminologyAvailable(BranchPathUtils.createMainPath());
+		final boolean onlyRefSetImportersRegistered = Iterables.all(importers, Predicates.instanceOf(AbstractSnomedRefSetImporter.class));
 
+		/*
+		 * Commit notifications for changes made by the import should only be sent if the terminology already exists,
+		 * and only changes for reference sets are coming in from the import files. 
+		 */
+		context.setCommitNotificationEnabled(terminologyExistsBeforeImport && onlyRefSetImportersRegistered);
 		context.setUserId(requestingUserId);
 
 		final ICDOConnectionManager connectionManager = ApplicationContext.getInstance().getService(ICDOConnectionManager.class);
 		final CDOBranch branch = connectionManager.get(SnomedPackage.eINSTANCE).getBranch(branchPath);
 
 		if (null == branch) {
-			
 			throw new ImportException("Branch does not exist. [" + branchPath.getPath() + "]");
-
 		}
 
 		final SnomedEditingContext editingContext = new SnomedEditingContext(branchPath);
