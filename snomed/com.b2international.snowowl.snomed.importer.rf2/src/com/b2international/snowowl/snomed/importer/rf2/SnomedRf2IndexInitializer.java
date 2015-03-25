@@ -15,6 +15,7 @@
  */
 package com.b2international.snowowl.snomed.importer.rf2;
 
+import static com.b2international.commons.pcj.LongSets.forEach;
 import static com.b2international.commons.pcj.LongSets.newLongSet;
 import static com.b2international.commons.pcj.LongSets.toStringList;
 import static com.b2international.snowowl.core.ApplicationContext.getServiceForClass;
@@ -126,7 +127,9 @@ import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.SubMonitor;
 import org.eclipse.core.runtime.jobs.Job;
+import org.eclipse.emf.cdo.CDOObject;
 import org.eclipse.emf.cdo.transaction.CDOTransaction;
+import org.eclipse.emf.cdo.view.CDOView;
 
 import bak.pcj.LongCollection;
 import bak.pcj.LongIterator;
@@ -143,6 +146,7 @@ import com.b2international.commons.csv.CsvSettings;
 import com.b2international.commons.csv.RecordParserCallback;
 import com.b2international.commons.pcj.LongCollections;
 import com.b2international.commons.pcj.LongSets;
+import com.b2international.commons.pcj.LongSets.LongCollectionProcedure;
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.CoreTerminologyBroker;
 import com.b2international.snowowl.core.api.IBranchPath;
@@ -152,6 +156,7 @@ import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.datastore.cdo.CDOIDUtils;
 import com.b2international.snowowl.datastore.cdo.CDOTransactionFunction;
 import com.b2international.snowowl.datastore.cdo.CDOUtils;
+import com.b2international.snowowl.datastore.cdo.CDOViewFunction;
 import com.b2international.snowowl.datastore.cdo.ICDOConnection;
 import com.b2international.snowowl.datastore.cdo.ICDOConnectionManager;
 import com.b2international.snowowl.datastore.index.IndexUtils;
@@ -182,11 +187,14 @@ import com.b2international.snowowl.snomed.datastore.index.ISnomedTaxonomyBuilder
 import com.b2international.snowowl.snomed.datastore.index.SnomedDescriptionIndexMappingStrategy;
 import com.b2international.snowowl.snomed.datastore.index.SnomedIndexService;
 import com.b2international.snowowl.snomed.datastore.index.SnomedRelationshipIndexMappingStrategy;
+import com.b2international.snowowl.snomed.datastore.index.refset.SnomedRefSetMemberIndexEntry;
 import com.b2international.snowowl.snomed.datastore.index.refset.SnomedRefSetMemberIndexMappingStrategy;
 import com.b2international.snowowl.snomed.datastore.services.ISnomedComponentService;
+import com.b2international.snowowl.snomed.datastore.services.SnomedBranchRefSetMembershipLookupService;
 import com.b2international.snowowl.snomed.importer.rf2.model.ComponentImportType;
 import com.b2international.snowowl.snomed.importer.rf2.model.ComponentImportUnit;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedLanguageRefSetMember;
+import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetMember;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType;
 import com.google.common.base.Objects;
 import com.google.common.base.Preconditions;
@@ -292,7 +300,6 @@ public class SnomedRf2IndexInitializer extends Job {
 		LOGGER.info("SNOMED CT semantic content for '" + formettedDate + "' have been successfully initialized.");
 		
 		return Status.OK_STATUS;
-		
 	}
 
 	private Map<String, String> getDescriptionToConceptIds(final List<ComponentImportUnit> importUnits) {
@@ -582,15 +589,24 @@ public class SnomedRf2IndexInitializer extends Job {
 			LOGGER.trace("Overall difference count: " + difference.size());
 		}
 
+		LOGGER.info("Unvisited concepts have been successfully collected.");
+
 		if (!CompareUtils.isEmpty(difference)) {
-			
-			LOGGER.info("Unvisited concepts have been successfully collected.");
 			LOGGER.info("Reindexing unvisited concepts...");
 			indexUnvisitedConcepts(difference, dirtyConceptsForCompareReindex);
 			getSnomedIndexService().commit(branchPath);
-			LOGGER.info("Unvisited concepts have been successfully reindexeed.");
+			LOGGER.info("Unvisited concepts have been successfully reindexed.");
 		} else {
 			LOGGER.info("No unvisited concepts have been found.");
+		}
+		
+		if (!CompareUtils.isEmpty(visitedConceptsViaLanguageMemberships)) {
+			LOGGER.info("Reindexing reference set members on concepts where the preferred term changed...");
+			indexPreferredTermChangesOnMembers();
+			getSnomedIndexService().commit(branchPath);
+			LOGGER.info("Preferred term changes successfully updated on reference set members.");
+		} else {
+			LOGGER.info("No preferred term changes have been found.");
 		}
 		
 		LOGGER.info("Post-processing phase successfully finished.");
@@ -1045,7 +1061,41 @@ public class SnomedRf2IndexInitializer extends Job {
 				}
 			}
 		});
+	}
+	
+	private void indexPreferredTermChangesOnMembers() {
+		final SnomedBranchRefSetMembershipLookupService lookupService = new SnomedBranchRefSetMembershipLookupService(branchPath);
+		final ICDOConnection connection = ApplicationContext.getServiceForClass(ICDOConnectionManager.class).getByUuid(SnomedDatastoreActivator.REPOSITORY_UUID);
 		
+		CDOUtils.apply(new CDOViewFunction<Void, CDOView>(connection, branchPath) {
+			
+			@Override
+			protected Void apply(final CDOView view) {
+				
+				for (final String conceptId : visitedConceptsViaLanguageMemberships) {
+		
+					final Collection<SnomedRefSetMemberIndexEntry> referringMembers = lookupService.getReferringMembers(conceptId);
+					final String conceptLabel = getImportIndexService().getConceptLabel(conceptId);
+					final LongSet referringMemberStorageKeys = new LongOpenHashSet();
+					
+					for (final SnomedRefSetMemberIndexEntry referringMember : referringMembers) {
+						referringMemberStorageKeys.add(referringMember.getStorageKey());
+					}
+			
+					forEach(referringMemberStorageKeys, new LongCollectionProcedure() {
+						@Override
+						public void apply(final long referringMemberStorageKey) {
+							final CDOObject referringMember = CDOUtils.getObjectIfExists(view, referringMemberStorageKey);
+							if (referringMember instanceof SnomedRefSetMember) {
+								getSnomedIndexService().index(branchPath, new SnomedRefSetMemberIndexMappingStrategy((SnomedRefSetMember) referringMember, conceptLabel));
+							}
+						}
+					});
+				}
+				
+				return null;
+			}
+		});
 	}
 
 	private void indexDescriptions(final String absolutePath) {
