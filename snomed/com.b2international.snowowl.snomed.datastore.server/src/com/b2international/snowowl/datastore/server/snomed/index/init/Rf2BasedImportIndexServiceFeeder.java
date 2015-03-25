@@ -96,13 +96,14 @@ public class Rf2BasedImportIndexServiceFeeder implements IImportIndexServiceFeed
 					@Override
 					public void handleRecord(final int recordCount, final List<String> record) {
 
+						final String memberId = record.get(0);
 						final String refSetId = record.get(4);
 						final String descriptionId = record.get(5);
 						
 						final boolean active = "1".equals(record.get(2));
 						final boolean preferred = Concepts.REFSET_DESCRIPTION_ACCEPTABILITY_PREFERRED.equals(record.get(6));
 						
-						service.registerAcceptability(descriptionId, refSetId, preferred, active);
+						service.registerAcceptability(descriptionId, refSetId, memberId, preferred, active);
 						
 						if (0 == i.incrementAndGet() % 10000) {
 							service.commit();

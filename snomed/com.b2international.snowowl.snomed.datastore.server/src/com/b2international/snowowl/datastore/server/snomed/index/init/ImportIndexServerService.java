@@ -38,6 +38,7 @@ import org.apache.lucene.index.Term;
 import org.apache.lucene.search.BooleanClause.Occur;
 import org.apache.lucene.search.BooleanQuery;
 import org.apache.lucene.search.IndexSearcher;
+import org.apache.lucene.search.PrefixQuery;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.ReferenceManager;
 import org.apache.lucene.search.ScoreDoc;
@@ -311,7 +312,7 @@ public class ImportIndexServerService extends FSIndexServerService<IIndexEntry> 
 		doc.add(new StringField(ACTIVE, Boolean.toString(active), Store.YES));
     }
 
-    public void registerAcceptability(final String descriptionId, final String refSetId, final boolean preferred, final boolean active) {
+    public void registerAcceptability(final String descriptionId, final String refSetId, final String memberId, final boolean preferred, final boolean active) {
 
         final Document pendingDescriptionDoc = getDescriptionDocument(descriptionId);
 
@@ -335,7 +336,7 @@ public class ImportIndexServerService extends FSIndexServerService<IIndexEntry> 
 			}
 			
 			// Skip fields not containing information about the specified member
-			if (!fieldValue.equals(refSetId)) {
+			if (!fieldValue.equals(refSetId + "_" + memberId)) {
 				continue;
 			}
 
@@ -358,7 +359,7 @@ public class ImportIndexServerService extends FSIndexServerService<IIndexEntry> 
 
         // If the member was not found, but should be added, add it
         if (!found && active) {
-            pendingDescriptionDoc.add(new StringField(fieldToAdd, refSetId, Store.YES));
+            pendingDescriptionDoc.add(new StringField(fieldToAdd, refSetId + "_" + memberId, Store.YES));
         }
     }
 
@@ -454,6 +455,7 @@ public class ImportIndexServerService extends FSIndexServerService<IIndexEntry> 
 		}
 
         // Use the concept identifier as the label
+		LOGGER.warn("No preferred term found for concept {}.", conceptId);
         return conceptId;
 	}
 
@@ -463,7 +465,7 @@ public class ImportIndexServerService extends FSIndexServerService<IIndexEntry> 
         conceptLabelQuery.add(createActiveQuery(), Occur.MUST);
         conceptLabelQuery.add(createContainerConceptQuery(conceptId), Occur.MUST);
         conceptLabelQuery.add(new TermQuery(new Term(TERM_TYPE, IndexUtils.intToPrefixCoded(TermType.SYNONYM_AND_DESCENDANTS.ordinal()))), Occur.MUST);
-        conceptLabelQuery.add(new TermQuery(new Term(PREFERRED_REFSET_ID, languageRefSetId)), Occur.MUST);
+        conceptLabelQuery.add(new PrefixQuery(new Term(PREFERRED_REFSET_ID, languageRefSetId + "_")), Occur.MUST);
         
         // Try to find a preferred description first (PT or FSN, whichever comes first in the sorted set of documents)
         final List<DocumentWithScore> preferredDescriptionDocuments = search(SUPPORTING_INDEX_BRANCH_PATH, conceptLabelQuery, null, null, 1);

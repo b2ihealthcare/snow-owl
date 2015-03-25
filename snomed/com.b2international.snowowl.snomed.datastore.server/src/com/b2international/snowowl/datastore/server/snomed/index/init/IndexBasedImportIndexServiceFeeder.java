@@ -67,6 +67,7 @@ public class IndexBasedImportIndexServiceFeeder implements IImportIndexServiceFe
 	}
 
 	private static final Set<String> LANGUAGE_MEMBER_FIELDS_TO_LOAD = ImmutableSet.of(
+			SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_UUID,
 			SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_REFERENCE_SET_ID,
 			SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_REFERENCED_COMPONENT_ID,
 			SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_ACCEPTABILITY_ID,
@@ -98,6 +99,7 @@ public class IndexBasedImportIndexServiceFeeder implements IImportIndexServiceFe
 				
 				final Document doc = searcher.doc(itr.getDocID(), LANGUAGE_MEMBER_FIELDS_TO_LOAD);
 				
+				final String memberId = doc.get(SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_UUID);
 				final String refSetId = doc.get(SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_REFERENCE_SET_ID);
 				final String descriptionId = doc.get(SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_REFERENCED_COMPONENT_ID);
 				final String acceptabilityId = doc.get(SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_ACCEPTABILITY_ID);
@@ -105,7 +107,7 @@ public class IndexBasedImportIndexServiceFeeder implements IImportIndexServiceFe
 				final boolean preferred = Concepts.REFSET_DESCRIPTION_ACCEPTABILITY_PREFERRED.equals(acceptabilityId);
 				final boolean active = IndexUtils.getBooleanValue(doc.getField(SnomedIndexBrowserConstants.COMPONENT_ACTIVE));
 				
-				service.registerAcceptability(descriptionId, refSetId, preferred, active);
+				service.registerAcceptability(descriptionId, refSetId, memberId, preferred, active);
 			}
 			
 		} catch (final IOException e) {
