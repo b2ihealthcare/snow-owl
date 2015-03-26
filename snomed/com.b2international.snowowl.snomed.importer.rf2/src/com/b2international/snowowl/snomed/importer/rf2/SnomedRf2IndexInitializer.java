@@ -193,6 +193,7 @@ import com.b2international.snowowl.snomed.datastore.services.ISnomedComponentSer
 import com.b2international.snowowl.snomed.datastore.services.SnomedBranchRefSetMembershipLookupService;
 import com.b2international.snowowl.snomed.importer.rf2.model.ComponentImportType;
 import com.b2international.snowowl.snomed.importer.rf2.model.ComponentImportUnit;
+import com.b2international.snowowl.snomed.snomedrefset.SnomedConcreteDataTypeRefSetMember;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedLanguageRefSetMember;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetMember;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType;
@@ -226,6 +227,7 @@ public class SnomedRf2IndexInitializer extends Job {
 	private Multimap<String, String> detachedRefSetMemberships;
 	private Multimap<String, String> detachedMappingMemberships;
 	private Set<String> visitedConcepts;
+	private Set<String> visitedMembers;
 	private Set<String> visitedConceptsViaMemberships;
 	private Set<String> visitedConceptsViaLanguageMemberships;
 	private Set<String> visitedConceptsViaIsAStatements;
@@ -279,6 +281,7 @@ public class SnomedRf2IndexInitializer extends Job {
 		detachedRefSetMemberships = HashMultimap.create();
 		detachedMappingMemberships = HashMultimap.create();
 		visitedConcepts = Sets.newHashSet();
+		visitedMembers = Sets.newHashSet();
 		visitedConceptsViaMemberships = Sets.newHashSet();
 		visitedConceptsViaLanguageMemberships = newHashSet();
 		LOGGER.info("Gathering mappings between descriptions and concepts...");
@@ -410,7 +413,9 @@ public class SnomedRf2IndexInitializer extends Job {
 					@Override
 					public void handleRecord(final int recordCount, final List<String> record) {
 						
-						
+							final String uuid = record.get(0);
+							visitedMembers.add(uuid);
+							
 							final String refSetId = record.get(4);
 							final String id = record.get(5);
 							if (SnomedTerminologyComponentConstants.CONCEPT_NUMBER == SnomedTerminologyComponentConstants.getTerminologyComponentIdValueSafe(id)) {
@@ -1079,14 +1084,19 @@ public class SnomedRf2IndexInitializer extends Job {
 					final LongSet referringMemberStorageKeys = new LongOpenHashSet();
 					
 					for (final SnomedRefSetMemberIndexEntry referringMember : referringMembers) {
-						referringMemberStorageKeys.add(referringMember.getStorageKey());
+						if (!visitedMembers.contains(referringMember.getId())) {
+							referringMemberStorageKeys.add(referringMember.getStorageKey());
+						}
 					}
 			
 					forEach(referringMemberStorageKeys, new LongCollectionProcedure() {
 						@Override
 						public void apply(final long referringMemberStorageKey) {
 							final CDOObject referringMember = CDOUtils.getObjectIfExists(view, referringMemberStorageKey);
-							if (referringMember instanceof SnomedRefSetMember) {
+							if (referringMember instanceof SnomedConcreteDataTypeRefSetMember) {
+								final SnomedConcreteDataTypeRefSetMember cdtMember = (SnomedConcreteDataTypeRefSetMember) referringMember;
+								getSnomedIndexService().index(branchPath, new SnomedRefSetMemberIndexMappingStrategy(cdtMember, cdtMember.getLabel()));
+							} else if (referringMember instanceof SnomedRefSetMember) {
 								getSnomedIndexService().index(branchPath, new SnomedRefSetMemberIndexMappingStrategy((SnomedRefSetMember) referringMember, conceptLabel));
 							}
 						}
