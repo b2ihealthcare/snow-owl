@@ -136,6 +136,7 @@ public class SnomedEditingContext extends BaseSnomedEditingContext {
 	protected Concept moduleConcept;
 	private String nameSpace;
 	private String reservationName;
+	private boolean uniquenessCheckEnabled = true;
 
 	/**returns with a set of allowed concepts' ID. concept is allowed as preferred description type concept if 
 	 * has an associated active description type reference set member and is synonym or descendant of the synonym */
@@ -1546,13 +1547,15 @@ public class SnomedEditingContext extends BaseSnomedEditingContext {
 		 * IDs both among themselves and the components already persisted in the database.
 		 * Non-unique IDs will be overwritten with ones which are guaranteed to be unique 
 		 * as of the time of this check. */
-		List<CDOIDAndVersion> newObjects = transaction.getChangeSetData().getNewObjects();
-		ComponentIdUniquenessValidator uniquenessEnforcer = new ComponentIdUniquenessValidator(this);
-		for (CDOIDAndVersion newCdoIdAndVersion : newObjects) {
-			CDOObject newObject = transaction.getObject(newCdoIdAndVersion.getID());
-			if (newObject instanceof Component) {
-				Component newComponent = (Component) newObject;
-				uniquenessEnforcer.validateAndReplaceComponentId(newComponent);
+		if (isUniquenessCheckEnabled()) {
+			List<CDOIDAndVersion> newObjects = transaction.getChangeSetData().getNewObjects();
+			ComponentIdUniquenessValidator uniquenessEnforcer = new ComponentIdUniquenessValidator(this);
+			for (CDOIDAndVersion newCdoIdAndVersion : newObjects) {
+				CDOObject newObject = transaction.getObject(newCdoIdAndVersion.getID());
+				if (newObject instanceof Component) {
+					Component newComponent = (Component) newObject;
+					uniquenessEnforcer.validateAndReplaceComponentId(newComponent);
+				}
 			}
 		}
 		
@@ -1565,6 +1568,15 @@ public class SnomedEditingContext extends BaseSnomedEditingContext {
 		dependencyRefSetService.updateModuleDependenciesDuringPreCommit(getTransaction());
 	}
 	
+	public boolean isUniquenessCheckEnabled() {
+		return uniquenessCheckEnabled;
+	}
+	
+	public SnomedEditingContext setUniquenessCheckEnabled(boolean uniquenessCheckEnabled) {
+		this.uniquenessCheckEnabled = uniquenessCheckEnabled;
+		return this;
+	}
+
 	/**
 	 * This method makes a validation for a new Is-a relationship. If the destination concept is
 	 * a subtype of the source one, the return value is false, otherwise true.
