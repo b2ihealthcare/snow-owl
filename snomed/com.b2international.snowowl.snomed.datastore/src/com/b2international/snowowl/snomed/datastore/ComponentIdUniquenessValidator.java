@@ -43,6 +43,7 @@ import com.google.common.base.Supplier;
 
 /**
  * Class to validate the uniqueness of a SNOMED CT component's ID, and replace it if needed.
+ * @deprecated - new ID gen services ensure unique IDs to be generated among all editingContexts
  */
 final class ComponentIdUniquenessValidator {
 	
@@ -79,7 +80,11 @@ final class ComponentIdUniquenessValidator {
 		
 		if (!validateComponentId(component)) {
 			
-			final String newComponentId = editingContext.generateComponentId(component, this);
+			String newComponentId = editingContext.generateComponentId(component);
+			
+			while (!validateComponentId(newComponentId)) {
+				newComponentId = editingContext.generateComponentId(component);
+			}
 			
 			//update reference set ID as well if concept ID is not unique
 			if (component instanceof Concept) {
@@ -133,24 +138,16 @@ final class ComponentIdUniquenessValidator {
 	 * @return {@code true} if the component ID is unique, {@code false}
 	 *         otherwise
 	 */
-	public boolean validateComponentId(final Component component) {
-		return isUniqueInTransaction(component)	&& isUniqueInDatabase(component);
+	private boolean validateComponentId(final Component component) {
+		return validateComponentId(component.getId());
 	}
 
-	public boolean validateComponentId(final String componentId) {
+	private boolean validateComponentId(final String componentId) {
 		return isUniqueInTransaction(componentId) && isUniqueInDatabase(componentId);
 	}
 
-	private boolean isUniqueInTransaction(final Component newComponent) {
-		return isUniqueInTransaction(newComponent.getId());
-	}
-	
 	private boolean isUniqueInTransaction(final String newComponentId) {
 		return !newComponentIdsInTransaction.contains(newComponentId);
-	}
-
-	private boolean isUniqueInDatabase(final Component newComponent) {
-		return isUniqueInDatabase(newComponent.getId());
 	}
 
 	private LongSet initExistingCoreComponentIds() {
@@ -167,7 +164,7 @@ final class ComponentIdUniquenessValidator {
 	 * @param componentId the component identifier
 	 * @return {@code true} if the id is unique for the component. Otherwise returns with {@code false}.
 	 */
-	public boolean isUniqueInDatabase(final String componentId) {
+	private boolean isUniqueInDatabase(final String componentId) {
 		if (isEmpty(existingCoreComponentIds)) {
 			return getServiceForClass(SnomedTerminologyBrowser.class).isUniqueId(branchPath, componentId);
 		} else {

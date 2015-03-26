@@ -1539,30 +1539,6 @@ public class SnomedEditingContext extends BaseSnomedEditingContext {
 		return relationship;
 	}
 	
-	/**
-	 * Returns a unique SNOMED CT component Id with the namespace specified.
-	 * The method does not take into account components in the transaction, only in
-	 * the db.
-	 * 
-	 * @param componentNature type of the component (Concept|Description|Relationship)
-	 * @param namespace namespace for the id
-	 * @param validator the component uniqueness validator.
-	 * 
-	 * @return SNOMED CT component Id
-	 * @deprecated - use new {@link ISnomedIdentifierService}
-	 */
-	private String generateComponentId(final ComponentCategory componentNature, final String namespace, final ComponentIdUniquenessValidator validator) {
-		checkNotNull(componentNature, "componentNature");
-		checkNotNull(validator, "validator");
-
-		String componentId = identifiers.generateId(componentNature, namespace);
-		//generate it until it is unique
-		while (!validator.isUniqueInDatabase(componentId)) {
-			componentId = identifiers.generateId(componentNature, namespace);
-		}
-		return componentId;
-	}
-	
 	@Override
 	public void preCommit() {
 		
@@ -1658,23 +1634,20 @@ public class SnomedEditingContext extends BaseSnomedEditingContext {
 	 * @deprecated - use new {@link ISnomedIdentifierService}
 	 */
 	public String generateComponentId(Component component) {
-		checkNotNull(component, "component");
-		return generateComponentId(component, new ComponentIdUniquenessValidator(this));
+		if (component instanceof Relationship) {
+			return generateComponentId(ComponentCategory.RELATIONSHIP, getNamespace());
+		} else if (component instanceof Concept) {
+			return generateComponentId(ComponentCategory.CONCEPT, getNamespace());
+		} else if (component instanceof Description) {
+			return generateComponentId(ComponentCategory.DESCRIPTION, getNamespace());
+		}
+		throw new IllegalArgumentException(MessageFormat.format("Unexpected component class ''{0}''.", component));
 	}
 	
-	/*default*/ String generateComponentId(final Component component, final ComponentIdUniquenessValidator validator) {
-		checkNotNull(component, "component");
-		checkNotNull(validator, "validator");
-		if (component instanceof Relationship) {
-			return generateComponentId(ComponentCategory.RELATIONSHIP, getNamespace(), validator);
-		} else if (component instanceof Concept) {
-			return generateComponentId(ComponentCategory.CONCEPT, getNamespace(), validator);
-		} else if (component instanceof Description) {
-			return generateComponentId(ComponentCategory.DESCRIPTION, getNamespace(), validator);
-		}
-		throw new IllegalArgumentException(MessageFormat.format("Unexpected component class ''{0}''.", component.getClass()));
+	private String generateComponentId(final ComponentCategory componentNature, final String namespace) {
+		return identifiers.generateId(componentNature, namespace);
 	}
-
+	
 	public boolean isUniqueInTransaction(SnomedIdentifier identifier) {
 		for (Component component : Iterables.filter(getTransaction().getNewObjects().values(), getSnomedComponentClass(identifier.getComponentCategory()))) {
 			if (identifier.toString().equals(component.getId())) {
