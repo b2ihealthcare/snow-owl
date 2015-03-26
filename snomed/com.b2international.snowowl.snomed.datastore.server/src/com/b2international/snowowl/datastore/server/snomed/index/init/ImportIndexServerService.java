@@ -476,13 +476,36 @@ public class ImportIndexServerService extends FSIndexServerService<IIndexEntry> 
 		if (label != null) {
 			return label;
 		}
+		
+		// XXX: fallback to FSN
+		label = getFullySpecifiedName(conceptId);
+		if (label != null) {
+			return label;
+		}
 
         // Use the concept identifier as the label
 		LOGGER.warn("No preferred term found for concept {}.", conceptId);
         return conceptId;
 	}
 
-    public String getConceptLabel(final String conceptId, final String languageRefSetId) {
+    private String getFullySpecifiedName(final String conceptId) {
+		final BooleanQuery conceptLabelQuery = new BooleanQuery(true); 
+		conceptLabelQuery.add(createActiveQuery(), Occur.MUST);
+		conceptLabelQuery.add(createContainerConceptQuery(conceptId), Occur.MUST);
+		conceptLabelQuery.add(new TermQuery(new Term(TERM_TYPE, IndexUtils.intToPrefixCoded(TermType.FSN.ordinal()))), Occur.MUST);
+		
+        final List<DocumentWithScore> fsnDescriptionDocuments = search(SUPPORTING_INDEX_BRANCH_PATH, conceptLabelQuery, null, null, 1);
+
+        if (!CompareUtils.isEmpty(fsnDescriptionDocuments)) {
+            final DocumentWithScore preferredDocument = Iterables.getFirst(fsnDescriptionDocuments, null);
+            final Document unwrappedDocument = preferredDocument.getDocument();
+            return unwrappedDocument.get(TERM);
+        }
+
+        return null;
+	}
+
+	public String getConceptLabel(final String conceptId, final String languageRefSetId) {
 
         final BooleanQuery conceptLabelQuery = new BooleanQuery(true); 
         conceptLabelQuery.add(createActiveQuery(), Occur.MUST);
@@ -491,7 +514,6 @@ public class ImportIndexServerService extends FSIndexServerService<IIndexEntry> 
         
         final Filter preferredFilter = getPreferredFilter(languageRefSetId);
         
-        // Try to find a preferred description first (PT or FSN, whichever comes first in the sorted set of documents)
         final List<DocumentWithScore> preferredDescriptionDocuments = search(SUPPORTING_INDEX_BRANCH_PATH, conceptLabelQuery, preferredFilter, null, 1);
 
         if (!CompareUtils.isEmpty(preferredDescriptionDocuments)) {
