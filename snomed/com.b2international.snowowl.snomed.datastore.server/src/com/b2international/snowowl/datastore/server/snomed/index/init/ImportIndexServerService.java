@@ -37,12 +37,14 @@ import org.apache.lucene.index.IndexableField;
 import org.apache.lucene.index.Term;
 import org.apache.lucene.search.BooleanClause.Occur;
 import org.apache.lucene.search.BooleanQuery;
+import org.apache.lucene.search.CachingWrapperFilter;
+import org.apache.lucene.search.Filter;
 import org.apache.lucene.search.IndexSearcher;
-import org.apache.lucene.search.PrefixQuery;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.ReferenceManager;
 import org.apache.lucene.search.ScoreDoc;
 import org.apache.lucene.search.TermQuery;
+import org.apache.lucene.search.TermRangeFilter;
 import org.apache.lucene.search.TopDocs;
 import org.apache.lucene.search.TotalHitCountCollector;
 import org.eclipse.emf.cdo.common.id.CDOID;
@@ -83,6 +85,9 @@ import com.b2international.snowowl.snomed.datastore.SnomedRelationshipLookupServ
 import com.b2international.snowowl.snomed.datastore.SnomedStatementBrowser;
 import com.b2international.snowowl.snomed.datastore.SnomedTerminologyBrowser;
 import com.b2international.snowowl.snomed.datastore.services.ISnomedComponentService;
+import com.google.common.cache.CacheBuilder;
+import com.google.common.cache.CacheLoader;
+import com.google.common.cache.LoadingCache;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
 
@@ -125,10 +130,9 @@ public class ImportIndexServerService extends FSIndexServerService<IIndexEntry> 
     private static final String TERM = "term";
     private static final String ACTIVE = "active";
     private static final String TERM_TYPE = "termType";
-    private static final String PREFERRED_REFSET_ID = "preferredRefSetId";
-    private static final String ACCEPTABLE_REFSET_ID = "acceptableRefSetId";
+    private static final String PREFERRED_PREFIX = "preferred";
+    private static final String ACCEPTABLE_PREFIX = "acceptable";
 
-    private static final Set<String> DESCRIPTION_FIELDS = ImmutableSet.of(DESCRIPTION_ID, CONCEPT_ID, TERM, ACTIVE, TERM_TYPE, PREFERRED_REFSET_ID, ACCEPTABLE_REFSET_ID);
     private static final Set<String> TERM_ONLY = ImmutableSet.of(TERM);
     private static final Set<String> TERM_AND_TYPE_ONLY = ImmutableSet.of(TERM, TERM_TYPE);
 
@@ -139,6 +143,21 @@ public class ImportIndexServerService extends FSIndexServerService<IIndexEntry> 
     private final LongKeyMap pendingDescriptionDocuments = new LongKeyOpenHashMap();
 	
 	private String languageRefSetId;
+	
+	private LoadingCache<String, Filter> preferredFilters = CacheBuilder.newBuilder().build(new CacheLoader<String, Filter>() {
+		@Override
+		public Filter load(final String languageRefSetId) throws Exception {
+			return new CachingWrapperFilter(new TermRangeFilter(getPreferredField(languageRefSetId), null, null, true, true));
+		}
+	});
+
+	private String getPreferredField(final String languageRefSetId) {
+		return PREFERRED_PREFIX + "_" + languageRefSetId;
+	}
+	
+	private String getAcceptableField(final String languageRefSetId) {
+		return ACCEPTABLE_PREFIX + "_" + languageRefSetId;
+	}
 
     /**
      * A set containing the storage keys of the Synonym description type concept and its all descendant.
@@ -172,6 +191,7 @@ public class ImportIndexServerService extends FSIndexServerService<IIndexEntry> 
 
     @Override
     public void dispose() {
+    	clear();
         super.dispose();
         getDirectoryManager().cleanUp(SUPPORTING_INDEX_BRANCH_PATH, true);
     }
@@ -321,7 +341,10 @@ public class ImportIndexServerService extends FSIndexServerService<IIndexEntry> 
             return;
         }
         
-        final String fieldToAdd = preferred ? PREFERRED_REFSET_ID : ACCEPTABLE_REFSET_ID;
+        final String preferredField = getPreferredField(refSetId);
+        final String acceptableField = getAcceptableField(refSetId);
+        final String fieldToAdd = preferred ? preferredField : acceptableField;
+        
         boolean found = false;
 
         for (final Iterator<IndexableField> itr = pendingDescriptionDoc.getFields().iterator(); itr.hasNext(); /* emtpy */) {
@@ -331,12 +354,12 @@ public class ImportIndexServerService extends FSIndexServerService<IIndexEntry> 
             final String fieldValue = field.stringValue();
             
             // Skip fields not related to acceptability
-			if (!fieldName.equals(PREFERRED_REFSET_ID) && !fieldName.equals(ACCEPTABLE_REFSET_ID)) {
+			if (!fieldName.equals(preferredField) && !fieldName.equals(acceptableField)) {
 				continue;
 			}
 			
 			// Skip fields not containing information about the specified member
-			if (!fieldValue.equals(refSetId + "_" + memberId)) {
+			if (!fieldValue.equals(memberId)) {
 				continue;
 			}
 
@@ -359,7 +382,7 @@ public class ImportIndexServerService extends FSIndexServerService<IIndexEntry> 
 
         // If the member was not found, but should be added, add it
         if (!found && active) {
-            pendingDescriptionDoc.add(new StringField(fieldToAdd, refSetId + "_" + memberId, Store.YES));
+            pendingDescriptionDoc.add(new StringField(fieldToAdd, memberId, Store.YES));
         }
     }
 
@@ -385,7 +408,7 @@ public class ImportIndexServerService extends FSIndexServerService<IIndexEntry> 
 	            }
 	
 	            final int descriptionDocId = descriptionTopDocs.scoreDocs[0].doc;
-	            final Document descriptionDoc = searcher.doc(descriptionDocId, DESCRIPTION_FIELDS);
+	            final Document descriptionDoc = searcher.doc(descriptionDocId);
 	
 	            pendingDescriptionDoc = new Document();
 	            pendingDescriptionDoc.add(new StringField(DESCRIPTION_ID, descriptionDoc.get(DESCRIPTION_ID), Store.YES));
@@ -394,12 +417,12 @@ public class ImportIndexServerService extends FSIndexServerService<IIndexEntry> 
 	            pendingDescriptionDoc.add(new StringField(ACTIVE, descriptionDoc.get(ACTIVE), Store.YES));
 	            pendingDescriptionDoc.add(new IntField(TERM_TYPE, IndexUtils.getIntValue(descriptionDoc.getField(TERM_TYPE)), TYPE_PRECISE_INT_STORED));
 	
-	            for (final String preferredId : descriptionDoc.getValues(PREFERRED_REFSET_ID)) {
-	                pendingDescriptionDoc.add(new StringField(PREFERRED_REFSET_ID, preferredId, Store.YES));
-	            }
-	
-	            for (final String acceptableId : descriptionDoc.getValues(ACCEPTABLE_REFSET_ID)) {
-	                pendingDescriptionDoc.add(new StringField(ACCEPTABLE_REFSET_ID, acceptableId, Store.YES));
+	            for (final IndexableField acceptabilityField : descriptionDoc.getFields()) {
+	            	final String fieldName = acceptabilityField.name();
+	            	
+	            	if (fieldName.startsWith(PREFERRED_PREFIX) || fieldName.startsWith(ACCEPTABLE_PREFIX)) {
+	            		pendingDescriptionDoc.add(new StringField(acceptabilityField.name(), acceptabilityField.stringValue(), Store.YES));
+	            	}
 	            }
 	
 	            pendingDescriptionDocuments.put(longDescriptionId, pendingDescriptionDoc);
@@ -465,10 +488,11 @@ public class ImportIndexServerService extends FSIndexServerService<IIndexEntry> 
         conceptLabelQuery.add(createActiveQuery(), Occur.MUST);
         conceptLabelQuery.add(createContainerConceptQuery(conceptId), Occur.MUST);
         conceptLabelQuery.add(new TermQuery(new Term(TERM_TYPE, IndexUtils.intToPrefixCoded(TermType.SYNONYM_AND_DESCENDANTS.ordinal()))), Occur.MUST);
-        conceptLabelQuery.add(new PrefixQuery(new Term(PREFERRED_REFSET_ID, languageRefSetId + "_")), Occur.MUST);
+        
+        final Filter preferredFilter = getPreferredFilter(languageRefSetId);
         
         // Try to find a preferred description first (PT or FSN, whichever comes first in the sorted set of documents)
-        final List<DocumentWithScore> preferredDescriptionDocuments = search(SUPPORTING_INDEX_BRANCH_PATH, conceptLabelQuery, null, null, 1);
+        final List<DocumentWithScore> preferredDescriptionDocuments = search(SUPPORTING_INDEX_BRANCH_PATH, conceptLabelQuery, preferredFilter, null, 1);
 
         if (!CompareUtils.isEmpty(preferredDescriptionDocuments)) {
             final DocumentWithScore preferredDocument = Iterables.getFirst(preferredDescriptionDocuments, null);
@@ -546,6 +570,10 @@ public class ImportIndexServerService extends FSIndexServerService<IIndexEntry> 
     private TermQuery createActiveQuery() {
     	return new TermQuery(new Term(ACTIVE, Boolean.TRUE.toString()));
     }
+    
+    private Filter getPreferredFilter(final String languageRefSetId) {
+    	return preferredFilters.getUnchecked(languageRefSetId);
+    }
 
 	public String getDescriptionLabel(final String descriptionId) {
 
@@ -621,13 +649,19 @@ public class ImportIndexServerService extends FSIndexServerService<IIndexEntry> 
     		index(SUPPORTING_INDEX_BRANCH_PATH, descriptionDoc, new Term(DESCRIPTION_ID, String.valueOf(descriptionId)));
     	}
     	
-    	pendingDescriptionDocuments.clear();
+    	clear();
         super.commit(SUPPORTING_INDEX_BRANCH_PATH);
     }
 
     public final void rollback() {
+    	clear();
         super.rollback(SUPPORTING_INDEX_BRANCH_PATH);
     }
+
+	private void clear() {
+		pendingDescriptionDocuments.clear();
+    	preferredFilters.invalidateAll();
+	}
 
     /*returns with the CDO connection*/
     private ICDOConnection getConnection() {
