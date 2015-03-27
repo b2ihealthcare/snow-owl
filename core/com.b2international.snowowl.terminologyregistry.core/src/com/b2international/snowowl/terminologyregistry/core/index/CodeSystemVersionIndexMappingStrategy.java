@@ -52,7 +52,7 @@ public class CodeSystemVersionIndexMappingStrategy extends AbstractIndexMappingS
 	public Document createDocument() {
 		final Document doc = new Document();
 		doc.add(new LongField(VERSION_IMPORT_DATE, getTime(version.getImportDate()), Store.YES));
-		doc.add(new LongField(VERSION_EFFECTIVE_DATE, getTime(version.getEffectiveDate()), Store.YES));
+		doc.add(new LongField(VERSION_EFFECTIVE_DATE, EffectiveTimes.getEffectiveTime(version.getEffectiveDate()), Store.YES));
 		addStringFieldIfExists(doc, VERSION_DESCRIPTION, version.getDescription());
 		addStringFieldIfExists(doc, VERSION_VERSION_ID, version.getVersionId());
 		// XXX using EffectiveTimes here to handle possible null lastUpdateDate values 
