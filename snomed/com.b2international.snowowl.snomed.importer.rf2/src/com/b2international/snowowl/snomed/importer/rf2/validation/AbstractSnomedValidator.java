@@ -388,7 +388,8 @@ public abstract class AbstractSnomedValidator {
 				componentIds.get(row.get(0)).set(1, row.get(2));
 			} else if (!componentIds.get(row.get(0)).get(1).equals("0")) {
 				messages.add(MessageFormat.format("Line number {0} in the ''{1}'' file part of concept ID {2}", lineNumber, releaseFileName, conceptId));
-			}		} else {
+			}
+		} else {
 			componentIds.put(row.get(0), createConceptIdStatusList(row));
 		}
 	}
@@ -400,9 +401,13 @@ public abstract class AbstractSnomedValidator {
 	 * @param messages
 	 * @param lineNumber
 	 */
-	public void validateComponentExists(final String componentId, final ReleaseComponentType componentType, final Set<String> messages, final int lineNumber) {
+	public void validateComponentExists(final String componentId, final String partOfConceptId, final ReleaseComponentType componentType, final Set<String> messages, final int lineNumber) {
 		if (isComponentNotExist(componentId, componentType)) {
-			messages.add(MessageFormat.format("Line number {0} in the ''{1}'' file with concept ID {2}", lineNumber, releaseFileName, componentId));
+			if (componentId.equals(partOfConceptId)) {
+				messages.add(MessageFormat.format("Line number {0} in the ''{1}'' file with concept ID {2}", lineNumber, releaseFileName, componentId));
+			} else {
+				messages.add(MessageFormat.format("Line number {0} in the ''{1}'' file, part of concept ID {2}, missing concept ID {3}", lineNumber, releaseFileName, partOfConceptId, componentId));
+			}
 		}
 	}
 

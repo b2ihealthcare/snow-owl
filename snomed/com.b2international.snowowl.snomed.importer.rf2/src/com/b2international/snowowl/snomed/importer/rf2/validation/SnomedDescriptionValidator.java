@@ -64,9 +64,9 @@ public class SnomedDescriptionValidator extends AbstractSnomedValidator {
 	
 	@Override
 	protected void doValidate(final List<String> row, final int lineNumber) {
-		validateComponentExists(row.get(4), ReleaseComponentType.CONCEPT, descriptionConceptNotExist, lineNumber);
-		validateComponentExists(row.get(6), ReleaseComponentType.CONCEPT, typeConceptNotExist, lineNumber);
-		validateComponentExists(row.get(8), ReleaseComponentType.CONCEPT, caseSignificanceConceptNotExist, lineNumber);
+		validateComponentExists(row.get(4), row.get(4), ReleaseComponentType.CONCEPT, descriptionConceptNotExist, lineNumber);
+		validateComponentExists(row.get(6), row.get(4), ReleaseComponentType.CONCEPT, typeConceptNotExist, lineNumber);
+		validateComponentExists(row.get(8), row.get(4), ReleaseComponentType.CONCEPT, caseSignificanceConceptNotExist, lineNumber);
 		
 		validateComponentUnique(row, descriptionIdsWithEffectivetimeStatus, descriptionIdNotUnique, lineNumber);
 		validateFullySpecifiedName(row, fullySpecifiedNames, fullySpecifiedNameNotUnique, lineNumber);
