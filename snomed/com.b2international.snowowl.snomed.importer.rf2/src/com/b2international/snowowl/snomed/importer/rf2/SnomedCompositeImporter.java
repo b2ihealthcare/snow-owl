@@ -171,35 +171,36 @@ public class SnomedCompositeImporter extends AbstractLoggingImporter {
 				
 				ApplicationContext.getInstance().registerService(ImportIndexServerService.class, importIndexServerService);
 	
-				Date tagEffectiveTime = units.get(0).getEffectiveTime();
+				Date lastUnitEffectiveTime = units.get(0).getEffectiveTime();
 				
 				for (final ComponentImportUnit subUnit : units) {
 					
-					//if an unvisited tag effective time, initialize taxonomy builder and update import index server service, then perform tagging
-					if (!Objects.equal(tagEffectiveTime, subUnit.getEffectiveTime())) {
-						
-						updateInfrastructure(units, branchPath, tagEffectiveTime);
-	
-						updateCodeSystemMetadata(tagEffectiveTime, shouldCreateVersion());
-						
-						tagEffectiveTime = subUnit.getEffectiveTime();
+					/*
+					 * First import unit seen with an effective time different from the previous set of import units;
+					 * initialize taxonomy builder and update import index server service, then perform tagging if
+					 * required.
+					 * 
+					 * Note that different effective times should only be seen in FULL or DELTA import, and the 
+					 * collected values can be used as is.
+					 */
+					final Date currentUnitEffectiveTime = subUnit.getEffectiveTime();
+					
+					if (!Objects.equal(lastUnitEffectiveTime, currentUnitEffectiveTime)) {
+						updateInfrastructure(units, branchPath, lastUnitEffectiveTime);
+						updateCodeSystemMetadata(lastUnitEffectiveTime, importContext.isVersionCreationEnabled());
+						lastUnitEffectiveTime = currentUnitEffectiveTime;
 					}
 						
 					subUnit.doImport(subMonitor.newChild(1, SubMonitor.SUPPRESS_NONE));
 				}
 				
-				updateInfrastructure(units, branchPath, tagEffectiveTime);
+				updateInfrastructure(units, branchPath, lastUnitEffectiveTime);
 				
-				if (!terminologyAvailable && !shouldCreateVersion()) {
-					//always create version if terminology content did not exist before the import process
-					//but use maximum of the effective times
-					updateCodeSystemMetadata(findMaximumEffectiveTime(units), true);
-					
-				} else {
-					updateCodeSystemMetadata(tagEffectiveTime, shouldCreateVersion());
-				}
-				
-			
+				/*
+				 * Use the last effective time as seen in import files for the final version creation.
+				 * "lastUnitEffectiveTime" can not be used here, since this may be a SNAPSHOT import.
+				 */
+				updateCodeSystemMetadata(findMaximumEffectiveTime(units), importContext.isVersionCreationEnabled());
 			}
 			
 		} finally {	
@@ -226,7 +227,6 @@ public class SnomedCompositeImporter extends AbstractLoggingImporter {
 				return unit.getUnitFile();
 			}
 		}));
-		
 	}
 
 	private boolean isTerminologyAvailable() {
@@ -235,10 +235,6 @@ public class SnomedCompositeImporter extends AbstractLoggingImporter {
 
 	private IBranchPath getImportBranchPath() {
 		return BranchPathUtils.createPath(importContext.getEditingContext().getTransaction());
-	}
-
-	private boolean shouldCreateVersion() {
-		return !importContext.isSlicingDisabled() && importContext.isCreateVersions();
 	}
 
 	private boolean isRefSetImport(final Iterable<? extends ComponentImportUnit> units) {
@@ -274,7 +270,8 @@ public class SnomedCompositeImporter extends AbstractLoggingImporter {
 		
 		for (final ComponentImportUnit unit : units) {
 			
-			if (importContext.isSlicingDisabled() || Objects.equal(effectiveTime, unit.getEffectiveTime())) {
+			// Consider all reference set files if importing a SNAPSHOT, check matching effective time otherwise 
+			if (!importContext.isSlicingEnabled() || Objects.equal(effectiveTime, unit.getEffectiveTime())) {
 
 				final String path = unit.getUnitFile().getAbsolutePath();
 				
@@ -329,15 +326,14 @@ public class SnomedCompositeImporter extends AbstractLoggingImporter {
 				getImportBranchPath());
 		
 		try {
+
 			feeder.initContent(importIndexService, branchPath, new NullProgressMonitor());
 			importMrcmRules(effectiveTime);
-			initializeIndex(branchPath, importContext.isSlicingDisabled(), effectiveTime, units);
+			initializeIndex(branchPath, importContext.isSlicingEnabled(), effectiveTime, units);
 			
 		} catch (final SnowowlServiceException e) {
 			throw new ImportException(e);
 		}
-		
-		
 	}
 
 	private void importMrcmRules(final Date effectiveTime) {
@@ -346,65 +342,76 @@ public class SnomedCompositeImporter extends AbstractLoggingImporter {
 		if (null != mrcmFileUri) {
 			try {
 				final File mrcmFile = copyContentToTempFile(mrcmFileUri.toURL());
-				MrcmImporter.INSTANCE.doImport(userId, mrcmFile, false, importContext.getAggragator(EffectiveTimes.format(effectiveTime)));
+				MrcmImporter.INSTANCE.doImport(userId, mrcmFile, false, importContext.getAggregator(EffectiveTimes.format(effectiveTime)));
 			} catch (final MalformedURLException e) {
 				getLogger().warn("Error while trying to load the content of the MRCM file. Ignoring MRCM import for SNOMED CT.", e);
 			}
 		}
 	}
 
-	private void initializeIndex(final IBranchPath branchPath, final boolean slicingDisabled, final Date effectiveTime, final List<ComponentImportUnit> units) {
+	private void initializeIndex(final IBranchPath branchPath, final boolean slicingEnabled, final Date effectiveTime, final List<ComponentImportUnit> units) {
 
-		final SnomedRf2IndexInitializer snomedRf2IndexInitializer = new SnomedRf2IndexInitializer(branchPath, slicingDisabled, effectiveTime, units, importContext.getLanguageRefSetId());
+		final SnomedRf2IndexInitializer snomedRf2IndexInitializer = new SnomedRf2IndexInitializer(branchPath, slicingEnabled, effectiveTime, units, importContext.getLanguageRefSetId());
 		snomedRf2IndexInitializer.run(new NullProgressMonitor());
 	}
 
 	private void updateCodeSystemMetadata(final Date tagEffectiveTime, final boolean shouldCreateVersionAndTag) {
-			final String formattedTagEffectiveTime = EffectiveTimes.format(tagEffectiveTime);
-			final ICDOTransactionAggregator aggregator = 
-					importContext.getAggragator(formattedTagEffectiveTime);
+		
+		final String formattedTagEffectiveTime = EffectiveTimes.format(tagEffectiveTime);
+		final ICDOTransactionAggregator aggregator = importContext.getAggregator(formattedTagEffectiveTime);
+		final SnomedEditingContext editingContext = importContext.getEditingContext();
+		final CDOTransaction transaction = editingContext.getTransaction();
+		
+		try {
 			
-			final SnomedEditingContext editingContext = importContext.getEditingContext();
-			final CDOTransaction transaction = editingContext.getTransaction();
+			final CodeSystemVersionGroup group = check(editingContext.getCodeSystemVersionGroup());
 			
-			try {
-				
-				final CodeSystemVersionGroup group = check(editingContext.getCodeSystemVersionGroup());
-				if (group.getCodeSystems().isEmpty()) {
-					group.getCodeSystems().add(new SnomedCodeSystemFactory().createNewCodeSystem());
-				}
-				
-				if (shouldCreateVersionAndTag) {
-					group.getCodeSystemVersions().add(createVersion(formattedTagEffectiveTime, tagEffectiveTime));
-				}
-				
-				new CDOServerCommitBuilder(importContext.getUserId(), importContext.getCommitMessage(), aggregator)
-						.sendCommitNotification(false)
-						.parentContextDescription(DatastoreLockContextDescriptions.IMPORT)
-						.commit();
-				
-				if (shouldCreateVersionAndTag) {
-					final IBranchPath snomedBranchPath = BranchPathUtils.createPath(transaction);
-					
-					final ITagConfiguration configuration = TagConfigurationBuilder.createForRepositoryUuid(SnomedDatastoreActivator.REPOSITORY_UUID, formattedTagEffectiveTime)
-						.setBranchPath(snomedBranchPath)
-						.setUserId(importContext.getUserId())
-						.setParentContextDescription(DatastoreLockContextDescriptions.IMPORT)
-						.setShouldOptimizeIndex(true)
-						.build();
-					
-					ApplicationContext.getInstance().getService(ITagService.class).tag(configuration);
-				}
-				
-			} catch (final CommitException e) {
-				throw new ImportException("Cannot create tag for SNOMED CT " + formattedTagEffectiveTime, e);
-			} finally {
-				
-				importContext.setPreviousTime(importContext.getCommitTime());
-				importContext.setCommitTime(CDOServerUtils.getLastCommitTime(editingContext.getTransaction().getBranch()));
-				final CDOCommitInfo commitInfo = createCommitInfo(importContext.getCommitTime(), importContext.getPreviousTime());
-				CDOServerUtils.sendCommitNotification(commitInfo);
+			if (group.getCodeSystems().isEmpty()) {
+				group.getCodeSystems().add(new SnomedCodeSystemFactory().createNewCodeSystem());
 			}
+			
+			boolean existingVersionFound = false;
+			
+			if (shouldCreateVersionAndTag) {
+				for (final CodeSystemVersion codeSystemVersion : group.getCodeSystemVersions()) {
+					if (tagEffectiveTime.equals(codeSystemVersion.getEffectiveDate())) {
+						existingVersionFound = true;
+						break;
+					}
+				}
+				
+				if (!existingVersionFound) {
+					group.getCodeSystemVersions().add(createVersion(formattedTagEffectiveTime, tagEffectiveTime));
+				} else {
+					getLogger().warn("Not adding code system version entry for {}, a previous entry with the same effective time exists.", formattedTagEffectiveTime);
+				}
+			}
+			
+			new CDOServerCommitBuilder(importContext.getUserId(), importContext.getCommitMessage(), aggregator)
+					.sendCommitNotification(false)
+					.parentContextDescription(DatastoreLockContextDescriptions.IMPORT)
+					.commit();
+			
+			if (!existingVersionFound && shouldCreateVersionAndTag) {
+				final IBranchPath snomedBranchPath = BranchPathUtils.createPath(transaction);
+				
+				final ITagConfiguration configuration = TagConfigurationBuilder.createForRepositoryUuid(SnomedDatastoreActivator.REPOSITORY_UUID, formattedTagEffectiveTime)
+					.setBranchPath(snomedBranchPath)
+					.setUserId(importContext.getUserId())
+					.setParentContextDescription(DatastoreLockContextDescriptions.IMPORT)
+					.setShouldOptimizeIndex(true)
+					.build();
+				
+				ApplicationContext.getInstance().getService(ITagService.class).tag(configuration);
+			}
+			
+		} catch (final CommitException e) {
+			throw new ImportException("Cannot create tag for SNOMED CT " + formattedTagEffectiveTime, e);
+		} finally {
+			importContext.setCommitTime(CDOServerUtils.getLastCommitTime(editingContext.getTransaction().getBranch()));
+			final CDOCommitInfo commitInfo = createCommitInfo(importContext.getCommitTime(), importContext.getPreviousTime());
+			CDOServerUtils.sendCommitNotification(commitInfo);
+		}
 	}
 
 	private CDOCommitInfo createCommitInfo(final long timestamp, final long previousTimestamp) {
@@ -420,10 +427,11 @@ public class SnomedCompositeImporter extends AbstractLoggingImporter {
 	}
 	
 	private CodeSystemVersion createVersion(final String version, final Date effectiveDate) {
+
 		final CodeSystemVersion codeSystemVersion = SnomedFactory.eINSTANCE.createCodeSystemVersion();
-		codeSystemVersion.setImportDate(effectiveDate);
+		codeSystemVersion.setImportDate(new Date());
 		codeSystemVersion.setVersionId(version); 
-		codeSystemVersion.setDescription("International version of SNOMED Clinical Terms");
+		codeSystemVersion.setDescription("RF2 import of SNOMED Clinical Terms");
 		codeSystemVersion.setEffectiveDate(effectiveDate);
 		return codeSystemVersion;
 	}

@@ -231,7 +231,7 @@ public abstract class AbstractSnomedImporter<T extends AbstractComponentRow, C e
 	
 		try {
 			
-			componentStagingDirectory = new File(importContext.getStagingDirectoryRoot(), getComponentStagingDirectoryName());
+			componentStagingDirectory = new File(importContext.getStagingDirectory(), getComponentStagingDirectoryName());
 			
 			String message = MessageFormat.format("Creating staging directory ''{0}'' for {1} import.", 
 					componentStagingDirectory.getAbsolutePath(), importConfiguration.getType().getDisplayName());
@@ -286,8 +286,7 @@ public abstract class AbstractSnomedImporter<T extends AbstractComponentRow, C e
 	public List<ComponentImportUnit> getImportUnits(final SubMonitor subMonitor) {
 		
 		final String message = MessageFormat.format("Collecting {0} import units", getImportConfiguration().getType().getDisplayName());
-		subMonitor.beginTask(message, 
-				INDETERMINATE_WORK_UNITS);
+		subMonitor.beginTask(message, INDETERMINATE_WORK_UNITS);
 		log(message);
 		
 		final Map<Date, ComponentImportEntry> importEntries = Maps.newHashMap();
@@ -408,8 +407,7 @@ public abstract class AbstractSnomedImporter<T extends AbstractComponentRow, C e
 	private ComponentImportEntry getOrCreateImportEntry(final Map<Date, ComponentImportEntry> importEntries, final Date effectiveTime) {
 		
 		// Put everything into the same basket if no slicing should be used
-		final Date sliceEffectiveTime = importContext.isSlicingDisabled() ? UNSLICED_EFFECTIVE_TIME : effectiveTime;
-		
+		final Date sliceEffectiveTime = importContext.isSlicingEnabled() ? effectiveTime : UNSLICED_EFFECTIVE_TIME;
 		ComponentImportEntry importEntry = importEntries.get(sliceEffectiveTime);
 		
 		if (importEntry == null) {
@@ -559,11 +557,12 @@ public abstract class AbstractSnomedImporter<T extends AbstractComponentRow, C e
 
 	private String getImportMessage(final String formattedEffectiveTime) {
 		
-		if (importContext.isSlicingDisabled()) {
-			return MessageFormat.format("Processing {0}s", importConfiguration.getType().getDisplayName());
-		} else {
-			return MessageFormat.format("Processing {0}s for effective time {1}", importConfiguration.getType().getDisplayName(), 
+		if (importContext.isSlicingEnabled()) {
+			return MessageFormat.format("Processing {0}s for effective time {1}", 
+					importConfiguration.getType().getDisplayName(), 
 					formattedEffectiveTime);
+		} else {
+			return MessageFormat.format("Processing {0}s", importConfiguration.getType().getDisplayName());
 		}
 	}
 
@@ -589,8 +588,6 @@ public abstract class AbstractSnomedImporter<T extends AbstractComponentRow, C e
 	}
 
 	protected ImportAction commit(final SubMonitor subMonitor, final String formattedEffectiveTime) {
-
-
 		if (!importContext.getEditingContext().isDirty()) {
 			// Nothing to commit
 			subMonitor.worked(COMMIT_WORK_UNITS);
@@ -605,12 +602,12 @@ public abstract class AbstractSnomedImporter<T extends AbstractComponentRow, C e
 			// Wait until the changes end up in local indexes and the semantic cache
 			final Date effectiveTime = EffectiveTimes.parse(formattedEffectiveTime, SnomedConstants.RF2_EFFECTIVE_TIME_FORMAT);
 			final String ihtsdoEffectiveTime = EffectiveTimes.format(effectiveTime);
-			final ICDOTransactionAggregator aggragator = importContext.getAggragator(ihtsdoEffectiveTime);
+			final ICDOTransactionAggregator aggregator = importContext.getAggregator(ihtsdoEffectiveTime);
 			final String message = getCommitMessage(ihtsdoEffectiveTime);
 			importContext.setCommitMessage(message);
 			
-			new CDOServerCommitBuilder(importContext.getUserId(), message, aggragator)
-					.sendCommitNotification(importContext.isSendCommitNotificaion())
+			new CDOServerCommitBuilder(importContext.getUserId(), message, aggregator)
+					.sendCommitNotification(importContext.isCommitNotificationEnabled())
 					.parentContextDescription(DatastoreLockContextDescriptions.IMPORT)
 					.commit();
 			
@@ -635,7 +632,7 @@ public abstract class AbstractSnomedImporter<T extends AbstractComponentRow, C e
 	 * @throws SnowowlServiceException when preparing the commit failed.
 	 */
 	protected void preCommit(final InternalCDOTransaction transaction) throws SnowowlServiceException {
-		System.out.println();
+		return;
 	}
 	
 	private ImportAction checkCommitException(final SnowowlServiceException e) {

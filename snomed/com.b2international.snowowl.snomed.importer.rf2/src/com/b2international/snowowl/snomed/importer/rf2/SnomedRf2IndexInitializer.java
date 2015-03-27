@@ -95,6 +95,7 @@ import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBr
 import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.RELATIONSHIP_UNIVERSAL;
 import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.RELATIONSHIP_VALUE_ID;
 import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.ROOT_ID;
+import static com.google.common.collect.Lists.newArrayList;
 import static com.google.common.collect.Maps.newHashMap;
 import static com.google.common.collect.Sets.newHashSet;
 
@@ -200,7 +201,6 @@ import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType;
 import com.google.common.base.Objects;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.HashMultimap;
-import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Sets;
@@ -215,9 +215,9 @@ public class SnomedRf2IndexInitializer extends Job {
 	private static final CsvSettings CSV_SETTINGS = new CsvSettings('\0', '\t', EOL.LF, true);
 	private static final String ACTIVE_STATUS = "1";
 	private static final float DEFAULT_DOI = 1.0F;
-	private final boolean slicingDisabled;
+	private final boolean slicingEnabled;
 	private final Date effectiveTime;
-	private final List<ComponentImportUnit> importUnit;
+	private final List<ComponentImportUnit> importUnits;
 	private final IBranchPath branchPath;
 
 	private Multimap<Long, String> conceptIdToPredicateMap;
@@ -239,12 +239,12 @@ public class SnomedRf2IndexInitializer extends Job {
 	//when a reference set is imported where the concept is being created on the fly
 	private final Map<String, SnomedRefSetType> identifierConceptIdsForNewRefSets = newHashMap();
 
-	public SnomedRf2IndexInitializer(final IBranchPath branchPath, final boolean slicingDisabled, final Date effectiveTime, final List<ComponentImportUnit> units, final String languageRefSetId) {
+	public SnomedRf2IndexInitializer(final IBranchPath branchPath, final boolean slicingEnabled, final Date effectiveTime, final List<ComponentImportUnit> importUnits, final String languageRefSetId) {
 		super("SNOMED CT RF2 based index initializer...");
 		this.branchPath = branchPath;
-		this.slicingDisabled = slicingDisabled;
+		this.slicingEnabled = slicingEnabled;
 		this.effectiveTime = effectiveTime;
-		this.importUnit = Collections.unmodifiableList(units);
+		this.importUnits = Collections.unmodifiableList(importUnits);
 		//check services
 		getImportIndexService();
 		getTaxonomyBuilder();
@@ -262,8 +262,13 @@ public class SnomedRf2IndexInitializer extends Job {
 		final List<ComponentImportUnit> importUnits = collectImportUnits();
 		
 		delegateMonitor.beginTask("Indexing SNOMED CT...", importUnits.size() + 3);
-		final String formettedDate = EffectiveTimes.format(effectiveTime);
-		LOGGER.info("Initializing SNOMED CT semantic content from RF2 release format for '" + formettedDate + "'...");
+		
+		final String formattedDate = EffectiveTimes.format(effectiveTime);
+		if (slicingEnabled) {
+			LOGGER.info("Initializing SNOMED CT semantic content from RF2 release format for '{}'...", formattedDate);
+		} else {
+			LOGGER.info("Initializing SNOMED CT semantic content from RF2 release format...");
+		}
 		
 		LOGGER.info("Pre-processing phase [1 of 3]...");
 		
@@ -300,7 +305,7 @@ public class SnomedRf2IndexInitializer extends Job {
 		LOGGER.info("Indexing phase [2 of 3]...");
 		doImport(importUnits, delegateMonitor);
 		
-		LOGGER.info("SNOMED CT semantic content for '" + formettedDate + "' have been successfully initialized.");
+		LOGGER.info("SNOMED CT semantic content for '" + formattedDate + "' have been successfully initialized.");
 		
 		return Status.OK_STATUS;
 	}
@@ -479,24 +484,21 @@ public class SnomedRf2IndexInitializer extends Job {
 	
 	private List<ComponentImportUnit> collectImportUnits() {
 		
-		if (slicingDisabled) {
-			return Collections.unmodifiableList(importUnit);
-		} else {
+		if (slicingEnabled) {
+
+			final List<ComponentImportUnit> importUnitsForCurrentEffectiveTime = newArrayList();
 			
-			final List<ComponentImportUnit> $ = Lists.newArrayList();
-			
-			for (final ComponentImportUnit unit : importUnit) {
-				
+			for (final ComponentImportUnit unit : importUnits) {
 				if (Objects.equal(effectiveTime, unit.getEffectiveTime())) {
-					$.add(unit);
+					importUnitsForCurrentEffectiveTime.add(unit);
 				}
-				
 			}
 			
-			Collections.sort($, ComponentImportUnit.ORDERING);
+			Collections.sort(importUnitsForCurrentEffectiveTime, ComponentImportUnit.ORDERING);
+			return Collections.unmodifiableList(importUnitsForCurrentEffectiveTime);
 			
-			return Collections.unmodifiableList($);
-			
+		} else {
+			return Collections.unmodifiableList(importUnits);
 		}
 	}
 	
