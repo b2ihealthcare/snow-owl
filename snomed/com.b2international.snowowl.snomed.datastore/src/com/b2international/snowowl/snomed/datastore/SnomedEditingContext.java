@@ -1684,7 +1684,7 @@ public class SnomedEditingContext extends BaseSnomedEditingContext {
 	}
 	
 	public boolean isUniqueInTransaction(SnomedIdentifier identifier) {
-		return newComponentIds.contains(identifier.toString());
+		return !newComponentIds.contains(identifier.toString());
 	}
 
 }
