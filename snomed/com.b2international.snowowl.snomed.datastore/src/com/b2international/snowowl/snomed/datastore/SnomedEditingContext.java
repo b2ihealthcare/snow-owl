@@ -48,6 +48,7 @@ import static org.eclipse.emf.cdo.common.id.CDOID.NULL;
 import java.text.MessageFormat;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
@@ -59,8 +60,10 @@ import javax.annotation.Nullable;
 
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.emf.cdo.CDOObject;
+import org.eclipse.emf.cdo.CDOState;
 import org.eclipse.emf.cdo.common.id.CDOID;
 import org.eclipse.emf.cdo.common.revision.CDOIDAndVersion;
+import org.eclipse.emf.cdo.view.CDOObjectHandler;
 import org.eclipse.emf.cdo.view.CDOView;
 import org.eclipse.emf.common.util.EList;
 import org.eclipse.emf.ecore.EObject;
@@ -137,6 +140,21 @@ public class SnomedEditingContext extends BaseSnomedEditingContext {
 	private String nameSpace;
 	private String reservationName;
 	private boolean uniquenessCheckEnabled = true;
+	private Set<String> newComponentIds = Collections.synchronizedSet(Sets.<String>newHashSet());
+	private CDOObjectHandler objectHandler = new CDOObjectHandler() {
+		@Override
+		public void objectStateChanged(CDOView view, CDOObject object, CDOState oldState, CDOState newState) {
+			if (object instanceof Component) {
+				final String id = ((Component) object).getId();
+				if (newState == CDOState.NEW) {
+					newComponentIds.add(id);
+				} else if (newState == CDOState.TRANSIENT) {
+					newComponentIds.remove(id);
+				}
+			}
+		}
+	};
+	private LifecycleEventAdapter lifecycleListener;
 
 	/**returns with a set of allowed concepts' ID. concept is allowed as preferred description type concept if 
 	 * has an associated active description type reference set member and is synonym or descendant of the synonym */
@@ -527,12 +545,17 @@ public class SnomedEditingContext extends BaseSnomedEditingContext {
 		// register Unique In Transaction Restriction to identifier reservations
 		this.reservationName = String.format("reservations_%s", this);
 		this.reservations.create(this.reservationName, Reservations.uniqueInTransaction(this));
-		getTransaction().addListener(new LifecycleEventAdapter() {
+		lifecycleListener = new LifecycleEventAdapter() {
 			@Override
 			protected void onDeactivated(ILifecycle lifecycle) {
+				getTransaction().removeListener(lifecycleListener);
+				getTransaction().removeObjectHandler(objectHandler);
 				reservations.delete(reservationName);
+				newComponentIds.clear();
 			}
-		});
+		};
+		getTransaction().addListener(lifecycleListener);
+		getTransaction().addObjectHandler(objectHandler);
 	}
 
 	private void setNamespace(String nameSpace) {
@@ -1661,21 +1684,7 @@ public class SnomedEditingContext extends BaseSnomedEditingContext {
 	}
 	
 	public boolean isUniqueInTransaction(SnomedIdentifier identifier) {
-		for (Component component : Iterables.filter(getTransaction().getNewObjects().values(), getSnomedComponentClass(identifier.getComponentCategory()))) {
-			if (identifier.toString().equals(component.getId())) {
-				return false;
-			}
-		}
-		return true;
-	}
-
-	private Class<? extends Component> getSnomedComponentClass(ComponentCategory category) {
-		switch (category) {
-		case CONCEPT: return Concept.class;
-		case DESCRIPTION: return Description.class;
-		case RELATIONSHIP: return Relationship.class;
-		default: throw new UnsupportedOperationException("Unrecognized component category: " + category);
-		}
+		return newComponentIds.contains(identifier.toString());
 	}
 
 }
