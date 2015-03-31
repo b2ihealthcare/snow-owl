@@ -18,7 +18,7 @@
 
 	<groupId>org.eclipse.equinox.bundles</groupId>
 	<artifactId>org.eclipse.equinox.preferences</artifactId>
-	<version>3.5.2-SNAPSHOT</version>
+	<version>3.5.2</version>
 	<packaging>eclipse-plugin</packaging>
 
 </project>
