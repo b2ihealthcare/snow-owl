@@ -15,6 +15,9 @@
  */
 package com.b2international.snowowl.authentication.file;
 
+import static com.google.common.base.Preconditions.checkState;
+
+import com.b2international.snowowl.authentication.AuthenticationConfiguration;
 import com.b2international.snowowl.core.config.SnowOwlConfiguration;
 import com.b2international.snowowl.core.setup.DefaultBootstrapFragment;
 import com.b2international.snowowl.core.setup.Environment;
@@ -28,10 +31,12 @@ import com.b2international.snowowl.core.users.IUserManager;
 public class FileAuthenticationBootstrap extends DefaultBootstrapFragment {
 
 	@Override
-	public void init(SnowOwlConfiguration configuration, Environment environment) throws Exception {
-		// TODO register only if File based authentication is selected
-		final FileAuthConfig config = configuration.getModuleConfig(FileAuthConfig.class);
-		environment.services().registerService(IUserManager.class, new FileUserManager(environment.getConfigDirectory(), config));
+	public void init(SnowOwlConfiguration configuration, Environment env) throws Exception {
+		if ("PROP_FILE".equals(configuration.getModuleConfig(AuthenticationConfiguration.class).getType())) {
+			checkState(env.services().getService(IUserManager.class) == null, "Another IUserManager implemententation is already registered");
+			final FileAuthConfig config = configuration.getModuleConfig(FileAuthConfig.class);
+			env.services().registerService(IUserManager.class, new FileUserManager(env.getConfigDirectory(), config));
+		}
 	}
 
 }

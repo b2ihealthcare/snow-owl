@@ -18,19 +18,24 @@ package com.b2international.snowowl.snomed.api.domain;
 import java.util.Map;
 
 /**
- * TODO document
+ * Holds updatable properties of SNOMED CT descriptions.
  */
 public interface ISnomedDescriptionUpdate extends ISnomedComponentUpdate {
 
 	/**
-	 * TODO document
-	 * @return
+	 * Returns the requested new case significance value for the description.
+	 * 
+	 * @return the case significance value after the update
 	 */
 	CaseSignificance getCaseSignificance();
 
 	/**
-	 * TODO document
-	 * @return
+	 * Returns the requested new acceptability values for the description, keyed by language reference set identifier.
+	 * <p>
+	 * Conflicting language reference set members will be removed or deactivated, if a member has already been published
+	 * as part of an earlier RF2 release.
+	 * 
+	 * @return the acceptability value map after the update
 	 */
 	Map<String, Acceptability> getAcceptability();
 }

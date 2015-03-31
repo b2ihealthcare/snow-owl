@@ -18,6 +18,7 @@ package com.b2international.snowowl.datastore.cdo
 
 import org.eclipse.emf.cdo.common.branch.CDOBranchPoint
 import org.eclipse.emf.cdo.common.id.CDOIDUtil
+import org.eclipse.emf.cdo.common.lock.CDOLockState
 import org.eclipse.emf.cdo.common.lock.CDOLockChangeInfo.Operation
 import org.eclipse.emf.internal.cdo.view.AbstractCDOView
 import org.eclipse.emf.spi.cdo.InternalCDOTransaction
@@ -57,9 +58,12 @@ class InternalCDOTransactionWrapper {
 
 	/**@see org.eclipse.emf.internal.cdo.view.CDOViewImpl.updateAndNotifyLockStates(Operation, LockType, long, CDOLockState[])*/
 	def releaseLockStates(CommitTransactionResult result) {
-
-		if (null != result.newLockStates) {
-			transaction.updateAndNotifyLockStates(Operation.UNLOCK, null, result.getTimeStamp(), result.newLockStates)
+		releaseLockStates(Operation.UNLOCK, result.newLockStates, result.getTimeStamp())
+	}
+	
+	def releaseLockStates(Operation op, CDOLockState[] lockStates, long timestamp) {
+		if (lockStates != null) {
+			transaction.updateAndNotifyLockStates(op, null, timestamp, lockStates)
 		}
 	}
 

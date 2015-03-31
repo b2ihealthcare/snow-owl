@@ -27,9 +27,7 @@ import org.apache.lucene.index.NumericDocValues;
 import bak.pcj.LongCollection;
 
 /**
- * Class for collecting CDT properties such as module ID and container (concept or relationship)
- * module ID.
- *
+ * Class for collecting module identifiers on concrete domains and their containers (concept or relationship).
  */
 public class ConcreteDataTypePropertyCollector extends ComponentPropertyCollector {
 
@@ -41,25 +39,24 @@ public class ConcreteDataTypePropertyCollector extends ComponentPropertyCollecto
 	}
 
 	@Override
-	protected void setNextReader(final AtomicReader reader) throws IOException {
-		super.setNextReader(reader);
-		moduleIds = reader.getNumericDocValues(REFERENCE_SET_MEMBER_MODULE_ID);
-		containerModuleIds = reader.getNumericDocValues(REFERENCE_SET_MEMBER_CONTAINER_MODULE_ID);
-	}
-	
-	@Override
-	protected boolean check() {
-		return null != containerModuleIds
-			&& null != storageKeys
-			&& null != moduleIds;
-	}
-	
-	@Override
-	protected Object initProperties(final int doc) {
-		return new long[] {
-			moduleIds.get(doc),
-			containerModuleIds.get(doc)
-		};
+	protected void initDocValues(final AtomicReader leafReader) throws IOException {
+		super.initDocValues(leafReader);
+		moduleIds = leafReader.getNumericDocValues(REFERENCE_SET_MEMBER_MODULE_ID);
+		containerModuleIds = leafReader.getNumericDocValues(REFERENCE_SET_MEMBER_CONTAINER_MODULE_ID);
 	}
 
+	@Override
+	protected boolean isLeafCollectible() {
+		return super.isLeafCollectible() 
+				&& moduleIds != null 
+				&& containerModuleIds != null;
+	}
+
+	@Override
+	protected long[] collectProperties(final int docId) {
+		return new long[] { 
+				moduleIds.get(docId), 
+				containerModuleIds.get(docId) 
+		};
+	}
 }

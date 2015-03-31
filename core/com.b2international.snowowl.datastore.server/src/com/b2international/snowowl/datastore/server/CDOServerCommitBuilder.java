@@ -92,6 +92,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.b2international.commons.CompareUtils;
+import com.b2international.commons.StringUtils;
 import com.b2international.snowowl.datastore.cdo.CDOCommitInfoUtils;
 import com.b2international.snowowl.datastore.cdo.CDOTransactionAggregator;
 import com.b2international.snowowl.datastore.cdo.CDOTransactionAggregatorUtils;
@@ -379,16 +380,16 @@ public class CDOServerCommitBuilder {
 					try {
 
 						// Add a read lock alongside any existing write option lock
-						lockObjectsAndNotify(lockingManager, LockType.READ, newOwner, writeOptionKeys, 1000);
+						lockObjectsAndNotify(lockingManager, LockType.READ, newOwner, writeOptionKeys, 1000, transaction);
 
 						// Revoke all option locks from the original owner
-						unlockObjectsAndNotify(lockingManager, LockType.OPTION, originalOwner, writeOptionKeys);
+						unlockObjectsAndNotify(lockingManager, LockType.OPTION, originalOwner, writeOptionKeys, transaction);
 
 						// Add a write option for the new owner
-						lockObjectsAndNotify(lockingManager, LockType.OPTION, newOwner, writeOptionKeys, 1000);
+						lockObjectsAndNotify(lockingManager, LockType.OPTION, newOwner, writeOptionKeys, 1000, transaction);
 
 						// Finally, remove the read locks we added first
-						unlockObjectsAndNotify(lockingManager, LockType.READ, newOwner, writeOptionKeys);
+						unlockObjectsAndNotify(lockingManager, LockType.READ, newOwner, writeOptionKeys, transaction);
 
 					} catch (final InterruptedException e) {
 						throw new TransactionException(e);
@@ -401,19 +402,26 @@ public class CDOServerCommitBuilder {
 				final LockType lockType, 
 				final InternalView context, 
 				final Set<Object> objectsToLock, 
-				final int timeout) throws InterruptedException {
+				final int timeout,
+				final CDOTransaction transaction) throws InterruptedException {
 
 			final List<LockState<Object, IView>> newLockStates = lockingManager.lock2(lockType, context, objectsToLock, timeout);
-			sendLockNotification(newLockStates, lockingManager, context, Operation.LOCK);
+			sendLockNotification(Operation.LOCK, transaction, newLockStates);
 		}
 
 		private void unlockObjectsAndNotify(final InternalLockManager lockingManager, 
 				final LockType lockType,
 				final InternalView context, 
-				final Set<Object> objectsToUnlock) {
+				final Set<Object> objectsToUnlock,
+				final CDOTransaction transaction) {
 
 			final List<LockState<Object, IView>> newLockStates = lockingManager.unlock2(lockType, context, objectsToUnlock);
-			sendLockNotification(newLockStates, lockingManager, context, Operation.UNLOCK);
+			sendLockNotification(Operation.UNLOCK, transaction, newLockStates);
+		}
+
+		private void sendLockNotification(final Operation op, final CDOTransaction transaction, final List<LockState<Object, IView>> newLockStates) {
+			final InternalCDOTransactionWrapper wrapper = new InternalCDOTransactionWrapper(transaction);
+			wrapper.releaseLockStates(op, Repository.toCDOLockStates(newLockStates), transaction.getSession().getLastUpdateTime());
 		}
 
 		private void sendLockNotification(final List<LockState<Object, IView>> newLockStates, 
@@ -920,6 +928,11 @@ public class CDOServerCommitBuilder {
 				serverContext.rollback(message);
 			} catch (final Throwable e) {
 				LOGGER.error("Cannot rollback changes after failed commit.", e);
+			} finally {
+				final InternalTransaction transaction = serverContext.getTransaction();
+				final InternalLockManager lockingManager = transaction.getRepository().getLockingManager();
+				final List<LockState<Object, IView>> lockStates = lockingManager.unlock2(transaction);
+				sendLockNotification(lockStates, lockingManager, transaction, Operation.UNLOCK);
 			}
 		}
 
@@ -996,7 +1009,11 @@ public class CDOServerCommitBuilder {
 
 		this.transactionAggregator = transactionAggregator;
 		this.userId = userId;
-		this.comment = comment;
+		final String truncatedMessage = StringUtils.truncate(comment, 255 - UUID.randomUUID().toString().length());
+		if (!truncatedMessage.equals(comment)) {
+			LOGGER.warn("Truncated commit message (original message: {})", comment);
+		}
+		this.comment = truncatedMessage;
 	}
 
 	public CDOServerCommitBuilder notifyWriteAccessHandlers(final boolean value) {

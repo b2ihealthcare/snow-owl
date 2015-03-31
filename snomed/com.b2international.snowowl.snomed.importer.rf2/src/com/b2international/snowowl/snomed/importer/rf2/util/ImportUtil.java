@@ -54,7 +54,6 @@ import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.core.runtime.SubMonitor;
 import org.eclipse.emf.cdo.common.branch.CDOBranch;
 
-import com.b2international.commons.CompareUtils;
 import com.b2international.commons.ConsoleProgressMonitor;
 import com.b2international.commons.platform.Extensions;
 import com.b2international.snowowl.core.ApplicationContext;
@@ -123,7 +122,7 @@ import com.google.common.io.InputSupplier;
 public final class ImportUtil {
 
 	private static final org.slf4j.Logger IMPORT_LOGGER = org.slf4j.LoggerFactory.getLogger(ImportUtil.class);
-	private static final String SNOMED_IMPORT_POST_PROCESSOR_EXTENSION = "com.b2international.snowowl.snomed.importer.rf2.snomedImportPostProcessor";
+	private static final String SNOMED_IMPORT_POST_PROCESSOR_EXTENSION = "com.b2international.snowowl.snomed.datastore.snomedImportPostProcessor";
 
 	public SnomedImportResult doImport(final IBranchPath branchPath, final String languageRefSetId, 
 			final ContentSubType contentSubType, final File releaseArchive, final boolean shouldCreateVersions) throws Exception {
@@ -228,15 +227,19 @@ public final class ImportUtil {
 	}
 
 	public SnomedImportResult doImport(final String requestingUserId, final ImportConfiguration configuration, final IProgressMonitor monitor) throws ImportException {
+		try (SnomedImportContext context = new SnomedImportContext()) {
+			return doImportInternal(context, requestingUserId, configuration, monitor); 
+		} catch (Exception e) {
+			throw new ImportException(e);
+		}
+	}
 
+	private SnomedImportResult doImportInternal(final SnomedImportContext context, final String requestingUserId, final ImportConfiguration configuration, final IProgressMonitor monitor) {
+		final SubMonitor subMonitor = SubMonitor.convert(monitor, "Importing release files...", 17);
 		final SnomedImportResult result = new SnomedImportResult();
 		final IBranchPath branchPath = BranchPathUtils.createPath(configuration.getBranchPath());
-
 		LogUtils.logImportActivity(IMPORT_LOGGER, requestingUserId, branchPath, "SNOMED CT import started from RF2 release format.");
-
-		final SnomedImportContext context = new SnomedImportContext();
-		final SubMonitor subMonitor = SubMonitor.convert(monitor, "Importing release files...", 17);
-
+		
 		if (!isContentValid(result, requestingUserId, configuration, branchPath, subMonitor)) {
 			return result;
 		}
@@ -248,10 +251,9 @@ public final class ImportUtil {
 		final File stagingDirectoryRoot = new File(System.getProperty("java.io.tmpdir"));
 
 		context.setLanguageRefSetId(configuration.getLanguageRefSetId());
-		context.setCreateVersions(configuration.isCreateVersions());
+		context.setVersionCreationEnabled(configuration.isCreateVersions());
 		context.setLogger(IMPORT_LOGGER);
-		context.setStagingDirectoryRoot(stagingDirectoryRoot);
-		context.setSlicingDisabled(!ContentSubType.FULL.equals(configuration.getVersion()));
+		context.setStagingDirectory(stagingDirectoryRoot);
 		context.setContentSubType(configuration.getVersion());
 		context.setIgnoredRefSetIds(patchedExcludedRefSetIDs);
 
@@ -313,26 +315,21 @@ public final class ImportUtil {
 			}	
 		}
 
-		//check if index initialization is required
-		//updated with the change processors after each individual CDO transaction commits
-		if (!ApplicationContext.getInstance().getService(SnomedTerminologyBrowser.class).isTerminologyAvailable(BranchPathUtils.createMainPath()) //XXX if MAIN exists tasks must exists as well. 
-				|| !CompareUtils.isEmpty(Iterables.filter(importers, Predicates.not(Predicates.instanceOf(AbstractSnomedRefSetImporter.class))))) { //NOT only reference sets have been imported
-			
-			context.setSendCommitNotificaion(false);
-			
-		} else { //do nothing as described above
-			context.setSendCommitNotificaion(true);
-		}
+		final boolean terminologyExistsBeforeImport = ApplicationContext.getInstance().getService(SnomedTerminologyBrowser.class).isTerminologyAvailable(BranchPathUtils.createMainPath());
+		final boolean onlyRefSetImportersRegistered = Iterables.all(importers, Predicates.instanceOf(AbstractSnomedRefSetImporter.class));
 
+		/*
+		 * Commit notifications for changes made by the import should only be sent if the terminology already exists,
+		 * and only changes for reference sets are coming in from the import files. 
+		 */
+		context.setCommitNotificationEnabled(terminologyExistsBeforeImport && onlyRefSetImportersRegistered);
 		context.setUserId(requestingUserId);
 
 		final ICDOConnectionManager connectionManager = ApplicationContext.getInstance().getService(ICDOConnectionManager.class);
 		final CDOBranch branch = connectionManager.get(SnomedPackage.eINSTANCE).getBranch(branchPath);
 
 		if (null == branch) {
-			
 			throw new ImportException("Branch does not exist. [" + branchPath.getPath() + "]");
-
 		}
 
 		final SnomedEditingContext editingContext = new SnomedEditingContext(branchPath);
@@ -341,19 +338,15 @@ public final class ImportUtil {
 		context.setEditingContext(editingContext);
 		context.setConnection(connection);
 
-		if (context.isSlicingDisabled()) {
-
+		if (context.isSlicingEnabled()) {
+			context.setAggregatorSupplier(new EffectiveTimeBaseTransactionAggregatorSupplier(editingContext.getTransaction()));
+		} else {
 			//we will handle the whole delta/snapshot imports as one, or at least we will create one single commit for it
 			context.setAggregatorSupplier(Suppliers.memoize(new Supplier<ICDOTransactionAggregator>() {
 				@Override public ICDOTransactionAggregator get() {
 					return CDOTransactionAggregator.create(context.getEditingContext().getTransaction());
 				}
 			}));
-
-		} else {
-
-			context.setAggregatorSupplier(new EffectiveTimeBaseTransactionAggregatorSupplier(editingContext.getTransaction()));
-
 		}
 
 		final IOperationLockTarget lockTarget = new SingleRepositoryAndBranchLockTarget(editingContext.getTransaction().getSession().getRepositoryInfo().getUUID(), branchPath);
@@ -371,7 +364,7 @@ public final class ImportUtil {
 			throw new ImportException(e.getCause());
 		}
 		
-		return resultHolder[0]; 
+		return resultHolder[0];
 	}
 
 	private SnomedImportResult doImportLocked(final String requestingUserId, final ImportConfiguration configuration,

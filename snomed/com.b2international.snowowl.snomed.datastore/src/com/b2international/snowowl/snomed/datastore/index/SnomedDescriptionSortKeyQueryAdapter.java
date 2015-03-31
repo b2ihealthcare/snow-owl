@@ -22,13 +22,13 @@ import javax.annotation.Nullable;
 import org.apache.lucene.search.Filter;
 
 import com.b2international.commons.StringUtils;
+import com.b2international.snowowl.core.api.index.CommonIndexConstants;
 import com.b2international.snowowl.datastore.index.IndexQueryBuilder;
 import com.b2international.snowowl.datastore.index.IndexUtils;
 import com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants;
 
 /**
  * Query adapter for querying descriptions based on their label sort key field.
- * 
  */
 public class SnomedDescriptionSortKeyQueryAdapter extends SnomedDescriptionIndexQueryAdapter implements Serializable {
 
@@ -64,6 +64,6 @@ public class SnomedDescriptionSortKeyQueryAdapter extends SnomedDescriptionIndex
 			.requireExactTermIf(anyFlagSet(SEARCH_DESCRIPTION_ACTIVE_ONLY), SnomedIndexBrowserConstants.COMPONENT_ACTIVE, IndexUtils.intToPrefixCoded(1))
 			.requireExactTermIf(!StringUtils.isEmpty(descriptionTypeId), SnomedIndexBrowserConstants.DESCRIPTION_TYPE_ID, IndexUtils.longToPrefixCoded(descriptionTypeId))
 			.finishIf(StringUtils.isEmpty(searchString))
-			.requireExactTerm(SnomedIndexBrowserConstants.COMPONENT_LABEL_SORT_KEY, IndexUtils.getSortKey(searchString));
+			.requireExactTerm(CommonIndexConstants.COMPONENT_LABEL_SORT_KEY, IndexUtils.getSortKey(searchString));
 	}	
 }

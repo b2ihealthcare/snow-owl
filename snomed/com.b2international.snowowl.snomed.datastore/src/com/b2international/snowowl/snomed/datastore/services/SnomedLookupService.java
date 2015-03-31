@@ -41,6 +41,7 @@ import com.b2international.snowowl.core.IDisposableService;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.api.IComponent;
 import com.b2international.snowowl.core.api.ILookupService;
+import com.b2international.snowowl.core.terminology.ComponentCategory;
 import com.b2international.snowowl.datastore.BranchPathUtils;
 import com.b2international.snowowl.datastore.CodeSystemService;
 import com.b2international.snowowl.datastore.ICodeSystemVersion;
@@ -60,7 +61,7 @@ import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 import com.b2international.snowowl.snomed.datastore.SnomedDescriptionFragment;
 import com.b2international.snowowl.snomed.datastore.SnomedDescriptionLookupService;
 import com.b2international.snowowl.snomed.datastore.SnomedEditingContext;
-import com.b2international.snowowl.snomed.datastore.SnomedEditingContext.ComponentNature;
+import com.b2international.snowowl.snomed.datastore.id.ISnomedIdentifierService;
 import com.b2international.snowowl.snomed.datastore.index.SnomedClientIndexService;
 import com.b2international.snowowl.snomed.datastore.index.SnomedDescriptionIndexEntry;
 import com.b2international.snowowl.snomed.datastore.index.SnomedDescriptionIndexQueryAdapter;
@@ -608,7 +609,7 @@ public class SnomedLookupService implements IDisposableService, ISnomedLookupSer
 	 */
 	@Override
 	public String generateNewConceptId() {
-		return generateNewComponsnetId(ComponentNature.CONCEPT);
+		return generateNewComponsnetId(ComponentCategory.CONCEPT);
 	}
 	
 	/* (non-Javadoc)
@@ -616,7 +617,7 @@ public class SnomedLookupService implements IDisposableService, ISnomedLookupSer
 	 */
 	@Override
 	public String generateNewDescriptionId() {
-		return generateNewComponsnetId(ComponentNature.DESCRIPTION);
+		return generateNewComponsnetId(ComponentCategory.DESCRIPTION);
 	}
 	
 	/* (non-Javadoc)
@@ -624,7 +625,7 @@ public class SnomedLookupService implements IDisposableService, ISnomedLookupSer
 	 */
 	@Override
 	public String generateNewRelationshipId() {
-		return generateNewComponsnetId(ComponentNature.RELATIONSHIP);
+		return generateNewComponsnetId(ComponentCategory.RELATIONSHIP);
 	}
 	
 	/*
@@ -687,23 +688,9 @@ public class SnomedLookupService implements IDisposableService, ISnomedLookupSer
 	}
 	
 	/*generates and returns with a brand new, non-existing component ID based on the component nature argument.*/
-	private String generateNewComponsnetId(final ComponentNature componentNature) {
-		
+	private String generateNewComponsnetId(final ComponentCategory componentNature) {
 		Preconditions.checkNotNull(componentNature, "Component nature argument cannot be null.");
-		SnomedEditingContext context = null;
-		try {
-			
-			context = new SnomedEditingContext(BranchPathUtils.createPath(cdoView));
-			return context.generateComponentId(componentNature);
-			
-		} finally {
-			
-			if (null != context) {
-				context.close();
-			}
-			
-		}
-		
+		return ApplicationContext.getInstance().getServiceChecked(ISnomedIdentifierService.class).generateId(componentNature, SnomedEditingContext.getDefaultNamespace());
 	}
 	
 	private String getPreferredTerm(final IBranchPath branchPath, final String conceptId) {

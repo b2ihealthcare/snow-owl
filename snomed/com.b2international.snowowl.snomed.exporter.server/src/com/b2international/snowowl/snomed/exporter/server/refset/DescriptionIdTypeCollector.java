@@ -17,9 +17,8 @@ package com.b2international.snowowl.snomed.exporter.server.refset;
 
 import java.io.IOException;
 
-import org.apache.lucene.index.AtomicReaderContext;
-import org.apache.lucene.search.FieldCache;
-import org.apache.lucene.search.FieldCache.Longs;
+import org.apache.lucene.index.AtomicReader;
+import org.apache.lucene.index.NumericDocValues;
 
 import bak.pcj.map.LongKeyLongMap;
 import bak.pcj.map.LongKeyLongOpenHashMap;
@@ -28,40 +27,47 @@ import com.b2international.snowowl.datastore.index.AbstractDocsOutOfOrderCollect
 import com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants;
 
 /**
- * Collector for gathering the description ID and the description type concept ID
- * of a subset of SNOMED&nbsp;CT descriptions.
+ * Collector for gathering the description ID and the description type concept ID of a subset of SNOMED CT
+ * descriptions.
  */
 public class DescriptionIdTypeCollector extends AbstractDocsOutOfOrderCollector {
 
-	private Longs descriptionIds;
-	private Longs typeIds;
+	private NumericDocValues descriptionIds;
+	private NumericDocValues typeIds;
 
 	private final LongKeyLongMap map;
-	
+
+	/**
+	 * Creates a new collector with a backing map of the specified initial size.
+	 * 
+	 * @param expectedSize the expected number of entries in the collector's backing map, or <= 0 to use the default size
+	 */
 	public DescriptionIdTypeCollector(final int expectedSize) {
 		map = expectedSize > 0 ? new LongKeyLongOpenHashMap(expectedSize) : new LongKeyLongOpenHashMap();
 	}
-	
-	/* (non-Javadoc)
-	 * @see org.apache.lucene.search.Collector#collect(int)
-	 */
+
 	@Override
-	public void collect(int doc) throws IOException {
-		map.put(descriptionIds.get(doc), typeIds.get(doc));
+	public void collect(final int docId) throws IOException {
+		map.put(descriptionIds.get(docId), typeIds.get(docId));
 	}
 
-	/* (non-Javadoc)
-	 * @see org.apache.lucene.search.Collector#setNextReader(org.apache.lucene.index.AtomicReaderContext)
-	 */
 	@Override
-	public void setNextReader(AtomicReaderContext context) throws IOException {
-		descriptionIds = FieldCache.DEFAULT.getLongs(context.reader(), SnomedIndexBrowserConstants.COMPONENT_ID, false);
-		typeIds = FieldCache.DEFAULT.getLongs(context.reader(), SnomedIndexBrowserConstants.DESCRIPTION_TYPE_ID, false);
+	protected void initDocValues(final AtomicReader leafReader) throws IOException {
+		descriptionIds = leafReader.getNumericDocValues(SnomedIndexBrowserConstants.COMPONENT_ID);
+		typeIds = leafReader.getNumericDocValues(SnomedIndexBrowserConstants.DESCRIPTION_TYPE_ID);
 	}
 
-	/**Returns with a mapping between description IDs and the description type concept IDs.*/
+	@Override
+	protected boolean isLeafCollectible() {
+		return descriptionIds != null && typeIds != null;
+	}
+
+	/**
+	 * Returns a mapping between description IDs and the description type concept IDs.
+	 * 
+	 * @return the collected description ID-type ID mapping
+	 */
 	public LongKeyLongMap getIdMap() {
 		return map;
 	}
-	
 }

@@ -2,15 +2,17 @@
 <feature
       id="com.b2international.snowowl.server.dependencies.feature"
       label="Snow Owl Server Dependencies"
-      version="3.9.0.qualifier"
+      version="4.0.0"
       provider-name="B2i Healthcare">
 
-      <description url="http://b2i.sg">
-Snow Owl Terminology Server dependencies feature.
+   <description url="http://b2i.sg">
+      Snow Owl Terminology Server dependencies feature.
 Visit us at http://b2i.sg
    </description>
 
-   <copyright>Copyright 2011-2015 B2i Healthcare Pte Ltd, http://b2i.sg</copyright>
+   <copyright>
+      Copyright 2011-2015 B2i Healthcare Pte Ltd, http://b2i.sg
+   </copyright>
 
    <includes
          id="org.codehaus.groovy20.feature"
@@ -62,42 +64,42 @@ Visit us at http://b2i.sg
          id="org.eclipse.emf.cdo"
          download-size="0"
          install-size="0"
-         version="0.0.0"
+         version="4.1.1.b2i"
          unpack="false"/>
 
    <plugin
          id="org.eclipse.emf.cdo.common"
          download-size="0"
          install-size="0"
-         version="0.0.0"
+         version="4.1.1.b2i"
          unpack="false"/>
 
    <plugin
          id="org.eclipse.emf.cdo.net4j"
          download-size="0"
          install-size="0"
-         version="0.0.0"
+         version="4.1.1.b2i"
          unpack="false"/>
 
    <plugin
          id="org.eclipse.emf.cdo.server"
          download-size="0"
          install-size="0"
-         version="0.0.0"
+         version="4.1.1.b2i"
          unpack="false"/>
 
    <plugin
          id="org.eclipse.emf.cdo.server.db"
          download-size="0"
          install-size="0"
-         version="0.0.0"
+         version="4.1.1.b2i"
          unpack="false"/>
 
    <plugin
          id="org.eclipse.emf.cdo.server.net4j"
          download-size="0"
          install-size="0"
-         version="0.0.0"
+         version="4.1.1.b2i"
          unpack="false"/>
 
    <plugin
@@ -153,7 +155,7 @@ Visit us at http://b2i.sg
          id="org.eclipse.equinox.preferences"
          download-size="0"
          install-size="0"
-         version="0.0.0"
+         version="3.5.2.b2i"
          unpack="false"/>
 
    <plugin
@@ -174,7 +176,7 @@ Visit us at http://b2i.sg
          id="org.eclipse.net4j"
          download-size="0"
          install-size="0"
-         version="0.0.0"
+         version="4.1.1.b2i"
          unpack="false"/>
 
    <plugin
@@ -202,7 +204,7 @@ Visit us at http://b2i.sg
          id="org.eclipse.net4j.util"
          download-size="0"
          install-size="0"
-         version="0.0.0"
+         version="3.2.1.b2i"
          unpack="false"/>
 
    <plugin
@@ -551,7 +553,7 @@ Visit us at http://b2i.sg
          id="org.supercsv"
          download-size="0"
          install-size="0"
-         version="0.0.0"
+         version="1.0.0.b2i"
          unpack="false"/>
 
    <plugin
@@ -762,14 +764,6 @@ Visit us at http://b2i.sg
          unpack="false"/>
 
    <plugin
-         id="org.eclipse.equinox.console.jaas.fragment"
-         download-size="0"
-         install-size="0"
-         version="0.0.0"
-         fragment="true"
-         unpack="false"/>
-
-   <plugin
          id="org.eclipse.equinox.console.ssh"
          download-size="0"
          install-size="0"
@@ -836,7 +830,7 @@ Visit us at http://b2i.sg
          id="com.b2international.snowowl.hibernate.validator"
          download-size="0"
          install-size="0"
-         version="0.0.0"
+         version="5.1.1.Final-b2i"
          unpack="false"/>
 
    <plugin
@@ -850,7 +844,7 @@ Visit us at http://b2i.sg
          id="org.eclipse.net4j.db.mysql"
          download-size="0"
          install-size="0"
-         version="0.0.0"
+         version="4.0.200.v20130710-2145-b2i"
          unpack="false"/>
 
    <plugin
@@ -864,7 +858,7 @@ Visit us at http://b2i.sg
          id="com.b2international.org.apache.lucene"
          download-size="0"
          install-size="0"
-         version="0.0.0"/>
+         version="4.9.0.b2i"/>
 
    <plugin
          id="org.emfjson.core"
@@ -878,6 +872,20 @@ Visit us at http://b2i.sg
          download-size="0"
          install-size="0"
          version="0.0.0"
+         unpack="false"/>
+
+   <plugin
+         id="org.junit"
+         download-size="0"
+         install-size="0"
+         version="0.0.0"/>
+
+   <plugin
+         id="system.bundle.package.exporter"
+         download-size="0"
+         install-size="0"
+         version="0.0.0"
+         fragment="true"
          unpack="false"/>
 
 </feature>

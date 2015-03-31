@@ -1378,8 +1378,8 @@ helpers = this.merge(helpers, Handlebars.helpers); data = data || {};
     }
 
     HeaderView.prototype.events = {
-      'click #show-pet-store-icon': 'showPetStore',
-      'click #show-wordnik-dev-icon': 'showWordnikDev',
+      'click #show-admin-icon': 'showAdmin',
+      'click #show-sct-icon': 'showSct',
       'click #explore': 'showCustom',
       'keyup #input_baseUrl': 'showCustomOnKeyup',
       'keyup #input_apiKey': 'showCustomOnKeyup'
@@ -1387,15 +1387,15 @@ helpers = this.merge(helpers, Handlebars.helpers); data = data || {};
 
     HeaderView.prototype.initialize = function() {};
 
-    HeaderView.prototype.showPetStore = function(e) {
+    HeaderView.prototype.showAdmin = function(e) {
       return this.trigger('update-swagger-ui', {
-        url: "http://petstore.swagger.wordnik.com/api/api-docs"
+        url: "/snowowl/admin/api-docs"
       });
     };
 
-    HeaderView.prototype.showWordnikDev = function(e) {
+    HeaderView.prototype.showSct = function(e) {
       return this.trigger('update-swagger-ui', {
-        url: "http://api.wordnik.com/v4/resources.json"
+        url: "/snowowl/snomed-ct/api-docs"
       });
     };
 

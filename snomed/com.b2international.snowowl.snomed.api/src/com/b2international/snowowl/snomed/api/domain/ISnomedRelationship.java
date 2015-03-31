@@ -18,49 +18,60 @@ package com.b2international.snowowl.snomed.api.domain;
 import com.b2international.snowowl.api.domain.IComponentEdge;
 
 /**
- * TODO document
+ * Represents a SNOMED CT description.
+ * <p>
+ * Information about relationship refinability can also be retrieved from this object.
  */
 public interface ISnomedRelationship extends ISnomedComponent, IComponentEdge {
 
 	/**
-	 * TODO document
-	 * @return
+	 * Checks whether the destination concept's meaning should be negated ({@code ObjectComplementOf} semantics in OWL2).
+	 * 
+	 * @return {@code true} if the destination concept is negated, {@code false} if it should be interpreted normally
 	 */
 	boolean isDestinationNegated();
 
 	/**
-	 * TODO document
-	 * @return
+	 * Returns the type identifier of this relationship.
+	 * 
+	 * @return the relationship type identifier
 	 */
 	String getTypeId();
 
 	/**
-	 * TODO document
-	 * @return
+	 * Returns the relationship group number.
+	 * 
+	 * @return the relationship group, or 0 if this relationship can not be grouped, or is in an unnumbered, singleton
+	 * group
 	 */
 	int getGroup();
 
 	/**
-	 * TODO document
-	 * @return
+	 * If multiple relationship destinations are to be taken as a disjunction, the relationships are assigned a
+	 * common, positive union group number.
+	 * 
+	 * @return the relationship union group, or 0 if this relationship is not part of a disjunction
 	 */
 	int getUnionGroup();
 
 	/**
-	 * TODO document
-	 * @return
+	 * Returns the characteristic type of the relationship.
+	 * 
+	 * @return the relationship's characteristic type
 	 */
 	CharacteristicType getCharacteristicType();
 
 	/**
-	 * TODO document
-	 * @return
+	 * Returns the relationship's refinability reference set member value.
+	 * 
+	 * @return the refinability value for this relationship
 	 */
 	RelationshipRefinability getRefinability();
 
 	/**
-	 * TODO document
-	 * @return
+	 * Returns the relationship's modifier value.
+	 * 
+	 * @return the modifier of this relationship
 	 */
 	RelationshipModifier getModifier();
 }

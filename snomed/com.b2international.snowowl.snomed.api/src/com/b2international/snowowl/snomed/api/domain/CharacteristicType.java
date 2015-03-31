@@ -20,32 +20,35 @@ import java.text.MessageFormat;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 
 /**
- * TODO document
+ * Enumerates allowed relationship characteristic types and their corresponding concept identifiers.
+ * 
+ * @see <a href="http://www.snomed.org/tig?t=tsg2_metadata_enumeration_characteristic">Concept enumerations for
+ * characteristicTypeId (Technical Implementation Guide)</a>
  */
 public enum CharacteristicType implements ConceptEnum {
 
 	/**
-	 * TODO document
+	 * The relationship is used as part of the description logic (DL) definition
 	 */
 	DEFINING_RELATIONSHIP(Concepts.DEFINING_RELATIONSHIP),
 
 	/**
-	 * TODO document
+	 * The relationship is defining, and was created by an author (manually)
 	 */
 	STATED_RELATIONSHIP(Concepts.STATED_RELATIONSHIP),
 
 	/**
-	 * TODO document
+	 * The relationship is defining, and was created by the reasoner (automatically)
 	 */
 	INFERRED_RELATIONSHIP(Concepts.INFERRED_RELATIONSHIP),
 
 	/**
-	 * TODO document
+	 * When creating postcoordinated expressions based on the concept, this relationship can be included as a qualifier
 	 */
 	QUALIFYING_RELATIONSHIP(Concepts.QUALIFYING_RELATIONSHIP),
 
 	/**
-	 * TODO document
+	 * The relationship is not part of the DL definition; it only provides supplementary information
 	 */
 	ADDITIONAL_RELATIONSHIP(Concepts.ADDITIONAL_RELATIONSHIP);
 
@@ -55,11 +58,24 @@ public enum CharacteristicType implements ConceptEnum {
 		this.conceptId = conceptId;
 	}
 
+	/**
+	 * Retrieves the concept identifier for this characteristic type.
+	 * 
+	 * @return the concept identifier corresponding to the characteristic type constant
+	 */
 	@Override
 	public String getConceptId() {
 		return conceptId;
 	}
 
+	/**
+	 * Performs a reverse lookup by concept identifier and returns the matching characteristic type.
+	 * 
+	 * @param conceptId the concept identifier to look for
+	 * 
+	 * @return the resolved {@link CharacteristicType}
+	 * @throws IllegalArgumentException if no characteristic type matches the specified concept identifier
+	 */
 	public static CharacteristicType getByConceptId(final String conceptId) {
 		for (final CharacteristicType candidate : values()) {
 			if (candidate.getConceptId().equals(conceptId)) {

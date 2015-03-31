@@ -2,15 +2,15 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: Snow Owl SNOMED CT Datastore
 Bundle-SymbolicName: com.b2international.snowowl.snomed.datastore;singleton:=true
-Bundle-Version: 3.9.0.qualifier
+Bundle-Version: 4.0.0
 Bundle-Activator: com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator
 Bundle-Vendor: B2i Healthcare
 Bundle-RequiredExecutionEnvironment: JavaSE-1.7
 Import-Package: org.slf4j;version="1.7.2"
 Bundle-ActivationPolicy: lazy
 Require-Bundle: org.eclipse.core.runtime;bundle-version="[3.8.0,3.9.0)",
- org.eclipse.emf.cdo.server.db;bundle-version="4.1.1",
- org.eclipse.emf.cdo.net4j;bundle-version="4.1.1",
+ org.eclipse.emf.cdo.server.db;bundle-version="[4.1.1,4.1.2)",
+ org.eclipse.emf.cdo.net4j;bundle-version="[4.1.1,4.1.2)",
  org.codehaus.groovy;bundle-version="[2.0.7,2.1.0)",
  org.eclipse.core.commands;bundle-version="3.6.0",
  org.eclipse.core.databinding;bundle-version="1.4.0",
@@ -22,8 +22,10 @@ Require-Bundle: org.eclipse.core.runtime;bundle-version="[3.8.0,3.9.0)",
  com.b2international.snowowl.snomed.common;visibility:=reexport,
  com.b2international.snowowl.snomed.model;visibility:=reexport,
  com.b2international.snowowl.snomed.mrcm.model;visibility:=reexport,
- com.b2international.snowowl.terminologyregistry.core;visibility:=reexport
-Export-Package: com.b2international.snowowl.snomed.datastore,
+ com.b2international.snowowl.terminologyregistry.core;visibility:=reexport,
+ com.b2international.snowowl.eventbus
+Export-Package: com.b2international.snowowl.snomed.core.events,
+ com.b2international.snowowl.snomed.datastore,
  com.b2international.snowowl.snomed.datastore.browser,
  com.b2international.snowowl.snomed.datastore.config,
  com.b2international.snowowl.snomed.datastore.delta,
@@ -32,6 +34,8 @@ Export-Package: com.b2international.snowowl.snomed.datastore,
  com.b2international.snowowl.snomed.datastore.factory,
  com.b2international.snowowl.snomed.datastore.filteredrefset,
  com.b2international.snowowl.snomed.datastore.id,
+ com.b2international.snowowl.snomed.datastore.id.gen,
+ com.b2international.snowowl.snomed.datastore.id.reservations,
  com.b2international.snowowl.snomed.datastore.index,
  com.b2international.snowowl.snomed.datastore.index.interest,
  com.b2international.snowowl.snomed.datastore.index.refset,

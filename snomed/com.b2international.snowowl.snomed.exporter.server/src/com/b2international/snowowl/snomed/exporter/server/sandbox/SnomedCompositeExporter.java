@@ -200,7 +200,7 @@ public abstract class SnomedCompositeExporter implements SnomedIndexExporter {
 	}
 	
 	protected final String formatEffectiveTime(final IndexableField field) {
-		return EffectiveTimes.format(IndexUtils.getLongValue(field), DateFormats.SHORT);
+		return EffectiveTimes.format(IndexUtils.getLongValue(field), DateFormats.SHORT, configuration.getUnsetEffectiveTimeLabel());
 	}
 	
 	/**

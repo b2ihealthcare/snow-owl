@@ -286,16 +286,8 @@ public class InitialReasonerTaxonomyBuilder extends AbstractReasonerTaxonomyBuil
 		private GetConcreteDomainRunnable(final String taskName, final Stopwatch stopwatch, final IBranchPath branchPath,
 				final LongSet componentIds,
 				final short referencedComponentType,
-				final AtomicReference<LongKeyMap> concreteDomainMapReference) {
-			
-			this(taskName, stopwatch, branchPath, componentIds, referencedComponentType, false, concreteDomainMapReference);
-		}
-		
-		private GetConcreteDomainRunnable(final String taskName, final Stopwatch stopwatch, final IBranchPath branchPath,
-				final LongSet componentIds,
-				final short referencedComponentType,
-				final boolean includeAdditional,
-				final AtomicReference<LongKeyMap> concreteDomainMapReference) {
+				final AtomicReference<LongKeyMap> concreteDomainMapReference,
+				final boolean includeAdditional) {
 
 			this.taskName = taskName;
 			this.stopwatch = stopwatch;
@@ -429,15 +421,6 @@ public class InitialReasonerTaxonomyBuilder extends AbstractReasonerTaxonomyBuil
 	 * Creates a taxonomy builder instance.
 	 *
 	 * @param branchPath the branch path where the instance should be constructed.
-	 */
-	public InitialReasonerTaxonomyBuilder(final IBranchPath branchPath) {
-		this(branchPath, false);
-	}
-
-	/**
-	 * Creates a taxonomy builder instance.
-	 *
-	 * @param branchPath the branch path where the instance should be constructed.
 	 * @param includeAdditionalStatementConcreteDomains when {@code true}, retrieves all concrete domain members where the referenced component is a relationship;
 	 * when set to {@code false}, only members with non-additional characteristic type will be collected.
 	 */
@@ -474,12 +457,13 @@ public class InitialReasonerTaxonomyBuilder extends AbstractReasonerTaxonomyBuil
 		final Runnable taxonomyBuilderRunnable = new TaxonomyBuilderRunnable(taskName, stopwatch, conceptIdsReference, isAStatementsReference);
 
 		final Runnable getConceptConcreteDomainsRunnable = new GetConcreteDomainRunnable(taskName, stopwatch, branchPath, conceptIds,
-				SnomedTerminologyComponentConstants.CONCEPT_NUMBER, conceptConcreteDomainReference);
+				SnomedTerminologyComponentConstants.CONCEPT_NUMBER, conceptConcreteDomainReference,
+				false);
 
 		final LongSet relationshipIds = statementIdToConceptIdReference.get().keySet();
 		final Runnable getStatementConcreteDomainsRunnable = new GetConcreteDomainRunnable(taskName, stopwatch, branchPath, relationshipIds,
-				SnomedTerminologyComponentConstants.RELATIONSHIP_NUMBER, includeAdditionalStatementConcreteDomains, 
-				relationshipConcreteDomainReference);
+				SnomedTerminologyComponentConstants.RELATIONSHIP_NUMBER, relationshipConcreteDomainReference, 
+				includeAdditionalStatementConcreteDomains);
 
 		final Runnable getExhaustiveConceptIdsRunnable = new GetConceptIdsRunnable(taskName, stopwatch, branchPath,
 				exhaustiveConceptIdsReference, createIntTermQuery(SnomedIndexBrowserConstants.CONCEPT_EXHAUSTIVE, 1));

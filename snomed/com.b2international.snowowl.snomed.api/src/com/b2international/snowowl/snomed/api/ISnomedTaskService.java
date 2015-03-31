@@ -18,7 +18,7 @@ package com.b2international.snowowl.snomed.api;
 import com.b2international.snowowl.api.task.ITaskService;
 
 /**
- * TODO document
+ * Implementations of this interface add support task-based editing of SNOMED CT.
  */
 public interface ISnomedTaskService extends ITaskService {
 	// Empty interface body

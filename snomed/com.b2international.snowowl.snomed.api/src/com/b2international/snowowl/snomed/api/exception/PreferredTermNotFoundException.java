@@ -19,12 +19,16 @@ import com.b2international.snowowl.api.exception.NotFoundException;
 
 /**
  * Thrown when a preferred term can not be retrieved using the given language preferences.
- * 
  */
 public class PreferredTermNotFoundException extends NotFoundException {
 
 	private static final long serialVersionUID = 1L;
 
+	/**
+	 * Creates a new exception instance with the specified argument.
+	 * 
+	 * @param key the identifier of the concept for which a preferred term could not be retrieved
+	 */
 	public PreferredTermNotFoundException(final String key) {
 		super("Preferred term for concept", key);
 	}

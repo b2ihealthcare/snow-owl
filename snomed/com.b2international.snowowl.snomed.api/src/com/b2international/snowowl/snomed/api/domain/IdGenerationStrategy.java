@@ -16,9 +16,16 @@
 package com.b2international.snowowl.snomed.api.domain;
 
 /**
- * TODO document
+ * Implementations allow clients to generate component identifiers conforming to the specified constraints.
  */
 public interface IdGenerationStrategy {
 
+	/**
+	 * Generates a component identifier.
+	 * <p>
+	 * This method may return different results each time it is invoked. 
+	 * 
+	 * @return the generated identifier
+	 */
 	String getId();
 }

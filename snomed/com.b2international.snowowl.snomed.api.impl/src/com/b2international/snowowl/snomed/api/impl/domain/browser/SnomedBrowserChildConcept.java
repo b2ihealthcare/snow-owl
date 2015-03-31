@@ -55,7 +55,7 @@ public class SnomedBrowserChildConcept implements ISnomedBrowserChildConcept {
 	}
 
 	@Override
-	public boolean hasChild() {
+	public boolean getHasChild() {
 		return hasChild;
 	}
 

@@ -20,22 +20,25 @@ import java.text.MessageFormat;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 
 /**
- * TODO document
+ * Enumerates allowed relationship refinability values and maps them to concept identifiers.
+ * 
+ * @see <a href="http://www.snomed.org/tig?t=tsg2_metadata_refset_status_relref">Relationship Refinability Reference Set
+ * (Technical Implementation Guide)</a>
  */
 public enum RelationshipRefinability {
 
 	/**
-	 * TODO document
+	 * Relationship can not be refined in postcoordinated concept expressions.
 	 */
 	NOT_REFINABLE(Concepts.NOT_REFINABLE),
 
 	/**
-	 * TODO document
+	 * Relationship can optionally be refined in postcoordinated concept expressions. 
 	 */
 	OPTIONAL(Concepts.OPTIONAL_REFINABLE),
 
 	/**
-	 * TODO document
+	 * Relationship must be refined in postcoordinated concept expressions.
 	 */
 	MANDATORY(Concepts.MANDATORY_REFINABLE);
 
@@ -45,10 +48,23 @@ public enum RelationshipRefinability {
 		this.conceptId = conceptId;
 	}
 
+	/**
+	 * Retrieves the concept identifier for this refinability value.
+	 * 
+	 * @return the concept identifier corresponding to the refinability constant
+	 */
 	public String getConceptId() {
 		return conceptId;
 	}
 
+	/**
+	 * Performs a reverse lookup by concept identifier and returns the matching refinability value.
+	 * 
+	 * @param conceptId the concept identifier to look for
+	 * 
+	 * @return the resolved {@link RelationshipRefinability}
+	 * @throws IllegalArgumentException if no refinability value matches the specified concept identifier
+	 */
 	public static RelationshipRefinability getByConceptId(final String conceptId) {
 		for (final RelationshipRefinability candidate : values()) {
 			if (candidate.getConceptId().equals(conceptId)) {

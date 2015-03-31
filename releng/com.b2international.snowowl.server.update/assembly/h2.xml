@@ -6,52 +6,15 @@
 	<formats>
 		<format>zip</format>
 	</formats>
+	<componentDescriptors>
+		<componentDescriptor>assembly/common.xml</componentDescriptor>
+	</componentDescriptors>
 	<fileSets>
-		<!-- Virgo archive base content -->
-		<fileSet>
-			<directory>${project.basedir}/target/virgo-tomcat-server-3.6.2.RELEASE</directory>
-			<outputDirectory></outputDirectory>
-			<useDefaultExcludes>true</useDefaultExcludes>
-			<!-- The following files will be overwritten or unnecessary in the resulting 
-				archive -->
-			<excludes>
-				<exclude>**/dmk.bat</exclude>
-				<exclude>**/dmk.sh</exclude>
-				<exclude>**/startup.bat</exclude>
-				<exclude>**/startup.sh</exclude>
-				<exclude>**/java6-server.profile</exclude>
-				<exclude>**/org.eclipse.virgo.kernel.userregion.properties</exclude>
-				<exclude>**/org.eclipse.virgo.kernel.users.properties</exclude>
-				<exclude>**/serviceability.xml</exclude>
-				<exclude>**/org.eclipse.virgo.web.properties</exclude>
-				<!-- Remove splash app -->
-				<exclude>**/org.eclipse.virgo.apps.splash_3.6.2.RELEASE.jar</exclude>
-			</excludes>
-		</fileSet>
-		<!-- Common configuration -->
-		<fileSet>
-			<directory>${project.basedir}/assembly/common</directory>
-			<outputDirectory></outputDirectory>
-			<useDefaultExcludes>true</useDefaultExcludes>
-		</fileSet>
 		<!-- H2 specific configuration -->
 		<fileSet>
 			<directory>${project.basedir}/assembly/h2</directory>
 			<outputDirectory></outputDirectory>
 			<useDefaultExcludes>true</useDefaultExcludes>
-		</fileSet>
-		<!-- Application bundles to repository/usr -->
-		<fileSet>
-			<directory>${project.basedir}/target/repository/plugins</directory>
-			<outputDirectory>repository/usr</outputDirectory>
-			<useDefaultExcludes>true</useDefaultExcludes>
-			<!-- Make sure we exclude already existing or unnecessary bundles -->
-			<excludes>
-				<exclude>**/*osgi.enterprise*.jar</exclude>
-				<exclude>**/*system.bundle.package.exporter*.jar</exclude>
-				<exclude>*slf4j*.jar</exclude>
-				<exclude>*logback*.jar</exclude>
-			</excludes>
 		</fileSet>
 	</fileSets>
 </assembly>

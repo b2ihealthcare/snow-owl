@@ -67,13 +67,15 @@ public interface ISnomedBrowserService {
 	 * @param storageRef the storage reference locating the version and branch to search on (may not be {@code null})
 	 * @param query the query text (must be at least 3 characters long)
 	 * @param locales the {@link Locale}s to inspect when determining FSN, in decreasing order of preference
+	 * @param offset the offset in the result set (may not be negative)
+	 * @param limit the maximal number of results to return
 	 * @return the search result list of descriptions
 	 * @throws CodeSystemNotFoundException if a code system with the given short name is not registered
 	 * @throws CodeSystemVersionNotFoundException if a code system version for the code system with the given identifier is not registered
 	 * @throws TaskNotFoundException if the task identifier does not correspond to a task for the given code system version
 	 * @throws IllegalArgumentException if the query is {@code null} or too short
 	 */
-	List<ISnomedBrowserDescriptionResult> getDescriptions(IStorageRef storageRef, String query, List<Locale> locales);
+	List<ISnomedBrowserDescriptionResult> getDescriptions(IStorageRef storageRef, String query, List<Locale> locales, int offset, int limit);
 	
 	/**
 	 * Retrieves a map of enum constants and corresponding concepts.

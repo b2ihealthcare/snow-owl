@@ -15,9 +15,9 @@
  */
 package com.b2international.snowowl.snomed.api.impl;
 
-import com.b2international.snowowl.api.domain.ComponentCategory;
 import com.b2international.snowowl.api.impl.history.AbstractHistoryServiceImpl;
 import com.b2international.snowowl.core.api.IBranchPath;
+import com.b2international.snowowl.core.terminology.ComponentCategory;
 import com.b2international.snowowl.snomed.api.ISnomedConceptHistoryService;
 import com.b2international.snowowl.snomed.datastore.SnomedConceptLookupService;
 import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;

@@ -20,9 +20,17 @@ package com.b2international.snowowl.snomed.api.domain;
  */
 public interface ConceptEnum {
 
-	/** @return the concept identifier associated with this enum constant */
+	/** 
+	 * Retrieves the concept identifier for this enum value.
+	 *  
+	 * @return the concept identifier associated with this enum constant 
+	 */
 	String getConceptId();
-	
-	/** @return the enum constant's name */
+
+	/** 
+	 * Returns the name of this enum value.
+	 * 
+	 * @return the enum constant's name, same as {@link Enum#name()}
+	 */
 	String name(); // XXX: method name must be the same as Enum.name()
 }

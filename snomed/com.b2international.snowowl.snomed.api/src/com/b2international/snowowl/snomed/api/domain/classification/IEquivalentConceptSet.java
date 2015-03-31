@@ -18,19 +18,25 @@ package com.b2international.snowowl.snomed.api.domain.classification;
 import java.util.List;
 
 /**
- * TODO
+ * Represents an equivalent concept set, in which all concepts have the same description logic representation, without
+ * any extra defining relationships which would differentiate them from each other.
+ * <p>
+ * A special equivalent concept set is the set of unsatisfiable concepts, which are also equivalent to {@code Nothing}
+ * (the "empty set").
  */
 public interface IEquivalentConceptSet {
 
 	/**
-	 * 
-	 * @return
+	 * Checks if this set represents the unsatisfiable concept set.
+	 *  
+	 * @return {@code true} if concepts in this set are unsatisfiable, {@code false} if it is a regular equivalent set
 	 */
 	boolean isUnsatisfiable();
 
 	/**
+	 * Returns the list of contained equivalent concepts.
 	 * 
-	 * @return
+	 * @return the equivalent concepts
 	 */
 	List<IEquivalentConcept> getEquivalentConcepts();
 }

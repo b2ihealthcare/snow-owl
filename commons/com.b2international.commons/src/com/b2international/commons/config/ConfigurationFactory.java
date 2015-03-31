@@ -31,6 +31,9 @@ import java.util.Set;
 import javax.validation.ConstraintViolation;
 import javax.validation.Validator;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonParser.Feature;
 import com.fasterxml.jackson.databind.DeserializationFeature;
@@ -56,6 +59,7 @@ import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
  */
 public class ConfigurationFactory<T> {
 
+	private static final Logger LOG = LoggerFactory.getLogger(ConfigurationFactory.class);
 	private Class<T> klass;
 	private ObjectMapper mapper;
 	private Validator validator;
@@ -92,7 +96,11 @@ public class ConfigurationFactory<T> {
      */
 	public T build(ConfigurationSourceProvider provider, final String path) {
 		try (InputStream input = provider.open(checkNotNull(path))) {
-			final JsonNode node = mapper.readTree(input);
+			final JsonNode node = mapper.readTree(mapper.getFactory().createParser(input));
+			if (node == null) {
+				LOG.info("No configuration found at {}, falling back to default configurations", path);
+				return klass.newInstance();
+			}
 			return build(node, path);
 		} catch (RuntimeException e) {
 			throw e;

@@ -1,0 +1,2 @@
+
+# Empty modules configuration should be supported by instantiating a default instance from the module config class, default ctor required

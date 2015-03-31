@@ -19,42 +19,20 @@ import org.eclipse.core.runtime.IProgressMonitor;
 
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.api.SnowowlServiceException;
-import com.b2international.snowowl.datastore.server.snomed.index.init.ImportIndexServerService.DescriptionTypePredicateAdapter;
-import com.b2international.snowowl.datastore.server.snomed.index.init.ImportIndexServerService.IDescriptionTypePredicate;
 
 /**
  * Interface for populating the content of the {@link ImportIndexServerService}.
- *
  */
 public interface IImportIndexServiceFeeder {
 
 	/**
-	 * Initialize the content of the import index service argument.
-	 * @param service import index service.
-	 * @param branchPath branch path.
-	 * @param monitor monitor for the process.
-	 * @throws SnowowlServiceException in case of failed content initialization.
+	 * Initializes contents of the specified import index service.
+	 * 
+	 * @param service the import index service to populate
+	 * @param branchPath the branch path to use for lookups
+	 * @param monitor an {@link IProgressMonitor} for tracking initialization
+	 * 
+	 * @throws SnowowlServiceException if content initialization fails for some reason
 	 */
-	void initContent(final ImportIndexServerService service, final IBranchPath branchPath, final IProgressMonitor monitor) throws SnowowlServiceException;
-	
-	/**
-	 * Represents a fully specified name description type predicate.
-	 */
-	IDescriptionTypePredicate FSN_PREDICATE = new DescriptionTypePredicateAdapter() {
-		public boolean isFsn() { return true;};
-	};
-	
-	/**
-	 * Predicate for representing a synonym description type concept or any if its descendant.
-	 */
-	IDescriptionTypePredicate SYNONYM_OR_DESCENDANT_PREDICATE = new DescriptionTypePredicateAdapter() {
-		public boolean isSynonymOrDescendant() { return true; };
-	};
-	
-	/**
-	 * Represents a description type which does not fit neither {@link #FSN_PREDICATE} nor {@link #SYNONYM_OR_DESCENDANT_PREDICATE}. 
-	 */
-	IDescriptionTypePredicate OTHER_DESCRIPTION_PREDICATE = new DescriptionTypePredicateAdapter() {
-	};
-	
+	void initContent(ImportIndexServerService service, IBranchPath branchPath, IProgressMonitor monitor) throws SnowowlServiceException;
 }

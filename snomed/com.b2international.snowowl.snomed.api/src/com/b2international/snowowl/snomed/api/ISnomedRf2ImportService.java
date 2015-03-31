@@ -18,39 +18,64 @@ package com.b2international.snowowl.snomed.api;
 import java.io.InputStream;
 import java.util.UUID;
 
+import com.b2international.snowowl.api.codesystem.exception.CodeSystemNotFoundException;
+import com.b2international.snowowl.api.codesystem.exception.CodeSystemVersionNotFoundException;
+import com.b2international.snowowl.api.exception.BadRequestException;
+import com.b2international.snowowl.api.task.exception.TaskNotFoundException;
 import com.b2international.snowowl.snomed.api.domain.ISnomedImportConfiguration;
+import com.b2international.snowowl.snomed.api.domain.exception.SnomedImportConfigurationNotFoundException;
+import com.b2international.snowowl.snomed.api.domain.exception.SnomedImportException;
 
 /**
- * Representation of a SNOMED&nbsp;CT import service for RF2 release archives.
+ * Implementations allow importing SNOMED CT content from RF2 release archives.
  */
 public interface ISnomedRf2ImportService {
 
 	/**
-	 * Returns with the previously configured SNOMED&nbsp;CT RF2 import configuration.
-	 * @param importId the import configuration UUID.
-	 * @return the configuration.
+	 * Retrieves the configuration object for the specified import run identifier.
+	 * 
+	 * @param importId the identifier of the import run to look up
+	 * 
+	 * @return the configuration object describing import details
+	 * 
+	 * @throws SnomedImportConfigurationNotFoundException if the specified import run does not exist
 	 */
-	ISnomedImportConfiguration getImportDetails(final UUID importId);
+	ISnomedImportConfiguration getImportDetails(UUID importId);
 
 	/**
-	 * Deletes a previously configured SNOMED&nbsp;CT RF2 import configuration.
-	 * @param importId the import configuration unique identifier.
+	 * Deletes a previously configured SNOMED CT RF2 import run.
+	 * 
+	 * @param importId the identifier of the import run to remove
 	 */
-	void deleteImportDetails(final UUID importId);
+	void deleteImportDetails(UUID importId);
 
 	/**
-	 * Performs the SNOMED&nbsp;CT RF2 import.
-	 * @param importId the import configuration unique ID.
-	 * @param inputStream the input stream to the RF2 release archive.
-	 * @param originalFilename the file name of the release archive.
+	 * Starts the import using the specified input stream.
+	 * <p>
+	 * This method returns immediately. 
+	 * Import status can be followed by polling {@link #getImportDetails(UUID)}.
+	 *  
+	 * @param importId    the identifier of the import run to begin
+	 * @param inputStream the input stream opened on a valid RF2 release archive
+	 * 
+	 * @throws SnomedImportException if the import can not start for some reason (import errors are only 
+	 *                               reflected in the import run's status flag)
 	 */
-	void startImport(final UUID importId, final InputStream inputStream);
+	void startImport(UUID importId, InputStream inputStream);
 
 	/**
-	 * Creates and registers a new SNOMED&nbsp;CT RF2 import configuration. After the successful registration
-	 * it returns with the UUID of configuration.
-	 * @param configuration the configuration to register.
-	 * @return the UUID of the associated configuration.
+	 * Prepares a new SNOMED CT RF2 import run.
+	 * 
+	 * @param configuration the configuration object for the import run to register
+	 * 
+	 * @return the UUID of the associated configuration
+	 * 
+	 * @throws CodeSystemNotFoundException        if SNOMED CT as a code system is not registered
+	 * @throws CodeSystemVersionNotFoundException if a code system version for SNOMED CT with the given identifier
+	 *                                            is not registered
+	 * @throws TaskNotFoundException              if the task identifier does not correspond to a task for the given 
+	 *                                            code system version
+	 * @throws BadRequestException                if required properties on the configuration object are not populated                                             
 	 */
-	UUID create(final ISnomedImportConfiguration configuration);
+	UUID create(ISnomedImportConfiguration configuration);
 }

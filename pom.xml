@@ -5,7 +5,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>com.b2international.snowowl</groupId>
 	<artifactId>snowowl-parent</artifactId>
-	<version>3.9.0-SNAPSHOT</version>
+	<version>4.0.0</version>
 	<packaging>pom</packaging>
 
 	<properties>
@@ -23,6 +23,7 @@
 		<target.platform.version>3.9.0</target.platform.version>
 		<!-- Versioning -->
 		<forceContextQualifier>${maven.build.timestamp}</forceContextQualifier>
+		<customer>community</customer>
 	</properties>
 
 	<modules>
@@ -53,6 +54,19 @@
 			</plugin>
 			<plugin>
 				<groupId>org.eclipse.tycho</groupId>
+				<artifactId>tycho-source-plugin</artifactId>
+				<version>${tycho.version}</version>
+				<executions>
+					<execution>
+						<id>plugin-source</id>
+						<goals>
+							<goal>plugin-source</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+			<plugin>
+				<groupId>org.eclipse.tycho</groupId>
 				<artifactId>target-platform-configuration</artifactId>
 				<version>${tycho.version}</version>
 				<configuration>
@@ -60,7 +74,7 @@
 					<pomDependencies>consider</pomDependencies>
 					<filters>
 						<!-- work around Equinox bug 348045 -->
-						<!-- Removes the extension bundle from the available bundles for the 
+						<!-- Removes the extension bundle from the available bundles for the
 							javax.servlet package -->
 						<filter>
 							<type>java-package</type>
@@ -119,7 +133,7 @@
 							<restrictTo>
 								<versionRange>[15.0.0,16.0.0)</versionRange>
 							</restrictTo>
-						</filter>			
+						</filter>
 						<!-- Restrict Xtext bundle to 2.6.2 -->
 						<filter>
 							<type>eclipse-plugin</type>
@@ -261,6 +275,11 @@
 					<publishArtifacts>true</publishArtifacts>
 				</configuration>
 			</plugin>
+			<plugin>
+				<groupId>org.eclipse.tycho</groupId>
+				<artifactId>tycho-versions-plugin</artifactId>
+				<version>${tycho.version}</version>
+			</plugin>
 		</plugins>
 		<pluginManagement>
 			<plugins>
@@ -296,7 +315,7 @@
 						<includes>
 							<include>**/*Tests.java</include>
 						</includes>
-						<!-- Kill test JVM if tests take more than 10 minutes (600 seconds) 
+						<!-- Kill test JVM if tests take more than 10 minutes (600 seconds)
 							to finish -->
 						<forkedProcessTimeoutInSeconds>600</forkedProcessTimeoutInSeconds>
 					</configuration>
@@ -326,6 +345,11 @@
 					<configuration>
 						<includeAllDependencies>true</includeAllDependencies>
 					</configuration>
+				</plugin>
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-assembly-plugin</artifactId>
+					<version>2.3</version>
 				</plugin>
 			</plugins>
 		</pluginManagement>
@@ -527,18 +551,18 @@
 			</repositories>
 		</profile>
 	</profiles>
-	
+
 	<distributionManagement>
 		<repository>
-			<id>nexus_deployment</id>
+			<id>${maven.repository.id}</id>
 			<url>${nexus.releases.url}</url>
 		</repository>
 		<snapshotRepository>
-			<id>nexus_deployment</id>
+			<id>${maven.repository.id}</id>
 			<url>${nexus.snapshots.url}</url>
 		</snapshotRepository>
 	</distributionManagement>
-	
+
 	<scm>
 		<url>https://github.com/b2ihealthcare/snow-owl</url>
 		<connection>scm:git:ssh://github.com/b2ihealthcare/snow-owl.git</connection>

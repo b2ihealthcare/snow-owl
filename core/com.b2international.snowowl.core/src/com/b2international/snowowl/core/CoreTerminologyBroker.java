@@ -34,6 +34,7 @@ import org.slf4j.LoggerFactory;
 import com.b2international.commons.ClassUtils;
 import com.b2international.commons.CompareUtils;
 import com.b2international.commons.StringUtils;
+import com.b2international.snowowl.core.api.ExtendedComponent;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.api.IComponent;
 import com.b2international.snowowl.core.api.IComponentIconIdProvider;
@@ -264,6 +265,8 @@ public class CoreTerminologyBroker {
 		String terminologyComponentId = CLASS_TO_ID_CACHE.get(object.getClass());
 		if (null != terminologyComponentId) {
 			return terminologyComponentId;
+		} else if (object instanceof ExtendedComponent) {
+			return getTerminologyComponentId(((ExtendedComponent) object).getTerminologyComponentId());
 		}
 
 		for (final IConfigurationElement element : Platform.getExtensionRegistry().getConfigurationElementsFor(REPRESENTATION_EXTENSION_POINT_ID)) {
@@ -283,6 +286,8 @@ public class CoreTerminologyBroker {
 		Short id = CLASS_TO_SHORT_CACHE.get(object.getClass());
 		if (null != id) {
 			return id.shortValue();
+		} else if (object instanceof ExtendedComponent) {
+			return ((ExtendedComponent) object).getTerminologyComponentId();
 		}
 
 		final int asInt = getTerminologyComponentIdAsInt(object);
@@ -320,6 +325,8 @@ public class CoreTerminologyBroker {
 		final Integer componentId = CLASS_TO_INT_CACHE.get(object.getClass());
 		if (null != componentId) {
 			return componentId.intValue();
+		} else if (object instanceof ExtendedComponent) {
+			return (int) ((ExtendedComponent) object).getTerminologyComponentId();
 		}
 
 		for (final IConfigurationElement element : Platform.getExtensionRegistry().getConfigurationElementsFor(REPRESENTATION_EXTENSION_POINT_ID)) {

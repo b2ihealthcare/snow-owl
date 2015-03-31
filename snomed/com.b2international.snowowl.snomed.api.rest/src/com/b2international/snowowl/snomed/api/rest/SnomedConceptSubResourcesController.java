@@ -21,7 +21,6 @@ import java.util.List;
 import javax.servlet.http.HttpServletRequest;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -53,8 +52,8 @@ import com.wordnik.swagger.annotations.ApiResponses;
 @Api("SNOMED CT Concepts")
 @RestController
 @RequestMapping(
-		value="/snomed-ct/{version}",
-		produces={ AbstractRestService.V1_MEDIA_TYPE, MediaType.APPLICATION_JSON_VALUE })
+		value="/{version}",
+		produces={ AbstractRestService.V1_MEDIA_TYPE })
 public class SnomedConceptSubResourcesController extends AbstractSnomedRestService {
 
 	@Autowired

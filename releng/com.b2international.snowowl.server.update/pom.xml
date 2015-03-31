@@ -8,31 +8,12 @@
 	<parent>
 		<groupId>com.b2international.snowowl</groupId>
 		<artifactId>releng-parent</artifactId>
-		<version>3.9.0-SNAPSHOT</version>
+		<version>4.0.0</version>
 	</parent>
-
-	<properties>
-		<customer>community</customer>
-		<build.qualifier>${maven.build.timestamp}</build.qualifier>
-		<build.version>${parsedVersion.majorVersion}.${parsedVersion.minorVersion}.${parsedVersion.incrementalVersion}.${build.qualifier}</build.version>
-	</properties>
 
 	<build>
 		<finalName>snowowl-${customer}_${build.version}</finalName>
 		<plugins>
-			<plugin>
-				<groupId>org.codehaus.mojo</groupId>
-				<artifactId>build-helper-maven-plugin</artifactId>
-				<version>1.9.1</version>
-				<executions>
-					<execution>
-						<id>parse-version</id>
-						<goals>
-							<goal>parse-version</goal>
-						</goals>
-					</execution>
-				</executions>
-			</plugin>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-antrun-plugin</artifactId>
@@ -64,18 +45,10 @@
 							<goal>materialize-products</goal>
 						</goals>
 					</execution>
-					<execution>
-						<id>archive-products</id>
-						<goals>
-							<goal>archive-products</goal>
-						</goals>
-					</execution>
 				</executions>
 			</plugin>
 			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-assembly-plugin</artifactId>
-				<version>2.3</version>
 				<executions>
 					<execution>
 						<id>package-h2</id>

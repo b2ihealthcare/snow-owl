@@ -155,20 +155,12 @@ public class ServerSideWidgetBeanProviderStrategy extends WidgetBeanProviderStra
 
 		final List<LeafWidgetBean> beans = Lists.newArrayList();
 
-		//ignore inactive ones
-		final Iterable<SnomedConcreteDataTypeRefSetMemberIndexEntry> dataTypes = Iterables.filter(
-				getConcreteDataTypes(conceptId), new Predicate<SnomedConcreteDataTypeRefSetMemberIndexEntry>() {
-			@Override public boolean apply(final SnomedConcreteDataTypeRefSetMemberIndexEntry member) {
-				return member.isActive();
-			}
-		});
-		
 		final DataTypeContainerWidgetModel dataTypeModel = conceptWidgetModel.getDataTypeContainerWidgetModel();
 		
 		final List<DataTypeWidgetModel> unusedModels = Lists.newArrayList(
 				Lists.transform(dataTypeModel.getChildren(), new UncheckedCastFunction<WidgetModel, DataTypeWidgetModel>(DataTypeWidgetModel.class)));
 		
-		for (final SnomedConcreteDataTypeRefSetMemberIndexEntry entry : dataTypes) {
+		for (final SnomedConcreteDataTypeRefSetMemberIndexEntry entry : getConcreteDataTypes(conceptId)) {
 			final com.b2international.snowowl.snomed.mrcm.DataType convertedDataType = WidgetBeanUtils.TYPE_CONVERSION_MAP.get(entry.getDataType());
 			final DataTypeWidgetModel matchingModel = dataTypeModel.getFirstMatching(entry.getLabel(), convertedDataType);
 			final DataTypeWidgetBean widgetBean = new DataTypeWidgetBean(cwb, matchingModel, entry.getReferencedComponentId(), entry.getId(), entry.isReleased());

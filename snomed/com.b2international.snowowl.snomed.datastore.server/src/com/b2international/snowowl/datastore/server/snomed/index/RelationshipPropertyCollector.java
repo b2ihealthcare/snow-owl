@@ -33,9 +33,10 @@ import bak.pcj.LongCollection;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 
 /**
- * Class for collecting SNOMED&nbsp;CT relationship properties.
+ * Class for collecting SNOMED CT relationship properties.
+ * <p>
  * This class supplies a mapping for relationships, where keys are relationship storage keys,
- * values are a primitive long array with the followings:
+ * and values are primitive long arrays with the following content:
  * <ul>
  * <li>Relationship characteristic type concept ID</li>
  * <li>Relationship module concept ID</li>
@@ -44,7 +45,6 @@ import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
  * <li>Relationship destination concept ID</li>
  * <li>Relationship modified concept ID</li>
  * </ul>
- *
  */
 public class RelationshipPropertyCollector extends ComponentPropertyCollector {
 
@@ -52,10 +52,10 @@ public class RelationshipPropertyCollector extends ComponentPropertyCollector {
 	private static final long EXISTENTIAL = Long.parseLong(Concepts.EXISTENTIAL_RESTRICTION_MODIFIER);
 
 	private NumericDocValues characteristicTypeIds;
-	private NumericDocValues typdIds;
+	private NumericDocValues typeIds;
 	private NumericDocValues sourceIds;
 	private NumericDocValues destinationIds;
-	private NumericDocValues modifiers;
+	private NumericDocValues modifierFlags;
 	private NumericDocValues moduleIds;
 
 	public RelationshipPropertyCollector(final LongCollection acceptedIds) {
@@ -63,41 +63,40 @@ public class RelationshipPropertyCollector extends ComponentPropertyCollector {
 	}
 
 	@Override
-	protected void setNextReader(final AtomicReader reader) throws IOException {
-		super.setNextReader(reader);
-		characteristicTypeIds = reader.getNumericDocValues(RELATIONSHIP_CHARACTERISTIC_TYPE_ID);
-		moduleIds = reader.getNumericDocValues(RELATIONSHIP_MODULE_ID);
-		typdIds = reader.getNumericDocValues(RELATIONSHIP_ATTRIBUTE_ID);
-		sourceIds = reader.getNumericDocValues(RELATIONSHIP_OBJECT_ID);
-		destinationIds = reader.getNumericDocValues(RELATIONSHIP_VALUE_ID);
-		modifiers = reader.getNumericDocValues(RELATIONSHIP_UNIVERSAL);
+	protected void initDocValues(final AtomicReader leafReader) throws IOException {
+		super.initDocValues(leafReader);
+		characteristicTypeIds = leafReader.getNumericDocValues(RELATIONSHIP_CHARACTERISTIC_TYPE_ID);
+		moduleIds = leafReader.getNumericDocValues(RELATIONSHIP_MODULE_ID);
+		typeIds = leafReader.getNumericDocValues(RELATIONSHIP_ATTRIBUTE_ID);
+		sourceIds = leafReader.getNumericDocValues(RELATIONSHIP_OBJECT_ID);
+		destinationIds = leafReader.getNumericDocValues(RELATIONSHIP_VALUE_ID);
+		modifierFlags = leafReader.getNumericDocValues(RELATIONSHIP_UNIVERSAL);
 	}
 
 	@Override
-	protected boolean check() {
-		return null != characteristicTypeIds 
-			&& null != typdIds 
-			&& null != sourceIds 
-			&& null != destinationIds 
-			&& null != modifiers 
-			&& null != storageKeys
-			&& null != moduleIds;
+	protected boolean isLeafCollectible() {
+		return super.isLeafCollectible()
+				&& characteristicTypeIds != null 
+				&& moduleIds != null
+				&& typeIds != null 
+				&& sourceIds != null 
+				&& destinationIds != null 
+				&& modifierFlags != null; 
 	}
 
 	@Override
-	protected long[] initProperties(final int doc) {
+	protected long[] collectProperties(final int docId) {
 		return new long[] { 
-			characteristicTypeIds.get(doc),
-			moduleIds.get(doc),
-			typdIds.get(doc), 
-			sourceIds.get(doc), 
-			destinationIds.get(doc), 
-			getModifierId(doc) 
+				characteristicTypeIds.get(docId),
+				moduleIds.get(docId),
+				typeIds.get(docId), 
+				sourceIds.get(docId), 
+				destinationIds.get(docId), 
+				getModifierId(docId) 
 		};
 	}
 
-	private long getModifierId(final int doc) {
-		return 1 == modifiers.get(doc) ? UNIVERSAL : EXISTENTIAL;
+	private long getModifierId(final int docId) {
+		return (modifierFlags.get(docId) == 1L) ? UNIVERSAL : EXISTENTIAL;
 	}
-
 }

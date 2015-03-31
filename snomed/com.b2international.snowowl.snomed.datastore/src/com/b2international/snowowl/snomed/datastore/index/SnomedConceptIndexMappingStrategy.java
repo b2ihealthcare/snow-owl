@@ -21,7 +21,6 @@ import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBr
 import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.COMPONENT_ID;
 import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.COMPONENT_IGNORE_COMPARE_UNIQUE_KEY;
 import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.COMPONENT_LABEL;
-import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.COMPONENT_LABEL_SORT_KEY;
 import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.COMPONENT_REFERRING_PREDICATE;
 import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.COMPONENT_RELEASED;
 import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.COMPONENT_STORAGE_KEY;
@@ -42,27 +41,28 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.Set;
 
+import org.apache.lucene.document.BinaryDocValuesField;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.Field.Store;
-import org.apache.lucene.document.FloatField;
+import org.apache.lucene.document.FloatDocValuesField;
 import org.apache.lucene.document.IntField;
 import org.apache.lucene.document.LongField;
 import org.apache.lucene.document.NumericDocValuesField;
 import org.apache.lucene.document.StoredField;
 import org.apache.lucene.document.StringField;
 import org.apache.lucene.document.TextField;
+import org.apache.lucene.util.BytesRef;
 
 import bak.pcj.LongIterator;
 import bak.pcj.set.LongSet;
 
 import com.b2international.snowowl.core.ApplicationContext;
-import com.b2international.snowowl.core.api.index.CommonIndexConstants;
 import com.b2international.snowowl.core.api.index.IIndexMappingStrategy;
 import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.datastore.BranchPathUtils;
 import com.b2international.snowowl.datastore.cdo.CDOUtils;
 import com.b2international.snowowl.datastore.index.AbstractIndexMappingStrategy;
-import com.b2international.snowowl.datastore.index.IndexUtils;
+import com.b2international.snowowl.datastore.index.SortKeyMode;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants;
 import com.b2international.snowowl.snomed.datastore.services.ISnomedComponentService;
@@ -70,7 +70,6 @@ import com.b2international.snowowl.snomed.datastore.services.SnomedConceptNamePr
 
 /**
  * Mapping strategy to transform a SNOMED CT concept into a {@link Document document} of the index.
- * 
  * 
  * @see IIndexMappingStrategy
  * @see SnomedConceptNameProvider
@@ -175,14 +174,16 @@ public abstract class SnomedConceptIndexMappingStrategy extends AbstractIndexMap
 		doc.add(new IntField(CONCEPT_PRIMITIVE, primitive ? 1 : 0, Store.YES));
 		doc.add(new StoredField(COMPONENT_RELEASED, released ? 1 : 0));
 		doc.add(new TextField(COMPONENT_LABEL, label, Store.YES));
-		doc.add(new StringField(CommonIndexConstants.COMPONENT_LABEL_SINGLE, label, Store.NO));
-		doc.add(new StringField(COMPONENT_LABEL_SORT_KEY, IndexUtils.getSortKey(label), Store.YES));
-		doc.add(new FloatField(CONCEPT_DEGREE_OF_INTEREST, degreeOfInterest, Store.YES));
+		doc.add(new BinaryDocValuesField(COMPONENT_LABEL, new BytesRef(label)));
+		SortKeyMode.SORT_ONLY.add(doc, label);
+		doc.add(new StoredField(CONCEPT_DEGREE_OF_INTEREST, degreeOfInterest));
+		doc.add(new FloatDocValuesField(CONCEPT_DEGREE_OF_INTEREST, degreeOfInterest));
 		doc.add(new LongField(CONCEPT_MODULE_ID, Long.valueOf(moduleId), Store.YES));
 		doc.add(new LongField(COMPONENT_ICON_ID, Long.valueOf(iconId), Store.YES));
 		doc.add(new NumericDocValuesField(COMPONENT_STORAGE_KEY, storageKey));
 		doc.add(new NumericDocValuesField(COMPONENT_ID, Long.valueOf(conceptId)));
 		doc.add(new NumericDocValuesField(COMPONENT_COMPARE_UNIQUE_KEY, indexAsRelevantForCompare ? storageKey : CDOUtils.NO_STORAGE_KEY));
+		doc.add(new NumericDocValuesField(COMPONENT_ICON_ID, Long.valueOf(iconId)));
 		if (!indexAsRelevantForCompare) {
 			doc.add(new NumericDocValuesField(COMPONENT_IGNORE_COMPARE_UNIQUE_KEY, storageKey));
 		}

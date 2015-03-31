@@ -21,60 +21,72 @@ import java.util.Date;
 import com.b2international.snowowl.snomed.api.ISnomedExportService;
 
 /**
- * Representation of a configuration used by the 
- * {@link ISnomedExportService SNOMED&nbsp;CT export service}.
- *
+ * Represents the configuration object used by the {@link ISnomedExportService SNOMED CT export service}.
  */
 public interface ISnomedExportConfiguration {
 
 	/**
-	 * Returns with the RF2 release type of the current export configuration.
-	 * @return the desired RF2 release type.
+	 * Returns the RF2 release type of the current export configuration.
+	 * 
+	 * @return the desired RF2 release type
 	 */
 	Rf2ReleaseType getRf2ReleaseType();
+
+	/**
+	 * Returns the transient effective time to use for unpublished components.
+	 * 
+	 * @return the transient effective time, or {@code null} if the default {@code UNPUBLISHED} value should be printed
+	 * for unpublished components
+	 */
+	String getTransientEffectiveTime();
 	
 	/**
 	 * Returns the code system version identifier, eg. "{@code 2014-01-31}".
+	 * 
 	 * @return the code system version identifier
 	 */
 	String getVersion();
-	
+
 	/**
 	 * Returns the task identifier, eg. "{@code 1747}". A {@code null} value points to the repository version,
 	 * when the component is not part of an editing task.
-	 * @return the task identifier, or {@code null} in case of a component on a version
+	 * 
+	 * @return the task identifier, or {@code null} in case of the export happening on a version
 	 */
 	String getTaskId();
-	
+
 	/**
-	 * Returns with the delta export start effective time.
-	 * <br>Can be {@code null} even 
-	 * if the {@link Rf2ReleaseType release type} is {@link Rf2ReleaseType#DELTA delta}.
+	 * Returns the export's starting effective time range. Only applicable if the release type is set to
+	 * {@link Rf2ReleaseType#DELTA}.
+	 * 
+	 * @return the starting effective time range, or {@code null} if the export has an open-ended beginning date
 	 */
 	Date getDeltaExportStartEffectiveTime();
 
 	/**
-	 * Returns with the delta export end effective time.
-	 * <br>May return with {@code null} even 
-	 * if the {@link Rf2ReleaseType release type} is {@link Rf2ReleaseType#DELTA delta}.
+	 * Returns the export's ending effective time range. Only applicable if the release type is set to
+	 * {@link Rf2ReleaseType#DELTA}.
+	 * <p>
+	 * If both beginning and ending dates are set to {@code null}, all unpublished components will be exported.
+	 * 
+	 * @return the ending effective time range, or {@code null} if the export has an open-ended finishing date
 	 */
 	Date getDeltaExportEndEffectiveTime();
-	
+
 	/**
-	 * Returns with the namespace ID.
-	 * <p>The namespace ID will be used when generating the folder structure 
-	 * for the RF2 release format export.
-	 * @return the namespace ID.
+	 * Returns the country/namespace element to use when generating file and folder names for the RF2 export.
+	 * 
+	 * @return the country/namespace element to use in exported file and folder names
 	 */
 	String getNamespaceId();
-	
+
 	/**
-	 * Returns with a collection of SNOMED&nbsp;CT module concept IDs.
-	 * <p>This collection of module IDs will define which components will be included in the export.
-	 * Components having a module that is not included in the returning set will be excluded from 
-	 * the export result.
-	 * @return a collection of module dependency IDs.
+	 * Returns a collection of SNOMED CT modules selected for export.
+	 * <p>
+	 * This collection of module IDs will define which components will be included in the export. Components having a
+	 * module that is not included in the returning set will be excluded from the resulting archive.
+	 * 
+	 * @return a collection of module identifiers
 	 */
-	Collection<String> getModuleDependencyIds();
-	
+	Collection<String> getModuleIds();
 }

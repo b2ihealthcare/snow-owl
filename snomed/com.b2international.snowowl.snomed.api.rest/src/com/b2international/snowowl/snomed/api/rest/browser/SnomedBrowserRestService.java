@@ -19,6 +19,7 @@ import java.util.Map;
 import javax.servlet.http.HttpServletRequest;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.MediaType;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestHeader;
@@ -48,7 +49,7 @@ import com.wordnik.swagger.annotations.ApiResponses;
 @Controller
 @RequestMapping(
 		value="/{version}", 
-		produces={ SnomedBrowserRestService.IHTSDO_V1_MEDIA_TYPE })
+		produces={ SnomedBrowserRestService.IHTSDO_V1_MEDIA_TYPE, MediaType.APPLICATION_JSON_VALUE })
 public class SnomedBrowserRestService extends AbstractSnomedRestService {
 
 	/**
@@ -199,13 +200,21 @@ public class SnomedBrowserRestService extends AbstractSnomedRestService {
 			@RequestParam(value="query")
 			final String query,
 
+			@ApiParam(value="The starting offset in the list")
+			@RequestParam(value="offset", defaultValue="0", required=false) 
+			final int offset,
+
+			@ApiParam(value="The maximum number of items to return")
+			@RequestParam(value="limit", defaultValue="50", required=false) 
+			final int limit,
+
 			@ApiParam(value="Language codes and reference sets, in order of preference")
 			@RequestHeader(value="Accept-Language", defaultValue="en-US;q=0.8,en-GB;q=0.6", required=false) 
 			final String languageSetting,
 
 			final HttpServletRequest request) {
 
-		return searchDescriptionsOnTask(version, null, query, languageSetting, request);
+		return searchDescriptionsOnTask(version, null, query, offset, limit, languageSetting, request);
 	}
 
 	@ApiOperation(
@@ -232,6 +241,14 @@ public class SnomedBrowserRestService extends AbstractSnomedRestService {
 			@RequestParam(value="query")
 			final String query,
 
+			@ApiParam(value="The starting offset in the list")
+			@RequestParam(value="offset", defaultValue="0", required=false) 
+			final int offset,
+
+			@ApiParam(value="The maximum number of items to return")
+			@RequestParam(value="limit", defaultValue="50", required=false) 
+			final int limit,
+			
 			@ApiParam(value="Language codes and reference sets, in order of preference")
 			@RequestHeader(value="Accept-Language", defaultValue="en-US;q=0.8,en-GB;q=0.6", required=false) 
 			final String languageSetting,
@@ -243,7 +260,7 @@ public class SnomedBrowserRestService extends AbstractSnomedRestService {
 		ref.setVersion(version);
 		ref.setTaskId(taskId);
 
-		return delegate.getDescriptions(ref, query, Collections.list(request.getLocales()));
+		return delegate.getDescriptions(ref, query, Collections.list(request.getLocales()), offset, limit);
 	}
 
 	@ApiOperation(

@@ -18,14 +18,21 @@ package com.b2international.snowowl.snomed.api.domain;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 
 /**
- * TODO document
+ * Enumerates allowed relationship modifiers and maps them to concept identifiers.
+ * 
+ * @see <a href="http://www.snomed.org/tig?t=tsg2_metadata_enumeration_modifier">Concept enumerations for modifierId
+ * (Technical Implementation Guide)</a>
  */
 public enum RelationshipModifier implements ConceptEnum {
 
-	/** Existential restriction */
+	/** 
+	 * Existential restriction (&exist;)
+	 */
 	EXISTENTIAL(Concepts.EXISTENTIAL_RESTRICTION_MODIFIER),
 
-	/** Universal restriction */
+	/** 
+	 * Universal restriction (&forall;)
+	 */
 	UNIVERSAL(Concepts.UNIVERSAL_RESTRICTION_MODIFIER);
 
 	private final String conceptId;
@@ -34,6 +41,11 @@ public enum RelationshipModifier implements ConceptEnum {
 		this.conceptId = conceptId;
 	}
 
+	/**
+	 * Retrieves the concept identifier for this relationship modifier value.
+	 * 
+	 * @return the concept identifier corresponding to the modifier constant
+	 */
 	@Override
 	public String getConceptId() {
 		return conceptId;

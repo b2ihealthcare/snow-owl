@@ -1,7 +1,7 @@
 Manifest-Version: 2.0
 Bundle-Name: Common Protege Libraries
 Bundle-SymbolicName: org.protege.common;singleton=true
-Bundle-Version: 4.1.0.qualifier
+Bundle-Version: 4.1.0.b2i
 Bundle-Description: Some common libraries
 Bundle-Vendor: Protege Development Team
 Bundle-ContactAddress: p4-feedback@lists.stanford.edu

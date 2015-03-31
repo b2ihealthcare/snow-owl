@@ -30,6 +30,7 @@ import static java.util.Collections.sort;
 import static org.slf4j.LoggerFactory.getLogger;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
@@ -51,6 +52,7 @@ import com.b2international.snowowl.snomed.datastore.services.SnomedConceptNamePr
 import com.b2international.snowowl.snomed.importer.net4j.ImportConfiguration;
 import com.b2international.snowowl.snomed.importer.net4j.SnomedIncompleteTaxonomyValidationDefect;
 import com.b2international.snowowl.snomed.importer.net4j.SnomedValidationDefect;
+import com.b2international.snowowl.snomed.importer.net4j.SnomedValidationDefect.DefectType;
 import com.b2international.snowowl.snomed.importer.rf2.util.Rf2FileModifier;
 
 /**
@@ -88,70 +90,58 @@ public class SnomedTaxonomyValidator {
 	/*
 	 * Two major use cases exist:
 	 *  |
-	 *  + - content is already exists for SCT -> full import cannot occur but delta or snapshot
+	 *  + - snapshot import
 	 *  | |
 	 *  | +-> build taxonomy based on the content and apply the changes from the release files.
 	 *  |
-	 *  + - content does not exist -> snapshot or full import but no delta
+	 *  + - full or delta import
 	 *    |
 	 *    +-> build the taxonomy from the file. in case of full import split the files based effective times.
 	 *  
 	 */
 	private Collection<SnomedValidationDefect> doValidate() {
 		try {
-			if (isSnomedContentAvailable()) {
+			
+			if (isSnapshot()) {
 				
-				LOGGER.info("Validating RF2 release files against the current state of the SNOMED CT ontology...");
+				LOGGER.info("Validating SNOMED CT ontology based on the given RF2 release files...");
 				
-				final String conceptsFilePath = getConceptFilePath();
-				final String relationshipsFilePath = getRelationshipFilePath();
-				
-				final Rf2BasedSnomedTaxonomyBuilder builder = createBuilder(conceptsFilePath, relationshipsFilePath);
-				builder.applyNodeChanges(conceptsFilePath);
-				builder.applyEdgeChanges(relationshipsFilePath);
+				final String conceptFilePath = removeConceptHeader();
+				final String relationshipFilePath = removeRelationshipHeader();
+				final Rf2BasedSnomedTaxonomyBuilder builder = createBuilder(conceptFilePath, relationshipFilePath);
+				builder.applyNodeChanges(conceptFilePath);
+				builder.applyEdgeChanges(relationshipFilePath);
 				builder.build();
-				
+					
 			} else {
-				if (isSnapshot()) {
+			
+				LOGGER.info("Validating SNOMED CT ontology based on the given RF2 release files...");
 				
-					LOGGER.info("Validating SNOMED CT ontology based on the given RF2 release files...");
+				final Map<String, File> conceptFiles = Rf2FileModifier.split(configuration.getConceptsFile());
+				final Map<String, File> relationshipFiles = Rf2FileModifier.split(configuration.getRelationshipsFile());
+				
+				Rf2BasedSnomedTaxonomyBuilder builder = null;
+				final List<String> effectiveTimes = newArrayList(newHashSet(concat(conceptFiles.keySet(), relationshipFiles.keySet())));
+				sort(effectiveTimes);
+				
+				for (final String effectiveTime : effectiveTimes) {
 					
-					final String conceptFilePath = getConceptFilePath();
-					final String relationshipFilePath = getRelationshipFilePath();
-					final Rf2BasedSnomedTaxonomyBuilder builder = createBuilder(conceptFilePath, relationshipFilePath);
-					builder.applyNodeChanges(conceptFilePath);
-					builder.applyEdgeChanges(relationshipFilePath);
+					LOGGER.info("Validating concepts and relationships from '" + effectiveTime + "'...");
+					
+					final File conceptFile = conceptFiles.get(effectiveTime);
+					final File relationshipFile = relationshipFiles.get(effectiveTime);
+					
+					builder = null == builder ? createBuilder(getFilePath(conceptFile), getFilePath(relationshipFile)) : newInstance(builder);
+					builder.applyNodeChanges(getFilePath(conceptFile));
+					builder.applyEdgeChanges(getFilePath(relationshipFile));
 					builder.build();
-					
-				} else {
-				
-					LOGGER.info("Validating SNOMED CT ontology based on the given RF2 release files...");
-					
-					final Rf2FileModifier modifier = new Rf2FileModifier();
-					final Map<String, File> conceptFiles = modifier.split(configuration.getConceptsFile());
-					final Map<String, File> relationshipFiles = modifier.split(configuration.getRelationshipsFile());
-					
-					Rf2BasedSnomedTaxonomyBuilder builder = null;
-					final List<String> effectiveTimes = newArrayList(newHashSet(concat(conceptFiles.keySet(), relationshipFiles.keySet())));
-					sort(effectiveTimes);
-					
-					LOGGER.info("Validating SNOMED CT ontology based on the given RF2 release files...");
-					
-					for (final String effectiveTime : effectiveTimes) {
-						
-						LOGGER.info("Validating concepts and relationships from '" + effectiveTime + "'...");
-						
-						final File conceptFile = conceptFiles.get(effectiveTime);
-						final File relationshipFile = relationshipFiles.get(effectiveTime);
-						
-						builder = null == builder ? createBuilder(getFilePath(conceptFile), getFilePath(relationshipFile)) : newInstance(builder);
-						builder.applyNodeChanges(getFilePath(conceptFile));
-						builder.applyEdgeChanges(getFilePath(relationshipFile));
-						builder.build();
-					}
-					
 				}
+				
 			}
+			
+		} catch (final IOException e) {
+			LOGGER.error("Validation failed with an IOException.", e);
+			return Collections.<SnomedValidationDefect>singleton(new SnomedValidationDefect(DefectType.IO_PROBLEM, Collections.<String>emptySet()));
 		} catch (final IncompleteTaxonomyException e) {
 			LOGGER.error("Validation failed.");
 			final Collection<String> defects = newHashSet();
@@ -189,6 +179,7 @@ public class SnomedTaxonomyValidator {
 				sb.append("'.");
 				defects.add(sb.toString());
 			}
+			
 			final SnomedValidationDefect defect = new SnomedIncompleteTaxonomyValidationDefect(defects, conceptIdsToInactivate);
 			return Collections.<SnomedValidationDefect>singleton(defect);
 		}
@@ -205,14 +196,12 @@ public class SnomedTaxonomyValidator {
 		return null == file ?  null : file.getPath();
 	}
 	
-	private String getConceptFilePath() {
-		final Rf2FileModifier fileModifier = new Rf2FileModifier();
-		return fileModifier.cutHeader(configuration.getConceptsFile()).getPath();
+	private String removeConceptHeader() throws IOException {
+		return Rf2FileModifier.removeHeader(configuration.getConceptsFile()).getPath();
 	}
 	
-	private String getRelationshipFilePath() {
-		final Rf2FileModifier fileModifier = new Rf2FileModifier();
-		return fileModifier.cutHeader(configuration.getRelationshipsFile()).getPath();
+	private String removeRelationshipHeader() throws IOException {
+		return Rf2FileModifier.removeHeader(configuration.getRelationshipsFile()).getPath();
 	}
 
 	private boolean isSnapshot() {

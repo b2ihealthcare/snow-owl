@@ -25,7 +25,7 @@ public interface ISnomedBrowserChildConcept extends IConceptIdWithFsnProvider, I
 	/**
 	 * @return {@code true} if this concept has other children in the tree, {@code false} otherwise
 	 */
-	boolean hasChild();
+	boolean getHasChild();
 
 	/**
 	 * @return the characteristic type of the IS A relationship where the link to the child concept originates from

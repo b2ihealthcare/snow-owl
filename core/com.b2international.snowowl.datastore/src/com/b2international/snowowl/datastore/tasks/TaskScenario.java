@@ -29,28 +29,28 @@ public enum TaskScenario {
 	DUAL_AUTHORS_WITH_SINGLE_REVIEWER_DUAL_AUTHORING(AuthorArity.DUAL, ReviewerArity.SINGLE_REVIEWER, AuthoringType.DUAL_AUTHORING) {
 		@Override
 		public String toString() {
-			return "Dual authors with single reviewer � Dual authoring";
+			return "Dual authors with single reviewer – Dual authoring";
 		}
 	},
 	
 	DUAL_AUTHORS_WITH_SINGLE_REVIEWER_DUAL_BLIND_AUTHORING(AuthorArity.DUAL, ReviewerArity.SINGLE_REVIEWER, AuthoringType.DUAL_BLIND_AUTHORING) {
 		@Override
 		public String toString() {
-			return "Dual authors with single reviewer � Dual blind authoring";
+			return "Dual authors with single reviewer – Dual blind authoring";
 		}
 	},
 	
 	DUAL_AUTHORS_WITH_DUAL_REVIEWERS_DUAL_AUTHORING(AuthorArity.DUAL, ReviewerArity.DUAL_REVIEWER, AuthoringType.DUAL_AUTHORING) {
 		@Override
 		public String toString() {
-			return "Dual authors with dual reviewers � Dual authoring";
+			return "Dual authors with dual reviewers – Dual authoring";
 		}
 	},
 	
 	DUAL_AUTHORS_WITH_DUAL_REVIEWERS_DUAL_BLIND_AUTHORING(AuthorArity.DUAL, ReviewerArity.DUAL_REVIEWER, AuthoringType.DUAL_BLIND_AUTHORING) {
 		@Override
 		public String toString() {
-			return "Dual authors with dual reviewers � Dual blind authoring";
+			return "Dual authors with dual reviewers – Dual blind authoring";
 		}
 	};
 	

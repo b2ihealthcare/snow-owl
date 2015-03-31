@@ -13,20 +13,23 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.snomed.api.domain;
+package com.b2international.snowowl.snomed.api.exception;
+
+import com.b2international.snowowl.api.exception.NotFoundException;
 
 /**
- * Representation of a SNOMED&nbsp;CT reference set export configuration.
- * @see ISnomedExportConfiguration
- *
+ * Thrown when details of an export run can not be retrieved.
  */
-public interface ISnomedRefSetExportConfiguration extends ISnomedExportConfiguration {
+public class ExportRunNotFoundException extends NotFoundException {
+
+	private static final long serialVersionUID = 1L;
 
 	/**
-	 * Returns with the SNOMED&nbsp;CT identifier concept ID of the reference set 
-	 * that has to be exported into RF2 release format.
-	 * @return the identifier concept ID of the reference set.
+	 * Creates a new exception instance with the specified argument.
+	 * 
+	 * @param key the identifier of the export run which was not found
 	 */
-	String getRefSetId();
-	
+	public ExportRunNotFoundException(final String key) {
+		super("Export run", key);
+	}
 }

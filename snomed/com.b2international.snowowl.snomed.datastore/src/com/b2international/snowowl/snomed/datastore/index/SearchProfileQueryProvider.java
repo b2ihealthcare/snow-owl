@@ -46,9 +46,6 @@ public abstract class SearchProfileQueryProvider {
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(SearchProfileQueryProvider.class);
 	
-	private static final float ABOVE_AVERAGE_SCALE = 1.4f;
-	private static final float BELOW_AVERAGE_SCALE = 0.6f;
-	
 	@Nullable public static BooleanQuery provideQuery(final IBranchPath branchPath, final String userId) {
 		
 		Preconditions.checkNotNull(branchPath, "Branch path argument cannot be null.");
@@ -392,30 +389,20 @@ public abstract class SearchProfileQueryProvider {
 		switch (interest) {
 			
 			case AVERAGE:
-				
 				return query; //nothing to do
 				
-			case ABOVE_AVERAGE:
-				
-				query.setBoost(ABOVE_AVERAGE_SCALE);
-				return query;
-				
+			case ABOVE_AVERAGE: //$FALL-THROUGH$
 			case BELOW_AVERAGE:
-				
-				query.setBoost(BELOW_AVERAGE_SCALE);
+				query.setBoost(interest.getScaleFactor());
 				return query;
 		
 			case EXCLUDE:
-				
 				LOGGER.warn("Cannot decorate 'Exclude' interest.");
 				return query;
 				
 			default:
-				
 				throw new IllegalArgumentException("Unknown search profile interest: " + interest);
-			
 		}
-		
 	}
 	
 	private SearchProfileQueryProvider() {

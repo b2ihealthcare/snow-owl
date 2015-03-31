@@ -16,7 +16,10 @@
 package com.b2international.snowowl.snomed.api.domain;
 
 /**
- * TODO document
+ * Holds updatable properties of SNOMED CT relationships.
+ * <p>
+ * This interface is a placeholder; no properties outside of the ones in {@link ISnomedComponentUpdate} are currently
+ * updatable on a relationship.
  */
 public interface ISnomedRelationshipUpdate extends ISnomedComponentUpdate {
 	// Empty interface body

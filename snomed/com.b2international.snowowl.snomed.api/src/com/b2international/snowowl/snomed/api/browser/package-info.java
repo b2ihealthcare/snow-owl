@@ -15,6 +15,6 @@
  */
 
 /**
- * Holds the service interface for the IHTSDO SNOMED CT Browser.
+ * Contains the service interface for the IHTSDO SNOMED CT Browser.
  */
 package com.b2international.snowowl.snomed.api.browser;

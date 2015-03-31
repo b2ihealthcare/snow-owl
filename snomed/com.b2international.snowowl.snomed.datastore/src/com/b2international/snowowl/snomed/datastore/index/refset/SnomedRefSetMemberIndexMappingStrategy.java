@@ -23,7 +23,6 @@ import static com.b2international.snowowl.snomed.common.SnomedTerminologyCompone
 import static com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants.getTerminologyComponentIdValue;
 import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.COMPONENT_ACTIVE;
 import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.COMPONENT_LABEL;
-import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.COMPONENT_LABEL_SORT_KEY;
 import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.COMPONENT_RELEASED;
 import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.COMPONENT_STORAGE_KEY;
 import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_ACCEPTABILITY_ID;
@@ -94,6 +93,7 @@ import com.b2international.snowowl.datastore.CodeSystemUtils;
 import com.b2international.snowowl.datastore.cdo.CDOIDUtils;
 import com.b2international.snowowl.datastore.index.AbstractIndexMappingStrategy;
 import com.b2international.snowowl.datastore.index.IndexUtils;
+import com.b2international.snowowl.datastore.index.SortKeyMode;
 import com.b2international.snowowl.datastore.utils.ComponentUtils2;
 import com.b2international.snowowl.snomed.Component;
 import com.b2international.snowowl.snomed.Description;
@@ -280,7 +280,6 @@ public class SnomedRefSetMemberIndexMappingStrategy extends AbstractIndexMapping
 		}
 		
 		doc.add(new TextField(COMPONENT_LABEL, this.label, Store.YES));
-		doc.add(new StringField(COMPONENT_LABEL_SORT_KEY, IndexUtils.getSortKey(label), Store.YES));
 		
 		switch (member.getRefSet().getType()) {
 			
@@ -384,6 +383,7 @@ public class SnomedRefSetMemberIndexMappingStrategy extends AbstractIndexMapping
 				
 				if (null != label) {
 					doc.add(new BinaryDocValuesField(COMPONENT_LABEL, new BytesRef(label)));
+					SortKeyMode.SEARCH_ONLY.add(doc, label);
 				}
 				
 				doc.add(new NumericDocValuesField(REFERENCE_SET_MEMBER_REFERENCED_COMPONENT_ID, Long.parseLong(member.getReferencedComponentId())));
@@ -537,5 +537,4 @@ public class SnomedRefSetMemberIndexMappingStrategy extends AbstractIndexMapping
 		
 		return label;
 	}
-	
 }

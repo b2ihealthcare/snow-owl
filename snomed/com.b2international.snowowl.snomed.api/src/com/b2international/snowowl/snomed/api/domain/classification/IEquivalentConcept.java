@@ -16,19 +16,21 @@
 package com.b2international.snowowl.snomed.api.domain.classification;
 
 /**
- * TODO
+ * Represents a member of an equivalent concept set.
  */
 public interface IEquivalentConcept {
 
 	/**
+	 * Returns the concept identifier for the equivalent member.
 	 * 
-	 * @return
+	 * @return the concept identifier
 	 */
 	String getId();
 
 	/**
+	 * Returns the display label for the equivalent member.
 	 * 
-	 * @return
+	 * @return the display label
 	 */
 	String getLabel();
 }

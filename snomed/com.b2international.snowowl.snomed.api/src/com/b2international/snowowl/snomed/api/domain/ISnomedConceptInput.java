@@ -18,25 +18,32 @@ package com.b2international.snowowl.snomed.api.domain;
 import java.util.List;
 
 /**
- * TODO document
+ * Contains properties required for creating SNOMED CT concepts.
  */
 public interface ISnomedConceptInput extends ISnomedComponentInput {
 
 	/**
+	 * Returns the list of descriptions to create along with the concept. Must contain at least one fully specified name and one
+	 * synonym with preferred acceptability.
 	 * 
-	 * @return
+	 * @return the list of descriptions to create
 	 */
 	List<ISnomedDescriptionInput> getDescriptions();
-	
+
 	/**
-	 * TODO document
-	 * @return
+	 * Returns the identifier of a parent concept. The new concept will be attached to the existing concept graph via a new {@code IS A}
+	 * relationship, which will have this concept as the destination.
+	 * <p>
+	 * Extra relationships can be added in a separate call. 
+	 * 
+	 * @return the parent concept identifier
 	 */
 	String getParentId();
-	
+
 	/**
-	 * TODO document
-	 * @return
+	 * Returns the identifier generation strategy for the new {@code IS A} relationship.
+	 * 
+	 * @return the {@code IS A} relationship identifier generation strategy
 	 */
 	IdGenerationStrategy getIsAIdGenerationStrategy();
 }

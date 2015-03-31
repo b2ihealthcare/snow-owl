@@ -31,6 +31,7 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
+import com.b2international.commons.config.data.DefaultSettings;
 import com.b2international.commons.config.data.DynamicConfig;
 import com.b2international.commons.config.data.ModuleConfig1;
 import com.b2international.commons.config.data.ModuleConfig2;
@@ -112,6 +113,19 @@ public class ConfigurationFactoryTest {
 		assertEquals("config1", config1.getAttribute1_2());
 		assertEquals("config2", config2.getAttribute2_1());
 		assertTrue(config2.isAttribute2_2());
+	}
+	
+	@Test
+	public void build_DynamicConfigurationWithEmptyModule_ShouldDeserializeWithDefaults() throws Exception {
+		final Map<String, Class<?>> modules = newHashMap();
+		modules.put("moduleConfig1", ModuleConfig1.class);
+		final DynamicConfig config = parseWithModules(DynamicConfig.class, "empty_module_config.yml", validator, modules);
+		assertNotNull(config.getModuleConfig(ModuleConfig1.class));
+	}
+	
+	@Test
+	public void build_EmptyConfigurationFile_DefaultSettings() throws Exception {
+		assertNotNull(parse(DefaultSettings.class, "emptyconfig.yml"));
 	}
 	
 	private <T> T parse(Class<T> klass) throws IOException {

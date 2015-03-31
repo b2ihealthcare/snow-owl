@@ -15,76 +15,128 @@
  */
 package com.b2international.snowowl.snomed.datastore.id;
 
-import java.util.Random;
+import static com.google.common.base.Preconditions.checkArgument;
 
 import com.b2international.commons.VerhoeffCheck;
-import com.b2international.snowowl.snomed.datastore.SnomedEditingContext;
+import com.b2international.snowowl.core.terminology.ComponentCategory;
+import com.b2international.snowowl.snomed.datastore.id.gen.SingleItemIdGenerationStrategy;
+import com.b2international.snowowl.snomed.datastore.internal.id.SnomedIdentifierImpl;
+import com.b2international.snowowl.snomed.datastore.internal.id.SnomedIdentifierServiceImpl;
+import com.b2international.snowowl.snomed.datastore.internal.id.reservations.SnomedIdentifierReservationServiceImpl;
 import com.google.common.base.Strings;
 
 /**
- * SNOMED CT Identifiers v0.4:
- * <p />
- * <i>An item identifier can have a lowest permissible value of 100 (three digits) and a highest permissible value of 99999999 (8 digits) for long
- * format identifiers or 999999999999999 (15 digits) for short format identifiers. Leading zeros are not permitted in the item identifier.<//>
+ * Shortcut methods to create SNOMED CT Identifiers.
+ * <p><i>TODO: add support to track/take into account global reservations, currently it uses internal ID and Reservation services</i></p>
+ * <p>Mostly used from test cases</p> 
+ * 
+ * @since 4.0
  */
 public class SnomedIdentifiers {
 
 	private SnomedIdentifiers() {
 	}
 
-	/**
-	 * Generates a valid, random SNOMED CT Concept identifier based on the Core namespace.
-	 * 
-	 * @return a valid, randomly generated SCT ID.
-	 */
 	public static String generateConceptId() {
-		return generateComponentId(null, SnomedEditingContext.ComponentNature.CONCEPT);
+		return generateConceptId(null);
 	}
-	
-	/**
-	 * Generates a valid, random SNOMED CT Concept identifier based on the given namespace.
-	 * 
-	 * @param nameSpaceId
-	 *            - the namespace ID to use
-	 * @return a valid, randomly generated SCT ID.
-	 */
-	public static String generateConceptId(String nameSpaceId) {
-		return generateComponentId(nameSpaceId, SnomedEditingContext.ComponentNature.CONCEPT);
+
+	public static String generateConceptId(String namespace) {
+		return generateComponentId(ComponentCategory.CONCEPT, namespace);
+	}
+
+	public static String generateRelationshipId() {
+		return generateRelationshipId(null);
+	}
+
+	public static String generateRelationshipId(String namespace) {
+		return generateComponentId(ComponentCategory.RELATIONSHIP, namespace);
+	}
+
+	public static String generateDescriptionId() {
+		return generateRelationshipId(null);
+	}
+
+	public static String generateDescriptionId(String namespace) {
+		return generateComponentId(ComponentCategory.DESCRIPTION, namespace);
+	}
+
+	private static String generateComponentId(ComponentCategory component, String namespace) {
+		return getSnomedIdentifierService().generateId(component, namespace);
+	}
+
+	private static ISnomedIdentifierService getSnomedIdentifierService() {
+		return new SnomedIdentifierServiceImpl(new SnomedIdentifierReservationServiceImpl());
 	}
 
 	/**
-	 * Generates a valid random SNOMED CT component identifier.
+	 * Creates a {@link SnomedIdentifierImpl} from the given {@link String} componentId.
 	 * 
-	 * @param nameSpaceId
-	 * @param componentNature
-	 * @return a valid, randomly generated SCT ID.
+	 * @param componentId
+	 * @return
 	 */
-	public static String generateComponentId(String nameSpaceId, SnomedEditingContext.ComponentNature componentNature) {
-		StringBuilder buf = new StringBuilder();
-		buf.append(generateRandomItemIndentifier());
-		if (Strings.isNullOrEmpty(nameSpaceId)) {
-			buf.append('0');
-		} else {
-			buf.append(nameSpaceId);
-			buf.append('1');
+	public static SnomedIdentifier of(String componentId) {
+		validate(componentId);
+		final int checkDigit = Character.getNumericValue(componentId.charAt(componentId.length() - 1));
+		final int componentIdentifier = Character.getNumericValue(componentId.charAt(componentId.length() - 2));
+		final int partitionIdentifier = Character.getNumericValue(componentId.charAt(componentId.length() - 3));
+		final String namespace = partitionIdentifier == 0 ? null : componentId.substring(componentId.length() - 10, componentId.length() - 3);
+		final long itemId = partitionIdentifier == 0 ? Long.parseLong(componentId.substring(0, componentId.length() - 3)) : Long
+				.parseLong(componentId.substring(0, componentId.length() - 10));
+		return new SnomedIdentifierImpl(itemId, namespace, partitionIdentifier, componentIdentifier, checkDigit);
+	}
+
+	/**
+	 * Validates the given componentId by using the rules defined in the latest SNOMED CT Identifier specification, which are the following constraints:
+	 * <ul>
+	 * 	<li>Can't start with leading zeros</li>
+	 * 	<li>Lengths should be between 6 and 18 characters</li>
+	 * 	<li>Should parse to a long value</li>
+	 * 	<li>Should pass the Verhoeff check-digit test</li>
+	 * </ul>
+	 * 
+	 * @param componentId
+	 * @see VerhoeffCheck
+	 * @throws IllegalArgumentException - if the given componentId is invalid according to the SNOMED CT Identifier specification
+	 */
+	public static void validate(String componentId) throws IllegalArgumentException {
+		checkArgument(!Strings.isNullOrEmpty(componentId), "ComponentId must be defined");
+		checkArgument(!componentId.startsWith("0"), "ComponentId can't start with leading zeros");
+		checkArgument(componentId.length() >= 6 && componentId.length() <= 18, "ComponentId's length should be between 6-18 character length");
+		try {
+			Long.parseLong(componentId);
+		} catch (NumberFormatException e) {
+			throw new IllegalArgumentException("ComponentId should parse to a Long");
 		}
-		buf.append(componentNature.ordinal());
-		char checkDigit = VerhoeffCheck.calculateChecksum(buf, false);
-		buf.append(checkDigit);
-
-		String componentId = buf.toString();
-
-		return componentId;
+		checkArgument(VerhoeffCheck.validateLastChecksumDigit(componentId), "ComponentId should pass Verhoeff check-digit test");
 	}
 
 	/**
-	 * @return a random SCT item identifier
+	 * Generates a valid SNOMED CT Identifier from the given spec, which should be sufficient for a SNOMED CT Identifier.
+	 * 
+	 * @param itemId
+	 *            - the itemId to use for the newly created SNOMED CT Identifier
+	 * @param component
+	 *            - the component type to use
+	 * @return
 	 */
-	private static String generateRandomItemIndentifier() {
-		Random random = new Random();
-		// nextInt excludes top value, add 1 to make it inclusive
-		int randomNum = random.nextInt(99999999 - 100 + 1) + 100;
-		return Integer.toString(randomNum);
+	public static SnomedIdentifier generateFrom(int itemId, ComponentCategory component) {
+		return generateFrom(itemId, null, component);
+	}
+
+	/**
+	 * Generates a valid SNOMED CT Identifier from the given spec, which should be sufficient for a SNOMED CT Identifier.
+	 * 
+	 * @param itemId
+	 *            - the itemId to use for the newly created SNOMED CT Identifier
+	 * @param namespace
+	 *            - the namespace to use
+	 * @param component
+	 *            - the component type to use
+	 * @return
+	 */
+	public static SnomedIdentifier generateFrom(int itemId, String namespace, ComponentCategory component) {
+		return of(new SnomedIdentifierServiceImpl(new SnomedIdentifierReservationServiceImpl(), new SingleItemIdGenerationStrategy(String.valueOf(itemId))).generateId(component, namespace));
 	}
 
 }

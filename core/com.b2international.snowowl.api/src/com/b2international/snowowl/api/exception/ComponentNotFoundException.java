@@ -15,7 +15,7 @@
  */
 package com.b2international.snowowl.api.exception;
 
-import com.b2international.snowowl.api.domain.ComponentCategory;
+import com.b2international.snowowl.core.terminology.ComponentCategory;
 
 /**
  * Thrown when a terminology component can not be found for a given component identifier.

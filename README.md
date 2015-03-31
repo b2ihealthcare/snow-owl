@@ -1,133 +1,42 @@
-# snow-owl
-Snow Owl Terminology Server
+# Snow Owl
 
-Snow Owl Terminology Server - Initial contribution log
-======================================================
+## Introduction
+Snow Owl is a terminology server and a collaborative terminology authoring platform.  The authoring platform maintains terminology artifacts developed by a team and supported by business workflows that are driven by external task management systems like Bugzilla and JIRA.  With its modular design, the server can maintain multiple terminologies where new terminologies can be plugged-in to the platform.  The functionality of Snow Owl is exposed via a REST API.
 
-76 bundles donated:
+## Build
 
-commons/com.b2international.commons
-commons/com.b2international.commons.base
-commons/com.b2international.commons.groovy
-commons/com.b2international.commons.test
+Snow Owl uses Maven for its build system.
 
-core/com.b2international.snowowl.api
-core/com.b2international.snowowl.api.impl
-core/com.b2international.snowowl.api.rest
-core/com.b2international.snowowl.api.rest.tests
-core/com.b2international.snowowl.authentication
-core/com.b2international.snowowl.authentication.file
-core/com.b2international.snowowl.authentication.ldap
-core/com.b2international.snowowl.authorization
-core/com.b2international.snowowl.authorization.server
-core/com.b2international.snowowl.core
-core/com.b2international.snowowl.datastore
-core/com.b2international.snowowl.datastore.server
-core/com.b2international.snowowl.dependencies
-core/com.b2international.snowowl.emf.compare
-core/com.b2international.snowowl.importer
-core/com.b2international.snowowl.index.diff
-core/com.b2international.snowowl.index.diff.tests
-core/com.b2international.snowowl.logging.logbackconfiguration
-core/com.b2international.snowowl.scripting.core
-core/com.b2international.snowowl.scripting.server.feature
-core/com.b2international.snowowl.scripting.services
-core/com.b2international.snowowl.server.console
-core/com.b2international.snowowl.server.core.feature
-core/com.b2international.snowowl.server.dependencies.feature
-core/com.b2international.snowowl.server.product
-core/com.b2international.snowowl.server.product.feature
-core/com.b2international.snowowl.terminologyregistry.core
-core/com.b2international.snowowl.terminologyregistry.core.server
-core/com.b2international.snowowl.terminologyregistry.model
+In order to create a distribution, simply run the `mvn clean package -Pdependencies -Psite -Pdist` command in the cloned directory.
 
-dependencies/com.b2international.org.apache.lucene
-dependencies/com.b2international.snowowl.hibernate.validator
+To run the test cases, simply run:
 
-snomed/com.b2international.snowowl.snomed.api
-snomed/com.b2international.snowowl.snomed.api.impl
-snomed/com.b2international.snowowl.snomed.api.rest
-snomed/com.b2international.snowowl.snomed.api.rest.tests
-snomed/com.b2international.snowowl.snomed.common
-snomed/com.b2international.snowowl.snomed.core.feature
-snomed/com.b2international.snowowl.snomed.datastore
-snomed/com.b2international.snowowl.snomed.datastore.server
-snomed/com.b2international.snowowl.snomed.dsl
-snomed/com.b2international.snowowl.snomed.escg
-snomed/com.b2international.snowowl.snomed.escg.examples
-snomed/com.b2international.snowowl.snomed.exporter
-snomed/com.b2international.snowowl.snomed.exporter.server
-snomed/com.b2international.snowowl.snomed.importer
-snomed/com.b2international.snowowl.snomed.importer.rf2
-snomed/com.b2international.snowowl.snomed.model
-snomed/com.b2international.snowowl.snomed.mrcm.core
-snomed/com.b2international.snowowl.snomed.mrcm.core.server
-snomed/com.b2international.snowowl.snomed.mrcm.model
-snomed/com.b2international.snowowl.snomed.reasoner
-snomed/com.b2international.snowowl.snomed.reasoner.server
-snomed/com.b2international.snowowl.snomed.refset.core
-snomed/com.b2international.snowowl.snomed.refset.model
-snomed/com.b2international.snowowl.snomed.scg
-snomed/com.b2international.snowowl.snomed.semanticengine
-snomed/com.b2international.snowowl.snomed.semanticengine.simpleast
-snomed/com.b2international.snowowl.snomed.semanticengine.simpleast.test
-snomed/com.b2international.snowowl.snomed.semanticengine.test
-snomed/com.b2international.snowowl.snomed.validation
-snomed/com.b2international.snowowl.snomed.validation.constraints
+    mvn clean verify -Pdependencies -Psite -Pdist
 
-net4j/com.b2international.snowowl.eventbus
-net4j/com.b2international.snowowl.eventbus.tests
-net4j/com.b2international.snowowl.rpc
-net4j/com.b2international.snowowl.rpc.test
+The distribution package can be found in the `releng/distribution/target` folder, when the build completes.
 
-net4j/org.protege.core.feature
-net4j/org.eclipse.emf.cdo
-net4j/org.eclipse.emf.cdo.common
-net4j/org.eclipse.emf.cdo.net4j
-net4j/org.eclipse.emf.cdo.server
-net4j/org.eclipse.emf.cdo.server.db
-net4j/org.eclipse.emf.cdo.server.net4j
-net4j/org.eclipse.equinox.preferences
-net4j/org.eclipse.net4j
-net4j/org.eclipse.net4j.db.mysql
-net4j/org.eclipse.net4j.util
-net4j/org.protege.common
-net4j/org.protege.editor.core.application
-net4j/org.protege.editor.owl
-net4j/org.semanticweb.owl.owlapi
-net4j/org.supercsv
+### Additional Build Improvements
 
-releng/com.b2international.snowowl.server.target.update
-releng/com.b2international.snowowl.server.update
-releng/system.bundle.package.exporter
+Here are few tips to improve the quality of the default build process.
 
-tests/com.b2international.restassured-all
-tests/com.b2international.snowowl.test.commons
-tests/com.b2international.snowowl.test.dependencies
-tests/com.b2international.snowowl.test.feature
+#### Nexus
 
-Copyrights
-==========
+We highly recommend to install a local artifact repository (`Nexus OSS` is supported), so the build can deploy and reuse (in downstream projects) `Maven` and `p2` artifacts.
 
-Public domain:
-Base64.java 
+1. Download and install Nexus OSS or Professional (http://www.sonatype.org/nexus/go/).
+2. Install `Nexus Unzip Plugin` to easily reference p2 repositories deployed as zip: https://wiki.eclipse.org/Tycho/Nexus_Unzip_Plugin
+3. Define the `nexus.url` parameter in the `settings.xml` file under `.m2` folder on your build server (use the `settings.xml` in the root of this repository as template).
+4. Define a deployment user in Nexus, and reference it in the `.m2/settings.xml` file.
+5. Use `mvn clean deploy` instead of `mvn clean verify` when you execute the process.
+6. *Optional: deploy only if build succeeds (requires a `Jenkins CI` job with post build step to deploy artifacts to `Nexus`*
 
-IBM EPL in B2i plugins:
-MacOSXDebugVMRunner.java 
-MacOSXVMInstall.java 
-MacOSXVMInstallType.java 
-MacOSXVMRunner.java
+#### Prefetched target platform
 
-EPL:
-SerializableMultiStatus.java
+The `-Pdependencies` profile includes all required third party repositories and modules as part of the build process using Tycho's p2 and Maven dependency resolution capabilities. 
+While this should be enough to run the process, in production builds we recommend using a prefetched target platform, as it will ensure consistent third party versions and reduces the execution time significantly.
 
-GNU LGPL:
-StatementMap.java 
-
-Summary
-=======
-* Apache (c): 2705 java files
-* EPL (c): 5 
-* Public Domain and LGPL (c): 2
-
-Total of 2721 files.
+1. Create the target platform update site, run `mvn clean verify -Pdependencies -Ptarget_site`
+2. Navigate to `com.b2international.snowowl.server.target.update/target` folder
+3. Copy the `target_platform_<version>` folder to a webserver, or use `Nexus` to serve the site as unzipped p2 (requires Nexus OSS with Unzip Plugin installed, see previous section)
+4. Define an `http` URL as `target.platform.url` parameter in the global Maven `.m2/settings.xml` file
+5. Run Snow Owl maven process with `mvn clean verify -Ptp_dependencies -Psite -Pdist` (*NOTE: the tp_dependencies profile will use the prefetched local p2 repository instead of querying all remote sites*)

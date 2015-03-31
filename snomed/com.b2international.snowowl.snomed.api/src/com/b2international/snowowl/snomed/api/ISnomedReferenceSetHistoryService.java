@@ -18,10 +18,7 @@ package com.b2international.snowowl.snomed.api;
 import com.b2international.snowowl.api.history.IHistoryService;
 
 /**
- * Interface of the RESTful History Service for returning all information about the modifications made on SNOMED CT
- * reference sets.
- * 
- * @see IHistoryService
+ * Implementations of this interface provide a list of past modifications for SNOMED CT reference sets. 
  */
 public interface ISnomedReferenceSetHistoryService extends IHistoryService {
 	// Empty interface body

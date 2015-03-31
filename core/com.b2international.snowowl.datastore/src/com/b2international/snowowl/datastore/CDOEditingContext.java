@@ -178,6 +178,7 @@ public abstract class CDOEditingContext implements AutoCloseable {
 	
 	/**
 	 * Commits the content of the transaction into the underlying Snow Owl storage.
+	 * @param commitMessage - the commit message to associate with the commit, if it's longer than 250 characters, truncates it, and reports a warning
 	 * @param monitor progress monitor the progress monitor for the commit process. Can be {@code null}.
 	 * @throws SnowowlServiceException if either concurrent modification is received from the server of commit failed.
 	 */
@@ -193,7 +194,11 @@ public abstract class CDOEditingContext implements AutoCloseable {
 			if (commitMessage == null) {
 				transaction.setCommitComment("Snow Owl commit comment on " + new Date());
 			} else {
-				transaction.setCommitComment(commitMessage);
+				final String truncatedMessage = StringUtils.truncate(commitMessage, 255);
+				if (!truncatedMessage.equals(commitMessage)) {
+					LOGGER.warn("Truncated commit message (original message: {})", commitMessage);
+				}
+				transaction.setCommitComment(truncatedMessage);
 			}
 			
 			final CDOCommitInfo commitInfo = transaction.commit(subMonitor);
@@ -257,7 +262,15 @@ public abstract class CDOEditingContext implements AutoCloseable {
 	public void close() {
 		transaction.close();
 	}
-
+	
+	/**
+	 * Returns whether this {@link CDOEditingContext} is already closed (<code>false</code>) or it's still open (<code>true</code>).
+	 * @return
+	 */
+	public boolean isClosed() {
+		return transaction.isClosed();
+	}
+	
 	/**
 	 * @return true if the underlying transaction is dirty, false otherwise
 	 */
@@ -350,6 +363,11 @@ public abstract class CDOEditingContext implements AutoCloseable {
 	 */
 	protected abstract String getMetaRootResourceName();
 	
+	@Override
+	public String toString() {
+		return String.format("%s[%s]", getClass().getSimpleName(), getTransaction());
+	}
+	
 	/**
 	 * 
 	 * Convenience method for committing the object graph found in the {@link CDOEditingContext} to file. 
@@ -420,11 +438,6 @@ public abstract class CDOEditingContext implements AutoCloseable {
 		}
 	}
 	
-//	@Override
-//	public void close() {
-//		deactivate(cdoTransaction);
-//	}
-
 	private static IBranchPath getActivePath(EPackage ePackage) {
 		return getTaskManager().getActiveBranch(getConnection(ePackage).getUuid());
 	}
@@ -436,7 +449,9 @@ public abstract class CDOEditingContext implements AutoCloseable {
 	
 	/*creates an new CDO transaction instance on the HEAD of the given branch*/
 	private static CDOTransaction createTransaction(final EPackage ePackage, final IBranchPath branchPath) {
-		return getConnection(ePackage).createTransaction(branchPath);
+		final CDOTransaction transaction = getConnection(ePackage).createTransaction(branchPath);
+		transaction.options().setLockNotificationEnabled(true);
+		return transaction;
 	}
 
 	private static TaskManager getTaskManager() {

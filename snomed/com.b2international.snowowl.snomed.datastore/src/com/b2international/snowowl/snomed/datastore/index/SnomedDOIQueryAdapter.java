@@ -18,9 +18,6 @@ package com.b2international.snowowl.snomed.datastore.index;
 import static com.b2international.commons.ClassUtils.checkAndCast;
 
 import java.io.Serializable;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
 
 import javax.annotation.Nullable;
@@ -29,7 +26,6 @@ import org.apache.lucene.queries.CustomScoreQuery;
 import org.apache.lucene.queries.function.FunctionQuery;
 import org.apache.lucene.queries.function.ValueSource;
 import org.apache.lucene.queries.function.valuesource.FloatFieldSource;
-import org.apache.lucene.queries.function.valuesource.ProductFloatFunction;
 import org.apache.lucene.search.BooleanClause.Occur;
 import org.apache.lucene.search.BooleanQuery;
 import org.apache.lucene.search.Query;
@@ -46,7 +42,6 @@ import com.b2international.snowowl.snomed.datastore.SnomedConceptIndexEntry;
 import com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants;
 import com.google.common.base.Optional;
 import com.google.common.base.Strings;
-import com.google.common.collect.Lists;
 
 /**
  * The beginning of a new query parser.
@@ -65,10 +60,7 @@ public class SnomedDOIQueryAdapter extends SnomedConceptIndexQueryAdapter implem
 	
 	private static final long serialVersionUID = -3044881906076704431L;
 
-	private static final Collection<ValueSource> DOI_VALUE_SOURCES = 
-			Collections.unmodifiableList(Lists.<ValueSource>newArrayList(new FloatFieldSource(SnomedIndexBrowserConstants.CONCEPT_DEGREE_OF_INTEREST)));
-	
-	private static final ValueSource[] VALUE_SOURCES = Arrays.copyOf(DOI_VALUE_SOURCES.toArray(), DOI_VALUE_SOURCES.size(), ValueSource[].class);
+	private static final ValueSource DOI_VALUE_SOURCE = new FloatFieldSource(SnomedIndexBrowserConstants.CONCEPT_DEGREE_OF_INTEREST);
 	
 	private final String userId;
 	@Nullable private final Query restrictionQuery;
@@ -124,14 +116,14 @@ public class SnomedDOIQueryAdapter extends SnomedConceptIndexQueryAdapter implem
 			
 			if (null == searchProfileQuery) {
 				
-				return new CustomScoreQuery(query, new FunctionQuery(new ProductFloatFunction(VALUE_SOURCES)));
+				return new CustomScoreQuery(query, new FunctionQuery(DOI_VALUE_SOURCE));
 				
 			} else {
 				
 				//AND with the ID restriction query
 				searchProfileQuery.add(query, Occur.MUST);
 				
-				return new CustomScoreQuery(searchProfileQuery, new FunctionQuery(new ProductFloatFunction(VALUE_SOURCES))); 
+				return new CustomScoreQuery(searchProfileQuery, new FunctionQuery(DOI_VALUE_SOURCE)); 
 				
 			}
 			
@@ -139,14 +131,14 @@ public class SnomedDOIQueryAdapter extends SnomedConceptIndexQueryAdapter implem
 		
 		if (null == searchProfileQuery) {
 			
-			return new CustomScoreQuery(mainQuery, new FunctionQuery(new ProductFloatFunction(VALUE_SOURCES)));
+			return new CustomScoreQuery(mainQuery, new FunctionQuery(DOI_VALUE_SOURCE));
 			
 		} else {
 			
 			//AND with the main query
 			searchProfileQuery.add(mainQuery, Occur.MUST);
 			
-			return new CustomScoreQuery(searchProfileQuery, new FunctionQuery(new ProductFloatFunction(VALUE_SOURCES))); 
+			return new CustomScoreQuery(searchProfileQuery, new FunctionQuery(DOI_VALUE_SOURCE)); 
 			
 		}
 		

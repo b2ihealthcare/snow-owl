@@ -2,7 +2,7 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: %pluginName
 Bundle-SymbolicName: com.b2international.snowowl.snomed.refset.model;singleton:=true
-Bundle-Version: 3.9.0.qualifier
+Bundle-Version: 4.0.0
 Bundle-ClassPath: .
 Bundle-Vendor: %providerName
 Bundle-Localization: plugin
@@ -10,8 +10,8 @@ Bundle-RequiredExecutionEnvironment: JavaSE-1.7
 Export-Package: com.b2international.snowowl.snomed.snomedrefset,
  com.b2international.snowowl.snomed.snomedrefset.impl,
  com.b2international.snowowl.snomed.snomedrefset.util
-Require-Bundle: org.eclipse.core.runtime,
- org.eclipse.emf.ecore;visibility:=reexport,
- org.eclipse.emf.cdo;visibility:=reexport,
+Require-Bundle: org.eclipse.core.runtime;bundle-version="[3.8.0,3.9.0)",
+ org.eclipse.emf.ecore;bundle-version="[2.10.0,2.11.0)";visibility:=reexport,
+ org.eclipse.emf.cdo;bundle-version="[4.1.1,4.1.2)";visibility:=reexport,
  com.b2international.snowowl.snomed.common
 Bundle-ActivationPolicy: lazy

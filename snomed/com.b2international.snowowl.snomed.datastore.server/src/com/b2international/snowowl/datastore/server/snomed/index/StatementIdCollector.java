@@ -17,7 +17,7 @@ package com.b2international.snowowl.datastore.server.snomed.index;
 
 import java.io.IOException;
 
-import org.apache.lucene.index.AtomicReaderContext;
+import org.apache.lucene.index.AtomicReader;
 import org.apache.lucene.index.NumericDocValues;
 
 import bak.pcj.set.LongOpenHashSet;
@@ -25,12 +25,9 @@ import bak.pcj.set.LongSet;
 
 import com.b2international.snowowl.datastore.index.AbstractDocsOutOfOrderCollector;
 import com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants;
-import com.google.common.base.Preconditions;
 
 /**
- * Collector for gathering a set of object, value and attribute concept IDs for 
- * a subset of SNOMED&nbsp;CT relationships 
- *
+ * Collector for gathering all source, type and destination concept IDs referenced in matching SNOMED CT relationships.
  */
 public class StatementIdCollector extends AbstractDocsOutOfOrderCollector {
 
@@ -38,92 +35,56 @@ public class StatementIdCollector extends AbstractDocsOutOfOrderCollector {
 	 * Default initial size for the underlying collection. Value: {@value}.
 	 */
 	private static final int DEFAULT_EXPECTED_SIZE = 30000;
-	
+
 	private final LongSet ids;
-	
-	private NumericDocValues attributeIdsValues;
-	private NumericDocValues valueIdsValues;
-	private NumericDocValues objectIdsValues;
-	
+
+	private NumericDocValues sourceIdsValues;
+	private NumericDocValues typeIdsValues;
+	private NumericDocValues destinationIdsValues;
+
 	/**
 	 * Creates a new collector instance with the default expected size. 
 	 */
 	public StatementIdCollector() {
 		this(DEFAULT_EXPECTED_SIZE);
 	}
-	
+
 	/**
-	 * Creates a collector instance with the given expected size.
-	 * @param expectedSize the expected size.
+	 * Creates a new collector instance with the specified expected size.
+	 * 
+	 * @param expectedSize the expected number of collected identifiers, or <= 0 if the built-in default should be used
 	 */
 	public StatementIdCollector(final int expectedSize) {
-		ids = 0 > expectedSize ? new LongOpenHashSet(expectedSize) : new LongOpenHashSet();
+		this.ids = (0 > expectedSize) ? new LongOpenHashSet(expectedSize) : new LongOpenHashSet();
 	}
-	
-	/* (non-Javadoc)
-	 * @see org.apache.lucene.search.Collector#collect(int)
-	 */
+
 	@Override
-	public void collect(final int doc) throws IOException {
-	
-		if (!checkValues()) { //sources cannot be referenced
-			return;
-		}
-		
-		ids.add(objectIdsValues.get(doc));
-		ids.add(attributeIdsValues.get(doc));
-		ids.add(valueIdsValues.get(doc));
-
+	public void collect(final int docId) throws IOException {
+		ids.add(sourceIdsValues.get(docId));
+		ids.add(typeIdsValues.get(docId));
+		ids.add(destinationIdsValues.get(docId));
 	}
 
-	/* (non-Javadoc)
-	 * @see org.apache.lucene.search.Collector#setNextReader(org.apache.lucene.index.AtomicReaderContext)
-	 */
 	@Override
-	public void setNextReader(final AtomicReaderContext context) throws IOException {
-		
-		Preconditions.checkNotNull(context, "Atomic reader context argument cannot be null.");
-		
-		attributeIdsValues = context.reader().getNumericDocValues(SnomedIndexBrowserConstants.RELATIONSHIP_ATTRIBUTE_ID);
-		if (null == attributeIdsValues) {
-			resetValues();
-			return;
-		}
-		
-		valueIdsValues = context.reader().getNumericDocValues(SnomedIndexBrowserConstants.RELATIONSHIP_VALUE_ID);
-		if (null == valueIdsValues) {
-			resetValues();
-			return;
-		}
-		
-		objectIdsValues = context.reader().getNumericDocValues(SnomedIndexBrowserConstants.RELATIONSHIP_OBJECT_ID);
-		if (null == objectIdsValues) {
-			resetValues();
-			return;
-		}
-
+	protected void initDocValues(final AtomicReader leafReader) throws IOException {
+		sourceIdsValues = leafReader.getNumericDocValues(SnomedIndexBrowserConstants.RELATIONSHIP_OBJECT_ID);
+		typeIdsValues = leafReader.getNumericDocValues(SnomedIndexBrowserConstants.RELATIONSHIP_ATTRIBUTE_ID);
+		destinationIdsValues = leafReader.getNumericDocValues(SnomedIndexBrowserConstants.RELATIONSHIP_VALUE_ID);
 	}
-	
+
+	@Override
+	protected boolean isLeafCollectible() {
+		return sourceIdsValues != null
+				&& typeIdsValues != null
+				&& destinationIdsValues != null;
+	}
+
 	/**
-	 * Returns with a set of object, value and attribute concept IDs.
-	 * @return the concept IDs.
+	 * Returns a set of object, value and attribute concept identifiers.
+	 * 
+	 * @return the collected concept identifier set
 	 */
 	public LongSet getIds() {
 		return ids;
 	}
-
-	/*sets the reference on the values to null*/
-	private void resetValues() {
-		attributeIdsValues = null;
-		valueIdsValues = null;
-		objectIdsValues = null;
-	}
-	
-	/*returns true only and if only all the backing values can be referenced*/
-	private boolean checkValues() {
-		return null != valueIdsValues 
-				&& null != objectIdsValues
-				&& null != attributeIdsValues;
-	}
-
 }

@@ -34,6 +34,7 @@ import com.b2international.commons.collections.Procedure;
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.date.Dates;
+import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.datastore.BranchPathUtils;
 import com.b2international.snowowl.datastore.cdo.ICDOConnection;
 import com.b2international.snowowl.datastore.cdo.ICDOConnectionManager;
@@ -47,15 +48,16 @@ import com.google.common.collect.Iterables;
 import com.google.common.collect.Sets;
 
 /**
- * Model used in the SNOMED&nbsp;CT to RF1/RF2 export process.
+ * Model used in the SNOMED CT to RF1/RF2 export process.
  */
 public final class SnomedRf2ExportModel extends SnomedExportModel {
 
 	public static final String RELEASE_TYPE_PROPERTY = "releaseType";
 
 	public static final String EXPORT_PATH_PROPERTY = "exportPath";
+
 	/**
-	 * Flag to indicate whether the export wizard is for export one single SNOMED&nbsp;CT reference set or other SNOMED&nbsp;CT components.
+	 * Flag to indicate whether the export wizard is for export one single SNOMED CT reference set or other SNOMED CT components.
 	 * <br>If {@code true} only one reference set is selected for export otherwise {@code false}.
 	 */
 	private final boolean singleRefSetExport;
@@ -73,12 +75,10 @@ public final class SnomedRf2ExportModel extends SnomedExportModel {
 	private Set<String> modulesToExport;
 
 	private String namespace;
-
 	private IBranchPath clientBranch;
-
 	private String userId;
-
 	private Collection<SnomedModuleDependencyRefSetMemberFragment> moduleDependencyMembers;
+	private String unsetEffectiveTimeLabel;
 
 	/**
 	 * Creates a new RF2 export model for exporting all core components and reference sets on a given branch 
@@ -149,6 +149,7 @@ public final class SnomedRf2ExportModel extends SnomedExportModel {
 		final ICDOConnection connection = ApplicationContext.getInstance().getService(ICDOConnectionManager.class).get(SnomedPackage.eINSTANCE);
 		clientBranch = BranchPathUtils.createActivePath(connection.getUuid());
 		userId = ApplicationContext.getInstance().getService(ICDOConnectionManager.class).getUserId();
+		unsetEffectiveTimeLabel = EffectiveTimes.UNSET_EFFECTIVE_TIME_LABEL;
 	}
 
 	public Set<String> getRefSetIds() {
@@ -172,7 +173,7 @@ public final class SnomedRf2ExportModel extends SnomedExportModel {
 	}
 
 	/**
-	 * Returns {@code true} if the wizard should perform only one SNOMED&nbsp;CT reference set export. Otherwise it returns with {@code false}.
+	 * Returns {@code true} if the wizard should perform only one SNOMED CT reference set export. Otherwise it returns with {@code false}.
 	 * @return the value of the {@link #singleRefSetExport} flag.
 	 * @see #singleRefSetExport
 	 */
@@ -282,5 +283,12 @@ public final class SnomedRf2ExportModel extends SnomedExportModel {
 	public Collection<SnomedModuleDependencyRefSetMemberFragment> getModuleDependencyMembers() {
 		return moduleDependencyMembers;
 	}
-
+	
+	public String getUnsetEffectiveTimeLabel() {
+		return unsetEffectiveTimeLabel;
+	}
+	
+	public void setUnsetEffectiveTimeLabel(final String unsetEffectiveTimeLabel) {
+		this.unsetEffectiveTimeLabel = unsetEffectiveTimeLabel;
+	}
 }

@@ -58,7 +58,7 @@ import com.wordnik.swagger.annotations.ApiResponses;
 @Controller
 @RequestMapping(
 		value="/{version}", 
-		produces={ AbstractRestService.V1_MEDIA_TYPE, MediaType.APPLICATION_JSON_VALUE })
+		produces={ AbstractRestService.V1_MEDIA_TYPE })
 public class SnomedClassificationRestService extends AbstractSnomedRestService {
 
 	@Autowired

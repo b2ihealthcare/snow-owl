@@ -28,10 +28,16 @@ public class MappingWidgetModel extends WidgetModel implements Serializable {
 
 	private String allowedTerminologyComponentId;
 
+	private String targetReferenceSetId;
+
+	private String targetReferenceSetLabel;
+
 	private MappingWidgetModel(LowerBound lowerBound, UpperBound upperBound, ModelType modelType,
-			String allowedTerminologyComponentId) {
+			String allowedTerminologyComponentId, final String targetReferenceSetId, final String targetReferenceSetLabel) {
 		super(lowerBound, upperBound, modelType);
 		this.allowedTerminologyComponentId = allowedTerminologyComponentId;
+		this.targetReferenceSetId = targetReferenceSetId;
+		this.targetReferenceSetLabel = targetReferenceSetLabel;
 	}
 	
 	public String getAllowedTerminologyComponentId() {
@@ -48,14 +54,24 @@ public class MappingWidgetModel extends WidgetModel implements Serializable {
 	 * Creates an unsanctioned mapping model with 0..* cardinality and the terminology type id.
 	 * 
 	 * @param allowedTerminologyId the allowed mapping target component type id (may not be {@code null}
+	 * @param targetReferenceSetId - the reference set ID to use when creating a mapping member
+	 * @param targetReferenceSetLabel - the reference set Label to use when creating the missing reference set
 	 * @return the created mapping model instance
 	 */
-	public static MappingWidgetModel createUnsanctionedModel(final String allowedTerminologyId) {
-		return new MappingWidgetModel(LowerBound.OPTIONAL, UpperBound.MULTIPLE, ModelType.UNSANCTIONED, allowedTerminologyId);
+	public static MappingWidgetModel createUnsanctionedModel(final String allowedTerminologyId, final String targetReferenceSetId, final String targetReferenceSetLabel) {
+		return new MappingWidgetModel(LowerBound.OPTIONAL, UpperBound.MULTIPLE, ModelType.UNSANCTIONED, allowedTerminologyId, targetReferenceSetId, targetReferenceSetLabel);
 	}
 	
 	public boolean matches(final String terminologyId) {
 		return allowedTerminologyComponentId.equals(terminologyId);
+	}
+	
+	public String getTargetReferenceSetId() {
+		return targetReferenceSetId;
+	}
+	
+	public String getTargetReferenceSetLabel() {
+		return targetReferenceSetLabel;
 	}
 	
 	@Override

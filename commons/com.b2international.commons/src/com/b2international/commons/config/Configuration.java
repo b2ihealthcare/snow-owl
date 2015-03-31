@@ -45,6 +45,13 @@ public abstract class Configuration {
 	 */
 	public <T> T getModuleConfig(Class<T> configType) {
 		final Object configObject = configurationClassToNode.get(configType);
+		if (configObject == null) {
+			try {
+				return configType.newInstance();
+			} catch (ReflectiveOperationException e) {
+				throw new RuntimeException("Failed to create module configuration. Default ctor is required in type " + configType.getName());
+			}
+		}
 		return ClassUtils.checkAndCast(configObject, configType);
 	}
 

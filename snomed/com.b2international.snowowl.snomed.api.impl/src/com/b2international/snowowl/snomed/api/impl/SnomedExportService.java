@@ -16,37 +16,45 @@
 package com.b2international.snowowl.snomed.api.impl;
 
 import static com.b2international.commons.StringUtils.isEmpty;
-import static com.b2international.snowowl.datastore.BranchPathUtils.createPath;
-import static com.b2international.snowowl.datastore.BranchPathUtils.createVersionPath;
 import static com.b2international.snowowl.snomed.common.ContentSubType.DELTA;
 import static com.b2international.snowowl.snomed.common.ContentSubType.FULL;
 import static com.b2international.snowowl.snomed.common.ContentSubType.SNAPSHOT;
-import static com.b2international.snowowl.snomed.exporter.model.SnomedRf2ExportModel.createExportModelForSingleRefSet;
 import static com.b2international.snowowl.snomed.exporter.model.SnomedRf2ExportModel.createExportModelWithAllRefSets;
 import static com.google.common.base.Strings.nullToEmpty;
-import static com.google.common.collect.ImmutableMap.of;
 
 import java.io.File;
 import java.util.Map;
 
 import org.eclipse.core.runtime.NullProgressMonitor;
 
+import bak.pcj.set.LongSet;
+
+import com.b2international.commons.StringUtils;
+import com.b2international.commons.pcj.LongSets;
+import com.b2international.snowowl.api.exception.BadRequestException;
+import com.b2international.snowowl.api.impl.domain.StorageRef;
+import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.api.IBranchPath;
+import com.b2international.snowowl.core.api.SnowowlRuntimeException;
+import com.b2international.snowowl.core.date.DateFormats;
+import com.b2international.snowowl.core.date.Dates;
+import com.b2international.snowowl.core.date.EffectiveTimes;
+import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.api.ISnomedExportService;
 import com.b2international.snowowl.snomed.api.domain.ISnomedExportConfiguration;
-import com.b2international.snowowl.snomed.api.domain.ISnomedRefSetExportConfiguration;
 import com.b2international.snowowl.snomed.api.domain.Rf2ReleaseType;
 import com.b2international.snowowl.snomed.api.exception.SnomedExportException;
 import com.b2international.snowowl.snomed.common.ContentSubType;
+import com.b2international.snowowl.snomed.datastore.SnomedTerminologyBrowser;
 import com.b2international.snowowl.snomed.exporter.model.SnomedRf2ExportModel;
+import com.google.common.collect.ImmutableMap;
 
 /**
- * {@link ISnomedExportService export service} implementation for the SNOMED&nbsp;CT ontology.
- *
+ * {@link ISnomedExportService export service} implementation for the SNOMED CT ontology.
  */
 public class SnomedExportService implements ISnomedExportService {
 
-	private static final Map<Rf2ReleaseType, ContentSubType> TYPE_MAPPING = of(
+	private static final Map<Rf2ReleaseType, ContentSubType> TYPE_MAPPING = ImmutableMap.of(
 			Rf2ReleaseType.DELTA, DELTA, 
 			Rf2ReleaseType.SNAPSHOT, SNAPSHOT, 
 			Rf2ReleaseType.FULL, FULL
@@ -77,47 +85,56 @@ public class SnomedExportService implements ISnomedExportService {
 		return new com.b2international.snowowl.snomed.exporter.service.SnomedExportService();
 	}
 
-	private SnomedRf2ExportModel convertConfiguration(
-			final ISnomedExportConfiguration configuration) {
+	private SnomedRf2ExportModel convertConfiguration(final ISnomedExportConfiguration configuration) {
 		
 		checkNotNull(configuration, "Configuration was missing for the export operation.");
 		final ContentSubType contentSubType = convertType(configuration.getRf2ReleaseType());
-		final IBranchPath exportBranchPath = getExportBranchPath(configuration);
 		
-		final SnomedRf2ExportModel model;
-		if (configuration instanceof ISnomedRefSetExportConfiguration) {
-			final String refSetId = ((ISnomedRefSetExportConfiguration) configuration).getRefSetId();
-			checkNotNull(refSetId, "Reference set identifier was missing from the export configuration.");
-			model = createExportModelForSingleRefSet(refSetId, contentSubType, exportBranchPath);
-		} else {
-			model = createExportModelWithAllRefSets(contentSubType, exportBranchPath);
-		}
+		final StorageRef exportStorageRef = new StorageRef();
+		
+		exportStorageRef.setShortName("SNOMEDCT");
+		exportStorageRef.setVersion(configuration.getVersion());
+		exportStorageRef.setTaskId(configuration.getTaskId());
+		
+		final IBranchPath exportBranchPath = exportStorageRef.getBranchPath();
+		
+		final SnomedRf2ExportModel model = createExportModelWithAllRefSets(contentSubType, exportBranchPath);
 		
 		final String namespaceId = configuration.getNamespaceId();
-		checkNotNull(namespaceId, "Namespace ID was missing from the export configuration.");
 		model.setNamespace(namespaceId);
-		model.getModulesToExport().addAll(configuration.getModuleDependencyIds());
+		
+		if (configuration.getModuleIds().isEmpty()) {
+			final LongSet modules = ApplicationContext.getServiceForClass(SnomedTerminologyBrowser.class).getAllSubTypeIds(exportBranchPath, Long.parseLong(Concepts.MODULE_ROOT));
+			model.getModulesToExport().addAll(LongSets.toStringSet(modules));
+		} else {
+			model.getModulesToExport().addAll(configuration.getModuleIds());
+		}
+		
 		model.setDeltaExportStartEffectiveTime(configuration.getDeltaExportStartEffectiveTime());
 		model.setDeltaExportEndEffectiveTime(configuration.getDeltaExportEndEffectiveTime());
 		model.setDeltaExport(ContentSubType.DELTA.equals(contentSubType));
 		
+		final String transientEffectiveTime = configuration.getTransientEffectiveTime();
+		
+		if (StringUtils.isEmpty(transientEffectiveTime)) {
+			model.setUnsetEffectiveTimeLabel(EffectiveTimes.UNSET_EFFECTIVE_TIME_LABEL);
+		} else if ("NOW".equals(transientEffectiveTime)) {
+			model.setUnsetEffectiveTimeLabel(EffectiveTimes.format(Dates.todayGmt(), DateFormats.SHORT));
+		} else {
+			
+			try {
+				EffectiveTimes.parse(transientEffectiveTime, DateFormats.SHORT);
+			} catch (SnowowlRuntimeException e) {
+				throw new BadRequestException("Transient effective time '%s' is not in the expected date format.", transientEffectiveTime);
+			}
+			
+			model.setUnsetEffectiveTimeLabel(transientEffectiveTime);
+		}
+
 		return model; 
 	}
-	
-	private IBranchPath getExportBranchPath(final ISnomedExportConfiguration configuration) {
-		checkNotNull(configuration, "Configuration was missing for the export operation.");
-		final String version = configuration.getVersion();
-		final String taskId = configuration.getTaskId();
-		
-		checkNotNull(version, "Code system version was missing from the export configuration.");
-		final IBranchPath branchPathSuffix = createVersionPath(version);
-		return isEmpty(taskId) 
-			? branchPathSuffix 
-			: createPath(branchPathSuffix, taskId);
-	}
-	
+
 	private ContentSubType convertType(final Rf2ReleaseType typeToConvert) {
-		checkNotNull(typeToConvert, "RF2 release type was missing from the export configuration.");
 		final ContentSubType type = TYPE_MAPPING.get(typeToConvert);
 		return checkNotNull(type, "Unknown or unexpected RF2 release type of: " + typeToConvert + ".");
 	}

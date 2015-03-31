@@ -20,22 +20,18 @@ import static com.google.common.base.Preconditions.checkNotNull;
 import java.io.IOException;
 import java.util.Arrays;
 
-import org.apache.lucene.index.AtomicReaderContext;
+import org.apache.lucene.index.AtomicReader;
 import org.apache.lucene.index.NumericDocValues;
 
 import com.b2international.snowowl.datastore.index.AbstractDocsOutOfOrderCollector;
 import com.b2international.snowowl.snomed.datastore.IsAStatement;
 import com.b2international.snowowl.snomed.datastore.StatementCollectionMode;
 import com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants;
-import com.google.common.base.Preconditions;
 
 /**
- * Collector class for collecting SNOMED&nbsp;CT {@link IsAStatement IS_A relationship}s.
- *
+ * Collector class for collecting SNOMED CT {@link IsAStatement IS_A relationship}s.
  */
 public class StatementCollector extends AbstractDocsOutOfOrderCollector {
-
-	private static final long NOT_APPLICABLE_ID = -1L;
 
 	/**
 	 * Default initial size for the underlying collection. Value: {@value}.
@@ -44,7 +40,7 @@ public class StatementCollector extends AbstractDocsOutOfOrderCollector {
 
 	private final IsAStatement[] statements;
 
-	private NumericDocValues idsValues; // can be set to null, relationship id docvalues, storage key docvalues depending on mode
+	private NumericDocValues idsValues; // can be set to null, relationship id docvalues or storage key docvalues, depending on mode
 	private NumericDocValues sourceIdsValues;
 	private NumericDocValues destinationIdsValues;
 
@@ -53,7 +49,8 @@ public class StatementCollector extends AbstractDocsOutOfOrderCollector {
 	private int count;
 
 	/**
-	 * Creates a collector with the the default expected size
+	 * Creates a collector with the default expected size and collection mode.
+	 * 
 	 * @param mode the statement collection mode for this run (collect no IDs, collect relationship IDs, collect storage keys)
 	 */
 	public StatementCollector(final StatementCollectionMode mode) {
@@ -61,79 +58,43 @@ public class StatementCollector extends AbstractDocsOutOfOrderCollector {
 	}
 
 	/**
-	 * Creates a collector with the given expected size.
-	 * @param expectedSize the expected size.
+	 * Creates a collector with the given expected size and collection mode.
+	 * 
+	 * @param expectedSize the expected size
 	 * @param mode the statement collection mode for this run (collect no IDs, collect relationship IDs, collect storage keys)
 	 */
 	public StatementCollector(final int expectedSize, final StatementCollectionMode mode) {
 		this.mode = checkNotNull(mode, "mode");
-		statements = mode.createArray(expectedSize);
-		count = 0;
+		this.statements = mode.createArray(expectedSize);
 	}
 
-	/* (non-Javadoc)
-	 * @see org.apache.lucene.search.Collector#collect(int)
-	 */
 	@Override
-	public void collect(final int doc) throws IOException {
-
-		if (!checkValues()) { // sources cannot be referenced
-			return;
-		}
-
-		final long idOrKey = (null != idsValues) ? idsValues.get(doc) : NOT_APPLICABLE_ID;
-		final long sourceId = sourceIdsValues.get(doc);
-		final long destinationId = destinationIdsValues.get(doc);
+	public void collect(final int docId) throws IOException {
+		final long idOrKey = mode.getIdValue(idsValues, docId);
+		final long sourceId = sourceIdsValues.get(docId);
+		final long destinationId = destinationIdsValues.get(docId);
 
 		statements[count++] = mode.createStatement(sourceId, destinationId, idOrKey);
 	}
 
-	/* (non-Javadoc)
-	 * @see org.apache.lucene.search.Collector#setNextReader(org.apache.lucene.index.AtomicReaderContext)
-	 */
 	@Override
-	public void setNextReader(final AtomicReaderContext context) throws IOException {
+	protected void initDocValues(final AtomicReader leafReader) throws IOException {
+		idsValues = mode.getNumericDocValues(leafReader);
+		destinationIdsValues = leafReader.getNumericDocValues(SnomedIndexBrowserConstants.RELATIONSHIP_VALUE_ID);
+		sourceIdsValues = leafReader.getNumericDocValues(SnomedIndexBrowserConstants.RELATIONSHIP_OBJECT_ID);
+	}
 
-		Preconditions.checkNotNull(context, "Atomic reader context argument cannot be null.");
-
-		if (mode.collectsIdValues()) {
-			idsValues = context.reader().getNumericDocValues(mode.getIdValuesField());
-			if (null == idsValues) {
-				resetValues();
-				return;
-			}
-		}
-
-		destinationIdsValues = context.reader().getNumericDocValues(SnomedIndexBrowserConstants.RELATIONSHIP_VALUE_ID);
-		if (null == destinationIdsValues) {
-			resetValues();
-			return;
-		}
-
-		sourceIdsValues = context.reader().getNumericDocValues(SnomedIndexBrowserConstants.RELATIONSHIP_OBJECT_ID);
-		if (null == sourceIdsValues) {
-			resetValues();
-			return;
-		}
+	@Override
+	protected boolean isLeafCollectible() {
+		return mode.isLeafCollectible(idsValues) && sourceIdsValues != null && destinationIdsValues != null;
 	}
 
 	/**
-	 * @return an array copy of the collected statements.
+	 * Returns collected statements.
+	 * 
+	 * @return an array copy of the collected statements
 	 */
 	public IsAStatement[] getStatements() {
 		return Arrays.copyOf(statements, count);
-	}
-
-	/* sets the reference on the values to null */
-	private void resetValues() {
-		idsValues = null;
-		destinationIdsValues = null;
-		sourceIdsValues = null;
-	}
-
-	/* returns true if only and only if all the backing values can be referenced */
-	private boolean checkValues() {
-		final boolean baseValuesPresent = (null != destinationIdsValues) && (null != sourceIdsValues);
-		return baseValuesPresent && mode.checkIdsValuesPresent(idsValues);
 	}
 }

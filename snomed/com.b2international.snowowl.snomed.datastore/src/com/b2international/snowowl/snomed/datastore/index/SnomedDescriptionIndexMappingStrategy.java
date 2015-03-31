@@ -15,14 +15,11 @@
  */
 package com.b2international.snowowl.snomed.datastore.index;
 
-import static com.b2international.snowowl.core.api.index.CommonIndexConstants.COMPONENT_LABEL_SINGLE;
 import static com.b2international.snowowl.datastore.cdo.CDOIDUtils.asLong;
-import static com.b2international.snowowl.datastore.index.IndexUtils.getSortKey;
 import static com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants.DESCRIPTION_NUMBER;
 import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.COMPONENT_ACTIVE;
 import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.COMPONENT_ID;
 import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.COMPONENT_LABEL;
-import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.COMPONENT_LABEL_SORT_KEY;
 import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.COMPONENT_RELEASED;
 import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.COMPONENT_STORAGE_KEY;
 import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.COMPONENT_TYPE;
@@ -33,25 +30,24 @@ import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBr
 import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.DESCRIPTION_TYPE_ID;
 import static com.google.common.base.Strings.nullToEmpty;
 import static java.lang.Long.parseLong;
-import static org.apache.lucene.document.Field.Store.NO;
 import static org.apache.lucene.document.Field.Store.YES;
 
+import org.apache.lucene.document.BinaryDocValuesField;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.IntField;
 import org.apache.lucene.document.LongField;
 import org.apache.lucene.document.NumericDocValuesField;
 import org.apache.lucene.document.StoredField;
-import org.apache.lucene.document.StringField;
 import org.apache.lucene.document.TextField;
-import org.apache.lucene.index.NumericDocValues;
+import org.apache.lucene.util.BytesRef;
 
 import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.datastore.index.AbstractIndexMappingStrategy;
+import com.b2international.snowowl.datastore.index.SortKeyMode;
 import com.b2international.snowowl.snomed.Description;
 
 /**
  * Mapping strategy for SNOMED CT descriptions.
- * 
  */
 public class SnomedDescriptionIndexMappingStrategy extends AbstractIndexMappingStrategy {
 	
@@ -78,8 +74,8 @@ public class SnomedDescriptionIndexMappingStrategy extends AbstractIndexMappingS
 		doc.add(new LongField(COMPONENT_ID, parseLong(descriptionId), YES));
 		doc.add(new IntField(COMPONENT_TYPE, DESCRIPTION_NUMBER, YES));
 		doc.add(new TextField(COMPONENT_LABEL, term, YES));
-		doc.add(new StringField(COMPONENT_LABEL_SORT_KEY, getSortKey(term), YES));
-		doc.add(new StringField(COMPONENT_LABEL_SINGLE, term, NO));
+		SortKeyMode.SEARCH_ONLY.add(doc, term);
+		doc.add(new BinaryDocValuesField(COMPONENT_LABEL, new BytesRef(term)));
 		doc.add(new IntField(COMPONENT_ACTIVE, active ? 1 : 0, YES));
 		doc.add(new LongField(COMPONENT_STORAGE_KEY, storageKey, YES));
 		doc.add(new StoredField(DESCRIPTION_CASE_SIGNIFICANCE_ID, caseSignificanceId));

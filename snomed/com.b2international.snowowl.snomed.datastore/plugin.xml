@@ -475,7 +475,7 @@
    <extension
          point="com.b2international.snowowl.core.bootstrapFragments">
       <bootstrapFragment
-            class="com.b2international.snowowl.snomed.datastore.SnomedCoreBootstrap">
+            class="com.b2international.snowowl.snomed.datastore.internal.boot.SnomedCoreBootstrap">
       </bootstrapFragment>
    </extension>
    <extension

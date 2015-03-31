@@ -17,12 +17,12 @@ package com.b2international.commons;
 
 import static com.b2international.commons.CompareUtils.isEmpty;
 import static com.b2international.commons.StringUtils.isEmpty;
+import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static java.util.UUID.randomUUID;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
-import java.io.Closeable;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -32,7 +32,6 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.Reader;
-import java.net.URI;
 import java.net.URL;
 import java.util.Deque;
 import java.util.LinkedList;
@@ -47,6 +46,8 @@ import org.slf4j.LoggerFactory;
 import com.google.common.io.InputSupplier;
 
 public final class FileUtils {
+
+	private static final int DEFAULT_BUFFER_SIZE = 4096;
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(FileUtils.class);
 
@@ -107,6 +108,7 @@ public final class FileUtils {
 
 		try {
 			final InputSupplier<InputStream> isSupplier = new InputSupplier<InputStream>() {
+				@Override
 				public InputStream getInput() throws IOException {
 					return is;
 				}
@@ -191,14 +193,13 @@ public final class FileUtils {
 	 * Takes the root directory which contents must be zipped
 	 *
 	 * @param rootDirectoryToZipUp points to the root directory to zip up
-	 * @param arhiveFile the zip file itself
+	 * @param archiveFile the zip file itself
 	 * @return
 	 * @throws IOException
 	 */
-	public static File createZipArchive(final File rootDirectoryToZipUp, final File arhiveFile) throws IOException {
-		zip(rootDirectoryToZipUp, arhiveFile);
-
-		return arhiveFile;
+	public static File createZipArchive(final File rootDirectoryToZipUp, final File archiveFile) throws IOException {
+		zip(rootDirectoryToZipUp, archiveFile);
+		return archiveFile;
 	}
 
 	/**
@@ -246,68 +247,56 @@ public final class FileUtils {
 		fis.close();
 	}
 
-	/**
-	 * Helper method for the zipper
-	 *
-	 */
-	private static void zip(File directory, final File zipfile) throws IOException {
-		final URI base = directory.toURI();
-		final Deque<File> queue = new LinkedList<File>();
-		queue.push(directory);
-		final OutputStream out = new FileOutputStream(zipfile);
-		Closeable res = out;
-		try {
-			final ZipOutputStream zos = new ZipOutputStream(out);
-			res = zos;
-			while (!queue.isEmpty()) {
-				directory = queue.pop();
-				for (final File directoryEntry : directory.listFiles()) {
-					String name = base.relativize(directoryEntry.toURI()).getPath();
-					if (directoryEntry.isDirectory()) {
-						queue.push(directoryEntry);
-						// URI always uses forward slashes (http://www.ietf.org/rfc/rfc1738.txt),
-						// regardless of platform, therefore the OS specific file separator on
-						// windows ('\' character) is not working in this case
-						name = name.endsWith("/") ? name : name + "/";
-						zos.putNextEntry(new ZipEntry(name));
-					} else {
-						zos.putNextEntry(new ZipEntry(name));
-						copy(directoryEntry, zos);
-						zos.closeEntry();
+	private static void zip(File directory, final File zipFile) throws IOException {
+		checkArgument(directory != null && directory.isDirectory() && directory.canWrite(), "The given directory %s is not found or it's read-only", directory);
+		checkNotNull(zipFile, "zipFile");
+
+		try (FileOutputStream fos = new FileOutputStream(zipFile)) {
+			try (ZipOutputStream zos = new ZipOutputStream(fos)) {
+
+				Deque<File> queue = new LinkedList<File>();
+				queue.push(directory);
+
+				while (!queue.isEmpty()) {
+					File first = queue.pop();
+					final File[] content = first.listFiles();
+					if (content != null) {
+						for (File file : content) {
+							String relativeName = getRelativeName(directory, file);
+							if (file.isDirectory()) {
+								zos.putNextEntry(new ZipEntry(relativeName));
+								queue.push(file);
+							} else {
+								zos.putNextEntry(new ZipEntry(relativeName));
+								try (FileInputStream fis = new FileInputStream(file)) {
+									copy(fis, zos);
+								}
+							}
+							zos.closeEntry();
+						}
 					}
+					// TODO include empty dirs???
 				}
 			}
-		} finally {
-			res.close();
 		}
 	}
 
-	/**
-	 * Helper method for the zipper
-	 *
-	 */
-	private static void copy(final File file, final OutputStream out) throws IOException {
-		final InputStream in = new FileInputStream(file);
-		try {
-			copy(in, out);
-		} finally {
-			in.close();
+	private static void copy(InputStream is, OutputStream os) throws IOException {
+		byte[] buffer = new byte[DEFAULT_BUFFER_SIZE];
+		int length;
+		while ((length = is.read(buffer)) > 0) {
+			os.write(buffer, 0, length);
 		}
 	}
 
-	/**
-	 * Helper method for the zipper
-	 *
-	 */
-	private static void copy(final InputStream in, final OutputStream out) throws IOException {
-		final byte[] buffer = new byte[1024];
-		while (true) {
-			final int readCount = in.read(buffer);
-			if (readCount < 0) {
-				break;
-			}
-			out.write(buffer, 0, readCount);
+	private static String getRelativeName(File directory, File file) {
+		String name = directory.toURI().relativize(file.toURI()).getPath();
+		if (file.isDirectory()) {
+			// URI always uses forward slashes (http://www.ietf.org/rfc/rfc1738.txt), regardless of platform, therefore the OS specific file separator
+			// on windows ('\' character) is not working in this case
+			return name.endsWith("/") ? name : name + "/";
 		}
+		return name;
 	}
 
 	private FileUtils() {

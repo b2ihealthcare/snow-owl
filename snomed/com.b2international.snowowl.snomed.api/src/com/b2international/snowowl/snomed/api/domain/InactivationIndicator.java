@@ -21,32 +21,35 @@ import static com.google.common.base.Preconditions.checkNotNull;
 import com.b2international.snowowl.snomed.datastore.SnomedInactivationPlan.InactivationReason;
 
 /**
- * TODO document
+ * Enumeration to specify the reason of the inactivation of SNOMED CT concepts.
+ * 
+ * @see <a href="http://www.snomed.org/tig?t=tsg2_metadata_refset_status_cpt">Component Inactivation Reference Sets
+ * (Technical Implementation Guide)</a>
  */
 public enum InactivationIndicator {
 
 	/**
-	 * 
+	 * The concept has been retired without any particular indication. 
 	 */
 	RETIRED(InactivationReason.RETIRED),
 
 	/**
-	 * 
+	 * The concept is ambiguous.
 	 */
 	AMBIGUOUS(InactivationReason.AMBIGUOUS),
 
 	/**
-	 * 
+	 * The concept duplicates the definition of another concept.
 	 */
 	DUPLICATE(InactivationReason.DUPLICATE),
 
 	/**
-	 * 
+	 * The concept contains an error.
 	 */
 	ERRONEOUS(InactivationReason.ERRONEOUS),
 
 	/**
-	 * 
+	 * The concept was moved to another namespace.
 	 */
 	MOVED_ELSEWHERE(InactivationReason.MOVED_TO);
 
@@ -56,13 +59,25 @@ public enum InactivationIndicator {
 		this.inactivationReason = inactivationReason;
 	}
 
+	/**
+	 * Retrieves the concept identifier for this inactivation indicator.
+	 * 
+	 * @return the concept identifier corresponding to the inactivation indicator constant
+	 */
 	public String getConceptId() {
 		return inactivationReason.getInactivationReasonConceptId();
 	}
 
+	/**
+	 * Returns with the concept inactivation indication for the specified concept identifier.
+	 * 
+	 * @param conceptId the concept identifier to look up (may not be {@code null} or empty)
+	 * 
+	 * @return the resolved concept inactivation indicator, or {@code #RETIRED} if one cannot be found for the
+	 * specified identifier
+	 */
 	public static InactivationIndicator getByConceptId(final String conceptId) {
 		checkNotNull(conceptId, "Concept identifier may not be null.");
-		// XXX: Avoid matching on RETIRED by concept identifier 
 		checkArgument(!conceptId.isEmpty(), "Concept identifier may not be empty."); 
 
 		for (final InactivationIndicator candidate : values()) {
@@ -74,6 +89,11 @@ public enum InactivationIndicator {
 		return RETIRED;
 	}
 
+	/**
+	 * Converts this enumeration to its {@link InactivationReason} counterpart (for internal use). 
+	 * 
+	 * @return the converted inactivation reason value
+	 */
 	public InactivationReason toInactivationReason() {
 		return inactivationReason;
 	}

@@ -28,7 +28,6 @@ import com.b2international.snowowl.core.api.index.IIndexUpdater;
  * Abstract superclass for {@link IIndexMappingStrategy IIndexMappingStrategies} that work with a Lucene-based {@link AbstractIndexUpdater}. 
  *
  * @param E the {@link IIndexEntry} subtype this index service uses
- * 
  */
 public abstract class AbstractIndexMappingStrategy implements IIndexMappingStrategy {
 

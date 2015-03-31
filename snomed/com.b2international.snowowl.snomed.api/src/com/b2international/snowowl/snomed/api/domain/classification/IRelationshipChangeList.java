@@ -18,11 +18,22 @@ package com.b2international.snowowl.snomed.api.domain.classification;
 import java.util.List;
 
 /**
- * TODO document
+ * Holds a pageable list of suggested relationship changes. It includes the total number of changes, as
+ * well as the subset of the actual data.
  */
 public interface IRelationshipChangeList {
 
+	/**
+	 * Returns the requested segment of changed relationships.
+	 * 
+	 * @return a subset of the relationships which should be modified 
+	 */
 	List<IRelationshipChange> getChanges();
-	
+
+	/**
+	 * Returns the total number of relationship changes for this classification run.
+	 * 
+	 * @return the total number of changes
+	 */
 	int getTotal();
 }

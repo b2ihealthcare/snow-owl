@@ -15,6 +15,9 @@
  */
 package com.b2international.snowowl.authentication.ldap;
 
+import static com.google.common.base.Preconditions.checkState;
+
+import com.b2international.snowowl.authentication.AuthenticationConfiguration;
 import com.b2international.snowowl.core.config.SnowOwlConfiguration;
 import com.b2international.snowowl.core.setup.DefaultBootstrapFragment;
 import com.b2international.snowowl.core.setup.Environment;
@@ -29,8 +32,10 @@ public class LdapAuthenticationBootstrap extends DefaultBootstrapFragment {
 
 	@Override
 	public void init(SnowOwlConfiguration configuration, Environment env) throws Exception {
-		// TODO register only if LDAP provider is selected
-		env.services().registerService(IUserManager.class, new LdapUserManager());
+		if ("LDAP".equals(configuration.getModuleConfig(AuthenticationConfiguration.class).getType())) {
+			checkState(env.services().getService(IUserManager.class) == null, "Another IUserManager implemententation is already registered");
+			env.services().registerService(IUserManager.class, new LdapUserManager());
+		}
 	}
 
 }

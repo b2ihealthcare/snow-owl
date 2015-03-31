@@ -15,28 +15,32 @@
  */
 package com.b2international.snowowl.snomed.api.domain;
 
+import com.b2international.snowowl.snomed.api.ISnomedConceptService;
+
 /**
- * TODO document
+ * Enumerates different search criteria which can be used when looking up concepts.
+ * 
+ * @see ISnomedConceptService
  */
 public enum SearchKind {
 
 	/**
-	 * 
+	 * Search by concept label (a preferred term in a system-defined dialect)
 	 */
 	LABEL,
-	
+
 	/**
-	 * 
+	 * Search by ESCG expression
 	 */
 	ESCG,
-	
+
 	/**
-	 * 
+	 * Search by matching concept module
 	 */
 	MODULE,
-	
+
 	/**
-	 * 
+	 * Search by matching namespace part of concept identifier
 	 */
 	NAMESPACE;
 }

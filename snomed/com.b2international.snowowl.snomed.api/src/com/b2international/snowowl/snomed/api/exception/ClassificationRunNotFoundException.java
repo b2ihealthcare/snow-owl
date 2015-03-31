@@ -18,13 +18,17 @@ package com.b2international.snowowl.snomed.api.exception;
 import com.b2international.snowowl.api.exception.NotFoundException;
 
 /**
- * Thrown when details of a classification run can not be retrieved from the datastore.
- * 
+ * Thrown when details of a classification run can not be retrieved.
  */
 public class ClassificationRunNotFoundException extends NotFoundException {
 
 	private static final long serialVersionUID = 1L;
 
+	/**
+	 * Creates a new exception instance with the specified argument.
+	 * 
+	 * @param key the identifier of the classification run which was not found
+	 */
 	public ClassificationRunNotFoundException(final String key) {
 		super("Classification run", key);
 	}

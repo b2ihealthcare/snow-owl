@@ -56,6 +56,8 @@ public abstract class EffectiveTimes {
 
 	/**
 	 * Formats the given object representing an effective time with the given datePattern and returns the result.
+	 * <p>
+	 * Unset effective times will be represented with the {@link #UNSET_EFFECTIVE_TIME_LABEL} constant.
 	 * 
 	 * @param effectiveTime
 	 *            - the date to format, may be <code>null</code>
@@ -64,11 +66,28 @@ public abstract class EffectiveTimes {
 	 * @return - the formatted date as string
 	 */
 	public static String format(@Nullable Object effectiveTime, String datePattern) {
+		return format(effectiveTime, datePattern, UNSET_EFFECTIVE_TIME_LABEL);
+	}
+	
+	/**
+	 * Formats the given object representing an effective time with the given datePattern and returns the result.
+	 * <p>
+	 * Unset effective time values will be represented with the third {@code String} argument.
+	 * 
+	 * @param effectiveTime
+	 *            - the date to format, may be <code>null</code>
+	 * @param datePattern
+	 *            - the pattern to use
+	 * @param unsetEffectiveTimeLabel
+	 *            - the label to use when the effective time is not set
+	 * @return - the formatted date as string
+	 */
+	public static String format(@Nullable Object effectiveTime, String datePattern, String unsetEffectiveTimeLabel) {
 		if (effectiveTime == null) {
-			return UNSET_EFFECTIVE_TIME_LABEL;
+			return unsetEffectiveTimeLabel;
 		} else if (effectiveTime instanceof Long) {
 			if (((long) effectiveTime) == UNSET_EFFECTIVE_TIME) {
-				return UNSET_EFFECTIVE_TIME_LABEL;
+				return unsetEffectiveTimeLabel;
 			}
 			return Dates.formatByGmt(toDate((Long) effectiveTime), datePattern);
 		}
