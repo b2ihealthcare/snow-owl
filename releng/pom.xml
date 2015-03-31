@@ -55,7 +55,7 @@
 			<id>dist</id>
 			<activation>
 				<property>
-					<name>release</name>
+					<name>dist</name>
 					<value>true</value>
 				</property>
 			</activation>
