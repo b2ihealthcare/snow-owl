@@ -82,7 +82,7 @@ public class EMFJSONSerializer {
 		checkArgument(!Strings.isNullOrEmpty(json), "Given JSON should not be null or empty");
 		checkNotNull(type, "type");
 		try {
-			return objectMapper.readValue(json, type);
+			return type.cast(objectMapper.readValue(json, EObject.class));
 		} catch (Exception e) {
 			throw new ConversionException(e);
 		}
