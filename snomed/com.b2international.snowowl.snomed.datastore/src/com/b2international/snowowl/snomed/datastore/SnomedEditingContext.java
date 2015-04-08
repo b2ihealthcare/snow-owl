@@ -144,12 +144,13 @@ public class SnomedEditingContext extends BaseSnomedEditingContext {
 	private CDOObjectHandler objectHandler = new CDOObjectHandler() {
 		@Override
 		public void objectStateChanged(CDOView view, CDOObject object, CDOState oldState, CDOState newState) {
+			
+			// BUG (SO-1619): Getting a property value from an object which is about to become a PROXY will reload the revision.
 			if (object instanceof Component) {
-				final String id = ((Component) object).getId();
 				if (newState == CDOState.NEW) {
-					newComponentIds.add(id);
+					newComponentIds.add(((Component) object).getId());
 				} else if (newState == CDOState.TRANSIENT) {
-					newComponentIds.remove(id);
+					newComponentIds.remove(((Component) object).getId());
 				}
 			}
 		}
