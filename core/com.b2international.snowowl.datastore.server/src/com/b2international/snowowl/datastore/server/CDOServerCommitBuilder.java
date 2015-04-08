@@ -35,7 +35,6 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.emf.cdo.CDOObject;
 import org.eclipse.emf.cdo.CDOObjectReference;
-import org.eclipse.emf.cdo.CDOState;
 import org.eclipse.emf.cdo.common.branch.CDOBranch;
 import org.eclipse.emf.cdo.common.branch.CDOBranchPoint;
 import org.eclipse.emf.cdo.common.commit.CDOCommitInfo;
@@ -696,13 +695,14 @@ public class CDOServerCommitBuilder {
 					((InternalCDOPackageUnit) newPackageUnit).setState(CDOPackageUnit.State.LOADED);
 				}
 
-				// Get the union of delta and dirty objects as they may vary
+				// Not all revision deltas will have a corresponding dirty object, so a difference needs to be computed
 				final Set<CDOID> deltaIds = clientContext.getRevisionDeltas().keySet();
 				final Set<CDOID> dirtyIds = clientContext.getDirtyObjects().keySet();
-				final SetView<CDOID> dirtyAndDeltasIds = Sets.union(deltaIds, dirtyIds);
+				final SetView<CDOID> deltaIdsOnly = Sets.difference(deltaIds, dirtyIds);
 
-				updateNewObjects(internalTransaction, clientContext.getNewObjects(), result.getIDMappings());
-				updateChangedObjects(internalTransaction, clientContext.getDirtyObjects(), dirtyAndDeltasIds, result);
+				postCommit(clientContext.getNewObjects(), result);
+				postCommit(clientContext.getDirtyObjects(), result);
+				postCommitRevisions(deltaIdsOnly, internalTransaction, result);
 				adjustRevisionDeltas(clientContext, result);
 				removeDetachedObjectsFromView(transaction, clientContext);
 
@@ -769,103 +769,39 @@ public class CDOServerCommitBuilder {
 			}
 		}
 
-		/**
-		 * Updates the CDOID to object mapping on the specified transaction for the specified new objects. Adjusts the
-		 * revisions and object state as well.
-		 */
-		private void updateNewObjects(final InternalCDOTransaction internalTransaction, 
-				final Map<CDOID, CDOObject> newObjects, 
-				final Map<CDOID, CDOID> idMappings) {
-
-			if (CompareUtils.isEmpty(newObjects)) {
-				return;
-			}
-
-			for (final CDOObject object : newObjects.values()) {
-
-				final InternalCDOObject internalObject = (InternalCDOObject) object;
-				final InternalCDORevision revision = (InternalCDORevision) object.cdoRevision();
-
-				final CDOID oldID = object.cdoID();
-				final CDOID newID = idMappings.get(oldID);
-
-				if (newID != null) {
-					internalObject.cdoInternalSetID(newID);
-					internalTransaction.remapObject(oldID);
-					revision.setID(newID);
+		private void postCommit(final Map<CDOID, CDOObject> objects, final CommitTransactionResult result) {
+			if (!objects.isEmpty()) {
+				for (final CDOObject object : objects.values()) {
+					CDOStateMachine.INSTANCE.commit((InternalCDOObject) object, result);
 				}
-
-				// FIXME (apeteri): don't we need to call adjustReferences here?
-				revision.freeze();
-
-				// TODO (akitta): consider using IRepository#getRevisionManager instead. It uses the repository itself as the revision loader.
-				final InternalCDORevisionManager revisionManager = internalTransaction.getSession().getRevisionManager();
-				revisionManager.addRevision(revision);
-
-				changeState(internalObject, CDOState.CLEAN);
 			}
 		}
-
+		
 		/**
 		 * Adjusts changed revisions and updates ID mapping if required.
 		 * <p>
 		 * This method considers and ensures a workaround for cases where new objects are created and added to their
 		 * container (CDO resource or CDO object) without making the container itself dirty.
 		 */
-		private void updateChangedObjects(final InternalCDOTransaction internalTransaction, 
-				final Map<CDOID, CDOObject> dirtyObjects, 
-				final Set<CDOID> dirtyAndDeltaIds, 
+		private void postCommitRevisions(final Set<CDOID> deltaIdsOnly, final InternalCDOTransaction internalTransaction, 
 				final CommitTransactionResult result) {
 
-			if (CompareUtils.isEmpty(dirtyAndDeltaIds)) {
+			if (CompareUtils.isEmpty(deltaIdsOnly)) {
 				return;
 			}
 
-			// Objects not dirty in object level but at CDO revision delta level
-			final Set<CDOID> unvisitedDeltaIds = newHashSet();
-			final Map<CDOID, CDOID> idMappings = result.getIDMappings();
+			final CDOBranch branch = result.getBranch();
+			final CDOBranchPoint branchPoint = branch.getPoint(result.getPreviousTimeStamp());
+			final List<CDORevision> revisions = CDOServerUtils.getRevisions(branchPoint, deltaIdsOnly);
 
-			for (final CDOID id : dirtyAndDeltaIds) {
-				final CDOObject object = dirtyObjects.get(id);
-
-				// Object should be dirty if it exists in the transaction as dirty
-				if (null != object) {
-					final InternalCDOObject internalObject = (InternalCDOObject) object;
-					final InternalCDORevision internalRevision = (InternalCDORevision) object.cdoRevision();
-
-					final CDOID oldID = object.cdoID();
-					final CDOID newID = idMappings.get(oldID);
-
-					if (null != newID) {
-						internalObject.cdoInternalSetID(newID);
-						internalTransaction.remapObject(oldID);
-						internalRevision.setID(newID);
-					}
-
-					adjustDirtyRevision(internalTransaction, result, internalRevision);
-					changeState(internalObject, CDOState.CLEAN);
-
-				} else {
-					unvisitedDeltaIds.add(id);
-				}
-			}
-
-			if (!CompareUtils.isEmpty(unvisitedDeltaIds)) {
-
-				final CDOBranch branch = result.getBranch();
-				final CDOBranchPoint branchPoint = branch.getPoint(result.getPreviousTimeStamp());
-				final List<CDORevision> revisions = CDOServerUtils.getRevisions(branchPoint, unvisitedDeltaIds);
-
-				for (final CDORevision revision : revisions) {
-					final InternalCDORevision internalRevision  = (InternalCDORevision) revision;
-					adjustDirtyRevision(internalTransaction, result, internalRevision);
-				}
+			for (final CDORevision revision : revisions) {
+				final InternalCDORevision internalRevision  = (InternalCDORevision) revision;
+				postCommitRevision(internalRevision, internalTransaction, result);
 			}
 		}
 
-		private void adjustDirtyRevision(final InternalCDOTransaction internalTransaction, 
-				final CommitTransactionResult result,
-				final InternalCDORevision revision) {
+		private void postCommitRevision(final InternalCDORevision revision, final InternalCDOTransaction internalTransaction,
+				final CommitTransactionResult result) {
 
 			revision.adjustForCommit(internalTransaction.getBranch(), result.getTimeStamp());
 			revision.adjustReferences(result.getReferenceAdjuster());
@@ -873,17 +809,6 @@ public class CDOServerCommitBuilder {
 
 			final InternalCDORevisionManager revisionManager = internalTransaction.getSession().getRevisionManager();
 			revisionManager.addRevision(revision);
-		}
-
-		private void changeState(final InternalCDOObject object, final CDOState state) {
-
-			final CDOState oldState = object.cdoState();
-			if (oldState.equals(state)) {
-				return;
-			}
-
-			object.cdoInternalSetState(state);
-			CDOStateMachine.INSTANCE.fireEvent(StateChangedEvent2.createInstance(object, oldState, state));
 		}
 
 		private void adjustRevisionDeltas(final InternalCDOCommitContext clientContext, final CommitTransactionResult result) {
