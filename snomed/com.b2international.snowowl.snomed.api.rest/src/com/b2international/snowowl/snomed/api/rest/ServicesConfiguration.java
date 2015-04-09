@@ -180,5 +180,6 @@ public class ServicesConfiguration extends WebMvcConfigurerAdapter {
 	@Override
 	public void configurePathMatch(final PathMatchConfigurer configurer) {
 		configurer.setUseRegisteredSuffixPatternMatch(true);
+		configurer.setPathMatcher(new AntPathWildcardMatcher());
 	}
 }
