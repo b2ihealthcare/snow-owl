@@ -35,7 +35,7 @@ import static org.junit.Assert.*;
  * @author Arjen Poutsma
  * @author Rossen Stoyanchev
  */
-public class AntPathMatcherTests {
+public class AntPathWildcardMatcherTests {
 
 	private AntPathWildcardMatcher pathMatcher;
 
