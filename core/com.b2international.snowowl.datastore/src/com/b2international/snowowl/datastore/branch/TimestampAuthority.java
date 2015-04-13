@@ -15,38 +15,8 @@
  */
 package com.b2international.snowowl.datastore.branch;
 
-import com.b2international.snowowl.datastore.branch.BranchImpl.BranchState;
+public interface TimestampAuthority {
 
-/**
- * @since 4.1
- */
-public interface Branch {
-
-	String path();
-
-	String name();
-
-	Branch parent();
-
-	long baseTimestamp();
-
-	long headTimestamp();
-
-	BranchState state();
-
-	BranchState state(Branch branch);
-
-	void handleCommit(long commitTimestamp);
-
-	Branch rebase();
-
-	Branch rebase(Branch target);
+	long getTimestamp();
 	
-	/**
-	 * @param source - the branch to merge onto this branch
-	 * @throws BranchMergeException - if source cannot be merged
-	 */
-	void merge(Branch source) throws BranchMergeException;
-
-
 }

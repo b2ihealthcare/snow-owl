@@ -20,7 +20,7 @@ import static org.junit.Assert.assertTrue;
 
 import org.junit.Test;
 
-import com.b2international.snowowl.datastore.branch.Branch.BranchState;
+import com.b2international.snowowl.datastore.branch.BranchImpl.BranchState;
 
 public class MainBranchTest {
 
@@ -87,5 +87,10 @@ public class MainBranchTest {
 		assertEquals("Branch 'MAIN' should be in UP_TO_DATE state initially.", BranchState.UP_TO_DATE, main.state());
 		main.handleCommit(5L);
 		assertEquals("Branch 'MAIN' should be in UP_TO_DATE state, even after committing.", BranchState.UP_TO_DATE, main.state());
+	}
+	
+	@Test(expected = UnsupportedOperationException.class)
+	public void rebaseMainBranch() throws Exception {
+		main.rebase();
 	}
 }

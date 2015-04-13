@@ -15,7 +15,10 @@
  */
 package com.b2international.snowowl.datastore.branch;
 
-public class MainBranch extends Branch {
+/**
+ * @since 4.1
+ */
+public class MainBranch extends BranchImpl {
 
     private static final long DEFAULT_TIMESTAMP = 0L;
 	private static final String DEFAULT_PATH = "MAIN";
@@ -43,4 +46,10 @@ public class MainBranch extends Branch {
 	public BranchState state() {
 		return BranchState.UP_TO_DATE;
 	}
+	
+	@Override
+	public Branch rebase(Branch target) {
+		throw new UnsupportedOperationException(path() + " branch cannot be rebased");
+	}
+	
 }
