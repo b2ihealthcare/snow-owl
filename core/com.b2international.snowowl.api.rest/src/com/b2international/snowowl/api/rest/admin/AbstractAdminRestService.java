@@ -22,7 +22,7 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
 
-import com.b2international.snowowl.api.exception.NotFoundException;
+import com.b2international.snowowl.core.exceptions.NotFoundException;
 import com.google.common.base.Joiner;
 import com.google.common.base.Optional;
 

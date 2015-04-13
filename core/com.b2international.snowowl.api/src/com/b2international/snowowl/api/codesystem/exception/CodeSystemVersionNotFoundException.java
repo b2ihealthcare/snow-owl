@@ -15,7 +15,7 @@
  */
 package com.b2international.snowowl.api.codesystem.exception;
 
-import com.b2international.snowowl.api.exception.NotFoundException;
+import com.b2international.snowowl.core.exceptions.NotFoundException;
 
 /**
  * Thrown when a version within a code system can not be found for a given version identifier.

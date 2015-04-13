@@ -26,7 +26,7 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import com.b2international.snowowl.api.exception.BadRequestException;
 import com.b2international.snowowl.api.exception.ConflictException;
 import com.b2international.snowowl.api.exception.IllegalQueryParameterException;
-import com.b2international.snowowl.api.exception.NotFoundException;
+import com.b2international.snowowl.core.exceptions.NotFoundException;
 import com.b2international.snowowl.snomed.api.rest.domain.RestApiError;
 import com.fasterxml.jackson.databind.JsonMappingException;
 

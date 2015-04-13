@@ -15,7 +15,7 @@
  */
 package com.b2international.snowowl.api.task.exception;
 
-import com.b2international.snowowl.api.exception.NotFoundException;
+import com.b2international.snowowl.core.exceptions.NotFoundException;
 
 /**
  * Thrown when a task can not be found for a given task identifier.

@@ -21,6 +21,7 @@ import com.b2international.snowowl.api.codesystem.exception.CodeSystemNotFoundEx
 import com.b2international.snowowl.api.codesystem.exception.CodeSystemVersionNotFoundException;
 import com.b2international.snowowl.api.task.domain.ITask;
 import com.b2international.snowowl.api.task.domain.ITaskInput;
+import com.b2international.snowowl.api.task.exception.TaskCreationException;
 import com.b2international.snowowl.api.task.exception.TaskNotFoundException;
 import com.b2international.snowowl.api.task.exception.TaskPromotionException;
 import com.b2international.snowowl.api.task.exception.TaskSynchronizationConflictException;

@@ -15,6 +15,7 @@
  */
 package com.b2international.snowowl.api.exception;
 
+import com.b2international.snowowl.core.exceptions.NotFoundException;
 import com.b2international.snowowl.core.terminology.ComponentCategory;
 
 /**
