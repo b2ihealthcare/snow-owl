@@ -22,7 +22,7 @@ import java.text.MessageFormat;
 /**
  * Thrown when a requested item could not be found.
  */
-public abstract class NotFoundException extends RuntimeException {
+public class NotFoundException extends RuntimeException {
 
 	private static final long serialVersionUID = 1L;
 
@@ -41,7 +41,7 @@ public abstract class NotFoundException extends RuntimeException {
 	 * @param type the type of the item which was not found (may not be {@code null})
 	 * @param key  the unique key of the item which was not found (may not be {@code null})
 	 */
-	protected NotFoundException(final String type, final String key) {
+	public NotFoundException(final String type, final String key) {
 		super(getMessage(type, key));
 		this.type = type;
 		this.key = key;
