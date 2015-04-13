@@ -22,9 +22,7 @@ import java.util.regex.Pattern;
 
 /*
  * TODO: branch description
- * TODO: state machine (new state: stale)
  * TODO: metadata
- * TODO: throw custom exception on merge (branch is not in FORWARD state)
  */
 public class BranchImpl implements Branch {
 
