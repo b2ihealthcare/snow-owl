@@ -15,9 +15,10 @@
  */
 package com.b2international.snowowl.datastore.branch;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
-import org.junit.Ignore;
 import org.junit.Test;
 
 import com.b2international.snowowl.datastore.branch.Branch.BranchState;
@@ -120,11 +121,10 @@ public class BranchTest {
 	}
 	
 	@Test
-	@Ignore
 	public void mergeForward() throws Exception {
 		testForwardState();
 		main.merge(branchA);
-		assertEquals("Branch 'MAIN/a' should be in UP_TO_DATE state after merging.", BranchState.UP_TO_DATE, branchA.state());
+		assertEquals("Branch 'MAIN/a' should be in UP_TO_DATE state after merging.", BranchState.DIVERGED, branchA.state());
 	}
 
 	@Test(expected=IllegalArgumentException.class)
