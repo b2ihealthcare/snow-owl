@@ -127,19 +127,19 @@ public class BranchTest {
 		assertEquals("Branch 'MAIN/a' should be in UP_TO_DATE state after merging.", BranchState.DIVERGED, branchA.state());
 	}
 
-	@Test(expected=IllegalArgumentException.class)
+	@Test(expected=BranchMergeException.class)
 	public void mergeBehind() throws Exception {
 		testBehindState();
 		main.merge(branchA);
 	}
 
-	@Test(expected=IllegalArgumentException.class)
+	@Test(expected=BranchMergeException.class)
 	public void mergeDiverged() throws Exception {
 		testDivergedState();
 		main.merge(branchA);
 	}
 
-	@Test(expected=IllegalArgumentException.class)
+	@Test(expected=BranchMergeException.class)
 	public void mergeUpToDate() throws Exception {
 		main.merge(branchA);
 	}

@@ -21,8 +21,9 @@ import java.util.regex.Pattern;
 
 /*
  * TODO: branch description
- * TODO: state machine (up-to-date, forward, behind, diverged)
+ * TODO: state machine (new state: stale)
  * TODO: metadata
+ * TODO: throw custom exception on merge (branch is not in FORWARD state)
  */
 public class Branch {
 
@@ -98,9 +99,15 @@ public class Branch {
 		handleCommit(mergeTimestamp);
 	}
 	
-	public void merge(Branch source) {
+	/**
+	 * @param source - the branch to merge onto this branch
+	 * @throws BranchMergeException - if source cannot be merged
+	 */
+	public void merge(Branch source) throws BranchMergeException {
 		checkArgument(!source.equals(this), "Can't merge branch onto itself.");
-		checkArgument(source.state() == BranchState.FORWARD, "Only source in the FORWARD state can merged.");
+		if (source.state() != BranchState.FORWARD) {
+			throw new BranchMergeException("Only source in the FORWARD state can merged.");
+		}
 		// TODO: actual merge happens here
 		handleMerge(source, headTimestamp + 100L);
 	}
