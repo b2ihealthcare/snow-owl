@@ -21,7 +21,7 @@ package com.b2international.snowowl.datastore.branch;
 public class MainBranch extends BranchImpl {
 
     private static final long DEFAULT_TIMESTAMP = 0L;
-	private static final String DEFAULT_PATH = "MAIN";
+	static final String DEFAULT_PATH = "MAIN";
 
 	// For testing only
 	MainBranch() {
@@ -45,6 +45,11 @@ public class MainBranch extends BranchImpl {
 	@Override
 	public BranchState state() {
 		return BranchState.UP_TO_DATE;
+	}
+	
+	@Override
+	public BranchState state(Branch target) {
+		throw new UnsupportedOperationException();
 	}
 	
 	@Override

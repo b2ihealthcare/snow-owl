@@ -35,7 +35,6 @@ public class BranchImpl implements Branch {
         STALE
     }
 
-    private static final String SEPARATOR = "/";
     private static final Pattern VALID_NAME_PATTERN = Pattern.compile("[a-zA-Z0-9_-]{1,50}");
 
     private Branch parent;
@@ -43,11 +42,17 @@ public class BranchImpl implements Branch {
     private long baseTimestamp;
     private long headTimestamp;
     
+    /*TODO remove field if possible*/
     private TimestampAuthority timestampAuthority;
-    
+    private BranchManager branchManager;
+
     void setTimestampAuthority(TimestampAuthority timestampAuthority) {
 		this.timestampAuthority = timestampAuthority;
 	}
+    
+    void setBranchManager(BranchManager branchManager) {
+    	this.branchManager = branchManager;
+    }
 
     public BranchImpl(Branch parent, String name, long baseTimestamp) {
         this(parent, name, baseTimestamp, parent.headTimestamp());
@@ -157,6 +162,11 @@ public class BranchImpl implements Branch {
 		}
 		// TODO: actual merge happens here
 		handleMerge(source, getTimestamp());
+	}
+	
+	@Override
+	public Branch createChild(String name) {
+		return branchManager.createBranch(this, name);
 	}
 	
     @Override

@@ -22,6 +22,8 @@ import com.b2international.snowowl.datastore.branch.BranchImpl.BranchState;
  */
 public interface Branch {
 
+	public static final String SEPARATOR = "/";
+	
 	String path();
 
 	String name();
@@ -51,5 +53,6 @@ public interface Branch {
 	 */
 	void merge(Branch source) throws BranchMergeException;
 
+	Branch createChild(String string);
 
 }
