@@ -23,6 +23,7 @@ import java.util.regex.Pattern;
 /*
  * TODO: branch description
  * TODO: metadata
+ * TODO: move to internal package
  */
 public class BranchImpl implements Branch {
 
@@ -145,7 +146,7 @@ public class BranchImpl implements Branch {
 	}
 
 	private long getTimestamp() {
-		return timestampAuthority.getTimestamp();//Math.max(headTimestamp(), parent().headTimestamp()) + 1;
+		return timestampAuthority.getTimestamp();
 	}
 	
 	@Override
