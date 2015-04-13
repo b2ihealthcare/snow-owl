@@ -63,75 +63,51 @@ public class BranchImpl implements Branch {
         this.headTimestamp = baseTimestamp;
     }
 
-    /* (non-Javadoc)
-	 * @see com.b2international.snowowl.datastore.branch.Branch#path()
-	 */
     @Override
 	public String path() {
         return parent.path() + SEPARATOR + name;
     }
 
-    /* (non-Javadoc)
-	 * @see com.b2international.snowowl.datastore.branch.Branch#name()
-	 */
     @Override
 	public String name() {
         return name;
     }
 
-    /* (non-Javadoc)
-	 * @see com.b2international.snowowl.datastore.branch.Branch#parent()
-	 */
     @Override
 	public Branch parent() {
         return parent;
     }
 
-    /* (non-Javadoc)
-	 * @see com.b2international.snowowl.datastore.branch.Branch#baseTimestamp()
-	 */
     @Override
 	public long baseTimestamp() {
         return baseTimestamp;
     }
 
-    /* (non-Javadoc)
-	 * @see com.b2international.snowowl.datastore.branch.Branch#headTimestamp()
-	 */
     @Override
 	public long headTimestamp() {
         return headTimestamp;
     }
 
-    /* (non-Javadoc)
-	 * @see com.b2international.snowowl.datastore.branch.Branch#state()
-	 */
     @Override
 	public BranchState state() {
 		return state(parent());
 	}
     
-    /* (non-Javadoc)
-	 * @see com.b2international.snowowl.datastore.branch.Branch#state(com.b2international.snowowl.datastore.branch.Branch)
-	 */
     @Override
-	public BranchState state(Branch branch) {
-		if (baseTimestamp() < branch.baseTimestamp()) {
+	public BranchState state(Branch target) {
+		if (baseTimestamp() < target.baseTimestamp()) {
         	return BranchState.STALE;
-        } else if (headTimestamp > baseTimestamp && branch.headTimestamp() < baseTimestamp) {
+        } else if (headTimestamp > baseTimestamp && target.headTimestamp() < baseTimestamp) {
         	return BranchState.FORWARD;
-        } else if (headTimestamp == baseTimestamp && branch.headTimestamp() > baseTimestamp) {
+        } else if (headTimestamp == baseTimestamp && target.headTimestamp() > baseTimestamp) {
         	return BranchState.BEHIND;
-        } else if (headTimestamp > baseTimestamp && branch.headTimestamp() > baseTimestamp) {
+        } else if (headTimestamp > baseTimestamp && target.headTimestamp() > baseTimestamp) {
         	return BranchState.DIVERGED;
         } else {
     	    return BranchState.UP_TO_DATE;
         }
     }
     
-    /* (non-Javadoc)
-	 * @see com.b2international.snowowl.datastore.branch.Branch#handleCommit(long)
-	 */
     @Override
 	public void handleCommit(long commitTimestamp) {
         checkArgument(commitTimestamp > headTimestamp(), "Commit timestamp %s is before last commit timestamp %s on current branch.", commitTimestamp, headTimestamp());
@@ -143,9 +119,6 @@ public class BranchImpl implements Branch {
 		handleCommit(mergeTimestamp);
 	}
 	
-	/* (non-Javadoc)
-	 * @see com.b2international.snowowl.datastore.branch.Branch#rebase()
-	 */
 	@Override
 	public Branch rebase() {
 		return rebase(parent());
@@ -175,9 +148,6 @@ public class BranchImpl implements Branch {
 		return timestampAuthority.getTimestamp();//Math.max(headTimestamp(), parent().headTimestamp()) + 1;
 	}
 	
-	/* (non-Javadoc)
-	 * @see com.b2international.snowowl.datastore.branch.Branch#merge(com.b2international.snowowl.datastore.branch.Branch)
-	 */
 	@Override
 	public void merge(Branch source) throws BranchMergeException {
 		checkArgument(!source.equals(this), "Can't merge branch onto itself.");

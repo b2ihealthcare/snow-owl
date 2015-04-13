@@ -34,8 +34,11 @@ public interface Branch {
 
 	BranchState state();
 
-	BranchState state(Branch branch);
+	BranchState state(Branch target);
 
+	/*
+	 * TODO: move this to internal class 
+	 */
 	void handleCommit(long commitTimestamp);
 
 	Branch rebase();
