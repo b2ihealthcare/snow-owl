@@ -20,10 +20,11 @@ import static com.google.common.base.Preconditions.checkArgument;
 import java.util.Objects;
 import java.util.regex.Pattern;
 
-/*
+/**
  * TODO: branch description
  * TODO: metadata
  * TODO: move to internal package
+ * @since 4.1
  */
 public class BranchImpl implements Branch {
 
