@@ -19,6 +19,7 @@ import static com.google.common.collect.Maps.newHashMap;
 
 import java.util.Map;
 
+import com.b2international.snowowl.core.exceptions.AlreadyExistsException;
 import com.b2international.snowowl.core.exceptions.NotFoundException;
 
 
@@ -44,7 +45,7 @@ public class BranchManager {
 	Branch createBranch(Branch parent, String name) {
 		final String path = parent.path().concat(Branch.SEPARATOR).concat(name);
 		if (getBranchFromStore(path) != null) {
-			throw new RuntimeException();
+			throw new AlreadyExistsException(Branch.class.getSimpleName(), path);
 		}
 		final BranchImpl branch = new BranchImpl(parent, name, clock.getTimestamp());
 		branch.setTimestampAuthority(clock);

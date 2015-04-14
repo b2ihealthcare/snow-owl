@@ -21,6 +21,7 @@ import static org.junit.Assert.assertNotNull;
 import org.junit.Before;
 import org.junit.Test;
 
+import com.b2international.snowowl.core.exceptions.AlreadyExistsException;
 import com.b2international.snowowl.core.exceptions.NotFoundException;
 
 /**
@@ -51,7 +52,7 @@ public class BranchManagerTest {
 		assertEquals(created, manager.getBranch("MAIN/a"));
 	}
 	
-	@Test(expected = RuntimeException.class)
+	@Test(expected = AlreadyExistsException.class)
 	public void whenCreatingAlreadyExistingBranch_ThenThrowException() throws Exception {
 		manager.getMainBranch().createChild("a");
 		manager.getMainBranch().createChild("a");
