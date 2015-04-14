@@ -15,6 +15,8 @@
  */
 package com.b2international.snowowl.api.exception;
 
+import com.b2international.snowowl.core.exceptions.BadRequestException;
+
 /**
  * Thrown when the supplied query parameters are not acceptable.
  */

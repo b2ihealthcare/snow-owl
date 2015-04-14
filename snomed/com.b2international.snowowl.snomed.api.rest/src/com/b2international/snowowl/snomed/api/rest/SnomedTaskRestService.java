@@ -33,11 +33,11 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.b2international.snowowl.api.exception.BadRequestException;
 import com.b2international.snowowl.api.impl.task.domain.TaskChangeRequest;
 import com.b2international.snowowl.api.impl.task.domain.TaskInput;
 import com.b2international.snowowl.api.task.domain.ITask;
 import com.b2international.snowowl.api.task.domain.TaskState;
+import com.b2international.snowowl.core.exceptions.BadRequestException;
 import com.b2international.snowowl.snomed.api.ISnomedTaskService;
 import com.b2international.snowowl.snomed.api.rest.domain.CollectionResource;
 import com.wordnik.swagger.annotations.Api;

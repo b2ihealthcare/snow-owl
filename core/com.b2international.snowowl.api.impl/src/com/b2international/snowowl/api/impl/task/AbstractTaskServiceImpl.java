@@ -25,7 +25,6 @@ import org.eclipse.emf.cdo.common.branch.CDOBranch;
 
 import com.b2international.snowowl.api.codesystem.exception.CodeSystemNotFoundException;
 import com.b2international.snowowl.api.codesystem.exception.CodeSystemVersionNotFoundException;
-import com.b2international.snowowl.api.exception.AlreadyExistsException;
 import com.b2international.snowowl.api.impl.task.domain.Task;
 import com.b2international.snowowl.api.task.ITaskService;
 import com.b2international.snowowl.api.task.domain.ITask;
@@ -34,6 +33,7 @@ import com.b2international.snowowl.api.task.domain.TaskState;
 import com.b2international.snowowl.api.task.exception.TaskNotFoundException;
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.api.IBranchPath;
+import com.b2international.snowowl.core.exceptions.AlreadyExistsException;
 import com.b2international.snowowl.datastore.BranchPathUtils;
 import com.b2international.snowowl.datastore.ICodeSystem;
 import com.b2international.snowowl.datastore.TaskBranchPathMap;

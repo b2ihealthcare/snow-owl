@@ -23,8 +23,8 @@ import com.b2international.snowowl.api.domain.IComponentList;
 import com.b2international.snowowl.api.domain.IComponentNode;
 import com.b2international.snowowl.api.domain.IComponentRef;
 import com.b2international.snowowl.api.domain.IStorageRef;
-import com.b2international.snowowl.api.exception.ComponentNotFoundException;
 import com.b2international.snowowl.api.task.exception.TaskNotFoundException;
+import com.b2international.snowowl.core.exceptions.ComponentNotFoundException;
 
 /**
  * Component node service implementations allow browsing components of a code system as a directed, acyclic graph (DAG)

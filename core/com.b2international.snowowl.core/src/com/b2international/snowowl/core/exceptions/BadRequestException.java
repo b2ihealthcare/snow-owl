@@ -13,24 +13,24 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.api.exception;
+package com.b2international.snowowl.core.exceptions;
 
 /**
- * Thrown when the same component is modified concurrently by multiple clients, or the request is based on an outdated
- * version of a component.
+ * Thrown when a request contains incorrect parameters or is otherwise malformed.
  * 
  * @since 1.0
  */
-public class ConflictException extends RuntimeException {
+public class BadRequestException extends RuntimeException {
 
-	private static final long serialVersionUID = -2887608541911973086L;
+	private static final long serialVersionUID = 7998450893448621719L;
 
 	/**
-	 * Creates a new exception instance with the specified message.
+	 * Creates a new instance with the specified format string and arguments.
 	 * 
-	 * @param message the exception message
+	 * @param message the format string for the returned message
+	 * @param args    the format string arguments
 	 */
-	public ConflictException(String message) {
-		super(message);
+	public BadRequestException(final String message, final Object...args) {
+		super(String.format(message, args));
 	}
 }

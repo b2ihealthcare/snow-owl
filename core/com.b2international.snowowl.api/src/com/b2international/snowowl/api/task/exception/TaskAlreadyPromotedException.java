@@ -15,7 +15,7 @@
  */
 package com.b2international.snowowl.api.task.exception;
 
-import com.b2international.snowowl.api.exception.BadRequestException;
+import com.b2international.snowowl.core.exceptions.BadRequestException;
 
 /**
  * Thrown when an editing task can not be updated because it is already promoted and closed for modification.

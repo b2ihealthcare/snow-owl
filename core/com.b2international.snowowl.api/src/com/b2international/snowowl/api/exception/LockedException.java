@@ -15,6 +15,8 @@
  */
 package com.b2international.snowowl.api.exception;
 
+import com.b2international.snowowl.core.exceptions.ConflictException;
+
 /**
  * Thrown when a request can not be processed due to a lock existing on the underlying repository. The client
  * has to send the request again, after the lock was released.

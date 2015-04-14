@@ -20,9 +20,9 @@ import com.b2international.snowowl.api.codesystem.exception.CodeSystemVersionNot
 import com.b2international.snowowl.api.domain.IComponent;
 import com.b2international.snowowl.api.domain.IComponentInput;
 import com.b2international.snowowl.api.domain.IComponentRef;
-import com.b2international.snowowl.api.exception.ComponentNotFoundException;
 import com.b2international.snowowl.api.history.IHistoryService;
 import com.b2international.snowowl.api.task.exception.TaskNotFoundException;
+import com.b2international.snowowl.core.exceptions.ComponentNotFoundException;
 
 /**
  * Component service implementations provide methods for <b>c</b>reating, <b>r</b>eading, <b>u</b>pdating and

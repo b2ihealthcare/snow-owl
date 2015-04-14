@@ -20,8 +20,8 @@ import com.b2international.snowowl.api.codesystem.exception.CodeSystemVersionNot
 import com.b2international.snowowl.api.domain.IComponentEdge;
 import com.b2international.snowowl.api.domain.IComponentList;
 import com.b2international.snowowl.api.domain.IComponentRef;
-import com.b2international.snowowl.api.exception.ComponentNotFoundException;
 import com.b2international.snowowl.api.task.exception.TaskNotFoundException;
+import com.b2international.snowowl.core.exceptions.ComponentNotFoundException;
 
 /**
  * Component edge service implementations allow exploring the connecting edges of a code system's graph view.
