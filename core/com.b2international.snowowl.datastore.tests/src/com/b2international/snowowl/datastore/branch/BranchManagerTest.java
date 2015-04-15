@@ -37,7 +37,7 @@ public class BranchManagerTest {
 
 	@Before
 	public void givenBranchManager() {
-		manager = new BranchManager(new AtomicLongTimestampAuthority());
+		manager = new BranchManagerImpl(new AtomicLongTimestampAuthority());
 		main = manager.getMainBranch();
 	}
 	

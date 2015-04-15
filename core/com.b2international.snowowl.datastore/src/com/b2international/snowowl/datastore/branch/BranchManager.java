@@ -15,65 +15,37 @@
  */
 package com.b2international.snowowl.datastore.branch;
 
-import static com.google.common.collect.Maps.newHashMap;
-
 import java.util.Collection;
-import java.util.Map;
 
-import com.b2international.snowowl.core.exceptions.AlreadyExistsException;
 import com.b2international.snowowl.core.exceptions.NotFoundException;
-import com.google.common.collect.ImmutableList;
-
 
 /**
  * @since 4.1
  */
-public class BranchManager {
+public interface BranchManager {
 
-	private TimestampAuthority clock;
-	private Map<String, Branch> branches = newHashMap();
+	/**
+	 * Returns the MAIN branch.
+	 * 
+	 * @return a never <code>null</code> {@link Branch} instance representing the one and only MAIN branch.
+	 */
+	Branch getMainBranch();
 
-	public BranchManager(TimestampAuthority clock) {
-		this.clock = clock;
-		initMainBranch();
-	}
+	/**
+	 * Returns the {@link Branch} represented with the given path.
+	 * 
+	 * @param path
+	 * @return
+	 * @throws NotFoundException
+	 *             - if the branch does not exists with the given path
+	 */
+	Branch getBranch(String path);
 
-	private void initMainBranch() {
-		final MainBranch main = new MainBranch(clock.getTimestamp());
-		main.setBranchManager(this);
-		this.branches.put(MainBranch.DEFAULT_PATH, main);
-	}
-	
-	Branch createBranch(Branch parent, String name) {
-		final String path = parent.path().concat(Branch.SEPARATOR).concat(name);
-		if (getBranchFromStore(path) != null) {
-			throw new AlreadyExistsException(Branch.class.getSimpleName(), path);
-		}
-		final BranchImpl branch = new BranchImpl(parent, name, clock.getTimestamp());
-		branch.setTimestampAuthority(clock);
-		branch.setBranchManager(this);
-		branches.put(path, branch);
-		return branch;
-	}
-	
-	public Branch getMainBranch() {
-		return getBranch(MainBranch.DEFAULT_PATH);
-	}
-
-	public Branch getBranch(String path) {
-		final Branch branch = getBranchFromStore(path);
-		if (branch == null) {
-			throw new NotFoundException(Branch.class.getSimpleName(), path);
-		}
-		return branch;
-	}
-
-	private Branch getBranchFromStore(String path) {
-		return branches.get(path);
-	}
-
-	public Collection<Branch> getBranches() {
-		return ImmutableList.copyOf(branches.values());
-	}
+	/**
+	 * Returns all branches associated with this {@link BranchManager}.
+	 * 
+	 * @return
+	 */
+	Collection<Branch> getBranches();
 
 }

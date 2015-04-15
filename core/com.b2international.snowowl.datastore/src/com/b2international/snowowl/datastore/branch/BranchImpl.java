@@ -46,13 +46,13 @@ public class BranchImpl implements Branch {
     
     /*TODO remove field if possible, move to SPI interface*/
     private TimestampAuthority timestampAuthority;
-    private BranchManager branchManager;
+    private BranchManagerImpl branchManager;
 
     void setTimestampAuthority(TimestampAuthority timestampAuthority) {
 		this.timestampAuthority = timestampAuthority;
 	}
     
-    void setBranchManager(BranchManager branchManager) {
+    void setBranchManager(BranchManagerImpl branchManager) {
     	this.branchManager = branchManager;
     }
 
