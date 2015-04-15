@@ -60,4 +60,18 @@ public class BranchManagerTest {
 		main.createChild("a");
 	}
 	
+	@Test
+	public void whenCreatingDeepBranchHierarchy_ThenEachSegmentShouldBeCreatedAndStoredInBranchManager() throws Exception {
+		final Branch abcd = main.createChild("a").createChild("b").createChild("c").createChild("d");
+		assertEquals("MAIN/a/b/c/d", abcd.path());
+		final Branch abc = abcd.parent();
+		final Branch ab = abc.parent();
+		final Branch a = ab.parent();
+		final Branch main = a.parent();
+		assertEquals(manager.getBranch("MAIN/a/b/c"), abc);
+		assertEquals(manager.getBranch("MAIN/a/b"), ab);
+		assertEquals(manager.getBranch("MAIN/a"), a);
+		assertEquals(this.main, main);
+	}
+	
 }

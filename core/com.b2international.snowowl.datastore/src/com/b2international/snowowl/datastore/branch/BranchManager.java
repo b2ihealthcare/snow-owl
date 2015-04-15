@@ -49,6 +49,7 @@ public class BranchManager {
 		}
 		final BranchImpl branch = new BranchImpl(parent, name, clock.getTimestamp());
 		branch.setTimestampAuthority(clock);
+		branch.setBranchManager(this);
 		branches.put(path, branch);
 		return branch;
 	}
