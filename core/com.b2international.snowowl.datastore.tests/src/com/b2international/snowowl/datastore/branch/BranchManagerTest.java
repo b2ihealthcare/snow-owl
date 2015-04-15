@@ -15,8 +15,11 @@
  */
 package com.b2international.snowowl.datastore.branch;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+
+import java.util.Collection;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -72,6 +75,15 @@ public class BranchManagerTest {
 		assertEquals(manager.getBranch("MAIN/a/b"), ab);
 		assertEquals(manager.getBranch("MAIN/a"), a);
 		assertEquals(this.main, main);
+	}
+	
+	@Test
+	public void whenCreatingThreeBranches_ThenManagerShouldReturnAllOfThemInGetAll() throws Exception {
+		final Branch a = main.createChild("a");
+		final Branch b = main.createChild("b");
+		final Branch c = main.createChild("c");
+		final Collection<Branch> branches = manager.getBranches();
+		assertThat(branches).containsExactly(main, a, b, c);
 	}
 	
 }

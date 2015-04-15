@@ -17,10 +17,12 @@ package com.b2international.snowowl.datastore.branch;
 
 import static com.google.common.collect.Maps.newHashMap;
 
+import java.util.Collection;
 import java.util.Map;
 
 import com.b2international.snowowl.core.exceptions.AlreadyExistsException;
 import com.b2international.snowowl.core.exceptions.NotFoundException;
+import com.google.common.collect.ImmutableList;
 
 
 /**
@@ -68,6 +70,10 @@ public class BranchManager {
 
 	private Branch getBranchFromStore(String path) {
 		return branches.get(path);
+	}
+
+	public Collection<Branch> getBranches() {
+		return ImmutableList.copyOf(branches.values());
 	}
 
 }
