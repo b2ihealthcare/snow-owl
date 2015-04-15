@@ -48,6 +48,11 @@ public class MainBranch extends BranchImpl {
 	}
 	
 	@Override
+	public void delete() {
+		throw new UnsupportedOperationException(path() + " cannot be deleted");
+	}
+	
+	@Override
 	public BranchState state(Branch target) {
 		throw new UnsupportedOperationException();
 	}

@@ -24,7 +24,7 @@ import com.b2international.snowowl.datastore.branch.BranchImpl.BranchState;
  * 
  * @since 4.1
  */
-public interface Branch {
+public interface Branch extends Deletable {
 
 	/**
 	 * Segment separator in {@link Branch#path()} values.

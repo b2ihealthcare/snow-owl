@@ -42,8 +42,9 @@ public class BranchImpl implements Branch {
     private String name;
     private long baseTimestamp;
     private long headTimestamp;
+    private boolean deleted;
     
-    /*TODO remove field if possible*/
+    /*TODO remove field if possible, move to SPI interface*/
     private TimestampAuthority timestampAuthority;
     private BranchManager branchManager;
 
@@ -99,6 +100,16 @@ public class BranchImpl implements Branch {
 	public BranchState state() {
 		return state(parent());
 	}
+    
+    @Override
+    public void delete() {
+    	this.deleted = true;
+    }
+    
+    @Override
+    public boolean isDeleted() {
+    	return deleted;
+    }
     
     @Override
 	public BranchState state(Branch target) {

@@ -93,4 +93,9 @@ public class MainBranchTest {
 	public void rebaseMainBranch() throws Exception {
 		main.rebase();
 	}
+	
+	@Test(expected = UnsupportedOperationException.class)
+	public void deleteMainBranch() throws Exception {
+		main.delete();
+	}
 }

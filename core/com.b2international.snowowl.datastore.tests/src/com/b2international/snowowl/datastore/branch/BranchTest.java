@@ -17,6 +17,7 @@ package com.b2international.snowowl.datastore.branch;
 
 import static com.google.common.collect.Lists.newArrayList;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
@@ -293,6 +294,14 @@ public class BranchTest {
 				// success
 			}
 		}
+	}
+	
+	@Test
+	public void deleteBranch() throws Exception {
+		branchA = createBranch(main, "a");
+		assertFalse(branchA.isDeleted());
+		branchA.delete();
+		assertTrue(branchA.isDeleted());
 	}
 	
 	private void commit(Branch branch) {
