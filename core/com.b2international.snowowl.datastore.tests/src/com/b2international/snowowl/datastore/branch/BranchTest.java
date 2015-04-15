@@ -15,9 +15,11 @@
  */
 package com.b2international.snowowl.datastore.branch;
 
+import static com.google.common.collect.Lists.newArrayList;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -279,6 +281,18 @@ public class BranchTest {
 		rebaseDivergedWithBehindChild();
 		final Branch newBranchB = branchB.rebase(newBranchA);
 		assertState(newBranchB, BranchState.UP_TO_DATE);
+	}
+	
+	@Test
+	public void createChildWithInvalidPathShouldThrowException() throws Exception {
+		for (String name : newArrayList("/", "/a", "a/", "a/b")) {
+			try {
+				main.createChild(name);
+				fail("IllegalArgumentException should be thrown when creating child branch " + name);
+			} catch (IllegalArgumentException e) {
+				// success
+			}
+		}
 	}
 	
 	private void commit(Branch branch) {

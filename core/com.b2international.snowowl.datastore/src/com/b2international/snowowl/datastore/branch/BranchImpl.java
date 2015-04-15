@@ -60,7 +60,7 @@ public class BranchImpl implements Branch {
     }
 
     protected BranchImpl(Branch parent, String name, long baseTimestamp, long parentHeadTimestamp) {
-        checkArgument(VALID_NAME_PATTERN.matcher(name).matches(), "Name '%s' has invalid characters.", name);
+        checkName(name);
         checkArgument(baseTimestamp >= 0L, "Base timestamp may not be negative.");
         checkArgument(baseTimestamp > parentHeadTimestamp, "Base timestamp %s must be greater than parent head timestamp %s.", baseTimestamp, parentHeadTimestamp);
 
@@ -167,6 +167,7 @@ public class BranchImpl implements Branch {
 	
 	@Override
 	public Branch createChild(String name) {
+		checkName(name);
 		return branchManager.createBranch(this, name);
 	}
 	
@@ -184,5 +185,9 @@ public class BranchImpl implements Branch {
         Branch other = (Branch) obj;
         return path().equals(other.path()) && baseTimestamp() == other.baseTimestamp();
     }
+    
+    private void checkName(String name) {
+		checkArgument(VALID_NAME_PATTERN.matcher(name).matches(), "Name '%s' has invalid characters.", name);
+	}
 
 }
