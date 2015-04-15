@@ -101,7 +101,7 @@ public class BranchImpl implements Branch {
 	@Override
 	public Branch rebase(Branch target) {
 		final BranchState state = state();
-		if (state == BranchState.BEHIND || state == BranchState.DIVERGED) {
+		if (state == BranchState.BEHIND || state == BranchState.DIVERGED || state == BranchState.STALE) {
 			return branchManager.rebase(this, (BranchImpl) target);
 		} else {
 			return this;

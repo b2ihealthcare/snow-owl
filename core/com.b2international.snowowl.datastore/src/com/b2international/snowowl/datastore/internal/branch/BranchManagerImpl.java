@@ -58,6 +58,10 @@ public class BranchManagerImpl implements BranchManager {
 			throw new AlreadyExistsException(Branch.class.getSimpleName(), path);
 		}
 		
+		return reopen(parent, name);
+	}
+
+	private BranchImpl reopen(BranchImpl parent, String name) {
 		final BranchImpl child = new BranchImpl(this, name, parent.path(), clock.getTimestamp());
 		registerBranch(child);
 		return child;
@@ -92,7 +96,7 @@ public class BranchManagerImpl implements BranchManager {
 	}
 
 	Branch rebase(BranchImpl source, BranchImpl target) {
-		BranchImpl rebasedSource = createBranch((BranchImpl) source.parent(), source.name());
+		BranchImpl rebasedSource = reopen((BranchImpl) source.parent(), source.name());
 		
 		if (source.state() == BranchState.DIVERGED) {
 			rebasedSource = handleCommit(rebasedSource, clock.getTimestamp());
