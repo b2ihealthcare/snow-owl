@@ -30,15 +30,17 @@ import com.b2international.snowowl.core.exceptions.NotFoundException;
 public class BranchManagerTest {
 
 	private BranchManager manager;
+	private Branch main;
 
 	@Before
 	public void givenBranchManager() {
 		manager = new BranchManager(new AtomicLongTimestampAuthority());
+		main = manager.getMainBranch();
 	}
 	
 	@Test
 	public void whenGettingMainBranch_ThenItShouldBeReturned() throws Exception {
-		assertNotNull(manager.getMainBranch());
+		assertNotNull(main);
 	}
 	
 	@Test(expected = NotFoundException.class)
@@ -48,14 +50,14 @@ public class BranchManagerTest {
 	
 	@Test
 	public void whenCreatingBranch_ThenItShouldBeReturnedViaGet() throws Exception {
-		final Branch created = manager.getMainBranch().createChild("a");
+		final Branch created = main.createChild("a");
 		assertEquals(created, manager.getBranch("MAIN/a"));
 	}
 	
 	@Test(expected = AlreadyExistsException.class)
 	public void whenCreatingAlreadyExistingBranch_ThenThrowException() throws Exception {
-		manager.getMainBranch().createChild("a");
-		manager.getMainBranch().createChild("a");
+		main.createChild("a");
+		main.createChild("a");
 	}
 	
 }
