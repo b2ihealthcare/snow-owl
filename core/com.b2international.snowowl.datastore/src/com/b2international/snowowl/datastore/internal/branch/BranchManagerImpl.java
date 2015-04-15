@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.datastore.branch;
+package com.b2international.snowowl.datastore.internal.branch;
 
 import static com.google.common.collect.Maps.newHashMap;
 
@@ -22,6 +22,9 @@ import java.util.Map;
 
 import com.b2international.snowowl.core.exceptions.AlreadyExistsException;
 import com.b2international.snowowl.core.exceptions.NotFoundException;
+import com.b2international.snowowl.datastore.branch.Branch;
+import com.b2international.snowowl.datastore.branch.BranchManager;
+import com.b2international.snowowl.datastore.branch.TimestampAuthority;
 import com.google.common.collect.ImmutableList;
 
 

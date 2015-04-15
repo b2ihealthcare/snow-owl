@@ -13,12 +13,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.datastore.branch;
+package com.b2international.snowowl.datastore.internal.branch;
 
 import static com.google.common.base.Preconditions.checkArgument;
 
 import java.util.Objects;
 import java.util.regex.Pattern;
+
+import com.b2international.snowowl.datastore.branch.Branch;
+import com.b2international.snowowl.datastore.branch.BranchMergeException;
+import com.b2international.snowowl.datastore.branch.TimestampAuthority;
 
 /**
  * TODO: branch description

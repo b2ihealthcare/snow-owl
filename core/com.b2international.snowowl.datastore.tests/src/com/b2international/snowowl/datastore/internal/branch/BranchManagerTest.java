@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.datastore.branch;
+package com.b2international.snowowl.datastore.internal.branch;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
@@ -26,6 +26,9 @@ import org.junit.Test;
 
 import com.b2international.snowowl.core.exceptions.AlreadyExistsException;
 import com.b2international.snowowl.core.exceptions.NotFoundException;
+import com.b2international.snowowl.datastore.branch.Branch;
+import com.b2international.snowowl.datastore.branch.BranchManager;
+import com.b2international.snowowl.datastore.internal.branch.BranchManagerImpl;
 
 /**
  * @since 4.1

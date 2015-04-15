@@ -1,6 +1,8 @@
-package com.b2international.snowowl.datastore.branch;
+package com.b2international.snowowl.datastore.internal.branch;
 
 import java.util.concurrent.atomic.AtomicLong;
+
+import com.b2international.snowowl.datastore.branch.TimestampAuthority;
 
 public class AtomicLongTimestampAuthority implements TimestampAuthority {
 

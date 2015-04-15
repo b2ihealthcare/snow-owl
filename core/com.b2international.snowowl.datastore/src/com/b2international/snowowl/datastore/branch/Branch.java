@@ -16,7 +16,7 @@
 package com.b2international.snowowl.datastore.branch;
 
 import com.b2international.snowowl.core.exceptions.AlreadyExistsException;
-import com.b2international.snowowl.datastore.branch.BranchImpl.BranchState;
+import com.b2international.snowowl.datastore.internal.branch.BranchImpl.BranchState;
 
 /**
  * Represents a {@link Branch} in a terminology repository. A {@link Branch} can be uniquely identified by using its {@link #path()} and
