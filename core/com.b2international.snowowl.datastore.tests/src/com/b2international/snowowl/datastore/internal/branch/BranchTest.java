@@ -15,20 +15,15 @@
  */
 package com.b2international.snowowl.datastore.internal.branch;
 
-import static com.google.common.collect.Lists.newArrayList;
+import static com.b2international.snowowl.datastore.internal.branch.BranchAssertions.*;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotEquals;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.mockito.Mockito.mock;
 
 import org.junit.Before;
 import org.junit.Test;
 
 import com.b2international.snowowl.datastore.branch.Branch;
-import com.b2international.snowowl.datastore.branch.BranchMergeException;
-import com.b2international.snowowl.datastore.internal.branch.BranchImpl;
-import com.b2international.snowowl.datastore.internal.branch.MainBranch;
 import com.b2international.snowowl.datastore.internal.branch.BranchImpl.BranchState;
 
 /**
@@ -37,15 +32,14 @@ import com.b2international.snowowl.datastore.internal.branch.BranchImpl.BranchSt
 public class BranchTest {
 
 	private AtomicLongTimestampAuthority clock = new AtomicLongTimestampAuthority();
-	private MainBranch main;
-	private Branch branchA;
-	private Branch branchB;
-	private Branch newBranchA;
+	private BranchManagerImpl manager;
+	private BranchImpl main;
+	private BranchImpl branchA;
 	
 	@Before
 	public void before() {
-		main = new MainBranch(currentTimestamp());
-		main.setTimestampAuthority(clock);
+		manager = mock(BranchManagerImpl.class);
+		main = new MainBranchImpl(manager, currentTimestamp());
 		branchA = createBranch(main, "a");
 	}
 	
@@ -81,13 +75,13 @@ public class BranchTest {
 	@Test
 	public void createWithMainChildPath() {
 		Branch branch = createBranch(main, "p1");
-		assertPath(branch, "MAIN/p1");
+		BranchAssertions.assertPath(branch, "MAIN/p1");
 	}
 	
 	@Test
 	public void createWithSamePathAndBaseTimestampShouldBeEqual() {
 		Branch branch1 = createBranch(main, "p1");
-		Branch branch2 = new BranchImpl(main, "p1", branch1.baseTimestamp());
+		Branch branch2 = createBranch(main, "p1", branch1.baseTimestamp());
 		assertEquals(branch1, branch2);
 	}
 
@@ -120,222 +114,142 @@ public class BranchTest {
 	}
 
 	@Test
-	public void createWithPathParent() throws Exception {
-		Branch branch2 = createBranch(branchA, "b");
-		assertEquals(branchA, branch2.parent());
-		assertEquals(main, branchA.parent());
+	public void initialStateIsUpToDate() {
+		assertState(branchA, main, BranchState.UP_TO_DATE);
 	}
-
-	@Test(expected=IllegalArgumentException.class)
-	public void branchBeforeParentHead() throws Exception {
-		new BranchImpl(main, "a", main.baseTimestamp() - 1);
-	}
-
+	
 	@Test
 	public void testForwardState() throws Exception {
-		assertState(branchA, BranchState.UP_TO_DATE);
-		commit(branchA);
-		assertState(branchA, BranchState.FORWARD);
+		assertState(commit(branchA), main, BranchState.FORWARD);
 	}
 
 	@Test
 	public void testBehindState() throws Exception {
-		assertState(branchA, BranchState.UP_TO_DATE);
-		commit(main);
-		assertState(branchA, BranchState.BEHIND);
+		assertState(branchA, commit(main), BranchState.BEHIND);
 	}
 
 	@Test
 	public void testDivergedState() throws Exception {
-		assertState(branchA, BranchState.UP_TO_DATE);
-		commit(main);
-		commit(branchA);
-		assertState(branchA, BranchState.DIVERGED);
-	}
-	
-	@Test(expected=IllegalArgumentException.class)
-	public void mergeSelf() throws Exception {
-		main.merge(main);
-	}
-	
-	@Test
-	public void mergeForward() throws Exception {
-		testForwardState();
-		main.merge(branchA);
-		assertState(branchA, BranchState.DIVERGED);
+		assertState(commit(branchA), commit(main), BranchState.DIVERGED);
 	}
 
-	@Test(expected=BranchMergeException.class)
-	public void mergeBehind() throws Exception {
-		testBehindState();
-		main.merge(branchA);
+//	
+//	@Test
+//	public void rebaseUpToDateState() throws Exception {
+//		clock.advance(9L);
+//		final Branch branchAWithTimestamp = createBranch(main, "a");
+//		final long expected = branchAWithTimestamp.baseTimestamp();
+//		branchAWithTimestamp.rebase();
+//		assertEquals("Rebasing UP_TO_DATE branch should do nothing", expected, branchAWithTimestamp.baseTimestamp());
+//	}
+//	
+//	@Test
+//	public void rebaseForwardState() throws Exception {
+//		clock.advance(9L);
+//		final Branch branchAWithTimestamp = createBranch(main, "a");
+//		final long expected = branchAWithTimestamp.baseTimestamp();
+//		commit(branchAWithTimestamp);
+//		branchAWithTimestamp.rebase();
+//		assertEquals("Rebasing FORWARD branch should do nothing", expected, branchAWithTimestamp.baseTimestamp());
+//	}
+//	
+//	@Test
+//	public void rebaseBehindState() throws Exception {
+//		testBehindState();
+//		newBranchA = branchA.rebase();
+//		assertState(newBranchA, BranchState.UP_TO_DATE);
+//		assertState(branchA, BranchState.BEHIND);
+//		assertLaterBase(newBranchA, main);
+//		assertLaterBase(newBranchA, branchA);
+//	}
+//
+//	@Test
+//	public void rebaseDivergedState() throws Exception {
+//		testDivergedState();
+//		newBranchA = branchA.rebase();
+//		assertState(newBranchA, BranchState.FORWARD);
+//		assertState(branchA, BranchState.DIVERGED);
+//		assertLaterBase(newBranchA, main);
+//		assertLaterBase(newBranchA, branchA);
+//	}
+//
+//	@Test
+//	public void rebaseDivergedStateWithMultipleCommits() throws Exception {
+//		testDivergedState();
+//		commit(branchA);
+//		newBranchA = branchA.rebase();
+//		assertState(newBranchA, BranchState.FORWARD);
+//		assertState(branchA, BranchState.DIVERGED);
+//		assertLaterBase(newBranchA, main);
+//		assertLaterBase(newBranchA, branchA);
+//	}
+//	
+//	@Test
+//	public void rebaseDivergedWithBehindChild() throws Exception {
+//		commit(main);
+//		branchB = createBranch(branchA, "b");
+//		commit(branchA);
+//		assertState(branchA, BranchState.DIVERGED);
+//		assertState(branchB, BranchState.BEHIND);
+//		newBranchA = branchA.rebase();
+//		assertState(newBranchA, BranchState.FORWARD);
+//		assertState(branchA, BranchState.DIVERGED);
+//		assertLaterBase(newBranchA, main);
+//		assertLaterBase(newBranchA, branchA);
+//		assertState(branchB, branchA, BranchState.BEHIND);
+//		assertState(branchB, newBranchA, BranchState.STALE);
+//		assertParent(branchB, branchA);
+//	}
+//	
+//	@Test
+//	public void rebaseBehindWithForwardChild() throws Exception {
+//		commit(main);
+//		branchB = createBranch(branchA, "b");
+//		commit(branchB);
+//		assertState(branchA, BranchState.BEHIND);
+//		assertState(branchB, BranchState.FORWARD);
+//		newBranchA = branchA.rebase();
+//		assertState(newBranchA, BranchState.UP_TO_DATE);
+//		assertState(branchA, BranchState.BEHIND);
+//		assertLaterBase(newBranchA, main);
+//		assertLaterBase(newBranchA, branchA);
+//		assertState(branchB, branchA, BranchState.FORWARD);
+//		assertState(branchB, newBranchA, BranchState.STALE);
+//		assertParent(branchB, branchA);
+//	}
+//	
+//	@Test
+//	public void rebaseDivergedWithTwoChildren() throws Exception {
+//		commit(main);
+//		branchB = createBranch(branchA, "b");
+//		commit(branchA);
+//		final Branch branchC = createBranch(branchA, "c");
+//		newBranchA = branchA.rebase();
+//		assertState(newBranchA, BranchState.FORWARD);
+//		assertState(branchA, BranchState.DIVERGED);
+//		assertState(branchB, branchA, BranchState.BEHIND);
+//		assertState(branchB, newBranchA, BranchState.STALE);
+//		assertState(branchC, branchA, BranchState.UP_TO_DATE);
+//		assertState(branchC, newBranchA, BranchState.STALE);
+//	}
+//	
+//	@Test
+//	public void rebaseBehindChildOnRebasedForwardParent() throws Exception {
+//		rebaseDivergedWithBehindChild();
+//		final Branch newBranchB = branchB.rebase(newBranchA);
+//		assertState(newBranchB, BranchState.UP_TO_DATE);
+//	}
+//	
+
+	private BranchImpl commit(BranchImpl branch) {
+		return branch.withHeadTimestamp(currentTimestamp());		
+	}
+	
+	private BranchImpl createBranch(Branch parent, String name) {
+		return createBranch(parent, name, currentTimestamp());
 	}
 
-	@Test(expected=BranchMergeException.class)
-	public void mergeDiverged() throws Exception {
-		testDivergedState();
-		main.merge(branchA);
+	private BranchImpl createBranch(Branch parent, String name, long currentTimestamp) {
+		return new BranchImpl(manager, name, parent.path(), currentTimestamp);
 	}
-
-	@Test(expected=BranchMergeException.class)
-	public void mergeUpToDate() throws Exception {
-		main.merge(branchA);
-	}
-	
-	@Test
-	public void rebaseUpToDateState() throws Exception {
-		clock.advance(9L);
-		final Branch branchAWithTimestamp = createBranch(main, "a");
-		final long expected = branchAWithTimestamp.baseTimestamp();
-		branchAWithTimestamp.rebase();
-		assertEquals("Rebasing UP_TO_DATE branch should do nothing", expected, branchAWithTimestamp.baseTimestamp());
-	}
-	
-	@Test
-	public void rebaseForwardState() throws Exception {
-		clock.advance(9L);
-		final Branch branchAWithTimestamp = createBranch(main, "a");
-		final long expected = branchAWithTimestamp.baseTimestamp();
-		commit(branchAWithTimestamp);
-		branchAWithTimestamp.rebase();
-		assertEquals("Rebasing FORWARD branch should do nothing", expected, branchAWithTimestamp.baseTimestamp());
-	}
-	
-	@Test
-	public void rebaseBehindState() throws Exception {
-		testBehindState();
-		newBranchA = branchA.rebase();
-		assertState(newBranchA, BranchState.UP_TO_DATE);
-		assertState(branchA, BranchState.BEHIND);
-		assertLaterBase(newBranchA, main);
-		assertLaterBase(newBranchA, branchA);
-	}
-
-	@Test
-	public void rebaseDivergedState() throws Exception {
-		testDivergedState();
-		newBranchA = branchA.rebase();
-		assertState(newBranchA, BranchState.FORWARD);
-		assertState(branchA, BranchState.DIVERGED);
-		assertLaterBase(newBranchA, main);
-		assertLaterBase(newBranchA, branchA);
-	}
-
-	@Test
-	public void rebaseDivergedStateWithMultipleCommits() throws Exception {
-		testDivergedState();
-		commit(branchA);
-		newBranchA = branchA.rebase();
-		assertState(newBranchA, BranchState.FORWARD);
-		assertState(branchA, BranchState.DIVERGED);
-		assertLaterBase(newBranchA, main);
-		assertLaterBase(newBranchA, branchA);
-	}
-	
-	@Test
-	public void rebaseDivergedWithBehindChild() throws Exception {
-		commit(main);
-		branchB = createBranch(branchA, "b");
-		commit(branchA);
-		assertState(branchA, BranchState.DIVERGED);
-		assertState(branchB, BranchState.BEHIND);
-		newBranchA = branchA.rebase();
-		assertState(newBranchA, BranchState.FORWARD);
-		assertState(branchA, BranchState.DIVERGED);
-		assertLaterBase(newBranchA, main);
-		assertLaterBase(newBranchA, branchA);
-		assertState(branchB, branchA, BranchState.BEHIND);
-		assertState(branchB, newBranchA, BranchState.STALE);
-		assertParent(branchB, branchA);
-	}
-	
-	@Test
-	public void rebaseBehindWithForwardChild() throws Exception {
-		commit(main);
-		branchB = createBranch(branchA, "b");
-		commit(branchB);
-		assertState(branchA, BranchState.BEHIND);
-		assertState(branchB, BranchState.FORWARD);
-		newBranchA = branchA.rebase();
-		assertState(newBranchA, BranchState.UP_TO_DATE);
-		assertState(branchA, BranchState.BEHIND);
-		assertLaterBase(newBranchA, main);
-		assertLaterBase(newBranchA, branchA);
-		assertState(branchB, branchA, BranchState.FORWARD);
-		assertState(branchB, newBranchA, BranchState.STALE);
-		assertParent(branchB, branchA);
-	}
-	
-	@Test
-	public void rebaseDivergedWithTwoChildren() throws Exception {
-		commit(main);
-		branchB = createBranch(branchA, "b");
-		commit(branchA);
-		final Branch branchC = createBranch(branchA, "c");
-		newBranchA = branchA.rebase();
-		assertState(newBranchA, BranchState.FORWARD);
-		assertState(branchA, BranchState.DIVERGED);
-		assertState(branchB, branchA, BranchState.BEHIND);
-		assertState(branchB, newBranchA, BranchState.STALE);
-		assertState(branchC, branchA, BranchState.UP_TO_DATE);
-		assertState(branchC, newBranchA, BranchState.STALE);
-	}
-	
-	@Test
-	public void rebaseBehindChildOnRebasedForwardParent() throws Exception {
-		rebaseDivergedWithBehindChild();
-		final Branch newBranchB = branchB.rebase(newBranchA);
-		assertState(newBranchB, BranchState.UP_TO_DATE);
-	}
-	
-	@Test
-	public void createChildWithInvalidPathShouldThrowException() throws Exception {
-		for (String name : newArrayList("/", "/a", "a/", "a/b")) {
-			try {
-				main.createChild(name);
-				fail("IllegalArgumentException should be thrown when creating child branch " + name);
-			} catch (IllegalArgumentException e) {
-				// success
-			}
-		}
-	}
-	
-	@Test
-	public void deleteBranch() throws Exception {
-		branchA = createBranch(main, "a");
-		assertFalse(branchA.isDeleted());
-		branchA.delete();
-		assertTrue(branchA.isDeleted());
-	}
-	
-	private void commit(Branch branch) {
-		branch.handleCommit(currentTimestamp());		
-	}
-	
-	private Branch createBranch(Branch parent, String name) {
-		final BranchImpl branch = new BranchImpl(parent, name, currentTimestamp());
-		branch.setTimestampAuthority(clock);
-		return branch;
-	}
-	
-	private static void assertState(Branch branch, BranchState expectedState) {
-		assertEquals(String.format("Incorrect branch state of branch '%s' ", branch.path()), expectedState, branch.state());
-	}
-	
-	private static void assertState(final Branch branch, final Branch other, final BranchState expectedState) {
-		assertEquals(String.format("Incorrect branch state of branch '%s' compared to branch '%s'", branch.path(), other.path()), expectedState, branch.state(other));
-	}
-	
-	private static void assertPath(Branch branch, String expectedPath) {
-		assertEquals("Branch path should be '%s'.", expectedPath, branch.path());
-	}
-	
-	private static void assertLaterBase(Branch branch, Branch other) {
-		assertTrue(String.format("Basetimestamp of branch '%s' should be later than headTimestamp of '%s'.", branch.path(), other.path()), branch.baseTimestamp() > other.headTimestamp());
-	}
-	
-	private static void assertParent(Branch branch, Branch parent) {
-		assertEquals(String.format("Parent of branch '%s' should be '%s'.", branch.path(), parent.path()), branch.parent(), parent);		
-	}
-	
 }

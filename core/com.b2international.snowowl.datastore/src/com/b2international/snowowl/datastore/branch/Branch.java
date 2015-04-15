@@ -107,10 +107,11 @@ public interface Branch extends Deletable {
 	/**
 	 * @param source
 	 *            - the branch to merge onto this branch
+	 * @return 
 	 * @throws BranchMergeException
 	 *             - if source cannot be merged
 	 */
-	void merge(Branch source) throws BranchMergeException;
+	Branch merge(Branch source) throws BranchMergeException;
 
 	/**
 	 * Creates a new child branch.
@@ -122,10 +123,4 @@ public interface Branch extends Deletable {
 	 *             - if the child branch already exists
 	 */
 	Branch createChild(String name) throws AlreadyExistsException;
-	
-	/*
-	 * TODO: move this to internal class/interface
-	 */
-	void handleCommit(long commitTimestamp);
-
 }

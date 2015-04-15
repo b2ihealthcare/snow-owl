@@ -26,8 +26,8 @@ public interface Deletable {
 	boolean isDeleted();
 
 	/**
-	 * Deletes this object. Calling {@link #isDeleted()} should return <code>true</code> after a call to this method.
+	 * Deletes this object. Calling {@link #isDeleted()} on the returned object should return <code>true</code> after a call to this method.
+	 * @return 
 	 */
-	void delete();
-
+	Deletable delete();
 }

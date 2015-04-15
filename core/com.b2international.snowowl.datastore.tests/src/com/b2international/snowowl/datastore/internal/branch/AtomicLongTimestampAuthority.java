@@ -2,9 +2,9 @@ package com.b2international.snowowl.datastore.internal.branch;
 
 import java.util.concurrent.atomic.AtomicLong;
 
-import com.b2international.snowowl.datastore.branch.TimestampAuthority;
+import com.b2international.snowowl.datastore.branch.TimestampProvider;
 
-public class AtomicLongTimestampAuthority implements TimestampAuthority {
+public class AtomicLongTimestampAuthority implements TimestampProvider {
 
 	private AtomicLong timestampAuthority = new AtomicLong(0L);
 	

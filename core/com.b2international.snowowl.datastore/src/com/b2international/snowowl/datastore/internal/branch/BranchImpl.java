@@ -16,18 +16,16 @@
 package com.b2international.snowowl.datastore.internal.branch;
 
 import static com.google.common.base.Preconditions.checkArgument;
+import static com.google.common.base.Preconditions.checkNotNull;
 
-import java.util.Objects;
 import java.util.regex.Pattern;
 
 import com.b2international.snowowl.datastore.branch.Branch;
 import com.b2international.snowowl.datastore.branch.BranchMergeException;
-import com.b2international.snowowl.datastore.branch.TimestampAuthority;
 
 /**
  * TODO: branch description
  * TODO: metadata
- * TODO: move to internal package
  * @since 4.1
  */
 public class BranchImpl implements Branch {
@@ -42,54 +40,100 @@ public class BranchImpl implements Branch {
 
     private static final Pattern VALID_NAME_PATTERN = Pattern.compile("[a-zA-Z0-9_-]{1,50}");
 
-    private Branch parent;
-    private String name;
-    private long baseTimestamp;
-    private long headTimestamp;
-    private boolean deleted;
-    
-    /*TODO remove field if possible, move to SPI interface*/
-    private TimestampAuthority timestampAuthority;
-    private BranchManagerImpl branchManager;
-
-    void setTimestampAuthority(TimestampAuthority timestampAuthority) {
-		this.timestampAuthority = timestampAuthority;
+	private static void checkName(String name) {
+		checkArgument(VALID_NAME_PATTERN.matcher(name).matches(), "Name '%s' has invalid characters.", name);
 	}
+
+    protected final BranchManagerImpl branchManager;
     
-    void setBranchManager(BranchManagerImpl branchManager) {
-    	this.branchManager = branchManager;
+    private final String name;
+    private final String parentPath;
+    private final long baseTimestamp;
+    private final long headTimestamp;
+    private final boolean deleted;
+    
+    public BranchImpl(BranchManagerImpl branchManager, String name, String parentPath, long baseTimestamp) {
+    	this(branchManager, name, parentPath, baseTimestamp, baseTimestamp);
     }
-
-    public BranchImpl(Branch parent, String name, long baseTimestamp) {
-        this(parent, name, baseTimestamp, parent.headTimestamp());
+    
+    public BranchImpl(BranchManagerImpl branchManager, String name, String parentPath, long baseTimestamp, long headTimestamp) {
+    	this(branchManager, name, parentPath, baseTimestamp, headTimestamp, false);
     }
-
-    protected BranchImpl(Branch parent, String name, long baseTimestamp, long parentHeadTimestamp) {
+    
+	public BranchImpl(BranchManagerImpl branchManager, String name, String parentPath, long baseTimestamp, long headTimestamp, boolean deleted) {
         checkName(name);
         checkArgument(baseTimestamp >= 0L, "Base timestamp may not be negative.");
-        checkArgument(baseTimestamp > parentHeadTimestamp, "Base timestamp %s must be greater than parent head timestamp %s.", baseTimestamp, parentHeadTimestamp);
+        checkArgument(headTimestamp >= baseTimestamp, "Head timestamp may not be smaller than base timestamp.");
+        checkNotNull(branchManager, "Branch manager may not be null.");
+        
+		this.branchManager = branchManager;
+		this.name = name;
+		this.parentPath = parentPath;
+		this.baseTimestamp = baseTimestamp;
+		this.headTimestamp = headTimestamp;
+		this.deleted = deleted;
+	}
+	
+	BranchImpl withDeleted() {
+		return new BranchImpl(branchManager, name, parentPath, baseTimestamp, headTimestamp, true);
+	}
+	
+	BranchImpl withBaseTimestamp(long newBaseTimestamp) {
+        checkArgument(newBaseTimestamp > baseTimestamp, "New base timestamp may not be smaller or equal than old base timestamp.");
+		return new BranchImpl(branchManager, name, parentPath, newBaseTimestamp, newBaseTimestamp, deleted);
+	}
+	
+	BranchImpl withHeadTimestamp(long newHeadTimestamp) {
+		checkArgument(newHeadTimestamp > headTimestamp, "New head timestamp may not be smaller or equal than old head timestamp.");
+		return new BranchImpl(branchManager, name, parentPath, baseTimestamp, newHeadTimestamp, deleted);
+	}
+	
+	@Override
+	public Branch delete() {
+		return branchManager.delete(this);
+	}
 
-        this.parent = parent;
-        this.name = name;
-        this.baseTimestamp = baseTimestamp;
-        this.headTimestamp = baseTimestamp;
-    }
+	@Override
+	public Branch rebase() {
+		return rebase(parent());
+	}
 
-    @Override
-	public String path() {
-        return parent.path() + SEPARATOR + name;
-    }
+	@Override
+	public Branch rebase(Branch target) {
+		final BranchState state = state();
+		if (state == BranchState.BEHIND || state == BranchState.DIVERGED) {
+			return branchManager.rebase(this, (BranchImpl) target);
+		} else {
+			return this;
+		}
+	}
 
-    @Override
+	@Override
+	public Branch merge(Branch source) throws BranchMergeException {
+		checkArgument(!source.equals(this), "Can't merge branch onto itself.");
+		if (source.state() != BranchState.FORWARD) {
+			throw new BranchMergeException("Only source in the FORWARD state can merged.");
+		} else {
+			return branchManager.merge(this, (BranchImpl) source);
+		}
+	}
+
+	@Override
+	public Branch createChild(String name) {
+		checkName(name);
+		return branchManager.createBranch(this, name);
+	}
+
+	@Override
 	public String name() {
-        return name;
-    }
-
-    @Override
+		return name;
+	}
+	
+	@Override
 	public Branch parent() {
-        return parent;
-    }
-
+		return branchManager.getBranch(parentPath);
+	}
+	
     @Override
 	public long baseTimestamp() {
         return baseTimestamp;
@@ -101,19 +145,19 @@ public class BranchImpl implements Branch {
     }
 
     @Override
-	public BranchState state() {
-		return state(parent());
-	}
-    
-    @Override
-    public void delete() {
-    	this.deleted = true;
-    }
-    
-    @Override
     public boolean isDeleted() {
     	return deleted;
     }
+
+	@Override
+	public String path() {
+        return parentPath + SEPARATOR + name;
+    }
+
+    @Override
+	public BranchState state() {
+		return state(parent());
+	}
     
     @Override
 	public BranchState state(Branch target) {
@@ -131,78 +175,36 @@ public class BranchImpl implements Branch {
     }
     
     @Override
-	public void handleCommit(long commitTimestamp) {
-        checkArgument(commitTimestamp > headTimestamp(), "Commit timestamp %s is before last commit timestamp %s on current branch.", commitTimestamp, headTimestamp());
-        headTimestamp = commitTimestamp;
-    }
-
-	private void handleMerge(Branch source, long mergeTimestamp) {
-		checkArgument(mergeTimestamp > source.headTimestamp(), "Merge timestamp %s is before last commit timestamp %s on source branch.", mergeTimestamp, source.headTimestamp());
-		handleCommit(mergeTimestamp);
-	}
-	
-	@Override
-	public Branch rebase() {
-		return rebase(parent());
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + (int) (baseTimestamp ^ (baseTimestamp >>> 32));
+		result = prime * result + ((branchManager == null) ? 0 : branchManager.hashCode());
+		result = prime * result + (deleted ? 1231 : 1237);
+		result = prime * result + (int) (headTimestamp ^ (headTimestamp >>> 32));
+		result = prime * result + ((name == null) ? 0 : name.hashCode());
+		result = prime * result + ((parentPath == null) ? 0 : parentPath.hashCode());
+		return result;
 	}
 
 	@Override
-	public Branch rebase(Branch target) {
-		final BranchState state = state();
-		if (state == BranchState.BEHIND || state == BranchState.DIVERGED) {
-			return doRebase(target, state);
+	public boolean equals(Object obj) {
+		if (this == obj) { return true; }
+		if (obj == null) { return false; }
+		
+		if (!(obj instanceof BranchImpl)) {
+			return false;
 		}
-		return this;
+		
+		BranchImpl other = (BranchImpl) obj;
+		
+		if (baseTimestamp != other.baseTimestamp) { return false; }
+		if (!branchManager.equals(other.branchManager)) { return false; }
+		if (deleted != other.deleted) { return false; }
+		if (headTimestamp != other.headTimestamp) { return false; }
+		if (!name.equals(other.name)) { return false; }
+		if (!parentPath.equals(other.parentPath)) { return false; }
+		
+		return true;
 	}
-
-	private Branch doRebase(Branch target, BranchState originalState) {
-		final long newBaseTimestamp = getTimestamp();
-		final BranchImpl newBranch = new BranchImpl(target, name(), newBaseTimestamp);
-		newBranch.setTimestampAuthority(timestampAuthority);
-		if (originalState == BranchState.DIVERGED) {
-			// TODO apply commits
-			newBranch.handleCommit(getTimestamp());
-		}
-		return newBranch;
-	}
-
-	private long getTimestamp() {
-		return timestampAuthority.getTimestamp();
-	}
-	
-	@Override
-	public void merge(Branch source) throws BranchMergeException {
-		checkArgument(!source.equals(this), "Can't merge branch onto itself.");
-		if (source.state() != BranchState.FORWARD) {
-			throw new BranchMergeException("Only source in the FORWARD state can merged.");
-		}
-		// TODO: actual merge happens here
-		handleMerge(source, getTimestamp());
-	}
-	
-	@Override
-	public Branch createChild(String name) {
-		checkName(name);
-		return branchManager.createBranch(this, name);
-	}
-	
-    @Override
-    public int hashCode() {
-        return Objects.hash(path(), baseTimestamp());
-    }
-
-    @Override
-    public boolean equals(Object obj) {
-        if (this == obj) { return true; }
-        if (obj == null) { return false; }
-        if (!(obj instanceof BranchImpl)) { return false; }
-
-        Branch other = (Branch) obj;
-        return path().equals(other.path()) && baseTimestamp() == other.baseTimestamp();
-    }
-    
-    private void checkName(String name) {
-		checkArgument(VALID_NAME_PATTERN.matcher(name).matches(), "Name '%s' has invalid characters.", name);
-	}
-
 }

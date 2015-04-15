@@ -20,27 +20,40 @@ import com.b2international.snowowl.datastore.branch.Branch;
 /**
  * @since 4.1
  */
-public class MainBranch extends BranchImpl {
+public class MainBranchImpl extends BranchImpl {
 
-    private static final long DEFAULT_TIMESTAMP = 0L;
-	static final String DEFAULT_PATH = "MAIN";
+    static final String DEFAULT_PATH = "MAIN";
 
-	// For testing only
-	MainBranch() {
-		this(DEFAULT_TIMESTAMP);
+	MainBranchImpl(BranchManagerImpl branchManager, long baseTimestamp) {
+		super(branchManager, DEFAULT_PATH, "", baseTimestamp);
 	}
 	
-	public MainBranch(long baseTimestamp) {
-		super(null, DEFAULT_PATH, baseTimestamp, baseTimestamp - 1L);
+	private MainBranchImpl(BranchManagerImpl branchManager, long baseTimestamp, long headTimestamp) {
+		super(branchManager, DEFAULT_PATH, "", baseTimestamp, headTimestamp);
+	}
+
+	@Override
+	BranchImpl withBaseTimestamp(long newBaseTimestamp) {
+		throw new UnsupportedOperationException();
+	}
+	
+	@Override
+	BranchImpl withDeleted() {
+		throw new UnsupportedOperationException();
+	}
+	
+	@Override
+	MainBranchImpl withHeadTimestamp(long newHeadTimestamp) {
+		return new MainBranchImpl(branchManager, baseTimestamp(), newHeadTimestamp);
 	}
 
 	@Override
 	public String path() {
 		return name();
 	}
-
+	
 	@Override
-	public MainBranch parent() {
+	public Branch parent() {
 		return this;
 	}
 	
@@ -50,18 +63,17 @@ public class MainBranch extends BranchImpl {
 	}
 	
 	@Override
-	public void delete() {
+	public Branch delete() {
 		throw new UnsupportedOperationException(path() + " cannot be deleted");
 	}
 	
 	@Override
 	public BranchState state(Branch target) {
-		throw new UnsupportedOperationException();
+		throw new UnsupportedOperationException(path() + " cannot compute state compared to target " + target.path());
 	}
 	
 	@Override
 	public Branch rebase(Branch target) {
-		throw new UnsupportedOperationException(path() + " branch cannot be rebased");
+		throw new UnsupportedOperationException(path() + " cannot be rebased");
 	}
-	
 }

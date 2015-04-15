@@ -16,18 +16,16 @@
 package com.b2international.snowowl.datastore.branch;
 
 /**
- * Represents an authority capable of providing timestamps. It is forbidden to return the same timestamp twice, each call to {@link #getTimestamp()}
- * should result in a unique timestamp {@link Long} value.
+ * Represents an object capable of providing timestamp(s).
  * 
  * @since 4.1
  */
-public interface TimestampAuthority {
+public interface TimestampProvider {
 
 	/**
-	 * Returns the current timestamp.
+	 * Provides a timestamp. Timestamps may be repeated on multiple invocations. 
 	 * 
 	 * @return
 	 */
 	long getTimestamp();
-
 }

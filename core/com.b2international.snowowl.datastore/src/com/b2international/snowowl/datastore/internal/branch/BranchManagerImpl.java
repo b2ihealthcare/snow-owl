@@ -15,17 +15,17 @@
  */
 package com.b2international.snowowl.datastore.internal.branch;
 
-import static com.google.common.collect.Maps.newHashMap;
-
 import java.util.Collection;
-import java.util.Map;
+import java.util.concurrent.ConcurrentMap;
 
 import com.b2international.snowowl.core.exceptions.AlreadyExistsException;
 import com.b2international.snowowl.core.exceptions.NotFoundException;
 import com.b2international.snowowl.datastore.branch.Branch;
 import com.b2international.snowowl.datastore.branch.BranchManager;
-import com.b2international.snowowl.datastore.branch.TimestampAuthority;
+import com.b2international.snowowl.datastore.branch.TimestampProvider;
+import com.b2international.snowowl.datastore.internal.branch.BranchImpl.BranchState;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.MapMaker;
 
 
 /**
@@ -33,35 +33,39 @@ import com.google.common.collect.ImmutableList;
  */
 public class BranchManagerImpl implements BranchManager {
 
-	private TimestampAuthority clock;
-	private Map<String, Branch> branches = newHashMap();
+	private TimestampProvider clock;
+	
+	private ConcurrentMap<String, Branch> branches = new MapMaker().makeMap();
 
-	public BranchManagerImpl(TimestampAuthority clock) {
+	public BranchManagerImpl(TimestampProvider clock) {
 		this.clock = clock;
 		initMainBranch();
 	}
-
+	
 	private void initMainBranch() {
-		final MainBranch main = new MainBranch(clock.getTimestamp());
-		main.setBranchManager(this);
-		this.branches.put(MainBranch.DEFAULT_PATH, main);
+		final MainBranchImpl main = new MainBranchImpl(this, clock.getTimestamp());
+		registerBranch(main);
+	}
+
+	private void registerBranch(final Branch branch) {
+		branches.put(branch.path(), branch);
 	}
 	
-	Branch createBranch(Branch parent, String name) {
+	BranchImpl createBranch(BranchImpl parent, String name) {
+		
 		final String path = parent.path().concat(Branch.SEPARATOR).concat(name);
 		if (getBranchFromStore(path) != null) {
 			throw new AlreadyExistsException(Branch.class.getSimpleName(), path);
 		}
-		final BranchImpl branch = new BranchImpl(parent, name, clock.getTimestamp());
-		branch.setTimestampAuthority(clock);
-		branch.setBranchManager(this);
-		branches.put(path, branch);
-		return branch;
+		
+		final BranchImpl child = new BranchImpl(this, name, parent.path(), clock.getTimestamp());
+		registerBranch(child);
+		return child;
 	}
-	
+
 	@Override
 	public Branch getMainBranch() {
-		return getBranch(MainBranch.DEFAULT_PATH);
+		return getBranch(MainBranchImpl.DEFAULT_PATH);
 	}
 
 	@Override
@@ -82,4 +86,32 @@ public class BranchManagerImpl implements BranchManager {
 		return ImmutableList.copyOf(branches.values());
 	}
 
+	BranchImpl merge(BranchImpl target, BranchImpl source) {
+		// Changes from source will appear on target as a single commit
+		return handleCommit(target, clock.getTimestamp());
+	}
+
+	Branch rebase(BranchImpl source, BranchImpl target) {
+		BranchImpl rebasedSource = createBranch((BranchImpl) source.parent(), source.name());
+		
+		if (source.state() == BranchState.DIVERGED) {
+			rebasedSource = handleCommit(rebasedSource, clock.getTimestamp());
+		}
+		
+		return rebasedSource;
+	}
+
+	BranchImpl delete(BranchImpl branchImpl) {
+		if (branches.replace(branchImpl.path(), branchImpl, branchImpl.withDeleted())) {
+			// 
+		}
+		
+		return null;
+	}
+	
+	BranchImpl handleCommit(BranchImpl branch, long timestamp) {
+		BranchImpl branchAfterCommit = branch.withHeadTimestamp(timestamp);
+		registerBranch(branchAfterCommit);
+		return branchAfterCommit;
+	}
 }
