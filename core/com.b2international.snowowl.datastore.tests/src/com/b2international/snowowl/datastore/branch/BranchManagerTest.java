@@ -86,4 +86,11 @@ public class BranchManagerTest {
 		assertThat(branches).containsExactly(main, a, b, c);
 	}
 	
+	@Test
+	public void whenDeletingBranch_ThenManagerShouldStillReturnIt() throws Exception {
+		final Branch a = main.createChild("a");
+		a.delete();
+		assertEquals(manager.getBranch("MAIN/a"), a);
+	}
+	
 }
