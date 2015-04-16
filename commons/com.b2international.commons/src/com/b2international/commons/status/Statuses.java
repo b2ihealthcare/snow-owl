@@ -168,6 +168,20 @@ public final class Statuses {
 	}
 
 	/**
+	 * Adds the content of the given {@link IStatus} to the specified {@link SerializableMultiStatus}.
+	 * 
+	 * @param multiStatus
+	 * @param status
+	 */
+	public static void mergeInto(final SerializableMultiStatus multiStatus, final IStatus status) {
+		if (status instanceof SerializableStatus) {
+			multiStatus.merge((SerializableStatus) status);
+		} else {
+			multiStatus.merge(toSerializable(status));
+		}
+	}
+	
+	/**
 	 * Returns with a copy of the status argument.
 	 * 
 	 * @param status
