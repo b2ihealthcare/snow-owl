@@ -15,8 +15,6 @@
  */
 package com.b2international.snowowl.datastore.internal.branch;
 
-import java.util.concurrent.atomic.AtomicLong;
-
 import org.eclipse.emf.cdo.common.util.CDOTimeProvider;
 
 import com.b2international.snowowl.datastore.branch.TimestampProvider;
@@ -24,22 +22,17 @@ import com.b2international.snowowl.datastore.branch.TimestampProvider;
 /**
  * @since 4.1
  */
-public class AtomicLongTimestampAuthority implements TimestampProvider, CDOTimeProvider {
+public class CDOBasedTimestampProvider implements TimestampProvider {
 
-	private AtomicLong timestampAuthority = new AtomicLong(0L);
+	private CDOTimeProvider timeProvider;
+
+	public CDOBasedTimestampProvider(CDOTimeProvider timeProvider) {
+		this.timeProvider = timeProvider;
+	}
 	
 	@Override
 	public long getTimestamp() {
-		return timestampAuthority.getAndIncrement();
-	}
-	
-	void advance(long delta) {
-		timestampAuthority.addAndGet(delta);
-	}
-
-	@Override
-	public long getTimeStamp() {
-		return getTimestamp();
+		return timeProvider.getTimeStamp();
 	}
 
 }

@@ -23,9 +23,11 @@ import org.junit.Before;
 import org.junit.Test;
 
 import com.b2international.snowowl.datastore.branch.Branch;
-import com.b2international.snowowl.datastore.internal.branch.MainBranchImpl;
 import com.b2international.snowowl.datastore.internal.branch.BranchImpl.BranchState;
 
+/**
+ * @since 4.1
+ */
 public class MainBranchTest {
 
 	private BranchManagerImpl manager;

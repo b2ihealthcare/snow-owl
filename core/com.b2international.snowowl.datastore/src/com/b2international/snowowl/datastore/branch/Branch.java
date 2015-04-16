@@ -123,4 +123,7 @@ public interface Branch extends Deletable {
 	 *             - if the child branch already exists
 	 */
 	Branch createChild(String name) throws AlreadyExistsException;
+	
+	@Override
+	Branch delete();
 }

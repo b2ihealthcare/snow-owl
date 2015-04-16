@@ -48,7 +48,7 @@ public class BranchManagerTest {
 	@Before
 	public void givenBranchManager() {
 		clock = new AtomicLongTimestampAuthority();
-		manager = new BranchManagerImpl(clock);
+		manager = new BranchManagerImpl(clock.getTimestamp(), clock);
 		main = (BranchImpl) manager.getMainBranch();
 		a = (BranchImpl) main.createChild("a");
 	}

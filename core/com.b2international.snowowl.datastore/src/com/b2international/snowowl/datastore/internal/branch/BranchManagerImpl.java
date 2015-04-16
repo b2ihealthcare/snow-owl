@@ -33,17 +33,17 @@ import com.google.common.collect.MapMaker;
  */
 public class BranchManagerImpl implements BranchManager {
 
-	private TimestampProvider clock;
+	private final TimestampProvider clock;
 	
-	private ConcurrentMap<String, Branch> branches = new MapMaker().makeMap();
+	private final ConcurrentMap<String, Branch> branches = new MapMaker().makeMap();
 
-	public BranchManagerImpl(TimestampProvider clock) {
+	public BranchManagerImpl(long mainBranchTimestamp, TimestampProvider clock) {
 		this.clock = clock;
-		initMainBranch();
+		initMainBranch(mainBranchTimestamp);
 	}
 	
-	private void initMainBranch() {
-		final MainBranchImpl main = new MainBranchImpl(this, clock.getTimestamp());
+	private void initMainBranch(long mainBranchTimestamp) {
+		final MainBranchImpl main = new MainBranchImpl(this, mainBranchTimestamp);
 		registerBranch(main);
 	}
 
@@ -61,7 +61,7 @@ public class BranchManagerImpl implements BranchManager {
 		return reopen(parent, name);
 	}
 
-	private BranchImpl reopen(BranchImpl parent, String name) {
+	protected BranchImpl reopen(BranchImpl parent, String name) {
 		final BranchImpl child = new BranchImpl(this, name, parent.path(), clock.getTimestamp());
 		registerBranch(child);
 		return child;
@@ -106,13 +106,17 @@ public class BranchManagerImpl implements BranchManager {
 	}
 
 	BranchImpl delete(BranchImpl branchImpl) {
-		if (branches.replace(branchImpl.path(), branchImpl, branchImpl.withDeleted())) {
-			// 
+		final BranchImpl deleted = branchImpl.withDeleted();
+		if (branches.replace(branchImpl.path(), branchImpl, deleted)) {
+			postDelete(deleted);
 		}
 		
 		return null;
 	}
 	
+	protected void postDelete(BranchImpl branch) {
+	}
+
 	BranchImpl handleCommit(BranchImpl branch, long timestamp) {
 		BranchImpl branchAfterCommit = branch.withHeadTimestamp(timestamp);
 		registerBranch(branchAfterCommit);
