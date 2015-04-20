@@ -53,6 +53,8 @@ public class SnomedCoreConfiguration {
 	@NotNull
 	private String defaultNamespace = DEFAULT_NAMESPACE;
 	
+	private boolean concreteDomainSupport;
+	
 	/**
 	 * @return the maxReasonerCount
 	 */
@@ -131,6 +133,16 @@ public class SnomedCoreConfiguration {
 	@JsonProperty
 	public void setDefaultReasoner(String defaultReasoner) {
 		this.defaultReasoner = defaultReasoner;
+	}
+
+	@JsonProperty("concreteDomainSupport")
+	public boolean isConcreteDomainSupported() {
+		return concreteDomainSupport;
+	}
+	
+	@JsonProperty("concreteDomainSupport")
+	public void setConcreteDomainSupported(boolean concreteDomainSupport) {
+		this.concreteDomainSupport = concreteDomainSupport;
 	}
 	
 }

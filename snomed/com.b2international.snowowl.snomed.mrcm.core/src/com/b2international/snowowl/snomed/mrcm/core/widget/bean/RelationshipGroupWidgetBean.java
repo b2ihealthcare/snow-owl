@@ -48,6 +48,10 @@ public class RelationshipGroupWidgetBean extends ContainerWidgetBean implements 
 		this.groupNumber = groupNumber;
 	}
 	
+	public boolean isConcreteDomainSupported() {
+		return getModel().isConcreteDomainSupported();
+	}
+	
 	@Override
 	public RelationshipGroupWidgetModel getModel() {
 		return (RelationshipGroupWidgetModel) super.getModel();
@@ -69,4 +73,5 @@ public class RelationshipGroupWidgetBean extends ContainerWidgetBean implements 
 	public String toString() {
 		return String.format("RelationshipGroupWidgetBean [elements=%s, groupNumber=%s]", StringUtils.toString(getElements()), groupNumber);
 	}
+
 }
