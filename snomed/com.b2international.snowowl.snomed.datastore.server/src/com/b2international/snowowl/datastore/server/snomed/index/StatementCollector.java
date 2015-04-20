@@ -33,11 +33,6 @@ import com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserCo
  */
 public class StatementCollector extends AbstractDocsOutOfOrderCollector {
 
-	/**
-	 * Default initial size for the underlying collection. Value: {@value}.
-	 */
-	private static final int DEFAULT_EXPECTED_SIZE = 1000000;
-
 	private final IsAStatement[] statements;
 
 	private NumericDocValues idsValues; // can be set to null, relationship id docvalues or storage key docvalues, depending on mode
@@ -47,15 +42,6 @@ public class StatementCollector extends AbstractDocsOutOfOrderCollector {
 	private final StatementCollectionMode mode;
 
 	private int count;
-
-	/**
-	 * Creates a collector with the default expected size and collection mode.
-	 * 
-	 * @param mode the statement collection mode for this run (collect no IDs, collect relationship IDs, collect storage keys)
-	 */
-	public StatementCollector(final StatementCollectionMode mode) {
-		this(DEFAULT_EXPECTED_SIZE, mode);
-	}
 
 	/**
 	 * Creates a collector with the given expected size and collection mode.
