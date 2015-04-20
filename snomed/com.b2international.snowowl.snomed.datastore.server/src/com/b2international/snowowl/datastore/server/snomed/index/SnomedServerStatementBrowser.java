@@ -428,13 +428,8 @@ public class SnomedServerStatementBrowser extends AbstractSnomedIndexBrowser<Sno
 
 		try {
 
-			final StatementCollector collector;
-			if (StatementCollectionMode.ALL_TYPES_NO_IDS.equals(mode)) {
-				final int hitCount = service.getHitCount(branchPath, mode.getQuery(), null);
-				collector = new StatementCollector(hitCount, mode);
-			} else {
-				collector = new StatementCollector(mode);
-			}
+			final int hitCount = service.getTotalHitCount(branchPath, mode.getQuery());
+			final StatementCollector collector = new StatementCollector(hitCount, mode);
 			
 			service.search(branchPath, mode.getQuery(), collector);
 
