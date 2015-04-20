@@ -30,6 +30,7 @@ import com.b2international.commons.concurrent.equinox.ForkJoinUtils;
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.snomed.datastore.SnomedTaxonomyService;
+import com.b2international.snowowl.snomed.datastore.config.SnomedCoreConfiguration;
 import com.b2international.snowowl.snomed.datastore.services.IClientSnomedComponentService;
 import com.b2international.snowowl.snomed.datastore.snor.PredicateIndexEntry;
 import com.b2international.snowowl.snomed.datastore.snor.PredicateIndexEntry.PredicateType;
@@ -97,7 +98,9 @@ public class ConceptModelConstraintToWidgetModelConverter {
 		final DescriptionContainerWidgetModel descriptionContainerWidgetModel = new DescriptionContainerWidgetModel(descriptionWidgetModels);
 		final DataTypeContainerWidgetModel dataTypeContainerWidgetModel = new DataTypeContainerWidgetModel(dataTypeWidgetModels);
 		
-		relationshipGroupWidgetModels.add(RelationshipGroupWidgetModel.createUngroupedModel(ungroupedRelationshipWidgetModels));
+		final RelationshipGroupWidgetModel ungroupedModel = RelationshipGroupWidgetModel.createUngroupedModel(ungroupedRelationshipWidgetModels);
+		ungroupedModel.setConcreteDomainSupported(ApplicationContext.getInstance().getServiceChecked(SnomedCoreConfiguration.class).isConcreteDomainSupported());
+		relationshipGroupWidgetModels.add(ungroupedModel);
 		relationshipGroupWidgetModels.add(RelationshipGroupWidgetModel.createGroupedModel(singleGroupRelationshipWidgetModels));
 		final RelationshipGroupContainerWidgetModel relationshipGroupContainerWidgetModel = new RelationshipGroupContainerWidgetModel(relationshipGroupWidgetModels);
 		
