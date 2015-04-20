@@ -47,13 +47,14 @@ public class SnomedCoreBootstrap extends DefaultBootstrapFragment {
 		final ISnomedIdentifierService idService = new SnomedIdentifierServiceImpl(reservationService);
 		env.services().registerService(ISnomedIdentiferReservationService.class, reservationService);
 		env.services().registerService(ISnomedIdentifierService.class, idService);
+		env.services().registerService(SnomedCoreConfiguration.class, configuration.getModuleConfig(SnomedCoreConfiguration.class));
 	}
 
 	@Override
 	public void run(SnowOwlConfiguration configuration, Environment env, IProgressMonitor monitor) throws Exception {
 		// TODO figure out how to properly register Handler to specific endpoints in core services,
 		// It would be nice to use a framework like reactor
-		// Also if we stick with the current IEventBus impl, we should definitely implement
+		// Also if we stick with the current IEventBus impl, we should definitely implement routers
 		env.service(IEventBus.class).registerHandler("/snomed-ct/ids", new SnomedIdentifierServiceEventHandler(env.provider(ISnomedIdentifierService.class)));
 	}
 
