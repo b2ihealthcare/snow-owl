@@ -79,7 +79,6 @@ import bak.pcj.list.LongArrayList;
 import bak.pcj.list.LongList;
 
 import com.b2international.commons.CompareUtils;
-import com.b2international.commons.db.JdbcUtils;
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.api.SnowowlServiceException;
 import com.b2international.snowowl.datastore.CDOEditingContext;
@@ -90,8 +89,6 @@ import com.b2international.snowowl.datastore.cdo.ICDOConnectionManager;
 import com.b2international.snowowl.datastore.cdo.ICDOTransactionAggregator;
 import com.b2international.snowowl.datastore.server.internal.ImpersonatingSessionProtocol;
 import com.google.common.base.Preconditions;
-import com.google.common.base.Supplier;
-import com.google.common.base.Suppliers;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
@@ -588,49 +585,28 @@ public abstract class CDOServerUtils {
 		
 		Preconditions.checkNotNull(branch, "CDO branch argument cannot be null.");
 		final String uuid = getConnectionManager().get(branch).getUuid();
-		PreparedStatement statement = null;;
 		
 		try {
 			
-			statement = STATEMENT_CACHE.get(uuid).get();
-			statement.getConnection().rollback();
+			IDBStoreAccessor accessor = ACCESSOR_CACHE.get(uuid);
 			
-		} catch (final ExecutionException e) {
-			
-			throw new RuntimeException("Failed to get last commit time for branch: " + branch, e);
-			
-		} catch (final SQLException e) {
-			
-			throw new RuntimeException("Failed to get last commit time for branch: " + branch, e);
-			
-		}
+			synchronized (accessor) {
+				Connection connection = accessor.getConnection();
+				connection.rollback();
 		
-		ResultSet resultSet = null;
-		
-		try {
-		
-			statement.setInt(1, branch.getID());
-			resultSet = statement.executeQuery();
-
-			final long $ = resultSet.next() ? resultSet.getLong(1) : Long.MIN_VALUE;
-			return getDbStoreByUuid(uuid).getCreationTime() > $ ? Long.MIN_VALUE : $;
-		
-		} catch (final SQLException e) {
-			
-			throw new RuntimeException("Failed to get last commit time for branch: " + branch, e);
-			
-		} finally {
-			
-			JdbcUtils.close(resultSet);
-
-			try {
-				statement.getConnection().rollback();
-			} catch (final SQLException e) {
-				throw new RuntimeException("Failed to get last commit time for branch: " + branch, e);
+				try (PreparedStatement statement = connection.prepareStatement("SELECT MAX(COMMIT_TIME) FROM CDO_COMMIT_INFOS WHERE BRANCH_ID=?")) {
+					statement.setInt(1, branch.getID());
+					ResultSet resultSet = statement.executeQuery();
+					final long lastCommitTime = resultSet.next() ? resultSet.getLong(1) : Long.MIN_VALUE;
+					return getDbStoreByUuid(uuid).getCreationTime() > lastCommitTime ? Long.MIN_VALUE : lastCommitTime;
+				}
 			}
 			
+		} catch (final ExecutionException e) {
+			throw new RuntimeException("Failed to get last commit time for branch: " + branch, e);
+		} catch (final SQLException e) {
+			throw new RuntimeException("Failed to get last commit time for branch: " + branch, e);
 		}
-		
 	}
 
 	/**Returns with the store accessor for a given repository.<br>Never {@code null}.*/
@@ -674,20 +650,11 @@ public abstract class CDOServerUtils {
     return repository;
   }
 	
-	/**Cache providing suppliers for reusing the {@code SQL GET MAX COMMIT_TIME} prepared statement.*/
-	private static final LoadingCache<String, Supplier<PreparedStatement>> STATEMENT_CACHE = CacheBuilder.newBuilder().build(new CacheLoader<String, Supplier<PreparedStatement>>() {
-		@Override public Supplier<PreparedStatement> load(final String uuid) throws Exception {
+	/** Cache storing a dedicated {@link IDBStoreAccessor} for retrieving latest commit timestamps for each repository. */
+	private static final LoadingCache<String, IDBStoreAccessor> ACCESSOR_CACHE = CacheBuilder.newBuilder().build(new CacheLoader<String, IDBStoreAccessor>() {
+		@Override public IDBStoreAccessor load(final String uuid) throws Exception {
 			Preconditions.checkNotNull(uuid, "Repository UUID argument cannot be null.");
-			return Suppliers.memoize(new Supplier<PreparedStatement>() {
-				@Override public PreparedStatement get() {
-					final Connection connection = ((IDBStoreAccessor) getAccessorByUuid(uuid)).getConnection();
-					try {
-						return connection.prepareStatement("SELECT MAX(COMMIT_TIME) FROM CDO_COMMIT_INFOS WHERE BRANCH_ID=?");
-					} catch (final SQLException e) {
-						throw new RuntimeException("Failed to prepare statement.", e);
-					}
-				}
-			});
+			return (IDBStoreAccessor) getAccessorByUuid(uuid);
 		}
 	});
 	
