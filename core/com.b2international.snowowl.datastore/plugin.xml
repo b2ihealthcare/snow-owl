@@ -141,5 +141,8 @@
          <bootstrapFragment
                class="com.b2international.snowowl.datastore.connection.RepositoryConnectionBootstrap">
          </bootstrapFragment>
+         <bootstrapFragment
+               class="com.b2international.snowowl.datastore.internal.DatastoreBootstrap">
+         </bootstrapFragment>
       </extension>
 </plugin>
