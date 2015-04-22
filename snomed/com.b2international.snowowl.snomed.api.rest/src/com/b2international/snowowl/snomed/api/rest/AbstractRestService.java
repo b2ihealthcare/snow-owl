@@ -23,10 +23,11 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
 
-import com.b2international.snowowl.api.exception.IllegalQueryParameterException;
+import com.b2international.snowowl.core.exceptions.ApiError;
 import com.b2international.snowowl.core.exceptions.BadRequestException;
 import com.b2international.snowowl.core.exceptions.ConflictException;
 import com.b2international.snowowl.core.exceptions.NotFoundException;
+import com.b2international.snowowl.core.exceptions.NotImplementedException;
 import com.b2international.snowowl.snomed.api.rest.domain.RestApiError;
 import com.fasterxml.jackson.databind.JsonMappingException;
 
@@ -53,7 +54,7 @@ public abstract class AbstractRestService {
 	@ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
 	public @ResponseBody RestApiError handle(final Exception ex) {
 		LOG.error("Exception during processing of a request", ex);
-		return RestApiError.of(HttpStatus.INTERNAL_SERVER_ERROR.value()).message(GENERIC_USER_MESSAGE).developerMessage(getDeveloperMessage(ex)).build();
+		return RestApiError.of(ApiError.Builder.of(GENERIC_USER_MESSAGE).build()).build(HttpStatus.INTERNAL_SERVER_ERROR.value());
 	}
 	
 	/**
@@ -66,7 +67,7 @@ public abstract class AbstractRestService {
 	@ResponseStatus(HttpStatus.BAD_REQUEST)
 	public @ResponseBody RestApiError handle(HttpMessageNotReadableException ex) {
 		LOG.error("Exception during processing of a JSON document", ex);
-		return RestApiError.of(HttpStatus.BAD_REQUEST.value()).message("Bad Request").developerMessage(getDeveloperMessage(ex)).build();
+		return RestApiError.of(ApiError.Builder.of("Invalid JSON representation").build()).build(HttpStatus.BAD_REQUEST.value());
 	}
 
 	/**
@@ -79,7 +80,7 @@ public abstract class AbstractRestService {
 	@ExceptionHandler
 	@ResponseStatus(HttpStatus.NOT_FOUND)
 	public @ResponseBody RestApiError handle(final NotFoundException ex) {
-		return RestApiError.of(HttpStatus.NOT_FOUND.value()).message(ex.getMessage()).developerMessage(getDeveloperMessage(ex)).build();
+		return RestApiError.of(ex.toApiError()).build(HttpStatus.NOT_FOUND.value());
 	}
 
 	/**
@@ -90,9 +91,8 @@ public abstract class AbstractRestService {
 	 */
 	@ExceptionHandler
 	@ResponseStatus(HttpStatus.NOT_IMPLEMENTED)
-	public @ResponseBody RestApiError handle(UnsupportedOperationException ex) {
-		return RestApiError.of(HttpStatus.NOT_IMPLEMENTED.value()).developerMessage(getDeveloperMessage(ex))
-				.build();
+	public @ResponseBody RestApiError handle(NotImplementedException ex) {
+		return RestApiError.of(ex.toApiError()).build(HttpStatus.NOT_IMPLEMENTED.value());
 	}
 
 	/**
@@ -104,8 +104,7 @@ public abstract class AbstractRestService {
 	@ExceptionHandler
 	@ResponseStatus(HttpStatus.BAD_REQUEST)
 	public @ResponseBody RestApiError handle(final BadRequestException ex) {
-		return RestApiError.of(HttpStatus.BAD_REQUEST.value()).message(ex.getMessage())
-				.developerMessage(getDeveloperMessage(ex)).build();
+		return RestApiError.of(ex.toApiError()).build(HttpStatus.BAD_REQUEST.value());
 	}
 	
 	/**
@@ -117,22 +116,7 @@ public abstract class AbstractRestService {
 	@ExceptionHandler
 	@ResponseStatus(HttpStatus.CONFLICT)
 	public @ResponseBody RestApiError handle(final ConflictException ex) {
-		return RestApiError.of(HttpStatus.CONFLICT.value()).message(ex.getMessage())
-				.developerMessage(getDeveloperMessage(ex)).build();
-	}
-
-	private String getDeveloperMessage(Exception ex) {
-		if (ex instanceof NotFoundException) {
-			return String.format("The requested instance resource (id = %s, type = %s) is not exists and/or not yet created.",
-					((NotFoundException) ex).getKey(), ((NotFoundException) ex).getType());
-		} else if (ex instanceof IllegalQueryParameterException) {
-			return "One or more supplied query parameters were invalid. Check input values.";
-		} else if (ex instanceof BadRequestException) {
-			return "Input representation syntax or validation errors. Check input values.";
-		} else if (ex instanceof UnsupportedOperationException) {
-			return ex.getMessage() == null ? "Not implemented" : ex.getMessage();
-		}
-		return ex.getMessage();
+		return RestApiError.of(ex.toApiError()).build(HttpStatus.CONFLICT.value());
 	}
 
 }

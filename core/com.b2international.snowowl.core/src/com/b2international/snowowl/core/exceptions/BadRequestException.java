@@ -18,19 +18,19 @@ package com.b2international.snowowl.core.exceptions;
 /**
  * Thrown when a request contains incorrect parameters or is otherwise malformed.
  * 
- * @since 1.0
+ * @since 4.0
  */
-public class BadRequestException extends RuntimeException {
+public class BadRequestException extends ApiException {
 
 	private static final long serialVersionUID = 7998450893448621719L;
 
-	/**
-	 * Creates a new instance with the specified format string and arguments.
-	 * 
-	 * @param message the format string for the returned message
-	 * @param args    the format string arguments
-	 */
 	public BadRequestException(final String message, final Object...args) {
-		super(String.format(message, args));
+		super(message, args);
 	}
+	
+	@Override
+	protected String getDeveloperMessage() {
+		return "Input representation syntax or validation errors. Check input values.";
+	}
+	
 }

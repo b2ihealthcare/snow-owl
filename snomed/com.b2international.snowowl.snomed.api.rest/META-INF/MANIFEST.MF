@@ -1,9 +1,10 @@
 Manifest-Version: 1.0
-Bundle-Version: 1.0.0.qualifier
+Bundle-Version: 2.0.0.qualifier
 Bundle-Name: Snow Owl SNOMED CT REST Service
 Bundle-ManifestVersion: 2
 Bundle-SymbolicName: com.b2international.snowowl.snomed.api.rest;singleton:=true
-Import-Package: com.b2international.snowowl.api,
+Import-Package: com.b2international.commons.exceptions,
+ com.b2international.snowowl.api,
  com.b2international.snowowl.api.codesystem,
  com.b2international.snowowl.api.domain,
  com.b2international.snowowl.api.exception,
@@ -42,7 +43,7 @@ Import-Package: com.b2international.snowowl.api,
  org.slf4j;version="1.7.2"
 Bundle-RequiredExecutionEnvironment: JavaSE-1.7
 Bundle-ActivationPolicy: lazy
-Web-ContextPath: /snowowl/snomed-ct
+Web-ContextPath: /snowowl/v2/snomed-ct
 Require-Bundle: com.google.guava;bundle-version="[15.0.0,16.0.0)",
  org.eclipse.equinox.security;bundle-version="1.1.100"
 Bundle-ClassPath: .,

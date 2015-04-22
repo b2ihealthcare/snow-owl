@@ -32,4 +32,10 @@ public class IllegalQueryParameterException extends BadRequestException {
 	public IllegalQueryParameterException(final String message) {
 		super(message);
 	}
+	
+	@Override
+	protected String getDeveloperMessage() {
+		return "One or more supplied query parameters were invalid. Check input values.";
+	}
+	
 }

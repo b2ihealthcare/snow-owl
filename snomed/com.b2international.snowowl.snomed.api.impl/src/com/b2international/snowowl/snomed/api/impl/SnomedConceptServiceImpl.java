@@ -192,7 +192,7 @@ public class SnomedConceptServiceImpl
 			return concept;
 
 		} catch (final ComponentNotFoundException e) {
-			throw new BadRequestException("%s with identifier %s required for the creation of the concept does not exist.", e.getType(), e.getKey());
+			throw e.toBadRequestException();
 		}
 	}
 
@@ -220,7 +220,7 @@ public class SnomedConceptServiceImpl
 			return parentIsARelationship;
 
 		} catch (final ComponentNotFoundException e) {
-			throw new BadRequestException("%s with identifier %s required for the creation of the IS A relationship does not exist.", e.getType(), e.getKey());
+			throw e.toBadRequestException();
 		}
 	}
 
