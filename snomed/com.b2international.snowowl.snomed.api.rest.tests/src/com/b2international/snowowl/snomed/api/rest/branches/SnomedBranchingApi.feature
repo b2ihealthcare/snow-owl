@@ -36,7 +36,7 @@ Feature: SnomedBranchingApi
 		var req = givenAuthenticatedRequest(API)
 		var Response res
 		
-	Scenario: Nonexistent SNOMED CT Branch
+	Scenario: Nonexistent SNOMED CT branch
 	
 		Given parent "MAIN"
 			parent = args.first
@@ -54,7 +54,7 @@ Feature: SnomedBranchingApi
 		Then return "400" status
 		And return body with status "400"
 		
-	Scenario: New SNOMED CT Branch under MAIN
+	Scenario: New SNOMED CT branch under MAIN
 	
 		Given new SNOMED-CT branch request under parent branch "MAIN"
 			parent = args.first
@@ -82,3 +82,20 @@ Feature: SnomedBranchingApi
 			res = req.post(args.first.renderWithFields(this))
 		Then return "409" status
 		And return body with status "409"
+		
+	Scenario: Delete SNOMED-CT branch
+		
+		Given new SNOMED-CT branch under parent branch "MAIN"
+			parent = args.first
+			val createdResponse = givenAuthenticatedRequest(API).withJson(#{
+				"parent" -> parent,
+  				"name" -> branchName
+			}).post("/branches")
+			createdResponse.expectStatus(201)
+		When sending DELETE to "/branches/${parent}/${branchName}"
+			res = req.delete(args.first.renderWithFields(this))
+		Then return "204" status
+		And the branch should be deleted
+			res = givenAuthenticatedRequest(API).get("/branches/${parent}/${branchName}".renderWithFields(this))
+			res.expectStatus(200)
+			res.getBody.path("deleted") should be true
