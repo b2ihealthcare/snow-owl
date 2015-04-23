@@ -56,11 +56,7 @@ Feature: SnomedConceptCreateOnVersionApi
 			res = req.post(args.first.renderWithFields(this))
 		Then return "404" status
 			// if the status code is not the expected one print the method body to track failures easily
-			val expectedStatus = args.first.toInt
-			if (res.statusCode() != expectedStatus) {
-				System.err.println(res.body().asString)
-			}
-			res.then.statusCode(expectedStatus)
+			res.expectStatus(args.first.toInt)
 		And return body with status "404"
 			res.then.body("status", equalTo(args.first.toInt))
 			
