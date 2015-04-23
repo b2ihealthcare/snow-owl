@@ -15,14 +15,15 @@
  */
 package com.b2international.snowowl.datastore.internal.branch;
 
-import java.util.concurrent.atomic.AtomicLong;
+import static com.google.common.base.Preconditions.checkNotNull;
 
 import com.b2international.snowowl.core.exceptions.NotImplementedException;
 import com.b2international.snowowl.datastore.branch.Branch;
 import com.b2international.snowowl.datastore.branch.BranchManager;
-import com.b2international.snowowl.datastore.branch.TimestampProvider;
-import com.b2international.snowowl.datastore.events.CreateBranchEvent;
+import com.b2international.snowowl.datastore.events.BranchEvent;
 import com.b2international.snowowl.datastore.events.BranchReply;
+import com.b2international.snowowl.datastore.events.CreateBranchEvent;
+import com.b2international.snowowl.datastore.events.DeleteBranchEvent;
 import com.b2international.snowowl.datastore.events.ReadBranchEvent;
 import com.b2international.snowowl.eventbus.IHandler;
 import com.b2international.snowowl.eventbus.IMessage;
@@ -32,13 +33,11 @@ import com.b2international.snowowl.eventbus.IMessage;
  */
 public class BranchEventHandler implements IHandler<IMessage> {
 
-	private BranchManager branchManager = new BranchManagerImpl(0L, new TimestampProvider() {
-		private AtomicLong clock = new AtomicLong(0L);
-		@Override
-		public long getTimestamp() {
-			return clock.getAndIncrement();
-		}
-	});
+	private BranchManager branchManager;
+	
+	public BranchEventHandler(BranchManager branchManager) {
+		this.branchManager = checkNotNull(branchManager, "manager");
+	}
 	
 	@Override
 	public void handle(IMessage message) {
@@ -49,18 +48,29 @@ public class BranchEventHandler implements IHandler<IMessage> {
 			message.reply(createBranch((CreateBranchEvent)event));
 		} else if (event instanceof ReadBranchEvent) {
 			message.reply(readBranch((ReadBranchEvent) event));
+		} else if (event instanceof DeleteBranchEvent) {
+			message.reply(deleteBranch((DeleteBranchEvent) event));
 		} else {
 			throw new NotImplementedException("Event handling not implemented: " + event);
 		}
 	}
 
-	private BranchReply readBranch(ReadBranchEvent event) {
-		return new BranchReply(branchManager.getBranch(event.getBranchPath()));
+	private BranchReply deleteBranch(DeleteBranchEvent event) {
+		return new BranchReply(getBranch(event).delete());
+	}
+
+	public BranchReply readBranch(ReadBranchEvent event) {
+		return new BranchReply(getBranch(event));
 	}
 
 	private BranchReply createBranch(CreateBranchEvent event) {
-		final Branch child = branchManager.getBranch(event.getParent()).createChild(event.getName());
+		final Branch parent = branchManager.getBranch(event.getParent());
+		final Branch child = parent.createChild(event.getName());
 		return new BranchReply(child);
+	}
+	
+	private Branch getBranch(BranchEvent event) {
+		return branchManager.getBranch(event.getBranchPath());
 	}
 	
 }
