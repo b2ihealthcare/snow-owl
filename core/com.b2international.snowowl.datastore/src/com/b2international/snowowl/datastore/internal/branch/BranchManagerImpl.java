@@ -19,6 +19,7 @@ import java.util.Collection;
 import java.util.concurrent.ConcurrentMap;
 
 import com.b2international.snowowl.core.exceptions.AlreadyExistsException;
+import com.b2international.snowowl.core.exceptions.BadRequestException;
 import com.b2international.snowowl.core.exceptions.NotFoundException;
 import com.b2international.snowowl.datastore.branch.Branch;
 import com.b2international.snowowl.datastore.branch.Branch.BranchState;
@@ -52,7 +53,9 @@ public class BranchManagerImpl implements BranchManager {
 	}
 	
 	BranchImpl createBranch(BranchImpl parent, String name) {
-		
+		if (parent.isDeleted()) {
+			throw new BadRequestException("Cannot create '%s' child branch under deleted '%s' parent.", name, parent.path());
+		}
 		final String path = parent.path().concat(Branch.SEPARATOR).concat(name);
 		if (getBranchFromStore(path) != null) {
 			throw new AlreadyExistsException(Branch.class.getSimpleName(), path);
@@ -110,8 +113,7 @@ public class BranchManagerImpl implements BranchManager {
 		if (branches.replace(branchImpl.path(), branchImpl, deleted)) {
 			postDelete(deleted);
 		}
-		
-		return null;
+		return deleted;
 	}
 	
 	protected void postDelete(BranchImpl branch) {

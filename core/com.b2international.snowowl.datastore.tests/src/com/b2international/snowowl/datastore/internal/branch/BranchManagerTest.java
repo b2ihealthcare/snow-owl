@@ -30,6 +30,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import com.b2international.snowowl.core.exceptions.AlreadyExistsException;
+import com.b2international.snowowl.core.exceptions.BadRequestException;
 import com.b2international.snowowl.core.exceptions.NotFoundException;
 import com.b2international.snowowl.datastore.branch.Branch;
 import com.b2international.snowowl.datastore.branch.Branch.BranchState;
@@ -100,6 +101,11 @@ public class BranchManagerTest {
 	public void whenDeletingBranch_ThenManagerShouldStillReturnIt() throws Exception {
 		a.delete();
 		assertTrue(manager.getBranch("MAIN/a").isDeleted());
+	}
+	
+	@Test(expected = BadRequestException.class)
+	public void whenCreatingChildUnderDeletedBranch_ThenThrowBadRequestException() throws Exception {
+		a.delete().createChild("childOfDeletedA");
 	}
 	
 	@Test
