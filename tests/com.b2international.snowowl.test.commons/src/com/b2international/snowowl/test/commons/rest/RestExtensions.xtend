@@ -96,5 +96,12 @@ class RestExtensions {
 		val jettyPortProp = System.getProperty("jetty.port")
 		return if(jettyPortProp != null) Integer.valueOf(jettyPortProp) else 8080
 	}
+	
+	def static expectStatus(Response it, int expectedStatus) {
+		if (statusCode() != expectedStatus) {
+			System.err.println(body().asString)
+		}
+		then.statusCode(expectedStatus)
+	}
 
 }
