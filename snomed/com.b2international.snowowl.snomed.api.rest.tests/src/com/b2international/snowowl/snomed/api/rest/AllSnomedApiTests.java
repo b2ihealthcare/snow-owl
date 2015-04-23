@@ -23,10 +23,7 @@ import org.junit.runners.Suite.SuiteClasses;
 
 import com.b2international.commons.platform.PlatformUtil;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
-import com.b2international.snowowl.snomed.api.rest.concept.SnomedConceptCreateOnTaskApiFeature;
-import com.b2international.snowowl.snomed.api.rest.concept.SnomedConceptCreateOnVersionApiFeature;
-import com.b2international.snowowl.snomed.api.rest.id.SnomedIdentifierRESTfulAPIFeature;
-import com.b2international.snowowl.snomed.api.rest.tasks.SnomedTasksApiFeature;
+import com.b2international.snowowl.snomed.api.rest.branches.SnomedBranchingApiFeature;
 import com.b2international.snowowl.snomed.common.ContentSubType;
 import com.b2international.snowowl.test.commons.BundleStartRule;
 import com.b2international.snowowl.test.commons.Resources;
@@ -38,10 +35,11 @@ import com.b2international.snowowl.test.commons.SnowOwlAppRule;
  */
 @RunWith(Suite.class)
 @SuiteClasses({ 
-	SnomedConceptCreateOnTaskApiFeature.class,
-	SnomedConceptCreateOnVersionApiFeature.class,
-	SnomedTasksApiFeature.class,
-	SnomedIdentifierRESTfulAPIFeature.class
+//	SnomedConceptCreateOnTaskApiFeature.class,
+//	SnomedConceptCreateOnVersionApiFeature.class,
+//	SnomedTasksApiFeature.class,
+//	SnomedIdentifierRESTfulAPIFeature.class
+	SnomedBranchingApiFeature.class
 })
 public class AllSnomedApiTests {
 
