@@ -15,17 +15,18 @@
  */
 package com.b2international.snowowl.datastore.internal;
 
-import java.util.concurrent.atomic.AtomicLong;
-
 import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.emf.cdo.common.branch.CDOBranchManager;
+import org.eclipse.emf.cdo.spi.common.branch.InternalCDOBranchManager;
 
 import com.b2international.snowowl.core.config.SnowOwlConfiguration;
 import com.b2international.snowowl.core.setup.BootstrapFragment;
 import com.b2international.snowowl.core.setup.Environment;
 import com.b2international.snowowl.datastore.branch.BranchManager;
-import com.b2international.snowowl.datastore.branch.TimestampProvider;
+import com.b2international.snowowl.datastore.cdo.ICDOConnection;
+import com.b2international.snowowl.datastore.cdo.ICDOConnectionManager;
 import com.b2international.snowowl.datastore.internal.branch.BranchEventHandler;
-import com.b2international.snowowl.datastore.internal.branch.BranchManagerImpl;
+import com.b2international.snowowl.datastore.internal.branch.CDOBranchManagerImpl;
 import com.b2international.snowowl.eventbus.IEventBus;
 
 /**
@@ -33,22 +34,18 @@ import com.b2international.snowowl.eventbus.IEventBus;
  */
 public class DatastoreBootstrap implements BootstrapFragment {
 
-	// TODO init branchManager(s)
-	private BranchManager branchManager = new BranchManagerImpl(0L, new TimestampProvider() {
-		private AtomicLong clock = new AtomicLong(0L);
-		@Override
-		public long getTimestamp() {
-			return clock.getAndIncrement();
-		}
-	});
-	
 	@Override
 	public void init(SnowOwlConfiguration configuration, Environment env) throws Exception {
 	}
 
 	@Override
 	public void run(SnowOwlConfiguration configuration, Environment env, IProgressMonitor monitor) throws Exception {
-		env.service(IEventBus.class).registerHandler("/branches", new BranchEventHandler(branchManager));
+		if (env.isServer()) {
+			ICDOConnection cdoConnection = env.service(ICDOConnectionManager.class).getByUuid("snomedStore");
+			CDOBranchManager cdoBranchManager = cdoConnection.getMainBranch().getBranchManager();
+			BranchManager branchManager = new CDOBranchManagerImpl((InternalCDOBranchManager) cdoBranchManager, cdoConnection);
+		
+			env.service(IEventBus.class).registerHandler("/branches", new BranchEventHandler(branchManager));
+		}
 	}
-
 }

@@ -38,7 +38,14 @@ public class BranchManagerImpl implements BranchManager {
 	
 	private final ConcurrentMap<String, Branch> branches = new MapMaker().makeMap();
 
-	public BranchManagerImpl(long mainBranchTimestamp, TimestampProvider clock) {
+	public BranchManagerImpl(long mainBranchTimestamp) {
+		this(mainBranchTimestamp, null);
+	}
+	
+	/*
+	 * For testing only
+	 */
+	BranchManagerImpl(long mainBranchTimestamp, TimestampProvider clock) {
 		this.clock = clock;
 		initMainBranch(mainBranchTimestamp);
 	}
@@ -65,7 +72,11 @@ public class BranchManagerImpl implements BranchManager {
 	}
 
 	protected BranchImpl reopen(BranchImpl parent, String name) {
-		final BranchImpl child = new BranchImpl(this, name, parent.path(), clock.getTimestamp());
+		return reopen(parent, name, clock.getTimestamp());
+	}
+	
+	protected BranchImpl reopen(BranchImpl parent, String name, long baseTimestamp) {
+		final BranchImpl child = new BranchImpl(this, name, parent.path(), baseTimestamp);
 		registerBranch(child);
 		return child;
 	}
@@ -95,17 +106,21 @@ public class BranchManagerImpl implements BranchManager {
 
 	BranchImpl merge(BranchImpl target, BranchImpl source) {
 		// Changes from source will appear on target as a single commit
-		return handleCommit(target, clock.getTimestamp());
+		return applyChangeSet(target, source, clock.getTimestamp());
 	}
 
 	Branch rebase(BranchImpl source, BranchImpl target) {
 		BranchImpl rebasedSource = reopen((BranchImpl) source.parent(), source.name());
 		
 		if (source.state() == BranchState.DIVERGED) {
-			rebasedSource = handleCommit(rebasedSource, clock.getTimestamp());
+			return applyChangeSet(rebasedSource, source, clock.getTimestamp());
+		} else {
+			return rebasedSource;
 		}
-		
-		return rebasedSource;
+	}
+
+	BranchImpl applyChangeSet(BranchImpl target, BranchImpl source, long timestamp) {
+		return handleCommit(target, timestamp);
 	}
 
 	BranchImpl delete(BranchImpl branchImpl) {

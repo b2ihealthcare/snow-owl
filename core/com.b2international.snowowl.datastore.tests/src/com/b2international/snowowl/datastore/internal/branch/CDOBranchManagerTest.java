@@ -18,6 +18,7 @@ package com.b2international.snowowl.datastore.internal.branch;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNull;
+import static org.mockito.Mockito.mock;
 
 import org.eclipse.emf.cdo.common.branch.CDOBranch;
 import org.eclipse.emf.cdo.common.util.CDOTimeProvider;
@@ -27,6 +28,7 @@ import org.junit.runner.RunWith;
 import org.mockito.runners.MockitoJUnitRunner;
 
 import com.b2international.snowowl.datastore.branch.Branch;
+import com.b2international.snowowl.datastore.cdo.ICDOConnection;
 
 /**
  * @since 4.1
@@ -46,7 +48,7 @@ public class CDOBranchManagerTest {
 		clock = new AtomicLongTimestampAuthority();
 		cdoBranchManager = new MockInternalCDOBranchManager(clock);
 		cdoBranchManager.initMainBranch(false, clock.getTimeStamp());
-		manager = new CDOBranchManagerImpl(cdoBranchManager);
+		manager = new CDOBranchManagerImpl(cdoBranchManager, mock(ICDOConnection.class));
 		main = manager.getMainBranch();
 	}
 	

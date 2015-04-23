@@ -15,15 +15,16 @@
  */
 package com.b2international.snowowl.datastore.branch;
 
+import com.b2international.commons.exceptions.FormattedRuntimeException;
+
 /**
  * @since 4.1
  */
-public class BranchMergeException extends RuntimeException {
+public class BranchMergeException extends FormattedRuntimeException {
 
 	private static final long serialVersionUID = -119878531358715593L;
 	
-	public BranchMergeException(String message) {
-		super(message);
+	public BranchMergeException(String template, Object... args) {
+		super(template, args);
 	}
-
 }
