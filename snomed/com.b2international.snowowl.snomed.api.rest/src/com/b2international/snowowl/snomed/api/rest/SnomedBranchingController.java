@@ -16,15 +16,12 @@
 package com.b2international.snowowl.snomed.api.rest;
 
 import static org.springframework.hateoas.mvc.ControllerLinkBuilder.linkTo;
-import static org.springframework.hateoas.mvc.ControllerLinkBuilder.methodOn;
 
 import java.net.URI;
 
-import javax.swing.text.AbstractDocument.BranchElement;
-
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.ResponseEntity;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -57,7 +54,7 @@ public class SnomedBranchingController extends AbstractRestService {
 	@RequestMapping(method=RequestMethod.POST)
 	@ResponseStatus(HttpStatus.CREATED)
 	public DeferredResult<ResponseEntity<Void>> createBranch(@RequestBody CreateBranchRequest request) {
-		final ResponseEntity<Void> response = Responses.created(getBranchUri(request.path())).build();
+		final ResponseEntity<Void> response = Responses.created(getBranchLocationHeader(request.path())).build();
 		final DeferredResult<ResponseEntity<Void>> result = new DeferredResult<ResponseEntity<Void>>();
 		request.toEvent("SNOMEDCT").send(bus, new IHandler<IMessage>() {
 			@Override
@@ -91,9 +88,9 @@ public class SnomedBranchingController extends AbstractRestService {
 //		return new DeleteBranchEvent().on(bus).to("/branches").send();
 		return null;
 	}
-	
-	private URI getBranchUri(String branchPath) {
-		return linkTo(methodOn(SnomedBranchingController.class).getBranch(branchPath)).toUri();
+
+	private URI getBranchLocationHeader(String branchPath) {
+		return linkTo(SnomedBranchingController.class).slash(branchPath).toUri();
 	}
 	
 }
