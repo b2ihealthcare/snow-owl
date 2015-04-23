@@ -15,33 +15,13 @@
  */
 package com.b2international.snowowl.snomed.api.rest.domain;
 
-import com.b2international.snowowl.datastore.branch.Branch;
-import com.b2international.snowowl.datastore.events.CreateBranchEvent;
-import com.fasterxml.jackson.annotation.JsonProperty;
-
 /**
  * @since 4.1
  */
-public abstract class CreateBranchRequest {
+public class CreateSnomedBranchRequest extends CreateBranchRequest {
 
-	@JsonProperty
-	private String parent = "MAIN";
-	
-	@JsonProperty
-	private String name;
-
-	private String repository;
-	
-	public CreateBranchRequest(String repository) {
-		this.repository = repository;
-	}
-	
-	public CreateBranchEvent toEvent() {
-		return new CreateBranchEvent(repository, parent, name);
+	public CreateSnomedBranchRequest() {
+		super("SNOMEDCT");
 	}
 
-	public String path() {
-		return parent + Branch.SEPARATOR + name;
-	}
-	
 }
