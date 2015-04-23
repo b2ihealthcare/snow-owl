@@ -13,40 +13,32 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.datastore.events;
+package com.b2international.snowowl.core.events;
 
-import com.b2international.snowowl.core.events.BaseEvent;
+import com.b2international.snowowl.eventbus.IEventBus;
+import com.b2international.snowowl.eventbus.IHandler;
+import com.b2international.snowowl.eventbus.IMessage;
 
 /**
  * @since 4.1
  */
-public class CreateBranchEvent extends BaseEvent {
+public abstract class BaseEvent implements Event {
 
-	private String repository;
-	private String parent;
-	private String name;
-	
-	public CreateBranchEvent(String repository, String parent, String name) {
-		this.repository = repository;
-		this.parent = parent;
-		this.name = name;
-	}
-	
-	public String getParent() {
-		return parent;
-	}
-	
-	public String getName() {
-		return name;
-	}
-	
-	public String getRepository() {
-		return repository;
-	}
-	
 	@Override
-	protected String getAddress() {
-		return "/branches";
+	public void send(IEventBus bus) {
+		send(bus, null);
 	}
-	
+
+	@Override
+	public void send(IEventBus bus, IHandler<IMessage> replyHandler) {
+		bus.send(getAddress(), this, replyHandler);
+	}
+
+	/**
+	 * Returns the address as the destination of this {@link Event}.
+	 * 
+	 * @return
+	 */
+	protected abstract String getAddress();
+
 }
