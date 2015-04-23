@@ -17,6 +17,7 @@ package com.b2international.snowowl.datastore.internal.branch;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
+import com.b2international.snowowl.core.exceptions.NotFoundException;
 import com.b2international.snowowl.core.exceptions.NotImplementedException;
 import com.b2international.snowowl.datastore.branch.Branch;
 import com.b2international.snowowl.datastore.branch.BranchManager;
@@ -64,9 +65,14 @@ public class BranchEventHandler implements IHandler<IMessage> {
 	}
 
 	private BranchReply createBranch(CreateBranchEvent event) {
-		final Branch parent = branchManager.getBranch(event.getParent());
-		final Branch child = parent.createChild(event.getName());
-		return new BranchReply(child);
+		try {
+			final Branch parent = branchManager.getBranch(event.getParent());
+			final Branch child = parent.createChild(event.getName());
+			return new BranchReply(child);
+		} catch (NotFoundException e) {
+			// if parent not found, convert it to BadRequestException
+			throw e.toBadRequestException();
+		}
 	}
 	
 	private Branch getBranch(BranchEvent event) {
