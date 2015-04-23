@@ -30,14 +30,6 @@ import com.b2international.snowowl.datastore.branch.BranchMergeException;
  */
 public class BranchImpl implements Branch {
 
-    public enum BranchState {
-        UP_TO_DATE,
-        FORWARD, 
-        BEHIND, 
-        DIVERGED, 
-        STALE
-    }
-
     private static final Pattern VALID_NAME_PATTERN = Pattern.compile("[a-zA-Z0-9_-]{1,50}");
 
 	private static void checkName(String name) {
@@ -100,8 +92,8 @@ public class BranchImpl implements Branch {
 
 	@Override
 	public Branch rebase(Branch target) {
-		final BranchState state = state();
-		if (state == BranchState.BEHIND || state == BranchState.DIVERGED || state == BranchState.STALE) {
+		final Branch.BranchState state = state();
+		if (state == Branch.BranchState.BEHIND || state == Branch.BranchState.DIVERGED || state == Branch.BranchState.STALE) {
 			return branchManager.rebase(this, (BranchImpl) target);
 		} else {
 			return this;
@@ -111,7 +103,7 @@ public class BranchImpl implements Branch {
 	@Override
 	public Branch merge(Branch source) throws BranchMergeException {
 		checkArgument(!source.equals(this), "Can't merge branch onto itself.");
-		if (source.state() != BranchState.FORWARD) {
+		if (source.state() != Branch.BranchState.FORWARD) {
 			throw new BranchMergeException("Only source in the FORWARD state can merged.");
 		} else {
 			return branchManager.merge(this, (BranchImpl) source);
@@ -155,22 +147,22 @@ public class BranchImpl implements Branch {
     }
 
     @Override
-	public BranchState state() {
+	public Branch.BranchState state() {
 		return state(parent());
 	}
     
     @Override
-	public BranchState state(Branch target) {
+	public Branch.BranchState state(Branch target) {
 		if (baseTimestamp() < target.baseTimestamp()) {
-        	return BranchState.STALE;
+        	return Branch.BranchState.STALE;
         } else if (headTimestamp > baseTimestamp && target.headTimestamp() < baseTimestamp) {
-        	return BranchState.FORWARD;
+        	return Branch.BranchState.FORWARD;
         } else if (headTimestamp == baseTimestamp && target.headTimestamp() > baseTimestamp) {
-        	return BranchState.BEHIND;
+        	return Branch.BranchState.BEHIND;
         } else if (headTimestamp > baseTimestamp && target.headTimestamp() > baseTimestamp) {
-        	return BranchState.DIVERGED;
+        	return Branch.BranchState.DIVERGED;
         } else {
-    	    return BranchState.UP_TO_DATE;
+    	    return Branch.BranchState.UP_TO_DATE;
         }
     }
     

@@ -32,8 +32,8 @@ import org.junit.Test;
 import com.b2international.snowowl.core.exceptions.AlreadyExistsException;
 import com.b2international.snowowl.core.exceptions.NotFoundException;
 import com.b2international.snowowl.datastore.branch.Branch;
+import com.b2international.snowowl.datastore.branch.Branch.BranchState;
 import com.b2international.snowowl.datastore.branch.BranchMergeException;
-import com.b2international.snowowl.datastore.internal.branch.BranchImpl.BranchState;
 
 /**
  * @since 4.1

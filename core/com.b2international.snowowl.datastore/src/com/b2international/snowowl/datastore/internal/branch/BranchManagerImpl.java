@@ -21,9 +21,9 @@ import java.util.concurrent.ConcurrentMap;
 import com.b2international.snowowl.core.exceptions.AlreadyExistsException;
 import com.b2international.snowowl.core.exceptions.NotFoundException;
 import com.b2international.snowowl.datastore.branch.Branch;
+import com.b2international.snowowl.datastore.branch.Branch.BranchState;
 import com.b2international.snowowl.datastore.branch.BranchManager;
 import com.b2international.snowowl.datastore.branch.TimestampProvider;
-import com.b2international.snowowl.datastore.internal.branch.BranchImpl.BranchState;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.MapMaker;
 

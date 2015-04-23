@@ -16,7 +16,6 @@
 package com.b2international.snowowl.datastore.branch;
 
 import com.b2international.snowowl.core.exceptions.AlreadyExistsException;
-import com.b2international.snowowl.datastore.internal.branch.BranchImpl.BranchState;
 
 /**
  * Represents a {@link Branch} in a terminology repository. A {@link Branch} can be uniquely identified by using its {@link #path()} and
@@ -25,6 +24,17 @@ import com.b2international.snowowl.datastore.internal.branch.BranchImpl.BranchSt
  * @since 4.1
  */
 public interface Branch extends Deletable {
+
+	/**
+	 * @since 4.1
+	 */
+	enum BranchState {
+	    UP_TO_DATE,
+	    FORWARD, 
+	    BEHIND, 
+	    DIVERGED, 
+	    STALE
+	}
 
 	/**
 	 * Segment separator in {@link Branch#path()} values.

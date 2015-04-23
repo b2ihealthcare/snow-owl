@@ -58,8 +58,8 @@ public class MainBranchImpl extends BranchImpl {
 	}
 	
 	@Override
-	public BranchState state() {
-		return BranchState.UP_TO_DATE;
+	public Branch.BranchState state() {
+		return Branch.BranchState.UP_TO_DATE;
 	}
 	
 	@Override
@@ -68,7 +68,7 @@ public class MainBranchImpl extends BranchImpl {
 	}
 	
 	@Override
-	public BranchState state(Branch target) {
+	public Branch.BranchState state(Branch target) {
 		throw new UnsupportedOperationException(path() + " cannot compute state compared to target " + target.path());
 	}
 	
