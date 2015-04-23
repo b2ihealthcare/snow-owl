@@ -49,15 +49,16 @@ Feature: SnomedBranchingApi
 		
 	Scenario: New SNOMED-CT branch under nonexistent parent 
 	
-		Given new SNOMED-CT branch request under parent branch "nonexistent"
+		Given new SNOMED-CT branch request under parent branch "nonexistent" with name "${branchName}"
 		When sending POST to "/branches"
 		Then return "400" status
 		And return body with status "400"
 		
 	Scenario: New SNOMED CT branch under MAIN
 	
-		Given new SNOMED-CT branch request under parent branch "MAIN"
+		Given new SNOMED-CT branch request under parent branch "MAIN" with name "${branchName}"
 			parent = args.first
+			branchName = args.second.renderWithFields(this)
 			req.withJson(#{
 				"parent" -> parent,
   				"name" -> branchName
@@ -71,12 +72,7 @@ Feature: SnomedBranchingApi
 	
 	Scenario: Duplicate branch on same parent
 	
-		Given new SNOMED-CT branch request under parent branch "MAIN"
-		And another new SNOMED-CT branch request under parent branch "MAIN"
-			req.withJson(#{
-				"parent" -> args.first,
-  				"name" -> branchName
-			})
+		Given new SNOMED-CT branch request under parent branch "MAIN" with name "${branchName}"
 		When sending POST to "/branches"
 		And sending the second POST to "/branches"
 			res = req.post(args.first.renderWithFields(this))
@@ -85,7 +81,7 @@ Feature: SnomedBranchingApi
 		
 	Scenario: Delete SNOMED-CT branch
 		
-		Given new SNOMED-CT branch under parent branch "MAIN"
+		Given new SNOMED-CT branch under parent branch "MAIN" with name "${branchName}"
 			parent = args.first
 			val createdResponse = givenAuthenticatedRequest(API).withJson(#{
 				"parent" -> parent,
@@ -99,3 +95,15 @@ Feature: SnomedBranchingApi
 			res = givenAuthenticatedRequest(API).get("/branches/${parent}/${branchName}".renderWithFields(this))
 			res.expectStatus(200)
 			res.getBody.path("deleted") should be true
+			
+	Scenario: Create new SNOMED-CT branch on deleted branch
+		
+		Given new SNOMED-CT branch under parent branch "MAIN" with name "${branchName}"
+		And sending DELETE to "/branches/${parent}/${branchName}"
+		And return "204" status
+		And the branch should be deleted
+		And new SNOMED-CT branch request under parent branch "MAIN/${branchName}" with name "childOfDeletedBranch"
+		When sending POST to "/branches"
+		Then return "400" status
+		And return body with status "400"
+	
