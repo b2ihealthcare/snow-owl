@@ -17,6 +17,7 @@ package com.b2international.snowowl.datastore.internal.branch;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
+import com.b2international.snowowl.core.exceptions.ApiException;
 import com.b2international.snowowl.core.exceptions.NotFoundException;
 import com.b2international.snowowl.core.exceptions.NotImplementedException;
 import com.b2international.snowowl.datastore.branch.Branch;
@@ -42,17 +43,21 @@ public class BranchEventHandler implements IHandler<IMessage> {
 	
 	@Override
 	public void handle(IMessage message) {
-		// TODO how to handle multiple possible message bodies
-		// TODO consider using eventbus APIs with method annotations, @Handler
-		final Object event = message.body();
-		if (event instanceof CreateBranchEvent) {
-			message.reply(createBranch((CreateBranchEvent)event));
-		} else if (event instanceof ReadBranchEvent) {
-			message.reply(readBranch((ReadBranchEvent) event));
-		} else if (event instanceof DeleteBranchEvent) {
-			message.reply(deleteBranch((DeleteBranchEvent) event));
-		} else {
-			throw new NotImplementedException("Event handling not implemented: " + event);
+		try {
+			// TODO how to handle multiple possible message bodies
+			// TODO consider using eventbus APIs with method annotations, @Handler
+			final Object event = message.body();
+			if (event instanceof CreateBranchEvent) {
+				message.reply(createBranch((CreateBranchEvent)event));
+			} else if (event instanceof ReadBranchEvent) {
+				message.reply(readBranch((ReadBranchEvent) event));
+			} else if (event instanceof DeleteBranchEvent) {
+				message.reply(deleteBranch((DeleteBranchEvent) event));
+			} else {
+				throw new NotImplementedException("Event handling not implemented: " + event);
+			}
+		} catch (ApiException e) {
+			message.fail(e);
 		}
 	}
 
