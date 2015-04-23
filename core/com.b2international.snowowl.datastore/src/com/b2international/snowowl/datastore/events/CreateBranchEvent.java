@@ -15,6 +15,8 @@
  */
 package com.b2international.snowowl.datastore.events;
 
+import com.b2international.snowowl.datastore.branch.Branch;
+
 
 /**
  * @since 4.1
@@ -26,11 +28,16 @@ public class CreateBranchEvent extends BranchEvent {
 	private String name;
 	
 	public CreateBranchEvent(String repository, String parent, String name) {
+		super(path(parent, name));
 		this.repository = repository;
 		this.parent = parent;
 		this.name = name;
 	}
 	
+	private static String path(String parent, String name) {
+		return parent + Branch.SEPARATOR + name;
+	}
+
 	public String getParent() {
 		return parent;
 	}

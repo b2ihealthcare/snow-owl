@@ -21,14 +21,8 @@ package com.b2international.snowowl.datastore.events;
  */
 public class DeleteBranchEvent extends BranchEvent {
 
-	private String branchPath;
-
 	public DeleteBranchEvent(String branchPath) {
-		this.branchPath = branchPath;
+		super(branchPath);
 	}
 	
-	public String getBranchPath() {
-		return branchPath;
-	}
-
 }
