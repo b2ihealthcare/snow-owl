@@ -40,7 +40,7 @@ public class DatastoreBootstrap implements BootstrapFragment {
 
 	@Override
 	public void run(SnowOwlConfiguration configuration, Environment env, IProgressMonitor monitor) throws Exception {
-		if (env.isServer()) {
+		if (env.isServer() || env.isEmbedded()) {
 			ICDOConnection cdoConnection = env.service(ICDOConnectionManager.class).getByUuid("snomedStore");
 			CDOBranchManager cdoBranchManager = cdoConnection.getMainBranch().getBranchManager();
 			BranchManager branchManager = new CDOBranchManagerImpl((InternalCDOBranchManager) cdoBranchManager, cdoConnection);
