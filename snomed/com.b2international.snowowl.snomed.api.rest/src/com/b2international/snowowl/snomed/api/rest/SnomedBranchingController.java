@@ -33,10 +33,11 @@ import org.springframework.web.context.request.async.DeferredResult;
 import com.b2international.snowowl.core.exceptions.ApiException;
 import com.b2international.snowowl.datastore.branch.Branch;
 import com.b2international.snowowl.datastore.events.CreateBranchReply;
+import com.b2international.snowowl.datastore.events.ReadBranchEvent;
 import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.eventbus.IHandler;
 import com.b2international.snowowl.eventbus.IMessage;
-import com.b2international.snowowl.snomed.api.rest.domain.CreateBranchRequest;
+import com.b2international.snowowl.snomed.api.rest.domain.CreateSnomedBranchRequest;
 import com.b2international.snowowl.snomed.api.rest.util.Responses;
 import com.wordnik.swagger.annotations.Api;
 
@@ -53,10 +54,10 @@ public class SnomedBranchingController extends AbstractRestService {
 	
 	@RequestMapping(method=RequestMethod.POST)
 	@ResponseStatus(HttpStatus.CREATED)
-	public DeferredResult<ResponseEntity<Void>> createBranch(@RequestBody CreateBranchRequest request) {
+	public DeferredResult<ResponseEntity<Void>> createBranch(@RequestBody CreateSnomedBranchRequest request) {
 		final ResponseEntity<Void> response = Responses.created(getBranchLocationHeader(request.path())).build();
 		final DeferredResult<ResponseEntity<Void>> result = new DeferredResult<ResponseEntity<Void>>();
-		request.toEvent("SNOMEDCT").send(bus, new IHandler<IMessage>() {
+		request.toEvent().send(bus, new IHandler<IMessage>() {
 			@Override
 			public void handle(IMessage message) {
 				try {
@@ -76,9 +77,23 @@ public class SnomedBranchingController extends AbstractRestService {
 	}
 	
 	@RequestMapping(value="/{path:**}", method=RequestMethod.GET)
-	public DeferredResult<ResponseEntity<Branch>> getBranch(@PathVariable("path") String branchPath) {
-//		return new ReadBranchEvent().send(bus, new );
-		return null;
+	public DeferredResult<Branch> getBranch(@PathVariable("path") String branchPath) {
+		final DeferredResult<Branch> result = new DeferredResult<>();
+		new ReadBranchEvent(branchPath).send(bus, new IHandler<IMessage>() {
+			@Override
+			public void handle(IMessage message) {
+				try {
+					if (message.isSucceeded()) {
+						result.setResult(message.body(CreateBranchReply.class).getBranch());
+					} else {
+						result.setErrorResult(message.body(ApiException.class));
+					}
+				} catch (Exception e) {
+					result.setErrorResult(e);
+				}
+			}
+		});
+		return result;
 	}
 	
 	
