@@ -22,7 +22,8 @@ import com.b2international.snowowl.datastore.branch.Branch;
 import com.b2international.snowowl.datastore.branch.BranchManager;
 import com.b2international.snowowl.datastore.branch.TimestampProvider;
 import com.b2international.snowowl.datastore.events.CreateBranchEvent;
-import com.b2international.snowowl.datastore.events.CreateBranchReply;
+import com.b2international.snowowl.datastore.events.BranchReply;
+import com.b2international.snowowl.datastore.events.ReadBranchEvent;
 import com.b2international.snowowl.eventbus.IHandler;
 import com.b2international.snowowl.eventbus.IMessage;
 
@@ -46,14 +47,20 @@ public class BranchEventHandler implements IHandler<IMessage> {
 		final Object event = message.body();
 		if (event instanceof CreateBranchEvent) {
 			message.reply(createBranch((CreateBranchEvent)event));
+		} else if (event instanceof ReadBranchEvent) {
+			message.reply(readBranch((ReadBranchEvent) event));
 		} else {
 			throw new NotImplementedException("Event handling not implemented: " + event);
 		}
 	}
 
-	private CreateBranchReply createBranch(CreateBranchEvent event) {
+	private BranchReply readBranch(ReadBranchEvent event) {
+		return new BranchReply(branchManager.getBranch(event.getBranchPath()));
+	}
+
+	private BranchReply createBranch(CreateBranchEvent event) {
 		final Branch child = branchManager.getBranch(event.getParent()).createChild(event.getName());
-		return new CreateBranchReply(child);
+		return new BranchReply(child);
 	}
 	
 }

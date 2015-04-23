@@ -32,7 +32,7 @@ import org.springframework.web.context.request.async.DeferredResult;
 
 import com.b2international.snowowl.core.exceptions.ApiException;
 import com.b2international.snowowl.datastore.branch.Branch;
-import com.b2international.snowowl.datastore.events.CreateBranchReply;
+import com.b2international.snowowl.datastore.events.BranchReply;
 import com.b2international.snowowl.datastore.events.ReadBranchEvent;
 import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.eventbus.IHandler;
@@ -63,7 +63,7 @@ public class SnomedBranchingController extends AbstractRestService {
 				try {
 					if (message.isSucceeded()) {
 						// success, just try to read the reply
-						message.body(CreateBranchReply.class);
+						message.body(BranchReply.class);
 						result.setResult(response);
 					} else {
 						result.setErrorResult(message.body(ApiException.class));
@@ -84,7 +84,7 @@ public class SnomedBranchingController extends AbstractRestService {
 			public void handle(IMessage message) {
 				try {
 					if (message.isSucceeded()) {
-						result.setResult(message.body(CreateBranchReply.class).getBranch());
+						result.setResult(message.body(BranchReply.class).getBranch());
 					} else {
 						result.setErrorResult(message.body(ApiException.class));
 					}

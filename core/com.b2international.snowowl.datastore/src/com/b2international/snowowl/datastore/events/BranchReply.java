@@ -20,11 +20,11 @@ import com.b2international.snowowl.datastore.branch.Branch;
 /**
  * @since 4.1
  */
-public class CreateBranchReply {
+public class BranchReply {
 
 	private Branch branch;
 
-	public CreateBranchReply(Branch branch) {
+	public BranchReply(Branch branch) {
 		this.branch = branch;
 	}
 	
