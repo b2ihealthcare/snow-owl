@@ -21,6 +21,7 @@ import java.net.URI;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -33,6 +34,7 @@ import org.springframework.web.context.request.async.DeferredResult;
 import com.b2international.snowowl.core.exceptions.ApiException;
 import com.b2international.snowowl.datastore.branch.Branch;
 import com.b2international.snowowl.datastore.events.BranchReply;
+import com.b2international.snowowl.datastore.events.DeleteBranchEvent;
 import com.b2international.snowowl.datastore.events.ReadBranchEvent;
 import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.eventbus.IHandler;
@@ -46,7 +48,7 @@ import com.wordnik.swagger.annotations.Api;
  */
 @Api("SNOMED CT Branches")
 @RestController
-@RequestMapping("/branches")
+@RequestMapping(value="/branches", produces={MediaType.APPLICATION_JSON_VALUE})
 public class SnomedBranchingController extends AbstractRestService {
 
 	@Autowired 
@@ -100,8 +102,25 @@ public class SnomedBranchingController extends AbstractRestService {
 	@RequestMapping(value="/{path:**}", method=RequestMethod.DELETE)
 	@ResponseStatus(HttpStatus.NO_CONTENT)
 	public DeferredResult<ResponseEntity<Void>> deleteBranch(@PathVariable("path") String branchPath) {
-//		return new DeleteBranchEvent().on(bus).to("/branches").send();
-		return null;
+		final ResponseEntity<Void> response = Responses.status(HttpStatus.NO_CONTENT).build();
+		final DeferredResult<ResponseEntity<Void>> result = new DeferredResult<ResponseEntity<Void>>();
+		new DeleteBranchEvent(branchPath).send(bus, new IHandler<IMessage>() {
+			@Override
+			public void handle(IMessage message) {
+				try {
+					if (message.isSucceeded()) {
+						// success, just try to read the reply
+						message.body(BranchReply.class);
+						result.setResult(response);
+					} else {
+						result.setErrorResult(message.body(ApiException.class));
+					}
+				} catch (Exception e) {
+					result.setErrorResult(e);
+				}
+			}
+		});
+		return result;
 	}
 
 	private URI getBranchLocationHeader(String branchPath) {
