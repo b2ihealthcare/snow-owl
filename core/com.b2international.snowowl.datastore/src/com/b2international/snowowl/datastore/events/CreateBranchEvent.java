@@ -15,12 +15,11 @@
  */
 package com.b2international.snowowl.datastore.events;
 
-import com.b2international.snowowl.core.events.BaseEvent;
 
 /**
  * @since 4.1
  */
-public class CreateBranchEvent extends BaseEvent {
+public class CreateBranchEvent extends BranchEvent {
 
 	private String repository;
 	private String parent;
@@ -42,11 +41,6 @@ public class CreateBranchEvent extends BaseEvent {
 	
 	public String getRepository() {
 		return repository;
-	}
-	
-	@Override
-	protected String getAddress() {
-		return "/branches";
 	}
 	
 }

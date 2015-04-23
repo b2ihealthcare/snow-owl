@@ -15,21 +15,16 @@
  */
 package com.b2international.snowowl.datastore.events;
 
-
+import com.b2international.snowowl.core.events.BaseEvent;
 
 /**
  * @since 4.1
  */
-public class ReadBranchEvent extends BranchEvent {
+public abstract class BranchEvent extends BaseEvent {
 
-	private String branchPath;
-
-	public ReadBranchEvent(String branchPath) {
-		this.branchPath = branchPath;
-	}
-	
-	public String getBranchPath() {
-		return branchPath;
+	@Override
+	protected final String getAddress() {
+		return "/branches";
 	}
 	
 }
