@@ -15,21 +15,24 @@
  */
 package com.b2international.snowowl.datastore.events;
 
-import static com.google.common.base.Preconditions.checkNotNull;
+import java.util.Collection;
+import java.util.Collections;
+
+import com.b2international.snowowl.datastore.branch.Branch;
 
 /**
  * @since 4.1
  */
-public abstract class BranchEvent extends BaseBranchEvent {
+public class BranchesReply {
 
-	private String branchPath;
+	private Collection<Branch> branches;
 
-	public BranchEvent(String branchPath) {
-		this.branchPath = checkNotNull(branchPath, "branchPath");
+	public BranchesReply(Collection<Branch> branches) {
+		this.branches = branches == null ? Collections.<Branch>emptySet() : branches;
 	}
 	
-	public final String getBranchPath() {
-		return branchPath;
+	public Collection<Branch> getBranches() {
+		return branches;
 	}
 	
 }

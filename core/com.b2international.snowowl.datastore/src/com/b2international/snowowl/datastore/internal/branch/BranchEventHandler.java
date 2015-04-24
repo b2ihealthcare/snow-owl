@@ -24,8 +24,10 @@ import com.b2international.snowowl.datastore.branch.Branch;
 import com.b2international.snowowl.datastore.branch.BranchManager;
 import com.b2international.snowowl.datastore.events.BranchEvent;
 import com.b2international.snowowl.datastore.events.BranchReply;
+import com.b2international.snowowl.datastore.events.BranchesReply;
 import com.b2international.snowowl.datastore.events.CreateBranchEvent;
 import com.b2international.snowowl.datastore.events.DeleteBranchEvent;
+import com.b2international.snowowl.datastore.events.ReadAllBranchEvent;
 import com.b2international.snowowl.datastore.events.ReadBranchEvent;
 import com.b2international.snowowl.eventbus.IHandler;
 import com.b2international.snowowl.eventbus.IMessage;
@@ -53,12 +55,18 @@ public class BranchEventHandler implements IHandler<IMessage> {
 				message.reply(readBranch((ReadBranchEvent) event));
 			} else if (event instanceof DeleteBranchEvent) {
 				message.reply(deleteBranch((DeleteBranchEvent) event));
+			} else if (event instanceof ReadAllBranchEvent) {
+				message.reply(readAllBranch());
 			} else {
 				throw new NotImplementedException("Event handling not implemented: " + event);
 			}
 		} catch (ApiException e) {
 			message.fail(e);
 		}
+	}
+
+	private BranchesReply readAllBranch() {
+		return new BranchesReply(branchManager.getBranches());
 	}
 
 	private BranchReply deleteBranch(DeleteBranchEvent event) {

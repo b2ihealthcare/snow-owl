@@ -15,21 +15,8 @@
  */
 package com.b2international.snowowl.datastore.events;
 
-import static com.google.common.base.Preconditions.checkNotNull;
-
 /**
  * @since 4.1
  */
-public abstract class BranchEvent extends BaseBranchEvent {
-
-	private String branchPath;
-
-	public BranchEvent(String branchPath) {
-		this.branchPath = checkNotNull(branchPath, "branchPath");
-	}
-	
-	public final String getBranchPath() {
-		return branchPath;
-	}
-	
+public class ReadAllBranchEvent extends BaseBranchEvent {
 }
