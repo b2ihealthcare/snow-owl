@@ -27,6 +27,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.runners.MockitoJUnitRunner;
 
+import com.b2international.snowowl.core.api.index.IIndexUpdater;
 import com.b2international.snowowl.datastore.branch.Branch;
 import com.b2international.snowowl.datastore.cdo.ICDOConnection;
 
@@ -48,7 +49,7 @@ public class CDOBranchManagerTest {
 		clock = new AtomicLongTimestampAuthority();
 		cdoBranchManager = new MockInternalCDOBranchManager(clock);
 		cdoBranchManager.initMainBranch(false, clock.getTimeStamp());
-		manager = new CDOBranchManagerImpl(cdoBranchManager, mock(ICDOConnection.class));
+		manager = new CDOBranchManagerImpl(cdoBranchManager, mock(ICDOConnection.class), mock(IIndexUpdater.class));
 		main = manager.getMainBranch();
 	}
 	
@@ -88,7 +89,7 @@ public class CDOBranchManagerTest {
 		final CDOBranch cdoBranchA = manager.getCDOBranch(branchA);
 		// commit and rebase
 		manager.handleCommit((BranchImpl) main, clock.getTimeStamp());
-		final Branch rebasedBranchA = branchA.rebase();
+		final Branch rebasedBranchA = branchA.rebase("Rebase");
 		final CDOBranch rebasedCdoBranchA = manager.getCDOBranch(rebasedBranchA);
 		assertNotEquals(rebasedCdoBranchA.getID(), cdoBranchA.getID());
 	}

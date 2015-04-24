@@ -97,7 +97,7 @@ public class MainBranchTest {
 
 	@Test(expected = UnsupportedOperationException.class)
 	public void rebaseMainBranch() throws Exception {
-		main.rebase();
+		main.rebase("Commit");
 	}
 	
 	@Test(expected = UnsupportedOperationException.class)

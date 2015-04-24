@@ -122,13 +122,13 @@ public class BranchManagerTest {
 
 	@Test(expected=IllegalArgumentException.class)
 	public void mergeSelf() throws Exception {
-		main.merge(main);
+		merge(main, main);
 	}
-	
+
 	@Test
 	public void mergeForward() throws Exception {
 		final BranchImpl newBranchA = commit(a);
-		BranchImpl newMain = (BranchImpl) main.merge(newBranchA);
+		BranchImpl newMain = (BranchImpl) merge(main, newBranchA);
 		assertTrue(newMain.headTimestamp() > main.headTimestamp());
 		assertState(manager.getBranch(a.path()), BranchState.DIVERGED);
 	}
@@ -139,26 +139,26 @@ public class BranchManagerTest {
 
 	@Test(expected=BranchMergeException.class)
 	public void mergeBehind() throws Exception {
-		commit(main).merge(a);
+		merge(commit(main), a);
 	}
 
 	@Test(expected=BranchMergeException.class)
 	public void mergeDiverged() throws Exception {
 		BranchImpl newBranchA = commit(a);
 		BranchImpl newMain = commit(main);
-		newMain.merge(newBranchA);
+		merge(newMain, newBranchA);
 	}
 
 	@Test(expected=BranchMergeException.class)
 	public void mergeUpToDate() throws Exception {
-		main.merge(a);
+		merge(main, a);
 	}
 	
 	@Test
 	public void rebaseUpToDateState() throws Exception {
 		clock.advance(9L);
 		final long expected = a.baseTimestamp();
-		final Branch newBranchA = a.rebase();
+		final Branch newBranchA = rebase(a);
 		assertEquals("Rebasing UP_TO_DATE branch should do nothing", expected, newBranchA.baseTimestamp());
 	}
 	
@@ -166,14 +166,14 @@ public class BranchManagerTest {
 	public void rebaseForwardState() throws Exception {
 		clock.advance(9L);
 		final long expected = a.baseTimestamp();
-		final Branch newBranchA = commit(a).rebase();
+		final Branch newBranchA = rebase(commit(a));
 		assertEquals("Rebasing FORWARD branch should do nothing", expected, newBranchA.baseTimestamp());
 	}
 	
 	@Test
 	public void rebaseBehindState() throws Exception {
 		commit(main);
-		final Branch newBranchA = a.rebase();
+		final Branch newBranchA = rebase(a);
 		assertState(newBranchA, BranchState.UP_TO_DATE);
 		assertState(a, BranchState.BEHIND);
 		assertLaterBase(newBranchA, main);
@@ -184,7 +184,7 @@ public class BranchManagerTest {
 	public void rebaseDivergedState() throws Exception {
 		commit(main);
 		final BranchImpl branchA = commit(a);
-		final Branch newBranchA = branchA.rebase();
+		final Branch newBranchA = rebase(branchA);
 		assertState(newBranchA, BranchState.FORWARD);
 		assertState(branchA, BranchState.DIVERGED);
 		assertLaterBase(newBranchA, main);
@@ -195,7 +195,7 @@ public class BranchManagerTest {
 	public void rebaseDivergedStateWithMultipleCommits() throws Exception {
 		commit(main);
 		final BranchImpl branchA = commit(a);
-		final Branch rebasedBranchA = branchA.rebase();
+		final Branch rebasedBranchA = rebase(branchA);
 		assertState(rebasedBranchA, BranchState.FORWARD);
 		assertState(branchA, BranchState.DIVERGED);
 		assertLaterBase(rebasedBranchA, main);
@@ -209,7 +209,7 @@ public class BranchManagerTest {
 		final Branch branchA = commit(a);
 		assertState(branchA, BranchState.DIVERGED);
 		assertState(branchB, BranchState.BEHIND);
-		final Branch rebasedBranchA = branchA.rebase();
+		final Branch rebasedBranchA = rebase(branchA);
 		assertState(rebasedBranchA, BranchState.FORWARD);
 		assertState(branchA, BranchState.DIVERGED);
 		assertLaterBase(rebasedBranchA, main);
@@ -224,7 +224,7 @@ public class BranchManagerTest {
 		final BranchImpl branchB = commit((BranchImpl) a.createChild("b"));
 		assertState(a, BranchState.BEHIND);
 		assertState(branchB, BranchState.FORWARD);
-		final Branch rebasedBranchA = a.rebase();
+		final Branch rebasedBranchA = rebase(a);
 		assertState(rebasedBranchA, BranchState.UP_TO_DATE);
 		assertState(a, BranchState.BEHIND);
 		assertLaterBase(rebasedBranchA, main);
@@ -239,7 +239,7 @@ public class BranchManagerTest {
 		final Branch branchB = a.createChild("b");
 		final Branch branchA = commit(a);
 		final Branch branchC = branchA.createChild("c");
-		final Branch rebasedBranchA = branchA.rebase();
+		final Branch rebasedBranchA = rebase(branchA);
 		assertState(rebasedBranchA, BranchState.FORWARD);
 		assertState(branchA, BranchState.DIVERGED);
 		assertState(branchB, branchA, BranchState.BEHIND);
@@ -251,12 +251,23 @@ public class BranchManagerTest {
 	@Test
 	public void rebaseBehindChildOnRebasedForwardParent() throws Exception {
 		rebaseDivergedWithBehindChild();
-		final Branch newBranchB = manager.getBranch("MAIN/a/b").rebase(manager.getBranch("MAIN/a"));
+		final Branch newBranchB = rebase(manager.getBranch("MAIN/a/b"), manager.getBranch("MAIN/a"));
 		assertState(newBranchB, BranchState.UP_TO_DATE);
 	}
 	
 	private BranchImpl commit(BranchImpl branch) {
 		return manager.handleCommit(branch, currentTimestamp());
 	}
+
+	private Branch merge(Branch target, Branch source) {
+		return target.merge(source, "Message");
+	}
+
+	private Branch rebase(Branch source) {
+		return source.rebase("Message");
+	}
 	
+	private Branch rebase(Branch source, Branch target) {
+		return source.rebase(target, "Message");
+	}
 }
