@@ -15,23 +15,37 @@
  */
 package com.b2international.snowowl.datastore.events;
 
-import com.b2international.snowowl.datastore.branch.Branch;
+import com.google.common.base.Strings;
 
 /**
- * Common success reply used when sending {@link BaseBranchEvent}s into the system.
- * 
  * @since 4.1
  */
-public class BranchReply {
+public class MergeEvent extends BaseBranchEvent {
 
-	private Branch branch;
-
-	public BranchReply(Branch branch) {
-		this.branch = branch;
+	private final String source;
+	private final String target;
+	private final String commitMessage;
+	
+	public MergeEvent(String source, String target, String commitMessage) {
+		this.source = source;
+		this.target = target;
+		this.commitMessage = Strings.isNullOrEmpty(commitMessage) ? defaultMessage() : commitMessage;
+	}
+	
+	private String defaultMessage() {
+		return String.format("Merge branch '%s' into '%s'", getSource(), getTarget());
 	}
 
-	public Branch getBranch() {
-		return branch;
+	public String getCommitMessage() {
+		return commitMessage;
 	}
-
+	
+	public String getSource() {
+		return source;
+	}
+	
+	public String getTarget() {
+		return target;
+	}
+	
 }

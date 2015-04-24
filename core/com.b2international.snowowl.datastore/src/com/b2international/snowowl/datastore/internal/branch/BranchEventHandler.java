@@ -18,6 +18,7 @@ package com.b2international.snowowl.datastore.internal.branch;
 import static com.google.common.base.Preconditions.checkNotNull;
 
 import com.b2international.snowowl.core.exceptions.ApiException;
+import com.b2international.snowowl.core.exceptions.BadRequestException;
 import com.b2international.snowowl.core.exceptions.NotFoundException;
 import com.b2international.snowowl.core.exceptions.NotImplementedException;
 import com.b2international.snowowl.datastore.branch.Branch;
@@ -27,6 +28,7 @@ import com.b2international.snowowl.datastore.events.BranchReply;
 import com.b2international.snowowl.datastore.events.BranchesReply;
 import com.b2international.snowowl.datastore.events.CreateBranchEvent;
 import com.b2international.snowowl.datastore.events.DeleteBranchEvent;
+import com.b2international.snowowl.datastore.events.MergeEvent;
 import com.b2international.snowowl.datastore.events.ReadAllBranchEvent;
 import com.b2international.snowowl.datastore.events.ReadBranchEvent;
 import com.b2international.snowowl.eventbus.IHandler;
@@ -57,6 +59,8 @@ public class BranchEventHandler implements IHandler<IMessage> {
 				message.reply(deleteBranch((DeleteBranchEvent) event));
 			} else if (event instanceof ReadAllBranchEvent) {
 				message.reply(readAllBranch());
+			} else if (event instanceof MergeEvent) {
+				message.reply(merge((MergeEvent)event));
 			} else {
 				throw new NotImplementedException("Event handling not implemented: " + event);
 			}
@@ -84,6 +88,25 @@ public class BranchEventHandler implements IHandler<IMessage> {
 			return new BranchReply(child);
 		} catch (NotFoundException e) {
 			// if parent not found, convert it to BadRequestException
+			throw e.toBadRequestException();
+		}
+	}
+	
+	private BranchReply merge(MergeEvent event) {
+		try {
+			final Branch source = branchManager.getBranch(event.getSource());
+			final Branch target = branchManager.getBranch(event.getTarget());
+			if (source.parent().equals(target)) {
+				// merge into target
+				final Branch merged = target.merge(source);
+				return new BranchReply(merged);
+			} else if (target.parent().equals(source)) {
+				// rebase into target
+				final Branch rebased = target.rebase(source);
+				return new BranchReply(rebased);
+			}
+			throw new BadRequestException("Cannot merge source '%s' into target '%s', because there is no relation between them.", source.path(), target.path());
+		} catch (NotFoundException e) {
 			throw e.toBadRequestException();
 		}
 	}
