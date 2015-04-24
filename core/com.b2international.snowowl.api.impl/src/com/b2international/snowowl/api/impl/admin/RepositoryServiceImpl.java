@@ -152,7 +152,7 @@ public class RepositoryServiceImpl implements InternalRepositoryService {
 	public List<String> getRepositoryVersionIndexFiles(final String repositoryUuid, final String repositoryVersionId) {
 		checkValidRepositoryAndVersionId(repositoryUuid, repositoryVersionId);
 
-		final IIndexUpdater<IIndexEntry> updater = IndexServerServiceManager.INSTANCE.getIndexService(repositoryUuid);
+		final IIndexUpdater<IIndexEntry> updater = IndexServerServiceManager.INSTANCE.getByUuid(repositoryUuid);
 		final IBranchPath versionPath = BranchPathUtils.createVersionPath(repositoryVersionId);
 		final List<String> fileList =  updater.listFiles(versionPath);
 		return ImmutableList.copyOf(fileList);

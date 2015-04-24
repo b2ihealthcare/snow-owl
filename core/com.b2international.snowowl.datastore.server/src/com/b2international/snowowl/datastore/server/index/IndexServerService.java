@@ -30,7 +30,6 @@ import java.util.concurrent.ExecutionException;
 import javax.annotation.Nullable;
 
 import org.apache.lucene.document.Document;
-import org.apache.lucene.index.IndexCommit;
 import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.index.Term;
 import org.apache.lucene.search.Collector;
@@ -40,7 +39,6 @@ import org.apache.lucene.search.Query;
 import org.apache.lucene.search.ReferenceManager;
 import org.apache.lucene.search.ScoreDoc;
 import org.apache.lucene.search.Sort;
-import org.apache.lucene.search.SortField;
 import org.apache.lucene.search.TopDocs;
 import org.apache.lucene.search.TotalHitCountCollector;
 import org.apache.lucene.search.grouping.GroupDocs;
@@ -228,7 +226,7 @@ public abstract class IndexServerService<E extends IIndexEntry> extends Abstract
 	 * @see com.b2international.snowowl.core.api.index.IIndexUpdater#updateSnapshotFor(com.b2international.snowowl.core.api.IBranchPath, long)
 	 */
 	@Override
-	public synchronized void updateSnapshotFor(final IBranchPath branchPath, final long timestamp) {
+	public synchronized void reopen(final IBranchPath branchPath, final long timestamp) {
 		Preconditions.checkNotNull(branchPath, "Branch path argument cannot be null.");
 		Preconditions.checkState(!BranchPathUtils.isMain(branchPath), "Branch path cannot be MAIN.");
 		final IndexBranchService baseBranchService = getBranchService(branchPath.getParent());
@@ -904,25 +902,11 @@ public abstract class IndexServerService<E extends IIndexEntry> extends Abstract
 		}
 		
 		final IndexBranchService branchService = getBranchService(sourceBranchPath);
-		IndexCommit snapshotCommit = null;
 		
 		try {
-			
-			snapshotCommit = branchService.snapshot();
 			branchService.createIndexCommit(targetBranchPath, getCommitTimeProvider().getCommitTime(sourceBranchPath), tag, shouldOptimizedIndex);
 		} catch (final Exception e) {
 			throw new IndexException(e);
-		} finally {
-			
-			if (snapshotCommit == null) {
-				return;
-			}
-			
-			try {
-				branchService.releaseSnapshot(snapshotCommit);
-			} catch (final IOException e) {
-				LOGGER.error("Caught exception while releasing snapshot.", e);
-			}
 		}
 	}
 

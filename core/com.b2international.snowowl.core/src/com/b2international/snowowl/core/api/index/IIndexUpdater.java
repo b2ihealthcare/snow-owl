@@ -94,7 +94,7 @@ public interface IIndexUpdater<E extends IIndexEntry> extends IIndexService<E> {
 	 * @param branchPath the branch path.
 	 * @param timestamp the timestamp representing the last modification time.
 	 */
-	void updateSnapshotFor(final IBranchPath branchPath, final long timestamp);
+	void reopen(final IBranchPath branchPath, final long timestamp);
 
 	/**
 	 * Returns with the UUID of the repository which is associated with the current index service. 

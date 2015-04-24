@@ -19,6 +19,8 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.emf.cdo.common.branch.CDOBranchManager;
 import org.eclipse.emf.cdo.spi.common.branch.InternalCDOBranchManager;
 
+import com.b2international.snowowl.core.api.index.IIndexServerServiceManager;
+import com.b2international.snowowl.core.api.index.IIndexUpdater;
 import com.b2international.snowowl.core.config.SnowOwlConfiguration;
 import com.b2international.snowowl.core.setup.BootstrapFragment;
 import com.b2international.snowowl.core.setup.Environment;
@@ -42,8 +44,9 @@ public class DatastoreBootstrap implements BootstrapFragment {
 	public void run(SnowOwlConfiguration configuration, Environment env, IProgressMonitor monitor) throws Exception {
 		if (env.isServer() || env.isEmbedded()) {
 			ICDOConnection cdoConnection = env.service(ICDOConnectionManager.class).getByUuid("snomedStore");
+			IIndexUpdater<?> indexUpdater = env.service(IIndexServerServiceManager.class).getByUuid("snomedStore"); 
 			CDOBranchManager cdoBranchManager = cdoConnection.getMainBranch().getBranchManager();
-			BranchManager branchManager = new CDOBranchManagerImpl((InternalCDOBranchManager) cdoBranchManager, cdoConnection);
+			BranchManager branchManager = new CDOBranchManagerImpl((InternalCDOBranchManager) cdoBranchManager, cdoConnection, indexUpdater);
 		
 			env.service(IEventBus.class).registerHandler("/branches", new BranchEventHandler(branchManager));
 		}

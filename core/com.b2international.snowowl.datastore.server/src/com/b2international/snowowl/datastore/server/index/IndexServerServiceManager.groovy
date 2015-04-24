@@ -17,6 +17,7 @@ package com.b2international.snowowl.datastore.server.index;
 
 import com.b2international.snowowl.core.ApplicationContext
 import com.b2international.snowowl.core.api.index.IIndexEntry
+import com.b2international.snowowl.core.api.index.IIndexServerServiceManager;
 import com.b2international.snowowl.core.api.index.IIndexUpdater
 import com.google.common.base.Preconditions
 
@@ -33,7 +34,7 @@ public enum IndexServerServiceManager implements IIndexServerServiceManager {
 	 * @see com.b2international.snowowl.datastore.server.index.IIndexServerServiceManager#getIndexService(java.lang.String)
 	 */
 	@Override
-	public <E extends IIndexEntry> IIndexUpdater<E> getIndexService(final String repositoryUuid) {
+	public <E extends IIndexEntry> IIndexUpdater<E> getByUuid(final String repositoryUuid) {
 		Preconditions.checkNotNull services.find { service -> repositoryUuid == service.repositoryUuid }, "Cannot find index service for repository: $repositoryUuid" 
 	}
 	

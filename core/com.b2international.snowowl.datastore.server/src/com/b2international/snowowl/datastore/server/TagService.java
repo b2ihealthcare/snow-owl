@@ -78,7 +78,7 @@ public class TagService implements ITagService {
 					
 					connection.getBranch(branchPath).createBranch(tagBranchPath.lastSegment());
 					
-					final IIndexUpdater<IIndexEntry> indexService = IndexServerServiceManager.INSTANCE.getIndexService(uuid);
+					final IIndexUpdater<IIndexEntry> indexService = IndexServerServiceManager.INSTANCE.getByUuid(uuid);
 					indexService.snapshotFor(tagBranchPath, true, tagConfiguration.shouldOptimizeIndex());
 					indexService.getHitCount(tagBranchPath, FakeQueryAdapter.INSTANCE);
 						

@@ -104,22 +104,22 @@ public class BranchManagerImpl implements BranchManager {
 		return ImmutableList.copyOf(branches.values());
 	}
 
-	BranchImpl merge(BranchImpl target, BranchImpl source) {
+	BranchImpl merge(BranchImpl target, BranchImpl source, String commitMessage) {
 		// Changes from source will appear on target as a single commit
-		return applyChangeSet(target, source, clock.getTimestamp());
+		return applyChangeSet(target, source, clock.getTimestamp(), commitMessage);
 	}
 
-	Branch rebase(BranchImpl source, BranchImpl target) {
+	Branch rebase(BranchImpl source, BranchImpl target, String commitMessage) {
 		BranchImpl rebasedSource = reopen((BranchImpl) source.parent(), source.name());
 		
 		if (source.state() == BranchState.DIVERGED) {
-			return applyChangeSet(rebasedSource, source, clock.getTimestamp());
+			return applyChangeSet(rebasedSource, source, clock.getTimestamp(), commitMessage);
 		} else {
 			return rebasedSource;
 		}
 	}
 
-	BranchImpl applyChangeSet(BranchImpl target, BranchImpl source, long timestamp) {
+	BranchImpl applyChangeSet(BranchImpl target, BranchImpl source, long timestamp, String commitMessage) {
 		return handleCommit(target, timestamp);
 	}
 

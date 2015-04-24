@@ -122,7 +122,7 @@ public enum MrcmImporter {
 			
 			//prepare index server service here instead of change processor
 			//since both transaction commit context and index service initialization runs SQL query, that could end up in deadlock.
-			IndexServerServiceManager.INSTANCE.getIndexService(repositoryUuid).prepare(path);
+			IndexServerServiceManager.INSTANCE.getByUuid(repositoryUuid).prepare(path);
 			
 			final String version = BranchPathUtils.isMain(path) ? "'HEAD'" : ("'" + path.lastSegment() + "' version");
 			final String progressMessage = "Processing MRCM rules to " + version + "... [" + (((i + 1) *100) / paths.size()) + "%]"; 

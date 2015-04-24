@@ -105,7 +105,7 @@ public class IndexDifferServiceImpl implements IndexDifferService {
 	}
 
 	private IndexServerService<?> getIndexService(final String repositoryUuid) {
-		return (IndexServerService<?>) IndexServerServiceManager.INSTANCE.getIndexService(checkNotNull(repositoryUuid, "repositoryUuid"));
+		return (IndexServerService<?>) IndexServerServiceManager.INSTANCE.getByUuid(checkNotNull(repositoryUuid, "repositoryUuid"));
 	}
 
 	private void log(final String message) {

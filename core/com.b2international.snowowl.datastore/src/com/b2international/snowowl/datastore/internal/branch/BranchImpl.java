@@ -86,27 +86,27 @@ public class BranchImpl implements Branch {
 	}
 
 	@Override
-	public Branch rebase() {
-		return rebase(parent());
+	public Branch rebase(String commitMessage) {
+		return rebase(parent(), commitMessage);
 	}
 
 	@Override
-	public Branch rebase(Branch target) {
+	public Branch rebase(Branch target, String commitMessage) {
 		final Branch.BranchState state = state();
 		if (state == Branch.BranchState.BEHIND || state == Branch.BranchState.DIVERGED || state == Branch.BranchState.STALE) {
-			return branchManager.rebase(this, (BranchImpl) target);
+			return branchManager.rebase(this, (BranchImpl) target, commitMessage);
 		} else {
 			return this;
 		}
 	}
 
 	@Override
-	public Branch merge(Branch source) throws BranchMergeException {
+	public Branch merge(Branch source, String commitMessage) throws BranchMergeException {
 		checkArgument(!source.equals(this), "Can't merge branch onto itself.");
 		if (source.state() != Branch.BranchState.FORWARD) {
 			throw new BranchMergeException("Only source in the FORWARD state can merged.");
 		} else {
-			return branchManager.merge(this, (BranchImpl) source);
+			return branchManager.merge(this, (BranchImpl) source, commitMessage);
 		}
 	}
 

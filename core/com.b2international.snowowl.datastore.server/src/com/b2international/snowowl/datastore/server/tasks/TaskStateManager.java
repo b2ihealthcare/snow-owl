@@ -654,7 +654,7 @@ public class TaskStateManager extends SingleDirectoryIndexServerService implemen
 		for (final Entry<String, IBranchPath> entry : branchPathMap.getLockedEntries().entrySet()) {
 			
 			final String repositoryUuid = entry.getKey();
-			final IIndexUpdater<IIndexEntry> indexService = IndexServerServiceManager.INSTANCE.getIndexService(repositoryUuid);
+			final IIndexUpdater<IIndexEntry> indexService = IndexServerServiceManager.INSTANCE.getByUuid(repositoryUuid);
 			indexService.inactiveClose(branchPathMap.getBranchPath(repositoryUuid));
 			
 		}

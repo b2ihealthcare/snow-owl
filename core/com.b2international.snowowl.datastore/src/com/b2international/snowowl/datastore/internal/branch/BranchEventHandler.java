@@ -77,11 +77,11 @@ public class BranchEventHandler extends ApiEventHandler {
 			final Branch target = branchManager.getBranch(event.getTarget());
 			if (source.parent().equals(target)) {
 				// merge into target
-				final Branch merged = target.merge(source);
+				final Branch merged = target.merge(source, event.getCommitMessage());
 				return new BranchReply(merged);
 			} else if (target.parent().equals(source)) {
 				// rebase into target
-				final Branch rebased = target.rebase(source);
+				final Branch rebased = target.rebase(source, event.getCommitMessage());
 				return new BranchReply(rebased);
 			}
 			throw new BadRequestException("Cannot merge source '%s' into target '%s', because there is no relation between them.", source.path(), target.path());

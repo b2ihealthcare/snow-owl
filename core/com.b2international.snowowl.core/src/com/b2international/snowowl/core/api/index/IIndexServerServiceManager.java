@@ -13,13 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.datastore.server.index;
-
-import com.b2international.snowowl.core.api.index.IIndexEntry;
-import com.b2international.snowowl.core.api.index.IIndexUpdater;
+package com.b2international.snowowl.core.api.index;
 
 /**
- * {@link IndexServerService Index server service} manager representation.
+ * Collects index server services by repository.
  */
 public interface IIndexServerServiceManager {
 
@@ -28,5 +25,5 @@ public interface IIndexServerServiceManager {
 	 * @param repositoryUuid the unique repository ID.
 	 * @return the index service.
 	 */
-	<E extends IIndexEntry> IIndexUpdater<E> getIndexService(final String repositoryUuid);
+	<E extends IIndexEntry> IIndexUpdater<E> getByUuid(final String repositoryUuid);
 }

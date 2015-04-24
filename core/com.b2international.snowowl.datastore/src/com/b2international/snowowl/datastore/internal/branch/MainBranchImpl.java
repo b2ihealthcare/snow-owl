@@ -58,7 +58,7 @@ public class MainBranchImpl extends BranchImpl {
 	}
 	
 	@Override
-	public Branch.BranchState state() {
+	public BranchState state() {
 		return Branch.BranchState.UP_TO_DATE;
 	}
 	
@@ -68,12 +68,12 @@ public class MainBranchImpl extends BranchImpl {
 	}
 	
 	@Override
-	public Branch.BranchState state(Branch target) {
+	public BranchState state(Branch target) {
 		throw new UnsupportedOperationException(path() + " cannot compute state compared to target " + target.path());
 	}
 	
 	@Override
-	public Branch rebase(Branch target) {
+	public Branch rebase(Branch target, String commitMessage) {
 		throw new UnsupportedOperationException(path() + " cannot be rebased");
 	}
 }

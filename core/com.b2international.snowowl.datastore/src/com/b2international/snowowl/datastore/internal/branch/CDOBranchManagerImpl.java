@@ -27,6 +27,8 @@ import org.eclipse.emf.cdo.transaction.CDOTransaction;
 import org.eclipse.emf.cdo.util.CommitException;
 import org.eclipse.emf.spi.cdo.DefaultCDOMerger;
 
+import com.b2international.snowowl.core.api.index.IIndexUpdater;
+import com.b2international.snowowl.datastore.BranchPathUtils;
 import com.b2international.snowowl.datastore.branch.Branch;
 import com.b2international.snowowl.datastore.branch.BranchManager;
 import com.b2international.snowowl.datastore.branch.BranchMergeException;
@@ -41,13 +43,16 @@ import com.google.common.collect.MapMaker;
 public class CDOBranchManagerImpl extends BranchManagerImpl {
 
 	private final ConcurrentMap<String, Integer> branches = new MapMaker().makeMap();
+	
 	private final InternalCDOBranchManager cdoBranchManager;
 	private final ICDOConnection cdoConnection;
+	private final IIndexUpdater<?> indexUpdater;
 	
-	public CDOBranchManagerImpl(final InternalCDOBranchManager cdoBranchManager, final ICDOConnection cdoConnection) {
+	public CDOBranchManagerImpl(final InternalCDOBranchManager cdoBranchManager, final ICDOConnection cdoConnection, final IIndexUpdater<?> indexUpdater) {
 		super(getBasetimestamp(cdoBranchManager.getMainBranch()));
 		this.cdoBranchManager = checkNotNull(cdoBranchManager, "cdoBranchManager");
 		this.cdoConnection = checkNotNull(cdoConnection, "cdoConnection");
+		this.indexUpdater = checkNotNull(indexUpdater, "indexUpdater");
 		registerCDOBranch(this.cdoBranchManager.getMainBranch());
 	}
 	
@@ -65,7 +70,7 @@ public class CDOBranchManagerImpl extends BranchManagerImpl {
 	}
 
 	@Override
-	BranchImpl applyChangeSet(BranchImpl target, BranchImpl source, long timestamp) {
+	BranchImpl applyChangeSet(BranchImpl target, BranchImpl source, long timestamp, String commitMessage) {
 		CDOSession session = cdoConnection.getSession();
 		CDOBranch targetBranch = getCDOBranch(target);
 	    CDOBranch sourceBranch = getCDOBranch(source);
@@ -74,6 +79,7 @@ public class CDOBranchManagerImpl extends BranchManagerImpl {
 		tx.merge(sourceBranch.getHead(), new DefaultCDOMerger.PerFeature.ManyValued());
 		CDOCommitInfo commitInfo;
 		try {
+			tx.setCommitComment(commitMessage);
 			commitInfo = tx.commit();
 		} catch (CommitException e) {
 			throw new BranchMergeException("Failed to apply changeset on '%s' from '%s'.", target.path(), source.path());
@@ -86,6 +92,7 @@ public class CDOBranchManagerImpl extends BranchManagerImpl {
 	protected BranchImpl reopen(BranchImpl parent, String name) {
 		final CDOBranch childCDOBranch = createCDOBranch(parent, name);
 		registerCDOBranch(childCDOBranch);
+		indexUpdater.reopen(BranchPathUtils.createPath(childCDOBranch), childCDOBranch.getBase().getTimeStamp());
 		return reopen(parent, name, getBasetimestamp(childCDOBranch));
 	}
 	

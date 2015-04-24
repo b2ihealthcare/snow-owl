@@ -147,7 +147,7 @@ public class CDOBranchManager implements ICDOBranchManager {
 						throw new IllegalStateException(MessageFormat.format("Source branch base ''{0}'' not found on connection ''{1}''.", fromBranchPath.getPath(), connection.getUuid()));
 					}
 	
-					final IIndexUpdater<IIndexEntry> indexService = IndexServerServiceManager.INSTANCE.getIndexService(connection.getUuid());
+					final IIndexUpdater<IIndexEntry> indexService = IndexServerServiceManager.INSTANCE.getByUuid(connection.getUuid());
 					
 					synchronized (branchChangeMutex) {
 						final CDOBranch toBranch = connection.getBranch(toBranchPath);
@@ -325,7 +325,7 @@ public class CDOBranchManager implements ICDOBranchManager {
 
 						// Create an empty, new branch on top with same name, do the same for the index
 						final CDOBranch newBranch = targetBranch.createBranch(taskBranchPath.lastSegment());
-						IndexServerServiceManager.INSTANCE.getIndexService(uuid).updateSnapshotFor(taskBranchPath, newBranch.getBase().getTimeStamp());
+						IndexServerServiceManager.INSTANCE.getByUuid(uuid).reopen(taskBranchPath, newBranch.getBase().getTimeStamp());
 
 						Set<CDOID> objectsToRemove = Sets.newHashSet();
 
