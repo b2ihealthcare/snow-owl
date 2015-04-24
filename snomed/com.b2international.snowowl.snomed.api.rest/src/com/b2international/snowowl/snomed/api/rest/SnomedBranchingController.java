@@ -35,9 +35,12 @@ import com.b2international.commons.collections.Procedure;
 import com.b2international.snowowl.core.events.util.AsyncSupport;
 import com.b2international.snowowl.datastore.branch.Branch;
 import com.b2international.snowowl.datastore.events.BranchReply;
+import com.b2international.snowowl.datastore.events.BranchesReply;
 import com.b2international.snowowl.datastore.events.DeleteBranchEvent;
+import com.b2international.snowowl.datastore.events.ReadAllBranchEvent;
 import com.b2international.snowowl.datastore.events.ReadBranchEvent;
 import com.b2international.snowowl.eventbus.IEventBus;
+import com.b2international.snowowl.snomed.api.rest.domain.CollectionResource;
 import com.b2international.snowowl.snomed.api.rest.domain.CreateSnomedBranchRequest;
 import com.b2international.snowowl.snomed.api.rest.util.Responses;
 import com.wordnik.swagger.annotations.Api;
@@ -62,6 +65,20 @@ public class SnomedBranchingController extends AbstractRestService {
 			.send(request.toEvent())
 			.then(new Procedure<BranchReply>() { @Override protected void doApply(BranchReply reply) {
 				result.setResult(response);
+			}})
+			.fail(new Procedure<Throwable>() { @Override protected void doApply(Throwable t) {
+				result.setErrorResult(t);
+			}});
+		return result;
+	}
+	
+	@RequestMapping(method=RequestMethod.GET)
+	public DeferredResult<CollectionResource<Branch>> getBranches() {
+		final DeferredResult<CollectionResource<Branch>> result = new DeferredResult<>();
+		new AsyncSupport<>(bus, BranchesReply.class)
+			.send(new ReadAllBranchEvent())
+			.then(new Procedure<BranchesReply>() { @Override protected void doApply(BranchesReply reply) {
+				result.setResult(CollectionResource.of(reply.getBranches()));
 			}})
 			.fail(new Procedure<Throwable>() { @Override protected void doApply(Throwable t) {
 				result.setErrorResult(t);

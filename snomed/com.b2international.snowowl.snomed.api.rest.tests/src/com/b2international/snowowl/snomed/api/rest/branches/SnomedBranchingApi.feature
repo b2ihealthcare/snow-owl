@@ -22,6 +22,7 @@ import com.b2international.snowowl.snomed.api.rest.concept.*
 
 import static extension com.b2international.snowowl.test.commons.rest.RestExtensions.*
 import com.jayway.restassured.http.ContentType
+import java.util.Collection
 
 /**
  * @since 2.0
@@ -106,4 +107,14 @@ Feature: SnomedBranchingApi
 		When sending POST to "/branches"
 		Then return "400" status
 		And return body with status "400"
+		
+	Scenario: Newly created SNOMED-CT branches appear on branch collection
 	
+		Given new SNOMED-CT branch under parent branch "MAIN" with name "${branchName}"
+		When sending GET to "/branches"
+		Then return "200" status
+		And return body with items
+			res.getBody.path("items.name") should be [
+				it instanceof Collection && (it as Collection).contains(branchName)
+			]
+		
