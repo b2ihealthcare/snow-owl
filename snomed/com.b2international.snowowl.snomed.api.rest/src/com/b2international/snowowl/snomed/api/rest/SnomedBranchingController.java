@@ -100,11 +100,10 @@ public class SnomedBranchingController extends AbstractRestService {
 		return result;
 	}
 	
-	
 	@RequestMapping(value="/{path:**}", method=RequestMethod.DELETE)
 	@ResponseStatus(HttpStatus.NO_CONTENT)
 	public DeferredResult<ResponseEntity<Void>> deleteBranch(@PathVariable("path") String branchPath) {
-		final ResponseEntity<Void> response = Responses.status(HttpStatus.NO_CONTENT).build();
+		final ResponseEntity<Void> response = Responses.noContent().build();
 		final DeferredResult<ResponseEntity<Void>> result = new DeferredResult<>();
 		new AsyncSupport<>(bus, BranchReply.class)
 			.send(new DeleteBranchEvent(branchPath))
@@ -116,7 +115,7 @@ public class SnomedBranchingController extends AbstractRestService {
 			}});
 		return result;
 	}
-
+	
 	private URI getBranchLocationHeader(String branchPath) {
 		return linkTo(SnomedBranchingController.class).slash(branchPath).toUri();
 	}
