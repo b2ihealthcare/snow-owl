@@ -54,7 +54,7 @@ import com.b2international.snowowl.datastore.IBranchPathMap;
 import com.b2international.snowowl.datastore.personalization.IComponentSetManager;
 import com.b2international.snowowl.datastore.quicksearch.IQuickSearchContentProvider;
 import com.b2international.snowowl.datastore.quicksearch.QuickSearchContentProviderBroker;
-import com.b2international.snowowl.datastore.server.index.SingleDirectoryIndexServerService;
+import com.b2international.snowowl.datastore.store.SingleDirectoryIndexServerService;
 import com.google.common.base.Function;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Multimap;
