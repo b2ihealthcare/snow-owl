@@ -17,10 +17,10 @@ package com.b2international.snowowl.datastore.internal.branch;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
-import com.b2international.snowowl.core.exceptions.ApiException;
+import com.b2international.snowowl.core.events.util.ApiEventHandler;
+import com.b2international.snowowl.core.events.util.Handler;
 import com.b2international.snowowl.core.exceptions.BadRequestException;
 import com.b2international.snowowl.core.exceptions.NotFoundException;
-import com.b2international.snowowl.core.exceptions.NotImplementedException;
 import com.b2international.snowowl.datastore.branch.Branch;
 import com.b2international.snowowl.datastore.branch.BranchManager;
 import com.b2international.snowowl.datastore.events.BranchEvent;
@@ -31,13 +31,11 @@ import com.b2international.snowowl.datastore.events.DeleteBranchEvent;
 import com.b2international.snowowl.datastore.events.MergeEvent;
 import com.b2international.snowowl.datastore.events.ReadAllBranchEvent;
 import com.b2international.snowowl.datastore.events.ReadBranchEvent;
-import com.b2international.snowowl.eventbus.IHandler;
-import com.b2international.snowowl.eventbus.IMessage;
 
 /**
  * @since 4.1
  */
-public class BranchEventHandler implements IHandler<IMessage> {
+public class BranchEventHandler extends ApiEventHandler {
 
 	private BranchManager branchManager;
 	
@@ -45,43 +43,23 @@ public class BranchEventHandler implements IHandler<IMessage> {
 		this.branchManager = checkNotNull(branchManager, "manager");
 	}
 	
-	@Override
-	public void handle(IMessage message) {
-		try {
-			// TODO how to handle multiple possible message bodies
-			// TODO consider using eventbus APIs with method annotations, @Handler
-			final Object event = message.body();
-			if (event instanceof CreateBranchEvent) {
-				message.reply(createBranch((CreateBranchEvent)event));
-			} else if (event instanceof ReadBranchEvent) {
-				message.reply(readBranch((ReadBranchEvent) event));
-			} else if (event instanceof DeleteBranchEvent) {
-				message.reply(deleteBranch((DeleteBranchEvent) event));
-			} else if (event instanceof ReadAllBranchEvent) {
-				message.reply(readAllBranch());
-			} else if (event instanceof MergeEvent) {
-				message.reply(merge((MergeEvent)event));
-			} else {
-				throw new NotImplementedException("Event handling not implemented: " + event);
-			}
-		} catch (ApiException e) {
-			message.fail(e);
-		}
-	}
-
-	private BranchesReply readAllBranch() {
+	@Handler
+	protected BranchesReply handle(ReadAllBranchEvent event) {
 		return new BranchesReply(branchManager.getBranches());
 	}
 
-	private BranchReply deleteBranch(DeleteBranchEvent event) {
+	@Handler
+	protected BranchReply handle(DeleteBranchEvent event) {
 		return new BranchReply(getBranch(event).delete());
 	}
 
-	public BranchReply readBranch(ReadBranchEvent event) {
+	@Handler
+	protected BranchReply handle(ReadBranchEvent event) {
 		return new BranchReply(getBranch(event));
 	}
 
-	private BranchReply createBranch(CreateBranchEvent event) {
+	@Handler
+	protected BranchReply handle(CreateBranchEvent event) {
 		try {
 			final Branch parent = branchManager.getBranch(event.getParent());
 			final Branch child = parent.createChild(event.getName());
@@ -92,7 +70,8 @@ public class BranchEventHandler implements IHandler<IMessage> {
 		}
 	}
 	
-	private BranchReply merge(MergeEvent event) {
+	@Handler
+	protected BranchReply handle(MergeEvent event) {
 		try {
 			final Branch source = branchManager.getBranch(event.getSource());
 			final Branch target = branchManager.getBranch(event.getTarget());
