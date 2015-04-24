@@ -31,14 +31,13 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.context.request.async.DeferredResult;
 
-import com.b2international.snowowl.core.exceptions.ApiException;
+import com.b2international.commons.collections.Procedure;
+import com.b2international.snowowl.core.events.util.AsyncSupport;
 import com.b2international.snowowl.datastore.branch.Branch;
 import com.b2international.snowowl.datastore.events.BranchReply;
 import com.b2international.snowowl.datastore.events.DeleteBranchEvent;
 import com.b2international.snowowl.datastore.events.ReadBranchEvent;
 import com.b2international.snowowl.eventbus.IEventBus;
-import com.b2international.snowowl.eventbus.IHandler;
-import com.b2international.snowowl.eventbus.IMessage;
 import com.b2international.snowowl.snomed.api.rest.domain.CreateSnomedBranchRequest;
 import com.b2international.snowowl.snomed.api.rest.util.Responses;
 import com.wordnik.swagger.annotations.Api;
@@ -58,43 +57,29 @@ public class SnomedBranchingController extends AbstractRestService {
 	@ResponseStatus(HttpStatus.CREATED)
 	public DeferredResult<ResponseEntity<Void>> createBranch(@RequestBody CreateSnomedBranchRequest request) {
 		final ResponseEntity<Void> response = Responses.created(getBranchLocationHeader(request.path())).build();
-		final DeferredResult<ResponseEntity<Void>> result = new DeferredResult<ResponseEntity<Void>>();
-		request.toEvent().send(bus, new IHandler<IMessage>() {
-			@Override
-			public void handle(IMessage message) {
-				try {
-					if (message.isSucceeded()) {
-						// success, just try to read the reply
-						message.body(BranchReply.class);
-						result.setResult(response);
-					} else {
-						result.setErrorResult(message.body(ApiException.class));
-					}
-				} catch (Exception e) {
-					result.setErrorResult(e);
-				}
-			}
-		});
+		final DeferredResult<ResponseEntity<Void>> result = new DeferredResult<>();
+		new AsyncSupport<>(bus, BranchReply.class)
+			.send(request.toEvent())
+			.then(new Procedure<BranchReply>() { @Override protected void doApply(BranchReply reply) {
+				result.setResult(response);
+			}})
+			.fail(new Procedure<Throwable>() { @Override protected void doApply(Throwable t) {
+				result.setErrorResult(t);
+			}});
 		return result;
 	}
 	
 	@RequestMapping(value="/{path:**}", method=RequestMethod.GET)
 	public DeferredResult<Branch> getBranch(@PathVariable("path") String branchPath) {
 		final DeferredResult<Branch> result = new DeferredResult<>();
-		new ReadBranchEvent(branchPath).send(bus, new IHandler<IMessage>() {
-			@Override
-			public void handle(IMessage message) {
-				try {
-					if (message.isSucceeded()) {
-						result.setResult(message.body(BranchReply.class).getBranch());
-					} else {
-						result.setErrorResult(message.body(ApiException.class));
-					}
-				} catch (Exception e) {
-					result.setErrorResult(e);
-				}
-			}
-		});
+		new AsyncSupport<>(bus, BranchReply.class)
+			.send(new ReadBranchEvent(branchPath))
+			.then(new Procedure<BranchReply>() { @Override protected void doApply(BranchReply reply) {
+				result.setResult(reply.getBranch());
+			}})
+			.fail(new Procedure<Throwable>() { @Override protected void doApply(Throwable t) {
+				result.setErrorResult(t);
+			}});
 		return result;
 	}
 	
@@ -103,23 +88,15 @@ public class SnomedBranchingController extends AbstractRestService {
 	@ResponseStatus(HttpStatus.NO_CONTENT)
 	public DeferredResult<ResponseEntity<Void>> deleteBranch(@PathVariable("path") String branchPath) {
 		final ResponseEntity<Void> response = Responses.status(HttpStatus.NO_CONTENT).build();
-		final DeferredResult<ResponseEntity<Void>> result = new DeferredResult<ResponseEntity<Void>>();
-		new DeleteBranchEvent(branchPath).send(bus, new IHandler<IMessage>() {
-			@Override
-			public void handle(IMessage message) {
-				try {
-					if (message.isSucceeded()) {
-						// success, just try to read the reply
-						message.body(BranchReply.class);
-						result.setResult(response);
-					} else {
-						result.setErrorResult(message.body(ApiException.class));
-					}
-				} catch (Exception e) {
-					result.setErrorResult(e);
-				}
-			}
-		});
+		final DeferredResult<ResponseEntity<Void>> result = new DeferredResult<>();
+		new AsyncSupport<>(bus, BranchReply.class)
+			.send(new DeleteBranchEvent(branchPath))
+			.then(new Procedure<BranchReply>() { @Override protected void doApply(BranchReply reply) {
+				result.setResult(response);
+			}})
+			.fail(new Procedure<Throwable>() { @Override protected void doApply(Throwable t) {
+				result.setErrorResult(t);
+			}});
 		return result;
 	}
 
