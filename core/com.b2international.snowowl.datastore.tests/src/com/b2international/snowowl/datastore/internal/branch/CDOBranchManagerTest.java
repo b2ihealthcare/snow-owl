@@ -32,6 +32,7 @@ import org.mockito.runners.MockitoJUnitRunner;
 
 import com.b2international.snowowl.datastore.branch.Branch;
 import com.b2international.snowowl.datastore.internal.IRepository;
+import com.b2international.snowowl.datastore.store.MemStore;
 
 /**
  * @since 4.1
@@ -58,7 +59,7 @@ public class CDOBranchManagerTest {
 		when(repository.getCdoBranchManager()).thenReturn(cdoBranchManager);
 		when(repository.getCdoMainBranch()).thenReturn(mainBranch);
 		
-		manager = new CDOBranchManagerImpl(repository);
+		manager = new CDOBranchManagerImpl(repository, new MemStore<Branch>());
 		main = manager.getMainBranch();
 	}
 	

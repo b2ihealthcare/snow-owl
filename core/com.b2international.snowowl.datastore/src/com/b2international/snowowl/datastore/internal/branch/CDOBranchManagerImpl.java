@@ -30,6 +30,7 @@ import com.b2international.snowowl.datastore.branch.BranchManager;
 import com.b2international.snowowl.datastore.branch.BranchMergeException;
 import com.b2international.snowowl.datastore.cdo.ICDORepository;
 import com.b2international.snowowl.datastore.internal.IRepository;
+import com.b2international.snowowl.datastore.store.Store;
 import com.google.common.collect.MapMaker;
 
 /**
@@ -43,8 +44,8 @@ public class CDOBranchManagerImpl extends BranchManagerImpl {
 	
 	private final IRepository repository;
 	
-	public CDOBranchManagerImpl(final IRepository repository) {
-		super(getBasetimestamp(repository.getCdoMainBranch()));
+	public CDOBranchManagerImpl(final IRepository repository, final Store<Branch> branchStore) {
+		super(branchStore, getBasetimestamp(repository.getCdoMainBranch()));
 		this.repository = repository;
 		registerCDOBranch(repository.getCdoMainBranch());
 		registerCommitListener(repository.getCdoRepository());
