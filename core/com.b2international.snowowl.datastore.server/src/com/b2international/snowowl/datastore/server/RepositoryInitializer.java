@@ -92,6 +92,7 @@ import com.b2international.commons.CompareUtils;
 import com.b2international.snowowl.datastore.CDOEditingContext;
 import com.b2international.snowowl.datastore.ICodeSystemVersion;
 import com.b2international.snowowl.datastore.cdo.CDORootResourceNameProvider;
+import com.b2international.snowowl.datastore.cdo.ICDORepository;
 import com.b2international.snowowl.datastore.server.internal.ImpersonatingSessionProtocol;
 import com.b2international.snowowl.terminologymetadata.CodeSystemVersion;
 import com.b2international.snowowl.terminologymetadata.CodeSystemVersionGroup;

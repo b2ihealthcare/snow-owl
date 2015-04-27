@@ -26,6 +26,7 @@ import com.b2international.snowowl.datastore.BranchPathUtils;
 import com.b2international.snowowl.datastore.cdo.ICDOConnection;
 import com.b2international.snowowl.datastore.cdo.ICDOConnectionManager;
 import com.b2international.snowowl.datastore.cdo.ICDOContainer;
+import com.b2international.snowowl.datastore.cdo.ICDORepository;
 import com.b2international.snowowl.datastore.exception.RepositoryLockException;
 import com.b2international.snowowl.datastore.index.FakeQueryAdapter;
 import com.b2international.snowowl.datastore.oplock.IOperationLockManager;

@@ -15,7 +15,6 @@
  */
 package com.b2international.snowowl.emf.compare.diff.processor;
 
-import static com.b2international.snowowl.emf.compare.NsUriProvider.NULL_IMPL;
 import static java.util.Collections.emptySet;
 
 import java.util.Collection;
@@ -23,7 +22,7 @@ import java.util.Collection;
 import org.eclipse.emf.common.notify.Notifier;
 import org.eclipse.emf.ecore.EStructuralFeature;
 
-import com.b2international.snowowl.emf.compare.NsUriProvider;
+import com.b2international.commons.emf.NsUriProvider;
 
 /**
  * Basic {@link DiffProcessor difference processor} implementation.
@@ -44,7 +43,7 @@ public abstract class DiffProcessorImpl<E> implements DiffProcessor<E> {
 	
 	@Override
 	public NsUriProvider getNsUriProvider() {
-		return NULL_IMPL;
+		return NsUriProvider.NULL_IMPL;
 	}
 	
 }

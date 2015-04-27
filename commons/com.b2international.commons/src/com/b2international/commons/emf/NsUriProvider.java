@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.emf.compare;
+package com.b2international.commons.emf;
 
 import static java.util.Collections.emptySet;
 

@@ -46,7 +46,7 @@ import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.EReference;
 import org.eclipse.emf.ecore.EStructuralFeature;
 
-import com.b2international.snowowl.emf.compare.NsUriProvider;
+import com.b2international.commons.emf.NsUriProvider;
 import com.google.common.base.Function;
 import com.google.common.cache.LoadingCache;
 

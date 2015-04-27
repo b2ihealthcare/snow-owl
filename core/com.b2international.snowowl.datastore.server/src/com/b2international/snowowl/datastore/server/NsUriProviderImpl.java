@@ -31,11 +31,13 @@ import org.eclipse.emf.cdo.transaction.CDOTransaction;
 import org.eclipse.emf.ecore.EObject;
 
 import com.b2international.commons.collections.Procedure;
+import com.b2international.commons.emf.NsUriProvider;
 import com.b2international.snowowl.datastore.cdo.CDOContainer;
 import com.b2international.snowowl.datastore.cdo.CDOTransactionFunction;
 import com.b2international.snowowl.datastore.cdo.ICDOConnection;
 import com.b2international.snowowl.datastore.cdo.ICDOConnectionManager;
-import com.b2international.snowowl.emf.compare.NsUriProvider;
+import com.b2international.snowowl.datastore.cdo.ICDORepository;
+import com.b2international.snowowl.datastore.cdo.ICDORepositoryManager;
 import com.google.common.base.Supplier;
 
 /**

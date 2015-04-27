@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.datastore.server;
+package com.b2international.snowowl.datastore.cdo;
 
 import java.sql.Connection;
 import java.util.Set;
@@ -23,7 +23,6 @@ import org.eclipse.emf.cdo.server.db.IDBStore;
 
 import com.b2international.commons.CompareUtils;
 import com.b2international.snowowl.core.api.IBranchPath;
-import com.b2international.snowowl.datastore.cdo.ICDOManagedItem;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Predicate;
 import com.google.common.collect.Lists;

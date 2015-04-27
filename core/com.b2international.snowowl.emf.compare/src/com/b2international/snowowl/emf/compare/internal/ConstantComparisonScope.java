@@ -24,7 +24,7 @@ import org.eclipse.emf.compare.scope.FilterComparisonScope;
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.resource.Resource;
 
-import com.b2international.snowowl.emf.compare.NsUriProvider;
+import com.b2international.commons.emf.NsUriProvider;
 
 /**
  * Customized comparison scope backed with a namespace URI provider.

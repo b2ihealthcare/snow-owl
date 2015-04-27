@@ -13,13 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.datastore.server;
+package com.b2international.snowowl.datastore.cdo;
 
 import org.eclipse.emf.cdo.server.IRepository.Handler;
 import org.eclipse.emf.cdo.session.remote.CDORemoteSession;
 
-import com.b2international.snowowl.datastore.cdo.ICDOContainer;
-import com.b2international.snowowl.emf.compare.NsUriProvider;
+import com.b2international.commons.emf.NsUriProvider;
 
 /**
  * Service interface for managing {@link ICDORepository CDO repositories} and their lifecycle.
