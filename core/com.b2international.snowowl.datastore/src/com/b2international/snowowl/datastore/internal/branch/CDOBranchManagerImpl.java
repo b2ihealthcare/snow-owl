@@ -15,24 +15,21 @@
  */
 package com.b2international.snowowl.datastore.internal.branch;
 
-import static com.google.common.base.Preconditions.checkNotNull;
-
 import java.util.concurrent.ConcurrentMap;
 
 import org.eclipse.emf.cdo.common.branch.CDOBranch;
 import org.eclipse.emf.cdo.common.commit.CDOCommitInfo;
-import org.eclipse.emf.cdo.session.CDOSession;
-import org.eclipse.emf.cdo.spi.common.branch.InternalCDOBranchManager;
+import org.eclipse.emf.cdo.common.commit.CDOCommitInfoHandler;
 import org.eclipse.emf.cdo.transaction.CDOTransaction;
 import org.eclipse.emf.cdo.util.CommitException;
 import org.eclipse.emf.spi.cdo.DefaultCDOMerger;
 
-import com.b2international.snowowl.core.api.index.IIndexUpdater;
 import com.b2international.snowowl.datastore.BranchPathUtils;
 import com.b2international.snowowl.datastore.branch.Branch;
 import com.b2international.snowowl.datastore.branch.BranchManager;
 import com.b2international.snowowl.datastore.branch.BranchMergeException;
-import com.b2international.snowowl.datastore.cdo.ICDOConnection;
+import com.b2international.snowowl.datastore.cdo.ICDORepository;
+import com.b2international.snowowl.datastore.internal.IRepository;
 import com.google.common.collect.MapMaker;
 
 /**
@@ -44,16 +41,13 @@ public class CDOBranchManagerImpl extends BranchManagerImpl {
 
 	private final ConcurrentMap<String, Integer> branches = new MapMaker().makeMap();
 	
-	private final InternalCDOBranchManager cdoBranchManager;
-	private final ICDOConnection cdoConnection;
-	private final IIndexUpdater<?> indexUpdater;
+	private final IRepository repository;
 	
-	public CDOBranchManagerImpl(final InternalCDOBranchManager cdoBranchManager, final ICDOConnection cdoConnection, final IIndexUpdater<?> indexUpdater) {
-		super(getBasetimestamp(cdoBranchManager.getMainBranch()));
-		this.cdoBranchManager = checkNotNull(cdoBranchManager, "cdoBranchManager");
-		this.cdoConnection = checkNotNull(cdoConnection, "cdoConnection");
-		this.indexUpdater = checkNotNull(indexUpdater, "indexUpdater");
-		registerCDOBranch(this.cdoBranchManager.getMainBranch());
+	public CDOBranchManagerImpl(final IRepository repository) {
+		super(getBasetimestamp(repository.getCdoMainBranch()));
+		this.repository = repository;
+		registerCDOBranch(repository.getCdoMainBranch());
+		registerCommitListener(repository.getCdoRepository());
 	}
 	
 	CDOBranch getCDOBranch(Branch branch) {
@@ -63,7 +57,7 @@ public class CDOBranchManagerImpl extends BranchManagerImpl {
 	
 	private CDOBranch loadCDOBranch(Integer branchId) {
 		if (branchId != null) {
-			return cdoBranchManager.getBranch(branchId);
+			return repository.getCdoBranchManager().getBranch(branchId);
 		} else {
 			return null;
 		}
@@ -71,10 +65,9 @@ public class CDOBranchManagerImpl extends BranchManagerImpl {
 
 	@Override
 	BranchImpl applyChangeSet(BranchImpl target, BranchImpl source, long timestamp, String commitMessage) {
-		CDOSession session = cdoConnection.getSession();
 		CDOBranch targetBranch = getCDOBranch(target);
 	    CDOBranch sourceBranch = getCDOBranch(source);
-		CDOTransaction tx = session.openTransaction(targetBranch);
+		CDOTransaction tx = repository.getConnection().createTransaction(targetBranch);
 		
 		tx.merge(sourceBranch.getHead(), new DefaultCDOMerger.PerFeature.ManyValued());
 		CDOCommitInfo commitInfo;
@@ -92,7 +85,7 @@ public class CDOBranchManagerImpl extends BranchManagerImpl {
 	protected BranchImpl reopen(BranchImpl parent, String name) {
 		final CDOBranch childCDOBranch = createCDOBranch(parent, name);
 		registerCDOBranch(childCDOBranch);
-		indexUpdater.reopen(BranchPathUtils.createPath(childCDOBranch), childCDOBranch.getBase().getTimeStamp());
+		repository.getIndexUpdater().reopen(BranchPathUtils.createPath(childCDOBranch), childCDOBranch.getBase().getTimeStamp());
 		return reopen(parent, name, getBasetimestamp(childCDOBranch));
 	}
 	
@@ -111,9 +104,17 @@ public class CDOBranchManagerImpl extends BranchManagerImpl {
 		final int branchId = branch.getID();
 		branches.put(path, branchId);
 	}
-	
+
+	private void registerCommitListener(ICDORepository repository) {
+		repository.getRepository().addCommitInfoHandler(new CDOCommitInfoHandler() {
+			@Override
+			public void handleCommitInfo(CDOCommitInfo commitInfo) {
+				handleCommit((BranchImpl) getBranch(commitInfo.getBranch().getPathName()), commitInfo.getTimeStamp());
+			}
+		}); 
+	}
+
 	private static long getBasetimestamp(CDOBranch branch) {
 		return branch.getBase().getTimeStamp();
 	}
-	
 }

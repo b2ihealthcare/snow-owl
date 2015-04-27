@@ -18,18 +18,20 @@ package com.b2international.snowowl.datastore.internal.branch;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNull;
+import static org.mockito.Mockito.RETURNS_MOCKS;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 import org.eclipse.emf.cdo.common.branch.CDOBranch;
 import org.eclipse.emf.cdo.common.util.CDOTimeProvider;
+import org.eclipse.emf.cdo.spi.common.branch.InternalCDOBranch;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.runners.MockitoJUnitRunner;
 
-import com.b2international.snowowl.core.api.index.IIndexUpdater;
 import com.b2international.snowowl.datastore.branch.Branch;
-import com.b2international.snowowl.datastore.cdo.ICDOConnection;
+import com.b2international.snowowl.datastore.internal.IRepository;
 
 /**
  * @since 4.1
@@ -49,7 +51,14 @@ public class CDOBranchManagerTest {
 		clock = new AtomicLongTimestampAuthority();
 		cdoBranchManager = new MockInternalCDOBranchManager(clock);
 		cdoBranchManager.initMainBranch(false, clock.getTimeStamp());
-		manager = new CDOBranchManagerImpl(cdoBranchManager, mock(ICDOConnection.class), mock(IIndexUpdater.class));
+
+		InternalCDOBranch mainBranch = cdoBranchManager.getMainBranch();
+		
+		IRepository repository = mock(IRepository.class, RETURNS_MOCKS);
+		when(repository.getCdoBranchManager()).thenReturn(cdoBranchManager);
+		when(repository.getCdoMainBranch()).thenReturn(mainBranch);
+		
+		manager = new CDOBranchManagerImpl(repository);
 		main = manager.getMainBranch();
 	}
 	
