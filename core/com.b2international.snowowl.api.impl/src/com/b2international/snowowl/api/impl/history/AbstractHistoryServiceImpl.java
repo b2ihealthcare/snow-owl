@@ -116,14 +116,14 @@ public abstract class AbstractHistoryServiceImpl implements IHistoryService {
 					repositoryUuid, handledRepositoryUuid));
 		}
 
-		final IBranchPath branchPath = internalComponentRef.getBranchPath();
+		final IBranchPath branch = internalComponentRef.getBranch();
 		final String componentId = internalComponentRef.getComponentId();
-		final long storageKey = getStorageKey(branchPath, componentId);
+		final long storageKey = getStorageKey(branch, componentId);
 		if (!CDOIDUtils.checkId(storageKey)) {
 			throw new ComponentNotFoundException(handledCategory, componentId);
 		}
 
-		final HistoryInfoConfiguration configuration = HistoryInfoConfigurationImpl.create(storageKey, branchPath);
+		final HistoryInfoConfiguration configuration = HistoryInfoConfigurationImpl.create(storageKey, branch);
 		final Collection<com.b2international.snowowl.core.api.IHistoryInfo> sourceHistoryInfos = getHistoryService().getHistory(configuration);			
 		final Collection<IHistoryInfo> targetHistoryInfos = Collections2.transform(sourceHistoryInfos, CONVERTER);
 

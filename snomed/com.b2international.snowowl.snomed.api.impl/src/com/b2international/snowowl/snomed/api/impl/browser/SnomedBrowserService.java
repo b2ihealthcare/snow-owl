@@ -116,7 +116,7 @@ public class SnomedBrowserService implements ISnomedBrowserService {
 		final InternalComponentRef internalConceptRef = ClassUtils.checkAndCast(conceptRef, InternalComponentRef.class);
 		internalConceptRef.checkStorageExists();
 		
-		final IBranchPath branchPath = internalConceptRef.getBranchPath();
+		final IBranchPath branchPath = internalConceptRef.getBranch();
 		final String conceptId = conceptRef.getComponentId();
 		final SnomedConceptIndexEntry concept = getTerminologyBrowser().getConcept(branchPath, conceptId);
 		
@@ -192,7 +192,7 @@ public class SnomedBrowserService implements ISnomedBrowserService {
 			destinationConceptIds.add(relationship.getValueId());
 		}
 		
-		final Collection<SnomedConceptIndexEntry> destinationConcepts = getTerminologyBrowser().getConcepts(((InternalComponentRef) sourceConceptRef).getBranchPath(), destinationConceptIds);
+		final Collection<SnomedConceptIndexEntry> destinationConcepts = getTerminologyBrowser().getConcepts(((InternalComponentRef) sourceConceptRef).getBranch(), destinationConceptIds);
 		final Map<String, SnomedConceptIndexEntry> destinationConceptMap = Maps.uniqueIndex(destinationConcepts, new Function<SnomedConceptIndexEntry, String>() {
 			@Override
 			public String apply(final SnomedConceptIndexEntry input) {
@@ -241,7 +241,7 @@ public class SnomedBrowserService implements ISnomedBrowserService {
 		final InternalComponentRef internalConceptRef = ClassUtils.checkAndCast(conceptRef, InternalComponentRef.class);
 		internalConceptRef.checkStorageExists();
 		
-		final IBranchPath branchPath = internalConceptRef.getBranchPath();
+		final IBranchPath branchPath = internalConceptRef.getBranch();
 		final String conceptId = conceptRef.getComponentId();
 		
 		if (!getTerminologyBrowser().exists(branchPath, conceptId)) {
@@ -298,8 +298,7 @@ public class SnomedBrowserService implements ISnomedBrowserService {
 		final ComponentRef conceptRef = new ComponentRef();
 
 		conceptRef.setShortName(sourceRef.getShortName());
-		conceptRef.setVersion(sourceRef.getVersion());
-		conceptRef.setTaskId(sourceRef.getTaskId());
+		conceptRef.setBranchPath(sourceRef.getBranchPath());
 		conceptRef.setComponentId(newComponentId);
 
 		return conceptRef;
@@ -314,7 +313,7 @@ public class SnomedBrowserService implements ISnomedBrowserService {
 		final InternalStorageRef internalStorageRef = ClassUtils.checkAndCast(storageRef, InternalStorageRef.class);
 		internalStorageRef.checkStorageExists();
 
-		final IBranchPath branchPath = internalStorageRef.getBranchPath();
+		final IBranchPath branchPath = internalStorageRef.getBranch();
 		final SnomedDescriptionReducedQueryAdapter descriptionQueryAdapter = new SnomedDescriptionReducedQueryAdapter(query, SnomedDescriptionReducedQueryAdapter.SEARCH_DESCRIPTION_TERM) {
 			private static final long serialVersionUID = 1L;
 
