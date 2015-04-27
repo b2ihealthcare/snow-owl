@@ -15,6 +15,7 @@
  */
 package com.b2international.snowowl.datastore.store;
 
+import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
 
 import java.io.File;
@@ -44,7 +45,6 @@ import org.eclipse.core.runtime.Path;
 
 import com.b2international.commons.ClassUtils;
 import com.b2international.snowowl.core.IDisposableService;
-import com.b2international.snowowl.core.SnowOwlApplication;
 import com.b2international.snowowl.datastore.ISingleDirectoryIndexService;
 import com.b2international.snowowl.datastore.index.DelimiterStopAnalyzer;
 import com.b2international.snowowl.datastore.index.IndexUtils;
@@ -72,8 +72,6 @@ public abstract class SingleDirectoryIndexServerService implements ISingleDirect
 	private final Ordering<String> snapshotReverseOrdering = new SnapshotOrdering().reverse();
 
 	private final Map<String, IndexCommit> heldSnapshots = new MapMaker().makeMap();
-	private final File indexRootPath;
-	private final File indexRelativePath;
 	
 	protected Directory directory;
 	protected ReferenceManager<IndexSearcher> manager;
@@ -81,26 +79,29 @@ public abstract class SingleDirectoryIndexServerService implements ISingleDirect
 	
 	protected volatile AtomicBoolean disposed = new AtomicBoolean(false);
 	
-	protected SingleDirectoryIndexServerService(final File indexRootPath) {
-		this(indexRootPath, OpenMode.CREATE_OR_APPEND);
+	private final File indexDirectory;
+	
+	/**
+	 * Full path to the directory to use.
+	 * @param directoryPath - the absolute directory path 
+	 */
+	protected SingleDirectoryIndexServerService(final File directory) {
+		this(directory, false);
 	}
 	
-	protected SingleDirectoryIndexServerService(final File indexRootPath, final OpenMode openMode) {
-		checkNotNull(openMode, "Index open mode may not be null.");
-		this.indexRootPath = checkNotNull(indexRootPath, "indexRootPath");
-		
-		final File indexPath = new File(getDataDirectory(), "indexes");
-		indexRelativePath = new File(indexPath, indexRootPath.getPath());
-		
-		if (!indexRelativePath.isDirectory() && !indexRelativePath.mkdirs()) {
-			throw new StoreException("Couldn't create directories for index path '%s'.", indexRelativePath);
-		}
-		
+	protected SingleDirectoryIndexServerService(final File directory, final boolean clean) {
+		checkNotNull(directory, "indexDirectory");
+		checkArgument(directory.exists() || directory.mkdirs(), "Couldn't create directories for path '%s'", directory);
+		this.indexDirectory = directory;
+		initLucene(indexDirectory, clean);
+	}
+
+	private void initLucene(final File indexDirectory, final boolean clean) {
 		try {
-			this.directory = IndexUtils.open(indexRelativePath);
+			this.directory = IndexUtils.open(indexDirectory);
 			final Analyzer analyzer = new DelimiterStopAnalyzer();
 			final IndexWriterConfig config = new IndexWriterConfig(Version.LUCENE_4_9, analyzer);
-			config.setOpenMode(openMode);
+			config.setOpenMode(clean ? OpenMode.CREATE : OpenMode.CREATE_OR_APPEND);
 			config.setIndexDeletionPolicy(new SnapshotDeletionPolicy(config.getIndexDeletionPolicy()));
 			this.writer = new IndexWriter(directory, config);
 			this.writer.commit(); // Create index if it didn't exist
@@ -109,9 +110,13 @@ public abstract class SingleDirectoryIndexServerService implements ISingleDirect
 			throw new StoreException(e.getMessage(), e);
 		}
 	}
-
-	private File getDataDirectory() {
-		return SnowOwlApplication.INSTANCE.getEnviroment().getDataDirectory();
+	
+	/**
+	 * Returns the directory where this {@link SingleDirectoryIndexServerService} operates.
+	 * @return
+	 */
+	public File getDirectory() {
+		return indexDirectory;
 	}
 
 	@Override
@@ -149,7 +154,7 @@ public abstract class SingleDirectoryIndexServerService implements ISingleDirect
 
 	@Override
 	public File getIndexRootPath() {
-		return indexRootPath;
+		return new File(indexDirectory.getName());
 	}
 	
 	@Override
@@ -187,13 +192,13 @@ public abstract class SingleDirectoryIndexServerService implements ISingleDirect
 		}
 		
 		final IPath base = new Path(basePath.getAbsolutePath());
-		final IPath actual = new Path(indexRelativePath.getAbsolutePath());
+		final IPath actual = new Path(indexDirectory.getAbsolutePath());
 		final IPath relativePath = actual.makeRelativeTo(base);
 
 		final Collection<String> fileNames = indexCommit.getFileNames();
 		
 		for (final String fileName : fileNames) {
-			final File indexFilePath = new File(indexRelativePath, fileName);
+			final File indexFilePath = new File(indexDirectory, fileName);
 			
 			// Only collect files from this folder
 			if (indexFilePath.exists() && indexFilePath.isFile()) {
@@ -205,7 +210,7 @@ public abstract class SingleDirectoryIndexServerService implements ISingleDirect
 	}
 
 	private File getIndexBasePath() {
-		File relativePath = indexRelativePath;
+		File relativePath = indexDirectory;
 		
 		while (null != relativePath && !relativePath.getName().equals("indexes")) {
 			relativePath = relativePath.getParentFile();
@@ -236,8 +241,7 @@ public abstract class SingleDirectoryIndexServerService implements ISingleDirect
 	}
 
 	private SnapshotDeletionPolicy getSnapshotDeletionPolicy() {
-		final SnapshotDeletionPolicy indexDeletionPolicy = ClassUtils.checkAndCast(writer.getConfig().getIndexDeletionPolicy(), SnapshotDeletionPolicy.class);
-		return indexDeletionPolicy;
+		return ClassUtils.checkAndCast(writer.getConfig().getIndexDeletionPolicy(), SnapshotDeletionPolicy.class);
 	}
 
 	private void checkNotDisposed() {
