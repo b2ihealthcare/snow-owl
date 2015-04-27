@@ -60,7 +60,7 @@ public class SnomedDescriptionRestService extends AbstractSnomedRestService {
 	protected ISnomedDescriptionService delegate;
 	
 	@ApiOperation(
-			value="Create description", 
+			value="Create Description", 
 			notes="Creates a new Description directly on a version.")
 	@ApiResponses({
 		@ApiResponse(code = 201, message = "Created"),
