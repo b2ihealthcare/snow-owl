@@ -107,10 +107,10 @@ public class SnomedTerminologyBrowserServiceImpl implements ISnomedTerminologyBr
 		final InternalStorageRef internalRef = ClassUtils.checkAndCast(ref, InternalStorageRef.class);
 		internalRef.checkStorageExists();
 
-		final IBranchPath branchPath = internalRef.getBranchPath();
+		final IBranchPath branch = internalRef.getBranch();
 		final SortedTerminologyConceptAdapter queryAdapter = new SortedTerminologyConceptAdapter(null, SortedTerminologyConceptAdapter.SEARCH_ROOTS, null);
-		final List<SnomedConceptIndexEntry> entries = getIndexService().search(branchPath, queryAdapter);
-		return convertEntries(branchPath, entries);
+		final List<SnomedConceptIndexEntry> entries = getIndexService().search(branch, queryAdapter);
+		return convertEntries(branch, entries);
 	}
 
 	@Override
@@ -124,13 +124,13 @@ public class SnomedTerminologyBrowserServiceImpl implements ISnomedTerminologyBr
 		final InternalComponentRef internalRef = ClassUtils.checkAndCast(nodeRef, InternalComponentRef.class);
 		internalRef.checkStorageExists();
 
-		final IBranchPath branchPath = internalRef.getBranchPath();
+		final IBranchPath branch = internalRef.getBranch();
 		final String componentId = nodeRef.getComponentId();
-		checkConceptExists(branchPath, componentId);
+		checkConceptExists(branch, componentId);
 
 		final int flags = direct ? SortedTerminologyConceptAdapter.SEARCH_PARENT : SortedTerminologyConceptAdapter.SEARCH_PARENT | SortedTerminologyConceptAdapter.SEARCH_ANCESTOR;
 		final SortedTerminologyConceptAdapter queryAdapter = new SortedTerminologyConceptAdapter(componentId, flags, null);
-		return toComponentList(offset, limit, branchPath, queryAdapter);
+		return toComponentList(offset, limit, branch, queryAdapter);
 	}
 
 	@Override
@@ -139,16 +139,16 @@ public class SnomedTerminologyBrowserServiceImpl implements ISnomedTerminologyBr
 		final InternalComponentRef internalRef = ClassUtils.checkAndCast(nodeRef, InternalComponentRef.class);
 		internalRef.checkStorageExists();
 
-		final IBranchPath branchPath = internalRef.getBranchPath();
+		final IBranchPath branch = internalRef.getBranch();
 		final String componentId = nodeRef.getComponentId();
-		checkConceptExists(branchPath, componentId);
+		checkConceptExists(branch, componentId);
 
 		final Collection<String> ancestorIds;
 
 		if (direct) {
-			ancestorIds = getTerminologyBrowser().getSuperTypeIds(branchPath, internalRef.getComponentId()); 
+			ancestorIds = getTerminologyBrowser().getSuperTypeIds(branch, internalRef.getComponentId()); 
 		} else {
-			ancestorIds = toStringSet(getTerminologyBrowser().getAllSuperTypeIds(branchPath, Long.valueOf(internalRef.getComponentId())));
+			ancestorIds = toStringSet(getTerminologyBrowser().getAllSuperTypeIds(branch, Long.valueOf(internalRef.getComponentId())));
 		}
 
 		if (ancestorIds.isEmpty()) {
@@ -157,7 +157,7 @@ public class SnomedTerminologyBrowserServiceImpl implements ISnomedTerminologyBr
 
 		final String[] ancestorIdArray = ancestorIds.toArray(new String[ancestorIds.size()]);
 		final SortedTerminologyConceptAdapter queryAdapter = new SortedTerminologyConceptAdapter(null, SortedTerminologyConceptAdapter.SEARCH_ACTIVE_CONCEPTS, ancestorIdArray);
-		return toComponentList(offset, limit, branchPath, queryAdapter);
+		return toComponentList(offset, limit, branch, queryAdapter);
 	}
 
 	private void checkConceptExists(final IBranchPath branchPath, final String componentId) {

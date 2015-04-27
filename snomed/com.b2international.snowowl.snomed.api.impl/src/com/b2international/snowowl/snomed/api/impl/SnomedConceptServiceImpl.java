@@ -125,7 +125,7 @@ public class SnomedConceptServiceImpl
 	@Override
 	public boolean componentExists(final IComponentRef ref) {
 		final InternalComponentRef internalRef = ClassUtils.checkAndCast(ref, InternalComponentRef.class);
-		return snomedConceptLookupService.exists(internalRef.getBranchPath(), internalRef.getComponentId());
+		return snomedConceptLookupService.exists(internalRef.getBranch(), internalRef.getComponentId());
 	}
 
 	@Override
@@ -227,8 +227,9 @@ public class SnomedConceptServiceImpl
 	@Override
 	protected ISnomedConcept doRead(final IComponentRef ref) {
 		final InternalComponentRef internalRef = ClassUtils.checkAndCast(ref, InternalComponentRef.class);
-		final SnomedConceptIndexEntry conceptIndexEntry = snomedConceptLookupService.getComponent(internalRef.getBranchPath(), internalRef.getComponentId());
-		return getConceptConverter(internalRef.getBranchPath()).apply(conceptIndexEntry); 
+		final IBranchPath branch = internalRef.getBranch();
+		final SnomedConceptIndexEntry conceptIndexEntry = snomedConceptLookupService.getComponent(branch, internalRef.getComponentId());
+		return getConceptConverter(branch).apply(conceptIndexEntry); 
 	}
 
 	@Override
@@ -417,24 +418,24 @@ public class SnomedConceptServiceImpl
 	}
 
 	@Override
-	public IComponentList<ISnomedConcept> getAllConcepts(final String version, final String taskId, final int offset, final int limit) {
-		final InternalStorageRef internalRef = createStorageRef(version, taskId);
-		final IBranchPath branchPath = internalRef.getBranchPath();
+	public IComponentList<ISnomedConcept> getAllConcepts(final String branchPath, final int offset, final int limit) {
+		final InternalStorageRef internalRef = createStorageRef(branchPath);
+		final IBranchPath branch = internalRef.getBranch();
 		final SnomedConceptReducedQueryAdapter queryAdapter = new SnomedConceptReducedQueryAdapter("", SnomedConceptReducedQueryAdapter.SEARCH_DEFAULT);
 
-		return search(offset, limit, queryAdapter, branchPath);
+		return search(offset, limit, queryAdapter, branch);
 	}
 
 	@Override
-	public IComponentList<ISnomedConcept> search(final String version, final String taskId, final Map<SearchKind, String> queryParams, final int offset, final int limit) {
-		final InternalStorageRef internalRef = createStorageRef(version, taskId);
-		final IBranchPath branchPath = internalRef.getBranchPath();
+	public IComponentList<ISnomedConcept> search(final String branchPath, final Map<SearchKind, String> queryParams, final int offset, final int limit) {
+		final InternalStorageRef internalRef = createStorageRef(branchPath);
+		final IBranchPath branch = internalRef.getBranch();
 		final Query restrictionQuery;
 
 		if (queryParams.containsKey(SearchKind.ESCG)) {
 
 			try {
-				restrictionQuery = getQueryEvaluatorService().evaluateBooleanQuery(branchPath, queryParams.get(SearchKind.ESCG));
+				restrictionQuery = getQueryEvaluatorService().evaluateBooleanQuery(branch, queryParams.get(SearchKind.ESCG));
 			} catch (final SyntaxErrorException e) {
 				throw new IllegalQueryParameterException(e.getMessage());
 			}
@@ -445,14 +446,13 @@ public class SnomedConceptServiceImpl
 
 		final String label = Strings.nullToEmpty(queryParams.get(SearchKind.LABEL));
 		final SnomedDOIQueryAdapter queryAdapter = new SnomedDOIQueryAdapter(label, "", restrictionQuery);
-		return search(offset, limit, queryAdapter, branchPath);
+		return search(offset, limit, queryAdapter, branch);
 	}
 
-	private InternalStorageRef createStorageRef(final String version, final String taskId) {
+	private InternalStorageRef createStorageRef(final String branchPath) {
 		final StorageRef storageRef = new StorageRef();
 		storageRef.setShortName("SNOMEDCT");
-		storageRef.setVersion(version);
-		storageRef.setTaskId(taskId);
+		storageRef.setBranchPath(branchPath);
 		storageRef.checkStorageExists();
 		return storageRef;
 	}

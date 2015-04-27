@@ -95,10 +95,8 @@ public class SnomedDescriptionInput extends AbstractSnomedComponentInput impleme
 		builder.append(getModuleId());
 		builder.append(", getCodeSystemShortName()=");
 		builder.append(getCodeSystemShortName());
-		builder.append(", getCodeSystemVersionId()=");
-		builder.append(getCodeSystemVersionId());
-		builder.append(", getTaskId()=");
-		builder.append(getTaskId());
+		builder.append(", getBranchPath()=");
+		builder.append(getBranchPath());
 		builder.append(", getConceptId()=");
 		builder.append(getConceptId());
 		builder.append(", getTypeId()=");

@@ -69,7 +69,6 @@ public abstract class AbstractComponentServiceImpl<C extends IComponentInput, R 
 		checkNotNull(input, "Component input may not be null.");
 		checkNotNull(userId, "User identifier may not be null.");
 		checkNotNull(commitComment, "Commit comment may not be null.");
-		checkClosedTask(input.getTaskId());
 
 		if (componentExists(input)) {
 			throw createDuplicateComponentException(input);
@@ -103,7 +102,6 @@ public abstract class AbstractComponentServiceImpl<C extends IComponentInput, R 
 	@Override
 	public R update(final IComponentRef ref, final U update, final String userId, final String commitComment) {
 		checkComponentExists(ref);
-		checkClosedTask(ref.getTaskId());
 
 		try (E editingContext = createEditingContext(ref)) {
 			doUpdate(ref, update, editingContext);
@@ -115,7 +113,6 @@ public abstract class AbstractComponentServiceImpl<C extends IComponentInput, R 
 	@Override
 	public void delete(final IComponentRef ref, final String userId, final String commitComment) {
 		checkComponentExists(ref);
-		checkClosedTask(ref.getTaskId());
 
 		try (E editingContext = createEditingContext(ref)) {
 			doDelete(ref, editingContext);
@@ -133,8 +130,7 @@ public abstract class AbstractComponentServiceImpl<C extends IComponentInput, R 
 	protected IComponentRef createComponentRef(final C input, final String componentId) {
 		final ComponentRef result = new ComponentRef();
 		result.setShortName(input.getCodeSystemShortName());
-		result.setVersion(input.getCodeSystemVersionId());
-		result.setTaskId(input.getTaskId());
+		result.setBranchPath(input.getBranchPath());
 		result.setComponentId(componentId);
 		result.checkStorageExists();
 		return result;

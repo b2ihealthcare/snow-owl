@@ -18,12 +18,12 @@ package com.b2international.snowowl.api.impl.domain;
 import com.b2international.snowowl.api.domain.IComponentInput;
 
 /**
+ * @since 1.0
  */
 public abstract class AbstractComponentInput implements IComponentInput {
 
 	private String codeSystemShortName;
-	private String codeSystemVersionId;
-	private String taskId;
+	private String branchPath;
 
 	@Override
 	public String getCodeSystemShortName() {
@@ -31,24 +31,16 @@ public abstract class AbstractComponentInput implements IComponentInput {
 	}
 
 	@Override
-	public String getCodeSystemVersionId() {
-		return codeSystemVersionId;
-	}
-
-	@Override
-	public String getTaskId() {
-		return taskId;
+	public String getBranchPath() {
+		return branchPath;
 	}
 	
 	public void setCodeSystemShortName(String codeSystemShortName) {
 		this.codeSystemShortName = codeSystemShortName;
 	}
-
-	public void setCodeSystemVersionId(String codeSystemVersionId) {
-		this.codeSystemVersionId = codeSystemVersionId;
-	}
 	
-	public void setTaskId(String taskId) {
-		this.taskId = taskId;
+	public void setBranchPath(String branchPath) {
+		this.branchPath = branchPath;
 	}
+
 }

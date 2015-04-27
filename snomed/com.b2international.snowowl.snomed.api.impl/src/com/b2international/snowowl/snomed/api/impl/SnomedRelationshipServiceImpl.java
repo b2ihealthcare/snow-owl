@@ -50,7 +50,7 @@ public class SnomedRelationshipServiceImpl
 	@Override
 	protected boolean componentExists(final IComponentRef ref) {
 		final InternalComponentRef internalRef = ClassUtils.checkAndCast(ref, InternalComponentRef.class);
-		return snomedRelationshipLookupService.exists(internalRef.getBranchPath(), internalRef.getComponentId());
+		return snomedRelationshipLookupService.exists(internalRef.getBranch(), internalRef.getComponentId());
 	}
 
 	@Override
@@ -78,8 +78,9 @@ public class SnomedRelationshipServiceImpl
 	@Override
 	protected ISnomedRelationship doRead(final IComponentRef ref) {
 		final InternalComponentRef internalRef = ClassUtils.checkAndCast(ref, InternalComponentRef.class);
-		final SnomedRelationshipIndexEntry relationshipIndexEntry = snomedRelationshipLookupService.getComponent(internalRef.getBranchPath(), internalRef.getComponentId());
-		return getRelationshipConverter(internalRef.getBranchPath()).apply(relationshipIndexEntry);
+		final IBranchPath branch = internalRef.getBranch();
+		final SnomedRelationshipIndexEntry relationshipIndexEntry = snomedRelationshipLookupService.getComponent(branch, internalRef.getComponentId());
+		return getRelationshipConverter(branch).apply(relationshipIndexEntry);
 	}
 
 	private Relationship getRelationship(final String relationshipId, final SnomedEditingContext editingContext) {
