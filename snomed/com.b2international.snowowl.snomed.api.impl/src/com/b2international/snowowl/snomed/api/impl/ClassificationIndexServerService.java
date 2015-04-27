@@ -28,7 +28,6 @@ import org.apache.lucene.document.Document;
 import org.apache.lucene.document.Field.Store;
 import org.apache.lucene.document.StoredField;
 import org.apache.lucene.document.StringField;
-import org.apache.lucene.index.IndexWriterConfig.OpenMode;
 import org.apache.lucene.index.Term;
 import org.apache.lucene.search.BooleanClause.Occur;
 import org.apache.lucene.search.BooleanQuery;
@@ -75,8 +74,8 @@ public class ClassificationIndexServerService extends SingleDirectoryIndexServer
 
 	private final ObjectMapper objectMapper;
 
-	public ClassificationIndexServerService(final File indexRootPath) {
-		super(indexRootPath, OpenMode.CREATE);
+	public ClassificationIndexServerService(final File directory) {
+		super(directory, true);
 		objectMapper = new ObjectMapper();
 	}
 
