@@ -22,7 +22,6 @@ import static org.mockito.Mockito.mock;
 import org.junit.Before;
 import org.junit.Test;
 
-import com.b2international.snowowl.datastore.branch.Branch;
 import com.b2international.snowowl.datastore.branch.Branch.BranchState;
 
 /**
@@ -37,8 +36,10 @@ public class MainBranchTest {
 	@Before
 	public void before() {
 		manager = mock(BranchManagerImpl.class);
-		main = new MainBranchImpl(manager, 0L);
-		mainWithTimestamp = new MainBranchImpl(manager, 5L);
+		main = new MainBranchImpl(0L);
+		main.setBranchManager(manager);
+		mainWithTimestamp = new MainBranchImpl(5L);
+		mainWithTimestamp.setBranchManager(manager);
 	}
 
 	@Test
@@ -53,7 +54,8 @@ public class MainBranchTest {
 
 	@Test
 	public void shouldBeEqualToMain() {
-		Branch main2 = new MainBranchImpl(manager, 0L);
+		MainBranchImpl main2 = new MainBranchImpl(0L);
+		main2.setBranchManager(manager);
 		assertTrue("Separately created main branches should be equal.", main.equals(main2));
 	}
 
@@ -64,7 +66,7 @@ public class MainBranchTest {
 
 	@Test(expected=IllegalArgumentException.class)
 	public void mainBaseTimestampShouldBeNonNegative() throws Exception {
-		new MainBranchImpl(manager, -1L);
+		new MainBranchImpl(-1L);
 	}
 
 	@Test

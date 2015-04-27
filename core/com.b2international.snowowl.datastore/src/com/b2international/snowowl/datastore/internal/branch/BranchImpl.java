@@ -36,7 +36,7 @@ public class BranchImpl implements Branch {
 		checkArgument(VALID_NAME_PATTERN.matcher(name).matches(), "Name '%s' has invalid characters.", name);
 	}
 
-    protected final BranchManagerImpl branchManager;
+    protected BranchManagerImpl branchManager;
     
     private final String name;
     private final String parentPath;
@@ -44,21 +44,18 @@ public class BranchImpl implements Branch {
     private final long headTimestamp;
     private final boolean deleted;
     
-    public BranchImpl(BranchManagerImpl branchManager, String name, String parentPath, long baseTimestamp) {
-    	this(branchManager, name, parentPath, baseTimestamp, baseTimestamp);
+    public BranchImpl(String name, String parentPath, long baseTimestamp) {
+    	this(name, parentPath, baseTimestamp, baseTimestamp);
     }
     
-    public BranchImpl(BranchManagerImpl branchManager, String name, String parentPath, long baseTimestamp, long headTimestamp) {
-    	this(branchManager, name, parentPath, baseTimestamp, headTimestamp, false);
+    public BranchImpl(String name, String parentPath, long baseTimestamp, long headTimestamp) {
+    	this(name, parentPath, baseTimestamp, headTimestamp, false);
     }
     
-	public BranchImpl(BranchManagerImpl branchManager, String name, String parentPath, long baseTimestamp, long headTimestamp, boolean deleted) {
+	public BranchImpl(String name, String parentPath, long baseTimestamp, long headTimestamp, boolean deleted) {
         checkName(name);
         checkArgument(baseTimestamp >= 0L, "Base timestamp may not be negative.");
         checkArgument(headTimestamp >= baseTimestamp, "Head timestamp may not be smaller than base timestamp.");
-        checkNotNull(branchManager, "Branch manager may not be null.");
-        
-		this.branchManager = branchManager;
 		this.name = name;
 		this.parentPath = parentPath;
 		this.baseTimestamp = baseTimestamp;
@@ -66,18 +63,28 @@ public class BranchImpl implements Branch {
 		this.deleted = deleted;
 	}
 	
+	public void setBranchManager(BranchManagerImpl branchManager) {
+		this.branchManager = checkNotNull(branchManager, "branchManager");
+	}
+	
 	BranchImpl withDeleted() {
-		return new BranchImpl(branchManager, name, parentPath, baseTimestamp, headTimestamp, true);
+		final BranchImpl branch = new BranchImpl(name, parentPath, baseTimestamp, headTimestamp, true);
+		branch.setBranchManager(branchManager);
+		return branch;
 	}
 	
 	BranchImpl withBaseTimestamp(long newBaseTimestamp) {
         checkArgument(newBaseTimestamp > baseTimestamp, "New base timestamp may not be smaller or equal than old base timestamp.");
-		return new BranchImpl(branchManager, name, parentPath, newBaseTimestamp, newBaseTimestamp, deleted);
+		final BranchImpl branch = new BranchImpl(name, parentPath, newBaseTimestamp, newBaseTimestamp, deleted);
+		branch.setBranchManager(branchManager);
+		return branch;
 	}
 	
 	BranchImpl withHeadTimestamp(long newHeadTimestamp) {
 		checkArgument(newHeadTimestamp > headTimestamp, "New head timestamp may not be smaller or equal than old head timestamp.");
-		return new BranchImpl(branchManager, name, parentPath, baseTimestamp, newHeadTimestamp, deleted);
+		final BranchImpl branch = new BranchImpl(name, parentPath, baseTimestamp, newHeadTimestamp, deleted);
+		branch.setBranchManager(branchManager);
+		return branch;
 	}
 	
 	@Override

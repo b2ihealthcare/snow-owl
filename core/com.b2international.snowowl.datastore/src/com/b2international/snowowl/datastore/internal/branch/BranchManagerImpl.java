@@ -55,11 +55,12 @@ public class BranchManagerImpl implements BranchManager {
 	}
 	
 	private void initMainBranch(long mainBranchTimestamp) {
-		final MainBranchImpl main = new MainBranchImpl(this, mainBranchTimestamp);
+		final MainBranchImpl main = new MainBranchImpl(mainBranchTimestamp);
 		registerBranch(main);
 	}
 
 	private void registerBranch(final BranchImpl branch) {
+		branch.setBranchManager(this);
 		branchStore.put(branch.path(), branch);
 	}
 	
@@ -80,7 +81,7 @@ public class BranchManagerImpl implements BranchManager {
 	}
 	
 	protected BranchImpl reopen(BranchImpl parent, String name, long baseTimestamp) {
-		final BranchImpl child = new BranchImpl(this, name, parent.path(), baseTimestamp);
+		final BranchImpl child = new BranchImpl(name, parent.path(), baseTimestamp);
 		registerBranch(child);
 		return child;
 	}

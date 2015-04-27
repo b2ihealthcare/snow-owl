@@ -39,7 +39,8 @@ public class BranchTest {
 	@Before
 	public void before() {
 		manager = mock(BranchManagerImpl.class);
-		main = new MainBranchImpl(manager, currentTimestamp());
+		main = new MainBranchImpl(currentTimestamp());
+		main.setBranchManager(manager);
 		branchA = createBranch(main, "a");
 	}
 	
@@ -142,6 +143,8 @@ public class BranchTest {
 	}
 
 	private BranchImpl createBranch(Branch parent, String name, long currentTimestamp) {
-		return new BranchImpl(manager, name, parent.path(), currentTimestamp);
+		final BranchImpl branch = new BranchImpl(name, parent.path(), currentTimestamp);
+		branch.setBranchManager(manager);
+		return branch;
 	}
 }
