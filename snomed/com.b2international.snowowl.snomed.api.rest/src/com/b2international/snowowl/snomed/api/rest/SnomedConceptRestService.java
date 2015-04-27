@@ -62,7 +62,7 @@ import com.wordnik.swagger.annotations.ApiResponses;
 @Controller
 @RequestMapping(
 		value="/{path:**}", 
-		produces={ AbstractRestService.V1_MEDIA_TYPE })
+		produces={ AbstractRestService.SO_MEDIA_TYPE })
 public class SnomedConceptRestService extends AbstractSnomedRestService {
 
 	@Autowired
@@ -150,7 +150,7 @@ public class SnomedConceptRestService extends AbstractSnomedRestService {
 	@RequestMapping(
 			value="/concepts", 
 			method=RequestMethod.POST, 
-			consumes={ AbstractRestService.V1_MEDIA_TYPE, MediaType.APPLICATION_JSON_VALUE })
+			consumes={ AbstractRestService.SO_MEDIA_TYPE, MediaType.APPLICATION_JSON_VALUE })
 	@ResponseStatus(HttpStatus.CREATED)
 	public ResponseEntity<Void> create(
 			@ApiParam(value="The branch path")
@@ -188,7 +188,7 @@ public class SnomedConceptRestService extends AbstractSnomedRestService {
 	@RequestMapping(
 			value="/concepts/{conceptId}/updates", 
 			method=RequestMethod.POST,
-			consumes={ AbstractRestService.V1_MEDIA_TYPE, MediaType.APPLICATION_JSON_VALUE })
+			consumes={ AbstractRestService.SO_MEDIA_TYPE, MediaType.APPLICATION_JSON_VALUE })
 	@ResponseStatus(HttpStatus.NO_CONTENT)
 	public void update(			
 			@ApiParam(value="The branch path")

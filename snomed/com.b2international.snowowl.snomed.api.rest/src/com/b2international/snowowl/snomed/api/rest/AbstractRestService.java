@@ -24,6 +24,6 @@ public abstract class AbstractRestService {
 	/**
 	 * The currently supported versioned media type of the snowowl RESTful API.
 	 */
-	public static final String V1_MEDIA_TYPE = "application/vnd.com.b2international.snowowl-v1+json";
+	public static final String SO_MEDIA_TYPE = "application/vnd.com.b2international.snowowl+json";
 
 }

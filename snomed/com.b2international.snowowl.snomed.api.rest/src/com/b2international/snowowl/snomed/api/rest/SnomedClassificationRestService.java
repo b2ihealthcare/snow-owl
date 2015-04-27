@@ -57,7 +57,7 @@ import com.wordnik.swagger.annotations.ApiResponses;
 @Controller
 @RequestMapping(
 		value="/{path:**}", 
-		produces={ AbstractRestService.V1_MEDIA_TYPE })
+		produces={ AbstractRestService.SO_MEDIA_TYPE })
 public class SnomedClassificationRestService extends AbstractSnomedRestService {
 
 	@Autowired
@@ -93,7 +93,7 @@ public class SnomedClassificationRestService extends AbstractSnomedRestService {
 	@RequestMapping(
 			value="/classifications", 
 			method=RequestMethod.POST,
-			consumes={ AbstractRestService.V1_MEDIA_TYPE, MediaType.APPLICATION_JSON_VALUE })
+			consumes={ AbstractRestService.SO_MEDIA_TYPE, MediaType.APPLICATION_JSON_VALUE })
 	@ResponseStatus(value=HttpStatus.CREATED)
 	public ResponseEntity<Void> beginClassification(
 			@ApiParam(value="The branch path")
@@ -199,7 +199,7 @@ public class SnomedClassificationRestService extends AbstractSnomedRestService {
 	@RequestMapping(
 			value="/classifications/{classificationId}", 
 			method=RequestMethod.PUT,
-			consumes={ AbstractRestService.V1_MEDIA_TYPE, MediaType.APPLICATION_JSON_VALUE })
+			consumes={ AbstractRestService.SO_MEDIA_TYPE, MediaType.APPLICATION_JSON_VALUE })
 	@ResponseStatus(value=HttpStatus.NO_CONTENT)
 	public void updateClassificationRun(
 			@ApiParam(value="The branch path")

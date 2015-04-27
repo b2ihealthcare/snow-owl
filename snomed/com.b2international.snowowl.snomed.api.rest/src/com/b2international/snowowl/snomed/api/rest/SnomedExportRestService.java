@@ -66,7 +66,7 @@ import com.wordnik.swagger.annotations.ApiResponses;
  */
 @RestController
 @RequestMapping(
-		value="/exports", produces = { AbstractRestService.V1_MEDIA_TYPE })
+		value="/exports", produces = { AbstractRestService.SO_MEDIA_TYPE })
 @Api("SNOMED CT Export")
 public class SnomedExportRestService extends AbstractSnomedRestService {
 
@@ -86,7 +86,7 @@ public class SnomedExportRestService extends AbstractSnomedRestService {
 		@ApiResponse(code=400, message="Configuration object failed validation"),
 		@ApiResponse(code=404, message="Code system version and/or task not found")
 	})
-	@RequestMapping(method=RequestMethod.POST, consumes = { AbstractRestService.V1_MEDIA_TYPE, MediaType.APPLICATION_JSON_VALUE })
+	@RequestMapping(method=RequestMethod.POST, consumes = { AbstractRestService.SO_MEDIA_TYPE, MediaType.APPLICATION_JSON_VALUE })
 	@ResponseStatus(HttpStatus.CREATED)
 	public ResponseEntity<Void> beginExport(
 			@ApiParam(value="Export configuration")
@@ -172,7 +172,7 @@ public class SnomedExportRestService extends AbstractSnomedRestService {
 		@ApiResponse(code=200, message="OK"),
 		@ApiResponse(code=404, message="Export run not found")
 	})
-	@RequestMapping(value="/{id}/archive", method=RequestMethod.GET, produces = { AbstractRestService.V1_MEDIA_TYPE, MediaType.APPLICATION_OCTET_STREAM_VALUE })
+	@RequestMapping(value="/{id}/archive", method=RequestMethod.GET, produces = { AbstractRestService.SO_MEDIA_TYPE, MediaType.APPLICATION_OCTET_STREAM_VALUE })
 	public @ResponseBody ResponseEntity<?> getArchive(
 			@ApiParam(value="Export run ID")
 			@PathVariable(value="id")

@@ -39,7 +39,7 @@ import com.wordnik.swagger.annotations.ApiOperation;
 @RestController
 @RequestMapping(
 		value="/{path:**}", 
-		produces={ AbstractRestService.V1_MEDIA_TYPE })
+		produces={ AbstractRestService.SO_MEDIA_TYPE })
 public class SnomedReferenceSetHistoryRestService extends AbstractSnomedRestService {
 
 	@Autowired
