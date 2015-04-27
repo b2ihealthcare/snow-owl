@@ -30,7 +30,7 @@ import java.util.Collection
 Feature: SnomedBranchingApi
 
 	Background:
-		static String API = "/v2/snomed-ct"
+		static String API = "/snomed-ct/v2"
 		var public String parent = "MAIN"
 		var public String branchName = UUID.randomUUID.toString
 		var description = "Description at " + new Date
