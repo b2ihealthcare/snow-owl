@@ -36,4 +36,44 @@ class Types {
 		
 	}
 	
+	static class ComplexData {
+		
+		@JsonProperty
+		private String id;
+		
+		@JsonProperty
+		private String name;
+		
+		@JsonProperty
+		private State state;
+
+		@JsonCreator
+		public ComplexData(@JsonProperty("id") String id, @JsonProperty("name") String name, @JsonProperty("state") State state) {
+			this.id = id;
+			this.name = name;
+			this.state = state;
+		}
+		
+		public String getId() {
+			return id;
+		}
+		
+		@Override
+		public int hashCode() {
+			return Objects.hashCode(id);
+		}
+		
+		@Override
+		public boolean equals(Object obj) {
+			if (obj == this) return true;
+			if (!(obj instanceof ComplexData)) return false;
+			return Objects.equals(id, id);
+		}
+		
+	}
+	
+	static enum State {
+		SCHEDULED, RUNNING, FAILED
+	}
+	
 }

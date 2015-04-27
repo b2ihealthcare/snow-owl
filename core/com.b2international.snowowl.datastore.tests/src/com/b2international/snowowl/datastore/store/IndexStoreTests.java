@@ -107,7 +107,7 @@ public class IndexStoreTests {
 		assertEquals(newData, store.get(KEY));
 	}
 	
-	private static File tmpDir() {
+	static File tmpDir() {
 		final File tmpDir = Files.createTempDir();
 		tmpDir.deleteOnExit();
 		return tmpDir;
