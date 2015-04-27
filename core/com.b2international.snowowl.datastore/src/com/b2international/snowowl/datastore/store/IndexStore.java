@@ -29,6 +29,7 @@ import org.apache.lucene.index.Term;
 import org.apache.lucene.search.BooleanClause.Occur;
 import org.apache.lucene.search.BooleanQuery;
 import org.apache.lucene.search.IndexSearcher;
+import org.apache.lucene.search.MatchAllDocsQuery;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.ScoreDoc;
 import org.apache.lucene.search.Sort;
@@ -46,7 +47,6 @@ import com.google.common.collect.Iterables;
 public class IndexStore<T> extends SingleDirectoryIndexServerService implements Store<T> {
 
 	private static final String ID_FIELD = "id";
-	private static final String TYPE_FIELD = "type";
 	private static final String SOURCE_FIELD = "source";
 	private ObjectMapper objectMapper;
 	private Class<T> clazz;
@@ -125,7 +125,7 @@ public class IndexStore<T> extends SingleDirectoryIndexServerService implements 
 	@Override
 	public Collection<T> values() {
 		try {
-			return search(matchAllQuery(clazz));
+			return search(matchAllQuery());
 		} catch (IOException e) {
 			throw new StoreException("Failed to retrieve values from store '%s'.", getDirectory(), e);
 		}
@@ -144,7 +144,6 @@ public class IndexStore<T> extends SingleDirectoryIndexServerService implements 
 	private void updateDoc(String key, T value) throws IOException {
 		final Document doc = new Document();
 		doc.add(new StringField(ID_FIELD, key, Field.Store.NO));
-		doc.add(new StringField(TYPE_FIELD, clazz.getName(), Field.Store.NO));
 		doc.add(new StringField(SOURCE_FIELD, serialize(value), Field.Store.YES));
 		writer.updateDocument(new Term(ID_FIELD, key), doc);
 	}
@@ -193,10 +192,8 @@ public class IndexStore<T> extends SingleDirectoryIndexServerService implements 
 		}
 	}
 	
-	private static BooleanQuery matchAllQuery(Class<?> type) {
-		final BooleanQuery query = new BooleanQuery();
-		query.add(new TermQuery(new Term(TYPE_FIELD, type.getName())), Occur.MUST);
-		return query;
+	private static Query matchAllQuery() {
+		return new MatchAllDocsQuery();
 	}
 	
 	private static BooleanQuery matchKeyQuery(String key) {
