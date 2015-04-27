@@ -26,6 +26,11 @@ import com.b2international.snowowl.core.exceptions.AlreadyExistsException;
 public interface Branch extends Deletable {
 
 	/**
+	 * The path of the main branch.
+	 */
+	static final String MAIN_PATH = "MAIN";
+	
+	/**
 	 * @since 4.1
 	 */
 	enum BranchState {

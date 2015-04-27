@@ -87,7 +87,7 @@ public class BranchManagerImpl implements BranchManager {
 
 	@Override
 	public Branch getMainBranch() {
-		return getBranch(MainBranchImpl.DEFAULT_PATH);
+		return getBranch(MainBranchImpl.MAIN_PATH);
 	}
 
 	@Override

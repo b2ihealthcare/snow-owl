@@ -22,14 +22,12 @@ import com.b2international.snowowl.datastore.branch.Branch;
  */
 public class MainBranchImpl extends BranchImpl {
 
-    static final String DEFAULT_PATH = "MAIN";
-
 	MainBranchImpl(BranchManagerImpl branchManager, long baseTimestamp) {
-		super(branchManager, DEFAULT_PATH, "", baseTimestamp);
+		super(branchManager, MAIN_PATH, "", baseTimestamp);
 	}
 	
 	private MainBranchImpl(BranchManagerImpl branchManager, long baseTimestamp, long headTimestamp) {
-		super(branchManager, DEFAULT_PATH, "", baseTimestamp, headTimestamp);
+		super(branchManager, MAIN_PATH, "", baseTimestamp, headTimestamp);
 	}
 
 	@Override
