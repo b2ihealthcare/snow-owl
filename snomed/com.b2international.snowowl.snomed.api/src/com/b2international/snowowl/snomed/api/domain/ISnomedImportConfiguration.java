@@ -24,28 +24,7 @@ import com.b2international.snowowl.snomed.api.ISnomedRf2ImportService;
 /**
  * Represents the configuration object used by the {@link ISnomedRf2ImportService SNOMED CT RF2 import service}.
  */
-public interface ISnomedImportConfiguration {
-
-	/**
-	 * Returns the RF2 release type of the current import configuration.
-	 * 
-	 * @return the desired RF2 release type
-	 */
-	Rf2ReleaseType getRf2ReleaseType();
-
-	/**
-	 * Returns the code system version identifier, eg. "{@code 2014-01-31}".
-	 * 
-	 * @return the code system version identifier
-	 */
-	String getVersion();
-
-	/**
-	 * Returns the identifier of the task on which the import is running, eg. "{@code issue-332}".
-	 * 
-	 * @return the task identifier
-	 */
-	String getTaskId();
+public interface ISnomedImportConfiguration extends ISnomedRF2Configuration {
 
 	/**
 	 * Returns the language reference set identifier for the preferred language that should be used for the import

@@ -28,8 +28,7 @@ import com.b2international.snowowl.snomed.api.domain.Rf2ReleaseType;
 public class SnomedImportConfiguration implements ISnomedImportConfiguration {
 
 	private final Rf2ReleaseType rf2ReleaseType;
-	private final String version;
-	private final String taskId;
+	private final String branchPath;
 	private final String languageRefSetId;
 	private final boolean createVersion;
 	private ImportStatus importStatus = ImportStatus.WAITING_FOR_FILE;
@@ -39,18 +38,16 @@ public class SnomedImportConfiguration implements ISnomedImportConfiguration {
 	/**
 	 * Creates a new import configuration instance.
 	 * @param rf2ReleaseType the RF2 release type.
-	 * @param version the version where the import has to be performed.
+	 * @param branchPath the branch path where the import has to be performed.
 	 * @param languageRefSetId the language reference set identifier concept ID for the preferred language. 
-	 * @param taskId the identifier of the task to use for importing, or {@code null} if the import should be done on the version 
 	 * @param createVersion boolean indicating whether a new version has to be created for each individual 
 	 * effective times. Has no effect if the RF2 release type in *NOT* full.
 	 */
-	public SnomedImportConfiguration(final Rf2ReleaseType rf2ReleaseType, final String version, final String taskId,  
+	public SnomedImportConfiguration(final Rf2ReleaseType rf2ReleaseType, final String branchPath,  
 			final String languageRefSetId, final boolean createVersion) {
 		
 		this.rf2ReleaseType = checkNotNull(rf2ReleaseType, "rf2ReleaseType");
-		this.version = checkNotNull(version, "version");
-		this.taskId = taskId;
+		this.branchPath = checkNotNull(branchPath, "branchPath");
 		this.languageRefSetId = checkNotNull(languageRefSetId, "languageRefSetId");
 		this.createVersion = checkNotNull(createVersion, "createVersion");
 	}
@@ -61,15 +58,10 @@ public class SnomedImportConfiguration implements ISnomedImportConfiguration {
 	}
 
 	@Override
-	public String getVersion() {
-		return version;
+	public String getBranchPath() {
+		return branchPath;
 	}
-
-	@Override
-	public String getTaskId() {
-		return taskId;
-	}
-
+	
 	@Override
 	public String getLanguageRefSetId() {
 		return languageRefSetId;

@@ -93,18 +93,17 @@ public class SnomedExportService implements ISnomedExportService {
 		final StorageRef exportStorageRef = new StorageRef();
 		
 		exportStorageRef.setShortName("SNOMEDCT");
-		exportStorageRef.setVersion(configuration.getVersion());
-		exportStorageRef.setTaskId(configuration.getTaskId());
+		exportStorageRef.setBranchPath(configuration.getBranchPath());
 		
-		final IBranchPath exportBranchPath = exportStorageRef.getBranchPath();
+		final IBranchPath exportBranch = exportStorageRef.getBranch();
 		
-		final SnomedRf2ExportModel model = createExportModelWithAllRefSets(contentSubType, exportBranchPath);
+		final SnomedRf2ExportModel model = createExportModelWithAllRefSets(contentSubType, exportBranch);
 		
 		final String namespaceId = configuration.getNamespaceId();
 		model.setNamespace(namespaceId);
 		
 		if (configuration.getModuleIds().isEmpty()) {
-			final LongSet modules = ApplicationContext.getServiceForClass(SnomedTerminologyBrowser.class).getAllSubTypeIds(exportBranchPath, Long.parseLong(Concepts.MODULE_ROOT));
+			final LongSet modules = ApplicationContext.getServiceForClass(SnomedTerminologyBrowser.class).getAllSubTypeIds(exportBranch, Long.parseLong(Concepts.MODULE_ROOT));
 			model.getModulesToExport().addAll(LongSets.toStringSet(modules));
 		} else {
 			model.getModulesToExport().addAll(configuration.getModuleIds());

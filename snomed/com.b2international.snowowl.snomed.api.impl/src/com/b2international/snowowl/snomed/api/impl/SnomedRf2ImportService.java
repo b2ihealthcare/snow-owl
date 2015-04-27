@@ -37,6 +37,7 @@ import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.exceptions.BadRequestException;
 import com.b2international.snowowl.datastore.BranchPathUtils;
 import com.b2international.snowowl.datastore.ContentAvailabilityInfoManager;
+import com.b2international.snowowl.datastore.branch.Branch;
 import com.b2international.snowowl.snomed.api.ISnomedRf2ImportService;
 import com.b2international.snowowl.snomed.api.domain.ISnomedImportConfiguration;
 import com.b2international.snowowl.snomed.api.domain.ISnomedImportConfiguration.ImportStatus;
@@ -120,9 +121,9 @@ public class SnomedRf2ImportService implements ISnomedRf2ImportService {
 					+ "An import is already in progress. Please try again later.");
 		}
 		
-		if (null != configuration.getTaskId() && !Rf2ReleaseType.DELTA.equals(releaseType)) {
+		if (!Branch.MAIN_PATH.equals(configuration.getBranchPath()) && !Rf2ReleaseType.DELTA.equals(releaseType)) {
 			throw new SnomedImportException("Importing a non-delta release of SNOMED CT "
-					+ "from an archive is prohibited when a task identifier is specified.");
+					+ "from an archive is prohibited when a non-MAIN branch path is specified.");
 		}
 		
 		final File archiveFile = copyContentToTempFile(inputStream, valueOf(randomUUID()));
@@ -142,14 +143,9 @@ public class SnomedRf2ImportService implements ISnomedRf2ImportService {
 	}
 
 	private SnomedImportResult doImport(final ISnomedImportConfiguration configuration, final File archiveFile) throws Exception {
-		
-		IBranchPath branchPath = BranchPathUtils.createVersionPath(configuration.getVersion());
-		if (null != configuration.getTaskId()) {
-			branchPath = BranchPathUtils.createPath(branchPath, configuration.getTaskId());
-		}
-		
+		final IBranchPath branch = BranchPathUtils.createPath(configuration.getBranchPath());
 		return new ImportUtil().doImport(
-				branchPath, 
+				branch, 
 				configuration.getLanguageRefSetId(), 
 				getByNameIgnoreCase(valueOf(configuration.getRf2ReleaseType())), 
 				archiveFile,
@@ -175,8 +171,7 @@ public class SnomedRf2ImportService implements ISnomedRf2ImportService {
 		final StorageRef importStorageRef = new StorageRef();
 		
 		importStorageRef.setShortName("SNOMEDCT");
-		importStorageRef.setVersion(configuration.getVersion());
-		importStorageRef.setTaskId(configuration.getTaskId());
+		importStorageRef.setBranchPath(configuration.getBranchPath());
 		
 		// Check version and branch existence
 		importStorageRef.checkStorageExists();

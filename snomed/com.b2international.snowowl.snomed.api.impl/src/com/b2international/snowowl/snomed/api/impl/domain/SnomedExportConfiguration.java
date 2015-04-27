@@ -30,8 +30,7 @@ import com.b2international.snowowl.snomed.api.domain.Rf2ReleaseType;
 public class SnomedExportConfiguration implements ISnomedExportConfiguration {
 
 	private Rf2ReleaseType type;
-	private String version;
-	private String taskId;
+	private String branchPath;
 	private String namespaceId;
 	private Collection<String> moduleIds;
 	private Date deltaExportStartEffectiveTime;
@@ -39,16 +38,13 @@ public class SnomedExportConfiguration implements ISnomedExportConfiguration {
 	private String transientEffectiveTime;
 
 	public SnomedExportConfiguration(Rf2ReleaseType type, 
-			String version, String taskId, 
+			String branchPath, 
 			String namespaceId, Collection<String> moduleIds,
 			Date deltaExportStartEffectiveTime, Date deltaExportEndEffectiveTime, 
 			String transientEffectiveTime) {
-		
 		this.type = checkNotNull(type, "type");
-		this.version = checkNotNull(version, "version");
 		this.namespaceId = checkNotNull(namespaceId, "namespaceId");
-		
-		this.taskId = taskId;
+		this.branchPath = checkNotNull(branchPath, "branchPath");
 		this.moduleIds = moduleIds == null ? Collections.<String>emptySet() : moduleIds;
 		this.deltaExportStartEffectiveTime = deltaExportStartEffectiveTime;
 		this.deltaExportEndEffectiveTime = deltaExportEndEffectiveTime;
@@ -61,15 +57,10 @@ public class SnomedExportConfiguration implements ISnomedExportConfiguration {
 	}
 
 	@Override
-	public String getVersion() {
-		return version;
+	public String getBranchPath() {
+		return branchPath;
 	}
-
-	@Override
-	public String getTaskId() {
-		return taskId;
-	}
-
+	
 	@Override
 	public Date getDeltaExportStartEffectiveTime() {
 		return deltaExportStartEffectiveTime;
