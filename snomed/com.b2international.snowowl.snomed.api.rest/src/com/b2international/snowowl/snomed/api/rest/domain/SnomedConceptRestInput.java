@@ -71,12 +71,9 @@ public class SnomedConceptRestInput extends AbstractSnomedComponentRestInput<Sno
 		return new SnomedConceptInput();
 	}
 
-	/**
-	 * @return
-	 */
 	@Override
-	public SnomedConceptInput toComponentInput(final String version, final String taskId) {
-		final SnomedConceptInput result = super.toComponentInput(version, taskId);
+	public SnomedConceptInput toComponentInput(final String branchPath) {
+		final SnomedConceptInput result = super.toComponentInput(branchPath);
 
 		result.setIsAIdGenerationStrategy(createIdGenerationStrategy(getIsAId()));
 
@@ -87,7 +84,7 @@ public class SnomedConceptRestInput extends AbstractSnomedComponentRestInput<Sno
 				restDescription.setNamespaceId(getNamespaceId());
 			}
 			
-			descriptionInputs.add(restDescription.toComponentInput(version, taskId));
+			descriptionInputs.add(restDescription.toComponentInput(branchPath));
 		}
 
 		result.setDescriptions(descriptionInputs);

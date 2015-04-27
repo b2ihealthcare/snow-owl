@@ -37,7 +37,7 @@ import com.wordnik.swagger.annotations.ApiResponses;
 @Api("SNOMED CT History")
 @RestController
 @RequestMapping(
-		value="/{version}", 
+		value="/{path:**}", 
 		produces={ AbstractRestService.V1_MEDIA_TYPE })
 public class SnomedConceptHistoryRestService extends AbstractSnomedRestService {
 
@@ -45,49 +45,24 @@ public class SnomedConceptHistoryRestService extends AbstractSnomedRestService {
 	protected ISnomedConceptHistoryService delegate;
 
 	@ApiOperation(
-			value="Retrieve history for a concept", 
-			notes="Returns the change history for the specified concept.")
+			value="Retrieve history for a Concept", 
+			notes="Returns the change history for the specified Concept.")
 	@ApiResponses({
 		@ApiResponse(code = 200, message = "OK", response = Void.class),
-		@ApiResponse(code = 404, message = "Code system version or concept not found")
+		@ApiResponse(code = 404, message = "Branch or Concept not found")
 	})
 	@RequestMapping(value="/concepts/{conceptId}/history", method=RequestMethod.GET)
 	public CollectionResource<IHistoryInfo> getHistory(
-			@ApiParam(value="The code system version")
-			@PathVariable(value="version") 
-			final String version,
+			@ApiParam(value="The branch path")
+			@PathVariable(value="path") 
+			final String branchPath,
 
 			@ApiParam(value="The concept identifier")
 			@PathVariable(value="conceptId")
 			final String conceptId) {
 
-		return getHistoryOnTask(version, null, conceptId);
-	}
-
-	@ApiOperation(
-			value="Retrieve history for a concept on task", 
-			notes="Returns the change history for the specified concept.")
-	@ApiResponses({
-		@ApiResponse(code = 200, message = "OK", response = Void.class),
-		@ApiResponse(code = 404, message = "Code system version, task or concept not found")
-	})
-	@RequestMapping(
-			value="/tasks/{taskId}/concepts/{conceptId}/history", 
-			method=RequestMethod.GET)
-	public CollectionResource<IHistoryInfo> getHistoryOnTask(
-			@ApiParam(value="The code system version")
-			@PathVariable(value="version") 
-			final String version,
-
-			@ApiParam(value="The task")
-			@PathVariable(value="taskId")
-			final String taskId,
-
-			@ApiParam(value="The concept identifier")
-			@PathVariable(value="conceptId")
-			final String conceptId) {
-
-		final IComponentRef conceptRef = createComponentRef(version, taskId, conceptId);
+		final IComponentRef conceptRef = createComponentRef(branchPath, conceptId);
 		return CollectionResource.of(delegate.getHistory(conceptRef));
 	}
+
 }

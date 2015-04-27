@@ -16,7 +16,6 @@
 package com.b2international.snowowl.snomed.api.rest;
 
 import static org.springframework.hateoas.mvc.ControllerLinkBuilder.linkTo;
-import static org.springframework.hateoas.mvc.ControllerLinkBuilder.methodOn;
 
 import java.net.URI;
 import java.security.Principal;
@@ -62,10 +61,10 @@ public class SnomedDescriptionRestService extends AbstractSnomedRestService {
 	
 	@ApiOperation(
 			value="Create description", 
-			notes="Creates a new description directly on a version.")
+			notes="Creates a new Description directly on a version.")
 	@ApiResponses({
 		@ApiResponse(code = 201, message = "Created"),
-		@ApiResponse(code = 404, message = "Code system version not found")
+		@ApiResponse(code = 404, message = "Branch not found")
 	})
 	@RequestMapping(
 			value="/descriptions", 
@@ -73,9 +72,9 @@ public class SnomedDescriptionRestService extends AbstractSnomedRestService {
 			consumes={ AbstractRestService.V1_MEDIA_TYPE, MediaType.APPLICATION_JSON_VALUE })
 	@ResponseStatus(HttpStatus.CREATED)
 	public ResponseEntity<Void> create(
-			@ApiParam(value="The code system version")
-			@PathVariable(value="version")
-			final String version,
+			@ApiParam(value="The branch path")
+			@PathVariable(value="path")
+			final String branchPath,
 			
 			@ApiParam(value="Description parameters")
 			@RequestBody 
@@ -83,92 +82,37 @@ public class SnomedDescriptionRestService extends AbstractSnomedRestService {
 			
 			final Principal principal) {
 		
-		final ISnomedDescription createdDescription = doCreate(version, null, body, principal);
-		return Responses.created(getDescriptionLocation(version, createdDescription)).build();
+		final ISnomedDescription createdDescription = doCreate(branchPath, body, principal);
+		return Responses.created(getDescriptionLocation(branchPath, createdDescription)).build();
 	}
 
 	@ApiOperation(
-			value="Create description on task", 
-			notes="Creates a new description on a task branch.")
-	@ApiResponses({
-		@ApiResponse(code = 201, message = "Created"),
-		@ApiResponse(code = 404, message = "Code system version or task not found")
-	})
-	@RequestMapping(
-			value="/tasks/{taskId}/descriptions", 
-			method=RequestMethod.POST,
-			consumes={ AbstractRestService.V1_MEDIA_TYPE, MediaType.APPLICATION_JSON_VALUE })
-	@ResponseStatus(HttpStatus.CREATED)
-	public ResponseEntity<Void> createOnTask(
-			@ApiParam(value="The code system version")
-			@PathVariable(value="version")
-			final String version,
-			
-			@ApiParam(value="The task")
-			@PathVariable(value="taskId")
-			final String taskId,
-			
-			@ApiParam(value="Description parameters")
-			@RequestBody 
-			final ChangeRequest<SnomedDescriptionRestInput> body,
-			
-			final Principal principal) {
-
-		final ISnomedDescription createdDescription = doCreate(version, taskId, body, principal);
-		return Responses.created(getDescriptionOnTaskLocation(version, taskId, createdDescription)).build();
-	}
-
-	@ApiOperation(
-			value="Retrieve description properties", 
-			notes="Returns all properties of the specified description, including acceptability values by language reference set.")
+			value="Retrieve Description properties", 
+			notes="Returns all properties of the specified Description, including acceptability values by language reference set.")
 	@ApiResponses({
 		@ApiResponse(code = 200, message = "OK"),
-		@ApiResponse(code = 404, message = "Code system version or description not found")
+		@ApiResponse(code = 404, message = "Branch or Description not found")
 	})
 	@RequestMapping(value="/descriptions/{descriptionId}", method=RequestMethod.GET)
 	public ISnomedDescription read(
-			@ApiParam(value="The code system version")
-			@PathVariable(value="version")
-			final String version,
+			@ApiParam(value="The branch path")
+			@PathVariable(value="path")
+			final String branchPath,
 			
-			@ApiParam(value="The description identifier")
+			@ApiParam(value="The Description identifier")
 			@PathVariable(value="descriptionId")
 			final String descriptionId) {
-
-		return readOnTask(version, null, descriptionId);
-	}
-
-	@ApiOperation(
-			value="Retrieve description properties on task", 
-			notes="Returns all properties of the specified description on a task branch, including acceptability values by language reference set.")
-	@ApiResponses({
-		@ApiResponse(code = 200, message = "OK"),
-		@ApiResponse(code = 404, message = "Code system version, task or description not found")
-	})
-	@RequestMapping(value="/tasks/{taskId}/descriptions/{descriptionId}", method=RequestMethod.GET)
-	public ISnomedDescription readOnTask(
-			@ApiParam(value="The code system version")
-			@PathVariable(value="version")
-			final String version,
-			
-			@ApiParam(value="The task")
-			@PathVariable(value="taskId")
-			final String taskId,
-			
-			@ApiParam(value="The description identifier")
-			@PathVariable(value="descriptionId")
-			final String descriptionId) {
-
-		final IComponentRef conceptRef = createComponentRef(version, taskId, descriptionId);
+		final IComponentRef conceptRef = createComponentRef(branchPath, descriptionId);
 		return delegate.read(conceptRef);
 	}
 
+
 	@ApiOperation(
-			value="Update description",
-			notes="Updates properties of the specified description, also managing language reference set membership.")
+			value="Update Description",
+			notes="Updates properties of the specified Description, also managing language reference set membership.")
 	@ApiResponses({
 		@ApiResponse(code = 204, message = "Update successful"),
-		@ApiResponse(code = 404, message = "Code system version or description not found")
+		@ApiResponse(code = 404, message = "Branch or Description not found")
 	})
 	@RequestMapping(
 			value="/descriptions/{descriptionId}/updates", 
@@ -176,55 +120,21 @@ public class SnomedDescriptionRestService extends AbstractSnomedRestService {
 			consumes={ AbstractRestService.V1_MEDIA_TYPE, MediaType.APPLICATION_JSON_VALUE })
 	@ResponseStatus(HttpStatus.NO_CONTENT)
 	public void update(			
-			@ApiParam(value="The code system version")
-			@PathVariable(value="version")
-			final String version,
+			@ApiParam(value="The branch path")
+			@PathVariable(value="path")
+			final String branchPath,
 			
-			@ApiParam(value="The description identifier")
+			@ApiParam(value="The Description identifier")
 			@PathVariable(value="descriptionId")
 			final String descriptionId,
 			
-			@ApiParam(value="Update description parameters")
+			@ApiParam(value="Update Description parameters")
 			@RequestBody 
 			final ChangeRequest<SnomedDescriptionRestUpdate> body,
 			
 			final Principal principal) {
 
-		updateOnTask(version, null, descriptionId, body, principal);
-	}
-
-	@ApiOperation(
-			value="Update description on task",
-			notes="Updates properties of the specified description on a task branch, also managing language reference set membership.")
-	@ApiResponses({
-		@ApiResponse(code = 204, message = "Update successful"),
-		@ApiResponse(code = 404, message = "Code system version, task or description not found")
-	})
-	@RequestMapping(
-			value="/tasks/{taskId}/descriptions/{descriptionId}/updates", 
-			method=RequestMethod.POST, 
-			consumes={ AbstractRestService.V1_MEDIA_TYPE, MediaType.APPLICATION_JSON_VALUE })
-	@ResponseStatus(HttpStatus.NO_CONTENT)
-	public void updateOnTask(			
-			@ApiParam(value="The code system version")
-			@PathVariable(value="version")
-			final String version,
-			
-			@ApiParam(value="The task")
-			@PathVariable(value="taskId")
-			final String taskId,
-			
-			@ApiParam(value="The description identifier")
-			@PathVariable(value="descriptionId")
-			final String descriptionId,
-			
-			@ApiParam(value="Update description parameters")
-			@RequestBody 
-			final ChangeRequest<SnomedDescriptionRestUpdate> body,
-			
-			final Principal principal) {
-
-		final IComponentRef conceptRef = createComponentRef(version, taskId, descriptionId);
+		final IComponentRef conceptRef = createComponentRef(branchPath, descriptionId);
 		final ISnomedDescriptionUpdate update = body.getChange().toComponentUpdate();
 		final String userId = principal.getName();
 		final String commitComment = body.getCommitComment();
@@ -233,70 +143,39 @@ public class SnomedDescriptionRestService extends AbstractSnomedRestService {
 	}
 
 	@ApiOperation(
-			value="Delete description",
-			notes="Permanently removes the specified unreleased description and related components.")
+			value="Delete Description",
+			notes="Permanently removes the specified unreleased Description and related components.")
 	@ApiResponses({
 		@ApiResponse(code = 204, message = "Delete successful"),
-		@ApiResponse(code = 404, message = "Code system version or description not found")
+		@ApiResponse(code = 404, message = "Branch or Description not found")
 	})
 	@RequestMapping(value="/descriptions/{descriptionId}", method=RequestMethod.DELETE)
 	@ResponseStatus(HttpStatus.NO_CONTENT)
 	public void delete(			
-			@ApiParam(value="The code system version")
-			@PathVariable(value="version")
-			final String version,
+			@ApiParam(value="The branch path")
+			@PathVariable(value="path")
+			final String branchPath,
 			
-			@ApiParam(value="The description identifier")
+			@ApiParam(value="The Description identifier")
 			@PathVariable(value="descriptionId")
 			final String descriptionId,
 			
 			final Principal principal) {
 
-		deleteOnTask(version, null, descriptionId, principal);
-	}
-
-	@ApiOperation(
-			value="Delete description on task",
-			notes="Permanently removes the specified unreleased description and related components from a task branch.")
-	@ApiResponses({
-		@ApiResponse(code = 204, message = "Delete successful"),
-		@ApiResponse(code = 404, message = "Code system version, task or description not found")
-	})
-	@RequestMapping(value="/tasks/{taskId}/descriptions/{descriptionId}", method=RequestMethod.DELETE)
-	@ResponseStatus(HttpStatus.NO_CONTENT)
-	public void deleteOnTask(			
-			@ApiParam(value="The code system version")
-			@PathVariable(value="version")
-			final String version,
-			
-			@ApiParam(value="The task")
-			@PathVariable(value="taskId")
-			final String taskId,
-			
-			@ApiParam(value="The description identifier")
-			@PathVariable(value="descriptionId")
-			final String descriptionId,
-			
-			final Principal principal) {
-
-		final IComponentRef descriptionRef = createComponentRef(version, taskId, descriptionId);
+		final IComponentRef descriptionRef = createComponentRef(branchPath, descriptionId);
 		final String userId = principal.getName();
-		delegate.delete(descriptionRef, userId, "Deleted description from store.");
+		delegate.delete(descriptionRef, userId, String.format("Deleted Description '%s' from store.", descriptionId));
 	}
 	
-	private ISnomedDescription doCreate(final String version, final String taskId, final ChangeRequest<SnomedDescriptionRestInput> body, final Principal principal) {
-		final ISnomedDescriptionInput input = body.getChange().toComponentInput(version, taskId);
+	private ISnomedDescription doCreate(final String branchPath, final ChangeRequest<SnomedDescriptionRestInput> body, final Principal principal) {
+		final ISnomedDescriptionInput input = body.getChange().toComponentInput(branchPath);
 		final String userId = principal.getName();
 		final String commitComment = body.getCommitComment();
 		return delegate.create(input, userId, commitComment);
 	}
 	
-	private URI getDescriptionLocation(final String version, final ISnomedDescription createdDescription) {
-		return linkTo(methodOn(SnomedDescriptionRestService.class).read(version, createdDescription.getId())).toUri();
-	}
-	
-	private URI getDescriptionOnTaskLocation(String version, String taskId, ISnomedDescription createdDescription) {
-		return linkTo(methodOn(SnomedDescriptionRestService.class).readOnTask(version, taskId, createdDescription.getId())).toUri();
+	private URI getDescriptionLocation(final String branchPath, final ISnomedDescription createdDescription) {
+		return linkTo(SnomedDescriptionRestService.class).slash(branchPath).slash("descriptions").slash(createdDescription.getId()).toUri();
 	}
 	
 }

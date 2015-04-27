@@ -107,8 +107,8 @@ public class SnomedRelationshipRestInput extends AbstractSnomedComponentRestInpu
 	 * @return
 	 */
 	@Override
-	public SnomedRelationshipInput toComponentInput(final String version, final String taskId) {
-		final SnomedRelationshipInput result = super.toComponentInput(version, taskId);
+	public SnomedRelationshipInput toComponentInput(final String branchPath) {
+		final SnomedRelationshipInput result = super.toComponentInput(branchPath);
 
 		result.setCharacteristicType(getCharacteristicType());
 		result.setDestinationId(getDestinationId());

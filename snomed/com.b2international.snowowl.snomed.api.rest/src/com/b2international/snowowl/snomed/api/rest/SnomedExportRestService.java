@@ -113,8 +113,7 @@ public class SnomedExportRestService extends AbstractSnomedRestService {
 		final StorageRef exportStorageRef = new StorageRef();
 		
 		exportStorageRef.setShortName("SNOMEDCT");
-		exportStorageRef.setVersion(configuration.getVersion());
-		exportStorageRef.setTaskId(configuration.getTaskId());
+		exportStorageRef.setBranchPath(configuration.getBranchPath());
 		
 		// Check version and branch existence
 		exportStorageRef.checkStorageExists();
@@ -198,7 +197,7 @@ public class SnomedExportRestService extends AbstractSnomedRestService {
 	private SnomedExportConfiguration toExportConfiguration(final SnomedExportRestConfiguration configuration) {
 		final SnomedExportConfiguration conf = new SnomedExportConfiguration(
 				configuration.getType(), 
-				configuration.getVersion(), configuration.getTaskId(),
+				configuration.getBranchPath(),
 				configuration.getNamespaceId(), configuration.getModuleIds(),
 				configuration.getDeltaStartEffectiveTime(), configuration.getDeltaEndEffectiveTime(),
 				configuration.getTransientEffectiveTime());

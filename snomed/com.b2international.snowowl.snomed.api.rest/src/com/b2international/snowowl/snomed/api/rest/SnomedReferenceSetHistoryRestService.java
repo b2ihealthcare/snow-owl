@@ -38,7 +38,7 @@ import com.wordnik.swagger.annotations.ApiOperation;
 @Api("SNOMED CT History")
 @RestController
 @RequestMapping(
-		value="/{version}", 
+		value="/{path:**}", 
 		produces={ AbstractRestService.V1_MEDIA_TYPE })
 public class SnomedReferenceSetHistoryRestService extends AbstractSnomedRestService {
 
@@ -50,26 +50,15 @@ public class SnomedReferenceSetHistoryRestService extends AbstractSnomedRestServ
 			value="Get history for a reference set", 
 			notes="Retrieves history for the specified SNOMED CT reference set.")
 	public SnomedReferenceSetHistory getHistory(
-			@PathVariable(value="version") final String version,
+			@PathVariable(value="path") final String branchPath,
 			@PathVariable(value="refSetId") final String refSetId) {
 
-		return getHistoryOnTask(version, null, refSetId);
-	}
-
-	@RequestMapping(value="/tasks/{taskId}/reference-sets/{refSetId}/history", method=RequestMethod.GET)
-	@ApiOperation(
-			value="Get history for a reference set on task", 
-			notes="Retrieves history for the specified SNOMED CT reference set.")
-	public SnomedReferenceSetHistory getHistoryOnTask(
-			@PathVariable(value="version") final String version,
-			@PathVariable(value="taskId") final String taskId,
-			@PathVariable(value="refSetId") final String refSetId) {
-
-		final IComponentRef refSetRef = createComponentRef(version, taskId, refSetId);
+		final IComponentRef refSetRef = createComponentRef(branchPath, refSetId);
 		final List<IHistoryInfo> referenceSetHistory = delegate.getHistory(refSetRef);
 
 		final SnomedReferenceSetHistory result = new SnomedReferenceSetHistory();
 		result.setReferenceSetHistory(referenceSetHistory);
 		return result;
 	}
+
 }

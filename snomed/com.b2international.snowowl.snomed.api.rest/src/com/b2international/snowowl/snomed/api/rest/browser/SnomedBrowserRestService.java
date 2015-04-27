@@ -48,30 +48,30 @@ import com.wordnik.swagger.annotations.ApiResponses;
 @Api("IHTSDO SNOMED CT Browser")
 @Controller
 @RequestMapping(
-		value="/{version}", 
+		value="/{path:**}", 
 		produces={ SnomedBrowserRestService.IHTSDO_V1_MEDIA_TYPE, MediaType.APPLICATION_JSON_VALUE })
 public class SnomedBrowserRestService extends AbstractSnomedRestService {
 
 	/**
 	 * The currently supported versioned media type of the IHTSDO SNOMED CT Browser RESTful API.
 	 */
-	public static final String IHTSDO_V1_MEDIA_TYPE = "application/vnd.org.ihtsdo.browser-v1+json";
+	public static final String IHTSDO_V1_MEDIA_TYPE = "application/vnd.org.ihtsdo.browser+json";
 
 	@Autowired
 	protected ISnomedBrowserService delegate;
 
 	@ApiOperation(
 			value="Retrieve single concept properties",
-			notes="Retrieves a single concept and related information on a version.")
+			notes="Retrieves a single concept and related information on a branch.")
 	@ApiResponses({
 		@ApiResponse(code = 200, message = "OK", response = Void.class),
 		@ApiResponse(code = 404, message = "Code system version or concept not found")
 	})
 	@RequestMapping(value="/concepts/{conceptId}", method=RequestMethod.GET)
 	public @ResponseBody ISnomedBrowserConcept getSingleConcept(
-			@ApiParam(value="The code system version")
-			@PathVariable(value="version")
-			final String version,
+			@ApiParam(value="The branch path")
+			@PathVariable(value="path")
+			final String branchPath,
 
 			@ApiParam(value="The concept identifier")
 			@PathVariable(value="conceptId")
@@ -83,43 +83,13 @@ public class SnomedBrowserRestService extends AbstractSnomedRestService {
 
 			final HttpServletRequest request) {
 
-		return getSingleConceptOnTask(version, null, conceptId, languageSetting, request);
-	}
-
-	@ApiOperation(
-			value="Retrieve single concept properties on task",
-			notes="Retrieves a single concept and related information on a task branch.")
-	@ApiResponses({
-		@ApiResponse(code = 200, message = "OK", response = Void.class),
-		@ApiResponse(code = 404, message = "Code system version, task or concept not found")
-	})
-	@RequestMapping(value="/tasks/{taskId}/concepts/{conceptId}", method=RequestMethod.GET)
-	public @ResponseBody ISnomedBrowserConcept getSingleConceptOnTask(
-			@ApiParam(value="The code system version")
-			@PathVariable(value="version")
-			final String version,
-
-			@ApiParam(value="The task")
-			@PathVariable(value="taskId")
-			final String taskId,
-
-			@ApiParam(value="The concept identifier")
-			@PathVariable(value="conceptId")
-			final String conceptId,
-
-			@ApiParam(value="Language codes and reference sets, in order of preference")
-			@RequestHeader(value="Accept-Language", defaultValue="en-US;q=0.8,en-GB;q=0.6", required=false) 
-			final String languageSetting,
-
-			final HttpServletRequest request) {
-
-		final IComponentRef conceptRef = createComponentRef(version, taskId, conceptId);
+		final IComponentRef conceptRef = createComponentRef(branchPath, conceptId);
 		return delegate.getConceptDetails(conceptRef, Collections.list(request.getLocales()));
 	}
 
 	@ApiOperation(
 			value = "Retrieve children of a concept",
-			notes = "Returns a list of child concepts of the specified concept on a version.",
+			notes = "Returns a list of child concepts of the specified concept on a branch.",
 			response=Void.class)
 	@ApiResponses({
 		@ApiResponse(code = 200, message = "OK"),
@@ -129,9 +99,9 @@ public class SnomedBrowserRestService extends AbstractSnomedRestService {
 			value="/concepts/{conceptId}/children",
 			method = RequestMethod.GET)
 	public @ResponseBody List<ISnomedBrowserChildConcept> getChildren(
-			@ApiParam(value="The code system version")
-			@PathVariable(value="version")
-			final String version,
+			@ApiParam(value="The branch path")
+			@PathVariable(value="path")
+			final String branchPath,
 
 			@ApiParam(value="The concept identifier")
 			@PathVariable(value="conceptId")
@@ -143,40 +113,7 @@ public class SnomedBrowserRestService extends AbstractSnomedRestService {
 
 			final HttpServletRequest request) {
 
-		return getChildrenOnTask(version, null, conceptId, languageSetting, request);
-	}
-
-	@ApiOperation(
-			value = "Retrieve descendants of a concept",
-			notes = "Returns the list of child concepts of the specified concept on a task branch.",
-			response=Void.class)
-	@ApiResponses({
-		@ApiResponse(code = 200, message = "OK"),
-		@ApiResponse(code = 404, message = "Code system version, task or concept not found")
-	})
-	@RequestMapping(
-			value="/tasks/{taskId}/concepts/{conceptId}/children",
-			method = RequestMethod.GET)
-	public @ResponseBody List<ISnomedBrowserChildConcept> getChildrenOnTask(
-			@ApiParam(value="The code system version")
-			@PathVariable(value="version")
-			final String version,
-
-			@ApiParam(value="The task")
-			@PathVariable(value="taskId")
-			final String taskId,
-
-			@ApiParam(value="The concept identifier")
-			@PathVariable(value="conceptId")
-			final String conceptId,
-
-			@ApiParam(value="Language codes and reference sets, in order of preference")
-			@RequestHeader(value="Accept-Language", defaultValue="en-US;q=0.8,en-GB;q=0.6", required=false) 
-			final String languageSetting,
-
-			final HttpServletRequest request) {
-
-		final IComponentRef ref = createComponentRef(version, taskId, conceptId);
+		final IComponentRef ref = createComponentRef(branchPath, conceptId);
 		return delegate.getConceptChildren(ref, Collections.list(request.getLocales()));
 	}
 
@@ -192,9 +129,9 @@ public class SnomedBrowserRestService extends AbstractSnomedRestService {
 			value="/descriptions",
 			method = RequestMethod.GET)
 	public @ResponseBody List<ISnomedBrowserDescriptionResult> searchDescriptions(
-			@ApiParam(value="The code system version")
-			@PathVariable(value="version")
-			final String version,
+			@ApiParam(value="The branch path")
+			@PathVariable(value="path")
+			final String branchPath,
 
 			@ApiParam(value="The query string")
 			@RequestParam(value="query")
@@ -208,47 +145,6 @@ public class SnomedBrowserRestService extends AbstractSnomedRestService {
 			@RequestParam(value="limit", defaultValue="50", required=false) 
 			final int limit,
 
-			@ApiParam(value="Language codes and reference sets, in order of preference")
-			@RequestHeader(value="Accept-Language", defaultValue="en-US;q=0.8,en-GB;q=0.6", required=false) 
-			final String languageSetting,
-
-			final HttpServletRequest request) {
-
-		return searchDescriptionsOnTask(version, null, query, offset, limit, languageSetting, request);
-	}
-
-	@ApiOperation(
-			value = "Retrieve descendants of a concept",
-			notes = "Returns the list of child concepts of the specified concept on a task branch.",
-			response=Void.class)
-	@ApiResponses({
-		@ApiResponse(code = 200, message = "OK"),
-		@ApiResponse(code = 404, message = "Code system version, task or concept not found")
-	})
-	@RequestMapping(
-			value="/tasks/{taskId}/descriptions",
-			method = RequestMethod.GET)
-	public @ResponseBody List<ISnomedBrowserDescriptionResult> searchDescriptionsOnTask(
-			@ApiParam(value="The code system version")
-			@PathVariable(value="version")
-			final String version,
-
-			@ApiParam(value="The task")
-			@PathVariable(value="taskId")
-			final String taskId,
-
-			@ApiParam(value="The query string")
-			@RequestParam(value="query")
-			final String query,
-
-			@ApiParam(value="The starting offset in the list")
-			@RequestParam(value="offset", defaultValue="0", required=false) 
-			final int offset,
-
-			@ApiParam(value="The maximum number of items to return")
-			@RequestParam(value="limit", defaultValue="50", required=false) 
-			final int limit,
-			
 			@ApiParam(value="Language codes and reference sets, in order of preference")
 			@RequestHeader(value="Accept-Language", defaultValue="en-US;q=0.8,en-GB;q=0.6", required=false) 
 			final String languageSetting,
@@ -257,9 +153,7 @@ public class SnomedBrowserRestService extends AbstractSnomedRestService {
 
 		final StorageRef ref = new StorageRef();
 		ref.setShortName("SNOMEDCT");
-		ref.setVersion(version);
-		ref.setTaskId(taskId);
-
+		ref.setBranchPath(branchPath);
 		return delegate.getDescriptions(ref, query, Collections.list(request.getLocales()), offset, limit);
 	}
 
@@ -272,51 +166,19 @@ public class SnomedBrowserRestService extends AbstractSnomedRestService {
 	@RequestMapping(value="/constants", method=RequestMethod.GET)
 	public @ResponseBody Map<String, ISnomedBrowserConstant> getConstants(
 
-			@ApiParam(value="The code system version")
-			@PathVariable(value="version")
-			final String version,
+			@ApiParam(value="The branch path")
+			@PathVariable(value="path")
+			final String branchPath,
 
 			@ApiParam(value="Language codes and reference sets, in order of preference")
 			@RequestHeader(value="Accept-Language", defaultValue="en-US;q=0.8,en-GB;q=0.6", required=false) 
 			final String languageSetting,
 
 			final HttpServletRequest request) {
-
 		final StorageRef ref = new StorageRef();
 		ref.setShortName("SNOMEDCT");
-		ref.setVersion("MAIN");
-
-		return getConstantsOnTask(version, null, languageSetting, request);
-	}
-
-	@ApiOperation(
-			value="Retrieve constants and properties on task",
-			notes="Retrieves referenced constants and related concept properties from a task branch.")
-	@ApiResponses({
-		@ApiResponse(code = 200, message = "OK", response = Void.class)
-	})
-	@RequestMapping(value="/tasks/{taskId}/constants", method=RequestMethod.GET)
-	public @ResponseBody Map<String, ISnomedBrowserConstant> getConstantsOnTask(
-
-			@ApiParam(value="The code system version")
-			@PathVariable(value="version")
-			final String version,
-
-			@ApiParam(value="The task")
-			@PathVariable(value="taskId")
-			final String taskId,
-
-			@ApiParam(value="Language codes and reference sets, in order of preference")
-			@RequestHeader(value="Accept-Language", defaultValue="en-US;q=0.8,en-GB;q=0.6", required=false) 
-			final String languageSetting,
-
-			final HttpServletRequest request) {
-
-		final StorageRef ref = new StorageRef();
-		ref.setShortName("SNOMEDCT");
-		ref.setVersion(version);
-		ref.setTaskId(taskId);
-
+		ref.setBranchPath(branchPath);
 		return delegate.getConstants(ref, Collections.list(request.getLocales()));
 	}
+
 }
