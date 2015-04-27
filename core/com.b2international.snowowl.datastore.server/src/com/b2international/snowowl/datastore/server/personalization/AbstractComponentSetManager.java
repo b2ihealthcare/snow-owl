@@ -77,8 +77,8 @@ public abstract class AbstractComponentSetManager extends SingleDirectoryIndexSe
 	
 	private static final Set<String> FIELDS_TO_LOAD = ImmutableSet.of(FIELD_ID, FIELD_TERMINOLOGY_COMPONENT_ID);
 
-	protected AbstractComponentSetManager(File indexRootPath) {
-		super(indexRootPath);
+	protected AbstractComponentSetManager(File directory) {
+		super(directory);
 	}
 	
 	@Override
