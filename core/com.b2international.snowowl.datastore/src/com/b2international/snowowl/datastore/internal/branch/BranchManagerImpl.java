@@ -35,9 +35,9 @@ import com.google.common.collect.ImmutableList;
 public class BranchManagerImpl implements BranchManager {
 
 	private final TimestampProvider clock;
-	private Store<Branch> branchStore;
+	private Store<BranchImpl> branchStore;
 	
-	public BranchManagerImpl(Store<Branch> branchStore, long mainBranchTimestamp) {
+	public BranchManagerImpl(Store<BranchImpl> branchStore, long mainBranchTimestamp) {
 		this(branchStore, mainBranchTimestamp, null);
 	}
 	
@@ -45,10 +45,10 @@ public class BranchManagerImpl implements BranchManager {
 	 * For testing only
 	 */
 	BranchManagerImpl(long mainBranchTimestamp, TimestampProvider clock) {
-		this(new MemStore<Branch>(), mainBranchTimestamp, clock);
+		this(new MemStore<BranchImpl>(), mainBranchTimestamp, clock);
 	}
 	
-	/*package*/ BranchManagerImpl(Store<Branch> branchStore, long mainBranchTimestamp, TimestampProvider clock) {
+	/*package*/ BranchManagerImpl(Store<BranchImpl> branchStore, long mainBranchTimestamp, TimestampProvider clock) {
 		this.branchStore = branchStore;
 		this.clock = clock;
 		initMainBranch(mainBranchTimestamp);
@@ -59,7 +59,7 @@ public class BranchManagerImpl implements BranchManager {
 		registerBranch(main);
 	}
 
-	private void registerBranch(final Branch branch) {
+	private void registerBranch(final BranchImpl branch) {
 		branchStore.put(branch.path(), branch);
 	}
 	
@@ -104,7 +104,7 @@ public class BranchManagerImpl implements BranchManager {
 	}
 
 	@Override
-	public Collection<Branch> getBranches() {
+	public Collection<? extends Branch> getBranches() {
 		return ImmutableList.copyOf(branchStore.values());
 	}
 

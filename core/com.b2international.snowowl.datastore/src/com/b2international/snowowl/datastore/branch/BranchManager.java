@@ -46,6 +46,6 @@ public interface BranchManager {
 	 * 
 	 * @return
 	 */
-	Collection<Branch> getBranches();
+	Collection<? extends Branch> getBranches();
 
 }

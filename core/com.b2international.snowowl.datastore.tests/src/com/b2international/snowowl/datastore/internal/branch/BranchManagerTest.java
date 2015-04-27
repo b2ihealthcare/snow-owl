@@ -93,7 +93,7 @@ public class BranchManagerTest {
 	public void whenCreatingThreeBranches_ThenManagerShouldReturnAllOfThemInGetAll() throws Exception {
 		final Branch b = main.createChild("b");
 		final Branch c = main.createChild("c");
-		final Collection<Branch> branches = manager.getBranches();
+		final Collection<? extends Branch> branches = manager.getBranches();
 		assertThat(branches).containsOnly(main, a, b, c);
 	}
 	

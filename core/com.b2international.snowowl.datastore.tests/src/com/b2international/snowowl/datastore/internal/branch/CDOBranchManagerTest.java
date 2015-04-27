@@ -59,7 +59,7 @@ public class CDOBranchManagerTest {
 		when(repository.getCdoBranchManager()).thenReturn(cdoBranchManager);
 		when(repository.getCdoMainBranch()).thenReturn(mainBranch);
 		
-		manager = new CDOBranchManagerImpl(repository, new MemStore<Branch>());
+		manager = new CDOBranchManagerImpl(repository, new MemStore<BranchImpl>());
 		main = manager.getMainBranch();
 	}
 	

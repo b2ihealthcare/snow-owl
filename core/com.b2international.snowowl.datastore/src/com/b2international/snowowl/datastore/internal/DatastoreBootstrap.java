@@ -15,19 +15,21 @@
  */
 package com.b2international.snowowl.datastore.internal;
 
+import java.io.File;
+
 import org.eclipse.core.runtime.IProgressMonitor;
 
 import com.b2international.snowowl.core.api.index.IIndexServerServiceManager;
 import com.b2international.snowowl.core.config.SnowOwlConfiguration;
 import com.b2international.snowowl.core.setup.BootstrapFragment;
 import com.b2international.snowowl.core.setup.Environment;
-import com.b2international.snowowl.datastore.branch.Branch;
 import com.b2international.snowowl.datastore.branch.BranchManager;
 import com.b2international.snowowl.datastore.cdo.ICDOConnectionManager;
 import com.b2international.snowowl.datastore.cdo.ICDORepositoryManager;
 import com.b2international.snowowl.datastore.internal.branch.BranchEventHandler;
+import com.b2international.snowowl.datastore.internal.branch.BranchImpl;
 import com.b2international.snowowl.datastore.internal.branch.CDOBranchManagerImpl;
-import com.b2international.snowowl.datastore.store.MemStore;
+import com.b2international.snowowl.datastore.store.IndexStore;
 import com.b2international.snowowl.eventbus.IEventBus;
 
 /**
@@ -47,7 +49,8 @@ public class DatastoreBootstrap implements BootstrapFragment {
 			IIndexServerServiceManager indexServerServiceManager = env.service(IIndexServerServiceManager.class); 
 			RepositoryWrapper wrapper = new RepositoryWrapper("snomedStore", cdoConnectionManager, cdoRepositoryManager, indexServerServiceManager);
 			
-			BranchManager branchManager = new CDOBranchManagerImpl(wrapper, new MemStore<Branch>());
+			final File branchIndexDirectory = new File(env.getDataDirectory(), "branches");
+			BranchManager branchManager = new CDOBranchManagerImpl(wrapper, new IndexStore<BranchImpl>(branchIndexDirectory, BranchImpl.class));
 			env.service(IEventBus.class).registerHandler("/branches", new BranchEventHandler(branchManager));
 		}
 	}

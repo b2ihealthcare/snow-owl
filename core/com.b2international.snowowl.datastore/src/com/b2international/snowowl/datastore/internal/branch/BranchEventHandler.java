@@ -16,6 +16,7 @@
 package com.b2international.snowowl.datastore.internal.branch;
 
 import static com.google.common.base.Preconditions.checkNotNull;
+import static com.google.common.collect.Sets.newHashSet;
 
 import com.b2international.snowowl.core.events.util.ApiEventHandler;
 import com.b2international.snowowl.core.events.util.Handler;
@@ -45,7 +46,7 @@ public class BranchEventHandler extends ApiEventHandler {
 	
 	@Handler
 	protected BranchesReply handle(ReadAllBranchEvent event) {
-		return new BranchesReply(branchManager.getBranches());
+		return new BranchesReply(newHashSet(branchManager.getBranches()));
 	}
 
 	@Handler

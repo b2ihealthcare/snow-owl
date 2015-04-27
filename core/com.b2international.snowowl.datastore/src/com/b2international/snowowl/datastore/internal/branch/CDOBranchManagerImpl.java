@@ -44,7 +44,7 @@ public class CDOBranchManagerImpl extends BranchManagerImpl {
 	
 	private final IRepository repository;
 	
-	public CDOBranchManagerImpl(final IRepository repository, final Store<Branch> branchStore) {
+	public CDOBranchManagerImpl(final IRepository repository, final Store<BranchImpl> branchStore) {
 		super(branchStore, getBasetimestamp(repository.getCdoMainBranch()));
 		this.repository = repository;
 		registerCDOBranch(repository.getCdoMainBranch());
