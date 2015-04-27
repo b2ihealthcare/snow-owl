@@ -71,7 +71,7 @@ public class IndexStore<T> extends SingleDirectoryIndexServerService implements 
 			if (get(key) != null) {
 				throw new StoreException("Duplicates on key '%s' are not allowed in store '%s'.", key, getDirectory());
 			}
-			addDoc(key, value);
+			updateDoc(key, value);
 			commit();
 		} catch (IOException e) {
 			throw new StoreException("Failed to store value '%s' in key '%s'", value, key, e);
@@ -118,7 +118,7 @@ public class IndexStore<T> extends SingleDirectoryIndexServerService implements 
 
 	private void doUpdate(String key, T newValue) throws IOException {
 		deleteDoc(key);
-		addDoc(key, newValue);
+		updateDoc(key, newValue);
 		commit();
 	}
 
@@ -141,12 +141,12 @@ public class IndexStore<T> extends SingleDirectoryIndexServerService implements 
 		}
 	}
 	
-	private void addDoc(String key, T value) throws IOException {
+	private void updateDoc(String key, T value) throws IOException {
 		final Document doc = new Document();
 		doc.add(new StringField(ID_FIELD, key, Field.Store.NO));
 		doc.add(new StringField(TYPE_FIELD, clazz.getName(), Field.Store.NO));
 		doc.add(new StringField(SOURCE_FIELD, serialize(value), Field.Store.YES));
-		writer.addDocument(doc);		
+		writer.updateDocument(new Term(ID_FIELD, key), doc);
 	}
 	
 	private void deleteDoc(String key) throws IOException {
