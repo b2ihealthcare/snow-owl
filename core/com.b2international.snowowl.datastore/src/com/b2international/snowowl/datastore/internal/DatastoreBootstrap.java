@@ -16,17 +16,14 @@
 package com.b2international.snowowl.datastore.internal;
 
 import org.eclipse.core.runtime.IProgressMonitor;
-import org.eclipse.emf.cdo.common.branch.CDOBranchManager;
-import org.eclipse.emf.cdo.spi.common.branch.InternalCDOBranchManager;
 
 import com.b2international.snowowl.core.api.index.IIndexServerServiceManager;
-import com.b2international.snowowl.core.api.index.IIndexUpdater;
 import com.b2international.snowowl.core.config.SnowOwlConfiguration;
 import com.b2international.snowowl.core.setup.BootstrapFragment;
 import com.b2international.snowowl.core.setup.Environment;
 import com.b2international.snowowl.datastore.branch.BranchManager;
-import com.b2international.snowowl.datastore.cdo.ICDOConnection;
 import com.b2international.snowowl.datastore.cdo.ICDOConnectionManager;
+import com.b2international.snowowl.datastore.cdo.ICDORepositoryManager;
 import com.b2international.snowowl.datastore.internal.branch.BranchEventHandler;
 import com.b2international.snowowl.datastore.internal.branch.CDOBranchManagerImpl;
 import com.b2international.snowowl.eventbus.IEventBus;
@@ -43,11 +40,12 @@ public class DatastoreBootstrap implements BootstrapFragment {
 	@Override
 	public void run(SnowOwlConfiguration configuration, Environment env, IProgressMonitor monitor) throws Exception {
 		if (env.isServer() || env.isEmbedded()) {
-			ICDOConnection cdoConnection = env.service(ICDOConnectionManager.class).getByUuid("snomedStore");
-			IIndexUpdater<?> indexUpdater = env.service(IIndexServerServiceManager.class).getByUuid("snomedStore"); 
-			CDOBranchManager cdoBranchManager = cdoConnection.getMainBranch().getBranchManager();
-			BranchManager branchManager = new CDOBranchManagerImpl((InternalCDOBranchManager) cdoBranchManager, cdoConnection, indexUpdater);
-		
+			ICDOConnectionManager cdoConnectionManager = env.service(ICDOConnectionManager.class);
+			ICDORepositoryManager cdoRepositoryManager = env.service(ICDORepositoryManager.class);
+			IIndexServerServiceManager indexServerServiceManager = env.service(IIndexServerServiceManager.class); 
+			RepositoryWrapper wrapper = new RepositoryWrapper("snomedStore", cdoConnectionManager, cdoRepositoryManager, indexServerServiceManager);
+			
+			BranchManager branchManager = new CDOBranchManagerImpl(wrapper);
 			env.service(IEventBus.class).registerHandler("/branches", new BranchEventHandler(branchManager));
 		}
 	}

@@ -24,13 +24,16 @@ import org.slf4j.LoggerFactory;
 
 import com.b2international.snowowl.core.api.SnowowlRuntimeException;
 import com.b2international.snowowl.core.api.SnowowlServiceException;
+import com.b2international.snowowl.core.api.index.IIndexServerServiceManager;
 import com.b2international.snowowl.core.config.ClientPreferences;
 import com.b2international.snowowl.core.config.SnowOwlConfiguration;
 import com.b2international.snowowl.core.setup.Environment;
 import com.b2international.snowowl.core.setup.PreRunCapableBootstrapFragment;
 import com.b2international.snowowl.core.users.SpecialUserStore;
 import com.b2international.snowowl.datastore.cdo.CDOConnectionFactoryProvider;
+import com.b2international.snowowl.datastore.cdo.ICDORepositoryManager;
 import com.b2international.snowowl.datastore.net4j.Net4jUtils;
+import com.b2international.snowowl.datastore.server.index.IndexServerServiceManager;
 import com.b2international.snowowl.datastore.server.session.ApplicationSessionManager;
 import com.b2international.snowowl.datastore.server.session.LogListener;
 import com.b2international.snowowl.datastore.server.session.VersionProcessor;
@@ -83,6 +86,8 @@ public class DatastoreServerBootstrap implements PreRunCapableBootstrapFragment 
 			final ICDORepositoryManager cdoRepositoryManager = CDORepositoryManager.getInstance();
 			cdoRepositoryManager.activate();
 			environment.services().registerService(ICDORepositoryManager.class, cdoRepositoryManager);
+			
+			environment.services().registerService(IIndexServerServiceManager.class, IndexServerServiceManager.INSTANCE);
 			
 			LOG.info("<<< Server-side datastore bundle started. [{}]", serverStopwatch);
 		} else {
