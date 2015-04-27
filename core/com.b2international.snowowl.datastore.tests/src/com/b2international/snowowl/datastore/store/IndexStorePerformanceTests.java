@@ -15,8 +15,12 @@
  */
 package com.b2international.snowowl.datastore.store;
 
+import static com.google.common.collect.Lists.newArrayList;
 import static org.junit.Assert.assertNotNull;
 
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
 import java.util.Random;
 import java.util.UUID;
 
@@ -24,11 +28,13 @@ import org.databene.contiperf.PerfTest;
 import org.databene.contiperf.Required;
 import org.databene.contiperf.junit.ContiPerfRule;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 
 import com.b2international.snowowl.datastore.store.Types.ComplexData;
 import com.b2international.snowowl.datastore.store.Types.State;
+import com.google.common.collect.Lists;
 
 /**
  * @since 4.1
@@ -40,28 +46,39 @@ public class IndexStorePerformanceTests {
 	
 	private Random rnd = new Random();
 	private Store<ComplexData> store;
+	private List<ComplexData> dataToStore = Collections.synchronizedList(Lists.<ComplexData>newLinkedList());
 
 	@Before
 	public void givenIndexStore() {
 		this.store = new IndexStore<ComplexData>(IndexStoreTests.tmpDir(), ComplexData.class);
+		dataToStore.addAll(generateData(1000));
 	}
 	
 	@Test
 	@PerfTest(rampUp = 1000, warmUp = 1000, invocations = 1000)
 	@Required(median = 25, percentile95 = 50)
-	public void storingValuesinSequentialFormShouldBeFast() throws Exception {
-		final ComplexData value = newRandomData();
+	public void storingValuesSequentiallyShouldBeFast() throws Exception {
+		final ComplexData value = dataToStore.remove(0);
 		store.put(value.getId(), value);
 		assertNotNull(store.get(value.getId()));
 	}
 	
+	@Ignore
 	@Test
 	@PerfTest(rampUp = 1000, warmUp = 1000, invocations = 1000, threads = 8)
 	@Required(median = 150, percentile95 = 250)
-	public void storingValuesInParallelFormShouldBeFastButSlowerThenSequential() throws Exception {
-		final ComplexData value = newRandomData();
+	public void storingValuesInParallelShouldBeFastButSlowerThanSeq() throws Exception {
+		final ComplexData value = dataToStore.remove(0);
 		store.put(value.getId(), value);
 		assertNotNull(store.get(value.getId()));
+	}
+	
+	private Collection<? extends ComplexData> generateData(int numberOfElements) {
+		final Collection<ComplexData> result = newArrayList();
+		for (int i = 0; i < numberOfElements; i++) {
+			result.add(newRandomData());
+		}
+		return result;
 	}
 
 	private ComplexData newRandomData() {
