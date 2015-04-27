@@ -83,9 +83,8 @@ public class ClassificationIndexServerService extends SingleDirectoryIndexServer
 
 		final BooleanQuery query = new BooleanQuery(true);
 		query.add(new TermQuery(new Term("class", ClassificationRun.class.getSimpleName())), Occur.MUST);
-		query.add(new TermQuery(new Term("version", storageRef.getCodeSystemVersion().getVersionId())), Occur.MUST);
 		query.add(new TermQuery(new Term("userId", userId)), Occur.MUST);
-		query.add(new TermQuery(new Term("branchPath", storageRef.getBranchPath().getPath())), Occur.MUST);
+		query.add(new TermQuery(new Term("branchPath", storageRef.getBranchPath())), Occur.MUST);
 
 		return this.<IClassificationRun>search(query, ClassificationRun.class);
 	}
@@ -100,12 +99,11 @@ public class ClassificationIndexServerService extends SingleDirectoryIndexServer
 		}
 	}
 
-	public void insertOrUpdateClassificationRun(final String versionId, final IBranchPath branchPath, final ClassificationRun classificationRun) throws IOException {
+	public void insertOrUpdateClassificationRun(final IBranchPath branchPath, final ClassificationRun classificationRun) throws IOException {
 
 		final Document updateDocument = new Document();
 		updateDocument.add(new StringField("class", ClassificationRun.class.getSimpleName(), Store.NO));
 		updateDocument.add(new StringField("id", classificationRun.getId(), Store.NO));
-		updateDocument.add(new StringField("version", versionId, Store.YES));
 		updateDocument.add(new StringField("userId", classificationRun.getUserId(), Store.YES));
 		updateDocument.add(new StringField("branchPath", branchPath.getPath(), Store.YES));
 		updateDocument.add(new StoredField("source", objectMapper.writer().writeValueAsString(classificationRun)));
@@ -126,7 +124,6 @@ public class ClassificationIndexServerService extends SingleDirectoryIndexServer
 			return;
 		}
 
-		final String version = sourceDocument.get("version");
 		final IBranchPath branchPath = BranchPathUtils.createPath(sourceDocument.get("branchPath"));
 		final ClassificationRun classificationRun = objectMapper.reader(ClassificationRun.class).readValue(sourceDocument.get("source"));
 
@@ -140,7 +137,7 @@ public class ClassificationIndexServerService extends SingleDirectoryIndexServer
 			classificationRun.setCompletionDate(new Date());
 		}
 
-		insertOrUpdateClassificationRun(version, branchPath, classificationRun);
+		insertOrUpdateClassificationRun(branchPath, classificationRun);
 	}
 
 	public void deleteClassificationData(final UUID id) throws IOException {
@@ -157,7 +154,6 @@ public class ClassificationIndexServerService extends SingleDirectoryIndexServer
 			return;
 		}
 
-		final String version = sourceDocument.get("version");
 		final IBranchPath branchPath = BranchPathUtils.createPath(sourceDocument.get("branchPath"));
 		final String userId = sourceDocument.get("userId");
 
@@ -176,7 +172,7 @@ public class ClassificationIndexServerService extends SingleDirectoryIndexServer
 			convertedEquivalenceSet.setUnsatisfiable(equivalenceSet.isUnsatisfiable());
 			convertedEquivalenceSet.setEquivalentConcepts(convertedEquivalentConcepts);
 
-			indexResult(id, version, branchPath, userId, EquivalentConceptSet.class, convertedEquivalenceSet);
+			indexResult(id, branchPath, userId, EquivalentConceptSet.class, convertedEquivalenceSet);
 		}
 
 		for (final RelationshipChangeEntry relationshipChange : changes.getRelationshipEntries()) {
@@ -193,7 +189,7 @@ public class ClassificationIndexServerService extends SingleDirectoryIndexServer
 			convertedRelationshipChange.setTypeId(Long.toString(relationshipChange.getType().getId()));
 			convertedRelationshipChange.setUnionGroup(relationshipChange.getUnionGroup());
 
-			indexResult(id, version, branchPath, userId, RelationshipChange.class, convertedRelationshipChange);
+			indexResult(id, branchPath, userId, RelationshipChange.class, convertedRelationshipChange);
 		}
 
 		commit();
@@ -238,13 +234,12 @@ public class ClassificationIndexServerService extends SingleDirectoryIndexServer
 		return result;
 	}
 
-	private <T> void indexResult(final UUID id, final String version, final IBranchPath branchPath, final String userId, 
+	private <T> void indexResult(final UUID id, final IBranchPath branchPath, final String userId, 
 			final Class<T> clazz, final T value) throws IOException {
 
 		final Document updateDocument = new Document();
 		updateDocument.add(new StringField("class", clazz.getSimpleName(), Store.NO));
 		updateDocument.add(new StringField("id", id.toString(), Store.NO));
-		updateDocument.add(new StringField("version", version, Store.NO));
 		updateDocument.add(new StringField("userId", userId, Store.NO));
 		updateDocument.add(new StringField("branchPath", branchPath.getPath(), Store.NO));
 		updateDocument.add(new StoredField("source", objectMapper.writer().writeValueAsString(value)));
@@ -266,9 +261,8 @@ public class ClassificationIndexServerService extends SingleDirectoryIndexServer
 		final BooleanQuery query = new BooleanQuery(true);
 		query.add(new TermQuery(new Term("class", className)), Occur.MUST);
 		query.add(new TermQuery(new Term("id", classificationId)), Occur.MUST);
-		query.add(new TermQuery(new Term("version", storageRef.getCodeSystemVersion().getVersionId())), Occur.MUST);
 		query.add(new TermQuery(new Term("userId", userId)), Occur.MUST);
-		query.add(new TermQuery(new Term("branchPath", storageRef.getBranchPath().getPath())), Occur.MUST);
+		query.add(new TermQuery(new Term("branchPath", storageRef.getBranchPath())), Occur.MUST);
 		return query;
 	}
 
