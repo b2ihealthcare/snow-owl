@@ -16,7 +16,6 @@
 package com.b2international.snowowl.datastore.internal.branch;
 
 import java.util.Collection;
-import java.util.concurrent.ConcurrentMap;
 
 import com.b2international.snowowl.core.exceptions.AlreadyExistsException;
 import com.b2international.snowowl.core.exceptions.BadRequestException;
@@ -25,8 +24,9 @@ import com.b2international.snowowl.datastore.branch.Branch;
 import com.b2international.snowowl.datastore.branch.Branch.BranchState;
 import com.b2international.snowowl.datastore.branch.BranchManager;
 import com.b2international.snowowl.datastore.branch.TimestampProvider;
+import com.b2international.snowowl.datastore.store.MemStore;
+import com.b2international.snowowl.datastore.store.Store;
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.MapMaker;
 
 
 /**
@@ -35,17 +35,21 @@ import com.google.common.collect.MapMaker;
 public class BranchManagerImpl implements BranchManager {
 
 	private final TimestampProvider clock;
+	private Store<Branch> branchStore;
 	
-	private final ConcurrentMap<String, Branch> branches = new MapMaker().makeMap();
-
-	public BranchManagerImpl(long mainBranchTimestamp) {
-		this(mainBranchTimestamp, null);
+	public BranchManagerImpl(Store<Branch> branchStore, long mainBranchTimestamp) {
+		this(branchStore, mainBranchTimestamp, null);
 	}
 	
 	/*
 	 * For testing only
 	 */
 	BranchManagerImpl(long mainBranchTimestamp, TimestampProvider clock) {
+		this(new MemStore<Branch>(), mainBranchTimestamp, clock);
+	}
+	
+	/*package*/ BranchManagerImpl(Store<Branch> branchStore, long mainBranchTimestamp, TimestampProvider clock) {
+		this.branchStore = branchStore;
 		this.clock = clock;
 		initMainBranch(mainBranchTimestamp);
 	}
@@ -56,7 +60,7 @@ public class BranchManagerImpl implements BranchManager {
 	}
 
 	private void registerBranch(final Branch branch) {
-		branches.put(branch.path(), branch);
+		branchStore.put(branch.path(), branch);
 	}
 	
 	BranchImpl createBranch(BranchImpl parent, String name) {
@@ -96,12 +100,12 @@ public class BranchManagerImpl implements BranchManager {
 	}
 
 	private Branch getBranchFromStore(String path) {
-		return branches.get(path);
+		return branchStore.get(path);
 	}
 
 	@Override
 	public Collection<Branch> getBranches() {
-		return ImmutableList.copyOf(branches.values());
+		return ImmutableList.copyOf(branchStore.values());
 	}
 
 	BranchImpl merge(BranchImpl target, BranchImpl source, String commitMessage) {
@@ -125,7 +129,7 @@ public class BranchManagerImpl implements BranchManager {
 
 	BranchImpl delete(BranchImpl branchImpl) {
 		final BranchImpl deleted = branchImpl.withDeleted();
-		if (branches.replace(branchImpl.path(), branchImpl, deleted)) {
+		if (branchStore.replace(branchImpl.path(), branchImpl, deleted)) {
 			postDelete(deleted);
 		}
 		return deleted;
