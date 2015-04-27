@@ -20,9 +20,9 @@ import org.eclipse.emf.cdo.common.branch.CDOBranch;
 import com.b2international.snowowl.api.domain.IStorageRef;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.datastore.ICodeSystem;
-import com.b2international.snowowl.datastore.ICodeSystemVersion;
 
 /**
+ * @since 1.0
  */
 public interface InternalStorageRef extends IStorageRef {
 
@@ -39,17 +39,12 @@ public interface InternalStorageRef extends IStorageRef {
 	/**
 	 * @return
 	 */
-	IBranchPath getBranchPath();
+	IBranchPath getBranch();
 
 	/**
 	 * @return
 	 */
 	CDOBranch getCdoBranch();
-
-	/**
-	 * @return
-	 */
-	ICodeSystemVersion getCodeSystemVersion();
 
 	/**
 	 * 

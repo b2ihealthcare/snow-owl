@@ -15,27 +15,21 @@
  */
 package com.b2international.snowowl.api.impl.domain;
 
-import java.util.Collection;
-
 import org.eclipse.emf.cdo.common.branch.CDOBranch;
 
 import com.b2international.snowowl.api.codesystem.exception.CodeSystemNotFoundException;
-import com.b2international.snowowl.api.codesystem.exception.CodeSystemVersionNotFoundException;
-import com.b2international.snowowl.api.task.exception.TaskNotFoundException;
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.exceptions.NotFoundException;
 import com.b2international.snowowl.datastore.BranchPathUtils;
-import com.b2international.snowowl.datastore.CodeSystemService;
 import com.b2international.snowowl.datastore.IBranchPathMap;
 import com.b2international.snowowl.datastore.ICodeSystem;
-import com.b2international.snowowl.datastore.ICodeSystemVersion;
 import com.b2international.snowowl.datastore.TerminologyRegistryService;
 import com.b2international.snowowl.datastore.UserBranchPathMap;
 import com.b2international.snowowl.datastore.cdo.ICDOConnectionManager;
 
 /**
- *
+ * @since 1.0
  */
 public class StorageRef implements InternalStorageRef {
 
@@ -45,43 +39,29 @@ public class StorageRef implements InternalStorageRef {
 		return ApplicationContext.getServiceForClass(ICDOConnectionManager.class);
 	}
 
-	private static CodeSystemService getCodeSystemService() {
-		return ApplicationContext.getServiceForClass(CodeSystemService.class);
-	}
-
 	private static TerminologyRegistryService getRegistryService() {
 		return ApplicationContext.getServiceForClass(TerminologyRegistryService.class);
 	}
 
 	private String shortName;
-	private String version;
-	private String taskId;
+	private String branchPath;
 
 	@Override
 	public String getShortName() {
 		return shortName;
 	}
-
+	
 	@Override
-	public String getVersion() {
-		return version;
-	}
-
-	@Override
-	public String getTaskId() {
-		return taskId;
+	public String getBranchPath() {
+		return branchPath;
 	}
 
 	public void setShortName(final String shortName) {
 		this.shortName = shortName;
 	}
-
-	public void setVersion(final String version) {
-		this.version = version;
-	}
-
-	public void setTaskId(final String taskId) {
-		this.taskId = taskId;
+	
+	public void setBranchPath(String branchPath) {
+		this.branchPath = branchPath;
 	}
 
 	@Override
@@ -100,17 +80,9 @@ public class StorageRef implements InternalStorageRef {
 		return getCodeSystem().getRepositoryUuid();
 	}
 
-	private IBranchPath getVersionBranchPath() {
-		return BranchPathUtils.createVersionPath(version);
-	}
-
 	@Override
-	public IBranchPath getBranchPath() {
-		if (null == taskId) {
-			return getVersionBranchPath();
-		} else {
-			return BranchPathUtils.createPath(getVersionBranchPath(), taskId);
-		}
+	public IBranchPath getBranch() {
+		return BranchPathUtils.createPath(getBranchPath());
 	}
 
 	@Override
@@ -120,36 +92,15 @@ public class StorageRef implements InternalStorageRef {
 			return cdoBranch;
 		}
 
-		throw createCdoBranchNotFoundException();
+		throw new NotFoundException("Branch", branchPath);
 	}
 
 	private CDOBranch getCdoBranchOrNull() {
-		return getConnectionManager().getByUuid(getRepositoryUuid()).getBranch(getBranchPath());
+		return getConnectionManager().getByUuid(getRepositoryUuid()).getBranch(getBranch());
 	}
 
-	private NotFoundException createCdoBranchNotFoundException() {
-		if (null == taskId) {
-			return new CodeSystemVersionNotFoundException(version);
-		} else {
-			return new TaskNotFoundException(taskId);
-		}
-	}
-
-	@Override
-	public ICodeSystemVersion getCodeSystemVersion() {
-		final Collection<ICodeSystemVersion> codeSystemVersions = getCodeSystemService().getAllTagsWithHead(getRepositoryUuid());
-		for (final ICodeSystemVersion codeSystemVersion : codeSystemVersions) {
-			if (codeSystemVersion.getVersionId().equals(version)) {
-				return codeSystemVersion;
-			}
-		}
-
-		throw new CodeSystemVersionNotFoundException(version);
-	}
-	
 	@Override
 	public void checkStorageExists() {
-		getCodeSystemVersion();
 		getCdoBranch();
 	}
 
@@ -158,10 +109,8 @@ public class StorageRef implements InternalStorageRef {
 		final StringBuilder builder = new StringBuilder();
 		builder.append("StorageRef [shortName=");
 		builder.append(shortName);
-		builder.append(", version=");
-		builder.append(version);
-		builder.append(", taskId=");
-		builder.append(taskId);
+		builder.append(", branchPath=");
+		builder.append(branchPath);
 		builder.append("]");
 		return builder.toString();
 	}
