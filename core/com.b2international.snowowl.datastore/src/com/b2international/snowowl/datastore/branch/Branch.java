@@ -52,6 +52,12 @@ public interface Branch extends Deletable {
 	 * @return
 	 */
 	String path();
+	
+	/**
+	 * Returns the unique path of the parent of this {@link Branch}.
+	 * @return
+	 */
+	String parentPath();
 
 	/**
 	 * Returns the name of the {@link Branch}, which is often the same value as the last segment of the {@link #path()}.

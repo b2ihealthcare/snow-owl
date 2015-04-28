@@ -13,9 +13,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.snomed.api.rest.domain;
+package com.b2international.snowowl.datastore.branch;
 
-import com.b2international.snowowl.datastore.branch.Branch;
+import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 /**
@@ -23,26 +23,35 @@ import com.fasterxml.jackson.annotation.JsonProperty;
  * 
  * @since 4.1
  */
-public interface BranchMixin extends Branch {
+public abstract class BranchMixin implements Branch {
 
-	@JsonProperty
-	@Override
-	public long baseTimestamp();
+	@JsonCreator
+	BranchMixin(@JsonProperty("name") String name, @JsonProperty("parentPath") String parentPath, @JsonProperty("baseTimestamp") long baseTimestamp,
+			@JsonProperty("headTimestamp") long headTimestamp, @JsonProperty("deleted") boolean deleted) {
+	}
 	
 	@JsonProperty
 	@Override
-	public long headTimestamp();
+	public abstract long baseTimestamp();
 	
 	@JsonProperty
 	@Override
-	public String name();
+	public abstract long headTimestamp();
 	
 	@JsonProperty
 	@Override
-	public String path();
+	public abstract String name();
 	
 	@JsonProperty
 	@Override
-	public Branch.BranchState state();
+	public abstract String path();
+	
+	@JsonProperty
+	@Override
+	public abstract String parentPath();
+	
+	@JsonProperty
+	@Override
+	public abstract Branch.BranchState state();
 	
 }

@@ -129,6 +129,11 @@ public class BranchImpl implements Branch {
 	}
 	
 	@Override
+	public String parentPath() {
+		return parentPath;
+	}
+	
+	@Override
 	public Branch parent() {
 		return branchManager.getBranch(parentPath);
 	}
