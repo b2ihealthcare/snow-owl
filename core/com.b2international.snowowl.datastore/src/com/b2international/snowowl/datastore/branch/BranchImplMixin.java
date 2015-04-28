@@ -23,10 +23,10 @@ import com.fasterxml.jackson.annotation.JsonProperty;
  * 
  * @since 4.1
  */
-public abstract class BranchMixin implements Branch {
+public abstract class BranchImplMixin implements Branch {
 
 	@JsonCreator
-	BranchMixin(@JsonProperty("name") String name, @JsonProperty("parentPath") String parentPath, @JsonProperty("baseTimestamp") long baseTimestamp,
+	BranchImplMixin(@JsonProperty("name") String name, @JsonProperty("parentPath") String parentPath, @JsonProperty("baseTimestamp") long baseTimestamp,
 			@JsonProperty("headTimestamp") long headTimestamp, @JsonProperty("deleted") boolean deleted) {
 	}
 	
@@ -44,14 +44,6 @@ public abstract class BranchMixin implements Branch {
 	
 	@JsonProperty
 	@Override
-	public abstract String path();
-	
-	@JsonProperty
-	@Override
 	public abstract String parentPath();
-	
-	@JsonProperty
-	@Override
-	public abstract Branch.BranchState state();
 	
 }
