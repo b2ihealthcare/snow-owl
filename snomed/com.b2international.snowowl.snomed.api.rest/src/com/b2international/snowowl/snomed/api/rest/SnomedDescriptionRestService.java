@@ -52,7 +52,6 @@ import com.wordnik.swagger.annotations.ApiResponses;
 @Api("SNOMED CT Descriptions")
 @RestController
 @RequestMapping(
-		value="/{version}",
 		produces={ AbstractRestService.SO_MEDIA_TYPE })
 public class SnomedDescriptionRestService extends AbstractSnomedRestService {
 
@@ -67,7 +66,7 @@ public class SnomedDescriptionRestService extends AbstractSnomedRestService {
 		@ApiResponse(code = 404, message = "Branch not found")
 	})
 	@RequestMapping(
-			value="/descriptions", 
+			value="/{path:**}/descriptions", 
 			method=RequestMethod.POST,
 			consumes={ AbstractRestService.SO_MEDIA_TYPE, MediaType.APPLICATION_JSON_VALUE })
 	@ResponseStatus(HttpStatus.CREATED)
@@ -93,7 +92,7 @@ public class SnomedDescriptionRestService extends AbstractSnomedRestService {
 		@ApiResponse(code = 200, message = "OK"),
 		@ApiResponse(code = 404, message = "Branch or Description not found")
 	})
-	@RequestMapping(value="/descriptions/{descriptionId}", method=RequestMethod.GET)
+	@RequestMapping(value="/{path:**}/descriptions/{descriptionId}", method=RequestMethod.GET)
 	public ISnomedDescription read(
 			@ApiParam(value="The branch path")
 			@PathVariable(value="path")
@@ -115,7 +114,7 @@ public class SnomedDescriptionRestService extends AbstractSnomedRestService {
 		@ApiResponse(code = 404, message = "Branch or Description not found")
 	})
 	@RequestMapping(
-			value="/descriptions/{descriptionId}/updates", 
+			value="/{path:**}/descriptions/{descriptionId}/updates", 
 			method=RequestMethod.POST, 
 			consumes={ AbstractRestService.SO_MEDIA_TYPE, MediaType.APPLICATION_JSON_VALUE })
 	@ResponseStatus(HttpStatus.NO_CONTENT)
@@ -149,7 +148,7 @@ public class SnomedDescriptionRestService extends AbstractSnomedRestService {
 		@ApiResponse(code = 204, message = "Delete successful"),
 		@ApiResponse(code = 404, message = "Branch or Description not found")
 	})
-	@RequestMapping(value="/descriptions/{descriptionId}", method=RequestMethod.DELETE)
+	@RequestMapping(value="/{path:**}/descriptions/{descriptionId}", method=RequestMethod.DELETE)
 	@ResponseStatus(HttpStatus.NO_CONTENT)
 	public void delete(			
 			@ApiParam(value="The branch path")

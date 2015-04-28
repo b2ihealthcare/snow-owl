@@ -56,7 +56,6 @@ import com.wordnik.swagger.annotations.ApiResponses;
 @Api("SNOMED CT Classification")
 @Controller
 @RequestMapping(
-		value="/{path:**}", 
 		produces={ AbstractRestService.SO_MEDIA_TYPE })
 public class SnomedClassificationRestService extends AbstractSnomedRestService {
 
@@ -70,7 +69,7 @@ public class SnomedClassificationRestService extends AbstractSnomedRestService {
 		@ApiResponse(code = 200, message = "OK"),
 		@ApiResponse(code = 404, message = "Branch not found")
 	})
-	@RequestMapping(value="/classifications", method=RequestMethod.GET)
+	@RequestMapping(value="/{path:**}/classifications", method=RequestMethod.GET)
 	public @ResponseBody CollectionResource<IClassificationRun> getAllClassificationRuns(
 			@ApiParam(value="The branch path")
 			@PathVariable(value="path") 
@@ -91,7 +90,7 @@ public class SnomedClassificationRestService extends AbstractSnomedRestService {
 		@ApiResponse(code = 404, message = "Branch not found")
 	})
 	@RequestMapping(
-			value="/classifications", 
+			value="/{path:**}/classifications", 
 			method=RequestMethod.POST,
 			consumes={ AbstractRestService.SO_MEDIA_TYPE, MediaType.APPLICATION_JSON_VALUE })
 	@ResponseStatus(value=HttpStatus.CREATED)
@@ -116,7 +115,7 @@ public class SnomedClassificationRestService extends AbstractSnomedRestService {
 		@ApiResponse(code = 200, message = "OK"),
 		@ApiResponse(code = 404, message = "Branch or classification not found")
 	})
-	@RequestMapping(value="/classifications/{classificationId}", method=RequestMethod.GET)
+	@RequestMapping(value="/{path:**}/classifications/{classificationId}", method=RequestMethod.GET)
 	public @ResponseBody IClassificationRun getClassificationRun(
 			@ApiParam(value="The branch path")
 			@PathVariable(value="path") 
@@ -139,7 +138,7 @@ public class SnomedClassificationRestService extends AbstractSnomedRestService {
 		@ApiResponse(code = 200, message = "OK"),
 		@ApiResponse(code = 404, message = "Branch or classification not found")
 	})
-	@RequestMapping(value="/classifications/{classificationId}/equivalent-concepts", method=RequestMethod.GET)
+	@RequestMapping(value="/{path:**}/classifications/{classificationId}/equivalent-concepts", method=RequestMethod.GET)
 	public @ResponseBody CollectionResource<IEquivalentConceptSet> getEquivalentConceptSets(
 			@ApiParam(value="The branch path")
 			@PathVariable(value="path") 
@@ -162,7 +161,7 @@ public class SnomedClassificationRestService extends AbstractSnomedRestService {
 		@ApiResponse(code = 200, message = "OK"),
 		@ApiResponse(code = 404, message = "Branch or classification not found")
 	})
-	@RequestMapping(value="/classifications/{classificationId}/relationship-changes", method=RequestMethod.GET)
+	@RequestMapping(value="/{path:**}/classifications/{classificationId}/relationship-changes", method=RequestMethod.GET)
 	public @ResponseBody PageableCollectionResource<IRelationshipChange> getRelationshipChanges(
 			@ApiParam(value="The branch path")
 			@PathVariable(value="path") 
@@ -197,7 +196,7 @@ public class SnomedClassificationRestService extends AbstractSnomedRestService {
 		@ApiResponse(code = 404, message = "Branch or classification not found")
 	})
 	@RequestMapping(
-			value="/classifications/{classificationId}", 
+			value="/{path:**}/classifications/{classificationId}", 
 			method=RequestMethod.PUT,
 			consumes={ AbstractRestService.SO_MEDIA_TYPE, MediaType.APPLICATION_JSON_VALUE })
 	@ResponseStatus(value=HttpStatus.NO_CONTENT)
@@ -229,7 +228,7 @@ public class SnomedClassificationRestService extends AbstractSnomedRestService {
 		@ApiResponse(code = 204, message = "No content, delete successful"),
 		@ApiResponse(code = 404, message = "Branch or classification not found")
 	})
-	@RequestMapping(value="/classifications/{classificationId}", method=RequestMethod.DELETE)
+	@RequestMapping(value="/{path:**}/classifications/{classificationId}", method=RequestMethod.DELETE)
 	@ResponseStatus(value=HttpStatus.NO_CONTENT)
 	public void deleteClassificationRun(
 			@ApiParam(value="The branch path")

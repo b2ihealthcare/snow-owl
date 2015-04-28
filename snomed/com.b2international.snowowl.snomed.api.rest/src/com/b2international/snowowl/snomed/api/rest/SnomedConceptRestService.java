@@ -60,9 +60,7 @@ import com.wordnik.swagger.annotations.ApiResponses;
  */
 @Api("SNOMED CT Concepts")
 @Controller
-@RequestMapping(
-		value="/{path:**}", 
-		produces={ AbstractRestService.SO_MEDIA_TYPE })
+@RequestMapping(produces={ AbstractRestService.SO_MEDIA_TYPE })
 public class SnomedConceptRestService extends AbstractSnomedRestService {
 
 	@Autowired
@@ -76,7 +74,7 @@ public class SnomedConceptRestService extends AbstractSnomedRestService {
 		@ApiResponse(code = 400, message = "Invalid filter config", response = RestApiError.class),
 		@ApiResponse(code = 404, message = "Branch not found")
 	})
-	@RequestMapping(value="/concepts", method=RequestMethod.GET)
+	@RequestMapping(value="/{path:**}/concepts", method=RequestMethod.GET)
 	public @ResponseBody PageableCollectionResource<ISnomedConcept> getConcepts(
 			@ApiParam(value="The branch path")
 			@PathVariable(value="path")
@@ -126,7 +124,7 @@ public class SnomedConceptRestService extends AbstractSnomedRestService {
 		@ApiResponse(code = 200, message = "OK", response = Void.class),
 		@ApiResponse(code = 404, message = "Branch or Concept not found")
 	})
-	@RequestMapping(value="/concepts/{conceptId}", method=RequestMethod.GET)
+	@RequestMapping(value="/{path:**}/concepts/{conceptId}", method=RequestMethod.GET)
 	public @ResponseBody ISnomedConcept read(
 			@ApiParam(value="The branch path")
 			@PathVariable(value="path")
@@ -148,7 +146,7 @@ public class SnomedConceptRestService extends AbstractSnomedRestService {
 		@ApiResponse(code = 404, message = "Branch not found")
 	})
 	@RequestMapping(
-			value="/concepts", 
+			value="/{path:**}/concepts", 
 			method=RequestMethod.POST, 
 			consumes={ AbstractRestService.SO_MEDIA_TYPE, MediaType.APPLICATION_JSON_VALUE })
 	@ResponseStatus(HttpStatus.CREATED)
@@ -186,7 +184,7 @@ public class SnomedConceptRestService extends AbstractSnomedRestService {
 		@ApiResponse(code = 404, message = "Branch or Concept not found")
 	})
 	@RequestMapping(
-			value="/concepts/{conceptId}/updates", 
+			value="/{path:**}/concepts/{conceptId}/updates", 
 			method=RequestMethod.POST,
 			consumes={ AbstractRestService.SO_MEDIA_TYPE, MediaType.APPLICATION_JSON_VALUE })
 	@ResponseStatus(HttpStatus.NO_CONTENT)
@@ -223,7 +221,7 @@ public class SnomedConceptRestService extends AbstractSnomedRestService {
 		@ApiResponse(code = 409, message = "Cannot be deleted if released", response = RestApiError.class),
 		@ApiResponse(code = 404, message = "Branch or Concept not found")
 	})
-	@RequestMapping(value="/concepts/{conceptId}", method=RequestMethod.DELETE)
+	@RequestMapping(value="/{path:**}/concepts/{conceptId}", method=RequestMethod.DELETE)
 	@ResponseStatus(HttpStatus.NO_CONTENT)
 	public void delete(			
 			@ApiParam(value="The branch path")

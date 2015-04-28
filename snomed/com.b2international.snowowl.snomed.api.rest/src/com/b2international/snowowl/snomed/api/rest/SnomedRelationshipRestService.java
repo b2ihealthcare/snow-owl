@@ -53,7 +53,6 @@ import com.wordnik.swagger.annotations.ApiResponses;
 @Api("SNOMED CT Relationships")
 @RestController
 @RequestMapping(
-		value="/{path:**}",
 		produces={ AbstractRestService.SO_MEDIA_TYPE })
 public class SnomedRelationshipRestService extends AbstractSnomedRestService {
 
@@ -68,7 +67,7 @@ public class SnomedRelationshipRestService extends AbstractSnomedRestService {
 		@ApiResponse(code = 404, message = "Branch not found")
 	})
 	@RequestMapping(
-			value="/relationships", 
+			value="/{path:**}/relationships", 
 			method=RequestMethod.POST, 
 			consumes={ AbstractRestService.SO_MEDIA_TYPE, MediaType.APPLICATION_JSON_VALUE })
 	@ResponseStatus(HttpStatus.CREATED)
@@ -95,7 +94,7 @@ public class SnomedRelationshipRestService extends AbstractSnomedRestService {
 		@ApiResponse(code = 200, message = "OK"),
 		@ApiResponse(code = 404, message = "Branch or Relationship not found")
 	})
-	@RequestMapping(value="/relationships/{relationshipId}", method=RequestMethod.GET)
+	@RequestMapping(value="/{path:**}/relationships/{relationshipId}", method=RequestMethod.GET)
 	public ISnomedRelationship read(
 			@ApiParam(value="The branch path")
 			@PathVariable("path") 
@@ -116,7 +115,7 @@ public class SnomedRelationshipRestService extends AbstractSnomedRestService {
 		@ApiResponse(code = 404, message = "Branch or Relationship not found")
 	})
 	@RequestMapping(
-			value="/relationships/{relationshipId}/updates", 
+			value="/{path:**}/relationships/{relationshipId}/updates", 
 			method=RequestMethod.POST,
 			consumes={ AbstractRestService.SO_MEDIA_TYPE, MediaType.APPLICATION_JSON_VALUE })
 	@ResponseStatus(HttpStatus.NO_CONTENT)
@@ -153,7 +152,7 @@ public class SnomedRelationshipRestService extends AbstractSnomedRestService {
 		@ApiResponse(code = 404, message = "Branch or Relationship not found"),
 		@ApiResponse(code = 409, message = "Relationship cannot be deleted", response = RestApiError.class)
 	})
-	@RequestMapping(value="/relationships/{relationshipId}", method=RequestMethod.DELETE)
+	@RequestMapping(value="/{path:**}/relationships/{relationshipId}", method=RequestMethod.DELETE)
 	@ResponseStatus(HttpStatus.NO_CONTENT)
 	public void delete(
 			@ApiParam(value="The branch path")

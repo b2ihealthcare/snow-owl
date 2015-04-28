@@ -37,7 +37,6 @@ import com.wordnik.swagger.annotations.ApiResponses;
 @Api("SNOMED CT History")
 @RestController
 @RequestMapping(
-		value="/{path:**}", 
 		produces={ AbstractRestService.SO_MEDIA_TYPE })
 public class SnomedConceptHistoryRestService extends AbstractSnomedRestService {
 
@@ -51,7 +50,7 @@ public class SnomedConceptHistoryRestService extends AbstractSnomedRestService {
 		@ApiResponse(code = 200, message = "OK", response = Void.class),
 		@ApiResponse(code = 404, message = "Branch or Concept not found")
 	})
-	@RequestMapping(value="/concepts/{conceptId}/history", method=RequestMethod.GET)
+	@RequestMapping(value="/{path:**}/concepts/{conceptId}/history", method=RequestMethod.GET)
 	public CollectionResource<IHistoryInfo> getHistory(
 			@ApiParam(value="The branch path")
 			@PathVariable(value="path") 

@@ -52,7 +52,6 @@ import com.wordnik.swagger.annotations.ApiResponses;
 @Api("SNOMED CT Concepts")
 @RestController
 @RequestMapping(
-		value="/{path:**}",
 		produces={ AbstractRestService.SO_MEDIA_TYPE })
 public class SnomedConceptSubResourcesController extends AbstractSnomedRestService {
 
@@ -73,7 +72,7 @@ public class SnomedConceptSubResourcesController extends AbstractSnomedRestServi
 		@ApiResponse(code = 200, message = "OK"),
 		@ApiResponse(code = 404, message = "Branch or Concept not found")
 	})
-	@RequestMapping(value="/concepts/{conceptId}/descriptions", method=RequestMethod.GET)
+	@RequestMapping(value="/{path:**}/concepts/{conceptId}/descriptions", method=RequestMethod.GET)
 	public SnomedConceptDescriptions getConceptDescriptions(
 			@ApiParam(value="The branch path")
 			@PathVariable(value="path")
@@ -98,7 +97,7 @@ public class SnomedConceptSubResourcesController extends AbstractSnomedRestServi
 		@ApiResponse(code = 200, message = "OK"),
 		@ApiResponse(code = 404, message = "Branch or Concept not found")
 	})
-	@RequestMapping(value="/concepts/{conceptId}/inbound-relationships", method=RequestMethod.GET)
+	@RequestMapping(value="/{path:**}/concepts/{conceptId}/inbound-relationships", method=RequestMethod.GET)
 	public SnomedInboundRelationships getInboundStatements(
 			@ApiParam(value="The branch path")
 			@PathVariable(value="path")
@@ -133,7 +132,7 @@ public class SnomedConceptSubResourcesController extends AbstractSnomedRestServi
 		@ApiResponse(code = 200, message = "OK"),
 		@ApiResponse(code = 404, message = "Branch or Concept not found")
 	})
-	@RequestMapping(value="/concepts/{conceptId}/outbound-relationships", method=RequestMethod.GET)
+	@RequestMapping(value="/{path:**}/concepts/{conceptId}/outbound-relationships", method=RequestMethod.GET)
 	public SnomedOutboundRelationships getOutboundStatements(
 			@ApiParam(value="The branch path")
 			@PathVariable(value="path")
@@ -169,7 +168,7 @@ public class SnomedConceptSubResourcesController extends AbstractSnomedRestServi
 		@ApiResponse(code = 404, message = "Branch or Concept not found")
 	})
 	@RequestMapping(
-			value="/concepts/{conceptId}/descendants",
+			value="/{path:**}/concepts/{conceptId}/descendants",
 			method = RequestMethod.GET)
 	public PageableCollectionResource<ISnomedConcept> getDescendants(
 			@ApiParam(value="The branch path")
@@ -206,7 +205,7 @@ public class SnomedConceptSubResourcesController extends AbstractSnomedRestServi
 		@ApiResponse(code = 404, message = "Branch or Concept not found")
 	})
 	@RequestMapping(
-			value="/concepts/{conceptId}/ancestors",
+			value="/{path:**}/concepts/{conceptId}/ancestors",
 			method = RequestMethod.GET)
 	public PageableCollectionResource<ISnomedConcept> getAncestors(
 			@ApiParam(value="The branch path")
@@ -247,7 +246,7 @@ public class SnomedConceptSubResourcesController extends AbstractSnomedRestServi
 		@ApiResponse(code = 404, message = "Branch, Concept or Preferred Term not found")
 	})
 	@RequestMapping(
-			value="/concepts/{conceptId}/pt",
+			value="/{path:**}/concepts/{conceptId}/pt",
 			method = RequestMethod.GET)
 	public ISnomedDescription getPreferredTerm(
 			@ApiParam(value="The branch path")

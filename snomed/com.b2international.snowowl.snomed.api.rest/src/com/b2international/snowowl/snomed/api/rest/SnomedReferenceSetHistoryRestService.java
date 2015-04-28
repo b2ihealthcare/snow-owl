@@ -38,14 +38,13 @@ import com.wordnik.swagger.annotations.ApiOperation;
 @Api("SNOMED CT History")
 @RestController
 @RequestMapping(
-		value="/{path:**}", 
 		produces={ AbstractRestService.SO_MEDIA_TYPE })
 public class SnomedReferenceSetHistoryRestService extends AbstractSnomedRestService {
 
 	@Autowired
 	protected ISnomedReferenceSetHistoryService delegate;
 
-	@RequestMapping(value="/reference-sets/{refSetId}/history", method=RequestMethod.GET)
+	@RequestMapping(value="/{path:**}/reference-sets/{refSetId}/history", method=RequestMethod.GET)
 	@ApiOperation(
 			value="Get history for a reference set", 
 			notes="Retrieves history for the specified SNOMED CT reference set.")
