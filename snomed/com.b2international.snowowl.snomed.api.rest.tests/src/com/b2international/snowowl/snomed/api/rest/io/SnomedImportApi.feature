@@ -31,7 +31,7 @@ Feature: SnomedImportApi
 		static String MEDIA_TYPE = ""
 		var req = givenAuthenticatedRequest(API)
 		var Response res
-		var public String importTicketId
+		var public String importId
 	
 	Scenario: Configure SNOMED CT Import
 		
@@ -47,8 +47,10 @@ Feature: SnomedImportApi
 		Then return "201" status
 		And return location header pointing to "/imports"
 		And import configuration should be accessible via returned location header
-			importTicketId = res.location.lastPathSegment
-			expectResourceAt(API, "imports", importTicketId)
+			importId = res.location.lastPathSegment
+			expectResourceAt(API, "imports", importId)
+		And import should have status "WAITING_FOR_FILE"
+			API.get("imports", importId).getBody.path("status") should be args.first
 		
 	Scenario: Delete SNOMED CT import configuration
 		
@@ -63,9 +65,9 @@ Feature: SnomedImportApi
 				})
 				.post("/imports")
 			response.expectStatus(201)
-			importTicketId = response.location.lastPathSegment
-		When sending DELETE to "/imports/${importTicketId}"
+			importId = response.location.lastPathSegment
+		When sending DELETE to "/imports/${importId}"
 		Then return "204" status
 		And configuration should not be accessible anymore
-			expectNoResourceAt(API, "imports", importTicketId)
+			expectNoResourceAt(API, "imports", importId)
 			

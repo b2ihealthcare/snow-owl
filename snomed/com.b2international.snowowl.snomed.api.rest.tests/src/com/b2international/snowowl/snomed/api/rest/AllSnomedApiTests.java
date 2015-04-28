@@ -26,6 +26,7 @@ import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.api.rest.branches.SnomedBranchingApiFeature;
 import com.b2international.snowowl.snomed.api.rest.concept.SnomedConceptCreateApiFeature;
 import com.b2international.snowowl.snomed.api.rest.id.SnomedIdentifierRESTfulAPIFeature;
+import com.b2international.snowowl.snomed.api.rest.io.SnomedImportApiExamplesFeature;
 import com.b2international.snowowl.snomed.api.rest.io.SnomedImportApiFeature;
 import com.b2international.snowowl.snomed.common.ContentSubType;
 import com.b2international.snowowl.test.commons.BundleStartRule;
@@ -41,7 +42,8 @@ import com.b2international.snowowl.test.commons.SnowOwlAppRule;
 	SnomedBranchingApiFeature.class,
 	SnomedConceptCreateApiFeature.class,
 	SnomedIdentifierRESTfulAPIFeature.class,
-	SnomedImportApiFeature.class
+	SnomedImportApiFeature.class,
+	SnomedImportApiExamplesFeature.class
 })
 public class AllSnomedApiTests {
 

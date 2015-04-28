@@ -28,6 +28,8 @@ import static com.jayway.restassured.RestAssured.*
 
 import static extension com.b2international.snowowl.test.commons.json.JsonExtensions.*
 import com.google.common.base.Splitter
+import java.io.File
+import com.b2international.commons.platform.PlatformUtil
 
 /**
  * Useful extension methods when testing Snow Owl's RESTful API. High level REST related syntactic sugars and stuff like 
@@ -121,14 +123,24 @@ class RestExtensions {
 		Splitter.on("/").split(path).last
 	}
 	
-	def static String expectResourceAt(String apiPath, String endpoint, String id) {
-		val response = givenAuthenticatedRequest(apiPath).get(asPath(#[endpoint, id]))
+	def static String expectResourceAt(String api, String endpoint, String id) {
+		val response = api.get(endpoint, id) 
 		response.expectStatus(200)
 		response.getBody.asString
 	}
 	
-	def static void expectNoResourceAt(String apiPath, String endpoint, String id) {
-		givenAuthenticatedRequest(apiPath).get(asPath(#[endpoint, id])).expectStatus(404)
+	def static void expectNoResourceAt(String api, String endpoint, String id) {
+		api.get(endpoint, id).expectStatus(404)
+	}
+	
+	def static RequestSpecification withFile(RequestSpecification it, String file, Class<?> cp) {
+		multiPart(new File(PlatformUtil.toAbsolutePath(cp, file)))
+	}
+	
+	// Simple REST operations
+	
+	def static Response get(String api, String endpoint, String id) {
+		givenAuthenticatedRequest(api).get(asPath(#[endpoint, id]))
 	}
 
 }
