@@ -60,9 +60,13 @@ public class IndexStore<T> extends SingleDirectoryIndexServerService implements 
 	 *            - the value's type
 	 */
 	public IndexStore(File directory, Class<T> type) {
+		this(directory, new ObjectMapper(), type);
+	}
+	
+	public IndexStore(File directory, ObjectMapper objectMapper, Class<T> type) {
 		super(directory);
+		this.objectMapper = checkNotNull(objectMapper, "objectMapper");
 		this.clazz = checkNotNull(type, "type");
-		this.objectMapper = new ObjectMapper();
 	}
 
 	@Override
