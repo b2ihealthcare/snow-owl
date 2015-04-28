@@ -28,6 +28,7 @@ import javax.annotation.PreDestroy;
 import com.b2international.commons.status.SerializableStatus;
 import com.b2international.snowowl.api.impl.domain.StorageRef;
 import com.b2international.snowowl.core.ApplicationContext;
+import com.b2international.snowowl.core.SnowOwlApplication;
 import com.b2international.snowowl.datastore.oplock.impl.DatastoreLockContextDescriptions;
 import com.b2international.snowowl.datastore.remotejobs.AbstractRemoteJobEvent;
 import com.b2international.snowowl.datastore.remotejobs.IRemoteJobManager;
@@ -185,7 +186,8 @@ public class SnomedClassificationServiceImpl implements ISnomedClassificationSer
 
 	@PostConstruct
 	protected void init() {
-		indexService = new ClassificationIndexServerService(new File("classification_runs"));
+		final File dir = new File(new File(SnowOwlApplication.INSTANCE.getEnviroment().getDataDirectory(), "indexes"), "classification_runs");
+		indexService = new ClassificationIndexServerService(dir);
 
 		changeHandler = new RemoteJobChangeHandler();
 		getEventBus().registerHandler(IRemoteJobManager.ADDRESS_REMOTE_JOB_CHANGED, changeHandler);

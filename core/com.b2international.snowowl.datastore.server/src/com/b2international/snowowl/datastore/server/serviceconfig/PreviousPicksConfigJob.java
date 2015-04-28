@@ -17,7 +17,6 @@ package com.b2international.snowowl.datastore.server.serviceconfig;
 
 import java.io.File;
 
-import com.b2international.snowowl.core.SnowOwlApplication;
 import com.b2international.snowowl.core.api.SnowowlServiceException;
 import com.b2international.snowowl.datastore.personalization.IPreviousPicksManager;
 import com.b2international.snowowl.datastore.server.DatastoreServerActivator;
@@ -51,7 +50,7 @@ public class PreviousPicksConfigJob extends AbstractServerServiceConfigJob<IPrev
 	 */
 	@Override
 	protected PreviousPicksManager createServiceImplementation() throws SnowowlServiceException {
-		final File dir = new File(SnowOwlApplication.INSTANCE.getEnviroment().getDataDirectory(), INDEX_DIRECTORY);
+		final File dir = new File(new File(getEnvironment().getDataDirectory(), "indexes"), INDEX_DIRECTORY);
 		return new PreviousPicksManager(dir);
 	}
 }

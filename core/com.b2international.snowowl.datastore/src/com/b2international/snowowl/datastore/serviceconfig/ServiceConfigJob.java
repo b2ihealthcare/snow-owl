@@ -31,6 +31,7 @@ import com.b2international.snowowl.core.api.SnowowlRuntimeException;
 import com.b2international.snowowl.core.api.SnowowlServiceException;
 import com.b2international.snowowl.core.config.ClientPreferences;
 import com.b2international.snowowl.core.config.SnowOwlConfiguration;
+import com.b2international.snowowl.core.setup.Environment;
 import com.google.common.base.Stopwatch;
 
 /**
@@ -87,6 +88,10 @@ public abstract class ServiceConfigJob extends SimpleFamilyJob {
 	 */
 	protected final SnowOwlConfiguration getSnowOwlConfiguration() {
 		return SnowOwlApplication.INSTANCE.getConfiguration();
+	}
+	
+	protected final Environment getEnvironment() {
+		return SnowOwlApplication.INSTANCE.getEnviroment();
 	}
 	
 }
