@@ -24,7 +24,6 @@ import com.b2international.snowowl.datastore.branch.Branch;
 import com.b2international.snowowl.datastore.branch.Branch.BranchState;
 import com.b2international.snowowl.datastore.branch.BranchManager;
 import com.b2international.snowowl.datastore.branch.TimestampProvider;
-import com.b2international.snowowl.datastore.store.MemStore;
 import com.b2international.snowowl.datastore.store.Store;
 import com.google.common.collect.ImmutableList;
 
@@ -39,13 +38,6 @@ public class BranchManagerImpl implements BranchManager {
 	
 	public BranchManagerImpl(Store<BranchImpl> branchStore, long mainBranchTimestamp) {
 		this(branchStore, mainBranchTimestamp, null);
-	}
-	
-	/*
-	 * For testing only
-	 */
-	BranchManagerImpl(long mainBranchTimestamp, TimestampProvider clock) {
-		this(new MemStore<BranchImpl>(), mainBranchTimestamp, clock);
 	}
 	
 	/*package*/ BranchManagerImpl(Store<BranchImpl> branchStore, long mainBranchTimestamp, TimestampProvider clock) {
@@ -101,7 +93,11 @@ public class BranchManagerImpl implements BranchManager {
 	}
 
 	private Branch getBranchFromStore(String path) {
-		return branchStore.get(path);
+		final BranchImpl branch = branchStore.get(path);
+		if (branch != null) {
+			branch.setBranchManager(this);
+		}
+		return branch;
 	}
 
 	@Override

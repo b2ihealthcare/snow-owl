@@ -23,6 +23,8 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
+import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.when;
 
 import java.util.Collection;
 
@@ -35,6 +37,7 @@ import com.b2international.snowowl.core.exceptions.NotFoundException;
 import com.b2international.snowowl.datastore.branch.Branch;
 import com.b2international.snowowl.datastore.branch.Branch.BranchState;
 import com.b2international.snowowl.datastore.branch.BranchMergeException;
+import com.b2international.snowowl.datastore.store.MemStore;
 
 /**
  * @since 4.1
@@ -45,11 +48,13 @@ public class BranchManagerTest {
 	private BranchManagerImpl manager;
 	private BranchImpl main;
 	private BranchImpl a;
+	private MemStore<BranchImpl> store;
 
 	@Before
 	public void givenBranchManager() {
 		clock = new AtomicLongTimestampAuthority();
-		manager = new BranchManagerImpl(clock.getTimestamp(), clock);
+		store = spy(new MemStore<BranchImpl>());
+		manager = new BranchManagerImpl(store, clock.getTimestamp(), clock);
 		main = (BranchImpl) manager.getMainBranch();
 		a = (BranchImpl) main.createChild("a");
 	}
@@ -66,7 +71,14 @@ public class BranchManagerTest {
 	
 	@Test
 	public void whenCreatingBranch_ThenItShouldBeReturnedViaGet() throws Exception {
-		assertEquals(a, manager.getBranch("MAIN/a"));
+		assertEquals(a, (BranchImpl) manager.getBranch("MAIN/a"));
+	}
+	
+	@Test
+	public void whenGettingBranch_ThenBranchManagerShouldBeSet() throws Exception {
+		when(store.get("MAIN/a")).thenReturn(new BranchImpl("a", "MAIN", 0L, 1L, false));
+		final BranchImpl branch = (BranchImpl) manager.getBranch("MAIN/a");
+		assertNotNull(branch.getBranchManager());
 	}
 	
 	@Test(expected = AlreadyExistsException.class)

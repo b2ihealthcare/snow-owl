@@ -67,6 +67,10 @@ public class BranchImpl implements Branch {
 		this.branchManager = checkNotNull(branchManager, "branchManager");
 	}
 	
+	BranchManagerImpl getBranchManager() {
+		return this.branchManager;
+	}
+	
 	BranchImpl withDeleted() {
 		final BranchImpl branch = new BranchImpl(name, parentPath, baseTimestamp, headTimestamp, true);
 		branch.setBranchManager(branchManager);
@@ -211,4 +215,5 @@ public class BranchImpl implements Branch {
 		
 		return true;
 	}
+
 }
