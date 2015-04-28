@@ -25,7 +25,6 @@ import com.b2international.snowowl.datastore.branch.Branch.BranchState;
 import com.b2international.snowowl.datastore.branch.BranchManager;
 import com.b2international.snowowl.datastore.branch.TimestampProvider;
 import com.b2international.snowowl.datastore.store.Store;
-import com.google.common.collect.ImmutableList;
 
 
 /**
@@ -102,7 +101,11 @@ public class BranchManagerImpl implements BranchManager {
 
 	@Override
 	public Collection<? extends Branch> getBranches() {
-		return ImmutableList.copyOf(branchStore.values());
+		final Collection<BranchImpl> values = branchStore.values();
+		for (BranchImpl branch : values) {
+			branch.setBranchManager(this);
+		}
+		return values;
 	}
 
 	BranchImpl merge(BranchImpl target, BranchImpl source, String commitMessage) {
