@@ -23,13 +23,15 @@ import com.b2international.snowowl.core.api.index.IIndexServerServiceManager;
 import com.b2international.snowowl.core.config.SnowOwlConfiguration;
 import com.b2international.snowowl.core.setup.BootstrapFragment;
 import com.b2international.snowowl.core.setup.Environment;
-import com.b2international.snowowl.datastore.branch.BranchImplMixin;
 import com.b2international.snowowl.datastore.branch.BranchManager;
 import com.b2international.snowowl.datastore.cdo.ICDOConnectionManager;
 import com.b2international.snowowl.datastore.cdo.ICDORepositoryManager;
 import com.b2international.snowowl.datastore.internal.branch.BranchEventHandler;
 import com.b2international.snowowl.datastore.internal.branch.BranchImpl;
+import com.b2international.snowowl.datastore.internal.branch.BranchImplMixin;
 import com.b2international.snowowl.datastore.internal.branch.CDOBranchManagerImpl;
+import com.b2international.snowowl.datastore.internal.branch.MainBranchImpl;
+import com.b2international.snowowl.datastore.internal.branch.MainBranchImplMixin;
 import com.b2international.snowowl.datastore.store.IndexStore;
 import com.b2international.snowowl.eventbus.IEventBus;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -54,6 +56,7 @@ public class DatastoreBootstrap implements BootstrapFragment {
 			final File branchIndexDirectory = new File(new File(env.getDataDirectory(), "indexes"), "branches");
 			final ObjectMapper objectMapper = new ObjectMapper();
 			objectMapper.addMixInAnnotations(BranchImpl.class, BranchImplMixin.class);
+			objectMapper.addMixInAnnotations(MainBranchImpl.class, MainBranchImplMixin.class);
 			BranchManager branchManager = new CDOBranchManagerImpl(wrapper, new IndexStore<BranchImpl>(branchIndexDirectory, objectMapper, BranchImpl.class));
 			env.service(IEventBus.class).registerHandler("/branches", new BranchEventHandler(branchManager));
 		}

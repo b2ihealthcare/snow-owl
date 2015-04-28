@@ -13,37 +13,27 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.datastore.branch;
+package com.b2international.snowowl.datastore.internal.branch;
 
+import com.b2international.snowowl.datastore.branch.Branch;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 /**
- * Mixin interface to use for {@link Branch} JSON serialization.
+ * Mixin interface to use for {@link MainBranchImpl} JSON serialization.
  * 
  * @since 4.1
  */
-public abstract class BranchImplMixin implements Branch {
+public abstract class MainBranchImplMixin implements Branch {
 
 	@JsonCreator
-	BranchImplMixin(@JsonProperty("name") String name, @JsonProperty("parentPath") String parentPath, @JsonProperty("baseTimestamp") long baseTimestamp,
-			@JsonProperty("headTimestamp") long headTimestamp, @JsonProperty("deleted") boolean deleted) {
+	MainBranchImplMixin(@JsonProperty("baseTimestamp") long baseTimestamp, @JsonProperty("headTimestamp") long headTimestamp) {
 	}
 	
 	@JsonProperty
-	@Override
 	public abstract long baseTimestamp();
 	
 	@JsonProperty
-	@Override
 	public abstract long headTimestamp();
-	
-	@JsonProperty
-	@Override
-	public abstract String name();
-	
-	@JsonProperty
-	@Override
-	public abstract String parentPath();
 	
 }

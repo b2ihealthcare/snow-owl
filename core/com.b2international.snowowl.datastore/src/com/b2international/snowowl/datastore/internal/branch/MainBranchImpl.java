@@ -26,7 +26,7 @@ public class MainBranchImpl extends BranchImpl {
 		super(MAIN_PATH, "", baseTimestamp);
 	}
 	
-	private MainBranchImpl(long baseTimestamp, long headTimestamp) {
+	MainBranchImpl(long baseTimestamp, long headTimestamp) {
 		super(MAIN_PATH, "", baseTimestamp, headTimestamp);
 	}
 

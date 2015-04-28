@@ -187,7 +187,6 @@ public class BranchImpl implements Branch {
 		final int prime = 31;
 		int result = 1;
 		result = prime * result + (int) (baseTimestamp ^ (baseTimestamp >>> 32));
-		result = prime * result + ((branchManager == null) ? 0 : branchManager.hashCode());
 		result = prime * result + (deleted ? 1231 : 1237);
 		result = prime * result + (int) (headTimestamp ^ (headTimestamp >>> 32));
 		result = prime * result + ((name == null) ? 0 : name.hashCode());
@@ -207,7 +206,6 @@ public class BranchImpl implements Branch {
 		BranchImpl other = (BranchImpl) obj;
 		
 		if (baseTimestamp != other.baseTimestamp) { return false; }
-		if (!branchManager.equals(other.branchManager)) { return false; }
 		if (deleted != other.deleted) { return false; }
 		if (headTimestamp != other.headTimestamp) { return false; }
 		if (!name.equals(other.name)) { return false; }
