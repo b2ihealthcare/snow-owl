@@ -104,6 +104,12 @@ public class ControllerExceptionMapper {
 		return RestApiError.of(ex.toApiError()).build(HttpStatus.BAD_REQUEST.value());
 	}
 	
+	@ExceptionHandler
+	@ResponseStatus(HttpStatus.BAD_REQUEST)
+	public @ResponseBody RestApiError handle(final IllegalArgumentException ex) {
+		return RestApiError.of(ApiError.Builder.of(ex.getMessage()).build()).build(HttpStatus.BAD_REQUEST.value());
+	}
+	
 	/**
 	 * Exception handler to return <b>Bad Request</b> when an {@link BadRequestException} is thrown from the underlying system.
 	 * 
