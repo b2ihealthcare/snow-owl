@@ -63,7 +63,7 @@ public class BranchImpl implements Branch {
 		this.deleted = deleted;
 	}
 	
-	public void setBranchManager(BranchManagerImpl branchManager) {
+	void setBranchManager(BranchManagerImpl branchManager) {
 		this.branchManager = checkNotNull(branchManager, "branchManager");
 	}
 	
