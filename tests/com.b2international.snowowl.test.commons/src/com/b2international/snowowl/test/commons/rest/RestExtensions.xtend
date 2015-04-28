@@ -1,6 +1,18 @@
-/*******************************************************************************
+/*
  * Copyright 2011-2015 B2i Healthcare Pte Ltd, http://b2i.sg
- *******************************************************************************/
+ * 
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package com.b2international.snowowl.test.commons.rest
 
 import com.google.common.base.Preconditions
@@ -15,6 +27,7 @@ import org.hamcrest.CoreMatchers
 import static com.jayway.restassured.RestAssured.*
 
 import static extension com.b2international.snowowl.test.commons.json.JsonExtensions.*
+import com.google.common.base.Splitter
 
 /**
  * Useful extension methods when testing Snow Owl's RESTful API. High level REST related syntactic sugars and stuff like 
@@ -67,7 +80,7 @@ class RestExtensions {
 	}
 
 	def static String location(Response it) {
-		header(LOCATION)
+		header(LOCATION) ?: ""
 	}
 
 	def static String renderWithFields(String it, Object object) {
@@ -102,6 +115,20 @@ class RestExtensions {
 			System.err.println(body().asString)
 		}
 		then.statusCode(expectedStatus)
+	}
+	
+	def static String lastPathSegment(String path) {
+		Splitter.on("/").split(path).last
+	}
+	
+	def static String expectResourceAt(String apiPath, String endpoint, String id) {
+		val response = givenAuthenticatedRequest(apiPath).get(asPath(#[endpoint, id]))
+		response.expectStatus(200)
+		response.getBody.asString
+	}
+	
+	def static void expectNoResourceAt(String apiPath, String endpoint, String id) {
+		givenAuthenticatedRequest(apiPath).get(asPath(#[endpoint, id])).expectStatus(404)
 	}
 
 }
