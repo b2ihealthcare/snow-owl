@@ -48,7 +48,7 @@ Feature: SnomedImportApi
 		And return location header pointing to "/imports"
 		And import configuration should be accessible via returned location header
 			importId = res.location.lastPathSegment
-			expectResourceAt(API, "imports", importId)
+			API.get("imports", importId).expectStatus(200)
 		And import should have status "WAITING_FOR_FILE"
 			API.get("imports", importId).getBody.path("status") should be args.first
 		
@@ -69,5 +69,5 @@ Feature: SnomedImportApi
 		When sending DELETE to "/imports/${importId}"
 		Then return "204" status
 		And configuration should not be accessible anymore
-			expectNoResourceAt(API, "imports", importId)
+			API.get("imports", importId).expectStatus(404)
 			

@@ -123,24 +123,14 @@ class RestExtensions {
 		Splitter.on("/").split(path).last
 	}
 	
-	def static String expectResourceAt(String api, String endpoint, String id) {
-		val response = api.get(endpoint, id) 
-		response.expectStatus(200)
-		response.getBody.asString
-	}
-	
-	def static void expectNoResourceAt(String api, String endpoint, String id) {
-		api.get(endpoint, id).expectStatus(404)
-	}
-	
 	def static RequestSpecification withFile(RequestSpecification it, String file, Class<?> cp) {
 		multiPart(new File(PlatformUtil.toAbsolutePath(cp, file)))
 	}
 	
 	// Simple REST operations
 	
-	def static Response get(String api, String endpoint, String id) {
-		givenAuthenticatedRequest(api).get(asPath(#[endpoint, id]))
+	def static Response get(String api, String...segments) {
+		givenAuthenticatedRequest(api).get(asPath(segments))
 	}
 
 }

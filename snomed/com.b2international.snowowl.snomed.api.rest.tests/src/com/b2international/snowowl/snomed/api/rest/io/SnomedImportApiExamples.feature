@@ -36,10 +36,12 @@ Feature: SnomedImportApiExamples
 	Scenario: Import new concept via RF2 Delta archive
 		
 		Given SNOMED CT "DELTA" import configuration on branch "MAIN"
+		And concept "63961392103" is not available on "MAIN"
+			API.get(args.second, "concepts", args.first).expectStatus(404)
 		When sending POST to "/imports/${importId}/archive" with file "SnomedCT_Release_INT_20150131_new_concept.zip"
 			res = req.withFile(args.second, getClass()).post(args.first.renderWithFields(this))
-		Then return "204" status
-		And wait until the import state is either "COMPLETED" or "FAILED"
+		And return "204" status
+		Then wait until the import state is either "COMPLETED" or "FAILED"
 			res.then.statusCode(204) // guard to make this part fail if Then part failed
 			val states = #{args.first, args.second}
 			val delay = 1000L;
@@ -50,36 +52,59 @@ Feature: SnomedImportApiExamples
 				res = API.get("imports", importId)
 			} while (!states.contains(res.getBody.path("status")));
 		And it should succeed
-			res.getBody.path("status") should be "COMPLETED" 
+			res.getBody.path("status") should be "COMPLETED"
+		And concept "63961392103" should be available on "MAIN"
+			val res = API.get(args.second, "concepts", args.first)
+			res.expectStatus(200)
+			res.getBody.path("active") should be true
 
 	Scenario: Import new description via RF2 Delta archive
 		
 		Given SNOMED CT "DELTA" import configuration on branch "MAIN"
+		And description "11320138110" is not available on "MAIN"
+			API.get(args.second, "descriptions", args.first).expectStatus(404)
 		When sending POST to "/imports/${importId}/archive" with file "SnomedCT_Release_INT_20150201_new_description.zip"
-		Then return "204" status
-		And wait until the import state is either "COMPLETED" or "FAILED"
+		And return "204" status
+		Then wait until the import state is either "COMPLETED" or "FAILED"
 		And it should succeed
+		And description "11320138110" should be available on "MAIN"
+			val res = API.get(args.second, "descriptions", args.first)
+			res.expectStatus(200)
+			res.getBody.path("active") should be true
 	
 	Scenario: Import new relationship via RF2 Delta archive
 		
 		Given SNOMED CT "DELTA" import configuration on branch "MAIN"
+		And relationship "24088071128" is not available on "MAIN"
+			API.get(args.second, "relationships", args.first).expectStatus(404)
 		When sending POST to "/imports/${importId}/archive" with file "SnomedCT_Release_INT_20150202_new_relationship.zip"
-		Then return "204" status
-		And wait until the import state is either "COMPLETED" or "FAILED"
+		And return "204" status
+		Then wait until the import state is either "COMPLETED" or "FAILED"
 		And it should succeed
+		And relationship "24088071128" should be available on "MAIN"
+			val res = API.get(args.second, "relationships", args.first)
+			res.expectStatus(200)
+			res.getBody.path("active") should be true
 		
 	Scenario: Import preferred term change via RF2 Delta archive
 		
 		Given SNOMED CT "DELTA" import configuration on branch "MAIN"
+		And preferred term of concept "63961392103" is "13809498114" on "MAIN"
+			val res = givenAuthenticatedRequest(API).header("Accept-Language", "en-GB").get(asPath(#[args.third, "concepts", args.first, "pt"]))
+			res.expectStatus(200)
+			res.getBody.path("id") should be args.second
 		When sending POST to "/imports/${importId}/archive" with file "SnomedCT_Release_INT_20150203_change_pt.zip"
-		Then return "204" status
-		And wait until the import state is either "COMPLETED" or "FAILED"
+		And return "204" status
+		Then wait until the import state is either "COMPLETED" or "FAILED"
 		And it should succeed
+		And preferred term of concept "63961392103" is "11320138110" on "MAIN"
 		
 	Scenario: Import concept inactivation via RF2 Delta archive
 		
 		Given SNOMED CT "DELTA" import configuration on branch "MAIN"
 		When sending POST to "/imports/${importId}/archive" with file "SnomedCT_Release_INT_20150204_inactivate_concept.zip"
-		Then return "204" status
-		And wait until the import state is either "COMPLETED" or "FAILED"
+		And return "204" status
+		Then wait until the import state is either "COMPLETED" or "FAILED"
 		And it should succeed
+		And concept "63961392103" should be inactive on "MAIN"
+			API.get(args.second, "concepts", args.first).getBody.path("active") should be false
