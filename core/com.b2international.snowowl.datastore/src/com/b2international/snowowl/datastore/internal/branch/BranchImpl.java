@@ -20,15 +20,14 @@ import static com.google.common.base.Preconditions.checkNotNull;
 
 import java.util.regex.Pattern;
 
+import com.b2international.snowowl.core.MetadataHolderImpl;
 import com.b2international.snowowl.datastore.branch.Branch;
 import com.b2international.snowowl.datastore.branch.BranchMergeException;
 
 /**
- * TODO: branch description
- * TODO: metadata
  * @since 4.1
  */
-public class BranchImpl implements Branch {
+public class BranchImpl extends MetadataHolderImpl implements Branch {
 
     private static final Pattern VALID_NAME_PATTERN = Pattern.compile("[a-zA-Z0-9_-]{1,50}");
 
