@@ -58,10 +58,12 @@ public class IndexStoreTests {
 		assertEquals(value, actual);
 	}
 	
-	@Test(expected = StoreException.class)
-	public void whenStoringDataOnSameKey_ThenThrowException() throws Exception {
+	@Test
+	public void whenStoringDataOnSameKey_ThenReplaceData() throws Exception {
 		storeData();
-		store.put(KEY, newData());
+		final Data newData = newData();
+		store.put(KEY, newData);
+		assertEquals(newData, store.get(KEY));
 	}
 
 	@Test

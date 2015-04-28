@@ -72,11 +72,7 @@ public class IndexStore<T> extends SingleDirectoryIndexServerService implements 
 	@Override
 	public void put(String key, T value) {
 		try {
-			if (get(key) != null) {
-				throw new StoreException("Duplicates on key '%s' are not allowed in store '%s'.", key, getDirectory());
-			}
-			updateDoc(key, value);
-			commit();
+			doUpdate(key, value);
 		} catch (IOException e) {
 			throw new StoreException("Failed to store value '%s' in key '%s'", value, key, e);
 		}
@@ -121,7 +117,6 @@ public class IndexStore<T> extends SingleDirectoryIndexServerService implements 
 	}
 
 	private void doUpdate(String key, T newValue) throws IOException {
-		deleteDoc(key);
 		updateDoc(key, newValue);
 		commit();
 	}
