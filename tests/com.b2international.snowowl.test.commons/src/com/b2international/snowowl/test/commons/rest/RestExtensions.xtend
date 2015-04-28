@@ -3,18 +3,18 @@
  *******************************************************************************/
 package com.b2international.snowowl.test.commons.rest
 
+import com.google.common.base.Preconditions
 import com.jayway.restassured.http.ContentType
 import com.jayway.restassured.response.Response
 import com.jayway.restassured.specification.RequestSpecification
-import java.util.Collection
+import java.util.List
 import java.util.Map
 import org.apache.commons.lang.text.StrSubstitutor
+import org.hamcrest.CoreMatchers
 
 import static com.jayway.restassured.RestAssured.*
 
 import static extension com.b2international.snowowl.test.commons.json.JsonExtensions.*
-import com.google.common.base.Preconditions
-import org.hamcrest.CoreMatchers
 
 /**
  * Useful extension methods when testing Snow Owl's RESTful API. High level REST related syntactic sugars and stuff like 
@@ -62,7 +62,7 @@ class RestExtensions {
 		contentType(ContentType.JSON).body(properties.asJson)
 	}
 
-	def static String asPath(Collection<? extends Object> values) {
+	def static String asPath(List<? extends String> values) {
 		"/" + values.join("/")
 	}
 
