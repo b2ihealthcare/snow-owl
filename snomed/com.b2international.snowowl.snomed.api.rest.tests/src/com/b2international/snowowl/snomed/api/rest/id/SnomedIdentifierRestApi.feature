@@ -16,7 +16,6 @@
 package com.b2international.snowowl.snomed.api.rest.id
 
 import com.jayway.restassured.response.Response
-import java.util.UUID
 
 import com.b2international.snowowl.snomed.api.rest.concept.*
 import static extension com.b2international.snowowl.test.commons.rest.RestExtensions.*
@@ -24,11 +23,9 @@ import static extension com.b2international.snowowl.test.commons.rest.RestExtens
 Feature: Snomed Identifier RESTful API
 
 	Background: 
-		static String API = "/snomed-ct"
+		static String API = "/snomed-ct/v2"
 		var req = givenAuthenticatedRequest(API)
 		var Response res
-		
-		var public taskId = UUID.randomUUID.toString
 		var componentApiSegment = "unknown"
 
 	Scenario: Generate SNOMED CT International Concept ID
@@ -51,10 +48,10 @@ Feature: Snomed Identifier RESTful API
 			val actualComponentId = id.charAt(id.length - 2)
 			actualComponentId should be expectedComponentId
 		And the returned ID should be unique on "MAIN"
-			val version = args.first
+			val branchPath = args.first
 			val id = res.getBody.path("id") as String
 			var checkRequest = givenAuthenticatedRequest(API)
-			val response = checkRequest.get(asPath(#{version, componentApiSegment, id}))
+			val response = checkRequest.get(asPath(#[branchPath, componentApiSegment, id]))
 			response.getStatusCode should be 404
 			
 	Scenario: Generate SNOMED CT International Description ID

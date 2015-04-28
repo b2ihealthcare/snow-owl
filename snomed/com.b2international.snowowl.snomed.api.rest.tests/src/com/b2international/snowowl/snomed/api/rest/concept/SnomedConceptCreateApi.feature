@@ -1,6 +1,18 @@
-/*******************************************************************************
+/*
  * Copyright 2011-2015 B2i Healthcare Pte Ltd, http://b2i.sg
- *******************************************************************************/
+ * 
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package com.b2international.snowowl.snomed.api.rest.concept
 
 import com.jayway.restassured.response.Response
@@ -12,26 +24,27 @@ import com.b2international.snowowl.snomed.datastore.id.SnomedIdentifiers
 
 import static com.b2international.snowowl.snomed.SnomedConstants.Concepts.*
 import static extension com.b2international.snowowl.test.commons.rest.RestExtensions.*
+import java.util.UUID
 
 /**
- * @author mczotter
  * @since 1.0
  */
-Feature: SnomedConceptCreateOnVersionApi
+Feature: SnomedConceptCreateApi
 
 	Background:
-		static String API = "/snomed-ct"
+		static String API = "/snomed-ct/v2"
 		var req = givenAuthenticatedRequest(API)
-		var Response res;
-		var public String version;
+		var Response res
+		var public String branchPath
+		var public branchName = UUID.randomUUID.toString
 		
 		val correctAcceptabilityMap = #{ REFSET_LANGUAGE_TYPE_UK -> "PREFERRED" }
 		val incorrectAcceptabilityMap = #{ "1" -> "PREFERRED" }
 		
-	Scenario: New Concept on a not existing SNOMED CT version
+	Scenario: New Concept on non-existent SNOMED CT branch
 		
-		Given version "1998-01-31"
-			version = args.first
+		Given branchPath "MAIN/1998-01-31"
+			branchPath = args.first.renderWithFields(this)
 		And new concept
 			req.withJson(#{
 				"parentId" -> ROOT_CONCEPT,
@@ -52,7 +65,7 @@ Feature: SnomedConceptCreateOnVersionApi
 				],
 				"commitComment" -> "New concept"
 			})
-		When sending POST to "/${version}/concepts"
+		When sending POST to "/${branchPath}/concepts"
 			res = req.post(args.first.renderWithFields(this))
 		Then return "404" status
 			// if the status code is not the expected one print the method body to track failures easily
@@ -60,10 +73,10 @@ Feature: SnomedConceptCreateOnVersionApi
 		And return body with status "404"
 			res.then.body("status", equalTo(args.first.toInt))
 			
-	Scenario: New Concept under not existing Concept
+	Scenario: New Concept under unknown Concept
 		
-		Given version "MAIN"
-		And new concept under "1000"
+		Given branchPath "MAIN"
+		And new child concept of parent "1000"
 			req.withJson(#{
 				"parentId" -> args.first,
 				"moduleId" -> MODULE_SCT_CORE,
@@ -83,13 +96,13 @@ Feature: SnomedConceptCreateOnVersionApi
 				],
 				"commitComment" -> "New concept"
 			})
-		When sending POST to "/${version}/concepts"
+		When sending POST to "/${branchPath}/concepts"
 		Then return "400" status
 		And return body with status "400"
 
 	Scenario: New Concept with unknown FSN language refset
 	
-		Given version "MAIN"
+		Given branchPath "MAIN"
 		And new concept with unknown refset
 			req.withJson(#{
 				"parentId" -> ROOT_CONCEPT,
@@ -110,13 +123,13 @@ Feature: SnomedConceptCreateOnVersionApi
 				],
 				"commitComment" -> "New concept"
 			})
-		When sending POST to "/${version}/concepts"
+		When sending POST to "/${branchPath}/concepts"
 		Then return "400" status
 		And return body with status "400"
 
 	Scenario: New Concept in an unkown module
 	
-		Given version "MAIN"
+		Given branchPath "MAIN"
 		And new concept with unknown module
 			req.withJson(#{
 				"parentId" -> ROOT_CONCEPT,
@@ -137,17 +150,17 @@ Feature: SnomedConceptCreateOnVersionApi
 				],
 				"commitComment" -> "New concept"
 			})
-		When sending POST to "/${version}/concepts"
+		When sending POST to "/${branchPath}/concepts"
 		Then return "400" status
 		And return body with status "400"
 
-	Scenario: New Concept on an existing SNOMED CT version
+	Scenario: New Concept on SNOMED CT Main Branch
 	
-		Given version "MAIN"
+		Given branchPath "MAIN"
 		And new concept
-		When sending POST to "/${version}/concepts"
+		When sending POST to "/${branchPath}/concepts"
 		Then return "201" status
-		And return location header pointing to "/${version}/concepts"
+		And return location header pointing to "/${branchPath}/concepts"
 			res.location should contain args.first.renderWithFields(this) 
 		And return empty body
 			res.getBody.asString => ""
@@ -156,7 +169,7 @@ Feature: SnomedConceptCreateOnVersionApi
 		
 		var public conceptId = SnomedIdentifiers.generateConceptId()
 		
-		Given version "MAIN"
+		Given branchPath "MAIN"
 		And new concept with id
 			req.withJson(#{
 				"id" -> conceptId,
@@ -178,8 +191,33 @@ Feature: SnomedConceptCreateOnVersionApi
 				],
 				"commitComment" -> "New concept"
 			})
-		When sending POST to "/${version}/concepts"
+		When sending POST to "/${branchPath}/concepts"
 		Then return "201" status
-		And return location header pointing to "/${version}/concepts/${conceptId}"
+		And return location header pointing to "/${branchPath}/concepts/${conceptId}"
+		And return empty body
+		
+	Scenario: New Concept on a newly created branch
+	
+		Given branchPath "MAIN/${branchName}"
+		And new concept
+		And a newly created branch at "/branches"
+			givenAuthenticatedRequest(API).withJson(#{
+				"name" -> branchName
+			}).post(args.first.renderWithFields(this)).then.statusCode(201)
+		When sending POST to "/${branchPath}/concepts"
+		Then return "201" status
+		And return location header pointing to "/${branchPath}/concepts"
+		And return empty body
+	
+	Scenario: New Concept on a newly created branch with existing identifier
+		
+		var public conceptId = SnomedIdentifiers.generateConceptId()
+		
+		Given branchPath "MAIN/${branchName}"
+		And new concept with id
+		And a newly created branch at "/branches"
+		When sending POST to "/${branchPath}/concepts"
+		Then return "201" status
+		And return location header pointing to "/${branchPath}/concepts/${conceptId}"
 		And return empty body
 			
