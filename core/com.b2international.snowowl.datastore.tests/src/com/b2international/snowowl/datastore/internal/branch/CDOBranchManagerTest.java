@@ -17,7 +17,6 @@ package com.b2international.snowowl.datastore.internal.branch;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
-import static org.junit.Assert.assertNull;
 import static org.mockito.Mockito.RETURNS_MOCKS;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -30,6 +29,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.runners.MockitoJUnitRunner;
 
+import com.b2international.snowowl.core.api.SnowowlRuntimeException;
 import com.b2international.snowowl.datastore.branch.Branch;
 import com.b2international.snowowl.datastore.internal.IRepository;
 import com.b2international.snowowl.datastore.store.MemStore;
@@ -86,11 +86,11 @@ public class CDOBranchManagerTest {
 		assertEquals(branchB.path(), cdoBranchB.getPathName());
 	}
 	
-	@Test
+	@Test(expected = SnowowlRuntimeException.class)
 	public void whenDeletingNewlyCreatedBranch_ThenAssociatedBranchShouldBeRemovedFromInternalMap() throws Exception {
 		whenCreatingBranch_ThenItShouldBeCreated_AndACDOBranchShouldBeAssociatedWithIt();
 		branchA.delete();
-		assertNull(manager.getCDOBranch(branchA));
+		manager.getCDOBranch(branchA);
 	}
 	
 	@Test

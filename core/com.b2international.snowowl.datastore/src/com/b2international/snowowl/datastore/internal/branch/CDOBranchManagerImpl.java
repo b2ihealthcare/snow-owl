@@ -24,6 +24,7 @@ import org.eclipse.emf.cdo.transaction.CDOTransaction;
 import org.eclipse.emf.cdo.util.CommitException;
 import org.eclipse.emf.spi.cdo.DefaultCDOMerger;
 
+import com.b2international.snowowl.core.api.SnowowlRuntimeException;
 import com.b2international.snowowl.datastore.BranchPathUtils;
 import com.b2international.snowowl.datastore.branch.Branch;
 import com.b2international.snowowl.datastore.branch.BranchManager;
@@ -53,15 +54,14 @@ public class CDOBranchManagerImpl extends BranchManagerImpl {
 	
 	CDOBranch getCDOBranch(Branch branch) {
 		final Integer branchId = branches.get(branch.path());
-		return loadCDOBranch(branchId);
+		if (branchId != null) {
+			return loadCDOBranch(branchId);
+		}
+		throw new SnowowlRuntimeException("No registered CDOBranch for path: " + branch.path());
 	}
 	
 	private CDOBranch loadCDOBranch(Integer branchId) {
-		if (branchId != null) {
-			return repository.getCdoBranchManager().getBranch(branchId);
-		} else {
-			return null;
-		}
+		return repository.getCdoBranchManager().getBranch(branchId);
 	}
 
 	@Override
