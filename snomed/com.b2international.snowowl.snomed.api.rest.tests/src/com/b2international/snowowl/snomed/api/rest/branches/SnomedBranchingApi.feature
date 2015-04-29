@@ -36,6 +36,7 @@ Feature: SnomedBranchingApi
 		var description = "Description at " + new Date
 		var req = givenAuthenticatedRequest(API)
 		var Response res
+		val metadata = newHashMap()
 		
 	Scenario: Nonexistent SNOMED CT branch
 	
@@ -51,6 +52,13 @@ Feature: SnomedBranchingApi
 	Scenario: New SNOMED-CT branch under nonexistent parent 
 	
 		Given new SNOMED-CT branch request under parent branch "nonexistent" with name "${branchName}"
+			parent = args.first
+			branchName = args.second.renderWithFields(this)
+			req.withJson(#{
+				"parent" -> parent,
+  				"name" -> branchName,
+  				"metadata" -> metadata
+			})
 		When sending POST to "/branches"
 		Then return "400" status
 		And return body with status "400"
@@ -58,12 +66,6 @@ Feature: SnomedBranchingApi
 	Scenario: New SNOMED CT branch under MAIN
 	
 		Given new SNOMED-CT branch request under parent branch "MAIN" with name "${branchName}"
-			parent = args.first
-			branchName = args.second.renderWithFields(this)
-			req.withJson(#{
-				"parent" -> parent,
-  				"name" -> branchName
-			})
 		When sending POST to "/branches"
 		Then return "201" status
 		And return location header pointing to "/branches/${parent}/${branchName}"
@@ -118,3 +120,15 @@ Feature: SnomedBranchingApi
 				it instanceof Collection && (it as Collection).contains(branchName)
 			]
 		
+
+	Scenario: Metadata support
+		
+		Given metadata "description" with value "My awesome branch on MAIN"
+			metadata.put(args.first, args.second)
+		And new SNOMED-CT branch request under parent branch "MAIN" with name "${branchName}"
+		When sending POST to "/branches"
+		Then return "201" status
+		And return location header pointing to "/branches/${parent}/${branchName}"
+		And return "200" with body when sending GET to "/branches/${parent}/${branchName}"
+		And return body containing metadata "My awesome branch on MAIN" on JSON path "metadata.description"
+			res.getBody.path(args.second) should be args.first
