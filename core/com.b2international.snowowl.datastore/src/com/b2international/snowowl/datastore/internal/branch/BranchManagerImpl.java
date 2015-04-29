@@ -43,11 +43,10 @@ public class BranchManagerImpl implements BranchManager {
 	/*package*/ BranchManagerImpl(Store<BranchImpl> branchStore, long mainBranchTimestamp, TimestampProvider clock) {
 		this.branchStore = branchStore;
 		this.clock = clock;
-		initMainBranch(mainBranchTimestamp);
+		initMainBranch(new MainBranchImpl(mainBranchTimestamp));
 	}
 	
-	private void initMainBranch(long mainBranchTimestamp) {
-		final MainBranchImpl main = new MainBranchImpl(mainBranchTimestamp);
+	/*package*/ void initMainBranch(BranchImpl main) {
 		registerBranch(main);
 	}
 
@@ -68,7 +67,10 @@ public class BranchManagerImpl implements BranchManager {
 		return reopen(parent, name, metadata);
 	}
 
-	protected BranchImpl reopen(BranchImpl parent, String name, Metadata metadata) {
+	/*
+	 * For testing only.
+	 */
+	BranchImpl reopen(BranchImpl parent, String name, Metadata metadata) {
 		return reopen(parent, name, metadata, clock.getTimestamp());
 	}
 	

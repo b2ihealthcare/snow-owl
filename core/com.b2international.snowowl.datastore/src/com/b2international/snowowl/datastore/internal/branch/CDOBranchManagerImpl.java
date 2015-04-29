@@ -15,8 +15,6 @@
  */
 package com.b2international.snowowl.datastore.internal.branch;
 
-import java.util.concurrent.ConcurrentMap;
-
 import org.eclipse.emf.cdo.common.branch.CDOBranch;
 import org.eclipse.emf.cdo.common.commit.CDOCommitInfo;
 import org.eclipse.emf.cdo.common.commit.CDOCommitInfoHandler;
@@ -33,7 +31,6 @@ import com.b2international.snowowl.datastore.branch.BranchMergeException;
 import com.b2international.snowowl.datastore.cdo.ICDORepository;
 import com.b2international.snowowl.datastore.internal.IRepository;
 import com.b2international.snowowl.datastore.store.Store;
-import com.google.common.collect.MapMaker;
 
 /**
  * {@link BranchManager} implementation based on {@link CDOBranch} functionality.
@@ -42,23 +39,27 @@ import com.google.common.collect.MapMaker;
  */
 public class CDOBranchManagerImpl extends BranchManagerImpl {
 
-	private final ConcurrentMap<String, Integer> branches = new MapMaker().makeMap();
-	
+	private static final String CDO_BRANCH_ID = "cdoBranchId";
 	private final IRepository repository;
 	
 	public CDOBranchManagerImpl(final IRepository repository, final Store<BranchImpl> branchStore) {
 		super(branchStore, getBasetimestamp(repository.getCdoMainBranch()));
 		this.repository = repository;
-		registerCDOBranch(repository.getCdoMainBranch());
 		registerCommitListener(repository.getCdoRepository());
 	}
 	
+	@Override
+	void initMainBranch(BranchImpl main) {
+		main.metadata().put(CDO_BRANCH_ID, CDOBranch.MAIN_BRANCH_ID);
+		super.initMainBranch(main);
+	}
+	
 	CDOBranch getCDOBranch(Branch branch) {
-		final Integer branchId = branches.get(branch.path());
+		final Integer branchId = branch.metadata().getInt(CDO_BRANCH_ID);
 		if (branchId != null) {
 			return loadCDOBranch(branchId);
 		}
-		throw new SnowowlRuntimeException("No registered CDOBranch for path: " + branch.path());
+		throw new SnowowlRuntimeException("Missing registered CDOBranch identifier for branch at path: " + branch.path());
 	}
 	
 	private CDOBranch loadCDOBranch(Integer branchId) {
@@ -84,27 +85,15 @@ public class CDOBranchManagerImpl extends BranchManagerImpl {
 	}
 	
 	@Override
-	protected BranchImpl reopen(BranchImpl parent, String name, Metadata metadata) {
+	BranchImpl reopen(BranchImpl parent, String name, Metadata metadata) {
 		final CDOBranch childCDOBranch = createCDOBranch(parent, name);
-		registerCDOBranch(childCDOBranch);
+		metadata.put(CDO_BRANCH_ID, childCDOBranch.getID());
 		repository.getIndexUpdater().reopen(BranchPathUtils.createPath(childCDOBranch), childCDOBranch.getBase().getTimeStamp());
 		return reopen(parent, name, metadata, getBasetimestamp(childCDOBranch));
 	}
 	
-	@Override
-	protected void postDelete(BranchImpl branch) {
-		super.postDelete(branch);
-		branches.remove(branch.path());
-	}
-	
 	private CDOBranch createCDOBranch(BranchImpl parent, String name) {
 		return getCDOBranch(parent).createBranch(name);
-	}
-
-	private void registerCDOBranch(CDOBranch branch) {
-		final String path = branch.getPathName();
-		final int branchId = branch.getID();
-		branches.put(path, branchId);
 	}
 
 	private void registerCommitListener(ICDORepository repository) {
