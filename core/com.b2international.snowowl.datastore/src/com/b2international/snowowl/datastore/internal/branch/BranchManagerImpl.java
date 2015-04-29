@@ -17,6 +17,7 @@ package com.b2international.snowowl.datastore.internal.branch;
 
 import java.util.Collection;
 
+import com.b2international.snowowl.core.Metadata;
 import com.b2international.snowowl.core.exceptions.AlreadyExistsException;
 import com.b2international.snowowl.core.exceptions.BadRequestException;
 import com.b2international.snowowl.core.exceptions.NotFoundException;
@@ -55,7 +56,7 @@ public class BranchManagerImpl implements BranchManager {
 		branchStore.put(branch.path(), branch);
 	}
 	
-	BranchImpl createBranch(BranchImpl parent, String name) {
+	BranchImpl createBranch(BranchImpl parent, String name, Metadata metadata) {
 		if (parent.isDeleted()) {
 			throw new BadRequestException("Cannot create '%s' child branch under deleted '%s' parent.", name, parent.path());
 		}
@@ -64,15 +65,16 @@ public class BranchManagerImpl implements BranchManager {
 			throw new AlreadyExistsException(Branch.class.getSimpleName(), path);
 		}
 		
-		return reopen(parent, name);
+		return reopen(parent, name, metadata);
 	}
 
-	protected BranchImpl reopen(BranchImpl parent, String name) {
-		return reopen(parent, name, clock.getTimestamp());
+	protected BranchImpl reopen(BranchImpl parent, String name, Metadata metadata) {
+		return reopen(parent, name, metadata, clock.getTimestamp());
 	}
 	
-	protected BranchImpl reopen(BranchImpl parent, String name, long baseTimestamp) {
+	protected BranchImpl reopen(BranchImpl parent, String name, Metadata metadata, long baseTimestamp) {
 		final BranchImpl child = new BranchImpl(name, parent.path(), baseTimestamp);
+		child.metadata(metadata);
 		registerBranch(child);
 		return child;
 	}
@@ -114,7 +116,7 @@ public class BranchManagerImpl implements BranchManager {
 	}
 
 	Branch rebase(BranchImpl source, BranchImpl target, String commitMessage) {
-		BranchImpl rebasedSource = reopen((BranchImpl) source.parent(), source.name());
+		BranchImpl rebasedSource = reopen((BranchImpl) source.parent(), source.name(), source.metadata());
 		
 		if (source.state() == BranchState.DIVERGED) {
 			return applyChangeSet(rebasedSource, source, clock.getTimestamp(), commitMessage);

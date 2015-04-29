@@ -44,6 +44,7 @@ public class MainBranchImpl extends BranchImpl {
 	MainBranchImpl withHeadTimestamp(long newHeadTimestamp) {
 		final MainBranchImpl main = new MainBranchImpl(baseTimestamp(), newHeadTimestamp);
 		main.setBranchManager(branchManager);
+		main.metadata(metadata());
 		return main;
 	}
 

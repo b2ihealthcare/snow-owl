@@ -20,6 +20,7 @@ import static com.google.common.base.Preconditions.checkNotNull;
 
 import java.util.regex.Pattern;
 
+import com.b2international.snowowl.core.Metadata;
 import com.b2international.snowowl.core.MetadataHolderImpl;
 import com.b2international.snowowl.datastore.branch.Branch;
 import com.b2international.snowowl.datastore.branch.BranchMergeException;
@@ -73,6 +74,7 @@ public class BranchImpl extends MetadataHolderImpl implements Branch {
 	BranchImpl withDeleted() {
 		final BranchImpl branch = new BranchImpl(name, parentPath, baseTimestamp, headTimestamp, true);
 		branch.setBranchManager(branchManager);
+		branch.metadata(metadata());
 		return branch;
 	}
 	
@@ -80,6 +82,7 @@ public class BranchImpl extends MetadataHolderImpl implements Branch {
         checkArgument(newBaseTimestamp > baseTimestamp, "New base timestamp may not be smaller or equal than old base timestamp.");
 		final BranchImpl branch = new BranchImpl(name, parentPath, newBaseTimestamp, newBaseTimestamp, deleted);
 		branch.setBranchManager(branchManager);
+		branch.metadata(metadata());
 		return branch;
 	}
 	
@@ -87,6 +90,7 @@ public class BranchImpl extends MetadataHolderImpl implements Branch {
 		checkArgument(newHeadTimestamp > headTimestamp, "New head timestamp may not be smaller or equal than old head timestamp.");
 		final BranchImpl branch = new BranchImpl(name, parentPath, baseTimestamp, newHeadTimestamp, deleted);
 		branch.setBranchManager(branchManager);
+		branch.metadata(metadata());
 		return branch;
 	}
 	
@@ -122,8 +126,13 @@ public class BranchImpl extends MetadataHolderImpl implements Branch {
 
 	@Override
 	public Branch createChild(String name) {
+		return createChild(name, null);
+	}
+	
+	@Override
+	public Branch createChild(String name, Metadata metadata) {
 		checkName(name);
-		return branchManager.createBranch(this, name);
+		return branchManager.createBranch(this, name, metadata);
 	}
 
 	@Override

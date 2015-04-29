@@ -15,6 +15,8 @@
  */
 package com.b2international.snowowl.datastore.branch;
 
+import com.b2international.snowowl.core.Metadata;
+import com.b2international.snowowl.core.MetadataHolder;
 import com.b2international.snowowl.core.exceptions.AlreadyExistsException;
 
 /**
@@ -23,7 +25,7 @@ import com.b2international.snowowl.core.exceptions.AlreadyExistsException;
  * 
  * @since 4.1
  */
-public interface Branch extends Deletable {
+public interface Branch extends Deletable, MetadataHolder {
 
 	/**
 	 * The path of the main branch.
@@ -149,6 +151,17 @@ public interface Branch extends Deletable {
 	 */
 	Branch createChild(String name) throws AlreadyExistsException;
 	
+	/**
+	 * Creates a new child branch with the given name and metadata.
+	 * @param name - the name of the new child {@link Branch}, may not be <code>null</code>
+	 * @param metadata - optional metadata map
+	 * @return
+	 * @throws AlreadyExistsException
+	 *             - if the child branch already exists
+	 */
+	Branch createChild(String name, Metadata metadata);
+	
 	@Override
 	Branch delete();
+
 }

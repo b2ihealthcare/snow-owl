@@ -19,10 +19,7 @@ import static com.b2international.snowowl.datastore.internal.branch.BranchAssert
 import static com.b2international.snowowl.datastore.internal.branch.BranchAssertions.assertState;
 import static com.google.common.collect.Lists.newArrayList;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.junit.Assert.*;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.when;
 
@@ -31,6 +28,8 @@ import java.util.Collection;
 import org.junit.Before;
 import org.junit.Test;
 
+import com.b2international.snowowl.core.Metadata;
+import com.b2international.snowowl.core.MetadataImpl;
 import com.b2international.snowowl.core.exceptions.AlreadyExistsException;
 import com.b2international.snowowl.core.exceptions.BadRequestException;
 import com.b2international.snowowl.core.exceptions.NotFoundException;
@@ -107,6 +106,14 @@ public class BranchManagerTest {
 		final Branch c = main.createChild("c");
 		final Collection<? extends Branch> branches = manager.getBranches();
 		assertThat(branches).containsOnly(main, a, b, c);
+	}
+	
+	@Test
+	public void whenCreatingBranchWithMetadata_ThenItShouldBeStored() throws Exception {
+		final Metadata metadata = new MetadataImpl();
+		metadata.put("key", "value");
+		final Branch b = main.createChild("b", metadata);
+		assertEquals("value", b.metadata().get("key"));
 	}
 	
 	@Test

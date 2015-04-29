@@ -24,6 +24,7 @@ import org.eclipse.emf.cdo.transaction.CDOTransaction;
 import org.eclipse.emf.cdo.util.CommitException;
 import org.eclipse.emf.spi.cdo.DefaultCDOMerger;
 
+import com.b2international.snowowl.core.Metadata;
 import com.b2international.snowowl.core.api.SnowowlRuntimeException;
 import com.b2international.snowowl.datastore.BranchPathUtils;
 import com.b2international.snowowl.datastore.branch.Branch;
@@ -83,11 +84,11 @@ public class CDOBranchManagerImpl extends BranchManagerImpl {
 	}
 	
 	@Override
-	protected BranchImpl reopen(BranchImpl parent, String name) {
+	protected BranchImpl reopen(BranchImpl parent, String name, Metadata metadata) {
 		final CDOBranch childCDOBranch = createCDOBranch(parent, name);
 		registerCDOBranch(childCDOBranch);
 		repository.getIndexUpdater().reopen(BranchPathUtils.createPath(childCDOBranch), childCDOBranch.getBase().getTimeStamp());
-		return reopen(parent, name, getBasetimestamp(childCDOBranch));
+		return reopen(parent, name, metadata, getBasetimestamp(childCDOBranch));
 	}
 	
 	@Override

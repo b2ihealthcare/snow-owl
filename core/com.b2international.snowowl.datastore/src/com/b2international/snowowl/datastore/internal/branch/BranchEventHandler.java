@@ -63,7 +63,7 @@ public class BranchEventHandler extends ApiEventHandler {
 	protected BranchReply handle(CreateBranchEvent event) {
 		try {
 			final Branch parent = branchManager.getBranch(event.getParent());
-			final Branch child = parent.createChild(event.getName());
+			final Branch child = parent.createChild(event.getName(), event.getMetadata());
 			return new BranchReply(child);
 		} catch (NotFoundException e) {
 			// if parent not found, convert it to BadRequestException
