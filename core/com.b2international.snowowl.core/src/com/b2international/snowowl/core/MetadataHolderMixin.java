@@ -24,6 +24,6 @@ public interface MetadataHolderMixin extends MetadataHolder {
 
 	@Override
 	@JsonProperty
-	public Metadata metadata();
+	Metadata metadata();
 	
 }

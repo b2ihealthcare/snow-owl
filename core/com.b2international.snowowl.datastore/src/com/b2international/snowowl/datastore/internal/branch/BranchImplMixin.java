@@ -15,6 +15,7 @@
  */
 package com.b2international.snowowl.datastore.internal.branch;
 
+import com.b2international.snowowl.core.MetadataHolderMixin;
 import com.b2international.snowowl.datastore.branch.Branch;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -33,7 +34,7 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo;
 @JsonSubTypes(
 	@JsonSubTypes.Type(value = MainBranchImpl.class, name="mainBranch")
 )
-public abstract class BranchImplMixin implements Branch {
+public abstract class BranchImplMixin implements MetadataHolderMixin {
 
 	@JsonCreator
 	BranchImplMixin(@JsonProperty("name") String name, @JsonProperty("parentPath") String parentPath, @JsonProperty("baseTimestamp") long baseTimestamp,
@@ -41,19 +42,15 @@ public abstract class BranchImplMixin implements Branch {
 	}
 	
 	@JsonProperty
-	@Override
 	public abstract long baseTimestamp();
 	
 	@JsonProperty
-	@Override
 	public abstract long headTimestamp();
 	
 	@JsonProperty
-	@Override
 	public abstract String name();
 	
 	@JsonProperty
-	@Override
 	public abstract String parentPath();
 	
 }

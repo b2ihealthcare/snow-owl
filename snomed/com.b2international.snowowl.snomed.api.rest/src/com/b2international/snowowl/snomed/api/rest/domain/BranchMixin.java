@@ -15,32 +15,28 @@
  */
 package com.b2international.snowowl.snomed.api.rest.domain;
 
+import com.b2international.snowowl.core.MetadataHolderMixin;
 import com.b2international.snowowl.datastore.branch.Branch;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 /**
  * @since 4.1
  */
-public interface BranchMixin extends Branch {
+public interface BranchMixin extends MetadataHolderMixin {
 
 	@JsonProperty
-	@Override
-	public abstract long baseTimestamp();
+	long baseTimestamp();
 	
 	@JsonProperty
-	@Override
-	public abstract long headTimestamp();
+	long headTimestamp();
 	
 	@JsonProperty
-	@Override
-	public abstract String name();
+	String name();
 	
 	@JsonProperty
-	@Override
-	public abstract String path();
+	String path();
 	
 	@JsonProperty
-	@Override
-	public abstract BranchState state();
+	Branch.BranchState state();
 	
 }
