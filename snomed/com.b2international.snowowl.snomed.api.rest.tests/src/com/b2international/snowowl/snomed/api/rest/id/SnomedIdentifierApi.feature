@@ -20,7 +20,7 @@ import com.jayway.restassured.response.Response
 import com.b2international.snowowl.snomed.api.rest.concept.*
 import static extension com.b2international.snowowl.test.commons.rest.RestExtensions.*
 
-Feature: Snomed Identifier RESTful API
+Feature: SnomedIdentifierApi
 
 	Background: 
 		static String API = "/snomed-ct/v2"
