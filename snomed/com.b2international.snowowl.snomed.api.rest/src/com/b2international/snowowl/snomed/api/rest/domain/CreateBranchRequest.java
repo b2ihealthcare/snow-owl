@@ -15,6 +15,7 @@
  */
 package com.b2international.snowowl.snomed.api.rest.domain;
 
+import com.b2international.snowowl.core.MetadataHolderImpl;
 import com.b2international.snowowl.datastore.branch.Branch;
 import com.b2international.snowowl.datastore.events.CreateBranchEvent;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -22,7 +23,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 /**
  * @since 4.1
  */
-public abstract class CreateBranchRequest {
+public abstract class CreateBranchRequest extends MetadataHolderImpl {
 
 	@JsonProperty
 	private String parent = "MAIN";
@@ -37,7 +38,7 @@ public abstract class CreateBranchRequest {
 	}
 	
 	public CreateBranchEvent toEvent() {
-		return new CreateBranchEvent(repository, parent, name);
+		return new CreateBranchEvent(repository, parent, name, metadata());
 	}
 
 	public String path() {

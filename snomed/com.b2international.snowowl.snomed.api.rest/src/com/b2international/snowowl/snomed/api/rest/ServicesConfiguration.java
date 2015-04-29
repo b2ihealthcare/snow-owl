@@ -36,6 +36,10 @@ import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 import org.springframework.web.servlet.config.annotation.PathMatchConfigurer;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurerAdapter;
 
+import com.b2international.snowowl.core.Metadata;
+import com.b2international.snowowl.core.MetadataHolder;
+import com.b2international.snowowl.core.MetadataHolderMixin;
+import com.b2international.snowowl.core.MetadataMixin;
 import com.b2international.snowowl.datastore.branch.Branch;
 import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.snomed.api.domain.ISnomedComponent;
@@ -158,6 +162,8 @@ public class ServicesConfiguration extends WebMvcConfigurerAdapter {
 		objectMapper.addMixInAnnotations(ISnomedComponent.class, ISnomedComponentMixin.class);
 		objectMapper.addMixInAnnotations(ISnomedBrowserComponent.class, ISnomedComponentMixin.class);
 		objectMapper.addMixInAnnotations(Branch.class, BranchMixin.class);
+		objectMapper.addMixInAnnotations(Metadata.class, MetadataMixin.class);
+		objectMapper.addMixInAnnotations(MetadataHolder.class, MetadataHolderMixin.class);
 		return objectMapper;
 	}
 	

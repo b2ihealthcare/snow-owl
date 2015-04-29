@@ -64,7 +64,7 @@ public class ControllerExceptionMapper {
 	@ResponseStatus(HttpStatus.BAD_REQUEST)
 	public @ResponseBody RestApiError handle(HttpMessageNotReadableException ex) {
 		LOG.error("Exception during processing of a JSON document", ex);
-		return RestApiError.of(ApiError.Builder.of("Invalid JSON representation").build()).build(HttpStatus.BAD_REQUEST.value());
+		return RestApiError.of(ApiError.Builder.of("Invalid JSON representation").developerMessage(ex.getMessage()).build()).build(HttpStatus.BAD_REQUEST.value());
 	}
 
 	/**
