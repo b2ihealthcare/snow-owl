@@ -15,7 +15,7 @@
  */
 package com.b2international.snowowl.datastore.internal.branch;
 
-import com.b2international.snowowl.datastore.branch.Branch;
+import com.b2international.snowowl.core.MetadataHolderMixin;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
@@ -24,7 +24,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
  * 
  * @since 4.1
  */
-public abstract class MainBranchImplMixin implements Branch {
+public abstract class MainBranchImplMixin implements MetadataHolderMixin {
 
 	@JsonCreator
 	MainBranchImplMixin(@JsonProperty("baseTimestamp") long baseTimestamp, @JsonProperty("headTimestamp") long headTimestamp) {

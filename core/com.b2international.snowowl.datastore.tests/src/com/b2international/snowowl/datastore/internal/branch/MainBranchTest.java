@@ -32,6 +32,7 @@ public class MainBranchTest {
 	private BranchManagerImpl manager;
 	private MainBranchImpl main;
 	private MainBranchImpl mainWithTimestamp;
+	private BranchSerializer serializer;
 
 	@Before
 	public void before() {
@@ -40,6 +41,7 @@ public class MainBranchTest {
 		main.setBranchManager(manager);
 		mainWithTimestamp = new MainBranchImpl(5L);
 		mainWithTimestamp.setBranchManager(manager);
+		serializer = new BranchSerializer();
 	}
 
 	@Test
@@ -106,4 +108,25 @@ public class MainBranchTest {
 	public void deleteMainBranch() throws Exception {
 		main.delete();
 	}
+	
+	@Test
+	public void serializationTest() throws Exception {
+		main.metadata().put("key", "value");
+		final String json = serializer.writeValueAsString(main);
+		assertEquals("{\"type\":\"mainBranch\",\"baseTimestamp\":0,\"headTimestamp\":0,\"metadata\":{\"key\":\"value\"},\"name\":\"MAIN\",\"parentPath\":\"\",\"deleted\":false}", json);
+	}
+	
+	@Test
+	public void deserializationTest() throws Exception {
+		main.metadata().put("key", "value");
+		final String json = serializer.writeValueAsString(main);
+		final BranchImpl value = serializer.readValue(json, BranchImpl.class);
+		assertEquals("MAIN", value.path());
+		assertEquals("MAIN", value.name());
+		assertEquals(0L, value.baseTimestamp());
+		assertEquals(0L, value.headTimestamp());
+		assertEquals(false, value.isDeleted());
+		assertEquals("value", value.metadata().get("key"));
+	}
+	
 }
