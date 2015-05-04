@@ -28,7 +28,7 @@ import com.b2international.snowowl.datastore.branch.BranchMergeException;
 /**
  * @since 4.1
  */
-public class BranchImpl extends MetadataHolderImpl implements Branch {
+public class BranchImpl extends MetadataHolderImpl implements Branch, InternalBranch {
 
     private static final Pattern VALID_NAME_PATTERN = Pattern.compile("[a-zA-Z0-9_-]{1,50}");
 
@@ -63,7 +63,8 @@ public class BranchImpl extends MetadataHolderImpl implements Branch {
 		this.deleted = deleted;
 	}
 	
-	void setBranchManager(BranchManagerImpl branchManager) {
+    @Override
+	public void setBranchManager(BranchManagerImpl branchManager) {
 		this.branchManager = checkNotNull(branchManager, "branchManager");
 	}
 	
@@ -71,25 +72,26 @@ public class BranchImpl extends MetadataHolderImpl implements Branch {
 		return this.branchManager;
 	}
 	
-	BranchImpl withDeleted() {
-		final BranchImpl branch = new BranchImpl(name, parentPath, baseTimestamp, headTimestamp, true);
-		branch.setBranchManager(branchManager);
-		branch.metadata(metadata());
-		return branch;
+    @Override
+    public InternalBranch withDeleted() {
+		return createBranch(name, parentPath, baseTimestamp, headTimestamp, true);
 	}
-	
-	BranchImpl withBaseTimestamp(long newBaseTimestamp) {
+
+    @Override
+    public InternalBranch withBaseTimestamp(long newBaseTimestamp) {
         checkArgument(newBaseTimestamp > baseTimestamp, "New base timestamp may not be smaller or equal than old base timestamp.");
-		final BranchImpl branch = new BranchImpl(name, parentPath, newBaseTimestamp, newBaseTimestamp, deleted);
-		branch.setBranchManager(branchManager);
-		branch.metadata(metadata());
-		return branch;
+		return createBranch(name, parentPath, newBaseTimestamp, newBaseTimestamp, deleted);
 	}
 	
-	BranchImpl withHeadTimestamp(long newHeadTimestamp) {
+    @Override
+    public InternalBranch withHeadTimestamp(long newHeadTimestamp) {
 		checkArgument(newHeadTimestamp > headTimestamp, "New head timestamp may not be smaller or equal than old head timestamp.");
-		final BranchImpl branch = new BranchImpl(name, parentPath, baseTimestamp, newHeadTimestamp, deleted);
-		branch.setBranchManager(branchManager);
+		return createBranch(name, parentPath, baseTimestamp, newHeadTimestamp, deleted);
+	}
+    
+	private BranchImpl createBranch(String name, String parentPath, long baseTimestamp, long headTimestamp, boolean deleted) {
+		final BranchImpl branch = new BranchImpl(name, parentPath, baseTimestamp, headTimestamp, deleted);
+		branch.setBranchManager(getBranchManager());
 		branch.metadata(metadata());
 		return branch;
 	}

@@ -27,10 +27,12 @@ public class BranchSerializationTest {
 
 	private BranchImpl branch;
 	private BranchSerializer mapper;
+	private CDOBranchImpl cdoBranch;
 
 	@Before
 	public void givenBranch() {
 		this.branch = new BranchImpl("name", "parent", 0L, 0L, false);
+		this.cdoBranch = new CDOBranchImpl("name", "parent", 0L, 0L, false, 0);
 		this.mapper = new BranchSerializer();
 	}
 	
@@ -64,6 +66,18 @@ public class BranchSerializationTest {
 		assertEquals(0L, value.headTimestamp());
 		assertEquals(false, value.isDeleted());
 		assertEquals("Project A branch", value.metadata().get("description"));
+	}
+	
+	@Test
+	public void serializeCDOBranchImpl() throws Exception {
+		final String json = mapper.writeValueAsString(cdoBranch);
+		assertEquals("{\"type\":\"CDOBranchImpl\",\"name\":\"name\",\"parentPath\":\"parent\",\"baseTimestamp\":0,\"headTimestamp\":0,\"deleted\":false,\"metadata\":{},\"cdoBranchId\":0}", json);
+	}
+	
+	@Test
+	public void deserializeCDOBranchImpl() throws Exception {
+		final String json = mapper.writeValueAsString(cdoBranch);
+		mapper.readValue(json, CDOBranchImpl.class);
 	}
 	
 }

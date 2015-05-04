@@ -91,11 +91,10 @@ public class MainBranchTest {
 		assertEquals("Branch 'MAIN' should be in UP_TO_DATE state, even after committing.", BranchState.UP_TO_DATE, commit(main, 5L).state());
 	}
 	
-	private BranchImpl commit(BranchImpl branch, long... timestamps) {
+	private InternalBranch commit(InternalBranch branch, long... timestamps) {
 		for (long timestamp : timestamps) {
 			branch = branch.withHeadTimestamp(timestamp);
 		}
-		
 		return branch;
 	}
 
@@ -113,7 +112,7 @@ public class MainBranchTest {
 	public void serializationTest() throws Exception {
 		main.metadata().put("key", "value");
 		final String json = serializer.writeValueAsString(main);
-		assertEquals("{\"type\":\"mainBranch\",\"baseTimestamp\":0,\"headTimestamp\":0,\"metadata\":{\"key\":\"value\"},\"name\":\"MAIN\",\"parentPath\":\"\",\"deleted\":false}", json);
+		assertEquals("{\"type\":\"MainBranchImpl\",\"baseTimestamp\":0,\"headTimestamp\":0,\"metadata\":{\"key\":\"value\"},\"name\":\"MAIN\",\"parentPath\":\"\",\"deleted\":false}", json);
 	}
 	
 	@Test

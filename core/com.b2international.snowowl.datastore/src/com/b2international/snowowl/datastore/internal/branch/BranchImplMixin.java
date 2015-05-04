@@ -18,6 +18,7 @@ package com.b2international.snowowl.datastore.internal.branch;
 import com.b2international.snowowl.core.MetadataHolderMixin;
 import com.b2international.snowowl.datastore.branch.Branch;
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
@@ -28,11 +29,12 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo;
  * @since 4.1
  */
 @JsonTypeInfo(
+		defaultImpl = BranchImpl.class,
 	    use = JsonTypeInfo.Id.NAME,
 	    include = JsonTypeInfo.As.PROPERTY,
 	    property = "type")
 @JsonSubTypes(
-	@JsonSubTypes.Type(value = MainBranchImpl.class, name="mainBranch")
+	@JsonSubTypes.Type(value = MainBranchImpl.class)
 )
 public abstract class BranchImplMixin implements MetadataHolderMixin {
 
@@ -52,5 +54,8 @@ public abstract class BranchImplMixin implements MetadataHolderMixin {
 	
 	@JsonProperty
 	public abstract String parentPath();
+	
+	@JsonIgnore
+	public abstract BranchManagerImpl getBranchManager();
 	
 }

@@ -19,16 +19,25 @@ import com.b2international.snowowl.core.MetadataHolderMixin;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonSubTypes;
+import com.fasterxml.jackson.annotation.JsonTypeInfo;
 
 /**
- * Mixin interface to use for {@link MainBranchImpl} JSON serialization.
- * 
  * @since 4.1
  */
-public abstract class MainBranchImplMixin implements MetadataHolderMixin {
+@JsonTypeInfo(
+		defaultImpl = CDOBranchImpl.class,
+	    use = JsonTypeInfo.Id.NAME,
+	    include = JsonTypeInfo.As.PROPERTY,
+	    property = "type")
+@JsonSubTypes(
+	@JsonSubTypes.Type(value = CDOMainBranchImpl.class)
+)
+public abstract class CDOBranchImplMixin implements MetadataHolderMixin {
 
 	@JsonCreator
-	MainBranchImplMixin(@JsonProperty("baseTimestamp") long baseTimestamp, @JsonProperty("headTimestamp") long headTimestamp) {
+	CDOBranchImplMixin(@JsonProperty("name") String name, @JsonProperty("parentPath") String parentPath, @JsonProperty("baseTimestamp") long baseTimestamp,
+			@JsonProperty("headTimestamp") long headTimestamp, @JsonProperty("deleted") boolean deleted, @JsonProperty("cdobranchId") int cdoBranchId) {
 	}
 	
 	@JsonProperty
@@ -37,7 +46,16 @@ public abstract class MainBranchImplMixin implements MetadataHolderMixin {
 	@JsonProperty
 	public abstract long headTimestamp();
 	
+	@JsonProperty
+	public abstract String name();
+	
+	@JsonProperty
+	public abstract String parentPath();
+	
 	@JsonIgnore
 	public abstract BranchManagerImpl getBranchManager();
 	
+	@JsonProperty
+	public abstract int cdoBranchId();
+
 }

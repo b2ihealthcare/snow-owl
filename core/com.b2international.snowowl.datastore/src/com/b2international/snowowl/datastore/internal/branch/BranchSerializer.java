@@ -38,6 +38,9 @@ public class BranchSerializer extends ObjectMapper {
 		addMixInAnnotations(MetadataHolder.class, MetadataHolderMixin.class);
 		addMixInAnnotations(BranchImpl.class, BranchImplMixin.class);
 		addMixInAnnotations(MainBranchImpl.class, MainBranchImplMixin.class);
+		addMixInAnnotations(CDOBranchImpl.class, CDOBranchImplMixin.class);
+		addMixInAnnotations(CDOMainBranchImpl.class, CDOMainBranchImplMixin.class);
+		addMixInAnnotations(InternalBranch.class, InternalBranchMixin.class);
 	}
 	
 }

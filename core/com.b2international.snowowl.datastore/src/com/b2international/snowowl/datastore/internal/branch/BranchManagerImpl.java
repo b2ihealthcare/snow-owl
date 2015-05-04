@@ -34,28 +34,28 @@ import com.b2international.snowowl.datastore.store.Store;
 public class BranchManagerImpl implements BranchManager {
 
 	private final TimestampProvider clock;
-	private Store<BranchImpl> branchStore;
+	private Store<InternalBranch> branchStore;
 	
-	public BranchManagerImpl(Store<BranchImpl> branchStore, long mainBranchTimestamp) {
+	public BranchManagerImpl(Store<InternalBranch> branchStore, long mainBranchTimestamp) {
 		this(branchStore, mainBranchTimestamp, null);
 	}
 	
-	/*package*/ BranchManagerImpl(Store<BranchImpl> branchStore, long mainBranchTimestamp, TimestampProvider clock) {
+	/*package*/ BranchManagerImpl(Store<InternalBranch> branchStore, long mainBranchTimestamp, TimestampProvider clock) {
 		this.branchStore = branchStore;
 		this.clock = clock;
 		initMainBranch(new MainBranchImpl(mainBranchTimestamp));
 	}
 	
-	/*package*/ void initMainBranch(BranchImpl main) {
+	/*package*/ void initMainBranch(InternalBranch main) {
 		registerBranch(main);
 	}
 
-	private void registerBranch(final BranchImpl branch) {
+	void registerBranch(final InternalBranch branch) {
 		branch.setBranchManager(this);
 		branchStore.put(branch.path(), branch);
 	}
 	
-	BranchImpl createBranch(BranchImpl parent, String name, Metadata metadata) {
+	InternalBranch createBranch(InternalBranch parent, String name, Metadata metadata) {
 		if (parent.isDeleted()) {
 			throw new BadRequestException("Cannot create '%s' child branch under deleted '%s' parent.", name, parent.path());
 		}
@@ -67,18 +67,21 @@ public class BranchManagerImpl implements BranchManager {
 		return reopen(parent, name, metadata);
 	}
 
-	/*
-	 * For testing only.
-	 */
-	BranchImpl reopen(BranchImpl parent, String name, Metadata metadata) {
+	// TODO convert this to abstract method
+	InternalBranch reopen(InternalBranch parent, String name, Metadata metadata) {
 		return reopen(parent, name, metadata, clock.getTimestamp());
 	}
 	
-	protected BranchImpl reopen(BranchImpl parent, String name, Metadata metadata, long baseTimestamp) {
-		final BranchImpl child = new BranchImpl(name, parent.path(), baseTimestamp);
-		child.metadata(metadata);
+	InternalBranch reopen(InternalBranch parent, String name, Metadata metadata, long baseTimestamp) {
+		final InternalBranch child = createBranch(name, parent.path(), metadata, baseTimestamp);
 		registerBranch(child);
 		return child;
+	}
+
+	private InternalBranch createBranch(String name, String parentPath, Metadata metadata, long baseTimestamp) {
+		final InternalBranch branch = new BranchImpl(name, parentPath, baseTimestamp);
+		branch.metadata(metadata);
+		return branch;
 	}
 
 	@Override
@@ -95,8 +98,8 @@ public class BranchManagerImpl implements BranchManager {
 		return branch;
 	}
 
-	private Branch getBranchFromStore(String path) {
-		final BranchImpl branch = branchStore.get(path);
+	protected final Branch getBranchFromStore(String path) {
+		final InternalBranch branch = branchStore.get(path);
 		if (branch != null) {
 			branch.setBranchManager(this);
 		}
@@ -105,20 +108,22 @@ public class BranchManagerImpl implements BranchManager {
 
 	@Override
 	public Collection<? extends Branch> getBranches() {
-		final Collection<BranchImpl> values = branchStore.values();
-		for (BranchImpl branch : values) {
+		final Collection<InternalBranch> values = branchStore.values();
+		for (InternalBranch branch : values) {
 			branch.setBranchManager(this);
 		}
 		return values;
 	}
 
-	BranchImpl merge(BranchImpl target, BranchImpl source, String commitMessage) {
+	// TODO convert this to abstract method
+	InternalBranch merge(InternalBranch target, InternalBranch source, String commitMessage) {
 		// Changes from source will appear on target as a single commit
 		return applyChangeSet(target, source, clock.getTimestamp(), commitMessage);
 	}
 
-	Branch rebase(BranchImpl source, BranchImpl target, String commitMessage) {
-		BranchImpl rebasedSource = reopen((BranchImpl) source.parent(), source.name(), source.metadata());
+	// TODO convert this to abstract method
+	Branch rebase(InternalBranch source, InternalBranch target, String commitMessage) {
+		InternalBranch rebasedSource = reopen((InternalBranch) source.parent(), source.name(), source.metadata());
 		
 		if (source.state() == BranchState.DIVERGED) {
 			return applyChangeSet(rebasedSource, source, clock.getTimestamp(), commitMessage);
@@ -127,23 +132,18 @@ public class BranchManagerImpl implements BranchManager {
 		}
 	}
 
-	BranchImpl applyChangeSet(BranchImpl target, BranchImpl source, long timestamp, String commitMessage) {
+	InternalBranch applyChangeSet(InternalBranch target, InternalBranch source, long timestamp, String commitMessage) {
 		return handleCommit(target, timestamp);
 	}
 
-	BranchImpl delete(BranchImpl branchImpl) {
-		final BranchImpl deleted = branchImpl.withDeleted();
-		if (branchStore.replace(branchImpl.path(), branchImpl, deleted)) {
-			postDelete(deleted);
-		}
+	/*package*/ final InternalBranch delete(InternalBranch branchImpl) {
+		final InternalBranch deleted = branchImpl.withDeleted();
+		branchStore.replace(branchImpl.path(), branchImpl, deleted);
 		return deleted;
 	}
 	
-	protected void postDelete(BranchImpl branch) {
-	}
-
-	BranchImpl handleCommit(BranchImpl branch, long timestamp) {
-		BranchImpl branchAfterCommit = branch.withHeadTimestamp(timestamp);
+	/*package*/ final InternalBranch handleCommit(InternalBranch branch, long timestamp) {
+		InternalBranch branchAfterCommit = branch.withHeadTimestamp(timestamp);
 		registerBranch(branchAfterCommit);
 		return branchAfterCommit;
 	}

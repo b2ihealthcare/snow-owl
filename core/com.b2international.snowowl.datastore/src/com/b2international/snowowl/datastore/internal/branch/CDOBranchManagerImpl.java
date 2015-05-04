@@ -15,6 +15,8 @@
  */
 package com.b2international.snowowl.datastore.internal.branch;
 
+import static com.google.common.base.Preconditions.checkArgument;
+
 import org.eclipse.emf.cdo.common.branch.CDOBranch;
 import org.eclipse.emf.cdo.common.commit.CDOCommitInfo;
 import org.eclipse.emf.cdo.common.commit.CDOCommitInfoHandler;
@@ -39,23 +41,22 @@ import com.b2international.snowowl.datastore.store.Store;
  */
 public class CDOBranchManagerImpl extends BranchManagerImpl {
 
-	private static final String CDO_BRANCH_ID = "cdoBranchId";
 	private final IRepository repository;
 	
-	public CDOBranchManagerImpl(final IRepository repository, final Store<BranchImpl> branchStore) {
+	public CDOBranchManagerImpl(final IRepository repository, final Store<InternalBranch> branchStore) {
 		super(branchStore, getBasetimestamp(repository.getCdoMainBranch()));
 		this.repository = repository;
 		registerCommitListener(repository.getCdoRepository());
 	}
 	
 	@Override
-	void initMainBranch(BranchImpl main) {
-		main.metadata().put(CDO_BRANCH_ID, CDOBranch.MAIN_BRANCH_ID);
-		super.initMainBranch(main);
+	void initMainBranch(InternalBranch main) {
+		super.initMainBranch(new CDOMainBranchImpl(main.baseTimestamp(), main.headTimestamp()));
 	}
 	
 	CDOBranch getCDOBranch(Branch branch) {
-		final Integer branchId = branch.metadata().getInt(CDO_BRANCH_ID);
+		checkArgument(!branch.isDeleted(), "Deleted branches cannot be ");
+		final Integer branchId = ((InternalCDOBasedBranch) branch).cdoBranchId();
 		if (branchId != null) {
 			return loadCDOBranch(branchId);
 		}
@@ -67,7 +68,7 @@ public class CDOBranchManagerImpl extends BranchManagerImpl {
 	}
 
 	@Override
-	BranchImpl applyChangeSet(BranchImpl target, BranchImpl source, long timestamp, String commitMessage) {
+	InternalBranch applyChangeSet(InternalBranch target, InternalBranch source, long timestamp, String commitMessage) {
 		CDOBranch targetBranch = getCDOBranch(target);
 	    CDOBranch sourceBranch = getCDOBranch(source);
 		CDOTransaction tx = repository.getConnection().createTransaction(targetBranch);
@@ -78,21 +79,28 @@ public class CDOBranchManagerImpl extends BranchManagerImpl {
 			tx.setCommitComment(commitMessage);
 			commitInfo = tx.commit();
 		} catch (CommitException e) {
-			throw new BranchMergeException("Failed to apply changeset on '%s' from '%s'.", target.path(), source.path());
+			throw new BranchMergeException("Failed to apply changeset on '%s' from '%s'.", target.path(), source.path(), e);
 		}
 		
 		return target.withHeadTimestamp(commitInfo.getTimeStamp());
 	}
 	
 	@Override
-	BranchImpl reopen(BranchImpl parent, String name, Metadata metadata) {
+	InternalBranch reopen(InternalBranch parent, String name, Metadata metadata) {
 		final CDOBranch childCDOBranch = createCDOBranch(parent, name);
-		metadata.put(CDO_BRANCH_ID, childCDOBranch.getID());
-		repository.getIndexUpdater().reopen(BranchPathUtils.createPath(childCDOBranch), childCDOBranch.getBase().getTimeStamp());
-		return reopen(parent, name, metadata, getBasetimestamp(childCDOBranch));
+		final long baseTimestamp = getBasetimestamp(childCDOBranch);
+		repository.getIndexUpdater().reopen(BranchPathUtils.createPath(childCDOBranch), baseTimestamp);
+		return reopen(parent, name, metadata, baseTimestamp, childCDOBranch.getID());
 	}
 	
-	private CDOBranch createCDOBranch(BranchImpl parent, String name) {
+	private InternalBranch reopen(InternalBranch parent, String name, Metadata metadata, long baseTimestamp, int id) {
+		final InternalBranch branch = new CDOBranchImpl(name, parent.path(), baseTimestamp, id);
+		branch.metadata(metadata);
+		registerBranch(branch);
+		return branch;
+	}
+
+	private CDOBranch createCDOBranch(InternalBranch parent, String name) {
 		return getCDOBranch(parent).createBranch(name);
 	}
 
@@ -100,7 +108,7 @@ public class CDOBranchManagerImpl extends BranchManagerImpl {
 		repository.getRepository().addCommitInfoHandler(new CDOCommitInfoHandler() {
 			@Override
 			public void handleCommitInfo(CDOCommitInfo commitInfo) {
-				handleCommit((BranchImpl) getBranch(commitInfo.getBranch().getPathName()), commitInfo.getTimeStamp());
+				handleCommit((InternalBranch) getBranch(commitInfo.getBranch().getPathName()), commitInfo.getTimeStamp());
 			}
 		}); 
 	}

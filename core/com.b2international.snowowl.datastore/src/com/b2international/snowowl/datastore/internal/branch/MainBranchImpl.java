@@ -31,17 +31,17 @@ public class MainBranchImpl extends BranchImpl {
 	}
 
 	@Override
-	BranchImpl withBaseTimestamp(long newBaseTimestamp) {
+	public InternalBranch withBaseTimestamp(long newBaseTimestamp) {
 		throw new UnsupportedOperationException();
 	}
 	
 	@Override
-	BranchImpl withDeleted() {
+	public InternalBranch withDeleted() {
 		throw new UnsupportedOperationException();
 	}
 	
 	@Override
-	MainBranchImpl withHeadTimestamp(long newHeadTimestamp) {
+	public InternalBranch withHeadTimestamp(long newHeadTimestamp) {
 		final MainBranchImpl main = new MainBranchImpl(baseTimestamp(), newHeadTimestamp);
 		main.setBranchManager(branchManager);
 		main.metadata(metadata());

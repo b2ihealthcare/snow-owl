@@ -27,9 +27,9 @@ import com.b2international.snowowl.datastore.branch.BranchManager;
 import com.b2international.snowowl.datastore.cdo.ICDOConnectionManager;
 import com.b2international.snowowl.datastore.cdo.ICDORepositoryManager;
 import com.b2international.snowowl.datastore.internal.branch.BranchEventHandler;
-import com.b2international.snowowl.datastore.internal.branch.BranchImpl;
 import com.b2international.snowowl.datastore.internal.branch.BranchSerializer;
 import com.b2international.snowowl.datastore.internal.branch.CDOBranchManagerImpl;
+import com.b2international.snowowl.datastore.internal.branch.InternalBranch;
 import com.b2international.snowowl.datastore.store.IndexStore;
 import com.b2international.snowowl.eventbus.IEventBus;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -46,16 +46,24 @@ public class DatastoreBootstrap implements BootstrapFragment {
 	@Override
 	public void run(SnowOwlConfiguration configuration, Environment env, IProgressMonitor monitor) throws Exception {
 		if (env.isServer() || env.isEmbedded()) {
-			ICDOConnectionManager cdoConnectionManager = env.service(ICDOConnectionManager.class);
-			ICDORepositoryManager cdoRepositoryManager = env.service(ICDORepositoryManager.class);
-			IIndexServerServiceManager indexServerServiceManager = env.service(IIndexServerServiceManager.class); 
-			RepositoryWrapper wrapper = new RepositoryWrapper("snomedStore", cdoConnectionManager, cdoRepositoryManager, indexServerServiceManager);
-			
-			final File branchIndexDirectory = new File(new File(env.getDataDirectory(), "indexes"), "branches");
-			final ObjectMapper objectMapper = new BranchSerializer();
-			BranchManager branchManager = new CDOBranchManagerImpl(wrapper, new IndexStore<BranchImpl>(branchIndexDirectory, objectMapper, BranchImpl.class));
-			env.service(IEventBus.class).registerHandler("/branches", new BranchEventHandler(branchManager));
+			final RepositoryWrapper wrapper = createSnomedRepositoryWrapper(env);
+			initializeBranchingSupport(env, wrapper);
 		}
+	}
+
+	private RepositoryWrapper createSnomedRepositoryWrapper(Environment env) {
+		final ICDOConnectionManager cdoConnectionManager = env.service(ICDOConnectionManager.class);
+		final ICDORepositoryManager cdoRepositoryManager = env.service(ICDORepositoryManager.class);
+		final IIndexServerServiceManager indexServerServiceManager = env.service(IIndexServerServiceManager.class); 
+		return new RepositoryWrapper("snomedStore", cdoConnectionManager, cdoRepositoryManager, indexServerServiceManager);
+	}
+
+	private void initializeBranchingSupport(Environment env, RepositoryWrapper wrapper) {
+		final File branchIndexDirectory = new File(new File(env.getDataDirectory(), "indexes"), "branches");
+		final ObjectMapper objectMapper = new BranchSerializer();
+		final IndexStore<InternalBranch> branchStore = new IndexStore<InternalBranch>(branchIndexDirectory, objectMapper, InternalBranch.class);
+		final BranchManager branchManager = new CDOBranchManagerImpl(wrapper, branchStore);
+		env.service(IEventBus.class).registerHandler("/branches", new BranchEventHandler(branchManager));
 	}
 
 }

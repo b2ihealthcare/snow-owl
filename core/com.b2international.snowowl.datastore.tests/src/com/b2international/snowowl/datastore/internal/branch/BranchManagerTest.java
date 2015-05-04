@@ -19,7 +19,10 @@ import static com.b2international.snowowl.datastore.internal.branch.BranchAssert
 import static com.b2international.snowowl.datastore.internal.branch.BranchAssertions.assertState;
 import static com.google.common.collect.Lists.newArrayList;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.when;
 
@@ -45,17 +48,17 @@ public class BranchManagerTest {
 
 	private AtomicLongTimestampAuthority clock;
 	private BranchManagerImpl manager;
-	private BranchImpl main;
-	private BranchImpl a;
-	private MemStore<BranchImpl> store;
+	private InternalBranch main;
+	private InternalBranch a;
+	private MemStore<InternalBranch> store;
 
 	@Before
 	public void givenBranchManager() {
 		clock = new AtomicLongTimestampAuthority();
-		store = spy(new MemStore<BranchImpl>());
+		store = spy(new MemStore<InternalBranch>());
 		manager = new BranchManagerImpl(store, clock.getTimestamp(), clock);
-		main = (BranchImpl) manager.getMainBranch();
-		a = (BranchImpl) main.createChild("a");
+		main = (InternalBranch) manager.getMainBranch();
+		a = (InternalBranch) main.createChild("a");
 	}
 	
 	@Test
@@ -70,7 +73,7 @@ public class BranchManagerTest {
 	
 	@Test
 	public void whenCreatingBranch_ThenItShouldBeReturnedViaGet() throws Exception {
-		assertEquals(a, (BranchImpl) manager.getBranch("MAIN/a"));
+		assertEquals(a, (InternalBranch) manager.getBranch("MAIN/a"));
 	}
 	
 	@Test
@@ -146,8 +149,8 @@ public class BranchManagerTest {
 
 	@Test
 	public void mergeForward() throws Exception {
-		final BranchImpl newBranchA = commit(a);
-		BranchImpl newMain = (BranchImpl) merge(main, newBranchA);
+		final InternalBranch newBranchA = commit(a);
+		InternalBranch newMain = (InternalBranch) merge(main, newBranchA);
 		assertTrue(newMain.headTimestamp() > main.headTimestamp());
 		assertState(manager.getBranch(a.path()), BranchState.DIVERGED);
 	}
@@ -163,8 +166,8 @@ public class BranchManagerTest {
 
 	@Test(expected=BranchMergeException.class)
 	public void mergeDiverged() throws Exception {
-		BranchImpl newBranchA = commit(a);
-		BranchImpl newMain = commit(main);
+		InternalBranch newBranchA = commit(a);
+		InternalBranch newMain = commit(main);
 		merge(newMain, newBranchA);
 	}
 
@@ -202,7 +205,7 @@ public class BranchManagerTest {
 	@Test
 	public void rebaseDivergedState() throws Exception {
 		commit(main);
-		final BranchImpl branchA = commit(a);
+		final InternalBranch branchA = commit(a);
 		final Branch newBranchA = rebase(branchA);
 		assertState(newBranchA, BranchState.FORWARD);
 		assertState(branchA, BranchState.DIVERGED);
@@ -213,7 +216,7 @@ public class BranchManagerTest {
 	@Test
 	public void rebaseDivergedStateWithMultipleCommits() throws Exception {
 		commit(main);
-		final BranchImpl branchA = commit(a);
+		final InternalBranch branchA = commit(a);
 		final Branch rebasedBranchA = rebase(branchA);
 		assertState(rebasedBranchA, BranchState.FORWARD);
 		assertState(branchA, BranchState.DIVERGED);
@@ -240,7 +243,7 @@ public class BranchManagerTest {
 	@Test
 	public void rebaseBehindWithForwardChild() throws Exception {
 		commit(main);
-		final BranchImpl branchB = commit((BranchImpl) a.createChild("b"));
+		final InternalBranch branchB = commit((InternalBranch) a.createChild("b"));
 		assertState(a, BranchState.BEHIND);
 		assertState(branchB, BranchState.FORWARD);
 		final Branch rebasedBranchA = rebase(a);
@@ -274,7 +277,7 @@ public class BranchManagerTest {
 		assertState(newBranchB, BranchState.UP_TO_DATE);
 	}
 	
-	private BranchImpl commit(BranchImpl branch) {
+	private InternalBranch commit(InternalBranch branch) {
 		return manager.handleCommit(branch, currentTimestamp());
 	}
 

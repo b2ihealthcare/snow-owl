@@ -29,7 +29,6 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.runners.MockitoJUnitRunner;
 
-import com.b2international.snowowl.core.api.SnowowlRuntimeException;
 import com.b2international.snowowl.datastore.branch.Branch;
 import com.b2international.snowowl.datastore.internal.IRepository;
 import com.b2international.snowowl.datastore.store.MemStore;
@@ -44,7 +43,7 @@ public class CDOBranchManagerTest {
 	private MockInternalCDOBranchManager cdoBranchManager;
 	
 	private CDOBranchManagerImpl manager;
-	private Branch main;
+	private CDOMainBranchImpl main;
 	private Branch branchA;
 	
 	@Before
@@ -59,8 +58,8 @@ public class CDOBranchManagerTest {
 		when(repository.getCdoBranchManager()).thenReturn(cdoBranchManager);
 		when(repository.getCdoMainBranch()).thenReturn(mainBranch);
 		
-		manager = new CDOBranchManagerImpl(repository, new MemStore<BranchImpl>());
-		main = manager.getMainBranch();
+		manager = new CDOBranchManagerImpl(repository, new MemStore<InternalBranch>());
+		main = (CDOMainBranchImpl) manager.getMainBranch();
 	}
 	
 	@Test
@@ -86,11 +85,11 @@ public class CDOBranchManagerTest {
 		assertEquals(branchB.path(), cdoBranchB.getPathName());
 	}
 	
-	@Test(expected = SnowowlRuntimeException.class)
-	public void whenDeletingNewlyCreatedBranch_ThenAssociatedBranchShouldBeRemovedFromInternalMap() throws Exception {
+	@Test(expected = IllegalArgumentException.class)
+	public void whenGettingCDOBranchOfDeletedBranch_ThenThrowException() throws Exception {
 		whenCreatingBranch_ThenItShouldBeCreated_AndACDOBranchShouldBeAssociatedWithIt();
-		branchA.delete();
-		manager.getCDOBranch(branchA);
+		final Branch deletedA = branchA.delete();
+		manager.getCDOBranch(deletedA);
 	}
 	
 	@Test
@@ -98,7 +97,7 @@ public class CDOBranchManagerTest {
 		branchA = main.createChild("a");
 		final CDOBranch cdoBranchA = manager.getCDOBranch(branchA);
 		// commit and rebase
-		manager.handleCommit((BranchImpl) main, clock.getTimeStamp());
+		manager.handleCommit(main, clock.getTimeStamp());
 		final Branch rebasedBranchA = branchA.rebase("Rebase");
 		final CDOBranch rebasedCdoBranchA = manager.getCDOBranch(rebasedBranchA);
 		assertNotEquals(rebasedCdoBranchA.getID(), cdoBranchA.getID());

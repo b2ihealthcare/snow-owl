@@ -15,29 +15,28 @@
  */
 package com.b2international.snowowl.datastore.internal.branch;
 
-import com.b2international.snowowl.core.MetadataHolderMixin;
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonProperty;
+import org.eclipse.emf.cdo.common.branch.CDOBranch;
 
 /**
- * Mixin interface to use for {@link MainBranchImpl} JSON serialization.
- * 
  * @since 4.1
  */
-public abstract class MainBranchImplMixin implements MetadataHolderMixin {
+public class CDOMainBranchImpl extends MainBranchImpl implements InternalCDOBasedBranch {
 
-	@JsonCreator
-	MainBranchImplMixin(@JsonProperty("baseTimestamp") long baseTimestamp, @JsonProperty("headTimestamp") long headTimestamp) {
+	CDOMainBranchImpl(long baseTimestamp, long headTimestamp) {
+		super(baseTimestamp, headTimestamp);
 	}
 	
-	@JsonProperty
-	public abstract long baseTimestamp();
+	@Override
+	public int cdoBranchId() {
+		return CDOBranch.MAIN_BRANCH_ID;
+	}
 	
-	@JsonProperty
-	public abstract long headTimestamp();
-	
-	@JsonIgnore
-	public abstract BranchManagerImpl getBranchManager();
-	
+	@Override
+	public InternalBranch withHeadTimestamp(long newHeadTimestamp) {
+		final MainBranchImpl main = new CDOMainBranchImpl(baseTimestamp(), newHeadTimestamp);
+		main.setBranchManager(branchManager);
+		main.metadata(metadata());
+		return main;
+	}
+
 }

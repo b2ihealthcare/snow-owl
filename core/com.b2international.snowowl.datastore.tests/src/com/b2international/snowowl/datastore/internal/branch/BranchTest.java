@@ -33,8 +33,8 @@ public class BranchTest {
 
 	private AtomicLongTimestampAuthority clock = new AtomicLongTimestampAuthority();
 	private BranchManagerImpl manager;
-	private BranchImpl main;
-	private BranchImpl branchA;
+	private InternalBranch main;
+	private InternalBranch branchA;
 	
 	@Before
 	public void before() {
@@ -134,15 +134,15 @@ public class BranchTest {
 		assertState(commit(branchA), commit(main), BranchState.DIVERGED);
 	}
 
-	private BranchImpl commit(BranchImpl branch) {
+	private InternalBranch commit(InternalBranch branch) {
 		return branch.withHeadTimestamp(currentTimestamp());		
 	}
 	
-	private BranchImpl createBranch(Branch parent, String name) {
+	private InternalBranch createBranch(Branch parent, String name) {
 		return createBranch(parent, name, currentTimestamp());
 	}
 
-	private BranchImpl createBranch(Branch parent, String name, long currentTimestamp) {
+	private InternalBranch createBranch(Branch parent, String name, long currentTimestamp) {
 		final BranchImpl branch = new BranchImpl(name, parent.path(), currentTimestamp);
 		branch.setBranchManager(manager);
 		return branch;

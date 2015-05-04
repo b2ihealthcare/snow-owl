@@ -21,14 +21,12 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 /**
- * Mixin interface to use for {@link MainBranchImpl} JSON serialization.
- * 
  * @since 4.1
  */
-public abstract class MainBranchImplMixin implements MetadataHolderMixin {
+public abstract class CDOMainBranchImplMixin implements MetadataHolderMixin {
 
 	@JsonCreator
-	MainBranchImplMixin(@JsonProperty("baseTimestamp") long baseTimestamp, @JsonProperty("headTimestamp") long headTimestamp) {
+	CDOMainBranchImplMixin(@JsonProperty("baseTimestamp") long baseTimestamp, @JsonProperty("headTimestamp") long headTimestamp) {
 	}
 	
 	@JsonProperty
@@ -36,6 +34,9 @@ public abstract class MainBranchImplMixin implements MetadataHolderMixin {
 	
 	@JsonProperty
 	public abstract long headTimestamp();
+	
+	@JsonIgnore
+	public abstract int getCDOBranchId();
 	
 	@JsonIgnore
 	public abstract BranchManagerImpl getBranchManager();

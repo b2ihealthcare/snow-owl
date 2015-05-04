@@ -15,29 +15,12 @@
  */
 package com.b2international.snowowl.datastore.internal.branch;
 
-import com.b2international.snowowl.core.MetadataHolderMixin;
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonProperty;
 
 /**
- * Mixin interface to use for {@link MainBranchImpl} JSON serialization.
- * 
  * @since 4.1
  */
-public abstract class MainBranchImplMixin implements MetadataHolderMixin {
-
-	@JsonCreator
-	MainBranchImplMixin(@JsonProperty("baseTimestamp") long baseTimestamp, @JsonProperty("headTimestamp") long headTimestamp) {
-	}
+public interface InternalCDOBasedBranch {
 	
-	@JsonProperty
-	public abstract long baseTimestamp();
-	
-	@JsonProperty
-	public abstract long headTimestamp();
-	
-	@JsonIgnore
-	public abstract BranchManagerImpl getBranchManager();
+	int cdoBranchId();
 	
 }
