@@ -29,8 +29,9 @@ public class ConflictException extends ApiException {
 	 * Creates a new exception instance with the specified message.
 	 * 
 	 * @param message the exception message
+	 * @param args format string arguments (used when the exception message contains {@code %s} placeholders)
 	 */
-	public ConflictException(String message) {
-		super(message);
+	public ConflictException(String message, Object... args) {
+		super(message, args);
 	}
 }

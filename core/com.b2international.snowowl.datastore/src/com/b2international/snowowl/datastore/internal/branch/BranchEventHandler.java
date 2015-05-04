@@ -21,9 +21,11 @@ import static com.google.common.collect.Sets.newHashSet;
 import com.b2international.snowowl.core.events.util.ApiEventHandler;
 import com.b2international.snowowl.core.events.util.Handler;
 import com.b2international.snowowl.core.exceptions.BadRequestException;
+import com.b2international.snowowl.core.exceptions.ConflictException;
 import com.b2international.snowowl.core.exceptions.NotFoundException;
 import com.b2international.snowowl.datastore.branch.Branch;
 import com.b2international.snowowl.datastore.branch.BranchManager;
+import com.b2international.snowowl.datastore.branch.BranchMergeException;
 import com.b2international.snowowl.datastore.events.BranchEvent;
 import com.b2international.snowowl.datastore.events.BranchReply;
 import com.b2international.snowowl.datastore.events.BranchesReply;
@@ -78,13 +80,18 @@ public class BranchEventHandler extends ApiEventHandler {
 			final Branch target = branchManager.getBranch(event.getTarget());
 			if (source.parent().equals(target)) {
 				// merge into target
-				final Branch merged = target.merge(source, event.getCommitMessage());
-				return new BranchReply(merged);
+				try {
+					final Branch merged = target.merge(source, event.getCommitMessage());
+					return new BranchReply(merged);
+				} catch (BranchMergeException e) {
+					throw new ConflictException("Cannot merge source '%s' into target '%s', because the source branch has no changes to merge, or the two branches have diverged.", source.path(), target.path());
+				}
 			} else if (target.parent().equals(source)) {
 				// rebase into target
 				final Branch rebased = target.rebase(source, event.getCommitMessage());
 				return new BranchReply(rebased);
 			}
+			
 			throw new BadRequestException("Cannot merge source '%s' into target '%s', because there is no relation between them.", source.path(), target.path());
 		} catch (NotFoundException e) {
 			throw e.toBadRequestException();
@@ -94,5 +101,4 @@ public class BranchEventHandler extends ApiEventHandler {
 	private Branch getBranch(BranchEvent event) {
 		return branchManager.getBranch(event.getBranchPath());
 	}
-	
 }

@@ -17,6 +17,7 @@ package com.b2international.snowowl.snomed.api.rest.branches
 
 import com.jayway.restassured.response.Response
 import com.jayway.restassured.specification.RequestSpecification
+import java.util.Map
 import java.util.Date
 import java.util.UUID
 
@@ -36,15 +37,15 @@ Feature: SnomedMergeApi
 
 		var public String parent = "MAIN"
 		var public String branchName = UUID.randomUUID.toString
-		var String conceptId
 		
 		var RequestSpecification req
 		var Response res
 
+		val Map<String, String> conceptMap = newHashMap()
 		val metadata = newHashMap()
 		val correctAcceptabilityMap = #{ REFSET_LANGUAGE_TYPE_UK -> "PREFERRED" }
 
-	Scenario: Clean merge of new concept on branch 
+	Scenario: Accept merge attempt of branch in FORWARD state 
 	
 		Given a SNOMED CT branch under parent branch "${parent}" with name "${branchName}"
 			parent = args.first.renderWithFields(this)
@@ -57,7 +58,7 @@ Feature: SnomedMergeApi
 			
 			res = req.post("/branches")
 			res.expectStatus(201)
-		When creating a new concept on "${parent}/${branchName}"
+		When creating a new concept "C1" with URL "${parent}/${branchName}/concepts"
 			req = givenAuthenticatedRequest(API).withJson(#{
 				"parentId" -> ROOT_CONCEPT,
 				"moduleId" -> MODULE_SCT_CORE,
@@ -78,11 +79,13 @@ Feature: SnomedMergeApi
 				"commitComment" -> "New concept"
 			})
 			
-			res = req.post(args.first.renderWithFields(this) + "/concepts")
+			val url = args.second.renderWithFields(this)
+			res = req.post(url)
 			res.expectStatus(201)
-			res.location should contain args.first.renderWithFields(this) + "/concepts"
-			conceptId = res.location.lastPathSegment
-		And merging changes on branch "${parent}/${branchName}" to "${parent}" with comment "Merge commit"
+			res.location should contain url
+			conceptMap.put(args.first, res.location.lastPathSegment)
+
+		And merging changes from branch "${parent}/${branchName}" to "${parent}" with comment "Merge commit"
 			req = givenAuthenticatedRequest(API).withJson(#{
 				"source" -> args.first.renderWithFields(this),
 				"target" -> args.second.renderWithFields(this),
@@ -91,6 +94,36 @@ Feature: SnomedMergeApi
 			
 			res = req.post("/merges")
 		Then return "204" status
-		And the concept should exist on branch "${parent}"
-			API.get(args.first.renderWithFields(this), "concepts", conceptId).expectStatus(200)
-		And the concept should exist on branch "${parent}/${branchName}"
+		And the concept "C1" should exist on URL base "${parent}/concepts"
+			API.get(args.second.renderWithFields(this), conceptMap.get(args.first)).expectStatus(200)
+		And the concept "C1" should exist on URL base "${parent}/${branchName}/concepts"
+
+	Scenario: Reject merge attempt of branch in DIVERGED state
+		
+		Given a SNOMED CT branch under parent branch "${parent}" with name "${branchName}"
+		When creating a new concept "C1" with URL "${parent}/concepts"
+		And creating a new concept "C2" with URL "${parent}/${branchName}/concepts"
+		And merging changes from branch "${parent}/${branchName}" to "${parent}" with comment "Merge commit"
+		Then return "409" status
+		And the concept "C1" should exist on URL base "${parent}/concepts"
+		And the concept "C2" should exist on URL base "${parent}/${branchName}/concepts"
+
+	Scenario: Rebase DIVERGED branch
+		
+		Given a SNOMED CT branch under parent branch "${parent}" with name "${branchName}"
+		When creating a new concept "C1" with URL "${parent}/concepts"
+		And creating a new concept "C2" with URL "${parent}/${branchName}/concepts"
+		And rebasing branch "${parent}/${branchName}" onto "${parent}" with comment "Rebase commit"
+			req = givenAuthenticatedRequest(API).withJson(#{
+				"source" -> args.second.renderWithFields(this),
+				"target" -> args.first.renderWithFields(this),
+				"commitComment" -> args.third
+			})
+			
+			res = req.post("/merges")
+		Then return "204" status
+		And the concept "C1" should exist on URL base "${parent}/concepts"
+		And the concept "C1" should exist on URL base "${parent}/${branchName}/concepts"
+		And the concept "C2" should not exist on URL base "${parent}/concepts"
+			API.get(args.second.renderWithFields(this), conceptMap.get(args.first)).expectStatus(404)
+		And the concept "C2" should exist on URL base "${parent}/${branchName}/concepts"
