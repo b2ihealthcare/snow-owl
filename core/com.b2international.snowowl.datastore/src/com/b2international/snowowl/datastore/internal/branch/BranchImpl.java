@@ -44,15 +44,15 @@ public class BranchImpl extends MetadataHolderImpl implements Branch {
     private final long headTimestamp;
     private final boolean deleted;
     
-    public BranchImpl(String name, String parentPath, long baseTimestamp) {
+    protected BranchImpl(String name, String parentPath, long baseTimestamp) {
     	this(name, parentPath, baseTimestamp, baseTimestamp);
     }
     
-    public BranchImpl(String name, String parentPath, long baseTimestamp, long headTimestamp) {
+    protected BranchImpl(String name, String parentPath, long baseTimestamp, long headTimestamp) {
     	this(name, parentPath, baseTimestamp, headTimestamp, false);
     }
     
-	public BranchImpl(String name, String parentPath, long baseTimestamp, long headTimestamp, boolean deleted) {
+    protected BranchImpl(String name, String parentPath, long baseTimestamp, long headTimestamp, boolean deleted) {
         checkName(name);
         checkArgument(baseTimestamp >= 0L, "Base timestamp may not be negative.");
         checkArgument(headTimestamp >= baseTimestamp, "Head timestamp may not be smaller than base timestamp.");
