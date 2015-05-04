@@ -24,25 +24,17 @@ import com.b2international.snowowl.core.exceptions.NotFoundException;
 import com.b2international.snowowl.datastore.branch.Branch;
 import com.b2international.snowowl.datastore.branch.Branch.BranchState;
 import com.b2international.snowowl.datastore.branch.BranchManager;
-import com.b2international.snowowl.datastore.branch.TimestampProvider;
 import com.b2international.snowowl.datastore.store.Store;
-
 
 /**
  * @since 4.1
  */
-public class BranchManagerImpl implements BranchManager {
+public abstract class BranchManagerImpl implements BranchManager {
 
-	private final TimestampProvider clock;
 	private Store<InternalBranch> branchStore;
 	
 	public BranchManagerImpl(Store<InternalBranch> branchStore, long mainBranchTimestamp) {
-		this(branchStore, mainBranchTimestamp, null);
-	}
-	
-	/*package*/ BranchManagerImpl(Store<InternalBranch> branchStore, long mainBranchTimestamp, TimestampProvider clock) {
 		this.branchStore = branchStore;
-		this.clock = clock;
 		initMainBranch(new MainBranchImpl(mainBranchTimestamp));
 	}
 	
@@ -67,22 +59,7 @@ public class BranchManagerImpl implements BranchManager {
 		return reopen(parent, name, metadata);
 	}
 
-	// TODO convert this to abstract method
-	InternalBranch reopen(InternalBranch parent, String name, Metadata metadata) {
-		return reopen(parent, name, metadata, clock.getTimestamp());
-	}
-	
-	InternalBranch reopen(InternalBranch parent, String name, Metadata metadata, long baseTimestamp) {
-		final InternalBranch child = createBranch(name, parent.path(), metadata, baseTimestamp);
-		registerBranch(child);
-		return child;
-	}
-
-	private InternalBranch createBranch(String name, String parentPath, Metadata metadata, long baseTimestamp) {
-		final InternalBranch branch = new BranchImpl(name, parentPath, baseTimestamp);
-		branch.metadata(metadata);
-		return branch;
-	}
+	abstract InternalBranch reopen(InternalBranch parent, String name, Metadata metadata);
 
 	@Override
 	public Branch getMainBranch() {
@@ -115,26 +92,22 @@ public class BranchManagerImpl implements BranchManager {
 		return values;
 	}
 
-	// TODO convert this to abstract method
 	InternalBranch merge(InternalBranch target, InternalBranch source, String commitMessage) {
 		// Changes from source will appear on target as a single commit
-		return applyChangeSet(target, source, clock.getTimestamp(), commitMessage);
+		return applyChangeSet(target, source, commitMessage);
 	}
 
-	// TODO convert this to abstract method
-	Branch rebase(InternalBranch source, InternalBranch target, String commitMessage) {
+	InternalBranch rebase(InternalBranch source, InternalBranch target, String commitMessage) {
 		InternalBranch rebasedSource = reopen((InternalBranch) source.parent(), source.name(), source.metadata());
 		
 		if (source.state() == BranchState.DIVERGED) {
-			return applyChangeSet(rebasedSource, source, clock.getTimestamp(), commitMessage);
+			return applyChangeSet(rebasedSource, source, commitMessage);
 		} else {
 			return rebasedSource;
 		}
 	}
 
-	InternalBranch applyChangeSet(InternalBranch target, InternalBranch source, long timestamp, String commitMessage) {
-		return handleCommit(target, timestamp);
-	}
+	abstract InternalBranch applyChangeSet(InternalBranch target, InternalBranch source, String commitMessage);
 
 	/*package*/ final InternalBranch delete(InternalBranch branchImpl) {
 		final InternalBranch deleted = branchImpl.withDeleted();

@@ -40,11 +40,32 @@ import com.b2international.snowowl.datastore.branch.Branch;
 import com.b2international.snowowl.datastore.branch.Branch.BranchState;
 import com.b2international.snowowl.datastore.branch.BranchMergeException;
 import com.b2international.snowowl.datastore.store.MemStore;
+import com.b2international.snowowl.datastore.store.Store;
 
 /**
  * @since 4.1
  */
 public class BranchManagerTest {
+
+	private class BranchManagerImplTest extends BranchManagerImpl {
+
+		private BranchManagerImplTest(Store<InternalBranch> branchStore, long mainBranchTimestamp) {
+			super(branchStore, mainBranchTimestamp);
+		}
+
+		@Override
+		InternalBranch applyChangeSet(InternalBranch target, InternalBranch source, String commitMessage) {
+			return handleCommit(target, clock.getTimestamp());
+		}
+
+		@Override
+		InternalBranch reopen(InternalBranch parent, String name, Metadata metadata) {
+			final InternalBranch branch = new BranchImpl(name, parent.path(), clock.getTimestamp());
+			branch.metadata(metadata);
+			registerBranch(branch);
+			return branch;
+		}
+	}
 
 	private AtomicLongTimestampAuthority clock;
 	private BranchManagerImpl manager;
@@ -56,7 +77,8 @@ public class BranchManagerTest {
 	public void givenBranchManager() {
 		clock = new AtomicLongTimestampAuthority();
 		store = spy(new MemStore<InternalBranch>());
-		manager = new BranchManagerImpl(store, clock.getTimestamp(), clock);
+		manager = new BranchManagerImplTest(store, clock.getTimestamp());
+		
 		main = (InternalBranch) manager.getMainBranch();
 		a = (InternalBranch) main.createChild("a");
 	}

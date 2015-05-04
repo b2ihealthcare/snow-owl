@@ -68,7 +68,7 @@ public class CDOBranchManagerImpl extends BranchManagerImpl {
 	}
 
 	@Override
-	InternalBranch applyChangeSet(InternalBranch target, InternalBranch source, long timestamp, String commitMessage) {
+	InternalBranch applyChangeSet(InternalBranch target, InternalBranch source, String commitMessage) {
 		CDOBranch targetBranch = getCDOBranch(target);
 	    CDOBranch sourceBranch = getCDOBranch(source);
 		CDOTransaction tx = repository.getConnection().createTransaction(targetBranch);
