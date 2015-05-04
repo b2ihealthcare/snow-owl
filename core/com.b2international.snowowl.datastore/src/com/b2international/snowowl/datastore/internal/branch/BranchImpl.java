@@ -90,10 +90,14 @@ public class BranchImpl extends MetadataHolderImpl implements Branch, InternalBr
 	}
     
 	private BranchImpl createBranch(String name, String parentPath, long baseTimestamp, long headTimestamp, boolean deleted) {
-		final BranchImpl branch = new BranchImpl(name, parentPath, baseTimestamp, headTimestamp, deleted);
+		final BranchImpl branch = doCreateBranch(name, parentPath, baseTimestamp, headTimestamp, deleted);
 		branch.setBranchManager(getBranchManager());
 		branch.metadata(metadata());
 		return branch;
+	}
+
+	protected BranchImpl doCreateBranch(String name, String parentPath, long baseTimestamp, long headTimestamp, boolean deleted) {
+		return new BranchImpl(name, parentPath, baseTimestamp, headTimestamp, deleted);
 	}
 	
 	@Override

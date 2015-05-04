@@ -34,6 +34,11 @@ public class CDOBranchImpl extends BranchImpl implements InternalCDOBasedBranch 
 		super(name, parentPath, baseTimestamp, headTimestamp, deleted);
 		this.cdoBranchId = cdoBranchId;
 	}
+	
+	@Override
+	protected CDOBranchImpl doCreateBranch(String name, String parentPath, long baseTimestamp, long headTimestamp, boolean deleted) {
+		return new CDOBranchImpl(name, parentPath, baseTimestamp, headTimestamp, deleted, cdoBranchId);
+	}
 
 	@Override
 	public int cdoBranchId() {

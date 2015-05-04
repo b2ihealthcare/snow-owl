@@ -65,5 +65,4 @@ public class DatastoreBootstrap implements BootstrapFragment {
 		final BranchManager branchManager = new CDOBranchManagerImpl(wrapper, branchStore);
 		env.service(IEventBus.class).registerHandler("/branches", new BranchEventHandler(branchManager));
 	}
-
 }
