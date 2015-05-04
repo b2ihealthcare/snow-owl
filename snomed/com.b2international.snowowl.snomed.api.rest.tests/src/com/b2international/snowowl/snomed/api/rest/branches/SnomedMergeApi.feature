@@ -26,6 +26,7 @@ import static com.b2international.snowowl.snomed.SnomedConstants.Concepts.*
 import static extension com.b2international.snowowl.test.commons.rest.RestExtensions.*
 import com.b2international.snowowl.snomed.api.rest.concept.*
 import com.b2international.snowowl.snomed.api.rest.branches.*
+import com.b2international.snowowl.snomed.api.domain.Acceptability
 
 /**
  * @since 2.0
@@ -41,11 +42,12 @@ Feature: SnomedMergeApi
 		var RequestSpecification req
 		var Response res
 
-		val Map<String, String> conceptMap = newHashMap()
+		val Map<String, String> componentMap = newHashMap()
 		val metadata = newHashMap()
-		val correctAcceptabilityMap = #{ REFSET_LANGUAGE_TYPE_UK -> "PREFERRED" }
+		val preferredAcceptabilityMap = #{ REFSET_LANGUAGE_TYPE_UK -> Acceptability.PREFERRED.name }
+		val acceptableAcceptabilityMap = #{ REFSET_LANGUAGE_TYPE_UK -> Acceptability.ACCEPTABLE.name }
 
-	Scenario: Accept merge attempt of branch in FORWARD state 
+	Scenario: Accept merge attempt of new concept in FORWARD state 
 	
 		Given a SNOMED CT branch under parent branch "${parent}" with name "${branchName}"
 			parent = args.first.renderWithFields(this)
@@ -67,13 +69,13 @@ Feature: SnomedMergeApi
 						"typeId" -> FULLY_SPECIFIED_NAME,
 						"term" -> "New Term at " + new Date(),
 						"languageCode" -> "en",
-						"acceptability" -> correctAcceptabilityMap 
+						"acceptability" -> preferredAcceptabilityMap 
 					},
 					#{
 						"typeId" -> SYNONYM,
 						"term" -> "New Preferred Term at " + new Date(),
 						"languageCode" -> "en",
-						"acceptability" -> correctAcceptabilityMap 
+						"acceptability" -> preferredAcceptabilityMap 
 					}
 				],
 				"commitComment" -> "New concept"
@@ -83,8 +85,7 @@ Feature: SnomedMergeApi
 			res = req.post(url)
 			res.expectStatus(201)
 			res.location should contain url
-			conceptMap.put(args.first, res.location.lastPathSegment)
-
+			componentMap.put(args.first, res.location.lastPathSegment)
 		And merging changes from branch "${parent}/${branchName}" to "${parent}" with comment "Merge commit"
 			req = givenAuthenticatedRequest(API).withJson(#{
 				"source" -> args.first.renderWithFields(this),
@@ -94,21 +95,63 @@ Feature: SnomedMergeApi
 			
 			res = req.post("/merges")
 		Then return "204" status
-		And the concept "C1" should exist on URL base "${parent}/concepts"
-			API.get(args.second.renderWithFields(this), conceptMap.get(args.first)).expectStatus(200)
-		And the concept "C1" should exist on URL base "${parent}/${branchName}/concepts"
+		And the component "C1" should exist on URL base "${parent}/concepts"
+			API.get(args.second.renderWithFields(this), componentMap.get(args.first)).expectStatus(200)
+		And the component "C1" should exist on URL base "${parent}/${branchName}/concepts"
 
-	Scenario: Reject merge attempt of branch in DIVERGED state
+	Scenario: Accept merge attempt of new description in FORWARD state
+		Given a SNOMED CT branch under parent branch "${parent}" with name "${branchName}"
+		When creating a new description "D1" with URL "${parent}/${branchName}/descriptions"
+			req = givenAuthenticatedRequest(API).withJson(#{
+				"conceptId" -> ROOT_CONCEPT,
+				"moduleId" -> MODULE_SCT_CORE,
+				"typeId" -> SYNONYM,
+				"term" -> "New Synonym at " + new Date(),
+				"languageCode" -> "en",
+				"acceptability" -> acceptableAcceptabilityMap,
+				"commitComment" -> "New description"
+			})
+			
+			val url = args.second.renderWithFields(this)
+			res = req.post(url)
+			res.expectStatus(201)
+			res.location should contain url
+			componentMap.put(args.first, res.location.lastPathSegment)
+		And merging changes from branch "${parent}/${branchName}" to "${parent}" with comment "Merge commit"
+		Then return "204" status
+		And the component "D1" should exist on URL base "${parent}/descriptions"
+
+	Scenario: Accept merge attempt of new relationship in FORWARD state
+		Given a SNOMED CT branch under parent branch "${parent}" with name "${branchName}"
+		When creating a new relationship "R1" with URL "${parent}/${branchName}/relationships"
+			req = givenAuthenticatedRequest(API).withJson(#{
+				"sourceId" -> ROOT_CONCEPT,
+				"moduleId" -> MODULE_SCT_CORE,
+				"typeId" -> "116676008", // Associated morphology
+				"destinationId" -> "49755003", // Morphologic abnormality
+				"commitComment" -> "New relationship"
+			})
+			
+			val url = args.second.renderWithFields(this)
+			res = req.post(url)
+			res.expectStatus(201)
+			res.location should contain url
+			componentMap.put(args.first, res.location.lastPathSegment)
+		And merging changes from branch "${parent}/${branchName}" to "${parent}" with comment "Merge commit"
+		Then return "204" status
+		And the component "R1" should exist on URL base "${parent}/relationships"
+
+	Scenario: Reject merge attempt of new concept in DIVERGED state
 		
 		Given a SNOMED CT branch under parent branch "${parent}" with name "${branchName}"
 		When creating a new concept "C1" with URL "${parent}/concepts"
 		And creating a new concept "C2" with URL "${parent}/${branchName}/concepts"
 		And merging changes from branch "${parent}/${branchName}" to "${parent}" with comment "Merge commit"
 		Then return "409" status
-		And the concept "C1" should exist on URL base "${parent}/concepts"
-		And the concept "C2" should exist on URL base "${parent}/${branchName}/concepts"
+		And the component "C1" should exist on URL base "${parent}/concepts"
+		And the component "C2" should exist on URL base "${parent}/${branchName}/concepts"
 
-	Scenario: Rebase DIVERGED branch
+	Scenario: Accept merge attempt of new concept in DIVERGED state after rebasing
 		
 		Given a SNOMED CT branch under parent branch "${parent}" with name "${branchName}"
 		When creating a new concept "C1" with URL "${parent}/concepts"
@@ -122,8 +165,8 @@ Feature: SnomedMergeApi
 			
 			res = req.post("/merges")
 		Then return "204" status
-		And the concept "C1" should exist on URL base "${parent}/concepts"
-		And the concept "C1" should exist on URL base "${parent}/${branchName}/concepts"
-		And the concept "C2" should not exist on URL base "${parent}/concepts"
-			API.get(args.second.renderWithFields(this), conceptMap.get(args.first)).expectStatus(404)
-		And the concept "C2" should exist on URL base "${parent}/${branchName}/concepts"
+		And the component "C1" should exist on URL base "${parent}/concepts"
+		And the component "C1" should exist on URL base "${parent}/${branchName}/concepts"
+		And the component "C2" should not exist on URL base "${parent}/concepts"
+			API.get(args.second.renderWithFields(this), componentMap.get(args.first)).expectStatus(404)
+		And the component "C2" should exist on URL base "${parent}/${branchName}/concepts"
