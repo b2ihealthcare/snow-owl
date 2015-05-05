@@ -27,6 +27,8 @@ import static extension com.b2international.snowowl.test.commons.rest.RestExtens
 import com.b2international.snowowl.snomed.api.rest.concept.*
 import com.b2international.snowowl.snomed.api.rest.branches.*
 import com.b2international.snowowl.snomed.api.domain.Acceptability
+import com.b2international.snowowl.snomed.api.domain.DefinitionStatus
+import com.b2international.snowowl.snomed.api.domain.CaseSignificance
 
 /**
  * @since 2.0
@@ -38,6 +40,7 @@ Feature: SnomedMergeApi
 
 		var public String parent = "MAIN"
 		var public String branchName = UUID.randomUUID.toString
+		var public String componentId
 		
 		var RequestSpecification req
 		var Response res
@@ -207,3 +210,40 @@ Feature: SnomedMergeApi
 		And the component "R1" should exist on URL base "${parent}/${branchName}/relationships"
 		And the component "R2" should not exist on URL base "${parent}/descriptions"
 		And the component "R2" should exist on URL base "${parent}/${branchName}/relationships"
+
+	Scenario: Reject rebase attempt of changed description on branch and parent
+		Given a SNOMED CT branch under parent branch "${parent}" with name "${branchName}"
+		And creating a new description "D1" with URL "${parent}/${branchName}/descriptions"
+		And merging changes from branch "${parent}/${branchName}" to "${parent}" with comment "Merge commit"
+		And updating description case significance "D1" to "CASE_INSENSITIVE" with URL "${parent}/${branchName}/descriptions/${componentId}/updates"
+			req = givenAuthenticatedRequest(API).withJson(#{
+				"caseSignificance" -> CaseSignificance.valueOf(args.second).name,
+				"commitComment" -> "Changed definition status"
+			})
+			
+			componentId = componentMap.get(args.first);
+			res = req.post(args.third.renderWithFields(this))
+			res.expectStatus(204)
+		And updating description case significance "D1" to "ENTIRE_TERM_CASE_SENSITIVE" with URL "${parent}/descriptions/${componentId}/updates"
+		And rebasing branch "${parent}/${branchName}" onto "${parent}" with comment "Rebase commit"
+		Then return "409" status
+
+	Scenario: Reject rebase attempt of changed concept on branch, deleted on parent
+		Given a SNOMED CT branch under parent branch "${parent}" with name "${branchName}"
+		When creating a new concept "C1" with URL "${parent}/${branchName}/concepts"
+		And merging changes from branch "${parent}/${branchName}" to "${parent}" with comment "Merge commit"
+		And updating concept definition status "C1" to "FULLY_DEFINED" with URL "${parent}/${branchName}/concepts/${componentId}/updates"
+			req = givenAuthenticatedRequest(API).withJson(#{
+				"definitionStatus" -> DefinitionStatus.valueOf(args.second).name,
+				"commitComment" -> "Changed definition status"
+			})
+			
+			componentId = componentMap.get(args.first);
+			res = req.post(args.third.renderWithFields(this))
+			res.expectStatus(204)
+		And deleting concept "C1" with URL "${parent}/concepts/${componentId}"
+			componentId = componentMap.get(args.first);
+			res = req.delete(args.second.renderWithFields(this))
+			res.expectStatus(204)
+		And rebasing branch "${parent}/${branchName}" onto "${parent}" with comment "Rebase commit"
+		Then return "409" status
