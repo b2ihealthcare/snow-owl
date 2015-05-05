@@ -156,9 +156,11 @@ public class DataTypeWidgetBean extends LeafWidgetBean implements Serializable {
 	@Override
 	protected DataTypeWidgetBean replicate() {
 		final DataTypeWidgetBean dataTypeWidgetBean = new DataTypeWidgetBean(cwb, getModel(), getReferencedComponentId(), UNINITIALIZED, false);
+		dataTypeWidgetBean.setPropagationEnabled(isPropagationEnabled());
 		dataTypeWidgetBean.setSelectedLabel(getSelectedLabel());
 		dataTypeWidgetBean.setSelectedValue(getSelectedValue());
 		dataTypeWidgetBean.setSelectedUom(getSelectedUom());
+		dataTypeWidgetBean.setCharacteristicTypeId(getCharacteristicType());
 		return dataTypeWidgetBean;
 	}
 	
