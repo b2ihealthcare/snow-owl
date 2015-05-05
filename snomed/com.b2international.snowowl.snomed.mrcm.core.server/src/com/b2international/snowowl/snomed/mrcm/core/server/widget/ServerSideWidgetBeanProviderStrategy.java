@@ -166,6 +166,7 @@ public class ServerSideWidgetBeanProviderStrategy extends WidgetBeanProviderStra
 			final DataTypeWidgetBean widgetBean = new DataTypeWidgetBean(cwb, matchingModel, entry.getReferencedComponentId(), entry.getId(), entry.isReleased());
 			widgetBean.setSelectedValue(SnomedRefSetUtil.serializeValue(entry.getDataType(), entry.getValue()));
 			widgetBean.setSelectedLabel(entry.getLabel());
+			widgetBean.setCharacteristicTypeId(entry.getCharacteristicTypeId());
 			beans.add(widgetBean);
 			unusedModels.remove(matchingModel);
 		}
