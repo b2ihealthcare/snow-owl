@@ -79,17 +79,24 @@ public class BranchEventHandler extends ApiEventHandler {
 			final Branch source = branchManager.getBranch(event.getSource());
 			final Branch target = branchManager.getBranch(event.getTarget());
 			if (source.parent().equals(target)) {
+				
 				// merge into target
 				try {
 					final Branch merged = target.merge(source, event.getCommitMessage());
 					return new BranchReply(merged);
 				} catch (BranchMergeException e) {
-					throw new ConflictException("Cannot merge source '%s' into target '%s', because the source branch has no changes to merge, or the two branches have diverged.", source.path(), target.path());
+					throw new ConflictException("Cannot merge source '%s' into target '%s'.", source.path(), target.path());
 				}
+				
 			} else if (target.parent().equals(source)) {
-				// rebase into target
-				final Branch rebased = target.rebase(source, event.getCommitMessage());
-				return new BranchReply(rebased);
+				
+				// rebase onto target
+				try {
+					final Branch rebased = target.rebase(source, event.getCommitMessage());
+					return new BranchReply(rebased);
+				} catch (BranchMergeException e) {
+					throw new ConflictException("Cannot rebase target '%s' onto source '%s'.", target.path(), source.path());
+				}
 			}
 			
 			throw new BadRequestException("Cannot merge source '%s' into target '%s', because there is no relation between them.", source.path(), target.path());
