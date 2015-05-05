@@ -20,6 +20,7 @@ import static com.google.common.base.Preconditions.checkArgument;
 import org.eclipse.emf.cdo.common.branch.CDOBranch;
 import org.eclipse.emf.cdo.common.commit.CDOCommitInfo;
 import org.eclipse.emf.cdo.common.commit.CDOCommitInfoHandler;
+import org.eclipse.emf.cdo.transaction.CDOMerger;
 import org.eclipse.emf.cdo.transaction.CDOTransaction;
 import org.eclipse.emf.cdo.util.CommitException;
 import org.eclipse.emf.spi.cdo.DefaultCDOMerger;
@@ -72,12 +73,14 @@ public class CDOBranchManagerImpl extends BranchManagerImpl {
 		CDOBranch targetBranch = getCDOBranch(target);
 	    CDOBranch sourceBranch = getCDOBranch(source);
 		CDOTransaction tx = repository.getConnection().createTransaction(targetBranch);
-		
-		tx.merge(sourceBranch.getHead(), new DefaultCDOMerger.PerFeature.ManyValued());
 		CDOCommitInfo commitInfo;
+		
 		try {
+			tx.merge(sourceBranch.getHead(), new DefaultCDOMerger.PerFeature.ManyValued());
 			tx.setCommitComment(commitMessage);
 			commitInfo = tx.commit();
+		} catch (CDOMerger.ConflictException e) {
+			throw new BranchMergeException("Could not resolve all conflicts while applying changeset on '%s' from '%s'.", target.path(), source.path(), e);
 		} catch (CommitException e) {
 			throw new BranchMergeException("Failed to apply changeset on '%s' from '%s'.", target.path(), source.path(), e);
 		}
