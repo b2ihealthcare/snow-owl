@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.datastore.internal.branch;
+package com.b2international.snowowl.datastore.server.internal.branch;
 
 import static com.google.common.base.Preconditions.checkArgument;
 
@@ -23,16 +23,16 @@ import org.eclipse.emf.cdo.common.commit.CDOCommitInfoHandler;
 import org.eclipse.emf.cdo.transaction.CDOMerger;
 import org.eclipse.emf.cdo.transaction.CDOTransaction;
 import org.eclipse.emf.cdo.util.CommitException;
-import org.eclipse.emf.spi.cdo.DefaultCDOMerger;
 
 import com.b2international.snowowl.core.Metadata;
 import com.b2international.snowowl.core.api.SnowowlRuntimeException;
 import com.b2international.snowowl.datastore.BranchPathUtils;
-import com.b2international.snowowl.datastore.branch.Branch;
-import com.b2international.snowowl.datastore.branch.BranchManager;
-import com.b2international.snowowl.datastore.branch.BranchMergeException;
+import com.b2international.snowowl.datastore.cdo.ICDOConnection;
 import com.b2international.snowowl.datastore.cdo.ICDORepository;
-import com.b2international.snowowl.datastore.internal.IRepository;
+import com.b2international.snowowl.datastore.server.branch.Branch;
+import com.b2international.snowowl.datastore.server.branch.BranchManager;
+import com.b2international.snowowl.datastore.server.branch.BranchMergeException;
+import com.b2international.snowowl.datastore.server.internal.IRepository;
 import com.b2international.snowowl.datastore.store.Store;
 
 /**
@@ -72,20 +72,29 @@ public class CDOBranchManagerImpl extends BranchManagerImpl {
 	InternalBranch applyChangeSet(InternalBranch target, InternalBranch source, String commitMessage) {
 		CDOBranch targetBranch = getCDOBranch(target);
 	    CDOBranch sourceBranch = getCDOBranch(source);
-		CDOTransaction tx = repository.getConnection().createTransaction(targetBranch);
-		CDOCommitInfo commitInfo;
+		CDOTransaction targetTransaction = null;
 		
 		try {
-			tx.merge(sourceBranch.getHead(), new DefaultCDOMerger.PerFeature.ManyValued());
-			tx.setCommitComment(commitMessage);
-			commitInfo = tx.commit();
+			
+			ICDOConnection connection = repository.getConnection();
+			targetTransaction = connection.createTransaction(targetBranch);
+			
+			targetTransaction.merge(sourceBranch.getHead(), new CDOBranchMerger(repository.getCdoRepositoryId()));
+			targetTransaction.setCommitComment(commitMessage);
+			
+			CDOCommitInfo commitInfo = targetTransaction.commit();
+			return target.withHeadTimestamp(commitInfo.getTimeStamp());
+			
 		} catch (CDOMerger.ConflictException e) {
 			throw new BranchMergeException("Could not resolve all conflicts while applying changeset on '%s' from '%s'.", target.path(), source.path(), e);
 		} catch (CommitException e) {
 			throw new BranchMergeException("Failed to apply changeset on '%s' from '%s'.", target.path(), source.path(), e);
+		} finally {
+			
+			if (targetTransaction != null) { 
+				targetTransaction.close(); 
+			}
 		}
-		
-		return target.withHeadTimestamp(commitInfo.getTimeStamp());
 	}
 	
 	@Override
