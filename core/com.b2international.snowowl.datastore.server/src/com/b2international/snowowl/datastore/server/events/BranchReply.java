@@ -13,9 +13,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.datastore.events;
+package com.b2international.snowowl.datastore.server.events;
 
-import com.b2international.snowowl.datastore.branch.Branch;
+import com.b2international.snowowl.datastore.server.branch.Branch;
 
 /**
  * Common success reply used when sending {@link BaseBranchEvent}s into the system.

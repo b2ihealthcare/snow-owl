@@ -13,12 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.datastore.events;
+package com.b2international.snowowl.datastore.server.events;
 
 import java.util.Collection;
 import java.util.Collections;
 
-import com.b2international.snowowl.datastore.branch.Branch;
+import com.b2international.snowowl.datastore.server.branch.Branch;
 
 /**
  * @since 4.1
