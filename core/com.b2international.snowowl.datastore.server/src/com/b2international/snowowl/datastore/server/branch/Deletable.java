@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.datastore.branch;
+package com.b2international.snowowl.datastore.server.branch;
 
 /**
  * @since 4.1
