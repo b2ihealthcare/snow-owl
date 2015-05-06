@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.datastore.internal;
+package com.b2international.snowowl.datastore.server.internal;
 
 import org.eclipse.emf.cdo.common.branch.CDOBranch;
 import org.eclipse.emf.cdo.common.branch.CDOBranchManager;
@@ -36,4 +36,6 @@ public interface IRepository {
 	IIndexUpdater<?> getIndexUpdater();
 
 	ICDORepository getCdoRepository();
+
+	String getCdoRepositoryId();
 }

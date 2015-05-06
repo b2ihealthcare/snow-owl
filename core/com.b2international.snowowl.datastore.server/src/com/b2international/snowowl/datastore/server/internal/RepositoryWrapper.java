@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.datastore.internal;
+package com.b2international.snowowl.datastore.server.internal;
 
 import org.eclipse.emf.cdo.common.branch.CDOBranch;
 import org.eclipse.emf.cdo.common.branch.CDOBranchManager;
@@ -69,5 +69,10 @@ public class RepositoryWrapper implements IRepository {
 	@Override
 	public ICDORepository getCdoRepository() {
 		return repositoryManager.getByUuid(repositoryId);
+	}
+	
+	@Override
+	public String getCdoRepositoryId() {
+		return repositoryId;
 	}
 }
