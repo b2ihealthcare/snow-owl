@@ -24,7 +24,6 @@ import java.io.Serializable;
 import com.b2international.commons.StringUtils;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.api.NullBranchPath;
-import com.b2international.snowowl.datastore.branch.Branch;
 import com.google.common.base.Joiner;
 import com.google.common.base.Objects;
 import com.google.common.base.Preconditions;
@@ -164,7 +163,7 @@ import com.google.common.collect.Iterables;
 			return NullBranchPath.INSTANCE.getPath();
 		}
 		
-		checkArgument(path.startsWith(Branch.MAIN_PATH), "Path '%s' should start with MAIN", path);
+		checkArgument(path.startsWith(IBranchPath.MAIN_BRANCH), "Path '%s' should start with MAIN", path);
 		//if the path has a trailing separator, cut it
 		path = trimTrailingSeparator(path);
 		
