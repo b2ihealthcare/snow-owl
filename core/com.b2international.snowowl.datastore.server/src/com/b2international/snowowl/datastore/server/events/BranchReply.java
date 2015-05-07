@@ -24,14 +24,13 @@ import com.b2international.snowowl.datastore.server.branch.Branch;
  */
 public class BranchReply {
 
-	private Branch branch;
+	private final Branch branch;
 
-	public BranchReply(Branch branch) {
+	public BranchReply(final Branch branch) {
 		this.branch = branch;
 	}
 
 	public Branch getBranch() {
 		return branch;
 	}
-
 }

@@ -19,4 +19,8 @@ package com.b2international.snowowl.datastore.server.events;
  * @since 4.1
  */
 public class ReadAllBranchEvent extends BaseBranchEvent {
+
+	public ReadAllBranchEvent(final String repositoryId) {
+		super(repositoryId);
+	}
 }

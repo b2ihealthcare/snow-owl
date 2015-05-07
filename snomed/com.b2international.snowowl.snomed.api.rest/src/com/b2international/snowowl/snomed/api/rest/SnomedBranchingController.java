@@ -76,7 +76,7 @@ public class SnomedBranchingController extends AbstractRestService {
 	public DeferredResult<CollectionResource<Branch>> getBranches() {
 		final DeferredResult<CollectionResource<Branch>> result = new DeferredResult<>();
 		new AsyncSupport<>(bus, BranchesReply.class)
-			.send(new ReadAllBranchEvent())
+			.send(new ReadAllBranchEvent("snomedStore"))
 			.then(new Procedure<BranchesReply>() { @Override protected void doApply(BranchesReply reply) {
 				result.setResult(CollectionResource.of(reply.getBranches()));
 			}})
@@ -90,7 +90,7 @@ public class SnomedBranchingController extends AbstractRestService {
 	public DeferredResult<Branch> getBranch(@PathVariable("path") String branchPath) {
 		final DeferredResult<Branch> result = new DeferredResult<>();
 		new AsyncSupport<>(bus, BranchReply.class)
-			.send(new ReadBranchEvent(branchPath))
+			.send(new ReadBranchEvent("snomedStore", branchPath))
 			.then(new Procedure<BranchReply>() { @Override protected void doApply(BranchReply reply) {
 				result.setResult(reply.getBranch());
 			}})
@@ -106,7 +106,7 @@ public class SnomedBranchingController extends AbstractRestService {
 		final ResponseEntity<Void> response = Responses.noContent().build();
 		final DeferredResult<ResponseEntity<Void>> result = new DeferredResult<>();
 		new AsyncSupport<>(bus, BranchReply.class)
-			.send(new DeleteBranchEvent(branchPath))
+			.send(new DeleteBranchEvent("snomedStore", branchPath))
 			.then(new Procedure<BranchReply>() { @Override protected void doApply(BranchReply reply) {
 				result.setResult(response);
 			}})

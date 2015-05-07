@@ -25,13 +25,14 @@ public class MergeEvent extends BaseBranchEvent {
 	private final String source;
 	private final String target;
 	private final String commitMessage;
-	
-	public MergeEvent(String source, String target, String commitMessage) {
+
+	public MergeEvent(final String repositoryId, final String source, final String target, final String commitMessage) {
+		super(repositoryId);
 		this.source = source;
 		this.target = target;
 		this.commitMessage = Strings.isNullOrEmpty(commitMessage) ? defaultMessage() : commitMessage;
 	}
-	
+
 	private String defaultMessage() {
 		return String.format("Merge branch '%s' into '%s'", getSource(), getTarget());
 	}
@@ -39,13 +40,12 @@ public class MergeEvent extends BaseBranchEvent {
 	public String getCommitMessage() {
 		return commitMessage;
 	}
-	
+
 	public String getSource() {
 		return source;
 	}
-	
+
 	public String getTarget() {
 		return target;
 	}
-	
 }

@@ -16,6 +16,7 @@
 package com.b2international.snowowl.datastore.server;
 
 import java.io.File;
+import java.nio.file.Paths;
 
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.net4j.jvm.IJVMConnector;
@@ -119,30 +120,43 @@ public class DatastoreServerBootstrap implements PreRunCapableBootstrapFragment 
 		ServiceConfigJobManager.INSTANCE.registerServices(monitor);
 		
 		if (environment.isServer() || environment.isEmbedded()) {
-			final RepositoryWrapper wrapper = createSnomedRepositoryWrapper(environment);
-			initializeBranchingSupport(environment, wrapper);
+			initializeBranchingSupport(environment);
 		}
 	}
 
-	private RepositoryWrapper createSnomedRepositoryWrapper(Environment env) {
-		final ICDOConnectionManager cdoConnectionManager = env.service(ICDOConnectionManager.class);
-		final ICDORepositoryManager cdoRepositoryManager = env.service(ICDORepositoryManager.class);
-		final IIndexServerServiceManager indexServerServiceManager = env.service(IIndexServerServiceManager.class); 
-		return new RepositoryWrapper("snomedStore", cdoConnectionManager, cdoRepositoryManager, indexServerServiceManager);
+	private void initializeBranchingSupport(Environment environment) {
+		final Stopwatch branchStopwatch = Stopwatch.createStarted();
+		LOG.info(">>> Initializing branch services.");
+		
+		final ICDOConnectionManager cdoConnectionManager = environment.service(ICDOConnectionManager.class);
+		final ICDORepositoryManager cdoRepositoryManager = environment.service(ICDORepositoryManager.class);
+		final IIndexServerServiceManager indexServerServiceManager = environment.service(IIndexServerServiceManager.class); 
+		
+		final ObjectMapper objectMapper = new BranchSerializer();
+		
+		for (String repositoryId : cdoRepositoryManager.uuidKeySet()) {
+			final RepositoryWrapper wrapper = new RepositoryWrapper(repositoryId, cdoConnectionManager, cdoRepositoryManager, indexServerServiceManager);
+			initializeBranchingSupport(environment, wrapper, objectMapper);
+		}
+		
+		LOG.info("<<< Branch services registered. [{}]", branchStopwatch);
 	}
 
-	private void initializeBranchingSupport(Environment env, RepositoryWrapper wrapper) {
-		final File branchIndexDirectory = new File(new File(env.getDataDirectory(), "indexes"), "branches");
-		final ObjectMapper objectMapper = new BranchSerializer();
+	private void initializeBranchingSupport(Environment environment, RepositoryWrapper wrapper, ObjectMapper objectMapper) {
+		final String repositoryId = wrapper.getCdoRepositoryId();
+		final File branchIndexDirectory = environment.getDataDirectory()
+				.toPath()
+				.resolve(Paths.get("indexes", "branches", repositoryId))
+				.toFile();
+
 		final IndexStore<InternalBranch> branchStore = new IndexStore<InternalBranch>(branchIndexDirectory, objectMapper, InternalBranch.class);
 		final BranchManager branchManager = new CDOBranchManagerImpl(wrapper, branchStore);
-		env.service(IEventBus.class).registerHandler("/branches", new BranchEventHandler(branchManager));
+		environment.service(IEventBus.class).registerHandler("/" + repositoryId + "/branches" , new BranchEventHandler(branchManager));
 	}
 	
 	private void connectSystemUser(IManagedContainer container) throws SnowowlServiceException {
 		// Normally this is done for us by CDOConnectionFactory
-		final IJVMConnector connector = JVMUtil.getConnector(container,
-				Net4jUtils.NET_4_J_CONNECTOR_NAME);
+		final IJVMConnector connector = JVMUtil.getConnector(container, Net4jUtils.NET_4_J_CONNECTOR_NAME);
 		final RpcProtocol clientProtocol = RpcUtil.getRpcClientProtocol(container);
 		clientProtocol.open(connector);
 

@@ -25,14 +25,13 @@ import com.b2international.snowowl.datastore.server.branch.Branch;
  */
 public class BranchesReply {
 
-	private Collection<Branch> branches;
+	private final Collection<Branch> branches;
 
-	public BranchesReply(Collection<Branch> branches) {
+	public BranchesReply(final Collection<Branch> branches) {
 		this.branches = branches == null ? Collections.<Branch>emptySet() : branches;
 	}
-	
+
 	public Collection<Branch> getBranches() {
 		return branches;
 	}
-	
 }

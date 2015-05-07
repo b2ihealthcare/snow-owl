@@ -24,37 +24,30 @@ import com.b2international.snowowl.datastore.server.branch.Branch;
  */
 public class CreateBranchEvent extends BranchEvent {
 
-	private String repository;
-	private String parent;
-	private String name;
-	private Metadata metadata;
-	
-	public CreateBranchEvent(String repository, String parent, String name, Metadata metadata) {
-		super(path(parent, name));
-		this.repository = repository;
+	private final String parent;
+	private final String name;
+	private final Metadata metadata;
+
+	public CreateBranchEvent(final String repositoryId, final String parent, final String name, final Metadata metadata) {
+		super(repositoryId, path(parent, name));
 		this.parent = parent;
 		this.name = name;
 		this.metadata = metadata;
 	}
-	
-	private static String path(String parent, String name) {
+
+	private static String path(final String parent, final String name) {
 		return parent + Branch.SEPARATOR + name;
 	}
 
 	public String getParent() {
 		return parent;
 	}
-	
+
 	public String getName() {
 		return name;
 	}
-	
-	public String getRepository() {
-		return repository;
-	}
-	
+
 	public Metadata getMetadata() {
 		return metadata;
 	}
-	
 }

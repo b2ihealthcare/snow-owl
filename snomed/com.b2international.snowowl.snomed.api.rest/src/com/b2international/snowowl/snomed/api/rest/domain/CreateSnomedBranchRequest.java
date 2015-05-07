@@ -21,7 +21,7 @@ package com.b2international.snowowl.snomed.api.rest.domain;
 public class CreateSnomedBranchRequest extends CreateBranchRequest {
 
 	public CreateSnomedBranchRequest() {
-		super("SNOMEDCT");
+		super("snomedStore");
 	}
 
 }

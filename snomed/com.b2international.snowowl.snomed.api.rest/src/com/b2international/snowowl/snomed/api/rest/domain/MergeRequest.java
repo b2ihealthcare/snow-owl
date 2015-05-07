@@ -40,7 +40,7 @@ public class MergeRequest {
 	private String commitComment;
 
 	public Event toEvent() {
-		return new MergeEvent(source, target, commitComment);
+		return new MergeEvent("snomedStore", source, target, commitComment);
 	}
 	
 }

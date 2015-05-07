@@ -22,14 +22,14 @@ import static com.google.common.base.Preconditions.checkNotNull;
  */
 public abstract class BranchEvent extends BaseBranchEvent {
 
-	private String branchPath;
+	private final String branchPath;
 
-	public BranchEvent(String branchPath) {
+	public BranchEvent(final String repositoryId, final String branchPath) {
+		super(repositoryId);
 		this.branchPath = checkNotNull(branchPath, "branchPath");
 	}
-	
+
 	public final String getBranchPath() {
 		return branchPath;
 	}
-	
 }

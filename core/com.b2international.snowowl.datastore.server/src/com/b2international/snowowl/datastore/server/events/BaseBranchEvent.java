@@ -15,6 +15,8 @@
  */
 package com.b2international.snowowl.datastore.server.events;
 
+import static com.google.common.base.Preconditions.checkNotNull;
+
 import com.b2international.snowowl.core.events.BaseEvent;
 
 /**
@@ -22,9 +24,18 @@ import com.b2international.snowowl.core.events.BaseEvent;
  */
 public abstract class BaseBranchEvent extends BaseEvent {
 
+	private final String repositoryId;
+
+	protected BaseBranchEvent(final String repositoryId) {
+		this.repositoryId = checkNotNull(repositoryId, "repositoryId");
+	}
+
+	public String getRepositoryId() {
+		return repositoryId;
+	}
+
 	@Override
 	protected final String getAddress() {
-		return "/branches";
+		return "/" + repositoryId + "/branches";
 	}
-	
 }
