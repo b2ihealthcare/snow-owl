@@ -111,13 +111,13 @@ public enum CDOConflictProcessorBroker {
 	public ICDOConflictProcessor getProcessor(final String repositoryUuid) {
 		checkNotNull(repositoryUuid, "Repository identifier may not be null.");
 
-		final Collection<ICDOConflictProcessor> processors = Extensions.getExtensions(ICDOConflictProcessor.CONFLICT_PROCESSOR_EXTENSION_ID, ICDOConflictProcessor.class);
+		final Collection<ICDOConflictProcessor> processors = Extensions.getExtensions(ICDOConflictProcessor.EXTENSION_ID, ICDOConflictProcessor.class);
 		for (final ICDOConflictProcessor processor : processors) {
 			if (repositoryUuid.equals(processor.getRepositoryUuid())) {
 				return processor;
 			}
 		}
 
-		return NullCDOConflictProcessor.INSTANCE;
+		return new NullCDOConflictProcessor(repositoryUuid);
 	}
 }

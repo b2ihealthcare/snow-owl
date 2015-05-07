@@ -79,7 +79,10 @@ public class CDOBranchManagerImpl extends BranchManagerImpl {
 			ICDOConnection connection = repository.getConnection();
 			targetTransaction = connection.createTransaction(targetBranch);
 			
-			targetTransaction.merge(sourceBranch.getHead(), new CDOBranchMerger(repository.getCdoRepositoryId()));
+			CDOBranchMerger merger = new CDOBranchMerger(repository.getCdoRepositoryId());
+			targetTransaction.merge(sourceBranch.getHead(), merger);
+			merger.unlinkObjects(targetTransaction);
+			
 			targetTransaction.setCommitComment(commitMessage);
 			
 			CDOCommitInfo commitInfo = targetTransaction.commit();

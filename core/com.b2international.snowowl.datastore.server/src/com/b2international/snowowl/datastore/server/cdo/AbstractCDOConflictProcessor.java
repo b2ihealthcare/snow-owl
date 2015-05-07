@@ -15,104 +15,142 @@
  */
 package com.b2international.snowowl.datastore.server.cdo;
 
-import static com.b2international.commons.ChangeKind.ADDED;
-import static com.b2international.commons.ChangeKind.DELETED;
-import static com.google.common.base.Preconditions.checkState;
-import static com.google.common.collect.Iterables.get;
+import static com.google.common.base.Preconditions.checkNotNull;
+import static com.google.common.collect.Sets.newHashSet;
 
-import java.util.Collection;
-import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
-import javax.annotation.Nullable;
-
-import org.eclipse.emf.cdo.common.commit.CDOChangeSetData;
+import org.eclipse.emf.cdo.CDOObject;
 import org.eclipse.emf.cdo.common.id.CDOID;
-import org.eclipse.emf.cdo.common.revision.CDOIDAndVersion;
 import org.eclipse.emf.cdo.common.revision.CDORevision;
-import org.eclipse.emf.cdo.common.revision.CDORevisionKey;
+import org.eclipse.emf.cdo.common.revision.delta.CDOFeatureDelta;
+import org.eclipse.emf.cdo.common.revision.delta.CDORevisionDelta;
+import org.eclipse.emf.cdo.common.revision.delta.CDOSetFeatureDelta;
 import org.eclipse.emf.cdo.spi.common.revision.InternalCDORevision;
-import org.eclipse.emf.cdo.view.CDOView;
+import org.eclipse.emf.cdo.transaction.CDOTransaction;
+import org.eclipse.emf.ecore.EAttribute;
+import org.eclipse.emf.ecore.EClass;
+import org.eclipse.emf.ecore.util.EcoreUtil;
+import org.eclipse.emf.spi.cdo.DefaultCDOMerger.ChangedInSourceAndDetachedInTargetConflict;
+import org.eclipse.emf.spi.cdo.DefaultCDOMerger.Conflict;
 
-import com.b2international.snowowl.datastore.cdo.CDOIDUtils;
-import com.b2international.snowowl.datastore.cdo.ConflictWrapper;
-import com.b2international.snowowl.datastore.cdo.ConflictingChange;
-import com.b2international.snowowl.datastore.server.CDOServerUtils;
+import com.b2international.snowowl.datastore.cdo.CDOUtils;
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Iterables;
 
 /**
  * Abstract superclass for {@link ICDOConflictProcessor}s that only want to report a subset of possible application-level conflicts.
  */
 public abstract class AbstractCDOConflictProcessor implements ICDOConflictProcessor {
 
-	@Override
-	public ConflictWrapper checkConflictForNewObjects(final CDOChangeSetData targetChangeSet, final CDOIDAndVersion newInSource, final CDOView sourceView) {
-		final Collection<CDOID> detachedTargetIds = CDOIDUtils.extractIds(targetChangeSet.getDetachedObjects());
-		return checkConflict(detachedTargetIds, newInSource, sourceView);
+	private static final Map<EClass, EAttribute> EMPTY_MAP = ImmutableMap.of();
+
+	private final String repositoryUuid;
+	private final Map<EClass, EAttribute> releasedAttributeMap;
+	private final Set<CDOID> idsToUnlink = newHashSet();
+
+	protected AbstractCDOConflictProcessor(final String repositoryUuid) {
+		this(repositoryUuid, EMPTY_MAP);
 	}
-	
-	/**
-	 * Creates and returns with a conflict wrapper describing that the conflicting target ID has been detached on target while a 
-	 * new component has been created on the source and referencing the detached target component.
-	 * <p>May return with {@code null} if the conflicting target component ID is {@code null}.
-	 * @param conflictingTargetId the ID that has been detached on the target before the synchronization. Optional. Can be {@code null}.
-	 * @param newInSource the new component that has been added on the source which is referencing the detached target.
-	 * @return the conflict wrapper describing the conflict, or {@code null} if there are any conflicts.
-	 */
-	@Nullable protected ConflictWrapper creatConflictWrapper(@Nullable final CDOID conflictingTargetId, final CDOIDAndVersion newInSource) {
-		if (null == conflictingTargetId) {
-			return null;
-		} else {
-			final ConflictingChange changeOnTarget = new ConflictingChange(DELETED, conflictingTargetId);
-			final ConflictingChange changeOnSource = new ConflictingChange(ADDED, newInSource.getID());
-			return new ConflictWrapper(changeOnTarget, changeOnSource);
-		}
+
+	protected AbstractCDOConflictProcessor(final String repositoryUuid, final Map<EClass, EAttribute> releasedAttributeMap) {
+		checkNotNull(repositoryUuid, "Repository identifier may not be null.");
+		checkNotNull(releasedAttributeMap, "EClass to released attribute map may not be null.");
+
+		this.repositoryUuid = repositoryUuid;
+		this.releasedAttributeMap = releasedAttributeMap;
 	}
 
 	@Override
-	public ConflictWrapper checkConflictForDetachedObjects(final Map<CDOID, CDORevisionKey> changedComponentsMapping, 
-			final CDOIDAndVersion detachedOnSource, final CDOView sourceView, final CDOView targetView) {
-		
-		if (shouldCheckReleasedFlag()) {
-			//here we only care about objects that has been deleted on source and modified on target
-			//assuming that deletion is not allowed by default if a component is already released on source
-			final CDORevisionKey changedTargetRevision = changedComponentsMapping.get(detachedOnSource.getID());
-			if (null != changedTargetRevision) {
-				final CDOID id = changedTargetRevision.getID();
-				final List<CDORevision> revisions = CDOServerUtils.getRevisions(targetView, id);
-				checkState(revisions.size() == 1, "Expected exactly 1 revision for ID: '" + id + "'. Got: '" + revisions.size() + "'.");
-				final CDORevision revision = get(revisions, 0);
-				if (revision instanceof InternalCDORevision) {
-					final ConflictWrapper conflictWrapper = checkReleasedForDetachedObjects((InternalCDORevision) revision);
-					if (null != conflictWrapper) {
-						return conflictWrapper;
-					}
-				}
+	public final String getRepositoryUuid() {
+		return repositoryUuid;
+	}
+
+	/**
+	 * {@inheritDoc}
+	 * <p>
+	 * The default case will allow the add by returning {@code newInSource} (a {@link CDORevision}).
+	 */
+	@Override
+	public Object addedInSource(final CDORevision sourceRevision, final Map<CDOID, Object> targetMap) {
+		return sourceRevision;
+	}
+
+	/**
+	 * {@inheritDoc}
+	 * <p>
+	 * The default case will check if {@link #addedInSource(CDORevision, Map)} would return a {@link Conflict} in the
+	 * same case, and if so, adds the identifier to the set of objects to unlink later; the addition is allowed
+	 * otherwise by returning {@code targetRevision} (a {@link CDORevision}).
+	 */
+	@Override
+	public Object addedInTarget(final CDORevision targetRevision, final Map<CDOID, Object> sourceMap) {
+		if (addedInSource(targetRevision, sourceMap) instanceof Conflict) {
+			idsToUnlink.add(targetRevision.getID());
+		}
+
+		return targetRevision;
+	}
+
+	protected Set<CDOID> getDetachedIdsInTarget(final Map<CDOID, Object> targetMap) {
+		return ImmutableSet.copyOf(Iterables.filter(targetMap.values(), CDOID.class));
+	}
+
+	protected Iterable<InternalCDORevision> getNewRevisionsInTarget(final Map<CDOID, Object> targetMap) {
+		return Iterables.filter(targetMap.values(), InternalCDORevision.class);
+	}
+
+	@Override
+	public void unlinkObjects(final CDOTransaction transaction) {
+		for (final CDOID idToUnlink : idsToUnlink) {
+			final CDOObject objectIfExists = CDOUtils.getObjectIfExists(transaction, idToUnlink);
+			if (objectIfExists != null) {
+				unlinkObject(objectIfExists);
 			}
 		}
-		
-		return null;
 	}
-	
+
+	protected void unlinkObject(final CDOObject object) {
+		EcoreUtil.remove(object);
+	}
+
 	/**
-	 * Checks if the object new in the source change set identified by its {@link CDOIDAndVersion} conflicts with the set of objects detached
-	 * on the target, identified by the specified {@link CDOID} collection.
-	 * @param detachedTargetIds the detached {@link CDOID}s of the target change set.
-	 * @param newInSource a new object's {@link CDOIDAndVersion} in the source change set. 
-	 * @param sourceView a view opened on the source change set's branch. It is the caller's responsibility to close the view.
-	 * @return an instance wrapping the conflict. 
+	 * {@inheritDoc}
+	 * <p>
+	 * The default case will check if the change did not involve releasing the component, and if so, reports a
+	 * conflict; allows the removal otherwise.
 	 */
-	protected abstract ConflictWrapper checkConflict(final Collection<CDOID> detachedTargetIds, final CDOIDAndVersion newInSource, final CDOView sourceView);
-	
-	/**Returns with {@code true} if the released flag for a detached component has to be checked against application specific conflicts.*/
-	protected boolean shouldCheckReleasedFlag() {
-		return false;
+	@Override
+	public Object changedInTargetAndDetachedInSource(final CDORevisionDelta targetDelta) {
+
+		final Conflict conflict = checkReleasedId(targetDelta);
+		if (conflict != null) {
+			return conflict;
+		}
+
+		return targetDelta.getID();
 	}
-	
-	/**Returns with a conflict if the given revision argument (loaded from the target as a changed component) has conflicts
-	 *due to released flag property mismatch. In other words component has been deleted from source and released on target meanwhile.*/
-	protected ConflictWrapper checkReleasedForDetachedObjects(final InternalCDORevision changedTargetRevision) {
-		return null;
+
+	private Conflict checkReleasedId(final CDORevisionDelta revisionDelta) {
+
+		final EClass eClass = revisionDelta.getEClass();
+
+		if (releasedAttributeMap.containsKey(eClass) && isReleased(revisionDelta, releasedAttributeMap.get(eClass))) {
+			return new ChangedInSourceAndDetachedInTargetConflict(revisionDelta);
+		} else {
+			return null;
+		}
 	}
-	
-	
+
+	private boolean isReleased(final CDORevisionDelta revisionDelta, final EAttribute releasedAttribute) {
+		final CDOFeatureDelta releasedFeatureDelta = revisionDelta.getFeatureDelta(releasedAttribute);
+
+		if (!(releasedFeatureDelta instanceof CDOSetFeatureDelta)) {
+			return false;
+		} else {
+			return (boolean) ((CDOSetFeatureDelta) releasedFeatureDelta).getValue();
+		}
+	}
 }

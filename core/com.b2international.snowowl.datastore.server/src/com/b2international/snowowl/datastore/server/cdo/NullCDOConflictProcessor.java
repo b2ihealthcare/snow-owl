@@ -15,44 +15,12 @@
  */
 package com.b2international.snowowl.datastore.server.cdo;
 
-import java.util.Map;
-
-import org.eclipse.emf.cdo.CDOObject;
-import org.eclipse.emf.cdo.common.commit.CDOChangeSetData;
-import org.eclipse.emf.cdo.common.id.CDOID;
-import org.eclipse.emf.cdo.common.revision.CDOIDAndVersion;
-import org.eclipse.emf.cdo.common.revision.CDORevisionKey;
-import org.eclipse.emf.cdo.view.CDOView;
-
-import com.b2international.snowowl.datastore.cdo.ConflictWrapper;
-
 /**
- * Null conflict processor. Does nothing.
+ * The no-op implementation of {@link ICDOConflictProcessor}.
  */
-public enum NullCDOConflictProcessor implements ICDOConflictProcessor {
+public final class NullCDOConflictProcessor extends AbstractCDOConflictProcessor implements ICDOConflictProcessor {
 
-	/**The singleton instance without implementation.*/
-	INSTANCE;
-
-	@Override 
-	public void detachConflictingObject(final CDOObject objectToRemove) { 
-		return;
-	}
-
-	@Override 
-	public ConflictWrapper checkConflictForNewObjects(final CDOChangeSetData targetChangeSet, final CDOIDAndVersion newInSource, final CDOView sourceView) { 
-		return null; 
-	}
-	
-	@Override
-	public ConflictWrapper checkConflictForDetachedObjects(final Map<CDOID, CDORevisionKey> changedComponentsMapping, 
-			final CDOIDAndVersion detachedOnSource, final CDOView sourceView, final CDOView targetView) {
-		
-		return null;
-	}
-	
-	@Override
-	public String getRepositoryUuid() {
-		throw new UnsupportedOperationException("Implementation error.");
+	public NullCDOConflictProcessor(final String repositoryId) {
+		super(repositoryId);
 	}
 }
