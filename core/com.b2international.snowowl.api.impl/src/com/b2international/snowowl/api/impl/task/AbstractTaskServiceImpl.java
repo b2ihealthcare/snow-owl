@@ -39,7 +39,7 @@ import com.b2international.snowowl.datastore.ICodeSystem;
 import com.b2international.snowowl.datastore.TaskBranchPathMap;
 import com.b2international.snowowl.datastore.TerminologyRegistryService;
 import com.b2international.snowowl.datastore.UserBranchPathMap;
-import com.b2international.snowowl.datastore.cdo.ICDOBranchManager;
+import com.b2international.snowowl.datastore.cdo.ICDOBranchActionManager;
 import com.b2international.snowowl.datastore.cdo.ICDOConnectionManager;
 import com.b2international.snowowl.datastore.server.CDOServerUtils;
 import com.b2international.snowowl.datastore.tasks.ITaskStateManager;
@@ -112,8 +112,8 @@ public class AbstractTaskServiceImpl implements ITaskService {
 		return ApplicationContext.getServiceForClass(ITaskStateManager.class);
 	}
 
-	private static ICDOBranchManager getBranchManager() {
-		return ApplicationContext.getServiceForClass(ICDOBranchManager.class);
+	private static ICDOBranchActionManager getBranchManager() {
+		return ApplicationContext.getServiceForClass(ICDOBranchActionManager.class);
 	}
 
 	private static void checkCodeSystemVersionArguments(final String shortName, final String version) {

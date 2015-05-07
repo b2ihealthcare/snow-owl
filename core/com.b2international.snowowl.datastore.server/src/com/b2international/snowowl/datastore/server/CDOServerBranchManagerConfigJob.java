@@ -16,7 +16,7 @@
 package com.b2international.snowowl.datastore.server;
 
 import com.b2international.snowowl.core.api.SnowowlServiceException;
-import com.b2international.snowowl.datastore.cdo.ICDOBranchManager;
+import com.b2international.snowowl.datastore.cdo.ICDOBranchActionManager;
 import com.b2international.snowowl.datastore.server.cdo.CDOBranchManager;
 import com.b2international.snowowl.datastore.serviceconfig.AbstractServerServiceConfigJob;
 
@@ -24,7 +24,7 @@ import com.b2international.snowowl.datastore.serviceconfig.AbstractServerService
  * Job for initializing and registering {@link ICDOServerBranchManager} to the application.
  *
  */
-public class CDOServerBranchManagerConfigJob extends AbstractServerServiceConfigJob<ICDOBranchManager> {
+public class CDOServerBranchManagerConfigJob extends AbstractServerServiceConfigJob<ICDOBranchActionManager> {
 
 	public CDOServerBranchManagerConfigJob() {
 		super("CDO server branch manager configuration...", DatastoreServerActivator.PLUGIN_ID);
@@ -35,8 +35,8 @@ public class CDOServerBranchManagerConfigJob extends AbstractServerServiceConfig
 	 * @see com.b2international.snowowl.datastore.serviceconfig.AbstractServerServiceConfigJob#getServiceClass()
 	 */
 	@Override
-	protected Class<ICDOBranchManager> getServiceClass() {
-		return ICDOBranchManager.class;
+	protected Class<ICDOBranchActionManager> getServiceClass() {
+		return ICDOBranchActionManager.class;
 	}
 
 	/*

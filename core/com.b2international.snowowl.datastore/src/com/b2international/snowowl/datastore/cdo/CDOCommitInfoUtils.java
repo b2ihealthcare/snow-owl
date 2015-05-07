@@ -93,7 +93,7 @@ public abstract class CDOCommitInfoUtils {
 		final String repositoryUuid = branchPoint.getUuid();
 		final IBranchPath branchPath = branchPoint.getBranchPath();
 		
-		final long timestamp = ApplicationContext.getInstance().getService(ICDOBranchManager.class).getLastCommitTime(repositoryUuid, branchPath);
+		final long timestamp = ApplicationContext.getInstance().getService(ICDOBranchActionManager.class).getLastCommitTime(repositoryUuid, branchPath);
 		final ConsumeAllCommitInfoHandler handler = new ConsumeAllCommitInfoHandler();
 		final CDOCommitInfoQuery query;
 		final Iterable<CDOCommitInfo> $;
@@ -302,7 +302,7 @@ public abstract class CDOCommitInfoUtils {
 		Preconditions.checkNotNull(userId, "User ID argument cannot be null.");
 		Preconditions.checkNotNull(comment, "Commit comment argument cannot be null.");
 
-		final long timestamp = ApplicationContext.getInstance().getService(ICDOBranchManager.class).getLastCommitTime(repositoryUuid, branchPath);
+		final long timestamp = ApplicationContext.getInstance().getService(ICDOBranchActionManager.class).getLastCommitTime(repositoryUuid, branchPath);
 		final CDOCommitInfoQuery query = new CDOCommitInfoQuery(Collections.singletonMap(repositoryUuid, branchPath)).setEndTime(timestamp).setStartTime(timestamp);
 		final ConsumeAllCommitInfoHandler handler = new ConsumeAllCommitInfoHandler();
 		getCommitInfos(query, handler);

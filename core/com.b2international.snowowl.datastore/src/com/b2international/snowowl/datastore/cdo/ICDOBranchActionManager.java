@@ -31,12 +31,15 @@ import com.google.common.base.Predicate;
 import com.google.common.primitives.Longs;
 
 /**
- * Interface for a CDO specific client side branch manager.
+ * Interface for a CDO-specific, client-side branch action manager.
+ * <p>
+ * Branch actions are performed in bulk, after all affected locks are acquired. Any caught exception will cause the method to
+ * return, and the corresponding locks will be released.
  * 
  * @see BranchNamePredicate
  * @see BranchPathPredicate
  */
-public interface ICDOBranchManager {
+public interface ICDOBranchActionManager {
 
 	/**
 	 * Comparator for comparing branches based on their base timestamps.
@@ -50,7 +53,7 @@ public interface ICDOBranchManager {
 	/**
 	 * Predicate for comparing branches by their names.
 	 * 
-	 * @see ICDOBranchManager
+	 * @see ICDOBranchActionManager
 	 */
 	public static class BranchNamePredicate implements Predicate<CDOBranch> {
 		
@@ -71,7 +74,7 @@ public interface ICDOBranchManager {
 	/**
 	 * Predicate for comparing branches by their paths.
 	 * 
-	 * @see ICDOBranchManager
+	 * @see ICDOBranchActionManager
 	 */
 	public static class BranchPathPredicate implements Predicate<CDOBranch> {
 		
@@ -190,5 +193,4 @@ public interface ICDOBranchManager {
 			@Nullable final String commitComment, 
 			final String repositoryUuid,
 			final String parentContextDescription);
-
 }
