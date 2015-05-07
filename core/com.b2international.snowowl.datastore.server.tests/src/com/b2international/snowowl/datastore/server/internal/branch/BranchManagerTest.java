@@ -13,10 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.datastore.internal.branch;
+package com.b2international.snowowl.datastore.server.internal.branch;
 
-import static com.b2international.snowowl.datastore.internal.branch.BranchAssertions.assertLaterBase;
-import static com.b2international.snowowl.datastore.internal.branch.BranchAssertions.assertState;
+import static com.b2international.snowowl.datastore.server.internal.branch.BranchAssertions.assertLaterBase;
+import static com.b2international.snowowl.datastore.server.internal.branch.BranchAssertions.assertState;
 import static com.google.common.collect.Lists.newArrayList;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
@@ -36,9 +36,9 @@ import com.b2international.snowowl.core.MetadataImpl;
 import com.b2international.snowowl.core.exceptions.AlreadyExistsException;
 import com.b2international.snowowl.core.exceptions.BadRequestException;
 import com.b2international.snowowl.core.exceptions.NotFoundException;
-import com.b2international.snowowl.datastore.branch.Branch;
-import com.b2international.snowowl.datastore.branch.Branch.BranchState;
-import com.b2international.snowowl.datastore.branch.BranchMergeException;
+import com.b2international.snowowl.datastore.server.branch.Branch;
+import com.b2international.snowowl.datastore.server.branch.Branch.BranchState;
+import com.b2international.snowowl.datastore.server.branch.BranchMergeException;
 import com.b2international.snowowl.datastore.store.MemStore;
 import com.b2international.snowowl.datastore.store.Store;
 

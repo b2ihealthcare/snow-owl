@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.datastore.store;
+package com.b2international.snowowl.datastore.server.store;
 
 import static com.google.common.collect.Lists.newArrayList;
 import static org.junit.Assert.assertNotNull;
@@ -32,8 +32,10 @@ import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 
-import com.b2international.snowowl.datastore.store.Types.ComplexData;
-import com.b2international.snowowl.datastore.store.Types.State;
+import com.b2international.snowowl.datastore.server.store.Types.ComplexData;
+import com.b2international.snowowl.datastore.server.store.Types.State;
+import com.b2international.snowowl.datastore.store.IndexStore;
+import com.b2international.snowowl.datastore.store.Store;
 import com.google.common.collect.Lists;
 
 /**

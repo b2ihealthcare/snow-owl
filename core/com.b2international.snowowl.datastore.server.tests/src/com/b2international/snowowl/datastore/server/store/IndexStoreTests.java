@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.datastore.store;
+package com.b2international.snowowl.datastore.server.store;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
@@ -27,8 +27,11 @@ import java.util.UUID;
 import org.junit.Before;
 import org.junit.Test;
 
-import com.b2international.snowowl.datastore.store.Types.Data;
-import com.b2international.snowowl.datastore.store.Types.EmptyData;
+import com.b2international.snowowl.datastore.server.store.Types.Data;
+import com.b2international.snowowl.datastore.server.store.Types.EmptyData;
+import com.b2international.snowowl.datastore.store.IndexStore;
+import com.b2international.snowowl.datastore.store.Store;
+import com.b2international.snowowl.datastore.store.StoreException;
 import com.google.common.io.Files;
 
 /**

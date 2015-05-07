@@ -13,13 +13,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.datastore.internal.branch;
+package com.b2international.snowowl.datastore.server.internal.branch;
 
 import java.util.concurrent.atomic.AtomicLong;
 
 import org.eclipse.emf.cdo.common.util.CDOTimeProvider;
 
-import com.b2international.snowowl.datastore.branch.TimestampProvider;
+import com.b2international.snowowl.datastore.server.branch.TimestampProvider;
 
 /**
  * @since 4.1

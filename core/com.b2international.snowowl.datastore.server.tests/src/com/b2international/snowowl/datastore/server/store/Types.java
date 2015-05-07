@@ -1,4 +1,4 @@
-package com.b2international.snowowl.datastore.store;
+package com.b2international.snowowl.datastore.server.store;
 
 import java.util.Objects;
 
