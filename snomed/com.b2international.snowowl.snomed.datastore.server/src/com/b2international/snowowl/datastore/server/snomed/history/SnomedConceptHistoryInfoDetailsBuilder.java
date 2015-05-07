@@ -53,7 +53,6 @@ import java.util.List;
 import java.util.Map;
 
 import org.eclipse.emf.cdo.CDOObject;
-import org.eclipse.emf.cdo.common.id.CDOID;
 import org.eclipse.emf.cdo.common.revision.CDOIDAndVersion;
 import org.eclipse.emf.cdo.common.revision.delta.CDOSetFeatureDelta;
 import org.eclipse.emf.cdo.spi.common.revision.InternalCDORevision;
@@ -76,7 +75,6 @@ import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.snomed.datastore.SnomedConceptLabelProviderService;
 import com.b2international.snowowl.snomed.datastore.SnomedDescriptionLabelProviderService;
-import com.b2international.snowowl.snomed.datastore.services.ISnomedComponentService;
 import com.b2international.snowowl.snomed.datastore.services.SnomedConceptNameProvider;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedAttributeValueRefSetMember;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedComplexMapRefSetMember;
@@ -566,11 +564,13 @@ public class SnomedConceptHistoryInfoDetailsBuilder extends AbstractHistoryInfoD
 	
 	private String getIdentifierConceptLabel(final SnomedRefSetMember member) {
 		final IBranchPath branchPath = createPath(member.cdoView());
-		final InternalCDORevision revision = (InternalCDORevision) member.cdoRevision();
-		final CDOID refSetCdoId = (CDOID) revision.get(SnomedRefSetPackage.eINSTANCE.getSnomedRefSetMember_RefSet(), CDOStore.NO_INDEX);
-		final Map<CDOID, String> cdoIdIdMapping = getServiceForClass(ISnomedComponentService.class).getRefSetCdoIdIdMapping(branchPath);
-		final Pair<IBranchPath, String> pair = identicalPairOf(branchPath, cdoIdIdMapping.get(refSetCdoId));
-		return idLabelCache.getUnchecked(pair);
+		final String refSetIdentifierId = member.getRefSetIdentifierId();
+		final Pair<IBranchPath, String> pair = identicalPairOf(branchPath, refSetIdentifierId);
+		final String label = idLabelCache.getUnchecked(pair);
+		if (refSetIdentifierId.equals(label)) {
+			return "deleted reference set " + label;
+		}
+		return label;
 	}
 	
 	private String getLabel(final Relationship relationship) {
