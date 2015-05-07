@@ -15,6 +15,8 @@
  */
 package com.b2international.snowowl.datastore.server;
 
+import java.io.File;
+
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.net4j.jvm.IJVMConnector;
 import org.eclipse.net4j.jvm.JVMUtil;
@@ -31,19 +33,28 @@ import com.b2international.snowowl.core.setup.Environment;
 import com.b2international.snowowl.core.setup.PreRunCapableBootstrapFragment;
 import com.b2international.snowowl.core.users.SpecialUserStore;
 import com.b2international.snowowl.datastore.cdo.CDOConnectionFactoryProvider;
+import com.b2international.snowowl.datastore.cdo.ICDOConnectionManager;
 import com.b2international.snowowl.datastore.cdo.ICDORepositoryManager;
 import com.b2international.snowowl.datastore.net4j.Net4jUtils;
+import com.b2international.snowowl.datastore.server.branch.BranchManager;
 import com.b2international.snowowl.datastore.server.index.IndexServerServiceManager;
+import com.b2international.snowowl.datastore.server.internal.RepositoryWrapper;
+import com.b2international.snowowl.datastore.server.internal.branch.BranchEventHandler;
+import com.b2international.snowowl.datastore.server.internal.branch.BranchSerializer;
+import com.b2international.snowowl.datastore.server.internal.branch.CDOBranchManagerImpl;
+import com.b2international.snowowl.datastore.server.internal.branch.InternalBranch;
 import com.b2international.snowowl.datastore.server.session.ApplicationSessionManager;
 import com.b2international.snowowl.datastore.server.session.LogListener;
 import com.b2international.snowowl.datastore.server.session.VersionProcessor;
 import com.b2international.snowowl.datastore.serviceconfig.ServiceConfigJobManager;
 import com.b2international.snowowl.datastore.session.IApplicationSessionManager;
+import com.b2international.snowowl.datastore.store.IndexStore;
 import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.eventbus.net4j.EventBusNet4jUtil;
 import com.b2international.snowowl.rpc.RpcConfiguration;
 import com.b2international.snowowl.rpc.RpcProtocol;
 import com.b2international.snowowl.rpc.RpcUtil;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Stopwatch;
 
 /**
@@ -106,6 +117,26 @@ public class DatastoreServerBootstrap implements PreRunCapableBootstrapFragment 
 	@Override
 	public void run(SnowOwlConfiguration configuration, Environment environment, IProgressMonitor monitor) throws Exception {
 		ServiceConfigJobManager.INSTANCE.registerServices(monitor);
+		
+		if (environment.isServer() || environment.isEmbedded()) {
+			final RepositoryWrapper wrapper = createSnomedRepositoryWrapper(environment);
+			initializeBranchingSupport(environment, wrapper);
+		}
+	}
+
+	private RepositoryWrapper createSnomedRepositoryWrapper(Environment env) {
+		final ICDOConnectionManager cdoConnectionManager = env.service(ICDOConnectionManager.class);
+		final ICDORepositoryManager cdoRepositoryManager = env.service(ICDORepositoryManager.class);
+		final IIndexServerServiceManager indexServerServiceManager = env.service(IIndexServerServiceManager.class); 
+		return new RepositoryWrapper("snomedStore", cdoConnectionManager, cdoRepositoryManager, indexServerServiceManager);
+	}
+
+	private void initializeBranchingSupport(Environment env, RepositoryWrapper wrapper) {
+		final File branchIndexDirectory = new File(new File(env.getDataDirectory(), "indexes"), "branches");
+		final ObjectMapper objectMapper = new BranchSerializer();
+		final IndexStore<InternalBranch> branchStore = new IndexStore<InternalBranch>(branchIndexDirectory, objectMapper, InternalBranch.class);
+		final BranchManager branchManager = new CDOBranchManagerImpl(wrapper, branchStore);
+		env.service(IEventBus.class).registerHandler("/branches", new BranchEventHandler(branchManager));
 	}
 	
 	private void connectSystemUser(IManagedContainer container) throws SnowowlServiceException {
@@ -118,5 +149,4 @@ public class DatastoreServerBootstrap implements PreRunCapableBootstrapFragment 
 		RpcUtil.getRpcClientProxy(InternalApplicationSessionManager.class).connectSystemUser();
 		CDOConnectionFactoryProvider.INSTANCE.getConnectionFactory().connect(SpecialUserStore.SYSTEM_USER);
 	}
-
 }
