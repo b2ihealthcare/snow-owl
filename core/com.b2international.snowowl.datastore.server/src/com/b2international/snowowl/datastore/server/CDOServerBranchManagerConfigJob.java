@@ -17,7 +17,7 @@ package com.b2international.snowowl.datastore.server;
 
 import com.b2international.snowowl.core.api.SnowowlServiceException;
 import com.b2international.snowowl.datastore.cdo.ICDOBranchActionManager;
-import com.b2international.snowowl.datastore.server.cdo.CDOBranchManager;
+import com.b2international.snowowl.datastore.server.cdo.CDOBranchActionManager;
 import com.b2international.snowowl.datastore.serviceconfig.AbstractServerServiceConfigJob;
 
 /**
@@ -44,7 +44,7 @@ public class CDOServerBranchManagerConfigJob extends AbstractServerServiceConfig
 	 * @see com.b2international.snowowl.datastore.serviceconfig.AbstractServerServiceConfigJob#createServiceImplementation()
 	 */
 	@Override
-	protected CDOBranchManager createServiceImplementation() throws SnowowlServiceException {
-		return new CDOBranchManager();
+	protected CDOBranchActionManager createServiceImplementation() throws SnowowlServiceException {
+		return new CDOBranchActionManager();
 	}
 }

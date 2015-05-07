@@ -81,7 +81,7 @@ import com.b2international.snowowl.datastore.cdo.ConflictWrapper;
 import com.b2international.snowowl.datastore.cdo.CustomConflictException;
 import com.b2international.snowowl.datastore.cdo.EmptyCDOChangeSetData;
 import com.b2international.snowowl.datastore.cdo.EmptyTransactionAggregatorException;
-import com.b2international.snowowl.datastore.cdo.ICDOBranchManager;
+import com.b2international.snowowl.datastore.cdo.ICDOBranchActionManager;
 import com.b2international.snowowl.datastore.cdo.ICDOConnection;
 import com.b2international.snowowl.datastore.cdo.ICDOConnectionManager;
 import com.b2international.snowowl.datastore.cdo.ICDOTransactionAggregator;
@@ -107,10 +107,12 @@ import com.google.common.collect.Sets;
  * creation, synchronization and promotion of changes.
  * 
  */
-public class CDOBranchManager implements ICDOBranchManager {
+public class CDOBranchActionManager implements ICDOBranchActionManager {
 
-	@SuppressWarnings("restriction") private static final String CDO_OBJECT_QUERY = org.eclipse.emf.cdo.server.internal.db.SQLQueryHandler.CDO_OBJECT_QUERY;
-	private static final Logger LOGGER = LoggerFactory.getLogger(CDOBranchManager.class);
+	@SuppressWarnings("restriction") 
+	private static final String CDO_OBJECT_QUERY = org.eclipse.emf.cdo.server.internal.db.SQLQueryHandler.CDO_OBJECT_QUERY;
+	
+	private static final Logger LOGGER = LoggerFactory.getLogger(CDOBranchActionManager.class);
 
 	private final Object branchChangeMutex = new Object();
 
