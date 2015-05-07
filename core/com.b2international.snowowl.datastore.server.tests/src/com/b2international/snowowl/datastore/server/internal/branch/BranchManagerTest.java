@@ -174,7 +174,7 @@ public class BranchManagerTest {
 		final InternalBranch newBranchA = commit(a);
 		InternalBranch newMain = (InternalBranch) merge(main, newBranchA);
 		assertTrue(newMain.headTimestamp() > main.headTimestamp());
-		assertState(manager.getBranch(a.path()), BranchState.DIVERGED);
+		assertState(manager.getBranch(a.path()), BranchState.UP_TO_DATE);
 	}
 
 	private long currentTimestamp() {
