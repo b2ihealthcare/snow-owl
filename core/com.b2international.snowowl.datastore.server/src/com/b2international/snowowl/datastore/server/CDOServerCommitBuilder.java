@@ -456,10 +456,10 @@ public class CDOServerCommitBuilder {
 			final InternalCDORevisionDelta[] dirtyRevisionDeltas = new InternalCDORevisionDelta[transaction.getLastSavepoint().getRevisionDeltas().size()];
 			final CDOID[] detachedObjects = new CDOID[transaction.getDetachedObjects().size()];
 
-			// Populate new revisions
+			// Populate new revisions (copy all revisions so that the version is not adjusted twice)
 			int i = 0;
 			for (final CDOObject newObject : transaction.getNewObjects().values()) {
-				newRevisions[i++] = (InternalCDORevision) newObject.cdoRevision();
+				newRevisions[i++] = (InternalCDORevision) newObject.cdoRevision().copy();
 			}
 
 			// Populate revision deltas
