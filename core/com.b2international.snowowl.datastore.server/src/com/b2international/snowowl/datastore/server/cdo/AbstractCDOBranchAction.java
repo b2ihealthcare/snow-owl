@@ -78,7 +78,7 @@ public abstract class AbstractCDOBranchAction {
 		}
 	}
 
-	protected abstract void apply(String repositoryId, IBranchPath taskBranchPath) throws Exception;
+	protected abstract void apply(String repositoryId, IBranchPath taskBranchPath) throws Throwable;
 
 	protected void postRun() throws Exception {
 		return;
@@ -90,6 +90,10 @@ public abstract class AbstractCDOBranchAction {
 
 	protected String getUserId() {
 		return userId;
+	}
+
+	protected String getLockDescription() {
+		return lockDescription;
 	}
 
 	private void acquireLocks() throws OperationLockException, InterruptedException {

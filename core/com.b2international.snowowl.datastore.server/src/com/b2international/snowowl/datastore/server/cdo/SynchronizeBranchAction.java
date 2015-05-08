@@ -39,6 +39,7 @@ import com.b2international.snowowl.datastore.cdo.ConflictWrapper;
 import com.b2international.snowowl.datastore.cdo.CustomConflictException;
 import com.b2international.snowowl.datastore.cdo.ICDOConnection;
 import com.b2international.snowowl.datastore.oplock.impl.DatastoreLockContextDescriptions;
+import com.b2international.snowowl.datastore.server.CDOServerCommitBuilder;
 import com.b2international.snowowl.datastore.server.CDOServerUtils;
 import com.b2international.snowowl.datastore.server.index.IndexServerServiceManager;
 import com.b2international.snowowl.datastore.server.internal.branch.CDOBranchMerger;
@@ -131,8 +132,13 @@ public class SynchronizeBranchAction extends AbstractCDOBranchAction {
 		}
 
 		try {
-			CDOServerUtils.commit(transactions, getUserId(), COMMIT_COMMENT, true, null);
+
+			new CDOServerCommitBuilder(getUserId(), COMMIT_COMMENT, transactions)
+				.parentContextDescription(getLockDescription())
+				.commit();
+
 			LogUtils.logUserEvent(LOGGER, getUserId(), "Synchronizing changes finished successfully.");
+
 		} finally {
 			for (final CDOTransaction transaction : transactions) {
 				transaction.close();

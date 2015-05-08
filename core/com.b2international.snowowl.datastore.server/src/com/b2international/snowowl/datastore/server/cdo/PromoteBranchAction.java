@@ -39,6 +39,7 @@ import com.b2international.snowowl.datastore.cdo.EmptyTransactionAggregatorExcep
 import com.b2international.snowowl.datastore.cdo.ICDOConnection;
 import com.b2international.snowowl.datastore.exception.RepositoryLockException;
 import com.b2international.snowowl.datastore.oplock.impl.DatastoreLockContextDescriptions;
+import com.b2international.snowowl.datastore.server.CDOServerCommitBuilder;
 import com.b2international.snowowl.datastore.server.CDOServerUtils;
 import com.b2international.snowowl.datastore.server.internal.branch.CDOBranchMerger;
 
@@ -125,7 +126,11 @@ public class PromoteBranchAction extends AbstractCDOBranchAction {
 		LOGGER.info("Committing changes...");
 
 		try {
-			CDOServerUtils.commit(transactions, getUserId(), commitComment, true, null);
+
+			new CDOServerCommitBuilder(getUserId(), commitComment, transactions)
+				.parentContextDescription(getLockDescription())
+				.commit();
+			
 			LogUtils.logUserEvent(LOGGER, getUserId(), "Promoting changes finished successfully.");
 		} catch (final CommitException e) {
 

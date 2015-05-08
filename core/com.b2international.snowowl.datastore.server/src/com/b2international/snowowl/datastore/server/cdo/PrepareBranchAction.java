@@ -16,20 +16,29 @@
 package com.b2international.snowowl.datastore.server.cdo;
 
 import java.text.MessageFormat;
+import java.util.concurrent.ExecutionException;
 
 import org.eclipse.emf.cdo.common.branch.CDOBranch;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.b2international.commons.collections.Procedure;
+import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.LogUtils;
+import com.b2international.snowowl.core.MetadataImpl;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.api.index.IIndexEntry;
 import com.b2international.snowowl.core.api.index.IIndexUpdater;
+import com.b2international.snowowl.core.events.util.AsyncSupport;
 import com.b2international.snowowl.datastore.BranchPathUtils;
 import com.b2international.snowowl.datastore.IBranchPathMap;
 import com.b2international.snowowl.datastore.cdo.ICDOConnection;
 import com.b2international.snowowl.datastore.oplock.impl.DatastoreLockContextDescriptions;
+import com.b2international.snowowl.datastore.server.events.BranchReply;
+import com.b2international.snowowl.datastore.server.events.CreateBranchEvent;
 import com.b2international.snowowl.datastore.server.index.IndexServerServiceManager;
+import com.b2international.snowowl.eventbus.IEventBus;
+import com.google.common.util.concurrent.SettableFuture;
 
 /**
  * Creates task branches and freezes state in the parent branch index, so a differencing task index can be based on it.
@@ -43,7 +52,7 @@ public class PrepareBranchAction extends AbstractCDOBranchAction {
 	}
 
 	@Override
-	protected void apply(final String repositoryId, final IBranchPath taskBranchPath) {
+	protected void apply(final String repositoryId, final IBranchPath taskBranchPath) throws Throwable {
 
 		final ICDOConnection connection = getConnectionManager().getByUuid(repositoryId);
 		final IIndexUpdater<IIndexEntry> indexService = IndexServerServiceManager.INSTANCE.getByUuid(repositoryId);
@@ -65,15 +74,37 @@ public class PrepareBranchAction extends AbstractCDOBranchAction {
 
 		CDOBranch taskBranch = connection.getBranch(taskBranchPath);
 
-		final String message = MessageFormat.format("Changing to {0} in ''{1}''...", taskBranchPath.getPath(), connection.getRepositoryName());
-		LOGGER.info(message);
-		LogUtils.logUserEvent(LOGGER, getUserId(), parentBranchPath, message);
-
 		if (taskBranch == null) {
-			taskBranch = parentBranch.createBranch(taskBranchPath.lastSegment());
-			indexService.snapshotFor(taskBranchPath, false, false);
-		}
 
-		indexService.prepare(taskBranchPath);
+			final String message = MessageFormat.format("Creating branch {0} in ''{1}''...", taskBranchPath.getPath(), connection.getRepositoryName());
+			LOGGER.info(message);
+			LogUtils.logUserEvent(LOGGER, getUserId(), parentBranchPath, message);
+
+			final IEventBus eventBus = ApplicationContext.getServiceForClass(IEventBus.class);
+			final CreateBranchEvent event = new CreateBranchEvent(repositoryId, parentBranchPath.getPath(), taskBranchPath.lastSegment(), new MetadataImpl());
+			
+			final SettableFuture<BranchReply> result = SettableFuture.create();
+			
+			new AsyncSupport<>(eventBus, BranchReply.class)
+				.send(event)
+				.then(new Procedure<BranchReply>() { @Override protected void doApply(BranchReply input) { result.set(input); }})
+				.fail(new Procedure<Throwable>() { @Override protected void doApply(Throwable input) { result.setException(input); }});
+			
+			try {
+				result.get();
+			} catch (InterruptedException e) {
+				throw e;
+			} catch (ExecutionException e) {
+				throw e.getCause();
+			}
+		
+		} else {
+
+			final String message = MessageFormat.format("Preparing branch {0} in ''{1}''...", taskBranchPath.getPath(), connection.getRepositoryName());
+			LOGGER.info(message);
+			LogUtils.logUserEvent(LOGGER, getUserId(), parentBranchPath, message);
+
+			indexService.prepare(taskBranchPath);
+		}
 	}
 }
