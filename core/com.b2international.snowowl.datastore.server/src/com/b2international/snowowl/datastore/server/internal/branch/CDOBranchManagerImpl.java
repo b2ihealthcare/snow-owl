@@ -20,6 +20,7 @@ import static com.google.common.base.Preconditions.checkArgument;
 import org.eclipse.emf.cdo.common.branch.CDOBranch;
 import org.eclipse.emf.cdo.common.commit.CDOCommitInfo;
 import org.eclipse.emf.cdo.common.commit.CDOCommitInfoHandler;
+import org.eclipse.emf.cdo.internal.common.commit.FailureCommitInfo;
 import org.eclipse.emf.cdo.transaction.CDOMerger;
 import org.eclipse.emf.cdo.transaction.CDOTransaction;
 import org.eclipse.emf.cdo.util.CommitException;
@@ -123,7 +124,9 @@ public class CDOBranchManagerImpl extends BranchManagerImpl {
 		repository.getRepository().addCommitInfoHandler(new CDOCommitInfoHandler() {
 			@Override
 			public void handleCommitInfo(CDOCommitInfo commitInfo) {
-				handleCommit((InternalBranch) getBranch(commitInfo.getBranch().getPathName()), commitInfo.getTimeStamp());
+				if (!(commitInfo instanceof FailureCommitInfo)) {
+					handleCommit((InternalBranch) getBranch(commitInfo.getBranch().getPathName()), commitInfo.getTimeStamp());
+				}
 			}
 		}); 
 	}
