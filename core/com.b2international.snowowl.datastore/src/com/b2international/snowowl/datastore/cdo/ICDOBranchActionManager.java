@@ -26,7 +26,6 @@ import org.eclipse.emf.cdo.common.branch.CDOBranch;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.api.IBranchPoint;
 import com.b2international.snowowl.datastore.IBranchPathMap;
-import com.b2international.snowowl.datastore.TaskBranchPathMap;
 import com.google.common.base.Predicate;
 import com.google.common.primitives.Longs;
 
@@ -113,7 +112,7 @@ public interface ICDOBranchActionManager {
 	 *         operation was successful.
 	 * @see CustomConflictException - occurres if the synchronization failed with conflicts
 	 */
-	@Nullable Throwable synchronize(final TaskBranchPathMap branchPathMap, final String userId);
+	@Nullable Throwable synchronize(final IBranchPathMap branchPathMap, final String userId);
 
 	/**
 	 * Checks whether any of the branches specified by their paths should be synchronized with the corresponding parent branch.
@@ -126,7 +125,7 @@ public interface ICDOBranchActionManager {
 	 * @return returns {@code true} if all branches are synchronized with their corresponding parent branch. Otherwise returns with
 	 *         {@code false}.
 	 */
-	boolean isSynchronized(final TaskBranchPathMap branchPathMap);
+	boolean isSynchronized(final IBranchPathMap branchPathMap);
 
 	/**
 	 * Returns with the last commit time made on the given branch.
@@ -149,7 +148,7 @@ public interface ICDOBranchActionManager {
 	 * @return returns with the error (if any) occurred while promoting changes to the parent branch. Returns with {@code null} if the
 	 *         operation was successful.
 	 */
-	@Nullable Throwable promote(final TaskBranchPathMap branchPathMap, final String userId, final String commitComment);
+	@Nullable Throwable promote(final IBranchPathMap branchPathMap, final String userId, final String commitComment);
 
 	/**
 	 * Reverts all modifications on the specified branch made between the HEAD of the given branch and the corresponding branch point

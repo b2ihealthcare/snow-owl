@@ -17,17 +17,19 @@ package com.b2international.snowowl.datastore.oplock.impl;
 
 /**
  * Contains context descriptions used in {@link DatastoreLockContext}s.
- * 
  */
 public abstract class DatastoreLockContextDescriptions {
 
 	private DatastoreLockContextDescriptions() { }
-	
+
 	public static final String ROOT = "<<root>>";
-	
+
 	// XXX (apeteri): these descriptions are currently compared by content, exact reuse of messages can cause problems 
 	public static final String DISPOSE_LOCK_MANAGER = "shutting down the lock manager";
 	public static final String COMMIT = "committing changes";
+	public static final String PREPARE = "waiting for a branch to be prepared";
+	public static final String SYNCHRONIZE = "synchronizing changes";
+	public static final String PROMOTE = "promoting changes";
 	public static final String PROCESS_CHANGES = "waiting for changes to be processed";
 	public static final String CONFIGURE_VERSION = "configuring the new version";
 	public static final String CREATE_VERSION = "creating a new version";
