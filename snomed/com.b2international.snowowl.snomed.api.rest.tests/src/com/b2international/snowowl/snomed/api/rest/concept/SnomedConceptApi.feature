@@ -20,6 +20,7 @@ import java.util.Date
 import static org.hamcrest.CoreMatchers.*;
 
 import com.b2international.snowowl.snomed.api.rest.concept.*
+import com.b2international.snowowl.snomed.api.rest.branches.*
 import com.b2international.snowowl.snomed.datastore.id.SnomedIdentifiers
 
 import static com.b2international.snowowl.snomed.SnomedConstants.Concepts.*
@@ -221,3 +222,11 @@ Feature: SnomedConceptCreateApi
 		And return location header pointing to "/${branchPath}/concepts/${conceptId}"
 		And return empty body
 			
+	Scenario: New Concept on a deleted branch
+		Given branchPath "MAIN/${branchName}"
+		And a newly created branch at "/branches"
+		When sending DELETE to "/${branchPath}"
+		And sending POST to "/${branchPath}/concepts"
+		Then return "404" status
+		And return body with status "404"
+		
