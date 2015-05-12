@@ -14,7 +14,8 @@ fileAuth:
 repository:
   host: 0.0.0.0
   port: 2036
-  # Index timeout (default)
+  # Index timeout to invalidate and purge the unused indexes for tasks
+  # Default is 240, setting it to 0 means infinite (turns it off)
   # indexTimeout=240
   database:
     type: b2i_mysql
