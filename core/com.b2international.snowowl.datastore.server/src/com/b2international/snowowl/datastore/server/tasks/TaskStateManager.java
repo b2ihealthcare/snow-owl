@@ -178,7 +178,8 @@ public class TaskStateManager extends SingleDirectoryIndexServerService implemen
 
 				final AtomicLong usageTime = usageTimeCache.getIfPresent(taskId);
 
-				if (null == usageTime) {
+				//expireTimeMinutes means infinite - do not invalidate the task index
+				if (null == usageTime || expireTimeMinutes == 0) {
 					continue;
 				}
 
