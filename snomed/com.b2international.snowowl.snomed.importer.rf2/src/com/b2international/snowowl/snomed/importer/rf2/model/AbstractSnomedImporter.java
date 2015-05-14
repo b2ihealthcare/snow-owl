@@ -26,7 +26,6 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.text.MessageFormat;
-import java.util.Calendar;
 import java.util.Collection;
 import java.util.Date;
 import java.util.List;
@@ -38,6 +37,7 @@ import org.eclipse.core.runtime.SubMonitor;
 import org.eclipse.emf.cdo.CDOObject;
 import org.eclipse.emf.cdo.util.CommitException;
 import org.eclipse.emf.spi.cdo.InternalCDOTransaction;
+import org.supercsv.cellprocessor.Optional;
 import org.supercsv.cellprocessor.ParseDate;
 import org.supercsv.cellprocessor.ift.CellProcessor;
 import org.supercsv.exception.SuperCSVException;
@@ -78,6 +78,7 @@ import com.google.common.base.Joiner;
 import com.google.common.base.Supplier;
 import com.google.common.base.Suppliers;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.Iterables;
 import com.google.common.collect.Maps;
 import com.google.common.io.Closeables;
 
@@ -106,23 +107,15 @@ public abstract class AbstractSnomedImporter<T extends AbstractComponentRow, C e
 	private static final int EFFECTIVE_TIME_IDX = 1;
 
 	/**
-	 * Component release files which shouldn't be split into multiple pieces are
-	 * assigned this date (20020131) as the key in
-	 * {@link #getOrCreateImportEntry(Map, Date)}.
+	 * Component release files with no current effective time are assigned this key in
+	 * {@link #getOrCreateImportEntry(Map, String)}.
 	 */
-	protected static final Date UNSLICED_EFFECTIVE_TIME; 
+	public static final String UNPUBLISHED_KEY = "Unpublished"; 
 
 	protected static CellProcessor createEffectiveTimeCellProcessor() {
-		return new ParseDate(SnomedConstants.RF2_EFFECTIVE_TIME_FORMAT).setTimeZone(Dates.getGmtTimeZone());
+		return new Optional(new ParseDate(SnomedConstants.RF2_EFFECTIVE_TIME_FORMAT).setTimeZone(Dates.getGmtTimeZone()));
 	}
 
-	static {
-		final Calendar unslicedEffectiveTimeCalendar = Calendar.getInstance(Dates.getGmtTimeZone());
-		unslicedEffectiveTimeCalendar.clear();
-		unslicedEffectiveTimeCalendar.set(2002, 0, 31);
-		UNSLICED_EFFECTIVE_TIME = unslicedEffectiveTimeCalendar.getTime();
-	}
-	
 	private final SnomedImportConfiguration<T> importConfiguration;
 	private final SnomedImportContext importContext;
 	private final InputStream releaseFileStream;
@@ -271,15 +264,17 @@ public abstract class AbstractSnomedImporter<T extends AbstractComponentRow, C e
 	
 	private boolean skipCurrentRow(final Date currentRowDate, final Date editedComponentDate) {
 		
-		//always component with the state of the current row, if the component is not persisted yet or
-		//has unpublished modification.
-		if (null == editedComponentDate) {
+		/*
+		 * Component wins if it has unpublished effective date, except if the incoming CSV row also 
+		 * has an unpublished effective date.
+		 */
+		if (currentRowDate == null) {
+			return true;
+		} else if (editedComponentDate == null) {
 			return false;
+		} else {
+			return editedComponentDate.getTime() >= currentRowDate.getTime();
 		}
-		
-		//we already have a persisted member with a "greater" effective time than the effective time of the
-		//currently parsed CSV row
-		return editedComponentDate.getTime() >= currentRowDate.getTime();
 	}
 	
 	@Override
@@ -289,7 +284,7 @@ public abstract class AbstractSnomedImporter<T extends AbstractComponentRow, C e
 		subMonitor.beginTask(message, INDETERMINATE_WORK_UNITS);
 		log(message);
 		
-		final Map<Date, ComponentImportEntry> importEntries = Maps.newHashMap();
+		final Map<String, ComponentImportEntry> importEntries = Maps.newHashMap();
 		final InputStreamReader releaseFileReader = new InputStreamReader(releaseFileStream, CsvConstants.IHTSDO_CHARSET);
 		final CsvListReader releaseFileListReader = new CsvListReader(releaseFileReader, CsvConstants.IHTSDO_CSV_PREFERENCE);
 
@@ -324,19 +319,19 @@ public abstract class AbstractSnomedImporter<T extends AbstractComponentRow, C e
 					break;
 				}
 				
-				final String effectiveTime = row.get(EFFECTIVE_TIME_IDX);
-				final Date parsedEffectiveTime = tryParseEffectiveTime(effectiveTime);
+				final String effectiveTimeString = row.get(EFFECTIVE_TIME_IDX);
+				final Date parsedEffectiveTime = tryParseEffectiveTime(effectiveTimeString);
 				
 				if (null == parsedEffectiveTime) {
-					
-					if (ImportAction.CONTINUE.equals(handleUnparseableEffectiveTime(effectiveTime))) {
+					// Check if we allow the incoming non-Date parseable value as a layer identifier
+					if (ImportAction.CONTINUE.equals(handleUnparseableEffectiveTime(effectiveTimeString))) {
 						continue;
 					} else {
 						break;
 					}
 				}
 				
-				final ComponentImportEntry importEntry = getOrCreateImportEntry(importEntries, parsedEffectiveTime);
+				final ComponentImportEntry importEntry = getOrCreateImportEntry(importEntries, effectiveTimeString);
 				importEntry.getWriter().write(row);
 				importEntry.increaseRecordCount();
 				
@@ -398,21 +393,41 @@ public abstract class AbstractSnomedImporter<T extends AbstractComponentRow, C e
 		}
 	}
 
-	private ImportAction handleUnparseableEffectiveTime(final String effectiveTime) {
-		log("SNOMED CT import failed. Reason: " + "cannot parse effective time '" + effectiveTime + "'. Aborting.");
-		importContext.getLogger().warn("Unparseable effective time '" + effectiveTime + "'. Aborting.");
+	private ImportAction handleUnparseableEffectiveTime(final String csvEffectiveTime) {
+		if (ContentSubType.DELTA.equals(importContext.getContentSubType()) && csvEffectiveTime.isEmpty()) {
+			return ImportAction.CONTINUE;
+		}
+		
+		log("SNOMED CT " + importContext.getContentSubType() + " import failed. Reason: " + "cannot parse effective time '" + csvEffectiveTime + "'. Aborting.");
+		importContext.getLogger().warn("Unparseable effective time '" + csvEffectiveTime + "'. Aborting.");
 		return ImportAction.BREAK;
 	}
 
-	private ComponentImportEntry getOrCreateImportEntry(final Map<Date, ComponentImportEntry> importEntries, final Date effectiveTime) {
+	private ComponentImportEntry getOrCreateImportEntry(final Map<String, ComponentImportEntry> importEntries, final String csvEffectiveTime) {
 		
 		// Put everything into the same basket if no slicing should be used
-		final Date sliceEffectiveTime = importContext.isSlicingEnabled() ? effectiveTime : UNSLICED_EFFECTIVE_TIME;
-		ComponentImportEntry importEntry = importEntries.get(sliceEffectiveTime);
+		final String effectiveTimeKey;
 		
+		if (ContentSubType.DELTA.equals(importContext.getContentSubType()) && csvEffectiveTime.isEmpty()) {
+			effectiveTimeKey = UNPUBLISHED_KEY;
+		} else {
+			effectiveTimeKey = csvEffectiveTime;
+		}
+		
+		if (!importContext.isSlicingEnabled()) {
+			Entry<String, ComponentImportEntry> entry = Iterables.getOnlyElement(importEntries.entrySet(), null);
+			
+			if (entry != null && csvEffectiveTime.compareTo(entry.getKey()) > 0) {
+				importEntries.remove(entry.getKey());
+				importEntries.put(csvEffectiveTime, entry.getValue());
+			}
+		}
+		
+		ComponentImportEntry importEntry = importEntries.get(csvEffectiveTime);
+
 		if (importEntry == null) {
 			
-			final String sliceFileName = getSliceFileName(sliceEffectiveTime);
+			final String sliceFileName = getSliceFileName(effectiveTimeKey);
 			final File sliceFile = new File(componentStagingDirectory, sliceFileName);
 			FileOutputStream sliceStream = null;
 			
@@ -428,21 +443,21 @@ public abstract class AbstractSnomedImporter<T extends AbstractComponentRow, C e
 			final CsvListWriter sliceWriter = new CsvListWriter(sliceStreamWriter, CsvConstants.IHTSDO_CSV_PREFERENCE);
 			importEntry = new ComponentImportEntry(sliceFile, sliceWriter);
 			
-			importEntries.put(sliceEffectiveTime, importEntry);
+			importEntries.put(effectiveTimeKey, importEntry);
 		}
 		
 		return importEntry;
 	}
 
-	private String getSliceFileName(final Date effectiveTime) {
-		return MessageFormat.format("{0}_{1}.txt", importConfiguration.getType().getDirectoryPartName(), EffectiveTimes.format(effectiveTime, SnomedConstants.RF2_EFFECTIVE_TIME_FORMAT));
+	private String getSliceFileName(final String effectiveTimeKey) {
+		return MessageFormat.format("{0}_{1}.txt", importConfiguration.getType().getDirectoryPartName(), effectiveTimeKey);
 	}
 	
-	private List<ComponentImportUnit> createImportUnits(final Map<Date, ComponentImportEntry> importUnits) {
+	private List<ComponentImportUnit> createImportUnits(final Map<String, ComponentImportEntry> importEntries) {
 		
 		final ImmutableList.Builder<ComponentImportUnit> unitsBuilder = ImmutableList.builder();
 		
-		for (final Entry<Date, ComponentImportEntry> unitEntry : importUnits.entrySet()) {
+		for (final Entry<String, ComponentImportEntry> unitEntry : importEntries.entrySet()) {
 			unitsBuilder.add(unitEntry.getValue().createUnit(this, unitEntry.getKey(), importConfiguration.getType()));
 		}
 		
@@ -462,7 +477,7 @@ public abstract class AbstractSnomedImporter<T extends AbstractComponentRow, C e
 		subMonitor.beginTask(message, workUnits);
 		log(message);
 		
-		final String sliceFileName = getSliceFileName(concreteUnit.getEffectiveTime());
+		final String sliceFileName = getSliceFileName(concreteUnit.getEffectiveTimeKey());
 		final File sliceFile = new File(componentStagingDirectory, sliceFileName);
 		InputStream sliceFileStream = null;
 		
@@ -541,7 +556,7 @@ public abstract class AbstractSnomedImporter<T extends AbstractComponentRow, C e
 	}
 
 	protected String getFormattedEffectiveTime(final ComponentImportUnit concreteUnit) {
-		return EffectiveTimes.format(concreteUnit.getEffectiveTime(), SnomedConstants.RF2_EFFECTIVE_TIME_FORMAT);
+		return EffectiveTimes.format(concreteUnit.getEffectiveTimeKey(), SnomedConstants.RF2_EFFECTIVE_TIME_FORMAT);
 	}
 
 	protected int getImportWorkUnits(final int recordCount) {
