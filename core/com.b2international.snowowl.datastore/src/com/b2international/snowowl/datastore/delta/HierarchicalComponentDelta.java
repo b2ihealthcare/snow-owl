@@ -37,47 +37,24 @@ public class HierarchicalComponentDelta extends ComponentDelta implements Serial
 	private HierarchicalComponentDelta parent;
 
 	public HierarchicalComponentDelta(final ComponentDelta delta) {
-		
 		this(
-				Preconditions.checkNotNull(Preconditions.checkNotNull(delta, "Component delta argument cannot be null").getId(), "ID argument cannot be null."),
+				Preconditions.checkNotNull(delta, "Component delta argument cannot be null").getId(),
 				delta.getCdoId(),
-				Preconditions.checkNotNull(delta.getBranchPath(), "Branch path argument cannot be null."),
-				Preconditions.checkNotNull(delta.getLabel(), "Label argument cannot be null."),
-				Preconditions.checkNotNull(delta.getIconId(), "Component icon ID argument cannot be null."),
+				delta.getBranchPath(),
+				delta.getLabel(),
+				delta.getIconId(),
 				delta.getTerminologyComponentId(),
 				delta.getCodeSystemOID(),
-				Preconditions.checkNotNull(delta.getChange(), "Component change kind argument cannot be null."));
-		
+				delta.getChange());
 	}
 	
 	public HierarchicalComponentDelta(final String id, final long cdoId, final IBranchPath branchPath, final String label, final String iconId, final short terminologyComponentId, final String codeSystemOID) {
-		
-		this(
-				Preconditions.checkNotNull(id, "ID argument cannot be null."),
-				cdoId,
-				Preconditions.checkNotNull(branchPath, "Branch path argument cannot be null."),
-				Preconditions.checkNotNull(label, "Label argument cannot be null."),
-				Preconditions.checkNotNull(iconId, "Component icon ID argument cannot be null."),
-				terminologyComponentId,
-				codeSystemOID,
-				ChangeKind.UNCHANGED);
-		
+		this(id, cdoId, branchPath, label, iconId, terminologyComponentId, codeSystemOID, ChangeKind.UNCHANGED);
 	}
 	
 	public HierarchicalComponentDelta(final String id, final long cdoId, final IBranchPath branchPath, final String label, final String iconId, short terminologyComponentId, final String codeSystemOID, final ChangeKind change) {
-		
-		super(
-				Preconditions.checkNotNull(id, "ID argument cannot be null."),
-				cdoId,
-				Preconditions.checkNotNull(branchPath, "Branch path argument cannot be null."),
-				Preconditions.checkNotNull(label, "Label argument cannot be null."),
-				Preconditions.checkNotNull(iconId, "Component icon ID argument cannot be null."),
-				terminologyComponentId,
-				codeSystemOID,
-				Preconditions.checkNotNull(change, "Component change kind argument cannot be null."));
-		
+		super(id, cdoId, branchPath, label, iconId, terminologyComponentId, codeSystemOID, change);
 		children = Lists.newArrayList();
-		
 	}
 	
 	/**
