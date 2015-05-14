@@ -112,9 +112,16 @@ public class SnomedComplexMapTypeRefSetImporter extends AbstractSnomedMapTypeRef
 			return null;
 		}
 
+		if (currentRow.getEffectiveTime() != null) {
+			editedMember.setEffectiveTime(currentRow.getEffectiveTime());
+			editedMember.setReleased(true);
+		} else {
+			editedMember.unsetEffectiveTime();
+			editedMember.setReleased(false);
+		}
+
 		editedMember.setRefSet(getOrCreateRefSet(currentRow.getRefSetId(), currentRow.getReferencedComponentId()));
 		editedMember.setActive(currentRow.isActive());
-		editedMember.setEffectiveTime(currentRow.getEffectiveTime());
 		editedMember.setModuleId(currentRow.getModuleId());
 		editedMember.setReferencedComponentId(currentRow.getReferencedComponentId());
 		editedMember.setMapTargetComponentId(currentRow.getAssociatedComponentId());
@@ -123,7 +130,6 @@ public class SnomedComplexMapTypeRefSetImporter extends AbstractSnomedMapTypeRef
 		editedMember.setMapRule(currentRow.getMapRule());
 		editedMember.setMapGroup(currentRow.getMapGroup());
 		editedMember.setMapPriority(currentRow.getMapPriority());
-		editedMember.setReleased(true);
 		
 		return editedMember;
 	}

@@ -102,13 +102,19 @@ public class SnomedSimpleMapTypeRefSetImporter extends AbstractSnomedMapTypeRefS
 			return null;
 		}
 
+		if (currentRow.getEffectiveTime() != null) {
+			editedMember.setEffectiveTime(currentRow.getEffectiveTime());
+			editedMember.setReleased(true);
+		} else {
+			editedMember.unsetEffectiveTime();
+			editedMember.setReleased(false);
+		}
+
 		editedMember.setRefSet(getOrCreateRefSet(currentRow.getRefSetId(), currentRow.getReferencedComponentId()));
 		editedMember.setActive(currentRow.isActive());
-		editedMember.setEffectiveTime(currentRow.getEffectiveTime());
 		editedMember.setModuleId(currentRow.getModuleId());
 		editedMember.setReferencedComponentId(currentRow.getReferencedComponentId());
 		editedMember.setMapTargetComponentId(currentRow.getAssociatedComponentId());
-		editedMember.setReleased(true);
 		
 		if (extended) {
 			editedMember.setMapTargetComponentDescription(((SimpleMapRefSetRow) currentRow).getMapTargetDescription());
