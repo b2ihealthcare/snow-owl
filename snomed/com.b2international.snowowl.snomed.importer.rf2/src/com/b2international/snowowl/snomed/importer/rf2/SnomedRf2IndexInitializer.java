@@ -106,7 +106,6 @@ import java.io.Reader;
 import java.text.MessageFormat;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -216,7 +215,7 @@ public class SnomedRf2IndexInitializer extends Job {
 	private static final String ACTIVE_STATUS = "1";
 	private static final float DEFAULT_DOI = 1.0F;
 	private final boolean slicingEnabled;
-	private final Date effectiveTime;
+	private final String effectiveTimeKey;
 	private final List<ComponentImportUnit> importUnits;
 	private final IBranchPath branchPath;
 
@@ -239,11 +238,11 @@ public class SnomedRf2IndexInitializer extends Job {
 	//when a reference set is imported where the concept is being created on the fly
 	private final Map<String, SnomedRefSetType> identifierConceptIdsForNewRefSets = newHashMap();
 
-	public SnomedRf2IndexInitializer(final IBranchPath branchPath, final boolean slicingEnabled, final Date effectiveTime, final List<ComponentImportUnit> importUnits, final String languageRefSetId) {
+	public SnomedRf2IndexInitializer(final IBranchPath branchPath, final boolean slicingEnabled, final String lastUnitEffectiveTimeKey, final List<ComponentImportUnit> importUnits, final String languageRefSetId) {
 		super("SNOMED CT RF2 based index initializer...");
 		this.branchPath = branchPath;
 		this.slicingEnabled = slicingEnabled;
-		this.effectiveTime = effectiveTime;
+		this.effectiveTimeKey = lastUnitEffectiveTimeKey;
 		this.importUnits = Collections.unmodifiableList(importUnits);
 		//check services
 		getImportIndexService();
@@ -263,9 +262,8 @@ public class SnomedRf2IndexInitializer extends Job {
 		
 		delegateMonitor.beginTask("Indexing SNOMED CT...", importUnits.size() + 3);
 		
-		final String formattedDate = EffectiveTimes.format(effectiveTime);
 		if (slicingEnabled) {
-			LOGGER.info("Initializing SNOMED CT semantic content from RF2 release format for '{}'...", formattedDate);
+			LOGGER.info("Initializing SNOMED CT semantic content from RF2 release format for key '{}'...", effectiveTimeKey);
 		} else {
 			LOGGER.info("Initializing SNOMED CT semantic content from RF2 release format...");
 		}
@@ -305,7 +303,7 @@ public class SnomedRf2IndexInitializer extends Job {
 		LOGGER.info("Indexing phase [2 of 3]...");
 		doImport(importUnits, delegateMonitor);
 		
-		LOGGER.info("SNOMED CT semantic content for '" + formattedDate + "' have been successfully initialized.");
+		LOGGER.info("SNOMED CT semantic content for key '{}' have been successfully initialized.", effectiveTimeKey);
 		
 		return Status.OK_STATUS;
 	}
@@ -489,7 +487,7 @@ public class SnomedRf2IndexInitializer extends Job {
 			final List<ComponentImportUnit> importUnitsForCurrentEffectiveTime = newArrayList();
 			
 			for (final ComponentImportUnit unit : importUnits) {
-				if (Objects.equal(effectiveTime, unit.getEffectiveTime())) {
+				if (Objects.equal(effectiveTimeKey, unit.getEffectiveTimeKey())) {
 					importUnitsForCurrentEffectiveTime.add(unit);
 				}
 			}
@@ -660,13 +658,14 @@ public class SnomedRf2IndexInitializer extends Job {
 				final long characteristicTypeConceptSctId = Long.parseLong(record.get(8));
 				final boolean active = ACTIVE_STATUS.equals(record.get(2));
 				final int group = Integer.parseInt(record.get(6));
-				final boolean released = true;
 				final int unionGroup = 0;
 				final boolean destinationNegated = false;
 				final long moduleConceptId = Long.parseLong(record.get(3));
 				final boolean inferred = Concepts.INFERRED_RELATIONSHIP.equals(record.get(8));
 				final boolean universal = Concepts.UNIVERSAL_RESTRICTION_MODIFIER.equals(record.get(9));
-				final long timestampLong = EffectiveTimes.parse(record.get(1), DateFormats.SHORT).getTime();
+				
+				final long effectiveTime = record.get(1).isEmpty() ? -1L : EffectiveTimes.parse(record.get(1), DateFormats.SHORT).getTime();
+				final boolean released = effectiveTime != -1L;
 				
 				// Create relationship document
 				final Document doc = new Document();
@@ -685,7 +684,7 @@ public class SnomedRf2IndexInitializer extends Job {
 				doc.add(new StoredField(RELATIONSHIP_INFERRED, inferred ? 1 : 0));
 				doc.add(new StoredField(RELATIONSHIP_UNIVERSAL, universal ? 1 : 0));
 				doc.add(new LongField(RELATIONSHIP_MODULE_ID, moduleConceptId, Store.YES));
-				doc.add(new LongField(RELATIONSHIP_EFFECTIVE_TIME, timestampLong, Store.YES));
+				doc.add(new LongField(RELATIONSHIP_EFFECTIVE_TIME, effectiveTime, Store.YES));
 				
 				doc.add(new NumericDocValuesField(COMPONENT_STORAGE_KEY, storageKey));
 				doc.add(new NumericDocValuesField(COMPONENT_ID, sctId));
@@ -851,7 +850,6 @@ public class SnomedRf2IndexInitializer extends Job {
 				
 				
 				final String uuid = record.get(0);
-				final long timestampLong = EffectiveTimes.parse(record.get(1), DateFormats.SHORT).getTime();
 				final boolean active = ACTIVE_STATUS.equals(record.get(2));
 				final long module = Long.parseLong(record.get(3));
 				final String refComponentId = record.get(5);
@@ -859,6 +857,9 @@ public class SnomedRf2IndexInitializer extends Job {
 				final int refComponentType = visitedRefSets.get(refSetId).getB();
 				final long memberCdoId = importIndexService.getMemberCdoId(uuid);
 				
+				final long effectiveTime = record.get(1).isEmpty() ? -1L : EffectiveTimes.parse(record.get(1), DateFormats.SHORT).getTime();
+				final boolean released = effectiveTime != -1L;
+
 				String label = null;
 				
 				if (ComponentImportType.EXTENDED_CONCRETE_DOMAIN_REFSET == type) {
@@ -886,12 +887,12 @@ public class SnomedRf2IndexInitializer extends Job {
 				doc.add(new IntField(COMPONENT_ACTIVE, active ? 1 : 0, Store.YES));
 				doc.add(new IntField(REFERENCE_SET_MEMBER_REFERENCE_SET_TYPE, refSetType.ordinal(), Store.YES));
 				doc.add(new LongField(COMPONENT_STORAGE_KEY, memberCdoId, Store.YES));
-				doc.add(new StoredField(COMPONENT_RELEASED, 1));
+				doc.add(new StoredField(COMPONENT_RELEASED, released ? 1 : 0));
 				doc.add(new IntField(REFERENCE_SET_MEMBER_REFERENCED_COMPONENT_TYPE, refComponentType, Store.YES));
 				doc.add(new StringField(REFERENCE_SET_MEMBER_REFERENCED_COMPONENT_ID, refComponentId, Store.YES));
 				doc.add(new LongField(REFERENCE_SET_MEMBER_MODULE_ID, module, Store.YES));
 				doc.add(new LongField(REFERENCE_SET_MEMBER_REFERENCE_SET_ID, Long.valueOf(refSetId), Store.YES));
-				doc.add(new LongField(REFERENCE_SET_MEMBER_EFFECTIVE_TIME, timestampLong, Store.YES));
+				doc.add(new LongField(REFERENCE_SET_MEMBER_EFFECTIVE_TIME, effectiveTime, Store.YES));
 				doc.add(new TextField(COMPONENT_LABEL, label, Store.YES));
 				
 				switch (refSetType) {
@@ -1121,12 +1122,13 @@ public class SnomedRf2IndexInitializer extends Job {
 				final long sctId = Long.parseLong(record.get(0));
 				final String term = record.get(7);
 				final boolean active = ACTIVE_STATUS.equals(record.get(2));
-				final boolean released = true;
 				final long moduleId = Long.parseLong(record.get(3));
 				final long typeId = Long.parseLong(record.get(6));
 				final long caseSignificanceId = Long.parseLong(record.get(8));
 				final long containerConceptId = Long.parseLong(record.get(4));
-				final long effectiveTime = EffectiveTimes.parse(record.get(1), DateFormats.SHORT).getTime();
+				
+				final long effectiveTime = record.get(1).isEmpty() ? -1L : EffectiveTimes.parse(record.get(1), DateFormats.SHORT).getTime();
+				final boolean released = effectiveTime != -1L;
 
 				// Create description document.
 				final Document doc = new Document();
@@ -1211,13 +1213,14 @@ public class SnomedRf2IndexInitializer extends Job {
 				
 				final long conceptStorageKey = getImportIndexService().getComponentCdoId(sConceptId);
 				final boolean active = ACTIVE_STATUS.equals(record.get(2)); 
-				final boolean released = true;
 				final boolean primitive = isPrimitiveConcept(conceptId, Long.parseLong(record.get(4)));
 				final boolean exhaustive = false;
 				final long moduleId = Long.parseLong(record.get(3));
 				final Collection<String> currentRefSetMemberships = getCurrentRefSetMemberships(sConceptId, newRefSetMemberships, detachedRefSetMemberships);
 				final Collection<String> currentMappingMemberships = getCurrentMappingMemberships(sConceptId, newMappingMemberships, detachedMappingMemberships);
-				final long effectiveTime = EffectiveTimes.parse(record.get(1), DateFormats.SHORT).getTime();
+				
+				final long effectiveTime = record.get(1).isEmpty() ? -1L : EffectiveTimes.parse(record.get(1), DateFormats.SHORT).getTime();
+				final boolean released = effectiveTime != -1L;
 				
 				final Document doc = createConceptDocument(
 						conceptIdToPredicateMap, 
