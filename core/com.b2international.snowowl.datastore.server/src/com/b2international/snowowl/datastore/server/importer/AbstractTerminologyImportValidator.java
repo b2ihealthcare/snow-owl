@@ -16,7 +16,6 @@
 package com.b2international.snowowl.datastore.server.importer;
 
 import java.text.MessageFormat;
-import java.text.ParseException;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
@@ -27,8 +26,6 @@ import org.apache.poi.ss.usermodel.Row;
 import org.eclipse.emf.cdo.CDOObject;
 
 import com.b2international.commons.StringUtils;
-import com.b2international.snowowl.core.api.SnowowlRuntimeException;
-import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.datastore.importer.TerminologyImportType;
 import com.b2international.snowowl.datastore.importer.TerminologyImportValidationDefect;
 import com.b2international.snowowl.datastore.importer.TerminologyImportValidationDefect.DefectType;
@@ -182,30 +179,6 @@ public abstract class AbstractTerminologyImportValidator<T extends CDOObject> {
 	protected void validateMatchingAttribute(final String sheetName, final String sheetValue, final String databaseValue, final String errorMessage) {
 		if (!sheetValue.equals(databaseValue)) {
 			addDefect(sheetName, DefectType.DIFFERENCES, errorMessage);
-		}
-	}
-
-	/**
-	 * Validates the effective time format.
-	 * 
-	 * @param sheetName
-	 *            the name of the sheet.
-	 * @param effectiveTime
-	 *            the effective time to be validated.
-	 * @param errorMessage
-	 *            the error message if the format is invalid.
-	 */
-	protected void validateEffectiveTime(final String sheetName, final String effectiveTime, final String errorMessage) {
-		if (!StringUtils.isEmpty(effectiveTime)) {
-			try {
-				EffectiveTimes.parse(effectiveTime);
-			} catch (SnowowlRuntimeException e) {
-				if (e.getCause() instanceof ParseException) {
-					addDefect(sheetName, DefectType.EFFECTIVE_TIME, errorMessage);
-				} else {
-					throw e;
-				}
-			}
 		}
 	}
 
