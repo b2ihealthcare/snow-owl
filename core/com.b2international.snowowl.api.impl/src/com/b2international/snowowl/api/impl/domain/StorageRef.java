@@ -15,18 +15,28 @@
  */
 package com.b2international.snowowl.api.impl.domain;
 
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicReference;
+
 import org.eclipse.emf.cdo.common.branch.CDOBranch;
 
+import com.b2international.commons.collections.Procedure;
 import com.b2international.snowowl.api.codesystem.exception.CodeSystemNotFoundException;
 import com.b2international.snowowl.core.ApplicationContext;
-import com.b2international.snowowl.core.api.IBranchPath;
+import com.b2international.snowowl.core.api.SnowowlRuntimeException;
+import com.b2international.snowowl.core.events.util.AsyncSupport;
+import com.b2international.snowowl.core.exceptions.BadRequestException;
 import com.b2international.snowowl.core.exceptions.NotFoundException;
-import com.b2international.snowowl.datastore.BranchPathUtils;
 import com.b2international.snowowl.datastore.IBranchPathMap;
 import com.b2international.snowowl.datastore.ICodeSystem;
 import com.b2international.snowowl.datastore.TerminologyRegistryService;
 import com.b2international.snowowl.datastore.UserBranchPathMap;
 import com.b2international.snowowl.datastore.cdo.ICDOConnectionManager;
+import com.b2international.snowowl.datastore.server.branch.Branch;
+import com.b2international.snowowl.datastore.server.events.BranchReply;
+import com.b2international.snowowl.datastore.server.events.ReadBranchEvent;
+import com.b2international.snowowl.eventbus.IEventBus;
 
 /**
  * @since 1.0
@@ -42,9 +52,14 @@ public class StorageRef implements InternalStorageRef {
 	private static TerminologyRegistryService getRegistryService() {
 		return ApplicationContext.getServiceForClass(TerminologyRegistryService.class);
 	}
+	
+	private static IEventBus getEventBus() {
+		return ApplicationContext.getServiceForClass(IEventBus.class);
+	}
 
 	private String shortName;
 	private String branchPath;
+	private Branch branch;
 
 	@Override
 	public String getShortName() {
@@ -81,8 +96,36 @@ public class StorageRef implements InternalStorageRef {
 	}
 
 	@Override
-	public IBranchPath getBranch() {
-		return BranchPathUtils.createPath(getBranchPath());
+	public Branch getBranch() {
+		if (branch == null) {
+			final CountDownLatch latch = new CountDownLatch(1);
+			final AtomicReference<Branch> ref = new AtomicReference<>();
+			new AsyncSupport<>(getEventBus(), BranchReply.class).send(new ReadBranchEvent(getRepositoryUuid(), getBranchPath()))
+				.then(new Procedure<BranchReply>() {
+					@Override
+					protected void doApply(BranchReply input) {
+						ref.set(input.getBranch());
+						latch.countDown();
+					}
+				}).fail(new Procedure<Throwable>() {
+					@Override
+					protected void doApply(Throwable input) {
+						latch.countDown();
+					}
+				});
+			try {
+				if (!latch.await(2000, TimeUnit.MILLISECONDS)) {
+					throw new SnowowlRuntimeException("Timeout when reading branch: " + getRepositoryUuid() + ", path: " + getBranchPath());
+				}
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			}
+			branch = ref.get();
+		}
+		if (branch == null) {
+			throw new NotFoundException("Branch", getBranchPath());
+		}
+		return branch;
 	}
 
 	@Override
@@ -92,15 +135,18 @@ public class StorageRef implements InternalStorageRef {
 			return cdoBranch;
 		}
 
-		throw new NotFoundException("Branch", branchPath);
+		throw new NotFoundException("Branch", getBranchPath());
 	}
 
 	private CDOBranch getCdoBranchOrNull() {
-		return getConnectionManager().getByUuid(getRepositoryUuid()).getBranch(getBranch());
+		return getConnectionManager().getByUuid(getRepositoryUuid()).getBranch(getBranch().getBranchPath());
 	}
 
 	@Override
 	public void checkStorageExists() {
+		if (getBranch().isDeleted()) {
+			throw new BadRequestException("Branch '%s' has been deleted and cannot accept further modifications.", getBranchPath());
+		}
 		getCdoBranch();
 	}
 

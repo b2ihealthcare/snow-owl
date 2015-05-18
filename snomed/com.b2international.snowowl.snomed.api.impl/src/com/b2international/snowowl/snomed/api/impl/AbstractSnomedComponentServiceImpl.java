@@ -102,7 +102,7 @@ implements ISnomedComponentService<C, R, U> {
 	@Override
 	protected SnomedEditingContext createEditingContext(final IComponentRef ref) {
 		final InternalComponentRef internalRef = ClassUtils.checkAndCast(ref, InternalComponentRef.class);
-		return new SnomedEditingContext(internalRef.getBranch());
+		return new SnomedEditingContext(internalRef.getBranch().getBranchPath());
 	}
 
 	@Override

@@ -83,7 +83,7 @@ public class SnomedStatementBrowserServiceImpl implements ISnomedStatementBrowse
 		}
 		
 		final SnomedRelationshipList result = new SnomedRelationshipList();
-		final IBranchPath branch = internalRef.getBranch();
+		final IBranchPath branch = internalRef.getBranch().getBranchPath();
 		result.setTotalMembers(getIndexService().getHitCount(branch, queryAdapter));
 
 		final List<SnomedRelationshipIndexEntry> indexEntries = getIndexService().search(branch, queryAdapter, offset, limit);

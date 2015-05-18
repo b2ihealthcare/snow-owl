@@ -89,7 +89,7 @@ public class SnomedDescriptionServiceImpl
 	@Override
 	protected boolean componentExists(final IComponentRef ref) {
 		final InternalComponentRef internalRef = ClassUtils.checkAndCast(ref, InternalComponentRef.class);
-		final IBranchPath branch = internalRef.getBranch();
+		final IBranchPath branch = internalRef.getBranch().getBranchPath();
 		return snomedDescriptionLookupService.exists(branch, internalRef.getComponentId());
 	}
 
@@ -119,7 +119,7 @@ public class SnomedDescriptionServiceImpl
 	@Override
 	protected ISnomedDescription doRead(final IComponentRef ref) {
 		final InternalComponentRef internalRef = ClassUtils.checkAndCast(ref, InternalComponentRef.class);
-		final IBranchPath branch = internalRef.getBranch();
+		final IBranchPath branch = internalRef.getBranch().getBranchPath();
 		final SnomedDescriptionIndexEntry descriptionIndexEntry = snomedDescriptionLookupService.getComponent(branch, internalRef.getComponentId());
 		return getDescriptionConverter(branch).apply(descriptionIndexEntry);
 	}
@@ -130,7 +130,7 @@ public class SnomedDescriptionServiceImpl
 
 		final InternalComponentRef internalConceptRef = ClassUtils.checkAndCast(conceptRef, InternalComponentRef.class);
 		final SnomedDescriptionIndexQueryAdapter queryAdapter = SnomedDescriptionIndexQueryAdapter.findByConceptId(internalConceptRef.getComponentId());
-		final IBranchPath branch = internalConceptRef.getBranch();
+		final IBranchPath branch = internalConceptRef.getBranch().getBranchPath();
 		
 		final Collection<SnomedDescriptionIndexEntry> descriptionIndexEntries = getIndexService().searchUnsorted(branch, queryAdapter);
 		final Collection<ISnomedDescription> transformedDescriptions = Collections2.transform(descriptionIndexEntries, getDescriptionConverter(branch));
@@ -268,7 +268,7 @@ public class SnomedDescriptionServiceImpl
 		final InternalComponentRef internalRef = ClassUtils.checkAndCast(conceptRef, InternalComponentRef.class);
 //		internalRef.checkStorageExists();
 
-		final IBranchPath branch = internalRef.getBranch();
+		final IBranchPath branch = internalRef.getBranch().getBranchPath();
 		final ImmutableBiMap<Locale, String> languageIdMap = createLanguageIdMap(locales, branch);
 		final Multimap<Locale, ISnomedDescription> descriptionsByLocale = HashMultimap.create();
 		final List<ISnomedDescription> descriptions = readConceptDescriptions(conceptRef);
@@ -340,7 +340,7 @@ public class SnomedDescriptionServiceImpl
 		final InternalComponentRef internalRef = ClassUtils.checkAndCast(conceptRef, InternalComponentRef.class);
 		internalRef.checkStorageExists();
 
-		final IBranchPath branch = internalRef.getBranch();
+		final IBranchPath branch = internalRef.getBranch().getBranchPath();
 		final ImmutableBiMap<Locale, String> languageIdMap = createLanguageIdMap(locales, branch);
 		final Multimap<Locale, ISnomedDescription> descriptionsByLocale = HashMultimap.create();
 		final List<ISnomedDescription> descriptions = readConceptDescriptions(conceptRef);

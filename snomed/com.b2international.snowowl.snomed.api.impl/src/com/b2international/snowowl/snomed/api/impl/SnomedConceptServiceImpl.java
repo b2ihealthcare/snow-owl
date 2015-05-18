@@ -125,7 +125,7 @@ public class SnomedConceptServiceImpl
 	@Override
 	public boolean componentExists(final IComponentRef ref) {
 		final InternalComponentRef internalRef = ClassUtils.checkAndCast(ref, InternalComponentRef.class);
-		return snomedConceptLookupService.exists(internalRef.getBranch(), internalRef.getComponentId());
+		return snomedConceptLookupService.exists(internalRef.getBranch().getBranchPath(), internalRef.getComponentId());
 	}
 
 	@Override
@@ -227,7 +227,7 @@ public class SnomedConceptServiceImpl
 	@Override
 	protected ISnomedConcept doRead(final IComponentRef ref) {
 		final InternalComponentRef internalRef = ClassUtils.checkAndCast(ref, InternalComponentRef.class);
-		final IBranchPath branch = internalRef.getBranch();
+		final IBranchPath branch = internalRef.getBranch().getBranchPath();
 		final SnomedConceptIndexEntry conceptIndexEntry = snomedConceptLookupService.getComponent(branch, internalRef.getComponentId());
 		return getConceptConverter(branch).apply(conceptIndexEntry); 
 	}
@@ -420,7 +420,7 @@ public class SnomedConceptServiceImpl
 	@Override
 	public IComponentList<ISnomedConcept> getAllConcepts(final String branchPath, final int offset, final int limit) {
 		final InternalStorageRef internalRef = createStorageRef(branchPath);
-		final IBranchPath branch = internalRef.getBranch();
+		final IBranchPath branch = internalRef.getBranch().getBranchPath();
 		final SnomedConceptReducedQueryAdapter queryAdapter = new SnomedConceptReducedQueryAdapter("", SnomedConceptReducedQueryAdapter.SEARCH_DEFAULT);
 
 		return search(offset, limit, queryAdapter, branch);
@@ -429,7 +429,7 @@ public class SnomedConceptServiceImpl
 	@Override
 	public IComponentList<ISnomedConcept> search(final String branchPath, final Map<SearchKind, String> queryParams, final int offset, final int limit) {
 		final InternalStorageRef internalRef = createStorageRef(branchPath);
-		final IBranchPath branch = internalRef.getBranch();
+		final IBranchPath branch = internalRef.getBranch().getBranchPath();
 		final Query restrictionQuery;
 
 		if (queryParams.containsKey(SearchKind.ESCG)) {

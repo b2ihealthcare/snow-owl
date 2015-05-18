@@ -29,6 +29,7 @@ import com.b2international.commons.status.SerializableStatus;
 import com.b2international.snowowl.api.impl.domain.StorageRef;
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.SnowOwlApplication;
+import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.datastore.oplock.impl.DatastoreLockContextDescriptions;
 import com.b2international.snowowl.datastore.remotejobs.AbstractRemoteJobEvent;
 import com.b2international.snowowl.datastore.remotejobs.IRemoteJobManager;
@@ -232,8 +233,9 @@ public class SnomedClassificationServiceImpl implements ISnomedClassificationSer
 	public IClassificationRun beginClassification(final String branchPath, final String reasonerId, final String userId) {
 
 		final StorageRef storageRef = createStorageRef(branchPath);
+		final IBranchPath oldBranchPath = storageRef.getBranch().getBranchPath();
 
-		final ClassificationRequest classificationRequest = new ClassificationRequest(userId, storageRef.getBranch())
+		final ClassificationRequest classificationRequest = new ClassificationRequest(userId, oldBranchPath)
 		.withParentContextDescription(DatastoreLockContextDescriptions.ROOT)
 		.withReasonerId(reasonerId);
 
@@ -248,7 +250,7 @@ public class SnomedClassificationServiceImpl implements ISnomedClassificationSer
 		classificationRun.setStatus(ClassificationStatus.SCHEDULED);
 
 		try {
-			indexService.insertOrUpdateClassificationRun(storageRef.getBranch(), classificationRun);
+			indexService.insertOrUpdateClassificationRun(oldBranchPath, classificationRun);
 		} catch (final IOException e) {
 			throw new RuntimeException(e);
 		}

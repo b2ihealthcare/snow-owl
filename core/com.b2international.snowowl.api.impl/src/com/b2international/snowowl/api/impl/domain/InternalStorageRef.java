@@ -18,8 +18,8 @@ package com.b2international.snowowl.api.impl.domain;
 import org.eclipse.emf.cdo.common.branch.CDOBranch;
 
 import com.b2international.snowowl.api.domain.IStorageRef;
-import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.datastore.ICodeSystem;
+import com.b2international.snowowl.datastore.server.branch.Branch;
 
 /**
  * @since 1.0
@@ -37,9 +37,9 @@ public interface InternalStorageRef extends IStorageRef {
 	String getRepositoryUuid();
 
 	/**
-	 * @return
+	 * @return the Branch associated with the storage reference.
 	 */
-	IBranchPath getBranch();
+	Branch getBranch();
 
 	/**
 	 * @return
