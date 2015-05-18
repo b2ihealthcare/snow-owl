@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.snomed.api.rest.concept
+package com.b2international.snowowl.snomed.api.rest.components
 
 import com.jayway.restassured.response.Response
 import java.util.Date
