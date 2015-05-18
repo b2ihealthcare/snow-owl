@@ -1,7 +1,6 @@
 package com.b2international.snowowl.snomed.api.rest.components
 
 import com.jayway.restassured.response.Response
-import java.util.Map
 import java.util.UUID
 
 import com.b2international.snowowl.snomed.api.rest.components.*
@@ -21,19 +20,18 @@ Feature: SnomedRelationshipApi
 		var public branchName = UUID.randomUUID.toString
 		
 		// concept IDs available in the MiniCT FULL RF2
-		val disease = "64572001"
-		val severity = "246112005"
-		val associatedWith = "47429007"
-		var Map<String, Object> json
+		val DISEASE = "64572001"
+		val TEMPORAL_CONTEXT = "410510008"
+		val FINDING_CONTEXT = "408729009"
 		
 	Scenario: New Relationship on non-existent SNOMED CT branch
 		
 		Given branchPath "MAIN/nonexistent"
 		And new relationship
 			req.withJson(#{
-				"sourceId" -> disease,
-				"typeId" -> associatedWith,
-				"destinationId" -> severity,
+				"sourceId" -> DISEASE,
+				"typeId" -> FINDING_CONTEXT,
+				"destinationId" -> TEMPORAL_CONTEXT,
 				"moduleId" -> Concepts.MODULE_SCT_CORE,
 				"commitComment" -> "Created new relationship"
 			})
