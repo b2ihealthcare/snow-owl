@@ -387,7 +387,7 @@ public abstract class AbstractSnomedImporter<T extends AbstractComponentRow, C e
 			}
 		}
 		
-		ComponentImportEntry importEntry = importEntries.get(csvEffectiveTime);
+		ComponentImportEntry importEntry = importEntries.get(effectiveTimeKey);
 
 		if (importEntry == null) {
 			
