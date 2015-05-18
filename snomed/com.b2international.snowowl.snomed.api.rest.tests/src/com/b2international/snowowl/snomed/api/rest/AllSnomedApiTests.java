@@ -25,7 +25,7 @@ import com.b2international.commons.platform.PlatformUtil;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.api.rest.branches.SnomedBranchingApiFeature;
 import com.b2international.snowowl.snomed.api.rest.branches.SnomedMergeApiFeature;
-import com.b2international.snowowl.snomed.api.rest.concept.SnomedConceptCreateApiFeature;
+import com.b2international.snowowl.snomed.api.rest.components.SnomedConceptCreateApiFeature;
 import com.b2international.snowowl.snomed.api.rest.id.SnomedIdentifierApiFeature;
 import com.b2international.snowowl.snomed.api.rest.io.SnomedImportApiExamplesFeature;
 import com.b2international.snowowl.snomed.api.rest.io.SnomedImportApiFeature;
