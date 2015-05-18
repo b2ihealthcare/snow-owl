@@ -195,7 +195,7 @@ public class SnomedConceptHistoryInfoDetailsBuilder extends AbstractHistoryInfoD
 						getPreferredTerm(concept)).toString();
 			} else if (RELEASED_FEATURE_NAME.equals(featureName)) {
 				final String label = getPreferredTerm(concept);
-				return getPublishedChange(featureName, builder, label);
+				return getPublishedChange(featureName, builder, label, featureValue);
 			}
 		} else if (changedObject instanceof Description) {
 			final Description description = (Description) changedObject;
@@ -220,7 +220,7 @@ public class SnomedConceptHistoryInfoDetailsBuilder extends AbstractHistoryInfoD
 						String.valueOf(featureValue),
 						description.getTerm()).toString();
 			} else if (RELEASED_FEATURE_NAME.equals(featureName)) {
-				return getPublishedChange(featureName, builder, description.getTerm());
+				return getPublishedChange(featureName, builder, description.getTerm(), featureValue);
 			}
 		} else if (changedObject instanceof Relationship) {
 			final Relationship relationship = (Relationship) changedObject;
@@ -241,7 +241,7 @@ public class SnomedConceptHistoryInfoDetailsBuilder extends AbstractHistoryInfoD
 				return appendDescription(builder, getFeatureMapping().get(featureName), SnomedHistoryUtils.getNewFeatureValue(featureValue), 
 						getLabel(relationship)).toString();
 			} else if (RELEASED_FEATURE_NAME.equals(featureName)) {
-				return getPublishedChange(featureName, builder, getLabel(relationship));
+				return getPublishedChange(featureName, builder, getLabel(relationship), featureValue);
 			} else if (RELATIONSHIP_TYPE_FEATURE_NAME.equals(featureName)) {
 				return appendDescription(builder, "relationship type" /*;( quite ugly but there is a collision with the description type feature name*/
 						, SnomedHistoryUtils.getNewFeatureValue(featureValue), 
@@ -291,7 +291,7 @@ public class SnomedConceptHistoryInfoDetailsBuilder extends AbstractHistoryInfoD
 						DateFormat.getDateInstance().format(featureValue),
 						getReferencedComponentLabel((SnomedRefSetMember) changedObject)).toString();
 			} else if (RELEASED_FEATURE_NAME.equals(featureName)) {
-				return getPublishedChange(featureName, builder, getReferencedComponentLabel((SnomedRefSetMember) changedObject));
+				return getPublishedChange(featureName, builder, getReferencedComponentLabel((SnomedRefSetMember) changedObject), featureValue);
 			} else if (VALUE_ID_FEATURE_NAME.equals(featureName)) {
 				return appendDescription(builder, getFeatureMapping().get(featureName), 
 						SnomedConceptNameProvider.INSTANCE.getText(String.valueOf(featureValue), changedObject.cdoView()), 
@@ -327,14 +327,18 @@ public class SnomedConceptHistoryInfoDetailsBuilder extends AbstractHistoryInfoD
 		} else if (changedObject instanceof SnomedRefSet) {
 			if (RELEASED_FEATURE_NAME.equals(featureName)) {
 				final String label = SnomedConceptNameProvider.INSTANCE.getText(((SnomedRefSet) changedObject).getIdentifierId());
-				return getPublishedChange(featureName, builder, label);
+				return getPublishedChange(featureName, builder, label, featureValue);
 			}
 		}
 		return "Unexpected change on object: " + String.valueOf(changedObject) + " with the feature name of: '" + featureName + "'.";
 	}
 
-	private String getPublishedChange(final String featureName, final StringBuilder builder, final String label) {
-		return builder.append(label).append(" ").append(getFeatureMapping().get(featureName)).append(".").toString();
+	private String getPublishedChange(final String featureName, final StringBuilder builder, final String label, final Object featureValue) {
+		if ((boolean) featureValue) {
+			return builder.append(label).append(" ").append(getFeatureMapping().get(featureName)).append(".").toString();
+		} else {
+			return null;
+		}
 	}
 
 	private boolean isPtLanguageMember(final CDOObject member) {
