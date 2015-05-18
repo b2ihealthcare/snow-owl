@@ -132,5 +132,13 @@ class RestExtensions {
 	def static Response get(String api, String...segments) {
 		givenAuthenticatedRequest(api).get(asPath(segments))
 	}
+	
+	def static Response delete(String api, String...segments) {
+		givenAuthenticatedRequest(api).delete(asPath(segments))
+	}
+	
+	def static Response postJson(String api, Map<String, ?> json, String...segments) {
+		givenAuthenticatedRequest(api).withJson(json).post(asPath(segments))
+	}
 
 }
