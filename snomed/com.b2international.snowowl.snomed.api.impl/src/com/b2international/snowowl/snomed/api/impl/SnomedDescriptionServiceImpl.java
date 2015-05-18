@@ -30,6 +30,7 @@ import com.b2international.snowowl.api.impl.domain.InternalComponentRef;
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.ComponentIdentifierPair;
 import com.b2international.snowowl.core.api.IBranchPath;
+import com.b2international.snowowl.core.exceptions.ComponentNotFoundException;
 import com.b2international.snowowl.core.terminology.ComponentCategory;
 import com.b2international.snowowl.datastore.BranchPathUtils;
 import com.b2international.snowowl.snomed.Description;
@@ -94,21 +95,25 @@ public class SnomedDescriptionServiceImpl
 
 	@Override
 	protected Description convertAndRegister(final ISnomedDescriptionInput input, final SnomedEditingContext editingContext) {
-		final Description description = SnomedFactory.eINSTANCE.createDescription();
-
-		description.setId(input.getIdGenerationStrategy().getId());
-		description.setActive(true);
-		description.unsetEffectiveTime();
-		description.setReleased(false);
-		description.setModule(getModuleConcept(input, editingContext));
-		description.setConcept(getConcept(input.getConceptId(), editingContext));
-		description.setCaseSignificance(getConcept(input.getCaseSignificance().getConceptId(), editingContext));
-		description.setType(getConcept(input.getTypeId(), editingContext));
-		description.setTerm(input.getTerm());
-		description.setLanguageCode(input.getLanguageCode());
-
-		updateAcceptabilityMap(input.getAcceptability(), description, editingContext);
-		return description;
+		try {
+			final Description description = SnomedFactory.eINSTANCE.createDescription();
+			
+			description.setId(input.getIdGenerationStrategy().getId());
+			description.setActive(true);
+			description.unsetEffectiveTime();
+			description.setReleased(false);
+			description.setModule(getModuleConcept(input, editingContext));
+			description.setConcept(getConcept(input.getConceptId(), editingContext));
+			description.setCaseSignificance(getConcept(input.getCaseSignificance().getConceptId(), editingContext));
+			description.setType(getConcept(input.getTypeId(), editingContext));
+			description.setTerm(input.getTerm());
+			description.setLanguageCode(input.getLanguageCode());
+			
+			updateAcceptabilityMap(input.getAcceptability(), description, editingContext);
+			return description;
+		} catch (ComponentNotFoundException e) {
+			throw e.toBadRequestException();
+		}
 	}
 
 	@Override
