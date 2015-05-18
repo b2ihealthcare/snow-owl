@@ -15,6 +15,7 @@
  */
 package com.b2international.snowowl.api.impl;
 
+import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
 
 import java.util.ConcurrentModificationException;
@@ -40,6 +41,7 @@ import com.b2international.snowowl.datastore.CDOEditingContext;
 import com.b2international.snowowl.datastore.exception.RepositoryLockException;
 import com.b2international.snowowl.datastore.server.CDOServerUtils;
 import com.b2international.snowowl.datastore.tasks.ITaskStateManager;
+import com.google.common.base.Strings;
 
 /**
  * TODO: validate misguided references (eg. when the incoming code system short name is ATC in SnomedConceptServiceImpl)?
@@ -68,7 +70,7 @@ public abstract class AbstractComponentServiceImpl<C extends IComponentInput, R 
 	public R create(final C input, final String userId, final String commitComment) {
 		checkNotNull(input, "Component input may not be null.");
 		checkNotNull(userId, "User identifier may not be null.");
-		checkNotNull(commitComment, "Commit comment may not be null.");
+		checkArgument(!Strings.isNullOrEmpty(commitComment), "Commit comment may not be null.");
 
 		if (componentExists(input)) {
 			throw createDuplicateComponentException(input);
