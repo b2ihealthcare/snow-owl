@@ -388,8 +388,10 @@ public class SnomedCompositeImporter extends AbstractLoggingImporter {
 			
 			if (!existingVersionFound && shouldCreateVersionAndTag) {
 				final IBranchPath snomedBranchPath = BranchPathUtils.createPath(transaction);
+				final Date effectiveDate = EffectiveTimes.parse(lastUnitEffectiveTimeKey, DateFormats.SHORT);
+				final String formattedEffectiveDate = EffectiveTimes.format(effectiveDate);
 				
-				final ITagConfiguration configuration = TagConfigurationBuilder.createForRepositoryUuid(SnomedDatastoreActivator.REPOSITORY_UUID, lastUnitEffectiveTimeKey)
+				final ITagConfiguration configuration = TagConfigurationBuilder.createForRepositoryUuid(SnomedDatastoreActivator.REPOSITORY_UUID, formattedEffectiveDate)
 					.setBranchPath(snomedBranchPath)
 					.setUserId(importContext.getUserId())
 					.setParentContextDescription(DatastoreLockContextDescriptions.IMPORT)
