@@ -95,7 +95,7 @@ public class SnomedExportService implements ISnomedExportService {
 		exportStorageRef.setShortName("SNOMEDCT");
 		exportStorageRef.setBranchPath(configuration.getBranchPath());
 		
-		final IBranchPath exportBranch = exportStorageRef.getBranch().getBranchPath();
+		final IBranchPath exportBranch = exportStorageRef.getBranch().branchPath();
 		
 		final SnomedRf2ExportModel model = createExportModelWithAllRefSets(contentSubType, exportBranch);
 		

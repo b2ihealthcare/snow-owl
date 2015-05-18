@@ -233,7 +233,7 @@ public class SnomedClassificationServiceImpl implements ISnomedClassificationSer
 	public IClassificationRun beginClassification(final String branchPath, final String reasonerId, final String userId) {
 
 		final StorageRef storageRef = createStorageRef(branchPath);
-		final IBranchPath oldBranchPath = storageRef.getBranch().getBranchPath();
+		final IBranchPath oldBranchPath = storageRef.getBranch().branchPath();
 
 		final ClassificationRequest classificationRequest = new ClassificationRequest(userId, oldBranchPath)
 		.withParentContextDescription(DatastoreLockContextDescriptions.ROOT)

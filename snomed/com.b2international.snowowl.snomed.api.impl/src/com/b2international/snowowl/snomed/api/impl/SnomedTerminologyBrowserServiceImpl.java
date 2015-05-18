@@ -107,7 +107,7 @@ public class SnomedTerminologyBrowserServiceImpl implements ISnomedTerminologyBr
 		final InternalStorageRef internalRef = ClassUtils.checkAndCast(ref, InternalStorageRef.class);
 		internalRef.checkStorageExists();
 
-		final IBranchPath branch = internalRef.getBranch().getBranchPath();
+		final IBranchPath branch = internalRef.getBranch().branchPath();
 		final SortedTerminologyConceptAdapter queryAdapter = new SortedTerminologyConceptAdapter(null, SortedTerminologyConceptAdapter.SEARCH_ROOTS, null);
 		final List<SnomedConceptIndexEntry> entries = getIndexService().search(branch, queryAdapter);
 		return convertEntries(branch, entries);
@@ -124,7 +124,7 @@ public class SnomedTerminologyBrowserServiceImpl implements ISnomedTerminologyBr
 		final InternalComponentRef internalRef = ClassUtils.checkAndCast(nodeRef, InternalComponentRef.class);
 		internalRef.checkStorageExists();
 
-		final IBranchPath branch = internalRef.getBranch().getBranchPath();
+		final IBranchPath branch = internalRef.getBranch().branchPath();
 		final String componentId = nodeRef.getComponentId();
 		checkConceptExists(branch, componentId);
 
@@ -139,7 +139,7 @@ public class SnomedTerminologyBrowserServiceImpl implements ISnomedTerminologyBr
 		final InternalComponentRef internalRef = ClassUtils.checkAndCast(nodeRef, InternalComponentRef.class);
 		internalRef.checkStorageExists();
 
-		final IBranchPath branch = internalRef.getBranch().getBranchPath();
+		final IBranchPath branch = internalRef.getBranch().branchPath();
 		final String componentId = nodeRef.getComponentId();
 		checkConceptExists(branch, componentId);
 

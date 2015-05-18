@@ -139,7 +139,7 @@ public class StorageRef implements InternalStorageRef {
 	}
 
 	private CDOBranch getCdoBranchOrNull() {
-		return getConnectionManager().getByUuid(getRepositoryUuid()).getBranch(getBranch().getBranchPath());
+		return getConnectionManager().getByUuid(getRepositoryUuid()).getBranch(getBranch().branchPath());
 	}
 
 	@Override

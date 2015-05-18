@@ -179,7 +179,7 @@ public class BranchImpl extends MetadataHolderImpl implements Branch, InternalBr
     }
 	
 	@Override
-	public IBranchPath getBranchPath() {
+	public IBranchPath branchPath() {
 		return BranchPathUtils.createPath(path());
 	}
 

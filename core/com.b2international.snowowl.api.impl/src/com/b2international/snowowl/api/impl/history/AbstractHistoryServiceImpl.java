@@ -116,7 +116,7 @@ public abstract class AbstractHistoryServiceImpl implements IHistoryService {
 					repositoryUuid, handledRepositoryUuid));
 		}
 
-		final IBranchPath branch = internalComponentRef.getBranch().getBranchPath();
+		final IBranchPath branch = internalComponentRef.getBranch().branchPath();
 		final String componentId = internalComponentRef.getComponentId();
 		final long storageKey = getStorageKey(branch, componentId);
 		if (!CDOIDUtils.checkId(storageKey)) {
