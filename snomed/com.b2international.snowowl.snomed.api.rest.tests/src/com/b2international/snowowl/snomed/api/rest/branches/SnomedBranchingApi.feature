@@ -18,7 +18,7 @@ package com.b2international.snowowl.snomed.api.rest.branches
 import com.jayway.restassured.response.Response
 import java.util.Date
 import java.util.UUID
-import com.b2international.snowowl.snomed.api.rest.concept.*
+import com.b2international.snowowl.snomed.api.rest.components.*
 
 import static extension com.b2international.snowowl.test.commons.rest.RestExtensions.*
 import com.jayway.restassured.http.ContentType

@@ -29,7 +29,7 @@ import java.util.UUID
 /**
  * @since 1.0
  */
-Feature: SnomedConceptCreateApi
+Feature: SnomedConceptApi
 
 	Background:
 		static String API = "/snomed-ct/v2"
@@ -201,9 +201,7 @@ Feature: SnomedConceptCreateApi
 		Given branchPath "MAIN/${branchName}"
 		And new concept
 		And a newly created branch at "/branches"
-			givenAuthenticatedRequest(API).withJson(#{
-				"name" -> branchName
-			}).post(args.first.renderWithFields(this)).then.statusCode(201)
+			API.postJson(#{"name" -> branchName}, args.first.renderWithFields(this)).expectStatus(201)
 		When sending POST to "/${branchPath}/concepts"
 		Then return "201" status
 		And return location header pointing to "/${branchPath}/concepts"
@@ -222,10 +220,13 @@ Feature: SnomedConceptCreateApi
 		And return empty body
 			
 	Scenario: New Concept on a deleted branch
+		
 		Given branchPath "MAIN/${branchName}"
 		And a newly created branch at "/branches"
-		When sending DELETE to "/${branchPath}"
-		And sending POST to "/${branchPath}/concepts"
-		Then return "404" status
-		And return body with status "404"
+		And new concept
+		And deleting branch at "/branches/${branchPath}"
+			API.delete(args.first.renderWithFields(this)).expectStatus(204)	
+		When sending POST to "/${branchPath}/concepts"
+		Then return "400" status
+		And return body with status "400"
 		

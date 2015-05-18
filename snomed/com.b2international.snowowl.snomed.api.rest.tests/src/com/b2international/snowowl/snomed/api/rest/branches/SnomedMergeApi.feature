@@ -24,7 +24,7 @@ import java.util.UUID
 import static com.b2international.snowowl.snomed.SnomedConstants.Concepts.*
 
 import static extension com.b2international.snowowl.test.commons.rest.RestExtensions.*
-import com.b2international.snowowl.snomed.api.rest.concept.*
+import com.b2international.snowowl.snomed.api.rest.components.*
 import com.b2international.snowowl.snomed.api.rest.branches.*
 import com.b2international.snowowl.snomed.api.domain.Acceptability
 import com.b2international.snowowl.snomed.api.domain.DefinitionStatus
