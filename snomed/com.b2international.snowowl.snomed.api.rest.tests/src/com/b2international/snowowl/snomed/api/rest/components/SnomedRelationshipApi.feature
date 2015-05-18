@@ -1,3 +1,18 @@
+/*
+ * Copyright 2011-2015 B2i Healthcare Pte Ltd, http://b2i.sg
+ * 
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package com.b2international.snowowl.snomed.api.rest.components
 
 import com.jayway.restassured.response.Response
@@ -89,6 +104,24 @@ Feature: SnomedRelationshipApi
 			res = API.get(branchPath, "relationships", relationshipId)
 			res.expectStatus(200)
 			res.getBody.path(args.first).toString should be args.second
+			
+	Scenario: New Defining Relationship on SNOMED CT Main branch
+		
+		Given branchPath "MAIN"
+		And new defining relationship "${DISEASE}" - "${FINDING_CONTEXT}" - "${TEMPORAL_CONTEXT}" with module "${SCT_CORE_MODULE}" and comment "Created new relationship"
+			req.withJson(#{
+				"sourceId" -> args.first.renderWithFields(this),
+				"typeId" -> args.second.renderWithFields(this),
+				"destinationId" -> args.third.renderWithFields(this),
+				"moduleId" -> args.forth.renderWithFields(this),
+				"characteristicType" -> "DEFINING_RELATIONSHIP",
+				"commitComment" -> args.fifth
+			})
+		When sending POST to "/${branchPath}/relationships"
+		Then return "201" status
+		And return location header pointing to "/${branchPath}/relationships"
+		And extracted relationship id
+		And "characteristicType" should be "DEFINING_RELATIONSHIP"
 		
 	Scenario: Delete relationship
 		
@@ -120,4 +153,32 @@ Feature: SnomedRelationshipApi
 	
 	Scenario: Create relationship on deep branch
 		
+		Given branchPath "MAIN/${branchName}/b/c"
+		And newly created branch "${branchName}" under "MAIN"
+			val name = args.first.renderWithFields(this)
+			val parent = args.second.renderWithFields(this)
+			API.postJson(#{"parent" -> parent, "name" -> name}, "branches").expectStatus(201)
+		And newly created branch "b" under "MAIN/${branchName}"
+		And newly created branch "c" under "MAIN/${branchName}/b"
+		And new relationship "${DISEASE}" - "${FINDING_CONTEXT}" - "${TEMPORAL_CONTEXT}" with module "${SCT_CORE_MODULE}" and comment "Created new relationship"
+		When sending POST to "/${branchPath}/relationships"
+		Then return "201" status
+		And return location header pointing to "/${branchPath}/relationships"
+		And extracted relationship id
+		And "characteristicType" should be "STATED_RELATIONSHIP"
+		
 	Scenario: Create relationship on deleted deep branch
+		
+		Given branchPath "MAIN/${branchName}/b/c"
+		And newly created branch "${branchName}" under "MAIN"
+		And newly created branch "b" under "MAIN/${branchName}"
+		And newly created branch "c" under "MAIN/${branchName}/b"
+		And new relationship "${DISEASE}" - "${FINDING_CONTEXT}" - "${TEMPORAL_CONTEXT}" with module "${SCT_CORE_MODULE}" and comment "Created new relationship"
+		And sending POST to "/${branchPath}/relationships"
+		And return location header pointing to "/${branchPath}/relationships"
+		And extracted relationship id
+		When deleting relationship at "/${branchPath}/relationships/${relationshipId}"
+			res = API.delete(args.first.renderWithFields(this))
+		Then return "204" status 
+		And it should be deleted
+			API.get(branchPath, "relationships", relationshipId).expectStatus(404)
