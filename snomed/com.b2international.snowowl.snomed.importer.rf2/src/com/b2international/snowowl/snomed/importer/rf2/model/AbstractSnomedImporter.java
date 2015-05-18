@@ -52,7 +52,6 @@ import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.api.SnowowlRuntimeException;
 import com.b2international.snowowl.core.api.SnowowlServiceException;
 import com.b2international.snowowl.core.date.Dates;
-import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.datastore.BranchPathUtils;
 import com.b2international.snowowl.datastore.CDOEditingContext;
 import com.b2international.snowowl.datastore.cdo.ICDOTransactionAggregator;
@@ -265,12 +264,12 @@ public abstract class AbstractSnomedImporter<T extends AbstractComponentRow, C e
 	private boolean skipCurrentRow(final Date currentRowDate, final Date editedComponentDate) {
 		
 		/*
-		 * Component wins if it has unpublished effective date, except if the incoming CSV row also 
-		 * has an unpublished effective date.
+		 * The RF2 row has to be imported if either the current component is unpublished, or the incoming row has no effective
+		 * date set.
 		 */
-		if (currentRowDate == null) {
-			return true;
-		} else if (editedComponentDate == null) {
+		if (editedComponentDate == null) {
+			return false;
+		} else if (currentRowDate == null) {
 			return false;
 		} else {
 			return editedComponentDate.getTime() >= currentRowDate.getTime();
@@ -320,17 +319,6 @@ public abstract class AbstractSnomedImporter<T extends AbstractComponentRow, C e
 				}
 				
 				final String effectiveTimeString = row.get(EFFECTIVE_TIME_IDX);
-				final Date parsedEffectiveTime = tryParseEffectiveTime(effectiveTimeString);
-				
-				if (null == parsedEffectiveTime) {
-					// Check if we allow the incoming non-Date parseable value as a layer identifier
-					if (ImportAction.CONTINUE.equals(handleUnparseableEffectiveTime(effectiveTimeString))) {
-						continue;
-					} else {
-						break;
-					}
-				}
-				
 				final ComponentImportEntry importEntry = getOrCreateImportEntry(importEntries, effectiveTimeString);
 				importEntry.getWriter().write(row);
 				importEntry.increaseRecordCount();
@@ -385,27 +373,9 @@ public abstract class AbstractSnomedImporter<T extends AbstractComponentRow, C e
 		return ImportAction.CONTINUE;
 	}
 
-	private Date tryParseEffectiveTime(final String effectiveTime) {
-		try {
-			return EffectiveTimes.parse(effectiveTime, SnomedConstants.RF2_EFFECTIVE_TIME_FORMAT);
-		} catch (final SnowowlRuntimeException e) {
-			return null;
-		}
-	}
-
-	private ImportAction handleUnparseableEffectiveTime(final String csvEffectiveTime) {
-		if (ContentSubType.DELTA.equals(importContext.getContentSubType()) && csvEffectiveTime == null) {
-			return ImportAction.CONTINUE;
-		}
-		
-		log("SNOMED CT " + importContext.getContentSubType() + " import failed. Reason: " + "cannot parse effective time '" + csvEffectiveTime + "'. Aborting.");
-		importContext.getLogger().warn("Unparseable effective time '" + csvEffectiveTime + "'. Aborting.");
-		return ImportAction.BREAK;
-	}
-
 	private ComponentImportEntry getOrCreateImportEntry(final Map<String, ComponentImportEntry> importEntries, final String csvEffectiveTime) {
 		
-		final String effectiveTimeKey = (csvEffectiveTime == null) ? UNPUBLISHED_KEY : csvEffectiveTime;
+		final String effectiveTimeKey = csvEffectiveTime.isEmpty() ? UNPUBLISHED_KEY : csvEffectiveTime;
 		
 		// SNAPSHOT import units will be registered with the highest effective time encountered; relocate the existing entry if necessary
 		if (ContentSubType.SNAPSHOT.equals(importContext.getContentSubType())) {

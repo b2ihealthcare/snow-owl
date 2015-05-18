@@ -194,12 +194,7 @@ public class SnomedCompositeImporter extends AbstractLoggingImporter {
 				}
 				
 				updateInfrastructure(units, branchPath, lastUnitEffectiveTimeKey);
-				
-				/*
-				 * Use the last effective time as seen in import files for the final version creation.
-				 * "lastUnitEffectiveTime" can not be used here, since this may be a SNAPSHOT import.
-				 */
-				updateCodeSystemMetadata(findMaximumEffectiveTimeKey(units), importContext.isVersionCreationEnabled());
+				updateCodeSystemMetadata(lastUnitEffectiveTimeKey, importContext.isVersionCreationEnabled());
 			}
 			
 		} finally {	
@@ -218,10 +213,6 @@ public class SnomedCompositeImporter extends AbstractLoggingImporter {
 			}
 		}
 		
-	}
-
-	private String findMaximumEffectiveTimeKey(List<ComponentImportUnit> units) {
-		return ComponentImportUnit.ORDERING.max(units).getEffectiveTimeKey();
 	}
 
 	private IBranchPath getImportBranchPath() {
