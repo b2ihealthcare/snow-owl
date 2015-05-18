@@ -19,7 +19,6 @@ import com.jayway.restassured.response.Response
 import java.util.Date
 import static org.hamcrest.CoreMatchers.*;
 
-import com.b2international.snowowl.snomed.api.rest.concept.*
 import com.b2international.snowowl.snomed.api.rest.branches.*
 import com.b2international.snowowl.snomed.datastore.id.SnomedIdentifiers
 
