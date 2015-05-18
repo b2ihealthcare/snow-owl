@@ -262,8 +262,7 @@ public class SnomedCompositeImporter extends AbstractLoggingImporter {
 		for (final ComponentImportUnit unit : units) {
 			
 			// Consider all reference set files if importing a SNAPSHOT, check matching effective time otherwise 
-			if (!importContext.isSlicingEnabled() || Objects.equal(lastUnitEffectiveTimeKey, unit.getEffectiveTimeKey())) {
-
+			if (Objects.equal(lastUnitEffectiveTimeKey, unit.getEffectiveTimeKey())) {
 				final String path = unit.getUnitFile().getAbsolutePath();
 				
 				switch (unit.getType()) {
@@ -320,7 +319,7 @@ public class SnomedCompositeImporter extends AbstractLoggingImporter {
 
 			feeder.initContent(importIndexService, branchPath, new NullProgressMonitor());
 			importMrcmRules(lastUnitEffectiveTimeKey);
-			initializeIndex(branchPath, importContext.isSlicingEnabled(), lastUnitEffectiveTimeKey, units);
+			initializeIndex(branchPath, lastUnitEffectiveTimeKey, units);
 			
 		} catch (final SnowowlServiceException e) {
 			throw new ImportException(e);
@@ -340,8 +339,8 @@ public class SnomedCompositeImporter extends AbstractLoggingImporter {
 		}
 	}
 
-	private void initializeIndex(final IBranchPath branchPath, final boolean slicingEnabled, final String lastUnitEffectiveTimeKey, final List<ComponentImportUnit> units) {
-		final SnomedRf2IndexInitializer snomedRf2IndexInitializer = new SnomedRf2IndexInitializer(branchPath, slicingEnabled, lastUnitEffectiveTimeKey, units, importContext.getLanguageRefSetId());
+	private void initializeIndex(final IBranchPath branchPath, final String lastUnitEffectiveTimeKey, final List<ComponentImportUnit> units) {
+		final SnomedRf2IndexInitializer snomedRf2IndexInitializer = new SnomedRf2IndexInitializer(branchPath, lastUnitEffectiveTimeKey, units, importContext.getLanguageRefSetId());
 		snomedRf2IndexInitializer.run(new NullProgressMonitor());
 	}
 

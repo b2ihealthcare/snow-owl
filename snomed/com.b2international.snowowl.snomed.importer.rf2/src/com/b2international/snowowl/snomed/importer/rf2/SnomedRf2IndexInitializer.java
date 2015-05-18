@@ -214,7 +214,6 @@ public class SnomedRf2IndexInitializer extends Job {
 	private static final CsvSettings CSV_SETTINGS = new CsvSettings('\0', '\t', EOL.LF, true);
 	private static final String ACTIVE_STATUS = "1";
 	private static final float DEFAULT_DOI = 1.0F;
-	private final boolean slicingEnabled;
 	private final String effectiveTimeKey;
 	private final List<ComponentImportUnit> importUnits;
 	private final IBranchPath branchPath;
@@ -238,10 +237,9 @@ public class SnomedRf2IndexInitializer extends Job {
 	//when a reference set is imported where the concept is being created on the fly
 	private final Map<String, SnomedRefSetType> identifierConceptIdsForNewRefSets = newHashMap();
 
-	public SnomedRf2IndexInitializer(final IBranchPath branchPath, final boolean slicingEnabled, final String lastUnitEffectiveTimeKey, final List<ComponentImportUnit> importUnits, final String languageRefSetId) {
+	public SnomedRf2IndexInitializer(final IBranchPath branchPath, final String lastUnitEffectiveTimeKey, final List<ComponentImportUnit> importUnits, final String languageRefSetId) {
 		super("SNOMED CT RF2 based index initializer...");
 		this.branchPath = branchPath;
-		this.slicingEnabled = slicingEnabled;
 		this.effectiveTimeKey = lastUnitEffectiveTimeKey;
 		this.importUnits = Collections.unmodifiableList(importUnits);
 		//check services
@@ -262,12 +260,7 @@ public class SnomedRf2IndexInitializer extends Job {
 		
 		delegateMonitor.beginTask("Indexing SNOMED CT...", importUnits.size() + 3);
 		
-		if (slicingEnabled) {
-			LOGGER.info("Initializing SNOMED CT semantic content from RF2 release format for key '{}'...", effectiveTimeKey);
-		} else {
-			LOGGER.info("Initializing SNOMED CT semantic content from RF2 release format...");
-		}
-		
+		LOGGER.info("Initializing SNOMED CT semantic content from RF2 release format for key '{}'...", effectiveTimeKey);
 		LOGGER.info("Pre-processing phase [1 of 3]...");
 		
 		doiData = new DoiInitializer().run(delegateMonitor);
@@ -482,22 +475,16 @@ public class SnomedRf2IndexInitializer extends Job {
 	
 	private List<ComponentImportUnit> collectImportUnits() {
 		
-		if (slicingEnabled) {
-
-			final List<ComponentImportUnit> importUnitsForCurrentEffectiveTime = newArrayList();
-			
-			for (final ComponentImportUnit unit : importUnits) {
-				if (Objects.equal(effectiveTimeKey, unit.getEffectiveTimeKey())) {
-					importUnitsForCurrentEffectiveTime.add(unit);
-				}
+		final List<ComponentImportUnit> importUnitsForCurrentEffectiveTime = newArrayList();
+		
+		for (final ComponentImportUnit unit : importUnits) {
+			if (Objects.equal(effectiveTimeKey, unit.getEffectiveTimeKey())) {
+				importUnitsForCurrentEffectiveTime.add(unit);
 			}
-			
-			Collections.sort(importUnitsForCurrentEffectiveTime, ComponentImportUnit.ORDERING);
-			return Collections.unmodifiableList(importUnitsForCurrentEffectiveTime);
-			
-		} else {
-			return Collections.unmodifiableList(importUnits);
 		}
+		
+		Collections.sort(importUnitsForCurrentEffectiveTime, ComponentImportUnit.ORDERING);
+		return Collections.unmodifiableList(importUnitsForCurrentEffectiveTime);
 	}
 	
 	private void doImport(final Iterable<ComponentImportUnit> units, final IProgressMonitor delegateMonitor) {

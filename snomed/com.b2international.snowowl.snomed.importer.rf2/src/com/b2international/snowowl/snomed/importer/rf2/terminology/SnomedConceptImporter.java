@@ -81,7 +81,7 @@ public class SnomedConceptImporter extends AbstractSnomedTerminologyImporter<Con
 
 		final Map<String, ConceptRow> conceptRowMap;
 		final ComponentImportUnit concreteUnit = (ComponentImportUnit) unit;
-		final String formattedEffectiveTime = getFormattedEffectiveTime(concreteUnit);
+		final String effectiveTimeKey = concreteUnit.getEffectiveTimeKey();
 		
 		try {
 			conceptRowBuilder = ImmutableMap.builder();
@@ -103,12 +103,12 @@ public class SnomedConceptImporter extends AbstractSnomedTerminologyImporter<Con
 				continue;
 			}
 			
-			if (ImportAction.BREAK.equals(cdoCommit(subMonitor, formattedEffectiveTime))) {
+			if (ImportAction.BREAK.equals(cdoCommit(subMonitor, effectiveTimeKey))) {
 				break;
 			}
 		}
 		
-		cdoCommit(subMonitor, formattedEffectiveTime);
+		cdoCommit(subMonitor, effectiveTimeKey);
 	}
 
 	@Override
