@@ -22,6 +22,8 @@ import java.util.regex.Pattern;
 
 import com.b2international.snowowl.core.Metadata;
 import com.b2international.snowowl.core.MetadataHolderImpl;
+import com.b2international.snowowl.core.api.IBranchPath;
+import com.b2international.snowowl.datastore.BranchPathUtils;
 import com.b2international.snowowl.datastore.server.branch.Branch;
 import com.b2international.snowowl.datastore.server.branch.BranchMergeException;
 
@@ -175,6 +177,11 @@ public class BranchImpl extends MetadataHolderImpl implements Branch, InternalBr
 	public String path() {
         return parentPath + SEPARATOR + name;
     }
+	
+	@Override
+	public IBranchPath getBranchPath() {
+		return BranchPathUtils.createPath(path());
+	}
 
     @Override
 	public Branch.BranchState state() {

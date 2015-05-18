@@ -17,6 +17,7 @@ package com.b2international.snowowl.datastore.server.branch;
 
 import com.b2international.snowowl.core.Metadata;
 import com.b2international.snowowl.core.MetadataHolder;
+import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.exceptions.AlreadyExistsException;
 
 /**
@@ -163,5 +164,11 @@ public interface Branch extends Deletable, MetadataHolder {
 	
 	@Override
 	Branch delete();
+
+	/**
+	 * @return
+	 * @deprecated - use the new {@link Branch} interface instead
+	 */
+	IBranchPath getBranchPath();
 
 }
