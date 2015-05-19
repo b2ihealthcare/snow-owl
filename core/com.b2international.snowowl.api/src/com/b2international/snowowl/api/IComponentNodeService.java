@@ -23,7 +23,6 @@ import com.b2international.snowowl.api.domain.IComponentList;
 import com.b2international.snowowl.api.domain.IComponentNode;
 import com.b2international.snowowl.api.domain.IComponentRef;
 import com.b2international.snowowl.api.domain.IStorageRef;
-import com.b2international.snowowl.api.task.exception.TaskNotFoundException;
 import com.b2international.snowowl.core.exceptions.ComponentNotFoundException;
 
 /**
@@ -52,8 +51,6 @@ public interface IComponentNodeService<N extends IComponentNode> {
 	 * @throws CodeSystemNotFoundException        if a code system with the given short name is not registered
 	 * @throws CodeSystemVersionNotFoundException if a code system version for the code system with the given identifier
 	 *                                            is not registered
-	 * @throws TaskNotFoundException              if the task identifier does not correspond to a task for the given 
-	 *                                            code system version
 	 */
 	List<N> getRootNodes(IStorageRef ref);
 
@@ -67,8 +64,6 @@ public interface IComponentNodeService<N extends IComponentNode> {
 	 * @throws CodeSystemNotFoundException        if a code system with the given short name is not registered
 	 * @throws CodeSystemVersionNotFoundException if a code system version for the code system with the given identifier
 	 *                                            is not registered
-	 * @throws TaskNotFoundException              if the task identifier does not correspond to a task for the given 
-	 *                                            code system version
 	 * @throws ComponentNotFoundException         if the component identifier does not match any component on the given
 	 * 											  version, task
 	 */
@@ -93,8 +88,6 @@ public interface IComponentNodeService<N extends IComponentNode> {
 	 * @throws CodeSystemNotFoundException        if a code system with the given short name is not registered
 	 * @throws CodeSystemVersionNotFoundException if a code system version for the code system with the given identifier
 	 *                                            is not registered
-	 * @throws TaskNotFoundException              if the task identifier does not correspond to a task for the given 
-	 *                                            code system version
 	 * @throws ComponentNotFoundException         if the component identifier does not match any component on the given
 	 * 											  version, task
 	 */
@@ -119,8 +112,6 @@ public interface IComponentNodeService<N extends IComponentNode> {
 	 * @throws CodeSystemNotFoundException        if a code system with the given short name is not registered
 	 * @throws CodeSystemVersionNotFoundException if a code system version for the code system with the given identifier
 	 *                                            is not registered
-	 * @throws TaskNotFoundException              if the task identifier does not correspond to a task for the given 
-	 *                                            code system version
 	 * @throws ComponentNotFoundException         if the component identifier does not match any component on the given
 	 * 											  version, task
 	 */

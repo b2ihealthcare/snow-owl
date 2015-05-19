@@ -30,8 +30,6 @@ import com.b2international.snowowl.api.domain.IComponentInput;
 import com.b2international.snowowl.api.domain.IComponentRef;
 import com.b2international.snowowl.api.exception.LockedException;
 import com.b2international.snowowl.api.impl.domain.ComponentRef;
-import com.b2international.snowowl.api.task.exception.TaskAlreadyPromotedException;
-import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.api.SnowowlRuntimeException;
 import com.b2international.snowowl.core.exceptions.AlreadyExistsException;
 import com.b2international.snowowl.core.exceptions.ComponentNotFoundException;
@@ -40,7 +38,6 @@ import com.b2international.snowowl.core.terminology.ComponentCategory;
 import com.b2international.snowowl.datastore.CDOEditingContext;
 import com.b2international.snowowl.datastore.exception.RepositoryLockException;
 import com.b2international.snowowl.datastore.server.CDOServerUtils;
-import com.b2international.snowowl.datastore.tasks.ITaskStateManager;
 import com.google.common.base.Strings;
 
 /**
@@ -49,10 +46,6 @@ import com.google.common.base.Strings;
  */
 public abstract class AbstractComponentServiceImpl<C extends IComponentInput, R extends IComponent, U, E extends CDOEditingContext, M extends CDOObject> 
 	implements IComponentService<C, R, U> {
-
-	private static ITaskStateManager getTaskStateManager() {
-		return ApplicationContext.getServiceForClass(ITaskStateManager.class);
-	}
 
 	protected final String handledRepositoryUuid;
 	protected final ComponentCategory handledCategory;
@@ -158,12 +151,6 @@ public abstract class AbstractComponentServiceImpl<C extends IComponentInput, R 
 			}
 			
 			throw new SnowowlRuntimeException(e.getMessage(), e);
-		}
-	}
-
-	protected void checkClosedTask(final String taskId) {
-		if (null != taskId && getTaskStateManager().isClosed(taskId)) {
-			throw new TaskAlreadyPromotedException("Task " + taskId + " is already promoted.");
 		}
 	}
 
