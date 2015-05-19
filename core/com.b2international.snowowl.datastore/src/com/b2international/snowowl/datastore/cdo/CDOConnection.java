@@ -77,13 +77,9 @@ import com.google.common.collect.Lists;
 	
 	@Override
 	public CDOView createView(final IBranchPoint branchPoint) {
-		
-		Preconditions.checkNotNull(branchPoint, "Branch point argument cannot be null.");
-		
-		final CDOBranch branch = Preconditions.checkNotNull(
-				getBranch(branchPoint.getBranchPath()), 
-				"Branch does not exist. Path: '" + branchPoint.getBranchPath().getPath() + "'.");
-		
+		checkNotNull(branchPoint, "Branch point argument cannot be null.");
+		final CDOBranch branch = checkNotNull(getBranch(branchPoint.getBranchPath()), "Branch '%s' does not exist.",
+				branchPoint.getBranchPath());
 		return createView(branch, branchPoint.getTimestamp());
 	}
 	
@@ -120,8 +116,7 @@ import com.google.common.collect.Lists;
 	
 	@Override
 	public CDOTransaction createTransaction(final IBranchPath branchPath) {
-		Preconditions.checkNotNull(branchPath, "Branch path argument cannot be null.");
-		final CDOBranch branch = Preconditions.checkNotNull(getBranch(branchPath), "Branch does not exist. Path: '" + branchPath.getPath() + "'.");
+		final CDOBranch branch = Preconditions.checkNotNull(getBranch(branchPath), "Branch '%s' does not exist.", branchPath);
 		return createTransaction(branch);
 	}
 	

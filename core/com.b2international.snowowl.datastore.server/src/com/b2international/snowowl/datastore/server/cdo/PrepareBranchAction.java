@@ -69,14 +69,14 @@ public class PrepareBranchAction extends AbstractCDOBranchAction {
 		final CDOBranch parentBranch = connection.getBranch(parentBranchPath);
 
 		if (parentBranch == null) {
-			throw new IllegalStateException(MessageFormat.format("Parent branch ''{0}'' not found on connection ''{1}''.", parentBranchPath.getPath(), connection.getUuid()));
+			throw new IllegalStateException(MessageFormat.format("Parent branch ''{0}'' not found on connection ''{1}''.", parentBranchPath, connection.getUuid()));
 		}
 
 		CDOBranch taskBranch = connection.getBranch(taskBranchPath);
 
 		if (taskBranch == null) {
 
-			final String message = MessageFormat.format("Creating branch {0} in ''{1}''...", taskBranchPath.getPath(), connection.getRepositoryName());
+			final String message = MessageFormat.format("Creating branch {0} in ''{1}''...", taskBranchPath, connection.getRepositoryName());
 			LOGGER.info(message);
 			LogUtils.logUserEvent(LOGGER, getUserId(), parentBranchPath, message);
 
@@ -100,7 +100,7 @@ public class PrepareBranchAction extends AbstractCDOBranchAction {
 		
 		} else {
 
-			final String message = MessageFormat.format("Preparing branch {0} in ''{1}''...", taskBranchPath.getPath(), connection.getRepositoryName());
+			final String message = MessageFormat.format("Preparing branch {0} in ''{1}''...", taskBranchPath, connection.getRepositoryName());
 			LOGGER.info(message);
 			LogUtils.logUserEvent(LOGGER, getUserId(), parentBranchPath, message);
 

@@ -100,7 +100,7 @@ public class SnomedServerPredicateBrowser extends AbstractIndexBrowser<Predicate
 			final DocIdsIterator itr = collector.getDocIDs().iterator();
 			return createResultObjects(branchPath, itr);
 		} catch (final IOException e) {
-			throw new SnowowlRuntimeException("Error while loading all MRCM predicates on '" + branchPath.getPath() + "' branch.");
+			throw new SnowowlRuntimeException("Error while loading all MRCM predicates on '" + branchPath + "' branch.");
 		}
 	}
 	

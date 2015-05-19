@@ -55,15 +55,15 @@ public class SnomedTaxonomyServiceImpl implements SnomedTaxonomyService, IPostSt
 			.maximumSize(MAX_BRANCH_CACHING_SUPPORT)
 			.removalListener(new RemovalListener<IBranchPath, SnomedTaxonomy>() {
 				public void onRemoval(final RemovalNotification<IBranchPath, SnomedTaxonomy> notification) {
-					LOGGER.info("SNOMED CT taxonomy has been successfully released from the cache on '" + notification.getKey().getPath() + "' branch.");
+					LOGGER.info("SNOMED CT taxonomy has been successfully released from the cache on '" + notification.getKey() + "' branch.");
 				}
 			})
 			.build(new CacheLoader<IBranchPath, SnomedTaxonomy>() {
 				public SnomedTaxonomy load(final IBranchPath branchPath) throws Exception {
 					final Stopwatch stopwatch = Stopwatch.createStarted();
-					LOGGER.info("Initializing and caching SNOMED CT taxonomy for on '" + branchPath.getPath() + "' branch...");
+					LOGGER.info("Initializing and caching SNOMED CT taxonomy for on '" + branchPath + "' branch...");
 					final SnomedTaxonomy taxonomy = new SnomedTaxonomyImpl(branchPath);
-					LOGGER.info("SNOMED CT taxonomy has been successfully initialized and cached on '" + branchPath.getPath() + "'. [" + stopwatch + "]");
+					LOGGER.info("SNOMED CT taxonomy has been successfully initialized and cached on '" + branchPath + "'. [" + stopwatch + "]");
 					return taxonomy;
 				}
 			});

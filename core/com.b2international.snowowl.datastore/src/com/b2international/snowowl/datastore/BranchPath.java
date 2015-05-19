@@ -25,7 +25,6 @@ import com.b2international.commons.StringUtils;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.api.NullBranchPath;
 import com.google.common.base.Joiner;
-import com.google.common.base.Objects;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Splitter;
 import com.google.common.base.Strings;
@@ -118,8 +117,7 @@ import com.google.common.collect.Iterables;
 	 */
 	@Override
 	public String toString() {
-		return Objects.toStringHelper(this)
-				.add("Path", new StringBuilder("'").append(path).append("'").toString()).toString();
+		return getPath();
 	}
 
 	/* (non-Javadoc)

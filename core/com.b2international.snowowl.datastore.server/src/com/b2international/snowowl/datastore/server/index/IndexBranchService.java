@@ -190,7 +190,7 @@ public class IndexBranchService implements Closeable {
 				} catch (final IOException e1) {
 					//intentionally ignored
 				}
-				throw new IndexException("Error while closing index searcher manager. [" + configuration.getBranchPath().getPath() + "]", e);
+				throw new IndexException("Error while closing index searcher manager. [" + configuration.getBranchPath() + "]", e);
 			}
 		}
 		
@@ -411,7 +411,7 @@ public class IndexBranchService implements Closeable {
 				}
 			}, GET_INDEX_COMMIT_FUNCTION);
 		} catch (final IOException e) {
-			throw new IndexException("Cannot get index commit for branch path: '" + branchPath.getPath() + "'.", e);
+			throw new IndexException("Cannot get index commit for branch path: '" + branchPath + "'.", e);
 		}
 	}
 

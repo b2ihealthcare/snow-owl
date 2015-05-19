@@ -235,7 +235,7 @@ public abstract class IndexServerService<E extends IIndexEntry> extends Abstract
 			inactiveClose(branchPath);
 			prepare(branchPath);
 		} catch (final IOException e) {
-			throw new IndexException("Failed to update snapshot for '" + branchPath.getPath() + "'. [" + timestamp + "]", e);
+			throw new IndexException("Failed to update snapshot for '" + branchPath + "'. [" + timestamp + "]", e);
 		}
 	}
 	
@@ -898,7 +898,7 @@ public abstract class IndexServerService<E extends IIndexEntry> extends Abstract
 		checkNotDisposed();
 	
 		if (LOGGER.isInfoEnabled()) {
-			LOGGER.info("[" + getClass().getSimpleName() + "] Creating " + (tag ? "tag" : "snapshot") + " for: '" + targetBranchPath.getPath() + "'.");
+			LOGGER.info("[" + getClass().getSimpleName() + "] Creating " + (tag ? "tag" : "snapshot") + " for: '" + targetBranchPath + "'.");
 		}
 		
 		final IndexBranchService branchService = getBranchService(sourceBranchPath);

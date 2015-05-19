@@ -312,7 +312,7 @@ public abstract class CDOCommitInfoUtils {
 			throw new IllegalStateException(new StringBuilder("Expecting single commit info in '")
 			.append(repositoryUuid)
 			.append("' on '")
-			.append(branchPath.getPath())
+			.append(branchPath)
 			.append("' with timestamp: ")
 			.append(timestamp)
 			.append(". Got:")
@@ -347,7 +347,7 @@ public abstract class CDOCommitInfoUtils {
 		final ICDOConnection connection = connectionManager.getByUuid(repositoryUuid);
 		final CDOBranch branch = connection.getBranch(branchPath);
 		
-		Preconditions.checkNotNull(branch, "Branch [" + branchPath.getPath() + "] does not exist in " + connection.getRepositoryName() + " repository.");
+		Preconditions.checkNotNull(branch, "Branch [" + branchPath + "] does not exist in " + connection.getRepositoryName() + " repository.");
 		
 		return new EmptyCDOCommitInfo(branch, userId, comment, timestamp, previousTimestamp);
 	}

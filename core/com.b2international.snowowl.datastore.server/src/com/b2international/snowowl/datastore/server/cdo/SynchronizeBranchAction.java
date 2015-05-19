@@ -89,8 +89,8 @@ public class SynchronizeBranchAction extends AbstractCDOBranchAction {
 		}
 		
 		LOGGER.info(MessageFormat.format("Applying changes from ''{0}'' to ''{1}'' in ''{2}''...", 
-				parentBranchPath.getPath(),
-				taskBranchPath.getPath(), 
+				parentBranchPath,
+				taskBranchPath, 
 				connection.getRepositoryName()));
 
 		final CDOBranchMerger branchMerger = new CDOBranchMerger(connection.getUuid());

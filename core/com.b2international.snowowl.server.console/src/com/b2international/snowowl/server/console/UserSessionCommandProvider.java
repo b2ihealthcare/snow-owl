@@ -467,7 +467,7 @@ public class UserSessionCommandProvider implements CommandProvider {
 			//assuming active connection manager service here
 			
 			if (null == connection.getBranch(branchPath)) {
-				interpreter.println("Branch does not exist. Branch path: '" + branchPath.getPath() + "'. Repository UUID: '" + uuidOrAll + "'.");
+				interpreter.println("Branch does not exist. Branch path: '" + branchPath + "'. Repository UUID: '" + uuidOrAll + "'.");
 				interpreter.println(getHelp());
 				return null;
 			}

@@ -172,7 +172,7 @@ public class PostStoreUpdateManager implements IPostStoreUpdateManager {
 			if (null != branch) {
 				final IBranchPath branchPath = createPath(branch);
 				final String repositoryName = getServiceForClass(ICDOConnectionManager.class).get(branch).getRepositoryName();
-				LOGGER.info(MessageFormat.format("Commit notification received for user {0} on ''{1}'' branch from ''{2}''.", invalidationEvent.getUserID(), branchPath.getPath(), repositoryName));
+				LOGGER.info(MessageFormat.format("Commit notification received for user {0} on ''{1}'' branch from ''{2}''.", invalidationEvent.getUserID(), branchPath, repositoryName));
 			} else {
 				LOGGER.info(MessageFormat.format("Commit notification received for user {0}.", invalidationEvent.getUserID()));
 			}

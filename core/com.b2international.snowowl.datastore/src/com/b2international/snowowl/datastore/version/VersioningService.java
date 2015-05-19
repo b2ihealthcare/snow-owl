@@ -322,7 +322,7 @@ public class VersioningService implements IVersioningService {
 		}
 		final IBranchPath versionBranchPath = createVersionPath(versionId);
 		final CDOBranch branch = getConnection(toolingId).getBranch(versionBranchPath);
-		return Preconditions.checkNotNull(branch, "Branch '" + versionBranchPath.getPath() + "' does not exist in '" + getRepositoryUuid(toolingId) + "'.");
+		return Preconditions.checkNotNull(branch, "Branch '" + versionBranchPath + "' does not exist in '" + getRepositoryUuid(toolingId) + "'.");
 	}
 
 

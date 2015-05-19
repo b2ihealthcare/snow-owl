@@ -100,7 +100,7 @@ public class PersistChangesRemoteJob extends AbstractRemoteJob {
 			lockBeforeChanges();
 			return persistChanges(monitor);
 		} catch (final Exception e) {
-			return error(SnomedReasonerServerActivator.PLUGIN_ID, "Error while persisting classification changes on '" + branchPath.getPath() + "'.", e);
+			return error(SnomedReasonerServerActivator.PLUGIN_ID, "Error while persisting classification changes on '" + branchPath + "'.", e);
 		} finally {
 			monitor.done();
 			cleanup();

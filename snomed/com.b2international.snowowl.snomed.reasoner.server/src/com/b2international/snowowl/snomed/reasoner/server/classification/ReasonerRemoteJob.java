@@ -36,7 +36,7 @@ public class ReasonerRemoteJob extends AbstractRemoteJob {
 	private final ClassificationRequest classificationRequest;
 	
 	public ReasonerRemoteJob(final SnomedReasonerServerService serverService, final ClassificationRequest classificationRequest) {
-		super(MessageFormat.format("Classifying the ontology on {0}", classificationRequest.getSnomedBranchPath().getPath()));
+		super(MessageFormat.format("Classifying the ontology on {0}", classificationRequest.getSnomedBranchPath()));
 		this.serverService = serverService;
 		this.classificationRequest = classificationRequest;
 	}

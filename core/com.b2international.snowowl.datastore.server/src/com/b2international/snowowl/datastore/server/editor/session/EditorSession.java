@@ -227,7 +227,7 @@ public abstract class EditorSession<C extends EObject> implements IEditorSession
 						final String name = connection.getRepositoryName();
 						
 						final String message = StringUtils.isEmpty(cause.getMessage()) 
-								? (name + " is currently locked on '" + BranchPathUtils.createPath(transaction).getPath() + "' branch. All kind of modifications are temporary disabled.")
+								? (name + " is currently locked on '" + BranchPathUtils.createPath(transaction) + "' branch. All kind of modifications are temporary disabled.")
 								: cause.getMessage();
 						
 						final SnowowlServiceException sse = new SnowowlServiceException(message, cause);

@@ -753,7 +753,7 @@ public class TaskStateManager extends SingleDirectoryIndexServerService implemen
 	}
 
 	private String getPathEntry(final String repositoryUuid, final IBranchPath branchPath) {
-		return MessageFormat.format("{0}:{1}:{2}", repositoryUuid, getVersionPath(branchPath), branchPath.getPath());
+		return MessageFormat.format("{0}:{1}:{2}", repositoryUuid, getVersionPath(branchPath), branchPath);
 	}
 
 	private String getVersionPath(final IBranchPath branchPath) {

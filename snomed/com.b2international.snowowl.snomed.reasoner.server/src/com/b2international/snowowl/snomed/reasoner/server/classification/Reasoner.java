@@ -139,7 +139,7 @@ public class Reasoner extends AbstractDisposableService {
 			return taxonomy;
 			
 		} catch (final RuntimeException | InvocationTargetException | InterruptedException | OutOfMemoryError e) {
-			LOGGER.error(MessageFormat.format("Caught exception while classifying ontology on branch path ''{0}''.", branchPath.getPath()), e);
+			LOGGER.error(MessageFormat.format("Caught exception while classifying ontology on branch path ''{0}''.", branchPath), e);
 			
 			try {
 				unload();
@@ -200,7 +200,7 @@ public class Reasoner extends AbstractDisposableService {
 		try {
 			stateMachine.setStale();
 		} catch (final Exception e) {
-			LOGGER.error(MessageFormat.format("Caught exception while marking reasoner as stale on branch path ''{0}''.", branchPath.getPath()), e);
+			LOGGER.error(MessageFormat.format("Caught exception while marking reasoner as stale on branch path ''{0}''.", branchPath), e);
 			stateMachine.fail();
 		}
 	}
@@ -212,7 +212,7 @@ public class Reasoner extends AbstractDisposableService {
 			unload();
 			stateMachine.unload();
 		} catch (final Exception e) {
-			LOGGER.error(MessageFormat.format("Caught exception while retiring reasoner for branch path ''{0}''.", branchPath.getPath()), e);
+			LOGGER.error(MessageFormat.format("Caught exception while retiring reasoner for branch path ''{0}''.", branchPath), e);
 			stateMachine.fail();
 		}
 		
@@ -233,7 +233,7 @@ public class Reasoner extends AbstractDisposableService {
 
 	@Override
 	public String toString() {
-		return "ReasonerServiceWrapper[branchPath=" + branchPath.getPath() + "]";
+		return "ReasonerServiceWrapper[branchPath=" + branchPath + "]";
 	}
 
 	private ICDOConnectionManager getConnectionManager() {

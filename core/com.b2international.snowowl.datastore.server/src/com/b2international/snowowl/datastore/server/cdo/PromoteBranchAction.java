@@ -89,16 +89,16 @@ public class PromoteBranchAction extends AbstractCDOBranchAction {
 		if (parentLastCommitTime > parentBranchPoint.getTimeStamp()) {
 
 			LOGGER.error(MessageFormat.format("Modifications have been made on the ''{0}'' branch. Promotion canceled for ''{1}''.",
-					parentBranchPath.getPath(), 
+					parentBranchPath, 
 					getUserId()));
 
 			throw new BranchNotSynchronizedException(MessageFormat.format("Modifications have been made on the ''{0}'' branch, promotion "
-					+ "is not allowed. Please synchronize changes and try again.", parentBranchPath.getPath()));
+					+ "is not allowed. Please synchronize changes and try again.", parentBranchPath));
 		}
 
 		LOGGER.info(MessageFormat.format("Promoting changes from ''{0}'' to ''{1}'' in ''{2}''...", 
-				taskBranchPath.getPath(), 
-				parentBranchPath.getPath(),
+				taskBranchPath, 
+				parentBranchPath,
 				connection.getRepositoryName()));
 
 		final CDOBranchMerger branchMerger = new CDOBranchMerger(connection.getUuid());
