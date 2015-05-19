@@ -88,13 +88,19 @@ public class SnomedQueryRefSetImporter extends AbstractSnomedRefSetImporter<Quer
 			return null;
 		}
 
+		if (currentRow.getEffectiveTime() != null) {
+			editedMember.setEffectiveTime(currentRow.getEffectiveTime());
+			editedMember.setReleased(true);
+		} else {
+			editedMember.unsetEffectiveTime();
+			editedMember.setReleased(false);
+		}
+
 		editedMember.setRefSet(getOrCreateRefSet(currentRow.getRefSetId(), currentRow.getReferencedComponentId()));
 		editedMember.setActive(currentRow.isActive());
-		editedMember.setEffectiveTime(currentRow.getEffectiveTime());
 		editedMember.setModuleId(currentRow.getModuleId());
 		editedMember.setReferencedComponentId(currentRow.getReferencedComponentId());
 		editedMember.setQuery(currentRow.getQuery());
-		editedMember.setReleased(true);
 		
 		return editedMember;
 	}

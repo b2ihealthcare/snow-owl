@@ -117,7 +117,7 @@ public class SnomedExportService implements ISnomedExportService {
 		final String transientEffectiveTime = configuration.getTransientEffectiveTime();
 		
 		if (StringUtils.isEmpty(transientEffectiveTime)) {
-			model.setUnsetEffectiveTimeLabel(EffectiveTimes.UNSET_EFFECTIVE_TIME_LABEL);
+			model.setUnsetEffectiveTimeLabel("");
 		} else if ("NOW".equals(transientEffectiveTime)) {
 			model.setUnsetEffectiveTimeLabel(EffectiveTimes.format(Dates.todayGmt(), DateFormats.SHORT));
 		} else {

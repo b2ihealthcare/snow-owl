@@ -129,13 +129,19 @@ public class SnomedLanguageRefSetImporter extends AbstractSnomedRefSetImporter<A
 			return null;
 		}
 
+		if (currentRow.getEffectiveTime() != null) {
+			editedMember.setEffectiveTime(currentRow.getEffectiveTime());
+			editedMember.setReleased(true);
+		} else {
+			editedMember.unsetEffectiveTime();
+			editedMember.setReleased(false);
+		}
+
 		editedMember.setRefSet(getOrCreateRefSet(currentRow.getRefSetId(), currentRow.getReferencedComponentId()));
 		editedMember.setActive(currentRow.isActive());
-		editedMember.setEffectiveTime(currentRow.getEffectiveTime());
 		editedMember.setModuleId(currentRow.getModuleId());
 		editedMember.setReferencedComponentId(currentRow.getReferencedComponentId());
 		editedMember.setAcceptabilityId(currentRow.getAssociatedComponentId());
-		editedMember.setReleased(true);
 		
 		return editedMember;
 	}

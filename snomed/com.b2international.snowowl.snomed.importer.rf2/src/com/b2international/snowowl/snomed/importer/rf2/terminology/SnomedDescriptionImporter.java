@@ -75,14 +75,20 @@ public class SnomedDescriptionImporter extends AbstractSnomedTerminologyImporter
 			return;
 		}
 
+		if (currentRow.getEffectiveTime() != null) {
+			editedDescription.setEffectiveTime(currentRow.getEffectiveTime());
+			editedDescription.setReleased(true);
+		} else {
+			editedDescription.unsetEffectiveTime();
+			editedDescription.setReleased(false);
+		}
+		
 		editedDescription.setActive(currentRow.isActive());
 		editedDescription.setCaseSignificance(getConceptSafe(currentRow.getCaseSignificanceId(), SnomedRf2Headers.FIELD_CASE_SIGNIFICANCE_ID, currentRow.getId()));
-		editedDescription.setEffectiveTime(currentRow.getEffectiveTime());
 		editedDescription.setLanguageCode(currentRow.getLanguageCode());
 		editedDescription.setModule(getConceptSafe(currentRow.getModuleId(), SnomedRf2Headers.FIELD_MODULE_ID, currentRow.getId()));
 		editedDescription.setTerm(currentRow.getTerm());
 		editedDescription.setType(getConceptSafe(currentRow.getTypeId(), SnomedRf2Headers.FIELD_TYPE_ID, currentRow.getId()));
-		editedDescription.setReleased(true);
 		
 		getImportContext().conceptVisited(currentRow.getConceptId());
 	}

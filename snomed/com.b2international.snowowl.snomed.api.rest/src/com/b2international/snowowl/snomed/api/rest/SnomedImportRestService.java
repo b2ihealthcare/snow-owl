@@ -65,7 +65,8 @@ public class SnomedImportRestService extends AbstractSnomedRestService {
 	@ApiOperation(
 			value="Import SNOMED CT content", 
 			notes="Configures processes to import RF2 based archives. The configured process will wait until the archive actually uploaded via the <em>/archive</em> endpoint. "
-					+ "The actual import process will start after the file upload completed.")
+					+ "The actual import process will start after the file upload completed. Note: unpublished components (with no value entered in the 'effectiveTime' column) are "
+					+ "only allowed in DELTA import mode.")
 	@ApiResponses({
 		@ApiResponse(code = 201, message = "Created"),
 		@ApiResponse(code = 404, message = "Code system version not found"),

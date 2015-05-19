@@ -408,17 +408,6 @@ public class SnomedImportContext implements ISnomedPostProcessorContext, AutoClo
 	}
 
 	/**
-	 * Checks whether incoming release files should be split based on effective time values, and the split files should
-	 * be processed on an effective time-by-effective time basis.
-	 * 
-	 * @return {@code true} for {@code FULL} and {@code DELTA} imports, {@code false} for {@code SNAPSHOT}s (which must
-	 * be processed in whole)
-	 */
-	public boolean isSlicingEnabled() {
-		return !ContentSubType.SNAPSHOT.equals(contentSubType);
-	}
-
-	/**
 	 * Registers a concept which was "touched" by the import run. Visited concepts can be retrieved later for an import
 	 * summary.
 	 * <p>

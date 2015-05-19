@@ -81,7 +81,7 @@ public class SnomedConceptImporter extends AbstractSnomedTerminologyImporter<Con
 
 		final Map<String, ConceptRow> conceptRowMap;
 		final ComponentImportUnit concreteUnit = (ComponentImportUnit) unit;
-		final String formattedEffectiveTime = getFormattedEffectiveTime(concreteUnit);
+		final String effectiveTimeKey = concreteUnit.getEffectiveTimeKey();
 		
 		try {
 			conceptRowBuilder = ImmutableMap.builder();
@@ -103,12 +103,12 @@ public class SnomedConceptImporter extends AbstractSnomedTerminologyImporter<Con
 				continue;
 			}
 			
-			if (ImportAction.BREAK.equals(cdoCommit(subMonitor, formattedEffectiveTime))) {
+			if (ImportAction.BREAK.equals(cdoCommit(subMonitor, effectiveTimeKey))) {
 				break;
 			}
 		}
 		
-		cdoCommit(subMonitor, formattedEffectiveTime);
+		cdoCommit(subMonitor, effectiveTimeKey);
 	}
 
 	@Override
@@ -148,16 +148,18 @@ public class SnomedConceptImporter extends AbstractSnomedTerminologyImporter<Con
 			return;
 		}
 		
-		editedConcept.setEffectiveTime(currentRow.getEffectiveTime());
+		if (currentRow.getEffectiveTime() != null) {
+			editedConcept.setEffectiveTime(currentRow.getEffectiveTime());
+			editedConcept.setReleased(true);
+		} else {
+			editedConcept.unsetEffectiveTime();
+			editedConcept.setReleased(false);
+		}
+		
 		editedConcept.setExhaustive(false);
 		editedConcept.setActive(currentRow.isActive());
-		editedConcept.setReleased(true);
-		
-		final Concept definitionStatusConcept = getOrCreateConcept(currentRow.getDefinitionStatusId());
-		editedConcept.setDefinitionStatus(definitionStatusConcept);
-		
-		final Concept moduleConcept = getOrCreateConcept(currentRow.getModuleId());
-		editedConcept.setModule(moduleConcept);
+		editedConcept.setDefinitionStatus(getOrCreateConcept(currentRow.getDefinitionStatusId()));
+		editedConcept.setModule(getOrCreateConcept(currentRow.getModuleId()));
 		
 		getImportContext().conceptVisited(currentRow.getId());
 	}
