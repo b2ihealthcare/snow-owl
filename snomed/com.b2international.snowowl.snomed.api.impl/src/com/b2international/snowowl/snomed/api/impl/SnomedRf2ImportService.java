@@ -19,7 +19,6 @@ import static com.b2international.commons.FileUtils.copyContentToTempFile;
 import static com.b2international.snowowl.snomed.common.ContentSubType.getByNameIgnoreCase;
 import static com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator.REPOSITORY_UUID;
 import static com.google.common.base.Preconditions.checkNotNull;
-import static com.google.common.collect.Iterables.isEmpty;
 import static java.lang.String.valueOf;
 import static java.util.Collections.synchronizedMap;
 import static java.util.UUID.randomUUID;
@@ -27,6 +26,7 @@ import static java.util.UUID.randomUUID;
 import java.io.File;
 import java.io.InputStream;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 
 import org.slf4j.Logger;
@@ -46,6 +46,7 @@ import com.b2international.snowowl.snomed.api.domain.exception.SnomedImportConfi
 import com.b2international.snowowl.snomed.api.domain.exception.SnomedImportException;
 import com.b2international.snowowl.snomed.api.impl.domain.SnomedImportConfiguration;
 import com.b2international.snowowl.snomed.importer.net4j.SnomedImportResult;
+import com.b2international.snowowl.snomed.importer.net4j.SnomedValidationDefect;
 import com.b2international.snowowl.snomed.importer.rf2.util.ImportUtil;
 import com.google.common.base.Predicate;
 import com.google.common.base.Strings;
@@ -132,14 +133,23 @@ public class SnomedRf2ImportService implements ISnomedRf2ImportService {
 				try {
 					((SnomedImportConfiguration) configuration).setStatus(ImportStatus.RUNNING);
 					final SnomedImportResult result = doImport(configuration, archiveFile);
-					((SnomedImportConfiguration) configuration).setStatus(isEmpty(result.getValidationDefects()) ? ImportStatus.COMPLETED : ImportStatus.FAILED); 
+					((SnomedImportConfiguration) configuration).setStatus(convertStatus(result.getValidationDefects())); 
 				} catch (final Exception e) {
 					LOG.error("Error during the import of " + archiveFile, e);
 					((SnomedImportConfiguration) configuration).setStatus(ImportStatus.FAILED);
 				}
 			}
 		}).start();
+	}
+
+	private ImportStatus convertStatus(Set<SnomedValidationDefect> validationDefects) {
+		for (SnomedValidationDefect validationDefect : validationDefects) {
+			if (validationDefect.getDefectType().isCritical()) {
+				return ImportStatus.FAILED;
+			}
+		}
 		
+		return ImportStatus.COMPLETED;
 	}
 
 	private SnomedImportResult doImport(final ISnomedImportConfiguration configuration, final File archiveFile) throws Exception {
