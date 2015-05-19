@@ -54,16 +54,7 @@ public abstract class ComponentDelta implements IChangedComponentCDOIDs, Seriali
 	private final String codeSystemOID;
 	
 	protected ComponentDelta(final String id, final long cdoId, final IBranchPath branchPath, final String label, final String iconId, final short terminologyComponentId, final String codeSystemOID) {
-		
-		this(
-				Preconditions.checkNotNull(id, "ID argument cannot be null."),
-				cdoId,
-				Preconditions.checkNotNull(branchPath, "Branch path argument cannot be null."),
-				Preconditions.checkNotNull(label, "Label argument cannot be null."),
-				Preconditions.checkNotNull(iconId, "Component icon ID argument cannot be null."),
-				terminologyComponentId,
-				codeSystemOID,
-				ChangeKind.UNCHANGED);
+		this(id, cdoId, branchPath, label, iconId, terminologyComponentId, codeSystemOID, ChangeKind.UNCHANGED);
 		
 	}
 	
@@ -74,7 +65,7 @@ public abstract class ComponentDelta implements IChangedComponentCDOIDs, Seriali
 		this.cdoId = cdoId;
 		this.branchPath = Preconditions.checkNotNull(branchPath, "Branch path argument cannot be null.");
 		this.label = Preconditions.checkNotNull(label, "Label argument cannot be null.");
-		this.iconId = Preconditions.checkNotNull(iconId, "Component icon ID argument cannot be null.");
+		this.iconId = iconId;
 		this.change = Preconditions.checkNotNull(change, "Component change kind argument cannot be null.");
 		this.terminologyComponentId = terminologyComponentId;
 		componentChanges = new RelatedComponentChanges(cdoId);

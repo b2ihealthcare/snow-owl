@@ -53,7 +53,6 @@ import java.util.List;
 import java.util.Map;
 
 import org.eclipse.emf.cdo.CDOObject;
-import org.eclipse.emf.cdo.common.id.CDOID;
 import org.eclipse.emf.cdo.common.revision.CDOIDAndVersion;
 import org.eclipse.emf.cdo.common.revision.delta.CDOSetFeatureDelta;
 import org.eclipse.emf.cdo.spi.common.revision.InternalCDORevision;
@@ -76,7 +75,6 @@ import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.snomed.datastore.SnomedConceptLabelProviderService;
 import com.b2international.snowowl.snomed.datastore.SnomedDescriptionLabelProviderService;
-import com.b2international.snowowl.snomed.datastore.services.ISnomedComponentService;
 import com.b2international.snowowl.snomed.datastore.services.SnomedConceptNameProvider;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedAttributeValueRefSetMember;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedComplexMapRefSetMember;
@@ -197,7 +195,7 @@ public class SnomedConceptHistoryInfoDetailsBuilder extends AbstractHistoryInfoD
 						getPreferredTerm(concept)).toString();
 			} else if (RELEASED_FEATURE_NAME.equals(featureName)) {
 				final String label = getPreferredTerm(concept);
-				return getPublishedChange(featureName, builder, label);
+				return getPublishedChange(featureName, builder, label, featureValue);
 			}
 		} else if (changedObject instanceof Description) {
 			final Description description = (Description) changedObject;
@@ -222,7 +220,7 @@ public class SnomedConceptHistoryInfoDetailsBuilder extends AbstractHistoryInfoD
 						String.valueOf(featureValue),
 						description.getTerm()).toString();
 			} else if (RELEASED_FEATURE_NAME.equals(featureName)) {
-				return getPublishedChange(featureName, builder, description.getTerm());
+				return getPublishedChange(featureName, builder, description.getTerm(), featureValue);
 			}
 		} else if (changedObject instanceof Relationship) {
 			final Relationship relationship = (Relationship) changedObject;
@@ -243,7 +241,7 @@ public class SnomedConceptHistoryInfoDetailsBuilder extends AbstractHistoryInfoD
 				return appendDescription(builder, getFeatureMapping().get(featureName), SnomedHistoryUtils.getNewFeatureValue(featureValue), 
 						getLabel(relationship)).toString();
 			} else if (RELEASED_FEATURE_NAME.equals(featureName)) {
-				return getPublishedChange(featureName, builder, getLabel(relationship));
+				return getPublishedChange(featureName, builder, getLabel(relationship), featureValue);
 			} else if (RELATIONSHIP_TYPE_FEATURE_NAME.equals(featureName)) {
 				return appendDescription(builder, "relationship type" /*;( quite ugly but there is a collision with the description type feature name*/
 						, SnomedHistoryUtils.getNewFeatureValue(featureValue), 
@@ -293,7 +291,7 @@ public class SnomedConceptHistoryInfoDetailsBuilder extends AbstractHistoryInfoD
 						DateFormat.getDateInstance().format(featureValue),
 						getReferencedComponentLabel((SnomedRefSetMember) changedObject)).toString();
 			} else if (RELEASED_FEATURE_NAME.equals(featureName)) {
-				return getPublishedChange(featureName, builder, getReferencedComponentLabel((SnomedRefSetMember) changedObject));
+				return getPublishedChange(featureName, builder, getReferencedComponentLabel((SnomedRefSetMember) changedObject), featureValue);
 			} else if (VALUE_ID_FEATURE_NAME.equals(featureName)) {
 				return appendDescription(builder, getFeatureMapping().get(featureName), 
 						SnomedConceptNameProvider.INSTANCE.getText(String.valueOf(featureValue), changedObject.cdoView()), 
@@ -329,14 +327,18 @@ public class SnomedConceptHistoryInfoDetailsBuilder extends AbstractHistoryInfoD
 		} else if (changedObject instanceof SnomedRefSet) {
 			if (RELEASED_FEATURE_NAME.equals(featureName)) {
 				final String label = SnomedConceptNameProvider.INSTANCE.getText(((SnomedRefSet) changedObject).getIdentifierId());
-				return getPublishedChange(featureName, builder, label);
+				return getPublishedChange(featureName, builder, label, featureValue);
 			}
 		}
 		return "Unexpected change on object: " + String.valueOf(changedObject) + " with the feature name of: '" + featureName + "'.";
 	}
 
-	private String getPublishedChange(final String featureName, final StringBuilder builder, final String label) {
-		return builder.append(label).append(" ").append(getFeatureMapping().get(featureName)).append(".").toString();
+	private String getPublishedChange(final String featureName, final StringBuilder builder, final String label, final Object featureValue) {
+		if ((boolean) featureValue) {
+			return builder.append(label).append(" ").append(getFeatureMapping().get(featureName)).append(".").toString();
+		} else {
+			return null;
+		}
 	}
 
 	private boolean isPtLanguageMember(final CDOObject member) {
@@ -566,11 +568,13 @@ public class SnomedConceptHistoryInfoDetailsBuilder extends AbstractHistoryInfoD
 	
 	private String getIdentifierConceptLabel(final SnomedRefSetMember member) {
 		final IBranchPath branchPath = createPath(member.cdoView());
-		final InternalCDORevision revision = (InternalCDORevision) member.cdoRevision();
-		final CDOID refSetCdoId = (CDOID) revision.get(SnomedRefSetPackage.eINSTANCE.getSnomedRefSetMember_RefSet(), CDOStore.NO_INDEX);
-		final Map<CDOID, String> cdoIdIdMapping = getServiceForClass(ISnomedComponentService.class).getRefSetCdoIdIdMapping(branchPath);
-		final Pair<IBranchPath, String> pair = identicalPairOf(branchPath, cdoIdIdMapping.get(refSetCdoId));
-		return idLabelCache.getUnchecked(pair);
+		final String refSetIdentifierId = member.getRefSetIdentifierId();
+		final Pair<IBranchPath, String> pair = identicalPairOf(branchPath, refSetIdentifierId);
+		final String label = idLabelCache.getUnchecked(pair);
+		if (refSetIdentifierId.equals(label)) {
+			return "deleted reference set " + label;
+		}
+		return label;
 	}
 	
 	private String getLabel(final Relationship relationship) {

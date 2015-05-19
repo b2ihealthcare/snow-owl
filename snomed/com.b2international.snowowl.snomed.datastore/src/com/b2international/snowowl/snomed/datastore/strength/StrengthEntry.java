@@ -353,7 +353,7 @@ public class StrengthEntry implements Serializable {
 		if (denominatorValue == null) {
 			if (other.denominatorValue != null)
 				return false;
-		} else if (!denominatorValue.equals(other.denominatorValue))
+		} else if (denominatorValue.compareTo(other.denominatorValue) != 0)
 			return false;
 		if (name == null) {
 			if (other.name != null)
@@ -363,19 +363,19 @@ public class StrengthEntry implements Serializable {
 		if (numeratorMaxValue == null) {
 			if (other.numeratorMaxValue != null)
 				return false;
-		} else if (!numeratorMaxValue.equals(other.numeratorMaxValue))
+		} else if (numeratorMaxValue.compareTo(other.numeratorMaxValue) != 0)
 			return false;
 		if (numeratorMinValue == null) {
 			if (other.numeratorMinValue != null)
 				return false;
-		} else if (!numeratorMinValue.equals(other.numeratorMinValue))
+		} else if (numeratorMinValue.compareTo(other.numeratorMinValue) != 0)
 			return false;
 		if (numeratorUnit != other.numeratorUnit)
 			return false;
 		if (numeratorValue == null) {
 			if (other.numeratorValue != null)
 				return false;
-		} else if (!numeratorValue.equals(other.numeratorValue))
+		} else if (numeratorValue.compareTo(other.numeratorValue) != 0)
 			return false;
 		if (type != other.type)
 			return false;

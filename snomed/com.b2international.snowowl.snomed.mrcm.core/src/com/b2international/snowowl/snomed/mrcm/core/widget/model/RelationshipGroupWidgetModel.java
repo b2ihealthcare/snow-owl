@@ -65,11 +65,20 @@ public class RelationshipGroupWidgetModel extends ContainerWidgetModel {
 	}
 	
 	private GroupFlag groupFlag;
+	private boolean concreteDomainSupported;
 	
 	private RelationshipGroupWidgetModel(final String label, final List<? extends WidgetModel> models, final GroupFlag groupFlag) {
 		
 		super(label, models);
 		this.groupFlag = checkNotNull(groupFlag, "groupFlag");
+	}
+	
+	public boolean isConcreteDomainSupported() {
+		return isUngrouped() && concreteDomainSupported;
+	}
+	
+	public void setConcreteDomainSupported(boolean concreteDomainSupported) {
+		this.concreteDomainSupported = concreteDomainSupported;
 	}
 	
 	public boolean isUngrouped() {
@@ -125,4 +134,5 @@ public class RelationshipGroupWidgetModel extends ContainerWidgetModel {
 		
 		throw new IllegalStateException(MessageFormat.format("Couldn''t find matching concrete domain model for type ''{0}''.", dataType));
 	}
+
 }

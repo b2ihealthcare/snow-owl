@@ -78,15 +78,21 @@ public class SnomedRelationshipImporter extends AbstractSnomedTerminologyImporte
 			return;
 		}
 
+		if (currentRow.getEffectiveTime() != null) {
+			editedRelationship.setEffectiveTime(currentRow.getEffectiveTime());
+			editedRelationship.setReleased(true);
+		} else {
+			editedRelationship.unsetEffectiveTime();
+			editedRelationship.setReleased(false);
+		}
+
 		editedRelationship.setActive(currentRow.isActive());
-		editedRelationship.setEffectiveTime(currentRow.getEffectiveTime());
 		editedRelationship.setModule(getConceptSafe(currentRow.getModuleId(), SnomedRf2Headers.FIELD_MODULE_ID, currentRow.getId()));
 		editedRelationship.setDestination(getConceptSafe(currentRow.getDestinationId(), SnomedRf2Headers.FIELD_DESTINATION_ID, currentRow.getId()));
 		editedRelationship.setType(getConceptSafe(currentRow.getTypeId(), SnomedRf2Headers.FIELD_TYPE_ID, currentRow.getId()));
 		editedRelationship.setCharacteristicType(getConceptSafe(currentRow.getCharacteristicTypeId(), SnomedRf2Headers.FIELD_CHARACTERISTIC_TYPE_ID, currentRow.getId()));
 		editedRelationship.setModifier(getConceptSafe(currentRow.getModifierId(), SnomedRf2Headers.FIELD_MODIFIER_ID, currentRow.getId()));
 		editedRelationship.setGroup(currentRow.getRelationshipGroup());
-		editedRelationship.setReleased(true);
 		
 		getImportContext().conceptVisited(currentRow.getSourceId());
 	}

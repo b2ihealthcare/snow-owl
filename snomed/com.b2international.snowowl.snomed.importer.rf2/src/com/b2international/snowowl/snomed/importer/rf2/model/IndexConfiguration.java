@@ -119,7 +119,7 @@ public class IndexConfiguration {
 			query.executeUpdate();
 			return true;
 		} catch (final SQLException e) {
-			logger.warn(MessageFormat.format("Couldn''t create or drop index {0} for table {1}.", indexName, tableName));
+			logger.warn("Couldn't create or drop index {} for table {}.", indexName, tableName, e);
 			return false;
 		} finally {
 			if (null != query) {

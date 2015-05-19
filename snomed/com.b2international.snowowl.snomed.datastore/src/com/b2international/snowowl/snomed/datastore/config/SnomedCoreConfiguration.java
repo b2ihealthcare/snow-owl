@@ -30,7 +30,8 @@ import com.fasterxml.jackson.annotation.JsonProperty;
  */
 public class SnomedCoreConfiguration {
 
-	private static final String DEFAULT_REASONER = "org.semanticweb.elk.elk.reasoner.factory"; //$NON-NLS-1$
+	public static final String ELK_REASONER_ID = "org.semanticweb.elk.elk.reasoner.factory"; //$NON-NLS-1$
+	private static final String DEFAULT_REASONER = ELK_REASONER_ID;
 	public static final String DEFAULT_LANGUAGE = "en-gb"; //$NON-NLS-1$
 	public static final int DEFAULT_MAXIMUM_REASONER_COUNT = 2;
 	public static final int DEFAULT_MAXIMUM_REASONER_RESULTS = 10;
@@ -52,6 +53,9 @@ public class SnomedCoreConfiguration {
 	
 	@NotNull
 	private String defaultNamespace = DEFAULT_NAMESPACE;
+	
+	private boolean concreteDomainSupport;
+	private boolean showReasonerUsageWarning = true;
 	
 	/**
 	 * @return the maxReasonerCount
@@ -131,6 +135,26 @@ public class SnomedCoreConfiguration {
 	@JsonProperty
 	public void setDefaultReasoner(String defaultReasoner) {
 		this.defaultReasoner = defaultReasoner;
+	}
+
+	@JsonProperty("concreteDomainSupport")
+	public boolean isConcreteDomainSupported() {
+		return concreteDomainSupport;
+	}
+	
+	@JsonProperty("concreteDomainSupport")
+	public void setConcreteDomainSupported(boolean concreteDomainSupport) {
+		this.concreteDomainSupport = concreteDomainSupport;
+	}
+
+	@JsonProperty("showReasonerUsageWarning")
+	public boolean isShowReasonerUsageWarningEnabled() {
+		return showReasonerUsageWarning ;
+	}
+	
+	@JsonProperty("showReasonerUsageWarning")
+	public void setShowReasonerUsageWarningEnabled(boolean showReasonerUsageWarning) {
+		this.showReasonerUsageWarning = showReasonerUsageWarning;
 	}
 	
 }

@@ -206,7 +206,7 @@ public abstract class SnomedRf2Headers {
 		FIELD_MODULE_ID, 
 		FIELD_REFSET_ID, 
 		FIELD_REFERENCED_COMPONENT_ID,
-		FIELD_TARGET_COMPONENT };
+		FIELD_TARGET_COMPONENT_ID };
 	
 	public static final String[] SIMPLE_MAP_TYPE_HEADER = new String[] {
 		FIELD_ID, 

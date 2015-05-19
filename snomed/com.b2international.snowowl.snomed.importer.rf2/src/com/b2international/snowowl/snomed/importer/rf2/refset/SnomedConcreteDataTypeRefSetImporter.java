@@ -131,9 +131,16 @@ public class SnomedConcreteDataTypeRefSetImporter extends AbstractSnomedRefSetIm
 			return null;
 		}
 
+		if (currentRow.getEffectiveTime() != null) {
+			editedMember.setEffectiveTime(currentRow.getEffectiveTime());
+			editedMember.setReleased(true);
+		} else {
+			editedMember.unsetEffectiveTime();
+			editedMember.setReleased(false);
+		}
+
 		editedMember.setRefSet(getOrCreateRefSet(currentRow.getRefSetId(), currentRow.getReferencedComponentId()));
 		editedMember.setActive(currentRow.isActive());
-		editedMember.setEffectiveTime(currentRow.getEffectiveTime());
 		editedMember.setModuleId(currentRow.getModuleId());
 		editedMember.setReferencedComponentId(currentRow.getReferencedComponentId());
 		editedMember.setUomComponentId(currentRow.getUomId());
@@ -141,7 +148,6 @@ public class SnomedConcreteDataTypeRefSetImporter extends AbstractSnomedRefSetIm
 		editedMember.setLabel(currentRow.getAttributeName());
 		editedMember.setSerializedValue(currentRow.getDataValue());
 		editedMember.setCharacteristicTypeId(currentRow.getCharacteristicTypeId());
-		editedMember.setReleased(true);
 		
 		return editedMember;
 	}

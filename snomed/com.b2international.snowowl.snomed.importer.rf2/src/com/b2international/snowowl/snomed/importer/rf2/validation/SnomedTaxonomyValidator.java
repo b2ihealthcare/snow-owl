@@ -20,7 +20,6 @@ import static com.b2international.snowowl.core.ApplicationContext.getServiceForC
 import static com.b2international.snowowl.datastore.server.snomed.index.init.Rf2BasedSnomedTaxonomyBuilder.newInstance;
 import static com.b2international.snowowl.datastore.server.snomed.index.init.Rf2BasedSnomedTaxonomyBuilder.newValidationInstance;
 import static com.b2international.snowowl.snomed.common.ContentSubType.SNAPSHOT;
-import static com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator.REPOSITORY_UUID;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.collect.Iterables.concat;
 import static com.google.common.collect.Lists.newArrayList;
@@ -42,7 +41,6 @@ import org.slf4j.Logger;
 
 import com.b2international.commons.Pair;
 import com.b2international.snowowl.core.api.IBranchPath;
-import com.b2international.snowowl.datastore.ContentAvailabilityInfoManager;
 import com.b2international.snowowl.datastore.server.snomed.index.AbstractSnomedTaxonomyBuilder;
 import com.b2international.snowowl.datastore.server.snomed.index.SnomedTaxonomyBuilder;
 import com.b2international.snowowl.datastore.server.snomed.index.init.Rf2BasedSnomedTaxonomyBuilder;
@@ -162,21 +160,21 @@ public class SnomedTaxonomyValidator {
 				String destinationLabel = SnomedConceptNameProvider.INSTANCE.getComponentLabel(branchPath, destinationId);
 				
 				final StringBuilder sb = new StringBuilder();
-				sb.append("Source concept '");
+				sb.append("IS A relationship with source concept '");
 				sb.append(sourceId);
 				if (!isEmpty(sourceLabel)) {
 					sb.append("|");
 					sb.append(sourceLabel);
 					sb.append("|");
 				}
-				sb.append("' is referencing to a concept that would be inactivated with the current import. Destination concept: '");
+				sb.append("' and destination concept '");
 				sb.append(destinationId);
 				if (!isEmpty(destinationLabel)) {
 					sb.append("|");
 					sb.append(destinationLabel);
 					sb.append("|");
 				}
-				sb.append("'.");
+				sb.append("' has a missing or inactive source or destination concept.");
 				defects.add(sb.toString());
 			}
 			
@@ -184,7 +182,7 @@ public class SnomedTaxonomyValidator {
 			return Collections.<SnomedValidationDefect>singleton(defect);
 		}
 		
-		LOGGER.info("SNOMED CT ontology validation successfully finished. No errors where found.");
+		LOGGER.info("SNOMED CT ontology validation successfully finished. No errors were found.");
 		return emptySet();
 	}
 
@@ -213,10 +211,6 @@ public class SnomedTaxonomyValidator {
 		return newValidationInstance(original, conceptFilePath, relationshipFilePath);
 	}
 
-	private boolean isSnomedContentAvailable() {
-		return ContentAvailabilityInfoManager.INSTANCE.isAvailable(REPOSITORY_UUID);
-	}
-
 	private boolean isCoreImport() {
 		return hasConceptImport() && hasRelationshipImport();
 	}
@@ -228,5 +222,4 @@ public class SnomedTaxonomyValidator {
 	private boolean hasRelationshipImport() {
 		return null != configuration.getRelationshipsFile();
 	}
-	
 }

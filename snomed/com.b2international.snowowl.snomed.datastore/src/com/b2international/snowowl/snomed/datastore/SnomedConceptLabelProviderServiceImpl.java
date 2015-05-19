@@ -31,7 +31,10 @@ public class SnomedConceptLabelProviderServiceImpl implements SnomedConceptLabel
 	@Override
 	public String getLabel(final IBranchPath branchPath, final String conceptId) {
 		final IComponentNameProvider nameProvider = SnomedConceptNameProvider.INSTANCE;
-		return nameProvider.getComponentLabel(checkNotNull(branchPath, "branchPath"), checkNotNull(conceptId, "conceptId"));
+		if (conceptId != null) {
+			return nameProvider.getComponentLabel(checkNotNull(branchPath, "branchPath"), checkNotNull(conceptId, "conceptId"));
+		}
+		return "N/A";
 	}
 
 }

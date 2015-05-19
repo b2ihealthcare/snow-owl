@@ -18,7 +18,6 @@ package com.b2international.snowowl.snomed.importer.rf2.model;
 import static com.google.common.base.Preconditions.checkNotNull;
 
 import java.io.File;
-import java.util.Date;
 
 import org.supercsv.io.CsvListWriter;
 
@@ -27,7 +26,6 @@ import com.b2international.snowowl.importer.Importer;
 /**
  * Stores a {@link CsvListWriter} and a record count for slicing release files
  * based on the entries' effective time.
- * 
  */
 public class ComponentImportEntry {
 
@@ -40,8 +38,8 @@ public class ComponentImportEntry {
 		this.writer = checkNotNull(writer, "writer");
 	}
 	
-	public ComponentImportUnit createUnit(final Importer importer, final Date effectiveTime, final ComponentImportType type) {
-		return new ComponentImportUnit(importer, effectiveTime, type, unitFile, recordCount);
+	public ComponentImportUnit createUnit(final Importer importer, final String effectiveTimeKey, final ComponentImportType type) {
+		return new ComponentImportUnit(importer, effectiveTimeKey, type, unitFile, recordCount);
 	}
 	
 	public CsvListWriter getWriter() {

@@ -337,17 +337,7 @@ public final class ImportUtil {
 		final Connection connection = ServerDbUtils.createConnection(SnomedPackage.eINSTANCE, config);
 		context.setEditingContext(editingContext);
 		context.setConnection(connection);
-
-		if (context.isSlicingEnabled()) {
-			context.setAggregatorSupplier(new EffectiveTimeBaseTransactionAggregatorSupplier(editingContext.getTransaction()));
-		} else {
-			//we will handle the whole delta/snapshot imports as one, or at least we will create one single commit for it
-			context.setAggregatorSupplier(Suppliers.memoize(new Supplier<ICDOTransactionAggregator>() {
-				@Override public ICDOTransactionAggregator get() {
-					return CDOTransactionAggregator.create(context.getEditingContext().getTransaction());
-				}
-			}));
-		}
+		context.setAggregatorSupplier(new EffectiveTimeBaseTransactionAggregatorSupplier(editingContext.getTransaction()));
 
 		final IOperationLockTarget lockTarget = new SingleRepositoryAndBranchLockTarget(editingContext.getTransaction().getSession().getRepositoryInfo().getUUID(), branchPath);
 		final DatastoreLockContext lockContext = new DatastoreLockContext(requestingUserId, DatastoreLockContextDescriptions.IMPORT);

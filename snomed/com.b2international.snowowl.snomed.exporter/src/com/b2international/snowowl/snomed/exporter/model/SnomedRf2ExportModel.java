@@ -34,7 +34,6 @@ import com.b2international.commons.collections.Procedure;
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.date.Dates;
-import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.datastore.BranchPathUtils;
 import com.b2international.snowowl.datastore.cdo.ICDOConnection;
 import com.b2international.snowowl.datastore.cdo.ICDOConnectionManager;
@@ -149,7 +148,7 @@ public final class SnomedRf2ExportModel extends SnomedExportModel {
 		final ICDOConnection connection = ApplicationContext.getInstance().getService(ICDOConnectionManager.class).get(SnomedPackage.eINSTANCE);
 		clientBranch = BranchPathUtils.createActivePath(connection.getUuid());
 		userId = ApplicationContext.getInstance().getService(ICDOConnectionManager.class).getUserId();
-		unsetEffectiveTimeLabel = EffectiveTimes.UNSET_EFFECTIVE_TIME_LABEL;
+		unsetEffectiveTimeLabel = "";
 	}
 
 	public Set<String> getRefSetIds() {
