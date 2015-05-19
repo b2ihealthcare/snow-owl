@@ -103,6 +103,11 @@ public class BranchImpl extends MetadataHolderImpl implements Branch, InternalBr
 	}
 	
 	@Override
+	public Branch reopen() {
+		return branchManager.reopen((InternalBranch) parent(), name, metadata());
+	}
+	
+	@Override
 	public Branch delete() {
 		return branchManager.delete(this);
 	}

@@ -34,6 +34,7 @@ import com.b2international.snowowl.datastore.server.events.DeleteBranchEvent;
 import com.b2international.snowowl.datastore.server.events.MergeEvent;
 import com.b2international.snowowl.datastore.server.events.ReadAllBranchEvent;
 import com.b2international.snowowl.datastore.server.events.ReadBranchEvent;
+import com.b2international.snowowl.datastore.server.events.ReopenBranchEvent;
 
 /**
  * @since 4.1
@@ -67,6 +68,17 @@ public class BranchEventHandler extends ApiEventHandler {
 			final Branch parent = branchManager.getBranch(event.getParent());
 			final Branch child = parent.createChild(event.getName(), event.getMetadata());
 			return new BranchReply(child);
+		} catch (NotFoundException e) {
+			// if parent not found, convert it to BadRequestException
+			throw e.toBadRequestException();
+		}
+	}
+	
+	@Handler
+	protected BranchReply handle(ReopenBranchEvent event) {
+		try {
+			final Branch branch = branchManager.getBranch(event.getBranchPath());
+			return new BranchReply(branch.reopen());
 		} catch (NotFoundException e) {
 			// if parent not found, convert it to BadRequestException
 			throw e.toBadRequestException();

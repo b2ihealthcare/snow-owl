@@ -161,6 +161,13 @@ public interface Branch extends Deletable, MetadataHolder {
 	 *             - if the child branch already exists
 	 */
 	Branch createChild(String name, Metadata metadata);
+
+	/**
+	 * Reopens the branch with the same name and parent, on the parent head.
+	 * 
+	 * @return the reopened branch
+	 */
+	Branch reopen();
 	
 	@Override
 	Branch delete();
@@ -170,5 +177,4 @@ public interface Branch extends Deletable, MetadataHolder {
 	 * @deprecated - use the new {@link Branch} interface instead
 	 */
 	IBranchPath branchPath();
-
 }

@@ -82,7 +82,6 @@ public class PrepareBranchAction extends AbstractCDOBranchAction {
 
 			final IEventBus eventBus = ApplicationContext.getServiceForClass(IEventBus.class);
 			final CreateBranchEvent event = new CreateBranchEvent(repositoryId, parentBranchPath.getPath(), taskBranchPath.lastSegment(), new MetadataImpl());
-			
 			final SettableFuture<BranchReply> result = SettableFuture.create();
 			
 			new AsyncSupport<>(eventBus, BranchReply.class)
