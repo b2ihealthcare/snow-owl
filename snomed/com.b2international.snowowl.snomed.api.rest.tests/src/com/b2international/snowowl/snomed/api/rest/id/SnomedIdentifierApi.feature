@@ -17,7 +17,7 @@ package com.b2international.snowowl.snomed.api.rest.id
 
 import com.jayway.restassured.response.Response
 
-import com.b2international.snowowl.snomed.api.rest.concept.*
+import com.b2international.snowowl.snomed.api.rest.components.*
 import static extension com.b2international.snowowl.test.commons.rest.RestExtensions.*
 
 Feature: SnomedIdentifierApi
