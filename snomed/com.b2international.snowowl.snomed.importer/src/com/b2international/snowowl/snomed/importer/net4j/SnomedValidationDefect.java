@@ -44,12 +44,12 @@ public class SnomedValidationDefect implements Serializable {
 	
 	public enum DefectType {
 		
-		HEADER_DIFFERENCES("Header format is different from the standard format defined by IHTSDO"),
+		HEADER_DIFFERENCES("Header format is different from the standard format defined by IHTSDO", false),
 		INCORRECT_COLUMN_NUMBER("Incorrect column number in release file"),
 		MODULE_CONCEPT_NOT_EXIST("Module concept does not exist"),
 		NOT_UNIQUE_DESCRIPTION_ID("Description identifier is not unique"),
-		NOT_UNIQUE_FULLY_SPECIFIED_NAME("Fully specified name is not unique"),
-		CONCEPT_DEFINITION_STATUS_NOT_EXIST("Concepts refers to a non-existing concept in column 'definitionStatusId'"),
+		NOT_UNIQUE_FULLY_SPECIFIED_NAME("Fully specified name is not unique", false),
+		CONCEPT_DEFINITION_STATUS_NOT_EXIST("Concept refers to a non-existing concept in column 'definitionStatusId'"),
 		DESCRIPTION_CONCEPT_NOT_EXIST("Description refers to a non-existing concept in column 'conceptId'"),
 		DESCRIPTION_TYPE_NOT_EXIST("Description refers to a non-existing concept in column 'typeId'"),
 		DESCRIPTION_CASE_SIGNIFICANCE_NOT_EXIST("Description refers to a non-existing concept in column 'caseSignificanceId'"),
@@ -70,23 +70,30 @@ public class SnomedValidationDefect implements Serializable {
 		SIMPLE_MAP_TARGET_IS_EMPTY("Simple map type reference set member target is empty in column 'mapTarget'"),
 		DESCRIPTION_TYPE_DESCRIPTION_FORMAT_NOT_EXIST("Description type reference set member refers to a non-existing concept in column 'descriptionFormat'"),
 		DESCRIPTION_TYPE_DESCRIPTION_LENGTH_IS_EMPTY("Description type reference set member value is empty in column 'descriptionLength'"),
-		ASSOCIATION_REFSET_TARGET_COMPONENT_NOT_EXIST("Association reference set member refers to a non-existing concept in column 'targetComponent'"),
-		UNKOWN_REFSET_TYPE("Unknown reference set type"), 
+		ASSOCIATION_REFSET_TARGET_COMPONENT_NOT_EXIST("Association reference set member refers to a non-existing concept in column 'targetComponentId'"),
 		INVALID_EFFECTIVE_TIME_FORMAT("Effective time format is not valid. Acceptable effective time format is 'yyyyMMdd'."),
-		INCONSISTENT_TAXONOMY("The concepts below are referenced in active relationships. The newly imported version inactivates " + 
-				"these concepts but leaves the other end of the relationship active, which is invalid."),
+		INCONSISTENT_TAXONOMY("The concepts below are referenced in active IS A relationships, but are inactive or otherwise not known."),
 		IO_PROBLEM("Encountered an I/O error while running validation.");
 		
-		private String label;
+		private final String label;
+		private final boolean critical;
 		
 		private DefectType(final String label) {
+			this(label, true);
+		}
+		
+		private DefectType(final String label, final boolean critical) {
 			this.label = label;
+			this.critical = critical;
 		}
 		
 		@Override
 		public String toString() {
 			return label;
 		}
+		
+		public boolean isCritical() {
+			return critical;
+		}
 	}
-
 }
