@@ -65,12 +65,14 @@ import com.b2international.snowowl.importer.ImportException;
 import com.b2international.snowowl.importer.Importer;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.SnomedFactory;
+import com.b2international.snowowl.snomed.common.ContentSubType;
 import com.b2international.snowowl.snomed.datastore.SnomedCodeSystemFactory;
 import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 import com.b2international.snowowl.snomed.datastore.SnomedEditingContext;
 import com.b2international.snowowl.snomed.importer.rf2.model.AbstractSnomedImporter;
 import com.b2international.snowowl.snomed.importer.rf2.model.ComponentImportType;
 import com.b2international.snowowl.snomed.importer.rf2.model.ComponentImportUnit;
+import com.b2international.snowowl.snomed.importer.rf2.model.EffectiveTimeUnitOrdering;
 import com.b2international.snowowl.snomed.importer.rf2.model.SnomedImportContext;
 import com.b2international.snowowl.snomed.mrcm.core.server.MrcmFileRegistryImpl;
 import com.b2international.snowowl.snomed.mrcm.core.server.MrcmImporter;
@@ -134,8 +136,16 @@ public class SnomedCompositeImporter extends AbstractLoggingImporter {
 			units.addAll(importer.getImportUnits(subMonitor.newChild(1, SubMonitor.SUPPRESS_NONE)));
 		}
 		
-		Collections.sort(units, unitOrdering);
+		if (ContentSubType.SNAPSHOT.equals(importContext.getContentSubType())) {
+			AbstractImportUnit latestUnit = EffectiveTimeUnitOrdering.INSTANCE.max(units);
+			String latestKey = ((ComponentImportUnit) latestUnit).getEffectiveTimeKey();
+			
+			for (AbstractImportUnit unit : units) {
+				((ComponentImportUnit) unit).setEffectiveTimeKey(latestKey);
+			}
+		}
 		
+		Collections.sort(units, unitOrdering);
 		return new SnomedCompositeImportUnit(this, units);
 	}
 

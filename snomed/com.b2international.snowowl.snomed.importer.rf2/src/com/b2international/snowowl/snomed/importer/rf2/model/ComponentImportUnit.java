@@ -30,27 +30,10 @@ import com.google.common.collect.Ordering;
  */
 public class ComponentImportUnit extends AbstractImportUnit {
 
-	private static class UnitOrdering extends Ordering<AbstractImportUnit> {
-
-		@Override
-		public int compare(final AbstractImportUnit left, final AbstractImportUnit right) {
-
-			final ComponentImportUnit castLeft = (ComponentImportUnit) left;
-			final ComponentImportUnit castRight = (ComponentImportUnit) right;
-			
-			final int dateComparison = castLeft.getEffectiveTimeKey().compareTo(castRight.getEffectiveTimeKey());
-			
-			if (dateComparison != 0) {
-				return dateComparison; 
-			}
-			
-			return castLeft.getType().compareTo(castRight.getType());
-		}
-	}
+	public static final Ordering<AbstractImportUnit> ORDERING = EffectiveTimeUnitOrdering.INSTANCE.compound(TypeUnitOrdering.INSTANCE);
 	
-	public static final Ordering<AbstractImportUnit> ORDERING = new UnitOrdering();
-	
-	private final String effectiveTimeKey;
+	private String effectiveTimeKey;
+
 	private final ComponentImportType type;
 	private final File unitFile;
 	private final int recordCount;
@@ -67,6 +50,10 @@ public class ComponentImportUnit extends AbstractImportUnit {
 	
 	public String getEffectiveTimeKey() {
 		return effectiveTimeKey;
+	}
+	
+	public void setEffectiveTimeKey(String effectiveTimeKey) {
+		this.effectiveTimeKey = effectiveTimeKey;
 	}
 	
 	public ComponentImportType getType() {

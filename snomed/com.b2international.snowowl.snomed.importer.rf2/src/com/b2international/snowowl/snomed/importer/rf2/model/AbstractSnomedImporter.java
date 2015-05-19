@@ -375,15 +375,19 @@ public abstract class AbstractSnomedImporter<T extends AbstractComponentRow, C e
 
 	private ComponentImportEntry getOrCreateImportEntry(final Map<String, ComponentImportEntry> importEntries, final String csvEffectiveTime) {
 		
-		final String effectiveTimeKey = csvEffectiveTime.isEmpty() ? UNPUBLISHED_KEY : csvEffectiveTime;
+		String effectiveTimeKey = csvEffectiveTime.isEmpty() ? UNPUBLISHED_KEY : csvEffectiveTime;
 		
 		// SNAPSHOT import units will be registered with the highest effective time encountered; relocate the existing entry if necessary
 		if (ContentSubType.SNAPSHOT.equals(importContext.getContentSubType())) {
-			Entry<String, ComponentImportEntry> entry = Iterables.getOnlyElement(importEntries.entrySet(), null);
-			
-			if (entry != null && csvEffectiveTime.compareTo(entry.getKey()) > 0) {
-				importEntries.remove(entry.getKey());
-				importEntries.put(csvEffectiveTime, entry.getValue());
+			final Entry<String, ComponentImportEntry> entry = Iterables.getOnlyElement(importEntries.entrySet(), null);
+			if (entry != null) {
+				
+				if (csvEffectiveTime.compareTo(entry.getKey()) > 0) {
+					importEntries.remove(entry.getKey());
+					importEntries.put(csvEffectiveTime, entry.getValue());
+				} else {
+					effectiveTimeKey = entry.getKey();
+				}
 			}
 		}
 		
@@ -442,8 +446,7 @@ public abstract class AbstractSnomedImporter<T extends AbstractComponentRow, C e
 		subMonitor.beginTask(message, workUnits);
 		log(message);
 		
-		final String sliceFileName = getSliceFileName(effectiveTimeKey);
-		final File sliceFile = new File(componentStagingDirectory, sliceFileName);
+		final File sliceFile = concreteUnit.getUnitFile();
 		InputStream sliceFileStream = null;
 		
 		try {
