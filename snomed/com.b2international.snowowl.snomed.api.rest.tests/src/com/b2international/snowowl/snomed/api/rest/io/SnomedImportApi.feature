@@ -67,6 +67,7 @@ Feature: SnomedImportApi
 			response.expectStatus(201)
 			importId = response.location.lastPathSegment
 		When sending DELETE to "/imports/${importId}"
+			res = req.delete(args.first.renderWithFields(this))
 		Then return "204" status
 		And configuration should not be accessible anymore
 			API.get("imports", importId).expectStatus(404)
