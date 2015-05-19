@@ -15,9 +15,7 @@
  */
 package com.b2international.snowowl.api.impl.domain;
 
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicReference;
+import java.util.concurrent.ExecutionException;
 
 import org.eclipse.emf.cdo.common.branch.CDOBranch;
 
@@ -37,6 +35,7 @@ import com.b2international.snowowl.datastore.server.branch.Branch;
 import com.b2international.snowowl.datastore.server.events.BranchReply;
 import com.b2international.snowowl.datastore.server.events.ReadBranchEvent;
 import com.b2international.snowowl.eventbus.IEventBus;
+import com.google.common.util.concurrent.SettableFuture;
 
 /**
  * @since 1.0
@@ -98,29 +97,24 @@ public class StorageRef implements InternalStorageRef {
 	@Override
 	public Branch getBranch() {
 		if (branch == null) {
-			final CountDownLatch latch = new CountDownLatch(1);
-			final AtomicReference<Branch> ref = new AtomicReference<>();
+			final SettableFuture<BranchReply> result = SettableFuture.create();
 			new AsyncSupport<>(getEventBus(), BranchReply.class).send(new ReadBranchEvent(getRepositoryUuid(), getBranchPath()))
-				.then(new Procedure<BranchReply>() {
-					@Override
-					protected void doApply(BranchReply input) {
-						ref.set(input.getBranch());
-						latch.countDown();
-					}
-				}).fail(new Procedure<Throwable>() {
-					@Override
-					protected void doApply(Throwable input) {
-						latch.countDown();
-					}
-				});
+				.then(new Procedure<BranchReply>() { @Override protected void doApply(BranchReply input) {
+					result.set(input);
+				}}).fail(new Procedure<Throwable>() { @Override protected void doApply(Throwable input) {
+					result.setException(input);
+				}});
 			try {
-				if (!latch.await(2000, TimeUnit.MILLISECONDS)) {
-					throw new SnowowlRuntimeException("Timeout when reading branch: " + getRepositoryUuid() + ", path: " + getBranchPath());
-				}
+				branch = result.get().getBranch();
 			} catch (InterruptedException e) {
-				e.printStackTrace();
+				throw new SnowowlRuntimeException(e);
+			} catch (ExecutionException e) {
+				final Throwable cause = e.getCause();
+				if (cause instanceof RuntimeException) {
+					throw (RuntimeException) cause;
+				}
+				throw new SnowowlRuntimeException(cause);
 			}
-			branch = ref.get();
 		}
 		if (branch == null) {
 			throw new NotFoundException("Branch", getBranchPath());
