@@ -16,6 +16,8 @@
 package com.b2international.snowowl.api.impl.domain;
 
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 import org.eclipse.emf.cdo.common.branch.CDOBranch;
 
@@ -26,6 +28,7 @@ import com.b2international.snowowl.core.api.SnowowlRuntimeException;
 import com.b2international.snowowl.core.events.util.AsyncSupport;
 import com.b2international.snowowl.core.exceptions.BadRequestException;
 import com.b2international.snowowl.core.exceptions.NotFoundException;
+import com.b2international.snowowl.core.exceptions.RequestTimeoutException;
 import com.b2international.snowowl.datastore.IBranchPathMap;
 import com.b2international.snowowl.datastore.ICodeSystem;
 import com.b2international.snowowl.datastore.TerminologyRegistryService;
@@ -43,6 +46,7 @@ import com.google.common.util.concurrent.SettableFuture;
 public class StorageRef implements InternalStorageRef {
 
 	private static final IBranchPathMap MAIN_BRANCH_PATH_MAP = new UserBranchPathMap();
+	private static final long DEFAULT_ASYNC_TIMEOUT_DELAY = 5000;
 
 	private static ICDOConnectionManager getConnectionManager() {
 		return ApplicationContext.getServiceForClass(ICDOConnectionManager.class);
@@ -105,9 +109,11 @@ public class StorageRef implements InternalStorageRef {
 					result.setException(input);
 				}});
 			try {
-				branch = result.get().getBranch();
+				branch = result.get(DEFAULT_ASYNC_TIMEOUT_DELAY, TimeUnit.MILLISECONDS).getBranch();
 			} catch (InterruptedException e) {
 				throw new SnowowlRuntimeException(e);
+			} catch (TimeoutException e) {
+				throw new RequestTimeoutException(e);
 			} catch (ExecutionException e) {
 				final Throwable cause = e.getCause();
 				if (cause instanceof RuntimeException) {

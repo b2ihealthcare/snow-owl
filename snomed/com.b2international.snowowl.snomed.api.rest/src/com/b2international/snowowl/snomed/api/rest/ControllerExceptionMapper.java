@@ -29,6 +29,7 @@ import com.b2international.snowowl.core.exceptions.BadRequestException;
 import com.b2international.snowowl.core.exceptions.ConflictException;
 import com.b2international.snowowl.core.exceptions.NotFoundException;
 import com.b2international.snowowl.core.exceptions.NotImplementedException;
+import com.b2international.snowowl.core.exceptions.RequestTimeoutException;
 import com.b2international.snowowl.snomed.api.rest.domain.RestApiError;
 import com.fasterxml.jackson.databind.JsonMappingException;
 
@@ -50,8 +51,15 @@ public class ControllerExceptionMapper {
 	@ExceptionHandler
 	@ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
 	public @ResponseBody RestApiError handle(final Exception ex) {
-		LOG.error("Exception during processing of a request", ex);
+		LOG.error("Exception during request processing", ex);
 		return RestApiError.of(ApiError.Builder.of(GENERIC_USER_MESSAGE).build()).build(HttpStatus.INTERNAL_SERVER_ERROR.value());
+	}
+	
+	@ExceptionHandler
+	@ResponseStatus(HttpStatus.REQUEST_TIMEOUT)
+	public @ResponseBody RestApiError handle(RequestTimeoutException ex) {
+		LOG.error("Timeout during request processing", ex);
+		return RestApiError.of(ApiError.Builder.of(GENERIC_USER_MESSAGE).build()).build(HttpStatus.REQUEST_TIMEOUT.value());
 	}
 	
 	/**
