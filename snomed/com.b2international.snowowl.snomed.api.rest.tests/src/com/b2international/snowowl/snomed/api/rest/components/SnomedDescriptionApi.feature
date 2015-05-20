@@ -22,7 +22,6 @@ import com.b2international.snowowl.snomed.api.rest.components.*
 import static extension com.b2international.snowowl.test.commons.rest.RestExtensions.*
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts
 import com.b2international.snowowl.snomed.api.rest.branches.*
-import java.util.Map
 
 import static com.b2international.snowowl.snomed.SnomedConstants.Concepts.*
 import com.b2international.snowowl.snomed.api.domain.Acceptability
@@ -50,7 +49,7 @@ Feature: SnomedDescriptionApi
 		val public SYNONYM_ID = SYNONYM
 		
 		val acceptableAcceptabilityMap = #{ REFSET_LANGUAGE_TYPE_UK -> Acceptability.ACCEPTABLE.name }
-		var public Map<String, ?> json
+		val preferredAcceptabilityMap = #{ REFSET_LANGUAGE_TYPE_UK -> Acceptability.PREFERRED.name }
 		
 	Scenario: New description on non-existent SNOMED CT branch
 		
@@ -146,11 +145,44 @@ Feature: SnomedDescriptionApi
 		And sending POST to "/${branchPath}/descriptions"
 		And extracted description id
 		And inactivation request
-		When sending PUT to "/${branchPath}/descriptions/${descriptionId}/updates"
-			res = API.postJson(json, args.first.renderWithFields(this))
+		When sending POST to "/${branchPath}/descriptions/${descriptionId}/updates"
 		Then return "204" status
 		And "active" should be "false"
 	
+	Scenario: Change description case significance
+		Given branchPath "MAIN"
+		And new description "${DISEASE}" - "Rare disease" with module "${MODULE_SCT_CORE_ID}" and type "${SYNONYM_ID}" and comment "Created new description"
+		And sending POST to "/${branchPath}/descriptions"
+		And extracted description id
+		And changing case significance to "CASE_INSENSITIVE"
+			req.withJson(#{
+				"caseSignificance" -> args.first,
+				"commitComment" -> "Updating case significance"
+			})
+		When sending POST to "/${branchPath}/descriptions/${descriptionId}/updates"
+		Then return "204" status
+		And "caseSignificance" should be "CASE_INSENSITIVE"
+
+	Scenario: Change description acceptability
+		Given branchPath "MAIN"
+		And new description "${DISEASE}" - "Rare disease" with module "${MODULE_SCT_CORE_ID}" and type "${SYNONYM_ID}" and comment "Created new description"
+		And sending POST to "/${branchPath}/descriptions"
+		And extracted description id
+		And changing acceptability to preferred
+			req.withJson(#{
+				"acceptability" -> preferredAcceptabilityMap,
+				"commitComment" -> "Updating acceptability"
+			})
+		When sending POST to "/${branchPath}/descriptions/${descriptionId}/updates"
+		Then return "204" status
+		And the preferred term of "${DISEASE}" should be "Rare disease"
+			res = givenAuthenticatedRequest(API)
+				.headers(#{ "Accept-Language" -> "en-GB" })
+				.get(asPath(#[ branchPath, "concepts", args.first.renderWithFields(this), "pt" ]))
+				
+			res.expectStatus(200)
+			res.getBody.path("term").toString should be args.second
+
 	Scenario: Create description on deep branch
 		
 		Given branchPath "MAIN/${branchName}/b/c"
