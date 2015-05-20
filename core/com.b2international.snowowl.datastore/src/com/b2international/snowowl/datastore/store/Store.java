@@ -17,6 +17,8 @@ package com.b2international.snowowl.datastore.store;
 
 import java.util.Collection;
 
+import com.b2international.snowowl.datastore.store.query.Query;
+
 
 /**
  * @since 4.1
@@ -36,5 +38,9 @@ public interface Store<T> {
 	Collection<T> values();
 	
 	void clear();
+	
+	Collection<T> search(Query query);
+	
+	Collection<T> search(Query query, int offset, int limit);
 
 }

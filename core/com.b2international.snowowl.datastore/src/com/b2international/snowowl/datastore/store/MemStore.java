@@ -15,9 +15,17 @@
  */
 package com.b2international.snowowl.datastore.store;
 
+import static com.google.common.base.Preconditions.checkArgument;
+
 import java.util.Collection;
 import java.util.concurrent.ConcurrentMap;
 
+import com.b2international.snowowl.datastore.store.query.Query;
+import com.b2international.snowowl.datastore.store.query.Where;
+import com.google.common.base.Function;
+import com.google.common.base.Predicate;
+import com.google.common.base.Predicates;
+import com.google.common.collect.FluentIterable;
 import com.google.common.collect.MapMaker;
 
 /**
@@ -55,6 +63,28 @@ public class MemStore<T> implements Store<T> {
 	@Override
 	public void clear() {
 		values.clear();
+	}
+	
+	@Override
+	public Collection<T> search(Query query) {
+		return search(query, 0, Integer.MAX_VALUE);
+	}
+	
+	@Override
+	public Collection<T> search(Query query, int offset, int limit) {
+		checkArgument(query != null, "Query may not be null");
+		checkArgument(offset >= 0, "Offset must be zero or positive");
+		checkArgument(limit >= 1, "Limit should be at least one");
+		return FluentIterable.from(values()).skip(offset).limit(limit).filter(Predicates.and(toPredicates(query))).toSet();
+	}
+	
+	private Iterable<Predicate<T>> toPredicates(Query query) {
+		return FluentIterable.from(query.clauses()).filter(Where.class).transform(new Function<Where, Predicate<T>>() {
+			@Override
+			public Predicate<T> apply(final Where where) {
+				return where.toPredicate();
+			}
+		}).toSet();
 	}
 	
 }
