@@ -108,13 +108,13 @@ public class EventBus extends Lifecycle implements IEventBus {
 	
 	private void receiveMessage(BaseMessage message) {
 		final String address = message.address();
-		LOG.trace("Received message: " + message);
 		message.bus = this;
 		final ChoosableList<Handler> handlers = handlerMap.get(address);
 		receiveMessage(handlers, message);
 	}
 	
 	private void receiveMessage(ChoosableList<Handler> handlers, BaseMessage message) {
+		LOG.trace("Received message: " + message);
 		if (handlers != null) {
 			if (message.isSend()) {
 				final Handler handler = handlers.choose();
@@ -128,6 +128,7 @@ public class EventBus extends Lifecycle implements IEventBus {
 			}
 		} else {
 			// TODO send reply to indicate that there is no handler
+			LOG.error("No event handler registered: {}", message.address());
 		}
 	}
 	
