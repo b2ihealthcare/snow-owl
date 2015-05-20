@@ -45,11 +45,6 @@ public class FileLoginModule extends AbstractLoginModule {
 	}
 
 	@Override
-	protected Logger getLogger() {
-		return LOGGER;
-	}
-
-	@Override
 	protected void doLogin(final Pair<String, String> userNameAndPassword) throws FailedLoginException {
 		final IUserManager userManager = ApplicationContext.getInstance().getService(IUserManager.class);
 		final User user = userManager.getUser(userNameAndPassword.getA());

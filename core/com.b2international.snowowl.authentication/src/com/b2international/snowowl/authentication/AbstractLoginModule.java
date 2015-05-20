@@ -30,8 +30,6 @@ import javax.security.auth.callback.UnsupportedCallbackException;
 import javax.security.auth.login.LoginException;
 import javax.security.auth.spi.LoginModule;
 
-import org.slf4j.Logger;
-
 import com.b2international.commons.Pair;
 
 /**
@@ -50,11 +48,7 @@ public abstract class AbstractLoginModule implements LoginModule {
 	@Override
 	public final boolean login() throws LoginException {
 		final Pair<String, String> userNameAndPassword = getUsernameAndPasswordFromCallback();
-
-		getLogger().info("Authenticating: " + userNameAndPassword.getA());
 		doLogin(userNameAndPassword);
-		getLogger().info("Authentication succeeded for user: " + userNameAndPassword.getA());
-
 		return true;
 	}
 
@@ -96,8 +90,6 @@ public abstract class AbstractLoginModule implements LoginModule {
 			throw new LoginException(MessageFormat.format("Callback ''{0}'' is not recognized.", e.getCallback())); 
 		}
 	}
-
-	protected abstract Logger getLogger();
 
 	protected abstract void doLogin(Pair<String, String> userNameAndPassword) throws LoginException;
 }
