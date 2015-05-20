@@ -21,8 +21,9 @@ import java.util.UUID
 import com.b2international.snowowl.snomed.api.rest.components.*
 
 import static extension com.b2international.snowowl.test.commons.rest.RestExtensions.*
-import com.jayway.restassured.http.ContentType
 import java.util.Collection
+import com.jayway.restassured.RestAssured
+import com.jayway.restassured.parsing.Parser
 
 /**
  * @since 2.0
@@ -31,7 +32,6 @@ Feature: SnomedBranchingApi
 
 	Background:
 		static String API = "/snomed-ct/v2"
-		var public String parent = "MAIN"
 		var public String branchName = UUID.randomUUID.toString
 		var public String branch2Name = UUID.randomUUID.toString
 		var description = "Description at " + new Date
@@ -41,11 +41,9 @@ Feature: SnomedBranchingApi
 		
 	Scenario: Nonexistent SNOMED CT branch
 	
-		Given parent "MAIN"
-			parent = args.first
-		And branchName "nonexistent"
+		Given branchName "nonexistent"
 			branchName = args.first
-		When sending GET to "/branches/${parent}/${branchName}"
+		When sending GET to "/branches/MAIN/${branchName}"
 			res = req.get(args.first.renderWithFields(this))
 		Then return "404" status
 		And return body with status "404"
@@ -53,7 +51,7 @@ Feature: SnomedBranchingApi
 	Scenario: New SNOMED-CT branch under nonexistent parent 
 	
 		Given new SNOMED-CT branch request under parent branch "nonexistent" with name "${branchName}"
-			parent = args.first
+			val parent = args.first.renderWithFields(this)
 			branchName = args.second.renderWithFields(this)
 			req.withJson(#{
 				"parent" -> parent,
@@ -69,9 +67,9 @@ Feature: SnomedBranchingApi
 		Given new SNOMED-CT branch request under parent branch "MAIN" with name "${branchName}"
 		When sending POST to "/branches"
 		Then return "201" status
-		And return location header pointing to "/branches/${parent}/${branchName}"
-		And return "200" with body when sending GET to "/branches/${parent}/${branchName}"
-			res = givenAuthenticatedRequest(API).accept(ContentType.JSON).get(args.second.renderWithFields(this))
+		And return location header pointing to "/branches/MAIN/${branchName}"
+		And return "200" with body when sending GET to "/branches/MAIN/${branchName}"
+			res = API.get(args.second.renderWithFields(this))
 			res.expectStatus(args.first.toInt)
 	
 	Scenario: Duplicate branch on same parent
@@ -86,13 +84,13 @@ Feature: SnomedBranchingApi
 	Scenario: Delete SNOMED-CT branch
 		
 		Given new SNOMED-CT branch under parent branch "MAIN" with name "${branchName}"
-			parent = args.first
-			val createdResponse = givenAuthenticatedRequest(API).withJson(#{
+			val parent = args.first.renderWithFields(this)
+			val name = args.second.renderWithFields(this)
+			API.postJson(#{
 				"parent" -> parent,
-  				"name" -> branchName
-			}).post("/branches")
-			createdResponse.expectStatus(201)
-		When sending DELETE to "/branches/${parent}/${branchName}"
+  				"name" -> name
+			}, "branches").expectStatus(201)
+		When sending DELETE to "/branches/MAIN/${branchName}"
 			res = req.delete(args.first.renderWithFields(this))
 		Then return "204" status
 		And branch "MAIN/${branchName}" should be deleted
@@ -104,7 +102,7 @@ Feature: SnomedBranchingApi
 		
 		Given new SNOMED-CT branch under parent branch "MAIN" with name "${branchName}"
 		And new SNOMED-CT branch under parent branch "MAIN/${branchName}" with name "${branch2Name}"
-		When sending DELETE to "/branches/${parent}/${branchName}"
+		When sending DELETE to "/branches/MAIN/${branchName}"
 		Then return "204" status
 		And branch "MAIN/${branchName}" should be deleted
 		And branch "MAIN/${branchName}/${branch2Name}" should be deleted
@@ -112,7 +110,7 @@ Feature: SnomedBranchingApi
 	Scenario: Create new SNOMED-CT branch on deleted branch
 		
 		Given new SNOMED-CT branch under parent branch "MAIN" with name "${branchName}"
-		And sending DELETE to "/branches/${parent}/${branchName}"
+		And sending DELETE to "/branches/MAIN/${branchName}"
 		And return "204" status
 		And branch "MAIN/${branchName}" should be deleted
 		And new SNOMED-CT branch request under parent branch "MAIN/${branchName}" with name "childOfDeletedBranch"
@@ -138,8 +136,8 @@ Feature: SnomedBranchingApi
 		And new SNOMED-CT branch request under parent branch "MAIN" with name "${branchName}"
 		When sending POST to "/branches"
 		Then return "201" status
-		And return location header pointing to "/branches/${parent}/${branchName}"
-		And return "200" with body when sending GET to "/branches/${parent}/${branchName}"
+		And return location header pointing to "/branches/MAIN/${branchName}"
+		And return "200" with body when sending GET to "/branches/MAIN/${branchName}"
 		And return body containing metadata "My awesome branch on MAIN" on JSON path "metadata.description"
 			res.getBody.path(args.second) should be args.first
 	
