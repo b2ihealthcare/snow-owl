@@ -27,7 +27,6 @@ import com.google.common.base.Preconditions;
 
 /**
  * Builder for creating {@link ITagConfiguration tag configuration} instances.
- *
  */
 public class TagConfigurationBuilder implements Serializable {
 
@@ -38,7 +37,6 @@ public class TagConfigurationBuilder implements Serializable {
 	private String userId;
 	private IBranchPath branchPath;
 	private String parentContextDescription = DatastoreLockContextDescriptions.CREATE_VERSION;
-	private boolean shouldOptimizeIndex = false;
 	
 	/**Creates a new tag configuration tag builder for the given repository UUID argument.*/
 	public static TagConfigurationBuilder createForRepositoryUuid(final String repositoryUuid, final String versionId) {
@@ -59,7 +57,6 @@ public class TagConfigurationBuilder implements Serializable {
 			@Override public String getRepositoryUuid() { return repositoryUuid; }
 			@Override public IBranchPath getBranchPath() { return branchPath; }
 			@Override public String getParentContextDescription() { return parentContextDescription; }
-			@Override public boolean shouldOptimizeIndex() { return shouldOptimizeIndex; }
 		};
 	}
 
@@ -94,16 +91,6 @@ public class TagConfigurationBuilder implements Serializable {
 		return this;
 	}
 	
-	/**
-	 * Sets the boolean flag to enable or disable the index optimization.
-	 * @return the builder.
-	 * @deprecated read {@link ITagConfiguration#shouldOptimizeIndex()}
-	 */
-	public TagConfigurationBuilder setShouldOptimizeIndex(final boolean shouldOptimizeIndex) {
-		this.shouldOptimizeIndex = shouldOptimizeIndex;
-		return this;
-	}
-	
 	/**Private constructor.*/
 	private TagConfigurationBuilder(final String repositoryUuid, final String versionId) {
 		this.repositoryUuid = Preconditions.checkNotNull(repositoryUuid);
@@ -116,5 +103,4 @@ public class TagConfigurationBuilder implements Serializable {
 	private String getUserId() {
 		return ApplicationContext.getInstance().getService(ICDOConnectionManager.class).getUserId();
 	}
-	
 }

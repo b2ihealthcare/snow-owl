@@ -193,7 +193,12 @@ public class ImportIndexServerService extends FSIndexServerService<IIndexEntry> 
     public void dispose() {
     	clear();
         super.dispose();
-        getDirectoryManager().cleanUp(SUPPORTING_INDEX_BRANCH_PATH, true);
+        
+        try {
+			getDirectoryManager().deleteIndex(SUPPORTING_INDEX_BRANCH_PATH);
+		} catch (IOException e) {
+			LOGGER.error("Failed to delete index directory.", e);
+		}
     }
 
     public void registerComponent(final String componentId, final CDOID cdoId) {
