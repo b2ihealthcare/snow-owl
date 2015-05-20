@@ -142,6 +142,20 @@ public class BranchManagerTest {
 	}
 	
 	@Test
+	public void whenCreatingBranchAndChildren_ThenChildrenShouldReturnAllOfThem() throws Exception {
+		final Branch b = a.createChild("b");
+		final Branch c = a.createChild("c");
+		assertThat(a.children()).containsOnly(b, c);
+	}
+	
+	@Test
+	public void whenCreatingBranchAndChildTree_ThenChildrenShouldReturnAllOfThem() throws Exception {
+		final Branch b = a.createChild("b");
+		final Branch c = b.createChild("c");
+		assertThat(a.children()).containsOnly(b, c);
+	}
+	
+	@Test
 	public void whenDeletingBranch_ThenManagerShouldStillReturnIt() throws Exception {
 		a.delete();
 		assertTrue(manager.getBranch("MAIN/a").isDeleted());
@@ -150,6 +164,24 @@ public class BranchManagerTest {
 	@Test(expected = BadRequestException.class)
 	public void whenCreatingChildUnderDeletedBranch_ThenThrowBadRequestException() throws Exception {
 		a.delete().createChild("childOfDeletedA");
+	}
+	
+	@Test
+	public void whenDeletingBranch_ChildBranchesShouldBeDeletedAsWell() throws Exception {
+		a.createChild("1");
+		a.createChild("2");
+		a.delete();
+		assertTrue(manager.getBranch("MAIN/a/1").isDeleted());
+		assertTrue(manager.getBranch("MAIN/a/2").isDeleted());
+	}
+	
+	@Test
+	public void whenDeletingBranchWithChildTree_ThenChildTreeShouldBeDeleted() throws Exception {
+		a.createChild("1").createChild("2");
+		a.delete();
+		assertTrue(manager.getBranch("MAIN/a/1").isDeleted());
+		assertTrue(manager.getBranch("MAIN/a/1/2").isDeleted());
+		
 	}
 	
 	@Test

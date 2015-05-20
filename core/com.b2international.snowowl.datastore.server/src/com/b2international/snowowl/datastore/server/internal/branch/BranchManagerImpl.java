@@ -22,15 +22,17 @@ import com.b2international.snowowl.core.exceptions.AlreadyExistsException;
 import com.b2international.snowowl.core.exceptions.BadRequestException;
 import com.b2international.snowowl.core.exceptions.NotFoundException;
 import com.b2international.snowowl.datastore.server.branch.Branch;
-import com.b2international.snowowl.datastore.server.branch.BranchManager;
 import com.b2international.snowowl.datastore.server.branch.Branch.BranchState;
+import com.b2international.snowowl.datastore.server.branch.BranchManager;
 import com.b2international.snowowl.datastore.store.Store;
+import com.b2international.snowowl.datastore.store.query.QueryBuilder;
 
 /**
  * @since 4.1
  */
 public abstract class BranchManagerImpl implements BranchManager {
 
+	private static final String PATH_FIELD = "path";
 	private final Store<InternalBranch> branchStore;
 	
 	public BranchManagerImpl(final Store<InternalBranch> branchStore, final long mainBranchTimestamp) {
@@ -47,7 +49,7 @@ public abstract class BranchManagerImpl implements BranchManager {
 		branchStore.put(branch.path(), branch);
 	}
 	
-	InternalBranch createBranch(final InternalBranch parent, final String name, final Metadata metadata) {
+	final InternalBranch createBranch(final InternalBranch parent, final String name, final Metadata metadata) {
 		if (parent.isDeleted()) {
 			throw new BadRequestException("Cannot create '%s' child branch under deleted '%s' parent.", name, parent.path());
 		}
@@ -55,7 +57,6 @@ public abstract class BranchManagerImpl implements BranchManager {
 		if (getBranchFromStore(path) != null) {
 			throw new AlreadyExistsException(Branch.class.getSimpleName(), path);
 		}
-		
 		return reopen(parent, name, metadata);
 	}
 
@@ -75,7 +76,7 @@ public abstract class BranchManagerImpl implements BranchManager {
 		return branch;
 	}
 
-	protected final Branch getBranchFromStore(final String path) {
+	private final Branch getBranchFromStore(final String path) {
 		final InternalBranch branch = branchStore.get(path);
 		if (branch != null) {
 			branch.setBranchManager(this);
@@ -92,13 +93,13 @@ public abstract class BranchManagerImpl implements BranchManager {
 		return values;
 	}
 
-	InternalBranch merge(final InternalBranch target, final InternalBranch source, final String commitMessage) {
+	final InternalBranch merge(final InternalBranch target, final InternalBranch source, final String commitMessage) {
 		final InternalBranch mergedTarget = applyChangeSet(target, source, commitMessage);
 		reopen((InternalBranch) source.parent(), source.name(), source.metadata());
 		return mergedTarget;
 	}
 
-	InternalBranch rebase(final InternalBranch source, final InternalBranch target, final String commitMessage) {
+	final InternalBranch rebase(final InternalBranch source, final InternalBranch target, final String commitMessage) {
 		final InternalBranch rebasedSource = reopen((InternalBranch) source.parent(), source.name(), source.metadata());
 		
 		if (source.state() == BranchState.DIVERGED) {
@@ -111,6 +112,13 @@ public abstract class BranchManagerImpl implements BranchManager {
 	abstract InternalBranch applyChangeSet(InternalBranch target, InternalBranch source, String commitMessage);
 
 	/*package*/ final InternalBranch delete(final InternalBranch branchImpl) {
+		for (Branch child : branchImpl.children()) {
+			doDelete((InternalBranch) child);
+		}
+		return doDelete(branchImpl);
+	}
+
+	private InternalBranch doDelete(final InternalBranch branchImpl) {
 		final InternalBranch deleted = branchImpl.withDeleted();
 		branchStore.replace(branchImpl.path(), branchImpl, deleted);
 		return deleted;
@@ -120,5 +128,9 @@ public abstract class BranchManagerImpl implements BranchManager {
 		final InternalBranch branchAfterCommit = branch.withHeadTimestamp(timestamp);
 		registerBranch(branchAfterCommit);
 		return branchAfterCommit;
+	}
+
+	/*package*/ final Collection<? extends Branch> getChildren(BranchImpl branchImpl) {
+		return branchStore.search(QueryBuilder.newQuery().prefixMatch(PATH_FIELD, branchImpl.path() + Branch.SEPARATOR).build());
 	}
 }

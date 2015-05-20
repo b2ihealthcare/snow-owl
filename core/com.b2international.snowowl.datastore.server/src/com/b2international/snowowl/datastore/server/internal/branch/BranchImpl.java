@@ -18,6 +18,7 @@ package com.b2international.snowowl.datastore.server.internal.branch;
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
 
+import java.util.Collection;
 import java.util.regex.Pattern;
 
 import com.b2international.snowowl.core.Metadata;
@@ -146,6 +147,11 @@ public class BranchImpl extends MetadataHolderImpl implements Branch, InternalBr
 	public Branch createChild(String name, Metadata metadata) {
 		checkName(name);
 		return branchManager.createBranch(this, name, metadata);
+	}
+	
+	@Override
+	public Collection<? extends Branch> children() {
+		return branchManager.getChildren(this);
 	}
 
 	@Override

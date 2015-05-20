@@ -15,6 +15,8 @@
  */
 package com.b2international.snowowl.datastore.server.branch;
 
+import java.util.Collection;
+
 import com.b2international.snowowl.core.Metadata;
 import com.b2international.snowowl.core.MetadataHolder;
 import com.b2international.snowowl.core.api.IBranchPath;
@@ -32,16 +34,12 @@ public interface Branch extends Deletable, MetadataHolder {
 	 * The path of the main branch.
 	 */
 	static final String MAIN_PATH = "MAIN";
-	
+
 	/**
 	 * @since 4.1
 	 */
 	enum BranchState {
-	    UP_TO_DATE,
-	    FORWARD, 
-	    BEHIND, 
-	    DIVERGED, 
-	    STALE
+		UP_TO_DATE, FORWARD, BEHIND, DIVERGED, STALE
 	}
 
 	/**
@@ -55,9 +53,10 @@ public interface Branch extends Deletable, MetadataHolder {
 	 * @return
 	 */
 	String path();
-	
+
 	/**
 	 * Returns the unique path of the parent of this {@link Branch}.
+	 * 
 	 * @return
 	 */
 	String parentPath();
@@ -135,7 +134,7 @@ public interface Branch extends Deletable, MetadataHolder {
 	 *            - the branch to merge onto this branch
 	 * @param commitMessage
 	 *            - the commit message
-	 * @return 
+	 * @return
 	 * @throws BranchMergeException
 	 *             - if source cannot be merged
 	 */
@@ -151,11 +150,14 @@ public interface Branch extends Deletable, MetadataHolder {
 	 *             - if the child branch already exists
 	 */
 	Branch createChild(String name) throws AlreadyExistsException;
-	
+
 	/**
 	 * Creates a new child branch with the given name and metadata.
-	 * @param name - the name of the new child {@link Branch}, may not be <code>null</code>
-	 * @param metadata - optional metadata map
+	 * 
+	 * @param name
+	 *            - the name of the new child {@link Branch}, may not be <code>null</code>
+	 * @param metadata
+	 *            - optional metadata map
 	 * @return
 	 * @throws AlreadyExistsException
 	 *             - if the child branch already exists
@@ -163,12 +165,19 @@ public interface Branch extends Deletable, MetadataHolder {
 	Branch createChild(String name, Metadata metadata);
 
 	/**
+	 * Returns all child branches created on this {@link Branch}.
+	 * 
+	 * @return a {@link Collection} of child {@link Branch} instances or an empty collection, never <code>null</code>.
+	 */
+	Collection<? extends Branch> children();
+
+	/**
 	 * Reopens the branch with the same name and parent, on the parent head.
 	 * 
 	 * @return the reopened branch
 	 */
 	Branch reopen();
-	
+
 	@Override
 	Branch delete();
 
