@@ -33,6 +33,7 @@ Feature: SnomedBranchingApi
 		static String API = "/snomed-ct/v2"
 		var public String parent = "MAIN"
 		var public String branchName = UUID.randomUUID.toString
+		var public String branch2Name = UUID.randomUUID.toString
 		var description = "Description at " + new Date
 		var req = givenAuthenticatedRequest(API)
 		var Response res
@@ -94,17 +95,26 @@ Feature: SnomedBranchingApi
 		When sending DELETE to "/branches/${parent}/${branchName}"
 			res = req.delete(args.first.renderWithFields(this))
 		Then return "204" status
-		And the branch should be deleted
-			res = givenAuthenticatedRequest(API).get("/branches/${parent}/${branchName}".renderWithFields(this))
+		And branch "MAIN/${branchName}" should be deleted
+			res = API.get("branches", args.first.renderWithFields(this))
 			res.expectStatus(200)
 			res.getBody.path("deleted") should be true
 			
+	Scenario: Delete SNOMED-CT Branch with child branch
+		
+		Given new SNOMED-CT branch under parent branch "MAIN" with name "${branchName}"
+		And new SNOMED-CT branch under parent branch "MAIN/${branchName}" with name "${branch2Name}"
+		When sending DELETE to "/branches/${parent}/${branchName}"
+		Then return "204" status
+		And branch "MAIN/${branchName}" should be deleted
+		And branch "MAIN/${branchName}/${branch2Name}" should be deleted
+
 	Scenario: Create new SNOMED-CT branch on deleted branch
 		
 		Given new SNOMED-CT branch under parent branch "MAIN" with name "${branchName}"
 		And sending DELETE to "/branches/${parent}/${branchName}"
 		And return "204" status
-		And the branch should be deleted
+		And branch "MAIN/${branchName}" should be deleted
 		And new SNOMED-CT branch request under parent branch "MAIN/${branchName}" with name "childOfDeletedBranch"
 		When sending POST to "/branches"
 		Then return "400" status
@@ -132,3 +142,4 @@ Feature: SnomedBranchingApi
 		And return "200" with body when sending GET to "/branches/${parent}/${branchName}"
 		And return body containing metadata "My awesome branch on MAIN" on JSON path "metadata.description"
 			res.getBody.path(args.second) should be args.first
+	
