@@ -38,6 +38,7 @@ import com.b2international.snowowl.datastore.server.events.BranchReply;
 import com.b2international.snowowl.datastore.server.events.BranchesReply;
 import com.b2international.snowowl.datastore.server.events.DeleteBranchEvent;
 import com.b2international.snowowl.datastore.server.events.ReadAllBranchEvent;
+import com.b2international.snowowl.datastore.server.events.ReadBranchChildrenEvent;
 import com.b2international.snowowl.datastore.server.events.ReadBranchEvent;
 import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.snomed.api.rest.domain.CollectionResource;
@@ -53,6 +54,8 @@ import com.wordnik.swagger.annotations.Api;
 @RequestMapping(value="/branches", produces={MediaType.APPLICATION_JSON_VALUE})
 public class SnomedBranchingController extends AbstractRestService {
 
+	private static final String SNOMED_REPOSITORY = "snomedStore";
+	
 	@Autowired 
 	private IEventBus bus;
 	
@@ -76,7 +79,21 @@ public class SnomedBranchingController extends AbstractRestService {
 	public DeferredResult<CollectionResource<Branch>> getBranches() {
 		final DeferredResult<CollectionResource<Branch>> result = new DeferredResult<>();
 		new AsyncSupport<>(bus, BranchesReply.class)
-			.send(new ReadAllBranchEvent("snomedStore"))
+			.send(new ReadAllBranchEvent(SNOMED_REPOSITORY))
+			.then(new Procedure<BranchesReply>() { @Override protected void doApply(BranchesReply reply) {
+				result.setResult(CollectionResource.of(reply.getBranches()));
+			}})
+			.fail(new Procedure<Throwable>() { @Override protected void doApply(Throwable t) {
+				result.setErrorResult(t);
+			}});
+		return result;
+	}
+	
+	@RequestMapping(value="/{path:**}/children", method=RequestMethod.GET)
+	public DeferredResult<CollectionResource<Branch>> getChildren(@PathVariable("path") String branchPath) {
+		final DeferredResult<CollectionResource<Branch>> result = new DeferredResult<>();
+		new AsyncSupport<>(bus, BranchesReply.class)
+			.send(new ReadBranchChildrenEvent(SNOMED_REPOSITORY, branchPath))
 			.then(new Procedure<BranchesReply>() { @Override protected void doApply(BranchesReply reply) {
 				result.setResult(CollectionResource.of(reply.getBranches()));
 			}})
@@ -90,7 +107,7 @@ public class SnomedBranchingController extends AbstractRestService {
 	public DeferredResult<Branch> getBranch(@PathVariable("path") String branchPath) {
 		final DeferredResult<Branch> result = new DeferredResult<>();
 		new AsyncSupport<>(bus, BranchReply.class)
-			.send(new ReadBranchEvent("snomedStore", branchPath))
+			.send(new ReadBranchEvent(SNOMED_REPOSITORY, branchPath))
 			.then(new Procedure<BranchReply>() { @Override protected void doApply(BranchReply reply) {
 				result.setResult(reply.getBranch());
 			}})
@@ -106,7 +123,7 @@ public class SnomedBranchingController extends AbstractRestService {
 		final ResponseEntity<Void> response = Responses.noContent().build();
 		final DeferredResult<ResponseEntity<Void>> result = new DeferredResult<>();
 		new AsyncSupport<>(bus, BranchReply.class)
-			.send(new DeleteBranchEvent("snomedStore", branchPath))
+			.send(new DeleteBranchEvent(SNOMED_REPOSITORY, branchPath))
 			.then(new Procedure<BranchReply>() { @Override protected void doApply(BranchReply reply) {
 				result.setResult(response);
 			}})

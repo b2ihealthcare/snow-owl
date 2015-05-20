@@ -33,6 +33,7 @@ import com.b2international.snowowl.datastore.server.events.CreateBranchEvent;
 import com.b2international.snowowl.datastore.server.events.DeleteBranchEvent;
 import com.b2international.snowowl.datastore.server.events.MergeEvent;
 import com.b2international.snowowl.datastore.server.events.ReadAllBranchEvent;
+import com.b2international.snowowl.datastore.server.events.ReadBranchChildrenEvent;
 import com.b2international.snowowl.datastore.server.events.ReadBranchEvent;
 import com.b2international.snowowl.datastore.server.events.ReopenBranchEvent;
 
@@ -50,6 +51,12 @@ public class BranchEventHandler extends ApiEventHandler {
 	@Handler
 	protected BranchesReply handle(ReadAllBranchEvent event) {
 		return new BranchesReply(newHashSet(branchManager.getBranches()));
+	}
+	
+	@Handler
+	protected BranchesReply handle(ReadBranchChildrenEvent event) {
+		final Branch branch = getBranch(event);
+		return new BranchesReply(newHashSet(branch.children()));
 	}
 
 	@Handler
@@ -77,7 +84,7 @@ public class BranchEventHandler extends ApiEventHandler {
 	@Handler
 	protected BranchReply handle(ReopenBranchEvent event) {
 		try {
-			final Branch branch = branchManager.getBranch(event.getBranchPath());
+			final Branch branch = getBranch(event);
 			return new BranchReply(branch.reopen());
 		} catch (NotFoundException e) {
 			// if parent not found, convert it to BadRequestException
