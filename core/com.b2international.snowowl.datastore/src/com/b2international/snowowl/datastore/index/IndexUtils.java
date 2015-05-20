@@ -88,23 +88,28 @@ public abstract class IndexUtils {
 	};
 	
 	/**
-	 * Unique key representing a specific version as an entry of the user data.
+	 * User data entry for storing the child branch path.
+	 * 
 	 * @see IndexCommit
 	 * @see IndexWriter#setCommitData(java.util.Map)
 	 */
-	public static final String INDEX_SNAPSHOT_VERSION_KEY = "indexSnapshotVersion";
+	public static final String INDEX_BRANCH_PATH_KEY = "branchPath";
 
 	/**
-	 * Unique key for a given snapshot timestamp as an entry of the user data.
+	 * User data entry for storing the base timestamp of the child branch.
+	 * 
 	 * @see IndexCommit
 	 * @see IndexWriter#setCommitData(java.util.Map)
 	 */
-	public static final String INDEX_SNAPSHOT_TIMESTMP_KEY = "indexSnapshotTimestamp";
-	
+	public static final String INDEX_BASE_TIMESTAMP_KEY = "baseTimestamp";
+
 	/**
-	 * Unique key for marking a index commit with the user data as a tag.
+	 * User data entry for storing the CDO branch ID sequence, corresponding to the child branch path.
+	 * 
+	 * @see IndexCommit
+	 * @see IndexWriter#setCommitData(java.util.Map)
 	 */
-	public static final String INDEX_TAG_KEY = "indexTagKey";
+	public static final String INDEX_CDO_BRANCH_PATH_KEY = "cdoBranchPath";
 	
 	/**
 	 * The default sort criteria which sorts by relevancy and then by sort key.
