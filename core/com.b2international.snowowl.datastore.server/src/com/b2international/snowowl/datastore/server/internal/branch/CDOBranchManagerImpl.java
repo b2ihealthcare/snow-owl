@@ -105,14 +105,14 @@ public class CDOBranchManagerImpl extends BranchManagerImpl {
     InternalBranch reopen(InternalBranch parent, String name, Metadata metadata) {
         final CDOBranch childCDOBranch = createCDOBranch(parent, name);
         final CDOBranchPoint[] basePath = childCDOBranch.getBasePath();
-        final int[] cdoBranchPath = new int[basePath.length + 1];
-        cdoBranchPath[basePath.length] = childCDOBranch.getID();
+        final int[] cdoBranchPath = new int[basePath.length];
+        cdoBranchPath[basePath.length - 1] = childCDOBranch.getID();
         
-        for (int i = basePath.length - 1; i >= 0; i--) {
-        	cdoBranchPath[basePath.length - 1 - i] = basePath[i].getBranch().getID();
+        for (int i = 1; i < basePath.length; i++) {
+        	cdoBranchPath[i - 1] = basePath[i].getBranch().getID();
         }
 
-        final long timeStamp = basePath[0].getTimeStamp();
+        final long timeStamp = basePath[basePath.length - 1].getTimeStamp();
         repository.getIndexUpdater().reopen(BranchPathUtils.createPath(childCDOBranch), cdoBranchPath, timeStamp);
 		return reopen(parent, name, metadata, timeStamp, childCDOBranch.getID());
     }
