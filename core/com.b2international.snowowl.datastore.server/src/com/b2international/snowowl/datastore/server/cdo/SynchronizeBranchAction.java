@@ -44,7 +44,6 @@ import com.b2international.snowowl.datastore.cdo.CustomConflictException;
 import com.b2international.snowowl.datastore.cdo.ICDOConnection;
 import com.b2international.snowowl.datastore.oplock.impl.DatastoreLockContextDescriptions;
 import com.b2international.snowowl.datastore.server.CDOServerCommitBuilder;
-import com.b2international.snowowl.datastore.server.CDOServerUtils;
 import com.b2international.snowowl.datastore.server.events.BranchReply;
 import com.b2international.snowowl.datastore.server.events.ReopenBranchEvent;
 import com.b2international.snowowl.datastore.server.internal.branch.CDOBranchMerger;
@@ -74,11 +73,6 @@ public class SynchronizeBranchAction extends AbstractCDOBranchAction {
 
 		// Does the task branch exist?
 		if (null == taskBranch) {
-			return;
-		}
-
-		// No commits at all on task branch?
-		if (Long.MIN_VALUE == CDOServerUtils.getLastCommitTime(taskBranch)) {
 			return;
 		}
 		
