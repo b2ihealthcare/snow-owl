@@ -18,6 +18,7 @@ package com.b2international.snowowl.datastore.server.index;
 import static com.b2international.snowowl.datastore.BranchPathUtils.isBasePath;
 import static com.b2international.snowowl.datastore.BranchPathUtils.isMain;
 import static com.google.common.base.Preconditions.checkNotNull;
+import static com.google.common.base.Preconditions.checkState;
 import static com.google.common.collect.Iterables.getLast;
 
 import java.io.Closeable;
@@ -370,6 +371,7 @@ public class IndexBranchService implements Closeable {
 	void createIndexCommit(final IBranchPath branchPath, final int[] cdoBranchPath, final long baseTimestamp) throws IOException {
 		checkClosed();
 		checkReadOnly();
+		checkState(cdoBranchPath[0] == 0, "CDO ID sequence did not start with 0.");
 		
 		final Map<String, String> userData = Maps.newHashMap();
 		userData.put(IndexUtils.INDEX_BRANCH_PATH_KEY, branchPath.getPath());
@@ -436,7 +438,7 @@ public class IndexBranchService implements Closeable {
 		final IndexWriterConfig config = new IndexWriterConfig(Version.LUCENE_4_9, analyzer);
 		config.setOpenMode(OpenMode.CREATE_OR_APPEND);
 
-		final IndexDeletionPolicy wrappedDeletionPolicy = new KeepOnlyMostRecentVersionAndMasterCommitDeletionPolicy(IndexUtils.INDEX_BRANCH_PATH_KEY);
+		final IndexDeletionPolicy wrappedDeletionPolicy = new KeepBranchPointAndLastCommitDeletionPolicy();
 		final SnapshotDeletionPolicy deletionPolicy = new SnapshotDeletionPolicy(wrappedDeletionPolicy);
 		config.setIndexDeletionPolicy(deletionPolicy);
 
