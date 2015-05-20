@@ -97,9 +97,9 @@ Feature: SnomedMergeApi
 			
 			res = req.post("/merges")
 		Then return "204" status
-		And the component "C1" should exist on URL base "${parent}/concepts"
+		And component "C1" should exist on URL base "${parent}/concepts"
 			API.get(args.second.renderWithFields(this), componentMap.get(args.first)).expectStatus(200)
-		And the component "C1" should exist on URL base "${parent}/${branchName}/concepts"
+		And component "C1" should exist on URL base "${parent}/${branchName}/concepts"
 
 	Scenario: Accept merge attempt of new description in FORWARD state
 		Given a SNOMED CT branch under parent branch "${parent}" with name "${branchName}"
@@ -121,7 +121,7 @@ Feature: SnomedMergeApi
 			componentMap.put(args.first, res.location.lastPathSegment)
 		And merging changes from branch "${parent}/${branchName}" to "${parent}" with comment "Merge commit"
 		Then return "204" status
-		And the component "D1" should exist on URL base "${parent}/descriptions"
+		And component "D1" should exist on URL base "${parent}/descriptions"
 
 	Scenario: Accept merge attempt of new relationship in FORWARD state
 		Given a SNOMED CT branch under parent branch "${parent}" with name "${branchName}"
@@ -141,7 +141,7 @@ Feature: SnomedMergeApi
 			componentMap.put(args.first, res.location.lastPathSegment)
 		And merging changes from branch "${parent}/${branchName}" to "${parent}" with comment "Merge commit"
 		Then return "204" status
-		And the component "R1" should exist on URL base "${parent}/relationships"
+		And component "R1" should exist on URL base "${parent}/relationships"
 
 	Scenario: Reject merge attempt of new concept in DIVERGED state
 		Given a SNOMED CT branch under parent branch "${parent}" with name "${branchName}"
@@ -149,8 +149,8 @@ Feature: SnomedMergeApi
 		And creating a new concept "C2" with URL "${parent}/${branchName}/concepts"
 		And merging changes from branch "${parent}/${branchName}" to "${parent}" with comment "Merge commit"
 		Then return "409" status
-		And the component "C1" should exist on URL base "${parent}/concepts"
-		And the component "C2" should exist on URL base "${parent}/${branchName}/concepts"
+		And component "C1" should exist on URL base "${parent}/concepts"
+		And component "C2" should exist on URL base "${parent}/${branchName}/concepts"
 
 	Scenario: Reject merge attempt of new description in DIVERGED state
 		Given a SNOMED CT branch under parent branch "${parent}" with name "${branchName}"
@@ -158,8 +158,8 @@ Feature: SnomedMergeApi
 		And creating a new description "D2" with URL "${parent}/${branchName}/descriptions"
 		And merging changes from branch "${parent}/${branchName}" to "${parent}" with comment "Merge commit"
 		Then return "409" status
-		And the component "D1" should exist on URL base "${parent}/descriptions"
-		And the component "D2" should exist on URL base "${parent}/${branchName}/descriptions"
+		And component "D1" should exist on URL base "${parent}/descriptions"
+		And component "D2" should exist on URL base "${parent}/${branchName}/descriptions"
 
 	Scenario: Reject merge attempt of new relationship in DIVERGED state
 		Given a SNOMED CT branch under parent branch "${parent}" with name "${branchName}"
@@ -167,8 +167,8 @@ Feature: SnomedMergeApi
 		And creating a new relationship "R2" with URL "${parent}/${branchName}/relationships"
 		And merging changes from branch "${parent}/${branchName}" to "${parent}" with comment "Merge commit"
 		Then return "409" status
-		And the component "R1" should exist on URL base "${parent}/relationships"
-		And the component "R2" should exist on URL base "${parent}/${branchName}/relationships"
+		And component "R1" should exist on URL base "${parent}/relationships"
+		And component "R2" should exist on URL base "${parent}/${branchName}/relationships"
 
 	Scenario: Accept rebase attempt of new concept in DIVERGED state
 		Given a SNOMED CT branch under parent branch "${parent}" with name "${branchName}"
@@ -183,11 +183,11 @@ Feature: SnomedMergeApi
 			
 			res = req.post("/merges")
 		Then return "204" status
-		And the component "C1" should exist on URL base "${parent}/concepts"
-		And the component "C1" should exist on URL base "${parent}/${branchName}/concepts"
-		And the component "C2" should not exist on URL base "${parent}/concepts"
+		And component "C1" should exist on URL base "${parent}/concepts"
+		And component "C1" should exist on URL base "${parent}/${branchName}/concepts"
+		And component "C2" should not exist on URL base "${parent}/concepts"
 			API.get(args.second.renderWithFields(this), componentMap.get(args.first)).expectStatus(404)
-		And the component "C2" should exist on URL base "${parent}/${branchName}/concepts"
+		And component "C2" should exist on URL base "${parent}/${branchName}/concepts"
 
 	Scenario: Accept rebase attempt of new description in DIVERGED state
 		Given a SNOMED CT branch under parent branch "${parent}" with name "${branchName}"
@@ -195,10 +195,10 @@ Feature: SnomedMergeApi
 		And creating a new description "D2" with URL "${parent}/${branchName}/descriptions"
 		And rebasing branch "${parent}/${branchName}" onto "${parent}" with comment "Rebase commit"
 		Then return "204" status
-		And the component "D1" should exist on URL base "${parent}/descriptions"
-		And the component "D1" should exist on URL base "${parent}/${branchName}/descriptions"
-		And the component "D2" should not exist on URL base "${parent}/descriptions"
-		And the component "D2" should exist on URL base "${parent}/${branchName}/descriptions"
+		And component "D1" should exist on URL base "${parent}/descriptions"
+		And component "D1" should exist on URL base "${parent}/${branchName}/descriptions"
+		And component "D2" should not exist on URL base "${parent}/descriptions"
+		And component "D2" should exist on URL base "${parent}/${branchName}/descriptions"
 
 	Scenario: Accept rebase attempt of new relationship in DIVERGED state
 		Given a SNOMED CT branch under parent branch "${parent}" with name "${branchName}"
@@ -206,15 +206,15 @@ Feature: SnomedMergeApi
 		And creating a new relationship "R2" with URL "${parent}/${branchName}/relationships"
 		And rebasing branch "${parent}/${branchName}" onto "${parent}" with comment "Rebase commit"
 		Then return "204" status
-		And the component "R1" should exist on URL base "${parent}/relationships"
-		And the component "R1" should exist on URL base "${parent}/${branchName}/relationships"
-		And the component "R2" should not exist on URL base "${parent}/descriptions"
-		And the component "R2" should exist on URL base "${parent}/${branchName}/relationships"
+		And component "R1" should exist on URL base "${parent}/relationships"
+		And component "R1" should exist on URL base "${parent}/${branchName}/relationships"
+		And component "R2" should not exist on URL base "${parent}/descriptions"
+		And component "R2" should exist on URL base "${parent}/${branchName}/relationships"
 
 	Scenario: Reject rebase attempt of changed description on branch and parent
 		Given a SNOMED CT branch under parent branch "${parent}" with name "${branchName}"
 		And creating a new description "D1" with URL "${parent}/${branchName}/descriptions"
-		And merging changes from branch "${parent}/${branchName}" to "${parent}" with comment "Merge commit"
+		And merging changes from branch "${parent}/${branchName}" to "${parent}" with comment "Description creation commit"
 		And updating description case significance "D1" to "CASE_INSENSITIVE" with URL "${parent}/${branchName}/descriptions/${componentId}/updates"
 			req = givenAuthenticatedRequest(API).withJson(#{
 				"caseSignificance" -> CaseSignificance.valueOf(args.second).name,
@@ -231,7 +231,7 @@ Feature: SnomedMergeApi
 	Scenario: Reject rebase attempt of changed concept on branch, deleted on parent
 		Given a SNOMED CT branch under parent branch "${parent}" with name "${branchName}"
 		When creating a new concept "C1" with URL "${parent}/${branchName}/concepts"
-		And merging changes from branch "${parent}/${branchName}" to "${parent}" with comment "Merge commit"
+		And merging changes from branch "${parent}/${branchName}" to "${parent}" with comment "Concept creation commit"
 		And updating concept definition status "C1" to "FULLY_DEFINED" with URL "${parent}/${branchName}/concepts/${componentId}/updates"
 			req = givenAuthenticatedRequest(API).withJson(#{
 				"definitionStatus" -> DefinitionStatus.valueOf(args.second).name,
@@ -247,3 +247,64 @@ Feature: SnomedMergeApi
 			res.expectStatus(204)
 		And rebasing branch "${parent}/${branchName}" onto "${parent}" with comment "Rebase commit"
 		Then return "409" status
+
+	Scenario: Accept rebase attempt of changed concept on parent, deleted on branch, concept stays deleted
+		Given a SNOMED CT branch under parent branch "${parent}" with name "${branchName}"
+		When creating a new concept "C1" with URL "${parent}/${branchName}/concepts"
+		And merging changes from branch "${parent}/${branchName}" to "${parent}" with comment "Concept creation commit"
+		And updating concept definition status "C1" to "FULLY_DEFINED" with URL "${parent}/concepts/${componentId}/updates"
+		And deleting concept "C1" with URL "${parent}/${branchName}/concepts/${componentId}"
+		And rebasing branch "${parent}/${branchName}" onto "${parent}" with comment "Rebase commit"
+		Then return "204" status
+		And component "C1" should not exist on URL base "${parent}/${branchName}/concepts"
+		And component "C1" should exist on URL base "${parent}/concepts"
+
+	Scenario: Accept rebase and merge attempt of changed concept on parent, deleted on branch, concept stays deleted
+		Given a SNOMED CT branch under parent branch "${parent}" with name "${branchName}"
+		When creating a new concept "C1" with URL "${parent}/${branchName}/concepts"
+		And merging changes from branch "${parent}/${branchName}" to "${parent}" with comment "Concept creation commit"
+		And updating concept definition status "C1" to "FULLY_DEFINED" with URL "${parent}/concepts/${componentId}/updates"
+		And deleting concept "C1" with URL "${parent}/${branchName}/concepts/${componentId}"
+		And rebasing branch "${parent}/${branchName}" onto "${parent}" with comment "Rebase commit"
+		And merging changes from branch "${parent}/${branchName}" to "${parent}" with comment "Merge commit"
+		Then return "204" status
+		And component "C1" should not exist on URL base "${parent}/${branchName}/concepts"
+		And component "C1" should not exist on URL base "${parent}/concepts"
+		
+	Scenario: Reject rebase attempt of changed description on branch and parent with multiple changes
+		Given a SNOMED CT branch under parent branch "${parent}" with name "${branchName}"
+		And creating a new description "D1" with URL "${parent}/${branchName}/descriptions"
+		And merging changes from branch "${parent}/${branchName}" to "${parent}" with comment "Description creation commit"
+		And updating description case significance "D1" to "CASE_INSENSITIVE" with URL "${parent}/${branchName}/descriptions/${componentId}/updates"
+		And updating description module identifier "D1" to "900000000000013009" with URL "${parent}/${branchName}/descriptions/${componentId}/updates"
+			req = givenAuthenticatedRequest(API).withJson(#{
+				"moduleId" -> args.second,
+				"commitComment" -> "Changed module identifier"
+			})
+			
+			componentId = componentMap.get(args.first);
+			res = req.post(args.third.renderWithFields(this))
+			res.expectStatus(204)
+		And updating description case significance "D1" to "ENTIRE_TERM_CASE_SENSITIVE" with URL "${parent}/descriptions/${componentId}/updates"
+		And updating description module identifier "D1" to "900000000000443000" with URL "${parent}/descriptions/${componentId}/updates"
+		And rebasing branch "${parent}/${branchName}" onto "${parent}" with comment "Rebase commit"
+		Then return "409" status
+
+	Scenario: Accept rebase and merge attempt of changed description on branch with multiple changes
+		Given a SNOMED CT branch under parent branch "${parent}" with name "${branchName}"
+		And creating a new description "D1" with URL "${parent}/${branchName}/descriptions"
+		And merging changes from branch "${parent}/${branchName}" to "${parent}" with comment "Description creation commit"
+		And creating a new description "D2" with URL "${parent}/descriptions"
+		And updating description case significance "D1" to "CASE_INSENSITIVE" with URL "${parent}/${branchName}/descriptions/${componentId}/updates"
+		And updating description module identifier "D1" to "900000000000013009" with URL "${parent}/${branchName}/descriptions/${componentId}/updates"
+		And rebasing branch "${parent}/${branchName}" onto "${parent}" with comment "Rebase commit"
+		And merging changes from branch "${parent}/${branchName}" to "${parent}" with comment "Merge commit"
+		Then return "204" status
+		And component "D1" should exist on URL base "${parent}/descriptions"
+		And component "D2" should exist on URL base "${parent}/descriptions"
+		And component "D1" should be "CASE_INSENSITIVE" for JSON path "caseSignificance" with URL "${parent}/descriptions/${componentId}"
+			componentId = componentMap.get(args.first)
+			res = API.get(args.forth.renderWithFields(this))
+			res.expectStatus(200)
+			res.jsonPath.getString(args.third) should be args.second
+		And component "D1" should be "900000000000013009" for JSON path "moduleId" with URL "${parent}/descriptions/${componentId}"
