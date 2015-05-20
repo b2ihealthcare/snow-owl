@@ -32,7 +32,7 @@ import com.b2international.snowowl.datastore.store.query.QueryBuilder;
  */
 public abstract class BranchManagerImpl implements BranchManager {
 
-	private static final String PATH_FIELD = "path";
+	protected static final String PATH_FIELD = "path";
 	private final Store<InternalBranch> branchStore;
 	
 	public BranchManagerImpl(final Store<InternalBranch> branchStore, final long mainBranchTimestamp) {
@@ -87,10 +87,14 @@ public abstract class BranchManagerImpl implements BranchManager {
 	@Override
 	public Collection<? extends Branch> getBranches() {
 		final Collection<InternalBranch> values = branchStore.values();
+		initialize(values);
+		return values;
+	}
+
+	private void initialize(final Collection<InternalBranch> values) {
 		for (final InternalBranch branch : values) {
 			branch.setBranchManager(this);
 		}
-		return values;
 	}
 
 	final InternalBranch merge(final InternalBranch target, final InternalBranch source, final String commitMessage) {
@@ -131,6 +135,8 @@ public abstract class BranchManagerImpl implements BranchManager {
 	}
 
 	/*package*/ final Collection<? extends Branch> getChildren(BranchImpl branchImpl) {
-		return branchStore.search(QueryBuilder.newQuery().prefixMatch(PATH_FIELD, branchImpl.path() + Branch.SEPARATOR).build());
+		final Collection<InternalBranch> values = branchStore.search(QueryBuilder.newQuery().prefixMatch(PATH_FIELD, branchImpl.path() + Branch.SEPARATOR).build());
+		initialize(values);
+		return values;
 	}
 }
