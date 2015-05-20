@@ -30,12 +30,17 @@ import org.apache.lucene.search.BooleanClause.Occur;
 import org.apache.lucene.search.BooleanQuery;
 import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.MatchAllDocsQuery;
+import org.apache.lucene.search.PrefixQuery;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.ScoreDoc;
 import org.apache.lucene.search.Sort;
 import org.apache.lucene.search.TermQuery;
 import org.apache.lucene.search.TopDocs;
 
+import com.b2international.snowowl.datastore.store.query.Clause;
+import com.b2international.snowowl.datastore.store.query.EqualsWhere;
+import com.b2international.snowowl.datastore.store.query.PrefixWhere;
+import com.b2international.snowowl.datastore.store.query.Where;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
@@ -82,7 +87,7 @@ public class IndexStore<T> extends SingleDirectoryIndexServerService implements 
 	public T get(String key) {
 		try {
 			final Query query = matchKeyQuery(key);
-			return Iterables.getOnlyElement(search(query), null);
+			return Iterables.getOnlyElement(searchIndex(query), null);
 		} catch (IOException e) {
 			throw new StoreException(e.getMessage(), e);
 		}
@@ -124,10 +129,40 @@ public class IndexStore<T> extends SingleDirectoryIndexServerService implements 
 	@Override
 	public Collection<T> values() {
 		try {
-			return search(matchAllQuery());
+			return searchIndex(matchAllQuery());
 		} catch (IOException e) {
 			throw new StoreException("Failed to retrieve values from store '%s'.", getDirectory(), e);
 		}
+	}
+	
+	@Override
+	public Collection<T> search(com.b2international.snowowl.datastore.store.query.Query query) {
+		return search(query, 0, Integer.MAX_VALUE);
+	}
+	
+	@Override
+	public Collection<T> search(com.b2international.snowowl.datastore.store.query.Query query, int offset, int limit) {
+		try {
+			return searchIndex(convert(query), offset, limit);
+		} catch (IOException e) {
+			throw new StoreException("Failed to execute query '%s' on store '%s'.", query, getDirectory(), e);
+		}
+	}
+
+	private Query convert(com.b2international.snowowl.datastore.store.query.Query query) {
+		final BooleanQuery result = new BooleanQuery();
+		for (Clause clause : query.clauses()) {
+			if (clause instanceof Where) {
+				final String property = ((Where) clause).property();
+				final String value = ((Where) clause).value();
+				if (clause instanceof EqualsWhere) {
+					result.add(new TermQuery(new Term(property, value)), Occur.MUST);
+				} else if (clause instanceof PrefixWhere) {
+					result.add(new PrefixQuery(new Term(property, value)), Occur.MUST);
+				}
+			}
+		}
+		return result;
 	}
 
 	@Override
@@ -159,15 +194,15 @@ public class IndexStore<T> extends SingleDirectoryIndexServerService implements 
 		return objectMapper.readValue(source, clazz);
 	}
 	
-	private List<T> search(final Query query) throws IOException {
-		return search(query, Integer.MAX_VALUE);
+	private List<T> searchIndex(final Query query) throws IOException {
+		return searchIndex(query, Integer.MAX_VALUE);
 	}
 
-	private List<T> search(final Query query, final int limit) throws IOException {
-		return search(query, 0, limit);
+	private List<T> searchIndex(final Query query, final int limit) throws IOException {
+		return searchIndex(query, 0, limit);
 	}
 	
-	private List<T> search(final Query query, final int offset, final int limit) throws IOException {
+	private List<T> searchIndex(final Query query, final int offset, final int limit) throws IOException {
 		IndexSearcher searcher = null;
 		try {
 			searcher = manager.acquire();
