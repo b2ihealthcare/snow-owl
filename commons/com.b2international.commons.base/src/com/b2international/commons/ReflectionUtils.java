@@ -31,6 +31,25 @@ public class ReflectionUtils {
 		}
 	}
 	
+	public static Object getGetterValue(Object object, String property) {
+		try {
+			return getGetter(object.getClass(), property).invoke(object);
+		} catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
+			throw new RuntimeException("Could not get value from getter: " + object + "-" + property, e);
+		}
+	}
+	
+	private static Method getGetter(Class<?> type, String property) {
+		try {
+			return type.getMethod(property);
+		} catch (NoSuchMethodException | SecurityException e) {
+			if (!property.startsWith("get")) {
+				return getGetter(type, "get".concat(StringUtils.capitalizeFirstLetter(property)));
+			}
+			throw new RuntimeException("Could not find applicable getter method: " + property, e);
+		}
+	}
+	
 	public static <R, T> R getField(Class<T> clazz, T instance, String fieldName) {
 		try {
 			Field field = clazz.getDeclaredField(fieldName);

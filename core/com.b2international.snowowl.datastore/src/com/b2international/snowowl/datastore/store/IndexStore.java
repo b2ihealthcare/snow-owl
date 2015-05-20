@@ -16,6 +16,7 @@
 package com.b2international.snowowl.datastore.store;
 
 import static com.google.common.base.Preconditions.checkNotNull;
+import static com.google.common.collect.Sets.newHashSet;
 
 import java.io.File;
 import java.io.IOException;
@@ -37,6 +38,7 @@ import org.apache.lucene.search.Sort;
 import org.apache.lucene.search.TermQuery;
 import org.apache.lucene.search.TopDocs;
 
+import com.b2international.commons.ReflectionUtils;
 import com.b2international.snowowl.datastore.store.query.Clause;
 import com.b2international.snowowl.datastore.store.query.EqualsWhere;
 import com.b2international.snowowl.datastore.store.query.PrefixWhere;
@@ -55,6 +57,7 @@ public class IndexStore<T> extends SingleDirectoryIndexServerService implements 
 	private static final String SOURCE_FIELD = "source";
 	private ObjectMapper objectMapper;
 	private Class<T> clazz;
+	private Collection<String> additionalSearchableFields = newHashSet();
 
 	/**
 	 * Creates a new Index based {@link Store} implementation working on the given directory.
@@ -175,11 +178,27 @@ public class IndexStore<T> extends SingleDirectoryIndexServerService implements 
 		}
 	}
 	
+	/**
+	 * TODO move this to interface
+	 * @param property
+	 */
+	public void configureSearchable(String property) {
+		this.additionalSearchableFields.add(checkNotNull(property));
+	}
+	
 	private void updateDoc(String key, T value) throws IOException {
+		final Document doc = createDoc(key, value);
+		writer.updateDocument(new Term(ID_FIELD, key), doc);
+	}
+
+	private Document createDoc(String key, T value) throws IOException {
 		final Document doc = new Document();
 		doc.add(new StringField(ID_FIELD, key, Field.Store.NO));
 		doc.add(new StringField(SOURCE_FIELD, serialize(value), Field.Store.YES));
-		writer.updateDocument(new Term(ID_FIELD, key), doc);
+		for (String property : newHashSet(this.additionalSearchableFields)) {
+			doc.add(new StringField(property, String.valueOf(ReflectionUtils.getGetterValue(value, property)), Field.Store.NO));
+		}
+		return doc;
 	}
 	
 	private void deleteDoc(String key) throws IOException {

@@ -15,13 +15,7 @@
  */
 package com.b2international.snowowl.datastore.store.query;
 
-import static com.google.common.base.Preconditions.checkNotNull;
-
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-
-import org.eclipse.xtext.util.Strings;
-
+import com.b2international.commons.ReflectionUtils;
 import com.google.common.base.Predicate;
 
 /**
@@ -49,42 +43,19 @@ public abstract class WhereBase implements Where {
 	
 	@Override
 	public final <T> Predicate<T> toPredicate() {
-		return new WherePredicate<T>(this);
+		return new WherePredicate<T>();
 	}
 	
 	protected abstract boolean matches(String actual);
 	
 	private class WherePredicate<T> implements Predicate<T> {
 
-		private Where where;
-
-		public WherePredicate(Where where) {
-			this.where = checkNotNull(where);
-		}
-		
-		private Method findGetter(Class<?> type, String property) {
-			try {
-				return type.getMethod(property);
-			} catch (NoSuchMethodException | SecurityException e) {
-				if (!property.startsWith("get")) {
-					return findGetter(type, "get".concat(Strings.toFirstUpper(property)));
-				}
-				throw new QueryException("Could not find applicable getter method: ", property, e);
-			}
-		}
-
 		@Override
 		public boolean apply(T input) {
-			final Method getter = findGetter(input.getClass(), where.property());
-			try {
-				if (getter != null) {
-					final String actual = String.valueOf(getter.invoke(input));
-					return matches(actual);
-				}
-			} catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
-				e.printStackTrace();
-			}
-			return false;
+			final Object value = ReflectionUtils.getGetterValue(input.getClass(), property()); 
+			// TODO add non-string support
+			final String actual = String.valueOf(value);
+			return matches(actual);
 		}
 
 	}
