@@ -58,7 +58,7 @@ Feature: SnomedImportApi
 			val response = givenAuthenticatedRequest(API)
 				.withJson(#{
 					"type" -> args.first,
-	  				"branchPath" -> args.second,
+	  				"branchPath" -> args.second.renderWithFields(this),
 	  				// TODO remove unnecessary definition of langRefSetId when import supports it
 	  				"languageRefSetId" -> UK_LANG_REFSET
 					

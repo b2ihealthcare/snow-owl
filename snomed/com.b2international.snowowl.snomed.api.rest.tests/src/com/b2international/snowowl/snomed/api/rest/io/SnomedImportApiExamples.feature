@@ -16,6 +16,7 @@
 package com.b2international.snowowl.snomed.api.rest.io
 
 import static extension com.b2international.snowowl.test.commons.rest.RestExtensions.*
+import static extension com.b2international.snowowl.snomed.api.rest.BranchingApiExtensions.*
 import com.b2international.snowowl.snomed.api.rest.io.*
 import com.b2international.snowowl.snomed.api.rest.components.*
 import com.jayway.restassured.response.Response
@@ -32,12 +33,15 @@ Feature: SnomedImportApiExamples
 		var req = givenAuthenticatedRequest(API)
 		var Response res
 		var public String importId
-	
+		var public String branchPath
+		
 	Scenario: Import new concept via RF2 Delta archive
 		
-		Given SNOMED CT "DELTA" import configuration on branch "MAIN"
-		And concept "63961392103" is not available on "MAIN"
-			API.get(args.second, "concepts", args.first).expectStatus(404)
+		Given branch "import-branch" under "MAIN"
+			branchPath = API.getOrCreate(args.second, args.first)  
+		And SNOMED CT "DELTA" import configuration on branch "${branchPath}"
+		And concept "63961392103" is not available on "${branchPath}"
+			API.get(args.second.renderWithFields(this), "concepts", args.first).expectStatus(404)
 		When sending POST to "/imports/${importId}/archive" with file "SnomedCT_Release_INT_20150131_new_concept.zip"
 			res = req.withFile(args.second, getClass()).post(args.first.renderWithFields(this))
 		And return "204" status
@@ -53,58 +57,62 @@ Feature: SnomedImportApiExamples
 			} while (!states.contains(res.getBody.path("status")));
 		And it should succeed
 			res.getBody.path("status") should be "COMPLETED"
-		And concept "63961392103" should be available on "MAIN"
-			val res = API.get(args.second, "concepts", args.first)
+		And concept "63961392103" should be available on "${branchPath}"
+			val res = API.get(args.second.renderWithFields(this), "concepts", args.first)
 			res.expectStatus(200)
 			res.getBody.path("active") should be true
 
 	Scenario: Import new description via RF2 Delta archive
 		
-		Given SNOMED CT "DELTA" import configuration on branch "MAIN"
-		And description "11320138110" is not available on "MAIN"
-			API.get(args.second, "descriptions", args.first).expectStatus(404)
+		Given branch "import-branch" under "MAIN"
+		And SNOMED CT "DELTA" import configuration on branch "${branchPath}"
+		And description "11320138110" is not available on "${branchPath}"
+			API.get(args.second.renderWithFields(this), "descriptions", args.first).expectStatus(404)
 		When sending POST to "/imports/${importId}/archive" with file "SnomedCT_Release_INT_20150201_new_description.zip"
 		And return "204" status
 		Then wait until the import state is either "COMPLETED" or "FAILED"
 		And it should succeed
-		And description "11320138110" should be available on "MAIN"
-			val res = API.get(args.second, "descriptions", args.first)
+		And description "11320138110" should be available on "${branchPath}"
+			val res = API.get(args.second.renderWithFields(this), "descriptions", args.first)
 			res.expectStatus(200)
 			res.getBody.path("active") should be true
 	
 	Scenario: Import new relationship via RF2 Delta archive
 		
-		Given SNOMED CT "DELTA" import configuration on branch "MAIN"
-		And relationship "24088071128" is not available on "MAIN"
-			API.get(args.second, "relationships", args.first).expectStatus(404)
+		Given branch "import-branch" under "MAIN"
+		And SNOMED CT "DELTA" import configuration on branch "${branchPath}"
+		And relationship "24088071128" is not available on "${branchPath}"
+			API.get(args.second.renderWithFields(this), "relationships", args.first).expectStatus(404)
 		When sending POST to "/imports/${importId}/archive" with file "SnomedCT_Release_INT_20150202_new_relationship.zip"
 		And return "204" status
 		Then wait until the import state is either "COMPLETED" or "FAILED"
 		And it should succeed
-		And relationship "24088071128" should be available on "MAIN"
-			val res = API.get(args.second, "relationships", args.first)
+		And relationship "24088071128" should be available on "${branchPath}"
+			val res = API.get(args.second.renderWithFields(this), "relationships", args.first)
 			res.expectStatus(200)
 			res.getBody.path("active") should be true
 		
 	Scenario: Import preferred term change via RF2 Delta archive
 		
-		Given SNOMED CT "DELTA" import configuration on branch "MAIN"
-		And preferred term of concept "63961392103" is "13809498114" on "MAIN"
-			val res = givenAuthenticatedRequest(API).header("Accept-Language", "en-GB").get(asPath(#[args.third, "concepts", args.first, "pt"]))
+		Given branch "import-branch" under "MAIN"
+		And SNOMED CT "DELTA" import configuration on branch "${branchPath}"
+		And preferred term of concept "63961392103" is "13809498114" on "${branchPath}"
+			val res = givenAuthenticatedRequest(API).header("Accept-Language", "en-GB").get(asPath(#[args.third.renderWithFields(this), "concepts", args.first, "pt"]))
 			res.expectStatus(200)
 			res.getBody.path("id") should be args.second
 		When sending POST to "/imports/${importId}/archive" with file "SnomedCT_Release_INT_20150203_change_pt.zip"
 		And return "204" status
 		Then wait until the import state is either "COMPLETED" or "FAILED"
 		And it should succeed
-		And preferred term of concept "63961392103" is "11320138110" on "MAIN"
+		And preferred term of concept "63961392103" is "11320138110" on "${branchPath}"
 		
 	Scenario: Import concept inactivation via RF2 Delta archive
 		
-		Given SNOMED CT "DELTA" import configuration on branch "MAIN"
+		Given branch "import-branch" under "MAIN"
+		And SNOMED CT "DELTA" import configuration on branch "${branchPath}"
 		When sending POST to "/imports/${importId}/archive" with file "SnomedCT_Release_INT_20150204_inactivate_concept.zip"
 		And return "204" status
 		Then wait until the import state is either "COMPLETED" or "FAILED"
 		And it should succeed
-		And concept "63961392103" should be inactive on "MAIN"
-			API.get(args.second, "concepts", args.first).getBody.path("active") should be false
+		And concept "63961392103" should be inactive on "${branchPath}"
+			API.get(args.second.renderWithFields(this), "concepts", args.first).getBody.path("active") should be false
