@@ -30,7 +30,7 @@ public abstract class FSIndexServerService<E extends IIndexEntry> extends IndexS
 
 	private final Supplier<IDirectoryManager> directorySupplier = Suppliers.memoize(new Supplier<IDirectoryManager>() {
 		@Override public IDirectoryManager get() {
-			return new FSDirectoryManager(getRepositoryUuid(), indexPath, new IndexPurgerPredicate(getRepositoryUuid(), FSIndexServerService.this));
+			return new FSDirectoryManager(getRepositoryUuid(), indexPath, FSIndexServerService.this);
 		}
 	});
 

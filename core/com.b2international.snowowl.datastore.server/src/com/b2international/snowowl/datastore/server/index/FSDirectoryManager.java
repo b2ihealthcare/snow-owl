@@ -27,7 +27,6 @@ import static com.google.common.collect.Sets.newHashSet;
 import static java.util.Collections.unmodifiableCollection;
 
 import java.io.File;
-import java.io.FileFilter;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.List;
@@ -41,11 +40,11 @@ import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.FSDirectory;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.Path;
+import org.eclipse.emf.cdo.common.branch.CDOBranch;
 import org.eclipse.emf.cdo.eresource.CDOResource;
 import org.eclipse.emf.cdo.transaction.CDOTransaction;
 import org.eclipse.emf.ecore.EObject;
 
-import com.b2international.commons.CompareUtils;
 import com.b2international.commons.FileUtils;
 import com.b2international.snowowl.core.SnowOwlApplication;
 import com.b2international.snowowl.core.api.IBranchPath;
@@ -65,7 +64,6 @@ import com.b2international.snowowl.terminologymetadata.CodeSystemVersion;
 import com.b2international.snowowl.terminologymetadata.CodeSystemVersionGroup;
 import com.b2international.snowowl.terminologymetadata.TerminologymetadataPackage;
 import com.b2international.snowowl.terminologyregistry.core.index.CodeSystemVersionIndexMappingStrategy;
-import com.google.common.base.Preconditions;
 import com.google.common.base.Predicate;
 import com.google.common.collect.Ordering;
 import com.google.common.collect.Sets;
@@ -77,101 +75,80 @@ public class FSDirectoryManager implements IDirectoryManager {
 
 	private static final String INDEXES_CHILD_FOLDER = "indexes";
 
+	private final String repositoryUuid;
 	private final File indexRelativeRootPath;
-	private final IIndexPurgerPredicate indexPurgerPredicate;
+	private final IndexServerService<?> indexServerService;
 
-	private String repositoryUuid;
-
-	public FSDirectoryManager(final String repositoryUuid, final File indexRelativeRootPath, final IIndexPurgerPredicate indexPurgerPredicate) {
+	public FSDirectoryManager(final String repositoryUuid, final File indexRelativeRootPath, final IndexServerService<?> indexServerService) {
 		this.repositoryUuid = checkNotNull(repositoryUuid, "repositoryUuid");
-		this.indexPurgerPredicate = checkNotNull(indexPurgerPredicate, "indexPurgerPredicate");
 		this.indexRelativeRootPath = checkNotNull(indexRelativeRootPath, "indexRelativeRootPath");
+		this.indexServerService = checkNotNull(indexServerService, "indexServerService");
 	}
 
 	@Override
-	public Directory createDirectory(final IBranchPath branchPath) throws IOException {
+	public Directory createDirectory(final IBranchPath branchPath, final IndexBranchService baseService) throws IOException {
+		final IndexCommit baseCommit = getBaseCommit(branchPath, baseService);
+		final File folderForBranchPath = getFolderForBranchPath(branchPath, baseCommit);
+		
 		if (BranchPathUtils.isMain(branchPath)) {
-			return createDirectory(branchPath, getFolderForBranchPath(branchPath));
+			return IndexUtils.open(folderForBranchPath);
+		} else if (isBasePath(branchPath)) {
+			return new ReadOnlyDirectory(baseCommit);
 		} else {
-			final IBranchPath parentPath = branchPath.getParent();
-			final IndexBranchService baseService = indexPurgerPredicate.getBranchService(parentPath);
-			final IndexCommit commit = baseService.getIndexCommit(branchPath);
-			if (isBasePath(branchPath)) {
-				return new ReadOnlyDirectory(commit);
-			} else {
-				return new CompositeDirectory(commit, createDirectory(branchPath, getFolderForBranchPath(branchPath)));
-			}
+			final Directory writeableDirectory = IndexUtils.open(folderForBranchPath);
+			return new CompositeDirectory(baseCommit, writeableDirectory);
+		}
+	}
+
+	private File getDataDirectory() {
+		return SnowOwlApplication.INSTANCE.getEnviroment().getDataDirectory();
+	}
+
+	private File getIndexRootPath() {
+		return new File(getDataDirectory(), INDEXES_CHILD_FOLDER);
+	}
+
+	private File getIndexAbsolutePath() {
+		final File indexRootPath = getIndexRootPath();
+		final File indexTerminologyRootPath = new File(indexRootPath, indexRelativeRootPath.getPath());
+		return indexTerminologyRootPath;
+	}
+
+	private File getFolderForBranchPath(final IBranchPath branchPath) throws IOException {
+		if (BranchPathUtils.isMain(branchPath)) {
+			return getFolderForBranchPath(branchPath, null);
+		} else {
+			IBranchPath parent = branchPath.getParent();
+			IndexBranchService baseService = indexServerService.getBranchService(parent);
+			IndexCommit baseCommit = getBaseCommit(branchPath, baseService);
+			return getFolderForBranchPath(branchPath, baseCommit);
+		}
+	}
+	
+	private File getFolderForBranchPath(final IBranchPath branchPath, IndexCommit baseCommit) throws IOException {
+		final File indexTerminologyRootPath = getIndexAbsolutePath();
+		final String child;
+		
+		if (BranchPathUtils.isMain(branchPath)) {
+			child = String.valueOf(CDOBranch.MAIN_BRANCH_ID);
+		} else {
+			child = baseCommit.getUserData().get(IndexUtils.INDEX_CDO_BRANCH_PATH_KEY);
+		}
+		
+		return new File(indexTerminologyRootPath, child);
+	}
+
+	private IndexCommit getBaseCommit(IBranchPath branchPath, IndexBranchService baseService) throws IOException {
+		if (BranchPathUtils.isMain(branchPath)) {
+			return null;
+		} else {
+			return baseService.getIndexCommit(branchPath);
 		}
 	}
 
 	@Override
-	public void cleanUp(final IBranchPath branchPath, final boolean force) {
-
-		final File[] subDirectories = getFolderForBranchPath(branchPath).listFiles(new FileFilter() {
-			@Override
-			public boolean accept(File pathname) {
-				return pathname.isDirectory();
-			}
-		});
-
-		if (CompareUtils.isEmpty(subDirectories)) {
-			if (indexPurgerPredicate.apply(branchPath)) {
-				FileUtils.deleteDirectory(getFolderForBranchPath(branchPath));
-			}
-			return;
-		}
-
-		for (final File subDirectory : subDirectories) {
-
-			//absolute file to avoid e.g /home/user/MAIN/SnowOwl/resources/indexes/snomed/MAIN/task_300 issue
-			final String dataDirectoryUri = getDataDirectory().toURI().toString();
-			String subFolderUri = subDirectory.toURI().toString();
-			subFolderUri = subFolderUri.replaceFirst(dataDirectoryUri, "");
-			final int index = subFolderUri.lastIndexOf(branchPath.getPath());
-			Preconditions.checkState(index > 0, "Cannot extract branch path from " + subFolderUri + ".");
-			final String subDirectoryPath = subFolderUri.substring(index);
-			final IBranchPath subFolderBranchPath = BranchPathUtils.createPath(subDirectoryPath);
-
-			if (!force && !indexPurgerPredicate.apply(subFolderBranchPath)) {
-
-				cleanUp(subFolderBranchPath, true);
-
-			} else {
-
-				Directory indexDirectory = null;
-
-				try {
-
-					indexDirectory = IndexUtils.open(subDirectory);
-
-					if (DirectoryReader.indexExists(indexDirectory)) {
-						indexDirectory.close();
-						indexDirectory = null;
-					}
-					FileUtils.deleteDirectory(subDirectory);
-
-				} catch (final IOException ignored) {
-					// Don't mind if it is not a real directory
-				} finally {
-
-					if (null != indexDirectory) {
-						try {
-							indexDirectory.close();
-						} catch (final IOException e) {
-							try {
-								indexDirectory.close();
-							} catch (final IOException e1) {
-								//intentionally ignored
-							}
-							throw new IndexException("Error while cleaning up index folder " + indexDirectory, e);
-						}
-					}
-
-				}
-
-			}
-
-		}
+	public void deleteIndex(final IBranchPath branchPath) throws IOException {
+		FileUtils.deleteDirectory(getFolderForBranchPath(branchPath));
 	}
 
 	@Override
@@ -186,7 +163,7 @@ public class FSDirectoryManager implements IDirectoryManager {
 
 		try {
 
-			final List<IndexCommit> commits = DirectoryReader.listCommits(indexPurgerPredicate.getBranchService(branchPath).getDirectory());
+			final List<IndexCommit> commits = DirectoryReader.listCommits(indexServerService.getBranchService(branchPath).getDirectory());
 
 			for (final IndexCommit commit : commits) {
 				final Collection<String> fileNames = commit.getFileNames();
@@ -260,53 +237,23 @@ public class FSDirectoryManager implements IDirectoryManager {
 									if (shouldTag) {
 										try {
 											service.commit();
-											service.createIndexCommit(createVersionPath(ICodeSystemVersion.INITIAL_STATE), -1L, true, false);
+											service.createIndexCommit(createVersionPath(ICodeSystemVersion.INITIAL_STATE), new int[] { 0 }, -1L);
 										} catch (IOException e) {
 											throw new IndexException("Failed to initialize index branch service for " + repositoryUuid);
 										}
 									}
-
 								}
-
 
 								return com.b2international.commons.Void.VOID;
 							}
 						});
-
 					}
 				}
-
-
 			}
 
 		} catch (final IOException e) {
 			throw new IndexException("Failed to initialize index branch service for " + repositoryUuid);
 		}
-	}
-
-	private File getDataDirectory() {
-		return SnowOwlApplication.INSTANCE.getEnviroment().getDataDirectory();
-	}
-
-	private File getFolderForBranchPath(final IBranchPath branchPath) {
-		final File indexTerminologyRootPath = getIndexAbsolutePath();
-		final File indexTerminologyBranchPath = new File(indexTerminologyRootPath, branchPath.getOsPath());
-		return indexTerminologyBranchPath;
-	}
-
-	private File getIndexAbsolutePath() {
-		final File indexRootPath = getIndexRootPath();
-		final File indexTerminologyRootPath = new File(indexRootPath, indexRelativeRootPath.getPath());
-		return indexTerminologyRootPath;
-	}
-
-	private File getIndexRootPath() {
-		return new File(getDataDirectory(), INDEXES_CHILD_FOLDER);
-	}
-
-	private Directory createDirectory(final IBranchPath branchPath, final File indexPath) throws IOException {
-		final Directory result = IndexUtils.open(indexPath);
-		return result;
 	}
 
 	private Collection<CDORootResourceNameProvider> getRootResourceNameProvidersForRepository(final String repsotiryUuid) {

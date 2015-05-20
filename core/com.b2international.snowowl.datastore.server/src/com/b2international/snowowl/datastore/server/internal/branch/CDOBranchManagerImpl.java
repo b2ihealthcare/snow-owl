@@ -1,6 +1,6 @@
 /*
  * Copyright 2011-2015 B2i Healthcare Pte Ltd, http://b2i.sg
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -18,9 +18,9 @@ package com.b2international.snowowl.datastore.server.internal.branch;
 import static com.google.common.base.Preconditions.checkArgument;
 
 import org.eclipse.emf.cdo.common.branch.CDOBranch;
+import org.eclipse.emf.cdo.common.branch.CDOBranchPoint;
 import org.eclipse.emf.cdo.common.commit.CDOCommitInfo;
 import org.eclipse.emf.cdo.common.commit.CDOCommitInfoHandler;
-import org.eclipse.emf.cdo.internal.common.commit.FailureCommitInfo;
 import org.eclipse.emf.cdo.transaction.CDOMerger;
 import org.eclipse.emf.cdo.transaction.CDOTransaction;
 import org.eclipse.emf.cdo.util.CommitException;
@@ -38,100 +38,109 @@ import com.b2international.snowowl.datastore.store.Store;
 
 /**
  * {@link BranchManager} implementation based on {@link CDOBranch} functionality.
- * 
+ *
  * @since 4.1
  */
 public class CDOBranchManagerImpl extends BranchManagerImpl {
 
-	private final IRepository repository;
-	
-	public CDOBranchManagerImpl(final IRepository repository, final Store<InternalBranch> branchStore) {
-		super(branchStore, getBasetimestamp(repository.getCdoMainBranch()));
-		this.repository = repository;
-		registerCommitListener(repository.getCdoRepository());
-	}
-	
-	@Override
-	void initMainBranch(InternalBranch main) {
-		super.initMainBranch(new CDOMainBranchImpl(main.baseTimestamp(), main.headTimestamp()));
-	}
-	
-	CDOBranch getCDOBranch(Branch branch) {
-		checkArgument(!branch.isDeleted(), "Deleted branches cannot be ");
-		final Integer branchId = ((InternalCDOBasedBranch) branch).cdoBranchId();
-		if (branchId != null) {
-			return loadCDOBranch(branchId);
-		}
-		throw new SnowowlRuntimeException("Missing registered CDOBranch identifier for branch at path: " + branch.path());
-	}
-	
-	private CDOBranch loadCDOBranch(Integer branchId) {
-		return repository.getCdoBranchManager().getBranch(branchId);
-	}
+    private final IRepository repository;
 
-	@Override
-	InternalBranch applyChangeSet(InternalBranch target, InternalBranch source, String commitMessage) {
-		CDOBranch targetBranch = getCDOBranch(target);
-	    CDOBranch sourceBranch = getCDOBranch(source);
-		CDOTransaction targetTransaction = null;
-		
-		try {
-			
-			ICDOConnection connection = repository.getConnection();
-			targetTransaction = connection.createTransaction(targetBranch);
-			
-			CDOBranchMerger merger = new CDOBranchMerger(repository.getCdoRepositoryId());
-			targetTransaction.merge(sourceBranch.getHead(), merger);
-			merger.unlinkObjects(targetTransaction);
-			
-			targetTransaction.setCommitComment(commitMessage);
-			
-			CDOCommitInfo commitInfo = targetTransaction.commit();
-			return target.withHeadTimestamp(commitInfo.getTimeStamp());
-			
-		} catch (CDOMerger.ConflictException e) {
-			throw new BranchMergeException("Could not resolve all conflicts while applying changeset on '%s' from '%s'.", target.path(), source.path(), e);
-		} catch (CommitException e) {
-			throw new BranchMergeException("Failed to apply changeset on '%s' from '%s'.", target.path(), source.path(), e);
-		} finally {
-			
-			if (targetTransaction != null) { 
-				targetTransaction.close(); 
-			}
-		}
-	}
-	
-	@Override
-	InternalBranch reopen(InternalBranch parent, String name, Metadata metadata) {
-		final CDOBranch childCDOBranch = createCDOBranch(parent, name);
-		final long baseTimestamp = getBasetimestamp(childCDOBranch);
-		repository.getIndexUpdater().reopen(BranchPathUtils.createPath(childCDOBranch), baseTimestamp);
-		return reopen(parent, name, metadata, baseTimestamp, childCDOBranch.getID());
-	}
-	
-	private InternalBranch reopen(InternalBranch parent, String name, Metadata metadata, long baseTimestamp, int id) {
-		final InternalBranch branch = new CDOBranchImpl(name, parent.path(), baseTimestamp, id);
-		branch.metadata(metadata);
-		registerBranch(branch);
-		return branch;
-	}
+    public CDOBranchManagerImpl(final IRepository repository, final Store<InternalBranch> branchStore) {
+        super(branchStore, getBasetimestamp(repository.getCdoMainBranch()));
+        this.repository = repository;
+        registerCommitListener(repository.getCdoRepository());
+    }
 
-	private CDOBranch createCDOBranch(InternalBranch parent, String name) {
-		return getCDOBranch(parent).createBranch(name);
-	}
+    @Override
+    void initMainBranch(InternalBranch main) {
+        super.initMainBranch(new CDOMainBranchImpl(main.baseTimestamp(), main.headTimestamp()));
+    }
 
-	private void registerCommitListener(ICDORepository repository) {
-		repository.getRepository().addCommitInfoHandler(new CDOCommitInfoHandler() {
+    CDOBranch getCDOBranch(Branch branch) {
+        checkArgument(!branch.isDeleted(), "Deleted branches cannot be ");
+        final Integer branchId = ((InternalCDOBasedBranch) branch).cdoBranchId();
+        if (branchId != null) {
+            return loadCDOBranch(branchId);
+        }
+        throw new SnowowlRuntimeException("Missing registered CDOBranch identifier for branch at path: " + branch.path());
+    }
+
+    private CDOBranch loadCDOBranch(Integer branchId) {
+        return repository.getCdoBranchManager().getBranch(branchId);
+    }
+
+    @Override
+    InternalBranch applyChangeSet(InternalBranch target, InternalBranch source, String commitMessage) {
+        CDOBranch targetBranch = getCDOBranch(target);
+        CDOBranch sourceBranch = getCDOBranch(source);
+        CDOTransaction targetTransaction = null;
+
+        try {
+
+            ICDOConnection connection = repository.getConnection();
+            targetTransaction = connection.createTransaction(targetBranch);
+
+            CDOBranchMerger merger = new CDOBranchMerger(repository.getCdoRepositoryId());
+            targetTransaction.merge(sourceBranch.getHead(), merger);
+            merger.unlinkObjects(targetTransaction);
+
+            targetTransaction.setCommitComment(commitMessage);
+
+            CDOCommitInfo commitInfo = targetTransaction.commit();
+            return target.withHeadTimestamp(commitInfo.getTimeStamp());
+
+        } catch (CDOMerger.ConflictException e) {
+            throw new BranchMergeException("Could not resolve all conflicts while applying changeset on '%s' from '%s'.", target.path(), source.path(), e);
+        } catch (CommitException e) {
+            throw new BranchMergeException("Failed to apply changeset on '%s' from '%s'.", target.path(), source.path(), e);
+        } finally {
+
+            if (targetTransaction != null) {
+                targetTransaction.close();
+            }
+        }
+    }
+
+    @Override
+    InternalBranch reopen(InternalBranch parent, String name, Metadata metadata) {
+        final CDOBranch childCDOBranch = createCDOBranch(parent, name);
+        final CDOBranchPoint[] basePath = childCDOBranch.getBasePath();
+        final int[] cdoBranchPath = new int[basePath.length + 1];
+        cdoBranchPath[basePath.length] = childCDOBranch.getID();
+        
+        for (int i = basePath.length - 1; i >= 0; i--) {
+        	cdoBranchPath[basePath.length - 1 - i] = basePath[i].getBranch().getID();
+        }
+
+        final long timeStamp = basePath[0].getTimeStamp();
+        repository.getIndexUpdater().reopen(BranchPathUtils.createPath(childCDOBranch), cdoBranchPath, timeStamp);
+		return reopen(parent, name, metadata, timeStamp, childCDOBranch.getID());
+    }
+
+    private InternalBranch reopen(InternalBranch parent, String name, Metadata metadata, long baseTimestamp, int id) {
+        final InternalBranch branch = new CDOBranchImpl(name, parent.path(), baseTimestamp, id);
+        branch.metadata(metadata);
+        registerBranch(branch);
+        return branch;
+    }
+
+    private CDOBranch createCDOBranch(InternalBranch parent, String name) {
+        return getCDOBranch(parent).createBranch(name);
+    }
+
+    @SuppressWarnings("restriction")
+    private void registerCommitListener(ICDORepository repository) {
+        repository.getRepository().addCommitInfoHandler(new CDOCommitInfoHandler() {
 			@Override
-			public void handleCommitInfo(CDOCommitInfo commitInfo) {
-				if (!(commitInfo instanceof FailureCommitInfo)) {
-					handleCommit((InternalBranch) getBranch(commitInfo.getBranch().getPathName()), commitInfo.getTimeStamp());
-				}
-			}
-		}); 
-	}
+            public void handleCommitInfo(CDOCommitInfo commitInfo) {
+                if (!(commitInfo instanceof org.eclipse.emf.cdo.internal.common.commit.FailureCommitInfo)) {
+                    handleCommit((InternalBranch) getBranch(commitInfo.getBranch().getPathName()), commitInfo.getTimeStamp());
+                }
+            }
+        });
+    }
 
-	private static long getBasetimestamp(CDOBranch branch) {
-		return branch.getBase().getTimeStamp();
-	}
+    private static long getBasetimestamp(CDOBranch branch) {
+        return branch.getBase().getTimeStamp();
+    }
 }

@@ -29,7 +29,6 @@ import com.b2international.snowowl.rpc.RpcUtil;
 /**
  * Job for creating, initializing and registering an index service to the application on the server side.
  * 
- * 
  * @param <U> the index updater interface type
  */
 public abstract class IndexServiceConfigJob<U extends IIndexUpdater<?>> extends ServiceConfigJob {
@@ -60,7 +59,6 @@ public abstract class IndexServiceConfigJob<U extends IIndexUpdater<?>> extends 
 		
 		// Register implementation for both reading and writing
 		final U implementation = createServiceImplementation();
-		implementation.purge();
 		implementation.prepare(createMainPath());
 		final Class<? super U> searcherClass = getSearcherClass();
 		final Class<U> updaterClass = getUpdaterClass();

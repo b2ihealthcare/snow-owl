@@ -27,16 +27,22 @@ import com.b2international.snowowl.core.api.IBranchPath;
  */
 public interface IDirectoryManager extends IndexDirectoryFirstStartupCallback {
 
-	/**Creates and returns with a new {@link Directory} instance.*/
-	Directory createDirectory(final IBranchPath branchPath) throws IOException;
+	/** 
+	 * Creates and returns with a new {@link Directory} instance. 
+	 * @param baseService 
+	 */
+	Directory createDirectory(IBranchPath branchPath, IndexBranchService baseService) throws IOException;
 	
-	/**Cleans up the underlying resources. Purge will be forced if <b>force</b> flag is configured to {@code true}.*/
-	void cleanUp(final IBranchPath branchPath, final boolean force);
+	/** 
+	 * Cleans up underlying resources. 
+	 * @throws IOException 
+	 */
+	void deleteIndex(IBranchPath branchPath) throws IOException;
 	
 	/**
 	 * Collects a list of absolute file paths that contain index data for the specified branch path. Note that the list
 	 * may not be complete to reproduce an index by itself in case of "layered" indexes.
 	 * @return the list of files which carry data for this update, or an empty list (never {@code null})
 	 */
-	List<String> listFiles(final IBranchPath branchPath) throws IOException;
+	List<String> listFiles(IBranchPath branchPath) throws IOException;
 }
