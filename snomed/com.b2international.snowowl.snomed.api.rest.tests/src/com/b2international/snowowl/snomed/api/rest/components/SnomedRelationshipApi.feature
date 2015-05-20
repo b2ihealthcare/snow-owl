@@ -22,7 +22,6 @@ import com.b2international.snowowl.snomed.api.rest.components.*
 import static extension com.b2international.snowowl.test.commons.rest.RestExtensions.*
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts
 import com.b2international.snowowl.snomed.api.rest.branches.*
-import java.util.Map
 
 /**
  * @since 2.0
@@ -42,7 +41,6 @@ Feature: SnomedRelationshipApi
 		val public TEMPORAL_CONTEXT = "410510008"
 		val public FINDING_CONTEXT = "408729009"
 		val public SCT_CORE_MODULE = Concepts.MODULE_SCT_CORE
-		var public Map<String, ?> json
 		
 	Scenario: New Relationship on non-existent SNOMED CT branch
 		
@@ -142,12 +140,11 @@ Feature: SnomedRelationshipApi
 		And sending POST to "/${branchPath}/relationships"
 		And extracted relationship id
 		And inactivation request
-			json = #{
+			req.withJson(#{
 				"active" -> false,
 				"commitComment" -> "Inactivated"
-			}
-		When sending PUT to "/${branchPath}/relationships/${relationshipId}/updates"
-			res = API.postJson(json, args.first.renderWithFields(this))
+			})
+		When sending POST to "/${branchPath}/relationships/${relationshipId}/updates"
 		Then return "204" status
 		And "active" should be "false"
 	
