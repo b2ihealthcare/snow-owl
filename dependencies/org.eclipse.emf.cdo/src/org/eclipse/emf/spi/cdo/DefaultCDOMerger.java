@@ -586,7 +586,7 @@ public class DefaultCDOMerger implements CDOMerger
           {
             if (!handleListDeltaAdd(resultList, (CDOAddFeatureDelta)deltaToHandle, listToAdjust))
             {
-              if (listToAdjust == null)
+              if (listToAdjust == null && !isEqualDeltaPresent(resultList, deltaToHandle))
               {
                 // If the ADD delta was not taken into the result the remaining deltas must be adjusted
                 adjustAfterRemoval(listToHandle, 0);
@@ -597,9 +597,9 @@ public class DefaultCDOMerger implements CDOMerger
           {
             if (!handleListDeltaRemove(resultList, (CDORemoveFeatureDelta)deltaToHandle, listToAdjust))
             {
-              if (listToAdjust == null)
+              if (listToAdjust == null && !isEqualDeltaPresent(resultList, deltaToHandle))
               {
-                // If the REMOVE delta was not taken into the result the remaining deltas must be adjusted
+            	// If the REMOVE delta was not taken into the result the remaining deltas must be adjusted
                 adjustAfterAddition(listToHandle, 0);
               }
             }
@@ -619,7 +619,18 @@ public class DefaultCDOMerger implements CDOMerger
         }
       }
 
-      /**
+      private boolean isEqualDeltaPresent(List<CDOFeatureDelta> resultList, CDOFeatureDelta deltaToHandle) 
+      {
+	    for (CDOFeatureDelta resultDelta : resultList) {
+			if (resultDelta.isStructurallyEqual(deltaToHandle)) {
+				return true;
+			}
+		}
+	    
+	    return false;
+	  }
+
+	  /**
        * Decides whether an ADD delta is to be taken (added to the result list) and returns <code>true</code> if it was
        * taken, <code>false</code> otherwise. Note that the passed ADD delta has to be copied prior to adding it to the
        * result list!
@@ -664,11 +675,17 @@ public class DefaultCDOMerger implements CDOMerger
           // listToAdjust is only null for the sourceFeatureDeltas.
           // In this case ignore a potential duplicate REMOVE delta.
           Object value = removeDelta.getValue();
+          
+          // Remove REMOVE deltas for objects that have been removed from source and target.
+          // This can for example happen if a source is re-merged to target.
           if (!getTargetMap().containsKey(value) && !getSourceMap().containsKey(value))
           {
-            // Remove REMOVE deltas for objects that have been removed from source and target.
-            // This can for example happen if a source is re-merged to target.
             return false;
+          }
+          
+          if (getTargetMap().get(value) instanceof CDOID && getSourceMap().get(value) instanceof CDOID)
+          {
+        	return false;
           }
         }
 
