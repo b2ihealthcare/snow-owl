@@ -22,8 +22,6 @@ import com.b2international.snowowl.snomed.api.rest.components.*
 
 import static extension com.b2international.snowowl.test.commons.rest.RestExtensions.*
 import java.util.Collection
-import com.jayway.restassured.RestAssured
-import com.jayway.restassured.parsing.Parser
 
 /**
  * @since 2.0
