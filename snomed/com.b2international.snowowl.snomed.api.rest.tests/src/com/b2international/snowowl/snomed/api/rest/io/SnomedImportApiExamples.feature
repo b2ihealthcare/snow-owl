@@ -15,10 +15,10 @@
  */
 package com.b2international.snowowl.snomed.api.rest.io
 
-import static extension com.b2international.snowowl.test.commons.rest.RestExtensions.*
-import com.b2international.snowowl.snomed.api.rest.io.*
-import com.b2international.snowowl.snomed.api.rest.components.*
 import com.jayway.restassured.response.Response
+import com.b2international.snowowl.snomed.api.rest.components.*
+
+import static extension com.b2international.snowowl.test.commons.rest.RestExtensions.*
 
 /**
  * @since 2.0
