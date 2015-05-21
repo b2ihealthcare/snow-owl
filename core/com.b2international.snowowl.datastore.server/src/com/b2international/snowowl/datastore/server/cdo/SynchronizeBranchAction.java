@@ -57,12 +57,13 @@ public class SynchronizeBranchAction extends AbstractCDOBranchAction {
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(SynchronizeBranchAction.class);
 
-	private static final String COMMIT_COMMENT = "Synchronized task branch with parent.";
-
 	private final List<CDOTransaction> transactions = newArrayList();
 
-	public SynchronizeBranchAction(final IBranchPathMap branchPathMap, final String userId) {
+	private final String commitComment;
+
+	public SynchronizeBranchAction(final IBranchPathMap branchPathMap, final String userId, final String commitComment) {
 		super(branchPathMap, userId, DatastoreLockContextDescriptions.SYNCHRONIZE);
+		this.commitComment = commitComment;
 	}
 
 	@Override
@@ -154,7 +155,7 @@ public class SynchronizeBranchAction extends AbstractCDOBranchAction {
 
 		try {
 
-			new CDOServerCommitBuilder(getUserId(), COMMIT_COMMENT, transactions)
+			new CDOServerCommitBuilder(getUserId(), commitComment, transactions)
 				.parentContextDescription(getLockDescription())
 				.commit();
 

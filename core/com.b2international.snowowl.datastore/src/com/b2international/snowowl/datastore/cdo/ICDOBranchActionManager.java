@@ -108,11 +108,12 @@ public interface ICDOBranchActionManager {
 	 * 
 	 * @param branchPathMap the set of branch paths to synchronize.
 	 * @param userId the unique ID of the user who's performing the branch synchronization.
+	 * @param commitComment the commit comment for the synchronization.
 	 * @return returns with the error (if any) occurred while performing the branch synchronization. Returns with {@code null} if the
 	 *         operation was successful.
 	 * @see CustomConflictException - occurres if the synchronization failed with conflicts
 	 */
-	@Nullable Throwable synchronize(final IBranchPathMap branchPathMap, final String userId);
+	@Nullable Throwable synchronize(final IBranchPathMap branchPathMap, final String userId, final String commitComment);
 
 	/**
 	 * Checks whether any of the branches specified by their paths should be synchronized with the corresponding parent branch.

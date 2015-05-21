@@ -76,8 +76,8 @@ public class CDOBranchActionManager implements ICDOBranchActionManager {
 	}
 
 	@Override
-	public @Nullable Throwable synchronize(final IBranchPathMap branchPathMap, final String userId) {
-		return new SynchronizeBranchAction(branchPathMap, userId).run();
+	public @Nullable Throwable synchronize(final IBranchPathMap branchPathMap, final String userId, final String commitComment) {
+		return new SynchronizeBranchAction(branchPathMap, userId, commitComment).run();
 	}
 
 	@Override
