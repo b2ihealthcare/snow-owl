@@ -190,6 +190,10 @@ public class SnomedRf2ImportService implements ISnomedRf2ImportService {
 			throw new BadRequestException("Language reference set identifier should be specified.");
 		}
 		
+		if (!Branch.MAIN_PATH.equals(configuration.getBranchPath()) && configuration.shouldCreateVersion()) {
+			throw new BadRequestException("Import time versioning supported on MAIN branch only");
+		}
+		
 		final UUID importId = randomUUID();
 		configurationMapping.put(importId, configuration);
 		return importId;

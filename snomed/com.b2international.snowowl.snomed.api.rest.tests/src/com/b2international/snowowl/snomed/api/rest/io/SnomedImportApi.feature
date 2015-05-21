@@ -33,15 +33,23 @@ Feature: SnomedImportApi
 		var Response res
 		var public String importId
 	
+	Scenario: Cannot create versions on branch import
+		
+		Given branch "delta-branch" under "MAIN"
+		And SNOMED CT "DELTA" import configuration request on branch "MAIN/delta-branch" with createVersions "true"
+		When sending POST to "/imports"
+		Then return "400" status
+		And return body with status "400"
+	
 	Scenario: Configure SNOMED CT Import
 		
-		Given SNOMED CT "DELTA" import configuration request on branch "MAIN"
+		Given SNOMED CT "DELTA" import configuration request on branch "MAIN"  with createVersions "false"
 			req.withJson(#{
 				"type" -> args.first,
-  				"branchPath" -> args.second,
+  				"branchPath" -> args.second.renderWithFields(this),
   				// TODO remove unnecessary definition of langRefSetId when import supports it
-  				"languageRefSetId" -> UK_LANG_REFSET
-				
+  				"languageRefSetId" -> UK_LANG_REFSET,
+  				"createVersions" -> args.third.toBool
 			})
 		When sending POST to "/imports"
 		Then return "201" status
@@ -55,17 +63,15 @@ Feature: SnomedImportApi
 	Scenario: Delete SNOMED CT import configuration
 		
 		Given SNOMED CT "DELTA" import configuration on branch "MAIN"
-			val response = givenAuthenticatedRequest(API)
-				.withJson(#{
+			val res = API.postJson(#{
 					"type" -> args.first,
 	  				"branchPath" -> args.second.renderWithFields(this),
 	  				// TODO remove unnecessary definition of langRefSetId when import supports it
 	  				"languageRefSetId" -> UK_LANG_REFSET
 					
-				})
-				.post("/imports")
-			response.expectStatus(201)
-			importId = response.location.lastPathSegment
+				}, "imports")
+			res.expectStatus(201)
+			importId = res.location.lastPathSegment
 		When sending DELETE to "/imports/${importId}"
 			res = req.delete(args.first.renderWithFields(this))
 		Then return "204" status
