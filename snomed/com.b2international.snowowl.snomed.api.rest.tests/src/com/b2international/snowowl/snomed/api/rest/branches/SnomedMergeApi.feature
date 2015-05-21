@@ -241,7 +241,7 @@ Feature: SnomedMergeApi
 			componentId = componentMap.get(args.first);
 			res = req.post(args.third.renderWithFields(this))
 			res.expectStatus(204)
-		And deleting concept "C1" with URL "${parent}/concepts/${componentId}"
+		And deleting component "C1" with URL "${parent}/concepts/${componentId}"
 			componentId = componentMap.get(args.first);
 			res = req.delete(args.second.renderWithFields(this))
 			res.expectStatus(204)
@@ -253,7 +253,7 @@ Feature: SnomedMergeApi
 		When creating a new concept "C1" with URL "${parent}/${branchName}/concepts"
 		And merging changes from branch "${parent}/${branchName}" to "${parent}" with comment "Concept creation commit"
 		And updating concept definition status "C1" to "FULLY_DEFINED" with URL "${parent}/concepts/${componentId}/updates"
-		And deleting concept "C1" with URL "${parent}/${branchName}/concepts/${componentId}"
+		And deleting component "C1" with URL "${parent}/${branchName}/concepts/${componentId}"
 		And rebasing branch "${parent}/${branchName}" onto "${parent}" with comment "Rebase commit"
 		Then return "204" status
 		And component "C1" should not exist on URL base "${parent}/${branchName}/concepts"
@@ -264,7 +264,7 @@ Feature: SnomedMergeApi
 		When creating a new concept "C1" with URL "${parent}/${branchName}/concepts"
 		And merging changes from branch "${parent}/${branchName}" to "${parent}" with comment "Concept creation commit"
 		And updating concept definition status "C1" to "FULLY_DEFINED" with URL "${parent}/concepts/${componentId}/updates"
-		And deleting concept "C1" with URL "${parent}/${branchName}/concepts/${componentId}"
+		And deleting component "C1" with URL "${parent}/${branchName}/concepts/${componentId}"
 		And rebasing branch "${parent}/${branchName}" onto "${parent}" with comment "Rebase commit"
 		And merging changes from branch "${parent}/${branchName}" to "${parent}" with comment "Merge commit"
 		Then return "204" status
@@ -308,3 +308,24 @@ Feature: SnomedMergeApi
 			res.expectStatus(200)
 			res.jsonPath.getString(args.third) should be args.second
 		And component "D1" should be "900000000000013009" for JSON path "moduleId" with URL "${parent}/descriptions/${componentId}"
+
+	Scenario: Accept rebase and merge attempt of deleted description on branch and parent
+		Given a SNOMED CT branch under parent branch "${parent}" with name "${branchName}"
+		And creating a new description "D1" with URL "${parent}/${branchName}/descriptions"
+		And merging changes from branch "${parent}/${branchName}" to "${parent}" with comment "Description creation commit"
+
+		And deleting component "D1" with URL "${parent}/descriptions/${componentId}"
+
+		And deleting component "D1" with URL "${parent}/${branchName}/descriptions/${componentId}"
+		And creating a new description "D2" with URL "${parent}/${branchName}/descriptions"
+
+		And rebasing branch "${parent}/${branchName}" onto "${parent}" with comment "Rebase commit" 
+		And return "204" status
+		And merging changes from branch "${parent}/${branchName}" to "${parent}" with comment "Merge commit"
+
+		Then return "204" status
+
+		And component "D1" should not exist on URL base "${parent}/descriptions"
+		And component "D1" should not exist on URL base "${parent}/${branchName}/descriptions"
+		And component "D2" should exist on URL base "${parent}/descriptions"
+		And component "D2" should exist on URL base "${parent}/${branchName}/descriptions"
