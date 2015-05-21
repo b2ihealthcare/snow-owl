@@ -125,7 +125,12 @@ Feature: SnomedBranchingApi
 			res.getBody.path("items.name") should be [
 				it instanceof Collection && (it as Collection).contains(branchName)
 			]
-		
+		And new branch appear on children list at "/branches/MAIN/children"
+			res = API.get(args.first.renderWithFields(this))
+			res.expectStatus(200)
+			res.getBody.path("items.name") should be [
+				it instanceof Collection && (it as Collection).contains(branchName)
+			]
 
 	Scenario: Metadata support
 		
