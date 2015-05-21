@@ -23,7 +23,6 @@ import static extension com.b2international.snowowl.test.commons.rest.RestExtens
 class BranchingApiExtensions {
 	
 	def static String getOrCreate(String api, String parent, String branchName) {
-		println("wtf")
 		val res = api.get("branches", parent, branchName)
 		if (res.getStatusCode == 404) {
 			api.postJson(#{
@@ -33,5 +32,4 @@ class BranchingApiExtensions {
 		}
 		return parent + "/" + branchName
 	}
-	
 }
