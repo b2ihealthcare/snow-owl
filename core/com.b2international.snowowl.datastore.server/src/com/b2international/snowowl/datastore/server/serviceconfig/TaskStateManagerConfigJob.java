@@ -48,7 +48,8 @@ public class TaskStateManagerConfigJob extends ServiceConfigJob {
 			return false;
 		}
 
-		TaskStateManager service = new TaskStateManager(new File("tasks"));
+		final File dir = new File(new File(getEnvironment().getDataDirectory(), "indexes"), "tasks");
+		TaskStateManager service = new TaskStateManager(dir);
 		ApplicationContext.getInstance().registerService(ITaskStateManager.class, service);
 
 		RpcUtil.getInitialServerSession(IPluginContainer.INSTANCE).registerClassLoader(ITaskStateManager.class, service.getClass().getClassLoader());

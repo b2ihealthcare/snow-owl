@@ -19,6 +19,7 @@ import com.b2international.commons.ClassUtils;
 import com.b2international.snowowl.api.domain.IComponentRef;
 import com.b2international.snowowl.api.impl.domain.InternalComponentRef;
 import com.b2international.snowowl.core.api.IBranchPath;
+import com.b2international.snowowl.core.exceptions.ComponentNotFoundException;
 import com.b2international.snowowl.core.terminology.ComponentCategory;
 import com.b2international.snowowl.snomed.Relationship;
 import com.b2international.snowowl.snomed.SnomedFactory;
@@ -50,36 +51,41 @@ public class SnomedRelationshipServiceImpl
 	@Override
 	protected boolean componentExists(final IComponentRef ref) {
 		final InternalComponentRef internalRef = ClassUtils.checkAndCast(ref, InternalComponentRef.class);
-		return snomedRelationshipLookupService.exists(internalRef.getBranchPath(), internalRef.getComponentId());
+		return snomedRelationshipLookupService.exists(internalRef.getBranch().branchPath(), internalRef.getComponentId());
 	}
 
 	@Override
 	protected Relationship convertAndRegister(final ISnomedRelationshipInput input, final SnomedEditingContext editingContext) {
-		final Relationship relationship = SnomedFactory.eINSTANCE.createRelationship();
-
-		relationship.setId(input.getIdGenerationStrategy().getId());
-		relationship.setActive(true);
-		relationship.unsetEffectiveTime();
-		relationship.setReleased(false);
-		relationship.setModule(getModuleConcept(input, editingContext));
-		relationship.setCharacteristicType(getConcept(input.getCharacteristicType().getConceptId(), editingContext));
-		relationship.setDestination(getConcept(input.getDestinationId(), editingContext));
-		relationship.setDestinationNegated(input.isDestinationNegated());
-		relationship.setGroup(input.getGroup());
-		relationship.setModifier(getConcept(input.getModifier().getConceptId(), editingContext));
-		relationship.setSource(getConcept(input.getSourceId(), editingContext));
-		relationship.setType(getConcept(input.getTypeId(), editingContext));
-		relationship.setUnionGroup(input.getUnionGroup());
-
-		// TODO: add a refinability refset member here?
-		return relationship;
+		try {
+			final Relationship relationship = SnomedFactory.eINSTANCE.createRelationship();
+			
+			relationship.setId(input.getIdGenerationStrategy().getId());
+			relationship.setActive(true);
+			relationship.unsetEffectiveTime();
+			relationship.setReleased(false);
+			relationship.setModule(getModuleConcept(input, editingContext));
+			relationship.setCharacteristicType(getConcept(input.getCharacteristicType().getConceptId(), editingContext));
+			relationship.setDestination(getConcept(input.getDestinationId(), editingContext));
+			relationship.setDestinationNegated(input.isDestinationNegated());
+			relationship.setGroup(input.getGroup());
+			relationship.setModifier(getConcept(input.getModifier().getConceptId(), editingContext));
+			relationship.setSource(getConcept(input.getSourceId(), editingContext));
+			relationship.setType(getConcept(input.getTypeId(), editingContext));
+			relationship.setUnionGroup(input.getUnionGroup());
+			
+			// TODO: add a refinability refset member here?
+			return relationship;
+		} catch (ComponentNotFoundException e) {
+			throw e.toBadRequestException();
+		}
 	}
 
 	@Override
 	protected ISnomedRelationship doRead(final IComponentRef ref) {
 		final InternalComponentRef internalRef = ClassUtils.checkAndCast(ref, InternalComponentRef.class);
-		final SnomedRelationshipIndexEntry relationshipIndexEntry = snomedRelationshipLookupService.getComponent(internalRef.getBranchPath(), internalRef.getComponentId());
-		return getRelationshipConverter(internalRef.getBranchPath()).apply(relationshipIndexEntry);
+		final IBranchPath branch = internalRef.getBranch().branchPath();
+		final SnomedRelationshipIndexEntry relationshipIndexEntry = snomedRelationshipLookupService.getComponent(branch, internalRef.getComponentId());
+		return getRelationshipConverter(branch).apply(relationshipIndexEntry);
 	}
 
 	private Relationship getRelationship(final String relationshipId, final SnomedEditingContext editingContext) {

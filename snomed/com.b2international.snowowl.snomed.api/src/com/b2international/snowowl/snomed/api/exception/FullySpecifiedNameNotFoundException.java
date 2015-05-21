@@ -15,7 +15,7 @@
  */
 package com.b2international.snowowl.snomed.api.exception;
 
-import com.b2international.snowowl.api.exception.NotFoundException;
+import com.b2international.snowowl.core.exceptions.NotFoundException;
 
 /**
  * Thrown when a fully specified name can not be retrieved.

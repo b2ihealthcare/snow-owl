@@ -118,11 +118,6 @@ public class LdapLoginModule extends AbstractLoginModule {
 	}
 
 	@Override
-	protected Logger getLogger() {
-		return LOGGER;
-	}
-
-	@Override
 	protected void doLogin(final Pair<String, String> userNameAndPassword) throws LoginException {
 		InitialLdapContext systemContext = null;
 

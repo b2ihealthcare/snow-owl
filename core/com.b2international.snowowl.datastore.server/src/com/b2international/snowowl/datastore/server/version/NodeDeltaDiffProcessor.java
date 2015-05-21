@@ -34,9 +34,9 @@ import org.eclipse.emf.ecore.EStructuralFeature;
 import org.osgi.framework.Bundle;
 import org.slf4j.Logger;
 
+import com.b2international.commons.emf.NsUriProvider;
+import com.b2international.snowowl.datastore.cdo.ICDORepositoryManager;
 import com.b2international.snowowl.datastore.index.diff.NodeDelta;
-import com.b2international.snowowl.datastore.server.ICDORepositoryManager;
-import com.b2international.snowowl.emf.compare.NsUriProvider;
 import com.b2international.snowowl.emf.compare.diff.AttributeDiff;
 import com.b2international.snowowl.emf.compare.diff.Diff;
 import com.b2international.snowowl.emf.compare.diff.ReferenceDiff;

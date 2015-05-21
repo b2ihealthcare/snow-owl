@@ -159,7 +159,7 @@ public abstract class BranchPointUtils {
 		final ICDOConnection connection = getConnectionManager().getByUuid(branchPoint.getUuid());
 		final CDOBranch branch = connection.getBranch(branchPoint.getBranchPath());
 		
-		Preconditions.checkNotNull(branch, "Branch does not exist. Path: '" + branchPoint.getBranchPath().getPath() + "'.");
+		Preconditions.checkNotNull(branch, "Branch does not exist. Path: '" + branchPoint.getBranchPath() + "'.");
 		
 		return branch.getPoint(branchPoint.getTimestamp());
 		

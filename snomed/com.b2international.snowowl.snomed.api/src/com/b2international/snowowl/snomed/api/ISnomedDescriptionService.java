@@ -21,7 +21,6 @@ import java.util.Locale;
 import com.b2international.snowowl.api.codesystem.exception.CodeSystemNotFoundException;
 import com.b2international.snowowl.api.codesystem.exception.CodeSystemVersionNotFoundException;
 import com.b2international.snowowl.api.domain.IComponentRef;
-import com.b2international.snowowl.api.task.exception.TaskNotFoundException;
 import com.b2international.snowowl.snomed.api.domain.ISnomedDescription;
 import com.b2international.snowowl.snomed.api.domain.ISnomedDescriptionInput;
 import com.b2international.snowowl.snomed.api.domain.ISnomedDescriptionUpdate;
@@ -66,8 +65,6 @@ public interface ISnomedDescriptionService extends ISnomedComponentService<ISnom
 	 * @throws CodeSystemNotFoundException        if SNOMED CT as a code system is not registered
 	 * @throws CodeSystemVersionNotFoundException if a code system version for SNOMED CT with the given identifier
 	 *                                            is not registered
-	 * @throws TaskNotFoundException              if the task identifier does not correspond to a task for the given 
-	 *                                            code system version
 	 * @throws PreferredTermNotFoundException     if no preferred term could be collected as a result of the process above
 	 */
 	ISnomedDescription getPreferredTerm(IComponentRef conceptRef, List<Locale> locales);

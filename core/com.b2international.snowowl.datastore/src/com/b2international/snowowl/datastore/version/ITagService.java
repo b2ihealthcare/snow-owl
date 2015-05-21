@@ -26,6 +26,5 @@ public interface ITagService {
 	 * Performs a tag operation based on the given tag configuration.
 	 * @param tagConfiguration the configuration for the tag operation.
 	 */
-	public void tag(final ITagConfiguration tagConfiguration);
-	
+	void tag(ITagConfiguration tagConfiguration);
 }

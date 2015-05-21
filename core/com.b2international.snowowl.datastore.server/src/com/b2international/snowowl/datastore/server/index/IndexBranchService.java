@@ -18,6 +18,7 @@ package com.b2international.snowowl.datastore.server.index;
 import static com.b2international.snowowl.datastore.BranchPathUtils.isBasePath;
 import static com.b2international.snowowl.datastore.BranchPathUtils.isMain;
 import static com.google.common.base.Preconditions.checkNotNull;
+import static com.google.common.base.Preconditions.checkState;
 import static com.google.common.collect.Iterables.getLast;
 
 import java.io.Closeable;
@@ -61,17 +62,12 @@ import com.b2international.snowowl.datastore.index.NullSearcherManager;
 import com.b2international.snowowl.datastore.server.internal.lucene.index.FilteringMergePolicy;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Predicate;
-import com.google.common.base.Strings;
+import com.google.common.base.Predicates;
 import com.google.common.collect.Maps;
+import com.google.common.primitives.Ints;
 
 public class IndexBranchService implements Closeable {
 	
-	private static final Predicate<String> IS_INDEX_TAG = new Predicate<String>() {
-		@Override public boolean apply(final String value) {
-			return Boolean.parseBoolean(Strings.nullToEmpty(value));
-		}
-	};
-
 	private static final IndexCommitFunction<Integer> GET_SEGMENT_COUNTER_FUNCTION = new IndexCommitFunction<Integer>() {
 		@Override public Integer apply(final IndexCommit commit) {
 			checkNotNull(commit, "commit");
@@ -108,7 +104,7 @@ public class IndexBranchService implements Closeable {
 	private final IndexPostProcessingConfiguration configuration;
 	private final IDirectoryManager directoryManager;
 	private final boolean readOnly;
-	private boolean firstStartupAtMain = false;;
+	private boolean firstStartupAtMain = false;
 	
 	public IndexBranchService(final IBranchPath branchPath, final IDirectoryManager directoryManager, @Nullable final IndexBranchService baseService) throws IOException {
 
@@ -116,7 +112,7 @@ public class IndexBranchService implements Closeable {
 		long timestamp = IIndexPostProcessingConfiguration.DEFAULT_TIMESTAMP;
 		final AtomicBoolean requiresPostProcessing = new AtomicBoolean(false);
 		
-		directory = directoryManager.createDirectory(branchPath);
+		directory = directoryManager.createDirectory(branchPath, baseService);
 		readOnly = isBasePath(branchPath);
 		
 		//not main and there are no indexes, we have to 'do' nothing 
@@ -140,7 +136,7 @@ public class IndexBranchService implements Closeable {
 			} else {
 				
 				if (!readOnly) {
-					timestamp = Long.parseLong(commit.getUserData().get(IndexUtils.INDEX_SNAPSHOT_TIMESTMP_KEY));
+					timestamp = Long.parseLong(commit.getUserData().get(IndexUtils.INDEX_BASE_TIMESTAMP_KEY));
 				}
 				requiresPostProcessing.compareAndSet(false, !readOnly);
 				
@@ -164,7 +160,6 @@ public class IndexBranchService implements Closeable {
 		configuration.setBranchPath(branchPath);
 		configuration.setTimestamp(timestamp);
 		configuration.setRequiresPostProcessing(requiresPostProcessing);
-		
 	}
 
 	public ReferenceManager<IndexSearcher> getManager() {
@@ -190,7 +185,7 @@ public class IndexBranchService implements Closeable {
 				} catch (final IOException e1) {
 					//intentionally ignored
 				}
-				throw new IndexException("Error while closing index searcher manager. [" + configuration.getBranchPath().getPath() + "]", e);
+				throw new IndexException("Error while closing index searcher manager. [" + configuration.getBranchPath() + "]", e);
 			}
 		}
 		
@@ -348,7 +343,7 @@ public class IndexBranchService implements Closeable {
 			
 			if (null != userData) {
 				
-				final String value = userData.get(IndexUtils.INDEX_SNAPSHOT_VERSION_KEY);
+				final String value = userData.get(IndexUtils.INDEX_BRANCH_PATH_KEY);
 				if (null != value) {
 					return true; 
 				}
@@ -373,26 +368,19 @@ public class IndexBranchService implements Closeable {
 		return getIndexCommit(directory, checkNotNull(branchPath, "branchPath"));
 	}
 	
-	public void createIndexCommit(final IBranchPath branchPath, final long timestamp, final boolean tag, final boolean shouldOptimizedIndex) throws IOException {
-
+	void createIndexCommit(final IBranchPath branchPath, final int[] cdoBranchPath, final long baseTimestamp) throws IOException {
 		checkClosed();
 		checkReadOnly();
+		checkState(cdoBranchPath[0] == 0, "CDO ID sequence did not start with 0.");
 		
 		final Map<String, String> userData = Maps.newHashMap();
-		userData.put(IndexUtils.INDEX_SNAPSHOT_VERSION_KEY, branchPath.getPath());
-		userData.put(IndexUtils.INDEX_SNAPSHOT_TIMESTMP_KEY, String.valueOf(timestamp));
-		
-		if (tag) {
-			userData.put(IndexUtils.INDEX_TAG_KEY, Boolean.toString(tag));
-			if (shouldOptimizedIndex) {
-				optimize();
-			}
-		}
+		userData.put(IndexUtils.INDEX_BRANCH_PATH_KEY, branchPath.getPath());
+		userData.put(IndexUtils.INDEX_BASE_TIMESTAMP_KEY, String.valueOf(baseTimestamp));
+		userData.put(IndexUtils.INDEX_CDO_BRANCH_PATH_KEY, Ints.join("/", cdoBranchPath));
 		
 		indexWriter.setCommitData(userData);
 		indexWriter.commit(); //intentionally not via #commit (reader should not be reopen, commit data should be specified)
 		updateMergePolicy();
-		
 	}
 
 	public Directory getDirectory() {
@@ -405,13 +393,13 @@ public class IndexBranchService implements Closeable {
 
 	@Nullable public static IndexCommit getIndexCommit(final Directory directory, final IBranchPath branchPath) {
 		try {
-			return getValueFromIndexCommit(directory, IndexUtils.INDEX_SNAPSHOT_VERSION_KEY, new Predicate<String>() {
+			return getValueFromIndexCommit(directory, IndexUtils.INDEX_BRANCH_PATH_KEY, new Predicate<String>() {
 				@Override public boolean apply(final String pathString) {
 					return checkNotNull(branchPath, "branchPath").getPath().equals(pathString);
 				}
 			}, GET_INDEX_COMMIT_FUNCTION);
 		} catch (final IOException e) {
-			throw new IndexException("Cannot get index commit for branch path: '" + branchPath.getPath() + "'.", e);
+			throw new IndexException("Cannot get index commit for branch path: '" + branchPath + "'.", e);
 		}
 	}
 
@@ -420,7 +408,7 @@ public class IndexBranchService implements Closeable {
 	}
 
 	private static int getSegmentInfoCounter(final Directory _directory) throws IOException {
-		return getValueFromIndexCommit(_directory, IndexUtils.INDEX_TAG_KEY, IS_INDEX_TAG, GET_SEGMENT_COUNTER_FUNCTION);
+		return getValueFromIndexCommit(_directory, IndexUtils.INDEX_BRANCH_PATH_KEY, Predicates.<String>notNull(), GET_SEGMENT_COUNTER_FUNCTION);
 	}
 	
 	private static <T> T getValueFromIndexCommit(final Directory directory, final String userDataKey, final Predicate<String> expectedValuePredicate, final IndexCommitFunction<T> getValueFunction) throws IOException {
@@ -450,7 +438,7 @@ public class IndexBranchService implements Closeable {
 		final IndexWriterConfig config = new IndexWriterConfig(Version.LUCENE_4_9, analyzer);
 		config.setOpenMode(OpenMode.CREATE_OR_APPEND);
 
-		final IndexDeletionPolicy wrappedDeletionPolicy = new KeepOnlyMostRecentVersionAndMasterCommitDeletionPolicy(IndexUtils.INDEX_SNAPSHOT_VERSION_KEY);
+		final IndexDeletionPolicy wrappedDeletionPolicy = new KeepBranchPointAndLastCommitDeletionPolicy();
 		final SnapshotDeletionPolicy deletionPolicy = new SnapshotDeletionPolicy(wrappedDeletionPolicy);
 		config.setIndexDeletionPolicy(deletionPolicy);
 
@@ -466,7 +454,6 @@ public class IndexBranchService implements Closeable {
 		}
 
 		updateMergePolicy();
-		
 		return indexWriter;
 	}
 

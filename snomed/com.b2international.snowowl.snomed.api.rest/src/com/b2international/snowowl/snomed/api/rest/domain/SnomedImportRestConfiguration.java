@@ -15,7 +15,9 @@
  */
 package com.b2international.snowowl.snomed.api.rest.domain;
 
+import com.b2international.snowowl.snomed.api.domain.ISnomedImportConfiguration;
 import com.b2international.snowowl.snomed.api.domain.Rf2ReleaseType;
+import com.b2international.snowowl.snomed.api.impl.domain.SnomedImportConfiguration;
 
 /**
  * @since 1.0
@@ -23,27 +25,18 @@ import com.b2international.snowowl.snomed.api.domain.Rf2ReleaseType;
 public class SnomedImportRestConfiguration {
 
 	private Rf2ReleaseType type;
-	private String version;
-	private String taskId;
+	private String branchPath;
 	private Boolean createVersions = Boolean.FALSE;
 	private String languageRefSetId;
 
-	public String getVersion() {
-		return version;
+	public String getBranchPath() {
+		return branchPath;
 	}
-
-	public String getTaskId() {
-		return taskId;
+	
+	public void setBranchPath(String branchPath) {
+		this.branchPath = branchPath;
 	}
-
-	public void setVersion(final String version) {
-		this.version = version;
-	}
-
-	public void setTaskId(final String taskId) {
-		this.taskId = taskId;
-	}
-
+	
 	public Rf2ReleaseType getType() {
 		return type;
 	}
@@ -76,16 +69,22 @@ public class SnomedImportRestConfiguration {
 	public void setLanguageRefSetId(final String languageRefSetId) {
 		this.languageRefSetId = languageRefSetId;
 	}
+	
+	public ISnomedImportConfiguration toConfig() {
+		return new SnomedImportConfiguration(
+				getType(), 
+				getBranchPath(),
+				getLanguageRefSetId(), 
+				getCreateVersions());
+	}
 
 	@Override
 	public String toString() {
 		final StringBuilder builder = new StringBuilder();
 		builder.append("SnomedImportRestConfiguration [type=");
 		builder.append(type);
-		builder.append(", version=");
-		builder.append(version);
-		builder.append(", taskId=");
-		builder.append(taskId);
+		builder.append(", branchPath=");
+		builder.append(branchPath);
 		builder.append(", createVersions=");
 		builder.append(createVersions);
 		builder.append(", languageRefSetId=");

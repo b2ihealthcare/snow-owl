@@ -51,7 +51,7 @@ import com.wordnik.swagger.annotations.ApiResponses;
 @RestController
 @RequestMapping(
 		value = "/codesystems/{shortName}/versions",
-		produces={ AbstractRestService.V1_MEDIA_TYPE, MediaType.APPLICATION_JSON_VALUE })
+		produces={ AbstractRestService.SO_MEDIA_TYPE, MediaType.APPLICATION_JSON_VALUE })
 public class CodeSystemVersionRestService extends AbstractRestService {
 
 	@Autowired
@@ -99,7 +99,7 @@ public class CodeSystemVersionRestService extends AbstractRestService {
 		@ApiResponse(code = 201, message = "Created"),
 		@ApiResponse(code = 404, message = "Code system not found", response = RestApiError.class)
 	})
-	@RequestMapping(method=RequestMethod.POST, consumes = { AbstractRestService.V1_MEDIA_TYPE, MediaType.APPLICATION_JSON_VALUE })
+	@RequestMapping(method=RequestMethod.POST, consumes = { AbstractRestService.SO_MEDIA_TYPE, MediaType.APPLICATION_JSON_VALUE })
 	@ResponseStatus(value=HttpStatus.CREATED)
 	public ResponseEntity<Void> createVersion(
 			@ApiParam(value="The code system short name")

@@ -17,7 +17,6 @@ package com.b2international.snowowl.snomed.api.rest;
 
 import static com.google.common.collect.Maps.newHashMap;
 import static org.springframework.hateoas.mvc.ControllerLinkBuilder.linkTo;
-import static org.springframework.hateoas.mvc.ControllerLinkBuilder.methodOn;
 
 import java.net.URI;
 import java.security.Principal;
@@ -61,64 +60,25 @@ import com.wordnik.swagger.annotations.ApiResponses;
  */
 @Api("SNOMED CT Concepts")
 @Controller
-@RequestMapping(
-		value="/{version}", 
-		produces={ AbstractRestService.V1_MEDIA_TYPE })
+@RequestMapping(produces={ AbstractRestService.SO_MEDIA_TYPE })
 public class SnomedConceptRestService extends AbstractSnomedRestService {
 
 	@Autowired
 	protected ISnomedConceptService delegate;
 
 	@ApiOperation(
-			value="Retrieve concepts from a version", 
-			notes="Returns a list with all/filtered concepts from a version branch.")
+			value="Retrieve Concepts from a branch", 
+			notes="Returns a list with all/filtered Concepts from a branch.")
 	@ApiResponses({
 		@ApiResponse(code = 200, message = "OK", response = PageableCollectionResource.class),
 		@ApiResponse(code = 400, message = "Invalid filter config", response = RestApiError.class),
-		@ApiResponse(code = 404, message = "Code system version not found")
+		@ApiResponse(code = 404, message = "Branch not found")
 	})
-	@RequestMapping(value="/concepts", method=RequestMethod.GET)
+	@RequestMapping(value="/{path:**}/concepts", method=RequestMethod.GET)
 	public @ResponseBody PageableCollectionResource<ISnomedConcept> getConcepts(
-			@ApiParam(value="The code system version")
-			@PathVariable(value="version")
-			final String version,
-
-			@ApiParam(value="The label to match")
-			@RequestParam(value="label", defaultValue="", required=false) 
-			final String labelFilter,
-
-			@ApiParam(value="The ESCG filtering expression to apply")
-			@RequestParam(value="escg", defaultValue="", required=false) 
-			final String escgFilter,
-
-			@ApiParam(value="The starting offset in the list")
-			@RequestParam(value="offset", defaultValue="0", required=false) 
-			final int offset,
-
-			@ApiParam(value="The maximum number of items to return")
-			@RequestParam(value="limit", defaultValue="50", required=false) 
-			final int limit) {
-
-		return getConceptsOnTask(version, null, labelFilter, escgFilter, offset, limit);
-	}
-
-	@ApiOperation(
-			value="Retrieve concepts from a task", 
-			notes="Returns a list with all/filtered concepts from a task branch on a version.")
-	@ApiResponses({
-		@ApiResponse(code = 200, message = "OK", response = PageableCollectionResource.class),
-		@ApiResponse(code = 400, message = "Invalid filter config", response = RestApiError.class),
-		@ApiResponse(code = 404, message = "Code system version or task not found")
-	})
-	@RequestMapping(value="/tasks/{taskId}/concepts", method=RequestMethod.GET)
-	public @ResponseBody PageableCollectionResource<ISnomedConcept> getConceptsOnTask(
-			@ApiParam(value="The code system version")
-			@PathVariable(value="version")
-			final String version,
-
-			@ApiParam(value="The task")
-			@PathVariable(value="taskId")
-			final String taskId,
+			@ApiParam(value="The branch path")
+			@PathVariable(value="path")
+			final String branchPath,
 
 			@ApiParam(value="The label to match")
 			@RequestParam(value="label", defaultValue="", required=false) 
@@ -143,9 +103,9 @@ public class SnomedConceptRestService extends AbstractSnomedRestService {
 		registerIfNotNull(SearchKind.ESCG, escgFilter, queryParams);
 
 		if (queryParams.isEmpty()) {
-			concepts = delegate.getAllConcepts(version, taskId, offset, limit);
+			concepts = delegate.getAllConcepts(branchPath, offset, limit);
 		} else {
-			concepts = delegate.search(version, taskId, queryParams, offset, limit);
+			concepts = delegate.search(branchPath, queryParams, offset, limit);
 		}
 
 		return PageableCollectionResource.of(concepts.getMembers(), offset, limit, concepts.getTotalMembers());
@@ -158,67 +118,42 @@ public class SnomedConceptRestService extends AbstractSnomedRestService {
 	}
 
 	@ApiOperation(
-			value="Retrieve concept properties",
-			notes="Returns all properties of the specified concept, including a summary of inactivation indicator and association members.")
+			value="Retrieve Concept properties",
+			notes="Returns all properties of the specified Concept, including a summary of inactivation indicator and association members.")
 	@ApiResponses({
 		@ApiResponse(code = 200, message = "OK", response = Void.class),
-		@ApiResponse(code = 404, message = "Code system version or concept not found")
+		@ApiResponse(code = 404, message = "Branch or Concept not found")
 	})
-	@RequestMapping(value="/concepts/{conceptId}", method=RequestMethod.GET)
+	@RequestMapping(value="/{path:**}/concepts/{conceptId}", method=RequestMethod.GET)
 	public @ResponseBody ISnomedConcept read(
-			@ApiParam(value="The code system version")
-			@PathVariable(value="version")
-			final String version,
+			@ApiParam(value="The branch path")
+			@PathVariable(value="path")
+			final String branchPath,
 
-			@ApiParam(value="The concept identifier")
+			@ApiParam(value="The Concept identifier")
 			@PathVariable(value="conceptId")
 			final String conceptId) {
 
-		return readOnTask(version, null, conceptId);
-	}
-
-	@ApiOperation(
-			value="Retrieve concept properties on task",
-			notes="Returns all properties of the specified concept on a task branch, including a summary of inactivation indicator "
-					+ "and association members.")
-	@ApiResponses({
-		@ApiResponse(code = 200, message = "OK", response = Void.class),
-		@ApiResponse(code = 404, message = "Code system version, task or concept not found")
-	})
-	@RequestMapping(value="/tasks/{taskId}/concepts/{conceptId}", method=RequestMethod.GET)
-	public @ResponseBody ISnomedConcept readOnTask(
-			@ApiParam(value="The code system version")
-			@PathVariable(value="version")
-			final String version,
-
-			@ApiParam(value="The task")
-			@PathVariable(value="taskId")
-			final String taskId,
-
-			@ApiParam(value="The concept identifier")
-			@PathVariable(value="conceptId")
-			final String conceptId) {
-
-		final IComponentRef conceptRef = createComponentRef(version, taskId, conceptId);
+		final IComponentRef conceptRef = createComponentRef(branchPath, conceptId);
 		return delegate.read(conceptRef);
 	}
 
 	@ApiOperation(
-			value="Create concept", 
-			notes="Creates a new concept directly on a version branch.")
+			value="Create Concept", 
+			notes="Creates a new Concept directly on a branch.")
 	@ApiResponses({
 		@ApiResponse(code = 201, message = "Concept created on task"),
-		@ApiResponse(code = 404, message = "Code system version not found")
+		@ApiResponse(code = 404, message = "Branch not found")
 	})
 	@RequestMapping(
-			value="/concepts", 
+			value="/{path:**}/concepts", 
 			method=RequestMethod.POST, 
-			consumes={ AbstractRestService.V1_MEDIA_TYPE, MediaType.APPLICATION_JSON_VALUE })
+			consumes={ AbstractRestService.SO_MEDIA_TYPE, MediaType.APPLICATION_JSON_VALUE })
 	@ResponseStatus(HttpStatus.CREATED)
 	public ResponseEntity<Void> create(
-			@ApiParam(value="The code system version")
-			@PathVariable(value="version")
-			final String version,
+			@ApiParam(value="The branch path")
+			@PathVariable(value="path")
+			final String branchPath,
 
 			@ApiParam(value="Concept parameters")
 			@RequestBody 
@@ -226,125 +161,49 @@ public class SnomedConceptRestService extends AbstractSnomedRestService {
 
 			final Principal principal) {
 		
-		final ISnomedConcept createdConcept = doCreate(version, null, body, principal);
-		return Responses.created(getConceptLocationURI(version, createdConcept)).build();
+		final ISnomedConcept createdConcept = doCreate(branchPath, body, principal);
+		return Responses.created(getConceptLocationURI(branchPath, createdConcept)).build();
 	}
 
 	@ApiOperation(
-			value="Create concept on task", 
-			notes="Creates a new concept on a task branch.")
-	@ApiResponses({
-		@ApiResponse(code = 201, message = "Concept created on task"),
-		@ApiResponse(code = 404, message = "Code system version or task not found")
-	})
-	@RequestMapping(
-			value="/tasks/{taskId}/concepts", 
-			method=RequestMethod.POST,
-			consumes={ AbstractRestService.V1_MEDIA_TYPE, MediaType.APPLICATION_JSON_VALUE })
-	@ResponseStatus(HttpStatus.CREATED)
-	public ResponseEntity<Void> createOnTask(
-			@ApiParam(value="The code system version")
-			@PathVariable(value="version")
-			final String version,
-
-			@ApiParam(value="The task")
-			@PathVariable(value="taskId")
-			final String taskId,
-
-			@ApiParam(value="Concept parameters")
-			@RequestBody 
-			final ChangeRequest<SnomedConceptRestInput> body,
-
-			final Principal principal) {
-
-		final ISnomedConcept createdConcept = doCreate(version, taskId, body, principal);
-		return Responses.created(getConceptOnTaskLocationURI(version, taskId, createdConcept)).build();
-	}
-
-	@ApiOperation(
-			value="Update concept",
-			notes="Updates properties of the specified concept, also managing inactivation indicator and association reference set "
+			value="Update Concept",
+			notes="Updates properties of the specified Concept, also managing inactivation indicator and association reference set "
 					+ "membership in case of inactivation."
 					+ "<p>The following properties are allowed to change:"
 					+ "<p>"
 					+ "&bull; module identifier<br>"
 					+ "&bull; subclass definition status<br>"
 					+ "&bull; definition status<br>"
-					+ "&bull; associated concepts<br>"
+					+ "&bull; associated Concepts<br>"
 					+ ""
 					+ "<p>The following properties, when changed, will trigger inactivation:"
 					+ "<p>"
 					+ "&bull; inactivation indicator<br>")
 	@ApiResponses({
 		@ApiResponse(code = 204, message = "Update successful"),
-		@ApiResponse(code = 404, message = "Code system version or concept not found")
+		@ApiResponse(code = 404, message = "Branch or Concept not found")
 	})
 	@RequestMapping(
-			value="/concepts/{conceptId}/updates", 
+			value="/{path:**}/concepts/{conceptId}/updates", 
 			method=RequestMethod.POST,
-			consumes={ AbstractRestService.V1_MEDIA_TYPE, MediaType.APPLICATION_JSON_VALUE })
+			consumes={ AbstractRestService.SO_MEDIA_TYPE, MediaType.APPLICATION_JSON_VALUE })
 	@ResponseStatus(HttpStatus.NO_CONTENT)
 	public void update(			
-			@ApiParam(value="The code system version")
-			@PathVariable(value="version")
-			final String version,
+			@ApiParam(value="The branch path")
+			@PathVariable(value="path")
+			final String branchPath,
 
-			@ApiParam(value="The concept identifier")
+			@ApiParam(value="The Concept identifier")
 			@PathVariable(value="conceptId")
 			final String conceptId,
 			
-			@ApiParam(value="Updated concept parameters")
+			@ApiParam(value="Updated Concept parameters")
 			@RequestBody 
 			final ChangeRequest<SnomedConceptRestUpdate> body,
 
 			final Principal principal) {
 
-		updateOnTask(version, null, conceptId, body, principal);
-	}
-
-	@ApiOperation(
-			value="Update concept on task",
-			notes="Updates properties of the specified concept on a task branch, also managing inactivation indicator and association "
-					+ "reference set membership in case of inactivation."
-					+ "<p>The following properties are allowed to change:"
-					+ "<p>"
-					+ "&bull; module identifier<br>"
-					+ "&bull; subclass definition status<br>"
-					+ "&bull; definition status<br>"
-					+ "&bull; associated concepts<br>"
-					+ ""
-					+ "<p>The following properties, when changed, will trigger inactivation:"
-					+ "<p>"
-					+ "&bull; inactivation indicator<br>")
-	@ApiResponses({
-		@ApiResponse(code = 204, message = "Update successful"),
-		@ApiResponse(code = 404, message = "Code system version, task or concept not found")
-	})
-	@RequestMapping(
-			value="/tasks/{taskId}/concepts/{conceptId}/updates", 
-			method=RequestMethod.POST,
-			consumes={ AbstractRestService.V1_MEDIA_TYPE, MediaType.APPLICATION_JSON_VALUE })
-	@ResponseStatus(HttpStatus.NO_CONTENT)
-	public void updateOnTask(			
-			@ApiParam(value="The code system version")
-			@PathVariable(value="version")
-			final String version,
-
-			@ApiParam(value="The task")
-			@PathVariable(value="taskId")
-			final String taskId,
-
-			@ApiParam(value="The concept identifier")
-			@PathVariable(value="conceptId")
-			final String conceptId, 
-
-			@ApiParam(value="Updated concept parameters")
-			@RequestBody 
-			final ChangeRequest<SnomedConceptRestUpdate> body,
-
-			final Principal principal) {
-
-		final IComponentRef conceptRef = createComponentRef(version, taskId, conceptId);
+		final IComponentRef conceptRef = createComponentRef(branchPath, conceptId);
 		final ISnomedConceptUpdate update = body.getChange().toComponentUpdate();
 		final String userId = principal.getName();
 		final String commitComment = body.getCommitComment();
@@ -353,75 +212,41 @@ public class SnomedConceptRestService extends AbstractSnomedRestService {
 	}
 
 	@ApiOperation(
-			value="Delete concept",
-			notes="Permanently removes the specified unreleased concept and related components.<p>If any participating "
-					+ "component has already been released, the concept can not be removed and a <code>409</code> "
+			value="Delete Concept",
+			notes="Permanently removes the specified unreleased Concept and related components.<p>If any participating "
+					+ "component has already been released, the Concept can not be removed and a <code>409</code> "
 					+ "status will be returned.")
 	@ApiResponses({
 		@ApiResponse(code = 204, message = "Deletion successful"),
 		@ApiResponse(code = 409, message = "Cannot be deleted if released", response = RestApiError.class),
-		@ApiResponse(code = 404, message = "Code system version or concept not found")
+		@ApiResponse(code = 404, message = "Branch or Concept not found")
 	})
-	@RequestMapping(value="/concepts/{conceptId}", method=RequestMethod.DELETE)
+	@RequestMapping(value="/{path:**}/concepts/{conceptId}", method=RequestMethod.DELETE)
 	@ResponseStatus(HttpStatus.NO_CONTENT)
 	public void delete(			
-			@ApiParam(value="The code system version")
-			@PathVariable(value="version")
-			final String version,
+			@ApiParam(value="The branch path")
+			@PathVariable(value="path")
+			final String branchPath,
 
-			@ApiParam(value="The concept identifier")
+			@ApiParam(value="The Concept identifier")
 			@PathVariable(value="conceptId")
 			final String conceptId, 
 
 			final Principal principal) {
-
-		deleteOnTask(version, null, conceptId, principal);
-	}
-
-	@ApiOperation(
-			value="Delete concept on task",
-			notes="Permanently removes the specified unreleased concept and related components from a task branch.<p>If any participating "
-					+ "component has already been released, the concept can not be removed and a <code>409</code> "
-					+ "status will be returned.")
-	@ApiResponses({
-		@ApiResponse(code = 204, message = "Deletion successfully completed"),
-		@ApiResponse(code = 409, message = "Cannot be deleted if released", response = RestApiError.class),
-		@ApiResponse(code = 404, message = "Code system version, task or concept not found")
-	})
-	@RequestMapping(value="/tasks/{taskId}/concepts/{conceptId}", method=RequestMethod.DELETE)
-	@ResponseStatus(HttpStatus.NO_CONTENT)
-	public void deleteOnTask(			
-			@ApiParam(value="The code system version")
-			@PathVariable(value="version")
-			final String version,
-
-			@ApiParam(value="The task")
-			@PathVariable(value="taskId")
-			final String taskId,
-
-			@ApiParam(value="The concept identifier")
-			@PathVariable(value="conceptId")
-			final String conceptId, 
-
-			final Principal principal) {
-
-		final IComponentRef conceptRef = createComponentRef(version, taskId, conceptId);
+		final IComponentRef conceptRef = createComponentRef(branchPath, conceptId);
 		final String userId = principal.getName();
-		delegate.delete(conceptRef, userId, "Deleted concept from store.");
+		delegate.delete(conceptRef, userId, String.format("Deleted Concept '%s' from store.", conceptId));
 	}
 
-	private ISnomedConcept doCreate(final String version, final String taskId, final ChangeRequest<SnomedConceptRestInput> body, final Principal principal) {
-		final ISnomedConceptInput input = body.getChange().toComponentInput(version, taskId);
+	private ISnomedConcept doCreate(final String branchPath, final ChangeRequest<SnomedConceptRestInput> body, final Principal principal) {
+		final ISnomedConceptInput input = body.getChange().toComponentInput(branchPath);
 		final String userId = principal.getName();
 		final String commitComment = body.getCommitComment();
 		return delegate.create(input, userId, commitComment);
 	}
 
-	private URI getConceptLocationURI(String version, ISnomedConcept concept) {
-		return linkTo(methodOn(SnomedConceptRestService.class).read(version, concept.getId())).toUri();
+	private URI getConceptLocationURI(String branchPath, ISnomedConcept concept) {
+		return linkTo(SnomedConceptRestService.class).slash(branchPath).slash("concepts").slash(concept.getId()).toUri();
 	}
 
-	private URI getConceptOnTaskLocationURI(String version, String taskId, ISnomedConcept concept) {
-		return linkTo(methodOn(SnomedConceptRestService.class).readOnTask(version, taskId, concept.getId())).toUri();
-	}
 }

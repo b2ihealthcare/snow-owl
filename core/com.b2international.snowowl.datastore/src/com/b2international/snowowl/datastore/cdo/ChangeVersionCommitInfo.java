@@ -33,10 +33,6 @@ import com.google.common.base.Preconditions;
  */
 public class ChangeVersionCommitInfo extends EmptyCDOCommitInfo {
 
-	public static ChangeVersionCommitInfo createHead(final String repositoryUuid) {
-		return create(repositoryUuid, IBranchPath.MAIN_BRANCH);
-	}
-
 	public static ChangeVersionCommitInfo create(final String repositoryUuid, final String targetVersion) {
 		final Triple<CDOBranch, String, String> triple = init(repositoryUuid, targetVersion);
 		final IBranchPath branchPath = BranchPathUtils.createPath(triple.getA());

@@ -30,7 +30,6 @@ import java.util.concurrent.ExecutionException;
 import javax.annotation.Nullable;
 
 import org.apache.lucene.document.Document;
-import org.apache.lucene.index.IndexCommit;
 import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.index.Term;
 import org.apache.lucene.search.Collector;
@@ -40,7 +39,6 @@ import org.apache.lucene.search.Query;
 import org.apache.lucene.search.ReferenceManager;
 import org.apache.lucene.search.ScoreDoc;
 import org.apache.lucene.search.Sort;
-import org.apache.lucene.search.SortField;
 import org.apache.lucene.search.TopDocs;
 import org.apache.lucene.search.TotalHitCountCollector;
 import org.apache.lucene.search.grouping.GroupDocs;
@@ -97,7 +95,6 @@ public abstract class IndexServerService<E extends IIndexEntry> extends Abstract
 			}
 			
 			return branchService;
-			
 		}
 	}
 
@@ -110,7 +107,6 @@ public abstract class IndexServerService<E extends IIndexEntry> extends Abstract
 	protected static final Logger LOGGER = LoggerFactory.getLogger(IndexServerService.class);
 	
 	protected volatile boolean disposed;
-//	protected final File indexRelativeRootPath;
 
 	private final LoadingCache<IBranchPath, IndexBranchService> branchServices;
 	
@@ -124,14 +120,6 @@ public abstract class IndexServerService<E extends IIndexEntry> extends Abstract
 	}
 
 	protected abstract IDirectoryManager getDirectoryManager();
-
-	/* (non-Javadoc)
-	 * @see com.b2international.snowowl.core.api.index.IIndexUpdater#purge()
-	 */
-	@Override
-	public void purge() {
-		getDirectoryManager().cleanUp(BranchPathUtils.createMainPath(), false);		
-	}
 	
 	@Override
 	public void commit(final IBranchPath branchPath) {
@@ -212,32 +200,17 @@ public abstract class IndexServerService<E extends IIndexEntry> extends Abstract
 	}
 
 	@Override
-	public void snapshotFor(final IBranchPath targetBranchPath, final boolean tag, final boolean shouldOptimizedIndex) {
-
-		Preconditions.checkNotNull(targetBranchPath, "Target branch path argument cannot be null.");
-		synchronized (BranchPathUtils.createPath(targetBranchPath.getPath())) {
-			
-			snapshot(targetBranchPath.getParent(), targetBranchPath, tag, shouldOptimizedIndex);
-			
-		}
-		
-	}
-	
-	/*
-	 * (non-Javadoc)
-	 * @see com.b2international.snowowl.core.api.index.IIndexUpdater#updateSnapshotFor(com.b2international.snowowl.core.api.IBranchPath, long)
-	 */
-	@Override
-	public synchronized void updateSnapshotFor(final IBranchPath branchPath, final long timestamp) {
+	public synchronized void reopen(final IBranchPath branchPath, final int[] cdoBranchPath, final long baseTimestamp) {
 		Preconditions.checkNotNull(branchPath, "Branch path argument cannot be null.");
 		Preconditions.checkState(!BranchPathUtils.isMain(branchPath), "Branch path cannot be MAIN.");
 		final IndexBranchService baseBranchService = getBranchService(branchPath.getParent());
+		
 		try {
-			baseBranchService.createIndexCommit(branchPath, timestamp, false, false);
+			baseBranchService.createIndexCommit(branchPath, cdoBranchPath, baseTimestamp);
 			inactiveClose(branchPath);
 			prepare(branchPath);
 		} catch (final IOException e) {
-			throw new IndexException("Failed to update snapshot for '" + branchPath.getPath() + "'. [" + timestamp + "]", e);
+			throw new IndexException("Failed to update snapshot for '" + branchPath + "'. [" + baseTimestamp + "]", e);
 		}
 	}
 	
@@ -266,7 +239,6 @@ public abstract class IndexServerService<E extends IIndexEntry> extends Abstract
 
 		if (null != branchService) {
 			branchService.close();
-			getDirectoryManager().cleanUp(branchPath, false);
 		}
 	}
 	
@@ -808,10 +780,8 @@ public abstract class IndexServerService<E extends IIndexEntry> extends Abstract
 	@Override
 	public IndexBranchService getBranchService(final IBranchPath branchPath) {
 		
-		
 		// Record usage
 		if (!BranchPathUtils.isMain(branchPath)) {
-			
 			getIndexAccessUpdater().registerAccessAndRecordUsage(branchPath);
 	
 			//to ensure recursive index structure revive
@@ -892,39 +862,6 @@ public abstract class IndexServerService<E extends IIndexEntry> extends Abstract
 	}
 
 	private static final Set<String> COMPONENT_ID_FIELD_TO_LOAD = Sets.newHashSet(CommonIndexConstants.COMPONENT_ID);
-
-	private void snapshot(final IBranchPath sourceBranchPath, final IBranchPath targetBranchPath, final boolean tag, final boolean shouldOptimizedIndex) {
-		
-		checkNotNull(sourceBranchPath, "sourceBranchPath");
-		checkNotNull(targetBranchPath, "targetBranchPath");
-		checkNotDisposed();
-	
-		if (LOGGER.isInfoEnabled()) {
-			LOGGER.info("[" + getClass().getSimpleName() + "] Creating " + (tag ? "tag" : "snapshot") + " for: '" + targetBranchPath.getPath() + "'.");
-		}
-		
-		final IndexBranchService branchService = getBranchService(sourceBranchPath);
-		IndexCommit snapshotCommit = null;
-		
-		try {
-			
-			snapshotCommit = branchService.snapshot();
-			branchService.createIndexCommit(targetBranchPath, getCommitTimeProvider().getCommitTime(sourceBranchPath), tag, shouldOptimizedIndex);
-		} catch (final Exception e) {
-			throw new IndexException(e);
-		} finally {
-			
-			if (snapshotCommit == null) {
-				return;
-			}
-			
-			try {
-				branchService.releaseSnapshot(snapshotCommit);
-			} catch (final IOException e) {
-				LOGGER.error("Caught exception while releasing snapshot.", e);
-			}
-		}
-	}
 
 	private void checkNotDisposed() {
 		if (disposed) {

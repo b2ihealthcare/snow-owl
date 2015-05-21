@@ -206,9 +206,9 @@ public abstract class CDOEditingContext implements AutoCloseable {
 			final String repositoryName = getServiceForClass(ICDOConnectionManager.class).get(transaction).getRepositoryName();
 			final String userID = transaction.getSession().getUserID();
 			if (isEmpty(commitMessage)) {
-				LOGGER.info(format("{0} has committed the transaction on ''{1}'' branch from ''{2}''.", userID, branchPath.getPath(), repositoryName));
+				LOGGER.info(format("{0} has committed the transaction on ''{1}'' branch from ''{2}''.", userID, branchPath, repositoryName));
 			} else {
-				LOGGER.info(format("{0} has committed the transaction on ''{1}'' branch from ''{2}'' with message: ''{3}''", userID, branchPath.getPath(), repositoryName, commitMessage));
+				LOGGER.info(format("{0} has committed the transaction on ''{1}'' branch from ''{2}'' with message: ''{3}''", userID, branchPath, repositoryName, commitMessage));
 			}
 			
 			return commitInfo;

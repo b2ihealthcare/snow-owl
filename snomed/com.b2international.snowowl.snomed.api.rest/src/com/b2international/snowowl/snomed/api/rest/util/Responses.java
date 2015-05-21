@@ -52,18 +52,27 @@ public class Responses {
 	public static final ResponseBuilder ok() {
 		return status(HttpStatus.OK);
 	}
+	
+	/**
+	 * Creates a {@link ResponseBuilder} with the HTTP status code NO_CONTENT.
+	 * 
+	 * @return
+	 */
+	public static ResponseBuilder noContent() {
+		return status(HttpStatus.NO_CONTENT);
+	}
 
 	/**
 	 * Creates a {@link ResponseBuilder} with the HTTP status code NOT_MODIFIED.
 	 * 
-	 * @param the
+	 * @param tag
 	 *            - HTTP ETag value associated with the not modified response.
 	 * @return
 	 */
 	public static final ResponseBuilder notModified(String tag) {
 		return status(HttpStatus.NOT_MODIFIED);
 	}
-
+	
 	/**
 	 * Creates a {@link ResponseBuilder} with the given HTTP status code.
 	 * 

@@ -54,7 +54,7 @@ import com.b2international.snowowl.datastore.IBranchPathMap;
 import com.b2international.snowowl.datastore.personalization.IComponentSetManager;
 import com.b2international.snowowl.datastore.quicksearch.IQuickSearchContentProvider;
 import com.b2international.snowowl.datastore.quicksearch.QuickSearchContentProviderBroker;
-import com.b2international.snowowl.datastore.server.index.SingleDirectoryIndexServerService;
+import com.b2international.snowowl.datastore.store.SingleDirectoryIndexServerService;
 import com.google.common.base.Function;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Multimap;
@@ -77,8 +77,8 @@ public abstract class AbstractComponentSetManager extends SingleDirectoryIndexSe
 	
 	private static final Set<String> FIELDS_TO_LOAD = ImmutableSet.of(FIELD_ID, FIELD_TERMINOLOGY_COMPONENT_ID);
 
-	protected AbstractComponentSetManager(File indexRootPath) {
-		super(indexRootPath);
+	protected AbstractComponentSetManager(File directory) {
+		super(directory);
 	}
 	
 	@Override

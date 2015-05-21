@@ -426,7 +426,7 @@ public class InitialReasonerTaxonomyBuilder extends AbstractReasonerTaxonomyBuil
 	 */
 	public InitialReasonerTaxonomyBuilder(final IBranchPath branchPath, final boolean includeAdditionalStatementConcreteDomains) {
 
-		final String taskName = MessageFormat.format("Building reasoner taxonomy for branch path ''{0}''", branchPath.getPath());
+		final String taskName = MessageFormat.format("Building reasoner taxonomy for branch path ''{0}''", branchPath);
 		entering(taskName);
 
 		final Stopwatch stopwatch = Stopwatch.createStarted();

@@ -15,6 +15,8 @@
  */
 package com.b2international.snowowl.datastore;
 
+import static com.google.common.base.Preconditions.checkArgument;
+
 import java.io.File;
 import java.io.ObjectStreamException;
 import java.io.Serializable;
@@ -23,7 +25,6 @@ import com.b2international.commons.StringUtils;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.api.NullBranchPath;
 import com.google.common.base.Joiner;
-import com.google.common.base.Objects;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Splitter;
 import com.google.common.base.Strings;
@@ -116,8 +117,7 @@ import com.google.common.collect.Iterables;
 	 */
 	@Override
 	public String toString() {
-		return Objects.toStringHelper(this)
-				.add("Path", new StringBuilder("'").append(path).append("'").toString()).toString();
+		return getPath();
 	}
 
 	/* (non-Javadoc)
@@ -153,7 +153,6 @@ import com.google.common.collect.Iterables;
 	
 	/*initialize the parent branch path instance*/
 	private static String initParentPath(String path) {
-		
 		if (BranchPathUtils.isMain(path)) { //if path is main, return with the empty parent
 			return IBranchPath.EMPTY_PATH;
 		}
@@ -162,6 +161,7 @@ import com.google.common.collect.Iterables;
 			return NullBranchPath.INSTANCE.getPath();
 		}
 		
+		checkArgument(path.startsWith(IBranchPath.MAIN_BRANCH), "Path '%s' should start with MAIN", path);
 		//if the path has a trailing separator, cut it
 		path = trimTrailingSeparator(path);
 		

@@ -36,9 +36,15 @@ import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 import org.springframework.web.servlet.config.annotation.PathMatchConfigurer;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurerAdapter;
 
+import com.b2international.snowowl.core.Metadata;
+import com.b2international.snowowl.core.MetadataHolder;
+import com.b2international.snowowl.core.MetadataHolderMixin;
+import com.b2international.snowowl.core.MetadataMixin;
+import com.b2international.snowowl.datastore.server.branch.Branch;
 import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.snomed.api.domain.ISnomedComponent;
 import com.b2international.snowowl.snomed.api.domain.browser.ISnomedBrowserComponent;
+import com.b2international.snowowl.snomed.api.rest.domain.BranchMixin;
 import com.b2international.snowowl.snomed.api.rest.domain.ISnomedComponentMixin;
 import com.fasterxml.classmate.TypeResolver;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
@@ -155,6 +161,9 @@ public class ServicesConfiguration extends WebMvcConfigurerAdapter {
 		objectMapper.configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false);
 		objectMapper.addMixInAnnotations(ISnomedComponent.class, ISnomedComponentMixin.class);
 		objectMapper.addMixInAnnotations(ISnomedBrowserComponent.class, ISnomedComponentMixin.class);
+		objectMapper.addMixInAnnotations(Branch.class, BranchMixin.class);
+		objectMapper.addMixInAnnotations(Metadata.class, MetadataMixin.class);
+		objectMapper.addMixInAnnotations(MetadataHolder.class, MetadataHolderMixin.class);
 		return objectMapper;
 	}
 	
@@ -180,5 +189,6 @@ public class ServicesConfiguration extends WebMvcConfigurerAdapter {
 	@Override
 	public void configurePathMatch(final PathMatchConfigurer configurer) {
 		configurer.setUseRegisteredSuffixPatternMatch(true);
+		configurer.setPathMatcher(new AntPathWildcardMatcher());
 	}
 }

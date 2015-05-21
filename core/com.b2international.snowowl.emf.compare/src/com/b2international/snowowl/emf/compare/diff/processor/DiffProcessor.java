@@ -20,7 +20,7 @@ import java.util.Collection;
 import org.eclipse.emf.common.notify.Notifier;
 import org.eclipse.emf.ecore.EStructuralFeature;
 
-import com.b2international.snowowl.emf.compare.NsUriProvider;
+import com.b2international.commons.emf.NsUriProvider;
 import com.b2international.snowowl.emf.compare.diff.AttributeDiff;
 import com.b2international.snowowl.emf.compare.diff.Diff;
 import com.b2international.snowowl.emf.compare.diff.ReferenceDiff;

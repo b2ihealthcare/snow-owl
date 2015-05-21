@@ -15,398 +15,217 @@
  */
 package com.b2international.snowowl.datastore.server.snomed;
 
-import static com.b2international.commons.ChangeKind.ADDED;
-import static com.b2international.commons.StringUtils.EMPTY_STRING;
-import static com.b2international.commons.StringUtils.isEmpty;
-import static com.b2international.snowowl.core.ApplicationContext.getServiceForClass;
-import static com.b2international.snowowl.core.CoreTerminologyBroker.UNSPECIFIED_NUMBER_SHORT;
-import static com.b2international.snowowl.datastore.BranchPathUtils.createPath;
-import static java.lang.Boolean.parseBoolean;
+import static com.google.common.collect.Maps.newHashMap;
 
 import java.util.Collection;
 import java.util.Map;
 import java.util.Set;
 
 import org.eclipse.emf.cdo.CDOObject;
-import org.eclipse.emf.cdo.common.commit.CDOChangeSetData;
+import org.eclipse.emf.cdo.common.branch.CDOBranch;
 import org.eclipse.emf.cdo.common.id.CDOID;
 import org.eclipse.emf.cdo.common.id.CDOIDUtil;
-import org.eclipse.emf.cdo.common.revision.CDOIDAndVersion;
+import org.eclipse.emf.cdo.common.revision.CDORevision;
 import org.eclipse.emf.cdo.spi.common.revision.InternalCDORevision;
-import org.eclipse.emf.cdo.view.CDOView;
+import org.eclipse.emf.ecore.EAttribute;
 import org.eclipse.emf.ecore.EClass;
-import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.EStructuralFeature;
+import org.eclipse.emf.spi.cdo.DefaultCDOMerger.Conflict;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import com.b2international.commons.ClassUtils;
-import com.b2international.commons.Pair;
-import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.CoreTerminologyBroker;
 import com.b2international.snowowl.core.api.IBranchPath;
-import com.b2international.snowowl.core.api.IComponentNameProvider;
-import com.b2international.snowowl.core.api.ILookupService;
 import com.b2international.snowowl.datastore.BranchPathUtils;
-import com.b2international.snowowl.datastore.cdo.AlreadyReleasedConflictWrapper;
-import com.b2international.snowowl.datastore.cdo.CDOUtils;
-import com.b2international.snowowl.datastore.cdo.ConflictWrapper;
-import com.b2international.snowowl.datastore.cdo.ConflictingChange;
 import com.b2international.snowowl.datastore.server.cdo.AbstractCDOConflictProcessor;
+import com.b2international.snowowl.datastore.server.cdo.AddedInSourceAndDetachedInTargetConflict;
+import com.b2international.snowowl.datastore.server.cdo.AddedInSourceAndTargetConflict;
 import com.b2international.snowowl.datastore.server.cdo.ICDOConflictProcessor;
-import com.b2international.snowowl.snomed.Description;
 import com.b2international.snowowl.snomed.Relationship;
 import com.b2international.snowowl.snomed.SnomedPackage;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
-import com.b2international.snowowl.snomed.datastore.SnomedDescriptionLookupService;
-import com.b2international.snowowl.snomed.datastore.SnomedRefSetBrowser;
-import com.b2international.snowowl.snomed.datastore.SnomedStatementBrowser;
-import com.b2international.snowowl.snomed.datastore.SnomedTerminologyBrowser;
-import com.b2international.snowowl.snomed.datastore.services.ISnomedComponentService;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetMember;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetPackage;
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableMultimap;
 import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.Maps;
+import com.google.common.collect.Multimap;
 
 /**
- * Conflict processor for SNOMED&nbsp;CT ontology.
- *
+ * An {@link ICDOConflictProcessor} implementation handling conflicts specific to the SNOMED CT terminology model.
  */
 public class SnomedCDOConflictProcessor extends AbstractCDOConflictProcessor implements ICDOConflictProcessor {
 
 	private static final Set<EClass> COMPONENT_CLASSES = ImmutableSet.of(
-			SnomedPackage.Literals.CONCEPT,
-			SnomedPackage.Literals.DESCRIPTION,
+			SnomedPackage.Literals.CONCEPT, 
+			SnomedPackage.Literals.DESCRIPTION, 
 			SnomedPackage.Literals.RELATIONSHIP);
 
-	@Override
-	public ConflictWrapper checkConflictForNewObjects(final CDOChangeSetData targetChangeSet, final CDOIDAndVersion newInSource, final CDOView sourceView) {
+	private static final Multimap<EClass, EStructuralFeature> DETACHED_FEATURE_MAP = ImmutableMultimap.<EClass, EStructuralFeature>builder()
+			.put(SnomedPackage.Literals.RELATIONSHIP, SnomedPackage.Literals.RELATIONSHIP__SOURCE)
+			.put(SnomedPackage.Literals.RELATIONSHIP, SnomedPackage.Literals.RELATIONSHIP__TYPE)
+			.put(SnomedPackage.Literals.RELATIONSHIP, SnomedPackage.Literals.RELATIONSHIP__DESTINATION)
+			.put(SnomedPackage.Literals.DESCRIPTION, SnomedPackage.Literals.DESCRIPTION__CONCEPT)
+			.put(SnomedPackage.Literals.DESCRIPTION, SnomedPackage.Literals.DESCRIPTION__TYPE)
+			.build();
 
-		final ConflictWrapper conflictWrapper = super.checkConflictForNewObjects(targetChangeSet, newInSource, sourceView);
+	private static final Map<EClass, EAttribute> RELEASED_ATTRIBUTE_MAP = ImmutableMap.of(
+			SnomedPackage.Literals.COMPONENT, SnomedPackage.Literals.COMPONENT__RELEASED,
+			SnomedRefSetPackage.Literals.SNOMED_REF_SET_MEMBER, SnomedRefSetPackage.Literals.SNOMED_REF_SET_MEMBER__RELEASED);
 
-		if (null != conflictWrapper) {
-			return conflictWrapper;
-		}
+	private static final Logger LOGGER = LoggerFactory.getLogger(SnomedCDOConflictProcessor.class);
 
-		final Map<String, CDOID> newComponentIdsInTarget = Maps.newHashMap();
-
-		for (final CDOIDAndVersion newInTarget : targetChangeSet.getNewObjects()) {
-			final InternalCDORevision newRevisionInTarget = ClassUtils.checkAndCast(newInTarget, InternalCDORevision.class);
-
-			if (!isComponentRevision(newRevisionInTarget)) {
-				continue;
-			}
-
-			newComponentIdsInTarget.put(getComponentIdFromRevision(newRevisionInTarget), newInTarget.getID());
-		}
-
-		return checkDuplicateComponentIds(newComponentIdsInTarget, ClassUtils.checkAndCast(newInSource, InternalCDORevision.class), sourceView);
+	public SnomedCDOConflictProcessor() {
+		super(SnomedDatastoreActivator.REPOSITORY_UUID, RELEASED_ATTRIBUTE_MAP);
 	}
 
+	/**
+	 * {@inheritDoc}
+	 * <p>
+	 * SNOMED CT-specific conflict processing will report a conflict if:
+	 * <ul>
+	 * <li>a new object on target has the same SNOMED CT component identifier as the new object on source 
+	 * <li>a detached object on target is referenced by the new object on source
+	 * </ul>
+	 * The addition is allowed through in all other cases.
+	 */
 	@Override
-	public ConflictWrapper checkConflict(final Collection<CDOID> detachedIds, final CDOIDAndVersion newCdoIdAndVersion, final CDOView view) {
+	public Object addedInSource(final CDORevision sourceRevision, final Map<CDOID, Object> targetMap) {
 
-		CDOUtils.check(view);
+		Conflict conflict = checkDuplicateComponentIds(sourceRevision, targetMap);
+		if (conflict != null) {
+			return conflict;
+		}
 
-		if (newCdoIdAndVersion instanceof InternalCDORevision) {
+		conflict = checkDetachedReferences(sourceRevision, targetMap);
+		if (conflict != null) {
+			return conflict;
+		}
 
-			final InternalCDORevision revision = (InternalCDORevision) newCdoIdAndVersion;
-			final EClass eClass = revision.getEClass();
+		return super.addedInSource(sourceRevision, targetMap);
+	}
 
-			if (SnomedPackage.eINSTANCE.getRelationship().equals(eClass)) {
+	private Conflict checkDuplicateComponentIds(final CDORevision sourceRevision, final Map<CDOID, Object> targetMap) {
 
-				//source concept CDO ID
-				CDOID cdoId = (CDOID) revision.getValue(SnomedPackage.eINSTANCE.getRelationship_Source());
+		if (!isComponent(sourceRevision)) {
+			return null;
+		}
 
-				if (detachedIds.contains(cdoId)) {
+		final String newComponentIdInSource = getComponentId((InternalCDORevision) sourceRevision);
+		final Map<String, CDOID> newComponentIdsInTarget = newHashMap();
+		final Iterable<InternalCDORevision> newRevisionsInTarget = getNewRevisionsInTarget(targetMap);
 
-					return creatConflictWrapper(cdoId, newCdoIdAndVersion);
-
-				}
-
-				//destination concept CDO ID
-				cdoId = (CDOID) revision.getValue(SnomedPackage.eINSTANCE.getRelationship_Destination());
-
-				if (detachedIds.contains(cdoId)) {
-
-					return creatConflictWrapper(cdoId, newCdoIdAndVersion);
-
-				}
-
-				//type concept CDO ID
-				cdoId = (CDOID) revision.getValue(SnomedPackage.eINSTANCE.getRelationship_Type());
-
-				if (detachedIds.contains(cdoId)) {
-
-					return creatConflictWrapper(cdoId, newCdoIdAndVersion);
-
-				}
-
-			} else if (SnomedPackage.eINSTANCE.getDescription().equals(eClass)) {
-
-				//description type concept CDO ID
-				final CDOID typeCdoId = (CDOID) revision.getValue(SnomedPackage.eINSTANCE.getDescription_Type());
-
-				if (detachedIds.contains(typeCdoId)) {
-
-					return creatConflictWrapper(typeCdoId, newCdoIdAndVersion);
-
-				}
-
-				//container concept CDO ID
-				final CDOID containerCdoId = (CDOID) revision.getContainerID();
-
-				if (detachedIds.contains(containerCdoId)) {
-
-					return creatConflictWrapper(containerCdoId, newCdoIdAndVersion);
-
-				}
-
-			} else if (SnomedRefSetPackage.eINSTANCE.getSnomedRefSetMember().isSuperTypeOf(eClass)) {
-
-				final String referencedComponentId = (String) revision.getValue(SnomedRefSetPackage.eINSTANCE.getSnomedRefSetMember_ReferencedComponentId());
-
-				CDOID cdoId = null;
-				long storageKey = -1L;
-				short type = -1;
-
-				if (SnomedRefSetPackage.eINSTANCE.getSnomedQueryRefSetMember().equals(eClass)) {
-
-					type = SnomedTerminologyComponentConstants.REFSET_NUMBER; //always referencing a simple type reference set
-
-				} else {
-
-					type = SnomedTerminologyComponentConstants.getTerminologyComponentIdValueSafe(referencedComponentId);
-
-				}
-
-				if (-1 != type) {
-
-					final IBranchPath branchPath = BranchPathUtils.createPath(view);
-
-					switch (type) {
-
-						case SnomedTerminologyComponentConstants.CONCEPT_NUMBER:
-
-							storageKey = ApplicationContext.getInstance().getService(SnomedTerminologyBrowser.class).getStorageKey(branchPath, referencedComponentId);
-							break;
-
-						case SnomedTerminologyComponentConstants.RELATIONSHIP_NUMBER:
-
-							storageKey = ApplicationContext.getInstance().getService(SnomedStatementBrowser.class).getStorageKey(branchPath, referencedComponentId);
-							break;
-
-						case SnomedTerminologyComponentConstants.REFSET_NUMBER:
-
-							storageKey = ApplicationContext.getInstance().getService(SnomedRefSetBrowser.class).getStorageKey(branchPath, referencedComponentId);
-							break;
-
-						case SnomedTerminologyComponentConstants.DESCRIPTION_NUMBER:
-
-							storageKey = new SnomedDescriptionLookupService().getStorageKey(branchPath, referencedComponentId);
-							break;
-
-						default:
-
-					}
-
-				}
-
-				//for e.g. mapping members referencing anything but SNOMED CT
-				if (-1L == storageKey) {
-
-					final SnomedRefSetMember member = (SnomedRefSetMember) view.getObject(newCdoIdAndVersion.getID());
-					final String terminologyComponentId = CoreTerminologyBroker.getInstance().getTerminologyComponentId(member.getReferencedComponentType());
-					final ILookupService<String, Object, Object> lookupService = CoreTerminologyBroker.getInstance().getLookupService(terminologyComponentId);
-					final CDOObject component = (CDOObject) lookupService.getComponent(referencedComponentId, view);
-
-					if (null != component) {
-
-						cdoId = component.cdoID();
-
-					}
-
-				} else {
-
-					cdoId = CDOIDUtil.createLong(storageKey);
-
-				}
-
-				if (detachedIds.contains(cdoId)) {
-
-					return creatConflictWrapper(cdoId, newCdoIdAndVersion);
-
-				}
-
-
-			}
-
-
-		} else {
-
-			final CDOObject newObject = view.getObject(newCdoIdAndVersion.getID());
-
-			if (newObject instanceof Relationship) {
-
-				final Relationship relationship = (Relationship) newObject;
-
-				//check source
-				if (detachedIds.contains(relationship.getSource().cdoID())) {
-					return creatConflictWrapper(relationship.getSource().cdoID(), newCdoIdAndVersion);
-				}
-
-				//check destination
-				if (detachedIds.contains(relationship.getDestination().cdoID())) {
-					return creatConflictWrapper(relationship.getDestination().cdoID(), newCdoIdAndVersion);
-				}
-
-				//check type
-				if (detachedIds.contains(relationship.getType().cdoID())) {
-					return creatConflictWrapper(relationship.getType().cdoID(), newCdoIdAndVersion);
-				}
-
-			} else if (newObject instanceof SnomedRefSetMember) {
-
-				final SnomedRefSetMember member = (SnomedRefSetMember) newObject;
-				final ILookupService<String, CDOObject, CDOView> lookupService = getLookupService(member);
-				final long storageKey = lookupService.getStorageKey(BranchPathUtils.createActivePath(SnomedPackage.eINSTANCE), member.getReferencedComponentId());
-
-				CDOID cdoId = null;
-
-				if (-1L == storageKey) {
-
-					final CDOObject referencedComponent = lookupService.getComponent(member.getReferencedComponentId(), member.cdoView());
-					cdoId = referencedComponent.cdoID();
-
-				} else {
-
-					cdoId = CDOIDUtil.createLong(storageKey);
-
-				}
-
-				if (detachedIds.contains(cdoId)) {
-					return creatConflictWrapper(cdoId, newCdoIdAndVersion);
-				}
-
-			} else if (newObject instanceof Description) {
-
-				final Description description = (Description) newObject;
-
-				if (detachedIds.contains(description.getConcept().cdoID())) {
-					return creatConflictWrapper(description.getConcept().cdoID(), newCdoIdAndVersion);
-				}
-
+		for (final InternalCDORevision targetRevision : newRevisionsInTarget) {
+			if (isComponent(targetRevision)) {
+				newComponentIdsInTarget.put(getComponentId(targetRevision), targetRevision.getID());
 			}
 		}
 
+		final CDOID conflictingNewInTarget = newComponentIdsInTarget.get(newComponentIdInSource);
+		if (null != conflictingNewInTarget) {
+			return new AddedInSourceAndTargetConflict(sourceRevision.getID(), conflictingNewInTarget);
+		} else {
+			return null;
+		}
+	}
+
+	private boolean isComponent(final CDORevision revision) {
+		return isComponent(revision.getEClass());
+	}
+
+	private boolean isComponent(final EClass eClass) {
+		return COMPONENT_CLASSES.contains(eClass);
+	}
+
+	private String getComponentId(final InternalCDORevision revision) {
+		return (String) revision.getValue(SnomedPackage.Literals.COMPONENT__ID);
+	}
+
+	private Conflict checkDetachedReferences(final CDORevision sourceRevision, final Map<CDOID, Object> targetMap) {
+
+		final InternalCDORevision internalSourceRevision = (InternalCDORevision) sourceRevision;
+		final EClass eClass = internalSourceRevision.getEClass();
+		final Set<CDOID> detachedTargetIds = getDetachedIdsInTarget(targetMap);
+
+		final Conflict conflict;
+
+		if (isComponent(eClass)) {
+			conflict = checkDetachedComponentReferences(internalSourceRevision, detachedTargetIds, DETACHED_FEATURE_MAP.get(eClass));
+		} else if (SnomedRefSetPackage.Literals.SNOMED_REF_SET_MEMBER.isSuperTypeOf(eClass)) {
+			conflict = checkDetachedRefSetReferences(internalSourceRevision, eClass, detachedTargetIds);
+		} else {
+			conflict = null;
+		}
+
+		return conflict;
+	}
+
+	private Conflict checkDetachedComponentReferences(final InternalCDORevision internalSourceRevision, final Set<CDOID> detachedTargetIds, final Collection<EStructuralFeature> featuresToCheck) {
+
+		for (final EStructuralFeature feature : featuresToCheck) {
+			final CDOID targetId = (CDOID) internalSourceRevision.getValue(feature);
+			if (detachedTargetIds.contains(targetId)) {
+				return new AddedInSourceAndDetachedInTargetConflict(internalSourceRevision.getID(), targetId);
+			}
+		}
 
 		return null;
 	}
 
-	@Override
-	public void detachConflictingObject(final CDOObject objectToRemove) {
+	private Conflict checkDetachedRefSetReferences(final InternalCDORevision internalSourceRevision, final EClass sourceEClass, final Set<CDOID> detachedTargetIds) {
 
-		if (objectToRemove instanceof Relationship) {
+		final String referencedComponentId = (String) internalSourceRevision.getValue(SnomedRefSetPackage.Literals.SNOMED_REF_SET_MEMBER__REFERENCED_COMPONENT_ID);
+		final short referencedComponentType = getReferencedComponentType(sourceEClass, referencedComponentId);
 
-			((Relationship) objectToRemove).setSource(null);
-			((Relationship) objectToRemove).setDestination(null);
-
-		} else if (objectToRemove instanceof SnomedRefSetMember) {
-
-			final EObject container = objectToRemove.eContainer();
-			final EStructuralFeature containingFeature = objectToRemove.eContainingFeature();
-
-			((Collection<?>) container.eGet(containingFeature)).remove(objectToRemove);
-
-		}
-
-	}
-
-	@Override
-	public String getRepositoryUuid() {
-		return SnomedDatastoreActivator.REPOSITORY_UUID;
-	}
-
-	@Override
-	protected boolean shouldCheckReleasedFlag() {
-		return true;
-	}
-
-	@Override
-	protected ConflictWrapper checkReleasedForDetachedObjects(final InternalCDORevision changedTargetRevision) {
-
-		final EClass eClass = changedTargetRevision.getEClass();
-		final IBranchPath branchPath = createPath(changedTargetRevision.getBranch());
-
-		boolean alreadyReleased = false;
-		short terminologyComponentId = UNSPECIFIED_NUMBER_SHORT;
-		String label = EMPTY_STRING;
-
-		if (SnomedPackage.eINSTANCE.getComponent().isSuperTypeOf(eClass)) {
-			alreadyReleased = parseBoolean(String.valueOf(changedTargetRevision.getValue(SnomedPackage.eINSTANCE.getComponent_Released())));
-			final String id = String.valueOf(changedTargetRevision.getValue(SnomedPackage.eINSTANCE.getComponent_Id()));
-			terminologyComponentId = SnomedTerminologyComponentConstants.getTerminologyComponentIdValueSafe(id);
-			final String terminologyComponentIdString = CoreTerminologyBroker.getInstance().getTerminologyComponentId(terminologyComponentId);
-			final IComponentNameProvider nameProvider = CoreTerminologyBroker.getInstance().getNameProviderFactory(terminologyComponentIdString).getNameProvider();
-			label = nameProvider.getComponentLabel(branchPath, id);
-		} else if (SnomedRefSetPackage.eINSTANCE.getSnomedRefSetMember().isSuperTypeOf(eClass)) {
-			alreadyReleased = parseBoolean(String.valueOf(changedTargetRevision.getValue(SnomedRefSetPackage.eINSTANCE.getSnomedRefSetMember_Released())));
-			terminologyComponentId = SnomedTerminologyComponentConstants.REFSET_MEMBER_NUMBER;
-			String uuid = String.valueOf(changedTargetRevision.getValue(SnomedRefSetPackage.eINSTANCE.getSnomedRefSetMember_Uuid()));
-			label = getMemberLabel(branchPath, uuid);
-		} else {
+		// Unspecified or non-SNOMED CT components can not be checked this way
+		if (referencedComponentType == CoreTerminologyBroker.UNSPECIFIED_NUMBER_SHORT) {
 			return null;
 		}
 
-		return alreadyReleased ? new AlreadyReleasedConflictWrapper(changedTargetRevision.getID(), terminologyComponentId, label, branchPath) : null;
+		final String terminologyComponentId = CoreTerminologyBroker.getInstance().getTerminologyComponentId(referencedComponentType);
+		final long referencedComponentStorageKey = getReferencedComponentStorageKey(internalSourceRevision.getBranch(), referencedComponentId, terminologyComponentId); 
 
-	}
-
-	private String getMemberLabel(final IBranchPath branchPath, final String uuid) {
-			final Pair<String, String> labelPair = getServiceForClass(ISnomedComponentService.class).getMemberLabel(branchPath, uuid);
-			final StringBuffer sb = new StringBuffer();
-			sb.append(labelPair.getA());
-			if (!isEmpty(labelPair.getB())) {
-				sb.append(" - ");
-				sb.append(labelPair.getB());
-			}
-			return sb.toString();
-	}
-
-	private ConflictWrapper checkDuplicateComponentIds(final Map<String, CDOID> newComponentIdsInTarget, final InternalCDORevision newRevisionInSource, final CDOView sourceView) {
-
-		if (!isComponentRevision(newRevisionInSource)) {
+		// Not found components are OK as well
+		if (referencedComponentStorageKey == -1L) {
 			return null;
 		}
 
-		final String newComponentIdInSource = getComponentIdFromRevision(newRevisionInSource);
-		final CDOID conflictingNewInTarget = newComponentIdsInTarget.get(newComponentIdInSource);
-
-		if (null != conflictingNewInTarget) {
-
-			final ConflictingChange changeOnTarget = new ConflictingChange(ADDED, conflictingNewInTarget);
-			final ConflictingChange changeOnSource = new ConflictingChange(ADDED, newRevisionInSource.getID());
-
-			return new ConflictWrapper(changeOnTarget, changeOnSource);
-
+		final CDOID targetId = CDOIDUtil.createLong(referencedComponentStorageKey);
+		if (detachedTargetIds.contains(targetId)) {
+			return new AddedInSourceAndDetachedInTargetConflict(internalSourceRevision.getID(), targetId);
 		} else {
 			return null;
 		}
 	}
 
-	private boolean isComponentRevision(final InternalCDORevision revision) {
-		return COMPONENT_CLASSES.contains(revision.getEClass());
+	private short getReferencedComponentType(final EClass sourceEClass, final String referencedComponentId) {
+
+		if (SnomedRefSetPackage.Literals.SNOMED_QUERY_REF_SET_MEMBER.equals(sourceEClass)) {
+			// Query reference set members need to be special cases so that they don't return CONCEPT as the type
+			return SnomedTerminologyComponentConstants.REFSET_NUMBER;
+		} else {
+			return SnomedTerminologyComponentConstants.getTerminologyComponentIdValueSafe(referencedComponentId);
+		}
 	}
 
-	private String getComponentIdFromRevision(final InternalCDORevision revision) {
-		return (String) revision.getValue(SnomedPackage.Literals.COMPONENT__ID);
+	private long getReferencedComponentStorageKey(final CDOBranch branch, final String referencedComponentId, final String terminologyComponentId) {
+		final IBranchPath branchPath = BranchPathUtils.createPath(branch);
+		return CoreTerminologyBroker.getInstance().getLookupService(terminologyComponentId).getStorageKey(branchPath, referencedComponentId);
 	}
 
-	private ILookupService<String, CDOObject, CDOView> getLookupService(final SnomedRefSetMember member) {
-		return CoreTerminologyBroker.getInstance().getLookupService(getTerminologyComponentType(member));
-	}
+	@Override
+	protected void unlinkObject(final CDOObject object) {
 
-	private String getTerminologyComponentType(final SnomedRefSetMember member) {
-		return CoreTerminologyBroker.getInstance().getTerminologyComponentId(member.getReferencedComponentType());
-	}
+		if (object instanceof Relationship) {
 
+			((Relationship) object).setSource(null);
+			((Relationship) object).setDestination(null);
+
+		} else if (object instanceof SnomedRefSetMember) {
+			super.unlinkObject(object);
+		} else {
+			LOGGER.warn("Unexpected CDO object not unlinked: {}.", object);
+		}
+	}
 }

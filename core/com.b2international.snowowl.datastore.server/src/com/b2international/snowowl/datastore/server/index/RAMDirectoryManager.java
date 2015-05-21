@@ -15,6 +15,7 @@
  */
 package com.b2international.snowowl.datastore.server.index;
 
+import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
 
@@ -31,23 +32,18 @@ import com.b2international.snowowl.datastore.server.internal.lucene.store.Compos
  */
 public class RAMDirectoryManager implements IDirectoryManager {
 
-	private Directory baseDirectory;
-
 	@Override
-	public Directory createDirectory(final IBranchPath branchPath) {
+	public Directory createDirectory(final IBranchPath branchPath, final IndexBranchService baseService) throws IOException {
 		if (BranchPathUtils.isMain(branchPath)) {
-			if (null == baseDirectory) {
-				baseDirectory = new RAMDirectory(); 
-			}
-			return baseDirectory;
+			return new RAMDirectory();
 		} else {
-			final IndexCommit commit = IndexBranchService.getIndexCommit(baseDirectory, branchPath);
+			final IndexCommit commit = baseService.getIndexCommit(branchPath);
 			return new CompositeDirectory(commit, new RAMDirectory());
 		}
 	}
 
 	@Override
-	public void cleanUp(final IBranchPath branchPath, final boolean force) {
+	public void deleteIndex(final IBranchPath branchPath) {
 		//intentionally ignored
 	}
 
@@ -60,5 +56,4 @@ public class RAMDirectoryManager implements IDirectoryManager {
 	public void fireFirstStartup(final IndexBranchService service) {
 		//does nothing
 	}
-	
 }

@@ -24,11 +24,11 @@ import org.apache.lucene.search.SortField.Type;
 import com.b2international.commons.ClassUtils;
 import com.b2international.snowowl.api.domain.IComponentList;
 import com.b2international.snowowl.api.domain.IComponentRef;
-import com.b2international.snowowl.api.exception.ComponentNotFoundException;
 import com.b2international.snowowl.api.impl.domain.InternalComponentRef;
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.api.index.CommonIndexConstants;
+import com.b2international.snowowl.core.exceptions.ComponentNotFoundException;
 import com.b2international.snowowl.core.terminology.ComponentCategory;
 import com.b2international.snowowl.snomed.api.ISnomedStatementBrowserService;
 import com.b2international.snowowl.snomed.api.domain.ISnomedRelationship;
@@ -83,11 +83,11 @@ public class SnomedStatementBrowserServiceImpl implements ISnomedStatementBrowse
 		}
 		
 		final SnomedRelationshipList result = new SnomedRelationshipList();
-		final IBranchPath branchPath = internalRef.getBranchPath();
-		result.setTotalMembers(getIndexService().getHitCount(branchPath, queryAdapter));
+		final IBranchPath branch = internalRef.getBranch().branchPath();
+		result.setTotalMembers(getIndexService().getHitCount(branch, queryAdapter));
 
-		final List<SnomedRelationshipIndexEntry> indexEntries = getIndexService().search(branchPath, queryAdapter, offset, limit);
-		final List<ISnomedRelationship> relationships = Lists.transform(indexEntries, createConverter(branchPath));
+		final List<SnomedRelationshipIndexEntry> indexEntries = getIndexService().search(branch, queryAdapter, offset, limit);
+		final List<ISnomedRelationship> relationships = Lists.transform(indexEntries, createConverter(branch));
 		result.setMembers(ImmutableList.copyOf(relationships));
 
 		return result;

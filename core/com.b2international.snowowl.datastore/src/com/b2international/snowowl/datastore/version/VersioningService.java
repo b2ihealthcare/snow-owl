@@ -64,7 +64,7 @@ import com.b2international.snowowl.datastore.ContentAvailabilityInfoManager;
 import com.b2international.snowowl.datastore.DatastoreActivator;
 import com.b2international.snowowl.datastore.ICodeSystemVersion;
 import com.b2international.snowowl.datastore.LatestCodeSystemVersionUtils;
-import com.b2international.snowowl.datastore.cdo.ICDOBranchManager;
+import com.b2international.snowowl.datastore.cdo.ICDOBranchActionManager;
 import com.b2international.snowowl.datastore.cdo.ICDOConnection;
 import com.b2international.snowowl.datastore.cdo.ICDOConnectionManager;
 import com.b2international.snowowl.datastore.oplock.IOperationLockManager;
@@ -322,7 +322,7 @@ public class VersioningService implements IVersioningService {
 		}
 		final IBranchPath versionBranchPath = createVersionPath(versionId);
 		final CDOBranch branch = getConnection(toolingId).getBranch(versionBranchPath);
-		return Preconditions.checkNotNull(branch, "Branch '" + versionBranchPath.getPath() + "' does not exist in '" + getRepositoryUuid(toolingId) + "'.");
+		return Preconditions.checkNotNull(branch, "Branch '" + versionBranchPath + "' does not exist in '" + getRepositoryUuid(toolingId) + "'.");
 	}
 
 
@@ -351,7 +351,7 @@ public class VersioningService implements IVersioningService {
 	
 	private long getLastModificationBranch(final String toolingId, @Nullable final String versionId) {
 		final String repositoryUuid = getRepositoryUuid(checkNotNull(toolingId, "toolingId"));
-		return getServiceForClass(ICDOBranchManager.class).getLastCommitTime(repositoryUuid, null == versionId ? getCurrentBranchPath(toolingId) : createVersionPath(versionId));
+		return getServiceForClass(ICDOBranchActionManager.class).getLastCommitTime(repositoryUuid, null == versionId ? getCurrentBranchPath(toolingId) : createVersionPath(versionId));
 	}
 	
 	private HashMap<String, Collection<ICodeSystemVersion>> initExistingVersions(final Iterable<String> toolingIds) {

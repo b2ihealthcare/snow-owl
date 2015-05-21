@@ -15,15 +15,15 @@
  */
 package com.b2international.snowowl.datastore;
 
-import com.b2international.snowowl.datastore.cdo.ICDOBranchManager;
+import com.b2international.snowowl.datastore.cdo.ICDOBranchActionManager;
 import com.b2international.snowowl.datastore.serviceconfig.AbstractClientServiceConfigJob;
 
 /**
- * Job for initializing and registering {@link ICDOBranchManager} to the application.
+ * Job for initializing and registering {@link ICDOBranchActionManager} to the application.
  * If application is running in remote mode, a proxy will be registered instead. 
  *
  */
-public class CDOBranchManagerConfigJob extends AbstractClientServiceConfigJob<ICDOBranchManager> {
+public class CDOBranchManagerConfigJob extends AbstractClientServiceConfigJob<ICDOBranchActionManager> {
 
 	public CDOBranchManagerConfigJob() {
 		super("CDO server branch manager configuration...", DatastoreActivator.PLUGIN_ID);
@@ -33,7 +33,7 @@ public class CDOBranchManagerConfigJob extends AbstractClientServiceConfigJob<IC
 	 * @see com.b2international.snowowl.datastore.serviceconfig.AbstractClientServiceConfigJob#getServiceClass()
 	 */
 	@Override
-	protected Class<ICDOBranchManager> getServiceClass() {
-		return ICDOBranchManager.class;
+	protected Class<ICDOBranchActionManager> getServiceClass() {
+		return ICDOBranchActionManager.class;
 	}
 }

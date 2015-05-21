@@ -15,6 +15,9 @@
  */
 package com.b2international.snowowl.datastore.server;
 
+import java.io.File;
+import java.nio.file.Paths;
+
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.net4j.jvm.IJVMConnector;
 import org.eclipse.net4j.jvm.JVMUtil;
@@ -24,23 +27,35 @@ import org.slf4j.LoggerFactory;
 
 import com.b2international.snowowl.core.api.SnowowlRuntimeException;
 import com.b2international.snowowl.core.api.SnowowlServiceException;
+import com.b2international.snowowl.core.api.index.IIndexServerServiceManager;
 import com.b2international.snowowl.core.config.ClientPreferences;
 import com.b2international.snowowl.core.config.SnowOwlConfiguration;
 import com.b2international.snowowl.core.setup.Environment;
 import com.b2international.snowowl.core.setup.PreRunCapableBootstrapFragment;
 import com.b2international.snowowl.core.users.SpecialUserStore;
 import com.b2international.snowowl.datastore.cdo.CDOConnectionFactoryProvider;
+import com.b2international.snowowl.datastore.cdo.ICDOConnectionManager;
+import com.b2international.snowowl.datastore.cdo.ICDORepositoryManager;
 import com.b2international.snowowl.datastore.net4j.Net4jUtils;
+import com.b2international.snowowl.datastore.server.branch.BranchManager;
+import com.b2international.snowowl.datastore.server.index.IndexServerServiceManager;
+import com.b2international.snowowl.datastore.server.internal.RepositoryWrapper;
+import com.b2international.snowowl.datastore.server.internal.branch.BranchEventHandler;
+import com.b2international.snowowl.datastore.server.internal.branch.BranchSerializer;
+import com.b2international.snowowl.datastore.server.internal.branch.CDOBranchManagerImpl;
+import com.b2international.snowowl.datastore.server.internal.branch.InternalBranch;
 import com.b2international.snowowl.datastore.server.session.ApplicationSessionManager;
 import com.b2international.snowowl.datastore.server.session.LogListener;
 import com.b2international.snowowl.datastore.server.session.VersionProcessor;
 import com.b2international.snowowl.datastore.serviceconfig.ServiceConfigJobManager;
 import com.b2international.snowowl.datastore.session.IApplicationSessionManager;
+import com.b2international.snowowl.datastore.store.IndexStore;
 import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.eventbus.net4j.EventBusNet4jUtil;
 import com.b2international.snowowl.rpc.RpcConfiguration;
 import com.b2international.snowowl.rpc.RpcProtocol;
 import com.b2international.snowowl.rpc.RpcUtil;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Stopwatch;
 
 /**
@@ -84,6 +99,8 @@ public class DatastoreServerBootstrap implements PreRunCapableBootstrapFragment 
 			cdoRepositoryManager.activate();
 			environment.services().registerService(ICDORepositoryManager.class, cdoRepositoryManager);
 			
+			environment.services().registerService(IIndexServerServiceManager.class, IndexServerServiceManager.INSTANCE);
+			
 			LOG.info("<<< Server-side datastore bundle started. [{}]", serverStopwatch);
 		} else {
 			LOG.info("Snow Owl application is running in remote mode.");
@@ -101,17 +118,49 @@ public class DatastoreServerBootstrap implements PreRunCapableBootstrapFragment 
 	@Override
 	public void run(SnowOwlConfiguration configuration, Environment environment, IProgressMonitor monitor) throws Exception {
 		ServiceConfigJobManager.INSTANCE.registerServices(monitor);
+		
+		if (environment.isServer() || environment.isEmbedded()) {
+			initializeBranchingSupport(environment);
+		}
+	}
+
+	private void initializeBranchingSupport(Environment environment) {
+		final Stopwatch branchStopwatch = Stopwatch.createStarted();
+		LOG.info(">>> Initializing branch services.");
+		
+		final ICDOConnectionManager cdoConnectionManager = environment.service(ICDOConnectionManager.class);
+		final ICDORepositoryManager cdoRepositoryManager = environment.service(ICDORepositoryManager.class);
+		final IIndexServerServiceManager indexServerServiceManager = environment.service(IIndexServerServiceManager.class); 
+		
+		final ObjectMapper objectMapper = new BranchSerializer();
+		
+		for (String repositoryId : cdoRepositoryManager.uuidKeySet()) {
+			final RepositoryWrapper wrapper = new RepositoryWrapper(repositoryId, cdoConnectionManager, cdoRepositoryManager, indexServerServiceManager);
+			initializeBranchingSupport(environment, wrapper, objectMapper);
+		}
+		
+		LOG.info("<<< Branch services registered. [{}]", branchStopwatch);
+	}
+
+	private void initializeBranchingSupport(Environment environment, RepositoryWrapper wrapper, ObjectMapper objectMapper) {
+		final String repositoryId = wrapper.getCdoRepositoryId();
+		final File branchIndexDirectory = environment.getDataDirectory()
+				.toPath()
+				.resolve(Paths.get("indexes", "branches", repositoryId))
+				.toFile();
+
+		final IndexStore<InternalBranch> branchStore = new IndexStore<InternalBranch>(branchIndexDirectory, objectMapper, InternalBranch.class);
+		final BranchManager branchManager = new CDOBranchManagerImpl(wrapper, branchStore);
+		environment.service(IEventBus.class).registerHandler("/" + repositoryId + "/branches" , new BranchEventHandler(branchManager));
 	}
 	
 	private void connectSystemUser(IManagedContainer container) throws SnowowlServiceException {
 		// Normally this is done for us by CDOConnectionFactory
-		final IJVMConnector connector = JVMUtil.getConnector(container,
-				Net4jUtils.NET_4_J_CONNECTOR_NAME);
+		final IJVMConnector connector = JVMUtil.getConnector(container, Net4jUtils.NET_4_J_CONNECTOR_NAME);
 		final RpcProtocol clientProtocol = RpcUtil.getRpcClientProtocol(container);
 		clientProtocol.open(connector);
 
 		RpcUtil.getRpcClientProxy(InternalApplicationSessionManager.class).connectSystemUser();
 		CDOConnectionFactoryProvider.INSTANCE.getConnectionFactory().connect(SpecialUserStore.SYSTEM_USER);
 	}
-
 }

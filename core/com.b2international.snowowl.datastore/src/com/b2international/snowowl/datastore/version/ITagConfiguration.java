@@ -32,7 +32,6 @@ public interface ITagConfiguration extends Serializable {
 	String getVersionId();
 	
 	/**Returns with the destination branch path where the that has to be performed.*/
-	//XXX can it be anything else but MAIN?
 	IBranchPath getBranchPath();
 	
 	/**The UUID of the repository where the tag has to be created.*/
@@ -40,13 +39,4 @@ public interface ITagConfiguration extends Serializable {
 	
 	/**The parent lock context description, as a part of which tagging should be carried out*/
 	String getParentContextDescription();
-	
-	/**
-	 * Returns with {@code true} if the index segments has to be optimized. Otherwise {@code false}.
-	 * <p><b>NOTE:&nbsp;</b>Although optimize is very catchy clients really should <b>NOT</b> return 
-	 * with {@code true} unless  they's are totally sure what to do with this boolean property. 
-	 * It's highly recommended to use {@code false}. 
-	 * @return {@code true} if index segments has to be optimized. Otherwise {@code false}. 
-	 */
-	boolean shouldOptimizeIndex();
 }

@@ -15,6 +15,8 @@
  */
 package com.b2international.snowowl.api.exception;
 
+import com.b2international.snowowl.core.exceptions.ConflictException;
+
 /**
  * Thrown when a component has been already inactivated in a previous request.
  * 

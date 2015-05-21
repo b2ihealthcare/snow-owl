@@ -16,9 +16,9 @@
 package com.b2international.snowowl.api.impl.domain;
 
 import com.b2international.snowowl.api.domain.IComponentRef;
-import com.google.common.collect.Ordering;
 
 /**
+ * @since 1.0
  */
 public class ComponentRef extends StorageRef implements InternalComponentRef {
 
@@ -37,8 +37,7 @@ public class ComponentRef extends StorageRef implements InternalComponentRef {
 	public final int compareTo(final IComponentRef other) {
 		int result = 0;
 		if (result == 0) { result = getShortName().compareTo(other.getShortName()); }
-		if (result == 0) { result = getVersion().compareTo(other.getVersion()); }
-		if (result == 0) { result = Ordering.natural().nullsFirst().compare(getTaskId(), other.getTaskId()); }
+		if (result == 0) { result = getBranchPath().compareTo(other.getBranchPath()); }
 		if (result == 0) { result = getComponentId().compareTo(other.getComponentId()); }
 		return result;
 	}
@@ -48,13 +47,12 @@ public class ComponentRef extends StorageRef implements InternalComponentRef {
 		final StringBuilder builder = new StringBuilder();
 		builder.append("ComponentRef [getShortName()=");
 		builder.append(getShortName());
-		builder.append(", getVersion()=");
-		builder.append(getVersion());
-		builder.append(", getTaskId()=");
-		builder.append(getTaskId());
+		builder.append(", getBranchPath()=");
+		builder.append(getBranchPath());
 		builder.append(", componentId=");
 		builder.append(componentId);
 		builder.append("]");
 		return builder.toString();
 	}
+
 }

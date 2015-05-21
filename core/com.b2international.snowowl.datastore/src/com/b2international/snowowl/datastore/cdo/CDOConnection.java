@@ -46,7 +46,7 @@ import com.b2international.snowowl.core.api.IBranchPoint;
 import com.b2international.snowowl.core.config.SnowOwlConfiguration;
 import com.b2international.snowowl.core.users.User;
 import com.b2international.snowowl.datastore.PostStoreUpdateManager;
-import com.b2international.snowowl.datastore.cdo.ICDOBranchManager.BranchPathPredicate;
+import com.b2international.snowowl.datastore.cdo.ICDOBranchActionManager.BranchPathPredicate;
 import com.b2international.snowowl.datastore.connection.RepositoryConnectionConfiguration;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Iterables;
@@ -57,7 +57,7 @@ import com.google.common.collect.Lists;
  * <li>the {@link CDOSession}
  * <li>the {@link User} credentials
  * <li>the custom client side {@link SnowowlClientProtocol} for net4j communication
- * <li>{@link ICDOBranchManager}
+ * <li>{@link ICDOBranchActionManager}
  * <li>{@link PostStoreUpdateManager}
  *
  */
@@ -77,13 +77,9 @@ import com.google.common.collect.Lists;
 	
 	@Override
 	public CDOView createView(final IBranchPoint branchPoint) {
-		
-		Preconditions.checkNotNull(branchPoint, "Branch point argument cannot be null.");
-		
-		final CDOBranch branch = Preconditions.checkNotNull(
-				getBranch(branchPoint.getBranchPath()), 
-				"Branch does not exist. Path: '" + branchPoint.getBranchPath().getPath() + "'.");
-		
+		checkNotNull(branchPoint, "Branch point argument cannot be null.");
+		final CDOBranch branch = checkNotNull(getBranch(branchPoint.getBranchPath()), "Branch '%s' does not exist.",
+				branchPoint.getBranchPath());
 		return createView(branch, branchPoint.getTimestamp());
 	}
 	
@@ -120,8 +116,7 @@ import com.google.common.collect.Lists;
 	
 	@Override
 	public CDOTransaction createTransaction(final IBranchPath branchPath) {
-		Preconditions.checkNotNull(branchPath, "Branch path argument cannot be null.");
-		final CDOBranch branch = Preconditions.checkNotNull(getBranch(branchPath), "Branch does not exist. Path: '" + branchPath.getPath() + "'.");
+		final CDOBranch branch = Preconditions.checkNotNull(getBranch(branchPath), "Branch '%s' does not exist.", branchPath);
 		return createTransaction(branch);
 	}
 	
@@ -194,7 +189,7 @@ import com.google.common.collect.Lists;
 			return emptyList();
 		}
 		final List<CDOBranch> $ = Lists.newArrayList(Iterables.filter(Arrays.asList(parentBranch.getBranches()), new BranchPathPredicate(branchPath)));
-		Collections.sort($, ICDOBranchManager.BRANCH_BASE_COMPARATOR);
+		Collections.sort($, ICDOBranchActionManager.BRANCH_BASE_COMPARATOR);
 		
 		if (!oldestFirst) {
 			Collections.reverse($);

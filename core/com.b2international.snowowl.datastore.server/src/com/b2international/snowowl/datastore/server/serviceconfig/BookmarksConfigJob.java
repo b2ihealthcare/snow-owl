@@ -50,6 +50,7 @@ public class BookmarksConfigJob extends AbstractServerServiceConfigJob<IBookmark
 	 */
 	@Override
 	protected BookmarksManager createServiceImplementation() throws SnowowlServiceException {
-		return new BookmarksManager(new File(INDEX_DIRECTORY));
+		final File dir = new File(new File(getEnvironment().getDataDirectory(), "indexes"), INDEX_DIRECTORY);
+		return new BookmarksManager(dir);
 	}
 }

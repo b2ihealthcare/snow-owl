@@ -31,8 +31,8 @@ import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.datastore.BranchPathUtils;
 import com.b2international.snowowl.datastore.IBranchPathMap;
 import com.b2international.snowowl.datastore.UserBranchPathMap;
-import com.b2international.snowowl.datastore.server.ICDORepository;
-import com.b2international.snowowl.datastore.server.ICDORepositoryManager;
+import com.b2international.snowowl.datastore.cdo.ICDORepository;
+import com.b2international.snowowl.datastore.cdo.ICDORepositoryManager;
 import com.b2international.snowowl.datastore.session.IApplicationSessionManager;
 import com.b2international.snowowl.rpc.RpcSession;
 

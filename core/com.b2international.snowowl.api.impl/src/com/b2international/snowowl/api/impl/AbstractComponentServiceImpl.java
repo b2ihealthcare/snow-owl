@@ -15,6 +15,7 @@
  */
 package com.b2international.snowowl.api.impl;
 
+import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
 
 import java.util.ConcurrentModificationException;
@@ -27,19 +28,17 @@ import com.b2international.snowowl.api.IComponentService;
 import com.b2international.snowowl.api.domain.IComponent;
 import com.b2international.snowowl.api.domain.IComponentInput;
 import com.b2international.snowowl.api.domain.IComponentRef;
-import com.b2international.snowowl.api.exception.AlreadyExistsException;
-import com.b2international.snowowl.api.exception.ComponentNotFoundException;
-import com.b2international.snowowl.api.exception.ConflictException;
 import com.b2international.snowowl.api.exception.LockedException;
 import com.b2international.snowowl.api.impl.domain.ComponentRef;
-import com.b2international.snowowl.api.task.exception.TaskAlreadyPromotedException;
-import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.api.SnowowlRuntimeException;
+import com.b2international.snowowl.core.exceptions.AlreadyExistsException;
+import com.b2international.snowowl.core.exceptions.ComponentNotFoundException;
+import com.b2international.snowowl.core.exceptions.ConflictException;
 import com.b2international.snowowl.core.terminology.ComponentCategory;
 import com.b2international.snowowl.datastore.CDOEditingContext;
 import com.b2international.snowowl.datastore.exception.RepositoryLockException;
 import com.b2international.snowowl.datastore.server.CDOServerUtils;
-import com.b2international.snowowl.datastore.tasks.ITaskStateManager;
+import com.google.common.base.Strings;
 
 /**
  * TODO: validate misguided references (eg. when the incoming code system short name is ATC in SnomedConceptServiceImpl)?
@@ -47,10 +46,6 @@ import com.b2international.snowowl.datastore.tasks.ITaskStateManager;
  */
 public abstract class AbstractComponentServiceImpl<C extends IComponentInput, R extends IComponent, U, E extends CDOEditingContext, M extends CDOObject> 
 	implements IComponentService<C, R, U> {
-
-	private static ITaskStateManager getTaskStateManager() {
-		return ApplicationContext.getServiceForClass(ITaskStateManager.class);
-	}
 
 	protected final String handledRepositoryUuid;
 	protected final ComponentCategory handledCategory;
@@ -68,8 +63,7 @@ public abstract class AbstractComponentServiceImpl<C extends IComponentInput, R 
 	public R create(final C input, final String userId, final String commitComment) {
 		checkNotNull(input, "Component input may not be null.");
 		checkNotNull(userId, "User identifier may not be null.");
-		checkNotNull(commitComment, "Commit comment may not be null.");
-		checkClosedTask(input.getTaskId());
+		checkArgument(!Strings.isNullOrEmpty(commitComment), "Commit comment may not be null.");
 
 		if (componentExists(input)) {
 			throw createDuplicateComponentException(input);
@@ -103,7 +97,6 @@ public abstract class AbstractComponentServiceImpl<C extends IComponentInput, R 
 	@Override
 	public R update(final IComponentRef ref, final U update, final String userId, final String commitComment) {
 		checkComponentExists(ref);
-		checkClosedTask(ref.getTaskId());
 
 		try (E editingContext = createEditingContext(ref)) {
 			doUpdate(ref, update, editingContext);
@@ -115,7 +108,6 @@ public abstract class AbstractComponentServiceImpl<C extends IComponentInput, R 
 	@Override
 	public void delete(final IComponentRef ref, final String userId, final String commitComment) {
 		checkComponentExists(ref);
-		checkClosedTask(ref.getTaskId());
 
 		try (E editingContext = createEditingContext(ref)) {
 			doDelete(ref, editingContext);
@@ -133,8 +125,7 @@ public abstract class AbstractComponentServiceImpl<C extends IComponentInput, R 
 	protected IComponentRef createComponentRef(final C input, final String componentId) {
 		final ComponentRef result = new ComponentRef();
 		result.setShortName(input.getCodeSystemShortName());
-		result.setVersion(input.getCodeSystemVersionId());
-		result.setTaskId(input.getTaskId());
+		result.setBranchPath(input.getBranchPath());
 		result.setComponentId(componentId);
 		result.checkStorageExists();
 		return result;
@@ -160,12 +151,6 @@ public abstract class AbstractComponentServiceImpl<C extends IComponentInput, R 
 			}
 			
 			throw new SnowowlRuntimeException(e.getMessage(), e);
-		}
-	}
-
-	protected void checkClosedTask(final String taskId) {
-		if (null != taskId && getTaskStateManager().isClosed(taskId)) {
-			throw new TaskAlreadyPromotedException("Task " + taskId + " is already promoted.");
 		}
 	}
 

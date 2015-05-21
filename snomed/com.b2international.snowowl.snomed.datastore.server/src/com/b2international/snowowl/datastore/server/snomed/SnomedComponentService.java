@@ -463,7 +463,7 @@ public class SnomedComponentService implements ISnomedComponentService, IPostSto
 		try {
 			return (Map<HierarchyInclusionType, Multimap<String, PredicateIndexEntry>>) cache.get(branchPath).get(CacheKeyType.PREDICATE_TYPES);
 		} catch (final ExecutionException e) {
-			LOGGER.error("Error while getting available MRCM predicates on '" + branchPath.getPath()+ "' branch.", e);
+			LOGGER.error("Error while getting available MRCM predicates on '" + branchPath + "' branch.", e);
 			throw new UncheckedExecutionException(e);
 		}
 	}
@@ -474,7 +474,7 @@ public class SnomedComponentService implements ISnomedComponentService, IPostSto
 		try {
 			return (Map<CDOID, String>) cache.get(branchPath).get(CacheKeyType.REFERENCE_SET_CDO_IDS);
 		} catch (final ExecutionException e) {
-			LOGGER.error("Error while getting reference set CDO ID to ID mapping on '" + branchPath.getPath()+ "' branch.", e);
+			LOGGER.error("Error while getting reference set CDO ID to ID mapping on '" + branchPath + "' branch.", e);
 			throw new UncheckedExecutionException(e);
 		}
 	}
@@ -572,7 +572,7 @@ public class SnomedComponentService implements ISnomedComponentService, IPostSto
 			try {
 				cache.get(branchPath);
 			} catch (final ExecutionException e) {
-				LOGGER.error(MessageFormat.format("Caught exception while requesting cache for branch path {0}.", branchPath.getPath()), e);
+				LOGGER.error(MessageFormat.format("Caught exception while requesting cache for branch path {0}.", branchPath), e);
 				// Continue; the loading job might not have any effect.
 			}
 
@@ -807,7 +807,7 @@ public class SnomedComponentService implements ISnomedComponentService, IPostSto
 			
 		} catch (final IOException e) {
 			
-			throw new IndexException("Error while getting description fragments for concept: " + conceptId + " [" + branchPath.getPath() + "]", e);
+			throw new IndexException("Error while getting description fragments for concept: " + conceptId + " [" + branchPath + "]", e);
 			
 		} finally {
 			
@@ -2372,7 +2372,7 @@ public class SnomedComponentService implements ISnomedComponentService, IPostSto
 			}
 			
 		} catch (final IOException e) {
-			LOGGER.error("Error while getting description preferability mapping for concept '" + conceptId + "' on '" + branchPath.getPath() + "' branch.");
+			LOGGER.error("Error while getting description preferability mapping for concept '" + conceptId + "' on '" + branchPath + "' branch.");
 			throw new SnowowlRuntimeException(e);
 		} finally {
 			if (null != manager && null != searcher) {
@@ -2775,7 +2775,7 @@ public class SnomedComponentService implements ISnomedComponentService, IPostSto
 			}
 			
 		} catch (final IOException e) {
-			throw new IndexException("Error while getting components referenced by MRCM predicates on '" + branchPath.getPath() + "' branch.", e);
+			throw new IndexException("Error while getting components referenced by MRCM predicates on '" + branchPath + "' branch.", e);
 		} finally {
 			if (null != manager && null != searcher) {
 				try {
@@ -3042,7 +3042,7 @@ public class SnomedComponentService implements ISnomedComponentService, IPostSto
 		private final IBranchPath branchPath;
 
 		private BranchCacheLoadingJob(final IBranchPath branchPath) {
-			super("Initializing for the '" + branchPath.getPath() + "' branch.");
+			super("Initializing for the '" + branchPath + "' branch.");
 			this.branchPath = branchPath;
 			setPriority(Job.INTERACTIVE);
 			setUser(false);

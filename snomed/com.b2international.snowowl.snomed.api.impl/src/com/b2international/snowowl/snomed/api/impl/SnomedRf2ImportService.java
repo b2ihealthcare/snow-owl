@@ -19,7 +19,6 @@ import static com.b2international.commons.FileUtils.copyContentToTempFile;
 import static com.b2international.snowowl.snomed.common.ContentSubType.getByNameIgnoreCase;
 import static com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator.REPOSITORY_UUID;
 import static com.google.common.base.Preconditions.checkNotNull;
-import static com.google.common.collect.Iterables.isEmpty;
 import static java.lang.String.valueOf;
 import static java.util.Collections.synchronizedMap;
 import static java.util.UUID.randomUUID;
@@ -27,16 +26,18 @@ import static java.util.UUID.randomUUID;
 import java.io.File;
 import java.io.InputStream;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.b2international.snowowl.api.exception.BadRequestException;
 import com.b2international.snowowl.api.impl.domain.StorageRef;
 import com.b2international.snowowl.core.api.IBranchPath;
+import com.b2international.snowowl.core.exceptions.BadRequestException;
 import com.b2international.snowowl.datastore.BranchPathUtils;
 import com.b2international.snowowl.datastore.ContentAvailabilityInfoManager;
+import com.b2international.snowowl.datastore.server.branch.Branch;
 import com.b2international.snowowl.snomed.api.ISnomedRf2ImportService;
 import com.b2international.snowowl.snomed.api.domain.ISnomedImportConfiguration;
 import com.b2international.snowowl.snomed.api.domain.ISnomedImportConfiguration.ImportStatus;
@@ -45,6 +46,7 @@ import com.b2international.snowowl.snomed.api.domain.exception.SnomedImportConfi
 import com.b2international.snowowl.snomed.api.domain.exception.SnomedImportException;
 import com.b2international.snowowl.snomed.api.impl.domain.SnomedImportConfiguration;
 import com.b2international.snowowl.snomed.importer.net4j.SnomedImportResult;
+import com.b2international.snowowl.snomed.importer.net4j.SnomedValidationDefect;
 import com.b2international.snowowl.snomed.importer.rf2.util.ImportUtil;
 import com.google.common.base.Predicate;
 import com.google.common.base.Strings;
@@ -120,9 +122,9 @@ public class SnomedRf2ImportService implements ISnomedRf2ImportService {
 					+ "An import is already in progress. Please try again later.");
 		}
 		
-		if (null != configuration.getTaskId() && !Rf2ReleaseType.DELTA.equals(releaseType)) {
+		if (!Branch.MAIN_PATH.equals(configuration.getBranchPath()) && !Rf2ReleaseType.DELTA.equals(releaseType)) {
 			throw new SnomedImportException("Importing a non-delta release of SNOMED CT "
-					+ "from an archive is prohibited when a task identifier is specified.");
+					+ "from an archive is prohibited when a non-MAIN branch path is specified.");
 		}
 		
 		final File archiveFile = copyContentToTempFile(inputStream, valueOf(randomUUID()));
@@ -131,25 +133,29 @@ public class SnomedRf2ImportService implements ISnomedRf2ImportService {
 				try {
 					((SnomedImportConfiguration) configuration).setStatus(ImportStatus.RUNNING);
 					final SnomedImportResult result = doImport(configuration, archiveFile);
-					((SnomedImportConfiguration) configuration).setStatus(isEmpty(result.getValidationDefects()) ? ImportStatus.COMPLETED : ImportStatus.FAILED); 
+					((SnomedImportConfiguration) configuration).setStatus(convertStatus(result.getValidationDefects())); 
 				} catch (final Exception e) {
 					LOG.error("Error during the import of " + archiveFile, e);
 					((SnomedImportConfiguration) configuration).setStatus(ImportStatus.FAILED);
 				}
 			}
 		}).start();
+	}
+
+	private ImportStatus convertStatus(Set<SnomedValidationDefect> validationDefects) {
+		for (SnomedValidationDefect validationDefect : validationDefects) {
+			if (validationDefect.getDefectType().isCritical()) {
+				return ImportStatus.FAILED;
+			}
+		}
 		
+		return ImportStatus.COMPLETED;
 	}
 
 	private SnomedImportResult doImport(final ISnomedImportConfiguration configuration, final File archiveFile) throws Exception {
-		
-		IBranchPath branchPath = BranchPathUtils.createVersionPath(configuration.getVersion());
-		if (null != configuration.getTaskId()) {
-			branchPath = BranchPathUtils.createPath(branchPath, configuration.getTaskId());
-		}
-		
+		final IBranchPath branch = BranchPathUtils.createPath(configuration.getBranchPath());
 		return new ImportUtil().doImport(
-				branchPath, 
+				branch, 
 				configuration.getLanguageRefSetId(), 
 				getByNameIgnoreCase(valueOf(configuration.getRf2ReleaseType())), 
 				archiveFile,
@@ -175,8 +181,7 @@ public class SnomedRf2ImportService implements ISnomedRf2ImportService {
 		final StorageRef importStorageRef = new StorageRef();
 		
 		importStorageRef.setShortName("SNOMEDCT");
-		importStorageRef.setVersion(configuration.getVersion());
-		importStorageRef.setTaskId(configuration.getTaskId());
+		importStorageRef.setBranchPath(configuration.getBranchPath());
 		
 		// Check version and branch existence
 		importStorageRef.checkStorageExists();

@@ -34,6 +34,7 @@ import com.b2international.snowowl.core.users.SpecialUserStore;
 import com.b2international.snowowl.datastore.BranchPathUtils;
 import com.b2international.snowowl.datastore.CodeSystemService;
 import com.b2international.snowowl.datastore.ICodeSystemVersion;
+import com.b2international.snowowl.datastore.cdo.ICDORepositoryManager;
 import com.b2international.snowowl.datastore.oplock.IOperationLockTarget;
 import com.b2international.snowowl.datastore.oplock.OperationLockException;
 import com.b2international.snowowl.datastore.oplock.impl.AllRepositoriesLockTarget;
@@ -42,7 +43,6 @@ import com.b2international.snowowl.datastore.oplock.impl.DatastoreLockContextDes
 import com.b2international.snowowl.datastore.oplock.impl.DatastoreOperationLockException;
 import com.b2international.snowowl.datastore.oplock.impl.IDatastoreOperationLockManager;
 import com.b2international.snowowl.datastore.oplock.impl.SingleRepositoryLockTarget;
-import com.b2international.snowowl.datastore.server.ICDORepositoryManager;
 import com.b2international.snowowl.datastore.server.index.IndexServerServiceManager;
 import com.google.common.base.Function;
 import com.google.common.collect.ImmutableList;
@@ -152,7 +152,7 @@ public class RepositoryServiceImpl implements InternalRepositoryService {
 	public List<String> getRepositoryVersionIndexFiles(final String repositoryUuid, final String repositoryVersionId) {
 		checkValidRepositoryAndVersionId(repositoryUuid, repositoryVersionId);
 
-		final IIndexUpdater<IIndexEntry> updater = IndexServerServiceManager.INSTANCE.getIndexService(repositoryUuid);
+		final IIndexUpdater<IIndexEntry> updater = IndexServerServiceManager.INSTANCE.getByUuid(repositoryUuid);
 		final IBranchPath versionPath = BranchPathUtils.createVersionPath(repositoryVersionId);
 		final List<String> fileList =  updater.listFiles(versionPath);
 		return ImmutableList.copyOf(fileList);

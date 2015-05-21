@@ -55,7 +55,9 @@ public class SnomedCoreBootstrap extends DefaultBootstrapFragment {
 		// TODO figure out how to properly register Handler to specific endpoints in core services,
 		// It would be nice to use a framework like reactor
 		// Also if we stick with the current IEventBus impl, we should definitely implement routers
-		env.service(IEventBus.class).registerHandler("/snomed-ct/ids", new SnomedIdentifierServiceEventHandler(env.provider(ISnomedIdentifierService.class)));
+		if (env.isServer() || env.isEmbedded()) {
+			env.service(IEventBus.class).registerHandler("/snomed-ct/ids", new SnomedIdentifierServiceEventHandler(env.provider(ISnomedIdentifierService.class)));
+		}
 	}
 
 }

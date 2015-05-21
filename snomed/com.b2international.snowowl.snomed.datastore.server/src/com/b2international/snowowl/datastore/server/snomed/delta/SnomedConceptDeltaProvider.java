@@ -213,7 +213,7 @@ public class SnomedConceptDeltaProvider extends ComponentDeltaProvider<Hierarchi
 				@Override public ChangeSetDataWithTransaction load(final IBranchPath branchPath) throws Exception {
 	
 					Preconditions.checkNotNull(branchPath, "Branch path argument cannot be null.");
-					Preconditions.checkState(!BranchPathUtils.isMain(branchPath), "Branch path was the '" + branchPath.getPath() + "'branch.");
+					Preconditions.checkState(!BranchPathUtils.isMain(branchPath), "Branch path was the '" + branchPath + "'branch.");
 					
 					final IBranchPath parent = branchPath.getParent();
 					if (null == destinationBranch.get()) {
@@ -368,12 +368,12 @@ public class SnomedConceptDeltaProvider extends ComponentDeltaProvider<Hierarchi
 		} catch (final ExecutionException e) {
 			
 			LOGGER.error(e.getMessage(), e);
-			return new SnowowlServiceException("Error while applying changes to " + destinationBranch.get().getPath() + "'. Promotion failed.", e);
+			return new SnowowlServiceException("Error while applying changes to " + destinationBranch.get() + "'. Promotion failed.", e);
 			
 		} catch (final CommitException e) {
 			
 			LOGGER.error(e.getMessage(), e);
-			return new SnowowlServiceException("Error while committing changed to " + destinationBranch.get().getPath() + "'. Promotion failed.", e);
+			return new SnowowlServiceException("Error while committing changed to " + destinationBranch.get() + "'. Promotion failed.", e);
 			
 		} catch (final Exception e) {
 			

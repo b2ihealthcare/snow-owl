@@ -372,7 +372,7 @@ public class DefaultCDOMerger implements CDOMerger
     @Override
     public String toString()
     {
-      return MessageFormat.format("ChangedInSourceAndDetachedInTarget[source={1}]", sourceDelta); //$NON-NLS-1$
+      return MessageFormat.format("ChangedInSourceAndDetachedInTarget[source={0}]", sourceDelta); //$NON-NLS-1$
     }
   }
 

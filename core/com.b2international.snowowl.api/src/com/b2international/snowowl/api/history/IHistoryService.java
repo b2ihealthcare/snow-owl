@@ -20,9 +20,8 @@ import java.util.List;
 import com.b2international.snowowl.api.codesystem.exception.CodeSystemNotFoundException;
 import com.b2international.snowowl.api.codesystem.exception.CodeSystemVersionNotFoundException;
 import com.b2international.snowowl.api.domain.IComponentRef;
-import com.b2international.snowowl.api.exception.ComponentNotFoundException;
 import com.b2international.snowowl.api.history.domain.IHistoryInfo;
-import com.b2international.snowowl.api.task.exception.TaskNotFoundException;
+import com.b2international.snowowl.core.exceptions.ComponentNotFoundException;
 
 /**
  * History service implementations provide a list of past modifications for a particular component type.
@@ -42,8 +41,6 @@ public interface IHistoryService {
 	 * @throws CodeSystemNotFoundException        if a code system with the given short name is not registered
 	 * @throws CodeSystemVersionNotFoundException if a code system version for the code system with the given identifier
 	 *                                            is not registered
-	 * @throws TaskNotFoundException              if the task identifier does not correspond to a task for the given 
-	 *                                            code system version
 	 * @throws ComponentNotFoundException         if the component identifier does not match any component on the given task
 	 */
 	List<IHistoryInfo> getHistory(IComponentRef ref);

@@ -19,7 +19,7 @@ import static com.google.common.base.Preconditions.checkNotNull;
 
 import com.b2international.snowowl.api.admin.IMessagingService;
 import com.b2international.snowowl.core.ApplicationContext;
-import com.b2international.snowowl.datastore.server.ICDORepositoryManager;
+import com.b2international.snowowl.datastore.cdo.ICDORepositoryManager;
 
 /**
  */

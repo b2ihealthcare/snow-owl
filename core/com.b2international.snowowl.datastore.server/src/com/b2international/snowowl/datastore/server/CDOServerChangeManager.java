@@ -219,7 +219,7 @@ public class CDOServerChangeManager extends ObjectWriteAccessHandler {
 	}
 
 	private String getCommitContextInfo(final TransactionCommitContext context) {
-		return MessageFormat.format(COMMIT_CONTEXT_INFO_TEMPLATE, getUserId(context), repositoryName, getBranchPath(context).getPath());
+		return MessageFormat.format(COMMIT_CONTEXT_INFO_TEMPLATE, getUserId(context), repositoryName, getBranchPath(context));
 	}
 	
 	/*returns with a collection of human readable name of the factories. could be empty.*/

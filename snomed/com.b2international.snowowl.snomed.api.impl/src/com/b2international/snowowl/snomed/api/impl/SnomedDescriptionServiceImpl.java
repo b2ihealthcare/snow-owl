@@ -30,6 +30,7 @@ import com.b2international.snowowl.api.impl.domain.InternalComponentRef;
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.ComponentIdentifierPair;
 import com.b2international.snowowl.core.api.IBranchPath;
+import com.b2international.snowowl.core.exceptions.ComponentNotFoundException;
 import com.b2international.snowowl.core.terminology.ComponentCategory;
 import com.b2international.snowowl.datastore.BranchPathUtils;
 import com.b2international.snowowl.snomed.Description;
@@ -88,33 +89,39 @@ public class SnomedDescriptionServiceImpl
 	@Override
 	protected boolean componentExists(final IComponentRef ref) {
 		final InternalComponentRef internalRef = ClassUtils.checkAndCast(ref, InternalComponentRef.class);
-		return snomedDescriptionLookupService.exists(internalRef.getBranchPath(), internalRef.getComponentId());
+		final IBranchPath branch = internalRef.getBranch().branchPath();
+		return snomedDescriptionLookupService.exists(branch, internalRef.getComponentId());
 	}
 
 	@Override
 	protected Description convertAndRegister(final ISnomedDescriptionInput input, final SnomedEditingContext editingContext) {
-		final Description description = SnomedFactory.eINSTANCE.createDescription();
-
-		description.setId(input.getIdGenerationStrategy().getId());
-		description.setActive(true);
-		description.unsetEffectiveTime();
-		description.setReleased(false);
-		description.setModule(getModuleConcept(input, editingContext));
-		description.setConcept(getConcept(input.getConceptId(), editingContext));
-		description.setCaseSignificance(getConcept(input.getCaseSignificance().getConceptId(), editingContext));
-		description.setType(getConcept(input.getTypeId(), editingContext));
-		description.setTerm(input.getTerm());
-		description.setLanguageCode(input.getLanguageCode());
-
-		updateAcceptabilityMap(input.getAcceptability(), description, editingContext);
-		return description;
+		try {
+			final Description description = SnomedFactory.eINSTANCE.createDescription();
+			
+			description.setId(input.getIdGenerationStrategy().getId());
+			description.setActive(true);
+			description.unsetEffectiveTime();
+			description.setReleased(false);
+			description.setModule(getModuleConcept(input, editingContext));
+			description.setConcept(getConcept(input.getConceptId(), editingContext));
+			description.setCaseSignificance(getConcept(input.getCaseSignificance().getConceptId(), editingContext));
+			description.setType(getConcept(input.getTypeId(), editingContext));
+			description.setTerm(input.getTerm());
+			description.setLanguageCode(input.getLanguageCode());
+			
+			updateAcceptabilityMap(input.getAcceptability(), description, editingContext);
+			return description;
+		} catch (ComponentNotFoundException e) {
+			throw e.toBadRequestException();
+		}
 	}
 
 	@Override
 	protected ISnomedDescription doRead(final IComponentRef ref) {
 		final InternalComponentRef internalRef = ClassUtils.checkAndCast(ref, InternalComponentRef.class);
-		final SnomedDescriptionIndexEntry descriptionIndexEntry = snomedDescriptionLookupService.getComponent(internalRef.getBranchPath(), internalRef.getComponentId());
-		return getDescriptionConverter(internalRef.getBranchPath()).apply(descriptionIndexEntry);
+		final IBranchPath branch = internalRef.getBranch().branchPath();
+		final SnomedDescriptionIndexEntry descriptionIndexEntry = snomedDescriptionLookupService.getComponent(branch, internalRef.getComponentId());
+		return getDescriptionConverter(branch).apply(descriptionIndexEntry);
 	}
 
 	@Override
@@ -123,8 +130,10 @@ public class SnomedDescriptionServiceImpl
 
 		final InternalComponentRef internalConceptRef = ClassUtils.checkAndCast(conceptRef, InternalComponentRef.class);
 		final SnomedDescriptionIndexQueryAdapter queryAdapter = SnomedDescriptionIndexQueryAdapter.findByConceptId(internalConceptRef.getComponentId());
-		final Collection<SnomedDescriptionIndexEntry> descriptionIndexEntries = getIndexService().searchUnsorted(internalConceptRef.getBranchPath(), queryAdapter);
-		final Collection<ISnomedDescription> transformedDescriptions = Collections2.transform(descriptionIndexEntries, getDescriptionConverter(internalConceptRef.getBranchPath()));
+		final IBranchPath branch = internalConceptRef.getBranch().branchPath();
+		
+		final Collection<SnomedDescriptionIndexEntry> descriptionIndexEntries = getIndexService().searchUnsorted(branch, queryAdapter);
+		final Collection<ISnomedDescription> transformedDescriptions = Collections2.transform(descriptionIndexEntries, getDescriptionConverter(branch));
 
 		return SnomedComponentOrdering.id().immutableSortedCopy(transformedDescriptions);
 	}
@@ -259,8 +268,8 @@ public class SnomedDescriptionServiceImpl
 		final InternalComponentRef internalRef = ClassUtils.checkAndCast(conceptRef, InternalComponentRef.class);
 //		internalRef.checkStorageExists();
 
-		final IBranchPath branchPath = internalRef.getBranchPath();
-		final ImmutableBiMap<Locale, String> languageIdMap = createLanguageIdMap(locales, branchPath);
+		final IBranchPath branch = internalRef.getBranch().branchPath();
+		final ImmutableBiMap<Locale, String> languageIdMap = createLanguageIdMap(locales, branch);
 		final Multimap<Locale, ISnomedDescription> descriptionsByLocale = HashMultimap.create();
 		final List<ISnomedDescription> descriptions = readConceptDescriptions(conceptRef);
 
@@ -331,11 +340,11 @@ public class SnomedDescriptionServiceImpl
 		final InternalComponentRef internalRef = ClassUtils.checkAndCast(conceptRef, InternalComponentRef.class);
 		internalRef.checkStorageExists();
 
-		final IBranchPath branchPath = internalRef.getBranchPath();
-		final ImmutableBiMap<Locale, String> languageIdMap = createLanguageIdMap(locales, branchPath);
+		final IBranchPath branch = internalRef.getBranch().branchPath();
+		final ImmutableBiMap<Locale, String> languageIdMap = createLanguageIdMap(locales, branch);
 		final Multimap<Locale, ISnomedDescription> descriptionsByLocale = HashMultimap.create();
 		final List<ISnomedDescription> descriptions = readConceptDescriptions(conceptRef);
-		final Set<String> synonymAndDescendantIds = getSnomedComponentService().getSynonymAndDescendantIds(branchPath);
+		final Set<String> synonymAndDescendantIds = getSnomedComponentService().getSynonymAndDescendantIds(branch);
 
 		for (final ISnomedDescription description : descriptions) {
 			if (!description.isActive()) {

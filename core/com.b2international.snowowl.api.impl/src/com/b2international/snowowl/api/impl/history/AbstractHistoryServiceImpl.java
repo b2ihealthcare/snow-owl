@@ -24,7 +24,6 @@ import java.util.List;
 import com.b2international.commons.ChangeKind;
 import com.b2international.commons.ClassUtils;
 import com.b2international.snowowl.api.domain.IComponentRef;
-import com.b2international.snowowl.api.exception.ComponentNotFoundException;
 import com.b2international.snowowl.api.history.IHistoryService;
 import com.b2international.snowowl.api.history.domain.ChangeType;
 import com.b2international.snowowl.api.history.domain.IHistoryInfo;
@@ -36,6 +35,7 @@ import com.b2international.snowowl.api.impl.history.domain.HistoryInfoDetails;
 import com.b2international.snowowl.api.impl.history.domain.HistoryVersion;
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.api.IBranchPath;
+import com.b2international.snowowl.core.exceptions.ComponentNotFoundException;
 import com.b2international.snowowl.core.terminology.ComponentCategory;
 import com.b2international.snowowl.datastore.cdo.CDOCommitInfoUtils;
 import com.b2international.snowowl.datastore.cdo.CDOIDUtils;
@@ -116,14 +116,14 @@ public abstract class AbstractHistoryServiceImpl implements IHistoryService {
 					repositoryUuid, handledRepositoryUuid));
 		}
 
-		final IBranchPath branchPath = internalComponentRef.getBranchPath();
+		final IBranchPath branch = internalComponentRef.getBranch().branchPath();
 		final String componentId = internalComponentRef.getComponentId();
-		final long storageKey = getStorageKey(branchPath, componentId);
+		final long storageKey = getStorageKey(branch, componentId);
 		if (!CDOIDUtils.checkId(storageKey)) {
 			throw new ComponentNotFoundException(handledCategory, componentId);
 		}
 
-		final HistoryInfoConfiguration configuration = HistoryInfoConfigurationImpl.create(storageKey, branchPath);
+		final HistoryInfoConfiguration configuration = HistoryInfoConfigurationImpl.create(storageKey, branch);
 		final Collection<com.b2international.snowowl.core.api.IHistoryInfo> sourceHistoryInfos = getHistoryService().getHistory(configuration);			
 		final Collection<IHistoryInfo> targetHistoryInfos = Collections2.transform(sourceHistoryInfos, CONVERTER);
 

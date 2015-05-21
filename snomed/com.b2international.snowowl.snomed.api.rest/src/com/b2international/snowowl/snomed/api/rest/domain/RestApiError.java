@@ -15,6 +15,7 @@
  */
 package com.b2international.snowowl.snomed.api.rest.domain;
 
+import com.b2international.snowowl.core.exceptions.ApiError;
 import com.wordnik.swagger.annotations.ApiModel;
 import com.wordnik.swagger.annotations.ApiModelProperty;
 
@@ -25,17 +26,17 @@ import com.wordnik.swagger.annotations.ApiModelProperty;
  * @since 3.7
  */
 @ApiModel("Error Response")
-public class RestApiError {
+public class RestApiError implements ApiError {
 
 	@ApiModelProperty(required = true)
 	private int status;
-	
+
 	@ApiModelProperty(required = false)
 	private Integer code;
-	
+
 	@ApiModelProperty(required = true)
 	private String message = "Request failed";
-	
+
 	@ApiModelProperty(required = true)
 	private String developerMessage;
 
@@ -84,8 +85,8 @@ public class RestApiError {
 	private void setStatus(int status) {
 		this.status = status;
 	}
-	
-	public void setCode(int code) {
+
+	private void setCode(int code) {
 		this.code = code;
 	}
 
@@ -96,15 +97,15 @@ public class RestApiError {
 	private void setDeveloperMessage(String developerMessage) {
 		this.developerMessage = developerMessage;
 	}
-	
+
 	/**
-	 * Return a new {@link Builder} to build a new {@link RestApiError} representation.
+	 * Return a new {@link Builder} to build a new {@link RestApiError} representation based on the given {@link ApiError}.
 	 * 
-	 * @param status
+	 * @param error
 	 * @return
 	 */
-	public static Builder of(int status) {
-		return new Builder(status);
+	public static Builder of(ApiError error) {
+		return new Builder(error);
 	}
 
 	/**
@@ -116,27 +117,15 @@ public class RestApiError {
 
 		private RestApiError error;
 
-		private Builder(int status) {
+		private Builder(ApiError error) {
 			this.error = new RestApiError();
-			this.error.setStatus(status);
+			this.error.setCode(error.getCode());
+			this.error.setMessage(error.getMessage());
+			this.error.setDeveloperMessage(error.getDeveloperMessage());
 		}
 
-		public Builder code(int code) {
-			this.error.setCode(code);
-			return this;
-		}
-		
-		public Builder message(String message) {
-			this.error.setMessage(message);
-			return this;
-		}
-
-		public Builder developerMessage(String message) {
-			this.error.setDeveloperMessage(message);
-			return this;
-		}
-
-		public RestApiError build() {
+		public RestApiError build(int httpStatus) {
+			this.error.setStatus(httpStatus);
 			return this.error;
 		}
 

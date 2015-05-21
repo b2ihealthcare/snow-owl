@@ -15,73 +15,71 @@
  */
 package com.b2international.snowowl.api.impl.domain;
 
-import java.util.Collection;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 import org.eclipse.emf.cdo.common.branch.CDOBranch;
 
+import com.b2international.commons.collections.Procedure;
 import com.b2international.snowowl.api.codesystem.exception.CodeSystemNotFoundException;
-import com.b2international.snowowl.api.codesystem.exception.CodeSystemVersionNotFoundException;
-import com.b2international.snowowl.api.exception.NotFoundException;
-import com.b2international.snowowl.api.task.exception.TaskNotFoundException;
 import com.b2international.snowowl.core.ApplicationContext;
-import com.b2international.snowowl.core.api.IBranchPath;
-import com.b2international.snowowl.datastore.BranchPathUtils;
-import com.b2international.snowowl.datastore.CodeSystemService;
+import com.b2international.snowowl.core.api.SnowowlRuntimeException;
+import com.b2international.snowowl.core.events.util.AsyncSupport;
+import com.b2international.snowowl.core.exceptions.BadRequestException;
+import com.b2international.snowowl.core.exceptions.NotFoundException;
+import com.b2international.snowowl.core.exceptions.RequestTimeoutException;
 import com.b2international.snowowl.datastore.IBranchPathMap;
 import com.b2international.snowowl.datastore.ICodeSystem;
-import com.b2international.snowowl.datastore.ICodeSystemVersion;
 import com.b2international.snowowl.datastore.TerminologyRegistryService;
 import com.b2international.snowowl.datastore.UserBranchPathMap;
 import com.b2international.snowowl.datastore.cdo.ICDOConnectionManager;
+import com.b2international.snowowl.datastore.server.branch.Branch;
+import com.b2international.snowowl.datastore.server.events.BranchReply;
+import com.b2international.snowowl.datastore.server.events.ReadBranchEvent;
+import com.b2international.snowowl.eventbus.IEventBus;
+import com.google.common.util.concurrent.SettableFuture;
 
 /**
- *
+ * @since 1.0
  */
 public class StorageRef implements InternalStorageRef {
 
 	private static final IBranchPathMap MAIN_BRANCH_PATH_MAP = new UserBranchPathMap();
+	private static final long DEFAULT_ASYNC_TIMEOUT_DELAY = 5000;
 
 	private static ICDOConnectionManager getConnectionManager() {
 		return ApplicationContext.getServiceForClass(ICDOConnectionManager.class);
 	}
 
-	private static CodeSystemService getCodeSystemService() {
-		return ApplicationContext.getServiceForClass(CodeSystemService.class);
-	}
-
 	private static TerminologyRegistryService getRegistryService() {
 		return ApplicationContext.getServiceForClass(TerminologyRegistryService.class);
 	}
+	
+	private static IEventBus getEventBus() {
+		return ApplicationContext.getServiceForClass(IEventBus.class);
+	}
 
 	private String shortName;
-	private String version;
-	private String taskId;
+	private String branchPath;
+	private Branch branch;
 
 	@Override
 	public String getShortName() {
 		return shortName;
 	}
-
+	
 	@Override
-	public String getVersion() {
-		return version;
-	}
-
-	@Override
-	public String getTaskId() {
-		return taskId;
+	public String getBranchPath() {
+		return branchPath;
 	}
 
 	public void setShortName(final String shortName) {
 		this.shortName = shortName;
 	}
-
-	public void setVersion(final String version) {
-		this.version = version;
-	}
-
-	public void setTaskId(final String taskId) {
-		this.taskId = taskId;
+	
+	public void setBranchPath(String branchPath) {
+		this.branchPath = branchPath;
 	}
 
 	@Override
@@ -100,17 +98,34 @@ public class StorageRef implements InternalStorageRef {
 		return getCodeSystem().getRepositoryUuid();
 	}
 
-	private IBranchPath getVersionBranchPath() {
-		return BranchPathUtils.createVersionPath(version);
-	}
-
 	@Override
-	public IBranchPath getBranchPath() {
-		if (null == taskId) {
-			return getVersionBranchPath();
-		} else {
-			return BranchPathUtils.createPath(getVersionBranchPath(), taskId);
+	public Branch getBranch() {
+		if (branch == null) {
+			final SettableFuture<BranchReply> result = SettableFuture.create();
+			new AsyncSupport<>(getEventBus(), BranchReply.class).send(new ReadBranchEvent(getRepositoryUuid(), getBranchPath()))
+				.then(new Procedure<BranchReply>() { @Override protected void doApply(BranchReply input) {
+					result.set(input);
+				}}).fail(new Procedure<Throwable>() { @Override protected void doApply(Throwable input) {
+					result.setException(input);
+				}});
+			try {
+				branch = result.get(DEFAULT_ASYNC_TIMEOUT_DELAY, TimeUnit.MILLISECONDS).getBranch();
+			} catch (InterruptedException e) {
+				throw new SnowowlRuntimeException(e);
+			} catch (TimeoutException e) {
+				throw new RequestTimeoutException(e);
+			} catch (ExecutionException e) {
+				final Throwable cause = e.getCause();
+				if (cause instanceof RuntimeException) {
+					throw (RuntimeException) cause;
+				}
+				throw new SnowowlRuntimeException(cause);
+			}
 		}
+		if (branch == null) {
+			throw new NotFoundException("Branch", getBranchPath());
+		}
+		return branch;
 	}
 
 	@Override
@@ -120,36 +135,18 @@ public class StorageRef implements InternalStorageRef {
 			return cdoBranch;
 		}
 
-		throw createCdoBranchNotFoundException();
+		throw new NotFoundException("Branch", getBranchPath());
 	}
 
 	private CDOBranch getCdoBranchOrNull() {
-		return getConnectionManager().getByUuid(getRepositoryUuid()).getBranch(getBranchPath());
+		return getConnectionManager().getByUuid(getRepositoryUuid()).getBranch(getBranch().branchPath());
 	}
 
-	private NotFoundException createCdoBranchNotFoundException() {
-		if (null == taskId) {
-			return new CodeSystemVersionNotFoundException(version);
-		} else {
-			return new TaskNotFoundException(taskId);
-		}
-	}
-
-	@Override
-	public ICodeSystemVersion getCodeSystemVersion() {
-		final Collection<ICodeSystemVersion> codeSystemVersions = getCodeSystemService().getAllTagsWithHead(getRepositoryUuid());
-		for (final ICodeSystemVersion codeSystemVersion : codeSystemVersions) {
-			if (codeSystemVersion.getVersionId().equals(version)) {
-				return codeSystemVersion;
-			}
-		}
-
-		throw new CodeSystemVersionNotFoundException(version);
-	}
-	
 	@Override
 	public void checkStorageExists() {
-		getCodeSystemVersion();
+		if (getBranch().isDeleted()) {
+			throw new BadRequestException("Branch '%s' has been deleted and cannot accept further modifications.", getBranchPath());
+		}
 		getCdoBranch();
 	}
 
@@ -158,10 +155,8 @@ public class StorageRef implements InternalStorageRef {
 		final StringBuilder builder = new StringBuilder();
 		builder.append("StorageRef [shortName=");
 		builder.append(shortName);
-		builder.append(", version=");
-		builder.append(version);
-		builder.append(", taskId=");
-		builder.append(taskId);
+		builder.append(", branchPath=");
+		builder.append(branchPath);
 		builder.append("]");
 		return builder.toString();
 	}

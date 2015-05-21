@@ -31,7 +31,6 @@ import bak.pcj.set.LongSet;
 
 import com.b2international.commons.StringUtils;
 import com.b2international.commons.pcj.LongSets;
-import com.b2international.snowowl.api.exception.BadRequestException;
 import com.b2international.snowowl.api.impl.domain.StorageRef;
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.api.IBranchPath;
@@ -39,6 +38,7 @@ import com.b2international.snowowl.core.api.SnowowlRuntimeException;
 import com.b2international.snowowl.core.date.DateFormats;
 import com.b2international.snowowl.core.date.Dates;
 import com.b2international.snowowl.core.date.EffectiveTimes;
+import com.b2international.snowowl.core.exceptions.BadRequestException;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.api.ISnomedExportService;
 import com.b2international.snowowl.snomed.api.domain.ISnomedExportConfiguration;
@@ -93,18 +93,17 @@ public class SnomedExportService implements ISnomedExportService {
 		final StorageRef exportStorageRef = new StorageRef();
 		
 		exportStorageRef.setShortName("SNOMEDCT");
-		exportStorageRef.setVersion(configuration.getVersion());
-		exportStorageRef.setTaskId(configuration.getTaskId());
+		exportStorageRef.setBranchPath(configuration.getBranchPath());
 		
-		final IBranchPath exportBranchPath = exportStorageRef.getBranchPath();
+		final IBranchPath exportBranch = exportStorageRef.getBranch().branchPath();
 		
-		final SnomedRf2ExportModel model = createExportModelWithAllRefSets(contentSubType, exportBranchPath);
+		final SnomedRf2ExportModel model = createExportModelWithAllRefSets(contentSubType, exportBranch);
 		
 		final String namespaceId = configuration.getNamespaceId();
 		model.setNamespace(namespaceId);
 		
 		if (configuration.getModuleIds().isEmpty()) {
-			final LongSet modules = ApplicationContext.getServiceForClass(SnomedTerminologyBrowser.class).getAllSubTypeIds(exportBranchPath, Long.parseLong(Concepts.MODULE_ROOT));
+			final LongSet modules = ApplicationContext.getServiceForClass(SnomedTerminologyBrowser.class).getAllSubTypeIds(exportBranch, Long.parseLong(Concepts.MODULE_ROOT));
 			model.getModulesToExport().addAll(LongSets.toStringSet(modules));
 		} else {
 			model.getModulesToExport().addAll(configuration.getModuleIds());

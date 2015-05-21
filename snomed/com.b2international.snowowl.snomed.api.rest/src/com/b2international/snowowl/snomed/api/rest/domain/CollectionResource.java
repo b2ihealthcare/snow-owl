@@ -20,6 +20,7 @@ import java.util.Collections;
 import java.util.List;
 
 import com.google.common.base.Objects;
+import com.google.common.collect.ImmutableList;
 import com.wordnik.swagger.annotations.ApiModel;
 import com.wordnik.swagger.annotations.ApiModelProperty;
 
@@ -55,6 +56,19 @@ public class CollectionResource<T> {
 	 */
 	public static <T> CollectionResource<T> of(List<T> items) {
 		return new CollectionResource<T>(items);
+	}
+	
+	/**
+	 * Creates a new {@link CollectionResource} for the given items.
+	 * 
+	 * @param items
+	 * @return
+	 */
+	public static <T> CollectionResource<T> of(Collection<T> items) {
+		if (items instanceof List) {
+			return of((List<T>)items);
+		}
+		return of(ImmutableList.copyOf(items));
 	}
 	
 	@Override

@@ -72,7 +72,7 @@ public abstract class IndexPostProcessor implements IIndexPostProcessor {
 
 				if (ICDOChangeProcessor.NULL_IMPL == cdoChangeProcessor) {
 					if (LOGGER.isInfoEnabled()) {
-						LOGGER.info("Index reviving took " + stopwatch + " on '" + branchPath.getPath() + "' [" + getToolingFeatureName() + "].");
+						LOGGER.info("Index reviving took " + stopwatch + " on '" + branchPath + "' [" + getToolingFeatureName() + "].");
 					}
 					return;
 				}
@@ -86,7 +86,7 @@ public abstract class IndexPostProcessor implements IIndexPostProcessor {
 				//no changes on branch
 				if (Long.MIN_VALUE == lastCommitTime) {
 					if (LOGGER.isInfoEnabled()) {
-						LOGGER.info("Index reviving took " + stopwatch + " on '" + branchPath.getPath() + "' [" + getToolingFeatureName() + "].");
+						LOGGER.info("Index reviving took " + stopwatch + " on '" + branchPath + "' [" + getToolingFeatureName() + "].");
 					}
 					return;
 				}
@@ -95,7 +95,7 @@ public abstract class IndexPostProcessor implements IIndexPostProcessor {
 				if (lastCommitTime == timestamp && CDOBranchPoint.UNSPECIFIED_DATE != timestamp) {
 					
 					if (LOGGER.isInfoEnabled()) {
-						LOGGER.info("Index reviving took " + stopwatch + " on '" + branchPath.getPath() + "' [" + getToolingFeatureName() + "].");
+						LOGGER.info("Index reviving took " + stopwatch + " on '" + branchPath + "' [" + getToolingFeatureName() + "].");
 					}
 					return;
 				}
@@ -125,13 +125,13 @@ public abstract class IndexPostProcessor implements IIndexPostProcessor {
 					});
 					
 					if (LOGGER.isInfoEnabled()) {
-						LOGGER.info("Index reviving with post processing took " + stopwatch + " on '" + branchPath.getPath() + "' [" + getToolingFeatureName() + "].");
+						LOGGER.info("Index reviving with post processing took " + stopwatch + " on '" + branchPath + "' [" + getToolingFeatureName() + "].");
 					}
 					
 				} else {
 					
 					if (LOGGER.isInfoEnabled()) {
-						LOGGER.info("Index reviving took " + stopwatch + " on '" + branchPath.getPath() + "' [" + getToolingFeatureName() + "].");
+						LOGGER.info("Index reviving took " + stopwatch + " on '" + branchPath + "' [" + getToolingFeatureName() + "].");
 					}
 					
 				}

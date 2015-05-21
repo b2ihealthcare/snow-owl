@@ -50,6 +50,7 @@ public class PreviousPicksConfigJob extends AbstractServerServiceConfigJob<IPrev
 	 */
 	@Override
 	protected PreviousPicksManager createServiceImplementation() throws SnowowlServiceException {
-		return new PreviousPicksManager(new File(INDEX_DIRECTORY));
+		final File dir = new File(new File(getEnvironment().getDataDirectory(), "indexes"), INDEX_DIRECTORY);
+		return new PreviousPicksManager(dir);
 	}
 }

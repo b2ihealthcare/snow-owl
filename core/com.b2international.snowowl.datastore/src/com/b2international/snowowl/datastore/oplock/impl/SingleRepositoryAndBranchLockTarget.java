@@ -76,6 +76,6 @@ public class SingleRepositoryAndBranchLockTarget extends SingleRepositoryLockTar
 
 	@Override
 	public String toString() {
-		return MessageFormat.format("branch ''{0}'' of repository ''{1}''", branchPath.getPath(), getRepositoryDisplayName());
+		return MessageFormat.format("branch ''{0}'' of repository ''{1}''", branchPath, getRepositoryDisplayName());
 	}
 }

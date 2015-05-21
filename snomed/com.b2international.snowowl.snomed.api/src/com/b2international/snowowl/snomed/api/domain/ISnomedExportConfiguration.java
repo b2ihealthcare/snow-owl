@@ -23,14 +23,7 @@ import com.b2international.snowowl.snomed.api.ISnomedExportService;
 /**
  * Represents the configuration object used by the {@link ISnomedExportService SNOMED CT export service}.
  */
-public interface ISnomedExportConfiguration {
-
-	/**
-	 * Returns the RF2 release type of the current export configuration.
-	 * 
-	 * @return the desired RF2 release type
-	 */
-	Rf2ReleaseType getRf2ReleaseType();
+public interface ISnomedExportConfiguration extends ISnomedRF2Configuration {
 
 	/**
 	 * Returns the transient effective time to use for unpublished components.
@@ -40,21 +33,6 @@ public interface ISnomedExportConfiguration {
 	 */
 	String getTransientEffectiveTime();
 	
-	/**
-	 * Returns the code system version identifier, eg. "{@code 2014-01-31}".
-	 * 
-	 * @return the code system version identifier
-	 */
-	String getVersion();
-
-	/**
-	 * Returns the task identifier, eg. "{@code 1747}". A {@code null} value points to the repository version,
-	 * when the component is not part of an editing task.
-	 * 
-	 * @return the task identifier, or {@code null} in case of the export happening on a version
-	 */
-	String getTaskId();
-
 	/**
 	 * Returns the export's starting effective time range. Only applicable if the release type is set to
 	 * {@link Rf2ReleaseType#DELTA}.

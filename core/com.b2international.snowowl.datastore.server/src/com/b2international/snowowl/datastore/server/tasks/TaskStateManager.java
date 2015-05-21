@@ -64,8 +64,8 @@ import com.b2international.snowowl.datastore.config.RepositoryConfiguration;
 import com.b2international.snowowl.datastore.index.IndexUtils;
 import com.b2international.snowowl.datastore.net4j.push.PushServiceException;
 import com.b2international.snowowl.datastore.server.index.IndexServerServiceManager;
-import com.b2international.snowowl.datastore.server.index.SingleDirectoryIndexServerService;
 import com.b2international.snowowl.datastore.server.net4j.push.PushServerService;
+import com.b2international.snowowl.datastore.store.SingleDirectoryIndexServerService;
 import com.b2international.snowowl.datastore.tasks.ITaskContext;
 import com.b2international.snowowl.datastore.tasks.ITaskStateManager;
 import com.b2international.snowowl.datastore.tasks.Task;
@@ -655,7 +655,7 @@ public class TaskStateManager extends SingleDirectoryIndexServerService implemen
 		for (final Entry<String, IBranchPath> entry : branchPathMap.getLockedEntries().entrySet()) {
 			
 			final String repositoryUuid = entry.getKey();
-			final IIndexUpdater<IIndexEntry> indexService = IndexServerServiceManager.INSTANCE.getIndexService(repositoryUuid);
+			final IIndexUpdater<IIndexEntry> indexService = IndexServerServiceManager.INSTANCE.getByUuid(repositoryUuid);
 			indexService.inactiveClose(branchPathMap.getBranchPath(repositoryUuid));
 			
 		}
@@ -753,7 +753,7 @@ public class TaskStateManager extends SingleDirectoryIndexServerService implemen
 	}
 
 	private String getPathEntry(final String repositoryUuid, final IBranchPath branchPath) {
-		return MessageFormat.format("{0}:{1}:{2}", repositoryUuid, getVersionPath(branchPath), branchPath.getPath());
+		return MessageFormat.format("{0}:{1}:{2}", repositoryUuid, getVersionPath(branchPath), branchPath);
 	}
 
 	private String getVersionPath(final IBranchPath branchPath) {

@@ -46,6 +46,9 @@ import com.b2international.snowowl.core.users.SpecialUserStore;
 import com.b2international.snowowl.datastore.BranchPathUtils;
 import com.b2international.snowowl.datastore.cdo.ICDOConnection;
 import com.b2international.snowowl.datastore.cdo.ICDOConnectionManager;
+import com.b2international.snowowl.datastore.cdo.ICDORepository;
+import com.b2international.snowowl.datastore.cdo.ICDORepositoryManager;
+import com.b2international.snowowl.datastore.cdo.ICDORepositoryManager.ISessionOperationCallback;
 import com.b2international.snowowl.datastore.oplock.IOperationLockTarget;
 import com.b2international.snowowl.datastore.oplock.OperationLockException;
 import com.b2international.snowowl.datastore.oplock.impl.AllRepositoriesLockTarget;
@@ -54,9 +57,6 @@ import com.b2international.snowowl.datastore.oplock.impl.DatastoreLockContextDes
 import com.b2international.snowowl.datastore.oplock.impl.IDatastoreOperationLockManager;
 import com.b2international.snowowl.datastore.oplock.impl.SingleRepositoryAndBranchLockTarget;
 import com.b2international.snowowl.datastore.oplock.impl.SingleRepositoryLockTarget;
-import com.b2international.snowowl.datastore.server.ICDORepository;
-import com.b2international.snowowl.datastore.server.ICDORepositoryManager;
-import com.b2international.snowowl.datastore.server.ICDORepositoryManager.ISessionOperationCallback;
 import com.b2international.snowowl.datastore.server.oplock.OperationLockInfo;
 import com.b2international.snowowl.datastore.server.oplock.impl.DatastoreOperationLockManager;
 import com.b2international.snowowl.datastore.session.IApplicationSessionManager;
@@ -467,7 +467,7 @@ public class UserSessionCommandProvider implements CommandProvider {
 			//assuming active connection manager service here
 			
 			if (null == connection.getBranch(branchPath)) {
-				interpreter.println("Branch does not exist. Branch path: '" + branchPath.getPath() + "'. Repository UUID: '" + uuidOrAll + "'.");
+				interpreter.println("Branch does not exist. Branch path: '" + branchPath + "'. Repository UUID: '" + uuidOrAll + "'.");
 				interpreter.println(getHelp());
 				return null;
 			}

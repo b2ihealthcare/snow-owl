@@ -71,12 +71,11 @@ public abstract class AbstractSnomedComponentRestInput<I extends AbstractSnomedC
 	 */
 	protected abstract ComponentCategory getComponentCategory();
 	
-	protected I toComponentInput(final String version, final String taskId) {
+	protected I toComponentInput(final String branchPath) {
 		final I result = createComponentInput();
 
 		result.setCodeSystemShortName("SNOMEDCT");
-		result.setCodeSystemVersionId(version);
-		result.setTaskId(taskId);
+		result.setBranchPath(branchPath);
 
 		result.setIdGenerationStrategy(createIdGenerationStrategy(getId()));
 		result.setModuleId(getModuleId());

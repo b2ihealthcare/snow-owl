@@ -16,7 +16,6 @@
 package com.b2international.snowowl.snomed.api.rest;
 
 import static org.springframework.hateoas.mvc.ControllerLinkBuilder.linkTo;
-import static org.springframework.hateoas.mvc.ControllerLinkBuilder.methodOn;
 
 import java.net.URI;
 import java.security.Principal;
@@ -54,29 +53,28 @@ import com.wordnik.swagger.annotations.ApiResponses;
 @Api("SNOMED CT Relationships")
 @RestController
 @RequestMapping(
-		value="/{version}",
-		produces={ AbstractRestService.V1_MEDIA_TYPE })
+		produces={ AbstractRestService.SO_MEDIA_TYPE })
 public class SnomedRelationshipRestService extends AbstractSnomedRestService {
 
 	@Autowired
 	protected ISnomedRelationshipService delegate;
 
 	@ApiOperation(
-			value="Create relationship", 
-			notes="Creates a new relationship directly on a version branch.")
+			value="Create Relationship", 
+			notes="Creates a new Relationship directly on a version branch.")
 	@ApiResponses({
 		@ApiResponse(code = 201, message = "Created"),
-		@ApiResponse(code = 404, message = "Code system version not found")
+		@ApiResponse(code = 404, message = "Branch not found")
 	})
 	@RequestMapping(
-			value="/relationships", 
+			value="/{path:**}/relationships", 
 			method=RequestMethod.POST, 
-			consumes={ AbstractRestService.V1_MEDIA_TYPE, MediaType.APPLICATION_JSON_VALUE })
+			consumes={ AbstractRestService.SO_MEDIA_TYPE, MediaType.APPLICATION_JSON_VALUE })
 	@ResponseStatus(HttpStatus.CREATED)
 	public ResponseEntity<Void> create(
-			@ApiParam(value="The code system version")
-			@PathVariable("version") 
-			final String version,
+			@ApiParam(value="The branch path")
+			@PathVariable("path") 
+			final String branchPath,
 			
 			@ApiParam(value="Relationship parameters")
 			@RequestBody 
@@ -84,151 +82,59 @@ public class SnomedRelationshipRestService extends AbstractSnomedRestService {
 			
 			final Principal principal) {
 
-		final ISnomedRelationship createdRelationship = doCreate(version, null, body, principal);
-		return Responses.created(getRelationshipLocation(version, createdRelationship)).build();
-	}
-
-
-	@ApiOperation(
-			value="Create relationship on task", 
-			notes="Creates a new relationship on a task branch.")
-	@ApiResponses({
-		@ApiResponse(code = 201, message = "Created"),
-		@ApiResponse(code = 404, message = "Code system version or task not found")
-	})
-	@RequestMapping(
-			value="/tasks/{taskId}/relationships", 
-			method=RequestMethod.POST,
-			consumes={ AbstractRestService.V1_MEDIA_TYPE, MediaType.APPLICATION_JSON_VALUE })
-	@ResponseStatus(HttpStatus.CREATED)
-	public ResponseEntity<Void> createOnTask(
-			@ApiParam(value="The code system version")
-			@PathVariable("version") 
-			final String version,
-			
-			@ApiParam(value="The task")
-			@PathVariable("taskId") 
-			final String taskId,
-			
-			@ApiParam(value="Relationship parameters")
-			@RequestBody 
-			final ChangeRequest<SnomedRelationshipRestInput> body,
-			
-			final Principal principal) {
-
-		final ISnomedRelationship createdRelationship = doCreate(version, taskId, body, principal);
-		return Responses.created(getRelationshipOnTaskLocation(version, taskId, createdRelationship)).build();
+		final ISnomedRelationship createdRelationship = doCreate(branchPath, body, principal);
+		return Responses.created(getRelationshipLocation(branchPath, createdRelationship)).build();
 	}
 
 	@ApiOperation(
-			value="Retrieve relationship properties", 
-			notes="Returns all properties of the specified relationship, including the associated refinability value.",
+			value="Retrieve Relationship properties", 
+			notes="Returns all properties of the specified Relationship, including the associated refinability value.",
 			response=Void.class)
 	@ApiResponses({
 		@ApiResponse(code = 200, message = "OK"),
-		@ApiResponse(code = 404, message = "Code system version or relationship not found")
+		@ApiResponse(code = 404, message = "Branch or Relationship not found")
 	})
-	@RequestMapping(value="/relationships/{relationshipId}", method=RequestMethod.GET)
+	@RequestMapping(value="/{path:**}/relationships/{relationshipId}", method=RequestMethod.GET)
 	public ISnomedRelationship read(
-			@ApiParam(value="The code system version")
-			@PathVariable("version") 
-			final String version,
+			@ApiParam(value="The branch path")
+			@PathVariable("path") 
+			final String branchPath,
 			
-			@ApiParam(value="The relationship identifier")
+			@ApiParam(value="The Relationship identifier")
 			@PathVariable("relationshipId") 
 			final String relationshipId) {
 
-		return readOnTask(version, null, relationshipId);
+		return delegate.read(createComponentRef(branchPath, relationshipId));
 	}
 
 	@ApiOperation(
-			value="Retrieve relationship properties on task", 
-			notes="Returns all properties of the specified relationship on a task branch, including the associated refinability value.",
-			response=Void.class)
-	@ApiResponses({
-		@ApiResponse(code = 200, message = "OK"),
-		@ApiResponse(code = 404, message = "Code system version, task or relationship not found")
-	})
-	@RequestMapping(value="/tasks/{taskId}/relationships/{relationshipId}", method=RequestMethod.GET)
-	public ISnomedRelationship readOnTask(
-			@ApiParam(value="The code system version")
-			@PathVariable("version") 
-			final String version,
-			
-			@ApiParam(value="The task")
-			@PathVariable("taskId") 
-			final String taskId,
-			
-			@ApiParam(value="The relationship identifier")
-			@PathVariable("relationshipId") 
-			final String relationshipId) {
-
-		final IComponentRef relationshipRef = createComponentRef(version, taskId, relationshipId);
-		return delegate.read(relationshipRef);
-	}
-
-	@ApiOperation(
-			value="Update relationship",
-			notes="Updates properties of the specified relationship.")
+			value="Update Relationship",
+			notes="Updates properties of the specified Relationship.")
 	@ApiResponses({
 		@ApiResponse(code = 204, message = "Update successful"),
-		@ApiResponse(code = 404, message = "Code system version or relationship not found")
+		@ApiResponse(code = 404, message = "Branch or Relationship not found")
 	})
 	@RequestMapping(
-			value="/relationships/{relationshipId}/updates", 
+			value="/{path:**}/relationships/{relationshipId}/updates", 
 			method=RequestMethod.POST,
-			consumes={ AbstractRestService.V1_MEDIA_TYPE, MediaType.APPLICATION_JSON_VALUE })
+			consumes={ AbstractRestService.SO_MEDIA_TYPE, MediaType.APPLICATION_JSON_VALUE })
 	@ResponseStatus(HttpStatus.NO_CONTENT)
 	public void update(
-			@ApiParam(value="The code system version")
-			@PathVariable("version") 
-			final String version,
+			@ApiParam(value="The branch path")
+			@PathVariable("path") 
+			final String branchPath,
 			
-			@ApiParam(value="The relationship identifier")
+			@ApiParam(value="The Relationship identifier")
 			@PathVariable("relationshipId") 
 			final String relationshipId,
 			
-			@ApiParam(value="Update relationship parameters")
+			@ApiParam(value="Update Relationship parameters")
 			@RequestBody 
 			final ChangeRequest<SnomedRelationshipRestUpdate> body,
 			
 			final Principal principal) {
 
-		updateOnTask(version, null, relationshipId, body, principal);
-	}
-
-	@ApiOperation(
-			value="Update relationship on task",
-			notes="Updates properties of the specified relationship on a task branch.")
-	@ApiResponses({
-		@ApiResponse(code = 204, message = "Update successful"),
-		@ApiResponse(code = 404, message = "Code system version, task or relationship not found")
-	})
-	@RequestMapping(
-			value="/tasks/{taskId}/relationships/{relationshipId}/updates", 
-			method=RequestMethod.POST,
-			consumes={ AbstractRestService.V1_MEDIA_TYPE, MediaType.APPLICATION_JSON_VALUE })
-	@ResponseStatus(HttpStatus.NO_CONTENT)
-	public void updateOnTask(
-			@ApiParam(value="The code system version")
-			@PathVariable("version") 
-			final String version,
-			
-			@ApiParam(value="The task")
-			@PathVariable("taskId") 
-			final String taskId,
-			
-			@ApiParam(value="The relationship identifier")
-			@PathVariable("relationshipId") 
-			final String relationshipId,
-			
-			@ApiParam(value="Update relationship parameters")
-			@RequestBody 
-			final ChangeRequest<SnomedRelationshipRestUpdate> body,
-			
-			final Principal principal) {
-
-		final IComponentRef relationshipRef = createComponentRef(version, taskId, relationshipId);
+		final IComponentRef relationshipRef = createComponentRef(branchPath, relationshipId);
 		final ISnomedRelationshipUpdate update = body.getChange().toComponentUpdate();
 		final String userId = principal.getName();
 		final String commitComment = body.getCommitComment();
@@ -237,75 +143,42 @@ public class SnomedRelationshipRestService extends AbstractSnomedRestService {
 	}
 
 	@ApiOperation(
-			value="Delete relationship",
-			notes="Permanently removes the specified unreleased relationship and related components.<p>If the relationship "
+			value="Delete Relationship",
+			notes="Permanently removes the specified unreleased Relationship and related components.<p>If the Relationship "
 					+ "has already been released, it can not be removed and a <code>409</code> "
 					+ "status will be returned.")
 	@ApiResponses({
 		@ApiResponse(code = 204, message = "Delete successful"),
-		@ApiResponse(code = 404, message = "Code system version or relationship not found"),
+		@ApiResponse(code = 404, message = "Branch or Relationship not found"),
 		@ApiResponse(code = 409, message = "Relationship cannot be deleted", response = RestApiError.class)
 	})
-	@RequestMapping(value="/relationships/{relationshipId}", method=RequestMethod.DELETE)
+	@RequestMapping(value="/{path:**}/relationships/{relationshipId}", method=RequestMethod.DELETE)
 	@ResponseStatus(HttpStatus.NO_CONTENT)
 	public void delete(
-			@ApiParam(value="The code system version")
-			@PathVariable("version") 
-			final String version,
+			@ApiParam(value="The branch path")
+			@PathVariable("path") 
+			final String branchPath,
 			
-			@ApiParam(value="The relationship identifier")
+			@ApiParam(value="The Relationship identifier")
 			@PathVariable("relationshipId") 
 			final String relationshipId,
 			
 			final Principal principal) {
 
-		deleteOnTask(version, null, relationshipId, principal);
-	}
-
-	@ApiOperation(
-			value="Delete relationship on task",
-			notes="Permanently removes the specified unreleased relationship and related components from a task branch.<p>If the relationship "
-					+ "has already been released, it can not be removed and a <code>409</code> "
-					+ "status will be returned.")
-	@ApiResponses({
-		@ApiResponse(code = 204, message = "Delete successful"),
-		@ApiResponse(code = 404, message = "Code system version, task or relationship not found"),
-		@ApiResponse(code = 409, message = "Relationship cannot be deleted", response = RestApiError.class)
-	})
-	@RequestMapping(value="/tasks/{taskId}/relationships/{relationshipId}", method=RequestMethod.DELETE)
-	@ResponseStatus(HttpStatus.NO_CONTENT)
-	public void deleteOnTask(
-			@ApiParam(value="The code system version")
-			@PathVariable("version") 
-			final String version,
-			
-			@ApiParam(value="The task")
-			@PathVariable("taskId") 
-			final String taskId,
-			
-			@ApiParam(value="The relationship identifier")
-			@PathVariable("relationshipId") 
-			final String relationshipId, 
-			
-			final Principal principal) {
-
-		final IComponentRef relationshipRef = createComponentRef(version, taskId, relationshipId);
+		final IComponentRef relationshipRef = createComponentRef(branchPath, relationshipId);
 		final String userId = principal.getName();
-		delegate.delete(relationshipRef, userId, "Deleted relationship from store.");
+		delegate.delete(relationshipRef, userId, String.format("Deleted Relationship '%s' from store.", relationshipId));
 	}
-	
-	private ISnomedRelationship doCreate(final String version, final String taskId, final ChangeRequest<SnomedRelationshipRestInput> body, final Principal principal) {
-		final ISnomedRelationshipInput input = body.getChange().toComponentInput(version, taskId);
+
+	private ISnomedRelationship doCreate(final String branchPath, final ChangeRequest<SnomedRelationshipRestInput> body, final Principal principal) {
+		final ISnomedRelationshipInput input = body.getChange().toComponentInput(branchPath);
 		final String userId = principal.getName();
 		final String commitComment = body.getCommitComment();
 		return delegate.create(input, userId, commitComment);
 	}
 	
-	private URI getRelationshipLocation(final String version, final ISnomedRelationship createdRelationship) {
-		return linkTo(methodOn(SnomedRelationshipRestService.class).read(version, createdRelationship.getId())).toUri();
+	private URI getRelationshipLocation(final String branchPath, final ISnomedRelationship createdRelationship) {
+		return linkTo(SnomedRelationshipRestService.class).slash(branchPath).slash("relationships").slash(createdRelationship.getId()).toUri();
 	}
 
-	private URI getRelationshipOnTaskLocation(final String version, final String taskId, final ISnomedRelationship createdRelationship) {
-		return linkTo(methodOn(SnomedRelationshipRestService.class).readOnTask(version, taskId, createdRelationship.getId())).toUri();
-	}
 }

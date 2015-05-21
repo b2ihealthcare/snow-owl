@@ -59,10 +59,7 @@ public class IndexDifferServiceImpl implements IndexDifferService {
 
 		final IndexBranchService targetBranchService = indexService.getBranchService(configuration.getTargetPath());
 		
-		final String sourcePath = sourceBranchPath.getPath();
-		final String targetPath = configuration.getTargetPath().getPath();
-		
-		log("Calculating index diff between '" + sourcePath + "' and '" + targetPath + "' for " + configuration.getToolingName() + "...");
+		log("Calculating index diff between '" + sourceBranchPath + "' and '" + configuration.getTargetPath() + "' for " + configuration.getToolingName() + "...");
 		
 		@Nullable final IndexCommit ancestorCommit;
 		final IndexCommit sourceIndexCommit;
@@ -105,7 +102,7 @@ public class IndexDifferServiceImpl implements IndexDifferService {
 	}
 
 	private IndexServerService<?> getIndexService(final String repositoryUuid) {
-		return (IndexServerService<?>) IndexServerServiceManager.INSTANCE.getIndexService(checkNotNull(repositoryUuid, "repositoryUuid"));
+		return (IndexServerService<?>) IndexServerServiceManager.INSTANCE.getByUuid(checkNotNull(repositoryUuid, "repositoryUuid"));
 	}
 
 	private void log(final String message) {

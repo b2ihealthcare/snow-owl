@@ -42,7 +42,7 @@ import com.wordnik.swagger.annotations.ApiResponses;
  */
 @Api("SNOMED CT Identifiers")
 @RestController
-@RequestMapping(value="/ids", produces = { AbstractRestService.V1_MEDIA_TYPE })
+@RequestMapping(value="/ids", produces = { AbstractRestService.SO_MEDIA_TYPE })
 public class SnomedIdentifierRestService extends AbstractRestService {
 
 	@Autowired
@@ -54,7 +54,7 @@ public class SnomedIdentifierRestService extends AbstractRestService {
 	@ApiResponses({
 		@ApiResponse(code = 201, message = "Created")
 	})
-	@RequestMapping(method = RequestMethod.POST, consumes = { AbstractRestService.V1_MEDIA_TYPE, MediaType.APPLICATION_JSON_VALUE })
+	@RequestMapping(method = RequestMethod.POST, consumes = { AbstractRestService.SO_MEDIA_TYPE, MediaType.APPLICATION_JSON_VALUE })
 	@ResponseStatus(value = HttpStatus.CREATED)
 	public DeferredResult<SnomedIdentifierResponse> generate(@RequestBody final SnomedIdentifierRequest request) {
 		final DeferredResult<SnomedIdentifierResponse> result = new DeferredResult<SnomedIdentifierResponse>();

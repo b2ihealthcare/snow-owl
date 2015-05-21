@@ -20,9 +20,8 @@ import com.b2international.snowowl.api.codesystem.exception.CodeSystemVersionNot
 import com.b2international.snowowl.api.domain.IComponent;
 import com.b2international.snowowl.api.domain.IComponentInput;
 import com.b2international.snowowl.api.domain.IComponentRef;
-import com.b2international.snowowl.api.exception.ComponentNotFoundException;
 import com.b2international.snowowl.api.history.IHistoryService;
-import com.b2international.snowowl.api.task.exception.TaskNotFoundException;
+import com.b2international.snowowl.core.exceptions.ComponentNotFoundException;
 
 /**
  * Component service implementations provide methods for <b>c</b>reating, <b>r</b>eading, <b>u</b>pdating and
@@ -57,8 +56,6 @@ public interface IComponentService<C extends IComponentInput, R extends ICompone
 	 * @throws CodeSystemNotFoundException        if a code system with the given short name is not registered
 	 * @throws CodeSystemVersionNotFoundException if a code system version for the code system with the given identifier
 	 *                                            is not registered
-	 * @throws TaskNotFoundException              if the task identifier does not correspond to a task for the given 
-	 *                                            code system version
 	 * @throws ComponentValidationException       if the component input fails validation
 	 * @throws ComponentCreationException         if creating the component fails for any other reason
 	 */
@@ -74,8 +71,6 @@ public interface IComponentService<C extends IComponentInput, R extends ICompone
 	 * @throws CodeSystemNotFoundException        if a code system with the given short name is not registered
 	 * @throws CodeSystemVersionNotFoundException if a code system version for the code system with the given identifier
 	 *                                            is not registered
-	 * @throws TaskNotFoundException              if the task identifier does not correspond to a task for the given 
-	 *                                            code system version
 	 * @throws ComponentNotFoundException         if the component identifier does not match any component on the given task
 	 */
 	R read(IComponentRef ref);
@@ -97,8 +92,6 @@ public interface IComponentService<C extends IComponentInput, R extends ICompone
 	 * @throws CodeSystemNotFoundException        if a code system with the given short name is not registered
 	 * @throws CodeSystemVersionNotFoundException if a code system version for the code system with the given identifier
 	 *                                            is not registered
-	 * @throws TaskNotFoundException              if the task identifier does not correspond to a task for the given 
-	 *                                            code system version
 	 * @throws ComponentNotFoundException         if the component identifier does not match any component on the given task
 	 * @throws ComponentValidationException       if the supplied update model fails validation
 	 * @throws ComponentUpdateException           if updating the component fails for any other reason
@@ -118,8 +111,6 @@ public interface IComponentService<C extends IComponentInput, R extends ICompone
 	 * @throws CodeSystemNotFoundException        if a code system with the given short name is not registered
 	 * @throws CodeSystemVersionNotFoundException if a code system version for the code system with the given identifier
 	 *                                            is not registered
-	 * @throws TaskNotFoundException              if the task identifier does not correspond to a task for the given 
-	 *                                            code system version
 	 * @throws ComponentNotFoundException         if the component identifier does not match any component on the given task
 	 * @throws ComponentDeleteException           if deleting the component fails for any other reason
 	 */

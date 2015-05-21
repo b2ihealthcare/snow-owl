@@ -3,7 +3,8 @@ Bundle-Version: 4.1.1.qualifier
 Bundle-Name: Snow Owl Administrative Web Services
 Bundle-ManifestVersion: 2
 Bundle-SymbolicName: com.b2international.snowowl.api.rest;singleton:=true
-Import-Package: com.b2international.snowowl.api,
+Import-Package: com.b2international.commons.exceptions,
+ com.b2international.snowowl.api,
  com.b2international.snowowl.api.admin,
  com.b2international.snowowl.api.admin.exception,
  com.b2international.snowowl.api.codesystem,
@@ -13,10 +14,7 @@ Import-Package: com.b2international.snowowl.api,
  com.b2international.snowowl.api.impl.admin,
  com.b2international.snowowl.api.impl.codesystem,
  com.b2international.snowowl.api.impl.history,
- com.b2international.snowowl.api.impl.task,
- com.b2international.snowowl.api.impl.task.domain,
- com.b2international.snowowl.api.task,
- com.b2international.snowowl.api.task.domain,
+ com.b2international.snowowl.core.exceptions,
  javax.servlet;version="2.6.0",
  javax.servlet.http;version="2.6.0",
  org.eclipse.core.runtime;version="3.4.0",

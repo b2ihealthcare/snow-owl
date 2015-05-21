@@ -32,12 +32,12 @@ import org.slf4j.LoggerFactory;
 import com.b2international.commons.ClassUtils;
 import com.b2international.snowowl.api.domain.IComponentRef;
 import com.b2international.snowowl.api.domain.IStorageRef;
-import com.b2international.snowowl.api.exception.ComponentNotFoundException;
 import com.b2international.snowowl.api.impl.domain.ComponentRef;
 import com.b2international.snowowl.api.impl.domain.InternalComponentRef;
 import com.b2international.snowowl.api.impl.domain.InternalStorageRef;
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.api.IBranchPath;
+import com.b2international.snowowl.core.exceptions.ComponentNotFoundException;
 import com.b2international.snowowl.core.terminology.ComponentCategory;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.api.browser.ISnomedBrowserService;
@@ -116,7 +116,7 @@ public class SnomedBrowserService implements ISnomedBrowserService {
 		final InternalComponentRef internalConceptRef = ClassUtils.checkAndCast(conceptRef, InternalComponentRef.class);
 		internalConceptRef.checkStorageExists();
 		
-		final IBranchPath branchPath = internalConceptRef.getBranchPath();
+		final IBranchPath branchPath = internalConceptRef.getBranch().branchPath();
 		final String conceptId = conceptRef.getComponentId();
 		final SnomedConceptIndexEntry concept = getTerminologyBrowser().getConcept(branchPath, conceptId);
 		
@@ -192,7 +192,8 @@ public class SnomedBrowserService implements ISnomedBrowserService {
 			destinationConceptIds.add(relationship.getValueId());
 		}
 		
-		final Collection<SnomedConceptIndexEntry> destinationConcepts = getTerminologyBrowser().getConcepts(((InternalComponentRef) sourceConceptRef).getBranchPath(), destinationConceptIds);
+		final IBranchPath branchPath = ((InternalComponentRef) sourceConceptRef).getBranch().branchPath();
+		final Collection<SnomedConceptIndexEntry> destinationConcepts = getTerminologyBrowser().getConcepts(branchPath, destinationConceptIds);
 		final Map<String, SnomedConceptIndexEntry> destinationConceptMap = Maps.uniqueIndex(destinationConcepts, new Function<SnomedConceptIndexEntry, String>() {
 			@Override
 			public String apply(final SnomedConceptIndexEntry input) {
@@ -241,7 +242,7 @@ public class SnomedBrowserService implements ISnomedBrowserService {
 		final InternalComponentRef internalConceptRef = ClassUtils.checkAndCast(conceptRef, InternalComponentRef.class);
 		internalConceptRef.checkStorageExists();
 		
-		final IBranchPath branchPath = internalConceptRef.getBranchPath();
+		final IBranchPath branchPath = internalConceptRef.getBranch().branchPath();
 		final String conceptId = conceptRef.getComponentId();
 		
 		if (!getTerminologyBrowser().exists(branchPath, conceptId)) {
@@ -298,8 +299,7 @@ public class SnomedBrowserService implements ISnomedBrowserService {
 		final ComponentRef conceptRef = new ComponentRef();
 
 		conceptRef.setShortName(sourceRef.getShortName());
-		conceptRef.setVersion(sourceRef.getVersion());
-		conceptRef.setTaskId(sourceRef.getTaskId());
+		conceptRef.setBranchPath(sourceRef.getBranchPath());
 		conceptRef.setComponentId(newComponentId);
 
 		return conceptRef;
@@ -314,7 +314,7 @@ public class SnomedBrowserService implements ISnomedBrowserService {
 		final InternalStorageRef internalStorageRef = ClassUtils.checkAndCast(storageRef, InternalStorageRef.class);
 		internalStorageRef.checkStorageExists();
 
-		final IBranchPath branchPath = internalStorageRef.getBranchPath();
+		final IBranchPath branchPath = internalStorageRef.getBranch().branchPath();
 		final SnomedDescriptionReducedQueryAdapter descriptionQueryAdapter = new SnomedDescriptionReducedQueryAdapter(query, SnomedDescriptionReducedQueryAdapter.SEARCH_DESCRIPTION_TERM) {
 			private static final long serialVersionUID = 1L;
 

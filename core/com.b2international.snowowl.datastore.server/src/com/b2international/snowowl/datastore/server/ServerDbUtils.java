@@ -48,6 +48,8 @@ import com.b2international.commons.db.JdbcUrl;
 import com.b2international.commons.db.JdbcUtils;
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.api.SnowowlRuntimeException;
+import com.b2international.snowowl.datastore.cdo.ICDORepository;
+import com.b2international.snowowl.datastore.cdo.ICDORepositoryManager;
 import com.b2international.snowowl.datastore.config.RepositoryConfiguration;
 import com.google.common.base.Function;
 import com.google.common.base.Preconditions;

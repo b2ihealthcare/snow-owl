@@ -23,8 +23,7 @@ import com.b2international.snowowl.api.codesystem.exception.CodeSystemNotFoundEx
 import com.b2international.snowowl.api.codesystem.exception.CodeSystemVersionNotFoundException;
 import com.b2international.snowowl.api.domain.IComponentRef;
 import com.b2international.snowowl.api.domain.IStorageRef;
-import com.b2international.snowowl.api.exception.ComponentNotFoundException;
-import com.b2international.snowowl.api.task.exception.TaskNotFoundException;
+import com.b2international.snowowl.core.exceptions.ComponentNotFoundException;
 import com.b2international.snowowl.snomed.api.domain.browser.ISnomedBrowserChildConcept;
 import com.b2international.snowowl.snomed.api.domain.browser.ISnomedBrowserConcept;
 import com.b2international.snowowl.snomed.api.domain.browser.ISnomedBrowserConstant;
@@ -43,7 +42,6 @@ public interface ISnomedBrowserService {
 	 * @return the aggregated content for the requested concept
 	 * @throws CodeSystemNotFoundException if a code system with the given short name is not registered
 	 * @throws CodeSystemVersionNotFoundException if a code system version for the code system with the given identifier is not registered
-	 * @throws TaskNotFoundException if the task identifier does not correspond to a task for the given code system version
 	 * @throws ComponentNotFoundException if the component identifier does not match any concept on the given task
 	 */
 	ISnomedBrowserConcept getConceptDetails(IComponentRef conceptRef, List<Locale> locales);
@@ -56,7 +54,6 @@ public interface ISnomedBrowserService {
 	 * @return the child concept list for the requested concept
 	 * @throws CodeSystemNotFoundException if a code system with the given short name is not registered
 	 * @throws CodeSystemVersionNotFoundException if a code system version for the code system with the given identifier is not registered
-	 * @throws TaskNotFoundException if the task identifier does not correspond to a task for the given code system version
 	 * @throws ComponentNotFoundException if the component identifier does not match any concept on the given task
 	 */
 	List<ISnomedBrowserChildConcept> getConceptChildren(IComponentRef conceptRef, List<Locale> locales);
@@ -72,7 +69,6 @@ public interface ISnomedBrowserService {
 	 * @return the search result list of descriptions
 	 * @throws CodeSystemNotFoundException if a code system with the given short name is not registered
 	 * @throws CodeSystemVersionNotFoundException if a code system version for the code system with the given identifier is not registered
-	 * @throws TaskNotFoundException if the task identifier does not correspond to a task for the given code system version
 	 * @throws IllegalArgumentException if the query is {@code null} or too short
 	 */
 	List<ISnomedBrowserDescriptionResult> getDescriptions(IStorageRef storageRef, String query, List<Locale> locales, int offset, int limit);
@@ -84,7 +80,6 @@ public interface ISnomedBrowserService {
 	 * @param locales the {@link Locale}s to inspect when determining FSN, in decreasing order of preference
 	 * @throws CodeSystemNotFoundException if a code system with the given short name is not registered
 	 * @throws CodeSystemVersionNotFoundException if a code system version for the code system with the given identifier is not registered
-	 * @throws TaskNotFoundException if the task identifier does not correspond to a task for the given code system version
 	 * @return a map with keys as constant identifiers, and values as corresponding concept ID-FSN pairs
 	 */
 	Map<String, ISnomedBrowserConstant> getConstants(IStorageRef storageRef, List<Locale> locales);

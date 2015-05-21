@@ -49,7 +49,7 @@ import com.b2international.snowowl.datastore.IBranchPathMap;
 import com.b2international.snowowl.datastore.TaskBranchPathMap;
 import com.b2international.snowowl.datastore.UserBranchPathMap;
 import com.b2international.snowowl.datastore.cdo.CustomConflictException;
-import com.b2international.snowowl.datastore.cdo.ICDOBranchManager;
+import com.b2international.snowowl.datastore.cdo.ICDOBranchActionManager;
 import com.b2international.snowowl.datastore.cdo.ICDOConnection;
 import com.b2international.snowowl.datastore.cdo.ICDOConnectionManager;
 import com.b2international.snowowl.datastore.cdo.IPostStoreUpdateManager;
@@ -59,7 +59,7 @@ import com.google.common.base.Preconditions;
 /**
  * The TaskManager service is responsible of handling all the branch switching.
  * <p>
- * It wraps a {@link ICDOBranchManager}, which contains the CDO related logic.
+ * It wraps a {@link ICDOBranchActionManager}, which contains the CDO related logic.
  * </p>
  * 
  */
@@ -473,8 +473,8 @@ public class TaskManager {
 	}
 	
 	/*returns with the branch manager service*/
-	private ICDOBranchManager getBranchManager() {
-		return getServiceForClass(ICDOBranchManager.class);
+	private ICDOBranchActionManager getBranchManager() {
+		return getServiceForClass(ICDOBranchActionManager.class);
 	}
 	
 	/*returns with the CDO connection manager service.*/

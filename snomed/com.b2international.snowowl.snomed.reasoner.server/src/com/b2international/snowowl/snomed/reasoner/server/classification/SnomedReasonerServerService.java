@@ -236,13 +236,13 @@ public class SnomedReasonerServerService extends CollectingService<Reasoner, Cla
 
 	@Override
 	protected Reasoner createService(final IBranchPath branchPath, final boolean shared, final ClassificationRequest request) throws Exception {
-		LOGGER.info(MessageFormat.format("Creating reasoner for branch path ''{0}''.", branchPath.getPath()));
+		LOGGER.info(MessageFormat.format("Creating reasoner for branch path ''{0}''.", branchPath));
 		return new Reasoner(request.getReasonerId(), branchPath, shared);
 	}
 
 	@Override
 	protected void retireService(final Reasoner reasoner) throws InterruptedException {
-		LOGGER.info(MessageFormat.format("Retiring reasoner for branch path ''{0}''.", reasoner.getBranchPath().getPath()));
+		LOGGER.info(MessageFormat.format("Retiring reasoner for branch path ''{0}''.", reasoner.getBranchPath()));
 		reasoner.dispose();
 	}
 	

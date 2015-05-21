@@ -16,18 +16,16 @@
 package com.b2international.snowowl.datastore.server;
 
 import java.lang.reflect.InvocationTargetException;
+import java.util.concurrent.ExecutionException;
 
+import com.b2international.commons.collections.Procedure;
 import com.b2international.snowowl.core.ApplicationContext;
+import com.b2international.snowowl.core.MetadataImpl;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.api.SnowowlRuntimeException;
-import com.b2international.snowowl.core.api.index.IIndexEntry;
-import com.b2international.snowowl.core.api.index.IIndexUpdater;
-import com.b2international.snowowl.datastore.BranchPathUtils;
-import com.b2international.snowowl.datastore.cdo.ICDOConnection;
-import com.b2international.snowowl.datastore.cdo.ICDOConnectionManager;
-import com.b2international.snowowl.datastore.cdo.ICDOContainer;
+import com.b2international.snowowl.core.events.util.AsyncSupport;
+import com.b2international.snowowl.datastore.cdo.ICDORepository;
 import com.b2international.snowowl.datastore.exception.RepositoryLockException;
-import com.b2international.snowowl.datastore.index.FakeQueryAdapter;
 import com.b2international.snowowl.datastore.oplock.IOperationLockManager;
 import com.b2international.snowowl.datastore.oplock.IOperationLockTarget;
 import com.b2international.snowowl.datastore.oplock.OperationLockException;
@@ -36,16 +34,19 @@ import com.b2international.snowowl.datastore.oplock.impl.DatastoreLockContext;
 import com.b2international.snowowl.datastore.oplock.impl.DatastoreLockContextDescriptions;
 import com.b2international.snowowl.datastore.oplock.impl.IDatastoreOperationLockManager;
 import com.b2international.snowowl.datastore.oplock.impl.SingleRepositoryAndBranchLockTarget;
-import com.b2international.snowowl.datastore.server.index.IndexServerServiceManager;
+import com.b2international.snowowl.datastore.server.events.BranchReply;
+import com.b2international.snowowl.datastore.server.events.CreateBranchEvent;
 import com.b2international.snowowl.datastore.version.ITagConfiguration;
 import com.b2international.snowowl.datastore.version.ITagService;
+import com.b2international.snowowl.eventbus.IEventBus;
 import com.google.common.base.Preconditions;
+import com.google.common.util.concurrent.SettableFuture;
 
 /**
  * Service for tagging the content of a {@link ICDORepository repository}.
  */
 public class TagService implements ITagService {
-	
+
 	/* (non-Javadoc)
 	 * @see com.b2international.snowowl.datastore.version.ITagService#tag(com.b2international.snowowl.datastore.version.ITagConfiguration)
 	 */
@@ -60,47 +61,44 @@ public class TagService implements ITagService {
 		final String uuid = Preconditions.checkNotNull(tagConfiguration.getRepositoryUuid(), "Repository UUID argument cannot be null.");
 		final String parentContextDescription = Preconditions.checkNotNull(tagConfiguration.getParentContextDescription(), "Parent lock context description cannot be null.");
 		
-		synchronized (BranchPathUtils.createPath(branchPath.getPath())) {
+		final IOperationLockTarget lockTarget = new SingleRepositoryAndBranchLockTarget(uuid, branchPath);
+		final DatastoreLockContext lockContext = new DatastoreLockContext(userId, 
+				DatastoreLockContextDescriptions.REGISTER_NEW_CODE_SYSTEM, 
+				parentContextDescription);
+
+		try {
 			
-			final IOperationLockTarget lockTarget = new SingleRepositoryAndBranchLockTarget(uuid, branchPath);
-			final DatastoreLockContext lockContext = new DatastoreLockContext(userId, 
-					DatastoreLockContextDescriptions.REGISTER_NEW_CODE_SYSTEM, 
-					parentContextDescription);
+			final IDatastoreOperationLockManager lockManager = getLockManager();
+			
+			OperationLockRunner.with(lockManager).run(new Runnable() { @Override public void run() {
 
-			try {
+				final IEventBus eventBus = ApplicationContext.getServiceForClass(IEventBus.class);
+				final CreateBranchEvent event = new CreateBranchEvent(uuid, branchPath.getPath(), versionId, new MetadataImpl());
+				final SettableFuture<BranchReply> result = SettableFuture.create();
 				
-				IDatastoreOperationLockManager lockManager = getLockManager();
+				new AsyncSupport<>(eventBus, BranchReply.class)
+					.send(event)
+					.then(new Procedure<BranchReply>() { @Override protected void doApply(final BranchReply input) { result.set(input); }})
+					.fail(new Procedure<Throwable>() { @Override protected void doApply(final Throwable input) { result.setException(input); }});
 				
-				OperationLockRunner.with(lockManager).run(new Runnable() { @Override public void run() {
-
-					final ICDOConnection connection = getConnectionManager().getByUuid(uuid);
-					final IBranchPath tagBranchPath = BranchPathUtils.createPath(branchPath, versionId);
+				try {
+					result.get();
+				} catch (final InterruptedException e) {
+					throw new SnowowlRuntimeException(e);
+				} catch (final ExecutionException e) {
+					throw new SnowowlRuntimeException(e);
+				}
 					
-					connection.getBranch(branchPath).createBranch(tagBranchPath.lastSegment());
-					
-					final IIndexUpdater<IIndexEntry> indexService = IndexServerServiceManager.INSTANCE.getIndexService(uuid);
-					indexService.snapshotFor(tagBranchPath, true, tagConfiguration.shouldOptimizeIndex());
-					indexService.getHitCount(tagBranchPath, FakeQueryAdapter.INSTANCE);
-						
-				}}, lockContext, IOperationLockManager.IMMEDIATE, lockTarget);
-				
-			} catch (final OperationLockException | InterruptedException e) {
-				throw new RepositoryLockException(e);
-			} catch (final InvocationTargetException e) {
-				throw SnowowlRuntimeException.wrap(e.getCause());
-			}
-		}		
-	}
-
-	private ApplicationContext getApplicationContext() {
-		return ApplicationContext.getInstance();
+			}}, lockContext, IOperationLockManager.IMMEDIATE, lockTarget);
+			
+		} catch (final OperationLockException | InterruptedException e) {
+			throw new RepositoryLockException(e);
+		} catch (final InvocationTargetException e) {
+			throw SnowowlRuntimeException.wrap(e.getCause());
+		}
 	}
 
 	private IDatastoreOperationLockManager getLockManager() {
-		return getApplicationContext().getService(IDatastoreOperationLockManager.class);
-	}
-
-	private ICDOContainer<ICDOConnection> getConnectionManager() {
-		return getApplicationContext().getService(ICDOConnectionManager.class);
+		return ApplicationContext.getServiceForClass(IDatastoreOperationLockManager.class);
 	}
 }

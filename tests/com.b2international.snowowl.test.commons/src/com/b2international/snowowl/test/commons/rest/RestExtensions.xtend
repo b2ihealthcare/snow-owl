@@ -1,20 +1,35 @@
-/*******************************************************************************
+/*
  * Copyright 2011-2015 B2i Healthcare Pte Ltd, http://b2i.sg
- *******************************************************************************/
+ * 
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package com.b2international.snowowl.test.commons.rest
 
+import com.google.common.base.Preconditions
 import com.jayway.restassured.http.ContentType
 import com.jayway.restassured.response.Response
 import com.jayway.restassured.specification.RequestSpecification
-import java.util.Collection
+import java.util.List
 import java.util.Map
 import org.apache.commons.lang.text.StrSubstitutor
+import org.hamcrest.CoreMatchers
 
 import static com.jayway.restassured.RestAssured.*
 
 import static extension com.b2international.snowowl.test.commons.json.JsonExtensions.*
-import com.google.common.base.Preconditions
-import org.hamcrest.CoreMatchers
+import com.google.common.base.Splitter
+import java.io.File
+import com.b2international.commons.platform.PlatformUtil
 
 /**
  * Useful extension methods when testing Snow Owl's RESTful API. High level REST related syntactic sugars and stuff like 
@@ -62,12 +77,12 @@ class RestExtensions {
 		contentType(ContentType.JSON).body(properties.asJson)
 	}
 
-	def static String asPath(Collection<? extends Object> values) {
+	def static String asPath(List<? extends String> values) {
 		"/" + values.join("/")
 	}
 
 	def static String location(Response it) {
-		header(LOCATION)
+		header(LOCATION) ?: ""
 	}
 
 	def static String renderWithFields(String it, Object object) {
@@ -95,6 +110,35 @@ class RestExtensions {
 	def static int getPort() {
 		val jettyPortProp = System.getProperty("jetty.port")
 		return if(jettyPortProp != null) Integer.valueOf(jettyPortProp) else 8080
+	}
+	
+	def static expectStatus(Response it, int expectedStatus) {
+		if (statusCode() != expectedStatus) {
+			System.err.println(body().asString)
+		}
+		then.statusCode(expectedStatus)
+	}
+	
+	def static String lastPathSegment(String path) {
+		Splitter.on("/").split(path).last
+	}
+	
+	def static RequestSpecification withFile(RequestSpecification it, String file, Class<?> cp) {
+		multiPart(new File(PlatformUtil.toAbsolutePath(cp, file)))
+	}
+	
+	// Simple REST operations
+	
+	def static Response get(String api, String...segments) {
+		givenAuthenticatedRequest(api).get(asPath(segments))
+	}
+	
+	def static Response delete(String api, String...segments) {
+		givenAuthenticatedRequest(api).delete(asPath(segments))
+	}
+	
+	def static Response postJson(String api, Map<String, ?> json, String...segments) {
+		givenAuthenticatedRequest(api).withJson(json).post(asPath(segments))
 	}
 
 }

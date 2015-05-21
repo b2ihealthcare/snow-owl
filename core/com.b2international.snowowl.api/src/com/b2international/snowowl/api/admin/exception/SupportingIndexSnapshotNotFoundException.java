@@ -15,7 +15,7 @@
  */
 package com.b2international.snowowl.api.admin.exception;
 
-import com.b2international.snowowl.api.exception.NotFoundException;
+import com.b2international.snowowl.core.exceptions.NotFoundException;
 
 /**
  * Thrown when an index snapshot for a supporting index can not be found for a given snapshot identifier.

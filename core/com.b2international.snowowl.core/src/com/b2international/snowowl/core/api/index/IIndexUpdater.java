@@ -70,19 +70,6 @@ public interface IIndexUpdater<E extends IIndexEntry> extends IIndexService<E> {
 	void deleteAll(final IBranchPath branchPath);
 	
 	/**
-	 * Creates a snapshot of the index holding information about the specified branch path's <b>parent</b>, used for starting
-	 * a new branch based on existing index data.
-	 * 
-	 * @param targetBranchPath the branch path to take a snapshot for (may not be {@code null})
-	 * @param tag flag indicating whether the snapshot is a tag operation of not. {@code true} if yes. If snapshot is a tag,
-	 * then clients can make sure, that index directory will not be cleaned up if any modification has been made in it since the 
-	 * tag happened. 
-	 * @param shouldOptimizeIndex {@code true} if the index should be optimized otherwise {@code false}. If {@code tag} is {@code false} this argument will be 
-	 * ignored.
-	 */
-	void snapshotFor(final IBranchPath targetBranchPath, final boolean tag, final boolean shouldOptimizeIndex);
-
-	/**
 	 * Signals the index updater that the indexes for the specified branch path should be closed and removed from the disk.
 	 * 
 	 * @param branchPath
@@ -90,22 +77,19 @@ public interface IIndexUpdater<E extends IIndexEntry> extends IIndexService<E> {
 	void inactiveClose(final IBranchPath branchPath);
 
 	/**
-	 * Updates the snapshot for a given branch index index.  
-	 * @param branchPath the branch path.
-	 * @param timestamp the timestamp representing the last modification time.
+	 * Creates an empty commit with custom metadata set for a given branch index.
+	 * 
+	 * @param branchPath the branch path
+	 * @param cdoBranchPath a sequence of CDO branch identifiers, starting with 0 (MAIN)
+	 * @param baseTimestamp
 	 */
-	void updateSnapshotFor(final IBranchPath branchPath, final long timestamp);
+	void reopen(final IBranchPath branchPath, final int[] cdoBranchPath, final long baseTimestamp);
 
 	/**
 	 * Returns with the UUID of the repository which is associated with the current index service. 
 	 * @return the repository UUID.
 	 */
 	String getRepositoryUuid();
-	
-	/**
-	 * Purges the underlying index directory content if unused. Should be called after instantiating index updater.
-	 */
-	void purge();
 	
 	/**
 	 * Collects a list of absolute file paths that contain index data for the specified branch path. Note that the list

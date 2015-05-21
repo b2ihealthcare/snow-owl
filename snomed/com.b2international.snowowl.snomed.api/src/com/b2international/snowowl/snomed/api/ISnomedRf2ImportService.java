@@ -20,8 +20,7 @@ import java.util.UUID;
 
 import com.b2international.snowowl.api.codesystem.exception.CodeSystemNotFoundException;
 import com.b2international.snowowl.api.codesystem.exception.CodeSystemVersionNotFoundException;
-import com.b2international.snowowl.api.exception.BadRequestException;
-import com.b2international.snowowl.api.task.exception.TaskNotFoundException;
+import com.b2international.snowowl.core.exceptions.BadRequestException;
 import com.b2international.snowowl.snomed.api.domain.ISnomedImportConfiguration;
 import com.b2international.snowowl.snomed.api.domain.exception.SnomedImportConfigurationNotFoundException;
 import com.b2international.snowowl.snomed.api.domain.exception.SnomedImportException;
@@ -73,8 +72,6 @@ public interface ISnomedRf2ImportService {
 	 * @throws CodeSystemNotFoundException        if SNOMED CT as a code system is not registered
 	 * @throws CodeSystemVersionNotFoundException if a code system version for SNOMED CT with the given identifier
 	 *                                            is not registered
-	 * @throws TaskNotFoundException              if the task identifier does not correspond to a task for the given 
-	 *                                            code system version
 	 * @throws BadRequestException                if required properties on the configuration object are not populated                                             
 	 */
 	UUID create(ISnomedImportConfiguration configuration);

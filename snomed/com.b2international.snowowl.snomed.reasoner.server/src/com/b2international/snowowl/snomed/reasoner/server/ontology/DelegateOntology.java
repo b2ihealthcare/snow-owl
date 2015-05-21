@@ -1230,7 +1230,7 @@ public class DelegateOntology extends OWLObjectImpl implements OWLMutableOntolog
 	}
 
 	@Override public String toString() {
-		return "DelegateOntology[branchPath=" + branchPath.getPath() + "]";
+		return "DelegateOntology[branchPath=" + branchPath + "]";
 	}
 
 	public void dispose() {

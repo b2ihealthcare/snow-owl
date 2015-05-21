@@ -269,7 +269,7 @@ public abstract class SnomedCompositeExporter implements SnomedIndexExporter {
 					}
 				}
 				
-				checkState(closestBranchPathIndex > -1, "Cannot find closest version or MAIN for branch path '" + currentBranchPath.getPath() + "'.");
+				checkState(closestBranchPathIndex > -1, "Cannot find closest version or MAIN for branch path '" + currentBranchPath + "'.");
 				
 				//now add the BASE of all previous versions (exclude the one that is the closest with current branch)
 				for (int i = closestBranchPathIndex + 1; i < allVersionsBranchPaths.size(); i++) {

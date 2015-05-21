@@ -17,60 +17,76 @@ package com.b2international.snowowl.datastore.server.cdo;
 
 import java.util.Map;
 
-import javax.annotation.Nullable;
-
-import org.eclipse.emf.cdo.CDOObject;
-import org.eclipse.emf.cdo.common.commit.CDOChangeSetData;
 import org.eclipse.emf.cdo.common.id.CDOID;
-import org.eclipse.emf.cdo.common.revision.CDOIDAndVersion;
-import org.eclipse.emf.cdo.common.revision.CDORevisionKey;
-import org.eclipse.emf.cdo.spi.common.revision.InternalCDORevision;
-import org.eclipse.emf.cdo.view.CDOView;
-
-import com.b2international.snowowl.datastore.cdo.ConflictWrapper;
+import org.eclipse.emf.cdo.common.revision.CDORevision;
+import org.eclipse.emf.cdo.common.revision.delta.CDORevisionDelta;
+import org.eclipse.emf.cdo.transaction.CDOTransaction;
+import org.eclipse.emf.spi.cdo.DefaultCDOMerger.Conflict;
 
 /**
- * Conflict processor representation for CDO.
- * @see NullCDOConflictProcessor
+ * Handles conflicting changes when synchronizing branches.
  */
 public interface ICDOConflictProcessor {
 
-	/**Unique ID of the CDO conflict processor extension point.*/
-	String CONFLICT_PROCESSOR_EXTENSION_ID = "com.b2international.snowowl.datastore.server.conflictProcessor";
-	
 	/**
-	 * Checks if a new CDO object on the synchronization source branch conflicts with any changes that happened on the
-	 * target branch (according to the given change set).
-	 * <p>
-	 * <b>Note:</b> the "synchronization source" role can be filled by either the task parent and the task branch, it is not always the task branch.
-	 * 
-	 * @param targetChangeSet the change set of the target branch.
-	 * @param newInSource the CDO ID and version of an object which is new on the source branch. Could be full {@link InternalCDORevision revision}.
-	 * @param sourceView a view opened on the source branch for resolving any CDO IDs. The caller is responsible for disposing the view.
-	 * @return the {@link ConflictWrapper} describing the conflict, or {@code null} if this new object is not part of a conflicting change.
+	 * The extension identifier of CDO conflict processors.
 	 */
-	@Nullable ConflictWrapper checkConflictForNewObjects(final CDOChangeSetData targetChangeSet, final CDOIDAndVersion newInSource, final CDOView sourceView);
-	
-	/**
-	 * Checks for application specific conflicts for objects which has been deleted on the source branch. 
-	 * @param changedComponentsMapping a mapping of changed components from the target. Keys are CDO IDs and values are {@link CDOIDAndVersion}. Could be full revisions.
-	 * @param detachedOnSource the CDO ID and version representing a deleted objects. (Never a full CDO revision)
-	 * @param sourceView the view for the source.
-	 * @param targetView view associated with the target branch.
-	 * @return a wrapper representing an application specific conflict, or {@code null} if no conflicts were found for the deleted component. 
-	 */
-	@Nullable ConflictWrapper checkConflictForDetachedObjects(final Map<CDOID, CDORevisionKey> changedComponentsMapping, final CDOIDAndVersion detachedOnSource, final CDOView sourceView, final CDOView targetView);
-	
-	/**
-	 * Detaches the specified object.
-	 * @param objectToRemove the object to remove.
-	 */
-	void detachConflictingObject(final CDOObject objectToRemove);
-	
-	
+	String EXTENSION_ID = "com.b2international.snowowl.datastore.server.conflictProcessor";
+
 	/***
-	 * Returns with the repository UUID where the current processor works on.
-	 * @return the repository UUID.
+	 * Returns the conflict processor's associated repository identifier.
+	 * 
+	 * @return the identifier of the repository this conflict processor operates on
 	 */
 	String getRepositoryUuid();
+
+	/**
+	 * Checks if the specified {@link CDORevision} from the source change set conflicts with any changes on the target.
+	 * 
+	 * @param sourceRevision the new {@link CDORevision} from the source change set
+	 * @param targetMap the computed change set for the target branch, indexed by {@link CDOID}
+	 * @return <ul>
+	 * <li>{@code null} if the add should be ignored;
+	 * <li>a {@link CDORevision} if an addition should take place;
+	 * <li>a {@link CDOID} if an object should be removed;
+	 * <li>a {@link Conflict} if a merge conflict should be reported.
+	 * </ul>
+	 */
+	Object addedInSource(CDORevision sourceRevision, Map<CDOID, Object> targetMap);
+
+	/**
+	 * Checks if the object with the removed {@link CDOID} from the target change set conflicts with an item in the
+	 * source change set.
+	 * 
+	 * @param targetDelta the computed change on the target branch for the object removed on the source branch
+	 * @return <ul>
+	 * <li>{@code null} if the add should be ignored;
+	 * <li>a {@link CDORevision} if an addition should take place;
+	 * <li>a {@link CDOID} if an object should be removed;
+	 * <li>a {@link Conflict} if a merge conflict should be reported.
+	 * </ul>
+	 */
+	Object changedInTargetAndDetachedInSource(CDORevisionDelta targetDelta);
+
+	/**
+	 * Checks if the specified {@link CDORevision} from the source change set conflicts with any changes on the target.
+	 * 
+	 * @param targetRevision the new {@link CDORevision} from the target change set
+	 * @param sourceMap the computed change set for the target branch, indexed by {@link CDOID}
+	 * @return <ul>
+	 * <li>{@code null} if the add should be ignored;
+	 * <li>a {@link CDORevision} if an addition should take place;
+	 * <li>a {@link CDOID} if an object should be removed;
+	 * <li>a {@link Conflict} if a merge conflict should be reported.
+	 * </ul>
+	 */
+	Object addedInTarget(CDORevision targetRevision, Map<CDOID, Object> sourceMap);
+
+	/**
+	 * Removes cross-references from objects queued for removal before detaching them from the persistent object graph,
+	 * using the specified transaction.
+	 * 
+	 * @param transaction the CDO transaction to use for unlinking (may not be {@code null})
+	 */
+	void unlinkObjects(CDOTransaction transaction);
 }
