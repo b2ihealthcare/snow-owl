@@ -27,9 +27,7 @@ import static extension com.b2international.snowowl.test.commons.rest.RestExtens
 Feature: SnomedImportApiExamples
 	
 	Background:
-		static String UK_LANG_REFSET = "900000000000508004"
 		static String API = "/snomed-ct/v2"
-		static String MEDIA_TYPE = ""
 		var req = givenAuthenticatedRequest(API)
 		var Response res
 		var public String importId
