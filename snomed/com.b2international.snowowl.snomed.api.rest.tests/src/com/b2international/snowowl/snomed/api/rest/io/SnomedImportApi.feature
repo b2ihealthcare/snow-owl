@@ -19,6 +19,7 @@ import com.jayway.restassured.response.Response
 import com.b2international.snowowl.snomed.api.rest.components.*
 
 import static extension com.b2international.snowowl.test.commons.rest.RestExtensions.*
+import com.b2international.snowowl.snomed.SnomedConstants.Concepts
 
 /**
  * @since 2.0
@@ -26,9 +27,7 @@ import static extension com.b2international.snowowl.test.commons.rest.RestExtens
 Feature: SnomedImportApi
 
 	Background:
-		static String UK_LANG_REFSET = "900000000000508004"
 		static String API = "/snomed-ct/v2"
-		static String MEDIA_TYPE = ""
 		var req = givenAuthenticatedRequest(API)
 		var Response res
 		var public String importId
@@ -48,7 +47,7 @@ Feature: SnomedImportApi
 				"type" -> args.first,
   				"branchPath" -> args.second.renderWithFields(this),
   				// TODO remove unnecessary definition of langRefSetId when import supports it
-  				"languageRefSetId" -> UK_LANG_REFSET,
+  				"languageRefSetId" -> Concepts.REFSET_LANGUAGE_TYPE_UK,
   				"createVersions" -> args.third.toBool
 			})
 		When sending POST to "/imports"
@@ -67,7 +66,7 @@ Feature: SnomedImportApi
 					"type" -> args.first,
 	  				"branchPath" -> args.second.renderWithFields(this),
 	  				// TODO remove unnecessary definition of langRefSetId when import supports it
-	  				"languageRefSetId" -> UK_LANG_REFSET
+	  				"languageRefSetId" -> Concepts.REFSET_LANGUAGE_TYPE_UK
 					
 				}, "imports")
 			res.expectStatus(201)
