@@ -101,7 +101,7 @@ class RestExtensions {
 	}
 
 	def static String asPath(List<? extends String> values) {
-		"/" + values.join("/")
+		("/" + values.join("/")).replaceAll("//", "/")
 	}
 
 	def static String location(Response it) {
@@ -137,7 +137,10 @@ class RestExtensions {
 	
 	def static expectStatus(Response it, int expectedStatus) {
 		if (statusCode() != expectedStatus) {
-			System.err.println(body().asString)
+			System.err.println("Web server may reject your request, check access log")
+			System.err.println("Headers: " + headers())
+			System.err.println("Content-Type: " + getContentType)
+			System.err.println("Body: " + body().asString)
 		}
 		then.statusCode(expectedStatus)
 	}
