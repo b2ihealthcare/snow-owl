@@ -15,23 +15,23 @@
  */
 package com.b2international.snowowl.test.commons.rest
 
+import com.b2international.commons.platform.PlatformUtil
 import com.google.common.base.Preconditions
+import com.google.common.base.Splitter
+import com.jayway.restassured.RestAssured
 import com.jayway.restassured.http.ContentType
 import com.jayway.restassured.response.Response
 import com.jayway.restassured.specification.RequestSpecification
+import java.io.File
 import java.util.List
 import java.util.Map
+import java.util.concurrent.atomic.AtomicBoolean
 import org.apache.commons.lang.text.StrSubstitutor
 import org.hamcrest.CoreMatchers
 
 import static com.jayway.restassured.RestAssured.*
 
 import static extension com.b2international.snowowl.test.commons.json.JsonExtensions.*
-import com.google.common.base.Splitter
-import java.io.File
-import com.b2international.commons.platform.PlatformUtil
-import java.util.concurrent.atomic.AtomicBoolean
-import com.jayway.restassured.RestAssured
 
 /**
  * Useful extension methods when testing Snow Owl's RESTful API. High level REST related syntactic sugars and stuff like 
@@ -55,9 +55,22 @@ class RestExtensions {
 	public static final String LOCATION = "Location"
 
 	// Auth
-	public static final String USER = "snowowl"
-	public static final String PASS = "snowowl"
+	public static final String DEFAULT_USER = "snowowl"
+	public static final String DEFAULT_PASS = "snowowl"
+	
 	public static final String WRONG_PASS = "wrong"
+	
+	static final String USER = if (!System.getProperty("test.user").nullOrEmpty) {
+		System.getProperty("test.user")
+	} else {
+		DEFAULT_USER
+	}
+		
+	static final String PASS = if (!System.getProperty("test.password").nullOrEmpty) {
+		System.getProperty("test.password")
+	} else {
+		DEFAULT_PASS
+	}
 
 	def static RequestSpecification givenUnauthenticatedRequest(String api) {
 		if (BASE_URI_CHANGED.compareAndSet(false, true)) {
@@ -74,7 +87,7 @@ class RestExtensions {
 	def static RequestSpecification givenAuthenticatedRequest(String api) {
 		givenRequestWithPassword(api, PASS)
 	}
-
+	
 	def static RequestSpecification givenInvalidPasswordRequest(String api) {
 		givenRequestWithPassword(api, WRONG_PASS)
 	}
