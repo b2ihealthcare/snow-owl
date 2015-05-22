@@ -27,6 +27,7 @@
 			<param-value>/WEB-INF/servlet-context.xml</param-value>
 		</init-param>
     	<load-on-startup>1</load-on-startup>
+    	<async-supported>true</async-supported>
 		<multipart-config>
 	        <location>/tmp</location>
 	        <max-file-size>734003200</max-file-size>
@@ -39,6 +40,7 @@
 		<!-- Note that this name is magic: it will be used to look up a filter bean in the Spring application context. -->
 		<filter-name>springSecurityFilterChain</filter-name>
 		<filter-class>org.springframework.web.filter.DelegatingFilterProxy</filter-class>
+		<async-supported>true</async-supported>
 	</filter>
 
 	<servlet-mapping>
