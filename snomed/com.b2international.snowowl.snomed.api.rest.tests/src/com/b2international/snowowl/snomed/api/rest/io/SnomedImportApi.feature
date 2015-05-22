@@ -31,15 +31,7 @@ Feature: SnomedImportApi
 		var req = givenAuthenticatedRequest(API)
 		var Response res
 		var public String importId
-	
-	Scenario: Cannot create versions on branch import
-		
-		Given branch "delta-branch" under "MAIN"
-		And SNOMED CT "DELTA" import configuration request on branch "MAIN/delta-branch" with createVersions "true"
-		When sending POST to "/imports"
-		Then return "400" status
-		And return body with status "400"
-	
+
 	Scenario: Configure SNOMED CT Import
 		
 		Given SNOMED CT "DELTA" import configuration request on branch "MAIN"  with createVersions "false"
@@ -76,4 +68,11 @@ Feature: SnomedImportApi
 		Then return "204" status
 		And configuration should not be accessible anymore
 			API.get("imports", importId).expectStatus(404)
-			
+
+	Scenario: Cannot create versions on branch import
+		
+		Given branch "delta-branch" under "MAIN"
+		And SNOMED CT "DELTA" import configuration request on branch "MAIN/delta-branch" with createVersions "true"
+		When sending POST to "/imports"
+		Then return "400" status
+		And return body with status "400"
