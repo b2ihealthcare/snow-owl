@@ -30,6 +30,8 @@ import static extension com.b2international.snowowl.test.commons.json.JsonExtens
 import com.google.common.base.Splitter
 import java.io.File
 import com.b2international.commons.platform.PlatformUtil
+import java.util.concurrent.atomic.AtomicBoolean
+import com.jayway.restassured.RestAssured
 
 /**
  * Useful extension methods when testing Snow Owl's RESTful API. High level REST related syntactic sugars and stuff like 
@@ -40,6 +42,7 @@ import com.b2international.commons.platform.PlatformUtil
 class RestExtensions {
 
 	// HTTP and REST API
+	static AtomicBoolean BASE_URI_CHANGED = new AtomicBoolean(false) 
 	public static final String CONTEXT = "snowowl"
 
 	public static final int OK = 200
@@ -57,8 +60,15 @@ class RestExtensions {
 	public static final String WRONG_PASS = "wrong"
 
 	def static RequestSpecification givenUnauthenticatedRequest(String api) {
+		if (BASE_URI_CHANGED.compareAndSet(false, true)) {
+			// change Base URI if defined as sysarg
+			val serverLocation = System.getProperty("test.server.location")
+			if (!serverLocation.nullOrEmpty) {
+				RestAssured.baseURI = serverLocation
+			}
+		}
 		Preconditions.checkArgument(api.startsWith("/"), "Api param should start with a forward slash: '/'")
-		given().port(getPort()).basePath(CONTEXT + api)
+		return given().port(getPort()).basePath(CONTEXT + api)
 	}
 
 	def static RequestSpecification givenAuthenticatedRequest(String api) {
