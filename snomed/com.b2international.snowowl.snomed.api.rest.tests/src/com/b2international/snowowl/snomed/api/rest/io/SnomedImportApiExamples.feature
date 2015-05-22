@@ -17,7 +17,6 @@ package com.b2international.snowowl.snomed.api.rest.io
 
 import com.jayway.restassured.response.Response
 import com.b2international.snowowl.snomed.api.rest.components.*
-import com.b2international.snowowl.snomed.api.rest.io.*
 
 import static extension com.b2international.snowowl.test.commons.rest.RestExtensions.*
 
