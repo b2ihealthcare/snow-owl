@@ -16,6 +16,7 @@
 package com.b2international.snowowl.snomed.api.rest.io
 
 import com.jayway.restassured.response.Response
+import com.b2international.snowowl.snomed.SnomedConstants.Concepts
 import com.b2international.snowowl.snomed.api.rest.components.*
 
 import static extension com.b2international.snowowl.test.commons.rest.RestExtensions.*
@@ -35,14 +36,6 @@ Feature: SnomedImportApiExamples
 	Scenario: Import new concept via RF2 Delta archive
 		
 		Given branch "import-branch" under "MAIN"
-			res = API.get("branches", args.second, args.first)
-			if (res.getStatusCode == 404) {
-				API.postJson(#{
-					"parent" -> args.second,
-					"name" -> args.first
-				}, "branches").expectStatus(201)
-			}
-			branchPath = args.second + "/" + args.first  
 		And SNOMED CT "DELTA" import configuration on branch "${branchPath}"
 		And concept "63961392103" is not available on "${branchPath}"
 			API.get(args.second.renderWithFields(this), "concepts", args.first).expectStatus(404)

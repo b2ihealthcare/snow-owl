@@ -72,6 +72,14 @@ Feature: SnomedImportApi
 	Scenario: Cannot create versions on branch import
 		
 		Given branch "delta-branch" under "MAIN"
+			res = API.get("branches", args.second, args.first)
+			if (res.getStatusCode == 404) {
+				API.postJson(#{
+					"parent" -> args.second,
+					"name" -> args.first
+				}, "branches").expectStatus(201)
+			}
+			branchPath = args.second + "/" + args.first
 		And SNOMED CT "DELTA" import configuration request on branch "MAIN/delta-branch" with createVersions "true"
 		When sending POST to "/imports"
 		Then return "400" status
