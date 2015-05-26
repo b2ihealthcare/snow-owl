@@ -15,6 +15,8 @@
  */
 package com.b2international.snowowl.snomed.api.rest.domain;
 
+import org.hibernate.validator.constraints.NotEmpty;
+
 import com.b2international.snowowl.core.events.Event;
 import com.b2international.snowowl.datastore.server.events.MergeEvent;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -29,10 +31,12 @@ public class MergeRequest {
 
 	@ApiModelProperty(required = true)
 	@JsonProperty
+	@NotEmpty
 	private String source;
 	
 	@ApiModelProperty(required = true)
 	@JsonProperty
+	@NotEmpty
 	private String target;
 	
 	@ApiModelProperty(required = false)

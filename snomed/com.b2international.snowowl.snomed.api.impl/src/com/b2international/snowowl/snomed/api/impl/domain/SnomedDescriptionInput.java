@@ -17,6 +17,10 @@ package com.b2international.snowowl.snomed.api.impl.domain;
 
 import java.util.Map;
 
+import javax.validation.constraints.NotNull;
+
+import org.hibernate.validator.constraints.NotEmpty;
+
 import com.b2international.snowowl.snomed.api.domain.Acceptability;
 import com.b2international.snowowl.snomed.api.domain.CaseSignificance;
 import com.b2international.snowowl.snomed.api.domain.ISnomedDescriptionInput;
@@ -26,10 +30,20 @@ import com.b2international.snowowl.snomed.api.domain.ISnomedDescriptionInput;
 public class SnomedDescriptionInput extends AbstractSnomedComponentInput implements ISnomedDescriptionInput {
 
 	private String conceptId;
+	
+	@NotEmpty
 	private String typeId;
+	
+	@NotEmpty
 	private String term;
+	
+	@NotEmpty
 	private String languageCode;
+	
+	@NotNull
 	private CaseSignificance caseSignificance = CaseSignificance.INITIAL_CHARACTER_CASE_INSENSITIVE;
+	
+	@NotEmpty
 	private Map<String, Acceptability> acceptability;
 
 	@Override

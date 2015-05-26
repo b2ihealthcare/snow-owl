@@ -45,6 +45,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.b2international.snowowl.api.codesystem.ICodeSystemVersionService;
 import com.b2international.snowowl.api.impl.domain.StorageRef;
+import com.b2international.snowowl.core.exceptions.ApiValidation;
 import com.b2international.snowowl.core.exceptions.BadRequestException;
 import com.b2international.snowowl.snomed.api.ISnomedExportService;
 import com.b2international.snowowl.snomed.api.domain.Rf2ReleaseType;
@@ -93,18 +94,12 @@ public class SnomedExportRestService extends AbstractSnomedRestService {
 			@RequestBody
 			final SnomedExportRestConfiguration configuration) throws IOException {
 
-		if (configuration.getType() == null) {
-			throw new BadRequestException("RF2 release type was missing from the export configuration.");
-		}
-
+		ApiValidation.checkInput(configuration);
+		
 		if (!Rf2ReleaseType.DELTA.equals(configuration.getType())) {
 			if (configuration.getDeltaStartEffectiveTime() != null || configuration.getDeltaEndEffectiveTime() != null) {
 				throw new BadRequestException("Export date ranges can only be set if the export mode is set to DELTA.");
 			}
-		}
-		
-		if (Strings.isNullOrEmpty(configuration.getNamespaceId())) {
-			throw new BadRequestException("Namespace ID was missing from the export configuration.");
 		}
 		
 		final String transientEffectiveTime = configuration.getTransientEffectiveTime();

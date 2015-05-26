@@ -15,6 +15,10 @@
  */
 package com.b2international.snowowl.snomed.api.rest.domain;
 
+import static com.google.common.base.Preconditions.checkNotNull;
+
+import org.hibernate.validator.constraints.NotEmpty;
+
 import com.b2international.snowowl.core.MetadataHolderImpl;
 import com.b2international.snowowl.datastore.server.branch.Branch;
 import com.b2international.snowowl.datastore.server.events.CreateBranchEvent;
@@ -26,15 +30,17 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 public abstract class CreateBranchRequest extends MetadataHolderImpl {
 
 	@JsonProperty
+	@NotEmpty
 	private String parent = "MAIN";
 	
 	@JsonProperty
+	@NotEmpty
 	private String name;
 
 	private String repository;
 	
 	public CreateBranchRequest(String repository) {
-		this.repository = repository;
+		this.repository = checkNotNull(repository, "repository");
 	}
 	
 	public CreateBranchEvent toEvent() {

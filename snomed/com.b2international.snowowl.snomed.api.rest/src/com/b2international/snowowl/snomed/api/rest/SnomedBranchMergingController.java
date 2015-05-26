@@ -27,6 +27,7 @@ import org.springframework.web.context.request.async.DeferredResult;
 
 import com.b2international.commons.collections.Procedure;
 import com.b2international.snowowl.core.events.util.AsyncSupport;
+import com.b2international.snowowl.core.exceptions.ApiValidation;
 import com.b2international.snowowl.datastore.server.events.BranchReply;
 import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.snomed.api.rest.domain.MergeRequest;
@@ -47,6 +48,7 @@ public class SnomedBranchMergingController {
 	@RequestMapping(method = RequestMethod.POST)
 	@ResponseStatus(HttpStatus.NO_CONTENT)
 	public DeferredResult<ResponseEntity<Void>> merge(@RequestBody MergeRequest request) {
+		ApiValidation.checkInput(request);
 		final ResponseEntity<Void> response = Responses.noContent().build();
 		final DeferredResult<ResponseEntity<Void>> result = new DeferredResult<>();
 		new AsyncSupport<BranchReply>(bus, BranchReply.class)

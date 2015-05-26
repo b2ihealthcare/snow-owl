@@ -15,10 +15,14 @@
  */
 package com.b2international.snowowl.snomed.api.rest.domain;
 
+import org.hibernate.validator.constraints.NotEmpty;
+
 /**
+ * @since 4.0
  */
 public class ClassificationRestInput {
 
+	@NotEmpty
 	private String reasonerId;
 
 	public String getReasonerId() {

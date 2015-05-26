@@ -18,6 +18,10 @@ package com.b2international.snowowl.snomed.api.rest.domain;
 import java.util.Collection;
 import java.util.Date;
 
+import javax.validation.constraints.NotNull;
+
+import org.hibernate.validator.constraints.NotEmpty;
+
 import com.b2international.snowowl.snomed.api.domain.Rf2ReleaseType;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonFormat.Shape;
@@ -27,12 +31,18 @@ import com.fasterxml.jackson.annotation.JsonFormat.Shape;
  */
 public class SnomedExportRestConfiguration {
 
+	@NotNull(message = "RF2 release type was missing from the export configuration.")
 	private Rf2ReleaseType type;
+	
+	@NotEmpty
 	private String branchPath;
+	
+	@NotEmpty
+	private String namespaceId = "INT";
+	
 	private Collection<String> moduleIds;
 	private Date deltaStartEffectiveTime;
 	private Date deltaEndEffectiveTime;
-	private String namespaceId = "INT";
 	private String transientEffectiveTime;
 
 	/**

@@ -19,6 +19,10 @@ import static com.google.common.base.Preconditions.checkNotNull;
 
 import java.util.Date;
 
+import javax.validation.constraints.NotNull;
+
+import org.hibernate.validator.constraints.NotEmpty;
+
 import com.b2international.snowowl.snomed.api.domain.ISnomedImportConfiguration;
 import com.b2international.snowowl.snomed.api.domain.Rf2ReleaseType;
 
@@ -27,9 +31,15 @@ import com.b2international.snowowl.snomed.api.domain.Rf2ReleaseType;
  */
 public class SnomedImportConfiguration implements ISnomedImportConfiguration {
 
+	@NotNull
 	private final Rf2ReleaseType rf2ReleaseType;
+	
+	@NotEmpty
 	private final String branchPath;
+	
+	@NotEmpty
 	private final String languageRefSetId;
+	
 	private final boolean createVersion;
 	private ImportStatus importStatus = ImportStatus.WAITING_FOR_FILE;
 	private Date startDate;

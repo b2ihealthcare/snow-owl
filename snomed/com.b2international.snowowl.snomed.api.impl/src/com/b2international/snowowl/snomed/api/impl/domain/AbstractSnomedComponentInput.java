@@ -15,14 +15,18 @@
  */
 package com.b2international.snowowl.snomed.api.impl.domain;
 
+import javax.validation.constraints.NotNull;
+
 import com.b2international.snowowl.api.impl.domain.AbstractComponentInput;
 import com.b2international.snowowl.snomed.api.domain.ISnomedComponentInput;
 import com.b2international.snowowl.snomed.api.domain.IdGenerationStrategy;
 
 /**
+ * @since 4.0
  */
 public abstract class AbstractSnomedComponentInput extends AbstractComponentInput implements ISnomedComponentInput {
 
+	@NotNull
 	private IdGenerationStrategy idGenerationStrategy;
 	private String moduleId;
 

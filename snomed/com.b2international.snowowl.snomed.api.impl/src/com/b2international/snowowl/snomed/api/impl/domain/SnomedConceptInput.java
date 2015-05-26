@@ -18,6 +18,11 @@ package com.b2international.snowowl.snomed.api.impl.domain;
 import java.util.Collections;
 import java.util.List;
 
+import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Size;
+
+import org.hibernate.validator.constraints.NotEmpty;
+
 import com.b2international.snowowl.snomed.api.domain.ISnomedConceptInput;
 import com.b2international.snowowl.snomed.api.domain.ISnomedDescriptionInput;
 import com.b2international.snowowl.snomed.api.domain.IdGenerationStrategy;
@@ -27,8 +32,13 @@ import com.google.common.collect.ImmutableList;
  */
 public class SnomedConceptInput extends AbstractSnomedComponentInput implements ISnomedConceptInput {
 
+	@Size(min = 2)
 	private List<ISnomedDescriptionInput> descriptions = Collections.emptyList();
+	
+	@NotEmpty
 	private String parentId;
+	
+	@NotNull
 	private IdGenerationStrategy isAIdGenerationStrategy;
 
 	@Override

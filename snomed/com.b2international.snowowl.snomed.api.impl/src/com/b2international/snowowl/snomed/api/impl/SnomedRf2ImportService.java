@@ -34,6 +34,7 @@ import org.slf4j.LoggerFactory;
 
 import com.b2international.snowowl.api.impl.domain.StorageRef;
 import com.b2international.snowowl.core.api.IBranchPath;
+import com.b2international.snowowl.core.exceptions.ApiValidation;
 import com.b2international.snowowl.core.exceptions.BadRequestException;
 import com.b2international.snowowl.datastore.BranchPathUtils;
 import com.b2international.snowowl.datastore.ContentAvailabilityInfoManager;
@@ -49,7 +50,6 @@ import com.b2international.snowowl.snomed.importer.net4j.SnomedImportResult;
 import com.b2international.snowowl.snomed.importer.net4j.SnomedValidationDefect;
 import com.b2international.snowowl.snomed.importer.rf2.util.ImportUtil;
 import com.google.common.base.Predicate;
-import com.google.common.base.Strings;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Maps;
 
@@ -177,6 +177,7 @@ public class SnomedRf2ImportService implements ISnomedRf2ImportService {
 	@Override
 	public UUID create(final ISnomedImportConfiguration configuration) {
 		checkNotNull(configuration, "SNOMED CT import configuration should be specified.");
+		ApiValidation.checkInput(configuration);
 		
 		final StorageRef importStorageRef = new StorageRef();
 		
@@ -185,10 +186,6 @@ public class SnomedRf2ImportService implements ISnomedRf2ImportService {
 		
 		// Check version and branch existence
 		importStorageRef.checkStorageExists();
-		
-		if (Strings.isNullOrEmpty(configuration.getLanguageRefSetId())) {
-			throw new BadRequestException("Language reference set identifier should be specified.");
-		}
 		
 		if (!Branch.MAIN_PATH.equals(configuration.getBranchPath()) && configuration.shouldCreateVersion()) {
 			throw new BadRequestException("Import time versioning supported on MAIN branch only");

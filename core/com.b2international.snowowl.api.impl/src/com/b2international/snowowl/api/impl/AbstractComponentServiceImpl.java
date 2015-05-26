@@ -32,6 +32,7 @@ import com.b2international.snowowl.api.exception.LockedException;
 import com.b2international.snowowl.api.impl.domain.ComponentRef;
 import com.b2international.snowowl.core.api.SnowowlRuntimeException;
 import com.b2international.snowowl.core.exceptions.AlreadyExistsException;
+import com.b2international.snowowl.core.exceptions.ApiValidation;
 import com.b2international.snowowl.core.exceptions.ComponentNotFoundException;
 import com.b2international.snowowl.core.exceptions.ConflictException;
 import com.b2international.snowowl.core.terminology.ComponentCategory;
@@ -63,12 +64,13 @@ public abstract class AbstractComponentServiceImpl<C extends IComponentInput, R 
 	public R create(final C input, final String userId, final String commitComment) {
 		checkNotNull(input, "Component input may not be null.");
 		checkNotNull(userId, "User identifier may not be null.");
-		checkArgument(!Strings.isNullOrEmpty(commitComment), "Commit comment may not be null.");
-
+		checkArgument(!Strings.isNullOrEmpty(commitComment), "Commit comment may not be null or empty.");
+		ApiValidation.checkInput(input);
+		
 		if (componentExists(input)) {
 			throw createDuplicateComponentException(input);
 		}
-	
+
 		try (E editingContext = createEditingContext(input)) {
 
 			final M component = convertAndRegister(input, editingContext);
@@ -97,7 +99,8 @@ public abstract class AbstractComponentServiceImpl<C extends IComponentInput, R 
 	@Override
 	public R update(final IComponentRef ref, final U update, final String userId, final String commitComment) {
 		checkComponentExists(ref);
-
+		ApiValidation.checkInput(update);
+		
 		try (E editingContext = createEditingContext(ref)) {
 			doUpdate(ref, update, editingContext);
 			doCommit(userId, commitComment, editingContext);

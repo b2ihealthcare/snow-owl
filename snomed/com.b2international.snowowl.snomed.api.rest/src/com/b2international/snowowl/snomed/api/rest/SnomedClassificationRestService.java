@@ -33,6 +33,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
 
+import com.b2international.snowowl.core.exceptions.ApiValidation;
 import com.b2international.snowowl.snomed.api.ISnomedClassificationService;
 import com.b2international.snowowl.snomed.api.domain.classification.ClassificationStatus;
 import com.b2international.snowowl.snomed.api.domain.classification.IClassificationRun;
@@ -55,8 +56,7 @@ import com.wordnik.swagger.annotations.ApiResponses;
  */
 @Api("SNOMED CT Classification")
 @Controller
-@RequestMapping(
-		produces={ AbstractRestService.SO_MEDIA_TYPE })
+@RequestMapping(produces={ AbstractRestService.SO_MEDIA_TYPE })
 public class SnomedClassificationRestService extends AbstractSnomedRestService {
 
 	@Autowired
@@ -101,11 +101,11 @@ public class SnomedClassificationRestService extends AbstractSnomedRestService {
 
 			@ApiParam(value="Classification parameters")
 			@RequestBody 
-			final ClassificationRestInput classificationInput,
+			final ClassificationRestInput request,
 
 			final Principal principal) {
-
-		final IClassificationRun classificationRun = delegate.beginClassification(branchPath, classificationInput.getReasonerId(), principal.getName());
+		ApiValidation.checkInput(request);
+		final IClassificationRun classificationRun = delegate.beginClassification(branchPath, request.getReasonerId(), principal.getName());
 		return Responses.created(getClassificationUri(branchPath, classificationRun)).build();
 	}
 
@@ -214,7 +214,7 @@ public class SnomedClassificationRestService extends AbstractSnomedRestService {
 			final ClassificationRestRun updatedRun,
 
 			final Principal principal) {
-
+		
 		// TODO: compare all fields to find out what the client wants us to do, check for conflicts, etc.
 		if (ClassificationStatus.SAVED.equals(updatedRun.getStatus())) {
 			delegate.persistChanges(branchPath, classificationId, principal.getName());

@@ -25,6 +25,7 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.context.request.async.DeferredResult;
 
+import com.b2international.snowowl.core.exceptions.ApiValidation;
 import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.eventbus.IHandler;
 import com.b2international.snowowl.eventbus.IMessage;
@@ -57,6 +58,7 @@ public class SnomedIdentifierRestService extends AbstractRestService {
 	@RequestMapping(method = RequestMethod.POST, consumes = { AbstractRestService.SO_MEDIA_TYPE, MediaType.APPLICATION_JSON_VALUE })
 	@ResponseStatus(value = HttpStatus.CREATED)
 	public DeferredResult<SnomedIdentifierResponse> generate(@RequestBody final SnomedIdentifierRequest request) {
+		ApiValidation.checkInput(request);
 		final DeferredResult<SnomedIdentifierResponse> result = new DeferredResult<SnomedIdentifierResponse>();
 		bus.send("/snomed-ct/ids", new SnomedIdentifierRequestEvent(request.getType(), request.getNamespace()), new IHandler<IMessage>() {
 			@Override

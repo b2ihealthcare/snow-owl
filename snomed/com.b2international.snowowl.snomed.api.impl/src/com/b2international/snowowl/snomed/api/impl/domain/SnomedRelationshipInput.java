@@ -15,21 +15,41 @@
  */
 package com.b2international.snowowl.snomed.api.impl.domain;
 
+import javax.validation.constraints.Min;
+import javax.validation.constraints.NotNull;
+
+import org.hibernate.validator.constraints.NotEmpty;
+
 import com.b2international.snowowl.snomed.api.domain.CharacteristicType;
 import com.b2international.snowowl.snomed.api.domain.ISnomedRelationshipInput;
 import com.b2international.snowowl.snomed.api.domain.RelationshipModifier;
 
 /**
+ * @since 4.0
  */
 public class SnomedRelationshipInput extends AbstractSnomedComponentInput implements ISnomedRelationshipInput {
 
+	@NotEmpty
 	private String sourceId;
+	
+	@NotEmpty
 	private String destinationId;
-	private boolean destinationNegated;
+	
+	@NotEmpty
 	private String typeId;
+	
+	private boolean destinationNegated;
+	
+	@Min(0)
 	private int group;
+	
+	@Min(0)
 	private int unionGroup;
+	
+	@NotNull
 	private CharacteristicType characteristicType;
+	
+	@NotNull
 	private RelationshipModifier modifier;
 
 	@Override
