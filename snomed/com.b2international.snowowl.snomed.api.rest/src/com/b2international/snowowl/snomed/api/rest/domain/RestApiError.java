@@ -15,7 +15,10 @@
  */
 package com.b2international.snowowl.snomed.api.rest.domain;
 
+import java.util.Map;
+
 import com.b2international.snowowl.core.exceptions.ApiError;
+import com.fasterxml.jackson.annotation.JsonAnyGetter;
 import com.wordnik.swagger.annotations.ApiModel;
 import com.wordnik.swagger.annotations.ApiModelProperty;
 
@@ -39,6 +42,9 @@ public class RestApiError implements ApiError {
 
 	@ApiModelProperty(required = true)
 	private String developerMessage;
+	
+	@ApiModelProperty(required = false, hidden = true)
+	private Map<String, Object> additionalInformation;
 
 	private RestApiError() {
 		// intentionally ignored, use the builder
@@ -58,6 +64,7 @@ public class RestApiError implements ApiError {
 	 * 
 	 * @return
 	 */
+	@Override
 	public Integer getCode() {
 		return code;
 	}
@@ -68,6 +75,7 @@ public class RestApiError implements ApiError {
 	 * 
 	 * @return
 	 */
+	@Override
 	public String getMessage() {
 		return message;
 	}
@@ -78,8 +86,15 @@ public class RestApiError implements ApiError {
 	 * 
 	 * @return
 	 */
+	@Override
 	public String getDeveloperMessage() {
 		return developerMessage;
+	}
+	
+	@JsonAnyGetter
+	@Override
+	public Map<String, Object> getAdditionalInfo() {
+		return additionalInformation;
 	}
 
 	private void setStatus(int status) {
@@ -96,6 +111,10 @@ public class RestApiError implements ApiError {
 
 	private void setDeveloperMessage(String developerMessage) {
 		this.developerMessage = developerMessage;
+	}
+	
+	private void setAdditionalInformation(Map<String, Object> additionalInfo) {
+		this.additionalInformation = additionalInfo;
 	}
 
 	/**
@@ -122,6 +141,7 @@ public class RestApiError implements ApiError {
 			this.error.setCode(error.getCode());
 			this.error.setMessage(error.getMessage());
 			this.error.setDeveloperMessage(error.getDeveloperMessage());
+			this.error.setAdditionalInformation(error.getAdditionalInfo());
 		}
 
 		public RestApiError build(int httpStatus) {
