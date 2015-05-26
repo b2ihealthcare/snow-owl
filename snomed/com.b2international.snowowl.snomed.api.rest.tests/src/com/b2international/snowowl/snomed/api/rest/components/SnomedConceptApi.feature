@@ -25,6 +25,7 @@ import com.b2international.snowowl.snomed.datastore.id.SnomedIdentifiers
 import static com.b2international.snowowl.snomed.SnomedConstants.Concepts.*
 import static extension com.b2international.snowowl.test.commons.rest.RestExtensions.*
 import java.util.UUID
+import java.util.Collection
 
 /**
  * @since 1.0
@@ -73,10 +74,10 @@ Feature: SnomedConceptApi
 		And return body with status "404"
 			res.then.body("status", equalTo(args.first.toInt))
 			
-	Scenario: New Concept under unknown Concept
+	Scenario: New Concept under unspecified parent Concept
 		
 		Given branchPath "MAIN"
-		And new child concept of parent "1000"
+		And new child concept of parent ""
 			req.withJson(#{
 				"parentId" -> args.first,
 				"moduleId" -> MODULE_SCT_CORE,
@@ -96,6 +97,21 @@ Feature: SnomedConceptApi
 				],
 				"commitComment" -> "New concept"
 			})
+		When sending POST to "/${branchPath}/concepts"
+		Then return "400" status
+		And return body with status "400"
+		And return body with message "1 validation error"
+			res.path("message") should be args.first.renderWithFields(this)
+			println(res.getBody.asString)
+		And return body with violation message "'parentId' may not be empty (was '')"
+			res.path("violations") should be [
+				it instanceof Collection && (it as Collection).contains(args.first.renderWithFields(this))
+			]
+		
+	Scenario: New Concept under unknown parent Concept
+		
+		Given branchPath "MAIN"
+		And new child concept of parent "1000"
 		When sending POST to "/${branchPath}/concepts"
 		Then return "400" status
 		And return body with status "400"
@@ -130,10 +146,10 @@ Feature: SnomedConceptApi
 	Scenario: New Concept in an unkown module
 	
 		Given branchPath "MAIN"
-		And new concept with unknown module
+		And new concept with module "1"
 			req.withJson(#{
 				"parentId" -> ROOT_CONCEPT,
-				"moduleId" -> "1",
+				"moduleId" -> args.first.renderWithFields(this),
 				"descriptions" -> #[
 					#{
 						"typeId" -> FULLY_SPECIFIED_NAME,
@@ -149,6 +165,33 @@ Feature: SnomedConceptApi
 					}
 				],
 				"commitComment" -> "New concept"
+			})
+		When sending POST to "/${branchPath}/concepts"
+		Then return "400" status
+		And return body with status "400"
+		
+	Scenario: New Concept request without commit comment
+	
+		Given branchPath "MAIN"
+		And new concept request with commit comment ""
+			req.withJson(#{
+				"parentId" -> ROOT_CONCEPT,
+				"moduleId" -> MODULE_SCT_CORE,
+				"descriptions" -> #[
+					#{
+						"typeId" -> FULLY_SPECIFIED_NAME,
+						"term" -> "New Term at " + new Date(),
+						"languageCode" -> "en",
+						"acceptability" -> correctAcceptabilityMap
+					},
+					#{
+						"typeId" -> SYNONYM,
+						"term" -> "New Preferred Term at " + new Date(),
+						"languageCode" -> "en",
+						"acceptability" -> correctAcceptabilityMap 
+					}
+				],
+				"commitComment" -> args.first.renderWithFields(this)
 			})
 		When sending POST to "/${branchPath}/concepts"
 		Then return "400" status
