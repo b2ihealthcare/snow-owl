@@ -64,7 +64,11 @@ public class HistoryInfoConfigurationImpl implements HistoryInfoConfiguration, S
 			}
 		});
 		
-		return null == idPair ? NULL_IMPL : new HistoryInfoConfigurationImpl(storageKey, idPair.getA(), idPair.getB(), branchPath);
+		if (idPair == null) {
+			return NullHistoryInfoConfiguration.INSTANCE;
+		} else {
+			return new HistoryInfoConfigurationImpl(storageKey, idPair.getA(), idPair.getB(), branchPath);
+		}
 	}
 
 	public HistoryInfoConfigurationImpl(final long storageKey, final String componentId, final String terminologyComponentId, final IBranchPath branchPath) {

@@ -18,43 +18,27 @@ package com.b2international.snowowl.datastore.history;
 import com.b2international.snowowl.core.api.IBranchPath;
 
 /**
- * Representation of a history info configuration.
- * <br>Encapsulates all information required for getting the history of
- * a terminology independent component. 
- *
+ * Encapsulates all information required for getting the history of a terminology independent component.
  */
 public interface HistoryInfoConfiguration {
 
 	/**
-	 * Returns with the unique primary key of a terminology independent
-	 * component.
-	 * @return the primary key of the component.
+	 * Returns the storage key of a terminology independent component.
 	 */
 	long getStorageKey();
 
 	/**
-	 * Returns with the terminology/content specific ID of the component.
-	 * @return the terminology specific component ID.
+	 * Returns the component identifier.
 	 */
 	String getComponentId();
 
 	/**
-	 * Returns with the application specific terminology component ID
-	 * of a component. 
-	 * @return the terminology component ID of a component.
+	 * Returns the application-specific terminology component identifier.
 	 */
 	String getTerminologyComponentId();
 	
 	/**
-	 * Returns with the active branch path of the terminology/content
-	 * where the underlying terminology independent component belongs to.
-	 * @return the active branch path configuration for the terminology/content.
+	 * Returns the active branch path from where history should be computed.
 	 */
 	IBranchPath getBranchPath();
-	
-	/**
-	 * Null implementation of a historical information configuration.
-	 */
-	HistoryInfoConfiguration NULL_IMPL = NullHistoryInfoConfiguration.INSTANCE;
-	
 }

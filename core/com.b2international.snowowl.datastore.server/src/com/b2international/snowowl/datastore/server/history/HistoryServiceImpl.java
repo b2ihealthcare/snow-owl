@@ -29,9 +29,7 @@ import com.b2international.snowowl.datastore.history.HistoryInfoConfiguration;
 import com.b2international.snowowl.datastore.history.HistoryService;
 
 /**
- * History service implementation. Provides historical information for 
- * terminology independent components.
- *
+ * Delegates computing component history to {@link HistoryInfoProvider}.
  */
 public class HistoryServiceImpl implements HistoryService {
 
@@ -39,12 +37,13 @@ public class HistoryServiceImpl implements HistoryService {
 	
 	@Override
 	public Collection<IHistoryInfo> getHistory(final HistoryInfoConfiguration configuration) {
+		checkNotNull(configuration, "History configuration object may not be null.");
+		
 		try {
-			return HistoryInfoProvider.INSTANCE.getHistoryInfo(checkNotNull(configuration, "configuration"));
+			return HistoryInfoProvider.INSTANCE.getHistoryInfo(configuration);
 		} catch (final SnowowlServiceException e) {
 			LOGGER.error("Error while getting history for component: '" + configuration.getStorageKey() + "'.", e);
 			return emptyList();
 		}
 	}
-
 }
