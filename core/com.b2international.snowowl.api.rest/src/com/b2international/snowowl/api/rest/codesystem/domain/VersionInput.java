@@ -17,6 +17,10 @@ package com.b2international.snowowl.api.rest.codesystem.domain;
 
 import java.util.Date;
 
+import javax.validation.constraints.NotNull;
+
+import org.hibernate.validator.constraints.NotEmpty;
+
 import com.b2international.snowowl.api.codesystem.domain.ICodeSystemVersionProperties;
 
 /**
@@ -24,8 +28,11 @@ import com.b2international.snowowl.api.codesystem.domain.ICodeSystemVersionPrope
  */
 public class VersionInput implements ICodeSystemVersionProperties {
 
+	@NotEmpty
 	private String version;
 	private String description = "";
+	
+	@NotNull
 	private Date effectiveDate;
 	
 	@Override

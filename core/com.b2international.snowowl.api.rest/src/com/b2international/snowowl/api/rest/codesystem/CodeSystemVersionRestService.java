@@ -38,6 +38,7 @@ import com.b2international.snowowl.api.rest.codesystem.domain.VersionInput;
 import com.b2international.snowowl.api.rest.domain.CollectionResource;
 import com.b2international.snowowl.api.rest.domain.RestApiError;
 import com.b2international.snowowl.api.rest.util.Responses;
+import com.b2international.snowowl.core.exceptions.ApiValidation;
 import com.wordnik.swagger.annotations.Api;
 import com.wordnik.swagger.annotations.ApiOperation;
 import com.wordnik.swagger.annotations.ApiParam;
@@ -108,7 +109,7 @@ public class CodeSystemVersionRestService extends AbstractRestService {
 			
 			@ApiParam(value="Version parameters")
 			@RequestBody final VersionInput input) {
-
+		ApiValidation.checkInput(input);
 		final ICodeSystemVersion version = delegate.createVersion(shortName, input);
 		return Responses.created(getVersionURI(shortName, version.getVersion())).build();
 	}

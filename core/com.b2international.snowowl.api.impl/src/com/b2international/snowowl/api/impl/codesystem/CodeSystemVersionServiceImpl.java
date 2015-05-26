@@ -133,7 +133,7 @@ public class CodeSystemVersionServiceImpl implements ICodeSystemVersionService {
 			}
 			throw new SnowowlRuntimeException("Version creation failed due to " + result.getMessage());
 		} catch (SnowowlServiceException e) {
-			throw new LockedException(String.format("Cannot create version as %s is locked. Details: %s", shortName, e.getMessage()));
+			throw new LockedException(String.format("Cannot create version. %s is locked. Details: %s", shortName, e.getMessage()));
 		} finally {
 			try {
 				versioningService.releaseLock();
