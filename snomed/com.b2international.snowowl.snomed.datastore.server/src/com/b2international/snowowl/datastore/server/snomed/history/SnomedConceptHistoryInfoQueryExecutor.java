@@ -16,6 +16,7 @@
 package com.b2international.snowowl.datastore.server.snomed.history;
 
 import static com.google.common.base.Preconditions.checkNotNull;
+import static com.google.common.collect.Lists.newArrayList;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -27,13 +28,13 @@ import java.util.Set;
 import java.util.SortedMap;
 import java.util.TreeMap;
 
+import org.eclipse.emf.cdo.common.branch.CDOBranchPoint;
 import org.eclipse.emf.cdo.common.id.CDOID;
 
 import com.b2international.commons.collections.CloseableMap;
 import com.b2international.snowowl.core.api.IHistoryInfo.IVersion;
 import com.b2international.snowowl.datastore.cdo.CDOUtils;
 import com.b2international.snowowl.datastore.cdo.LocalDbUtils;
-import com.b2international.snowowl.datastore.history.Version;
 import com.b2international.snowowl.datastore.server.history.HistoryInfoQueryExecutorImpl;
 import com.b2international.snowowl.datastore.server.history.InternalHistoryInfoConfiguration;
 import com.b2international.snowowl.datastore.server.history.PreparedStatementKey;
@@ -47,8 +48,6 @@ import com.google.common.collect.ImmutableSet;
  */
 public class SnomedConceptHistoryInfoQueryExecutor extends HistoryInfoQueryExecutorImpl {
 
-	private static final int UNSPECIFIED_CONCEPT_INBOUND_RELATIONSHIP_NUMBER = -1;
-
 	private static final Set<SnomedRefSetType> REFSET_MEMBER_TYPES = ImmutableSet.of(SnomedRefSetType.SIMPLE_MAP, 
 			SnomedRefSetType.SIMPLE, 
 			SnomedRefSetType.ATTRIBUTE_VALUE, 
@@ -61,10 +60,10 @@ public class SnomedConceptHistoryInfoQueryExecutor extends HistoryInfoQueryExecu
 
 		final SortedMap<Long, IVersion<CDOID>> modifications = new TreeMap<Long, IVersion<CDOID>>();
 		collectPrimaryComponentChanges(configuration, modifications, SnomedPreparedStatementKey.CONCEPT_CHANGES);
-		collectConceptPTChanges(configuration, modifications);
 		collectOtherComponentChanges(configuration, modifications, SnomedPreparedStatementKey.DESCRIPTION_CHANGES);
 		collectOtherComponentChanges(configuration, modifications, SnomedPreparedStatementKey.RELATIONSHIP_CHANGES);
 		collectRefSetMemberChanges(configuration, modifications);
+		collectConceptPTChanges(configuration, modifications);
 		adjustMinorVersions(modifications);
 		return modifications;
 	}
@@ -83,41 +82,17 @@ public class SnomedConceptHistoryInfoQueryExecutor extends HistoryInfoQueryExecu
 	}
 
 	@Override
-	protected void registerPrimaryComponentModifications(final InternalHistoryInfoConfiguration configuration, 
-			final SortedMap<Long, IVersion<CDOID>> modifications, 
-			final List<Object[]> info) {
-		
-		int lastInbound = UNSPECIFIED_CONCEPT_INBOUND_RELATIONSHIP_NUMBER;
-		int majorVersion = INITIAL_MAJOR_VERSION;
-		
-		for (final Object[] objectInfo : info) {
-			
-			final long timeStamp = (Long) objectInfo[0];
-			final int inboundListSize = (Integer) objectInfo[1];
-			
-			/*
-			 * Check concept in-bound relationship list size; we don't want to indicate changes related to
-			 * inbound relationships.
-			 */
-			if (lastInbound == UNSPECIFIED_CONCEPT_INBOUND_RELATIONSHIP_NUMBER || lastInbound == inboundListSize) {
-				final Version v = new Version(majorVersion++);
-				v.addAffectedObjectId(configuration.getCdoId(), timeStamp);
-				modifications.put(timeStamp, v);
-			}
-			
-			lastInbound = inboundListSize;
-		}
-	}
-
-	@Override
 	protected CloseableMap<PreparedStatementKey, PreparedStatement> createPreparedStatements(final Connection connection) throws SQLException {
 	
 		final CloseableMap<PreparedStatementKey, PreparedStatement> statements = new CloseableMap<>();
 		statements.put(SnomedPreparedStatementKey.CONCEPT_CHANGES, connection.prepareStatement(SnomedConceptHistoryQueries.CONCEPT_CHANGES.getQuery()));
-		statements.put(SnomedPreparedStatementKey.CONCEPT_PT_CHANGES, connection.prepareStatement(SnomedConceptHistoryQueries.CONCEPT_PT_CHANGES.getQuery()));
 		statements.put(SnomedPreparedStatementKey.DESCRIPTION_CHANGES, connection.prepareStatement(SnomedConceptHistoryQueries.DESCRIPTION_CHANGES.getQuery()));
 		statements.put(SnomedPreparedStatementKey.RELATIONSHIP_CHANGES, connection.prepareStatement(SnomedConceptHistoryQueries.RELATIONSHIP_CHANGES.getQuery()));
-		
+
+		PreparedStatement ptStatement = connection.prepareStatement(SnomedConceptHistoryQueries.CONCEPT_PT_CHANGES.getQuery());
+		ptStatement.setLong(4, FsnCdoIdSupplier.INSTANCE.get());
+		statements.put(SnomedPreparedStatementKey.CONCEPT_PT_CHANGES, ptStatement);
+
 		for (final SnomedRefSetType type : REFSET_MEMBER_TYPES) {
 			final PreparedStatementKey statementKey = SnomedPreparedStatementKey.getMemberStatementKey(type);
 			final PreparedStatement statement = getRefSetMemberStatement(connection, type);
@@ -132,7 +107,28 @@ public class SnomedConceptHistoryInfoQueryExecutor extends HistoryInfoQueryExecu
 
 		for (final SnomedRefSetType type : REFSET_MEMBER_TYPES) {
 			final PreparedStatementKey statementKey = SnomedPreparedStatementKey.getMemberStatementKey(type);
-			collectOtherComponentChanges(configuration, modifications, statementKey);
+			collectRefSetMemberChanges(configuration, modifications, statementKey);
+		}
+	}
+	
+	protected void collectRefSetMemberChanges(final InternalHistoryInfoConfiguration configuration, 
+			final SortedMap<Long, IVersion<CDOID>> modifications, 
+			final PreparedStatementKey statementKey) throws SQLException {
+		
+		final PreparedStatement statement = configuration.getPreparedStatements().get(statementKey);
+		final List<CDOBranchPoint> branchPoints = getBranchPoints(configuration);
+
+		for (final CDOBranchPoint branchPoint : branchPoints) {
+			final List<Object[]> otherComponentInfos = newArrayList();
+			setComponentIdQueryParameters(statement, configuration.getComponentId(), branchPoint.getBranch().getID(), branchPoint.getTimeStamp());
+		
+			try (final ResultSet rs = statement.executeQuery()) {
+				while (rs.next()) {
+					otherComponentInfos.add(createOtherComponentInfo(rs));
+				}
+			}
+			
+			registerOtherComponentModifications(modifications, otherComponentInfos, branchPoint);
 		}
 	}
 

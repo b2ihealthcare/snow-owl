@@ -39,7 +39,7 @@ public enum SnomedConceptHistoryQueries {
 			+ "WHERE concept.CDO_ID = ? "
 			+ "AND concept.CDO_BRANCH = ? "
 			+ "AND concept.CDO_CREATED <= ? "
-			+ "ORDER BY concept.CDO_CREATED DESC "),
+			+ "ORDER BY concept.CDO_CREATED "),
 
 	/**
 	 * Query parameters:
@@ -101,12 +101,12 @@ public enum SnomedConceptHistoryQueries {
 			+ "JOIN SNOMED_DESCRIPTION description "
 			+ "ON member.REFERENCEDCOMPONENTID = description.ID "
 			// -------------------------------
-			+ "WHERE member.ACCEPTABILITYID(" + Concepts.REFSET_DESCRIPTION_ACCEPTABILITY_PREFERRED + " "
+			+ "WHERE member.ACCEPTABILITYID = " + Concepts.REFSET_DESCRIPTION_ACCEPTABILITY_PREFERRED + " "
 			+ "AND member.ACTIVE "
 			+ "AND description.CDO_CONTAINER = ? "
-			+ "AND description.TYPE <> ? "
 			+ "AND member.CDO_BRANCH = ? "
-			+ "AND member.CDO_CREATED <= ? "),
+			+ "AND member.CDO_CREATED <= ? "
+			+ "AND description.TYPE <> ? "),
 
 	/**
 	 * Query parameters:

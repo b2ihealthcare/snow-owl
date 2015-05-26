@@ -117,7 +117,7 @@ public abstract class HistoryInfoQueryExecutorImpl implements HistoryInfoQueryEx
 		final List<Object[]> primaryComponentInfos = newArrayList();
 
 		for (final CDOBranchPoint branchPoint : branchPoints) {
-			setQueryParameters(statement, configuration.getStorageKey(), branchPoint.getBranch().getID(), branchPoint.getTimeStamp());
+			setStorageKeyQueryParameters(statement, configuration.getStorageKey(), branchPoint.getBranch().getID(), branchPoint.getTimeStamp());
 		
 			try (final ResultSet rs = statement.executeQuery()) {
 				while (rs.next()) {
@@ -149,7 +149,7 @@ public abstract class HistoryInfoQueryExecutorImpl implements HistoryInfoQueryEx
 
 			// Other components are processed in segments
 			final List<Object[]> otherComponentInfos = newArrayList();
-			setQueryParameters(statement, configuration.getStorageKey(), branchPoint.getBranch().getID(), branchPoint.getTimeStamp());
+			setStorageKeyQueryParameters(statement, configuration.getStorageKey(), branchPoint.getBranch().getID(), branchPoint.getTimeStamp());
 		
 			try (final ResultSet rs = statement.executeQuery()) {
 				while (rs.next()) {
@@ -161,7 +161,7 @@ public abstract class HistoryInfoQueryExecutorImpl implements HistoryInfoQueryEx
 		}
 	}
 
-	private List<CDOBranchPoint> getBranchPoints(final InternalHistoryInfoConfiguration configuration) {
+	protected List<CDOBranchPoint> getBranchPoints(final InternalHistoryInfoConfiguration configuration) {
 		
 		final CDOBranch currentBranch = configuration.getView().getBranch();
 		final ImmutableList.Builder<CDOBranchPoint> branchPointsBuilder = ImmutableList.builder();
@@ -187,12 +187,32 @@ public abstract class HistoryInfoQueryExecutorImpl implements HistoryInfoQueryEx
 	 * 
 	 * @throws SQLException
 	 */
-	protected void setQueryParameters(final PreparedStatement statement, 
+	protected void setStorageKeyQueryParameters(final PreparedStatement statement, 
 			final long storageKey, 
 			final int branchId, 
 			final long maxCommitTimestamp) throws SQLException {
 		
 		statement.setLong(1, storageKey);
+		statement.setInt(2, branchId);
+		statement.setLong(3, maxCommitTimestamp);
+	}
+	
+	/**
+	 * Populates the specified JDBC prepared statement's parameters from the given history configuration.
+	 * 
+	 * @param statement the statement to adjust
+	 * @param componentId the focused components's identifier
+	 * @param branchId the branch to run the query on
+	 * @param maxCommitTimestamp the maximum permissible timestamp which should be considered on this branch segment
+	 * 
+	 * @throws SQLException
+	 */
+	protected void setComponentIdQueryParameters(final PreparedStatement statement, 
+			final String componentId, 
+			final int branchId, 
+			final long maxCommitTimestamp) throws SQLException {
+		
+		statement.setString(1, componentId);
 		statement.setInt(2, branchId);
 		statement.setLong(3, maxCommitTimestamp);
 	}
@@ -266,7 +286,7 @@ public abstract class HistoryInfoQueryExecutorImpl implements HistoryInfoQueryEx
 		}
 	}
 
-	private Object[] createOtherComponentInfo(final ResultSet rs) throws SQLException {
+	protected Object[] createOtherComponentInfo(final ResultSet rs) throws SQLException {
 		return new Object[] {
 				rs.getObject(1), //CDO ID 
 				rs.getObject(2), //created timestamp
