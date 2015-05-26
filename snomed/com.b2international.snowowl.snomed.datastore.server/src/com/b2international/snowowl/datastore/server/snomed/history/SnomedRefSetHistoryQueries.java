@@ -35,7 +35,8 @@ public enum SnomedRefSetHistoryQueries {
 			// -------------------------------
 			+ "WHERE refset.CDO_ID = ? "
 			+ "AND refset.CDO_BRANCH = ? "
-			+ "AND refset.CDO_CREATED <= ? "),
+			+ "AND refset.CDO_CREATED <= ? "
+			+ "ORDER BY refset.CDO_CREATED "),
 	
 	/**
 	 * Query parameters:
