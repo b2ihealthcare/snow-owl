@@ -32,7 +32,6 @@ import com.b2international.commons.exceptions.Exceptions;
 import com.b2international.snowowl.core.LogUtils;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.api.SnowowlServiceException;
-import com.b2international.snowowl.datastore.BranchPathUtils;
 import com.b2international.snowowl.datastore.IBranchPathMap;
 import com.b2international.snowowl.datastore.cdo.BranchNotSynchronizedException;
 import com.b2international.snowowl.datastore.cdo.EmptyTransactionAggregatorException;
@@ -65,18 +64,13 @@ public class PromoteBranchAction extends AbstractCDOBranchAction {
 		final ICDOConnection connection = getConnectionManager().getByUuid(repositoryId);
 		final CDOBranch taskBranch = connection.getBranch(taskBranchPath);
 
-		// Does the task branch exist?
+		// Does the task CDO branch exist?
 		if (null == taskBranch) {
 			return;
 		}
 
 		// No commits at all on task branch?
 		if (Long.MIN_VALUE == CDOServerUtils.getLastCommitTime(taskBranch)) {
-			return;
-		}
-
-		// Can the task branch have a parent?
-		if (BranchPathUtils.isMain(taskBranchPath)) {
 			return;
 		}
 

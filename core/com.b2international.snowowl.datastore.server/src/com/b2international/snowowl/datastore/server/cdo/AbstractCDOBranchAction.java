@@ -65,7 +65,12 @@ public abstract class AbstractCDOBranchAction {
 			acquireLocks();
 
 			for (final Entry<String, IBranchPath> repositoryBranchPath : branchPathMap.getLockedEntries().entrySet()) {
-				apply(repositoryBranchPath.getKey(), repositoryBranchPath.getValue());
+				final String repositoryId = repositoryBranchPath.getKey();
+				final IBranchPath taskBranchPath = repositoryBranchPath.getValue();
+				
+				if (isApplicable(repositoryId, taskBranchPath)) {
+					apply(repositoryId, taskBranchPath);
+				}
 			}
 
 			postRun();
@@ -79,6 +84,17 @@ public abstract class AbstractCDOBranchAction {
 	}
 
 	protected abstract void apply(String repositoryId, IBranchPath taskBranchPath) throws Throwable;
+	
+	protected boolean isApplicable(String repositoryId, IBranchPath taskBranchPath) {
+		
+		if (taskBranchPath == null) {
+			return false;
+		} else if (BranchPathUtils.isMain(taskBranchPath)) {
+			return false;
+		} else {
+			return true;
+		}
+	}
 
 	protected void postRun() throws Exception {
 		return;
@@ -99,18 +115,21 @@ public abstract class AbstractCDOBranchAction {
 	private void acquireLocks() throws OperationLockException, InterruptedException {
 
 		for (final Entry<String, IBranchPath> repositoryBranchPath : branchPathMap.getLockedEntries().entrySet()) {
+			final String repositoryId = repositoryBranchPath.getKey();
 			final IBranchPath branchPath = repositoryBranchPath.getValue();
 
-			if (branchPath != null) {
+			if (isApplicable(repositoryId, branchPath)) {
 				lockTargets.add(createLockTarget(repositoryBranchPath.getKey(), branchPath));
-			}
-
-			if (!BranchPathUtils.isMain(branchPath)) {
 				lockTargets.add(createLockTarget(repositoryBranchPath.getKey(), branchPath.getParent()));	
 			}
 		}
 
-		getDatastoreOperationLockManager().lock(createLockContext(), IDatastoreOperationLockManager.IMMEDIATE, lockTargets);
+		try {
+			getDatastoreOperationLockManager().lock(createLockContext(), IDatastoreOperationLockManager.IMMEDIATE, lockTargets);
+		} catch (OperationLockException | InterruptedException e) {
+			lockTargets.clear();
+			throw e;
+		}
 	}
 
 	private void releaseLocks() {

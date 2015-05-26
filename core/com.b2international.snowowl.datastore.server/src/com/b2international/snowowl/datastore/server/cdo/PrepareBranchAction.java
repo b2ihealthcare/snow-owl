@@ -30,7 +30,6 @@ import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.api.index.IIndexEntry;
 import com.b2international.snowowl.core.api.index.IIndexUpdater;
 import com.b2international.snowowl.core.events.util.AsyncSupport;
-import com.b2international.snowowl.datastore.BranchPathUtils;
 import com.b2international.snowowl.datastore.IBranchPathMap;
 import com.b2international.snowowl.datastore.cdo.ICDOConnection;
 import com.b2international.snowowl.datastore.oplock.impl.DatastoreLockContextDescriptions;
@@ -56,15 +55,6 @@ public class PrepareBranchAction extends AbstractCDOBranchAction {
 
 		final ICDOConnection connection = getConnectionManager().getByUuid(repositoryId);
 		final IIndexUpdater<IIndexEntry> indexService = IndexServerServiceManager.INSTANCE.getByUuid(repositoryId);
-
-		if (taskBranchPath == null) {
-			return;
-		}
-
-		if (BranchPathUtils.isMain(taskBranchPath)) {
-			return;
-		}
-
 		final IBranchPath parentBranchPath = taskBranchPath.getParent();
 		final CDOBranch parentBranch = connection.getBranch(parentBranchPath);
 

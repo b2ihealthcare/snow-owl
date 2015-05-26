@@ -72,16 +72,11 @@ public class SynchronizeBranchAction extends AbstractCDOBranchAction {
 		final ICDOConnection connection = getConnectionManager().getByUuid(repositoryId);
 		final CDOBranch taskBranch = connection.getBranch(taskBranchPath);
 
-		// Does the task branch exist?
+		// Does the task CDO branch exist?
 		if (null == taskBranch) {
 			return;
 		}
 		
-		// Can the task branch have a parent?
-		if (BranchPathUtils.isMain(taskBranchPath)) {
-			return;
-		}
-
 		final IBranchPath parentBranchPath = taskBranchPath.getParent();
 		final CDOBranch parentBranch = taskBranch.getBase().getBranch();
 
