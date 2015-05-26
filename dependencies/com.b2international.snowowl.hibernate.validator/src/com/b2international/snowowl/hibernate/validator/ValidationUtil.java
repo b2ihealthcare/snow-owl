@@ -19,11 +19,15 @@ package com.b2international.snowowl.hibernate.validator;
 import static java.util.Collections.singletonList;
 
 import java.util.List;
+import java.util.Set;
 
+import javax.validation.ConstraintViolation;
 import javax.validation.Validation;
 import javax.validation.ValidationProviderResolver;
 import javax.validation.Validator;
 import javax.validation.ValidatorFactory;
+import javax.validation.executable.ExecutableValidator;
+import javax.validation.metadata.BeanDescriptor;
 
 import org.hibernate.validator.HibernateValidator;
 
@@ -60,7 +64,45 @@ public class ValidationUtil {
 	 * @return
 	 */
 	public static final Validator getValidator() {
-		return FACTORY.getValidator();
+		return new Validator() {
+			
+			@Override
+			public <T> Set<ConstraintViolation<T>> validateValue(Class<T> beanType, String propertyName, Object value, Class<?>... groups) {
+				return null;
+			}
+			
+			@Override
+			public <T> Set<ConstraintViolation<T>> validateProperty(T object, String propertyName, Class<?>... groups) {
+				return null;
+			}
+			
+			@Override
+			public <T> Set<ConstraintViolation<T>> validate(T object, Class<?>... groups) {
+				final Thread thread = Thread.currentThread();
+				final ClassLoader oldClassLoader = thread.getContextClassLoader();
+				try {
+					thread.setContextClassLoader(ValidationUtil.class.getClassLoader());
+					return FACTORY.getValidator().validate(object, groups);
+				} finally {
+					thread.setContextClassLoader(oldClassLoader);
+				}
+			}
+			
+			@Override
+			public <T> T unwrap(Class<T> type) {
+				return null;
+			}
+			
+			@Override
+			public BeanDescriptor getConstraintsForClass(Class<?> clazz) {
+				return null;
+			}
+			
+			@Override
+			public ExecutableValidator forExecutables() {
+				return null;
+			}
+		};
 	}
 
 }

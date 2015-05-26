@@ -50,7 +50,7 @@ public class ConstraintViolations {
 	 * @param violations
 	 * @return
 	 */
-	public static <T> ImmutableList<String> format(Collection<ConstraintViolation<T>> violations) {
+	public static ImmutableList<String> format(Collection<? extends ConstraintViolation<?>> violations) {
 		final Set<String> errors = Sets.newHashSet();
 		for (ConstraintViolation<?> v : violations) {
 			errors.add(format(v));

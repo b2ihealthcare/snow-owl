@@ -15,6 +15,9 @@
  */
 package com.b2international.snowowl.core.exceptions;
 
+import java.util.Collections;
+import java.util.Map;
+
 import com.b2international.commons.exceptions.FormattedRuntimeException;
 
 /**
@@ -38,7 +41,7 @@ public abstract class ApiException extends FormattedRuntimeException {
 	 * @return {@link ApiError} representation of this {@link ApiException}, never <code>null</code>.
 	 */
 	public final ApiError toApiError() {
-		return ApiError.Builder.of(getMessage()).code(getCode()).developerMessage(getDeveloperMessage()).build();
+		return ApiError.Builder.of(getMessage()).code(getCode()).developerMessage(getDeveloperMessage()).addInfos(getAdditionalInfo()).build();
 	}
 
 	/**
@@ -57,6 +60,15 @@ public abstract class ApiException extends FormattedRuntimeException {
 	 */
 	protected String getDeveloperMessage() {
 		return getMessage();
+	}
+
+	/**
+	 * Returns additional information about the {@link ApiException}.
+	 * 
+	 * @return
+	 */
+	protected Map<String, Object> getAdditionalInfo() {
+		return Collections.emptyMap();
 	}
 
 }

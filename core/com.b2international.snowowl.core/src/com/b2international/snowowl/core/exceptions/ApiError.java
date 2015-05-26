@@ -15,6 +15,10 @@
  */
 package com.b2international.snowowl.core.exceptions;
 
+import static com.google.common.collect.Maps.newHashMap;
+
+import java.util.Map;
+
 import com.b2international.snowowl.core.internal.exceptions.ApiErrorImpl;
 
 /**
@@ -46,6 +50,12 @@ public interface ApiError {
 	 * @return
 	 */
 	Integer getCode();
+	
+	/**
+	 * Additional information about the error.
+	 * @return
+	 */
+	Map<String, Object> getAdditionalInfo();
 
 	/**
 	 * Builds {@link ApiError} representations.
@@ -57,6 +67,7 @@ public interface ApiError {
 		private String message;
 		private String developerMessage;
 		private int code;
+		private Map<String, Object> additionalInformation = newHashMap();
 
 		public Builder(String message) {
 			this.message = message;
@@ -72,8 +83,18 @@ public interface ApiError {
 			return this;
 		}
 		
+		public Builder addInfo(String property, Object value) {
+			this.additionalInformation.put(property, value);
+			return this;
+		}
+
+		public Builder addInfos(Map<String, Object> additionalInformation) {
+			this.additionalInformation.putAll(additionalInformation);
+			return this;
+		}
+		
 		public ApiError build() {
-			return new ApiErrorImpl(this.message, this.developerMessage, this.code);
+			return new ApiErrorImpl(this.message, this.developerMessage, this.code, this.additionalInformation);
 		}
 		
 		public static Builder of(String message) {
