@@ -15,12 +15,13 @@
  */
 package com.b2international.snowowl.datastore.server.snomed.history;
 
+import com.b2international.snowowl.datastore.server.history.PreparedStatementKey;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 
 /**
  * Contains SQL queries used for populating the history page of SNOMED CT concepts. 
  */
-public abstract class SnomedConceptHistoryQueries {
+public enum SnomedConceptHistoryQueries implements PreparedStatementKey {
 
 	/**
 	 * Query parameters:
@@ -30,7 +31,7 @@ public abstract class SnomedConceptHistoryQueries {
 	 * <li>Ending timestamp for the current CDO branch segment ("infinity" or base of child branch)</li>
 	 * <ol>
 	 */
-	public static final String CONCEPT_CHANGES_FROM_BRANCH = "SELECT "
+	CONCEPT_CHANGES_FROM_BRANCH("SELECT "
 			+ "concept.CDO_CREATED, "
 			+ "concept.INBOUNDRELATIONSHIPS "
 			// -------------------------------
@@ -38,7 +39,8 @@ public abstract class SnomedConceptHistoryQueries {
 			// -------------------------------
 			+ "WHERE concept.CDO_ID = ? "
 			+ "AND concept.CDO_BRANCH = ? "
-			+ "AND concept.CDO_CREATED <= ? ";
+			+ "AND concept.CDO_CREATED <= ? "
+			+ "ORDER BY concept.CDO_CREATED DESC "),
 
 	/**
 	 * Query parameters:
@@ -48,7 +50,7 @@ public abstract class SnomedConceptHistoryQueries {
 	 * <li>Ending timestamp for the current CDO branch segment ("infinity" or base of child branch)</li>
 	 * <ol>
 	 */
-	public static final String DESCRIPTION_CHANGES_FROM_BRANCH = "SELECT "
+	DESCRIPTION_CHANGES_FROM_BRANCH("SELECT "
 			+ "description.CDO_ID, "
 			+ "description.CDO_CREATED, "
 			+ "description.CDO_REVISED "
@@ -59,7 +61,7 @@ public abstract class SnomedConceptHistoryQueries {
 			// -------------------------------
 			+ "WHERE descriptionsList.CDO_SOURCE = ? "
 			+ "AND description.CDO_BRANCH = ? "
-			+ "AND description.CDO_CREATED <= ? ";
+			+ "AND description.CDO_CREATED <= ? "),
 
 	/**
 	 * Query parameters:
@@ -69,7 +71,7 @@ public abstract class SnomedConceptHistoryQueries {
 	 * <li>Ending timestamp for the current CDO branch segment ("infinity" or base of child branch)</li>
 	 * <ol>
 	 */
-	public static final String RELATIONSHIP_CHANGES_FROM_BRANCH = "SELECT "
+	RELATIONSHIP_CHANGES_FROM_BRANCH("SELECT "
 			+ "relationship.CDO_ID, "
 			+ "relationship.CDO_CREATED, "
 			+ "relationship.CDO_REVISED "
@@ -80,7 +82,7 @@ public abstract class SnomedConceptHistoryQueries {
 			// -------------------------------
 			+ "WHERE relationshipsList.CDO_SOURCE = ? "
 			+ "AND relationship.CDO_BRANCH = ? "
-			+ "AND relationship.CDO_CREATED <= ? ";
+			+ "AND relationship.CDO_CREATED <= ? "),
 
 	/**
 	 * Query parameters:
@@ -91,7 +93,7 @@ public abstract class SnomedConceptHistoryQueries {
 	 * <li>Ending timestamp for the current CDO branch segment ("infinity" or base of child branch)</li>
 	 * <ol>
 	 */
-	public static final String CONCEPT_PT_CHANGES_FROM_BRANCH = "SELECT "
+	CONCEPT_PT_CHANGES_FROM_BRANCH("SELECT "
 			+ "member.CDO_ID, "
 			+ "member.CDO_CREATED, "
 			+ "member.CDO_REVISED "
@@ -100,12 +102,12 @@ public abstract class SnomedConceptHistoryQueries {
 			+ "JOIN SNOMED_DESCRIPTION description "
 			+ "ON member.REFERENCEDCOMPONENTID = description.ID "
 			// -------------------------------
-			+ "WHERE member.ACCEPTABILITYID = " + Concepts.REFSET_DESCRIPTION_ACCEPTABILITY_PREFERRED + " "
+			+ "WHERE member.ACCEPTABILITYID(" + Concepts.REFSET_DESCRIPTION_ACCEPTABILITY_PREFERRED + " "
 			+ "AND member.ACTIVE "
 			+ "AND description.CDO_CONTAINER = ? "
 			+ "AND description.TYPE <> ? "
 			+ "AND member.CDO_BRANCH = ? "
-			+ "AND member.CDO_CREATED <= ? ";
+			+ "AND member.CDO_CREATED <= ? "),
 
 	/**
 	 * Query parameters:
@@ -115,7 +117,7 @@ public abstract class SnomedConceptHistoryQueries {
 	 * <li>Ending timestamp for the current CDO branch segment ("infinity" or base of child branch)</li>
 	 * <ol>
 	 */
-	public static final String RELATED_REFERENCE_SET_MEMBER_CHANGES_FROM_BRANCH_TEMPLATE = "SELECT "
+	RELATED_REFERENCE_SET_MEMBER_CHANGES_FROM_BRANCH_TEMPLATE("SELECT "
 			+ "member.CDO_ID, "
 			+ "member.CDO_CREATED, "
 			+ "member.CDO_REVISED "
@@ -124,9 +126,20 @@ public abstract class SnomedConceptHistoryQueries {
 			// -------------------------------
 			+ "WHERE member.REFERENCEDCOMPONENTID = ? "
 			+ "AND member.CDO_BRANCH = ? "
-			+ "AND member.CDO_CREATED <= ? ";
+			+ "AND member.CDO_CREATED <= ? ");
 	
-	private SnomedConceptHistoryQueries() {
-		throw new UnsupportedOperationException("This class is not supposed to be instantiated.");
+	private final String query;
+
+	private SnomedConceptHistoryQueries(final String query) {
+		this.query = query;
+	}
+	
+	public String getQuery() {
+		return query;
+	}
+	
+	// FIXME: "verbatim" constants and templated ones should probably be in separate enums
+	public String getQuery(final String tableName) {
+		return String.format(query, tableName);
 	}
 }

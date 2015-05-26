@@ -15,10 +15,12 @@
  */
 package com.b2international.snowowl.datastore.server.snomed.history;
 
+import com.b2international.snowowl.datastore.server.history.PreparedStatementKey;
+
 /**
  * Contains SQL queries used for populating the history page of SNOMED CT reference sets. 
  */
-public abstract class SnomedRefSetHistoryQueries {
+public enum SnomedRefSetHistoryQueries implements PreparedStatementKey {
 
 	/**
 	 * Query parameters:
@@ -28,14 +30,14 @@ public abstract class SnomedRefSetHistoryQueries {
 	 * <li>Ending timestamp for the current CDO branch segment ("infinity" or base of child branch)</li>
 	 * <ol>
 	 */
-	public static final String REFSET_CHANGES_TEMPLATE_FROM_BRANCH_TEMPLATE = "SELECT "
+	REFSET_CHANGES_TEMPLATE_FROM_BRANCH_TEMPLATE("SELECT "
 			+ "refset.CDO_CREATED "
 			// -------------------------------
 			+ "FROM %s refset "
 			// -------------------------------
 			+ "WHERE refset.CDO_ID = ? "
 			+ "AND refset.CDO_BRANCH = ? "
-			+ "AND refset.CDO_CREATED <= ? ";
+			+ "AND refset.CDO_CREATED <= ? "),
 	
 	/**
 	 * Query parameters:
@@ -45,7 +47,7 @@ public abstract class SnomedRefSetHistoryQueries {
 	 * <li>Ending timestamp for the current CDO branch segment ("infinity" or base of child branch)</li>
 	 * <ol>
 	 */
-	public static final String REFSET_MEMBER_CHANGES_TEMPLATE_FROM_BRANCH_TEMPLATE = "SELECT "
+	REFSET_MEMBER_CHANGES_TEMPLATE_FROM_BRANCH_TEMPLATE("SELECT "
 			+ "member.CDO_ID, "
 			+ "member.CDO_CREATED "
 			// -------------------------------
@@ -53,9 +55,15 @@ public abstract class SnomedRefSetHistoryQueries {
 			// -------------------------------
 			+ "WHERE member.REFSET = ? "
 			+ "AND member.CDO_BRANCH = ? "
-			+ "AND member.CDO_CREATED <= ? ";
+			+ "AND member.CDO_CREATED <= ? ");
+
+	private final String queryTemplate;
 	
-	private SnomedRefSetHistoryQueries() {
-		throw new UnsupportedOperationException("This class is not supposed to be instantiated.");
+	private SnomedRefSetHistoryQueries(final String queryTemplate) {
+		this.queryTemplate = queryTemplate;
+	}
+	
+	public String getQuery(final String tableName) {
+		return String.format(queryTemplate, tableName);
 	}
 }
