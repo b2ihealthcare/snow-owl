@@ -15,12 +15,10 @@
  */
 package com.b2international.snowowl.datastore.server.snomed.history;
 
-import com.b2international.snowowl.datastore.server.history.PreparedStatementKey;
-
 /**
  * Contains SQL queries used for populating the history page of SNOMED CT reference sets. 
  */
-public enum SnomedRefSetHistoryQueries implements PreparedStatementKey {
+public enum SnomedRefSetHistoryQueries {
 
 	/**
 	 * Query parameters:
@@ -30,7 +28,7 @@ public enum SnomedRefSetHistoryQueries implements PreparedStatementKey {
 	 * <li>Ending timestamp for the current CDO branch segment ("infinity" or base of child branch)</li>
 	 * <ol>
 	 */
-	REFSET_CHANGES_TEMPLATE_FROM_BRANCH_TEMPLATE("SELECT "
+	REFSET_CHANGES("SELECT "
 			+ "refset.CDO_CREATED "
 			// -------------------------------
 			+ "FROM %s refset "
@@ -47,9 +45,10 @@ public enum SnomedRefSetHistoryQueries implements PreparedStatementKey {
 	 * <li>Ending timestamp for the current CDO branch segment ("infinity" or base of child branch)</li>
 	 * <ol>
 	 */
-	REFSET_MEMBER_CHANGES_TEMPLATE_FROM_BRANCH_TEMPLATE("SELECT "
+	REFSET_MEMBER_CHANGES("SELECT "
 			+ "member.CDO_ID, "
-			+ "member.CDO_CREATED "
+			+ "member.CDO_CREATED, "
+			+ "member.CDO_REVISED "
 			// -------------------------------
 			+ "FROM %s member "
 			// -------------------------------

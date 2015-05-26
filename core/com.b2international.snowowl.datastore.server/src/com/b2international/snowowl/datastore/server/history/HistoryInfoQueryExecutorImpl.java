@@ -232,7 +232,7 @@ public abstract class HistoryInfoQueryExecutorImpl implements HistoryInfoQueryEx
 		}
 	}
 
-	private Object[] createPrimaryComponentInfo(final ResultSet rs) throws SQLException {
+	protected Object[] createPrimaryComponentInfo(final ResultSet rs) throws SQLException {
 		return new Object[] { 
 				rs.getLong(1) // created timestamp 
 		};

@@ -15,13 +15,12 @@
  */
 package com.b2international.snowowl.datastore.server.snomed.history;
 
-import com.b2international.snowowl.datastore.server.history.PreparedStatementKey;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 
 /**
  * Contains SQL queries used for populating the history page of SNOMED CT concepts. 
  */
-public enum SnomedConceptHistoryQueries implements PreparedStatementKey {
+public enum SnomedConceptHistoryQueries {
 
 	/**
 	 * Query parameters:
@@ -31,7 +30,7 @@ public enum SnomedConceptHistoryQueries implements PreparedStatementKey {
 	 * <li>Ending timestamp for the current CDO branch segment ("infinity" or base of child branch)</li>
 	 * <ol>
 	 */
-	CONCEPT_CHANGES_FROM_BRANCH("SELECT "
+	CONCEPT_CHANGES("SELECT "
 			+ "concept.CDO_CREATED, "
 			+ "concept.INBOUNDRELATIONSHIPS "
 			// -------------------------------
@@ -50,7 +49,7 @@ public enum SnomedConceptHistoryQueries implements PreparedStatementKey {
 	 * <li>Ending timestamp for the current CDO branch segment ("infinity" or base of child branch)</li>
 	 * <ol>
 	 */
-	DESCRIPTION_CHANGES_FROM_BRANCH("SELECT "
+	DESCRIPTION_CHANGES("SELECT "
 			+ "description.CDO_ID, "
 			+ "description.CDO_CREATED, "
 			+ "description.CDO_REVISED "
@@ -71,7 +70,7 @@ public enum SnomedConceptHistoryQueries implements PreparedStatementKey {
 	 * <li>Ending timestamp for the current CDO branch segment ("infinity" or base of child branch)</li>
 	 * <ol>
 	 */
-	RELATIONSHIP_CHANGES_FROM_BRANCH("SELECT "
+	RELATIONSHIP_CHANGES("SELECT "
 			+ "relationship.CDO_ID, "
 			+ "relationship.CDO_CREATED, "
 			+ "relationship.CDO_REVISED "
@@ -93,7 +92,7 @@ public enum SnomedConceptHistoryQueries implements PreparedStatementKey {
 	 * <li>Ending timestamp for the current CDO branch segment ("infinity" or base of child branch)</li>
 	 * <ol>
 	 */
-	CONCEPT_PT_CHANGES_FROM_BRANCH("SELECT "
+	CONCEPT_PT_CHANGES("SELECT "
 			+ "member.CDO_ID, "
 			+ "member.CDO_CREATED, "
 			+ "member.CDO_REVISED "
@@ -117,7 +116,7 @@ public enum SnomedConceptHistoryQueries implements PreparedStatementKey {
 	 * <li>Ending timestamp for the current CDO branch segment ("infinity" or base of child branch)</li>
 	 * <ol>
 	 */
-	RELATED_REFERENCE_SET_MEMBER_CHANGES_FROM_BRANCH_TEMPLATE("SELECT "
+	RELATED_REFERENCE_SET_MEMBER_CHANGES("SELECT "
 			+ "member.CDO_ID, "
 			+ "member.CDO_CREATED, "
 			+ "member.CDO_REVISED "
