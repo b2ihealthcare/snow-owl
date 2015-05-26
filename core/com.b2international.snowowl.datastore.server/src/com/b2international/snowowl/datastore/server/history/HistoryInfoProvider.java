@@ -301,9 +301,8 @@ public enum HistoryInfoProvider {
 	}
 
 	private PreparedStatement prepareStatement(final InternalHistoryInfoConfiguration configuration, final Long timeStamp) throws SQLException {
-		final PreparedStatement statement = configuration.getConnection().prepareStatement(DatastoreQueries.SQL_GET_COMMIT_INFO_DATA);
+		final PreparedStatement statement = configuration.getConnection().prepareStatement(DatastoreQueries.SQL_GET_COMMIT_INFO_DATA.getQuery());
 		statement.setLong(1, timeStamp.longValue());
-		statement.setInt(2, configuration.getBranchId());
 		return statement;
 	}
 
@@ -329,14 +328,9 @@ public enum HistoryInfoProvider {
 		for (final Entry<CDOID, Long> entry : map.entrySet()) {
 			final long commitTime = entry.getValue();
 			final CDOID cdoid = entry.getKey();
-			CDOBranchPoint branchPoint = branch.getPoint(commitTime);
-			
-			while (commitTime < branchPoint.getBranch().getBase().getTimeStamp()) {
-				branchPoint = branch.getBase().getBranch().getPoint(commitTime);
-			}
+			final CDOBranchPoint branchPoint = branch.getPoint(commitTime);
 			idBranchPoint.put(cdoid, branchPoint);
 			affectedRevisions.put(cdoid, revisionManager.getRevision(cdoid, branchPoint, CDORevision.UNCHUNKED, CDORevision.DEPTH_NONE, true));
-			
 		}    			
 		
 		final List<CDOIDAndVersion> newObjects = Lists.newArrayList();
