@@ -39,6 +39,6 @@ public class AlreadyExistsException extends ConflictException {
 	private static String formatMessage(final String type, final String id) {
 		checkNotNull(type, "type");
 		checkNotNull(id, "id");
-		return String.format("%s with %s identifier already exists.", type, id);
+		return String.format("%s with '%s' identifier already exists.", type, id);
 	}
 }
