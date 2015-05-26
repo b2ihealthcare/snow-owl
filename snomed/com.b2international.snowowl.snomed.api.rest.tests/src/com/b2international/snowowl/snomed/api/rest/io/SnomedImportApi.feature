@@ -27,7 +27,7 @@ import com.b2international.snowowl.snomed.SnomedConstants.Concepts
 Feature: SnomedImportApi
 
 	Background:
-		static String API = "/snomed-ct/v2"
+		public static String API = "/snomed-ct/v2"
 		var req = givenAuthenticatedRequest(API)
 		var Response res
 		var public String importId

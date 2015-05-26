@@ -16,10 +16,12 @@
 package com.b2international.snowowl.snomed.api.rest.versioning
 
 import com.b2international.snowowl.snomed.api.rest.components.*
+import com.b2international.snowowl.snomed.api.rest.branching.*
 import static extension com.b2international.snowowl.test.commons.rest.RestExtensions.*
 import java.util.Map
 import com.jayway.restassured.response.Response
 import com.jayway.restassured.specification.RequestSpecification
+import com.b2international.snowowl.snomed.api.rest.io.*
 
 /**
  * @since 2.0
@@ -65,3 +67,12 @@ Feature: SnomedVersioningApi
 		Given new "sct-v2" version request with effective time "20150101"
 		When sending POST to "/codesystems/SNOMEDCT/versions"
 		Then return "400" status
+
+	Scenario: Create SNOMED-CT branch under MAIN and version with same name
+		
+		Given branch "version-branch-conflict" under "MAIN"
+		And new "version-branch-conflict" version request with effective time "20150202"
+		When sending POST to "/codesystems/SNOMEDCT/versions"
+		Then return "409" status
+		And version should not exists as "/codesystems/SNOMEDCT/versions/version-branch-conflict"
+			API.get(args.first).expectStatus(404)
