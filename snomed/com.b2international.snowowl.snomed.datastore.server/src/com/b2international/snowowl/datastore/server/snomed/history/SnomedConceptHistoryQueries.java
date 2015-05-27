@@ -39,7 +39,7 @@ public enum SnomedConceptHistoryQueries {
 			+ "WHERE concept.CDO_ID = ? "
 			+ "AND concept.CDO_BRANCH = ? "
 			+ "AND concept.CDO_CREATED <= ? "
-			+ "ORDER BY concept.CDO_CREATED "),
+			+ "ORDER BY concept.CDO_CREATED DESC "),
 
 	/**
 	 * Query parameters:

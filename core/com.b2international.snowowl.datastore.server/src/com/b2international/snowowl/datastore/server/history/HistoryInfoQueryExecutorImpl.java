@@ -242,11 +242,11 @@ public abstract class HistoryInfoQueryExecutorImpl implements HistoryInfoQueryEx
 	protected void registerPrimaryComponentModifications(final InternalHistoryInfoConfiguration configuration, 
 			final SortedMap<Long, IVersion<CDOID>> modifications, final List<Object[]> info) {
 		
-		int majorVersion = INITIAL_MAJOR_VERSION; 
+		int majorVersion = info.size(); 
 		
 		for (final Object[] objectInfo : info) {
 			final long timestamp = (long) objectInfo[0];
-			final Version version = new Version(majorVersion++);
+			final Version version = new Version(majorVersion--);
 			version.addAffectedObjectId(configuration.getCdoId(), timestamp);
 			modifications.put(timestamp, version);
 		}

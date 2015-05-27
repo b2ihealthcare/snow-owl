@@ -37,7 +37,7 @@ public enum ComponentHistoryQueries implements PreparedStatementKey {
 			+ "WHERE component.CDO_ID = ? " 
 			+ "AND component.CDO_BRANCH = ? "
 			+ "AND component.CDO_CREATED <= ? "
-			+ "ORDER BY component.CDO_CREATED ");
+			+ "ORDER BY component.CDO_CREATED DESC ");
 	
 	private final String queryTemplate;
 	
