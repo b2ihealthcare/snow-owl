@@ -11,7 +11,8 @@
 	<!-- REST should have no state, each request is re-authenticated -->
 	<http create-session="stateless">
 		<intercept-url pattern="/api-docs/**" access="IS_AUTHENTICATED_ANONYMOUSLY" />
-		<intercept-url pattern="/api-viewer/**" access="IS_AUTHENTICATED_ANONYMOUSLY" />
+		<intercept-url pattern="/static/**" access="IS_AUTHENTICATED_ANONYMOUSLY" />
+		<intercept-url pattern="/" access="IS_AUTHENTICATED_ANONYMOUSLY" />
 		<intercept-url pattern="/**" access="ROLE_USER" />
 		<http-basic />
 	</http>
