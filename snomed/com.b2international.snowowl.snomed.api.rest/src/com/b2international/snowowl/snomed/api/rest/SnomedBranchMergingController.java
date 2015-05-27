@@ -37,7 +37,7 @@ import com.wordnik.swagger.annotations.Api;
 /**
  * @since 4.1
  */
-@Api("SNOMED CT Branches")
+@Api("Branches")
 @RestController
 @RequestMapping(value="/merges")
 public class SnomedBranchMergingController {

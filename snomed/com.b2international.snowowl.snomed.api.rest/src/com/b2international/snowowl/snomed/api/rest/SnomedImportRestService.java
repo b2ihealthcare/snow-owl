@@ -51,11 +51,11 @@ import com.wordnik.swagger.annotations.ApiResponses;
 /**
  * @since 1.0
  */
+@Api("Imports")
 @RestController
 @RequestMapping(
 		value="/imports",
 		produces={ AbstractRestService.SO_MEDIA_TYPE, MediaType.APPLICATION_JSON_VALUE })
-@Api(value="SNOMED CT Import")
 public class SnomedImportRestService extends AbstractSnomedRestService {
 
 	@Autowired

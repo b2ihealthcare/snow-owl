@@ -41,7 +41,7 @@ import com.wordnik.swagger.annotations.ApiResponses;
 /**
  * @since 1.0
  */
-@Api("SNOMED CT Identifiers")
+@Api("Identifiers")
 @RestController
 @RequestMapping(value="/ids", produces = { AbstractRestService.SO_MEDIA_TYPE })
 public class SnomedIdentifierRestService extends AbstractRestService {

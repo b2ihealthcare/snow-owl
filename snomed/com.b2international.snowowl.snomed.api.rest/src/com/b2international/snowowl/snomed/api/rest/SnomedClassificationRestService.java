@@ -54,7 +54,7 @@ import com.wordnik.swagger.annotations.ApiResponses;
 /**
  * @since 1.0
  */
-@Api("SNOMED CT Classification")
+@Api("Classifications")
 @Controller
 @RequestMapping(produces={ AbstractRestService.SO_MEDIA_TYPE })
 public class SnomedClassificationRestService extends AbstractSnomedRestService {

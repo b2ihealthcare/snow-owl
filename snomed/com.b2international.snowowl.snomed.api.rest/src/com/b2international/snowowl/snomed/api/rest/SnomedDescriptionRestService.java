@@ -49,7 +49,7 @@ import com.wordnik.swagger.annotations.ApiResponses;
 /**
  * @since 1.0
  */
-@Api("SNOMED CT Descriptions")
+@Api("Descriptions")
 @RestController
 @RequestMapping(
 		produces={ AbstractRestService.SO_MEDIA_TYPE })

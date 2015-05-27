@@ -35,7 +35,7 @@ import com.wordnik.swagger.annotations.ApiOperation;
  * @since 1.0
  */
 @ApiIgnore
-@Api("SNOMED CT History")
+@Api("History")
 @RestController
 @RequestMapping(
 		produces={ AbstractRestService.SO_MEDIA_TYPE })

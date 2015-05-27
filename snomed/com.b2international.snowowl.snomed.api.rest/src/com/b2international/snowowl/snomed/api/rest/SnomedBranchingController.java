@@ -46,11 +46,14 @@ import com.b2international.snowowl.snomed.api.rest.domain.CollectionResource;
 import com.b2international.snowowl.snomed.api.rest.domain.CreateSnomedBranchRequest;
 import com.b2international.snowowl.snomed.api.rest.util.Responses;
 import com.wordnik.swagger.annotations.Api;
+import com.wordnik.swagger.annotations.ApiOperation;
+import com.wordnik.swagger.annotations.ApiResponse;
+import com.wordnik.swagger.annotations.ApiResponses;
 
 /**
  * @since 4.1
  */
-@Api("SNOMED CT Branches")
+@Api("Branches")
 @RestController
 @RequestMapping(value="/branches", produces={MediaType.APPLICATION_JSON_VALUE})
 public class SnomedBranchingController extends AbstractRestService {
@@ -59,7 +62,14 @@ public class SnomedBranchingController extends AbstractRestService {
 	
 	@Autowired 
 	private IEventBus bus;
-	
+
+	@ApiOperation(
+		value = "Create a new branch", 
+		notes = "Create a new branch in the SNOMED-CT repository.")
+	@ApiResponses({
+		@ApiResponse(code = 201, message = "Created"),
+		@ApiResponse(code = 400, message = "Bad Request")
+	})
 	@RequestMapping(method=RequestMethod.POST)
 	@ResponseStatus(HttpStatus.CREATED)
 	public DeferredResult<ResponseEntity<Void>> createBranch(@RequestBody CreateSnomedBranchRequest request) {
@@ -77,6 +87,12 @@ public class SnomedBranchingController extends AbstractRestService {
 		return result;
 	}
 	
+	@ApiOperation(
+		value = "Retrieve all branches", 
+		notes = "Returns all SNOMED-CT branches from the repository.")
+	@ApiResponses({
+		@ApiResponse(code = 200, message = "OK")
+	})
 	@RequestMapping(method=RequestMethod.GET)
 	public DeferredResult<CollectionResource<Branch>> getBranches() {
 		final DeferredResult<CollectionResource<Branch>> result = new DeferredResult<>();
@@ -91,6 +107,13 @@ public class SnomedBranchingController extends AbstractRestService {
 		return result;
 	}
 	
+	@ApiOperation(
+		value = "Retrieve children of a single branch", 
+		notes = "Returns the children of a single SNOMED-CT branch (both direct and transitive).")
+	@ApiResponses({
+		@ApiResponse(code = 200, message = "OK"),
+		@ApiResponse(code = 404, message = "Not Found"),
+	})
 	@RequestMapping(value="/{path:**}/children", method=RequestMethod.GET)
 	public DeferredResult<CollectionResource<Branch>> getChildren(@PathVariable("path") String branchPath) {
 		final DeferredResult<CollectionResource<Branch>> result = new DeferredResult<>();
@@ -105,6 +128,13 @@ public class SnomedBranchingController extends AbstractRestService {
 		return result;
 	}
 	
+	@ApiOperation(
+		value = "Retrieve a single branch", 
+		notes = "Returns a SNOMED-CT branch.")
+	@ApiResponses({
+		@ApiResponse(code = 200, message = "OK"),
+		@ApiResponse(code = 404, message = "Not Found"),
+	})
 	@RequestMapping(value="/{path:**}", method=RequestMethod.GET)
 	public DeferredResult<Branch> getBranch(@PathVariable("path") String branchPath) {
 		final DeferredResult<Branch> result = new DeferredResult<>();
@@ -119,6 +149,17 @@ public class SnomedBranchingController extends AbstractRestService {
 		return result;
 	}
 	
+	@ApiOperation(
+		value = "Delete a branch", 
+		notes = "Deletes a branch and all its children."
+				+ "<p>"
+				+ "Note that deleted branch are still available and will be listed in <b>GET /branches</b> but with the flag <b>deleted</b> set to <i>true</i>. "
+				+ "The API will return <strong>HTTP 400</strong> responses, if clients send requests to <strong>deleted</strong> branches."
+				+ "</p>")
+	@ApiResponses({
+		@ApiResponse(code = 200, message = "OK"),
+		@ApiResponse(code = 404, message = "Not Found"),
+	})
 	@RequestMapping(value="/{path:**}", method=RequestMethod.DELETE)
 	@ResponseStatus(HttpStatus.NO_CONTENT)
 	public DeferredResult<ResponseEntity<Void>> deleteBranch(@PathVariable("path") String branchPath) {

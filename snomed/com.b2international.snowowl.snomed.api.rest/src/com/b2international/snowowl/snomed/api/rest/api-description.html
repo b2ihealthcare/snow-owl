@@ -1,0 +1,33 @@
+This describes the resources that make up the official Snow Owl SNOMED-CT Terminology API. If you have any problems or requests please contact <a href="mailto:info@b2international.com">support</a>.
+
+<p>
+	<h2>Current Version</h2>
+	<p>SNOMED-CT API endpoints are currently have version <b>v2</b>. You have to explicitly set the version of the API via path parameter. For example:</p>
+	<pre><code>GET /snomed-ct/v2/branches</code></pre>
+</p>
+
+<p>
+	<h2>Schema</h2>
+	<p>All data is sent and received as JSON. Blank fields are omitted instead of being included as <code>null</code>.</p>
+	<p>All non-effective time timestamps are returned in ISO 8601 format:</p>
+	<pre><code>YYYY-MM-DDTHH:MM:SSZ</code></pre>
+	
+	<p>Effective Time values are sent and received in short format:</p>
+	<pre><code>yyyyMMdd</code></pre>
+</p>
+
+<p>
+	<h2>Client Errors</h2>
+	<p>There are three possible types of client errors on API calls that receive request bodies:</p>
+	<ol>
+  		<li>
+    	<p>Sending invalid JSON will result in a <code>400 Bad Request</code> response.</p>
+    	<pre><code class="json">HTTP/1.1 400 Bad Request 
+{
+	"status" : "400",
+	"message" : "Invalid JSON representation",
+	"developerMessage" : "detailed information about the error for developers"
+}</code></pre>
+  	</li>
+</ol>
+</p>

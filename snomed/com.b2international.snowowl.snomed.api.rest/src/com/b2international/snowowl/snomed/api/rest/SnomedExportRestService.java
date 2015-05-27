@@ -65,10 +65,10 @@ import com.wordnik.swagger.annotations.ApiResponses;
 /**
  * @since 1.0
  */
+@Api("Exports")
 @RestController
 @RequestMapping(
 		value="/exports", produces = { AbstractRestService.SO_MEDIA_TYPE })
-@Api("SNOMED CT Export")
 public class SnomedExportRestService extends AbstractSnomedRestService {
 
 	@Autowired

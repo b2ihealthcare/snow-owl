@@ -15,6 +15,8 @@
  */
 package com.b2international.snowowl.snomed.api.rest;
 
+import java.io.File;
+import java.io.IOException;
 import java.security.Principal;
 import java.util.List;
 import java.util.TimeZone;
@@ -36,6 +38,7 @@ import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 import org.springframework.web.servlet.config.annotation.PathMatchConfigurer;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurerAdapter;
 
+import com.b2international.commons.platform.PlatformUtil;
 import com.b2international.snowowl.core.Metadata;
 import com.b2international.snowowl.core.MetadataHolder;
 import com.b2international.snowowl.core.MetadataHolderMixin;
@@ -53,6 +56,9 @@ import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.databind.util.ISO8601DateFormat;
 import com.fasterxml.jackson.datatype.guava.GuavaModule;
 import com.fasterxml.jackson.module.scala.DefaultScalaModule;
+import com.google.common.base.Charsets;
+import com.google.common.base.Joiner;
+import com.google.common.io.Files;
 import com.mangofactory.swagger.configuration.SpringSwaggerConfig;
 import com.mangofactory.swagger.models.alternates.AlternateTypeRule;
 import com.mangofactory.swagger.paths.RelativeSwaggerPathProvider;
@@ -76,7 +82,6 @@ public class ServicesConfiguration extends WebMvcConfigurerAdapter {
 	private String apiVersion;
 
 	private String apiTitle;
-	private String apiDescription;
 	private String apiTermsOfServiceUrl;
 	private String apiContact;
 	private String apiLicense;
@@ -102,12 +107,6 @@ public class ServicesConfiguration extends WebMvcConfigurerAdapter {
 	@Value("${api.title}")
 	public void setApiTitle(final String apiTitle) {
 		this.apiTitle = apiTitle;
-	}
-
-	@Autowired
-	@Value("${api.description}")
-	public void setApiDescription(final String apiDescription) {
-		this.apiDescription = apiDescription;
 	}
 
 	@Autowired
@@ -137,7 +136,7 @@ public class ServicesConfiguration extends WebMvcConfigurerAdapter {
 	@Bean
 	public SwaggerSpringMvcPlugin swaggerSpringMvcPlugin() {
 		final SwaggerSpringMvcPlugin swaggerSpringMvcPlugin = new SwaggerSpringMvcPlugin(springSwaggerConfig);
-		swaggerSpringMvcPlugin.apiInfo(new ApiInfo(apiTitle, apiDescription, apiTermsOfServiceUrl, apiContact, apiLicense, apiLicenseUrl));
+		swaggerSpringMvcPlugin.apiInfo(new ApiInfo(apiTitle, readApiDescription(), apiTermsOfServiceUrl, apiContact, apiLicense, apiLicenseUrl));
 		swaggerSpringMvcPlugin.apiVersion(apiVersion);
 		swaggerSpringMvcPlugin.pathProvider(new RelativeSwaggerPathProvider(servletContext));
 		swaggerSpringMvcPlugin.useDefaultResponseMessages(false);
@@ -147,6 +146,15 @@ public class ServicesConfiguration extends WebMvcConfigurerAdapter {
 		swaggerSpringMvcPlugin.alternateTypeRules(new AlternateTypeRule(resolver.resolve(UUID.class), resolver.resolve(String.class)));
 
 		return swaggerSpringMvcPlugin;
+	}
+
+	private String readApiDescription() {
+		try {
+			final File apiDesc = new File(PlatformUtil.toAbsolutePath(ServicesConfiguration.class, "api-description.html"));
+			return Joiner.on("\n").join(Files.readLines(apiDesc, Charsets.UTF_8));
+		} catch (IOException e) {
+			throw new RuntimeException("Failed to read api-description.html file", e);
+		}
 	}
 
 	@Bean
