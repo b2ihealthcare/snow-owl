@@ -72,11 +72,11 @@ public class SnomedRelationshipValidator extends AbstractSnomedValidator {
 					lineNumber, releaseFileName, row.get(0)));
 		}
 
-		validateComponentExists(row.get(4), ReleaseComponentType.CONCEPT, sourceConceptNotExist, lineNumber);
-		validateComponentExists(row.get(5), ReleaseComponentType.CONCEPT, destinationConceptNotExist, lineNumber);
-		validateComponentExists(row.get(7), ReleaseComponentType.CONCEPT, typeConceptNotExist, lineNumber);
-		validateComponentExists(row.get(8), ReleaseComponentType.CONCEPT, characteristicTypeConceptNotExist, lineNumber);
-		validateComponentExists(row.get(9), ReleaseComponentType.CONCEPT, modifierConceptNotExist, lineNumber);
+		validateComponentExists(row.get(4), row.get(4), ReleaseComponentType.CONCEPT, sourceConceptNotExist, lineNumber);
+		validateComponentExists(row.get(5), row.get(4), ReleaseComponentType.CONCEPT, destinationConceptNotExist, lineNumber);
+		validateComponentExists(row.get(7), row.get(4), ReleaseComponentType.CONCEPT, typeConceptNotExist, lineNumber);
+		validateComponentExists(row.get(8), row.get(4), ReleaseComponentType.CONCEPT, characteristicTypeConceptNotExist, lineNumber);
+		validateComponentExists(row.get(9), row.get(4), ReleaseComponentType.CONCEPT, modifierConceptNotExist, lineNumber);
 	}
 
 	@Override

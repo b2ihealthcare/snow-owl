@@ -17,3 +17,6 @@ target
 .Spotlight-V100
 .Trashes
 *.log
+*.iml
+*.idea
+.classpath
