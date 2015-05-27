@@ -173,7 +173,7 @@ public class PlatformUtil {
 	 */
 	public static String toAbsolutePathBundleEntry(Class<?> contextClass, String path) {
 		final Bundle bundle = checkNotNull(FrameworkUtil.getBundle(contextClass), "Bundle not found for %s", contextClass);
-		return toAbsoluteBundlePath(checkNotNull(bundle.getEntry(path), "Bundle entry not found at %s", path));
+		return toAbsoluteBundlePath(checkNotNull(bundle.getEntry(path), "Bundle entry not found at %s in bundle %s", path, bundle.getSymbolicName()));
 	}
 
 }
