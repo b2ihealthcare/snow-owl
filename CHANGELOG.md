@@ -3,23 +3,26 @@ All notable changes to this project will be documented in this file.
 
 ## 2015-05-27
 ### Added
-- `WRP-X`: deep branching support has been implemented.
+- Deep branching support has been implemented
   * `POST` `/branches` endpoint
   * `GET` `/branches` endpoint
   * `DELETE` `/branches/{path}` endpoint
   * `GET` `/branches/{path}` endpoint
   * `GET` `/branches/{path}/children` endpoint
   * `POST` `/merges` endpoint
+
 ### Changed
-- Added support for Unpublished component import. RF2 rows with empty effectiveTime column can be imported into Snow Owl SNOMED-CT repository.
+- Added support for Unpublished component import. RF2 rows with empty effectiveTime column can be imported into Snow Owl SNOMED CT repository.
 - Breaking RESTful API changes
-  * `/{tag}[/tasks/{taskId}]/...` URLs are replaced with URL beginning with`/{path}/...`
+  * `/{tag}[/tasks/{taskId}]/...` URLs are replaced with URL beginning with `/{path}/...`, where "path" may include an arbitrary number of `/`-separated segments
 - Separate API documentation for each RESTful API
   * `Administrative`: http://localhost:8080/snowowl/admin/
-  * `SNOMED-CT`: http://localhost:8080/snowowl/snomed-ct/v2/
+  * `SNOMED CT`: http://localhost:8080/snowowl/snomed-ct/v2/
 - API documentation layout
   * Two column layout, one for the API docs and one for the Swagger UI
 - Deep branching support for Import/Export configuration (new `branchPath`)
+- API version is now included in SNOMED CT REST service URLs; the accepted media type is `application/vnd.com.b2international.snowowl+json` for both Administrative and SNOMED CT terminology services
+
 ### Removed
 - Breaking RESTful API changes
   * Removed /tasks API endpoints
