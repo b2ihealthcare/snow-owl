@@ -98,7 +98,8 @@ public class CodeSystemVersionRestService extends AbstractRestService {
 			notes="Creates a new code system version in the specified terminology.")
 	@ApiResponses({
 		@ApiResponse(code = 201, message = "Created"),
-		@ApiResponse(code = 404, message = "Code system not found", response = RestApiError.class)
+		@ApiResponse(code = 404, message = "Code system not found", response = RestApiError.class),
+		@ApiResponse(code = 409, message = "Code system version conflicts with existing branch", response = RestApiError.class)
 	})
 	@RequestMapping(method=RequestMethod.POST, consumes = { AbstractRestService.SO_MEDIA_TYPE, MediaType.APPLICATION_JSON_VALUE })
 	@ResponseStatus(value=HttpStatus.CREATED)
