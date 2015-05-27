@@ -344,7 +344,7 @@ public abstract class AbstractSnomedTaxonomyBuilder implements ISnomedTaxonomyBu
 	public LongSet getDescendantNodeIds(final String conceptId) {
 		checkState();
 		checkNotNull(conceptId, "Concept ID argument cannot be null.");
-		return processElements(getNodeIdFunction, descendants[getInternalId(conceptId)]);
+		return processElements(conceptId, getNodeIdFunction, descendants[getInternalId(conceptId)]);
 	}
 	
 	/*
@@ -355,7 +355,7 @@ public abstract class AbstractSnomedTaxonomyBuilder implements ISnomedTaxonomyBu
 	public LongSet getAncestorNodeIds(final String conceptId) {
 		checkState();
 		checkNotNull(conceptId, "Concept ID argument cannot be null.");
-		return processElements(getNodeIdFunction, ancestors[getInternalId(conceptId)]);
+		return processElements(conceptId, getNodeIdFunction, ancestors[getInternalId(conceptId)]);
 	}
 
 	/*
@@ -523,14 +523,19 @@ public abstract class AbstractSnomedTaxonomyBuilder implements ISnomedTaxonomyBu
 		return $;
 	}
 	
-	private LongSet processElements(final IntToLongFunction function, final int... internalIds) {
+	private LongSet processElements(final String conceptId, final IntToLongFunction function, final int... internalIds) {
 		Preconditions.checkNotNull(function, "Function argument cannot be null.");
 		if (CompareUtils.isEmpty(internalIds)) {
 			return new LongOpenHashSet();
 		}
 		final LongSet $ = new LongOpenHashSet(internalIds.length); //optimized load factor
+		final long conceptIdLong = Long.parseLong(conceptId);
 		for (final int i : internalIds) {
-			$.add(function.apply(i));
+			long convertedId = function.apply(i);
+			if (conceptIdLong == convertedId) {
+				throw new IllegalStateException("Concept ID " + conceptId + " found in parent or child result set (loop).");
+			}
+			$.add(convertedId);
 		}
 		return $;
 	}
