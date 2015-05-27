@@ -256,7 +256,6 @@ public enum HistoryInfoProvider {
 		
 		try (
 			final PreparedStatement statement = prepareStatement(configuration, timeStamp);
-			
 			final ResultSet resultSet = statement.executeQuery();
 		) {
 			final boolean hasResult = resultSet.next();
@@ -267,7 +266,6 @@ public enum HistoryInfoProvider {
 			
 			author = String.valueOf(resultSet.getObject(1));
 			comments = String.valueOf(resultSet.getObject(2));
-			
 		} 
 		
 		if (System.currentTimeMillis() - startTime > timeout) {
@@ -285,7 +283,9 @@ public enum HistoryInfoProvider {
 			if (commitInfo != null) {
 				
 				currentView = connection.createView(branch, commitInfo.getTimeStamp(), false);
-				beforeView = connection.createView(branch, commitInfo.getPreviousTimeStamp(), incomplete);
+				
+				final CDOBranchPoint beforeBranchPoint = getAdjustedBranchPoint(branch, commitInfo.getPreviousTimeStamp());
+				beforeView = connection.createView(beforeBranchPoint.getBranch(), beforeBranchPoint.getTimeStamp(), incomplete);
 				
 				final HistoryInfoDetailsBuilder builder = // 
 						HistoryInfoDetailsBuilderProvider.INSTANCE.getBuilder(configuration.getTerminologyComponentId());
@@ -293,10 +293,10 @@ public enum HistoryInfoProvider {
 			}
 			
 		} finally {
-			
 			LifecycleUtil.deactivate(currentView);
 			LifecycleUtil.deactivate(beforeView);
 		}
+
 		return new HistoryInfo(timeStamp, version, author, comments, incomplete, details);
 	}
 
@@ -328,7 +328,7 @@ public enum HistoryInfoProvider {
 		for (final Entry<CDOID, Long> entry : map.entrySet()) {
 			final long commitTime = entry.getValue();
 			final CDOID cdoid = entry.getKey();
-			final CDOBranchPoint branchPoint = branch.getPoint(commitTime);
+			final CDOBranchPoint branchPoint = getAdjustedBranchPoint(branch, commitTime);
 			idBranchPoint.put(cdoid, branchPoint);
 			affectedRevisions.put(cdoid, revisionManager.getRevision(cdoid, branchPoint, CDORevision.UNCHUNKED, CDORevision.DEPTH_NONE, true));
 		}    			
@@ -342,7 +342,8 @@ public enum HistoryInfoProvider {
     		if (entry.getValue() == null) {
     			final CDOID cdoId = entry.getKey();
     			final CDOBranchPoint branchPoint = idBranchPoint.get(cdoId);
-				final CDORevision previousRevision = revisionManager.getRevision(cdoId, branchPoint.getBranch().getPoint(branchPoint.getTimeStamp() - 1), CDORevision.UNCHUNKED, CDORevision.DEPTH_NONE, true);
+    			final CDOBranchPoint previousBranchPoint = getAdjustedBranchPoint(branchPoint.getBranch(), branchPoint.getTimeStamp() - 1L);
+				final CDORevision previousRevision = revisionManager.getRevision(cdoId, previousBranchPoint, CDORevision.UNCHUNKED, CDORevision.DEPTH_NONE, true);
 				detachedObjects.add(previousRevision);
 				continue;
     		}
@@ -388,7 +389,21 @@ public enum HistoryInfoProvider {
 						detachedObjects));
 		
 		return commitInfo;
-    
+	}
+
+	/*
+	 * XXX: Returns a CDOBranchPoint with the actual branch the specified timestamp belongs to. This is required because
+	 * certain parts of CDO truncate the untreated branch point to branch base points if the timestamp is before the
+	 * branch start point.
+	 */
+	private static CDOBranchPoint getAdjustedBranchPoint(final CDOBranch branch, final long timeStamp) {
+		CDOBranchPoint branchPoint = branch.getPoint(timeStamp);
+		
+		while (!branchPoint.getBranch().isMainBranch() && branchPoint.getTimeStamp() < branchPoint.getBranch().getBase().getTimeStamp()) {
+			branchPoint = branchPoint.getBranch().getBase().getBranch().getPoint(branchPoint.getTimeStamp());
+		}
+		
+		return branchPoint;
 	}
 	
 	private CDOView openView(final HistoryInfoConfiguration configuration) {
