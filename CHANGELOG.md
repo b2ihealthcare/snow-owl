@@ -27,6 +27,11 @@ All notable changes to this project will be documented in this file.
 - Breaking RESTful API changes
   * Removed /tasks API endpoints
 
+### Known issues
+- Associated index directories are not purged when a branch and any children are deleted
+- Reopening a branch can not be rolled back; if applying changes fails after reopening a branch during rebase or merge operations, previous changes will be lost
+- No additional metadata is present on version tag branches
+
 ## 2015-03-26
 ### Added
 - `WRP-89`: both `FULL` and `DELTA` imports are now separating incoming import files into "layers" based on the effective time columns, and individual layers get imported in order. This enables importing the `20150131` INT RF2 release delta, which includes components from `20140731` as well. The import process can now create versions after importing each "layer" for all import types.
