@@ -44,6 +44,7 @@ import com.b2international.snowowl.snomed.api.rest.domain.ClassificationRestInpu
 import com.b2international.snowowl.snomed.api.rest.domain.ClassificationRestRun;
 import com.b2international.snowowl.snomed.api.rest.domain.CollectionResource;
 import com.b2international.snowowl.snomed.api.rest.domain.PageableCollectionResource;
+import com.b2international.snowowl.snomed.api.rest.domain.RestApiError;
 import com.b2international.snowowl.snomed.api.rest.util.Responses;
 import com.wordnik.swagger.annotations.Api;
 import com.wordnik.swagger.annotations.ApiOperation;
@@ -67,7 +68,7 @@ public class SnomedClassificationRestService extends AbstractSnomedRestService {
 			notes="Returns a list of classification runs for a branch.")
 	@ApiResponses({
 		@ApiResponse(code = 200, message = "OK"),
-		@ApiResponse(code = 404, message = "Branch not found")
+		@ApiResponse(code = 404, message = "Branch not found", response=RestApiError.class)
 	})
 	@RequestMapping(value="/{path:**}/classifications", method=RequestMethod.GET)
 	public @ResponseBody CollectionResource<IClassificationRun> getAllClassificationRuns(
@@ -87,7 +88,7 @@ public class SnomedClassificationRestService extends AbstractSnomedRestService {
 					+ "to determine whether it's completed or not.")
 	@ApiResponses({
 		@ApiResponse(code = 201, message = "Created"),
-		@ApiResponse(code = 404, message = "Branch not found")
+		@ApiResponse(code = 404, message = "Branch not found", response=RestApiError.class)
 	})
 	@RequestMapping(
 			value="/{path:**}/classifications", 
@@ -113,7 +114,7 @@ public class SnomedClassificationRestService extends AbstractSnomedRestService {
 			value="Retrieve the state of a classification run from branch")
 	@ApiResponses({
 		@ApiResponse(code = 200, message = "OK"),
-		@ApiResponse(code = 404, message = "Branch or classification not found")
+		@ApiResponse(code = 404, message = "Branch or classification not found", response=RestApiError.class)
 	})
 	@RequestMapping(value="/{path:**}/classifications/{classificationId}", method=RequestMethod.GET)
 	public @ResponseBody IClassificationRun getClassificationRun(
@@ -136,7 +137,7 @@ public class SnomedClassificationRestService extends AbstractSnomedRestService {
 					+ " is returned if the classification hasn't finished yet, or no equivalent concepts could be found.")
 	@ApiResponses({
 		@ApiResponse(code = 200, message = "OK"),
-		@ApiResponse(code = 404, message = "Branch or classification not found")
+		@ApiResponse(code = 404, message = "Branch or classification not found", response=RestApiError.class)
 	})
 	@RequestMapping(value="/{path:**}/classifications/{classificationId}/equivalent-concepts", method=RequestMethod.GET)
 	public @ResponseBody CollectionResource<IEquivalentConceptSet> getEquivalentConceptSets(
@@ -159,7 +160,7 @@ public class SnomedClassificationRestService extends AbstractSnomedRestService {
 					+ " is returned if the classification hasn't finished yet, or no changed relationships could be found.")
 	@ApiResponses({
 		@ApiResponse(code = 200, message = "OK"),
-		@ApiResponse(code = 404, message = "Branch or classification not found")
+		@ApiResponse(code = 404, message = "Branch or classification not found", response=RestApiError.class)
 	})
 	@RequestMapping(value="/{path:**}/classifications/{classificationId}/relationship-changes", method=RequestMethod.GET)
 	public @ResponseBody PageableCollectionResource<IRelationshipChange> getRelationshipChanges(
@@ -193,7 +194,7 @@ public class SnomedClassificationRestService extends AbstractSnomedRestService {
 					+ "Currently only the state can be changed from 'COMPLETED' to 'SAVED'.")
 	@ApiResponses({
 		@ApiResponse(code = 204, message = "No content, update successful"),
-		@ApiResponse(code = 404, message = "Branch or classification not found")
+		@ApiResponse(code = 404, message = "Branch or classification not found", response=RestApiError.class)
 	})
 	@RequestMapping(
 			value="/{path:**}/classifications/{classificationId}", 
@@ -226,7 +227,7 @@ public class SnomedClassificationRestService extends AbstractSnomedRestService {
 			notes="Classification runs remain available until they are explicitly deleted by the client. Results of the classification cannot be retrieved after deletion.")
 	@ApiResponses({
 		@ApiResponse(code = 204, message = "No content, delete successful"),
-		@ApiResponse(code = 404, message = "Branch or classification not found")
+		@ApiResponse(code = 404, message = "Branch or classification not found", response=RestApiError.class)
 	})
 	@RequestMapping(value="/{path:**}/classifications/{classificationId}", method=RequestMethod.DELETE)
 	@ResponseStatus(value=HttpStatus.NO_CONTENT)

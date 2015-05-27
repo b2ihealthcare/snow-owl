@@ -298,7 +298,7 @@
 }
 .swagger-section .swagger-ui-wrap .info_description {
   
-  font-size: 12px;
+  font-size: 14px;
 }
 .swagger-section .swagger-ui-wrap .markdown ol li,
 .swagger-section .swagger-ui-wrap .markdown ul li {
@@ -1235,7 +1235,7 @@
 {
 	.content { padding: 2em 3em; }
 
-	.info_description
+	.info
 	{
 		float: left;
 		width: 48%;

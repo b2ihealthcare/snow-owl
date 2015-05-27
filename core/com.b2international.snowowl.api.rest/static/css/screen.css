@@ -123,7 +123,6 @@
 .swagger-section .swagger-ui-wrap {
   line-height: 1;
   font-family: "Droid Sans", sans-serif;
-  max-width: 1140px;
   margin-left: auto;
   margin-right: auto;
 }
@@ -298,8 +297,8 @@
   padding-bottom: 5px;
 }
 .swagger-section .swagger-ui-wrap .info_description {
-  padding-bottom: 10px;
-  font-size: 15px;
+  
+  font-size: 14px;
 }
 .swagger-section .swagger-ui-wrap .markdown ol li,
 .swagger-section .swagger-ui-wrap .markdown ul li {
@@ -1169,24 +1168,24 @@
   padding: 20px 0 20px 35px;
   color: white;
 }
-.swagger-section #header form#api_selector {
+.swagger-section #header div#navbar {
   display: block;
   clear: none;
   float: right;
 }
-.swagger-section #header form#api_selector .input {
+.swagger-section #header div#navbar .input {
   display: block;
   clear: none;
   float: left;
   margin: 0 10px 0 0;
 }
-.swagger-section #header form#api_selector .input input#input_apiKey {
+.swagger-section #header div#navbar .input input#input_apiKey {
   width: 200px;
 }
-.swagger-section #header form#api_selector .input input#input_baseUrl {
+.swagger-section #header div#navbar .input input#input_baseUrl {
   width: 400px;
 }
-.swagger-section #header form#api_selector .input a#explore {
+.swagger-section #header div#navbar .input a#explore {
   display: block;
   text-decoration: none;
   font-weight: bold;
@@ -1201,10 +1200,10 @@
   -khtml-border-radius: 4px;
   border-radius: 4px;
 }
-.swagger-section #header form#api_selector .input a#explore:hover {
+.swagger-section #header div#navbar .input a#explore:hover {
   background-color: #547f00;
 }
-.swagger-section #header form#api_selector .input input {
+.swagger-section #header div#navbar .input input {
   font-size: 0.9em;
   padding: 3px;
   margin: 0;
@@ -1218,4 +1217,37 @@
   min-height: 30px;
   text-align: center;
   padding-top: 10px;
+}
+
+.content
+{
+	overflow: hidden;
+	padding: 1em 1.25em;
+	background-color: #fff;
+}
+
+.main, .aside
+{
+	margin-bottom: 1em;
+}
+
+@media (min-width: 55em)
+{
+	.content { padding: 2em 3em; }
+
+	.info
+	{
+		float: left;
+		width: 48%;
+		margin-right: 2%;
+		margin-bottom: 1em;
+	}
+
+	.container
+	{
+		float: left;
+		width: 50%;
+		margin-bottom: 1em;
+	}
+
 }
