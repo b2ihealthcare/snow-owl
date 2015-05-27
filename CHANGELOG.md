@@ -1,6 +1,29 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
+## 2015-05-27
+### Added
+- `WRP-X`: deep branching support has been implemented.
+  * `POST` `/branches` endpoint
+  * `GET` `/branches` endpoint
+  * `DELETE` `/branches/{path}` endpoint
+  * `GET` `/branches/{path}` endpoint
+  * `GET` `/branches/{path}/children` endpoint
+  * `POST` `/merges` endpoint
+### Changed
+- Added support for Unpublished component import. RF2 rows with empty effectiveTime column can be imported into Snow Owl SNOMED-CT repository.
+- Breaking RESTful API changes
+  * `/{tag}[/tasks/{taskId}]/...` URLs are replaced with URL beginning with`/{path}/...`
+- Separate API documentation for each RESTful API
+  * `Administrative`: http://localhost:8080/snowowl/admin/
+  * `SNOMED-CT`: http://localhost:8080/snowowl/snomed-ct/v2/
+- API documentation layout
+  * Two column layout, one for the API docs and one for the Swagger UI
+- Deep branching support for Import/Export configuration (new `branchPath`)
+### Removed
+- Breaking RESTful API changes
+  * Removed /tasks API endpoints
+
 ## 2015-03-26
 ### Added
 - `WRP-89`: both `FULL` and `DELTA` imports are now separating incoming import files into "layers" based on the effective time columns, and individual layers get imported in order. This enables importing the `20150131` INT RF2 release delta, which includes components from `20140731` as well. The import process can now create versions after importing each "layer" for all import types.
