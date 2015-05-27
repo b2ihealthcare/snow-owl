@@ -141,11 +141,8 @@ public class InternalHistoryInfoConfigurationImpl implements InternalHistoryInfo
 		return HistoryInfoQueryExecutorProvider.INSTANCE.getExecutor(getTerminologyComponentId());
 	}
 	
-	private CloseableMap<PreparedStatementKey, PreparedStatement> tryGetStatements(
-			final HistoryInfoQueryExecutor executor) throws SQLException {
-		return ((HistoryInfoQueryExecutorImpl) executor).getPreparedStatements(
-				this.configuration.getBranchPath(), 
-				this.connection);
+	private CloseableMap<PreparedStatementKey, PreparedStatement> tryGetStatements(final HistoryInfoQueryExecutor executor) throws SQLException {
+		return ((HistoryInfoQueryExecutorImpl) executor).getPreparedStatements(connection);
 	}
 	
 	private static int getBranchId(final CDOView view) {

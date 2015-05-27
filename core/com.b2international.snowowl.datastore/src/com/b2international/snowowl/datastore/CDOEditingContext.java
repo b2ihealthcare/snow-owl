@@ -26,7 +26,6 @@ import static java.text.MessageFormat.format;
 
 import java.io.File;
 import java.io.IOException;
-import java.text.MessageFormat;
 import java.util.Collection;
 import java.util.ConcurrentModificationException;
 import java.util.Date;
@@ -123,7 +122,7 @@ public abstract class CDOEditingContext implements AutoCloseable {
 		// query the resources table, to get the index directly
 		final CDOObject container = object.eContainer()== null ? cdoObject.cdoResource() : (CDOObject) object.eContainer();
 		final int version = container.cdoRevision().getVersion();
-		final String sqlGetIndexFormatted = MessageFormat.format(DatastoreQueries.SQL_GET_INDEX_AND_BRANCH_FOR_VALUE, tableName);
+		final String sqlGetIndexFormatted = DatastoreQueries.SQL_GET_INDEX_AND_BRANCH_FOR_VALUE.getQuery(tableName);
 		final CDOQuery query = transaction.createQuery("sql", sqlGetIndexFormatted);
 		query.setParameter(CDOQueryUtils.CDO_OBJECT_QUERY, false);
 		query.setParameter("cdoId", CDOIDUtil.getLong(cdoObject.cdoID()));

@@ -364,10 +364,10 @@ public class SnomedConceptHistoryInfoDetailsBuilder extends AbstractHistoryInfoD
 	private String getRefSetChangeDescription(final SnomedRefSetMember cdoObject, final CDOView beforeView, final CDOView currentView, final String change) {
 		if (cdoObject instanceof SnomedRefSetMember) {
 			final SnomedRefSetMember member = (SnomedRefSetMember) cdoObject;
-			final String label = getReferencedComponentLabel(member);
+			String label = getReferencedComponentLabel(member);
 			
 			if (isEmpty(label)) {
-				return "Reference set member: " + member.getReferencedComponentId() + " has been deleted.";
+				label = member.getReferencedComponentId();
 			}
 			
 			if (member instanceof SnomedSimpleMapRefSetMember) {

@@ -29,44 +29,9 @@ import com.b2international.snowowl.core.api.TerminologyComponentIdProvider;
 
 /**
  * Representation of a historical information query executor implementation.
- *
  */
 public interface HistoryInfoQueryExecutor extends TerminologyComponentIdProvider {
 
-	/**
-	 * <ol>
-	 * <li>The CDO ID of the component.</li>
-	 * <ol>
-	 */
-	String COMPONENT_CHANGES_ON_MAIN_TEMPLATE = "SELECT "
-			+ "component.CDO_CREATED "
-			+ "FROM %s component "
-			+ "WHERE component.CDO_ID = ? " 
-			+ "AND component.CDO_BRANCH = 0 "
-			+ "ORDER BY component.CDO_CREATED";
-	
-	/**
-	 * <ol>
-	 * <li>The CDO ID of the component.</li>
-	 * <li>Current CDO branch ID.</li>
-	 * <li>Current CDO branch ID.</li>
-	 * <li>Base timestamp for the current CDO branch.</li>
-	 * <ol>
-	 */
-	String COMPONENT_CHANGES_ON_BRANCH_TEMPLATE = "SELECT "
-			+ "component.CDO_CREATED "
-			+ "FROM %s component "
-			+ "WHERE component.CDO_ID = ? " 
-			+ "AND (component.CDO_BRANCH = ? OR component.CDO_BRANCH = 0) "
-			+ "AND (component.CDO_BRANCH = ? OR (component.CDO_BRANCH = 0 AND component.CDO_CREATED <= ?)) "
-			+ "ORDER BY component.CDO_CREATED";
-	
-	/**
-	 * Prepared statement key for 
-	 */
-	PreparedStatementKey COMPONENT_CHANGES = new PreparedStatementKey() {
-	};
-	
 	/**
 	 * Executes the queries required to retrieve all historical information for a content or terminology independent
 	 * component and returns with a map of timestamps and associated {@link IVersion version} entry
@@ -95,5 +60,4 @@ public interface HistoryInfoQueryExecutor extends TerminologyComponentIdProvider
 			return UNSPECIFIED_NUMBER_SHORT;
 		};
 	};
-	
 }

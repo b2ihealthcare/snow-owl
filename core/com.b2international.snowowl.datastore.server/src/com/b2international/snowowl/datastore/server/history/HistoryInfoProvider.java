@@ -17,15 +17,10 @@ package com.b2international.snowowl.datastore.server.history;
 
 import static com.b2international.snowowl.core.ApplicationContext.getServiceForClass;
 import static com.b2international.snowowl.datastore.cdo.CDOIDUtils.checkId;
-import static com.b2international.snowowl.datastore.history.NullHistoryInfoConfiguration.isNullConfiguration;
-import static com.b2international.snowowl.datastore.server.CDOServerUtils.getAccessor;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.collect.Maps.newHashMap;
 import static java.util.Collections.emptyList;
 import static org.eclipse.emf.cdo.common.branch.CDOBranchPoint.UNSPECIFIED_DATE;
-import static org.eclipse.emf.cdo.server.StoreThreadLocal.release;
-import static org.eclipse.emf.cdo.server.StoreThreadLocal.setAccessor;
-import static org.eclipse.net4j.util.lifecycle.LifecycleUtil.deactivate;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -38,10 +33,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Stack;
+import java.util.concurrent.TimeUnit;
 
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.core.runtime.OperationCanceledException;
-import org.eclipse.core.runtime.SubMonitor;
 import org.eclipse.emf.cdo.common.branch.CDOBranch;
 import org.eclipse.emf.cdo.common.branch.CDOBranchPoint;
 import org.eclipse.emf.cdo.common.branch.CDOBranchVersion;
@@ -66,7 +61,6 @@ import org.eclipse.net4j.util.lifecycle.LifecycleUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.b2international.commons.CancelableProgressMonitorWrapper;
 import com.b2international.commons.Pair;
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.api.IHistoryInfo;
@@ -81,7 +75,10 @@ import com.b2international.snowowl.datastore.history.DetachedHistoryInfo;
 import com.b2international.snowowl.datastore.history.HistoryInfo;
 import com.b2international.snowowl.datastore.history.HistoryInfoConfiguration;
 import com.b2international.snowowl.datastore.history.HistoryInfoDetailsBuilder;
+import com.b2international.snowowl.datastore.history.NullHistoryInfoConfiguration;
 import com.b2international.snowowl.datastore.history.Version;
+import com.b2international.snowowl.datastore.server.CDOServerUtils;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
@@ -89,49 +86,56 @@ import com.google.common.collect.Ordering;
 import com.google.common.primitives.Longs;
 
 /**
- * Low-level, stateless service singleton for providing historical information for 
- * a terminology or content independent component. 
- * 
- *
+ * Service singleton which provides historical information for a component. 
  */
 public enum HistoryInfoProvider {
 
-	/**Shared service singleton.*/
 	INSTANCE;
 	
 	private static final Logger LOGGER = LoggerFactory.getLogger(HistoryInfoProvider.class);
 	
-	// Absolute time limit for determining history details in milliseconds
-	private static final long DEFAULT_TIMEOUT = 15000;
+	private static final long DEFAULT_TIMEOUT = TimeUnit.SECONDS.toMillis(15L);
 	
 	/**
-	 * Returns with the historical information of a terminology independent component.
-	 * @param configuration for running the query.
-	 * @return a collection of historical information for a component.
-	 * @throws SnowowlServiceException 
+	 * Computes history for the specified history configuration, within the time limits of {@link #DEFAULT_TIMEOUT}.
+	 * 
+	 * @param configuration the history configuration object (may not be {@code null})
+	 * @return a collection of history information rows describing changes to the component itself, as well as any
+	 * closely related components
+	 * @throws SnowowlServiceException if history can not be retrieved for some reason (including integrity issues
+	 * related to historical data)
 	 */
 	public Collection<IHistoryInfo> getHistoryInfo(final HistoryInfoConfiguration configuration) throws SnowowlServiceException {
+		return getHistoryInfo(configuration, DEFAULT_TIMEOUT);
+	}
+	
+	/**
+	 * Computes history for the specified history configuration and timeout.
+	 * 
+	 * @param configuration the history configuration object (may not be {@code null})
+	 * @param timeout the maximum collection time which should be spent on computing history
+	 * @return a collection of history information rows describing changes to the component itself, as well as any
+	 * closely related components
+	 * @throws SnowowlServiceException if history can not be retrieved for some reason (including integrity issues
+	 * related to historical data)
+	 */
+	public Collection<IHistoryInfo> getHistoryInfo(final HistoryInfoConfiguration configuration, final long timeout) throws SnowowlServiceException {
+		checkNotNull(configuration, "History configuration object may not be null.");
 		
-		if (isNullConfiguration(configuration)) {
-			return emptyList();
+		if (NullHistoryInfoConfiguration.isNullConfiguration(configuration)) {
+			return ImmutableList.of();
 		}
 		
-		checkNotNull(configuration, "configuration");
-		
 		CDOView view = null;
+		final IDBStoreAccessor accessor = CDOServerUtils.getAccessor(configuration.getStorageKey());
 		
 		try {
 			
-			setAccessor(getAccessor(configuration.getStorageKey()));
+			StoreThreadLocal.setAccessor(accessor);
 			view = openView(configuration);
 			
-			try (
-					final InternalHistoryInfoConfiguration internalConfiguration = //
-							new InternalHistoryInfoConfigurationImpl(configuration, getConnection(), view);
-			) {
-
-				return getHistoryInfo(internalConfiguration, DEFAULT_TIMEOUT);
-				
+			try (final InternalHistoryInfoConfiguration internalConfiguration = new InternalHistoryInfoConfigurationImpl(configuration, getConnection(), view)) {
+				return getHistoryInfo(internalConfiguration, timeout);
 			} catch (final SQLException e) {
 				final String msg = "Error while trying to get history for component: '" + configuration.getStorageKey() + "'.";
 				LOGGER.error(msg, e);
@@ -139,24 +143,21 @@ public enum HistoryInfoProvider {
 			}
 			
 		} finally {
-			deactivate(view);
-			release();
+			StoreThreadLocal.release();
+			LifecycleUtil.deactivate(view);
 		}
-		
 	}
 	
-	public List<IHistoryInfo> getHistoryInfo(final InternalHistoryInfoConfiguration configuration, final long timeout) throws SnowowlServiceException, SQLException {
+	private List<IHistoryInfo> getHistoryInfo(final InternalHistoryInfoConfiguration configuration, final long timeout) throws SnowowlServiceException, SQLException {
 
 		final long id = configuration.getStorageKey();
 		
 		if (!checkId(id)) {
-			return emptyList();
+			return ImmutableList.of();
 		}
 		
 		final long startTime = System.currentTimeMillis();
 		final CDOID cdoId = CDOIDUtil.createLong(id);
-		final NullProgressMonitor monitor = new NullProgressMonitor();
-		final SubMonitor subMonitor = SubMonitor.convert(new CancelableProgressMonitorWrapper(monitor), 100);
 
 		try {
 			
@@ -169,23 +170,14 @@ public enum HistoryInfoProvider {
 				return Collections.<IHistoryInfo>singletonList(new DetachedHistoryInfo(branch, cdoId));
 			}
 			
-			final HistoryInfoQueryExecutor executor = HistoryInfoQueryExecutorProvider.INSTANCE.getExecutor(configuration.getTerminologyComponentId());
-	
 			final Stack<HistoryInfo> infos = new Stack<HistoryInfo>();
 			final Map<Long, IVersion<CDOID>> query;
 			
 			// Try to find details for most recent commits first
+			final HistoryInfoQueryExecutor executor = HistoryInfoQueryExecutorProvider.INSTANCE.getExecutor(configuration.getTerminologyComponentId());
 			final Map<Long, IVersion<CDOID>> entries = executor.execute(configuration);
+
 			query = ImmutableSortedMap.copyOf(entries, Ordering.natural().reverse());
-			
-			int itemCount = 0;
-			
-			for (final IVersion<CDOID> version : query.values()) {
-				itemCount += version.getAffectedObjectIds().size();
-			}
-			
-			subMonitor.setWorkRemaining(itemCount);
-			
 			
 			for (final Entry<Long, IVersion<CDOID>> entry : query.entrySet()) {
 				final HistoryInfo historyInfo = createHistoryInfo(startTime, configuration, entry, timeout);
@@ -212,10 +204,8 @@ public enum HistoryInfoProvider {
 					}
 					
 				}
-				
-				subMonitor.worked(entry.getValue().getAffectedObjectIds().size());
 			}
-
+			
 			int nextMinorVersion = 1;
 			int nextMajorVersion = 1;
 			
@@ -250,7 +240,7 @@ public enum HistoryInfoProvider {
 		} catch (final OperationCanceledException e) {
 			return emptyList();
 		} finally {
-			monitor.done();
+			new NullProgressMonitor().done();
 		}
 	}
 
@@ -266,7 +256,6 @@ public enum HistoryInfoProvider {
 		
 		try (
 			final PreparedStatement statement = prepareStatement(configuration, timeStamp);
-			
 			final ResultSet resultSet = statement.executeQuery();
 		) {
 			final boolean hasResult = resultSet.next();
@@ -277,7 +266,6 @@ public enum HistoryInfoProvider {
 			
 			author = String.valueOf(resultSet.getObject(1));
 			comments = String.valueOf(resultSet.getObject(2));
-			
 		} 
 		
 		if (System.currentTimeMillis() - startTime > timeout) {
@@ -295,7 +283,9 @@ public enum HistoryInfoProvider {
 			if (commitInfo != null) {
 				
 				currentView = connection.createView(branch, commitInfo.getTimeStamp(), false);
-				beforeView = connection.createView(branch, commitInfo.getPreviousTimeStamp(), incomplete);
+				
+				final CDOBranchPoint beforeBranchPoint = getAdjustedBranchPoint(branch, commitInfo.getPreviousTimeStamp());
+				beforeView = connection.createView(beforeBranchPoint.getBranch(), beforeBranchPoint.getTimeStamp(), incomplete);
 				
 				final HistoryInfoDetailsBuilder builder = // 
 						HistoryInfoDetailsBuilderProvider.INSTANCE.getBuilder(configuration.getTerminologyComponentId());
@@ -303,17 +293,16 @@ public enum HistoryInfoProvider {
 			}
 			
 		} finally {
-			
 			LifecycleUtil.deactivate(currentView);
 			LifecycleUtil.deactivate(beforeView);
 		}
+
 		return new HistoryInfo(timeStamp, version, author, comments, incomplete, details);
 	}
 
 	private PreparedStatement prepareStatement(final InternalHistoryInfoConfiguration configuration, final Long timeStamp) throws SQLException {
-		final PreparedStatement statement = configuration.getConnection().prepareStatement(DatastoreQueries.SQL_GET_COMMIT_INFO_DATA);
+		final PreparedStatement statement = configuration.getConnection().prepareStatement(DatastoreQueries.SQL_GET_COMMIT_INFO_DATA.getQuery());
 		statement.setLong(1, timeStamp.longValue());
-		statement.setInt(2, configuration.getBranchId());
 		return statement;
 	}
 
@@ -339,14 +328,9 @@ public enum HistoryInfoProvider {
 		for (final Entry<CDOID, Long> entry : map.entrySet()) {
 			final long commitTime = entry.getValue();
 			final CDOID cdoid = entry.getKey();
-			CDOBranchPoint branchPoint = branch.getPoint(commitTime);
-			
-			while (commitTime < branchPoint.getBranch().getBase().getTimeStamp()) {
-				branchPoint = branch.getBase().getBranch().getPoint(commitTime);
-			}
+			final CDOBranchPoint branchPoint = getAdjustedBranchPoint(branch, commitTime);
 			idBranchPoint.put(cdoid, branchPoint);
 			affectedRevisions.put(cdoid, revisionManager.getRevision(cdoid, branchPoint, CDORevision.UNCHUNKED, CDORevision.DEPTH_NONE, true));
-			
 		}    			
 		
 		final List<CDOIDAndVersion> newObjects = Lists.newArrayList();
@@ -358,7 +342,8 @@ public enum HistoryInfoProvider {
     		if (entry.getValue() == null) {
     			final CDOID cdoId = entry.getKey();
     			final CDOBranchPoint branchPoint = idBranchPoint.get(cdoId);
-				final CDORevision previousRevision = revisionManager.getRevision(cdoId, branchPoint.getBranch().getPoint(branchPoint.getTimeStamp() - 1), CDORevision.UNCHUNKED, CDORevision.DEPTH_NONE, true);
+    			final CDOBranchPoint previousBranchPoint = getAdjustedBranchPoint(branchPoint.getBranch(), branchPoint.getTimeStamp() - 1L);
+				final CDORevision previousRevision = revisionManager.getRevision(cdoId, previousBranchPoint, CDORevision.UNCHUNKED, CDORevision.DEPTH_NONE, true);
 				detachedObjects.add(previousRevision);
 				continue;
     		}
@@ -404,7 +389,21 @@ public enum HistoryInfoProvider {
 						detachedObjects));
 		
 		return commitInfo;
-    
+	}
+
+	/*
+	 * XXX: Returns a CDOBranchPoint with the actual branch the specified timestamp belongs to. This is required because
+	 * certain parts of CDO truncate the untreated branch point to branch base points if the timestamp is before the
+	 * branch start point.
+	 */
+	private static CDOBranchPoint getAdjustedBranchPoint(final CDOBranch branch, final long timeStamp) {
+		CDOBranchPoint branchPoint = branch.getPoint(timeStamp);
+		
+		while (!branchPoint.getBranch().isMainBranch() && branchPoint.getTimeStamp() < branchPoint.getBranch().getBase().getTimeStamp()) {
+			branchPoint = branchPoint.getBranch().getBase().getBranch().getPoint(branchPoint.getTimeStamp());
+		}
+		
+		return branchPoint;
 	}
 	
 	private CDOView openView(final HistoryInfoConfiguration configuration) {

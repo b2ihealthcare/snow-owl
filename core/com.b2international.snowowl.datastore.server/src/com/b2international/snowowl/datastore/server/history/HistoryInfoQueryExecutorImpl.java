@@ -16,10 +16,8 @@
 package com.b2international.snowowl.datastore.server.history;
 
 import static com.b2international.commons.collections.CloseableMap.newCloseableMap;
-import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.collect.Lists.newArrayList;
-import static java.lang.String.format;
 import static org.eclipse.emf.cdo.common.id.CDOIDUtil.createLong;
 
 import java.sql.Connection;
@@ -30,14 +28,15 @@ import java.util.List;
 import java.util.Map;
 import java.util.SortedMap;
 
+import org.eclipse.emf.cdo.common.branch.CDOBranch;
+import org.eclipse.emf.cdo.common.branch.CDOBranchPoint;
 import org.eclipse.emf.cdo.common.id.CDOID;
 
 import com.b2international.commons.collections.CloseableMap;
-import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.api.IHistoryInfo.IVersion;
-import com.b2international.snowowl.datastore.BranchPathUtils;
 import com.b2international.snowowl.datastore.history.Version;
-import com.google.common.base.Predicate;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.Lists;
 
 
 /**
@@ -46,217 +45,176 @@ import com.google.common.base.Predicate;
  */
 public abstract class HistoryInfoQueryExecutorImpl implements HistoryInfoQueryExecutor {
 
-	protected static final int DEFAULT_JOIN_NUMBER = 0;
-	protected static final int FAKE_MINOR_VERSION = -1;
+	/** Minor version value, set when the actual minor version is not yet known. */
+	protected static final int UNSPECIFIED_MINOR_VERSION = -1;
+	
+	/** The starting value for major versions. */
 	protected static final int INITIAL_MAJOR_VERSION = 1;
 	
-	protected static final Predicate<IVersion<CDOID>> OTHER_COMPONENT_REGISTRATION_PREDICATE = //
-		new Predicate<IVersion<CDOID>>() {
-			public boolean apply(final IVersion<CDOID> version) {
-				return 1 < version.getMajorVersion() 
-					|| 0 != version.getMinorVersion();
-			}
-		};
-
 	/**
-	 * Returns with a multimap of statements that has to be executed for retrieving all the
-	 * historical information for a terminology or content independent component.
-	 * @param branchPath the branch path for the visibility when creating the queries.
-	 * @param connection the connection for the backend.
-	 * @return a map of prepared statements grouped by unique {@link PreparedStatementKey keys}.
-	 * @throws SQLException if error occurred while preparing the statements.
+	 * Returns a map of JDBC statements that have to be executed for retrieving all the historical information for a
+	 * terminology component.
+	 * 
+	 * @param connection the database connection
+	 * @return a map of prepared statements grouped by unique {@link PreparedStatementKey keys}
+	 * 
+	 * @throws SQLException if an error occurs while preparing statements
 	 */
-	public CloseableMap<PreparedStatementKey, PreparedStatement> getPreparedStatements(
-			final IBranchPath branchPath, final Connection connection) throws SQLException {
-		
-		checkNotNull(branchPath, "branchPath");
-		checkNotNull(connection, "connection");
-		
-		return BranchPathUtils.isMain(branchPath) 
-			? createStatementsForMain(connection) 
-			: createStatementsForBranch(connection);
-		
+	public CloseableMap<PreparedStatementKey, PreparedStatement> getPreparedStatements(final Connection connection) throws SQLException {
+		checkNotNull(connection, "Database connection may not be null.");
+		return createPreparedStatements(connection);
+	}
+	
+	protected CloseableMap<PreparedStatementKey, PreparedStatement> createPreparedStatements(final Connection connection) throws SQLException {
+		final CloseableMap<PreparedStatementKey, PreparedStatement> statements = newCloseableMap();
+		final String query = ComponentHistoryQueries.COMPONENT_CHANGES.getQuery(getPrimaryComponentTableName());
+		statements.put(ComponentHistoryQueries.COMPONENT_CHANGES, connection.prepareStatement(query));
+		return statements;
 	}
 	
 	/**
-	 * Collects and registers the primary component changes.
-	 * @param configuration the configuration.
-	 * @param modifications the to populate.
+	 * Returns the SQL table name for the primary component.
+	 * <p>
+	 * NOTE: clients must implement this method if {@link #createPreparedStatements(Connection)} is not overridden.
+	 */
+	protected String getPrimaryComponentTableName() {
+		throw new AssertionError("Clients must implement this method if createPreparedStatements is not overridden.");
+	}
+
+	/**
+	 * Collects and registers primary component changes.
+	 * 
+	 * @param configuration the history configuration
+	 * @param modifications the modification map to populate
+	 * 
 	 * @throws SQLException
 	 */
 	protected void collectPrimaryComponentChanges(final InternalHistoryInfoConfiguration configuration, 
 			final SortedMap<Long, IVersion<CDOID>> modifications) throws SQLException {
-		collectPrimaryComponentChanges(configuration, modifications, COMPONENT_CHANGES);
 		
+		collectPrimaryComponentChanges(configuration, modifications, ComponentHistoryQueries.COMPONENT_CHANGES);
 	}
 	
 	/**
-	 * Collects and registers the primary component changes.
-	 * @param configuration the configuration.
-	 * @param modifications the to populate.
-	 * @param statementKey the prepared statement key for the primary component.
+	 * Collects and registers primary component changes using the specified statement key.
+	 * <p>
+	 * The statement key is used to get the JDBC prepared statement, which will be executed after updating its parameters.
+	 * 
+	 * @param configuration the history configuration
+	 * @param modifications the modification map to populate
+	 * @param statementKey the prepared statement key for the primary component
+	 * 
 	 * @throws SQLException
 	 */
 	protected void collectPrimaryComponentChanges(final InternalHistoryInfoConfiguration configuration, 
-			final SortedMap<Long, IVersion<CDOID>> modifications, final PreparedStatementKey statementKey) throws SQLException {
-		
-		PreparedStatement statement = configuration.getPreparedStatements().get(statementKey);
-		statement = adjustStatement(configuration, statement, DEFAULT_JOIN_NUMBER);
-		
-		try (final ResultSet rs = statement.executeQuery()) {
-			final List<Object[]> info = newArrayList();
-			while (rs.next()) {
-				info.add(createPrimaryComponentInfo(rs));
-			}
-			
-			registerPrimaryComponentModifications(configuration, modifications, info);
-		}
-		
-	}
-	
-	/**
-	 * Collects and registers any kind of other component changes as the part of
-	 * the primary component changes.
-	 * @param configuration the configuration.
-	 * @param modifications the map of modifications to populate and update.
-	 * @param statementKey the identifier of the statement to execute.
-	 * @throws SQLException
-	 */
-	protected void collectOtherComponentChanges(final InternalHistoryInfoConfiguration configuration, 
-			final SortedMap<Long, IVersion<CDOID>> modifications, final PreparedStatementKey statementKey) throws SQLException {
-		collectOtherComponentChanges(configuration, modifications, statementKey, DEFAULT_JOIN_NUMBER);
-	}
-	
-	/**
-	 * Collects and registers any kind of other component changes as the part of
-	 * the primary component changes.
-	 * @param configuration the configuration.
-	 * @param modifications the map of modifications to populate and update.
-	 * @param statementKey the identifier of the statement to execute.
-	 * @param numberOfJoins the number of the joins in the SQL query. 
-	 * The statement will be adjusted based on this number. Should be {@code 0} or greater.
-	 * @throws SQLException
-	 */
-	protected void collectOtherComponentChanges(final InternalHistoryInfoConfiguration configuration, 
-			final SortedMap<Long, IVersion<CDOID>> modifications, final PreparedStatementKey statementKey, 
-			final int numberOfJoins) throws SQLException {
-		
-		checkArgument(DEFAULT_JOIN_NUMBER <= numberOfJoins, "Number of joins argument cannot be a negative integer.");
+			final SortedMap<Long, IVersion<CDOID>> modifications, 
+			final PreparedStatementKey statementKey) throws SQLException {
 		
 		final PreparedStatement statement = configuration.getPreparedStatements().get(statementKey);
-		collectOtherComponentChanges(configuration, modifications, adjustStatement(configuration, statement, numberOfJoins));
+		final List<CDOBranchPoint> branchPoints = getBranchPoints(configuration);
+		
+		// Primary components are collected in a single list
+		final List<Object[]> primaryComponentInfos = newArrayList();
 
+		for (final CDOBranchPoint branchPoint : branchPoints) {
+			setStorageKeyQueryParameters(statement, configuration.getStorageKey(), branchPoint.getBranch().getID(), branchPoint.getTimeStamp());
+		
+			try (final ResultSet rs = statement.executeQuery()) {
+				while (rs.next()) {
+					primaryComponentInfos.add(createPrimaryComponentInfo(rs));
+				}
+			}
+		}
+		
+		registerPrimaryComponentModifications(configuration, modifications, primaryComponentInfos);
 	}
 	
 	/**
-	 * Collects and registers any kind of other component changes as the part of
-	 * the primary component changes.
-	 * @param configuration the configuration.
-	 * @param modifications the map of modifications to populate and update.
-	 * @param statement the statement to execute.
+	 * Collects and registers other component changes using the specified statement key.
+	 * 
+	 * @param configuration the history configuration
+	 * @param modifications the modification map to populate
+	 * @param statementKey the prepared statement key for the other components
+	 * 
 	 * @throws SQLException
 	 */
 	protected void collectOtherComponentChanges(final InternalHistoryInfoConfiguration configuration, 
-			final SortedMap<Long, IVersion<CDOID>> modifications, final PreparedStatement statement) throws SQLException {
+			final SortedMap<Long, IVersion<CDOID>> modifications, 
+			final PreparedStatementKey statementKey) throws SQLException {
 		
-		try (final ResultSet rs = statement.executeQuery()) {
-			final List<Object[]> info = newArrayList();
-			while (rs.next()) {
-				info.add(new Object[] {
-						rs.getObject(1), //CDO ID 
-						rs.getObject(2), //created timestamp
-						rs.getObject(3), //revised timestamp
-						rs.getObject(4) //branch ID
-					});
+		final PreparedStatement statement = configuration.getPreparedStatements().get(statementKey);
+		final List<CDOBranchPoint> branchPoints = getBranchPoints(configuration);
+
+		for (final CDOBranchPoint branchPoint : branchPoints) {
+
+			// Other components are processed in segments
+			final List<Object[]> otherComponentInfos = newArrayList();
+			setStorageKeyQueryParameters(statement, configuration.getStorageKey(), branchPoint.getBranch().getID(), branchPoint.getTimeStamp());
+		
+			try (final ResultSet rs = statement.executeQuery()) {
+				while (rs.next()) {
+					otherComponentInfos.add(createOtherComponentInfo(rs));
+				}
 			}
 			
-			registerOtherComponentModifications(modifications, info, configuration);
+			registerOtherComponentModifications(modifications, otherComponentInfos, branchPoint);
 		}
+	}
 
-	}
-	
-	/**
-	 * Returns with a multimap of statements that has to be executed for retrieving all the
-	 * historical information for a terminology or content independent component when caller is
-	 * on the {@link IBranchPath#MAIN_BRANCH MAIN} branch.
-	 * @param connection the connection for the backend.
-	 * @return a map of prepared statements grouped by unique {@link PreparedStatementKey keys}.
-	 * @throws SQLException if error occurred while preparing the statements.
-	 */
-	protected CloseableMap<PreparedStatementKey, PreparedStatement> createStatementsForMain(
-			final Connection connection) throws SQLException {
+	protected List<CDOBranchPoint> getBranchPoints(final InternalHistoryInfoConfiguration configuration) {
 		
-		final CloseableMap<PreparedStatementKey, PreparedStatement> statements = newCloseableMap();
-		final String query = format(COMPONENT_CHANGES_ON_MAIN_TEMPLATE, getPrimaryComponentTableName());
-		statements.put(COMPONENT_CHANGES, connection.prepareStatement(query));
+		final CDOBranch currentBranch = configuration.getView().getBranch();
+		final ImmutableList.Builder<CDOBranchPoint> branchPointsBuilder = ImmutableList.builder();
 		
-		return statements;
-	}
-	
-	/**
-	 * Returns with a multimap of statements that has to be executed for retrieving all the
-	 * historical information for a terminology or content independent component when caller is *NOT*
-	 * on the {@link IBranchPath#MAIN_BRANCH MAIN} branch.
-	 * @param connection the connection for the backend.
-	 * @return a map of prepared statements grouped by unique {@link PreparedStatementKey keys}.
-	 * @throws SQLException if error occurred while preparing the statements.
-	 */
-	protected CloseableMap<PreparedStatementKey, PreparedStatement> createStatementsForBranch(
-			final Connection connection) throws SQLException {
+		final CDOBranchPoint[] basePath = currentBranch.getBasePath();
+		for (int i = 1; i < basePath.length; i++) {
+			branchPointsBuilder.add(basePath[i]);
+		}
 		
-		final CloseableMap<PreparedStatementKey, PreparedStatement> statements = newCloseableMap();
-		final String query = format(COMPONENT_CHANGES_ON_BRANCH_TEMPLATE, getPrimaryComponentTableName());
-		statements.put(COMPONENT_CHANGES, connection.prepareStatement(query));
+		branchPointsBuilder.add(currentBranch.getPoint(Long.MAX_VALUE));
 		
-		return statements;
+		// Start with the branch in question, then work our way back
+		return ImmutableList.copyOf(Lists.reverse(branchPointsBuilder.build()));
 	}
 
 	/**
-	 * Returns with the table name for the primary component.
-	 * <p>NOTE: clients must implement this method if 
-	 * {@link #createStatementsForMain(Connection)} and/or 
-	 * {@link #createStatementsForBranch(Connection)} is not overridden.
-	 * @return
-	 */
-	protected String getPrimaryComponentTableName() {
-		throw new UnsupportedOperationException("Implementation error."
-				+ "\nClients must implement this method.");
-	}
-	
-	/**
-	 * Returns {@code true} if the configuration is adjusted for the {@link IBranchPath#MAIN_BRANCH MAIN}
-	 * branch. Otherwise returns with {@code false}.
-	 * @param configuration the configuration.
-	 * @return {@code true} if MAIN branch. Otherwise {@code false}.
-	 */
-	protected boolean isMain(final InternalHistoryInfoConfiguration configuration) {
-		return BranchPathUtils.isMain(configuration.getBranchPath());
-	}
-	
-	/**
-	 * Adjusts the prepared statement based on the configuration and returns with the
-	 * adjusted argument.
-	 * @param configuration the configuration.
-	 * @param statementToAdjust the statement to adjust.
-	 * @param numberOfJoins the number of the joins in the SQL query. 
-	 * The statement will be adjusted based on this number. Should be {@code 0} or greater.
-	 * @return the adjusted argument instance.
+	 * Populates the specified JDBC prepared statement's parameters from the given history configuration.
+	 * 
+	 * @param statement the statement to adjust
+	 * @param storageKey the focused CDO object's identifier
+	 * @param branchId the branch to run the query on
+	 * @param maxCommitTimestamp the maximum permissible timestamp which should be considered on this branch segment
+	 * 
 	 * @throws SQLException
 	 */
-	protected PreparedStatement adjustStatement(final InternalHistoryInfoConfiguration configuration, 
-			final PreparedStatement statementToAdjust, final int numberOfJoins) throws SQLException {
+	protected void setStorageKeyQueryParameters(final PreparedStatement statement, 
+			final long storageKey, 
+			final int branchId, 
+			final long maxCommitTimestamp) throws SQLException {
 		
-		int parameterIndex = 1;
+		statement.setLong(1, storageKey);
+		statement.setInt(2, branchId);
+		statement.setLong(3, maxCommitTimestamp);
+	}
+	
+	/**
+	 * Populates the specified JDBC prepared statement's parameters from the given history configuration.
+	 * 
+	 * @param statement the statement to adjust
+	 * @param componentId the focused components's identifier
+	 * @param branchId the branch to run the query on
+	 * @param maxCommitTimestamp the maximum permissible timestamp which should be considered on this branch segment
+	 * 
+	 * @throws SQLException
+	 */
+	protected void setComponentIdQueryParameters(final PreparedStatement statement, 
+			final String componentId, 
+			final int branchId, 
+			final long maxCommitTimestamp) throws SQLException {
 		
-		statementToAdjust.setLong(parameterIndex++, configuration.getStorageKey());
-		if (!isMain(configuration)) {
-			for (int i = 0; i <= numberOfJoins; i++) {
-				statementToAdjust.setInt(parameterIndex++, configuration.getBranchId());
-				statementToAdjust.setInt(parameterIndex++, configuration.getBranchId());
-				statementToAdjust.setLong(parameterIndex++, configuration.getBaseBranchTimestamp());
-			}
-		}
-		return statementToAdjust;
+		statement.setString(1, componentId);
+		statement.setInt(2, branchId);
+		statement.setLong(3, maxCommitTimestamp);
 	}
 	
 	/**
@@ -284,92 +242,85 @@ public abstract class HistoryInfoQueryExecutorImpl implements HistoryInfoQueryEx
 	protected void registerPrimaryComponentModifications(final InternalHistoryInfoConfiguration configuration, 
 			final SortedMap<Long, IVersion<CDOID>> modifications, final List<Object[]> info) {
 		
-		int majorVersion = INITIAL_MAJOR_VERSION; 
+		int majorVersion = info.size(); 
 		
 		for (final Object[] objectInfo : info) {
 			final long timestamp = (long) objectInfo[0];
-			final Version version = new Version(majorVersion++);
+			final Version version = new Version(majorVersion--);
 			version.addAffectedObjectId(configuration.getCdoId(), timestamp);
 			modifications.put(timestamp, version);
 		}
 	}
 
-	/**
-	 * Creates and returns with an array of primary component information extracted from the result set.
-	 * @param rs the result set.
-	 * @return an array of component information.
-	 * @throws SQLException
-	 */
 	protected Object[] createPrimaryComponentInfo(final ResultSet rs) throws SQLException {
-		return new Object[] { rs.getLong(1) };
+		return new Object[] { 
+				rs.getLong(1) // created timestamp 
+		};
 	}
 	
 	/**
-	 * Registers additional modifications as the modification of the primary component. 
-	 * @param modifications the other modifications that has to be registered for the 
-	 * primary component.
-	 * @param info a list of CDOIDs, timestamps and CDO branch IDs.
-	 * @param configuration the configuration for the historical information query,
+	 * Registers additional modifications as the modification of the primary component.
+	 * 
+	 * @param modifications the map of modifications that has to be registered for the component
+	 * @param info a list of CDOIDs, timestamps and CDO branch IDs
+	 * @param branchPoint the branch point for the currently processed branch segment
 	 */
 	protected void registerOtherComponentModifications(final SortedMap<Long, IVersion<CDOID>> modifications, 
-			final List<Object[]> info, final InternalHistoryInfoConfiguration configuration) {
+			final List<Object[]> info, 
+			final CDOBranchPoint branchPoint) {
 		
 		for (final Object[] result : info) {
 			final long affectedId = (Long) result[0];
 			final long createdTimestamp = (Long) result[1];
 			final long revisedTimestamp = (Long) result[2];
-			final int branchId = (Integer) result[3];
 
 			registerOtherComponentModifications(modifications, affectedId, createdTimestamp);
-			if (isRevised(revisedTimestamp)
-					&& isRelevantChange(configuration, revisedTimestamp, branchId)) {
+			
+			/*
+			 * Since some of the queries don't return deleted revisions, set (revised timestamp + 1) as a relevant
+			 * commit timestamp, if the update happened before the branch point.
+			 */
+			if (isRevised(revisedTimestamp) && isRelevantChange(revisedTimestamp, branchPoint)) {
 				registerOtherComponentModifications(modifications, affectedId, revisedTimestamp + 1);
 			}
 		}
-		
 	}
 
-	private boolean isRelevantChange(final InternalHistoryInfoConfiguration configuration, 
-			final long revisedTimestamp, final int branchId) {
-		
-		return isSameBranch(configuration, branchId) 
-				|| isModifiedOnAncestorBranch(configuration, revisedTimestamp);
-	}
-
-	private boolean isModifiedOnAncestorBranch(final InternalHistoryInfoConfiguration 
-			configuration, final long revisedTimestamp) {
-		
-		return configuration.getBaseBranchTimestamp() > revisedTimestamp + 1;
+	protected Object[] createOtherComponentInfo(final ResultSet rs) throws SQLException {
+		return new Object[] {
+				rs.getObject(1), //CDO ID 
+				rs.getObject(2), //created timestamp
+				rs.getObject(3), //revised timestamp
+		};
 	}
 
 	private void registerOtherComponentModifications(final SortedMap<Long, IVersion<CDOID>> allModification, 
-			final long affectedId, final long createdTimestamp) {
+			final long affectedId, 
+			final long createdTimestamp) {
 		
 		Version versionForTimestamp = (Version) allModification.get(createdTimestamp);
 
 		if (versionForTimestamp == null) {
 			final Version previousVersion = (Version) allModification.get(allModification.headMap(createdTimestamp).lastKey());
 			final int majorVersion = previousVersion.getMajorVersion();
-			versionForTimestamp = new Version(majorVersion, FAKE_MINOR_VERSION); // fix minor versions at the end
+			versionForTimestamp = new Version(majorVersion, UNSPECIFIED_MINOR_VERSION); // fix minor versions at the end
 			allModification.put(createdTimestamp, versionForTimestamp);
 		}
 
 		if (canRegisterAffectedObjectId(versionForTimestamp)) {
 			versionForTimestamp.addAffectedObjectId(createLong(affectedId), createdTimestamp);
 		}
-		
 	}
 	
 	protected boolean canRegisterAffectedObjectId(final Version version) {
 		return true;
 	}
 
-	private boolean isSameBranch(final InternalHistoryInfoConfiguration configuration, final int branchId) {
-		return configuration.getBranchId() == branchId;
-	}
-
 	private boolean isRevised(final long revisedTimestamp) {
-		return revisedTimestamp != 0;
+		return revisedTimestamp != CDOBranchPoint.UNSPECIFIED_DATE;
 	}
 	
+	private boolean isRelevantChange(final long revisedTimestamp, final CDOBranchPoint branchPoint) {
+		return revisedTimestamp + 1 < branchPoint.getTimeStamp();
+	}
 }
