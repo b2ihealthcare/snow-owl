@@ -52,7 +52,7 @@ public abstract class WhereBase implements Where {
 
 		@Override
 		public boolean apply(T input) {
-			final Object value = ReflectionUtils.getGetterValue(input.getClass(), property()); 
+			final Object value = ReflectionUtils.getGetterValue(input, property()); 
 			// TODO add non-string support
 			final String actual = String.valueOf(value);
 			return matches(actual);
