@@ -4,9 +4,9 @@
   <modelVersion>4.0.0</modelVersion>
   <parent>
     <groupId>com.b2international.snowowl</groupId>
-    <artifactId>dependencies-parent</artifactId>
+    <artifactId>core-parent</artifactId>
     <version>4.1.1</version>
   </parent>
-  <artifactId>org.eclipse.net4j.db.mysql</artifactId>
-  <packaging>eclipse-plugin</packaging>
+  <artifactId>com.b2international.snowowl.datastore.server.tests</artifactId>
+  <packaging>eclipse-test-plugin</packaging>
 </project>

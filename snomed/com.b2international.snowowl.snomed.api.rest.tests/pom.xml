@@ -8,7 +8,7 @@
 	<parent>
 		<groupId>com.b2international.snowowl</groupId>
 		<artifactId>snomed-parent</artifactId>
-		<version>4.1.1-SNAPSHOT</version>
+		<version>4.1.1</version>
 	</parent>
 
 	<dependencies>
@@ -149,7 +149,7 @@
       		<repositories>
       			<repository>
         			<id>so_server_site</id>
-        			<url>http://jenkins:8081/nexus/content/repositories/snapshots.unzip/com/b2international/snowowl/com.b2international.snowowl.server.update/4.1.1-SNAPSHOT/com.b2international.snowowl.server.update-4.1.1-SNAPSHOT.zip-unzip/</url>
+        			<url>http://jenkins:8081/nexus/content/repositories/snapshots.unzip/com/b2international/snowowl/com.b2international.snowowl.server.update/${project.version}/com.b2international.snowowl.server.update-${project.version}.zip-unzip/</url>
         			<layout>p2</layout>
      			</repository>
       		</repositories>
