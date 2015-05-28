@@ -22,6 +22,7 @@ All notable changes to this project will be documented in this file.
   * Two column layout, one for the API docs and one for the Swagger UI
 - Deep branching support for Import/Export configuration (new `branchPath`)
 - API version is now included in SNOMED CT REST service URLs; the accepted media type is `application/vnd.com.b2international.snowowl+json` for both Administrative and SNOMED CT terminology services
+- Deployment changes: The preferred transaction isolation level is READ-COMMITTED for MySQL databases. For changing the corresponding server variable, refer to https://dev.mysql.com/doc/refman/5.6/en/set-transaction.html.
 
 ### Removed
 - Breaking RESTful API changes
