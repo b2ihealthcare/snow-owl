@@ -56,6 +56,7 @@ public class IndexStorePerformanceTests {
 		dataToStore.addAll(generateData(1000));
 	}
 	
+	@Ignore
 	@Test
 	@PerfTest(rampUp = 1000, warmUp = 1000, invocations = 1000)
 	@Required(median = 25, percentile95 = 50)

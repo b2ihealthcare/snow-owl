@@ -138,6 +138,7 @@ public class MockInternalCDOBranchManager implements InternalCDOBranchManager {
 	private void mockBase(InternalCDOBranch branch, long baseTimestamp) {
 		final CDOBranchPoint base = mock(CDOBranchPoint.class);
 		when(branch.getBase()).thenReturn(base);
+		when(base.getBranch()).thenReturn(branch);
 		when(base.getTimeStamp()).thenReturn(baseTimestamp);		
 	}
 	
@@ -166,6 +167,7 @@ public class MockInternalCDOBranchManager implements InternalCDOBranchManager {
 		final InternalCDOBranch branch = mock(InternalCDOBranch.class);
 		mockBranchID(branch, branchIds.getAndIncrement());
 		mockBase(branch, clock.getTimeStamp());
+		mockBasePath(parent, branch);
 		if (parent == null) {
 			mockBranchPath(branch, "", name);
 		} else {
@@ -174,5 +176,22 @@ public class MockInternalCDOBranchManager implements InternalCDOBranchManager {
 		mockBranchCreation(branch);
 		return branch;
 	}
-	
+
+	private void mockBasePath(InternalCDOBranch parent, InternalCDOBranch branch) {
+		final CDOBranchPoint[] parentBasePath = parent == null ? null : parent.getBasePath();
+		final CDOBranchPoint[] basePath = new CDOBranchPoint[parentBasePath == null ? 1 : (parentBasePath.length + 1)];
+		for (int i = 0; i < basePath.length; i++) {
+			if (parentBasePath != null) {
+				if (i == basePath.length - 1) {
+					basePath[i] = branch.getBase();
+				} else {
+					basePath[i] = parentBasePath[i];
+				}
+			} else {
+				basePath[i] = branch.getBase();
+			}
+		}
+		when(branch.getBasePath()).thenReturn(basePath);
+	}
+
 }
