@@ -184,8 +184,11 @@ public class SnomedRf2ImportService implements ISnomedRf2ImportService {
 		importStorageRef.setShortName("SNOMEDCT");
 		importStorageRef.setBranchPath(configuration.getBranchPath());
 		
-		// Check version and branch existence
-		importStorageRef.checkStorageExists();
+		// Check version and branch existence in case of DELTA RF2 import
+		// FULL AND SNAPSHOT can be import into empty databases
+		if (Rf2ReleaseType.DELTA == configuration.getRf2ReleaseType()) {
+			importStorageRef.checkStorageExists();
+		}
 		
 		if (!Branch.MAIN_PATH.equals(configuration.getBranchPath()) && configuration.shouldCreateVersion()) {
 			throw new BadRequestException("Import time versioning supported on MAIN branch only");
