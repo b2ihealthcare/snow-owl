@@ -1156,7 +1156,17 @@ public class CDOTransactionImpl extends CDOViewImpl implements InternalCDOTransa
       }
 
       goalRevision.setRevised(CDOBranchPoint.UNSPECIFIED_DATE);
-      ancestorGoalDelta.apply(goalRevision);
+      for (CDOFeatureDelta featureDelta : ancestorGoalDelta.getFeatureDeltas())
+      {
+        if (featureDelta instanceof CDOListFeatureDelta)
+        {
+          applyListFeatureDelta((CDOListFeatureDelta)featureDelta, goalRevision);
+        }
+        else
+        {
+          featureDelta.apply(goalRevision);
+        }
+      }
 
       // to avoid PartialCollectionLoadingNotSupportedException when comparing revisions
       resolveElementProxies(goalRevision);
