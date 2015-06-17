@@ -37,7 +37,6 @@ import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.LogUtils;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.events.util.AsyncSupport;
-import com.b2international.snowowl.datastore.BranchPathUtils;
 import com.b2international.snowowl.datastore.IBranchPathMap;
 import com.b2international.snowowl.datastore.cdo.ConflictWrapper;
 import com.b2international.snowowl.datastore.cdo.CustomConflictException;
@@ -114,7 +113,7 @@ public class SynchronizeBranchAction extends AbstractCDOBranchAction {
 
 	private void applyChangeSet(final ICDOConnection connection, final CDOBranch taskBranch, IBranchPath newTaskBranchPath) throws CustomConflictException {
 		
-		final CDOBranchMerger branchMerger = new CDOBranchMerger(connection.getUuid());
+		final CDOBranchMerger branchMerger = new CDOBranchMerger(CDOConflictProcessorBroker.INSTANCE.getProcessor(connection.getUuid()));
 		final Set<ConflictWrapper> conflictWrappers = new HashSet<ConflictWrapper>(); 
 
 		try {
@@ -122,8 +121,8 @@ public class SynchronizeBranchAction extends AbstractCDOBranchAction {
 			final CDOTransaction transaction = connection.createTransaction(newTaskBranchPath);
 			transaction.merge(taskBranch.getHead(), branchMerger);
 
-			LOGGER.info(MessageFormat.format("Unlinking components in ''{0}''...", connection.getRepositoryName()));
-			branchMerger.unlinkObjects(transaction);
+			LOGGER.info(MessageFormat.format("Post-processing components in ''{0}''...", connection.getRepositoryName()));
+			branchMerger.postProcess(transaction);
 
 			if (transaction.isDirty()) {
 				transactions.add(transaction);

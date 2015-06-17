@@ -95,7 +95,7 @@ public class PromoteBranchAction extends AbstractCDOBranchAction {
 				parentBranchPath,
 				connection.getRepositoryName()));
 
-		final CDOBranchMerger branchMerger = new CDOBranchMerger(connection.getUuid());
+		final CDOBranchMerger branchMerger = new CDOBranchMerger(CDOConflictProcessorBroker.INSTANCE.getProcessor(repositoryId));
 
 		try {
 
@@ -103,7 +103,7 @@ public class PromoteBranchAction extends AbstractCDOBranchAction {
 			transaction.merge(taskBranch.getHead(), branchMerger);
 
 			LOGGER.info(MessageFormat.format("Unlinking components in ''{0}''...", connection.getRepositoryName()));
-			branchMerger.unlinkObjects(transaction);
+			branchMerger.postProcess(transaction);
 
 			if (transaction.isDirty()) {
 				transactions.add(transaction);

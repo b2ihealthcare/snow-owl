@@ -83,10 +83,10 @@ public interface ICDOConflictProcessor {
 	Object addedInTarget(CDORevision targetRevision, Map<CDOID, Object> sourceMap);
 
 	/**
-	 * Removes cross-references from objects queued for removal before detaching them from the persistent object graph,
-	 * using the specified transaction.
+	 * Post-processes the resulting change set. This usually removes cross-references from objects queued for removal
+	 * before detaching them from the persistent object graph, using the specified transaction.
 	 * 
-	 * @param transaction the CDO transaction to use for unlinking (may not be {@code null})
+	 * @param transaction the CDO transaction after the change set has been applied (may not be {@code null})
 	 */
-	void unlinkObjects(CDOTransaction transaction);
+	Conflict postProcess(CDOTransaction transaction);
 }

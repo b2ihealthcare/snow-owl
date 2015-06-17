@@ -20,7 +20,7 @@ import org.eclipse.emf.cdo.common.revision.delta.CDORevisionDelta;
 import org.eclipse.emf.cdo.transaction.CDOTransaction;
 import org.eclipse.emf.spi.cdo.DefaultCDOMerger;
 
-import com.b2international.snowowl.datastore.server.cdo.CDOConflictProcessorBroker;
+import com.b2international.snowowl.datastore.server.branch.BranchMergeException;
 import com.b2international.snowowl.datastore.server.cdo.ICDOConflictProcessor;
 
 /**
@@ -34,10 +34,10 @@ public class CDOBranchMerger extends DefaultCDOMerger.PerFeature.ManyValued {
 	/**
 	 * Creates a new instance using the specified repository identifier.
 	 * 
-	 * @param repositoryId the identifier of the repository to merge changes in (may not be {@code null})
+	 * @param delegate the CDO conflict processor handling terminology-specific merge decisions 
 	 */
-	public CDOBranchMerger(final String repositoryId) {
-		this.delegate = CDOConflictProcessorBroker.INSTANCE.getProcessor(repositoryId);
+	public CDOBranchMerger(final ICDOConflictProcessor delegate) {
+		this.delegate = delegate;
 	}
 
 	@Override
@@ -55,7 +55,9 @@ public class CDOBranchMerger extends DefaultCDOMerger.PerFeature.ManyValued {
 		return delegate.changedInTargetAndDetachedInSource(targetDelta);
 	}
 
-	public void unlinkObjects(final CDOTransaction transaction) {
-		delegate.unlinkObjects(transaction);
+	public void postProcess(final CDOTransaction transaction) {
+		if (delegate.postProcess(transaction) != null) {
+			throw new BranchMergeException("Conflicts detected while post-processing transaction on branch %s.", transaction.getBranch().getPathName());
+		}
 	}
 }

@@ -45,7 +45,7 @@ import com.b2international.snowowl.datastore.store.Store;
 public class CDOBranchManagerImpl extends BranchManagerImpl {
 
     private final IRepository repository;
-
+	
     public CDOBranchManagerImpl(final IRepository repository, final Store<InternalBranch> branchStore) {
         super(branchStore, getBasetimestamp(repository.getCdoMainBranch()));
         this.repository = repository;
@@ -74,7 +74,7 @@ public class CDOBranchManagerImpl extends BranchManagerImpl {
     }
 
     @Override
-    InternalBranch applyChangeSet(InternalBranch target, InternalBranch source, String commitMessage) {
+    InternalBranch applyChangeSet(InternalBranch target, InternalBranch source, boolean dryRun, String commitMessage) {
         CDOBranch targetBranch = getCDOBranch(target);
         CDOBranch sourceBranch = getCDOBranch(source);
         CDOTransaction targetTransaction = null;
@@ -84,21 +84,24 @@ public class CDOBranchManagerImpl extends BranchManagerImpl {
             ICDOConnection connection = repository.getConnection();
             targetTransaction = connection.createTransaction(targetBranch);
 
-            CDOBranchMerger merger = new CDOBranchMerger(repository.getCdoRepositoryId());
+            CDOBranchMerger merger = new CDOBranchMerger(repository.getConflictProcessor());
             targetTransaction.merge(sourceBranch.getHead(), merger);
-            merger.unlinkObjects(targetTransaction);
+            merger.postProcess(targetTransaction);
 
             targetTransaction.setCommitComment(commitMessage);
 
-            CDOCommitInfo commitInfo = targetTransaction.commit();
-            return target.withHeadTimestamp(commitInfo.getTimeStamp());
+            if (!dryRun) {
+	            CDOCommitInfo commitInfo = targetTransaction.commit();
+	            return target.withHeadTimestamp(commitInfo.getTimeStamp());
+            } else {
+            	return target;
+            }
 
         } catch (CDOMerger.ConflictException e) {
             throw new BranchMergeException("Could not resolve all conflicts while applying changeset on '%s' from '%s'.", target.path(), source.path(), e);
         } catch (CommitException e) {
             throw new BranchMergeException("Failed to apply changeset on '%s' from '%s'.", target.path(), source.path(), e);
         } finally {
-
             if (targetTransaction != null) {
                 targetTransaction.close();
             }

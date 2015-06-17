@@ -190,9 +190,8 @@ Feature: SnomedMergeApi
 		When creating a new description "D1" with URL "MAIN/descriptions"
 		And creating a new description "D2" with URL "MAIN/${branchName}/descriptions"
 		And rebasing branch "MAIN/${branchName}" onto "MAIN" with comment "Rebase commit"
-		Then return "204" status
+		Then return "409" status
 		And component "D1" should exist on URL base "MAIN/descriptions"
-		And component "D1" should exist on URL base "MAIN/${branchName}/descriptions"
 		And component "D2" should not exist on URL base "MAIN/descriptions"
 		And component "D2" should exist on URL base "MAIN/${branchName}/descriptions"
 
@@ -324,17 +323,4 @@ Feature: SnomedMergeApi
 		And component "D1" should not exist on URL base "MAIN/descriptions"
 		And component "D1" should not exist on URL base "MAIN/${branchName}/descriptions"
 		And component "D2" should exist on URL base "MAIN/descriptions"
-		And component "D2" should exist on URL base "MAIN/${branchName}/descriptions"
-
-	Scenario: Accept rebase and merge attempt of two branches
-		Given a SNOMED CT branch under parent branch "MAIN" with name "${branchName}"
-		And a SNOMED CT branch under parent branch "MAIN/${branchName}" with name "A"
-		And a SNOMED CT branch under parent branch "MAIN/${branchName}" with name "B"
-		And creating a new description "D1" with URL "MAIN/${branchName}/A/descriptions"
-		And creating a new description "D2" with URL "MAIN/${branchName}/B/descriptions"
-		And rebasing branch "MAIN/${branchName}/A" onto "MAIN/${branchName}" with comment "Rebase commit A"		
-		And merging changes from branch "MAIN/${branchName}/A" to "MAIN/${branchName}" with comment "Merge commit A"
-		And rebasing branch "MAIN/${branchName}/B" onto "MAIN/${branchName}" with comment "Rebase commit B"		
-		And merging changes from branch "MAIN/${branchName}/B" to "MAIN/${branchName}" with comment "Merge commit B"
-		Then component "D1" should exist on URL base "MAIN/${branchName}/descriptions"
 		And component "D2" should exist on URL base "MAIN/${branchName}/descriptions"

@@ -21,6 +21,7 @@ import org.eclipse.emf.cdo.common.branch.CDOBranchManager;
 import com.b2international.snowowl.core.api.index.IIndexUpdater;
 import com.b2international.snowowl.datastore.cdo.ICDOConnection;
 import com.b2international.snowowl.datastore.cdo.ICDORepository;
+import com.b2international.snowowl.datastore.server.cdo.ICDOConflictProcessor;
 
 /**
  * @since 4.1 
@@ -38,4 +39,6 @@ public interface IRepository {
 	ICDORepository getCdoRepository();
 
 	String getCdoRepositoryId();
+	
+	ICDOConflictProcessor getConflictProcessor();
 }

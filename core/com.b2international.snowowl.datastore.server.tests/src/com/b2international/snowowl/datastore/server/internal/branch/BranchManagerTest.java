@@ -54,7 +54,7 @@ public class BranchManagerTest {
 		}
 
 		@Override
-		InternalBranch applyChangeSet(InternalBranch target, InternalBranch source, String commitMessage) {
+		InternalBranch applyChangeSet(InternalBranch target, InternalBranch source, boolean dryRun, String commitMessage) {
 			return handleCommit(target, clock.getTimestamp());
 		}
 

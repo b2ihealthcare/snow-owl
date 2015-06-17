@@ -103,13 +103,15 @@ public abstract class AbstractCDOConflictProcessor implements ICDOConflictProces
 	}
 
 	@Override
-	public void unlinkObjects(final CDOTransaction transaction) {
+	public Conflict postProcess(final CDOTransaction transaction) {
 		for (final CDOID idToUnlink : idsToUnlink) {
 			final CDOObject objectIfExists = CDOUtils.getObjectIfExists(transaction, idToUnlink);
 			if (objectIfExists != null) {
 				unlinkObject(objectIfExists);
 			}
 		}
+		
+		return null;
 	}
 
 	protected void unlinkObject(final CDOObject object) {

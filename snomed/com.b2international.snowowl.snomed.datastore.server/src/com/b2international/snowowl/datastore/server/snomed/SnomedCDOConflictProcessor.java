@@ -16,6 +16,7 @@
 package com.b2international.snowowl.datastore.server.snomed;
 
 import static com.google.common.collect.Maps.newHashMap;
+import static com.google.common.collect.Sets.newHashSet;
 
 import java.util.Collection;
 import java.util.Map;
@@ -27,6 +28,7 @@ import org.eclipse.emf.cdo.common.id.CDOID;
 import org.eclipse.emf.cdo.common.id.CDOIDUtil;
 import org.eclipse.emf.cdo.common.revision.CDORevision;
 import org.eclipse.emf.cdo.spi.common.revision.InternalCDORevision;
+import org.eclipse.emf.cdo.transaction.CDOTransaction;
 import org.eclipse.emf.ecore.EAttribute;
 import org.eclipse.emf.ecore.EClass;
 import org.eclipse.emf.ecore.EStructuralFeature;
@@ -34,6 +36,7 @@ import org.eclipse.emf.spi.cdo.DefaultCDOMerger.Conflict;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.CoreTerminologyBroker;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.datastore.BranchPathUtils;
@@ -41,10 +44,12 @@ import com.b2international.snowowl.datastore.server.cdo.AbstractCDOConflictProce
 import com.b2international.snowowl.datastore.server.cdo.AddedInSourceAndDetachedInTargetConflict;
 import com.b2international.snowowl.datastore.server.cdo.AddedInSourceAndTargetConflict;
 import com.b2international.snowowl.datastore.server.cdo.ICDOConflictProcessor;
-import com.b2international.snowowl.snomed.Relationship;
-import com.b2international.snowowl.snomed.SnomedPackage;
+import com.b2international.snowowl.snomed.*;
+import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
+import com.b2international.snowowl.snomed.datastore.services.ISnomedComponentService;
+import com.b2international.snowowl.snomed.snomedrefset.SnomedLanguageRefSetMember;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetMember;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetPackage;
 import com.google.common.collect.ImmutableMap;
@@ -102,7 +107,7 @@ public class SnomedCDOConflictProcessor extends AbstractCDOConflictProcessor imp
 		if (conflict != null) {
 			return conflict;
 		}
-
+		
 		return super.addedInSource(sourceRevision, targetMap);
 	}
 
@@ -215,13 +220,94 @@ public class SnomedCDOConflictProcessor extends AbstractCDOConflictProcessor imp
 	}
 
 	@Override
+	public Conflict postProcess(CDOTransaction transaction) {
+		super.postProcess(transaction);
+		
+		final IBranchPath branchPath = BranchPathUtils.createPath(transaction);
+		final Set<String> synonymAndDescendantIds = ApplicationContext.getServiceForClass(ISnomedComponentService.class).getSynonymAndDescendantIds(branchPath);
+		final Set<SnomedLanguageRefSetMember> membersToRemove = newHashSet();
+		
+		label:
+		for (CDOObject newObject : transaction.getNewObjects().values()) {
+			
+			
+			if (!(newObject instanceof SnomedLanguageRefSetMember)) {
+				continue;
+			}
+			
+			SnomedLanguageRefSetMember newLanguageRefSetMember = (SnomedLanguageRefSetMember) newObject;
+			
+			if (!newLanguageRefSetMember.isActive()) {
+				continue;
+			}
+			
+			Description description = (Description) newObject.eContainer();
+			
+			if (!description.isActive()) {
+				continue;
+			}
+			
+			String acceptabilityId = newLanguageRefSetMember.getAcceptabilityId();
+			String typeId = description.getType().getId();
+			String languageRefSetId = newLanguageRefSetMember.getRefSetIdentifierId(); 
+			
+			Concept concept = description.getConcept();
+			
+			for (Description conceptDescription : concept.getDescriptions()) {
+				
+				if (!conceptDescription.isActive()) {
+					continue;
+				}
+				
+				String conceptDescriptionTypeId = conceptDescription.getType().getId();
+				
+				if (!typeId.equals(conceptDescriptionTypeId) && !(synonymAndDescendantIds.contains(typeId) && synonymAndDescendantIds.contains(conceptDescriptionTypeId))) {
+					continue;
+				}
+				
+				for (SnomedLanguageRefSetMember conceptDescriptionMember : conceptDescription.getLanguageRefSetMembers()) {
+					
+					if (!conceptDescriptionMember.isActive()) {
+						continue;
+					}
+					
+					if (!languageRefSetId.equals(conceptDescriptionMember.getRefSetIdentifierId())) {
+						continue;
+					}
+					
+					if (conceptDescriptionMember.equals(newLanguageRefSetMember)) {
+						continue;
+					}
+					
+					if (acceptabilityId.equals(conceptDescriptionMember.getAcceptabilityId())) {
+						if (description.equals(conceptDescription)) {
+							membersToRemove.add(newLanguageRefSetMember);
+							continue label;
+						} else if (Concepts.REFSET_DESCRIPTION_ACCEPTABILITY_PREFERRED.equals(acceptabilityId)) {
+							return new AddedInSourceAndTargetConflict(newLanguageRefSetMember.cdoID(), conceptDescriptionMember.cdoID()); 
+						}
+					} else {
+						if (description.equals(conceptDescription)) {
+							return new AddedInSourceAndTargetConflict(newLanguageRefSetMember.cdoID(), conceptDescriptionMember.cdoID());
+						}
+					}
+				}
+			}
+		}
+		
+		for (SnomedLanguageRefSetMember memberToRemove : membersToRemove) {
+			unlinkObject(memberToRemove);
+		}
+		
+		return null;
+	}
+	
+	@Override
 	protected void unlinkObject(final CDOObject object) {
 
 		if (object instanceof Relationship) {
-
 			((Relationship) object).setSource(null);
 			((Relationship) object).setDestination(null);
-
 		} else if (object instanceof SnomedRefSetMember) {
 			super.unlinkObject(object);
 		} else {

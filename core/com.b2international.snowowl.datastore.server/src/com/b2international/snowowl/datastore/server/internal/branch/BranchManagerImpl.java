@@ -98,22 +98,24 @@ public abstract class BranchManagerImpl implements BranchManager {
 	}
 
 	final InternalBranch merge(final InternalBranch target, final InternalBranch source, final String commitMessage) {
-		final InternalBranch mergedTarget = applyChangeSet(target, source, commitMessage);
+		final InternalBranch mergedTarget = applyChangeSet(target, source, false, commitMessage);
 		reopen((InternalBranch) source.parent(), source.name(), source.metadata());
 		return mergedTarget;
 	}
 
 	final InternalBranch rebase(final InternalBranch source, final InternalBranch target, final String commitMessage) {
-		final InternalBranch rebasedSource = reopen((InternalBranch) source.parent(), source.name(), source.metadata());
+		InternalBranch parent = (InternalBranch) source.parent();
+		applyChangeSet(parent, source, true, commitMessage);
+		final InternalBranch rebasedSource = reopen(parent, source.name(), source.metadata());
 		
 		if (source.state() == BranchState.DIVERGED) {
-			return applyChangeSet(rebasedSource, source, commitMessage);
+			return applyChangeSet(rebasedSource, source, false, commitMessage);
 		} else {
 			return rebasedSource;
 		}
 	}
 
-	abstract InternalBranch applyChangeSet(InternalBranch target, InternalBranch source, String commitMessage);
+	abstract InternalBranch applyChangeSet(InternalBranch target, InternalBranch source, boolean dryRun, String commitMessage);
 
 	/*package*/ final InternalBranch delete(final InternalBranch branchImpl) {
 		for (Branch child : branchImpl.children()) {
