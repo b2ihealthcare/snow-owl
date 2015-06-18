@@ -17,12 +17,8 @@ package com.b2international.snowowl.snomed.api.impl;
 
 import static com.google.common.collect.Maps.newHashMap;
 
-import java.util.Collection;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
+import java.util.*;
 import java.util.Map.Entry;
-import java.util.Set;
 
 import com.b2international.commons.ClassUtils;
 import com.b2international.snowowl.api.domain.IComponentRef;
@@ -38,11 +34,7 @@ import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.SnomedConstants.LanguageCodeReferenceSetIdentifierMapping;
 import com.b2international.snowowl.snomed.SnomedFactory;
 import com.b2international.snowowl.snomed.api.ISnomedDescriptionService;
-import com.b2international.snowowl.snomed.api.domain.Acceptability;
-import com.b2international.snowowl.snomed.api.domain.CaseSignificance;
-import com.b2international.snowowl.snomed.api.domain.ISnomedDescription;
-import com.b2international.snowowl.snomed.api.domain.ISnomedDescriptionInput;
-import com.b2international.snowowl.snomed.api.domain.ISnomedDescriptionUpdate;
+import com.b2international.snowowl.snomed.api.domain.*;
 import com.b2international.snowowl.snomed.api.exception.FullySpecifiedNameNotFoundException;
 import com.b2international.snowowl.snomed.api.exception.PreferredTermNotFoundException;
 import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
@@ -57,11 +49,7 @@ import com.b2international.snowowl.snomed.datastore.services.ISnomedComponentSer
 import com.b2international.snowowl.snomed.snomedrefset.SnomedLanguageRefSetMember;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedStructuralRefSet;
-import com.google.common.collect.Collections2;
-import com.google.common.collect.HashMultimap;
-import com.google.common.collect.ImmutableBiMap;
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.Multimap;
+import com.google.common.collect.*;
 import com.google.common.primitives.Longs;
 
 public class SnomedDescriptionServiceImpl 
@@ -269,7 +257,7 @@ public class SnomedDescriptionServiceImpl
 //		internalRef.checkStorageExists();
 
 		final IBranchPath branch = internalRef.getBranch().branchPath();
-		final ImmutableBiMap<Locale, String> languageIdMap = createLanguageIdMap(locales, branch);
+		final ImmutableBiMap<Locale, String> languageIdMap = getLanguageIdMap(locales, branch);
 		final Multimap<Locale, ISnomedDescription> descriptionsByLocale = HashMultimap.create();
 		final List<ISnomedDescription> descriptions = readConceptDescriptions(conceptRef);
 
@@ -290,7 +278,7 @@ public class SnomedDescriptionServiceImpl
 			}
 		}
 
-		for (final Locale locale : languageIdMap.keySet()) {
+		for (final Locale locale : locales) {
 			final Collection<ISnomedDescription> matchingDescriptions = descriptionsByLocale.get(locale);
 			if (!matchingDescriptions.isEmpty()) {
 				return matchingDescriptions.iterator().next();
@@ -341,7 +329,7 @@ public class SnomedDescriptionServiceImpl
 		internalRef.checkStorageExists();
 
 		final IBranchPath branch = internalRef.getBranch().branchPath();
-		final ImmutableBiMap<Locale, String> languageIdMap = createLanguageIdMap(locales, branch);
+		final ImmutableBiMap<Locale, String> languageIdMap = getLanguageIdMap(locales, branch);
 		final Multimap<Locale, ISnomedDescription> descriptionsByLocale = HashMultimap.create();
 		final List<ISnomedDescription> descriptions = readConceptDescriptions(conceptRef);
 		final Set<String> synonymAndDescendantIds = getSnomedComponentService().getSynonymAndDescendantIds(branch);
@@ -363,7 +351,7 @@ public class SnomedDescriptionServiceImpl
 			}
 		}
 
-		for (final Locale locale : languageIdMap.keySet()) {
+		for (final Locale locale : locales) {
 			final Collection<ISnomedDescription> matchingDescriptions = descriptionsByLocale.get(locale);
 			if (!matchingDescriptions.isEmpty()) {
 				return matchingDescriptions.iterator().next();
@@ -382,7 +370,8 @@ public class SnomedDescriptionServiceImpl
 	 * - Different branch paths can have different available language refsets, looks like something which could be added to SnomedComponentService
 	 * - Better fallback mechanism?
 	 */
-	private ImmutableBiMap<Locale, String> createLanguageIdMap(final List<Locale> locales, final IBranchPath branchPath) {
+	@Override
+	public ImmutableBiMap<Locale, String> getLanguageIdMap(final List<Locale> locales, final IBranchPath branchPath) {
 		final ImmutableBiMap.Builder<Locale, String> resultBuilder = ImmutableBiMap.builder();
 
 		for (final Locale locale : locales) {

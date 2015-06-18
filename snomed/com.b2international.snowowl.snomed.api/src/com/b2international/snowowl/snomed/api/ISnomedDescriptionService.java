@@ -21,11 +21,14 @@ import java.util.Locale;
 import com.b2international.snowowl.api.codesystem.exception.CodeSystemNotFoundException;
 import com.b2international.snowowl.api.codesystem.exception.CodeSystemVersionNotFoundException;
 import com.b2international.snowowl.api.domain.IComponentRef;
+import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.snomed.api.domain.ISnomedDescription;
 import com.b2international.snowowl.snomed.api.domain.ISnomedDescriptionInput;
 import com.b2international.snowowl.snomed.api.domain.ISnomedDescriptionUpdate;
 import com.b2international.snowowl.snomed.api.exception.FullySpecifiedNameNotFoundException;
 import com.b2international.snowowl.snomed.api.exception.PreferredTermNotFoundException;
+import com.google.common.collect.BiMap;
+import com.google.common.collect.ImmutableBiMap;
 
 /**
  * SNOMED CT relationship service implementations provide methods for <b>c</b>reating, <b>r</b>eading, <b>u</b>pdating
@@ -96,4 +99,13 @@ public interface ISnomedDescriptionService extends ISnomedComponentService<ISnom
 	 * @throws FullySpecifiedNameNotFoundException if no fully specified name could be collected as a result of the process above
 	 */
 	ISnomedDescription getFullySpecifiedName(IComponentRef conceptRef, List<Locale> locales);
+	
+	/**
+	 * Converts a list of user-specified {@link Locale}s to language reference set identifiers.
+	 * 
+	 * @param locales    a list of {@link Locale}s to use, in order of preference
+	 * @param branchPath the branch path to look up language reference sets on
+	 * @return a {@link BiMap bidirectional map} indexing reference set identifiers by {@link Locale}
+	 */
+	ImmutableBiMap<Locale, String> getLanguageIdMap(List<Locale> locales, IBranchPath branchPath);
 }
