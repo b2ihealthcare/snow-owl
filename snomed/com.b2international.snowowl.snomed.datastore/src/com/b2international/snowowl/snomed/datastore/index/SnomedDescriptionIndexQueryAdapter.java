@@ -73,6 +73,11 @@ public abstract class SnomedDescriptionIndexQueryAdapter extends SnomedDslIndexQ
 				SnomedDescriptionContainerQueryAdapter.SEARCH_DESCRIPTION_CONTAINER_SYNYONYMS_ONLY);
 	}
 	
+	public static final SnomedDescriptionIndexQueryAdapter createFindFsnByConceptIds(final Collection<String> conceptIds) {
+		return new SnomedDescriptionContainerQueryAdapter(conceptIds, 
+				SnomedDescriptionContainerQueryAdapter.SEARCH_DESCRIPTION_CONTAINER_FSN_ONLY);
+	}
+	
 	public static final SnomedDescriptionContainerQueryAdapter createFindByConceptIds(final Collection<String> conceptIds) {
 		return new SnomedDescriptionContainerQueryAdapter(conceptIds, 
 				SnomedDescriptionContainerQueryAdapter.SEARCH_DEFAULT);
