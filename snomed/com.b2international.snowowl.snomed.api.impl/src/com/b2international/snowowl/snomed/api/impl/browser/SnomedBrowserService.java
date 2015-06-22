@@ -32,7 +32,6 @@ import com.b2international.snowowl.api.impl.domain.ComponentRef;
 import com.b2international.snowowl.api.impl.domain.InternalComponentRef;
 import com.b2international.snowowl.api.impl.domain.InternalStorageRef;
 import com.b2international.snowowl.core.ApplicationContext;
-import com.b2international.snowowl.core.api.ComponentUtils;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.exceptions.ComponentNotFoundException;
 import com.b2international.snowowl.core.terminology.ComponentCategory;
@@ -48,11 +47,11 @@ import com.b2international.snowowl.snomed.datastore.SnomedRelationshipIndexEntry
 import com.b2international.snowowl.snomed.datastore.SnomedStatementBrowser;
 import com.b2international.snowowl.snomed.datastore.SnomedTerminologyBrowser;
 import com.b2international.snowowl.snomed.datastore.index.*;
-import com.b2international.snowowl.snomed.datastore.index.refset.SnomedRefSetMemberIndexEntry;
-import com.b2international.snowowl.snomed.datastore.index.refset.SnomedRefSetMembershipIndexQueryAdapter;
 import com.google.common.base.Function;
 import com.google.common.base.Optional;
-import com.google.common.collect.*;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Maps;
 
 public class SnomedBrowserService implements ISnomedBrowserService {
 
@@ -213,87 +212,57 @@ public class SnomedBrowserService implements ISnomedBrowserService {
 
 	@Override
 	public List<ISnomedBrowserParentConcept> getConceptParents(IComponentRef conceptRef, List<Locale> locales) {
-		throw new UnsupportedOperationException();
+
+		return new FsnJoinerOperation<ISnomedBrowserParentConcept>(conceptRef, locales, descriptionService) {
+			
+			@Override
+			protected Collection<SnomedConceptIndexEntry> getConceptEntries(String conceptId) {
+				return getTerminologyBrowser().getSuperTypesById(branchPath, conceptId);
+			}
+
+			@Override
+			protected ISnomedBrowserParentConcept convertConceptEntry(SnomedConceptIndexEntry conceptEntry, Optional<String> optionalFsn) {
+				final String childConceptId = conceptEntry.getId();
+				final SnomedBrowserParentConcept convertedConcept = new SnomedBrowserParentConcept(); 
+
+				convertedConcept.setConceptId(childConceptId);
+				convertedConcept.setDefinitionStatus(conceptEntry.isPrimitive() ? DefinitionStatus.PRIMITIVE : DefinitionStatus.FULLY_DEFINED);
+				convertedConcept.setFsn(optionalFsn.or(childConceptId));
+
+				return convertedConcept;
+			}
+			
+		}.run();
 	}
 	
 	@Override
 	public List<ISnomedBrowserChildConcept> getConceptChildren(final IComponentRef conceptRef, final List<Locale> locales) {
 		
-		final InternalComponentRef internalConceptRef = ClassUtils.checkAndCast(conceptRef, InternalComponentRef.class);
-		internalConceptRef.checkStorageExists();
-		
-		final IBranchPath branchPath = internalConceptRef.getBranch().branchPath();
-		final String conceptId = conceptRef.getComponentId();
-		
-		if (!getTerminologyBrowser().exists(branchPath, conceptId)) {
-			throw new ComponentNotFoundException(ComponentCategory.CONCEPT, conceptId);
-		}
-		
-		final Collection<SnomedConceptIndexEntry> childConcepts = getTerminologyBrowser().getSubTypesById(branchPath, conceptId);
-		
-		final SnomedDescriptionIndexQueryAdapter fsnsQuery = SnomedDescriptionIndexQueryAdapter.createFindFsnByConceptIds(ComponentUtils.getIdSet(childConcepts));
-		final Collection<SnomedDescriptionIndexEntry> fsnsIndexEntries = getIndexService().searchUnsorted(branchPath, fsnsQuery);
-		final Multimap<String, SnomedDescriptionIndexEntry> fsnsByConcept = Multimaps.index(fsnsIndexEntries, new Function<SnomedDescriptionIndexEntry, String>() {
-			@Override public String apply(SnomedDescriptionIndexEntry input) {
-				return input.getConceptId();
-			}
-		});
-
-		final Table<String, String, Acceptability> descriptionAcceptability = HashBasedTable.create();
-		final ImmutableBiMap<Locale, String> languageIdMap = descriptionService.getLanguageIdMap(locales, branchPath);
-
-		for (Locale locale : locales) {
-			String languageRefSetId = languageIdMap.get(locale);
+		return new FsnJoinerOperation<ISnomedBrowserChildConcept>(conceptRef, locales, descriptionService) {
 			
-			if (languageRefSetId != null) {
-				SnomedRefSetMembershipIndexQueryAdapter languageMembersQuery = SnomedRefSetMembershipIndexQueryAdapter.createFindAllLanguageMembersQuery(ComponentUtils.getIds(fsnsIndexEntries), languageRefSetId);
-				final Collection<SnomedRefSetMemberIndexEntry> languageMemberEntries = getIndexService().searchUnsorted(branchPath, languageMembersQuery);
-				
-				for (SnomedRefSetMemberIndexEntry languageMemberEntry : languageMemberEntries) {
-					final Acceptability acceptability = Acceptability.getByConceptId(languageMemberEntry.getSpecialFieldId());
-					descriptionAcceptability.put(languageMemberEntry.getReferencedComponentId(), languageMemberEntry.getRefSetIdentifierId(), acceptability);
-				}
+			@Override
+			protected Collection<SnomedConceptIndexEntry> getConceptEntries(String conceptId) {
+				return getTerminologyBrowser().getSubTypesById(branchPath, conceptId);
 			}
-		}
-		
-		final ImmutableList.Builder<ISnomedBrowserChildConcept> resultBuilder = ImmutableList.builder();
 
-		for (final SnomedConceptIndexEntry childConcept : childConcepts) {
+			@Override
+			protected ISnomedBrowserChildConcept convertConceptEntry(SnomedConceptIndexEntry conceptEntry, Optional<String> optionalFsn) {
+				final String childConceptId = conceptEntry.getId();
+				final SnomedBrowserChildConcept convertedConcept = new SnomedBrowserChildConcept(); 
+
+				convertedConcept.setConceptId(childConceptId);
+				convertedConcept.setActive(conceptEntry.isActive());
+				convertedConcept.setDefinitionStatus(conceptEntry.isPrimitive() ? DefinitionStatus.PRIMITIVE : DefinitionStatus.FULLY_DEFINED);
+				convertedConcept.setModuleId(conceptEntry.getModuleId());
+				convertedConcept.setFsn(optionalFsn.or(childConceptId));
+
+				final int subTypeCount = getTerminologyBrowser().getSubTypeCountById(branchPath, childConceptId);
+				convertedConcept.setHasChild(subTypeCount > 0);
+
+				return convertedConcept;
+			}
 			
-			final String childConceptId = childConcept.getId();
-			final SnomedBrowserChildConcept convertedDescendant = new SnomedBrowserChildConcept(); 
-
-			convertedDescendant.setConceptId(childConceptId);
-			convertedDescendant.setActive(childConcept.isActive());
-			convertedDescendant.setDefinitionStatus(childConcept.isPrimitive() ? DefinitionStatus.PRIMITIVE : DefinitionStatus.FULLY_DEFINED);
-			convertedDescendant.setModuleId(childConcept.getModuleId());
-			convertedDescendant.setFsn(getFsn(locales, fsnsByConcept.get(childConceptId), descriptionAcceptability, languageIdMap).or(childConceptId));
-
-			final int subTypeCount = getTerminologyBrowser().getSubTypeCountById(branchPath, childConceptId);
-			convertedDescendant.setHasChild(subTypeCount > 0);
-
-			resultBuilder.add(convertedDescendant);
-		}
-
-		return resultBuilder.build();
-	}
-
-	private Optional<String> getFsn(final List<Locale> locales,
-			final Collection<SnomedDescriptionIndexEntry> fsnEntries,
-			final Table<String, String, Acceptability> descriptionAcceptability,
-			final ImmutableBiMap<Locale, String> languageIdMap) {
-		
-		for (Locale locale : locales) {
-			final String languageRefSetId = languageIdMap.get(locale);
-			for (SnomedDescriptionIndexEntry indexEntry : fsnEntries) {
-				if (Acceptability.PREFERRED.equals(descriptionAcceptability.get(indexEntry.getId(), languageRefSetId))) {
-					return Optional.of(indexEntry.getLabel());
-				}
-			}
-		}
-		
-		// FIXME: check language codes when it becomes available on the index entry
-		return FluentIterable.from(fsnEntries).first().transform(ComponentUtils.getLabelFunction());
+		}.run();
 	}
 
 	private static SnomedTerminologyBrowser getTerminologyBrowser() {
