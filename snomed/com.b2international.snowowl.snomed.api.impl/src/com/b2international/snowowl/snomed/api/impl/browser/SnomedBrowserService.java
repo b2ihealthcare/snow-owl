@@ -212,6 +212,11 @@ public class SnomedBrowserService implements ISnomedBrowserService {
 	}
 
 	@Override
+	public List<ISnomedBrowserParentConcept> getConceptParents(IComponentRef conceptRef, List<Locale> locales) {
+		throw new UnsupportedOperationException();
+	}
+	
+	@Override
 	public List<ISnomedBrowserChildConcept> getConceptChildren(final IComponentRef conceptRef, final List<Locale> locales) {
 		
 		final InternalComponentRef internalConceptRef = ClassUtils.checkAndCast(conceptRef, InternalComponentRef.class);
