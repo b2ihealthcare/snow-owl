@@ -32,6 +32,7 @@ import org.hamcrest.CoreMatchers
 import static com.jayway.restassured.RestAssured.*
 
 import static extension com.b2international.snowowl.test.commons.json.JsonExtensions.*
+import com.google.common.base.Joiner
 
 /**
  * Useful extension methods when testing Snow Owl's RESTful API. High level REST related syntactic sugars and stuff like 
@@ -146,7 +147,11 @@ class RestExtensions {
 	}
 	
 	def static String lastPathSegment(String path) {
-		Splitter.on("/").split(path).last
+		Splitter.on('/').split(path).last
+	}
+	
+	def static String joinPath(String... segments) {
+		Joiner.on('/').join(segments)
 	}
 	
 	def static RequestSpecification withFile(RequestSpecification it, String file, Class<?> cp) {
