@@ -185,7 +185,7 @@ Feature: SnomedMergeApi
 			API.get(args.second.renderWithFields(this), componentMap.get(args.first)).expectStatus(404)
 		And component "C2" should exist on URL base "MAIN/${branchName}/concepts"
 
-	Scenario: Accept rebase attempt of new description in DIVERGED state
+	Scenario: Reject rebase attempt of new PT in DIVERGED state
 		Given a SNOMED CT branch under parent branch "MAIN" with name "${branchName}"
 		When creating a new description "D1" with URL "MAIN/descriptions"
 		And creating a new description "D2" with URL "MAIN/${branchName}/descriptions"
