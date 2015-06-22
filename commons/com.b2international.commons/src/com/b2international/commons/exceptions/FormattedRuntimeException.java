@@ -20,7 +20,7 @@ package com.b2international.commons.exceptions;
  * 
  * @since 4.1
  */
-public abstract class FormattedRuntimeException extends RuntimeException {
+public class FormattedRuntimeException extends RuntimeException {
 
 	private static final long serialVersionUID = 2260275826641517268L;
 
