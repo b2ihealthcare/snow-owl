@@ -21,26 +21,14 @@ import javax.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestHeader;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.*;
 
 import com.b2international.snowowl.api.domain.IComponentRef;
 import com.b2international.snowowl.api.impl.domain.StorageRef;
 import com.b2international.snowowl.snomed.api.browser.ISnomedBrowserService;
-import com.b2international.snowowl.snomed.api.domain.browser.ISnomedBrowserChildConcept;
-import com.b2international.snowowl.snomed.api.domain.browser.ISnomedBrowserConcept;
-import com.b2international.snowowl.snomed.api.domain.browser.ISnomedBrowserConstant;
-import com.b2international.snowowl.snomed.api.domain.browser.ISnomedBrowserDescriptionResult;
+import com.b2international.snowowl.snomed.api.domain.browser.*;
 import com.b2international.snowowl.snomed.api.rest.AbstractSnomedRestService;
-import com.wordnik.swagger.annotations.Api;
-import com.wordnik.swagger.annotations.ApiOperation;
-import com.wordnik.swagger.annotations.ApiParam;
-import com.wordnik.swagger.annotations.ApiResponse;
-import com.wordnik.swagger.annotations.ApiResponses;
+import com.wordnik.swagger.annotations.*;
 
 /**
  * @since 1.0
@@ -68,7 +56,7 @@ public class SnomedBrowserRestService extends AbstractSnomedRestService {
 		@ApiResponse(code = 404, message = "Code system version or concept not found")
 	})
 	@RequestMapping(value="/concepts/{conceptId}", method=RequestMethod.GET)
-	public @ResponseBody ISnomedBrowserConcept getSingleConcept(
+	public @ResponseBody ISnomedBrowserConcept getConceptDetails(
 			@ApiParam(value="The branch path")
 			@PathVariable(value="path")
 			final String branchPath,
@@ -88,6 +76,36 @@ public class SnomedBrowserRestService extends AbstractSnomedRestService {
 	}
 
 	@ApiOperation(
+			value = "Retrieve parents of a concept",
+			notes = "Returns a list of parent concepts of the specified concept on a branch.",
+			response=Void.class)
+	@ApiResponses({
+		@ApiResponse(code = 200, message = "OK"),
+		@ApiResponse(code = 404, message = "Code system version or concept not found")
+	})
+	@RequestMapping(
+			value="/concepts/{conceptId}/parents",
+			method = RequestMethod.GET)
+	public @ResponseBody List<ISnomedBrowserParentConcept> getConceptParents(
+			@ApiParam(value="The branch path")
+			@PathVariable(value="path")
+			final String branchPath,
+			
+			@ApiParam(value="The concept identifier")
+			@PathVariable(value="conceptId")
+			final String conceptId,
+			
+			@ApiParam(value="Language codes and reference sets, in order of preference")
+			@RequestHeader(value="Accept-Language", defaultValue="en-US;q=0.8,en-GB;q=0.6", required=false) 
+			final String languageSetting,
+			
+			final HttpServletRequest request) {
+		
+		final IComponentRef ref = createComponentRef(branchPath, conceptId);
+		return delegate.getConceptParents(ref, Collections.list(request.getLocales()));
+	}
+	
+	@ApiOperation(
 			value = "Retrieve children of a concept",
 			notes = "Returns a list of child concepts of the specified concept on a branch.",
 			response=Void.class)
@@ -98,7 +116,7 @@ public class SnomedBrowserRestService extends AbstractSnomedRestService {
 	@RequestMapping(
 			value="/concepts/{conceptId}/children",
 			method = RequestMethod.GET)
-	public @ResponseBody List<ISnomedBrowserChildConcept> getChildren(
+	public @ResponseBody List<ISnomedBrowserChildConcept> getConceptChildren(
 			@ApiParam(value="The branch path")
 			@PathVariable(value="path")
 			final String branchPath,
