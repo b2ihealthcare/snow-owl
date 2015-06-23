@@ -281,7 +281,7 @@ public class CDOLegacyAdapter extends CDOLegacyWrapper implements Adapter.Intern
   }
 
   /**
-   * @author Martin Flügge
+   * @author Martin Fluegge
    * @since 3.0
    */
   protected class AdapterListListener implements
