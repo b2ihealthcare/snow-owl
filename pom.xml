@@ -284,7 +284,7 @@
 				<version>2.10.3</version>
 				<configuration>
 					<aggregate>true</aggregate>
-					<excludePackageNames>org.apache.poi.*:org.eclipse.*:org.ihtsdo.*:org.osgi.*:org.protege.*:org.supercsv.*:spiffy.*</excludePackageNames>
+					<excludePackageNames>org.apache.poi.*:org.eclipse.*:org.ihtsdo.*:org.osgi.*:org.protege.*:org.supercsv.*:spiffy.*:*.test*</excludePackageNames>
 				</configuration>
 			</plugin>
 		</plugins>
