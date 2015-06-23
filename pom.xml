@@ -278,6 +278,15 @@
 				<artifactId>tycho-versions-plugin</artifactId>
 				<version>${tycho.version}</version>
 			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-javadoc-plugin</artifactId>
+				<version>2.10.3</version>
+				<configuration>
+					<aggregate>true</aggregate>
+					<excludePackageNames>org.apache.poi.*:org.eclipse.*:org.ihtsdo.*:org.osgi.*:org.protege.*:org.supercsv.*:spiffy.*</excludePackageNames>
+				</configuration>
+			</plugin>
 		</plugins>
 		<pluginManagement>
 			<plugins>
