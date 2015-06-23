@@ -20,6 +20,7 @@ import static com.b2international.snowowl.test.commons.rest.RestExtensions.joinP
 import static com.b2international.snowowl.test.commons.rest.RestExtensions.lastPathSegment;
 import static com.google.common.collect.Maps.newHashMap;
 import static org.hamcrest.CoreMatchers.containsString;
+import static org.hamcrest.CoreMatchers.equalTo;
 
 import java.util.Date;
 import java.util.Map;
@@ -169,6 +170,10 @@ public class SnomedMergeApiTest extends AbstractSnomedApiTest {
 
 	private void assertConceptCanBeDeleted(String symbolicName, String... segments) {
 		assertComponentCanBeDeleted("concepts", symbolicName, segments);
+	}
+	
+	private void assertDescriptionCanBeDeleted(String symbolicName, String... segments) {
+		assertComponentCanBeDeleted("descriptions", symbolicName, segments);
 	}
 
 	private void assertComponentStatus(String componentType, int statusCode, String symbolicName, String... segments) {
@@ -509,5 +514,53 @@ public class SnomedMergeApiTest extends AbstractSnomedApiTest {
 		assertBranchCanBeMerged(joinPath("MAIN", branchName), "MAIN", "Merge concept deletion back to MAIN");
 		assertConceptNotExists("C1", "MAIN", branchName);
 		assertConceptNotExists("C1", "MAIN");
+	}
+	
+	@Test
+	public void rebaseAndMergeChangedDescriptionMultipleChanges() {
+		mergeNewDescriptionForward();
+		
+		assertDescriptionCanBeCreated("D2", ACCEPTABLE_ACCEPTABILITY_MAP, "MAIN");
+		
+		Map<?, ?> changesOnBranch = ImmutableMap.of(
+			"caseSignificance", CaseSignificance.CASE_INSENSITIVE,
+			"moduleId", "900000000000013009",
+			"commitComment", "Changed case significance and module on branch"
+		);
+
+		assertDescriptionCanBeUpdated("D1", changesOnBranch, "MAIN", branchName);
+		assertBranchCanBeRebased("MAIN", joinPath("MAIN", branchName), "Rebase description update");
+		assertBranchCanBeMerged(joinPath("MAIN", branchName), "MAIN", "Merge description update");
+		
+		assertDescriptionExists("D1", "MAIN");
+		assertDescriptionExists("D2", "MAIN");
+		
+		givenAuthenticatedRequest(API)
+		.when()
+			.get("/MAIN/descriptions/{id}", symbolicNameToIds.get("D1"))
+		.then()
+		.assertThat()
+			.statusCode(200)
+		.and()
+			.body("caseSignificance", equalTo(CaseSignificance.CASE_INSENSITIVE.name()))
+		.and()
+			.body("moduleId", equalTo("900000000000013009"));
+	}
+	
+	@Test
+	public void rebaseAndMergeNewDescriptionBothDeleted() {
+		mergeNewDescriptionForward();
+		
+		assertDescriptionCanBeCreated("D2", ACCEPTABLE_ACCEPTABILITY_MAP, "MAIN");
+		assertDescriptionCanBeDeleted("D1", "MAIN");
+		assertDescriptionCanBeDeleted("D1", "MAIN", branchName);
+		
+		assertBranchCanBeRebased("MAIN", joinPath("MAIN", branchName), "Rebase description dual deletion");
+		assertBranchCanBeMerged(joinPath("MAIN", branchName), "MAIN", "Merge description dual deletion");
+		
+		assertDescriptionNotExists("D1", "MAIN");
+		assertDescriptionNotExists("D1", "MAIN", branchName);
+		assertDescriptionExists("D2", "MAIN");
+		assertDescriptionExists("D2", "MAIN", branchName);
 	}
 }
