@@ -24,6 +24,7 @@ import java.util.Map;
 
 import org.junit.Test;
 
+import com.b2international.snowowl.snomed.api.rest.AbstractSnomedApiTest;
 import com.google.common.collect.ImmutableMap;
 import com.jayway.restassured.response.ValidatableResponse;
 
