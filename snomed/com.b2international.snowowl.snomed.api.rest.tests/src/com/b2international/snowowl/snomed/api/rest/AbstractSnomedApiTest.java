@@ -17,16 +17,22 @@ package com.b2international.snowowl.snomed.api.rest;
 
 import static com.b2international.snowowl.test.commons.rest.RestExtensions.givenAuthenticatedRequest;
 import static com.b2international.snowowl.test.commons.rest.RestExtensions.joinPath;
+import static com.b2international.snowowl.test.commons.rest.RestExtensions.lastPathSegment;
+import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.endsWith;
+import static org.hamcrest.CoreMatchers.equalTo;
 
 import java.util.Map;
 import java.util.UUID;
 
 import org.junit.Before;
 
+import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
+import com.b2international.snowowl.snomed.api.domain.Acceptability;
 import com.google.common.collect.ImmutableMap;
 import com.jayway.restassured.http.ContentType;
 import com.jayway.restassured.response.Response;
+import com.jayway.restassured.response.ValidatableResponse;
 import com.jayway.restassured.specification.RequestSpecification;
 
 /**
@@ -34,9 +40,18 @@ import com.jayway.restassured.specification.RequestSpecification;
  */
 public abstract class AbstractSnomedApiTest {
 
-	protected static String SCT_API = "/snomed-ct/v2";
 	protected static String ADMIN_API = "/admin";
 	
+	protected static String SCT_API = "/snomed-ct/v2";
+	
+	protected static final Map<?, ?> ACCEPTABLE_ACCEPTABILITY_MAP = ImmutableMap.of(
+		Concepts.REFSET_LANGUAGE_TYPE_UK, Acceptability.ACCEPTABLE
+	);
+
+	protected static final Map<?, ?> PREFERRED_ACCEPTABILITY_MAP = ImmutableMap.of(
+		Concepts.REFSET_LANGUAGE_TYPE_UK, Acceptability.PREFERRED
+	);
+
 	protected String branchName;
 			
 	@Before
@@ -79,6 +94,15 @@ public abstract class AbstractSnomedApiTest {
 			.header("Location", endsWith(String.format("/branches/%s/%s", parent, name)));
 	}
 	
+	protected void assertBranchCanBeDeleted(final String parent, final String name) {
+		givenAuthenticatedRequest(SCT_API)
+		.when()
+			.delete("/branches/{parent}/{name}", parent, name)
+		.then()
+		.assertThat()
+			.statusCode(204);
+	}
+
 	private void assertComponentStatus(String componentType, int statusCode, String componentId, String... segments) {
 		String path = joinPath(segments);
 		
@@ -120,5 +144,42 @@ public abstract class AbstractSnomedApiTest {
 	
 	protected void assertRelationshipNotExists(String componentId, String... segments) {
 		assertComponentNotExists("relationships", componentId, segments);
+	}
+
+	private Response whenCreatingComponent(String componentType, Map<?, ?> requestBody, String... segments) {
+		return givenAuthenticatedRequest(SCT_API)
+		.with()
+			.contentType(ContentType.JSON)
+		.and()
+			.body(requestBody)
+		.when()
+			.post("/{path}/{componentType}", joinPath(segments), componentType);
+	}
+
+	protected ValidatableResponse assertComponentCreationStatus(String componentType, Map<?, ?> requestBody, int statusCode, String... segments) {
+		return whenCreatingComponent(componentType, requestBody, segments)
+		.then()
+		.assertThat()
+			.statusCode(statusCode);
+	}
+
+	protected ValidatableResponse assertComponentCanNotBeCreated(String componentType, Map<?, ?> requestBody, String... segments) {
+		return assertComponentCreationStatus(componentType, requestBody, 400, joinPath(segments))
+		.and()
+			.body("status", equalTo(400));
+	}
+	
+	protected String assertComponentCanBeCreated(String componentType, Map<?, ?> requestBody, String... segments) {
+		String path = joinPath(segments);
+
+		String location = assertComponentCreationStatus(componentType, requestBody, 201, path)
+		.and()
+			.header("Location", containsString(String.format("/%s/%s", path, componentType)))
+		.and()
+			.body(equalTo(""))
+		.and()
+			.extract().response().getHeader("Location");
+		
+		return lastPathSegment(location);
 	}
 }

@@ -17,9 +17,7 @@ package com.b2international.snowowl.snomed.api.rest.branches;
 
 import static com.b2international.snowowl.test.commons.rest.RestExtensions.givenAuthenticatedRequest;
 import static com.b2international.snowowl.test.commons.rest.RestExtensions.joinPath;
-import static com.b2international.snowowl.test.commons.rest.RestExtensions.lastPathSegment;
 import static com.google.common.collect.Maps.newHashMap;
-import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.equalTo;
 
 import java.util.Date;
@@ -28,7 +26,6 @@ import java.util.Map;
 import org.junit.Test;
 
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
-import com.b2international.snowowl.snomed.api.domain.Acceptability;
 import com.b2international.snowowl.snomed.api.domain.CaseSignificance;
 import com.b2international.snowowl.snomed.api.domain.DefinitionStatus;
 import com.b2international.snowowl.snomed.api.rest.AbstractSnomedApiTest;
@@ -43,35 +40,10 @@ import com.jayway.restassured.specification.RequestSpecification;
  */
 public class SnomedMergeApiTest extends AbstractSnomedApiTest {
 
-	private static final Map<?, ?> ACCEPTABLE_ACCEPTABILITY_MAP = ImmutableMap.of(
-		Concepts.REFSET_LANGUAGE_TYPE_UK, Acceptability.ACCEPTABLE
-	);
-
-	private static final Map<?, ?> PREFERRED_ACCEPTABILITY_MAP = ImmutableMap.of(
-		Concepts.REFSET_LANGUAGE_TYPE_UK, Acceptability.PREFERRED
-	);
-
 	private Map<String, String> symbolicNameMap = newHashMap();
-	
-	private void assertComponentCanBeCreated(String componentType, String symbolicName, Map<?, ?> requestBody, String... segments) {
-		String path = joinPath(segments);
 
-		Response response = givenAuthenticatedRequest(SCT_API)
-		.with()
-			.contentType(ContentType.JSON)
-		.and()
-			.body(requestBody)
-		.when()
-			.post("/{path}/{componentType}", path, componentType);
-			
-		response
-		.then()
-		.assertThat()
-			.statusCode(201)
-		.and()
-			.header("Location", containsString(String.format("/%s/%s", path, componentType)));
-		
-		symbolicNameMap.put(symbolicName, lastPathSegment(response.getHeader("Location")));
+	protected void assertComponentCanBeCreated(String componentType, String symbolicName, Map<?, ?> requestBody, String... segments) {
+		symbolicNameMap.put(symbolicName, assertComponentCanBeCreated(componentType, requestBody, segments));
 	}
 	
 	@Override

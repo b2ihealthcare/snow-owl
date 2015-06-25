@@ -93,15 +93,6 @@ public class SnomedBranchingApiTest extends AbstractSnomedApiTest {
 			.statusCode(409);
 	}
 	
-	private void assertBranchCanBeDeleted(final String parent, final String name) {
-		givenAuthenticatedRequest(SCT_API)
-		.when()
-			.delete("/branches/{parent}/{name}", parent, name)
-		.then()
-		.assertThat()
-			.statusCode(204);
-	}
-
 	private void assertBranchIsDeleted(final String parent, final String name) {
 		assertBranchExists(parent, name)
 		.and()
