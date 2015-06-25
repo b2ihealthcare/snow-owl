@@ -16,6 +16,7 @@
 package com.b2international.snowowl.snomed.api.rest;
 
 import static com.b2international.snowowl.test.commons.rest.RestExtensions.givenAuthenticatedRequest;
+import static com.b2international.snowowl.test.commons.rest.RestExtensions.joinPath;
 import static org.hamcrest.CoreMatchers.endsWith;
 
 import java.util.Map;
@@ -76,5 +77,48 @@ public abstract class AbstractSnomedApiTest {
 			.statusCode(201)
 		.and()
 			.header("Location", endsWith(String.format("/branches/%s/%s", parent, name)));
+	}
+	
+	private void assertComponentStatus(String componentType, int statusCode, String componentId, String... segments) {
+		String path = joinPath(segments);
+		
+		givenAuthenticatedRequest(SCT_API)
+		.when()
+			.get("/{path}/{componentType}/{id}", path, componentType, componentId)
+		.then()
+		.assertThat()
+			.statusCode(statusCode);
+	}
+	
+	private void assertComponentExists(String componentType, String symbolicName, String... segments) {
+		assertComponentStatus(componentType, 200, symbolicName, segments);
+	}
+
+	protected void assertConceptExists(String componentId, String... segments) {
+		assertComponentExists("concepts", componentId, segments);
+	}
+	
+	protected void assertDescriptionExists(String componentId, String... segments) {
+		assertComponentExists("descriptions", componentId, segments);
+	}
+	
+	protected void assertRelationshipExists(String componentId, String... segments) {
+		assertComponentExists("relationships", componentId, segments);
+	}
+	
+	private void assertComponentNotExists(String componentType, String componentId, String... segments) {
+		assertComponentStatus(componentType, 404, componentId, segments);
+	}
+	
+	protected void assertConceptNotExists(String componentId, String... segments) {
+		assertComponentNotExists("concepts", componentId, segments);
+	}
+	
+	protected void assertDescriptionNotExists(String componentId, String... segments) {
+		assertComponentNotExists("descriptions", componentId, segments);
+	}
+	
+	protected void assertRelationshipNotExists(String componentId, String... segments) {
+		assertComponentNotExists("relationships", componentId, segments);
 	}
 }

@@ -51,7 +51,7 @@ public class SnomedMergeApiTest extends AbstractSnomedApiTest {
 		Concepts.REFSET_LANGUAGE_TYPE_UK, Acceptability.PREFERRED
 	);
 
-	private final Map<String, String> symbolicNameToIds = newHashMap();
+	private Map<String, String> symbolicNameMap = newHashMap();
 	
 	private void assertComponentCanBeCreated(String componentType, String symbolicName, Map<?, ?> requestBody, String... segments) {
 		String path = joinPath(segments);
@@ -71,7 +71,37 @@ public class SnomedMergeApiTest extends AbstractSnomedApiTest {
 		.and()
 			.header("Location", containsString(String.format("/%s/%s", path, componentType)));
 		
-		symbolicNameToIds.put(symbolicName, lastPathSegment(response.getHeader("Location")));
+		symbolicNameMap.put(symbolicName, lastPathSegment(response.getHeader("Location")));
+	}
+	
+	@Override
+	protected void assertConceptExists(String symbolicName, String... segments) {
+		super.assertConceptExists(symbolicNameMap.get(symbolicName), segments);
+	}
+	
+	@Override
+	protected void assertDescriptionExists(String symbolicName, String... segments) {
+		super.assertDescriptionExists(symbolicNameMap.get(symbolicName), segments);
+	}
+	
+	@Override
+	protected void assertRelationshipExists(String symbolicName, String... segments) {
+		super.assertRelationshipExists(symbolicNameMap.get(symbolicName), segments);
+	}
+	
+	@Override
+	protected void assertConceptNotExists(String symbolicName, String... segments) {
+		super.assertConceptNotExists(symbolicNameMap.get(symbolicName), segments);
+	}
+	
+	@Override
+	protected void assertDescriptionNotExists(String symbolicName, String... segments) {
+		super.assertDescriptionNotExists(symbolicNameMap.get(symbolicName), segments);
+	}
+	
+	@Override
+	protected void assertRelationshipNotExists(String symbolicName, String... segments) {
+		super.assertRelationshipNotExists(symbolicNameMap.get(symbolicName), segments);
 	}
 	
 	private void assertConceptCanBeCreated(String symbolicName, String... segments) {
@@ -139,7 +169,7 @@ public class SnomedMergeApiTest extends AbstractSnomedApiTest {
 		.and()
 			.body(requestBody)
 		.when()
-			.post("/{path}/{componentType}/{id}/updates", path, componentType, symbolicNameToIds.get(symbolicName));
+			.post("/{path}/{componentType}/{id}/updates", path, componentType, symbolicNameMap.get(symbolicName));
 			
 		response
 		.then()
@@ -160,7 +190,7 @@ public class SnomedMergeApiTest extends AbstractSnomedApiTest {
 
 		Response response = givenAuthenticatedRequest(SCT_API)
 		.when()
-			.delete("/{path}/{componentType}/{id}", path, componentType, symbolicNameToIds.get(symbolicName));
+			.delete("/{path}/{componentType}/{id}", path, componentType, symbolicNameMap.get(symbolicName));
 			
 		response
 		.then()
@@ -174,49 +204,6 @@ public class SnomedMergeApiTest extends AbstractSnomedApiTest {
 	
 	private void assertDescriptionCanBeDeleted(String symbolicName, String... segments) {
 		assertComponentCanBeDeleted("descriptions", symbolicName, segments);
-	}
-
-	private void assertComponentStatus(String componentType, int statusCode, String symbolicName, String... segments) {
-		String path = joinPath(segments);
-		
-		givenAuthenticatedRequest(SCT_API)
-		.when()
-			.get("/{path}/{componentType}/{id}", path, componentType, symbolicNameToIds.get(symbolicName))
-		.then()
-		.assertThat()
-			.statusCode(statusCode);
-	}
-	
-	private void assertComponentExists(String componentType, String symbolicName, String... segments) {
-		assertComponentStatus(componentType, 200, symbolicName, segments);
-	}
-
-	private void assertConceptExists(String symbolicName, String... segments) {
-		assertComponentExists("concepts", symbolicName, segments);
-	}
-	
-	private void assertDescriptionExists(String symbolicName, String... segments) {
-		assertComponentExists("descriptions", symbolicName, segments);
-	}
-	
-	private void assertRelationshipExists(String symbolicName, String... segments) {
-		assertComponentExists("relationships", symbolicName, segments);
-	}
-	
-	private void assertComponentNotExists(String componentType, String symbolicName, String... segments) {
-		assertComponentStatus(componentType, 404, symbolicName, segments);
-	}
-	
-	private void assertConceptNotExists(String symbolicName, String... segments) {
-		assertComponentNotExists("concepts", symbolicName, segments);
-	}
-	
-	private void assertDescriptionNotExists(String symbolicName, String... segments) {
-		assertComponentNotExists("descriptions", symbolicName, segments);
-	}
-	
-	private void assertRelationshipNotExists(String symbolicName, String... segments) {
-		assertComponentNotExists("relationships", symbolicName, segments);
 	}
 
 	private Response whenMergingOrRebasingBranches(RequestSpecification request, String source, String target, String commitComment) {
@@ -537,7 +524,7 @@ public class SnomedMergeApiTest extends AbstractSnomedApiTest {
 		
 		givenAuthenticatedRequest(SCT_API)
 		.when()
-			.get("/MAIN/descriptions/{id}", symbolicNameToIds.get("D1"))
+			.get("/MAIN/descriptions/{id}", symbolicNameMap.get("D1"))
 		.then()
 		.assertThat()
 			.statusCode(200)
