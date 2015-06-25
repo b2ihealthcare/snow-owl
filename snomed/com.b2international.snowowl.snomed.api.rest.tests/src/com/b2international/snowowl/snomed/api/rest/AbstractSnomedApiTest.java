@@ -106,7 +106,7 @@ public abstract class AbstractSnomedApiTest {
 		assertComponentExists("relationships", componentId, segments);
 	}
 	
-	private void assertComponentNotExists(String componentType, String componentId, String... segments) {
+	protected void assertComponentNotExists(String componentType, String componentId, String... segments) {
 		assertComponentStatus(componentType, 404, componentId, segments);
 	}
 	
