@@ -33,7 +33,8 @@ import com.jayway.restassured.specification.RequestSpecification;
  */
 public abstract class AbstractSnomedApiTest {
 
-	protected static String API = "/snomed-ct/v2";
+	protected static String SCT_API = "/snomed-ct/v2";
+	protected static String ADMIN_API = "/admin";
 	
 	protected String branchName;
 			
@@ -69,7 +70,7 @@ public abstract class AbstractSnomedApiTest {
 	}
 
 	protected void assertBranchCanBeCreated(final String parent, final String name, final Map<?, ?> metadata) {
-		whenCreatingBranch(givenAuthenticatedRequest(API), parent, name, metadata)
+		whenCreatingBranch(givenAuthenticatedRequest(SCT_API), parent, name, metadata)
 		.then()
 		.assertThat()
 			.statusCode(201)

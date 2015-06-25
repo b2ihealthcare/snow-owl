@@ -35,7 +35,7 @@ public class SnomedBranchingApiTest extends AbstractSnomedApiTest {
 
 	@Test
 	public void readNonExistentBranch() {
-		givenAuthenticatedRequest(API)
+		givenAuthenticatedRequest(SCT_API)
 		.when()
 			.get("/branches/MAIN/{branchName}", "nonexistent")
 		.then()
@@ -47,7 +47,7 @@ public class SnomedBranchingApiTest extends AbstractSnomedApiTest {
 
 	@Test
 	public void createBranchWithNonexistentParent() {
-		whenCreatingBranch(givenAuthenticatedRequest(API), "nonexistent", branchName)
+		whenCreatingBranch(givenAuthenticatedRequest(SCT_API), "nonexistent", branchName)
 		.then()
 		.assertThat()
 			.statusCode(400)
@@ -56,7 +56,7 @@ public class SnomedBranchingApiTest extends AbstractSnomedApiTest {
 	}
 
 	private ValidatableResponse assertBranchExists(final String parent, final String name) {
-		return givenAuthenticatedRequest(API)
+		return givenAuthenticatedRequest(SCT_API)
 		.when()
 			.get("/branches/{parent}/{branchName}", parent, name)
 		.then()
@@ -87,14 +87,14 @@ public class SnomedBranchingApiTest extends AbstractSnomedApiTest {
 	public void createBranchTwice() {
 		assertBranchCanBeCreated("MAIN", branchName);
 		
-		whenCreatingBranch(givenAuthenticatedRequest(API), "MAIN", branchName)
+		whenCreatingBranch(givenAuthenticatedRequest(SCT_API), "MAIN", branchName)
 		.then()
 		.assertThat()
 			.statusCode(409);
 	}
 	
 	private void assertBranchCanBeDeleted(final String parent, final String name) {
-		givenAuthenticatedRequest(API)
+		givenAuthenticatedRequest(SCT_API)
 		.when()
 			.delete("/branches/{parent}/{name}", parent, name)
 		.then()
@@ -134,7 +134,7 @@ public class SnomedBranchingApiTest extends AbstractSnomedApiTest {
 		assertBranchCanBeCreated("MAIN", branchName);
 		assertBranchCanBeDeleted("MAIN", branchName);
 		
-		whenCreatingBranch(givenAuthenticatedRequest(API), joinPath("MAIN", branchName), "childOfDeletedBranch")
+		whenCreatingBranch(givenAuthenticatedRequest(SCT_API), joinPath("MAIN", branchName), "childOfDeletedBranch")
 		.then()
 		.assertThat()
 			.statusCode(400)
@@ -143,7 +143,7 @@ public class SnomedBranchingApiTest extends AbstractSnomedApiTest {
 	}
 	
 	private void assertBranchChildrenContains(String childrenUrl, String childName) {
-		givenAuthenticatedRequest(API)
+		givenAuthenticatedRequest(SCT_API)
 		.when()
 			.get(childrenUrl)
 		.then()

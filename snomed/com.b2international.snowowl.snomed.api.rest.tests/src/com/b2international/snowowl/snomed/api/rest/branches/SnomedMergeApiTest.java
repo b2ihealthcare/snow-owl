@@ -56,7 +56,7 @@ public class SnomedMergeApiTest extends AbstractSnomedApiTest {
 	private void assertComponentCanBeCreated(String componentType, String symbolicName, Map<?, ?> requestBody, String... segments) {
 		String path = joinPath(segments);
 
-		Response response = givenAuthenticatedRequest(API)
+		Response response = givenAuthenticatedRequest(SCT_API)
 		.with()
 			.contentType(ContentType.JSON)
 		.and()
@@ -133,7 +133,7 @@ public class SnomedMergeApiTest extends AbstractSnomedApiTest {
 	private void assertComponentCanBeUpdated(String componentType, String symbolicName, Map<?, ?> requestBody, String... segments) {
 		String path = joinPath(segments);
 
-		Response response = givenAuthenticatedRequest(API)
+		Response response = givenAuthenticatedRequest(SCT_API)
 		.with()
 			.contentType(ContentType.JSON)
 		.and()
@@ -158,7 +158,7 @@ public class SnomedMergeApiTest extends AbstractSnomedApiTest {
 	private void assertComponentCanBeDeleted(String componentType, String symbolicName, String... segments) {
 		String path = joinPath(segments);
 
-		Response response = givenAuthenticatedRequest(API)
+		Response response = givenAuthenticatedRequest(SCT_API)
 		.when()
 			.delete("/{path}/{componentType}/{id}", path, componentType, symbolicNameToIds.get(symbolicName));
 			
@@ -179,7 +179,7 @@ public class SnomedMergeApiTest extends AbstractSnomedApiTest {
 	private void assertComponentStatus(String componentType, int statusCode, String symbolicName, String... segments) {
 		String path = joinPath(segments);
 		
-		givenAuthenticatedRequest(API)
+		givenAuthenticatedRequest(SCT_API)
 		.when()
 			.get("/{path}/{componentType}/{id}", path, componentType, symbolicNameToIds.get(symbolicName))
 		.then()
@@ -236,7 +236,7 @@ public class SnomedMergeApiTest extends AbstractSnomedApiTest {
 	}
 
 	private void assertBranchCanBeMerged(String source, String target, String commitComment) {
-		whenMergingOrRebasingBranches(givenAuthenticatedRequest(API), source, target, commitComment)
+		whenMergingOrRebasingBranches(givenAuthenticatedRequest(SCT_API), source, target, commitComment)
 		.then()
 		.assertThat()
 			.statusCode(204);
@@ -248,7 +248,7 @@ public class SnomedMergeApiTest extends AbstractSnomedApiTest {
 	}
 	
 	private void assertBranchConflicts(String source, String target, String commitComment) {
-		whenMergingOrRebasingBranches(givenAuthenticatedRequest(API), source, target, commitComment)
+		whenMergingOrRebasingBranches(givenAuthenticatedRequest(SCT_API), source, target, commitComment)
 		.then()
 		.assertThat()
 			.statusCode(409);
@@ -535,7 +535,7 @@ public class SnomedMergeApiTest extends AbstractSnomedApiTest {
 		assertDescriptionExists("D1", "MAIN");
 		assertDescriptionExists("D2", "MAIN");
 		
-		givenAuthenticatedRequest(API)
+		givenAuthenticatedRequest(SCT_API)
 		.when()
 			.get("/MAIN/descriptions/{id}", symbolicNameToIds.get("D1"))
 		.then()
