@@ -32,22 +32,18 @@ public abstract class AbstractSnomedImportApiTest extends AbstractSnomedApiTest 
 
 	protected Response whenCreatingImportConfiguration(final Map<?, ?> importConfiguration) {
 		return givenAuthenticatedRequest(SnomedApiTestConstants.SCT_API)
-		.with()
-			.contentType(ContentType.JSON)
-		.and()
-			.body(importConfiguration)
-		.when()
-			.post("/imports");
+				.with().contentType(ContentType.JSON)
+				.and().body(importConfiguration)
+				.when().post("/imports");
 	}
 
 	protected String assertImportConfigurationCanBeCreated(final Map<?, ?> importConfiguration) {
 		final Response response = whenCreatingImportConfiguration(importConfiguration);
-		
-		response
-		.then()
-		.assertThat()
-			.statusCode(201);
-	
-		return lastPathSegment(response.getHeader("Location"));
+
+		final String location = response.then()
+				.assertThat().statusCode(201)
+				.and().extract().response().header("Location");
+
+		return lastPathSegment(location);
 	}
 }

@@ -15,493 +15,505 @@
  */
 package com.b2international.snowowl.snomed.api.rest.branches;
 
+import static com.b2international.snowowl.snomed.SnomedConstants.Concepts.FULLY_SPECIFIED_NAME;
+import static com.b2international.snowowl.snomed.SnomedConstants.Concepts.SYNONYM;
+import static com.b2international.snowowl.snomed.api.rest.SnomedApiTestConstants.ACCEPTABLE_ACCEPTABILITY_MAP;
+import static com.b2international.snowowl.snomed.api.rest.SnomedApiTestConstants.PREFERRED_ACCEPTABILITY_MAP;
+import static com.b2international.snowowl.snomed.api.rest.SnomedApiTestConstants.SCT_API;
 import static com.b2international.snowowl.snomed.api.rest.SnomedBranchingApiAssert.assertBranchCreated;
+import static com.b2international.snowowl.snomed.api.rest.SnomedComponentApiAssert.assertComponentHasProperty;
 import static com.b2international.snowowl.test.commons.rest.RestExtensions.givenAuthenticatedRequest;
-import static com.b2international.snowowl.test.commons.rest.RestExtensions.joinPath;
 import static com.google.common.collect.Maps.newHashMap;
-import static org.hamcrest.CoreMatchers.equalTo;
 
 import java.util.Date;
 import java.util.Map;
 
 import org.junit.Test;
 
+import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.api.domain.CaseSignificance;
 import com.b2international.snowowl.snomed.api.domain.DefinitionStatus;
 import com.b2international.snowowl.snomed.api.rest.AbstractSnomedApiTest;
 import com.b2international.snowowl.snomed.api.rest.SnomedApiTestConstants;
+import com.b2international.snowowl.snomed.api.rest.SnomedComponentApiAssert;
+import com.b2international.snowowl.snomed.api.rest.SnomedComponentType;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.jayway.restassured.http.ContentType;
 import com.jayway.restassured.response.Response;
-import com.jayway.restassured.specification.RequestSpecification;
 
 /**
  * @since 2.0
  */
 public class SnomedMergeApiTest extends AbstractSnomedApiTest {
 
-	private Map<String, String> symbolicNameMap = newHashMap();
+	private final Map<String, String> symbolicNameMap = newHashMap();
 
-	protected void assertComponentCanBeCreated(String componentType, String symbolicName, Map<?, ?> requestBody, String... segments) {
-		symbolicNameMap.put(symbolicName, assertComponentCanBeCreated(componentType, requestBody, segments));
-	}
-	
-	@Override
-	protected void assertConceptExists(String symbolicName, String... segments) {
-		super.assertConceptExists(symbolicNameMap.get(symbolicName), segments);
-	}
-	
-	@Override
-	protected void assertDescriptionExists(String symbolicName, String... segments) {
-		super.assertDescriptionExists(symbolicNameMap.get(symbolicName), segments);
-	}
-	
-	@Override
-	protected void assertRelationshipExists(String symbolicName, String... segments) {
-		super.assertRelationshipExists(symbolicNameMap.get(symbolicName), segments);
-	}
-	
-	@Override
-	protected void assertConceptNotExists(String symbolicName, String... segments) {
-		super.assertConceptNotExists(symbolicNameMap.get(symbolicName), segments);
-	}
-	
-	@Override
-	protected void assertDescriptionNotExists(String symbolicName, String... segments) {
-		super.assertDescriptionNotExists(symbolicNameMap.get(symbolicName), segments);
-	}
-	
-	@Override
-	protected void assertRelationshipNotExists(String symbolicName, String... segments) {
-		super.assertRelationshipNotExists(symbolicNameMap.get(symbolicName), segments);
-	}
-	
-	private void assertConceptCanBeCreated(String symbolicName, String... segments) {
-		
-		Date creationDate = new Date();
-		Map<?, ?> requestBody = ImmutableMap.of(
-			"commitComment", "New concept",
-			"parentId", Concepts.ROOT_CONCEPT,
-			"moduleId", Concepts.MODULE_SCT_CORE,
-			"descriptions", ImmutableList.of(
-				ImmutableMap.of(
-					"typeId", Concepts.FULLY_SPECIFIED_NAME,
-					"term", "New FSN at " + creationDate,
-					"languageCode", "en",
-					"acceptability", SnomedApiTestConstants.PREFERRED_ACCEPTABILITY_MAP 
-				),
-				
-				ImmutableMap.of(
-					"typeId", Concepts.SYNONYM,
-					"term", "New PT at " + creationDate,
-					"languageCode", "en",
-					"acceptability", SnomedApiTestConstants.PREFERRED_ACCEPTABILITY_MAP 
-				)
-			)
-		);
-				
-		assertComponentCanBeCreated("concepts", symbolicName, requestBody, segments);
-	}
-	
-	private void assertDescriptionCanBeCreated(String symbolicName, Map<?, ?> acceptabilityMap, String... segments) {
-		
-		Date creationDate = new Date();
-		Map<?, ?> requestBody = ImmutableMap.builder()
-			.put("conceptId", Concepts.ROOT_CONCEPT)
-			.put("moduleId", Concepts.MODULE_SCT_CORE)
-			.put("typeId", Concepts.SYNONYM)
-			.put("term", "New PT at " + creationDate)
-			.put("languageCode", "en")
-			.put("acceptability", acceptabilityMap)
-			.put("commitComment", "New description")
-			.build();
-		
-		assertComponentCanBeCreated("descriptions", symbolicName, requestBody, segments);
-	}
-	
-	private void assertRelationshipCanBeCreated(String symbolicName, String... segments) {
-		
-		Map<?, ?> requestBody = ImmutableMap.of(
-			"sourceId", Concepts.ROOT_CONCEPT,
-			"moduleId", Concepts.MODULE_SCT_CORE,
-			"typeId", "116676008", // Associated morphology
-			"destinationId", "49755003", // Morphologic abnormality
-			"commitComment", "New relationship"
-		);
-		
-		assertComponentCanBeCreated("relationships", symbolicName, requestBody, segments);
+	// --------------------------------------------------------
+	// Symbolic component existence checks
+	// --------------------------------------------------------
+
+	private void assertConceptExists(final IBranchPath branchPath, final String symbolicName) {
+		SnomedComponentApiAssert.assertConceptExists(branchPath, symbolicNameMap.get(symbolicName));
 	}
 
-	@Override
-	protected void assertComponentCanBeUpdated(String componentType, String symbolicName, Map<?, ?> requestBody, String... segments) {
-		super.assertComponentCanBeUpdated(componentType, symbolicNameMap.get(symbolicName), requestBody, segments);
+	private void assertDescriptionExists(final IBranchPath branchPath, final String symbolicName) {
+		SnomedComponentApiAssert.assertDescriptionExists(branchPath, symbolicNameMap.get(symbolicName));
 	}
 
-	private void assertConceptCanBeUpdated(String symbolicName, Map<?, ?> requestBody, String... segments) {
-		assertComponentCanBeUpdated("concepts", symbolicName, requestBody, segments);
-	}
-	
-	private void assertDescriptionCanBeUpdated(String symbolicName, Map<?, ?> requestBody, String... segments) {
-		assertComponentCanBeUpdated("descriptions", symbolicName, requestBody, segments);
-	}
-	
-	@Override
-	protected void assertComponentCanBeDeleted(String componentType, String symbolicName, String... segments) {
-		super.assertComponentCanBeDeleted(componentType, symbolicNameMap.get(symbolicName), segments);
+	private void assertRelationshipExists(final IBranchPath branchPath, final String symbolicName) {
+		SnomedComponentApiAssert.assertRelationshipExists(branchPath, symbolicNameMap.get(symbolicName));
 	}
 
-	private void assertConceptCanBeDeleted(String symbolicName, String... segments) {
-		assertComponentCanBeDeleted("concepts", symbolicName, segments);
-	}
-	
-	private void assertDescriptionCanBeDeleted(String symbolicName, String... segments) {
-		assertComponentCanBeDeleted("descriptions", symbolicName, segments);
+	private void assertConceptNotExists(final IBranchPath branchPath, final String symbolicName) {
+		SnomedComponentApiAssert.assertConceptNotExists(branchPath, symbolicNameMap.get(symbolicName));
 	}
 
-	private Response whenMergingOrRebasingBranches(RequestSpecification request, String source, String target, String commitComment) {
-		Map<?, ?> requestBody = ImmutableMap.of(
-			"source", source,
-			"target", target,
-			"commitComment", commitComment
-		);
-
-		return request
-		.with()
-			.contentType(ContentType.JSON)
-		.and()
-			.body(requestBody)
-		.when()
-			.post("/merges");
+	private void assertDescriptionNotExists(final IBranchPath branchPath, final String symbolicName) {
+		SnomedComponentApiAssert.assertDescriptionNotExists(branchPath, symbolicNameMap.get(symbolicName));
 	}
 
-	private void assertBranchCanBeMerged(String source, String target, String commitComment) {
-		whenMergingOrRebasingBranches(givenAuthenticatedRequest(SnomedApiTestConstants.SCT_API), source, target, commitComment)
-		.then()
-		.assertThat()
-			.statusCode(204);
+	private void assertRelationshipNotExists(final IBranchPath branchPath, final String symbolicName) {
+		SnomedComponentApiAssert.assertRelationshipNotExists(branchPath, symbolicNameMap.get(symbolicName));
 	}
-	
-	private void assertBranchCanBeRebased(String source, String target, String commitComment) {
-		// Convenience method; the merge service figures out what to do by inspecting the relationship between source and target
-		assertBranchCanBeMerged(source, target, commitComment);
+
+	// --------------------------------------------------------
+	// Symbolic component creation
+	// --------------------------------------------------------
+
+	private void assertComponentCreated(final IBranchPath branchPath, 
+			final String symbolicName, 
+			final SnomedComponentType componentType, 
+			final Map<?, ?> requestBody) {
+
+		symbolicNameMap.put(symbolicName, SnomedComponentApiAssert.assertComponentCreated(branchPath, componentType, requestBody));
 	}
-	
-	private void assertBranchConflicts(String source, String target, String commitComment) {
-		whenMergingOrRebasingBranches(givenAuthenticatedRequest(SnomedApiTestConstants.SCT_API), source, target, commitComment)
-		.then()
-		.assertThat()
-			.statusCode(409);
+
+	private void assertConceptCreated(final IBranchPath branchPath, final String symbolicName) {
+		final Date creationDate = new Date();
+
+		final Map<?, ?> fsnDescription = ImmutableMap.<String, Object>builder()
+				.put("typeId", FULLY_SPECIFIED_NAME)
+				.put("term", "New FSN at " + creationDate)
+				.put("languageCode", "en")
+				.put("acceptability", PREFERRED_ACCEPTABILITY_MAP)
+				.build();
+
+		final Map<?, ?> ptDescription = ImmutableMap.<String, Object>builder()
+				.put("typeId", SYNONYM)
+				.put("term", "New PT at " + creationDate)
+				.put("languageCode", "en")
+				.put("acceptability", PREFERRED_ACCEPTABILITY_MAP)
+				.build();
+
+		final ImmutableMap.Builder<String, Object> conceptBuilder = ImmutableMap.<String, Object>builder()
+				.put("commitComment", "New concept")
+				.put("parentId", Concepts.ROOT_CONCEPT)
+				.put("moduleId", Concepts.MODULE_SCT_CORE)
+				.put("descriptions", ImmutableList.of(fsnDescription, ptDescription));
+
+		assertComponentCreated(branchPath, symbolicName, SnomedComponentType.CONCEPT, conceptBuilder.build());
+	}
+
+	private void assertDescriptionCreated(final IBranchPath branchPath, final String symbolicName, final Map<?, ?> acceptabilityMap) {
+		final Date creationDate = new Date();
+
+		final Map<?, ?> requestBody = ImmutableMap.builder()
+				.put("conceptId", Concepts.ROOT_CONCEPT)
+				.put("moduleId", Concepts.MODULE_SCT_CORE)
+				.put("typeId", Concepts.SYNONYM)
+				.put("term", "New description at " + creationDate)
+				.put("languageCode", "en")
+				.put("acceptability", acceptabilityMap)
+				.put("commitComment", "New description")
+				.build();
+
+		assertComponentCreated(branchPath, symbolicName, SnomedComponentType.DESCRIPTION, requestBody);
+	}
+
+	private void assertRelationshipCreated(final IBranchPath branchPath, final String symbolicName) {
+		final Map<?, ?> requestBody = ImmutableMap.builder()
+				.put("sourceId", Concepts.ROOT_CONCEPT)
+				.put("moduleId", Concepts.MODULE_SCT_CORE)
+				.put("typeId", "116676008") // Associated morphology
+				.put("destinationId", "49755003") // Morphologic abnormality
+				.put("commitComment", "New relationship")
+				.build();
+
+		assertComponentCreated(branchPath, symbolicName, SnomedComponentType.RELATIONSHIP, requestBody);
+	}
+
+	// --------------------------------------------------------
+	// Symbolic component updates
+	// --------------------------------------------------------
+
+	private void assertComponentCanBeUpdated(final IBranchPath branchPath, 
+			final String symbolicName, 
+			final SnomedComponentType componentType, 
+			final Map<?, ?> requestBody) {
+
+		SnomedComponentApiAssert.assertComponentCanBeUpdated(branchPath, componentType, symbolicNameMap.get(symbolicName), requestBody);
+	}
+
+	private void assertConceptCanBeUpdated(final IBranchPath branchPath, final String symbolicName, final Map<?, ?> requestBody) {
+		assertComponentCanBeUpdated(branchPath, symbolicName, SnomedComponentType.CONCEPT, requestBody);
+	}
+
+	private void assertDescriptionCanBeUpdated(final IBranchPath branchPath, final String symbolicName, final Map<?, ?> requestBody) {
+		assertComponentCanBeUpdated(branchPath, symbolicName, SnomedComponentType.DESCRIPTION, requestBody);
+	}
+
+	// --------------------------------------------------------
+	// Symbolic component deletion
+	// --------------------------------------------------------
+
+	private void assertComponentCanBeDeleted(final IBranchPath branchPath, final String symbolicName, final SnomedComponentType componentType) {
+		SnomedComponentApiAssert.assertComponentCanBeDeleted(branchPath, componentType, symbolicNameMap.get(symbolicName));
+	}
+
+	private void assertConceptCanBeDeleted(final IBranchPath branchPath, final String symbolicName) {
+		assertComponentCanBeDeleted(branchPath, symbolicName, SnomedComponentType.CONCEPT);
+	}
+
+	private void assertDescriptionCanBeDeleted(final IBranchPath branchPath, final String symbolicName) {
+		assertComponentCanBeDeleted(branchPath, symbolicName, SnomedComponentType.DESCRIPTION);
+	}
+
+	// --------------------------------------------------------
+	// Rebase and merge assertions
+	// --------------------------------------------------------
+
+	// XXX: the merge service figures out what to do by inspecting the relationship between source and target
+	private Response whenMergingOrRebasingBranches(final IBranchPath source, final IBranchPath target, final String commitComment) {
+		final Map<?, ?> requestBody = ImmutableMap.builder()
+				.put("source", source.getPath())
+				.put("target", target.getPath())
+				.put("commitComment", commitComment)
+				.build();
+
+		return givenAuthenticatedRequest(SCT_API)
+				.with().contentType(ContentType.JSON)
+				.and().body(requestBody)
+				.when().post("/merges");
+	}
+
+	private void assertBranchCanBeMerged(final IBranchPath branchPath, final String commitComment) {
+		whenMergingOrRebasingBranches(branchPath, branchPath.getParent(), commitComment)
+		.then().assertThat().statusCode(204);
+	}
+
+	private void assertBranchCanBeRebased(final IBranchPath branchPath, final String commitComment) {
+		whenMergingOrRebasingBranches(branchPath.getParent(), branchPath, commitComment)
+		.then().assertThat().statusCode(204);
+	}
+
+	private void assertBranchConflicts(final IBranchPath source, final IBranchPath target, final String commitComment) {
+		whenMergingOrRebasingBranches(source, target, commitComment)
+		.then().assertThat().statusCode(409);
 	}
 
 	@Test
 	public void mergeNewConceptForward() {
-		assertBranchCreated(branchPath);
-		
-		assertConceptCanBeCreated("C1", "MAIN", branchName);
-		assertConceptExists("C1", "MAIN", branchName);
+		assertBranchCreated(testBranchPath);
 
-		assertBranchCanBeMerged(joinPath("MAIN", branchName), "MAIN", "Merge new concept");
-		
-		assertConceptExists("C1", "MAIN", branchName);
-		assertConceptExists("C1", "MAIN");
+		assertConceptCreated(testBranchPath, "C1");
+		assertConceptExists(testBranchPath, "C1");
+
+		assertBranchCanBeMerged(testBranchPath, "Merge new concept");
+
+		assertConceptExists(testBranchPath, "C1");
+		assertConceptExists(testBranchPath.getParent(), "C1");
 	}
-	
+
 	@Test
 	public void mergeNewDescriptionForward() {
-		assertBranchCreated(branchPath);
-		
-		assertDescriptionCanBeCreated("D1", SnomedApiTestConstants.ACCEPTABLE_ACCEPTABILITY_MAP, "MAIN", branchName);
-		assertDescriptionExists("D1", "MAIN", branchName);
-		
-		assertBranchCanBeMerged(joinPath("MAIN", branchName), "MAIN", "Merge new description");
-		
-		assertDescriptionExists("D1", "MAIN", branchName);
-		assertDescriptionExists("D1", "MAIN");
+		assertBranchCreated(testBranchPath);
+
+		assertDescriptionCreated(testBranchPath, "D1", ACCEPTABLE_ACCEPTABILITY_MAP);
+		assertDescriptionExists(testBranchPath, "D1");
+
+		assertBranchCanBeMerged(testBranchPath, "Merge new description");
+
+		assertDescriptionExists(testBranchPath, "D1");
+		assertDescriptionExists(testBranchPath.getParent(), "D1");
 	}
-	
+
 	@Test
 	public void mergeNewRelationshipForward() {
-		assertBranchCreated(branchPath);
-		
-		assertRelationshipCanBeCreated("R1", "MAIN", branchName);
-		assertRelationshipExists("R1", "MAIN", branchName);
-		
-		assertBranchCanBeMerged(joinPath("MAIN", branchName), "MAIN", "Merge new relationship");
-		
-		assertRelationshipExists("R1", "MAIN", branchName);
-		assertRelationshipExists("R1", "MAIN");
+		assertBranchCreated(testBranchPath);
+
+		assertRelationshipCreated(testBranchPath, "R1");
+		assertRelationshipExists(testBranchPath, "R1");
+
+		assertBranchCanBeMerged(testBranchPath, "Merge new relationship");
+
+		assertRelationshipExists(testBranchPath, "R1");
+		assertRelationshipExists(testBranchPath.getParent(), "R1");
 	}
-	
+
 	@Test
 	public void noMergeNewConceptDiverged() {
-		assertBranchCreated(branchPath);
-		
-		assertConceptCanBeCreated("C1", "MAIN", branchName);
-		assertConceptCanBeCreated("C2", "MAIN");
-		
-		assertConceptExists("C1", "MAIN", branchName);
-		assertConceptNotExists("C1", "MAIN");
-		assertConceptExists("C2", "MAIN");
-		assertConceptNotExists("C2", "MAIN", branchName);
-		
-		assertBranchConflicts(joinPath("MAIN", branchName), "MAIN", "Merge new concept");
-		
-		assertConceptExists("C1", "MAIN", branchName);
-		assertConceptNotExists("C1", "MAIN");
-		assertConceptExists("C2", "MAIN");
-		assertConceptNotExists("C2", "MAIN", branchName);
+		assertBranchCreated(testBranchPath);
+
+		assertConceptCreated(testBranchPath, "C1");
+		assertConceptExists(testBranchPath, "C1");
+		assertConceptNotExists(testBranchPath.getParent(), "C1");
+
+		assertConceptCreated(testBranchPath.getParent(), "C2");
+		assertConceptExists(testBranchPath.getParent(), "C2");
+		assertConceptNotExists(testBranchPath, "C2");
+
+		assertBranchConflicts(testBranchPath, testBranchPath.getParent(), "Merge new concept");
+
+		assertConceptExists(testBranchPath, "C1");
+		assertConceptNotExists(testBranchPath.getParent(), "C1");
+		assertConceptExists(testBranchPath.getParent(), "C2");
+		assertConceptNotExists(testBranchPath, "C2");
 	}
 
 	@Test
 	public void noMergeNewDescriptionDiverged() {
-		assertBranchCreated(branchPath);
-		
-		assertDescriptionCanBeCreated("D1", SnomedApiTestConstants.ACCEPTABLE_ACCEPTABILITY_MAP, "MAIN", branchName);
-		assertDescriptionCanBeCreated("D2", SnomedApiTestConstants.ACCEPTABLE_ACCEPTABILITY_MAP, "MAIN");
-		
-		assertDescriptionExists("D1", "MAIN", branchName);
-		assertDescriptionNotExists("D1", "MAIN");
-		assertDescriptionExists("D2", "MAIN");
-		assertDescriptionNotExists("D2", "MAIN", branchName);
-		
-		assertBranchConflicts(joinPath("MAIN", branchName), "MAIN", "Merge new description");
-		
-		assertDescriptionExists("D1", "MAIN", branchName);
-		assertDescriptionNotExists("D1", "MAIN");
-		assertDescriptionExists("D2", "MAIN");
-		assertDescriptionNotExists("D2", "MAIN", branchName);
+		assertBranchCreated(testBranchPath);
+
+		assertDescriptionCreated(testBranchPath, "D1", SnomedApiTestConstants.ACCEPTABLE_ACCEPTABILITY_MAP);
+		assertDescriptionExists(testBranchPath, "D1");
+		assertDescriptionNotExists(testBranchPath.getParent(), "D1");
+
+		assertDescriptionCreated(testBranchPath.getParent(), "D2", SnomedApiTestConstants.ACCEPTABLE_ACCEPTABILITY_MAP);
+		assertDescriptionExists(testBranchPath.getParent(), "D2");
+		assertDescriptionNotExists(testBranchPath, "D2");
+
+		assertBranchConflicts(testBranchPath, testBranchPath.getParent(), "Merge new description");
+
+		assertDescriptionExists(testBranchPath, "D1");
+		assertDescriptionNotExists(testBranchPath.getParent(), "D1");
+		assertDescriptionExists(testBranchPath.getParent(), "D2");
+		assertDescriptionNotExists(testBranchPath, "D2");
 	}
-	
+
 	@Test
 	public void noMergeNewRelationshipDiverged() {
-		assertBranchCreated(branchPath);
-		
-		assertRelationshipCanBeCreated("R1", "MAIN", branchName);
-		assertRelationshipCanBeCreated("R2", "MAIN");
-		
-		assertRelationshipExists("R1", "MAIN", branchName);
-		assertRelationshipNotExists("R1", "MAIN");
-		assertRelationshipExists("R2", "MAIN");
-		assertRelationshipNotExists("R2", "MAIN", branchName);
-		
-		assertBranchConflicts(joinPath("MAIN", branchName), "MAIN", "Merge new relationship");
-		
-		assertRelationshipExists("R1", "MAIN", branchName);
-		assertRelationshipNotExists("R1", "MAIN");
-		assertRelationshipExists("R2", "MAIN");
-		assertRelationshipNotExists("R2", "MAIN", branchName);
+		assertBranchCreated(testBranchPath);
+
+		assertRelationshipCreated(testBranchPath, "R1");
+		assertRelationshipExists(testBranchPath, "R1");
+		assertRelationshipNotExists(testBranchPath.getParent(), "R1");
+
+		assertRelationshipCreated(testBranchPath.getParent(), "R2");
+		assertRelationshipExists(testBranchPath.getParent(), "R2");
+		assertRelationshipNotExists(testBranchPath, "R2");
+
+		assertBranchConflicts(testBranchPath, testBranchPath.getParent(), "Merge new relationship");
+
+		assertRelationshipExists(testBranchPath, "R1");
+		assertRelationshipNotExists(testBranchPath.getParent(), "R1");
+		assertRelationshipExists(testBranchPath.getParent(), "R2");
+		assertRelationshipNotExists(testBranchPath, "R2");
 	}
-	
+
 	@Test
 	public void rebaseNewConceptDiverged() {
-		assertBranchCreated(branchPath);
-		
-		assertConceptCanBeCreated("C1", "MAIN", branchName);
-		assertConceptCanBeCreated("C2", "MAIN");
-		
-		assertConceptExists("C1", "MAIN", branchName);
-		assertConceptNotExists("C1", "MAIN");
-		assertConceptExists("C2", "MAIN");
-		assertConceptNotExists("C2", "MAIN", branchName);
-		
-		assertBranchCanBeRebased("MAIN", joinPath("MAIN", branchName), "Rebase new concept");
-		
-		assertConceptExists("C1", "MAIN", branchName);
-		assertConceptNotExists("C1", "MAIN");
-		assertConceptExists("C2", "MAIN");
-		assertConceptExists("C2", "MAIN", branchName); // C2 becomes visible after rebasing
+		assertBranchCreated(testBranchPath);
+
+		assertConceptCreated(testBranchPath, "C1");
+		assertConceptExists(testBranchPath, "C1");
+		assertConceptNotExists(testBranchPath.getParent(), "C1");
+
+		assertConceptCreated(testBranchPath.getParent(), "C2");
+		assertConceptExists(testBranchPath.getParent(), "C2");
+		assertConceptNotExists(testBranchPath,"C2");
+
+		assertBranchCanBeRebased(testBranchPath, "Rebase new concept");
+
+		assertConceptExists(testBranchPath,"C1");
+		assertConceptNotExists(testBranchPath.getParent(), "C1");
+		assertConceptExists(testBranchPath.getParent(), "C2");
+		assertConceptExists(testBranchPath, "C2"); // C2 from the parent becomes visible on the test branch after rebasing
 	}
 
 	@Test
 	public void rebaseNewDescriptionDiverged() {
-		assertBranchCreated(branchPath);
-		
-		assertDescriptionCanBeCreated("D1", SnomedApiTestConstants.ACCEPTABLE_ACCEPTABILITY_MAP, "MAIN", branchName);
-		assertDescriptionCanBeCreated("D2", SnomedApiTestConstants.ACCEPTABLE_ACCEPTABILITY_MAP, "MAIN");
-		
-		assertDescriptionExists("D1", "MAIN", branchName);
-		assertDescriptionNotExists("D1", "MAIN");
-		assertDescriptionExists("D2", "MAIN");
-		assertDescriptionNotExists("D2", "MAIN", branchName);
-		
-		assertBranchCanBeRebased("MAIN", joinPath("MAIN", branchName), "Rebase new description");
-		
-		assertDescriptionExists("D1", "MAIN", branchName);
-		assertDescriptionNotExists("D1", "MAIN");
-		assertDescriptionExists("D2", "MAIN");
-		assertDescriptionExists("D2", "MAIN", branchName); // D2 becomes visible after rebasing
+		assertBranchCreated(testBranchPath);
+
+		assertDescriptionCreated(testBranchPath, "D1", ACCEPTABLE_ACCEPTABILITY_MAP);
+		assertDescriptionExists(testBranchPath, "D1");
+		assertDescriptionNotExists(testBranchPath.getParent(), "D1");
+
+		assertDescriptionCreated(testBranchPath.getParent(), "D2", ACCEPTABLE_ACCEPTABILITY_MAP);
+		assertDescriptionExists(testBranchPath.getParent(), "D2");
+		assertDescriptionNotExists(testBranchPath,"D2");
+
+		assertBranchCanBeRebased(testBranchPath, "Rebase new description");
+
+		assertDescriptionExists(testBranchPath,"D1");
+		assertDescriptionNotExists(testBranchPath.getParent(), "D1");
+		assertDescriptionExists(testBranchPath.getParent(), "D2");
+		assertDescriptionExists(testBranchPath, "D2");
 	}
-	
+
 	@Test
 	public void rebaseNewRelationshipDiverged() {
-		assertBranchCreated(branchPath);
-		
-		assertRelationshipCanBeCreated("R1", "MAIN", branchName);
-		assertRelationshipCanBeCreated("R2", "MAIN");
-		
-		assertRelationshipExists("R1", "MAIN", branchName);
-		assertRelationshipNotExists("R1", "MAIN");
-		assertRelationshipExists("R2", "MAIN");
-		assertRelationshipNotExists("R2", "MAIN", branchName);
-		
-		assertBranchCanBeRebased("MAIN", joinPath("MAIN", branchName), "Rebase new relationship");
-		
-		assertRelationshipExists("R1", "MAIN", branchName);
-		assertRelationshipNotExists("R1", "MAIN");
-		assertRelationshipExists("R2", "MAIN");
-		assertRelationshipExists("R2", "MAIN", branchName); // R2 becomes visible after rebasing
+		assertBranchCreated(testBranchPath);
+
+		assertRelationshipCreated(testBranchPath, "R1");
+		assertRelationshipExists(testBranchPath, "R1");
+		assertRelationshipNotExists(testBranchPath.getParent(), "R1");
+
+		assertRelationshipCreated(testBranchPath.getParent(), "R2");
+		assertRelationshipExists(testBranchPath.getParent(), "R2");
+		assertRelationshipNotExists(testBranchPath,"R2");
+
+		assertBranchCanBeRebased(testBranchPath, "Rebase new concept");
+
+		assertRelationshipExists(testBranchPath,"R1");
+		assertRelationshipNotExists(testBranchPath.getParent(), "R1");
+		assertRelationshipExists(testBranchPath.getParent(), "R2");
+		assertRelationshipExists(testBranchPath, "R2");
 	}
-	
+
 	@Test
-	public void noRebaseNewPT() {
-		assertBranchCreated(branchPath);
-		
-		assertDescriptionCanBeCreated("D1", SnomedApiTestConstants.PREFERRED_ACCEPTABILITY_MAP, "MAIN", branchName);
-		assertDescriptionCanBeCreated("D2", SnomedApiTestConstants.PREFERRED_ACCEPTABILITY_MAP, "MAIN");
-		
-		assertDescriptionExists("D1", "MAIN", branchName);
-		assertDescriptionNotExists("D1", "MAIN");
-		assertDescriptionExists("D2", "MAIN");
-		assertDescriptionNotExists("D2", "MAIN", branchName);
-		
-		assertBranchConflicts("MAIN", joinPath("MAIN", branchName), "Rebase new PT");
-		
-		assertDescriptionExists("D1", "MAIN", branchName);
-		assertDescriptionNotExists("D1", "MAIN");
-		assertDescriptionExists("D2", "MAIN");
-		assertDescriptionNotExists("D2", "MAIN", branchName); // D2 did not become visible because the rebase was rejected
+	public void noRebaseNewPreferredTerm() {
+		assertBranchCreated(testBranchPath);
+
+		assertDescriptionCreated(testBranchPath, "D1", PREFERRED_ACCEPTABILITY_MAP);
+		assertDescriptionExists(testBranchPath, "D1");
+		assertDescriptionNotExists(testBranchPath.getParent(), "D1");
+
+		assertDescriptionCreated(testBranchPath.getParent(), "D2", PREFERRED_ACCEPTABILITY_MAP);
+		assertDescriptionExists(testBranchPath.getParent(), "D2");
+		assertDescriptionNotExists(testBranchPath,"D2");
+
+		assertBranchConflicts(testBranchPath.getParent(), testBranchPath, "Rebase new preferred term");
+
+		assertDescriptionExists(testBranchPath, "D1");
+		assertDescriptionNotExists(testBranchPath.getParent(), "D1");
+		assertDescriptionExists(testBranchPath.getParent(), "D2");
+		assertDescriptionNotExists(testBranchPath,"D2"); // D2 did not become visible because the rebase was rejected
 	}
-	
-	private void assertDescriptionChangesConflict(Map<?, ?> changesOnMain, Map<?, ?> changesOnBranch) {
+
+	private void assertDescriptionChangesConflict(final Map<?, ?> changesOnParent, final Map<?, ?> changesOnBranch) {
 		mergeNewDescriptionForward();
 
-		assertDescriptionCanBeUpdated("D1", changesOnMain, "MAIN");
-		assertDescriptionCanBeUpdated("D1", changesOnBranch, "MAIN", branchName);
-		
-		assertBranchConflicts("MAIN", joinPath("MAIN", branchName), "Rebase conflicting description change");
+		assertDescriptionCanBeUpdated(testBranchPath.getParent(), "D1", changesOnParent);
+		assertDescriptionCanBeUpdated(testBranchPath, "D1", changesOnBranch);
+
+		assertBranchConflicts(testBranchPath.getParent(), testBranchPath, "Rebase conflicting description change");
 	}
-	
+
 	@Test
 	public void noRebaseConflictingDescription() {
-		Map<?, ?> changesOnMain = ImmutableMap.of(
-			"caseSignificance", CaseSignificance.CASE_INSENSITIVE,
-			"commitComment", "Changed case significance on MAIN"
-		);
-		
-		Map<?, ?> changesOnBranch = ImmutableMap.of(
-			"caseSignificance", CaseSignificance.ENTIRE_TERM_CASE_SENSITIVE,
-			"commitComment", "Changed case significance on branch"
-		);
-		
-		assertDescriptionChangesConflict(changesOnMain, changesOnBranch);
+		final Map<?, ?> changesOnParent = ImmutableMap.builder()
+				.put("caseSignificance", CaseSignificance.CASE_INSENSITIVE)
+				.put("commitComment", "Changed case significance on parent")
+				.build();
+
+		final Map<?, ?> changesOnBranch = ImmutableMap.builder()
+				.put("caseSignificance", CaseSignificance.ENTIRE_TERM_CASE_SENSITIVE)
+				.put("commitComment", "Changed case significance on branch")
+				.build();
+
+		assertDescriptionChangesConflict(changesOnParent, changesOnBranch);
 	}
-	
+
 	@Test
 	public void noRebaseConflictingDescriptionMultipleChanges() {
-		Map<?, ?> changesOnMain = ImmutableMap.of(
-			"caseSignificance", CaseSignificance.CASE_INSENSITIVE,
-			"moduleId", "900000000000013009",
-			"commitComment", "Changed case significance and module on MAIN"
-		);
-		
-		Map<?, ?> changesOnBranch = ImmutableMap.of(
-			"caseSignificance", CaseSignificance.ENTIRE_TERM_CASE_SENSITIVE,
-			"moduleId", "900000000000443000",
-			"commitComment", "Changed case significance and module on branch"
-		);
-		
-		assertDescriptionChangesConflict(changesOnMain, changesOnBranch);
+		final Map<?, ?> changesOnParent = ImmutableMap.builder()
+				.put("caseSignificance", CaseSignificance.CASE_INSENSITIVE)
+				.put("moduleId", "900000000000013009")
+				.put("commitComment", "Changed case significance and module on parent")
+				.build();
+
+		final Map<?, ?> changesOnBranch = ImmutableMap.builder()
+				.put("caseSignificance", CaseSignificance.ENTIRE_TERM_CASE_SENSITIVE)
+				.put("moduleId", "900000000000443000")
+				.put("commitComment", "Changed case significance and module on branch")
+				.build();
+
+		assertDescriptionChangesConflict(changesOnParent, changesOnBranch);
 	}
-	
+
 	@Test
 	public void noRebaseChangedConceptOnBranchDeletedOnParent() {
 		mergeNewConceptForward();
-		
-		Map<?, ?> changeOnBranch = ImmutableMap.of(
-			"definitionStatus", DefinitionStatus.FULLY_DEFINED,
-			"commitComment", "Changed definition status on branch"
-		);
-		
-		assertConceptCanBeDeleted("C1", "MAIN");
-		assertConceptCanBeUpdated("C1", changeOnBranch, "MAIN", branchName);
-		
-		assertBranchConflicts("MAIN", joinPath("MAIN", branchName), "Rebase conflicting concept deletion");
+
+		final Map<?, ?> changeOnBranch = ImmutableMap.builder()
+				.put("definitionStatus", DefinitionStatus.FULLY_DEFINED)
+				.put("commitComment", "Changed definition status on branch")
+				.build();
+
+		assertConceptCanBeDeleted(testBranchPath.getParent(), "C1");
+		assertConceptCanBeUpdated(testBranchPath, "C1", changeOnBranch);
+
+		assertBranchConflicts(testBranchPath.getParent(), testBranchPath, "Rebase conflicting concept deletion");
 	}
-	
+
 	@Test
 	public void rebaseChangedConceptOnParentDeletedOnBranch() {
 		mergeNewConceptForward();
-		
-		Map<?, ?> changeOnMain = ImmutableMap.of(
-			"definitionStatus", DefinitionStatus.FULLY_DEFINED,
-			"commitComment", "Changed definition status on MAIN"
-		);
-		
-		assertConceptCanBeUpdated("C1", changeOnMain, "MAIN");
-		assertConceptCanBeDeleted("C1", "MAIN", branchName);
-		
-		assertBranchCanBeRebased("MAIN", joinPath("MAIN", branchName), "Rebase concept deletion");
-		
-		assertConceptExists("C1", "MAIN");
-		assertConceptNotExists("C1", "MAIN", branchName);
+
+		final Map<?, ?> changeOnParent = ImmutableMap.builder()
+				.put("definitionStatus", DefinitionStatus.FULLY_DEFINED)
+				.put("commitComment", "Changed definition status on parent")
+				.build();
+
+		assertConceptCanBeUpdated(testBranchPath.getParent(), "C1", changeOnParent);
+		assertConceptCanBeDeleted(testBranchPath, "C1");
+
+		assertBranchCanBeRebased(testBranchPath, "Rebase concept deletion");
+
+		assertConceptExists(testBranchPath.getParent(), "C1");
+		assertConceptNotExists(testBranchPath, "C1");
 	}
-	
+
 	@Test
 	public void rebaseAndMergeChangedConceptOnParentDeletedOnBranch() {
 		rebaseChangedConceptOnParentDeletedOnBranch();
-		
-		assertBranchCanBeMerged(joinPath("MAIN", branchName), "MAIN", "Merge concept deletion back to MAIN");
-		assertConceptNotExists("C1", "MAIN", branchName);
-		assertConceptNotExists("C1", "MAIN");
+
+		assertBranchCanBeMerged(testBranchPath, "Merge concept deletion back to MAIN");
+
+		assertConceptNotExists(testBranchPath.getParent(), "C1");
+		assertConceptNotExists(testBranchPath, "C1");
 	}
-	
+
 	@Test
 	public void rebaseAndMergeChangedDescriptionMultipleChanges() {
 		mergeNewDescriptionForward();
-		
-		assertDescriptionCanBeCreated("D2", SnomedApiTestConstants.ACCEPTABLE_ACCEPTABILITY_MAP, "MAIN");
-		
-		Map<?, ?> changesOnBranch = ImmutableMap.of(
-			"caseSignificance", CaseSignificance.CASE_INSENSITIVE,
-			"moduleId", "900000000000013009",
-			"commitComment", "Changed case significance and module on branch"
-		);
 
-		assertDescriptionCanBeUpdated("D1", changesOnBranch, "MAIN", branchName);
-		assertBranchCanBeRebased("MAIN", joinPath("MAIN", branchName), "Rebase description update");
-		assertBranchCanBeMerged(joinPath("MAIN", branchName), "MAIN", "Merge description update");
-		
-		assertDescriptionExists("D1", "MAIN");
-		assertDescriptionExists("D2", "MAIN");
-		
-		givenAuthenticatedRequest(SnomedApiTestConstants.SCT_API)
-		.when()
-			.get("/MAIN/descriptions/{id}", symbolicNameMap.get("D1"))
-		.then()
-		.assertThat()
-			.statusCode(200)
-		.and()
-			.body("caseSignificance", equalTo(CaseSignificance.CASE_INSENSITIVE.name()))
-		.and()
-			.body("moduleId", equalTo("900000000000013009"));
+		assertDescriptionCreated(testBranchPath.getParent(), "D2", SnomedApiTestConstants.ACCEPTABLE_ACCEPTABILITY_MAP);
+
+		final Map<?, ?> changesOnBranch = ImmutableMap.builder()
+				.put("caseSignificance", CaseSignificance.CASE_INSENSITIVE)
+				.put("moduleId", "900000000000013009")
+				.put("commitComment", "Changed case significance and module on branch")
+				.build();
+
+		assertDescriptionCanBeUpdated(testBranchPath, "D1", changesOnBranch);
+
+		assertBranchCanBeRebased(testBranchPath, "Rebase description update");
+		assertBranchCanBeMerged(testBranchPath, "Merge description update");
+
+		assertDescriptionExists(testBranchPath.getParent(), "D1");
+		assertDescriptionExists(testBranchPath.getParent(), "D2");
+
+		assertComponentHasProperty(testBranchPath.getParent(), SnomedComponentType.DESCRIPTION, symbolicNameMap.get("D1"), "caseSignificance", CaseSignificance.CASE_INSENSITIVE.name());
+		assertComponentHasProperty(testBranchPath.getParent(), SnomedComponentType.DESCRIPTION, symbolicNameMap.get("D1"), "moduleId", "900000000000013009");
 	}
-	
+
 	@Test
 	public void rebaseAndMergeNewDescriptionBothDeleted() {
 		mergeNewDescriptionForward();
-		
-		assertDescriptionCanBeCreated("D2", SnomedApiTestConstants.ACCEPTABLE_ACCEPTABILITY_MAP, "MAIN");
-		assertDescriptionCanBeDeleted("D1", "MAIN");
-		assertDescriptionCanBeDeleted("D1", "MAIN", branchName);
-		
-		assertBranchCanBeRebased("MAIN", joinPath("MAIN", branchName), "Rebase description dual deletion");
-		assertBranchCanBeMerged(joinPath("MAIN", branchName), "MAIN", "Merge description dual deletion");
-		
-		assertDescriptionNotExists("D1", "MAIN");
-		assertDescriptionNotExists("D1", "MAIN", branchName);
-		assertDescriptionExists("D2", "MAIN");
-		assertDescriptionExists("D2", "MAIN", branchName);
+
+		assertDescriptionCreated(testBranchPath.getParent(), "D2", SnomedApiTestConstants.ACCEPTABLE_ACCEPTABILITY_MAP);
+		assertDescriptionCanBeDeleted(testBranchPath, "D1");
+		assertDescriptionCanBeDeleted(testBranchPath.getParent(), "D1");
+
+		assertBranchCanBeRebased(testBranchPath, "Rebase description dual deletion");
+		assertBranchCanBeMerged(testBranchPath, "Merge description dual deletion");
+
+		assertDescriptionNotExists(testBranchPath, "D1");
+		assertDescriptionNotExists(testBranchPath.getParent(), "D1");
+		assertDescriptionExists(testBranchPath, "D2");
+		assertDescriptionExists(testBranchPath.getParent(), "D2");
 	}
 }

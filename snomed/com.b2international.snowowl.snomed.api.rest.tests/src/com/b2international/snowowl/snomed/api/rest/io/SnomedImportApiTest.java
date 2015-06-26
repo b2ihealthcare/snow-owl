@@ -17,7 +17,6 @@ package com.b2international.snowowl.snomed.api.rest.io;
 
 import static com.b2international.snowowl.snomed.api.rest.SnomedBranchingApiAssert.assertBranchCreated;
 import static com.b2international.snowowl.test.commons.rest.RestExtensions.givenAuthenticatedRequest;
-import static com.b2international.snowowl.test.commons.rest.RestExtensions.joinPath;
 import static org.hamcrest.CoreMatchers.equalTo;
 
 import java.util.Map;
@@ -37,36 +36,26 @@ public class SnomedImportApiTest extends AbstractSnomedImportApiTest {
 
 	private void assertImportConfigurationCreationFails(final Map<?, ?> importConfiguration) {
 		whenCreatingImportConfiguration(importConfiguration)
-		.then()
-		.assertThat()
-			.statusCode(400)
-		.and()
-			.body("status", equalTo(400));
+		.then().assertThat().statusCode(400)
+		.and().body("status", equalTo(400));
 	}
-	
+
 	private ValidatableResponse assertImportConfigurationStatus(final String importId, final int expectedStatus) {
 		return givenAuthenticatedRequest(SnomedApiTestConstants.SCT_API)
-		.when()
-			.get("/imports/{id}", importId)
-		.then()
-		.assertThat()
-			.statusCode(expectedStatus);
+				.when().get("/imports/{id}", importId)
+				.then().assertThat().statusCode(expectedStatus);
 	}
 
 	private String assertImportConfigurationExistsAfterCreation() {
-		final Map<?, ?> importConfiguration = ImmutableMap.of(
-			"type", Rf2ReleaseType.DELTA.name(),
-			"branchPath", "MAIN",
-			"languageRefSetId", Concepts.REFSET_LANGUAGE_TYPE_UK,
-			"createVersions", false
-		);
+		final Map<?, ?> importConfiguration = ImmutableMap.builder()
+				.put("type", Rf2ReleaseType.DELTA.name())
+				.put("branchPath", "MAIN")
+				.put("languageRefSetId", Concepts.REFSET_LANGUAGE_TYPE_UK)
+				.put("createVersions", false)
+				.build();
 
 		final String importId = assertImportConfigurationCanBeCreated(importConfiguration);
-		
-		assertImportConfigurationStatus(importId, 200)
-		.and()
-			.body("status", equalTo("WAITING_FOR_FILE"));
-		
+		assertImportConfigurationStatus(importId, 200).and().body("status", equalTo("WAITING_FOR_FILE"));
 		return importId;
 	}
 
@@ -78,28 +67,25 @@ public class SnomedImportApiTest extends AbstractSnomedImportApiTest {
 	@Test
 	public void deleteImportConfiguration() {
 		final String importId = assertImportConfigurationExistsAfterCreation();
-		
+
 		givenAuthenticatedRequest(SnomedApiTestConstants.SCT_API)
-		.when()
-			.delete("/imports/{id}", importId)
-		.then()
-		.assertThat()
-			.statusCode(204);
-		
+		.when().delete("/imports/{id}", importId)
+		.then().assertThat().statusCode(204);
+
 		assertImportConfigurationStatus(importId, 404);
 	}
-	
+
 	@Test
 	public void noVersionsAllowedOnBranch() {
-		assertBranchCreated(branchPath);
-		
-		final Map<?, ?> importConfiguration = ImmutableMap.of(
-			"type", Rf2ReleaseType.DELTA.name(),
-			"branchPath", joinPath("MAIN", branchName),
-			"languageRefSetId", Concepts.REFSET_LANGUAGE_TYPE_UK,
-			"createVersions", true
-		);
-		
+		assertBranchCreated(testBranchPath);
+
+		final Map<?, ?> importConfiguration = ImmutableMap.builder()
+				.put("type", Rf2ReleaseType.DELTA.name())
+				.put("branchPath", testBranchPath.getPath())
+				.put("languageRefSetId", Concepts.REFSET_LANGUAGE_TYPE_UK)
+				.put("createVersions", true)
+				.build();
+
 		assertImportConfigurationCreationFails(importConfiguration);
 	}
 }

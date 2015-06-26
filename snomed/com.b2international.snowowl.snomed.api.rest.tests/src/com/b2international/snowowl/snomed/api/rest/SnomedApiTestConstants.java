@@ -26,7 +26,7 @@ import com.google.common.collect.ImmutableMap;
  * 
  * @since 2.0
  */
-public class SnomedApiTestConstants {
+public abstract class SnomedApiTestConstants {
 
 	/**
 	 * The context-relative base URL for SNOMED CT-related controllers.
@@ -42,7 +42,12 @@ public class SnomedApiTestConstants {
 	 * An acceptability map which specifies that the corresponding description is preferred in the UK language reference set.
 	 */
 	public static final Map<?, ?> PREFERRED_ACCEPTABILITY_MAP = ImmutableMap.of(Concepts.REFSET_LANGUAGE_TYPE_UK, Acceptability.PREFERRED);
-	
+
+	/**
+	 * An acceptability map with an invalid language reference set identifier.
+	 */
+	public static final Map<?, ?> INVALID_ACCEPTABILITY_MAP = ImmutableMap.of("1", Acceptability.PREFERRED);
+
 	private SnomedApiTestConstants() {
 		throw new UnsupportedOperationException("This class is not supposed to be instantiated.");
 	}

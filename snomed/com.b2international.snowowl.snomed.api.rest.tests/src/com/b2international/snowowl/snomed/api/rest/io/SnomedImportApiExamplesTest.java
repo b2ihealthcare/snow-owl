@@ -16,9 +16,9 @@
 package com.b2international.snowowl.snomed.api.rest.io;
 
 import static com.b2international.snowowl.snomed.api.rest.SnomedBranchingApiAssert.assertBranchCreated;
+import static com.b2international.snowowl.snomed.api.rest.SnomedComponentApiAssert.*;
 import static com.b2international.snowowl.test.commons.rest.RestExtensions.givenAuthenticatedRequest;
-import static com.b2international.snowowl.test.commons.rest.RestExtensions.joinPath;
-import static org.hamcrest.CoreMatchers.equalTo;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
 
 import java.io.File;
@@ -32,72 +32,62 @@ import com.b2international.commons.platform.PlatformUtil;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.api.domain.Rf2ReleaseType;
 import com.b2international.snowowl.snomed.api.rest.SnomedApiTestConstants;
+import com.b2international.snowowl.snomed.api.rest.SnomedComponentType;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
-import com.jayway.restassured.response.Response;
 
 /**
  * @since 2.0
  */
 public class SnomedImportApiExamplesTest extends AbstractSnomedImportApiTest {
-	
+
 	private static final Set<String> FINISH_STATES = ImmutableSet.of("COMPLETED", "FAILED");
+
 	private static final long POLL_INTERVAL = TimeUnit.SECONDS.toMillis(1L);
+
 	private static final long POLL_TIMEOUT = TimeUnit.SECONDS.toMillis(30L);
-	
+
 	private void assertImportFileCanBeUploaded(final String importId, final String importFile) {
-		givenAuthenticatedRequest(SnomedApiTestConstants.SCT_API)
-		.with()
-			.multiPart(new File(PlatformUtil.toAbsolutePath(getClass(), importFile)))
-		.when()
-			.post("/imports/{id}/archive", importId)
-		.then()
-		.assertThat()
-			.statusCode(204);
+		givenAuthenticatedRequest(SnomedApiTestConstants.SCT_API).with().multiPart(new File(PlatformUtil.toAbsolutePath(getClass(), importFile)))
+		.when().post("/imports/{id}/archive", importId)
+		.then().assertThat().statusCode(204);
 	}
 
 	private void assertImportCompletes(final String importId) {
-		
 		final long endTime = System.currentTimeMillis() + POLL_TIMEOUT;
 
-		Response pollResponse;
 		long currentTime;
-		
+		String currentStatus;
+
 		do {
-			
+
 			try {
 				Thread.sleep(POLL_INTERVAL);
 			} catch (final InterruptedException e) {
 				fail(e.toString());
 			}
-			
-			pollResponse = givenAuthenticatedRequest(SnomedApiTestConstants.SCT_API)
-			.when()
-				.get("/imports/{id}", importId);
-			
-			pollResponse
-			.then()
-			.assertThat()
-				.statusCode(200);
-			
+
+			currentStatus = givenAuthenticatedRequest(SnomedApiTestConstants.SCT_API)
+					.when().get("/imports/{id}", importId)
+					.then().assertThat().statusCode(200)
+					.and().extract().response().body().path("status");
+
 			currentTime = System.currentTimeMillis();
-			
-		} while (!FINISH_STATES.contains(pollResponse.getBody().path("status")) && currentTime < endTime);
-		
-		pollResponse
-		.then()
-		.assertThat()
-			.body("status", equalTo("COMPLETED"));
+
+		} while (!FINISH_STATES.contains(currentStatus) && currentTime < endTime);
+
+		assertEquals("End state should be COMPLETED.", currentStatus, "COMPLETED");
 	}
 
 	private void assertImportFileCanBeImported(final String importFile) {
-		final Map<?, ?> importConfiguration = ImmutableMap.of(
-			"type", Rf2ReleaseType.DELTA.name(),
-			"branchPath", joinPath("MAIN", branchName),
-			"languageRefSetId", Concepts.REFSET_LANGUAGE_TYPE_UK,
-			"createVersions", false
-		);
-		
+
+		final Map<?, ?> importConfiguration = ImmutableMap.builder()
+				.put("type", Rf2ReleaseType.DELTA.name())
+				.put("branchPath", testBranchPath.getPath())
+				.put("languageRefSetId", Concepts.REFSET_LANGUAGE_TYPE_UK)
+				.put("createVersions", false)
+				.build();
+
 		final String importId = assertImportConfigurationCanBeCreated(importConfiguration);
 		assertImportFileCanBeUploaded(importId, importFile);
 		assertImportCompletes(importId);
@@ -105,67 +95,60 @@ public class SnomedImportApiExamplesTest extends AbstractSnomedImportApiTest {
 
 	@Test
 	public void importNewConcept() {
-		assertBranchCreated(branchPath);
-		assertConceptNotExists("63961392103", "MAIN", branchName);
-		
+		assertBranchCreated(testBranchPath);
+		assertConceptNotExists(testBranchPath, "63961392103");
+
 		assertImportFileCanBeImported("SnomedCT_Release_INT_20150131_new_concept.zip");
-		
-		assertConceptExists("63961392103", "MAIN", branchName);
+
+		assertConceptExists(testBranchPath, "63961392103");
 	}
 
 	@Test
 	public void importNewDescription() {
-		assertBranchCreated(branchPath);
-		assertDescriptionNotExists("11320138110", "MAIN", branchName);
-		
+		assertBranchCreated(testBranchPath);
+		assertDescriptionNotExists(testBranchPath, "11320138110");
+
 		assertImportFileCanBeImported("SnomedCT_Release_INT_20150131_new_concept.zip");
 		assertImportFileCanBeImported("SnomedCT_Release_INT_20150201_new_description.zip");
-		
-		assertDescriptionExists("11320138110", "MAIN", branchName);
+
+		assertDescriptionExists(testBranchPath, "11320138110");
 	}
-	
+
 	@Test
 	public void importNewRelationship() {
-		assertBranchCreated(branchPath);
-		assertRelationshipNotExists("24088071128", "MAIN", branchName);
+		assertBranchCreated(testBranchPath);
+		assertRelationshipNotExists(testBranchPath, "24088071128");
 
 		assertImportFileCanBeImported("SnomedCT_Release_INT_20150131_new_concept.zip");
 		assertImportFileCanBeImported("SnomedCT_Release_INT_20150202_new_relationship.zip");
-		
-		assertRelationshipExists("24088071128", "MAIN", branchName);
+
+		assertRelationshipExists(testBranchPath, "24088071128");
 	}
 
 	@Test
 	public void importNewPreferredTerm() {
-		assertBranchCreated(branchPath);
+		assertBranchCreated(testBranchPath);
 
 		assertImportFileCanBeImported("SnomedCT_Release_INT_20150131_new_concept.zip");
-		assertPreferredTermEquals("63961392103", "13809498114", "MAIN", branchName);
-		
+		assertPreferredTermEquals(testBranchPath, "63961392103", "13809498114");
+
 		assertImportFileCanBeImported("SnomedCT_Release_INT_20150201_new_description.zip");
-		assertPreferredTermEquals("63961392103", "13809498114", "MAIN", branchName);
-		
+		assertPreferredTermEquals(testBranchPath, "63961392103", "13809498114");
+
 		assertImportFileCanBeImported("SnomedCT_Release_INT_20150203_change_pt.zip");
-		assertPreferredTermEquals("63961392103", "11320138110", "MAIN", branchName);
+		assertPreferredTermEquals(testBranchPath, "63961392103", "11320138110");
 	}
-	
+
 	@Test
 	public void importConceptInactivation() {
-		assertBranchCreated(branchPath);
-		
+		assertBranchCreated(testBranchPath);
+
 		assertImportFileCanBeImported("SnomedCT_Release_INT_20150131_new_concept.zip");
 		assertImportFileCanBeImported("SnomedCT_Release_INT_20150201_new_description.zip");
 		assertImportFileCanBeImported("SnomedCT_Release_INT_20150202_new_relationship.zip");
 		assertImportFileCanBeImported("SnomedCT_Release_INT_20150203_change_pt.zip");
 		assertImportFileCanBeImported("SnomedCT_Release_INT_20150204_inactivate_concept.zip");
-		
-		givenAuthenticatedRequest(SnomedApiTestConstants.SCT_API)
-		.when()
-			.get("/{path}/concepts/{conceptId}", joinPath("MAIN", branchName), "63961392103")
-		.then()
-		.assertThat()
-			.statusCode(200)
-		.and()
-			.body("active", equalTo(false));
+
+		assertComponentActive(testBranchPath, SnomedComponentType.CONCEPT, "63961392103", false);
 	}
 }

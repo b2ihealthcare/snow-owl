@@ -15,15 +15,20 @@
  */
 package com.b2international.snowowl.snomed.api.rest.components;
 
+import static com.b2international.snowowl.datastore.BranchPathUtils.createMainPath;
+import static com.b2international.snowowl.datastore.BranchPathUtils.createPath;
+import static com.b2international.snowowl.snomed.SnomedConstants.Concepts.MODULE_SCT_CORE;
+import static com.b2international.snowowl.snomed.api.rest.SnomedComponentApiAssert.*;
 import static org.hamcrest.CoreMatchers.equalTo;
 
 import java.util.Map;
 
 import org.junit.Test;
 
-import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
+import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.snomed.api.domain.CharacteristicType;
 import com.b2international.snowowl.snomed.api.rest.AbstractSnomedApiTest;
+import com.b2international.snowowl.snomed.api.rest.SnomedComponentType;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableMap.Builder;
 
@@ -36,7 +41,12 @@ public class SnomedRelationshipApiTest extends AbstractSnomedApiTest {
 	private static final String TEMPORAL_CONTEXT = "410510008";
 	private static final String FINDING_CONTEXT = "408729009";
 
-	private Builder<Object, Object> createRequestBuilder(String sourceId, String typeId, String destinationId, String moduleId, String comment) {
+	private Builder<Object, Object> createRequestBuilder(final String sourceId, 
+			final String typeId, 
+			final String destinationId, 
+			final String moduleId, 
+			final String comment) {
+
 		return ImmutableMap.builder()
 				.put("sourceId", sourceId)
 				.put("typeId", typeId)
@@ -44,122 +54,137 @@ public class SnomedRelationshipApiTest extends AbstractSnomedApiTest {
 				.put("moduleId", moduleId)
 				.put("commitComment", comment);
 	}
-	
-	private Map<?, ?> createRequestBody(String sourceId, String typeId, String destinationId, String moduleId, String comment) {
-		return createRequestBuilder(sourceId, typeId, destinationId, moduleId, comment).build();
-	}
-	
-	private Map<?, ?> createRequestBody(String sourceId, String typeId, String destinationId, String moduleId, CharacteristicType characteristicType, String comment) {
+
+	private Map<?, ?> createRequestBody(final String sourceId, 
+			final String typeId, 
+			final String destinationId, 
+			final String moduleId, 
+			final String comment) {
+
 		return createRequestBuilder(sourceId, typeId, destinationId, moduleId, comment)
-			.put("characteristicType", characteristicType.name())
-			.build();
+				.build();
 	}
-	
+
+	private Map<?, ?> createRequestBody(final String sourceId, 
+			final String typeId, 
+			final String destinationId, 
+			final String moduleId, 
+			final CharacteristicType characteristicType, 
+			final String comment) {
+
+		return createRequestBuilder(sourceId, typeId, destinationId, moduleId, comment)
+				.put("characteristicType", characteristicType.name())
+				.build();
+	}
+
 	@Test
 	public void createRelationshipNonExistentBranch() {
-		final Map<?, ?> requestBody = createRequestBody(DISEASE, TEMPORAL_CONTEXT, FINDING_CONTEXT, Concepts.MODULE_SCT_CORE, "New relationship on a non-existent branch");
-		assertComponentCreationStatus("relationships", requestBody, 404, "MAIN", "1998-01-31") // !
-		.and()
-			.body("status", equalTo(404));
+		final Map<?, ?> requestBody = createRequestBody(DISEASE, TEMPORAL_CONTEXT, FINDING_CONTEXT, MODULE_SCT_CORE, "New relationship on a non-existent branch");
+		assertComponentCreatedWithStatus(createPath("MAIN/1998-01-31"), SnomedComponentType.RELATIONSHIP, requestBody, 404)
+		.and().body("status", equalTo(404));
+
 	}
-	
+
 	@Test
 	public void createRelationshipWithNonExistentSource() {
-		final Map<?, ?> requestBody = createRequestBody("1", TEMPORAL_CONTEXT, FINDING_CONTEXT, Concepts.MODULE_SCT_CORE, "New relationship with a non-existent source ID");		
-		assertComponentCanNotBeCreated("relationships", requestBody, "MAIN");
+		final Map<?, ?> requestBody = createRequestBody("1", TEMPORAL_CONTEXT, FINDING_CONTEXT, MODULE_SCT_CORE, "New relationship with a non-existent source ID");		
+		assertComponentNotCreated(createMainPath(), SnomedComponentType.RELATIONSHIP, requestBody);
 	}
-	
+
 	@Test
 	public void createRelationshipWithNonexistentType() {
-		final Map<?, ?> requestBody = createRequestBody(DISEASE, "2", FINDING_CONTEXT, Concepts.MODULE_SCT_CORE, "New relationship on a non-existent branch");		
-		assertComponentCanNotBeCreated("relationships", requestBody, "MAIN");
+		final Map<?, ?> requestBody = createRequestBody(DISEASE, "2", FINDING_CONTEXT, MODULE_SCT_CORE, "New relationship on a non-existent branch");		
+		assertComponentNotCreated(createMainPath(), SnomedComponentType.RELATIONSHIP, requestBody);
 	}
 
 	@Test
 	public void createRelationshipWithNonExistentDestination() {
-		final Map<?, ?> requestBody = createRequestBody(DISEASE, TEMPORAL_CONTEXT, "3", Concepts.MODULE_SCT_CORE, "New relationship with a non-existent destination ID");		
-		assertComponentCanNotBeCreated("relationships", requestBody, "MAIN");
+		final Map<?, ?> requestBody = createRequestBody(DISEASE, TEMPORAL_CONTEXT, "3", MODULE_SCT_CORE, "New relationship with a non-existent destination ID");		
+		assertComponentNotCreated(createMainPath(), SnomedComponentType.RELATIONSHIP, requestBody);
 	}
 
 	@Test
 	public void createRelationshipWithNonexistentModule() {
 		final Map<?, ?> requestBody = createRequestBody(DISEASE, TEMPORAL_CONTEXT, FINDING_CONTEXT, "4", "New relationship with a non-existent module ID");
-		assertComponentCanNotBeCreated("relationships", requestBody, "MAIN");
+		assertComponentNotCreated(createMainPath(), SnomedComponentType.RELATIONSHIP, requestBody);
 	}
 
-	private void assertCharacteristicType(String relationshipId, CharacteristicType characteristicType) {
-		assertComponentHasProperty("relationships", relationshipId, "characteristicType", characteristicType.name(), "MAIN");
+	private void assertCharacteristicType(final IBranchPath branchPath, final String relationshipId, final CharacteristicType characteristicType) {
+		assertComponentHasProperty(branchPath, SnomedComponentType.RELATIONSHIP, relationshipId, "characteristicType", characteristicType.toString());
 	}
 
 	@Test
 	public void createRelationship() {
-		final Map<?, ?> requestBody = createRequestBody(DISEASE, TEMPORAL_CONTEXT, FINDING_CONTEXT, Concepts.MODULE_SCT_CORE, "New relationship on MAIN");
-		String relationshipId = assertComponentCanBeCreated("relationships", requestBody, "MAIN");
-		assertCharacteristicType(relationshipId, CharacteristicType.STATED_RELATIONSHIP);
+		final Map<?, ?> requestBody = createRequestBody(DISEASE, TEMPORAL_CONTEXT, FINDING_CONTEXT, MODULE_SCT_CORE, "New relationship on MAIN");
+		final String relationshipId = assertComponentCreated(createMainPath(), SnomedComponentType.RELATIONSHIP, requestBody);
+		assertCharacteristicType(createMainPath(), relationshipId, CharacteristicType.STATED_RELATIONSHIP);
 	}
-	
+
 	@Test
 	public void createRelationshipInferred() {
-		final Map<?, ?> requestBody = createRequestBody(DISEASE, TEMPORAL_CONTEXT, FINDING_CONTEXT, Concepts.MODULE_SCT_CORE, CharacteristicType.INFERRED_RELATIONSHIP, "New relationship on MAIN");
-		String relationshipId = assertComponentCanBeCreated("relationships", requestBody, "MAIN");
-		assertCharacteristicType(relationshipId, CharacteristicType.INFERRED_RELATIONSHIP);
+		final Map<?, ?> requestBody = createRequestBody(DISEASE, TEMPORAL_CONTEXT, FINDING_CONTEXT, MODULE_SCT_CORE, CharacteristicType.INFERRED_RELATIONSHIP, "New relationship on MAIN");
+		final String relationshipId = assertComponentCreated(createMainPath(), SnomedComponentType.RELATIONSHIP, requestBody);
+		assertCharacteristicType(createMainPath(), relationshipId, CharacteristicType.INFERRED_RELATIONSHIP);
 	}
-	
+
 	@Test
 	public void deleteRelationship() {
-		final Map<?, ?> requestBody = createRequestBody(DISEASE, TEMPORAL_CONTEXT, FINDING_CONTEXT, Concepts.MODULE_SCT_CORE, "New relationship on MAIN");
-		String relationshipId = assertComponentCanBeCreated("relationships", requestBody, "MAIN");
+		final Map<?, ?> requestBody = createRequestBody(DISEASE, TEMPORAL_CONTEXT, FINDING_CONTEXT, MODULE_SCT_CORE, "New relationship on MAIN");
+		final String relationshipId = assertComponentCreated(createMainPath(), SnomedComponentType.RELATIONSHIP, requestBody);
 
-		assertRelationshipCanBeDeleted(relationshipId, "MAIN");
-		assertRelationshipNotExists(relationshipId, "MAIN");
+		assertRelationshipCanBeDeleted(createMainPath(), relationshipId);
+		assertRelationshipNotExists(createMainPath(), relationshipId);
 	}
 
-	private void assertRelationshipCanBeDeleted(String relationshipId, String... segments) {
-		assertComponentCanBeDeleted("relationships", relationshipId, segments);
+	private void assertRelationshipCanBeDeleted(final IBranchPath branchPath, final String relationshipId, final String... segments) {
+		assertComponentCanBeDeleted(branchPath, SnomedComponentType.RELATIONSHIP, relationshipId);
 	}
 
-	private void assertRelationshipCanBeUpdated(String relationshipId, final Map<?, ?> updateRequestBody, String... segments) {
-		assertComponentCanBeUpdated("relationships", relationshipId, updateRequestBody, segments);
+	private void assertRelationshipCanBeUpdated(final IBranchPath branchPath, final String relationshipId, final Map<?, ?> requestBody) {
+		assertComponentCanBeUpdated(branchPath, SnomedComponentType.RELATIONSHIP, relationshipId, requestBody);
 	}
 
 	@Test
 	public void inactivateRelationship() {
-		final Map<?, ?> createRequestBody = createRequestBody(DISEASE, TEMPORAL_CONTEXT, FINDING_CONTEXT, Concepts.MODULE_SCT_CORE, "New relationship on MAIN");
-		String relationshipId = assertComponentCanBeCreated("relationships", createRequestBody, "MAIN");
-		
-		final Map<?, ?> updateRequestBody = ImmutableMap.of(
-			"active", false,
-			"commitComment", "Inactivated relationship"
-		);
-		
-		assertRelationshipCanBeUpdated(relationshipId, updateRequestBody, "MAIN");
-		assertRelationshipActive(relationshipId, false);
+		final Map<?, ?> createRequestBody = createRequestBody(DISEASE, TEMPORAL_CONTEXT, FINDING_CONTEXT, MODULE_SCT_CORE, "New relationship on MAIN");
+		final String relationshipId = assertComponentCreated(createMainPath(), SnomedComponentType.RELATIONSHIP, createRequestBody);
+		assertRelationshipActive(createMainPath(), relationshipId, true);
+
+		final Map<?, ?> updateRequestBody = ImmutableMap.builder()
+				.put("active", false)
+				.put("commitComment", "Inactivated relationship")
+				.build();
+
+		assertRelationshipCanBeUpdated(createMainPath(), relationshipId, updateRequestBody);
+		assertRelationshipActive(createMainPath(), relationshipId, false);
 	}
-	
-	private void assertRelationshipActive(String relationshipId, boolean active) {
-		assertComponentActive("relationships", relationshipId, active, "MAIN");
+
+	private void assertRelationshipActive(final IBranchPath branchPath, final String relationshipId, final boolean active) {
+		assertComponentActive(branchPath, SnomedComponentType.RELATIONSHIP, relationshipId, active);
 	}
-	
+
 	@Test
 	public void createRelationshipOnNestedBranch() {
-		createNestedBranch("a", "b");
-		
-		final Map<?, ?> requestBody = createRequestBody(DISEASE, TEMPORAL_CONTEXT, FINDING_CONTEXT, Concepts.MODULE_SCT_CORE, "New relationship on MAIN");
-		String relationshipId = assertComponentCanBeCreated("relationships", requestBody, "MAIN", branchName, "a", "b");		
-		
-		assertRelationshipExists(relationshipId, "MAIN", branchName, "a", "b");
-		assertRelationshipNotExists(relationshipId, "MAIN", branchName, "a");
-		assertRelationshipNotExists(relationshipId, "MAIN", branchName);
-		assertRelationshipNotExists(relationshipId, "MAIN");
+		final IBranchPath nestedBranchPath = createNestedBranch("a", "b");
+		final Map<?, ?> requestBody = createRequestBody(DISEASE, TEMPORAL_CONTEXT, FINDING_CONTEXT, MODULE_SCT_CORE, "New relationship on MAIN");
+		final String relationshipId = assertComponentCreated(nestedBranchPath, SnomedComponentType.RELATIONSHIP, requestBody);		
+
+		assertRelationshipExists(nestedBranchPath, relationshipId);
+		assertRelationshipNotExists(nestedBranchPath.getParent(), relationshipId);
+		assertRelationshipNotExists(nestedBranchPath.getParent().getParent(), relationshipId);
+		assertRelationshipNotExists(nestedBranchPath.getParent().getParent().getParent(), relationshipId);
 	}
-	
+
 	@Test
 	public void deleteRelationshipOnNestedBranch() {
-		createNestedBranch("a", "b");
-		
-		final Map<?, ?> requestBody = createRequestBody(DISEASE, TEMPORAL_CONTEXT, FINDING_CONTEXT, Concepts.MODULE_SCT_CORE, "New relationship on MAIN");
-		String relationshipId = assertComponentCanBeCreated("relationships", requestBody, "MAIN", branchName, "a", "b");		
+		final IBranchPath nestedBranchPath = createNestedBranch("a", "b");
+		final Map<?, ?> requestBody = createRequestBody(DISEASE, TEMPORAL_CONTEXT, FINDING_CONTEXT, MODULE_SCT_CORE, "New relationship on MAIN");
+		final String relationshipId = assertComponentCreated(nestedBranchPath, SnomedComponentType.RELATIONSHIP, requestBody);		
 
-		assertRelationshipCanBeDeleted(relationshipId, "MAIN", branchName, "a", "b");
+		assertRelationshipCanBeDeleted(nestedBranchPath, relationshipId);
+		assertRelationshipNotExists(nestedBranchPath, relationshipId);
+		assertRelationshipNotExists(nestedBranchPath.getParent(), relationshipId);
+		assertRelationshipNotExists(nestedBranchPath.getParent().getParent(), relationshipId);
+		assertRelationshipNotExists(nestedBranchPath.getParent().getParent().getParent(), relationshipId);
 	}
 }

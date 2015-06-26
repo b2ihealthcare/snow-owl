@@ -27,30 +27,28 @@ import com.google.common.collect.ImmutableMap;
 import com.jayway.restassured.http.ContentType;
 import com.jayway.restassured.response.Response;
 import com.jayway.restassured.response.ValidatableResponse;
-import com.jayway.restassured.specification.RequestSpecification;
 
 /**
  * A set of assert methods related to the branching support in the REST API.
  * 
  * @since 2.0
  */
-public class SnomedBranchingApiAssert {
+public abstract class SnomedBranchingApiAssert {
 
-	private static Response whenCreatingBranch(final RequestSpecification request, final IBranchPath branchPath, final Map<?, ?> metadata) {
+	private static Response whenCreatingBranch(final IBranchPath branchPath, final Map<?, ?> metadata) {
 		final Map<?, ?> requestBody = ImmutableMap.<String, Object> builder()
 				.put("parent", branchPath.getParentPath())
 				.put("name", branchPath.lastSegment())
 				.put("metadata", metadata).build();
 
-		return request
+		return givenAuthenticatedRequest(SnomedApiTestConstants.SCT_API)
 				.and().contentType(ContentType.JSON)
 				.and().body(requestBody)
 				.when().post("/branches");
 	}
 
 	private static ValidatableResponse assertBranchCreatedWithStatus(final IBranchPath branchPath, final Map<?, ?> metadata, final int statusCode) {
-		final RequestSpecification request = givenAuthenticatedRequest(SnomedApiTestConstants.SCT_API);
-		return whenCreatingBranch(request, branchPath, metadata)
+		return whenCreatingBranch(branchPath, metadata)
 				.then().assertThat().statusCode(statusCode);
 	}
 
@@ -185,7 +183,7 @@ public class SnomedBranchingApiAssert {
 				givenAuthenticatedRequest(SnomedApiTestConstants.SCT_API).when().get("/branches/{path}/children", branchPath.getParentPath()),
 				branchPath.lastSegment());
 	}
-	
+
 	private SnomedBranchingApiAssert() {
 		throw new UnsupportedOperationException("This class is not supposed to be instantiated.");
 	}

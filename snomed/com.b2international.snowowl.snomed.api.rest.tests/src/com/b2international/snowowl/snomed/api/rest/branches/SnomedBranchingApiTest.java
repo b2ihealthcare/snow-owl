@@ -39,13 +39,13 @@ public class SnomedBranchingApiTest extends AbstractSnomedApiTest {
 
 	@Test
 	public void createBranchWithNonexistentParent() {
-		assertBranchNotCreated(createPath(createPath("MAIN/nonexistent"), branchPath.lastSegment()));
+		assertBranchNotCreated(createPath(testBranchPath, "a"));
 	}
 
 	@Test
 	public void createBranch() {
-		assertBranchCreated(branchPath);
-		assertBranchExists(branchPath);
+		assertBranchCreated(testBranchPath);
+		assertBranchExists(testBranchPath);
 	}
 
 	@Test
@@ -53,56 +53,54 @@ public class SnomedBranchingApiTest extends AbstractSnomedApiTest {
 		final String description = "Description of branch";
 		final Map<?, ?> metadata = ImmutableMap.of("description", description);
 
-		assertBranchCreated(branchPath, metadata);
-
-		assertBranchExists(branchPath)
+		assertBranchCreated(testBranchPath, metadata);
+		assertBranchExists(testBranchPath)
 		.and().body("metadata.description", equalTo(description));
 	}
 
 	@Test
 	public void createBranchTwice() {
-		assertBranchCreated(branchPath);
-		assertBranchCreationConflicts(branchPath);
+		assertBranchCreated(testBranchPath);
+		assertBranchCreationConflicts(testBranchPath);
 	}
 
 	@Test
 	public void deleteBranch() {
-		assertBranchCreated(branchPath);
-		assertBranchDeleted(branchPath);
-		assertBranchReportedAsDeleted(branchPath);
+		assertBranchCreated(testBranchPath);
+		assertBranchDeleted(testBranchPath);
+		assertBranchReportedAsDeleted(testBranchPath);
 	}
 
 	@Test
 	public void deleteBranchRecursively() {
-		final IBranchPath secondBranchPath = createPath(branchPath, "child");
+		final IBranchPath secondBranchPath = createPath(testBranchPath, "child");
 
-		assertBranchCreated(branchPath);
+		assertBranchCreated(testBranchPath);
 		assertBranchCreated(secondBranchPath);
 
-		assertBranchExists(branchPath);
+		assertBranchExists(testBranchPath);
 		assertBranchExists(secondBranchPath);
 
-		assertBranchDeleted(branchPath);
-
-		assertBranchReportedAsDeleted(branchPath);
+		assertBranchDeleted(testBranchPath);
+		assertBranchReportedAsDeleted(testBranchPath);
 		assertBranchReportedAsDeleted(secondBranchPath);
 	}
 
 	@Test
 	public void createBranchOnDeletedBranch() {
-		final IBranchPath secondBranchPath = createPath(branchPath, "childOfDeletedBranch");
+		final IBranchPath secondBranchPath = createPath(testBranchPath, "childOfDeletedBranch");
 
-		assertBranchCreated(branchPath);
-		assertBranchDeleted(branchPath);
+		assertBranchCreated(testBranchPath);
+		assertBranchDeleted(testBranchPath);
 
 		assertBranchNotCreated(secondBranchPath);
 	}
 
 	@Test
 	public void getChildren() {
-		assertBranchCreated(branchPath);
+		assertBranchCreated(testBranchPath);
 
-		assertBranchesContainsName(branchPath);
-		assertBranchChildrenContainsName(branchPath);
+		assertBranchesContainsName(testBranchPath);
+		assertBranchChildrenContainsName(testBranchPath);
 	}
 }

@@ -26,7 +26,6 @@ import com.b2international.snowowl.snomed.api.rest.AbstractSnomedApiTest;
 import com.google.common.collect.ImmutableMap;
 import com.jayway.restassured.http.ContentType;
 import com.jayway.restassured.response.Response;
-import com.jayway.restassured.specification.RequestSpecification;
 
 /**
  * @since 2.0
@@ -42,58 +41,50 @@ public class SnomedVersioningApiTest extends AbstractSnomedApiTest {
 	public void getNonExistentVersion() {
 		assertVersionGetStatus("nonexistent", 404);
 	}
-	
+
 	@Test
 	public void createVersionWithoutDescription() {
 		assertVersionPostStatus("", "20150201", 400);
 	}
-	
+
 	@Test
 	public void createVersionWithNonLatestEffectiveDate() {
 		assertVersionPostStatus("sct-v1", "20150101", 400);
 	}
-	
+
 	@Test
 	public void createVersion() {
 		assertVersionPostStatus("sct-v2", "20150201", 201);
 		assertVersionGetStatus("sct-v2", 200);
 	}
-	
+
 	@Test
 	public void createVersionWithSameNameAsBranch() {
-		assertBranchCreated(branchPath);
-		assertVersionPostStatus(branchPath.lastSegment(), "20150202", 409);
+		assertBranchCreated(testBranchPath);
+		assertVersionPostStatus(testBranchPath.lastSegment(), "20150202", 409);
 	}
 
-	private void assertVersionGetStatus(String version, int status) {
+	private void assertVersionGetStatus(final String version, final int status) {
 		givenAuthenticatedRequest(ADMIN_API)
-		.when()
-			.get("/codesystems/SNOMEDCT/versions/{id}", version)
-		.then()
-		.assertThat()
-			.statusCode(status);
+		.when().get("/codesystems/SNOMEDCT/versions/{id}", version)
+		.then().assertThat().statusCode(status);
 	}
 
-	private void assertVersionPostStatus(String version, String effectiveDate, int status) {
-		whenCreatingVersion(givenAuthenticatedRequest(ADMIN_API), version, effectiveDate)
-		.then()
-		.assertThat()
-			.statusCode(status);
+	private void assertVersionPostStatus(final String version, final String effectiveDate, final int status) {
+		whenCreatingVersion(version, effectiveDate)
+		.then().assertThat().statusCode(status);
 	}
-	
-	private Response whenCreatingVersion(RequestSpecification request, String version, String effectiveDate) {
-		Map<?, ?> requestBody = ImmutableMap.of(
-			"version", version,
-			"description", version,
-			"effectiveDate", effectiveDate
-		);
 
-		return request
-		.and()
-			.contentType(ContentType.JSON)
-		.and()
-			.body(requestBody)
-		.when()
-			.post("/codesystems/SNOMEDCT/versions");
+	private Response whenCreatingVersion(final String version, final String effectiveDate) {
+		final Map<?, ?> requestBody = ImmutableMap.builder()
+				.put("version", version)
+				.put("description", version)
+				.put("effectiveDate", effectiveDate)
+				.build();
+
+		return givenAuthenticatedRequest(ADMIN_API)
+				.and().contentType(ContentType.JSON)
+				.and().body(requestBody)
+				.when().post("/codesystems/SNOMEDCT/versions");
 	}
 }
