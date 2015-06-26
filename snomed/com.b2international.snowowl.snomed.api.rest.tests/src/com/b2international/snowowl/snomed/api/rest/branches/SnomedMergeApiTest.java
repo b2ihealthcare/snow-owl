@@ -15,6 +15,7 @@
  */
 package com.b2international.snowowl.snomed.api.rest.branches;
 
+import static com.b2international.snowowl.snomed.api.rest.SnomedBranchingApiAssert.assertBranchCreated;
 import static com.b2international.snowowl.test.commons.rest.RestExtensions.givenAuthenticatedRequest;
 import static com.b2international.snowowl.test.commons.rest.RestExtensions.joinPath;
 import static com.google.common.collect.Maps.newHashMap;
@@ -196,7 +197,7 @@ public class SnomedMergeApiTest extends AbstractSnomedApiTest {
 
 	@Test
 	public void mergeNewConceptForward() {
-		assertBranchCanBeCreated("MAIN", branchName);
+		assertBranchCreated(branchPath);
 		
 		assertConceptCanBeCreated("C1", "MAIN", branchName);
 		assertConceptExists("C1", "MAIN", branchName);
@@ -209,7 +210,7 @@ public class SnomedMergeApiTest extends AbstractSnomedApiTest {
 	
 	@Test
 	public void mergeNewDescriptionForward() {
-		assertBranchCanBeCreated("MAIN", branchName);
+		assertBranchCreated(branchPath);
 		
 		assertDescriptionCanBeCreated("D1", SnomedApiTestConstants.ACCEPTABLE_ACCEPTABILITY_MAP, "MAIN", branchName);
 		assertDescriptionExists("D1", "MAIN", branchName);
@@ -222,7 +223,7 @@ public class SnomedMergeApiTest extends AbstractSnomedApiTest {
 	
 	@Test
 	public void mergeNewRelationshipForward() {
-		assertBranchCanBeCreated("MAIN", branchName);
+		assertBranchCreated(branchPath);
 		
 		assertRelationshipCanBeCreated("R1", "MAIN", branchName);
 		assertRelationshipExists("R1", "MAIN", branchName);
@@ -235,7 +236,7 @@ public class SnomedMergeApiTest extends AbstractSnomedApiTest {
 	
 	@Test
 	public void noMergeNewConceptDiverged() {
-		assertBranchCanBeCreated("MAIN", branchName);
+		assertBranchCreated(branchPath);
 		
 		assertConceptCanBeCreated("C1", "MAIN", branchName);
 		assertConceptCanBeCreated("C2", "MAIN");
@@ -255,7 +256,7 @@ public class SnomedMergeApiTest extends AbstractSnomedApiTest {
 
 	@Test
 	public void noMergeNewDescriptionDiverged() {
-		assertBranchCanBeCreated("MAIN", branchName);
+		assertBranchCreated(branchPath);
 		
 		assertDescriptionCanBeCreated("D1", SnomedApiTestConstants.ACCEPTABLE_ACCEPTABILITY_MAP, "MAIN", branchName);
 		assertDescriptionCanBeCreated("D2", SnomedApiTestConstants.ACCEPTABLE_ACCEPTABILITY_MAP, "MAIN");
@@ -275,7 +276,7 @@ public class SnomedMergeApiTest extends AbstractSnomedApiTest {
 	
 	@Test
 	public void noMergeNewRelationshipDiverged() {
-		assertBranchCanBeCreated("MAIN", branchName);
+		assertBranchCreated(branchPath);
 		
 		assertRelationshipCanBeCreated("R1", "MAIN", branchName);
 		assertRelationshipCanBeCreated("R2", "MAIN");
@@ -295,7 +296,7 @@ public class SnomedMergeApiTest extends AbstractSnomedApiTest {
 	
 	@Test
 	public void rebaseNewConceptDiverged() {
-		assertBranchCanBeCreated("MAIN", branchName);
+		assertBranchCreated(branchPath);
 		
 		assertConceptCanBeCreated("C1", "MAIN", branchName);
 		assertConceptCanBeCreated("C2", "MAIN");
@@ -315,7 +316,7 @@ public class SnomedMergeApiTest extends AbstractSnomedApiTest {
 
 	@Test
 	public void rebaseNewDescriptionDiverged() {
-		assertBranchCanBeCreated("MAIN", branchName);
+		assertBranchCreated(branchPath);
 		
 		assertDescriptionCanBeCreated("D1", SnomedApiTestConstants.ACCEPTABLE_ACCEPTABILITY_MAP, "MAIN", branchName);
 		assertDescriptionCanBeCreated("D2", SnomedApiTestConstants.ACCEPTABLE_ACCEPTABILITY_MAP, "MAIN");
@@ -335,7 +336,7 @@ public class SnomedMergeApiTest extends AbstractSnomedApiTest {
 	
 	@Test
 	public void rebaseNewRelationshipDiverged() {
-		assertBranchCanBeCreated("MAIN", branchName);
+		assertBranchCreated(branchPath);
 		
 		assertRelationshipCanBeCreated("R1", "MAIN", branchName);
 		assertRelationshipCanBeCreated("R2", "MAIN");
@@ -355,7 +356,7 @@ public class SnomedMergeApiTest extends AbstractSnomedApiTest {
 	
 	@Test
 	public void noRebaseNewPT() {
-		assertBranchCanBeCreated("MAIN", branchName);
+		assertBranchCreated(branchPath);
 		
 		assertDescriptionCanBeCreated("D1", SnomedApiTestConstants.PREFERRED_ACCEPTABILITY_MAP, "MAIN", branchName);
 		assertDescriptionCanBeCreated("D2", SnomedApiTestConstants.PREFERRED_ACCEPTABILITY_MAP, "MAIN");

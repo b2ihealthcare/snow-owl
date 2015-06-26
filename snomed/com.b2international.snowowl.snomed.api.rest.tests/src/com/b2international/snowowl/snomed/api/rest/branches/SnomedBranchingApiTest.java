@@ -15,19 +15,17 @@
  */
 package com.b2international.snowowl.snomed.api.rest.branches;
 
-import static com.b2international.snowowl.test.commons.rest.RestExtensions.givenAuthenticatedRequest;
-import static com.b2international.snowowl.test.commons.rest.RestExtensions.joinPath;
+import static com.b2international.snowowl.datastore.BranchPathUtils.createPath;
+import static com.b2international.snowowl.snomed.api.rest.SnomedBranchingApiAssert.*;
 import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.CoreMatchers.hasItem;
 
 import java.util.Map;
 
 import org.junit.Test;
 
+import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.snomed.api.rest.AbstractSnomedApiTest;
-import com.b2international.snowowl.snomed.api.rest.SnomedApiTestConstants;
 import com.google.common.collect.ImmutableMap;
-import com.jayway.restassured.response.ValidatableResponse;
 
 /**
  * @since 2.0
@@ -36,119 +34,75 @@ public class SnomedBranchingApiTest extends AbstractSnomedApiTest {
 
 	@Test
 	public void readNonExistentBranch() {
-		givenAuthenticatedRequest(SnomedApiTestConstants.SCT_API)
-		.when()
-			.get("/branches/MAIN/{branchName}", "nonexistent")
-		.then()
-		.assertThat()
-			.statusCode(404)
-		.and()
-			.body("status", equalTo(404));
+		assertBranchNotExists(createPath("MAIN/nonexistent"));
 	}
 
 	@Test
 	public void createBranchWithNonexistentParent() {
-		whenCreatingBranch(givenAuthenticatedRequest(SnomedApiTestConstants.SCT_API), "nonexistent", branchName)
-		.then()
-		.assertThat()
-			.statusCode(400)
-		.and()
-			.body("status", equalTo(400));
-	}
-
-	private ValidatableResponse assertBranchExists(final String parent, final String name) {
-		return givenAuthenticatedRequest(SnomedApiTestConstants.SCT_API)
-		.when()
-			.get("/branches/{parent}/{branchName}", parent, name)
-		.then()
-		.assertThat()
-			.statusCode(200);
+		assertBranchNotCreated(createPath(createPath("MAIN/nonexistent"), branchPath.lastSegment()));
 	}
 
 	@Test
 	public void createBranch() {
-		assertBranchCanBeCreated("MAIN", branchName);
-		assertBranchExists("MAIN", branchName);
+		assertBranchCreated(branchPath);
+		assertBranchExists(branchPath);
 	}
-	
+
 	@Test
 	public void createBranchWithMetadata() {
 		final String description = "Description of branch";
-		final Map<?, ?> metadata = ImmutableMap.of(
-			"description", description
-		);
-		
-		assertBranchCanBeCreated("MAIN", branchName, metadata);
-		assertBranchExists("MAIN", branchName)
-		.and()
-			.body("metadata.description", equalTo(description));
+		final Map<?, ?> metadata = ImmutableMap.of("description", description);
+
+		assertBranchCreated(branchPath, metadata);
+
+		assertBranchExists(branchPath)
+		.and().body("metadata.description", equalTo(description));
 	}
 
 	@Test
 	public void createBranchTwice() {
-		assertBranchCanBeCreated("MAIN", branchName);
-		
-		whenCreatingBranch(givenAuthenticatedRequest(SnomedApiTestConstants.SCT_API), "MAIN", branchName)
-		.then()
-		.assertThat()
-			.statusCode(409);
-	}
-	
-	private void assertBranchIsDeleted(final String parent, final String name) {
-		assertBranchExists(parent, name)
-		.and()
-			.body("deleted", equalTo(true));
+		assertBranchCreated(branchPath);
+		assertBranchCreationConflicts(branchPath);
 	}
 
 	@Test
 	public void deleteBranch() {
-		assertBranchCanBeCreated("MAIN", branchName);
-		assertBranchCanBeDeleted("MAIN", branchName);
-		assertBranchIsDeleted("MAIN", branchName);
+		assertBranchCreated(branchPath);
+		assertBranchDeleted(branchPath);
+		assertBranchReportedAsDeleted(branchPath);
 	}
 
 	@Test
 	public void deleteBranchRecursively() {
-		assertBranchCanBeCreated("MAIN", branchName);
-		assertBranchCanBeCreated(joinPath("MAIN", branchName), "child");
-		
-		assertBranchExists("MAIN", branchName);
-		assertBranchExists(joinPath("MAIN", branchName), "child");
-		
-		assertBranchCanBeDeleted("MAIN", branchName);
-		
-		assertBranchIsDeleted("MAIN", branchName);
-		assertBranchIsDeleted(joinPath("MAIN", branchName), "child");
+		final IBranchPath secondBranchPath = createPath(branchPath, "child");
+
+		assertBranchCreated(branchPath);
+		assertBranchCreated(secondBranchPath);
+
+		assertBranchExists(branchPath);
+		assertBranchExists(secondBranchPath);
+
+		assertBranchDeleted(branchPath);
+
+		assertBranchReportedAsDeleted(branchPath);
+		assertBranchReportedAsDeleted(secondBranchPath);
 	}
-	
+
 	@Test
 	public void createBranchOnDeletedBranch() {
-		assertBranchCanBeCreated("MAIN", branchName);
-		assertBranchCanBeDeleted("MAIN", branchName);
-		
-		whenCreatingBranch(givenAuthenticatedRequest(SnomedApiTestConstants.SCT_API), joinPath("MAIN", branchName), "childOfDeletedBranch")
-		.then()
-		.assertThat()
-			.statusCode(400)
-		.and()
-			.body("status", equalTo(400));
-	}
-	
-	private void assertBranchChildrenContains(String childrenUrl, String childName) {
-		givenAuthenticatedRequest(SnomedApiTestConstants.SCT_API)
-		.when()
-			.get(childrenUrl)
-		.then()
-		.assertThat()
-			.statusCode(200)
-		.and()
-			.body("items.name", hasItem(childName));
+		final IBranchPath secondBranchPath = createPath(branchPath, "childOfDeletedBranch");
+
+		assertBranchCreated(branchPath);
+		assertBranchDeleted(branchPath);
+
+		assertBranchNotCreated(secondBranchPath);
 	}
 
 	@Test
 	public void getChildren() {
-		assertBranchCanBeCreated("MAIN", branchName);
-		assertBranchChildrenContains("/branches", branchName);
-		assertBranchChildrenContains("/branches/MAIN/children", branchName);
+		assertBranchCreated(branchPath);
+
+		assertBranchesContainsName(branchPath);
+		assertBranchChildrenContainsName(branchPath);
 	}
 }

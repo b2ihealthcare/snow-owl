@@ -197,12 +197,10 @@ public class SnomedDescriptionApiTest extends AbstractSnomedApiTest {
 		assertDescriptionCanBeUpdated(descriptionId, updateRequestBody);
 		assertPreferredTermEquals(DISEASE, descriptionId, "MAIN");
 	}
-	
+
 	@Test
 	public void createDescriptionOnNestedBranch() {
-		assertBranchCanBeCreated("MAIN", branchName);
-		assertBranchCanBeCreated("MAIN/" + branchName, "a");
-		assertBranchCanBeCreated("MAIN/" + branchName + "/a", "b");
+		createNestedBranch("a", "b");
 		
 		final Map<?, ?> createRequestBody = createRequestBody(DISEASE, "Rare disease", Concepts.MODULE_SCT_CORE, Concepts.SYNONYM, "New description on MAIN");
 		String descriptionId = assertComponentCanBeCreated("descriptions", createRequestBody, "MAIN", branchName, "a", "b");		
@@ -212,12 +210,10 @@ public class SnomedDescriptionApiTest extends AbstractSnomedApiTest {
 		assertDescriptionNotExists(descriptionId, "MAIN", branchName);
 		assertDescriptionNotExists(descriptionId, "MAIN");
 	}
-	
+
 	@Test
 	public void deleteDescriptionOnNestedBranch() {
-		assertBranchCanBeCreated("MAIN", branchName);
-		assertBranchCanBeCreated("MAIN/" + branchName, "a");
-		assertBranchCanBeCreated("MAIN/" + branchName + "/a", "b");
+		createNestedBranch("a", "b");
 		
 		final Map<?, ?> createRequestBody = createRequestBody(DISEASE, "Rare disease", Concepts.MODULE_SCT_CORE, Concepts.SYNONYM, "New description on MAIN");
 		String descriptionId = assertComponentCanBeCreated("descriptions", createRequestBody, "MAIN", branchName, "a", "b");		

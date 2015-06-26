@@ -142,9 +142,7 @@ public class SnomedRelationshipApiTest extends AbstractSnomedApiTest {
 	
 	@Test
 	public void createRelationshipOnNestedBranch() {
-		assertBranchCanBeCreated("MAIN", branchName);
-		assertBranchCanBeCreated("MAIN/" + branchName, "a");
-		assertBranchCanBeCreated("MAIN/" + branchName + "/a", "b");
+		createNestedBranch("a", "b");
 		
 		final Map<?, ?> requestBody = createRequestBody(DISEASE, TEMPORAL_CONTEXT, FINDING_CONTEXT, Concepts.MODULE_SCT_CORE, "New relationship on MAIN");
 		String relationshipId = assertComponentCanBeCreated("relationships", requestBody, "MAIN", branchName, "a", "b");		
@@ -157,9 +155,7 @@ public class SnomedRelationshipApiTest extends AbstractSnomedApiTest {
 	
 	@Test
 	public void deleteRelationshipOnNestedBranch() {
-		assertBranchCanBeCreated("MAIN", branchName);
-		assertBranchCanBeCreated("MAIN/" + branchName, "a");
-		assertBranchCanBeCreated("MAIN/" + branchName + "/a", "b");
+		createNestedBranch("a", "b");
 		
 		final Map<?, ?> requestBody = createRequestBody(DISEASE, TEMPORAL_CONTEXT, FINDING_CONTEXT, Concepts.MODULE_SCT_CORE, "New relationship on MAIN");
 		String relationshipId = assertComponentCanBeCreated("relationships", requestBody, "MAIN", branchName, "a", "b");		

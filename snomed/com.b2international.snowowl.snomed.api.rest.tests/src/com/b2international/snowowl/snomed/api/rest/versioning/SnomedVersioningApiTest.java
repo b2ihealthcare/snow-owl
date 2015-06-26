@@ -15,6 +15,7 @@
  */
 package com.b2international.snowowl.snomed.api.rest.versioning;
 
+import static com.b2international.snowowl.snomed.api.rest.SnomedBranchingApiAssert.assertBranchCreated;
 import static com.b2international.snowowl.test.commons.rest.RestExtensions.givenAuthenticatedRequest;
 
 import java.util.Map;
@@ -60,8 +61,8 @@ public class SnomedVersioningApiTest extends AbstractSnomedApiTest {
 	
 	@Test
 	public void createVersionWithSameNameAsBranch() {
-		assertBranchCanBeCreated("MAIN", "sct-v3");
-		assertVersionPostStatus("sct-v3", "20150202", 409);
+		assertBranchCreated(branchPath);
+		assertVersionPostStatus(branchPath.lastSegment(), "20150202", 409);
 	}
 
 	private void assertVersionGetStatus(String version, int status) {

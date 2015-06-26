@@ -15,6 +15,8 @@
  */
 package com.b2international.snowowl.snomed.api.rest.components;
 
+import static com.b2international.snowowl.snomed.api.rest.SnomedBranchingApiAssert.assertBranchCreated;
+import static com.b2international.snowowl.snomed.api.rest.SnomedBranchingApiAssert.assertBranchDeleted;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.hasItem;
 import static org.junit.Assert.assertEquals;
@@ -133,14 +135,14 @@ public class SnomedConceptApiTest extends AbstractSnomedApiTest {
 	
 	@Test
 	public void createConceptOnBranch() {
-		assertBranchCanBeCreated("MAIN", branchName);
+		assertBranchCreated(branchPath);
 		final Map<?, ?> requestBody = createRequestBody(null, Concepts.ROOT_CONCEPT, Concepts.MODULE_SCT_CORE, SnomedApiTestConstants.PREFERRED_ACCEPTABILITY_MAP, false);
 		assertComponentCanBeCreated("concepts", requestBody, "MAIN", branchName);
 	}
 	
 	@Test
 	public void createConceptWithGeneratedIdOnBranch() {
-		assertBranchCanBeCreated("MAIN", branchName);
+		assertBranchCreated(branchPath);
 		String conceptId = SnomedIdentifiers.generateConceptId();
 		final Map<?, ?> requestBody = createRequestBody(conceptId, Concepts.ROOT_CONCEPT, Concepts.MODULE_SCT_CORE, SnomedApiTestConstants.PREFERRED_ACCEPTABILITY_MAP, false);
 		String createdId = assertComponentCanBeCreated("concepts", requestBody, "MAIN", branchName);
@@ -149,8 +151,8 @@ public class SnomedConceptApiTest extends AbstractSnomedApiTest {
 	
 	@Test
 	public void createConceptOnDeletedBranch() {
-		assertBranchCanBeCreated("MAIN", branchName);
-		assertBranchCanBeDeleted("MAIN", branchName);
+		assertBranchCreated(branchPath);
+		assertBranchDeleted(branchPath);
 		final Map<?, ?> requestBody = createRequestBody(null, Concepts.ROOT_CONCEPT, Concepts.MODULE_SCT_CORE, SnomedApiTestConstants.PREFERRED_ACCEPTABILITY_MAP, false);		
 		assertComponentCanNotBeCreated("concepts", requestBody, "MAIN", branchName);
 	}

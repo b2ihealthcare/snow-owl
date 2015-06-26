@@ -15,6 +15,7 @@
  */
 package com.b2international.snowowl.snomed.api.rest.io;
 
+import static com.b2international.snowowl.snomed.api.rest.SnomedBranchingApiAssert.assertBranchCreated;
 import static com.b2international.snowowl.test.commons.rest.RestExtensions.givenAuthenticatedRequest;
 import static com.b2international.snowowl.test.commons.rest.RestExtensions.joinPath;
 import static org.hamcrest.CoreMatchers.equalTo;
@@ -90,7 +91,7 @@ public class SnomedImportApiTest extends AbstractSnomedImportApiTest {
 	
 	@Test
 	public void noVersionsAllowedOnBranch() {
-		assertBranchCanBeCreated("MAIN", branchName);
+		assertBranchCreated(branchPath);
 		
 		final Map<?, ?> importConfiguration = ImmutableMap.of(
 			"type", Rf2ReleaseType.DELTA.name(),
