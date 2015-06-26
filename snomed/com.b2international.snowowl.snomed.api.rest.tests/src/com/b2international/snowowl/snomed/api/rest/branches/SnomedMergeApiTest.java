@@ -132,21 +132,9 @@ public class SnomedMergeApiTest extends AbstractSnomedApiTest {
 		assertComponentCanBeCreated("relationships", symbolicName, requestBody, segments);
 	}
 
-	private void assertComponentCanBeUpdated(String componentType, String symbolicName, Map<?, ?> requestBody, String... segments) {
-		String path = joinPath(segments);
-
-		Response response = givenAuthenticatedRequest(SCT_API)
-		.with()
-			.contentType(ContentType.JSON)
-		.and()
-			.body(requestBody)
-		.when()
-			.post("/{path}/{componentType}/{id}/updates", path, componentType, symbolicNameMap.get(symbolicName));
-			
-		response
-		.then()
-		.assertThat()
-			.statusCode(204);
+	@Override
+	protected void assertComponentCanBeUpdated(String componentType, String symbolicName, Map<?, ?> requestBody, String... segments) {
+		super.assertComponentCanBeUpdated(componentType, symbolicNameMap.get(symbolicName), requestBody, segments);
 	}
 
 	private void assertConceptCanBeUpdated(String symbolicName, Map<?, ?> requestBody, String... segments) {
@@ -157,17 +145,9 @@ public class SnomedMergeApiTest extends AbstractSnomedApiTest {
 		assertComponentCanBeUpdated("descriptions", symbolicName, requestBody, segments);
 	}
 	
-	private void assertComponentCanBeDeleted(String componentType, String symbolicName, String... segments) {
-		String path = joinPath(segments);
-
-		Response response = givenAuthenticatedRequest(SCT_API)
-		.when()
-			.delete("/{path}/{componentType}/{id}", path, componentType, symbolicNameMap.get(symbolicName));
-			
-		response
-		.then()
-		.assertThat()
-			.statusCode(204);
+	@Override
+	protected void assertComponentCanBeDeleted(String componentType, String symbolicName, String... segments) {
+		super.assertComponentCanBeDeleted(componentType, symbolicNameMap.get(symbolicName), segments);
 	}
 
 	private void assertConceptCanBeDeleted(String symbolicName, String... segments) {

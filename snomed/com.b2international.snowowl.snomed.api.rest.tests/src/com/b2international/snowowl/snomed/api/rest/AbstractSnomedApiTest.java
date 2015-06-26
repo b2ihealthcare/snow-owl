@@ -195,4 +195,41 @@ public abstract class AbstractSnomedApiTest {
 		.and()
 			.body("id", equalTo(descriptionId));
 	}
+	
+	protected void assertComponentHasProperty(String componentType, String componentId, String propertyName, Object value, String... segments) {
+		givenAuthenticatedRequest(SCT_API)
+		.when()
+			.get("/{path}/{type}/{id}", joinPath(segments), componentType, componentId)
+		.then()
+		.assertThat()
+			.statusCode(200)
+		.and()
+			.body(propertyName, equalTo(value));
+	}
+	
+	protected void assertComponentCanBeDeleted(String componentType, String componentId, String... segments) {
+		givenAuthenticatedRequest(SCT_API)
+		.when()
+			.delete("/{path}/{type}/{id}", joinPath(segments), componentType, componentId)
+		.then()
+		.assertThat()
+			.statusCode(204);
+	}
+	
+	protected void assertComponentCanBeUpdated(String componentType, String componentId, Map<?, ?> updateRequestBody, String... segments) {
+		givenAuthenticatedRequest(SCT_API)
+		.with()
+			.contentType(ContentType.JSON)
+		.and()
+			.body(updateRequestBody)
+		.when()
+			.post("/{path}/{type}/{id}/updates", joinPath(segments), componentType, componentId)
+		.then()
+		.assertThat()
+			.statusCode(204);
+	}
+	
+	protected void assertComponentActive(String componentType, String componentId, boolean active, String... segments) {
+		assertComponentHasProperty(componentType, componentId, "active", active, segments);
+	}
 }
