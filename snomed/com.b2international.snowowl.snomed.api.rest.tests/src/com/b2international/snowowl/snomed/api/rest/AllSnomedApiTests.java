@@ -23,14 +23,15 @@ import org.junit.runners.Suite.SuiteClasses;
 
 import com.b2international.commons.platform.PlatformUtil;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
-import com.b2international.snowowl.snomed.api.rest.branches.SnomedBranchingApiFeature;
-import com.b2international.snowowl.snomed.api.rest.branches.SnomedMergeApiFeature;
-import com.b2international.snowowl.snomed.api.rest.components.SnomedConceptApiFeature;
-import com.b2international.snowowl.snomed.api.rest.components.SnomedDescriptionApiFeature;
-import com.b2international.snowowl.snomed.api.rest.components.SnomedRelationshipApiFeature;
-import com.b2international.snowowl.snomed.api.rest.id.SnomedIdentifierApiFeature;
-import com.b2international.snowowl.snomed.api.rest.io.SnomedImportApiExamplesFeature;
-import com.b2international.snowowl.snomed.api.rest.io.SnomedImportApiFeature;
+import com.b2international.snowowl.snomed.api.rest.branches.SnomedBranchingApiTest;
+import com.b2international.snowowl.snomed.api.rest.branches.SnomedMergeApiTest;
+import com.b2international.snowowl.snomed.api.rest.components.SnomedConceptApiTest;
+import com.b2international.snowowl.snomed.api.rest.components.SnomedDescriptionApiTest;
+import com.b2international.snowowl.snomed.api.rest.components.SnomedRelationshipApiTest;
+import com.b2international.snowowl.snomed.api.rest.id.SnomedIdentifierApiTest;
+import com.b2international.snowowl.snomed.api.rest.io.SnomedImportApiExamplesTest;
+import com.b2international.snowowl.snomed.api.rest.io.SnomedImportApiTest;
+import com.b2international.snowowl.snomed.api.rest.versioning.SnomedVersioningApiTest;
 import com.b2international.snowowl.snomed.common.ContentSubType;
 import com.b2international.snowowl.test.commons.BundleStartRule;
 import com.b2international.snowowl.test.commons.Resources;
@@ -42,15 +43,15 @@ import com.b2international.snowowl.test.commons.SnowOwlAppRule;
  */
 @RunWith(Suite.class)
 @SuiteClasses({ 
-	SnomedBranchingApiFeature.class,
-	SnomedMergeApiFeature.class,
-	SnomedConceptApiFeature.class,
-	SnomedDescriptionApiFeature.class,
-	SnomedRelationshipApiFeature.class,
-	SnomedIdentifierApiFeature.class,
-	SnomedImportApiFeature.class,
-	SnomedImportApiExamplesFeature.class
-//	SnomedVersioningApiFeature.class
+	SnomedBranchingApiTest.class,
+	SnomedMergeApiTest.class,
+	SnomedVersioningApiTest.class,
+	SnomedImportApiTest.class,
+	SnomedImportApiExamplesTest.class,
+	SnomedIdentifierApiTest.class,
+	SnomedConceptApiTest.class,
+	SnomedDescriptionApiTest.class,
+	SnomedRelationshipApiTest.class,
 })
 public class AllSnomedApiTests {
 
@@ -60,5 +61,4 @@ public class AllSnomedApiTests {
 			.around(new BundleStartRule("com.b2international.snowowl.api.rest"))
 			.around(new BundleStartRule("com.b2international.snowowl.snomed.api.rest"))
 			.around(new SnomedContentRule(Resources.Snomed.MINI_RF2_INT, Concepts.REFSET_LANGUAGE_TYPE_UK, ContentSubType.FULL));
-	
 }
