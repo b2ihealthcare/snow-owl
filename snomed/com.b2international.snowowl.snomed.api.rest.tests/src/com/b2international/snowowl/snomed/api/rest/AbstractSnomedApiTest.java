@@ -27,8 +27,6 @@ import java.util.UUID;
 
 import org.junit.Before;
 
-import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
-import com.b2international.snowowl.snomed.api.domain.Acceptability;
 import com.google.common.collect.ImmutableMap;
 import com.jayway.restassured.http.ContentType;
 import com.jayway.restassured.response.Response;
@@ -39,18 +37,6 @@ import com.jayway.restassured.specification.RequestSpecification;
  * @since 2.0
  */
 public abstract class AbstractSnomedApiTest {
-
-	protected static String ADMIN_API = "/admin";
-	
-	protected static String SCT_API = "/snomed-ct/v2";
-	
-	protected static final Map<?, ?> ACCEPTABLE_ACCEPTABILITY_MAP = ImmutableMap.of(
-		Concepts.REFSET_LANGUAGE_TYPE_UK, Acceptability.ACCEPTABLE
-	);
-
-	protected static final Map<?, ?> PREFERRED_ACCEPTABILITY_MAP = ImmutableMap.of(
-		Concepts.REFSET_LANGUAGE_TYPE_UK, Acceptability.PREFERRED
-	);
 
 	protected String branchName;
 			
@@ -86,7 +72,7 @@ public abstract class AbstractSnomedApiTest {
 	}
 
 	protected void assertBranchCanBeCreated(final String parent, final String name, final Map<?, ?> metadata) {
-		whenCreatingBranch(givenAuthenticatedRequest(SCT_API), parent, name, metadata)
+		whenCreatingBranch(givenAuthenticatedRequest(SnomedApiTestConstants.SCT_API), parent, name, metadata)
 		.then()
 		.assertThat()
 			.statusCode(201)
@@ -95,7 +81,7 @@ public abstract class AbstractSnomedApiTest {
 	}
 	
 	protected void assertBranchCanBeDeleted(final String parent, final String name) {
-		givenAuthenticatedRequest(SCT_API)
+		givenAuthenticatedRequest(SnomedApiTestConstants.SCT_API)
 		.when()
 			.delete("/branches/{parent}/{name}", parent, name)
 		.then()
@@ -106,7 +92,7 @@ public abstract class AbstractSnomedApiTest {
 	private void assertComponentStatus(String componentType, int statusCode, String componentId, String... segments) {
 		String path = joinPath(segments);
 		
-		givenAuthenticatedRequest(SCT_API)
+		givenAuthenticatedRequest(SnomedApiTestConstants.SCT_API)
 		.when()
 			.get("/{path}/{componentType}/{id}", path, componentType, componentId)
 		.then()
@@ -147,7 +133,7 @@ public abstract class AbstractSnomedApiTest {
 	}
 
 	private Response whenCreatingComponent(String componentType, Map<?, ?> requestBody, String... segments) {
-		return givenAuthenticatedRequest(SCT_API)
+		return givenAuthenticatedRequest(SnomedApiTestConstants.SCT_API)
 		.with()
 			.contentType(ContentType.JSON)
 		.and()
@@ -184,7 +170,7 @@ public abstract class AbstractSnomedApiTest {
 	}
 	
 	protected void assertPreferredTermEquals(final String conceptId, final String descriptionId, final String... segments) {
-		givenAuthenticatedRequest(SCT_API)
+		givenAuthenticatedRequest(SnomedApiTestConstants.SCT_API)
 		.with()
 			.header("Accept-Language", "en-GB")
 		.when()
@@ -197,7 +183,7 @@ public abstract class AbstractSnomedApiTest {
 	}
 	
 	protected void assertComponentHasProperty(String componentType, String componentId, String propertyName, Object value, String... segments) {
-		givenAuthenticatedRequest(SCT_API)
+		givenAuthenticatedRequest(SnomedApiTestConstants.SCT_API)
 		.when()
 			.get("/{path}/{type}/{id}", joinPath(segments), componentType, componentId)
 		.then()
@@ -208,7 +194,7 @@ public abstract class AbstractSnomedApiTest {
 	}
 	
 	protected void assertComponentCanBeDeleted(String componentType, String componentId, String... segments) {
-		givenAuthenticatedRequest(SCT_API)
+		givenAuthenticatedRequest(SnomedApiTestConstants.SCT_API)
 		.when()
 			.delete("/{path}/{type}/{id}", joinPath(segments), componentType, componentId)
 		.then()
@@ -217,7 +203,7 @@ public abstract class AbstractSnomedApiTest {
 	}
 	
 	protected void assertComponentCanBeUpdated(String componentType, String componentId, Map<?, ?> updateRequestBody, String... segments) {
-		givenAuthenticatedRequest(SCT_API)
+		givenAuthenticatedRequest(SnomedApiTestConstants.SCT_API)
 		.with()
 			.contentType(ContentType.JSON)
 		.and()

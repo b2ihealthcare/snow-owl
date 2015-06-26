@@ -25,6 +25,7 @@ import java.util.Map;
 import org.junit.Test;
 
 import com.b2international.snowowl.snomed.api.rest.AbstractSnomedApiTest;
+import com.b2international.snowowl.snomed.api.rest.SnomedApiTestConstants;
 import com.google.common.collect.ImmutableMap;
 import com.jayway.restassured.response.ValidatableResponse;
 
@@ -35,7 +36,7 @@ public class SnomedBranchingApiTest extends AbstractSnomedApiTest {
 
 	@Test
 	public void readNonExistentBranch() {
-		givenAuthenticatedRequest(SCT_API)
+		givenAuthenticatedRequest(SnomedApiTestConstants.SCT_API)
 		.when()
 			.get("/branches/MAIN/{branchName}", "nonexistent")
 		.then()
@@ -47,7 +48,7 @@ public class SnomedBranchingApiTest extends AbstractSnomedApiTest {
 
 	@Test
 	public void createBranchWithNonexistentParent() {
-		whenCreatingBranch(givenAuthenticatedRequest(SCT_API), "nonexistent", branchName)
+		whenCreatingBranch(givenAuthenticatedRequest(SnomedApiTestConstants.SCT_API), "nonexistent", branchName)
 		.then()
 		.assertThat()
 			.statusCode(400)
@@ -56,7 +57,7 @@ public class SnomedBranchingApiTest extends AbstractSnomedApiTest {
 	}
 
 	private ValidatableResponse assertBranchExists(final String parent, final String name) {
-		return givenAuthenticatedRequest(SCT_API)
+		return givenAuthenticatedRequest(SnomedApiTestConstants.SCT_API)
 		.when()
 			.get("/branches/{parent}/{branchName}", parent, name)
 		.then()
@@ -87,7 +88,7 @@ public class SnomedBranchingApiTest extends AbstractSnomedApiTest {
 	public void createBranchTwice() {
 		assertBranchCanBeCreated("MAIN", branchName);
 		
-		whenCreatingBranch(givenAuthenticatedRequest(SCT_API), "MAIN", branchName)
+		whenCreatingBranch(givenAuthenticatedRequest(SnomedApiTestConstants.SCT_API), "MAIN", branchName)
 		.then()
 		.assertThat()
 			.statusCode(409);
@@ -125,7 +126,7 @@ public class SnomedBranchingApiTest extends AbstractSnomedApiTest {
 		assertBranchCanBeCreated("MAIN", branchName);
 		assertBranchCanBeDeleted("MAIN", branchName);
 		
-		whenCreatingBranch(givenAuthenticatedRequest(SCT_API), joinPath("MAIN", branchName), "childOfDeletedBranch")
+		whenCreatingBranch(givenAuthenticatedRequest(SnomedApiTestConstants.SCT_API), joinPath("MAIN", branchName), "childOfDeletedBranch")
 		.then()
 		.assertThat()
 			.statusCode(400)
@@ -134,7 +135,7 @@ public class SnomedBranchingApiTest extends AbstractSnomedApiTest {
 	}
 	
 	private void assertBranchChildrenContains(String childrenUrl, String childName) {
-		givenAuthenticatedRequest(SCT_API)
+		givenAuthenticatedRequest(SnomedApiTestConstants.SCT_API)
 		.when()
 			.get(childrenUrl)
 		.then()

@@ -29,6 +29,7 @@ import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.api.domain.CaseSignificance;
 import com.b2international.snowowl.snomed.api.domain.DefinitionStatus;
 import com.b2international.snowowl.snomed.api.rest.AbstractSnomedApiTest;
+import com.b2international.snowowl.snomed.api.rest.SnomedApiTestConstants;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.jayway.restassured.http.ContentType;
@@ -88,14 +89,14 @@ public class SnomedMergeApiTest extends AbstractSnomedApiTest {
 					"typeId", Concepts.FULLY_SPECIFIED_NAME,
 					"term", "New FSN at " + creationDate,
 					"languageCode", "en",
-					"acceptability", PREFERRED_ACCEPTABILITY_MAP 
+					"acceptability", SnomedApiTestConstants.PREFERRED_ACCEPTABILITY_MAP 
 				),
 				
 				ImmutableMap.of(
 					"typeId", Concepts.SYNONYM,
 					"term", "New PT at " + creationDate,
 					"languageCode", "en",
-					"acceptability", PREFERRED_ACCEPTABILITY_MAP 
+					"acceptability", SnomedApiTestConstants.PREFERRED_ACCEPTABILITY_MAP 
 				)
 			)
 		);
@@ -175,7 +176,7 @@ public class SnomedMergeApiTest extends AbstractSnomedApiTest {
 	}
 
 	private void assertBranchCanBeMerged(String source, String target, String commitComment) {
-		whenMergingOrRebasingBranches(givenAuthenticatedRequest(SCT_API), source, target, commitComment)
+		whenMergingOrRebasingBranches(givenAuthenticatedRequest(SnomedApiTestConstants.SCT_API), source, target, commitComment)
 		.then()
 		.assertThat()
 			.statusCode(204);
@@ -187,7 +188,7 @@ public class SnomedMergeApiTest extends AbstractSnomedApiTest {
 	}
 	
 	private void assertBranchConflicts(String source, String target, String commitComment) {
-		whenMergingOrRebasingBranches(givenAuthenticatedRequest(SCT_API), source, target, commitComment)
+		whenMergingOrRebasingBranches(givenAuthenticatedRequest(SnomedApiTestConstants.SCT_API), source, target, commitComment)
 		.then()
 		.assertThat()
 			.statusCode(409);
@@ -210,7 +211,7 @@ public class SnomedMergeApiTest extends AbstractSnomedApiTest {
 	public void mergeNewDescriptionForward() {
 		assertBranchCanBeCreated("MAIN", branchName);
 		
-		assertDescriptionCanBeCreated("D1", ACCEPTABLE_ACCEPTABILITY_MAP, "MAIN", branchName);
+		assertDescriptionCanBeCreated("D1", SnomedApiTestConstants.ACCEPTABLE_ACCEPTABILITY_MAP, "MAIN", branchName);
 		assertDescriptionExists("D1", "MAIN", branchName);
 		
 		assertBranchCanBeMerged(joinPath("MAIN", branchName), "MAIN", "Merge new description");
@@ -256,8 +257,8 @@ public class SnomedMergeApiTest extends AbstractSnomedApiTest {
 	public void noMergeNewDescriptionDiverged() {
 		assertBranchCanBeCreated("MAIN", branchName);
 		
-		assertDescriptionCanBeCreated("D1", ACCEPTABLE_ACCEPTABILITY_MAP, "MAIN", branchName);
-		assertDescriptionCanBeCreated("D2", ACCEPTABLE_ACCEPTABILITY_MAP, "MAIN");
+		assertDescriptionCanBeCreated("D1", SnomedApiTestConstants.ACCEPTABLE_ACCEPTABILITY_MAP, "MAIN", branchName);
+		assertDescriptionCanBeCreated("D2", SnomedApiTestConstants.ACCEPTABLE_ACCEPTABILITY_MAP, "MAIN");
 		
 		assertDescriptionExists("D1", "MAIN", branchName);
 		assertDescriptionNotExists("D1", "MAIN");
@@ -316,8 +317,8 @@ public class SnomedMergeApiTest extends AbstractSnomedApiTest {
 	public void rebaseNewDescriptionDiverged() {
 		assertBranchCanBeCreated("MAIN", branchName);
 		
-		assertDescriptionCanBeCreated("D1", ACCEPTABLE_ACCEPTABILITY_MAP, "MAIN", branchName);
-		assertDescriptionCanBeCreated("D2", ACCEPTABLE_ACCEPTABILITY_MAP, "MAIN");
+		assertDescriptionCanBeCreated("D1", SnomedApiTestConstants.ACCEPTABLE_ACCEPTABILITY_MAP, "MAIN", branchName);
+		assertDescriptionCanBeCreated("D2", SnomedApiTestConstants.ACCEPTABLE_ACCEPTABILITY_MAP, "MAIN");
 		
 		assertDescriptionExists("D1", "MAIN", branchName);
 		assertDescriptionNotExists("D1", "MAIN");
@@ -356,8 +357,8 @@ public class SnomedMergeApiTest extends AbstractSnomedApiTest {
 	public void noRebaseNewPT() {
 		assertBranchCanBeCreated("MAIN", branchName);
 		
-		assertDescriptionCanBeCreated("D1", PREFERRED_ACCEPTABILITY_MAP, "MAIN", branchName);
-		assertDescriptionCanBeCreated("D2", PREFERRED_ACCEPTABILITY_MAP, "MAIN");
+		assertDescriptionCanBeCreated("D1", SnomedApiTestConstants.PREFERRED_ACCEPTABILITY_MAP, "MAIN", branchName);
+		assertDescriptionCanBeCreated("D2", SnomedApiTestConstants.PREFERRED_ACCEPTABILITY_MAP, "MAIN");
 		
 		assertDescriptionExists("D1", "MAIN", branchName);
 		assertDescriptionNotExists("D1", "MAIN");
@@ -459,7 +460,7 @@ public class SnomedMergeApiTest extends AbstractSnomedApiTest {
 	public void rebaseAndMergeChangedDescriptionMultipleChanges() {
 		mergeNewDescriptionForward();
 		
-		assertDescriptionCanBeCreated("D2", ACCEPTABLE_ACCEPTABILITY_MAP, "MAIN");
+		assertDescriptionCanBeCreated("D2", SnomedApiTestConstants.ACCEPTABLE_ACCEPTABILITY_MAP, "MAIN");
 		
 		Map<?, ?> changesOnBranch = ImmutableMap.of(
 			"caseSignificance", CaseSignificance.CASE_INSENSITIVE,
@@ -474,7 +475,7 @@ public class SnomedMergeApiTest extends AbstractSnomedApiTest {
 		assertDescriptionExists("D1", "MAIN");
 		assertDescriptionExists("D2", "MAIN");
 		
-		givenAuthenticatedRequest(SCT_API)
+		givenAuthenticatedRequest(SnomedApiTestConstants.SCT_API)
 		.when()
 			.get("/MAIN/descriptions/{id}", symbolicNameMap.get("D1"))
 		.then()
@@ -490,7 +491,7 @@ public class SnomedMergeApiTest extends AbstractSnomedApiTest {
 	public void rebaseAndMergeNewDescriptionBothDeleted() {
 		mergeNewDescriptionForward();
 		
-		assertDescriptionCanBeCreated("D2", ACCEPTABLE_ACCEPTABILITY_MAP, "MAIN");
+		assertDescriptionCanBeCreated("D2", SnomedApiTestConstants.ACCEPTABLE_ACCEPTABILITY_MAP, "MAIN");
 		assertDescriptionCanBeDeleted("D1", "MAIN");
 		assertDescriptionCanBeDeleted("D1", "MAIN", branchName);
 		

@@ -32,6 +32,11 @@ import com.jayway.restassured.specification.RequestSpecification;
  */
 public class SnomedVersioningApiTest extends AbstractSnomedApiTest {
 
+	/**
+	 * The context-relative base URL for the administrative controller. 
+	 */
+	private static String ADMIN_API = "/admin";
+
 	@Test
 	public void getNonExistentVersion() {
 		assertVersionGetStatus("nonexistent", 404);

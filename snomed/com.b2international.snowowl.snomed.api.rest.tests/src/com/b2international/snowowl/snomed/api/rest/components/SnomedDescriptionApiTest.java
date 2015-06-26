@@ -26,6 +26,7 @@ import org.junit.Test;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.api.domain.CaseSignificance;
 import com.b2international.snowowl.snomed.api.rest.AbstractSnomedApiTest;
+import com.b2international.snowowl.snomed.api.rest.SnomedApiTestConstants;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableMap.Builder;
 import com.jayway.restassured.http.ContentType;
@@ -44,7 +45,7 @@ public class SnomedDescriptionApiTest extends AbstractSnomedApiTest {
 				.put("typeId", typeId)
 				.put("term", term)
 				.put("languageCode", "en")
-				.put("acceptability", ACCEPTABLE_ACCEPTABILITY_MAP)
+				.put("acceptability", SnomedApiTestConstants.ACCEPTABLE_ACCEPTABILITY_MAP)
 				.put("commitComment", comment);
 	}
 	
@@ -91,7 +92,7 @@ public class SnomedDescriptionApiTest extends AbstractSnomedApiTest {
 	}
 
 	private void assertDescriptionHasProperty(String descriptionId, String propertyName, Object value) {
-		givenAuthenticatedRequest(SCT_API)
+		givenAuthenticatedRequest(SnomedApiTestConstants.SCT_API)
 		.when()
 			.get("/MAIN/descriptions/{id}", descriptionId)
 		.then()
@@ -134,7 +135,7 @@ public class SnomedDescriptionApiTest extends AbstractSnomedApiTest {
 	}
 
 	private void assertDescriptionCanBeDeleted(String descriptionId, String... segments) {
-		givenAuthenticatedRequest(SCT_API)
+		givenAuthenticatedRequest(SnomedApiTestConstants.SCT_API)
 		.when()
 			.delete("/{path}/descriptions/{id}", joinPath(segments), descriptionId)
 		.then()
@@ -143,7 +144,7 @@ public class SnomedDescriptionApiTest extends AbstractSnomedApiTest {
 	}
 
 	private void assertDescriptionCanBeUpdated(String descriptionId, final Map<?, ?> updateRequestBody) {
-		givenAuthenticatedRequest(SCT_API)
+		givenAuthenticatedRequest(SnomedApiTestConstants.SCT_API)
 		.with()
 			.contentType(ContentType.JSON)
 		.and()
@@ -189,7 +190,7 @@ public class SnomedDescriptionApiTest extends AbstractSnomedApiTest {
 		String descriptionId = assertComponentCanBeCreated("descriptions", createRequestBody, "MAIN");
 		
 		final Map<?, ?> updateRequestBody = ImmutableMap.of(
-			"acceptability", PREFERRED_ACCEPTABILITY_MAP,
+			"acceptability", SnomedApiTestConstants.PREFERRED_ACCEPTABILITY_MAP,
 			"commitComment", "Changed description acceptability"
 		);
 		

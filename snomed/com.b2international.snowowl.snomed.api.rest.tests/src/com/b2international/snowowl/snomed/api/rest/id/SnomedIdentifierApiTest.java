@@ -13,6 +13,7 @@ import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
 
 import com.b2international.snowowl.snomed.api.rest.AbstractSnomedApiTest;
+import com.b2international.snowowl.snomed.api.rest.SnomedApiTestConstants;
 import com.google.common.collect.ImmutableMap;
 import com.jayway.restassured.http.ContentType;
 
@@ -105,7 +106,7 @@ public class SnomedIdentifierApiTest extends AbstractSnomedApiTest {
 			requestBuilder.put("namespace", namespaceId);
 		}
 		
-		return givenAuthenticatedRequest(SCT_API)
+		return givenAuthenticatedRequest(SnomedApiTestConstants.SCT_API)
 		.with()
 			.contentType(ContentType.JSON)
 		.and()

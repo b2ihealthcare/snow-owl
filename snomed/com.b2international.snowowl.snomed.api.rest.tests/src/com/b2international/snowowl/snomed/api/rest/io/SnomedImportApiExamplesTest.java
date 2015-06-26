@@ -30,6 +30,7 @@ import org.junit.Test;
 import com.b2international.commons.platform.PlatformUtil;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.api.domain.Rf2ReleaseType;
+import com.b2international.snowowl.snomed.api.rest.SnomedApiTestConstants;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.jayway.restassured.response.Response;
@@ -44,7 +45,7 @@ public class SnomedImportApiExamplesTest extends AbstractSnomedImportApiTest {
 	private static final long POLL_TIMEOUT = TimeUnit.SECONDS.toMillis(30L);
 	
 	private void assertImportFileCanBeUploaded(final String importId, final String importFile) {
-		givenAuthenticatedRequest(SCT_API)
+		givenAuthenticatedRequest(SnomedApiTestConstants.SCT_API)
 		.with()
 			.multiPart(new File(PlatformUtil.toAbsolutePath(getClass(), importFile)))
 		.when()
@@ -69,7 +70,7 @@ public class SnomedImportApiExamplesTest extends AbstractSnomedImportApiTest {
 				fail(e.toString());
 			}
 			
-			pollResponse = givenAuthenticatedRequest(SCT_API)
+			pollResponse = givenAuthenticatedRequest(SnomedApiTestConstants.SCT_API)
 			.when()
 				.get("/imports/{id}", importId);
 			
@@ -157,7 +158,7 @@ public class SnomedImportApiExamplesTest extends AbstractSnomedImportApiTest {
 		assertImportFileCanBeImported("SnomedCT_Release_INT_20150203_change_pt.zip");
 		assertImportFileCanBeImported("SnomedCT_Release_INT_20150204_inactivate_concept.zip");
 		
-		givenAuthenticatedRequest(SCT_API)
+		givenAuthenticatedRequest(SnomedApiTestConstants.SCT_API)
 		.when()
 			.get("/{path}/concepts/{conceptId}", joinPath("MAIN", branchName), "63961392103")
 		.then()

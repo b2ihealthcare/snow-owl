@@ -27,6 +27,7 @@ import org.junit.Test;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.api.domain.Acceptability;
 import com.b2international.snowowl.snomed.api.rest.AbstractSnomedApiTest;
+import com.b2international.snowowl.snomed.api.rest.SnomedApiTestConstants;
 import com.b2international.snowowl.snomed.datastore.id.SnomedIdentifiers;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
@@ -59,7 +60,7 @@ public class SnomedConceptApiTest extends AbstractSnomedApiTest {
 				"typeId", Concepts.SYNONYM,
 				"term", "New PT at " + creationDate,
 				"languageCode", "en",
-				"acceptability", PREFERRED_ACCEPTABILITY_MAP 
+				"acceptability", SnomedApiTestConstants.PREFERRED_ACCEPTABILITY_MAP 
 			)
 		));
 			
@@ -76,7 +77,7 @@ public class SnomedConceptApiTest extends AbstractSnomedApiTest {
 	
 	@Test
 	public void createConceptNonExistentBranch() {
-		final Map<?, ?> requestBody = createRequestBody(null, Concepts.ROOT_CONCEPT, Concepts.MODULE_SCT_CORE, PREFERRED_ACCEPTABILITY_MAP, false);
+		final Map<?, ?> requestBody = createRequestBody(null, Concepts.ROOT_CONCEPT, Concepts.MODULE_SCT_CORE, SnomedApiTestConstants.PREFERRED_ACCEPTABILITY_MAP, false);
 		assertComponentCreationStatus("concepts", requestBody, 404, "MAIN", "1998-01-31") // !
 		.and()
 			.body("status", equalTo(404));
@@ -84,7 +85,7 @@ public class SnomedConceptApiTest extends AbstractSnomedApiTest {
 	
 	@Test
 	public void createConceptWithoutParent() {
-		final Map<?, ?> requestBody = createRequestBody(null, "", Concepts.MODULE_SCT_CORE, PREFERRED_ACCEPTABILITY_MAP, false);		
+		final Map<?, ?> requestBody = createRequestBody(null, "", Concepts.MODULE_SCT_CORE, SnomedApiTestConstants.PREFERRED_ACCEPTABILITY_MAP, false);		
 		assertComponentCanNotBeCreated("concepts", requestBody, "MAIN")
 		.and()
 			.body("message", equalTo("1 validation error"))
@@ -94,7 +95,7 @@ public class SnomedConceptApiTest extends AbstractSnomedApiTest {
 	
 	@Test
 	public void createConceptWithNonexistentParent() {
-		final Map<?, ?> requestBody = createRequestBody(null, "1000", Concepts.MODULE_SCT_CORE, PREFERRED_ACCEPTABILITY_MAP, false);
+		final Map<?, ?> requestBody = createRequestBody(null, "1000", Concepts.MODULE_SCT_CORE, SnomedApiTestConstants.PREFERRED_ACCEPTABILITY_MAP, false);
 		assertComponentCanNotBeCreated("concepts", requestBody, "MAIN");
 	}
 	
@@ -106,26 +107,26 @@ public class SnomedConceptApiTest extends AbstractSnomedApiTest {
 	
 	@Test
 	public void createConceptWithNonexistentModule() {
-		final Map<?, ?> requestBody = createRequestBody(null, Concepts.ROOT_CONCEPT, "1", PREFERRED_ACCEPTABILITY_MAP, false);
+		final Map<?, ?> requestBody = createRequestBody(null, Concepts.ROOT_CONCEPT, "1", SnomedApiTestConstants.PREFERRED_ACCEPTABILITY_MAP, false);
 		assertComponentCanNotBeCreated("concepts", requestBody, "MAIN");
 	}
 	
 	@Test
 	public void createConceptWithoutCommitComment() {
-		final Map<?, ?> requestBody = createRequestBody(null, Concepts.ROOT_CONCEPT, Concepts.MODULE_SCT_CORE, PREFERRED_ACCEPTABILITY_MAP, true);
+		final Map<?, ?> requestBody = createRequestBody(null, Concepts.ROOT_CONCEPT, Concepts.MODULE_SCT_CORE, SnomedApiTestConstants.PREFERRED_ACCEPTABILITY_MAP, true);
 		assertComponentCanNotBeCreated("concepts", requestBody, "MAIN");
 	}
 	
 	@Test
 	public void createConcept() {
-		final Map<?, ?> requestBody = createRequestBody(null, Concepts.ROOT_CONCEPT, Concepts.MODULE_SCT_CORE, PREFERRED_ACCEPTABILITY_MAP, false);
+		final Map<?, ?> requestBody = createRequestBody(null, Concepts.ROOT_CONCEPT, Concepts.MODULE_SCT_CORE, SnomedApiTestConstants.PREFERRED_ACCEPTABILITY_MAP, false);
 		assertComponentCanBeCreated("concepts", requestBody, "MAIN");
 	}
 	
 	@Test
 	public void createConceptWithGeneratedId() {
 		String conceptId = SnomedIdentifiers.generateConceptId();
-		final Map<?, ?> requestBody = createRequestBody(conceptId, Concepts.ROOT_CONCEPT, Concepts.MODULE_SCT_CORE, PREFERRED_ACCEPTABILITY_MAP, false);		
+		final Map<?, ?> requestBody = createRequestBody(conceptId, Concepts.ROOT_CONCEPT, Concepts.MODULE_SCT_CORE, SnomedApiTestConstants.PREFERRED_ACCEPTABILITY_MAP, false);		
 		String createdId = assertComponentCanBeCreated("concepts", requestBody, "MAIN");
 		assertEquals("Pre-generated and returned concept ID should match.", conceptId, createdId);
 	}
@@ -133,7 +134,7 @@ public class SnomedConceptApiTest extends AbstractSnomedApiTest {
 	@Test
 	public void createConceptOnBranch() {
 		assertBranchCanBeCreated("MAIN", branchName);
-		final Map<?, ?> requestBody = createRequestBody(null, Concepts.ROOT_CONCEPT, Concepts.MODULE_SCT_CORE, PREFERRED_ACCEPTABILITY_MAP, false);
+		final Map<?, ?> requestBody = createRequestBody(null, Concepts.ROOT_CONCEPT, Concepts.MODULE_SCT_CORE, SnomedApiTestConstants.PREFERRED_ACCEPTABILITY_MAP, false);
 		assertComponentCanBeCreated("concepts", requestBody, "MAIN", branchName);
 	}
 	
@@ -141,7 +142,7 @@ public class SnomedConceptApiTest extends AbstractSnomedApiTest {
 	public void createConceptWithGeneratedIdOnBranch() {
 		assertBranchCanBeCreated("MAIN", branchName);
 		String conceptId = SnomedIdentifiers.generateConceptId();
-		final Map<?, ?> requestBody = createRequestBody(conceptId, Concepts.ROOT_CONCEPT, Concepts.MODULE_SCT_CORE, PREFERRED_ACCEPTABILITY_MAP, false);
+		final Map<?, ?> requestBody = createRequestBody(conceptId, Concepts.ROOT_CONCEPT, Concepts.MODULE_SCT_CORE, SnomedApiTestConstants.PREFERRED_ACCEPTABILITY_MAP, false);
 		String createdId = assertComponentCanBeCreated("concepts", requestBody, "MAIN", branchName);
 		assertEquals("Pre-generated and returned concept ID should match.", conceptId, createdId);
 	}
@@ -150,7 +151,7 @@ public class SnomedConceptApiTest extends AbstractSnomedApiTest {
 	public void createConceptOnDeletedBranch() {
 		assertBranchCanBeCreated("MAIN", branchName);
 		assertBranchCanBeDeleted("MAIN", branchName);
-		final Map<?, ?> requestBody = createRequestBody(null, Concepts.ROOT_CONCEPT, Concepts.MODULE_SCT_CORE, PREFERRED_ACCEPTABILITY_MAP, false);		
+		final Map<?, ?> requestBody = createRequestBody(null, Concepts.ROOT_CONCEPT, Concepts.MODULE_SCT_CORE, SnomedApiTestConstants.PREFERRED_ACCEPTABILITY_MAP, false);		
 		assertComponentCanNotBeCreated("concepts", requestBody, "MAIN", branchName);
 	}
 }

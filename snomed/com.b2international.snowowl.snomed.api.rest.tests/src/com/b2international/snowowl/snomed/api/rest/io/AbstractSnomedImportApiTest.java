@@ -21,6 +21,7 @@ import static com.b2international.snowowl.test.commons.rest.RestExtensions.lastP
 import java.util.Map;
 
 import com.b2international.snowowl.snomed.api.rest.AbstractSnomedApiTest;
+import com.b2international.snowowl.snomed.api.rest.SnomedApiTestConstants;
 import com.jayway.restassured.http.ContentType;
 import com.jayway.restassured.response.Response;
 
@@ -30,7 +31,7 @@ import com.jayway.restassured.response.Response;
 public abstract class AbstractSnomedImportApiTest extends AbstractSnomedApiTest {
 
 	protected Response whenCreatingImportConfiguration(final Map<?, ?> importConfiguration) {
-		return givenAuthenticatedRequest(SCT_API)
+		return givenAuthenticatedRequest(SnomedApiTestConstants.SCT_API)
 		.with()
 			.contentType(ContentType.JSON)
 		.and()

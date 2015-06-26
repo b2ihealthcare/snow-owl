@@ -25,6 +25,7 @@ import org.junit.Test;
 
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.api.domain.Rf2ReleaseType;
+import com.b2international.snowowl.snomed.api.rest.SnomedApiTestConstants;
 import com.google.common.collect.ImmutableMap;
 import com.jayway.restassured.response.ValidatableResponse;
 
@@ -43,7 +44,7 @@ public class SnomedImportApiTest extends AbstractSnomedImportApiTest {
 	}
 	
 	private ValidatableResponse assertImportConfigurationStatus(final String importId, final int expectedStatus) {
-		return givenAuthenticatedRequest(SCT_API)
+		return givenAuthenticatedRequest(SnomedApiTestConstants.SCT_API)
 		.when()
 			.get("/imports/{id}", importId)
 		.then()
@@ -77,7 +78,7 @@ public class SnomedImportApiTest extends AbstractSnomedImportApiTest {
 	public void deleteImportConfiguration() {
 		final String importId = assertImportConfigurationExistsAfterCreation();
 		
-		givenAuthenticatedRequest(SCT_API)
+		givenAuthenticatedRequest(SnomedApiTestConstants.SCT_API)
 		.when()
 			.delete("/imports/{id}", importId)
 		.then()
