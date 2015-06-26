@@ -182,4 +182,17 @@ public abstract class AbstractSnomedApiTest {
 		
 		return lastPathSegment(location);
 	}
+	
+	protected void assertPreferredTermEquals(final String conceptId, final String descriptionId, final String... segments) {
+		givenAuthenticatedRequest(SCT_API)
+		.with()
+			.header("Accept-Language", "en-GB")
+		.when()
+			.get("/{path}/concepts/{conceptId}/pt", joinPath(segments), conceptId)
+		.then()
+		.assertThat()
+			.statusCode(200)
+		.and()
+			.body("id", equalTo(descriptionId));
+	}
 }

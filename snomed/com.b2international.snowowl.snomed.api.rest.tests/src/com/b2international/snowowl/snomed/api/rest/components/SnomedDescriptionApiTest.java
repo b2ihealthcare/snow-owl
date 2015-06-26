@@ -16,6 +16,7 @@
 package com.b2international.snowowl.snomed.api.rest.components;
 
 import static com.b2international.snowowl.test.commons.rest.RestExtensions.givenAuthenticatedRequest;
+import static com.b2international.snowowl.test.commons.rest.RestExtensions.joinPath;
 import static org.hamcrest.CoreMatchers.equalTo;
 
 import java.util.Map;
@@ -27,6 +28,7 @@ import com.b2international.snowowl.snomed.api.domain.CaseSignificance;
 import com.b2international.snowowl.snomed.api.rest.AbstractSnomedApiTest;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableMap.Builder;
+import com.jayway.restassured.http.ContentType;
 
 /**
  * @since 2.0
@@ -34,8 +36,6 @@ import com.google.common.collect.ImmutableMap.Builder;
 public class SnomedDescriptionApiTest extends AbstractSnomedApiTest {
 
 	private static final String DISEASE = "64572001";
-	private static final String TEMPORAL_CONTEXT = "410510008";
-	private static final String FINDING_CONTEXT = "408729009";
 	
 	private Builder<Object, Object> createRequestBuilder(String conceptId, String term, String moduleId, String typeId, String comment) {
 		return ImmutableMap.builder()
@@ -90,7 +90,7 @@ public class SnomedDescriptionApiTest extends AbstractSnomedApiTest {
 		assertComponentCanNotBeCreated("descriptions", requestBody, "MAIN");
 	}
 
-	private void assertCaseSignificance(String descriptionId, CaseSignificance caseSignificance) {
+	private void assertDescriptionHasProperty(String descriptionId, String propertyName, Object value) {
 		givenAuthenticatedRequest(SCT_API)
 		.when()
 			.get("/MAIN/descriptions/{id}", descriptionId)
@@ -98,7 +98,15 @@ public class SnomedDescriptionApiTest extends AbstractSnomedApiTest {
 		.assertThat()
 			.statusCode(200)
 		.and()
-			.body("caseSignificance", equalTo(caseSignificance.toString()));
+			.body(propertyName, equalTo(value));
+	}
+	
+	private void assertCaseSignificance(String descriptionId, CaseSignificance caseSignificance) {
+		assertDescriptionHasProperty(descriptionId, "caseSignificance", caseSignificance.toString());
+	}
+	
+	private void assertActive(String descriptionId, boolean active) {
+		assertDescriptionHasProperty(descriptionId, "active", active);
 	}
 
 	@Test
@@ -113,5 +121,106 @@ public class SnomedDescriptionApiTest extends AbstractSnomedApiTest {
 		final Map<?, ?> requestBody = createRequestBody(DISEASE, "Rare disease", Concepts.MODULE_SCT_CORE, Concepts.SYNONYM, CaseSignificance.CASE_INSENSITIVE, "New description on MAIN");
 		String descriptionId = assertComponentCanBeCreated("descriptions", requestBody, "MAIN");
 		assertCaseSignificance(descriptionId, CaseSignificance.CASE_INSENSITIVE);
+	}
+	
+	@Test
+	public void deleteDescription() {
+		final Map<?, ?> requestBody = createRequestBody(DISEASE, "Rare disease", Concepts.MODULE_SCT_CORE, Concepts.SYNONYM, "New description on MAIN");
+		String descriptionId = assertComponentCanBeCreated("descriptions", requestBody, "MAIN");
+
+		assertDescriptionCanBeDeleted(descriptionId, "MAIN");
+		
+		assertDescriptionNotExists(descriptionId, "MAIN");
+	}
+
+	private void assertDescriptionCanBeDeleted(String descriptionId, String... segments) {
+		givenAuthenticatedRequest(SCT_API)
+		.when()
+			.delete("/{path}/descriptions/{id}", joinPath(segments), descriptionId)
+		.then()
+		.assertThat()
+			.statusCode(204);
+	}
+
+	private void assertDescriptionCanBeUpdated(String descriptionId, final Map<?, ?> updateRequestBody) {
+		givenAuthenticatedRequest(SCT_API)
+		.with()
+			.contentType(ContentType.JSON)
+		.and()
+			.body(updateRequestBody)
+		.when()
+			.post("/MAIN/descriptions/{id}/updates", descriptionId)
+		.then()
+		.assertThat()
+			.statusCode(204);
+	}
+
+	@Test
+	public void inactivateDescription() {
+		final Map<?, ?> createRequestBody = createRequestBody(DISEASE, "Rare disease", Concepts.MODULE_SCT_CORE, Concepts.SYNONYM, "New description on MAIN");
+		String descriptionId = assertComponentCanBeCreated("descriptions", createRequestBody, "MAIN");
+		
+		final Map<?, ?> updateRequestBody = ImmutableMap.of(
+			"active", false,
+			"commitComment", "Inactivated description"
+		);
+		
+		assertDescriptionCanBeUpdated(descriptionId, updateRequestBody);
+		assertActive(descriptionId, false);
+	}
+	
+	@Test
+	public void updateCaseSignificance() {
+		final Map<?, ?> createRequestBody = createRequestBody(DISEASE, "Rare disease", Concepts.MODULE_SCT_CORE, Concepts.SYNONYM, "New description on MAIN");
+		String descriptionId = assertComponentCanBeCreated("descriptions", createRequestBody, "MAIN");
+		
+		final Map<?, ?> updateRequestBody = ImmutableMap.of(
+			"caseSignificance", CaseSignificance.CASE_INSENSITIVE.name(),
+			"commitComment", "Changed description case significance"
+		);
+		
+		assertDescriptionCanBeUpdated(descriptionId, updateRequestBody);
+		assertCaseSignificance(descriptionId, CaseSignificance.CASE_INSENSITIVE);
+	}
+	
+	@Test
+	public void updateAcceptability() {
+		final Map<?, ?> createRequestBody = createRequestBody(DISEASE, "Rare disease", Concepts.MODULE_SCT_CORE, Concepts.SYNONYM, "New description on MAIN");
+		String descriptionId = assertComponentCanBeCreated("descriptions", createRequestBody, "MAIN");
+		
+		final Map<?, ?> updateRequestBody = ImmutableMap.of(
+			"acceptability", PREFERRED_ACCEPTABILITY_MAP,
+			"commitComment", "Changed description acceptability"
+		);
+		
+		assertDescriptionCanBeUpdated(descriptionId, updateRequestBody);
+		assertPreferredTermEquals(DISEASE, descriptionId, "MAIN");
+	}
+	
+	@Test
+	public void createDescriptionOnNestedBranch() {
+		assertBranchCanBeCreated("MAIN", branchName);
+		assertBranchCanBeCreated("MAIN/" + branchName, "a");
+		assertBranchCanBeCreated("MAIN/" + branchName + "/a", "b");
+		
+		final Map<?, ?> createRequestBody = createRequestBody(DISEASE, "Rare disease", Concepts.MODULE_SCT_CORE, Concepts.SYNONYM, "New description on MAIN");
+		String descriptionId = assertComponentCanBeCreated("descriptions", createRequestBody, "MAIN", branchName, "a", "b");		
+		
+		assertDescriptionExists(descriptionId, "MAIN", branchName, "a", "b");
+		assertDescriptionNotExists(descriptionId, "MAIN", branchName, "a");
+		assertDescriptionNotExists(descriptionId, "MAIN", branchName);
+		assertDescriptionNotExists(descriptionId, "MAIN");
+	}
+	
+	@Test
+	public void deleteDescriptionOnNestedBranch() {
+		assertBranchCanBeCreated("MAIN", branchName);
+		assertBranchCanBeCreated("MAIN/" + branchName, "a");
+		assertBranchCanBeCreated("MAIN/" + branchName + "/a", "b");
+		
+		final Map<?, ?> createRequestBody = createRequestBody(DISEASE, "Rare disease", Concepts.MODULE_SCT_CORE, Concepts.SYNONYM, "New description on MAIN");
+		String descriptionId = assertComponentCanBeCreated("descriptions", createRequestBody, "MAIN", branchName, "a", "b");		
+
+		assertDescriptionCanBeDeleted(descriptionId, "MAIN", branchName, "a", "b");
 	}
 }
