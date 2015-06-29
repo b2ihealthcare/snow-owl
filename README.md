@@ -35,7 +35,7 @@ We highly recommend to install a local artifact repository (`Nexus OSS` is suppo
 The `-Pdependencies` profile includes all required third party repositories and modules as part of the build process using Tycho's p2 and Maven dependency resolution capabilities. 
 While this should be enough to run the process, in production builds we recommend using a prefetched target platform, as it will ensure consistent third party versions and reduces the execution time significantly.
 
-1. Create the target platform update site, run `mvn clean verify -Pdependencies -Ptarget_site`
+1. Create the target platform update site, run `mvn clean verify -Pdependencies -Ptarget_site` from the **releng** folder
 2. Navigate to `com.b2international.snowowl.server.target.update/target` folder
 3. Copy the `target_platform_<version>` folder to a webserver, or use `Nexus` to serve the site as unzipped p2 (requires Nexus OSS with Unzip Plugin installed, see previous section)
 4. Define an `http` URL as `target.platform.url` parameter in the global Maven `.m2/settings.xml` file
