@@ -5,7 +5,7 @@ Snow Owl is a terminology server and a collaborative terminology authoring platf
 
 ## Java
 
-The required JDK version is Java 7 update 55 or older.
+The required JDK version is Java 7 update 55 or later.
 
 ## Dev
 
