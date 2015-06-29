@@ -3,6 +3,55 @@
 ## Introduction
 Snow Owl is a terminology server and a collaborative terminology authoring platform.  The authoring platform maintains terminology artifacts developed by a team and supported by business workflows that are driven by external task management systems like Bugzilla and JIRA.  With its modular design, the server can maintain multiple terminologies where new terminologies can be plugged-in to the platform.  The functionality of Snow Owl is exposed via a REST API.
 
+## Java
+
+The required JDK version is Java 7 update 55 or older.
+
+## Dev
+
+Snow Owl is an Equinox-OSGi based server (using either Virgo or standalone OSGi). To develop plug-ins for Snow Owl you need to use Eclipse as IDE: 
+* Use latest Modeling Luna version http://www.eclipse.org/downloads/packages/eclipse-modeling-tools/lunasr2
+
+Required Eclipse plug-ins (install the listed features):
+
+* Groovy (http://dist.springsource.org/release/GRECLIPSE/e4.4/)
+ * Groovy-Eclipse
+ * Extra Groovy compilers > Groovy compiler 2.0 feature
+* Xtext/Xtend (http://download.eclipse.org/modeling/tmf/xtext/updates/composite/releases/)
+ * MWE 2 Language SDK 2.6.1
+ * Xtend SDK 2.6.2
+ * Xtext SDK 2.6.2
+* Optional: Maven integration (http://download.eclipse.org/technology/m2e/releases) 
+ 
+### Eclipse Preferences
+
+Make sure you have the following preferences enabled/disabled.
+* Groovy compiler level is set to 2.0.7 (Preferences > Groovy > Compiler)
+* 'Enable checking for mismatches between the project an workspace Groovy compiler levels' is checked under Preferences > Groovy > Compiler. (If you have error in any of the Groovy projects with 'compiler mismatch' message then you can fix at project properties > Groovy Compiler > set compiler level to 2.0)
+* Plug-in development API baseline errors is set to Ignored (Preferences > Plug-in Development > API Baselines)
+
+### Target platform
+
+1. Create a prefetched target platform and copy the contents of the `target_platform_<version>` directory under `<eclipse_home>/target_platform`.
+2. (Re)Open Eclipse and find the `com.b2international.snowowl.server.target.update` project
+3. Open the file: `com.b2international.snowowl.server.local.target`
+4. Click on `Set as Target platform`
+
+### Run from development environment
+
+1. Find `com.b2international.snowowl.server.update` project
+2. Open `so_server.product` file, click on `Run as Eclipse application` and terminate it
+3. Open Run Configurations and find the launch config `so_server.product`
+4. Open Arguments tab
+ * Add `-Djetty.home.bundle=org.eclipse.jetty.osgi.boot` to the end of VM arguments
+5. Open Plug-ins tab
+ 1. Add `org.eclipse.jetty.osgi.boot` bundle (set Auto-Start to `true`, and Start Level to `5`)
+ 2. Click on Add required bundles
+ 3. Remove `org.eclipse.equinox.http.jetty` bundle, all `jsp` bundles and all `jasper` bundles
+ 4. Set the API bundles to start automatically (`com.b2international.snowowl.api.rest`, `com.b2international.snowowl.snomed.api.rest`) by setting Auto-Start to `true`, and Start Level to `5`.
+6. Run and point your browser to `http://localhost:8080/snowowl/snomed-ct/v2/`
+7. By default Snow Owl will use an empty embedded `H2` database. To use `MySQL`, you have to configure the database in the `snowowl_config.yml` configuration file.
+
 ## Build
 
 Snow Owl uses Maven for its build system.
