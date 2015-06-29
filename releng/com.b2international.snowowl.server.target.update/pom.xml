@@ -12,7 +12,7 @@
 
 	<properties>
 		<update.site>dependencies</update.site>
-		<repository.name>target_platform_${target.platform.version}</repository.name>
+		<repository.name>target_platform_${project.version}</repository.name>
 	</properties>
 	
 	<build>
