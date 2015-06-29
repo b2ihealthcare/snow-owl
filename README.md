@@ -47,7 +47,7 @@ Make sure you have the following preferences enabled/disabled.
 5. Open Plug-ins tab
  1. Add `org.eclipse.jetty.osgi.boot` bundle (set Auto-Start to `true`, and Start Level to `5`)
  2. Click on Add required bundles
- 3. Remove `org.eclipse.equinox.http.jetty` bundle, all `jsp` bundles and all `jasper` bundles
+ 3. Remove `org.eclipse.equinox.http.jetty`, `org.eclipse.jetty.annotations`, all `*jsp*` and `*jasper*` bundles
  4. Set the API bundles to start automatically (`com.b2international.snowowl.api.rest`, `com.b2international.snowowl.snomed.api.rest`) by setting Auto-Start to `true`, and Start Level to `5`.
 6. Run and point your browser to `http://localhost:8080/snowowl/snomed-ct/v2/`
 7. By default Snow Owl will use an empty embedded `H2` database. To use `MySQL`, you have to configure the database in the `snowowl_config.yml` configuration file.
