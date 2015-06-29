@@ -11,7 +11,6 @@
 	</parent>
 
 	<properties>
-		<update.site>dependencies</update.site>
 		<repository.name>target_platform_${project.version}</repository.name>
 	</properties>
 	
@@ -103,29 +102,6 @@
 				</configuration>
 			</plugin>
 			<plugin>
-				<groupId>org.eclipse.tycho.extras</groupId>
-				<artifactId>tycho-p2-extras-plugin</artifactId>
-				<version>${tycho-extras.version}</version>
-				<executions>
-					<!-- Move final content to the destination folder -->
-					<execution>
-						<id>copy-content-to-site</id>
-						<phase>verify</phase>
-						<goals>
-							<goal>mirror</goal>
-						</goals>
-						<configuration>
-							<source>
-								<repository>
-									<url>${project.build.directory}/repository</url>
-								</repository>
-							</source>
-							<destination>${download.publish.path}</destination>
-						</configuration>
-					</execution>
-				</executions>
-			</plugin>
-			<plugin>
 				<groupId>org.eclipse.tycho</groupId>
 				<artifactId>tycho-p2-repository-plugin</artifactId>
 				<executions>
@@ -200,77 +176,7 @@
 					</execution>
 				</executions>
 			</plugin>
-			<plugin>
-				<groupId>com.github.goldin</groupId>
-				<artifactId>copy-maven-plugin</artifactId>
-				<version>0.2.5</version>
-				<executions>
-					<execution>
-						<id>copy-zip-to-site</id>
-						<goals>
-							<goal>copy</goal>
-						</goals>
-						<phase>verify</phase>
-						<configuration>
-							<resources>
-								<resource>
-									<directory>${project.build.directory}/${repository.name}</directory>
-									<targetPath>${project.build.directory}/${repository.name}_${maven.build.timestamp}.zip</targetPath>
-									<exclude>**/org.eclipse.rap*</exclude>
-									<pack>true</pack>
-								</resource>
-								<resource>
-									<directory>${project.build.directory}</directory>
-									<targetPath>${download.publish.path}</targetPath>
-									<include>${repository.name}_${maven.build.timestamp}.zip</include>
-								</resource>
-							</resources>
-						</configuration>
-					</execution>
-				</executions>
-			</plugin>
 		</plugins>
 	</build>
-
-	<profiles>
-		<profile>
-			<id>clean</id>
-			<activation>
-				<property>
-					<name>clean_repository</name>
-					<value>true</value>
-				</property>
-			</activation>
-			<build>
-				<plugins>
-					<plugin>
-						<groupId>org.apache.maven.plugins</groupId>
-						<artifactId>maven-clean-plugin</artifactId>
-						<version>2.3</version>
-						<executions>
-							<execution>
-								<id>clean_repo</id>
-								<phase>clean</phase>
-								<goals>
-									<goal>clean</goal>
-								</goals>
-								<configuration>
-									<followSymLinks>false</followSymLinks>
-									<excludeDefaultDirectories>true</excludeDefaultDirectories>
-									<filesets>
-										<fileset>
-											<directory>${download.publish.path}</directory>
-											<includes>
-												<include>**/*</include>
-											</includes>
-										</fileset>
-									</filesets>
-								</configuration>
-							</execution>
-						</executions>
-					</plugin>
-				</plugins>
-			</build>
-		</profile>
-	</profiles>
+	
 </project>
