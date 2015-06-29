@@ -39,7 +39,7 @@
    <feature url="features/org.eclipse.xtext.xbase.source_2.6.2.v201407030533.jar" id="org.eclipse.xtext.xbase.source" version="2.6.2.v201407030533">
       <category name="Xtext"/>
    </feature>
-   <feature url="features/org.eclipse.emf.sdk_2.10.0.v20140519-0339.jar" id="org.eclipse.emf.sdk" version="2.10.0.v20140519-0339">
+   <feature url="features/org.eclipse.emf.sdk_2.10.2.v20150123-0452.jar" id="org.eclipse.emf.sdk" version="2.10.2.v20150123-0452">
       <category name="Modeling"/>
    </feature>
    <feature url="features/org.emfjson.feature_0.10.0.jar" id="org.emfjson.feature" version="0.10.0">
