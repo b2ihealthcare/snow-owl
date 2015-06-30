@@ -15,6 +15,7 @@
  */
 package com.b2international.snowowl.snomed.api.browser;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -93,5 +94,7 @@ public interface ISnomedBrowserService {
 	 * @return a map with keys as constant identifiers, and values as corresponding concept ID-FSN pairs
 	 */
 	Map<String, ISnomedBrowserConstant> getConstants(IStorageRef storageRef, List<Locale> locales);
+
+	ISnomedBrowserConcept create(String branchPath, ISnomedBrowserConcept concept, String userId, List<Locale> locales);
 
 }

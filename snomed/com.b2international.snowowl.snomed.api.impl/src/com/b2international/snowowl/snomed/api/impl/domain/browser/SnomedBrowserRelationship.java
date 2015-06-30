@@ -17,11 +17,16 @@ import com.b2international.snowowl.snomed.api.domain.RelationshipModifier;
 import com.b2international.snowowl.snomed.api.domain.browser.ISnomedBrowserRelationship;
 import com.b2international.snowowl.snomed.api.domain.browser.ISnomedBrowserRelationshipTarget;
 import com.b2international.snowowl.snomed.api.domain.browser.ISnomedBrowserRelationshipType;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 
 public class SnomedBrowserRelationship extends SnomedBrowserComponent implements ISnomedBrowserRelationship {
 
+	@JsonDeserialize(as=SnomedBrowserRelationshipType.class)
 	private ISnomedBrowserRelationshipType type;
+
+	@JsonDeserialize(as=SnomedBrowserRelationshipTarget.class)
 	private ISnomedBrowserRelationshipTarget target;
+
 	private String sourceId;
 	private int groupId;
 	private CharacteristicType characteristicType;
