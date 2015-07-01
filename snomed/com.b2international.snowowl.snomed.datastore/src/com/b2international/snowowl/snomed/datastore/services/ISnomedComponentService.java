@@ -18,6 +18,7 @@ package com.b2international.snowowl.snomed.datastore.services;
 import java.io.Serializable;
 import java.util.BitSet;
 import java.util.Collection;
+import java.util.Date;
 import java.util.Map;
 import java.util.Set;
 
@@ -405,6 +406,14 @@ public interface ISnomedComponentService {
 	 * @return a collection of existing module dependency reference set members.
 	 */
 	Collection<SnomedModuleDependencyRefSetMemberFragment> getExistingModules(final IBranchPath branchPath);
+	
+	/**
+	 * Returns with a map containing every module of the Module Dependency reference set and the latest effective time for the module.
+	 * The provided date could be <code>null</code>.
+	 * @param branchPath the branch path.
+	 * @return a map where the key is the module ID and the value is the module's latest effective time
+	 */
+	Map<String, Date> getExistingModulesWithEffectiveTime(IBranchPath branchPath);
 	
 	/**
 	 * Returns with a set of concept storage keys that have to be inactivated when retiring the concept concepts

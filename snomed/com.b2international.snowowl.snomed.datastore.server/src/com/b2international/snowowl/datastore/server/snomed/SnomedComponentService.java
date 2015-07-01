@@ -100,6 +100,7 @@ import java.util.BitSet;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.Date;
 import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.Map;
@@ -284,6 +285,7 @@ public class SnomedComponentService implements ISnomedComponentService, IPostSto
 			));
 	
 	private static final Function<String, Boolean> ALWAYS_FALSE_FUNC = new Function<String, Boolean>() {
+		@Override
 		public Boolean apply(final String input) {
 			return false;
 		}
@@ -2080,6 +2082,32 @@ public class SnomedComponentService implements ISnomedComponentService, IPostSto
 	}
 	
 	@Override
+	public Map<String, Date> getExistingModulesWithEffectiveTime(final IBranchPath branchPath) {
+		final ImmutableSet<SnomedModuleDependencyRefSetMemberFragment> existingModules = ImmutableSet.copyOf(getExistingModules(branchPath));
+
+		final Set<String> existingModuleIds = newHashSet();
+		for (final SnomedModuleDependencyRefSetMemberFragment fragment : existingModules) {
+			existingModuleIds.add(fragment.getModuleId());
+			existingModuleIds.add(fragment.getReferencedComponentId());
+		}
+
+		final Map<String, Date> modules = newHashMap();
+
+		for (final String moduleId : existingModuleIds) {
+			Date date = null;
+			for (final SnomedModuleDependencyRefSetMemberFragment fragment : existingModules) {
+				if (null != fragment.getSourceEffectiveTime() && fragment.getModuleId().equals(moduleId)) {
+					date = date == null ? fragment.getSourceEffectiveTime() : fragment.getSourceEffectiveTime().compareTo(date) > 0 ? fragment.getSourceEffectiveTime() : date;
+				} else if (null != fragment.getTargetEffectiveTime() && fragment.getReferencedComponentId().equals(moduleId)) {
+					date = date == null ? fragment.getTargetEffectiveTime() : fragment.getTargetEffectiveTime().compareTo(date) > 0 ? fragment.getTargetEffectiveTime() : date;
+				}
+			}
+			modules.put(moduleId, date);
+		}
+		return modules;
+	}
+	
+	@Override
 	public LongSet getSelfAndAllSubtypeStorageKeysForInactivation(final IBranchPath branchPath, final String... focusConceptIds) {
 		checkNotNull(branchPath, "branchPath");
 		checkNotNull(focusConceptIds, "focusConceptIds");
@@ -2087,6 +2115,7 @@ public class SnomedComponentService implements ISnomedComponentService, IPostSto
 		final Collection<String> conceptIds = collector.collectSelfAndDescendantConceptIds(branchPath, focusConceptIds);
 		final SnomedTerminologyBrowser terminologyBrowser = getServiceForClass(SnomedTerminologyBrowser.class);
 		return newLongSet(LongSets.transform(conceptIds, new LongSets.LongFunction<String>() {
+			@Override
 			public long apply(final String conceptId) {
 				return terminologyBrowser.getStorageKey(branchPath, conceptId);
 			}
@@ -2136,6 +2165,7 @@ public class SnomedComponentService implements ISnomedComponentService, IPostSto
 
 			final Multimap<String, V> componentsToDataTypeValues = synchronizedMultimap(HashMultimap.<String, V>create());
 			IndexUtils.parallelForEachDocId(collector.getDocIDs(), new IndexUtils.DocIdProcedure() {
+				@Override
 				public void apply(final int docId) throws IOException {
 					final Document doc = searcher.get().doc(docId, DATA_TYPE_VALUE_AND_REFERENCED_COMPONENT_FIELDS_TO_LOAD);
 					final String componentId = doc.get(REFERENCE_SET_MEMBER_REFERENCED_COMPONENT_ID);
@@ -2205,6 +2235,7 @@ public class SnomedComponentService implements ISnomedComponentService, IPostSto
 			final DocIdCollector preferredMemberDocIdCollector = DocIdCollector.create(maxDoc);
 			getIndexServerService().search(branchPath, activePreferredLanguageMembersQuery, preferredMemberDocIdCollector);
 			parallelForEachDocId(preferredMemberDocIdCollector.getDocIDs(), new IndexUtils.DocIdProcedure() {
+				@Override
 				public void apply(final int docId) throws IOException {
 					final Document doc = searcher.get().doc(docId, REFERENCED_COMPONENT_ID_FIELD_TO_LOAD);
 					preferredDescriptionIds.add(Long.parseLong(doc.get(REFERENCE_SET_MEMBER_REFERENCED_COMPONENT_ID)));
@@ -2217,6 +2248,7 @@ public class SnomedComponentService implements ISnomedComponentService, IPostSto
 
 			getIndexServerService().search(branchPath, activeFsnsQuery, fsnDocIdCollector);
 			parallelForEachDocId(fsnDocIdCollector.getDocIDs(), new IndexUtils.DocIdProcedure() {
+				@Override
 				public void apply(final int docId) throws IOException {
 					final Document doc = searcher.get().doc(docId, FSN_DESCRIPTION_FIELDS_TO_LOAD);
 					final long descriptionId = getLongValue(doc.getField(COMPONENT_ID));
@@ -2422,7 +2454,7 @@ public class SnomedComponentService implements ISnomedComponentService, IPostSto
 		
 		final BooleanQuery activeDefiningRelationshipsQuery = new BooleanQuery(true);
 		final BooleanQuery definingTypeQuery = new BooleanQuery(true);
-		for (String definingCharacteristicTypeId : DEFINING_CHARACTERISTIC_TYPES) {
+		for (final String definingCharacteristicTypeId : DEFINING_CHARACTERISTIC_TYPES) {
 			final TermQuery query = new TermQuery(new Term(RELATIONSHIP_CHARACTERISTIC_TYPE_ID, longToPrefixCoded(definingCharacteristicTypeId)));
 			definingTypeQuery.add(query, SHOULD);
 		}
@@ -2444,7 +2476,8 @@ public class SnomedComponentService implements ISnomedComponentService, IPostSto
 		final BooleanQuery activeMappingsQuery = new BooleanQuery(true);
 		final BooleanQuery mappingTypeQuery = new BooleanQuery(true);
 		for (final SnomedRefSetType mappingType : filter(SnomedRefSetType.VALUES, new Predicate<SnomedRefSetType>() {
-			public boolean apply(SnomedRefSetType type) {
+			@Override
+			public boolean apply(final SnomedRefSetType type) {
 				return isMapping(type);
 			}
 		})) {
@@ -2732,6 +2765,7 @@ public class SnomedComponentService implements ISnomedComponentService, IPostSto
 		final IndexSearcher searcher = null;
 		
 		final Map<String, PredicateIndexEntry> predicateMappings = uniqueIndex(getServiceForClass(SnomedPredicateBrowser.class).getAllPredicates(branchPath), new Function<PredicateIndexEntry, String>() {
+			@Override
 			public String apply(final PredicateIndexEntry predicate) {
 				return predicate.getId();
 			}
