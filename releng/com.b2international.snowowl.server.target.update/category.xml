@@ -6,9 +6,6 @@
    <feature url="features/org.eclipse.equinox.core.sdk_3.8.0.v20120913-170102-84FAcGeRFnbPjaJrB422VklHlU.jar" id="org.eclipse.equinox.core.sdk" version="3.8.0.v20120913-170102-84FAcGeRFnbPjaJrB422VklHlU">
       <category name="Eclipse Runtime"/>
    </feature>
-   <feature url="features/org.jnario.feature.group_1.0.0.201407142310.jar" id="org.jnario" version="1.0.0.201407142310">
-      <category name="Other"/>
-   </feature>
    <feature url="features/org.eclipse.emf.mwe.core_1.3.3.v201406110919.jar" id="org.eclipse.emf.mwe.core" version="1.3.3.v201406110919">
       <category name="Modeling"/>
    </feature>
@@ -139,7 +136,6 @@
    <bundle id="xstream" version="1.4.7"/>
    <category-def name="Eclipse Runtime" label="Eclipse RT Components"/>
    <category-def name="Modeling" label="Modeling Components"/>
-   <category-def name="Other" label="Others"/>
    <category-def name="IDE Tools" label="Development Environment Tools"/>
    <category-def name="Xtext" label="Eclipse Xtext"/>
    <category-def name="CDO" label="Eclipse CDO"/>
