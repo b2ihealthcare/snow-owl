@@ -15,9 +15,12 @@
  */
 package com.b2international.snowowl.snomed.api.impl.domain.browser;
 
+import com.b2international.snowowl.snomed.api.domain.Acceptability;
 import com.b2international.snowowl.snomed.api.domain.CaseSignificance;
 import com.b2international.snowowl.snomed.api.domain.browser.ISnomedBrowserDescription;
 import com.b2international.snowowl.snomed.api.domain.browser.SnomedBrowserDescriptionType;
+
+import java.util.Map;
 
 public class SnomedBrowserDescription extends SnomedBrowserComponent implements ISnomedBrowserDescription {
 
@@ -27,6 +30,7 @@ public class SnomedBrowserDescription extends SnomedBrowserComponent implements 
 	private String lang;
 	private String term;
 	private CaseSignificance caseSignificance;
+	private Map<String, Acceptability> acceptabilityMap;
 
 	@Override
 	public String getDescriptionId() {
@@ -63,6 +67,11 @@ public class SnomedBrowserDescription extends SnomedBrowserComponent implements 
 		return caseSignificance;
 	}
 
+	@Override
+	public Map<String, Acceptability> getAcceptabilityMap() {
+		return acceptabilityMap;
+	}
+
 	public void setDescriptionId(final String descriptionId) {
 		this.descriptionId = descriptionId;
 	}
@@ -87,6 +96,10 @@ public class SnomedBrowserDescription extends SnomedBrowserComponent implements 
 		this.caseSignificance = caseSignificance;
 	}
 
+	public void setAcceptabilityMap(Map<String, Acceptability> acceptabilityMap) {
+		this.acceptabilityMap = acceptabilityMap;
+	}
+
 	@Override
 	public String toString() {
 		final StringBuilder builder = new StringBuilder();
@@ -102,6 +115,8 @@ public class SnomedBrowserDescription extends SnomedBrowserComponent implements 
 		builder.append(term);
 		builder.append(", caseSignificance=");
 		builder.append(caseSignificance);
+		builder.append(", acceptabilityMap=");
+		builder.append(acceptabilityMap);
 		builder.append(", getEffectiveTime()=");
 		builder.append(getEffectiveTime());
 		builder.append(", getModuleId()=");

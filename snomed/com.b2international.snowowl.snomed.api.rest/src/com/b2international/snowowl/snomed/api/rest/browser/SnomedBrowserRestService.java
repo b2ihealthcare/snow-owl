@@ -49,7 +49,7 @@ import com.wordnik.swagger.annotations.ApiResponses;
 @Api("IHTSDO SNOMED CT Browser")
 @Controller
 @RequestMapping(
-		value="/{path:**}", 
+		value="/browser/{path:**}",
 		produces={ SnomedBrowserRestService.IHTSDO_V1_MEDIA_TYPE, MediaType.APPLICATION_JSON_VALUE })
 public class SnomedBrowserRestService extends AbstractSnomedRestService {
 
@@ -86,6 +86,34 @@ public class SnomedBrowserRestService extends AbstractSnomedRestService {
 
 		final IComponentRef conceptRef = createComponentRef(branchPath, conceptId);
 		return delegate.getConceptDetails(conceptRef, Collections.list(request.getLocales()));
+	}
+
+	@ApiOperation(
+			value="Create a concept",
+			notes="Creates a new Concept on a branch.")
+	@ApiResponses({
+		@ApiResponse(code = 200, message = "OK", response = Void.class),
+		@ApiResponse(code = 404, message = "Code system version or concept not found")
+	})
+	@RequestMapping(value="/concepts", method=RequestMethod.POST)
+	public @ResponseBody ISnomedBrowserConcept createConcept(
+			@ApiParam(value="The branch path")
+			@PathVariable(value="path")
+			final String branchPath,
+
+//			@ApiParam(value="Language codes and reference sets, in order of preference")
+//			@RequestHeader(value="Accept-Language", defaultValue="en-US;q=0.8,en-GB;q=0.6", required=false) 
+//			final String languageSetting,
+			
+			@RequestBody
+			final SnomedBrowserConcept concept,
+
+			final Principal principal,
+			
+			final HttpServletRequest request) {
+
+		final String userId = principal.getName();
+		return browserService.create(branchPath, concept, userId, Collections.list(request.getLocales()));
 	}
 
 	@ApiOperation(
