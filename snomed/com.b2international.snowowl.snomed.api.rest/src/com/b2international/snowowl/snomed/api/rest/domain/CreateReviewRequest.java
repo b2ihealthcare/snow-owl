@@ -25,7 +25,7 @@ import com.wordnik.swagger.annotations.ApiModelProperty;
 /**
  * @since 5.0
  */
-public abstract class CreateReviewRequest {
+public class CreateReviewRequest {
 
 	@ApiModelProperty(required = true)
 	@JsonProperty

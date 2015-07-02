@@ -25,7 +25,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 /**
  * @since 4.1
  */
-public abstract class CreateBranchRequest extends MetadataHolderImpl {
+public class CreateBranchRequest extends MetadataHolderImpl {
 
 	@JsonProperty
 	@NotEmpty
