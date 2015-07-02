@@ -24,12 +24,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.ResponseStatus;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import com.b2international.snowowl.api.domain.IComponentRef;
 import com.b2international.snowowl.snomed.api.ISnomedDescriptionService;
@@ -40,11 +35,7 @@ import com.b2international.snowowl.snomed.api.rest.domain.ChangeRequest;
 import com.b2international.snowowl.snomed.api.rest.domain.SnomedDescriptionRestInput;
 import com.b2international.snowowl.snomed.api.rest.domain.SnomedDescriptionRestUpdate;
 import com.b2international.snowowl.snomed.api.rest.util.Responses;
-import com.wordnik.swagger.annotations.Api;
-import com.wordnik.swagger.annotations.ApiOperation;
-import com.wordnik.swagger.annotations.ApiParam;
-import com.wordnik.swagger.annotations.ApiResponse;
-import com.wordnik.swagger.annotations.ApiResponses;
+import com.wordnik.swagger.annotations.*;
 
 /**
  * @since 1.0
@@ -167,7 +158,7 @@ public class SnomedDescriptionRestService extends AbstractSnomedRestService {
 	}
 	
 	private ISnomedDescription doCreate(final String branchPath, final ChangeRequest<SnomedDescriptionRestInput> body, final Principal principal) {
-		final ISnomedDescriptionInput input = body.getChange().toComponentInput(branchPath);
+		final ISnomedDescriptionInput input = body.getChange().toComponentInput(branchPath, codeSystemShortName);
 		final String userId = principal.getName();
 		final String commitComment = body.getCommitComment();
 		return delegate.create(input, userId, commitComment);
@@ -176,5 +167,4 @@ public class SnomedDescriptionRestService extends AbstractSnomedRestService {
 	private URI getDescriptionLocation(final String branchPath, final ISnomedDescription createdDescription) {
 		return linkTo(SnomedDescriptionRestService.class).slash(branchPath).slash("descriptions").slash(createdDescription.getId()).toUri();
 	}
-	
 }
