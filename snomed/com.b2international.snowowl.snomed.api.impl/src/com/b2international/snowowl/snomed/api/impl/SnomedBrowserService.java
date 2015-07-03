@@ -411,7 +411,7 @@ public class SnomedBrowserService implements ISnomedBrowserService {
 	}
 
 	@Override
-	public List<ISnomedBrowserDescriptionResult> getDescriptions(final IStorageRef storageRef, final String query, final List<Locale> locales, final int offset, final int limit) {
+	public List<ISnomedBrowserDescriptionResult> getDescriptions(final IStorageRef storageRef, final String query, final List<Locale> locales, final ISnomedBrowserDescriptionResult.TermType resultConceptTermType, final int offset, final int limit) {
 		checkNotNull(storageRef, "Storage reference may not be null.");
 		checkNotNull(query, "Query may not be null.");
 		checkArgument(query.length() >= 3, "Query must be at least 3 characters long.");
@@ -465,8 +465,17 @@ public class SnomedBrowserService implements ISnomedBrowserService {
 			} else {
 				details = new SnomedBrowserDescriptionResultDetails();
 
+				final String term;
+				switch (resultConceptTermType) {
+					case FNS:
 				final IComponentRef conceptRef = createConceptRef(storageRef, descriptionIndexEntry.getConceptId());
-				details.setFsn(descriptionService.getFullySpecifiedName(conceptRef, locales).getTerm());
+						term = descriptionService.getFullySpecifiedName(conceptRef, locales).getTerm();
+						break;
+					default:
+						term = descriptionIndexEntry.getLabel();
+						break;
+				}
+				details.setFsn(term);
 				
 				if (conceptIndexEntry != null) {
 	
