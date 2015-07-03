@@ -27,6 +27,7 @@ import com.b2international.snowowl.snomed.api.domain.CaseSignificance;
 import com.b2international.snowowl.snomed.api.impl.domain.*;
 
 import com.b2international.snowowl.snomed.datastore.*;
+import com.google.common.collect.*;
 import org.apache.lucene.search.Sort;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -49,9 +50,6 @@ import com.b2international.snowowl.snomed.api.impl.domain.browser.*;
 import com.b2international.snowowl.snomed.datastore.index.*;
 import com.google.common.base.Function;
 import com.google.common.base.Optional;
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.Maps;
 
 public class SnomedBrowserService implements ISnomedBrowserService {
 
@@ -72,17 +70,19 @@ public class SnomedBrowserService implements ISnomedBrowserService {
 	
 	private static final Logger LOGGER = LoggerFactory.getLogger(SnomedBrowserService.class);
 
+	private final InputFactory inputFactory;
+
+	@Resource
 	private SnomedConceptServiceImpl conceptService;
+
+	@Resource
 	private SnomedDescriptionServiceImpl descriptionService;
 
 	@Resource
-	public void setConceptService(final SnomedConceptServiceImpl conceptService) {
-		this.conceptService = conceptService;
-	}
+	private SnomedRelationshipServiceImpl relationshipService;
 
-	@Resource
-	public void setDescriptionService(final SnomedDescriptionServiceImpl descriptionService) {
-		this.descriptionService = descriptionService;
+	public SnomedBrowserService() {
+		inputFactory = new InputFactory();
 	}
 
 	@Override
@@ -127,7 +127,7 @@ public class SnomedBrowserService implements ISnomedBrowserService {
 
 	@Override
 	public ISnomedBrowserConcept create(String branchPath, ISnomedBrowserConcept concept, String userId, List<Locale> locales) {
-		final SnomedConceptInput snomedConceptInput = toConceptInput(branchPath, concept);
+		final ISnomedConceptInput snomedConceptInput = inputFactory.createComponentInput(branchPath, concept, ISnomedConceptInput.class);
 		String commitComment = getCommitComment(userId, concept, "creating");
 		final ISnomedConcept iSnomedConcept = conceptService.create(snomedConceptInput, userId, commitComment);
 		final IComponentRef componentRef = createComponentRef(branchPath, iSnomedConcept.getId());
@@ -141,27 +141,47 @@ public class SnomedBrowserService implements ISnomedBrowserService {
 		final SnomedEditingContext editingContext = conceptService.createEditingContext(componentRef);
 		String commitComment = getCommitComment(userId, newVersionConcept, "updating");
 
-		// Gather updates
-		final ISnomedConceptUpdate conceptUpdate = getConceptUpdate(existingVersionConcept, newVersionConcept);
+		// Concept update
+		final ISnomedConceptUpdate conceptUpdate = inputFactory.createComponentUpdate(existingVersionConcept, newVersionConcept, ISnomedConceptUpdate.class);
+
+		// Description updates
 		final List<ISnomedBrowserDescription> existingVersionDescriptions = existingVersionConcept.getDescriptions();
 		final List<ISnomedBrowserDescription> newVersionDescriptions = newVersionConcept.getDescriptions();
-		Set<String> descriptionDeletionIds = getDescriptionDeletions(existingVersionDescriptions, newVersionDescriptions);
-		Map<String, ISnomedDescriptionUpdate> descriptionUpdates = getDescriptionUpdates(existingVersionDescriptions, newVersionDescriptions);
-		List<SnomedDescriptionInput> descriptionInputs = getDescriptionCreations(branchPath, newVersionDescriptions);
+		Set<String> descriptionDeletionIds = inputFactory.getComponentDeletions(existingVersionDescriptions, newVersionDescriptions);
+		Map<String, ISnomedDescriptionUpdate> descriptionUpdates = inputFactory.createComponentUpdates(existingVersionDescriptions, newVersionDescriptions, ISnomedDescriptionUpdate.class);
+		List<ISnomedDescriptionInput> descriptionInputs = inputFactory.createComponentInputs(branchPath, newVersionDescriptions, ISnomedDescriptionInput.class);
+
+		// Relationship updates
+		final List<ISnomedBrowserRelationship> existingVersionRelationships = existingVersionConcept.getRelationships();
+		final List<ISnomedBrowserRelationship> newVersionRelationships = newVersionConcept.getRelationships();
+		Set<String> relationshipDeletionIds = inputFactory.getComponentDeletions(existingVersionRelationships, newVersionRelationships);
+		Map<String, ISnomedRelationshipUpdate> relationshipUpdates = inputFactory.createComponentUpdates(existingVersionRelationships, newVersionRelationships, ISnomedRelationshipUpdate.class);
+		List<ISnomedRelationshipInput> relationshipInputs = inputFactory.createComponentInputs(branchPath, newVersionRelationships, ISnomedRelationshipInput.class);
 
 		// Add updates to editing context
 		if (conceptUpdate != null) {
 			conceptService.doUpdate(componentRef, conceptUpdate, editingContext);
 		}
+
 		for (String descriptionDeletionId : descriptionDeletionIds) {
 			descriptionService.doDelete(createComponentRef(branchPath, descriptionDeletionId), editingContext);
 		}
 		for (String descriptionId : descriptionUpdates.keySet()) {
 			descriptionService.doUpdate(createComponentRef(branchPath, descriptionId), descriptionUpdates.get(descriptionId), editingContext);
 		}
-		for (SnomedDescriptionInput descriptionInput : descriptionInputs) {
-			descriptionInput.setConceptId(existingVersionConcept.getConceptId());
+		for (ISnomedDescriptionInput descriptionInput : descriptionInputs) {
+			((SnomedDescriptionInput)descriptionInput).setConceptId(existingVersionConcept.getConceptId());
 			descriptionService.convertAndRegister(descriptionInput, editingContext);
+		}
+
+		for (String relationshipDeletionId : relationshipDeletionIds) {
+			relationshipService.doDelete(createComponentRef(branchPath, relationshipDeletionId), editingContext);
+		}
+		for (String relationshipId : relationshipUpdates.keySet()) {
+			relationshipService.doUpdate(createComponentRef(branchPath, relationshipId), relationshipUpdates.get(relationshipId), editingContext);
+		}
+		for (ISnomedRelationshipInput relationshipInput : relationshipInputs) {
+			relationshipService.convertAndRegister(relationshipInput, editingContext);
 		}
 
 		// TODO - Add MRCM checks here
@@ -170,69 +190,6 @@ public class SnomedBrowserService implements ISnomedBrowserService {
 		conceptService.doCommit(userId, commitComment, editingContext);
 
 		return getConceptDetails(componentRef, locales);
-	}
-
-	private ISnomedConceptUpdate getConceptUpdate(ISnomedBrowserConcept existingVersion, ISnomedBrowserConcept newVersion) {
-
-		boolean anyDifference = existingVersion.isActive() != newVersion.isActive()
-				|| !existingVersion.getModuleId().equals(newVersion.getModuleId())
-				|| !existingVersion.getDefinitionStatus().equals(newVersion.getDefinitionStatus());
-
-		if (anyDifference) {
-			final SnomedConceptUpdate snomedConceptUpdate = new SnomedConceptUpdate();
-			snomedConceptUpdate.setModuleId(newVersion.getModuleId());
-			snomedConceptUpdate.setDefinitionStatus(newVersion.getDefinitionStatus());
-			snomedConceptUpdate.setActive(newVersion.isActive());
-			return snomedConceptUpdate;
-		} else {
-			return null;
-		}
-	}
-
-	private Set<String> getDescriptionDeletions(List<ISnomedBrowserDescription> existingVersion, List<ISnomedBrowserDescription> newVersion) {
-		Set<String> existingIds = toIdSet(existingVersion);
-		Set<String> newIds = toIdSet(newVersion);
-		existingIds.removeAll(newIds);
-		return existingIds;
-	}
-
-	private Set<String> toIdSet(Collection<ISnomedBrowserDescription> components) {
-		Set<String> ids = new HashSet<String>();
-		for (ISnomedBrowserDescription component : components) {
-			ids.add(component.getDescriptionId());
-		}
-		return ids;
-	}
-
-	private Map<String, ISnomedDescriptionUpdate> getDescriptionUpdates(List<ISnomedBrowserDescription> existingVersions, List<ISnomedBrowserDescription> newVersions) {
-		Map<String, ISnomedDescriptionUpdate> updateMap = new HashMap<String, ISnomedDescriptionUpdate>();
-		for (ISnomedBrowserDescription existingDesc : existingVersions) {
-			for (ISnomedBrowserDescription newVersionDesc : newVersions) {
-				final String descriptionId = existingDesc.getDescriptionId();
-				if (descriptionId.equals(newVersionDesc.getDescriptionId())) {
-					final SnomedDescriptionUpdate update = new SnomedDescriptionUpdate();
-					update.setActive(newVersionDesc.isActive());
-					update.setModuleId(newVersionDesc.getModuleId());
-					final Map<String, Acceptability> newAcceptabilityMap = newVersionDesc.getAcceptabilityMap();
-					if (!existingDesc.getAcceptabilityMap().equals(newAcceptabilityMap)) {
-						update.setAcceptability(newAcceptabilityMap);
-					}
-					update.setCaseSignificance(newVersionDesc.getCaseSignificance());
-					updateMap.put(descriptionId, update);
-				}
-			}
-		}
-		return updateMap;
-	}
-
-	private List<SnomedDescriptionInput> getDescriptionCreations(String branchPath, List<ISnomedBrowserDescription> newVersionDescriptions) {
-		List<SnomedDescriptionInput> inputs = new ArrayList<SnomedDescriptionInput>();
-		for (ISnomedBrowserDescription description : newVersionDescriptions) {
-			if (description.getDescriptionId() == null) {
-				inputs.add(toDescriptionInput(branchPath, description));
-			}
-		}
-		return inputs;
 	}
 
 	private String getCommitComment(String userId, ISnomedBrowserConcept snomedConceptInput, String action) {
@@ -253,61 +210,6 @@ public class SnomedBrowserService implements ISnomedBrowserService {
 		final ComponentRef conceptRef = new ComponentRef(SNOMEDCT, branchPath, componentId);
 		conceptRef.checkStorageExists();
 		return conceptRef;
-	}
-
-	private SnomedConceptInput toConceptInput(final String branchPath, ISnomedBrowserConcept concept) {
-		final SnomedConceptInput conceptInput = new SnomedConceptInput();
-		setCommonComponentProperties(branchPath, concept, conceptInput, ComponentCategory.CONCEPT);
-		conceptInput.setIsAIdGenerationStrategy(conceptInput.getIdGenerationStrategy());
-
-		// Find a parent relationship
-		final String parentRelationshipId = getParentId(concept);
-		conceptInput.setParentId(parentRelationshipId);
-
-		final List<SnomedDescriptionInput> descriptionInputs = newArrayList();
-		for (ISnomedBrowserDescription description : concept.getDescriptions()) {
-			descriptionInputs.add(toDescriptionInput(branchPath, description));
-		}
-
-		conceptInput.setDescriptions(descriptionInputs);
-
-		return conceptInput;
-	}
-
-	private void setCommonComponentProperties(String branchPath, ISnomedBrowserComponent component, AbstractSnomedComponentInput componentInput, ComponentCategory componentCategory) {
-		componentInput.setBranchPath(branchPath);
-		componentInput.setCodeSystemShortName(SNOMEDCT);
-		final String moduleId = component.getModuleId();
-		componentInput.setModuleId(moduleId != null ? moduleId : Concepts.MODULE_SCT_CORE);
-		// Use default namespace
-		final NamespaceIdGenerationStrategy idGenerationStrategy = new NamespaceIdGenerationStrategy(componentCategory, null);
-		componentInput.setIdGenerationStrategy(idGenerationStrategy);
-	}
-
-	private SnomedDescriptionInput toDescriptionInput(String branchPath, ISnomedBrowserDescription description) {
-		final SnomedDescriptionInput descriptionInput = new SnomedDescriptionInput();
-		setCommonComponentProperties(branchPath, description, descriptionInput, ComponentCategory.DESCRIPTION);
-		descriptionInput.setLanguageCode(description.getLang());
-		descriptionInput.setTypeId(description.getType().getConceptId());
-		descriptionInput.setTerm(description.getTerm());
-		descriptionInput.setAcceptability(description.getAcceptabilityMap());
-		return descriptionInput;
-	}
-
-	private String getParentId(ISnomedBrowserConcept concept) {
-		ISnomedBrowserRelationship parentRelationship = null;
-		for (ISnomedBrowserRelationship relationship : concept.getRelationships()) {
-			final ISnomedBrowserRelationshipType type = relationship.getType();
-			final String conceptId = type.getConceptId();
-			if (SnomedConstants.Concepts.IS_A.equals(conceptId)) {
-				parentRelationship = relationship;
-			}
-		}
-		if (parentRelationship != null) {
-			return parentRelationship.getTarget().getConceptId();
-		} else {
-			throw new BadRequestException("At least one isA relationship is required.");
-		}
 	}
 
 	private List<ISnomedBrowserDescription> convertDescriptions(final List<ISnomedDescription> descriptions) {

@@ -21,6 +21,8 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 
 public class SnomedBrowserRelationship extends SnomedBrowserComponent implements ISnomedBrowserRelationship {
 
+	private String relationshipId;
+
 	@JsonDeserialize(as=SnomedBrowserRelationshipType.class)
 	private ISnomedBrowserRelationshipType type;
 
@@ -31,6 +33,16 @@ public class SnomedBrowserRelationship extends SnomedBrowserComponent implements
 	private int groupId;
 	private CharacteristicType characteristicType;
 	private RelationshipModifier modifier;
+
+	@Override
+	public String getId() {
+		return relationshipId;
+	}
+
+	@Override
+	public String getRelationshipId() {
+		return relationshipId;
+	}
 
 	@Override
 	public ISnomedBrowserRelationshipType getType() {
@@ -62,6 +74,10 @@ public class SnomedBrowserRelationship extends SnomedBrowserComponent implements
 		return modifier;
 	}
 
+	public void setRelationshipId(String relationshipId) {
+		this.relationshipId = relationshipId;
+	}
+
 	public void setType(final ISnomedBrowserRelationshipType type) {
 		this.type = type;
 	}
@@ -91,6 +107,8 @@ public class SnomedBrowserRelationship extends SnomedBrowserComponent implements
 		final StringBuilder builder = new StringBuilder();
 		builder.append("SnomedBrowserRelationship [type=");
 		builder.append(type);
+		builder.append(", relationshipId=");
+		builder.append(relationshipId);
 		builder.append(", target=");
 		builder.append(target);
 		builder.append(", sourceId=");

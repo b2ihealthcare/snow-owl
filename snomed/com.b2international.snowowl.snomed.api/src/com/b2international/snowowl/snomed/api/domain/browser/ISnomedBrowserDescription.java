@@ -23,7 +23,7 @@ import java.util.Map;
 /**
  * Represents a specific SNOMED CT description, carrying information for use in the IHTSDO SNOMED CT Browser.
  */
-public interface ISnomedBrowserDescription extends ISnomedBrowserComponent {
+public interface ISnomedBrowserDescription extends ISnomedBrowserComponentWithId {
 
 	/** @return the descriptions's unique component identifier */
 	String getDescriptionId();

@@ -15,18 +15,14 @@
  */
 package com.b2international.snowowl.snomed.api.impl.domain.browser;
 
-import static com.google.common.collect.Lists.newArrayList;
-
-import java.util.List;
-
 import com.b2international.snowowl.snomed.api.domain.DefinitionStatus;
 import com.b2international.snowowl.snomed.api.domain.browser.ISnomedBrowserConcept;
 import com.b2international.snowowl.snomed.api.domain.browser.ISnomedBrowserDescription;
 import com.b2international.snowowl.snomed.api.domain.browser.ISnomedBrowserRelationship;
-import com.b2international.snowowl.snomed.api.impl.domain.SnomedConceptInput;
-import com.b2international.snowowl.snomed.api.impl.domain.SnomedDescriptionInput;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.google.common.collect.ImmutableList;
+
+import java.util.List;
 
 public class SnomedBrowserConcept extends SnomedBrowserComponent implements ISnomedBrowserConcept {
 
@@ -40,7 +36,12 @@ public class SnomedBrowserConcept extends SnomedBrowserComponent implements ISno
 	private List<ISnomedBrowserDescription> descriptions = ImmutableList.of();
 
 	@JsonDeserialize(contentAs=SnomedBrowserRelationship.class)
-	private List<ISnomedBrowserRelationship> relationships = ImmutableList.of(); 
+	private List<ISnomedBrowserRelationship> relationships = ImmutableList.of();
+
+	@Override
+	public String getId() {
+		return conceptId;
+	}
 
 	@Override
 	public String getConceptId() {

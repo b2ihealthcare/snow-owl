@@ -33,6 +33,11 @@ public class SnomedBrowserDescription extends SnomedBrowserComponent implements 
 	private Map<String, Acceptability> acceptabilityMap;
 
 	@Override
+	public String getId() {
+		return descriptionId;
+	}
+
+	@Override
 	public String getDescriptionId() {
 		return descriptionId;
 	}
