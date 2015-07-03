@@ -12,6 +12,7 @@
  */
 package com.b2international.snowowl.snomed.api.rest.browser;
 
+import java.security.Principal;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -22,6 +23,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -30,12 +32,14 @@ import org.springframework.web.bind.annotation.ResponseBody;
 
 import com.b2international.snowowl.api.domain.IComponentRef;
 import com.b2international.snowowl.api.impl.domain.StorageRef;
+import com.b2international.snowowl.core.exceptions.BadRequestException;
 import com.b2international.snowowl.snomed.api.browser.ISnomedBrowserService;
 import com.b2international.snowowl.snomed.api.domain.browser.ISnomedBrowserChildConcept;
 import com.b2international.snowowl.snomed.api.domain.browser.ISnomedBrowserConcept;
 import com.b2international.snowowl.snomed.api.domain.browser.ISnomedBrowserConstant;
 import com.b2international.snowowl.snomed.api.domain.browser.ISnomedBrowserDescriptionResult;
 import com.b2international.snowowl.snomed.api.domain.browser.ISnomedBrowserParentConcept;
+import com.b2international.snowowl.snomed.api.impl.domain.browser.SnomedBrowserConcept;
 import com.b2international.snowowl.snomed.api.rest.AbstractSnomedRestService;
 import com.wordnik.swagger.annotations.Api;
 import com.wordnik.swagger.annotations.ApiOperation;
@@ -109,7 +113,10 @@ public class SnomedBrowserRestService extends AbstractSnomedRestService {
 			final HttpServletRequest request) {
 
 		final String userId = principal.getName();
-		return browserService.create(branchPath, concept, userId, Collections.list(request.getLocales()));
+		if (concept.getConceptId() != null) {
+			throw new BadRequestException("The concept in the request body should not have an ID when creating. When performing an update include the concept ID in the URL.");
+		}
+		return delegate.create(branchPath, concept, userId, Collections.list(request.getLocales()));
 	}
 
 	@ApiOperation(
@@ -125,6 +132,10 @@ public class SnomedBrowserRestService extends AbstractSnomedRestService {
 			@PathVariable(value="path")
 			final String branchPath,
 
+			@ApiParam(value="The SCTID of the concept being updated")
+			@PathVariable(value="conceptId")
+			final String conceptId,
+
 			@RequestBody
 			final SnomedBrowserConcept concept,
 
@@ -132,8 +143,12 @@ public class SnomedBrowserRestService extends AbstractSnomedRestService {
 
 			final HttpServletRequest request) {
 
+		if (!conceptId.equals(concept.getConceptId())) {
+			throw new BadRequestException("The concept ID in the request body does not match the ID in the URL.");
+		}
+
 		final String userId = principal.getName();
-		return browserService.update(branchPath, concept, userId, Collections.list(request.getLocales()));
+		return delegate.update(branchPath, concept, userId, Collections.list(request.getLocales()));
 	}
 
 	@ApiOperation(

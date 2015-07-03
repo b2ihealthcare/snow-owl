@@ -58,11 +58,6 @@ public class SnomedBrowserDescription extends SnomedBrowserComponent implements 
 	}
 
 	@Override
-	public int getLength() {
-		return (term == null) ? 0 : term.length();
-	}
-
-	@Override
 	public CaseSignificance getCaseSignificance() {
 		return caseSignificance;
 	}

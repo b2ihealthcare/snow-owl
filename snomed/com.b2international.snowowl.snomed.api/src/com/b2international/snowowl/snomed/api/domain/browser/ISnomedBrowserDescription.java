@@ -40,9 +40,6 @@ public interface ISnomedBrowserDescription extends ISnomedBrowserComponent {
 	/** @return the description term */
 	String getTerm();
 	
-	/** @return the length of the description term */
-	int getLength();
-
 	/** @return the case sensitivity of the description term */
 	CaseSignificance getCaseSignificance();
 

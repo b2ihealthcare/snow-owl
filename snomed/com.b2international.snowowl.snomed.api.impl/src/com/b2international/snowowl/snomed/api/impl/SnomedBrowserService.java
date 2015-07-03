@@ -147,7 +147,7 @@ public class SnomedBrowserService implements ISnomedBrowserService {
 		final List<ISnomedBrowserDescription> newVersionDescriptions = newVersionConcept.getDescriptions();
 		Set<String> descriptionDeletionIds = getDescriptionDeletions(existingVersionDescriptions, newVersionDescriptions);
 		Map<String, ISnomedDescriptionUpdate> descriptionUpdates = getDescriptionUpdates(existingVersionDescriptions, newVersionDescriptions);
-		List<ISnomedDescriptionInput> descriptionInputs = getDescriptionCreations(branchPath, newVersionDescriptions);
+		List<SnomedDescriptionInput> descriptionInputs = getDescriptionCreations(branchPath, newVersionDescriptions);
 
 		// Add updates to editing context
 		if (conceptUpdate != null) {
@@ -159,7 +159,8 @@ public class SnomedBrowserService implements ISnomedBrowserService {
 		for (String descriptionId : descriptionUpdates.keySet()) {
 			descriptionService.doUpdate(createComponentRef(branchPath, descriptionId), descriptionUpdates.get(descriptionId), editingContext);
 		}
-		for (ISnomedDescriptionInput descriptionInput : descriptionInputs) {
+		for (SnomedDescriptionInput descriptionInput : descriptionInputs) {
+			descriptionInput.setConceptId(existingVersionConcept.getConceptId());
 			descriptionService.convertAndRegister(descriptionInput, editingContext);
 		}
 
@@ -224,8 +225,8 @@ public class SnomedBrowserService implements ISnomedBrowserService {
 		return updateMap;
 	}
 
-	private List<ISnomedDescriptionInput> getDescriptionCreations(String branchPath, List<ISnomedBrowserDescription> newVersionDescriptions) {
-		List<ISnomedDescriptionInput> inputs = new ArrayList<ISnomedDescriptionInput>();
+	private List<SnomedDescriptionInput> getDescriptionCreations(String branchPath, List<ISnomedBrowserDescription> newVersionDescriptions) {
+		List<SnomedDescriptionInput> inputs = new ArrayList<SnomedDescriptionInput>();
 		for (ISnomedBrowserDescription description : newVersionDescriptions) {
 			if (description.getDescriptionId() == null) {
 				inputs.add(toDescriptionInput(branchPath, description));
