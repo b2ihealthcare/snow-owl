@@ -16,13 +16,14 @@
 package com.b2international.snowowl.datastore.server.review;
 
 import com.b2international.snowowl.datastore.server.branch.Branch;
+import com.b2international.snowowl.datastore.server.branch.Deletable;
 
 /**
  * Represents a terminology review comparing changes on branches.
  *
  * @since 5.0
  */
-public interface Review {
+public interface Review extends Deletable {
 
 	/**
 	 * Returns the unique identifier of this review.
@@ -49,4 +50,12 @@ public interface Review {
 	 * the meantime.
 	 */
 	Branch target();
+
+	/**
+	 * Deletes this review and corresponding concept changes from the review repository.
+	 * 
+	 * @return the deleted instance, {@code this}
+	 */
+	@Override
+	Review delete();
 }

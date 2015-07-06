@@ -37,7 +37,7 @@ public class CreateReviewRequest {
 	@NotEmpty
 	private String target;
 
-	public Event toEvent(final String repositoryId) {
-		return new CreateReviewEvent(repositoryId, source, target);
+	public Event toEvent(final String repositoryId, final String userId) {
+		return new CreateReviewEvent(repositoryId, userId, source, target);
 	}
 }

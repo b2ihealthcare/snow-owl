@@ -13,24 +13,22 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.datastore.server.review;
+package com.b2international.snowowl.datastore.server.internal.review;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 /**
- * Enumerates possible states of a terminology review.
- *
- * @since 5.0
+ * @since 4.1
  */
-public enum ReviewStatus {
+public class ReviewSerializer extends ObjectMapper {
 
-	/** New, changed and detached concepts are still being collected. */
-	PENDING,
+	private static final long serialVersionUID = -217524850635164394L;
 
-	/** Changes are available, no commits have happened since the start of the review. */
-	CURRENT,
+	public ReviewSerializer() {	
+		initMixinAnnotations();
+	}
 
-	/** Computed differences are not up-to-date; a commit on either of the compared branches invalidated it. */
-	STALE,
-	
-	/** Differences could not be computed for some reason. */
-	FAILED
+	private void initMixinAnnotations() {
+		addMixInAnnotations(ReviewImpl.class, ReviewImplMixin.class);
+	}
 }

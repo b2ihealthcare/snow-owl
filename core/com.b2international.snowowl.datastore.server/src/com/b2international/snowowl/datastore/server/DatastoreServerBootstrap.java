@@ -44,6 +44,8 @@ import com.b2international.snowowl.datastore.server.internal.branch.BranchEventH
 import com.b2international.snowowl.datastore.server.internal.branch.BranchSerializer;
 import com.b2international.snowowl.datastore.server.internal.branch.CDOBranchManagerImpl;
 import com.b2international.snowowl.datastore.server.internal.branch.InternalBranch;
+import com.b2international.snowowl.datastore.server.internal.review.*;
+import com.b2international.snowowl.datastore.server.review.ReviewManager;
 import com.b2international.snowowl.datastore.server.session.ApplicationSessionManager;
 import com.b2international.snowowl.datastore.server.session.LogListener;
 import com.b2international.snowowl.datastore.server.session.VersionProcessor;
@@ -55,7 +57,6 @@ import com.b2international.snowowl.eventbus.net4j.EventBusNet4jUtil;
 import com.b2international.snowowl.rpc.RpcConfiguration;
 import com.b2international.snowowl.rpc.RpcProtocol;
 import com.b2international.snowowl.rpc.RpcUtil;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Stopwatch;
 
 /**
@@ -126,32 +127,49 @@ public class DatastoreServerBootstrap implements PreRunCapableBootstrapFragment 
 
 	private void initializeBranchingSupport(Environment environment) {
 		final Stopwatch branchStopwatch = Stopwatch.createStarted();
-		LOG.info(">>> Initializing branch services.");
+		LOG.info(">>> Initializing branch and review services.");
 		
 		final ICDOConnectionManager cdoConnectionManager = environment.service(ICDOConnectionManager.class);
 		final ICDORepositoryManager cdoRepositoryManager = environment.service(ICDORepositoryManager.class);
 		final IIndexServerServiceManager indexServerServiceManager = environment.service(IIndexServerServiceManager.class); 
 		
-		final ObjectMapper objectMapper = new BranchSerializer();
+		final BranchSerializer branchSerializer = new BranchSerializer();
+		final ReviewSerializer reviewSerializer = new ReviewSerializer();
 		
 		for (String repositoryId : cdoRepositoryManager.uuidKeySet()) {
 			final RepositoryWrapper wrapper = new RepositoryWrapper(repositoryId, cdoConnectionManager, cdoRepositoryManager, indexServerServiceManager);
-			initializeBranchingSupport(environment, wrapper, objectMapper);
+			initializeBranchingSupport(environment, wrapper, branchSerializer, reviewSerializer);
 		}
 		
-		LOG.info("<<< Branch services registered. [{}]", branchStopwatch);
+		LOG.info("<<< Branch and review services registered. [{}]", branchStopwatch);
 	}
 
-	private void initializeBranchingSupport(Environment environment, RepositoryWrapper wrapper, ObjectMapper objectMapper) {
+	private void initializeBranchingSupport(Environment environment, RepositoryWrapper wrapper, BranchSerializer branchSerializer, ReviewSerializer reviewSerializer) {
 		final String repositoryId = wrapper.getCdoRepositoryId();
 		final File branchIndexDirectory = environment.getDataDirectory()
 				.toPath()
 				.resolve(Paths.get("indexes", "branches", repositoryId))
 				.toFile();
 
-		final IndexStore<InternalBranch> branchStore = new IndexStore<InternalBranch>(branchIndexDirectory, objectMapper, InternalBranch.class);
+		final IndexStore<InternalBranch> branchStore = new IndexStore<InternalBranch>(branchIndexDirectory, branchSerializer, InternalBranch.class);
 		final BranchManager branchManager = new CDOBranchManagerImpl(wrapper, branchStore);
 		environment.service(IEventBus.class).registerHandler("/" + repositoryId + "/branches" , new BranchEventHandler(branchManager));
+		
+		final File reviewsIndexDirectory = environment.getDataDirectory()
+				.toPath()
+				.resolve(Paths.get("indexes", "reviews", repositoryId))
+				.toFile();
+		
+		final File conceptChangesIndexDirectory = environment.getDataDirectory()
+				.toPath()
+				.resolve(Paths.get("indexes", "concept_changes", repositoryId))
+				.toFile();
+		
+		final IndexStore<ReviewImpl> reviewStore = new IndexStore<ReviewImpl>(reviewsIndexDirectory, reviewSerializer, ReviewImpl.class);
+		final IndexStore<ConceptChangesImpl> conceptChangesStore = new IndexStore<ConceptChangesImpl>(conceptChangesIndexDirectory, reviewSerializer, ConceptChangesImpl.class);
+		final ReviewManager reviewManager = new ReviewManagerImpl(wrapper.getCdoRepository(), reviewStore, conceptChangesStore);
+		
+		environment.service(IEventBus.class).registerHandler("/" + repositoryId + "/reviews" , new ReviewEventHandler(reviewManager, branchManager));
 	}
 	
 	private void connectSystemUser(IManagedContainer container) throws SnowowlServiceException {

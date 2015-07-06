@@ -19,6 +19,7 @@ import static org.springframework.hateoas.mvc.ControllerLinkBuilder.linkTo;
 import static org.springframework.hateoas.mvc.ControllerLinkBuilder.methodOn;
 
 import java.net.URI;
+import java.security.Principal;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -64,11 +65,11 @@ public class SnomedBranchReviewController extends AbstractRestService {
 	})
 	@RequestMapping(method=RequestMethod.POST)
 	@ResponseStatus(HttpStatus.CREATED)
-	public DeferredResult<ResponseEntity<Void>> createReview(@RequestBody final CreateReviewRequest request) {
+	public DeferredResult<ResponseEntity<Void>> createReview(@RequestBody final CreateReviewRequest request, final Principal principal) {
 		ApiValidation.checkInput(request);
 		final DeferredResult<ResponseEntity<Void>> result = new DeferredResult<>();
 		new AsyncSupport<>(bus, ReviewReply.class)
-		.send(request.toEvent(repositoryId))
+		.send(request.toEvent(repositoryId, principal.getName()))
 		.then(new Procedure<ReviewReply>() { @Override protected void doApply(final ReviewReply reply) {
 			result.setResult(Responses.created(getLocationHeader(reply)).build());
 		}})
