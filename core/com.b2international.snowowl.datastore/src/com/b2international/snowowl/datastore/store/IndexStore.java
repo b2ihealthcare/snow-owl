@@ -28,15 +28,7 @@ import org.apache.lucene.document.Field;
 import org.apache.lucene.document.StringField;
 import org.apache.lucene.index.Term;
 import org.apache.lucene.search.BooleanClause.Occur;
-import org.apache.lucene.search.BooleanQuery;
-import org.apache.lucene.search.IndexSearcher;
-import org.apache.lucene.search.MatchAllDocsQuery;
-import org.apache.lucene.search.PrefixQuery;
-import org.apache.lucene.search.Query;
-import org.apache.lucene.search.ScoreDoc;
-import org.apache.lucene.search.Sort;
-import org.apache.lucene.search.TermQuery;
-import org.apache.lucene.search.TopDocs;
+import org.apache.lucene.search.*;
 
 import com.b2international.commons.ReflectionUtils;
 import com.b2international.snowowl.datastore.store.query.Clause;
@@ -178,10 +170,7 @@ public class IndexStore<T> extends SingleDirectoryIndexServerService implements 
 		}
 	}
 	
-	/**
-	 * TODO move this to interface
-	 * @param property
-	 */
+	@Override
 	public void configureSearchable(String property) {
 		this.additionalSearchableFields.add(checkNotNull(property));
 	}

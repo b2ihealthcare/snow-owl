@@ -78,6 +78,11 @@ public class MemStore<T> implements Store<T> {
 		return FluentIterable.from(values()).skip(offset).limit(limit).filter(Predicates.and(toPredicates(query))).toSet();
 	}
 	
+	@Override
+	public void configureSearchable(String property) {
+		// No-op for MemStore, which can access all properties of a stored item reflectively
+	}
+	
 	private Iterable<Predicate<T>> toPredicates(Query query) {
 		return FluentIterable.from(query.clauses()).filter(Where.class).transform(new Function<Where, Predicate<T>>() {
 			@Override

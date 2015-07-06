@@ -42,5 +42,6 @@ public interface Store<T> {
 	Collection<T> search(Query query);
 	
 	Collection<T> search(Query query, int offset, int limit);
-
+	
+	void configureSearchable(String property);
 }
