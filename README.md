@@ -14,6 +14,8 @@ Snow Owl is an Equinox-OSGi based server (using either Virgo or standalone OSGi)
 
 Required Eclipse plug-ins (install the listed features):
 
+*Note: you may have to untick the `Show only the latest versions of the available software` checkbox to get older versions of a feature.*
+
 * Groovy (http://dist.springsource.org/release/GRECLIPSE/e4.4/)
  * Groovy-Eclipse
  * Extra Groovy compilers > Groovy compiler 2.0 feature
