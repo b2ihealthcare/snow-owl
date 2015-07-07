@@ -15,6 +15,8 @@
  */
 package com.b2international.snowowl.datastore.server.review;
 
+import com.b2international.snowowl.datastore.server.branch.Branch;
+
 /**
  * @since 5.0
  */
@@ -25,4 +27,6 @@ public interface BranchState {
 	long baseTimestamp();
 	
 	long headTimestamp();
+	
+	boolean matches(Branch branch);
 }

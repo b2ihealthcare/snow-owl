@@ -26,16 +26,10 @@ import com.b2international.snowowl.core.exceptions.NotFoundException;
 import com.b2international.snowowl.datastore.server.branch.Branch;
 import com.b2international.snowowl.datastore.server.branch.BranchManager;
 import com.b2international.snowowl.datastore.server.branch.BranchMergeException;
-import com.b2international.snowowl.datastore.server.events.BranchEvent;
-import com.b2international.snowowl.datastore.server.events.BranchReply;
-import com.b2international.snowowl.datastore.server.events.BranchesReply;
-import com.b2international.snowowl.datastore.server.events.CreateBranchEvent;
-import com.b2international.snowowl.datastore.server.events.DeleteBranchEvent;
-import com.b2international.snowowl.datastore.server.events.MergeEvent;
-import com.b2international.snowowl.datastore.server.events.ReadAllBranchEvent;
-import com.b2international.snowowl.datastore.server.events.ReadBranchChildrenEvent;
-import com.b2international.snowowl.datastore.server.events.ReadBranchEvent;
-import com.b2international.snowowl.datastore.server.events.ReopenBranchEvent;
+import com.b2international.snowowl.datastore.server.events.*;
+import com.b2international.snowowl.datastore.server.review.BranchState;
+import com.b2international.snowowl.datastore.server.review.Review;
+import com.b2international.snowowl.datastore.server.review.ReviewManager;
 
 /**
  * @since 4.1
@@ -43,9 +37,11 @@ import com.b2international.snowowl.datastore.server.events.ReopenBranchEvent;
 public class BranchEventHandler extends ApiEventHandler {
 
 	private BranchManager branchManager;
+	private ReviewManager reviewManager;
 	
-	public BranchEventHandler(BranchManager branchManager) {
-		this.branchManager = checkNotNull(branchManager, "manager");
+	public BranchEventHandler(BranchManager branchManager, ReviewManager reviewManager) {
+		this.branchManager = checkNotNull(branchManager, "branchManager");
+		this.reviewManager = checkNotNull(reviewManager, "reviewManager");
 	}
 	
 	@Handler
@@ -95,10 +91,21 @@ public class BranchEventHandler extends ApiEventHandler {
 	@Handler
 	protected BranchReply handle(MergeEvent event) {
 		try {
+			final String reviewId = event.getReviewId();
 			final Branch source = branchManager.getBranch(event.getSource());
 			final Branch target = branchManager.getBranch(event.getTarget());
-			if (source.parent().equals(target)) {
+			
+			if (reviewId != null) {
+				Review review = reviewManager.getReview(reviewId);
+				BranchState sourceState = review.source();
+				BranchState targetState = review.target();
 				
+				if (!sourceState.matches(source) || !targetState.matches(target)) {
+					throw new ConflictException("Branch parameters did not match with the specified review identifier '%s'.", reviewId);
+				}
+			}
+			
+			if (source.parent().equals(target)) {
 				// merge into target
 				try {
 					final Branch merged = target.merge(source, event.getCommitMessage());
@@ -108,7 +115,6 @@ public class BranchEventHandler extends ApiEventHandler {
 				}
 				
 			} else if (target.parent().equals(source)) {
-				
 				// rebase onto target
 				try {
 					final Branch rebased = target.rebase(source, event.getCommitMessage());

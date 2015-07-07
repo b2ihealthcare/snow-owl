@@ -51,4 +51,11 @@ public class BranchStateImpl implements BranchState {
 	public long headTimestamp() {
 		return headTimestamp;
 	}
+
+	@Override
+	public boolean matches(final Branch branch) {
+		return branch.path().equals(path) 
+				&& branch.baseTimestamp() == baseTimestamp 
+				&& branch.headTimestamp() == headTimestamp;
+	}
 }

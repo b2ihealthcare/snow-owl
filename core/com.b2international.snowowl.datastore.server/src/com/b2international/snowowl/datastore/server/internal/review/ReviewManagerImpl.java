@@ -26,6 +26,10 @@ import java.util.UUID;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
+import org.eclipse.core.runtime.jobs.IJobChangeEvent;
+import org.eclipse.core.runtime.jobs.IJobChangeListener;
+import org.eclipse.core.runtime.jobs.Job;
+import org.eclipse.core.runtime.jobs.JobChangeAdapter;
 import org.eclipse.emf.cdo.common.commit.CDOCommitInfo;
 import org.eclipse.emf.cdo.common.commit.CDOCommitInfoHandler;
 
@@ -35,9 +39,7 @@ import com.b2international.snowowl.datastore.cdo.ICDORepository;
 import com.b2international.snowowl.datastore.index.diff.CompareResult;
 import com.b2international.snowowl.datastore.index.diff.NodeDiff;
 import com.b2international.snowowl.datastore.index.diff.VersionCompareConfiguration;
-import com.b2international.snowowl.datastore.remotejobs.*;
 import com.b2international.snowowl.datastore.server.branch.Branch;
-import com.b2international.snowowl.datastore.server.remotejobs.AbstractRemoteJob;
 import com.b2international.snowowl.datastore.server.review.ConceptChanges;
 import com.b2international.snowowl.datastore.server.review.Review;
 import com.b2international.snowowl.datastore.server.review.ReviewManager;
@@ -45,9 +47,6 @@ import com.b2international.snowowl.datastore.server.review.ReviewStatus;
 import com.b2international.snowowl.datastore.store.Store;
 import com.b2international.snowowl.datastore.store.query.QueryBuilder;
 import com.b2international.snowowl.datastore.version.VersionCompareService;
-import com.b2international.snowowl.eventbus.IEventBus;
-import com.b2international.snowowl.eventbus.IHandler;
-import com.b2international.snowowl.eventbus.IMessage;
 import com.google.common.collect.ImmutableSet;
 
 /**
@@ -55,70 +54,39 @@ import com.google.common.collect.ImmutableSet;
  */
 public class ReviewManagerImpl implements ReviewManager {
 
-	private final class CreateReviewRemoteJob extends AbstractRemoteJob {
+	private final class CreateReviewJob extends Job {
 
+		private final String reviewId;
 		private final VersionCompareConfiguration configuration;
 
-		private CreateReviewRemoteJob(final VersionCompareConfiguration configuration) {
+		private CreateReviewJob(final String reviewId, final VersionCompareConfiguration configuration) {
 			super(MessageFormat.format("Creating review for branch ''{0}''", configuration.getTargetPath().getPath()));
+			this.reviewId = reviewId;
 			this.configuration = configuration;
 		}
 
 		@Override
-		protected IStatus runWithListenableMonitor(final IProgressMonitor monitor) {
+		protected IStatus run(final IProgressMonitor monitor) {
 			final CompareResult compare = getServiceForClass(VersionCompareService.class).compare(configuration, monitor);
-			final UUID reviewJobId = RemoteJobUtils.getRemoteJobId(this);
-			createConceptChanges(reviewJobId.toString(), compare);
+			createConceptChanges(reviewId, compare);
 			return Status.OK_STATUS;
+		}
+
+		public String getReviewId() {
+			return reviewId;
 		}
 	}
 
-	private final class RemoteJobChangeHandler implements IHandler<IMessage> {
+	private final class ReviewJobChangeListener extends JobChangeAdapter {
 
 		@Override
-		public void handle(final IMessage message) {
-			new RemoteJobEventSwitch() {
-
-				@Override
-				protected void caseChanged(final RemoteJobChangedEvent event) {
-
-					if (RemoteJobEntry.PROP_STATE.equals(event.getPropertyName())) {
-						final RemoteJobState newState = (RemoteJobState) event.getNewValue();
-						final UUID id = event.getId();
-
-						switch (newState) {
-							case CANCEL_REQUESTED:
-								// Nothing to do
-								break;
-							case FAILED:
-								updateReviewStatus(id.toString(), ReviewStatus.FAILED);
-								break;
-							case FINISHED: 
-								updateReviewStatus(id.toString(), ReviewStatus.CURRENT);
-								break;
-							case RUNNING:
-								// Nothing to do
-								break;
-							case SCHEDULED:
-								// Nothing to do
-								break;
-							default:
-								throw new IllegalStateException(MessageFormat.format("Unexpected remote job state ''{0}''.", newState));
-						}
-					}
-				}
-
-				@Override
-				protected void caseRemoved(final RemoteJobRemovedEvent event) {
-
-					try {
-						getReview(event.getId().toString()).delete();
-					} catch (final NotFoundException e) {
-						return;
-					}					
-				}
-
-			}.doSwitch(message.body(AbstractRemoteJobEvent.class));
+		public void done(IJobChangeEvent event) {
+			final String id = ((CreateReviewJob) event.getJob()).getReviewId();
+			if (event.getResult().isOK()) {
+				updateReviewStatus(id.toString(), ReviewStatus.CURRENT);				
+			} else {
+				updateReviewStatus(id.toString(), ReviewStatus.FAILED);				
+			}
 		}
 	}
 
@@ -143,36 +111,37 @@ public class ReviewManagerImpl implements ReviewManager {
 		}
 	}
 
+	private final String repositoryId;
 	private final Store<ReviewImpl> reviewStore;
 	private final Store<ConceptChangesImpl> conceptChangesStore;
-	private final IHandler<IMessage> remoteJobChangeHandler = new RemoteJobChangeHandler();
+	private final IJobChangeListener jobChangeListener = new ReviewJobChangeListener();
 	private final SetStaleHandler commitInfoHandler = new SetStaleHandler();
 
 	public ReviewManagerImpl(final ICDORepository repository, final Store<ReviewImpl> reviewStore, final Store<ConceptChangesImpl> conceptChangesStore) {
+		this.repositoryId = repository.getUuid();
 		this.reviewStore = reviewStore;
 		this.conceptChangesStore = conceptChangesStore;
 		reviewStore.configureSearchable("sourcePath");
 		reviewStore.configureSearchable("targetPath");
 
-		getServiceForClass(IEventBus.class).registerHandler(IRemoteJobManager.ADDRESS_REMOTE_JOB_CHANGED, remoteJobChangeHandler);
 		repository.getRepository().addCommitInfoHandler(commitInfoHandler);
 	}
 
 	@Override
 	public Review createReview(final String userId, final Branch source, final Branch target) {
-		final UUID reviewId = UUID.randomUUID();
-
 		final IBranchPath headPath = true ? source.branchPath() : target.branchPath();
 		final IBranchPath basePath = convertIntoBasePath(headPath);
-		final VersionCompareConfiguration configuration = new VersionCompareConfiguration("snomedStore", basePath, headPath, false, true, false);
+		final VersionCompareConfiguration configuration = new VersionCompareConfiguration(repositoryId, basePath, headPath, false, true, false);
 
-		final CreateReviewRemoteJob compareJob = new CreateReviewRemoteJob(configuration);
-		RemoteJobUtils.configureProperties(compareJob, userId, null, reviewId);
-
+		final String reviewId = UUID.randomUUID().toString();
+		final CreateReviewJob compareJob = new CreateReviewJob(reviewId, configuration);
+		
 		final ReviewImpl review = ReviewImpl.builder(reviewId.toString(), source, target).build();
 		review.setReviewManager(this);
 		reviewStore.put(reviewId.toString(), review);
 
+		compareJob.addJobChangeListener(jobChangeListener);
+		compareJob.schedule();
 		return review;
 	}
 
@@ -230,7 +199,7 @@ public class ReviewManagerImpl implements ReviewManager {
 		final ConceptChangesImpl conceptChanges = conceptChangesStore.get(id);
 
 		if (conceptChanges == null) {
-			throw new NotFoundException(ConceptChanges.class.getSimpleName(), id);
+			throw new NotFoundException("Concept changes", id);
 		} else {
 			return conceptChanges;
 		}

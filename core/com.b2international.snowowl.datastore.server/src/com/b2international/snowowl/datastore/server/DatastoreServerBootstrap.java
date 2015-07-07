@@ -153,7 +153,6 @@ public class DatastoreServerBootstrap implements PreRunCapableBootstrapFragment 
 
 		final IndexStore<InternalBranch> branchStore = new IndexStore<InternalBranch>(branchIndexDirectory, branchSerializer, InternalBranch.class);
 		final BranchManager branchManager = new CDOBranchManagerImpl(wrapper, branchStore);
-		environment.service(IEventBus.class).registerHandler("/" + repositoryId + "/branches" , new BranchEventHandler(branchManager));
 		
 		final File reviewsIndexDirectory = environment.getDataDirectory()
 				.toPath()
@@ -168,8 +167,9 @@ public class DatastoreServerBootstrap implements PreRunCapableBootstrapFragment 
 		final IndexStore<ReviewImpl> reviewStore = new IndexStore<ReviewImpl>(reviewsIndexDirectory, reviewSerializer, ReviewImpl.class);
 		final IndexStore<ConceptChangesImpl> conceptChangesStore = new IndexStore<ConceptChangesImpl>(conceptChangesIndexDirectory, reviewSerializer, ConceptChangesImpl.class);
 		final ReviewManager reviewManager = new ReviewManagerImpl(wrapper.getCdoRepository(), reviewStore, conceptChangesStore);
-		
-		environment.service(IEventBus.class).registerHandler("/" + repositoryId + "/reviews" , new ReviewEventHandler(reviewManager, branchManager));
+
+		environment.service(IEventBus.class).registerHandler("/" + repositoryId + "/branches" , new BranchEventHandler(branchManager, reviewManager));
+		environment.service(IEventBus.class).registerHandler("/" + repositoryId + "/reviews" , new ReviewEventHandler(branchManager, reviewManager));
 	}
 	
 	private void connectSystemUser(IManagedContainer container) throws SnowowlServiceException {

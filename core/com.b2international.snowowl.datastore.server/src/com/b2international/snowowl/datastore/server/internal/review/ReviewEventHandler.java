@@ -32,12 +32,12 @@ import com.b2international.snowowl.datastore.server.review.ReviewManager;
  */
 public class ReviewEventHandler extends ApiEventHandler {
 
-	private final ReviewManager reviewManager;
 	private final BranchManager branchManager;
+	private final ReviewManager reviewManager;
 
-	public ReviewEventHandler(final ReviewManager reviewManager, final BranchManager branchManager) {
-		this.reviewManager = checkNotNull(reviewManager, "reviewManager");
+	public ReviewEventHandler(final BranchManager branchManager, final ReviewManager reviewManager) {
 		this.branchManager = checkNotNull(branchManager, "branchManager");
+		this.reviewManager = checkNotNull(reviewManager, "reviewManager");
 	}
 
 	@Handler
