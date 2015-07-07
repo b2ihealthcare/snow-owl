@@ -15,7 +15,6 @@
  */
 package com.b2international.snowowl.datastore.server.review;
 
-import com.b2international.snowowl.datastore.server.branch.Branch;
 import com.b2international.snowowl.datastore.server.branch.Deletable;
 
 /**
@@ -41,15 +40,15 @@ public interface Review extends Deletable {
 	 * Note that a separate retrieve request for the same branch may display different values, if it has been changed in
 	 * the meantime.
 	 */
-	Branch source();
-
+	BranchState source();
+	
 	/**
 	 * Returns the branch used as the comparison target in the state it was when collection started.
 	 * <p>
 	 * Note that a separate retrieve request for the same branch may display different values, if it has been changed in
 	 * the meantime.
 	 */
-	Branch target();
+	BranchState target();
 
 	/**
 	 * Deletes this review and corresponding concept changes from the review repository.

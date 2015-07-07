@@ -15,26 +15,19 @@
  */
 package com.b2international.snowowl.snomed.api.rest.domain;
 
-import com.b2international.snowowl.datastore.server.review.BranchState;
-import com.b2international.snowowl.datastore.server.review.ReviewStatus;
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 /**
  * @since 5.0
  */
-@JsonIgnoreProperties("deleted")
-public interface ReviewMixin {
+public interface BranchStateMixin {
 
 	@JsonProperty
-	String id();
+	String path();
 
 	@JsonProperty
-	ReviewStatus status();
+	long baseTimestamp();
 
 	@JsonProperty
-	BranchState source();
-
-	@JsonProperty
-	BranchState target();
+	long headTimestamp();
 }

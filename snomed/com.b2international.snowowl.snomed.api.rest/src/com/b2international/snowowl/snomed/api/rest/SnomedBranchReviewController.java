@@ -16,12 +16,12 @@
 package com.b2international.snowowl.snomed.api.rest;
 
 import static org.springframework.hateoas.mvc.ControllerLinkBuilder.linkTo;
-import static org.springframework.hateoas.mvc.ControllerLinkBuilder.methodOn;
 
 import java.net.URI;
 import java.security.Principal;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.hateoas.mvc.ControllerLinkBuilder;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -68,10 +68,11 @@ public class SnomedBranchReviewController extends AbstractRestService {
 	public DeferredResult<ResponseEntity<Void>> createReview(@RequestBody final CreateReviewRequest request, final Principal principal) {
 		ApiValidation.checkInput(request);
 		final DeferredResult<ResponseEntity<Void>> result = new DeferredResult<>();
+		final ControllerLinkBuilder linkTo = linkTo(SnomedBranchReviewController.class);
 		new AsyncSupport<>(bus, ReviewReply.class)
 		.send(request.toEvent(repositoryId, principal.getName()))
 		.then(new Procedure<ReviewReply>() { @Override protected void doApply(final ReviewReply reply) {
-			result.setResult(Responses.created(getLocationHeader(reply)).build());
+			result.setResult(Responses.created(getLocationHeader(linkTo, reply)).build());
 		}})
 		.fail(new Procedure<Throwable>() { @Override protected void doApply(final Throwable t) {
 			result.setErrorResult(t);
@@ -144,7 +145,7 @@ public class SnomedBranchReviewController extends AbstractRestService {
 		return result;
 	}
 
-	private URI getLocationHeader(final ReviewReply reply) {
-		return linkTo(methodOn(SnomedBranchReviewController.class).getReview(reply.getReview().id())).toUri();
+	private URI getLocationHeader(ControllerLinkBuilder linkBuilder, final ReviewReply reply) {
+		return linkBuilder.slash(reply.getReview().id()).toUri();
 	}
 }

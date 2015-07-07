@@ -18,7 +18,7 @@ package com.b2international.snowowl.datastore.server.internal.review;
 import java.util.Objects;
 
 import com.b2international.snowowl.datastore.server.branch.Branch;
-import com.b2international.snowowl.datastore.server.internal.branch.InternalCDOBasedBranch;
+import com.b2international.snowowl.datastore.server.review.BranchState;
 import com.b2international.snowowl.datastore.server.review.Review;
 import com.b2international.snowowl.datastore.server.review.ReviewStatus;
 
@@ -31,8 +31,8 @@ public class ReviewImpl implements Review {
 
 	private final String id;
 	private final ReviewStatus status;
-	private final Branch source;
-	private final Branch target;
+	private final BranchStateImpl source;
+	private final BranchStateImpl target;
 	private final boolean deleted;
 
 	public static Builder builder(final String id, final Branch source, final Branch target) {
@@ -46,15 +46,19 @@ public class ReviewImpl implements Review {
 	public static class Builder {
 
 		private final String id;
-		private final Branch source;
-		private final Branch target;
+		private final BranchStateImpl source;
+		private final BranchStateImpl target;
 		private ReviewStatus status = ReviewStatus.PENDING;
 		private boolean deleted = false;
 
 		private Builder(final String id, final Branch source, final Branch target) {
+			this(id, new BranchStateImpl(source), new BranchStateImpl(target));
+		}
+
+		private Builder(final String id, final BranchStateImpl sourceState, final BranchStateImpl targetState) {
 			this.id = id;
-			this.source = source;
-			this.target = target;
+			this.source = sourceState;
+			this.target = targetState;
 		}
 
 		private Builder(final ReviewImpl review) {
@@ -79,11 +83,15 @@ public class ReviewImpl implements Review {
 	}
 
 	private ReviewImpl(final Builder builder) {
-		id = builder.id;
-		source = builder.source;
-		target = builder.target;
-		status = builder.status;
-		deleted = builder.deleted;
+		this(builder.id, builder.source, builder.target, builder.status, builder.deleted);
+	}
+
+	private ReviewImpl(final String id, final BranchStateImpl source, final BranchStateImpl target, final ReviewStatus status, final boolean deleted) {
+		this.id = id;
+		this.source = source;
+		this.target = target;
+		this.status = status;
+		this.deleted = deleted;
 	}
 
 	void setReviewManager(final ReviewManagerImpl reviewManager) {
@@ -101,15 +109,23 @@ public class ReviewImpl implements Review {
 	}
 
 	@Override
-	public Branch source() {
+	public BranchState source() {
 		return source;
 	}
 
 	@Override
-	public Branch target() {
+	public BranchState target() {
 		return target;
 	}
 
+	public String sourcePath() {
+		return source.path();
+	}
+	
+	public String targetPath() {
+		return target.path();
+	}
+	
 	@Override
 	public Review delete() {
 		return reviewManager.deleteReview(this);
@@ -118,20 +134,6 @@ public class ReviewImpl implements Review {
 	@Override
 	public boolean isDeleted() {
 		return deleted;
-	}
-
-	/**
-	 * @return the CDO internal identifier of the source branch used in the review
-	 */
-	public int getSourceCdoBranchId() {
-		return ((InternalCDOBasedBranch) source).cdoBranchId();
-	}
-
-	/**
-	 * @return the CDO internal identifier of the target branch used in the review
-	 */
-	public int getTargetCdoBranchId() {
-		return ((InternalCDOBasedBranch) target).cdoBranchId();
 	}
 
 	@Override

@@ -13,28 +13,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.snomed.api.rest.domain;
-
-import com.b2international.snowowl.datastore.server.review.BranchState;
-import com.b2international.snowowl.datastore.server.review.ReviewStatus;
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.fasterxml.jackson.annotation.JsonProperty;
+package com.b2international.snowowl.datastore.server.review;
 
 /**
  * @since 5.0
  */
-@JsonIgnoreProperties("deleted")
-public interface ReviewMixin {
+public interface BranchState {
 
-	@JsonProperty
-	String id();
-
-	@JsonProperty
-	ReviewStatus status();
-
-	@JsonProperty
-	BranchState source();
-
-	@JsonProperty
-	BranchState target();
+	String path();
+	
+	long baseTimestamp();
+	
+	long headTimestamp();
 }

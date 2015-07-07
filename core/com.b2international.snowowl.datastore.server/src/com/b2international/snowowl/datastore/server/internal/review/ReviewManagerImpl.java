@@ -131,10 +131,10 @@ public class ReviewManagerImpl implements ReviewManager {
 				return;
 			}
 
-			final int id = commitInfo.getBranch().getID();
+			final String path = commitInfo.getBranch().getPathName();
 			final Set<ReviewImpl> affectedReviews = ImmutableSet.<ReviewImpl>builder()
-					.addAll(reviewStore.search(QueryBuilder.newQuery().match("sourceCdoBranchId", String.valueOf(id)).build()))
-					.addAll(reviewStore.search(QueryBuilder.newQuery().match("targetCdoBranchId", String.valueOf(id)).build()))
+					.addAll(reviewStore.search(QueryBuilder.newQuery().match("sourcePath", path).build()))
+					.addAll(reviewStore.search(QueryBuilder.newQuery().match("targetCdoBranchId", path).build()))
 					.build();
 
 			for (final ReviewImpl affectedReview : affectedReviews) {
@@ -151,8 +151,8 @@ public class ReviewManagerImpl implements ReviewManager {
 	public ReviewManagerImpl(final ICDORepository repository, final Store<ReviewImpl> reviewStore, final Store<ConceptChangesImpl> conceptChangesStore) {
 		this.reviewStore = reviewStore;
 		this.conceptChangesStore = conceptChangesStore;
-		reviewStore.configureSearchable("sourceCdoBranchId");
-		reviewStore.configureSearchable("targetCdoBranchId");
+		reviewStore.configureSearchable("sourcePath");
+		reviewStore.configureSearchable("targetPath");
 
 		getServiceForClass(IEventBus.class).registerHandler(IRemoteJobManager.ADDRESS_REMOTE_JOB_CHANGED, remoteJobChangeHandler);
 		repository.getRepository().addCommitInfoHandler(commitInfoHandler);
@@ -177,7 +177,7 @@ public class ReviewManagerImpl implements ReviewManager {
 	}
 
 	void updateReviewStatus(final String id, final ReviewStatus newReviewStatus) {
-		// FIXME: check return value of replace while spinning?
+		// FIXME: check if replace succeeded while spinning, similar to how classes work?
 		final ReviewImpl oldReviewImpl = (ReviewImpl) getReview(id);
 		if (!ReviewStatus.STALE.equals(oldReviewImpl.status())) {
 			final ReviewImpl newReviewImpl = ReviewImpl.builder(oldReviewImpl).status(newReviewStatus).build();

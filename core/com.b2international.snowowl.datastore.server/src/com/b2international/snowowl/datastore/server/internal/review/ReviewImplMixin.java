@@ -1,6 +1,6 @@
 /*
  * Copyright 2011-2015 B2i Healthcare Pte Ltd, http://b2i.sg
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -15,10 +15,11 @@
  */
 package com.b2international.snowowl.datastore.server.internal.review;
 
-import com.b2international.snowowl.datastore.server.branch.Branch;
+import com.b2international.snowowl.datastore.server.review.BranchState;
 import com.b2international.snowowl.datastore.server.review.Review;
 import com.b2international.snowowl.datastore.server.review.ReviewStatus;
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 /**
@@ -26,36 +27,37 @@ import com.fasterxml.jackson.annotation.JsonProperty;
  */
 public abstract class ReviewImplMixin {
 
-	@JsonCreator
-	ReviewImplMixin(@JsonProperty("name") String name, 
-			@JsonProperty("parentPath") String parentPath, 
-			@JsonProperty("baseTimestamp") long baseTimestamp,
-			@JsonProperty("headTimestamp") long headTimestamp, 
-			@JsonProperty("deleted") boolean deleted) {
+    @JsonCreator
+    @JsonIgnoreProperties({ "sourcePath", "targetPath" })
+    private ReviewImplMixin(@JsonProperty("id") final String id, 
+    		@JsonProperty("source") final BranchState source, 
+    		@JsonProperty("target") final BranchState target, 
+    		@JsonProperty("status") final ReviewStatus status, 
+    		@JsonProperty("deleted") final boolean deleted) {
+        // Empty constructor body for mixin
+    }
 
-	}
+    @JsonProperty
+    public abstract String id();
 
-	@JsonProperty
-	public abstract String id();
+    @JsonProperty
+    public abstract ReviewStatus status();
 
-	@JsonProperty
-	public abstract ReviewStatus status();
+    @JsonProperty
+    public abstract BranchState source();
 
-	@JsonProperty
-	public abstract Branch source();
+    @JsonProperty
+    public abstract BranchState target();
 
-	@JsonProperty
-	public abstract Branch target();
+    @JsonProperty
+    public abstract Review delete();
 
-	@JsonProperty
-	public abstract Review delete();
+    @JsonProperty
+    public abstract boolean isDeleted();
 
-	@JsonProperty
-	public abstract boolean isDeleted();
+    @JsonProperty
+    public abstract String sourcePath();
 
-	@JsonProperty
-	public abstract int getSourceCdoBranchId();
-
-	@JsonProperty
-	public abstract int getTargetCdoBranchId();
+    @JsonProperty
+    public abstract String targetPath();
 }

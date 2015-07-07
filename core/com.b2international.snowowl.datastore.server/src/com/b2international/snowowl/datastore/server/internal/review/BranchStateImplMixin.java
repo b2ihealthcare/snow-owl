@@ -13,28 +13,29 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.snomed.api.rest.domain;
+package com.b2international.snowowl.datastore.server.internal.review;
 
-import com.b2international.snowowl.datastore.server.review.BranchState;
-import com.b2international.snowowl.datastore.server.review.ReviewStatus;
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 /**
  * @since 5.0
  */
-@JsonIgnoreProperties("deleted")
-public interface ReviewMixin {
+public abstract class BranchStateImplMixin {
 
-	@JsonProperty
-	String id();
+	@JsonCreator
+	private BranchStateImplMixin(@JsonProperty("path") final String path, 
+			@JsonProperty("baseTimestamp") final long baseTimestamp, 
+			@JsonProperty("headTimestamp") final long headTimestamp) {
+		// Empty mixin constructor
+	}
 
-	@JsonProperty
-	ReviewStatus status();
+	@JsonProperty("path")
+	public abstract String path();
 
-	@JsonProperty
-	BranchState source();
+	@JsonProperty("baseTimestamp")
+	public abstract long baseTimestamp();
 
-	@JsonProperty
-	BranchState target();
+	@JsonProperty("headTimestamp")
+	public abstract long headTimestamp();
 }
