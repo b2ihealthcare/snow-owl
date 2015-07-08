@@ -26,8 +26,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 public abstract class ConceptChangesMixin {
 
 	@JsonCreator
-	private ConceptChangesMixin(@JsonProperty("reviewId") final String id,
-			@JsonProperty("created") final String created,
+	private ConceptChangesMixin(@JsonProperty("id") final String id,
 			@JsonProperty("newConcepts") final Set<String> newConcepts, 
 			@JsonProperty("changedConcepts") final Set<String> changedConcepts, 
 			@JsonProperty("deletedConcepts") final Set<String> deletedConcepts) {
@@ -36,9 +35,6 @@ public abstract class ConceptChangesMixin {
 
 	@JsonProperty("id") 
 	public abstract String id();
-
-	@JsonProperty("created")
-	public abstract String created(); 
 
 	@JsonProperty("newConcepts") 
 	public abstract Set<String> newConcepts();

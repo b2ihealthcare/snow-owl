@@ -16,22 +16,22 @@
 package com.b2international.snowowl.datastore.server.internal.review;
 
 import com.b2international.snowowl.datastore.server.review.BranchState;
-import com.b2international.snowowl.datastore.server.review.Review;
 import com.b2international.snowowl.datastore.server.review.ReviewStatus;
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 /**
  * @since 5.0
  */
+@JsonIgnoreProperties({ "sourcePath", "targetPath", "deleted" })
 public abstract class ReviewImplMixin {
 
     @JsonCreator
-    @JsonIgnoreProperties({ "sourcePath", "targetPath" })
     private ReviewImplMixin(@JsonProperty("id") final String id, 
-    		@JsonProperty("source") final BranchState source, 
-    		@JsonProperty("target") final BranchState target, 
+    		@JsonProperty("source") final BranchStateImpl source, 
+    		@JsonProperty("target") final BranchStateImpl target, 
     		@JsonProperty("status") final ReviewStatus status, 
     		@JsonProperty("lastUpdated") final String lastUpdated) {
         // Empty constructor body for mixin
@@ -50,9 +50,6 @@ public abstract class ReviewImplMixin {
     public abstract BranchState target();
 
     @JsonProperty
-    public abstract Review delete();
-
-    @JsonProperty
     public abstract String lastUpdated();
 
     @JsonProperty
@@ -60,4 +57,7 @@ public abstract class ReviewImplMixin {
 
     @JsonProperty
     public abstract String targetPath();
+    
+    @JsonIgnore
+    public abstract boolean isDeleted();
 }
