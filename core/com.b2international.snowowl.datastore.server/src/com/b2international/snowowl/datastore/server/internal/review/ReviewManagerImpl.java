@@ -211,10 +211,18 @@ public class ReviewManagerImpl implements ReviewManager {
 
 	void updateReviewStatus(final String id, final ReviewStatus newReviewStatus) {
 		synchronized (reviewStore) {
-			final ReviewImpl oldReviewImpl = (ReviewImpl) getReview(id);
-			if (!ReviewStatus.STALE.equals(oldReviewImpl.status())) {
-				final ReviewImpl newReviewImpl = ReviewImpl.builder(oldReviewImpl).status(newReviewStatus).build();
-				reviewStore.put(id, newReviewImpl);
+			try {
+				final ReviewImpl oldReviewImpl = (ReviewImpl) getReview(id);
+				if (!ReviewStatus.STALE.equals(oldReviewImpl.status())) {
+					final ReviewImpl newReviewImpl = ReviewImpl.builder(oldReviewImpl)
+							.status(newReviewStatus)
+							.refreshLastUpdated()
+							.build();
+					
+					reviewStore.put(id, newReviewImpl);
+				}
+			} catch (final NotFoundException ignored) {
+				// No need to update if a review has been removed in the meantime 
 			}
 		}
 	}
