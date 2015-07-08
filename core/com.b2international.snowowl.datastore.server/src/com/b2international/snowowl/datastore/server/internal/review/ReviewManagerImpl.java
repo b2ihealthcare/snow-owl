@@ -154,8 +154,7 @@ public class ReviewManagerImpl implements ReviewManager {
 	private final SetStaleHandler commitInfoHandler = new SetStaleHandler();
 	private final TimerTask cleanupTask = new CleanupTask();
 
-	// Check every minute if there's something to remove
-	private static final long CHECK_INTERVAL_MILLIS = TimeUnit.MINUTES.toMillis(1L);
+	private static final long MINUTE_MILLIS = TimeUnit.MINUTES.toMillis(1L);
 
 	private final long keepStaleMillis;
 	private final long keepCurrentMillis;
@@ -165,16 +164,16 @@ public class ReviewManagerImpl implements ReviewManager {
 	}
 
 	public ReviewManagerImpl(final ICDORepository repository, final Store<ReviewImpl> reviewStore, final Store<ConceptChangesImpl> conceptChangesStore) {
-		this(repository, reviewStore, conceptChangesStore, 5 * CHECK_INTERVAL_MILLIS, 15 * CHECK_INTERVAL_MILLIS);
+		this(repository, reviewStore, conceptChangesStore, 5, 15);
 	}
 
 	public ReviewManagerImpl(final ICDORepository repository, 
 			final Store<ReviewImpl> reviewStore, final Store<ConceptChangesImpl> conceptChangesStore, 
-			final long keepStaleMillis, final long keepCurrentMillis) {
+			final int keepStaleMins, final long keepCurrentMins) {
 
 		this.repositoryId = repository.getUuid();
-		this.keepStaleMillis = keepStaleMillis;
-		this.keepCurrentMillis = keepCurrentMillis;
+		this.keepStaleMillis = keepStaleMins * MINUTE_MILLIS;
+		this.keepCurrentMillis = keepCurrentMins * MINUTE_MILLIS;
 
 		this.reviewStore = reviewStore;
 		reviewStore.configureSearchable("status");
@@ -185,7 +184,9 @@ public class ReviewManagerImpl implements ReviewManager {
 		this.conceptChangesStore = conceptChangesStore;
 
 		repository.getRepository().addCommitInfoHandler(commitInfoHandler);
-		Holder.CLEANUP_TIMER.schedule(cleanupTask, CHECK_INTERVAL_MILLIS, CHECK_INTERVAL_MILLIS);
+		
+		// Check every minute if there's something to remove
+		Holder.CLEANUP_TIMER.schedule(cleanupTask, MINUTE_MILLIS, MINUTE_MILLIS);
 	}
 
 	@Override
