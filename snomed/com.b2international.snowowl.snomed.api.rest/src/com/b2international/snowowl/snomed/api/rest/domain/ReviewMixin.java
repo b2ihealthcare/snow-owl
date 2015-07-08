@@ -28,6 +28,9 @@ public interface ReviewMixin {
 
 	@JsonProperty
 	String id();
+	
+	@JsonProperty
+	String lastUpdated();
 
 	@JsonProperty
 	ReviewStatus status();
