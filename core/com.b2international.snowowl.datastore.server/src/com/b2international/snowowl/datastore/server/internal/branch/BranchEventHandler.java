@@ -26,7 +26,16 @@ import com.b2international.snowowl.core.exceptions.NotFoundException;
 import com.b2international.snowowl.datastore.server.branch.Branch;
 import com.b2international.snowowl.datastore.server.branch.BranchManager;
 import com.b2international.snowowl.datastore.server.branch.BranchMergeException;
-import com.b2international.snowowl.datastore.server.events.*;
+import com.b2international.snowowl.datastore.server.events.BranchEvent;
+import com.b2international.snowowl.datastore.server.events.BranchReply;
+import com.b2international.snowowl.datastore.server.events.BranchesReply;
+import com.b2international.snowowl.datastore.server.events.CreateBranchEvent;
+import com.b2international.snowowl.datastore.server.events.DeleteBranchEvent;
+import com.b2international.snowowl.datastore.server.events.MergeEvent;
+import com.b2international.snowowl.datastore.server.events.ReadAllBranchEvent;
+import com.b2international.snowowl.datastore.server.events.ReadBranchChildrenEvent;
+import com.b2international.snowowl.datastore.server.events.ReadBranchEvent;
+import com.b2international.snowowl.datastore.server.events.ReopenBranchEvent;
 import com.b2international.snowowl.datastore.server.review.BranchState;
 import com.b2international.snowowl.datastore.server.review.Review;
 import com.b2international.snowowl.datastore.server.review.ReviewManager;
@@ -100,8 +109,12 @@ public class BranchEventHandler extends ApiEventHandler {
 				BranchState sourceState = review.source();
 				BranchState targetState = review.target();
 				
-				if (!sourceState.matches(source) || !targetState.matches(target)) {
-					throw new ConflictException("Branch parameters did not match with the specified review identifier '%s'.", reviewId);
+				if (!sourceState.matches(source)) {
+					throw new ConflictException("Source branch '%s' did not match with stored state on review identifier '%s'.", source.path(), reviewId);
+				}
+				
+				if (!targetState.matches(target)) {
+					throw new ConflictException("Target branch '%s' did not match with stored state on review identifier '%s'.", target.path(), reviewId);
 				}
 			}
 			
