@@ -33,7 +33,7 @@ public abstract class ReviewImplMixin {
     		@JsonProperty("source") final BranchState source, 
     		@JsonProperty("target") final BranchState target, 
     		@JsonProperty("status") final ReviewStatus status, 
-    		@JsonProperty("deleted") final boolean deleted) {
+    		@JsonProperty("lastUpdated") final String lastUpdated) {
         // Empty constructor body for mixin
     }
 
@@ -53,7 +53,7 @@ public abstract class ReviewImplMixin {
     public abstract Review delete();
 
     @JsonProperty
-    public abstract boolean isDeleted();
+    public abstract String lastUpdated();
 
     @JsonProperty
     public abstract String sourcePath();

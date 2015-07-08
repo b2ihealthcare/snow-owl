@@ -26,15 +26,19 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 public abstract class ConceptChangesMixin {
 
 	@JsonCreator
-	private ConceptChangesMixin(@JsonProperty("reviewId") final String reviewId, 
+	private ConceptChangesMixin(@JsonProperty("reviewId") final String id,
+			@JsonProperty("created") final String created,
 			@JsonProperty("newConcepts") final Set<String> newConcepts, 
 			@JsonProperty("changedConcepts") final Set<String> changedConcepts, 
 			@JsonProperty("deletedConcepts") final Set<String> deletedConcepts) {
 		// Empty mixin constructor
 	}
 
-	@JsonProperty("reviewId") 
-	public abstract String reviewId();
+	@JsonProperty("id") 
+	public abstract String id();
+
+	@JsonProperty("created")
+	public abstract String created(); 
 
 	@JsonProperty("newConcepts") 
 	public abstract Set<String> newConcepts();

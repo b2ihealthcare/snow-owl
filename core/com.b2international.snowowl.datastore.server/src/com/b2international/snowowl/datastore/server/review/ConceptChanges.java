@@ -25,7 +25,7 @@ public interface ConceptChanges {
 	/**
 	 * Returns the associated review's unique identifier.
 	 */
-	String reviewId();
+	String id();
 
 	/**
 	 * Returns a set of SNOMED CT concept identifiers which were marked as new in the comparison.

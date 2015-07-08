@@ -24,25 +24,25 @@ import com.b2international.snowowl.datastore.server.review.ConceptChanges;
  */
 public class ConceptChangesImpl implements ConceptChanges {
 
-	private final String reviewId;
+	private final String id;
 	private final Set<String> newConcepts;
 	private final Set<String> changedConcepts;
 	private final Set<String> deletedConcepts;
-	
-	public ConceptChangesImpl(final String reviewId, 
+
+	public ConceptChangesImpl(final String id,
 			final Set<String> newConcepts, 
 			final Set<String> changedConcepts, 
 			final Set<String> deletedConcepts) {
 
-		this.reviewId = reviewId;
+		this.id = id;
 		this.newConcepts = newConcepts;
 		this.changedConcepts = changedConcepts;
 		this.deletedConcepts = deletedConcepts;
 	}
 
 	@Override
-	public String reviewId() {
-		return reviewId;
+	public String id() {
+		return id;
 	}
 
 	@Override

@@ -15,12 +15,13 @@
  */
 package com.b2international.snowowl.datastore.server.internal.review;
 
-import java.util.Objects;
+import java.util.Date;
 
 import com.b2international.snowowl.datastore.server.branch.Branch;
 import com.b2international.snowowl.datastore.server.review.BranchState;
 import com.b2international.snowowl.datastore.server.review.Review;
 import com.b2international.snowowl.datastore.server.review.ReviewStatus;
+import com.fasterxml.jackson.databind.util.ISO8601Utils;
 
 /**
  * @since 5.0
@@ -30,10 +31,10 @@ public class ReviewImpl implements Review {
 	private ReviewManagerImpl reviewManager;
 
 	private final String id;
+	private final String lastUpdated;
 	private final ReviewStatus status;
 	private final BranchStateImpl source;
 	private final BranchStateImpl target;
-	private final boolean deleted;
 
 	public static Builder builder(final String id, final Branch source, final Branch target) {
 		return new Builder(id, source, target);
@@ -45,11 +46,15 @@ public class ReviewImpl implements Review {
 
 	public static class Builder {
 
+		private static String getCurrentTimeISO8601() {
+			return ISO8601Utils.format(new Date());
+		}
+
 		private final String id;
 		private final BranchStateImpl source;
 		private final BranchStateImpl target;
 		private ReviewStatus status = ReviewStatus.PENDING;
-		private boolean deleted = false;
+		private String lastUpdated = getCurrentTimeISO8601();
 
 		private Builder(final String id, final Branch source, final Branch target) {
 			this(id, new BranchStateImpl(source), new BranchStateImpl(target));
@@ -64,7 +69,7 @@ public class ReviewImpl implements Review {
 		private Builder(final ReviewImpl review) {
 			this(review.id, review.source, review.target);
 			status = review.status;
-			deleted = review.deleted;
+			lastUpdated = review.lastUpdated;
 		}
 
 		public Builder status(final ReviewStatus newStatus) {
@@ -72,8 +77,8 @@ public class ReviewImpl implements Review {
 			return this;
 		}
 
-		public Builder deleted() {
-			deleted = true;
+		public Builder refreshLastUpdated() {
+			lastUpdated = getCurrentTimeISO8601();
 			return this;
 		}
 
@@ -83,15 +88,15 @@ public class ReviewImpl implements Review {
 	}
 
 	private ReviewImpl(final Builder builder) {
-		this(builder.id, builder.source, builder.target, builder.status, builder.deleted);
+		this(builder.id, builder.source, builder.target, builder.status, builder.lastUpdated);
 	}
 
-	private ReviewImpl(final String id, final BranchStateImpl source, final BranchStateImpl target, final ReviewStatus status, final boolean deleted) {
+	private ReviewImpl(final String id, final BranchStateImpl source, final BranchStateImpl target, final ReviewStatus status, final String lastUpdated) {
 		this.id = id;
 		this.source = source;
 		this.target = target;
 		this.status = status;
-		this.deleted = deleted;
+		this.lastUpdated = lastUpdated;
 	}
 
 	void setReviewManager(final ReviewManagerImpl reviewManager) {
@@ -118,14 +123,19 @@ public class ReviewImpl implements Review {
 		return target;
 	}
 
+	@Override
+	public String lastUpdated() {
+		return lastUpdated;
+	}
+
 	public String sourcePath() {
 		return source.path();
 	}
-	
+
 	public String targetPath() {
 		return target.path();
 	}
-	
+
 	@Override
 	public Review delete() {
 		return reviewManager.deleteReview(this);
@@ -133,12 +143,12 @@ public class ReviewImpl implements Review {
 
 	@Override
 	public boolean isDeleted() {
-		return deleted;
+		return false;
 	}
 
 	@Override
 	public int hashCode() {
-		return Objects.hash(id, status);
+		return 31 + id.hashCode();
 	}
 
 	@Override
@@ -147,14 +157,7 @@ public class ReviewImpl implements Review {
 		if (obj == null) { return false; }
 		if (!(obj instanceof ReviewImpl)) { return false; }
 
-		/* 
-		 * XXX: Comparison considers both ID and status, in case event listeners try to change state on the 
-		 * review concurrently.
-		 */
 		final ReviewImpl other = (ReviewImpl) obj;
-		if (!id.equals(other.id)) {	return false; }
-		if (status != other.status) { return false; }
-
-		return true;
+		return id.equals(other.id);
 	}
 }

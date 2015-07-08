@@ -41,7 +41,7 @@ public interface Review extends Deletable {
 	 * the meantime.
 	 */
 	BranchState source();
-	
+
 	/**
 	 * Returns the branch used as the comparison target in the state it was when collection started.
 	 * <p>
@@ -57,4 +57,12 @@ public interface Review extends Deletable {
 	 */
 	@Override
 	Review delete();
+
+	/**
+	 * Returns the last update time in ISO8601 format. Update time is registered at creation and whenever the review's
+	 * state changes.
+	 * 
+	 * @return the time of last update
+	 */
+	String lastUpdated();
 }
