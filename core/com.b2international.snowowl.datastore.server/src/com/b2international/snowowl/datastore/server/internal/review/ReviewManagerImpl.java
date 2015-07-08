@@ -20,8 +20,12 @@ import static com.b2international.snowowl.datastore.BranchPathUtils.convertIntoB
 import static com.google.common.collect.Sets.newHashSet;
 
 import java.text.MessageFormat;
+import java.util.Date;
 import java.util.Set;
+import java.util.Timer;
+import java.util.TimerTask;
 import java.util.UUID;
+import java.util.concurrent.TimeUnit;
 
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
@@ -45,14 +49,17 @@ import com.b2international.snowowl.datastore.server.review.Review;
 import com.b2international.snowowl.datastore.server.review.ReviewManager;
 import com.b2international.snowowl.datastore.server.review.ReviewStatus;
 import com.b2international.snowowl.datastore.store.Store;
+import com.b2international.snowowl.datastore.store.query.Query;
 import com.b2international.snowowl.datastore.store.query.QueryBuilder;
 import com.b2international.snowowl.datastore.version.VersionCompareService;
+import com.fasterxml.jackson.databind.util.ISO8601Utils;
 import com.google.common.collect.ImmutableSet;
 
 /**
  * @since 5.0
  */
 public class ReviewManagerImpl implements ReviewManager {
+
 
 	private final class CreateReviewJob extends Job {
 
@@ -78,7 +85,6 @@ public class ReviewManagerImpl implements ReviewManager {
 	}
 
 	private final class ReviewJobChangeListener extends JobChangeAdapter {
-
 		@Override
 		public void done(IJobChangeEvent event) {
 			final String id = ((CreateReviewJob) event.getJob()).getReviewId();
@@ -91,7 +97,6 @@ public class ReviewManagerImpl implements ReviewManager {
 	}
 
 	private final class SetStaleHandler implements CDOCommitInfoHandler {
-
 		@Override
 		@SuppressWarnings("restriction")
 		public void handleCommitInfo(final CDOCommitInfo commitInfo) {
@@ -100,14 +105,45 @@ public class ReviewManagerImpl implements ReviewManager {
 			}
 
 			final String path = commitInfo.getBranch().getPathName();
-			final Set<ReviewImpl> affectedReviews = ImmutableSet.<ReviewImpl>builder()
-					.addAll(reviewStore.search(QueryBuilder.newQuery().match("sourcePath", path).build()))
-					.addAll(reviewStore.search(QueryBuilder.newQuery().match("targetCdoBranchId", path).build()))
-					.build();
 
-			for (final ReviewImpl affectedReview : affectedReviews) {
-				updateReviewStatus(affectedReview.id(), ReviewStatus.STALE);
+			synchronized (reviewStore) {
+				final Set<ReviewImpl> affectedReviews = ImmutableSet.<ReviewImpl>builder()
+						.addAll(reviewStore.search(QueryBuilder.newQuery().match("sourcePath", path).build()))
+						.addAll(reviewStore.search(QueryBuilder.newQuery().match("targetPath", path).build()))
+						.build();
+
+				for (final ReviewImpl affectedReview : affectedReviews) {
+					updateReviewStatus(affectedReview.id(), ReviewStatus.STALE);
+				}
 			}
+		}
+	}
+
+	private final class CleanupTask extends TimerTask {
+		@Override
+		public void run() {
+
+			long now = System.currentTimeMillis();
+			
+			synchronized (reviewStore) {
+				final Set<ReviewImpl> affectedReviews = ImmutableSet.<ReviewImpl>builder()
+						.addAll(reviewStore.search(buildQuery(ReviewStatus.CURRENT, now - keepCurrentMillis)))
+						.addAll(reviewStore.search(buildQuery(ReviewStatus.PENDING, now - keepStaleMillis)))
+						.addAll(reviewStore.search(buildQuery(ReviewStatus.STALE, now - keepStaleMillis)))
+						.addAll(reviewStore.search(buildQuery(ReviewStatus.FAILED, now - keepStaleMillis)))
+						.build();
+
+				for (final ReviewImpl affectedReview : affectedReviews) {
+					deleteReview(affectedReview);
+				}
+			}
+		}
+
+		private Query buildQuery(ReviewStatus status, long beforeTimestamp) {
+			return QueryBuilder.newQuery()
+					.match("status", status.toString())
+					.lessThan("lastUpdated", ISO8601Utils.format(new Date(beforeTimestamp)))
+					.build();
 		}
 	}
 
@@ -116,15 +152,40 @@ public class ReviewManagerImpl implements ReviewManager {
 	private final Store<ConceptChangesImpl> conceptChangesStore;
 	private final IJobChangeListener jobChangeListener = new ReviewJobChangeListener();
 	private final SetStaleHandler commitInfoHandler = new SetStaleHandler();
+	private final TimerTask cleanupTask = new CleanupTask();
+
+	// Check every minute if there's something to remove
+	private static final long CHECK_INTERVAL_MILLIS = TimeUnit.MINUTES.toMillis(1L);
+
+	private final long keepStaleMillis;
+	private final long keepCurrentMillis;
+
+	private static class Holder {
+		private static final Timer CLEANUP_TIMER = new Timer("Review cleanup", true);
+	}
 
 	public ReviewManagerImpl(final ICDORepository repository, final Store<ReviewImpl> reviewStore, final Store<ConceptChangesImpl> conceptChangesStore) {
+		this(repository, reviewStore, conceptChangesStore, 5 * CHECK_INTERVAL_MILLIS, 15 * CHECK_INTERVAL_MILLIS);
+	}
+
+	public ReviewManagerImpl(final ICDORepository repository, 
+			final Store<ReviewImpl> reviewStore, final Store<ConceptChangesImpl> conceptChangesStore, 
+			final long keepStaleMillis, final long keepCurrentMillis) {
+
 		this.repositoryId = repository.getUuid();
+		this.keepStaleMillis = keepStaleMillis;
+		this.keepCurrentMillis = keepCurrentMillis;
+
 		this.reviewStore = reviewStore;
-		this.conceptChangesStore = conceptChangesStore;
+		reviewStore.configureSearchable("status");
 		reviewStore.configureSearchable("sourcePath");
 		reviewStore.configureSearchable("targetPath");
+		reviewStore.configureSearchable("lastUpdated");
+
+		this.conceptChangesStore = conceptChangesStore;
 
 		repository.getRepository().addCommitInfoHandler(commitInfoHandler);
+		Holder.CLEANUP_TIMER.schedule(cleanupTask, CHECK_INTERVAL_MILLIS, CHECK_INTERVAL_MILLIS);
 	}
 
 	@Override
@@ -135,10 +196,13 @@ public class ReviewManagerImpl implements ReviewManager {
 
 		final String reviewId = UUID.randomUUID().toString();
 		final CreateReviewJob compareJob = new CreateReviewJob(reviewId, configuration);
-		
+
 		final ReviewImpl review = ReviewImpl.builder(reviewId.toString(), source, target).build();
 		review.setReviewManager(this);
-		reviewStore.put(reviewId.toString(), review);
+
+		synchronized (reviewStore) {
+			reviewStore.put(reviewId.toString(), review);
+		}
 
 		compareJob.addJobChangeListener(jobChangeListener);
 		compareJob.schedule();
@@ -146,11 +210,12 @@ public class ReviewManagerImpl implements ReviewManager {
 	}
 
 	void updateReviewStatus(final String id, final ReviewStatus newReviewStatus) {
-		// FIXME: check if replace succeeded while spinning, similar to how classes work?
-		final ReviewImpl oldReviewImpl = (ReviewImpl) getReview(id);
-		if (!ReviewStatus.STALE.equals(oldReviewImpl.status())) {
-			final ReviewImpl newReviewImpl = ReviewImpl.builder(oldReviewImpl).status(newReviewStatus).build();
-			reviewStore.replace(id, oldReviewImpl, newReviewImpl);
+		synchronized (reviewStore) {
+			final ReviewImpl oldReviewImpl = (ReviewImpl) getReview(id);
+			if (!ReviewStatus.STALE.equals(oldReviewImpl.status())) {
+				final ReviewImpl newReviewImpl = ReviewImpl.builder(oldReviewImpl).status(newReviewStatus).build();
+				reviewStore.put(id, newReviewImpl);
+			}
 		}
 	}
 
@@ -179,12 +244,22 @@ public class ReviewManagerImpl implements ReviewManager {
 		}
 
 		final ConceptChangesImpl convertedChanges = new ConceptChangesImpl(id, newConcepts, changedConcepts, deletedConcepts);
-		conceptChangesStore.put(id, convertedChanges);
+
+		synchronized (reviewStore) {
+			if (reviewStore.containsKey(id)) {
+				synchronized (conceptChangesStore) {
+					conceptChangesStore.put(id, convertedChanges);
+				}
+			}
+		}
 	}
 
 	@Override
 	public Review getReview(final String id) {
-		final ReviewImpl review = reviewStore.get(id);
+		final ReviewImpl review;
+		synchronized (reviewStore) {
+			review = reviewStore.get(id);
+		}
 
 		if (review == null) {
 			throw new NotFoundException(Review.class.getSimpleName(), id);
@@ -196,7 +271,10 @@ public class ReviewManagerImpl implements ReviewManager {
 
 	@Override
 	public ConceptChanges getConceptChanges(final String id) {
-		final ConceptChangesImpl conceptChanges = conceptChangesStore.get(id);
+		final ConceptChangesImpl conceptChanges;
+		synchronized (conceptChangesStore) {
+			conceptChanges = conceptChangesStore.get(id);
+		}
 
 		if (conceptChanges == null) {
 			throw new NotFoundException("Concept changes", id);
@@ -206,8 +284,13 @@ public class ReviewManagerImpl implements ReviewManager {
 	}
 
 	Review deleteReview(final Review review) {
-		reviewStore.remove(review.id());
-		conceptChangesStore.remove(review.id());
-		return ReviewImpl.builder((ReviewImpl) review).deleted().build();
+		synchronized (reviewStore) {
+			synchronized (conceptChangesStore) {
+				reviewStore.remove(review.id());
+				conceptChangesStore.remove(review.id());
+			}
+		}
+
+		return ReviewImpl.builder((ReviewImpl) review).refreshLastUpdated().build();
 	}
 }
