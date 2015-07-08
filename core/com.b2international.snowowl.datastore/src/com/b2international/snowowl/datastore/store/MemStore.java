@@ -46,6 +46,11 @@ public class MemStore<T> implements Store<T> {
 	}
 
 	@Override
+	public boolean containsKey(String key) {
+		return values.containsKey(key);
+	}
+
+	@Override
 	public T remove(String key) {
 		return values.remove(key);
 	}
@@ -91,5 +96,4 @@ public class MemStore<T> implements Store<T> {
 			}
 		}).toSet();
 	}
-	
 }

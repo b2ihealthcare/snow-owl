@@ -29,10 +29,12 @@ import org.apache.lucene.document.StringField;
 import org.apache.lucene.index.Term;
 import org.apache.lucene.search.BooleanClause.Occur;
 import org.apache.lucene.search.*;
+import org.apache.lucene.util.BytesRef;
 
 import com.b2international.commons.ReflectionUtils;
 import com.b2international.snowowl.datastore.store.query.Clause;
 import com.b2international.snowowl.datastore.store.query.EqualsWhere;
+import com.b2international.snowowl.datastore.store.query.LessThanWhere;
 import com.b2international.snowowl.datastore.store.query.PrefixWhere;
 import com.b2international.snowowl.datastore.store.query.Where;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -154,6 +156,8 @@ public class IndexStore<T> extends SingleDirectoryIndexServerService implements 
 					result.add(new TermQuery(new Term(property, value)), Occur.MUST);
 				} else if (clause instanceof PrefixWhere) {
 					result.add(new PrefixQuery(new Term(property, value)), Occur.MUST);
+				} else if (clause instanceof LessThanWhere) {
+					result.add(new TermRangeQuery(property, null, new BytesRef(value), false, false), Occur.MUST);
 				}
 			}
 		}
@@ -174,7 +178,31 @@ public class IndexStore<T> extends SingleDirectoryIndexServerService implements 
 	public void configureSearchable(String property) {
 		this.additionalSearchableFields.add(checkNotNull(property));
 	}
-	
+
+	@Override
+	public boolean containsKey(String key) {
+		IndexSearcher searcher = null;
+
+		try {
+
+			try {
+				searcher = manager.acquire();
+
+				final TotalHitCountCollector collector = new TotalHitCountCollector();
+				searcher.search(matchKeyQuery(key), collector);
+				return collector.getTotalHits() > 0;
+
+			} finally {
+				if (null != searcher) {
+					manager.release(searcher);
+				}
+			}
+
+		} catch (IOException e) {
+			throw new StoreException("Failed to check the existence of key '%s'", key, e);
+		} 
+	}
+
 	private void updateDoc(String key, T value) throws IOException {
 		final Document doc = createDoc(key, value);
 		writer.updateDocument(new Term(ID_FIELD, key), doc);
@@ -243,5 +271,4 @@ public class IndexStore<T> extends SingleDirectoryIndexServerService implements 
 		query.add(new TermQuery(new Term(ID_FIELD, key)), Occur.MUST);
 		return query;
 	}
-
 }

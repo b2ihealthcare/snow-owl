@@ -13,37 +13,21 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.datastore.store;
+package com.b2international.snowowl.datastore.store.query;
 
-import java.util.Collection;
-
-import com.b2international.snowowl.datastore.store.query.Query;
-
+import com.google.common.base.Strings;
 
 /**
- * @since 4.1
- * @param <T>
- *            - the type of the objects to store
+ * @since 5.0
  */
-public interface Store<T> {
+public class LessThanWhere extends WhereBase {
 
-	void put(String key, T value);
-	
-	T get(String key);
-	
-	T remove(String key);
-	
-	boolean replace(String key, T oldValue, T newValue);
-	
-	Collection<T> values();
-	
-	void clear();
-	
-	Collection<T> search(Query query);
-	
-	Collection<T> search(Query query, int offset, int limit);
-	
-	void configureSearchable(String property);
+	LessThanWhere(String property, String value) {
+		super(property, value);
+	}
 
-	boolean containsKey(String key);
+	@Override
+	protected boolean matches(String actual) {
+		return Strings.nullToEmpty(actual).compareTo(value()) < 0;
+	}
 }
