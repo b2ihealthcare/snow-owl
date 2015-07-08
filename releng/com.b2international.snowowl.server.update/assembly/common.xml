@@ -73,6 +73,8 @@
 				<exclude>**/*system.bundle.package.exporter*.jar</exclude>
 				<exclude>*slf4j*.jar</exclude>
 				<exclude>*logback*.jar</exclude>
+				<exclude>javax.el*.jar</exclude>
+				<exclude>org.apache.el*.jar</exclude>
 			</excludes>
 		</fileSet>
 	</fileSets>

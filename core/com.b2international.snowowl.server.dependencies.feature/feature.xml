@@ -830,7 +830,7 @@ Visit us at http://b2i.sg
          id="com.b2international.snowowl.hibernate.validator"
          download-size="0"
          install-size="0"
-         version="5.1.1.Final-b2i"
+         version="5.1.2.Final-b2i"
          unpack="false"/>
 
    <plugin
@@ -886,6 +886,13 @@ Visit us at http://b2i.sg
          install-size="0"
          version="0.0.0"
          fragment="true"
+         unpack="false"/>
+
+   <plugin
+         id="org.apache.el"
+         download-size="0"
+         install-size="0"
+         version="0.0.0"
          unpack="false"/>
 
 </feature>
