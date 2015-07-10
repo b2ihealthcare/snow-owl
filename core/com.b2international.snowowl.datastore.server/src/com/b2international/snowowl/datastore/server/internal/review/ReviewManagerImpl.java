@@ -190,9 +190,10 @@ public class ReviewManagerImpl implements ReviewManager {
 	}
 
 	@Override
-	public Review createReview(final String userId, final Branch source, final Branch target) {
-		final IBranchPath headPath = true ? source.branchPath() : target.branchPath();
-		final IBranchPath basePath = convertIntoBasePath(headPath);
+	public Review createReview(final String userId, final Branch source, final Branch target, final boolean isMerge) {
+		
+		final IBranchPath headPath = source.branchPath();
+		final IBranchPath basePath = convertIntoBasePath(isMerge ? source.branchPath() : target.branchPath());
 		final VersionCompareConfiguration configuration = new VersionCompareConfiguration(repositoryId, basePath, headPath, false, true, false);
 
 		final String reviewId = UUID.randomUUID().toString();

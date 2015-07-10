@@ -35,13 +35,13 @@ public interface ReviewManager {
 	 * {@link ReviewStatus#STALE}.
 	 * 
 	 * @see Branch#merge(Branch, String)
-	 * 
 	 * @param userId the identifier of the user requesting the review
 	 * @param source the source branch to review
 	 * @param target the target branch to review
+	 * @param isMerge {@code true} if this review is for a merge, {@code false} if it is for a rebase
 	 * @return the created {@link Review} object
 	 */
-	Review createReview(String userId, Branch source, Branch target);
+	Review createReview(String userId, Branch source, Branch target, boolean isMerge);
 
 	/**
 	 * Retrieves a single review by its unique identifier.
