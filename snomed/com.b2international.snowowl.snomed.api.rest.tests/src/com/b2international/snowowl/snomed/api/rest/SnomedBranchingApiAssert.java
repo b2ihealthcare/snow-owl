@@ -15,6 +15,7 @@
  */
 package com.b2international.snowowl.snomed.api.rest;
 
+import static com.b2international.snowowl.snomed.api.rest.SnomedApiTestConstants.SCT_API;
 import static com.b2international.snowowl.test.commons.rest.RestExtensions.givenAuthenticatedRequest;
 import static org.hamcrest.CoreMatchers.endsWith;
 import static org.hamcrest.CoreMatchers.equalTo;
@@ -59,8 +60,8 @@ public abstract class SnomedBranchingApiAssert {
 	 * 
 	 * @param branchPath the branch path to test
 	 */
-	public static void assertBranchCreated(final IBranchPath branchPath) {
-		assertBranchCreated(branchPath, ImmutableMap.of());
+	public static void givenBranchWithPath(final IBranchPath branchPath) {
+		givenBranchWithPathAndMetadata(branchPath, ImmutableMap.of());
 	}
 
 	/**
@@ -71,7 +72,7 @@ public abstract class SnomedBranchingApiAssert {
 	 * @param branchPath the branch path to test
 	 * @param metadata the metadata to register with the new branch
 	 */
-	public static void assertBranchCreated(final IBranchPath branchPath, final Map<?, ?> metadata) {
+	public static void givenBranchWithPathAndMetadata(final IBranchPath branchPath, final Map<?, ?> metadata) {
 		assertBranchCreatedWithStatus(branchPath, metadata, 201)
 		.and().header("Location", endsWith(String.format("/branches/%s", branchPath.getPath())));
 	}
@@ -110,7 +111,7 @@ public abstract class SnomedBranchingApiAssert {
 	 * 
 	 * @param branchPath the branch path to test
 	 */
-	public static void assertBranchDeleted(final IBranchPath branchPath) {
+	public static void whenDeletingBranchWithPath(final IBranchPath branchPath) {
 		givenAuthenticatedRequest(SnomedApiTestConstants.SCT_API)
 		.when().delete("/branches/{path}", branchPath.getPath())
 		.then().assertThat().statusCode(204);
@@ -184,6 +185,42 @@ public abstract class SnomedBranchingApiAssert {
 				branchPath.lastSegment());
 	}
 
+	// --------------------------------------------------------
+	// Rebase and merge assertions
+	// --------------------------------------------------------
+
+	// XXX: the merge service figures out what to do by inspecting the relationship between source and target
+	public static Response whenMergingOrRebasingBranches(final IBranchPath source, final IBranchPath target, final String commitComment) {
+		final Map<?, ?> requestBody = ImmutableMap.builder()
+				.put("source", source.getPath())
+				.put("target", target.getPath())
+				.put("commitComment", commitComment)
+				.build();
+
+		return givenAuthenticatedRequest(SCT_API)
+				.with().contentType(ContentType.JSON)
+				.and().body(requestBody)
+				.when().post("/merges");
+	}
+
+	public static void assertBranchCanBeMerged(final IBranchPath branchPath, final String commitComment) {
+		whenMergingOrRebasingBranches(branchPath, branchPath.getParent(), commitComment)
+		.then()
+			.statusCode(204);
+	}
+
+	public static void assertBranchCanBeRebased(final IBranchPath branchPath, final String commitComment) {
+		whenMergingOrRebasingBranches(branchPath.getParent(), branchPath, commitComment)
+		.then().
+			statusCode(204);
+	}
+
+	public static void assertBranchConflicts(final IBranchPath source, final IBranchPath target, final String commitComment) {
+		whenMergingOrRebasingBranches(source, target, commitComment)
+		.then()
+			.statusCode(409);
+	}
+	
 	private SnomedBranchingApiAssert() {
 		throw new UnsupportedOperationException("This class is not supposed to be instantiated.");
 	}

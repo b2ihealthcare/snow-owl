@@ -30,7 +30,6 @@ import com.b2international.snowowl.snomed.api.domain.CharacteristicType;
 import com.b2international.snowowl.snomed.api.rest.AbstractSnomedApiTest;
 import com.b2international.snowowl.snomed.api.rest.SnomedComponentType;
 import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ImmutableMap.Builder;
 
 /**
  * @since 2.0
@@ -41,45 +40,9 @@ public class SnomedRelationshipApiTest extends AbstractSnomedApiTest {
 	private static final String TEMPORAL_CONTEXT = "410510008";
 	private static final String FINDING_CONTEXT = "408729009";
 
-	private Builder<Object, Object> createRequestBuilder(final String sourceId, 
-			final String typeId, 
-			final String destinationId, 
-			final String moduleId, 
-			final String comment) {
-
-		return ImmutableMap.builder()
-				.put("sourceId", sourceId)
-				.put("typeId", typeId)
-				.put("destinationId", destinationId)
-				.put("moduleId", moduleId)
-				.put("commitComment", comment);
-	}
-
-	private Map<?, ?> createRequestBody(final String sourceId, 
-			final String typeId, 
-			final String destinationId, 
-			final String moduleId, 
-			final String comment) {
-
-		return createRequestBuilder(sourceId, typeId, destinationId, moduleId, comment)
-				.build();
-	}
-
-	private Map<?, ?> createRequestBody(final String sourceId, 
-			final String typeId, 
-			final String destinationId, 
-			final String moduleId, 
-			final CharacteristicType characteristicType, 
-			final String comment) {
-
-		return createRequestBuilder(sourceId, typeId, destinationId, moduleId, comment)
-				.put("characteristicType", characteristicType.name())
-				.build();
-	}
-
 	@Test
 	public void createRelationshipNonExistentBranch() {
-		final Map<?, ?> requestBody = createRequestBody(DISEASE, TEMPORAL_CONTEXT, FINDING_CONTEXT, MODULE_SCT_CORE, "New relationship on a non-existent branch");
+		final Map<?, ?> requestBody = givenRelationshipRequestBody(DISEASE, TEMPORAL_CONTEXT, FINDING_CONTEXT, MODULE_SCT_CORE, "New relationship on a non-existent branch");
 		assertComponentCreatedWithStatus(createPath("MAIN/1998-01-31"), SnomedComponentType.RELATIONSHIP, requestBody, 404)
 		.and().body("status", equalTo(404));
 
@@ -87,25 +50,25 @@ public class SnomedRelationshipApiTest extends AbstractSnomedApiTest {
 
 	@Test
 	public void createRelationshipWithNonExistentSource() {
-		final Map<?, ?> requestBody = createRequestBody("1", TEMPORAL_CONTEXT, FINDING_CONTEXT, MODULE_SCT_CORE, "New relationship with a non-existent source ID");		
+		final Map<?, ?> requestBody = givenRelationshipRequestBody("1", TEMPORAL_CONTEXT, FINDING_CONTEXT, MODULE_SCT_CORE, "New relationship with a non-existent source ID");		
 		assertComponentNotCreated(createMainPath(), SnomedComponentType.RELATIONSHIP, requestBody);
 	}
 
 	@Test
 	public void createRelationshipWithNonexistentType() {
-		final Map<?, ?> requestBody = createRequestBody(DISEASE, "2", FINDING_CONTEXT, MODULE_SCT_CORE, "New relationship on a non-existent branch");		
+		final Map<?, ?> requestBody = givenRelationshipRequestBody(DISEASE, "2", FINDING_CONTEXT, MODULE_SCT_CORE, "New relationship on a non-existent branch");		
 		assertComponentNotCreated(createMainPath(), SnomedComponentType.RELATIONSHIP, requestBody);
 	}
 
 	@Test
 	public void createRelationshipWithNonExistentDestination() {
-		final Map<?, ?> requestBody = createRequestBody(DISEASE, TEMPORAL_CONTEXT, "3", MODULE_SCT_CORE, "New relationship with a non-existent destination ID");		
+		final Map<?, ?> requestBody = givenRelationshipRequestBody(DISEASE, TEMPORAL_CONTEXT, "3", MODULE_SCT_CORE, "New relationship with a non-existent destination ID");		
 		assertComponentNotCreated(createMainPath(), SnomedComponentType.RELATIONSHIP, requestBody);
 	}
 
 	@Test
 	public void createRelationshipWithNonexistentModule() {
-		final Map<?, ?> requestBody = createRequestBody(DISEASE, TEMPORAL_CONTEXT, FINDING_CONTEXT, "4", "New relationship with a non-existent module ID");
+		final Map<?, ?> requestBody = givenRelationshipRequestBody(DISEASE, TEMPORAL_CONTEXT, FINDING_CONTEXT, "4", "New relationship with a non-existent module ID");
 		assertComponentNotCreated(createMainPath(), SnomedComponentType.RELATIONSHIP, requestBody);
 	}
 
@@ -115,21 +78,21 @@ public class SnomedRelationshipApiTest extends AbstractSnomedApiTest {
 
 	@Test
 	public void createRelationship() {
-		final Map<?, ?> requestBody = createRequestBody(DISEASE, TEMPORAL_CONTEXT, FINDING_CONTEXT, MODULE_SCT_CORE, "New relationship on MAIN");
+		final Map<?, ?> requestBody = givenRelationshipRequestBody(DISEASE, TEMPORAL_CONTEXT, FINDING_CONTEXT, MODULE_SCT_CORE, "New relationship on MAIN");
 		final String relationshipId = assertComponentCreated(createMainPath(), SnomedComponentType.RELATIONSHIP, requestBody);
 		assertCharacteristicType(createMainPath(), relationshipId, CharacteristicType.STATED_RELATIONSHIP);
 	}
 
 	@Test
 	public void createRelationshipInferred() {
-		final Map<?, ?> requestBody = createRequestBody(DISEASE, TEMPORAL_CONTEXT, FINDING_CONTEXT, MODULE_SCT_CORE, CharacteristicType.INFERRED_RELATIONSHIP, "New relationship on MAIN");
+		final Map<?, ?> requestBody = givenRelationshipRequestBody(DISEASE, TEMPORAL_CONTEXT, FINDING_CONTEXT, MODULE_SCT_CORE, CharacteristicType.INFERRED_RELATIONSHIP, "New relationship on MAIN");
 		final String relationshipId = assertComponentCreated(createMainPath(), SnomedComponentType.RELATIONSHIP, requestBody);
 		assertCharacteristicType(createMainPath(), relationshipId, CharacteristicType.INFERRED_RELATIONSHIP);
 	}
 
 	@Test
 	public void deleteRelationship() {
-		final Map<?, ?> requestBody = createRequestBody(DISEASE, TEMPORAL_CONTEXT, FINDING_CONTEXT, MODULE_SCT_CORE, "New relationship on MAIN");
+		final Map<?, ?> requestBody = givenRelationshipRequestBody(DISEASE, TEMPORAL_CONTEXT, FINDING_CONTEXT, MODULE_SCT_CORE, "New relationship on MAIN");
 		final String relationshipId = assertComponentCreated(createMainPath(), SnomedComponentType.RELATIONSHIP, requestBody);
 
 		assertRelationshipCanBeDeleted(createMainPath(), relationshipId);
@@ -146,7 +109,7 @@ public class SnomedRelationshipApiTest extends AbstractSnomedApiTest {
 
 	@Test
 	public void inactivateRelationship() {
-		final Map<?, ?> createRequestBody = createRequestBody(DISEASE, TEMPORAL_CONTEXT, FINDING_CONTEXT, MODULE_SCT_CORE, "New relationship on MAIN");
+		final Map<?, ?> createRequestBody = givenRelationshipRequestBody(DISEASE, TEMPORAL_CONTEXT, FINDING_CONTEXT, MODULE_SCT_CORE, "New relationship on MAIN");
 		final String relationshipId = assertComponentCreated(createMainPath(), SnomedComponentType.RELATIONSHIP, createRequestBody);
 		assertRelationshipActive(createMainPath(), relationshipId, true);
 
@@ -166,7 +129,7 @@ public class SnomedRelationshipApiTest extends AbstractSnomedApiTest {
 	@Test
 	public void createRelationshipOnNestedBranch() {
 		final IBranchPath nestedBranchPath = createNestedBranch("a", "b");
-		final Map<?, ?> requestBody = createRequestBody(DISEASE, TEMPORAL_CONTEXT, FINDING_CONTEXT, MODULE_SCT_CORE, "New relationship on MAIN");
+		final Map<?, ?> requestBody = givenRelationshipRequestBody(DISEASE, TEMPORAL_CONTEXT, FINDING_CONTEXT, MODULE_SCT_CORE, "New relationship on MAIN");
 		final String relationshipId = assertComponentCreated(nestedBranchPath, SnomedComponentType.RELATIONSHIP, requestBody);		
 
 		assertRelationshipExists(nestedBranchPath, relationshipId);
@@ -178,7 +141,7 @@ public class SnomedRelationshipApiTest extends AbstractSnomedApiTest {
 	@Test
 	public void deleteRelationshipOnNestedBranch() {
 		final IBranchPath nestedBranchPath = createNestedBranch("a", "b");
-		final Map<?, ?> requestBody = createRequestBody(DISEASE, TEMPORAL_CONTEXT, FINDING_CONTEXT, MODULE_SCT_CORE, "New relationship on MAIN");
+		final Map<?, ?> requestBody = givenRelationshipRequestBody(DISEASE, TEMPORAL_CONTEXT, FINDING_CONTEXT, MODULE_SCT_CORE, "New relationship on MAIN");
 		final String relationshipId = assertComponentCreated(nestedBranchPath, SnomedComponentType.RELATIONSHIP, requestBody);		
 
 		assertRelationshipCanBeDeleted(nestedBranchPath, relationshipId);
