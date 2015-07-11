@@ -1,5 +1,6 @@
 package com.b2international.snowowl.snomed.api.impl.domain;
 
+import com.b2international.commons.ClassUtils;
 import com.b2international.snowowl.core.terminology.ComponentCategory;
 import com.b2international.snowowl.snomed.api.domain.Acceptability;
 import com.b2international.snowowl.snomed.api.domain.ISnomedComponentInput;
@@ -36,11 +37,11 @@ public class DescriptionInputCreator extends AbstractInputCreator implements Com
 
 	@Override
 	public boolean canCreateInput(Class<? extends ISnomedComponentInput> inputType) {
-		return SnomedDescriptionInput.class.isAssignableFrom(inputType);
+		return ClassUtils.isClassAssignableFrom(SnomedDescriptionInput.class, inputType.getName());
 	}
 
 	@Override
 	public boolean canCreateUpdate(Class<? extends ISnomedComponentUpdate> updateType) {
-		return SnomedDescriptionUpdate.class.isAssignableFrom(updateType);
+		return ClassUtils.isClassAssignableFrom(SnomedDescriptionUpdate.class, updateType.getName());
 	}
 }

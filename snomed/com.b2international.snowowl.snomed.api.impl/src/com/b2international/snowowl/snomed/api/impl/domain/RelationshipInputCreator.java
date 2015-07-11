@@ -1,5 +1,6 @@
 package com.b2international.snowowl.snomed.api.impl.domain;
 
+import com.b2international.commons.ClassUtils;
 import com.b2international.snowowl.core.terminology.ComponentCategory;
 import com.b2international.snowowl.snomed.api.domain.ISnomedComponentInput;
 import com.b2international.snowowl.snomed.api.domain.ISnomedComponentUpdate;
@@ -29,11 +30,11 @@ public class RelationshipInputCreator extends AbstractInputCreator implements Co
 
 	@Override
 	public boolean canCreateInput(Class<? extends ISnomedComponentInput> inputType) {
-		return SnomedRelationshipInput.class.isAssignableFrom(inputType);
+		return ClassUtils.isClassAssignableFrom(SnomedRelationshipInput.class, inputType.getName());
 	}
 
 	@Override
 	public boolean canCreateUpdate(Class<? extends ISnomedComponentUpdate> updateType) {
-		return SnomedRelationshipUpdate.class.isAssignableFrom(updateType);
+		return ClassUtils.isClassAssignableFrom(SnomedRelationshipUpdate.class, updateType.getName());
 	}
 }
