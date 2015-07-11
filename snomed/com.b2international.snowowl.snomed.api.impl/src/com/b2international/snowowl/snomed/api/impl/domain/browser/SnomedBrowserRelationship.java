@@ -22,6 +22,13 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 public class SnomedBrowserRelationship extends SnomedBrowserComponent implements ISnomedBrowserRelationship {
 
 	private String relationshipId;
+	
+	public SnomedBrowserRelationship () {
+	}
+	
+	public SnomedBrowserRelationship (String relationshipId) {
+		this.relationshipId = relationshipId;
+	}
 
 	@JsonDeserialize(as=SnomedBrowserRelationshipType.class)
 	private ISnomedBrowserRelationshipType type;
@@ -105,7 +112,9 @@ public class SnomedBrowserRelationship extends SnomedBrowserComponent implements
 	@Override
 	public String toString() {
 		final StringBuilder builder = new StringBuilder();
-		builder.append("SnomedBrowserRelationship [type=");
+		builder.append("SnomedBrowserRelationship [ id=");
+		builder.append(relationshipId);
+		builder.append(", type=");
 		builder.append(type);
 		builder.append(", relationshipId=");
 		builder.append(relationshipId);
