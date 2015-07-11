@@ -255,7 +255,7 @@ public class SnomedBrowserService implements ISnomedBrowserService {
 	private List<ISnomedBrowserRelationship> convertRelationships(final List<SnomedRelationshipIndexEntry> relationships, final IComponentRef sourceConceptRef, final List<Locale> locales) {
 		final ImmutableMap.Builder<String, ISnomedBrowserRelationship> convertedRelationshipBuilder = ImmutableMap.builder();
 		for (final SnomedRelationshipIndexEntry relationship : relationships) {
-			final SnomedBrowserRelationship convertedRelationship = new SnomedBrowserRelationship();
+			final SnomedBrowserRelationship convertedRelationship = new SnomedBrowserRelationship(relationship.getId());
 			convertedRelationship.setActive(relationship.isActive());
 			convertedRelationship.setCharacteristicType(CharacteristicType.getByConceptId(relationship.getCharacteristicTypeId()));
 			convertedRelationship.setEffectiveTime(EffectiveTimes.toDate(relationship.getEffectiveTimeAsLong()));
