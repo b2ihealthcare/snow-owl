@@ -142,11 +142,6 @@ public class ReviewImpl implements Review {
 	}
 
 	@Override
-	public boolean isDeleted() {
-		return false;
-	}
-
-	@Override
 	public int hashCode() {
 		return 31 + id.hashCode();
 	}
