@@ -99,7 +99,7 @@ This describes the resources that make up the official Snow Owl® SNOMED CT Term
 		<p>
 			Snow Owl provides branching support for terminology repositories. In each repository there is an always existing and <i>UP_TO_DATE</i> branch called <b>MAIN</b>.
 			The <code>MAIN</code> repository represents the latest working version of your terminology.
-		<p>
+		</p>
 		<p>
 			You can create your own branches and create/edit/delete components and other resources on them. 
 			Branches are identified with their full path, which should always start with <i>MAIN</i>.
@@ -110,7 +110,7 @@ This describes the resources that make up the official Snow Owl® SNOMED CT Term
 			To properly merge a branch back into its parent, sometimes it is required to rebase (synchronize) it first with its parent to get the latest changes.
 			This can be decided via the state attribute of the branch, which represents the current state compared to its parent state.
 		</p>
-		<h2>Branch states</h2>
+	<h2>Branch states</h2>
 		<p>There are five different branch states available:</p>
 		<ol>
 			<li>UP_TO_DATE - the branch is up-to-date with its parent there are no changes neither on the branch or on its parent</li>
@@ -120,9 +120,27 @@ This describes the resources that make up the official Snow Owl® SNOMED CT Term
 			<li>STALE - the branch is no longer in relation with its former parent, and should be deleted.</li>
 		</ol>
 		<p>
-			<i>NOTE: Snow Owl does NOT support merging of unrelated (STALE) branches. So branch <code>MAIN/a</code> cannot be merged into or rebased on top of <code>MAIN/b</code>, there has to be a direct parent-child relationship between the two branches.</i>
+			<i>NOTE: Snow Owl does NOT support merging of unrelated (STALE) branches. So branch <code>MAIN/a</code> cannot be merged into or rebased on top of <code>MAIN/b</code>, 
+			there has to be a direct parent-child relationship between the two branches.</i>
 		</p>
-	<h2>Branches</h2>
+	<h2>Reviews</h2>
+		<p>
+			Reviews for current terminology changes committed to the source or target branch can be conducted by creating a review resource. The created resource can be polled to keep
+			track of the state of computations; initially the resource returns PENDING state, but when the change set on a branch is computed, it will be in the CURRENT state. Unsuccessful 
+			attempts will be marked with FAILED state.
+		</p>
+		<p>
+			If at any point in time after creating a review resource, additional commits are added to either the source or the target branch, the review resource transitions into the STALE
+			state, and can't be used in any merge or rebase operations.
+		</p>
+		<p>
+			As an additional parameter, a review identifier can be added to merge/rebase requests. If the source or target branch state deviates from the values stored in the review,
+			the operation will be rejected. 
+		<p>
+		<p>
+			Reviews and concept change sets have a limited lifetime. CURRENT reviews are kept for 15 minutes, while review objects in any other states are valid for 5 minutes by default. The
+			values can be changed in the server's configuration file.
+		</p>
 		<h3>Get a branch</h3>
 		<pre><code class="json">GET /branches/:path</code></pre>
 		<p>Response</p>
@@ -183,6 +201,67 @@ Location: http://localhost:8080/snowowl/snomed-ct/v2/branches/MAIN/branchName</c
   "source" : "MAIN",
   "target" : "MAIN/branchName"
 }</code></pre>
+		<p>Response</p>
+		<pre><code class="json">Status: 204 No content</code></pre>
+		<h3>Perform a merge with review identifier</h3>
+		<pre><code class="json">POST /merges</code></pre>
+		<p>Input</p>
+		<pre><code class="json">{
+  "source" : "MAIN/branchName",
+  "target" : "MAIN",
+  "reviewId" : "63e3187d-b2dd-4824-8078-893679fed93e" 
+}</code></pre>
+		<p>Successful response</p>
+		<pre><code class="json">Status: 204 No content</code></pre>
+		<p>Failure response</p>
+		<pre><code class="json">{
+  "status": 409,
+  "code": 0,
+  "message": "Target branch 'MAIN' did not match with stored state on review identifier '63e3187d-b2dd-4824-8078-893679fed93e'.",
+  "developerMessage": "Target branch 'MAIN' did not match with stored state on review identifier '63e3187d-b2dd-4824-8078-893679fed93e'."
+}</code></pre>
+	<h2>Reviews</h2>
+		<h3>Create a review</h3>
+		<pre><code class="json">POST /reviews</code></pre>
+		<p>Input</p>
+		<pre><code class="json">{
+  "source": "MAIN/a/b",
+  "target": "MAIN/a"
+}</code></pre>
+		<p>Response</p>
+		<pre><code class="json">Status: 201 Created
+Location: http://localhost:8080/snowowl/snomed-ct/v2/reviews/b5e8cb6b-419e-4180-9391-b938b50ef18b</code></pre>	
+		<h3>Get a review</h3>
+		<pre><code class="json">GET /reviews/:id</code></pre>
+		<p>Response</p>
+		<pre><code class="json">Status: 200 OK
+{
+  "id": "b5e8cb6b-419e-4180-9391-b938b50ef18b",
+  "lastUpdated": "2015-07-13T08:44:05Z",
+  "status": "CURRENT",
+  "source": {
+    "path": "MAIN/a/b",
+    "baseTimestamp": 1434556231935,
+    "headTimestamp": 1434556613118
+  },
+  "target": {
+    "path": "MAIN/a",
+    "baseTimestamp": 1429542539277,
+    "headTimestamp": 1436776409395
+  }
+}</code></pre>
+		<h3>Get concept changes for review</h3>
+		<pre><code class="json">GET /reviews/:id/concept-changes</code></pre>
+		<p>Response</p>
+		<pre><code class="json">Status: 200 OK
+{
+  "id": "b5e8cb6b-419e-4180-9391-b938b50ef18b",
+  "changedConcepts": [
+    "302509004"
+  ]
+}</code></pre>
+		<h3>Delete a review</h3>
+		<pre><code class="json">DELETE /reviews/:id</code></pre>
 		<p>Response</p>
 		<pre><code class="json">Status: 204 No content</code></pre>
 </div>
