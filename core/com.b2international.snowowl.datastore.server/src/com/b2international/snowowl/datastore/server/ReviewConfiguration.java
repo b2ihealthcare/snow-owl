@@ -25,20 +25,10 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 public class ReviewConfiguration {
 
 	@Min(1)
-	private int keepStaleMins = 5;
-
-	@Min(1)
 	private int keepCurrentMins = 15;
 
-	@JsonProperty
-	public int getKeepStaleMins() {
-		return keepStaleMins;
-	}
-
-	@JsonProperty
-	public void setKeepStaleMins(final int keepStaleMins) {
-		this.keepStaleMins = keepStaleMins;
-	}
+	@Min(1)
+	private int keepOtherMins = 5;
 
 	@JsonProperty
 	public int getKeepCurrentMins() {
@@ -48,5 +38,15 @@ public class ReviewConfiguration {
 	@JsonProperty
 	public void setKeepCurrentMins(final int keepCurrentMins) {
 		this.keepCurrentMins = keepCurrentMins;
+	}
+
+	@JsonProperty
+	public int getKeepOtherMins() {
+		return keepOtherMins;
+	}
+
+	@JsonProperty
+	public void setKeepOtherMins(final int keepOtherMins) {
+		this.keepOtherMins = keepOtherMins;
 	}
 }

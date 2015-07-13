@@ -178,7 +178,7 @@ public class DatastoreServerBootstrap implements PreRunCapableBootstrapFragment 
 		
 		final ReviewManager reviewManager = new ReviewManagerImpl(wrapper.getCdoRepository(), 
 				reviewStore, conceptChangesStore,
-				reviewConfiguration.getKeepStaleMins(), reviewConfiguration.getKeepCurrentMins());
+				reviewConfiguration.getKeepCurrentMins(), reviewConfiguration.getKeepOtherMins());
 
 		environment.service(IEventBus.class).registerHandler("/" + repositoryId + "/branches" , new BranchEventHandler(branchManager, reviewManager));
 		environment.service(IEventBus.class).registerHandler("/" + repositoryId + "/reviews" , new ReviewEventHandler(branchManager, reviewManager));

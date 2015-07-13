@@ -128,9 +128,9 @@ public class ReviewManagerImpl implements ReviewManager {
 
 					affectedReviews = ImmutableSet.<ReviewImpl>builder()
 							.addAll(reviewStore.search(buildQuery(ReviewStatus.CURRENT, now - keepCurrentMillis)))
-							.addAll(reviewStore.search(buildQuery(ReviewStatus.PENDING, now - keepStaleMillis)))
-							.addAll(reviewStore.search(buildQuery(ReviewStatus.STALE, now - keepStaleMillis)))
-							.addAll(reviewStore.search(buildQuery(ReviewStatus.FAILED, now - keepStaleMillis)))
+							.addAll(reviewStore.search(buildQuery(ReviewStatus.PENDING, now - keepOtherMillis)))
+							.addAll(reviewStore.search(buildQuery(ReviewStatus.STALE, now - keepOtherMillis)))
+							.addAll(reviewStore.search(buildQuery(ReviewStatus.FAILED, now - keepOtherMillis)))
 							.build();
 
 				} catch (final Exception e) {
@@ -167,7 +167,7 @@ public class ReviewManagerImpl implements ReviewManager {
 
 	private static final long REFRESH_INTERVAL = TimeUnit.MINUTES.toMillis(1L);
 
-	private final long keepStaleMillis;
+	private final long keepOtherMillis;
 	private final long keepCurrentMillis;
 
 	private static class Holder {
@@ -175,16 +175,16 @@ public class ReviewManagerImpl implements ReviewManager {
 	}
 
 	public ReviewManagerImpl(final ICDORepository repository, final Store<ReviewImpl> reviewStore, final Store<ConceptChangesImpl> conceptChangesStore) {
-		this(repository, reviewStore, conceptChangesStore, 5, 15);
+		this(repository, reviewStore, conceptChangesStore, 15, 5);
 	}
 
 	public ReviewManagerImpl(final ICDORepository repository, 
 			final Store<ReviewImpl> reviewStore, final Store<ConceptChangesImpl> conceptChangesStore, 
-			final int keepStaleMins, final long keepCurrentMins) {
+			final long keepCurrentMins, final int keepOtherMins) {
 
 		this.repositoryId = repository.getUuid();
-		this.keepStaleMillis = TimeUnit.MINUTES.toMillis(keepStaleMins);
 		this.keepCurrentMillis = TimeUnit.MINUTES.toMillis(keepCurrentMins);
+		this.keepOtherMillis = TimeUnit.MINUTES.toMillis(keepOtherMins);
 
 		this.reviewStore = reviewStore;
 		reviewStore.configureSearchable("status");
