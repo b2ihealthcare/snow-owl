@@ -20,11 +20,7 @@ import static com.b2international.snowowl.datastore.BranchPathUtils.convertIntoB
 import static com.google.common.collect.Sets.newHashSet;
 
 import java.text.MessageFormat;
-import java.util.Date;
-import java.util.Set;
-import java.util.Timer;
-import java.util.TimerTask;
-import java.util.UUID;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 
 import org.eclipse.core.runtime.IProgressMonitor;
@@ -36,6 +32,8 @@ import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.core.runtime.jobs.JobChangeAdapter;
 import org.eclipse.emf.cdo.common.commit.CDOCommitInfo;
 import org.eclipse.emf.cdo.common.commit.CDOCommitInfoHandler;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.exceptions.NotFoundException;
@@ -122,19 +120,30 @@ public class ReviewManagerImpl implements ReviewManager {
 	private final class CleanupTask extends TimerTask {
 		@Override
 		public void run() {
+			final long now = System.currentTimeMillis();
 
-			long now = System.currentTimeMillis();
-			
 			synchronized (reviewStore) {
-				final Set<ReviewImpl> affectedReviews = ImmutableSet.<ReviewImpl>builder()
-						.addAll(reviewStore.search(buildQuery(ReviewStatus.CURRENT, now - keepCurrentMillis)))
-						.addAll(reviewStore.search(buildQuery(ReviewStatus.PENDING, now - keepStaleMillis)))
-						.addAll(reviewStore.search(buildQuery(ReviewStatus.STALE, now - keepStaleMillis)))
-						.addAll(reviewStore.search(buildQuery(ReviewStatus.FAILED, now - keepStaleMillis)))
-						.build();
+				final Set<ReviewImpl> affectedReviews;
+				try {
+
+					affectedReviews = ImmutableSet.<ReviewImpl>builder()
+							.addAll(reviewStore.search(buildQuery(ReviewStatus.CURRENT, now - keepCurrentMillis)))
+							.addAll(reviewStore.search(buildQuery(ReviewStatus.PENDING, now - keepStaleMillis)))
+							.addAll(reviewStore.search(buildQuery(ReviewStatus.STALE, now - keepStaleMillis)))
+							.addAll(reviewStore.search(buildQuery(ReviewStatus.FAILED, now - keepStaleMillis)))
+							.build();
+
+				} catch (final Exception e) {
+					LOG.error("Exception in review cleanup task when searching for outdated reviews.", e);
+					return;
+				}
 
 				for (final ReviewImpl affectedReview : affectedReviews) {
-					deleteReview(affectedReview);
+					try {
+						deleteReview(affectedReview);
+					} catch (final Exception e) {
+						LOG.error("Exception in review cleanup task when deleting review {}.", affectedReview.id(), e);
+					}
 				}
 			}
 		}
@@ -147,6 +156,8 @@ public class ReviewManagerImpl implements ReviewManager {
 		}
 	}
 
+	private static final Logger LOG = LoggerFactory.getLogger(ReviewManagerImpl.class);
+
 	private final String repositoryId;
 	private final Store<ReviewImpl> reviewStore;
 	private final Store<ConceptChangesImpl> conceptChangesStore;
@@ -154,7 +165,7 @@ public class ReviewManagerImpl implements ReviewManager {
 	private final SetStaleHandler commitInfoHandler = new SetStaleHandler();
 	private final TimerTask cleanupTask = new CleanupTask();
 
-	private static final long MINUTE_MILLIS = TimeUnit.MINUTES.toMillis(1L);
+	private static final long REFRESH_INTERVAL = TimeUnit.MINUTES.toMillis(1L);
 
 	private final long keepStaleMillis;
 	private final long keepCurrentMillis;
@@ -172,8 +183,8 @@ public class ReviewManagerImpl implements ReviewManager {
 			final int keepStaleMins, final long keepCurrentMins) {
 
 		this.repositoryId = repository.getUuid();
-		this.keepStaleMillis = keepStaleMins * MINUTE_MILLIS;
-		this.keepCurrentMillis = keepCurrentMins * MINUTE_MILLIS;
+		this.keepStaleMillis = TimeUnit.MINUTES.toMillis(keepStaleMins);
+		this.keepCurrentMillis = TimeUnit.MINUTES.toMillis(keepCurrentMins);
 
 		this.reviewStore = reviewStore;
 		reviewStore.configureSearchable("status");
@@ -184,14 +195,14 @@ public class ReviewManagerImpl implements ReviewManager {
 		this.conceptChangesStore = conceptChangesStore;
 
 		repository.getRepository().addCommitInfoHandler(commitInfoHandler);
-		
+
 		// Check every minute if there's something to remove
-		Holder.CLEANUP_TIMER.schedule(cleanupTask, MINUTE_MILLIS, MINUTE_MILLIS);
+		Holder.CLEANUP_TIMER.schedule(cleanupTask, REFRESH_INTERVAL, REFRESH_INTERVAL);
 	}
 
 	@Override
 	public Review createReview(final String userId, final Branch source, final Branch target, final boolean isMerge) {
-		
+
 		final IBranchPath headPath = source.branchPath();
 		final IBranchPath basePath = convertIntoBasePath(isMerge ? source.branchPath() : target.branchPath());
 		final VersionCompareConfiguration configuration = new VersionCompareConfiguration(repositoryId, basePath, headPath, false, true, false);
@@ -220,7 +231,7 @@ public class ReviewManagerImpl implements ReviewManager {
 							.status(newReviewStatus)
 							.refreshLastUpdated()
 							.build();
-					
+
 					reviewStore.put(id, newReviewImpl);
 				}
 			} catch (final NotFoundException ignored) {
