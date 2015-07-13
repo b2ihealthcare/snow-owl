@@ -157,29 +157,28 @@ public class SnomedReviewApiTest extends AbstractSnomedApiTest {
 	
 	@Test
 	public void reviewBeforeMerge() {
-		final IBranchPath setupBranch = createRandomBranchPath();
-		givenBranchWithPath(setupBranch);
+		final IBranchPath setupBranch = createNestedBranch("a", "b");
 		final Map<?, ?> conceptRequestBody = givenConceptRequestBody(null, ROOT_CONCEPT, MODULE_SCT_CORE, PREFERRED_ACCEPTABILITY_MAP, false);
 
-		// Create a new concept on the setup branch so that it can be deleted on the test branch
+		// Create a new concept on the setup branch so that it can be deleted on the nested branch
 		final String c1 = assertComponentCreated(setupBranch, SnomedComponentType.CONCEPT, conceptRequestBody);
 		assertBranchCanBeMerged(setupBranch, "Creating concept which can be deleted");
 		
-		// Now open the test branch
-		givenBranchWithPath(testBranchPath);
+		final IBranchPath setupSiblingPath = BranchPathUtils.createPath(setupBranch.getParent(), "c");
+		givenBranchWithPath(setupSiblingPath);
 		
-		// Create new concept on this branch
-		final String c2 = assertComponentCreated(testBranchPath, SnomedComponentType.CONCEPT, conceptRequestBody);
+		// Create new concept on sibling branch
+		final String c2 = assertComponentCreated(setupSiblingPath, SnomedComponentType.CONCEPT, conceptRequestBody);
 		
 		// Create new relationship, which will mark "Disease" as changed, but not "Finding context"
 		final Map<?, ?> relationshipRequestBody = givenRelationshipRequestBody(DISEASE, TEMPORAL_CONTEXT, FINDING_CONTEXT, MODULE_SCT_CORE, "New relationship");
-		assertComponentCreated(testBranchPath, SnomedComponentType.RELATIONSHIP, relationshipRequestBody);
+		assertComponentCreated(setupSiblingPath, SnomedComponentType.RELATIONSHIP, relationshipRequestBody);
 		
 		// Delete the concept we have created earlier
-		assertComponentCanBeDeleted(testBranchPath, SnomedComponentType.CONCEPT, c1);
+		assertComponentCanBeDeleted(setupSiblingPath, SnomedComponentType.CONCEPT, c1);
 		
-		// See what happened on testBranch before merging changes from it to MAIN
-		final String reviewId = andCreatedReview(testBranchPath.getPath(), Branch.MAIN_PATH);
+		// See what happened on the sibling branch before merging changes to its parent
+		final String reviewId = andCreatedReview(setupSiblingPath.getPath(), setupSiblingPath.getParentPath());
 		assertReviewCurrent(reviewId);
 		
 		whenRetrievingChangesWithId(reviewId)
