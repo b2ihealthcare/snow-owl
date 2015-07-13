@@ -29,7 +29,7 @@ import com.b2international.snowowl.datastore.server.review.Review;
 import com.b2international.snowowl.datastore.server.review.ReviewManager;
 
 /**
- * @since 5.0
+ * @since 4.2
  */
 public class ReviewEventHandler extends ApiEventHandler {
 

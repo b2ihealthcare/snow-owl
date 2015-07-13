@@ -18,7 +18,7 @@ package com.b2international.snowowl.datastore.server.review;
 import java.util.Set;
 
 /**
- * @since 5.0
+ * @since 4.2
  */
 public interface ConceptChanges {
 

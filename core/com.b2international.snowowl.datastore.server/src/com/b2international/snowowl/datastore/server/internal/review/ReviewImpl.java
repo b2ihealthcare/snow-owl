@@ -24,7 +24,7 @@ import com.b2international.snowowl.datastore.server.review.ReviewStatus;
 import com.fasterxml.jackson.databind.util.ISO8601Utils;
 
 /**
- * @since 5.0
+ * @since 4.2
  */
 public class ReviewImpl implements Review {
 

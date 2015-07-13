@@ -20,7 +20,7 @@ import com.b2international.snowowl.datastore.server.branch.Deletable;
 /**
  * Represents a terminology review comparing changes on branches.
  *
- * @since 5.0
+ * @since 4.2
  */
 public interface Review extends Deletable {
 

@@ -19,7 +19,7 @@ package com.b2international.snowowl.datastore.server.events;
  * An event encapsulating a request to review differences between the specified source and target branch, identified by
  * their corresponding branch paths.
  * 
- * @since 5.0
+ * @since 4.2
  */
 public class CreateReviewEvent extends BaseReviewEvent {
 

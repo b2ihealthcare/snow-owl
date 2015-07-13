@@ -19,7 +19,7 @@ import com.b2international.snowowl.core.exceptions.NotFoundException;
 import com.b2international.snowowl.datastore.server.branch.Branch;
 
 /**
- * @since 5.0
+ * @since 4.2
  */
 public interface ReviewManager {
 

@@ -56,7 +56,7 @@ import com.fasterxml.jackson.databind.util.ISO8601Utils;
 import com.google.common.collect.ImmutableSet;
 
 /**
- * @since 5.0
+ * @since 4.2
  */
 public class ReviewManagerImpl implements ReviewManager {
 

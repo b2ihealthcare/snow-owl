@@ -23,7 +23,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 /**
- * @since 5.0
+ * @since 4.2
  */
 @JsonIgnoreProperties({ "sourcePath", "targetPath", "deleted" })
 public abstract class ReviewImplMixin {

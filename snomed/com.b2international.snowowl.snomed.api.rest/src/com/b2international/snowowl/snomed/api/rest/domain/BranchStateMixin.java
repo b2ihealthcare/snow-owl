@@ -18,7 +18,7 @@ package com.b2international.snowowl.snomed.api.rest.domain;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 /**
- * @since 5.0
+ * @since 4.2
  */
 public interface BranchStateMixin {
 

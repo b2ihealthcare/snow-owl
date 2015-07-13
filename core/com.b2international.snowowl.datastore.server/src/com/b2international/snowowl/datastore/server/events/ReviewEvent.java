@@ -20,7 +20,7 @@ import static com.google.common.base.Preconditions.checkNotNull;
 /**
  * An abstract superclass for terminology review events which include the affected review's identifier.
  * 
- * @since 5.0
+ * @since 4.2
  */
 public abstract class ReviewEvent extends BaseReviewEvent {
 

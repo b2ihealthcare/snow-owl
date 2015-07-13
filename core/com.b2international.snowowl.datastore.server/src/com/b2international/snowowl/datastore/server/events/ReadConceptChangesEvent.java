@@ -18,7 +18,7 @@ package com.b2international.snowowl.datastore.server.events;
 /**
  * Sent when a user requests to read change set of a terminology review with the specified identifier.
  * 
- * @since 5.0
+ * @since 4.2
  */
 public class ReadConceptChangesEvent extends ReviewEvent {
 

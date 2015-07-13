@@ -18,7 +18,7 @@ package com.b2international.snowowl.datastore.server.events;
 /**
  * Sent when a user requests a review to be deleted.
  * 
- * @since 5.0
+ * @since 4.2
  */
 public class DeleteReviewEvent extends ReviewEvent {
 

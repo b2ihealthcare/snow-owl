@@ -22,7 +22,7 @@ import com.b2international.snowowl.core.events.BaseEvent;
 /**
  * Abstract superclass for events related to reviewing changes between branches.
  * 
- * @since 5.0
+ * @since 4.2
  */
 public abstract class BaseReviewEvent extends BaseEvent {
 

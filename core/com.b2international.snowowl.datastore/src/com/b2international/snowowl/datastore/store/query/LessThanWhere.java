@@ -18,7 +18,7 @@ package com.b2international.snowowl.datastore.store.query;
 import com.google.common.base.Strings;
 
 /**
- * @since 5.0
+ * @since 4.2
  */
 public class LessThanWhere extends WhereBase {
 

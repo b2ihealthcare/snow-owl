@@ -46,7 +46,7 @@ import com.wordnik.swagger.annotations.ApiResponses;
 /**
  * Provides REST endpoints for computing Reviewerences between branches.
  * 
- * @since 5.0
+ * @since 4.2
  */
 @Api("Branches")
 @RestController

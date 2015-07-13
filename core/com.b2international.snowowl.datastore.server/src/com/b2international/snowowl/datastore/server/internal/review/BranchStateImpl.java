@@ -19,7 +19,7 @@ import com.b2international.snowowl.datastore.server.branch.Branch;
 import com.b2international.snowowl.datastore.server.review.BranchState;
 
 /**
- * @since 5.0
+ * @since 4.2
  */
 public class BranchStateImpl implements BranchState {
 

@@ -18,7 +18,7 @@ package com.b2international.snowowl.datastore.server.review;
 import com.b2international.snowowl.datastore.server.branch.Branch;
 
 /**
- * @since 5.0
+ * @since 4.2
  */
 public interface BranchState {
 

@@ -20,7 +20,7 @@ import com.b2international.snowowl.datastore.server.review.ConceptChanges;
 /**
  * Sent when a review change set is successfully read.
  * 
- * @since 5.0
+ * @since 4.2
  */
 public class ConceptChangesReply {
 

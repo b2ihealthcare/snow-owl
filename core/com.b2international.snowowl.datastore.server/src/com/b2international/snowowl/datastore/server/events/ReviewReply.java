@@ -20,7 +20,7 @@ import com.b2international.snowowl.datastore.server.review.Review;
 /**
  * Sent when a terminology review object is successfully created, read or deleted.
  * 
- * @since 5.0
+ * @since 4.2
  */
 public class ReviewReply {
 
