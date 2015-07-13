@@ -19,7 +19,6 @@ import static com.google.common.base.Preconditions.checkNotNull;
 
 import com.b2international.snowowl.core.events.util.ApiEventHandler;
 import com.b2international.snowowl.core.events.util.Handler;
-import com.b2international.snowowl.core.exceptions.BadRequestException;
 import com.b2international.snowowl.core.exceptions.NotFoundException;
 import com.b2international.snowowl.datastore.server.branch.Branch;
 import com.b2international.snowowl.datastore.server.branch.BranchManager;
@@ -44,17 +43,11 @@ public class ReviewEventHandler extends ApiEventHandler {
 	@Handler
 	protected ReviewReply handle(final CreateReviewEvent event) {
 		try {
+
 			final Branch source = branchManager.getBranch(event.getSourcePath());
 			final Branch target = branchManager.getBranch(event.getTargetPath());
-			
-			if (source.parent().equals(target) && !source.path().equals(Branch.MAIN_PATH)) {
-				return new ReviewReply(reviewManager.createReview(event.getUserId(), source, target, true));
-			} else if (target.parent().equals(source) && !target.path().equals(Branch.MAIN_PATH)) {
-				return new ReviewReply(reviewManager.createReview(event.getUserId(), source, target, false));
-			} else {
-				throw new BadRequestException("Cannot create review for source '%s' and target '%s', because there is no relation between them.", source.path(), target.path());
-			}
-			
+			return new ReviewReply(reviewManager.createReview(source, target));
+
 		} catch (final NotFoundException e) {
 			// Non-existent branches are reported as Bad Requests for reviews
 			throw e.toBadRequestException();

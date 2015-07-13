@@ -23,19 +23,13 @@ package com.b2international.snowowl.datastore.server.events;
  */
 public class CreateReviewEvent extends BaseReviewEvent {
 
-	private final String userId;
 	private final String sourcePath;
 	private final String targetPath;
 
-	public CreateReviewEvent(final String repositoryId, final String userId, final String sourcePath, final String targetPath) {
+	public CreateReviewEvent(final String repositoryId, final String sourcePath, final String targetPath) {
 		super(repositoryId);
-		this.userId = userId;
 		this.sourcePath = sourcePath;
 		this.targetPath = targetPath;
-	}
-
-	public String getUserId() {
-		return userId;
 	}
 
 	public String getSourcePath() {

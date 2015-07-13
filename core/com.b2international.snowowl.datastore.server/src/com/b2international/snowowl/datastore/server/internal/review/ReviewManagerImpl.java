@@ -36,6 +36,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.b2international.snowowl.core.api.IBranchPath;
+import com.b2international.snowowl.core.exceptions.BadRequestException;
 import com.b2international.snowowl.core.exceptions.NotFoundException;
 import com.b2international.snowowl.datastore.cdo.ICDORepository;
 import com.b2international.snowowl.datastore.index.diff.CompareResult;
@@ -201,12 +202,24 @@ public class ReviewManagerImpl implements ReviewManager {
 	}
 
 	@Override
-	public Review createReview(final String userId, final Branch source, final Branch target, final boolean isMerge) {
+	public Review createReview(final Branch source, final Branch target) {
 
+		if (source.path().equals(target.path())) {
+			throw new BadRequestException("Cannot create a review with the same source and target '%s'.", source.path());
+		}
+		
 		final IBranchPath headPath = source.branchPath();
-		final IBranchPath basePath = convertIntoBasePath(isMerge ? source.branchPath() : target.branchPath());
+		final IBranchPath basePath;
+		
+		if (source.parent().equals(target)) {
+			basePath = convertIntoBasePath(source.branchPath());	
+		} else if (target.parent().equals(source)) {
+			basePath = convertIntoBasePath(target.branchPath());
+		} else {
+			throw new BadRequestException("Cannot create review for source '%s' and target '%s', because there is no relation between them.", source.path(), target.path());
+		}
+		
 		final VersionCompareConfiguration configuration = new VersionCompareConfiguration(repositoryId, basePath, headPath, false, true, false);
-
 		final String reviewId = UUID.randomUUID().toString();
 		final CreateReviewJob compareJob = new CreateReviewJob(reviewId, configuration);
 
@@ -312,6 +325,6 @@ public class ReviewManagerImpl implements ReviewManager {
 			}
 		}
 
-		return ReviewImpl.builder((ReviewImpl) review).refreshLastUpdated().build();
+		return review;
 	}
 }

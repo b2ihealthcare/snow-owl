@@ -33,15 +33,13 @@ public interface ReviewManager {
 	 * transitions to {@link ReviewStatus#CURRENT} if no commits have happened on either {@code source} or
 	 * {@code target} in the meantime. Should this happen at any time after creating the review, it becomes
 	 * {@link ReviewStatus#STALE}.
-	 * 
-	 * @see Branch#merge(Branch, String)
-	 * @param userId the identifier of the user requesting the review
 	 * @param source the source branch to review
 	 * @param target the target branch to review
-	 * @param isMerge {@code true} if this review is for a merge, {@code false} if it is for a rebase
+	 * 
+	 * @see Branch#merge(Branch, String)
 	 * @return the created {@link Review} object
 	 */
-	Review createReview(String userId, Branch source, Branch target, boolean isMerge);
+	Review createReview(Branch source, Branch target);
 
 	/**
 	 * Retrieves a single review by its unique identifier.

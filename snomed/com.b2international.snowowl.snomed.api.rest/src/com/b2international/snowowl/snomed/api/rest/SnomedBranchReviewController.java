@@ -18,7 +18,6 @@ package com.b2international.snowowl.snomed.api.rest;
 import static org.springframework.hateoas.mvc.ControllerLinkBuilder.linkTo;
 
 import java.net.URI;
-import java.security.Principal;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.hateoas.mvc.ControllerLinkBuilder;
@@ -65,12 +64,12 @@ public class SnomedBranchReviewController extends AbstractRestService {
 	})
 	@RequestMapping(method=RequestMethod.POST)
 	@ResponseStatus(HttpStatus.CREATED)
-	public DeferredResult<ResponseEntity<Void>> createReview(@RequestBody final CreateReviewRequest request, final Principal principal) {
+	public DeferredResult<ResponseEntity<Void>> createReview(@RequestBody final CreateReviewRequest request) {
 		ApiValidation.checkInput(request);
 		final DeferredResult<ResponseEntity<Void>> result = new DeferredResult<>();
 		final ControllerLinkBuilder linkTo = linkTo(SnomedBranchReviewController.class);
 		new AsyncSupport<>(bus, ReviewReply.class)
-		.send(request.toEvent(repositoryId, principal.getName()))
+		.send(request.toEvent(repositoryId))
 		.then(new Procedure<ReviewReply>() { @Override protected void doApply(final ReviewReply reply) {
 			result.setResult(Responses.created(getLocationHeader(linkTo, reply)).build());
 		}})
