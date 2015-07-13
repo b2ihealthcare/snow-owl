@@ -152,7 +152,7 @@ public class SnomedReviewApiTest extends AbstractSnomedApiTest {
 
 		} while (!FINISH_STATES.contains(currentStatus) && currentTime < endTime);
 
-		assertEquals("End state should be CURRENT.", currentStatus, "CURRENT");
+		assertEquals("End state should be CURRENT.", currentStatus, ReviewStatus.CURRENT.toString());
 	}
 	
 	@Test
@@ -196,9 +196,8 @@ public class SnomedReviewApiTest extends AbstractSnomedApiTest {
 		// Open the setup branch
 		IBranchPath setupBranchPath = createNestedBranch("A");
 		
-		final Map<?, ?> conceptRequestBody = givenConceptRequestBody(null, ROOT_CONCEPT, MODULE_SCT_CORE, PREFERRED_ACCEPTABILITY_MAP, false);
-
 		// Create a new concept on the setup branch so that it can be deleted on the test branch
+		final Map<?, ?> conceptRequestBody = givenConceptRequestBody(null, ROOT_CONCEPT, MODULE_SCT_CORE, PREFERRED_ACCEPTABILITY_MAP, false);
 		final String c1 = assertComponentCreated(setupBranchPath, SnomedComponentType.CONCEPT, conceptRequestBody);
 		assertBranchCanBeMerged(setupBranchPath, "Creating concept which can be deleted");
 		
@@ -250,5 +249,19 @@ public class SnomedReviewApiTest extends AbstractSnomedApiTest {
 			
 		whenRetrievingReviewWithId(reviewId).then().statusCode(404);
 		whenRetrievingChangesWithId(reviewId).then().statusCode(404);
+	}
+	
+	@Test
+	public void setReviewStale() {
+		givenBranchWithPath(testBranchPath);
+		final String reviewId = andCreatedReview("MAIN", testBranchPath.getPath());
+
+		final Map<?, ?> conceptRequestBody = givenConceptRequestBody(null, ROOT_CONCEPT, MODULE_SCT_CORE, PREFERRED_ACCEPTABILITY_MAP, false);
+		assertComponentCreated(testBranchPath, SnomedComponentType.CONCEPT, conceptRequestBody);
+		
+		whenRetrievingReviewWithId(reviewId)
+		.then()
+			.statusCode(200)
+			.body("status", equalTo(ReviewStatus.STALE.toString()));		
 	}
 }
