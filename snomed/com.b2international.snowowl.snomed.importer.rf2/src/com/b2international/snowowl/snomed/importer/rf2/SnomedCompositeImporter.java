@@ -433,7 +433,7 @@ public class SnomedCompositeImporter extends AbstractLoggingImporter {
 		String formattedEffectiveDate = EffectiveTimes.format(effectiveDate);
 		
 		final CodeSystemVersion codeSystemVersion = SnomedFactory.eINSTANCE.createCodeSystemVersion();
-		codeSystemVersion.setImportDate(Dates.todayGmt());
+		codeSystemVersion.setImportDate(new Date());
 		codeSystemVersion.setVersionId(formattedEffectiveDate); 
 		codeSystemVersion.setDescription("RF2 import of SNOMED Clinical Terms");
 		codeSystemVersion.setEffectiveDate(effectiveDate);
