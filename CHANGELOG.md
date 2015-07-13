@@ -1,6 +1,14 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
+## 2015-07-23
+### Added
+- Support for terminology reviews
+  * `POST /reviews`
+  * `GET /reviews/:id`
+  * `GET /reviews/:id/concept-changes`
+  * `DELETE /reviews/:id`
+
 ## 2015-05-27
 ### Added
 - Deep branching support has been implemented
