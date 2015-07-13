@@ -22,6 +22,7 @@ import static org.mockito.Mockito.mock;
 import org.junit.Before;
 import org.junit.Test;
 
+import com.b2international.snowowl.core.exceptions.BadRequestException;
 import com.b2international.snowowl.datastore.server.branch.Branch.BranchState;
 
 /**
@@ -98,12 +99,12 @@ public class MainBranchTest {
 		return branch;
 	}
 
-	@Test(expected = UnsupportedOperationException.class)
+	@Test(expected = BadRequestException.class)
 	public void rebaseMainBranch() throws Exception {
 		main.rebase("Commit");
 	}
 	
-	@Test(expected = UnsupportedOperationException.class)
+	@Test(expected = BadRequestException.class)
 	public void deleteMainBranch() throws Exception {
 		main.delete();
 	}

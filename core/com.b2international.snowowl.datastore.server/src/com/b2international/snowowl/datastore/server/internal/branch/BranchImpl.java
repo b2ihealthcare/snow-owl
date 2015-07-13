@@ -24,6 +24,7 @@ import java.util.regex.Pattern;
 import com.b2international.snowowl.core.Metadata;
 import com.b2international.snowowl.core.MetadataHolderImpl;
 import com.b2international.snowowl.core.api.IBranchPath;
+import com.b2international.snowowl.core.exceptions.BadRequestException;
 import com.b2international.snowowl.datastore.BranchPathUtils;
 import com.b2international.snowowl.datastore.server.branch.Branch;
 import com.b2international.snowowl.datastore.server.branch.BranchMergeException;
@@ -130,7 +131,10 @@ public class BranchImpl extends MetadataHolderImpl implements Branch, InternalBr
 
 	@Override
 	public Branch merge(Branch source, String commitMessage) throws BranchMergeException {
-		checkArgument(!source.equals(this), "Can't merge branch onto itself.");
+		if (path().equals(source.path())) {
+			throw new BadRequestException("Can't merge branch '%s' onto itself.", path());
+		}
+		
 		if (source.state() != Branch.BranchState.FORWARD) {
 			throw new BranchMergeException("Only source in the FORWARD state can merged.");
 		} else {

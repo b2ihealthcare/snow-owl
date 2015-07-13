@@ -118,7 +118,7 @@ public class BranchEventHandler extends ApiEventHandler {
 				}
 			}
 			
-			if (source.parent().equals(target) && !source.path().equals(Branch.MAIN_PATH)) {
+			if (source.parent().equals(target)) {
 				// merge into target
 				try {
 					final Branch merged = target.merge(source, event.getCommitMessage());
@@ -127,7 +127,7 @@ public class BranchEventHandler extends ApiEventHandler {
 					throw new ConflictException("Cannot merge source '%s' into target '%s'.", source.path(), target.path());
 				}
 				
-			} else if (target.parent().equals(source) && !target.path().equals(Branch.MAIN_PATH)) {
+			} else if (target.parent().equals(source)) {
 				// rebase onto target
 				try {
 					final Branch rebased = target.rebase(source, event.getCommitMessage());
