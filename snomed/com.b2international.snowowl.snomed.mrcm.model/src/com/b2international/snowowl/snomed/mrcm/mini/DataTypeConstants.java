@@ -44,7 +44,7 @@ public enum DataTypeConstants {
 	CREATE_CONTAINER_HIERARCHY("createContainerHierarchy", "Create container hierarchy", PROPERTY_SECTION, BOOLEAN),
 	CAN_BE_TAGGED_WITH_VACCINE("canBeTaggedWithVaccine", "Can be tagged with vaccine", PROPERTY_SECTION, BOOLEAN),
 	INCLUDES_INGREDIENT_QUALIFER("includesIngredientQualifer", "Includes ingredient qualifier", PROPERTY_SECTION, BOOLEAN),
-	IS_A_VITAMIN("isavitamin", "Vitamin", PROPERTY_SECTION, BOOLEAN),
+	IS_A_VITAMIN("isVitamin", "Vitamin", PROPERTY_SECTION, BOOLEAN),
 	REQUIRES_SPECIFIC_CONTAINER("requiresSpecificContainer", "Requires specific container", PROPERTY_SECTION, BOOLEAN),
 	DISCRETE("isDiscrete", "Discrete", PROPERTY_SECTION, BOOLEAN),
 	PROPRIETARY("isProprietary", "Proprietary", PROPERTY_SECTION, BOOLEAN),

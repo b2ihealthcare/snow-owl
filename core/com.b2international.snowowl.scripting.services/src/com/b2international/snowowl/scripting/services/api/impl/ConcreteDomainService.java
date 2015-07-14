@@ -44,6 +44,10 @@ import com.google.common.collect.Multimap;
  */
 public class ConcreteDomainService implements IConcreteDomainService {
 
+	private static final String IS_MANUFACTURED = "isManufactured";
+	private static final String IS_VACCINE = "isVaccine";
+	private static final String IS_VITAMIN = "isVitamin";
+
 	@Override
 	public Collection<SnomedConcreteDataTypeRefSetMemberIndexEntry> getAllDataTypesForConcept(final String conceptId) {
 		
@@ -63,7 +67,7 @@ public class ConcreteDomainService implements IConcreteDomainService {
 	public boolean isVaccine(final String conceptId) {
 		return 0 < Collections2.filter(getAllDataTypesForConcept(conceptId), new Predicate<SnomedConcreteDataTypeRefSetMemberIndexEntry>() {
 			@Override public boolean apply(final SnomedConcreteDataTypeRefSetMemberIndexEntry dataType) {
-				return "isVaccine".equals(dataType.getLabel()) && Boolean.parseBoolean(String.valueOf(dataType.getValue()));
+				return IS_VACCINE.equals(dataType.getLabel()) && Boolean.parseBoolean(String.valueOf(dataType.getValue()));
 			}
 		}).size();
 	}
@@ -72,7 +76,7 @@ public class ConcreteDomainService implements IConcreteDomainService {
 	public boolean isVitamin(final String conceptId) {
 		return 0 < Collections2.filter(getAllDataTypesForConcept(conceptId), new Predicate<SnomedConcreteDataTypeRefSetMemberIndexEntry>() {
 			@Override public boolean apply(final SnomedConcreteDataTypeRefSetMemberIndexEntry dataType) {
-				return "isavitamin".equals(dataType.getLabel()) && Boolean.parseBoolean(String.valueOf(dataType.getValue()));
+				return IS_VITAMIN.equals(dataType.getLabel()) && Boolean.parseBoolean(String.valueOf(dataType.getValue()));
 			}
 		}).size();
 	}
@@ -95,7 +99,7 @@ public class ConcreteDomainService implements IConcreteDomainService {
 	@Override
 	public Map<String, Boolean> getAllManufacturedConcreteDomains() {
 		final Multimap<String, Boolean> concreteDomainsForName = // 
-				getServiceForClass(IClientSnomedComponentService.class).<Boolean>getAllConcreteDomainsForName("isManufactured");
+				getServiceForClass(IClientSnomedComponentService.class).<Boolean>getAllConcreteDomainsForName(IS_MANUFACTURED);
 		//we blindly ignore multiple values for the same concrete domains per components
 		final Map<String, Boolean> results = newHashMapWithExpectedSize(concreteDomainsForName.size());
 		for (final String componentId : concreteDomainsForName.keys()) {
