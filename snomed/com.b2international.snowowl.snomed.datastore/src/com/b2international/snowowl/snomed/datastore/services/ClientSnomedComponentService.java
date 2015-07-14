@@ -18,6 +18,7 @@ package com.b2international.snowowl.snomed.datastore.services;
 import static com.google.common.base.Preconditions.checkNotNull;
 
 import java.util.Collection;
+import java.util.Date;
 import java.util.Map;
 import java.util.Set;
 
@@ -154,13 +155,18 @@ public class ClientSnomedComponentService extends ActiveBranchPathAwareService i
 	}
 	
 	@Override
-	public <V> Multimap<String, V> getAllConcreteDomainsForName(String concreteDomainName) {
+	public <V> Multimap<String, V> getAllConcreteDomainsForName(final String concreteDomainName) {
 		return wrappedService.getAllConcreteDomainsForName(getBranchPath(), concreteDomainName);
 	}
 	
 	@Override
 	public Collection<SnomedModuleDependencyRefSetMemberFragment> getExistingModules() {
 		return wrappedService.getExistingModules(getBranchPath());
+	}
+	
+	@Override
+	public Map<String, Date> getExistingModulesWithEffectiveTime() {
+		return wrappedService.getExistingModulesWithEffectiveTime(getBranchPath());
 	}
 	
 	@Override

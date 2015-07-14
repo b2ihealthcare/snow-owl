@@ -16,6 +16,7 @@
 package com.b2international.snowowl.snomed.datastore.services;
 
 import java.util.Collection;
+import java.util.Date;
 import java.util.Map;
 import java.util.Set;
 
@@ -224,5 +225,12 @@ public interface IClientSnomedComponentService {
 	 * @return a collection of existing module dependency reference set members.
 	 */
 	Collection<SnomedModuleDependencyRefSetMemberFragment> getExistingModules();
+	
+	/**
+	 * Returns with a map containing every module of the Module Dependency reference set and the latest effective time for the module.
+	 * The provided date could be <code>null</code>.
+	 * @return a map where the key is the module ID and the value is the module's latest effective time
+	 */
+	Map<String, Date> getExistingModulesWithEffectiveTime();
 	
 }
