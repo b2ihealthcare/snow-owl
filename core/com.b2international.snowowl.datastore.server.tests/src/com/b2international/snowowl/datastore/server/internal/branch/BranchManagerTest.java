@@ -196,7 +196,7 @@ public class BranchManagerTest {
 		}
 	}
 
-	@Test(expected=IllegalArgumentException.class)
+	@Test(expected=BadRequestException.class)
 	public void mergeSelf() throws Exception {
 		merge(main, main);
 	}

@@ -15,14 +15,22 @@
  */
 package com.b2international.snowowl.snomed.api.rest;
 
+import static com.b2international.snowowl.snomed.SnomedConstants.Concepts.FULLY_SPECIFIED_NAME;
+import static com.b2international.snowowl.snomed.SnomedConstants.Concepts.SYNONYM;
+import static com.b2international.snowowl.snomed.api.rest.SnomedApiTestConstants.PREFERRED_ACCEPTABILITY_MAP;
 import static com.b2international.snowowl.test.commons.rest.RestExtensions.givenAuthenticatedRequest;
 import static com.b2international.snowowl.test.commons.rest.RestExtensions.lastPathSegment;
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.equalTo;
 
+import java.util.Date;
 import java.util.Map;
 
 import com.b2international.snowowl.core.api.IBranchPath;
+import com.b2international.snowowl.snomed.api.domain.CharacteristicType;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableMap.Builder;
 import com.jayway.restassured.http.ContentType;
 import com.jayway.restassured.response.Response;
 import com.jayway.restassured.response.ValidatableResponse;
@@ -34,6 +42,75 @@ import com.jayway.restassured.response.ValidatableResponse;
  */
 public abstract class SnomedComponentApiAssert {
 
+	public static Map<?, ?> givenConceptRequestBody(final String conceptId, final String parentId, final String moduleId, final Map<?, ?> fsnAcceptabilityMap, final boolean skipComment) {
+
+		final Date creationDate = new Date();
+		final Map<?, ?> fsnDescription = ImmutableMap.<String, Object>builder()
+				.put("typeId", FULLY_SPECIFIED_NAME)
+				.put("term", "New FSN at " + creationDate)
+				.put("languageCode", "en")
+				.put("acceptability", fsnAcceptabilityMap)
+				.build();
+
+		final Map<?, ?> ptDescription = ImmutableMap.<String, Object>builder()
+				.put("typeId", SYNONYM)
+				.put("term", "New PT at " + creationDate)
+				.put("languageCode", "en")
+				.put("acceptability", PREFERRED_ACCEPTABILITY_MAP)
+				.build();
+
+		final ImmutableMap.Builder<String, Object> conceptBuilder = ImmutableMap.<String, Object>builder()
+				.put("parentId", parentId)
+				.put("moduleId", moduleId)
+				.put("descriptions", ImmutableList.of(fsnDescription, ptDescription));
+
+		if (conceptId != null) {
+			conceptBuilder.put("id", conceptId);
+		}
+
+		if (!skipComment) {
+			conceptBuilder.put("commitComment", "New concept");
+		}
+
+		return conceptBuilder.build();
+	}
+	
+	private static Builder<Object, Object> createRelationshipRequestBuilder(final String sourceId, 
+			final String typeId, 
+			final String destinationId, 
+			final String moduleId, 
+			final String comment) {
+
+		return ImmutableMap.builder()
+				.put("sourceId", sourceId)
+				.put("typeId", typeId)
+				.put("destinationId", destinationId)
+				.put("moduleId", moduleId)
+				.put("commitComment", comment);
+	}
+
+	public static Map<?, ?> givenRelationshipRequestBody(final String sourceId, 
+			final String typeId, 
+			final String destinationId, 
+			final String moduleId, 
+			final String comment) {
+
+		return createRelationshipRequestBuilder(sourceId, typeId, destinationId, moduleId, comment)
+				.build();
+	}
+
+	public static Map<?, ?> givenRelationshipRequestBody(final String sourceId, 
+			final String typeId, 
+			final String destinationId, 
+			final String moduleId, 
+			final CharacteristicType characteristicType, 
+			final String comment) {
+
+		return createRelationshipRequestBuilder(sourceId, typeId, destinationId, moduleId, comment)
+				.put("characteristicType", characteristicType.name())
+				.build();
+	}
+	
 	private static ValidatableResponse assertComponentReadWithStatus(final IBranchPath branchPath, 
 			final SnomedComponentType componentType, 
 			final String componentId, 

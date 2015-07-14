@@ -15,7 +15,7 @@
  */
 package com.b2international.snowowl.snomed.api.rest;
 
-import static com.b2international.snowowl.snomed.api.rest.SnomedBranchingApiAssert.assertBranchCreated;
+import static com.b2international.snowowl.snomed.api.rest.SnomedBranchingApiAssert.givenBranchWithPath;
 
 import java.util.UUID;
 
@@ -33,16 +33,20 @@ public abstract class AbstractSnomedApiTest {
 
 	@Before
 	public void setup() {
-		testBranchPath = BranchPathUtils.createPath(BranchPathUtils.createMainPath(), UUID.randomUUID().toString());
+		testBranchPath = createRandomBranchPath();
+	}
+
+	protected IBranchPath createRandomBranchPath() {
+		return BranchPathUtils.createPath(BranchPathUtils.createMainPath(), UUID.randomUUID().toString());
 	}
 
 	protected IBranchPath createNestedBranch(final String... segments) {
 		IBranchPath currentBranchPath = testBranchPath;
-		assertBranchCreated(currentBranchPath);
+		givenBranchWithPath(currentBranchPath);
 
 		for (final String segment : segments) {
 			currentBranchPath = BranchPathUtils.createPath(currentBranchPath, segment);
-			assertBranchCreated(currentBranchPath);
+			givenBranchWithPath(currentBranchPath);
 		}
 
 		return currentBranchPath;

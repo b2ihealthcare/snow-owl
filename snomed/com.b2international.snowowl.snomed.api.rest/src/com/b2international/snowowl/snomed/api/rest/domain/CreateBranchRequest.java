@@ -15,8 +15,6 @@
  */
 package com.b2international.snowowl.snomed.api.rest.domain;
 
-import static com.google.common.base.Preconditions.checkNotNull;
-
 import org.hibernate.validator.constraints.NotEmpty;
 
 import com.b2international.snowowl.core.MetadataHolderImpl;
@@ -27,28 +25,21 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 /**
  * @since 4.1
  */
-public abstract class CreateBranchRequest extends MetadataHolderImpl {
+public class CreateBranchRequest extends MetadataHolderImpl {
 
 	@JsonProperty
 	@NotEmpty
 	private String parent = "MAIN";
-	
+
 	@JsonProperty
 	@NotEmpty
 	private String name;
 
-	private String repository;
-	
-	public CreateBranchRequest(String repository) {
-		this.repository = checkNotNull(repository, "repository");
-	}
-	
-	public CreateBranchEvent toEvent() {
-		return new CreateBranchEvent(repository, parent, name, metadata());
+	public CreateBranchEvent toEvent(final String repositoryId) {
+		return new CreateBranchEvent(repositoryId, parent, name, metadata());
 	}
 
 	public String path() {
 		return parent + Branch.SEPARATOR + name;
 	}
-	
 }

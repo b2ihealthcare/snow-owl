@@ -19,10 +19,11 @@ import static com.b2international.snowowl.snomed.SnomedConstants.Concepts.FULLY_
 import static com.b2international.snowowl.snomed.SnomedConstants.Concepts.SYNONYM;
 import static com.b2international.snowowl.snomed.api.rest.SnomedApiTestConstants.ACCEPTABLE_ACCEPTABILITY_MAP;
 import static com.b2international.snowowl.snomed.api.rest.SnomedApiTestConstants.PREFERRED_ACCEPTABILITY_MAP;
-import static com.b2international.snowowl.snomed.api.rest.SnomedApiTestConstants.SCT_API;
-import static com.b2international.snowowl.snomed.api.rest.SnomedBranchingApiAssert.assertBranchCreated;
+import static com.b2international.snowowl.snomed.api.rest.SnomedBranchingApiAssert.assertBranchCanBeMerged;
+import static com.b2international.snowowl.snomed.api.rest.SnomedBranchingApiAssert.assertBranchCanBeRebased;
+import static com.b2international.snowowl.snomed.api.rest.SnomedBranchingApiAssert.assertBranchConflicts;
+import static com.b2international.snowowl.snomed.api.rest.SnomedBranchingApiAssert.givenBranchWithPath;
 import static com.b2international.snowowl.snomed.api.rest.SnomedComponentApiAssert.assertComponentHasProperty;
-import static com.b2international.snowowl.test.commons.rest.RestExtensions.givenAuthenticatedRequest;
 import static com.google.common.collect.Maps.newHashMap;
 
 import java.util.Date;
@@ -40,8 +41,6 @@ import com.b2international.snowowl.snomed.api.rest.SnomedComponentApiAssert;
 import com.b2international.snowowl.snomed.api.rest.SnomedComponentType;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
-import com.jayway.restassured.http.ContentType;
-import com.jayway.restassured.response.Response;
 
 /**
  * @since 2.0
@@ -180,42 +179,9 @@ public class SnomedMergeApiTest extends AbstractSnomedApiTest {
 		assertComponentCanBeDeleted(branchPath, symbolicName, SnomedComponentType.DESCRIPTION);
 	}
 
-	// --------------------------------------------------------
-	// Rebase and merge assertions
-	// --------------------------------------------------------
-
-	// XXX: the merge service figures out what to do by inspecting the relationship between source and target
-	private Response whenMergingOrRebasingBranches(final IBranchPath source, final IBranchPath target, final String commitComment) {
-		final Map<?, ?> requestBody = ImmutableMap.builder()
-				.put("source", source.getPath())
-				.put("target", target.getPath())
-				.put("commitComment", commitComment)
-				.build();
-
-		return givenAuthenticatedRequest(SCT_API)
-				.with().contentType(ContentType.JSON)
-				.and().body(requestBody)
-				.when().post("/merges");
-	}
-
-	private void assertBranchCanBeMerged(final IBranchPath branchPath, final String commitComment) {
-		whenMergingOrRebasingBranches(branchPath, branchPath.getParent(), commitComment)
-		.then().assertThat().statusCode(204);
-	}
-
-	private void assertBranchCanBeRebased(final IBranchPath branchPath, final String commitComment) {
-		whenMergingOrRebasingBranches(branchPath.getParent(), branchPath, commitComment)
-		.then().assertThat().statusCode(204);
-	}
-
-	private void assertBranchConflicts(final IBranchPath source, final IBranchPath target, final String commitComment) {
-		whenMergingOrRebasingBranches(source, target, commitComment)
-		.then().assertThat().statusCode(409);
-	}
-
 	@Test
 	public void mergeNewConceptForward() {
-		assertBranchCreated(testBranchPath);
+		givenBranchWithPath(testBranchPath);
 
 		assertConceptCreated(testBranchPath, "C1");
 		assertConceptExists(testBranchPath, "C1");
@@ -228,7 +194,7 @@ public class SnomedMergeApiTest extends AbstractSnomedApiTest {
 
 	@Test
 	public void mergeNewDescriptionForward() {
-		assertBranchCreated(testBranchPath);
+		givenBranchWithPath(testBranchPath);
 
 		assertDescriptionCreated(testBranchPath, "D1", ACCEPTABLE_ACCEPTABILITY_MAP);
 		assertDescriptionExists(testBranchPath, "D1");
@@ -241,7 +207,7 @@ public class SnomedMergeApiTest extends AbstractSnomedApiTest {
 
 	@Test
 	public void mergeNewRelationshipForward() {
-		assertBranchCreated(testBranchPath);
+		givenBranchWithPath(testBranchPath);
 
 		assertRelationshipCreated(testBranchPath, "R1");
 		assertRelationshipExists(testBranchPath, "R1");
@@ -254,7 +220,7 @@ public class SnomedMergeApiTest extends AbstractSnomedApiTest {
 
 	@Test
 	public void noMergeNewConceptDiverged() {
-		assertBranchCreated(testBranchPath);
+		givenBranchWithPath(testBranchPath);
 
 		assertConceptCreated(testBranchPath, "C1");
 		assertConceptExists(testBranchPath, "C1");
@@ -274,7 +240,7 @@ public class SnomedMergeApiTest extends AbstractSnomedApiTest {
 
 	@Test
 	public void noMergeNewDescriptionDiverged() {
-		assertBranchCreated(testBranchPath);
+		givenBranchWithPath(testBranchPath);
 
 		assertDescriptionCreated(testBranchPath, "D1", SnomedApiTestConstants.ACCEPTABLE_ACCEPTABILITY_MAP);
 		assertDescriptionExists(testBranchPath, "D1");
@@ -294,7 +260,7 @@ public class SnomedMergeApiTest extends AbstractSnomedApiTest {
 
 	@Test
 	public void noMergeNewRelationshipDiverged() {
-		assertBranchCreated(testBranchPath);
+		givenBranchWithPath(testBranchPath);
 
 		assertRelationshipCreated(testBranchPath, "R1");
 		assertRelationshipExists(testBranchPath, "R1");
@@ -314,7 +280,7 @@ public class SnomedMergeApiTest extends AbstractSnomedApiTest {
 
 	@Test
 	public void rebaseNewConceptDiverged() {
-		assertBranchCreated(testBranchPath);
+		givenBranchWithPath(testBranchPath);
 
 		assertConceptCreated(testBranchPath, "C1");
 		assertConceptExists(testBranchPath, "C1");
@@ -334,7 +300,7 @@ public class SnomedMergeApiTest extends AbstractSnomedApiTest {
 
 	@Test
 	public void rebaseNewDescriptionDiverged() {
-		assertBranchCreated(testBranchPath);
+		givenBranchWithPath(testBranchPath);
 
 		assertDescriptionCreated(testBranchPath, "D1", ACCEPTABLE_ACCEPTABILITY_MAP);
 		assertDescriptionExists(testBranchPath, "D1");
@@ -354,7 +320,7 @@ public class SnomedMergeApiTest extends AbstractSnomedApiTest {
 
 	@Test
 	public void rebaseNewRelationshipDiverged() {
-		assertBranchCreated(testBranchPath);
+		givenBranchWithPath(testBranchPath);
 
 		assertRelationshipCreated(testBranchPath, "R1");
 		assertRelationshipExists(testBranchPath, "R1");
@@ -374,7 +340,7 @@ public class SnomedMergeApiTest extends AbstractSnomedApiTest {
 
 	@Test
 	public void noRebaseNewPreferredTerm() {
-		assertBranchCreated(testBranchPath);
+		givenBranchWithPath(testBranchPath);
 
 		assertDescriptionCreated(testBranchPath, "D1", PREFERRED_ACCEPTABILITY_MAP);
 		assertDescriptionExists(testBranchPath, "D1");

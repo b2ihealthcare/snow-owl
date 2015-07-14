@@ -45,11 +45,17 @@ import com.b2international.snowowl.core.MetadataHolder;
 import com.b2international.snowowl.core.MetadataHolderMixin;
 import com.b2international.snowowl.core.MetadataMixin;
 import com.b2international.snowowl.datastore.server.branch.Branch;
+import com.b2international.snowowl.datastore.server.review.BranchState;
+import com.b2international.snowowl.datastore.server.review.ConceptChanges;
+import com.b2international.snowowl.datastore.server.review.ConceptChangesMixin;
+import com.b2international.snowowl.datastore.server.review.Review;
 import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.snomed.api.domain.ISnomedComponent;
 import com.b2international.snowowl.snomed.api.domain.browser.ISnomedBrowserComponent;
 import com.b2international.snowowl.snomed.api.rest.domain.BranchMixin;
+import com.b2international.snowowl.snomed.api.rest.domain.BranchStateMixin;
 import com.b2international.snowowl.snomed.api.rest.domain.ISnomedComponentMixin;
+import com.b2international.snowowl.snomed.api.rest.domain.ReviewMixin;
 import com.fasterxml.classmate.TypeResolver;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -175,6 +181,9 @@ public class ServicesConfiguration extends WebMvcConfigurerAdapter {
 		objectMapper.addMixInAnnotations(Branch.class, BranchMixin.class);
 		objectMapper.addMixInAnnotations(Metadata.class, MetadataMixin.class);
 		objectMapper.addMixInAnnotations(MetadataHolder.class, MetadataHolderMixin.class);
+		objectMapper.addMixInAnnotations(Review.class, ReviewMixin.class);
+		objectMapper.addMixInAnnotations(BranchState.class, BranchStateMixin.class);
+		objectMapper.addMixInAnnotations(ConceptChanges.class, ConceptChangesMixin.class);
 		return objectMapper;
 	}
 	

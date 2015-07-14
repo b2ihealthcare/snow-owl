@@ -15,6 +15,8 @@
  */
 package com.b2international.snowowl.snomed.api.rest;
 
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 
 /**
  * @since 1.0
@@ -26,4 +28,7 @@ public abstract class AbstractRestService {
 	 */
 	public static final String SO_MEDIA_TYPE = "application/vnd.com.b2international.snowowl+json";
 
+	@Autowired
+	@Value("${repositoryId}")
+	protected String repositoryId;
 }

@@ -72,8 +72,8 @@ public class SnomedConceptRestInput extends AbstractSnomedComponentRestInput<Sno
 	}
 
 	@Override
-	public SnomedConceptInput toComponentInput(final String branchPath) {
-		final SnomedConceptInput result = super.toComponentInput(branchPath);
+	public SnomedConceptInput toComponentInput(final String branchPath, final String codeSystemShortName) {
+		final SnomedConceptInput result = super.toComponentInput(branchPath, codeSystemShortName);
 
 		result.setIsAIdGenerationStrategy(createIdGenerationStrategy(getIsAId()));
 
@@ -84,7 +84,7 @@ public class SnomedConceptRestInput extends AbstractSnomedComponentRestInput<Sno
 				restDescription.setNamespaceId(getNamespaceId());
 			}
 			
-			descriptionInputs.add(restDescription.toComponentInput(branchPath));
+			descriptionInputs.add(restDescription.toComponentInput(branchPath, codeSystemShortName));
 		}
 
 		result.setDescriptions(descriptionInputs);

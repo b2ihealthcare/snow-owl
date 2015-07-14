@@ -170,7 +170,7 @@ public class SnomedBrowserRestService extends AbstractSnomedRestService {
 			final HttpServletRequest request) {
 
 		final StorageRef ref = new StorageRef();
-		ref.setShortName("SNOMEDCT");
+		ref.setShortName(codeSystemShortName);
 		ref.setBranchPath(branchPath);
 		return delegate.getDescriptions(ref, query, Collections.list(request.getLocales()), offset, limit);
 	}
@@ -194,7 +194,7 @@ public class SnomedBrowserRestService extends AbstractSnomedRestService {
 
 			final HttpServletRequest request) {
 		final StorageRef ref = new StorageRef();
-		ref.setShortName("SNOMEDCT");
+		ref.setShortName(codeSystemShortName);
 		ref.setBranchPath(branchPath);
 		return delegate.getConstants(ref, Collections.list(request.getLocales()));
 	}

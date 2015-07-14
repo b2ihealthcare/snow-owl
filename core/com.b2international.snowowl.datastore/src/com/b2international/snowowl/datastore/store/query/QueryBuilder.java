@@ -44,6 +44,12 @@ public class QueryBuilder {
 		this.query.addClause(new PrefixWhere(property, value));
 		return this;
 	}
+
+	public QueryBuilder lessThan(String property, String value) {
+		checkState(query != null, "Query already created, use another builder");
+		this.query.addClause(new LessThanWhere(property, value));
+		return this;
+	}
 	
 	public Query build() {
 		Query query = this.query;
@@ -69,5 +75,4 @@ public class QueryBuilder {
 		}
 		
 	}
-	
 }

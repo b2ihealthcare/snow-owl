@@ -13,15 +13,25 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.snomed.api.rest.domain;
+package com.b2international.snowowl.datastore.server.events;
+
+import static com.google.common.base.Preconditions.checkNotNull;
 
 /**
- * @since 4.1
+ * An abstract superclass for terminology review events which include the affected review's identifier.
+ * 
+ * @since 4.2
  */
-public class CreateSnomedBranchRequest extends CreateBranchRequest {
+public abstract class ReviewEvent extends BaseReviewEvent {
 
-	public CreateSnomedBranchRequest() {
-		super("snomedStore");
+	private final String reviewId;
+
+	public ReviewEvent(final String repositoryId, final String reviewId) {
+		super(repositoryId);
+		this.reviewId = checkNotNull(reviewId, "reviewId");
 	}
 
+	public final String getReviewId() {
+		return reviewId;
+	}
 }

@@ -15,6 +15,9 @@
  */
 package com.b2international.snowowl.snomed.api.rest;
 
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+
 import com.b2international.snowowl.api.domain.IComponentRef;
 import com.b2international.snowowl.api.impl.domain.ComponentRef;
 
@@ -23,11 +26,15 @@ import com.b2international.snowowl.api.impl.domain.ComponentRef;
  * 
  * @since 1.0
  */
-public class AbstractSnomedRestService extends AbstractRestService {
+public abstract class AbstractSnomedRestService extends AbstractRestService {
+
+	@Autowired
+	@Value("${codeSystemShortName}")
+	protected String codeSystemShortName;
 
 	protected IComponentRef createComponentRef(final String branchPath, final String componentId) {
 		final ComponentRef conceptRef = new ComponentRef();
-		conceptRef.setShortName("SNOMEDCT");
+		conceptRef.setShortName(codeSystemShortName);
 		conceptRef.setBranchPath(branchPath);
 		conceptRef.setComponentId(componentId);
 		conceptRef.checkStorageExists();

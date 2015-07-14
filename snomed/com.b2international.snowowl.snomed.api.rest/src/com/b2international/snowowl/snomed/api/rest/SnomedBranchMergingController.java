@@ -19,11 +19,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.ResponseStatus;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.context.request.async.DeferredResult;
 
 import com.b2international.commons.collections.Procedure;
@@ -45,7 +41,7 @@ import com.wordnik.swagger.annotations.ApiResponses;
 @Api("Branches")
 @RestController
 @RequestMapping(value="/merges", produces={AbstractRestService.SO_MEDIA_TYPE, MediaType.APPLICATION_JSON_VALUE})
-public class SnomedBranchMergingController {
+public class SnomedBranchMergingController extends AbstractRestService {
 
 	@Autowired
 	private IEventBus bus;
@@ -66,7 +62,7 @@ public class SnomedBranchMergingController {
 		final ResponseEntity<Void> response = Responses.noContent().build();
 		final DeferredResult<ResponseEntity<Void>> result = new DeferredResult<>();
 		new AsyncSupport<BranchReply>(bus, BranchReply.class)
-			.send(request.toEvent())
+			.send(request.toEvent(repositoryId))
 			.then(new Procedure<BranchReply>() { @Override protected void doApply(BranchReply reply) {
 				result.setResult(response);
 			}})

@@ -1,6 +1,20 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
+## 2015-07-23
+### Added
+- Support for terminology reviews
+  * `POST` `/reviews`
+  * `GET` `/reviews/:id`
+  * `GET` `/reviews/:id/concept-changes`
+  * `DELETE` `/reviews/:id`
+  
+  Changes are computed according to existing version comparison logic in Snow Owl Server; in particular, reference set identifier concepts are marked as changed if any members are added, removed or updated in the reference set. The first modification immediately after versioning triggers an update to "Module dependency", making it appear in concept change resources.
+  
+  Inbound relationship changes do not mark the target concept as changed. Inactivating a concept marks it as changed, not deleted.
+  
+  Concept change sets and review resources are kept for a limited time, which is configurable using the `snowowl_configuration.yml` file.
+
 ## 2015-05-27
 ### Added
 - Deep branching support has been implemented

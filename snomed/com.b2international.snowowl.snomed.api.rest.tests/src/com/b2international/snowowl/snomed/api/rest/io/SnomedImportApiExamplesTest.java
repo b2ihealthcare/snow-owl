@@ -15,7 +15,7 @@
  */
 package com.b2international.snowowl.snomed.api.rest.io;
 
-import static com.b2international.snowowl.snomed.api.rest.SnomedBranchingApiAssert.assertBranchCreated;
+import static com.b2international.snowowl.snomed.api.rest.SnomedBranchingApiAssert.givenBranchWithPath;
 import static com.b2international.snowowl.snomed.api.rest.SnomedComponentApiAssert.*;
 import static com.b2international.snowowl.test.commons.rest.RestExtensions.givenAuthenticatedRequest;
 import static org.junit.Assert.assertEquals;
@@ -95,7 +95,7 @@ public class SnomedImportApiExamplesTest extends AbstractSnomedImportApiTest {
 
 	@Test
 	public void importNewConcept() {
-		assertBranchCreated(testBranchPath);
+		givenBranchWithPath(testBranchPath);
 		assertConceptNotExists(testBranchPath, "63961392103");
 
 		assertImportFileCanBeImported("SnomedCT_Release_INT_20150131_new_concept.zip");
@@ -105,7 +105,7 @@ public class SnomedImportApiExamplesTest extends AbstractSnomedImportApiTest {
 
 	@Test
 	public void importNewDescription() {
-		assertBranchCreated(testBranchPath);
+		givenBranchWithPath(testBranchPath);
 		assertDescriptionNotExists(testBranchPath, "11320138110");
 
 		assertImportFileCanBeImported("SnomedCT_Release_INT_20150131_new_concept.zip");
@@ -116,7 +116,7 @@ public class SnomedImportApiExamplesTest extends AbstractSnomedImportApiTest {
 
 	@Test
 	public void importNewRelationship() {
-		assertBranchCreated(testBranchPath);
+		givenBranchWithPath(testBranchPath);
 		assertRelationshipNotExists(testBranchPath, "24088071128");
 
 		assertImportFileCanBeImported("SnomedCT_Release_INT_20150131_new_concept.zip");
@@ -127,7 +127,7 @@ public class SnomedImportApiExamplesTest extends AbstractSnomedImportApiTest {
 
 	@Test
 	public void importNewPreferredTerm() {
-		assertBranchCreated(testBranchPath);
+		givenBranchWithPath(testBranchPath);
 
 		assertImportFileCanBeImported("SnomedCT_Release_INT_20150131_new_concept.zip");
 		assertPreferredTermEquals(testBranchPath, "63961392103", "13809498114");
@@ -141,7 +141,7 @@ public class SnomedImportApiExamplesTest extends AbstractSnomedImportApiTest {
 
 	@Test
 	public void importConceptInactivation() {
-		assertBranchCreated(testBranchPath);
+		givenBranchWithPath(testBranchPath);
 
 		assertImportFileCanBeImported("SnomedCT_Release_INT_20150131_new_concept.zip");
 		assertImportFileCanBeImported("SnomedCT_Release_INT_20150201_new_description.zip");

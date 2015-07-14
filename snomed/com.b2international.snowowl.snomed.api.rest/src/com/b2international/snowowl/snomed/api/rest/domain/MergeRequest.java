@@ -33,18 +33,21 @@ public class MergeRequest {
 	@JsonProperty
 	@NotEmpty
 	private String source;
-	
+
 	@ApiModelProperty(required = true)
 	@JsonProperty
 	@NotEmpty
 	private String target;
-	
+
 	@ApiModelProperty(required = false)
 	@JsonProperty
 	private String commitComment;
-
-	public Event toEvent() {
-		return new MergeEvent("snomedStore", source, target, commitComment);
-	}
 	
+	@ApiModelProperty(required = false)
+	@JsonProperty
+	private String reviewId;
+	
+	public Event toEvent(final String repositoryId) {
+		return new MergeEvent(repositoryId, source, target, commitComment, reviewId);
+	}
 }

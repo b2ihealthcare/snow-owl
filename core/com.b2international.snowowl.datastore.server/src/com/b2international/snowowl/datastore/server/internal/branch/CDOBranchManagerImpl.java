@@ -34,7 +34,6 @@ import com.b2international.snowowl.datastore.server.branch.Branch;
 import com.b2international.snowowl.datastore.server.branch.BranchManager;
 import com.b2international.snowowl.datastore.server.branch.BranchMergeException;
 import com.b2international.snowowl.datastore.server.internal.IRepository;
-import com.b2international.snowowl.datastore.store.IndexStore;
 import com.b2international.snowowl.datastore.store.Store;
 
 /**
@@ -49,9 +48,7 @@ public class CDOBranchManagerImpl extends BranchManagerImpl {
     public CDOBranchManagerImpl(final IRepository repository, final Store<InternalBranch> branchStore) {
         super(branchStore, getBasetimestamp(repository.getCdoMainBranch()));
         this.repository = repository;
-        if (branchStore instanceof IndexStore) {
-        	((IndexStore<InternalBranch>) branchStore).configureSearchable(PATH_FIELD);
-        }
+       	branchStore.configureSearchable(PATH_FIELD);
         registerCommitListener(repository.getCdoRepository());
     }
 

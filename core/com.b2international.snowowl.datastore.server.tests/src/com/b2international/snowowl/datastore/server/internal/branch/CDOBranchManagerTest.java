@@ -17,6 +17,7 @@ package com.b2international.snowowl.datastore.server.internal.branch;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
+import static org.mockito.Mockito.RETURNS_DEFAULTS;
 import static org.mockito.Mockito.RETURNS_MOCKS;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -30,6 +31,7 @@ import org.junit.runner.RunWith;
 import org.mockito.runners.MockitoJUnitRunner;
 
 import com.b2international.snowowl.datastore.server.branch.Branch;
+import com.b2international.snowowl.datastore.server.cdo.ICDOConflictProcessor;
 import com.b2international.snowowl.datastore.server.internal.IRepository;
 import com.b2international.snowowl.datastore.store.MemStore;
 
@@ -52,11 +54,13 @@ public class CDOBranchManagerTest {
 		cdoBranchManager = new MockInternalCDOBranchManager(clock);
 		cdoBranchManager.initMainBranch(false, clock.getTimeStamp());
 
-		InternalCDOBranch mainBranch = cdoBranchManager.getMainBranch();
-		
-		IRepository repository = mock(IRepository.class, RETURNS_MOCKS);
+		final InternalCDOBranch mainBranch = cdoBranchManager.getMainBranch();
+		final IRepository repository = mock(IRepository.class, RETURNS_MOCKS);
+		final ICDOConflictProcessor conflictProcessor = mock(ICDOConflictProcessor.class, RETURNS_DEFAULTS);
+
 		when(repository.getCdoBranchManager()).thenReturn(cdoBranchManager);
 		when(repository.getCdoMainBranch()).thenReturn(mainBranch);
+		when(repository.getConflictProcessor()).thenReturn(conflictProcessor);
 		
 		manager = new CDOBranchManagerImpl(repository, new MemStore<InternalBranch>());
 		main = (CDOMainBranchImpl) manager.getMainBranch();

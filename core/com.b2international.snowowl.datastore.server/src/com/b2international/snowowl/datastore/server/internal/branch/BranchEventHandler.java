@@ -36,6 +36,9 @@ import com.b2international.snowowl.datastore.server.events.ReadAllBranchEvent;
 import com.b2international.snowowl.datastore.server.events.ReadBranchChildrenEvent;
 import com.b2international.snowowl.datastore.server.events.ReadBranchEvent;
 import com.b2international.snowowl.datastore.server.events.ReopenBranchEvent;
+import com.b2international.snowowl.datastore.server.review.BranchState;
+import com.b2international.snowowl.datastore.server.review.Review;
+import com.b2international.snowowl.datastore.server.review.ReviewManager;
 
 /**
  * @since 4.1
@@ -43,9 +46,11 @@ import com.b2international.snowowl.datastore.server.events.ReopenBranchEvent;
 public class BranchEventHandler extends ApiEventHandler {
 
 	private BranchManager branchManager;
+	private ReviewManager reviewManager;
 	
-	public BranchEventHandler(BranchManager branchManager) {
-		this.branchManager = checkNotNull(branchManager, "manager");
+	public BranchEventHandler(BranchManager branchManager, ReviewManager reviewManager) {
+		this.branchManager = checkNotNull(branchManager, "branchManager");
+		this.reviewManager = checkNotNull(reviewManager, "reviewManager");
 	}
 	
 	@Handler
@@ -95,10 +100,25 @@ public class BranchEventHandler extends ApiEventHandler {
 	@Handler
 	protected BranchReply handle(MergeEvent event) {
 		try {
+			final String reviewId = event.getReviewId();
 			final Branch source = branchManager.getBranch(event.getSource());
 			final Branch target = branchManager.getBranch(event.getTarget());
-			if (source.parent().equals(target)) {
+			
+			if (reviewId != null) {
+				Review review = reviewManager.getReview(reviewId);
+				BranchState sourceState = review.source();
+				BranchState targetState = review.target();
 				
+				if (!sourceState.matches(source)) {
+					throw new ConflictException("Source branch '%s' did not match with stored state on review identifier '%s'.", source.path(), reviewId);
+				}
+				
+				if (!targetState.matches(target)) {
+					throw new ConflictException("Target branch '%s' did not match with stored state on review identifier '%s'.", target.path(), reviewId);
+				}
+			}
+			
+			if (source.parent().equals(target)) {
 				// merge into target
 				try {
 					final Branch merged = target.merge(source, event.getCommitMessage());
@@ -108,7 +128,6 @@ public class BranchEventHandler extends ApiEventHandler {
 				}
 				
 			} else if (target.parent().equals(source)) {
-				
 				// rebase onto target
 				try {
 					final Branch rebased = target.rebase(source, event.getCommitMessage());
