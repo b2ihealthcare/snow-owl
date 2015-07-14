@@ -36,7 +36,7 @@ public class ReviewSerializationTest {
 	private ReviewSerializer mapper;
 
 	@Before
-	public void givenBranch() {
+	public void setUp() {
 		final Branch source = mock(Branch.class);
 		when(source.path()).thenReturn("MAIN/a");
 		when(source.baseTimestamp()).thenReturn(1L);
