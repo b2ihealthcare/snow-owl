@@ -50,10 +50,4 @@ public abstract class ReviewImplMixin {
 
     @JsonProperty
     public abstract String lastUpdated();
-
-    @JsonProperty
-    public abstract String sourcePath();
-
-    @JsonProperty
-    public abstract String targetPath();
 }

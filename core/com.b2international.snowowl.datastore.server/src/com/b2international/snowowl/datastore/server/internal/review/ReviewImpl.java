@@ -78,7 +78,11 @@ public class ReviewImpl implements Review {
 		}
 
 		public Builder refreshLastUpdated() {
-			lastUpdated = getCurrentTimeISO8601();
+			return lastUpdated(getCurrentTimeISO8601());
+		}
+		
+		public Builder lastUpdated(final String newLastUpdated) {
+			lastUpdated = newLastUpdated;
 			return this;
 		}
 
