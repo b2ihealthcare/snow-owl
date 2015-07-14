@@ -130,13 +130,10 @@ This describes the resources that make up the official Snow Owl® SNOMED CT Term
 			attempts will be marked with FAILED state.
 		</p>
 		<p>
-			If at any point in time after creating a review resource, additional commits are added to either the source or the target branch, the review resource transitions into the STALE
-			state, and can't be used in any merge or rebase operations.
+			A review identifier can be added to merge requests as an optional property. If the source or target branch state is different from the values captured 
+			when creating the review, the merge/rebase attempt will be rejected. This can happen, for example, when additional commits are added to the source or the target branch 
+			while a review is in progress; the review resource state becomes STALE in such cases.
 		</p>
-		<p>
-			As an additional parameter, a review identifier can be added to merge/rebase requests. If the source or target branch state deviates from the values stored in the review,
-			the operation will be rejected. 
-		<p>
 		<p>
 			Reviews and concept change sets have a limited lifetime. CURRENT reviews are kept for 15 minutes, while review objects in any other states are valid for 5 minutes by default. The
 			values can be changed in the server's configuration file.
