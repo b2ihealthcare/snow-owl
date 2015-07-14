@@ -191,15 +191,22 @@ public abstract class SnomedBranchingApiAssert {
 
 	// XXX: the merge service figures out what to do by inspecting the relationship between source and target
 	public static Response whenMergingOrRebasingBranches(final IBranchPath source, final IBranchPath target, final String commitComment) {
-		final Map<?, ?> requestBody = ImmutableMap.builder()
+		return whenMergingOrRebasingBranches(source, target, commitComment, null);
+	}
+
+	public static Response whenMergingOrRebasingBranches(final IBranchPath source, final IBranchPath target, final String commitComment, final String reviewId) {
+		final ImmutableMap.Builder<String, Object> requestBuilder = ImmutableMap.<String, Object>builder()
 				.put("source", source.getPath())
 				.put("target", target.getPath())
-				.put("commitComment", commitComment)
-				.build();
-
+				.put("commitComment", commitComment);
+				
+		if (null != reviewId) {
+			requestBuilder.put("reviewId", reviewId);
+		}
+		
 		return givenAuthenticatedRequest(SCT_API)
 				.with().contentType(ContentType.JSON)
-				.and().body(requestBody)
+				.and().body(requestBuilder.build())
 				.when().post("/merges");
 	}
 

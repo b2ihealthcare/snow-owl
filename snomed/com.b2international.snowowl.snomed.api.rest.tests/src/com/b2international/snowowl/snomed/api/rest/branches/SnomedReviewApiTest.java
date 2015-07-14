@@ -20,6 +20,7 @@ import static com.b2international.snowowl.snomed.SnomedConstants.Concepts.ROOT_C
 import static com.b2international.snowowl.snomed.api.rest.SnomedApiTestConstants.PREFERRED_ACCEPTABILITY_MAP;
 import static com.b2international.snowowl.snomed.api.rest.SnomedBranchingApiAssert.assertBranchCanBeMerged;
 import static com.b2international.snowowl.snomed.api.rest.SnomedBranchingApiAssert.givenBranchWithPath;
+import static com.b2international.snowowl.snomed.api.rest.SnomedBranchingApiAssert.whenMergingOrRebasingBranches;
 import static com.b2international.snowowl.snomed.api.rest.SnomedComponentApiAssert.assertComponentCanBeDeleted;
 import static com.b2international.snowowl.snomed.api.rest.SnomedComponentApiAssert.assertComponentCreated;
 import static com.b2international.snowowl.snomed.api.rest.SnomedComponentApiAssert.givenConceptRequestBody;
@@ -263,5 +264,13 @@ public class SnomedReviewApiTest extends AbstractSnomedApiTest {
 		.then()
 			.statusCode(200)
 			.body("status", equalTo(ReviewStatus.STALE.toString()));		
+	}
+	
+	@Test
+	public void mergeWithNonExistentReview() {
+		givenBranchWithPath(testBranchPath);
+		whenMergingOrRebasingBranches(testBranchPath, testBranchPath.getParent(), "Merge commit", "abc")
+		.then()
+			.statusCode(400);
 	}
 }
