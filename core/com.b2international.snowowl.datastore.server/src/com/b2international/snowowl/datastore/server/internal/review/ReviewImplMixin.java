@@ -18,13 +18,11 @@ package com.b2international.snowowl.datastore.server.internal.review;
 import com.b2international.snowowl.datastore.server.review.BranchState;
 import com.b2international.snowowl.datastore.server.review.ReviewStatus;
 import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 /**
  * @since 4.2
  */
-@JsonIgnoreProperties({ "sourcePath", "targetPath" })
 public abstract class ReviewImplMixin {
 
     @JsonCreator
