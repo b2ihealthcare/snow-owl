@@ -87,7 +87,7 @@ public class SnomedComplexMapRefSetExporter extends SnomedRefSetExporter {
 		sb.append(doc.get(REFERENCE_SET_MEMBER_CORRELATION_ID));
 		if (extended) {
 			sb.append(HT);
-			sb.append(doc.get(REFERENCE_SET_MEMBER_MAP_CATEGORY_ID));
+			sb.append(nullToEmpty(doc.get(REFERENCE_SET_MEMBER_MAP_CATEGORY_ID)));
 		}
 		return sb.toString();
 	}

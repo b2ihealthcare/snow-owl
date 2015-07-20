@@ -131,6 +131,10 @@ public class SnomedComplexMapTypeRefSetImporter extends AbstractSnomedMapTypeRef
 		editedMember.setMapGroup(currentRow.getMapGroup());
 		editedMember.setMapPriority(currentRow.getMapPriority());
 		
+		if (extended) {
+			editedMember.setMapCategoryId(currentRow.getMapCategoryId());
+		}
+		
 		return editedMember;
 	}
 
