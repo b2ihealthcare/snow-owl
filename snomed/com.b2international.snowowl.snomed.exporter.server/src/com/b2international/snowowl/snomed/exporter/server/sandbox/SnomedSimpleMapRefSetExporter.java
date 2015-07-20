@@ -20,6 +20,7 @@ import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBr
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.collect.Sets.newHashSet;
 import static java.util.Collections.unmodifiableSet;
+import static com.google.common.base.Strings.nullToEmpty;
 
 import java.util.Set;
 
@@ -65,7 +66,7 @@ public class SnomedSimpleMapRefSetExporter extends SnomedRefSetExporter {
 		sb.append(doc.get(REFERENCE_SET_MEMBER_MAP_TARGET_COMPONENT_ID));
 		if (includeMapTargetDescription) {
 			sb.append(HT);
-			sb.append(doc.get(REFERENCE_SET_MEMBER_MAP_TARGET_COMPONENT_DESCRIPTION));
+			sb.append(nullToEmpty(doc.get(REFERENCE_SET_MEMBER_MAP_TARGET_COMPONENT_DESCRIPTION)));
 		}
 		return sb.toString();
 	}
