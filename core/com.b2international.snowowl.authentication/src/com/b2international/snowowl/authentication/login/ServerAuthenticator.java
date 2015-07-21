@@ -103,24 +103,26 @@ public class ServerAuthenticator {
 	 * @throws LoginException
 	 */
 	public void login(String userName, String password) throws LoginException {
-		this.userName = userName;
-		this.password = password;
-		try {
-			LogUtils.logUserAccess(LOG, userName, "Authenticating: " + userName);
-			loginContext.login();
-			LogUtils.logUserAccess(LOG, userName, "Authentication succeeded");
-		} catch (LoginException loginException) {
-
-			String reason = "";
-			if (loginException.getCause() instanceof LoginException) {
-				reason = !StringUtils.isEmpty(loginException.getCause().getMessage()) ? " Reason: "
-						+ loginException.getCause().getMessage() : "";
+		synchronized (loginContext) {
+			this.userName = userName;
+			this.password = password;
+			try {
+				LogUtils.logUserAccess(LOG, userName, "Authenticating: " + userName);
+				loginContext.login();
+				LogUtils.logUserAccess(LOG, userName, "Authentication succeeded");
+			} catch (LoginException loginException) {
+				
+				String reason = "";
+				if (loginException.getCause() instanceof LoginException) {
+					reason = !StringUtils.isEmpty(loginException.getCause().getMessage()) ? " Reason: "
+							+ loginException.getCause().getMessage() : "";
+				}
+				
+				final String message = userName + " could not log in." + reason;
+				LOG.error(message);
+				LogUtils.logUserAccess(LOG, userName, message);
+				throw loginException;
 			}
-
-			final String message = userName + " could not log in." + reason;
-			LOG.error(message);
-			LogUtils.logUserAccess(LOG, userName, message);
-			throw loginException;
 		}
 	}
 

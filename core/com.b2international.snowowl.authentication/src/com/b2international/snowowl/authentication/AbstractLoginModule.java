@@ -42,7 +42,7 @@ public abstract class AbstractLoginModule implements LoginModule {
 
 	@Override
 	public void initialize(final Subject subject, final CallbackHandler callbackHandler, final Map<String, ?> sharedState, final Map<String, ?> options) {
-		this.callbackHandler = callbackHandler;
+		this.callbackHandler = checkNotNull(callbackHandler, "callbackHandler");
 	}
 
 	@Override
