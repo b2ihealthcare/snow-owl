@@ -1,0 +1,218 @@
+= Installation guide
+B2i Healthcare Ltd. <info@b2international.com>
+:toc2:
+
+== Introduction
+
+This document goes through the installation steps of required software listed in "`Software requirements`".
+After finishing the installation of all items, follow "`Configuration guide`" to set up each component to 
+work with Snow Owl Server.
+
+== Components
+
+=== Operating system
+
+Install Red Hat Enterprise Linux or CentOS using the minimal ISO image. As hardware configurations and the
+corresponding exact installation steps can be different from machine to machine, please refer to the 
+https://access.redhat.com/documentation/en-US/Red_Hat_Enterprise_Linux/6/html/Installation_Guide/index.html[installation guide]
+on Red Hat's site for details (covers both distributions).
+
+NOTE: The text-based installer does not offer all options compared to the graphical one; you may have to connect a physical
+monitor, or use the built-in KVM management capabilities of the server (if supported) to perform the installation from the
+graphical environment. The installed system only needs an SSH connection for administration.
+
+When creating the partition layout, keep in mind that Snow Owl Server requires at least 160 GB of disk space when branched
+terminology editing is used extensively.
+
+After logging in to the installed system, update installed packages to the latest version and add EPEL as a package
+repository for dependencies. For non-CentOS installations, please see the the
+https://fedoraproject.org/wiki/EPEL#How_can_I_use_these_extra_packages.3F[usage instructions] on the EPEL wiki.
+
+--------------------------
+# yum update
+# reboot
+# yum install epel-release ← works only if CentOS was installed
+--------------------------
+
+Create a non-login user for Snow Owl Server to run as:
+
+--------------------------
+# useradd -r -s /sbin/nologin snowowl 
+--------------------------
+
+=== Database server software
+
+An extensive installation guide for getting MySQL Community Edition from a yum repository is available at 
+http://dev.mysql.com/doc/mysql-yum-repo-quick-guide/en/index.html#repo-qg-yum-fresh-install[the MySQL Documentation Library].
+The required steps are summarized below.
+
+After downloading the RPM package, install MySQL's yum repository with the following command:
+
+--------------------------
+# yum install mysql-community-release-el6-5.noarch.rpm
+--------------------------
+
+The repository for MySQL 5.6 should be enabled by default. Confirm by opening `/etc/yum.repos.d/mysql-community.repo`; you 
+should see `enabled=1` only in section `[mysql56-community]`.
+
+--------------------------
+[mysql56-community]
+name=MySQL 5.6 Community Server
+baseurl=http://repo.mysql.com/yum/mysql-5.6-community/el/5/$basearch/
+enabled=1 ← should be 0 for other releases, 1 for the 5.6 server
+...
+--------------------------
+
+Install MySQL Community Server using yum:
+
+--------------------------
+# yum install mysql-community-server
+--------------------------
+
+Start the service, wait for first-time initialization to complete:
+
+--------------------------
+# service mysqld start
+Starting MySQL.                                            [  OK  ]
+--------------------------
+
+After a few minutes, check if the database service is still running and enabled at startup:
+
+--------------------------
+# service mysqld status
+mysqld (pid  1757) is running...
+--------------------------
+
+--------------------------
+# chkconfig mysqld on
+# chkconfig --list mysqld
+mysqld          0:off   1:off   2:on    3:on    4:on    5:on    6:off
+--------------------------
+
+Go through the secure installation, which removes example and public databases, and sets a new root password for the
+database:
+
+--------------------------
+# mysql_secure_installation
+--------------------------
+  
+NOTE: The entered new root password will be used later for configuration and administrative purposes; do not forget this password.
+
+Bring down the database service while replacing the configuration file:
+
+--------------------------
+# service mysqld stop
+Shutting down MySQL..                                      [  OK  ]
+  
+<replace /etc/my.cnf with contents from ...>
+  
+# reboot
+--------------------------
+
+Finally, check the log file `/var/log/mysqld.log` for any errors.
+
+=== JDK
+
+Download the "`Linux X64`" edition, and install it with yum:
+
+--------------------------
+# yum install jdk-7u79-linux-x64.rpm
+--------------------------
+
+=== LDAP
+
+Download the 64-bit Linux RPM package, and install it with yum:
+
+--------------------------
+# yum install apacheds-2.0.0-M20-x86_64.rpm
+--------------------------
+
+Start the service, check if it is running at startup:
+
+--------------------------
+# service apacheds-2.0.0_M20-default start
+Starting ApacheDS - default...
+
+# service apacheds-2.0.0_M20-default status
+ApacheDS - default is running (1947).
+
+# chkconfig apacheds-2.0.0_M20-default on
+# chkconfig --list apacheds-2.0.0_M20-default
+apacheds-2.0.0_M20-default   0:off   1:off   2:on    3:on    4:on    5:on    6:off
+
+# reboot
+--------------------------
+
+Check the log files in folder `/var/lib/apacheds-2.0.0_M20/default/log` for any errors. `wrapper.log` holds messages
+from the service wrapper running at startup and shutdown, while `apacheds.log` captures log output from the directory
+server itself.
+
+=== Task tracking
+
+As in the case of MySQL, only the steps required are included below, a more complete installation guide for Bugzilla
+can be found at https://www.bugzilla.org/docs/3.6/en/html/installing-bugzilla.html.
+
+Install the Apache2 web server:
+
+--------------------------
+# yum install httpd
+
+# service httpd start
+Starting httpd:                                            [  OK  ]
+
+# service httpd status
+httpd (pid  1638) is running...
+
+# chkconfig httpd on
+# chkconfig --list httpd
+httpd           0:off   1:off   2:on    3:on    4:on    5:on    6:off
+
+# reboot
+--------------------------
+
+Extract the downloaded archive of Bugzilla and move contents into folder `/var/www/html`, adjust permissions and
+SELinux labels:
+
+--------------------------
+# tar xzvf bugzilla-3.6.13.tar.gz
+# mv bugzilla-3.6.13 /var/www/html/bugzilla
+# chown -Rv apache:apache /var/www/html/bugzilla
+# restorecon -Rv /var/www/html/bugzilla
+--------------------------
+
+Check the availability of Perl modules required to get Bugzilla running:
+
+--------------------------
+# cd /var/www/html/bugzilla
+# ./checksetup.pl --check-modules
+--------------------------
+
+Depending on the set of currently installed Perl modules, the check script will list a set of required modules,
+another set of optional modules and a database module to use for persisting Bugzilla issues. The preferred way of
+installing them is via yum, but the suggested `perl install-module.pl` commands can also be used for this. On a
+clean CentOS 6 system, the following set of packages need to be added for a MySQL client, the required modules and
+modules XML-RPC and LDAP:
+
+--------------------------
+# yum install perl-DBD-MySQL
+# yum install perl-Digest-SHA perl-DateTime perl-TimeDate perl-Template-Toolkit perl-Email-Send perl-Email-MIME 
+perl-Email-MIME-Encodings perl-Email-MIME-Modifier perl-URI
+# yum install perl-SOAP-Lite perl-LDAP
+--------------------------
+
+Finally, run `checksetup.pl` again, so Bugzilla can create its configuration file, `/var/www/html/bugzilla/localconfig`:
+
+--------------------------
+# ./checksetup.pl
+--------------------------
+
+== Snow Owl Server
+
+Unpack the distribution archive into `/opt`, installing `unzip` first if not already present; change permissions
+on the created folder:
+
+--------------------------
+# yum install unzip
+# unzip snowowl-community-{version}-mysql.zip -d /opt
+# chown -Rv snowowl:snowowl /opt/snowowl-community_{version}
+--------------------------
