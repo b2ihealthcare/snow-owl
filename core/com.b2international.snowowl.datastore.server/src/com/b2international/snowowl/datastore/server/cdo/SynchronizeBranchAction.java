@@ -32,11 +32,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.b2international.commons.CompareUtils;
-import com.b2international.commons.collections.Procedure;
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.LogUtils;
 import com.b2international.snowowl.core.api.IBranchPath;
-import com.b2international.snowowl.core.events.util.AsyncSupport;
 import com.b2international.snowowl.datastore.IBranchPathMap;
 import com.b2international.snowowl.datastore.cdo.ConflictWrapper;
 import com.b2international.snowowl.datastore.cdo.CustomConflictException;
@@ -47,7 +45,6 @@ import com.b2international.snowowl.datastore.server.events.BranchReply;
 import com.b2international.snowowl.datastore.server.events.ReopenBranchEvent;
 import com.b2international.snowowl.datastore.server.internal.branch.CDOBranchMerger;
 import com.b2international.snowowl.eventbus.IEventBus;
-import com.google.common.util.concurrent.SettableFuture;
 
 /**
  * Synchronizes changes with the task branches' parents. 
@@ -91,17 +88,9 @@ public class SynchronizeBranchAction extends AbstractCDOBranchAction {
 
 		final IEventBus eventBus = ApplicationContext.getServiceForClass(IEventBus.class);
 		final ReopenBranchEvent event = new ReopenBranchEvent(repositoryId, taskBranchPath.getPath());
-		final SettableFuture<BranchReply> result = SettableFuture.create();
-		
-		new AsyncSupport<>(eventBus, BranchReply.class)
-			.send(event)
-			.then(new Procedure<BranchReply>() { @Override protected void doApply(BranchReply input) { result.set(input); }})
-			.fail(new Procedure<Throwable>() { @Override protected void doApply(Throwable input) { result.setException(input); }});
-		
 		final BranchReply reply;
-		
 		try {
-			reply = result.get();
+			reply = event.send(eventBus, BranchReply.class).get();
 		} catch (InterruptedException e) {
 			throw e;
 		} catch (ExecutionException e) {

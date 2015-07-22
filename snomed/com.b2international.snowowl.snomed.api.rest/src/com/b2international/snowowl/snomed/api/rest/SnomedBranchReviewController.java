@@ -24,13 +24,21 @@ import org.springframework.hateoas.mvc.ControllerLinkBuilder;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.ResponseStatus;
+import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.context.request.async.DeferredResult;
 
 import com.b2international.commons.collections.Procedure;
-import com.b2international.snowowl.core.events.util.AsyncSupport;
 import com.b2international.snowowl.core.exceptions.ApiValidation;
-import com.b2international.snowowl.datastore.server.events.*;
+import com.b2international.snowowl.datastore.server.events.ConceptChangesReply;
+import com.b2international.snowowl.datastore.server.events.DeleteReviewEvent;
+import com.b2international.snowowl.datastore.server.events.ReadConceptChangesEvent;
+import com.b2international.snowowl.datastore.server.events.ReadReviewEvent;
+import com.b2international.snowowl.datastore.server.events.ReviewReply;
 import com.b2international.snowowl.datastore.server.review.ConceptChanges;
 import com.b2international.snowowl.datastore.server.review.Review;
 import com.b2international.snowowl.eventbus.IEventBus;
@@ -68,14 +76,14 @@ public class SnomedBranchReviewController extends AbstractRestService {
 		ApiValidation.checkInput(request);
 		final DeferredResult<ResponseEntity<Void>> result = new DeferredResult<>();
 		final ControllerLinkBuilder linkTo = linkTo(SnomedBranchReviewController.class);
-		new AsyncSupport<>(bus, ReviewReply.class)
-		.send(request.toEvent(repositoryId))
-		.then(new Procedure<ReviewReply>() { @Override protected void doApply(final ReviewReply reply) {
-			result.setResult(Responses.created(getLocationHeader(linkTo, reply)).build());
-		}})
-		.fail(new Procedure<Throwable>() { @Override protected void doApply(final Throwable t) {
-			result.setErrorResult(t);
-		}});
+		request.toEvent(repositoryId)
+			.send(bus, ReviewReply.class)
+			.then(new Procedure<ReviewReply>() { @Override protected void doApply(final ReviewReply reply) {
+				result.setResult(Responses.created(getLocationHeader(linkTo, reply)).build());
+			}})
+			.fail(new Procedure<Throwable>() { @Override protected void doApply(final Throwable t) {
+				result.setErrorResult(t);
+			}});
 		return result;
 	}
 
@@ -89,15 +97,14 @@ public class SnomedBranchReviewController extends AbstractRestService {
 	@RequestMapping(value="/{id}", method=RequestMethod.GET)
 	public DeferredResult<Review> getReview(@PathVariable("id") final String reviewId) {
 		final DeferredResult<Review> result = new DeferredResult<>();
-		new AsyncSupport<>(bus, ReviewReply.class)
-		.send(new ReadReviewEvent(repositoryId, reviewId))
-		.then(new Procedure<ReviewReply>() { @Override protected void doApply(final ReviewReply reply) {
-			result.setResult(reply.getReview());
-		}})
-		.fail(new Procedure<Throwable>() { @Override protected void doApply(final Throwable t) {
-			result.setErrorResult(t);
-		}});
-
+		new ReadReviewEvent(repositoryId, reviewId)
+			.send(bus, ReviewReply.class)
+			.then(new Procedure<ReviewReply>() { @Override protected void doApply(final ReviewReply reply) {
+				result.setResult(reply.getReview());
+			}})
+			.fail(new Procedure<Throwable>() { @Override protected void doApply(final Throwable t) {
+				result.setErrorResult(t);
+			}});
 		return result;
 	}
 
@@ -111,14 +118,14 @@ public class SnomedBranchReviewController extends AbstractRestService {
 	@RequestMapping(value="/{id}/concept-changes", method=RequestMethod.GET)
 	public DeferredResult<ConceptChanges> getConceptChanges(@PathVariable("id") final String reviewId) {
 		final DeferredResult<ConceptChanges> result = new DeferredResult<>();
-		new AsyncSupport<>(bus, ConceptChangesReply.class)
-		.send(new ReadConceptChangesEvent(repositoryId, reviewId))
-		.then(new Procedure<ConceptChangesReply>() { @Override protected void doApply(final ConceptChangesReply reply) {
-			result.setResult(reply.getConceptChanges());
-		}})
-		.fail(new Procedure<Throwable>() { @Override protected void doApply(final Throwable t) {
-			result.setErrorResult(t);
-		}});
+		new ReadConceptChangesEvent(repositoryId, reviewId)
+			.send(bus, ConceptChangesReply.class)
+			.then(new Procedure<ConceptChangesReply>() { @Override protected void doApply(final ConceptChangesReply reply) {
+				result.setResult(reply.getConceptChanges());
+			}})
+			.fail(new Procedure<Throwable>() { @Override protected void doApply(final Throwable t) {
+				result.setErrorResult(t);
+			}});
 		return result;
 	}
 
@@ -133,14 +140,14 @@ public class SnomedBranchReviewController extends AbstractRestService {
 	@ResponseStatus(HttpStatus.NO_CONTENT)
 	public DeferredResult<ResponseEntity<Void>> deleteReview(@PathVariable("id") final String ReviewId) {
 		final DeferredResult<ResponseEntity<Void>> result = new DeferredResult<>();
-		new AsyncSupport<>(bus, ReviewReply.class)
-		.send(new DeleteReviewEvent(repositoryId, ReviewId))
-		.then(new Procedure<ReviewReply>() { @Override protected void doApply(final ReviewReply reply) {
-			result.setResult(Responses.noContent().build());
-		}})
-		.fail(new Procedure<Throwable>() { @Override protected void doApply(final Throwable t) {
-			result.setErrorResult(t);
-		}});
+		new DeleteReviewEvent(repositoryId, ReviewId)
+			.send(bus, ReviewReply.class)
+			.then(new Procedure<ReviewReply>() { @Override protected void doApply(final ReviewReply reply) {
+				result.setResult(Responses.noContent().build());
+			}})
+			.fail(new Procedure<Throwable>() { @Override protected void doApply(final Throwable t) {
+				result.setErrorResult(t);
+			}});
 		return result;
 	}
 

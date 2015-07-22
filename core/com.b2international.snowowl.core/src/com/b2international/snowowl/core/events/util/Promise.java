@@ -16,13 +16,14 @@
 package com.b2international.snowowl.core.events.util;
 
 import com.b2international.commons.collections.Procedure;
+import com.google.common.util.concurrent.ListenableFuture;
 
 /**
  * @since 4.1
  * @param <T>
  *            - the type of the return value
  */
-public interface Promise<T> {
+public interface Promise<T> extends ListenableFuture<T> {
 
 	/**
 	 * Define what to do when the promise becomes resolved.

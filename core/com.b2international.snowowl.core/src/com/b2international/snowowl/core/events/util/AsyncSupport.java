@@ -38,7 +38,7 @@ public final class AsyncSupport<T> {
 	}
 
 	public Promise<T> send(Event event) {
-		final SimplePromise<T> promise = new SimplePromise<>();
+		final SettablePromise<T> promise = new SettablePromise<>();
 		event.send(bus, new IHandler<IMessage>() {
 			@Override
 			public void handle(IMessage message) {

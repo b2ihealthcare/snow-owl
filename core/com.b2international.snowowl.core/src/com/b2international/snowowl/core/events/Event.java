@@ -15,6 +15,7 @@
  */
 package com.b2international.snowowl.core.events;
 
+import com.b2international.snowowl.core.events.util.Promise;
 import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.eventbus.IHandler;
 import com.b2international.snowowl.eventbus.IMessage;
@@ -29,5 +30,7 @@ public interface Event {
 	void send(IEventBus bus);
 	
 	void send(IEventBus bus, IHandler<IMessage> replyHandler);
+	
+	<T> Promise<T> send(IEventBus bus, Class<T> returnType);
 	
 }

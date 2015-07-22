@@ -18,12 +18,10 @@ package com.b2international.snowowl.datastore.server;
 import java.lang.reflect.InvocationTargetException;
 import java.util.concurrent.ExecutionException;
 
-import com.b2international.commons.collections.Procedure;
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.MetadataImpl;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.api.SnowowlRuntimeException;
-import com.b2international.snowowl.core.events.util.AsyncSupport;
 import com.b2international.snowowl.datastore.cdo.ICDORepository;
 import com.b2international.snowowl.datastore.exception.RepositoryLockException;
 import com.b2international.snowowl.datastore.oplock.IOperationLockManager;
@@ -40,7 +38,6 @@ import com.b2international.snowowl.datastore.version.ITagConfiguration;
 import com.b2international.snowowl.datastore.version.ITagService;
 import com.b2international.snowowl.eventbus.IEventBus;
 import com.google.common.base.Preconditions;
-import com.google.common.util.concurrent.SettableFuture;
 
 /**
  * Service for tagging the content of a {@link ICDORepository repository}.
@@ -74,15 +71,9 @@ public class TagService implements ITagService {
 
 				final IEventBus eventBus = ApplicationContext.getServiceForClass(IEventBus.class);
 				final CreateBranchEvent event = new CreateBranchEvent(uuid, branchPath.getPath(), versionId, new MetadataImpl());
-				final SettableFuture<BranchReply> result = SettableFuture.create();
-				
-				new AsyncSupport<>(eventBus, BranchReply.class)
-					.send(event)
-					.then(new Procedure<BranchReply>() { @Override protected void doApply(final BranchReply input) { result.set(input); }})
-					.fail(new Procedure<Throwable>() { @Override protected void doApply(final Throwable input) { result.setException(input); }});
 				
 				try {
-					result.get();
+					event.send(eventBus, BranchReply.class).get();
 				} catch (final InterruptedException e) {
 					throw new SnowowlRuntimeException(e);
 				} catch (final ExecutionException e) {

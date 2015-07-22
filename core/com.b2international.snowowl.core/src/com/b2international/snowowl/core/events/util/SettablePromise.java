@@ -15,45 +15,56 @@
  */
 package com.b2international.snowowl.core.events.util;
 
-import static com.google.common.collect.Lists.newLinkedList;
-
-import java.util.LinkedList;
-import java.util.concurrent.atomic.AtomicBoolean;
-
 import com.b2international.commons.collections.Procedure;
+import com.google.common.util.concurrent.AbstractFuture;
+import com.google.common.util.concurrent.FutureCallback;
+import com.google.common.util.concurrent.Futures;
 
 /**
  * @since 4.1
  */
-public class SimplePromise<T> implements Promise<T> {
-
-	private LinkedList<Procedure<T>> thens = newLinkedList();
-	private LinkedList<Procedure<Throwable>> fails = newLinkedList();
-	private AtomicBoolean completed = new AtomicBoolean(false);
+class SettablePromise<T> extends AbstractFuture<T> implements Promise<T> {
 
 	@Override
-	public Promise<T> then(Procedure<T> then) {
-		thens.add(then);
+	public Promise<T> then(final Procedure<T> then) {
+		Futures.addCallback(this, new FutureCallback<T>() {
+			@Override
+			public void onSuccess(T result) {
+				then.apply(result);
+			}
+
+			@Override
+			public void onFailure(Throwable t) {
+			}
+		});
 		return this;
 	}
 
 	@Override
-	public Promise<T> fail(Procedure<Throwable> fail) {
-		fails.add(fail);
-		return this;
+	public Promise<T> fail(final Procedure<Throwable> fail) {
+		Futures.addCallback(this, new FutureCallback<T>() {
+
+			@Override
+			public void onSuccess(T result) {
+			}
+
+			@Override
+			public void onFailure(Throwable t) {
+				fail.apply(t);
+			}
+
+		});
+		return null;
 	}
 
 	/**
 	 * Resolves the promise by sending the given result object to all then listeners.
 	 * 
-	 * @param t - the resolution of this promise
+	 * @param t
+	 *            - the resolution of this promise
 	 */
 	protected void resolve(T t) {
-		if (completed.compareAndSet(false, true)) {
-			for (Procedure<T> then : thens) {
-				then.apply(t);
-			}
-		}
+		set(t);
 	}
 
 	/**
@@ -62,11 +73,7 @@ public class SimplePromise<T> implements Promise<T> {
 	 * @param throwable
 	 */
 	protected void reject(Throwable throwable) {
-		if (completed.compareAndSet(false, true)) {
-			for (Procedure<Throwable> fail : fails) {
-				fail.apply(throwable);
-			}
-		}
+		setException(throwable);
 	}
 
 }

@@ -21,11 +21,9 @@ import java.util.concurrent.TimeoutException;
 
 import org.eclipse.emf.cdo.common.branch.CDOBranch;
 
-import com.b2international.commons.collections.Procedure;
 import com.b2international.snowowl.api.codesystem.exception.CodeSystemNotFoundException;
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.api.SnowowlRuntimeException;
-import com.b2international.snowowl.core.events.util.AsyncSupport;
 import com.b2international.snowowl.core.exceptions.BadRequestException;
 import com.b2international.snowowl.core.exceptions.NotFoundException;
 import com.b2international.snowowl.core.exceptions.RequestTimeoutException;
@@ -38,7 +36,6 @@ import com.b2international.snowowl.datastore.server.branch.Branch;
 import com.b2international.snowowl.datastore.server.events.BranchReply;
 import com.b2international.snowowl.datastore.server.events.ReadBranchEvent;
 import com.b2international.snowowl.eventbus.IEventBus;
-import com.google.common.util.concurrent.SettableFuture;
 
 /**
  * @since 1.0
@@ -101,15 +98,9 @@ public class StorageRef implements InternalStorageRef {
 	@Override
 	public Branch getBranch() {
 		if (branch == null) {
-			final SettableFuture<BranchReply> result = SettableFuture.create();
-			new AsyncSupport<>(getEventBus(), BranchReply.class).send(new ReadBranchEvent(getRepositoryUuid(), getBranchPath()))
-				.then(new Procedure<BranchReply>() { @Override protected void doApply(BranchReply input) {
-					result.set(input);
-				}}).fail(new Procedure<Throwable>() { @Override protected void doApply(Throwable input) {
-					result.setException(input);
-				}});
 			try {
-				branch = result.get(DEFAULT_ASYNC_TIMEOUT_DELAY, TimeUnit.MILLISECONDS).getBranch();
+				final ReadBranchEvent event = new ReadBranchEvent(getRepositoryUuid(), getBranchPath());
+				branch = event.send(getEventBus(), BranchReply.class).get(DEFAULT_ASYNC_TIMEOUT_DELAY, TimeUnit.MILLISECONDS).getBranch();
 			} catch (InterruptedException e) {
 				throw new SnowowlRuntimeException(e);
 			} catch (TimeoutException e) {

@@ -19,11 +19,14 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.ResponseStatus;
+import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.context.request.async.DeferredResult;
 
 import com.b2international.commons.collections.Procedure;
-import com.b2international.snowowl.core.events.util.AsyncSupport;
 import com.b2international.snowowl.core.exceptions.ApiValidation;
 import com.b2international.snowowl.datastore.server.events.BranchReply;
 import com.b2international.snowowl.eventbus.IEventBus;
@@ -61,8 +64,8 @@ public class SnomedBranchMergingController extends AbstractRestService {
 		ApiValidation.checkInput(request);
 		final ResponseEntity<Void> response = Responses.noContent().build();
 		final DeferredResult<ResponseEntity<Void>> result = new DeferredResult<>();
-		new AsyncSupport<BranchReply>(bus, BranchReply.class)
-			.send(request.toEvent(repositoryId))
+		request.toEvent(repositoryId)
+			.send(bus, BranchReply.class)
 			.then(new Procedure<BranchReply>() { @Override protected void doApply(BranchReply reply) {
 				result.setResult(response);
 			}})
