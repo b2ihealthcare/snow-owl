@@ -21,14 +21,27 @@ import javax.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestHeader;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
 
 import com.b2international.snowowl.api.domain.IComponentRef;
 import com.b2international.snowowl.api.impl.domain.StorageRef;
 import com.b2international.snowowl.snomed.api.browser.ISnomedBrowserService;
-import com.b2international.snowowl.snomed.api.domain.browser.*;
+import com.b2international.snowowl.snomed.api.domain.browser.ISnomedBrowserChildConcept;
+import com.b2international.snowowl.snomed.api.domain.browser.ISnomedBrowserConcept;
+import com.b2international.snowowl.snomed.api.domain.browser.ISnomedBrowserConstant;
+import com.b2international.snowowl.snomed.api.domain.browser.ISnomedBrowserDescriptionResult;
+import com.b2international.snowowl.snomed.api.domain.browser.ISnomedBrowserParentConcept;
 import com.b2international.snowowl.snomed.api.rest.AbstractSnomedRestService;
-import com.wordnik.swagger.annotations.*;
+import com.wordnik.swagger.annotations.Api;
+import com.wordnik.swagger.annotations.ApiOperation;
+import com.wordnik.swagger.annotations.ApiParam;
+import com.wordnik.swagger.annotations.ApiResponse;
+import com.wordnik.swagger.annotations.ApiResponses;
 
 /**
  * @since 1.0
@@ -169,9 +182,7 @@ public class SnomedBrowserRestService extends AbstractSnomedRestService {
 
 			final HttpServletRequest request) {
 
-		final StorageRef ref = new StorageRef();
-		ref.setShortName(codeSystemShortName);
-		ref.setBranchPath(branchPath);
+		final StorageRef ref = new StorageRef(codeSystemShortName, branchPath);
 		return delegate.getDescriptions(ref, query, Collections.list(request.getLocales()), offset, limit);
 	}
 
@@ -193,9 +204,7 @@ public class SnomedBrowserRestService extends AbstractSnomedRestService {
 			final String languageSetting,
 
 			final HttpServletRequest request) {
-		final StorageRef ref = new StorageRef();
-		ref.setShortName(codeSystemShortName);
-		ref.setBranchPath(branchPath);
+		final StorageRef ref = new StorageRef(codeSystemShortName, branchPath);
 		return delegate.getConstants(ref, Collections.list(request.getLocales()));
 	}
 

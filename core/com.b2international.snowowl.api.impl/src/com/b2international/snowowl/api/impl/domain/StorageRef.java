@@ -57,10 +57,15 @@ public class StorageRef implements InternalStorageRef {
 		return ApplicationContext.getServiceForClass(IEventBus.class);
 	}
 
-	private String shortName;
-	private String branchPath;
+	private final String shortName;
+	private final String branchPath;
 	private Branch branch;
 
+	public StorageRef(String codeSystem, String branchPath) {
+		this.shortName = codeSystem;
+		this.branchPath = branchPath;
+	}
+	
 	@Override
 	public String getShortName() {
 		return shortName;
@@ -69,14 +74,6 @@ public class StorageRef implements InternalStorageRef {
 	@Override
 	public String getBranchPath() {
 		return branchPath;
-	}
-
-	public void setShortName(final String shortName) {
-		this.shortName = shortName;
-	}
-	
-	public void setBranchPath(String branchPath) {
-		this.branchPath = branchPath;
 	}
 
 	@Override
@@ -95,6 +92,10 @@ public class StorageRef implements InternalStorageRef {
 		return getCodeSystem().getRepositoryUuid();
 	}
 
+	protected final void setBranch(Branch branch) {
+		this.branch = branch;
+	}
+	
 	@Override
 	public Branch getBranch() {
 		if (branch == null) {
@@ -134,7 +135,7 @@ public class StorageRef implements InternalStorageRef {
 	}
 
 	@Override
-	public void checkStorageExists() {
+	public final void checkStorageExists() {
 		if (getBranch().isDeleted()) {
 			throw new BadRequestException("Branch '%s' has been deleted and cannot accept further modifications.", getBranchPath());
 		}

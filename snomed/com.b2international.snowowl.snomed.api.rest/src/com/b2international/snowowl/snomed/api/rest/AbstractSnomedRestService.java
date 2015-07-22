@@ -33,10 +33,7 @@ public abstract class AbstractSnomedRestService extends AbstractRestService {
 	protected String codeSystemShortName;
 
 	protected IComponentRef createComponentRef(final String branchPath, final String componentId) {
-		final ComponentRef conceptRef = new ComponentRef();
-		conceptRef.setShortName(codeSystemShortName);
-		conceptRef.setBranchPath(branchPath);
-		conceptRef.setComponentId(componentId);
+		final ComponentRef conceptRef = new ComponentRef(codeSystemShortName, branchPath, componentId);
 		conceptRef.checkStorageExists();
 		return conceptRef;
 	}

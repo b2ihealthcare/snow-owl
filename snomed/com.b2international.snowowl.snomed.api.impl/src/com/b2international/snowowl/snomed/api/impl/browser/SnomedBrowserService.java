@@ -17,7 +17,11 @@ import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.collect.Lists.newArrayList;
 import static com.google.common.collect.Maps.newHashMap;
 
-import java.util.*;
+import java.util.Collection;
+import java.util.Date;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
 
 import javax.annotation.Resource;
 
@@ -37,16 +41,41 @@ import com.b2international.snowowl.core.exceptions.ComponentNotFoundException;
 import com.b2international.snowowl.core.terminology.ComponentCategory;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.api.browser.ISnomedBrowserService;
-import com.b2international.snowowl.snomed.api.domain.*;
-import com.b2international.snowowl.snomed.api.domain.browser.*;
+import com.b2international.snowowl.snomed.api.domain.CaseSignificance;
+import com.b2international.snowowl.snomed.api.domain.CharacteristicType;
+import com.b2international.snowowl.snomed.api.domain.ConceptEnum;
+import com.b2international.snowowl.snomed.api.domain.DefinitionStatus;
+import com.b2international.snowowl.snomed.api.domain.ISnomedDescription;
+import com.b2international.snowowl.snomed.api.domain.RelationshipModifier;
+import com.b2international.snowowl.snomed.api.domain.browser.ISnomedBrowserChildConcept;
+import com.b2international.snowowl.snomed.api.domain.browser.ISnomedBrowserConcept;
+import com.b2international.snowowl.snomed.api.domain.browser.ISnomedBrowserConstant;
+import com.b2international.snowowl.snomed.api.domain.browser.ISnomedBrowserDescription;
+import com.b2international.snowowl.snomed.api.domain.browser.ISnomedBrowserDescriptionResult;
+import com.b2international.snowowl.snomed.api.domain.browser.ISnomedBrowserParentConcept;
+import com.b2international.snowowl.snomed.api.domain.browser.ISnomedBrowserRelationship;
+import com.b2international.snowowl.snomed.api.domain.browser.SnomedBrowserDescriptionType;
 import com.b2international.snowowl.snomed.api.impl.SnomedConceptServiceImpl;
 import com.b2international.snowowl.snomed.api.impl.SnomedDescriptionServiceImpl;
-import com.b2international.snowowl.snomed.api.impl.domain.browser.*;
+import com.b2international.snowowl.snomed.api.impl.domain.browser.SnomedBrowserChildConcept;
+import com.b2international.snowowl.snomed.api.impl.domain.browser.SnomedBrowserConcept;
+import com.b2international.snowowl.snomed.api.impl.domain.browser.SnomedBrowserConstant;
+import com.b2international.snowowl.snomed.api.impl.domain.browser.SnomedBrowserDescription;
+import com.b2international.snowowl.snomed.api.impl.domain.browser.SnomedBrowserDescriptionResult;
+import com.b2international.snowowl.snomed.api.impl.domain.browser.SnomedBrowserDescriptionResultDetails;
+import com.b2international.snowowl.snomed.api.impl.domain.browser.SnomedBrowserParentConcept;
+import com.b2international.snowowl.snomed.api.impl.domain.browser.SnomedBrowserRelationship;
+import com.b2international.snowowl.snomed.api.impl.domain.browser.SnomedBrowserRelationshipTarget;
+import com.b2international.snowowl.snomed.api.impl.domain.browser.SnomedBrowserRelationshipType;
 import com.b2international.snowowl.snomed.datastore.SnomedConceptIndexEntry;
 import com.b2international.snowowl.snomed.datastore.SnomedRelationshipIndexEntry;
 import com.b2international.snowowl.snomed.datastore.SnomedStatementBrowser;
 import com.b2international.snowowl.snomed.datastore.SnomedTerminologyBrowser;
-import com.b2international.snowowl.snomed.datastore.index.*;
+import com.b2international.snowowl.snomed.datastore.index.SnomedConceptFullQueryAdapter;
+import com.b2international.snowowl.snomed.datastore.index.SnomedDescriptionContainerQueryAdapter;
+import com.b2international.snowowl.snomed.datastore.index.SnomedDescriptionIndexEntry;
+import com.b2international.snowowl.snomed.datastore.index.SnomedDescriptionReducedQueryAdapter;
+import com.b2international.snowowl.snomed.datastore.index.SnomedIndexService;
 import com.google.common.base.Function;
 import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableList;
@@ -274,13 +303,7 @@ public class SnomedBrowserService implements ISnomedBrowserService {
 	}
 
 	private IComponentRef createConceptRef(final IStorageRef sourceRef, final String newComponentId) {
-		final ComponentRef conceptRef = new ComponentRef();
-
-		conceptRef.setShortName(sourceRef.getShortName());
-		conceptRef.setBranchPath(sourceRef.getBranchPath());
-		conceptRef.setComponentId(newComponentId);
-
-		return conceptRef;
+		return new ComponentRef(sourceRef, newComponentId);
 	}
 
 	@Override

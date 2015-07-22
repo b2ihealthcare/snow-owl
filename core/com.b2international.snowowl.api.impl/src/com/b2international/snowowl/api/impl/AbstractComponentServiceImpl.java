@@ -126,10 +126,7 @@ public abstract class AbstractComponentServiceImpl<C extends IComponentInput, R 
 	}
 
 	protected IComponentRef createComponentRef(final C input, final String componentId) {
-		final ComponentRef result = new ComponentRef();
-		result.setShortName(input.getCodeSystemShortName());
-		result.setBranchPath(input.getBranchPath());
-		result.setComponentId(componentId);
+		final ComponentRef result = new ComponentRef(input.getCodeSystemShortName(), input.getBranchPath(), componentId);
 		result.checkStorageExists();
 		return result;
 	}

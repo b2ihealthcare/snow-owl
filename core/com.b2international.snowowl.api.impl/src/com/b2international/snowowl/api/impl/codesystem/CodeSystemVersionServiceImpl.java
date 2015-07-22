@@ -158,9 +158,7 @@ public class CodeSystemVersionServiceImpl implements ICodeSystemVersionService {
 			throw new AlreadyExistsException("Version", properties.getVersion());
 		}
 		
-		final StorageRef ref = new StorageRef();
-		ref.setShortName("SNOMEDCT");
-		ref.setBranchPath("MAIN/" + properties.getVersion());
+		final StorageRef ref = new StorageRef("SNOMEDCT", "MAIN/" + properties.getVersion());
 		
 		try {
 			ref.getBranch();

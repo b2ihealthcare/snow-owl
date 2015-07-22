@@ -450,9 +450,7 @@ public class SnomedConceptServiceImpl
 	}
 
 	private InternalStorageRef createStorageRef(final String branchPath) {
-		final StorageRef storageRef = new StorageRef();
-		storageRef.setShortName("SNOMEDCT");
-		storageRef.setBranchPath(branchPath);
+		final StorageRef storageRef = new StorageRef("SNOMEDCT", branchPath);
 		storageRef.checkStorageExists();
 		return storageRef;
 	}

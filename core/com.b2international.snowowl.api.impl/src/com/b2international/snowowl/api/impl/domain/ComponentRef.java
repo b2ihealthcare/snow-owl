@@ -15,22 +15,33 @@
  */
 package com.b2international.snowowl.api.impl.domain;
 
+import static com.google.common.base.Preconditions.checkNotNull;
+
+import com.b2international.commons.ClassUtils;
 import com.b2international.snowowl.api.domain.IComponentRef;
+import com.b2international.snowowl.api.domain.IStorageRef;
 
 /**
  * @since 1.0
  */
 public class ComponentRef extends StorageRef implements InternalComponentRef {
 
-	private String componentId;
+	private final String componentId;
+
+	public ComponentRef(IStorageRef sourceRef, String newComponentId) {
+		this(checkNotNull(sourceRef, "sourceRef").getShortName(), sourceRef.getBranchPath(), newComponentId);
+		final InternalStorageRef ref = ClassUtils.checkAndCast(sourceRef, InternalStorageRef.class);
+		setBranch(ref.getBranch());
+	}
+
+	public ComponentRef(String codeSystem, String branchPath, String componentId) {
+		super(codeSystem, branchPath);
+		this.componentId = componentId;
+	}
 
 	@Override
 	public String getComponentId() {
 		return componentId;
-	}
-
-	public void setComponentId(final String componentId) {
-		this.componentId = componentId;
 	}
 
 	@Override

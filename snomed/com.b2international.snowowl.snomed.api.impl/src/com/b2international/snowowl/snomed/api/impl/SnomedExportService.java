@@ -90,11 +90,7 @@ public class SnomedExportService implements ISnomedExportService {
 		checkNotNull(configuration, "Configuration was missing for the export operation.");
 		final ContentSubType contentSubType = convertType(configuration.getRf2ReleaseType());
 		
-		final StorageRef exportStorageRef = new StorageRef();
-		
-		exportStorageRef.setShortName("SNOMEDCT");
-		exportStorageRef.setBranchPath(configuration.getBranchPath());
-		
+		final StorageRef exportStorageRef = new StorageRef("SNOMEDCT", configuration.getBranchPath());
 		final IBranchPath exportBranch = exportStorageRef.getBranch().branchPath();
 		
 		final SnomedRf2ExportModel model = createExportModelWithAllRefSets(contentSubType, exportBranch);
