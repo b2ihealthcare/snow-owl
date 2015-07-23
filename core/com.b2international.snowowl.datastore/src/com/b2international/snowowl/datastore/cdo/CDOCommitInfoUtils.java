@@ -36,6 +36,7 @@ import org.eclipse.emf.cdo.common.branch.CDOBranchPoint;
 import org.eclipse.emf.cdo.common.commit.CDOCommitInfo;
 import org.eclipse.emf.cdo.common.commit.CDOCommitInfoHandler;
 import org.eclipse.emf.cdo.common.commit.CDOCommitInfoManager;
+import org.eclipse.emf.cdo.internal.common.commit.FailureCommitInfo;
 import org.eclipse.emf.cdo.net4j.CDONet4jSession;
 
 import com.b2international.commons.CompareUtils;
@@ -209,6 +210,10 @@ public abstract class CDOCommitInfoUtils {
 		
 		if (null == commitInfo) {
 			return null;
+		}
+		
+		if (commitInfo instanceof FailureCommitInfo) {
+			return commitInfo;
 		}
 		
 		return new org.eclipse.emf.cdo.internal.common.commit.DelegatingCommitInfo() {
