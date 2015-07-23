@@ -50,6 +50,7 @@ import org.slf4j.LoggerFactory;
 import com.b2international.commons.CompareUtils;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.api.SnowowlRuntimeException;
+import com.b2international.snowowl.core.exceptions.ApiException;
 import com.b2international.snowowl.datastore.CDOCommitChangeSet;
 import com.b2international.snowowl.datastore.ICDOCommitChangeSet;
 import com.google.common.base.Function;
@@ -103,6 +104,8 @@ public class CDOServerChangeManager extends ObjectWriteAccessHandler {
 			
 			LOGGER.info("Semantic index change processing successfully finished. " + commitContextInfo);
 			LOGGER.info("Persisting changes into repository... " + commitContextInfo);
+		} catch (ApiException e) {
+			throw e;
 		} catch (final Throwable t) {
 			throw SnowowlRuntimeException.wrap(t);
 		} finally {

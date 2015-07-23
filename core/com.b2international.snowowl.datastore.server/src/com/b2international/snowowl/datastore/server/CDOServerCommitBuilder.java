@@ -271,6 +271,8 @@ public class CDOServerCommitBuilder {
 
 		public Iterable<CDOCommitInfo> commit(final IProgressMonitor monitor) throws CommitException {
 
+			TransactionException commitException = null;
+			
 			try {
 
 				createImpersonatingSessions();
@@ -283,6 +285,7 @@ public class CDOServerCommitBuilder {
 					prepareTransactions();
 					commitTransactions();
 				} catch (final TransactionException e) {
+					commitException = e;
 					rollbackTransactions(e);
 				}
 
@@ -291,26 +294,11 @@ public class CDOServerCommitBuilder {
 
 				if (CompareUtils.isEmpty(commitInfos)) {
 					throw new CommitException();
-				}
-
-				if (commitInfos.size() == 1) {
-
-					final CDOCommitInfo info = Iterables.getOnlyElement(commitInfos.values());
-					if (info instanceof FailureCommitInfo) {
-						throw new CommitException();
-					} else {
-						return commitInfos.values();
-					}
-
+				} else if (Iterables.any(commitInfos.values(), Predicates.instanceOf(FailureCommitInfo.class))) {
+					throw new CommitException(commitException);
 				} else {
-
-					if (Iterables.any(commitInfos.values(), Predicates.instanceOf(FailureCommitInfo.class))) {
-						throw new CommitException();
-					} else {
-						return commitInfos.values();
-					}
+					return commitInfos.values();
 				}
-
 			} finally {
 				deactivateImpersonatingSessions();
 			}

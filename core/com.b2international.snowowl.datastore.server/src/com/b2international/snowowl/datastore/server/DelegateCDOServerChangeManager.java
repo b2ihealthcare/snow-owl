@@ -38,6 +38,7 @@ import com.b2international.snowowl.core.LogUtils;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.api.SnowowlRuntimeException;
 import com.b2international.snowowl.core.api.SnowowlServiceException;
+import com.b2international.snowowl.core.exceptions.ApiException;
 import com.b2international.snowowl.datastore.BranchPathUtils;
 import com.b2international.snowowl.datastore.ICDOChangeProcessor;
 import com.b2international.snowowl.datastore.ICDOCommitChangeSet;
@@ -152,7 +153,13 @@ public class DelegateCDOServerChangeManager {
 				e.addSuppressed(e2);
 			}
 			
-			throw new SnowowlRuntimeException("Error when executing change processors on branch: " + branchPath, e);
+			if (e instanceof RuntimeException) {
+				if (e.getCause() instanceof ApiException) {
+					throw (ApiException) e.getCause();
+				}
+			} else {
+				throw new SnowowlRuntimeException("Error when executing change processors on branch: " + branchPath, e);
+			}
 		}
 	}
 
