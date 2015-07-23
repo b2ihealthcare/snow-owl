@@ -28,6 +28,7 @@ import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.api.IComponent;
 import com.b2international.snowowl.core.api.IComponentWithIconId;
+import com.b2international.snowowl.core.exceptions.CycleDetectedException;
 import com.b2international.snowowl.datastore.BranchPathUtils;
 import com.b2international.snowowl.datastore.BranchPointUtils;
 import com.b2international.snowowl.datastore.ComponentIconProvider;
@@ -196,6 +197,9 @@ public class SnomedIconProvider extends ComponentIconProvider<String> {
 	public String getIconComponentId(String componentId, ISnomedTaxonomyBuilder taxonomyBuilder) {
 		if (componentId == null) {
 			return null;
+		}
+		if (taxonomyBuilder.getAllAncestorNodeIds(componentId).contains(Long.valueOf(componentId))) {
+			throw new CycleDetectedException("Concept " + componentId + " would introduce a cycle in the ISA graph (loop).");
 		}
 		String iconId = getParentFrom(componentId, readAvailableImageNames(), taxonomyBuilder);
 		return iconId != null ? iconId : Concepts.ROOT_CONCEPT;

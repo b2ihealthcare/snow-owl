@@ -17,16 +17,18 @@ package com.b2international.snowowl.snomed.api.rest.components;
 
 import static com.b2international.snowowl.datastore.BranchPathUtils.createMainPath;
 import static com.b2international.snowowl.datastore.BranchPathUtils.createPath;
+import static com.b2international.snowowl.snomed.SnomedConstants.Concepts.IS_A;
 import static com.b2international.snowowl.snomed.SnomedConstants.Concepts.MODULE_SCT_CORE;
 import static com.b2international.snowowl.snomed.SnomedConstants.Concepts.ROOT_CONCEPT;
 import static com.b2international.snowowl.snomed.api.rest.SnomedApiTestConstants.INVALID_ACCEPTABILITY_MAP;
 import static com.b2international.snowowl.snomed.api.rest.SnomedApiTestConstants.PREFERRED_ACCEPTABILITY_MAP;
-import static com.b2international.snowowl.snomed.api.rest.SnomedBranchingApiAssert.whenDeletingBranchWithPath;
 import static com.b2international.snowowl.snomed.api.rest.SnomedBranchingApiAssert.givenBranchWithPath;
+import static com.b2international.snowowl.snomed.api.rest.SnomedBranchingApiAssert.whenDeletingBranchWithPath;
 import static com.b2international.snowowl.snomed.api.rest.SnomedComponentApiAssert.assertComponentCreated;
 import static com.b2international.snowowl.snomed.api.rest.SnomedComponentApiAssert.assertComponentCreatedWithStatus;
 import static com.b2international.snowowl.snomed.api.rest.SnomedComponentApiAssert.assertComponentNotCreated;
 import static com.b2international.snowowl.snomed.api.rest.SnomedComponentApiAssert.givenConceptRequestBody;
+import static com.b2international.snowowl.snomed.api.rest.SnomedComponentApiAssert.givenRelationshipRequestBody;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.hasItem;
 import static org.junit.Assert.assertEquals;
@@ -119,5 +121,29 @@ public class SnomedConceptApiTest extends AbstractSnomedApiTest {
 		whenDeletingBranchWithPath(testBranchPath);
 		final Map<?, ?> requestBody = givenConceptRequestBody(null, ROOT_CONCEPT, MODULE_SCT_CORE, PREFERRED_ACCEPTABILITY_MAP, false);		
 		assertComponentNotCreated(testBranchPath, SnomedComponentType.CONCEPT, requestBody);
+	}
+	
+	@Test
+	public void createConceptISACycle_Simple() throws Exception {
+		final String newConceptId = "91559698001"; // randomly generated concept ID
+		final Map<?, ?> body = givenConceptRequestBody(newConceptId, DISEASE, MODULE_SCT_CORE, PREFERRED_ACCEPTABILITY_MAP, false);
+		assertComponentCreated(createMainPath(), SnomedComponentType.CONCEPT, body);
+		// try creating a relationship between the ROOT_CONCEPT and the newConceptId
+		final Map<?, ?> newRelationshipBody = givenRelationshipRequestBody(DISEASE, IS_A, newConceptId, MODULE_SCT_CORE, "Trying to create a 1 long ISA cycle");
+		assertComponentNotCreated(createMainPath(), SnomedComponentType.RELATIONSHIP, newRelationshipBody);
+	}
+	
+	@Test
+	public void createConceptISACycle_Long() throws Exception {
+		final String newConceptId = "80844557002"; // randomly generated concept ID
+		final Map<?, ?> body = givenConceptRequestBody(newConceptId, DISEASE, MODULE_SCT_CORE, PREFERRED_ACCEPTABILITY_MAP, false);
+		assertComponentCreated(createMainPath(), SnomedComponentType.CONCEPT, body);
+		
+		final String newConceptId2 = "45933887007"; // randomly generated concept ID
+		final Map<?, ?> body2 = givenConceptRequestBody(newConceptId2, newConceptId, MODULE_SCT_CORE, PREFERRED_ACCEPTABILITY_MAP, false);
+		assertComponentCreated(createMainPath(), SnomedComponentType.CONCEPT, body2);
+		
+		final Map<?, ?> newRelationshipBody = givenRelationshipRequestBody(DISEASE, IS_A, newConceptId2, MODULE_SCT_CORE, "Trying to create a 2 long ISA cycle");
+		assertComponentNotCreated(createMainPath(), SnomedComponentType.RELATIONSHIP, newRelationshipBody);
 	}
 }

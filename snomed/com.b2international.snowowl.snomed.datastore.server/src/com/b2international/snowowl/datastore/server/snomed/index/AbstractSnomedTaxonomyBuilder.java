@@ -534,7 +534,7 @@ public abstract class AbstractSnomedTaxonomyBuilder implements ISnomedTaxonomyBu
 		for (final int i : internalIds) {
 			long convertedId = function.apply(i);
 			if (conceptIdLong == convertedId) {
-				throw new CycleDetectedException("Concept ID " + conceptId + " found in parent or child result set (loop).");
+				throw new CycleDetectedException("Concept " + conceptId + " would introduce a cycle in the ISA graph (loop).");
 			}
 			$.add(convertedId);
 		}
