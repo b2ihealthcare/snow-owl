@@ -18,7 +18,16 @@ package com.b2international.snowowl.snomed.api.rest.components;
 import static com.b2international.snowowl.datastore.BranchPathUtils.createMainPath;
 import static com.b2international.snowowl.datastore.BranchPathUtils.createPath;
 import static com.b2international.snowowl.snomed.SnomedConstants.Concepts.MODULE_SCT_CORE;
-import static com.b2international.snowowl.snomed.api.rest.SnomedComponentApiAssert.*;
+import static com.b2international.snowowl.snomed.api.rest.SnomedComponentApiAssert.assertComponentActive;
+import static com.b2international.snowowl.snomed.api.rest.SnomedComponentApiAssert.assertComponentCanBeDeleted;
+import static com.b2international.snowowl.snomed.api.rest.SnomedComponentApiAssert.assertComponentCanBeUpdated;
+import static com.b2international.snowowl.snomed.api.rest.SnomedComponentApiAssert.assertComponentCreated;
+import static com.b2international.snowowl.snomed.api.rest.SnomedComponentApiAssert.assertComponentCreatedWithStatus;
+import static com.b2international.snowowl.snomed.api.rest.SnomedComponentApiAssert.assertComponentHasProperty;
+import static com.b2international.snowowl.snomed.api.rest.SnomedComponentApiAssert.assertComponentNotCreated;
+import static com.b2international.snowowl.snomed.api.rest.SnomedComponentApiAssert.assertRelationshipExists;
+import static com.b2international.snowowl.snomed.api.rest.SnomedComponentApiAssert.assertRelationshipNotExists;
+import static com.b2international.snowowl.snomed.api.rest.SnomedComponentApiAssert.givenRelationshipRequestBody;
 import static org.hamcrest.CoreMatchers.equalTo;
 
 import java.util.Map;
@@ -37,6 +46,7 @@ import com.google.common.collect.ImmutableMap;
 public class SnomedRelationshipApiTest extends AbstractSnomedApiTest {
 
 	private static final String DISEASE = "64572001";
+	private static final String ISA = "116680003";
 	private static final String TEMPORAL_CONTEXT = "410510008";
 	private static final String FINDING_CONTEXT = "408729009";
 
@@ -149,5 +159,11 @@ public class SnomedRelationshipApiTest extends AbstractSnomedApiTest {
 		assertRelationshipNotExists(nestedBranchPath.getParent(), relationshipId);
 		assertRelationshipNotExists(nestedBranchPath.getParent().getParent(), relationshipId);
 		assertRelationshipNotExists(nestedBranchPath.getParent().getParent().getParent(), relationshipId);
+	}
+	
+	@Test
+	public void createCyclicIsaRelationship_Self() throws Exception {
+		final Map<?, ?> body = givenRelationshipRequestBody(DISEASE, ISA, DISEASE, MODULE_SCT_CORE, "New cyclic ISA relationship");
+		assertComponentNotCreated(createMainPath(), SnomedComponentType.RELATIONSHIP, body);
 	}
 }

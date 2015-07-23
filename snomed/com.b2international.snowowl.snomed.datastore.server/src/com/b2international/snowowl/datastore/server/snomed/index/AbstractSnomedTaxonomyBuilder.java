@@ -38,6 +38,7 @@ import com.b2international.commons.arrays.LongBidiMapWithInternalId;
 import com.b2international.commons.concurrent.equinox.ForkJoinUtils;
 import com.b2international.commons.pcj.LongSets;
 import com.b2international.snowowl.core.api.SnowowlRuntimeException;
+import com.b2international.snowowl.core.exceptions.CycleDetectedException;
 import com.b2international.snowowl.snomed.datastore.SnomedTaxonomyBuilderMode;
 import com.b2international.snowowl.snomed.datastore.index.ISnomedTaxonomyBuilder;
 import com.b2international.snowowl.snomed.datastore.index.IncompleteTaxonomyException;
@@ -533,7 +534,7 @@ public abstract class AbstractSnomedTaxonomyBuilder implements ISnomedTaxonomyBu
 		for (final int i : internalIds) {
 			long convertedId = function.apply(i);
 			if (conceptIdLong == convertedId) {
-				throw new IllegalStateException("Concept ID " + conceptId + " found in parent or child result set (loop).");
+				throw new CycleDetectedException("Concept ID " + conceptId + " found in parent or child result set (loop).");
 			}
 			$.add(convertedId);
 		}

@@ -35,6 +35,7 @@ import com.b2international.snowowl.core.exceptions.AlreadyExistsException;
 import com.b2international.snowowl.core.exceptions.ApiValidation;
 import com.b2international.snowowl.core.exceptions.ComponentNotFoundException;
 import com.b2international.snowowl.core.exceptions.ConflictException;
+import com.b2international.snowowl.core.exceptions.CycleDetectedException;
 import com.b2international.snowowl.core.terminology.ComponentCategory;
 import com.b2international.snowowl.datastore.CDOEditingContext;
 import com.b2international.snowowl.datastore.exception.RepositoryLockException;
@@ -150,6 +151,10 @@ public abstract class AbstractComponentServiceImpl<C extends IComponentInput, R 
 				throw new ConflictException("Concurrent modifications prevented the concept from being persisted. Please try again.");
 			}
 			
+			final CycleDetectedException cause3 = Exceptions.extractCause(e.getCause(), getClass().getClassLoader(), CycleDetectedException.class);
+			if (cause3 != null) {
+				throw cause3;
+			}
 			throw new SnowowlRuntimeException(e.getMessage(), e);
 		}
 	}
