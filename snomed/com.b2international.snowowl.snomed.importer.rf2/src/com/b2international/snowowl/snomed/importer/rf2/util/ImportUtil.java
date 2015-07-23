@@ -37,8 +37,6 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.lang.reflect.InvocationTargetException;
 import java.net.URL;
-import java.sql.Connection;
-import java.sql.SQLException;
 import java.text.MessageFormat;
 import java.util.Collection;
 import java.util.Collections;
@@ -59,10 +57,8 @@ import com.b2international.commons.platform.Extensions;
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.LogUtils;
 import com.b2international.snowowl.core.api.IBranchPath;
-import com.b2international.snowowl.core.config.SnowOwlConfiguration;
 import com.b2international.snowowl.datastore.BranchPathUtils;
 import com.b2international.snowowl.datastore.cdo.ICDOConnectionManager;
-import com.b2international.snowowl.datastore.config.RepositoryConfiguration;
 import com.b2international.snowowl.datastore.oplock.IOperationLockManager;
 import com.b2international.snowowl.datastore.oplock.IOperationLockTarget;
 import com.b2international.snowowl.datastore.oplock.OperationLockException;
@@ -72,7 +68,6 @@ import com.b2international.snowowl.datastore.oplock.impl.DatastoreLockContextDes
 import com.b2international.snowowl.datastore.oplock.impl.IDatastoreOperationLockManager;
 import com.b2international.snowowl.datastore.oplock.impl.SingleRepositoryAndBranchLockTarget;
 import com.b2international.snowowl.datastore.server.CDOServerUtils;
-import com.b2international.snowowl.datastore.server.ServerDbUtils;
 import com.b2international.snowowl.importer.ImportException;
 import com.b2international.snowowl.importer.Importer;
 import com.b2international.snowowl.snomed.SnomedPackage;
@@ -329,10 +324,7 @@ public final class ImportUtil {
 		}
 
 		final SnomedEditingContext editingContext = new SnomedEditingContext(branchPath);
-		final RepositoryConfiguration config = ApplicationContext.getInstance().getServiceChecked(SnowOwlConfiguration.class).getModuleConfig(RepositoryConfiguration.class);
-		final Connection connection = ServerDbUtils.createConnection(SnomedPackage.eINSTANCE, config);
 		context.setEditingContext(editingContext);
-		context.setConnection(connection);
 		context.setAggregatorSupplier(new EffectiveTimeBaseTransactionAggregatorSupplier(editingContext.getTransaction()));
 
 		final IOperationLockTarget lockTarget = new SingleRepositoryAndBranchLockTarget(editingContext.getTransaction().getSession().getRepositoryInfo().getUUID(), branchPath);
@@ -342,7 +334,7 @@ public final class ImportUtil {
 		
 		try {
 			OperationLockRunner.with(lockManager).run(new Runnable() { @Override public void run() {
-				resultHolder[0] = doImportLocked(requestingUserId, configuration, connection, result, branchPath, context, subMonitor, importers, editingContext, branch);
+				resultHolder[0] = doImportLocked(requestingUserId, configuration, result, branchPath, context, subMonitor, importers, editingContext, branch);
 			}}, lockContext, IOperationLockManager.NO_TIMEOUT, lockTarget);
 		} catch (final OperationLockException | InterruptedException e) {
 			throw new ImportException(e);
@@ -354,9 +346,9 @@ public final class ImportUtil {
 	}
 
 	private SnomedImportResult doImportLocked(final String requestingUserId, final ImportConfiguration configuration,
-			final Connection connection, final SnomedImportResult result, final IBranchPath branchPath,
-			final SnomedImportContext context, final SubMonitor subMonitor, final List<Importer> importers,
-			final SnomedEditingContext editingContext, final CDOBranch branch) {
+			final SnomedImportResult result, final IBranchPath branchPath, final SnomedImportContext context,
+			final SubMonitor subMonitor, final List<Importer> importers, final SnomedEditingContext editingContext,
+			final CDOBranch branch) {
 
 		try { 
 
@@ -400,20 +392,11 @@ public final class ImportUtil {
 
 			subMonitor.done();
 
-			if (null != connection) {
-				try {
-					connection.close();
-				} catch (final SQLException e) {
-					e.printStackTrace();
-				}
-			}
-
 			if (!result.getVisitedConcepts().isEmpty() || !result.getVisitedRefSets().isEmpty()) {
 				LogUtils.logImportActivity(IMPORT_LOGGER, requestingUserId, branchPath, "SNOMED CT import successfully finished.");
 			} else {
 				LogUtils.logImportActivity(IMPORT_LOGGER, requestingUserId, branchPath, "SNOMED CT import finished. No changes could be found.");
 			}
-			
 		}
 	}
 

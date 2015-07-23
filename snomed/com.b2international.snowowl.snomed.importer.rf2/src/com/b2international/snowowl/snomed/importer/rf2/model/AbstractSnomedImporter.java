@@ -25,6 +25,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
+import java.sql.Connection;
+import java.sql.SQLException;
 import java.text.MessageFormat;
 import java.util.Collection;
 import java.util.Date;
@@ -47,16 +49,20 @@ import org.supercsv.io.CsvListWriter;
 
 import com.b2international.commons.FileUtils;
 import com.b2international.commons.StringUtils;
+import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.LogUtils;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.api.SnowowlRuntimeException;
 import com.b2international.snowowl.core.api.SnowowlServiceException;
+import com.b2international.snowowl.core.config.SnowOwlConfiguration;
 import com.b2international.snowowl.core.date.Dates;
 import com.b2international.snowowl.datastore.BranchPathUtils;
 import com.b2international.snowowl.datastore.CDOEditingContext;
 import com.b2international.snowowl.datastore.cdo.ICDOTransactionAggregator;
+import com.b2international.snowowl.datastore.config.RepositoryConfiguration;
 import com.b2international.snowowl.datastore.oplock.impl.DatastoreLockContextDescriptions;
 import com.b2international.snowowl.datastore.server.CDOServerCommitBuilder;
+import com.b2international.snowowl.datastore.server.ServerDbUtils;
 import com.b2international.snowowl.importer.AbstractImportUnit;
 import com.b2international.snowowl.importer.AbstractLoggingImporter;
 import com.b2international.snowowl.importer.ImportAction;
@@ -68,6 +74,7 @@ import com.b2international.snowowl.snomed.Description;
 import com.b2international.snowowl.snomed.Inactivatable;
 import com.b2international.snowowl.snomed.Relationship;
 import com.b2international.snowowl.snomed.SnomedConstants;
+import com.b2international.snowowl.snomed.SnomedPackage;
 import com.b2international.snowowl.snomed.common.ContentSubType;
 import com.b2international.snowowl.snomed.importer.rf2.CsvConstants;
 import com.b2international.snowowl.snomed.importer.rf2.csv.AbstractComponentRow;
@@ -647,13 +654,16 @@ public abstract class AbstractSnomedImporter<T extends AbstractComponentRow, C e
 		log(message);
 		subMonitor.setWorkRemaining(importConfiguration.getIndexes().size());
 	
-		try {
+		final RepositoryConfiguration config = ApplicationContext.getInstance().getServiceChecked(SnowOwlConfiguration.class).getModuleConfig(RepositoryConfiguration.class);
+		try (final Connection connection = ServerDbUtils.createConnection(SnomedPackage.eINSTANCE, config)) {
 			
 			for (final IndexConfiguration indexConfiguration : importConfiguration.getIndexes()) {
-				indexConfiguration.create(getLogger(), importContext.getConnection());
+				indexConfiguration.create(getLogger(), connection);
 				subMonitor.worked(1);
 			}
 		
+		} catch (final SQLException e) {
+			getLogger().error("Couldn't open database connection for creating indexes.", e);
 		} finally {
 			subMonitor.done();
 		}

@@ -53,7 +53,6 @@ public class SnomedImportContext implements ISnomedPostProcessorContext, AutoClo
 	private String userId;
 	private String commitMessage;
 
-	private Connection connection;
 	private SnomedEditingContext editingContext;
 	private Supplier<ICDOTransactionAggregator> aggregatorSupplier;
 	private boolean commitNotificationEnabled;
@@ -277,24 +276,6 @@ public class SnomedImportContext implements ISnomedPostProcessorContext, AutoClo
 	 */
 	public void setVersionCreationEnabled(final boolean versionCreationEnabled) {
 		this.versionCreationEnabled = versionCreationEnabled;
-	}
-
-	/**
-	 * Returns an active database connection to the SNOMED CT repository, used for managing database indexes.
-	 * 
-	 * @return the JDBC connection to the SNOMED CT repository
-	 */
-	public Connection getConnection() {
-		return connection;
-	}
-
-	/**
-	 * Registers a new database connection instance for this import run.
-	 * 
-	 * @param connection the JDBC connection to use
-	 */
-	public void setConnection(final Connection connection) {
-		this.connection = connection;
 	}
 
 	/**
