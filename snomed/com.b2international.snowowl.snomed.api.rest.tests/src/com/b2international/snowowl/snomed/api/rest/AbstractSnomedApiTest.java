@@ -29,6 +29,7 @@ import com.b2international.snowowl.datastore.BranchPathUtils;
  */
 public abstract class AbstractSnomedApiTest {
 
+	protected static final String DISEASE = "64572001";
 	protected IBranchPath testBranchPath;
 
 	@Before

@@ -17,6 +17,7 @@ package com.b2international.snowowl.snomed.api.rest.components;
 
 import static com.b2international.snowowl.datastore.BranchPathUtils.createMainPath;
 import static com.b2international.snowowl.datastore.BranchPathUtils.createPath;
+import static com.b2international.snowowl.snomed.SnomedConstants.Concepts.IS_A;
 import static com.b2international.snowowl.snomed.SnomedConstants.Concepts.MODULE_SCT_CORE;
 import static com.b2international.snowowl.snomed.api.rest.SnomedComponentApiAssert.assertComponentActive;
 import static com.b2international.snowowl.snomed.api.rest.SnomedComponentApiAssert.assertComponentCanBeDeleted;
@@ -45,8 +46,6 @@ import com.google.common.collect.ImmutableMap;
  */
 public class SnomedRelationshipApiTest extends AbstractSnomedApiTest {
 
-	private static final String DISEASE = "64572001";
-	private static final String ISA = "116680003";
 	private static final String TEMPORAL_CONTEXT = "410510008";
 	private static final String FINDING_CONTEXT = "408729009";
 
@@ -163,7 +162,7 @@ public class SnomedRelationshipApiTest extends AbstractSnomedApiTest {
 	
 	@Test
 	public void createCyclicIsaRelationship_Self() throws Exception {
-		final Map<?, ?> body = givenRelationshipRequestBody(DISEASE, ISA, DISEASE, MODULE_SCT_CORE, "New cyclic ISA relationship");
+		final Map<?, ?> body = givenRelationshipRequestBody(DISEASE, IS_A, DISEASE, MODULE_SCT_CORE, "New cyclic ISA relationship");
 		assertComponentNotCreated(createMainPath(), SnomedComponentType.RELATIONSHIP, body);
 	}
 }
