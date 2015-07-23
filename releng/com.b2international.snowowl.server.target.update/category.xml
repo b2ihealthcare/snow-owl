@@ -134,7 +134,7 @@
    <bundle id="org.mockito.mockito-all" version="1.9.5"/>
    <bundle id="org.yaml.snakeyaml" version="1.12.0"/>
    <bundle id="xstream" version="1.4.7"/>
-   <bundle id="org.apache.el" version="7.0.35"/>
+   <bundle id="org.apache.el" version="7.0.35.v201312011930"/>
    <category-def name="Eclipse Runtime" label="Eclipse RT Components"/>
    <category-def name="Modeling" label="Modeling Components"/>
    <category-def name="IDE Tools" label="Development Environment Tools"/>
