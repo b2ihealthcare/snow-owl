@@ -32,7 +32,6 @@ import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.SnomedPackage;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.snomed.datastore.SnomedMapSetSetting;
-import com.b2international.snowowl.snomed.datastore.SnomedRefSetUtil;
 import com.b2international.snowowl.snomed.datastore.SnomedTerminologyBrowser;
 import com.b2international.snowowl.snomed.exporter.server.sandbox.NoopExporter;
 import com.b2international.snowowl.snomed.exporter.server.sandbox.SnomedAssociationRefSetExporter;
@@ -104,7 +103,7 @@ public class SnomedRefSetExporterFactory {
 			switch (type) {
 
 				case SIMPLE_MAP:
-					final boolean includeMapTargetDescription = isSddMapping(createPath(cdoView), refSetId) && isSimpleMapWithDescription(refSet);
+					final boolean includeMapTargetDescription = isSddMapping(createPath(cdoView), refSetId);
 					return new SnomedSimpleMapRefSetExporter(configuration, refSetId, type, includeMapTargetDescription);
 				case COMPLEX_MAP: //$FALL-THROUGH$
 				case EXTENDED_MAP:
@@ -188,10 +187,6 @@ public class SnomedRefSetExporterFactory {
 			if (null != view)
 				view.close();
 		}
-	}
-
-	private static Boolean isSimpleMapWithDescription(final SnomedRefSet refSet) {
-		return SnomedRefSetUtil.isSimpleMapWithDescription(refSet);
 	}
 
 	private static boolean isSddMapping(final IBranchPath branchPath, final String refSetId) {
