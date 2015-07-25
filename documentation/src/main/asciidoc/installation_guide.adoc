@@ -1,6 +1,7 @@
 = Installation guide
 B2i Healthcare Ltd. <info@b2international.com>
 :toc2:
+:icons: font
 
 == Introduction
 
@@ -31,8 +32,9 @@ https://fedoraproject.org/wiki/EPEL#How_can_I_use_these_extra_packages.3F[usage 
 --------------------------
 # yum update
 # reboot
-# yum install epel-release ← works only if CentOS was installed
+# yum install epel-release // <1> 
 --------------------------
+<1> Works only if CentOS was installed
 
 Create a non-login user for Snow Owl Server to run as:
 
@@ -52,16 +54,16 @@ After downloading the RPM package, install MySQL's yum repository with the follo
 # yum install mysql-community-release-el6-5.noarch.rpm
 --------------------------
 
-The repository for MySQL 5.6 should be enabled by default. Confirm by opening `/etc/yum.repos.d/mysql-community.repo`; you 
-should see `enabled=1` only in section `[mysql56-community]`.
+The repository for MySQL 5.6 should be enabled by default. Confirm by opening `/etc/yum.repos.d/mysql-community.repo`:
 
 --------------------------
 [mysql56-community]
 name=MySQL 5.6 Community Server
 baseurl=http://repo.mysql.com/yum/mysql-5.6-community/el/5/$basearch/
-enabled=1 ← should be 0 for other releases, 1 for the 5.6 server
+enabled=1 // <1>
 ...
 --------------------------
+<1> Value should be 0 for other releases, 1 for the 5.6 server
 
 Install MySQL Community Server using yum:
 
@@ -94,20 +96,10 @@ database:
 
 --------------------------
 # mysql_secure_installation
+# reboot
 --------------------------
   
 NOTE: The entered new root password will be used later for configuration and administrative purposes; do not forget this password.
-
-Bring down the database service while replacing the configuration file:
-
---------------------------
-# service mysqld stop
-Shutting down MySQL..                                      [  OK  ]
-  
-<replace /etc/my.cnf with contents from ...>
-  
-# reboot
---------------------------
 
 Finally, check the log file `/var/log/mysqld.log` for any errors.
 
@@ -124,26 +116,26 @@ Download the "`Linux X64`" edition, and install it with yum:
 Download the 64-bit Linux RPM package, and install it with yum:
 
 --------------------------
-# yum install apacheds-2.0.0-M20-x86_64.rpm
+# yum install apacheds-2.0.0-M12-x86_64.rpm
 --------------------------
 
 Start the service, check if it is running at startup:
 
 --------------------------
-# service apacheds-2.0.0_M20-default start
+# service apacheds-2.0.0_M12-default start
 Starting ApacheDS - default...
 
-# service apacheds-2.0.0_M20-default status
+# service apacheds-2.0.0_M12-default status
 ApacheDS - default is running (1947).
 
-# chkconfig apacheds-2.0.0_M20-default on
-# chkconfig --list apacheds-2.0.0_M20-default
-apacheds-2.0.0_M20-default   0:off   1:off   2:on    3:on    4:on    5:on    6:off
+# chkconfig apacheds-2.0.0_M12-default on
+# chkconfig --list apacheds-2.0.0_M12-default
+apacheds-2.0.0_M12-default   0:off   1:off   2:on    3:on    4:on    5:on    6:off
 
 # reboot
 --------------------------
 
-Check the log files in folder `/var/lib/apacheds-2.0.0_M20/default/log` for any errors. `wrapper.log` holds messages
+Check the log files in folder `/var/lib/apacheds-2.0.0_M12/default/log` for any errors. `wrapper.log` holds messages
 from the service wrapper running at startup and shutdown, while `apacheds.log` captures log output from the directory
 server itself.
 
