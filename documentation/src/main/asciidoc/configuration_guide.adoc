@@ -876,7 +876,7 @@ files are prefixed with the string `localhost_access_log`, have a suffix of `.tx
 what should be logged, and do not include DNS lookups of the IP address of the remote host.
 
 `eventlogs/eventlog.log`:: The `EVENT_LOG_FILE` appender logs only important events and thus the volume of information is 
-lower. The files are intended for use by support and admin personnel to report and diagnose runtime problems.
+lower.
 
 `logs/snowowl/snowowl_user_audit.log`:: Events with business significance will be logged in this file.
 
@@ -892,7 +892,7 @@ http://www.eclipse.org/virgo/documentation/virgo-documentation-3.6.1.RELEASE/doc
 
 Currently, default logging appenders for the log targets above look like this:
  
- --------------------------
+--------------------------
 <appender name="LOG_FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
     <file>serviceability/logs/log.log</file>
     <rollingPolicy class="ch.qos.logback.core.rolling.FixedWindowRollingPolicy">
@@ -906,11 +906,11 @@ Currently, default logging appenders for the log targets above look like this:
     <encoder class="ch.qos.logback.classic.encoder.PatternLayoutEncoder">
         <Pattern>[%d{yyyy-MM-dd HH:mm:ss.SSS}] %-5level %-28.28thread %-64.64logger{64} %X{medic.eventCode} %msg %ex%n</Pattern>
     </encoder>
- </appender>
- --------------------------
+</appender>
+--------------------------
  
 In this setting, the administrator can set the location of the log file, the maximum size of the log file and the 
-number files rolling over. Documentation on the logging configuration settings can be found here: http://logback.qos.ch.
+total number of files rolling over. Documentation on the logging configuration settings can be found here: http://logback.qos.ch.
 
 === Virgo documentation
 
