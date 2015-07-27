@@ -133,10 +133,14 @@ public abstract class AbstractReIndexJob<T extends CDOObject, E extends IIndexEn
 		final int size = contents.size();
 		monitor.setWorkRemaining(size + 5);
 		for (final T component : Iterables.filter(contents, targetClass)) {
-			indexUpdater.index(branchPath, getMappingStrategy(component));
+			reIndex(component, indexUpdater);
 			monitor.worked(1);
 		}
 		monitor.done();
+	}
+
+	protected void reIndex(final T component, final IIndexUpdater<E> indexUpdater) {
+		indexUpdater.index(branchPath, getMappingStrategy(component));
 	}
 
 	/**
