@@ -16,7 +16,7 @@
 package com.b2international.snowowl.datastore.server.internal.branch;
 
 import com.b2international.snowowl.core.exceptions.BadRequestException;
-import com.b2international.snowowl.datastore.server.branch.Branch;
+import com.b2international.snowowl.datastore.branch.Branch;
 
 /**
  * @since 4.1

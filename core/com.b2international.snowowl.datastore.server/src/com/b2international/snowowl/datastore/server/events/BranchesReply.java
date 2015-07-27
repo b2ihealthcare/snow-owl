@@ -18,7 +18,7 @@ package com.b2international.snowowl.datastore.server.events;
 import java.util.Collection;
 import java.util.Collections;
 
-import com.b2international.snowowl.datastore.server.branch.Branch;
+import com.b2international.snowowl.datastore.branch.Branch;
 
 /**
  * @since 4.1

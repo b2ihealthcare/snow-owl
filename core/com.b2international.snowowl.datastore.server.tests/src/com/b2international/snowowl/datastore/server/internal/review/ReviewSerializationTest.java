@@ -22,7 +22,7 @@ import static org.mockito.Mockito.when;
 import org.junit.Before;
 import org.junit.Test;
 
-import com.b2international.snowowl.datastore.server.branch.Branch;
+import com.b2international.snowowl.datastore.branch.Branch;
 import com.b2international.snowowl.datastore.server.review.ReviewStatus;
 import com.google.common.collect.ImmutableSet;
 

@@ -20,7 +20,7 @@ import org.eclipse.emf.cdo.common.revision.delta.CDORevisionDelta;
 import org.eclipse.emf.cdo.transaction.CDOTransaction;
 import org.eclipse.emf.spi.cdo.DefaultCDOMerger;
 
-import com.b2international.snowowl.datastore.server.branch.BranchMergeException;
+import com.b2international.snowowl.datastore.branch.BranchMergeException;
 import com.b2international.snowowl.datastore.server.cdo.ICDOConflictProcessor;
 
 /**

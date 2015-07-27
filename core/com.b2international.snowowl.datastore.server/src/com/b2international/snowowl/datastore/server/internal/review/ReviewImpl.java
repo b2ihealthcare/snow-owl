@@ -17,7 +17,7 @@ package com.b2international.snowowl.datastore.server.internal.review;
 
 import java.util.Date;
 
-import com.b2international.snowowl.datastore.server.branch.Branch;
+import com.b2international.snowowl.datastore.branch.Branch;
 import com.b2international.snowowl.datastore.server.review.BranchState;
 import com.b2international.snowowl.datastore.server.review.Review;
 import com.b2international.snowowl.datastore.server.review.ReviewStatus;

@@ -23,7 +23,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import com.b2international.snowowl.core.exceptions.BadRequestException;
-import com.b2international.snowowl.datastore.server.branch.Branch.BranchState;
+import com.b2international.snowowl.datastore.branch.Branch.BranchState;
 
 /**
  * @since 4.1

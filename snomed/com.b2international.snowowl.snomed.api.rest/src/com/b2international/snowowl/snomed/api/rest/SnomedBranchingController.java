@@ -33,7 +33,7 @@ import org.springframework.web.context.request.async.DeferredResult;
 
 import com.b2international.commons.collections.Procedure;
 import com.b2international.snowowl.core.exceptions.ApiValidation;
-import com.b2international.snowowl.datastore.server.branch.Branch;
+import com.b2international.snowowl.datastore.branch.Branch;
 import com.b2international.snowowl.datastore.server.events.BranchReply;
 import com.b2international.snowowl.datastore.server.events.BranchesReply;
 import com.b2international.snowowl.datastore.server.events.DeleteBranchEvent;

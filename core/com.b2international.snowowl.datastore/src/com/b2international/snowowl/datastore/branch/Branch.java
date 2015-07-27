@@ -13,14 +13,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.datastore.server.branch;
+package com.b2international.snowowl.datastore.branch;
 
 import java.util.Collection;
+import java.util.regex.Pattern;
 
 import com.b2international.snowowl.core.Metadata;
 import com.b2international.snowowl.core.MetadataHolder;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.exceptions.AlreadyExistsException;
+import com.b2international.snowowl.core.exceptions.BadRequestException;
+import com.google.common.base.Strings;
 
 /**
  * Represents a {@link Branch} in a terminology repository. A {@link Branch} can be uniquely identified by using its {@link #path()} and
@@ -29,6 +32,73 @@ import com.b2international.snowowl.core.exceptions.AlreadyExistsException;
  * @since 4.1
  */
 public interface Branch extends Deletable, MetadataHolder {
+
+	/**
+	 * Allowed set of characters for a branch name.
+	 */
+	String DEFAULT_ALLOWED_BRANCH_NAME_CHARACTER_SET = "a-zA-Z0-9_-";
+
+	/**
+	 * The maximum length of a branch.
+	 */
+	int DEFAULT_MAXIMUM_BRANCH_NAME_LENGTH = 50;
+
+	/**
+	 * @since 4.2
+	 */
+	interface BranchNameValidator {
+
+		BranchNameValidator DEFAULT = new BranchNameValidatorImpl();
+		
+		/**
+		 * Validate a branch name and throw an {@link IllegalArgumentException} if it's invalid.
+		 * 
+		 * @param name
+		 */
+		void checkName(String name);
+
+		/**
+		 * @since 4.2
+		 */
+		class BranchNameValidatorImpl implements BranchNameValidator {
+			
+			private Pattern pattern;
+			private String allowedCharacterSet;
+			private int maximumLength;
+			
+			public BranchNameValidatorImpl() {
+				this(DEFAULT_ALLOWED_BRANCH_NAME_CHARACTER_SET, DEFAULT_MAXIMUM_BRANCH_NAME_LENGTH);
+			}
+			
+			public BranchNameValidatorImpl(String allowedCharacterSet, int maximumLength) {
+				this.allowedCharacterSet = allowedCharacterSet;
+				this.maximumLength = maximumLength;
+				pattern = Pattern.compile(String.format("[%s]{1,%s}", allowedCharacterSet, maximumLength));
+			}
+
+			@Override
+			public void checkName(String name) {
+				if (Strings.isNullOrEmpty(name)) {
+					throw new BadRequestException("Name cannot be empty");
+				}
+				if (!pattern.matcher(name).matches()) {
+					throw new BadRequestException("'%s' is either too long (max %s characters) or it contains invalid characters (only '%s' characters are allowed).", name, maximumLength, allowedCharacterSet);
+				}
+				checkContainsNonDigitCharacter(name);
+			}
+			
+			private void checkContainsNonDigitCharacter(final String name) {
+				for (char c : name.toCharArray()) {
+					if (!Character.isDigit(c)) {
+						return;
+					}
+				}	
+				throw new BadRequestException("Name should contain at least one non-digit character.");
+			}
+
+		}
+		
+	}
 
 	/**
 	 * The path of the main branch.

@@ -22,7 +22,6 @@ import static com.b2international.snowowl.datastore.BranchPathUtils.createVersio
 import static com.b2international.snowowl.datastore.oplock.impl.DatastoreLockContextDescriptions.CONFIGURE_VERSION;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Suppliers.memoize;
-import static com.google.common.collect.Collections2.transform;
 import static com.google.common.collect.Iterables.find;
 import static com.google.common.collect.Iterables.get;
 import static com.google.common.collect.Iterables.getFirst;
@@ -54,16 +53,19 @@ import com.b2international.commons.CompareUtils;
 import com.b2international.commons.collections.Procedure;
 import com.b2international.commons.concurrent.ConcurrentCollectionUtils;
 import com.b2international.commons.status.SerializableStatus;
+import com.b2international.commons.status.Statuses;
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.CoreTerminologyBroker;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.api.SnowowlServiceException;
+import com.b2international.snowowl.core.exceptions.BadRequestException;
 import com.b2international.snowowl.datastore.BranchPathUtils;
 import com.b2international.snowowl.datastore.CodeSystemUtils;
 import com.b2international.snowowl.datastore.ContentAvailabilityInfoManager;
 import com.b2international.snowowl.datastore.DatastoreActivator;
 import com.b2international.snowowl.datastore.ICodeSystemVersion;
 import com.b2international.snowowl.datastore.LatestCodeSystemVersionUtils;
+import com.b2international.snowowl.datastore.branch.Branch;
 import com.b2international.snowowl.datastore.cdo.ICDOBranchActionManager;
 import com.b2international.snowowl.datastore.cdo.ICDOConnection;
 import com.b2international.snowowl.datastore.cdo.ICDOConnectionManager;
@@ -83,7 +85,9 @@ import com.google.common.base.Preconditions;
 import com.google.common.base.Predicate;
 import com.google.common.base.Strings;
 import com.google.common.base.Supplier;
+import com.google.common.collect.Collections2;
 import com.google.common.collect.Maps;
+import com.google.common.collect.Sets;
 
 /**
  * Stateful versioning service implementation.
@@ -99,6 +103,12 @@ public class VersioningService implements IVersioningService {
 	private static final String NO_CONTENT_TEMPLATE = "Cannot create new version.\nContent is not available for {0}.";
 	private static final String SUCCESS_TEMPLATE = "{0} has been successfully versioned with ''{1}''.";
 	private static final String EFFECTIVE_TIME_ADJUSTED_TEMPLATE = "Effective time has been successfully adjusted on unpublished components for {0}.";
+	/**Application specific reserved words.*/
+	private static final Collection<String> APPLICATION_RESERVED_WORDS = Collections.unmodifiableSet(Sets.newHashSet(
+			IBranchPath.MAIN_BRANCH,
+			ICodeSystemVersion.UNVERSIONED,
+			ICodeSystemVersion.INITIAL_STATE
+			));
 	
 	
 	private final PublishOperationConfiguration configuration;
@@ -127,11 +137,21 @@ public class VersioningService implements IVersioningService {
 
 	@Override
 	public IStatus configureNewVersionId(final String versionId, final boolean ignoreValidation) {
+		try {
+			Branch.BranchNameValidator.DEFAULT.checkName(versionId);
+		} catch (BadRequestException e) {
+			return Statuses.error(e.getMessage());
+		}
+		
+		if (APPLICATION_RESERVED_WORDS.contains(versionId)) {
+			return Statuses.error(String.format("Version name '%s' is reserved word.", versionId));
+		}
+		
 		for (final String toolingId : getToolingIds()) {
 			if (!ignoreValidation) {
-				final IStatus status = getVersionNameValidator(toolingId).validate(versionId);
-				if (!status.isOK()) {
-					return status; 
+				final Collection<String> existingVersions = Collections2.transform(VersioningService.this.getExistingVersions(toolingId), IVersionCollector.GET_VERSION_NAME_FUNC);
+				if (existingVersions.contains(versionId)) {
+					return Statuses.error("Name should be unique.");
 				}
 			}
 		}
@@ -403,16 +423,6 @@ public class VersioningService implements IVersioningService {
 		} catch (InterruptedException e) {
 			throw new SnowowlServiceException(e);
 		}
-	}
-	
-	/**Returns with the version name validator.*/
-	private IVersionNameValidator getVersionNameValidator(final String toolingId) {
-		return new VersionNameValidator() {
-			@Override
-			protected Collection<String> getExistingVersionNames() {
-				return transform(VersioningService.this.getExistingVersions(toolingId), IVersionCollector.GET_VERSION_NAME_FUNC);
-			}
-		};
 	}
 	
 	private Map<String, Boolean> shouldPerformTag() {

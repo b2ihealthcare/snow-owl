@@ -19,26 +19,19 @@ import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
 
 import java.util.Collection;
-import java.util.regex.Pattern;
 
 import com.b2international.snowowl.core.Metadata;
 import com.b2international.snowowl.core.MetadataHolderImpl;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.exceptions.BadRequestException;
 import com.b2international.snowowl.datastore.BranchPathUtils;
-import com.b2international.snowowl.datastore.server.branch.Branch;
-import com.b2international.snowowl.datastore.server.branch.BranchMergeException;
+import com.b2international.snowowl.datastore.branch.Branch;
+import com.b2international.snowowl.datastore.branch.BranchMergeException;
 
 /**
  * @since 4.1
  */
 public class BranchImpl extends MetadataHolderImpl implements Branch, InternalBranch {
-
-    private static final Pattern VALID_NAME_PATTERN = Pattern.compile("[a-zA-Z0-9_-]{1,50}");
-
-	private static void checkName(String name) {
-		checkArgument(VALID_NAME_PATTERN.matcher(name).matches(), "Name '%s' has invalid characters.", name);
-	}
 
     protected BranchManagerImpl branchManager;
     
@@ -57,7 +50,7 @@ public class BranchImpl extends MetadataHolderImpl implements Branch, InternalBr
     }
     
     protected BranchImpl(String name, String parentPath, long baseTimestamp, long headTimestamp, boolean deleted) {
-        checkName(name);
+        BranchNameValidator.DEFAULT.checkName(name);
         checkArgument(baseTimestamp >= 0L, "Base timestamp may not be negative.");
         checkArgument(headTimestamp >= baseTimestamp, "Head timestamp may not be smaller than base timestamp.");
 		this.name = name;
@@ -149,7 +142,7 @@ public class BranchImpl extends MetadataHolderImpl implements Branch, InternalBr
 	
 	@Override
 	public Branch createChild(String name, Metadata metadata) {
-		checkName(name);
+		BranchNameValidator.DEFAULT.checkName(name);
 		return branchManager.createBranch(this, name, metadata);
 	}
 	

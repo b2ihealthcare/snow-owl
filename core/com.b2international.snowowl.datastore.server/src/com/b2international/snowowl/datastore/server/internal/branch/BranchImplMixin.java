@@ -16,7 +16,7 @@
 package com.b2international.snowowl.datastore.server.internal.branch;
 
 import com.b2international.snowowl.core.MetadataHolderMixin;
-import com.b2international.snowowl.datastore.server.branch.Branch;
+import com.b2international.snowowl.datastore.branch.Branch;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;

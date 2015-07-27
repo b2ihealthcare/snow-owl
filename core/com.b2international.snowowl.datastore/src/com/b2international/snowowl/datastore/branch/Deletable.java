@@ -13,19 +13,21 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.datastore.server.branch;
+package com.b2international.snowowl.datastore.branch;
 
 /**
- * Represents an object capable of providing timestamp(s).
- * 
  * @since 4.1
  */
-public interface TimestampProvider {
+public interface Deletable {
 
 	/**
-	 * Provides a timestamp. Timestamps may be repeated on multiple invocations. 
-	 * 
-	 * @return
+	 * @return whether this object is deleted or not
 	 */
-	long getTimestamp();
+	boolean isDeleted();
+
+	/**
+	 * Deletes this object. Calling {@link #isDeleted()} on the returned object should return <code>true</code> after a call to this method.
+	 * @return 
+	 */
+	Deletable delete();
 }

@@ -16,7 +16,7 @@
 package com.b2international.snowowl.datastore.server.events;
 
 import com.b2international.snowowl.core.Metadata;
-import com.b2international.snowowl.datastore.server.branch.Branch;
+import com.b2international.snowowl.datastore.branch.Branch;
 
 
 /**

@@ -19,7 +19,7 @@ import org.eclipse.emf.cdo.common.branch.CDOBranch;
 
 import com.b2international.snowowl.api.domain.IStorageRef;
 import com.b2international.snowowl.datastore.ICodeSystem;
-import com.b2international.snowowl.datastore.server.branch.Branch;
+import com.b2international.snowowl.datastore.branch.Branch;
 
 /**
  * @since 1.0

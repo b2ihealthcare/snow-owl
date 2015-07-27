@@ -18,7 +18,7 @@ package com.b2international.snowowl.snomed.api.rest.domain;
 import org.hibernate.validator.constraints.NotEmpty;
 
 import com.b2international.snowowl.core.MetadataHolderImpl;
-import com.b2international.snowowl.datastore.server.branch.Branch;
+import com.b2international.snowowl.datastore.branch.Branch;
 import com.b2international.snowowl.datastore.server.events.CreateBranchEvent;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
