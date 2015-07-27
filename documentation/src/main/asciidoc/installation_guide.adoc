@@ -162,6 +162,23 @@ httpd           0:off   1:off   2:on    3:on    4:on    5:on    6:off
 # reboot
 --------------------------
 
+Add the following configuration section to `/etc/httpd/conf/httpd.conf`:
+
+--------------------------
+<Directory /var/www/html/bugzilla>
+    AddHandler cgi-script .cgi
+    Options +Indexes +ExecCGI
+    DirectoryIndex index.cgi
+    AllowOverride Limit
+</Directory>
+--------------------------
+
+Reload the httpd service configuration to apply changes:
+
+--------------------------
+# service httpd reload
+--------------------------
+
 Extract the downloaded archive of Bugzilla and move contents into folder `/var/www/html`, adjust permissions and
 SELinux labels:
 
