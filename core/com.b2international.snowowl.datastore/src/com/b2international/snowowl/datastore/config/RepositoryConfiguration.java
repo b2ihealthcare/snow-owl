@@ -172,8 +172,8 @@ public class RepositoryConfiguration {
 		final ImmutableMap.Builder<Object, Object> properties = ImmutableMap.builder();
 		properties.put("class", getDatabaseConfiguration().getDatasourceClass());
 		properties.put("uRL", getDatabaseUrl().build(repositoryName)); // XXX: strange casing required by net4j's uncapitalizer method when inspecting setters!
-		properties.put("user", getDatabaseConfiguration().getPassword());
-		properties.put("password", getDatabaseConfiguration().getUsername());
+		properties.put("user", getDatabaseConfiguration().getUsername());
+		properties.put("password", getDatabaseConfiguration().getPassword());
 		return properties.build();
 	}
 
