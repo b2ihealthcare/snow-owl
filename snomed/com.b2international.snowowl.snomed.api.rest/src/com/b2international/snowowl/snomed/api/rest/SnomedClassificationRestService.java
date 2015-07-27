@@ -162,7 +162,7 @@ public class SnomedClassificationRestService extends AbstractSnomedRestService {
 		@ApiResponse(code = 200, message = "OK"),
 		@ApiResponse(code = 404, message = "Branch or classification not found", response=RestApiError.class)
 	})
-	@RequestMapping(value="/{path:**}/classifications/{classificationId}/relationship-changes", method=RequestMethod.GET)
+	@RequestMapping(value="/{path:**}/classifications/{classificationId}/relationship-changes", method=RequestMethod.GET, produces={"application/json", "text/csv"})
 	public @ResponseBody PageableCollectionResource<IRelationshipChange> getRelationshipChanges(
 			@ApiParam(value="The branch path")
 			@PathVariable(value="path") 
