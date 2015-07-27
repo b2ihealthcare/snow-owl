@@ -144,6 +144,7 @@ public class ServerSideWidgetBeanProviderStrategy extends WidgetBeanProviderStra
 			}
 			widgetBean.setSelectedValue(SnomedRefSetUtil.serializeValue(entry.getDataType(), entry.getValue()));
 			widgetBean.setSelectedLabel(entry.getLabel());
+			widgetBean.setCharacteristicTypeId(entry.getCharacteristicTypeId());
 			beans.add(widgetBean);
 		}
 		
