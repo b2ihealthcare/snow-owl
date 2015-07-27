@@ -84,18 +84,8 @@ public interface Branch extends Deletable, MetadataHolder {
 				if (!pattern.matcher(name).matches()) {
 					throw new BadRequestException("'%s' is either too long (max %s characters) or it contains invalid characters (only '%s' characters are allowed).", name, maximumLength, allowedCharacterSet);
 				}
-				checkContainsNonDigitCharacter(name);
 			}
 			
-			private void checkContainsNonDigitCharacter(final String name) {
-				for (char c : name.toCharArray()) {
-					if (!Character.isDigit(c)) {
-						return;
-					}
-				}	
-				throw new BadRequestException("Name should contain at least one non-digit character.");
-			}
-
 		}
 		
 	}
