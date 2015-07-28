@@ -43,7 +43,12 @@ public abstract class BranchManagerImpl implements BranchManager {
 	}
 	
 	/*package*/ void initMainBranch(final InternalBranch main) {
-		registerBranch(main);
+    	try {
+    		getMainBranch();
+    	} catch (NotFoundException e) {
+    		branchStore.clear();
+    		registerBranch(main);
+    	}
 	}
 
 	void registerBranch(final InternalBranch branch) {

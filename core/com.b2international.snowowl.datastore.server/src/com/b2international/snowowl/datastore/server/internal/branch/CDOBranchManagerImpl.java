@@ -31,7 +31,6 @@ import org.eclipse.emf.cdo.util.CommitException;
 
 import com.b2international.snowowl.core.Metadata;
 import com.b2international.snowowl.core.api.SnowowlRuntimeException;
-import com.b2international.snowowl.core.exceptions.NotFoundException;
 import com.b2international.snowowl.datastore.BranchPathUtils;
 import com.b2international.snowowl.datastore.branch.Branch;
 import com.b2international.snowowl.datastore.branch.BranchManager;
@@ -50,7 +49,7 @@ import com.b2international.snowowl.datastore.store.query.QueryBuilder;
 public class CDOBranchManagerImpl extends BranchManagerImpl {
 
     private static final String CDO_BRANCH_ID = "cdoBranchId";
-    
+
 	private final IRepository repository;
 	
     public CDOBranchManagerImpl(final IRepository repository, final Store<InternalBranch> branchStore) {
@@ -81,15 +80,11 @@ public class CDOBranchManagerImpl extends BranchManagerImpl {
 
     @Override
     void initMainBranch(InternalBranch main) {
-    	try {
-    		getMainBranch();
-    	} catch (NotFoundException ignored) {
-    		super.initMainBranch(new CDOMainBranchImpl(main.baseTimestamp(), main.headTimestamp()));
-    	}
+    	super.initMainBranch(new CDOMainBranchImpl(main.baseTimestamp(), main.headTimestamp()));
     }
 
     CDOBranch getCDOBranch(Branch branch) {
-        checkArgument(!branch.isDeleted(), "Deleted branches cannot be ");
+        checkArgument(!branch.isDeleted(), "Deleted branches cannot be retrieved.");
         final Integer branchId = ((InternalCDOBasedBranch) branch).cdoBranchId();
         if (branchId != null) {
             return loadCDOBranch(branchId);
