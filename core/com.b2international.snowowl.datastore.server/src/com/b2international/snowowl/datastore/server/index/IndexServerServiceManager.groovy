@@ -35,7 +35,7 @@ public enum IndexServerServiceManager implements IIndexServerServiceManager {
 	 */
 	@Override
 	public <E extends IIndexEntry> IIndexUpdater<E> getByUuid(final String repositoryUuid) {
-		Preconditions.checkNotNull services.find { service -> repositoryUuid == service.repositoryUuid }, "Cannot find index service for repository: $repositoryUuid" 
+		Preconditions.checkNotNull getServices().find { service -> repositoryUuid == service.repositoryUuid }, "Cannot find index service for repository: $repositoryUuid" 
 	}
 	
 	private Iterable<IIndexUpdater> getServices() {
