@@ -137,7 +137,7 @@ public abstract class AbstractComponentServiceImpl<C extends IComponentInput, R 
 		return createEditingContext(createComponentRef(input, null));
 	}
 
-	private void doCommit(final String userId, final String commitComment, final E editingContext) {
+	public void doCommit(final String userId, final String commitComment, final E editingContext) {
 		try {
 			CDOServerUtils.commit(editingContext.getTransaction(), userId, commitComment, null);
 		} catch (final CommitException e) {

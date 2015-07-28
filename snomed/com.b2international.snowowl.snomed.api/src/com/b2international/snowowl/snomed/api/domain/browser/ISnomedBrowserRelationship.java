@@ -21,7 +21,10 @@ import com.b2international.snowowl.snomed.api.domain.RelationshipModifier;
 /**
  * Represents a specific SNOMED CT relationship, carrying information for use in the IHTSDO SNOMED CT Browser.
  */
-public interface ISnomedBrowserRelationship extends ISnomedBrowserComponent {
+public interface ISnomedBrowserRelationship extends ISnomedBrowserComponentWithId {
+
+	/** @return the relationship's unique component identifier */
+	String getRelationshipId();
 
 	/** @return details about the relationship's type concept */
 	ISnomedBrowserRelationshipType getType();

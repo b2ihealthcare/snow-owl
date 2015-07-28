@@ -20,7 +20,7 @@ import java.util.List;
 /**
  * Represents a specific SNOMED CT concept, carrying information for use in the IHTSDO SNOMED CT Browser.
  */
-public interface ISnomedBrowserConcept extends ISnomedBrowserComponent, IConceptIdWithFsnProvider, IDefinitionStatusProvider {
+public interface ISnomedBrowserConcept extends ISnomedBrowserComponentWithId, IConceptIdWithFsnProvider, IDefinitionStatusProvider {
 
 	/** @return the Preferred Term of this concept for the requested language code and dialect */
 	String getPreferredSynonym();

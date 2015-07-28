@@ -28,7 +28,7 @@
 	
 	<bean class="com.b2international.snowowl.snomed.api.impl.SnomedClassificationServiceImpl" />
 	
-	<bean class="com.b2international.snowowl.snomed.api.impl.browser.SnomedBrowserService" />
+	<bean class="com.b2international.snowowl.snomed.api.impl.SnomedBrowserService" />
 	
 	<mvc:default-servlet-handler />
 	
