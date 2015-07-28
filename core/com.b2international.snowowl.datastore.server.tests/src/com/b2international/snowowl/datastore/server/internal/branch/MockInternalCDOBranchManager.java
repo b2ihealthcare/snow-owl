@@ -174,6 +174,7 @@ public class MockInternalCDOBranchManager implements InternalCDOBranchManager {
 			mockBranchPath(branch, parent.getPathName().concat(Branch.SEPARATOR), name);
 		}
 		mockBranchCreation(branch);
+		mockChildren(branch);
 		return branch;
 	}
 
@@ -194,4 +195,7 @@ public class MockInternalCDOBranchManager implements InternalCDOBranchManager {
 		when(branch.getBasePath()).thenReturn(basePath);
 	}
 
+	private void mockChildren(InternalCDOBranch branch) {
+		when(branch.getBranches()).thenReturn(new InternalCDOBranch[0]);
+	}
 }
