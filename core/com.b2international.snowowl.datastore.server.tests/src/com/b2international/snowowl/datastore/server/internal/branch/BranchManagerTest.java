@@ -189,8 +189,8 @@ public class BranchManagerTest {
 		for (String name : newArrayList("/", "/a", "a/", "a/b")) {
 			try {
 				main.createChild(name);
-				fail("IllegalArgumentException should be thrown when creating child branch " + name);
-			} catch (IllegalArgumentException e) {
+				fail("BadRequestException should be thrown when creating child branch " + name);
+			} catch (BadRequestException e) {
 				// success
 			}
 		}
