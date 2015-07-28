@@ -93,9 +93,6 @@ public class PersistChangesRemoteJob extends AbstractRemoteJob {
 	@Override
 	protected IStatus runWithListenableMonitor(final IProgressMonitor monitor) {
 
-		lockContext = createLockContext(userId);
-		lockTarget = createLockTarget(branchPath);
-
 		try {
 			lockBeforeChanges();
 			return persistChanges(monitor);
@@ -108,9 +105,16 @@ public class PersistChangesRemoteJob extends AbstractRemoteJob {
 	}
 
 	private void lockBeforeChanges() {
-	
+
+		final DatastoreLockContext localLockContext = createLockContext(userId);
+		final IOperationLockTarget localLockTarget = createLockTarget(branchPath);
+
 		try {
-			getLockManager().lock(lockContext, LOCK_TIMEOUT_MILLIS, lockTarget);
+
+			getLockManager().lock(localLockContext, LOCK_TIMEOUT_MILLIS, localLockTarget);
+			lockContext = localLockContext;
+			lockTarget = localLockTarget;
+
 		} catch (final OperationLockException | InterruptedException e) {
 			DatastoreLockContext otherContext = null;
 			if (e instanceof DatastoreOperationLockException) {
@@ -168,13 +172,17 @@ public class PersistChangesRemoteJob extends AbstractRemoteJob {
 	}
 
 	private void cleanup() {
-		if (null != lockContext && null != lockTarget) {
-			getLockManager().unlock(lockContext, lockTarget);
-		}
-		
-		lockContext = null;
-		lockTarget = null;
-		taxonomy = null;
+		try {
+
+			if (null != lockContext && null != lockTarget) {
+				getLockManager().unlock(lockContext, lockTarget);
+			}
+
+		} finally {
+			lockContext = null;
+			lockTarget = null;
+			taxonomy = null;
+		}		
 	}
 
 	private String getDefaultContextDescription() {
