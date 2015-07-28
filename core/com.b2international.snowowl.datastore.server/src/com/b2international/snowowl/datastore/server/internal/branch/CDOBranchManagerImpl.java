@@ -17,6 +17,10 @@ package com.b2international.snowowl.datastore.server.internal.branch;
 
 import static com.google.common.base.Preconditions.checkArgument;
 
+import java.util.ArrayDeque;
+import java.util.Arrays;
+import java.util.Deque;
+
 import org.eclipse.emf.cdo.common.branch.CDOBranch;
 import org.eclipse.emf.cdo.common.branch.CDOBranchPoint;
 import org.eclipse.emf.cdo.common.commit.CDOCommitInfo;
@@ -27,6 +31,7 @@ import org.eclipse.emf.cdo.util.CommitException;
 
 import com.b2international.snowowl.core.Metadata;
 import com.b2international.snowowl.core.api.SnowowlRuntimeException;
+import com.b2international.snowowl.core.exceptions.NotFoundException;
 import com.b2international.snowowl.datastore.BranchPathUtils;
 import com.b2international.snowowl.datastore.branch.Branch;
 import com.b2international.snowowl.datastore.branch.BranchManager;
@@ -35,6 +40,7 @@ import com.b2international.snowowl.datastore.cdo.ICDOConnection;
 import com.b2international.snowowl.datastore.cdo.ICDORepository;
 import com.b2international.snowowl.datastore.server.internal.IRepository;
 import com.b2international.snowowl.datastore.store.Store;
+import com.b2international.snowowl.datastore.store.query.QueryBuilder;
 
 /**
  * {@link BranchManager} implementation based on {@link CDOBranch} functionality.
@@ -43,18 +49,43 @@ import com.b2international.snowowl.datastore.store.Store;
  */
 public class CDOBranchManagerImpl extends BranchManagerImpl {
 
-    private final IRepository repository;
+    private static final String CDO_BRANCH_ID = "cdoBranchId";
+    
+	private final IRepository repository;
 	
     public CDOBranchManagerImpl(final IRepository repository, final Store<InternalBranch> branchStore) {
         super(branchStore, getBasetimestamp(repository.getCdoMainBranch()));
         this.repository = repository;
        	branchStore.configureSearchable(PATH_FIELD);
+       	branchStore.configureSearchable(CDO_BRANCH_ID);
+       	
+		Deque<CDOBranch> workQueue = new ArrayDeque<CDOBranch>();
+		workQueue.add(repository.getCdoBranchManager().getMainBranch());
+		
+		while (!workQueue.isEmpty()) {
+			CDOBranch current = workQueue.pollFirst();
+			
+			if (!current.isMainBranch()) {
+				final Branch branch = getBranch(current.getID());
+
+				if (branch == null) {
+					registerBranch(new CDOBranchImpl(current.getName(), current.getBase().getBranch().getPathName(), current.getBase().getTimeStamp(), current.getID()));
+				}
+			}
+			
+			workQueue.addAll(Arrays.asList(current.getBranches()));
+		}
+
         registerCommitListener(repository.getCdoRepository());
     }
 
     @Override
     void initMainBranch(InternalBranch main) {
-        super.initMainBranch(new CDOMainBranchImpl(main.baseTimestamp(), main.headTimestamp()));
+    	try {
+    		getMainBranch();
+    	} catch (NotFoundException ignored) {
+    		super.initMainBranch(new CDOMainBranchImpl(main.baseTimestamp(), main.headTimestamp()));
+    	}
     }
 
     CDOBranch getCDOBranch(Branch branch) {
@@ -66,6 +97,10 @@ public class CDOBranchManagerImpl extends BranchManagerImpl {
         throw new SnowowlRuntimeException("Missing registered CDOBranch identifier for branch at path: " + branch.path());
     }
 
+    private Branch getBranch(Integer branchId) {
+    	return getBranchFromStore(QueryBuilder.newQuery().match(CDO_BRANCH_ID, branchId.toString()).build());
+    }
+    
     private CDOBranch loadCDOBranch(Integer branchId) {
         return repository.getCdoBranchManager().getBranch(branchId);
     }

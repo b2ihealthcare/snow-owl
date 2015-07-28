@@ -25,7 +25,9 @@ import com.b2international.snowowl.datastore.branch.Branch;
 import com.b2international.snowowl.datastore.branch.BranchManager;
 import com.b2international.snowowl.datastore.branch.Branch.BranchState;
 import com.b2international.snowowl.datastore.store.Store;
+import com.b2international.snowowl.datastore.store.query.Query;
 import com.b2international.snowowl.datastore.store.query.QueryBuilder;
+import com.google.common.collect.Iterables;
 
 /**
  * @since 4.1
@@ -76,6 +78,14 @@ public abstract class BranchManagerImpl implements BranchManager {
 		return branch;
 	}
 
+	protected final Branch getBranchFromStore(final Query query) {
+		final InternalBranch branch = Iterables.getOnlyElement(branchStore.search(query, 0, 1), null);
+		if (branch != null) {
+			branch.setBranchManager(this);
+		}
+		return branch;
+	}
+	
 	private final Branch getBranchFromStore(final String path) {
 		final InternalBranch branch = branchStore.get(path);
 		if (branch != null) {
