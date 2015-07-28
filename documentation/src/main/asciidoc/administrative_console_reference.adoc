@@ -62,7 +62,7 @@ To narrow the command list down to a certain category, type the category name gi
 osgi> localcodesystem
 --- Local code system datastore commands ---
        localcodesystem exportXL local_codesystems_excelfile_path - Exports local code...
-       localcodesystem importXL local_codesystems_excelfile_path clear_database - Imports...
+       localcodesystem importXL local_codesystems_excelfile_path clear_database - ...
 --------------------------
 
 === Disconnecting from the console
@@ -215,11 +215,11 @@ White blood cell disorder
 ...
 Red blood cell count, manual, peritoneal fluid
 Red blood cell folate borderline high
-ID	Label
-425983008	Autologous peripheral blood stem cell transplant
-54097007	White blood cell disorder
+ID          Label
+425983008   Autologous peripheral blood stem cell transplant
+54097007    White blood cell disorder
 ...
-442218004	Red blood cell folate borderline high
+442218004   Red blood cell folate borderline high
 --------------------------
 
 == Machine-Readable Concept Model

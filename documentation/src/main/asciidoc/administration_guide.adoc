@@ -76,8 +76,8 @@ To list the available language reference set identifiers, use the following comm
 --------------------------
 osgi> sctimport rf2_languages {import_zip_directory}/SnomedCT_Release_XXX_xxxxxxxx.zip
 [...]
-900000000000508004	Great Britain English language reference set
-900000000000509007	United States of America English language reference set
+900000000000508004  Great Britain English language reference set
+900000000000509007  United States of America English language reference set
 --------------------------
 
 Available language reference sets will be displayed as above, after parsing the archive is completed.
@@ -93,7 +93,8 @@ osgi> sctimport rf2_release -l <languageRefSetId> -t <type> <file>
 <languageRefSetId>:: The language reference set identifier to use, selected from the list available identifiers in the
 previous step
 <type>:: One of `FULL`, `SNAPSHOT` or `DELTA`, depending on the import type the administrator wants to use
-<file>:: The absolute path of the release archive file to import, `{import_zip_directory}/SnomedCT_Release_XXX_xxxxxxxx.zip`
+<file>:: The absolute path of the release archive file to import, +
+`{import_zip_directory}/SnomedCT_Release_XXX_xxxxxxxx.zip`
 
 NOTE: While the import is running, there is no feedback on the OSGi console until the process is finished; log output
 can be observed throughout the import session in the file `serviceability/logs/log.log`. The import may take several
@@ -123,68 +124,68 @@ performing any import/export operations.
 
 |ATC import from ClaML
 |
-|&checkmark;
+|✔
 |
 
 |ICD-10 import from ClaML
 |
-|&checkmark;
+|✔
 |
 
 |ICD-10-AM import from .zip archive
 |
-|&checkmark;
+|✔
 |
 
 |Local Code System import from Excel spreadsheet
 |`localcodesystem importXL`
-|&checkmark;
-|&checkmark;
+|✔
+|✔
 
 |LOINC import from .zip archive
 |`loinc import`
-|&checkmark;
-|&checkmark;
+|✔
+|✔
 
 |Mapping set import from Excel spreadsheet
-|mappingset import
-|&checkmark;
-|&checkmark;
+|`mappingset import`
+|✔
+|✔
 
 |SNOMED CT release import from RF2 files
 |`sctimport rf2_release`
-|&checkmark; (zip only)
-|&checkmark;
+|✔ (zip only)
+|✔
 
 |SNOMED CT reference set import from RF2 file
 |`sctimport rf2_refset`
-|&checkmark;
-|&checkmark;
+|✔
+|✔
 
 |SNOMED CT reference set import from delimiter-separated file (includes RF1 subset files)
 |`sctimport dsv_refset`
-|&checkmark;
-|&checkmark;
+|✔
+|✔
 
 |Value domain import from Excel spreadsheet
 |
-|&checkmark;
+|✔
 |
 
 |Value domain import from UMLS SVS XML file
 |`valueset import`
-|&checkmark;
-|&checkmark;
+|✔
+|✔
 
 |Import MRCM rules from XMI file
 |`mrcm import`
 |
-|&checkmark;
+|✔
 
 |Export MRCM rules to XMI file
 |`mrcm export`
 |
-|&checkmark;
+|✔
 |===
 
 === List of operations that can be executed by regular users
