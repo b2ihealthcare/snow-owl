@@ -28,6 +28,8 @@ public class ClassificationRun extends ClassificationInput implements IClassific
 	private ClassificationStatus status;
 	private Date creationDate;
 	private Date completionDate;
+	private Boolean redundantStatedRelationshipsFound;
+	private Boolean equivalentConceptsFound;
 
 	@Override
 	public String getId() {
@@ -49,6 +51,14 @@ public class ClassificationRun extends ClassificationInput implements IClassific
 		return completionDate;
 	}
 
+	public Boolean getRedundantStatedRelationshipsFound() {
+		return redundantStatedRelationshipsFound;
+	}
+
+	public Boolean getEquivalentConceptsFound() {
+		return equivalentConceptsFound;
+	}
+
 	public void setId(final String id) {
 		this.id = id;
 	}
@@ -65,6 +75,14 @@ public class ClassificationRun extends ClassificationInput implements IClassific
 		this.completionDate = completionDate;
 	}
 
+	public void setRedundantStatedRelationshipsFound(Boolean redundantStatedRelationshipsFound) {
+		this.redundantStatedRelationshipsFound = redundantStatedRelationshipsFound;
+	}
+
+	public void setEquivalentConceptsFound(Boolean equivalentConceptsFound) {
+		this.equivalentConceptsFound = equivalentConceptsFound;
+	}
+
 	@Override
 	public String toString() {
 		final StringBuilder builder = new StringBuilder();
@@ -76,6 +94,10 @@ public class ClassificationRun extends ClassificationInput implements IClassific
 		builder.append(creationDate);
 		builder.append(", completionDate=");
 		builder.append(completionDate);
+		builder.append(", redundantStatedRelationshipsFound=");
+		builder.append(redundantStatedRelationshipsFound);
+		builder.append(", equivalentConceptsFound=");
+		builder.append(equivalentConceptsFound);
 		builder.append("]");
 		return builder.toString();
 	}

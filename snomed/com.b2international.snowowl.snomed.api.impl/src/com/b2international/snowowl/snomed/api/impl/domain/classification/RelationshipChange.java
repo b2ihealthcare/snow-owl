@@ -28,6 +28,7 @@ public class RelationshipChange implements IRelationshipChange {
 	private String typeId;
 	private String destinationId;
 	private boolean destinationNegated;
+	private String characteristicTypeId;
 	private int group;
 	private int unionGroup;
 	private RelationshipModifier modifier;
@@ -55,6 +56,10 @@ public class RelationshipChange implements IRelationshipChange {
 	@Override
 	public boolean isDestinationNegated() {
 		return destinationNegated;
+	}
+
+	public String getCharacteristicTypeId() {
+		return characteristicTypeId;
 	}
 
 	@Override
@@ -92,6 +97,10 @@ public class RelationshipChange implements IRelationshipChange {
 		this.destinationNegated = destinationNegated;
 	}
 
+	public void setCharacteristicTypeId(String characteristicTypeId) {
+		this.characteristicTypeId = characteristicTypeId;
+	}
+
 	public void setGroup(final int group) {
 		this.group = group;
 	}
@@ -117,6 +126,8 @@ public class RelationshipChange implements IRelationshipChange {
 		builder.append(destinationId);
 		builder.append(", destinationNegated=");
 		builder.append(destinationNegated);
+		builder.append(", characteristicTypeId=");
+		builder.append(characteristicTypeId);
 		builder.append(", group=");
 		builder.append(group);
 		builder.append(", unionGroup=");
