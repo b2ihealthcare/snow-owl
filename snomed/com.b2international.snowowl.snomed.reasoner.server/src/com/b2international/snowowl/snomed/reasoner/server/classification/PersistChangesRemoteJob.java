@@ -118,7 +118,7 @@ public class PersistChangesRemoteJob extends AbstractRemoteJob {
 		} catch (final OperationLockException | InterruptedException e) {
 			DatastoreLockContext otherContext = null;
 			if (e instanceof DatastoreOperationLockException) {
-				otherContext = ((DatastoreOperationLockException) e).getContext(lockTarget);
+				otherContext = ((DatastoreOperationLockException) e).getContext(localLockTarget);
 			}
 	
 			final String reason = (null == otherContext) ? getDefaultContextDescription() : getContextDescription(otherContext);
