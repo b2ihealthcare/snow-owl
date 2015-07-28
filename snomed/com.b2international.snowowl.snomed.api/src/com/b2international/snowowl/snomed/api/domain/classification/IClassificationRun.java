@@ -49,4 +49,18 @@ public interface IClassificationRun extends IClassificationInput {
 	 * @return the classification completion date
 	 */
 	Date getCompletionDate();
+
+	/**
+	 * Returns a boolean indicating if any redundant stated relationships were found, or {@code null} if the classification hasn't finished yet.
+	 *
+	 * @return the classification completion date
+	 */
+	Boolean getRedundantStatedRelationshipsFound();
+
+	/**
+	 * Returns a boolean indicating if any equivalent concepts were found, or {@code null} if the classification hasn't finished yet.
+	 *
+	 * @return the classification completion date
+	 */
+	Boolean getEquivalentConceptsFound();
 }

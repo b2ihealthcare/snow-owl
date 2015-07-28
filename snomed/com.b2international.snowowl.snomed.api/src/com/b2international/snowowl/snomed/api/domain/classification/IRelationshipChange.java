@@ -59,6 +59,13 @@ public interface IRelationshipChange {
 	boolean isDestinationNegated();
 
 	/**
+	 * Returns the characteristicType concept identifier of this relationship.
+	 * 
+	 * @return the characteristicType concept identifier
+	 */
+	String getCharacteristicTypeId();
+
+	/**
 	 * Returns the relationship's group number.
 	 * 
 	 * @return the relationship group, or 0 if this relationship can not be grouped, or is in an unnumbered, singleton
