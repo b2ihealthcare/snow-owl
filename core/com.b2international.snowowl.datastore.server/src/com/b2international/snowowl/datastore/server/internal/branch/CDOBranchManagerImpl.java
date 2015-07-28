@@ -173,7 +173,7 @@ public class CDOBranchManagerImpl extends BranchManagerImpl {
 			@Override
             public void handleCommitInfo(CDOCommitInfo commitInfo) {
                 if (!(commitInfo instanceof org.eclipse.emf.cdo.internal.common.commit.FailureCommitInfo)) {
-                    handleCommit((InternalBranch) getBranch(commitInfo.getBranch().getPathName()), commitInfo.getTimeStamp());
+                    handleCommit((InternalBranch) getBranch(commitInfo.getBranch().getID()), commitInfo.getTimeStamp());
                 }
             }
         });
