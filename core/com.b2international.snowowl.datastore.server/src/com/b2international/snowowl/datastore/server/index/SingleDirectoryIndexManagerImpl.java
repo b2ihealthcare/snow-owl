@@ -29,12 +29,12 @@ public class SingleDirectoryIndexManagerImpl implements SingleDirectoryIndexMana
 	
 	@Override
 	public void registerIndex(SingleDirectoryIndex index) {
-		services.put(index.getIndexPath(), index);
+		services.put(getKey(index), index);
 	}
 
 	@Override
 	public void unregisterIndex(SingleDirectoryIndex index) {
-		services.remove(index.getIndexPath(), index);
+		services.remove(getKey(index), index);
 	}
 	
 	@Override
@@ -46,6 +46,10 @@ public class SingleDirectoryIndexManagerImpl implements SingleDirectoryIndexMana
 	public SingleDirectoryIndex getService(final String serviceId) {
 		Preconditions.checkNotNull(serviceId, "Service identifier may not be null.");
 		return services.get(serviceId);
+	}
+	
+	private String getKey(SingleDirectoryIndex index) {
+		return index.getIndexRootPath().getPath();
 	}
 	
 }

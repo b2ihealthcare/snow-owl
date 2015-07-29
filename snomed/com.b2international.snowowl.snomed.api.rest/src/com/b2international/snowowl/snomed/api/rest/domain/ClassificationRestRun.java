@@ -15,10 +15,10 @@
  */
 package com.b2international.snowowl.snomed.api.rest.domain;
 
-import java.util.Date;
-
 import com.b2international.snowowl.snomed.api.domain.classification.ClassificationStatus;
 import com.b2international.snowowl.snomed.api.domain.classification.IClassificationRun;
+
+import java.util.Date;
 
 /**
  */
@@ -29,30 +29,35 @@ public class ClassificationRestRun extends ClassificationRestInput implements IC
 	private ClassificationStatus status;
 	private Date creationDate;
 	private Date completionDate;
+	private Boolean redundantStatedRelationshipsFound;
+	private Boolean equivalentConceptsFound;
 
-	@Override
 	public String getId() {
 		return id;
 	}
 
-	@Override
 	public String getUserId() {
 		return userId;
 	}
 
-	@Override
 	public ClassificationStatus getStatus() {
 		return status;
 	}
 
-	@Override
 	public Date getCreationDate() {
 		return creationDate;
 	}
 
-	@Override
 	public Date getCompletionDate() {
 		return completionDate;
+	}
+
+	public Boolean getRedundantStatedRelationshipsFound() {
+		return redundantStatedRelationshipsFound;
+	}
+
+	public Boolean getEquivalentConceptsFound() {
+		return equivalentConceptsFound;
 	}
 
 	public void setId(final String id) {
@@ -75,6 +80,14 @@ public class ClassificationRestRun extends ClassificationRestInput implements IC
 		this.completionDate = completionDate;
 	}
 
+	public void setRedundantStatedRelationshipsFound(Boolean redundantStatedRelationshipsFound) {
+		this.redundantStatedRelationshipsFound = redundantStatedRelationshipsFound;
+	}
+
+	public void setEquivalentConceptsFound(Boolean equivalentConceptsFound) {
+		this.equivalentConceptsFound = equivalentConceptsFound;
+	}
+
 	@Override
 	public String toString() {
 		final StringBuilder builder = new StringBuilder();
@@ -88,8 +101,10 @@ public class ClassificationRestRun extends ClassificationRestInput implements IC
 		builder.append(status);
 		builder.append(", creationDate=");
 		builder.append(creationDate);
-		builder.append(", completionDate=");
-		builder.append(completionDate);
+		builder.append(", redundantStatedRelationshipsFound=");
+		builder.append(redundantStatedRelationshipsFound);
+		builder.append(", equivalentConceptsFound=");
+		builder.append(equivalentConceptsFound);
 		builder.append("]");
 		return builder.toString();
 	}

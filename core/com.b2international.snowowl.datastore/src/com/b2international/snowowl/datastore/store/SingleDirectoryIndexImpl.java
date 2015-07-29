@@ -46,7 +46,6 @@ import org.eclipse.core.runtime.Path;
 
 import com.b2international.commons.ClassUtils;
 import com.b2international.snowowl.core.IDisposableService;
-import com.b2international.snowowl.core.SnowOwlApplication;
 import com.b2international.snowowl.datastore.SingleDirectoryIndex;
 import com.b2international.snowowl.datastore.index.DelimiterStopAnalyzer;
 import com.b2international.snowowl.datastore.index.IndexUtils;
