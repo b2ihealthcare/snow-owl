@@ -20,6 +20,7 @@ import static com.google.common.base.Preconditions.checkNotNull;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Paths;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
@@ -45,6 +46,7 @@ import org.eclipse.core.runtime.Path;
 
 import com.b2international.commons.ClassUtils;
 import com.b2international.snowowl.core.IDisposableService;
+import com.b2international.snowowl.core.SnowOwlApplication;
 import com.b2international.snowowl.datastore.SingleDirectoryIndex;
 import com.b2international.snowowl.datastore.index.DelimiterStopAnalyzer;
 import com.b2international.snowowl.datastore.index.IndexUtils;
@@ -153,8 +155,8 @@ public abstract class SingleDirectoryIndexImpl implements SingleDirectoryIndex, 
 	}
 
 	@Override
-	public File getIndexRootPath() {
-		return new File(indexDirectory.getName());
+	public String getIndexPath() {
+		return Paths.get(SnowOwlApplication.INSTANCE.getEnviroment().getDataDirectory().getAbsolutePath(), "indexes").relativize(indexDirectory.toPath()).toString();
 	}
 	
 	@Override

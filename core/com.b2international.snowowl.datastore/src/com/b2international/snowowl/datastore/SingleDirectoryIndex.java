@@ -15,12 +15,9 @@
  */
 package com.b2international.snowowl.datastore;
 
-import java.io.File;
 import java.io.IOException;
 import java.util.List;
 
-/**
- */
 public interface SingleDirectoryIndex {
 
 	void releaseSnapshot(final String snapshotId) throws IOException;
@@ -31,5 +28,5 @@ public interface SingleDirectoryIndex {
 
 	String snapshot() throws IOException;
 
-	File getIndexRootPath();
+	String getIndexPath();
 }
