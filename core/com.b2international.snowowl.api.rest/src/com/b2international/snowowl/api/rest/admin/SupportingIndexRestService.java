@@ -62,7 +62,7 @@ public class SupportingIndexRestService extends AbstractAdminRestService {
 		return joinStrings(indexIds);
 	}
 
-	@RequestMapping(value="{indexId}/snapshots", method=RequestMethod.GET)
+	@RequestMapping(value="{indexId:**}/snapshots", method=RequestMethod.GET)
 	@ApiOperation(
 			value="Retrieve all snapshot identifiers for an index",
 			notes="Retrieves a list of snapshot identifiers for the specified supporting index.")
@@ -78,7 +78,7 @@ public class SupportingIndexRestService extends AbstractAdminRestService {
 		return joinStrings(snapshotIds);
 	}
 
-	@RequestMapping(value="{indexId}/snapshots", method=RequestMethod.POST)
+	@RequestMapping(value="{indexId:**}/snapshots", method=RequestMethod.POST)
 	@ApiOperation(
 			value="Create snapshot for an index",
 			notes="Retrieves a list of snapshot identifiers for the specified supporting index.",
@@ -98,7 +98,7 @@ public class SupportingIndexRestService extends AbstractAdminRestService {
 		return new ResponseEntity<String>(snapshotId, headers, HttpStatus.CREATED);
 	}
 
-	@RequestMapping(value="{indexId}/snapshots/{snapshotId}", method=RequestMethod.GET)
+	@RequestMapping(value="{indexId:**}/snapshots/{snapshotId}", method=RequestMethod.GET)
 	@ApiOperation(
 			value="List contents of an index snapshot",
 			notes="Retrieves a list of snapshot identifiers for the specified supporting index.")
@@ -114,7 +114,7 @@ public class SupportingIndexRestService extends AbstractAdminRestService {
 		return joinStrings(indexFiles);
 	}
 
-	@RequestMapping(value="{indexId}/snapshots/{snapshotId}", method=RequestMethod.DELETE)
+	@RequestMapping(value="{indexId:**}/snapshots/{snapshotId}", method=RequestMethod.DELETE)
 	@ResponseStatus(HttpStatus.NO_CONTENT)
 	@ApiOperation(
 			value="Release resources associated with an index snapshot",
