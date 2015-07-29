@@ -39,7 +39,9 @@ import com.b2international.snowowl.datastore.cdo.CDOConnectionFactoryProvider;
 import com.b2international.snowowl.datastore.cdo.ICDOConnectionManager;
 import com.b2international.snowowl.datastore.cdo.ICDORepositoryManager;
 import com.b2international.snowowl.datastore.net4j.Net4jUtils;
+import com.b2international.snowowl.datastore.server.index.SingleDirectoryIndexManager;
 import com.b2international.snowowl.datastore.server.index.IndexServerServiceManager;
+import com.b2international.snowowl.datastore.server.index.SingleDirectoryIndexManagerImpl;
 import com.b2international.snowowl.datastore.server.internal.RepositoryWrapper;
 import com.b2international.snowowl.datastore.server.internal.branch.BranchEventHandler;
 import com.b2international.snowowl.datastore.server.internal.branch.BranchSerializer;
@@ -106,7 +108,10 @@ public class DatastoreServerBootstrap implements PreRunCapableBootstrapFragment 
 			cdoRepositoryManager.activate();
 			environment.services().registerService(ICDORepositoryManager.class, cdoRepositoryManager);
 			
+			// register index manager services, one for branching, one for single directory
+			// TODO would be nice to merge these into one single IndexManager
 			environment.services().registerService(IIndexServerServiceManager.class, IndexServerServiceManager.INSTANCE);
+			environment.services().registerService(SingleDirectoryIndexManager.class, new SingleDirectoryIndexManagerImpl());
 			
 			LOG.info("<<< Server-side datastore bundle started. [{}]", serverStopwatch);
 		} else {
@@ -182,6 +187,11 @@ public class DatastoreServerBootstrap implements PreRunCapableBootstrapFragment 
 
 		environment.service(IEventBus.class).registerHandler("/" + repositoryId + "/branches" , new BranchEventHandler(branchManager, reviewManager));
 		environment.service(IEventBus.class).registerHandler("/" + repositoryId + "/reviews" , new ReviewEventHandler(branchManager, reviewManager));
+		// register stores to index manager
+		final SingleDirectoryIndexManager indexManager = environment.service(SingleDirectoryIndexManager.class);
+		indexManager.registerIndex(branchStore);
+		indexManager.registerIndex(reviewStore);
+		indexManager.registerIndex(conceptChangesStore);
 	}
 	
 	private void connectSystemUser(IManagedContainer container) throws SnowowlServiceException {

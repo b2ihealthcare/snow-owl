@@ -174,13 +174,14 @@ public class SnomedClassificationServiceImpl implements ISnomedClassificationSer
 		}
 	}
 
-	private ClassificationIndexServerService indexService;
+	private ClassificationRunIndex indexService;
 	private RemoteJobChangeHandler changeHandler;
 
 	@PostConstruct
 	protected void init() {
 		final File dir = new File(new File(SnowOwlApplication.INSTANCE.getEnviroment().getDataDirectory(), "indexes"), "classification_runs");
-		indexService = new ClassificationIndexServerService(dir);
+		indexService = new ClassificationRunIndex(dir);
+		ApplicationContext.getInstance().getServiceChecked(SingleDirectoryIndexManager.class).registerIndex(indexService);
 
 		changeHandler = new RemoteJobChangeHandler();
 		getEventBus().registerHandler(IRemoteJobManager.ADDRESS_REMOTE_JOB_CHANGED, changeHandler);
@@ -192,6 +193,7 @@ public class SnomedClassificationServiceImpl implements ISnomedClassificationSer
 		changeHandler = null;
 
 		if (null != indexService) {
+			ApplicationContext.getInstance().getServiceChecked(SingleDirectoryIndexManager.class).unregisterIndex(indexService);
 			indexService.dispose();
 			indexService = null;
 		}

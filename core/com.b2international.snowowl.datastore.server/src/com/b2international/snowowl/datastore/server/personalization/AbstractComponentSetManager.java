@@ -54,7 +54,7 @@ import com.b2international.snowowl.datastore.IBranchPathMap;
 import com.b2international.snowowl.datastore.personalization.IComponentSetManager;
 import com.b2international.snowowl.datastore.quicksearch.IQuickSearchContentProvider;
 import com.b2international.snowowl.datastore.quicksearch.QuickSearchContentProviderBroker;
-import com.b2international.snowowl.datastore.store.SingleDirectoryIndexServerService;
+import com.b2international.snowowl.datastore.store.SingleDirectoryIndexImpl;
 import com.google.common.base.Function;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Multimap;
@@ -63,7 +63,7 @@ import com.google.common.collect.Multimaps;
 /**
  *
  */
-public abstract class AbstractComponentSetManager extends SingleDirectoryIndexServerService implements IComponentSetManager {
+public abstract class AbstractComponentSetManager extends SingleDirectoryIndexImpl implements IComponentSetManager {
 
 	private static final String FIELD_ID = "id";
 	

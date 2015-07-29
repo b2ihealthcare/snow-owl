@@ -45,7 +45,7 @@ import com.google.common.collect.Iterables;
 /**
  * @since 4.1
  */
-public class IndexStore<T> extends SingleDirectoryIndexServerService implements Store<T> {
+public class IndexStore<T> extends SingleDirectoryIndexImpl implements Store<T> {
 
 	private static final String ID_FIELD = "id";
 	private static final String SOURCE_FIELD = "source";
