@@ -53,10 +53,12 @@ public class CDOBranchManagerImpl extends BranchManagerImpl {
 	private final IRepository repository;
 	
     public CDOBranchManagerImpl(final IRepository repository, final Store<InternalBranch> branchStore) {
-        super(branchStore, getBasetimestamp(repository.getCdoMainBranch()));
+        super(branchStore);
         this.repository = repository;
-       	branchStore.configureSearchable(PATH_FIELD);
        	branchStore.configureSearchable(CDO_BRANCH_ID);
+       	
+       	CDOBranch cdoMainBranch = repository.getCdoMainBranch();
+		initMainBranch(new CDOMainBranchImpl(repository.getBaseTimestamp(cdoMainBranch), repository.getHeadTimestamp(cdoMainBranch)));
        	
 		Deque<CDOBranch> workQueue = new ArrayDeque<CDOBranch>();
 		workQueue.add(repository.getCdoBranchManager().getMainBranch());
@@ -68,7 +70,9 @@ public class CDOBranchManagerImpl extends BranchManagerImpl {
 				final Branch branch = getBranch(current.getID());
 
 				if (branch == null) {
-					registerBranch(new CDOBranchImpl(current.getName(), current.getBase().getBranch().getPathName(), current.getBase().getTimeStamp(), current.getID()));
+					long baseTimestamp = repository.getBaseTimestamp(current);
+					long headTimestamp = repository.getHeadTimestamp(current);
+					registerBranch(new CDOBranchImpl(current.getName(), current.getBase().getBranch().getPathName(), baseTimestamp, headTimestamp, current.getID()));
 				}
 			}
 			
@@ -76,11 +80,6 @@ public class CDOBranchManagerImpl extends BranchManagerImpl {
 		}
 
         registerCommitListener(repository.getCdoRepository());
-    }
-
-    @Override
-    void initMainBranch(InternalBranch main) {
-    	super.initMainBranch(new CDOMainBranchImpl(main.baseTimestamp(), main.headTimestamp()));
     }
 
     CDOBranch getCDOBranch(Branch branch) {
@@ -172,9 +171,5 @@ public class CDOBranchManagerImpl extends BranchManagerImpl {
                 }
             }
         });
-    }
-
-    private static long getBasetimestamp(CDOBranch branch) {
-        return branch.getBase().getTimeStamp();
     }
 }

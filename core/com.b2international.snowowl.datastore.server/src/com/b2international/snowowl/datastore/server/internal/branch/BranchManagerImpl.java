@@ -34,15 +34,16 @@ import com.google.common.collect.Iterables;
  */
 public abstract class BranchManagerImpl implements BranchManager {
 
-	protected static final String PATH_FIELD = "path";
+	private static final String PATH_FIELD = "path";
+	
 	private final Store<InternalBranch> branchStore;
 	
-	public BranchManagerImpl(final Store<InternalBranch> branchStore, final long mainBranchTimestamp) {
+	public BranchManagerImpl(final Store<InternalBranch> branchStore) {
 		this.branchStore = branchStore;
-		initMainBranch(new MainBranchImpl(mainBranchTimestamp));
+		branchStore.configureSearchable(PATH_FIELD);
 	}
 	
-	/*package*/ void initMainBranch(final InternalBranch main) {
+	protected final void initMainBranch(final InternalBranch main) {
     	try {
     		getMainBranch();
     	} catch (NotFoundException e) {
