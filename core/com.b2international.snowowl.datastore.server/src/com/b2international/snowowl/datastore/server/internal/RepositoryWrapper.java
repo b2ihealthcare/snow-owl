@@ -91,6 +91,6 @@ public class RepositoryWrapper implements IRepository {
 	
 	@Override
 	public long getHeadTimestamp(CDOBranch branch) {
-		return CDOServerUtils.getLastCommitTime(branch);
+		return Math.max(getBaseTimestamp(branch), CDOServerUtils.getLastCommitTime(branch));
 	}
 }
