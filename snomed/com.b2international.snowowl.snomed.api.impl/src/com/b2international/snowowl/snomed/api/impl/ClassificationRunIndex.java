@@ -43,7 +43,7 @@ import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.datastore.BranchPathUtils;
 import com.b2international.snowowl.datastore.index.DocIdCollector;
 import com.b2international.snowowl.datastore.index.DocIdCollector.DocIdsIterator;
-import com.b2international.snowowl.datastore.store.SingleDirectoryIndexServerService;
+import com.b2international.snowowl.datastore.store.SingleDirectoryIndexImpl;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.api.domain.RelationshipModifier;
 import com.b2international.snowowl.snomed.api.domain.classification.ChangeNature;
@@ -70,11 +70,11 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
 
-public class ClassificationIndexServerService extends SingleDirectoryIndexServerService {
+public class ClassificationRunIndex extends SingleDirectoryIndexImpl {
 
 	private final ObjectMapper objectMapper;
 
-	public ClassificationIndexServerService(final File directory) {
+	public ClassificationRunIndex(final File directory) {
 		super(directory, true);
 		objectMapper = new ObjectMapper();
 	}

@@ -45,7 +45,7 @@ import org.eclipse.core.runtime.Path;
 
 import com.b2international.commons.ClassUtils;
 import com.b2international.snowowl.core.IDisposableService;
-import com.b2international.snowowl.datastore.ISingleDirectoryIndexService;
+import com.b2international.snowowl.datastore.SingleDirectoryIndex;
 import com.b2international.snowowl.datastore.index.DelimiterStopAnalyzer;
 import com.b2international.snowowl.datastore.index.IndexUtils;
 import com.google.common.collect.Lists;
@@ -58,7 +58,7 @@ import com.google.common.io.Closeables;
  * An abstract implementation for an index service which does not use multiple directories. 
  *
  */
-public abstract class SingleDirectoryIndexServerService implements ISingleDirectoryIndexService, IDisposableService {
+public abstract class SingleDirectoryIndexImpl implements SingleDirectoryIndex, IDisposableService {
 
 	private final class SnapshotOrdering extends Ordering<String> {
 		@Override
@@ -85,11 +85,11 @@ public abstract class SingleDirectoryIndexServerService implements ISingleDirect
 	 * Full path to the directory to use.
 	 * @param directoryPath - the absolute directory path 
 	 */
-	protected SingleDirectoryIndexServerService(final File directory) {
+	protected SingleDirectoryIndexImpl(final File directory) {
 		this(directory, false);
 	}
 	
-	protected SingleDirectoryIndexServerService(final File directory, final boolean clean) {
+	protected SingleDirectoryIndexImpl(final File directory, final boolean clean) {
 		checkNotNull(directory, "indexDirectory");
 		checkArgument(directory.exists() || directory.mkdirs(), "Couldn't create directories for path '%s'", directory);
 		this.indexDirectory = directory;
@@ -112,7 +112,7 @@ public abstract class SingleDirectoryIndexServerService implements ISingleDirect
 	}
 	
 	/**
-	 * Returns the directory where this {@link SingleDirectoryIndexServerService} operates.
+	 * Returns the directory where this {@link SingleDirectoryIndexImpl} operates.
 	 * @return
 	 */
 	public File getDirectory() {

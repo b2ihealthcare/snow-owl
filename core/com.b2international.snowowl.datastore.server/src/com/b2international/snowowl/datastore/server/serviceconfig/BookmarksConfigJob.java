@@ -17,9 +17,11 @@ package com.b2international.snowowl.datastore.server.serviceconfig;
 
 import java.io.File;
 
+import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.api.SnowowlServiceException;
 import com.b2international.snowowl.datastore.personalization.IBookmarksManager;
 import com.b2international.snowowl.datastore.server.DatastoreServerActivator;
+import com.b2international.snowowl.datastore.server.index.SingleDirectoryIndexManager;
 import com.b2international.snowowl.datastore.server.personalization.BookmarksManager;
 import com.b2international.snowowl.datastore.serviceconfig.AbstractServerServiceConfigJob;
 
@@ -51,6 +53,9 @@ public class BookmarksConfigJob extends AbstractServerServiceConfigJob<IBookmark
 	@Override
 	protected BookmarksManager createServiceImplementation() throws SnowowlServiceException {
 		final File dir = new File(new File(getEnvironment().getDataDirectory(), "indexes"), INDEX_DIRECTORY);
-		return new BookmarksManager(dir);
+		final BookmarksManager manager = new BookmarksManager(dir);
+		ApplicationContext.getInstance().getServiceChecked(SingleDirectoryIndexManager.class).registerIndex(manager);
+		return manager;
 	}
+	
 }

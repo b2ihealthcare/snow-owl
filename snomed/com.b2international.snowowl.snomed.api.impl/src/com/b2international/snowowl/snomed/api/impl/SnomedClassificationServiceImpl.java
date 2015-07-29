@@ -40,6 +40,7 @@ import com.b2international.snowowl.datastore.remotejobs.RemoteJobEventSwitch;
 import com.b2international.snowowl.datastore.remotejobs.RemoteJobRemovedEvent;
 import com.b2international.snowowl.datastore.remotejobs.RemoteJobState;
 import com.b2international.snowowl.datastore.remotejobs.RemoteJobUtils;
+import com.b2international.snowowl.datastore.server.index.SingleDirectoryIndexManager;
 import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.eventbus.IHandler;
 import com.b2international.snowowl.eventbus.IMessage;
@@ -182,13 +183,14 @@ public class SnomedClassificationServiceImpl implements ISnomedClassificationSer
 		}
 	}
 
-	private ClassificationIndexServerService indexService;
+	private ClassificationRunIndex indexService;
 	private RemoteJobChangeHandler changeHandler;
 
 	@PostConstruct
 	protected void init() {
 		final File dir = new File(new File(SnowOwlApplication.INSTANCE.getEnviroment().getDataDirectory(), "indexes"), "classification_runs");
-		indexService = new ClassificationIndexServerService(dir);
+		indexService = new ClassificationRunIndex(dir);
+		ApplicationContext.getInstance().getServiceChecked(SingleDirectoryIndexManager.class).registerIndex(indexService);
 
 		changeHandler = new RemoteJobChangeHandler();
 		getEventBus().registerHandler(IRemoteJobManager.ADDRESS_REMOTE_JOB_CHANGED, changeHandler);
@@ -200,6 +202,7 @@ public class SnomedClassificationServiceImpl implements ISnomedClassificationSer
 		changeHandler = null;
 
 		if (null != indexService) {
+			ApplicationContext.getInstance().getServiceChecked(SingleDirectoryIndexManager.class).unregisterIndex(indexService);
 			indexService.dispose();
 			indexService = null;
 		}

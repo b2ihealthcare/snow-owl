@@ -21,14 +21,14 @@ import javax.annotation.Nullable;
 
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.datastore.IBranchPathMap;
-import com.b2international.snowowl.datastore.ISingleDirectoryIndexService;
+import com.b2international.snowowl.datastore.SingleDirectoryIndex;
 import com.b2international.snowowl.datastore.TaskBranchPathMap;
 
 /**
  * Keeps track of task promotion status on the server. 
  *
  */
-public interface ITaskStateManager extends ISingleDirectoryIndexService {
+public interface ITaskStateManager extends SingleDirectoryIndex {
 
 	public static final String PROTOCOL_NAME = ITaskStateManager.class.getName(); 
 	

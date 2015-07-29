@@ -22,6 +22,7 @@ import org.eclipse.net4j.util.container.IPluginContainer;
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.api.SnowowlServiceException;
 import com.b2international.snowowl.core.config.ClientPreferences;
+import com.b2international.snowowl.datastore.server.index.SingleDirectoryIndexManager;
 import com.b2international.snowowl.datastore.server.DatastoreServerActivator;
 import com.b2international.snowowl.datastore.server.tasks.TaskStateManager;
 import com.b2international.snowowl.datastore.serviceconfig.ServiceConfigJob;
@@ -50,6 +51,7 @@ public class TaskStateManagerConfigJob extends ServiceConfigJob {
 
 		final File dir = new File(new File(getEnvironment().getDataDirectory(), "indexes"), "tasks");
 		TaskStateManager service = new TaskStateManager(dir);
+		ApplicationContext.getInstance().getServiceChecked(SingleDirectoryIndexManager.class).registerIndex(service);
 		ApplicationContext.getInstance().registerService(ITaskStateManager.class, service);
 
 		RpcUtil.getInitialServerSession(IPluginContainer.INSTANCE).registerClassLoader(ITaskStateManager.class, service.getClass().getClassLoader());
