@@ -44,7 +44,6 @@ import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.api.SnowowlServiceException;
 import com.b2international.snowowl.core.date.DateFormats;
-import com.b2international.snowowl.core.date.Dates;
 import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.datastore.BranchPathUtils;
 import com.b2international.snowowl.datastore.cdo.CDOCommitInfoUtils;
@@ -163,19 +162,29 @@ public class SnomedCompositeImporter extends AbstractLoggingImporter {
 			final UncheckedCastFunction<AbstractImportUnit, ComponentImportUnit> castFunction = new UncheckedCastFunction<AbstractImportUnit, ComponentImportUnit>(ComponentImportUnit.class);
 			final List<ComponentImportUnit> units = Lists.newArrayList(Iterables.transform(compositeUnit.getUnits(), castFunction));
 			
+			subMonitor.setWorkRemaining(units.size() + 1);
+
 			if (isRefSetImport(units)) {
 			
+				String lastUnitEffectiveTimeKey = units.get(0).getEffectiveTimeKey();
+				
 				for (final ComponentImportUnit subUnit : units) {
+					
+					final String currentUnitEffectiveTimeKey = subUnit.getEffectiveTimeKey();
+					
+					if (!Objects.equal(lastUnitEffectiveTimeKey, currentUnitEffectiveTimeKey)) {
+						updateCodeSystemMetadata(lastUnitEffectiveTimeKey, importContext.isVersionCreationEnabled());
+						lastUnitEffectiveTimeKey = currentUnitEffectiveTimeKey;
+					}
+					
 					subUnit.doImport(subMonitor.newChild(1, SubMonitor.SUPPRESS_NONE));
 				}
+				
+				updateCodeSystemMetadata(lastUnitEffectiveTimeKey, importContext.isVersionCreationEnabled());
 				
 			} else {
 			
 				Preconditions.checkState(!ApplicationContext.getInstance().exists(ImportIndexServerService.class), "SNOMED CT import already in progress.");
-	
-				final int size = units.size();
-				
-				subMonitor.setWorkRemaining(size + 1);
 	
 				final ImportIndexServerService importIndexServerService = new ImportIndexServerService(branchPath, importContext.getLanguageRefSetId());
 				final IndexBasedImportIndexServiceFeeder feeder = new IndexBasedImportIndexServiceFeeder();
