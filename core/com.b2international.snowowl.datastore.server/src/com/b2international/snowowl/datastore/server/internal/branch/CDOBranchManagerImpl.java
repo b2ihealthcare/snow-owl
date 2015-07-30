@@ -18,7 +18,6 @@ package com.b2international.snowowl.datastore.server.internal.branch;
 import static com.google.common.base.Preconditions.checkArgument;
 
 import java.util.ArrayDeque;
-import java.util.Arrays;
 import java.util.Deque;
 
 import org.eclipse.emf.cdo.common.branch.CDOBranch;
@@ -40,6 +39,7 @@ import com.b2international.snowowl.datastore.cdo.ICDORepository;
 import com.b2international.snowowl.datastore.server.internal.IRepository;
 import com.b2international.snowowl.datastore.store.Store;
 import com.b2international.snowowl.datastore.store.query.QueryBuilder;
+import com.google.common.collect.ImmutableSortedSet;
 
 /**
  * {@link BranchManager} implementation based on {@link CDOBranch} functionality.
@@ -76,7 +76,7 @@ public class CDOBranchManagerImpl extends BranchManagerImpl {
 				}
 			}
 			
-			workQueue.addAll(Arrays.asList(current.getBranches()));
+			workQueue.addAll(ImmutableSortedSet.copyOf(current.getBranches()));
 		}
 
         registerCommitListener(repository.getCdoRepository());
