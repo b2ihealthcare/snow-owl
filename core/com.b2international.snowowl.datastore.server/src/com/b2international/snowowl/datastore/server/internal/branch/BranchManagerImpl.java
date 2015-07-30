@@ -43,13 +43,17 @@ public abstract class BranchManagerImpl implements BranchManager {
 		branchStore.configureSearchable(PATH_FIELD);
 	}
 	
-	protected final void initMainBranch(final InternalBranch main) {
+	protected final void initBranchStore(final InternalBranch main) {
     	try {
     		getMainBranch();
     	} catch (NotFoundException e) {
-    		branchStore.clear();
-    		registerBranch(main);
+    		doInitBranchStore(main);
     	}
+	}
+
+	protected void doInitBranchStore(InternalBranch main) {
+		branchStore.clear();
+		registerBranch(main);
 	}
 
 	void registerBranch(final InternalBranch branch) {

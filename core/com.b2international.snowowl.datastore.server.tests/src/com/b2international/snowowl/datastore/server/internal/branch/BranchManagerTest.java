@@ -51,7 +51,7 @@ public class BranchManagerTest {
 
 		private BranchManagerImplTest(Store<InternalBranch> branchStore, long mainBranchTimestamp) {
 			super(branchStore);
-			initMainBranch(new MainBranchImpl(mainBranchTimestamp));
+			initBranchStore(new MainBranchImpl(mainBranchTimestamp));
 		}
 
 		@Override

@@ -58,8 +58,15 @@ public class CDOBranchManagerImpl extends BranchManagerImpl {
        	branchStore.configureSearchable(CDO_BRANCH_ID);
        	
        	CDOBranch cdoMainBranch = repository.getCdoMainBranch();
-		initMainBranch(new CDOMainBranchImpl(repository.getBaseTimestamp(cdoMainBranch), repository.getHeadTimestamp(cdoMainBranch)));
+		initBranchStore(new CDOMainBranchImpl(repository.getBaseTimestamp(cdoMainBranch), repository.getHeadTimestamp(cdoMainBranch)));
        	
+        registerCommitListener(repository.getCdoRepository());
+    }
+
+    @Override
+	protected void doInitBranchStore(final InternalBranch main) {
+		super.doInitBranchStore(main);
+		
 		Deque<CDOBranch> workQueue = new ArrayDeque<CDOBranch>();
 		workQueue.add(repository.getCdoBranchManager().getMainBranch());
 		
@@ -78,9 +85,7 @@ public class CDOBranchManagerImpl extends BranchManagerImpl {
 			
 			workQueue.addAll(ImmutableSortedSet.copyOf(current.getBranches()));
 		}
-
-        registerCommitListener(repository.getCdoRepository());
-    }
+	}
 
     CDOBranch getCDOBranch(Branch branch) {
         checkArgument(!branch.isDeleted(), "Deleted branches cannot be retrieved.");
