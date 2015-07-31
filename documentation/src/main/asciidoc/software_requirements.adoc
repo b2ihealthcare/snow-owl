@@ -1,7 +1,4 @@
-= Software requirements for Snow Owl Server
-B2i Healthcare <support@b2i.sg>
-:toc2:
-:icons: font
+= Software requirements
 
 == Introduction
 
@@ -61,3 +58,4 @@ described above.
 
 Note that the downloadable release of the same reasoner is based on a different (newer) glibc version, which makes it 
 unsuitable for use within Snow Owl on CentOS/RHEL 6.
+

@@ -1,7 +1,4 @@
-= Administrative console command reference
-B2i Healthcare <support@b2i.sg>
-:toc2:
-:icons: font
+= Console command reference
 
 == Introduction
 
@@ -935,3 +932,4 @@ Requesting job 0 to cancel.
 ...and an additional invocation of `remotejobs list` should list the given job's status as "Cancel requested".
 
 NOTE: Not all remote jobs are able to react to cancel requests.
+

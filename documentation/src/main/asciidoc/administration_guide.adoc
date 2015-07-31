@@ -1,7 +1,4 @@
 = Administration guide
-B2i Healthcare <support@b2i.sg>
-:toc2:
-:icons: font
 
 == Introduction
 
@@ -374,3 +371,4 @@ $ mysql -u (username) -p(password) bugs < /path/to/bugzilla-backup.sql
 
 In addition to the contents of the database, the `data` directory and the `localconfig` file from Bugzilla's 
 installation directory should also be preserved.
+

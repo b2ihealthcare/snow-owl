@@ -1,7 +1,4 @@
 = Installation guide
-B2i Healthcare <support@b2i.sg>
-:toc2:
-:icons: font
 
 == Introduction
 
@@ -225,3 +222,4 @@ on the created folder:
 # unzip snowowl-community-{version}-mysql.zip -d /opt
 # chown -Rv snowowl:snowowl /opt/snowowl-community_{version}
 --------------------------
+

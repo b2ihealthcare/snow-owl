@@ -1,7 +1,4 @@
 = Configuration guide
-B2i Healthcare <support@b2i.sg>
-:toc2:
-:icons: font
 
 == Introduction
 
@@ -486,7 +483,7 @@ Add custom fields through the web interface (`Administration > Custom fields`):
 |false
 |===
 
-==== Authentication agains LDAP
+==== Authentication against LDAP
 
 Bugzilla is capable to authenticate against the external LDAP server which Snow Owl Server will use. Setting it up 
 requires the following steps to be taken:
@@ -915,3 +912,4 @@ total number of files rolling over. Documentation on the logging configuration s
 === Virgo documentation
 
 Complete documentation of the Virgo OSGi server can be found here: http://www.eclipse.org/virgo/documentation.
+
