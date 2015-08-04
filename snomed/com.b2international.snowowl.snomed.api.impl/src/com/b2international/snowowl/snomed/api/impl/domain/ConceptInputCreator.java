@@ -32,15 +32,23 @@ public class ConceptInputCreator extends AbstractInputCreator implements Compone
 
 	@Override
 	public SnomedConceptUpdate createUpdate(SnomedBrowserConcept existingVersion, SnomedBrowserConcept newVersion) {
-		boolean anyDifference = existingVersion.isActive() != newVersion.isActive()
-				|| !existingVersion.getModuleId().equals(newVersion.getModuleId())
-				|| !existingVersion.getDefinitionStatus().equals(newVersion.getDefinitionStatus());
+		final SnomedConceptUpdate snomedConceptUpdate = new SnomedConceptUpdate();
+		boolean anyDifference = false;
+
+		if (existingVersion.isActive() != newVersion.isActive()) {
+			anyDifference = true;
+			snomedConceptUpdate.setActive(newVersion.isActive());
+		}
+		if (!existingVersion.getModuleId().equals(newVersion.getModuleId())) {
+			anyDifference = true;
+			snomedConceptUpdate.setModuleId(newVersion.getModuleId());
+		}
+		if (!existingVersion.getDefinitionStatus().equals(newVersion.getDefinitionStatus())) {
+			anyDifference = true;
+			snomedConceptUpdate.setDefinitionStatus(newVersion.getDefinitionStatus());
+		}
 
 		if (anyDifference) {
-			final SnomedConceptUpdate snomedConceptUpdate = new SnomedConceptUpdate();
-			snomedConceptUpdate.setModuleId(newVersion.getModuleId());
-			snomedConceptUpdate.setDefinitionStatus(newVersion.getDefinitionStatus());
-			snomedConceptUpdate.setActive(newVersion.isActive());
 			return snomedConceptUpdate;
 		} else {
 			return null;

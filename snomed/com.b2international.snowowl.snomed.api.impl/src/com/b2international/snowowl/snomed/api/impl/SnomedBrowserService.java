@@ -135,6 +135,7 @@ public class SnomedBrowserService implements ISnomedBrowserService {
 	}
 
 	public ISnomedBrowserConcept update(String branchPath, ISnomedBrowserConcept newVersionConcept, String userId, ArrayList<Locale> locales) {
+		LOGGER.info("Update concept start {}", newVersionConcept.getFsn());
 		final IComponentRef componentRef = createComponentRef(branchPath, newVersionConcept.getConceptId());
 		final ISnomedBrowserConcept existingVersionConcept = getConceptDetails(componentRef, locales);
 
@@ -150,6 +151,7 @@ public class SnomedBrowserService implements ISnomedBrowserService {
 		Set<String> descriptionDeletionIds = inputFactory.getComponentDeletions(existingVersionDescriptions, newVersionDescriptions);
 		Map<String, ISnomedDescriptionUpdate> descriptionUpdates = inputFactory.createComponentUpdates(existingVersionDescriptions, newVersionDescriptions, ISnomedDescriptionUpdate.class);
 		List<ISnomedDescriptionInput> descriptionInputs = inputFactory.createComponentInputs(branchPath, newVersionDescriptions, ISnomedDescriptionInput.class);
+		LOGGER.info("Got description changes +{} -{} m{}, {}", descriptionInputs.size(), descriptionDeletionIds.size(), descriptionUpdates.size(), newVersionConcept.getFsn());
 
 		// Relationship updates
 		final List<ISnomedBrowserRelationship> existingVersionRelationships = existingVersionConcept.getRelationships();
@@ -157,6 +159,7 @@ public class SnomedBrowserService implements ISnomedBrowserService {
 		Set<String> relationshipDeletionIds = inputFactory.getComponentDeletions(existingVersionRelationships, newVersionRelationships);
 		Map<String, ISnomedRelationshipUpdate> relationshipUpdates = inputFactory.createComponentUpdates(existingVersionRelationships, newVersionRelationships, ISnomedRelationshipUpdate.class);
 		List<ISnomedRelationshipInput> relationshipInputs = inputFactory.createComponentInputs(branchPath, newVersionRelationships, ISnomedRelationshipInput.class);
+		LOGGER.info("Got relationship changes +{} -{} m{}, {}", relationshipInputs.size(), relationshipDeletionIds.size(), relationshipUpdates.size(), newVersionConcept.getFsn());
 
 		// Add updates to editing context
 		if (conceptUpdate != null) {
@@ -188,6 +191,7 @@ public class SnomedBrowserService implements ISnomedBrowserService {
 
 		// Commit
 		conceptService.doCommit(userId, commitComment, editingContext);
+		LOGGER.info("Committed changes for concept {}", newVersionConcept.getFsn());
 
 		return getConceptDetails(componentRef, locales);
 	}
