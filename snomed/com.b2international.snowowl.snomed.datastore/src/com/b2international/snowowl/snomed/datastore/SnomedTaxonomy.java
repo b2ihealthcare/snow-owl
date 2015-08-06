@@ -146,7 +146,7 @@ public interface SnomedTaxonomy {
 	
 	/**
 	 * Returns with a collection of relationship type concept IDs extracted from the active outbound/source
-	 * relationships of the given concept.
+	 * relationships of the given concept. IS_A relationships will be excluded.
 	 * @param conceptId the unique ID of the concept.
 	 * @return a collection of relationship type concept identifiers.
 	 */

@@ -50,6 +50,7 @@ import bak.pcj.LongCollection;
 import bak.pcj.LongIterator;
 import bak.pcj.list.IntArrayDeque;
 import bak.pcj.list.IntArrayList;
+import bak.pcj.list.LongArrayList;
 import bak.pcj.map.LongKeyMap;
 import bak.pcj.map.LongKeyMapIterator;
 import bak.pcj.set.IntBitSet;
@@ -728,11 +729,11 @@ public class SnomedTaxonomyImpl implements SnomedTaxonomy {
 	}
 	
 	private Collection<String> getIds(final IntCollection internalIds) {
-		final LongSet ids = newLongSetWithExpectedSize(internalIds.size());
+		LongArrayList ids = new LongArrayList(internalIds.size());
 		for (final IntIterator itr = internalIds.iterator(); itr.hasNext(); /**/) {
 			ids.add(concepts.get(itr.next()));
 		}
-		return toStringSet(ids);
+		return toStringList(ids);
 	}
 	
 	private int getInternalId(final String conceptId) {

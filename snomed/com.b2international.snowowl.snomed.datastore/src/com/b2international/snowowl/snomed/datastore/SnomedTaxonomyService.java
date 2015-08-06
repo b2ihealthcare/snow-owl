@@ -141,6 +141,13 @@ public interface SnomedTaxonomyService {
 	 */
 	boolean hasOutboundRelationshipOfType(final IBranchPath branchPath, final String conceptId, final String typeId);
 	
+	/**
+	 * Returns with a collection of relationship type concept IDs extracted from the active outbound/source
+	 * relationships of the given concept. IS_A relationships will be excluded.
+	 * @param branchPath the branch path.
+	 * @param conceptId the unique ID of the concept.
+	 * @return a collection of relationship type concept identifiers.
+	 */
 	Collection<String> getOutboundRelationshipTypes(final IBranchPath branchPath, final String conceptId);
 	
 	/**
