@@ -18,9 +18,7 @@ package com.b2international.snowowl.datastore.server.snomed;
 import static com.b2international.commons.StringUtils.isEmpty;
 import static com.b2international.commons.graph.GraphUtils.getLongestPath;
 import static com.b2international.commons.pcj.LongSets.newLongSet;
-import static com.b2international.commons.pcj.LongSets.newLongSetWithExpectedSize;
 import static com.b2international.commons.pcj.LongSets.toStringList;
-import static com.b2international.commons.pcj.LongSets.toStringSet;
 import static com.b2international.snowowl.core.ApplicationContext.getServiceForClass;
 import static com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator.REPOSITORY_UUID;
 import static com.google.common.base.Preconditions.checkNotNull;
@@ -333,6 +331,26 @@ public class SnomedTaxonomyImpl implements SnomedTaxonomy {
 			return newArrayList(transform(getOutboundRelationships(branchPath, conceptId, typeId), GET_TARGET_FUNCTION));
 		}
 	}
+	
+	@Override
+	public Collection<String> getAllOutboundConcepts(final String conceptId) {
+		if (isInitialized()) {
+			final int internalId = getInternalId(conceptId);
+			if (internalId < 0) {
+				return emptyList();
+			}
+			final int ids[][] = outgoings[internalId];
+			final IntCollection internalIds = new IntArrayList();
+			
+			for (final int[] id : ids) {
+				internalIds.add(id[0]);
+			}
+			return getIds(internalIds);
+		} else {
+			initializeTaxonomyInBackgroud();
+			return newArrayList(transform(getOutboundRelationships(branchPath, conceptId, true), GET_TARGET_FUNCTION));
+		}
+	}
 
 	@Override
 	public boolean hasOutboundRelationshipOfType(final String conceptId, final String typeId) {
@@ -407,6 +425,26 @@ public class SnomedTaxonomyImpl implements SnomedTaxonomy {
 		} else {
 			initializeTaxonomyInBackgroud();
 			return newArrayList(transform(getInboundRelationships(branchPath, conceptId, typeId), GET_SOURCE_FUNCTION));
+		}
+	}
+	
+	@Override
+	public Collection<String> getAllInboundConcepts(final String conceptId) {
+		if (isInitialized()) {
+			final int internalId = getInternalId(conceptId);
+			if (internalId < 0) {
+				return emptyList();
+			}
+			final int ids[][] = incomings[internalId];
+			final IntCollection internalIds = new IntArrayList();
+			
+			for (final int[] id : ids) {
+				internalIds.add(id[0]);
+			}
+			return getIds(internalIds);
+		} else {
+			initializeTaxonomyInBackgroud();
+			return newArrayList(transform(getInboundRelationships(branchPath, conceptId, true), GET_SOURCE_FUNCTION));
 		}
 	}
 	
@@ -729,7 +767,7 @@ public class SnomedTaxonomyImpl implements SnomedTaxonomy {
 	}
 	
 	private Collection<String> getIds(final IntCollection internalIds) {
-		LongArrayList ids = new LongArrayList(internalIds.size());
+		final LongArrayList ids = new LongArrayList(internalIds.size());
 		for (final IntIterator itr = internalIds.iterator(); itr.hasNext(); /**/) {
 			ids.add(concepts.get(itr.next()));
 		}
@@ -872,7 +910,11 @@ public class SnomedTaxonomyImpl implements SnomedTaxonomy {
 	}
 	
 	private Collection<SnomedRelationshipIndexEntry> getOutboundRelationships(final IBranchPath branchPath, final String conceptId) {
-		return filter(getStatementBrowser().getOutboundStatementsById(branchPath, conceptId), Predicates.and(ACTIVE_RELATIONSHIP_PREDICATE, NON_ISA_RELATIONSHIP_PREDICATE));
+		return getOutboundRelationships(branchPath, conceptId, false);
+	}
+	
+	private Collection<SnomedRelationshipIndexEntry> getOutboundRelationships(final IBranchPath branchPath, final String conceptId, final boolean includeIsas) {
+		return filter(getStatementBrowser().getOutboundStatementsById(branchPath, conceptId), includeIsas ? ACTIVE_RELATIONSHIP_PREDICATE : Predicates.and(ACTIVE_RELATIONSHIP_PREDICATE, NON_ISA_RELATIONSHIP_PREDICATE));
 	}
 
 	private Collection<SnomedRelationshipIndexEntry> getOutboundRelationships(final IBranchPath branchPath, final String conceptId, final String typeId) {
@@ -885,7 +927,11 @@ public class SnomedTaxonomyImpl implements SnomedTaxonomy {
 	}
 	
 	private Collection<SnomedRelationshipIndexEntry> getInboundRelationships(final IBranchPath branchPath, final String conceptId) {
-		return filter(getStatementBrowser().getInboundStatementsById(branchPath, conceptId), Predicates.and(ACTIVE_RELATIONSHIP_PREDICATE, NON_ISA_RELATIONSHIP_PREDICATE));
+		return getInboundRelationships(branchPath, conceptId, false);
+	}
+	
+	private Collection<SnomedRelationshipIndexEntry> getInboundRelationships(final IBranchPath branchPath, final String conceptId, final boolean includeIsas) {
+		return filter(getStatementBrowser().getInboundStatementsById(branchPath, conceptId), includeIsas ? ACTIVE_RELATIONSHIP_PREDICATE : Predicates.and(ACTIVE_RELATIONSHIP_PREDICATE, NON_ISA_RELATIONSHIP_PREDICATE));
 	}
 	
 	private Collection<SnomedRelationshipIndexEntry> getInboundRelationships(final IBranchPath branchPath, final String conceptId, final String typeId) {

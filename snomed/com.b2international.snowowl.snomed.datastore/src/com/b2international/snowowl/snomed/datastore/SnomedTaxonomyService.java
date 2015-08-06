@@ -131,6 +131,15 @@ public interface SnomedTaxonomyService {
 	Collection<String> getOutboundConcepts(final IBranchPath branchPath, final String conceptId, final String typeId);
 	
 	/**
+	 * Returns with all concept IDs that can be accessed from a given focus concept's
+	 * active outbound/source relationships. 
+	 * @param branchPath the branch path.
+	 * @param conceptId the focus concept ID.
+	 * @return all concept IDs that can be accessed from a focus concept's active outbound/source relationships.
+	 */
+	Collection<String> getAllOutboundConcepts(IBranchPath branchPath, String conceptId);
+	
+	/**
 	 * Returns with {@code true} only and if only the focus concept given with the concept ID argument 
 	 * has at least one active source/outbound relationship with the given relationship type. Otherwise {@code false}.
 	 * @param branchPath the branch path.
@@ -172,6 +181,15 @@ public interface SnomedTaxonomyService {
 	 */
 	Collection<String> getInboundConcepts(final IBranchPath branchPath, final String conceptId, final String typeId);
 
+	/**
+	 * Returns with all concept IDs that can be accessed from a given focus concept's
+	 * active inbound/destination relationships.
+	 * @param branchPath the branch path.
+	 * @param conceptId the focus concept ID.
+	 * @return all concept IDs that can be accessed from a focus concept's active inbound/destination relationships.
+	 */
+	Collection<String> getAllInboundConcepts(IBranchPath branchPath, String conceptId);
+	
 	/**
 	 * Returns with {@code true} only and if only the focus concept given with the concept ID argument 
 	 * has at least one active destination/inbound relationship with the given relationship type. Otherwise {@code false}.

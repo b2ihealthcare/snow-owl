@@ -82,7 +82,7 @@ public class SnomedTaxonomyImpl implements SnomedTaxonomy {
 	}
 
 	@Override
-	public int getOutboundConceptsCount(String conceptId) {
+	public int getOutboundConceptsCount(final String conceptId) {
 		return delegate.getOutboundConceptsCount(conceptId);
 	}
 	
@@ -96,6 +96,11 @@ public class SnomedTaxonomyImpl implements SnomedTaxonomy {
 		return delegate.getOutboundConcepts(conceptId, typeId);
 	}
 
+	@Override
+	public Collection<String> getAllOutboundConcepts(final String conceptId) {
+		return delegate.getAllOutboundConcepts(conceptId);
+	}
+	
 	@Override
 	public boolean hasOutboundRelationshipOfType(final String conceptId, final String typeId) {
 		return delegate.hasOutboundRelationshipOfType(conceptId, typeId);
@@ -111,6 +116,11 @@ public class SnomedTaxonomyImpl implements SnomedTaxonomy {
 		return delegate.getInboundConcepts(conceptId, typeId);
 	}
 
+	@Override
+	public Collection<String> getAllInboundConcepts(final String conceptId) {
+		return delegate.getAllInboundConcepts(conceptId);
+	}
+	
 	@Override
 	public boolean hasInboundRelationshipOfType(final String conceptId, final String typeId) {
 		return delegate.hasInboundRelationshipOfType(conceptId, typeId);

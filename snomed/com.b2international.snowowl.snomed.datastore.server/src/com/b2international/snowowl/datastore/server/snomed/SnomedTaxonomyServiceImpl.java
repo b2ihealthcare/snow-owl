@@ -158,6 +158,14 @@ public class SnomedTaxonomyServiceImpl implements SnomedTaxonomyService, IPostSt
 	}
 
 	@Override
+	public Collection<String> getAllOutboundConcepts(final IBranchPath branchPath, final String conceptId) {
+		if (isEmpty(conceptId)) {
+			return emptyList();
+		}
+		return getTaxonomy(branchPath).getAllOutboundConcepts(conceptId);
+	}
+	
+	@Override
 	public boolean hasOutboundRelationshipOfType(final IBranchPath branchPath, final String conceptId, final String typeId) {
 		return getTaxonomy(branchPath).hasOutboundRelationshipOfType(conceptId, typeId);
 	}
@@ -194,6 +202,14 @@ public class SnomedTaxonomyServiceImpl implements SnomedTaxonomyService, IPostSt
 		return getTaxonomy(branchPath).getInboundConcepts(conceptId, typeId);
 	}
 
+	@Override
+	public Collection<String> getAllInboundConcepts(final IBranchPath branchPath, final String conceptId) {
+		if (isEmpty(conceptId)) {
+			return emptyList();
+		}
+		return getTaxonomy(branchPath).getAllInboundConcepts(conceptId);
+	}
+	
 	@Override
 	public boolean hasInboundRelationshipOfType(final IBranchPath branchPath, final String conceptId, final String typeId) {
 		return getTaxonomy(branchPath).hasInboundRelationshipOfType(conceptId, typeId);
