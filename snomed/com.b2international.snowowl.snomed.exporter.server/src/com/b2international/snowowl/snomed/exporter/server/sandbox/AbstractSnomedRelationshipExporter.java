@@ -36,15 +36,21 @@ import static java.util.Collections.unmodifiableSet;
 import java.util.Set;
 
 import org.apache.lucene.document.Document;
+import org.apache.lucene.index.Term;
+import org.apache.lucene.search.BooleanClause.Occur;
+import org.apache.lucene.search.BooleanQuery;
+import org.apache.lucene.search.Query;
+import org.apache.lucene.search.TermQuery;
 
+import com.b2international.snowowl.datastore.index.IndexUtils;
+import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
-import com.b2international.snowowl.snomed.exporter.server.ComponentExportType;
+import com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants;
 
 /**
- * RF2 exporter for SNOMED&nbsp;CT relationships.
- *
+ * RF2 exporter for SNOMED CT relationships.
  */
-public class SnomedRelationshipExporter extends SnomedCoreExporter {
+public abstract class AbstractSnomedRelationshipExporter extends SnomedCoreExporter {
 
 	private static final Set<String> FIELDS_TO_LOAD = unmodifiableSet(newHashSet(
 			COMPONENT_ID,
@@ -59,8 +65,11 @@ public class SnomedRelationshipExporter extends SnomedCoreExporter {
 			RELATIONSHIP_UNIVERSAL
 		));
 	
-	public SnomedRelationshipExporter(final SnomedExportConfiguration configuration) {
+	private Occur statedOccur;
+	
+	protected AbstractSnomedRelationshipExporter(final SnomedExportConfiguration configuration, final Occur statedOccur) {
 		super(checkNotNull(configuration, "configuration"));
+		this.statedOccur = checkNotNull(statedOccur, "statedOccur");
 	}
 	
 	@Override
@@ -94,11 +103,6 @@ public class SnomedRelationshipExporter extends SnomedCoreExporter {
 	}
 
 	@Override
-	public ComponentExportType getType() {
-		return ComponentExportType.RELATIONSHIP;
-	}
-	
-	@Override
 	public String[] getColumnHeaders() {
 		return SnomedRf2Headers.RELATIONSHIP_HEADER;
 	}
@@ -106,6 +110,14 @@ public class SnomedRelationshipExporter extends SnomedCoreExporter {
 	@Override
 	protected int getTerminologyComponentType() {
 		return RELATIONSHIP_NUMBER;
+	}
+	
+	@Override
+	protected Query getSnapshotQuery() {
+		final BooleanQuery snapshotQuery = new BooleanQuery(true);
+		snapshotQuery.add(super.getSnapshotQuery(), Occur.MUST);
+		snapshotQuery.add(new TermQuery(new Term(SnomedIndexBrowserConstants.RELATIONSHIP_CHARACTERISTIC_TYPE_ID, IndexUtils.longToPrefixCoded(Concepts.STATED_RELATIONSHIP))), statedOccur);
+		return snapshotQuery;
 	}
 
 	@Override

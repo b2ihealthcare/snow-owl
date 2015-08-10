@@ -22,6 +22,7 @@ package com.b2international.snowowl.snomed.exporter.server;
  * <li>{@link #CONCEPT SNOMED&nbsp;CT concept}</li>
  * <li>{@link #DESCRIPTION SNOMED&nbsp;CT description}</li>
  * <li>{@link #RELATIONSHIP SNOMED&nbsp;CT relationship}</li>
+ * <li>{@link #STATED_RELATIONSHIP SNOMED&nbsp;CT stated relationship}</li>
  * <li>{@link #REF_SET SNOMED&nbsp;CT reference set}</li>
  * </ul>
  * </p>
@@ -43,6 +44,11 @@ public enum ComponentExportType {
 	 * @see ComponentExportType
 	 */
 	RELATIONSHIP("Relationship"),
+	/**
+	 * SNOMED&nbsp;CT stated relationship.
+	 * @see ComponentExportType
+	 */
+	STATED_RELATIONSHIP("StatedRelationship"),
 	/**
 	 * SNOMED&nbsp;CT reference set.
 	 * @see ComponentExportType

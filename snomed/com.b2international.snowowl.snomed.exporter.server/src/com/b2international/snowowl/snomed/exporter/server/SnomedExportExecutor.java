@@ -38,7 +38,7 @@ import com.b2international.snowowl.core.api.SnowowlRuntimeException;
 import com.b2international.snowowl.snomed.datastore.services.ISnomedComponentService;
 import com.b2international.snowowl.snomed.exporter.server.sandbox.SnomedExportConfiguration;
 import com.b2international.snowowl.snomed.exporter.server.sandbox.SnomedExporter;
-import com.b2international.snowowl.snomed.exporter.server.sandbox.SnomedRelationshipExporter;
+import com.b2international.snowowl.snomed.exporter.server.sandbox.AbstractSnomedRelationshipExporter;
 import com.google.common.base.Joiner;
 import com.google.common.base.Supplier;
 
@@ -189,7 +189,7 @@ public class SnomedExportExecutor {
 		
 		final String moduleId = split[3];
 		if (isModuleToExport(moduleId)) {
-			if (snomedExporter instanceof SnomedRelationshipExporter) {
+			if (snomedExporter instanceof AbstractSnomedRelationshipExporter) {
 				if (isSourceAndDestinationRight(row)) {
 					return true;
 				} else {

@@ -344,7 +344,7 @@ public class SnomedExportServerIndication extends IndicationWithMonitoring {
 		int counter = 0;
 
 		if (coreComponentExport) {
-			counter += 6;
+			counter += 8;
 			if (includeRf1)
 				counter += 6;
 		}
