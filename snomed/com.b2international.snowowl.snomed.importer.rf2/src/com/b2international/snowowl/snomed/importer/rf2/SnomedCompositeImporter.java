@@ -268,7 +268,7 @@ public class SnomedCompositeImporter extends AbstractLoggingImporter {
 		}
 		
 		String conceptFilePath = null;
-		String descriptionFilePath = null;
+		Set<String> descriptionFilePaths = newHashSet();
 		String relationshipFilePath = null;
 		Set<String> languageFilePaths = newHashSet();
 		
@@ -279,10 +279,23 @@ public class SnomedCompositeImporter extends AbstractLoggingImporter {
 				final String path = unit.getUnitFile().getAbsolutePath();
 				
 				switch (unit.getType()) {
-					case CONCEPT: if (null == conceptFilePath) conceptFilePath = path;  break;
-					case DESCRIPTION: if (null == descriptionFilePath) descriptionFilePath = path; break;
-					case LANGUAGE_TYPE_REFSET: languageFilePaths.add(path); break;
-					case RELATIONSHIP: if (null == relationshipFilePath) relationshipFilePath = path; break;
+					case CONCEPT: 
+						if (null == conceptFilePath) {
+							conceptFilePath = path;
+						}
+						break;
+					case DESCRIPTION: 
+					case TEXT_DEFINITION: 
+						descriptionFilePaths.add(path); 
+						break;
+					case LANGUAGE_TYPE_REFSET: 
+						languageFilePaths.add(path); 
+						break;
+					case RELATIONSHIP: 
+						if (null == relationshipFilePath) {
+							relationshipFilePath = path; 
+						}
+						break;
 					default: /*intentionally ignored*/ break;
 				}
 			}
@@ -323,7 +336,7 @@ public class SnomedCompositeImporter extends AbstractLoggingImporter {
 		final ImportIndexServerService importIndexService = ApplicationContext.getInstance().getService(ImportIndexServerService.class);
 		
 		final Rf2BasedImportIndexServiceFeeder feeder = new Rf2BasedImportIndexServiceFeeder(
-				descriptionFilePath, 
+				descriptionFilePaths, 
 				languageFilePaths, 
 				synonymAndDescendants, 
 				getImportBranchPath());

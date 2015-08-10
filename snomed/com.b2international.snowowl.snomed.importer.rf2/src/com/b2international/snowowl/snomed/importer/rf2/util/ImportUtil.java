@@ -83,6 +83,7 @@ import com.b2international.snowowl.snomed.importer.release.ReleaseFileSet;
 import com.b2international.snowowl.snomed.importer.release.ReleaseFileSetSelectors;
 import com.b2international.snowowl.snomed.importer.rf2.SnomedCompositeImportUnit;
 import com.b2international.snowowl.snomed.importer.rf2.SnomedCompositeImporter;
+import com.b2international.snowowl.snomed.importer.rf2.model.ComponentImportType;
 import com.b2international.snowowl.snomed.importer.rf2.model.ComponentImportUnit;
 import com.b2international.snowowl.snomed.importer.rf2.model.SnomedImportContext;
 import com.b2international.snowowl.snomed.importer.rf2.refset.AbstractSnomedRefSetImporter;
@@ -253,22 +254,22 @@ public final class ImportUtil {
 
 			if (ImportConfiguration.isValidReleaseFile(configuration.getDescriptionsFile())) {
 				final URL url = configuration.toURL(configuration.getDescriptionsFile());
-				importers.add(new SnomedDescriptionImporter(context, url.openStream(), configuration.getMappedName(url.getPath())));
+				importers.add(new SnomedDescriptionImporter(context, url.openStream(), configuration.getMappedName(url.getPath()), ComponentImportType.DESCRIPTION));
 			}
 			
 			if (ImportConfiguration.isValidReleaseFile(configuration.getTextDefinitionFile())) {
 				final URL url = configuration.toURL(configuration.getTextDefinitionFile());
-				importers.add(new SnomedDescriptionImporter(context, url.openStream(), configuration.getMappedName(url.getPath())));
+				importers.add(new SnomedDescriptionImporter(context, url.openStream(), configuration.getMappedName(url.getPath()), ComponentImportType.TEXT_DEFINITION));
 			}
 
 			if (ImportConfiguration.isValidReleaseFile(configuration.getRelationshipsFile())) {
 				final URL url = configuration.toURL(configuration.getRelationshipsFile());
-				importers.add(new SnomedRelationshipImporter(context, url.openStream(), configuration.getMappedName(url.getPath())));
+				importers.add(new SnomedRelationshipImporter(context, url.openStream(), configuration.getMappedName(url.getPath()), ComponentImportType.RELATIONSHIP));
 			}
 
 			if (ImportConfiguration.isValidReleaseFile(configuration.getStatedRelationshipsFile())) {
 				final URL url = configuration.toURL(configuration.getStatedRelationshipsFile());
-				importers.add(new SnomedRelationshipImporter(context, url.openStream(), configuration.getMappedName(url.getPath())));
+				importers.add(new SnomedRelationshipImporter(context, url.openStream(), configuration.getMappedName(url.getPath()), ComponentImportType.STATED_RELATIONSHIP));
 			}
 
 		} catch (final IOException e) {

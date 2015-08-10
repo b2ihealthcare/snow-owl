@@ -41,12 +41,12 @@ public class Rf2BasedImportIndexServiceFeeder implements IImportIndexServiceFeed
 
 	private static final CsvSettings CSV_SETTINGS = new CsvSettings('\0', '\t', EOL.LF, true);
 	
-	private final String descriptionFilePath;
+	private final Set<String> descriptionFilePaths;
 	private final Set<String> languageRefSetFilePaths;
 	private final Set<String> synonymAndDescendantIds;
 	
-	public Rf2BasedImportIndexServiceFeeder(final String descriptionFilePath, final Set<String> languageRefSetFilePaths, final Set<String> synonymAndDescendantIds, final IBranchPath branchPath) {
-		this.descriptionFilePath = descriptionFilePath;
+	public Rf2BasedImportIndexServiceFeeder(final Set<String> descriptionFilePaths, final Set<String> languageRefSetFilePaths, final Set<String> synonymAndDescendantIds, final IBranchPath branchPath) {
+		this.descriptionFilePaths = descriptionFilePaths;
 		this.languageRefSetFilePaths = languageRefSetFilePaths;
 		this.synonymAndDescendantIds = synonymAndDescendantIds;
 	}
@@ -59,8 +59,7 @@ public class Rf2BasedImportIndexServiceFeeder implements IImportIndexServiceFeed
 
 		final AtomicInteger i = new AtomicInteger();
 
-		if (null != descriptionFilePath) {
-		
+		for (final String descriptionFilePath : descriptionFilePaths) {
 			try (final FileReader reader = new FileReader(new File(descriptionFilePath))) {
 	
 				new CsvParser(reader, CSV_SETTINGS, new RecordParserCallback<String>() {

@@ -55,15 +55,17 @@ public class SnomedDescriptionImporter extends AbstractSnomedTerminologyImporter
 			.add(new IndexConfiguration("SNOMED_DESCRIPTION_IDX1003", "SNOMED_DESCRIPTION", "CDO_CONTAINER", "CDO_BRANCH", "CDO_VERSION"))
 			.build();
 	
-	private static final SnomedImportConfiguration<DescriptionRow> IMPORT_CONFIGURATION = new SnomedImportConfiguration<DescriptionRow>(
-			ComponentImportType.DESCRIPTION, 
+	private static SnomedImportConfiguration<DescriptionRow> createImportConfiguration(final ComponentImportType type) {
+		return new SnomedImportConfiguration<DescriptionRow>(
+			type, 
 			CELLPROCESSOR_MAPPING, 
 			DescriptionRow.class, 
 			SnomedRf2Headers.DESCRIPTION_HEADER,
 			INDEXES);
+	}
 
-	public SnomedDescriptionImporter(final SnomedImportContext importContext, final InputStream releaseFileStream, final String releaseFileIdentifier) {
-		super(IMPORT_CONFIGURATION, importContext, releaseFileStream, releaseFileIdentifier);
+	public SnomedDescriptionImporter(final SnomedImportContext importContext, final InputStream releaseFileStream, final String releaseFileIdentifier, final ComponentImportType type) {
+		super(createImportConfiguration(type), importContext, releaseFileStream, releaseFileIdentifier);
 	}
 
 	@Override

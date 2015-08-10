@@ -230,7 +230,7 @@ public class SnomedRf2IndexInitializer extends Job {
 	private Set<String> visitedConceptsViaLanguageMemberships;
 	private Set<String> visitedConceptsViaIsAStatements;
 	private Set<String> visitedConceptsViaOtherStatements;
-	private Map<String, String> descriptiptionsToConceptIds;
+	private Map<String, String> descriptionsToConceptIds;
 	private Map<String, Pair<SnomedRefSetType, Integer>> visitedRefSets;
 	private Set<String> skippedReferenceSets;
 	private LongKeyFloatMap doiData;
@@ -281,7 +281,7 @@ public class SnomedRf2IndexInitializer extends Job {
 		visitedConceptsViaMemberships = Sets.newHashSet();
 		visitedConceptsViaLanguageMemberships = newHashSet();
 		LOGGER.info("Gathering mappings between descriptions and concepts...");
-		descriptiptionsToConceptIds = getDescriptionToConceptIds(importUnits);
+		descriptionsToConceptIds = getDescriptionToConceptIds(importUnits);
 		LOGGER.info("Description to concept mapping successfully finished.");
 		visitedRefSets = Maps.newHashMap();
 		visitedConceptsViaIsAStatements = Sets.newHashSet();
@@ -306,16 +306,18 @@ public class SnomedRf2IndexInitializer extends Job {
 		final Map<String, String> $ = Maps.newHashMap();
 		
 		for (final ComponentImportUnit unit : importUnits) {
-			if (ComponentImportType.DESCRIPTION == unit.getType()) {
-				
-				parseFile(unit.getUnitFile().getAbsolutePath(), 9, new RecordParserCallback<String>() {
-
-					@Override
-					public void handleRecord(final int recordCount, final List<String> record) {
-						$.put(record.get(0), record.get(4));
-					}
-				});
-				
+			switch (unit.getType()) {
+				case DESCRIPTION:
+				case TEXT_DEFINITION:
+					parseFile(unit.getUnitFile().getAbsolutePath(), 9, new RecordParserCallback<String>() {
+						@Override
+						public void handleRecord(final int recordCount, final List<String> record) {
+							$.put(record.get(0), record.get(4));
+						}
+					});
+					break;
+				default: 
+					break;
 			}
 		}
 		
@@ -347,7 +349,7 @@ public class SnomedRf2IndexInitializer extends Job {
 				case LANGUAGE_TYPE_REFSET:
 					//language reference set membership may vary the PT of a concept :(
 					LOGGER.info("Collecting language type reference set member changes.");
-					collectLanguageMembership(unit, visitedConceptsViaLanguageMemberships, descriptiptionsToConceptIds);
+					collectLanguageMembership(unit, visitedConceptsViaLanguageMemberships, descriptionsToConceptIds);
 					break;
 					
 				default:
@@ -361,7 +363,7 @@ public class SnomedRf2IndexInitializer extends Job {
 		
 	}
 
-	private void collectLanguageMembership(final ComponentImportUnit unit, final Set<String> visitedConceptsViaLanguageMemberships, final Map<String, String> descriptiptionsToConceptIds) {
+	private void collectLanguageMembership(final ComponentImportUnit unit, final Set<String> visitedConceptsViaLanguageMemberships, final Map<String, String> descriptionsToConceptIds) {
 		if (null == unit.getUnitFile()) {
 			return;
 		}
@@ -371,7 +373,7 @@ public class SnomedRf2IndexInitializer extends Job {
 			public void handleRecord(final int recordCount, final List<String> record) {
 				
 				final String descriptionId = record.get(5);
-				String conceptId = descriptiptionsToConceptIds.get(descriptionId);
+				String conceptId = descriptionsToConceptIds.get(descriptionId);
 				if (StringUtils.isEmpty(conceptId)) {
 					conceptId = ApplicationContext.getInstance().getService(ISnomedComponentService.class).getDescriptionProperties(branchPath, descriptionId)[0];
 				}
@@ -506,12 +508,14 @@ public class SnomedRf2IndexInitializer extends Job {
 						LOGGER.info("Concepts have been successfully indexed.");
 						break;
 					case DESCRIPTION:
+					case TEXT_DEFINITION:
 						LOGGER.info("Indexing descriptions...");
 						indexDescriptions(absolutePath);
 						getSnomedIndexService().commit(branchPath);
 						LOGGER.info("Descriptions have been successfully indexed.");
 						break;
 					case RELATIONSHIP:
+					case STATED_RELATIONSHIP:
 						LOGGER.info("Indexing relationships...");
 						indexRelationships(absolutePath);
 						getSnomedIndexService().commit(branchPath);

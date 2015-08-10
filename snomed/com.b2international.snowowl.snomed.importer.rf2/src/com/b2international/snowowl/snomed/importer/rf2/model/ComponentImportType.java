@@ -26,7 +26,9 @@ public enum ComponentImportType {
 	
 	CONCEPT("concept"),
 	DESCRIPTION("description"),
+	TEXT_DEFINITION("text definition"),
 	RELATIONSHIP("relationship"),
+	STATED_RELATIONSHIP("stated relationship"),
 	LANGUAGE_TYPE_REFSET("language type reference set member"),
 	SIMPLE_TYPE_REFSET("simple type reference set member"),
 	ATTRIBUTE_VALUE_REFSET("attribute value type reference set member"),
@@ -60,8 +62,9 @@ public enum ComponentImportType {
 	public static boolean isRefSetType(final ComponentImportType type) {
 		return !CONCEPT.equals(Preconditions.checkNotNull(type, "Component import type argument cannot be null.")) 
 				&& !DESCRIPTION.equals(type)
+				&& !TEXT_DEFINITION.equals(type)
 				&& !RELATIONSHIP.equals(type)
+				&& !STATED_RELATIONSHIP.equals(type)
 				&& !TERMINOLOGY_REGISTRY.equals(type);
 	}
-	
 }
