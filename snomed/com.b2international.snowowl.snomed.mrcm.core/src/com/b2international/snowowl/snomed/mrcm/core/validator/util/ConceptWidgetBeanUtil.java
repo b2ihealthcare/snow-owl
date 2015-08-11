@@ -15,13 +15,11 @@
  */
 package com.b2international.snowowl.snomed.mrcm.core.validator.util;
 
-import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.collect.Lists.newArrayList;
 
 import java.util.Collection;
 
 import com.b2international.commons.StringUtils;
-import com.b2international.snowowl.core.api.NullComponent;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.mrcm.DataType;
 import com.b2international.snowowl.snomed.mrcm.core.widget.bean.ConceptWidgetBean;
@@ -35,27 +33,6 @@ import com.google.common.collect.Iterables;
 /**
  */
 public class ConceptWidgetBeanUtil {
-
-	/**
-	 * Returns <code>true</code> if the relationship type has been specified. Otherwise returns with <code>false</code>.
-	 */
-	public static boolean isRelationshipTypeSet(final RelationshipWidgetBean relationship) {
-		return !NullComponent.isNullComponent(relationship.getSelectedType());
-	}
-
-	/**
-	 * Returns <code>true</code> if the relationship destination has been specified. Otherwise returns with <code>false</code>.
-	 */
-	public static boolean isRelationshipValueSet(final RelationshipWidgetBean relationship) {
-		return !NullComponent.isNullComponent(relationship.getSelectedValue());
-	}
-
-	/**
-	 * Returns <code>true</code> if the relationship type is IS_A. Otherwise returns with <code>false</code>.
-	 */
-	public static boolean isRelationshipTypeIsA(final RelationshipWidgetBean relationship) {
-		return Concepts.IS_A.equals(relationship.getSelectedType().getId());
-	}
 
 	/**
 	 * Returns <code>true</code> if the boolean value for the given {@link DataTypeWidgetBean} is Yes.
@@ -134,11 +111,10 @@ public class ConceptWidgetBeanUtil {
 	 * @return
 	 */
 	public static Iterable<RelationshipWidgetBean> getRelationships(final ConceptWidgetBean concept, final String typeId) {
-		checkArgument(!StringUtils.isEmpty(typeId), "TypeId must be specified");
 		return Iterables.filter(getRelationships(concept), new Predicate<RelationshipWidgetBean>() {
 			@Override
 			public boolean apply(RelationshipWidgetBean input) {
-				return isRelationshipTypeSet(input) && typeId.equals(input.getSelectedType().getId());
+				return input.isTypeMatches(typeId);
 			}
 		});
 	}
