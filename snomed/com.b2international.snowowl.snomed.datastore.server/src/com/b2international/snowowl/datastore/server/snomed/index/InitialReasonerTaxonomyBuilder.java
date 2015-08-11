@@ -15,6 +15,9 @@
  */
 package com.b2international.snowowl.datastore.server.snomed.index;
 
+import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.COMPONENT_ACTIVE;
+import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.RELATIONSHIP_CHARACTERISTIC_TYPE_ID;
+
 import java.text.MessageFormat;
 import java.util.Collection;
 import java.util.concurrent.atomic.AtomicReference;
@@ -22,7 +25,6 @@ import java.util.concurrent.atomic.AtomicReference;
 import org.apache.lucene.index.Term;
 import org.apache.lucene.search.BooleanClause.Occur;
 import org.apache.lucene.search.BooleanQuery;
-import org.apache.lucene.search.Query;
 import org.apache.lucene.search.TermQuery;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -48,7 +50,6 @@ import com.b2international.snowowl.datastore.server.index.IndexServerService;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.snomed.datastore.ConcreteDomainFragment;
 import com.b2international.snowowl.snomed.datastore.IsAStatement;
-import com.b2international.snowowl.snomed.datastore.SnomedStatementBrowser;
 import com.b2international.snowowl.snomed.datastore.StatementCollectionMode;
 import com.b2international.snowowl.snomed.datastore.StatementFragment;
 import com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants;
@@ -60,26 +61,18 @@ import com.google.common.base.Stopwatch;
  * Class for building the bare minimum representation of the state of the SNOMED&nbsp;CT ontology before processing changes.
  * <p>
  * This class should be used to compare the ontology state with the outcome of the classification process.
- * 
  */
 public class InitialReasonerTaxonomyBuilder extends AbstractReasonerTaxonomyBuilder {
 
 	private final class GetActiveIsAStatementsRunnable implements Runnable {
 
 		private final String taskName;
-		private final Stopwatch stopwatch;
-		private final IBranchPath branchPath;
-
 		private final AtomicReference<IsAStatement[]> isAStatementsReference;
 
-		private GetActiveIsAStatementsRunnable(final String taskName,
-				final Stopwatch builderStopwatch,
-				final IBranchPath branchPath,
+		private GetActiveIsAStatementsRunnable(final String taskName, 
 				final AtomicReference<IsAStatement[]> isAStatementsReference) {
-
+			
 			this.taskName = taskName;
-			this.stopwatch = builderStopwatch;
-			this.branchPath = branchPath;
 			this.isAStatementsReference = isAStatementsReference;
 		}
 
@@ -90,6 +83,7 @@ public class InitialReasonerTaxonomyBuilder extends AbstractReasonerTaxonomyBuil
 			statementsQuery.add(createIntTermQuery(SnomedIndexBrowserConstants.COMPONENT_ACTIVE, 1), Occur.MUST);
 			statementsQuery.add(createIntTermQuery(SnomedIndexBrowserConstants.COMPONENT_TYPE, SnomedTerminologyComponentConstants.RELATIONSHIP_NUMBER), Occur.MUST);
 			statementsQuery.add(createLongTermQuery(SnomedIndexBrowserConstants.RELATIONSHIP_ATTRIBUTE_ID, IS_A_ID), Occur.MUST);
+			statementsQuery.add(createCharacteristicTypeQuery(), Occur.MUST);
 
 			final int hitCount = getIndexServerService().getHitCount(branchPath, statementsQuery, null);
 			final StatementCollector statementCollector = new StatementCollector(hitCount, StatementCollectionMode.NO_IDS);
@@ -104,19 +98,15 @@ public class InitialReasonerTaxonomyBuilder extends AbstractReasonerTaxonomyBuil
 	private final class GetConceptIdsRunnable implements Runnable {
 
 		private final String taskName;
-		private final Stopwatch stopwatch;
-		private final IBranchPath branchPath;
-
 		private final AtomicReference<LongSet> conceptIdsReference;
 		private final TermQuery additionalClause;
 
-		private GetConceptIdsRunnable(final String taskName, final Stopwatch stopwatch, final IBranchPath branchPath,
-				final AtomicReference<LongSet> conceptIdsReference, final TermQuery additionalClause) {
+		private GetConceptIdsRunnable(final String taskName,
+				final AtomicReference<LongSet> conceptIdsReference, 
+				final TermQuery additionalClause) {
 
 			this.taskName = taskName;
 			this.conceptIdsReference = conceptIdsReference;
-			this.stopwatch = stopwatch;
-			this.branchPath = branchPath;
 			this.additionalClause = additionalClause;
 		}
 
@@ -144,26 +134,13 @@ public class InitialReasonerTaxonomyBuilder extends AbstractReasonerTaxonomyBuil
 	private final class GetConceptIdsAndKeysRunnable implements Runnable {
 
 		private final String taskName;
-		private final Stopwatch stopwatch;
-		private final IBranchPath branchPath;
-
 		private final AtomicReference<long[][]> conceptIdsReference;
-		private final Query additionalClause;
 
-		private GetConceptIdsAndKeysRunnable(final String taskName, final Stopwatch stopwatch, final IBranchPath branchPath,
+		private GetConceptIdsAndKeysRunnable(final String taskName,
 				final AtomicReference<long[][]> conceptIdsReference) {
-
-			this(taskName, stopwatch, branchPath, conceptIdsReference, null);
-		}
-
-		private GetConceptIdsAndKeysRunnable(final String taskName, final Stopwatch stopwatch, final IBranchPath branchPath,
-				final AtomicReference<long[][]> conceptIdsReference, final Query additionalClause) {
 
 			this.taskName = taskName;
 			this.conceptIdsReference = conceptIdsReference;
-			this.stopwatch = stopwatch;
-			this.branchPath = branchPath;
-			this.additionalClause = additionalClause;
 		}
 
 		@Override
@@ -172,10 +149,6 @@ public class InitialReasonerTaxonomyBuilder extends AbstractReasonerTaxonomyBuil
 			final BooleanQuery conceptQuery = new BooleanQuery(true);
 			conceptQuery.add(createIntTermQuery(SnomedIndexBrowserConstants.COMPONENT_ACTIVE, 1), Occur.MUST);
 			conceptQuery.add(createIntTermQuery(SnomedIndexBrowserConstants.COMPONENT_TYPE, SnomedTerminologyComponentConstants.CONCEPT_NUMBER), Occur.MUST);
-
-			if (null != additionalClause) {
-				conceptQuery.add(additionalClause, Occur.MUST);
-			}
 
 			final int hitCount = getIndexServerService().getHitCount(branchPath, conceptQuery, null);
 			final ConceptIdStorageKeyCollector collector = new ConceptIdStorageKeyCollector(hitCount);
@@ -190,16 +163,14 @@ public class InitialReasonerTaxonomyBuilder extends AbstractReasonerTaxonomyBuil
 	private final class TaxonomyBuilderRunnable implements Runnable {
 
 		private final String taskName;
-		private final Stopwatch stopwatch;
-
 		private final AtomicReference<long[][]> conceptIdsReference;
 		private final AtomicReference<IsAStatement[]> isAStatementsReference;
 
-		private TaxonomyBuilderRunnable(final String taskName, final Stopwatch stopwatch, final AtomicReference<long[][]> conceptIdsReference,
+		private TaxonomyBuilderRunnable(final String taskName, 
+				final AtomicReference<long[][]> conceptIdsReference,
 				final AtomicReference<IsAStatement[]> isAStatementsReference) {
 
 			this.taskName = taskName;
-			this.stopwatch = stopwatch;
 			this.conceptIdsReference = conceptIdsReference;
 			this.isAStatementsReference = isAStatementsReference;
 		}
@@ -275,26 +246,18 @@ public class InitialReasonerTaxonomyBuilder extends AbstractReasonerTaxonomyBuil
 	private final class GetConcreteDomainRunnable implements Runnable {
 
 		private final String taskName;
-		private final Stopwatch stopwatch;
-		private final IBranchPath branchPath;
-
 		private final LongSet componentIds;
 		private final short referencedComponentType;
-		private final boolean includeAdditional;
 		private final AtomicReference<LongKeyMap> concreteDomainMapReference;
 
-		private GetConcreteDomainRunnable(final String taskName, final Stopwatch stopwatch, final IBranchPath branchPath,
+		private GetConcreteDomainRunnable(final String taskName,
 				final LongSet componentIds,
 				final short referencedComponentType,
-				final AtomicReference<LongKeyMap> concreteDomainMapReference,
-				final boolean includeAdditional) {
+				final AtomicReference<LongKeyMap> concreteDomainMapReference) {
 
 			this.taskName = taskName;
-			this.stopwatch = stopwatch;
-			this.branchPath = branchPath;
 			this.componentIds = componentIds;
 			this.referencedComponentType = referencedComponentType;
-			this.includeAdditional = includeAdditional;
 			this.concreteDomainMapReference = concreteDomainMapReference;
 		}
 
@@ -306,10 +269,14 @@ public class InitialReasonerTaxonomyBuilder extends AbstractReasonerTaxonomyBuil
 			getConceptConcreteDomainQuery.add(createIntTermQuery(SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_REFERENCE_SET_TYPE, SnomedRefSetType.CONCRETE_DATA_TYPE_VALUE), Occur.MUST);
 			getConceptConcreteDomainQuery.add(createIntTermQuery(SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_REFERENCED_COMPONENT_TYPE, referencedComponentType), Occur.MUST);
 			
-			if (!includeAdditional) {
-				// no additional characteristic type (either defining or subtypes, or nothing at all)
-				getConceptConcreteDomainQuery.add(createLongTermQuery(SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_CHARACTERISTIC_TYPE_ID, ADDITIONAL_RELATIONSHIP), Occur.MUST_NOT);
+			final BooleanQuery characteristicTypeQuery = createCharacteristicTypeQuery();
+			
+			// XXX: Change processor mode needs additional concrete domain members as well (relationships only)
+			if (!isReasonerMode() && SnomedTerminologyComponentConstants.RELATIONSHIP_NUMBER == referencedComponentType) {
+				characteristicTypeQuery.add(createLongTermQuery(SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_CHARACTERISTIC_TYPE_ID, ADDITIONAL_RELATIONSHIP), Occur.SHOULD);
 			}
+			
+			getConceptConcreteDomainQuery.add(characteristicTypeQuery, Occur.MUST);
 
 			final int hitCount = getIndexServerService().getHitCount(branchPath, getConceptConcreteDomainQuery, null);
 			final ConcreteDomainFragmentCollector collector = new ConcreteDomainFragmentCollector(hitCount);
@@ -334,26 +301,31 @@ public class InitialReasonerTaxonomyBuilder extends AbstractReasonerTaxonomyBuil
 	private final class StatementMapperRunnable implements Runnable {
 
 		private final String taskName;
-		private final Stopwatch stopwatch;
-		private final IBranchPath branchPath;
-
 		private final LongSet conceptIds;
 		private final AtomicReference<LongKeyLongMap> statementIdToConceptIdReference;
 
-		private StatementMapperRunnable(final String taskName, final Stopwatch stopwatch, final IBranchPath branchPath,
+		private StatementMapperRunnable(final String taskName,
 				final LongSet conceptIds,
 				final AtomicReference<LongKeyLongMap> statementIdToConceptIdReference) {
 
 			this.taskName = taskName;
-			this.stopwatch = stopwatch;
-			this.branchPath = branchPath;
 			this.conceptIds = conceptIds;
 			this.statementIdToConceptIdReference = statementIdToConceptIdReference;
 		}
 
 		@Override
 		public void run() {
-			final LongKeyMap statementMap = getStatementBrowser().getStatementsForClassification(branchPath);
+			
+			final BooleanQuery statementQuery = new BooleanQuery(true);
+			statementQuery.add(new TermQuery(new Term(CommonIndexConstants.COMPONENT_TYPE, IndexUtils.intToPrefixCoded(SnomedTerminologyComponentConstants.RELATIONSHIP_NUMBER))), Occur.MUST);
+			statementQuery.add(new TermQuery(new Term(COMPONENT_ACTIVE, IndexUtils.intToPrefixCoded(1))), Occur.MUST);
+			statementQuery.add(createCharacteristicTypeQuery(), Occur.MUST);
+
+			final StatementFragmentCollector collector = new StatementFragmentCollector();
+
+			getIndexServerService().search(branchPath, statementQuery, collector);
+
+			final LongKeyMap statementMap = collector.getStatementMap();
 
 			for (final LongKeyMapIterator itr = statementMap.entries(); itr.hasNext(); /* nothing */) {
 				itr.next();
@@ -415,27 +387,36 @@ public class InitialReasonerTaxonomyBuilder extends AbstractReasonerTaxonomyBuil
 		return new TermQuery(new Term(fieldName, IndexUtils.intToPrefixCoded(intValue)));
 	}
 
+	/* returns with the server side index service for SNOMED CT. */
+	@SuppressWarnings("rawtypes")
+	private static IndexServerService getIndexServerService() {
+		return ClassUtils.checkAndCast(ApplicationContext.getInstance().getService(SnomedIndexService.class), IndexServerService.class);
+	}
+
 	private final Object storageKeyLock = new Object();
+	private final IBranchPath branchPath;
+	private final Stopwatch stopwatch;
 
 	/**
 	 * Creates a taxonomy builder instance.
 	 *
-	 * @param branchPath the branch path where the instance should be constructed.
-	 * @param includeAdditionalStatementConcreteDomains when {@code true}, retrieves all concrete domain members where the referenced component is a relationship;
-	 * when set to {@code false}, only members with non-additional characteristic type will be collected.
+	 * @param branchPath the branch path where the instance should be constructed
+	 * @param type the mode of operation for this taxonomy builder (intended for classification or change processing)
 	 */
-	public InitialReasonerTaxonomyBuilder(final IBranchPath branchPath, final boolean includeAdditionalStatementConcreteDomains) {
-
+	public InitialReasonerTaxonomyBuilder(final IBranchPath branchPath, final Type type) {
+		super(type);
+		
+		this.branchPath = branchPath;
+		this.stopwatch = Stopwatch.createStarted();
+		
 		final String taskName = MessageFormat.format("Building reasoner taxonomy for branch path ''{0}''", branchPath);
 		entering(taskName);
-
-		final Stopwatch stopwatch = Stopwatch.createStarted();
 
 		final AtomicReference<long[][]> conceptIdsReference = createAtomicReference();
 		final AtomicReference<IsAStatement[]> isAStatementsReference = createAtomicReference();
 
-		final Runnable getConceptIdsRunnable = new GetConceptIdsAndKeysRunnable(taskName, stopwatch, branchPath, conceptIdsReference);
-		final Runnable getIsAStatementsRunnable = new GetActiveIsAStatementsRunnable(taskName, stopwatch, branchPath, isAStatementsReference);
+		final Runnable getConceptIdsRunnable = new GetConceptIdsAndKeysRunnable(taskName, conceptIdsReference);
+		final Runnable getIsAStatementsRunnable = new GetActiveIsAStatementsRunnable(taskName, isAStatementsReference);
 
 		ForkJoinUtils.runInParallel(getIsAStatementsRunnable, getConceptIdsRunnable);
 
@@ -452,24 +433,24 @@ public class InitialReasonerTaxonomyBuilder extends AbstractReasonerTaxonomyBuil
 		final AtomicReference<LongKeyMap> relationshipConcreteDomainReference = createAtomicReference();
 		final AtomicReference<LongKeyLongMap> statementIdToConceptIdReference = createAtomicReference();
 
-		new StatementMapperRunnable(taskName, stopwatch, branchPath, conceptIds, statementIdToConceptIdReference).run();
+		new StatementMapperRunnable(taskName, conceptIds, statementIdToConceptIdReference).run();
 		
-		final Runnable taxonomyBuilderRunnable = new TaxonomyBuilderRunnable(taskName, stopwatch, conceptIdsReference, isAStatementsReference);
+		final Runnable taxonomyBuilderRunnable = new TaxonomyBuilderRunnable(taskName, conceptIdsReference, isAStatementsReference);
 
-		final Runnable getConceptConcreteDomainsRunnable = new GetConcreteDomainRunnable(taskName, stopwatch, branchPath, conceptIds,
-				SnomedTerminologyComponentConstants.CONCEPT_NUMBER, conceptConcreteDomainReference,
-				false);
+		final Runnable getConceptConcreteDomainsRunnable = new GetConcreteDomainRunnable(taskName, conceptIds,
+				SnomedTerminologyComponentConstants.CONCEPT_NUMBER, conceptConcreteDomainReference);
 
 		final LongSet relationshipIds = statementIdToConceptIdReference.get().keySet();
-		final Runnable getStatementConcreteDomainsRunnable = new GetConcreteDomainRunnable(taskName, stopwatch, branchPath, relationshipIds,
-				SnomedTerminologyComponentConstants.RELATIONSHIP_NUMBER, relationshipConcreteDomainReference, 
-				includeAdditionalStatementConcreteDomains);
+		final Runnable getStatementConcreteDomainsRunnable = new GetConcreteDomainRunnable(taskName, relationshipIds,
+				SnomedTerminologyComponentConstants.RELATIONSHIP_NUMBER, relationshipConcreteDomainReference);
 
-		final Runnable getExhaustiveConceptIdsRunnable = new GetConceptIdsRunnable(taskName, stopwatch, branchPath,
-				exhaustiveConceptIdsReference, createIntTermQuery(SnomedIndexBrowserConstants.CONCEPT_EXHAUSTIVE, 1));
+		final Runnable getExhaustiveConceptIdsRunnable = new GetConceptIdsRunnable(taskName,
+				exhaustiveConceptIdsReference, 
+				createIntTermQuery(SnomedIndexBrowserConstants.CONCEPT_EXHAUSTIVE, 1));
 
-		final Runnable getFullyDefinedConceptIdsRunnable = new GetConceptIdsRunnable(taskName, stopwatch, branchPath,
-				fullyDefinedConceptIdsReference, createIntTermQuery(SnomedIndexBrowserConstants.CONCEPT_PRIMITIVE, 0));
+		final Runnable getFullyDefinedConceptIdsRunnable = new GetConceptIdsRunnable(taskName,
+				fullyDefinedConceptIdsReference, 
+				createIntTermQuery(SnomedIndexBrowserConstants.CONCEPT_PRIMITIVE, 0));
 
 		ForkJoinUtils.runInParallel(
 				taxonomyBuilderRunnable,
@@ -509,15 +490,17 @@ public class InitialReasonerTaxonomyBuilder extends AbstractReasonerTaxonomyBuil
 
 		leaving(taskName, stopwatch);
 	}
+	
+	private BooleanQuery createCharacteristicTypeQuery() {
+		final BooleanQuery result = new BooleanQuery(true);
+		result.add(createLongTermQuery(RELATIONSHIP_CHARACTERISTIC_TYPE_ID, STATED_RELATIONSHIP), Occur.SHOULD);
 
-	/* returns with the statement browser service. */
-	private SnomedStatementBrowser getStatementBrowser() {
-		return ApplicationContext.getInstance().getService(SnomedStatementBrowser.class);
-	}
-
-	/* returns with the server side index service for SNOMED CT. */
-	@SuppressWarnings("rawtypes")
-	private IndexServerService getIndexServerService() {
-		return ClassUtils.checkAndCast(ApplicationContext.getInstance().getService(SnomedIndexService.class), IndexServerService.class);
+		// XXX: Change processor mode requires all defining information, not just stated ones
+		if (!isReasonerMode()) {
+			result.add(createLongTermQuery(RELATIONSHIP_CHARACTERISTIC_TYPE_ID, INFERRED_RELATIONSHIP), Occur.SHOULD);
+			result.add(createLongTermQuery(RELATIONSHIP_CHARACTERISTIC_TYPE_ID, DEFINING_RELATIONSHIP), Occur.SHOULD);
+		}
+		
+		return result;
 	}
 }

@@ -48,7 +48,17 @@ import com.google.common.collect.Collections2;
  */
 public abstract class AbstractReasonerTaxonomyBuilder {
 
+	public enum Type {
+		/** The resulting taxonomy is used for populating an OWL ontology. */
+		REASONER, 
+		/** The resulting taxonomy is used for updating indexes. */
+		CHANGE_PROCESSOR;
+	}
+	
 	protected static final long IS_A_ID = Long.parseLong(Concepts.IS_A);
+	protected static final long STATED_RELATIONSHIP = Long.parseLong(Concepts.STATED_RELATIONSHIP);
+	protected static final long INFERRED_RELATIONSHIP = Long.parseLong(Concepts.INFERRED_RELATIONSHIP);
+	protected static final long DEFINING_RELATIONSHIP = Long.parseLong(Concepts.DEFINING_RELATIONSHIP);
 	protected static final long ADDITIONAL_RELATIONSHIP = Long.parseLong(Concepts.ADDITIONAL_RELATIONSHIP);
 	
 	/** Matrix for storing concept ancestors by internal IDs. */
@@ -81,11 +91,14 @@ public abstract class AbstractReasonerTaxonomyBuilder {
 	/** Maps component storage keys indexed in this taxonomy builder to their "containing" concept ID. */
 	protected LongKeyLongMap componentStorageKeyToConceptId;
 
+	/** The mode of operation for this taxonomy builder. */
+	private final Type type;
+	
 	/**
 	 * Default constructor; subclasses should initialize fields.
 	 */
-	protected AbstractReasonerTaxonomyBuilder() {
-		// Empty implementation
+	protected AbstractReasonerTaxonomyBuilder(final Type type) {
+		this.type = type;
 	}
 
 	/**
@@ -93,7 +106,8 @@ public abstract class AbstractReasonerTaxonomyBuilder {
 	 *
 	 * @param source the builder to copy (may not be {@code null})
 	 */
-	protected AbstractReasonerTaxonomyBuilder(final AbstractReasonerTaxonomyBuilder source) {
+	protected AbstractReasonerTaxonomyBuilder(final AbstractReasonerTaxonomyBuilder source, final Type type) {
+		this(type);
 		checkNotNull(source, "source");
 
 		// We can rebuild these; we have the technology
@@ -109,6 +123,10 @@ public abstract class AbstractReasonerTaxonomyBuilder {
 		this.conceptIdToInternalId = (LongKeyIntOpenHashMap) ((LongKeyIntOpenHashMap) source.conceptIdToInternalId).clone();
 		
 		this.componentStorageKeyToConceptId = (LongKeyLongOpenHashMap) ((LongKeyLongOpenHashMap) source.componentStorageKeyToConceptId).clone();
+	}
+	
+	protected boolean isReasonerMode() {
+		return Type.REASONER.equals(type);
 	}
 
 	/**
