@@ -22,7 +22,6 @@ import bak.pcj.map.LongKeyMap;
 
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.api.browser.IStatementBrowser;
-import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 
 /**
  * Browser service for the SNOMED&nbsp;CT relationships.
@@ -73,16 +72,6 @@ public interface SnomedStatementBrowser extends IStatementBrowser<SnomedConceptI
 	 * @return an array of active source relationship storage keys from a given union group for a concept.
 	 */
 	long[] getStatementStorageKeysForUnionGroup(final IBranchPath branchPath, final long conceptId, final int unionGroup);
-
-	/**
-	 * Returns with a map of SNOMED CT relationships. Clients can make sure, that all the returning statements are active
-	 * and the characteristic type concept is {@link Concepts#DEFINING_RELATIONSHIP defining} or its descendant.
-	 * <br>The values are the source concept IDs the values are the associated outbound {@link StatementFragment relationships}.
-	 * @param branchPath the branch path.
-	 * @return a map of statements for the classification process.
-	 * @see StatementFragment
-	 */
-	LongKeyMap getStatementsForClassification(final IBranchPath branchPath);
 
 	/**
 	 * Returns with a map of SNOMED CT relationships. Clients can make sure, that all the returning statements are active.
@@ -157,5 +146,4 @@ public interface SnomedStatementBrowser extends IStatementBrowser<SnomedConceptI
 	Map<String, String> getAllStatementImageIdsById(final IBranchPath branchPath, final String conceptId);
 
 	Map<String, String> getAllDestinationLabels(IBranchPath branchPath, Collection<String> sourceIds, String typeId);
-
 }

@@ -71,7 +71,6 @@ import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.datastore.index.DocIdCollector;
 import com.b2international.snowowl.datastore.index.DocIdCollector.DocIdsIterator;
 import com.b2international.snowowl.datastore.index.IndexUtils;
-import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.snomed.datastore.IsAStatement;
 import com.b2international.snowowl.snomed.datastore.SnomedConceptIndexEntry;
@@ -444,35 +443,6 @@ public class SnomedServerStatementBrowser extends AbstractSnomedIndexBrowser<Sno
 				}
 			}
 		}
-	}
-
-	/* (non-Javadoc)
-	 * @see com.b2international.snowowl.snomed.datastore.SnomedStatementBrowser#getStatementsForClassification(com.b2international.snowowl.core.api.IBranchPath)
-	 */
-	@Override
-	public LongKeyMap getStatementsForClassification(final IBranchPath branchPath) {
-
-		Preconditions.checkNotNull(branchPath, "Branch path argument cannot be null.");
-
-		final TermQuery relationshipTypeQuery = new TermQuery(new Term(CommonIndexConstants.COMPONENT_TYPE, IndexUtils.intToPrefixCoded(SnomedTerminologyComponentConstants.RELATIONSHIP_NUMBER)));
-		final TermQuery activeComponentQuery = new TermQuery(new Term(COMPONENT_ACTIVE, IndexUtils.intToPrefixCoded(1)));
-		final BooleanQuery typeQuery = new BooleanQuery(true);
-
-		typeQuery.add(new TermQuery(new Term(RELATIONSHIP_CHARACTERISTIC_TYPE_ID, IndexUtils.longToPrefixCoded(Concepts.STATED_RELATIONSHIP))), Occur.SHOULD);
-		typeQuery.add(new TermQuery(new Term(RELATIONSHIP_CHARACTERISTIC_TYPE_ID, IndexUtils.longToPrefixCoded(Concepts.INFERRED_RELATIONSHIP))), Occur.SHOULD);
-		typeQuery.add(new TermQuery(new Term(RELATIONSHIP_CHARACTERISTIC_TYPE_ID, IndexUtils.longToPrefixCoded(Concepts.DEFINING_RELATIONSHIP))), Occur.SHOULD);
-
-		final BooleanQuery statementQuery = new BooleanQuery(true);
-		statementQuery.add(relationshipTypeQuery, Occur.MUST);
-		statementQuery.add(activeComponentQuery, Occur.MUST);
-		statementQuery.add(typeQuery, Occur.MUST);
-
-		final StatementFragmentCollector collector = new StatementFragmentCollector();
-
-		service.search(branchPath, statementQuery, collector);
-
-		return collector.getStatementMap();
-
 	}
 
 	/* (non-Javadoc)

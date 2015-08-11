@@ -25,7 +25,6 @@ import bak.pcj.map.LongKeyMap;
 import com.b2international.snowowl.core.annotations.Client;
 import com.b2international.snowowl.datastore.browser.AbstractClientStatementBrowser;
 import com.b2international.snowowl.datastore.browser.ActiveBranchClientStatementBrowser;
-import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.SnomedPackage;
 
 /**
@@ -79,17 +78,6 @@ public class SnomedClientStatementBrowser extends ActiveBranchClientStatementBro
 	 */
 	public long[] getStatementStorageKeysForGroup(final long conceptId, final int group) {
 		return ((SnomedStatementBrowser) getDelegateBrowser()).getStatementStorageKeysForGroup(getBranchPath(), conceptId, group);
-	}
-
-	/**
-	 * Returns with a map of SNOMED CT relationships. Clients can make sure, that all the returning statements are active
-	 * and the characteristic type concept is {@link Concepts#DEFINING_RELATIONSHIP defining} or its descendant.
-	 * <br>The values are the source concept IDs the values are the associated outbound {@link StatementFragment relationships}.
-	 * @return a map of statements for the classification process.
-	 * @see StatementFragment
-	 */
-	public LongKeyMap getStatementsForClassification() {
-		return ((SnomedStatementBrowser)getDelegateBrowser()).getStatementsForClassification(getBranchPath());
 	}
 
 	/**
