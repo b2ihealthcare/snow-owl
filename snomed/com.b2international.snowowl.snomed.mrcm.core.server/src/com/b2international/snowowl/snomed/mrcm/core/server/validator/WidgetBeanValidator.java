@@ -16,12 +16,9 @@
 package com.b2international.snowowl.snomed.mrcm.core.server.validator;
 
 import static com.b2international.snowowl.snomed.mrcm.core.validator.util.ConceptWidgetBeanUtil.isFsn;
-import static com.b2international.snowowl.snomed.mrcm.core.validator.util.ConceptWidgetBeanUtil.isRelationshipTypeIsA;
-import static com.b2international.snowowl.snomed.mrcm.core.validator.util.ConceptWidgetBeanUtil.isRelationshipTypeSet;
-import static com.b2international.snowowl.snomed.mrcm.core.validator.util.ConceptWidgetBeanUtil.isRelationshipValueSet;
 
+import java.util.Collection;
 import java.util.List;
-import java.util.Set;
 
 import org.eclipse.core.runtime.IStatus;
 
@@ -45,11 +42,9 @@ import com.b2international.snowowl.snomed.mrcm.core.widget.bean.RelationshipWidg
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Multimap;
-import com.google.common.collect.Sets;
 
 /**
  * Server side {@link ConceptWidgetBean} validator.
- * 
  */
 public class WidgetBeanValidator implements IWidgetBeanValidator {
 
@@ -60,6 +55,7 @@ public class WidgetBeanValidator implements IWidgetBeanValidator {
 	 * @param conceptWidgetBean the {@link ConceptWidgetBean} to validate. Represents a SNOMED&nbsp;CT concept.
 	 * @return a multimap of validation status. Can be empty.
 	 */
+	@Override
 	public Multimap<ModeledWidgetBean, IStatus> validate(IBranchPath branchPath, ConceptWidgetBean conceptWidgetBean) {
 		final Multimap<ModeledWidgetBean, IStatus> results = HashMultimap.create();
 		results.putAll(validateDescriptions(branchPath, conceptWidgetBean));
@@ -103,65 +99,61 @@ public class WidgetBeanValidator implements IWidgetBeanValidator {
 	}
 
 	/*validates the relationships associated with the concept widget model*/
-	private Multimap<ModeledWidgetBean, IStatus> validateRelationships(IBranchPath branchPath, final ConceptWidgetBean concept) {
+	private Multimap<ModeledWidgetBean, IStatus> validateRelationships(final IBranchPath branchPath, final ConceptWidgetBean concept) {
 		
 		final Multimap<ModeledWidgetBean, IStatus> results = HashMultimap.create();
 		final List<ModeledWidgetBean> groups = concept.getProperties().getElements();
 		
-		final String snomedConceptId = concept.getConceptId();
-		final SnomedConceptIndexEntry snomedConceptMini = getTerminologyBrowser().getConcept(branchPath, snomedConceptId);
-		Long snomedConceptIdLong = Long.valueOf(snomedConceptId);
-		LongSet allSubTypesAndSelfIds = getTerminologyBrowser().getAllSubTypeIds(branchPath, snomedConceptIdLong);
-		allSubTypesAndSelfIds.add(snomedConceptIdLong);
-		
 		boolean hasActiveIsA = false;
-		final Set<String> isADestinationIds = Sets.newHashSet();
-		
+		final Multimap<String, String> isaTypeToParentIdMap = HashMultimap.create();
 		
 		for (final RelationshipGroupWidgetBean group : Iterables.filter(groups, RelationshipGroupWidgetBean.class)) {
 			
 			final List<ModeledWidgetBean> relationships = group.getElements();
 			
 			for (final RelationshipWidgetBean relationship : Iterables.filter(relationships, RelationshipWidgetBean.class)) {
-
-				
-				// We're only considering populated relationships here
-				if (!isRelationshipTypeSet(relationship) || !isRelationshipValueSet(relationship)) {
+				if (!relationship.isValid()) {
 					continue;
 				}
-
+				
 				if (relationship.isUnsanctioned()) {
 					results.put(relationship, createWarning("This property violates the concept model."));
 				}
 
 				// The rest of the loop only deals with IS A relationships
 				final String destinationId = relationship.getSelectedValue().getId();
-				if (!isRelationshipTypeIsA(relationship)) {
-					continue;
-				} else {
-					if (isADestinationIds.contains(destinationId)) {
-						results.put(relationship, createError("The concept has duplicate Is-a relationships."));
+				if (relationship.isIsA()) {
+					final String characteristicTypeId = relationship.getSelectedCharacteristicType().getId();
+					final String characteristicTypeLabel = getTerminologyBrowser().getConcept(branchPath, characteristicTypeId).getLabel();
+					final Collection<String> parents = isaTypeToParentIdMap.get(characteristicTypeId);
+					if (parents.contains(destinationId)) {
+						results.put(relationship, createError("The concept has duplicate (%s) Is-a relationships.", characteristicTypeLabel));
 					} else {
-						isADestinationIds.add(destinationId);
-					}
-				}
-				
-				// check for active IS_A in ungrouped properties
-				if (!hasActiveIsA && 0 == group.getGroupNumber()) {
-					hasActiveIsA = true;
-				}
-				
-				if (destinationId.equals(snomedConceptId)) {
-					results.put(relationship, createError("For Is-a relationships, the destination should not be the same as the edited concept."));
-				} else {
-					
-					if (null == snomedConceptMini) { //new concept. it does not exist in store. cannot cause cycle.
-						continue;
+						isaTypeToParentIdMap.put(characteristicTypeId, destinationId);
 					}
 					
-					//the IS_A relationship destination cannot be in the subtype set
-					if (allSubTypesAndSelfIds.contains(Long.valueOf(destinationId))) {
-						results.put(relationship, createError("For Is-a relationships, the destination should not be the descendant of the edited concept."));
+					// check for active IS_A in ungrouped properties
+					if (!hasActiveIsA && 0 == group.getGroupNumber()) {
+						hasActiveIsA = true;
+					}
+
+					final String snomedConceptId = concept.getConceptId();
+					if (destinationId.equals(snomedConceptId)) {
+						results.put(relationship, createError("For Is-a relationships, the destination should not be the same as the edited concept."));
+					} else {
+						final SnomedConceptIndexEntry snomedConceptMini = getTerminologyBrowser().getConcept(branchPath, snomedConceptId);
+						final Long snomedConceptIdLong = Long.valueOf(snomedConceptId);
+						final LongSet allSubTypesAndSelfIds = getTerminologyBrowser().getAllSubTypeIds(branchPath, snomedConceptIdLong);
+						allSubTypesAndSelfIds.add(snomedConceptIdLong);
+						
+						if (null == snomedConceptMini) { //new concept. it does not exist in store. cannot cause cycle.
+							continue;
+						}
+						
+						//the IS_A relationship destination cannot be in the subtype set
+						if (allSubTypesAndSelfIds.contains(Long.valueOf(destinationId))) {
+							results.put(relationship, createError("For Is-a relationships, the destination should not be the descendant of the edited concept."));
+						}
 					}
 				}
 			}
@@ -181,17 +173,17 @@ public class WidgetBeanValidator implements IWidgetBeanValidator {
 	}
 
 	/*generates status with error severity. the message of the status is based on the specified message*/
-	private IStatus createError(final String message) {
+	private IStatus createError(final String message, Object...args) {
 		return createStatus(IStatus.ERROR, message);
 	}
 	
 	/*generates status with warning severity. the message of the status is based on the specified message*/
-	private IStatus createWarning(final String message) {
+	private IStatus createWarning(final String message, Object...args) {
 		return createStatus(IStatus.WARNING, message);
 	}
 	
 	/*generates status with a specified severity and message*/
-	private IStatus createStatus(final int severity, final String message) {
-		return new ComponentValidationStatus(severity, MrcmCoreActivator.PLUGIN_ID, message);
+	private IStatus createStatus(final int severity, final String message, final Object...args) {
+		return new ComponentValidationStatus(severity, MrcmCoreActivator.PLUGIN_ID, String.format(message, args));
 	}
 }
