@@ -48,7 +48,8 @@ import com.google.common.collect.Lists;
  */
 public class IndexConfiguration {
 
-	public static final Map<ComponentImportType, List<IndexConfiguration>> CONFIGURATIONS_BY_TYPE = ImmutableMap.<ComponentImportType, List<IndexConfiguration>>builder()
+	public static final Map<ComponentImportType, List<IndexConfiguration>> createConfigurationMap() {
+		return ImmutableMap.<ComponentImportType, List<IndexConfiguration>>builder()
 			.put(ComponentImportType.ASSOCIATION_TYPE_REFSET, SnomedAssociationRefSetImporter.INDEXES)
 			.put(ComponentImportType.ATTRIBUTE_VALUE_REFSET, SnomedAttributeValueRefSetImporter.INDEXES)
 			.put(ComponentImportType.COMPLEX_MAP_TYPE_REFSET, SnomedComplexMapTypeRefSetImporter.INDEXES)
@@ -62,9 +63,9 @@ public class IndexConfiguration {
 			.put(ComponentImportType.SIMPLE_MAP_TYPE_REFSET, SnomedSimpleMapTypeRefSetImporter.INDEXES)
 			.put(ComponentImportType.SIMPLE_TYPE_REFSET, SnomedSimpleTypeRefSetImporter.INDEXES)
 			.build();
+	}
 	
 	/**
-	 * 
 	 * @param logger
 	 * @param connection
 	 * @param monitor 
@@ -72,15 +73,16 @@ public class IndexConfiguration {
 	 */
 	public static int dropAll(final Logger logger, final Connection connection, IProgressMonitor monitor) {
 		
-		final SubMonitor subMonitor = SubMonitor.convert(monitor, "Dropping SNOMED CT database indexes", CONFIGURATIONS_BY_TYPE.size());
+		final Map<ComponentImportType, List<IndexConfiguration>> configurationMap = createConfigurationMap();
+		final SubMonitor subMonitor = SubMonitor.convert(monitor, "Dropping SNOMED CT database indexes", configurationMap.size());
 		
 		int dropCount = 0;
 		
-		for (ComponentImportType type : CONFIGURATIONS_BY_TYPE.keySet()) {
+		for (ComponentImportType type : configurationMap.keySet()) {
 			final SubMonitor typeMonitor = subMonitor.newChild(1, SubMonitor.SUPPRESS_NONE);
-			typeMonitor.beginTask("Processing " + StringUtils.capitalizeFirstLetter(type.getDisplayName()) + "s", CONFIGURATIONS_BY_TYPE.get(type).size());
+			typeMonitor.beginTask("Processing " + StringUtils.capitalizeFirstLetter(type.getDisplayName()) + "s", configurationMap.get(type).size());
 			
-			for (IndexConfiguration configuration : CONFIGURATIONS_BY_TYPE.get(type)) {
+			for (IndexConfiguration configuration : configurationMap.get(type)) {
 				typeMonitor.subTask(configuration.indexName);
 				if (configuration.drop(logger, connection)) {
 					++dropCount;
@@ -100,15 +102,16 @@ public class IndexConfiguration {
 	 */
 	public static int createAll(final Logger logger, final Connection connection, IProgressMonitor monitor) {
 		
-		final SubMonitor subMonitor = SubMonitor.convert(monitor, "Creating SNOMED CT database indexes", CONFIGURATIONS_BY_TYPE.size());
+		final Map<ComponentImportType, List<IndexConfiguration>> configurationMap = createConfigurationMap();
+		final SubMonitor subMonitor = SubMonitor.convert(monitor, "Creating SNOMED CT database indexes", configurationMap.size());
 		
 		int createCount = 0;
 		
-		for (ComponentImportType type : CONFIGURATIONS_BY_TYPE.keySet()) {
+		for (ComponentImportType type : configurationMap.keySet()) {
 			final SubMonitor typeMonitor = subMonitor.newChild(1, SubMonitor.SUPPRESS_NONE);
-			typeMonitor.beginTask("Processing " + StringUtils.capitalizeFirstLetter(type.getDisplayName()) + "s", CONFIGURATIONS_BY_TYPE.get(type).size());
+			typeMonitor.beginTask("Processing " + StringUtils.capitalizeFirstLetter(type.getDisplayName()) + "s", configurationMap.get(type).size());
 			
-			for (IndexConfiguration configuration : CONFIGURATIONS_BY_TYPE.get(type)) {
+			for (IndexConfiguration configuration : configurationMap.get(type)) {
 				typeMonitor.subTask(configuration.indexName);
 				if (configuration.create(logger, connection)) {
 					++createCount;
