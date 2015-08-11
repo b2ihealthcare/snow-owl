@@ -42,12 +42,19 @@ import com.b2international.snowowl.snomed.mrcm.core.widget.bean.RelationshipWidg
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Multimap;
+import com.google.inject.Provider;
 
 /**
  * Server side {@link ConceptWidgetBean} validator.
  */
 public class WidgetBeanValidator implements IWidgetBeanValidator {
 
+	private Provider<SnomedTerminologyBrowser> browserProvider;
+
+	public WidgetBeanValidator(Provider<SnomedTerminologyBrowser> browserProvider) {
+		this.browserProvider = browserProvider;
+	}
+	
 	/**
 	 * Validates a {@link ConceptWidgetBean} and returns with a multimap of status informations.
 	 * <br>Keys are the {@link ModeledWidgetBean} instances.
@@ -100,6 +107,7 @@ public class WidgetBeanValidator implements IWidgetBeanValidator {
 
 	/*validates the relationships associated with the concept widget model*/
 	private Multimap<ModeledWidgetBean, IStatus> validateRelationships(final IBranchPath branchPath, final ConceptWidgetBean concept) {
+		final SnomedTerminologyBrowser browser = browserProvider.get();
 		
 		final Multimap<ModeledWidgetBean, IStatus> results = HashMultimap.create();
 		final List<ModeledWidgetBean> groups = concept.getProperties().getElements();
@@ -124,7 +132,7 @@ public class WidgetBeanValidator implements IWidgetBeanValidator {
 				final String destinationId = relationship.getSelectedValue().getId();
 				if (relationship.isIsA()) {
 					final String characteristicTypeId = relationship.getSelectedCharacteristicType().getId();
-					final String characteristicTypeLabel = getTerminologyBrowser().getConcept(branchPath, characteristicTypeId).getLabel();
+					final String characteristicTypeLabel = browser.getConcept(branchPath, characteristicTypeId).getLabel();
 					final Collection<String> parents = isaTypeToParentIdMap.get(characteristicTypeId);
 					if (parents.contains(destinationId)) {
 						results.put(relationship, createError("The concept has duplicate (%s) Is-a relationships.", characteristicTypeLabel));
@@ -141,9 +149,9 @@ public class WidgetBeanValidator implements IWidgetBeanValidator {
 					if (destinationId.equals(snomedConceptId)) {
 						results.put(relationship, createError("For Is-a relationships, the destination should not be the same as the edited concept."));
 					} else {
-						final SnomedConceptIndexEntry snomedConceptMini = getTerminologyBrowser().getConcept(branchPath, snomedConceptId);
+						final SnomedConceptIndexEntry snomedConceptMini = browser.getConcept(branchPath, snomedConceptId);
 						final Long snomedConceptIdLong = Long.valueOf(snomedConceptId);
-						final LongSet allSubTypesAndSelfIds = getTerminologyBrowser().getAllSubTypeIds(branchPath, snomedConceptIdLong);
+						final LongSet allSubTypesAndSelfIds = browser.getAllSubTypeIds(branchPath, snomedConceptIdLong);
 						allSubTypesAndSelfIds.add(snomedConceptIdLong);
 						
 						if (null == snomedConceptMini) { //new concept. it does not exist in store. cannot cause cycle.
@@ -165,11 +173,6 @@ public class WidgetBeanValidator implements IWidgetBeanValidator {
 		}
 		
 		return results;
-	}
-
-	/*returns with the concept hierarchy browser service for the SNOMED CT terminology*/
-	private SnomedTerminologyBrowser getTerminologyBrowser() {
-		return ApplicationContext.getInstance().getService(SnomedTerminologyBrowser.class);
 	}
 
 	/*generates status with error severity. the message of the status is based on the specified message*/
