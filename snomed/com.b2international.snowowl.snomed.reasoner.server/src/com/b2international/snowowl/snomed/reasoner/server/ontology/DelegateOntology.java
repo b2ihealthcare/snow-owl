@@ -106,6 +106,7 @@ import bak.pcj.LongIterator;
 import bak.pcj.set.LongSet;
 
 import com.b2international.snowowl.core.api.IBranchPath;
+import com.b2international.snowowl.datastore.server.snomed.index.AbstractReasonerTaxonomyBuilder.Type;
 import com.b2international.snowowl.datastore.server.snomed.index.InitialReasonerTaxonomyBuilder;
 import com.b2international.snowowl.snomed.datastore.ConcreteDomainFragment;
 import com.b2international.snowowl.snomed.datastore.StatementFragment;
@@ -1223,7 +1224,7 @@ public class DelegateOntology extends OWLObjectImpl implements OWLMutableOntolog
 	private InitialReasonerTaxonomyBuilder getReasonerTaxonomyBuilder() {
 
 		if (null == reasonerTaxonomyBuilder) {
-			reasonerTaxonomyBuilder = new InitialReasonerTaxonomyBuilder(branchPath, false);
+			reasonerTaxonomyBuilder = new InitialReasonerTaxonomyBuilder(branchPath, Type.REASONER);
 		}
 
 		return reasonerTaxonomyBuilder;
