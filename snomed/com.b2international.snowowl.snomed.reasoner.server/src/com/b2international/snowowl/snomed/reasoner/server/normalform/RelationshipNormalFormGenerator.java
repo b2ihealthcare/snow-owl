@@ -526,7 +526,7 @@ public final class RelationshipNormalFormGenerator extends NormalFormGenerator<S
 
 	@Override
 	public Collection<StatementFragment> getExistingComponents(final long conceptId) {
-		return reasonerTaxonomyBuilder.getStatementFragments(conceptId);
+		return reasonerTaxonomyBuilder.getInferredStatementFragments(conceptId);
 	}
 
 	/**

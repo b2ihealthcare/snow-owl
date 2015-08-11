@@ -42,6 +42,7 @@ import com.b2international.snowowl.datastore.oplock.impl.SingleRepositoryAndBran
 import com.b2international.snowowl.datastore.server.CDOServerCommitBuilder;
 import com.b2international.snowowl.datastore.server.remotejobs.AbstractRemoteJob;
 import com.b2international.snowowl.datastore.server.snomed.index.InitialReasonerTaxonomyBuilder;
+import com.b2international.snowowl.datastore.server.snomed.index.AbstractReasonerTaxonomyBuilder.Type;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 import com.b2international.snowowl.snomed.datastore.SnomedEditingContext;
@@ -136,7 +137,7 @@ public class PersistChangesRemoteJob extends AbstractRemoteJob {
 
 		try (final SnomedEditingContext editingContext = new SnomedEditingContext(branchPath)) {
 
-			final InitialReasonerTaxonomyBuilder reasonerTaxonomyBuilder = new InitialReasonerTaxonomyBuilder(branchPath, false);
+			final InitialReasonerTaxonomyBuilder reasonerTaxonomyBuilder = new InitialReasonerTaxonomyBuilder(branchPath, Type.REASONER);
 
 			final RelationshipNormalFormGenerator relationshipGenerator = new RelationshipNormalFormGenerator(taxonomy, reasonerTaxonomyBuilder);
 			relationshipGenerator.collectNormalFormChanges(subMonitor.newChild(1), new RelationshipPersister(editingContext, OntologyChange.Nature.ADD));
