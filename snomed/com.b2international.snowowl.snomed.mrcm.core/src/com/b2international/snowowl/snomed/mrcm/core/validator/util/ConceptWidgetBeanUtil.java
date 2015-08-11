@@ -19,9 +19,6 @@ import static com.google.common.collect.Lists.newArrayList;
 
 import java.util.Collection;
 
-import com.b2international.commons.StringUtils;
-import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
-import com.b2international.snowowl.snomed.mrcm.DataType;
 import com.b2international.snowowl.snomed.mrcm.core.widget.bean.ConceptWidgetBean;
 import com.b2international.snowowl.snomed.mrcm.core.widget.bean.DataTypeWidgetBean;
 import com.b2international.snowowl.snomed.mrcm.core.widget.bean.DescriptionWidgetBean;
@@ -33,76 +30,6 @@ import com.google.common.collect.Iterables;
 /**
  */
 public class ConceptWidgetBeanUtil {
-
-	/**
-	 * Returns <code>true</code> if the boolean value for the given {@link DataTypeWidgetBean} is Yes.
-	 * 
-	 * @param dataType
-	 * @return
-	 * @throws IllegalArgumentException
-	 *             if the given {@link DataTypeWidgetBean}'s allowed type is not a boolean.
-	 */
-	public static boolean isTrue(DataTypeWidgetBean dataType) {
-		if (DataType.BOOLEAN.equals(dataType.getAllowedType())) {
-			return "1".equals(dataType.getSelectedValue());
-		}
-		throw new IllegalArgumentException("The given dataType is not a boolean.");
-	}
-
-	/**
-	 * Returns <code>true</code> if the boolean value for the given {@link DataTypeWidgetBean} is No.
-	 * 
-	 * @param dataType
-	 * @return
-	 * @throws IllegalArgumentException
-	 *             if the given {@link DataTypeWidgetBean}'s allowed type is not a boolean.
-	 */
-	public static boolean isFalse(DataTypeWidgetBean dataType) {
-		if (DataType.BOOLEAN.equals(dataType.getAllowedType())) {
-			return "0".equals(dataType.getSelectedValue());
-		}
-		throw new IllegalArgumentException("The given dataType is not a boolean.");
-	}
-
-	/**
-	 * Returns <code>true</code> if the boolean value for the given {@link DataTypeWidgetBean} is N/A.
-	 * 
-	 * @param dataType
-	 * @return
-	 * @throws IllegalArgumentException
-	 *             if the given {@link DataTypeWidgetBean}'s allowed type is not a boolean.
-	 */
-	public static boolean isNotSpecified(DataTypeWidgetBean dataType) {
-		if (dataType != null && DataType.BOOLEAN.equals(dataType.getAllowedType())) {
-			return StringUtils.isEmpty(dataType.getSelectedValue());
-		}
-		throw new IllegalArgumentException("The given dataType is not a boolean.");
-	}
-
-	/**
-	 * Returns <code>true</code> if the underlying description is a fully specified name.
-	 * 
-	 * @param description
-	 * @return
-	 */
-	public static boolean isFsn(final DescriptionWidgetBean description) {
-
-		if (!isFsn(description.getSelectedType().getId())) {
-			return false;
-		}
-
-		return true;
-	}
-
-	/**
-	 * Returns <code>true</code> if the specified concept ID is the FSN description type concept ID.
-	 * 
-	 * @param conceptId
-	 * @return
-	 */
-	public static boolean isFsn(final String conceptId) {
-		return Concepts.FULLY_SPECIFIED_NAME.equals(conceptId);
-	}
 
 	/**
 	 * Returns all {@link RelationshipWidgetBean} within the given {@link ConceptWidgetBean} instance for the given relationship type ID.
@@ -162,7 +89,7 @@ public class ConceptWidgetBeanUtil {
 	public static DescriptionWidgetBean getFullySpecifiedNameBean(ConceptWidgetBean concept) {
 		for (DescriptionWidgetBean description : Iterables.filter(concept.getDescriptions().getElements(),
 				DescriptionWidgetBean.class)) {
-			if (isFsn(description)) {
+			if (description.isFsn()) {
 				return description;
 			}
 		}

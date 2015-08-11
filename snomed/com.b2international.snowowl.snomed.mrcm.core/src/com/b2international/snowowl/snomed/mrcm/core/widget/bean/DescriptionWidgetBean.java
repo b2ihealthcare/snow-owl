@@ -191,6 +191,16 @@ public class DescriptionWidgetBean extends LeafWidgetBean {
 	public boolean isPreferred() {
 		return preferred;
 	}
+	
+	/**
+	 * Returns <code>true</code> if the underlying description is a fully specified name.
+	 * 
+	 * @param description
+	 * @return
+	 */
+	public boolean isFsn() {
+		return Concepts.FULLY_SPECIFIED_NAME.equals(getSelectedType().getId());
+	}
 
 	public void setPreferred(final boolean newPreferred) {
 

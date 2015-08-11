@@ -15,8 +15,6 @@
  */
 package com.b2international.snowowl.snomed.mrcm.core.server.validator;
 
-import static com.b2international.snowowl.snomed.mrcm.core.validator.util.ConceptWidgetBeanUtil.isFsn;
-
 import java.util.List;
 
 import org.eclipse.core.runtime.IStatus;
@@ -46,7 +44,7 @@ public class DescriptionWidgetBeanValidator implements ModeledWidgetBeanValidato
 		int numberOfFsns = 0;
 		final List<ModeledWidgetBean> descriptions = concept.getDescriptions().getElements();
 		for (final DescriptionWidgetBean description : Iterables.filter(descriptions, DescriptionWidgetBean.class)) {
-			if (isFsn(description)) {
+			if (description.isFsn()) {
 				numberOfFsns++;
 				if (Strings.isNullOrEmpty(description.getTerm())) {
 					reporter.error(description, "Fully specified name should be specified.");
