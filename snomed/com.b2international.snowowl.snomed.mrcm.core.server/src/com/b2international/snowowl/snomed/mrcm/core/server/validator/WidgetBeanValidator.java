@@ -174,12 +174,12 @@ public class WidgetBeanValidator implements IWidgetBeanValidator {
 
 	/*generates status with error severity. the message of the status is based on the specified message*/
 	private IStatus createError(final String message, Object...args) {
-		return createStatus(IStatus.ERROR, message);
+		return createStatus(IStatus.ERROR, message, args);
 	}
 	
 	/*generates status with warning severity. the message of the status is based on the specified message*/
 	private IStatus createWarning(final String message, Object...args) {
-		return createStatus(IStatus.WARNING, message);
+		return createStatus(IStatus.WARNING, message, args);
 	}
 	
 	/*generates status with a specified severity and message*/
