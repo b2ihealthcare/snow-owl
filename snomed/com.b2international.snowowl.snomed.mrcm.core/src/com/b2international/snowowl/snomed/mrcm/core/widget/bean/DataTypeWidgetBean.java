@@ -40,7 +40,7 @@ public class DataTypeWidgetBean extends LeafWidgetBean implements Serializable {
 	private String selectedLabel = "";
 	private String selectedValue = "";
 	private String selectedUom;
-	private String characteristicTypeId = Concepts.DEFINING_RELATIONSHIP;
+	private String characteristicTypeId = Concepts.STATED_RELATIONSHIP;
 
 	private ConceptWidgetBean cwb;
 	
