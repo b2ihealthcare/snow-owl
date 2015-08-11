@@ -15,14 +15,9 @@
  */
 package com.b2international.snowowl.snomed.mrcm.core.validator.util;
 
-import static com.google.common.collect.Lists.newArrayList;
-
-import java.util.Collection;
-
 import com.b2international.snowowl.snomed.mrcm.core.widget.bean.ConceptWidgetBean;
 import com.b2international.snowowl.snomed.mrcm.core.widget.bean.DataTypeWidgetBean;
 import com.b2international.snowowl.snomed.mrcm.core.widget.bean.DescriptionWidgetBean;
-import com.b2international.snowowl.snomed.mrcm.core.widget.bean.RelationshipGroupWidgetBean;
 import com.b2international.snowowl.snomed.mrcm.core.widget.bean.RelationshipWidgetBean;
 import com.google.common.base.Predicate;
 import com.google.common.collect.Iterables;
@@ -38,46 +33,12 @@ public class ConceptWidgetBeanUtil {
 	 * @return
 	 */
 	public static Iterable<RelationshipWidgetBean> getRelationships(final ConceptWidgetBean concept, final String typeId) {
-		return Iterables.filter(getRelationships(concept), new Predicate<RelationshipWidgetBean>() {
+		return Iterables.filter(concept.getRelationships(), new Predicate<RelationshipWidgetBean>() {
 			@Override
 			public boolean apply(RelationshipWidgetBean input) {
 				return input.isTypeMatches(typeId);
 			}
 		});
-	}
-
-	/**
-	 * Returns all {@link RelationshipWidgetBean} within the given {@link ConceptWidgetBean} instance.
-	 * 
-	 * @param concept
-	 * @return
-	 */
-	public static Iterable<RelationshipWidgetBean> getRelationships(ConceptWidgetBean concept) {
-		// all grouped properties
-		final Collection<RelationshipWidgetBean> relationships = newArrayList();
-		final Iterable<RelationshipGroupWidgetBean> groups = Iterables.filter(concept.getProperties().getElements(),
-				RelationshipGroupWidgetBean.class);
-		for (RelationshipGroupWidgetBean group : groups) {
-			relationships.addAll(newArrayList(Iterables.filter(group.getElements(), RelationshipWidgetBean.class)));
-		}
-		return relationships;
-	}
-
-	/**
-	 * Returns all {@link DataTypeWidgetBean} within the given {@link ConceptWidgetBean}.
-	 * 
-	 * @param concept
-	 * @return
-	 */
-	public static Iterable<DataTypeWidgetBean> getDataTypes(ConceptWidgetBean concept) {
-		// all grouped properties
-		final Collection<DataTypeWidgetBean> dataTypes = newArrayList();
-		final Iterable<RelationshipGroupWidgetBean> groups = Iterables.filter(concept.getProperties().getElements(),
-				RelationshipGroupWidgetBean.class);
-		for (RelationshipGroupWidgetBean group : groups) {
-			dataTypes.addAll(newArrayList(Iterables.filter(group.getElements(), DataTypeWidgetBean.class)));
-		}
-		return dataTypes;
 	}
 
 	/**
@@ -87,8 +48,7 @@ public class ConceptWidgetBeanUtil {
 	 * @return
 	 */
 	public static DescriptionWidgetBean getFullySpecifiedNameBean(ConceptWidgetBean concept) {
-		for (DescriptionWidgetBean description : Iterables.filter(concept.getDescriptions().getElements(),
-				DescriptionWidgetBean.class)) {
+		for (DescriptionWidgetBean description : concept.getDescriptionBeans()) {
 			if (description.isFsn()) {
 				return description;
 			}
@@ -140,7 +100,7 @@ public class ConceptWidgetBeanUtil {
 	 * @return
 	 */
 	public static DataTypeWidgetBean getDataType(ConceptWidgetBean concept, String propertyName) {
-		for (DataTypeWidgetBean dataType : getDataTypes(concept)) {
+		for (DataTypeWidgetBean dataType : concept.getDataTypes()) {
 			if (propertyName.equals(dataType.getSelectedLabel())) {
 				return dataType;
 			}
@@ -156,7 +116,7 @@ public class ConceptWidgetBeanUtil {
 	 * @return
 	 */
 	public static RelationshipWidgetBean getRelationship(ConceptWidgetBean concept, String relationshipId) {
-		for (RelationshipWidgetBean relationship : getRelationships(concept)) {
+		for (RelationshipWidgetBean relationship : concept.getRelationships()) {
 			if (relationshipId.equals(relationship.getSelectedType().getId())) {
 				return relationship;
 			}
