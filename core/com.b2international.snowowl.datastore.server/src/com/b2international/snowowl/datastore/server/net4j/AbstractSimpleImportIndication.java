@@ -27,7 +27,7 @@ import org.eclipse.net4j.util.om.monitor.OMMonitor;
 import com.b2international.snowowl.core.api.Net4jProtocolConstants;
 
 /**
- * Abstract import indication for ICD 10 terminologies.
+ * Simple, user aware import indication.
  */
 public abstract class AbstractSimpleImportIndication extends IndicationWithMonitoring {
 

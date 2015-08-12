@@ -31,7 +31,7 @@ import com.b2international.snowowl.core.api.Net4jProtocolConstants;
 import com.b2international.snowowl.datastore.cdo.ICDOConnectionManager;
 
 /**
- * Abstract import request for ICD 10 terminologies.
+ * Simple, user aware import request.
  */
 public abstract class AbstractSimpleImportRequest extends RequestWithMonitoring<Boolean> {
 
