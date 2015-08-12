@@ -29,6 +29,8 @@ import com.b2international.snowowl.snomed.datastore.id.reservations.ISnomedIdent
 import com.b2international.snowowl.snomed.datastore.id.reservations.Reservations;
 import com.b2international.snowowl.snomed.datastore.internal.id.SnomedIdentifierServiceImpl;
 import com.b2international.snowowl.snomed.datastore.internal.id.reservations.SnomedIdentifierReservationServiceImpl;
+import com.b2international.snowowl.snomed.metadata.SnomedMetadata;
+import com.b2international.snowowl.snomed.metadata.SnomedMetadataImpl;
 import com.google.inject.Provider;
 
 /**
@@ -48,6 +50,7 @@ public class SnomedCoreBootstrap extends DefaultBootstrapFragment {
 		env.services().registerService(ISnomedIdentiferReservationService.class, reservationService);
 		env.services().registerService(ISnomedIdentifierService.class, idService);
 		env.services().registerService(SnomedCoreConfiguration.class, configuration.getModuleConfig(SnomedCoreConfiguration.class));
+		env.services().registerService(SnomedMetadata.class, new SnomedMetadataImpl(env.provider(SnomedTerminologyBrowser.class)));
 	}
 
 	@Override

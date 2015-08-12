@@ -46,5 +46,6 @@ Export-Package: com.b2international.snowowl.snomed.core.events,
  com.b2international.snowowl.snomed.datastore.snor,
  com.b2international.snowowl.snomed.datastore.strength,
  com.b2international.snowowl.snomed.datastore.uri,
- com.b2international.snowowl.snomed.datastore.validation
+ com.b2international.snowowl.snomed.datastore.validation,
+ com.b2international.snowowl.snomed.metadata
 
