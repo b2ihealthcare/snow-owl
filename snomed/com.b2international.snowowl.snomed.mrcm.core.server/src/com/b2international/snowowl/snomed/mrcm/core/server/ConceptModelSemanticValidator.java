@@ -74,7 +74,7 @@ public class ConceptModelSemanticValidator {
 	private boolean exists(IBranchPath branchPath, Object featureValue) {
 		if (featureValue instanceof String) {
 			final String value = (String) featureValue;
-			if (value.isEmpty()) {
+			if (!value.isEmpty()) {
 				if (lookupService.exists(branchPath, value)) {
 					return true;
 				}
