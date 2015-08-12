@@ -33,13 +33,13 @@ import com.b2international.snowowl.datastore.cdo.ICDOConnectionManager;
 /**
  * Abstract import request for ICD 10 terminologies.
  */
-public abstract class AbstractIcd10ImportRequest extends RequestWithMonitoring<Boolean> {
+public abstract class AbstractSimpleImportRequest extends RequestWithMonitoring<Boolean> {
 
 	private static final int REQUEST_TIMEOUT_MILLIS = 60 * 30 * 1000;
 
 	private final File importFile;
 
-	public AbstractIcd10ImportRequest(final SignalProtocol<?> protocol, final short signalId, final File importFile) {
+	public AbstractSimpleImportRequest(final SignalProtocol<?> protocol, final short signalId, final File importFile) {
 		super(protocol, signalId);
 		this.importFile = importFile;
 	}

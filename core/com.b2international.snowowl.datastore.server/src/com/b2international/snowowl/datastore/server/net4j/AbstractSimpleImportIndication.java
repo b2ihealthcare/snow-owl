@@ -29,14 +29,14 @@ import com.b2international.snowowl.core.api.Net4jProtocolConstants;
 /**
  * Abstract import indication for ICD 10 terminologies.
  */
-public abstract class AbstractIcd10ImportIndication extends IndicationWithMonitoring {
+public abstract class AbstractSimpleImportIndication extends IndicationWithMonitoring {
 
 	private static final String TEMP_DIR = System.getProperty("java.io.tmpdir");
 
 	private File file;
 	private String userId;
 
-	public AbstractIcd10ImportIndication(final SignalProtocol<?> protocol, final short signalId) {
+	public AbstractSimpleImportIndication(final SignalProtocol<?> protocol, final short signalId) {
 		super(protocol, signalId);
 	}
 
