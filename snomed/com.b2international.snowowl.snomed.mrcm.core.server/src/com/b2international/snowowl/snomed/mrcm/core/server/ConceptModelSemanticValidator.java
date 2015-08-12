@@ -34,6 +34,7 @@ import com.b2international.snowowl.snomed.mrcm.ConceptModel;
 import com.b2international.snowowl.snomed.mrcm.ConceptModelPredicate;
 import com.b2international.snowowl.snomed.mrcm.ConceptSetDefinition;
 import com.b2international.snowowl.snomed.mrcm.ConstraintBase;
+import com.b2international.snowowl.snomed.mrcm.core.ConceptModelUtils;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSet.Builder;
 
@@ -56,7 +57,7 @@ public class ConceptModelSemanticValidator {
 		new EObjectWalker(new NoopTreeVisitor<EObjectTreeNode>() {
 			@Override
 			protected void doVisit(EObjectTreeNode node) {
-				if (node.getFeature() != null && !exists(branchPath, node.getFeatureValue())) {
+				if (node != null && ConceptModelUtils.CONCEPT_ID_FEATURES.contains(node.getFeature()) && !exists(branchPath, node.getFeatureValue())) {
 					final EObject obj = node.getEObject();
 					if (obj instanceof ConceptModelPredicate) {
 						invalidConstraints.add(getContainerConstraint((ConceptModelPredicate) obj));
