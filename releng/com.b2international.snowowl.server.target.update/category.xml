@@ -6,34 +6,34 @@
    <feature url="features/org.eclipse.equinox.core.sdk_3.8.0.v20120913-170102-84FAcGeRFnbPjaJrB422VklHlU.jar" id="org.eclipse.equinox.core.sdk" version="3.8.0.v20120913-170102-84FAcGeRFnbPjaJrB422VklHlU">
       <category name="Eclipse Runtime"/>
    </feature>
-   <feature url="features/org.eclipse.emf.mwe.core_1.3.3.v201406110919.jar" id="org.eclipse.emf.mwe.core" version="1.3.3.v201406110919">
+   <feature url="features/org.eclipse.emf.mwe.core_1.3.11.v201508030321.jar" id="org.eclipse.emf.mwe.core" version="1.3.11.v201508030321">
       <category name="Modeling"/>
    </feature>
-   <feature url="features/org.eclipse.emf.mwe.doc_1.3.3.v201406110919.jar" id="org.eclipse.emf.mwe.doc" version="1.3.3.v201406110919">
+   <feature url="features/org.eclipse.emf.mwe.doc_1.3.11.v201508030321.jar" id="org.eclipse.emf.mwe.doc" version="1.3.11.v201508030321">
       <category name="Modeling"/>
    </feature>
-   <feature url="features/org.eclipse.emf.mwe.sdk_1.3.3.v201406110919.jar" id="org.eclipse.emf.mwe.sdk" version="1.3.3.v201406110919">
+   <feature url="features/org.eclipse.emf.mwe.sdk_1.3.11.v201508030321.jar" id="org.eclipse.emf.mwe.sdk" version="1.3.11.v201508030321">
       <category name="Modeling"/>
    </feature>
-   <feature url="features/org.eclipse.emf.mwe2.launcher_2.6.1.v201406120758.jar" id="org.eclipse.emf.mwe2.launcher" version="2.6.1.v201406120758">
+   <feature url="features/org.eclipse.emf.mwe2.launcher_2.8.1.v201508030411.jar" id="org.eclipse.emf.mwe2.launcher" version="2.8.1.v201508030411">
       <category name="Modeling"/>
    </feature>
-   <feature url="features/org.eclipse.emf.mwe2.language.sdk_2.6.1.v201406120758.jar" id="org.eclipse.emf.mwe2.language.sdk" version="2.6.1.v201406120758">
+   <feature url="features/org.eclipse.emf.mwe2.language.sdk_2.8.1.v201508030411.jar" id="org.eclipse.emf.mwe2.language.sdk" version="2.8.1.v201508030411">
       <category name="Modeling"/>
    </feature>
-   <feature url="features/org.eclipse.emf.mwe2.runtime.sdk_2.6.1.v201406110919.jar" id="org.eclipse.emf.mwe2.runtime.sdk" version="2.6.1.v201406110919">
+   <feature url="features/org.eclipse.emf.mwe2.runtime.sdk_2.8.1.v201508030321.jar" id="org.eclipse.emf.mwe2.runtime.sdk" version="2.8.1.v201508030321">
       <category name="Modeling"/>
    </feature>
-   <feature url="features/org.eclipse.xtext.runtime_2.6.2.v201407030533.jar" id="org.eclipse.xtext.runtime" version="2.6.2.v201407030533">
+   <feature url="features/org.eclipse.xtext.runtime_2.8.4.v201508050135.jar" id="org.eclipse.xtext.runtime" version="2.8.4.v201508050135">
       <category name="Xtext"/>
    </feature>
-   <feature url="features/org.eclipse.xtext.runtime.source_2.6.2.v201407030533.jar" id="org.eclipse.xtext.runtime.source" version="2.6.2.v201407030533">
+   <feature url="features/org.eclipse.xtext.runtime.source_2.8.4.v201508050135.jar" id="org.eclipse.xtext.runtime.source" version="2.8.4.v201508050135">
       <category name="Xtext"/>
    </feature>
-   <feature url="features/org.eclipse.xtext.xbase_2.6.2.v201407030533.jar" id="org.eclipse.xtext.xbase" version="2.6.2.v201407030533">
+   <feature url="features/org.eclipse.xtext.xbase_2.8.4.v201508050135.jar" id="org.eclipse.xtext.xbase" version="2.8.4.v201508050135">
       <category name="Xtext"/>
    </feature>
-   <feature url="features/org.eclipse.xtext.xbase.source_2.6.2.v201407030533.jar" id="org.eclipse.xtext.xbase.source" version="2.6.2.v201407030533">
+   <feature url="features/org.eclipse.xtext.xbase.source_2.8.4.v201508050135.jar" id="org.eclipse.xtext.xbase.source" version="2.8.4.v201508050135">
       <category name="Xtext"/>
    </feature>
    <feature url="features/org.eclipse.emf.sdk_2.10.2.v20150123-0452.jar" id="org.eclipse.emf.sdk" version="2.10.2.v20150123-0452">
@@ -95,8 +95,8 @@
    <bundle id="org.slf4j.log4j.source" version="1.7.2.v20130115-1340"/>
    <bundle id="org.eclipse.xtend" version="1.4.0.v201306110406"/>
    <bundle id="org.eclipse.xpand" version="1.4.0.v201306110406"/>
-   <bundle id="org.eclipse.xtend.lib" version="2.6.2.v201407030533"/>
-   <bundle id="org.eclipse.xtend.lib.source" version="2.6.2.v201407030533"/>
+   <bundle id="org.eclipse.xtend.lib" version="2.8.4.v201508050135"/>
+   <bundle id="org.eclipse.xtend.lib.source" version="2.8.4.v201508050135"/>
    <bundle id="org.junit" version="4.11.0.v201303080030"/>
    <bundle id="org.junit.source" version="4.11.0.v201303080030"/>
    <bundle id="org.apache.commons.beanutils" version="1.8.0.v201205091237"/>
@@ -113,6 +113,7 @@
    <bundle id="osgi.enterprise.source" version="4.2.0.v201108120515"/>
    <bundle id="org.dom4j" version="1.6.1.v201312101416"/>
    <bundle id="org.dom4j.source" version="1.6.1.v201312101416"/>
+   <!-- Maven OSGi dependencies -->
    <bundle id="com.codahale.metrics.annotation" version="3.0.2"/>
    <bundle id="com.codahale.metrics.core" version="3.0.2"/>
    <bundle id="com.codahale.metrics.jvm" version="3.0.2"/>
