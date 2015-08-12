@@ -38,6 +38,8 @@ public class RelationshipWidgetBean extends LeafWidgetBean {
 	public static final String PROP_SELECTED_TYPE = "selectedType";
 
 	public static final String PROP_SELECTED_VALUE = "selectedValue";
+	
+	public static final String PROP_CHAR_TYPE = "selectedCharacteristicType";
 
 	public static final long UNINITIALIZED = -1;
 
@@ -199,13 +201,17 @@ public class RelationshipWidgetBean extends LeafWidgetBean {
 	}
 
 	public void setSelectedCharacteristicType(final IComponent<String> selectedCharacteristicType) {
+		final String oldSelectedCharType = this.selectedCharacteristicType;
 		this.selectedCharacteristicType = selectedCharacteristicType.getId();
 		getConcept().add(selectedCharacteristicType);
+		firePropertyChange(PROP_CHAR_TYPE, oldSelectedCharType, this.selectedCharacteristicType);
 	}
 
 	public void setSelectedCharacteristicType(final String selectedCharacteristicType) {
+		final String oldSelectedCharType = this.selectedCharacteristicType;
 		this.selectedCharacteristicType = selectedCharacteristicType;
 		getConcept().add(selectedCharacteristicType);
+		firePropertyChange(PROP_CHAR_TYPE, oldSelectedCharType, selectedCharacteristicType);
 	}
 
 	/**
