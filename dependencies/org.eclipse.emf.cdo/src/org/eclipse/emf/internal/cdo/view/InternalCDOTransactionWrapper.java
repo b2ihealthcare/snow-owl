@@ -15,6 +15,8 @@
  */
 package org.eclipse.emf.internal.cdo.view;
 
+import java.lang.reflect.Method;
+
 import org.eclipse.emf.cdo.common.branch.CDOBranchPoint;
 import org.eclipse.emf.cdo.common.lock.CDOLockChangeInfo.Operation;
 import org.eclipse.emf.cdo.common.lock.CDOLockState;
@@ -22,15 +24,12 @@ import org.eclipse.emf.cdo.transaction.CDOCommitContext;
 import org.eclipse.emf.cdo.transaction.CDOTransaction;
 import org.eclipse.emf.internal.cdo.transaction.CDOTransactionImpl;
 import org.eclipse.emf.spi.cdo.CDOSessionProtocol.CommitTransactionResult;
-
-import com.b2international.commons.ReflectionUtils;
-import com.b2international.commons.ReflectionUtils.Parameter;
+import org.eclipse.net4j.util.ReflectUtil;
 
 /**
  * Wrapper for {@link CDOTransaction CDO transaction}s, exposing non-API methods of the subject.
  */
 @Deprecated
-@SuppressWarnings("restriction")
 public class InternalCDOTransactionWrapper {
 
 	private final CDOTransactionImpl delegate;
@@ -80,7 +79,8 @@ public class InternalCDOTransactionWrapper {
 	 * @see org.eclipse.emf.internal.cdo.transaction.CDOTransactionImpl.cleanUp(CDOCommitContext)
 	 */
 	public void cleanUp(final CDOCommitContext commitContext) {
-		ReflectionUtils.callMethod(CDOTransactionImpl.class, delegate, "cleanUp", new Parameter<>(CDOCommitContext.class, commitContext));
+		final Method cleanUpMethod = ReflectUtil.getMethod(CDOTransactionImpl.class, "cleanUp", CDOCommitContext.class);
+		ReflectUtil.invokeMethod(cleanUpMethod, delegate, commitContext);
 	}
 
 	/**
