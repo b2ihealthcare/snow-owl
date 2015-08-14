@@ -32,6 +32,7 @@ import java.util.Set;
 import org.apache.lucene.document.Document;
 
 import com.b2international.snowowl.core.api.index.CommonIndexConstants;
+import com.b2international.snowowl.datastore.index.ComponentIdLongField;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
 import com.b2international.snowowl.snomed.exporter.server.ComponentExportType;
 
@@ -45,7 +46,7 @@ public class SnomedDescriptionExporter extends SnomedCoreExporter {
 	private static final String LANGUAGE_CODE = "en";
 	
 	private static final Set<String> FIELDS_TO_LOAD = unmodifiableSet(newHashSet(
-			CommonIndexConstants.COMPONENT_ID,
+			ComponentIdLongField.COMPONENT_ID,
 			DESCRIPTION_EFFECTIVE_TIME,
 			COMPONENT_ACTIVE,
 			COMPONENT_MODULE_ID,
@@ -67,7 +68,7 @@ public class SnomedDescriptionExporter extends SnomedCoreExporter {
 	@Override
 	public String transform(final Document doc) {
 		final StringBuilder sb = new StringBuilder();
-		sb.append(doc.get(CommonIndexConstants.COMPONENT_ID));
+		sb.append(ComponentIdLongField.getString(doc));
 		sb.append(HT);
 		sb.append(formatEffectiveTime(doc.getField(getEffectiveTimeField())));
 		sb.append(HT);

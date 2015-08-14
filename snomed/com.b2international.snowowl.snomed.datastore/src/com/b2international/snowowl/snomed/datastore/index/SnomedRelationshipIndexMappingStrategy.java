@@ -44,6 +44,7 @@ import org.apache.lucene.document.StoredField;
 import com.b2international.snowowl.core.api.index.CommonIndexConstants;
 import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.datastore.index.AbstractIndexMappingStrategy;
+import com.b2international.snowowl.datastore.index.ComponentIdLongField;
 import com.b2international.snowowl.snomed.Relationship;
 
 /**
@@ -75,7 +76,7 @@ public class SnomedRelationshipIndexMappingStrategy extends AbstractIndexMapping
 		final long moduleId = parseLong(relationship.getModule().getId());
 
 		final Document doc = new Document();
-		doc.add(new LongField(CommonIndexConstants.COMPONENT_ID, relationshipId, YES));
+		new ComponentIdLongField(relationshipId).addTo(doc);
 		doc.add(new IntField(CommonIndexConstants.COMPONENT_TYPE, RELATIONSHIP_NUMBER, YES));
 		doc.add(new StoredField(COMPONENT_RELEASED, relationship.isReleased() ? 1 : 0));
 		doc.add(new IntField(COMPONENT_ACTIVE, active ? 1 : 0, YES));
@@ -93,7 +94,6 @@ public class SnomedRelationshipIndexMappingStrategy extends AbstractIndexMapping
 		doc.add(new LongField(COMPONENT_MODULE_ID, moduleId, YES));
 
 		doc.add(new NumericDocValuesField(CommonIndexConstants.COMPONENT_STORAGE_KEY, storageKey));
-		doc.add(new NumericDocValuesField(CommonIndexConstants.COMPONENT_ID, relationshipId));
 		doc.add(new NumericDocValuesField(RELATIONSHIP_VALUE_ID, destinationId));
 		doc.add(new NumericDocValuesField(RELATIONSHIP_OBJECT_ID, sourceId));
 		doc.add(new NumericDocValuesField(RELATIONSHIP_ATTRIBUTE_ID, typeId));

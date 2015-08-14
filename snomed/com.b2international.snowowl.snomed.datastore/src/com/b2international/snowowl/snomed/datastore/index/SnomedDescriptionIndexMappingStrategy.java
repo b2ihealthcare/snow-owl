@@ -40,6 +40,7 @@ import org.apache.lucene.util.BytesRef;
 import com.b2international.snowowl.core.api.index.CommonIndexConstants;
 import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.datastore.index.AbstractIndexMappingStrategy;
+import com.b2international.snowowl.datastore.index.ComponentIdLongField;
 import com.b2international.snowowl.datastore.index.SortKeyMode;
 import com.b2international.snowowl.snomed.Description;
 
@@ -68,7 +69,7 @@ public class SnomedDescriptionIndexMappingStrategy extends AbstractIndexMappingS
 		final long effectiveTime = EffectiveTimes.getEffectiveTime(description.getEffectiveTime());
 		
 		final Document doc = new Document();
-		doc.add(new LongField(CommonIndexConstants.COMPONENT_ID, parseLong(descriptionId), YES));
+		new ComponentIdLongField(descriptionId).addTo(doc);
 		doc.add(new IntField(CommonIndexConstants.COMPONENT_TYPE, DESCRIPTION_NUMBER, YES));
 		doc.add(new TextField(CommonIndexConstants.COMPONENT_LABEL, term, YES));
 		SortKeyMode.SEARCH_ONLY.add(doc, term);
@@ -82,7 +83,6 @@ public class SnomedDescriptionIndexMappingStrategy extends AbstractIndexMappingS
 		doc.add(new LongField(COMPONENT_MODULE_ID, moduleId, YES));
 		doc.add(new LongField(DESCRIPTION_EFFECTIVE_TIME, effectiveTime, YES));
 
-		doc.add(new NumericDocValuesField(CommonIndexConstants.COMPONENT_ID, parseLong(descriptionId)));
 		doc.add(new NumericDocValuesField(CommonIndexConstants.COMPONENT_STORAGE_KEY, storageKey));
 		doc.add(new NumericDocValuesField(DESCRIPTION_CASE_SIGNIFICANCE_ID, caseSignificanceId));
 		doc.add(new NumericDocValuesField(DESCRIPTION_TYPE_ID, typeId));

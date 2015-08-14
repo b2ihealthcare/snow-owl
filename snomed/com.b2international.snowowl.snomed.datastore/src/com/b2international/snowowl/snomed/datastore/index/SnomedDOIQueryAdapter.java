@@ -38,6 +38,7 @@ import com.b2international.snowowl.datastore.index.AbstractIndexService;
 import com.b2international.snowowl.datastore.index.DocumentWithScore;
 import com.b2international.snowowl.datastore.index.IndexQueryBuilder;
 import com.b2international.snowowl.datastore.index.IndexUtils;
+import com.b2international.snowowl.datastore.index.ComponentIdLongField;
 import com.b2international.snowowl.snomed.datastore.SnomedConceptIndexEntry;
 import com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants;
 import com.google.common.base.Optional;
@@ -84,7 +85,7 @@ public class SnomedDOIQueryAdapter extends SnomedConceptIndexQueryAdapter implem
 			return super.createIndexQueryBuilder()
 					.finishIf(StringUtils.isEmpty(searchString))
 					.require(new IndexQueryBuilder()
-					.matchExactTerm(CommonIndexConstants.COMPONENT_ID, IndexUtils.longToPrefixCoded(parsedSearchStringOptional.get())).boost(10.0f)
+					.match(new ComponentIdLongField(parsedSearchStringOptional.get()).toQuery()).boost(10.0f)
 					.matchAllTokenizedTerms(CommonIndexConstants.COMPONENT_LABEL, searchString).boost(5.0f)
 					.matchAllTokenizedTerms(SnomedIndexBrowserConstants.CONCEPT_SYNONYM, searchString).boost(4.0f)
 					.matchAllTokenizedTermPrefixSequences(CommonIndexConstants.COMPONENT_LABEL, searchString).boost(3.0f)

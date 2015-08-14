@@ -17,12 +17,11 @@ package com.b2international.snowowl.core.api.index;
 
 /**
  * Collection of constants related to indexing.
- *  
  */
 public abstract class CommonIndexConstants {
 
 	public static final String ROOT_ID = "ROOT";
-	public static final String COMPONENT_ID = "component_id";
+	
 	public static final String COMPONENT_LABEL = "component_label";
 	public static final String COMPONENT_LABEL_SORT_KEY = "component_label_sort_key"; // Label with diacritical marks removed; serves as a sort key
 	public static final String COMPONENT_TYPE = "component_type";
@@ -34,6 +33,6 @@ public abstract class CommonIndexConstants {
 	public static final String COMPONENT_IGNORE_COMPARE_UNIQUE_KEY = "component_ignore_compare_unique_key";
 	
 	private CommonIndexConstants() {
-		// Prevent instantiation
+		throw new UnsupportedOperationException("This class is not supposed to be instantiated.");
 	}
 }

@@ -42,6 +42,7 @@ import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.api.index.CommonIndexConstants;
 import com.b2international.snowowl.datastore.index.IndexUtils;
+import com.b2international.snowowl.datastore.index.ComponentIdLongField;
 import com.b2international.snowowl.datastore.index.LongDocValuesCollector;
 import com.b2international.snowowl.datastore.server.snomed.SnomedComponentService;
 import com.b2international.snowowl.datastore.server.snomed.index.SnomedIndexServerService;
@@ -90,7 +91,7 @@ public class ConceptIdQueryEvaluator2 implements Serializable, IQueryEvaluator<L
 			final String conceptId = Preconditions.checkNotNull(concept.getConceptId());
 			final BooleanQuery mainQuery = new BooleanQuery(true);
 			final SnomedIndexServerService service = getIndexService();
-			final LongDocValuesCollector collector = new LongDocValuesCollector(CommonIndexConstants.COMPONENT_ID);
+			final LongDocValuesCollector collector = new LongDocValuesCollector(ComponentIdLongField.COMPONENT_ID);
 			
 			switch (concept.getQuantifier()) {
 				
@@ -175,7 +176,7 @@ public class ConceptIdQueryEvaluator2 implements Serializable, IQueryEvaluator<L
 			
 			final BooleanQuery mainQuery = new BooleanQuery(true);
 			final SnomedIndexServerService service = getIndexService();
-			final LongDocValuesCollector collector = new LongDocValuesCollector(CommonIndexConstants.COMPONENT_ID);
+			final LongDocValuesCollector collector = new LongDocValuesCollector(ComponentIdLongField.COMPONENT_ID);
 			
 			mainQuery.add(createActiveQuery(), Occur.MUST);
 			mainQuery.add(createConceptTypeQuery(), Occur.MUST);
@@ -290,11 +291,7 @@ public class ConceptIdQueryEvaluator2 implements Serializable, IQueryEvaluator<L
 	}
 
 	private Query createIdQuery(final String conceptId) {
-		return new TermQuery(createConceptIdTerm(conceptId));
-	}
-
-	private Term createConceptIdTerm(final String conceptId) {
-		return new Term(CommonIndexConstants.COMPONENT_ID, IndexUtils.longToPrefixCoded(conceptId));
+		return new ComponentIdLongField(conceptId).toQuery();
 	}
 	
 	private Term createRefSetTerm(String refSetId) {

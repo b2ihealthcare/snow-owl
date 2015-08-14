@@ -47,6 +47,7 @@ import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.api.index.CommonIndexConstants;
 import com.b2international.snowowl.datastore.index.IndexUtils;
+import com.b2international.snowowl.datastore.index.ComponentIdLongField;
 import com.b2international.snowowl.datastore.index.LongDocValuesCollector;
 import com.b2international.snowowl.datastore.server.index.IndexServerService;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
@@ -124,7 +125,7 @@ public class InitialReasonerTaxonomyBuilder extends AbstractReasonerTaxonomyBuil
 			}
 
 			final int hitCount = getIndexServerService().getHitCount(branchPath, conceptQuery, null);
-			final LongDocValuesCollector collector = new LongDocValuesCollector(CommonIndexConstants.COMPONENT_ID, hitCount);
+			final LongDocValuesCollector collector = new LongDocValuesCollector(ComponentIdLongField.COMPONENT_ID, hitCount);
 			getIndexServerService().search(branchPath, conceptQuery, collector);
 
 			conceptIdsReference.set(new LongOpenHashSet(collector.getValues()));

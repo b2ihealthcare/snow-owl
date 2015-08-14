@@ -44,6 +44,7 @@ import bak.pcj.set.LongSet;
 
 import com.b2international.snowowl.core.api.index.CommonIndexConstants;
 import com.b2international.snowowl.datastore.index.IndexUtils;
+import com.b2international.snowowl.datastore.index.ComponentIdLongField;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSet.Builder;
 
@@ -169,7 +170,7 @@ public class SnomedConceptDocumentMappingStrategy extends SnomedConceptIndexMapp
 	}
 
 	private static String getId(final Document conceptDocument) {
-		return conceptDocument.get(CommonIndexConstants.COMPONENT_ID);
+		return ComponentIdLongField.getString(conceptDocument);
 	}
 	
 	private static Date getEffectiveTime(final Document conceptDocument) {

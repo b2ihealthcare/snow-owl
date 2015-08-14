@@ -32,6 +32,7 @@ import bak.pcj.map.LongKeyLongOpenHashMap;
 import com.b2international.commons.pcj.LongSets;
 import com.b2international.snowowl.core.api.index.CommonIndexConstants;
 import com.b2international.snowowl.datastore.index.AbstractDocsOutOfOrderCollector;
+import com.b2international.snowowl.datastore.index.ComponentIdLongField;
 
 /**
  * Collector for gathering the icon IDs for SNOMED CT concepts.
@@ -66,7 +67,7 @@ public class SnomedConceptIconIdCollector extends AbstractDocsOutOfOrderCollecto
 
 	@Override
 	protected void initDocValues(final AtomicReader leafReader) throws IOException {
-		idDocValues = leafReader.getNumericDocValues(CommonIndexConstants.COMPONENT_ID);
+		idDocValues = ComponentIdLongField.getNumericDocValues(leafReader);
 		iconIdDocValues = leafReader.getNumericDocValues(CommonIndexConstants.COMPONENT_ICON_ID);
 	}
 

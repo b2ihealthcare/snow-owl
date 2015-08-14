@@ -45,9 +45,6 @@ import org.apache.lucene.document.StringField;
 import org.apache.lucene.document.TextField;
 import org.apache.lucene.util.BytesRef;
 
-import bak.pcj.LongIterator;
-import bak.pcj.set.LongSet;
-
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.api.index.CommonIndexConstants;
 import com.b2international.snowowl.core.api.index.IIndexMappingStrategy;
@@ -55,11 +52,15 @@ import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.datastore.BranchPathUtils;
 import com.b2international.snowowl.datastore.cdo.CDOUtils;
 import com.b2international.snowowl.datastore.index.AbstractIndexMappingStrategy;
+import com.b2international.snowowl.datastore.index.ComponentIdLongField;
 import com.b2international.snowowl.datastore.index.SortKeyMode;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants;
 import com.b2international.snowowl.snomed.datastore.services.ISnomedComponentService;
 import com.b2international.snowowl.snomed.datastore.services.SnomedConceptNameProvider;
+
+import bak.pcj.LongIterator;
+import bak.pcj.set.LongSet;
 
 /**
  * Mapping strategy to transform a SNOMED CT concept into a {@link Document document} of the index.
@@ -94,8 +95,12 @@ public abstract class SnomedConceptIndexMappingStrategy extends AbstractIndexMap
 	
 	private final String conceptId;
 	private final long storageKey;
+	
 	private final LongSet ancestorIds;
 	private final LongSet parentIds;
+//	private final LongSet statedAncestorIds;
+//	private final LongSet statedParentIds;
+	
 	private final boolean exhaustive;
 	private final boolean active;
 	private final boolean primitive;
@@ -115,6 +120,8 @@ public abstract class SnomedConceptIndexMappingStrategy extends AbstractIndexMap
 			final long storageKey, 
 			final LongSet ancestorIds, 
 			final LongSet parentIds,
+//			final LongSet statedAncestorIds, 
+//			final LongSet statedParentIds,
 			final boolean exhaustive, 
 			final boolean active, 
 			final boolean primitive, 
@@ -134,6 +141,8 @@ public abstract class SnomedConceptIndexMappingStrategy extends AbstractIndexMap
 		this.storageKey = storageKey;
 		this.ancestorIds = ancestorIds;
 		this.parentIds = parentIds;
+//		this.statedAncestorIds = statedAncestorIds;
+//		this.statedParentIds = statedParentIds;
 		this.exhaustive = exhaustive;
 		this.active = active;
 		this.primitive = primitive;
@@ -159,7 +168,7 @@ public abstract class SnomedConceptIndexMappingStrategy extends AbstractIndexMap
 		
 		final Document doc = new Document();
 		
-		doc.add(new LongField(CommonIndexConstants.COMPONENT_ID, Long.valueOf(conceptId), Store.YES));
+		new ComponentIdLongField(conceptId).addTo(doc);
 		doc.add(new LongField(CommonIndexConstants.COMPONENT_STORAGE_KEY, storageKey, Store.YES));
 		doc.add(new IntField(CommonIndexConstants.COMPONENT_TYPE, SnomedTerminologyComponentConstants.CONCEPT_NUMBER, Store.YES));
 		doc.add(new IntField(CONCEPT_EXHAUSTIVE, exhaustive ? 1 : 0, Store.YES));
@@ -174,7 +183,6 @@ public abstract class SnomedConceptIndexMappingStrategy extends AbstractIndexMap
 		doc.add(new LongField(COMPONENT_MODULE_ID, Long.valueOf(moduleId), Store.YES));
 		doc.add(new LongField(CommonIndexConstants.COMPONENT_ICON_ID, Long.valueOf(iconId), Store.YES));
 		doc.add(new NumericDocValuesField(CommonIndexConstants.COMPONENT_STORAGE_KEY, storageKey));
-		doc.add(new NumericDocValuesField(CommonIndexConstants.COMPONENT_ID, Long.valueOf(conceptId)));
 		doc.add(new NumericDocValuesField(CommonIndexConstants.COMPONENT_COMPARE_UNIQUE_KEY, indexAsRelevantForCompare ? storageKey : CDOUtils.NO_STORAGE_KEY));
 		doc.add(new NumericDocValuesField(CommonIndexConstants.COMPONENT_ICON_ID, Long.valueOf(iconId)));
 		if (!indexAsRelevantForCompare) {

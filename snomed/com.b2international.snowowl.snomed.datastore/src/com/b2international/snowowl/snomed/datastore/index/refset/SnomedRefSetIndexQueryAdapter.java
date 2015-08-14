@@ -42,6 +42,7 @@ import com.b2international.snowowl.core.api.index.IIndexService;
 import com.b2international.snowowl.datastore.index.DocumentWithScore;
 import com.b2international.snowowl.datastore.index.IndexQueryBuilder;
 import com.b2international.snowowl.datastore.index.IndexUtils;
+import com.b2international.snowowl.datastore.index.ComponentIdLongField;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants;
 import com.b2international.snowowl.snomed.datastore.index.SnomedDOIQueryAdapter;
@@ -155,16 +156,17 @@ public class SnomedRefSetIndexQueryAdapter extends SnomedDslIndexQueryAdapter<Sn
 					//even if the ID restriction was enabled and the query term was 'virtual'
 					//so we rather restrict the ID to an invalid one
 					//XXX zstorok: only add the invalid ID query if searching by label is not enabled
-					queryExpressionQueryBuilder.require(new TermQuery(new Term(CommonIndexConstants.COMPONENT_ID, IndexUtils.longToPrefixCoded(-1L))));
+					queryExpressionQueryBuilder.require(new ComponentIdLongField(-1L).toQuery());
 				} else {
 					queryExpressionQueryBuilder.require(createLabelQueryBuilder());
 				}
 			} else {
+				final Query componentIdQuery= new ComponentIdLongField(parsedSearchStringOptional.get()).toQuery();
 				if (anyFlagSet(SEARCH_BY_LABEL)) {
-					queryExpressionQueryBuilder.match(new TermQuery(new Term(CommonIndexConstants.COMPONENT_ID, IndexUtils.longToPrefixCoded(parsedSearchStringOptional.get()))));
+					queryExpressionQueryBuilder.match(componentIdQuery);
 					queryExpressionQueryBuilder.match(createLabelQueryBuilder());
 				} else {
-					queryExpressionQueryBuilder.require(new TermQuery(new Term(CommonIndexConstants.COMPONENT_ID, IndexUtils.longToPrefixCoded(parsedSearchStringOptional.get()))));
+					queryExpressionQueryBuilder.require(componentIdQuery);
 				}
 			}
 		} else {
@@ -183,7 +185,7 @@ public class SnomedRefSetIndexQueryAdapter extends SnomedDslIndexQueryAdapter<Sn
 			
 			final DocumentWithScore refSetDocument = itr.next();
 			final Document doc = refSetDocument.getDocument();
-			final String refSetId = doc.get(CommonIndexConstants.COMPONENT_ID);
+			final String refSetId = ComponentIdLongField.getString(doc);
 			if (!isEmpty(refSetId)) {
 				
 				@SuppressWarnings("rawtypes")
@@ -226,45 +228,14 @@ public class SnomedRefSetIndexQueryAdapter extends SnomedDslIndexQueryAdapter<Sn
 	
 	private SnomedRefSetIndexEntry createEntry(final Document document, final float score) {
 		return new SnomedRefSetIndexEntry(
-				getId(document), 
-				getLabel(document), 
-				getIconId(document),
+				ComponentIdLongField.getString(document), 
+				document.getField(CommonIndexConstants.COMPONENT_LABEL).stringValue(), 
+				document.getField(CommonIndexConstants.COMPONENT_ICON_ID).stringValue(),
 				document.get(SnomedIndexBrowserConstants.COMPONENT_MODULE_ID),
 				score,
-				getStorageKey(document), 
-				getType(document),
-				getReferencedComponentType(document), isStructural(document));
-	}
-	
-	private String getIconId(final Document document) {
-		return document.getField(CommonIndexConstants.COMPONENT_ICON_ID).stringValue();
-	}
-	
-	private boolean isStructural(final Document document) {
-		return IndexUtils.getBooleanValue(document.getField(REFERENCE_SET_STRUCTURAL));
-	}
-
-	private short getReferencedComponentType(final Document document) {
-		return IndexUtils.getShortValue(document.getField(REFERENCE_SET_REFERENCED_COMPONENT_TYPE));
-	}
-
-	private String getId(final Document document) {
-		return document.getField(CommonIndexConstants.COMPONENT_ID).stringValue();
-	}
-	
-	private String getLabel(final Document document) {
-		return document.getField(CommonIndexConstants.COMPONENT_LABEL).stringValue();
-	}
-	
-	private SnomedRefSetType getType(final Document document) {
-		return getTypeByValue(IndexUtils.getIntValue(document.getField(REFERENCE_SET_TYPE)));
-	}
-	
-	private SnomedRefSetType getTypeByValue(final int value) {
-		return SnomedRefSetType.get(value);
-	}
-
-	private long getStorageKey(final Document document) {
-		return IndexUtils.getLongValue(document.getField(CommonIndexConstants.COMPONENT_STORAGE_KEY));
+				IndexUtils.getLongValue(document.getField(CommonIndexConstants.COMPONENT_STORAGE_KEY)), 
+				SnomedRefSetType.get(IndexUtils.getIntValue(document.getField(REFERENCE_SET_TYPE))),
+				IndexUtils.getShortValue(document.getField(REFERENCE_SET_REFERENCED_COMPONENT_TYPE)), 
+				IndexUtils.getBooleanValue(document.getField(REFERENCE_SET_STRUCTURAL)));
 	}
 }

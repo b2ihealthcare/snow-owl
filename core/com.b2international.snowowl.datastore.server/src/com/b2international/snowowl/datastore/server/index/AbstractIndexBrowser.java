@@ -41,7 +41,6 @@ import org.apache.lucene.search.Query;
 import org.apache.lucene.search.ScoreDoc;
 import org.apache.lucene.search.TermQuery;
 import org.apache.lucene.search.TopDocs;
-import org.apache.lucene.util.BytesRef;
 
 import com.b2international.commons.ClassUtils;
 import com.b2international.commons.CompareUtils;
@@ -57,6 +56,7 @@ import com.b2international.snowowl.datastore.ICodeSystemVersion;
 import com.b2international.snowowl.datastore.InternalTerminologyRegistryService;
 import com.b2international.snowowl.datastore.index.DocIdCollector.DocIdsIterator;
 import com.b2international.snowowl.datastore.index.IndexUtils;
+import com.b2international.snowowl.datastore.index.ComponentIdLongField;
 import com.b2international.snowowl.datastore.server.TerminologyRegistryServiceWrapper;
 import com.b2international.snowowl.terminologyregistry.core.index.TerminologyRegistryIndexConstants;
 import com.google.common.base.Preconditions;
@@ -82,7 +82,7 @@ public abstract class AbstractIndexBrowser<E extends IIndexEntry> implements Int
 		}
 	}
 
-	private static final Set<String> ID_LABEL_FIELD_TO_LOAD = Collections.unmodifiableSet(Sets.newHashSet(CommonIndexConstants.COMPONENT_ID, CommonIndexConstants.COMPONENT_LABEL));
+	private static final Set<String> ID_LABEL_FIELD_TO_LOAD = Collections.unmodifiableSet(Sets.newHashSet(ComponentIdLongField.COMPONENT_ID, CommonIndexConstants.COMPONENT_LABEL));
 	private static final Set<String> COMPONENT_TYPE_FIELD_TO_LOAD = unmodifiableSet(newHashSet(CommonIndexConstants.COMPONENT_TYPE));
 	
 	/**
@@ -108,7 +108,7 @@ public abstract class AbstractIndexBrowser<E extends IIndexEntry> implements Int
 		
 		return new ComponentIdAndLabel(
 				Preconditions.checkNotNull(doc.get(CommonIndexConstants.COMPONENT_LABEL), "Component label was null for component. CDO ID: " + storageKey),
-				Preconditions.checkNotNull(doc.get(CommonIndexConstants.COMPONENT_ID), "Component ID was null for component. CDO ID: " + storageKey)); 
+				Preconditions.checkNotNull(doc.get(ComponentIdLongField.COMPONENT_ID), "Component ID was null for component. CDO ID: " + storageKey)); 
 		
 	}
 	
@@ -268,15 +268,13 @@ public abstract class AbstractIndexBrowser<E extends IIndexEntry> implements Int
 		return service.getTotalHitCount(branchPath, query);
 	}
 	
-	/**Returns with the term identifying the component ID. Field name is {@link CommonIndexConstants#COMPONENT_ID} value is the given string.
-	 *<br><b>NOTE:&nbsp;</b>clients may override this if e.g. unique component ID field is stored as numeric value and component ID
-	 *string has to be prefixcoded into the proper {@link BytesRef}.*/
-	protected Term getIdTerm(final String componentId) {
-		return new Term(CommonIndexConstants.COMPONENT_ID, componentId);
-	}
-	
 	@SuppressWarnings("unchecked")
 	private IndexServerService<E> getService(final IIndexService<?> service) {
 		return ClassUtils.checkAndCast(service, IndexServerService.class);
+	}
+	
+	/**Returns with the query for the unique ID of the component.*/
+	protected Query getComponentIdQuery(final String componentId) {
+		return new TermQuery(new Term(ComponentIdLongField.COMPONENT_ID, componentId));
 	}
 }

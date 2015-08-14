@@ -22,7 +22,6 @@ import static com.b2international.commons.pcj.LongSets.newLongSet;
 import static com.b2international.commons.pcj.LongSets.newLongSetWithMurMur3Hash;
 import static com.b2international.commons.pcj.LongSets.toStringSet;
 import static com.b2international.snowowl.core.ApplicationContext.getServiceForClass;
-import static com.b2international.snowowl.core.api.index.CommonIndexConstants.COMPONENT_ID;
 import static com.b2international.snowowl.core.api.index.CommonIndexConstants.COMPONENT_LABEL_SORT_KEY;
 import static com.b2international.snowowl.core.api.index.CommonIndexConstants.COMPONENT_STORAGE_KEY;
 import static com.b2international.snowowl.core.api.index.CommonIndexConstants.COMPONENT_TYPE;
@@ -164,6 +163,7 @@ import com.b2international.snowowl.datastore.cdo.ICDOConnectionManager;
 import com.b2international.snowowl.datastore.index.DocIdCollector;
 import com.b2international.snowowl.datastore.index.DocIdCollector.DocIdsIterator;
 import com.b2international.snowowl.datastore.index.IndexUtils;
+import com.b2international.snowowl.datastore.index.ComponentIdLongField;
 import com.b2international.snowowl.datastore.index.LongDocValuesCollector;
 import com.b2international.snowowl.datastore.server.index.IndexServerService;
 import com.b2international.snowowl.datastore.server.snomed.index.NamespaceMapping;
@@ -235,7 +235,7 @@ public class SnomedComponentService implements ISnomedComponentService, IPostSto
 	private static final Set<String> MEMBER_REF_SET_ID_FILDS_TO_LOAD = singleton(REFERENCE_SET_MEMBER_REFERENCE_SET_ID);
 	
 	private static final Set<String> COMPONENT_ID_MODULE_FIELDS_TO_LOAD = unmodifiableSet(newHashSet(
-			COMPONENT_ID, COMPONENT_MODULE_ID
+			ComponentIdLongField.COMPONENT_ID, COMPONENT_MODULE_ID
 			));
 	
 	private static final Set<String> MEMBER_LABEL_FIELDS_TO_LOAD = unmodifiableSet(newHashSet(
@@ -258,7 +258,7 @@ public class SnomedComponentService implements ISnomedComponentService, IPostSto
 			));
 	
 	private static final Set<String> FSN_DESCRIPTION_FIELDS_TO_LOAD = unmodifiableSet(newHashSet(
-			COMPONENT_ID, 
+			ComponentIdLongField.COMPONENT_ID, 
 			DESCRIPTION_CONCEPT_ID,
 			CommonIndexConstants.COMPONENT_LABEL
 			));
@@ -751,7 +751,7 @@ public class SnomedComponentService implements ISnomedComponentService, IPostSto
 				final Document descriptionDoc = searcher.doc(descriptionDocIdsItr.getDocID(), DESCRIPTION_EXTENDED_FIELDS_TO_LOAD);
 				descriptionProperties.add(new String[] {
 						
-						descriptionDoc.get(COMPONENT_ID),
+						ComponentIdLongField.getString(descriptionDoc),
 						descriptionDoc.get(CommonIndexConstants.COMPONENT_LABEL),
 						descriptionDoc.get(DESCRIPTION_CONCEPT_ID),
 						descriptionDoc.get(DESCRIPTION_TYPE_ID),
@@ -865,7 +865,7 @@ public class SnomedComponentService implements ISnomedComponentService, IPostSto
 		final BooleanQuery query = new BooleanQuery(true);
 
 		query.add(new TermQuery(new Term(COMPONENT_TYPE, IndexUtils.intToPrefixCoded(SnomedTerminologyComponentConstants.DESCRIPTION_NUMBER))), MUST);
-		query.add(new TermQuery(new Term(COMPONENT_ID, longToPrefixCoded(descriptionId))), MUST);
+		query.add(new ComponentIdLongField(descriptionId).toQuery(), MUST);
 		
 		final TopDocs topDocs = getIndexServerService().search(branchPath, query, 1);
 		
@@ -946,7 +946,8 @@ public class SnomedComponentService implements ISnomedComponentService, IPostSto
 		
 			final Document doc = getIndexServerService().document(branchPath, scoreDoc.doc, DESCRIPTION_EXTENDED_FIELDS_TO_LOAD);
 			
-			IndexableField field = doc.getField(COMPONENT_ID);
+			// TODO: Convert to LongComponentIdField.getString(doc)
+			IndexableField field = doc.getField(ComponentIdLongField.COMPONENT_ID);
 			
 			if (null == field) {
 				return null;
@@ -1030,7 +1031,7 @@ public class SnomedComponentService implements ISnomedComponentService, IPostSto
 		final BooleanQuery query = new BooleanQuery(true);
 
 		query.add(new TermQuery(new Term(COMPONENT_TYPE, IndexUtils.intToPrefixCoded(SnomedTerminologyComponentConstants.RELATIONSHIP_NUMBER))), MUST);
-		query.add(new TermQuery(new Term(COMPONENT_ID, longToPrefixCoded(relationshipId))), MUST);
+		query.add(new ComponentIdLongField(relationshipId).toQuery(), MUST);
 		
 		final TopDocs topDocs = getIndexServerService().search(branchPath, query, 1);
 		
@@ -1175,7 +1176,7 @@ public class SnomedComponentService implements ISnomedComponentService, IPostSto
 		
 		final BooleanQuery query = new BooleanQuery(true);
 		query.add(new TermQuery(new Term(COMPONENT_TYPE, IndexUtils.intToPrefixCoded(SnomedTerminologyComponentConstants.DESCRIPTION_NUMBER))), MUST);
-		query.add(new TermQuery(new Term(COMPONENT_ID, longToPrefixCoded(relationshipId))), MUST);
+		query.add(new ComponentIdLongField(relationshipId).toQuery(), MUST);
 		
 		final TopDocs topDocs = getIndexServerService().search(branchPath, query, 1);
 		
@@ -1235,7 +1236,7 @@ public class SnomedComponentService implements ISnomedComponentService, IPostSto
 		
 		try {
 			
-			final Query query = new TermQuery(new Term(COMPONENT_ID, longToPrefixCoded(componentId)));
+			final Query query = new ComponentIdLongField(componentId).toQuery();
 			return getIndexServerService().getHitCount(branchPath, query, null) > 0;
 			
 		} catch (final NumberFormatException e) {
@@ -1377,7 +1378,7 @@ public class SnomedComponentService implements ISnomedComponentService, IPostSto
 				
 				query = new TermQuery(new Term(COMPONENT_TYPE, IndexUtils.intToPrefixCoded(terminologyComponentId)));
 				fieldsToLoad = COMPONENT_ID_STORAGE_KEY_TO_LOAD;
-				idField = COMPONENT_ID;
+				idField = ComponentIdLongField.COMPONENT_ID;
 				break;
 				
 			case SnomedTerminologyComponentConstants.REFSET_MEMBER_NUMBER:
@@ -1566,7 +1567,7 @@ public class SnomedComponentService implements ISnomedComponentService, IPostSto
 			while (itr.next()) {
 				
 				final Document doc = searcher.doc(itr.getDocID(), COMPONENT_ID_KEY_TO_LOAD);
-				$.add(IndexUtils.getIntValue(doc.getField(COMPONENT_ID)));
+				$.add(ComponentIdLongField.getLong(doc));
 				
 			}
 			
@@ -1717,7 +1718,8 @@ public class SnomedComponentService implements ISnomedComponentService, IPostSto
 			final DocIdsIterator itr = collector.getDocIDs().iterator();
 			
 			while (itr.next()) {
-				$.add(getLongValue(searcher.doc(itr.getDocID(), COMPONENT_ID_KEY_TO_LOAD).getField(COMPONENT_ID)));
+				Document doc = searcher.doc(itr.getDocID(), COMPONENT_ID_KEY_TO_LOAD);
+				$.add(ComponentIdLongField.getLong(doc));
 			}
 			
 			return $;
@@ -1761,7 +1763,7 @@ public class SnomedComponentService implements ISnomedComponentService, IPostSto
 
 			while (itr.next()) {
 				final Document doc = searcher.doc(itr.getDocID(), COMPONENT_ID_MODULE_FIELDS_TO_LOAD);
-				ids.put(getLongValue(doc.getField(COMPONENT_ID)), getLongValue(doc.getField(COMPONENT_MODULE_ID)));
+				ids.put(ComponentIdLongField.getLong(doc), getLongValue(doc.getField(COMPONENT_MODULE_ID)));
 			}
 			
 			return ids;
@@ -1970,7 +1972,7 @@ public class SnomedComponentService implements ISnomedComponentService, IPostSto
 		
 		final BooleanQuery refSetQuery = new BooleanQuery(true);
 		refSetQuery.add(new TermQuery(new Term(COMPONENT_TYPE, IndexUtils.intToPrefixCoded(SnomedTerminologyComponentConstants.REFSET_NUMBER))), MUST);
-		refSetQuery.add(new TermQuery(new Term(COMPONENT_ID, longToPrefixCoded(refSetId))), MUST);
+		refSetQuery.add(new ComponentIdLongField(refSetId).toQuery(), MUST);
 		
 		final Query memberQuery = new TermQuery(new Term(REFERENCE_SET_MEMBER_REFERENCE_SET_ID, longToPrefixCoded(refSetId)));
 		final int maxDoc = getIndexServerService().maxDoc(branchPath);
@@ -2045,7 +2047,7 @@ public class SnomedComponentService implements ISnomedComponentService, IPostSto
 	@Override
 	public LongSet getAllCoreComponentIds(final IBranchPath branchPath) {
 		checkNotNull(branchPath, "branchPath");
-		final LongDocValuesCollector collector = new LongDocValuesCollector(COMPONENT_ID);
+		final LongDocValuesCollector collector = new LongDocValuesCollector(ComponentIdLongField.COMPONENT_ID);
 		getIndexServerService().search(branchPath, ALL_CORE_COMPONENTS_QUERY, collector);
 		return newLongSet(collector.getValues());
 	}
@@ -2247,7 +2249,7 @@ public class SnomedComponentService implements ISnomedComponentService, IPostSto
 				@Override
 				public void apply(final int docId) throws IOException {
 					final Document doc = searcher.get().doc(docId, FSN_DESCRIPTION_FIELDS_TO_LOAD);
-					final long descriptionId = getLongValue(doc.getField(COMPONENT_ID));
+					final long descriptionId = ComponentIdLongField.getLong(doc);
 					
 					//FSN is applicable for the specified language
 					if (descriptionIds.contains(descriptionId)) {
@@ -2291,7 +2293,7 @@ public class SnomedComponentService implements ISnomedComponentService, IPostSto
 		final BooleanQuery subtypeOrSelfQuery = new BooleanQuery(true);
 		subtypeOrSelfQuery.add(new TermQuery(new Term(CommonIndexConstants.COMPONENT_PARENT, longToPrefixCoded(focusConceptId))), SHOULD);
 		subtypeOrSelfQuery.add(new TermQuery(new Term(CONCEPT_ANCESTOR, longToPrefixCoded(focusConceptId))), SHOULD);
-		subtypeOrSelfQuery.add(new TermQuery(new Term(COMPONENT_ID, longToPrefixCoded(focusConceptId))), SHOULD);
+		subtypeOrSelfQuery.add(new ComponentIdLongField(focusConceptId).toQuery(), SHOULD);
 		
 		final BooleanQuery query = new BooleanQuery(true);
 		query.add(SnomedIndexQueries.ACTIVE_COMPONENT_QUERY, MUST);
@@ -2563,7 +2565,7 @@ public class SnomedComponentService implements ISnomedComponentService, IPostSto
 			
 		for (final String referencedComponentId : referencedComponentIds) {
 			final BooleanQuery componentQuery = new BooleanQuery(true);
-			componentQuery.add(new TermQuery(new Term(COMPONENT_ID, longToPrefixCoded(referencedComponentId))), MUST);
+			componentQuery.add(new ComponentIdLongField(referencedComponentId).toQuery(), MUST);
 			componentQuery.add(componentTypeQuery, MUST);
 
 			query.add(componentQuery, SHOULD);
@@ -2588,7 +2590,7 @@ public class SnomedComponentService implements ISnomedComponentService, IPostSto
 		checkNotNull(branchPath, "Branch path argument cannot be null.");
 		checkNotNull(componentId, "Component ID argument cannot be null.");
 		final BooleanQuery query = new BooleanQuery(true);
-		query.add(new TermQuery(new Term(COMPONENT_ID, longToPrefixCoded(componentId))), MUST);
+		query.add(new ComponentIdLongField(componentId).toQuery(), MUST);
 		query.add(new TermQuery(new Term(COMPONENT_TYPE, IndexUtils.intToPrefixCoded(componentType))), MUST);
 
 		return getIndexServerService().getHitCount(branchPath, query, null) > 0;
@@ -2644,7 +2646,7 @@ public class SnomedComponentService implements ISnomedComponentService, IPostSto
 
 				labelQuery = new BooleanQuery(true);
 				labelQuery.add(new TermQuery(new Term(COMPONENT_TYPE, IndexUtils.intToPrefixCoded(componentType))), MUST);
-				labelQuery.add(new TermQuery(new Term(COMPONENT_ID, longToPrefixCoded(componentId))), MUST);
+				labelQuery.add(new ComponentIdLongField(componentId).toQuery(), MUST);
 				break;
 				
 			case SnomedTerminologyComponentConstants.RELATIONSHIP_NUMBER:
@@ -2679,7 +2681,7 @@ public class SnomedComponentService implements ISnomedComponentService, IPostSto
 
 		final BooleanQuery query = new BooleanQuery(true);
 		query.add(new TermQuery(new Term(COMPONENT_TYPE, IndexUtils.intToPrefixCoded(SnomedTerminologyComponentConstants.CONCEPT_NUMBER))), MUST);
-		query.add(new TermQuery(new Term(COMPONENT_ID, longToPrefixCoded(conceptId))), MUST);
+		query.add(new ComponentIdLongField(conceptId).toQuery(), MUST);
 
 		final TopDocs topDocs = searcher.search(query, 1);
 
@@ -2743,7 +2745,7 @@ public class SnomedComponentService implements ISnomedComponentService, IPostSto
 		for (final ScoreDoc scoreDoc : topDocs.scoreDocs) {
 			final Document doc = indexService.document(branchPath, scoreDoc.doc, COMPONENT_ID_STORAGE_KEY_TO_LOAD);
 			final CDOID cdoId = CDOIDUtil.createLong(getLongValue(doc.getField(COMPONENT_STORAGE_KEY)));
-			final String refSetId = doc.get(COMPONENT_ID);
+			final String refSetId = ComponentIdLongField.getString(doc);
 			cdoIdToIdMap.put(cdoId, refSetId);
 		}
 		return unmodifiableMap(cdoIdToIdMap);
@@ -2778,9 +2780,9 @@ public class SnomedComponentService implements ISnomedComponentService, IPostSto
 			
 			while (itr.next()) {
 				
-				final Document doc = service.document(branchPath, itr.getDocID(), newHashSet(SnomedIndexBrowserConstants.COMPONENT_REFERRING_PREDICATE, CommonIndexConstants.COMPONENT_ID));
+				final Document doc = service.document(branchPath, itr.getDocID(), newHashSet(SnomedIndexBrowserConstants.COMPONENT_REFERRING_PREDICATE, ComponentIdLongField.COMPONENT_ID));
 				final IndexableField[] predicateFields = doc.getFields(SnomedIndexBrowserConstants.COMPONENT_REFERRING_PREDICATE);
-				final String componentId  = doc.get(CommonIndexConstants.COMPONENT_ID);
+				final String componentId = ComponentIdLongField.getString(doc);
 				//XXX akitta: what if both reference set and its identifier concept have predicates? how to distinguish between them?
 				for (final IndexableField field : predicateFields) {
 					
@@ -3033,10 +3035,10 @@ public class SnomedComponentService implements ISnomedComponentService, IPostSto
 	}
 
 	private static final Set<String> COMPONENT_STORAGE_KEY_TO_LOAD = newHashSet(COMPONENT_STORAGE_KEY);
-	private static final Set<String> COMPONENT_ID_KEY_TO_LOAD = newHashSet(COMPONENT_ID);
+	private static final Set<String> COMPONENT_ID_KEY_TO_LOAD = newHashSet(ComponentIdLongField.COMPONENT_ID);
 	
 	private static final Set<String> COMPONENT_ID_STORAGE_KEY_TO_LOAD = newHashSet(
-			COMPONENT_ID, 
+			ComponentIdLongField.COMPONENT_ID, 
 			COMPONENT_STORAGE_KEY);
 	
 	private static final Set<String> MEMBER_UUID_STORAGE_KEY_TO_LOAD = newHashSet(
@@ -3062,7 +3064,7 @@ public class SnomedComponentService implements ISnomedComponentService, IPostSto
 	
 	private static final Set<String> DESCRIPTION_EXTENDED_FIELDS_TO_LOAD = newHashSet(
 			COMPONENT_STORAGE_KEY,
-			COMPONENT_ID,
+			ComponentIdLongField.COMPONENT_ID,
 			DESCRIPTION_CONCEPT_ID,
 			DESCRIPTION_TYPE_ID,
 			CommonIndexConstants.COMPONENT_LABEL,
@@ -3112,5 +3114,4 @@ public class SnomedComponentService implements ISnomedComponentService, IPostSto
 		REFERENCE_SET_CDO_IDS,
 		NAMESPACE_IDS;
 	}
-	
 }

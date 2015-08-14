@@ -24,8 +24,6 @@ import java.util.List;
 import javax.annotation.Resource;
 
 import org.apache.lucene.search.Sort;
-import org.apache.lucene.search.SortField;
-import org.apache.lucene.search.SortField.Type;
 import org.apache.lucene.util.BytesRef;
 
 import com.b2international.commons.ClassUtils;
@@ -41,6 +39,7 @@ import com.b2international.snowowl.core.exceptions.ComponentNotFoundException;
 import com.b2international.snowowl.core.terminology.ComponentCategory;
 import com.b2international.snowowl.datastore.index.IndexQueryBuilder;
 import com.b2international.snowowl.datastore.index.IndexUtils;
+import com.b2international.snowowl.datastore.index.ComponentIdLongField;
 import com.b2international.snowowl.snomed.api.ISnomedConceptService;
 import com.b2international.snowowl.snomed.api.ISnomedTerminologyBrowserService;
 import com.b2international.snowowl.snomed.api.domain.ISnomedConcept;
@@ -98,7 +97,7 @@ public class SnomedTerminologyBrowserServiceImpl implements ISnomedTerminologyBr
 
 		@Override
 		public Sort createSort() {
-			return new Sort(new SortField(CommonIndexConstants.COMPONENT_ID, Type.LONG));
+			return ComponentIdLongField.createSort();
 		}
 	}
 

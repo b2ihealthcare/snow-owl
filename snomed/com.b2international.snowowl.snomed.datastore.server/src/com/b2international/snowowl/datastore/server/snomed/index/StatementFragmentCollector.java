@@ -28,6 +28,7 @@ import bak.pcj.map.LongKeyOpenHashMap;
 
 import com.b2international.snowowl.core.api.index.CommonIndexConstants;
 import com.b2international.snowowl.datastore.index.AbstractDocsOutOfOrderCollector;
+import com.b2international.snowowl.datastore.index.ComponentIdLongField;
 import com.b2international.snowowl.snomed.datastore.StatementFragment;
 import com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants;
 
@@ -104,7 +105,7 @@ public class StatementFragmentCollector extends AbstractDocsOutOfOrderCollector 
 
 	@Override
 	protected void initDocValues(final AtomicReader leafReader) throws IOException {
-		idValues = leafReader.getNumericDocValues(CommonIndexConstants.COMPONENT_ID);
+		idValues = ComponentIdLongField.getNumericDocValues(leafReader);
 		storageKeyValues = leafReader.getNumericDocValues(CommonIndexConstants.COMPONENT_STORAGE_KEY);
 		sourceIdValues = leafReader.getNumericDocValues(SnomedIndexBrowserConstants.RELATIONSHIP_OBJECT_ID);
 		destinationIdValues = leafReader.getNumericDocValues(SnomedIndexBrowserConstants.RELATIONSHIP_VALUE_ID);

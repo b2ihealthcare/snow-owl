@@ -26,7 +26,6 @@ import org.apache.lucene.search.Query;
 
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.api.IBranchPath;
-import com.b2international.snowowl.core.api.index.CommonIndexConstants;
 import com.b2international.snowowl.core.api.index.IndexException;
 import com.b2international.snowowl.core.validation.ComponentValidationConstraint;
 import com.b2international.snowowl.core.validation.ComponentValidationDiagnostic;
@@ -35,6 +34,7 @@ import com.b2international.snowowl.datastore.index.DocIdCollector;
 import com.b2international.snowowl.datastore.index.DocIdCollector.DocIdsIterator;
 import com.b2international.snowowl.datastore.index.IndexQueryBuilder;
 import com.b2international.snowowl.datastore.index.IndexUtils;
+import com.b2international.snowowl.datastore.index.ComponentIdLongField;
 import com.b2international.snowowl.datastore.server.snomed.index.SnomedIndexServerService;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.snomed.datastore.SnomedConceptIndexEntry;
@@ -82,12 +82,12 @@ public class SnomedConceptUngroupedRelationshipConstraint extends ComponentValid
 			DocIdsIterator iterator = collector.getDocIDs().iterator();
 			while (iterator.next()) {
 				Document doc = indexService.document(branchPath, iterator.getDocID(), ImmutableSet.of(SnomedIndexBrowserConstants.RELATIONSHIP_GROUP,
-						SnomedIndexBrowserConstants.RELATIONSHIP_ATTRIBUTE_ID, CommonIndexConstants.COMPONENT_ID));
+						SnomedIndexBrowserConstants.RELATIONSHIP_ATTRIBUTE_ID, ComponentIdLongField.COMPONENT_ID));
 				int relationshipGroup = doc.getField(SnomedIndexBrowserConstants.RELATIONSHIP_GROUP).numericValue().intValue();
 				if (relationshipGroup != 0) {
 					long relationshipTypeId = doc.getField(SnomedIndexBrowserConstants.RELATIONSHIP_ATTRIBUTE_ID).numericValue().longValue();
 					String relationshipTypeLabel = SnomedConceptNameProvider.INSTANCE.getText(String.valueOf(relationshipTypeId));
-					String relationshipLabel = SnomedRelationshipNameProvider.INSTANCE.getText(doc.get(CommonIndexConstants.COMPONENT_ID));
+					String relationshipLabel = SnomedRelationshipNameProvider.INSTANCE.getText(ComponentIdLongField.getString(doc));
 					String errorMessage = "'" + component.getLabel() + "' has a grouped relationship '" + relationshipLabel 
 							+ "' of the type '" + relationshipTypeLabel + "' that must always be ungrouped.";
 					diagnostics.add(new ComponentValidationDiagnosticImpl(component.getId(), errorMessage, ID, SnomedTerminologyComponentConstants.CONCEPT_NUMBER, error()));

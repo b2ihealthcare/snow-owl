@@ -48,6 +48,7 @@ import com.b2international.snowowl.datastore.index.AbstractIndexMappingStrategy;
 import com.b2international.snowowl.datastore.index.DocumentWithScore;
 import com.b2international.snowowl.datastore.index.IDocumentUpdater;
 import com.b2international.snowowl.datastore.index.IndexUtils;
+import com.b2international.snowowl.datastore.index.ComponentIdLongField;
 import com.b2international.snowowl.datastore.server.index.FSIndexServerService;
 import com.b2international.snowowl.datastore.server.index.IIndexPostProcessor;
 import com.b2international.snowowl.datastore.server.index.IndexPostProcessor;
@@ -121,14 +122,13 @@ public class SnomedIndexServerService extends FSIndexServerService<SnomedIndexEn
 		
 		if (null == mappingStrategy) { //if first attempt, retrieve from index
 			
-			final Term conceptIdTerm = new Term(CommonIndexConstants.COMPONENT_ID, IndexUtils.longToPrefixCoded(conceptId));
 			final Term conceptTypeTerm  = new Term(
 					CommonIndexConstants.COMPONENT_TYPE, 
 					IndexUtils.intToPrefixCoded(SnomedTerminologyComponentConstants.CONCEPT_NUMBER));
 			
 			final BooleanQuery query = new BooleanQuery(true);
 			query.add(new TermQuery(conceptTypeTerm), Occur.MUST);
-			query.add(new TermQuery(conceptIdTerm), Occur.MUST);
+			query.add(new ComponentIdLongField(conceptId).toQuery(), Occur.MUST);
 			
 			final Collection<DocumentWithScore> documents = search(branchPath, query, null, null, 2);
 			

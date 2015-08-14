@@ -37,6 +37,7 @@ import com.b2international.snowowl.core.api.index.CommonIndexConstants;
 import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.datastore.index.IndexQueryBuilder;
 import com.b2international.snowowl.datastore.index.IndexUtils;
+import com.b2international.snowowl.datastore.index.ComponentIdLongField;
 import com.b2international.snowowl.datastore.index.QueryDslIndexQueryAdapter;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.snomed.datastore.SnomedRelationshipIndexEntry;
@@ -80,7 +81,7 @@ public class SnomedRelationshipIndexQueryAdapter extends QueryDslIndexQueryAdapt
 	@Override
 	public SnomedRelationshipIndexEntry buildSearchResult(final Document doc, final IBranchPath branchPath, final float score) {
 		
-		final String id = doc.get(CommonIndexConstants.COMPONENT_ID);
+		final String id = ComponentIdLongField.getString(doc);
 		final String objectId = doc.get(RELATIONSHIP_OBJECT_ID);
 		final String attributeId = doc.get(RELATIONSHIP_ATTRIBUTE_ID);
 		final String valueId = doc.get(RELATIONSHIP_VALUE_ID);
@@ -112,7 +113,7 @@ public class SnomedRelationshipIndexQueryAdapter extends QueryDslIndexQueryAdapt
 			.requireExactTermIf(anyFlagSet(SEARCH_SOURCE_ID), RELATIONSHIP_OBJECT_ID, IndexUtils.longToPrefixCoded(parsedSearchStringOptional.get()))
 			.requireExactTermIf(anyFlagSet(SEARCH_DESTINATION_ID), RELATIONSHIP_VALUE_ID, IndexUtils.longToPrefixCoded(parsedSearchStringOptional.get()))
 			.requireExactTermIf(anyFlagSet(SEARCH_STORAGE_KEY), CommonIndexConstants.COMPONENT_STORAGE_KEY, IndexUtils.longToPrefixCoded(parsedSearchStringOptional.get()))
-			.requireExactTermIf(anyFlagSet(SEARCH_RELATIONSHIP_ID), CommonIndexConstants.COMPONENT_ID, IndexUtils.longToPrefixCoded(parsedSearchStringOptional.get()));
+			.requireIf(anyFlagSet(SEARCH_RELATIONSHIP_ID), new ComponentIdLongField(parsedSearchStringOptional.get()).toQuery());
 		} else {
 			// TODO: this query adapter only searches by IDs, what to return here?
 			return new IndexQueryBuilder()

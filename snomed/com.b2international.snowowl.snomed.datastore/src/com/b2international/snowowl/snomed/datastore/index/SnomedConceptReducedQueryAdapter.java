@@ -19,6 +19,7 @@ import com.b2international.commons.StringUtils;
 import com.b2international.snowowl.core.api.index.CommonIndexConstants;
 import com.b2international.snowowl.datastore.index.IndexQueryBuilder;
 import com.b2international.snowowl.datastore.index.IndexUtils;
+import com.b2international.snowowl.datastore.index.ComponentIdLongField;
 import com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants;
 import com.google.common.base.Optional;
 
@@ -51,8 +52,7 @@ public class SnomedConceptReducedQueryAdapter extends SnomedConceptIndexQueryAda
 			private static final long serialVersionUID = 2045863595340360998L;
 			@Override protected IndexQueryBuilder createIndexQueryBuilder() {
 				IndexQueryBuilder builder = super.createIndexQueryBuilder();
-				return builder
-					.requireExactTermIf(anyFlagSet(SEARCH_BY_CONCEPT_ID), CommonIndexConstants.COMPONENT_ID, IndexUtils.longToPrefixCoded(searchString));
+				return builder.requireIf(anyFlagSet(SEARCH_BY_CONCEPT_ID), new ComponentIdLongField(searchString).toQuery());
 			}
 		};
 	} 
@@ -84,10 +84,10 @@ public class SnomedConceptReducedQueryAdapter extends SnomedConceptIndexQueryAda
 
 	private IndexQueryBuilder createIndexQueryBuilderWithIdTerms(IndexQueryBuilder builder) {
 		return builder
-				.requireExistingTermIf(StringUtils.isEmpty(searchString), CommonIndexConstants.COMPONENT_ID)
+				.requireIf(StringUtils.isEmpty(searchString), ComponentIdLongField.existsQuery())
 				.finishIf(StringUtils.isEmpty(searchString))
 				.require(new IndexQueryBuilder()
-				.matchExactTerm(CommonIndexConstants.COMPONENT_ID, IndexUtils.longToPrefixCoded(searchString))
+				.match(new ComponentIdLongField(searchString).toQuery())
 				.matchAllTokenizedTermsIf(anyFlagSet(SEARCH_BY_LABEL), CommonIndexConstants.COMPONENT_LABEL, searchString.toLowerCase())
 				.matchAllTokenizedTermPrefixesIf(anyFlagSet(SEARCH_BY_LABEL), CommonIndexConstants.COMPONENT_LABEL, searchString.toLowerCase())
 				.matchAllTokenizedTermPrefixesIf(anyFlagSet(SEARCH_BY_FSN), SnomedIndexBrowserConstants.CONCEPT_FULLY_SPECIFIED_NAME, searchString.toLowerCase())
@@ -97,7 +97,7 @@ public class SnomedConceptReducedQueryAdapter extends SnomedConceptIndexQueryAda
 
 	private IndexQueryBuilder createIndexQueryBuilderWithoutIdTerms(IndexQueryBuilder builder) {
 		return builder
-				.requireExistingTermIf(StringUtils.isEmpty(searchString), CommonIndexConstants.COMPONENT_ID)
+				.requireIf(StringUtils.isEmpty(searchString), ComponentIdLongField.existsQuery())
 				.finishIf(StringUtils.isEmpty(searchString))
 				.require(new IndexQueryBuilder()
 				.matchAllTokenizedTermsIf(anyFlagSet(SEARCH_BY_LABEL), CommonIndexConstants.COMPONENT_LABEL, searchString.toLowerCase())

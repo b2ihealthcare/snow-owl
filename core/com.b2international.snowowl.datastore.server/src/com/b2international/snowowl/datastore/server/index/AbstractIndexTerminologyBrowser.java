@@ -57,6 +57,7 @@ import com.b2international.snowowl.datastore.index.DocIdCollector;
 import com.b2international.snowowl.datastore.index.DocIdCollector.DocIdsIterator;
 import com.b2international.snowowl.datastore.index.IndexQueryBuilder;
 import com.b2international.snowowl.datastore.index.IndexUtils;
+import com.b2international.snowowl.datastore.index.ComponentIdLongField;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableList.Builder;
@@ -460,7 +461,7 @@ abstract public class AbstractIndexTerminologyBrowser<E extends IIndexEntry> ext
 		Preconditions.checkNotNull(componentId, "Component ID argument cannot be null.");
 		
 		final BooleanQuery query = new BooleanQuery(true);
-		query.add(new TermQuery(getComponentIdTerm(componentId)), Occur.MUST);
+		query.add(getComponentIdQuery(componentId), Occur.MUST);
 		query.add(getTerminologyComponentTypeQuery(), Occur.MUST);
 
 		return service.getHitCount(branchPath, query, null) > 0;
@@ -485,9 +486,6 @@ abstract public class AbstractIndexTerminologyBrowser<E extends IIndexEntry> ext
 	private Query getDefaultTerminologyComponentTypeQuery() {
 		return new TermQuery(new Term(CommonIndexConstants.COMPONENT_TYPE, IndexUtils.intToPrefixCoded(getConceptTerminologyComponentId())));
 	}
-	
-	/**Returns with the term for the unique ID of the component.*/
-	abstract protected Term getComponentIdTerm(final String componentId);
 	
 	/**
 	 * Template method for creating an {@link IComponentWithChildFlag}.

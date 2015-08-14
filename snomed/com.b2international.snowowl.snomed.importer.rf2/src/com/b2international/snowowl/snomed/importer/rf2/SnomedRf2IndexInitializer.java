@@ -149,6 +149,7 @@ import com.b2international.snowowl.datastore.cdo.CDOViewFunction;
 import com.b2international.snowowl.datastore.cdo.ICDOConnection;
 import com.b2international.snowowl.datastore.cdo.ICDOConnectionManager;
 import com.b2international.snowowl.datastore.index.IndexUtils;
+import com.b2international.snowowl.datastore.index.ComponentIdLongField;
 import com.b2international.snowowl.datastore.index.SortKeyMode;
 import com.b2international.snowowl.datastore.server.snomed.index.NamespaceMapping;
 import com.b2international.snowowl.datastore.server.snomed.index.SnomedIndexServerService;
@@ -617,7 +618,7 @@ public class SnomedRf2IndexInitializer extends Job {
 			public void handleRecord(final int recordCount, final java.util.List<String> record) { 
 				
 				final long storageKey = getImportIndexService().getComponentCdoId(record.get(0));
-				final long sctId = Long.parseLong(record.get(0));
+				final String sctId = record.get(0);
 				final long sourceConceptId = Long.parseLong(record.get(4));
 				final long typeConceptId = Long.parseLong(record.get(7));
 				final long destinationConceptId = Long.parseLong(record.get(5));
@@ -649,7 +650,7 @@ public class SnomedRf2IndexInitializer extends Job {
 				
 				// Create relationship document
 				final Document doc = new Document();
-				doc.add(new LongField(CommonIndexConstants.COMPONENT_ID, sctId, Store.YES));
+				new ComponentIdLongField(sctId).addTo(doc);
 				doc.add(new IntField(CommonIndexConstants.COMPONENT_TYPE, SnomedTerminologyComponentConstants.RELATIONSHIP_NUMBER, Store.YES));
 				doc.add(new StoredField(COMPONENT_RELEASED, released ? 1 : 0));
 				doc.add(new IntField(COMPONENT_ACTIVE, active ? 1 : 0, Store.YES));
@@ -667,7 +668,6 @@ public class SnomedRf2IndexInitializer extends Job {
 				doc.add(new LongField(RELATIONSHIP_EFFECTIVE_TIME, effectiveTime, Store.YES));
 				
 				doc.add(new NumericDocValuesField(CommonIndexConstants.COMPONENT_STORAGE_KEY, storageKey));
-				doc.add(new NumericDocValuesField(CommonIndexConstants.COMPONENT_ID, sctId));
 				doc.add(new NumericDocValuesField(RELATIONSHIP_VALUE_ID, destinationConceptId));
 				doc.add(new NumericDocValuesField(RELATIONSHIP_OBJECT_ID, sourceConceptId));
 				doc.add(new NumericDocValuesField(RELATIONSHIP_ATTRIBUTE_ID, typeConceptId));
@@ -723,13 +723,12 @@ public class SnomedRf2IndexInitializer extends Job {
 					
 					final Document refSetDoc = new Document();
 					final int refSetType = getTypeOrdinal(type);
-					final Long id = Long.valueOf(refSetId);
 					final boolean structural = isStructural(type, refSetId);
 					final boolean indexAsRelevantForCompare = !structural;
 					final int refComponentType = SnomedTerminologyComponentConstants.getTerminologyComponentIdValueSafe(record.get(5));
 					final long storageKey = importIndexService.getRefSetCdoId(refSetId);
 					refSetDoc.add(new IntField(CommonIndexConstants.COMPONENT_TYPE, SnomedTerminologyComponentConstants.REFSET_NUMBER, Store.YES));
-					refSetDoc.add(new LongField(CommonIndexConstants.COMPONENT_ID, id, Store.YES));
+					new ComponentIdLongField(refSetId).addTo(refSetDoc);
 					refSetDoc.add(new IntField(REFERENCE_SET_TYPE, refSetType, Store.YES));
 					refSetDoc.add(new IntField(REFERENCE_SET_REFERENCED_COMPONENT_TYPE, refComponentType, Store.YES));
 					refSetDoc.add(new NumericDocValuesField(CommonIndexConstants.COMPONENT_COMPARE_UNIQUE_KEY, indexAsRelevantForCompare ? storageKey : CDOUtils.NO_STORAGE_KEY));
@@ -1098,7 +1097,7 @@ public class SnomedRf2IndexInitializer extends Job {
 			public void handleRecord(final int recordCount, final java.util.List<String> record) { 
 				
 				final long storageKey = getImportIndexService().getComponentCdoId(record.get(0));
-				final long sctId = Long.parseLong(record.get(0));
+				final String sctId = record.get(0);
 				final String term = record.get(7);
 				final boolean active = ACTIVE_STATUS.equals(record.get(2));
 				final long moduleId = Long.parseLong(record.get(3));
@@ -1111,7 +1110,7 @@ public class SnomedRf2IndexInitializer extends Job {
 
 				// Create description document.
 				final Document doc = new Document();
-				doc.add(new LongField(CommonIndexConstants.COMPONENT_ID, sctId, Store.YES));
+				new ComponentIdLongField(sctId).addTo(doc);
 				doc.add(new IntField(CommonIndexConstants.COMPONENT_TYPE, SnomedTerminologyComponentConstants.DESCRIPTION_NUMBER, Store.YES));
 				doc.add(new TextField(CommonIndexConstants.COMPONENT_LABEL, term, Store.YES));
 				SortKeyMode.SEARCH_ONLY.add(doc, term);
@@ -1125,7 +1124,6 @@ public class SnomedRf2IndexInitializer extends Job {
 				doc.add(new LongField(COMPONENT_MODULE_ID, moduleId, Store.YES));
 				doc.add(new LongField(DESCRIPTION_EFFECTIVE_TIME, effectiveTime, Store.YES));
 
-				doc.add(new NumericDocValuesField(CommonIndexConstants.COMPONENT_ID, sctId));
 				doc.add(new NumericDocValuesField(CommonIndexConstants.COMPONENT_STORAGE_KEY, storageKey));
 				doc.add(new NumericDocValuesField(DESCRIPTION_CASE_SIGNIFICANCE_ID, caseSignificanceId));
 				doc.add(new NumericDocValuesField(DESCRIPTION_TYPE_ID, typeId));
@@ -1224,11 +1222,10 @@ public class SnomedRf2IndexInitializer extends Job {
 			final boolean released, final boolean primitive, final boolean exhaustive, final long moduleId, final Collection<String> currentRefSetMemberships,
 			final Collection<String> currentMappingMemberships, final long effectiveTime, final boolean indexAsRelevantForCompare) {
 		
+		final String conceptIdString = Long.toString(conceptId);
 		final Document doc = new Document();
 		
-		final String conceptIdString = Long.toString(conceptId);
-		
-		doc.add(new LongField(CommonIndexConstants.COMPONENT_ID, conceptId, Store.YES));
+		new ComponentIdLongField(conceptId).addTo(doc);
 		doc.add(new LongField(CommonIndexConstants.COMPONENT_STORAGE_KEY, conceptStorageKey, Store.YES));
 		doc.add(new IntField(CommonIndexConstants.COMPONENT_TYPE, SnomedTerminologyComponentConstants.CONCEPT_NUMBER, Store.YES));
 		doc.add(new IntField(CONCEPT_EXHAUSTIVE, exhaustive ? 1 : 0, Store.YES));
@@ -1241,7 +1238,6 @@ public class SnomedRf2IndexInitializer extends Job {
 		if (!indexAsRelevantForCompare) {
 			doc.add(new NumericDocValuesField(CommonIndexConstants.COMPONENT_IGNORE_COMPARE_UNIQUE_KEY, conceptStorageKey));
 		}
-		doc.add(new NumericDocValuesField(CommonIndexConstants.COMPONENT_ID, conceptId));
 		doc.add(new LongField(CONCEPT_NAMESPACE_ID, NamespaceMapping.getExtensionNamespaceId(conceptId), Store.NO));
 		doc.add(new LongField(CONCEPT_EFFECTIVE_TIME, effectiveTime, Store.YES));
 		
@@ -1288,7 +1284,7 @@ public class SnomedRf2IndexInitializer extends Job {
 		}
 
 		// query direct parents
-		final LongCollection parentIds = getParentIds(String.valueOf(conceptId));
+		final LongCollection parentIds = getParentIds(conceptIdString);
 		if (parentIds.isEmpty()) {
 			// if it has no parents, then it is the root
 			doc.add(new LongField(CommonIndexConstants.COMPONENT_PARENT, ROOT_ID, Store.YES));
@@ -1299,13 +1295,13 @@ public class SnomedRf2IndexInitializer extends Job {
 			}
 		}
 		// query ancestors
-		final LongCollection ancestorIds = getAncestorIds(String.valueOf(conceptId));
+		final LongCollection ancestorIds = getAncestorIds(conceptIdString);
 		final LongIterator ancestorIdIterator = ancestorIds.iterator();
 		while (ancestorIdIterator.hasNext()) {
 			doc.add(new LongField(CONCEPT_ANCESTOR, ancestorIdIterator.next(), Store.YES));
 		}
 		
-		final List<TermWithType> descriptions = getImportIndexService().getConceptDescriptions(String.valueOf(conceptId));
+		final List<TermWithType> descriptions = getImportIndexService().getConceptDescriptions(conceptIdString);
 		for (final TermWithType termWithType : descriptions) {
 			
 			final String term = termWithType.term;

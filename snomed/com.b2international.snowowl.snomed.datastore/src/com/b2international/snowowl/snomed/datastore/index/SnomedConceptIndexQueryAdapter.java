@@ -27,6 +27,7 @@ import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.api.index.CommonIndexConstants;
 import com.b2international.snowowl.datastore.index.IndexQueryBuilder;
 import com.b2international.snowowl.datastore.index.IndexUtils;
+import com.b2international.snowowl.datastore.index.ComponentIdLongField;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.snomed.datastore.SnomedConceptIndexEntry;
 import com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants;
@@ -66,7 +67,7 @@ public abstract class SnomedConceptIndexQueryAdapter extends SnomedDslIndexQuery
 	@Override
 	public SnomedConceptIndexEntry buildSearchResult(final Document doc, final IBranchPath branchPath, final float score) {
 
-		final String id = doc.get(CommonIndexConstants.COMPONENT_ID);
+		final String id = ComponentIdLongField.getString(doc);
 		final String label = doc.get(CommonIndexConstants.COMPONENT_LABEL);
 		final String moduleId = doc.get(SnomedIndexBrowserConstants.COMPONENT_MODULE_ID);
 		final IndexableField storageKeyField = doc.getField(CommonIndexConstants.COMPONENT_STORAGE_KEY);

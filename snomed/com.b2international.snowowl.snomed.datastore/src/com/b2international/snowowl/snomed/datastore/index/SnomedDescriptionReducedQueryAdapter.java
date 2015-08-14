@@ -23,6 +23,7 @@ import com.b2international.commons.StringUtils;
 import com.b2international.snowowl.core.api.index.CommonIndexConstants;
 import com.b2international.snowowl.datastore.index.IndexQueryBuilder;
 import com.b2international.snowowl.datastore.index.IndexUtils;
+import com.b2international.snowowl.datastore.index.ComponentIdLongField;
 import com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants;
 import com.google.common.base.Optional;
 
@@ -59,7 +60,7 @@ public class SnomedDescriptionReducedQueryAdapter extends SnomedDescriptionIndex
 			return super.createIndexQueryBuilder()
 		        .requireExactTermIf(anyFlagSet(SEARCH_DESCRIPTION_ACTIVE_ONLY), SnomedIndexBrowserConstants.COMPONENT_ACTIVE, IndexUtils.intToPrefixCoded(1))
 		        .requireExactTermIf(!StringUtils.isEmpty(descriptionTypeId), SnomedIndexBrowserConstants.DESCRIPTION_TYPE_ID, IndexUtils.longToPrefixCoded(descriptionTypeId))
-		        .requireExistingTermIf(StringUtils.isEmpty(searchString), CommonIndexConstants.COMPONENT_ID);
+		        .requireIf(StringUtils.isEmpty(searchString), ComponentIdLongField.existsQuery());
 			
 		} else {
 			if (anyFlagSet(SEARCH_DESCRIPTION_ID | SEARCH_DESCRIPTION_CONCEPT_ID)) {
@@ -70,7 +71,7 @@ public class SnomedDescriptionReducedQueryAdapter extends SnomedDescriptionIndex
 					return createIndexQueryBuilderWithoutIdTerms();
 				} else {
 					// XXX: Search string could not be parsed into a long, so we query for an invalid ID instead. See SnomedRefSetIndexQueryAdapter.
-					return new IndexQueryBuilder().requireExactTerm(CommonIndexConstants.COMPONENT_ID, IndexUtils.longToPrefixCoded(-1L));
+					return new IndexQueryBuilder().require(new ComponentIdLongField(-1L).toQuery());
 				}
 			} else {
 				return createIndexQueryBuilderWithoutIdTerms();
@@ -82,10 +83,10 @@ public class SnomedDescriptionReducedQueryAdapter extends SnomedDescriptionIndex
 		return super.createIndexQueryBuilder()
 				.requireExactTermIf(anyFlagSet(SEARCH_DESCRIPTION_ACTIVE_ONLY), SnomedIndexBrowserConstants.COMPONENT_ACTIVE, IndexUtils.intToPrefixCoded(1))
 				.requireExactTermIf(!StringUtils.isEmpty(descriptionTypeId), SnomedIndexBrowserConstants.DESCRIPTION_TYPE_ID, IndexUtils.longToPrefixCoded(descriptionTypeId))
-				.requireExistingTermIf(StringUtils.isEmpty(searchString), CommonIndexConstants.COMPONENT_ID)
+				.requireIf(StringUtils.isEmpty(searchString), ComponentIdLongField.existsQuery())
 				.finishIf(StringUtils.isEmpty(searchString))
 				.require(new IndexQueryBuilder()
-				.matchExactTermIf(anyFlagSet(SEARCH_DESCRIPTION_ID), CommonIndexConstants.COMPONENT_ID, IndexUtils.longToPrefixCoded(parsedSearchStringOptional.get()))
+				.matchIf(anyFlagSet(SEARCH_DESCRIPTION_ID), new ComponentIdLongField(parsedSearchStringOptional.get()).toQuery())
 				.matchParsedTermIf(anyFlagSet(SEARCH_DESCRIPTION_TERM), CommonIndexConstants.COMPONENT_LABEL, searchString)
 				.matchExactTermIf(anyFlagSet(SEARCH_DESCRIPTION_CONCEPT_ID), SnomedIndexBrowserConstants.DESCRIPTION_CONCEPT_ID, IndexUtils.longToPrefixCoded(parsedSearchStringOptional.get())));
 	}
@@ -94,7 +95,7 @@ public class SnomedDescriptionReducedQueryAdapter extends SnomedDescriptionIndex
 		return super.createIndexQueryBuilder()
 				.requireExactTermIf(anyFlagSet(SEARCH_DESCRIPTION_ACTIVE_ONLY), SnomedIndexBrowserConstants.COMPONENT_ACTIVE, IndexUtils.intToPrefixCoded(1))
 				.requireExactTermIf(!StringUtils.isEmpty(descriptionTypeId), SnomedIndexBrowserConstants.DESCRIPTION_TYPE_ID, IndexUtils.longToPrefixCoded(descriptionTypeId))
-				.requireExistingTermIf(StringUtils.isEmpty(searchString), CommonIndexConstants.COMPONENT_ID)
+				.requireIf(StringUtils.isEmpty(searchString), ComponentIdLongField.existsQuery())
 				.finishIf(StringUtils.isEmpty(searchString))
 				.require(new IndexQueryBuilder()
 				.matchParsedTerm(CommonIndexConstants.COMPONENT_LABEL, searchString));

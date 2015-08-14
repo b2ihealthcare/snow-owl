@@ -25,6 +25,7 @@ import org.apache.lucene.search.BooleanClause.Occur;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.api.index.CommonIndexConstants;
 import com.b2international.snowowl.datastore.index.IndexUtils;
+import com.b2international.snowowl.datastore.index.ComponentIdLongField;
 import com.b2international.snowowl.datastore.index.LongDocValuesCollector;
 import com.b2international.snowowl.datastore.server.index.IndexServerService;
 import com.b2international.snowowl.datastore.server.snomed.index.StatementCollector;
@@ -74,7 +75,7 @@ public final class InitTaxonomyRunnable implements Runnable {
 		statementQuery.add(new TermQuery(new Term(SnomedIndexBrowserConstants.COMPONENT_ACTIVE, IndexUtils.intToPrefixCoded(1))), Occur.MUST);
 		statementQuery.add(new TermQuery(new Term(SnomedIndexBrowserConstants.RELATIONSHIP_ATTRIBUTE_ID, IndexUtils.longToPrefixCoded(Concepts.IS_A))), Occur.MUST);
 
-		final LongDocValuesCollector allConceptIdCollector = new LongDocValuesCollector(CommonIndexConstants.COMPONENT_ID, maxDoc);
+		final LongDocValuesCollector allConceptIdCollector = new LongDocValuesCollector(ComponentIdLongField.COMPONENT_ID, maxDoc);
 		indexService.search(branchPath, allConceptQuery, allConceptIdCollector);
 
 		final StatementCollector statementCollector = new StatementCollector(maxDoc, StatementCollectionMode.NO_IDS);

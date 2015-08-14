@@ -30,6 +30,7 @@ import org.apache.lucene.search.TermQuery;
 
 import com.b2international.snowowl.core.api.index.CommonIndexConstants;
 import com.b2international.snowowl.datastore.index.IndexUtils;
+import com.b2international.snowowl.datastore.index.ComponentIdLongField;
 import com.b2international.snowowl.snomed.datastore.escg.IQueryEvaluator;
 import com.b2international.snowowl.snomed.dsl.query.ast.AndClause;
 import com.b2international.snowowl.snomed.dsl.query.ast.ConceptRef;
@@ -199,11 +200,7 @@ public class IndexQueryQueryEvaluator implements Serializable, IQueryEvaluator<B
 	}
 
 	private TermQuery createIdQuery(final String conceptId) {
-		return new TermQuery(createConceptIdTerm(conceptId));
-	}
-
-	private Term createConceptIdTerm(final String conceptId) {
-		return new Term(CommonIndexConstants.COMPONENT_ID, IndexUtils.longToPrefixCoded(conceptId));
+		return new ComponentIdLongField(conceptId).toQuery();
 	}
 	
 	private Query createActiveQuery() {

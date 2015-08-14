@@ -24,10 +24,8 @@ import org.apache.lucene.search.CachingWrapperFilter;
 import org.apache.lucene.search.Filter;
 import org.apache.lucene.util.BytesRef;
 
-import com.b2international.commons.CompareUtils;
-import com.b2international.snowowl.core.api.index.CommonIndexConstants;
 import com.b2international.snowowl.core.api.index.IIndexEntry;
-import com.b2international.snowowl.datastore.index.IndexUtils;
+import com.b2international.snowowl.datastore.index.ComponentIdLongField;
 import com.b2international.snowowl.datastore.index.QueryDslIndexQueryAdapter;
 
 /**
@@ -50,17 +48,6 @@ public abstract class SnomedDslIndexQueryAdapter<E extends IIndexEntry> extends 
 	 */
 	@Override
 	public Filter createFilter() {
-		if (CompareUtils.isEmpty(componentIds)) {
-			return null;
-		}
-		
-		final BytesRef[] bytesRefs = new BytesRef[componentIds.length];
-		
-		for (int i = 0; i < componentIds.length; i++) {
-			bytesRefs[i] = IndexUtils.longToPrefixCoded(componentIds[i]);
-		}
-		
-		return new CachingWrapperFilter(new TermsFilter(CommonIndexConstants.COMPONENT_ID, bytesRefs));
+		return ComponentIdLongField.createFilter(componentIds);
 	}
-	
 }

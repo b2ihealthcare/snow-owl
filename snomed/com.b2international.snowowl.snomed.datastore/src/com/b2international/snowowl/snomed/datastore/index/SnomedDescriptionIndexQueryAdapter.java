@@ -26,6 +26,7 @@ import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.api.index.CommonIndexConstants;
 import com.b2international.snowowl.datastore.index.IndexQueryBuilder;
 import com.b2international.snowowl.datastore.index.IndexUtils;
+import com.b2international.snowowl.datastore.index.ComponentIdLongField;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants;
 import com.google.common.collect.ImmutableSet;
@@ -99,7 +100,7 @@ public abstract class SnomedDescriptionIndexQueryAdapter extends SnomedDslIndexQ
 	public SnomedDescriptionIndexEntry buildSearchResult(final Document doc, final IBranchPath branchPath, final float score) {
 
 		final SnomedDescriptionIndexEntry entry = new SnomedDescriptionIndexEntry(
-				doc.get(CommonIndexConstants.COMPONENT_ID), 
+				ComponentIdLongField.getString(doc), 
 				doc.get(CommonIndexConstants.COMPONENT_LABEL), 
 				doc.get(SnomedIndexBrowserConstants.DESCRIPTION_TYPE_ID),
 				doc.get(SnomedIndexBrowserConstants.COMPONENT_MODULE_ID), 

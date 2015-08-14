@@ -34,6 +34,7 @@ import org.apache.lucene.search.Query;
 import org.apache.lucene.search.TermQuery;
 
 import com.b2international.snowowl.core.api.index.CommonIndexConstants;
+import com.b2international.snowowl.datastore.index.ComponentIdLongField;
 
 /**
  * Enumerates the possible collection modes an array of {@link IsAStatement}s can be returned in.
@@ -64,12 +65,11 @@ public enum StatementCollectionMode {
 	},
 
 	WITH_RELATIONSHIP_IDS {
-		@Override public String getIdValuesField() {
-			return CommonIndexConstants.COMPONENT_ID;
+		@Override public NumericDocValues getNumericDocValues(final AtomicReader leafReader) throws IOException {
+			return ComponentIdLongField.getNumericDocValues(leafReader);
 		}
 
-		@Override
-		public IsAStatementWithId createStatement(final long sourceId, final long destinationId, final long idOrKey) {
+		@Override public IsAStatementWithId createStatement(final long sourceId, final long destinationId, final long idOrKey) {
 			return new SnomedIsAStatementWithId(sourceId, destinationId, idOrKey);
 		}
 

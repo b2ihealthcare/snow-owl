@@ -363,7 +363,8 @@ public abstract class IndexUtils {
 			}
 		});
 	}
-	
+
+	// TODO: remove method
 	public static BytesRef longToPrefixCoded(final String value) {
 		if (StringUtils.isEmpty(value)) {
 			return new BytesRef();

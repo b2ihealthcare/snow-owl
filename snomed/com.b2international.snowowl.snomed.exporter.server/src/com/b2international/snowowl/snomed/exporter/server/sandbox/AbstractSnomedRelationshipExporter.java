@@ -41,8 +41,8 @@ import org.apache.lucene.search.BooleanQuery;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.TermQuery;
 
-import com.b2international.snowowl.core.api.index.CommonIndexConstants;
 import com.b2international.snowowl.datastore.index.IndexUtils;
+import com.b2international.snowowl.datastore.index.ComponentIdLongField;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
 import com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants;
@@ -53,7 +53,7 @@ import com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserCo
 public abstract class AbstractSnomedRelationshipExporter extends SnomedCoreExporter {
 
 	private static final Set<String> FIELDS_TO_LOAD = unmodifiableSet(newHashSet(
-			CommonIndexConstants.COMPONENT_ID,
+			ComponentIdLongField.COMPONENT_ID,
 			RELATIONSHIP_EFFECTIVE_TIME,
 			COMPONENT_ACTIVE,
 			COMPONENT_MODULE_ID,
@@ -80,7 +80,7 @@ public abstract class AbstractSnomedRelationshipExporter extends SnomedCoreExpor
 	@Override
 	public String transform(final Document doc) {
 		final StringBuilder sb = new StringBuilder();
-		sb.append(doc.get(CommonIndexConstants.COMPONENT_ID));
+		sb.append(ComponentIdLongField.getString(doc));
 		sb.append(HT);
 		sb.append(formatEffectiveTime(doc.getField(getEffectiveTimeField())));
 		sb.append(HT);

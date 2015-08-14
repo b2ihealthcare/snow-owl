@@ -19,6 +19,7 @@ import com.b2international.commons.StringUtils;
 import com.b2international.snowowl.core.api.index.CommonIndexConstants;
 import com.b2international.snowowl.datastore.index.IndexQueryBuilder;
 import com.b2international.snowowl.datastore.index.IndexUtils;
+import com.b2international.snowowl.datastore.index.ComponentIdLongField;
 import com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants;
 import com.google.common.base.Optional;
 
@@ -53,7 +54,7 @@ public class SnomedConceptFullQueryAdapter extends SnomedConceptIndexQueryAdapte
 				return createIndexQueryBuilderWithoutIdTerms(builder);
 			} else {
 				// XXX: Search string could not be parsed into a long, so we query for an invalid ID instead. See SnomedRefSetIndexQueryAdapter.
-				return new IndexQueryBuilder().requireExactTerm(CommonIndexConstants.COMPONENT_ID, IndexUtils.longToPrefixCoded(-1L));
+				return new IndexQueryBuilder().require(new ComponentIdLongField(-1L).toQuery());
 			}
 		} else {
 			return createIndexQueryBuilderWithoutIdTerms(builder);
@@ -64,8 +65,7 @@ public class SnomedConceptFullQueryAdapter extends SnomedConceptIndexQueryAdapte
 		return builder
 				.finishIf(StringUtils.isEmpty(searchString))
 				.require(new IndexQueryBuilder()
-				.matchExactTermIf(anyFlagSet(SEARCH_BY_CONCEPT_ID), CommonIndexConstants.COMPONENT_ID, 
-						IndexUtils.longToPrefixCoded(parsedSearchStringOptional.get()))
+				.matchIf(anyFlagSet(SEARCH_BY_CONCEPT_ID), new ComponentIdLongField(parsedSearchStringOptional.get()).toQuery())
 				.matchParsedTermIf(anyFlagSet(SEARCH_BY_LABEL), CommonIndexConstants.COMPONENT_LABEL, searchString)
 				.matchParsedTermIf(anyFlagSet(SEARCH_BY_FSN), SnomedIndexBrowserConstants.CONCEPT_FULLY_SPECIFIED_NAME, searchString)
 				.matchParsedTermIf(anyFlagSet(SEARCH_BY_SYNONYM), SnomedIndexBrowserConstants.CONCEPT_SYNONYM, searchString)

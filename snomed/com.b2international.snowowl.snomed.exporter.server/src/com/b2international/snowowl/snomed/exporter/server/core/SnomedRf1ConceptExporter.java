@@ -49,6 +49,7 @@ import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.api.SnowowlRuntimeException;
 import com.b2international.snowowl.core.api.index.CommonIndexConstants;
 import com.b2international.snowowl.datastore.index.IndexUtils;
+import com.b2international.snowowl.datastore.index.ComponentIdLongField;
 import com.b2international.snowowl.datastore.server.index.IndexServerService;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
@@ -134,7 +135,7 @@ public class SnomedRf1ConceptExporter implements SnomedRf1Exporter {
 								
 								
 								final BooleanQuery conceptQuery = new BooleanQuery(true);
-								conceptQuery.add(new TermQuery(new Term(CommonIndexConstants.COMPONENT_ID, IndexUtils.longToPrefixCoded(conceptId))), Occur.MUST);
+								conceptQuery.add(new ComponentIdLongField(conceptId).toQuery(), Occur.MUST);
 								conceptQuery.add(TYPE_QUERY, Occur.MUST);
 								
 								final TopDocs conceptTopDocs = indexService.search(getBranchPath(), conceptQuery, 1);

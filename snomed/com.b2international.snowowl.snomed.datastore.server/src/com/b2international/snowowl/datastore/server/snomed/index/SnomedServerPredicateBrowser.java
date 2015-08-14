@@ -47,6 +47,7 @@ import com.b2international.snowowl.core.api.index.CommonIndexConstants;
 import com.b2international.snowowl.datastore.index.DocIdCollector;
 import com.b2international.snowowl.datastore.index.DocIdCollector.DocIdsIterator;
 import com.b2international.snowowl.datastore.index.IndexUtils;
+import com.b2international.snowowl.datastore.index.ComponentIdLongField;
 import com.b2international.snowowl.datastore.server.index.AbstractIndexBrowser;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.snomed.datastore.DataTypeUtils;
@@ -236,7 +237,7 @@ public class SnomedServerPredicateBrowser extends AbstractIndexBrowser<Predicate
 		
 		final BooleanQuery query = new BooleanQuery(true);
 		query.add(new TermQuery(new Term(CommonIndexConstants.COMPONENT_TYPE, IndexUtils.intToPrefixCoded(SnomedTerminologyComponentConstants.REFSET_NUMBER))), Occur.MUST);
-		query.add(new TermQuery(new Term(CommonIndexConstants.COMPONENT_ID, IndexUtils.longToPrefixCoded(identifierId))), Occur.MUST);
+		query.add(new ComponentIdLongField(identifierId).toQuery(), Occur.MUST);
 		
 		final TopDocs topDocs = service.search(branchPath, query, 1);
 		
@@ -264,7 +265,7 @@ public class SnomedServerPredicateBrowser extends AbstractIndexBrowser<Predicate
 		
 		final BooleanQuery query = new BooleanQuery();
 		query.add(new TermQuery(new Term(CommonIndexConstants.COMPONENT_TYPE, IndexUtils.intToPrefixCoded(SnomedTerminologyComponentConstants.CONCEPT_NUMBER))), Occur.MUST);
-		query.add(new TermQuery(new Term(CommonIndexConstants.COMPONENT_ID, IndexUtils.longToPrefixCoded(conceptId))), Occur.MUST);
+		query.add(new ComponentIdLongField(conceptId).toQuery(), Occur.MUST);
 		
 		final DocIdCollector docCollector = DocIdCollector.create(service.maxDoc(branchPath));
 		service.search(branchPath, query, docCollector);

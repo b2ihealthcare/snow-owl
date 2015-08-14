@@ -68,6 +68,7 @@ import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.datastore.index.DocIdCollector;
 import com.b2international.snowowl.datastore.index.DocIdCollector.DocIdsIterator;
 import com.b2international.snowowl.datastore.index.IndexUtils;
+import com.b2international.snowowl.datastore.index.ComponentIdLongField;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.snomed.datastore.IsAStatement;
 import com.b2international.snowowl.snomed.datastore.SnomedConceptIndexEntry;
@@ -87,7 +88,7 @@ import com.google.common.collect.Sets;
  */
 public class SnomedServerStatementBrowser extends AbstractSnomedIndexBrowser<SnomedRelationshipIndexEntry> implements SnomedStatementBrowser {
 
-	private static final ImmutableSet<String> FIELD_NAMES_TO_LOAD = ImmutableSet.of(CommonIndexConstants.COMPONENT_ID, RELATIONSHIP_OBJECT_ID,
+	private static final ImmutableSet<String> FIELD_NAMES_TO_LOAD = ImmutableSet.of(ComponentIdLongField.COMPONENT_ID, RELATIONSHIP_OBJECT_ID,
 			RELATIONSHIP_ATTRIBUTE_ID, RELATIONSHIP_VALUE_ID, RELATIONSHIP_GROUP,
 			RELATIONSHIP_UNION_GROUP, COMPONENT_RELEASED, COMPONENT_ACTIVE,
 			RELATIONSHIP_INFERRED, RELATIONSHIP_UNIVERSAL, RELATIONSHIP_DESTINATION_NEGATED,
@@ -110,7 +111,7 @@ public class SnomedServerStatementBrowser extends AbstractSnomedIndexBrowser<Sno
 
 	@Override
 	protected SnomedRelationshipIndexEntry createResultObject(final IBranchPath branchPath, final Document doc) {
-		final String id = doc.get(CommonIndexConstants.COMPONENT_ID);
+		final String id = ComponentIdLongField.getString(doc);
 		final String objectId = doc.get(RELATIONSHIP_OBJECT_ID);
 		final String attributeId = doc.get(RELATIONSHIP_ATTRIBUTE_ID);
 		final String valueId = doc.get(RELATIONSHIP_VALUE_ID);
@@ -174,7 +175,7 @@ public class SnomedServerStatementBrowser extends AbstractSnomedIndexBrowser<Sno
 	public SnomedRelationshipIndexEntry getStatement(final IBranchPath branchPath, final String id) {
 		checkNotNull(branchPath, "Branch path argument cannot be null.");
 		checkNotNull(id, "SNOMED CT relationship ID cannot be null.");
-		final TermQuery query = new TermQuery(new Term(CommonIndexConstants.COMPONENT_ID, IndexUtils.longToPrefixCoded(id)));
+		final TermQuery query = new ComponentIdLongField(id).toQuery();
 		final TopDocs topDocs = service.search(branchPath, query, 1);
 		return createSingleResultObject(branchPath, topDocs);
 	}
@@ -479,7 +480,7 @@ public class SnomedServerStatementBrowser extends AbstractSnomedIndexBrowser<Sno
 
 		final BooleanQuery query = new BooleanQuery(true);
 		query.add(new TermQuery(new Term(CommonIndexConstants.COMPONENT_TYPE, IndexUtils.intToPrefixCoded(SnomedTerminologyComponentConstants.RELATIONSHIP_NUMBER))), Occur.MUST);
-		query.add(new TermQuery(getIdTerm(relationshipId)), Occur.MUST);
+		query.add(getComponentIdQuery(relationshipId), Occur.MUST);
 
 		final TopDocs topDocs = service.search(branchPath, query, 1);
 
