@@ -15,30 +15,35 @@
  */
 package com.b2international.snowowl.datastore.server.index;
 
-import com.b2international.snowowl.core.ApplicationContext
-import com.b2international.snowowl.core.api.index.IIndexEntry
+import static com.google.common.base.Preconditions.checkNotNull;
+
+import com.b2international.snowowl.core.ApplicationContext;
+import com.b2international.snowowl.core.api.index.IIndexEntry;
 import com.b2international.snowowl.core.api.index.IIndexServerServiceManager;
-import com.b2international.snowowl.core.api.index.IIndexUpdater
-import com.google.common.base.Preconditions
+import com.b2international.snowowl.core.api.index.IIndexUpdater;
+import com.google.common.base.Predicate;
+import com.google.common.collect.Iterables;
 
 /**
  * {@link IIndexServerServiceManager} implementation.
  */
 public enum IndexServerServiceManager implements IIndexServerServiceManager {
 
-	/**Shared instance.*/
 	INSTANCE;
 	
-	/*
-	 * (non-Javadoc)
-	 * @see com.b2international.snowowl.datastore.server.index.IIndexServerServiceManager#getIndexService(java.lang.String)
-	 */
 	@Override
+	@SuppressWarnings("unchecked")
 	public <E extends IIndexEntry> IIndexUpdater<E> getByUuid(final String repositoryUuid) {
-		Preconditions.checkNotNull getServices().find { service -> repositoryUuid == service.repositoryUuid }, "Cannot find index service for repository: $repositoryUuid" 
+		return checkNotNull(Iterables.tryFind(getServices(), new Predicate<IIndexUpdater>() {
+			@Override
+			public boolean apply(IIndexUpdater input) {
+				return repositoryUuid.equals(input.getRepositoryUuid());
+			}
+		}).orNull(), "Cannot find index service for repository: %s", repositoryUuid);
 	}
 	
 	private Iterable<IIndexUpdater> getServices() {
 		return ApplicationContext.getInstance().getServices(IIndexUpdater.class);
 	}
+	
 }

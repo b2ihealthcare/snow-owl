@@ -52,6 +52,7 @@ import com.b2international.snowowl.datastore.server.CDOServerUtils;
 import com.b2international.snowowl.datastore.server.index.IndexServerServiceManager;
 import com.b2international.snowowl.snomed.SnomedPackage;
 import com.b2international.snowowl.snomed.datastore.MrcmEditingContext;
+import com.b2international.snowowl.snomed.datastore.SnomedConceptLookupService;
 import com.b2international.snowowl.snomed.mrcm.ConceptModel;
 import com.b2international.snowowl.snomed.mrcm.ConstraintBase;
 import com.google.common.base.Function;
@@ -153,7 +154,7 @@ public enum MrcmImporter {
 					ConceptModel model = null;
 					resource.load(null);
 					model = (ConceptModel) resource.getContents().get(0);
-					final Collection<ConstraintBase> invalidConstraints = new ConceptModelSemanticValidator().validateModel(path, model);
+					final Collection<ConstraintBase> invalidConstraints = new ConceptModelSemanticValidator(new SnomedConceptLookupService()).validate(path, model);
 					
 					context.clearContents();
 		

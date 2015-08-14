@@ -156,10 +156,7 @@ public class IndexBranchService implements Closeable {
 		//keep segment file even it contains only deletions
 		forceKeepFullyDeletedSegments(indexWriter);
 		
-		configuration = new IndexPostProcessingConfiguration();
-		configuration.setBranchPath(branchPath);
-		configuration.setTimestamp(timestamp);
-		configuration.setRequiresPostProcessing(requiresPostProcessing);
+		configuration = new IndexPostProcessingConfiguration(branchPath, timestamp, requiresPostProcessing);
 	}
 
 	public ReferenceManager<IndexSearcher> getManager() {
