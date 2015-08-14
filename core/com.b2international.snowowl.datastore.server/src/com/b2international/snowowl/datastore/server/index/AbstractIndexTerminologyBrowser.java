@@ -53,11 +53,12 @@ import com.b2international.snowowl.core.api.index.CommonIndexConstants;
 import com.b2international.snowowl.core.api.index.IIndexEntry;
 import com.b2international.snowowl.core.api.index.IIndexService;
 import com.b2international.snowowl.core.api.index.IndexException;
+import com.b2international.snowowl.datastore.index.ComponentIdField;
+import com.b2international.snowowl.datastore.index.ComponentIdStringField;
 import com.b2international.snowowl.datastore.index.DocIdCollector;
 import com.b2international.snowowl.datastore.index.DocIdCollector.DocIdsIterator;
 import com.b2international.snowowl.datastore.index.IndexQueryBuilder;
 import com.b2international.snowowl.datastore.index.IndexUtils;
-import com.b2international.snowowl.datastore.index.ComponentIdLongField;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableList.Builder;
@@ -72,7 +73,7 @@ abstract public class AbstractIndexTerminologyBrowser<E extends IIndexEntry> ext
 
 	protected static final Set<String> COMPONENT_STORAGE_KEY_FIELD_TO_LOAD = Collections.unmodifiableSet(Sets.newHashSet(CommonIndexConstants.COMPONENT_STORAGE_KEY));
 	protected static final Set<String> COMPONENT_PARENT_FIELDS_TO_LOAD = Collections.unmodifiableSet(Sets.newHashSet(CommonIndexConstants.COMPONENT_PARENT));
-	private static final Set<String> COMPONENT_ID_FIELD_TO_LOAD = Collections.unmodifiableSet(Sets.newHashSet(CommonIndexConstants.COMPONENT_ID));
+	private static final Set<String> COMPONENT_ID_FIELD_TO_LOAD = Collections.unmodifiableSet(Sets.newHashSet(ComponentIdField.COMPONENT_ID));
 	private static final Set<String> LABEL_FIELD_TO_LOAD = Collections.unmodifiableSet(Sets.newHashSet(CommonIndexConstants.COMPONENT_LABEL));
 	
 	public AbstractIndexTerminologyBrowser(final IIndexService<?> service) {
@@ -207,7 +208,7 @@ abstract public class AbstractIndexTerminologyBrowser<E extends IIndexEntry> ext
 			iterator = collector.getDocIDs().iterator();
 			while (iterator.next()) {
 				final Document doc = service.document(branchPath, iterator.getDocID(), COMPONENT_ID_FIELD_TO_LOAD);
-				rootConceptIds.add(doc.getField(CommonIndexConstants.COMPONENT_ID).stringValue());
+				rootConceptIds.add(ComponentIdField.getString(doc));
 			}
 		} catch (final IOException e) {
 			throw new IndexException("Error when querying root concepts.", e);
@@ -294,7 +295,7 @@ abstract public class AbstractIndexTerminologyBrowser<E extends IIndexEntry> ext
 	}
 
 	protected IndexQueryBuilder getConceptByIdQueryBuilder(final String conceptId) {
-		return new IndexQueryBuilder().requireExactTerm(CommonIndexConstants.COMPONENT_ID, conceptId);
+		return new IndexQueryBuilder().require(new ComponentIdStringField(conceptId).toQuery());
 	}
 
 	/**
@@ -375,7 +376,7 @@ abstract public class AbstractIndexTerminologyBrowser<E extends IIndexEntry> ext
 			
 			while (iterator.next()) {
 				final Document doc = service.document(branchPath, iterator.getDocID(), COMPONENT_ID_FIELD_TO_LOAD);
-				subTypeIds.add(doc.getField(CommonIndexConstants.COMPONENT_ID).stringValue());
+				subTypeIds.add(ComponentIdField.getString(doc));
 			}
 			
 			return subTypeIds;

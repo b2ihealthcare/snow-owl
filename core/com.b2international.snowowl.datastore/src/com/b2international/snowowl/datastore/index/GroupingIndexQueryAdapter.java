@@ -22,7 +22,6 @@ import java.util.Set;
 import org.apache.lucene.util.BytesRef;
 
 import com.b2international.snowowl.core.api.IBranchPath;
-import com.b2international.snowowl.core.api.index.CommonIndexConstants;
 import com.b2international.snowowl.core.api.index.IGroupingIndexQueryAdapter;
 import com.b2international.snowowl.core.api.index.IIndexEntry;
 import com.b2international.snowowl.core.api.index.IIndexService;
@@ -36,7 +35,7 @@ public abstract class GroupingIndexQueryAdapter<E extends IIndexEntry, G> extend
 
 	private static final long serialVersionUID = 1L;
 
-	private static final Set<String> COMPONENT_ID_ONLY = ImmutableSet.of(CommonIndexConstants.COMPONENT_ID);
+	private static final Set<String> COMPONENT_ID_ONLY = ImmutableSet.of(ComponentIdField.COMPONENT_ID);
 	
 	private final String groupField;
 	private final Set<String> valueFields;

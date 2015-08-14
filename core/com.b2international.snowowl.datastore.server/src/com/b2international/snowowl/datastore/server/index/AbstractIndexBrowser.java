@@ -54,9 +54,10 @@ import com.b2international.snowowl.core.api.index.IIndexService;
 import com.b2international.snowowl.datastore.ICodeSystem;
 import com.b2international.snowowl.datastore.ICodeSystemVersion;
 import com.b2international.snowowl.datastore.InternalTerminologyRegistryService;
+import com.b2international.snowowl.datastore.index.ComponentIdLongField;
+import com.b2international.snowowl.datastore.index.ComponentIdStringField;
 import com.b2international.snowowl.datastore.index.DocIdCollector.DocIdsIterator;
 import com.b2international.snowowl.datastore.index.IndexUtils;
-import com.b2international.snowowl.datastore.index.ComponentIdLongField;
 import com.b2international.snowowl.datastore.server.TerminologyRegistryServiceWrapper;
 import com.b2international.snowowl.terminologyregistry.core.index.TerminologyRegistryIndexConstants;
 import com.google.common.base.Preconditions;
@@ -275,6 +276,6 @@ public abstract class AbstractIndexBrowser<E extends IIndexEntry> implements Int
 	
 	/**Returns with the query for the unique ID of the component.*/
 	protected Query getComponentIdQuery(final String componentId) {
-		return new TermQuery(new Term(ComponentIdLongField.COMPONENT_ID, componentId));
+		return new ComponentIdStringField(componentId).toQuery();
 	}
 }

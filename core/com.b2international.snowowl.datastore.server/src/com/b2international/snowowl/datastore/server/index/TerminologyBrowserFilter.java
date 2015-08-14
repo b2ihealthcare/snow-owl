@@ -47,6 +47,7 @@ import com.b2international.snowowl.core.api.browser.ITerminologyBrowser;
 import com.b2international.snowowl.core.api.index.CommonIndexConstants;
 import com.b2international.snowowl.core.api.index.IIndexEntry;
 import com.b2international.snowowl.core.api.index.IndexException;
+import com.b2international.snowowl.datastore.index.ComponentIdStringField;
 import com.b2international.snowowl.datastore.index.DocIdCollector;
 import com.b2international.snowowl.datastore.index.DocIdCollector.DocIdsIterator;
 import com.google.common.collect.Maps;
@@ -121,7 +122,7 @@ public class TerminologyBrowserFilter<E extends IIndexEntry> {
 				}
 				
 				
-				final String componentId = doc.getField(CommonIndexConstants.COMPONENT_ID).stringValue();
+				final String componentId = ComponentIdStringField.getString(doc);
 				componentIdDocMap.put(componentId, doc);
 				
 				componentIdParentComponentIdMap.put(componentId, parentIds);

@@ -55,4 +55,5 @@ public class ComponentIdStringField extends ComponentIdField {
 	private static BytesRef toBytesRef(String componentId) {
 		return new BytesRef(componentId);
 	}
+
 }

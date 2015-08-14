@@ -15,6 +15,8 @@
  */
 package com.b2international.snowowl.datastore.index;
 
+import java.util.List;
+
 import org.apache.lucene.document.Document;
 import org.apache.lucene.index.IndexableField;
 import org.apache.lucene.index.Term;
@@ -25,12 +27,14 @@ import org.apache.lucene.search.PrefixQuery;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.Sort;
 import org.apache.lucene.search.SortField;
-import org.apache.lucene.search.TermQuery;
 import org.apache.lucene.search.SortField.Type;
+import org.apache.lucene.search.TermQuery;
 import org.apache.lucene.util.BytesRef;
 
 import com.b2international.commons.CompareUtils;
 import com.google.common.base.Function;
+import com.google.common.collect.FluentIterable;
+import com.google.common.collect.ImmutableList;
 
 public abstract class ComponentIdField {
 
@@ -52,12 +56,10 @@ public abstract class ComponentIdField {
 		if (CompareUtils.isEmpty(componentIds)) {
 			return null;
 		}
-		
-		final BytesRef[] bytesRefs = new BytesRef[componentIds.length];
-		for (int i = 0; i < componentIds.length; i++) {
-			bytesRefs[i] = toBytesRefFunction.apply(componentIds[i]);
-		}
-		
+		return createFilter(FluentIterable.from(ImmutableList.copyOf(componentIds)).transform(toBytesRefFunction).toList());
+	}
+
+	public static Filter createFilter(final List<BytesRef> bytesRefs) {
 		return new CachingWrapperFilter(new TermsFilter(COMPONENT_ID, bytesRefs));
 	}
 

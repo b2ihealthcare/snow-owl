@@ -56,6 +56,8 @@ import com.b2international.snowowl.core.api.index.IIndexQueryAdapter;
 import com.b2international.snowowl.core.api.index.IndexException;
 import com.b2international.snowowl.datastore.BranchPathUtils;
 import com.b2international.snowowl.datastore.index.AbstractIndexUpdater;
+import com.b2international.snowowl.datastore.index.ComponentIdField;
+import com.b2international.snowowl.datastore.index.ComponentIdStringField;
 import com.b2international.snowowl.datastore.index.DocIdCollector;
 import com.b2international.snowowl.datastore.index.DocIdCollector.DocIdsIterator;
 import com.b2international.snowowl.datastore.index.DocumentWithScore;
@@ -392,7 +394,8 @@ public abstract class IndexServerService<E extends IIndexEntry> extends Abstract
 			int size = 0;
 			
 			for (final ScoreDoc scoreDoc : topDocs.scoreDocs) {
-				ids[size++] = searcher.doc(scoreDoc.doc, COMPONENT_ID_FIELD_TO_LOAD).get(CommonIndexConstants.COMPONENT_ID);
+				final Document doc = searcher.doc(scoreDoc.doc, COMPONENT_ID_FIELD_TO_LOAD);
+				ids[size++] = ComponentIdStringField.getString(doc);
 			}
 			
 			return Arrays.asList(Arrays.copyOf(ids, size));
@@ -546,7 +549,8 @@ public abstract class IndexServerService<E extends IIndexEntry> extends Abstract
 
 			int size = 0;
 			while (itr.next()) {
-				ids[size++] = searcher.doc(itr.getDocID(), COMPONENT_ID_FIELD_TO_LOAD).get(CommonIndexConstants.COMPONENT_ID);
+				final Document doc = searcher.doc(itr.getDocID(), COMPONENT_ID_FIELD_TO_LOAD);
+				ids[size++] = ComponentIdStringField.getString(doc);
 			}
 			
 			return Arrays.asList(Arrays.copyOf(ids, size));
@@ -861,7 +865,7 @@ public abstract class IndexServerService<E extends IIndexEntry> extends Abstract
 		return hasDocumentsInternal(branchPath);
 	}
 
-	private static final Set<String> COMPONENT_ID_FIELD_TO_LOAD = Sets.newHashSet(CommonIndexConstants.COMPONENT_ID);
+	private static final Set<String> COMPONENT_ID_FIELD_TO_LOAD = Sets.newHashSet(ComponentIdField.COMPONENT_ID);
 
 	private void checkNotDisposed() {
 		if (disposed) {
