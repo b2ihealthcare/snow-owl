@@ -15,8 +15,8 @@
  */
 package com.b2international.snowowl.datastore.server.snomed.index;
 
+import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.COMPONENT_MODULE_ID;
 import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_CONTAINER_MODULE_ID;
-import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_MODULE_ID;
 import static com.google.common.base.Preconditions.checkNotNull;
 
 import java.io.IOException;
@@ -41,7 +41,7 @@ public class ConcreteDataTypePropertyCollector extends ComponentPropertyCollecto
 	@Override
 	protected void initDocValues(final AtomicReader leafReader) throws IOException {
 		super.initDocValues(leafReader);
-		moduleIds = leafReader.getNumericDocValues(REFERENCE_SET_MEMBER_MODULE_ID);
+		moduleIds = leafReader.getNumericDocValues(COMPONENT_MODULE_ID);
 		containerModuleIds = leafReader.getNumericDocValues(REFERENCE_SET_MEMBER_CONTAINER_MODULE_ID);
 	}
 

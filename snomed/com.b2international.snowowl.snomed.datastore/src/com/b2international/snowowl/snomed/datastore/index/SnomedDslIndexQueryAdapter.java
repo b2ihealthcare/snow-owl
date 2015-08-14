@@ -25,10 +25,10 @@ import org.apache.lucene.search.Filter;
 import org.apache.lucene.util.BytesRef;
 
 import com.b2international.commons.CompareUtils;
+import com.b2international.snowowl.core.api.index.CommonIndexConstants;
 import com.b2international.snowowl.core.api.index.IIndexEntry;
 import com.b2international.snowowl.datastore.index.IndexUtils;
 import com.b2international.snowowl.datastore.index.QueryDslIndexQueryAdapter;
-import com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants;
 
 /**
  * Abstract index query adapter for retrieving SNOMED&nbsp;CT component from the index.
@@ -60,7 +60,7 @@ public abstract class SnomedDslIndexQueryAdapter<E extends IIndexEntry> extends 
 			bytesRefs[i] = IndexUtils.longToPrefixCoded(componentIds[i]);
 		}
 		
-		return new CachingWrapperFilter(new TermsFilter(SnomedIndexBrowserConstants.COMPONENT_ID, bytesRefs));
+		return new CachingWrapperFilter(new TermsFilter(CommonIndexConstants.COMPONENT_ID, bytesRefs));
 	}
 	
 }

@@ -20,24 +20,16 @@ import static com.b2international.commons.pcj.LongSets.newLongSet;
 import static com.b2international.commons.pcj.LongSets.toStringList;
 import static com.b2international.snowowl.core.ApplicationContext.getServiceForClass;
 import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.COMPONENT_ACTIVE;
-import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.COMPONENT_COMPARE_UNIQUE_KEY;
-import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.COMPONENT_ICON_ID;
-import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.COMPONENT_ID;
-import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.COMPONENT_IGNORE_COMPARE_UNIQUE_KEY;
-import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.COMPONENT_LABEL;
+import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.COMPONENT_MODULE_ID;
 import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.COMPONENT_REFERRING_PREDICATE;
 import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.COMPONENT_RELEASED;
-import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.COMPONENT_STORAGE_KEY;
-import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.COMPONENT_TYPE;
 import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.CONCEPT_ANCESTOR;
 import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.CONCEPT_DEGREE_OF_INTEREST;
 import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.CONCEPT_EFFECTIVE_TIME;
 import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.CONCEPT_EXHAUSTIVE;
 import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.CONCEPT_FULLY_SPECIFIED_NAME;
-import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.CONCEPT_MODULE_ID;
 import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.CONCEPT_NAMESPACE_ID;
 import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.CONCEPT_OTHER_DESCRIPTION;
-import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.CONCEPT_PARENT;
 import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.CONCEPT_PRIMITIVE;
 import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.CONCEPT_REFERRING_MAPPING_REFERENCE_SET_ID;
 import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.CONCEPT_REFERRING_REFERENCE_SET_ID;
@@ -45,7 +37,6 @@ import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBr
 import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.DESCRIPTION_CASE_SIGNIFICANCE_ID;
 import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.DESCRIPTION_CONCEPT_ID;
 import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.DESCRIPTION_EFFECTIVE_TIME;
-import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.DESCRIPTION_MODULE_ID;
 import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.DESCRIPTION_TYPE_ID;
 import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_ACCEPTABILITY_ID;
 import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_ACCEPTABILITY_LABEL;
@@ -66,7 +57,6 @@ import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBr
 import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_MAP_TARGET_COMPONENT_ID;
 import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_MAP_TARGET_COMPONENT_LABEL;
 import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_MAP_TARGET_COMPONENT_TYPE_ID;
-import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_MODULE_ID;
 import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_OPERATOR_ID;
 import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_REFERENCED_COMPONENT_ID;
 import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_REFERENCED_COMPONENT_TYPE;
@@ -79,7 +69,6 @@ import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBr
 import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_UOM_ID;
 import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_UUID;
 import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_VALUE_ID;
-import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.REFERENCE_SET_MODULE_ID;
 import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.REFERENCE_SET_REFERENCED_COMPONENT_TYPE;
 import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.REFERENCE_SET_STRUCTURAL;
 import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.REFERENCE_SET_TYPE;
@@ -89,7 +78,6 @@ import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBr
 import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.RELATIONSHIP_EFFECTIVE_TIME;
 import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.RELATIONSHIP_GROUP;
 import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.RELATIONSHIP_INFERRED;
-import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.RELATIONSHIP_MODULE_ID;
 import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.RELATIONSHIP_OBJECT_ID;
 import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.RELATIONSHIP_UNION_GROUP;
 import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.RELATIONSHIP_UNIVERSAL;
@@ -151,6 +139,7 @@ import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.CoreTerminologyBroker;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.api.SnowowlRuntimeException;
+import com.b2international.snowowl.core.api.index.CommonIndexConstants;
 import com.b2international.snowowl.core.date.DateFormats;
 import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.datastore.cdo.CDOIDUtils;
@@ -660,11 +649,11 @@ public class SnomedRf2IndexInitializer extends Job {
 				
 				// Create relationship document
 				final Document doc = new Document();
-				doc.add(new LongField(COMPONENT_ID, sctId, Store.YES));
-				doc.add(new IntField(COMPONENT_TYPE, SnomedTerminologyComponentConstants.RELATIONSHIP_NUMBER, Store.YES));
+				doc.add(new LongField(CommonIndexConstants.COMPONENT_ID, sctId, Store.YES));
+				doc.add(new IntField(CommonIndexConstants.COMPONENT_TYPE, SnomedTerminologyComponentConstants.RELATIONSHIP_NUMBER, Store.YES));
 				doc.add(new StoredField(COMPONENT_RELEASED, released ? 1 : 0));
 				doc.add(new IntField(COMPONENT_ACTIVE, active ? 1 : 0, Store.YES));
-				doc.add(new LongField(COMPONENT_STORAGE_KEY, storageKey, Store.YES));
+				doc.add(new LongField(CommonIndexConstants.COMPONENT_STORAGE_KEY, storageKey, Store.YES));
 				doc.add(new LongField(RELATIONSHIP_OBJECT_ID, sourceConceptId, Store.YES));
 				doc.add(new LongField(RELATIONSHIP_ATTRIBUTE_ID, typeConceptId, Store.YES));
 				doc.add(new LongField(RELATIONSHIP_VALUE_ID, destinationConceptId, Store.YES));
@@ -674,11 +663,11 @@ public class SnomedRf2IndexInitializer extends Job {
 				doc.add(new StoredField(RELATIONSHIP_DESTINATION_NEGATED, destinationNegated ? 1 : 0));
 				doc.add(new StoredField(RELATIONSHIP_INFERRED, inferred ? 1 : 0));
 				doc.add(new StoredField(RELATIONSHIP_UNIVERSAL, universal ? 1 : 0));
-				doc.add(new LongField(RELATIONSHIP_MODULE_ID, moduleConceptId, Store.YES));
+				doc.add(new LongField(COMPONENT_MODULE_ID, moduleConceptId, Store.YES));
 				doc.add(new LongField(RELATIONSHIP_EFFECTIVE_TIME, effectiveTime, Store.YES));
 				
-				doc.add(new NumericDocValuesField(COMPONENT_STORAGE_KEY, storageKey));
-				doc.add(new NumericDocValuesField(COMPONENT_ID, sctId));
+				doc.add(new NumericDocValuesField(CommonIndexConstants.COMPONENT_STORAGE_KEY, storageKey));
+				doc.add(new NumericDocValuesField(CommonIndexConstants.COMPONENT_ID, sctId));
 				doc.add(new NumericDocValuesField(RELATIONSHIP_VALUE_ID, destinationConceptId));
 				doc.add(new NumericDocValuesField(RELATIONSHIP_OBJECT_ID, sourceConceptId));
 				doc.add(new NumericDocValuesField(RELATIONSHIP_ATTRIBUTE_ID, typeConceptId));
@@ -687,7 +676,7 @@ public class SnomedRf2IndexInitializer extends Job {
 				doc.add(new NumericDocValuesField(RELATIONSHIP_UNION_GROUP, unionGroup));
 				doc.add(new NumericDocValuesField(RELATIONSHIP_UNIVERSAL, universal ? 1 : 0));
 				doc.add(new NumericDocValuesField(RELATIONSHIP_DESTINATION_NEGATED, destinationNegated ? 1 : 0));
-				doc.add(new NumericDocValuesField(RELATIONSHIP_MODULE_ID, moduleConceptId));
+				doc.add(new NumericDocValuesField(COMPONENT_MODULE_ID, moduleConceptId));
 				
 				
 				snomedIndexService.index(branchPath, doc, IndexUtils.getStorageKeyTerm(storageKey));
@@ -739,13 +728,13 @@ public class SnomedRf2IndexInitializer extends Job {
 					final boolean indexAsRelevantForCompare = !structural;
 					final int refComponentType = SnomedTerminologyComponentConstants.getTerminologyComponentIdValueSafe(record.get(5));
 					final long storageKey = importIndexService.getRefSetCdoId(refSetId);
-					refSetDoc.add(new IntField(COMPONENT_TYPE, SnomedTerminologyComponentConstants.REFSET_NUMBER, Store.YES));
-					refSetDoc.add(new LongField(COMPONENT_ID, id, Store.YES));
+					refSetDoc.add(new IntField(CommonIndexConstants.COMPONENT_TYPE, SnomedTerminologyComponentConstants.REFSET_NUMBER, Store.YES));
+					refSetDoc.add(new LongField(CommonIndexConstants.COMPONENT_ID, id, Store.YES));
 					refSetDoc.add(new IntField(REFERENCE_SET_TYPE, refSetType, Store.YES));
 					refSetDoc.add(new IntField(REFERENCE_SET_REFERENCED_COMPONENT_TYPE, refComponentType, Store.YES));
-					refSetDoc.add(new NumericDocValuesField(COMPONENT_COMPARE_UNIQUE_KEY, indexAsRelevantForCompare ? storageKey : CDOUtils.NO_STORAGE_KEY));
+					refSetDoc.add(new NumericDocValuesField(CommonIndexConstants.COMPONENT_COMPARE_UNIQUE_KEY, indexAsRelevantForCompare ? storageKey : CDOUtils.NO_STORAGE_KEY));
 					if (!indexAsRelevantForCompare) {
-						refSetDoc.add(new NumericDocValuesField(COMPONENT_IGNORE_COMPARE_UNIQUE_KEY, storageKey));
+						refSetDoc.add(new NumericDocValuesField(CommonIndexConstants.COMPONENT_IGNORE_COMPARE_UNIQUE_KEY, storageKey));
 					}
 					
 					//consider excluded reference sets
@@ -754,11 +743,11 @@ public class SnomedRf2IndexInitializer extends Job {
 						return;
 					}
 					
-					refSetDoc.add(new LongField(COMPONENT_STORAGE_KEY, storageKey, Store.YES));
+					refSetDoc.add(new LongField(CommonIndexConstants.COMPONENT_STORAGE_KEY, storageKey, Store.YES));
 					refSetDoc.add(new IntField(REFERENCE_SET_STRUCTURAL, structural ? 1 : 0, Store.YES));
 					
 					final String label = importIndexService.getConceptLabel(refSetId);
-					refSetDoc.add(new TextField(COMPONENT_LABEL, label, Store.YES));
+					refSetDoc.add(new TextField(CommonIndexConstants.COMPONENT_LABEL, label, Store.YES));
 					
 					final String moduleId;
 					final SnomedConceptIndexEntry identifierConcept = ApplicationContext.getInstance().getService(SnomedTerminologyBrowser.class).getConcept(branchPath, refSetId);
@@ -814,7 +803,7 @@ public class SnomedRf2IndexInitializer extends Job {
 						
 					}
 					
-					refSetDoc.add(new LongField(REFERENCE_SET_MODULE_ID, Long.parseLong(moduleId), Store.YES));
+					refSetDoc.add(new LongField(COMPONENT_MODULE_ID, Long.parseLong(moduleId), Store.YES));
 					final String iconId;
 					
 					if (getTaxonomyBuilder().containsNode(refSetId)) {
@@ -828,7 +817,7 @@ public class SnomedRf2IndexInitializer extends Job {
 						}
 					}
 							
-					refSetDoc.add(new LongField(COMPONENT_ICON_ID, Long.parseLong(iconId), Store.YES));
+					refSetDoc.add(new LongField(CommonIndexConstants.COMPONENT_ICON_ID, Long.parseLong(iconId), Store.YES));
 					
 					for (final String predicateKey : refSetIdToPredicateMap.get(Long.parseLong(refSetId))) {
 						refSetDoc.add(new StringField(COMPONENT_REFERRING_PREDICATE, predicateKey, Store.YES));
@@ -876,14 +865,14 @@ public class SnomedRf2IndexInitializer extends Job {
 				doc.add(new StringField(REFERENCE_SET_MEMBER_UUID, uuid, Store.YES));
 				doc.add(new IntField(COMPONENT_ACTIVE, active ? 1 : 0, Store.YES));
 				doc.add(new IntField(REFERENCE_SET_MEMBER_REFERENCE_SET_TYPE, refSetType.ordinal(), Store.YES));
-				doc.add(new LongField(COMPONENT_STORAGE_KEY, memberCdoId, Store.YES));
+				doc.add(new LongField(CommonIndexConstants.COMPONENT_STORAGE_KEY, memberCdoId, Store.YES));
 				doc.add(new StoredField(COMPONENT_RELEASED, released ? 1 : 0));
 				doc.add(new IntField(REFERENCE_SET_MEMBER_REFERENCED_COMPONENT_TYPE, refComponentType, Store.YES));
 				doc.add(new StringField(REFERENCE_SET_MEMBER_REFERENCED_COMPONENT_ID, refComponentId, Store.YES));
-				doc.add(new LongField(REFERENCE_SET_MEMBER_MODULE_ID, module, Store.YES));
+				doc.add(new LongField(COMPONENT_MODULE_ID, module, Store.YES));
 				doc.add(new LongField(REFERENCE_SET_MEMBER_REFERENCE_SET_ID, Long.valueOf(refSetId), Store.YES));
 				doc.add(new LongField(REFERENCE_SET_MEMBER_EFFECTIVE_TIME, effectiveTime, Store.YES));
-				doc.add(new TextField(COMPONENT_LABEL, label, Store.YES));
+				doc.add(new TextField(CommonIndexConstants.COMPONENT_LABEL, label, Store.YES));
 				
 				switch (refSetType) {
 					
@@ -984,12 +973,12 @@ public class SnomedRf2IndexInitializer extends Job {
 						doc.add(new NumericDocValuesField(REFERENCE_SET_MEMBER_DATA_TYPE_VALUE, (byte) dataType.ordinal()));
 						
 						if (null != label) {
-							doc.add(new BinaryDocValuesField(COMPONENT_LABEL, new BytesRef(label)));
+							doc.add(new BinaryDocValuesField(CommonIndexConstants.COMPONENT_LABEL, new BytesRef(label)));
 							SortKeyMode.SEARCH_ONLY.add(doc, label);
 						}
 						
 						doc.add(new NumericDocValuesField(REFERENCE_SET_MEMBER_REFERENCED_COMPONENT_ID, Long.parseLong(refComponentId)));
-						doc.add(new NumericDocValuesField(COMPONENT_STORAGE_KEY, memberCdoId));
+						doc.add(new NumericDocValuesField(CommonIndexConstants.COMPONENT_STORAGE_KEY, memberCdoId));
 						doc.add(new NumericDocValuesField(REFERENCE_SET_MEMBER_REFERENCE_SET_ID, Long.parseLong(refSetId)));
 						break;
 						
@@ -1122,26 +1111,26 @@ public class SnomedRf2IndexInitializer extends Job {
 
 				// Create description document.
 				final Document doc = new Document();
-				doc.add(new LongField(COMPONENT_ID, sctId, Store.YES));
-				doc.add(new IntField(COMPONENT_TYPE, SnomedTerminologyComponentConstants.DESCRIPTION_NUMBER, Store.YES));
-				doc.add(new TextField(COMPONENT_LABEL, term, Store.YES));
+				doc.add(new LongField(CommonIndexConstants.COMPONENT_ID, sctId, Store.YES));
+				doc.add(new IntField(CommonIndexConstants.COMPONENT_TYPE, SnomedTerminologyComponentConstants.DESCRIPTION_NUMBER, Store.YES));
+				doc.add(new TextField(CommonIndexConstants.COMPONENT_LABEL, term, Store.YES));
 				SortKeyMode.SEARCH_ONLY.add(doc, term);
-				doc.add(new BinaryDocValuesField(COMPONENT_LABEL, new BytesRef(term)));
+				doc.add(new BinaryDocValuesField(CommonIndexConstants.COMPONENT_LABEL, new BytesRef(term)));
 				doc.add(new IntField(COMPONENT_ACTIVE, active ? 1 : 0, Store.YES));
-				doc.add(new LongField(COMPONENT_STORAGE_KEY, storageKey, Store.YES));
+				doc.add(new LongField(CommonIndexConstants.COMPONENT_STORAGE_KEY, storageKey, Store.YES));
 				doc.add(new StoredField(DESCRIPTION_CASE_SIGNIFICANCE_ID, caseSignificanceId));
 				doc.add(new StoredField(COMPONENT_RELEASED, released ? 1 : 0));
 				doc.add(new LongField(DESCRIPTION_TYPE_ID, typeId, Store.YES));
 				doc.add(new LongField(DESCRIPTION_CONCEPT_ID, containerConceptId, Store.YES));
-				doc.add(new LongField(DESCRIPTION_MODULE_ID, moduleId, Store.YES));
+				doc.add(new LongField(COMPONENT_MODULE_ID, moduleId, Store.YES));
 				doc.add(new LongField(DESCRIPTION_EFFECTIVE_TIME, effectiveTime, Store.YES));
 
-				doc.add(new NumericDocValuesField(COMPONENT_ID, sctId));
-				doc.add(new NumericDocValuesField(COMPONENT_STORAGE_KEY, storageKey));
+				doc.add(new NumericDocValuesField(CommonIndexConstants.COMPONENT_ID, sctId));
+				doc.add(new NumericDocValuesField(CommonIndexConstants.COMPONENT_STORAGE_KEY, storageKey));
 				doc.add(new NumericDocValuesField(DESCRIPTION_CASE_SIGNIFICANCE_ID, caseSignificanceId));
 				doc.add(new NumericDocValuesField(DESCRIPTION_TYPE_ID, typeId));
 				doc.add(new NumericDocValuesField(DESCRIPTION_CONCEPT_ID, containerConceptId));
-				doc.add(new NumericDocValuesField(DESCRIPTION_MODULE_ID, moduleId));
+				doc.add(new NumericDocValuesField(COMPONENT_MODULE_ID, moduleId));
 				doc.add(new NumericDocValuesField(DESCRIPTION_EFFECTIVE_TIME, effectiveTime));
 				
 				snomedIndexService.index(branchPath, doc, IndexUtils.getStorageKeyTerm(storageKey));
@@ -1239,20 +1228,20 @@ public class SnomedRf2IndexInitializer extends Job {
 		
 		final String conceptIdString = Long.toString(conceptId);
 		
-		doc.add(new LongField(COMPONENT_ID, conceptId, Store.YES));
-		doc.add(new LongField(COMPONENT_STORAGE_KEY, conceptStorageKey, Store.YES));
-		doc.add(new IntField(COMPONENT_TYPE, SnomedTerminologyComponentConstants.CONCEPT_NUMBER, Store.YES));
+		doc.add(new LongField(CommonIndexConstants.COMPONENT_ID, conceptId, Store.YES));
+		doc.add(new LongField(CommonIndexConstants.COMPONENT_STORAGE_KEY, conceptStorageKey, Store.YES));
+		doc.add(new IntField(CommonIndexConstants.COMPONENT_TYPE, SnomedTerminologyComponentConstants.CONCEPT_NUMBER, Store.YES));
 		doc.add(new IntField(CONCEPT_EXHAUSTIVE, exhaustive ? 1 : 0, Store.YES));
 		doc.add(new IntField(COMPONENT_ACTIVE, active ? 1 : 0, Store.YES));
 		doc.add(new IntField(CONCEPT_PRIMITIVE, primitive ? 1 : 0, Store.YES));
 		doc.add(new StoredField(COMPONENT_RELEASED, released ? 1 : 0));
-		doc.add(new LongField(CONCEPT_MODULE_ID, moduleId, Store.YES));
-		doc.add(new NumericDocValuesField(COMPONENT_STORAGE_KEY, conceptStorageKey));
-		doc.add(new NumericDocValuesField(COMPONENT_COMPARE_UNIQUE_KEY, indexAsRelevantForCompare ? conceptStorageKey : CDOUtils.NO_STORAGE_KEY));
+		doc.add(new LongField(COMPONENT_MODULE_ID, moduleId, Store.YES));
+		doc.add(new NumericDocValuesField(CommonIndexConstants.COMPONENT_STORAGE_KEY, conceptStorageKey));
+		doc.add(new NumericDocValuesField(CommonIndexConstants.COMPONENT_COMPARE_UNIQUE_KEY, indexAsRelevantForCompare ? conceptStorageKey : CDOUtils.NO_STORAGE_KEY));
 		if (!indexAsRelevantForCompare) {
-			doc.add(new NumericDocValuesField(COMPONENT_IGNORE_COMPARE_UNIQUE_KEY, conceptStorageKey));
+			doc.add(new NumericDocValuesField(CommonIndexConstants.COMPONENT_IGNORE_COMPARE_UNIQUE_KEY, conceptStorageKey));
 		}
-		doc.add(new NumericDocValuesField(COMPONENT_ID, conceptId));
+		doc.add(new NumericDocValuesField(CommonIndexConstants.COMPONENT_ID, conceptId));
 		doc.add(new LongField(CONCEPT_NAMESPACE_ID, NamespaceMapping.getExtensionNamespaceId(conceptId), Store.NO));
 		doc.add(new LongField(CONCEPT_EFFECTIVE_TIME, effectiveTime, Store.YES));
 		
@@ -1275,12 +1264,12 @@ public class SnomedRf2IndexInitializer extends Job {
 			}
 		}
 			
-		doc.add(new LongField(COMPONENT_ICON_ID, Long.valueOf(iconId), Store.YES));
-		doc.add(new NumericDocValuesField(COMPONENT_ICON_ID, Long.valueOf(iconId)));
+		doc.add(new LongField(CommonIndexConstants.COMPONENT_ICON_ID, Long.valueOf(iconId), Store.YES));
+		doc.add(new NumericDocValuesField(CommonIndexConstants.COMPONENT_ICON_ID, Long.valueOf(iconId)));
 
 		final String preferredTerm = getImportIndexService().getConceptLabel(conceptIdString);
-		doc.add(new TextField(COMPONENT_LABEL, preferredTerm, Store.YES));
-		doc.add(new BinaryDocValuesField(COMPONENT_LABEL, new BytesRef(preferredTerm)));
+		doc.add(new TextField(CommonIndexConstants.COMPONENT_LABEL, preferredTerm, Store.YES));
+		doc.add(new BinaryDocValuesField(CommonIndexConstants.COMPONENT_LABEL, new BytesRef(preferredTerm)));
 		SortKeyMode.SORT_ONLY.add(doc, preferredTerm);
 		
 		if (conceptIdToPredicateMap.containsKey(conceptId)) {
@@ -1302,11 +1291,11 @@ public class SnomedRf2IndexInitializer extends Job {
 		final LongCollection parentIds = getParentIds(String.valueOf(conceptId));
 		if (parentIds.isEmpty()) {
 			// if it has no parents, then it is the root
-			doc.add(new LongField(CONCEPT_PARENT, ROOT_ID, Store.YES));
+			doc.add(new LongField(CommonIndexConstants.COMPONENT_PARENT, ROOT_ID, Store.YES));
 		} else {
 			final LongIterator parentIdIterator = parentIds.iterator();
 			while (parentIdIterator.hasNext()) {
-				doc.add(new LongField(CONCEPT_PARENT, parentIdIterator.next(), Store.YES));
+				doc.add(new LongField(CommonIndexConstants.COMPONENT_PARENT, parentIdIterator.next(), Store.YES));
 			}
 		}
 		// query ancestors

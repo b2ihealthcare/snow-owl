@@ -22,9 +22,8 @@ import static com.b2international.snowowl.snomed.common.SnomedTerminologyCompone
 import static com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants.RELATIONSHIP_NUMBER;
 import static com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants.getTerminologyComponentIdValue;
 import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.COMPONENT_ACTIVE;
-import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.COMPONENT_LABEL;
+import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.COMPONENT_MODULE_ID;
 import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.COMPONENT_RELEASED;
-import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.COMPONENT_STORAGE_KEY;
 import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_ACCEPTABILITY_ID;
 import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_ACCEPTABILITY_LABEL;
 import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_CHARACTERISTIC_TYPE_ID;
@@ -45,7 +44,6 @@ import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBr
 import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_MAP_TARGET_COMPONENT_ID;
 import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_MAP_TARGET_COMPONENT_LABEL;
 import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_MAP_TARGET_COMPONENT_TYPE_ID;
-import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_MODULE_ID;
 import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_OPERATOR_ID;
 import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_QUERY;
 import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_REFERENCED_COMPONENT_ID;
@@ -87,6 +85,7 @@ import com.b2international.snowowl.core.api.IComponent;
 import com.b2international.snowowl.core.api.ILookupService;
 import com.b2international.snowowl.core.api.INameProviderFactory;
 import com.b2international.snowowl.core.api.IStatement;
+import com.b2international.snowowl.core.api.index.CommonIndexConstants;
 import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.datastore.BranchPathUtils;
 import com.b2international.snowowl.datastore.CodeSystemUtils;
@@ -155,11 +154,11 @@ public class SnomedRefSetMemberIndexMappingStrategy extends AbstractIndexMapping
 		doc.add(new StringField(REFERENCE_SET_MEMBER_UUID, member.getUuid(), Store.YES));
 		doc.add(new IntField(COMPONENT_ACTIVE, member.isActive() ? 1 : 0, Store.YES));
 		doc.add(new IntField(REFERENCE_SET_MEMBER_REFERENCE_SET_TYPE, member.getRefSet().getType().ordinal(), Store.YES));
-		doc.add(new LongField(COMPONENT_STORAGE_KEY, CDOIDUtil.getLong(member.cdoID()), Store.YES));
+		doc.add(new LongField(CommonIndexConstants.COMPONENT_STORAGE_KEY, CDOIDUtil.getLong(member.cdoID()), Store.YES));
 		doc.add(new StoredField(COMPONENT_RELEASED, member.isReleased() ? 1 : 0));
 		doc.add(new IntField(REFERENCE_SET_MEMBER_REFERENCED_COMPONENT_TYPE, member.getReferencedComponentType(), Store.YES));
 		doc.add(new StringField(REFERENCE_SET_MEMBER_REFERENCED_COMPONENT_ID, member.getReferencedComponentId(), Store.YES));
-		doc.add(new LongField(REFERENCE_SET_MEMBER_MODULE_ID, Long.valueOf(member.getModuleId()), Store.YES));
+		doc.add(new LongField(COMPONENT_MODULE_ID, Long.valueOf(member.getModuleId()), Store.YES));
 		doc.add(new LongField(REFERENCE_SET_MEMBER_REFERENCE_SET_ID, Long.valueOf(member.getRefSetIdentifierId()), Store.YES));
 		doc.add(new LongField(REFERENCE_SET_MEMBER_EFFECTIVE_TIME, EffectiveTimes.getEffectiveTime(member.getEffectiveTime()), Store.YES));
 		
@@ -279,7 +278,7 @@ public class SnomedRefSetMemberIndexMappingStrategy extends AbstractIndexMapping
 			
 		}
 		
-		doc.add(new TextField(COMPONENT_LABEL, this.label, Store.YES));
+		doc.add(new TextField(CommonIndexConstants.COMPONENT_LABEL, this.label, Store.YES));
 		
 		switch (member.getRefSet().getType()) {
 			
@@ -382,14 +381,14 @@ public class SnomedRefSetMemberIndexMappingStrategy extends AbstractIndexMapping
 				doc.add(new BinaryDocValuesField(REFERENCE_SET_MEMBER_SERIALIZED_VALUE, new BytesRef(dataTypeMember.getSerializedValue())));
 				
 				if (null != label) {
-					doc.add(new BinaryDocValuesField(COMPONENT_LABEL, new BytesRef(label)));
+					doc.add(new BinaryDocValuesField(CommonIndexConstants.COMPONENT_LABEL, new BytesRef(label)));
 					SortKeyMode.SEARCH_ONLY.add(doc, label);
 				}
 				
 				doc.add(new NumericDocValuesField(REFERENCE_SET_MEMBER_REFERENCED_COMPONENT_ID, Long.parseLong(member.getReferencedComponentId())));
-				doc.add(new NumericDocValuesField(COMPONENT_STORAGE_KEY, CDOIDUtils.asLong(member.cdoID())));
+				doc.add(new NumericDocValuesField(CommonIndexConstants.COMPONENT_STORAGE_KEY, CDOIDUtils.asLong(member.cdoID())));
 				doc.add(new NumericDocValuesField(REFERENCE_SET_MEMBER_REFERENCE_SET_ID, Long.parseLong(member.getRefSetIdentifierId())));
-				doc.add(new NumericDocValuesField(REFERENCE_SET_MEMBER_MODULE_ID, Long.valueOf(member.getModuleId())));
+				doc.add(new NumericDocValuesField(COMPONENT_MODULE_ID, Long.valueOf(member.getModuleId())));
 				
 				if (member.eContainer() instanceof Component) {
 					final String containerModuleId = ((Component) member.eContainer()).getModule().getId();

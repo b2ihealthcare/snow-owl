@@ -23,7 +23,6 @@ import static com.b2international.snowowl.snomed.common.SnomedTerminologyCompone
 import static com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants.RELATIONSHIP_NUMBER;
 import static com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator.REPOSITORY_UUID;
 import static com.b2international.snowowl.snomed.datastore.SnomedRefSetUtil.getRefSetMemberClass;
-import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.COMPONENT_TYPE;
 import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_REFERENCE_SET_TYPE;
 import static com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType.get;
 import static com.google.common.collect.Sets.newHashSet;
@@ -35,6 +34,7 @@ import org.apache.lucene.document.Document;
 import org.apache.lucene.index.IndexableField;
 import org.eclipse.emf.ecore.EClass;
 
+import com.b2international.snowowl.core.api.index.CommonIndexConstants;
 import com.b2international.snowowl.datastore.index.AbstractIndexService;
 import com.b2international.snowowl.datastore.index.IndexUtils;
 import com.b2international.snowowl.datastore.server.EClassProvider;
@@ -52,14 +52,14 @@ public class SnomedEClassProvider extends EClassProvider {
 	private static final int PREDICATE_TYPE_ID = 999;
 
 	private static final Set<String> FIELDS_TO_LOAD = unmodifiableSet(newHashSet(
-			COMPONENT_TYPE, 
+			CommonIndexConstants.COMPONENT_TYPE, 
 			REFERENCE_SET_MEMBER_REFERENCE_SET_TYPE
 			));
 	
 	@Override
 	protected EClass extractEClass(final Document doc) {
 		
-		IndexableField indexableField = doc.getField(COMPONENT_TYPE);
+		IndexableField indexableField = doc.getField(CommonIndexConstants.COMPONENT_TYPE);
 		if (null == indexableField) {//component type is not stored for reference set members
 			indexableField = doc.getField(REFERENCE_SET_MEMBER_REFERENCE_SET_TYPE);
 			if (null != indexableField) {

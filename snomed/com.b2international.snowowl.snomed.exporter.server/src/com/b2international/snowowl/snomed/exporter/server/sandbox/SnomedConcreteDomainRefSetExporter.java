@@ -15,7 +15,6 @@
  */
 package com.b2international.snowowl.snomed.exporter.server.sandbox;
 
-import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.COMPONENT_LABEL;
 import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_CHARACTERISTIC_TYPE_ID;
 import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_OPERATOR_ID;
 import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_SERIALIZED_VALUE;
@@ -29,6 +28,7 @@ import java.util.Set;
 
 import org.apache.lucene.document.Document;
 
+import com.b2international.snowowl.core.api.index.CommonIndexConstants;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType;
 
@@ -44,7 +44,7 @@ public class SnomedConcreteDomainRefSetExporter extends SnomedRefSetExporter {
 		final Set<String> fieldsToLoad = newHashSet(COMMON_FIELDS_TO_LOAD);
 		fieldsToLoad.add(REFERENCE_SET_MEMBER_UOM_ID);
 		fieldsToLoad.add(REFERENCE_SET_MEMBER_OPERATOR_ID);
-		fieldsToLoad.add(COMPONENT_LABEL);
+		fieldsToLoad.add(CommonIndexConstants.COMPONENT_LABEL);
 		fieldsToLoad.add(REFERENCE_SET_MEMBER_SERIALIZED_VALUE);
 		fieldsToLoad.add(REFERENCE_SET_MEMBER_CHARACTERISTIC_TYPE_ID);
 		FIELD_TO_LOAD = unmodifiableSet(fieldsToLoad);
@@ -68,7 +68,7 @@ public class SnomedConcreteDomainRefSetExporter extends SnomedRefSetExporter {
 		sb.append(HT);
 		sb.append(doc.get(REFERENCE_SET_MEMBER_OPERATOR_ID));
 		sb.append(HT);
-		sb.append(nullToEmpty(doc.get(COMPONENT_LABEL)));
+		sb.append(nullToEmpty(doc.get(CommonIndexConstants.COMPONENT_LABEL)));
 		sb.append(HT);
 		sb.append(doc.get(REFERENCE_SET_MEMBER_SERIALIZED_VALUE));
 		sb.append(HT);

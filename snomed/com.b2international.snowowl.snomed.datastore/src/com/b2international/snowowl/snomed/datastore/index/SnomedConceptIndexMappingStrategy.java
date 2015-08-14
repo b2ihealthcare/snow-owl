@@ -16,22 +16,14 @@
 package com.b2international.snowowl.snomed.datastore.index;
 
 import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.COMPONENT_ACTIVE;
-import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.COMPONENT_COMPARE_UNIQUE_KEY;
-import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.COMPONENT_ICON_ID;
-import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.COMPONENT_ID;
-import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.COMPONENT_IGNORE_COMPARE_UNIQUE_KEY;
-import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.COMPONENT_LABEL;
+import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.COMPONENT_MODULE_ID;
 import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.COMPONENT_REFERRING_PREDICATE;
 import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.COMPONENT_RELEASED;
-import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.COMPONENT_STORAGE_KEY;
-import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.COMPONENT_TYPE;
 import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.CONCEPT_ANCESTOR;
 import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.CONCEPT_DEGREE_OF_INTEREST;
 import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.CONCEPT_EFFECTIVE_TIME;
 import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.CONCEPT_EXHAUSTIVE;
-import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.CONCEPT_MODULE_ID;
 import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.CONCEPT_NAMESPACE_ID;
-import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.CONCEPT_PARENT;
 import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.CONCEPT_PRIMITIVE;
 import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.CONCEPT_REFERRING_MAPPING_REFERENCE_SET_ID;
 import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.CONCEPT_REFERRING_REFERENCE_SET_ID;
@@ -57,6 +49,7 @@ import bak.pcj.LongIterator;
 import bak.pcj.set.LongSet;
 
 import com.b2international.snowowl.core.ApplicationContext;
+import com.b2international.snowowl.core.api.index.CommonIndexConstants;
 import com.b2international.snowowl.core.api.index.IIndexMappingStrategy;
 import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.datastore.BranchPathUtils;
@@ -166,26 +159,26 @@ public abstract class SnomedConceptIndexMappingStrategy extends AbstractIndexMap
 		
 		final Document doc = new Document();
 		
-		doc.add(new LongField(COMPONENT_ID, Long.valueOf(conceptId), Store.YES));
-		doc.add(new LongField(COMPONENT_STORAGE_KEY, storageKey, Store.YES));
-		doc.add(new IntField(COMPONENT_TYPE, SnomedTerminologyComponentConstants.CONCEPT_NUMBER, Store.YES));
+		doc.add(new LongField(CommonIndexConstants.COMPONENT_ID, Long.valueOf(conceptId), Store.YES));
+		doc.add(new LongField(CommonIndexConstants.COMPONENT_STORAGE_KEY, storageKey, Store.YES));
+		doc.add(new IntField(CommonIndexConstants.COMPONENT_TYPE, SnomedTerminologyComponentConstants.CONCEPT_NUMBER, Store.YES));
 		doc.add(new IntField(CONCEPT_EXHAUSTIVE, exhaustive ? 1 : 0, Store.YES));
 		doc.add(new IntField(COMPONENT_ACTIVE, active ? 1 : 0, Store.YES));
 		doc.add(new IntField(CONCEPT_PRIMITIVE, primitive ? 1 : 0, Store.YES));
 		doc.add(new StoredField(COMPONENT_RELEASED, released ? 1 : 0));
-		doc.add(new TextField(COMPONENT_LABEL, label, Store.YES));
-		doc.add(new BinaryDocValuesField(COMPONENT_LABEL, new BytesRef(label)));
+		doc.add(new TextField(CommonIndexConstants.COMPONENT_LABEL, label, Store.YES));
+		doc.add(new BinaryDocValuesField(CommonIndexConstants.COMPONENT_LABEL, new BytesRef(label)));
 		SortKeyMode.SORT_ONLY.add(doc, label);
 		doc.add(new StoredField(CONCEPT_DEGREE_OF_INTEREST, degreeOfInterest));
 		doc.add(new FloatDocValuesField(CONCEPT_DEGREE_OF_INTEREST, degreeOfInterest));
-		doc.add(new LongField(CONCEPT_MODULE_ID, Long.valueOf(moduleId), Store.YES));
-		doc.add(new LongField(COMPONENT_ICON_ID, Long.valueOf(iconId), Store.YES));
-		doc.add(new NumericDocValuesField(COMPONENT_STORAGE_KEY, storageKey));
-		doc.add(new NumericDocValuesField(COMPONENT_ID, Long.valueOf(conceptId)));
-		doc.add(new NumericDocValuesField(COMPONENT_COMPARE_UNIQUE_KEY, indexAsRelevantForCompare ? storageKey : CDOUtils.NO_STORAGE_KEY));
-		doc.add(new NumericDocValuesField(COMPONENT_ICON_ID, Long.valueOf(iconId)));
+		doc.add(new LongField(COMPONENT_MODULE_ID, Long.valueOf(moduleId), Store.YES));
+		doc.add(new LongField(CommonIndexConstants.COMPONENT_ICON_ID, Long.valueOf(iconId), Store.YES));
+		doc.add(new NumericDocValuesField(CommonIndexConstants.COMPONENT_STORAGE_KEY, storageKey));
+		doc.add(new NumericDocValuesField(CommonIndexConstants.COMPONENT_ID, Long.valueOf(conceptId)));
+		doc.add(new NumericDocValuesField(CommonIndexConstants.COMPONENT_COMPARE_UNIQUE_KEY, indexAsRelevantForCompare ? storageKey : CDOUtils.NO_STORAGE_KEY));
+		doc.add(new NumericDocValuesField(CommonIndexConstants.COMPONENT_ICON_ID, Long.valueOf(iconId)));
 		if (!indexAsRelevantForCompare) {
-			doc.add(new NumericDocValuesField(COMPONENT_IGNORE_COMPARE_UNIQUE_KEY, storageKey));
+			doc.add(new NumericDocValuesField(CommonIndexConstants.COMPONENT_IGNORE_COMPARE_UNIQUE_KEY, storageKey));
 		}
 		doc.add(new LongField(CONCEPT_EFFECTIVE_TIME, EffectiveTimes.getEffectiveTime(effectiveTime), Store.YES));
 		
@@ -197,7 +190,7 @@ public abstract class SnomedConceptIndexMappingStrategy extends AbstractIndexMap
 		
 		addDescriptionFields(doc);
 
-		addHierarchicalFields(doc, parentIds, CONCEPT_PARENT);
+		addHierarchicalFields(doc, parentIds, CommonIndexConstants.COMPONENT_PARENT);
 		addHierarchicalFields(doc, ancestorIds, CONCEPT_ANCESTOR);
 		
 		addPredicateFields(doc, predicateKeys);

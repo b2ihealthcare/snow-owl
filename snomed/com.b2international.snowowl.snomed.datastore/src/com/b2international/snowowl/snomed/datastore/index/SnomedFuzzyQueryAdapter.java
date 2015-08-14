@@ -33,6 +33,7 @@ import org.apache.lucene.util.automaton.LevenshteinAutomata;
 
 import com.b2international.snowowl.core.TextConstants;
 import com.b2international.snowowl.core.api.IBranchPath;
+import com.b2international.snowowl.core.api.index.CommonIndexConstants;
 import com.b2international.snowowl.core.api.index.IIndexService;
 import com.b2international.snowowl.datastore.index.AbstractIndexService;
 import com.b2international.snowowl.datastore.index.DocumentWithScore;
@@ -73,7 +74,7 @@ public class SnomedFuzzyQueryAdapter extends SnomedConceptIndexQueryAdapter impl
 		
 		// Only find active and not excluded concepts
 		query.add(new BooleanClause(new TermQuery(new Term(SnomedIndexBrowserConstants.COMPONENT_ACTIVE, IndexUtils.intToPrefixCoded(1))), Occur.MUST));
-		query.add(new BooleanClause(new TermQuery(new Term(SnomedIndexBrowserConstants.COMPONENT_TYPE, IndexUtils.intToPrefixCoded(SnomedTerminologyComponentConstants.CONCEPT_NUMBER))), Occur.MUST));
+		query.add(new BooleanClause(new TermQuery(new Term(CommonIndexConstants.COMPONENT_TYPE, IndexUtils.intToPrefixCoded(SnomedTerminologyComponentConstants.CONCEPT_NUMBER))), Occur.MUST));
 		
 		// If the search string is empty, build a query that finds all active concepts
 		if (searchString.isEmpty()) {

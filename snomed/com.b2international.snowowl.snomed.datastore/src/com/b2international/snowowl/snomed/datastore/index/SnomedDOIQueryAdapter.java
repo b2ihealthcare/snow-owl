@@ -87,8 +87,8 @@ public class SnomedDOIQueryAdapter extends SnomedConceptIndexQueryAdapter implem
 					.matchExactTerm(CommonIndexConstants.COMPONENT_ID, IndexUtils.longToPrefixCoded(parsedSearchStringOptional.get())).boost(10.0f)
 					.matchAllTokenizedTerms(CommonIndexConstants.COMPONENT_LABEL, searchString).boost(5.0f)
 					.matchAllTokenizedTerms(SnomedIndexBrowserConstants.CONCEPT_SYNONYM, searchString).boost(4.0f)
-					.matchAllTokenizedTermPrefixSequences(SnomedIndexBrowserConstants.COMPONENT_LABEL, searchString).boost(3.0f)
-					.matchTokenizedTermSequence(SnomedIndexBrowserConstants.COMPONENT_LABEL, searchString).boost(2.0f)
+					.matchAllTokenizedTermPrefixSequences(CommonIndexConstants.COMPONENT_LABEL, searchString).boost(3.0f)
+					.matchTokenizedTermSequence(CommonIndexConstants.COMPONENT_LABEL, searchString).boost(2.0f)
 					.matchAllTokenizedTermPrefixes(SnomedIndexBrowserConstants.CONCEPT_SYNONYM, searchString));
 		} else {
 			return super.createIndexQueryBuilder()
@@ -96,8 +96,8 @@ public class SnomedDOIQueryAdapter extends SnomedConceptIndexQueryAdapter implem
 					.require(new IndexQueryBuilder()
 					.matchAllTokenizedTerms(CommonIndexConstants.COMPONENT_LABEL, searchString).boost(5.0f)
 					.matchAllTokenizedTerms(SnomedIndexBrowserConstants.CONCEPT_SYNONYM, searchString).boost(4.0f)
-					.matchAllTokenizedTermPrefixSequences(SnomedIndexBrowserConstants.COMPONENT_LABEL, searchString).boost(3.0f)
-					.matchTokenizedTermSequence(SnomedIndexBrowserConstants.COMPONENT_LABEL, searchString).boost(2.0f)
+					.matchAllTokenizedTermPrefixSequences(CommonIndexConstants.COMPONENT_LABEL, searchString).boost(3.0f)
+					.matchTokenizedTermSequence(CommonIndexConstants.COMPONENT_LABEL, searchString).boost(2.0f)
 					.matchAllTokenizedTermPrefixes(SnomedIndexBrowserConstants.CONCEPT_SYNONYM, searchString));
 		}
 	}

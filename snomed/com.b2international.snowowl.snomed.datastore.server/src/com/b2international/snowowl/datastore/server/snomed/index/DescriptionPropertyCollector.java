@@ -15,9 +15,9 @@
  */
 package com.b2international.snowowl.datastore.server.snomed.index;
 
+import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.COMPONENT_MODULE_ID;
 import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.DESCRIPTION_CASE_SIGNIFICANCE_ID;
 import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.DESCRIPTION_CONCEPT_ID;
-import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.DESCRIPTION_MODULE_ID;
 import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.DESCRIPTION_TYPE_ID;
 import static com.google.common.base.Preconditions.checkNotNull;
 
@@ -47,7 +47,7 @@ public class DescriptionPropertyCollector extends ComponentPropertyCollector {
 	protected void initDocValues(final AtomicReader leafReader) throws IOException {
 		super.initDocValues(leafReader);
 		conceptIds = leafReader.getNumericDocValues(DESCRIPTION_CONCEPT_ID);
-		moduleIds = leafReader.getNumericDocValues(DESCRIPTION_MODULE_ID);
+		moduleIds = leafReader.getNumericDocValues(COMPONENT_MODULE_ID);
 		typeIds = leafReader.getNumericDocValues(DESCRIPTION_TYPE_ID);
 		caseSignificanceIds = leafReader.getNumericDocValues(DESCRIPTION_CASE_SIGNIFICANCE_ID);
 	}

@@ -26,6 +26,7 @@ import org.apache.lucene.search.TermQuery;
 import bak.pcj.LongCollection;
 
 import com.b2international.snowowl.core.api.IBranchPath;
+import com.b2international.snowowl.core.api.index.CommonIndexConstants;
 import com.b2international.snowowl.datastore.index.IndexUtils;
 import com.b2international.snowowl.datastore.index.LongDocValuesCollector;
 import com.b2international.snowowl.datastore.server.index.IndexServerService;
@@ -73,7 +74,7 @@ public final class CollectMembersRunnable implements Runnable {
 			refSetMemberConceptQuery.add(labelQuery, Occur.MUST);
 		}
 
-		final LongDocValuesCollector conceptIdCollector = new LongDocValuesCollector(SnomedIndexBrowserConstants.COMPONENT_ID, maxDoc);
+		final LongDocValuesCollector conceptIdCollector = new LongDocValuesCollector(CommonIndexConstants.COMPONENT_ID, maxDoc);
 		indexService.search(branchPath, refSetMemberConceptQuery, conceptIdCollector);
 		final LongCollection conceptIds = conceptIdCollector.getValues();
 		conceptIds.trimToSize();

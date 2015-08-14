@@ -16,9 +16,7 @@
 package com.b2international.snowowl.datastore.server.snomed.escg;
 
 import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.COMPONENT_ACTIVE;
-import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.COMPONENT_ID;
 import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.CONCEPT_ANCESTOR;
-import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.CONCEPT_PARENT;
 import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.CONCEPT_REFERRING_MAPPING_REFERENCE_SET_ID;
 import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.CONCEPT_REFERRING_REFERENCE_SET_ID;
 
@@ -30,6 +28,7 @@ import org.apache.lucene.search.BooleanQuery;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.TermQuery;
 
+import com.b2international.snowowl.core.api.index.CommonIndexConstants;
 import com.b2international.snowowl.datastore.index.IndexUtils;
 import com.b2international.snowowl.snomed.datastore.escg.IQueryEvaluator;
 import com.b2international.snowowl.snomed.dsl.query.ast.AndClause;
@@ -188,7 +187,7 @@ public class IndexQueryQueryEvaluator implements Serializable, IQueryEvaluator<B
 	}
 
 	private Term createConceptParentTerm(final String conceptId) {
-		return new Term(CONCEPT_PARENT, IndexUtils.longToPrefixCoded(conceptId));
+		return new Term(CommonIndexConstants.COMPONENT_PARENT, IndexUtils.longToPrefixCoded(conceptId));
 	}
 
 	private Query createAncestorQuery(final String conceptId) {
@@ -204,7 +203,7 @@ public class IndexQueryQueryEvaluator implements Serializable, IQueryEvaluator<B
 	}
 
 	private Term createConceptIdTerm(final String conceptId) {
-		return new Term(COMPONENT_ID, IndexUtils.longToPrefixCoded(conceptId));
+		return new Term(CommonIndexConstants.COMPONENT_ID, IndexUtils.longToPrefixCoded(conceptId));
 	}
 	
 	private Query createActiveQuery() {

@@ -37,6 +37,7 @@ import org.slf4j.LoggerFactory;
 import com.b2international.commons.concurrent.equinox.ForkJoinUtils;
 import com.b2international.snowowl.core.SimpleFamilyJob;
 import com.b2international.snowowl.core.api.IBranchPath;
+import com.b2international.snowowl.core.api.index.CommonIndexConstants;
 import com.b2international.snowowl.datastore.server.DatastoreServerActivator;
 import com.b2international.snowowl.datastore.server.snomed.index.SnomedIndexServerService;
 import com.b2international.snowowl.snomed.SnomedConstants;
@@ -185,7 +186,7 @@ public class MrcmIndexInitializer extends SimpleFamilyJob {
 		final DataType dataType = dataTypePredicate.getType();
 		
 		final Document document = new Document();
-		document.add(new IntField(SnomedIndexBrowserConstants.COMPONENT_TYPE, PREDICATE_TYPE_ID, Store.YES));
+		document.add(new IntField(CommonIndexConstants.COMPONENT_TYPE, PREDICATE_TYPE_ID, Store.YES));
 		document.add(new StringField(SnomedIndexBrowserConstants.PREDICATE_UUID, predicate.getUuid(),Store.YES));
 		document.add(new StoredField(SnomedIndexBrowserConstants.PREDICATE_TYPE, PredicateType.DATATYPE.name()));
 		document.add(new StoredField(SnomedIndexBrowserConstants.PREDICATE_DATA_TYPE_LABEL, dataTypeLabel));
@@ -203,7 +204,7 @@ public class MrcmIndexInitializer extends SimpleFamilyJob {
 		final long descriptionId = Long.valueOf(descriptionPredicate.getTypeId());
 		
 		final Document document = new Document();
-		document.add(new IntField(SnomedIndexBrowserConstants.COMPONENT_TYPE, PREDICATE_TYPE_ID, Store.YES));
+		document.add(new IntField(CommonIndexConstants.COMPONENT_TYPE, PREDICATE_TYPE_ID, Store.YES));
 		document.add(new StringField(SnomedIndexBrowserConstants.PREDICATE_UUID, predicate.getUuid(),Store.YES));
 		document.add(new StoredField(SnomedIndexBrowserConstants.PREDICATE_TYPE, PredicateType.DESCRIPTION.name()));
 		document.add(new StoredField(SnomedIndexBrowserConstants.PREDICATE_DESCRIPTION_TYPE_ID, descriptionId));
@@ -254,7 +255,7 @@ public class MrcmIndexInitializer extends SimpleFamilyJob {
 		});
 		
 		final Document document = new Document();
-		document.add(new IntField(SnomedIndexBrowserConstants.COMPONENT_TYPE, PREDICATE_TYPE_ID, Store.YES));
+		document.add(new IntField(CommonIndexConstants.COMPONENT_TYPE, PREDICATE_TYPE_ID, Store.YES));
 		document.add(new StringField(SnomedIndexBrowserConstants.PREDICATE_UUID, predicate.getUuid(),Store.YES));
 		document.add(new StoredField(SnomedIndexBrowserConstants.PREDICATE_TYPE, PredicateType.RELATIONSHIP.name()));
 		document.add(new StoredField(SnomedIndexBrowserConstants.PREDICATE_RELATIONSHIP_TYPE_EXPRESSION, typeReference.get()));

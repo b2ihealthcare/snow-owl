@@ -23,6 +23,7 @@ import org.apache.lucene.index.NumericDocValues;
 import bak.pcj.map.LongKeyLongMap;
 import bak.pcj.map.LongKeyLongOpenHashMap;
 
+import com.b2international.snowowl.core.api.index.CommonIndexConstants;
 import com.b2international.snowowl.datastore.index.AbstractDocsOutOfOrderCollector;
 import com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants;
 
@@ -53,7 +54,7 @@ public class DescriptionIdTypeCollector extends AbstractDocsOutOfOrderCollector 
 
 	@Override
 	protected void initDocValues(final AtomicReader leafReader) throws IOException {
-		descriptionIds = leafReader.getNumericDocValues(SnomedIndexBrowserConstants.COMPONENT_ID);
+		descriptionIds = leafReader.getNumericDocValues(CommonIndexConstants.COMPONENT_ID);
 		typeIds = leafReader.getNumericDocValues(SnomedIndexBrowserConstants.DESCRIPTION_TYPE_ID);
 	}
 

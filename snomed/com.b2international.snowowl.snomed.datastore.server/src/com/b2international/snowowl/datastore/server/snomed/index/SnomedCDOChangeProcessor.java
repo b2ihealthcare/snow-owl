@@ -1491,7 +1491,7 @@ public class SnomedCDOChangeProcessor implements ICDOChangeProcessor {
 
 			//if the concept has been deleted we do not have to update its taxonomic informations, document will be deleted
 			if (!deletedConceptIds.contains(sourceConceptId)) {
-				removeTaxonomyField(sourceConceptId, destinationConceptId, SnomedIndexBrowserConstants.CONCEPT_PARENT);
+				removeTaxonomyField(sourceConceptId, destinationConceptId, CommonIndexConstants.COMPONENT_PARENT);
 				final LongOpenHashSet copyAncestorIds = new LongOpenHashSet(ancestorIds);
 				if (newTaxonomyBuilder.containsNode(Long.toString(sourceConceptId))) {
 					copyAncestorIds.removeAll(newTaxonomyBuilder.getSelfAndAllAncestorNodeIds(sourceConceptId));
@@ -1534,7 +1534,7 @@ public class SnomedCDOChangeProcessor implements ICDOChangeProcessor {
 			
 //			final long objectStorageKey = newTaxonomyBuilder.getStorageKey(sourceConceptId);
 			final LongSet ancestorIds = newTaxonomyBuilder.getSelfAndAllAncestorNodeIds(/*value ID*/destinationConceptId);
-			addTaxonomyField(sourceConceptId, destinationConceptId, SnomedIndexBrowserConstants.CONCEPT_PARENT);
+			addTaxonomyField(sourceConceptId, destinationConceptId, CommonIndexConstants.COMPONENT_PARENT);
 			addTaxonomyField(sourceConceptId, newTaxonomyBuilder.getAllAncestorNodeIds(Long.toString(destinationConceptId)), SnomedIndexBrowserConstants.CONCEPT_ANCESTOR);
 			
 			final LongSet objectAllSubTypeIds = newTaxonomyBuilder.getAllDescendantNodeIds(Long.toString(sourceConceptId));

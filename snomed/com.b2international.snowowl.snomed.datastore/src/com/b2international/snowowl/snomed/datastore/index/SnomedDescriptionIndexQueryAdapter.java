@@ -92,17 +92,17 @@ public abstract class SnomedDescriptionIndexQueryAdapter extends SnomedDslIndexQ
 	protected IndexQueryBuilder createIndexQueryBuilder() {
 		
 		return super.createIndexQueryBuilder()
-			.requireExactTerm(SnomedIndexBrowserConstants.COMPONENT_TYPE, IndexUtils.intToPrefixCoded(SnomedTerminologyComponentConstants.DESCRIPTION_NUMBER));
+			.requireExactTerm(CommonIndexConstants.COMPONENT_TYPE, IndexUtils.intToPrefixCoded(SnomedTerminologyComponentConstants.DESCRIPTION_NUMBER));
 	}
 	
 	@Override
 	public SnomedDescriptionIndexEntry buildSearchResult(final Document doc, final IBranchPath branchPath, final float score) {
 
 		final SnomedDescriptionIndexEntry entry = new SnomedDescriptionIndexEntry(
-				doc.get(SnomedIndexBrowserConstants.COMPONENT_ID), 
-				doc.get(SnomedIndexBrowserConstants.COMPONENT_LABEL), 
+				doc.get(CommonIndexConstants.COMPONENT_ID), 
+				doc.get(CommonIndexConstants.COMPONENT_LABEL), 
 				doc.get(SnomedIndexBrowserConstants.DESCRIPTION_TYPE_ID),
-				doc.get(SnomedIndexBrowserConstants.DESCRIPTION_MODULE_ID), 
+				doc.get(SnomedIndexBrowserConstants.COMPONENT_MODULE_ID), 
 				score,
 				doc.getField(CommonIndexConstants.COMPONENT_STORAGE_KEY).numericValue().longValue(),
 				IndexUtils.getBooleanValue(doc.getField(SnomedIndexBrowserConstants.COMPONENT_RELEASED)), 

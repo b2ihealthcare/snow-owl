@@ -16,7 +16,6 @@
 package com.b2international.snowowl.datastore.server.snomed.escg;
 
 import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.COMPONENT_ACTIVE;
-import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.COMPONENT_TYPE;
 import static com.google.common.base.Preconditions.checkNotNull;
 
 import java.io.Serializable;
@@ -30,6 +29,7 @@ import org.apache.lucene.search.TermQuery;
 import bak.pcj.LongCollection;
 
 import com.b2international.snowowl.core.api.IBranchPath;
+import com.b2international.snowowl.core.api.index.CommonIndexConstants;
 import com.b2international.snowowl.datastore.index.IndexUtils;
 import com.b2international.snowowl.dsl.escg.EscgUtils;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
@@ -56,7 +56,7 @@ public class EscgQueryEvaluatorService implements IEscgQueryEvaluatorService, Se
 	}
 	
 	private TermQuery createConceptTypeQuery() {
-		return new TermQuery(new Term(COMPONENT_TYPE, IndexUtils.intToPrefixCoded(SnomedTerminologyComponentConstants.CONCEPT_NUMBER)));
+		return new TermQuery(new Term(CommonIndexConstants.COMPONENT_TYPE, IndexUtils.intToPrefixCoded(SnomedTerminologyComponentConstants.CONCEPT_NUMBER)));
 	}
 
 	private TermQuery createActiveQuery() {

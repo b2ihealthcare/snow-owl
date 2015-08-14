@@ -83,7 +83,7 @@ public class InitialReasonerTaxonomyBuilder extends AbstractReasonerTaxonomyBuil
 
 			final BooleanQuery statementsQuery = new BooleanQuery(true);
 			statementsQuery.add(createIntTermQuery(SnomedIndexBrowserConstants.COMPONENT_ACTIVE, 1), Occur.MUST);
-			statementsQuery.add(createIntTermQuery(SnomedIndexBrowserConstants.COMPONENT_TYPE, SnomedTerminologyComponentConstants.RELATIONSHIP_NUMBER), Occur.MUST);
+			statementsQuery.add(createIntTermQuery(CommonIndexConstants.COMPONENT_TYPE, SnomedTerminologyComponentConstants.RELATIONSHIP_NUMBER), Occur.MUST);
 			statementsQuery.add(createLongTermQuery(SnomedIndexBrowserConstants.RELATIONSHIP_ATTRIBUTE_ID, IS_A_ID), Occur.MUST);
 			statementsQuery.add(createCharacteristicTypeQuery(), Occur.MUST);
 
@@ -117,7 +117,7 @@ public class InitialReasonerTaxonomyBuilder extends AbstractReasonerTaxonomyBuil
 
 			final BooleanQuery conceptQuery = new BooleanQuery(true);
 			conceptQuery.add(createIntTermQuery(SnomedIndexBrowserConstants.COMPONENT_ACTIVE, 1), Occur.MUST);
-			conceptQuery.add(createIntTermQuery(SnomedIndexBrowserConstants.COMPONENT_TYPE, SnomedTerminologyComponentConstants.CONCEPT_NUMBER), Occur.MUST);
+			conceptQuery.add(createIntTermQuery(CommonIndexConstants.COMPONENT_TYPE, SnomedTerminologyComponentConstants.CONCEPT_NUMBER), Occur.MUST);
 
 			if (null != additionalClause) {
 				conceptQuery.add(additionalClause, Occur.MUST);
@@ -150,7 +150,7 @@ public class InitialReasonerTaxonomyBuilder extends AbstractReasonerTaxonomyBuil
 
 			final BooleanQuery conceptQuery = new BooleanQuery(true);
 			conceptQuery.add(createIntTermQuery(SnomedIndexBrowserConstants.COMPONENT_ACTIVE, 1), Occur.MUST);
-			conceptQuery.add(createIntTermQuery(SnomedIndexBrowserConstants.COMPONENT_TYPE, SnomedTerminologyComponentConstants.CONCEPT_NUMBER), Occur.MUST);
+			conceptQuery.add(createIntTermQuery(CommonIndexConstants.COMPONENT_TYPE, SnomedTerminologyComponentConstants.CONCEPT_NUMBER), Occur.MUST);
 
 			final int hitCount = getIndexServerService().getHitCount(branchPath, conceptQuery, null);
 			final ConceptIdStorageKeyCollector collector = new ConceptIdStorageKeyCollector(hitCount);

@@ -19,8 +19,6 @@ import static com.b2international.commons.StringUtils.valueOfOrEmptyString;
 import static com.b2international.snowowl.core.ApplicationContext.getServiceForClass;
 import static com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants.CONCEPT_NUMBER;
 import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.COMPONENT_ACTIVE;
-import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.COMPONENT_ID;
-import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.COMPONENT_TYPE;
 import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.CONCEPT_FULLY_SPECIFIED_NAME;
 import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.CONCEPT_PRIMITIVE;
 import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_MAP_TARGET_COMPONENT_ID;
@@ -49,6 +47,7 @@ import com.b2international.commons.CompareUtils;
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.api.SnowowlRuntimeException;
+import com.b2international.snowowl.core.api.index.CommonIndexConstants;
 import com.b2international.snowowl.datastore.index.IndexUtils;
 import com.b2international.snowowl.datastore.server.index.IndexServerService;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
@@ -87,7 +86,7 @@ public class SnomedRf1ConceptExporter implements SnomedRf1Exporter {
 			));
 
 	private final static TermQuery TYPE_QUERY = 
-			new TermQuery(new Term(COMPONENT_TYPE, IndexUtils.intToPrefixCoded(SnomedTerminologyComponentConstants.CONCEPT_NUMBER)));
+			new TermQuery(new Term(CommonIndexConstants.COMPONENT_TYPE, IndexUtils.intToPrefixCoded(SnomedTerminologyComponentConstants.CONCEPT_NUMBER)));
 	private final static TermQuery INACTIVATION_QUERY = 
 			new TermQuery(new Term(REFERENCE_SET_MEMBER_REFERENCE_SET_ID, IndexUtils.longToPrefixCoded(Concepts.REFSET_CONCEPT_INACTIVITY_INDICATOR)));
 	private final static TermQuery CTV3_QUERY = 
@@ -135,7 +134,7 @@ public class SnomedRf1ConceptExporter implements SnomedRf1Exporter {
 								
 								
 								final BooleanQuery conceptQuery = new BooleanQuery(true);
-								conceptQuery.add(new TermQuery(new Term(COMPONENT_ID, IndexUtils.longToPrefixCoded(conceptId))), Occur.MUST);
+								conceptQuery.add(new TermQuery(new Term(CommonIndexConstants.COMPONENT_ID, IndexUtils.longToPrefixCoded(conceptId))), Occur.MUST);
 								conceptQuery.add(TYPE_QUERY, Occur.MUST);
 								
 								final TopDocs conceptTopDocs = indexService.search(getBranchPath(), conceptQuery, 1);

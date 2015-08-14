@@ -16,7 +16,7 @@
 package com.b2international.snowowl.snomed.datastore.index;
 
 import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.COMPONENT_ACTIVE;
-import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.COMPONENT_ICON_ID;
+import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.COMPONENT_MODULE_ID;
 import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.COMPONENT_REFERRING_PREDICATE;
 import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.COMPONENT_RELEASED;
 import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.CONCEPT_ANCESTOR;
@@ -24,9 +24,7 @@ import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBr
 import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.CONCEPT_EFFECTIVE_TIME;
 import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.CONCEPT_EXHAUSTIVE;
 import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.CONCEPT_FULLY_SPECIFIED_NAME;
-import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.CONCEPT_MODULE_ID;
 import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.CONCEPT_OTHER_DESCRIPTION;
-import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.CONCEPT_PARENT;
 import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.CONCEPT_PRIMITIVE;
 import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.CONCEPT_REFERRING_MAPPING_REFERENCE_SET_ID;
 import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.CONCEPT_REFERRING_REFERENCE_SET_ID;
@@ -94,7 +92,7 @@ public class SnomedConceptDocumentMappingStrategy extends SnomedConceptIndexMapp
 	}
 
 	private static String getIconId(Document conceptDocument) {
-		return conceptDocument.get(COMPONENT_ICON_ID);
+		return conceptDocument.get(CommonIndexConstants.COMPONENT_ICON_ID);
 	}
 
 	private static Set<String> getPredicateKeys(Document conceptDocument) {
@@ -124,7 +122,7 @@ public class SnomedConceptDocumentMappingStrategy extends SnomedConceptIndexMapp
 	}
 
 	private static String getModuleId(final Document conceptDocument) {
-		return conceptDocument.get(CONCEPT_MODULE_ID);
+		return conceptDocument.get(COMPONENT_MODULE_ID);
 	}
 
 	private static boolean isReleased(final Document conceptDocument) {
@@ -144,7 +142,7 @@ public class SnomedConceptDocumentMappingStrategy extends SnomedConceptIndexMapp
 	}
 
 	private static LongSet getParentIds(final Document conceptDocument) {
-		return getLongSet(conceptDocument, CONCEPT_PARENT);
+		return getLongSet(conceptDocument, CommonIndexConstants.COMPONENT_PARENT);
 	}
 
 	private static LongSet getAncestorIds(final Document conceptDocument) {

@@ -60,10 +60,10 @@ public class CollectReferencedComponentMapRunnable implements Runnable {
 	
 	private static final Set<String> ACTIVE_MEMBER_FIELDS_TO_LOAD = ImmutableSet.of(
 			SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_UUID,
-			SnomedIndexBrowserConstants.COMPONENT_STORAGE_KEY,
+			CommonIndexConstants.COMPONENT_STORAGE_KEY,
 			SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_UUID,
-			SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_MODULE_ID,
-			SnomedIndexBrowserConstants.COMPONENT_LABEL,
+			SnomedIndexBrowserConstants.COMPONENT_MODULE_ID,
+			CommonIndexConstants.COMPONENT_LABEL,
 			SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_EFFECTIVE_TIME);
 	
 	private static final Set<String> ALL_MEMBER_FIELDS_TO_LOAD = ImmutableSet.<String>builder()
@@ -133,9 +133,9 @@ public class CollectReferencedComponentMapRunnable implements Runnable {
 					final long effectiveTime = IndexUtils.getLongValue(doc.getField(SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_EFFECTIVE_TIME));
 					final boolean released = EffectiveTimes.UNSET_EFFECTIVE_TIME != effectiveTime;
 					final String uuid = doc.get(SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_UUID);
-					final String label = doc.get(SnomedIndexBrowserConstants.COMPONENT_LABEL);
+					final String label = doc.get(CommonIndexConstants.COMPONENT_LABEL);
 					final long storageKey = IndexUtils.getLongValue(doc.getField(CommonIndexConstants.COMPONENT_STORAGE_KEY));
-					final long moduleId = IndexUtils.getLongValue(doc.getField(SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_MODULE_ID));
+					final long moduleId = IndexUtils.getLongValue(doc.getField(SnomedIndexBrowserConstants.COMPONENT_MODULE_ID));
 
 					final IRefSetMemberNode node = new RegularRefSetMemberNode(referencedComponentId, 
 							label, 

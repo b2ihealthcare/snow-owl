@@ -17,10 +17,7 @@ package com.b2international.snowowl.datastore.server.snomed.escg;
 
 import static com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants.CONCEPT_NUMBER;
 import static com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants.RELATIONSHIP_NUMBER;
-import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.COMPONENT_ID;
-import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.COMPONENT_TYPE;
 import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.CONCEPT_ANCESTOR;
-import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.CONCEPT_PARENT;
 import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.CONCEPT_REFERRING_MAPPING_REFERENCE_SET_ID;
 import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.CONCEPT_REFERRING_REFERENCE_SET_ID;
 import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.RELATIONSHIP_ATTRIBUTE_ID;
@@ -281,7 +278,7 @@ public class ConceptIdQueryEvaluator2 implements Serializable, IQueryEvaluator<L
 	}
 
 	private Term createConceptParentTerm(final String conceptId) {
-		return new Term(CONCEPT_PARENT, IndexUtils.longToPrefixCoded(conceptId));
+		return new Term(CommonIndexConstants.COMPONENT_PARENT, IndexUtils.longToPrefixCoded(conceptId));
 	}
 
 	private Query createAncestorQuery(final String conceptId) {
@@ -297,7 +294,7 @@ public class ConceptIdQueryEvaluator2 implements Serializable, IQueryEvaluator<L
 	}
 
 	private Term createConceptIdTerm(final String conceptId) {
-		return new Term(COMPONENT_ID, IndexUtils.longToPrefixCoded(conceptId));
+		return new Term(CommonIndexConstants.COMPONENT_ID, IndexUtils.longToPrefixCoded(conceptId));
 	}
 	
 	private Term createRefSetTerm(String refSetId) {
@@ -318,11 +315,11 @@ public class ConceptIdQueryEvaluator2 implements Serializable, IQueryEvaluator<L
 	}
 	
 	private Query createConceptTypeQuery() {
-		return new TermQuery(new Term(COMPONENT_TYPE, IndexUtils.intToPrefixCoded(CONCEPT_NUMBER)));
+		return new TermQuery(new Term(CommonIndexConstants.COMPONENT_TYPE, IndexUtils.intToPrefixCoded(CONCEPT_NUMBER)));
 	}
 	
 	private Query createRelationshipTypeQuery() {
-		return new TermQuery(new Term(COMPONENT_TYPE, IndexUtils.intToPrefixCoded(RELATIONSHIP_NUMBER)));
+		return new TermQuery(new Term(CommonIndexConstants.COMPONENT_TYPE, IndexUtils.intToPrefixCoded(RELATIONSHIP_NUMBER)));
 	}
 
 	private Query createActiveQuery() {

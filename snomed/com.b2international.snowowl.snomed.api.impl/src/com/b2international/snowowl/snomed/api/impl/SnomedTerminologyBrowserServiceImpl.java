@@ -89,9 +89,9 @@ public class SnomedTerminologyBrowserServiceImpl implements ISnomedTerminologyBr
 		protected IndexQueryBuilder createIndexQueryBuilder() {
 			final BytesRef conceptIdBytesRef = IndexUtils.longToPrefixCoded(searchString);
 			return super.createIndexQueryBuilder()
-					.requireExactTermIf(allFlagsSet(SEARCH_ROOTS), SnomedIndexBrowserConstants.CONCEPT_PARENT, IndexUtils.longToPrefixCoded(ROOT_ID))
+					.requireExactTermIf(allFlagsSet(SEARCH_ROOTS), CommonIndexConstants.COMPONENT_PARENT, IndexUtils.longToPrefixCoded(ROOT_ID))
 					.require(new IndexQueryBuilder()
-						.matchExactTermIf(allFlagsSet(SEARCH_PARENT), SnomedIndexBrowserConstants.CONCEPT_PARENT, conceptIdBytesRef)
+						.matchExactTermIf(allFlagsSet(SEARCH_PARENT), CommonIndexConstants.COMPONENT_PARENT, conceptIdBytesRef)
 						.matchExactTermIf(allFlagsSet(SEARCH_ANCESTOR), SnomedIndexBrowserConstants.CONCEPT_ANCESTOR, conceptIdBytesRef)
 					);
 		}

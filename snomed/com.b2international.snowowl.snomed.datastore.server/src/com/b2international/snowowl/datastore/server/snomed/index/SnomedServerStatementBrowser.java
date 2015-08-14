@@ -17,17 +17,14 @@ package com.b2international.snowowl.datastore.server.snomed.index;
 
 import static com.b2international.snowowl.datastore.index.IndexUtils.longToPrefixCoded;
 import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.COMPONENT_ACTIVE;
-import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.COMPONENT_ID;
+import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.COMPONENT_MODULE_ID;
 import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.COMPONENT_RELEASED;
-import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.COMPONENT_STORAGE_KEY;
-import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.COMPONENT_TYPE;
 import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.RELATIONSHIP_ATTRIBUTE_ID;
 import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.RELATIONSHIP_CHARACTERISTIC_TYPE_ID;
 import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.RELATIONSHIP_DESTINATION_NEGATED;
 import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.RELATIONSHIP_EFFECTIVE_TIME;
 import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.RELATIONSHIP_GROUP;
 import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.RELATIONSHIP_INFERRED;
-import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.RELATIONSHIP_MODULE_ID;
 import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.RELATIONSHIP_OBJECT_ID;
 import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.RELATIONSHIP_UNION_GROUP;
 import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.RELATIONSHIP_UNIVERSAL;
@@ -90,15 +87,15 @@ import com.google.common.collect.Sets;
  */
 public class SnomedServerStatementBrowser extends AbstractSnomedIndexBrowser<SnomedRelationshipIndexEntry> implements SnomedStatementBrowser {
 
-	private static final ImmutableSet<String> FIELD_NAMES_TO_LOAD = ImmutableSet.of(COMPONENT_ID, RELATIONSHIP_OBJECT_ID,
+	private static final ImmutableSet<String> FIELD_NAMES_TO_LOAD = ImmutableSet.of(CommonIndexConstants.COMPONENT_ID, RELATIONSHIP_OBJECT_ID,
 			RELATIONSHIP_ATTRIBUTE_ID, RELATIONSHIP_VALUE_ID, RELATIONSHIP_GROUP,
 			RELATIONSHIP_UNION_GROUP, COMPONENT_RELEASED, COMPONENT_ACTIVE,
 			RELATIONSHIP_INFERRED, RELATIONSHIP_UNIVERSAL, RELATIONSHIP_DESTINATION_NEGATED,
-			RELATIONSHIP_CHARACTERISTIC_TYPE_ID, RELATIONSHIP_MODULE_ID, COMPONENT_STORAGE_KEY,
+			RELATIONSHIP_CHARACTERISTIC_TYPE_ID, COMPONENT_MODULE_ID, CommonIndexConstants.COMPONENT_STORAGE_KEY,
 			RELATIONSHIP_EFFECTIVE_TIME);
 
 	private static final Set<String> GROUP_FIELD_TO_LOAD = Collections.unmodifiableSet(Sets.newHashSet(RELATIONSHIP_GROUP));
-	private static final Set<String> STORAGE_KEY_GROUP_FIELD_TO_LOAD = Collections.unmodifiableSet(Sets.newHashSet(COMPONENT_STORAGE_KEY,
+	private static final Set<String> STORAGE_KEY_GROUP_FIELD_TO_LOAD = Collections.unmodifiableSet(Sets.newHashSet(CommonIndexConstants.COMPONENT_STORAGE_KEY,
 			RELATIONSHIP_GROUP,
 			RELATIONSHIP_UNION_GROUP));
 	private static final Set<String> UNION_GROUP_FIELD_TO_LOAD = Collections.unmodifiableSet(Sets.newHashSet(RELATIONSHIP_UNION_GROUP));
@@ -113,7 +110,7 @@ public class SnomedServerStatementBrowser extends AbstractSnomedIndexBrowser<Sno
 
 	@Override
 	protected SnomedRelationshipIndexEntry createResultObject(final IBranchPath branchPath, final Document doc) {
-		final String id = doc.get(COMPONENT_ID);
+		final String id = doc.get(CommonIndexConstants.COMPONENT_ID);
 		final String objectId = doc.get(RELATIONSHIP_OBJECT_ID);
 		final String attributeId = doc.get(RELATIONSHIP_ATTRIBUTE_ID);
 		final String valueId = doc.get(RELATIONSHIP_VALUE_ID);
@@ -125,8 +122,8 @@ public class SnomedServerStatementBrowser extends AbstractSnomedIndexBrowser<Sno
 				IndexUtils.getBooleanValue(doc.getField(RELATIONSHIP_INFERRED)),
 				IndexUtils.getBooleanValue(doc.getField(RELATIONSHIP_UNIVERSAL)),
 				IndexUtils.getBooleanValue(doc.getField(RELATIONSHIP_DESTINATION_NEGATED)));
-		final String moduleId = doc.get(RELATIONSHIP_MODULE_ID);
-		final long storageKey = IndexUtils.getLongValue(doc.getField(COMPONENT_STORAGE_KEY));
+		final String moduleId = doc.get(COMPONENT_MODULE_ID);
+		final long storageKey = IndexUtils.getLongValue(doc.getField(CommonIndexConstants.COMPONENT_STORAGE_KEY));
 		// FIXME: remove null check
 		final IndexableField effectiveTimeField = doc.getField(RELATIONSHIP_EFFECTIVE_TIME);
 		final long effectiveTime = (null == effectiveTimeField) ? EffectiveTimes.UNSET_EFFECTIVE_TIME : IndexUtils.getLongValue(effectiveTimeField);
@@ -165,7 +162,7 @@ public class SnomedServerStatementBrowser extends AbstractSnomedIndexBrowser<Sno
 		final DocIdCollector collector = DocIdCollector.create(service.maxDoc(branchPath));
 		try {
 			service.search(branchPath,
-					new TermQuery(new Term(COMPONENT_TYPE, IndexUtils.intToPrefixCoded(SnomedTerminologyComponentConstants.RELATIONSHIP_NUMBER))),
+					new TermQuery(new Term(CommonIndexConstants.COMPONENT_TYPE, IndexUtils.intToPrefixCoded(SnomedTerminologyComponentConstants.RELATIONSHIP_NUMBER))),
 					collector);
 			return createResultObjects(branchPath, collector.getDocIDs().iterator());
 		} catch (final IOException e) {
@@ -177,7 +174,7 @@ public class SnomedServerStatementBrowser extends AbstractSnomedIndexBrowser<Sno
 	public SnomedRelationshipIndexEntry getStatement(final IBranchPath branchPath, final String id) {
 		checkNotNull(branchPath, "Branch path argument cannot be null.");
 		checkNotNull(id, "SNOMED CT relationship ID cannot be null.");
-		final TermQuery query = new TermQuery(new Term(COMPONENT_ID, IndexUtils.longToPrefixCoded(id)));
+		final TermQuery query = new TermQuery(new Term(CommonIndexConstants.COMPONENT_ID, IndexUtils.longToPrefixCoded(id)));
 		final TopDocs topDocs = service.search(branchPath, query, 1);
 		return createSingleResultObject(branchPath, topDocs);
 	}
@@ -267,7 +264,7 @@ public class SnomedServerStatementBrowser extends AbstractSnomedIndexBrowser<Sno
 			final DocIdCollector collector = DocIdCollector.create(service.maxDoc(branchPath));
 
 			final BooleanQuery query = new BooleanQuery(true);
-			query.add(new TermQuery(new Term(COMPONENT_TYPE, IndexUtils.intToPrefixCoded(SnomedTerminologyComponentConstants.RELATIONSHIP_NUMBER))), Occur.MUST);
+			query.add(new TermQuery(new Term(CommonIndexConstants.COMPONENT_TYPE, IndexUtils.intToPrefixCoded(SnomedTerminologyComponentConstants.RELATIONSHIP_NUMBER))), Occur.MUST);
 			query.add(new TermQuery(new Term(COMPONENT_ACTIVE, IndexUtils.intToPrefixCoded(1))), Occur.MUST);
 			query.add(new TermQuery(new Term(RELATIONSHIP_OBJECT_ID, IndexUtils.longToPrefixCoded(conceptId))), Occur.MUST);
 
@@ -316,7 +313,7 @@ public class SnomedServerStatementBrowser extends AbstractSnomedIndexBrowser<Sno
 			final DocIdCollector collector = DocIdCollector.create(service.maxDoc(branchPath));
 
 			final BooleanQuery query = new BooleanQuery(true);
-			query.add(new TermQuery(new Term(COMPONENT_TYPE, IndexUtils.intToPrefixCoded(SnomedTerminologyComponentConstants.RELATIONSHIP_NUMBER))), Occur.MUST);
+			query.add(new TermQuery(new Term(CommonIndexConstants.COMPONENT_TYPE, IndexUtils.intToPrefixCoded(SnomedTerminologyComponentConstants.RELATIONSHIP_NUMBER))), Occur.MUST);
 			query.add(new TermQuery(new Term(COMPONENT_ACTIVE, IndexUtils.intToPrefixCoded(1))), Occur.MUST);
 			query.add(new TermQuery(new Term(RELATIONSHIP_OBJECT_ID, IndexUtils.longToPrefixCoded(conceptId))), Occur.MUST);
 
@@ -373,7 +370,7 @@ public class SnomedServerStatementBrowser extends AbstractSnomedIndexBrowser<Sno
 		try {
 
 			final BooleanQuery query = new BooleanQuery();
-			query.add(new TermQuery(new Term(COMPONENT_TYPE, IndexUtils.intToPrefixCoded(SnomedTerminologyComponentConstants.RELATIONSHIP_NUMBER))),
+			query.add(new TermQuery(new Term(CommonIndexConstants.COMPONENT_TYPE, IndexUtils.intToPrefixCoded(SnomedTerminologyComponentConstants.RELATIONSHIP_NUMBER))),
 					Occur.MUST);
 
 			query.add(new TermQuery(new Term(COMPONENT_ACTIVE, IndexUtils.intToPrefixCoded(1))), Occur.MUST);
@@ -396,7 +393,7 @@ public class SnomedServerStatementBrowser extends AbstractSnomedIndexBrowser<Sno
 				final Document doc = searcher.doc(itr.getDocID(), STORAGE_KEY_GROUP_FIELD_TO_LOAD);
 				final int groupValue = IndexUtils.getIntValue(doc.getField(groupField));
 				if (value == groupValue) {
-					statementStorageKeys[i++] = IndexUtils.getLongValue(doc.getField(COMPONENT_STORAGE_KEY));
+					statementStorageKeys[i++] = IndexUtils.getLongValue(doc.getField(CommonIndexConstants.COMPONENT_STORAGE_KEY));
 				}
 			}
 

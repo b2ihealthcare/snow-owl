@@ -15,9 +15,9 @@
  */
 package com.b2international.snowowl.datastore.server.snomed.index;
 
+import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.COMPONENT_MODULE_ID;
 import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.RELATIONSHIP_ATTRIBUTE_ID;
 import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.RELATIONSHIP_CHARACTERISTIC_TYPE_ID;
-import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.RELATIONSHIP_MODULE_ID;
 import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.RELATIONSHIP_OBJECT_ID;
 import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.RELATIONSHIP_UNIVERSAL;
 import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.RELATIONSHIP_VALUE_ID;
@@ -66,7 +66,7 @@ public class RelationshipPropertyCollector extends ComponentPropertyCollector {
 	protected void initDocValues(final AtomicReader leafReader) throws IOException {
 		super.initDocValues(leafReader);
 		characteristicTypeIds = leafReader.getNumericDocValues(RELATIONSHIP_CHARACTERISTIC_TYPE_ID);
-		moduleIds = leafReader.getNumericDocValues(RELATIONSHIP_MODULE_ID);
+		moduleIds = leafReader.getNumericDocValues(COMPONENT_MODULE_ID);
 		typeIds = leafReader.getNumericDocValues(RELATIONSHIP_ATTRIBUTE_ID);
 		sourceIds = leafReader.getNumericDocValues(RELATIONSHIP_OBJECT_ID);
 		destinationIds = leafReader.getNumericDocValues(RELATIONSHIP_VALUE_ID);

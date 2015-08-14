@@ -20,12 +20,11 @@ import static com.b2international.snowowl.snomed.SnomedConstants.Concepts.EXISTE
 import static com.b2international.snowowl.snomed.SnomedConstants.Concepts.UNIVERSAL_RESTRICTION_MODIFIER;
 import static com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants.RELATIONSHIP_NUMBER;
 import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.COMPONENT_ACTIVE;
-import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.COMPONENT_ID;
+import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.COMPONENT_MODULE_ID;
 import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.RELATIONSHIP_ATTRIBUTE_ID;
 import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.RELATIONSHIP_CHARACTERISTIC_TYPE_ID;
 import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.RELATIONSHIP_EFFECTIVE_TIME;
 import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.RELATIONSHIP_GROUP;
-import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.RELATIONSHIP_MODULE_ID;
 import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.RELATIONSHIP_OBJECT_ID;
 import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.RELATIONSHIP_UNIVERSAL;
 import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.RELATIONSHIP_VALUE_ID;
@@ -42,6 +41,7 @@ import org.apache.lucene.search.BooleanQuery;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.TermQuery;
 
+import com.b2international.snowowl.core.api.index.CommonIndexConstants;
 import com.b2international.snowowl.datastore.index.IndexUtils;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
@@ -53,10 +53,10 @@ import com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserCo
 public abstract class AbstractSnomedRelationshipExporter extends SnomedCoreExporter {
 
 	private static final Set<String> FIELDS_TO_LOAD = unmodifiableSet(newHashSet(
-			COMPONENT_ID,
+			CommonIndexConstants.COMPONENT_ID,
 			RELATIONSHIP_EFFECTIVE_TIME,
 			COMPONENT_ACTIVE,
-			RELATIONSHIP_MODULE_ID,
+			COMPONENT_MODULE_ID,
 			RELATIONSHIP_OBJECT_ID,
 			RELATIONSHIP_VALUE_ID,
 			RELATIONSHIP_GROUP,
@@ -80,13 +80,13 @@ public abstract class AbstractSnomedRelationshipExporter extends SnomedCoreExpor
 	@Override
 	public String transform(final Document doc) {
 		final StringBuilder sb = new StringBuilder();
-		sb.append(doc.get(COMPONENT_ID));
+		sb.append(doc.get(CommonIndexConstants.COMPONENT_ID));
 		sb.append(HT);
 		sb.append(formatEffectiveTime(doc.getField(getEffectiveTimeField())));
 		sb.append(HT);
 		sb.append(getIntValue(doc.getField(COMPONENT_ACTIVE)));
 		sb.append(HT);
-		sb.append(doc.get(RELATIONSHIP_MODULE_ID));
+		sb.append(doc.get(COMPONENT_MODULE_ID));
 		sb.append(HT);
 		sb.append(doc.get(RELATIONSHIP_OBJECT_ID));
 		sb.append(HT);

@@ -16,9 +16,6 @@
 package com.b2international.snowowl.snomed.datastore.index.refset;
 
 import static com.b2international.commons.StringUtils.isEmpty;
-import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.COMPONENT_ID;
-import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.COMPONENT_LABEL;
-import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.COMPONENT_TYPE;
 import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.REFERENCE_SET_REFERENCED_COMPONENT_TYPE;
 import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.REFERENCE_SET_STRUCTURAL;
 import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.REFERENCE_SET_TYPE;
@@ -121,7 +118,7 @@ public class SnomedRefSetIndexQueryAdapter extends SnomedDslIndexQueryAdapter<Sn
 		final IndexQueryBuilder queryBuilder = new IndexQueryBuilder();
 		
 		//workaround for same reference set and identifier concept ID
-		queryBuilder.requireExactTerm(COMPONENT_TYPE, IndexUtils.intToPrefixCoded(SnomedTerminologyComponentConstants.REFSET_NUMBER));
+		queryBuilder.requireExactTerm(CommonIndexConstants.COMPONENT_TYPE, IndexUtils.intToPrefixCoded(SnomedTerminologyComponentConstants.REFSET_NUMBER));
 
 		if (referencedComponentType != null) {
 			queryBuilder.requireExactTerm(REFERENCE_SET_REFERENCED_COMPONENT_TYPE, IndexUtils.intToPrefixCoded(referencedComponentType));
@@ -158,16 +155,16 @@ public class SnomedRefSetIndexQueryAdapter extends SnomedDslIndexQueryAdapter<Sn
 					//even if the ID restriction was enabled and the query term was 'virtual'
 					//so we rather restrict the ID to an invalid one
 					//XXX zstorok: only add the invalid ID query if searching by label is not enabled
-					queryExpressionQueryBuilder.require(new TermQuery(new Term(COMPONENT_ID, IndexUtils.longToPrefixCoded(-1L))));
+					queryExpressionQueryBuilder.require(new TermQuery(new Term(CommonIndexConstants.COMPONENT_ID, IndexUtils.longToPrefixCoded(-1L))));
 				} else {
 					queryExpressionQueryBuilder.require(createLabelQueryBuilder());
 				}
 			} else {
 				if (anyFlagSet(SEARCH_BY_LABEL)) {
-					queryExpressionQueryBuilder.match(new TermQuery(new Term(COMPONENT_ID, IndexUtils.longToPrefixCoded(parsedSearchStringOptional.get()))));
+					queryExpressionQueryBuilder.match(new TermQuery(new Term(CommonIndexConstants.COMPONENT_ID, IndexUtils.longToPrefixCoded(parsedSearchStringOptional.get()))));
 					queryExpressionQueryBuilder.match(createLabelQueryBuilder());
 				} else {
-					queryExpressionQueryBuilder.require(new TermQuery(new Term(COMPONENT_ID, IndexUtils.longToPrefixCoded(parsedSearchStringOptional.get()))));
+					queryExpressionQueryBuilder.require(new TermQuery(new Term(CommonIndexConstants.COMPONENT_ID, IndexUtils.longToPrefixCoded(parsedSearchStringOptional.get()))));
 				}
 			}
 		} else {
@@ -219,10 +216,10 @@ public class SnomedRefSetIndexQueryAdapter extends SnomedDslIndexQueryAdapter<Sn
 	private IndexQueryBuilder createLabelQueryBuilder() {
 		final IndexQueryBuilder labelQueryBuilder = new IndexQueryBuilder();
 		if ((searchFlags & SEARCH_PREFIXED_TERM) != 0) {
-			labelQueryBuilder.matchAllTokenizedTermPrefixes(COMPONENT_LABEL, searchString.toLowerCase());
+			labelQueryBuilder.matchAllTokenizedTermPrefixes(CommonIndexConstants.COMPONENT_LABEL, searchString.toLowerCase());
 		} else {
 			//	analyzed query, there is no need of lowercasing the search string
-			labelQueryBuilder.matchParsedTerm(COMPONENT_LABEL, searchString);
+			labelQueryBuilder.matchParsedTerm(CommonIndexConstants.COMPONENT_LABEL, searchString);
 		}
 		return labelQueryBuilder;
 	}
@@ -252,11 +249,11 @@ public class SnomedRefSetIndexQueryAdapter extends SnomedDslIndexQueryAdapter<Sn
 	}
 
 	private String getId(final Document document) {
-		return document.getField(COMPONENT_ID).stringValue();
+		return document.getField(CommonIndexConstants.COMPONENT_ID).stringValue();
 	}
 	
 	private String getLabel(final Document document) {
-		return document.getField(COMPONENT_LABEL).stringValue();
+		return document.getField(CommonIndexConstants.COMPONENT_LABEL).stringValue();
 	}
 	
 	private SnomedRefSetType getType(final Document document) {

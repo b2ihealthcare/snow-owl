@@ -44,12 +44,9 @@ import static com.b2international.snowowl.snomed.datastore.SnomedRefSetUtil.dese
 import static com.b2international.snowowl.snomed.datastore.SnomedRefSetUtil.getDataType;
 import static com.b2international.snowowl.snomed.datastore.SnomedRefSetUtil.isMapping;
 import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.COMPONENT_ACTIVE;
-import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.COMPONENT_ICON_ID;
-import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.COMPONENT_LABEL;
+import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.COMPONENT_MODULE_ID;
 import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.CONCEPT_ANCESTOR;
 import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.CONCEPT_EFFECTIVE_TIME;
-import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.CONCEPT_MODULE_ID;
-import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.CONCEPT_PARENT;
 import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.CONCEPT_REFERRING_REFERENCE_SET_ID;
 import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.DESCRIPTION_CONCEPT_ID;
 import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.DESCRIPTION_EFFECTIVE_TIME;
@@ -57,7 +54,6 @@ import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBr
 import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_ACCEPTABILITY_ID;
 import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_EFFECTIVE_TIME;
 import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_MAP_TARGET_COMPONENT_LABEL;
-import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_MODULE_ID;
 import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_REFERENCED_COMPONENT_ID;
 import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_REFERENCE_SET_ID;
 import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_REFERENCE_SET_TYPE;
@@ -239,11 +235,11 @@ public class SnomedComponentService implements ISnomedComponentService, IPostSto
 	private static final Set<String> MEMBER_REF_SET_ID_FILDS_TO_LOAD = singleton(REFERENCE_SET_MEMBER_REFERENCE_SET_ID);
 	
 	private static final Set<String> COMPONENT_ID_MODULE_FIELDS_TO_LOAD = unmodifiableSet(newHashSet(
-			COMPONENT_ID, CONCEPT_MODULE_ID
+			COMPONENT_ID, COMPONENT_MODULE_ID
 			));
 	
 	private static final Set<String> MEMBER_LABEL_FIELDS_TO_LOAD = unmodifiableSet(newHashSet(
-			COMPONENT_LABEL, 
+			CommonIndexConstants.COMPONENT_LABEL, 
 			REFERENCE_SET_MEMBER_MAP_TARGET_COMPONENT_LABEL
 			));
 
@@ -264,7 +260,7 @@ public class SnomedComponentService implements ISnomedComponentService, IPostSto
 	private static final Set<String> FSN_DESCRIPTION_FIELDS_TO_LOAD = unmodifiableSet(newHashSet(
 			COMPONENT_ID, 
 			DESCRIPTION_CONCEPT_ID,
-			COMPONENT_LABEL
+			CommonIndexConstants.COMPONENT_LABEL
 			));
 	
 	private static final Set<String> REFERENCED_COMPONENT_ID_FIELD_TO_LOAD = unmodifiableSet(newHashSet(
@@ -278,7 +274,7 @@ public class SnomedComponentService implements ISnomedComponentService, IPostSto
 	
 	private static final Set<String> MODULE_MEMBER_FIELDS_TO_LOAD = unmodifiableSet(newHashSet(
 			COMPONENT_STORAGE_KEY,
-			REFERENCE_SET_MEMBER_MODULE_ID,
+			COMPONENT_MODULE_ID,
 			REFERENCE_SET_MEMBER_REFERENCED_COMPONENT_ID,
 			REFERENCE_SET_MEMBER_SOURCE_EFFECTIVE_TIME,
 			REFERENCE_SET_MEMBER_TARGET_EFFECTIVE_TIME
@@ -756,7 +752,7 @@ public class SnomedComponentService implements ISnomedComponentService, IPostSto
 				descriptionProperties.add(new String[] {
 						
 						descriptionDoc.get(COMPONENT_ID),
-						descriptionDoc.get(COMPONENT_LABEL),
+						descriptionDoc.get(CommonIndexConstants.COMPONENT_LABEL),
 						descriptionDoc.get(DESCRIPTION_CONCEPT_ID),
 						descriptionDoc.get(DESCRIPTION_TYPE_ID),
 						EffectiveTimes.format(getLongValue(descriptionDoc.getField(DESCRIPTION_EFFECTIVE_TIME)))
@@ -881,7 +877,7 @@ public class SnomedComponentService implements ISnomedComponentService, IPostSto
 		
 		final Document doc = getIndexServerService().document(branchPath, scoreDoc.doc, DESCRIPTION_FIELDS_TO_LOAD);
 		
-		IndexableField field = doc.getField(COMPONENT_LABEL);
+		IndexableField field = doc.getField(CommonIndexConstants.COMPONENT_LABEL);
 		
 		if (null == field) {
 			return null;
@@ -962,7 +958,7 @@ public class SnomedComponentService implements ISnomedComponentService, IPostSto
 				return null;
 			}
 			
-			field = doc.getField(COMPONENT_LABEL);
+			field = doc.getField(CommonIndexConstants.COMPONENT_LABEL);
 			
 			if (null == field) {
 				return null;
@@ -1765,7 +1761,7 @@ public class SnomedComponentService implements ISnomedComponentService, IPostSto
 
 			while (itr.next()) {
 				final Document doc = searcher.doc(itr.getDocID(), COMPONENT_ID_MODULE_FIELDS_TO_LOAD);
-				ids.put(getLongValue(doc.getField(COMPONENT_ID)), getLongValue(doc.getField(CONCEPT_MODULE_ID)));
+				ids.put(getLongValue(doc.getField(COMPONENT_ID)), getLongValue(doc.getField(COMPONENT_MODULE_ID)));
 			}
 			
 			return ids;
@@ -1859,7 +1855,7 @@ public class SnomedComponentService implements ISnomedComponentService, IPostSto
 					final TopDocs topDocs = searcher.search(descriptionQuery, 1);
 					if (!IndexUtils.isEmpty(topDocs)) {
 						
-						final String label = searcher.doc(topDocs.scoreDocs[0].doc, COMPONENT_LABEL_TO_LOAD).get(COMPONENT_LABEL);
+						final String label = searcher.doc(topDocs.scoreDocs[0].doc, COMPONENT_LABEL_TO_LOAD).get(CommonIndexConstants.COMPONENT_LABEL);
 						//XXX map key is lowercase on purpose
 						$.put(label.toLowerCase(), String.valueOf(conceptId));
 						
@@ -1912,7 +1908,7 @@ public class SnomedComponentService implements ISnomedComponentService, IPostSto
 		
 		final Document doc = getIndexServerService().document(branchPath, topDocs.scoreDocs[0].doc, MEMBER_LABEL_FIELDS_TO_LOAD);
 		return of(
-				doc.get(COMPONENT_LABEL), 
+				doc.get(CommonIndexConstants.COMPONENT_LABEL), 
 				doc.get(REFERENCE_SET_MEMBER_MAP_TARGET_COMPONENT_LABEL)
 			);
 	}
@@ -1943,7 +1939,7 @@ public class SnomedComponentService implements ISnomedComponentService, IPostSto
 			while (itr.next()) {
 				final Document doc = searcher.doc(itr.getDocID(), MEMBER_LABEL_FIELDS_TO_LOAD);
 				labels.add(of(
-						doc.get(COMPONENT_LABEL), 
+						doc.get(CommonIndexConstants.COMPONENT_LABEL), 
 						doc.get(REFERENCE_SET_MEMBER_MAP_TARGET_COMPONENT_LABEL)
 					));
 			}
@@ -2124,7 +2120,7 @@ public class SnomedComponentService implements ISnomedComponentService, IPostSto
 	
 	private SnomedModuleDependencyRefSetMemberFragment createModuleMember(final Document doc) {
 		final SnomedModuleDependencyRefSetMemberFragment module = new SnomedModuleDependencyRefSetMemberFragment();
-		module.setModuleId(doc.get(REFERENCE_SET_MEMBER_MODULE_ID));
+		module.setModuleId(doc.get(COMPONENT_MODULE_ID));
 		module.setReferencedComponentId(doc.get(REFERENCE_SET_MEMBER_REFERENCED_COMPONENT_ID));
 		module.setStorageKey(getLongValue(doc.getField(COMPONENT_STORAGE_KEY)));
 		module.setSourceEffectiveTime(EffectiveTimes.toDate(getLongValue(doc.getField(REFERENCE_SET_MEMBER_SOURCE_EFFECTIVE_TIME))));
@@ -2258,7 +2254,7 @@ public class SnomedComponentService implements ISnomedComponentService, IPostSto
 						final long concpetId = getLongValue(doc.getField(DESCRIPTION_CONCEPT_ID));
 						
 						if (activeConceptIds.contains(concpetId)) {
-							fsnToIdsMapping.put(doc.get(COMPONENT_LABEL), Long.toString(concpetId));
+							fsnToIdsMapping.put(doc.get(CommonIndexConstants.COMPONENT_LABEL), Long.toString(concpetId));
 						}
 					}
 					
@@ -2293,7 +2289,7 @@ public class SnomedComponentService implements ISnomedComponentService, IPostSto
 		checkNotNull(focusConceptId, "focusConceptId");
 
 		final BooleanQuery subtypeOrSelfQuery = new BooleanQuery(true);
-		subtypeOrSelfQuery.add(new TermQuery(new Term(CONCEPT_PARENT, longToPrefixCoded(focusConceptId))), SHOULD);
+		subtypeOrSelfQuery.add(new TermQuery(new Term(CommonIndexConstants.COMPONENT_PARENT, longToPrefixCoded(focusConceptId))), SHOULD);
 		subtypeOrSelfQuery.add(new TermQuery(new Term(CONCEPT_ANCESTOR, longToPrefixCoded(focusConceptId))), SHOULD);
 		subtypeOrSelfQuery.add(new TermQuery(new Term(COMPONENT_ID, longToPrefixCoded(focusConceptId))), SHOULD);
 		
@@ -2674,7 +2670,7 @@ public class SnomedComponentService implements ISnomedComponentService, IPostSto
 		final Document doc = service.document(searcher, topDocs.scoreDocs[0].doc, COMPONENT_LABEL_TO_LOAD);
 		
 		//could be null
-		return doc.get(COMPONENT_LABEL);
+		return doc.get(CommonIndexConstants.COMPONENT_LABEL);
 	}
 	
 	private String getIconId(final String conceptId, final IndexServerService<?> service, final IndexSearcher searcher) throws IOException {
@@ -2701,7 +2697,7 @@ public class SnomedComponentService implements ISnomedComponentService, IPostSto
 
 		}
 
-		final String iconId = doc.get(COMPONENT_ICON_ID);
+		final String iconId = doc.get(CommonIndexConstants.COMPONENT_ICON_ID);
 
 		return StringUtils.isEmpty(iconId) ? null : iconId;
 
@@ -2782,7 +2778,7 @@ public class SnomedComponentService implements ISnomedComponentService, IPostSto
 			
 			while (itr.next()) {
 				
-				final Document doc = service.document(branchPath, itr.getDocID(), newHashSet(SnomedIndexBrowserConstants.COMPONENT_REFERRING_PREDICATE, SnomedIndexBrowserConstants.COMPONENT_ID));
+				final Document doc = service.document(branchPath, itr.getDocID(), newHashSet(SnomedIndexBrowserConstants.COMPONENT_REFERRING_PREDICATE, CommonIndexConstants.COMPONENT_ID));
 				final IndexableField[] predicateFields = doc.getFields(SnomedIndexBrowserConstants.COMPONENT_REFERRING_PREDICATE);
 				final String componentId  = doc.get(CommonIndexConstants.COMPONENT_ID);
 				//XXX akitta: what if both reference set and its identifier concept have predicates? how to distinguish between them?
@@ -3049,9 +3045,9 @@ public class SnomedComponentService implements ISnomedComponentService, IPostSto
 	
 	private static final long DESCRIPTION_TYPE_ROOT_CONCEPT_ID = Long.valueOf(Concepts.DESCRIPTION_TYPE_ROOT_CONCEPT);
 	private static final long SYNONYM_CONCEPT_ID = Long.valueOf(Concepts.SYNONYM);
-	private static final Set<String> COMPONENT_LABEL_TO_LOAD = newHashSet(COMPONENT_LABEL);
+	private static final Set<String> COMPONENT_LABEL_TO_LOAD = newHashSet(CommonIndexConstants.COMPONENT_LABEL);
 	private static final Set<String> COMPONENT_STATUS_TO_LOAD = newHashSet(COMPONENT_ACTIVE);
-	private static final Set<String> COMPONENT_ICON_ID_TO_LOAD = newHashSet(COMPONENT_ICON_ID);
+	private static final Set<String> COMPONENT_ICON_ID_TO_LOAD = newHashSet(CommonIndexConstants.COMPONENT_ICON_ID);
 	
 	private static final Set<String> RELATIONSHIP_FIELDS_TO_LOAD = newHashSet(
 			RELATIONSHIP_OBJECT_ID,
@@ -3062,14 +3058,14 @@ public class SnomedComponentService implements ISnomedComponentService, IPostSto
 	private static final Set<String> DESCRIPTION_FIELDS_TO_LOAD = newHashSet(
 			DESCRIPTION_CONCEPT_ID,
 			DESCRIPTION_TYPE_ID,
-			COMPONENT_LABEL);
+			CommonIndexConstants.COMPONENT_LABEL);
 	
 	private static final Set<String> DESCRIPTION_EXTENDED_FIELDS_TO_LOAD = newHashSet(
 			COMPONENT_STORAGE_KEY,
 			COMPONENT_ID,
 			DESCRIPTION_CONCEPT_ID,
 			DESCRIPTION_TYPE_ID,
-			COMPONENT_LABEL,
+			CommonIndexConstants.COMPONENT_LABEL,
 			DESCRIPTION_EFFECTIVE_TIME);
 	
 	private final class BranchCacheLoadingJob extends Job {

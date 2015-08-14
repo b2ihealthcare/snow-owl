@@ -19,8 +19,8 @@ import static com.b2international.snowowl.core.ApplicationContext.getServiceForC
 import static com.b2international.snowowl.datastore.index.IndexUtils.getIntValue;
 import static com.b2international.snowowl.datastore.index.IndexUtils.longToPrefixCoded;
 import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.COMPONENT_ACTIVE;
+import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.COMPONENT_MODULE_ID;
 import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_EFFECTIVE_TIME;
-import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_MODULE_ID;
 import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_REFERENCED_COMPONENT_ID;
 import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_REFERENCE_SET_ID;
 import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_UUID;
@@ -61,7 +61,7 @@ public class SnomedRefSetExporter extends SnomedCompositeExporter implements Sno
 			REFERENCE_SET_MEMBER_UUID,
 			REFERENCE_SET_MEMBER_EFFECTIVE_TIME,
 			COMPONENT_ACTIVE,
-			REFERENCE_SET_MEMBER_MODULE_ID,
+			COMPONENT_MODULE_ID,
 			REFERENCE_SET_MEMBER_REFERENCE_SET_ID,
 			REFERENCE_SET_MEMBER_REFERENCED_COMPONENT_ID
 			));
@@ -90,7 +90,7 @@ public class SnomedRefSetExporter extends SnomedCompositeExporter implements Sno
 		sb.append(HT);
 		sb.append(getIntValue(doc.getField(COMPONENT_ACTIVE)));
 		sb.append(HT);
-		sb.append(doc.get(REFERENCE_SET_MEMBER_MODULE_ID));
+		sb.append(doc.get(COMPONENT_MODULE_ID));
 		sb.append(HT);
 		sb.append(doc.get(REFERENCE_SET_MEMBER_REFERENCE_SET_ID));
 		sb.append(HT);

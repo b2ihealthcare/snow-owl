@@ -20,9 +20,6 @@ import static com.b2international.snowowl.datastore.index.IndexUtils.longToPrefi
 import static com.b2international.snowowl.snomed.SnomedConstants.Concepts.IS_A;
 import static com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants.RELATIONSHIP_NUMBER;
 import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.COMPONENT_ACTIVE;
-import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.COMPONENT_ID;
-import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.COMPONENT_STORAGE_KEY;
-import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.COMPONENT_TYPE;
 import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.RELATIONSHIP_ATTRIBUTE_ID;
 import static org.apache.lucene.search.BooleanClause.Occur.MUST;
 
@@ -35,6 +32,8 @@ import org.apache.lucene.index.Term;
 import org.apache.lucene.search.BooleanQuery;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.TermQuery;
+
+import com.b2international.snowowl.core.api.index.CommonIndexConstants;
 
 /**
  * Enumerates the possible collection modes an array of {@link IsAStatement}s can be returned in.
@@ -66,7 +65,7 @@ public enum StatementCollectionMode {
 
 	WITH_RELATIONSHIP_IDS {
 		@Override public String getIdValuesField() {
-			return COMPONENT_ID;
+			return CommonIndexConstants.COMPONENT_ID;
 		}
 
 		@Override
@@ -81,7 +80,7 @@ public enum StatementCollectionMode {
 
 	WITH_STORAGE_KEYS {
 		@Override public String getIdValuesField() {
-			return COMPONENT_STORAGE_KEY;
+			return CommonIndexConstants.COMPONENT_STORAGE_KEY;
 		}
 
 		@Override public IsAStatementWithKey createStatement(final long sourceId, final long destinationId, final long idOrKey) {
@@ -108,7 +107,7 @@ public enum StatementCollectionMode {
 
 		@Override public Query getQuery() {
 			final BooleanQuery query = new BooleanQuery(true);
-			query.add(new TermQuery(new Term(COMPONENT_TYPE, intToPrefixCoded(RELATIONSHIP_NUMBER))), MUST);
+			query.add(new TermQuery(new Term(CommonIndexConstants.COMPONENT_TYPE, intToPrefixCoded(RELATIONSHIP_NUMBER))), MUST);
 			query.add(new TermQuery(new Term(COMPONENT_ACTIVE, intToPrefixCoded(1))), MUST);
 			return query;
 		}

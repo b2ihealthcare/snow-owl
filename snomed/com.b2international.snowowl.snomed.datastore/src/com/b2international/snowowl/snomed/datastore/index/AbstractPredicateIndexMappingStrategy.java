@@ -29,6 +29,7 @@ import org.apache.lucene.document.StringField;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.b2international.snowowl.core.api.index.CommonIndexConstants;
 import com.b2international.snowowl.datastore.cdo.CDOIDUtils;
 import com.b2international.snowowl.datastore.index.AbstractIndexMappingStrategy;
 import com.b2international.snowowl.snomed.datastore.PredicateUtils;
@@ -182,7 +183,7 @@ public abstract class AbstractPredicateIndexMappingStrategy<P extends ConceptMod
 			
 			final Document doc = new Document();
 			
-			doc.add(new IntField(SnomedIndexBrowserConstants.COMPONENT_TYPE, PredicateUtils.PREDICATE_TYPE_ID, Store.YES));
+			doc.add(new IntField(CommonIndexConstants.COMPONENT_TYPE, PredicateUtils.PREDICATE_TYPE_ID, Store.YES));
 			doc.add(new StringField(SnomedIndexBrowserConstants.PREDICATE_UUID, predicate.getUuid(),Store.YES));
 			doc.add(new StoredField(SnomedIndexBrowserConstants.PREDICATE_TYPE, PredicateType.RELATIONSHIP.name()));
 			doc.add(new StoredField(SnomedIndexBrowserConstants.PREDICATE_RELATIONSHIP_TYPE_EXPRESSION, type));
@@ -218,7 +219,7 @@ public abstract class AbstractPredicateIndexMappingStrategy<P extends ConceptMod
 			
 			final Document doc = new Document();
 			
-			doc.add(new IntField(SnomedIndexBrowserConstants.COMPONENT_TYPE, PredicateUtils.PREDICATE_TYPE_ID, Store.YES));
+			doc.add(new IntField(CommonIndexConstants.COMPONENT_TYPE, PredicateUtils.PREDICATE_TYPE_ID, Store.YES));
 			doc.add(new StringField(SnomedIndexBrowserConstants.PREDICATE_UUID, predicate.getUuid(),Store.YES));
 			doc.add(new StoredField(SnomedIndexBrowserConstants.PREDICATE_TYPE, PredicateType.DESCRIPTION.name()));
 			doc.add(new StoredField(SnomedIndexBrowserConstants.PREDICATE_DESCRIPTION_TYPE_ID, descriptionId));
@@ -247,7 +248,7 @@ public abstract class AbstractPredicateIndexMappingStrategy<P extends ConceptMod
 			
 			final Document doc = new Document();
 
-			doc.add(new IntField(SnomedIndexBrowserConstants.COMPONENT_TYPE, PredicateUtils.PREDICATE_TYPE_ID, Store.YES));
+			doc.add(new IntField(CommonIndexConstants.COMPONENT_TYPE, PredicateUtils.PREDICATE_TYPE_ID, Store.YES));
 			doc.add(new StringField(SnomedIndexBrowserConstants.PREDICATE_UUID, predicate.getUuid(),Store.YES));
 			doc.add(new StoredField(SnomedIndexBrowserConstants.PREDICATE_TYPE, PredicateType.DATATYPE.name()));
 			doc.add(new StoredField(SnomedIndexBrowserConstants.PREDICATE_DATA_TYPE_LABEL, predicate.getLabel()));

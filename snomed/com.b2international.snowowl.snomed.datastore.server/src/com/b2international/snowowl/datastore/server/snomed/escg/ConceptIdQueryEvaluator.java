@@ -36,6 +36,7 @@ import bak.pcj.set.LongSet;
 
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.api.IBranchPath;
+import com.b2international.snowowl.core.api.index.CommonIndexConstants;
 import com.b2international.snowowl.datastore.BranchPathUtils;
 import com.b2international.snowowl.datastore.index.AbstractIndexService;
 import com.b2international.snowowl.datastore.index.DocIdCollector;
@@ -178,7 +179,7 @@ public class ConceptIdQueryEvaluator implements Serializable, IQueryEvaluator<Lo
 			AbstractIndexService indexService, ConceptRef conceptRef) throws IOException {
 		LongOpenHashSet conceptIdSet = new LongOpenHashSet();
 		final BooleanQuery query = new BooleanQuery();
-		final Query parentQuery = new TermQuery(new Term(SnomedIndexBrowserConstants.CONCEPT_PARENT, IndexUtils.longToPrefixCoded(conceptRef.getConceptId())));
+		final Query parentQuery = new TermQuery(new Term(CommonIndexConstants.COMPONENT_PARENT, IndexUtils.longToPrefixCoded(conceptRef.getConceptId())));
 		query.add(parentQuery, Occur.SHOULD);
 		final Query ancestorQuery = new TermQuery(new Term(SnomedIndexBrowserConstants.CONCEPT_ANCESTOR, IndexUtils.longToPrefixCoded(conceptRef.getConceptId())));
 		query.add(ancestorQuery, Occur.SHOULD);
@@ -187,8 +188,8 @@ public class ConceptIdQueryEvaluator implements Serializable, IQueryEvaluator<Lo
 		DocIdsIterator docIdsIterator = collector.getDocIDs().iterator();
 		while (docIdsIterator.next()) {
 			int docID = docIdsIterator.getDocID();
-			Document doc = indexService.document(branchPath, docID, ImmutableSet.of(SnomedIndexBrowserConstants.COMPONENT_ID));
-			conceptIdSet.add(Long.valueOf(doc.get(SnomedIndexBrowserConstants.COMPONENT_ID)));
+			Document doc = indexService.document(branchPath, docID, ImmutableSet.of(CommonIndexConstants.COMPONENT_ID));
+			conceptIdSet.add(Long.valueOf(doc.get(CommonIndexConstants.COMPONENT_ID)));
 		}
 		return conceptIdSet;
 	}

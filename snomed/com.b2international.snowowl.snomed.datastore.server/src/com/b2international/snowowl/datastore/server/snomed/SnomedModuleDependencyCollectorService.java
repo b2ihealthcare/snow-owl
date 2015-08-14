@@ -26,7 +26,6 @@ import static com.b2international.snowowl.datastore.server.snomed.ModuleCollecto
 import static com.b2international.snowowl.snomed.SnomedConstants.Concepts.REFSET_MODULE_DEPENDENCY_TYPE;
 import static com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants.DESCRIPTION_NUMBER;
 import static com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants.RELATIONSHIP_NUMBER;
-import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.COMPONENT_TYPE;
 import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_OPERATOR_ID;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Stopwatch.createStarted;
@@ -57,6 +56,7 @@ import bak.pcj.set.LongSet;
 
 import com.b2international.commons.pcj.LongSets.LongCollectionProcedure;
 import com.b2international.snowowl.core.api.IBranchPath;
+import com.b2international.snowowl.core.api.index.CommonIndexConstants;
 import com.b2international.snowowl.datastore.server.index.IndexServerService;
 import com.b2international.snowowl.datastore.server.snomed.index.ConcreteDataTypePropertyCollector;
 import com.b2international.snowowl.datastore.server.snomed.index.DescriptionPropertyCollector;
@@ -98,8 +98,8 @@ public enum SnomedModuleDependencyCollectorService {
 	private static final long MODULE_ROOT = parseLong(Concepts.MODULE_ROOT);
 	private static final long IS_A = parseLong(Concepts.IS_A);
 	
-	private static final Query ALL_DESCRIPTIONS_QUERY = new TermQuery(new Term(COMPONENT_TYPE, intToPrefixCoded(DESCRIPTION_NUMBER)));
-	private static final Query ALL_RELATIONSHIPS_QUERY = new TermQuery(new Term(COMPONENT_TYPE, intToPrefixCoded(RELATIONSHIP_NUMBER)));
+	private static final Query ALL_DESCRIPTIONS_QUERY = new TermQuery(new Term(CommonIndexConstants.COMPONENT_TYPE, intToPrefixCoded(DESCRIPTION_NUMBER)));
+	private static final Query ALL_RELATIONSHIPS_QUERY = new TermQuery(new Term(CommonIndexConstants.COMPONENT_TYPE, intToPrefixCoded(RELATIONSHIP_NUMBER)));
 	private static final Query ALL_CDT_MEMBERS_QUERY;
 	
 	static {

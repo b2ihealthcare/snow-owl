@@ -25,8 +25,8 @@ import org.apache.lucene.index.NumericDocValues;
 import bak.pcj.list.LongArrayList;
 import bak.pcj.list.LongList;
 
+import com.b2international.snowowl.core.api.index.CommonIndexConstants;
 import com.b2international.snowowl.datastore.index.AbstractDocsOutOfOrderCollector;
-import com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants;
 
 /**
  * Custom collector for extracting SNOMED CT concept identifiers and the unique storage keys as primitive longs.
@@ -60,8 +60,8 @@ public class ConceptIdStorageKeyCollector extends AbstractDocsOutOfOrderCollecto
 
 	@Override
 	protected void initDocValues(final AtomicReader leafReader) throws IOException {
-		conceptIdValues = leafReader.getNumericDocValues(SnomedIndexBrowserConstants.COMPONENT_ID);
-		storageKeyValues = leafReader.getNumericDocValues(SnomedIndexBrowserConstants.COMPONENT_STORAGE_KEY);
+		conceptIdValues = leafReader.getNumericDocValues(CommonIndexConstants.COMPONENT_ID);
+		storageKeyValues = leafReader.getNumericDocValues(CommonIndexConstants.COMPONENT_STORAGE_KEY);
 	}
 
 	@Override

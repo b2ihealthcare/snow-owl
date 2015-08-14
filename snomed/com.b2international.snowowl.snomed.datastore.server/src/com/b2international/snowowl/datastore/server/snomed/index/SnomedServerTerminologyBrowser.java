@@ -28,13 +28,12 @@ import static com.b2international.snowowl.core.api.index.CommonIndexConstants.CO
 import static com.b2international.snowowl.datastore.index.IndexUtils.getLongValue;
 import static com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants.REFSET_MEMBER_NUMBER;
 import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.COMPONENT_ACTIVE;
+import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.COMPONENT_MODULE_ID;
 import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.COMPONENT_RELEASED;
 import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.CONCEPT_ANCESTOR;
 import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.CONCEPT_DEGREE_OF_INTEREST;
 import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.CONCEPT_EFFECTIVE_TIME;
 import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.CONCEPT_EXHAUSTIVE;
-import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.CONCEPT_MODULE_ID;
-import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.CONCEPT_PARENT;
 import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.CONCEPT_PRIMITIVE;
 import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_UUID;
 import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.ROOT_ID;
@@ -82,6 +81,7 @@ import com.b2international.snowowl.core.api.ExtendedComponent;
 import com.b2international.snowowl.core.api.ExtendedComponentImpl;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.api.IComponentWithChildFlag;
+import com.b2international.snowowl.core.api.index.CommonIndexConstants;
 import com.b2international.snowowl.core.api.index.IndexException;
 import com.b2international.snowowl.datastore.cdo.CDOUtils;
 import com.b2international.snowowl.datastore.index.DocIdCollector;
@@ -130,12 +130,12 @@ public class SnomedServerTerminologyBrowser extends AbstractSnomedIndexTerminolo
 	
 	private static final Set<String> CONCEPT_FIELDS_TO_LOAD = ImmutableSet.of(COMPONENT_ID, 
 			COMPONENT_LABEL, COMPONENT_ICON_ID,
-			COMPONENT_STORAGE_KEY, CONCEPT_MODULE_ID,
+			COMPONENT_STORAGE_KEY, COMPONENT_MODULE_ID,
 			COMPONENT_ACTIVE, CONCEPT_PRIMITIVE,
 			CONCEPT_EXHAUSTIVE, COMPONENT_RELEASED, CONCEPT_EFFECTIVE_TIME);
 	
-	private static final Set<String> ID_AND_PARENT_FIELDS_TO_LOAD = unmodifiableSet(newHashSet(COMPONENT_ID, CONCEPT_PARENT));
-	private static final Set<String> PARENT_AND_ANCESTOR_FIELDS_TO_LOAD = unmodifiableSet(newHashSet(CONCEPT_PARENT, CONCEPT_ANCESTOR));
+	private static final Set<String> ID_AND_PARENT_FIELDS_TO_LOAD = unmodifiableSet(newHashSet(COMPONENT_ID, CommonIndexConstants.COMPONENT_PARENT));
+	private static final Set<String> PARENT_AND_ANCESTOR_FIELDS_TO_LOAD = unmodifiableSet(newHashSet(CommonIndexConstants.COMPONENT_PARENT, CONCEPT_ANCESTOR));
 	
 	private static final Set<String> DOI_FIELDS_TO_LOAD = ImmutableSet.of(CONCEPT_DEGREE_OF_INTEREST);
 	private static final Set<String> STORAGE_KEY_FIELDS_TO_LOAD = ImmutableSet.of(COMPONENT_STORAGE_KEY);
@@ -177,7 +177,7 @@ public class SnomedServerTerminologyBrowser extends AbstractSnomedIndexTerminolo
 	protected SnomedConceptIndexEntry createResultObject(final IBranchPath branchPath, final Document doc) {
 		final String id = doc.get(COMPONENT_ID);
 		String label = doc.get(COMPONENT_LABEL);
-		final String moduleId = doc.get(CONCEPT_MODULE_ID);
+		final String moduleId = doc.get(COMPONENT_MODULE_ID);
 		final IndexableField storageKeyField = doc.getField(COMPONENT_STORAGE_KEY);
 		final long storageKey = storageKeyField.numericValue().longValue();
 		final String iconId = doc.get(COMPONENT_ICON_ID);
@@ -316,8 +316,8 @@ public class SnomedServerTerminologyBrowser extends AbstractSnomedIndexTerminolo
 			return Collections.emptyList();
 		}
 		final Document document = service.document(branchPath, topDocs.scoreDocs[0].doc, 
-				Sets.newHashSet(CONCEPT_PARENT, CONCEPT_ANCESTOR));
-		final IndexableField[] parentFields = document.getFields(CONCEPT_PARENT);
+				Sets.newHashSet(CommonIndexConstants.COMPONENT_PARENT, CONCEPT_ANCESTOR));
+		final IndexableField[] parentFields = document.getFields(CommonIndexConstants.COMPONENT_PARENT);
 		final IndexableField[] ancestorFields = document.getFields(CONCEPT_ANCESTOR);
 		final Builder<SnomedConceptIndexEntry> builder = ImmutableList.builder();
 		for (final IndexableField parentField : parentFields) {
@@ -393,8 +393,8 @@ public class SnomedServerTerminologyBrowser extends AbstractSnomedIndexTerminolo
 		if (topDocs.scoreDocs.length > 0) {
 			final int docId = topDocs.scoreDocs[0].doc;
 			final Document document = service.document(branchPath, docId, 
-					ImmutableSet.of(CONCEPT_ANCESTOR, CONCEPT_PARENT));
-			final IndexableField[] parentFields = document.getFields(CONCEPT_PARENT);
+					ImmutableSet.of(CONCEPT_ANCESTOR, CommonIndexConstants.COMPONENT_PARENT));
+			final IndexableField[] parentFields = document.getFields(CommonIndexConstants.COMPONENT_PARENT);
 			final IndexableField[] ancestorFields = document.getFields(CONCEPT_ANCESTOR);
 			final Iterable<IndexableField> allSuperTypeFields = Iterables.concat(Arrays.asList(parentFields), Arrays.asList(ancestorFields));
 			for (final IndexableField superTypeField : allSuperTypeFields) {
@@ -518,8 +518,8 @@ public class SnomedServerTerminologyBrowser extends AbstractSnomedIndexTerminolo
 			return new LongOpenHashSet();
 		}
 		
-		final Document document = service.document(branchPath, topDocs.scoreDocs[0].doc, Sets.newHashSet(CONCEPT_PARENT));
-		final IndexableField[] parentFields = document.getFields(CONCEPT_PARENT);
+		final Document document = service.document(branchPath, topDocs.scoreDocs[0].doc, Sets.newHashSet(CommonIndexConstants.COMPONENT_PARENT));
+		final IndexableField[] parentFields = document.getFields(CommonIndexConstants.COMPONENT_PARENT);
 		final LongSet ids = new LongOpenHashSet(parentFields.length);
 
 		for (final IndexableField parentField : parentFields) {
@@ -549,7 +549,7 @@ public class SnomedServerTerminologyBrowser extends AbstractSnomedIndexTerminolo
 		final Document document = service.document(branchPath, topDocs.scoreDocs[0].doc, 
 				PARENT_AND_ANCESTOR_FIELDS_TO_LOAD);
 		
-		final IndexableField[] parentFields = document.getFields(CONCEPT_PARENT);
+		final IndexableField[] parentFields = document.getFields(CommonIndexConstants.COMPONENT_PARENT);
 		final IndexableField[] ancestorFields = document.getFields(CONCEPT_ANCESTOR);
 		final LongSet ids = newLongSetWithExpectedSize(parentFields.length + ancestorFields.length);
 
@@ -875,7 +875,7 @@ public class SnomedServerTerminologyBrowser extends AbstractSnomedIndexTerminolo
 	
 	protected IndexQueryBuilder getRootConceptsQueryBuilder() {
 		return new IndexQueryBuilder()
-			.requireExactTerm(CONCEPT_PARENT, IndexUtils.longToPrefixCoded(ROOT_ID))
+			.requireExactTerm(CommonIndexConstants.COMPONENT_PARENT, IndexUtils.longToPrefixCoded(ROOT_ID))
 			.requireExactTerm(COMPONENT_ACTIVE, IndexUtils.intToPrefixCoded(1));
 	}
 
@@ -1015,7 +1015,7 @@ public class SnomedServerTerminologyBrowser extends AbstractSnomedIndexTerminolo
 				public void apply(final int docId) throws IOException {
 					final Document doc = searcher.get().doc(docId, ID_AND_PARENT_FIELDS_TO_LOAD);
 					final long id = getLongValue(doc.getField(COMPONENT_ID));
-					final IndexableField[] parentIdFields = doc.getFields(CONCEPT_PARENT);
+					final IndexableField[] parentIdFields = doc.getFields(CommonIndexConstants.COMPONENT_PARENT);
 					final Long[] parentIds = new Long[parentIdFields.length];
 					int i = 0;
 					for (final IndexableField parentIdField : parentIdFields) {
@@ -1064,8 +1064,8 @@ public class SnomedServerTerminologyBrowser extends AbstractSnomedIndexTerminolo
 		if (CompareUtils.isEmpty(topDocs.scoreDocs)) {
 			return Collections.emptyList();
 		}
-		final Document document = service.document(branchPath, topDocs.scoreDocs[0].doc, Sets.newHashSet(CONCEPT_PARENT));
-		final IndexableField[] parentFields = document.getFields(CONCEPT_PARENT);
+		final Document document = service.document(branchPath, topDocs.scoreDocs[0].doc, Sets.newHashSet(CommonIndexConstants.COMPONENT_PARENT));
+		final IndexableField[] parentFields = document.getFields(CommonIndexConstants.COMPONENT_PARENT);
 		final Builder<SnomedConceptIndexEntry> builder = ImmutableList.builder();
 		for (final IndexableField parentField : parentFields) {
 			if (ROOT_ID != parentField.numericValue().longValue()) {
@@ -1079,7 +1079,7 @@ public class SnomedServerTerminologyBrowser extends AbstractSnomedIndexTerminolo
 	protected IndexQueryBuilder getSubTypesQueryBuilder(final String id) {
 		return new IndexQueryBuilder()
 			.require(getTerminologyComponentTypeQuery())
-			.requireExactTerm(CONCEPT_PARENT, IndexUtils.longToPrefixCoded(id));
+			.requireExactTerm(CommonIndexConstants.COMPONENT_PARENT, IndexUtils.longToPrefixCoded(id));
 	}
 	
 	@Override

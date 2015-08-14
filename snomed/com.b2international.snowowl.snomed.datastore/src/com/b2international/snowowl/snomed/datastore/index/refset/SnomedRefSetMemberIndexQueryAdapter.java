@@ -16,7 +16,6 @@
 package com.b2international.snowowl.snomed.datastore.index.refset;
 
 import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.COMPONENT_ACTIVE;
-import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.COMPONENT_LABEL;
 import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_REFERENCED_COMPONENT_ID;
 import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_REFERENCE_SET_ID;
 
@@ -33,6 +32,7 @@ import org.apache.lucene.search.TermQuery;
 
 import com.b2international.commons.StringUtils;
 import com.b2international.snowowl.core.api.IBranchPath;
+import com.b2international.snowowl.core.api.index.CommonIndexConstants;
 import com.b2international.snowowl.datastore.index.IndexAdapterBase;
 import com.b2international.snowowl.datastore.index.IndexUtils;
 
@@ -81,7 +81,7 @@ public class SnomedRefSetMemberIndexQueryAdapter extends IndexAdapterBase<Snomed
 		
 		if (!StringUtils.isEmpty(searchString)) {
 			final BooleanQuery fieldQuery = new BooleanQuery();
-			addTermPrefixClause(fieldQuery, COMPONENT_LABEL, searchString.toLowerCase());
+			addTermPrefixClause(fieldQuery, CommonIndexConstants.COMPONENT_LABEL, searchString.toLowerCase());
 			//added by endre, see issue #242
 			fieldQuery.add(new TermQuery(new Term(REFERENCE_SET_MEMBER_REFERENCED_COMPONENT_ID, searchString.toLowerCase())), Occur.SHOULD);
 			main.add(fieldQuery, Occur.MUST);

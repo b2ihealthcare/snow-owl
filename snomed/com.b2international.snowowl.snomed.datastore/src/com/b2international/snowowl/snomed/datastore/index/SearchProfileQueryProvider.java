@@ -31,6 +31,7 @@ import org.slf4j.LoggerFactory;
 import com.b2international.commons.CompareUtils;
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.api.IBranchPath;
+import com.b2international.snowowl.core.api.index.CommonIndexConstants;
 import com.b2international.snowowl.datastore.index.IndexUtils;
 import com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants;
 import com.b2international.snowowl.snomed.datastore.index.interest.ISearchProfileManager;
@@ -102,7 +103,7 @@ public abstract class SearchProfileQueryProvider {
 						final BooleanQuery descendantQuery = new BooleanQuery(true);
 						
 						final Query ancestorQuery = new TermQuery(new Term(SnomedIndexBrowserConstants.CONCEPT_ANCESTOR, contextId));
-						final Query parentQuery = new TermQuery(new Term(SnomedIndexBrowserConstants.CONCEPT_PARENT, contextId));
+						final Query parentQuery = new TermQuery(new Term(CommonIndexConstants.COMPONENT_PARENT, contextId));
 						
 						descendantQuery.add(ancestorQuery, Occur.SHOULD);
 						descendantQuery.add(parentQuery, Occur.SHOULD);
@@ -135,7 +136,7 @@ public abstract class SearchProfileQueryProvider {
 						
 					case WITHIN_A_MODULE:
 						
-						final Query moduleQuery = new TermQuery(new Term(SnomedIndexBrowserConstants.CONCEPT_MODULE_ID, contextId));
+						final Query moduleQuery = new TermQuery(new Term(SnomedIndexBrowserConstants.COMPONENT_MODULE_ID, contextId));
 	
 						switch (interest) {
 	
@@ -327,7 +328,7 @@ public abstract class SearchProfileQueryProvider {
 						
 						final BooleanQuery descendantQuery = new BooleanQuery(true);
 						final Query ancestorQuery = new TermQuery(new Term(SnomedIndexBrowserConstants.CONCEPT_ANCESTOR, contextId));
-						final Query parentQuery = new TermQuery(new Term(SnomedIndexBrowserConstants.CONCEPT_PARENT, contextId));
+						final Query parentQuery = new TermQuery(new Term(CommonIndexConstants.COMPONENT_PARENT, contextId));
 						descendantQuery.add(ancestorQuery, Occur.SHOULD);
 						descendantQuery.add(parentQuery, Occur.SHOULD);
 						searchProfileQuery.add(descendantQuery, Occur.MUST_NOT);
@@ -336,7 +337,7 @@ public abstract class SearchProfileQueryProvider {
 						
 					case WITHIN_A_MODULE:
 	
-						final Query moduleQuery = new TermQuery(new Term(SnomedIndexBrowserConstants.CONCEPT_MODULE_ID, contextId));
+						final Query moduleQuery = new TermQuery(new Term(SnomedIndexBrowserConstants.COMPONENT_MODULE_ID, contextId));
 						searchProfileQuery.add(moduleQuery, Occur.MUST_NOT);
 						
 						break; //break 'within a module' domain

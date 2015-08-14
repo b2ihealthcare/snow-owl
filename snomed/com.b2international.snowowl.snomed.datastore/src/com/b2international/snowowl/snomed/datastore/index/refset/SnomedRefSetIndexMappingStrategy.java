@@ -15,12 +15,6 @@
  */
 package com.b2international.snowowl.snomed.datastore.index.refset;
 
-import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.COMPONENT_COMPARE_UNIQUE_KEY;
-import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.COMPONENT_ID;
-import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.COMPONENT_IGNORE_COMPARE_UNIQUE_KEY;
-import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.COMPONENT_LABEL;
-import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.COMPONENT_STORAGE_KEY;
-import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.COMPONENT_TYPE;
 import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.REFERENCE_SET_REFERENCED_COMPONENT_TYPE;
 import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.REFERENCE_SET_STRUCTURAL;
 import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.REFERENCE_SET_TYPE;
@@ -36,6 +30,7 @@ import org.apache.lucene.document.NumericDocValuesField;
 import org.apache.lucene.document.StringField;
 import org.apache.lucene.document.TextField;
 
+import com.b2international.snowowl.core.api.index.CommonIndexConstants;
 import com.b2international.snowowl.datastore.cdo.CDOIDUtils;
 import com.b2international.snowowl.datastore.cdo.CDOUtils;
 import com.b2international.snowowl.datastore.index.AbstractIndexMappingStrategy;
@@ -74,25 +69,25 @@ public class SnomedRefSetIndexMappingStrategy extends AbstractIndexMappingStrate
 		final Document doc = new Document();
 		
 		final Long id = Long.valueOf(refSet.getIdentifierId());
-		doc.add(new IntField(COMPONENT_TYPE, SnomedTerminologyComponentConstants.REFSET_NUMBER, Store.YES));
-		doc.add(new LongField(COMPONENT_ID, id, Store.YES));
+		doc.add(new IntField(CommonIndexConstants.COMPONENT_TYPE, SnomedTerminologyComponentConstants.REFSET_NUMBER, Store.YES));
+		doc.add(new LongField(CommonIndexConstants.COMPONENT_ID, id, Store.YES));
 		doc.add(new IntField(REFERENCE_SET_TYPE, refSet.getType().getValue(), Store.YES));
 		doc.add(new IntField(REFERENCE_SET_REFERENCED_COMPONENT_TYPE, refSet.getReferencedComponentType(), Store.YES));
 		final long storageKey = CDOIDUtils.asLong(refSet.cdoID());
-		doc.add(new LongField(COMPONENT_STORAGE_KEY, storageKey, Store.YES));
+		doc.add(new LongField(CommonIndexConstants.COMPONENT_STORAGE_KEY, storageKey, Store.YES));
 		doc.add(new IntField(REFERENCE_SET_STRUCTURAL, refSet instanceof SnomedStructuralRefSet ? 1 : 0, Store.YES));
 		
 		final String label = SnomedConceptNameProvider.INSTANCE.getText(refSet.getIdentifierId(), refSet.cdoView());
-		doc.add(new TextField(COMPONENT_LABEL, label, Store.YES));
-		doc.add(new NumericDocValuesField(COMPONENT_COMPARE_UNIQUE_KEY, indexAsRelevantForCompare ? storageKey : CDOUtils.NO_STORAGE_KEY));
+		doc.add(new TextField(CommonIndexConstants.COMPONENT_LABEL, label, Store.YES));
+		doc.add(new NumericDocValuesField(CommonIndexConstants.COMPONENT_COMPARE_UNIQUE_KEY, indexAsRelevantForCompare ? storageKey : CDOUtils.NO_STORAGE_KEY));
 		
 		if (!indexAsRelevantForCompare) {
-			doc.add(new NumericDocValuesField(COMPONENT_IGNORE_COMPARE_UNIQUE_KEY, storageKey));
+			doc.add(new NumericDocValuesField(CommonIndexConstants.COMPONENT_IGNORE_COMPARE_UNIQUE_KEY, storageKey));
 		}
 		
 		final String moduleId = new SnomedConceptLookupService().getComponent(refSet.getIdentifierId(), refSet.cdoView()).getModule().getId();
-		doc.add(new LongField(SnomedIndexBrowserConstants.REFERENCE_SET_MODULE_ID, Long.parseLong(moduleId), Store.YES));
-		doc.add(new LongField(SnomedIndexBrowserConstants.COMPONENT_ICON_ID, iconId, Store.YES));
+		doc.add(new LongField(SnomedIndexBrowserConstants.COMPONENT_MODULE_ID, Long.parseLong(moduleId), Store.YES));
+		doc.add(new LongField(CommonIndexConstants.COMPONENT_ICON_ID, iconId, Store.YES));
 		
 		for (final String predicateKey : this.predicateKeys) {
 			doc.add(new StringField(SnomedIndexBrowserConstants.COMPONENT_REFERRING_PREDICATE, predicateKey, Store.YES));

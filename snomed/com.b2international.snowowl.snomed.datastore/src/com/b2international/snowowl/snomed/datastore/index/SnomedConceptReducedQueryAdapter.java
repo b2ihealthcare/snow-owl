@@ -15,9 +15,8 @@
  */
 package com.b2international.snowowl.snomed.datastore.index;
 
-import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.COMPONENT_STORAGE_KEY;
-
 import com.b2international.commons.StringUtils;
+import com.b2international.snowowl.core.api.index.CommonIndexConstants;
 import com.b2international.snowowl.datastore.index.IndexQueryBuilder;
 import com.b2international.snowowl.datastore.index.IndexUtils;
 import com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants;
@@ -42,7 +41,7 @@ public class SnomedConceptReducedQueryAdapter extends SnomedConceptIndexQueryAda
 			@Override protected IndexQueryBuilder createIndexQueryBuilder() {
 				IndexQueryBuilder builder = super.createIndexQueryBuilder();
 				return builder
-					.requireExactTermIf(anyFlagSet(SEARCH_STORAGE_KEY), COMPONENT_STORAGE_KEY, IndexUtils.longToPrefixCoded(Long.valueOf(searchString)));
+					.requireExactTermIf(anyFlagSet(SEARCH_STORAGE_KEY), CommonIndexConstants.COMPONENT_STORAGE_KEY, IndexUtils.longToPrefixCoded(Long.valueOf(searchString)));
 			}
 		};
 	} 
@@ -53,7 +52,7 @@ public class SnomedConceptReducedQueryAdapter extends SnomedConceptIndexQueryAda
 			@Override protected IndexQueryBuilder createIndexQueryBuilder() {
 				IndexQueryBuilder builder = super.createIndexQueryBuilder();
 				return builder
-					.requireExactTermIf(anyFlagSet(SEARCH_BY_CONCEPT_ID), SnomedIndexBrowserConstants.COMPONENT_ID, IndexUtils.longToPrefixCoded(searchString));
+					.requireExactTermIf(anyFlagSet(SEARCH_BY_CONCEPT_ID), CommonIndexConstants.COMPONENT_ID, IndexUtils.longToPrefixCoded(searchString));
 			}
 		};
 	} 
@@ -85,12 +84,12 @@ public class SnomedConceptReducedQueryAdapter extends SnomedConceptIndexQueryAda
 
 	private IndexQueryBuilder createIndexQueryBuilderWithIdTerms(IndexQueryBuilder builder) {
 		return builder
-				.requireExistingTermIf(StringUtils.isEmpty(searchString), SnomedIndexBrowserConstants.COMPONENT_ID)
+				.requireExistingTermIf(StringUtils.isEmpty(searchString), CommonIndexConstants.COMPONENT_ID)
 				.finishIf(StringUtils.isEmpty(searchString))
 				.require(new IndexQueryBuilder()
-				.matchExactTerm(SnomedIndexBrowserConstants.COMPONENT_ID, IndexUtils.longToPrefixCoded(searchString))
-				.matchAllTokenizedTermsIf(anyFlagSet(SEARCH_BY_LABEL), SnomedIndexBrowserConstants.COMPONENT_LABEL, searchString.toLowerCase())
-				.matchAllTokenizedTermPrefixesIf(anyFlagSet(SEARCH_BY_LABEL), SnomedIndexBrowserConstants.COMPONENT_LABEL, searchString.toLowerCase())
+				.matchExactTerm(CommonIndexConstants.COMPONENT_ID, IndexUtils.longToPrefixCoded(searchString))
+				.matchAllTokenizedTermsIf(anyFlagSet(SEARCH_BY_LABEL), CommonIndexConstants.COMPONENT_LABEL, searchString.toLowerCase())
+				.matchAllTokenizedTermPrefixesIf(anyFlagSet(SEARCH_BY_LABEL), CommonIndexConstants.COMPONENT_LABEL, searchString.toLowerCase())
 				.matchAllTokenizedTermPrefixesIf(anyFlagSet(SEARCH_BY_FSN), SnomedIndexBrowserConstants.CONCEPT_FULLY_SPECIFIED_NAME, searchString.toLowerCase())
 				.matchAllTokenizedTermPrefixesIf(anyFlagSet(SEARCH_BY_SYNONYM), SnomedIndexBrowserConstants.CONCEPT_SYNONYM, searchString.toLowerCase())
 				.matchAllTokenizedTermPrefixesIf(anyFlagSet(SEARCH_BY_OTHER), SnomedIndexBrowserConstants.CONCEPT_OTHER_DESCRIPTION, searchString.toLowerCase()));
@@ -98,11 +97,11 @@ public class SnomedConceptReducedQueryAdapter extends SnomedConceptIndexQueryAda
 
 	private IndexQueryBuilder createIndexQueryBuilderWithoutIdTerms(IndexQueryBuilder builder) {
 		return builder
-				.requireExistingTermIf(StringUtils.isEmpty(searchString), SnomedIndexBrowserConstants.COMPONENT_ID)
+				.requireExistingTermIf(StringUtils.isEmpty(searchString), CommonIndexConstants.COMPONENT_ID)
 				.finishIf(StringUtils.isEmpty(searchString))
 				.require(new IndexQueryBuilder()
-				.matchAllTokenizedTermsIf(anyFlagSet(SEARCH_BY_LABEL), SnomedIndexBrowserConstants.COMPONENT_LABEL, searchString.toLowerCase())
-				.matchAllTokenizedTermPrefixesIf(anyFlagSet(SEARCH_BY_LABEL), SnomedIndexBrowserConstants.COMPONENT_LABEL, searchString.toLowerCase())
+				.matchAllTokenizedTermsIf(anyFlagSet(SEARCH_BY_LABEL), CommonIndexConstants.COMPONENT_LABEL, searchString.toLowerCase())
+				.matchAllTokenizedTermPrefixesIf(anyFlagSet(SEARCH_BY_LABEL), CommonIndexConstants.COMPONENT_LABEL, searchString.toLowerCase())
 				.matchAllTokenizedTermPrefixesIf(anyFlagSet(SEARCH_BY_FSN), SnomedIndexBrowserConstants.CONCEPT_FULLY_SPECIFIED_NAME, searchString.toLowerCase())
 				.matchAllTokenizedTermPrefixesIf(anyFlagSet(SEARCH_BY_SYNONYM), SnomedIndexBrowserConstants.CONCEPT_SYNONYM, searchString.toLowerCase())
 				.matchAllTokenizedTermPrefixesIf(anyFlagSet(SEARCH_BY_OTHER), SnomedIndexBrowserConstants.CONCEPT_OTHER_DESCRIPTION, searchString.toLowerCase()));
