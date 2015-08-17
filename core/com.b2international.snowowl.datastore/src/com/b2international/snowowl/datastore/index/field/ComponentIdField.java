@@ -20,8 +20,7 @@ import java.util.List;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.index.IndexableField;
 import org.apache.lucene.index.Term;
-import org.apache.lucene.queries.TermsFilter;
-import org.apache.lucene.search.CachingWrapperFilter;
+import org.apache.lucene.search.FieldCacheTermsFilter;
 import org.apache.lucene.search.Filter;
 import org.apache.lucene.search.PrefixQuery;
 import org.apache.lucene.search.Query;
@@ -55,12 +54,13 @@ public abstract class ComponentIdField {
 	protected static Filter createFilter(Function<String, BytesRef> toBytesRefFunction, String... componentIds) {
 		if (CompareUtils.isEmpty(componentIds)) {
 			return null;
+		} else {
+			return createFilter(FluentIterable.from(ImmutableList.copyOf(componentIds)).transform(toBytesRefFunction).toList());
 		}
-		return createFilter(FluentIterable.from(ImmutableList.copyOf(componentIds)).transform(toBytesRefFunction).toList());
 	}
 
 	public static Filter createFilter(final List<BytesRef> bytesRefs) {
-		return new CachingWrapperFilter(new TermsFilter(COMPONENT_ID, bytesRefs));
+		return new FieldCacheTermsFilter(COMPONENT_ID, bytesRefs.toArray(new BytesRef[bytesRefs.size()]));
 	}
 
 	public void addTo(Document doc) {
