@@ -31,6 +31,9 @@ import org.apache.lucene.util.BytesRef;
 import com.b2international.snowowl.datastore.index.IndexUtils;
 import com.google.common.base.Function;
 
+/**
+ * @since 4.3
+ */
 public class ComponentIdLongField extends ComponentIdField {
 
 	private final long componentId;

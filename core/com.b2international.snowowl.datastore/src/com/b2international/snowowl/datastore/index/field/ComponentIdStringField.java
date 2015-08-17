@@ -24,6 +24,9 @@ import org.apache.lucene.util.BytesRef;
 
 import com.google.common.base.Function;
 
+/**
+ * @since 4.3
+ */
 public class ComponentIdStringField extends ComponentIdField {
 
 	private final String componentId;
@@ -36,6 +39,11 @@ public class ComponentIdStringField extends ComponentIdField {
 	public StringField toField() {
 		return new StringField(COMPONENT_ID, componentId, Store.YES);
 	}
+
+	@Override
+	protected BytesRef toBytesRef() {
+		return toBytesRef(componentId);
+	}
 	
 	public static Sort createSort() {
 		return ComponentIdField.createSort(Type.STRING);
@@ -45,11 +53,6 @@ public class ComponentIdStringField extends ComponentIdField {
 		return ComponentIdField.createFilter(new Function<String, BytesRef>() {	@Override public BytesRef apply(String input) {
 			return toBytesRef(input);
 		}}, componentIds);
-	}
-
-	@Override
-	protected BytesRef toBytesRef() {
-		return toBytesRef(componentId);
 	}
 
 	private static BytesRef toBytesRef(String componentId) {

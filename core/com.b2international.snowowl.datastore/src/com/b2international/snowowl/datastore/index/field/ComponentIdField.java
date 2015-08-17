@@ -18,7 +18,6 @@ package com.b2international.snowowl.datastore.index.field;
 import java.util.List;
 
 import org.apache.lucene.document.Document;
-import org.apache.lucene.index.IndexableField;
 import org.apache.lucene.index.Term;
 import org.apache.lucene.search.FieldCacheTermsFilter;
 import org.apache.lucene.search.Filter;
@@ -35,7 +34,10 @@ import com.google.common.base.Function;
 import com.google.common.collect.FluentIterable;
 import com.google.common.collect.ImmutableList;
 
-public abstract class ComponentIdField {
+/**
+ * @since 4.3
+ */
+public abstract class ComponentIdField extends IndexField {
 
 	public static final String COMPONENT_ID = "component_id";
 
@@ -63,15 +65,8 @@ public abstract class ComponentIdField {
 		return new FieldCacheTermsFilter(COMPONENT_ID, bytesRefs.toArray(new BytesRef[bytesRefs.size()]));
 	}
 
-	public void addTo(Document doc) {
-		doc.add(toField());
-	}
-
+	@Override
 	public TermQuery toQuery() {
 		return new TermQuery(new Term(COMPONENT_ID, toBytesRef()));
 	}
-
-	protected abstract IndexableField toField();
-
-	protected abstract BytesRef toBytesRef();
 }
