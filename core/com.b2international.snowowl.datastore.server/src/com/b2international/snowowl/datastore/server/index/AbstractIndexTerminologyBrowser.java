@@ -33,8 +33,6 @@ import org.apache.lucene.index.IndexableField;
 import org.apache.lucene.index.Term;
 import org.apache.lucene.search.BooleanClause.Occur;
 import org.apache.lucene.search.BooleanQuery;
-import org.apache.lucene.search.FieldCacheTermsFilter;
-import org.apache.lucene.search.Filter;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.TermQuery;
 import org.apache.lucene.search.TopDocs;
@@ -402,16 +400,6 @@ abstract public class AbstractIndexTerminologyBrowser<E extends IIndexEntry> ext
 	 */
 	protected abstract Query createFilterTerminologyBrowserQuery(final String expression);
 
-	/**
-	 * Creates and returns a {@link Filter filter} based on the specified component IDs.
-	 * 
-	 * @param componentIds the component IDs to include
-	 * @return the filter
-	 */
-	protected Filter createComponentFilter(final String...componentIds) {
-		return (null == componentIds) ? null : new FieldCacheTermsFilter(CommonIndexConstants.COMPONENT_ID, componentIds);
-	}
-	
 	public int getSubTypeCountById(final IBranchPath branchPath, final String id) {
 		checkNotNull(branchPath, "Branch path must not be null.");
 		checkNotNull(id, "ID must not be null.");
@@ -421,22 +409,6 @@ abstract public class AbstractIndexTerminologyBrowser<E extends IIndexEntry> ext
 			return getQueryResultCount(branchPath, query);
 		} catch (final IOException e) {
 			throw new RuntimeException("Error when retrieving the number of sub types of " + id + ".", e);
-		}
-	}
-	
-	public Collection<E> getFilteredConcepts(final IBranchPath branchPath, final String expression, final String... conceptIds) {
-		final Query query = createFilterTerminologyBrowserQuery(expression);
-		final DocIdCollector collector = DocIdCollector.create(service.maxDoc(branchPath));
-		if (conceptIds.length > 0) {
-			final Filter filter = createComponentFilter(conceptIds);
-			service.search(branchPath, query, filter, collector);
-		} else {
-			service.search(branchPath, query, collector);
-		}
-		try {
-			return createResultObjects(branchPath, collector.getDocIDs().iterator());
-		} catch (final IOException e) {
-			throw new RuntimeException("Error when retrieving filtered concepts.");
 		}
 	}
 	

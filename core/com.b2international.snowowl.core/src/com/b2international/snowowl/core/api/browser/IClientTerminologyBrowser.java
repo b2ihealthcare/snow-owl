@@ -22,7 +22,6 @@ import javax.annotation.Nullable;
 
 import org.eclipse.core.runtime.IProgressMonitor;
 
-import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.api.IComponentWithChildFlag;
 
 /**
@@ -200,8 +199,6 @@ public interface IClientTerminologyBrowser<C, K> {
 	
 	public IFilterClientTerminologyBrowser<C, K> filterTerminologyBrowser(@Nullable final String expression, @Nullable final IProgressMonitor monitor);
 
-	public Collection<C> getFilteredConcepts(IBranchPath branchPath, String expression, K... conceptIds);
-	
 	/**
 	 * Returns the direct children of the specified concept, with an additional flag to indicate whether the returned concepts have children or not.
 	 * 

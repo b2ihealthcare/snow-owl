@@ -253,22 +253,10 @@ public class FilteredTerminologyBrowser<C extends IComponent<K>, K> implements I
 	}
 
 	@Override
-	public Collection<C> getFilteredConcepts(IBranchPath branchPath, String expression, K... conceptIds) {
-		// TODO Auto-generated method stub
-		throw new UnsupportedOperationException("Not implemented.");
-	};
-	
-	/* (non-Javadoc)
-	 * @see com.b2international.snowowl.core.api.browser.IClientTerminologyBrowser#exists(java.lang.String)
-	 */
-	@Override
 	public boolean exists(String componentId) {
 		return filteredComponents.contains(componentId);
 	}
 
-	/* (non-Javadoc)
-	 * @see com.b2international.snowowl.core.api.browser.IClientTerminologyBrowser#exists(java.lang.String, java.lang.String)
-	 */
 	@Override
 	public boolean exists(String componentId, String codeSystemShortName) {
 		return exists(componentId);

@@ -22,7 +22,6 @@ import java.util.List;
 import org.eclipse.core.runtime.IProgressMonitor;
 
 import com.b2international.snowowl.core.api.ComponentUtils;
-import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.api.IComponentWithChildFlag;
 import com.b2international.snowowl.core.api.browser.IClientTerminologyBrowser;
 import com.b2international.snowowl.core.api.browser.IFilterClientTerminologyBrowser;
@@ -222,12 +221,6 @@ public class ValueSetBrowser implements IClientTerminologyBrowser<SnomedConceptI
 
 	@Override
 	public Collection<IComponentWithChildFlag<String>> getSubTypesWithChildFlag(SnomedConceptIndexEntry concept) {
-		// TODO Auto-generated method stub
-		throw new UnsupportedOperationException("Not implemented.");
-	}
-
-	@Override
-	public Collection<SnomedConceptIndexEntry> getFilteredConcepts(IBranchPath branchPath, String expression, String... conceptIds) {
 		// TODO Auto-generated method stub
 		throw new UnsupportedOperationException("Not implemented.");
 	}

@@ -20,7 +20,6 @@ import java.util.List;
 
 import org.eclipse.core.runtime.IProgressMonitor;
 
-import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.api.IComponent;
 import com.b2international.snowowl.core.api.IComponentWithChildFlag;
 import com.b2international.snowowl.core.api.browser.IClientTerminologyAndRefSetBrowser;
@@ -321,11 +320,6 @@ public abstract class AbstractClientRefSetBrowser<R extends IComponent<K>, C ext
 	@Override
 	public Collection<IComponentWithChildFlag<K>> getSubTypesWithChildFlag(final C concept) {
 		return wrapperService.getSubTypesWithChildFlag(getBranchPath(), concept);
-	}
-
-	@Override
-	public Collection<C> getFilteredConcepts(final IBranchPath branchPath, final String expression, final K... conceptIds) {
-		return wrapperService.getFilteredConcepts(branchPath, expression, conceptIds);
 	}
 
 	/* (non-Javadoc)

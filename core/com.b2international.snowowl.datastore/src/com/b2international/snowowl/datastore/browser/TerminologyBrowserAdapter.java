@@ -20,7 +20,6 @@ import java.util.List;
 
 import org.eclipse.core.runtime.IProgressMonitor;
 
-import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.api.IComponentWithChildFlag;
 import com.b2international.snowowl.core.api.browser.IClientTerminologyBrowser;
 import com.b2international.snowowl.core.api.browser.IFilterClientTerminologyBrowser;
@@ -156,11 +155,6 @@ public class TerminologyBrowserAdapter<C, K> implements IClientTerminologyBrowse
 	@Override
 	public Collection<IComponentWithChildFlag<K>> getSubTypesWithChildFlag(C concept) {
 		return delegate.getSubTypesWithChildFlag(concept);
-	}
-
-	@Override
-	public Collection<C> getFilteredConcepts(IBranchPath branchPath, String expression, K... conceptIds) {
-		return delegate.getFilteredConcepts(branchPath, expression, conceptIds);
 	}
 
 	/* (non-Javadoc)

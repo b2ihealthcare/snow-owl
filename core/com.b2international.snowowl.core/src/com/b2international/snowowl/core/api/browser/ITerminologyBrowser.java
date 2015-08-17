@@ -250,13 +250,6 @@ public interface ITerminologyBrowser<C, K> extends ExtendedComponentProvider, Su
 	IFilterClientTerminologyBrowser<C, K> filterTerminologyBrowser(final IBranchPath branchPath, @Nullable final String expression, @Nullable final IProgressMonitor monitor);
 	
 	/**
-	 * @param branchPath
-	 * @param expression
-	 * @return
-	 */
-	Collection<C> getFilteredConcepts(final IBranchPath branchPath, final String expression, final K...conceptIds);
-	
-	/**
 	 * Returns with the terminology dependent unique ID and the human readable label of a component specified by its unique storage key.
 	 * <br>This method could return with {@code null} if the component does not exist in the store on the specified branch.  
 	 * @param branchPath the branch path.

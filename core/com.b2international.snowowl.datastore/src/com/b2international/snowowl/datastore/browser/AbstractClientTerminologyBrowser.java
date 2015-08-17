@@ -22,7 +22,6 @@ import java.util.List;
 
 import org.eclipse.core.runtime.IProgressMonitor;
 
-import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.api.IComponent;
 import com.b2international.snowowl.core.api.IComponentWithChildFlag;
 import com.b2international.snowowl.core.api.browser.IClientTerminologyBrowser;
@@ -169,11 +168,6 @@ public abstract class AbstractClientTerminologyBrowser<C extends IComponent<K>, 
 	@Override
 	public IFilterClientTerminologyBrowser<C, K> filterTerminologyBrowser(String expression, IProgressMonitor monitor) {
 		return wrappedBrowser.filterTerminologyBrowser(getBranchPath(), expression, monitor);
-	}
-	
-	@Override
-	public Collection<C> getFilteredConcepts(IBranchPath branchPath, String expression, K... conceptIds) {
-		return wrappedBrowser.getFilteredConcepts(branchPath, expression, conceptIds);
 	}
 	
 	@Override
