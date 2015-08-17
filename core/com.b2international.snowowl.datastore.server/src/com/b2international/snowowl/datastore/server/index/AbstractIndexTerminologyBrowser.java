@@ -37,9 +37,6 @@ import org.apache.lucene.search.TermQuery;
 import org.apache.lucene.search.TopDocs;
 import org.eclipse.core.runtime.IProgressMonitor;
 
-import bak.pcj.set.LongOpenHashSet;
-import bak.pcj.set.LongSet;
-
 import com.b2international.commons.CompareUtils;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.api.IComponentWithChildFlag;
@@ -76,37 +73,6 @@ abstract public class AbstractIndexTerminologyBrowser<E extends IIndexEntry> ext
 		super(service);
 	}
 
-	public LongSet getRootConceptStorageKeys(final IBranchPath branchPath) {
-		
-		Preconditions.checkNotNull(branchPath, "Branch path argument cannot be null.");
-		
-		final Query query = getRootConceptsQueryBuilder().toQuery();
-		final DocIdCollector collector = DocIdCollector.create(service.maxDoc(branchPath));
-		service.search(branchPath, query, collector);
-		
-		try {
-			
-			final DocIdsIterator iterator = collector.getDocIDs().iterator();
-			final int size = collector.getDocIDs().size();
-			
-			final long[] $ = new long[size];
-			
-			int i = 0;
-			while (iterator.next()) {
-				
-				final Document doc = service.document(branchPath, iterator.getDocID(), COMPONENT_STORAGE_KEY_FIELD_TO_LOAD);
-				$[i++] = IndexUtils.getLongValue(doc.getField(CommonIndexConstants.COMPONENT_STORAGE_KEY));
-				
-			}
-			
-			return new LongOpenHashSet($);
-			
-		} catch (final IOException e) {
-			throw new IndexException("Error when querying root concepts.", e);
-		}
-		
-	}
-	
 	public long getStorageKey(final IBranchPath branchPath, final String conceptId) {
 		
 		Preconditions.checkNotNull(branchPath, "Branch path argument cannot be null.");

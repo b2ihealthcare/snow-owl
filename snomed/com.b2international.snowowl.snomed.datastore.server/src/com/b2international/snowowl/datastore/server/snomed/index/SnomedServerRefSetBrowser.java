@@ -87,7 +87,6 @@ import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.api.IComponentWithChildFlag;
 import com.b2international.snowowl.core.api.browser.IFilterClientTerminologyBrowser;
 import com.b2international.snowowl.core.api.index.CommonIndexConstants;
-import com.b2international.snowowl.core.api.index.IIndexEntry;
 import com.b2international.snowowl.core.api.index.IndexException;
 import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.datastore.cdo.CDOUtils;
@@ -977,19 +976,6 @@ public class SnomedServerRefSetBrowser extends AbstractSnomedIndexBrowser<Snomed
 	public IFilterClientTerminologyBrowser<SnomedConceptIndexEntry, String> filterTerminologyBrowser(final IBranchPath branchPath, final String expression, final IProgressMonitor monitor) {
 		// TODO Auto-generated method stub
 		throw new UnsupportedOperationException("Not implemented.");
-	}
-
-	/* (non-Javadoc)
-	 * @see com.b2international.snowowl.core.api.browser.ITerminologyBrowser#getRootConceptStorageKeys(com.b2international.snowowl.core.api.IBranchPath)
-	 */
-	@Override
-	public LongSet getRootConceptStorageKeys(final IBranchPath branchPath) {
-		final Collection<SnomedConceptIndexEntry> concepts = getRootConcepts(branchPath);
-		final LongSet $ = new LongOpenHashSet();
-		for (final IIndexEntry entry : concepts) {
-			$.add(entry.getStorageKey());
-		}
-		return $;
 	}
 
 	/* (non-Javadoc)

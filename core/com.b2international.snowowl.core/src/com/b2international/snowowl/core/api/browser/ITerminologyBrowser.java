@@ -22,8 +22,6 @@ import javax.annotation.Nullable;
 
 import org.eclipse.core.runtime.IProgressMonitor;
 
-import bak.pcj.set.LongSet;
-
 import com.b2international.snowowl.core.CoreTerminologyBroker;
 import com.b2international.snowowl.core.api.ComponentIdAndLabel;
 import com.b2international.snowowl.core.api.IBranchPath;
@@ -43,13 +41,6 @@ public interface ITerminologyBrowser<C, K> extends ExtendedComponentProvider, Su
 	 */
 	Collection<C> getRootConcepts(final IBranchPath branchPath);
 	
-	/**
-	 * Returns with the storage keys of the root components from the terminology.
-	 * @param branchPath the branch path.
-	 * @return a set of storage keys for the root components.
-	 */
-	LongSet getRootConceptStorageKeys(final IBranchPath branchPath);
-
 	/**
 	 * Returns with the component IDs of the root components from the terminology.
 	 * @param branchPath the branch path.
