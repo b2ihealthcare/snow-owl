@@ -183,14 +183,6 @@ public abstract class AbstractClientTerminologyBrowser<C extends IComponent<K>, 
 		return wrappedBrowser.exists(getBranchPath(), componentId);
 	}
 	
-	/* (non-Javadoc)
-	 * @see com.b2international.snowowl.core.api.browser.IClientTerminologyBrowser#exists(java.lang.String, java.lang.String)
-	 */
-	@Override
-	public boolean exists(String componentId, String codeSystemShortName) {
-		return wrappedBrowser.exists(getBranchPath(), componentId, codeSystemShortName);
-	}
-	
 	/**
 	 * @return the wrappedBrowser
 	 */

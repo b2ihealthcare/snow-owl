@@ -214,14 +214,4 @@ public interface IClientTerminologyBrowser<C, K> {
 	 * @return {@code true} if the component exists, otherwise returns with {@code false}.
 	 */
 	boolean exists(final String componentId);
-	
-	/**
-	 * Checks whether a component identified by its terminology specific unique ID exits on the currently active branch.
-	 * Returns with {@code true} if the component exists, otherwise returns with {@code false}.
-	 * @param componentId the terminology specific unique ID.
-	 * @param codeSystemShortName unique short name of an existing code system.
-	 * @return {@code true} if the component exists, otherwise returns with {@code false}.
-	 */
-	boolean exists(final String componentId, final String codeSystemShortName);
-
 }

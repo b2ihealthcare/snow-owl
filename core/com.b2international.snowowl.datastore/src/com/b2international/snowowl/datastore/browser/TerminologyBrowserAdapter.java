@@ -157,20 +157,8 @@ public class TerminologyBrowserAdapter<C, K> implements IClientTerminologyBrowse
 		return delegate.getSubTypesWithChildFlag(concept);
 	}
 
-	/* (non-Javadoc)
-	 * @see com.b2international.snowowl.core.api.browser.IClientTerminologyBrowser#exists(java.lang.String)
-	 */
 	@Override
 	public boolean exists(String componentId) {
 		return delegate.exists(componentId);
 	}
-	
-	/* (non-Javadoc)
-	 * @see com.b2international.snowowl.core.api.browser.IClientTerminologyBrowser#exists(java.lang.String, java.lang.String)
-	 */
-	@Override
-	public boolean exists(String componentId, String codeSystemShortName) {
-		return delegate.exists(componentId, codeSystemShortName);
-	}
-	
 }

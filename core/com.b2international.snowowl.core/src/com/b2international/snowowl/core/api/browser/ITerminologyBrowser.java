@@ -254,15 +254,4 @@ public interface ITerminologyBrowser<C, K> extends ExtendedComponentProvider, Su
 	 * @return {@code true} if the component exists, otherwise returns with {@code false}.
 	 */
 	boolean exists(final IBranchPath branchPath, final String componentId);
-	
-	/**
-	 * Checks whether a component identified by its terminology specific unique ID exits on the given branch.
-	 * Returns with {@code true} if the component exists, otherwise returns with {@code false}.
-	 * @param branchPath the branch path identifying the branch to check the existence.
-	 * @param componentId the terminology specific unique ID.
-	 * @param codeSystemShortName unique short name of an existing code system.
-	 * @return {@code true} if the component exists, otherwise returns with {@code false}.
-	 */
-	boolean exists(final IBranchPath branchPath, final String componentId, final String codeSystemShortName);
-	
 }

@@ -329,12 +329,4 @@ public abstract class AbstractClientRefSetBrowser<R extends IComponent<K>, C ext
 	public boolean exists(final String componentId) {
 		return wrapperService.exists(getBranchPath(), componentId);
 	}
-
-	/* (non-Javadoc)
-	 * @see com.b2international.snowowl.core.api.browser.IClientTerminologyBrowser#exists(java.lang.String, java.lang.String)
-	 */
-	@Override
-	public boolean exists(final String componentId, final String codeSystemShortName) {
-		return wrapperService.exists(getBranchPath(), componentId, codeSystemShortName);
-	}
 }

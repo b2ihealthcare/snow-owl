@@ -351,11 +351,6 @@ abstract public class AbstractIndexTerminologyBrowser<E extends IIndexEntry> ext
 		return service.getHitCount(branchPath, query, null) > 0;
 	}
 
-	@Override
-	public boolean exists(final IBranchPath branchPath, final String componentId, final String codeSystemShortName) {
-		return exists(branchPath, componentId);
-	}
-
 	// Even when we accept multiple component types, we only want to display root concepts from a particular type -- see Icd10AmServerTerminologyBrowser
 	protected Query getRootTerminologyComponentTypeQuery() {
 		return getDefaultTerminologyComponentTypeQuery();

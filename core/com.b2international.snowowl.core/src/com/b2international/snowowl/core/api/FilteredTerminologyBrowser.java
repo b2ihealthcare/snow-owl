@@ -256,9 +256,4 @@ public class FilteredTerminologyBrowser<C extends IComponent<K>, K> implements I
 	public boolean exists(String componentId) {
 		return filteredComponents.contains(componentId);
 	}
-
-	@Override
-	public boolean exists(String componentId, String codeSystemShortName) {
-		return exists(componentId);
-	}
 }

@@ -1000,14 +1000,6 @@ public class SnomedServerRefSetBrowser extends AbstractSnomedIndexBrowser<Snomed
 	public boolean exists(final IBranchPath branchPath, final String componentId) {
 		return null != getRefSet(branchPath, componentId);
 	}
-
-	/* (non-Javadoc)
-	 * @see com.b2international.snowowl.core.api.browser.ITerminologyBrowser#exists(com.b2international.snowowl.core.api.IBranchPath, java.lang.String, java.lang.String)
-	 */
-	@Override
-	public boolean exists(final IBranchPath branchPath, final String componentId, final String codeSystemShortName) {
-		return exists(branchPath, componentId);
-	}
 	
 	/*
 	 * (non-Javadoc)
