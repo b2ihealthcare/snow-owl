@@ -195,6 +195,7 @@ public class FSDirectoryManager implements IDirectoryManager {
 				for (final String rootResourceName : rootResourceNameProvider.getRootResourceNames()) {
 
 					final boolean metaRoot = any(rootResourceNameProviders, new Predicate<CDORootResourceNameProvider>() {
+						@Override
 						public boolean apply(final CDORootResourceNameProvider provider) {
 							return provider.isMetaRootResource(rootResourceName);
 						}
@@ -204,6 +205,7 @@ public class FSDirectoryManager implements IDirectoryManager {
 
 						final ICDOConnection connection = getServiceForClass(ICDOConnectionManager.class).getByUuid(repositoryUuid);
 						CDOUtils.apply(new CDOTransactionFunction<Void>(connection.getMainBranch()) {
+							@Override
 							protected Void apply(final CDOTransaction transaction) {
 
 								final CDOResource resource = transaction.getOrCreateResource(rootResourceName);
@@ -212,6 +214,7 @@ public class FSDirectoryManager implements IDirectoryManager {
 
 									final CDOResource cdoResource = (CDOResource) resource;
 									final EObject object = find(cdoResource.getContents(), new Predicate<EObject>() {
+										@Override
 										public boolean apply(final EObject eObject) {
 											return TerminologymetadataPackage.eINSTANCE.getCodeSystemVersionGroup().isSuperTypeOf(eObject.eClass());
 										}

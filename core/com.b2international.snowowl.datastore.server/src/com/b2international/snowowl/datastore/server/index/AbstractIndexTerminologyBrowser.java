@@ -73,6 +73,7 @@ abstract public class AbstractIndexTerminologyBrowser<E extends IIndexEntry> ext
 		super(service);
 	}
 
+	@Override
 	public long getStorageKey(final IBranchPath branchPath, final String conceptId) {
 		
 		Preconditions.checkNotNull(branchPath, "Branch path argument cannot be null.");
@@ -114,6 +115,7 @@ abstract public class AbstractIndexTerminologyBrowser<E extends IIndexEntry> ext
 		return IndexUtils.getLongValue(field);
 	}
 	
+	@Override
 	public Collection<E> getRootConcepts(final IBranchPath branchPath) {
 		checkNotNull(branchPath, "Branch path must not be null.");
 		
@@ -136,6 +138,7 @@ abstract public class AbstractIndexTerminologyBrowser<E extends IIndexEntry> ext
 		return rootConcepts;
 	}
 
+	@Override
 	public Collection<String> getRootConceptIds(final IBranchPath branchPath) {
 		checkNotNull(branchPath, "Branch path must not be null.");
 		
@@ -163,6 +166,7 @@ abstract public class AbstractIndexTerminologyBrowser<E extends IIndexEntry> ext
 			.require(getRootTerminologyComponentTypeQuery());
 	}
 
+	@Override
 	public Collection<String> getSuperTypeIds(final IBranchPath branchPath, final String componentId) {
 		checkNotNull(branchPath, "Branch path argument cannot be null.");
 		checkNotNull(componentId, "Component ID argument cannot be null.");
@@ -195,7 +199,9 @@ abstract public class AbstractIndexTerminologyBrowser<E extends IIndexEntry> ext
 	 * @param componentId the terminology specific unique ID of the component.
 	 * @return the name/label of the component. Or {@code null} if the component cannot be found.
 	 */
-	@Nullable public String getComponentLabel(final IBranchPath branchPath, final String componentId) {
+	@Override
+	@Nullable 
+	public String getComponentLabel(final IBranchPath branchPath, final String componentId) {
 		
 		Preconditions.checkNotNull(branchPath, "Branch path argument cannot be null.");
 		Preconditions.checkNotNull(componentId, "Component ID argument cannot be null.");
@@ -226,6 +232,7 @@ abstract public class AbstractIndexTerminologyBrowser<E extends IIndexEntry> ext
 		
 	}
 	
+	@Override
 	public E getConcept(final IBranchPath branchPath, final String conceptId) {
 		checkNotNull(branchPath, "Branch path must not be null.");
 		checkNotNull(conceptId, "conceptId");
@@ -239,6 +246,7 @@ abstract public class AbstractIndexTerminologyBrowser<E extends IIndexEntry> ext
 		return new IndexQueryBuilder().require(new ComponentIdStringField(conceptId).toQuery());
 	}
 
+	@Override
 	public Collection<E> getSuperTypesById(final IBranchPath branchPath, final String id) {
 		checkNotNull(branchPath, "Branch path must not be null.");
 		checkNotNull(id, "ID must not be null.");
@@ -259,6 +267,7 @@ abstract public class AbstractIndexTerminologyBrowser<E extends IIndexEntry> ext
 		return builder.build();
 	}
 
+	@Override
 	public Collection<E> getSubTypesById(final IBranchPath branchPath, final String id) {
 		checkNotNull(branchPath, "Branch path must not be null.");
 		checkNotNull(id, "ID must not be null.");
@@ -274,7 +283,7 @@ abstract public class AbstractIndexTerminologyBrowser<E extends IIndexEntry> ext
 		}
 	}
 
-	public Collection<String> getSubTypeIds(final IBranchPath branchPath, final String id) {
+	protected Collection<String> getSubTypeIds(final IBranchPath branchPath, final String id) {
 		checkNotNull(branchPath, "Branch path must not be null.");
 		checkNotNull(id, "ID must not be null.");
 		
@@ -315,6 +324,7 @@ abstract public class AbstractIndexTerminologyBrowser<E extends IIndexEntry> ext
 	 */
 	protected abstract Query createFilterTerminologyBrowserQuery(final String expression);
 
+	@Override
 	public int getSubTypeCountById(final IBranchPath branchPath, final String id) {
 		checkNotNull(branchPath, "Branch path must not be null.");
 		checkNotNull(id, "ID must not be null.");
@@ -327,11 +337,13 @@ abstract public class AbstractIndexTerminologyBrowser<E extends IIndexEntry> ext
 		}
 	}
 	
+	@Override
 	public IFilterClientTerminologyBrowser<E, String> filterTerminologyBrowser(final IBranchPath branchPath, @Nullable final String expression, @Nullable final IProgressMonitor monitor) {
 		final TerminologyBrowserFilter<E> terminologyBrowserFilter = new TerminologyBrowserFilter<E>(this, service);
 		return terminologyBrowserFilter.filterTerminologyBrowser(branchPath, expression, monitor);
 	}
 
+	@Override
 	public Collection<IComponentWithChildFlag<String>> getSubTypesWithChildFlag(final IBranchPath branchPath, final E concept) {
 		// get direct subtypes
 		final Collection<E> subTypes = getSubTypesById(branchPath, concept.getId());
@@ -342,7 +354,7 @@ abstract public class AbstractIndexTerminologyBrowser<E extends IIndexEntry> ext
 		return results;		
 	}
 
-	/**@see ITerminologyBrowser#exists(IBranchPath, String)*/
+	@Override
 	public boolean exists(final IBranchPath branchPath, final String componentId) {
 		
 		Preconditions.checkNotNull(branchPath, "Branch path argument cannot be null.");
@@ -354,8 +366,8 @@ abstract public class AbstractIndexTerminologyBrowser<E extends IIndexEntry> ext
 
 		return service.getHitCount(branchPath, query, null) > 0;
 	}
-	
-	/**@see ITerminologyBrowser#exists(IBranchPath, String, String)*/
+
+	@Override
 	public boolean exists(final IBranchPath branchPath, final String componentId, final String codeSystemShortName) {
 		return exists(branchPath, componentId);
 	}
