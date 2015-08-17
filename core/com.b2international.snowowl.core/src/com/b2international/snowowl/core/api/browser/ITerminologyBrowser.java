@@ -72,22 +72,6 @@ public interface ITerminologyBrowser<C, K> extends ExtendedComponentProvider, Su
 	Collection<C> getSuperTypes(final IBranchPath branchPath, final C concept);
 	
 	/**
-	 * Returns all ancestor component storage keys of the specified component.
-	 * @param branchPath the branch path reference limiting visibility to a particular branch (final may not be {@code null})
-	 * @param conceptId the component ID.
-	 * @return a collection of all ancestor component storage keys.
-	 */
-	LongSet getSuperTypeStorageKeys(final IBranchPath branchPath, final K concpetId);
-
-	/**
-	 * Returns all direct ancestor component storage keys of the specified component.
-	 * @param branchPath the branch path reference limiting visibility to a particular branch (final may not be {@code null})
-	 * @param storageKey the unique storage key of the component.
-	 * @return a collection of all ancestor component storage keys.
-	 */
-	LongSet getSuperTypeStorageKeys(final IBranchPath branchPath, final long storageKey);
-	
-	/**
 	 * Returns with the unique storage key of the component. 
 	 * @param branchPath 
 	 * @param conceptId the terminology specific unique ID of the component.

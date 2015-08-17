@@ -15,7 +15,6 @@
  */
 package com.b2international.snowowl.datastore.server.index;
 
-import static com.b2international.commons.pcj.LongSets.newLongSet;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Preconditions.checkState;
 
@@ -42,7 +41,6 @@ import bak.pcj.set.LongOpenHashSet;
 import bak.pcj.set.LongSet;
 
 import com.b2international.commons.CompareUtils;
-import com.b2international.commons.pcj.LongCollections;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.api.IComponentWithChildFlag;
 import com.b2international.snowowl.core.api.browser.IFilterClientTerminologyBrowser;
@@ -53,10 +51,10 @@ import com.b2international.snowowl.core.api.index.IIndexService;
 import com.b2international.snowowl.core.api.index.IndexException;
 import com.b2international.snowowl.datastore.index.DocIdCollector;
 import com.b2international.snowowl.datastore.index.DocIdCollector.DocIdsIterator;
-import com.b2international.snowowl.datastore.index.field.ComponentIdField;
-import com.b2international.snowowl.datastore.index.field.ComponentIdStringField;
 import com.b2international.snowowl.datastore.index.IndexQueryBuilder;
 import com.b2international.snowowl.datastore.index.IndexUtils;
+import com.b2international.snowowl.datastore.index.field.ComponentIdField;
+import com.b2international.snowowl.datastore.index.field.ComponentIdStringField;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableList.Builder;
@@ -107,27 +105,6 @@ abstract public class AbstractIndexTerminologyBrowser<E extends IIndexEntry> ext
 			throw new IndexException("Error when querying root concepts.", e);
 		}
 		
-	}
-	
-	public LongSet getSuperTypeStorageKeys(final IBranchPath branchPath, final String concpetId) {
-		
-		Preconditions.checkNotNull(branchPath, "Branch path argument cannot be null.");
-		Preconditions.checkNotNull(concpetId, "Concept ID argument cannot be null.");
-		
-		final Collection<String> ids = getSubTypeIds(branchPath, concpetId);
-		
-		if (CompareUtils.isEmpty(ids)) {
-			
-			return LongCollections.emptySet();
-			
-		}
-		
-		final LongSet $ = new LongOpenHashSet(ids.size());
-		for (final String id : ids) {
-			$.add(getStorageKey(branchPath, id));
-		}
-		
-		return $;
 	}
 	
 	public long getStorageKey(final IBranchPath branchPath, final String conceptId) {
@@ -296,34 +273,6 @@ abstract public class AbstractIndexTerminologyBrowser<E extends IIndexEntry> ext
 		return new IndexQueryBuilder().require(new ComponentIdStringField(conceptId).toQuery());
 	}
 
-	/**
-	 * Returns all direct ancestor component storage keys of the specified component.
-	 * @param branchPath the branch path reference limiting visibility to a particular branch (final may not be {@code null})
-	 * @param storageKey the unique storage key of the component.
-	 * @return a collection of all ancestor component storage keys.
-	 */
-	public LongSet getSuperTypeStorageKeys(final IBranchPath branchPath, final long storageKey) {
-		
-		final Query query = new TermQuery(new Term(CommonIndexConstants.COMPONENT_STORAGE_KEY, IndexUtils.longToPrefixCoded(storageKey)));
-		final TopDocs topDocs = service.search(branchPath, query, 1);
-		if (IndexUtils.isEmpty(topDocs)) {
-			return LongCollections.emptySet();
-		}
-		
-		final Document doc = service.document(branchPath, topDocs.scoreDocs[0].doc, COMPONENT_PARENT_FIELDS_TO_LOAD);
-		final IndexableField[] parentFields = doc.getFields(CommonIndexConstants.COMPONENT_PARENT);
-		final long[] superTypeStorageKeys = new long[parentFields.length];
-		int i = 0;
-		for (final IndexableField parentField : parentFields) {
-			final String parentId = parentField.stringValue();
-			if (!CommonIndexConstants.ROOT_ID.equals(parentId)) {
-				superTypeStorageKeys[i++] = getStorageKey(branchPath, parentId);
-			}
-		}
-		
-		return newLongSet(superTypeStorageKeys);
-	}
-	
 	public Collection<E> getSuperTypesById(final IBranchPath branchPath, final String id) {
 		checkNotNull(branchPath, "Branch path must not be null.");
 		checkNotNull(id, "ID must not be null.");

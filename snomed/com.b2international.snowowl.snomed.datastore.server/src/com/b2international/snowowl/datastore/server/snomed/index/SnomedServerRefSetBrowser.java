@@ -93,9 +93,9 @@ import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.datastore.cdo.CDOUtils;
 import com.b2international.snowowl.datastore.index.DocIdCollector;
 import com.b2international.snowowl.datastore.index.DocIdCollector.DocIdsIterator;
-import com.b2international.snowowl.datastore.index.field.ComponentIdLongField;
 import com.b2international.snowowl.datastore.index.IndexQueryBuilder;
 import com.b2international.snowowl.datastore.index.IndexUtils;
+import com.b2international.snowowl.datastore.index.field.ComponentIdLongField;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.snomed.datastore.SnomedConceptIndexEntry;
@@ -990,22 +990,6 @@ public class SnomedServerRefSetBrowser extends AbstractSnomedIndexBrowser<Snomed
 			$.add(entry.getStorageKey());
 		}
 		return $;
-	}
-
-	/* (non-Javadoc)
-	 * @see com.b2international.snowowl.core.api.browser.ITerminologyBrowser#getSuperTypeStorageKeys(com.b2international.snowowl.core.api.IBranchPath, java.lang.Object)
-	 */
-	@Override
-	public LongSet getSuperTypeStorageKeys(final IBranchPath branchPath, final String concpetId) {
-		throw new UnsupportedOperationException("Not implemented.");
-	}
-	
-	/* (non-Javadoc)
-	 * @see com.b2international.snowowl.core.api.browser.ITerminologyBrowser#getSuperTypeStorageKeys(com.b2international.snowowl.core.api.IBranchPath, long)
-	 */
-	@Override
-	public LongSet getSuperTypeStorageKeys(final IBranchPath branchPath, final long storageKey) {
-		throw new UnsupportedOperationException("Not implemented.");
 	}
 
 	/* (non-Javadoc)
