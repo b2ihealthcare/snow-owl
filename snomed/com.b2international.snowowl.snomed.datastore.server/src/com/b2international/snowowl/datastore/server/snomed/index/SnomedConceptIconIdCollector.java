@@ -32,7 +32,7 @@ import bak.pcj.map.LongKeyLongOpenHashMap;
 import com.b2international.commons.pcj.LongSets;
 import com.b2international.snowowl.core.api.index.CommonIndexConstants;
 import com.b2international.snowowl.datastore.index.AbstractDocsOutOfOrderCollector;
-import com.b2international.snowowl.datastore.index.ComponentIdLongField;
+import com.b2international.snowowl.datastore.index.field.ComponentIdLongField;
 
 /**
  * Collector for gathering the icon IDs for SNOMED CT concepts.

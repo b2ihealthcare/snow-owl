@@ -29,7 +29,7 @@ import com.b2international.commons.pcj.LongSets;
 import com.b2international.commons.pcj.LongSets.LongPredicate;
 import com.b2international.snowowl.core.api.index.CommonIndexConstants;
 import com.b2international.snowowl.datastore.index.AbstractDocsOutOfOrderCollector;
-import com.b2international.snowowl.datastore.index.ComponentIdLongField;
+import com.b2international.snowowl.datastore.index.field.ComponentIdLongField;
 
 /**
  * Collector for gathering SNOMED CT component IDs and a human readable label for the component.

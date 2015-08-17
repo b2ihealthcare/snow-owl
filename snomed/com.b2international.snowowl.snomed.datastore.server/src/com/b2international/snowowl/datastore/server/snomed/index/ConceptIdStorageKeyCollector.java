@@ -27,7 +27,7 @@ import bak.pcj.list.LongList;
 
 import com.b2international.snowowl.core.api.index.CommonIndexConstants;
 import com.b2international.snowowl.datastore.index.AbstractDocsOutOfOrderCollector;
-import com.b2international.snowowl.datastore.index.ComponentIdLongField;
+import com.b2international.snowowl.datastore.index.field.ComponentIdLongField;
 
 /**
  * Custom collector for extracting SNOMED CT concept identifiers and the unique storage keys as primitive longs.

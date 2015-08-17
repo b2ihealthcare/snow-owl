@@ -25,8 +25,8 @@ import org.apache.lucene.search.Filter;
 import org.apache.lucene.util.BytesRef;
 
 import com.b2international.snowowl.core.api.index.IIndexEntry;
-import com.b2international.snowowl.datastore.index.ComponentIdLongField;
 import com.b2international.snowowl.datastore.index.QueryDslIndexQueryAdapter;
+import com.b2international.snowowl.datastore.index.field.ComponentIdLongField;
 
 /**
  * Abstract index query adapter for retrieving SNOMED&nbsp;CT component from the index.

@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.datastore.index;
+package com.b2international.snowowl.datastore.index.field;
 
 import java.io.IOException;
 
@@ -28,6 +28,7 @@ import org.apache.lucene.search.Sort;
 import org.apache.lucene.search.SortField.Type;
 import org.apache.lucene.util.BytesRef;
 
+import com.b2international.snowowl.datastore.index.IndexUtils;
 import com.google.common.base.Function;
 
 public class ComponentIdLongField extends ComponentIdField {

@@ -32,7 +32,7 @@ import java.util.Set;
 import org.apache.lucene.document.Document;
 
 import com.b2international.snowowl.core.api.index.CommonIndexConstants;
-import com.b2international.snowowl.datastore.index.ComponentIdLongField;
+import com.b2international.snowowl.datastore.index.field.ComponentIdLongField;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
 import com.b2international.snowowl.snomed.exporter.server.ComponentExportType;
 
