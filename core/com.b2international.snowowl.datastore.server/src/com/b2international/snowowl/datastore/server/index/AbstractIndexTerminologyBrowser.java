@@ -81,35 +81,19 @@ abstract public class AbstractIndexTerminologyBrowser<E extends IIndexEntry> ext
 		
 		final BooleanQuery query = new BooleanQuery(true);
 		query.add(getTerminologyComponentTypeQuery(), Occur.MUST);
-		
-		try {
-			
-			query.add(new TermQuery(getIdTerm(conceptId)), Occur.MUST);
-			
-		} catch (final NumberFormatException e) {
-			
-			query.add(new TermQuery(new Term(CommonIndexConstants.COMPONENT_ID, conceptId)), Occur.MUST);
-			
-		}
-		
-		
+		query.add(getComponentIdQuery(conceptId), Occur.MUST);
+
 		final TopDocs topDocs = service.search(branchPath, query, 1);
 		
-		//cannot found matching label for component
 		if (null == topDocs || CompareUtils.isEmpty(topDocs.scoreDocs)) {
-			
 			return -1L;
-			
 		}
 		
 		final Document doc = service.document(branchPath, topDocs.scoreDocs[0].doc, COMPONENT_STORAGE_KEY_FIELD_TO_LOAD);
-		
 		final IndexableField field = doc.getField(CommonIndexConstants.COMPONENT_STORAGE_KEY);
 		
 		if (null == field) {
-			
 			return -1L;
-			
 		}
 		
 		return IndexUtils.getLongValue(field);
