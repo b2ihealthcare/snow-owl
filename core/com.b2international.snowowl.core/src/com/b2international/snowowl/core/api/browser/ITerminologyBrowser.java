@@ -22,7 +22,6 @@ import javax.annotation.Nullable;
 
 import org.eclipse.core.runtime.IProgressMonitor;
 
-import com.b2international.snowowl.core.CoreTerminologyBroker;
 import com.b2international.snowowl.core.api.ComponentIdAndLabel;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.api.IComponentWithChildFlag;
@@ -247,16 +246,6 @@ public interface ITerminologyBrowser<C, K> extends ExtendedComponentProvider, Su
 
 	Collection<IComponentWithChildFlag<K>> getSubTypesWithChildFlag(final IBranchPath branchPath, final C concept);
 
-	/**
-	 * Returns with the application specific unique component type of a component given with its unique storage key.
-	 * This method will return with {@link CoreTerminologyBroker#UNSPECIFIED_NUMBER_SHORT unspecified} if the component does not 
-	 * exist on the given branch or does not have any associated concrete component type.
-	 * @param branchPath the branch path.
-	 * @param storageKey the storage key of the component.
-	 * @return the component type as a short.
-	 */
-	short getComponentType(final IBranchPath branchPath, final long storageKey);
-	
 	/**
 	 * Checks whether a component identified by its terminology specific unique ID exits on the given branch.
 	 * Returns with {@code true} if the component exists, otherwise returns with {@code false}.

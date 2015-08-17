@@ -17,8 +17,6 @@ package com.b2international.snowowl.datastore.server.index;
 
 
 import static com.google.common.base.Preconditions.checkNotNull;
-import static com.google.common.collect.Sets.newHashSet;
-import static java.util.Collections.unmodifiableSet;
 
 import java.io.IOException;
 import java.util.Collection;
@@ -30,7 +28,6 @@ import java.util.Set;
 import javax.annotation.Nullable;
 
 import org.apache.lucene.document.Document;
-import org.apache.lucene.index.IndexableField;
 import org.apache.lucene.index.Term;
 import org.apache.lucene.search.BooleanClause.Occur;
 import org.apache.lucene.search.BooleanQuery;
@@ -44,7 +41,6 @@ import org.apache.lucene.search.TopDocs;
 
 import com.b2international.commons.ClassUtils;
 import com.b2international.commons.CompareUtils;
-import com.b2international.snowowl.core.CoreTerminologyBroker;
 import com.b2international.snowowl.core.api.ComponentIdAndLabel;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.api.IComponent;
@@ -55,9 +51,9 @@ import com.b2international.snowowl.datastore.ICodeSystem;
 import com.b2international.snowowl.datastore.ICodeSystemVersion;
 import com.b2international.snowowl.datastore.InternalTerminologyRegistryService;
 import com.b2international.snowowl.datastore.index.DocIdCollector.DocIdsIterator;
+import com.b2international.snowowl.datastore.index.IndexUtils;
 import com.b2international.snowowl.datastore.index.field.ComponentIdLongField;
 import com.b2international.snowowl.datastore.index.field.ComponentIdStringField;
-import com.b2international.snowowl.datastore.index.IndexUtils;
 import com.b2international.snowowl.datastore.server.TerminologyRegistryServiceWrapper;
 import com.b2international.snowowl.terminologyregistry.core.index.TerminologyRegistryIndexConstants;
 import com.google.common.base.Preconditions;
@@ -84,7 +80,6 @@ public abstract class AbstractIndexBrowser<E extends IIndexEntry> implements Int
 	}
 
 	private static final Set<String> ID_LABEL_FIELD_TO_LOAD = Collections.unmodifiableSet(Sets.newHashSet(ComponentIdLongField.COMPONENT_ID, CommonIndexConstants.COMPONENT_LABEL));
-	private static final Set<String> COMPONENT_TYPE_FIELD_TO_LOAD = unmodifiableSet(newHashSet(CommonIndexConstants.COMPONENT_TYPE));
 	
 	/**
 	 * Returns with the terminology dependent unique ID and the human readable label of a component specified by its unique storage key.
@@ -110,31 +105,6 @@ public abstract class AbstractIndexBrowser<E extends IIndexEntry> implements Int
 		return new ComponentIdAndLabel(
 				Preconditions.checkNotNull(doc.get(CommonIndexConstants.COMPONENT_LABEL), "Component label was null for component. CDO ID: " + storageKey),
 				Preconditions.checkNotNull(doc.get(ComponentIdLongField.COMPONENT_ID), "Component ID was null for component. CDO ID: " + storageKey)); 
-		
-	}
-	
-	/**
-	 * Returns with the application specific unique component type of a component given with its unique storage key.
-	 * This method will return with {@link CoreTerminologyBroker#UNSPECIFIED_NUMBER_SHORT unspecified} if the component does not 
-	 * exist on the given branch or does not have any associated concrete component type.
-	 * @param branchPath the branch path.
-	 * @param storageKey the storage key of the component.
-	 * @return the component type as a short.
-	 */
-	public short getComponentType(final IBranchPath branchPath, final long storageKey) {
-		
-		final Query query = new TermQuery(IndexUtils.getStorageKeyTerm(storageKey));
-		
-		final TopDocs topDocs = service.search(checkNotNull(branchPath, "branchPath"), query, 1);
-		
-		if (null == topDocs || CompareUtils.isEmpty(topDocs.scoreDocs)) {
-			return CoreTerminologyBroker.UNSPECIFIED_NUMBER_SHORT;
-		}
-		
-		final Document doc = service.document(branchPath, topDocs.scoreDocs[0].doc, COMPONENT_TYPE_FIELD_TO_LOAD);
-		
-		final IndexableField field = doc.getField(CommonIndexConstants.COMPONENT_TYPE);
-		return null == field ? CoreTerminologyBroker.UNSPECIFIED_NUMBER_SHORT : IndexUtils.getShortValue(field);
 		
 	}
 	
