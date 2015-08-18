@@ -108,7 +108,7 @@ public abstract class EClassProvider implements IEClassProvider {
 	 * Returns with the query that will be performed to find {@link EClass} based on unique storage key.
 	 * @return the query.
 	 */
-	protected Query getQuery(final long storageKey) {
+	private Query getQuery(final long storageKey) {
 		return new ComponentStorageKeyField(storageKey).toQuery();
 	}
 
