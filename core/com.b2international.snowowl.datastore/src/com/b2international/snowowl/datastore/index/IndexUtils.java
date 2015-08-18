@@ -31,7 +31,6 @@ import javax.annotation.Nullable;
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.TokenStream;
 import org.apache.lucene.analysis.tokenattributes.CharTermAttribute;
-import org.apache.lucene.document.Document;
 import org.apache.lucene.document.Field;
 import org.apache.lucene.document.Field.Store;
 import org.apache.lucene.document.FieldType;
@@ -42,7 +41,6 @@ import org.apache.lucene.index.FieldInfo.IndexOptions;
 import org.apache.lucene.index.IndexCommit;
 import org.apache.lucene.index.IndexWriter;
 import org.apache.lucene.index.IndexableField;
-import org.apache.lucene.index.Term;
 import org.apache.lucene.search.ScoreDoc;
 import org.apache.lucene.search.Sort;
 import org.apache.lucene.search.SortField;
@@ -82,7 +80,7 @@ public abstract class IndexUtils {
 
 	/**Transforms an {@link IndexableField} into the stored string value.*/
 	public static final Function<IndexableField, String> TO_STRING_VALUE_FUNC = new Function<IndexableField, String>() {
-		public String apply(final IndexableField field) {
+		@Override public String apply(final IndexableField field) {
 			return checkNotNull(field, "field").stringValue();
 		}
 	};
@@ -384,14 +382,6 @@ public abstract class IndexUtils {
 	}
 	
 	/**
-	 * @return the {@link Term} which uniquely identifies the {@link #createDocument() created document}, eg. a
-	 * component identifier; should be indexed as part of the {@link Document}
-	 */
-	public static final Term getStorageKeyTerm(final long storageKey) {
-		return new Term(CommonIndexConstants.COMPONENT_STORAGE_KEY, longToPrefixCoded(storageKey));
-	}
-
-	/**
 	 * Comparator for ordering {@link AtomicReaderContext}s based on their ordinal.
 	 */
 	public static final class AtomicReaderContextComparator implements Comparator<AtomicReaderContext> {
@@ -447,6 +437,7 @@ public abstract class IndexUtils {
 		}
 
 		parallelForEach(new LongArrayList(ids), new LongSets.LongCollectionProcedure() {
+			@Override
 			public void apply(final long docId) {
 				try {
 					procedure.apply(Ints.checkedCast(docId));
