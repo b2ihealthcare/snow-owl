@@ -28,9 +28,11 @@ import com.b2international.snowowl.core.api.index.CommonIndexConstants;
 import com.b2international.snowowl.datastore.index.IndexQueryBuilder;
 import com.b2international.snowowl.datastore.index.IndexUtils;
 import com.b2international.snowowl.datastore.index.field.ComponentIdLongField;
+import com.b2international.snowowl.datastore.index.field.ComponentTypeField;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.snomed.datastore.SnomedConceptIndexEntry;
 import com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants;
+import com.b2international.snowowl.snomed.datastore.browser.SnomedIndexQueries;
 
 /**
  * Common abstract superclass for SNOMED CT concept-related query adapters.
@@ -60,8 +62,8 @@ public abstract class SnomedConceptIndexQueryAdapter extends SnomedDslIndexQuery
 	@Override
 	protected IndexQueryBuilder createIndexQueryBuilder() {
 		return super.createIndexQueryBuilder()
-				.requireExactTerm(CommonIndexConstants.COMPONENT_TYPE, IndexUtils.intToPrefixCoded(SnomedTerminologyComponentConstants.CONCEPT_NUMBER))
-				.requireExactTermIf(anyFlagSet(SEARCH_ACTIVE_CONCEPTS), SnomedIndexBrowserConstants.COMPONENT_ACTIVE, IndexUtils.intToPrefixCoded(1));
+				.require(new ComponentTypeField(SnomedTerminologyComponentConstants.CONCEPT_NUMBER).toQuery())
+				.requireIf(anyFlagSet(SEARCH_ACTIVE_CONCEPTS), SnomedIndexQueries.ACTIVE_COMPONENT_QUERY);
 	}
 	
 	@Override

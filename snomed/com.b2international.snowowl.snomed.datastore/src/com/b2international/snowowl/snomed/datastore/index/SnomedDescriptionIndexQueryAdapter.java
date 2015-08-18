@@ -27,8 +27,10 @@ import com.b2international.snowowl.core.api.index.CommonIndexConstants;
 import com.b2international.snowowl.datastore.index.IndexQueryBuilder;
 import com.b2international.snowowl.datastore.index.IndexUtils;
 import com.b2international.snowowl.datastore.index.field.ComponentIdLongField;
+import com.b2international.snowowl.datastore.index.field.ComponentTypeField;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants;
+import com.b2international.snowowl.snomed.datastore.browser.SnomedIndexQueries;
 import com.google.common.collect.ImmutableSet;
 
 /**
@@ -91,9 +93,7 @@ public abstract class SnomedDescriptionIndexQueryAdapter extends SnomedDslIndexQ
 	@Override
 	@OverridingMethodsMustInvokeSuper
 	protected IndexQueryBuilder createIndexQueryBuilder() {
-		
-		return super.createIndexQueryBuilder()
-			.requireExactTerm(CommonIndexConstants.COMPONENT_TYPE, IndexUtils.intToPrefixCoded(SnomedTerminologyComponentConstants.DESCRIPTION_NUMBER));
+		return super.createIndexQueryBuilder().require(SnomedIndexQueries.DESCRIPTION_TYPE_QUERY);
 	}
 	
 	@Override

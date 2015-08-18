@@ -25,6 +25,7 @@ import com.b2international.snowowl.datastore.index.IndexQueryBuilder;
 import com.b2international.snowowl.datastore.index.IndexUtils;
 import com.b2international.snowowl.datastore.index.field.ComponentIdLongField;
 import com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants;
+import com.b2international.snowowl.snomed.datastore.browser.SnomedIndexQueries;
 import com.google.common.base.Optional;
 
 public class SnomedDescriptionReducedQueryAdapter extends SnomedDescriptionIndexQueryAdapter implements Serializable {
@@ -58,7 +59,7 @@ public class SnomedDescriptionReducedQueryAdapter extends SnomedDescriptionIndex
 		if (StringUtils.isEmpty(searchString)) {
 			
 			return super.createIndexQueryBuilder()
-		        .requireExactTermIf(anyFlagSet(SEARCH_DESCRIPTION_ACTIVE_ONLY), SnomedIndexBrowserConstants.COMPONENT_ACTIVE, IndexUtils.intToPrefixCoded(1))
+		        .requireIf(anyFlagSet(SEARCH_DESCRIPTION_ACTIVE_ONLY), SnomedIndexQueries.ACTIVE_COMPONENT_QUERY)
 		        .requireExactTermIf(!StringUtils.isEmpty(descriptionTypeId), SnomedIndexBrowserConstants.DESCRIPTION_TYPE_ID, IndexUtils.longToPrefixCoded(descriptionTypeId))
 		        .requireIf(StringUtils.isEmpty(searchString), ComponentIdLongField.existsQuery());
 			
@@ -81,7 +82,7 @@ public class SnomedDescriptionReducedQueryAdapter extends SnomedDescriptionIndex
 
 	private IndexQueryBuilder createIndexQueryBuilderWithIdTerms(Optional<Long> parsedSearchStringOptional) {
 		return super.createIndexQueryBuilder()
-				.requireExactTermIf(anyFlagSet(SEARCH_DESCRIPTION_ACTIVE_ONLY), SnomedIndexBrowserConstants.COMPONENT_ACTIVE, IndexUtils.intToPrefixCoded(1))
+				.requireIf(anyFlagSet(SEARCH_DESCRIPTION_ACTIVE_ONLY), SnomedIndexQueries.ACTIVE_COMPONENT_QUERY)
 				.requireExactTermIf(!StringUtils.isEmpty(descriptionTypeId), SnomedIndexBrowserConstants.DESCRIPTION_TYPE_ID, IndexUtils.longToPrefixCoded(descriptionTypeId))
 				.requireIf(StringUtils.isEmpty(searchString), ComponentIdLongField.existsQuery())
 				.finishIf(StringUtils.isEmpty(searchString))
@@ -93,7 +94,7 @@ public class SnomedDescriptionReducedQueryAdapter extends SnomedDescriptionIndex
 
 	private IndexQueryBuilder createIndexQueryBuilderWithoutIdTerms() {
 		return super.createIndexQueryBuilder()
-				.requireExactTermIf(anyFlagSet(SEARCH_DESCRIPTION_ACTIVE_ONLY), SnomedIndexBrowserConstants.COMPONENT_ACTIVE, IndexUtils.intToPrefixCoded(1))
+				.requireIf(anyFlagSet(SEARCH_DESCRIPTION_ACTIVE_ONLY), SnomedIndexQueries.ACTIVE_COMPONENT_QUERY)
 				.requireExactTermIf(!StringUtils.isEmpty(descriptionTypeId), SnomedIndexBrowserConstants.DESCRIPTION_TYPE_ID, IndexUtils.longToPrefixCoded(descriptionTypeId))
 				.requireIf(StringUtils.isEmpty(searchString), ComponentIdLongField.existsQuery())
 				.finishIf(StringUtils.isEmpty(searchString))

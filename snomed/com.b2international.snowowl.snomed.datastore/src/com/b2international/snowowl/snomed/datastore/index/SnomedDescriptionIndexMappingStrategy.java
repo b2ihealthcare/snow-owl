@@ -16,7 +16,6 @@
 package com.b2international.snowowl.snomed.datastore.index;
 
 import static com.b2international.snowowl.datastore.cdo.CDOIDUtils.asLong;
-import static com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants.DESCRIPTION_NUMBER;
 import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.COMPONENT_ACTIVE;
 import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.COMPONENT_MODULE_ID;
 import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.COMPONENT_RELEASED;
@@ -42,7 +41,9 @@ import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.datastore.index.AbstractIndexMappingStrategy;
 import com.b2international.snowowl.datastore.index.SortKeyMode;
 import com.b2international.snowowl.datastore.index.field.ComponentIdLongField;
+import com.b2international.snowowl.datastore.index.field.ComponentTypeField;
 import com.b2international.snowowl.snomed.Description;
+import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 
 /**
  * Mapping strategy for SNOMED CT descriptions.
@@ -70,7 +71,7 @@ public class SnomedDescriptionIndexMappingStrategy extends AbstractIndexMappingS
 		
 		final Document doc = new Document();
 		new ComponentIdLongField(descriptionId).addTo(doc);
-		doc.add(new IntField(CommonIndexConstants.COMPONENT_TYPE, DESCRIPTION_NUMBER, YES));
+		new ComponentTypeField(SnomedTerminologyComponentConstants.DESCRIPTION_NUMBER).addTo(doc);
 		doc.add(new TextField(CommonIndexConstants.COMPONENT_LABEL, term, YES));
 		SortKeyMode.SEARCH_ONLY.add(doc, term);
 		doc.add(new BinaryDocValuesField(CommonIndexConstants.COMPONENT_LABEL, new BytesRef(term)));

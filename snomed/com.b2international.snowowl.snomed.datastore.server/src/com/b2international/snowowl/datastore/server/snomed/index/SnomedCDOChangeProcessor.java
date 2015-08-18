@@ -119,6 +119,7 @@ import com.b2international.snowowl.snomed.datastore.SnomedRefSetMemberLookupServ
 import com.b2international.snowowl.snomed.datastore.SnomedRelationshipIndexEntry;
 import com.b2international.snowowl.snomed.datastore.SnomedTerminologyBrowser;
 import com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants;
+import com.b2international.snowowl.snomed.datastore.browser.SnomedIndexQueries;
 import com.b2international.snowowl.snomed.datastore.index.AbstractPredicateIndexMappingStrategy;
 import com.b2international.snowowl.snomed.datastore.index.ISnomedTaxonomyBuilder;
 import com.b2international.snowowl.snomed.datastore.index.ISnomedTaxonomyBuilder.TaxonomyEdge;
@@ -2635,11 +2636,10 @@ public class SnomedCDOChangeProcessor implements ICDOChangeProcessor {
 					conceptIds.add(parseLong(concept.getId()));
 				}
 				
-				final Query query = createConceptQuery();
 				final SnomedComponentLabelCollector collector = new SnomedComponentLabelCollector(conceptIds);
 				
 				//get labels
-				indexUpdater.search(branchPath, query, collector);
+				indexUpdater.search(branchPath, SnomedIndexQueries.CONCEPT_TYPE_QUERY, collector);
 				
 				return new IConceptLabelProviderStrategy() {
 					
@@ -2676,11 +2676,6 @@ public class SnomedCDOChangeProcessor implements ICDOChangeProcessor {
 				
 			}
 			
-		}
-
-		/*returns with a query that matches all SNOMED CT concepts.*/
-		private Query createConceptQuery() {
-			return new TermQuery(new Term(CommonIndexConstants.COMPONENT_TYPE, IndexUtils.intToPrefixCoded(SnomedTerminologyComponentConstants.CONCEPT_NUMBER)));
 		}
 
 		/*creates anew returns with a simple delegate strategy that uses the SNOMED CT component service for label lookup*/

@@ -29,11 +29,6 @@ import java.util.concurrent.Future;
 
 import javax.annotation.OverridingMethodsMustInvokeSuper;
 
-import org.apache.lucene.index.Term;
-import org.apache.lucene.search.BooleanClause.Occur;
-import org.apache.lucene.search.BooleanQuery;
-import org.apache.lucene.search.TermQuery;
-
 import bak.pcj.map.LongKeyMap;
 import bak.pcj.map.LongKeyMapIterator;
 import bak.pcj.map.LongKeyOpenHashMap;
@@ -41,14 +36,12 @@ import bak.pcj.map.LongKeyOpenHashMap;
 import com.b2international.commons.CompareUtils;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.api.SnowowlServiceException;
-import com.b2international.snowowl.core.api.index.CommonIndexConstants;
 import com.b2international.snowowl.core.api.index.IndexException;
 import com.b2international.snowowl.datastore.ICDOChangeProcessor;
 import com.b2international.snowowl.datastore.index.AbstractIndexMappingStrategy;
 import com.b2international.snowowl.datastore.index.DocumentWithScore;
 import com.b2international.snowowl.datastore.index.IDocumentUpdater;
-import com.b2international.snowowl.datastore.index.IndexUtils;
-import com.b2international.snowowl.datastore.index.field.ComponentIdLongField;
+import com.b2international.snowowl.datastore.index.query.IndexQueries;
 import com.b2international.snowowl.datastore.server.index.FSIndexServerService;
 import com.b2international.snowowl.datastore.server.index.IIndexPostProcessor;
 import com.b2international.snowowl.datastore.server.index.IndexPostProcessor;
@@ -122,15 +115,7 @@ public class SnomedIndexServerService extends FSIndexServerService<SnomedIndexEn
 		
 		if (null == mappingStrategy) { //if first attempt, retrieve from index
 			
-			final Term conceptTypeTerm  = new Term(
-					CommonIndexConstants.COMPONENT_TYPE, 
-					IndexUtils.intToPrefixCoded(SnomedTerminologyComponentConstants.CONCEPT_NUMBER));
-			
-			final BooleanQuery query = new BooleanQuery(true);
-			query.add(new TermQuery(conceptTypeTerm), Occur.MUST);
-			query.add(new ComponentIdLongField(conceptId).toQuery(), Occur.MUST);
-			
-			final Collection<DocumentWithScore> documents = search(branchPath, query, null, null, 2);
+			final Collection<DocumentWithScore> documents = search(branchPath, IndexQueries.queryComponentByLongId(SnomedTerminologyComponentConstants.CONCEPT_NUMBER, conceptId), null, null, 2);
 			
 			if (documents.size() > 1) {
 				throw new IndexException("Cannot update document. Reason more than one documents were found for unique concept ID: '" + conceptId + "'.");

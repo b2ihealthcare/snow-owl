@@ -15,7 +15,6 @@
  */
 package com.b2international.snowowl.datastore.server.snomed.escg;
 
-import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.COMPONENT_ACTIVE;
 import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.CONCEPT_ANCESTOR;
 import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.CONCEPT_REFERRING_MAPPING_REFERENCE_SET_ID;
 import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.CONCEPT_REFERRING_REFERENCE_SET_ID;
@@ -31,6 +30,7 @@ import org.apache.lucene.search.TermQuery;
 import com.b2international.snowowl.core.api.index.CommonIndexConstants;
 import com.b2international.snowowl.datastore.index.IndexUtils;
 import com.b2international.snowowl.datastore.index.field.ComponentIdLongField;
+import com.b2international.snowowl.snomed.datastore.browser.SnomedIndexQueries;
 import com.b2international.snowowl.snomed.datastore.escg.IQueryEvaluator;
 import com.b2international.snowowl.snomed.dsl.query.ast.AndClause;
 import com.b2international.snowowl.snomed.dsl.query.ast.ConceptRef;
@@ -203,10 +203,6 @@ public class IndexQueryQueryEvaluator implements Serializable, IQueryEvaluator<B
 		return new ComponentIdLongField(conceptId).toQuery();
 	}
 	
-	private Query createActiveQuery() {
-		return new TermQuery(new Term(COMPONENT_ACTIVE, IndexUtils.intToPrefixCoded(1)));
-	}
-	
 	private Term createRefSetTerm(String refSetId) {
 		return new Term(CONCEPT_REFERRING_REFERENCE_SET_ID, IndexUtils.longToPrefixCoded(refSetId));
 	}
@@ -221,7 +217,7 @@ public class IndexQueryQueryEvaluator implements Serializable, IQueryEvaluator<B
 		refSetQuery.add(new TermQuery(createMappingRefSetTerm(refSetId)), Occur.SHOULD);
 		final BooleanQuery query = new BooleanQuery(true);
 		query.add(refSetQuery, Occur.MUST);
-		query.add(createActiveQuery(), Occur.MUST);
+		query.add(SnomedIndexQueries.ACTIVE_COMPONENT_QUERY, Occur.MUST);
 		return query;
 	}
 

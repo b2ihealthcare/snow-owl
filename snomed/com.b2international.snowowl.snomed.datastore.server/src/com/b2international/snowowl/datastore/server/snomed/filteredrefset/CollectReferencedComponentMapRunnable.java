@@ -46,6 +46,7 @@ import com.b2international.snowowl.datastore.server.index.IndexServerService;
 import com.b2international.snowowl.datastore.server.snomed.index.SnomedServerTerminologyBrowser;
 import com.b2international.snowowl.snomed.datastore.SnomedConceptIndexEntry;
 import com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants;
+import com.b2international.snowowl.snomed.datastore.browser.SnomedIndexQueries;
 import com.b2international.snowowl.snomed.datastore.filteredrefset.IRefSetMemberNode;
 import com.b2international.snowowl.snomed.datastore.filteredrefset.NewRefSetMemberNode;
 import com.b2international.snowowl.snomed.datastore.filteredrefset.RegularRefSetMemberNode;
@@ -105,7 +106,7 @@ public class CollectReferencedComponentMapRunnable implements Runnable {
 		
 		if (!includeInactive) {
 			//exclude inactive members
-			memberQuery.add(new TermQuery(new Term(SnomedIndexBrowserConstants.COMPONENT_ACTIVE, IndexUtils.intToPrefixCoded(1))), Occur.MUST);
+			memberQuery.add(SnomedIndexQueries.ACTIVE_COMPONENT_QUERY, Occur.MUST);
 		}
 
 		final LongSet visitedIds = new LongOpenHashSet();

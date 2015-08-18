@@ -35,6 +35,7 @@ import com.b2international.snowowl.datastore.cdo.CDOIDUtils;
 import com.b2international.snowowl.datastore.cdo.CDOUtils;
 import com.b2international.snowowl.datastore.index.AbstractIndexMappingStrategy;
 import com.b2international.snowowl.datastore.index.field.ComponentIdLongField;
+import com.b2international.snowowl.datastore.index.field.ComponentTypeField;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.snomed.datastore.SnomedConceptLookupService;
 import com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants;
@@ -70,7 +71,7 @@ public class SnomedRefSetIndexMappingStrategy extends AbstractIndexMappingStrate
 		final Document doc = new Document();
 		
 		new ComponentIdLongField(refSet.getIdentifierId()).addTo(doc);
-		doc.add(new IntField(CommonIndexConstants.COMPONENT_TYPE, SnomedTerminologyComponentConstants.REFSET_NUMBER, Store.YES));
+		new ComponentTypeField(SnomedTerminologyComponentConstants.REFSET_NUMBER).addTo(doc);
 		doc.add(new IntField(REFERENCE_SET_TYPE, refSet.getType().getValue(), Store.YES));
 		doc.add(new IntField(REFERENCE_SET_REFERENCED_COMPONENT_TYPE, refSet.getReferencedComponentType(), Store.YES));
 		final long storageKey = CDOIDUtils.asLong(refSet.cdoID());

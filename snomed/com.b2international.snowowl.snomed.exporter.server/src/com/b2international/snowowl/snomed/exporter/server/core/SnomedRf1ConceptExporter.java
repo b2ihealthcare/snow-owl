@@ -39,6 +39,7 @@ import org.apache.lucene.index.Term;
 import org.apache.lucene.search.BooleanClause.Occur;
 import org.apache.lucene.search.BooleanQuery;
 import org.apache.lucene.search.IndexSearcher;
+import org.apache.lucene.search.Query;
 import org.apache.lucene.search.ReferenceManager;
 import org.apache.lucene.search.TermQuery;
 import org.apache.lucene.search.TopDocs;
@@ -47,12 +48,10 @@ import com.b2international.commons.CompareUtils;
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.api.SnowowlRuntimeException;
-import com.b2international.snowowl.core.api.index.CommonIndexConstants;
 import com.b2international.snowowl.datastore.index.IndexUtils;
-import com.b2international.snowowl.datastore.index.field.ComponentIdLongField;
+import com.b2international.snowowl.datastore.index.query.IndexQueries;
 import com.b2international.snowowl.datastore.server.index.IndexServerService;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
-import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.snomed.datastore.index.SnomedIndexService;
 import com.b2international.snowowl.snomed.datastore.services.ISnomedComponentService;
 import com.b2international.snowowl.snomed.datastore.services.ISnomedComponentService.IdStorageKeyPair;
@@ -86,8 +85,6 @@ public class SnomedRf1ConceptExporter implements SnomedRf1Exporter {
 			REFERENCE_SET_MEMBER_VALUE_ID
 			));
 
-	private final static TermQuery TYPE_QUERY = 
-			new TermQuery(new Term(CommonIndexConstants.COMPONENT_TYPE, IndexUtils.intToPrefixCoded(SnomedTerminologyComponentConstants.CONCEPT_NUMBER)));
 	private final static TermQuery INACTIVATION_QUERY = 
 			new TermQuery(new Term(REFERENCE_SET_MEMBER_REFERENCE_SET_ID, IndexUtils.longToPrefixCoded(Concepts.REFSET_CONCEPT_INACTIVITY_INDICATOR)));
 	private final static TermQuery CTV3_QUERY = 
@@ -107,6 +104,7 @@ public class SnomedRf1ConceptExporter implements SnomedRf1Exporter {
 	
 	private Supplier<Iterator<String>> createSupplier() {
 		return memoize(new Supplier<Iterator<String>>() {
+			@Override
 			public Iterator<String> get() {
 				return new AbstractIterator<String>() {
 					
@@ -118,6 +116,7 @@ public class SnomedRf1ConceptExporter implements SnomedRf1Exporter {
 					private Object[] _values;
 					
 					@SuppressWarnings("unchecked")
+					@Override
 					protected String computeNext() {
 						
 						while (idIterator.hasNext()) {
@@ -133,11 +132,7 @@ public class SnomedRf1ConceptExporter implements SnomedRf1Exporter {
 								manager = indexService.getManager(getBranchPath());
 								searcher = manager.acquire();
 								
-								
-								final BooleanQuery conceptQuery = new BooleanQuery(true);
-								conceptQuery.add(new ComponentIdLongField(conceptId).toQuery(), Occur.MUST);
-								conceptQuery.add(TYPE_QUERY, Occur.MUST);
-								
+								final Query conceptQuery = IndexQueries.queryComponentByLongId(CONCEPT_NUMBER, conceptId);
 								final TopDocs conceptTopDocs = indexService.search(getBranchPath(), conceptQuery, 1);
 								
 								Preconditions.checkState(null != conceptTopDocs && !CompareUtils.isEmpty(conceptTopDocs.scoreDocs));

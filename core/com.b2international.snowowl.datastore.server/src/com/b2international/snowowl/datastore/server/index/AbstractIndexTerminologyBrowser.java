@@ -153,10 +153,7 @@ abstract public class AbstractIndexTerminologyBrowser<E extends IIndexEntry> ext
 	public Collection<String> getSuperTypeIds(final IBranchPath branchPath, final String componentId) {
 		checkNotNull(branchPath, "Branch path argument cannot be null.");
 		checkNotNull(componentId, "Component ID argument cannot be null.");
-		
-		final Query query = getConceptByIdQueryBuilder(componentId).toQuery();
-		final TopDocs topDocs = service.search(branchPath, query, 1);
-		
+		final TopDocs topDocs = service.search(branchPath, getConceptByIdQueryBuilder(componentId), 1);
 		if (CompareUtils.isEmpty(topDocs.scoreDocs)) {
 			return Collections.emptyList();
 		}
@@ -185,14 +182,10 @@ abstract public class AbstractIndexTerminologyBrowser<E extends IIndexEntry> ext
 	@Override
 	@Nullable 
 	public String getComponentLabel(final IBranchPath branchPath, final String componentId) {
-		
 		Preconditions.checkNotNull(branchPath, "Branch path argument cannot be null.");
 		Preconditions.checkNotNull(componentId, "Component ID argument cannot be null.");
 		
-		final IndexQueryBuilder queryBuilder = getConceptByIdQueryBuilder(componentId);
-		final Query query = queryBuilder.toQuery();
-		
-		final TopDocs topDocs = service.search(branchPath, query, 1);
+		final TopDocs topDocs = service.search(branchPath, getConceptByIdQueryBuilder(componentId), 1);
 		
 		//cannot found matching label for component
 		if (null == topDocs || CompareUtils.isEmpty(topDocs.scoreDocs)) {
@@ -221,12 +214,11 @@ abstract public class AbstractIndexTerminologyBrowser<E extends IIndexEntry> ext
 		checkNotNull(conceptId, "conceptId");
 		checkState(!conceptId.isEmpty(), "conceptId is empty.");
 		
-		final Query query = getConceptByIdQueryBuilder(conceptId).toQuery();
-		return createSingleResultObject(branchPath, service.search(branchPath, query, 1));
+		return createSingleResultObject(branchPath, service.search(branchPath, getConceptByIdQueryBuilder(conceptId), 1));
 	}
 
-	protected IndexQueryBuilder getConceptByIdQueryBuilder(final String conceptId) {
-		return new IndexQueryBuilder().require(new ComponentIdStringField(conceptId).toQuery());
+	protected Query getConceptByIdQueryBuilder(final String conceptId) {
+		return new ComponentIdStringField(conceptId).toQuery();
 	}
 
 	@Override
@@ -234,8 +226,7 @@ abstract public class AbstractIndexTerminologyBrowser<E extends IIndexEntry> ext
 		checkNotNull(branchPath, "Branch path must not be null.");
 		checkNotNull(id, "ID must not be null.");
 		
-		final Query query = getConceptByIdQueryBuilder(id).toQuery();
-		final TopDocs topDocs = service.search(branchPath, query, 1);
+		final TopDocs topDocs = service.search(branchPath, getConceptByIdQueryBuilder(id), 1);
 		if (CompareUtils.isEmpty(topDocs.scoreDocs)) {
 			return Collections.emptyList();
 		}

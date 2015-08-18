@@ -21,27 +21,21 @@ import java.util.Map;
 
 import javax.annotation.Nullable;
 
-import org.apache.lucene.index.Term;
-import org.apache.lucene.search.BooleanClause.Occur;
-import org.apache.lucene.search.BooleanQuery;
 import org.apache.lucene.search.Query;
-import org.apache.lucene.search.TermQuery;
 import org.eclipse.emf.ecore.EPackage;
 
 import com.b2international.commons.StringUtils;
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.CoreTerminologyBroker;
 import com.b2international.snowowl.core.api.IBranchPath;
-import com.b2international.snowowl.core.api.index.CommonIndexConstants;
 import com.b2international.snowowl.core.quicksearch.CompactQuickSearchElement;
 import com.b2international.snowowl.core.quicksearch.QuickSearchContentResult;
 import com.b2international.snowowl.core.quicksearch.QuickSearchElement;
 import com.b2international.snowowl.datastore.IBranchPathMap;
-import com.b2international.snowowl.datastore.index.IndexUtils;
 import com.b2international.snowowl.datastore.index.field.ComponentIdLongField;
+import com.b2international.snowowl.datastore.index.query.IndexQueries;
 import com.b2international.snowowl.datastore.quicksearch.AbstractQuickSearchContentProvider;
 import com.b2international.snowowl.datastore.quicksearch.IQuickSearchContentProvider;
-import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.snomed.datastore.browser.SnomedIndexQueries;
 import com.b2international.snowowl.snomed.datastore.index.SnomedIndexService;
 import com.b2international.snowowl.snomed.datastore.index.refset.SnomedRefSetIndexEntry;
@@ -62,18 +56,12 @@ import com.google.common.collect.Lists;
  */
 public class SnomedRefSetQuickSearchContentProvider extends AbstractQuickSearchContentProvider implements IQuickSearchContentProvider {
 
-	private static final Query CONCEPT_TYPE_QUERY = new TermQuery(new Term(CommonIndexConstants.COMPONENT_TYPE, IndexUtils.intToPrefixCoded(SnomedTerminologyComponentConstants.CONCEPT_NUMBER)));
-	
 	private final class SnomedRefSetConverterFunction implements Function<SnomedRefSetIndexEntry, QuickSearchElement> {
 		@Override public QuickSearchElement apply(@Nullable SnomedRefSetIndexEntry input) {
 			return new CompactQuickSearchElement(input.getId(), input.getIconId(), input.getLabel(), false);
 		}
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see com.b2international.snowowl.datastore.IQuickSearchContentProvider#getComponents(java.lang.String, com.b2international.snowowl.core.api.IBranchPath, int, java.util.Map)
-	 */
 	@Override
 	public QuickSearchContentResult getComponents(final String queryExpression, final IBranchPathMap branchPathMap, final int limit, final Map<String, Object> configuration) {
 		
@@ -98,12 +86,9 @@ public class SnomedRefSetQuickSearchContentProvider extends AbstractQuickSearchC
 			
 			final SnomedRefSetIndexEntry refSet = itr.next();
 
-			final BooleanQuery activeConceptQuery = new BooleanQuery(true);
-			activeConceptQuery.add(SnomedIndexQueries.ACTIVE_COMPONENT_QUERY, Occur.MUST);
-			activeConceptQuery.add(CONCEPT_TYPE_QUERY, Occur.MUST);
-			activeConceptQuery.add(new ComponentIdLongField(refSet.getId()).toQuery(), Occur.MUST);
+			final Query activeConceptQuery = IndexQueries.and(SnomedIndexQueries.ACTIVE_COMPONENT_QUERY, SnomedIndexQueries.CONCEPT_TYPE_QUERY, new ComponentIdLongField(refSet.getId()).toQuery());
 			
-			if (inactiveConcept(indexService, branchPath, activeConceptQuery)) {
+			if (isInactiveConcept(indexService, branchPath, activeConceptQuery)) {
 				itr.remove();
 			}
 			
@@ -112,14 +97,10 @@ public class SnomedRefSetQuickSearchContentProvider extends AbstractQuickSearchC
 		return new QuickSearchContentResult(totalHitCount, convertToDTO(refSets));
 	}
 
-	private boolean inactiveConcept(final SnomedIndexServerService indexService, final IBranchPath branchPath, final BooleanQuery activeConceptQuery) {
-		return 1 > indexService.getHitCount(branchPath, activeConceptQuery, null);
+	private boolean isInactiveConcept(final SnomedIndexServerService indexService, final IBranchPath branchPath, final Query query) {
+		return 1 > indexService.getHitCount(branchPath, query, null);
 	}
 	
-	/*
-	 * (non-Javadoc)
-	 * @see com.b2international.snowowl.datastore.quicksearch.AbstractQuickSearchContentProvider#getEPackage()
-	 */
 	@Override
 	protected EPackage getEPackage() {
 		return SnomedRefSetPackage.eINSTANCE;

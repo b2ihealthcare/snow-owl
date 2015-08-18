@@ -26,17 +26,15 @@ import org.apache.lucene.search.TermQuery;
 import bak.pcj.LongCollection;
 
 import com.b2international.snowowl.core.api.IBranchPath;
-import com.b2international.snowowl.core.api.index.CommonIndexConstants;
 import com.b2international.snowowl.datastore.index.IndexUtils;
 import com.b2international.snowowl.datastore.index.LongDocValuesCollector;
 import com.b2international.snowowl.datastore.index.field.ComponentIdLongField;
 import com.b2international.snowowl.datastore.server.index.IndexServerService;
 import com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants;
+import com.b2international.snowowl.snomed.datastore.browser.SnomedIndexQueries;
 
 public final class CollectMembersRunnable implements Runnable {
 	
-	private final TermQuery activeComponentQuery;
-	private final TermQuery conceptTypeQuery;
 	private final Query labelQuery;
 	private final AtomicReference<LongCollection> collectedConceptIds;
 	private final int maxDoc;
@@ -45,12 +43,9 @@ public final class CollectMembersRunnable implements Runnable {
 	private final IBranchPath branchPath;
 	private final long refSetId;
 
-	public CollectMembersRunnable(TermQuery activeComponentQuery, TermQuery conceptTypeQuery, Query labelQuery,
+	public CollectMembersRunnable(Query labelQuery,
 			AtomicReference<LongCollection> collectedConceptIds, int maxDoc, boolean existingMembersOnly,
 			IndexServerService<?> indexService, IBranchPath branchPath, long refSetId) {
-		
-		this.activeComponentQuery = activeComponentQuery;
-		this.conceptTypeQuery = conceptTypeQuery;
 		this.labelQuery = labelQuery;
 		this.collectedConceptIds = collectedConceptIds;
 		this.maxDoc = maxDoc;
@@ -64,8 +59,8 @@ public final class CollectMembersRunnable implements Runnable {
 	public void run() {
 
 		final BooleanQuery refSetMemberConceptQuery = new BooleanQuery(true);
-		refSetMemberConceptQuery.add(activeComponentQuery, Occur.MUST);
-		refSetMemberConceptQuery.add(conceptTypeQuery, Occur.MUST);
+		refSetMemberConceptQuery.add(SnomedIndexQueries.ACTIVE_COMPONENT_QUERY, Occur.MUST);
+		refSetMemberConceptQuery.add(SnomedIndexQueries.CONCEPT_TYPE_QUERY, Occur.MUST);
 
 		final Occur refSetOccur = (existingMembersOnly) ? Occur.MUST : Occur.MUST_NOT;
 		refSetMemberConceptQuery.add(new TermQuery(new Term(SnomedIndexBrowserConstants.CONCEPT_REFERRING_REFERENCE_SET_ID, IndexUtils.longToPrefixCoded(refSetId))), refSetOccur);

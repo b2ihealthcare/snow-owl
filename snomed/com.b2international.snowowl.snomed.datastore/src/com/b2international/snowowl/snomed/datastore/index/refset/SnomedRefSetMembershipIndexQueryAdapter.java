@@ -15,7 +15,14 @@
  */
 package com.b2international.snowowl.snomed.datastore.index.refset;
 
-import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.*;
+import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_ACCEPTABILITY_ID;
+import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_EFFECTIVE_TIME;
+import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_MAP_TARGET_COMPONENT_ID;
+import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_MAP_TARGET_COMPONENT_TYPE_ID;
+import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_REFERENCED_COMPONENT_ID;
+import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_REFERENCED_COMPONENT_TYPE;
+import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_REFERENCE_SET_ID;
+import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_REFERENCE_SET_TYPE;
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
 
@@ -27,8 +34,14 @@ import java.util.StringTokenizer;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.index.Term;
 import org.apache.lucene.queries.BooleanFilter;
-import org.apache.lucene.search.*;
+import org.apache.lucene.search.BooleanClause;
 import org.apache.lucene.search.BooleanClause.Occur;
+import org.apache.lucene.search.BooleanQuery;
+import org.apache.lucene.search.Filter;
+import org.apache.lucene.search.FilteredQuery;
+import org.apache.lucene.search.Query;
+import org.apache.lucene.search.QueryWrapperFilter;
+import org.apache.lucene.search.TermQuery;
 
 import com.b2international.commons.CompareUtils;
 import com.b2international.commons.StringUtils;
@@ -159,7 +172,7 @@ public class SnomedRefSetMembershipIndexQueryAdapter extends SnomedRefSetMemberI
 				final BooleanQuery query = new BooleanQuery();
 				query.add(new TermQuery(new Term(REFERENCE_SET_MEMBER_REFERENCE_SET_ID, IndexUtils.longToPrefixCoded(languageRefSetId))), Occur.MUST);
 				query.add(new TermQuery(new Term(REFERENCE_SET_MEMBER_ACCEPTABILITY_ID, IndexUtils.longToPrefixCoded(Concepts.REFSET_DESCRIPTION_ACCEPTABILITY_PREFERRED))), Occur.MUST);
-				query.add(new TermQuery(new Term(COMPONENT_ACTIVE, IndexUtils.intToPrefixCoded(1))), Occur.MUST);
+				query.add(SnomedIndexQueries.ACTIVE_COMPONENT_QUERY, Occur.MUST);
 				return new FilteredQuery(query, createComponentIdFilter(descriptionIds));
 			}
 		};
@@ -177,7 +190,7 @@ public class SnomedRefSetMembershipIndexQueryAdapter extends SnomedRefSetMemberI
 			@Override public Query createQuery() {
 				final BooleanQuery query = new BooleanQuery();
 				query.add(new TermQuery(new Term(REFERENCE_SET_MEMBER_REFERENCE_SET_ID, IndexUtils.longToPrefixCoded(languageRefSetId))), Occur.MUST);
-				query.add(new TermQuery(new Term(COMPONENT_ACTIVE, IndexUtils.intToPrefixCoded(1))), Occur.MUST);
+				query.add(SnomedIndexQueries.ACTIVE_COMPONENT_QUERY, Occur.MUST);
 				return new FilteredQuery(query, createComponentIdFilter(descriptionIds));
 			}
 		};
@@ -398,7 +411,7 @@ public class SnomedRefSetMembershipIndexQueryAdapter extends SnomedRefSetMemberI
 				@Override public Query createQuery() {
 					final BooleanQuery query = new BooleanQuery();
 					query.add(new TermQuery(new Term(REFERENCE_SET_MEMBER_REFERENCE_SET_ID, IndexUtils.longToPrefixCoded(SnomedRefSetUtil.getRefSetId(type)))), Occur.MUST);
-					query.add(new TermQuery(new Term(COMPONENT_ACTIVE, IndexUtils.intToPrefixCoded(1))), Occur.MUST);
+					query.add(SnomedIndexQueries.ACTIVE_COMPONENT_QUERY, Occur.MUST);
 					return query;
 				}
 			};

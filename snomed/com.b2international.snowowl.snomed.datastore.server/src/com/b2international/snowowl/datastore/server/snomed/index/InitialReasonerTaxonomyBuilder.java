@@ -15,7 +15,6 @@
  */
 package com.b2international.snowowl.datastore.server.snomed.index;
 
-import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.COMPONENT_ACTIVE;
 import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.RELATIONSHIP_CHARACTERISTIC_TYPE_ID;
 
 import java.text.MessageFormat;
@@ -45,10 +44,10 @@ import com.b2international.commons.ClassUtils;
 import com.b2international.commons.concurrent.equinox.ForkJoinUtils;
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.api.IBranchPath;
-import com.b2international.snowowl.core.api.index.CommonIndexConstants;
 import com.b2international.snowowl.datastore.index.IndexUtils;
 import com.b2international.snowowl.datastore.index.LongDocValuesCollector;
 import com.b2international.snowowl.datastore.index.field.ComponentIdLongField;
+import com.b2international.snowowl.datastore.index.query.IndexQueries;
 import com.b2international.snowowl.datastore.server.index.IndexServerService;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.snomed.datastore.ConcreteDomainFragment;
@@ -56,6 +55,7 @@ import com.b2international.snowowl.snomed.datastore.IsAStatement;
 import com.b2international.snowowl.snomed.datastore.StatementCollectionMode;
 import com.b2international.snowowl.snomed.datastore.StatementFragment;
 import com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants;
+import com.b2international.snowowl.snomed.datastore.browser.SnomedIndexQueries;
 import com.b2international.snowowl.snomed.datastore.index.SnomedIndexService;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType;
 import com.google.common.base.Stopwatch;
@@ -83,8 +83,7 @@ public class InitialReasonerTaxonomyBuilder extends AbstractReasonerTaxonomyBuil
 		public void run() {
 
 			final BooleanQuery statementsQuery = new BooleanQuery(true);
-			statementsQuery.add(createIntTermQuery(SnomedIndexBrowserConstants.COMPONENT_ACTIVE, 1), Occur.MUST);
-			statementsQuery.add(createIntTermQuery(CommonIndexConstants.COMPONENT_TYPE, SnomedTerminologyComponentConstants.RELATIONSHIP_NUMBER), Occur.MUST);
+			statementsQuery.add(SnomedIndexQueries.ACTIVE_RELATIONSHIPS_QUERY, Occur.MUST);
 			statementsQuery.add(createLongTermQuery(SnomedIndexBrowserConstants.RELATIONSHIP_ATTRIBUTE_ID, IS_A_ID), Occur.MUST);
 			statementsQuery.add(createCharacteristicTypeQuery(), Occur.MUST);
 
@@ -115,21 +114,14 @@ public class InitialReasonerTaxonomyBuilder extends AbstractReasonerTaxonomyBuil
 
 		@Override
 		public void run() {
-
-			final BooleanQuery conceptQuery = new BooleanQuery(true);
-			conceptQuery.add(createIntTermQuery(SnomedIndexBrowserConstants.COMPONENT_ACTIVE, 1), Occur.MUST);
-			conceptQuery.add(createIntTermQuery(CommonIndexConstants.COMPONENT_TYPE, SnomedTerminologyComponentConstants.CONCEPT_NUMBER), Occur.MUST);
-
+			final BooleanQuery conceptQuery = (BooleanQuery) SnomedIndexQueries.ACTIVE_CONCEPTS_QUERY;
 			if (null != additionalClause) {
 				conceptQuery.add(additionalClause, Occur.MUST);
 			}
-
 			final int hitCount = getIndexServerService().getHitCount(branchPath, conceptQuery, null);
 			final LongDocValuesCollector collector = new LongDocValuesCollector(ComponentIdLongField.COMPONENT_ID, hitCount);
 			getIndexServerService().search(branchPath, conceptQuery, collector);
-
 			conceptIdsReference.set(new LongOpenHashSet(collector.getValues()));
-
 			checkpoint(taskName, MessageFormat.format("active concept IDs collection ({0})", additionalClause.getTerm().field()), stopwatch);
 		}
 	}
@@ -148,14 +140,9 @@ public class InitialReasonerTaxonomyBuilder extends AbstractReasonerTaxonomyBuil
 
 		@Override
 		public void run() {
-
-			final BooleanQuery conceptQuery = new BooleanQuery(true);
-			conceptQuery.add(createIntTermQuery(SnomedIndexBrowserConstants.COMPONENT_ACTIVE, 1), Occur.MUST);
-			conceptQuery.add(createIntTermQuery(CommonIndexConstants.COMPONENT_TYPE, SnomedTerminologyComponentConstants.CONCEPT_NUMBER), Occur.MUST);
-
-			final int hitCount = getIndexServerService().getHitCount(branchPath, conceptQuery, null);
+			final int hitCount = getIndexServerService().getHitCount(branchPath, SnomedIndexQueries.ACTIVE_CONCEPTS_QUERY, null);
 			final ConceptIdStorageKeyCollector collector = new ConceptIdStorageKeyCollector(hitCount);
-			getIndexServerService().search(branchPath, conceptQuery, collector);
+			getIndexServerService().search(branchPath, SnomedIndexQueries.ACTIVE_CONCEPTS_QUERY, collector);
 
 			conceptIdsReference.set(collector.getIds());
 
@@ -271,7 +258,7 @@ public class InitialReasonerTaxonomyBuilder extends AbstractReasonerTaxonomyBuil
 		public void run() {
 
 			final BooleanQuery getConceptConcreteDomainQuery = new BooleanQuery(true);
-			getConceptConcreteDomainQuery.add(createIntTermQuery(SnomedIndexBrowserConstants.COMPONENT_ACTIVE, 1), Occur.MUST);
+			getConceptConcreteDomainQuery.add(SnomedIndexQueries.ACTIVE_COMPONENT_QUERY, Occur.MUST);
 			getConceptConcreteDomainQuery.add(createIntTermQuery(SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_REFERENCE_SET_TYPE, SnomedRefSetType.CONCRETE_DATA_TYPE_VALUE), Occur.MUST);
 			getConceptConcreteDomainQuery.add(createIntTermQuery(SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_REFERENCED_COMPONENT_TYPE, referencedComponentType), Occur.MUST);
 			getConceptConcreteDomainQuery.add(characteristicTypeQuery, Occur.MUST);
@@ -341,26 +328,17 @@ public class InitialReasonerTaxonomyBuilder extends AbstractReasonerTaxonomyBuil
 		}
 
 		private LongKeyMap getStatements(final Query createCharacteristicTypeQuery) {
-			final BooleanQuery statementQuery = new BooleanQuery(true);
-			statementQuery.add(new TermQuery(new Term(CommonIndexConstants.COMPONENT_TYPE, IndexUtils.intToPrefixCoded(SnomedTerminologyComponentConstants.RELATIONSHIP_NUMBER))), Occur.MUST);
-			statementQuery.add(new TermQuery(new Term(COMPONENT_ACTIVE, IndexUtils.intToPrefixCoded(1))), Occur.MUST);
-			statementQuery.add(createCharacteristicTypeQuery, Occur.MUST);
-
+			final Query statementQuery = IndexQueries.and(SnomedIndexQueries.ACTIVE_RELATIONSHIPS_QUERY, createCharacteristicTypeQuery);
 			final StatementFragmentCollector collector = new StatementFragmentCollector();
-
 			getIndexServerService().search(branchPath, statementQuery, collector);
-
 			final LongKeyMap statementMap = collector.getStatementMap();
-
 			for (final LongKeyMapIterator itr = statementMap.entries(); itr.hasNext(); /* nothing */) {
 				itr.next();
-
 				final long sourceConceptId = itr.getKey();
 				if (!conceptIds.contains(sourceConceptId)) { // active relationship, but source concept is not active?
 					itr.remove();
 				}
 			}
-			
 			return statementMap;
 		}
 	}

@@ -15,8 +15,6 @@
  */
 package com.b2international.snowowl.datastore.server.snomed.escg;
 
-import static com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants.CONCEPT_NUMBER;
-import static com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants.RELATIONSHIP_NUMBER;
 import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.CONCEPT_ANCESTOR;
 import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.CONCEPT_REFERRING_MAPPING_REFERENCE_SET_ID;
 import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.CONCEPT_REFERRING_REFERENCE_SET_ID;
@@ -44,6 +42,7 @@ import com.b2international.snowowl.core.api.index.CommonIndexConstants;
 import com.b2international.snowowl.datastore.index.IndexUtils;
 import com.b2international.snowowl.datastore.index.LongDocValuesCollector;
 import com.b2international.snowowl.datastore.index.field.ComponentIdLongField;
+import com.b2international.snowowl.datastore.index.query.IndexQueries;
 import com.b2international.snowowl.datastore.server.snomed.SnomedComponentService;
 import com.b2international.snowowl.datastore.server.snomed.index.SnomedIndexServerService;
 import com.b2international.snowowl.snomed.datastore.browser.SnomedIndexQueries;
@@ -90,6 +89,8 @@ public class ConceptIdQueryEvaluator2 implements Serializable, IQueryEvaluator<L
 			final ConceptRef concept = (ConceptRef) expression;
 			final String conceptId = Preconditions.checkNotNull(concept.getConceptId());
 			final BooleanQuery mainQuery = new BooleanQuery(true);
+			mainQuery.add(SnomedIndexQueries.ACTIVE_COMPONENT_QUERY, Occur.MUST);
+			mainQuery.add(SnomedIndexQueries.CONCEPT_TYPE_QUERY, Occur.MUST);
 			final SnomedIndexServerService service = getIndexService();
 			final LongDocValuesCollector collector = new LongDocValuesCollector(ComponentIdLongField.COMPONENT_ID);
 			
@@ -107,8 +108,6 @@ public class ConceptIdQueryEvaluator2 implements Serializable, IQueryEvaluator<L
 					descendatQuery.add(createAncestorQuery(conceptId), Occur.SHOULD);
 					descendatQuery.add(createParentQuery(conceptId), Occur.SHOULD);
 				
-					mainQuery.add(createActiveQuery(), Occur.MUST);
-					mainQuery.add(createConceptTypeQuery(), Occur.MUST);
 					mainQuery.add(descendatQuery, Occur.MUST);
 					
 					service.search(branchPath, mainQuery, collector);
@@ -123,8 +122,6 @@ public class ConceptIdQueryEvaluator2 implements Serializable, IQueryEvaluator<L
 					descendatOrSelfQuery.add(createParentQuery(conceptId), Occur.SHOULD);
 					descendatOrSelfQuery.add(createIdQuery(conceptId), Occur.SHOULD);
 				
-					mainQuery.add(createActiveQuery(), Occur.MUST);
-					mainQuery.add(createConceptTypeQuery(), Occur.MUST);
 					mainQuery.add(descendatOrSelfQuery, Occur.MUST);
 					
 					service.search(branchPath, mainQuery, collector);
@@ -143,9 +140,8 @@ public class ConceptIdQueryEvaluator2 implements Serializable, IQueryEvaluator<L
 			final LongSet valueIdSet = evaluate(clause.getRight());
 
 			final BooleanQuery query = new BooleanQuery(true);
-			
-			query.add(createActiveQuery(), Occur.MUST);
-			query.add(createRelationshipTypeQuery(), Occur.MUST);
+			query.add(SnomedIndexQueries.ACTIVE_COMPONENT_QUERY, Occur.MUST);
+			query.add(SnomedIndexQueries.RELATIONSHIP_TYPE_QUERY, Occur.MUST);
 			
 			final BooleanQuery negatedQuery = new BooleanQuery(true);
 			//filter out the top most relationship types with index query if possible to better performance
@@ -174,15 +170,10 @@ public class ConceptIdQueryEvaluator2 implements Serializable, IQueryEvaluator<L
 			final RefSet refSet = (RefSet) expression;
 			final String refSetId = refSet.getId();
 			
-			final BooleanQuery mainQuery = new BooleanQuery(true);
+			final Query query = IndexQueries.and(SnomedIndexQueries.ACTIVE_CONCEPTS_QUERY, createRefSetQuery(refSetId));
 			final SnomedIndexServerService service = getIndexService();
 			final LongDocValuesCollector collector = new LongDocValuesCollector(ComponentIdLongField.COMPONENT_ID);
-			
-			mainQuery.add(createActiveQuery(), Occur.MUST);
-			mainQuery.add(createConceptTypeQuery(), Occur.MUST);
-			mainQuery.add(createRefSetQuery(refSetId), Occur.MUST);
-			
-			service.search(branchPath, mainQuery, collector);
+			service.search(branchPath, query, collector);
 			
 			return new LongOpenHashSet(collector.getValues());
 			
@@ -309,18 +300,6 @@ public class ConceptIdQueryEvaluator2 implements Serializable, IQueryEvaluator<L
 		final BooleanQuery query = new BooleanQuery(true);
 		query.add(refSetQuery, Occur.MUST);
 		return query;
-	}
-	
-	private Query createConceptTypeQuery() {
-		return new TermQuery(new Term(CommonIndexConstants.COMPONENT_TYPE, IndexUtils.intToPrefixCoded(CONCEPT_NUMBER)));
-	}
-	
-	private Query createRelationshipTypeQuery() {
-		return new TermQuery(new Term(CommonIndexConstants.COMPONENT_TYPE, IndexUtils.intToPrefixCoded(RELATIONSHIP_NUMBER)));
-	}
-
-	private Query createActiveQuery() {
-		return SnomedIndexQueries.ACTIVE_COMPONENT_QUERY;
 	}
 	
 }

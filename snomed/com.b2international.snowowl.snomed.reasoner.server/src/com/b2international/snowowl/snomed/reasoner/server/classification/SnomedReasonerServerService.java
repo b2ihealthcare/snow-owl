@@ -28,10 +28,6 @@ import java.util.Set;
 import java.util.UUID;
 
 import org.apache.lucene.document.Document;
-import org.apache.lucene.index.Term;
-import org.apache.lucene.search.BooleanClause.Occur;
-import org.apache.lucene.search.BooleanQuery;
-import org.apache.lucene.search.TermQuery;
 import org.apache.lucene.search.TopDocs;
 import org.eclipse.core.runtime.jobs.IJobChangeEvent;
 import org.eclipse.core.runtime.jobs.Job;
@@ -62,7 +58,7 @@ import com.b2international.snowowl.datastore.BranchPathUtils;
 import com.b2international.snowowl.datastore.cdo.ICDOConnection;
 import com.b2international.snowowl.datastore.cdo.ICDOConnectionManager;
 import com.b2international.snowowl.datastore.index.IndexUtils;
-import com.b2international.snowowl.datastore.index.field.ComponentIdLongField;
+import com.b2international.snowowl.datastore.index.query.IndexQueries;
 import com.b2international.snowowl.datastore.oplock.OperationLockException;
 import com.b2international.snowowl.datastore.remotejobs.IRemoteJobManager;
 import com.b2international.snowowl.datastore.remotejobs.RemoteJobUtils;
@@ -401,10 +397,7 @@ public class SnomedReasonerServerService extends CollectingService<Reasoner, Cla
 		
 		final IndexServerService<?> indexService = getIndexServerService();
 		
-		final BooleanQuery query = new BooleanQuery(true);
-		query.add(new ComponentIdLongField(id).toQuery(), Occur.MUST);
-		query.add(new TermQuery(new Term(CommonIndexConstants.COMPONENT_TYPE, IndexUtils.intToPrefixCoded(SnomedTerminologyComponentConstants.CONCEPT_NUMBER))), Occur.MUST);
-		final TopDocs topDocs = indexService.search(branchPath, query, 1);
+		final TopDocs topDocs = indexService.search(branchPath, IndexQueries.queryComponentByLongId(SnomedTerminologyComponentConstants.CONCEPT_NUMBER, id), 1);
 		if (null == topDocs || CompareUtils.isEmpty(topDocs.scoreDocs)) {
 			return new LongComponent(id, id + " (unresolved)", Long.parseLong(Concepts.ROOT_CONCEPT));
 		} else {
@@ -512,6 +505,7 @@ public class SnomedReasonerServerService extends CollectingService<Reasoner, Cla
 		RemoteJobUtils.configureProperties(remoteJob, userId, null, persistenceId);
 		
 		remoteJob.addJobChangeListener(new JobChangeAdapter() {
+			@Override
 			public void done(final IJobChangeEvent event) {
 				if (event.getResult().isOK()) {
 					getServiceForClass(IRemoteJobManager.class).cancelRemoteJob(persistenceId);

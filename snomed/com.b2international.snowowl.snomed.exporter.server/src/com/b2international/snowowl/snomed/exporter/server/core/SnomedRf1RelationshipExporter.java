@@ -30,6 +30,7 @@ import org.apache.lucene.index.Term;
 import org.apache.lucene.search.BooleanClause.Occur;
 import org.apache.lucene.search.BooleanQuery;
 import org.apache.lucene.search.IndexSearcher;
+import org.apache.lucene.search.Query;
 import org.apache.lucene.search.ReferenceManager;
 import org.apache.lucene.search.TermQuery;
 import org.apache.lucene.search.TopDocs;
@@ -38,9 +39,8 @@ import com.b2international.commons.CompareUtils;
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.api.SnowowlRuntimeException;
-import com.b2international.snowowl.core.api.index.CommonIndexConstants;
 import com.b2international.snowowl.datastore.index.IndexUtils;
-import com.b2international.snowowl.datastore.index.field.ComponentIdLongField;
+import com.b2international.snowowl.datastore.index.query.IndexQueries;
 import com.b2international.snowowl.datastore.server.index.IndexServerService;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
@@ -66,9 +66,6 @@ import com.google.common.collect.Sets;
  */
 public class SnomedRf1RelationshipExporter implements SnomedRf1Exporter {
 
-	private final static TermQuery TYPE_QUERY = 
-			new TermQuery(new Term(CommonIndexConstants.COMPONENT_TYPE, IndexUtils.intToPrefixCoded(SnomedTerminologyComponentConstants.RELATIONSHIP_NUMBER)));
-	
 	private static final Set<String> RELATIONSHIP_FILEDS_TO_LOAD = Collections.unmodifiableSet(Sets.newHashSet(
 			SnomedIndexBrowserConstants.RELATIONSHIP_OBJECT_ID,
 			SnomedIndexBrowserConstants.RELATIONSHIP_ATTRIBUTE_ID,
@@ -98,6 +95,7 @@ public class SnomedRf1RelationshipExporter implements SnomedRf1Exporter {
 	
 	private Supplier<Iterator<String>> createSupplier() {
 		return memoize(new Supplier<Iterator<String>>() {
+			@Override
 			public Iterator<String> get() {
 				return new AbstractIterator<String>() {
 					
@@ -109,6 +107,7 @@ public class SnomedRf1RelationshipExporter implements SnomedRf1Exporter {
 					private Object[] _values;
 					
 					@SuppressWarnings("unchecked")
+					@Override
 					protected String computeNext() {
 						
 						while (idIterator.hasNext()) {
@@ -125,10 +124,7 @@ public class SnomedRf1RelationshipExporter implements SnomedRf1Exporter {
 								searcher = manager.acquire();
 								
 								
-								final BooleanQuery relationshipQuery = new BooleanQuery(true);
-								relationshipQuery.add(new ComponentIdLongField(relationshipId).toQuery(), Occur.MUST);
-								relationshipQuery.add(TYPE_QUERY, Occur.MUST);
-								
+								final Query relationshipQuery = IndexQueries.queryComponentByLongId(SnomedTerminologyComponentConstants.RELATIONSHIP_NUMBER, relationshipId);
 								final TopDocs conceptTopDocs = indexService.search(getBranchPath(), relationshipQuery, 1);
 								
 								Preconditions.checkState(null != conceptTopDocs && !CompareUtils.isEmpty(conceptTopDocs.scoreDocs));

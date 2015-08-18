@@ -26,6 +26,7 @@ import com.b2international.snowowl.core.api.index.CommonIndexConstants;
 import com.b2international.snowowl.datastore.index.IndexQueryBuilder;
 import com.b2international.snowowl.datastore.index.IndexUtils;
 import com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants;
+import com.b2international.snowowl.snomed.datastore.browser.SnomedIndexQueries;
 
 /**
  * Query adapter for querying descriptions based on their label sort key field.
@@ -61,7 +62,7 @@ public class SnomedDescriptionSortKeyQueryAdapter extends SnomedDescriptionIndex
 	@Override
 	protected IndexQueryBuilder createIndexQueryBuilder() {
 		return super.createIndexQueryBuilder()
-			.requireExactTermIf(anyFlagSet(SEARCH_DESCRIPTION_ACTIVE_ONLY), SnomedIndexBrowserConstants.COMPONENT_ACTIVE, IndexUtils.intToPrefixCoded(1))
+			.requireIf(anyFlagSet(SEARCH_DESCRIPTION_ACTIVE_ONLY), SnomedIndexQueries.ACTIVE_COMPONENT_QUERY)
 			.requireExactTermIf(!StringUtils.isEmpty(descriptionTypeId), SnomedIndexBrowserConstants.DESCRIPTION_TYPE_ID, IndexUtils.longToPrefixCoded(descriptionTypeId))
 			.finishIf(StringUtils.isEmpty(searchString))
 			.requireExactTerm(CommonIndexConstants.COMPONENT_LABEL_SORT_KEY, IndexUtils.getSortKey(searchString));

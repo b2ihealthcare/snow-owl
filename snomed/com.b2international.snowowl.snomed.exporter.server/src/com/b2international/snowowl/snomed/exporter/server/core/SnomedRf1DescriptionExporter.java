@@ -44,10 +44,9 @@ import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.api.SnowowlRuntimeException;
 import com.b2international.snowowl.core.api.index.CommonIndexConstants;
 import com.b2international.snowowl.datastore.index.IndexUtils;
-import com.b2international.snowowl.datastore.index.field.ComponentIdLongField;
+import com.b2international.snowowl.datastore.index.query.IndexQueries;
 import com.b2international.snowowl.datastore.server.index.IndexServerService;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
-import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.snomed.datastore.ILanguageConfigurationProvider;
 import com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants;
 import com.b2international.snowowl.snomed.datastore.index.SnomedIndexService;
@@ -86,8 +85,6 @@ public class SnomedRf1DescriptionExporter implements SnomedRf1Exporter {
 			SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_VALUE_ID
 			));
 	
-	private final static TermQuery TYPE_QUERY = 
-			new TermQuery(new Term(CommonIndexConstants.COMPONENT_TYPE, IndexUtils.intToPrefixCoded(SnomedTerminologyComponentConstants.DESCRIPTION_NUMBER)));
 	private final static TermQuery INACTIVATION_QUERY = 
 			new TermQuery(new Term(SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_REFERENCE_SET_ID, IndexUtils.longToPrefixCoded(Concepts.REFSET_DESCRIPTION_INACTIVITY_INDICATOR)));
 	private static final Query PREFERRED_MEMBER_QUERY = 
@@ -112,6 +109,7 @@ public class SnomedRf1DescriptionExporter implements SnomedRf1Exporter {
 	
 	private Supplier<Iterator<String>> createSupplier() {
 		return memoize(new Supplier<Iterator<String>>() {
+			@Override
 			public Iterator<String> get() {
 				return new AbstractIterator<String>() {
 					
@@ -123,6 +121,7 @@ public class SnomedRf1DescriptionExporter implements SnomedRf1Exporter {
 					private Object[] _values;
 					
 					@SuppressWarnings("unchecked")
+					@Override
 					protected String computeNext() {
 						
 						while (idIterator.hasNext()) {
@@ -140,10 +139,7 @@ public class SnomedRf1DescriptionExporter implements SnomedRf1Exporter {
 								searcher = manager.acquire();
 								
 								
-								final BooleanQuery descriptionQuery = new BooleanQuery(true);
-								descriptionQuery.add(new ComponentIdLongField(descriptionId).toQuery(), Occur.MUST);
-								descriptionQuery.add(TYPE_QUERY, Occur.MUST);
-								
+								final Query descriptionQuery = IndexQueries.queryComponentByLongId(DESCRIPTION_NUMBER, descriptionId);
 								final TopDocs conceptTopDocs = indexService.search(getBranchPath(), descriptionQuery, 1);
 								
 								Preconditions.checkState(null != conceptTopDocs && !CompareUtils.isEmpty(conceptTopDocs.scoreDocs));

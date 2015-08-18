@@ -45,6 +45,7 @@ import com.b2international.snowowl.core.api.index.CommonIndexConstants;
 import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.datastore.index.AbstractIndexMappingStrategy;
 import com.b2international.snowowl.datastore.index.field.ComponentIdLongField;
+import com.b2international.snowowl.datastore.index.field.ComponentTypeField;
 import com.b2international.snowowl.snomed.Relationship;
 
 /**
@@ -77,7 +78,7 @@ public class SnomedRelationshipIndexMappingStrategy extends AbstractIndexMapping
 
 		final Document doc = new Document();
 		new ComponentIdLongField(relationshipId).addTo(doc);
-		doc.add(new IntField(CommonIndexConstants.COMPONENT_TYPE, RELATIONSHIP_NUMBER, YES));
+		new ComponentTypeField(RELATIONSHIP_NUMBER).addTo(doc);
 		doc.add(new StoredField(COMPONENT_RELEASED, relationship.isReleased() ? 1 : 0));
 		doc.add(new IntField(COMPONENT_ACTIVE, active ? 1 : 0, YES));
 		doc.add(new LongField(CommonIndexConstants.COMPONENT_STORAGE_KEY, storageKey, YES));

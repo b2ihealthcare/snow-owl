@@ -16,7 +16,6 @@
 package com.b2international.snowowl.datastore.server.snomed.index;
 
 import static com.b2international.snowowl.core.ApplicationContext.getServiceForClass;
-import static com.b2international.snowowl.datastore.index.IndexUtils.intToPrefixCoded;
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.collect.Sets.newHashSet;
@@ -36,25 +35,23 @@ import org.apache.lucene.index.IndexableField;
 import org.apache.lucene.index.Term;
 import org.apache.lucene.search.BooleanClause.Occur;
 import org.apache.lucene.search.BooleanQuery;
-import org.apache.lucene.search.Query;
 import org.apache.lucene.search.TermQuery;
 import org.apache.lucene.search.TopDocs;
 
 import com.b2international.commons.CompareUtils;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.api.SnowowlRuntimeException;
-import com.b2international.snowowl.core.api.index.CommonIndexConstants;
 import com.b2international.snowowl.datastore.index.DocIdCollector;
 import com.b2international.snowowl.datastore.index.DocIdCollector.DocIdsIterator;
-import com.b2international.snowowl.datastore.index.field.ComponentIdLongField;
 import com.b2international.snowowl.datastore.index.IndexUtils;
+import com.b2international.snowowl.datastore.index.query.IndexQueries;
 import com.b2international.snowowl.datastore.server.index.AbstractIndexBrowser;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.snomed.datastore.DataTypeUtils;
-import com.b2international.snowowl.snomed.datastore.PredicateUtils;
 import com.b2international.snowowl.snomed.datastore.SnomedPredicateBrowser;
 import com.b2international.snowowl.snomed.datastore.SnomedTaxonomyService;
 import com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants;
+import com.b2international.snowowl.snomed.datastore.browser.SnomedIndexQueries;
 import com.b2international.snowowl.snomed.datastore.index.SnomedIndexService;
 import com.b2international.snowowl.snomed.datastore.services.ISnomedComponentService;
 import com.b2international.snowowl.snomed.datastore.snor.PredicateIndexEntry;
@@ -73,8 +70,6 @@ import com.google.common.collect.Multimap;
  * 
  */
 public class SnomedServerPredicateBrowser extends AbstractIndexBrowser<PredicateIndexEntry> implements SnomedPredicateBrowser {
-
-	private static final Query PREDICATE_TYPE_QUERY = new TermQuery(new Term(CommonIndexConstants.COMPONENT_TYPE, intToPrefixCoded(PredicateUtils.PREDICATE_TYPE_ID)));
 
 	private static final Set<String> PREDICATE_FIELDS = ImmutableSet.of(SnomedIndexBrowserConstants.PREDICATE_CHARACTERISTIC_TYPE_EXPRESSION,
 			SnomedIndexBrowserConstants.PREDICATE_DATA_TYPE_LABEL,	SnomedIndexBrowserConstants.PREDICATE_DATA_TYPE_NAME,
@@ -97,7 +92,7 @@ public class SnomedServerPredicateBrowser extends AbstractIndexBrowser<Predicate
 		
 		try {
 			final DocIdCollector collector = DocIdCollector.create(service.maxDoc(branchPath));
-			service.search(branchPath, PREDICATE_TYPE_QUERY, collector);
+			service.search(branchPath, SnomedIndexQueries.PREDICATE_TYPE_QUERY, collector);
 			final DocIdsIterator itr = collector.getDocIDs().iterator();
 			return createResultObjects(branchPath, itr);
 		} catch (final IOException e) {
@@ -235,11 +230,7 @@ public class SnomedServerPredicateBrowser extends AbstractIndexBrowser<Predicate
 		Preconditions.checkNotNull(branchPath, "Branch path argument cannot be null.");
 		Preconditions.checkNotNull(identifierId, "Reference set identifier concept ID argument cannot be null.");
 		
-		final BooleanQuery query = new BooleanQuery(true);
-		query.add(new TermQuery(new Term(CommonIndexConstants.COMPONENT_TYPE, IndexUtils.intToPrefixCoded(SnomedTerminologyComponentConstants.REFSET_NUMBER))), Occur.MUST);
-		query.add(new ComponentIdLongField(identifierId).toQuery(), Occur.MUST);
-		
-		final TopDocs topDocs = service.search(branchPath, query, 1);
+		final TopDocs topDocs = service.search(branchPath, IndexQueries.queryComponentByLongId(SnomedTerminologyComponentConstants.REFSET_NUMBER, identifierId), 1);
 		
 		if (null == topDocs || CompareUtils.isEmpty(topDocs.scoreDocs)) {
 			return Collections.emptySet();
@@ -262,13 +253,8 @@ public class SnomedServerPredicateBrowser extends AbstractIndexBrowser<Predicate
 	
 	@Override
 	public Set<String> getPredicateKeys(final IBranchPath branchPath, final String conceptId) {
-		
-		final BooleanQuery query = new BooleanQuery();
-		query.add(new TermQuery(new Term(CommonIndexConstants.COMPONENT_TYPE, IndexUtils.intToPrefixCoded(SnomedTerminologyComponentConstants.CONCEPT_NUMBER))), Occur.MUST);
-		query.add(new ComponentIdLongField(conceptId).toQuery(), Occur.MUST);
-		
 		final DocIdCollector docCollector = DocIdCollector.create(service.maxDoc(branchPath));
-		service.search(branchPath, query, docCollector);
+		service.search(branchPath, IndexQueries.queryComponentByLongId(SnomedTerminologyComponentConstants.CONCEPT_NUMBER, conceptId), docCollector);
 		
 		try {
 			final DocIdsIterator docIdsIterator = docCollector.getDocIDs().iterator();

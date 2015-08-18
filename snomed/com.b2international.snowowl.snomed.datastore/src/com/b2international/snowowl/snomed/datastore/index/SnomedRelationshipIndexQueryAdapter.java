@@ -39,9 +39,9 @@ import com.b2international.snowowl.datastore.index.IndexQueryBuilder;
 import com.b2international.snowowl.datastore.index.IndexUtils;
 import com.b2international.snowowl.datastore.index.QueryDslIndexQueryAdapter;
 import com.b2international.snowowl.datastore.index.field.ComponentIdLongField;
-import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.snomed.datastore.SnomedRelationshipIndexEntry;
 import com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants;
+import com.b2international.snowowl.snomed.datastore.browser.SnomedIndexQueries;
 import com.google.common.base.Optional;
 
 /**
@@ -104,11 +104,11 @@ public class SnomedRelationshipIndexQueryAdapter extends QueryDslIndexQueryAdapt
 	@Override
 	protected IndexQueryBuilder createIndexQueryBuilder() {
 		Optional<Long> parsedSearchStringOptional = IndexUtils.parseLong(searchString);
+		final IndexQueryBuilder activeRelationshipsQuery = new IndexQueryBuilder()
+			.requireIf(anyFlagSet(SEARCH_ACTIVE_RELATIONSHIPS_ONLY), SnomedIndexQueries.ACTIVE_COMPONENT_QUERY)
+			.requireIf(StringUtils.isEmpty(searchString), SnomedIndexQueries.RELATIONSHIP_TYPE_QUERY);
 		if (parsedSearchStringOptional.isPresent()) {
-			return new IndexQueryBuilder()
-			.requireExactTermIf(anyFlagSet(SEARCH_ACTIVE_RELATIONSHIPS_ONLY), COMPONENT_ACTIVE, IndexUtils.intToPrefixCoded(1))
-			.requireExactTermIf(StringUtils.isEmpty(searchString), CommonIndexConstants.COMPONENT_TYPE, 
-					IndexUtils.intToPrefixCoded(SnomedTerminologyComponentConstants.RELATIONSHIP_NUMBER))
+			return activeRelationshipsQuery
 			.finishIf(StringUtils.isEmpty(searchString))
 			.requireExactTermIf(anyFlagSet(SEARCH_SOURCE_ID), RELATIONSHIP_OBJECT_ID, IndexUtils.longToPrefixCoded(parsedSearchStringOptional.get()))
 			.requireExactTermIf(anyFlagSet(SEARCH_DESTINATION_ID), RELATIONSHIP_VALUE_ID, IndexUtils.longToPrefixCoded(parsedSearchStringOptional.get()))
@@ -116,10 +116,7 @@ public class SnomedRelationshipIndexQueryAdapter extends QueryDslIndexQueryAdapt
 			.requireIf(anyFlagSet(SEARCH_RELATIONSHIP_ID), new ComponentIdLongField(parsedSearchStringOptional.get()).toQuery());
 		} else {
 			// TODO: this query adapter only searches by IDs, what to return here?
-			return new IndexQueryBuilder()
-				.requireExactTermIf(anyFlagSet(SEARCH_ACTIVE_RELATIONSHIPS_ONLY), COMPONENT_ACTIVE, IndexUtils.intToPrefixCoded(1))
-				.requireExactTermIf(StringUtils.isEmpty(searchString), CommonIndexConstants.COMPONENT_TYPE, 
-						IndexUtils.intToPrefixCoded(SnomedTerminologyComponentConstants.RELATIONSHIP_NUMBER));
+			return activeRelationshipsQuery;
 		}
 	}
 }

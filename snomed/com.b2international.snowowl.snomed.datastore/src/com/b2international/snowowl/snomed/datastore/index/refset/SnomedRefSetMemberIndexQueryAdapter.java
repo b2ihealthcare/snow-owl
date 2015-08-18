@@ -15,7 +15,6 @@
  */
 package com.b2international.snowowl.snomed.datastore.index.refset;
 
-import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.COMPONENT_ACTIVE;
 import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_REFERENCED_COMPONENT_ID;
 import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_REFERENCE_SET_ID;
 
@@ -35,6 +34,7 @@ import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.api.index.CommonIndexConstants;
 import com.b2international.snowowl.datastore.index.IndexAdapterBase;
 import com.b2international.snowowl.datastore.index.IndexUtils;
+import com.b2international.snowowl.snomed.datastore.browser.SnomedIndexQueries;
 
 public class SnomedRefSetMemberIndexQueryAdapter extends IndexAdapterBase<SnomedRefSetMemberIndexEntry> implements Serializable {
 
@@ -89,7 +89,7 @@ public class SnomedRefSetMemberIndexQueryAdapter extends IndexAdapterBase<Snomed
 		
 		if (excludeInactive) {
 			final BooleanQuery inactivityQuery = new BooleanQuery();
-			inactivityQuery.add(new BooleanClause(new TermQuery(new Term(COMPONENT_ACTIVE, IndexUtils.intToPrefixCoded(1))), Occur.MUST));
+			inactivityQuery.add(SnomedIndexQueries.ACTIVE_COMPONENT_QUERY, Occur.MUST);
 			main.add(inactivityQuery, Occur.MUST);
 		}
 		

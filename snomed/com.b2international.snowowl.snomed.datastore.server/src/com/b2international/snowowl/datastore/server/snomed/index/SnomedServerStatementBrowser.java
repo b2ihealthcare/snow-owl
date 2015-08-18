@@ -48,6 +48,7 @@ import org.apache.lucene.index.Term;
 import org.apache.lucene.search.BooleanClause.Occur;
 import org.apache.lucene.search.BooleanQuery;
 import org.apache.lucene.search.IndexSearcher;
+import org.apache.lucene.search.Query;
 import org.apache.lucene.search.ReferenceManager;
 import org.apache.lucene.search.TermQuery;
 import org.apache.lucene.search.TopDocs;
@@ -67,14 +68,16 @@ import com.b2international.snowowl.core.api.index.IndexException;
 import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.datastore.index.DocIdCollector;
 import com.b2international.snowowl.datastore.index.DocIdCollector.DocIdsIterator;
-import com.b2international.snowowl.datastore.index.field.ComponentIdLongField;
 import com.b2international.snowowl.datastore.index.IndexUtils;
+import com.b2international.snowowl.datastore.index.field.ComponentIdLongField;
+import com.b2international.snowowl.datastore.index.query.IndexQueries;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.snomed.datastore.IsAStatement;
 import com.b2international.snowowl.snomed.datastore.SnomedConceptIndexEntry;
 import com.b2international.snowowl.snomed.datastore.SnomedRelationshipIndexEntry;
 import com.b2international.snowowl.snomed.datastore.SnomedStatementBrowser;
 import com.b2international.snowowl.snomed.datastore.StatementCollectionMode;
+import com.b2international.snowowl.snomed.datastore.browser.SnomedIndexQueries;
 import com.b2international.snowowl.snomed.datastore.index.SnomedIndexService;
 import com.b2international.snowowl.snomed.datastore.services.ISnomedComponentService;
 import com.google.common.base.Preconditions;
@@ -84,7 +87,6 @@ import com.google.common.collect.Sets;
 
 /**
  * Index based statement browser implementation.
- *
  */
 public class SnomedServerStatementBrowser extends AbstractSnomedIndexBrowser<SnomedRelationshipIndexEntry> implements SnomedStatementBrowser {
 
@@ -163,7 +165,7 @@ public class SnomedServerStatementBrowser extends AbstractSnomedIndexBrowser<Sno
 		final DocIdCollector collector = DocIdCollector.create(service.maxDoc(branchPath));
 		try {
 			service.search(branchPath,
-					new TermQuery(new Term(CommonIndexConstants.COMPONENT_TYPE, IndexUtils.intToPrefixCoded(SnomedTerminologyComponentConstants.RELATIONSHIP_NUMBER))),
+					SnomedIndexQueries.RELATIONSHIP_TYPE_QUERY,
 					collector);
 			return createResultObjects(branchPath, collector.getDocIDs().iterator());
 		} catch (final IOException e) {
@@ -180,9 +182,6 @@ public class SnomedServerStatementBrowser extends AbstractSnomedIndexBrowser<Sno
 		return createSingleResultObject(branchPath, topDocs);
 	}
 
-	/* (non-Javadoc)
-	 * @see com.b2international.snowowl.core.api.browser.IStatementBrowser#getStatementsById(com.b2international.snowowl.core.api.IBranchPath, java.lang.Object)
-	 */
 	@Override
 	public List<SnomedRelationshipIndexEntry> getStatementsById(final IBranchPath branchPath, final String conceptId) {
 		checkNotNull(branchPath, "Branch path argument cannot be null.");
@@ -201,9 +200,6 @@ public class SnomedServerStatementBrowser extends AbstractSnomedIndexBrowser<Sno
 		}
 	}
 
-	/* (non-Javadoc)
-	 * @see com.b2international.snowowl.core.api.browser.IStatementBrowser#getInboundStatementsById(com.b2international.snowowl.core.api.IBranchPath, java.lang.Object)
-	 */
 	@Override
 	public List<SnomedRelationshipIndexEntry> getInboundStatementsById(final IBranchPath branchPath, final String conceptId) {
 		checkNotNull(branchPath, "Branch path argument cannot be null.");
@@ -232,9 +228,6 @@ public class SnomedServerStatementBrowser extends AbstractSnomedIndexBrowser<Sno
 		}
 	}
 	
-	/* (non-Javadoc)
-	 * @see com.b2international.snowowl.core.api.browser.IStatementBrowser#getOutboundStatementsById(com.b2international.snowowl.core.api.IBranchPath, java.lang.Object)
-	 */
 	@Override
 	public List<SnomedRelationshipIndexEntry> getOutboundStatementsById(final IBranchPath branchPath, final String conceptId) {
 		checkNotNull(branchPath, "Branch path argument cannot be null.");
@@ -248,28 +241,18 @@ public class SnomedServerStatementBrowser extends AbstractSnomedIndexBrowser<Sno
 		}
 	}
 	
-	/* (non-Javadoc)
-	 * @see com.b2international.snowowl.snomed.datastore.SnomedStatementBrowser#getHighestGroup(com.b2international.snowowl.core.api.IBranchPath, long)
-	 */
 	@Override
 	public int getHighestGroup(final IBranchPath branchPath, final long conceptId) {
 		checkNotNull(branchPath, "Branch path argument cannot be null.");
-
 		final ReferenceManager<IndexSearcher> manager = service.getManager(branchPath);
 		IndexSearcher searcher = null;
 
 		try {
-
 			int maxGroup = 0;
 
 			final DocIdCollector collector = DocIdCollector.create(service.maxDoc(branchPath));
 
-			final BooleanQuery query = new BooleanQuery(true);
-			query.add(new TermQuery(new Term(CommonIndexConstants.COMPONENT_TYPE, IndexUtils.intToPrefixCoded(SnomedTerminologyComponentConstants.RELATIONSHIP_NUMBER))), Occur.MUST);
-			query.add(new TermQuery(new Term(COMPONENT_ACTIVE, IndexUtils.intToPrefixCoded(1))), Occur.MUST);
-			query.add(new TermQuery(new Term(RELATIONSHIP_OBJECT_ID, IndexUtils.longToPrefixCoded(conceptId))), Occur.MUST);
-
-			service.search(branchPath, query, collector);
+			service.search(branchPath, queryActiveRelationshipsWhereObjectId(conceptId), collector);
 
 			final DocIdsIterator itr = collector.getDocIDs().iterator();
 			searcher = manager.acquire();
@@ -284,79 +267,56 @@ public class SnomedServerStatementBrowser extends AbstractSnomedIndexBrowser<Sno
 			}
 
 			return maxGroup;
-
 		} catch (final IOException e) {
 			throw new IndexException("Error while getting highest relationship group for concept: " + conceptId, e);
 		} finally {
-			if (searcher != null)
+			if (searcher != null) {
 				try {
 					manager.release(searcher);
 				} catch (final IOException e) {
 					throw new IndexException(e);
 				}
+			}
 		}
 	}
 
-	/* (non-Javadoc)
-	 * @see com.b2international.snowowl.snomed.datastore.SnomedStatementBrowser#getHighestUnionGroup(com.b2international.snowowl.core.api.IBranchPath, long)
-	 */
 	@Override
 	public int getHighestUnionGroup(final IBranchPath branchPath, final long conceptId) {
 		checkNotNull(branchPath, "Branch path argument cannot be null.");
-
 		final ReferenceManager<IndexSearcher> manager = service.getManager(branchPath);
 		IndexSearcher searcher = null;
-
 		try {
-
 			int maxUnionGroup = 0;
-
 			final DocIdCollector collector = DocIdCollector.create(service.maxDoc(branchPath));
-
-			final BooleanQuery query = new BooleanQuery(true);
-			query.add(new TermQuery(new Term(CommonIndexConstants.COMPONENT_TYPE, IndexUtils.intToPrefixCoded(SnomedTerminologyComponentConstants.RELATIONSHIP_NUMBER))), Occur.MUST);
-			query.add(new TermQuery(new Term(COMPONENT_ACTIVE, IndexUtils.intToPrefixCoded(1))), Occur.MUST);
-			query.add(new TermQuery(new Term(RELATIONSHIP_OBJECT_ID, IndexUtils.longToPrefixCoded(conceptId))), Occur.MUST);
-
-			service.search(branchPath, query, collector);
+			service.search(branchPath, queryActiveRelationshipsWhereObjectId(conceptId), collector);
 
 			final DocIdsIterator itr = collector.getDocIDs().iterator();
 			searcher = manager.acquire();
-
 			while (itr.next()) {
-
 				final int unionGroup = IndexUtils.getIntValue(service.document(searcher, itr.getDocID(), UNION_GROUP_FIELD_TO_LOAD).getField(RELATIONSHIP_UNION_GROUP));
 				if (unionGroup > maxUnionGroup) {
 					maxUnionGroup = unionGroup;
 				}
-
 			}
-
 			return maxUnionGroup;
-
 		} catch (final IOException e) {
 			throw new IndexException("Error while getting highest relationship union group for concept: " + conceptId, e);
 		} finally {
-			if (searcher != null)
+			if (searcher != null) {
 				try {
 					manager.release(searcher);
 				} catch (final IOException e) {
 					throw new IndexException(e);
 				}
+			}
 		}
 	}
 
-	/* (non-Javadoc)
-	 * @see com.b2international.snowowl.snomed.datastore.SnomedStatementBrowser#getStatementStorageKeysForGroup(com.b2international.snowowl.core.api.IBranchPath, long, int)
-	 */
 	@Override
 	public long[] getStatementStorageKeysForGroup(final IBranchPath branchPath, final long conceptId, final int group) {
 		return getStatementStorageKeysForGroupField(branchPath, conceptId, group, RELATIONSHIP_GROUP);
 	}
 
-	/* (non-Javadoc)
-	 * @see com.b2international.snowowl.snomed.datastore.SnomedStatementBrowser#getStatementStorageKeysForUnionGroup(com.b2international.snowowl.core.api.IBranchPath, long, int)
-	 */
 	@Override
 	public long[] getStatementStorageKeysForUnionGroup(final IBranchPath branchPath, final long conceptId, final int unionGroup) {
 		return getStatementStorageKeysForGroupField(branchPath, conceptId, unionGroup, RELATIONSHIP_UNION_GROUP);
@@ -364,26 +324,17 @@ public class SnomedServerStatementBrowser extends AbstractSnomedIndexBrowser<Sno
 
 	private long[] getStatementStorageKeysForGroupField(final IBranchPath branchPath, final long conceptId, final int value, final String groupField) {
 		checkNotNull(branchPath, "Branch path argument cannot be null.");
-
 		final ReferenceManager<IndexSearcher> manager = service.getManager(branchPath);
 		IndexSearcher searcher = null;
 
 		try {
-
-			final BooleanQuery query = new BooleanQuery();
-			query.add(new TermQuery(new Term(CommonIndexConstants.COMPONENT_TYPE, IndexUtils.intToPrefixCoded(SnomedTerminologyComponentConstants.RELATIONSHIP_NUMBER))),
-					Occur.MUST);
-
-			query.add(new TermQuery(new Term(COMPONENT_ACTIVE, IndexUtils.intToPrefixCoded(1))), Occur.MUST);
-			query.add(new TermQuery(new Term(RELATIONSHIP_OBJECT_ID, IndexUtils.longToPrefixCoded(conceptId))), Occur.MUST);
-			//cannot search for group, as it is not indexed
-
+			// cannot search for group, as it is not indexed
 			searcher = manager.acquire();
 			final IndexReader reader = searcher.getIndexReader();
 
 			final int size = reader.maxDoc();
 			final DocIdCollector collector = DocIdCollector.create(size);
-			service.search(branchPath, query, collector);
+			service.search(branchPath, queryActiveRelationshipsWhereObjectId(conceptId), collector);
 
 			final DocIdsIterator itr = collector.getDocIDs().iterator();
 
@@ -443,52 +394,26 @@ public class SnomedServerStatementBrowser extends AbstractSnomedIndexBrowser<Sno
 		}
 	}
 
-	/* (non-Javadoc)
-	 * @see com.b2international.snowowl.snomed.datastore.SnomedStatementBrowser#getAllActiveStatements(com.b2international.snowowl.core.api.IBranchPath)
-	 */
 	@Override
 	public LongKeyMap getAllActiveStatements(final IBranchPath branchPath) {
-
 		Preconditions.checkNotNull(branchPath, "Branch path argument cannot be null.");
-
-		final TermQuery relationshipTypeQuery = new TermQuery(new Term(CommonIndexConstants.COMPONENT_TYPE, IndexUtils.intToPrefixCoded(SnomedTerminologyComponentConstants.RELATIONSHIP_NUMBER)));
-		final TermQuery activeComponentQuery = new TermQuery(new Term(COMPONENT_ACTIVE, IndexUtils.intToPrefixCoded(1)));
-
-		final BooleanQuery statementQuery = new BooleanQuery(true);
-		statementQuery.add(relationshipTypeQuery, Occur.MUST);
-		statementQuery.add(activeComponentQuery, Occur.MUST);
-
-		final int hitCount = service.getHitCount(branchPath, statementQuery, null);
-
+		final int hitCount = service.getHitCount(branchPath, SnomedIndexQueries.ACTIVE_RELATIONSHIPS_QUERY, null);
 		final StatementFragmentCollector collector = new StatementFragmentCollector(hitCount);
-
-		service.search(branchPath, statementQuery, collector);
-
+		service.search(branchPath, SnomedIndexQueries.ACTIVE_RELATIONSHIPS_QUERY, collector);
 		return collector.getStatementMap();
-
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see com.b2international.snowowl.snomed.datastore.SnomedStatementBrowser#getStorageKey(com.b2international.snowowl.core.api.IBranchPath, java.lang.String)
-	 */
 	@Override
 	public long getStorageKey(final IBranchPath branchPath, final String relationshipId) {
 
 		Preconditions.checkNotNull(branchPath, "Branch path argument cannot be null.");
 		Preconditions.checkNotNull(branchPath, "Concept ID argument cannot be null.");
 
-		final BooleanQuery query = new BooleanQuery(true);
-		query.add(new TermQuery(new Term(CommonIndexConstants.COMPONENT_TYPE, IndexUtils.intToPrefixCoded(SnomedTerminologyComponentConstants.RELATIONSHIP_NUMBER))), Occur.MUST);
-		query.add(getComponentIdQuery(relationshipId), Occur.MUST);
-
-		final TopDocs topDocs = service.search(branchPath, query, 1);
+		final TopDocs topDocs = service.search(branchPath, IndexQueries.queryComponentByLongId(SnomedTerminologyComponentConstants.RELATIONSHIP_NUMBER, relationshipId), 1);
 
 		//cannot found matching label for component
 		if (null == topDocs || CompareUtils.isEmpty(topDocs.scoreDocs)) {
-
 			return -1L;
-
 		}
 
 		final Document doc = service.document(branchPath, topDocs.scoreDocs[0].doc, COMPONENT_STORAGE_KEY_TO_LOAD);
@@ -496,9 +421,7 @@ public class SnomedServerStatementBrowser extends AbstractSnomedIndexBrowser<Sno
 		final IndexableField field = doc.getField(CommonIndexConstants.COMPONENT_STORAGE_KEY);
 
 		if (null == field) {
-
 			return -1L;
-
 		}
 
 		return IndexUtils.getLongValue(field);
@@ -506,33 +429,15 @@ public class SnomedServerStatementBrowser extends AbstractSnomedIndexBrowser<Sno
 
 	private static final Set<String> COMPONENT_STORAGE_KEY_TO_LOAD = Sets.newHashSet(CommonIndexConstants.COMPONENT_STORAGE_KEY);
 
-	/*
-	 * (non-Javadoc)
-	 * @see com.b2international.snowowl.snomed.datastore.SnomedStatementBrowser#getSourceIdForStatementStorageKey(com.b2international.snowowl.core.api.IBranchPath, long)
-	 */
 	@Override
 	public long getSourceIdForStatementStorageKey(final IBranchPath branchPath, final long statementStorageKey) {
-
 		Preconditions.checkNotNull(branchPath, "Branch path argument cannot be null.");
-
-		final TermQuery relationshipTypeQuery = new TermQuery(new Term(CommonIndexConstants.COMPONENT_TYPE, IndexUtils.intToPrefixCoded(SnomedTerminologyComponentConstants.RELATIONSHIP_NUMBER)));
-		final TermQuery activeComponentQuery = new TermQuery(new Term(COMPONENT_ACTIVE, IndexUtils.intToPrefixCoded(1)));
-		final TermQuery relationshipStorageKeyQuery = new TermQuery(new Term(CommonIndexConstants.COMPONENT_STORAGE_KEY, IndexUtils.longToPrefixCoded(statementStorageKey)));
-
-		final BooleanQuery statementQuery = new BooleanQuery(true);
-		statementQuery.add(relationshipStorageKeyQuery, Occur.MUST);
-		statementQuery.add(relationshipTypeQuery, Occur.MUST);
-		statementQuery.add(activeComponentQuery, Occur.MUST);
-
+		final Query query = IndexQueries.and(SnomedIndexQueries.ACTIVE_RELATIONSHIPS_QUERY, new TermQuery(new Term(CommonIndexConstants.COMPONENT_STORAGE_KEY, IndexUtils.longToPrefixCoded(statementStorageKey))));
 		final StatementSourceIdCollector collector = new StatementSourceIdCollector(statementStorageKey);
-		service.search(branchPath, statementQuery, collector);
-
+		service.search(branchPath, query, collector);
 		return collector.getSourceId();
 	}
 
-	/* (non-Javadoc)
-	 * @see com.b2international.snowowl.snomed.datastore.SnomedStatementBrowser#getActiveInboundStatementsById(com.b2international.snowowl.core.api.IBranchPath, java.lang.String)
-	 */
 	@Override
 	public Collection<SnomedRelationshipIndexEntry> getActiveInboundStatementsById(final IBranchPath branchPath, final String conceptId) {
 		checkNotNull(branchPath, "Branch path argument cannot be null.");
@@ -541,7 +446,7 @@ public class SnomedServerStatementBrowser extends AbstractSnomedIndexBrowser<Sno
 			final DocIdCollector collector = DocIdCollector.create(service.maxDoc(branchPath));
 			final BooleanQuery query = new BooleanQuery(true);
 			query.add(new TermQuery(new Term(RELATIONSHIP_VALUE_ID, IndexUtils.longToPrefixCoded(Long.valueOf(conceptId)))), Occur.MUST);
-			query.add(new TermQuery(new Term(COMPONENT_ACTIVE, IndexUtils.intToPrefixCoded(1))), Occur.MUST);
+			query.add(SnomedIndexQueries.ACTIVE_COMPONENT_QUERY, Occur.MUST);
 			service.search(branchPath, query, collector);
 			return createResultObjects(branchPath, collector.getDocIDs().iterator());
 		} catch (final IOException e) {
@@ -549,9 +454,6 @@ public class SnomedServerStatementBrowser extends AbstractSnomedIndexBrowser<Sno
 		}
 	}
 
-	/* (non-Javadoc)
-	 * @see com.b2international.snowowl.snomed.datastore.SnomedStatementBrowser#getActiveOutboundStatementsById(com.b2international.snowowl.core.api.IBranchPath, java.lang.String)
-	 */
 	@Override
 	public Collection<SnomedRelationshipIndexEntry> getActiveOutboundStatementsById(final IBranchPath branchPath, final String conceptId) {
 		checkNotNull(branchPath, "Branch path argument cannot be null.");
@@ -560,7 +462,7 @@ public class SnomedServerStatementBrowser extends AbstractSnomedIndexBrowser<Sno
 			final DocIdCollector collector = DocIdCollector.create(service.maxDoc(branchPath));
 			final BooleanQuery query = new BooleanQuery(true);
 			query.add(new TermQuery(new Term(RELATIONSHIP_OBJECT_ID, IndexUtils.longToPrefixCoded(Long.valueOf(conceptId)))), Occur.MUST);
-			query.add(new TermQuery(new Term(COMPONENT_ACTIVE, IndexUtils.intToPrefixCoded(1))), Occur.MUST);
+			query.add(SnomedIndexQueries.ACTIVE_COMPONENT_QUERY, Occur.MUST);
 			service.search(branchPath, query, collector);
 			return createResultObjects(branchPath, collector.getDocIDs().iterator());
 		} catch (final IOException e) {
@@ -568,9 +470,6 @@ public class SnomedServerStatementBrowser extends AbstractSnomedIndexBrowser<Sno
 		}
 	}
 
-	/* (non-Javadoc)
-	 * @see com.b2international.snowowl.snomed.datastore.SnomedStatementBrowser#getAllStatementLabelsById(com.b2international.snowowl.core.api.IBranchPath, java.lang.String)
-	 */
 	@Override
 	public Map<String, String> getAllStatementLabelsById(final IBranchPath branchPath, final String conceptId) {
 		checkNotNull(branchPath, "Branch path argument cannot be null.");
@@ -588,41 +487,28 @@ public class SnomedServerStatementBrowser extends AbstractSnomedIndexBrowser<Sno
 		final Map<String, String> $ = Maps.newHashMapWithExpectedSize(idsSet.size());
 
 		if (idsSet.size() > 1000) {
-
 			final SnomedComponentLabelCollector labelCollector = new SnomedComponentLabelCollector(idsSet);
-			service.search(branchPath, new TermQuery(new Term(CommonIndexConstants.COMPONENT_TYPE, IndexUtils.intToPrefixCoded(SnomedTerminologyComponentConstants.CONCEPT_NUMBER))), labelCollector);
+			service.search(branchPath, SnomedIndexQueries.CONCEPT_TYPE_QUERY, labelCollector);
 			final LongKeyMap idLabelMapping = labelCollector.getIdLabelMapping();
 
 			for (final LongKeyMapIterator itr = idLabelMapping.entries(); itr.hasNext(); /**/) {
-
 				itr.next();
-
 				$.put(
 						Long.toString(itr.getKey()), //ID
 						String.valueOf(itr.getValue())); //label
-
 			}
-
-
 		} else {
-
 			final String[] ids = LongSets.toStringArray(collector.getIds());
 			final String[] labels = ApplicationContext.getInstance().getService(ISnomedComponentService.class).getLabels(branchPath, ids);
 
 			for (int i = 0; i < ids.length; i++) {
-
 				$.put(ids[i], labels[i]);
-
 			}
-
 		}
 
 		return $;
 	}
 
-	/* (non-Javadoc)
-	 * @see com.b2international.snowowl.snomed.datastore.SnomedStatementBrowser#getAllStatementImageIdsById(com.b2international.snowowl.core.api.IBranchPath, java.lang.String)
-	 */
 	@Override
 	public Map<String, String> getAllStatementImageIdsById(final IBranchPath branchPath, final String conceptId) {
 		checkNotNull(branchPath, "Branch path argument cannot be null.");
@@ -640,25 +526,18 @@ public class SnomedServerStatementBrowser extends AbstractSnomedIndexBrowser<Sno
 		final Map<String, String> $ = Maps.newHashMapWithExpectedSize(idsSet.size());
 
 		if (idsSet.size() > 1000) {
-
 			final SnomedConceptIconIdCollector labelCollector = new SnomedConceptIconIdCollector(idsSet);
-			service.search(branchPath, new TermQuery(new Term(CommonIndexConstants.COMPONENT_TYPE, IndexUtils.intToPrefixCoded(SnomedTerminologyComponentConstants.CONCEPT_NUMBER))), labelCollector);
+			service.search(branchPath, SnomedIndexQueries.CONCEPT_TYPE_QUERY, labelCollector);
 			return labelCollector.getIdIconIdStringMapping();
-
 		} else {
-
 			final String[] ids = LongSets.toStringArray(collector.getIds());
 			final String[] iconIds = ApplicationContext.getInstance().getService(ISnomedComponentService.class).getIconId(branchPath, ids);
 
 			for (int i = 0; i < ids.length; i++) {
-
 				$.put(ids[i], iconIds[i]);
-
 			}
-
 			return $;
 		}
-
 	}
 
 	@Override
@@ -690,5 +569,9 @@ public class SnomedServerStatementBrowser extends AbstractSnomedIndexBrowser<Sno
 		}
 		return result;
 	}
-
+	
+	private Query queryActiveRelationshipsWhereObjectId(long conceptId) {
+		return IndexQueries.and(SnomedIndexQueries.ACTIVE_RELATIONSHIPS_QUERY, new TermQuery(new Term(RELATIONSHIP_OBJECT_ID, IndexUtils.longToPrefixCoded(conceptId))));		
+	}
+	
 }

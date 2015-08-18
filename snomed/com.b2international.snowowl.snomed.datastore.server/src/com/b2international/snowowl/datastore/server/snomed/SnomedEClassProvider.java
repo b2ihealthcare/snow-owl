@@ -34,9 +34,9 @@ import org.apache.lucene.document.Document;
 import org.apache.lucene.index.IndexableField;
 import org.eclipse.emf.ecore.EClass;
 
-import com.b2international.snowowl.core.api.index.CommonIndexConstants;
 import com.b2international.snowowl.datastore.index.AbstractIndexService;
 import com.b2international.snowowl.datastore.index.IndexUtils;
+import com.b2international.snowowl.datastore.index.field.ComponentTypeField;
 import com.b2international.snowowl.datastore.server.EClassProvider;
 import com.b2international.snowowl.datastore.server.IEClassProvider;
 import com.b2international.snowowl.snomed.SnomedPackage;
@@ -52,14 +52,14 @@ public class SnomedEClassProvider extends EClassProvider {
 	private static final int PREDICATE_TYPE_ID = 999;
 
 	private static final Set<String> FIELDS_TO_LOAD = unmodifiableSet(newHashSet(
-			CommonIndexConstants.COMPONENT_TYPE, 
+			ComponentTypeField.COMPONENT_TYPE, 
 			REFERENCE_SET_MEMBER_REFERENCE_SET_TYPE
 			));
 	
 	@Override
 	protected EClass extractEClass(final Document doc) {
 		
-		IndexableField indexableField = doc.getField(CommonIndexConstants.COMPONENT_TYPE);
+		IndexableField indexableField = doc.getField(ComponentTypeField.COMPONENT_TYPE);
 		if (null == indexableField) {//component type is not stored for reference set members
 			indexableField = doc.getField(REFERENCE_SET_MEMBER_REFERENCE_SET_TYPE);
 			if (null != indexableField) {

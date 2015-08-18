@@ -25,6 +25,7 @@ import com.b2international.snowowl.datastore.index.IndexQueryBuilder;
 import com.b2international.snowowl.datastore.index.IndexUtils;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants;
+import com.b2international.snowowl.snomed.datastore.browser.SnomedIndexQueries;
 
 public class SnomedDescriptionContainerQueryAdapter extends SnomedDescriptionIndexQueryAdapter implements Serializable {
 
@@ -44,7 +45,7 @@ public class SnomedDescriptionContainerQueryAdapter extends SnomedDescriptionInd
     @Override
     protected IndexQueryBuilder createIndexQueryBuilder() {
         return super.createIndexQueryBuilder()
-            .requireExactTerm(SnomedIndexBrowserConstants.COMPONENT_ACTIVE, IndexUtils.intToPrefixCoded(1))
+            .require(SnomedIndexQueries.ACTIVE_COMPONENT_QUERY)
             .requireExactTermIf(anyFlagSet(SEARCH_DESCRIPTION_CONTAINER_SYNYONYMS_ONLY), SnomedIndexBrowserConstants.DESCRIPTION_TYPE_ID, IndexUtils.longToPrefixCoded(Concepts.SYNONYM))
             .requireExactTermIf(anyFlagSet(SEARCH_DESCRIPTION_CONTAINER_FSN_ONLY), SnomedIndexBrowserConstants.DESCRIPTION_TYPE_ID, IndexUtils.longToPrefixCoded(Concepts.FULLY_SPECIFIED_NAME))
             .requireAnyExactBytesRefTerms(SnomedIndexBrowserConstants.DESCRIPTION_CONCEPT_ID, IndexUtils.longToPrefixCoded(conceptIds));

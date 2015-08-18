@@ -32,13 +32,14 @@ import com.b2international.snowowl.core.validation.ComponentValidationDiagnostic
 import com.b2international.snowowl.core.validation.ComponentValidationDiagnosticImpl;
 import com.b2international.snowowl.datastore.index.DocIdCollector;
 import com.b2international.snowowl.datastore.index.DocIdCollector.DocIdsIterator;
-import com.b2international.snowowl.datastore.index.field.ComponentIdLongField;
 import com.b2international.snowowl.datastore.index.IndexQueryBuilder;
 import com.b2international.snowowl.datastore.index.IndexUtils;
+import com.b2international.snowowl.datastore.index.field.ComponentIdLongField;
 import com.b2international.snowowl.datastore.server.snomed.index.SnomedIndexServerService;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.snomed.datastore.SnomedConceptIndexEntry;
 import com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants;
+import com.b2international.snowowl.snomed.datastore.browser.SnomedIndexQueries;
 import com.b2international.snowowl.snomed.datastore.index.SnomedIndexService;
 import com.b2international.snowowl.snomed.datastore.services.SnomedConceptNameProvider;
 import com.b2international.snowowl.snomed.datastore.services.SnomedRelationshipNameProvider;
@@ -72,7 +73,7 @@ public class SnomedConceptUngroupedRelationshipConstraint extends ComponentValid
 					IndexUtils.longToPrefixCoded(ungroupedRelationshipTypeId));
 		}
 		Query query = new IndexQueryBuilder()
-			.requireExactTerm(SnomedIndexBrowserConstants.COMPONENT_ACTIVE, IndexUtils.intToPrefixCoded(1))
+			.require(SnomedIndexQueries.ACTIVE_COMPONENT_QUERY)
 			.requireExactTerm(SnomedIndexBrowserConstants.RELATIONSHIP_OBJECT_ID, IndexUtils.longToPrefixCoded(component.getId()))
 			.require(relationshipTypeIndexQueryBuilder)
 			.toQuery();

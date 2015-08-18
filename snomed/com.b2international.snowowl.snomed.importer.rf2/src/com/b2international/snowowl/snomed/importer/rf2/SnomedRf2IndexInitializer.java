@@ -151,6 +151,7 @@ import com.b2international.snowowl.datastore.cdo.ICDOConnectionManager;
 import com.b2international.snowowl.datastore.index.IndexUtils;
 import com.b2international.snowowl.datastore.index.SortKeyMode;
 import com.b2international.snowowl.datastore.index.field.ComponentIdLongField;
+import com.b2international.snowowl.datastore.index.field.ComponentTypeField;
 import com.b2international.snowowl.datastore.server.snomed.index.NamespaceMapping;
 import com.b2international.snowowl.datastore.server.snomed.index.SnomedIndexServerService;
 import com.b2international.snowowl.datastore.server.snomed.index.init.DoiInitializer;
@@ -615,6 +616,7 @@ public class SnomedRf2IndexInitializer extends Job {
 		final SnomedIndexServerService snomedIndexService = getSnomedIndexService();
 		
 		parseFile(absolutePath, 10, new RecordParserCallback<String>() {
+			@Override
 			public void handleRecord(final int recordCount, final java.util.List<String> record) { 
 				
 				final long storageKey = getImportIndexService().getComponentCdoId(record.get(0));
@@ -651,7 +653,7 @@ public class SnomedRf2IndexInitializer extends Job {
 				// Create relationship document
 				final Document doc = new Document();
 				new ComponentIdLongField(sctId).addTo(doc);
-				doc.add(new IntField(CommonIndexConstants.COMPONENT_TYPE, SnomedTerminologyComponentConstants.RELATIONSHIP_NUMBER, Store.YES));
+				new ComponentTypeField(SnomedTerminologyComponentConstants.RELATIONSHIP_NUMBER).addTo(doc);
 				doc.add(new StoredField(COMPONENT_RELEASED, released ? 1 : 0));
 				doc.add(new IntField(COMPONENT_ACTIVE, active ? 1 : 0, Store.YES));
 				doc.add(new LongField(CommonIndexConstants.COMPONENT_STORAGE_KEY, storageKey, Store.YES));
@@ -727,7 +729,7 @@ public class SnomedRf2IndexInitializer extends Job {
 					final boolean indexAsRelevantForCompare = !structural;
 					final int refComponentType = SnomedTerminologyComponentConstants.getTerminologyComponentIdValueSafe(record.get(5));
 					final long storageKey = importIndexService.getRefSetCdoId(refSetId);
-					refSetDoc.add(new IntField(CommonIndexConstants.COMPONENT_TYPE, SnomedTerminologyComponentConstants.REFSET_NUMBER, Store.YES));
+					new ComponentTypeField(SnomedTerminologyComponentConstants.REFSET_NUMBER).addTo(refSetDoc);
 					new ComponentIdLongField(refSetId).addTo(refSetDoc);
 					refSetDoc.add(new IntField(REFERENCE_SET_TYPE, refSetType, Store.YES));
 					refSetDoc.add(new IntField(REFERENCE_SET_REFERENCED_COMPONENT_TYPE, refComponentType, Store.YES));
@@ -757,6 +759,7 @@ public class SnomedRf2IndexInitializer extends Job {
 						//is being created in this effective time cycle. check concept in CDO
 						final ICDOConnection connection = getServiceForClass(ICDOConnectionManager.class).getByUuid(SnomedDatastoreActivator.REPOSITORY_UUID);
 						moduleId = CDOUtils.apply(new CDOTransactionFunction<String>(connection, branchPath) {
+							@Override
 							protected String apply(final CDOTransaction view) {
 								final Concept concept = new SnomedConceptLookupService().getComponent(refSetId, view);
 								//we have to index its descriptions, relationships and the concept itself
@@ -1111,7 +1114,7 @@ public class SnomedRf2IndexInitializer extends Job {
 				// Create description document.
 				final Document doc = new Document();
 				new ComponentIdLongField(sctId).addTo(doc);
-				doc.add(new IntField(CommonIndexConstants.COMPONENT_TYPE, SnomedTerminologyComponentConstants.DESCRIPTION_NUMBER, Store.YES));
+				new ComponentTypeField(SnomedTerminologyComponentConstants.DESCRIPTION_NUMBER).addTo(doc);
 				doc.add(new TextField(CommonIndexConstants.COMPONENT_LABEL, term, Store.YES));
 				SortKeyMode.SEARCH_ONLY.add(doc, term);
 				doc.add(new BinaryDocValuesField(CommonIndexConstants.COMPONENT_LABEL, new BytesRef(term)));
@@ -1227,7 +1230,7 @@ public class SnomedRf2IndexInitializer extends Job {
 		
 		new ComponentIdLongField(conceptId).addTo(doc);
 		doc.add(new LongField(CommonIndexConstants.COMPONENT_STORAGE_KEY, conceptStorageKey, Store.YES));
-		doc.add(new IntField(CommonIndexConstants.COMPONENT_TYPE, SnomedTerminologyComponentConstants.CONCEPT_NUMBER, Store.YES));
+		new ComponentTypeField(SnomedTerminologyComponentConstants.CONCEPT_NUMBER).addTo(doc);
 		doc.add(new IntField(CONCEPT_EXHAUSTIVE, exhaustive ? 1 : 0, Store.YES));
 		doc.add(new IntField(COMPONENT_ACTIVE, active ? 1 : 0, Store.YES));
 		doc.add(new IntField(CONCEPT_PRIMITIVE, primitive ? 1 : 0, Store.YES));

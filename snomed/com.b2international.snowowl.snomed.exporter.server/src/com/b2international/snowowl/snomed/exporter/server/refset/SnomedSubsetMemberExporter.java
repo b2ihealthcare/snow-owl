@@ -42,14 +42,13 @@ import bak.pcj.set.LongSet;
 import com.b2international.commons.CompareUtils;
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.api.SnowowlRuntimeException;
-import com.b2international.snowowl.core.api.index.CommonIndexConstants;
 import com.b2international.snowowl.core.date.DateFormats;
 import com.b2international.snowowl.core.date.Dates;
 import com.b2international.snowowl.datastore.index.IndexUtils;
 import com.b2international.snowowl.datastore.server.index.IndexServerService;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
-import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants;
+import com.b2international.snowowl.snomed.datastore.browser.SnomedIndexQueries;
 import com.b2international.snowowl.snomed.datastore.index.SnomedIndexService;
 import com.b2international.snowowl.snomed.exporter.server.ComponentExportType;
 import com.b2international.snowowl.snomed.exporter.server.Id2Rf1PropertyMapper;
@@ -116,10 +115,9 @@ public class SnomedSubsetMemberExporter extends AbstractSnomedSubsetExporter {
 		
 		//get referenced component's (description) ID to description type ID mapping 
 		if (languageType) {
-			final Query query = new TermQuery(new Term(CommonIndexConstants.COMPONENT_TYPE, IndexUtils.intToPrefixCoded(SnomedTerminologyComponentConstants.DESCRIPTION_NUMBER)));
-			final int expectedSize = indexService.getHitCount(getBranchPath(), query, null);
+			final int expectedSize = indexService.getHitCount(getBranchPath(), SnomedIndexQueries.DESCRIPTION_TYPE_QUERY, null);
 			final DescriptionIdTypeCollector collector = new DescriptionIdTypeCollector(expectedSize);
-			indexService.search(getBranchPath(), query, collector);
+			indexService.search(getBranchPath(), SnomedIndexQueries.DESCRIPTION_TYPE_QUERY, collector);
 			descriptionIdTypeMap = collector.getIdMap();
 		} 
 			

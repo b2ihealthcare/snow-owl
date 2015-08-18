@@ -45,6 +45,9 @@ import org.apache.lucene.document.StringField;
 import org.apache.lucene.document.TextField;
 import org.apache.lucene.util.BytesRef;
 
+import bak.pcj.LongIterator;
+import bak.pcj.set.LongSet;
+
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.api.index.CommonIndexConstants;
 import com.b2international.snowowl.core.api.index.IIndexMappingStrategy;
@@ -54,13 +57,11 @@ import com.b2international.snowowl.datastore.cdo.CDOUtils;
 import com.b2international.snowowl.datastore.index.AbstractIndexMappingStrategy;
 import com.b2international.snowowl.datastore.index.SortKeyMode;
 import com.b2international.snowowl.datastore.index.field.ComponentIdLongField;
+import com.b2international.snowowl.datastore.index.field.ComponentTypeField;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants;
 import com.b2international.snowowl.snomed.datastore.services.ISnomedComponentService;
 import com.b2international.snowowl.snomed.datastore.services.SnomedConceptNameProvider;
-
-import bak.pcj.LongIterator;
-import bak.pcj.set.LongSet;
 
 /**
  * Mapping strategy to transform a SNOMED CT concept into a {@link Document document} of the index.
@@ -170,7 +171,7 @@ public abstract class SnomedConceptIndexMappingStrategy extends AbstractIndexMap
 		
 		new ComponentIdLongField(conceptId).addTo(doc);
 		doc.add(new LongField(CommonIndexConstants.COMPONENT_STORAGE_KEY, storageKey, Store.YES));
-		doc.add(new IntField(CommonIndexConstants.COMPONENT_TYPE, SnomedTerminologyComponentConstants.CONCEPT_NUMBER, Store.YES));
+		new ComponentTypeField(SnomedTerminologyComponentConstants.CONCEPT_NUMBER).addTo(doc);
 		doc.add(new IntField(CONCEPT_EXHAUSTIVE, exhaustive ? 1 : 0, Store.YES));
 		doc.add(new IntField(COMPONENT_ACTIVE, active ? 1 : 0, Store.YES));
 		doc.add(new IntField(CONCEPT_PRIMITIVE, primitive ? 1 : 0, Store.YES));

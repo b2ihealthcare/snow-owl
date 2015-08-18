@@ -15,25 +15,20 @@
  */
 package com.b2international.snowowl.datastore.server.snomed.escg;
 
-import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.COMPONENT_ACTIVE;
 import static com.google.common.base.Preconditions.checkNotNull;
 
 import java.io.Serializable;
 import java.util.Collection;
 
-import org.apache.lucene.index.Term;
 import org.apache.lucene.search.BooleanClause.Occur;
 import org.apache.lucene.search.BooleanQuery;
-import org.apache.lucene.search.TermQuery;
 
 import bak.pcj.LongCollection;
 
 import com.b2international.snowowl.core.api.IBranchPath;
-import com.b2international.snowowl.core.api.index.CommonIndexConstants;
-import com.b2international.snowowl.datastore.index.IndexUtils;
 import com.b2international.snowowl.dsl.escg.EscgUtils;
-import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.snomed.datastore.SnomedConceptIndexEntry;
+import com.b2international.snowowl.snomed.datastore.browser.SnomedIndexQueries;
 import com.b2international.snowowl.snomed.datastore.escg.IEscgQueryEvaluatorService;
 
 public class EscgQueryEvaluatorService implements IEscgQueryEvaluatorService, Serializable {
@@ -50,22 +45,11 @@ public class EscgQueryEvaluatorService implements IEscgQueryEvaluatorService, Se
 	public BooleanQuery evaluateBooleanQuery(final IBranchPath branchPath, final String expression) {
 		final IndexQueryQueryEvaluator delegate = new IndexQueryQueryEvaluator();
 		final BooleanQuery booleanQuery = delegate.evaluate(EscgUtils.INSTANCE.parseRewrite(expression));
-		booleanQuery.add(createActiveQuery(), Occur.MUST);
-		booleanQuery.add(createConceptTypeQuery(), Occur.MUST);
+		booleanQuery.add(SnomedIndexQueries.ACTIVE_COMPONENT_QUERY, Occur.MUST);
+		booleanQuery.add(SnomedIndexQueries.CONCEPT_TYPE_QUERY, Occur.MUST);
 		return booleanQuery;
 	}
 	
-	private TermQuery createConceptTypeQuery() {
-		return new TermQuery(new Term(CommonIndexConstants.COMPONENT_TYPE, IndexUtils.intToPrefixCoded(SnomedTerminologyComponentConstants.CONCEPT_NUMBER)));
-	}
-
-	private TermQuery createActiveQuery() {
-		return new TermQuery(new Term(COMPONENT_ACTIVE, IndexUtils.intToPrefixCoded(1)));
-	}
-
-	/* (non-Javadoc)
-	 * @see com.b2international.snowowl.snomed.datastore.escg.IEscgQueryEvaluatorService#evaluateConceptIds(com.b2international.snowowl.core.api.IBranchPath, java.lang.String)
-	 */
 	@Override
 	public LongCollection evaluateConceptIds(final IBranchPath branchPath, final String queryExpression) {
 		checkNotNull(queryExpression, "ESCG query expression wrapper argument cannot be null.");

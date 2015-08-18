@@ -43,8 +43,8 @@ import com.b2international.snowowl.datastore.index.DocumentWithScore;
 import com.b2international.snowowl.datastore.index.IndexQueryBuilder;
 import com.b2international.snowowl.datastore.index.IndexUtils;
 import com.b2international.snowowl.datastore.index.field.ComponentIdLongField;
-import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants;
+import com.b2international.snowowl.snomed.datastore.browser.SnomedIndexQueries;
 import com.b2international.snowowl.snomed.datastore.index.SnomedDOIQueryAdapter;
 import com.b2international.snowowl.snomed.datastore.index.SnomedDslIndexQueryAdapter;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType;
@@ -119,7 +119,7 @@ public class SnomedRefSetIndexQueryAdapter extends SnomedDslIndexQueryAdapter<Sn
 		final IndexQueryBuilder queryBuilder = new IndexQueryBuilder();
 		
 		//workaround for same reference set and identifier concept ID
-		queryBuilder.requireExactTerm(CommonIndexConstants.COMPONENT_TYPE, IndexUtils.intToPrefixCoded(SnomedTerminologyComponentConstants.REFSET_NUMBER));
+		queryBuilder.require(SnomedIndexQueries.REFSET_TYPE_QUERY);
 
 		if (referencedComponentType != null) {
 			queryBuilder.requireExactTerm(REFERENCE_SET_REFERENCED_COMPONENT_TYPE, IndexUtils.intToPrefixCoded(referencedComponentType));

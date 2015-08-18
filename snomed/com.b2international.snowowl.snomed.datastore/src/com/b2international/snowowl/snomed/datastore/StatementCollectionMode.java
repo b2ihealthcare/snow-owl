@@ -15,26 +15,18 @@
  */
 package com.b2international.snowowl.snomed.datastore;
 
-import static com.b2international.snowowl.datastore.index.IndexUtils.intToPrefixCoded;
-import static com.b2international.snowowl.datastore.index.IndexUtils.longToPrefixCoded;
-import static com.b2international.snowowl.snomed.SnomedConstants.Concepts.IS_A;
-import static com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants.RELATIONSHIP_NUMBER;
-import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.COMPONENT_ACTIVE;
 import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.RELATIONSHIP_ATTRIBUTE_ID;
-import static org.apache.lucene.search.BooleanClause.Occur.MUST;
 
 import java.io.IOException;
 import java.text.MessageFormat;
 
 import org.apache.lucene.index.AtomicReader;
 import org.apache.lucene.index.NumericDocValues;
-import org.apache.lucene.index.Term;
-import org.apache.lucene.search.BooleanQuery;
 import org.apache.lucene.search.Query;
-import org.apache.lucene.search.TermQuery;
 
 import com.b2international.snowowl.core.api.index.CommonIndexConstants;
 import com.b2international.snowowl.datastore.index.field.ComponentIdLongField;
+import com.b2international.snowowl.snomed.datastore.browser.SnomedIndexQueries;
 
 /**
  * Enumerates the possible collection modes an array of {@link IsAStatement}s can be returned in.
@@ -106,10 +98,7 @@ public enum StatementCollectionMode {
 		}
 
 		@Override public Query getQuery() {
-			final BooleanQuery query = new BooleanQuery(true);
-			query.add(new TermQuery(new Term(CommonIndexConstants.COMPONENT_TYPE, intToPrefixCoded(RELATIONSHIP_NUMBER))), MUST);
-			query.add(new TermQuery(new Term(COMPONENT_ACTIVE, intToPrefixCoded(1))), MUST);
-			return query;
+			return SnomedIndexQueries.ACTIVE_RELATIONSHIPS_QUERY;
 		}
 
 	};
@@ -138,10 +127,7 @@ public enum StatementCollectionMode {
 	/**Returns with the index query to collect all relevant relationships.
 	 *<p>By default returns with a query that accepts active relationships with IS_A type.*/
 	public Query getQuery() {
-		final BooleanQuery query = new BooleanQuery(true);
-		query.add(new TermQuery(new Term(COMPONENT_ACTIVE, intToPrefixCoded(1))), MUST);
-		query.add(new TermQuery(new Term(RELATIONSHIP_ATTRIBUTE_ID, longToPrefixCoded(IS_A))), MUST);
-		return query;
+		return SnomedIndexQueries.ACTIVE_ISA_RELATIONSHIPS;
 	}
 
 	/**
