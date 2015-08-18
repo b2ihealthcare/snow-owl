@@ -23,7 +23,6 @@ import static com.b2international.snowowl.core.api.index.CommonIndexConstants.CO
 import static com.b2international.snowowl.core.api.index.CommonIndexConstants.COMPONENT_LABEL;
 import static com.b2international.snowowl.core.api.index.CommonIndexConstants.COMPONENT_PARENT;
 import static com.b2international.snowowl.datastore.index.IndexUtils.getLongValue;
-import static com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants.REFSET_MEMBER_NUMBER;
 import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.COMPONENT_ACTIVE;
 import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.COMPONENT_MODULE_ID;
 import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.COMPONENT_RELEASED;
@@ -34,7 +33,6 @@ import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBr
 import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.CONCEPT_PRIMITIVE;
 import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_UUID;
 import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.ROOT_ID;
-import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.collect.Sets.newHashSet;
 import static java.util.Collections.unmodifiableSet;
@@ -76,7 +74,6 @@ import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.api.IComponentWithChildFlag;
 import com.b2international.snowowl.core.api.index.CommonIndexConstants;
 import com.b2international.snowowl.core.api.index.IndexException;
-import com.b2international.snowowl.datastore.cdo.CDOUtils;
 import com.b2international.snowowl.datastore.index.DocIdCollector;
 import com.b2international.snowowl.datastore.index.DocIdCollector.DocIdsIterator;
 import com.b2international.snowowl.datastore.index.IndexQueryBuilder;
@@ -119,13 +116,6 @@ import com.google.common.collect.Sets;
  */
 public class SnomedServerTerminologyBrowser extends AbstractIndexTerminologyBrowser<SnomedConceptIndexEntry> implements SnomedTerminologyBrowser {
 
-	private static final Set<String> FIELDS_TO_LOAD_FOR_EXTENDED_COMPONENT = unmodifiableSet(newHashSet(
-			ComponentIdLongField.COMPONENT_ID, 
-			COMPONENT_LABEL, 
-			COMPONENT_ICON_ID,
-			ComponentTypeField.COMPONENT_TYPE,
-			REFERENCE_SET_MEMBER_UUID));
-	
 	private static final Set<String> CONCEPT_FIELDS_TO_LOAD = ImmutableSet.of(ComponentIdLongField.COMPONENT_ID, 
 			COMPONENT_LABEL, COMPONENT_ICON_ID,
 			ComponentStorageKeyField.COMPONENT_STORAGE_KEY, COMPONENT_MODULE_ID,
@@ -657,21 +647,14 @@ public class SnomedServerTerminologyBrowser extends AbstractIndexTerminologyBrow
 			}
 		}
 	}
+
+	@Override
+	protected Set<String> getExtendedComponentFieldsToLoad() {
+		return ImmutableSet.<String>builder().addAll(super.getExtendedComponentFieldsToLoad()).add(REFERENCE_SET_MEMBER_UUID).build();
+	}
 	
 	@Override
-	public ExtendedComponent getExtendedComponent(final IBranchPath branchPath, final long storageKey) {
-		checkNotNull(branchPath, "branchPath");
-		checkArgument(storageKey > CDOUtils.NO_STORAGE_KEY);
-		
-		final Query query = new ComponentStorageKeyField(storageKey).toQuery();
-		final TopDocs topDocs = service.search(branchPath, query, 1);
-		
-		if (IndexUtils.isEmpty(topDocs)) {
-			return null;
-		}
-		
-		final Document doc = service.document(branchPath, topDocs.scoreDocs[0].doc, FIELDS_TO_LOAD_FOR_EXTENDED_COMPONENT);
-		
+	protected ExtendedComponent convertDocToExtendedComponent(IBranchPath branchPath, Document doc) {
 		// if type field is null, then we are processing a reference set _member_
 		final IndexableField typeField = doc.getField(ComponentTypeField.COMPONENT_TYPE);
 		
@@ -682,7 +665,7 @@ public class SnomedServerTerminologyBrowser extends AbstractIndexTerminologyBrow
 					uuid, 
 					SnomedRefSetMemberNameProvider.INSTANCE.getComponentLabel(branchPath, uuid),
 					"",
-					REFSET_MEMBER_NUMBER);
+					SnomedTerminologyComponentConstants.REFSET_MEMBER_NUMBER);
 			
 		} else {
 			
@@ -694,20 +677,14 @@ public class SnomedServerTerminologyBrowser extends AbstractIndexTerminologyBrow
 					label = SnomedRelationshipNameProvider.INSTANCE.getComponentLabel(branchPath, id);
 				}
 			}
-			
 			return new ExtendedComponentImpl(
 					id, 
 					label,
 					doc.get(COMPONENT_ICON_ID), 
 					terminologyComponentId);
-		}
-		
-		
+		}	
 	}
-	
-	/* (non-Javadoc)
-	 * @see com.b2international.snowowl.snomed.datastore.SnomedTerminologyBrowser#getConceptIdToStorageKeyMap(com.b2international.snowowl.core.api.IBranchPath)
-	 */
+
 	@Override
 	public LongKeyLongMap getConceptIdToStorageKeyMap(final IBranchPath branchPath) {
 		checkNotNull(branchPath, "Branch path argument cannot be null.");

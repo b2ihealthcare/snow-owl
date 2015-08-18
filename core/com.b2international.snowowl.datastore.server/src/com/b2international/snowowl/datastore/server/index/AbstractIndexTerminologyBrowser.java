@@ -15,6 +15,8 @@
  */
 package com.b2international.snowowl.datastore.server.index;
 
+import static com.b2international.snowowl.core.api.index.CommonIndexConstants.COMPONENT_ICON_ID;
+import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Preconditions.checkState;
 
@@ -36,6 +38,8 @@ import org.apache.lucene.search.TopDocs;
 import org.eclipse.core.runtime.IProgressMonitor;
 
 import com.b2international.commons.CompareUtils;
+import com.b2international.snowowl.core.api.ExtendedComponent;
+import com.b2international.snowowl.core.api.ExtendedComponentImpl;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.api.IComponentWithChildFlag;
 import com.b2international.snowowl.core.api.browser.IFilterClientTerminologyBrowser;
@@ -44,9 +48,11 @@ import com.b2international.snowowl.core.api.index.CommonIndexConstants;
 import com.b2international.snowowl.core.api.index.IIndexEntry;
 import com.b2international.snowowl.core.api.index.IIndexService;
 import com.b2international.snowowl.core.api.index.IndexException;
+import com.b2international.snowowl.datastore.cdo.CDOUtils;
 import com.b2international.snowowl.datastore.index.DocIdCollector;
 import com.b2international.snowowl.datastore.index.DocIdCollector.DocIdsIterator;
 import com.b2international.snowowl.datastore.index.IndexQueryBuilder;
+import com.b2international.snowowl.datastore.index.IndexUtils;
 import com.b2international.snowowl.datastore.index.field.ComponentIdField;
 import com.b2international.snowowl.datastore.index.field.ComponentIdStringField;
 import com.b2international.snowowl.datastore.index.field.ComponentStorageKeyField;
@@ -55,6 +61,7 @@ import com.b2international.snowowl.datastore.index.query.IndexQueries;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableList.Builder;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 
@@ -68,10 +75,41 @@ abstract public class AbstractIndexTerminologyBrowser<E extends IIndexEntry> ext
 	private static final Set<String> COMPONENT_ID_FIELD_TO_LOAD = Collections.unmodifiableSet(Sets.newHashSet(ComponentIdField.COMPONENT_ID));
 	private static final Set<String> LABEL_FIELD_TO_LOAD = Collections.unmodifiableSet(Sets.newHashSet(CommonIndexConstants.COMPONENT_LABEL));
 	
+	private static final Set<String> DEFAULT_EXTENDED_COMPONENT_FIELD_TO_LOAD = ImmutableSet.of(ComponentIdStringField.COMPONENT_ID,
+			ComponentTypeField.COMPONENT_TYPE, CommonIndexConstants.COMPONENT_LABEL, CommonIndexConstants.COMPONENT_ICON_ID);
+	
 	public AbstractIndexTerminologyBrowser(final IIndexService<?> service) {
 		super(service);
 	}
 
+	@Override
+	public final ExtendedComponent getExtendedComponent(IBranchPath branchPath, long storageKey) {
+		checkNotNull(branchPath, "branchPath");
+		checkArgument(storageKey > CDOUtils.NO_STORAGE_KEY);
+		
+		final TopDocs topDocs = service.search(branchPath, new ComponentStorageKeyField(storageKey).toQuery(), 1);
+		
+		if (IndexUtils.isEmpty(topDocs)) {
+			return null;
+		}
+		
+		final Document doc = service.document(branchPath, topDocs.scoreDocs[0].doc, getExtendedComponentFieldsToLoad());
+		return convertDocToExtendedComponent(branchPath, doc);
+	}
+
+	protected ExtendedComponent convertDocToExtendedComponent(final IBranchPath branchPath, final Document doc) {
+		final String id = ComponentIdStringField.getString(doc);
+		return new ExtendedComponentImpl(
+				id, 
+				doc.get(CommonIndexConstants.COMPONENT_LABEL), 
+				doc.get(COMPONENT_ICON_ID), 
+				ComponentTypeField.getShort(doc));
+	}
+	
+	protected Set<String> getExtendedComponentFieldsToLoad() {
+		return DEFAULT_EXTENDED_COMPONENT_FIELD_TO_LOAD;
+	}
+	
 	@Override
 	public long getStorageKey(final IBranchPath branchPath, final String conceptId) {
 		checkNotNull(branchPath, "Branch path argument cannot be null.");
