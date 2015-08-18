@@ -15,19 +15,16 @@
  */
 package com.b2international.snowowl.datastore.index.field;
 
+import java.util.Collections;
 import java.util.Set;
 
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.Field.Store;
 import org.apache.lucene.document.IntField;
 import org.apache.lucene.index.IndexableField;
-import org.apache.lucene.index.Term;
-import org.apache.lucene.search.Query;
-import org.apache.lucene.search.TermQuery;
 import org.apache.lucene.util.BytesRef;
 
 import com.b2international.snowowl.datastore.index.IndexUtils;
-import com.google.common.collect.ImmutableSet;
 
 /**
  * @since 4.3
@@ -35,7 +32,7 @@ import com.google.common.collect.ImmutableSet;
 public class ComponentTypeField extends IndexField {
 	
 	public static final String COMPONENT_TYPE = "component_type";
-	public static final Set<String> FIELDS_TO_LOAD = ImmutableSet.<String>builder().add(COMPONENT_TYPE).build();
+	public static final Set<String> FIELDS_TO_LOAD = Collections.singleton(COMPONENT_TYPE);
 	
 	private int componentType;
 
@@ -48,13 +45,13 @@ public class ComponentTypeField extends IndexField {
 	}
 
 	@Override
-	public Query toQuery() {
-		return new TermQuery(new Term(COMPONENT_TYPE, IndexUtils.intToPrefixCoded(componentType)));
+	protected String getFieldName() {
+		return COMPONENT_TYPE;
 	}
 	
 	@Override
 	protected BytesRef toBytesRef() {
-		return null;
+		return IndexUtils.intToPrefixCoded(componentType);
 	}
 	
 	@Override

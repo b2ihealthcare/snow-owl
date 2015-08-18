@@ -26,7 +26,6 @@ import org.apache.lucene.search.Query;
 import org.apache.lucene.search.Sort;
 import org.apache.lucene.search.SortField;
 import org.apache.lucene.search.SortField.Type;
-import org.apache.lucene.search.TermQuery;
 import org.apache.lucene.util.BytesRef;
 
 import com.b2international.commons.CompareUtils;
@@ -64,9 +63,10 @@ public abstract class ComponentIdField extends IndexField {
 	public static Filter createFilter(final List<BytesRef> bytesRefs) {
 		return new FieldCacheTermsFilter(COMPONENT_ID, bytesRefs.toArray(new BytesRef[bytesRefs.size()]));
 	}
-
+	
 	@Override
-	public TermQuery toQuery() {
-		return new TermQuery(new Term(COMPONENT_ID, toBytesRef()));
+	protected final String getFieldName() {
+		return COMPONENT_ID;
 	}
+
 }

@@ -17,7 +17,9 @@ package com.b2international.snowowl.datastore.index.field;
 
 import org.apache.lucene.document.Document;
 import org.apache.lucene.index.IndexableField;
+import org.apache.lucene.index.Term;
 import org.apache.lucene.search.Query;
+import org.apache.lucene.search.TermQuery;
 import org.apache.lucene.util.BytesRef;
 
 /**
@@ -29,7 +31,15 @@ public abstract class IndexField {
 
 	protected abstract BytesRef toBytesRef();
 
-	public abstract Query toQuery();
+	public Query toQuery() {
+		return new TermQuery(toTerm());
+	}
+	
+	public Term toTerm() {
+		return new Term(getFieldName(), toBytesRef());
+	}
+	
+	protected abstract String getFieldName();
 
 	public void addTo(Document doc) {
 		doc.add(toField());
