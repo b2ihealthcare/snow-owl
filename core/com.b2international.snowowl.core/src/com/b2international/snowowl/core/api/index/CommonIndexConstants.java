@@ -24,7 +24,6 @@ public abstract class CommonIndexConstants {
 	
 	public static final String COMPONENT_LABEL = "component_label";
 	public static final String COMPONENT_LABEL_SORT_KEY = "component_label_sort_key"; // Label with diacritical marks removed; serves as a sort key
-	public static final String COMPONENT_TYPE = "component_type";
 	public static final String COMPONENT_STORAGE_KEY = "component_storage_key";
 	public static final String COMPONENT_ICON_ID = "component_icon_id";
 	public static final String COMPONENT_PARENT = "concept_parent_id";

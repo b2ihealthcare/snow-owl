@@ -29,7 +29,7 @@ public abstract class IndexField {
 
 	protected abstract BytesRef toBytesRef();
 
-	protected abstract Query toQuery();
+	public abstract Query toQuery();
 
 	public void addTo(Document doc) {
 		doc.add(toField());
