@@ -43,7 +43,6 @@ import org.apache.lucene.index.IndexableField;
 import org.apache.lucene.index.Term;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.ScoreDoc;
-import org.apache.lucene.search.TermQuery;
 import org.apache.lucene.search.TopDocs;
 import org.eclipse.emf.cdo.CDOObject;
 import org.eclipse.emf.cdo.common.branch.CDOBranch;
@@ -97,6 +96,7 @@ import com.b2international.snowowl.datastore.index.AbstractIndexMappingStrategy;
 import com.b2international.snowowl.datastore.index.AbstractIndexUpdater;
 import com.b2international.snowowl.datastore.index.IDocumentUpdater;
 import com.b2international.snowowl.datastore.index.IndexUtils;
+import com.b2international.snowowl.datastore.index.field.ComponentStorageKeyField;
 import com.b2international.snowowl.datastore.server.CDOServerUtils;
 import com.b2international.snowowl.snomed.Component;
 import com.b2international.snowowl.snomed.Concept;
@@ -2285,7 +2285,8 @@ public class SnomedCDOChangeProcessor implements ICDOChangeProcessor {
 	/*returns with the index document of a detached reference set member identified by its unique storage key.*/
 	private Document getDocumentForDetachedMember(final CDOID id) {
 		
-		final Query query = new TermQuery(new Term(CommonIndexConstants.COMPONENT_STORAGE_KEY, IndexUtils.longToPrefixCoded(CDOIDUtils.asLong(id))));
+		final long storageKey = CDOIDUtils.asLong(id);
+		final Query query = new ComponentStorageKeyField(storageKey).toQuery();
 		
 		final TopDocs topDocs = indexUpdater.search(branchPath, query, 1);
 		

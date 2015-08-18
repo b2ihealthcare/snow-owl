@@ -48,10 +48,10 @@ import com.b2international.commons.StringUtils;
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.CoreTerminologyBroker;
 import com.b2international.snowowl.core.api.IBranchPath;
-import com.b2international.snowowl.core.api.index.CommonIndexConstants;
 import com.b2international.snowowl.core.api.index.IIndexQueryAdapter;
 import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.datastore.index.IndexUtils;
+import com.b2international.snowowl.datastore.index.field.ComponentStorageKeyField;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.datastore.ILanguageConfigurationProvider;
 import com.b2international.snowowl.snomed.datastore.SnomedRefSetUtil;
@@ -75,9 +75,7 @@ public class SnomedRefSetMembershipIndexQueryAdapter extends SnomedRefSetMemberI
 		return new SnomedRefSetMembershipIndexQueryAdapter() {
 			private static final long serialVersionUID = -4427757769646167620L;
 			@Override public Query createQuery() {
-				final BooleanQuery query = new BooleanQuery();
-				query.add(new TermQuery(new Term(CommonIndexConstants.COMPONENT_STORAGE_KEY, IndexUtils.longToPrefixCoded(storageKey))), Occur.MUST);
-				return query;
+				return new ComponentStorageKeyField(storageKey).toQuery();
 			}
 		};
 	}
@@ -339,9 +337,7 @@ public class SnomedRefSetMembershipIndexQueryAdapter extends SnomedRefSetMemberI
 			return (IIndexQueryAdapter<T>) new SnomedConcreteDataTypeRefSetMembershipIndexQueryAdapter() {
 				private static final long serialVersionUID = -4427757769646167621L;
 				@Override public Query createQuery() {
-					final BooleanQuery query = new BooleanQuery();
-					query.add(new TermQuery(new Term(CommonIndexConstants.COMPONENT_STORAGE_KEY, IndexUtils.longToPrefixCoded(storageKey))), Occur.MUST);
-					return query;
+					return new ComponentStorageKeyField(storageKey).toQuery();
 				}
 			};
 		}

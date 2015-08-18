@@ -33,12 +33,12 @@ import org.apache.lucene.index.IndexableField;
 
 import com.b2international.commons.StringUtils;
 import com.b2international.snowowl.core.api.IBranchPath;
-import com.b2international.snowowl.core.api.index.CommonIndexConstants;
 import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.datastore.index.IndexQueryBuilder;
 import com.b2international.snowowl.datastore.index.IndexUtils;
 import com.b2international.snowowl.datastore.index.QueryDslIndexQueryAdapter;
 import com.b2international.snowowl.datastore.index.field.ComponentIdLongField;
+import com.b2international.snowowl.datastore.index.field.ComponentStorageKeyField;
 import com.b2international.snowowl.snomed.datastore.SnomedRelationshipIndexEntry;
 import com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants;
 import com.b2international.snowowl.snomed.datastore.browser.SnomedIndexQueries;
@@ -94,7 +94,7 @@ public class SnomedRelationshipIndexQueryAdapter extends QueryDslIndexQueryAdapt
 				getBooleanValue(doc.getField(RELATIONSHIP_UNIVERSAL)),
 				getBooleanValue(doc.getField(RELATIONSHIP_DESTINATION_NEGATED)));
 		final String moduleId = doc.get(SnomedIndexBrowserConstants.COMPONENT_MODULE_ID);
-		final long storageKey = IndexUtils.getLongValue(doc.getField(CommonIndexConstants.COMPONENT_STORAGE_KEY));
+		final long storageKey = ComponentStorageKeyField.getLong(doc);
 		// FIXME: remove null check
 		final IndexableField effectiveTimeField = doc.getField(SnomedIndexBrowserConstants.RELATIONSHIP_EFFECTIVE_TIME);
 		final long effectiveTime = (null == effectiveTimeField) ? EffectiveTimes.UNSET_EFFECTIVE_TIME : IndexUtils.getLongValue(effectiveTimeField);
@@ -112,7 +112,7 @@ public class SnomedRelationshipIndexQueryAdapter extends QueryDslIndexQueryAdapt
 			.finishIf(StringUtils.isEmpty(searchString))
 			.requireExactTermIf(anyFlagSet(SEARCH_SOURCE_ID), RELATIONSHIP_OBJECT_ID, IndexUtils.longToPrefixCoded(parsedSearchStringOptional.get()))
 			.requireExactTermIf(anyFlagSet(SEARCH_DESTINATION_ID), RELATIONSHIP_VALUE_ID, IndexUtils.longToPrefixCoded(parsedSearchStringOptional.get()))
-			.requireExactTermIf(anyFlagSet(SEARCH_STORAGE_KEY), CommonIndexConstants.COMPONENT_STORAGE_KEY, IndexUtils.longToPrefixCoded(parsedSearchStringOptional.get()))
+			.requireIf(anyFlagSet(SEARCH_STORAGE_KEY), new ComponentStorageKeyField(parsedSearchStringOptional.get()).toQuery())
 			.requireIf(anyFlagSet(SEARCH_RELATIONSHIP_ID), new ComponentIdLongField(parsedSearchStringOptional.get()).toQuery());
 		} else {
 			// TODO: this query adapter only searches by IDs, what to return here?

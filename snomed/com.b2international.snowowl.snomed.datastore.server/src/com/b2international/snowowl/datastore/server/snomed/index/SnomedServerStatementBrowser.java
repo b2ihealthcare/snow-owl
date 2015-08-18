@@ -63,13 +63,13 @@ import com.b2international.commons.CompareUtils;
 import com.b2international.commons.pcj.LongSets;
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.api.IBranchPath;
-import com.b2international.snowowl.core.api.index.CommonIndexConstants;
 import com.b2international.snowowl.core.api.index.IndexException;
 import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.datastore.index.DocIdCollector;
 import com.b2international.snowowl.datastore.index.DocIdCollector.DocIdsIterator;
 import com.b2international.snowowl.datastore.index.IndexUtils;
 import com.b2international.snowowl.datastore.index.field.ComponentIdLongField;
+import com.b2international.snowowl.datastore.index.field.ComponentStorageKeyField;
 import com.b2international.snowowl.datastore.index.query.IndexQueries;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.snomed.datastore.IsAStatement;
@@ -94,11 +94,11 @@ public class SnomedServerStatementBrowser extends AbstractSnomedIndexBrowser<Sno
 			RELATIONSHIP_ATTRIBUTE_ID, RELATIONSHIP_VALUE_ID, RELATIONSHIP_GROUP,
 			RELATIONSHIP_UNION_GROUP, COMPONENT_RELEASED, COMPONENT_ACTIVE,
 			RELATIONSHIP_INFERRED, RELATIONSHIP_UNIVERSAL, RELATIONSHIP_DESTINATION_NEGATED,
-			RELATIONSHIP_CHARACTERISTIC_TYPE_ID, COMPONENT_MODULE_ID, CommonIndexConstants.COMPONENT_STORAGE_KEY,
+			RELATIONSHIP_CHARACTERISTIC_TYPE_ID, COMPONENT_MODULE_ID, ComponentStorageKeyField.COMPONENT_STORAGE_KEY,
 			RELATIONSHIP_EFFECTIVE_TIME);
 
 	private static final Set<String> GROUP_FIELD_TO_LOAD = Collections.unmodifiableSet(Sets.newHashSet(RELATIONSHIP_GROUP));
-	private static final Set<String> STORAGE_KEY_GROUP_FIELD_TO_LOAD = Collections.unmodifiableSet(Sets.newHashSet(CommonIndexConstants.COMPONENT_STORAGE_KEY,
+	private static final Set<String> STORAGE_KEY_GROUP_FIELD_TO_LOAD = Collections.unmodifiableSet(Sets.newHashSet(ComponentStorageKeyField.COMPONENT_STORAGE_KEY,
 			RELATIONSHIP_GROUP,
 			RELATIONSHIP_UNION_GROUP));
 	private static final Set<String> UNION_GROUP_FIELD_TO_LOAD = Collections.unmodifiableSet(Sets.newHashSet(RELATIONSHIP_UNION_GROUP));
@@ -126,7 +126,7 @@ public class SnomedServerStatementBrowser extends AbstractSnomedIndexBrowser<Sno
 				IndexUtils.getBooleanValue(doc.getField(RELATIONSHIP_UNIVERSAL)),
 				IndexUtils.getBooleanValue(doc.getField(RELATIONSHIP_DESTINATION_NEGATED)));
 		final String moduleId = doc.get(COMPONENT_MODULE_ID);
-		final long storageKey = IndexUtils.getLongValue(doc.getField(CommonIndexConstants.COMPONENT_STORAGE_KEY));
+		final long storageKey = ComponentStorageKeyField.getLong(doc);
 		// FIXME: remove null check
 		final IndexableField effectiveTimeField = doc.getField(RELATIONSHIP_EFFECTIVE_TIME);
 		final long effectiveTime = (null == effectiveTimeField) ? EffectiveTimes.UNSET_EFFECTIVE_TIME : IndexUtils.getLongValue(effectiveTimeField);
@@ -177,7 +177,7 @@ public class SnomedServerStatementBrowser extends AbstractSnomedIndexBrowser<Sno
 	public SnomedRelationshipIndexEntry getStatement(final IBranchPath branchPath, final String id) {
 		checkNotNull(branchPath, "Branch path argument cannot be null.");
 		checkNotNull(id, "SNOMED CT relationship ID cannot be null.");
-		final TermQuery query = new ComponentIdLongField(id).toQuery();
+		final Query query = new ComponentIdLongField(id).toQuery();
 		final TopDocs topDocs = service.search(branchPath, query, 1);
 		return createSingleResultObject(branchPath, topDocs);
 	}
@@ -345,7 +345,7 @@ public class SnomedServerStatementBrowser extends AbstractSnomedIndexBrowser<Sno
 				final Document doc = searcher.doc(itr.getDocID(), STORAGE_KEY_GROUP_FIELD_TO_LOAD);
 				final int groupValue = IndexUtils.getIntValue(doc.getField(groupField));
 				if (value == groupValue) {
-					statementStorageKeys[i++] = IndexUtils.getLongValue(doc.getField(CommonIndexConstants.COMPONENT_STORAGE_KEY));
+					statementStorageKeys[i++] = ComponentStorageKeyField.getLong(doc);
 				}
 			}
 
@@ -416,23 +416,14 @@ public class SnomedServerStatementBrowser extends AbstractSnomedIndexBrowser<Sno
 			return -1L;
 		}
 
-		final Document doc = service.document(branchPath, topDocs.scoreDocs[0].doc, COMPONENT_STORAGE_KEY_TO_LOAD);
-
-		final IndexableField field = doc.getField(CommonIndexConstants.COMPONENT_STORAGE_KEY);
-
-		if (null == field) {
-			return -1L;
-		}
-
-		return IndexUtils.getLongValue(field);
+		final Document doc = service.document(branchPath, topDocs.scoreDocs[0].doc, ComponentStorageKeyField.FIELDS_TO_LOAD);
+		return ComponentStorageKeyField.getLong(doc);
 	}
-
-	private static final Set<String> COMPONENT_STORAGE_KEY_TO_LOAD = Sets.newHashSet(CommonIndexConstants.COMPONENT_STORAGE_KEY);
 
 	@Override
 	public long getSourceIdForStatementStorageKey(final IBranchPath branchPath, final long statementStorageKey) {
 		Preconditions.checkNotNull(branchPath, "Branch path argument cannot be null.");
-		final Query query = IndexQueries.and(SnomedIndexQueries.ACTIVE_RELATIONSHIPS_QUERY, new TermQuery(new Term(CommonIndexConstants.COMPONENT_STORAGE_KEY, IndexUtils.longToPrefixCoded(statementStorageKey))));
+		final Query query = IndexQueries.and(SnomedIndexQueries.ACTIVE_RELATIONSHIPS_QUERY, new ComponentStorageKeyField(statementStorageKey).toQuery());
 		final StatementSourceIdCollector collector = new StatementSourceIdCollector(statementStorageKey);
 		service.search(branchPath, query, collector);
 		return collector.getSourceId();

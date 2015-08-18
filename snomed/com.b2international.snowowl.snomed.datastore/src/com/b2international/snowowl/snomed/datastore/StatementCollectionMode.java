@@ -24,8 +24,8 @@ import org.apache.lucene.index.AtomicReader;
 import org.apache.lucene.index.NumericDocValues;
 import org.apache.lucene.search.Query;
 
-import com.b2international.snowowl.core.api.index.CommonIndexConstants;
 import com.b2international.snowowl.datastore.index.field.ComponentIdLongField;
+import com.b2international.snowowl.datastore.index.field.ComponentStorageKeyField;
 import com.b2international.snowowl.snomed.datastore.browser.SnomedIndexQueries;
 
 /**
@@ -72,7 +72,7 @@ public enum StatementCollectionMode {
 
 	WITH_STORAGE_KEYS {
 		@Override public String getIdValuesField() {
-			return CommonIndexConstants.COMPONENT_STORAGE_KEY;
+			return ComponentStorageKeyField.COMPONENT_STORAGE_KEY;
 		}
 
 		@Override public IsAStatementWithKey createStatement(final long sourceId, final long destinationId, final long idOrKey) {

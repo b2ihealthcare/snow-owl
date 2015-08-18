@@ -22,7 +22,6 @@ import static com.b2international.commons.pcj.LongSets.toSet;
 import static com.b2international.snowowl.core.api.index.CommonIndexConstants.COMPONENT_ICON_ID;
 import static com.b2international.snowowl.core.api.index.CommonIndexConstants.COMPONENT_LABEL;
 import static com.b2international.snowowl.core.api.index.CommonIndexConstants.COMPONENT_PARENT;
-import static com.b2international.snowowl.core.api.index.CommonIndexConstants.COMPONENT_STORAGE_KEY;
 import static com.b2international.snowowl.datastore.index.IndexUtils.getLongValue;
 import static com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants.REFSET_MEMBER_NUMBER;
 import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.COMPONENT_ACTIVE;
@@ -84,6 +83,7 @@ import com.b2international.snowowl.datastore.index.IndexQueryBuilder;
 import com.b2international.snowowl.datastore.index.IndexUtils;
 import com.b2international.snowowl.datastore.index.LongDocValuesCollector;
 import com.b2international.snowowl.datastore.index.field.ComponentIdLongField;
+import com.b2international.snowowl.datastore.index.field.ComponentStorageKeyField;
 import com.b2international.snowowl.datastore.index.field.ComponentTypeField;
 import com.b2international.snowowl.datastore.index.query.IndexQueries;
 import com.b2international.snowowl.datastore.server.index.AbstractIndexTerminologyBrowser;
@@ -128,7 +128,7 @@ public class SnomedServerTerminologyBrowser extends AbstractIndexTerminologyBrow
 	
 	private static final Set<String> CONCEPT_FIELDS_TO_LOAD = ImmutableSet.of(ComponentIdLongField.COMPONENT_ID, 
 			COMPONENT_LABEL, COMPONENT_ICON_ID,
-			COMPONENT_STORAGE_KEY, COMPONENT_MODULE_ID,
+			ComponentStorageKeyField.COMPONENT_STORAGE_KEY, COMPONENT_MODULE_ID,
 			COMPONENT_ACTIVE, CONCEPT_PRIMITIVE,
 			CONCEPT_EXHAUSTIVE, COMPONENT_RELEASED, CONCEPT_EFFECTIVE_TIME);
 	
@@ -136,7 +136,6 @@ public class SnomedServerTerminologyBrowser extends AbstractIndexTerminologyBrow
 	private static final Set<String> PARENT_AND_ANCESTOR_FIELDS_TO_LOAD = unmodifiableSet(newHashSet(CommonIndexConstants.COMPONENT_PARENT, CONCEPT_ANCESTOR));
 	
 	private static final Set<String> DOI_FIELDS_TO_LOAD = ImmutableSet.of(CONCEPT_DEGREE_OF_INTEREST);
-	private static final Set<String> STORAGE_KEY_FIELDS_TO_LOAD = ImmutableSet.of(COMPONENT_STORAGE_KEY);
 	private static final Set<String> COMPONENT_ID_FILEDS_TO_LOAD = ImmutableSet.of(ComponentIdLongField.COMPONENT_ID);
 
 	/**
@@ -168,8 +167,7 @@ public class SnomedServerTerminologyBrowser extends AbstractIndexTerminologyBrow
 		final String id = ComponentIdLongField.getString(doc);
 		String label = doc.get(COMPONENT_LABEL);
 		final String moduleId = doc.get(COMPONENT_MODULE_ID);
-		final IndexableField storageKeyField = doc.getField(COMPONENT_STORAGE_KEY);
-		final long storageKey = storageKeyField.numericValue().longValue();
+		final long storageKey = ComponentStorageKeyField.getLong(doc);
 		final String iconId = doc.get(COMPONENT_ICON_ID);
 		final long effectiveTime = IndexUtils.getLongValue(doc.getField(CONCEPT_EFFECTIVE_TIME));
 		
@@ -206,15 +204,9 @@ public class SnomedServerTerminologyBrowser extends AbstractIndexTerminologyBrow
 			return -1L;
 		}
 		
-		final Document doc = service.document(branchPath, topDocs.scoreDocs[0].doc, COMPONENT_STORAGE_KEY_TO_LOAD);
-		final IndexableField field = doc.getField(COMPONENT_STORAGE_KEY);
-		if (null == field) {
-			return -1L;
-		}
-		return IndexUtils.getLongValue(field);
+		final Document doc = service.document(branchPath, topDocs.scoreDocs[0].doc, ComponentStorageKeyField.FIELDS_TO_LOAD);
+		return ComponentStorageKeyField.getLong(doc);
 	}
-	
-	private static final Set<String> COMPONENT_STORAGE_KEY_TO_LOAD = Sets.newHashSet(COMPONENT_STORAGE_KEY);
 	
 	@Override
 	public List<SnomedConceptIndexEntry> getSubTypesAsList(final IBranchPath branchPath, final SnomedConceptIndexEntry concept) {
@@ -564,7 +556,8 @@ public class SnomedServerTerminologyBrowser extends AbstractIndexTerminologyBrow
 
 			final DocIdsIterator itr = collector.getDocIDs().iterator();
 			while (itr.next()) {
-				ids.add(Long.valueOf(service.document(branchPath, itr.getDocID(), STORAGE_KEY_FIELDS_TO_LOAD).get(COMPONENT_STORAGE_KEY)));
+				final Document doc = service.document(branchPath, itr.getDocID(), ComponentStorageKeyField.FIELDS_TO_LOAD);
+				ids.add(ComponentStorageKeyField.getLong(doc));
 			}
 			
 			return ids;
@@ -670,7 +663,7 @@ public class SnomedServerTerminologyBrowser extends AbstractIndexTerminologyBrow
 		checkNotNull(branchPath, "branchPath");
 		checkArgument(storageKey > CDOUtils.NO_STORAGE_KEY);
 		
-		final TermQuery query = new TermQuery(new Term(COMPONENT_STORAGE_KEY, IndexUtils.longToPrefixCoded(storageKey)));
+		final Query query = new ComponentStorageKeyField(storageKey).toQuery();
 		final TopDocs topDocs = service.search(branchPath, query, 1);
 		
 		if (IndexUtils.isEmpty(topDocs)) {

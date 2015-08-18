@@ -42,6 +42,7 @@ import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.datastore.index.DocIdCollector;
 import com.b2international.snowowl.datastore.index.DocIdCollector.DocIdsIterator;
 import com.b2international.snowowl.datastore.index.IndexUtils;
+import com.b2international.snowowl.datastore.index.field.ComponentStorageKeyField;
 import com.b2international.snowowl.datastore.server.index.IndexServerService;
 import com.b2international.snowowl.datastore.server.snomed.index.SnomedServerTerminologyBrowser;
 import com.b2international.snowowl.snomed.datastore.SnomedConceptIndexEntry;
@@ -61,7 +62,7 @@ public class CollectReferencedComponentMapRunnable implements Runnable {
 	
 	private static final Set<String> ACTIVE_MEMBER_FIELDS_TO_LOAD = ImmutableSet.of(
 			SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_UUID,
-			CommonIndexConstants.COMPONENT_STORAGE_KEY,
+			ComponentStorageKeyField.COMPONENT_STORAGE_KEY,
 			SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_UUID,
 			SnomedIndexBrowserConstants.COMPONENT_MODULE_ID,
 			CommonIndexConstants.COMPONENT_LABEL,
@@ -135,7 +136,7 @@ public class CollectReferencedComponentMapRunnable implements Runnable {
 					final boolean released = EffectiveTimes.UNSET_EFFECTIVE_TIME != effectiveTime;
 					final String uuid = doc.get(SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_UUID);
 					final String label = doc.get(CommonIndexConstants.COMPONENT_LABEL);
-					final long storageKey = IndexUtils.getLongValue(doc.getField(CommonIndexConstants.COMPONENT_STORAGE_KEY));
+					final long storageKey = ComponentStorageKeyField.getLong(doc);
 					final long moduleId = IndexUtils.getLongValue(doc.getField(SnomedIndexBrowserConstants.COMPONENT_MODULE_ID));
 
 					final IRefSetMemberNode node = new RegularRefSetMemberNode(referencedComponentId, 

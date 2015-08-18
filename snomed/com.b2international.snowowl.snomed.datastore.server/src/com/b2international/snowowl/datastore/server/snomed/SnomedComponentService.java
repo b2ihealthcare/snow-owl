@@ -23,7 +23,6 @@ import static com.b2international.commons.pcj.LongSets.newLongSetWithMurMur3Hash
 import static com.b2international.commons.pcj.LongSets.toStringSet;
 import static com.b2international.snowowl.core.ApplicationContext.getServiceForClass;
 import static com.b2international.snowowl.core.api.index.CommonIndexConstants.COMPONENT_LABEL_SORT_KEY;
-import static com.b2international.snowowl.core.api.index.CommonIndexConstants.COMPONENT_STORAGE_KEY;
 import static com.b2international.snowowl.datastore.index.DocIdCollector.create;
 import static com.b2international.snowowl.datastore.index.IndexUtils.getLongValue;
 import static com.b2international.snowowl.datastore.index.IndexUtils.intToPrefixCoded;
@@ -164,6 +163,7 @@ import com.b2international.snowowl.datastore.index.DocIdCollector.DocIdsIterator
 import com.b2international.snowowl.datastore.index.IndexUtils;
 import com.b2international.snowowl.datastore.index.LongDocValuesCollector;
 import com.b2international.snowowl.datastore.index.field.ComponentIdLongField;
+import com.b2international.snowowl.datastore.index.field.ComponentStorageKeyField;
 import com.b2international.snowowl.datastore.index.field.ComponentTypeField;
 import com.b2international.snowowl.datastore.index.query.IndexQueries;
 import com.b2international.snowowl.datastore.server.index.IndexServerService;
@@ -274,7 +274,7 @@ public class SnomedComponentService implements ISnomedComponentService, IPostSto
 			));
 	
 	private static final Set<String> MODULE_MEMBER_FIELDS_TO_LOAD = unmodifiableSet(newHashSet(
-			COMPONENT_STORAGE_KEY,
+			ComponentStorageKeyField.COMPONENT_STORAGE_KEY,
 			COMPONENT_MODULE_ID,
 			REFERENCE_SET_MEMBER_REFERENCED_COMPONENT_ID,
 			REFERENCE_SET_MEMBER_SOURCE_EFFECTIVE_TIME,
@@ -986,7 +986,7 @@ public class SnomedComponentService implements ISnomedComponentService, IPostSto
 				return null;
 			}
 			
-			field = doc.getField(COMPONENT_STORAGE_KEY);
+			field = doc.getField(ComponentStorageKeyField.COMPONENT_STORAGE_KEY);
 			
 			if (null == field) {
 				return null;
@@ -1150,13 +1150,8 @@ public class SnomedComponentService implements ISnomedComponentService, IPostSto
 		
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see com.b2international.snowowl.snomed.datastore.services.ISnomedComponentService#getDescriptionStorageKey(com.b2international.snowowl.core.api.IBranchPath, java.lang.String)
-	 */
 	@Override
 	public long getDescriptionStorageKey(final IBranchPath branchPath, final String descriptionId) {
-		
 		checkNotNull(branchPath, "Branch path argument cannot be null.");
 		checkNotNull(branchPath, "Concept ID argument cannot be null.");
 		
@@ -1166,21 +1161,10 @@ public class SnomedComponentService implements ISnomedComponentService, IPostSto
 			return -1L;
 		}
 		
-		final Document doc = getIndexServerService().document(branchPath, topDocs.scoreDocs[0].doc, COMPONENT_STORAGE_KEY_TO_LOAD);
-		
-		final IndexableField field = doc.getField(COMPONENT_STORAGE_KEY);
-		
-		if (null == field) {
-			return -1L;
-		}
-		
-		return getLongValue(field);
+		final Document doc = getIndexServerService().document(branchPath, topDocs.scoreDocs[0].doc, ComponentStorageKeyField.FIELDS_TO_LOAD);
+		return ComponentStorageKeyField.getLong(doc);
 	}
 	
-	/*
-	 * (non-Javadoc)
-	 * @see com.b2international.snowowl.snomed.datastore.services.ISnomedComponentService#descriptionExists(com.b2international.snowowl.core.api.IBranchPath, java.lang.String)
-	 */
 	@Override
 	public boolean descriptionExists(final IBranchPath branchPath, final String descriptionId) {
 		checkNotNull(branchPath, "Branch path argument cannot be null.");
@@ -1189,10 +1173,6 @@ public class SnomedComponentService implements ISnomedComponentService, IPostSto
 		return componentExists(branchPath, descriptionId, SnomedTerminologyComponentConstants.DESCRIPTION_NUMBER);
 	}
 	
-	/*
-	 * (non-Javadoc)
-	 * @see com.b2international.snowowl.snomed.datastore.services.ISnomedComponentService#relationshipExists(com.b2international.snowowl.core.api.IBranchPath, java.lang.String)
-	 */
 	@Override
 	public boolean relationshipExists(final IBranchPath branchPath, final String relationshipId) {
 
@@ -1201,11 +1181,7 @@ public class SnomedComponentService implements ISnomedComponentService, IPostSto
 		
 		return componentExists(branchPath, relationshipId, SnomedTerminologyComponentConstants.RELATIONSHIP_NUMBER);
 	}
-	
-	/*
-	 * (non-Javadoc)
-	 * @see com.b2international.snowowl.snomed.datastore.services.ISnomedComponentService#componentExists(com.b2international.snowowl.core.api.IBranchPath, java.lang.String)
-	 */
+
 	@Override
 	public boolean componentExists(final IBranchPath branchPath, final String componentId) {
 
@@ -1226,10 +1202,6 @@ public class SnomedComponentService implements ISnomedComponentService, IPostSto
 		
 	}
 	
-	/*
-	 * (non-Javadoc)
-	 * @see com.b2international.snowowl.snomed.datastore.services.ISnomedComponentService#getAllReferringMembersStorageKey(com.b2international.snowowl.core.api.IBranchPath, java.lang.String, int, int[])
-	 */
 	@Override
 	public LongSet getAllReferringMembersStorageKey(final IBranchPath branchPath, final String componentId, final int typeOrdinal, final int... otherTypeOrdinal) {
 		
@@ -1300,10 +1272,8 @@ public class SnomedComponentService implements ISnomedComponentService, IPostSto
 			final DocIdsIterator itr = collector.getDocIDs().iterator();
 			
 			while (itr.next()) {
-				
-				final Document doc = searcher.doc(itr.getDocID(), COMPONENT_STORAGE_KEY_TO_LOAD);
-				$.add(getLongValue(doc.getField(COMPONENT_STORAGE_KEY)));
-				
+				final Document doc = searcher.doc(itr.getDocID(), ComponentStorageKeyField.FIELDS_TO_LOAD);
+				$.add(ComponentStorageKeyField.getLong(doc));
 			}
 			
 			return $;
@@ -1335,9 +1305,6 @@ public class SnomedComponentService implements ISnomedComponentService, IPostSto
 		
 	}
 	
-	/* (non-Javadoc)
-	 * @see com.b2international.snowowl.snomed.datastore.services.ISnomedComponentService#getAllComponentIdStorageKeys(com.b2international.snowowl.core.api.IBranchPath, short)
-	 */
 	@Override
 	public Collection<IdStorageKeyPair> getAllComponentIdStorageKeys(final IBranchPath branchPath, final short terminologyComponentId) {
 		
@@ -1400,7 +1367,7 @@ public class SnomedComponentService implements ISnomedComponentService, IPostSto
 				final Document doc = searcher.doc(itr.getDocID(), fieldsToLoad);
 				$[i++] = new IdStorageKeyPair(
 						checkNotNull(doc.get(idField), "Cannot get ID field for document. [" + doc + "]"),
-						getLongValue(doc.getField(COMPONENT_STORAGE_KEY)));
+						ComponentStorageKeyField.getLong(doc));
 				
 			}
 			
@@ -1472,7 +1439,7 @@ public class SnomedComponentService implements ISnomedComponentService, IPostSto
 				final Document doc = searcher.doc(itr.getDocID(), MEMBER_UUID_STORAGE_KEY_TO_LOAD);
 				$[i++] = new IdStorageKeyPair(
 						checkNotNull(doc.get(REFERENCE_SET_MEMBER_UUID), "Cannot get UUID field for document. [" + doc + "]"),
-						getLongValue(doc.getField(COMPONENT_STORAGE_KEY)));
+						ComponentStorageKeyField.getLong(doc));
 				
 			}
 			
@@ -2091,7 +2058,7 @@ public class SnomedComponentService implements ISnomedComponentService, IPostSto
 		final SnomedModuleDependencyRefSetMemberFragment module = new SnomedModuleDependencyRefSetMemberFragment();
 		module.setModuleId(doc.get(COMPONENT_MODULE_ID));
 		module.setReferencedComponentId(doc.get(REFERENCE_SET_MEMBER_REFERENCED_COMPONENT_ID));
-		module.setStorageKey(getLongValue(doc.getField(COMPONENT_STORAGE_KEY)));
+		module.setStorageKey(ComponentStorageKeyField.getLong(doc));
 		module.setSourceEffectiveTime(EffectiveTimes.toDate(getLongValue(doc.getField(REFERENCE_SET_MEMBER_SOURCE_EFFECTIVE_TIME))));
 		module.setTargetEffectiveTime(EffectiveTimes.toDate(getLongValue(doc.getField(REFERENCE_SET_MEMBER_TARGET_EFFECTIVE_TIME))));
 		return module;
@@ -2301,8 +2268,8 @@ public class SnomedComponentService implements ISnomedComponentService, IPostSto
 			searcher = manager.acquire();
 			
 			while (itr.next()) {
-				final Document doc = searcher.doc(itr.getDocID(), COMPONENT_ID_STORAGE_KEY_TO_LOAD);
-				storageKeys.add(getLongValue(doc.getField(COMPONENT_STORAGE_KEY)));
+				final Document doc = searcher.doc(itr.getDocID(), ComponentStorageKeyField.FIELDS_TO_LOAD);
+				storageKeys.add(ComponentStorageKeyField.getLong(doc));
 			}
 			
 			return storageKeys;
@@ -2523,13 +2490,13 @@ public class SnomedComponentService implements ISnomedComponentService, IPostSto
 			query.add(IndexQueries.queryComponentByLongId(referencedComponentType, referencedComponentId), SHOULD);
 
 			if (query.getClauses().length + 1 == BooleanQuery.getMaxClauseCount()) {
-				storageKeys.addAll(executeQuery(query, COMPONENT_STORAGE_KEY, COMPONENT_STORAGE_KEY_TO_LOAD, indexService, searcher, maxDoc, branchPath));
+				storageKeys.addAll(getStorageKeys(query, indexService, searcher, maxDoc, branchPath));
 				query = new BooleanQuery(true);
 			}
 		}
 
 		if (query.getClauses().length > 0) {
-			storageKeys.addAll(executeQuery(query, COMPONENT_STORAGE_KEY, COMPONENT_STORAGE_KEY_TO_LOAD, indexService, searcher, maxDoc, branchPath));
+			storageKeys.addAll(getStorageKeys(query, indexService, searcher, maxDoc, branchPath));
 		}
 
 		return storageKeys;
@@ -2554,7 +2521,7 @@ public class SnomedComponentService implements ISnomedComponentService, IPostSto
 	/*returns true only and if only the SNOMED CT component identified by its unique ID is active. Otherwise false.*/
 	private boolean isActive(final long storageKey, final IndexServerService<?> service, final IndexSearcher searcher) throws IOException {
 		
-		final Query query = new TermQuery(new Term(COMPONENT_STORAGE_KEY, longToPrefixCoded(storageKey)));
+		final Query query = new ComponentStorageKeyField(storageKey).toQuery();
 		
 		final TopDocs topDocs = searcher.search(query, 1);
 		//cannot found matching component
@@ -2684,7 +2651,7 @@ public class SnomedComponentService implements ISnomedComponentService, IPostSto
 		final Map<CDOID, String> cdoIdToIdMap = newHashMap();
 		for (final ScoreDoc scoreDoc : topDocs.scoreDocs) {
 			final Document doc = indexService.document(branchPath, scoreDoc.doc, COMPONENT_ID_STORAGE_KEY_TO_LOAD);
-			final CDOID cdoId = CDOIDUtil.createLong(getLongValue(doc.getField(COMPONENT_STORAGE_KEY)));
+			final CDOID cdoId = CDOIDUtil.createLong(ComponentStorageKeyField.getLong(doc));
 			final String refSetId = ComponentIdLongField.getString(doc);
 			cdoIdToIdMap.put(cdoId, refSetId);
 		}
@@ -2958,32 +2925,27 @@ public class SnomedComponentService implements ISnomedComponentService, IPostSto
 	/*
 	 * Executes the given query and returns with the found components storage keys.
 	 */
-	private LongSet executeQuery(final BooleanQuery query, final String fieldName, final Set<String> attributesToLoad, final IndexServerService<?> indexService, final IndexSearcher searcher, final int maxDoc, final IBranchPath branchPath) throws IOException {
+	private LongSet getStorageKeys(final Query query, final IndexServerService<?> indexService, final IndexSearcher searcher, final int maxDoc, final IBranchPath branchPath) throws IOException {
 		final LongSet resultSet = new LongOpenHashSet();
 		final DocIdCollector componentCollector = DocIdCollector.create(maxDoc);
 		indexService.search(branchPath, query, componentCollector);
-		
 		final DocIdsIterator componentItr = componentCollector.getDocIDs().iterator();
-
 		while (componentItr.next()) {
-			final Document doc = searcher.doc(componentItr.getDocID(), attributesToLoad);
-			
-			resultSet.add(getLongValue(doc.getField(fieldName)));
+			final Document doc = searcher.doc(componentItr.getDocID(), ComponentStorageKeyField.FIELDS_TO_LOAD);
+			resultSet.add(ComponentStorageKeyField.getLong(doc));
 		}
-		
 		return resultSet;
 	}
 
-	private static final Set<String> COMPONENT_STORAGE_KEY_TO_LOAD = newHashSet(COMPONENT_STORAGE_KEY);
 	private static final Set<String> COMPONENT_ID_KEY_TO_LOAD = newHashSet(ComponentIdLongField.COMPONENT_ID);
 	
 	private static final Set<String> COMPONENT_ID_STORAGE_KEY_TO_LOAD = newHashSet(
 			ComponentIdLongField.COMPONENT_ID, 
-			COMPONENT_STORAGE_KEY);
+			ComponentStorageKeyField.COMPONENT_STORAGE_KEY);
 	
 	private static final Set<String> MEMBER_UUID_STORAGE_KEY_TO_LOAD = newHashSet(
 			REFERENCE_SET_MEMBER_UUID, 
-			COMPONENT_STORAGE_KEY);
+			ComponentStorageKeyField.COMPONENT_STORAGE_KEY);
 	
 	private static final long DESCRIPTION_TYPE_ROOT_CONCEPT_ID = Long.valueOf(Concepts.DESCRIPTION_TYPE_ROOT_CONCEPT);
 	private static final long SYNONYM_CONCEPT_ID = Long.valueOf(Concepts.SYNONYM);
@@ -3003,7 +2965,7 @@ public class SnomedComponentService implements ISnomedComponentService, IPostSto
 			CommonIndexConstants.COMPONENT_LABEL);
 	
 	private static final Set<String> DESCRIPTION_EXTENDED_FIELDS_TO_LOAD = newHashSet(
-			COMPONENT_STORAGE_KEY,
+			ComponentStorageKeyField.COMPONENT_STORAGE_KEY,
 			ComponentIdLongField.COMPONENT_ID,
 			DESCRIPTION_CONCEPT_ID,
 			DESCRIPTION_TYPE_ID,

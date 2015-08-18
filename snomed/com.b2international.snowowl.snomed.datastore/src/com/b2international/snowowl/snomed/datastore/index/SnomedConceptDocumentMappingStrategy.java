@@ -45,6 +45,7 @@ import bak.pcj.set.LongSet;
 import com.b2international.snowowl.core.api.index.CommonIndexConstants;
 import com.b2international.snowowl.datastore.index.IndexUtils;
 import com.b2international.snowowl.datastore.index.field.ComponentIdLongField;
+import com.b2international.snowowl.datastore.index.field.ComponentStorageKeyField;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSet.Builder;
 
@@ -54,8 +55,8 @@ public class SnomedConceptDocumentMappingStrategy extends SnomedConceptIndexMapp
 
 	public SnomedConceptDocumentMappingStrategy(final Document conceptDocument, final boolean indexAsRelevantForCompare) {
 		
-		super(getId(checkNotNull(conceptDocument, "SNOMED CT concept document cannot be null.")), 
-				getStorageKey(conceptDocument), 
+		super(ComponentIdLongField.getString(checkNotNull(conceptDocument, "SNOMED CT concept document cannot be null.")), 
+				ComponentStorageKeyField.getLong(conceptDocument), 
 				getAncestorIds(conceptDocument), 
 				getParentIds(conceptDocument), 
 				isExhaustive(conceptDocument), 
@@ -165,14 +166,6 @@ public class SnomedConceptDocumentMappingStrategy extends SnomedConceptIndexMapp
 		return longIds;
 	}
 
-	private static long getStorageKey(final Document conceptDocument) {
-		return IndexUtils.getLongValue(conceptDocument.getField(CommonIndexConstants.COMPONENT_STORAGE_KEY));
-	}
-
-	private static String getId(final Document conceptDocument) {
-		return ComponentIdLongField.getString(conceptDocument);
-	}
-	
 	private static Date getEffectiveTime(final Document conceptDocument) {
 		return new Date(IndexUtils.getLongValue(conceptDocument.getField(CONCEPT_EFFECTIVE_TIME)));
 	}

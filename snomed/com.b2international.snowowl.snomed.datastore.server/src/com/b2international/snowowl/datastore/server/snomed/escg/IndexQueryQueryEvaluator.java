@@ -199,7 +199,7 @@ public class IndexQueryQueryEvaluator implements Serializable, IQueryEvaluator<B
 		return new Term(CONCEPT_ANCESTOR, IndexUtils.longToPrefixCoded(conceptId));
 	}
 
-	private TermQuery createIdQuery(final String conceptId) {
+	private Query createIdQuery(final String conceptId) {
 		return new ComponentIdLongField(conceptId).toQuery();
 	}
 	

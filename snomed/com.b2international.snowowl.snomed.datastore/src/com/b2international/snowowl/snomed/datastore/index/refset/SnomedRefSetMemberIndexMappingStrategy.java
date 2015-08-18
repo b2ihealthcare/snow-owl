@@ -93,6 +93,7 @@ import com.b2international.snowowl.datastore.cdo.CDOIDUtils;
 import com.b2international.snowowl.datastore.index.AbstractIndexMappingStrategy;
 import com.b2international.snowowl.datastore.index.IndexUtils;
 import com.b2international.snowowl.datastore.index.SortKeyMode;
+import com.b2international.snowowl.datastore.index.field.ComponentStorageKeyField;
 import com.b2international.snowowl.datastore.utils.ComponentUtils2;
 import com.b2international.snowowl.snomed.Component;
 import com.b2international.snowowl.snomed.Description;
@@ -150,11 +151,12 @@ public class SnomedRefSetMemberIndexMappingStrategy extends AbstractIndexMapping
 	@OverridingMethodsMustInvokeSuper
 	public Document createDocument() {
 		final Document doc = new Document();
+		final long storageKey = CDOIDUtil.getLong(member.cdoID());
 
 		doc.add(new StringField(REFERENCE_SET_MEMBER_UUID, member.getUuid(), Store.YES));
 		doc.add(new IntField(COMPONENT_ACTIVE, member.isActive() ? 1 : 0, Store.YES));
 		doc.add(new IntField(REFERENCE_SET_MEMBER_REFERENCE_SET_TYPE, member.getRefSet().getType().ordinal(), Store.YES));
-		doc.add(new LongField(CommonIndexConstants.COMPONENT_STORAGE_KEY, CDOIDUtil.getLong(member.cdoID()), Store.YES));
+		new ComponentStorageKeyField(storageKey).addTo(doc);
 		doc.add(new StoredField(COMPONENT_RELEASED, member.isReleased() ? 1 : 0));
 		doc.add(new IntField(REFERENCE_SET_MEMBER_REFERENCED_COMPONENT_TYPE, member.getReferencedComponentType(), Store.YES));
 		doc.add(new StringField(REFERENCE_SET_MEMBER_REFERENCED_COMPONENT_ID, member.getReferencedComponentId(), Store.YES));
@@ -386,7 +388,7 @@ public class SnomedRefSetMemberIndexMappingStrategy extends AbstractIndexMapping
 				}
 				
 				doc.add(new NumericDocValuesField(REFERENCE_SET_MEMBER_REFERENCED_COMPONENT_ID, Long.parseLong(member.getReferencedComponentId())));
-				doc.add(new NumericDocValuesField(CommonIndexConstants.COMPONENT_STORAGE_KEY, CDOIDUtils.asLong(member.cdoID())));
+				doc.add(new NumericDocValuesField(ComponentStorageKeyField.COMPONENT_STORAGE_KEY, storageKey));
 				doc.add(new NumericDocValuesField(REFERENCE_SET_MEMBER_REFERENCE_SET_ID, Long.parseLong(member.getRefSetIdentifierId())));
 				doc.add(new NumericDocValuesField(COMPONENT_MODULE_ID, Long.valueOf(member.getModuleId())));
 				

@@ -20,6 +20,7 @@ import com.b2international.snowowl.core.api.index.CommonIndexConstants;
 import com.b2international.snowowl.datastore.index.IndexQueryBuilder;
 import com.b2international.snowowl.datastore.index.IndexUtils;
 import com.b2international.snowowl.datastore.index.field.ComponentIdLongField;
+import com.b2international.snowowl.datastore.index.field.ComponentStorageKeyField;
 import com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants;
 import com.google.common.base.Optional;
 
@@ -41,8 +42,8 @@ public class SnomedConceptReducedQueryAdapter extends SnomedConceptIndexQueryAda
 			private static final long serialVersionUID = 8790511308540662874L;
 			@Override protected IndexQueryBuilder createIndexQueryBuilder() {
 				IndexQueryBuilder builder = super.createIndexQueryBuilder();
-				return builder
-					.requireExactTermIf(anyFlagSet(SEARCH_STORAGE_KEY), CommonIndexConstants.COMPONENT_STORAGE_KEY, IndexUtils.longToPrefixCoded(Long.valueOf(searchString)));
+				final Long storageKey = Long.valueOf(searchString);
+				return builder.requireIf(anyFlagSet(SEARCH_STORAGE_KEY), new ComponentStorageKeyField(storageKey).toQuery());
 			}
 		};
 	} 

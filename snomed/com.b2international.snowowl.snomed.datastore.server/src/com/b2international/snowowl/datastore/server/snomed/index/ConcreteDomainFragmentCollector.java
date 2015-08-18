@@ -30,6 +30,7 @@ import bak.pcj.map.LongKeyOpenHashMap;
 
 import com.b2international.snowowl.core.api.index.CommonIndexConstants;
 import com.b2international.snowowl.datastore.index.AbstractDocsOutOfOrderCollector;
+import com.b2international.snowowl.datastore.index.field.ComponentStorageKeyField;
 import com.b2international.snowowl.snomed.datastore.ConcreteDomainFragment;
 import com.b2international.snowowl.snomed.datastore.SnomedRefSetUtil;
 import com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants;
@@ -76,7 +77,7 @@ public class ConcreteDomainFragmentCollector extends AbstractDocsOutOfOrderColle
 		labelValues = leafReader.getBinaryDocValues(CommonIndexConstants.COMPONENT_LABEL);
 		referencedIdValues = leafReader.getNumericDocValues(SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_REFERENCED_COMPONENT_ID);
 		typeValues = leafReader.getNumericDocValues(SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_DATA_TYPE_VALUE);
-		storageKeyValues = leafReader.getNumericDocValues(CommonIndexConstants.COMPONENT_STORAGE_KEY);
+		storageKeyValues = ComponentStorageKeyField.getNumericDocValues(leafReader);
 		refSetIdValues = leafReader.getNumericDocValues(SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_REFERENCE_SET_ID);
 	}
 

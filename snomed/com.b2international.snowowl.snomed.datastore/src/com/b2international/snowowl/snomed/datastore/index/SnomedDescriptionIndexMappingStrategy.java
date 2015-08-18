@@ -41,6 +41,7 @@ import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.datastore.index.AbstractIndexMappingStrategy;
 import com.b2international.snowowl.datastore.index.SortKeyMode;
 import com.b2international.snowowl.datastore.index.field.ComponentIdLongField;
+import com.b2international.snowowl.datastore.index.field.ComponentStorageKeyField;
 import com.b2international.snowowl.datastore.index.field.ComponentTypeField;
 import com.b2international.snowowl.snomed.Description;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
@@ -72,11 +73,13 @@ public class SnomedDescriptionIndexMappingStrategy extends AbstractIndexMappingS
 		final Document doc = new Document();
 		new ComponentIdLongField(descriptionId).addTo(doc);
 		new ComponentTypeField(SnomedTerminologyComponentConstants.DESCRIPTION_NUMBER).addTo(doc);
+		new ComponentStorageKeyField(storageKey).addTo(doc);
+		doc.add(new NumericDocValuesField(ComponentStorageKeyField.COMPONENT_STORAGE_KEY, storageKey));
+		
 		doc.add(new TextField(CommonIndexConstants.COMPONENT_LABEL, term, YES));
 		SortKeyMode.SEARCH_ONLY.add(doc, term);
 		doc.add(new BinaryDocValuesField(CommonIndexConstants.COMPONENT_LABEL, new BytesRef(term)));
 		doc.add(new IntField(COMPONENT_ACTIVE, active ? 1 : 0, YES));
-		doc.add(new LongField(CommonIndexConstants.COMPONENT_STORAGE_KEY, storageKey, YES));
 		doc.add(new StoredField(DESCRIPTION_CASE_SIGNIFICANCE_ID, caseSignificanceId));
 		doc.add(new StoredField(COMPONENT_RELEASED, description.isReleased() ? 1 : 0));
 		doc.add(new LongField(DESCRIPTION_TYPE_ID, typeId, YES));
@@ -84,7 +87,6 @@ public class SnomedDescriptionIndexMappingStrategy extends AbstractIndexMappingS
 		doc.add(new LongField(COMPONENT_MODULE_ID, moduleId, YES));
 		doc.add(new LongField(DESCRIPTION_EFFECTIVE_TIME, effectiveTime, YES));
 
-		doc.add(new NumericDocValuesField(CommonIndexConstants.COMPONENT_STORAGE_KEY, storageKey));
 		doc.add(new NumericDocValuesField(DESCRIPTION_CASE_SIGNIFICANCE_ID, caseSignificanceId));
 		doc.add(new NumericDocValuesField(DESCRIPTION_TYPE_ID, typeId));
 		doc.add(new NumericDocValuesField(DESCRIPTION_CONCEPT_ID, conceptId));

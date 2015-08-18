@@ -37,6 +37,7 @@ import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.datastore.BranchPathUtils;
 import com.b2international.snowowl.datastore.cdo.CDOUtils;
 import com.b2international.snowowl.datastore.index.IndexUtils;
+import com.b2international.snowowl.datastore.index.field.ComponentStorageKeyField;
 import com.b2international.snowowl.datastore.utils.ComponentUtils2;
 import com.b2international.snowowl.snomed.Concept;
 import com.b2international.snowowl.snomed.Description;
@@ -181,7 +182,7 @@ public class SnomedRefSetMemberIndexEntry extends SnomedIndexEntry implements IC
 		final SnomedRefSetType type = SnomedRefSetType.get(IndexUtils.getIntValue(doc.getField(SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_REFERENCE_SET_TYPE)));
 		final String uuid = doc.get(SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_UUID);
 		final String moduleId = doc.get(SnomedIndexBrowserConstants.COMPONENT_MODULE_ID);
-		final long storageKey = Long.parseLong(doc.get(CommonIndexConstants.COMPONENT_STORAGE_KEY));
+		final long storageKey = ComponentStorageKeyField.getLong(doc);
 		final float score = 0.0F;
 		final boolean active = IndexUtils.getBooleanValue(doc.getField(SnomedIndexBrowserConstants.COMPONENT_ACTIVE));
 		final boolean released = IndexUtils.getBooleanValue(doc.getField(SnomedIndexBrowserConstants.COMPONENT_RELEASED));

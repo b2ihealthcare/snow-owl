@@ -27,8 +27,7 @@ import com.b2international.snowowl.core.api.index.CommonIndexConstants;
 import com.b2international.snowowl.datastore.index.IndexQueryBuilder;
 import com.b2international.snowowl.datastore.index.IndexUtils;
 import com.b2international.snowowl.datastore.index.field.ComponentIdLongField;
-import com.b2international.snowowl.datastore.index.field.ComponentTypeField;
-import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
+import com.b2international.snowowl.datastore.index.field.ComponentStorageKeyField;
 import com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants;
 import com.b2international.snowowl.snomed.datastore.browser.SnomedIndexQueries;
 import com.google.common.collect.ImmutableSet;
@@ -105,7 +104,7 @@ public abstract class SnomedDescriptionIndexQueryAdapter extends SnomedDslIndexQ
 				doc.get(SnomedIndexBrowserConstants.DESCRIPTION_TYPE_ID),
 				doc.get(SnomedIndexBrowserConstants.COMPONENT_MODULE_ID), 
 				score,
-				doc.getField(CommonIndexConstants.COMPONENT_STORAGE_KEY).numericValue().longValue(),
+				ComponentStorageKeyField.getLong(doc),
 				IndexUtils.getBooleanValue(doc.getField(SnomedIndexBrowserConstants.COMPONENT_RELEASED)), 
 				IndexUtils.getBooleanValue(doc.getField(SnomedIndexBrowserConstants.COMPONENT_ACTIVE)), 
 				doc.get(SnomedIndexBrowserConstants.DESCRIPTION_TYPE_ID), 

@@ -93,6 +93,7 @@ import com.b2international.snowowl.datastore.index.DocIdCollector.DocIdsIterator
 import com.b2international.snowowl.datastore.index.IndexQueryBuilder;
 import com.b2international.snowowl.datastore.index.IndexUtils;
 import com.b2international.snowowl.datastore.index.field.ComponentIdLongField;
+import com.b2international.snowowl.datastore.index.field.ComponentStorageKeyField;
 import com.b2international.snowowl.datastore.index.query.IndexQueries;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
@@ -122,7 +123,6 @@ public class SnomedServerRefSetBrowser extends AbstractSnomedIndexBrowser<Snomed
 	private static final Set<String> MAPPING_REFERENCE_SET_ID_FIELD = Collections.unmodifiableSet(Sets.newHashSet(CONCEPT_REFERRING_MAPPING_REFERENCE_SET_ID));
 	private static final Set<String> REFERENCE_SET_ID_FIELD = Collections.unmodifiableSet(Sets.newHashSet(CONCEPT_REFERRING_REFERENCE_SET_ID));
 	private static final Set<String> COMPONENT_ID_FIELD = Collections.unmodifiableSet(Sets.newHashSet(ComponentIdLongField.COMPONENT_ID));
-	private static final Set<String> COMPONENT_STORAGE_KEY_TO_LOAD = Sets.newHashSet(CommonIndexConstants.COMPONENT_STORAGE_KEY);
 	private static final Set<String> REFERENCE_SET_TYPE_FIELD = Collections.unmodifiableSet(Sets.newHashSet(REFERENCE_SET_TYPE));
 
 	private static final Set<String> FILEDS_TO_LOAD_FOR_EXTENDED_COMPONENT = unmodifiableSet(newHashSet(
@@ -134,7 +134,7 @@ public class SnomedServerRefSetBrowser extends AbstractSnomedIndexBrowser<Snomed
 			CommonIndexConstants.COMPONENT_LABEL, 
 			REFERENCE_SET_REFERENCED_COMPONENT_TYPE, 
 			REFERENCE_SET_TYPE,
-			CommonIndexConstants.COMPONENT_STORAGE_KEY,
+			ComponentStorageKeyField.COMPONENT_STORAGE_KEY,
 			REFERENCE_SET_STRUCTURAL,
 			CommonIndexConstants.COMPONENT_ICON_ID,
 			COMPONENT_MODULE_ID);
@@ -336,23 +336,12 @@ public class SnomedServerRefSetBrowser extends AbstractSnomedIndexBrowser<Snomed
 			
 		}
 		
-		final Document doc = service.document(branchPath, topDocs.scoreDocs[0].doc, COMPONENT_STORAGE_KEY_TO_LOAD);
-		
-		final IndexableField field = doc.getField(CommonIndexConstants.COMPONENT_STORAGE_KEY);
-		
-		if (null == field) {
-			
-			return -1L;
-			
-		}
-		
-		return IndexUtils.getLongValue(field);
-		
+		final Document doc = service.document(branchPath, topDocs.scoreDocs[0].doc, ComponentStorageKeyField.FIELDS_TO_LOAD);
+		return ComponentStorageKeyField.getLong(doc);
 	}
 	
 	@Override
 	public long getStorageKey(final IBranchPath branchPath, final String identifierConceptId) {
-		
 		Preconditions.checkNotNull(branchPath, "Branch path argument cannot be null.");
 		Preconditions.checkNotNull(branchPath, "Concept ID argument cannot be null.");
 		
@@ -363,25 +352,15 @@ public class SnomedServerRefSetBrowser extends AbstractSnomedIndexBrowser<Snomed
 			return -1L;
 		}
 		
-		final Document doc = service.document(branchPath, topDocs.scoreDocs[0].doc, COMPONENT_STORAGE_KEY_TO_LOAD);
-		
-		final IndexableField field = doc.getField(CommonIndexConstants.COMPONENT_STORAGE_KEY);
-		
-		if (null == field) {
-			
-			return -1L;
-			
-		}
-		
-		return IndexUtils.getLongValue(field);
+		final Document doc = service.document(branchPath, topDocs.scoreDocs[0].doc, ComponentStorageKeyField.FIELDS_TO_LOAD);
+		return ComponentStorageKeyField.getLong(doc);
 	}
 	
 	@Override
 	public String getIdentifierId(final IBranchPath branchPath, final long storageKey) {
-
 		Preconditions.checkNotNull(branchPath, "Branch path argument cannot be null.");
 		
-		final Query query = new TermQuery(new Term(CommonIndexConstants.COMPONENT_STORAGE_KEY, IndexUtils.longToPrefixCoded(storageKey)));
+		final Query query = new ComponentStorageKeyField(storageKey).toQuery();
 		final TopDocs topDocs = service.search(branchPath, query, 1);
 		
 		if (null == topDocs || CompareUtils.isEmpty(topDocs.scoreDocs)) {
@@ -574,8 +553,8 @@ public class SnomedServerRefSetBrowser extends AbstractSnomedIndexBrowser<Snomed
 			
 			while (iterator.next()) {
 				final int docID = iterator.getDocID();
-				final Document doc = service.document(branchPath, docID, COMPONENT_STORAGE_KEY_TO_LOAD);
-				storageKeys.add(IndexUtils.getLongValue(doc.getField(CommonIndexConstants.COMPONENT_STORAGE_KEY)));
+				final Document doc = service.document(branchPath, docID, ComponentStorageKeyField.FIELDS_TO_LOAD);
+				storageKeys.add(ComponentStorageKeyField.getLong(doc));
 			}
 		} catch (final IOException e) {
 			throw new IndexException("Error while querying module dependency reference set members.", e);
@@ -655,7 +634,7 @@ public class SnomedServerRefSetBrowser extends AbstractSnomedIndexBrowser<Snomed
 		checkNotNull(branchPath, "branchPath");
 		checkArgument(storageKey > CDOUtils.NO_STORAGE_KEY);
 		
-		final TermQuery query = new TermQuery(new Term(CommonIndexConstants.COMPONENT_STORAGE_KEY, IndexUtils.longToPrefixCoded(storageKey)));
+		final Query query = new ComponentStorageKeyField(storageKey).toQuery();
 		final TopDocs topDocs = service.search(branchPath, query, 1);
 		
 		if (IndexUtils.isEmpty(topDocs)) {
@@ -676,12 +655,8 @@ public class SnomedServerRefSetBrowser extends AbstractSnomedIndexBrowser<Snomed
 	public boolean isRegularRefSet(final IBranchPath branchPath, final long storageKey) {
 		checkNotNull(branchPath, "branchPath");
 		checkArgument(storageKey > NO_STORAGE_KEY, "Storage key should be a positive integer.");
-		
-		final BooleanQuery query = new BooleanQuery(true);
-		query.add(SnomedIndexQueries.REFSET_TYPE_QUERY, Occur.MUST);
-		query.add(new TermQuery(new Term(CommonIndexConstants.COMPONENT_STORAGE_KEY, IndexUtils.longToPrefixCoded(storageKey))), Occur.MUST);
-		query.add(new TermQuery(new Term(REFERENCE_SET_STRUCTURAL, IndexUtils.intToPrefixCoded(0))), Occur.MUST);
-		
+		final Query query = IndexQueries.and(SnomedIndexQueries.REFSET_TYPE_QUERY, new ComponentStorageKeyField(storageKey).toQuery(), new TermQuery(
+				new Term(REFERENCE_SET_STRUCTURAL, IndexUtils.intToPrefixCoded(0))));
 		return service.getHitCount(branchPath, query, null) > 0;
 	}
 	
@@ -698,7 +673,7 @@ public class SnomedServerRefSetBrowser extends AbstractSnomedIndexBrowser<Snomed
 		final short referencedComponentType = referencedComponentTypeField.numericValue().shortValue();
 		final IndexableField referenceSetTypeField = doc.getField(REFERENCE_SET_TYPE);
 		final SnomedRefSetType refSetType = SnomedRefSetType.get(referenceSetTypeField.numericValue().intValue());
-		final long storageKey = doc.getField(CommonIndexConstants.COMPONENT_STORAGE_KEY).numericValue().longValue();
+		final long storageKey = ComponentStorageKeyField.getLong(doc);
 		final boolean structural = IndexUtils.getBooleanValue(doc.getField(REFERENCE_SET_STRUCTURAL));
 		final String iconId = doc.get(CommonIndexConstants.COMPONENT_ICON_ID);
 		final String moduleId = doc.get(COMPONENT_MODULE_ID);

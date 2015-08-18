@@ -20,7 +20,6 @@ import static com.b2international.snowowl.datastore.index.IndexUtils.getBooleanV
 import javax.annotation.Nullable;
 
 import org.apache.lucene.document.Document;
-import org.apache.lucene.index.IndexableField;
 import org.apache.lucene.search.Sort;
 
 import com.b2international.snowowl.core.api.IBranchPath;
@@ -28,6 +27,7 @@ import com.b2international.snowowl.core.api.index.CommonIndexConstants;
 import com.b2international.snowowl.datastore.index.IndexQueryBuilder;
 import com.b2international.snowowl.datastore.index.IndexUtils;
 import com.b2international.snowowl.datastore.index.field.ComponentIdLongField;
+import com.b2international.snowowl.datastore.index.field.ComponentStorageKeyField;
 import com.b2international.snowowl.datastore.index.field.ComponentTypeField;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.snomed.datastore.SnomedConceptIndexEntry;
@@ -72,8 +72,7 @@ public abstract class SnomedConceptIndexQueryAdapter extends SnomedDslIndexQuery
 		final String id = ComponentIdLongField.getString(doc);
 		final String label = doc.get(CommonIndexConstants.COMPONENT_LABEL);
 		final String moduleId = doc.get(SnomedIndexBrowserConstants.COMPONENT_MODULE_ID);
-		final IndexableField storageKeyField = doc.getField(CommonIndexConstants.COMPONENT_STORAGE_KEY);
-		final long storageKey = storageKeyField.numericValue().longValue();
+		final long storageKey = ComponentStorageKeyField.getLong(doc);
 		final byte flags = SnomedConceptIndexEntry.generateFlags(getBooleanValue(doc.getField(SnomedIndexBrowserConstants.COMPONENT_ACTIVE)), 
 				getBooleanValue(doc.getField(SnomedIndexBrowserConstants.CONCEPT_PRIMITIVE)),
 				getBooleanValue(doc.getField(SnomedIndexBrowserConstants.CONCEPT_EXHAUSTIVE)),

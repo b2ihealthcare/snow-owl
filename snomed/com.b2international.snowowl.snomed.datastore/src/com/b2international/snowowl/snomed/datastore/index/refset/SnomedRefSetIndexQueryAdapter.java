@@ -43,6 +43,7 @@ import com.b2international.snowowl.datastore.index.DocumentWithScore;
 import com.b2international.snowowl.datastore.index.IndexQueryBuilder;
 import com.b2international.snowowl.datastore.index.IndexUtils;
 import com.b2international.snowowl.datastore.index.field.ComponentIdLongField;
+import com.b2international.snowowl.datastore.index.field.ComponentStorageKeyField;
 import com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants;
 import com.b2international.snowowl.snomed.datastore.browser.SnomedIndexQueries;
 import com.b2international.snowowl.snomed.datastore.index.SnomedDOIQueryAdapter;
@@ -226,16 +227,16 @@ public class SnomedRefSetIndexQueryAdapter extends SnomedDslIndexQueryAdapter<Sn
 		return labelQueryBuilder;
 	}
 	
-	private SnomedRefSetIndexEntry createEntry(final Document document, final float score) {
+	private SnomedRefSetIndexEntry createEntry(final Document doc, final float score) {
 		return new SnomedRefSetIndexEntry(
-				ComponentIdLongField.getString(document), 
-				document.getField(CommonIndexConstants.COMPONENT_LABEL).stringValue(), 
-				document.getField(CommonIndexConstants.COMPONENT_ICON_ID).stringValue(),
-				document.get(SnomedIndexBrowserConstants.COMPONENT_MODULE_ID),
+				ComponentIdLongField.getString(doc), 
+				doc.getField(CommonIndexConstants.COMPONENT_LABEL).stringValue(), 
+				doc.getField(CommonIndexConstants.COMPONENT_ICON_ID).stringValue(),
+				doc.get(SnomedIndexBrowserConstants.COMPONENT_MODULE_ID),
 				score,
-				IndexUtils.getLongValue(document.getField(CommonIndexConstants.COMPONENT_STORAGE_KEY)), 
-				SnomedRefSetType.get(IndexUtils.getIntValue(document.getField(REFERENCE_SET_TYPE))),
-				IndexUtils.getShortValue(document.getField(REFERENCE_SET_REFERENCED_COMPONENT_TYPE)), 
-				IndexUtils.getBooleanValue(document.getField(REFERENCE_SET_STRUCTURAL)));
+				ComponentStorageKeyField.getLong(doc), 
+				SnomedRefSetType.get(IndexUtils.getIntValue(doc.getField(REFERENCE_SET_TYPE))),
+				IndexUtils.getShortValue(doc.getField(REFERENCE_SET_REFERENCED_COMPONENT_TYPE)), 
+				IndexUtils.getBooleanValue(doc.getField(REFERENCE_SET_STRUCTURAL)));
 	}
 }

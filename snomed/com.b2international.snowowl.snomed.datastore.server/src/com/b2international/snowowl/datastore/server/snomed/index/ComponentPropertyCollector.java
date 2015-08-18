@@ -27,8 +27,8 @@ import bak.pcj.map.LongKeyMap;
 import bak.pcj.map.LongKeyOpenHashMap;
 
 import com.b2international.commons.pcj.LongHashFunctionAdapter;
-import com.b2international.snowowl.core.api.index.CommonIndexConstants;
 import com.b2international.snowowl.datastore.index.AbstractDocsOutOfOrderCollector;
+import com.b2international.snowowl.datastore.index.field.ComponentStorageKeyField;
 import com.google.common.hash.Hashing;
 
 /**
@@ -47,7 +47,7 @@ public abstract class ComponentPropertyCollector extends AbstractDocsOutOfOrderC
 
 	@Override
 	protected void initDocValues(final AtomicReader leafReader) throws IOException {
-		storageKeys = leafReader.getNumericDocValues(CommonIndexConstants.COMPONENT_STORAGE_KEY);
+		storageKeys = leafReader.getNumericDocValues(ComponentStorageKeyField.COMPONENT_STORAGE_KEY);
 	}
 
 	/**
