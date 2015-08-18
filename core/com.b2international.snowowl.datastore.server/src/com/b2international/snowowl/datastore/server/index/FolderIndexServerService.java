@@ -30,7 +30,6 @@ import java.util.Set;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.index.IndexableField;
 import org.apache.lucene.search.Query;
-import org.apache.lucene.search.TermQuery;
 import org.apache.lucene.search.TopDocs;
 
 import com.b2international.commons.CompareUtils;
@@ -50,6 +49,7 @@ import com.b2international.snowowl.datastore.index.IndexUtils;
 import com.b2international.snowowl.datastore.index.ParentFolderAwareIndexEntry;
 import com.b2international.snowowl.datastore.index.field.ComponentIdField;
 import com.b2international.snowowl.datastore.index.field.ComponentIdStringField;
+import com.b2international.snowowl.datastore.index.field.ComponentStorageKeyField;
 import com.b2international.snowowl.datastore.index.field.ComponentTypeField;
 import com.b2international.snowowl.datastore.server.TerminologyRegistryServiceWrapper;
 import com.google.common.base.Predicate;
@@ -72,7 +72,7 @@ public abstract class FolderIndexServerService extends FSIndexServerService<Pare
 			ComponentIdField.COMPONENT_ID,
 			CommonIndexConstants.COMPONENT_LABEL,
 			CommonIndexConstants.COMPONENT_PARENT,
-			CommonIndexConstants.COMPONENT_STORAGE_KEY,
+			ComponentStorageKeyField.COMPONENT_STORAGE_KEY,
 			CommonIndexConstants.COMPONENT_RELEASED);
 	
 	private static final Predicate<IndexableField> NON_ROOT_PARENT_FIELD_PREDICATE = new Predicate<IndexableField>() {
@@ -96,7 +96,7 @@ public abstract class FolderIndexServerService extends FSIndexServerService<Pare
 		final String code = ComponentIdStringField.getString(document);
 		final String displayName = document.get(CommonIndexConstants.COMPONENT_LABEL);
 		final String parentId = document.get(CommonIndexConstants.COMPONENT_PARENT);
-		final long storageKey = document.getField(CommonIndexConstants.COMPONENT_STORAGE_KEY).numericValue().longValue();
+		final long storageKey = ComponentStorageKeyField.getLong(document);
 		return new FolderIndexEntry(code, displayName, parentId, storageKey, hasChildren(branchPath, code));
 	}
 
@@ -242,7 +242,7 @@ public abstract class FolderIndexServerService extends FSIndexServerService<Pare
 		checkNotNull(branchPath, "branchPath");
 		checkNotNull(conceptId, "conceptId");
 		
-		final TermQuery query = new ComponentIdStringField(conceptId).toQuery();
+		final Query query = new ComponentIdStringField(conceptId).toQuery();
 		final TopDocs topDocs = search(branchPath, query, 1);
 		
 		if (IndexUtils.isEmpty(topDocs)) {

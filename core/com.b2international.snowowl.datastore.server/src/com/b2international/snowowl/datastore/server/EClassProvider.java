@@ -22,20 +22,17 @@ import javax.annotation.Nullable;
 
 import org.apache.lucene.document.Document;
 import org.apache.lucene.index.IndexableField;
-import org.apache.lucene.index.Term;
 import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.ReferenceManager;
-import org.apache.lucene.search.TermQuery;
 import org.apache.lucene.search.TopDocs;
 import org.eclipse.emf.ecore.EClass;
 
 import com.b2international.commons.CompareUtils;
 import com.b2international.snowowl.core.api.IBranchPath;
-import com.b2international.snowowl.core.api.index.CommonIndexConstants;
 import com.b2international.snowowl.core.api.index.IndexException;
 import com.b2international.snowowl.datastore.index.AbstractIndexService;
-import com.b2international.snowowl.datastore.index.IndexUtils;
+import com.b2international.snowowl.datastore.index.field.ComponentStorageKeyField;
 import com.b2international.snowowl.datastore.index.field.ComponentTypeField;
 
 /**
@@ -56,10 +53,6 @@ public abstract class EClassProvider implements IEClassProvider {
 	 * <p>
 	 * {@inheritDoc}
 	 */
-	/*
-	 * (non-Javadoc)
-	 * @see com.b2international.snowowl.datastore.server.IEClassProvider#getEClass(com.b2international.snowowl.core.api.IBranchPath, long)
-	 */
 	@Override
 	@Nullable public EClass getEClass(final IBranchPath branchPath, final long storageKey) {
 		
@@ -79,19 +72,17 @@ public abstract class EClassProvider implements IEClassProvider {
 		} catch (final IOException e) {
 			throw new IndexException("Error while getting EClass of a component. Storage key: " + storageKey, e);
 		} finally {
-			if (searcher != null)
+			if (searcher != null) {
 				try {
 					manager.release(searcher);
 				} catch (IOException e) {
 					throw new IndexException(e);
 				}
+			}
 		}
 		
 	}
 	
-	/* (non-Javadoc)
-	 * @see com.b2international.snowowl.datastore.server.IEClassProvider#getPriority()
-	 */
 	@Override
 	public int getPriority() {
 		return PRIORITY;
@@ -118,7 +109,7 @@ public abstract class EClassProvider implements IEClassProvider {
 	 * @return the query.
 	 */
 	protected Query getQuery(final long storageKey) {
-		return new TermQuery(new Term(CommonIndexConstants.COMPONENT_STORAGE_KEY, IndexUtils.longToPrefixCoded(storageKey)));
+		return new ComponentStorageKeyField(storageKey).toQuery();
 	}
 
 	/**

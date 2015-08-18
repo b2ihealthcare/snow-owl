@@ -47,10 +47,11 @@ import com.b2international.snowowl.core.api.index.IndexException;
 import com.b2international.snowowl.datastore.index.DocIdCollector;
 import com.b2international.snowowl.datastore.index.DocIdCollector.DocIdsIterator;
 import com.b2international.snowowl.datastore.index.IndexQueryBuilder;
-import com.b2international.snowowl.datastore.index.IndexUtils;
 import com.b2international.snowowl.datastore.index.field.ComponentIdField;
 import com.b2international.snowowl.datastore.index.field.ComponentIdStringField;
+import com.b2international.snowowl.datastore.index.field.ComponentStorageKeyField;
 import com.b2international.snowowl.datastore.index.field.ComponentTypeField;
+import com.b2international.snowowl.datastore.index.query.IndexQueries;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableList.Builder;
@@ -63,7 +64,6 @@ import com.google.common.collect.Sets;
  */
 abstract public class AbstractIndexTerminologyBrowser<E extends IIndexEntry> extends AbstractIndexBrowser<E> implements ITerminologyBrowser<E, String> {
 
-	protected static final Set<String> COMPONENT_STORAGE_KEY_FIELD_TO_LOAD = Collections.unmodifiableSet(Sets.newHashSet(CommonIndexConstants.COMPONENT_STORAGE_KEY));
 	protected static final Set<String> COMPONENT_PARENT_FIELDS_TO_LOAD = Collections.unmodifiableSet(Sets.newHashSet(CommonIndexConstants.COMPONENT_PARENT));
 	private static final Set<String> COMPONENT_ID_FIELD_TO_LOAD = Collections.unmodifiableSet(Sets.newHashSet(ComponentIdField.COMPONENT_ID));
 	private static final Set<String> LABEL_FIELD_TO_LOAD = Collections.unmodifiableSet(Sets.newHashSet(CommonIndexConstants.COMPONENT_LABEL));
@@ -74,34 +74,21 @@ abstract public class AbstractIndexTerminologyBrowser<E extends IIndexEntry> ext
 
 	@Override
 	public long getStorageKey(final IBranchPath branchPath, final String conceptId) {
+		checkNotNull(branchPath, "Branch path argument cannot be null.");
+		checkNotNull(branchPath, "Concept ID argument cannot be null.");
 		
-		Preconditions.checkNotNull(branchPath, "Branch path argument cannot be null.");
-		Preconditions.checkNotNull(branchPath, "Concept ID argument cannot be null.");
-		
-		final BooleanQuery query = new BooleanQuery(true);
-		query.add(getTerminologyComponentTypeQuery(), Occur.MUST);
-		query.add(getComponentIdQuery(conceptId), Occur.MUST);
-
+		final Query query = IndexQueries.and(getTerminologyComponentTypeQuery(), getComponentIdQuery(conceptId));
 		final TopDocs topDocs = service.search(branchPath, query, 1);
-		
 		if (null == topDocs || CompareUtils.isEmpty(topDocs.scoreDocs)) {
 			return -1L;
 		}
-		
-		final Document doc = service.document(branchPath, topDocs.scoreDocs[0].doc, COMPONENT_STORAGE_KEY_FIELD_TO_LOAD);
-		final IndexableField field = doc.getField(CommonIndexConstants.COMPONENT_STORAGE_KEY);
-		
-		if (null == field) {
-			return -1L;
-		}
-		
-		return IndexUtils.getLongValue(field);
+		final Document doc = service.document(branchPath, topDocs.scoreDocs[0].doc, ComponentStorageKeyField.FIELDS_TO_LOAD);
+		return ComponentStorageKeyField.getLong(doc);
 	}
 	
 	@Override
 	public Collection<E> getRootConcepts(final IBranchPath branchPath) {
 		checkNotNull(branchPath, "Branch path must not be null.");
-		
 		final List<E> rootConcepts = Lists.newArrayList();
 		// TODO: maybe this could become a cached filter, since the search criteria don't change
 		final Query query = getRootConceptsQueryBuilder().toQuery();

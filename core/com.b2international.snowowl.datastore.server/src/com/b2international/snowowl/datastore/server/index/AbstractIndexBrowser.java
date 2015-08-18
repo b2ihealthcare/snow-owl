@@ -36,7 +36,6 @@ import org.apache.lucene.search.MultiTermQuery;
 import org.apache.lucene.search.PrefixQuery;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.ScoreDoc;
-import org.apache.lucene.search.TermQuery;
 import org.apache.lucene.search.TopDocs;
 
 import com.b2international.commons.ClassUtils;
@@ -51,9 +50,9 @@ import com.b2international.snowowl.datastore.ICodeSystem;
 import com.b2international.snowowl.datastore.ICodeSystemVersion;
 import com.b2international.snowowl.datastore.InternalTerminologyRegistryService;
 import com.b2international.snowowl.datastore.index.DocIdCollector.DocIdsIterator;
-import com.b2international.snowowl.datastore.index.IndexUtils;
 import com.b2international.snowowl.datastore.index.field.ComponentIdLongField;
 import com.b2international.snowowl.datastore.index.field.ComponentIdStringField;
+import com.b2international.snowowl.datastore.index.field.ComponentStorageKeyField;
 import com.b2international.snowowl.datastore.server.TerminologyRegistryServiceWrapper;
 import com.b2international.snowowl.terminologyregistry.core.index.TerminologyRegistryIndexConstants;
 import com.google.common.base.Preconditions;
@@ -89,12 +88,9 @@ public abstract class AbstractIndexBrowser<E extends IIndexEntry> implements Int
 	 * @return the {@link ComponentIdAndLabel ID and label pair} of a component. May return with {@code null} if the component does not exist in store. 
 	 */
 	@Nullable public ComponentIdAndLabel getComponentIdAndLabel(final IBranchPath branchPath, final long storageKey) {
+		checkNotNull(branchPath, "Branch path argument cannot be null.");
 		
-		Preconditions.checkNotNull(branchPath, "Branch path argument cannot be null.");
-		
-		final Query query = new TermQuery(IndexUtils.getStorageKeyTerm(storageKey));
-		
-		final TopDocs topDocs = service.search(branchPath, query, 1);
+		final TopDocs topDocs = service.search(branchPath, new ComponentStorageKeyField(storageKey).toQuery(), 1);
 		
 		if (null == topDocs || CompareUtils.isEmpty(topDocs.scoreDocs)) {
 			return null; //XXX null object pattern?

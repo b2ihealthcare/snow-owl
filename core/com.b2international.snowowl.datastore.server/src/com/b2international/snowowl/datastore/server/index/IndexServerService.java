@@ -50,7 +50,6 @@ import org.slf4j.LoggerFactory;
 
 import com.b2international.snowowl.core.IDisposableService;
 import com.b2international.snowowl.core.api.IBranchPath;
-import com.b2international.snowowl.core.api.index.CommonIndexConstants;
 import com.b2international.snowowl.core.api.index.IIndexEntry;
 import com.b2international.snowowl.core.api.index.IIndexQueryAdapter;
 import com.b2international.snowowl.core.api.index.IndexException;
@@ -58,11 +57,11 @@ import com.b2international.snowowl.datastore.BranchPathUtils;
 import com.b2international.snowowl.datastore.index.AbstractIndexUpdater;
 import com.b2international.snowowl.datastore.index.DocIdCollector;
 import com.b2international.snowowl.datastore.index.DocIdCollector.DocIdsIterator;
-import com.b2international.snowowl.datastore.index.field.ComponentIdField;
-import com.b2international.snowowl.datastore.index.field.ComponentIdStringField;
 import com.b2international.snowowl.datastore.index.DocumentWithScore;
 import com.b2international.snowowl.datastore.index.FakeQueryAdapter;
-import com.b2international.snowowl.datastore.index.IndexUtils;
+import com.b2international.snowowl.datastore.index.field.ComponentIdField;
+import com.b2international.snowowl.datastore.index.field.ComponentIdStringField;
+import com.b2international.snowowl.datastore.index.field.ComponentStorageKeyField;
 import com.google.common.base.Function;
 import com.google.common.base.Preconditions;
 import com.google.common.cache.CacheBuilder;
@@ -158,14 +157,11 @@ public abstract class IndexServerService<E extends IIndexEntry> extends Abstract
 	
 	@Override
 	public void delete(final IBranchPath branchPath, final long storageKey) {
-
 		checkNotNull(branchPath, "branchPath");
 		checkNotDisposed();
-		
 		final IndexBranchService branchService = getBranchService(branchPath);
-		
 		try {
-			branchService.deleteDocuments(new Term(CommonIndexConstants.COMPONENT_STORAGE_KEY, IndexUtils.longToPrefixCoded(storageKey)));
+			branchService.deleteDocuments(new ComponentStorageKeyField(storageKey).toTerm());
 		} catch (final IOException e) {
 			throw new IndexException(e);
 		}
@@ -173,12 +169,9 @@ public abstract class IndexServerService<E extends IIndexEntry> extends Abstract
 
 	@Override
 	public void rollback(final IBranchPath branchPath) {
-		
 		checkNotNull(branchPath, "branchPath");
 		checkNotDisposed();
-
 		final IndexBranchService branchService = getBranchService(branchPath);
-		
 		try {
 			branchService.rollback();
 		} catch (final IOException e) {
@@ -188,12 +181,9 @@ public abstract class IndexServerService<E extends IIndexEntry> extends Abstract
 
 	@Override
 	public void deleteAll(final IBranchPath branchPath) {
-		
 		checkNotNull(branchPath, "branchPath");
 		checkNotDisposed();
-
 		final IndexBranchService branchService = getBranchService(branchPath);
-		
 		try {
 			branchService.deleteAll();
 		} catch (final IOException e) {
