@@ -184,5 +184,15 @@ public abstract class SnomedTerminologyComponentConstants {
 			throw new IllegalArgumentException("Unknown terminology component identifier: " + id);
 		}
 	}
+
+	public static boolean isCoreComponentId(String componentId) {
+		return isCoreComponentType(getTerminologyComponentIdValueSafe(componentId));
+	}
+
+	public static boolean isCoreComponentType(short componentType) {
+		return SnomedTerminologyComponentConstants.CONCEPT_NUMBER == componentType || 
+				SnomedTerminologyComponentConstants.DESCRIPTION_NUMBER == componentType || 
+				SnomedTerminologyComponentConstants.RELATIONSHIP_NUMBER == componentType;
+	}
 	
 }
