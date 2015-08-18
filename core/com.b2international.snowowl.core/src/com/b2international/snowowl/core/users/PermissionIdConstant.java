@@ -132,6 +132,12 @@ public abstract class PermissionIdConstant {
 	
 	public static final String ICD_10_AM_NAVIGATOR = "icd10am:view";
 	
+	public static final String ICD_10_CM_IMPORT = "icd10cm:import";
+	
+	public static final String ICD_10_CM_SEARCH = "icd10cm:search";
+	
+	public static final String ICD_10_CM_NAVIGATOR = "icd10cm:view";
+	
 	public static final String LCS_EXPORT = "lcs:export";
 	
 	public static final String LCS_IMPORT = "lcs:import";
