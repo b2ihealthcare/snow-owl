@@ -29,7 +29,6 @@ import org.apache.lucene.search.TermQuery;
 import org.apache.lucene.util.BytesRef;
 
 import com.b2international.snowowl.core.api.SnowowlServiceException;
-import com.b2international.snowowl.core.api.index.CommonIndexConstants;
 import com.b2international.snowowl.core.api.index.IndexException;
 import com.b2international.snowowl.core.date.Dates;
 import com.b2international.snowowl.core.date.EffectiveTimes;
@@ -43,6 +42,7 @@ import com.b2international.snowowl.datastore.advancedsearch.LongSearchCriteria;
 import com.b2international.snowowl.datastore.advancedsearch.StringSearchCriteria;
 import com.b2international.snowowl.datastore.index.IndexQueryBuilder;
 import com.b2international.snowowl.datastore.index.IndexUtils;
+import com.b2international.snowowl.datastore.index.field.ComponentTypeField;
 
 /**
  * @since 3.0.1
@@ -71,9 +71,7 @@ public abstract class AbstractAdvancedSearchQueryBuilder {
 			occur = Occur.SHOULD;
 		}
 		// TODO: handle unexpected match type
-
-		compoundQuery.add(new TermQuery(new Term(CommonIndexConstants.COMPONENT_TYPE, IndexUtils.intToPrefixCoded(terminologyComponentTypeId))),
-				Occur.MUST);
+		compoundQuery.add(new ComponentTypeField(terminologyComponentTypeId).toQuery(), Occur.MUST);
 		if (!searchCriterias.isEmpty()) {
 			final BooleanQuery subQuery = new BooleanQuery();
 

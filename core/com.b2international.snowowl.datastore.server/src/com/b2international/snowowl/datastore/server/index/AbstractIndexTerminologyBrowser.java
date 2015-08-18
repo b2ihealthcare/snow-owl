@@ -29,11 +29,9 @@ import javax.annotation.Nullable;
 
 import org.apache.lucene.document.Document;
 import org.apache.lucene.index.IndexableField;
-import org.apache.lucene.index.Term;
 import org.apache.lucene.search.BooleanClause.Occur;
 import org.apache.lucene.search.BooleanQuery;
 import org.apache.lucene.search.Query;
-import org.apache.lucene.search.TermQuery;
 import org.apache.lucene.search.TopDocs;
 import org.eclipse.core.runtime.IProgressMonitor;
 
@@ -52,6 +50,7 @@ import com.b2international.snowowl.datastore.index.IndexQueryBuilder;
 import com.b2international.snowowl.datastore.index.IndexUtils;
 import com.b2international.snowowl.datastore.index.field.ComponentIdField;
 import com.b2international.snowowl.datastore.index.field.ComponentIdStringField;
+import com.b2international.snowowl.datastore.index.field.ComponentTypeField;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableList.Builder;
@@ -363,7 +362,7 @@ abstract public class AbstractIndexTerminologyBrowser<E extends IIndexEntry> ext
 
 	// The default implementation restricts the query to a single component type only
 	private Query getDefaultTerminologyComponentTypeQuery() {
-		return new TermQuery(new Term(CommonIndexConstants.COMPONENT_TYPE, IndexUtils.intToPrefixCoded(getConceptTerminologyComponentId())));
+		return new ComponentTypeField(getConceptTerminologyComponentId()).toQuery();
 	}
 	
 	/**

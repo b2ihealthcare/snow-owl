@@ -36,7 +36,7 @@ import com.b2international.snowowl.core.api.index.CommonIndexConstants;
 import com.b2international.snowowl.core.api.index.IndexException;
 import com.b2international.snowowl.datastore.index.AbstractIndexService;
 import com.b2international.snowowl.datastore.index.IndexUtils;
-import com.google.common.collect.Sets;
+import com.b2international.snowowl.datastore.index.field.ComponentTypeField;
 
 /**
  * Abstract implementation of the {@link IEClassProvider} interface.
@@ -110,11 +110,9 @@ public abstract class EClassProvider implements IEClassProvider {
 	 * @return a set of field names to load.
 	 */
 	protected Set<String> getFieldsToLoad() {
-		return COMPONENT_TYPE_TO_LOAD;
+		return ComponentTypeField.FIELDS_TO_LOAD;
 	}
 	
-	private static final Set<String> COMPONENT_TYPE_TO_LOAD = Sets.newHashSet(CommonIndexConstants.COMPONENT_TYPE);
-
 	/**
 	 * Returns with the query that will be performed to find {@link EClass} based on unique storage key.
 	 * @return the query.
