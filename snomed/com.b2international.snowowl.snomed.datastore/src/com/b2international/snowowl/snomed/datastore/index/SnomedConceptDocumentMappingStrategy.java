@@ -29,7 +29,6 @@ import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBr
 import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.CONCEPT_REFERRING_MAPPING_REFERENCE_SET_ID;
 import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.CONCEPT_REFERRING_REFERENCE_SET_ID;
 import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.CONCEPT_SYNONYM;
-import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.ROOT_ID;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.collect.Sets.newHashSet;
 
@@ -159,7 +158,7 @@ public class SnomedConceptDocumentMappingStrategy extends SnomedConceptIndexMapp
 		
 		for (final IndexableField field : fields) {
 			long id = IndexUtils.getLongValue(field);
-			if (ROOT_ID != id) {
+			if (!ComponentParentLongField.isRoot(id)) {
 				longIds.add(id);
 			}
 		}

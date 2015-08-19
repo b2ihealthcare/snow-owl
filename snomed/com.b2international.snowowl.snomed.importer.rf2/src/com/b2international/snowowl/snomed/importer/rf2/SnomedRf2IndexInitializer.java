@@ -82,7 +82,6 @@ import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBr
 import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.RELATIONSHIP_UNION_GROUP;
 import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.RELATIONSHIP_UNIVERSAL;
 import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.RELATIONSHIP_VALUE_ID;
-import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.ROOT_ID;
 import static com.google.common.collect.Lists.newArrayList;
 import static com.google.common.collect.Maps.newHashMap;
 import static com.google.common.collect.Sets.newHashSet;
@@ -1296,7 +1295,7 @@ public class SnomedRf2IndexInitializer extends Job {
 		final LongCollection parentIds = getParentIds(conceptIdString);
 		if (parentIds.isEmpty()) {
 			// if it has no parents, then it is the root
-			new ComponentParentLongField(ROOT_ID).addTo(doc);
+			ComponentParentLongField.ROOT_PARENT.addTo(doc);
 		} else {
 			final LongIterator parentIdIterator = parentIds.iterator();
 			while (parentIdIterator.hasNext()) {

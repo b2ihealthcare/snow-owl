@@ -16,7 +16,6 @@
 package com.b2international.snowowl.snomed.api.impl;
 
 import static com.b2international.commons.pcj.LongSets.toStringSet;
-import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.ROOT_ID;
 
 import java.util.Collection;
 import java.util.List;
@@ -88,7 +87,7 @@ public class SnomedTerminologyBrowserServiceImpl implements ISnomedTerminologyBr
 		protected IndexQueryBuilder createIndexQueryBuilder() {
 			final BytesRef conceptIdBytesRef = IndexUtils.longToPrefixCoded(searchString);
 			return super.createIndexQueryBuilder()
-					.requireIf(allFlagsSet(SEARCH_ROOTS), new ComponentParentLongField(ROOT_ID).toQuery())
+					.requireIf(allFlagsSet(SEARCH_ROOTS), ComponentParentLongField.ROOT_PARENT.toQuery())
 					.require(new IndexQueryBuilder()
 						.matchIf(allFlagsSet(SEARCH_PARENT), new ComponentParentLongField(searchString).toQuery())
 						.matchExactTermIf(allFlagsSet(SEARCH_ANCESTOR), SnomedIndexBrowserConstants.CONCEPT_ANCESTOR, conceptIdBytesRef)

@@ -27,7 +27,6 @@ import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBr
 import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.CONCEPT_PRIMITIVE;
 import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.CONCEPT_REFERRING_MAPPING_REFERENCE_SET_ID;
 import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.CONCEPT_REFERRING_REFERENCE_SET_ID;
-import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.ROOT_ID;
 
 import java.util.Collection;
 import java.util.Date;
@@ -58,6 +57,7 @@ import com.b2international.snowowl.datastore.index.AbstractIndexMappingStrategy;
 import com.b2international.snowowl.datastore.index.SortKeyMode;
 import com.b2international.snowowl.datastore.index.field.ComponentIdLongField;
 import com.b2international.snowowl.datastore.index.field.ComponentParentField;
+import com.b2international.snowowl.datastore.index.field.ComponentParentLongField;
 import com.b2international.snowowl.datastore.index.field.ComponentStorageKeyField;
 import com.b2international.snowowl.datastore.index.field.ComponentTypeField;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
@@ -231,12 +231,11 @@ public abstract class SnomedConceptIndexMappingStrategy extends AbstractIndexMap
 	}
 
 	private void addHierarchicalFields(final Document doc, final LongSet idSet, final String fieldName) {
-
 		final LongIterator idIterator = idSet.iterator();
 		
 		if (!idIterator.hasNext()) {
 			//happens when processing new concept. this time we ignore parentage changes. associated source IS_A relationship processing will trigger taxonomic updates.
-			doc.add(new LongField(fieldName, ROOT_ID, Store.YES));
+			doc.add(new LongField(fieldName, ComponentParentLongField.ROOT_ID, Store.YES));
 		} else {
 			while (idIterator.hasNext()) {
 				final long id = idIterator.next();
@@ -245,10 +244,6 @@ public abstract class SnomedConceptIndexMappingStrategy extends AbstractIndexMap
 		}
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see com.b2international.snowowl.datastore.index.AbstractIndexMappingStrategy#getStorageKey()
-	 */
 	@Override
 	protected long getStorageKey() {
 		return storageKey;

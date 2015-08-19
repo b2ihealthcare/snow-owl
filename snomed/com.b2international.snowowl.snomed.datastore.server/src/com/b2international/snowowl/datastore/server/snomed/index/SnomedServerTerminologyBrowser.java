@@ -30,7 +30,6 @@ import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBr
 import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.CONCEPT_EXHAUSTIVE;
 import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.CONCEPT_PRIMITIVE;
 import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_UUID;
-import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.ROOT_ID;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.collect.Sets.newHashSet;
 import static java.util.Collections.unmodifiableSet;
@@ -255,7 +254,7 @@ public class SnomedServerTerminologyBrowser extends AbstractIndexTerminologyBrow
 			builder.add(getConcept(branchPath, Long.toString(parent)));
 		}
 		for (final IndexableField ancestorField : ancestorFields) {
-			if (ROOT_ID != ancestorField.numericValue().longValue()) {
+			if (!ComponentParentLongField.isRoot(ancestorField.numericValue().longValue())) {
 				builder.add(getConcept(branchPath, ancestorField.stringValue()));
 			}
 		}
@@ -439,8 +438,9 @@ public class SnomedServerTerminologyBrowser extends AbstractIndexTerminologyBrow
 		ids.addAll(parents);
 
 		for (final IndexableField ancestorField : ancestorFields) {
-			if (ROOT_ID != ancestorField.numericValue().longValue()) {
-				ids.add(Long.parseLong(ancestorField.stringValue()));
+			final long value = ancestorField.numericValue().longValue();
+			if (!ComponentParentLongField.isRoot(value)) {
+				ids.add(value);
 			}
 		}
 		
@@ -648,7 +648,7 @@ public class SnomedServerTerminologyBrowser extends AbstractIndexTerminologyBrow
 	@Override
 	protected IndexQueryBuilder getRootConceptsQueryBuilder() {
 		return new IndexQueryBuilder()
-			.require(new ComponentParentLongField(ROOT_ID).toQuery())
+			.require(ComponentParentLongField.ROOT_PARENT.toQuery())
 			.require(SnomedIndexQueries.ACTIVE_COMPONENT_QUERY);
 	}
 

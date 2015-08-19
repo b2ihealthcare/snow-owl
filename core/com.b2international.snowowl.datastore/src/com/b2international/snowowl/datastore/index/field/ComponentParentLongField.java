@@ -35,7 +35,8 @@ import com.google.common.collect.ImmutableList.Builder;
  */
 public class ComponentParentLongField extends ComponentParentField {
 
-	private static final long ROOT_ID = -1L;
+	public static final long ROOT_ID = -1L;
+	public static final ComponentParentLongField ROOT_PARENT = new ComponentParentLongField(ROOT_ID);
 	
 	private long parentId;
 	
@@ -61,7 +62,7 @@ public class ComponentParentLongField extends ComponentParentField {
 		final Builder<Long> parents = ImmutableList.builder();
 		for (IndexableField field : document.getFields(COMPONENT_PARENT)) {
 			final long value = IndexUtils.getLongValue(field);
-			if (ROOT_ID != value) {
+			if (!isRoot(value)) {
 				parents.add(value);
 			}
 		}
@@ -72,12 +73,16 @@ public class ComponentParentLongField extends ComponentParentField {
 		final IndexableField[] fields = doc.getFields(COMPONENT_PARENT);
 		final LongSet longIds = new LongOpenHashSet(fields.length + 1);
 		for (final IndexableField field : fields) {
-			long value = IndexUtils.getLongValue(field);
-			if (ROOT_ID != value) {
+			final long value = IndexUtils.getLongValue(field);
+			if (!isRoot(value)) {
 				longIds.add(value);
 			}
 		}
 		return longIds;
 	}
 
+	public static boolean isRoot(long parent) {
+		return ROOT_ID == parent;
+	}
+	
 }

@@ -20,8 +20,6 @@ package com.b2international.snowowl.snomed.datastore.browser;
  */
 public abstract class SnomedIndexBrowserConstants {
 	
-	public static final long ROOT_ID = -1L;
-	
 	public static final String COMPONENT_ACTIVE = "component_active";
 	public static final String COMPONENT_RELEASED = "component_released";
 	public static final String COMPONENT_REFERRING_PREDICATE = "component_referring_predicate";
