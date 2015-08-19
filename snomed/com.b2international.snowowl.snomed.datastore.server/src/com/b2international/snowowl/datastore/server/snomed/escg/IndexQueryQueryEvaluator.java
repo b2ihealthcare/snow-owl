@@ -27,9 +27,9 @@ import org.apache.lucene.search.BooleanQuery;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.TermQuery;
 
-import com.b2international.snowowl.core.api.index.CommonIndexConstants;
 import com.b2international.snowowl.datastore.index.IndexUtils;
 import com.b2international.snowowl.datastore.index.field.ComponentIdLongField;
+import com.b2international.snowowl.datastore.index.field.ComponentParentLongField;
 import com.b2international.snowowl.snomed.datastore.browser.SnomedIndexQueries;
 import com.b2international.snowowl.snomed.datastore.escg.IQueryEvaluator;
 import com.b2international.snowowl.snomed.dsl.query.ast.AndClause;
@@ -83,7 +83,7 @@ public class IndexQueryQueryEvaluator implements Serializable, IQueryEvaluator<B
 					final BooleanQuery descendatQuery = new BooleanQuery();
 					
 					descendatQuery.add(createAncestorQuery(conceptId), Occur.SHOULD);
-					descendatQuery.add(createParentQuery(conceptId), Occur.SHOULD);
+					descendatQuery.add(new ComponentParentLongField(conceptId).toQuery(), Occur.SHOULD);
 				
 					mainQuery.add(descendatQuery, Occur.MUST);
 					return mainQuery;
@@ -93,7 +93,7 @@ public class IndexQueryQueryEvaluator implements Serializable, IQueryEvaluator<B
 					final BooleanQuery descendatOrSelfQuery = new BooleanQuery();
 					
 					descendatOrSelfQuery.add(createAncestorQuery(conceptId), Occur.SHOULD);
-					descendatOrSelfQuery.add(createParentQuery(conceptId), Occur.SHOULD);
+					descendatOrSelfQuery.add(new ComponentParentLongField(conceptId).toQuery(), Occur.SHOULD);
 					descendatOrSelfQuery.add(createIdQuery(conceptId), Occur.SHOULD);
 				
 					mainQuery.add(descendatOrSelfQuery, Occur.MUST);
@@ -183,14 +183,6 @@ public class IndexQueryQueryEvaluator implements Serializable, IQueryEvaluator<B
 		return mainQuery;
 	}
 	
-	private Query createParentQuery(final String conceptId) {
-		return new TermQuery(createConceptParentTerm(conceptId));
-	}
-
-	private Term createConceptParentTerm(final String conceptId) {
-		return new Term(CommonIndexConstants.COMPONENT_PARENT, IndexUtils.longToPrefixCoded(conceptId));
-	}
-
 	private Query createAncestorQuery(final String conceptId) {
 		return new TermQuery(createConceptAncestorTerm(conceptId));
 	}

@@ -31,8 +31,8 @@ import org.slf4j.LoggerFactory;
 import com.b2international.commons.CompareUtils;
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.api.IBranchPath;
-import com.b2international.snowowl.core.api.index.CommonIndexConstants;
 import com.b2international.snowowl.datastore.index.IndexUtils;
+import com.b2international.snowowl.datastore.index.field.ComponentParentLongField;
 import com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants;
 import com.b2international.snowowl.snomed.datastore.index.interest.ISearchProfileManager;
 import com.b2international.snowowl.snomed.datastore.index.interest.SearchProfile;
@@ -88,7 +88,8 @@ public abstract class SearchProfileQueryProvider {
 			//in case of average not much we can do
 			if (!SearchProfileInterest.AVERAGE.equals(interest)) {
 				
-				final BytesRef contextId = IndexUtils.longToPrefixCoded(rule.getContextId());
+				String contextId2 = rule.getContextId();
+				final BytesRef contextId = IndexUtils.longToPrefixCoded(contextId2);
 				
 				if (null == searchProfileQuery) {
 					
@@ -103,7 +104,7 @@ public abstract class SearchProfileQueryProvider {
 						final BooleanQuery descendantQuery = new BooleanQuery(true);
 						
 						final Query ancestorQuery = new TermQuery(new Term(SnomedIndexBrowserConstants.CONCEPT_ANCESTOR, contextId));
-						final Query parentQuery = new TermQuery(new Term(CommonIndexConstants.COMPONENT_PARENT, contextId));
+						final Query parentQuery = new ComponentParentLongField(contextId2).toQuery();
 						
 						descendantQuery.add(ancestorQuery, Occur.SHOULD);
 						descendantQuery.add(parentQuery, Occur.SHOULD);
@@ -229,7 +230,7 @@ public abstract class SearchProfileQueryProvider {
 						
 					case WITHIN_A_NAMESPACE:
 						
-						final String conceptId = rule.getContextId();
+						final String conceptId = contextId2;
 						final Query namespaceQuery = new TermQuery(new Term(SnomedIndexBrowserConstants.CONCEPT_NAMESPACE_ID, IndexUtils.longToPrefixCoded(conceptId)));
 						
 						switch (interest) {
@@ -328,7 +329,7 @@ public abstract class SearchProfileQueryProvider {
 						
 						final BooleanQuery descendantQuery = new BooleanQuery(true);
 						final Query ancestorQuery = new TermQuery(new Term(SnomedIndexBrowserConstants.CONCEPT_ANCESTOR, contextId));
-						final Query parentQuery = new TermQuery(new Term(CommonIndexConstants.COMPONENT_PARENT, contextId));
+						final Query parentQuery = new ComponentParentLongField(rule.getContextId()).toQuery();
 						descendantQuery.add(ancestorQuery, Occur.SHOULD);
 						descendantQuery.add(parentQuery, Occur.SHOULD);
 						searchProfileQuery.add(descendantQuery, Occur.MUST_NOT);

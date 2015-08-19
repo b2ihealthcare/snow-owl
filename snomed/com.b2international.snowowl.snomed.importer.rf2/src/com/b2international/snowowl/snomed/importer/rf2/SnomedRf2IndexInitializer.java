@@ -151,6 +151,7 @@ import com.b2international.snowowl.datastore.cdo.ICDOConnectionManager;
 import com.b2international.snowowl.datastore.index.IndexUtils;
 import com.b2international.snowowl.datastore.index.SortKeyMode;
 import com.b2international.snowowl.datastore.index.field.ComponentIdLongField;
+import com.b2international.snowowl.datastore.index.field.ComponentParentLongField;
 import com.b2international.snowowl.datastore.index.field.ComponentStorageKeyField;
 import com.b2international.snowowl.datastore.index.field.ComponentTypeField;
 import com.b2international.snowowl.datastore.server.snomed.index.NamespaceMapping;
@@ -1295,11 +1296,11 @@ public class SnomedRf2IndexInitializer extends Job {
 		final LongCollection parentIds = getParentIds(conceptIdString);
 		if (parentIds.isEmpty()) {
 			// if it has no parents, then it is the root
-			doc.add(new LongField(CommonIndexConstants.COMPONENT_PARENT, ROOT_ID, Store.YES));
+			new ComponentParentLongField(ROOT_ID).addTo(doc);
 		} else {
 			final LongIterator parentIdIterator = parentIds.iterator();
 			while (parentIdIterator.hasNext()) {
-				doc.add(new LongField(CommonIndexConstants.COMPONENT_PARENT, parentIdIterator.next(), Store.YES));
+				new ComponentParentLongField(parentIdIterator.next()).addTo(doc);
 			}
 		}
 		// query ancestors

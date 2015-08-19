@@ -57,6 +57,7 @@ import com.b2international.snowowl.datastore.cdo.CDOUtils;
 import com.b2international.snowowl.datastore.index.AbstractIndexMappingStrategy;
 import com.b2international.snowowl.datastore.index.SortKeyMode;
 import com.b2international.snowowl.datastore.index.field.ComponentIdLongField;
+import com.b2international.snowowl.datastore.index.field.ComponentParentField;
 import com.b2international.snowowl.datastore.index.field.ComponentStorageKeyField;
 import com.b2international.snowowl.datastore.index.field.ComponentTypeField;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
@@ -194,7 +195,8 @@ public abstract class SnomedConceptIndexMappingStrategy extends AbstractIndexMap
 		
 		addDescriptionFields(doc);
 
-		addHierarchicalFields(doc, parentIds, CommonIndexConstants.COMPONENT_PARENT);
+		// TODO remove ref to constant
+		addHierarchicalFields(doc, parentIds, ComponentParentField.COMPONENT_PARENT);
 		addHierarchicalFields(doc, ancestorIds, CONCEPT_ANCESTOR);
 		
 		addPredicateFields(doc, predicateKeys);

@@ -163,6 +163,7 @@ import com.b2international.snowowl.datastore.index.DocIdCollector.DocIdsIterator
 import com.b2international.snowowl.datastore.index.IndexUtils;
 import com.b2international.snowowl.datastore.index.LongDocValuesCollector;
 import com.b2international.snowowl.datastore.index.field.ComponentIdLongField;
+import com.b2international.snowowl.datastore.index.field.ComponentParentLongField;
 import com.b2international.snowowl.datastore.index.field.ComponentStorageKeyField;
 import com.b2international.snowowl.datastore.index.field.ComponentTypeField;
 import com.b2international.snowowl.datastore.index.query.IndexQueries;
@@ -2225,7 +2226,7 @@ public class SnomedComponentService implements ISnomedComponentService, IPostSto
 		checkNotNull(focusConceptId, "focusConceptId");
 
 		final BooleanQuery subtypeOrSelfQuery = new BooleanQuery(true);
-		subtypeOrSelfQuery.add(new TermQuery(new Term(CommonIndexConstants.COMPONENT_PARENT, longToPrefixCoded(focusConceptId))), SHOULD);
+		subtypeOrSelfQuery.add(new ComponentParentLongField(focusConceptId).toQuery(), SHOULD);
 		subtypeOrSelfQuery.add(new TermQuery(new Term(CONCEPT_ANCESTOR, longToPrefixCoded(focusConceptId))), SHOULD);
 		subtypeOrSelfQuery.add(new ComponentIdLongField(focusConceptId).toQuery(), SHOULD);
 		

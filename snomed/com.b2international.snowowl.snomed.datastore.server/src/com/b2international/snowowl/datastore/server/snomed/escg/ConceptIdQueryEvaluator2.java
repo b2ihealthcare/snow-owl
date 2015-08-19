@@ -38,10 +38,10 @@ import com.b2international.commons.ClassUtils;
 import com.b2international.commons.pcj.LongSets;
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.api.IBranchPath;
-import com.b2international.snowowl.core.api.index.CommonIndexConstants;
 import com.b2international.snowowl.datastore.index.IndexUtils;
 import com.b2international.snowowl.datastore.index.LongDocValuesCollector;
 import com.b2international.snowowl.datastore.index.field.ComponentIdLongField;
+import com.b2international.snowowl.datastore.index.field.ComponentParentLongField;
 import com.b2international.snowowl.datastore.index.query.IndexQueries;
 import com.b2international.snowowl.datastore.server.snomed.SnomedComponentService;
 import com.b2international.snowowl.datastore.server.snomed.index.SnomedIndexServerService;
@@ -106,7 +106,7 @@ public class ConceptIdQueryEvaluator2 implements Serializable, IQueryEvaluator<L
 					final BooleanQuery descendatQuery = new BooleanQuery(true);
 					
 					descendatQuery.add(createAncestorQuery(conceptId), Occur.SHOULD);
-					descendatQuery.add(createParentQuery(conceptId), Occur.SHOULD);
+					descendatQuery.add(new ComponentParentLongField(conceptId).toQuery(), Occur.SHOULD);
 				
 					mainQuery.add(descendatQuery, Occur.MUST);
 					
@@ -119,7 +119,7 @@ public class ConceptIdQueryEvaluator2 implements Serializable, IQueryEvaluator<L
 					final BooleanQuery descendatOrSelfQuery = new BooleanQuery(true);
 					
 					descendatOrSelfQuery.add(createAncestorQuery(conceptId), Occur.SHOULD);
-					descendatOrSelfQuery.add(createParentQuery(conceptId), Occur.SHOULD);
+					descendatOrSelfQuery.add(new ComponentParentLongField(conceptId).toQuery(), Occur.SHOULD);
 					descendatOrSelfQuery.add(createIdQuery(conceptId), Occur.SHOULD);
 				
 					mainQuery.add(descendatOrSelfQuery, Occur.MUST);
@@ -265,14 +265,6 @@ public class ConceptIdQueryEvaluator2 implements Serializable, IQueryEvaluator<L
 		return new Term(RELATIONSHIP_ATTRIBUTE_ID, IndexUtils.longToPrefixCoded(attributeId));
 	}
 	
-	private Query createParentQuery(final String conceptId) {
-		return new TermQuery(createConceptParentTerm(conceptId));
-	}
-
-	private Term createConceptParentTerm(final String conceptId) {
-		return new Term(CommonIndexConstants.COMPONENT_PARENT, IndexUtils.longToPrefixCoded(conceptId));
-	}
-
 	private Query createAncestorQuery(final String conceptId) {
 		return new TermQuery(createConceptAncestorTerm(conceptId));
 	}

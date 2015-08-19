@@ -34,12 +34,12 @@ import com.b2international.snowowl.api.impl.domain.InternalComponentRef;
 import com.b2international.snowowl.api.impl.domain.InternalStorageRef;
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.api.IBranchPath;
-import com.b2international.snowowl.core.api.index.CommonIndexConstants;
 import com.b2international.snowowl.core.exceptions.ComponentNotFoundException;
 import com.b2international.snowowl.core.terminology.ComponentCategory;
 import com.b2international.snowowl.datastore.index.IndexQueryBuilder;
 import com.b2international.snowowl.datastore.index.IndexUtils;
 import com.b2international.snowowl.datastore.index.field.ComponentIdLongField;
+import com.b2international.snowowl.datastore.index.field.ComponentParentLongField;
 import com.b2international.snowowl.snomed.api.ISnomedConceptService;
 import com.b2international.snowowl.snomed.api.ISnomedTerminologyBrowserService;
 import com.b2international.snowowl.snomed.api.domain.ISnomedConcept;
@@ -88,9 +88,9 @@ public class SnomedTerminologyBrowserServiceImpl implements ISnomedTerminologyBr
 		protected IndexQueryBuilder createIndexQueryBuilder() {
 			final BytesRef conceptIdBytesRef = IndexUtils.longToPrefixCoded(searchString);
 			return super.createIndexQueryBuilder()
-					.requireExactTermIf(allFlagsSet(SEARCH_ROOTS), CommonIndexConstants.COMPONENT_PARENT, IndexUtils.longToPrefixCoded(ROOT_ID))
+					.requireIf(allFlagsSet(SEARCH_ROOTS), new ComponentParentLongField(ROOT_ID).toQuery())
 					.require(new IndexQueryBuilder()
-						.matchExactTermIf(allFlagsSet(SEARCH_PARENT), CommonIndexConstants.COMPONENT_PARENT, conceptIdBytesRef)
+						.matchIf(allFlagsSet(SEARCH_PARENT), new ComponentParentLongField(searchString).toQuery())
 						.matchExactTermIf(allFlagsSet(SEARCH_ANCESTOR), SnomedIndexBrowserConstants.CONCEPT_ANCESTOR, conceptIdBytesRef)
 					);
 		}

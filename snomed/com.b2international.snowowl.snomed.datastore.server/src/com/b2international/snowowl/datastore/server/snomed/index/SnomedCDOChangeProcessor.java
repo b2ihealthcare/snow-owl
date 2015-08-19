@@ -96,6 +96,7 @@ import com.b2international.snowowl.datastore.index.AbstractIndexMappingStrategy;
 import com.b2international.snowowl.datastore.index.AbstractIndexUpdater;
 import com.b2international.snowowl.datastore.index.IDocumentUpdater;
 import com.b2international.snowowl.datastore.index.IndexUtils;
+import com.b2international.snowowl.datastore.index.field.ComponentParentField;
 import com.b2international.snowowl.datastore.index.field.ComponentStorageKeyField;
 import com.b2international.snowowl.datastore.server.CDOServerUtils;
 import com.b2international.snowowl.snomed.Component;
@@ -1492,7 +1493,7 @@ public class SnomedCDOChangeProcessor implements ICDOChangeProcessor {
 
 			//if the concept has been deleted we do not have to update its taxonomic informations, document will be deleted
 			if (!deletedConceptIds.contains(sourceConceptId)) {
-				removeTaxonomyField(sourceConceptId, destinationConceptId, CommonIndexConstants.COMPONENT_PARENT);
+				removeTaxonomyField(sourceConceptId, destinationConceptId, ComponentParentField.COMPONENT_PARENT);
 				final LongOpenHashSet copyAncestorIds = new LongOpenHashSet(ancestorIds);
 				if (newTaxonomyBuilder.containsNode(Long.toString(sourceConceptId))) {
 					copyAncestorIds.removeAll(newTaxonomyBuilder.getSelfAndAllAncestorNodeIds(sourceConceptId));
@@ -1535,7 +1536,7 @@ public class SnomedCDOChangeProcessor implements ICDOChangeProcessor {
 			
 //			final long objectStorageKey = newTaxonomyBuilder.getStorageKey(sourceConceptId);
 			final LongSet ancestorIds = newTaxonomyBuilder.getSelfAndAllAncestorNodeIds(/*value ID*/destinationConceptId);
-			addTaxonomyField(sourceConceptId, destinationConceptId, CommonIndexConstants.COMPONENT_PARENT);
+			addTaxonomyField(sourceConceptId, destinationConceptId, ComponentParentField.COMPONENT_PARENT);
 			addTaxonomyField(sourceConceptId, newTaxonomyBuilder.getAllAncestorNodeIds(Long.toString(destinationConceptId)), SnomedIndexBrowserConstants.CONCEPT_ANCESTOR);
 			
 			final LongSet objectAllSubTypeIds = newTaxonomyBuilder.getAllDescendantNodeIds(Long.toString(sourceConceptId));
