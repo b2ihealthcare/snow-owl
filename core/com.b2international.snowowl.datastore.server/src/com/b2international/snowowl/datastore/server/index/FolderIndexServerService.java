@@ -74,7 +74,7 @@ public abstract class FolderIndexServerService extends FSIndexServerService<Pare
 	@Override
 	public Set<FolderIndexEntry> getTopLevelFolders(final IBranchPath branchPath) {
 		checkNotNull(branchPath, "Branch path must not be null.");
-		return getSubFoldersById(branchPath, CommonIndexConstants.ROOT_ID);
+		return getSubFoldersByParentField(branchPath, ComponentParentStringField.ROOT_PARENT);
 	}
 	
 	private FolderIndexEntry createFolderResultObject(final IBranchPath branchPath, final Document document) {
@@ -105,10 +105,14 @@ public abstract class FolderIndexServerService extends FSIndexServerService<Pare
 		checkNotNull(branchPath, "Branch path must not be null.");
 		checkNotNull(folderId, "Folder id must not be null.");
 
-		final Set<FolderIndexEntry> results = Sets.newHashSet();
+		final ComponentParentStringField parentField = new ComponentParentStringField(folderId);
+		return getSubFoldersByParentField(branchPath, parentField);
+	}
 
+	private Set<FolderIndexEntry> getSubFoldersByParentField(final IBranchPath branchPath, final ComponentParentStringField parentField) {
+		final Set<FolderIndexEntry> results = Sets.newHashSet();
 		final Query query = new IndexQueryBuilder()
-				.require(new ComponentParentStringField(folderId).toQuery())
+				.require(parentField.toQuery())
 				.require(getFolderTypeQuery()).toQuery();
 
 		final Collection<DocumentWithScore> documents = searchUnordered(branchPath, query, null);
@@ -153,7 +157,7 @@ public abstract class FolderIndexServerService extends FSIndexServerService<Pare
 		checkNotNull(folderName, "Folder name must not be null.");
 		
 		final Query query = new IndexQueryBuilder()
-			.require(new ComponentParentStringField(CommonIndexConstants.ROOT_ID).toQuery())
+			.require(ComponentParentStringField.ROOT_PARENT.toQuery())
 			.requireExactTerm(CommonIndexConstants.COMPONENT_LABEL_SORT_KEY, IndexUtils.getSortKey(folderName))
 			.require(getFolderTypeQuery()).toQuery();
 	
@@ -203,7 +207,7 @@ public abstract class FolderIndexServerService extends FSIndexServerService<Pare
 		checkNotNull(branchPath, "Branch path must not be null.");
 
 		final Query query = new IndexQueryBuilder()
-				.require(new ComponentParentStringField(StringUtils.isEmpty(folderId) ? CommonIndexConstants.ROOT_ID : folderId).toQuery())
+				.require(new ComponentParentStringField(StringUtils.isEmpty(folderId) ? ComponentParentStringField.ROOT_ID : folderId).toQuery())
 				.require(new ComponentTypeField(getTerminologyComponentSetNumber()).toQuery())
 				.requireExactTerm(CommonIndexConstants.COMPONENT_RELEASED, "1").toQuery(); // 1: released
 

@@ -170,7 +170,7 @@ abstract public class AbstractIndexTerminologyBrowser<E extends IIndexEntry> ext
 	
 	protected IndexQueryBuilder getRootConceptsQueryBuilder() {
 		return new IndexQueryBuilder()
-			.require(new ComponentParentStringField(CommonIndexConstants.ROOT_ID).toQuery())
+			.require(ComponentParentStringField.ROOT_PARENT.toQuery())
 			.require(getRootTerminologyComponentTypeQuery());
 	}
 
@@ -250,9 +250,7 @@ abstract public class AbstractIndexTerminologyBrowser<E extends IIndexEntry> ext
 		final Collection<String> parents = ComponentParentStringField.getValues(document);
 		final Builder<E> builder = ImmutableList.builder();
 		for (final String parent : parents) {
-			if (!CommonIndexConstants.ROOT_ID.equals(parent)) {
-				builder.add(getConcept(branchPath, parent));
-			}
+			builder.add(getConcept(branchPath, parent));
 		}
 		return builder.build();
 	}

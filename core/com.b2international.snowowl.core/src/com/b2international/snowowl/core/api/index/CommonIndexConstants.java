@@ -20,8 +20,6 @@ package com.b2international.snowowl.core.api.index;
  */
 public abstract class CommonIndexConstants {
 
-	public static final String ROOT_ID = "ROOT";
-	
 	public static final String COMPONENT_LABEL = "component_label";
 	public static final String COMPONENT_LABEL_SORT_KEY = "component_label_sort_key"; // Label with diacritical marks removed; serves as a sort key
 	public static final String COMPONENT_ICON_ID = "component_icon_id";

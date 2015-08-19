@@ -686,7 +686,7 @@ public abstract class IndexServerService<E extends IIndexEntry> extends Abstract
 	
 	@Override
 	public int maxDoc(final IBranchPath branchPath) {
-		final ReferenceManager<IndexSearcher> manager = getManager(Preconditions.checkNotNull(branchPath, "Branch path argument cannot be null."));
+		final ReferenceManager<IndexSearcher> manager = getManager(branchPath);
 		IndexSearcher searcher = null;
 		try {
 			

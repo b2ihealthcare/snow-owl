@@ -26,7 +26,6 @@ import org.apache.lucene.document.StringField;
 import org.apache.lucene.index.IndexableField;
 import org.apache.lucene.util.BytesRef;
 
-import com.b2international.snowowl.core.api.index.CommonIndexConstants;
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableList.Builder;
@@ -37,6 +36,9 @@ import com.google.common.collect.Iterables;
  */
 public class ComponentParentStringField extends ComponentParentField {
 
+	public static final String ROOT_ID = "ROOT";
+	public static final ComponentParentStringField ROOT_PARENT = new ComponentParentStringField(ROOT_ID);
+	
 	private String parentId;
 	
 	public ComponentParentStringField(String parentId) {
@@ -60,7 +62,7 @@ public class ComponentParentStringField extends ComponentParentField {
 		final Builder<String> parents = ImmutableList.builder();
 		for (IndexableField field : fields) {
 			final String id = field.stringValue();
-			if (!CommonIndexConstants.ROOT_ID.equals(id)) {
+			if (!isRoot(id)) {
 				parents.add(id);
 			}
 		}
@@ -69,5 +71,9 @@ public class ComponentParentStringField extends ComponentParentField {
 
 	public static String getValue(Document doc) {
 		return Iterables.getOnlyElement(getValues(doc));
+	}
+
+	public static boolean isRoot(String parent) {
+		return ROOT_ID.equals(parent);
 	}
 }
