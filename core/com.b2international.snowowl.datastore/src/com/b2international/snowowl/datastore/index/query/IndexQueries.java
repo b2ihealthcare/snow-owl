@@ -42,17 +42,25 @@ public class IndexQueries {
 	}
 
 	public static Query and(Query...queries) {
-		final BooleanQuery query = new BooleanQuery(true);
-		for (Query q : queries) {
-			query.add(q, Occur.MUST);
-		}
-		return query;
+		return build(Occur.MUST, queries);
 	}
 	
 	public static Query and(IndexField...fields) {
 		final BooleanQuery query = new BooleanQuery(true);
 		for (IndexField field : fields) {
 			query.add(field.toQuery(), Occur.MUST);
+		}
+		return query;
+	}
+
+	public static Query or(Query...queries) {
+		return build(Occur.SHOULD, queries);
+	}
+
+	private static Query build(final Occur occur, Query... queries) {
+		final BooleanQuery query = new BooleanQuery(true);
+		for (Query q : queries) {
+			query.add(q, occur);
 		}
 		return query;
 	}
