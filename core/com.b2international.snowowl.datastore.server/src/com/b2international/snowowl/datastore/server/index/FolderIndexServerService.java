@@ -15,26 +15,20 @@
  */
 package com.b2international.snowowl.datastore.server.index;
 
-import static com.b2international.commons.CompareUtils.isEmpty;
 import static com.google.common.base.Preconditions.checkNotNull;
-import static com.google.common.collect.Sets.newHashSet;
-import static java.util.Collections.unmodifiableSet;
 
 import java.io.File;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Map;
 import java.util.Set;
 
 import org.apache.lucene.document.Document;
-import org.apache.lucene.index.IndexableField;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.TopDocs;
 
 import com.b2international.commons.CompareUtils;
 import com.b2international.commons.StringUtils;
-import com.b2international.commons.arrays.Arrays2;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.api.browser.SuperTypeIdProvider;
 import com.b2international.snowowl.core.api.index.CommonIndexConstants;
@@ -49,10 +43,11 @@ import com.b2international.snowowl.datastore.index.IndexUtils;
 import com.b2international.snowowl.datastore.index.ParentFolderAwareIndexEntry;
 import com.b2international.snowowl.datastore.index.field.ComponentIdField;
 import com.b2international.snowowl.datastore.index.field.ComponentIdStringField;
+import com.b2international.snowowl.datastore.index.field.ComponentParentField;
+import com.b2international.snowowl.datastore.index.field.ComponentParentStringField;
 import com.b2international.snowowl.datastore.index.field.ComponentStorageKeyField;
 import com.b2international.snowowl.datastore.index.field.ComponentTypeField;
 import com.b2international.snowowl.datastore.server.TerminologyRegistryServiceWrapper;
-import com.google.common.base.Predicate;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableList.Builder;
 import com.google.common.collect.ImmutableSet;
@@ -64,22 +59,12 @@ import com.google.common.collect.Sets;
  */
 public abstract class FolderIndexServerService extends FSIndexServerService<ParentFolderAwareIndexEntry> implements IFolderIndexService, InternalTerminologyRegistryService {
 
-	private static final Set<String> PARENT_ID_FIELDS_TO_LOAD = unmodifiableSet(newHashSet(
-			CommonIndexConstants.COMPONENT_PARENT
-			));
-	
 	private static final Set<String> FOLDER_FIELD_NAMES_TO_LOAD = ImmutableSet.of(
 			ComponentIdField.COMPONENT_ID,
 			CommonIndexConstants.COMPONENT_LABEL,
-			CommonIndexConstants.COMPONENT_PARENT,
+			ComponentParentField.COMPONENT_PARENT,
 			ComponentStorageKeyField.COMPONENT_STORAGE_KEY,
 			CommonIndexConstants.COMPONENT_RELEASED);
-	
-	private static final Predicate<IndexableField> NON_ROOT_PARENT_FIELD_PREDICATE = new Predicate<IndexableField>() {
-		@Override public boolean apply(final IndexableField field) {
-			return !CommonIndexConstants.ROOT_ID.equals(field.stringValue());
-		}
-	};
 	
 	protected FolderIndexServerService(final File indexPath) {
 		super(indexPath);
@@ -95,7 +80,7 @@ public abstract class FolderIndexServerService extends FSIndexServerService<Pare
 	private FolderIndexEntry createFolderResultObject(final IBranchPath branchPath, final Document document) {
 		final String code = ComponentIdStringField.getString(document);
 		final String displayName = document.get(CommonIndexConstants.COMPONENT_LABEL);
-		final String parentId = document.get(CommonIndexConstants.COMPONENT_PARENT);
+		final String parentId = ComponentParentStringField.getValue(document);
 		final long storageKey = ComponentStorageKeyField.getLong(document);
 		return new FolderIndexEntry(code, displayName, parentId, storageKey, hasChildren(branchPath, code));
 	}
@@ -123,7 +108,7 @@ public abstract class FolderIndexServerService extends FSIndexServerService<Pare
 		final Set<FolderIndexEntry> results = Sets.newHashSet();
 
 		final Query query = new IndexQueryBuilder()
-				.requireExactTerm(CommonIndexConstants.COMPONENT_PARENT, folderId)
+				.require(new ComponentParentStringField(folderId).toQuery())
 				.require(getFolderTypeQuery()).toQuery();
 
 		final Collection<DocumentWithScore> documents = searchUnordered(branchPath, query, null);
@@ -168,7 +153,7 @@ public abstract class FolderIndexServerService extends FSIndexServerService<Pare
 		checkNotNull(folderName, "Folder name must not be null.");
 		
 		final Query query = new IndexQueryBuilder()
-			.requireExactTerm(CommonIndexConstants.COMPONENT_PARENT, CommonIndexConstants.ROOT_ID)
+			.require(new ComponentParentStringField(CommonIndexConstants.ROOT_ID).toQuery())
 			.requireExactTerm(CommonIndexConstants.COMPONENT_LABEL_SORT_KEY, IndexUtils.getSortKey(folderName))
 			.require(getFolderTypeQuery()).toQuery();
 	
@@ -178,9 +163,7 @@ public abstract class FolderIndexServerService extends FSIndexServerService<Pare
 	protected abstract short getTerminologyFolderComponentNumber();
 	
 	private boolean hasChildren(final IBranchPath branchPath, final String folderId) {
-		final Query query = new IndexQueryBuilder().requireExactTerm(CommonIndexConstants.COMPONENT_PARENT, folderId).toQuery();
-		final int hitCount = getHitCount(branchPath, query, null);
-		return hitCount > 0;
+		return getHitCount(branchPath, new ComponentParentStringField(folderId).toQuery(), null) > 0;
 	}
 	
 	// TODO: place this method somewhere which is more component set specific
@@ -220,7 +203,7 @@ public abstract class FolderIndexServerService extends FSIndexServerService<Pare
 		checkNotNull(branchPath, "Branch path must not be null.");
 
 		final Query query = new IndexQueryBuilder()
-				.requireExactTerm(CommonIndexConstants.COMPONENT_PARENT, StringUtils.isEmpty(folderId) ? CommonIndexConstants.ROOT_ID : folderId)
+				.require(new ComponentParentStringField(StringUtils.isEmpty(folderId) ? CommonIndexConstants.ROOT_ID : folderId).toQuery())
 				.require(new ComponentTypeField(getTerminologyComponentSetNumber()).toQuery())
 				.requireExactTerm(CommonIndexConstants.COMPONENT_RELEASED, "1").toQuery(); // 1: released
 
@@ -249,18 +232,8 @@ public abstract class FolderIndexServerService extends FSIndexServerService<Pare
 			return Collections.emptySet();
 		}
 		
-		final Document doc = document(branchPath, topDocs.scoreDocs[0].doc, PARENT_ID_FIELDS_TO_LOAD);
-		final IndexableField[] parentFields = Arrays2.filter(doc.getFields(CommonIndexConstants.COMPONENT_PARENT), NON_ROOT_PARENT_FIELD_PREDICATE);
-		if (isEmpty(parentFields)) {
-			return Collections.emptySet();
-		}
-		
-		final String[] parentIds = new String[parentFields.length];
-		for (int i = 0; i < parentFields.length; i++) {
-			parentIds[i] = parentFields[i].stringValue();
-		}
-		
-		return Arrays.asList(parentIds);
+		final Document doc = document(branchPath, topDocs.scoreDocs[0].doc, ComponentParentField.FIELDS_TO_LOAD);
+		return ComponentParentStringField.getValues(doc);
 	}
 	
 	// TODO: place this method somewhere which is more component set specific

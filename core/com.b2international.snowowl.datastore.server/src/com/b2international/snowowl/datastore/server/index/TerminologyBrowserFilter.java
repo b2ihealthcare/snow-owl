@@ -17,7 +17,6 @@ package com.b2international.snowowl.datastore.server.index;
 
 import java.io.IOException;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -27,7 +26,6 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
 import org.apache.lucene.document.Document;
-import org.apache.lucene.index.IndexableField;
 import org.apache.lucene.search.Collector;
 import org.apache.lucene.search.Filter;
 import org.apache.lucene.search.IndexSearcher;
@@ -44,12 +42,12 @@ import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.api.browser.FilterTerminologyBrowserType;
 import com.b2international.snowowl.core.api.browser.IFilterClientTerminologyBrowser;
 import com.b2international.snowowl.core.api.browser.ITerminologyBrowser;
-import com.b2international.snowowl.core.api.index.CommonIndexConstants;
 import com.b2international.snowowl.core.api.index.IIndexEntry;
 import com.b2international.snowowl.core.api.index.IndexException;
 import com.b2international.snowowl.datastore.index.DocIdCollector;
 import com.b2international.snowowl.datastore.index.DocIdCollector.DocIdsIterator;
 import com.b2international.snowowl.datastore.index.field.ComponentIdStringField;
+import com.b2international.snowowl.datastore.index.field.ComponentParentStringField;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 
@@ -110,21 +108,10 @@ public class TerminologyBrowserFilter<E extends IIndexEntry> {
 				final int docId = itr.getDocID();
 				final Document doc = searcher.doc(docId);
 				
-				final IndexableField[] parentFields = doc.getFields(CommonIndexConstants.COMPONENT_PARENT);
-				
-				final Set<String> parentIds = CompareUtils.isEmpty(parentFields) 
-						? Collections.<String>emptySet() 
-						: Sets.<String>newLinkedHashSetWithExpectedSize(parentFields.length);
-				
-				for (final IndexableField field : parentFields) {
-					
-					parentIds.add(field.stringValue());
-				}
-				
-				
+				final Collection<String> parentIds = ComponentParentStringField.getValues(doc);
 				final String componentId = ComponentIdStringField.getString(doc);
-				componentIdDocMap.put(componentId, doc);
 				
+				componentIdDocMap.put(componentId, doc);
 				componentIdParentComponentIdMap.put(componentId, parentIds);
 
 				filteredComponents.add(componentId);

@@ -21,7 +21,6 @@ import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Preconditions.checkState;
 
 import java.io.IOException;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
@@ -55,6 +54,8 @@ import com.b2international.snowowl.datastore.index.IndexQueryBuilder;
 import com.b2international.snowowl.datastore.index.IndexUtils;
 import com.b2international.snowowl.datastore.index.field.ComponentIdField;
 import com.b2international.snowowl.datastore.index.field.ComponentIdStringField;
+import com.b2international.snowowl.datastore.index.field.ComponentParentField;
+import com.b2international.snowowl.datastore.index.field.ComponentParentStringField;
 import com.b2international.snowowl.datastore.index.field.ComponentStorageKeyField;
 import com.b2international.snowowl.datastore.index.field.ComponentTypeField;
 import com.b2international.snowowl.datastore.index.query.IndexQueries;
@@ -71,7 +72,6 @@ import com.google.common.collect.Sets;
  */
 abstract public class AbstractIndexTerminologyBrowser<E extends IIndexEntry> extends AbstractIndexBrowser<E> implements ITerminologyBrowser<E, String> {
 
-	protected static final Set<String> COMPONENT_PARENT_FIELDS_TO_LOAD = Collections.unmodifiableSet(Sets.newHashSet(CommonIndexConstants.COMPONENT_PARENT));
 	private static final Set<String> COMPONENT_ID_FIELD_TO_LOAD = Collections.unmodifiableSet(Sets.newHashSet(ComponentIdField.COMPONENT_ID));
 	private static final Set<String> LABEL_FIELD_TO_LOAD = Collections.unmodifiableSet(Sets.newHashSet(CommonIndexConstants.COMPONENT_LABEL));
 	
@@ -170,7 +170,7 @@ abstract public class AbstractIndexTerminologyBrowser<E extends IIndexEntry> ext
 	
 	protected IndexQueryBuilder getRootConceptsQueryBuilder() {
 		return new IndexQueryBuilder()
-			.requireExactTerm(CommonIndexConstants.COMPONENT_PARENT, CommonIndexConstants.ROOT_ID)
+			.require(new ComponentParentStringField(CommonIndexConstants.ROOT_ID).toQuery())
 			.require(getRootTerminologyComponentTypeQuery());
 	}
 
@@ -182,18 +182,8 @@ abstract public class AbstractIndexTerminologyBrowser<E extends IIndexEntry> ext
 		if (CompareUtils.isEmpty(topDocs.scoreDocs)) {
 			return Collections.emptyList();
 		}
-		
-		final Document document = service.document(branchPath, topDocs.scoreDocs[0].doc, COMPONENT_PARENT_FIELDS_TO_LOAD);
-		final IndexableField[] parentFields = document.getFields(CommonIndexConstants.COMPONENT_PARENT);
-		final String[] parentIds = new String[parentFields.length];
-		int i = 0;
-		for (final IndexableField parentField : parentFields) {
-			if (!CommonIndexConstants.ROOT_ID.equals(parentField.stringValue())) {
-				parentIds[i++] = parentField.stringValue();
-			}
-		}
-		return Arrays.asList(Arrays.copyOf(parentIds, i));
-		
+		final Document document = service.document(branchPath, topDocs.scoreDocs[0].doc, ComponentParentField.FIELDS_TO_LOAD);
+		return ComponentParentStringField.getValues(document);
 	}
 	
 	/**
@@ -233,6 +223,7 @@ abstract public class AbstractIndexTerminologyBrowser<E extends IIndexEntry> ext
 		
 	}
 	
+	
 	@Override
 	public E getConcept(final IBranchPath branchPath, final String conceptId) {
 		checkNotNull(branchPath, "Branch path must not be null.");
@@ -255,12 +246,12 @@ abstract public class AbstractIndexTerminologyBrowser<E extends IIndexEntry> ext
 		if (CompareUtils.isEmpty(topDocs.scoreDocs)) {
 			return Collections.emptyList();
 		}
-		final Document document = service.document(branchPath, topDocs.scoreDocs[0].doc, COMPONENT_PARENT_FIELDS_TO_LOAD);
-		final IndexableField[] parentFields = document.getFields(CommonIndexConstants.COMPONENT_PARENT);
+		final Document document = service.document(branchPath, topDocs.scoreDocs[0].doc, ComponentParentField.FIELDS_TO_LOAD);
+		final Collection<String> parents = ComponentParentStringField.getValues(document);
 		final Builder<E> builder = ImmutableList.builder();
-		for (final IndexableField parentField : parentFields) {
-			if (!CommonIndexConstants.ROOT_ID.equals(parentField.stringValue())) {
-				builder.add(getConcept(branchPath, parentField.stringValue()));
+		for (final String parent : parents) {
+			if (!CommonIndexConstants.ROOT_ID.equals(parent)) {
+				builder.add(getConcept(branchPath, parent));
 			}
 		}
 		return builder.build();
@@ -310,7 +301,7 @@ abstract public class AbstractIndexTerminologyBrowser<E extends IIndexEntry> ext
 	protected IndexQueryBuilder getSubTypesQueryBuilder(final String id) {
 		return new IndexQueryBuilder()
 			.require(getTerminologyComponentTypeQuery())
-			.requireExactTerm(CommonIndexConstants.COMPONENT_PARENT, id);
+			.require(new ComponentParentStringField(id).toQuery());
 	}
 
 	
