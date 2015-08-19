@@ -19,48 +19,29 @@ import java.util.Collections;
 import java.util.Set;
 
 import org.apache.lucene.document.Document;
-import org.apache.lucene.document.Field.Store;
-import org.apache.lucene.document.IntField;
-import org.apache.lucene.index.IndexableField;
-import org.apache.lucene.util.BytesRef;
-
-import com.b2international.snowowl.datastore.index.IndexUtils;
 
 /**
  * @since 4.3
  */
-public class ComponentTypeField extends IndexField {
+public class ComponentTypeField extends IntIndexField {
 	
 	public static final String COMPONENT_TYPE = "component_type";
 	public static final Set<String> FIELDS_TO_LOAD = Collections.singleton(COMPONENT_TYPE);
 	
-	private int componentType;
-
-	public ComponentTypeField(short componentType) {
-		this((int) componentType);
+	public ComponentTypeField(short value) {
+		super(COMPONENT_TYPE, value);
 	}
 	
-	public ComponentTypeField(int componentType) {
-		super(COMPONENT_TYPE);
-		this.componentType = componentType;
-	}
-
-	@Override
-	protected BytesRef toBytesRef() {
-		return IndexUtils.intToPrefixCoded(componentType);
-	}
-	
-	@Override
-	protected IndexableField toField() {
-		return new IntField(COMPONENT_TYPE, componentType, Store.YES);
+	public ComponentTypeField(int value) {
+		super(COMPONENT_TYPE, value);
 	}
 
 	public static int getInt(Document doc) {
-		return IndexUtils.getIntValue(doc.getField(COMPONENT_TYPE));
+		return IntIndexField.getInt(doc, COMPONENT_TYPE);
 	}
 
 	public static short getShort(Document doc) {
-		return IndexUtils.getShortValue(doc.getField(COMPONENT_TYPE));
+		return IntIndexField.getShort(doc, COMPONENT_TYPE);
 	}
 	
 }
