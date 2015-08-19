@@ -40,6 +40,10 @@ public abstract class ComponentIdField extends IndexField {
 
 	public static final String COMPONENT_ID = "component_id";
 
+	public ComponentIdField() {
+		super(COMPONENT_ID);
+	}
+	
 	public static Query existsQuery() {
 		return new PrefixQuery(new Term(COMPONENT_ID));
 	}
@@ -64,9 +68,4 @@ public abstract class ComponentIdField extends IndexField {
 		return new FieldCacheTermsFilter(COMPONENT_ID, bytesRefs.toArray(new BytesRef[bytesRefs.size()]));
 	}
 	
-	@Override
-	protected final String getFieldName() {
-		return COMPONENT_ID;
-	}
-
 }

@@ -40,6 +40,7 @@ public class ComponentStorageKeyField extends IndexField {
 	private long storageKey;
 	
 	public ComponentStorageKeyField(long storageKey) {
+		super(COMPONENT_STORAGE_KEY);
 		this.storageKey = storageKey;
 	}
 	
@@ -53,11 +54,6 @@ public class ComponentStorageKeyField extends IndexField {
 		return IndexUtils.longToPrefixCoded(storageKey);
 	}
 
-	@Override
-	protected String getFieldName() {
-		return COMPONENT_STORAGE_KEY;
-	}
-	
 	public static long getLong(Document doc) {
 		return IndexUtils.getLongValue(doc.getField(COMPONENT_STORAGE_KEY));
 	}

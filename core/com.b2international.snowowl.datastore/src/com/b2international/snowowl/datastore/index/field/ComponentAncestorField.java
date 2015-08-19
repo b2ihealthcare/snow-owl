@@ -25,10 +25,9 @@ public abstract class ComponentAncestorField extends IndexField {
 
 	public static final String COMPONENT_ANCESTOR = "concept_ancestor_id";
 	public static final Set<String> FIELDS_TO_LOAD = Collections.singleton(COMPONENT_ANCESTOR);
-	
-	@Override
-	protected String getFieldName() {
-		return COMPONENT_ANCESTOR;
+
+	public ComponentAncestorField() {
+		super(COMPONENT_ANCESTOR);
 	}
 	
 }

@@ -41,14 +41,10 @@ public class ComponentTypeField extends IndexField {
 	}
 	
 	public ComponentTypeField(int componentType) {
+		super(COMPONENT_TYPE);
 		this.componentType = componentType;
 	}
 
-	@Override
-	protected String getFieldName() {
-		return COMPONENT_TYPE;
-	}
-	
 	@Override
 	protected BytesRef toBytesRef() {
 		return IndexUtils.intToPrefixCoded(componentType);

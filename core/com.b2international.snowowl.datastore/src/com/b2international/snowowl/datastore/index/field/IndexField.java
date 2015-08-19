@@ -27,6 +27,12 @@ import org.apache.lucene.util.BytesRef;
  */
 public abstract class IndexField {
 
+	private String fieldName;
+
+	public IndexField(String fieldName) {
+		this.fieldName = fieldName;
+	}
+	
 	protected abstract IndexableField toField();
 
 	protected abstract BytesRef toBytesRef();
@@ -39,7 +45,9 @@ public abstract class IndexField {
 		return new Term(getFieldName(), toBytesRef());
 	}
 	
-	protected abstract String getFieldName();
+	protected final String getFieldName() {
+		return fieldName;
+	}
 
 	public void addTo(Document doc) {
 		doc.add(toField());
