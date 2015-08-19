@@ -116,14 +116,22 @@ abstract public class AbstractIndexTerminologyBrowser<E extends IIndexEntry> ext
 		checkNotNull(branchPath, "Concept ID argument cannot be null.");
 		
 		final Query query = IndexQueries.and(getTerminologyComponentTypeQuery(), getComponentIdQuery(conceptId));
+		return getStorageKey(branchPath, query);
+	}
+
+	protected long getStorageKey(final IBranchPath branchPath, final Query query) {
+		
+		// FIXME: service.search and service.document in separate calls
 		final TopDocs topDocs = service.search(branchPath, query, 1);
-		if (null == topDocs || CompareUtils.isEmpty(topDocs.scoreDocs)) {
-			return -1L;
+		
+		if (IndexUtils.isEmpty(topDocs)) {
+			return CDOUtils.NO_STORAGE_KEY;
 		}
+		
 		final Document doc = service.document(branchPath, topDocs.scoreDocs[0].doc, ComponentStorageKeyField.FIELDS_TO_LOAD);
 		return ComponentStorageKeyField.getLong(doc);
-	}
-	
+	}	
+		
 	@Override
 	public Collection<E> getRootConcepts(final IBranchPath branchPath) {
 		checkNotNull(branchPath, "Branch path must not be null.");
@@ -220,9 +228,7 @@ abstract public class AbstractIndexTerminologyBrowser<E extends IIndexEntry> ext
 		}
 		
 		return field.stringValue();
-		
 	}
-	
 	
 	@Override
 	public E getConcept(final IBranchPath branchPath, final String conceptId) {
@@ -230,7 +236,7 @@ abstract public class AbstractIndexTerminologyBrowser<E extends IIndexEntry> ext
 		checkNotNull(conceptId, "conceptId");
 		checkState(!conceptId.isEmpty(), "conceptId is empty.");
 		
-		return createSingleResultObject(branchPath, service.search(branchPath, getConceptByIdQueryBuilder(conceptId), 1));
+		return getConcept(branchPath, getConceptByIdQueryBuilder(conceptId));
 	}
 
 	protected Query getConceptByIdQueryBuilder(final String conceptId) {
@@ -352,7 +358,11 @@ abstract public class AbstractIndexTerminologyBrowser<E extends IIndexEntry> ext
 		query.add(getComponentIdQuery(componentId), Occur.MUST);
 		query.add(getTerminologyComponentTypeQuery(), Occur.MUST);
 
-		return service.getHitCount(branchPath, query, null) > 0;
+		return exists(branchPath, query);
+	}
+
+	protected boolean exists(final IBranchPath branchPath, final Query query) {
+		return service.getTotalHitCount(branchPath, query) > 0;
 	}
 
 	// Even when we accept multiple component types, we only want to display root concepts from a particular type -- see Icd10AmServerTerminologyBrowser
@@ -367,7 +377,11 @@ abstract public class AbstractIndexTerminologyBrowser<E extends IIndexEntry> ext
 
 	// The default implementation restricts the query to a single component type only
 	private Query getDefaultTerminologyComponentTypeQuery() {
-		return new ComponentTypeField(getConceptTerminologyComponentId()).toQuery();
+		return getTerminologyComponentTypeQuery(getConceptTerminologyComponentId());
+	}
+
+	protected Query getTerminologyComponentTypeQuery(final short terminologyComponentId) {
+		return new ComponentTypeField(terminologyComponentId).toQuery();
 	}
 	
 	/**

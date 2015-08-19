@@ -50,6 +50,7 @@ import com.b2international.snowowl.datastore.ICodeSystem;
 import com.b2international.snowowl.datastore.ICodeSystemVersion;
 import com.b2international.snowowl.datastore.InternalTerminologyRegistryService;
 import com.b2international.snowowl.datastore.index.DocIdCollector.DocIdsIterator;
+import com.b2international.snowowl.datastore.index.IndexUtils;
 import com.b2international.snowowl.datastore.index.field.ComponentIdLongField;
 import com.b2international.snowowl.datastore.index.field.ComponentIdStringField;
 import com.b2international.snowowl.datastore.index.field.ComponentStorageKeyField;
@@ -175,11 +176,15 @@ public abstract class AbstractIndexBrowser<E extends IIndexEntry> implements Int
 	 * @param docs
 	 * @return the component created from the first search result
 	 */
-	protected E createSingleResultObject(final IBranchPath branchPath, final TopDocs docs) {
-		if (CompareUtils.isEmpty(docs.scoreDocs)) {
+	protected E getConcept(final IBranchPath branchPath, final Query query) {
+		final TopDocs docs = service.search(branchPath, query, 1);
+		
+		if (IndexUtils.isEmpty(docs)) {
 			return null;
 		}
-		return createResultObject(branchPath, service.document(branchPath, docs.scoreDocs[0].doc, getFieldNamesToLoad()));
+		
+		final Document doc = service.document(branchPath, docs.scoreDocs[0].doc, getFieldNamesToLoad());
+		return createResultObject(branchPath, doc);
 	}
 
 	/**

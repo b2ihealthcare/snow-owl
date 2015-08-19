@@ -218,7 +218,7 @@ public abstract class AbstractHierarchicalComponentDeltaBuilder<C extends Hierar
 	}
 	
 	/**Returns with the terminology specific terminology browser service.*/
-	protected abstract <CC extends AbstractIndexEntry> ITerminologyBrowser<CC, String> getTerminologyBrowser();
+	protected abstract ITerminologyBrowser<? extends AbstractIndexEntry, String> getTerminologyBrowser();
 
 	/**Returns with the application specific terminology component ID for the concrete builder.*/
 	protected abstract short getTerminologyComponentId();

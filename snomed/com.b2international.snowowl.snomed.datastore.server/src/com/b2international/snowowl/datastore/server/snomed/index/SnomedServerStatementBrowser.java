@@ -177,9 +177,7 @@ public class SnomedServerStatementBrowser extends AbstractSnomedIndexBrowser<Sno
 	public SnomedRelationshipIndexEntry getStatement(final IBranchPath branchPath, final String id) {
 		checkNotNull(branchPath, "Branch path argument cannot be null.");
 		checkNotNull(id, "SNOMED CT relationship ID cannot be null.");
-		final Query query = new ComponentIdLongField(id).toQuery();
-		final TopDocs topDocs = service.search(branchPath, query, 1);
-		return createSingleResultObject(branchPath, topDocs);
+		return getConcept(branchPath, new ComponentIdLongField(id).toQuery());
 	}
 
 	@Override

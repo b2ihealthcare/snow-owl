@@ -86,8 +86,8 @@ public abstract class AbstractAdvancedSearchQueryBuilder {
 
 	protected Query createQuery(final AbstractSearchCriteria criteria) throws SnowowlServiceException {
 
-		final String searchConstant = criteria.getType();
-		final String indexKey = getIndexKey(searchConstant);
+		final String type = criteria.getType();
+		final String indexKey = getIndexKey(type);
 
 		if (indexKey != null) {
 
@@ -106,7 +106,7 @@ public abstract class AbstractAdvancedSearchQueryBuilder {
 						Throwable tokenMgrError = e.getCause().getCause();
 						if (e.getCause() instanceof ParseException && tokenMgrError instanceof TokenMgrError) {
 							String message = tokenMgrError.getMessage();
-							throw new AdvancedSearchQueryParseException(message, tokenMgrError, searchConstant, searchString);
+							throw new AdvancedSearchQueryParseException(message, tokenMgrError, type, searchString);
 						} else {
 							throw new SnowowlServiceException(e);
 						}

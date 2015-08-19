@@ -256,8 +256,7 @@ public class SnomedServerRefSetBrowser extends AbstractSnomedIndexBrowser<Snomed
 	
 	@Override
 	public SnomedRefSetIndexEntry getRefSet(final IBranchPath branchPath, final String refSetId) {
-		final TopDocs topDocs = service.search(branchPath, IndexQueries.queryComponentByLongId(SnomedTerminologyComponentConstants.REFSET_NUMBER, refSetId), 1);
-		return createSingleResultObject(branchPath, topDocs);
+		return getConcept(branchPath, IndexQueries.queryComponentByLongId(SnomedTerminologyComponentConstants.REFSET_NUMBER, refSetId));
 	}
 
 	@Override
