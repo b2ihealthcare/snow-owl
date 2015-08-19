@@ -131,14 +131,7 @@ import org.eclipse.emf.cdo.CDOObject;
 import org.eclipse.emf.cdo.transaction.CDOTransaction;
 import org.eclipse.emf.cdo.view.CDOView;
 
-import bak.pcj.LongCollection;
-import bak.pcj.LongIterator;
-import bak.pcj.map.LongKeyFloatMap;
-import bak.pcj.set.LongOpenHashSet;
-import bak.pcj.set.LongSet;
-
 import com.b2international.commons.CompareUtils;
-import com.b2international.commons.Pair;
 import com.b2international.commons.StringUtils;
 import com.b2international.commons.csv.CsvLexer.EOL;
 import com.b2international.commons.csv.CsvParser;
@@ -204,6 +197,12 @@ import com.google.common.collect.Maps;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Sets;
 
+import bak.pcj.LongCollection;
+import bak.pcj.LongIterator;
+import bak.pcj.map.LongKeyFloatMap;
+import bak.pcj.set.LongOpenHashSet;
+import bak.pcj.set.LongSet;
+
 /**
  * RF2 based incremental index initializer job.
  */
@@ -231,7 +230,7 @@ public class SnomedRf2IndexInitializer extends Job {
 	private Set<String> visitedConceptsViaIsAStatements;
 	private Set<String> visitedConceptsViaOtherStatements;
 	private Map<String, String> descriptiptionsToConceptIds;
-	private Map<String, Pair<SnomedRefSetType, Integer>> visitedRefSets;
+	private Map<String, SnomedRefSetType> visitedRefSets;
 	private Set<String> skippedReferenceSets;
 	private LongKeyFloatMap doiData;
 	//when a reference set is imported where the concept is being created on the fly
@@ -733,7 +732,7 @@ public class SnomedRf2IndexInitializer extends Job {
 					final Long id = Long.valueOf(refSetId);
 					final boolean structural = isStructural(type, refSetId);
 					final boolean indexAsRelevantForCompare = !structural;
-					final int refComponentType = SnomedTerminologyComponentConstants.getTerminologyComponentIdValueSafe(record.get(5));
+					final int refComponentType = getRefSetComponentType(record.get(5), refSetType);
 					final long storageKey = importIndexService.getRefSetCdoId(refSetId);
 					refSetDoc.add(new IntField(COMPONENT_TYPE, SnomedTerminologyComponentConstants.REFSET_NUMBER, Store.YES));
 					refSetDoc.add(new LongField(COMPONENT_ID, id, Store.YES));
@@ -831,7 +830,7 @@ public class SnomedRf2IndexInitializer extends Job {
 					}
 					
 					snomedIndexService.index(branchPath, refSetDoc, IndexUtils.getStorageKeyTerm(storageKey));
-					visitedRefSets.put(refSetId, Pair.of(SnomedRefSetType.get(refSetType), refComponentType));
+					visitedRefSets.put(refSetId, SnomedRefSetType.get(refSetType));
 				}
 				
 				
@@ -839,8 +838,8 @@ public class SnomedRf2IndexInitializer extends Job {
 				final boolean active = ACTIVE_STATUS.equals(record.get(2));
 				final long module = Long.parseLong(record.get(3));
 				final String refComponentId = record.get(5);
-				final SnomedRefSetType refSetType = visitedRefSets.get(refSetId).getA();
-				final int refComponentType = visitedRefSets.get(refSetId).getB();
+				final SnomedRefSetType refSetType = visitedRefSets.get(refSetId);
+				final int refComponentType = SnomedTerminologyComponentConstants.getTerminologyComponentIdValueSafe(refComponentId);
 				final long memberCdoId = importIndexService.getMemberCdoId(uuid);
 				
 				final long effectiveTime = getEffectiveTime(record);
@@ -1019,6 +1018,15 @@ public class SnomedRf2IndexInitializer extends Job {
 				snomedIndexService.index(branchPath, doc, IndexUtils.getStorageKeyTerm(memberCdoId));
 			}
 
+			private int getRefSetComponentType(final String representativeComponentId, final int refSetType) {
+				if (refSetType == SnomedRefSetType.CONCRETE_DATA_TYPE_VALUE) {
+					// Concrete domain reference sets can have both concepts and relationships as referenced components
+					return CoreTerminologyBroker.UNSPECIFIED_NUMBER;
+				} else {
+					return SnomedTerminologyComponentConstants.getTerminologyComponentIdValueSafe(representativeComponentId); 
+				}
+			}
+			
 			private boolean isStructural(final ComponentImportType type, final String refSetId) {
 				switch (type) {
 					case LANGUAGE_TYPE_REFSET: //$FALL-THROUGH$
