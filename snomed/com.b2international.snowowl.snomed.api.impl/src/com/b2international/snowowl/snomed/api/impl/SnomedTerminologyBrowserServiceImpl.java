@@ -23,7 +23,6 @@ import java.util.List;
 import javax.annotation.Resource;
 
 import org.apache.lucene.search.Sort;
-import org.apache.lucene.util.BytesRef;
 
 import com.b2international.commons.ClassUtils;
 import com.b2international.snowowl.api.domain.IComponentList;
@@ -36,7 +35,7 @@ import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.exceptions.ComponentNotFoundException;
 import com.b2international.snowowl.core.terminology.ComponentCategory;
 import com.b2international.snowowl.datastore.index.IndexQueryBuilder;
-import com.b2international.snowowl.datastore.index.IndexUtils;
+import com.b2international.snowowl.datastore.index.field.ComponentAncestorLongField;
 import com.b2international.snowowl.datastore.index.field.ComponentIdLongField;
 import com.b2international.snowowl.datastore.index.field.ComponentParentLongField;
 import com.b2international.snowowl.snomed.api.ISnomedConceptService;
@@ -45,7 +44,6 @@ import com.b2international.snowowl.snomed.api.domain.ISnomedConcept;
 import com.b2international.snowowl.snomed.api.impl.domain.SnomedConceptList;
 import com.b2international.snowowl.snomed.datastore.SnomedConceptIndexEntry;
 import com.b2international.snowowl.snomed.datastore.SnomedTerminologyBrowser;
-import com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants;
 import com.b2international.snowowl.snomed.datastore.index.SnomedConceptIndexQueryAdapter;
 import com.b2international.snowowl.snomed.datastore.index.SnomedIndexService;
 import com.b2international.snowowl.snomed.datastore.services.SnomedBranchRefSetMembershipLookupService;
@@ -85,12 +83,11 @@ public class SnomedTerminologyBrowserServiceImpl implements ISnomedTerminologyBr
 
 		@Override
 		protected IndexQueryBuilder createIndexQueryBuilder() {
-			final BytesRef conceptIdBytesRef = IndexUtils.longToPrefixCoded(searchString);
 			return super.createIndexQueryBuilder()
 					.requireIf(allFlagsSet(SEARCH_ROOTS), ComponentParentLongField.ROOT_PARENT.toQuery())
 					.require(new IndexQueryBuilder()
 						.matchIf(allFlagsSet(SEARCH_PARENT), new ComponentParentLongField(searchString).toQuery())
-						.matchExactTermIf(allFlagsSet(SEARCH_ANCESTOR), SnomedIndexBrowserConstants.CONCEPT_ANCESTOR, conceptIdBytesRef)
+						.matchIf(allFlagsSet(SEARCH_ANCESTOR), new ComponentAncestorLongField(searchString).toQuery())
 					);
 		}
 

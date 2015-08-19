@@ -19,7 +19,6 @@ import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBr
 import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.COMPONENT_MODULE_ID;
 import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.COMPONENT_REFERRING_PREDICATE;
 import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.COMPONENT_RELEASED;
-import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.CONCEPT_ANCESTOR;
 import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.CONCEPT_DEGREE_OF_INTEREST;
 import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.CONCEPT_EFFECTIVE_TIME;
 import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.CONCEPT_EXHAUSTIVE;
@@ -38,19 +37,17 @@ import java.util.Set;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.index.IndexableField;
 
-import bak.pcj.set.LongOpenHashSet;
 import bak.pcj.set.LongSet;
 
 import com.b2international.snowowl.core.api.index.CommonIndexConstants;
 import com.b2international.snowowl.datastore.index.IndexUtils;
+import com.b2international.snowowl.datastore.index.field.ComponentAncestorLongField;
 import com.b2international.snowowl.datastore.index.field.ComponentIdLongField;
 import com.b2international.snowowl.datastore.index.field.ComponentParentLongField;
 import com.b2international.snowowl.datastore.index.field.ComponentStorageKeyField;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSet.Builder;
 
-/**
- */
 public class SnomedConceptDocumentMappingStrategy extends SnomedConceptIndexMappingStrategy {
 
 	public SnomedConceptDocumentMappingStrategy(final Document conceptDocument, final boolean indexAsRelevantForCompare) {
@@ -148,22 +145,7 @@ public class SnomedConceptDocumentMappingStrategy extends SnomedConceptIndexMapp
 	}
 
 	private static LongSet getAncestorIds(final Document conceptDocument) {
-		return getLongSet(conceptDocument, CONCEPT_ANCESTOR);
-	}
-
-	private static LongSet getLongSet(final Document conceptDocument, final String fieldName) {
-		
-		final IndexableField[] fields = conceptDocument.getFields(fieldName);
-		final LongSet longIds = new LongOpenHashSet(fields.length + 1);
-		
-		for (final IndexableField field : fields) {
-			long id = IndexUtils.getLongValue(field);
-			if (!ComponentParentLongField.isRoot(id)) {
-				longIds.add(id);
-			}
-		}
-		
-		return longIds;
+		return ComponentAncestorLongField.getLongSet(conceptDocument);
 	}
 
 	private static Date getEffectiveTime(final Document conceptDocument) {

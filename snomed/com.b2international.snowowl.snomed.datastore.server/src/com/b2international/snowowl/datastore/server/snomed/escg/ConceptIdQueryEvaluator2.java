@@ -15,7 +15,6 @@
  */
 package com.b2international.snowowl.datastore.server.snomed.escg;
 
-import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.CONCEPT_ANCESTOR;
 import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.CONCEPT_REFERRING_MAPPING_REFERENCE_SET_ID;
 import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.CONCEPT_REFERRING_REFERENCE_SET_ID;
 import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.RELATIONSHIP_ATTRIBUTE_ID;
@@ -40,6 +39,7 @@ import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.datastore.index.IndexUtils;
 import com.b2international.snowowl.datastore.index.LongDocValuesCollector;
+import com.b2international.snowowl.datastore.index.field.ComponentAncestorLongField;
 import com.b2international.snowowl.datastore.index.field.ComponentIdLongField;
 import com.b2international.snowowl.datastore.index.field.ComponentParentLongField;
 import com.b2international.snowowl.datastore.index.query.IndexQueries;
@@ -105,7 +105,7 @@ public class ConceptIdQueryEvaluator2 implements Serializable, IQueryEvaluator<L
 					
 					final BooleanQuery descendatQuery = new BooleanQuery(true);
 					
-					descendatQuery.add(createAncestorQuery(conceptId), Occur.SHOULD);
+					descendatQuery.add(new ComponentAncestorLongField(conceptId).toQuery(), Occur.SHOULD);
 					descendatQuery.add(new ComponentParentLongField(conceptId).toQuery(), Occur.SHOULD);
 				
 					mainQuery.add(descendatQuery, Occur.MUST);
@@ -118,7 +118,7 @@ public class ConceptIdQueryEvaluator2 implements Serializable, IQueryEvaluator<L
 
 					final BooleanQuery descendatOrSelfQuery = new BooleanQuery(true);
 					
-					descendatOrSelfQuery.add(createAncestorQuery(conceptId), Occur.SHOULD);
+					descendatOrSelfQuery.add(new ComponentAncestorLongField(conceptId).toQuery(), Occur.SHOULD);
 					descendatOrSelfQuery.add(new ComponentParentLongField(conceptId).toQuery(), Occur.SHOULD);
 					descendatOrSelfQuery.add(createIdQuery(conceptId), Occur.SHOULD);
 				
@@ -265,14 +265,6 @@ public class ConceptIdQueryEvaluator2 implements Serializable, IQueryEvaluator<L
 		return new Term(RELATIONSHIP_ATTRIBUTE_ID, IndexUtils.longToPrefixCoded(attributeId));
 	}
 	
-	private Query createAncestorQuery(final String conceptId) {
-		return new TermQuery(createConceptAncestorTerm(conceptId));
-	}
-
-	private Term createConceptAncestorTerm(final String conceptId) {
-		return new Term(CONCEPT_ANCESTOR, IndexUtils.longToPrefixCoded(conceptId));
-	}
-
 	private Query createIdQuery(final String conceptId) {
 		return new ComponentIdLongField(conceptId).toQuery();
 	}

@@ -19,7 +19,6 @@ import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBr
 import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.COMPONENT_MODULE_ID;
 import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.COMPONENT_REFERRING_PREDICATE;
 import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.COMPONENT_RELEASED;
-import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.CONCEPT_ANCESTOR;
 import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.CONCEPT_DEGREE_OF_INTEREST;
 import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.CONCEPT_EFFECTIVE_TIME;
 import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.CONCEPT_EXHAUSTIVE;
@@ -55,6 +54,7 @@ import com.b2international.snowowl.datastore.BranchPathUtils;
 import com.b2international.snowowl.datastore.cdo.CDOUtils;
 import com.b2international.snowowl.datastore.index.AbstractIndexMappingStrategy;
 import com.b2international.snowowl.datastore.index.SortKeyMode;
+import com.b2international.snowowl.datastore.index.field.ComponentAncestorField;
 import com.b2international.snowowl.datastore.index.field.ComponentIdLongField;
 import com.b2international.snowowl.datastore.index.field.ComponentParentField;
 import com.b2international.snowowl.datastore.index.field.ComponentParentLongField;
@@ -197,7 +197,7 @@ public abstract class SnomedConceptIndexMappingStrategy extends AbstractIndexMap
 
 		// TODO remove ref to constant
 		addHierarchicalFields(doc, parentIds, ComponentParentField.COMPONENT_PARENT);
-		addHierarchicalFields(doc, ancestorIds, CONCEPT_ANCESTOR);
+		addHierarchicalFields(doc, ancestorIds, ComponentAncestorField.COMPONENT_ANCESTOR);
 		
 		addPredicateFields(doc, predicateKeys);
 

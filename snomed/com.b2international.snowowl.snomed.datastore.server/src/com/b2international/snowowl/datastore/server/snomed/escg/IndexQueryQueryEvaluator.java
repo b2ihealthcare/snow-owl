@@ -15,7 +15,6 @@
  */
 package com.b2international.snowowl.datastore.server.snomed.escg;
 
-import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.CONCEPT_ANCESTOR;
 import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.CONCEPT_REFERRING_MAPPING_REFERENCE_SET_ID;
 import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.CONCEPT_REFERRING_REFERENCE_SET_ID;
 
@@ -28,6 +27,7 @@ import org.apache.lucene.search.Query;
 import org.apache.lucene.search.TermQuery;
 
 import com.b2international.snowowl.datastore.index.IndexUtils;
+import com.b2international.snowowl.datastore.index.field.ComponentAncestorLongField;
 import com.b2international.snowowl.datastore.index.field.ComponentIdLongField;
 import com.b2international.snowowl.datastore.index.field.ComponentParentLongField;
 import com.b2international.snowowl.snomed.datastore.browser.SnomedIndexQueries;
@@ -82,7 +82,7 @@ public class IndexQueryQueryEvaluator implements Serializable, IQueryEvaluator<B
 					
 					final BooleanQuery descendatQuery = new BooleanQuery();
 					
-					descendatQuery.add(createAncestorQuery(conceptId), Occur.SHOULD);
+					descendatQuery.add(new ComponentAncestorLongField(conceptId).toQuery(), Occur.SHOULD);
 					descendatQuery.add(new ComponentParentLongField(conceptId).toQuery(), Occur.SHOULD);
 				
 					mainQuery.add(descendatQuery, Occur.MUST);
@@ -92,7 +92,7 @@ public class IndexQueryQueryEvaluator implements Serializable, IQueryEvaluator<B
 					
 					final BooleanQuery descendatOrSelfQuery = new BooleanQuery();
 					
-					descendatOrSelfQuery.add(createAncestorQuery(conceptId), Occur.SHOULD);
+					descendatOrSelfQuery.add(new ComponentAncestorLongField(conceptId).toQuery(), Occur.SHOULD);
 					descendatOrSelfQuery.add(new ComponentParentLongField(conceptId).toQuery(), Occur.SHOULD);
 					descendatOrSelfQuery.add(createIdQuery(conceptId), Occur.SHOULD);
 				
@@ -183,14 +183,6 @@ public class IndexQueryQueryEvaluator implements Serializable, IQueryEvaluator<B
 		return mainQuery;
 	}
 	
-	private Query createAncestorQuery(final String conceptId) {
-		return new TermQuery(createConceptAncestorTerm(conceptId));
-	}
-
-	private Term createConceptAncestorTerm(final String conceptId) {
-		return new Term(CONCEPT_ANCESTOR, IndexUtils.longToPrefixCoded(conceptId));
-	}
-
 	private Query createIdQuery(final String conceptId) {
 		return new ComponentIdLongField(conceptId).toQuery();
 	}

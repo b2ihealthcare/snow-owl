@@ -96,6 +96,7 @@ import com.b2international.snowowl.datastore.index.AbstractIndexMappingStrategy;
 import com.b2international.snowowl.datastore.index.AbstractIndexUpdater;
 import com.b2international.snowowl.datastore.index.IDocumentUpdater;
 import com.b2international.snowowl.datastore.index.IndexUtils;
+import com.b2international.snowowl.datastore.index.field.ComponentAncestorField;
 import com.b2international.snowowl.datastore.index.field.ComponentParentField;
 import com.b2international.snowowl.datastore.index.field.ComponentStorageKeyField;
 import com.b2international.snowowl.datastore.server.CDOServerUtils;
@@ -1498,7 +1499,7 @@ public class SnomedCDOChangeProcessor implements ICDOChangeProcessor {
 				if (newTaxonomyBuilder.containsNode(Long.toString(sourceConceptId))) {
 					copyAncestorIds.removeAll(newTaxonomyBuilder.getSelfAndAllAncestorNodeIds(sourceConceptId));
 				}
-				removeTaxonomyField(sourceConceptId, copyAncestorIds, SnomedIndexBrowserConstants.CONCEPT_ANCESTOR);
+				removeTaxonomyField(sourceConceptId, copyAncestorIds, ComponentAncestorField.COMPONENT_ANCESTOR);
 			}
 			
 			final LongSet sourceAllSubTypeIds = previousTaxonomyBuilder.getAllDescendantNodeIds(Long.toString(sourceConceptId));
@@ -1515,7 +1516,7 @@ public class SnomedCDOChangeProcessor implements ICDOChangeProcessor {
 					copyAncestorIds.removeAll(newTaxonomyBuilder.getSelfAndAllAncestorNodeIds(conceptId));
 				}
 				
-				removeTaxonomyField(conceptId, copyAncestorIds, SnomedIndexBrowserConstants.CONCEPT_ANCESTOR); //consider multiple ancestor fields with same parent
+				removeTaxonomyField(conceptId, copyAncestorIds, ComponentAncestorField.COMPONENT_ANCESTOR); //consider multiple ancestor fields with same parent
 			}
 			
 			
@@ -1537,7 +1538,7 @@ public class SnomedCDOChangeProcessor implements ICDOChangeProcessor {
 //			final long objectStorageKey = newTaxonomyBuilder.getStorageKey(sourceConceptId);
 			final LongSet ancestorIds = newTaxonomyBuilder.getSelfAndAllAncestorNodeIds(/*value ID*/destinationConceptId);
 			addTaxonomyField(sourceConceptId, destinationConceptId, ComponentParentField.COMPONENT_PARENT);
-			addTaxonomyField(sourceConceptId, newTaxonomyBuilder.getAllAncestorNodeIds(Long.toString(destinationConceptId)), SnomedIndexBrowserConstants.CONCEPT_ANCESTOR);
+			addTaxonomyField(sourceConceptId, newTaxonomyBuilder.getAllAncestorNodeIds(Long.toString(destinationConceptId)), ComponentAncestorField.COMPONENT_ANCESTOR);
 			
 			final LongSet objectAllSubTypeIds = newTaxonomyBuilder.getAllDescendantNodeIds(Long.toString(sourceConceptId));
 			for (final LongIterator itr = objectAllSubTypeIds.iterator(); itr.hasNext(); /* nothing */) {
@@ -1548,7 +1549,7 @@ public class SnomedCDOChangeProcessor implements ICDOChangeProcessor {
 					copyAncestorIds.removeAll(previousTaxonomyBuilder.getSelfAndAllAncestorNodeIds(conceptId));
 				}
 				
-				addTaxonomyField(conceptId, copyAncestorIds, SnomedIndexBrowserConstants.CONCEPT_ANCESTOR); //consider multiple ancestor fields with same parent
+				addTaxonomyField(conceptId, copyAncestorIds, ComponentAncestorField.COMPONENT_ANCESTOR); //consider multiple ancestor fields with same parent
 			}
 			
 			

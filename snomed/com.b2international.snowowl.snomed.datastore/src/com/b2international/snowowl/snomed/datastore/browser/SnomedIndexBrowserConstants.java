@@ -25,9 +25,6 @@ public abstract class SnomedIndexBrowserConstants {
 	public static final String COMPONENT_REFERRING_PREDICATE = "component_referring_predicate";
 	public static final String COMPONENT_MODULE_ID = "component_module_id";
 	
-	public static final String CONCEPT_STATED_PARENT = "concept_stated_parent_id";
-	public static final String CONCEPT_STATED_ANCESTOR = "concept_stated_ancestor_id";
-	public static final String CONCEPT_ANCESTOR = "concept_ancestor_id";
 	public static final String CONCEPT_PRIMITIVE = "concept_primitive";
 	public static final String CONCEPT_EXHAUSTIVE = "concept_exhaustive";
 	public static final String CONCEPT_FULLY_SPECIFIED_NAME = "concept_fully_specified_name";

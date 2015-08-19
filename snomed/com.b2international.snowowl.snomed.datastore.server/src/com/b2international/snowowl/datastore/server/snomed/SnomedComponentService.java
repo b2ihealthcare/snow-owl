@@ -42,7 +42,6 @@ import static com.b2international.snowowl.snomed.datastore.SnomedRefSetUtil.getD
 import static com.b2international.snowowl.snomed.datastore.SnomedRefSetUtil.isMapping;
 import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.COMPONENT_ACTIVE;
 import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.COMPONENT_MODULE_ID;
-import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.CONCEPT_ANCESTOR;
 import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.CONCEPT_EFFECTIVE_TIME;
 import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.CONCEPT_REFERRING_REFERENCE_SET_ID;
 import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.DESCRIPTION_CONCEPT_ID;
@@ -162,6 +161,7 @@ import com.b2international.snowowl.datastore.index.DocIdCollector;
 import com.b2international.snowowl.datastore.index.DocIdCollector.DocIdsIterator;
 import com.b2international.snowowl.datastore.index.IndexUtils;
 import com.b2international.snowowl.datastore.index.LongDocValuesCollector;
+import com.b2international.snowowl.datastore.index.field.ComponentAncestorLongField;
 import com.b2international.snowowl.datastore.index.field.ComponentIdLongField;
 import com.b2international.snowowl.datastore.index.field.ComponentParentLongField;
 import com.b2international.snowowl.datastore.index.field.ComponentStorageKeyField;
@@ -2227,7 +2227,7 @@ public class SnomedComponentService implements ISnomedComponentService, IPostSto
 
 		final BooleanQuery subtypeOrSelfQuery = new BooleanQuery(true);
 		subtypeOrSelfQuery.add(new ComponentParentLongField(focusConceptId).toQuery(), SHOULD);
-		subtypeOrSelfQuery.add(new TermQuery(new Term(CONCEPT_ANCESTOR, longToPrefixCoded(focusConceptId))), SHOULD);
+		subtypeOrSelfQuery.add(new ComponentAncestorLongField(focusConceptId).toQuery(), SHOULD);
 		subtypeOrSelfQuery.add(new ComponentIdLongField(focusConceptId).toQuery(), SHOULD);
 		
 		final BooleanQuery query = new BooleanQuery(true);
