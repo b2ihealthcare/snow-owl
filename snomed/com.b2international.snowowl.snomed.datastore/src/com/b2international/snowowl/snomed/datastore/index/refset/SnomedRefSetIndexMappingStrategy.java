@@ -24,7 +24,6 @@ import java.util.Collection;
 
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.Field.Store;
-import org.apache.lucene.document.IntField;
 import org.apache.lucene.document.LongField;
 import org.apache.lucene.document.NumericDocValuesField;
 import org.apache.lucene.document.StringField;
@@ -37,6 +36,7 @@ import com.b2international.snowowl.datastore.index.AbstractIndexMappingStrategy;
 import com.b2international.snowowl.datastore.index.field.ComponentIdLongField;
 import com.b2international.snowowl.datastore.index.field.ComponentStorageKeyField;
 import com.b2international.snowowl.datastore.index.field.ComponentTypeField;
+import com.b2international.snowowl.datastore.index.field.IntIndexField;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.snomed.datastore.SnomedConceptLookupService;
 import com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants;
@@ -73,11 +73,11 @@ public class SnomedRefSetIndexMappingStrategy extends AbstractIndexMappingStrate
 		
 		new ComponentIdLongField(refSet.getIdentifierId()).addTo(doc);
 		new ComponentTypeField(SnomedTerminologyComponentConstants.REFSET_NUMBER).addTo(doc);
-		doc.add(new IntField(REFERENCE_SET_TYPE, refSet.getType().getValue(), Store.YES));
-		doc.add(new IntField(REFERENCE_SET_REFERENCED_COMPONENT_TYPE, refSet.getReferencedComponentType(), Store.YES));
+		new IntIndexField(REFERENCE_SET_TYPE, refSet.getType().getValue()).addTo(doc);
+		new IntIndexField(REFERENCE_SET_REFERENCED_COMPONENT_TYPE, refSet.getReferencedComponentType()).addTo(doc);
 		final long storageKey = CDOIDUtils.asLong(refSet.cdoID());
 		new ComponentStorageKeyField(storageKey).addTo(doc);
-		doc.add(new IntField(REFERENCE_SET_STRUCTURAL, refSet instanceof SnomedStructuralRefSet ? 1 : 0, Store.YES));
+		new IntIndexField(REFERENCE_SET_STRUCTURAL, refSet instanceof SnomedStructuralRefSet ? 1 : 0).addTo(doc);
 		
 		final String label = SnomedConceptNameProvider.INSTANCE.getText(refSet.getIdentifierId(), refSet.cdoView());
 		doc.add(new TextField(CommonIndexConstants.COMPONENT_LABEL, label, Store.YES));

@@ -72,6 +72,8 @@ import com.b2international.snowowl.datastore.cdo.ICDOConnection;
 import com.b2international.snowowl.datastore.cdo.ICDOConnectionManager;
 import com.b2international.snowowl.datastore.index.DocumentWithScore;
 import com.b2international.snowowl.datastore.index.IndexUtils;
+import com.b2international.snowowl.datastore.index.field.IntIndexField;
+import com.b2international.snowowl.datastore.index.query.IndexQueries;
 import com.b2international.snowowl.datastore.server.index.FSIndexServerService;
 import com.b2international.snowowl.datastore.server.index.IIndexPostProcessor;
 import com.b2international.snowowl.snomed.Description;
@@ -494,10 +496,7 @@ public class ImportIndexServerService extends FSIndexServerService<IIndexEntry> 
 	}
 
     private String getFullySpecifiedName(final String conceptId) {
-		final BooleanQuery conceptLabelQuery = new BooleanQuery(true); 
-		conceptLabelQuery.add(createActiveQuery(), Occur.MUST);
-		conceptLabelQuery.add(createContainerConceptQuery(conceptId), Occur.MUST);
-		conceptLabelQuery.add(new TermQuery(new Term(TERM_TYPE, IndexUtils.intToPrefixCoded(TermType.FSN.ordinal()))), Occur.MUST);
+		final Query conceptLabelQuery = IndexQueries.and(createActiveQuery(), createContainerConceptQuery(conceptId), new IntIndexField(TERM_TYPE, TermType.FSN.ordinal()).toQuery()); 
 		
         final List<DocumentWithScore> fsnDescriptionDocuments = search(SUPPORTING_INDEX_BRANCH_PATH, conceptLabelQuery, null, null, 1);
 
@@ -511,11 +510,7 @@ public class ImportIndexServerService extends FSIndexServerService<IIndexEntry> 
 	}
 
 	public String getConceptLabel(final String conceptId, final String languageRefSetId) {
-
-        final BooleanQuery conceptLabelQuery = new BooleanQuery(true); 
-        conceptLabelQuery.add(createActiveQuery(), Occur.MUST);
-        conceptLabelQuery.add(createContainerConceptQuery(conceptId), Occur.MUST);
-        conceptLabelQuery.add(new TermQuery(new Term(TERM_TYPE, IndexUtils.intToPrefixCoded(TermType.SYNONYM_AND_DESCENDANTS.ordinal()))), Occur.MUST);
+        final Query conceptLabelQuery = IndexQueries.and(createActiveQuery(), createContainerConceptQuery(conceptId), new IntIndexField(TERM_TYPE, TermType.SYNONYM_AND_DESCENDANTS.ordinal()).toQuery()); 
         
         final Filter preferredFilter = getPreferredFilter(languageRefSetId);
         

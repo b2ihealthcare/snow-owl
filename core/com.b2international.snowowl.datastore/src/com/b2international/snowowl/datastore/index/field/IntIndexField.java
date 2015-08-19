@@ -20,6 +20,7 @@ import org.apache.lucene.document.Field.Store;
 import org.apache.lucene.document.IntField;
 import org.apache.lucene.index.IndexableField;
 import org.apache.lucene.util.BytesRef;
+import org.apache.lucene.util.NumericUtils;
 
 import com.b2international.snowowl.datastore.index.IndexUtils;
 
@@ -41,7 +42,7 @@ public class IntIndexField extends IndexField {
 	
 	@Override
 	protected BytesRef toBytesRef() {
-		return IndexUtils.intToPrefixCoded(value);
+		return toBytesRef(value);
 	}
 	
 	@Override
@@ -55,6 +56,20 @@ public class IntIndexField extends IndexField {
 
 	public static short getShort(Document doc, String fieldName) {
 		return IndexUtils.getShortValue(doc.getField(fieldName));
+	}
+	
+	/**
+	 * Converts the specified integer value to prefix coded bits.
+	 * 
+	 * @see NumericUtils#intToPrefixCoded(int, int, BytesRef)
+	 * 
+	 * @param value
+	 * @return
+	 */
+	public static BytesRef toBytesRef(final int value) {
+		final BytesRef bytesRef = new BytesRef();
+		NumericUtils.intToPrefixCoded(value, 0, bytesRef);
+		return bytesRef;
 	}
 	
 }

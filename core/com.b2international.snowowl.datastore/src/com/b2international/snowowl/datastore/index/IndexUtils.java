@@ -34,7 +34,6 @@ import org.apache.lucene.analysis.tokenattributes.CharTermAttribute;
 import org.apache.lucene.document.Field;
 import org.apache.lucene.document.Field.Store;
 import org.apache.lucene.document.FieldType;
-import org.apache.lucene.document.IntField;
 import org.apache.lucene.document.StringField;
 import org.apache.lucene.index.AtomicReaderContext;
 import org.apache.lucene.index.FieldInfo.IndexOptions;
@@ -216,17 +215,6 @@ public abstract class IndexUtils {
 		return new StringField(name, value ? "1" : "0", Store.YES);
 	}
 	
-	/**
-	 * Creates a field with the specified integer value. The value will be analyzed and stored.
-	 * 
-	 * @param name the name of the new field (may not be {@code null})
-	 * @param value the integer value to store
-	 * @return the populated {@link NumericField} instance
-	 */
-	public static @Nonnull IntField createIntField(final @Nonnull String name, final int value) {
-		return new IntField(name, value, Store.YES);
-	}
-	
 	/**Returns {@code true} if the {@link TopDocs} argument is either {@code null} or the {@link ScoreDoc} is empty or {@code null}.
 	 *Otherwise returns with {@code false}.*/
 	public static boolean isEmpty(final TopDocs docs) {
@@ -338,20 +326,6 @@ public abstract class IndexUtils {
 		// whitespace characters can be kept
 		final String labelWithoutDiacriticalsAndTermSeparators = TextConstants.DELIMITER_MATCHER.removeFrom(labelWithoutDiacriticals); 
 		return labelWithoutDiacriticalsAndTermSeparators;
-	}
-	
-	/**
-	 * Converts the specified integer value to prefix coded bits.
-	 * 
-	 * @see NumericUtils#intToPrefixCoded(int, int, BytesRef)
-	 * 
-	 * @param value
-	 * @return
-	 */
-	public static BytesRef intToPrefixCoded(final int value) {
-		final BytesRef bytesRef = new BytesRef();
-		NumericUtils.intToPrefixCoded(value, 0, bytesRef);
-		return bytesRef;
 	}
 	
 	public static Collection<BytesRef> longToPrefixCoded(final Collection<String> values) {

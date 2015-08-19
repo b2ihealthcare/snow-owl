@@ -67,7 +67,6 @@ import javax.annotation.OverridingMethodsMustInvokeSuper;
 import org.apache.lucene.document.BinaryDocValuesField;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.Field.Store;
-import org.apache.lucene.document.IntField;
 import org.apache.lucene.document.LongField;
 import org.apache.lucene.document.NumericDocValuesField;
 import org.apache.lucene.document.StoredField;
@@ -94,6 +93,7 @@ import com.b2international.snowowl.datastore.index.AbstractIndexMappingStrategy;
 import com.b2international.snowowl.datastore.index.IndexUtils;
 import com.b2international.snowowl.datastore.index.SortKeyMode;
 import com.b2international.snowowl.datastore.index.field.ComponentStorageKeyField;
+import com.b2international.snowowl.datastore.index.field.IntIndexField;
 import com.b2international.snowowl.datastore.utils.ComponentUtils2;
 import com.b2international.snowowl.snomed.Component;
 import com.b2international.snowowl.snomed.Description;
@@ -154,11 +154,11 @@ public class SnomedRefSetMemberIndexMappingStrategy extends AbstractIndexMapping
 		final long storageKey = CDOIDUtil.getLong(member.cdoID());
 
 		doc.add(new StringField(REFERENCE_SET_MEMBER_UUID, member.getUuid(), Store.YES));
-		doc.add(new IntField(COMPONENT_ACTIVE, member.isActive() ? 1 : 0, Store.YES));
-		doc.add(new IntField(REFERENCE_SET_MEMBER_REFERENCE_SET_TYPE, member.getRefSet().getType().ordinal(), Store.YES));
+		new IntIndexField(COMPONENT_ACTIVE, member.isActive() ? 1 : 0).addTo(doc);
+		new IntIndexField(REFERENCE_SET_MEMBER_REFERENCE_SET_TYPE, member.getRefSet().getType().ordinal()).addTo(doc);
 		new ComponentStorageKeyField(storageKey).addTo(doc);
 		doc.add(new StoredField(COMPONENT_RELEASED, member.isReleased() ? 1 : 0));
-		doc.add(new IntField(REFERENCE_SET_MEMBER_REFERENCED_COMPONENT_TYPE, member.getReferencedComponentType(), Store.YES));
+		new IntIndexField(REFERENCE_SET_MEMBER_REFERENCED_COMPONENT_TYPE, member.getReferencedComponentType()).addTo(doc);
 		doc.add(new StringField(REFERENCE_SET_MEMBER_REFERENCED_COMPONENT_ID, member.getReferencedComponentId(), Store.YES));
 		doc.add(new LongField(COMPONENT_MODULE_ID, Long.valueOf(member.getModuleId()), Store.YES));
 		doc.add(new LongField(REFERENCE_SET_MEMBER_REFERENCE_SET_ID, Long.valueOf(member.getRefSetIdentifierId()), Store.YES));
@@ -327,7 +327,7 @@ public class SnomedRefSetMemberIndexMappingStrategy extends AbstractIndexMapping
 				final short complexMapTargetComponentType = complexMember.getMapTargetComponentType();
 				
 				doc.add(new StringField(REFERENCE_SET_MEMBER_MAP_TARGET_COMPONENT_ID, complexMapTargetComponentId, Store.YES));
-				doc.add(new IntField(REFERENCE_SET_MEMBER_MAP_TARGET_COMPONENT_TYPE_ID, complexMapTargetComponentType, Store.YES));
+				new IntIndexField(REFERENCE_SET_MEMBER_MAP_TARGET_COMPONENT_TYPE_ID, complexMapTargetComponentType).addTo(doc);
 				
 				if (CoreTerminologyBroker.UNSPECIFIED_NUMBER_SHORT == complexMapTargetComponentType) {
 					
@@ -406,7 +406,7 @@ public class SnomedRefSetMemberIndexMappingStrategy extends AbstractIndexMapping
 				final short simpleMapTargetComponentType = mapMember.getMapTargetComponentType();
 				
 				doc.add(new StringField(REFERENCE_SET_MEMBER_MAP_TARGET_COMPONENT_ID, simpleMapTargetComponentId, Store.YES));
-				doc.add(new IntField(REFERENCE_SET_MEMBER_MAP_TARGET_COMPONENT_TYPE_ID, simpleMapTargetComponentType, Store.YES));
+				new IntIndexField(REFERENCE_SET_MEMBER_MAP_TARGET_COMPONENT_TYPE_ID, simpleMapTargetComponentType).addTo(doc);
 				
 				if (CoreTerminologyBroker.UNSPECIFIED_NUMBER_SHORT == simpleMapTargetComponentType) {
 					

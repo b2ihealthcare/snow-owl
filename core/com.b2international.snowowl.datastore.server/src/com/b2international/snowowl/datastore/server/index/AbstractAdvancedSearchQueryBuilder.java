@@ -26,7 +26,6 @@ import org.apache.lucene.search.BooleanQuery;
 import org.apache.lucene.search.NumericRangeQuery;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.TermQuery;
-import org.apache.lucene.util.BytesRef;
 
 import com.b2international.snowowl.core.api.SnowowlServiceException;
 import com.b2international.snowowl.core.api.index.IndexException;
@@ -43,6 +42,7 @@ import com.b2international.snowowl.datastore.advancedsearch.StringSearchCriteria
 import com.b2international.snowowl.datastore.index.IndexQueryBuilder;
 import com.b2international.snowowl.datastore.index.IndexUtils;
 import com.b2international.snowowl.datastore.index.field.ComponentTypeField;
+import com.b2international.snowowl.datastore.index.field.IntIndexField;
 
 /**
  * @since 3.0.1
@@ -114,12 +114,10 @@ public abstract class AbstractAdvancedSearchQueryBuilder {
 				}
 
 			} else if (criteria instanceof BooleanSearchCriteria) {
-
+				
 				final BooleanSearchCriteria booleanSearchCriteria = (BooleanSearchCriteria) criteria;
-				final BytesRef searchString = booleanToBytesRef(booleanSearchCriteria.getValue());
-
-				return new TermQuery(new Term(indexKey, searchString));
-
+				return new IntIndexField(indexKey, toIntValue(booleanSearchCriteria.getValue())).toQuery();
+				
 			} else if (criteria instanceof DateRangeSearchCriteria) {
 
 				final DateRangeSearchCriteria dateIntervalSearchCriteria = (DateRangeSearchCriteria) criteria;
@@ -163,6 +161,6 @@ public abstract class AbstractAdvancedSearchQueryBuilder {
 
 	protected abstract short getTerminologyComponentId();
 
-	protected abstract BytesRef booleanToBytesRef(boolean value);
+	protected abstract int toIntValue(boolean value);
 
 }

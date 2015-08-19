@@ -35,7 +35,6 @@ import javax.annotation.concurrent.GuardedBy;
 
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.Field.Store;
-import org.apache.lucene.document.IntField;
 import org.apache.lucene.document.StoredField;
 import org.apache.lucene.document.StringField;
 import org.apache.lucene.index.Term;
@@ -62,6 +61,7 @@ import com.b2international.snowowl.datastore.UserBranchPathMap;
 import com.b2international.snowowl.datastore.cdo.ICDOConnectionManager;
 import com.b2international.snowowl.datastore.config.RepositoryConfiguration;
 import com.b2international.snowowl.datastore.index.IndexUtils;
+import com.b2international.snowowl.datastore.index.field.IntIndexField;
 import com.b2international.snowowl.datastore.net4j.push.PushServiceException;
 import com.b2international.snowowl.datastore.server.index.IndexServerServiceManager;
 import com.b2international.snowowl.datastore.server.net4j.push.PushServerService;
@@ -728,7 +728,7 @@ public class TaskStateManager extends SingleDirectoryIndexImpl implements ITaskS
 		document.add(new StringField(FIELD_CONTEXT_ID, contextId, Store.YES));
 		document.add(new StringField(FIELD_REPOSITORY_URL, repositoryUrl, Store.YES));
 		document.add(new StringField(FIELD_DESCRIPTION, description, Store.YES));
-		document.add(new IntField(FIELD_SCENARIO_ORDINAL, scenario.ordinal(), Store.YES));
+		new IntIndexField(FIELD_SCENARIO_ORDINAL, scenario.ordinal()).addTo(document);
 
 		if (null != taskBranchPathMap) {
 			updateBranchPathMapFields(taskBranchPathMap, document);

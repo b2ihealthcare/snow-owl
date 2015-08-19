@@ -47,6 +47,7 @@ import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.datastore.index.IndexUtils;
 import com.b2international.snowowl.datastore.index.LongDocValuesCollector;
 import com.b2international.snowowl.datastore.index.field.ComponentIdLongField;
+import com.b2international.snowowl.datastore.index.field.IntIndexField;
 import com.b2international.snowowl.datastore.index.query.IndexQueries;
 import com.b2international.snowowl.datastore.server.index.IndexServerService;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
@@ -366,7 +367,7 @@ public class InitialReasonerTaxonomyBuilder extends AbstractReasonerTaxonomyBuil
 	}
 
 	private static TermQuery createIntTermQuery(final String fieldName, final int intValue) {
-		return new TermQuery(new Term(fieldName, IndexUtils.intToPrefixCoded(intValue)));
+		return (TermQuery) new IntIndexField(fieldName, intValue).toQuery();
 	}
 
 	/* returns with the server side index service for SNOMED CT. */

@@ -36,7 +36,6 @@ import static java.lang.Long.parseLong;
 import static org.apache.lucene.document.Field.Store.YES;
 
 import org.apache.lucene.document.Document;
-import org.apache.lucene.document.IntField;
 import org.apache.lucene.document.LongField;
 import org.apache.lucene.document.NumericDocValuesField;
 import org.apache.lucene.document.StoredField;
@@ -46,6 +45,7 @@ import com.b2international.snowowl.datastore.index.AbstractIndexMappingStrategy;
 import com.b2international.snowowl.datastore.index.field.ComponentIdLongField;
 import com.b2international.snowowl.datastore.index.field.ComponentStorageKeyField;
 import com.b2international.snowowl.datastore.index.field.ComponentTypeField;
+import com.b2international.snowowl.datastore.index.field.IntIndexField;
 import com.b2international.snowowl.snomed.Relationship;
 
 /**
@@ -83,7 +83,7 @@ public class SnomedRelationshipIndexMappingStrategy extends AbstractIndexMapping
 		doc.add(new NumericDocValuesField(ComponentStorageKeyField.COMPONENT_STORAGE_KEY, storageKey));
 		
 		doc.add(new StoredField(COMPONENT_RELEASED, relationship.isReleased() ? 1 : 0));
-		doc.add(new IntField(COMPONENT_ACTIVE, active ? 1 : 0, YES));
+		new IntIndexField(COMPONENT_ACTIVE, active ? 1 : 0).addTo(doc);
 		doc.add(new LongField(RELATIONSHIP_OBJECT_ID, sourceId, YES));
 		doc.add(new LongField(RELATIONSHIP_ATTRIBUTE_ID, typeId, YES));
 		doc.add(new LongField(RELATIONSHIP_VALUE_ID, destinationId, YES));

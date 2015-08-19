@@ -29,7 +29,6 @@ import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBr
 import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_QUERY;
 import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_REFERENCED_COMPONENT_ID;
 import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_REFERENCE_SET_ID;
-import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_REFERENCE_SET_TYPE;
 import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_SOURCE_EFFECTIVE_TIME;
 import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_TARGET_EFFECTIVE_TIME;
 import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_UUID;
@@ -654,8 +653,7 @@ public class SnomedServerRefSetBrowser extends AbstractSnomedIndexBrowser<Snomed
 	public boolean isRegularRefSet(final IBranchPath branchPath, final long storageKey) {
 		checkNotNull(branchPath, "branchPath");
 		checkArgument(storageKey > NO_STORAGE_KEY, "Storage key should be a positive integer.");
-		final Query query = IndexQueries.and(SnomedIndexQueries.REFSET_TYPE_QUERY, new ComponentStorageKeyField(storageKey).toQuery(), new TermQuery(
-				new Term(REFERENCE_SET_STRUCTURAL, IndexUtils.intToPrefixCoded(0))));
+		final Query query = IndexQueries.and(new ComponentStorageKeyField(storageKey).toQuery(), SnomedIndexQueries.REFSET_TYPE_QUERY, SnomedIndexQueries.NOT_STRUCTURAL_REFSET_QUERY);
 		return service.getHitCount(branchPath, query, null) > 0;
 	}
 	
@@ -920,28 +918,24 @@ public class SnomedServerRefSetBrowser extends AbstractSnomedIndexBrowser<Snomed
 	
 	@Override
 	public Collection<SnomedRefSetMemberIndexEntry> getMembersForMapTarget(final IBranchPath branchPath, final String mapTarget, final String mappingRefSetId) {
-		final BooleanQuery query = new BooleanQuery(true);
-		query.add(new TermQuery(new Term(REFERENCE_SET_MEMBER_REFERENCE_SET_ID, IndexUtils.longToPrefixCoded(mappingRefSetId))), Occur.MUST);
-		query.add(new TermQuery(new Term(REFERENCE_SET_MEMBER_MAP_TARGET_COMPONENT_ID, mapTarget)), Occur.MUST);
-		query.add(SnomedIndexQueries.ACTIVE_COMPONENT_QUERY, Occur.MUST);
-		
-		final BooleanQuery mapQuery = new BooleanQuery(true);
-		mapQuery.add(new TermQuery(new Term(REFERENCE_SET_MEMBER_REFERENCE_SET_TYPE, IndexUtils.intToPrefixCoded(SnomedRefSetType.COMPLEX_MAP_VALUE))), Occur.SHOULD);
-		mapQuery.add(new TermQuery(new Term(REFERENCE_SET_MEMBER_REFERENCE_SET_TYPE, IndexUtils.intToPrefixCoded(SnomedRefSetType.SIMPLE_MAP_VALUE))), Occur.SHOULD);
-		query.add(mapQuery, Occur.MUST);
+		final Query query = IndexQueries.and(
+			new TermQuery(new Term(REFERENCE_SET_MEMBER_REFERENCE_SET_ID, IndexUtils.longToPrefixCoded(mappingRefSetId))),
+			new TermQuery(new Term(REFERENCE_SET_MEMBER_MAP_TARGET_COMPONENT_ID, mapTarget)),
+			SnomedIndexQueries.ACTIVE_COMPONENT_QUERY,
+			getMapQuery());
 		return getMembers(branchPath, query);
+	}
+
+	private Query getMapQuery() {
+		return IndexQueries.or(SnomedIndexQueries.toRefSetMemberTypeQuery(SnomedRefSetType.COMPLEX_MAP_VALUE), SnomedIndexQueries.toRefSetMemberTypeQuery(SnomedRefSetType.SIMPLE_MAP_VALUE));
 	}
 	
 	@Override
 	public Collection<SnomedRefSetMemberIndexEntry> getMappingMembers(final IBranchPath branchPath, final String conceptId) {
-		final BooleanQuery query = new BooleanQuery(true);
-		query.add(new TermQuery(new Term(REFERENCE_SET_MEMBER_REFERENCED_COMPONENT_ID, conceptId)), Occur.MUST);
-		query.add(SnomedIndexQueries.ACTIVE_COMPONENT_QUERY, Occur.MUST);
-		
-		final BooleanQuery mapQuery = new BooleanQuery(true);
-		mapQuery.add(new TermQuery(new Term(REFERENCE_SET_MEMBER_REFERENCE_SET_TYPE, IndexUtils.intToPrefixCoded(SnomedRefSetType.COMPLEX_MAP_VALUE))), Occur.SHOULD);
-		mapQuery.add(new TermQuery(new Term(REFERENCE_SET_MEMBER_REFERENCE_SET_TYPE, IndexUtils.intToPrefixCoded(SnomedRefSetType.SIMPLE_MAP_VALUE))), Occur.SHOULD);
-		query.add(mapQuery, Occur.MUST);
+		final Query query = IndexQueries.and(
+				new TermQuery(new Term(REFERENCE_SET_MEMBER_REFERENCED_COMPONENT_ID, conceptId)),
+				SnomedIndexQueries.ACTIVE_COMPONENT_QUERY,
+				getMapQuery());
 		return getMembers(branchPath, query);
 	}
 	

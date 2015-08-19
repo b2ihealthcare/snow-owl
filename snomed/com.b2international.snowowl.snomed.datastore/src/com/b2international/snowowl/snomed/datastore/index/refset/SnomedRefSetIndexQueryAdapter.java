@@ -28,11 +28,9 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
 import org.apache.lucene.document.Document;
-import org.apache.lucene.index.Term;
 import org.apache.lucene.search.BooleanClause.Occur;
 import org.apache.lucene.search.BooleanQuery;
 import org.apache.lucene.search.Query;
-import org.apache.lucene.search.TermQuery;
 
 import com.b2international.commons.StringUtils;
 import com.b2international.snowowl.core.api.IBranchPath;
@@ -44,6 +42,7 @@ import com.b2international.snowowl.datastore.index.IndexQueryBuilder;
 import com.b2international.snowowl.datastore.index.IndexUtils;
 import com.b2international.snowowl.datastore.index.field.ComponentIdLongField;
 import com.b2international.snowowl.datastore.index.field.ComponentStorageKeyField;
+import com.b2international.snowowl.datastore.index.field.IntIndexField;
 import com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants;
 import com.b2international.snowowl.snomed.datastore.browser.SnomedIndexQueries;
 import com.b2international.snowowl.snomed.datastore.index.SnomedDOIQueryAdapter;
@@ -123,7 +122,7 @@ public class SnomedRefSetIndexQueryAdapter extends SnomedDslIndexQueryAdapter<Sn
 		queryBuilder.require(SnomedIndexQueries.REFSET_TYPE_QUERY);
 
 		if (referencedComponentType != null) {
-			queryBuilder.requireExactTerm(REFERENCE_SET_REFERENCED_COMPONENT_TYPE, IndexUtils.intToPrefixCoded(referencedComponentType));
+			queryBuilder.require(new IntIndexField(REFERENCE_SET_REFERENCED_COMPONENT_TYPE, referencedComponentType).toQuery());
 		}
 		
 		if (null != refSetTypes && refSetTypes.length > 0) {
@@ -132,14 +131,14 @@ public class SnomedRefSetIndexQueryAdapter extends SnomedDslIndexQueryAdapter<Sn
 			
 			for (final SnomedRefSetType refSetType : refSetTypes) {
 				// All of these are Occur.SHOULD, so at least one has to match
-				refsetTypeQuery.add(new TermQuery(new Term(REFERENCE_SET_TYPE, IndexUtils.intToPrefixCoded(refSetType.getValue()))), Occur.SHOULD);
+				refsetTypeQuery.add(new IntIndexField(REFERENCE_SET_TYPE, refSetType.getValue()).toQuery(), Occur.SHOULD);
 			}
 			
 			queryBuilder.require(refsetTypeQuery);
 		}
 
 		if ((searchFlags & SEARCH_REGULAR_ONLY) != 0) {
-			queryBuilder.requireExactTerm(REFERENCE_SET_STRUCTURAL, IndexUtils.intToPrefixCoded(0));
+			queryBuilder.require(new IntIndexField(REFERENCE_SET_STRUCTURAL, 0).toQuery());
 		}
 
 		// Shortcut for empty search terms: return all reference sets

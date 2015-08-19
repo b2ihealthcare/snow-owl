@@ -15,17 +15,13 @@
  */
 package com.b2international.snowowl.datastore.server.snomed.index.init;
 
-import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_REFERENCE_SET_TYPE;
-
 import java.io.IOException;
 import java.util.Set;
 
 import org.apache.lucene.document.Document;
-import org.apache.lucene.index.Term;
 import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.ReferenceManager;
-import org.apache.lucene.search.TermQuery;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.emf.cdo.common.id.CDOID;
 import org.eclipse.emf.cdo.common.id.CDOIDUtil;
@@ -40,9 +36,9 @@ import com.b2international.snowowl.datastore.server.index.IndexServerService;
 import com.b2international.snowowl.datastore.server.snomed.index.init.ImportIndexServerService.TermType;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants;
+import com.b2international.snowowl.snomed.datastore.browser.SnomedIndexQueries;
 import com.b2international.snowowl.snomed.datastore.index.SnomedIndexService;
 import com.b2international.snowowl.snomed.datastore.services.ISnomedComponentService;
-import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType;
 import com.google.common.collect.ImmutableSet;
 
 /**
@@ -79,7 +75,7 @@ public class IndexBasedImportIndexServiceFeeder implements IImportIndexServiceFe
 		
 		@SuppressWarnings("rawtypes")
 		final IndexServerService indexService = (IndexServerService) ApplicationContext.getInstance().getServiceChecked(SnomedIndexService.class);
-		final Query memberQuery = new TermQuery(new Term(REFERENCE_SET_MEMBER_REFERENCE_SET_TYPE, IndexUtils.intToPrefixCoded(SnomedRefSetType.LANGUAGE_VALUE)));
+		final Query memberQuery = SnomedIndexQueries.LANGUAGE_REFSET_MEMBER_TYPE_QUERY;
 		
 		ReferenceManager<IndexSearcher> manager = null;
 		IndexSearcher searcher = null;

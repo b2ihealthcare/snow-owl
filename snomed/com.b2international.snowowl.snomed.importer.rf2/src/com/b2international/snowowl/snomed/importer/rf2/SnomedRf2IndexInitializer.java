@@ -100,7 +100,6 @@ import org.apache.lucene.document.BinaryDocValuesField;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.Field.Store;
 import org.apache.lucene.document.FloatDocValuesField;
-import org.apache.lucene.document.IntField;
 import org.apache.lucene.document.LongField;
 import org.apache.lucene.document.NumericDocValuesField;
 import org.apache.lucene.document.StoredField;
@@ -153,6 +152,7 @@ import com.b2international.snowowl.datastore.index.field.ComponentIdLongField;
 import com.b2international.snowowl.datastore.index.field.ComponentParentLongField;
 import com.b2international.snowowl.datastore.index.field.ComponentStorageKeyField;
 import com.b2international.snowowl.datastore.index.field.ComponentTypeField;
+import com.b2international.snowowl.datastore.index.field.IntIndexField;
 import com.b2international.snowowl.datastore.server.snomed.index.NamespaceMapping;
 import com.b2international.snowowl.datastore.server.snomed.index.SnomedIndexServerService;
 import com.b2international.snowowl.datastore.server.snomed.index.init.DoiInitializer;
@@ -660,7 +660,7 @@ public class SnomedRf2IndexInitializer extends Job {
 				doc.add(new NumericDocValuesField(ComponentStorageKeyField.COMPONENT_STORAGE_KEY, storageKey));
 				
 				doc.add(new StoredField(COMPONENT_RELEASED, released ? 1 : 0));
-				doc.add(new IntField(COMPONENT_ACTIVE, active ? 1 : 0, Store.YES));
+				new IntIndexField(COMPONENT_ACTIVE, active ? 1 : 0).addTo(doc);
 				doc.add(new LongField(RELATIONSHIP_OBJECT_ID, sourceConceptId, Store.YES));
 				doc.add(new LongField(RELATIONSHIP_ATTRIBUTE_ID, typeConceptId, Store.YES));
 				doc.add(new LongField(RELATIONSHIP_VALUE_ID, destinationConceptId, Store.YES));
@@ -734,8 +734,8 @@ public class SnomedRf2IndexInitializer extends Job {
 					final long storageKey = importIndexService.getRefSetCdoId(refSetId);
 					new ComponentTypeField(SnomedTerminologyComponentConstants.REFSET_NUMBER).addTo(refSetDoc);
 					new ComponentIdLongField(refSetId).addTo(refSetDoc);
-					refSetDoc.add(new IntField(REFERENCE_SET_TYPE, refSetType, Store.YES));
-					refSetDoc.add(new IntField(REFERENCE_SET_REFERENCED_COMPONENT_TYPE, refComponentType, Store.YES));
+					new IntIndexField(REFERENCE_SET_TYPE, refSetType).addTo(refSetDoc);
+					new IntIndexField(REFERENCE_SET_REFERENCED_COMPONENT_TYPE, refComponentType).addTo(refSetDoc);
 					refSetDoc.add(new NumericDocValuesField(CommonIndexConstants.COMPONENT_COMPARE_UNIQUE_KEY, indexAsRelevantForCompare ? storageKey : CDOUtils.NO_STORAGE_KEY));
 					if (!indexAsRelevantForCompare) {
 						refSetDoc.add(new NumericDocValuesField(CommonIndexConstants.COMPONENT_IGNORE_COMPARE_UNIQUE_KEY, storageKey));
@@ -748,7 +748,7 @@ public class SnomedRf2IndexInitializer extends Job {
 					}
 					
 					new ComponentStorageKeyField(storageKey).addTo(refSetDoc);
-					refSetDoc.add(new IntField(REFERENCE_SET_STRUCTURAL, structural ? 1 : 0, Store.YES));
+					new IntIndexField(REFERENCE_SET_STRUCTURAL, structural ? 1 : 0).addTo(refSetDoc);
 					
 					final String label = importIndexService.getConceptLabel(refSetId);
 					refSetDoc.add(new TextField(CommonIndexConstants.COMPONENT_LABEL, label, Store.YES));
@@ -868,12 +868,12 @@ public class SnomedRf2IndexInitializer extends Job {
 				final Document doc = new Document();
 
 				doc.add(new StringField(REFERENCE_SET_MEMBER_UUID, uuid, Store.YES));
-				doc.add(new IntField(COMPONENT_ACTIVE, active ? 1 : 0, Store.YES));
-				doc.add(new IntField(REFERENCE_SET_MEMBER_REFERENCE_SET_TYPE, refSetType.ordinal(), Store.YES));
+				new IntIndexField(COMPONENT_ACTIVE, active ? 1 : 0).addTo(doc);
+				new IntIndexField(REFERENCE_SET_MEMBER_REFERENCE_SET_TYPE, refSetType.ordinal()).addTo(doc);
 				final ComponentStorageKeyField storageKeyField = new ComponentStorageKeyField(memberCdoId);
 				storageKeyField.addTo(doc);
 				doc.add(new StoredField(COMPONENT_RELEASED, released ? 1 : 0));
-				doc.add(new IntField(REFERENCE_SET_MEMBER_REFERENCED_COMPONENT_TYPE, refComponentType, Store.YES));
+				new IntIndexField(REFERENCE_SET_MEMBER_REFERENCED_COMPONENT_TYPE, refComponentType).addTo(doc);
 				doc.add(new StringField(REFERENCE_SET_MEMBER_REFERENCED_COMPONENT_ID, refComponentId, Store.YES));
 				doc.add(new LongField(COMPONENT_MODULE_ID, module, Store.YES));
 				doc.add(new LongField(REFERENCE_SET_MEMBER_REFERENCE_SET_ID, Long.valueOf(refSetId), Store.YES));
@@ -915,7 +915,7 @@ public class SnomedRf2IndexInitializer extends Job {
 						final short complexMapTargetComponentType = CoreTerminologyBroker.UNSPECIFIED_NUMBER_SHORT;
 						
 						doc.add(new StringField(REFERENCE_SET_MEMBER_MAP_TARGET_COMPONENT_ID, complexMapTargetComponentId, Store.YES));
-						doc.add(new IntField(REFERENCE_SET_MEMBER_MAP_TARGET_COMPONENT_TYPE_ID, complexMapTargetComponentType, Store.YES));
+						new IntIndexField(REFERENCE_SET_MEMBER_MAP_TARGET_COMPONENT_TYPE_ID, complexMapTargetComponentType).addTo(doc);
 						doc.add(new StoredField(REFERENCE_SET_MEMBER_MAP_TARGET_COMPONENT_LABEL, complexMapTargetComponentId)); //unknown map target
 						
 						if (record.size() > 12) { //extended map
@@ -994,7 +994,7 @@ public class SnomedRf2IndexInitializer extends Job {
 						final short simpleMapTargetComponentType = CoreTerminologyBroker.UNSPECIFIED_NUMBER_SHORT;
 						
 						doc.add(new StringField(REFERENCE_SET_MEMBER_MAP_TARGET_COMPONENT_ID, simpleMapTargetComponentId, Store.YES));
-						doc.add(new IntField(REFERENCE_SET_MEMBER_MAP_TARGET_COMPONENT_TYPE_ID, simpleMapTargetComponentType, Store.YES));
+						new IntIndexField(REFERENCE_SET_MEMBER_MAP_TARGET_COMPONENT_TYPE_ID, simpleMapTargetComponentType).addTo(doc);
 						doc.add(new StoredField(REFERENCE_SET_MEMBER_MAP_TARGET_COMPONENT_LABEL, simpleMapTargetComponentId)); //unknown map target
 						
 						if (record.size() > 7) {
@@ -1125,7 +1125,7 @@ public class SnomedRf2IndexInitializer extends Job {
 				doc.add(new TextField(CommonIndexConstants.COMPONENT_LABEL, term, Store.YES));
 				SortKeyMode.SEARCH_ONLY.add(doc, term);
 				doc.add(new BinaryDocValuesField(CommonIndexConstants.COMPONENT_LABEL, new BytesRef(term)));
-				doc.add(new IntField(COMPONENT_ACTIVE, active ? 1 : 0, Store.YES));
+				new IntIndexField(COMPONENT_ACTIVE, active ? 1 : 0).addTo(doc);
 				doc.add(new StoredField(DESCRIPTION_CASE_SIGNIFICANCE_ID, caseSignificanceId));
 				doc.add(new StoredField(COMPONENT_RELEASED, released ? 1 : 0));
 				doc.add(new LongField(DESCRIPTION_TYPE_ID, typeId, Store.YES));
@@ -1237,9 +1237,9 @@ public class SnomedRf2IndexInitializer extends Job {
 		new ComponentTypeField(SnomedTerminologyComponentConstants.CONCEPT_NUMBER).addTo(doc);
 		new ComponentStorageKeyField(conceptStorageKey).addTo(doc);
 		doc.add(new NumericDocValuesField(ComponentStorageKeyField.COMPONENT_STORAGE_KEY, conceptStorageKey));
-		doc.add(new IntField(CONCEPT_EXHAUSTIVE, exhaustive ? 1 : 0, Store.YES));
-		doc.add(new IntField(COMPONENT_ACTIVE, active ? 1 : 0, Store.YES));
-		doc.add(new IntField(CONCEPT_PRIMITIVE, primitive ? 1 : 0, Store.YES));
+		new IntIndexField(CONCEPT_EXHAUSTIVE, exhaustive ? 1 : 0).addTo(doc);
+		new IntIndexField(COMPONENT_ACTIVE, active ? 1 : 0).addTo(doc);
+		new IntIndexField(CONCEPT_PRIMITIVE, primitive ? 1 : 0).addTo(doc);
 		doc.add(new StoredField(COMPONENT_RELEASED, released ? 1 : 0));
 		doc.add(new LongField(COMPONENT_MODULE_ID, moduleId, Store.YES));
 		doc.add(new NumericDocValuesField(CommonIndexConstants.COMPONENT_COMPARE_UNIQUE_KEY, indexAsRelevantForCompare ? conceptStorageKey : CDOUtils.NO_STORAGE_KEY));

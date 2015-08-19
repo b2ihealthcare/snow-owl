@@ -29,7 +29,6 @@ import static org.apache.lucene.document.Field.Store.YES;
 
 import org.apache.lucene.document.BinaryDocValuesField;
 import org.apache.lucene.document.Document;
-import org.apache.lucene.document.IntField;
 import org.apache.lucene.document.LongField;
 import org.apache.lucene.document.NumericDocValuesField;
 import org.apache.lucene.document.StoredField;
@@ -43,6 +42,7 @@ import com.b2international.snowowl.datastore.index.SortKeyMode;
 import com.b2international.snowowl.datastore.index.field.ComponentIdLongField;
 import com.b2international.snowowl.datastore.index.field.ComponentStorageKeyField;
 import com.b2international.snowowl.datastore.index.field.ComponentTypeField;
+import com.b2international.snowowl.datastore.index.field.IntIndexField;
 import com.b2international.snowowl.snomed.Description;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 
@@ -79,7 +79,7 @@ public class SnomedDescriptionIndexMappingStrategy extends AbstractIndexMappingS
 		doc.add(new TextField(CommonIndexConstants.COMPONENT_LABEL, term, YES));
 		SortKeyMode.SEARCH_ONLY.add(doc, term);
 		doc.add(new BinaryDocValuesField(CommonIndexConstants.COMPONENT_LABEL, new BytesRef(term)));
-		doc.add(new IntField(COMPONENT_ACTIVE, active ? 1 : 0, YES));
+		new IntIndexField(COMPONENT_ACTIVE, active ? 1 : 0).addTo(doc);
 		doc.add(new StoredField(DESCRIPTION_CASE_SIGNIFICANCE_ID, caseSignificanceId));
 		doc.add(new StoredField(COMPONENT_RELEASED, description.isReleased() ? 1 : 0));
 		doc.add(new LongField(DESCRIPTION_TYPE_ID, typeId, YES));

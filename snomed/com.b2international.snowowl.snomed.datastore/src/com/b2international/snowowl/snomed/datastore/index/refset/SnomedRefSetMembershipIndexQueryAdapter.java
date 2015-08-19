@@ -22,7 +22,6 @@ import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBr
 import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_REFERENCED_COMPONENT_ID;
 import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_REFERENCED_COMPONENT_TYPE;
 import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_REFERENCE_SET_ID;
-import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_REFERENCE_SET_TYPE;
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
 
@@ -52,6 +51,8 @@ import com.b2international.snowowl.core.api.index.IIndexQueryAdapter;
 import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.datastore.index.IndexUtils;
 import com.b2international.snowowl.datastore.index.field.ComponentStorageKeyField;
+import com.b2international.snowowl.datastore.index.field.IntIndexField;
+import com.b2international.snowowl.datastore.index.query.IndexQueries;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.datastore.ILanguageConfigurationProvider;
 import com.b2international.snowowl.snomed.datastore.SnomedRefSetUtil;
@@ -279,21 +280,20 @@ public class SnomedRefSetMembershipIndexQueryAdapter extends SnomedRefSetMemberI
 	private static Query createRefSetTypeQuery(final Iterable<SnomedRefSetType> types) {
 		final BooleanQuery typeQuery = new BooleanQuery();
 		for (final SnomedRefSetType type : types) {
-			typeQuery.add(new TermQuery(new Term(REFERENCE_SET_MEMBER_REFERENCE_SET_TYPE, IndexUtils.intToPrefixCoded(type.getValue()))), Occur.SHOULD);
+			typeQuery.add(SnomedIndexQueries.toRefSetMemberTypeQuery(type.getValue()), Occur.SHOULD);
 		}
 		return typeQuery;
 	}
 	
 	private static Query createReferencedComponentTypeQuery(final String terminologyComponentId) {
 		final int componentTypeValue = CoreTerminologyBroker.getInstance().getTerminologyComponentIdAsInt(terminologyComponentId);
-		return new TermQuery(new Term(REFERENCE_SET_MEMBER_REFERENCED_COMPONENT_TYPE, IndexUtils.intToPrefixCoded(componentTypeValue)));
+		return new IntIndexField(REFERENCE_SET_MEMBER_REFERENCED_COMPONENT_TYPE, componentTypeValue).toQuery();
 	}
 	
 	private static Query createSpecialFieldTypeQuery(final String terminologyComponentId, final String fieldName) {
 		final int componentTypeValue = CoreTerminologyBroker.getInstance().getTerminologyComponentIdAsInt(terminologyComponentId);
-		return new TermQuery(new Term(fieldName, IndexUtils.intToPrefixCoded(componentTypeValue)));
+		return new IntIndexField(fieldName, componentTypeValue).toQuery();
 	}
-	
 	
 	private static Query internalAddParsedClause(final BooleanQuery query, final String fieldName, final String searchString) {
 		final List<String> tokens = internalTokenize(searchString);
@@ -352,10 +352,10 @@ public class SnomedRefSetMembershipIndexQueryAdapter extends SnomedRefSetMemberI
 			return (IIndexQueryAdapter<T>) new SnomedConcreteDataTypeRefSetMembershipIndexQueryAdapter() {
 				private static final long serialVersionUID = 8756363743189925011L;
 				@Override public Query createQuery() {
-					final BooleanQuery query = new BooleanQuery();
 					final int componentTypeValue = CoreTerminologyBroker.getInstance().getTerminologyComponentIdAsInt(componentType);
-					query.add(new TermQuery(new Term(REFERENCE_SET_MEMBER_REFERENCE_SET_TYPE, IndexUtils.intToPrefixCoded(SnomedRefSetType.CONCRETE_DATA_TYPE_VALUE))), Occur.MUST);
-					query.add(new TermQuery(new Term(REFERENCE_SET_MEMBER_REFERENCED_COMPONENT_TYPE, IndexUtils.intToPrefixCoded(componentTypeValue))), Occur.MUST);
+					final BooleanQuery query = new BooleanQuery(true);
+					query.add(SnomedIndexQueries.CONCRETE_DOMAIN_MEMBER_TYPE_QUERY, Occur.MUST);
+					query.add(SnomedIndexQueries.toRefSetReferencedComponentTypeQuery(componentTypeValue), Occur.MUST);
 					query.add(SnomedIndexQueries.ACTIVE_COMPONENT_QUERY, Occur.MUST);
 					final List<String> ids = Lists.newArrayList(referencedComponentIds);
 					if (ids.size() > 1) {
@@ -375,9 +375,7 @@ public class SnomedRefSetMembershipIndexQueryAdapter extends SnomedRefSetMemberI
 			return (IIndexQueryAdapter<T>) new SnomedConcreteDataTypeRefSetMembershipIndexQueryAdapter() {
 				private static final long serialVersionUID = -785494956030520757L;
 				@Override public Query createQuery() {
-					final BooleanQuery query = new BooleanQuery();
-					query.add(new TermQuery(new Term(REFERENCE_SET_MEMBER_REFERENCE_SET_TYPE, IndexUtils.intToPrefixCoded(SnomedRefSetType.CONCRETE_DATA_TYPE_VALUE))), Occur.MUST);
-					return query;
+					return SnomedIndexQueries.CONCRETE_DOMAIN_MEMBER_TYPE_QUERY;
 				}
 			};
 		}
@@ -389,11 +387,8 @@ public class SnomedRefSetMembershipIndexQueryAdapter extends SnomedRefSetMemberI
 			return (IIndexQueryAdapter<T>) new SnomedConcreteDataTypeRefSetMembershipIndexQueryAdapter() {
 				private static final long serialVersionUID = -8318912010028083774L;
 				@Override public Query createQuery() {
-					final BooleanQuery query = new BooleanQuery();
 					final int componentTypeValue = CoreTerminologyBroker.getInstance().getTerminologyComponentIdAsInt(componentType);
-					query.add(new TermQuery(new Term(REFERENCE_SET_MEMBER_REFERENCE_SET_TYPE, IndexUtils.intToPrefixCoded(SnomedRefSetType.CONCRETE_DATA_TYPE_VALUE))), Occur.MUST);
-					query.add(new TermQuery(new Term(REFERENCE_SET_MEMBER_REFERENCED_COMPONENT_TYPE, IndexUtils.intToPrefixCoded(componentTypeValue))), Occur.MUST);
-					return query;
+					return IndexQueries.and(SnomedIndexQueries.CONCRETE_DOMAIN_MEMBER_TYPE_QUERY, SnomedIndexQueries.toRefSetReferencedComponentTypeQuery(componentTypeValue));
 				}
 			};
 		}

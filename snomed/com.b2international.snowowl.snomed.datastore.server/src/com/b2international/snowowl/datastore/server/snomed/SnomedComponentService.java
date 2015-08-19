@@ -25,7 +25,6 @@ import static com.b2international.snowowl.core.ApplicationContext.getServiceForC
 import static com.b2international.snowowl.core.api.index.CommonIndexConstants.COMPONENT_LABEL_SORT_KEY;
 import static com.b2international.snowowl.datastore.index.DocIdCollector.create;
 import static com.b2international.snowowl.datastore.index.IndexUtils.getLongValue;
-import static com.b2international.snowowl.datastore.index.IndexUtils.intToPrefixCoded;
 import static com.b2international.snowowl.datastore.index.IndexUtils.isEmpty;
 import static com.b2international.snowowl.datastore.index.IndexUtils.longToPrefixCoded;
 import static com.b2international.snowowl.datastore.index.IndexUtils.parallelForEachDocId;
@@ -52,7 +51,6 @@ import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBr
 import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_MAP_TARGET_COMPONENT_LABEL;
 import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_REFERENCED_COMPONENT_ID;
 import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_REFERENCE_SET_ID;
-import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_REFERENCE_SET_TYPE;
 import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_SERIALIZED_VALUE;
 import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_SOURCE_EFFECTIVE_TIME;
 import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_TARGET_EFFECTIVE_TIME;
@@ -65,8 +63,6 @@ import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBr
 import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.RELATIONSHIP_EFFECTIVE_TIME;
 import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.RELATIONSHIP_OBJECT_ID;
 import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.RELATIONSHIP_VALUE_ID;
-import static com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType.CONCRETE_DATA_TYPE_VALUE;
-import static com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType.LANGUAGE_VALUE;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.collect.Collections2.filter;
 import static com.google.common.collect.Iterables.isEmpty;
@@ -1215,12 +1211,12 @@ public class SnomedComponentService implements ISnomedComponentService, IPostSto
 		final BooleanQuery query = new BooleanQuery(true);
 
 		final BooleanQuery typeQuery = new BooleanQuery(true);
-		typeQuery.add(new TermQuery(new Term(REFERENCE_SET_MEMBER_REFERENCE_SET_TYPE, IndexUtils.intToPrefixCoded(typeOrdinal))), SHOULD);
+		typeQuery.add(SnomedIndexQueries.toRefSetMemberTypeQuery(typeOrdinal), SHOULD);
 		types.add(SnomedRefSetType.get(typeOrdinal));
 		
 		for (final int otherType : otherTypeOrdinal) {
 		
-			typeQuery.add(new TermQuery(new Term(REFERENCE_SET_MEMBER_REFERENCE_SET_TYPE, IndexUtils.intToPrefixCoded(otherType))), SHOULD);
+			typeQuery.add(SnomedIndexQueries.toRefSetMemberTypeQuery(otherType), SHOULD);
 			types.add(SnomedRefSetType.get(otherType));
 			
 		}
@@ -1401,17 +1397,13 @@ public class SnomedComponentService implements ISnomedComponentService, IPostSto
 		
 	}
 	
-	/*
-	 * (non-Javadoc)
-	 * @see com.b2international.snowowl.snomed.datastore.services.ISnomedComponentService#getAllMemberIdStorageKeys(com.b2international.snowowl.core.api.IBranchPath, int)
-	 */
 	@Override
 	public Collection<IdStorageKeyPair> getAllMemberIdStorageKeys(final IBranchPath branchPath, final int refSetTypeOrdinal) {
 		
 		checkNotNull(branchPath, "Branch path argument cannot be null.");
 		checkNotNull(SnomedRefSetType.get(refSetTypeOrdinal), "SNOMED CT reference set type was null for ordinal. Ordinal: " + refSetTypeOrdinal);;
 		
-		final Query query = new TermQuery(new Term(REFERENCE_SET_MEMBER_REFERENCE_SET_TYPE, IndexUtils.intToPrefixCoded(refSetTypeOrdinal)));
+		final Query query = SnomedIndexQueries.toRefSetMemberTypeQuery(refSetTypeOrdinal);
 		
 		@SuppressWarnings("rawtypes")
 		final IndexServerService indexService = getIndexServerService();
@@ -2390,14 +2382,11 @@ public class SnomedComponentService implements ISnomedComponentService, IPostSto
 		final int definingRelationshipsCount = getIndexServerService().getHitCount(branchPath, activeDefiningRelationshipsQuery, null);
 		
 		final BooleanQuery activeConcreteDomainQuery = new BooleanQuery(true);
-		activeConcreteDomainQuery.add(new TermQuery(new Term(REFERENCE_SET_MEMBER_REFERENCE_SET_TYPE, intToPrefixCoded(CONCRETE_DATA_TYPE_VALUE))), MUST);
+		activeConcreteDomainQuery.add(SnomedIndexQueries.CONCRETE_DOMAIN_MEMBER_TYPE_QUERY, MUST);
 		activeConcreteDomainQuery.add(SnomedIndexQueries.ACTIVE_COMPONENT_QUERY, MUST);
 		final int concreteDomainCount = getIndexServerService().getHitCount(branchPath, activeConcreteDomainQuery, null);
 		
-		final BooleanQuery activeLanguageQuery = new BooleanQuery(true);
-		activeLanguageQuery.add(new TermQuery(new Term(REFERENCE_SET_MEMBER_REFERENCE_SET_TYPE, intToPrefixCoded(LANGUAGE_VALUE))), MUST);
-		activeLanguageQuery.add(SnomedIndexQueries.ACTIVE_COMPONENT_QUERY, MUST);
-		final int languageCount = getIndexServerService().getHitCount(branchPath, activeLanguageQuery, null);
+		final int languageCount = getIndexServerService().getHitCount(branchPath, SnomedIndexQueries.ACTIVE_LANGUAGE_REFSET_MEMBER_TYPE_QUERY, null);
 		
 		final BooleanQuery activeMappingsQuery = new BooleanQuery(true);
 		final BooleanQuery mappingTypeQuery = new BooleanQuery(true);
@@ -2407,7 +2396,7 @@ public class SnomedComponentService implements ISnomedComponentService, IPostSto
 				return isMapping(type);
 			}
 		})) {
-			mappingTypeQuery.add(new TermQuery(new Term(REFERENCE_SET_MEMBER_REFERENCE_SET_TYPE, intToPrefixCoded(mappingType.ordinal()))), SHOULD);
+			mappingTypeQuery.add(SnomedIndexQueries.toRefSetMemberTypeQuery(mappingType.ordinal()), SHOULD);
 		}
 		activeMappingsQuery.add(mappingTypeQuery, MUST);
 		activeMappingsQuery.add(SnomedIndexQueries.ACTIVE_COMPONENT_QUERY, MUST);
@@ -2769,14 +2758,11 @@ public class SnomedComponentService implements ISnomedComponentService, IPostSto
 	
 		final Map<DataType, Set<String>> dataTypeLabelMap = Maps.newHashMapWithExpectedSize(DataType.values().length);
 		
-		final TermQuery query = new TermQuery(new Term(REFERENCE_SET_MEMBER_REFERENCE_SET_TYPE, 
-				IndexUtils.intToPrefixCoded(SnomedRefSetType.CONCRETE_DATA_TYPE_VALUE)));
-		
 		@SuppressWarnings("rawtypes")
 		final IndexServerService service = (IndexServerService) getRefSetIndexService();
 		
 		final ReducedConcreteDomainFragmentCollector collector = new ReducedConcreteDomainFragmentCollector();
-		service.search(branchPath, query, collector);
+		service.search(branchPath, SnomedIndexQueries.CONCRETE_DOMAIN_MEMBER_TYPE_QUERY, collector);
 
 		for (final DataType  type : DataType.VALUES) {
 			
