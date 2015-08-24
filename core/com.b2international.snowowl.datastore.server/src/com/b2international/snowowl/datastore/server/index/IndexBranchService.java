@@ -47,6 +47,7 @@ import org.apache.lucene.search.MatchAllDocsQuery;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.ReferenceManager;
 import org.apache.lucene.search.SearcherManager;
+import org.apache.lucene.search.TopDocs;
 import org.apache.lucene.store.AlreadyClosedException;
 import org.apache.lucene.store.Directory;
 import org.apache.lucene.util.Version;
@@ -57,8 +58,10 @@ import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.api.SnowowlRuntimeException;
 import com.b2international.snowowl.core.api.index.IndexException;
 import com.b2international.snowowl.datastore.index.DelimiterStopAnalyzer;
+import com.b2international.snowowl.datastore.index.DocumentUpdater;
 import com.b2international.snowowl.datastore.index.IndexUtils;
 import com.b2international.snowowl.datastore.index.NullSearcherManager;
+import com.b2international.snowowl.datastore.index.field.ComponentStorageKeyField;
 import com.b2international.snowowl.datastore.server.internal.lucene.index.FilteringMergePolicy;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Predicate;
@@ -248,6 +251,32 @@ public class IndexBranchService implements Closeable {
 		checkReadOnly();
 		if (null != indexWriter) {
 			indexWriter.updateDocument(term, document);
+		}
+	}
+	
+	public void update(long storageKey, DocumentUpdater documentUpdater) throws IOException {
+		checkClosed();
+		checkReadOnly();
+		if (indexWriter != null) {
+			IndexSearcher searcher = null;
+			try {
+				ComponentStorageKeyField field = new ComponentStorageKeyField(storageKey);
+				final Query query = field.toQuery();
+				searcher = manager.acquire();
+				final TopDocs docs = searcher.search(query, 2);
+				checkState(docs.totalHits == 1, "Multiple documents with same storage key ('%s') on a single branch path", storageKey);
+				final Document doc = searcher.doc(docs.scoreDocs[0].doc);
+				documentUpdater.update(doc);
+				indexWriter.updateDocument(field.toTerm(), doc);
+			} finally {
+				if (searcher != null) {
+					try {
+						manager.release(searcher);
+					} catch (IOException e) {
+						e.printStackTrace();
+					}
+				}
+			}
 		}
 	}
 
@@ -491,5 +520,4 @@ public class IndexBranchService implements Closeable {
 		return (SnapshotDeletionPolicy) policy;
 	}
 
-	
 }

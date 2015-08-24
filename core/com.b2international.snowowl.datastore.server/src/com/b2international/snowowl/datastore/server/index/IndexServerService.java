@@ -57,6 +57,7 @@ import com.b2international.snowowl.datastore.BranchPathUtils;
 import com.b2international.snowowl.datastore.index.AbstractIndexUpdater;
 import com.b2international.snowowl.datastore.index.DocIdCollector;
 import com.b2international.snowowl.datastore.index.DocIdCollector.DocIdsIterator;
+import com.b2international.snowowl.datastore.index.DocumentUpdater;
 import com.b2international.snowowl.datastore.index.DocumentWithScore;
 import com.b2international.snowowl.datastore.index.FakeQueryAdapter;
 import com.b2international.snowowl.datastore.index.field.ComponentIdField;
@@ -250,8 +251,6 @@ public abstract class IndexServerService<E extends IIndexEntry> extends Abstract
 
 	@Override
 	public void index(final IBranchPath branchPath, final Document document, final Term id) {
-
-		checkNotNull(branchPath, "branchPath");
 		checkNotNull(document, "document");
 		checkNotNull(id, "id");
 		checkNotDisposed();
@@ -261,6 +260,16 @@ public abstract class IndexServerService<E extends IIndexEntry> extends Abstract
 		try {
 			branchService.updateDocument(id, document);
 		} catch (final IOException e) {
+			throw new IndexException(e);
+		}
+	}
+	
+	@Override
+	public void update(IBranchPath branchPath, long storageKey, DocumentUpdater documentUpdater) {
+		checkNotDisposed();
+		try {
+			getBranchService(branchPath).update(storageKey, documentUpdater);
+		} catch (IOException e) {
 			throw new IndexException(e);
 		}
 	}

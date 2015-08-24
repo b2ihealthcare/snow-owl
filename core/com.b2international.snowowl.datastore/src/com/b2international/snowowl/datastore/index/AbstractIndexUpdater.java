@@ -54,4 +54,6 @@ public abstract class AbstractIndexUpdater<E extends IIndexEntry> extends Abstra
 	 * 
 	 */
 	public abstract void index(final IBranchPath branchPath, final Document document, final Term id);
+	
+	public abstract void update(IBranchPath branchPath, final long storageKey, DocumentUpdater documentUpdater);
 }
