@@ -81,6 +81,7 @@ import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBr
 import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.RELATIONSHIP_UNION_GROUP;
 import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.RELATIONSHIP_UNIVERSAL;
 import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.RELATIONSHIP_VALUE_ID;
+import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.collect.Lists.newArrayList;
 import static com.google.common.collect.Maps.newHashMap;
 import static com.google.common.collect.Sets.newHashSet;
@@ -116,8 +117,6 @@ import org.eclipse.emf.cdo.CDOObject;
 import org.eclipse.emf.cdo.transaction.CDOTransaction;
 import org.eclipse.emf.cdo.view.CDOView;
 
-import bak.pcj.LongCollection;
-import bak.pcj.LongIterator;
 import bak.pcj.map.LongKeyFloatMap;
 import bak.pcj.set.LongOpenHashSet;
 import bak.pcj.set.LongSet;
@@ -129,7 +128,6 @@ import com.b2international.commons.csv.CsvLexer.EOL;
 import com.b2international.commons.csv.CsvParser;
 import com.b2international.commons.csv.CsvSettings;
 import com.b2international.commons.csv.RecordParserCallback;
-import com.b2international.commons.pcj.LongCollections;
 import com.b2international.commons.pcj.LongSets;
 import com.b2international.commons.pcj.LongSets.LongCollectionProcedure;
 import com.b2international.snowowl.core.ApplicationContext;
@@ -147,9 +145,7 @@ import com.b2international.snowowl.datastore.cdo.ICDOConnection;
 import com.b2international.snowowl.datastore.cdo.ICDOConnectionManager;
 import com.b2international.snowowl.datastore.index.IndexUtils;
 import com.b2international.snowowl.datastore.index.SortKeyMode;
-import com.b2international.snowowl.datastore.index.field.ComponentAncestorLongField;
 import com.b2international.snowowl.datastore.index.field.ComponentIdLongField;
-import com.b2international.snowowl.datastore.index.field.ComponentParentLongField;
 import com.b2international.snowowl.datastore.index.field.ComponentStorageKeyField;
 import com.b2international.snowowl.datastore.index.field.ComponentTypeField;
 import com.b2international.snowowl.datastore.index.field.IntIndexField;
@@ -160,7 +156,6 @@ import com.b2international.snowowl.datastore.server.snomed.index.init.ImportInde
 import com.b2international.snowowl.datastore.server.snomed.index.init.ImportIndexServerService.TermType;
 import com.b2international.snowowl.datastore.server.snomed.index.init.ImportIndexServerService.TermWithType;
 import com.b2international.snowowl.datastore.server.snomed.index.init.MrcmIndexInitializer;
-import com.b2international.snowowl.datastore.server.snomed.index.init.Rf2BasedSnomedTaxonomyBuilder;
 import com.b2international.snowowl.importer.ImportException;
 import com.b2international.snowowl.snomed.Concept;
 import com.b2international.snowowl.snomed.Description;
@@ -181,6 +176,8 @@ import com.b2international.snowowl.snomed.datastore.index.SnomedIndexService;
 import com.b2international.snowowl.snomed.datastore.index.SnomedRelationshipIndexMappingStrategy;
 import com.b2international.snowowl.snomed.datastore.index.refset.SnomedRefSetMemberIndexEntry;
 import com.b2international.snowowl.snomed.datastore.index.refset.SnomedRefSetMemberIndexMappingStrategy;
+import com.b2international.snowowl.snomed.datastore.index.update.RefSetIconIdUpdater;
+import com.b2international.snowowl.snomed.datastore.index.update.RefSetParentageUpdater;
 import com.b2international.snowowl.snomed.datastore.services.ISnomedComponentService;
 import com.b2international.snowowl.snomed.datastore.services.SnomedBranchRefSetMembershipLookupService;
 import com.b2international.snowowl.snomed.importer.rf2.model.ComponentImportType;
@@ -229,14 +226,16 @@ public class SnomedRf2IndexInitializer extends Job {
 	//when a reference set is imported where the concept is being created on the fly
 	private final Map<String, SnomedRefSetType> identifierConceptIdsForNewRefSets = newHashMap();
 
-	public SnomedRf2IndexInitializer(final IBranchPath branchPath, final String lastUnitEffectiveTimeKey, final List<ComponentImportUnit> importUnits, final String languageRefSetId) {
+	private ISnomedTaxonomyBuilder taxonomyBuilder;
+
+	public SnomedRf2IndexInitializer(final IBranchPath branchPath, final String lastUnitEffectiveTimeKey, final List<ComponentImportUnit> importUnits, final String languageRefSetId, ISnomedTaxonomyBuilder taxonomyBuilder) {
 		super("SNOMED CT RF2 based index initializer...");
 		this.branchPath = branchPath;
 		this.effectiveTimeKey = lastUnitEffectiveTimeKey;
+		this.taxonomyBuilder = checkNotNull(taxonomyBuilder, "taxonomyBuilder");
 		this.importUnits = Collections.unmodifiableList(importUnits);
 		//check services
 		getImportIndexService();
-		getTaxonomyBuilder();
 	}
 
 	
@@ -459,10 +458,6 @@ public class SnomedRf2IndexInitializer extends Job {
 		return Preconditions.checkNotNull(ApplicationContext.getInstance().getService(ImportIndexServerService.class), "Import index server service was null.");
 	}
 	
-	private ISnomedTaxonomyBuilder getTaxonomyBuilder() {
-		return Preconditions.checkNotNull(ApplicationContext.getInstance().getService(Rf2BasedSnomedTaxonomyBuilder.class), "RF2 based taxonomy builder service was null");
-	}
-	
 	private SnomedIndexServerService getSnomedIndexService() {
 		return (SnomedIndexServerService) Preconditions.checkNotNull(ApplicationContext.getInstance().getService(SnomedIndexService.class), "SNOMED CT index server service was null.");
 	}
@@ -604,8 +599,8 @@ public class SnomedRf2IndexInitializer extends Job {
 	private Set<String> getAllDescendants(final Set<String> union) {
 		final LongSet $ = new LongOpenHashSet();
 		for (final String conceptId : union) {
-			if (getTaxonomyBuilder().containsNode(conceptId)) { //inactive one
-				$.addAll(getTaxonomyBuilder().getAllDescendantNodeIds(conceptId));
+			if (taxonomyBuilder.containsNode(conceptId)) { //inactive one
+				$.addAll(taxonomyBuilder.getAllDescendantNodeIds(conceptId));
 			}
 		}
 		return LongSets.toStringSet($);
@@ -809,20 +804,8 @@ public class SnomedRf2IndexInitializer extends Job {
 					}
 					
 					refSetDoc.add(new LongField(COMPONENT_MODULE_ID, Long.parseLong(moduleId), Store.YES));
-					final String iconId;
-					
-					if (getTaxonomyBuilder().containsNode(refSetId)) {
-						iconId = SnomedIconProvider.getInstance().getIconComponentId(refSetId, getTaxonomyBuilder());
-					} else {
-						if (identifierConceptIdsForNewRefSets.containsKey(refSetId)) {
-							final SnomedRefSetType snomedRefSetType = identifierConceptIdsForNewRefSets.get(refSetId);
-							iconId = SnomedRefSetUtil.getConceptId(snomedRefSetType);
-						} else {
-							iconId = Concepts.ROOT_CONCEPT;
-						}
-					}
-							
-					refSetDoc.add(new LongField(CommonIndexConstants.COMPONENT_ICON_ID, Long.parseLong(iconId), Store.YES));
+					// TODO is this okay??? active flag set to true, the code does the same but it looks odd
+					updateIconId(refSetId, true, refSetDoc, false);
 					
 					for (final String predicateKey : refSetIdToPredicateMap.get(Long.parseLong(refSetId))) {
 						refSetDoc.add(new StringField(COMPONENT_REFERRING_PREDICATE, predicateKey, Store.YES));
@@ -1056,6 +1039,12 @@ public class SnomedRf2IndexInitializer extends Job {
 		});
 	}
 	
+	protected void updateIconId(String conceptId, boolean active, Document doc, boolean withDocValues) {
+		final Collection<String> availableImages = SnomedIconProvider.getInstance().getAvailableIconIds();
+		new RefSetIconIdUpdater(taxonomyBuilder, conceptId, active, availableImages, withDocValues, identifierConceptIdsForNewRefSets).update(doc);		
+	}
+
+
 	private void indexPreferredTermChangesOnMembers() {
 		final SnomedBranchRefSetMembershipLookupService lookupService = new SnomedBranchRefSetMembershipLookupService(branchPath);
 		final ICDOConnection connection = ApplicationContext.getServiceForClass(ICDOConnectionManager.class).getByUuid(SnomedDatastoreActivator.REPOSITORY_UUID);
@@ -1249,27 +1238,7 @@ public class SnomedRf2IndexInitializer extends Job {
 		doc.add(new LongField(CONCEPT_NAMESPACE_ID, NamespaceMapping.getExtensionNamespaceId(conceptId), Store.NO));
 		doc.add(new LongField(CONCEPT_EFFECTIVE_TIME, effectiveTime, Store.YES));
 		
-		final String iconId;
-
-		//it might happen that a concept has been active previously hence it's in the taxonomy builder
-		//but its just being inactivated.
-		if (!active) {
-			iconId = Concepts.ROOT_CONCEPT;
-		} else {
-			if (getTaxonomyBuilder().containsNode(conceptIdString)) {
-				iconId = SnomedIconProvider.getInstance().getIconComponentId(conceptIdString, getTaxonomyBuilder());
-			} else {
-				if (identifierConceptIdsForNewRefSets.containsKey(conceptIdString)) {
-					final SnomedRefSetType snomedRefSetType = identifierConceptIdsForNewRefSets.get(conceptIdString);
-					iconId = SnomedRefSetUtil.getConceptId(snomedRefSetType);
-				} else {
-					iconId = Concepts.ROOT_CONCEPT;
-				}
-			}
-		}
-			
-		doc.add(new LongField(CommonIndexConstants.COMPONENT_ICON_ID, Long.valueOf(iconId), Store.YES));
-		doc.add(new NumericDocValuesField(CommonIndexConstants.COMPONENT_ICON_ID, Long.valueOf(iconId)));
+		updateIconId(conceptIdString, active, doc, true);
 
 		final String preferredTerm = getImportIndexService().getConceptLabel(conceptIdString);
 		doc.add(new TextField(CommonIndexConstants.COMPONENT_LABEL, preferredTerm, Store.YES));
@@ -1291,23 +1260,8 @@ public class SnomedRf2IndexInitializer extends Job {
 			doc.add(new LongField(CONCEPT_REFERRING_MAPPING_REFERENCE_SET_ID, Long.parseLong(mappingRefSetId), Store.YES));
 		}
 
-		// query direct parents
-		final LongCollection parentIds = getParentIds(conceptIdString);
-		if (parentIds.isEmpty()) {
-			// if it has no parents, then it is the root
-			ComponentParentLongField.ROOT_PARENT.addTo(doc);
-		} else {
-			final LongIterator parentIdIterator = parentIds.iterator();
-			while (parentIdIterator.hasNext()) {
-				new ComponentParentLongField(parentIdIterator.next()).addTo(doc);
-			}
-		}
-		// query ancestors
-		final LongCollection ancestorIds = getAncestorIds(conceptIdString);
-		final LongIterator ancestorIdIterator = ancestorIds.iterator();
-		while (ancestorIdIterator.hasNext()) {
-			new ComponentAncestorLongField(ancestorIdIterator.next()).addTo(doc);
-		}
+		// update parents and ancestors
+		new RefSetParentageUpdater(taxonomyBuilder, conceptIdString, identifierConceptIdsForNewRefSets).update(doc);
 		
 		final List<TermWithType> descriptions = getImportIndexService().getConceptDescriptions(conceptIdString);
 		for (final TermWithType termWithType : descriptions) {
@@ -1355,32 +1309,6 @@ public class SnomedRf2IndexInitializer extends Job {
 		$.addAll(newMappingMemberships.get(sConceptId));
 		$.removeAll(detachedMappingMemberships.get(sConceptId));
 		return $;
-	}
-	
-	private LongCollection getParentIds(final String conceptId) {
-		if (getTaxonomyBuilder().containsNode(conceptId)) {
-			return getTaxonomyBuilder().getAncestorNodeIds(conceptId); 
-		}
-		
-		if (identifierConceptIdsForNewRefSets.containsKey(conceptId)) {
-			final SnomedRefSetType type = identifierConceptIdsForNewRefSets.get(conceptId);
-			return LongCollections.singletonSet(Long.parseLong(SnomedRefSetUtil.getConceptId(type)));
-		}
-		
-		return LongCollections.emptySet();
-	}
-	
-	private LongCollection getAncestorIds(final String conceptId) {
-		if (getTaxonomyBuilder().containsNode(conceptId)) {
-			return getTaxonomyBuilder().getAllIndirectAncestorNodeIds(conceptId);
-		}
-		
-		if (identifierConceptIdsForNewRefSets.containsKey(conceptId)) {
-			final SnomedRefSetType type = identifierConceptIdsForNewRefSets.get(conceptId);
-			return getTaxonomyBuilder().getAllAncestorNodeIds(SnomedRefSetUtil.getConceptId(type));
-		}
-		
-		return LongCollections.emptySet();
 	}
 	
 	private boolean isPrimitiveConcept(final long conceptId, final long definitionStatusConceptId) {
