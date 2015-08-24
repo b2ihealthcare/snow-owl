@@ -52,5 +52,9 @@ public abstract class IndexField {
 	public void addTo(Document doc) {
 		doc.add(toField());
 	}
+
+	public static void removeAll(String fieldName, Document doc) {
+		doc.removeFields(fieldName);
+	}
 	
 }

@@ -18,6 +18,8 @@ package com.b2international.snowowl.datastore.index.field;
 import java.util.Collections;
 import java.util.Set;
 
+import org.apache.lucene.document.Document;
+
 /**
  * @since 4.3
  */
@@ -28,6 +30,10 @@ public abstract class ComponentAncestorField extends IndexField {
 
 	public ComponentAncestorField() {
 		super(COMPONENT_ANCESTOR);
+	}
+
+	public static void removeAll(Document doc) {
+		IndexField.removeAll(COMPONENT_ANCESTOR, doc);
 	}
 	
 }
