@@ -39,7 +39,10 @@ import com.b2international.snowowl.datastore.index.field.ComponentTypeField;
 import com.b2international.snowowl.datastore.index.field.IntIndexField;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.snomed.datastore.SnomedConceptLookupService;
+import com.b2international.snowowl.snomed.datastore.SnomedIconProvider;
 import com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants;
+import com.b2international.snowowl.snomed.datastore.index.ISnomedTaxonomyBuilder;
+import com.b2international.snowowl.snomed.datastore.index.update.IconIdUpdater;
 import com.b2international.snowowl.snomed.datastore.services.SnomedConceptNameProvider;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSet;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedStructuralRefSet;
@@ -51,20 +54,20 @@ import com.google.common.base.Preconditions;
 public class SnomedRefSetIndexMappingStrategy extends AbstractIndexMappingStrategy {
 	
 	private final SnomedRefSet refSet;
-	private final long iconId;
 	private final Collection<String> predicateKeys;
 	private final boolean indexAsRelevantForCompare;
+	private ISnomedTaxonomyBuilder taxonomyBuilder;
 	
 	/**
 	 * Creates a new index mapping strategy instance based on the  specified SNOMED&nbsp;CT reference set.
 	 * @param refSet the reference set.
 	 * @param predicateKeys 
 	 */
-	public SnomedRefSetIndexMappingStrategy(final SnomedRefSet refSet, final long iconId, final Collection<String> predicateKeys, final boolean indexAsRelevantForCompare) {
+	public SnomedRefSetIndexMappingStrategy(final ISnomedTaxonomyBuilder taxonomyBuilder, final SnomedRefSet refSet, final Collection<String> predicateKeys, final boolean indexAsRelevantForCompare) {
+		this.taxonomyBuilder = taxonomyBuilder;
 		this.indexAsRelevantForCompare = indexAsRelevantForCompare;
 		this.predicateKeys = Preconditions.checkNotNull(predicateKeys, "Predicate key argument cannot be null.");
 		this.refSet = checkNotNull(refSet, "Reference set argument cannot be null.");
-		this.iconId = iconId;
 	}
 
 	@Override
@@ -89,7 +92,10 @@ public class SnomedRefSetIndexMappingStrategy extends AbstractIndexMappingStrate
 		
 		final String moduleId = new SnomedConceptLookupService().getComponent(refSet.getIdentifierId(), refSet.cdoView()).getModule().getId();
 		doc.add(new LongField(SnomedIndexBrowserConstants.COMPONENT_MODULE_ID, Long.parseLong(moduleId), Store.YES));
-		doc.add(new LongField(CommonIndexConstants.COMPONENT_ICON_ID, iconId, Store.YES));
+		
+		final String conceptId = refSet.getIdentifierId();
+		final boolean active = true;
+		new IconIdUpdater(taxonomyBuilder, conceptId, active, SnomedIconProvider.getInstance().getAvailableIconIds(), false).update(doc);
 		
 		for (final String predicateKey : this.predicateKeys) {
 			doc.add(new StringField(SnomedIndexBrowserConstants.COMPONENT_REFERRING_PREDICATE, predicateKey, Store.YES));

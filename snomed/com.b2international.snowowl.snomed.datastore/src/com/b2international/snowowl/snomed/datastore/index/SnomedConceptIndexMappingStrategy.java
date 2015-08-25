@@ -42,9 +42,6 @@ import org.apache.lucene.document.StringField;
 import org.apache.lucene.document.TextField;
 import org.apache.lucene.util.BytesRef;
 
-import bak.pcj.LongIterator;
-import bak.pcj.set.LongSet;
-
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.api.index.CommonIndexConstants;
 import com.b2international.snowowl.core.api.index.IIndexMappingStrategy;
@@ -53,15 +50,15 @@ import com.b2international.snowowl.datastore.BranchPathUtils;
 import com.b2international.snowowl.datastore.cdo.CDOUtils;
 import com.b2international.snowowl.datastore.index.AbstractIndexMappingStrategy;
 import com.b2international.snowowl.datastore.index.SortKeyMode;
-import com.b2international.snowowl.datastore.index.field.ComponentAncestorField;
 import com.b2international.snowowl.datastore.index.field.ComponentIdLongField;
-import com.b2international.snowowl.datastore.index.field.ComponentParentField;
-import com.b2international.snowowl.datastore.index.field.ComponentParentLongField;
 import com.b2international.snowowl.datastore.index.field.ComponentStorageKeyField;
 import com.b2international.snowowl.datastore.index.field.ComponentTypeField;
 import com.b2international.snowowl.datastore.index.field.IntIndexField;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
+import com.b2international.snowowl.snomed.datastore.SnomedIconProvider;
 import com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants;
+import com.b2international.snowowl.snomed.datastore.index.update.IconIdUpdater;
+import com.b2international.snowowl.snomed.datastore.index.update.ParentageUpdater;
 import com.b2international.snowowl.snomed.datastore.services.ISnomedComponentService;
 import com.b2international.snowowl.snomed.datastore.services.SnomedConceptNameProvider;
 
@@ -99,11 +96,6 @@ public abstract class SnomedConceptIndexMappingStrategy extends AbstractIndexMap
 	private final String conceptId;
 	private final long storageKey;
 	
-	private final LongSet ancestorIds;
-	private final LongSet parentIds;
-//	private final LongSet statedAncestorIds;
-//	private final LongSet statedParentIds;
-	
 	private final boolean exhaustive;
 	private final boolean active;
 	private final boolean primitive;
@@ -113,18 +105,14 @@ public abstract class SnomedConceptIndexMappingStrategy extends AbstractIndexMap
 	private final Set<DescriptionInfo> activeDescriptionInfos;
 	private final float degreeOfInterest;
 	private final Collection<String> predicateKeys;
-	private final String iconId;
 	private final Collection<String> referringRefSetIds;
 	private final Collection<String> mappingRefSetIds;
 	private final Date effectiveTime;
 	private final boolean indexAsRelevantForCompare;
+	private ISnomedTaxonomyBuilder taxonomyBuilder;
 	
-	protected SnomedConceptIndexMappingStrategy(final String conceptId, 
+	protected SnomedConceptIndexMappingStrategy(final ISnomedTaxonomyBuilder taxonomyBuilder, final String conceptId, 
 			final long storageKey, 
-			final LongSet ancestorIds, 
-			final LongSet parentIds,
-//			final LongSet statedAncestorIds, 
-//			final LongSet statedParentIds,
 			final boolean exhaustive, 
 			final boolean active, 
 			final boolean primitive, 
@@ -134,18 +122,14 @@ public abstract class SnomedConceptIndexMappingStrategy extends AbstractIndexMap
 			final Set<DescriptionInfo> activeDescriptionInfos,
 			final float degreeOfInterest,
 			final Collection<String> predicateKeys, 
-			final String iconId,
 			final Collection<String> referringRefSetIds,
 			final Collection<String> mappingRefSetIds,
 			final Date effectiveTime,
 			final boolean indexAsRelevantForCompare) {
 
+		this.taxonomyBuilder = taxonomyBuilder;
 		this.conceptId = conceptId;
 		this.storageKey = storageKey;
-		this.ancestorIds = ancestorIds;
-		this.parentIds = parentIds;
-//		this.statedAncestorIds = statedAncestorIds;
-//		this.statedParentIds = statedParentIds;
 		this.exhaustive = exhaustive;
 		this.active = active;
 		this.primitive = primitive;
@@ -155,7 +139,6 @@ public abstract class SnomedConceptIndexMappingStrategy extends AbstractIndexMap
 		this.activeDescriptionInfos = activeDescriptionInfos;
 		this.degreeOfInterest = degreeOfInterest;
 		this.predicateKeys = predicateKeys;
-		this.iconId = iconId;
 		this.referringRefSetIds = referringRefSetIds;
 		this.mappingRefSetIds = mappingRefSetIds;
 		this.effectiveTime = effectiveTime;
@@ -179,9 +162,9 @@ public abstract class SnomedConceptIndexMappingStrategy extends AbstractIndexMap
 		doc.add(new StoredField(CONCEPT_DEGREE_OF_INTEREST, degreeOfInterest));
 		doc.add(new FloatDocValuesField(CONCEPT_DEGREE_OF_INTEREST, degreeOfInterest));
 		doc.add(new LongField(COMPONENT_MODULE_ID, Long.valueOf(moduleId), Store.YES));
-		doc.add(new LongField(CommonIndexConstants.COMPONENT_ICON_ID, Long.valueOf(iconId), Store.YES));
 		doc.add(new NumericDocValuesField(CommonIndexConstants.COMPONENT_COMPARE_UNIQUE_KEY, indexAsRelevantForCompare ? storageKey : CDOUtils.NO_STORAGE_KEY));
-		doc.add(new NumericDocValuesField(CommonIndexConstants.COMPONENT_ICON_ID, Long.valueOf(iconId)));
+		//this point we have to find the first parent concept that is in the previous state of the taxonomy to specify the icon ID
+		new IconIdUpdater(taxonomyBuilder, conceptId, active, SnomedIconProvider.getInstance().getAvailableIconIds(), true);
 		if (!indexAsRelevantForCompare) {
 			doc.add(new NumericDocValuesField(CommonIndexConstants.COMPONENT_IGNORE_COMPARE_UNIQUE_KEY, storageKey));
 		}
@@ -195,9 +178,7 @@ public abstract class SnomedConceptIndexMappingStrategy extends AbstractIndexMap
 		
 		addDescriptionFields(doc);
 
-		// TODO remove ref to constant
-		addHierarchicalFields(doc, parentIds, ComponentParentField.COMPONENT_PARENT);
-		addHierarchicalFields(doc, ancestorIds, ComponentAncestorField.COMPONENT_ANCESTOR);
+		new ParentageUpdater(taxonomyBuilder, conceptId).update(doc);
 		
 		addPredicateFields(doc, predicateKeys);
 
@@ -227,20 +208,6 @@ public abstract class SnomedConceptIndexMappingStrategy extends AbstractIndexMap
 		
 		for (final DescriptionInfo descriptionInfo : activeDescriptionInfos) {
 			doc.add(new TextField(descriptionInfo.type.fieldName, descriptionInfo.term, Store.YES));
-		}
-	}
-
-	private void addHierarchicalFields(final Document doc, final LongSet idSet, final String fieldName) {
-		final LongIterator idIterator = idSet.iterator();
-		
-		if (!idIterator.hasNext()) {
-			//happens when processing new concept. this time we ignore parentage changes. associated source IS_A relationship processing will trigger taxonomic updates.
-			doc.add(new LongField(fieldName, ComponentParentLongField.ROOT_ID, Store.YES));
-		} else {
-			while (idIterator.hasNext()) {
-				final long id = idIterator.next();
-				doc.add(new LongField(fieldName, id, Store.YES));
-			}
 		}
 	}
 

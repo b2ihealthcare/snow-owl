@@ -37,25 +37,19 @@ import java.util.Set;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.index.IndexableField;
 
-import bak.pcj.set.LongSet;
-
 import com.b2international.snowowl.core.api.index.CommonIndexConstants;
 import com.b2international.snowowl.datastore.index.IndexUtils;
-import com.b2international.snowowl.datastore.index.field.ComponentAncestorLongField;
 import com.b2international.snowowl.datastore.index.field.ComponentIdLongField;
-import com.b2international.snowowl.datastore.index.field.ComponentParentLongField;
 import com.b2international.snowowl.datastore.index.field.ComponentStorageKeyField;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSet.Builder;
 
 public class SnomedConceptDocumentMappingStrategy extends SnomedConceptIndexMappingStrategy {
 
-	public SnomedConceptDocumentMappingStrategy(final Document conceptDocument, final boolean indexAsRelevantForCompare) {
+	public SnomedConceptDocumentMappingStrategy(ISnomedTaxonomyBuilder taxonomyBuilder, final Document conceptDocument, final boolean indexAsRelevantForCompare) {
 		
-		super(ComponentIdLongField.getString(checkNotNull(conceptDocument, "SNOMED CT concept document cannot be null.")), 
+		super(taxonomyBuilder, ComponentIdLongField.getString(checkNotNull(conceptDocument, "SNOMED CT concept document cannot be null.")), 
 				ComponentStorageKeyField.getLong(conceptDocument), 
-				getAncestorIds(conceptDocument), 
-				getParentIds(conceptDocument), 
 				isExhaustive(conceptDocument), 
 				isActive(conceptDocument), 
 				isPrimitive(conceptDocument), 
@@ -65,7 +59,6 @@ public class SnomedConceptDocumentMappingStrategy extends SnomedConceptIndexMapp
 				getActiveDescriptionInfos(conceptDocument),
 				getDegreeOfInterest(conceptDocument),
 				getPredicateKeys(conceptDocument), 
-				getIconId(conceptDocument),
 				getReferringRefSetIds(conceptDocument),
 				getMappingRefSetIds(conceptDocument),
 				getEffectiveTime(conceptDocument),
@@ -88,10 +81,6 @@ public class SnomedConceptDocumentMappingStrategy extends SnomedConceptIndexMapp
 			builder.add(indexableField.stringValue());
 		}
 		return builder.build();
-	}
-
-	private static String getIconId(Document conceptDocument) {
-		return conceptDocument.get(CommonIndexConstants.COMPONENT_ICON_ID);
 	}
 
 	private static Set<String> getPredicateKeys(Document conceptDocument) {
@@ -138,14 +127,6 @@ public class SnomedConceptDocumentMappingStrategy extends SnomedConceptIndexMapp
 
 	private static boolean isExhaustive(final Document conceptDocument) {
 		return IndexUtils.getBooleanValue(conceptDocument.getField(CONCEPT_EXHAUSTIVE));
-	}
-
-	private static LongSet getParentIds(final Document conceptDocument) {
-		return ComponentParentLongField.getLongSet(conceptDocument);
-	}
-
-	private static LongSet getAncestorIds(final Document conceptDocument) {
-		return ComponentAncestorLongField.getLongSet(conceptDocument);
 	}
 
 	private static Date getEffectiveTime(final Document conceptDocument) {

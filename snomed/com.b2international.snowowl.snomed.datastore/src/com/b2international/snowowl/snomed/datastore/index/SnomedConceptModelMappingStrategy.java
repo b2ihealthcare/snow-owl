@@ -23,9 +23,6 @@ import java.util.Set;
 
 import org.eclipse.emf.cdo.common.id.CDOIDUtil;
 
-import bak.pcj.set.LongOpenHashSet;
-import bak.pcj.set.LongSet;
-
 import com.b2international.commons.StringUtils;
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.datastore.BranchPathUtils;
@@ -43,11 +40,9 @@ public class SnomedConceptModelMappingStrategy extends SnomedConceptIndexMapping
 
 	public static final float DEFAULT_DOI = 1.0f;
 
-	public SnomedConceptModelMappingStrategy(final Concept concept, final String label, final Set<String> synonymAndDescendantIds, final LongSet parentIds, final LongSet ancestorIds, final float doi, final Collection<String> predicateKeys, final String iconId, final Collection<String> referringRefSetIds, final Collection<String> mappingRefSetIds, final boolean indexCompareKey) {
-		super(checkNotNull(concept, "SNOMED CT concept argument cannot be null.").getId(), 
+	public SnomedConceptModelMappingStrategy(final ISnomedTaxonomyBuilder taxonomyBuilder, final Concept concept, final String label, final Set<String> synonymAndDescendantIds, final float doi, final Collection<String> predicateKeys, final Collection<String> referringRefSetIds, final Collection<String> mappingRefSetIds, final boolean indexCompareKey) {
+		super(taxonomyBuilder, checkNotNull(concept, "SNOMED CT concept argument cannot be null.").getId(), 
 				CDOIDUtil.getLong(concept.cdoID()), 
-				nullToEmptySet(ancestorIds), 
-				nullToEmptySet(parentIds), 
 				concept.isExhaustive(), 
 				concept.isActive(), 
 				concept.isPrimitive(), 
@@ -57,17 +52,12 @@ public class SnomedConceptModelMappingStrategy extends SnomedConceptIndexMapping
 				getActiveDescriptionInfos(concept, checkNotNull(synonymAndDescendantIds, "Synonym and descendant concept IDs argument cannot be null.")),
 				doi,
 				predicateKeys, 
-				iconId,
 				referringRefSetIds,
 				mappingRefSetIds,
 				concept.getEffectiveTime(),
 				indexCompareKey);
 	}
 	
-	private static LongSet nullToEmptySet(final LongSet idSet) {
-		return null == idSet ? new LongOpenHashSet() : idSet;
-	}
-
 	/**
 	 * Returns with the label for the SNOMED CT concept. First it tires to get PT from the underlying transaction, 
 	 * if it fails, it falls back to fully specified name.
