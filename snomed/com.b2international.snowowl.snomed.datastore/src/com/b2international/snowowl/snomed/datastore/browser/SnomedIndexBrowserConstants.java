@@ -39,7 +39,6 @@ public abstract class SnomedIndexBrowserConstants {
 	public static final String RELATIONSHIP_OBJECT_ID = "relationship_object_id";
 	public static final String RELATIONSHIP_ATTRIBUTE_ID = "relationship_attribute_id";
 	public static final String RELATIONSHIP_VALUE_ID = "relationship_value_id";
-	public static final String RELATIONSHIP_CHARACTERISTIC_TYPE_ID = "relationship_characteristic_type_id";
 	public static final String RELATIONSHIP_GROUP = "relationship_group";
 	public static final String RELATIONSHIP_UNION_GROUP = "relationship_union_group";
 	public static final String RELATIONSHIP_INFERRED = "relationship_inferred";

@@ -72,7 +72,6 @@ import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBr
 import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.REFERENCE_SET_STRUCTURAL;
 import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.REFERENCE_SET_TYPE;
 import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.RELATIONSHIP_ATTRIBUTE_ID;
-import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.RELATIONSHIP_CHARACTERISTIC_TYPE_ID;
 import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.RELATIONSHIP_DESTINATION_NEGATED;
 import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.RELATIONSHIP_EFFECTIVE_TIME;
 import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.RELATIONSHIP_GROUP;
@@ -170,6 +169,7 @@ import com.b2international.snowowl.snomed.datastore.SnomedIconProvider;
 import com.b2international.snowowl.snomed.datastore.SnomedRefSetBrowser;
 import com.b2international.snowowl.snomed.datastore.SnomedRefSetUtil;
 import com.b2international.snowowl.snomed.datastore.SnomedTerminologyBrowser;
+import com.b2international.snowowl.snomed.datastore.browser.SnomedIndexQueries;
 import com.b2international.snowowl.snomed.datastore.index.SnomedDescriptionIndexMappingStrategy;
 import com.b2international.snowowl.snomed.datastore.index.SnomedIndexService;
 import com.b2international.snowowl.snomed.datastore.index.SnomedRelationshipIndexMappingStrategy;
@@ -659,7 +659,7 @@ public class SnomedRf2IndexInitializer extends Job {
 				doc.add(new LongField(RELATIONSHIP_OBJECT_ID, sourceConceptId, Store.YES));
 				doc.add(new LongField(RELATIONSHIP_ATTRIBUTE_ID, typeConceptId, Store.YES));
 				doc.add(new LongField(RELATIONSHIP_VALUE_ID, destinationConceptId, Store.YES));
-				doc.add(new LongField(RELATIONSHIP_CHARACTERISTIC_TYPE_ID, characteristicTypeConceptSctId, Store.YES));
+				doc.add(new LongField(SnomedIndexQueries.RELATIONSHIP_CHARACTERISTIC_TYPE_ID, characteristicTypeConceptSctId, Store.YES));
 				doc.add(new StoredField(RELATIONSHIP_GROUP, group));
 				doc.add(new StoredField(RELATIONSHIP_UNION_GROUP, unionGroup));
 				doc.add(new StoredField(RELATIONSHIP_DESTINATION_NEGATED, destinationNegated ? 1 : 0));
@@ -671,7 +671,7 @@ public class SnomedRf2IndexInitializer extends Job {
 				doc.add(new NumericDocValuesField(RELATIONSHIP_VALUE_ID, destinationConceptId));
 				doc.add(new NumericDocValuesField(RELATIONSHIP_OBJECT_ID, sourceConceptId));
 				doc.add(new NumericDocValuesField(RELATIONSHIP_ATTRIBUTE_ID, typeConceptId));
-				doc.add(new NumericDocValuesField(RELATIONSHIP_CHARACTERISTIC_TYPE_ID, characteristicTypeConceptSctId));
+				doc.add(new NumericDocValuesField(SnomedIndexQueries.RELATIONSHIP_CHARACTERISTIC_TYPE_ID, characteristicTypeConceptSctId));
 				doc.add(new NumericDocValuesField(RELATIONSHIP_GROUP, group));
 				doc.add(new NumericDocValuesField(RELATIONSHIP_UNION_GROUP, unionGroup));
 				doc.add(new NumericDocValuesField(RELATIONSHIP_UNIVERSAL, universal ? 1 : 0));

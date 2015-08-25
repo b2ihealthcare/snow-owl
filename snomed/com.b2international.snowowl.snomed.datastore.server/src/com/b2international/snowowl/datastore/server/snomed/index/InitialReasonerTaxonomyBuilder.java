@@ -15,14 +15,11 @@
  */
 package com.b2international.snowowl.datastore.server.snomed.index;
 
-import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.RELATIONSHIP_CHARACTERISTIC_TYPE_ID;
-
 import java.text.MessageFormat;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.concurrent.atomic.AtomicReference;
 
-import org.apache.lucene.index.Term;
 import org.apache.lucene.search.BooleanClause.Occur;
 import org.apache.lucene.search.BooleanQuery;
 import org.apache.lucene.search.Query;
@@ -44,7 +41,6 @@ import com.b2international.commons.ClassUtils;
 import com.b2international.commons.concurrent.equinox.ForkJoinUtils;
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.api.IBranchPath;
-import com.b2international.snowowl.datastore.index.IndexUtils;
 import com.b2international.snowowl.datastore.index.LongDocValuesCollector;
 import com.b2international.snowowl.datastore.index.field.ComponentIdLongField;
 import com.b2international.snowowl.datastore.index.field.IntIndexField;
@@ -85,7 +81,7 @@ public class InitialReasonerTaxonomyBuilder extends AbstractReasonerTaxonomyBuil
 
 			final BooleanQuery statementsQuery = new BooleanQuery(true);
 			statementsQuery.add(SnomedIndexQueries.ACTIVE_RELATIONSHIPS_QUERY, Occur.MUST);
-			statementsQuery.add(createLongTermQuery(SnomedIndexBrowserConstants.RELATIONSHIP_ATTRIBUTE_ID, IS_A_ID), Occur.MUST);
+			statementsQuery.add(SnomedIndexQueries.ISA_TYPE_QUERY, Occur.MUST);
 			statementsQuery.add(createCharacteristicTypeQuery(), Occur.MUST);
 
 			final int hitCount = getIndexServerService().getHitCount(branchPath, statementsQuery, null);
@@ -324,7 +320,7 @@ public class InitialReasonerTaxonomyBuilder extends AbstractReasonerTaxonomyBuil
 
 			statementIdToConceptIdReference.set(statementIdToConceptIds);
 			
-			inferredStatementMap = getStatements(createLongTermQuery(RELATIONSHIP_CHARACTERISTIC_TYPE_ID, INFERRED_RELATIONSHIP));
+			inferredStatementMap = getStatements(SnomedIndexQueries.INFERRED_RELATIONSHIP_CHARACTERISTIC_TYPE_QUERY);
 			checkpoint(taskName, "mapping statements for classification", stopwatch);
 		}
 
@@ -360,10 +356,6 @@ public class InitialReasonerTaxonomyBuilder extends AbstractReasonerTaxonomyBuil
 
 	private static void leaving(final String taskName, final Stopwatch stopwatch) {
 		LOGGER.info(MessageFormat.format("<<< {0} [{1}]", taskName, stopwatch));
-	}
-
-	private static TermQuery createLongTermQuery(final String fieldName, final long longValue) {
-		return new TermQuery(new Term(fieldName, IndexUtils.longToPrefixCoded(longValue)));
 	}
 
 	private static TermQuery createIntTermQuery(final String fieldName, final int intValue) {
@@ -435,7 +427,7 @@ public class InitialReasonerTaxonomyBuilder extends AbstractReasonerTaxonomyBuil
 
 		// XXX: Change processor mode needs additional concrete domain members as well (relationships only)
 		if (!isReasonerMode()) {
-			characteristicTypeQuery.add(createLongTermQuery(SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_CHARACTERISTIC_TYPE_ID, ADDITIONAL_RELATIONSHIP), Occur.SHOULD);
+			characteristicTypeQuery.add(SnomedIndexQueries.ADDITIONAL_MEMBER_CHARACTERISTIC_TYPE_QUERY, Occur.SHOULD);
 		}
 		
 		final Runnable getStatementConcreteDomainsRunnable = new GetConcreteDomainRunnable(taskName, 
@@ -447,7 +439,7 @@ public class InitialReasonerTaxonomyBuilder extends AbstractReasonerTaxonomyBuil
 		final Runnable getInferredConceptConcreteDomainsRunnable = new GetConcreteDomainRunnable(taskName, 
 				conceptIds,
 				SnomedTerminologyComponentConstants.CONCEPT_NUMBER,
-				createLongTermQuery(RELATIONSHIP_CHARACTERISTIC_TYPE_ID, INFERRED_RELATIONSHIP),
+				SnomedIndexQueries.INFERRED_RELATIONSHIP_CHARACTERISTIC_TYPE_QUERY,
 				conceptConcreteDomainReference);
 		
 		final Runnable getExhaustiveConceptIdsRunnable = new GetConceptIdsRunnable(taskName,
@@ -512,12 +504,12 @@ public class InitialReasonerTaxonomyBuilder extends AbstractReasonerTaxonomyBuil
 
 	private BooleanQuery createCharacteristicTypeQuery() {
 		final BooleanQuery result = new BooleanQuery(true);
-		result.add(createLongTermQuery(RELATIONSHIP_CHARACTERISTIC_TYPE_ID, STATED_RELATIONSHIP), Occur.SHOULD);
+		result.add(SnomedIndexQueries.STATED_RELATIONSHIP_CHARACTERISTIC_TYPE_QUERY, Occur.SHOULD);
 
 		// XXX: Change processor mode requires all defining information, not just stated ones
 		if (!isReasonerMode()) {
-			result.add(createLongTermQuery(RELATIONSHIP_CHARACTERISTIC_TYPE_ID, INFERRED_RELATIONSHIP), Occur.SHOULD);
-			result.add(createLongTermQuery(RELATIONSHIP_CHARACTERISTIC_TYPE_ID, DEFINING_RELATIONSHIP), Occur.SHOULD);
+			result.add(SnomedIndexQueries.INFERRED_RELATIONSHIP_CHARACTERISTIC_TYPE_QUERY, Occur.SHOULD);
+			result.add(SnomedIndexQueries.DEFINING_RELATIONSHIP_CHARACTERISTIC_TYPE_QUERY, Occur.SHOULD);
 		}
 		
 		return result;

@@ -19,7 +19,6 @@ import static com.b2international.snowowl.datastore.index.IndexUtils.getBooleanV
 import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.COMPONENT_ACTIVE;
 import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.COMPONENT_RELEASED;
 import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.RELATIONSHIP_ATTRIBUTE_ID;
-import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.RELATIONSHIP_CHARACTERISTIC_TYPE_ID;
 import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.RELATIONSHIP_DESTINATION_NEGATED;
 import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.RELATIONSHIP_GROUP;
 import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.RELATIONSHIP_INFERRED;
@@ -85,7 +84,7 @@ public class SnomedRelationshipIndexQueryAdapter extends QueryDslIndexQueryAdapt
 		final String objectId = doc.get(RELATIONSHIP_OBJECT_ID);
 		final String attributeId = doc.get(RELATIONSHIP_ATTRIBUTE_ID);
 		final String valueId = doc.get(RELATIONSHIP_VALUE_ID);
-		final String characteristicTypeId = doc.get(RELATIONSHIP_CHARACTERISTIC_TYPE_ID);
+		final String characteristicTypeId = doc.get(SnomedIndexQueries.RELATIONSHIP_CHARACTERISTIC_TYPE_ID);
 		byte group = (byte) doc.getField(RELATIONSHIP_GROUP).numericValue().intValue();
 		byte unionGroup = (byte) doc.getField(RELATIONSHIP_UNION_GROUP).numericValue().intValue();
 		byte flags = SnomedRelationshipIndexEntry.generateFlags(getBooleanValue(doc.getField(COMPONENT_RELEASED)), 

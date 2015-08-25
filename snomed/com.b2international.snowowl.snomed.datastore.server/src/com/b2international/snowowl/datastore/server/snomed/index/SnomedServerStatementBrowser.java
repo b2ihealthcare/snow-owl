@@ -20,7 +20,6 @@ import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBr
 import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.COMPONENT_MODULE_ID;
 import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.COMPONENT_RELEASED;
 import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.RELATIONSHIP_ATTRIBUTE_ID;
-import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.RELATIONSHIP_CHARACTERISTIC_TYPE_ID;
 import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.RELATIONSHIP_DESTINATION_NEGATED;
 import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.RELATIONSHIP_EFFECTIVE_TIME;
 import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.RELATIONSHIP_GROUP;
@@ -94,7 +93,7 @@ public class SnomedServerStatementBrowser extends AbstractSnomedIndexBrowser<Sno
 			RELATIONSHIP_ATTRIBUTE_ID, RELATIONSHIP_VALUE_ID, RELATIONSHIP_GROUP,
 			RELATIONSHIP_UNION_GROUP, COMPONENT_RELEASED, COMPONENT_ACTIVE,
 			RELATIONSHIP_INFERRED, RELATIONSHIP_UNIVERSAL, RELATIONSHIP_DESTINATION_NEGATED,
-			RELATIONSHIP_CHARACTERISTIC_TYPE_ID, COMPONENT_MODULE_ID, ComponentStorageKeyField.COMPONENT_STORAGE_KEY,
+			SnomedIndexQueries.RELATIONSHIP_CHARACTERISTIC_TYPE_ID, COMPONENT_MODULE_ID, ComponentStorageKeyField.COMPONENT_STORAGE_KEY,
 			RELATIONSHIP_EFFECTIVE_TIME);
 
 	private static final Set<String> GROUP_FIELD_TO_LOAD = Collections.unmodifiableSet(Sets.newHashSet(RELATIONSHIP_GROUP));
@@ -117,7 +116,7 @@ public class SnomedServerStatementBrowser extends AbstractSnomedIndexBrowser<Sno
 		final String objectId = doc.get(RELATIONSHIP_OBJECT_ID);
 		final String attributeId = doc.get(RELATIONSHIP_ATTRIBUTE_ID);
 		final String valueId = doc.get(RELATIONSHIP_VALUE_ID);
-		final String characteristicTypeId = doc.get(RELATIONSHIP_CHARACTERISTIC_TYPE_ID);
+		final String characteristicTypeId = doc.get(SnomedIndexQueries.RELATIONSHIP_CHARACTERISTIC_TYPE_ID);
 		final byte group = (byte) doc.getField(RELATIONSHIP_GROUP).numericValue().intValue();
 		final byte unionGroup = (byte) doc.getField(RELATIONSHIP_UNION_GROUP).numericValue().intValue();
 		final byte flags = SnomedRelationshipIndexEntry.generateFlags(IndexUtils.getBooleanValue(doc.getField(COMPONENT_RELEASED)),

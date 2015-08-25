@@ -23,7 +23,6 @@ import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBr
 import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.COMPONENT_MODULE_ID;
 import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.COMPONENT_RELEASED;
 import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.RELATIONSHIP_ATTRIBUTE_ID;
-import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.RELATIONSHIP_CHARACTERISTIC_TYPE_ID;
 import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.RELATIONSHIP_DESTINATION_NEGATED;
 import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.RELATIONSHIP_EFFECTIVE_TIME;
 import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.RELATIONSHIP_GROUP;
@@ -47,6 +46,7 @@ import com.b2international.snowowl.datastore.index.field.ComponentStorageKeyFiel
 import com.b2international.snowowl.datastore.index.field.ComponentTypeField;
 import com.b2international.snowowl.datastore.index.field.IntIndexField;
 import com.b2international.snowowl.snomed.Relationship;
+import com.b2international.snowowl.snomed.datastore.browser.SnomedIndexQueries;
 
 /**
  * Mapping strategy for SNOMED CT relationships.
@@ -87,7 +87,7 @@ public class SnomedRelationshipIndexMappingStrategy extends AbstractIndexMapping
 		doc.add(new LongField(RELATIONSHIP_OBJECT_ID, sourceId, YES));
 		doc.add(new LongField(RELATIONSHIP_ATTRIBUTE_ID, typeId, YES));
 		doc.add(new LongField(RELATIONSHIP_VALUE_ID, destinationId, YES));
-		doc.add(new LongField(RELATIONSHIP_CHARACTERISTIC_TYPE_ID, characteristicTypeId, YES));
+		doc.add(new LongField(SnomedIndexQueries.RELATIONSHIP_CHARACTERISTIC_TYPE_ID, characteristicTypeId, YES));
 		doc.add(new StoredField(RELATIONSHIP_GROUP, group));
 		doc.add(new StoredField(RELATIONSHIP_UNION_GROUP, unionGroup));
 		doc.add(new StoredField(RELATIONSHIP_DESTINATION_NEGATED, relationship.isDestinationNegated() ? 1 : 0));
@@ -99,7 +99,7 @@ public class SnomedRelationshipIndexMappingStrategy extends AbstractIndexMapping
 		doc.add(new NumericDocValuesField(RELATIONSHIP_VALUE_ID, destinationId));
 		doc.add(new NumericDocValuesField(RELATIONSHIP_OBJECT_ID, sourceId));
 		doc.add(new NumericDocValuesField(RELATIONSHIP_ATTRIBUTE_ID, typeId));
-		doc.add(new NumericDocValuesField(RELATIONSHIP_CHARACTERISTIC_TYPE_ID, characteristicTypeId));
+		doc.add(new NumericDocValuesField(SnomedIndexQueries.RELATIONSHIP_CHARACTERISTIC_TYPE_ID, characteristicTypeId));
 		doc.add(new NumericDocValuesField(RELATIONSHIP_GROUP, group));
 		doc.add(new NumericDocValuesField(RELATIONSHIP_UNION_GROUP, unionGroup));
 		doc.add(new NumericDocValuesField(RELATIONSHIP_UNIVERSAL, universal ? 1 : 0));

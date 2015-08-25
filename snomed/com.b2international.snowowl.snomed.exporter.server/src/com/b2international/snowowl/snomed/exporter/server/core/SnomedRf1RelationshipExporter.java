@@ -46,6 +46,7 @@ import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.snomed.datastore.SnomedRefSetLookupService;
 import com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants;
+import com.b2international.snowowl.snomed.datastore.browser.SnomedIndexQueries;
 import com.b2international.snowowl.snomed.datastore.index.SnomedIndexService;
 import com.b2international.snowowl.snomed.datastore.services.ISnomedComponentService;
 import com.b2international.snowowl.snomed.datastore.services.ISnomedComponentService.IdStorageKeyPair;
@@ -70,7 +71,7 @@ public class SnomedRf1RelationshipExporter implements SnomedRf1Exporter {
 			SnomedIndexBrowserConstants.RELATIONSHIP_OBJECT_ID,
 			SnomedIndexBrowserConstants.RELATIONSHIP_ATTRIBUTE_ID,
 			SnomedIndexBrowserConstants.RELATIONSHIP_VALUE_ID,
-			SnomedIndexBrowserConstants.RELATIONSHIP_CHARACTERISTIC_TYPE_ID,
+			SnomedIndexQueries.RELATIONSHIP_CHARACTERISTIC_TYPE_ID,
 			SnomedIndexBrowserConstants.RELATIONSHIP_GROUP
 			));
 	
@@ -135,7 +136,7 @@ public class SnomedRf1RelationshipExporter implements SnomedRf1Exporter {
 								_values[1] = doc.get(SnomedIndexBrowserConstants.RELATIONSHIP_OBJECT_ID);
 								_values[2] = doc.get(SnomedIndexBrowserConstants.RELATIONSHIP_ATTRIBUTE_ID);
 								_values[3] = doc.get(SnomedIndexBrowserConstants.RELATIONSHIP_VALUE_ID);
-								_values[4] = doc.get(SnomedIndexBrowserConstants.RELATIONSHIP_CHARACTERISTIC_TYPE_ID);
+								_values[4] = doc.get(SnomedIndexQueries.RELATIONSHIP_CHARACTERISTIC_TYPE_ID);
 								_values[6] = doc.get(SnomedIndexBrowserConstants.RELATIONSHIP_GROUP);
 								
 								if (refinabilityExists) {

@@ -22,7 +22,6 @@ import static com.b2international.snowowl.snomed.common.SnomedTerminologyCompone
 import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.COMPONENT_ACTIVE;
 import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.COMPONENT_MODULE_ID;
 import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.RELATIONSHIP_ATTRIBUTE_ID;
-import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.RELATIONSHIP_CHARACTERISTIC_TYPE_ID;
 import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.RELATIONSHIP_EFFECTIVE_TIME;
 import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.RELATIONSHIP_GROUP;
 import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.RELATIONSHIP_OBJECT_ID;
@@ -35,17 +34,13 @@ import static java.util.Collections.unmodifiableSet;
 import java.util.Set;
 
 import org.apache.lucene.document.Document;
-import org.apache.lucene.index.Term;
 import org.apache.lucene.search.BooleanClause.Occur;
 import org.apache.lucene.search.BooleanQuery;
 import org.apache.lucene.search.Query;
-import org.apache.lucene.search.TermQuery;
 
-import com.b2international.snowowl.datastore.index.IndexUtils;
 import com.b2international.snowowl.datastore.index.field.ComponentIdLongField;
-import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
-import com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants;
+import com.b2international.snowowl.snomed.datastore.browser.SnomedIndexQueries;
 
 /**
  * RF2 exporter for SNOMED CT relationships.
@@ -61,7 +56,7 @@ public abstract class AbstractSnomedRelationshipExporter extends SnomedCoreExpor
 			RELATIONSHIP_VALUE_ID,
 			RELATIONSHIP_GROUP,
 			RELATIONSHIP_ATTRIBUTE_ID,
-			RELATIONSHIP_CHARACTERISTIC_TYPE_ID,
+			SnomedIndexQueries.RELATIONSHIP_CHARACTERISTIC_TYPE_ID,
 			RELATIONSHIP_UNIVERSAL
 		));
 	
@@ -96,7 +91,7 @@ public abstract class AbstractSnomedRelationshipExporter extends SnomedCoreExpor
 		sb.append(HT);
 		sb.append(doc.get(RELATIONSHIP_ATTRIBUTE_ID));
 		sb.append(HT);
-		sb.append(doc.get(RELATIONSHIP_CHARACTERISTIC_TYPE_ID));
+		sb.append(doc.get(SnomedIndexQueries.RELATIONSHIP_CHARACTERISTIC_TYPE_ID));
 		sb.append(HT);
 		sb.append(getModifierValue(doc));
 		return sb.toString();
@@ -116,7 +111,7 @@ public abstract class AbstractSnomedRelationshipExporter extends SnomedCoreExpor
 	protected Query getSnapshotQuery() {
 		final BooleanQuery snapshotQuery = new BooleanQuery(true);
 		snapshotQuery.add(super.getSnapshotQuery(), Occur.MUST);
-		snapshotQuery.add(new TermQuery(new Term(SnomedIndexBrowserConstants.RELATIONSHIP_CHARACTERISTIC_TYPE_ID, IndexUtils.longToPrefixCoded(Concepts.STATED_RELATIONSHIP))), statedOccur);
+		snapshotQuery.add(SnomedIndexQueries.STATED_RELATIONSHIP_CHARACTERISTIC_TYPE_QUERY, statedOccur);
 		return snapshotQuery;
 	}
 

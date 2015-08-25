@@ -58,7 +58,6 @@ import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBr
 import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_VALUE_ID;
 import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.REFERENCE_SET_TYPE;
 import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.RELATIONSHIP_ATTRIBUTE_ID;
-import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.RELATIONSHIP_CHARACTERISTIC_TYPE_ID;
 import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.RELATIONSHIP_DESTINATION_NEGATED;
 import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.RELATIONSHIP_EFFECTIVE_TIME;
 import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.RELATIONSHIP_OBJECT_ID;
@@ -2373,8 +2372,7 @@ public class SnomedComponentService implements ISnomedComponentService, IPostSto
 		final BooleanQuery activeDefiningRelationshipsQuery = new BooleanQuery(true);
 		final BooleanQuery definingTypeQuery = new BooleanQuery(true);
 		for (final String definingCharacteristicTypeId : DEFINING_CHARACTERISTIC_TYPES) {
-			final TermQuery query = new TermQuery(new Term(RELATIONSHIP_CHARACTERISTIC_TYPE_ID, longToPrefixCoded(definingCharacteristicTypeId)));
-			definingTypeQuery.add(query, SHOULD);
+			definingTypeQuery.add(SnomedIndexQueries.toRelationshipCharacteristicTypeQuery(definingCharacteristicTypeId), SHOULD);
 		}
 		activeDefiningRelationshipsQuery.add(definingTypeQuery, MUST);
 		activeDefiningRelationshipsQuery.add(SnomedIndexQueries.RELATIONSHIP_TYPE_QUERY, MUST);
