@@ -266,9 +266,14 @@ public abstract class IndexServerService<E extends IIndexEntry> extends Abstract
 	
 	@Override
 	public void update(IBranchPath branchPath, long storageKey, DocumentUpdater documentUpdater) {
+		update(branchPath, new ComponentStorageKeyField(storageKey).toTerm(), documentUpdater);
+	}
+	
+	@Override
+	public void update(IBranchPath branchPath, Term term, DocumentUpdater documentUpdater) {
 		checkNotDisposed();
 		try {
-			getBranchService(branchPath).update(storageKey, documentUpdater);
+			getBranchService(branchPath).update(term, documentUpdater);
 		} catch (IOException e) {
 			throw new IndexException(e);
 		}
