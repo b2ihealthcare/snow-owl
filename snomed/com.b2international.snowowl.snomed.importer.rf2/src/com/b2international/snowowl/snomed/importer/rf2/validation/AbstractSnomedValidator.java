@@ -40,7 +40,6 @@ import org.supercsv.prefs.CsvPreference;
 
 import com.b2international.commons.CompareUtils;
 import com.b2international.commons.FileUtils;
-import com.b2international.commons.StringUtils;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.api.SnowowlRuntimeException;
 import com.b2international.snowowl.core.date.EffectiveTimes;

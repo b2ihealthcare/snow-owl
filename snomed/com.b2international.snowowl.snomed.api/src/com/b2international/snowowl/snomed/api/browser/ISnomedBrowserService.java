@@ -15,16 +15,17 @@
  */
 package com.b2international.snowowl.snomed.api.browser;
 
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
-
 import com.b2international.snowowl.api.codesystem.exception.CodeSystemNotFoundException;
 import com.b2international.snowowl.api.codesystem.exception.CodeSystemVersionNotFoundException;
 import com.b2international.snowowl.api.domain.IComponentRef;
 import com.b2international.snowowl.api.domain.IStorageRef;
 import com.b2international.snowowl.core.exceptions.ComponentNotFoundException;
 import com.b2international.snowowl.snomed.api.domain.browser.*;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
 
 /**
  * The interface for the IHTSDO SNOMED CT Browser service.
@@ -81,11 +82,11 @@ public interface ISnomedBrowserService {
 	 * @throws CodeSystemVersionNotFoundException if a code system version for the code system with the given identifier is not registered
 	 * @throws IllegalArgumentException if the query is {@code null} or too short
 	 */
-	List<ISnomedBrowserDescriptionResult> getDescriptions(IStorageRef storageRef, String query, List<Locale> locales, int offset, int limit);
-	
+	List<ISnomedBrowserDescriptionResult> getDescriptions(IStorageRef storageRef, String query, List<Locale> locales, ISnomedBrowserDescriptionResult.TermType resultConceptTermType, int offset, int limit);
+
 	/**
 	 * Retrieves a map of enum constants and corresponding concepts.
-	 * 
+	 *
 	 * @param storageRef the storage reference locating the version and branch to inspect (may not be {@code null})
 	 * @param locales the {@link Locale}s to inspect when determining FSN, in decreasing order of preference
 	 * @throws CodeSystemNotFoundException if a code system with the given short name is not registered
@@ -94,4 +95,7 @@ public interface ISnomedBrowserService {
 	 */
 	Map<String, ISnomedBrowserConstant> getConstants(IStorageRef storageRef, List<Locale> locales);
 
+	ISnomedBrowserConcept create(String branchPath, ISnomedBrowserConcept concept, String userId, List<Locale> locales);
+
+	ISnomedBrowserConcept update(String branchPath, ISnomedBrowserConcept concept, String userId, ArrayList<Locale> locales);
 }
