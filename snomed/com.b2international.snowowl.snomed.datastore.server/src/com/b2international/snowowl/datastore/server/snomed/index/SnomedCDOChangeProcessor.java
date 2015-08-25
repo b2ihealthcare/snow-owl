@@ -967,12 +967,16 @@ public class SnomedCDOChangeProcessor implements ICDOChangeProcessor {
 		while (newIterator.hasNext()) {
 			final long relationshipId = newIterator.next();
 			final String conceptId = newTaxonomy.getSourceNodeId(Long.toString(relationshipId));
-			partialUpdates.put(conceptId, new ParentageUpdater(newTaxonomy, conceptId));
-			// add subtree
+			// update only if not new concept
+			if (previousTaxonomy.containsNode(conceptId)) {
+				partialUpdates.put(conceptId, new ParentageUpdater(newTaxonomy, conceptId));
+			}
 			final LongIterator descendantIds = newTaxonomy.getAllDescendantNodeIds(conceptId).iterator();
 			while (descendantIds.hasNext()) {
 				final String descendant = Long.toString(descendantIds.next());
-				partialUpdates.put(descendant, new ParentageUpdater(newTaxonomy, descendant));
+				if (previousTaxonomy.containsNode(descendant)) {
+					partialUpdates.put(descendant, new ParentageUpdater(newTaxonomy, descendant));
+				}
 			}
 		}
 		// process detach relationships
@@ -980,11 +984,15 @@ public class SnomedCDOChangeProcessor implements ICDOChangeProcessor {
 		while (detachedIterator.hasNext()) {
 			final long relationshipId = detachedIterator.next();
 			final String conceptId = previousTaxonomy.getSourceNodeId(Long.toString(relationshipId));
-			partialUpdates.put(conceptId, new ParentageUpdater(newTaxonomy, conceptId));
+			if (newTaxonomy.containsNode(conceptId)) {
+				partialUpdates.put(conceptId, new ParentageUpdater(newTaxonomy, conceptId));
+			}
 			final LongIterator descendantIds = previousTaxonomy.getAllDescendantNodeIds(conceptId).iterator();
 			while (descendantIds.hasNext()) {
 				final String descendant = Long.toString(descendantIds.next());
-				partialUpdates.put(descendant, new ParentageUpdater(newTaxonomy, descendant));
+				if (newTaxonomy.containsNode(descendant)) {
+					partialUpdates.put(descendant, new ParentageUpdater(newTaxonomy, descendant));
+				}
 			}
 		}
 		LOGGER.info("Executing partial updates.");
