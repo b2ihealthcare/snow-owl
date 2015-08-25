@@ -15,23 +15,19 @@
  */
 package com.b2international.snowowl.snomed.datastore.index.update;
 
+import static com.google.common.collect.Sets.newHashSet;
 import static java.lang.Long.parseLong;
 
-import java.util.Arrays;
 import java.util.Set;
 
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.Field.Store;
 import org.apache.lucene.document.LongField;
-import org.apache.lucene.index.IndexableField;
 
 import com.b2international.snowowl.datastore.index.DocumentUpdaterBase;
 import com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants;
 import com.b2international.snowowl.snomed.datastore.index.refset.RefSetMemberChange;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType;
-import com.google.common.base.Function;
-import com.google.common.collect.Iterables;
-import com.google.common.collect.Sets;
 
 /**
  * @since 4.3
@@ -48,26 +44,10 @@ public class ReferenceSetMembershipUpdater extends DocumentUpdaterBase {
 	@Override
 	public void update(Document doc) {
 		// get reference set membership fields
-		final IndexableField[] referenceSetIdfields = doc.getFields(SnomedIndexBrowserConstants.CONCEPT_REFERRING_REFERENCE_SET_ID);
-		
-		// get the reference set IDs
-		final Set<String> referencingRefSetIds = Sets.newHashSet(Iterables.transform(Arrays.asList(referenceSetIdfields), new Function<IndexableField, String>() {
-			@Override public String apply(final IndexableField field) {
-				return field.stringValue();
-			}
-		}));
-		
+		final Set<String> referencingRefSetIds = newHashSet(doc.getValues(SnomedIndexBrowserConstants.CONCEPT_REFERRING_REFERENCE_SET_ID));
 		// get reference set mapping membership fields
-		final IndexableField[] mappingReferenceSetIdfields = doc.getFields(SnomedIndexBrowserConstants.CONCEPT_REFERRING_MAPPING_REFERENCE_SET_ID);
+		final Set<String> mappingReferencingRefSetIds = newHashSet(doc.getValues(SnomedIndexBrowserConstants.CONCEPT_REFERRING_MAPPING_REFERENCE_SET_ID));
 		
-		// get the mapping reference set IDs
-		final Set<String> mappingReferencingRefSetIds = Sets.newHashSet(Iterables.transform(Arrays.asList(mappingReferenceSetIdfields), new Function<IndexableField, String>() {
-			@Override public String apply(final IndexableField field) {
-				return field.stringValue();
-			}
-		}));
-		
-
 		// remove all fields
 		doc.removeFields(SnomedIndexBrowserConstants.CONCEPT_REFERRING_REFERENCE_SET_ID);
 		// mapping fields as well
@@ -93,14 +73,12 @@ public class ReferenceSetMembershipUpdater extends DocumentUpdaterBase {
 				default:
 					throw new IllegalArgumentException("Unknown reference set member change kind: " + change.getChangeKind());
 			}
-			
 		}
 		
 		// re-add reference set membership fields
 		for (final String refSetId : referencingRefSetIds) {
 			doc.add(new LongField(SnomedIndexBrowserConstants.CONCEPT_REFERRING_REFERENCE_SET_ID, parseLong(refSetId), Store.YES));
 		}
-		
 		// re-add mapping reference set membership fields
 		for (final String refSetId : mappingReferencingRefSetIds) {
 			doc.add(new LongField(SnomedIndexBrowserConstants.CONCEPT_REFERRING_MAPPING_REFERENCE_SET_ID, parseLong(refSetId), Store.YES));
