@@ -22,7 +22,6 @@ import static com.b2international.snowowl.snomed.mrcm.core.ConceptModelUtils.get
 import static com.google.common.collect.Sets.newHashSet;
 import static java.lang.Long.parseLong;
 
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
@@ -36,10 +35,6 @@ import java.util.concurrent.atomic.AtomicReference;
 import javax.annotation.Nullable;
 
 import org.apache.lucene.document.Document;
-import org.apache.lucene.document.Field.Store;
-import org.apache.lucene.document.LongField;
-import org.apache.lucene.document.StoredField;
-import org.apache.lucene.index.IndexableField;
 import org.apache.lucene.index.Term;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.ScoreDoc;
@@ -76,14 +71,12 @@ import com.b2international.commons.collections.Collections3;
 import com.b2international.commons.collections.Procedure;
 import com.b2international.commons.concurrent.ConcurrentCollectionUtils;
 import com.b2international.commons.concurrent.equinox.ForkJoinUtils;
-import com.b2international.commons.pcj.LongCollections;
 import com.b2international.commons.pcj.LongSets;
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.api.ComponentIdAndLabel;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.api.SnowowlServiceException;
 import com.b2international.snowowl.core.api.index.CommonIndexConstants;
-import com.b2international.snowowl.core.api.index.IIndexMappingStrategy;
 import com.b2international.snowowl.core.api.index.IIndexUpdater;
 import com.b2international.snowowl.datastore.ICDOChangeProcessor;
 import com.b2international.snowowl.datastore.ICDOCommitChangeSet;
@@ -94,10 +87,10 @@ import com.b2international.snowowl.datastore.cdo.ICDOConnectionManager;
 import com.b2international.snowowl.datastore.cdo.LifecycleUtils;
 import com.b2international.snowowl.datastore.index.AbstractIndexMappingStrategy;
 import com.b2international.snowowl.datastore.index.AbstractIndexUpdater;
-import com.b2international.snowowl.datastore.index.IDocumentUpdater;
+import com.b2international.snowowl.datastore.index.DocumentCompositeUpdater;
+import com.b2international.snowowl.datastore.index.DocumentUpdater;
 import com.b2international.snowowl.datastore.index.IndexUtils;
-import com.b2international.snowowl.datastore.index.field.ComponentAncestorField;
-import com.b2international.snowowl.datastore.index.field.ComponentParentField;
+import com.b2international.snowowl.datastore.index.field.ComponentIdLongField;
 import com.b2international.snowowl.datastore.index.field.ComponentStorageKeyField;
 import com.b2international.snowowl.datastore.server.CDOServerUtils;
 import com.b2international.snowowl.snomed.Component;
@@ -113,7 +106,6 @@ import com.b2international.snowowl.snomed.datastore.PredicateUtils.DefinitionTyp
 import com.b2international.snowowl.snomed.datastore.SnomedConceptIndexEntry;
 import com.b2international.snowowl.snomed.datastore.SnomedConceptLookupService;
 import com.b2international.snowowl.snomed.datastore.SnomedDescriptionLookupService;
-import com.b2international.snowowl.snomed.datastore.SnomedIconProvider;
 import com.b2international.snowowl.snomed.datastore.SnomedPredicateBrowser;
 import com.b2international.snowowl.snomed.datastore.SnomedRefSetBrowser;
 import com.b2international.snowowl.snomed.datastore.SnomedRefSetLookupService;
@@ -126,7 +118,6 @@ import com.b2international.snowowl.snomed.datastore.index.AbstractPredicateIndex
 import com.b2international.snowowl.snomed.datastore.index.ISnomedTaxonomyBuilder;
 import com.b2international.snowowl.snomed.datastore.index.ISnomedTaxonomyBuilder.TaxonomyEdge;
 import com.b2international.snowowl.snomed.datastore.index.ISnomedTaxonomyBuilder.TaxonomyNode;
-import com.b2international.snowowl.snomed.datastore.index.SnomedConceptDocumentMappingStrategy;
 import com.b2international.snowowl.snomed.datastore.index.SnomedConceptIndexQueryAdapter;
 import com.b2international.snowowl.snomed.datastore.index.SnomedConceptModelMappingStrategy;
 import com.b2international.snowowl.snomed.datastore.index.SnomedConceptReducedQueryAdapter;
@@ -135,10 +126,14 @@ import com.b2international.snowowl.snomed.datastore.index.SnomedIndexEntry;
 import com.b2international.snowowl.snomed.datastore.index.SnomedIndexService;
 import com.b2international.snowowl.snomed.datastore.index.SnomedRelationshipIndexMappingStrategy;
 import com.b2international.snowowl.snomed.datastore.index.SnomedRelationshipIndexQueryAdapter;
+import com.b2international.snowowl.snomed.datastore.index.refset.RefSetMemberChange;
+import com.b2international.snowowl.snomed.datastore.index.refset.RefSetMemberChange.MemberChangeKind;
 import com.b2international.snowowl.snomed.datastore.index.refset.SnomedRefSetIndexMappingStrategy;
 import com.b2international.snowowl.snomed.datastore.index.refset.SnomedRefSetMemberIndexEntry;
 import com.b2international.snowowl.snomed.datastore.index.refset.SnomedRefSetMemberIndexMappingStrategy;
 import com.b2international.snowowl.snomed.datastore.index.refset.SnomedRefSetMembershipIndexQueryAdapter;
+import com.b2international.snowowl.snomed.datastore.index.update.ParentageUpdater;
+import com.b2international.snowowl.snomed.datastore.index.update.ReferenceSetMembershipUpdater;
 import com.b2international.snowowl.snomed.datastore.services.ISnomedComponentService;
 import com.b2international.snowowl.snomed.mrcm.AttributeConstraint;
 import com.b2international.snowowl.snomed.mrcm.ConceptModel;
@@ -166,10 +161,12 @@ import com.google.common.base.Predicates;
 import com.google.common.base.Strings;
 import com.google.common.base.Supplier;
 import com.google.common.base.Suppliers;
+import com.google.common.collect.HashMultimap;
 import com.google.common.collect.HashMultiset;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import com.google.common.collect.Multimap;
 import com.google.common.collect.Multiset;
 import com.google.common.collect.Sets;
 
@@ -366,6 +363,8 @@ public class SnomedCDOChangeProcessor implements ICDOChangeProcessor {
 
 	/**A collection of CDO view. Used when objects have to be loaded due to detachment.*/
 	private final Collection<CDOView> views = Sets.newHashSet();
+	
+	private final Multimap<String, DocumentUpdater> partialUpdates = HashMultimap.create();
 	
 	/**
 	 * Creates a new change processor for the SNOMED&nbsp;CT ontology. 
@@ -698,48 +697,19 @@ public class SnomedCDOChangeProcessor implements ICDOChangeProcessor {
 		ConcurrentCollectionUtils.forEach(newConcepts, new Procedure<Concept>() {
 
 			@Override protected void doApply(final Concept newConcept) {
-				//hierarchy changes cannot be updated for new concepts, as it is not persisted, yet
 				final ISnomedTaxonomyBuilder taxonomyBuilder = getAndCheckNewTaxonomyBuilder();
-				
-				final boolean active = newConcept.isActive();
 				final String conceptId = newConcept.getId();
-				
-				final LongSet parentConceptIds;
-				final LongSet ancestorConceptIds;
-				
-				//can happen after the following use case:
-				//create a new concept (time_1)
-				//inactivate concept (time_2)
-				//delete concept (time_3)
-				//revert repository state to (time_2)
-				if (!active) {
-					
-					parentConceptIds = LongCollections.emptySet();
-					ancestorConceptIds = LongCollections.emptySet();
-					
-				} else {
-
-					parentConceptIds = taxonomyBuilder.getAncestorNodeIds(conceptId);
-					ancestorConceptIds = taxonomyBuilder.getAllIndirectAncestorNodeIds(newConcept.getId());
-					
-				}
-				
-				//this point we have to find the first parent concept that is in the previous state of the taxonomy to specify the icon ID
-				final String iconId = !active ? Concepts.ROOT_CONCEPT : getImageId(newConcept.getId());
+				final String label = conceptIdNewLabelMap.get(conceptId);
 				
 				final Collection<String> referringRefSetIds = refSetMembershipProviderSupplier.get().getContainerRefSetIds(conceptId, REFERRING_MEMBER_TYPES);
 				final Collection<String> mappingRefSetIds = refSetMembershipProviderSupplier.get().getContainerRefSetIds(conceptId, MAPPING_MEMBER_TYPES);
-				
-				final String label = conceptIdNewLabelMap.get(conceptId);
 				indexUpdater.addDocument(branchPath, new SnomedConceptModelMappingStrategy(
+						taxonomyBuilder,
 						newConcept,
 						label,
 						synonymAndDescendantIds, 
-						parentConceptIds, 
-						ancestorConceptIds, 
 						SnomedConceptModelMappingStrategy.DEFAULT_DOI,
 						Collections.<String>emptySet(), 
-						iconId, 
 						referringRefSetIds,
 						mappingRefSetIds,
 						true).createDocument());
@@ -760,12 +730,10 @@ public class SnomedCDOChangeProcessor implements ICDOChangeProcessor {
 		//new refsets
 		for (final SnomedRefSet newRefSet : newRefSets) {
 			
-			final long iconId = getIconId(newRefSet);
-			
 			final String identifierId = newRefSet.getIdentifierId();
 			final Collection<String> predicateKeys = predicateBrowser.getRefSetPredicateKeys(branchPath, identifierId);
 			
-			indexUpdater.addDocument(branchPath, new SnomedRefSetIndexMappingStrategy(newRefSet, iconId, predicateKeys, true).createDocument());
+			indexUpdater.addDocument(branchPath, new SnomedRefSetIndexMappingStrategy(getAndCheckNewTaxonomyBuilder(), newRefSet, predicateKeys, true).createDocument());
 			
 			//for logging, save the new refset
 			newRefsetLogEntries.add(new ComponentIdAndLabel(conceptIdNewLabelMap.get(identifierId), identifierId));
@@ -795,47 +763,10 @@ public class SnomedCDOChangeProcessor implements ICDOChangeProcessor {
 		}
 		
 		for (final Concept dirtyConcept : dirtyConcepts) {
-			
-			final ISnomedTaxonomyBuilder previousTaxonomyBuilder = getAndCheckPreviousTaxonomyBuilder();
 			final String conceptId = dirtyConcept.getId();
 			final long conceptIdL = parseLong(conceptId);
 			
-			//if concept is not active we should not access any kind of taxonomic information from taxonomy builder.
-			final boolean active = dirtyConcept.isActive();
-
-			final LongSet parentConceptIds;
-			final LongSet ancestorConceptIds;
-			
-			if (!active) { //this is the easier way. concept is inactive no parentage information
-				
-				parentConceptIds = LongCollections.emptySet();
-				ancestorConceptIds = LongCollections.emptySet();
-				
-			} else {
-				
-				//this is the trickier way as it might happen from 2.7 that user revert inactivation
-				//that will end up a dirty active concept that did not exist in the previous taxonomy
-				//this case use the new one
-				if (!previousTaxonomyBuilder.containsNode(conceptId)) {
-					
-					final ISnomedTaxonomyBuilder newTaxonomyBuilder = getAndCheckNewTaxonomyBuilder();
-					parentConceptIds = newTaxonomyBuilder.getAncestorNodeIds(conceptId);
-					ancestorConceptIds = newTaxonomyBuilder.getAllIndirectAncestorNodeIds(conceptId);
-					
-				} else { //fall back the normal way
-					
-					parentConceptIds = previousTaxonomyBuilder.getAncestorNodeIds(conceptId);
-					ancestorConceptIds = previousTaxonomyBuilder.getAllIndirectAncestorNodeIds(conceptId);
-				}
-
-				/*
-				 * XXX: concepts can sometimes be both ancestors and direct parents. Don't remove 
-				 * the intersection of the two sets from the ancestor set.
-				 */
-			}
-
 			final Collection<String> predicateKeys = Sets.newHashSet(predicateBrowser.getPredicateKeys(branchPath, conceptId));
-			
 			//update predicate keys. merge with the changes contained by the current change set.
 			//remove detached ones first
 			if (detachedConceptPredicateKeys.size() > 0) {
@@ -870,25 +801,6 @@ public class SnomedCDOChangeProcessor implements ICDOChangeProcessor {
 			}
 			
 			final float conceptDoi = getTerminologyBrowser().getConceptDoi(branchPath, conceptId);
-
-			final String iconId;
-			
-			if (dirtyConcept.isActive()) {
-				
-				//again. as we consider concept re-activation we have to check whether the concept exists in the previous state or not
-				if (previousTaxonomyBuilder.containsNode(conceptId)) {
-					//default method for getting concept ID
-					iconId = SnomedIconProvider.getInstance().getIconComponentId(conceptId, getAndCheckNewTaxonomyBuilder());
-					
-				} else {
-					//act in case of new concepts
-					iconId = getImageId(conceptId);
-					
-				}
-				
-			} else {
-				iconId = Concepts.ROOT_CONCEPT;
-			}
 			
 			final Collection<String> referencingRefSetIds = Sets.newHashSet(getRefSetBrowser().getContainerRefSetIds(branchPath, conceptId));
 			final Collection<String> referencingMappingRefSetIds = Sets.newHashSet(getRefSetBrowser().getContainerMappingRefSetIds(branchPath, conceptId));
@@ -901,36 +813,25 @@ public class SnomedCDOChangeProcessor implements ICDOChangeProcessor {
 				
 			}
 
-			//XXX aaaaa
-			final String copyLabel = label;
-			
+			final SnomedConceptModelMappingStrategy mappingStrategy = new SnomedConceptModelMappingStrategy(
+					getAndCheckNewTaxonomyBuilder(),
+					dirtyConcept,
+					label,
+					synonymAndDescendantIds, 
+					conceptDoi, 
+					predicateKeys, 
+					referencingRefSetIds,
+					referencingMappingRefSetIds,
+					indexConceptAsRelevantForCompare(dirtyConcept));
 			//workaround to cache concept that has a changes status.
-			indexUpdater.updateConcept(branchPath, conceptIdL, new IDocumentUpdater() {
-				@Override public IIndexMappingStrategy updateDocument(final Document document) {
-					
-					return new SnomedConceptModelMappingStrategy(
-							dirtyConcept,
-							copyLabel,
-							synonymAndDescendantIds, 
-							parentConceptIds, 
-							ancestorConceptIds, 
-							conceptDoi, 
-							predicateKeys, 
-							iconId, 
-							referencingRefSetIds,
-							referencingMappingRefSetIds,
-							indexConceptAsRelevantForCompare(dirtyConcept));
-				}
-
-			});
+			indexUpdater.index(branchPath, mappingStrategy);
 			
 			//log as a change on the concept
-			final ComponentIdAndLabel componentIdAndLabel = new ComponentIdAndLabel(copyLabel, conceptId);
+			final ComponentIdAndLabel componentIdAndLabel = new ComponentIdAndLabel(label, conceptId);
 			changedConceptLogEntries.add(componentIdAndLabel);
 		}
 		
 		for (final SnomedRefSet dirtyRefSet : dirtyRefSets) {
-			final long iconId = getIconId(dirtyRefSet);
 			final Collection<String> predicateKeys = Sets.newHashSet(predicateBrowser.getRefSetPredicateKeys(branchPath, dirtyRefSet.getIdentifierId()));
 
 			//merge predicate keys with the detached and new ones
@@ -967,7 +868,7 @@ public class SnomedCDOChangeProcessor implements ICDOChangeProcessor {
 				}
 			}
 			
-			indexUpdater.index(branchPath, new SnomedRefSetIndexMappingStrategy(dirtyRefSet, iconId, predicateKeys, indexConceptAsRelevantForCompare(dirtyRefSet)));
+			indexUpdater.index(branchPath, new SnomedRefSetIndexMappingStrategy(getAndCheckNewTaxonomyBuilder(), dirtyRefSet, predicateKeys, indexRefSetAsRelevantForCompare(dirtyRefSet)));
 			final ComponentIdAndLabel componentIdAndLabel = new SnomedRefSetLookupService().getComponentIdAndLabel(branchPath, asLong(dirtyRefSet.cdoID()));
 			changedRefSetLogEntries.add(componentIdAndLabel);
 		}
@@ -1039,132 +940,63 @@ public class SnomedCDOChangeProcessor implements ICDOChangeProcessor {
 		}
 		
 		if (!memberChanges.isEmpty()) {
-			
 			LOGGER.info("Updating reference set membership changes...");
-			
-			
 			for (final LongKeyMapIterator itr = memberChanges.entries(); itr.hasNext(); /* nothing */) {
-				
 				itr.next();
-				
 				final long conceptId = itr.getKey();
 				final Object value = itr.getValue();
 				
 				if (value instanceof Set) {
-					
 					@SuppressWarnings("unchecked")
 					final Set<RefSetMemberChange> memberChanges = (Set<RefSetMemberChange>) value;
 
-					//nothing to merge and update
-					if (CompareUtils.isEmpty(memberChanges)) {
-						continue;
+					final String conceptIdString = Long.toString(conceptId);
+					// if there are changes, and the concept is still active
+					if (!CompareUtils.isEmpty(memberChanges) && getAndCheckNewTaxonomyBuilder().containsNode(conceptIdString)) {
+						partialUpdates.put(conceptIdString, new ReferenceSetMembershipUpdater(conceptIdString, memberChanges));
 					}
-
-					if (!getAndCheckNewTaxonomyBuilder().containsNode(Long.toString(conceptId))) {
-						continue; //concept has been deleted, no need to update.
-					}
-					
-					indexUpdater.updateConcept(branchPath, conceptId, new IDocumentUpdater() {
-						@Override public IIndexMappingStrategy updateDocument(final Document doc) {
-
-							//get reference set membership fields
-							final IndexableField[] referenceSetIdfields = doc.getFields(SnomedIndexBrowserConstants.CONCEPT_REFERRING_REFERENCE_SET_ID);
-							
-							//get the reference set IDs
-							final Set<String> referencingRefSetIds = Sets.newHashSet(Iterables.transform(Arrays.asList(referenceSetIdfields), new Function<IndexableField, String>() {
-								@Override public String apply(final IndexableField field) {
-									return field.stringValue();
-								}
-							}));
-							
-							//get reference set mapping membership fields
-							final IndexableField[] mappingReferenceSetIdfields = doc.getFields(SnomedIndexBrowserConstants.CONCEPT_REFERRING_MAPPING_REFERENCE_SET_ID);
-							
-							//get the mapping reference set IDs
-							final Set<String> mappingReferencingRefSetIds = Sets.newHashSet(Iterables.transform(Arrays.asList(mappingReferenceSetIdfields), new Function<IndexableField, String>() {
-								@Override public String apply(final IndexableField field) {
-									return field.stringValue();
-								}
-							}));
-							
-
-							//remove all fields
-							doc.removeFields(SnomedIndexBrowserConstants.CONCEPT_REFERRING_REFERENCE_SET_ID);
-							//mapping fields as well
-							doc.removeFields(SnomedIndexBrowserConstants.CONCEPT_REFERRING_MAPPING_REFERENCE_SET_ID);
-							
-							//merge reference set membership with the changes extracted from the transaction, if any.
-							for (final RefSetMemberChange change : memberChanges) {
-								
-								switch (change.changeKind) {
-									
-									case ADDED:
-										
-										if (SnomedRefSetType.SIMPLE.equals(change.type) || SnomedRefSetType.ATTRIBUTE_VALUE.equals(change.type)) {
-											
-											referencingRefSetIds.add(change.refSetId);
-											
-										} else if (SnomedRefSetType.SIMPLE_MAP.equals(change.type)) {
-											
-											mappingReferencingRefSetIds.add(change.refSetId);
-											
-										}
-										
-										break;
-										
-									case REMOVED:
-										
-										if (SnomedRefSetType.SIMPLE.equals(change.type) || SnomedRefSetType.ATTRIBUTE_VALUE.equals(change.type)) {
-											
-											referencingRefSetIds.remove(change.refSetId);
-											
-										} else if (SnomedRefSetType.SIMPLE_MAP.equals(change.type)) {
-											
-											mappingReferencingRefSetIds.remove(change.refSetId);
-											
-										}
-										
-										break;
-										
-									default:
-										
-										throw new IllegalArgumentException("Unknown reference set member change kind: " + change.changeKind);
-									
-								}
-								
-							}
-							
-							//re-add reference set membership fields
-							for (final String refSetId : referencingRefSetIds) {
-								
-								doc.add(new LongField(SnomedIndexBrowserConstants.CONCEPT_REFERRING_REFERENCE_SET_ID, parseLong(refSetId), Store.YES));
-								
-							}
-							
-							//re-add mapping reference set membership fields
-							for (final String refSetId : mappingReferencingRefSetIds) {
-								
-								doc.add(new LongField(SnomedIndexBrowserConstants.CONCEPT_REFERRING_MAPPING_REFERENCE_SET_ID, parseLong(refSetId), Store.YES));
-								
-							}
-							
-							
-							return new SnomedConceptDocumentMappingStrategy(doc, indexConceptAsRelevantForCompare(conceptId));
-						}
-					});
-
-					
 				}
-				
 			}
-			
 		}
 		
+		final ISnomedTaxonomyBuilder newTaxonomy = getAndCheckNewTaxonomyBuilder();
+		final ISnomedTaxonomyBuilder previousTaxonomy = getPreviousTaxonomyBuilder();
 		LOGGER.info("Updating taxonomy...");
-		handleDetachedRelationship(differenceSupplier.get().getB());
-		handleNewRelationship(differenceSupplier.get().getA());
-			
+		// process new relationships
+		final LongIterator newIterator = differenceSupplier.get().getA().iterator();
+		while (newIterator.hasNext()) {
+			final long relationshipId = newIterator.next();
+			final String conceptId = newTaxonomy.getSourceNodeId(Long.toString(relationshipId));
+			partialUpdates.put(conceptId, new ParentageUpdater(newTaxonomy, conceptId));
+			// add subtree
+			final LongIterator descendantIds = newTaxonomy.getAllDescendantNodeIds(conceptId).iterator();
+			while (descendantIds.hasNext()) {
+				final String descendant = Long.toString(descendantIds.next());
+				partialUpdates.put(descendant, new ParentageUpdater(newTaxonomy, descendant));
+			}
+		}
+		// process detach relationships
+		final LongIterator detachedIterator = differenceSupplier.get().getB().iterator();
+		while (detachedIterator.hasNext()) {
+			final long relationshipId = detachedIterator.next();
+			final String conceptId = previousTaxonomy.getSourceNodeId(Long.toString(relationshipId));
+			partialUpdates.put(conceptId, new ParentageUpdater(newTaxonomy, conceptId));
+			final LongIterator descendantIds = previousTaxonomy.getAllDescendantNodeIds(conceptId).iterator();
+			while (descendantIds.hasNext()) {
+				final String descendant = Long.toString(descendantIds.next());
+				partialUpdates.put(descendant, new ParentageUpdater(newTaxonomy, descendant));
+			}
+		}
+		LOGGER.info("Executing partial updates.");
+		executePartialUpdates();
 		LOGGER.info("Processing and updating changes successfully finished.");
+	}
+
+	private void executePartialUpdates() {
+		for (String conceptId : partialUpdates.keySet()) {
+			final Collection<DocumentUpdater> updates = partialUpdates.get(conceptId);
+			indexUpdater.update(branchPath, new ComponentIdLongField(conceptId).toTerm(), new DocumentCompositeUpdater(updates));
+		}
 	}
 
 	/*calculates the new label for concepts, if any*/
@@ -1219,30 +1051,11 @@ public class SnomedCDOChangeProcessor implements ICDOChangeProcessor {
 		return $;
 	}
 	
-	/*returns with the icon ID for the given SNOMED CT reference set*/
-	private long getIconId(final SnomedRefSet refSet) {
-		
-		if (SnomedRefSetType.LANGUAGE.equals(refSet.getType())) {
-			
-			return parseLong(refSet.getIdentifierId());
-			
-		} else {
-			
-			return parseLong(getImageId(refSet.getIdentifierId()));
-			
-		}
-		
-	}
-
-	private boolean indexConceptAsRelevantForCompare(final long conceptId) {
-		return dirtyConceptIdsWithCompareUpdate.contains(conceptId);
-	}
-	
 	private boolean indexConceptAsRelevantForCompare(final Concept concept) {
 		return dirtyConceptIdsWithCompareUpdate.contains(parseLong(concept.getId()));
 	}
 	
-	private boolean indexConceptAsRelevantForCompare(final SnomedRefSet refSet) {
+	private boolean indexRefSetAsRelevantForCompare(final SnomedRefSet refSet) {
 		return dirtyRefSetIdsWithCompareUpdate.contains(parseLong(refSet.getIdentifierId()));
 	}
 	
@@ -1477,85 +1290,6 @@ public class SnomedCDOChangeProcessor implements ICDOChangeProcessor {
 		
 	}
 
-	/*process the changes on the detached IS_A relationships given as a set of relationship IDs*/
-	private void handleDetachedRelationship(final LongSet detachedIsARelationshipsIds) {
-		
-		final ISnomedTaxonomyBuilder newTaxonomyBuilder = getAndCheckNewTaxonomyBuilder();
-		final ISnomedTaxonomyBuilder previousTaxonomyBuilder = getAndCheckPreviousTaxonomyBuilder();
-		
-		for (final LongIterator relationshipIdItr = detachedIsARelationshipsIds.iterator(); relationshipIdItr.hasNext(); /*nothing*/) {
-			
-			final long relatonsipId = relationshipIdItr.next();
-			final long sourceConceptId = parseLong(previousTaxonomyBuilder.getSourceNodeId(Long.toString(relatonsipId)));
-			final long destinationConceptId = parseLong(previousTaxonomyBuilder.getDestinationNodeId(Long.toString(relatonsipId)));
-
-			final LongSet ancestorIds = previousTaxonomyBuilder.getSelfAndAllAncestorNodeIds(/*value ID*/destinationConceptId);
-			
-
-			//if the concept has been deleted we do not have to update its taxonomic informations, document will be deleted
-			if (!deletedConceptIds.contains(sourceConceptId)) {
-				removeTaxonomyField(sourceConceptId, destinationConceptId, ComponentParentField.COMPONENT_PARENT);
-				final LongOpenHashSet copyAncestorIds = new LongOpenHashSet(ancestorIds);
-				if (newTaxonomyBuilder.containsNode(Long.toString(sourceConceptId))) {
-					copyAncestorIds.removeAll(newTaxonomyBuilder.getSelfAndAllAncestorNodeIds(sourceConceptId));
-				}
-				removeTaxonomyField(sourceConceptId, copyAncestorIds, ComponentAncestorField.COMPONENT_ANCESTOR);
-			}
-			
-			final LongSet sourceAllSubTypeIds = previousTaxonomyBuilder.getAllDescendantNodeIds(Long.toString(sourceConceptId));
-			for (final LongIterator itr = sourceAllSubTypeIds.iterator(); itr.hasNext(); /* nothing */) {
-				
-				final LongOpenHashSet copyAncestorIds = new LongOpenHashSet(ancestorIds);
-				final long conceptId = itr.next();
-				
-				if (deletedConceptIds.contains(conceptId)) {
-					continue; //deleted concept no need to update taxonomy
-				}
-				
-				if (newTaxonomyBuilder.containsNode(Long.toString(conceptId))) { //concept is a new one, it did not exist in the previous state
-					copyAncestorIds.removeAll(newTaxonomyBuilder.getSelfAndAllAncestorNodeIds(conceptId));
-				}
-				
-				removeTaxonomyField(conceptId, copyAncestorIds, ComponentAncestorField.COMPONENT_ANCESTOR); //consider multiple ancestor fields with same parent
-			}
-			
-			
-		}
-	}
-	
-	/*process the changes on the new IS_A relationships given as a set of relationship IDs*/
-	private void handleNewRelationship(final LongSet newIsARelationshipsIds) {
-		
-		final ISnomedTaxonomyBuilder newTaxonomyBuilder = getAndCheckNewTaxonomyBuilder();
-		final ISnomedTaxonomyBuilder previousTaxonomyBuilder = getAndCheckPreviousTaxonomyBuilder();
-		
-		for (final LongIterator relationshipIdItr = newIsARelationshipsIds.iterator(); relationshipIdItr.hasNext(); /*nothing*/) {
-			
-			final long relatonsipId = relationshipIdItr.next();
-			final long sourceConceptId = parseLong(newTaxonomyBuilder.getSourceNodeId(Long.toString(relatonsipId)));
-			final long destinationConceptId = parseLong(newTaxonomyBuilder.getDestinationNodeId(Long.toString(relatonsipId)));
-			
-//			final long objectStorageKey = newTaxonomyBuilder.getStorageKey(sourceConceptId);
-			final LongSet ancestorIds = newTaxonomyBuilder.getSelfAndAllAncestorNodeIds(/*value ID*/destinationConceptId);
-			addTaxonomyField(sourceConceptId, destinationConceptId, ComponentParentField.COMPONENT_PARENT);
-			addTaxonomyField(sourceConceptId, newTaxonomyBuilder.getAllAncestorNodeIds(Long.toString(destinationConceptId)), ComponentAncestorField.COMPONENT_ANCESTOR);
-			
-			final LongSet objectAllSubTypeIds = newTaxonomyBuilder.getAllDescendantNodeIds(Long.toString(sourceConceptId));
-			for (final LongIterator itr = objectAllSubTypeIds.iterator(); itr.hasNext(); /* nothing */) {
-				
-				final LongOpenHashSet copyAncestorIds = new LongOpenHashSet(ancestorIds);
-				final long conceptId = itr.next();
-				if (previousTaxonomyBuilder.containsNode(Long.toString(conceptId))) {
-					copyAncestorIds.removeAll(previousTaxonomyBuilder.getSelfAndAllAncestorNodeIds(conceptId));
-				}
-				
-				addTaxonomyField(conceptId, copyAncestorIds, ComponentAncestorField.COMPONENT_ANCESTOR); //consider multiple ancestor fields with same parent
-			}
-			
-			
-		}
-	}
-
 	/*processes the given attribute constraint changes, marks the related concepts and reference sets as dirty*/
 	private void postProcessAttributeConstraints(final Set<AttributeConstraint> attributeConstraints, final Procedure<AttributeConstraint> function, 
 			final LongKeyMap conceptPredicateKeys, final LongKeyMap refSetPredicateKeys) {
@@ -1725,42 +1459,6 @@ public class SnomedCDOChangeProcessor implements ICDOChangeProcessor {
 		return newTaxonomyBuilderSupplier.get();
 	}
 
-	/*this method tries to get the first matching parent concept ID for the specified concept from the previous state of the taxonomy*/
-	private String getImageId(final String conceptId) {
-		
-		//the concept ID has a matching file resource. nothing to do.
-		if (SnomedIconProvider.getInstance().getAvailableIconIds().contains(conceptId)) {
-			return conceptId;
-		}
-		
-		final ISnomedTaxonomyBuilder newTaxonomyBuilder = getAndCheckNewTaxonomyBuilder();
-		final ISnomedTaxonomyBuilder previousTaxonomyBuilder = getAndCheckPreviousTaxonomyBuilder();
-		
-		if (!newTaxonomyBuilder.containsNode(conceptId)) {
-			return Concepts.ROOT_CONCEPT;
-		}
-		
-		final LongSet paretntConceptIds = newTaxonomyBuilder.getAncestorNodeIds(conceptId);
-		
-		if (LongSets.isEmpty(paretntConceptIds)) {
-			return Concepts.ROOT_CONCEPT;
-		}
-		
-		//basically we should not care about multiple parentage
-		//if the concept has multiple parent from multiple top level concepts, we just choose one, as we cannot decide which icon should be used
-		
-		final long parentConceptId = paretntConceptIds.iterator().next();
-		
-		if (previousTaxonomyBuilder.containsNode(Long.toString(parentConceptId))) {
-			return SnomedIconProvider.getInstance().getIconId(parentConceptId, branchPath);
-		} else {
-			
-			return getImageId(Long.toString(parentConceptId));
-			
-		}
-		
-	}
-	
 	/*returns with the previous taxonomy builder instance. also checks it's state.*/
 	private ISnomedTaxonomyBuilder getAndCheckPreviousTaxonomyBuilder() {
 		final ISnomedTaxonomyBuilder taxonomyBuilder = getPreviousTaxonomyBuilder();
@@ -1778,86 +1476,6 @@ public class SnomedCDOChangeProcessor implements ICDOChangeProcessor {
 	/*returns with the taxonomy builder representing the state of the ontology before the commit that is currently being processed*/
 	private ISnomedTaxonomyBuilder getPreviousTaxonomyBuilder() {
 		return previousTaxonomyBuilderSupplier.get();
-	}
-	
-	/*removes a fieldValue from a document field (fieldName) from a document identified by the concept ID)*/
-	private void removeTaxonomyField(final long conceptId, final long fieldValue, final String fieldName) {
-
-		indexUpdater.updateConcept(branchPath, conceptId, new IDocumentUpdater() {
-			@Override
-			public IIndexMappingStrategy updateDocument(final Document document) {
-				for (final Iterator<IndexableField> fieldItr = document.iterator(); fieldItr.hasNext(); /* nothing */) {
-					final IndexableField field = fieldItr.next();
-					if (fieldName.equals(field.name()) && Long.toString(fieldValue).equals(field.stringValue())) {
-						fieldItr.remove();
-					}
-				}
-
-				return new SnomedConceptDocumentMappingStrategy(document, indexConceptAsRelevantForCompare(conceptId));
-			}
-		});
-	}
-	
-	/*removes the fields storing taxonomy information for a document identified by the unique concept ID.
-	 *fieldValues: values to remove
-	 *fieldName: the field name to remove*/
-	private void removeTaxonomyField(final long conceptId, final LongSet fieldValues, final String fieldName) {
-
-		indexUpdater.updateConcept(branchPath, conceptId, new IDocumentUpdater() {
-			@Override
-			public IIndexMappingStrategy updateDocument(final Document document) {
-				
-				for (final LongIterator itr = fieldValues.iterator(); itr.hasNext(); /* nothing */) {
-					
-					final long fieldValue = itr.next();
-					
-					for (final Iterator<IndexableField> fieldItr = document.iterator(); fieldItr.hasNext(); /* nothing */) {
-						final IndexableField field = fieldItr.next();
-						if (fieldName.equals(field.name()) && Long.toString(fieldValue).equals(field.stringValue())) {
-							fieldItr.remove();
-						}
-					}
-
-				}
-				return new SnomedConceptDocumentMappingStrategy(document, indexConceptAsRelevantForCompare(conceptId));
-			}
-		});
-	}
-	
-	/**
-	 * Adds a new field with a specified value to a document identified by the unique concept ID.
-	 * @param conceptId the unique concept ID of a particular concept who's index document has to be updated.
-	 * @param fieldValue the value to add as a new field to the document. (SCT ID as long)
-	 * @param fieldName the name of the field on the document.
-	 */
-	private void addTaxonomyField(final long conceptId, final long fieldValue, final String fieldName) {
-		
-		indexUpdater.updateConcept(branchPath, conceptId, new IDocumentUpdater() {
-			@Override
-			public IIndexMappingStrategy updateDocument(final Document document) {
-				document.add(new StoredField(fieldName, fieldValue));
-				return new SnomedConceptDocumentMappingStrategy(document, indexConceptAsRelevantForCompare(conceptId));
-			}
-		});
-	}
-	
-	/**
-	 * Adds new fields with a specified values to a document identified by the unique concept ID.
-	 * @param conceptId the unique concept ID of a particular concept who's index document has to be updated.
-	 * @param fieldValues a set of values to add as a new field to the document. (SCT ID as long)
-	 * @param fieldName the name of the field on the document.
-	 */
-	private void addTaxonomyField(final long conceptId, final LongSet fieldValues, final String fieldName) {
-		
-		indexUpdater.updateConcept(branchPath, conceptId, new IDocumentUpdater() {
-			@Override
-			public IIndexMappingStrategy updateDocument(final Document document) {
-				for (final LongIterator itr = fieldValues.iterator(); itr.hasNext(); /* nothing */) {
-					document.add(new StoredField(fieldName, itr.next()));
-				}
-				return new SnomedConceptDocumentMappingStrategy(document, indexConceptAsRelevantForCompare(conceptId));
-			}
-		});
 	}
 	
 	/*returns with a set of reference set member changes for a concept given by its ID.*/
@@ -2479,95 +2097,11 @@ public class SnomedCDOChangeProcessor implements ICDOChangeProcessor {
 				}
 				
 			}
-			
 			return containerIds;
 			
 		}
 		
-		
 	} 
-	
-	/**
-	 * Class for representing a reference set member change.
-	 * Specifies what is the change kind in which reference set.
-	 */
-	private static final class RefSetMemberChange implements Comparable<RefSetMemberChange> {
-		
-		private final String refSetId;
-		private final MemberChangeKind changeKind;
-		private final SnomedRefSetType type;
-		
-		private RefSetMemberChange(final String refSetId, final MemberChangeKind changeKind, final SnomedRefSetType type) {
-			this.type = Preconditions.checkNotNull(type, "SNOMED CT reference set type argument cannot be null.");
-			this.refSetId = Preconditions.checkNotNull(refSetId, "SNOMED CT reference set identifier concept ID argument cannot be null.");
-			this.changeKind = Preconditions.checkNotNull(changeKind, "Reference set member change king argument cannot be null.");
-			
-			Preconditions.checkState(
-					SnomedRefSetType.SIMPLE.equals(type)
-					|| SnomedRefSetType.ATTRIBUTE_VALUE.equals(type)
-					|| SnomedRefSetType.SIMPLE_MAP.equals(type), "Unsupported reference set type: " + type);
-		}
-
-		/*
-		 * (non-Javadoc)
-		 * @see java.lang.Object#hashCode()
-		 */
-		@Override
-		public int hashCode() {
-			final int prime = 31;
-			int result = 1;
-			result = prime * result + ((changeKind == null) ? 0 : changeKind.hashCode());
-			result = prime * result + ((refSetId == null) ? 0 : refSetId.hashCode());
-			result = prime * result + ((type == null) ? 0 : type.hashCode());
-			return result;
-		}
-		
-		/*
-		 * (non-Javadoc)
-		 * @see java.lang.Object#equals(java.lang.Object)
-		 */
-		@Override
-		public boolean equals(final Object obj) {
-			if (this == obj)
-				return true;
-			if (obj == null)
-				return false;
-			if (!(obj instanceof RefSetMemberChange))
-				return false;
-			final RefSetMemberChange other = (RefSetMemberChange) obj;
-			if (changeKind != other.changeKind)
-				return false;
-			if (refSetId == null) {
-				if (other.refSetId != null)
-					return false;
-			} else if (!refSetId.equals(other.refSetId))
-				return false;
-			if (type != other.type)
-				return false;
-			return true;
-		}
-
-
-
-		/* (non-Javadoc)
-		 * @see java.lang.Comparable#compareTo(java.lang.Object)
-		 */
-		@Override
-		public int compareTo(final RefSetMemberChange o) {
-			return changeKind.compareTo(o.changeKind);
-		}
-		
-	}
-	
-	/**
-	 * Enumeration indicating whether a reference set member has been added or detached from its container
-	 * reference set. 
-	 *
-	 */
-	private static enum MemberChangeKind {
-		ADDED,
-		REMOVED;
-	}
 	
 	/**
 	 * Concept label provider.
