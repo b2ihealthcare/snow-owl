@@ -41,12 +41,12 @@ import org.slf4j.Logger;
 
 import com.b2international.commons.Pair;
 import com.b2international.snowowl.core.api.IBranchPath;
-import com.b2international.snowowl.datastore.server.snomed.index.AbstractSnomedTaxonomyBuilder;
-import com.b2international.snowowl.datastore.server.snomed.index.SnomedTaxonomyBuilder;
 import com.b2international.snowowl.datastore.server.snomed.index.init.Rf2BasedSnomedTaxonomyBuilder;
 import com.b2international.snowowl.snomed.datastore.SnomedTerminologyBrowser;
-import com.b2international.snowowl.snomed.datastore.index.IncompleteTaxonomyException;
 import com.b2international.snowowl.snomed.datastore.services.SnomedConceptNameProvider;
+import com.b2international.snowowl.snomed.datastore.taxonomy.AbstractSnomedTaxonomyBuilder;
+import com.b2international.snowowl.snomed.datastore.taxonomy.IncompleteTaxonomyException;
+import com.b2international.snowowl.snomed.datastore.taxonomy.SnomedTaxonomyBuilder;
 import com.b2international.snowowl.snomed.importer.net4j.ImportConfiguration;
 import com.b2international.snowowl.snomed.importer.net4j.SnomedIncompleteTaxonomyValidationDefect;
 import com.b2international.snowowl.snomed.importer.net4j.SnomedValidationDefect;

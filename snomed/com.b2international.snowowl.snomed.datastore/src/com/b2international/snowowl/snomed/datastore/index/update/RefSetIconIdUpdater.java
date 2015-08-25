@@ -21,7 +21,7 @@ import java.util.Map;
 
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.datastore.SnomedRefSetUtil;
-import com.b2international.snowowl.snomed.datastore.index.ISnomedTaxonomyBuilder;
+import com.b2international.snowowl.snomed.datastore.taxonomy.ISnomedTaxonomyBuilder;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType;
 
 /**

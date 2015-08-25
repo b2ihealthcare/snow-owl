@@ -34,11 +34,11 @@ import com.b2international.commons.csv.CsvParser;
 import com.b2international.commons.csv.CsvSettings;
 import com.b2international.commons.csv.RecordParserCallback;
 import com.b2international.snowowl.core.api.SnowowlRuntimeException;
-import com.b2international.snowowl.datastore.server.snomed.index.AbstractSnomedTaxonomyBuilder;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.datastore.IsAStatementWithId;
 import com.b2international.snowowl.snomed.datastore.SnomedTaxonomyBuilderMode;
 import com.b2international.snowowl.snomed.datastore.index.StatementMap;
+import com.b2international.snowowl.snomed.datastore.taxonomy.AbstractSnomedTaxonomyBuilder;
 import com.google.common.base.Preconditions;
 
 /**

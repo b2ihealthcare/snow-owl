@@ -61,6 +61,7 @@ import com.b2international.snowowl.snomed.datastore.index.update.IconIdUpdater;
 import com.b2international.snowowl.snomed.datastore.index.update.ParentageUpdater;
 import com.b2international.snowowl.snomed.datastore.services.ISnomedComponentService;
 import com.b2international.snowowl.snomed.datastore.services.SnomedConceptNameProvider;
+import com.b2international.snowowl.snomed.datastore.taxonomy.ISnomedTaxonomyBuilder;
 
 /**
  * Mapping strategy to transform a SNOMED CT concept into a {@link Document document} of the index.

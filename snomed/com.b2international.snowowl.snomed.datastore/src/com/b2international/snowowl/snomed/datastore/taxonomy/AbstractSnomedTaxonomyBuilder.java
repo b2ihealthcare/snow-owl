@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.datastore.server.snomed.index;
+package com.b2international.snowowl.snomed.datastore.taxonomy;
 
 import static com.b2international.snowowl.snomed.datastore.SnomedTaxonomyBuilderMode.DEFAULT;
 import static com.google.common.base.Preconditions.checkNotNull;
@@ -40,8 +40,6 @@ import com.b2international.commons.pcj.LongSets;
 import com.b2international.snowowl.core.api.SnowowlRuntimeException;
 import com.b2international.snowowl.core.exceptions.CycleDetectedException;
 import com.b2international.snowowl.snomed.datastore.SnomedTaxonomyBuilderMode;
-import com.b2international.snowowl.snomed.datastore.index.ISnomedTaxonomyBuilder;
-import com.b2international.snowowl.snomed.datastore.index.IncompleteTaxonomyException;
 import com.google.common.base.Preconditions;
 
 /**

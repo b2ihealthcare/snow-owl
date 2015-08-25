@@ -25,7 +25,7 @@ import org.apache.lucene.document.NumericDocValuesField;
 import com.b2international.snowowl.core.api.index.CommonIndexConstants;
 import com.b2international.snowowl.core.exceptions.CycleDetectedException;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
-import com.b2international.snowowl.snomed.datastore.index.ISnomedTaxonomyBuilder;
+import com.b2international.snowowl.snomed.datastore.taxonomy.ISnomedTaxonomyBuilder;
 
 /**
  * @since 4.3

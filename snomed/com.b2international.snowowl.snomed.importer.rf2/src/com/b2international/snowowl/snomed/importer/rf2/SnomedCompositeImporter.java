@@ -52,7 +52,6 @@ import com.b2international.snowowl.datastore.oplock.impl.DatastoreLockContextDes
 import com.b2international.snowowl.datastore.server.CDOServerCommitBuilder;
 import com.b2international.snowowl.datastore.server.CDOServerUtils;
 import com.b2international.snowowl.datastore.server.snomed.index.SnomedIndexServerService;
-import com.b2international.snowowl.datastore.server.snomed.index.SnomedTaxonomyBuilder;
 import com.b2international.snowowl.datastore.server.snomed.index.init.ImportIndexServerService;
 import com.b2international.snowowl.datastore.server.snomed.index.init.IndexBasedImportIndexServiceFeeder;
 import com.b2international.snowowl.datastore.server.snomed.index.init.Rf2BasedImportIndexServiceFeeder;
@@ -70,8 +69,9 @@ import com.b2international.snowowl.snomed.common.ContentSubType;
 import com.b2international.snowowl.snomed.datastore.SnomedCodeSystemFactory;
 import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 import com.b2international.snowowl.snomed.datastore.SnomedEditingContext;
-import com.b2international.snowowl.snomed.datastore.index.ISnomedTaxonomyBuilder;
 import com.b2international.snowowl.snomed.datastore.index.SnomedIndexService;
+import com.b2international.snowowl.snomed.datastore.taxonomy.ISnomedTaxonomyBuilder;
+import com.b2international.snowowl.snomed.datastore.taxonomy.SnomedTaxonomyBuilder;
 import com.b2international.snowowl.snomed.importer.rf2.model.AbstractSnomedImporter;
 import com.b2international.snowowl.snomed.importer.rf2.model.ComponentImportType;
 import com.b2international.snowowl.snomed.importer.rf2.model.ComponentImportUnit;

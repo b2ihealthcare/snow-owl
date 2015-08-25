@@ -18,7 +18,7 @@ package com.b2international.snowowl.snomed.datastore.index.update;
 import static com.google.common.base.Preconditions.checkNotNull;
 
 import com.b2international.snowowl.datastore.index.DocumentUpdaterBase;
-import com.b2international.snowowl.snomed.datastore.index.ISnomedTaxonomyBuilder;
+import com.b2international.snowowl.snomed.datastore.taxonomy.ISnomedTaxonomyBuilder;
 
 /**
  * @since 4.3

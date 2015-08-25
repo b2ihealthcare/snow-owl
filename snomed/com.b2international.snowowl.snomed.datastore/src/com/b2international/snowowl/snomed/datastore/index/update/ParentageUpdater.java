@@ -24,7 +24,7 @@ import com.b2international.commons.pcj.LongCollections;
 import com.b2international.snowowl.datastore.index.field.ComponentAncestorField;
 import com.b2international.snowowl.datastore.index.field.ComponentAncestorLongField;
 import com.b2international.snowowl.datastore.index.field.ComponentParentLongField;
-import com.b2international.snowowl.snomed.datastore.index.ISnomedTaxonomyBuilder;
+import com.b2international.snowowl.snomed.datastore.taxonomy.ISnomedTaxonomyBuilder;
 
 /**
  * @since 4.3

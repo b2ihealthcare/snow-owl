@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.datastore.server.snomed.index;
+package com.b2international.snowowl.snomed.datastore.taxonomy;
 
 import bak.pcj.LongCollection;
 import bak.pcj.LongIterator;
