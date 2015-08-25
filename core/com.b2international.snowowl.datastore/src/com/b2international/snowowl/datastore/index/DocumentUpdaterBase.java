@@ -37,7 +37,7 @@ public abstract class DocumentUpdaterBase implements DocumentUpdater {
 	
 	@Override
 	public int hashCode() {
-		return Objects.hash(componentId);
+		return Objects.hash(componentId, getClass());
 	}
 
 	@Override
