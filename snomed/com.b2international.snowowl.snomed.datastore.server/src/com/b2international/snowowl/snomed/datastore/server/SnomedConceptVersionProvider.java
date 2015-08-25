@@ -42,9 +42,6 @@ public class SnomedConceptVersionProvider extends CodeSystemVersionProvider {
 			SnomedPackage.Literals.COMPONENT__MODULE,
 			SnomedPackage.Literals.CONCEPT__DEFINITION_STATUS);
 
-	public SnomedConceptVersionProvider() {
-	}
-
 	@Override
 	protected EPackage getEPackage() {
 		return SnomedPackage.eINSTANCE;
@@ -79,5 +76,4 @@ public class SnomedConceptVersionProvider extends CodeSystemVersionProvider {
 		}
 		return false;
 	}
-
 }

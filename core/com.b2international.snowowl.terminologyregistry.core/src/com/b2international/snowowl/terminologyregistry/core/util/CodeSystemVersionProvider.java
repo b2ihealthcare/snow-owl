@@ -50,7 +50,7 @@ import com.google.common.base.Preconditions;
 public abstract class CodeSystemVersionProvider implements ICodeSystemVersionProvider {
 
 	@Override
-	public String getVersion(String terminologyComponentId, final String codeSystemShortName, String componentId, IBranchPath branchPath) {
+	public String getVersion(String terminologyComponentId, String componentId, IBranchPath branchPath) {
 		List<ICodeSystemVersion> allTagsWithHead = getAllTagsWithHead(terminologyComponentId);
 
 		if (existsOnlyOnMain(allTagsWithHead)) {
@@ -64,7 +64,6 @@ public abstract class CodeSystemVersionProvider implements ICodeSystemVersionPro
 				return lastVersionId;
 			}
 		}
-
 	}
 
 	private List<ICodeSystemVersion> getAllTagsWithHead(String terminologyComponentId) {
@@ -153,5 +152,4 @@ public abstract class CodeSystemVersionProvider implements ICodeSystemVersionPro
 			}
 		});
 	}
-
 }
