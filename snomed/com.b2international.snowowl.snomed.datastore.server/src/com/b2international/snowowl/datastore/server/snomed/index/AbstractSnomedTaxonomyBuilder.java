@@ -69,27 +69,11 @@ public abstract class AbstractSnomedTaxonomyBuilder implements ISnomedTaxonomyBu
 		}
 	};
 	
-	private final TransformBitSetFunction includeSelfFunction = new TransformBitSetFunction() {
-		@Override public BitSet transform(final int internalId, final BitSet sourceBitSet) {
-			Preconditions.checkNotNull(sourceBitSet, "Source bit set argument cannot be null.");
-			sourceBitSet.set(internalId); //include self
-			return sourceBitSet;
-		}
-	};
-	
-	/*
-	 * (non-Javadoc)
-	 * @see com.b2international.snowowl.snomed.datastore.index.ISnomedTaxonomyBuilder#isDirty()
-	 */
 	@Override
 	public boolean isDirty() {
 		return dirty;
 	}
 	
-	/*
-	 * (non-Javadoc)
-	 * @see com.b2international.snowowl.snomed.datastore.index.ISnomedTaxonomyBuilder#clear()
-	 */
 	@Override
 	public void clear() {
 		
@@ -368,10 +352,6 @@ public abstract class AbstractSnomedTaxonomyBuilder implements ISnomedTaxonomyBu
 		return getAndProcessAncestors(conceptId, getNodeIdFunction);
 	}
 	
-	/*
-	 * (non-Javadoc)
-	 * @see com.b2international.snowowl.snomed.datastore.index.ISnomedTaxonomyBuilder#getAllDescendantNodeIds(java.lang.String)
-	 */
 	@Override
 	public LongSet getAllDescendantNodeIds(final String conceptId) {
 		checkState();
@@ -380,13 +360,9 @@ public abstract class AbstractSnomedTaxonomyBuilder implements ISnomedTaxonomyBu
 		// index is the concept id, true if it is a sub-type
 		final BitSet subTypeMap = new BitSet(conceptCount);
 		collectDescendants(getInternalId(conceptId), subTypeMap);
-		return processElements(getNodeIdFunction, subTypeMap);
+		return processElements(Long.parseLong(conceptId), getNodeIdFunction, subTypeMap);
 	}
 	
-	/*
-	 * (non-Javadoc)
-	 * @see com.b2international.snowowl.snomed.datastore.index.ISnomedTaxonomyBuilder#getAllAncestorNodeIds(java.lang.String)
-	 */
 	@Override
 	public LongSet getAllAncestorNodeIds(final String conceptId) {
 		checkState();
@@ -397,40 +373,14 @@ public abstract class AbstractSnomedTaxonomyBuilder implements ISnomedTaxonomyBu
 		// index is the concept id, true if it is a sub-type
 		final BitSet superTypeMap = new BitSet(conceptCount);
 		collectAncestors(id, superTypeMap);
-		return processElements(getNodeIdFunction, superTypeMap);
+		return processElements(Long.parseLong(conceptId), getNodeIdFunction, superTypeMap);
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see com.b2international.snowowl.snomed.datastore.index.ISnomedTaxonomyBuilder#getSelfAndAllAncestorNodeIds(long)
-	 */
-	@Override
-	public LongSet getSelfAndAllAncestorNodeIds(final long conceptId) {
-		checkState();
-		final int conceptCount = getConceptCount();
-		final int id = getInternalId(conceptId);
-
-		// index is the concept id, true if it is a sub-type
-		final BitSet superTypeMap = new BitSet(conceptCount);
-		collectAncestors(id, superTypeMap);
-		includeSelfFunction.transform(id, superTypeMap);
-		return processElements(getNodeIdFunction, superTypeMap);
-	}
-	
-	
-	/*
-	 * (non-Javadoc)
-	 * @see com.b2international.snowowl.snomed.datastore.index.ISnomedTaxonomyBuilder#getSourceNodeId(java.lang.String)
-	 */
 	@Override
 	public String getSourceNodeId(final String edgeId) {
 		return Long.toString(getEdges0(Long.parseLong(edgeId))[1]);
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see com.b2international.snowowl.snomed.datastore.index.ISnomedTaxonomyBuilder#getDestinationNodeId(java.lang.String)
-	 */
 	@Override
 	public String getDestinationNodeId(final String edgeId) {
 		return Long.toString(getEdges0(Long.parseLong(edgeId))[0]);
@@ -487,12 +437,12 @@ public abstract class AbstractSnomedTaxonomyBuilder implements ISnomedTaxonomyBu
 		return DEFAULT;
 	}
 	
-	private LongSet getAndProcessAncestors(final String nodeId, final IntToLongFunction processingFunction) {
+	private LongSet getAndProcessAncestors(final String conceptId, final IntToLongFunction processingFunction) {
 		checkState();
-		checkNotNull(nodeId, "Concept ID argument cannot be null.");
+		checkNotNull(conceptId, "Concept ID argument cannot be null.");
 		
 		final int conceptCount = getConceptCount();
-		final int id = getInternalId(nodeId);
+		final int id = getInternalId(conceptId);
 		// index is the concept internal id, true if it is a supertype
 		final BitSet ancestorInternalIds = new BitSet(conceptCount);
 	
@@ -501,14 +451,14 @@ public abstract class AbstractSnomedTaxonomyBuilder implements ISnomedTaxonomyBu
 			collectAncestors(directParent, ancestorInternalIds);
 		}
 	
-		return processElements(processingFunction, ancestorInternalIds);		
+		return processElements(Long.parseLong(conceptId), processingFunction, ancestorInternalIds);		
 	}
 
 	private long[] getEdges0(final long statementId) {
 		return (long[]) getEdges().get(statementId);
 	}
 
-	private LongSet processElements(final IntToLongFunction function, final BitSet bitSet) {
+	private LongSet processElements(final long conceptId, final IntToLongFunction function, final BitSet bitSet) {
 		Preconditions.checkNotNull(function, "Function argument cannot be null.");
 		Preconditions.checkNotNull(function, "Bit set argument cannot be null.");
 		if (CompareUtils.isEmpty(bitSet)) {
@@ -518,7 +468,11 @@ public abstract class AbstractSnomedTaxonomyBuilder implements ISnomedTaxonomyBu
 	
 		final LongSet $ = new LongOpenHashSet(count);
 		for (int i = bitSet.nextSetBit(0); i >= 0; i = bitSet.nextSetBit(i + 1)) {
-			$.add(function.apply(i));
+			long convertedId = function.apply(i);
+			if (convertedId == conceptId) {
+				throw new CycleDetectedException("Concept " + conceptId + " would introduce a cycle in the ISA graph (loop).");
+			}
+			$.add(convertedId);
 		}
 
 		return $;

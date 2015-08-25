@@ -56,8 +56,6 @@ public interface ISnomedTaxonomyBuilder {
 
 	LongSet getAllAncestorNodeIds(final String nodeId);
 
-	LongSet getSelfAndAllAncestorNodeIds(final long nodeId);
-
 	String getSourceNodeId(final String edgeId);
 
 	String getDestinationNodeId(final String edgeId);
