@@ -16,16 +16,19 @@
 package com.b2international.snowowl.snomed.datastore;
 
 import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.RELATIONSHIP_ATTRIBUTE_ID;
+import static com.google.common.collect.Sets.newHashSet;
 
 import java.io.IOException;
 import java.text.MessageFormat;
+import java.util.Collection;
 
 import org.apache.lucene.index.AtomicReader;
 import org.apache.lucene.index.NumericDocValues;
 import org.apache.lucene.search.Query;
 
 import com.b2international.snowowl.datastore.index.field.ComponentIdLongField;
-import com.b2international.snowowl.datastore.index.field.ComponentStorageKeyField;
+import com.b2international.snowowl.datastore.index.query.IndexQueries;
+import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.datastore.browser.SnomedIndexQueries;
 
 /**
@@ -70,21 +73,13 @@ public enum StatementCollectionMode {
 		}
 	},
 
-	WITH_STORAGE_KEYS {
-		@Override public String getIdValuesField() {
-			return ComponentStorageKeyField.COMPONENT_STORAGE_KEY;
-		}
-
-		@Override public IsAStatementWithKey createStatement(final long sourceId, final long destinationId, final long idOrKey) {
-			return new SnomedIsAStatementWithKey(sourceId, destinationId, idOrKey);
-		}
-
-		@Override public IsAStatement[] createArray(final int expectedSize) {
-			return new SnomedIsAStatementWithKey[expectedSize];
-		}
-	},
-
 	ALL_TYPES_NO_IDS {
+		
+		@Override
+		public String getType() {
+			return null;
+		}
+		
 		@Override public String getIdValuesField() {
 			return RELATIONSHIP_ATTRIBUTE_ID;
 		}
@@ -96,9 +91,49 @@ public enum StatementCollectionMode {
 		@Override public IsAStatement[] createArray(final int expectedSize) {
 			return new SnomedStatement[expectedSize];
 		}
+		
+	},
+	
+	STATED_ISA_ONLY {
 
-		@Override public Query getQuery() {
-			return SnomedIndexQueries.ACTIVE_RELATIONSHIPS_QUERY;
+		@Override
+		public String getCharacteristicType() {
+			return Concepts.STATED_RELATIONSHIP;
+		}
+		
+		@Override public NumericDocValues getNumericDocValues(final AtomicReader leafReader) throws IOException {
+			return ComponentIdLongField.getNumericDocValues(leafReader);
+		}
+		
+		@Override
+		public IsAStatement createStatement(long sourceId, long destinationId, long idOrKey) {
+			return new SnomedIsAStatementWithId(sourceId, destinationId, idOrKey);
+		}
+		
+		@Override public IsAStatement[] createArray(final int expectedSize) {
+			return new SnomedIsAStatementWithId[expectedSize];
+		}
+
+	},
+	
+	INFERRED_ISA_ONLY {
+
+		@Override
+		public String getCharacteristicType() {
+			return Concepts.INFERRED_RELATIONSHIP;
+		}
+		
+		@Override public NumericDocValues getNumericDocValues(final AtomicReader leafReader) throws IOException {
+			return ComponentIdLongField.getNumericDocValues(leafReader);
+		}
+		
+		@Override
+		public IsAStatement createStatement(long sourceId, long destinationId, long idOrKey) {
+			return new SnomedIsAStatementWithId(sourceId, destinationId, idOrKey);
+		}
+		
+		@Override public IsAStatement[] createArray(final int expectedSize) {
+			return new SnomedIsAStatementWithId[expectedSize];
 		}
 
 	};
@@ -123,15 +158,35 @@ public enum StatementCollectionMode {
 	public long getIdValue(final NumericDocValues idsValues, final int docId) {
 		return idsValues.get(docId);
 	}
-
-	/**Returns with the index query to collect all relevant relationships.
-	 *<p>By default returns with a query that accepts active relationships with IS_A type.*/
-	public Query getQuery() {
-		return SnomedIndexQueries.ACTIVE_ISA_RELATIONSHIPS;
+	
+	/*<p>By default returns with a query that accepts active relationships with IS_A type.*/
+	public String getType() {
+		return Concepts.IS_A;
+	}
+	
+	public String getCharacteristicType() {
+		return null;
 	}
 
 	/**
-	 * 
+	 * Returns with the index query to collect all relevant relationships.
+	 */
+	public final Query getQuery() {
+		final Query baseQuery = SnomedIndexQueries.ACTIVE_RELATIONSHIPS_QUERY;
+		final Collection<Query> detailQueries = newHashSet();
+		if (getType() != null) {
+			detailQueries.add(SnomedIndexQueries.toRelationshipTypeQuery(getType()));
+		}
+		if (getCharacteristicType() != null) {
+			detailQueries.add(SnomedIndexQueries.toRelationshipCharacteristicTypeQuery(getCharacteristicType()));
+		}
+		if (!detailQueries.isEmpty()) {
+			return IndexQueries.and(baseQuery, IndexQueries.and(detailQueries.toArray(new Query[detailQueries.size()])));
+		}
+		return baseQuery;
+	}
+
+	/**
 	 * @param sourceId
 	 * @param destinationId
 	 * @param idOrKey
@@ -140,4 +195,5 @@ public enum StatementCollectionMode {
 	public abstract IsAStatement createStatement(long sourceId, long destinationId, long idOrKey);
 
 	public abstract IsAStatement[] createArray(int expectedSize);
+	
 }

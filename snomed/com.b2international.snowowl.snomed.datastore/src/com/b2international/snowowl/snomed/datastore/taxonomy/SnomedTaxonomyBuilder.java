@@ -98,13 +98,13 @@ public class SnomedTaxonomyBuilder extends AbstractSnomedTaxonomyBuilder {
 		setDirty(true);
 	}
 	
-	public SnomedTaxonomyBuilder(final IBranchPath branchPath) {
+	public SnomedTaxonomyBuilder(final IBranchPath branchPath, final StatementCollectionMode mode) {
 		this.branchPath = Preconditions.checkNotNull(branchPath, "Branch path argument cannot be null.");
 		
 		final Runnable initStatementsRunnable = new Runnable() {
 			@Override public void run() {
 				
-				final IsAStatementWithId[] isAStatements = getStatementBrowser().getActiveStatements(branchPath, StatementCollectionMode.WITH_RELATIONSHIP_IDS);
+				final IsAStatementWithId[] isAStatements = getStatementBrowser().getActiveStatements(branchPath, mode);
 				edges = 0 < isAStatements.length ? new StatementMap(isAStatements.length) : new StatementMap();
 				
 				for (final IsAStatementWithId statement : isAStatements) {
@@ -133,17 +133,11 @@ public class SnomedTaxonomyBuilder extends AbstractSnomedTaxonomyBuilder {
 		setDirty(true);
 	}
 
-	/* (non-Javadoc)
-	 * @see com.b2international.snowowl.snomed.datastore.index.AbstractSnomedTaxonomyBuilder#getNodes()
-	 */
 	@Override
 	public LongBidiMapWithInternalId getNodes() {
 		return nodes;
 	}
 
-	/* (non-Javadoc)
-	 * @see com.b2international.snowowl.snomed.datastore.index.AbstractSnomedTaxonomyBuilder#getEdges()
-	 */
 	@Override
 	public LongKeyMap getEdges() {
 		return edges;
