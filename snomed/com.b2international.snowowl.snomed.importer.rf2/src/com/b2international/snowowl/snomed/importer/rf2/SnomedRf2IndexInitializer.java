@@ -226,13 +226,15 @@ public class SnomedRf2IndexInitializer extends Job {
 	//when a reference set is imported where the concept is being created on the fly
 	private final Map<String, SnomedRefSetType> identifierConceptIdsForNewRefSets = newHashMap();
 
-	private ISnomedTaxonomyBuilder taxonomyBuilder;
+	private ISnomedTaxonomyBuilder inferredTaxonomyBuilder;
+	private ISnomedTaxonomyBuilder statedTaxonomyBuilder;
 
-	public SnomedRf2IndexInitializer(final IBranchPath branchPath, final String lastUnitEffectiveTimeKey, final List<ComponentImportUnit> importUnits, final String languageRefSetId, ISnomedTaxonomyBuilder taxonomyBuilder) {
+	public SnomedRf2IndexInitializer(final IBranchPath branchPath, final String lastUnitEffectiveTimeKey, final List<ComponentImportUnit> importUnits, final String languageRefSetId, ISnomedTaxonomyBuilder inferredTaxonomyBuilder, ISnomedTaxonomyBuilder statedTaxonomyBuilder) {
 		super("SNOMED CT RF2 based index initializer...");
 		this.branchPath = branchPath;
 		this.effectiveTimeKey = lastUnitEffectiveTimeKey;
-		this.taxonomyBuilder = checkNotNull(taxonomyBuilder, "taxonomyBuilder");
+		this.statedTaxonomyBuilder = checkNotNull(statedTaxonomyBuilder, "statedTaxonomyBuilder");
+		this.inferredTaxonomyBuilder = checkNotNull(inferredTaxonomyBuilder, "inferredTaxonomyBuilder");
 		this.importUnits = Collections.unmodifiableList(importUnits);
 		//check services
 		getImportIndexService();
@@ -599,8 +601,8 @@ public class SnomedRf2IndexInitializer extends Job {
 	private Set<String> getAllDescendants(final Set<String> union) {
 		final LongSet $ = new LongOpenHashSet();
 		for (final String conceptId : union) {
-			if (taxonomyBuilder.containsNode(conceptId)) { //inactive one
-				$.addAll(taxonomyBuilder.getAllDescendantNodeIds(conceptId));
+			if (inferredTaxonomyBuilder.containsNode(conceptId)) { //inactive one
+				$.addAll(inferredTaxonomyBuilder.getAllDescendantNodeIds(conceptId));
 			}
 		}
 		return LongSets.toStringSet($);
@@ -1041,7 +1043,7 @@ public class SnomedRf2IndexInitializer extends Job {
 	
 	protected void updateIconId(String conceptId, boolean active, Document doc, boolean withDocValues) {
 		final Collection<String> availableImages = SnomedIconProvider.getInstance().getAvailableIconIds();
-		new RefSetIconIdUpdater(taxonomyBuilder, conceptId, active, availableImages, withDocValues, identifierConceptIdsForNewRefSets).update(doc);		
+		new RefSetIconIdUpdater(inferredTaxonomyBuilder, conceptId, active, availableImages, withDocValues, identifierConceptIdsForNewRefSets).update(doc);		
 	}
 
 
@@ -1261,7 +1263,8 @@ public class SnomedRf2IndexInitializer extends Job {
 		}
 
 		// update parents and ancestors
-		new RefSetParentageUpdater(taxonomyBuilder, conceptIdString, identifierConceptIdsForNewRefSets).update(doc);
+		new RefSetParentageUpdater(inferredTaxonomyBuilder, conceptIdString, identifierConceptIdsForNewRefSets).update(doc);
+		new RefSetParentageUpdater(statedTaxonomyBuilder, conceptIdString, identifierConceptIdsForNewRefSets, Concepts.STATED_RELATIONSHIP).update(doc);
 		
 		final List<TermWithType> descriptions = getImportIndexService().getConceptDescriptions(conceptIdString);
 		for (final TermWithType termWithType : descriptions) {
