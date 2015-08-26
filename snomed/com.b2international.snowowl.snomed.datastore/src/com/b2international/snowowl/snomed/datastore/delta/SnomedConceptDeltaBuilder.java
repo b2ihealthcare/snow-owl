@@ -34,8 +34,6 @@ import org.eclipse.emf.cdo.view.CDOView;
 import org.eclipse.emf.ecore.EClass;
 import org.eclipse.emf.spi.cdo.InternalCDOSession;
 
-import bak.pcj.set.LongSet;
-
 import com.b2international.commons.ChangeKind;
 import com.b2international.commons.CompareUtils;
 import com.b2international.commons.StringUtils;
@@ -48,7 +46,6 @@ import com.b2international.snowowl.datastore.cdo.CDOUtils;
 import com.b2international.snowowl.datastore.cdo.ICDOConnection;
 import com.b2international.snowowl.datastore.cdo.ICDOConnectionManager;
 import com.b2international.snowowl.datastore.delta.AbstractHierarchicalComponentDeltaBuilder;
-import com.b2international.snowowl.datastore.delta.ComponentDelta;
 import com.b2international.snowowl.datastore.delta.HierarchicalComponentDelta;
 import com.b2international.snowowl.datastore.index.AbstractIndexEntry;
 import com.b2international.snowowl.snomed.Component;
@@ -72,6 +69,8 @@ import com.google.common.base.Preconditions;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
+
+import bak.pcj.set.LongSet;
 
 /**
  * Visitor to collect feature changes that are specific for SNOMED CT.
@@ -221,7 +220,7 @@ public class SnomedConceptDeltaBuilder extends AbstractHierarchicalComponentDelt
 				
 				
 				final HierarchicalComponentDelta delta = createDelta(revision, change, view);
-				put(delta).getComponentChanges().getIds().add(cdoId);
+				put(delta).getRelatedCdoIds().add(cdoId);
 				
 				
 			//descriptions
@@ -235,13 +234,13 @@ public class SnomedConceptDeltaBuilder extends AbstractHierarchicalComponentDelt
 					final long containerConceptCdoId = CDOIDUtils.asLong((CDOID) value);
 					final String containerConceptId = getComponentId(containerConceptCdoId, view);
 					
-					final HierarchicalComponentDelta delta = creatHierarchicalDelta(createDelta(containerConceptId, containerConceptCdoId, ChangeKind.UPDATED, view));
-					put(delta).getComponentChanges().getIds().add(cdoId);
+					final HierarchicalComponentDelta delta = createDelta(containerConceptId, containerConceptCdoId, ChangeKind.UPDATED, view);
+					put(delta).getRelatedCdoIds().add(cdoId);
 					
 				} else if (value instanceof Concept) { //in case of new objects in a transaction with temporary IDs 
 					
 					final HierarchicalComponentDelta delta = createDelta((Concept) value, ChangeKind.UPDATED);
-					put(delta).getComponentChanges().getIds().add(cdoId);
+					put(delta).getRelatedCdoIds().add(cdoId);
 					
 				}
 				
@@ -257,13 +256,13 @@ public class SnomedConceptDeltaBuilder extends AbstractHierarchicalComponentDelt
 					final long containerConceptCdoId = CDOIDUtils.asLong((CDOID) value);
 					final String containerConceptId = getComponentId(containerConceptCdoId, view);
 					
-					final HierarchicalComponentDelta delta = creatHierarchicalDelta(createDelta(containerConceptId, containerConceptCdoId, ChangeKind.UPDATED, view));
-					put(delta).getComponentChanges().getIds().add(cdoId);
+					final HierarchicalComponentDelta delta = createDelta(containerConceptId, containerConceptCdoId, ChangeKind.UPDATED, view);
+					put(delta).getRelatedCdoIds().add(cdoId);
 					
 				} else if (value instanceof Concept) { //in case of new objects in a transaction with temporary IDs 
 					
 					final HierarchicalComponentDelta delta = createDelta((Concept) value, ChangeKind.UPDATED);
-					put(delta).getComponentChanges().getIds().add(cdoId);
+					put(delta).getRelatedCdoIds().add(cdoId);
 					
 				}
 				
@@ -279,16 +278,16 @@ public class SnomedConceptDeltaBuilder extends AbstractHierarchicalComponentDelt
 					final String refSetIdentifierId = getComponentId(refSetCdoId, view);
 					
 					final long conceptCdoId = getStorageKey(refSetIdentifierId, view);					
-					final HierarchicalComponentDelta delta = creatHierarchicalDelta(createDelta(refSetIdentifierId, conceptCdoId, ChangeKind.UPDATED, view));
-					put(delta).getComponentChanges().getIds().add(cdoId);
+					final HierarchicalComponentDelta delta = createDelta(refSetIdentifierId, conceptCdoId, ChangeKind.UPDATED, view);
+					put(delta).getRelatedCdoIds().add(cdoId);
 					
 				} else if (value instanceof SnomedRefSet) {
 					
 					final String refSetIdentifierId = ((SnomedRefSet) value).getIdentifierId();
 					final long conceptCdoId = getStorageKey(refSetIdentifierId, view);
 					
-					final HierarchicalComponentDelta delta = creatHierarchicalDelta(createDelta(refSetIdentifierId, conceptCdoId, ChangeKind.UPDATED, view));
-					put(delta).getComponentChanges().getIds().add(cdoId);
+					final HierarchicalComponentDelta delta = createDelta(refSetIdentifierId, conceptCdoId, ChangeKind.UPDATED, view);
+					put(delta).getRelatedCdoIds().add(cdoId);
 					
 				}
 				
@@ -332,7 +331,7 @@ public class SnomedConceptDeltaBuilder extends AbstractHierarchicalComponentDelt
 			
 			final Concept concept = (Concept) object;
 			final HierarchicalComponentDelta delta = createDelta(concept, change);
-			put(delta).getComponentChanges().getIds().add(CDOIDUtils.asLong(concept.cdoID()));
+			put(delta).getRelatedCdoIds().add(CDOIDUtils.asLong(concept.cdoID()));
 
 		
 		//description
@@ -340,7 +339,7 @@ public class SnomedConceptDeltaBuilder extends AbstractHierarchicalComponentDelt
 			
 			final Description description = (Description) object;
 			final HierarchicalComponentDelta delta = createDelta(description.getConcept(), ChangeKind.UPDATED);
-			put(delta).getComponentChanges().getIds().add(CDOIDUtils.asLong(description.cdoID()));
+			put(delta).getRelatedCdoIds().add(CDOIDUtils.asLong(description.cdoID()));
 			
 			
 		//relationship
@@ -348,7 +347,7 @@ public class SnomedConceptDeltaBuilder extends AbstractHierarchicalComponentDelt
 			
 			final Relationship relationship = (Relationship) object;
 			final HierarchicalComponentDelta delta = createDelta(relationship.getSource(), ChangeKind.UPDATED);
-			put(delta).getComponentChanges().getIds().add(CDOIDUtils.asLong(relationship.cdoID()));
+			put(delta).getRelatedCdoIds().add(CDOIDUtils.asLong(relationship.cdoID()));
 
 		
 		//reference set member
@@ -359,8 +358,8 @@ public class SnomedConceptDeltaBuilder extends AbstractHierarchicalComponentDelt
 			final String refSetIdentifierId = refSet.getIdentifierId();
 			final long conceptCdoId = getStorageKey(refSetIdentifierId, object.cdoView());
 			
-			final HierarchicalComponentDelta delta = creatHierarchicalDelta(createDelta(refSetIdentifierId, conceptCdoId, ChangeKind.UPDATED, view));
-			put(delta).getComponentChanges().getIds().add(CDOIDUtils.asLong(member.cdoID()));
+			final HierarchicalComponentDelta delta = createDelta(refSetIdentifierId, conceptCdoId, ChangeKind.UPDATED, view);
+			put(delta).getRelatedCdoIds().add(CDOIDUtils.asLong(member.cdoID()));
 			
 			
 		//reference set member
@@ -370,8 +369,8 @@ public class SnomedConceptDeltaBuilder extends AbstractHierarchicalComponentDelt
 			final String refSetIdentifierId = refSet.getIdentifierId();
 			final long conceptCdoId = getStorageKey(refSetIdentifierId, object.cdoView());
 			
-			final HierarchicalComponentDelta delta = creatHierarchicalDelta(createDelta(refSetIdentifierId, conceptCdoId, ChangeKind.UPDATED, view));
-			put(delta).getComponentChanges().getIds().add(CDOIDUtils.asLong(object.cdoID()));
+			final HierarchicalComponentDelta delta = createDelta(refSetIdentifierId, conceptCdoId, ChangeKind.UPDATED, view);
+			put(delta).getRelatedCdoIds().add(CDOIDUtils.asLong(object.cdoID()));
 			
 		}
 		
@@ -410,7 +409,7 @@ public class SnomedConceptDeltaBuilder extends AbstractHierarchicalComponentDelt
 	}
 	
 	@Override
-	protected AbstractIndexEntry createAncestorEntryFromCdoObject(String ancestorId) {
+	protected AbstractIndexEntry getIndexEntryFromCdoObject(String ancestorId) {
 		
 		final Concept concept = createLookupService().getComponent(ancestorId, getCurrentView());
 
@@ -435,7 +434,6 @@ public class SnomedConceptDeltaBuilder extends AbstractHierarchicalComponentDelt
 	 * @see com.b2international.snowowl.datastore.delta.AbstractHierarchicalComponentDeltaBuilder#getTerminologyBrowser()
 	 */
 	@Override
-	@SuppressWarnings("unchecked")
 	protected SnomedTerminologyBrowser getTerminologyBrowser() {
 		return ApplicationContext.getInstance().getService(SnomedTerminologyBrowser.class);
 	}
@@ -456,7 +454,7 @@ public class SnomedConceptDeltaBuilder extends AbstractHierarchicalComponentDelt
 	 * @param view the view to resolve missing attributes, if any.
 	 * @return the component delta.
 	 */
-	protected ComponentDelta createDelta(final String conceptId, final long cdoId, final ChangeKind change, final CDOView view) {
+	private HierarchicalComponentDelta createDelta(final String conceptId, final long cdoId, final ChangeKind change, final CDOView view) {
 		
 		final String label = getConceptLabel(conceptId, view);
 		
@@ -474,11 +472,6 @@ public class SnomedConceptDeltaBuilder extends AbstractHierarchicalComponentDelt
 		
 	}
 
-	/*creates a new hierarchical delta with uninitialized ancestor and descendants property.*/
-	private HierarchicalComponentDelta creatHierarchicalDelta(final ComponentDelta delta) {
-		return new HierarchicalComponentDelta(delta);
-	}
-	
 	/*returns with the unique CDO ID of a SNOMED CT concept identified by its unique SCT ID. 
 	 *if the storage key was not cached yet, this method will cache it*/
 	private long getStorageKey(final String conceptId, final CDOView view) {

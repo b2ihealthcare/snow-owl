@@ -62,7 +62,6 @@ import com.google.common.base.Predicate;
 import com.google.common.base.Supplier;
 import com.google.common.base.Suppliers;
 import com.google.common.collect.Collections2;
-import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 
 /**
@@ -327,7 +326,7 @@ public class RefSetMemberDeltaBuilder extends SnomedConceptDeltaBuilder {
 	private void collapseTaxonomy() {
 		
 		//get a collection of root nodes first
-		final Collection<HierarchicalComponentDelta> roots = Collections2.filter(Lists.newArrayList(getDeltaIterator()), new Predicate<HierarchicalComponentDelta>() {
+		final Collection<HierarchicalComponentDelta> roots = Collections2.filter(getDeltas(), new Predicate<HierarchicalComponentDelta>() {
 			@Override public boolean apply(final HierarchicalComponentDelta input) {
 				return null == input.getParent();
 			}
@@ -337,9 +336,7 @@ public class RefSetMemberDeltaBuilder extends SnomedConceptDeltaBuilder {
 		//this is only for SNOMED CT.
 		final Collection<HierarchicalComponentDelta> topLevels = Sets.newHashSet();
 		for (final HierarchicalComponentDelta root : roots) {
-			
 			topLevels.addAll(root.getChildren());
-			
 		}
 		
 		for (final HierarchicalComponentDelta topLevel : topLevels) { //from top to bottom rebuild taxonomy
