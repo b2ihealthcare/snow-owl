@@ -21,61 +21,61 @@ import java.util.Collection;
 import com.b2international.commons.ChangeKind;
 import com.b2international.commons.hierarchy.HierarchicalElement;
 import com.b2international.snowowl.core.api.IBranchPath;
-import com.google.common.base.Preconditions;
 import com.google.common.collect.Lists;
 
 /**
  * Class representing a {@link ComponentDelta} with additional parentage information.
+ * 
  * @see ComponentDelta
- * @see Serializable
  */
 public class HierarchicalComponentDelta extends ComponentDelta implements Serializable, HierarchicalElement<HierarchicalComponentDelta> {
 
 	private static final long serialVersionUID = -6346847096632018833L;
 
-	private final Collection<HierarchicalComponentDelta> children;
 	private HierarchicalComponentDelta parent;
+	private final Collection<HierarchicalComponentDelta> children = Lists.newArrayList();
 
-	public HierarchicalComponentDelta(final ComponentDelta delta) {
-		this(
-				Preconditions.checkNotNull(delta, "Component delta argument cannot be null").getId(),
-				delta.getCdoId(),
-				delta.getBranchPath(),
-				delta.getLabel(),
-				delta.getIconId(),
-				delta.getTerminologyComponentId(),
-				delta.getCodeSystemOID(),
-				delta.getChange());
-	}
-	
-	public HierarchicalComponentDelta(final String id, final long cdoId, final IBranchPath branchPath, final String label, final String iconId, final short terminologyComponentId, final String codeSystemOID) {
+	public HierarchicalComponentDelta(final String id, 
+			final long cdoId, 
+			final IBranchPath branchPath,
+			final String label, 
+			final String iconId, 
+			final short terminologyComponentId, 
+			final String codeSystemOID) {
+
 		this(id, cdoId, branchPath, label, iconId, terminologyComponentId, codeSystemOID, ChangeKind.UNCHANGED);
 	}
-	
-	public HierarchicalComponentDelta(final String id, final long cdoId, final IBranchPath branchPath, final String label, final String iconId, short terminologyComponentId, final String codeSystemOID, final ChangeKind change) {
+
+	public HierarchicalComponentDelta(final String id, 
+			final long cdoId, 
+			final IBranchPath branchPath, 
+			final String label, 
+			final String iconId, 
+			final short terminologyComponentId, 
+			final String codeSystemOID, 
+			final ChangeKind change) {
+
 		super(id, cdoId, branchPath, label, iconId, terminologyComponentId, codeSystemOID, change);
-		children = Lists.newArrayList();
 	}
-	
+
 	/**
-	 * Returns with a collection of descendants.
+	 * Returns a collection of direct children.
 	 */
 	public Collection<HierarchicalComponentDelta> getChildren() {
 		return children;
 	}
-	
+
 	/**
-	 * Returns with the ancestor of the current component.
+	 * Returns the parent of the component, if set.
 	 */
 	public HierarchicalComponentDelta getParent() {
 		return parent;
 	}
-	
+
 	/**
-	 * Sets the ancestor of the current component.
+	 * Sets the parent of the component.
 	 */
-	public void setParent(HierarchicalComponentDelta parent) {
+	public void setParent(final HierarchicalComponentDelta parent) {
 		this.parent = parent;
 	}
-	
 }
