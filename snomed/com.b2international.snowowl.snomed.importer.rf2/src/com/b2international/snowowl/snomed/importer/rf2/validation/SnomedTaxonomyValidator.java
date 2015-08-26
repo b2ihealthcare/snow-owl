@@ -17,7 +17,6 @@ package com.b2international.snowowl.snomed.importer.rf2.validation;
 
 import static com.b2international.commons.StringUtils.isEmpty;
 import static com.b2international.snowowl.core.ApplicationContext.getServiceForClass;
-import static com.b2international.snowowl.datastore.server.snomed.index.init.Rf2BasedSnomedTaxonomyBuilder.newInstance;
 import static com.b2international.snowowl.datastore.server.snomed.index.init.Rf2BasedSnomedTaxonomyBuilder.newValidationInstance;
 import static com.b2international.snowowl.snomed.common.ContentSubType.SNAPSHOT;
 import static com.google.common.base.Preconditions.checkNotNull;
@@ -42,7 +41,9 @@ import org.slf4j.Logger;
 import com.b2international.commons.Pair;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.datastore.server.snomed.index.init.Rf2BasedSnomedTaxonomyBuilder;
+import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.datastore.SnomedTerminologyBrowser;
+import com.b2international.snowowl.snomed.datastore.StatementCollectionMode;
 import com.b2international.snowowl.snomed.datastore.services.SnomedConceptNameProvider;
 import com.b2international.snowowl.snomed.datastore.taxonomy.AbstractSnomedTaxonomyBuilder;
 import com.b2international.snowowl.snomed.datastore.taxonomy.IncompleteTaxonomyException;
@@ -106,10 +107,12 @@ public class SnomedTaxonomyValidator {
 				
 				final String conceptFilePath = removeConceptHeader();
 				final String relationshipFilePath = removeRelationshipHeader();
-				final Rf2BasedSnomedTaxonomyBuilder builder = createBuilder(conceptFilePath, relationshipFilePath);
+				final Rf2BasedSnomedTaxonomyBuilder builder = createBuilder();
 				builder.applyNodeChanges(conceptFilePath);
 				builder.applyEdgeChanges(relationshipFilePath);
 				builder.build();
+				
+				
 					
 			} else {
 			
@@ -118,7 +121,7 @@ public class SnomedTaxonomyValidator {
 				final Map<String, File> conceptFiles = Rf2FileModifier.split(configuration.getConceptsFile());
 				final Map<String, File> relationshipFiles = Rf2FileModifier.split(configuration.getRelationshipsFile());
 				
-				Rf2BasedSnomedTaxonomyBuilder builder = null;
+				final Rf2BasedSnomedTaxonomyBuilder builder = createBuilder();
 				final List<String> effectiveTimes = newArrayList(newHashSet(concat(conceptFiles.keySet(), relationshipFiles.keySet())));
 				sort(effectiveTimes);
 				
@@ -129,7 +132,6 @@ public class SnomedTaxonomyValidator {
 					final File conceptFile = conceptFiles.get(effectiveTime);
 					final File relationshipFile = relationshipFiles.get(effectiveTime);
 					
-					builder = null == builder ? createBuilder(getFilePath(conceptFile), getFilePath(relationshipFile)) : newInstance(builder);
 					builder.applyNodeChanges(getFilePath(conceptFile));
 					builder.applyEdgeChanges(getFilePath(relationshipFile));
 					builder.build();
@@ -206,9 +208,9 @@ public class SnomedTaxonomyValidator {
 		return SNAPSHOT.equals(configuration.getVersion());
 	}
 
-	private Rf2BasedSnomedTaxonomyBuilder createBuilder(final String conceptFilePath, final String relationshipFilePath) {
-		final AbstractSnomedTaxonomyBuilder original = new SnomedTaxonomyBuilder(branchPath).build();
-		return newValidationInstance(original, conceptFilePath, relationshipFilePath);
+	private Rf2BasedSnomedTaxonomyBuilder createBuilder() {
+		final AbstractSnomedTaxonomyBuilder original = new SnomedTaxonomyBuilder(branchPath, StatementCollectionMode.INFERRED_ISA_ONLY);
+		return newValidationInstance(original, Concepts.INFERRED_RELATIONSHIP);
 	}
 
 	private boolean isCoreImport() {
