@@ -41,8 +41,8 @@ public class SnomedConceptModelMappingStrategy extends SnomedConceptIndexMapping
 
 	public static final float DEFAULT_DOI = 1.0f;
 
-	public SnomedConceptModelMappingStrategy(final ISnomedTaxonomyBuilder taxonomyBuilder, final Concept concept, final String label, final Set<String> synonymAndDescendantIds, final float doi, final Collection<String> predicateKeys, final Collection<String> referringRefSetIds, final Collection<String> mappingRefSetIds, final boolean indexCompareKey) {
-		super(taxonomyBuilder, checkNotNull(concept, "SNOMED CT concept argument cannot be null.").getId(), 
+	public SnomedConceptModelMappingStrategy(final ISnomedTaxonomyBuilder inferredTaxonomyBuilder, ISnomedTaxonomyBuilder statedTaxonomyBuilder, final Concept concept, final String label, final Set<String> synonymAndDescendantIds, final float doi, final Collection<String> predicateKeys, final Collection<String> referringRefSetIds, final Collection<String> mappingRefSetIds, final boolean indexCompareKey) {
+		super(inferredTaxonomyBuilder, statedTaxonomyBuilder, checkNotNull(concept, "SNOMED CT concept argument cannot be null.").getId(), 
 				CDOIDUtil.getLong(concept.cdoID()), 
 				concept.isExhaustive(), 
 				concept.isActive(), 

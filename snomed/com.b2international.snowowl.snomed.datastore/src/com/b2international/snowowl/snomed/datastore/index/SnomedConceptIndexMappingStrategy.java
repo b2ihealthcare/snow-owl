@@ -54,6 +54,7 @@ import com.b2international.snowowl.datastore.index.field.ComponentIdLongField;
 import com.b2international.snowowl.datastore.index.field.ComponentStorageKeyField;
 import com.b2international.snowowl.datastore.index.field.ComponentTypeField;
 import com.b2international.snowowl.datastore.index.field.IntIndexField;
+import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.snomed.datastore.SnomedIconProvider;
 import com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants;
@@ -110,9 +111,10 @@ public abstract class SnomedConceptIndexMappingStrategy extends AbstractIndexMap
 	private final Collection<String> mappingRefSetIds;
 	private final Date effectiveTime;
 	private final boolean indexAsRelevantForCompare;
-	private ISnomedTaxonomyBuilder taxonomyBuilder;
+	private ISnomedTaxonomyBuilder inferredTaxonomyBuilder;
+	private ISnomedTaxonomyBuilder statedTaxonomyBuilder;
 	
-	protected SnomedConceptIndexMappingStrategy(final ISnomedTaxonomyBuilder taxonomyBuilder, final String conceptId, 
+	protected SnomedConceptIndexMappingStrategy(final ISnomedTaxonomyBuilder inferredTaxonomyBuilder, ISnomedTaxonomyBuilder statedTaxonomyBuilder, final String conceptId, 
 			final long storageKey, 
 			final boolean exhaustive, 
 			final boolean active, 
@@ -128,7 +130,8 @@ public abstract class SnomedConceptIndexMappingStrategy extends AbstractIndexMap
 			final Date effectiveTime,
 			final boolean indexAsRelevantForCompare) {
 
-		this.taxonomyBuilder = taxonomyBuilder;
+		this.inferredTaxonomyBuilder = inferredTaxonomyBuilder;
+		this.statedTaxonomyBuilder = statedTaxonomyBuilder;
 		this.conceptId = conceptId;
 		this.storageKey = storageKey;
 		this.exhaustive = exhaustive;
@@ -165,7 +168,7 @@ public abstract class SnomedConceptIndexMappingStrategy extends AbstractIndexMap
 		doc.add(new LongField(COMPONENT_MODULE_ID, Long.valueOf(moduleId), Store.YES));
 		doc.add(new NumericDocValuesField(CommonIndexConstants.COMPONENT_COMPARE_UNIQUE_KEY, indexAsRelevantForCompare ? storageKey : CDOUtils.NO_STORAGE_KEY));
 		//this point we have to find the first parent concept that is in the previous state of the taxonomy to specify the icon ID
-		new IconIdUpdater(taxonomyBuilder, conceptId, active, SnomedIconProvider.getInstance().getAvailableIconIds(), true);
+		new IconIdUpdater(inferredTaxonomyBuilder, conceptId, active, SnomedIconProvider.getInstance().getAvailableIconIds(), true);
 		if (!indexAsRelevantForCompare) {
 			doc.add(new NumericDocValuesField(CommonIndexConstants.COMPONENT_IGNORE_COMPARE_UNIQUE_KEY, storageKey));
 		}
@@ -179,7 +182,9 @@ public abstract class SnomedConceptIndexMappingStrategy extends AbstractIndexMap
 		
 		addDescriptionFields(doc);
 
-		new ParentageUpdater(taxonomyBuilder, conceptId).update(doc);
+		// update inferred and stated parentage
+		new ParentageUpdater(inferredTaxonomyBuilder, conceptId).update(doc);
+		new ParentageUpdater(statedTaxonomyBuilder, conceptId, Concepts.STATED_RELATIONSHIP).update(doc);
 		
 		addPredicateFields(doc, predicateKeys);
 

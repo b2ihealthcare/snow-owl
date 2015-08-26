@@ -47,9 +47,9 @@ import com.google.common.collect.ImmutableSet.Builder;
 
 public class SnomedConceptDocumentMappingStrategy extends SnomedConceptIndexMappingStrategy {
 
-	public SnomedConceptDocumentMappingStrategy(ISnomedTaxonomyBuilder taxonomyBuilder, final Document conceptDocument, final boolean indexAsRelevantForCompare) {
+	public SnomedConceptDocumentMappingStrategy(ISnomedTaxonomyBuilder inferredTaxonomyBuilder, ISnomedTaxonomyBuilder statedTaxonomyBuilder, final Document conceptDocument, final boolean indexAsRelevantForCompare) {
 		
-		super(taxonomyBuilder, ComponentIdLongField.getString(checkNotNull(conceptDocument, "SNOMED CT concept document cannot be null.")), 
+		super(inferredTaxonomyBuilder, statedTaxonomyBuilder, ComponentIdLongField.getString(checkNotNull(conceptDocument, "SNOMED CT concept document cannot be null.")), 
 				ComponentStorageKeyField.getLong(conceptDocument), 
 				isExhaustive(conceptDocument), 
 				isActive(conceptDocument), 
