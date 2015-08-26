@@ -41,13 +41,18 @@ public class ComponentAncestorLongField extends ComponentAncestorField {
 	private long value;
 	
 	public ComponentAncestorLongField(String value) {
-		this(Long.parseLong(value));
+		this(COMPONENT_ANCESTOR, Long.parseLong(value));
 	}
 	
 	public ComponentAncestorLongField(long value) {
-		this.value = value;
+		this(COMPONENT_ANCESTOR, value);
 	}
 	
+	public ComponentAncestorLongField(String fieldName, long value) {
+		super(fieldName);
+		this.value = value;
+	}
+
 	@Override
 	protected BytesRef toBytesRef() {
 		return IndexUtils.longToPrefixCoded(value);

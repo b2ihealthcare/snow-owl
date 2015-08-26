@@ -42,6 +42,7 @@ public class ComponentParentStringField extends ComponentParentField {
 	private String parentId;
 	
 	public ComponentParentStringField(String parentId) {
+		super(ComponentParentField.COMPONENT_PARENT);
 		checkArgument(!Strings.isNullOrEmpty(parentId), "ParentId cannot be null or empty");
 		this.parentId = parentId;
 	}

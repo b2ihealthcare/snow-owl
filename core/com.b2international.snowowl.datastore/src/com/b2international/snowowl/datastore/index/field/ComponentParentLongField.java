@@ -41,10 +41,20 @@ public class ComponentParentLongField extends ComponentParentField {
 	private long parentId;
 	
 	public ComponentParentLongField(String parentId) {
-		this(Long.parseLong(parentId));
+		this(COMPONENT_PARENT, parentId);
 	}
 	
 	public ComponentParentLongField(long parentId) {
+		this(COMPONENT_PARENT, parentId);
+	}
+	
+	public ComponentParentLongField(String fieldName, String parentId) {
+		this(fieldName, Long.parseLong(parentId));
+		
+	}
+	
+	public ComponentParentLongField(String fieldName, long parentId) {
+		super(fieldName);
 		this.parentId = parentId;
 	}
 

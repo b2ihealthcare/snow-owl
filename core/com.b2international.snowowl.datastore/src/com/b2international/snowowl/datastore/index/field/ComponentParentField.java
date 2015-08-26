@@ -27,11 +27,11 @@ public abstract class ComponentParentField extends IndexField {
 
 	public static final String COMPONENT_PARENT = "concept_parent_id";
 	public static final Set<String> FIELDS_TO_LOAD = Collections.singleton(COMPONENT_PARENT);
-
-	public ComponentParentField() {
-		super(COMPONENT_PARENT);
-	}
 	
+	public ComponentParentField(String fieldName) {
+		super(fieldName);
+	}
+
 	public static void removeAll(Document doc) {
 		IndexField.removeAll(COMPONENT_PARENT, doc);
 	}
