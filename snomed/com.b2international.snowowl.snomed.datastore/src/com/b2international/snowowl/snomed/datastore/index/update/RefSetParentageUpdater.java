@@ -32,7 +32,11 @@ public class RefSetParentageUpdater extends ParentageUpdater {
 	private Map<String, SnomedRefSetType> referenceSetIdToTypeMap;
 
 	public RefSetParentageUpdater(ISnomedTaxonomyBuilder taxonomyBuilder, String conceptId, Map<String, SnomedRefSetType> referenceSetIdToTypeMap) {
-		super(taxonomyBuilder, conceptId);
+		this(taxonomyBuilder, conceptId, referenceSetIdToTypeMap, null);
+	}
+	
+	public RefSetParentageUpdater(ISnomedTaxonomyBuilder taxonomyBuilder, String conceptId, Map<String, SnomedRefSetType> referenceSetIdToTypeMap, String fieldSuffix) {
+		super(taxonomyBuilder, conceptId, fieldSuffix);
 		this.referenceSetIdToTypeMap = referenceSetIdToTypeMap;
 	}
 	

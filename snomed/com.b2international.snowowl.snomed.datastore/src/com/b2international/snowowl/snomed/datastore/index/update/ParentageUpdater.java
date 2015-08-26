@@ -15,6 +15,8 @@
  */
 package com.b2international.snowowl.snomed.datastore.index.update;
 
+import java.util.Objects;
+
 import org.apache.lucene.document.Document;
 
 import bak.pcj.LongCollection;
@@ -23,23 +25,50 @@ import bak.pcj.LongIterator;
 import com.b2international.commons.pcj.LongCollections;
 import com.b2international.snowowl.datastore.index.field.ComponentAncestorField;
 import com.b2international.snowowl.datastore.index.field.ComponentAncestorLongField;
+import com.b2international.snowowl.datastore.index.field.ComponentParentField;
 import com.b2international.snowowl.datastore.index.field.ComponentParentLongField;
+import com.b2international.snowowl.datastore.index.field.IndexField;
 import com.b2international.snowowl.snomed.datastore.taxonomy.ISnomedTaxonomyBuilder;
+import com.google.common.base.Strings;
 
 /**
  * @since 4.3
  */
 public class ParentageUpdater extends SnomedDocumentUpdaterBase {
 
+	private String fieldSuffix;
+
 	public ParentageUpdater(ISnomedTaxonomyBuilder taxonomyBuilder, String conceptId) {
+		this(taxonomyBuilder, conceptId, null);
+	}
+	
+	public ParentageUpdater(ISnomedTaxonomyBuilder taxonomyBuilder, String conceptId, String fieldSuffix) {
 		super(taxonomyBuilder, conceptId);
+		this.fieldSuffix = Strings.nullToEmpty(fieldSuffix);
+	}
+	
+	@Override
+	public int hashCode() {
+		return Objects.hash(getComponentId(), getClass(), this.fieldSuffix);
+	}
+	
+	@Override
+	public boolean equals(Object obj) {
+		if (super.equals(obj)) {
+			ParentageUpdater other = (ParentageUpdater) obj;
+			return Objects.equals(fieldSuffix, other.fieldSuffix);
+		}
+		return false;
 	}
 
 	@Override
 	public final void update(Document doc) {
 		// throw out any parent or ancestor fields
-		ComponentParentLongField.removeAll(doc);
-		ComponentAncestorField.removeAll(doc);
+		final String parentFieldName = ComponentParentField.COMPONENT_PARENT + fieldSuffix;
+		final String ancestorFieldName = ComponentAncestorField.COMPONENT_ANCESTOR + fieldSuffix;
+		
+		IndexField.removeAll(parentFieldName, doc);
+		IndexField.removeAll(ancestorFieldName, doc);
 		
 		final LongCollection parentIds = getParentIds(getComponentId());
 		final LongCollection ancestorIds = getAncestorIds(getComponentId());
@@ -47,16 +76,16 @@ public class ParentageUpdater extends SnomedDocumentUpdaterBase {
 		final LongIterator ancestorIdIterator = ancestorIds.iterator();
 		// index ROOT_ID
 		if (!parentIdIterator.hasNext()) {
-			ComponentParentLongField.ROOT_PARENT.addTo(doc);
+			new ComponentParentLongField(parentFieldName, ComponentParentLongField.ROOT_ID).addTo(doc);
 		} else {
-			ComponentAncestorLongField.ROOT_PARENT.addTo(doc);
+			new ComponentAncestorLongField(ancestorFieldName, ComponentAncestorLongField.ROOT_ID).addTo(doc);
 		}
 		// index parentage info
 		while (parentIdIterator.hasNext()) {
-			new ComponentParentLongField(parentIdIterator.next()).addTo(doc);
+			new ComponentParentLongField(parentFieldName, parentIdIterator.next()).addTo(doc);
 		}
 		while (ancestorIdIterator.hasNext()) {
-			new ComponentAncestorLongField(ancestorIdIterator.next()).addTo(doc);
+			new ComponentAncestorLongField(ancestorFieldName, ancestorIdIterator.next()).addTo(doc);
 		}
 	}
 
