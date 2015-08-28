@@ -15,6 +15,8 @@
  */
 package com.b2international.snowowl.snomed.api.domain;
 
+import java.text.MessageFormat;
+
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 
 /**
@@ -49,5 +51,22 @@ public enum RelationshipModifier implements ConceptEnum {
 	@Override
 	public String getConceptId() {
 		return conceptId;
+	}
+	
+	/**
+	 * Performs a reverse lookup by concept identifier and returns the matching modifier value.
+	 * 
+	 * @param conceptId the concept identifier to look for
+	 * @return the resolved {@link RelationshipModifier}
+	 * @throws IllegalArgumentException if no known relationship modifier matches the specified concept identifier
+	 */
+	public static RelationshipModifier getByConceptId(final String conceptId) {
+		for (final RelationshipModifier candidate : values()) {
+			if (candidate.getConceptId().equals(conceptId)) {
+				return candidate;
+			}
+		}
+
+		throw new IllegalArgumentException(MessageFormat.format("No relationship modifier value found for identifier ''{0}''.", conceptId));
 	}
 }

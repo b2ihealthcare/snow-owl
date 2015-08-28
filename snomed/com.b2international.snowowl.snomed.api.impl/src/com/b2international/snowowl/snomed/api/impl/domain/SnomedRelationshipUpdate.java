@@ -15,20 +15,62 @@
  */
 package com.b2international.snowowl.snomed.api.impl.domain;
 
+import com.b2international.snowowl.snomed.api.domain.CharacteristicType;
 import com.b2international.snowowl.snomed.api.domain.ISnomedRelationshipUpdate;
+import com.b2international.snowowl.snomed.api.domain.RelationshipModifier;
 
-/**
- */
 public class SnomedRelationshipUpdate extends AbstractSnomedComponentUpdate implements ISnomedRelationshipUpdate {
+
+	private Integer group;
+	private Integer unionGroup;
+	private CharacteristicType characteristicType;
+	private RelationshipModifier modifier;
+
+	@Override
+	public Integer getGroup() {
+		return group;
+	}
+
+	public void setGroup(final Integer group) {
+		this.group = group;
+	}
+
+	@Override
+	public Integer getUnionGroup() {
+		return unionGroup;
+	}
+
+	public void setUnionGroup(final Integer unionGroup) {
+		this.unionGroup = unionGroup;
+	}
+
+	@Override
+	public CharacteristicType getCharacteristicType() {
+		return characteristicType;
+	}
+
+	public void setCharacteristicType(final CharacteristicType characteristicType) {
+		this.characteristicType = characteristicType;
+	}
+
+	@Override
+	public RelationshipModifier getModifier() {
+		return modifier;
+	}
+
+	public void setModifier(final RelationshipModifier modifier) {
+		this.modifier = modifier;
+	}
 
 	@Override
 	public String toString() {
-		final StringBuilder builder = new StringBuilder();
-		builder.append("SnomedRelationshipUpdate [getModuleId()=");
-		builder.append(getModuleId());
-		builder.append(", isActive()=");
-		builder.append(isActive());
-		builder.append("]");
-		return builder.toString();
+		return "SnomedRelationshipUpdate ["
+				+ "getModuleId()=" + getModuleId() 
+				+ ", isActive()=" + isActive() 
+				+ ", group=" + group 
+				+ ", unionGroup=" + unionGroup 
+				+ ", characteristicType=" + characteristicType 
+				+ ", modifier=" + modifier 
+				+ "]";
 	}
 }

@@ -248,11 +248,28 @@ public abstract class SnomedComponentApiAssert {
 			final String componentId, 
 			final Map<?, ?> requestBody) {
 
-		givenAuthenticatedRequest(SnomedApiTestConstants.SCT_API)
+		assertComponentUpdatedWithStatus(branchPath, componentType, componentId, requestBody, 204);
+	}
+
+	public static void assertComponentUpdatedWithStatus(final IBranchPath branchPath, 
+			final SnomedComponentType componentType,
+			final String componentId, 
+			final Map<?, ?> requestBody, 
+			final int statusCode) {
+
+		whenUpdatingComponent(branchPath, componentType, componentId, requestBody)
+		.then().assertThat().statusCode(statusCode);
+	}
+
+	private static Response whenUpdatingComponent(final IBranchPath branchPath, 
+			final SnomedComponentType componentType,
+			final String componentId, 
+			final Map<?, ?> requestBody) {
+		
+		return givenAuthenticatedRequest(SnomedApiTestConstants.SCT_API)
 		.with().contentType(ContentType.JSON)
 		.and().body(requestBody)
-		.when().post("/{path}/{componentType}/{id}/updates", branchPath.getPath(), componentType.toLowerCasePlural(), componentId)
-		.then().assertThat().statusCode(204);
+		.when().post("/{path}/{componentType}/{id}/updates", branchPath.getPath(), componentType.toLowerCasePlural(), componentId);
 	}
 
 	public static void assertComponentCanBeDeleted(final IBranchPath branchPath, 
