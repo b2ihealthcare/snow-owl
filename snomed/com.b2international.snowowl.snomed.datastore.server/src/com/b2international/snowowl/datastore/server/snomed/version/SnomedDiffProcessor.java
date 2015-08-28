@@ -565,11 +565,14 @@ public class SnomedDiffProcessor extends NodeDeltaDiffProcessor {
 		if (isEmpty(oldPt)) {
 			return createIgnoredDelta();
 		}
-
+		
+		if (oldPt.equals(newPt)) {
+			return createIgnoredDelta();
+		}
+		
 		final String languageRefSetLabel = capitalizeFirstLetter(getConceptLabel(getBranchPath(member), member.getRefSetIdentifierId()));
 		final FeatureChange featureChange = createFeatureChange(languageRefSetLabel + " preferred term", oldPt, newPt);
 		return createDeltaForUpdate(newPt, featureChange, CONCEPT_NUMBER);
-		
 	}
 
 	private NodeDelta createAttributeValueChangeDelta(final SingleValueAttributeDiff diff) {
