@@ -17,12 +17,8 @@ package com.b2international.snowowl.datastore.server.snomed.history;
 
 /**
  * Provides constants for SNOMED history information generation.
- * 
  */
-public final class SnomedHistoryInfoConstants {
-	
-	private SnomedHistoryInfoConstants() {
-	}
+public abstract class SnomedHistoryInfoConstants {
 	
 	public static final String CASE_SIGNIFICANCE_FEATURE_NAME = "caseSignificance";
 	public static final String STATUS_FEATURE_NAME = "active";
@@ -40,7 +36,9 @@ public final class SnomedHistoryInfoConstants {
 	public static final String RELATIONSHIP_TYPE_FEATURE_NAME = "type";
 	public static final String DESCRIPTION_TERM_FEATURE_NAME = "term";
 	public static final String GROUP_FEATURE_NAME = "group";
+	public static final String UNION_GROUP_FEATURE_NAME = "unionGroup";
 	public static final String CHARACTERISTIC_TYPE_FEATURE_NAME = "characteristicType";
+	public static final String MODIFIER_FEATURE_NAME = "modifier";
 	public static final String CORRELATION_ID_FEATURE_NAME = "correlationId";
 	public static final String MAP_GROUP_FEATURE_NAME = "mapGroup";
 	public static final String VALUE_ID_FEATURE_NAME = "valueId";
@@ -50,4 +48,7 @@ public final class SnomedHistoryInfoConstants {
 	public static final String TARGET_EFFECTIVE_TIME_FEATURE_NAME = "targetEffectiveTime";
 	public static final String ACCEPTABILITY_ID_FEATURE_NAME = "acceptabilityId";
 	
+	private SnomedHistoryInfoConstants() {
+		throw new UnsupportedOperationException("This class is not supposed to be instantiated.");
+	}
 }
