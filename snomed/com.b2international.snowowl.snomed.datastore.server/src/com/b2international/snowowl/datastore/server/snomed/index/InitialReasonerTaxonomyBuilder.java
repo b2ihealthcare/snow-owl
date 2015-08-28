@@ -440,7 +440,7 @@ public class InitialReasonerTaxonomyBuilder extends AbstractReasonerTaxonomyBuil
 				conceptIds,
 				SnomedTerminologyComponentConstants.CONCEPT_NUMBER,
 				SnomedIndexQueries.INFERRED_RELATIONSHIP_CHARACTERISTIC_TYPE_QUERY,
-				conceptConcreteDomainReference);
+				inferredConceptConcreteDomainReference);
 		
 		final Runnable getExhaustiveConceptIdsRunnable = new GetConceptIdsRunnable(taskName,
 				exhaustiveConceptIdsReference, 
