@@ -98,8 +98,8 @@ public class SnomedBrowserService implements ISnomedBrowserService {
 			throw new ComponentNotFoundException(ComponentCategory.CONCEPT, conceptId);
 		}
 		
-		final Collection<SnomedDescriptionIndexEntry> descriptions = getIndexService().searchUnsorted(branchPath, SnomedDescriptionContainerQueryAdapter.findByConceptId(conceptId));
-		
+		final List<ISnomedDescription> iSnomedDescriptions = descriptionService.readConceptDescriptions(conceptRef);
+
 		final ISnomedDescription fullySpecifiedName = descriptionService.getFullySpecifiedName(conceptRef, locales);
 		final ISnomedDescription preferredSynonym = descriptionService.getPreferredTerm(conceptRef, locales);
 		
@@ -116,7 +116,7 @@ public class SnomedBrowserService implements ISnomedBrowserService {
 
 		result.setIsLeafInferred(inferredDescendantCount < 1);
 
-		result.setDescriptions(convertDescriptions(newArrayList(descriptions)));
+		result.setDescriptions(convertDescriptions(newArrayList(iSnomedDescriptions)));
 
 		result.setFsn(fullySpecifiedName.getTerm());
 		result.setPreferredSynonym(preferredSynonym.getTerm());
@@ -217,27 +217,29 @@ public class SnomedBrowserService implements ISnomedBrowserService {
 		return conceptRef;
 	}
 
-	private List<ISnomedBrowserDescription> convertDescriptions(final List<SnomedDescriptionIndexEntry> descriptions) {
+	private List<ISnomedBrowserDescription> convertDescriptions(final List<ISnomedDescription> descriptions) {
 		final ImmutableList.Builder<ISnomedBrowserDescription> convertedDescriptionBuilder = ImmutableList.builder();
 
-		for (final SnomedDescriptionIndexEntry description : descriptions) {
+		for (final ISnomedDescription description : descriptions) {
 			final SnomedBrowserDescription convertedDescription = new SnomedBrowserDescription();
 
-			final SnomedBrowserDescriptionType descriptionType = convertDescriptionType(description.getType());
+			final SnomedBrowserDescriptionType descriptionType = convertDescriptionType(description.getTypeId());
+			final String descriptionId = description.getId();
 			if (null == descriptionType) {
-				LOGGER.warn("Unsupported description type ID {} on description {}, ignoring.", description.getType(), description.getId());
+				LOGGER.warn("Unsupported description type ID {} on description {}, ignoring.", description.getTypeId(), descriptionId);
 				continue;
 			}
 
 			convertedDescription.setActive(description.isActive());
-			convertedDescription.setCaseSignificance(CaseSignificance.getByConceptId(description.getCaseSignificance()));
+			convertedDescription.setCaseSignificance(description.getCaseSignificance());
 			convertedDescription.setConceptId(description.getConceptId());
-			convertedDescription.setDescriptionId(description.getId());
-			convertedDescription.setEffectiveTime(new Date(description.getEffectiveTimeAsLong()));
-			convertedDescription.setLang("en"); // FIXME: language code is not in the index
+			convertedDescription.setDescriptionId(descriptionId);
+			convertedDescription.setEffectiveTime(description.getEffectiveTime());
+			convertedDescription.setLang(description.getLanguageCode());
 			convertedDescription.setModuleId(description.getModuleId());
-			convertedDescription.setTerm(description.getLabel());
+			convertedDescription.setTerm(description.getTerm());
 			convertedDescription.setType(descriptionType);
+			convertedDescription.setAcceptabilityMap(description.getAcceptabilityMap());
 
 			convertedDescriptionBuilder.add(convertedDescription);
 		}
