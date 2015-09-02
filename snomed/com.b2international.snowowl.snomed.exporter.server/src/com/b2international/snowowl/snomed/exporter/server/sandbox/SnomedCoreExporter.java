@@ -22,7 +22,7 @@ import org.apache.lucene.index.Term;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.TermQuery;
 
-import com.b2international.snowowl.datastore.index.field.ComponentTypeField;
+import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedMappings;
 import com.b2international.snowowl.snomed.exporter.server.SnomedRf2Exporter;
 
 /**
@@ -44,7 +44,7 @@ public abstract class SnomedCoreExporter extends SnomedCompositeExporter impleme
 	
 	@Override
 	protected Query getSnapshotQuery() {
-		return new ComponentTypeField(getTerminologyComponentType()).toQuery();
+		return SnomedMappings.newQuery().concept().matchAll();
 	}
 	
 }
