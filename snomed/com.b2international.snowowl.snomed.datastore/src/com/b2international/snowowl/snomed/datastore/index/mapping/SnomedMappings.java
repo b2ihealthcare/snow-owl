@@ -17,9 +17,11 @@ package com.b2international.snowowl.snomed.datastore.index.mapping;
 
 import com.b2international.snowowl.datastore.index.mapping.IndexField;
 import com.b2international.snowowl.datastore.index.mapping.IntIndexField;
+import com.b2international.snowowl.datastore.index.mapping.LongCollectionIndexField;
 import com.b2international.snowowl.datastore.index.mapping.LongIndexField;
 import com.b2international.snowowl.datastore.index.mapping.Mappings;
 import com.b2international.snowowl.datastore.index.mapping.NumericDocValuesIndexField;
+import com.google.common.base.Predicates;
 
 /**
  * @since 4.3
@@ -51,8 +53,8 @@ public class SnomedMappings {
 	private static final NumericDocValuesIndexField<Long> COMPONENT_ICON_ID = Mappings.longDocValuesField(Mappings.iconId().fieldName());
 
 	// default parent and ancestor fields are used for inferred taxonomy
-	private static final LongIndexField COMPONENT_PARENT = parent("");
-	private static final LongIndexField COMPONENT_ANCESTOR = ancestor("");
+	private static final LongCollectionIndexField COMPONENT_PARENT = parent("");
+	private static final LongCollectionIndexField COMPONENT_ANCESTOR = ancestor("");
 	
 	// pre-constructed IndexField instances
 	private static final NumericDocValuesIndexField<Long> REFERENCE_SET_MEMBER_REFERENCED_COMPONENT_ID = Mappings.longDocValuesField(REFERENCE_SET_MEMBER_REFERENCED_COMPONENT_ID_FIELD_NAME);
@@ -74,20 +76,22 @@ public class SnomedMappings {
 		return COMPONENT_ID;
 	}
 	
-	public static LongIndexField parent() {
+	public static LongCollectionIndexField parent() {
 		return COMPONENT_PARENT;
 	}
 	
-	public static LongIndexField parent(String fieldNameSuffix) {
-		return (LongIndexField) Mappings.longField(Mappings.parent().fieldName() + fieldNameSuffix);
+	public static LongCollectionIndexField parent(String fieldNameSuffix) {
+		final LongIndexField field = Mappings.longField(Mappings.parent().fieldName() + fieldNameSuffix);
+		return Mappings.filteredLongField(field, Predicates.not(Predicates.equalTo(ROOT_ID)));
 	}
 	
-	public static LongIndexField ancestor() {
+	public static LongCollectionIndexField ancestor() {
 		return COMPONENT_ANCESTOR;
 	}
 	
-	public static LongIndexField ancestor(String fieldNameSuffix) {
-		return (LongIndexField) Mappings.longField(Mappings.ancestor().fieldName() + fieldNameSuffix);
+	public static LongCollectionIndexField ancestor(String fieldNameSuffix) {
+		final LongIndexField field = Mappings.longField(Mappings.ancestor().fieldName() + fieldNameSuffix);
+		return Mappings.filteredLongField(field, Predicates.not(Predicates.equalTo(ROOT_ID)));
 	}
 	
 	public static NumericDocValuesIndexField<Long> iconId() {

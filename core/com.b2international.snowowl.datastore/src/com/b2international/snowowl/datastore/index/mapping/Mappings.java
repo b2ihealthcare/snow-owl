@@ -18,11 +18,15 @@ package com.b2international.snowowl.datastore.index.mapping;
 import com.b2international.snowowl.datastore.index.mapping.DocumentBuilderBase.DocumentBuilder;
 import com.b2international.snowowl.datastore.index.mapping.FieldsToLoadBuilderBase.FieldsToLoadBuilder;
 import com.b2international.snowowl.datastore.index.mapping.QueryBuilderBase.QueryBuilder;
+import com.google.common.base.Predicate;
+import com.google.common.base.Predicates;
 
 /**
  * @since 4.3
  */
 public class Mappings {
+	
+	public static final String ROOT_ID_STRING = "ROOT";
 
 	private static final String COMPONENT_ID_FIELD_NAME = "component_id";
 	private static final String COMPONENT_TYPE_FIELD_NAME = "component_type";
@@ -35,12 +39,18 @@ public class Mappings {
 	private static final IndexField<String> COMPONENT_ID = stringField(COMPONENT_ID_FIELD_NAME);
 	private static final IntIndexField COMPONENT_TYPE = new IntIndexField(COMPONENT_TYPE_FIELD_NAME);
 	private static final NumericDocValuesIndexField<Long> COMPONENT_STORAGE_KEY = longDocValuesField(COMPONENT_STORAGEKEY_FIELD_NAME);
-	private static final IndexField<String> COMPONENT_PARENT = stringField(COMPONENT_PARENT_FIELD_NAME);
-	private static final IndexField<String> COMPONENT_ANCESTOR = stringField(COMPONENT_ANCESTOR_FIELD_NAME);
+	private static final IndexField<String> COMPONENT_PARENT = filteredField(stringField(COMPONENT_PARENT_FIELD_NAME), Predicates.not(Predicates.equalTo(ROOT_ID_STRING)));
+	private static final IndexField<String> COMPONENT_ANCESTOR = filteredField(stringField(COMPONENT_ANCESTOR_FIELD_NAME), Predicates.not(Predicates.equalTo(ROOT_ID_STRING)));
 	private static final BinaryDocValuesIndexField COMPONENT_LABEL = new DocValuesTextIndexField(COMPONENT_LABEL_FIELD_NAME);
 	private static final IndexField<String> COMPONENT_ICON_ID = stringField(COMPONENT_ICON_ID_FIELD_NAME);
 	
-	public static final String ROOT_ID_STRING = "ROOT";
+	public static LongCollectionIndexField filteredLongField(LongIndexField field, Predicate<? super Long> predicate) {
+		return new FilteredLongIndexField(field, predicate);
+	}
+	
+	public static <T> IndexField<T> filteredField(IndexField<T> field, Predicate<? super T> predicate) {
+		return new FilteredIndexField<>(field, predicate);
+	}
 	
 	public static IntIndexField type() {
 		return COMPONENT_TYPE;
@@ -94,7 +104,7 @@ public class Mappings {
 		return new IntIndexField(fieldName);
 	}
 	
-	public static IndexField<Long> longField(String fieldName) {
+	public static LongIndexField longField(String fieldName) {
 		return new LongIndexField(fieldName);
 	}
 	

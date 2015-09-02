@@ -33,6 +33,7 @@ import org.apache.lucene.util.BytesRef;
 
 import com.b2international.commons.CompareUtils;
 import com.google.common.base.Function;
+import com.google.common.base.Functions;
 import com.google.common.collect.FluentIterable;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableList.Builder;
@@ -73,8 +74,8 @@ public abstract class IndexFieldBase<T> implements IndexField<T> {
 	}
 	
 	@Override
-	public String getValueAsString(Document doc) {
-		return doc.get(fieldName());
+	public final String getValueAsString(Document doc) {
+		return getValue(doc).toString();
 	}
 	
 	@Override
@@ -82,21 +83,13 @@ public abstract class IndexFieldBase<T> implements IndexField<T> {
 		final Builder<T> values = ImmutableList.builder();
 		for (IndexableField field : getFields(doc)) {
 			values.add(getValue(field));
-//			if (!isRoot(value)) {
-//				parents.add(value);
-//			}
 		}
 		return values.build();
 	}
 	
 	@Override
-	public List<String> getValuesAsString(Document doc) {
-		final Builder<String> values = ImmutableList.builder();
-		for (IndexableField field : getFields(doc)) {
-			values.add(field.stringValue());
-			// TODO filter out
-		}
-		return values.build();
+	public final List<String> getValuesAsString(Document doc) {
+		return FluentIterable.from(getValues(doc)).transform(Functions.toStringFunction()).toList();
 	}
 	
 	@Override

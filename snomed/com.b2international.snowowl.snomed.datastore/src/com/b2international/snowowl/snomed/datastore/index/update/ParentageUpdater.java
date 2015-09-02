@@ -21,7 +21,7 @@ import bak.pcj.LongCollection;
 import bak.pcj.LongIterator;
 
 import com.b2international.commons.pcj.LongCollections;
-import com.b2international.snowowl.datastore.index.mapping.LongIndexField;
+import com.b2international.snowowl.datastore.index.mapping.IndexField;
 import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedDocumentBuilder;
 import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedMappings;
 import com.b2international.snowowl.snomed.datastore.taxonomy.ISnomedTaxonomyBuilder;
@@ -60,8 +60,8 @@ public class ParentageUpdater extends SnomedDocumentUpdaterBase {
 	@Override
 	public final void update(SnomedDocumentBuilder doc) {
 		// throw out any parent or ancestor fields
-		final LongIndexField parentField = SnomedMappings.parent(fieldSuffix);
-		final LongIndexField ancestorField = SnomedMappings.ancestor(fieldSuffix);
+		final IndexField<Long> parentField = SnomedMappings.parent(fieldSuffix);
+		final IndexField<Long> ancestorField = SnomedMappings.ancestor(fieldSuffix);
 		
 		parentField.removeAll(doc);
 		ancestorField.removeAll(doc);

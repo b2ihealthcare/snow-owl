@@ -53,12 +53,12 @@ public class IndexFieldDelegate<T> implements IndexField<T> {
 	}
 	
 	@Override
-	public List<String> getValuesAsString(Document doc) {
+	public final List<String> getValuesAsString(Document doc) {
 		return delegate.getValuesAsString(doc);
 	}
 	
 	@Override
-	public String getValueAsString(Document doc) {
+	public final String getValueAsString(Document doc) {
 		return delegate.getValueAsString(doc);
 	}
 
@@ -105,6 +105,10 @@ public class IndexFieldDelegate<T> implements IndexField<T> {
 	@Override
 	public Filter createFilter(List<BytesRef> bytesRefs) {
 		return delegate.createFilter(bytesRefs);
+	}
+	
+	protected IndexField<T> getDelegate() {
+		return delegate;
 	}
 	
 }

@@ -29,7 +29,7 @@ import com.b2international.snowowl.datastore.index.IndexUtils;
 /**
  * @since 4.3
  */
-public class LongIndexField extends IndexFieldBase<Long> {
+public class LongIndexField extends IndexFieldBase<Long> implements LongCollectionIndexField {
 
 	public LongIndexField(String fieldName) {
 		this(fieldName, true);
@@ -59,6 +59,7 @@ public class LongIndexField extends IndexFieldBase<Long> {
 		return field.numericValue().longValue();
 	}
 	
+	@Override
 	public final LongSet getValueAsLongSet(Document doc) {
 		final IndexableField[] fields = getFields(doc);
 		final LongSet longIds = new LongOpenHashSet(fields.length + 1);
