@@ -17,17 +17,13 @@ package com.b2international.snowowl.snomed.datastore.index.update;
 
 import java.util.Objects;
 
-import org.apache.lucene.document.Document;
-
 import bak.pcj.LongCollection;
 import bak.pcj.LongIterator;
 
 import com.b2international.commons.pcj.LongCollections;
-import com.b2international.snowowl.datastore.index.field.ComponentAncestorField;
-import com.b2international.snowowl.datastore.index.field.ComponentAncestorLongField;
-import com.b2international.snowowl.datastore.index.field.ComponentParentField;
-import com.b2international.snowowl.datastore.index.field.ComponentParentLongField;
-import com.b2international.snowowl.datastore.index.field.IndexField;
+import com.b2international.snowowl.datastore.index.mapping.LongIndexField;
+import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedDocumentBuilder;
+import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedMappings;
 import com.b2international.snowowl.snomed.datastore.taxonomy.ISnomedTaxonomyBuilder;
 import com.google.common.base.Strings;
 
@@ -62,13 +58,13 @@ public class ParentageUpdater extends SnomedDocumentUpdaterBase {
 	}
 
 	@Override
-	public final void update(Document doc) {
+	public final void update(SnomedDocumentBuilder doc) {
 		// throw out any parent or ancestor fields
-		final String parentFieldName = ComponentParentField.COMPONENT_PARENT + fieldSuffix;
-		final String ancestorFieldName = ComponentAncestorField.COMPONENT_ANCESTOR + fieldSuffix;
+		final LongIndexField parentField = SnomedMappings.parent(fieldSuffix);
+		final LongIndexField ancestorField = SnomedMappings.ancestor(fieldSuffix);
 		
-		IndexField.removeAll(parentFieldName, doc);
-		IndexField.removeAll(ancestorFieldName, doc);
+		parentField.removeAll(doc);
+		ancestorField.removeAll(doc);
 		
 		final LongCollection parentIds = getParentIds(getComponentId());
 		final LongCollection ancestorIds = getAncestorIds(getComponentId());
@@ -76,16 +72,16 @@ public class ParentageUpdater extends SnomedDocumentUpdaterBase {
 		final LongIterator ancestorIdIterator = ancestorIds.iterator();
 		// index ROOT_ID
 		if (!parentIdIterator.hasNext()) {
-			new ComponentParentLongField(parentFieldName, ComponentParentLongField.ROOT_ID).addTo(doc);
+			doc.addToDoc(parentField, SnomedMappings.ROOT_ID);
 		} else {
-			new ComponentAncestorLongField(ancestorFieldName, ComponentAncestorLongField.ROOT_ID).addTo(doc);
+			doc.addToDoc(ancestorField, SnomedMappings.ROOT_ID);
 		}
 		// index parentage info
 		while (parentIdIterator.hasNext()) {
-			new ComponentParentLongField(parentFieldName, parentIdIterator.next()).addTo(doc);
+			doc.addToDoc(parentField, parentIdIterator.next());
 		}
 		while (ancestorIdIterator.hasNext()) {
-			new ComponentAncestorLongField(ancestorFieldName, ancestorIdIterator.next()).addTo(doc);
+			doc.addToDoc(ancestorField, ancestorIdIterator.next());
 		}
 	}
 

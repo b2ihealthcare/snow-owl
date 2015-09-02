@@ -17,14 +17,10 @@ package com.b2international.snowowl.snomed.datastore.index.update;
 
 import java.util.Collection;
 
-import org.apache.lucene.document.Document;
-import org.apache.lucene.document.Field.Store;
-import org.apache.lucene.document.LongField;
-import org.apache.lucene.document.NumericDocValuesField;
-
-import com.b2international.snowowl.core.api.index.CommonIndexConstants;
 import com.b2international.snowowl.core.exceptions.CycleDetectedException;
+import com.b2international.snowowl.datastore.index.mapping.Mappings;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
+import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedDocumentBuilder;
 import com.b2international.snowowl.snomed.datastore.taxonomy.ISnomedTaxonomyBuilder;
 
 /**
@@ -32,25 +28,20 @@ import com.b2international.snowowl.snomed.datastore.taxonomy.ISnomedTaxonomyBuil
  */
 public class IconIdUpdater extends SnomedDocumentUpdaterBase {
 	
-	private boolean withDocValues;
 	private Collection<String> availableImages;
 	private boolean active;
 	
-	public IconIdUpdater(ISnomedTaxonomyBuilder taxonomyBuilder, String conceptId, boolean active, Collection<String> availableImages, boolean withDocValues) {
+	public IconIdUpdater(ISnomedTaxonomyBuilder taxonomyBuilder, String conceptId, boolean active, Collection<String> availableImages) {
 		super(taxonomyBuilder, conceptId);
 		this.active = active;
 		this.availableImages = availableImages;
-		this.withDocValues = withDocValues;
 	}
 	
 	@Override
-	public final void update(Document doc) {
-		doc.removeField(CommonIndexConstants.COMPONENT_ICON_ID);
+	public final void update(SnomedDocumentBuilder doc) {
+		doc.removeAll(Mappings.iconId());
 		final long iconIdLong = Long.parseLong(getIconId(getComponentId(), active));
-		doc.add(new LongField(CommonIndexConstants.COMPONENT_ICON_ID, iconIdLong, Store.YES));
-		if (withDocValues) {
-			doc.add(new NumericDocValuesField(CommonIndexConstants.COMPONENT_ICON_ID, iconIdLong));
-		}
+		doc.iconId(iconIdLong);
 	}
 
 	protected String getIconId(String conceptId, boolean active) {

@@ -87,9 +87,7 @@ import com.b2international.snowowl.datastore.index.AbstractIndexMappingStrategy;
 import com.b2international.snowowl.datastore.index.AbstractIndexUpdater;
 import com.b2international.snowowl.datastore.index.DocumentCompositeUpdater;
 import com.b2international.snowowl.datastore.index.DocumentUpdater;
-import com.b2international.snowowl.datastore.index.IndexUtils;
-import com.b2international.snowowl.datastore.index.field.ComponentIdLongField;
-import com.b2international.snowowl.datastore.index.field.ComponentStorageKeyField;
+import com.b2international.snowowl.datastore.index.mapping.DocumentBuilderFactory;
 import com.b2international.snowowl.datastore.server.CDOServerUtils;
 import com.b2international.snowowl.snomed.Component;
 import com.b2international.snowowl.snomed.Concept;
@@ -112,7 +110,6 @@ import com.b2international.snowowl.snomed.datastore.SnomedRelationshipIndexEntry
 import com.b2international.snowowl.snomed.datastore.SnomedTerminologyBrowser;
 import com.b2international.snowowl.snomed.datastore.StatementCollectionMode;
 import com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants;
-import com.b2international.snowowl.snomed.datastore.browser.SnomedIndexQueries;
 import com.b2international.snowowl.snomed.datastore.index.AbstractPredicateIndexMappingStrategy;
 import com.b2international.snowowl.snomed.datastore.index.SnomedConceptIndexQueryAdapter;
 import com.b2international.snowowl.snomed.datastore.index.SnomedConceptModelMappingStrategy;
@@ -122,6 +119,8 @@ import com.b2international.snowowl.snomed.datastore.index.SnomedIndexEntry;
 import com.b2international.snowowl.snomed.datastore.index.SnomedIndexService;
 import com.b2international.snowowl.snomed.datastore.index.SnomedRelationshipIndexMappingStrategy;
 import com.b2international.snowowl.snomed.datastore.index.SnomedRelationshipIndexQueryAdapter;
+import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedDocumentBuilder;
+import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedMappings;
 import com.b2international.snowowl.snomed.datastore.index.refset.RefSetMemberChange;
 import com.b2international.snowowl.snomed.datastore.index.refset.RefSetMemberChange.MemberChangeKind;
 import com.b2international.snowowl.snomed.datastore.index.refset.SnomedRefSetIndexMappingStrategy;
@@ -179,11 +178,7 @@ import com.google.common.collect.Sets;
  */
 public class SnomedCDOChangeProcessor implements ICDOChangeProcessor {
 
-	private static final Set<String> MEMBER_FIELD_TO_LOAD = 
-		Collections.unmodifiableSet(Sets.newHashSet(
-				SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_REFERENCED_COMPONENT_ID,
-				SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_REFERENCE_SET_ID,
-				SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_REFERENCE_SET_TYPE));
+	private static final Set<String> MEMBER_FIELD_TO_LOAD = SnomedMappings.fieldsToLoad().memberReferencedComponentId().memberReferenceSetId().memberReferenceSetType().build();
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(SnomedCDOChangeProcessor.class);
 	
@@ -371,7 +366,7 @@ public class SnomedCDOChangeProcessor implements ICDOChangeProcessor {
 	/**A collection of CDO view. Used when objects have to be loaded due to detachment.*/
 	private final Collection<CDOView> views = Sets.newHashSet();
 	
-	private final Multimap<String, DocumentUpdater> partialUpdates = HashMultimap.create();
+	private final Multimap<String, DocumentUpdater<SnomedDocumentBuilder>> partialUpdates = HashMultimap.create();
 
 	
 	/**
@@ -1005,8 +1000,9 @@ public class SnomedCDOChangeProcessor implements ICDOChangeProcessor {
 
 	private void executePartialUpdates() {
 		for (String conceptId : partialUpdates.keySet()) {
-			final Collection<DocumentUpdater> updates = partialUpdates.get(conceptId);
-			indexUpdater.update(branchPath, new ComponentIdLongField(conceptId).toTerm(), new DocumentCompositeUpdater(updates));
+			final Collection<DocumentUpdater<SnomedDocumentBuilder>> updates = partialUpdates.get(conceptId);
+			final DocumentBuilderFactory<SnomedDocumentBuilder> factory = new SnomedDocumentBuilder.Factory();
+			indexUpdater.update(branchPath, SnomedMappings.id().toTerm(Long.valueOf(conceptId)), new DocumentCompositeUpdater<SnomedDocumentBuilder>(updates), factory);
 		}
 	}
 
@@ -1604,7 +1600,7 @@ public class SnomedCDOChangeProcessor implements ICDOChangeProcessor {
 					
 					final long conceptId = parseLong(member.getReferencedComponentId());
 					
-					final RefSetMemberChange change = new RefSetMemberChange(member.getRefSetIdentifierId(), MemberChangeKind.ADDED, member.getRefSet().getType());
+					final RefSetMemberChange change = new RefSetMemberChange(parseLong(member.getRefSetIdentifierId()), MemberChangeKind.ADDED, member.getRefSet().getType());
 					
 					if (memberChanges.containsKey(conceptId)) {
 						
@@ -1664,22 +1660,16 @@ public class SnomedCDOChangeProcessor implements ICDOChangeProcessor {
 			hasRelatedChanges = true;
 
 			final Document doc = getDocumentForDetachedMember(detachedObjectType.getKey());
-			dirtyRefSetIdsWithCompareUpdate.add(IndexUtils.getLongValue(doc.getField(SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_REFERENCE_SET_ID)));
+			final Long refSetId = SnomedMappings.memberRefSetId().getValue(doc);
+			dirtyRefSetIdsWithCompareUpdate.add(refSetId);
 			
 			if (isInfluenceConceptDocument(detachedObjectType.getValue())) {
 				
-				final String referencedComponentId = Preconditions.checkNotNull(doc.get(SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_REFERENCED_COMPONENT_ID), 
-						"Cannot get referenced component ID for document: " + doc + " Member CDO ID: " + detachedObjectType.getKey());
+				final String referencedComponentId = SnomedMappings.memberReferencedComponentId().getValueAsString(doc);
 				
 				if (isConceptId(referencedComponentId)) {
-					
-					final String refSetId = Preconditions.checkNotNull(doc.get(SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_REFERENCE_SET_ID), 
-							"Cannot get reference set ID for document: " + doc + " Member CDO ID: " + detachedObjectType.getKey());
-					
-					final int typeOrdinal = IndexUtils.getIntValue(doc.getField(SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_REFERENCE_SET_TYPE));
-					
+					final int typeOrdinal = SnomedMappings.memberRefSetType().getValue(doc);
 					final long conceptId = parseLong(referencedComponentId);
-					
 					final RefSetMemberChange change = new RefSetMemberChange(refSetId, MemberChangeKind.REMOVED, getType(typeOrdinal));
 					
 					if (memberChanges.containsKey(conceptId)) {
@@ -1760,7 +1750,7 @@ public class SnomedCDOChangeProcessor implements ICDOChangeProcessor {
 				final long conceptId = parseLong(member.getReferencedComponentId());
 				
 				final RefSetMemberChange change = new RefSetMemberChange(
-						member.getRefSetIdentifierId(), 
+						parseLong(member.getRefSetIdentifierId()), 
 						member.isActive() 
 							? MemberChangeKind.ADDED 
 							: MemberChangeKind.REMOVED,
@@ -1886,7 +1876,7 @@ public class SnomedCDOChangeProcessor implements ICDOChangeProcessor {
 	private Document getDocumentForDetachedMember(final CDOID id) {
 		
 		final long storageKey = CDOIDUtils.asLong(id);
-		final Query query = new ComponentStorageKeyField(storageKey).toQuery();
+		final Query query = SnomedMappings.newQuery().storageKey(storageKey).matchAll();
 		
 		final TopDocs topDocs = indexUpdater.search(branchPath, query, 1);
 		
@@ -2156,7 +2146,7 @@ public class SnomedCDOChangeProcessor implements ICDOChangeProcessor {
 				final SnomedComponentLabelCollector collector = new SnomedComponentLabelCollector(conceptIds);
 				
 				//get labels
-				indexUpdater.search(branchPath, SnomedIndexQueries.CONCEPT_TYPE_QUERY, collector);
+				indexUpdater.search(branchPath, SnomedMappings.newQuery().concept().matchAll(), collector);
 				
 				return new IConceptLabelProviderStrategy() {
 					

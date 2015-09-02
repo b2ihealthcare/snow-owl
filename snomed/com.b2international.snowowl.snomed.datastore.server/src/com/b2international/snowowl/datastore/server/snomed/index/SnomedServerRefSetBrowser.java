@@ -20,15 +20,11 @@ import static com.b2international.commons.pcj.LongSets.newLongSet;
 import static com.b2international.commons.pcj.LongSets.parallelForEach;
 import static com.b2international.snowowl.datastore.cdo.CDOUtils.NO_STORAGE_KEY;
 import static com.b2international.snowowl.datastore.index.IndexUtils.getLongValue;
-import static com.b2international.snowowl.datastore.index.IndexUtils.longToPrefixCoded;
 import static com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants.CONCEPT_NUMBER;
-import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.COMPONENT_MODULE_ID;
 import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.CONCEPT_REFERRING_MAPPING_REFERENCE_SET_ID;
 import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.CONCEPT_REFERRING_REFERENCE_SET_ID;
 import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_MAP_TARGET_COMPONENT_ID;
 import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_QUERY;
-import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_REFERENCED_COMPONENT_ID;
-import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_REFERENCE_SET_ID;
 import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_SOURCE_EFFECTIVE_TIME;
 import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_TARGET_EFFECTIVE_TIME;
 import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_UUID;
@@ -39,8 +35,6 @@ import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.collect.Maps.newHashMap;
 import static com.google.common.collect.Sets.newHashSet;
-import static java.util.Collections.unmodifiableSet;
-import static org.apache.lucene.search.BooleanClause.Occur.MUST;
 import static org.apache.lucene.search.BooleanClause.Occur.SHOULD;
 import static org.apache.lucene.search.MultiTermQuery.CONSTANT_SCORE_FILTER_REWRITE;
 
@@ -83,31 +77,27 @@ import com.b2international.snowowl.core.api.ExtendedComponentImpl;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.api.IComponentWithChildFlag;
 import com.b2international.snowowl.core.api.browser.IFilterClientTerminologyBrowser;
-import com.b2international.snowowl.core.api.index.CommonIndexConstants;
 import com.b2international.snowowl.core.api.index.IndexException;
 import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.datastore.cdo.CDOUtils;
 import com.b2international.snowowl.datastore.index.DocIdCollector;
 import com.b2international.snowowl.datastore.index.DocIdCollector.DocIdsIterator;
-import com.b2international.snowowl.datastore.index.IndexQueryBuilder;
 import com.b2international.snowowl.datastore.index.IndexUtils;
-import com.b2international.snowowl.datastore.index.field.ComponentIdLongField;
-import com.b2international.snowowl.datastore.index.field.ComponentStorageKeyField;
-import com.b2international.snowowl.datastore.index.query.IndexQueries;
+import com.b2international.snowowl.datastore.index.mapping.Mappings;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.snomed.datastore.SnomedConceptIndexEntry;
 import com.b2international.snowowl.snomed.datastore.SnomedRefSetBrowser;
 import com.b2international.snowowl.snomed.datastore.SnomedRefSetUtil;
 import com.b2international.snowowl.snomed.datastore.SnomedTerminologyBrowser;
-import com.b2international.snowowl.snomed.datastore.browser.SnomedIndexQueries;
 import com.b2international.snowowl.snomed.datastore.index.SnomedIndexService;
+import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedMappings;
+import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedQueryBuilder;
 import com.b2international.snowowl.snomed.datastore.index.refset.SnomedRefSetIndexEntry;
 import com.b2international.snowowl.snomed.datastore.index.refset.SnomedRefSetMemberIndexEntry;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType;
 import com.google.common.base.Function;
 import com.google.common.base.Preconditions;
-import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
@@ -121,32 +111,28 @@ public class SnomedServerRefSetBrowser extends AbstractSnomedIndexBrowser<Snomed
 
 	private static final Set<String> MAPPING_REFERENCE_SET_ID_FIELD = Collections.unmodifiableSet(Sets.newHashSet(CONCEPT_REFERRING_MAPPING_REFERENCE_SET_ID));
 	private static final Set<String> REFERENCE_SET_ID_FIELD = Collections.unmodifiableSet(Sets.newHashSet(CONCEPT_REFERRING_REFERENCE_SET_ID));
-	private static final Set<String> COMPONENT_ID_FIELD = Collections.unmodifiableSet(Sets.newHashSet(ComponentIdLongField.COMPONENT_ID));
+	private static final Set<String> COMPONENT_ID_FIELD = SnomedMappings.fieldsToLoad().id().build();
 	private static final Set<String> REFERENCE_SET_TYPE_FIELD = Collections.unmodifiableSet(Sets.newHashSet(REFERENCE_SET_TYPE));
-
-	private static final Set<String> FILEDS_TO_LOAD_FOR_EXTENDED_COMPONENT = unmodifiableSet(newHashSet(
-			ComponentIdLongField.COMPONENT_ID, 
-			CommonIndexConstants.COMPONENT_LABEL, 
-			CommonIndexConstants.COMPONENT_ICON_ID));
+	private static final Set<String> FIELDS_TO_LOAD_FOR_EXTENDED_COMPONENT = SnomedMappings.fieldsToLoad().id().label().iconId().build();
 	
-	private static final ImmutableSet<String> FIELD_NAMES_TO_LOAD = ImmutableSet.of(ComponentIdLongField.COMPONENT_ID, 
-			CommonIndexConstants.COMPONENT_LABEL, 
-			REFERENCE_SET_REFERENCED_COMPONENT_TYPE, 
-			REFERENCE_SET_TYPE,
-			ComponentStorageKeyField.COMPONENT_STORAGE_KEY,
-			REFERENCE_SET_STRUCTURAL,
-			CommonIndexConstants.COMPONENT_ICON_ID,
-			COMPONENT_MODULE_ID);
+	private static final Set<String> FIELD_NAMES_TO_LOAD = SnomedMappings.fieldsToLoad()
+			.id()
+			.label()
+			.storageKey()
+			.iconId()
+			.module()
+			.field(REFERENCE_SET_REFERENCED_COMPONENT_TYPE)
+			.field(REFERENCE_SET_TYPE)
+			.field(REFERENCE_SET_STRUCTURAL)
+			.build();
 
-	private static final Set<String> MEMBER_QUERY_FIELDS_TO_LOAD = unmodifiableSet(newHashSet(REFERENCE_SET_MEMBER_QUERY));
-	private static final Set<String> MAP_TARGET_COMPONENT_ID_FIELDS_TO_LOAD = unmodifiableSet(newHashSet(
-	REFERENCE_SET_MEMBER_REFERENCED_COMPONENT_ID,
-	REFERENCE_SET_MEMBER_MAP_TARGET_COMPONENT_ID));
-	private static final Set<String> REF_SET_MEMBERSHIP_FIELDS_TO_LOAD = unmodifiableSet(newHashSet(
-	CONCEPT_REFERRING_REFERENCE_SET_ID,
-	CONCEPT_REFERRING_MAPPING_REFERENCE_SET_ID,
-	ComponentIdLongField.COMPONENT_ID
-	));
+	private static final Set<String> MEMBER_QUERY_FIELDS_TO_LOAD = SnomedMappings.fieldsToLoad().field(REFERENCE_SET_MEMBER_QUERY).build();
+	private static final Set<String> MAP_TARGET_COMPONENT_ID_FIELDS_TO_LOAD = SnomedMappings.fieldsToLoad()
+			.memberReferencedComponentId()
+			.field(REFERENCE_SET_MEMBER_MAP_TARGET_COMPONENT_ID).build();
+	
+	private static final Set<String> REF_SET_MEMBERSHIP_FIELDS_TO_LOAD = SnomedMappings.fieldsToLoad().id().field(CONCEPT_REFERRING_REFERENCE_SET_ID)
+			.field(CONCEPT_REFERRING_MAPPING_REFERENCE_SET_ID).build();
 
 	protected final class RefSetTypeToConceptFunction implements Function<SnomedRefSetType, SnomedConceptIndexEntry> {
 		private final IBranchPath branchPath;
@@ -170,7 +156,7 @@ public class SnomedServerRefSetBrowser extends AbstractSnomedIndexBrowser<Snomed
 	@Override
 	public int getMemberCount(final IBranchPath branchPath, final String refSetId) {
 		final TotalHitCountCollector collector = new TotalHitCountCollector();
-		final TermQuery refSetMemberByRefSetIdQuery = new TermQuery(new Term(REFERENCE_SET_MEMBER_REFERENCE_SET_ID, IndexUtils.longToPrefixCoded(refSetId)));
+		final Query refSetMemberByRefSetIdQuery = SnomedMappings.newQuery().memberRefSetId(refSetId).matchAll();
 		service.search(branchPath, refSetMemberByRefSetIdQuery, collector);
 		return collector.getTotalHits();
 	}
@@ -178,19 +164,14 @@ public class SnomedServerRefSetBrowser extends AbstractSnomedIndexBrowser<Snomed
 	@Override
 	public int getActiveMemberCount(final IBranchPath branchPath, final String refSetId) {
 		final TotalHitCountCollector collector = new TotalHitCountCollector();
-		final Query query = new IndexQueryBuilder().
-			require(SnomedIndexQueries.ACTIVE_COMPONENT_QUERY).
-			requireExactTerm(REFERENCE_SET_MEMBER_REFERENCE_SET_ID, IndexUtils.longToPrefixCoded(refSetId)).toQuery();
+		final Query query = SnomedMappings.newQuery().active().memberRefSetId(refSetId).matchAll();
 		service.search(branchPath, query, collector);
 		return collector.getTotalHits();
 	}
 
 	@Override
 	public Collection<SnomedConceptIndexEntry> getMemberConcepts(final IBranchPath branchPath, final String refSetId) {
-		final TermQuery refSetMemberByRefSetIdQuery = new TermQuery(new Term(REFERENCE_SET_MEMBER_REFERENCE_SET_ID, IndexUtils.longToPrefixCoded(refSetId)));
-		final BooleanQuery query = new BooleanQuery();
-		query.add(refSetMemberByRefSetIdQuery, Occur.MUST);
-		query.add(SnomedIndexQueries.ACTIVE_COMPONENT_QUERY, Occur.MUST);
+		final Query query = SnomedMappings.newQuery().active().memberRefSetId(refSetId).matchAll();
 		final DocIdCollector collector = DocIdCollector.create(service.maxDoc(branchPath));
 		service.search(branchPath, query, collector);
 		try {
@@ -198,8 +179,8 @@ public class SnomedServerRefSetBrowser extends AbstractSnomedIndexBrowser<Snomed
 			final Set<SnomedConceptIndexEntry> concepts = Sets.newHashSet();
 			while (scoredDocIdsIterator.next()) {
 				final int docId = scoredDocIdsIterator.getDocID();
-				final Document document = service.document(branchPath, docId, ImmutableSet.of(REFERENCE_SET_MEMBER_REFERENCED_COMPONENT_ID));
-				final String referencedConceptId = document.get(REFERENCE_SET_MEMBER_REFERENCED_COMPONENT_ID);
+				final Document doc = service.document(branchPath, docId, SnomedMappings.fieldsToLoad().memberReferencedComponentId().build());
+				final String referencedConceptId = SnomedMappings.memberReferencedComponentId().getValueAsString(doc);
 				concepts.add(getTerminologyBrowser().getConcept(branchPath, referencedConceptId));
 			}
 			return concepts;
@@ -210,10 +191,7 @@ public class SnomedServerRefSetBrowser extends AbstractSnomedIndexBrowser<Snomed
 	
 	@Override
 	public Collection<String> getMemberConceptIds(final IBranchPath branchPath, final String refSetId) {
-		final TermQuery refSetMemberByRefSetIdQuery = new TermQuery(new Term(REFERENCE_SET_MEMBER_REFERENCE_SET_ID, IndexUtils.longToPrefixCoded(refSetId)));
-		final BooleanQuery query = new BooleanQuery();
-		query.add(refSetMemberByRefSetIdQuery, Occur.MUST);
-		query.add(SnomedIndexQueries.ACTIVE_COMPONENT_QUERY, Occur.MUST);
+		final Query query = SnomedMappings.newQuery().active().memberRefSetId(refSetId).matchAll();
 		final DocIdCollector collector = DocIdCollector.create(service.maxDoc(branchPath));
 		service.search(branchPath, query, collector);
 		try {
@@ -221,9 +199,8 @@ public class SnomedServerRefSetBrowser extends AbstractSnomedIndexBrowser<Snomed
 			final Set<String> conceptIds = Sets.newHashSet();
 			while (scoredDocIdsIterator.next()) {
 				final int docId = scoredDocIdsIterator.getDocID();
-				final Document document = service.document(branchPath, docId, ImmutableSet.of(REFERENCE_SET_MEMBER_REFERENCED_COMPONENT_ID));
-				final String referencedConceptId = document.get(REFERENCE_SET_MEMBER_REFERENCED_COMPONENT_ID);
-				conceptIds.add(referencedConceptId);
+				final Document doc = service.document(branchPath, docId, SnomedMappings.fieldsToLoad().memberReferencedComponentId().build());
+				conceptIds.add(SnomedMappings.memberReferencedComponentId().getValueAsString(doc));
 			}
 			return conceptIds;
 		} catch (final IOException e) {
@@ -235,47 +212,40 @@ public class SnomedServerRefSetBrowser extends AbstractSnomedIndexBrowser<Snomed
 	@Override
 	public boolean isActiveMemberOf(final IBranchPath branchPath, final long identifierConceptId, final long conceptId) {
 		Preconditions.checkNotNull(branchPath, "Branch path argument cannot be null");
-		
-		final BooleanQuery query = new BooleanQuery(true);
-		query.add(IndexQueries.queryComponentByLongId(CONCEPT_NUMBER, conceptId), MUST);
-		query.add(new TermQuery(new Term(CONCEPT_REFERRING_REFERENCE_SET_ID, IndexUtils.longToPrefixCoded(identifierConceptId))), Occur.MUST);
-		
+		final Query query = SnomedMappings.newQuery().type(CONCEPT_NUMBER).id(conceptId).field(CONCEPT_REFERRING_REFERENCE_SET_ID, Long.valueOf(identifierConceptId)).matchAll();
 		return service.getHitCount(branchPath, query, null) > 0;
-		
 	}
 	
 	@Override
 	public String getComponentLabel(final IBranchPath branchPath, final String componentId) {
-		
 		Preconditions.checkNotNull(branchPath, "Branch path argument cannot be null.");
 		Preconditions.checkNotNull(componentId, "Component ID argument cannot be null.");
-		
 		return getTerminologyBrowser().getComponentLabel(branchPath, componentId);
 	}
 	
 	@Override
 	public SnomedRefSetIndexEntry getRefSet(final IBranchPath branchPath, final String refSetId) {
-		return getConcept(branchPath, IndexQueries.queryComponentByLongId(SnomedTerminologyComponentConstants.REFSET_NUMBER, refSetId));
+		return getConcept(branchPath, createRefSetByIdQuery(refSetId));
 	}
 
 	@Override
 	public Iterable<SnomedRefSetIndexEntry> getRefsSets(final IBranchPath branchPath) {
 		final DocIdCollector collector = DocIdCollector.create(service.maxDoc(branchPath));
 		try {
-			service.search(branchPath, SnomedIndexQueries.REFSET_TYPE_QUERY, collector);
+			service.search(branchPath, createRefSetTypeQuery(), collector);
 			return createResultObjects(branchPath, collector.getDocIDs().iterator());
 		} catch (final IOException e) {
 			throw new RuntimeException("Error when querying all statements.", e);
 		}
 	}
-	
+
 	@Override
 	public int getTypeOrdinal(final IBranchPath branchPath, final String refSetId) {
 
 		Preconditions.checkNotNull(branchPath, "Branch path argument cannot be null.");
 		Preconditions.checkNotNull(refSetId, "SNOMED CT reference set identifier concept ID argument cannot be null.");
 		
-		final TopDocs topDocs = service.search(branchPath, IndexQueries.queryComponentByLongId(SnomedTerminologyComponentConstants.REFSET_NUMBER, refSetId), 1);
+		final TopDocs topDocs = service.search(branchPath, createRefSetByIdQuery(refSetId), 1);
 		
 		if (null == topDocs || CompareUtils.isEmpty(topDocs.scoreDocs)) {
 			return -1;
@@ -293,22 +263,27 @@ public class SnomedServerRefSetBrowser extends AbstractSnomedIndexBrowser<Snomed
 		
 		return IndexUtils.getIntValue(field);
 	}
+	
+	private Query createRefSetTypeQuery() {
+		return SnomedMappings.newQuery().type(SnomedTerminologyComponentConstants.REFSET_NUMBER).matchAll();
+	}
+
+	private Query createRefSetByIdQuery(final String refSetId) {
+		return SnomedMappings.newQuery().type(SnomedTerminologyComponentConstants.REFSET_NUMBER).id(refSetId).matchAll();
+	}
 
 	@Override
 	public Collection<String> getAllRefSetIds(final IBranchPath branchPath) {
-		
 		final DocIdCollector collector = DocIdCollector.create(service.maxDoc(branchPath));
-		service.search(branchPath, SnomedIndexQueries.REFSET_TYPE_QUERY, collector);
+		service.search(branchPath, createRefSetTypeQuery(), collector);
 		
 		final Collection<String> $ = Sets.newHashSet();
-
 		try {
 			final DocIdsIterator iterator = collector.getDocIDs().iterator();
-			
 			while (iterator.next()) {
 				final int docID = iterator.getDocID();
 				final Document doc = service.document(branchPath, docID, COMPONENT_ID_FIELD);
-				$.add(ComponentIdLongField.getString(doc));
+				$.add(SnomedMappings.id().getValueAsString(doc));
 			}
 		} catch (final IOException e) {
 			throw new IndexException("Error while getting all reference set identifier concept IDs.", e);
@@ -334,8 +309,8 @@ public class SnomedServerRefSetBrowser extends AbstractSnomedIndexBrowser<Snomed
 			
 		}
 		
-		final Document doc = service.document(branchPath, topDocs.scoreDocs[0].doc, ComponentStorageKeyField.FIELDS_TO_LOAD);
-		return ComponentStorageKeyField.getLong(doc);
+		final Document doc = service.document(branchPath, topDocs.scoreDocs[0].doc, SnomedMappings.fieldsToLoad().storageKey().build());
+		return Mappings.storageKey().getValue(doc);
 	}
 	
 	@Override
@@ -343,22 +318,22 @@ public class SnomedServerRefSetBrowser extends AbstractSnomedIndexBrowser<Snomed
 		Preconditions.checkNotNull(branchPath, "Branch path argument cannot be null.");
 		Preconditions.checkNotNull(branchPath, "Concept ID argument cannot be null.");
 		
-		final TopDocs topDocs = service.search(branchPath, IndexQueries.queryComponentByLongId(SnomedTerminologyComponentConstants.REFSET_NUMBER, identifierConceptId), 1);
+		final TopDocs topDocs = service.search(branchPath, createRefSetByIdQuery(identifierConceptId), 1);
 		
 		//cannot found matching label for component
 		if (null == topDocs || CompareUtils.isEmpty(topDocs.scoreDocs)) {
 			return -1L;
 		}
 		
-		final Document doc = service.document(branchPath, topDocs.scoreDocs[0].doc, ComponentStorageKeyField.FIELDS_TO_LOAD);
-		return ComponentStorageKeyField.getLong(doc);
+		final Document doc = service.document(branchPath, topDocs.scoreDocs[0].doc, SnomedMappings.fieldsToLoad().storageKey().build());
+		return Mappings.storageKey().getValue(doc);
 	}
 	
 	@Override
 	public String getIdentifierId(final IBranchPath branchPath, final long storageKey) {
 		Preconditions.checkNotNull(branchPath, "Branch path argument cannot be null.");
 		
-		final Query query = new ComponentStorageKeyField(storageKey).toQuery();
+		final Query query = SnomedMappings.newQuery().storageKey(storageKey).matchAll();
 		final TopDocs topDocs = service.search(branchPath, query, 1);
 		
 		if (null == topDocs || CompareUtils.isEmpty(topDocs.scoreDocs)) {
@@ -367,7 +342,7 @@ public class SnomedServerRefSetBrowser extends AbstractSnomedIndexBrowser<Snomed
 		
 		final ScoreDoc scoreDoc = topDocs.scoreDocs[0];
 		final Document doc = service.document(branchPath, scoreDoc.doc, COMPONENT_ID_FIELD);
-		return ComponentIdLongField.getString(doc);
+		return SnomedMappings.id().getValueAsString(doc);
 	}
 	
 	@Override
@@ -448,7 +423,7 @@ public class SnomedServerRefSetBrowser extends AbstractSnomedIndexBrowser<Snomed
 			return Collections.emptySet();
 		}
 		
-		final Query query = IndexQueries.and(SnomedIndexQueries.ACTIVE_COMPONENT_QUERY, IndexQueries.queryComponentByLongId(CONCEPT_NUMBER, conceptId));
+		final Query query = SnomedMappings.newQuery().active().type(CONCEPT_NUMBER).id(conceptId).matchAll();
 		
 		final TopDocs topDocs = service.search(branchPath, query, 1);
 		
@@ -489,7 +464,7 @@ public class SnomedServerRefSetBrowser extends AbstractSnomedIndexBrowser<Snomed
 			return Collections.emptySet();
 		}
 		
-		final Query query = IndexQueries.and(SnomedIndexQueries.ACTIVE_COMPONENT_QUERY, IndexQueries.queryComponentByLongId(CONCEPT_NUMBER, conceptId));
+		final Query query = SnomedMappings.newQuery().active().type(CONCEPT_NUMBER).id(conceptId).matchAll();
 		final TopDocs topDocs = service.search(branchPath, query, 1);
 		
 		if (null == topDocs || CompareUtils.isEmpty(topDocs.scoreDocs)) {
@@ -519,27 +494,20 @@ public class SnomedServerRefSetBrowser extends AbstractSnomedIndexBrowser<Snomed
 	
 	@Override
 	public LongSet getPublishedModuleDependencyMembers(final IBranchPath branchPath, final String id) {
-		
 		Preconditions.checkNotNull(branchPath, "Branch path argument cannot be null.");
 		Preconditions.checkNotNull(id, "ID argument cannot be null.");
-
-		final BooleanQuery query = new BooleanQuery(true);
 		
-		final BooleanQuery moduleQuery = new BooleanQuery(true);
 
 		final BooleanQuery sourceModuleQuery = new BooleanQuery(true);
-		sourceModuleQuery.add(new TermQuery(new Term(COMPONENT_MODULE_ID, IndexUtils.longToPrefixCoded(id))), Occur.MUST);
+		sourceModuleQuery.add(SnomedMappings.newQuery().module(id).matchAll(), Occur.MUST);
 		sourceModuleQuery.add(new TermQuery(new Term(REFERENCE_SET_MEMBER_SOURCE_EFFECTIVE_TIME, IndexUtils.longToPrefixCoded(EffectiveTimes.UNSET_EFFECTIVE_TIME))), Occur.MUST_NOT);
 		
 		final BooleanQuery targetModuleQuery = new BooleanQuery(true);
-		targetModuleQuery.add(new TermQuery(new Term(REFERENCE_SET_MEMBER_REFERENCED_COMPONENT_ID, id)), Occur.MUST);
+		targetModuleQuery.add(SnomedMappings.newQuery().memberReferencedComponentId(id).matchAll(), Occur.MUST);
 		targetModuleQuery.add(new TermQuery(new Term(REFERENCE_SET_MEMBER_TARGET_EFFECTIVE_TIME, IndexUtils.longToPrefixCoded(EffectiveTimes.UNSET_EFFECTIVE_TIME))), Occur.MUST_NOT);
 		
-		moduleQuery.add(sourceModuleQuery, Occur.SHOULD);
-		moduleQuery.add(targetModuleQuery, Occur.SHOULD);
-
-		query.add(moduleQuery, Occur.MUST);
-		query.add(new TermQuery(new Term(REFERENCE_SET_MEMBER_REFERENCE_SET_ID, IndexUtils.longToPrefixCoded(Concepts.REFSET_MODULE_DEPENDENCY_TYPE))), Occur.MUST);
+		final Query moduleQuery = SnomedMappings.newQuery().and(sourceModuleQuery).and(targetModuleQuery).matchAny();
+		final Query query = SnomedMappings.newQuery().memberRefSetId(Concepts.REFSET_MODULE_DEPENDENCY_TYPE).and(moduleQuery).matchAll();
 		
 		final DocIdCollector collector = DocIdCollector.create(service.maxDoc(branchPath));
 		service.search(branchPath, query, collector);
@@ -551,8 +519,8 @@ public class SnomedServerRefSetBrowser extends AbstractSnomedIndexBrowser<Snomed
 			
 			while (iterator.next()) {
 				final int docID = iterator.getDocID();
-				final Document doc = service.document(branchPath, docID, ComponentStorageKeyField.FIELDS_TO_LOAD);
-				storageKeys.add(ComponentStorageKeyField.getLong(doc));
+				final Document doc = service.document(branchPath, docID, SnomedMappings.fieldsToLoad().storageKey().build());
+				storageKeys.add(Mappings.storageKey().getValue(doc));
 			}
 		} catch (final IOException e) {
 			throw new IndexException("Error while querying module dependency reference set members.", e);
@@ -628,32 +596,27 @@ public class SnomedServerRefSetBrowser extends AbstractSnomedIndexBrowser<Snomed
 	
 	@Override
 	public ExtendedComponent getExtendedComponent(final IBranchPath branchPath, final long storageKey) {
-		
 		checkNotNull(branchPath, "branchPath");
 		checkArgument(storageKey > CDOUtils.NO_STORAGE_KEY);
-		
-		final Query query = new ComponentStorageKeyField(storageKey).toQuery();
-		final TopDocs topDocs = service.search(branchPath, query, 1);
+		final TopDocs topDocs = service.search(branchPath, SnomedMappings.newQuery().storageKey(storageKey).matchAll(), 1);
 		
 		if (IndexUtils.isEmpty(topDocs)) {
 			return null;
 		}
 		
-		final Document doc = service.document(branchPath, topDocs.scoreDocs[0].doc, FILEDS_TO_LOAD_FOR_EXTENDED_COMPONENT);
-		
+		final Document doc = service.document(branchPath, topDocs.scoreDocs[0].doc, FIELDS_TO_LOAD_FOR_EXTENDED_COMPONENT);
 		return new ExtendedComponentImpl(
-				ComponentIdLongField.getString(doc), 
-				doc.get(CommonIndexConstants.COMPONENT_LABEL),
-				doc.get(CommonIndexConstants.COMPONENT_ICON_ID), 
+				SnomedMappings.id().getValueAsString(doc), 
+				Mappings.label().getValue(doc),
+				Mappings.iconId().getValue(doc), 
 				SnomedTerminologyComponentConstants.REFSET_NUMBER);
-		
 	}
 
 	@Override
 	public boolean isRegularRefSet(final IBranchPath branchPath, final long storageKey) {
 		checkNotNull(branchPath, "branchPath");
 		checkArgument(storageKey > NO_STORAGE_KEY, "Storage key should be a positive integer.");
-		final Query query = IndexQueries.and(new ComponentStorageKeyField(storageKey).toQuery(), SnomedIndexQueries.REFSET_TYPE_QUERY, SnomedIndexQueries.NOT_STRUCTURAL_REFSET_QUERY);
+		final Query query = SnomedMappings.newQuery().storageKey(storageKey).type(SnomedTerminologyComponentConstants.REFSET_NUMBER).field(REFERENCE_SET_STRUCTURAL, 0).matchAll();
 		return service.getHitCount(branchPath, query, null) > 0;
 	}
 	
@@ -664,16 +627,16 @@ public class SnomedServerRefSetBrowser extends AbstractSnomedIndexBrowser<Snomed
 
 	@Override
 	protected SnomedRefSetIndexEntry createResultObject(final IBranchPath branchPath, final Document doc) {
-		final String id = ComponentIdLongField.getString(doc);
-		final String label = doc.get(CommonIndexConstants.COMPONENT_LABEL);
+		final String id = SnomedMappings.id().getValueAsString(doc);
+		final String label = Mappings.label().getValue(doc);
 		final IndexableField referencedComponentTypeField = doc.getField(REFERENCE_SET_REFERENCED_COMPONENT_TYPE);
 		final short referencedComponentType = referencedComponentTypeField.numericValue().shortValue();
 		final IndexableField referenceSetTypeField = doc.getField(REFERENCE_SET_TYPE);
 		final SnomedRefSetType refSetType = SnomedRefSetType.get(referenceSetTypeField.numericValue().intValue());
-		final long storageKey = ComponentStorageKeyField.getLong(doc);
+		final long storageKey = Mappings.storageKey().getValue(doc);
 		final boolean structural = IndexUtils.getBooleanValue(doc.getField(REFERENCE_SET_STRUCTURAL));
-		final String iconId = doc.get(CommonIndexConstants.COMPONENT_ICON_ID);
-		final String moduleId = doc.get(COMPONENT_MODULE_ID);
+		final String iconId = Mappings.iconId().getValue(doc);
+		final String moduleId = SnomedMappings.module().getValueAsString(doc);
 		
 		return new SnomedRefSetIndexEntry(
 				id, 
@@ -709,12 +672,7 @@ public class SnomedServerRefSetBrowser extends AbstractSnomedIndexBrowser<Snomed
 
 	@Override
 	public boolean isReferenced(final IBranchPath branchPath, final String refSetId, final String componentId) {
-		final TermQuery referencingRefSetMembersQuery = new TermQuery(new Term(REFERENCE_SET_MEMBER_REFERENCED_COMPONENT_ID, componentId));
-		final TermQuery refSetMembersRefSetIdQuery = new TermQuery(new Term(REFERENCE_SET_MEMBER_REFERENCE_SET_ID, IndexUtils.longToPrefixCoded(refSetId)));
-		final BooleanQuery query = new BooleanQuery();
-		query.add(referencingRefSetMembersQuery, Occur.MUST);
-		query.add(SnomedIndexQueries.ACTIVE_COMPONENT_QUERY, Occur.MUST);
-		query.add(refSetMembersRefSetIdQuery, Occur.MUST);
+		final Query query = SnomedMappings.newQuery().active().memberReferencedComponentId(componentId).memberRefSetId(refSetId).matchAll();
 		final TotalHitCountCollector collector = new TotalHitCountCollector();
 		service.search(branchPath, query, collector);
 		return collector.getTotalHits() > 0;
@@ -722,15 +680,11 @@ public class SnomedServerRefSetBrowser extends AbstractSnomedIndexBrowser<Snomed
 
 	@Override
 	public Collection<String> getAllQueries(final IBranchPath branchPath, final String refSetId) {
-		
 		checkNotNull(branchPath, "branchPath");
 		checkNotNull(refSetId, "refSetId");
 		
 		final Collection<String> queries = newHashSet();
-		final Query refSetMembersRefSetIdQuery = new TermQuery(new Term(REFERENCE_SET_MEMBER_REFERENCE_SET_ID, IndexUtils.longToPrefixCoded(refSetId)));
-		final BooleanQuery query = new BooleanQuery();
-		query.add(refSetMembersRefSetIdQuery, Occur.MUST);
-		query.add(SnomedIndexQueries.ACTIVE_COMPONENT_QUERY, Occur.MUST);
+		final Query query = SnomedMappings.newQuery().active().memberRefSetId(refSetId).matchAll();
 		
 		final DocIdCollector collector = DocIdCollector.create(service.maxDoc(branchPath));
 		service.search(branchPath, query, collector);
@@ -770,7 +724,7 @@ public class SnomedServerRefSetBrowser extends AbstractSnomedIndexBrowser<Snomed
 		mappingMembershipQuery.setRewriteMethod(CONSTANT_SCORE_FILTER_REWRITE);
 		membershipQuery.add(mappingMembershipQuery, SHOULD);
 
-		final Query query = IndexQueries.and(SnomedIndexQueries.ACTIVE_CONCEPTS_QUERY, membershipQuery);
+		final Query query = SnomedMappings.newQuery().active().and(membershipQuery).matchAll();
 		final LongKeyMap refSetIdReferencedConceptIds = new LongKeyOpenHashMap();
 		
 		final DocIdCollector collector = DocIdCollector.create(service.maxDoc(branchPath));
@@ -793,7 +747,7 @@ public class SnomedServerRefSetBrowser extends AbstractSnomedIndexBrowser<Snomed
 				public void apply(final long docId) {
 					
 					final Document doc = service.document(branchPath, Ints.checkedCast(docId), REF_SET_MEMBERSHIP_FIELDS_TO_LOAD);
-					final long conceptId = ComponentIdLongField.getLong(doc);
+					final long conceptId = SnomedMappings.id().getValue(doc);
 					
 					final LongSet refSetIds = newLongSet();
 					for (final IndexableField field : doc.getFields(CONCEPT_REFERRING_REFERENCE_SET_ID)) {
@@ -892,7 +846,7 @@ public class SnomedServerRefSetBrowser extends AbstractSnomedIndexBrowser<Snomed
 	@Override
 	public Collection<SnomedRefSetIndexEntry> getAllReferenceSets(final IBranchPath branchPath) {
 		final DocIdCollector collector = DocIdCollector.create(service.maxDoc(branchPath));
-		service.search(branchPath, SnomedIndexQueries.REFSET_TYPE_QUERY, collector);
+		service.search(branchPath, createRefSetTypeQuery(), collector);
 		try {
 			final DocIdsIterator iterator = collector.getDocIDs().iterator();
 			return Lists.newArrayList(createResultObjects(branchPath, iterator));
@@ -918,24 +872,21 @@ public class SnomedServerRefSetBrowser extends AbstractSnomedIndexBrowser<Snomed
 	
 	@Override
 	public Collection<SnomedRefSetMemberIndexEntry> getMembersForMapTarget(final IBranchPath branchPath, final String mapTarget, final String mappingRefSetId) {
-		final Query query = IndexQueries.and(
-			new TermQuery(new Term(REFERENCE_SET_MEMBER_REFERENCE_SET_ID, IndexUtils.longToPrefixCoded(mappingRefSetId))),
-			new TermQuery(new Term(REFERENCE_SET_MEMBER_MAP_TARGET_COMPONENT_ID, mapTarget)),
-			SnomedIndexQueries.ACTIVE_COMPONENT_QUERY,
-			getMapQuery());
+		final Query query = SnomedMappings.newQuery()
+				.active()
+				.memberRefSetId(mappingRefSetId)
+				.field(REFERENCE_SET_MEMBER_MAP_TARGET_COMPONENT_ID, mapTarget)
+				.and(getMapQuery()).matchAll();
 		return getMembers(branchPath, query);
 	}
 
 	private Query getMapQuery() {
-		return IndexQueries.or(SnomedIndexQueries.toRefSetMemberTypeQuery(SnomedRefSetType.COMPLEX_MAP_VALUE), SnomedIndexQueries.toRefSetMemberTypeQuery(SnomedRefSetType.SIMPLE_MAP_VALUE));
+		return SnomedMappings.newQuery().memberRefSetType(SnomedRefSetType.COMPLEX_MAP).memberRefSetType(SnomedRefSetType.SIMPLE_MAP).matchAny();
 	}
 	
 	@Override
 	public Collection<SnomedRefSetMemberIndexEntry> getMappingMembers(final IBranchPath branchPath, final String conceptId) {
-		final Query query = IndexQueries.and(
-				new TermQuery(new Term(REFERENCE_SET_MEMBER_REFERENCED_COMPONENT_ID, conceptId)),
-				SnomedIndexQueries.ACTIVE_COMPONENT_QUERY,
-				getMapQuery());
+		final Query query = SnomedMappings.newQuery().active().memberReferencedComponentId(conceptId).and(getMapQuery()).matchAll();
 		return getMembers(branchPath, query);
 	}
 	
@@ -945,7 +896,7 @@ public class SnomedServerRefSetBrowser extends AbstractSnomedIndexBrowser<Snomed
 		checkNotNull(branchPath, "branchPath");
 		checkNotNull(refSetId, "refSetId");
 		
-		final Query query = IndexQueries.and(SnomedIndexQueries.ACTIVE_COMPONENT_QUERY, new TermQuery(new Term(REFERENCE_SET_MEMBER_REFERENCE_SET_ID, longToPrefixCoded(refSetId))));
+		final Query query = SnomedMappings.newQuery().active().memberRefSetId(refSetId).matchAll();
 		
 		final DocIdCollector collector = DocIdCollector.create(service.maxDoc(branchPath));
 		service.search(branchPath, query, collector);
@@ -958,7 +909,7 @@ public class SnomedServerRefSetBrowser extends AbstractSnomedIndexBrowser<Snomed
 			while (iterator.next()) {
 				final int docID = iterator.getDocID();
 				final Document doc = service.document(branchPath, docID, MAP_TARGET_COMPONENT_ID_FIELDS_TO_LOAD);
-				final String mapSource = doc.get(REFERENCE_SET_MEMBER_REFERENCED_COMPONENT_ID);
+				final String mapSource = SnomedMappings.memberReferencedComponentId().getValueAsString(doc);
 				final String mapTarget = doc.get(REFERENCE_SET_MEMBER_MAP_TARGET_COMPONENT_ID);
 				if (!isEmpty(mapSource) && !isEmpty(mapTarget)) {
 					
@@ -982,41 +933,32 @@ public class SnomedServerRefSetBrowser extends AbstractSnomedIndexBrowser<Snomed
 	}
 	
 	private Collection<SnomedRefSetMemberIndexEntry> getReferringMembers(final IBranchPath branchPath, final String conceptId, final boolean excludeInactive) {
-		final Query query;
-		final TermQuery queryFragment = new TermQuery(new Term(REFERENCE_SET_MEMBER_REFERENCED_COMPONENT_ID, conceptId));
+		final SnomedQueryBuilder query;
+		final SnomedQueryBuilder queryFragment = SnomedMappings.newQuery().memberReferencedComponentId(conceptId);
 		
 		if (excludeInactive) {
-			query = new BooleanQuery(true);
-			((BooleanQuery) query).add(queryFragment, Occur.MUST);
-			((BooleanQuery) query).add(SnomedIndexQueries.ACTIVE_COMPONENT_QUERY, Occur.MUST);
+			query = SnomedMappings.newQuery();
+			query.active().and(queryFragment.matchAll());
 		} else {
 			query = queryFragment; 
 		}
-		return getMembers(branchPath, query);
+		return getMembers(branchPath, query.matchAll());
 	}
 	
 	private Query getMappingQuery(final String mappingRefSetId, final String sourceId, final String targetId) {
-		final BooleanQuery query = new BooleanQuery(true);
-		query.add(new TermQuery(new Term(REFERENCE_SET_MEMBER_REFERENCE_SET_ID, IndexUtils.longToPrefixCoded(mappingRefSetId))), Occur.MUST);
-		query.add(new TermQuery(new Term(REFERENCE_SET_MEMBER_REFERENCED_COMPONENT_ID, sourceId)), Occur.MUST);
-		query.add(new TermQuery(new Term(REFERENCE_SET_MEMBER_MAP_TARGET_COMPONENT_ID, targetId)), Occur.MUST);
-		query.add(SnomedIndexQueries.ACTIVE_COMPONENT_QUERY, Occur.MUST);
-		return query;
+		return SnomedMappings.newQuery()
+				.active()
+				.memberRefSetId(mappingRefSetId)
+				.memberReferencedComponentId(sourceId)
+				.field(REFERENCE_SET_MEMBER_MAP_TARGET_COMPONENT_ID, targetId)
+				.matchAll();
 	}
 	
-	/*
-	 * (non-Javadoc)
-	 * @see com.b2international.snowowl.snomed.datastore.SnomedRefSetBrowser#getMembers(com.b2international.snowowl.core.api.IBranchPath, java.lang.String)
-	 */
 	@Override
 	public Collection<SnomedRefSetMemberIndexEntry> getMembers(final IBranchPath branchPath, final String referenceSetId) {
 		return getMembers(branchPath, referenceSetId, false);
 	}
 	
-	/*
-	 * (non-Javadoc)
-	 * @see com.b2international.snowowl.snomed.datastore.SnomedRefSetBrowser#getActiveMembers(com.b2international.snowowl.core.api.IBranchPath, java.lang.String)
-	 */
 	@Override
 	public Collection<SnomedRefSetMemberIndexEntry> getActiveMembers(final IBranchPath branchPath, final String referenceSetId) {
 		return getMembers(branchPath, referenceSetId, true);
@@ -1024,19 +966,16 @@ public class SnomedServerRefSetBrowser extends AbstractSnomedIndexBrowser<Snomed
 	
 	
 	private Collection<SnomedRefSetMemberIndexEntry> getMembers(final IBranchPath branchPath, final String referenceSetId, final boolean excludeInactive) {
-		
-		final Query query;
-		final TermQuery queryFragment = new TermQuery(new Term(REFERENCE_SET_MEMBER_REFERENCE_SET_ID, IndexUtils.longToPrefixCoded(referenceSetId)));
+		final SnomedQueryBuilder query;
+		final SnomedQueryBuilder queryFragment = SnomedMappings.newQuery().memberRefSetId(referenceSetId);
 		
 		if (excludeInactive) {
-			query = new BooleanQuery(true);
-			((BooleanQuery) query).add(queryFragment, Occur.MUST);
-			((BooleanQuery) query).add(SnomedIndexQueries.ACTIVE_COMPONENT_QUERY, Occur.MUST);
+			query = SnomedMappings.newQuery().active().and(queryFragment.matchAll());
 		} else {
 			query = queryFragment; 
 		}
 
-		return getMembers(branchPath, query);
+		return getMembers(branchPath, query.matchAll());
 	}
 	
 	private Collection<SnomedRefSetMemberIndexEntry> getMembers(final IBranchPath branchPath, final Query query) {
