@@ -22,17 +22,14 @@ import static com.b2international.snowowl.snomed.datastore.PredicateUtils.getEsc
 import java.text.MessageFormat;
 
 import org.apache.lucene.document.Document;
-import org.apache.lucene.document.Field.Store;
-import org.apache.lucene.document.StoredField;
-import org.apache.lucene.document.StringField;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.b2international.snowowl.datastore.cdo.CDOIDUtils;
 import com.b2international.snowowl.datastore.index.AbstractIndexMappingStrategy;
-import com.b2international.snowowl.datastore.index.field.ComponentTypeField;
 import com.b2international.snowowl.snomed.datastore.PredicateUtils;
 import com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants;
+import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedMappings;
 import com.b2international.snowowl.snomed.datastore.snor.PredicateIndexEntry.PredicateType;
 import com.b2international.snowowl.snomed.mrcm.AttributeConstraint;
 import com.b2international.snowowl.snomed.mrcm.CardinalityPredicate;
@@ -167,33 +164,9 @@ public abstract class AbstractPredicateIndexMappingStrategy<P extends ConceptMod
 			this.groupRule = Preconditions.checkNotNull(groupRule, "Group role argument cannot be null.");
 		}
 
-		/* (non-Javadoc)
-		 * @see com.b2international.snowowl.datastore.index.AbstractIndexMappingStrategy#createDocument()
-		 */
 		@Override
 		public Document createDocument() {
-			
-			final String characteristicTypeConceptId = predicate.getCharacteristicTypeConceptId();
-			final String type = getEscgExpression(predicate.getAttribute());
-			final String valueType = getEscgExpression(predicate.getRange());
-			final String characteristicType = isEmpty(characteristicTypeConceptId) 
-					? "<" + CHARACTERISTIC_TYPE 
-					: "<<" + characteristicTypeConceptId;  
-			
-			final Document doc = new Document();
-			
-			new ComponentTypeField(PredicateUtils.PREDICATE_TYPE_ID).addTo(doc);
-			doc.add(new StringField(SnomedIndexBrowserConstants.PREDICATE_UUID, predicate.getUuid(),Store.YES));
-			doc.add(new StoredField(SnomedIndexBrowserConstants.PREDICATE_TYPE, PredicateType.RELATIONSHIP.name()));
-			doc.add(new StoredField(SnomedIndexBrowserConstants.PREDICATE_RELATIONSHIP_TYPE_EXPRESSION, type));
-			doc.add(new StoredField(SnomedIndexBrowserConstants.PREDICATE_RELATIONSHIP_VALUE_EXPRESSION, valueType));
-			doc.add(new StoredField(SnomedIndexBrowserConstants.PREDICATE_CHARACTERISTIC_TYPE_EXPRESSION, characteristicType));
-			doc.add(new StoredField(SnomedIndexBrowserConstants.PREDICATE_GROUP_RULE, groupRule.name()));
-			doc.add(new StoredField(SnomedIndexBrowserConstants.PREDICATE_QUERY_EXPRESSION, domainQueryExpression));
-			doc.add(new StoredField(SnomedIndexBrowserConstants.PREDICATE_REQUIRED, required ? 1 : 0));
-			doc.add(new StoredField(SnomedIndexBrowserConstants.PREDICATE_MULTIPLE, multiple ? 1 : 0));
-			
-			return doc;
+			return createRelationshipPredicateDocument(predicate, domainQueryExpression, groupRule, required, multiple);
 		}
 		
 	}
@@ -209,24 +182,9 @@ public abstract class AbstractPredicateIndexMappingStrategy<P extends ConceptMod
 			super(predicate, domainQueryExpression, required, multiple);
 		}
 
-		/* (non-Javadoc)
-		 * @see com.b2international.snowowl.datastore.index.AbstractIndexMappingStrategy#createDocument()
-		 */
 		@Override
 		public Document createDocument() {
-			final long descriptionId = Long.valueOf(predicate.getTypeId());
-			
-			final Document doc = new Document();
-			
-			new ComponentTypeField(PredicateUtils.PREDICATE_TYPE_ID).addTo(doc);
-			doc.add(new StringField(SnomedIndexBrowserConstants.PREDICATE_UUID, predicate.getUuid(),Store.YES));
-			doc.add(new StoredField(SnomedIndexBrowserConstants.PREDICATE_TYPE, PredicateType.DESCRIPTION.name()));
-			doc.add(new StoredField(SnomedIndexBrowserConstants.PREDICATE_DESCRIPTION_TYPE_ID, descriptionId));
-			doc.add(new StoredField(SnomedIndexBrowserConstants.PREDICATE_QUERY_EXPRESSION, domainQueryExpression));
-			doc.add(new StoredField(SnomedIndexBrowserConstants.PREDICATE_REQUIRED, required ? 1 : 0));
-			doc.add(new StoredField(SnomedIndexBrowserConstants.PREDICATE_MULTIPLE, multiple ? 1 : 0));
-			
-			return doc;
+			return createDescriptionPredicateDocument(predicate, domainQueryExpression, required, multiple);
 		}
 		
 	}
@@ -239,27 +197,60 @@ public abstract class AbstractPredicateIndexMappingStrategy<P extends ConceptMod
 			super(predicate, domainQueryExpression, required, multiple);
 		}
 
-		/* (non-Javadoc)
-		 * @see com.b2international.snowowl.datastore.index.AbstractIndexMappingStrategy#createDocument()
-		 */
 		@Override
 		public Document createDocument() {
-			
-			final Document doc = new Document();
-
-			new ComponentTypeField(PredicateUtils.PREDICATE_TYPE_ID).addTo(doc);
-			doc.add(new StringField(SnomedIndexBrowserConstants.PREDICATE_UUID, predicate.getUuid(),Store.YES));
-			doc.add(new StoredField(SnomedIndexBrowserConstants.PREDICATE_TYPE, PredicateType.DATATYPE.name()));
-			doc.add(new StoredField(SnomedIndexBrowserConstants.PREDICATE_DATA_TYPE_LABEL, predicate.getLabel()));
-			doc.add(new StoredField(SnomedIndexBrowserConstants.PREDICATE_DATA_TYPE_NAME, predicate.getName()));
-			doc.add(new StoredField(SnomedIndexBrowserConstants.PREDICATE_DATA_TYPE_TYPE, predicate.getType().name()));
-			doc.add(new StoredField(SnomedIndexBrowserConstants.PREDICATE_QUERY_EXPRESSION, domainQueryExpression));
-			doc.add(new StoredField(SnomedIndexBrowserConstants.PREDICATE_REQUIRED, required ? 1 : 0));
-			doc.add(new StoredField(SnomedIndexBrowserConstants.PREDICATE_MULTIPLE, multiple ? 1 : 0));
-			
-			return doc;
+			return createConcreteDomainPredicateDocument(predicate, domainQueryExpression, required, multiple);
 		}
+
 		
 	}
 
+	public static Document createConcreteDomainPredicateDocument(ConcreteDomainElementPredicate predicate, String queryExpression, boolean required, boolean multiple) {
+		return SnomedMappings.doc()
+				.type(PredicateUtils.PREDICATE_TYPE_ID)
+				.field(SnomedIndexBrowserConstants.PREDICATE_UUID, predicate.getUuid())
+				.storedOnly(SnomedIndexBrowserConstants.PREDICATE_TYPE, PredicateType.DATATYPE.name())
+				.storedOnly(SnomedIndexBrowserConstants.PREDICATE_DATA_TYPE_LABEL, predicate.getLabel())
+				.storedOnly(SnomedIndexBrowserConstants.PREDICATE_DATA_TYPE_NAME, predicate.getName())
+				.storedOnly(SnomedIndexBrowserConstants.PREDICATE_DATA_TYPE_TYPE, predicate.getType().name())
+				.storedOnly(SnomedIndexBrowserConstants.PREDICATE_QUERY_EXPRESSION, queryExpression)
+				.storedOnly(SnomedIndexBrowserConstants.PREDICATE_REQUIRED, required ? 1 : 0)
+				.storedOnly(SnomedIndexBrowserConstants.PREDICATE_MULTIPLE, multiple ? 1 : 0)
+				.build();
+	}
+
+	public static Document createDescriptionPredicateDocument(DescriptionPredicate predicate, String queryExpression, boolean required, boolean multiple) {
+		return SnomedMappings.doc()
+			.type(PredicateUtils.PREDICATE_TYPE_ID)
+			.field(SnomedIndexBrowserConstants.PREDICATE_UUID, predicate.getUuid())
+			.storedOnly(SnomedIndexBrowserConstants.PREDICATE_TYPE, PredicateType.DESCRIPTION.name())
+			.storedOnly(SnomedIndexBrowserConstants.PREDICATE_DESCRIPTION_TYPE_ID, Long.valueOf(predicate.getTypeId()))
+			.storedOnly(SnomedIndexBrowserConstants.PREDICATE_QUERY_EXPRESSION, queryExpression)
+			.storedOnly(SnomedIndexBrowserConstants.PREDICATE_REQUIRED, required ? 1 : 0)
+			.storedOnly(SnomedIndexBrowserConstants.PREDICATE_MULTIPLE, multiple ? 1 : 0)
+			.build();
+	}
+
+	public static Document createRelationshipPredicateDocument(RelationshipPredicate predicate, String queryExpression, GroupRule groupRule, boolean required, boolean multiple) {
+		final String characteristicTypeConceptId = predicate.getCharacteristicTypeConceptId();
+		final String type = getEscgExpression(predicate.getAttribute());
+		final String valueType = getEscgExpression(predicate.getRange());
+		final String characteristicType = isEmpty(characteristicTypeConceptId) 
+				? "<" + CHARACTERISTIC_TYPE 
+				: "<<" + characteristicTypeConceptId;  
+		
+		return SnomedMappings.doc()
+				.field(SnomedIndexBrowserConstants.PREDICATE_UUID, predicate.getUuid())
+				.type(PredicateUtils.PREDICATE_TYPE_ID)
+				.storedOnly(SnomedIndexBrowserConstants.PREDICATE_TYPE, PredicateType.RELATIONSHIP.name())
+				.storedOnly(SnomedIndexBrowserConstants.PREDICATE_RELATIONSHIP_TYPE_EXPRESSION, type)
+				.storedOnly(SnomedIndexBrowserConstants.PREDICATE_RELATIONSHIP_VALUE_EXPRESSION, valueType)
+				.storedOnly(SnomedIndexBrowserConstants.PREDICATE_CHARACTERISTIC_TYPE_EXPRESSION, characteristicType)
+				.storedOnly(SnomedIndexBrowserConstants.PREDICATE_GROUP_RULE, groupRule.name())
+				.storedOnly(SnomedIndexBrowserConstants.PREDICATE_QUERY_EXPRESSION, queryExpression)
+				.storedOnly(SnomedIndexBrowserConstants.PREDICATE_REQUIRED, required ? 1 : 0)
+				.storedOnly(SnomedIndexBrowserConstants.PREDICATE_MULTIPLE, multiple ? 1 : 0)
+				.build();
+	}
+	
 }

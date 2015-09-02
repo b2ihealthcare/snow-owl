@@ -15,16 +15,10 @@
  */
 package com.b2international.snowowl.datastore.server.snomed.index.init;
 
-import static com.b2international.commons.StringUtils.isEmpty;
-
 import java.io.IOException;
 import java.text.MessageFormat;
-import java.util.concurrent.atomic.AtomicReference;
 
 import org.apache.lucene.document.Document;
-import org.apache.lucene.document.Field.Store;
-import org.apache.lucene.document.StoredField;
-import org.apache.lucene.document.StringField;
 import org.apache.lucene.index.Term;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
@@ -33,20 +27,17 @@ import org.eclipse.core.runtime.SubMonitor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.b2international.commons.concurrent.equinox.ForkJoinUtils;
 import com.b2international.snowowl.core.SimpleFamilyJob;
 import com.b2international.snowowl.core.api.IBranchPath;
-import com.b2international.snowowl.datastore.index.field.ComponentTypeField;
 import com.b2international.snowowl.datastore.server.DatastoreServerActivator;
 import com.b2international.snowowl.datastore.server.snomed.index.SnomedIndexServerService;
-import com.b2international.snowowl.snomed.SnomedConstants;
 import com.b2international.snowowl.snomed.datastore.MrcmEditingContext;
 import com.b2international.snowowl.snomed.datastore.PredicateUtils;
 import com.b2international.snowowl.snomed.datastore.PredicateUtils.ConstraintDomain;
 import com.b2international.snowowl.snomed.datastore.PredicateUtils.DefinitionType;
 import com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants;
+import com.b2international.snowowl.snomed.datastore.index.AbstractPredicateIndexMappingStrategy;
 import com.b2international.snowowl.snomed.datastore.snor.ConstraintFormIsApplicableForValidationPredicate;
-import com.b2international.snowowl.snomed.datastore.snor.PredicateIndexEntry.PredicateType;
 import com.b2international.snowowl.snomed.mrcm.AttributeConstraint;
 import com.b2international.snowowl.snomed.mrcm.CardinalityPredicate;
 import com.b2international.snowowl.snomed.mrcm.ConceptModel;
@@ -54,7 +45,6 @@ import com.b2international.snowowl.snomed.mrcm.ConceptModelPredicate;
 import com.b2international.snowowl.snomed.mrcm.ConceptSetDefinition;
 import com.b2international.snowowl.snomed.mrcm.ConcreteDomainElementPredicate;
 import com.b2international.snowowl.snomed.mrcm.ConstraintBase;
-import com.b2international.snowowl.snomed.mrcm.DataType;
 import com.b2international.snowowl.snomed.mrcm.DescriptionPredicate;
 import com.b2international.snowowl.snomed.mrcm.GroupRule;
 import com.b2international.snowowl.snomed.mrcm.RelationshipPredicate;
@@ -178,38 +168,15 @@ public class MrcmIndexInitializer extends SimpleFamilyJob {
 
 	private void importConcreteDomainElementPredicate(final ConceptModelPredicate predicate, final String queryExpression, final boolean required,
 			final boolean multiple) throws IOException {
-		
 		final ConcreteDomainElementPredicate dataTypePredicate = (ConcreteDomainElementPredicate) predicate;
-		final String dataTypeName = dataTypePredicate.getName();
-		final String dataTypeLabel = dataTypePredicate.getLabel();
-		final DataType dataType = dataTypePredicate.getType();
-		
-		final Document document = new Document();
-		new ComponentTypeField(PREDICATE_TYPE_ID).addTo(document);
-		document.add(new StringField(SnomedIndexBrowserConstants.PREDICATE_UUID, predicate.getUuid(),Store.YES));
-		document.add(new StoredField(SnomedIndexBrowserConstants.PREDICATE_TYPE, PredicateType.DATATYPE.name()));
-		document.add(new StoredField(SnomedIndexBrowserConstants.PREDICATE_DATA_TYPE_LABEL, dataTypeLabel));
-		document.add(new StoredField(SnomedIndexBrowserConstants.PREDICATE_DATA_TYPE_NAME, dataTypeName));
-		document.add(new StoredField(SnomedIndexBrowserConstants.PREDICATE_DATA_TYPE_TYPE, dataType.name()));
-		document.add(new StoredField(SnomedIndexBrowserConstants.PREDICATE_QUERY_EXPRESSION, queryExpression));
-		document.add(new StoredField(SnomedIndexBrowserConstants.PREDICATE_REQUIRED, required ? 1 : 0));
-		document.add(new StoredField(SnomedIndexBrowserConstants.PREDICATE_MULTIPLE, multiple ? 1 : 0));
+		final Document document = AbstractPredicateIndexMappingStrategy.createConcreteDomainPredicateDocument(dataTypePredicate, queryExpression, required, multiple);
 		indexService.index(branchPath, document, new Term(SnomedIndexBrowserConstants.PREDICATE_UUID, predicate.getUuid()));
 	}
 
 	private void importDescriptionPredicate(final ConceptModelPredicate predicate, final String queryExpression, final boolean required,
 			final boolean multiple) throws IOException {
 		final DescriptionPredicate descriptionPredicate = (DescriptionPredicate) predicate;
-		final long descriptionId = Long.valueOf(descriptionPredicate.getTypeId());
-		
-		final Document document = new Document();
-		new ComponentTypeField(PREDICATE_TYPE_ID).addTo(document);
-		document.add(new StringField(SnomedIndexBrowserConstants.PREDICATE_UUID, predicate.getUuid(),Store.YES));
-		document.add(new StoredField(SnomedIndexBrowserConstants.PREDICATE_TYPE, PredicateType.DESCRIPTION.name()));
-		document.add(new StoredField(SnomedIndexBrowserConstants.PREDICATE_DESCRIPTION_TYPE_ID, descriptionId));
-		document.add(new StoredField(SnomedIndexBrowserConstants.PREDICATE_QUERY_EXPRESSION, queryExpression));
-		document.add(new StoredField(SnomedIndexBrowserConstants.PREDICATE_REQUIRED, required ? 1 : 0));
-		document.add(new StoredField(SnomedIndexBrowserConstants.PREDICATE_MULTIPLE, multiple ? 1 : 0));
+		final Document document = AbstractPredicateIndexMappingStrategy.createDescriptionPredicateDocument(descriptionPredicate, queryExpression, required, multiple);
 		indexService.index(branchPath, document, new Term(SnomedIndexBrowserConstants.PREDICATE_UUID, predicate.getUuid()));
 	}
 
@@ -218,52 +185,42 @@ public class MrcmIndexInitializer extends SimpleFamilyJob {
 	
 		final RelationshipPredicate relationshipPredicate = (RelationshipPredicate) predicate;
 	
-		final String characteristicTypeConceptId = relationshipPredicate.getCharacteristicTypeConceptId();
-	
-		final AtomicReference<String> typeReference = new AtomicReference<String>();
-		final AtomicReference<String> valueTypeReference = new AtomicReference<String>();
-		final AtomicReference<String> characteristicTypeReference = new AtomicReference<String>();
-	
-		ForkJoinUtils.runInParallel(
-	
-		new Runnable() {
-			@Override
-			public void run() {
-				final String attributeExpression = PredicateUtils.getEscgExpression(relationshipPredicate.getAttribute());
-				typeReference.set(attributeExpression);
-			}
-		},
-	
-		new Runnable() {
-			@Override
-			public void run() {
-				if (isEmpty(characteristicTypeConceptId)) {
-					characteristicTypeReference.set("<" + SnomedConstants.Concepts.CHARACTERISTIC_TYPE);
-				} else {
-					characteristicTypeReference.set("<<" + characteristicTypeConceptId);
-				}
-			}
-		},
-	
-		new Runnable() {
-			@Override
-			public void run() {
-				final String valueExpression = PredicateUtils.getEscgExpression(relationshipPredicate.getRange());
-				valueTypeReference.set(valueExpression);
-			}
-		});
+		// FIXME change processing does this sequentially while import does it parallel
+//		final String characteristicTypeConceptId = relationshipPredicate.getCharacteristicTypeConceptId();
+//		final AtomicReference<String> typeReference = new AtomicReference<String>();
+//		final AtomicReference<String> valueTypeReference = new AtomicReference<String>();
+//		final AtomicReference<String> characteristicTypeReference = new AtomicReference<String>();
+//	
+//		ForkJoinUtils.runInParallel(
+//	
+//		new Runnable() {
+//			@Override
+//			public void run() {
+//				final String attributeExpression = PredicateUtils.getEscgExpression(relationshipPredicate.getAttribute());
+//				typeReference.set(attributeExpression);
+//			}
+//		},
+//	
+//		new Runnable() {
+//			@Override
+//			public void run() {
+//				if (isEmpty(characteristicTypeConceptId)) {
+//					characteristicTypeReference.set("<" + SnomedConstants.Concepts.CHARACTERISTIC_TYPE);
+//				} else {
+//					characteristicTypeReference.set("<<" + characteristicTypeConceptId);
+//				}
+//			}
+//		},
+//	
+//		new Runnable() {
+//			@Override
+//			public void run() {
+//				final String valueExpression = PredicateUtils.getEscgExpression(relationshipPredicate.getRange());
+//				valueTypeReference.set(valueExpression);
+//			}
+//		});
 		
-		final Document document = new Document();
-		new ComponentTypeField(PREDICATE_TYPE_ID).addTo(document);
-		document.add(new StringField(SnomedIndexBrowserConstants.PREDICATE_UUID, predicate.getUuid(),Store.YES));
-		document.add(new StoredField(SnomedIndexBrowserConstants.PREDICATE_TYPE, PredicateType.RELATIONSHIP.name()));
-		document.add(new StoredField(SnomedIndexBrowserConstants.PREDICATE_RELATIONSHIP_TYPE_EXPRESSION, typeReference.get()));
-		document.add(new StoredField(SnomedIndexBrowserConstants.PREDICATE_RELATIONSHIP_VALUE_EXPRESSION, valueTypeReference.get()));
-		document.add(new StoredField(SnomedIndexBrowserConstants.PREDICATE_CHARACTERISTIC_TYPE_EXPRESSION, characteristicTypeReference.get()));
-		document.add(new StoredField(SnomedIndexBrowserConstants.PREDICATE_GROUP_RULE, groupRule.name()));
-		document.add(new StoredField(SnomedIndexBrowserConstants.PREDICATE_QUERY_EXPRESSION, queryExpression));
-		document.add(new StoredField(SnomedIndexBrowserConstants.PREDICATE_REQUIRED, required ? 1 : 0));
-		document.add(new StoredField(SnomedIndexBrowserConstants.PREDICATE_MULTIPLE, multiple ? 1 : 0));
+		final Document document = AbstractPredicateIndexMappingStrategy.createRelationshipPredicateDocument(relationshipPredicate, queryExpression, groupRule, required, multiple);
 		indexService.index(branchPath, document, new Term(SnomedIndexBrowserConstants.PREDICATE_UUID, predicate.getUuid()));
 	}
 

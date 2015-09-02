@@ -72,8 +72,6 @@ import com.b2international.snowowl.datastore.cdo.ICDOConnection;
 import com.b2international.snowowl.datastore.cdo.ICDOConnectionManager;
 import com.b2international.snowowl.datastore.index.DocumentWithScore;
 import com.b2international.snowowl.datastore.index.IndexUtils;
-import com.b2international.snowowl.datastore.index.field.IntIndexField;
-import com.b2international.snowowl.datastore.index.query.IndexQueries;
 import com.b2international.snowowl.datastore.server.index.FSIndexServerService;
 import com.b2international.snowowl.datastore.server.index.IIndexPostProcessor;
 import com.b2international.snowowl.snomed.Description;
@@ -86,6 +84,7 @@ import com.b2international.snowowl.snomed.datastore.SnomedRefSetBrowser;
 import com.b2international.snowowl.snomed.datastore.SnomedRelationshipLookupService;
 import com.b2international.snowowl.snomed.datastore.SnomedStatementBrowser;
 import com.b2international.snowowl.snomed.datastore.SnomedTerminologyBrowser;
+import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedMappings;
 import com.b2international.snowowl.snomed.datastore.services.ISnomedComponentService;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
@@ -496,7 +495,7 @@ public class ImportIndexServerService extends FSIndexServerService<IIndexEntry> 
 	}
 
     private String getFullySpecifiedName(final String conceptId) {
-		final Query conceptLabelQuery = IndexQueries.and(createActiveQuery(), createContainerConceptQuery(conceptId), new IntIndexField(TERM_TYPE, TermType.FSN.ordinal()).toQuery()); 
+		final Query conceptLabelQuery = SnomedMappings.newQuery().and(createActiveQuery()).and(createContainerConceptQuery(conceptId)).field(TERM_TYPE, TermType.FSN.ordinal()).matchAll(); 
 		
         final List<DocumentWithScore> fsnDescriptionDocuments = search(SUPPORTING_INDEX_BRANCH_PATH, conceptLabelQuery, null, null, 1);
 
@@ -510,7 +509,7 @@ public class ImportIndexServerService extends FSIndexServerService<IIndexEntry> 
 	}
 
 	public String getConceptLabel(final String conceptId, final String languageRefSetId) {
-        final Query conceptLabelQuery = IndexQueries.and(createActiveQuery(), createContainerConceptQuery(conceptId), new IntIndexField(TERM_TYPE, TermType.SYNONYM_AND_DESCENDANTS.ordinal()).toQuery()); 
+		final Query conceptLabelQuery = SnomedMappings.newQuery().and(createActiveQuery()).and(createContainerConceptQuery(conceptId)).field(TERM_TYPE, TermType.SYNONYM_AND_DESCENDANTS.ordinal()).matchAll(); 
         
         final Filter preferredFilter = getPreferredFilter(languageRefSetId);
         
