@@ -53,9 +53,9 @@ public class SnomedDescriptionIndexEntry extends SnomedIndexEntry implements ICo
 	 * @param conceptId the container SNOMED&nbsp;CT concept ID.
 	 * @param effectiveTime effective time of the description. Could be {@link DateUtils#UNSET_EFFECTIVE_TIME}.
 	 */
-	public SnomedDescriptionIndexEntry(final String id, final String term, String iconId, final String moduleId, final float score, 
+	public SnomedDescriptionIndexEntry(final String id, final String term, final String moduleId, final float score, 
 			final long storageKey, final boolean released, final boolean active, final String type, String caseSignificance, final String conceptId, final long effectiveTime) {
-		super(id, term, iconId, moduleId, score, storageKey, released, active, effectiveTime);
+		super(id, term, type, moduleId, score, storageKey, released, active, effectiveTime);
 		this.type = Preconditions.checkNotNull(type, "Description type concept ID argument cannot be null.");
 		this.conceptId = Preconditions.checkNotNull(conceptId, "Container SNOMED CT concept ID argument cannot be null.");
 		this.caseSignificance = Preconditions.checkNotNull(caseSignificance, "Case significance argument ID cannot be null.");

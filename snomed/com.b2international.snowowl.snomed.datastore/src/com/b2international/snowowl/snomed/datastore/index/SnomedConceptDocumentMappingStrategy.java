@@ -15,8 +15,6 @@
  */
 package com.b2international.snowowl.snomed.datastore.index;
 
-import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.COMPONENT_ACTIVE;
-import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.COMPONENT_MODULE_ID;
 import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.COMPONENT_REFERRING_PREDICATE;
 import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.COMPONENT_RELEASED;
 import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.CONCEPT_DEGREE_OF_INTEREST;
@@ -28,7 +26,6 @@ import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBr
 import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.CONCEPT_REFERRING_MAPPING_REFERENCE_SET_ID;
 import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.CONCEPT_REFERRING_REFERENCE_SET_ID;
 import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.CONCEPT_SYNONYM;
-import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.collect.Sets.newHashSet;
 
 import java.util.Date;
@@ -37,32 +34,31 @@ import java.util.Set;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.index.IndexableField;
 
-import com.b2international.snowowl.core.api.index.CommonIndexConstants;
 import com.b2international.snowowl.datastore.index.IndexUtils;
-import com.b2international.snowowl.datastore.index.field.ComponentIdLongField;
-import com.b2international.snowowl.datastore.index.field.ComponentStorageKeyField;
+import com.b2international.snowowl.datastore.index.mapping.Mappings;
+import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedMappings;
 import com.b2international.snowowl.snomed.datastore.taxonomy.ISnomedTaxonomyBuilder;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSet.Builder;
 
 public class SnomedConceptDocumentMappingStrategy extends SnomedConceptIndexMappingStrategy {
 
-	public SnomedConceptDocumentMappingStrategy(ISnomedTaxonomyBuilder inferredTaxonomyBuilder, ISnomedTaxonomyBuilder statedTaxonomyBuilder, final Document conceptDocument, final boolean indexAsRelevantForCompare) {
-		
-		super(inferredTaxonomyBuilder, statedTaxonomyBuilder, ComponentIdLongField.getString(checkNotNull(conceptDocument, "SNOMED CT concept document cannot be null.")), 
-				ComponentStorageKeyField.getLong(conceptDocument), 
-				isExhaustive(conceptDocument), 
-				isActive(conceptDocument), 
-				isPrimitive(conceptDocument), 
-				isReleased(conceptDocument), 
-				getModuleId(conceptDocument), 
-				getLabel(conceptDocument), 
-				getActiveDescriptionInfos(conceptDocument),
-				getDegreeOfInterest(conceptDocument),
-				getPredicateKeys(conceptDocument), 
-				getReferringRefSetIds(conceptDocument),
-				getMappingRefSetIds(conceptDocument),
-				getEffectiveTime(conceptDocument),
+	public SnomedConceptDocumentMappingStrategy(ISnomedTaxonomyBuilder inferredTaxonomyBuilder, ISnomedTaxonomyBuilder statedTaxonomyBuilder, final Document doc, final boolean indexAsRelevantForCompare) {
+		super(inferredTaxonomyBuilder, statedTaxonomyBuilder, 
+				SnomedMappings.id().getValueAsString(doc), 
+				Mappings.storageKey().getValue(doc), 
+				isExhaustive(doc), 
+				isActive(doc), 
+				isPrimitive(doc), 
+				isReleased(doc), 
+				getModuleId(doc), 
+				getLabel(doc), 
+				getActiveDescriptionInfos(doc),
+				getDegreeOfInterest(doc),
+				getPredicateKeys(doc), 
+				getReferringRefSetIds(doc),
+				getMappingRefSetIds(doc),
+				getEffectiveTime(doc),
 				indexAsRelevantForCompare);
 	}
 
@@ -106,31 +102,31 @@ public class SnomedConceptDocumentMappingStrategy extends SnomedConceptIndexMapp
 		}
 	}
 
-	private static String getLabel(final Document conceptDocument) {
-		return conceptDocument.get(CommonIndexConstants.COMPONENT_LABEL);
+	private static String getLabel(final Document doc) {
+		return Mappings.label().getValue(doc);
 	}
 
-	private static String getModuleId(final Document conceptDocument) {
-		return conceptDocument.get(COMPONENT_MODULE_ID);
+	private static String getModuleId(final Document doc) {
+		return SnomedMappings.module().getValueAsString(doc);
 	}
 
-	private static boolean isReleased(final Document conceptDocument) {
-		return IndexUtils.getBooleanValue(conceptDocument.getField(COMPONENT_RELEASED));
+	private static boolean isReleased(final Document doc) {
+		return IndexUtils.getBooleanValue(doc.getField(COMPONENT_RELEASED));
 	}
 
-	private static boolean isPrimitive(final Document conceptDocument) {
-		return IndexUtils.getBooleanValue(conceptDocument.getField(CONCEPT_PRIMITIVE));
+	private static boolean isPrimitive(final Document doc) {
+		return IndexUtils.getBooleanValue(doc.getField(CONCEPT_PRIMITIVE));
 	}
 
-	private static boolean isActive(final Document conceptDocument) {
-		return IndexUtils.getBooleanValue(conceptDocument.getField(COMPONENT_ACTIVE));
+	private static boolean isActive(final Document doc) {
+		return SnomedMappings.active().getValue(doc) == 1;
 	}
 
-	private static boolean isExhaustive(final Document conceptDocument) {
-		return IndexUtils.getBooleanValue(conceptDocument.getField(CONCEPT_EXHAUSTIVE));
+	private static boolean isExhaustive(final Document doc) {
+		return IndexUtils.getBooleanValue(doc.getField(CONCEPT_EXHAUSTIVE));
 	}
 
-	private static Date getEffectiveTime(final Document conceptDocument) {
-		return new Date(IndexUtils.getLongValue(conceptDocument.getField(CONCEPT_EFFECTIVE_TIME)));
+	private static Date getEffectiveTime(final Document doc) {
+		return new Date(Mappings.longField(CONCEPT_EFFECTIVE_TIME).getValue(doc));
 	}
 }

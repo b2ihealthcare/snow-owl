@@ -23,24 +23,17 @@ import static com.google.common.base.Preconditions.checkNotNull;
 import java.util.Collection;
 
 import org.apache.lucene.document.Document;
-import org.apache.lucene.document.Field.Store;
-import org.apache.lucene.document.LongField;
-import org.apache.lucene.document.NumericDocValuesField;
-import org.apache.lucene.document.StringField;
-import org.apache.lucene.document.TextField;
 
 import com.b2international.snowowl.core.api.index.CommonIndexConstants;
 import com.b2international.snowowl.datastore.cdo.CDOIDUtils;
 import com.b2international.snowowl.datastore.cdo.CDOUtils;
 import com.b2international.snowowl.datastore.index.AbstractIndexMappingStrategy;
-import com.b2international.snowowl.datastore.index.field.ComponentIdLongField;
-import com.b2international.snowowl.datastore.index.field.ComponentStorageKeyField;
-import com.b2international.snowowl.datastore.index.field.ComponentTypeField;
-import com.b2international.snowowl.datastore.index.field.IntIndexField;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.snomed.datastore.SnomedConceptLookupService;
 import com.b2international.snowowl.snomed.datastore.SnomedIconProvider;
 import com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants;
+import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedDocumentBuilder;
+import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedMappings;
 import com.b2international.snowowl.snomed.datastore.index.update.IconIdUpdater;
 import com.b2international.snowowl.snomed.datastore.services.SnomedConceptNameProvider;
 import com.b2international.snowowl.snomed.datastore.taxonomy.ISnomedTaxonomyBuilder;
@@ -72,36 +65,34 @@ public class SnomedRefSetIndexMappingStrategy extends AbstractIndexMappingStrate
 
 	@Override
 	public Document createDocument() {
-		final Document doc = new Document();
-		
-		new ComponentIdLongField(refSet.getIdentifierId()).addTo(doc);
-		new ComponentTypeField(SnomedTerminologyComponentConstants.REFSET_NUMBER).addTo(doc);
-		new IntIndexField(REFERENCE_SET_TYPE, refSet.getType().getValue()).addTo(doc);
-		new IntIndexField(REFERENCE_SET_REFERENCED_COMPONENT_TYPE, refSet.getReferencedComponentType()).addTo(doc);
-		final long storageKey = CDOIDUtils.asLong(refSet.cdoID());
-		new ComponentStorageKeyField(storageKey).addTo(doc);
-		new IntIndexField(REFERENCE_SET_STRUCTURAL, refSet instanceof SnomedStructuralRefSet ? 1 : 0).addTo(doc);
-		
-		final String label = SnomedConceptNameProvider.INSTANCE.getText(refSet.getIdentifierId(), refSet.cdoView());
-		doc.add(new TextField(CommonIndexConstants.COMPONENT_LABEL, label, Store.YES));
-		doc.add(new NumericDocValuesField(CommonIndexConstants.COMPONENT_COMPARE_UNIQUE_KEY, indexAsRelevantForCompare ? storageKey : CDOUtils.NO_STORAGE_KEY));
+		final String conceptId = refSet.getIdentifierId();
+		final String label = SnomedConceptNameProvider.INSTANCE.getText(conceptId, refSet.cdoView());
+		final long storageKey = getStorageKey();
+		final SnomedDocumentBuilder doc = SnomedMappings.doc()
+				.id(conceptId)
+				.type(SnomedTerminologyComponentConstants.REFSET_NUMBER)
+				.storageKey(storageKey)
+				.field(REFERENCE_SET_TYPE, refSet.getType().getValue())
+				.field(REFERENCE_SET_REFERENCED_COMPONENT_TYPE, (int) refSet.getReferencedComponentType())
+				.field(REFERENCE_SET_STRUCTURAL, refSet instanceof SnomedStructuralRefSet ? 1 : 0)
+				.label(label)
+				.docValuesField(CommonIndexConstants.COMPONENT_COMPARE_UNIQUE_KEY, indexAsRelevantForCompare ? storageKey : CDOUtils.NO_STORAGE_KEY);
 		
 		if (!indexAsRelevantForCompare) {
-			doc.add(new NumericDocValuesField(CommonIndexConstants.COMPONENT_IGNORE_COMPARE_UNIQUE_KEY, storageKey));
+			doc.docValuesField(CommonIndexConstants.COMPONENT_IGNORE_COMPARE_UNIQUE_KEY, storageKey);
 		}
 		
 		final String moduleId = new SnomedConceptLookupService().getComponent(refSet.getIdentifierId(), refSet.cdoView()).getModule().getId();
-		doc.add(new LongField(SnomedIndexBrowserConstants.COMPONENT_MODULE_ID, Long.parseLong(moduleId), Store.YES));
+		doc.module(moduleId);
 		
-		final String conceptId = refSet.getIdentifierId();
 		final boolean active = true;
-		new IconIdUpdater(taxonomyBuilder, conceptId, active, SnomedIconProvider.getInstance().getAvailableIconIds(), false).update(doc);
+		new IconIdUpdater(taxonomyBuilder, conceptId, active, SnomedIconProvider.getInstance().getAvailableIconIds()).update(doc);
 		
 		for (final String predicateKey : this.predicateKeys) {
-			doc.add(new StringField(SnomedIndexBrowserConstants.COMPONENT_REFERRING_PREDICATE, predicateKey, Store.YES));
+			doc.field(SnomedIndexBrowserConstants.COMPONENT_REFERRING_PREDICATE, predicateKey);
 		}
 		
-		return doc;
+		return doc.build();
 	}
 	
 	@Override

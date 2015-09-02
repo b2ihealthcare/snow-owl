@@ -19,10 +19,7 @@ import static com.b2international.snowowl.datastore.cdo.CDOIDUtils.asLong;
 import static com.b2international.snowowl.snomed.SnomedConstants.Concepts.INFERRED_RELATIONSHIP;
 import static com.b2international.snowowl.snomed.SnomedConstants.Concepts.UNIVERSAL_RESTRICTION_MODIFIER;
 import static com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants.RELATIONSHIP_NUMBER;
-import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.COMPONENT_ACTIVE;
-import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.COMPONENT_MODULE_ID;
 import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.COMPONENT_RELEASED;
-import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.RELATIONSHIP_ATTRIBUTE_ID;
 import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.RELATIONSHIP_DESTINATION_NEGATED;
 import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.RELATIONSHIP_EFFECTIVE_TIME;
 import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.RELATIONSHIP_GROUP;
@@ -32,21 +29,14 @@ import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBr
 import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.RELATIONSHIP_UNIVERSAL;
 import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.RELATIONSHIP_VALUE_ID;
 import static java.lang.Long.parseLong;
-import static org.apache.lucene.document.Field.Store.YES;
 
 import org.apache.lucene.document.Document;
-import org.apache.lucene.document.LongField;
 import org.apache.lucene.document.NumericDocValuesField;
-import org.apache.lucene.document.StoredField;
 
 import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.datastore.index.AbstractIndexMappingStrategy;
-import com.b2international.snowowl.datastore.index.field.ComponentIdLongField;
-import com.b2international.snowowl.datastore.index.field.ComponentStorageKeyField;
-import com.b2international.snowowl.datastore.index.field.ComponentTypeField;
-import com.b2international.snowowl.datastore.index.field.IntIndexField;
 import com.b2international.snowowl.snomed.Relationship;
-import com.b2international.snowowl.snomed.datastore.browser.SnomedIndexQueries;
+import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedMappings;
 
 /**
  * Mapping strategy for SNOMED CT relationships.
@@ -76,36 +66,33 @@ public class SnomedRelationshipIndexMappingStrategy extends AbstractIndexMapping
 		final boolean universal = UNIVERSAL_RESTRICTION_MODIFIER.equals(relationship.getModifier().getId());
 		final long moduleId = parseLong(relationship.getModule().getId());
 
-		final Document doc = new Document();
-		new ComponentIdLongField(relationshipId).addTo(doc);
-		new ComponentTypeField(RELATIONSHIP_NUMBER).addTo(doc);
-		new ComponentStorageKeyField(storageKey).addTo(doc);
-		doc.add(new NumericDocValuesField(ComponentStorageKeyField.COMPONENT_STORAGE_KEY, storageKey));
-		
-		doc.add(new StoredField(COMPONENT_RELEASED, relationship.isReleased() ? 1 : 0));
-		new IntIndexField(COMPONENT_ACTIVE, active ? 1 : 0).addTo(doc);
-		doc.add(new LongField(RELATIONSHIP_OBJECT_ID, sourceId, YES));
-		doc.add(new LongField(RELATIONSHIP_ATTRIBUTE_ID, typeId, YES));
-		doc.add(new LongField(RELATIONSHIP_VALUE_ID, destinationId, YES));
-		doc.add(new LongField(SnomedIndexQueries.RELATIONSHIP_CHARACTERISTIC_TYPE_ID, characteristicTypeId, YES));
-		doc.add(new StoredField(RELATIONSHIP_GROUP, group));
-		doc.add(new StoredField(RELATIONSHIP_UNION_GROUP, unionGroup));
-		doc.add(new StoredField(RELATIONSHIP_DESTINATION_NEGATED, relationship.isDestinationNegated() ? 1 : 0));
-		doc.add(new StoredField(RELATIONSHIP_INFERRED, inferred ? 1 : 0));
-		doc.add(new StoredField(RELATIONSHIP_UNIVERSAL, universal ? 1 : 0));
-		doc.add(new LongField(RELATIONSHIP_EFFECTIVE_TIME, EffectiveTimes.getEffectiveTime(relationship.getEffectiveTime()), YES));
-		doc.add(new LongField(COMPONENT_MODULE_ID, moduleId, YES));
+		final Document doc = SnomedMappings.doc()
+				.id(relationshipId)
+				.type(RELATIONSHIP_NUMBER)
+				.storageKey(storageKey)
+				.active(active)
+				.module(moduleId)
+				.relationshipType(typeId)
+				.relationshipCharacteristicType(characteristicTypeId)
+				.field(RELATIONSHIP_OBJECT_ID, sourceId)
+				.field(RELATIONSHIP_VALUE_ID, destinationId)
+				.storedOnly(COMPONENT_RELEASED, relationship.isReleased() ? 1 : 0)
+				.storedOnly(RELATIONSHIP_GROUP, group)
+				.storedOnly(RELATIONSHIP_UNION_GROUP, unionGroup)
+				.storedOnly(RELATIONSHIP_DESTINATION_NEGATED, relationship.isDestinationNegated() ? 1 : 0)
+				.storedOnly(RELATIONSHIP_INFERRED, inferred ? 1 : 0)
+				.storedOnly(RELATIONSHIP_UNIVERSAL, universal ? 1 : 0)
+				.field(RELATIONSHIP_EFFECTIVE_TIME, EffectiveTimes.getEffectiveTime(relationship.getEffectiveTime()))
+				.build();
 
+		// TODO replace
 		doc.add(new NumericDocValuesField(RELATIONSHIP_VALUE_ID, destinationId));
 		doc.add(new NumericDocValuesField(RELATIONSHIP_OBJECT_ID, sourceId));
-		doc.add(new NumericDocValuesField(RELATIONSHIP_ATTRIBUTE_ID, typeId));
-		doc.add(new NumericDocValuesField(SnomedIndexQueries.RELATIONSHIP_CHARACTERISTIC_TYPE_ID, characteristicTypeId));
 		doc.add(new NumericDocValuesField(RELATIONSHIP_GROUP, group));
 		doc.add(new NumericDocValuesField(RELATIONSHIP_UNION_GROUP, unionGroup));
 		doc.add(new NumericDocValuesField(RELATIONSHIP_UNIVERSAL, universal ? 1 : 0));
 		doc.add(new NumericDocValuesField(RELATIONSHIP_DESTINATION_NEGATED, relationship.isDestinationNegated() ? 1 : 0));
-		doc.add(new NumericDocValuesField(COMPONENT_MODULE_ID, moduleId));
-
+		
 		return doc;
 	}
 

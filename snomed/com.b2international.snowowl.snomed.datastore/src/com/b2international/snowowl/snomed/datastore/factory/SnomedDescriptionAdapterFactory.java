@@ -51,7 +51,6 @@ public class SnomedDescriptionAdapterFactory extends TypeSafeAdapterFactory {
 			final SnomedDescriptionIndexEntry adaptedEntry = new SnomedDescriptionIndexEntry(
 					description.getId(), 
 					description.getTerm(), 
-					description.getType().getId(),
 					description.getModule().getId(),
 					0.0f,
 					CDOUtils.getStorageKey(description),

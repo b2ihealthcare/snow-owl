@@ -21,8 +21,6 @@ import static com.b2international.snowowl.snomed.common.SnomedTerminologyCompone
 import static com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants.RELATIONSHIP;
 import static com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants.RELATIONSHIP_NUMBER;
 import static com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants.getTerminologyComponentIdValue;
-import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.COMPONENT_ACTIVE;
-import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.COMPONENT_MODULE_ID;
 import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.COMPONENT_RELEASED;
 import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_ACCEPTABILITY_ID;
 import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_ACCEPTABILITY_LABEL;
@@ -46,10 +44,6 @@ import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBr
 import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_MAP_TARGET_COMPONENT_TYPE_ID;
 import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_OPERATOR_ID;
 import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_QUERY;
-import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_REFERENCED_COMPONENT_ID;
-import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_REFERENCED_COMPONENT_TYPE;
-import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_REFERENCE_SET_ID;
-import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_REFERENCE_SET_TYPE;
 import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_SERIALIZED_VALUE;
 import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_SOURCE_EFFECTIVE_TIME;
 import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_TARGET_COMPONENT_ID;
@@ -66,14 +60,8 @@ import javax.annotation.OverridingMethodsMustInvokeSuper;
 
 import org.apache.lucene.document.BinaryDocValuesField;
 import org.apache.lucene.document.Document;
-import org.apache.lucene.document.Field.Store;
-import org.apache.lucene.document.LongField;
 import org.apache.lucene.document.NumericDocValuesField;
-import org.apache.lucene.document.StoredField;
-import org.apache.lucene.document.StringField;
-import org.apache.lucene.document.TextField;
 import org.apache.lucene.util.BytesRef;
-import org.eclipse.emf.cdo.common.id.CDOIDUtil;
 import org.eclipse.emf.cdo.view.CDOView;
 
 import com.b2international.commons.StringUtils;
@@ -84,7 +72,6 @@ import com.b2international.snowowl.core.api.IComponent;
 import com.b2international.snowowl.core.api.ILookupService;
 import com.b2international.snowowl.core.api.INameProviderFactory;
 import com.b2international.snowowl.core.api.IStatement;
-import com.b2international.snowowl.core.api.index.CommonIndexConstants;
 import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.datastore.BranchPathUtils;
 import com.b2international.snowowl.datastore.CodeSystemUtils;
@@ -92,8 +79,6 @@ import com.b2international.snowowl.datastore.cdo.CDOIDUtils;
 import com.b2international.snowowl.datastore.index.AbstractIndexMappingStrategy;
 import com.b2international.snowowl.datastore.index.IndexUtils;
 import com.b2international.snowowl.datastore.index.SortKeyMode;
-import com.b2international.snowowl.datastore.index.field.ComponentStorageKeyField;
-import com.b2international.snowowl.datastore.index.field.IntIndexField;
 import com.b2international.snowowl.datastore.utils.ComponentUtils2;
 import com.b2international.snowowl.snomed.Component;
 import com.b2international.snowowl.snomed.Description;
@@ -106,6 +91,8 @@ import com.b2international.snowowl.snomed.datastore.SnomedRelationshipIndexEntry
 import com.b2international.snowowl.snomed.datastore.SnomedRelationshipLookupService;
 import com.b2international.snowowl.snomed.datastore.SnomedStatementBrowser;
 import com.b2international.snowowl.snomed.datastore.index.SnomedDescriptionIndexEntry;
+import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedDocumentBuilder;
+import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedMappings;
 import com.b2international.snowowl.snomed.datastore.services.ISnomedComponentService;
 import com.b2international.snowowl.snomed.datastore.services.SnomedConceptNameProvider;
 import com.b2international.snowowl.snomed.mrcm.DataType;
@@ -150,20 +137,19 @@ public class SnomedRefSetMemberIndexMappingStrategy extends AbstractIndexMapping
 	@Override
 	@OverridingMethodsMustInvokeSuper
 	public Document createDocument() {
-		final Document doc = new Document();
-		final long storageKey = CDOIDUtil.getLong(member.cdoID());
+		final long storageKey = getStorageKey();
+		final SnomedDocumentBuilder doc = SnomedMappings.doc()
+				.storageKey(storageKey)
+				.active(member.isActive())
+				.memberRefSetType(member.getRefSet().getType())
+				.memberReferencedComponentType((int) member.getReferencedComponentType())
+				.memberReferencedComponentId(member.getReferencedComponentId())
+				.module(member.getModuleId())
+				.memberRefSetId(member.getRefSetIdentifierId())
+				.field(REFERENCE_SET_MEMBER_UUID, member.getUuid())
+				.field(REFERENCE_SET_MEMBER_EFFECTIVE_TIME, EffectiveTimes.getEffectiveTime(member.getEffectiveTime()))
+				.storedOnly(COMPONENT_RELEASED, member.isReleased() ? 1 : 0);
 
-		doc.add(new StringField(REFERENCE_SET_MEMBER_UUID, member.getUuid(), Store.YES));
-		new IntIndexField(COMPONENT_ACTIVE, member.isActive() ? 1 : 0).addTo(doc);
-		new IntIndexField(REFERENCE_SET_MEMBER_REFERENCE_SET_TYPE, member.getRefSet().getType().ordinal()).addTo(doc);
-		new ComponentStorageKeyField(storageKey).addTo(doc);
-		doc.add(new StoredField(COMPONENT_RELEASED, member.isReleased() ? 1 : 0));
-		new IntIndexField(REFERENCE_SET_MEMBER_REFERENCED_COMPONENT_TYPE, member.getReferencedComponentType()).addTo(doc);
-		doc.add(new StringField(REFERENCE_SET_MEMBER_REFERENCED_COMPONENT_ID, member.getReferencedComponentId(), Store.YES));
-		doc.add(new LongField(COMPONENT_MODULE_ID, Long.valueOf(member.getModuleId()), Store.YES));
-		doc.add(new LongField(REFERENCE_SET_MEMBER_REFERENCE_SET_ID, Long.valueOf(member.getRefSetIdentifierId()), Store.YES));
-		doc.add(new LongField(REFERENCE_SET_MEMBER_EFFECTIVE_TIME, EffectiveTimes.getEffectiveTime(member.getEffectiveTime()), Store.YES));
-		
 		if (null == label) {
 		
 			if (!SnomedRefSetType.CONCRETE_DATA_TYPE.equals(member.getRefSet().getType())) {
@@ -279,125 +265,113 @@ public class SnomedRefSetMemberIndexMappingStrategy extends AbstractIndexMapping
 			}
 			
 		}
-		
-		doc.add(new TextField(CommonIndexConstants.COMPONENT_LABEL, this.label, Store.YES));
+		doc.label(label);
 		
 		switch (member.getRefSet().getType()) {
 			
 			case SIMPLE : 
 				//nothing else to do
-				return doc;
+				return doc.build();
 				
 			case ASSOCIATION:
 				//set the target component ID. It's always a SNOMED CT concept
 				final SnomedAssociationRefSetMember associationMember = (SnomedAssociationRefSetMember) member;
-				doc.add(new StringField(REFERENCE_SET_MEMBER_TARGET_COMPONENT_ID, associationMember.getTargetComponentId(), Store.YES));
-				return doc;
-				
+				return doc.field(REFERENCE_SET_MEMBER_TARGET_COMPONENT_ID, associationMember.getTargetComponentId()).build();
 			case ATTRIBUTE_VALUE:
 				//set the member value ID. Again, it's always a SNOMED CT concept
 				final SnomedAttributeValueRefSetMember attributeValueMember = (SnomedAttributeValueRefSetMember) member;
-				doc.add(new StringField(REFERENCE_SET_MEMBER_VALUE_ID, attributeValueMember.getValueId(), Store.YES));
-				return doc;
-				
+				return doc.field(REFERENCE_SET_MEMBER_VALUE_ID, attributeValueMember.getValueId()).build();
 			case QUERY:
 				//set the ESCG query from the member
 				final SnomedQueryRefSetMember queryMember = (SnomedQueryRefSetMember) member;
-				doc.add(new StringField(REFERENCE_SET_MEMBER_QUERY, queryMember.getQuery().trim(), Store.YES));
-				return doc;
+				return doc.field(REFERENCE_SET_MEMBER_QUERY, queryMember.getQuery().trim()).build();
 				
 			case EXTENDED_MAP: //$FALL-THROUGH$
 			case COMPLEX_MAP:
 				//cast member to complex map and set complex map properties to the document
 				final SnomedComplexMapRefSetMember complexMember = (SnomedComplexMapRefSetMember) member;
-				doc.add(new StoredField(REFERENCE_SET_MEMBER_MAP_GROUP, complexMember.getMapGroup()));
-				doc.add(new StoredField(REFERENCE_SET_MEMBER_MAP_PRIORITY, complexMember.getMapPriority()));
+				doc.storedOnly(REFERENCE_SET_MEMBER_MAP_GROUP, complexMember.getMapGroup());
+				doc.storedOnly(REFERENCE_SET_MEMBER_MAP_PRIORITY, complexMember.getMapPriority());
 				if (null != complexMember.getMapRule()) {
-					doc.add(new StringField(REFERENCE_SET_MEMBER_MAP_RULE, complexMember.getMapRule(), Store.YES));
+					doc.field(REFERENCE_SET_MEMBER_MAP_RULE, complexMember.getMapRule());
 				}
 				if (null != complexMember.getMapAdvice()) {
-					doc.add(new StringField(REFERENCE_SET_MEMBER_MAP_ADVICE, complexMember.getMapAdvice(), Store.YES));
+					doc.field(REFERENCE_SET_MEMBER_MAP_ADVICE, complexMember.getMapAdvice());
 				}
 				if (null != complexMember.getMapCategoryId()) {
-					doc.add(new LongField(REFERENCE_SET_MEMBER_MAP_CATEGORY_ID, Long.valueOf(complexMember.getMapCategoryId()), Store.YES));
+					doc.field(REFERENCE_SET_MEMBER_MAP_CATEGORY_ID, Long.valueOf(complexMember.getMapCategoryId()));
 				}
-				doc.add(new LongField(REFERENCE_SET_MEMBER_CORRELATION_ID, Long.valueOf(complexMember.getCorrelationId()), Store.YES));
+				doc.field(REFERENCE_SET_MEMBER_CORRELATION_ID, Long.valueOf(complexMember.getCorrelationId()));
 				
 				final String complexMapTargetComponentId = complexMember.getMapTargetComponentId();
 				final short complexMapTargetComponentType = complexMember.getMapTargetComponentType();
 				
-				doc.add(new StringField(REFERENCE_SET_MEMBER_MAP_TARGET_COMPONENT_ID, complexMapTargetComponentId, Store.YES));
-				new IntIndexField(REFERENCE_SET_MEMBER_MAP_TARGET_COMPONENT_TYPE_ID, complexMapTargetComponentType).addTo(doc);
+				doc.field(REFERENCE_SET_MEMBER_MAP_TARGET_COMPONENT_ID, complexMapTargetComponentId);
+				doc.field(REFERENCE_SET_MEMBER_MAP_TARGET_COMPONENT_TYPE_ID, (int) complexMapTargetComponentType);
 				
 				if (CoreTerminologyBroker.UNSPECIFIED_NUMBER_SHORT == complexMapTargetComponentType) {
 					
-					doc.add(new StoredField(REFERENCE_SET_MEMBER_MAP_TARGET_COMPONENT_LABEL, complexMapTargetComponentId)); //unknown map target
+					doc.storedOnly(REFERENCE_SET_MEMBER_MAP_TARGET_COMPONENT_LABEL, complexMapTargetComponentId); //unknown map target
 				
 				} else {
 					
 					final INameProviderFactory nameProviderFactory = CoreTerminologyBroker.getInstance().getNameProviderFactory(getTerminologyComponentId(complexMapTargetComponentType));
 					final String mapTargetLabel = nameProviderFactory.getNameProvider().getText(complexMapTargetComponentId);
-					doc.add(new StringField(REFERENCE_SET_MEMBER_MAP_TARGET_COMPONENT_LABEL, mapTargetLabel, Store.YES));
+					doc.field(REFERENCE_SET_MEMBER_MAP_TARGET_COMPONENT_LABEL, mapTargetLabel);
 				}
-				
-				return doc;
+				return doc.build();
 				
 			case DESCRIPTION_TYPE:
 				//set description type ID, label and description length
 				final SnomedDescriptionTypeRefSetMember descriptionMember = (SnomedDescriptionTypeRefSetMember) member;
-				doc.add(new LongField(REFERENCE_SET_MEMBER_DESCRIPTION_FORMAT_ID, Long.valueOf(descriptionMember.getDescriptionFormat()), Store.YES));
-				doc.add(new StoredField(REFERENCE_SET_MEMBER_DESCRIPTION_LENGTH, descriptionMember.getDescriptionLength()));
+				doc.field(REFERENCE_SET_MEMBER_DESCRIPTION_FORMAT_ID, Long.valueOf(descriptionMember.getDescriptionFormat()));
+				doc.storedOnly(REFERENCE_SET_MEMBER_DESCRIPTION_LENGTH, descriptionMember.getDescriptionLength());
 				//description type must be a SNOMED CT concept
 				final String descriptionFormatLabel = getCoreComponentLabel(descriptionMember.getDescriptionFormat(), descriptionMember.cdoView());
-				doc.add(new StringField(REFERENCE_SET_MEMBER_DESCRIPTION_FORMAT_LABEL, descriptionFormatLabel, Store.YES));
-				return doc;
+				doc.field(REFERENCE_SET_MEMBER_DESCRIPTION_FORMAT_LABEL, descriptionFormatLabel);
+				return doc.build();
 				
 			case LANGUAGE:
 				//set description acceptability label and ID
 				final SnomedLanguageRefSetMember languageMember = (SnomedLanguageRefSetMember) member;
-				doc.add(new LongField(REFERENCE_SET_MEMBER_ACCEPTABILITY_ID, Long.valueOf(languageMember.getAcceptabilityId()), Store.YES));
+				doc.field(REFERENCE_SET_MEMBER_ACCEPTABILITY_ID, Long.valueOf(languageMember.getAcceptabilityId()));
 				//acceptability ID always represents a SNOMED CT concept
 				final String acceptabilityLabel = getCoreComponentLabel(languageMember.getAcceptabilityId(), languageMember.cdoView());
-				doc.add(new StringField(REFERENCE_SET_MEMBER_ACCEPTABILITY_LABEL, acceptabilityLabel, Store.YES));
-				return doc;
+				doc.field(REFERENCE_SET_MEMBER_ACCEPTABILITY_LABEL, acceptabilityLabel);
+				return doc.build();
 				
 			case CONCRETE_DATA_TYPE:
+				
 				//set operator ID, serialized value, UOM ID (if any) and characteristic type ID
 				final SnomedConcreteDataTypeRefSetMember dataTypeMember = (SnomedConcreteDataTypeRefSetMember) member;
-				doc.add(new LongField(REFERENCE_SET_MEMBER_OPERATOR_ID, Long.valueOf(dataTypeMember.getOperatorComponentId()), Store.YES));
-				doc.add(new StringField(REFERENCE_SET_MEMBER_SERIALIZED_VALUE, dataTypeMember.getSerializedValue(), Store.YES));
+				doc.field(REFERENCE_SET_MEMBER_OPERATOR_ID, Long.valueOf(dataTypeMember.getOperatorComponentId()));
+				doc.field(REFERENCE_SET_MEMBER_SERIALIZED_VALUE, dataTypeMember.getSerializedValue());
 				if (null != dataTypeMember.getUomComponentId()) {
-					doc.add(new LongField(REFERENCE_SET_MEMBER_UOM_ID, Long.valueOf(dataTypeMember.getUomComponentId()), Store.YES));
+					doc.field(REFERENCE_SET_MEMBER_UOM_ID, Long.valueOf(dataTypeMember.getUomComponentId()));
 				}
 				
 				if (null != dataTypeMember.getCharacteristicTypeId()) {
-					doc.add(new LongField(REFERENCE_SET_MEMBER_CHARACTERISTIC_TYPE_ID, Long.valueOf(dataTypeMember.getCharacteristicTypeId()), Store.YES));
+					doc.field(REFERENCE_SET_MEMBER_CHARACTERISTIC_TYPE_ID, Long.valueOf(dataTypeMember.getCharacteristicTypeId()));
 				}
 				
+				final Document document = doc.build();
 				if (dataTypeMember.getUomComponentId() != null) {
-					doc.add(new NumericDocValuesField(REFERENCE_SET_MEMBER_UOM_ID, Long.parseLong(dataTypeMember.getUomComponentId())));
+					document.add(new NumericDocValuesField(REFERENCE_SET_MEMBER_UOM_ID, Long.parseLong(dataTypeMember.getUomComponentId())));
 				}
 				
 				final DataType dataType = SnomedRefSetUtil.getDataType(member.getRefSetIdentifierId());
-				doc.add(new NumericDocValuesField(REFERENCE_SET_MEMBER_DATA_TYPE_VALUE, (byte) dataType.ordinal()));
-				doc.add(new BinaryDocValuesField(REFERENCE_SET_MEMBER_SERIALIZED_VALUE, new BytesRef(dataTypeMember.getSerializedValue())));
+				document.add(new NumericDocValuesField(REFERENCE_SET_MEMBER_DATA_TYPE_VALUE, (byte) dataType.ordinal()));
+				document.add(new BinaryDocValuesField(REFERENCE_SET_MEMBER_SERIALIZED_VALUE, new BytesRef(dataTypeMember.getSerializedValue())));
 				
 				if (null != label) {
-					doc.add(new BinaryDocValuesField(CommonIndexConstants.COMPONENT_LABEL, new BytesRef(label)));
-					SortKeyMode.SEARCH_ONLY.add(doc, label);
+					SortKeyMode.SEARCH_ONLY.add(document, label);
 				}
-				
-				doc.add(new NumericDocValuesField(REFERENCE_SET_MEMBER_REFERENCED_COMPONENT_ID, Long.parseLong(member.getReferencedComponentId())));
-				doc.add(new NumericDocValuesField(ComponentStorageKeyField.COMPONENT_STORAGE_KEY, storageKey));
-				doc.add(new NumericDocValuesField(REFERENCE_SET_MEMBER_REFERENCE_SET_ID, Long.parseLong(member.getRefSetIdentifierId())));
-				doc.add(new NumericDocValuesField(COMPONENT_MODULE_ID, Long.valueOf(member.getModuleId())));
 				
 				if (member.eContainer() instanceof Component) {
 					final String containerModuleId = ((Component) member.eContainer()).getModule().getId();
-					doc.add(new NumericDocValuesField(REFERENCE_SET_MEMBER_CONTAINER_MODULE_ID, Long.valueOf(containerModuleId)));	
+					document.add(new NumericDocValuesField(REFERENCE_SET_MEMBER_CONTAINER_MODULE_ID, Long.valueOf(containerModuleId)));	
 				}
-				
-				return doc;
+				return document;
 				
 			case SIMPLE_MAP:
 				//set map target ID, type and label
@@ -405,12 +379,12 @@ public class SnomedRefSetMemberIndexMappingStrategy extends AbstractIndexMapping
 				final String simpleMapTargetComponentId = mapMember.getMapTargetComponentId();
 				final short simpleMapTargetComponentType = mapMember.getMapTargetComponentType();
 				
-				doc.add(new StringField(REFERENCE_SET_MEMBER_MAP_TARGET_COMPONENT_ID, simpleMapTargetComponentId, Store.YES));
-				new IntIndexField(REFERENCE_SET_MEMBER_MAP_TARGET_COMPONENT_TYPE_ID, simpleMapTargetComponentType).addTo(doc);
+				doc.field(REFERENCE_SET_MEMBER_MAP_TARGET_COMPONENT_ID, simpleMapTargetComponentId);
+				doc.field(REFERENCE_SET_MEMBER_MAP_TARGET_COMPONENT_TYPE_ID, (int) simpleMapTargetComponentType);
 				
 				if (CoreTerminologyBroker.UNSPECIFIED_NUMBER_SHORT == simpleMapTargetComponentType) {
 					
-					doc.add(new StoredField(REFERENCE_SET_MEMBER_MAP_TARGET_COMPONENT_LABEL, simpleMapTargetComponentId)); //unknown map target
+					doc.storedOnly(REFERENCE_SET_MEMBER_MAP_TARGET_COMPONENT_LABEL, simpleMapTargetComponentId); //unknown map target
 				
 				} else {
 					
@@ -422,24 +396,24 @@ public class SnomedRefSetMemberIndexMappingStrategy extends AbstractIndexMapping
 					if (isEmpty(mapTargetLabel)) {
 						mapTargetLabel = simpleMapTargetComponentId;
 					}
-					doc.add(new StringField(REFERENCE_SET_MEMBER_MAP_TARGET_COMPONENT_LABEL, mapTargetLabel, Store.YES));
+					doc.field(REFERENCE_SET_MEMBER_MAP_TARGET_COMPONENT_LABEL, mapTargetLabel);
 				}
 				
 				final String componentDescription = mapMember.getMapTargetComponentDescription();
 				if (null != componentDescription) {
-					doc.add(new TextField(REFERENCE_SET_MEMBER_MAP_TARGET_COMPONENT_DESCRIPTION, componentDescription, Store.YES));
-					doc.add(new StringField(REFERENCE_SET_MEMBER_MAP_TARGET_COMPONENT_DESCRIPTION_SORT_KEY, IndexUtils.getSortKey(componentDescription), Store.NO));
+					doc.tokenizedField(REFERENCE_SET_MEMBER_MAP_TARGET_COMPONENT_DESCRIPTION, componentDescription);
+					doc.searchOnlyField(REFERENCE_SET_MEMBER_MAP_TARGET_COMPONENT_DESCRIPTION_SORT_KEY, IndexUtils.getSortKey(componentDescription));
 				}
 				
-				return doc;
+				return doc.build();
 				
 			case MODULE_DEPENDENCY:
 				final SnomedModuleDependencyRefSetMember dependencyMember = (SnomedModuleDependencyRefSetMember) member;
 				
-				doc.add(new LongField(REFERENCE_SET_MEMBER_SOURCE_EFFECTIVE_TIME, EffectiveTimes.getEffectiveTime(dependencyMember.getSourceEffectiveTime()), Store.YES));
-				doc.add(new LongField(REFERENCE_SET_MEMBER_TARGET_EFFECTIVE_TIME, EffectiveTimes.getEffectiveTime(dependencyMember.getTargetEffectiveTime()), Store.YES));
+				doc.field(REFERENCE_SET_MEMBER_SOURCE_EFFECTIVE_TIME, EffectiveTimes.getEffectiveTime(dependencyMember.getSourceEffectiveTime()));
+				doc.field(REFERENCE_SET_MEMBER_TARGET_EFFECTIVE_TIME, EffectiveTimes.getEffectiveTime(dependencyMember.getTargetEffectiveTime()));
 				
-				return doc;
+				return doc.build();
 			
 			default:
 			

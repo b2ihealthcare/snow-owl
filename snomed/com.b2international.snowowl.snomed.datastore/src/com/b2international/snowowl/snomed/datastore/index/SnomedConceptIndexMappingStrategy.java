@@ -15,8 +15,6 @@
  */
 package com.b2international.snowowl.snomed.datastore.index;
 
-import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.COMPONENT_ACTIVE;
-import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.COMPONENT_MODULE_ID;
 import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.COMPONENT_REFERRING_PREDICATE;
 import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.COMPONENT_RELEASED;
 import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.CONCEPT_DEGREE_OF_INTEREST;
@@ -31,16 +29,7 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.Set;
 
-import org.apache.lucene.document.BinaryDocValuesField;
 import org.apache.lucene.document.Document;
-import org.apache.lucene.document.Field.Store;
-import org.apache.lucene.document.FloatDocValuesField;
-import org.apache.lucene.document.LongField;
-import org.apache.lucene.document.NumericDocValuesField;
-import org.apache.lucene.document.StoredField;
-import org.apache.lucene.document.StringField;
-import org.apache.lucene.document.TextField;
-import org.apache.lucene.util.BytesRef;
 
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.api.index.CommonIndexConstants;
@@ -49,15 +38,12 @@ import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.datastore.BranchPathUtils;
 import com.b2international.snowowl.datastore.cdo.CDOUtils;
 import com.b2international.snowowl.datastore.index.AbstractIndexMappingStrategy;
-import com.b2international.snowowl.datastore.index.SortKeyMode;
-import com.b2international.snowowl.datastore.index.field.ComponentIdLongField;
-import com.b2international.snowowl.datastore.index.field.ComponentStorageKeyField;
-import com.b2international.snowowl.datastore.index.field.ComponentTypeField;
-import com.b2international.snowowl.datastore.index.field.IntIndexField;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.snomed.datastore.SnomedIconProvider;
 import com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants;
+import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedDocumentBuilder;
+import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedMappings;
 import com.b2international.snowowl.snomed.datastore.index.update.IconIdUpdater;
 import com.b2international.snowowl.snomed.datastore.index.update.ParentageUpdater;
 import com.b2international.snowowl.snomed.datastore.services.ISnomedComponentService;
@@ -151,34 +137,31 @@ public abstract class SnomedConceptIndexMappingStrategy extends AbstractIndexMap
 
 	@Override
 	public Document createDocument() {
-		final Document doc = new Document();
-		new ComponentIdLongField(conceptId).addTo(doc);
-		new ComponentStorageKeyField(storageKey).addTo(doc);
-		doc.add(new NumericDocValuesField(ComponentStorageKeyField.COMPONENT_STORAGE_KEY, storageKey));
-		new ComponentTypeField(SnomedTerminologyComponentConstants.CONCEPT_NUMBER).addTo(doc);
-		new IntIndexField(CONCEPT_EXHAUSTIVE, exhaustive ? 1 : 0).addTo(doc);
-		new IntIndexField(COMPONENT_ACTIVE, active ? 1 : 0).addTo(doc);
-		new IntIndexField(CONCEPT_PRIMITIVE, primitive ? 1 : 0).addTo(doc);
-		doc.add(new StoredField(COMPONENT_RELEASED, released ? 1 : 0));
-		doc.add(new TextField(CommonIndexConstants.COMPONENT_LABEL, label, Store.YES));
-		doc.add(new BinaryDocValuesField(CommonIndexConstants.COMPONENT_LABEL, new BytesRef(label)));
-		SortKeyMode.SORT_ONLY.add(doc, label);
-		doc.add(new StoredField(CONCEPT_DEGREE_OF_INTEREST, degreeOfInterest));
-		doc.add(new FloatDocValuesField(CONCEPT_DEGREE_OF_INTEREST, degreeOfInterest));
-		doc.add(new LongField(COMPONENT_MODULE_ID, Long.valueOf(moduleId), Store.YES));
-		doc.add(new NumericDocValuesField(CommonIndexConstants.COMPONENT_COMPARE_UNIQUE_KEY, indexAsRelevantForCompare ? storageKey : CDOUtils.NO_STORAGE_KEY));
-		//this point we have to find the first parent concept that is in the previous state of the taxonomy to specify the icon ID
-		new IconIdUpdater(inferredTaxonomyBuilder, conceptId, active, SnomedIconProvider.getInstance().getAvailableIconIds(), true);
-		if (!indexAsRelevantForCompare) {
-			doc.add(new NumericDocValuesField(CommonIndexConstants.COMPONENT_IGNORE_COMPARE_UNIQUE_KEY, storageKey));
-		}
-		doc.add(new LongField(CONCEPT_EFFECTIVE_TIME, EffectiveTimes.getEffectiveTime(effectiveTime), Store.YES));
-		
 		final ISnomedComponentService componentService = ApplicationContext.getInstance().getService(ISnomedComponentService.class);
 		//XXX intentionally works on MAIN
 		final long namespaceId = componentService.getExtensionConceptId(BranchPathUtils.createMainPath(), conceptId);
 		
-		doc.add(new LongField(CONCEPT_NAMESPACE_ID, namespaceId, Store.NO));
+		final SnomedDocumentBuilder doc = SnomedMappings.doc()
+				.id(conceptId)
+				.storageKey(storageKey)
+				.type(SnomedTerminologyComponentConstants.CONCEPT_NUMBER)
+				.active(active)
+				.labelWithSortKey(label)
+				.module(moduleId)
+				.field(CONCEPT_EFFECTIVE_TIME, EffectiveTimes.getEffectiveTime(effectiveTime))
+				.field(CONCEPT_EXHAUSTIVE, exhaustive ? 1 : 0)
+				.field(CONCEPT_PRIMITIVE, primitive ? 1 : 0)
+				.field(COMPONENT_RELEASED, released ? 1 : 0)
+				.docValuesField(CONCEPT_DEGREE_OF_INTEREST, degreeOfInterest)
+				.docValuesField(CommonIndexConstants.COMPONENT_COMPARE_UNIQUE_KEY, indexAsRelevantForCompare ? storageKey : CDOUtils.NO_STORAGE_KEY)
+				.searchOnlyField(CONCEPT_NAMESPACE_ID, namespaceId);
+		
+		if (!indexAsRelevantForCompare) {
+			doc.docValuesField(CommonIndexConstants.COMPONENT_IGNORE_COMPARE_UNIQUE_KEY, storageKey);
+		}
+		
+		//this point we have to find the first parent concept that is in the previous state of the taxonomy to specify the icon ID
+		new IconIdUpdater(inferredTaxonomyBuilder, conceptId, active, SnomedIconProvider.getInstance().getAvailableIconIds()).update(doc);
 		
 		addDescriptionFields(doc);
 
@@ -191,29 +174,27 @@ public abstract class SnomedConceptIndexMappingStrategy extends AbstractIndexMap
 		addReferringRefSetFields(doc, referringRefSetIds);
 		
 		for (String refSetId : mappingRefSetIds) {
-			doc.add(new LongField(CONCEPT_REFERRING_MAPPING_REFERENCE_SET_ID, Long.valueOf(refSetId), Store.YES));
+			doc.field(CONCEPT_REFERRING_MAPPING_REFERENCE_SET_ID, Long.valueOf(refSetId));
 		}
 		
-		
-		return doc;
+		return doc.build();
 	}
 
-	private void addReferringRefSetFields(Document doc, Collection<String> referringRefSetIds) {
+	private void addReferringRefSetFields(SnomedDocumentBuilder doc, Collection<String> referringRefSetIds) {
 		for (String refSetId : referringRefSetIds) {
-			doc.add(new LongField(CONCEPT_REFERRING_REFERENCE_SET_ID, Long.valueOf(refSetId), Store.YES));
+			doc.field(CONCEPT_REFERRING_REFERENCE_SET_ID, Long.valueOf(refSetId));
 		}
 	}
 
-	private void addPredicateFields(final Document doc, final Collection<String> predicateKeys) {
+	private void addPredicateFields(final SnomedDocumentBuilder doc, final Collection<String> predicateKeys) {
 		for (final String predicateKey : predicateKeys) {
-			doc.add(new StringField(COMPONENT_REFERRING_PREDICATE, predicateKey, Store.YES));
+			doc.field(COMPONENT_REFERRING_PREDICATE, predicateKey);
 		}
 	}
 
-	private void addDescriptionFields(final Document doc) {
-		
+	private void addDescriptionFields(final SnomedDocumentBuilder doc) {
 		for (final DescriptionInfo descriptionInfo : activeDescriptionInfos) {
-			doc.add(new TextField(descriptionInfo.type.fieldName, descriptionInfo.term, Store.YES));
+			doc.field(descriptionInfo.type.fieldName, descriptionInfo.term);
 		}
 	}
 
