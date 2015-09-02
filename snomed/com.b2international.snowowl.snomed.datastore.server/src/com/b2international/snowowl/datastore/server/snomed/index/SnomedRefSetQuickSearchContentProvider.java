@@ -32,12 +32,11 @@ import com.b2international.snowowl.core.quicksearch.CompactQuickSearchElement;
 import com.b2international.snowowl.core.quicksearch.QuickSearchContentResult;
 import com.b2international.snowowl.core.quicksearch.QuickSearchElement;
 import com.b2international.snowowl.datastore.IBranchPathMap;
-import com.b2international.snowowl.datastore.index.field.ComponentIdLongField;
-import com.b2international.snowowl.datastore.index.query.IndexQueries;
 import com.b2international.snowowl.datastore.quicksearch.AbstractQuickSearchContentProvider;
 import com.b2international.snowowl.datastore.quicksearch.IQuickSearchContentProvider;
-import com.b2international.snowowl.snomed.datastore.browser.SnomedIndexQueries;
+import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.snomed.datastore.index.SnomedIndexService;
+import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedMappings;
 import com.b2international.snowowl.snomed.datastore.index.refset.SnomedRefSetIndexEntry;
 import com.b2international.snowowl.snomed.datastore.index.refset.SnomedRefSetIndexQueryAdapter;
 import com.b2international.snowowl.snomed.datastore.quicksearch.SnomedRefSetQuickSearchProvider;
@@ -86,7 +85,7 @@ public class SnomedRefSetQuickSearchContentProvider extends AbstractQuickSearchC
 			
 			final SnomedRefSetIndexEntry refSet = itr.next();
 
-			final Query activeConceptQuery = IndexQueries.and(SnomedIndexQueries.ACTIVE_COMPONENT_QUERY, SnomedIndexQueries.CONCEPT_TYPE_QUERY, new ComponentIdLongField(refSet.getId()).toQuery());
+			final Query activeConceptQuery = SnomedMappings.newQuery().active().type(SnomedTerminologyComponentConstants.CONCEPT_NUMBER).id(refSet.getId()).matchAll();
 			
 			if (isInactiveConcept(indexService, branchPath, activeConceptQuery)) {
 				itr.remove();

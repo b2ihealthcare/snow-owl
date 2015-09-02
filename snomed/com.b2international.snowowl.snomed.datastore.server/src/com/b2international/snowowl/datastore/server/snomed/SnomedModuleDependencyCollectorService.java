@@ -66,8 +66,8 @@ import com.b2international.snowowl.snomed.datastore.SnomedRefSetLookupService;
 import com.b2international.snowowl.snomed.datastore.SnomedRelationshipIndexEntry;
 import com.b2international.snowowl.snomed.datastore.SnomedStatementBrowser;
 import com.b2international.snowowl.snomed.datastore.SnomedTerminologyBrowser;
-import com.b2international.snowowl.snomed.datastore.browser.SnomedIndexQueries;
 import com.b2international.snowowl.snomed.datastore.index.SnomedIndexService;
+import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedMappings;
 import com.b2international.snowowl.snomed.datastore.services.ISnomedComponentService;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedModuleDependencyRefSetMember;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSet;
@@ -186,7 +186,7 @@ public enum SnomedModuleDependencyCollectorService {
 
 	private void tryCreateMembersForDescriptionChanges() {
 		final DescriptionPropertyCollector collector = new DescriptionPropertyCollector(getUnpublishedStorageKeys());
-		getIndexServerService().search(getBranchPath(), SnomedIndexQueries.DESCRIPTION_TYPE_QUERY, collector);
+		getIndexServerService().search(getBranchPath(), SnomedMappings.newQuery().description().matchAll(), collector);
 		
 		for (final LongKeyMapIterator itr = collector.getMapping().entries(); itr.hasNext(); /**/) {
 			itr.next();
@@ -205,7 +205,7 @@ public enum SnomedModuleDependencyCollectorService {
 
 	private void tryCreateMembersForRelationshipChanges() {
 		final RelationshipPropertyCollector collector = new RelationshipPropertyCollector(getUnpublishedStorageKeys());
-		getIndexServerService().search(getBranchPath(), SnomedIndexQueries.RELATIONSHIP_TYPE_QUERY, collector);
+		getIndexServerService().search(getBranchPath(), SnomedMappings.newQuery().relationship().matchAll(), collector);
 		
 		for (final LongKeyMapIterator itr = collector.getMapping().entries(); itr.hasNext(); /**/) {
 			itr.next();

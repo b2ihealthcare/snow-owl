@@ -39,10 +39,10 @@ import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.api.IComponentNameProvider;
 import com.b2international.snowowl.core.api.INameProviderFactory;
 import com.b2international.snowowl.core.api.TerminologyComponentIdProvider;
-import com.b2international.snowowl.datastore.index.field.ComponentTypeField;
 import com.b2international.snowowl.datastore.server.index.IndexServerService;
 import com.b2international.snowowl.datastore.server.snomed.InitializationState;
 import com.b2international.snowowl.snomed.datastore.index.SnomedIndexService;
+import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedMappings;
 import com.google.common.collect.ImmutableMap.Builder;
 
 /**
@@ -90,7 +90,7 @@ import com.google.common.collect.ImmutableMap.Builder;
 	private Map<String, String> getComponentLabelMapping() {
 		final SnomedComponentLabelCollector collector = new SnomedComponentLabelCollector();
 		final IndexServerService<?> indexService = getIndexService();
-		final Query query = new ComponentTypeField(getTerminologyComponentId()).toQuery();
+		final Query query = SnomedMappings.newQuery().type(getTerminologyComponentId()).matchAll();
 		indexService.search(getBranchPath(), query, collector);
 		return transformMap(collector.getIdLabelMapping());
 	}

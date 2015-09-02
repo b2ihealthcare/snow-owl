@@ -17,7 +17,6 @@ package com.b2international.snowowl.datastore.server.snomed.escg;
 
 import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.CONCEPT_REFERRING_MAPPING_REFERENCE_SET_ID;
 import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.CONCEPT_REFERRING_REFERENCE_SET_ID;
-import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.RELATIONSHIP_ATTRIBUTE_ID;
 
 import java.io.Serializable;
 
@@ -39,16 +38,13 @@ import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.datastore.index.IndexUtils;
 import com.b2international.snowowl.datastore.index.LongDocValuesCollector;
-import com.b2international.snowowl.datastore.index.field.ComponentAncestorLongField;
-import com.b2international.snowowl.datastore.index.field.ComponentIdLongField;
-import com.b2international.snowowl.datastore.index.field.ComponentParentLongField;
-import com.b2international.snowowl.datastore.index.query.IndexQueries;
 import com.b2international.snowowl.datastore.server.snomed.SnomedComponentService;
 import com.b2international.snowowl.datastore.server.snomed.index.SnomedIndexServerService;
-import com.b2international.snowowl.snomed.datastore.browser.SnomedIndexQueries;
+import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.snomed.datastore.escg.IQueryEvaluator;
 import com.b2international.snowowl.snomed.datastore.index.SnomedIndexService;
 import com.b2international.snowowl.snomed.datastore.index.StatementObjectIdCollector;
+import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedMappings;
 import com.b2international.snowowl.snomed.dsl.query.ast.AndClause;
 import com.b2international.snowowl.snomed.dsl.query.ast.AttributeClause;
 import com.b2international.snowowl.snomed.dsl.query.ast.ConceptRef;
@@ -88,44 +84,24 @@ public class ConceptIdQueryEvaluator2 implements Serializable, IQueryEvaluator<L
 			
 			final ConceptRef concept = (ConceptRef) expression;
 			final String conceptId = Preconditions.checkNotNull(concept.getConceptId());
-			final BooleanQuery mainQuery = new BooleanQuery(true);
-			mainQuery.add(SnomedIndexQueries.ACTIVE_COMPONENT_QUERY, Occur.MUST);
-			mainQuery.add(SnomedIndexQueries.CONCEPT_TYPE_QUERY, Occur.MUST);
+			final BooleanQuery mainQuery = (BooleanQuery) SnomedMappings.newQuery().active().type(SnomedTerminologyComponentConstants.CONCEPT_NUMBER).matchAll();
 			final SnomedIndexServerService service = getIndexService();
-			final LongDocValuesCollector collector = new LongDocValuesCollector(ComponentIdLongField.COMPONENT_ID);
+			final LongDocValuesCollector collector = new LongDocValuesCollector(SnomedMappings.id().fieldName());
 			
 			switch (concept.getQuantifier()) {
 				
 				case SELF:
-					
-					return new LongOpenHashSet(new long[] { Long.valueOf(conceptId) });
+					return new LongOpenHashSet(new long[] { Long.parseLong(conceptId) });
 					
 				case ANY_SUBTYPE:
-					
-					
-					final BooleanQuery descendatQuery = new BooleanQuery(true);
-					
-					descendatQuery.add(new ComponentAncestorLongField(conceptId).toQuery(), Occur.SHOULD);
-					descendatQuery.add(new ComponentParentLongField(conceptId).toQuery(), Occur.SHOULD);
-				
+					final Query descendatQuery = SnomedMappings.newQuery().parent(conceptId).ancestor(conceptId).matchAny();
 					mainQuery.add(descendatQuery, Occur.MUST);
-					
 					service.search(branchPath, mainQuery, collector);
-					
 					return new LongOpenHashSet(collector.getValues());
 
 				case SELF_AND_ANY_SUBTYPE:
-
-					final BooleanQuery descendatOrSelfQuery = new BooleanQuery(true);
-					
-					descendatOrSelfQuery.add(new ComponentAncestorLongField(conceptId).toQuery(), Occur.SHOULD);
-					descendatOrSelfQuery.add(new ComponentParentLongField(conceptId).toQuery(), Occur.SHOULD);
-					descendatOrSelfQuery.add(createIdQuery(conceptId), Occur.SHOULD);
-				
-					mainQuery.add(descendatOrSelfQuery, Occur.MUST);
-					
+					mainQuery.add(SnomedMappings.newQuery().id(conceptId).parent(conceptId).ancestor(conceptId).matchAny(), Occur.MUST);
 					service.search(branchPath, mainQuery, collector);
-					
 					return new LongOpenHashSet(collector.getValues());
 					
 				default:
@@ -139,9 +115,7 @@ public class ConceptIdQueryEvaluator2 implements Serializable, IQueryEvaluator<L
 			final LongSet attributeIdSet = evaluate(clause.getLeft());
 			final LongSet valueIdSet = evaluate(clause.getRight());
 
-			final BooleanQuery query = new BooleanQuery(true);
-			query.add(SnomedIndexQueries.ACTIVE_COMPONENT_QUERY, Occur.MUST);
-			query.add(SnomedIndexQueries.RELATIONSHIP_TYPE_QUERY, Occur.MUST);
+			final BooleanQuery query = (BooleanQuery) SnomedMappings.newQuery().active().type(SnomedTerminologyComponentConstants.RELATIONSHIP_NUMBER).matchAll();
 			
 			final BooleanQuery negatedQuery = new BooleanQuery(true);
 			//filter out the top most relationship types with index query if possible to better performance
@@ -170,11 +144,10 @@ public class ConceptIdQueryEvaluator2 implements Serializable, IQueryEvaluator<L
 			final RefSet refSet = (RefSet) expression;
 			final String refSetId = refSet.getId();
 			
-			final Query query = IndexQueries.and(SnomedIndexQueries.ACTIVE_CONCEPTS_QUERY, createRefSetQuery(refSetId));
+			final Query query = SnomedMappings.newQuery().active().type(SnomedTerminologyComponentConstants.CONCEPT_NUMBER).and(createRefSetQuery(refSetId)).matchAll();
 			final SnomedIndexServerService service = getIndexService();
-			final LongDocValuesCollector collector = new LongDocValuesCollector(ComponentIdLongField.COMPONENT_ID);
+			final LongDocValuesCollector collector = new LongDocValuesCollector(SnomedMappings.id().fieldName());
 			service.search(branchPath, query, collector);
-			
 			return new LongOpenHashSet(collector.getValues());
 			
 		} else if (expression instanceof SubExpression) {
@@ -258,17 +231,9 @@ public class ConceptIdQueryEvaluator2 implements Serializable, IQueryEvaluator<L
 	}
 	
 	private Query createStatementAttributeIdQuery(final long attributeId) {
-		return new TermQuery(createStatementAttributeIdTerm(attributeId));
+		return SnomedMappings.newQuery().relationshipType(attributeId).matchAll();
 	}
 
-	private Term createStatementAttributeIdTerm(final long attributeId) {
-		return new Term(RELATIONSHIP_ATTRIBUTE_ID, IndexUtils.longToPrefixCoded(attributeId));
-	}
-	
-	private Query createIdQuery(final String conceptId) {
-		return new ComponentIdLongField(conceptId).toQuery();
-	}
-	
 	private Term createRefSetTerm(String refSetId) {
 		return new Term(CONCEPT_REFERRING_REFERENCE_SET_ID, IndexUtils.longToPrefixCoded(refSetId));
 	}

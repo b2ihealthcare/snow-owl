@@ -35,9 +35,6 @@ import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.exceptions.ComponentNotFoundException;
 import com.b2international.snowowl.core.terminology.ComponentCategory;
 import com.b2international.snowowl.datastore.index.IndexQueryBuilder;
-import com.b2international.snowowl.datastore.index.field.ComponentAncestorLongField;
-import com.b2international.snowowl.datastore.index.field.ComponentIdLongField;
-import com.b2international.snowowl.datastore.index.field.ComponentParentLongField;
 import com.b2international.snowowl.snomed.api.ISnomedConceptService;
 import com.b2international.snowowl.snomed.api.ISnomedTerminologyBrowserService;
 import com.b2international.snowowl.snomed.api.domain.ISnomedConcept;
@@ -46,6 +43,7 @@ import com.b2international.snowowl.snomed.datastore.SnomedConceptIndexEntry;
 import com.b2international.snowowl.snomed.datastore.SnomedTerminologyBrowser;
 import com.b2international.snowowl.snomed.datastore.index.SnomedConceptIndexQueryAdapter;
 import com.b2international.snowowl.snomed.datastore.index.SnomedIndexService;
+import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedMappings;
 import com.b2international.snowowl.snomed.datastore.services.SnomedBranchRefSetMembershipLookupService;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
@@ -84,16 +82,16 @@ public class SnomedTerminologyBrowserServiceImpl implements ISnomedTerminologyBr
 		@Override
 		protected IndexQueryBuilder createIndexQueryBuilder() {
 			return super.createIndexQueryBuilder()
-					.requireIf(allFlagsSet(SEARCH_ROOTS), ComponentParentLongField.ROOT_PARENT.toQuery())
+					.requireIf(allFlagsSet(SEARCH_ROOTS), SnomedMappings.newQuery().parent(SnomedMappings.ROOT_ID).matchAll())
 					.require(new IndexQueryBuilder()
-						.matchIf(allFlagsSet(SEARCH_PARENT), new ComponentParentLongField(searchString).toQuery())
-						.matchIf(allFlagsSet(SEARCH_ANCESTOR), new ComponentAncestorLongField(searchString).toQuery())
+						.matchIf(allFlagsSet(SEARCH_PARENT), SnomedMappings.newQuery().parent(searchString).matchAll())
+						.matchIf(allFlagsSet(SEARCH_ANCESTOR), SnomedMappings.newQuery().ancestor(searchString).matchAll())
 					);
 		}
 
 		@Override
 		public Sort createSort() {
-			return ComponentIdLongField.createSort();
+			return SnomedMappings.id().createSort();
 		}
 	}
 

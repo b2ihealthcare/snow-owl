@@ -27,11 +27,8 @@ import org.apache.lucene.search.Query;
 import org.apache.lucene.search.TermQuery;
 
 import com.b2international.snowowl.datastore.index.IndexUtils;
-import com.b2international.snowowl.datastore.index.field.ComponentAncestorLongField;
-import com.b2international.snowowl.datastore.index.field.ComponentIdLongField;
-import com.b2international.snowowl.datastore.index.field.ComponentParentLongField;
-import com.b2international.snowowl.snomed.datastore.browser.SnomedIndexQueries;
 import com.b2international.snowowl.snomed.datastore.escg.IQueryEvaluator;
+import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedMappings;
 import com.b2international.snowowl.snomed.dsl.query.ast.AndClause;
 import com.b2international.snowowl.snomed.dsl.query.ast.ConceptRef;
 import com.b2international.snowowl.snomed.dsl.query.ast.NotClause;
@@ -53,9 +50,6 @@ public class IndexQueryQueryEvaluator implements Serializable, IQueryEvaluator<B
 
 	private static final long serialVersionUID = 1976491781836431852L;
 
-	/* (non-Javadoc)
-	 * @see com.b2international.snowowl.datastore.server.snomed.escg.IQueryEvaluator#evaluate(com.b2international.snowowl.snomed.dsl.query.RValue)
-	 */
 	@Override
 	public BooleanQuery evaluate(final com.b2international.snowowl.snomed.dsl.query.RValue expression) {
 		
@@ -75,28 +69,16 @@ public class IndexQueryQueryEvaluator implements Serializable, IQueryEvaluator<B
 			switch (concept.getQuantifier()) {
 				case SELF:
 					
-					mainQuery.add(createIdQuery(conceptId), Occur.MUST);
+					mainQuery.add(SnomedMappings.newQuery().id(conceptId).matchAll(), Occur.MUST);
 					return mainQuery;
 					
 				case ANY_SUBTYPE:
-					
-					final BooleanQuery descendatQuery = new BooleanQuery();
-					
-					descendatQuery.add(new ComponentAncestorLongField(conceptId).toQuery(), Occur.SHOULD);
-					descendatQuery.add(new ComponentParentLongField(conceptId).toQuery(), Occur.SHOULD);
-				
-					mainQuery.add(descendatQuery, Occur.MUST);
+					mainQuery.add(SnomedMappings.newQuery().parent(conceptId).ancestor(conceptId).matchAny(), Occur.MUST);
 					return mainQuery;
 					
 				case SELF_AND_ANY_SUBTYPE:
 					
-					final BooleanQuery descendatOrSelfQuery = new BooleanQuery();
-					
-					descendatOrSelfQuery.add(new ComponentAncestorLongField(conceptId).toQuery(), Occur.SHOULD);
-					descendatOrSelfQuery.add(new ComponentParentLongField(conceptId).toQuery(), Occur.SHOULD);
-					descendatOrSelfQuery.add(createIdQuery(conceptId), Occur.SHOULD);
-				
-					mainQuery.add(descendatOrSelfQuery, Occur.MUST);
+					mainQuery.add(SnomedMappings.newQuery().id(conceptId).parent(conceptId).ancestor(conceptId).matchAny(), Occur.MUST);
 					return mainQuery;
 					
 				default:
@@ -183,10 +165,6 @@ public class IndexQueryQueryEvaluator implements Serializable, IQueryEvaluator<B
 		return mainQuery;
 	}
 	
-	private Query createIdQuery(final String conceptId) {
-		return new ComponentIdLongField(conceptId).toQuery();
-	}
-	
 	private Term createRefSetTerm(String refSetId) {
 		return new Term(CONCEPT_REFERRING_REFERENCE_SET_ID, IndexUtils.longToPrefixCoded(refSetId));
 	}
@@ -201,7 +179,7 @@ public class IndexQueryQueryEvaluator implements Serializable, IQueryEvaluator<B
 		refSetQuery.add(new TermQuery(createMappingRefSetTerm(refSetId)), Occur.SHOULD);
 		final BooleanQuery query = new BooleanQuery(true);
 		query.add(refSetQuery, Occur.MUST);
-		query.add(SnomedIndexQueries.ACTIVE_COMPONENT_QUERY, Occur.MUST);
+		query.add(SnomedMappings.newQuery().active().matchAll(), Occur.MUST);
 		return query;
 	}
 

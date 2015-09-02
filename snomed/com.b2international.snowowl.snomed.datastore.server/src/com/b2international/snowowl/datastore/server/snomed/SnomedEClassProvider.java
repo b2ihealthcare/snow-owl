@@ -23,10 +23,7 @@ import static com.b2international.snowowl.snomed.common.SnomedTerminologyCompone
 import static com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants.RELATIONSHIP_NUMBER;
 import static com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator.REPOSITORY_UUID;
 import static com.b2international.snowowl.snomed.datastore.SnomedRefSetUtil.getRefSetMemberClass;
-import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_REFERENCE_SET_TYPE;
 import static com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType.get;
-import static com.google.common.collect.Sets.newHashSet;
-import static java.util.Collections.unmodifiableSet;
 
 import java.util.Set;
 
@@ -36,11 +33,12 @@ import org.eclipse.emf.ecore.EClass;
 
 import com.b2international.snowowl.datastore.index.AbstractIndexService;
 import com.b2international.snowowl.datastore.index.IndexUtils;
-import com.b2international.snowowl.datastore.index.field.ComponentTypeField;
+import com.b2international.snowowl.datastore.index.mapping.Mappings;
 import com.b2international.snowowl.datastore.server.EClassProvider;
 import com.b2international.snowowl.datastore.server.IEClassProvider;
 import com.b2international.snowowl.snomed.SnomedPackage;
 import com.b2international.snowowl.snomed.datastore.index.SnomedIndexService;
+import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedMappings;
 import com.b2international.snowowl.snomed.mrcm.MrcmPackage;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetPackage;
 
@@ -51,17 +49,14 @@ public class SnomedEClassProvider extends EClassProvider {
 
 	private static final int PREDICATE_TYPE_ID = 999;
 
-	private static final Set<String> FIELDS_TO_LOAD = unmodifiableSet(newHashSet(
-			ComponentTypeField.COMPONENT_TYPE, 
-			REFERENCE_SET_MEMBER_REFERENCE_SET_TYPE
-			));
+	private static final Set<String> FIELDS_TO_LOAD = SnomedMappings.fieldsToLoad().type().memberReferenceSetType().build();
 	
 	@Override
 	protected EClass extractEClass(final Document doc) {
 		
-		IndexableField indexableField = doc.getField(ComponentTypeField.COMPONENT_TYPE);
+		IndexableField indexableField = Mappings.type().getField(doc);
 		if (null == indexableField) {//component type is not stored for reference set members
-			indexableField = doc.getField(REFERENCE_SET_MEMBER_REFERENCE_SET_TYPE);
+			indexableField = SnomedMappings.memberRefSetType().getField(doc);
 			if (null != indexableField) {
 				return getRefSetMemberClass(get(getIntValue(indexableField)));
 			}

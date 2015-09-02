@@ -19,8 +19,8 @@ import org.apache.lucene.search.Query;
 
 import com.b2international.snowowl.core.api.index.IIndexEntry;
 import com.b2international.snowowl.core.api.index.IIndexService;
-import com.b2international.snowowl.datastore.index.field.ComponentIdLongField;
 import com.b2international.snowowl.datastore.server.index.AbstractIndexBrowser;
+import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedMappings;
 import com.google.common.base.Preconditions;
 
 /**
@@ -35,6 +35,6 @@ public abstract class AbstractSnomedIndexBrowser<E extends IIndexEntry> extends 
 	
 	@Override
 	protected Query getComponentIdQuery(String componentId) {
-		return new ComponentIdLongField(componentId).toQuery();
+		return SnomedMappings.newQuery().id(componentId).matchAll();
 	}
 }
