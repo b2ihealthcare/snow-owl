@@ -60,10 +60,16 @@ public class SnomedDescriptionSortKeyQueryAdapter extends SnomedDescriptionIndex
 	
 	@Override
 	protected IndexQueryBuilder createIndexQueryBuilder() {
-		return super.createIndexQueryBuilder()
+		return requireType(super.createIndexQueryBuilder())
 			.requireIf(anyFlagSet(SEARCH_DESCRIPTION_ACTIVE_ONLY), SnomedMappings.newQuery().active().matchAll())
-			.requireIf(!StringUtils.isEmpty(descriptionTypeId), SnomedMappings.newQuery().descriptionType(descriptionTypeId).matchAll())
 			.finishIf(StringUtils.isEmpty(searchString))
 			.requireExactTerm(CommonIndexConstants.COMPONENT_LABEL_SORT_KEY, IndexUtils.getSortKey(searchString));
+	}
+
+	private IndexQueryBuilder requireType(IndexQueryBuilder builder) {
+		if (!StringUtils.isEmpty(descriptionTypeId)) {
+			builder.require(SnomedMappings.newQuery().descriptionType(descriptionTypeId).matchAll());
+		}
+		return builder;
 	}	
 }

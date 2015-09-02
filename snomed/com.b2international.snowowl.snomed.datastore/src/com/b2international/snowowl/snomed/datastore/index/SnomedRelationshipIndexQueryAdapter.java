@@ -35,7 +35,6 @@ import com.b2international.snowowl.datastore.index.IndexQueryBuilder;
 import com.b2international.snowowl.datastore.index.IndexUtils;
 import com.b2international.snowowl.datastore.index.QueryDslIndexQueryAdapter;
 import com.b2international.snowowl.datastore.index.mapping.Mappings;
-import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.snomed.datastore.SnomedRelationshipIndexEntry;
 import com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants;
 import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedMappings;
@@ -103,14 +102,15 @@ public class SnomedRelationshipIndexQueryAdapter extends QueryDslIndexQueryAdapt
 		Optional<Long> parsedSearchStringOptional = IndexUtils.parseLong(searchString);
 		final IndexQueryBuilder activeRelationshipsQuery = new IndexQueryBuilder()
 			.requireIf(anyFlagSet(SEARCH_ACTIVE_RELATIONSHIPS_ONLY), SnomedMappings.newQuery().active().matchAll())
-			.requireIf(StringUtils.isEmpty(searchString), SnomedMappings.newQuery().type(SnomedTerminologyComponentConstants.RELATIONSHIP_NUMBER).matchAll());
+			.requireIf(StringUtils.isEmpty(searchString), SnomedMappings.newQuery().relationship().matchAll());
 		if (parsedSearchStringOptional.isPresent()) {
+			final Long id = parsedSearchStringOptional.get();
 			return activeRelationshipsQuery
 			.finishIf(StringUtils.isEmpty(searchString))
-			.requireExactTermIf(anyFlagSet(SEARCH_SOURCE_ID), RELATIONSHIP_OBJECT_ID, IndexUtils.longToPrefixCoded(parsedSearchStringOptional.get()))
-			.requireExactTermIf(anyFlagSet(SEARCH_DESTINATION_ID), RELATIONSHIP_VALUE_ID, IndexUtils.longToPrefixCoded(parsedSearchStringOptional.get()))
-			.requireIf(anyFlagSet(SEARCH_STORAGE_KEY), SnomedMappings.newQuery().storageKey(parsedSearchStringOptional.get()).matchAll())
-			.requireIf(anyFlagSet(SEARCH_RELATIONSHIP_ID), SnomedMappings.newQuery().id(parsedSearchStringOptional.get()).matchAll());
+			.requireExactTermIf(anyFlagSet(SEARCH_SOURCE_ID), RELATIONSHIP_OBJECT_ID, IndexUtils.longToPrefixCoded(id))
+			.requireExactTermIf(anyFlagSet(SEARCH_DESTINATION_ID), RELATIONSHIP_VALUE_ID, IndexUtils.longToPrefixCoded(id))
+			.requireIf(anyFlagSet(SEARCH_STORAGE_KEY), SnomedMappings.newQuery().storageKey(id).matchAll())
+			.requireIf(anyFlagSet(SEARCH_RELATIONSHIP_ID), SnomedMappings.newQuery().id(id).matchAll());
 		} else {
 			// TODO: this query adapter only searches by IDs, what to return here?
 			return activeRelationshipsQuery;

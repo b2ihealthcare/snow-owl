@@ -49,7 +49,7 @@ public class SnomedConceptFullQueryAdapter extends SnomedConceptIndexQueryAdapte
 		if (anyFlagSet(SEARCH_BY_CONCEPT_ID)) {
 			Optional<Long> parsedSearchStringOptional = IndexUtils.parseLong(searchString);
 			if (parsedSearchStringOptional.isPresent()) {
-				return createIndexQueryBuilderWithIdTerms(builder, parsedSearchStringOptional);
+				return createIndexQueryBuilderWithIdTerms(builder, parsedSearchStringOptional.get());
 			} else if (anyFlagSet(SEARCH_BY_LABEL | SEARCH_BY_FSN | SEARCH_BY_SYNONYM | SEARCH_BY_OTHER)) {
 				return createIndexQueryBuilderWithoutIdTerms(builder);
 			} else {
@@ -61,11 +61,11 @@ public class SnomedConceptFullQueryAdapter extends SnomedConceptIndexQueryAdapte
 		}
 	}
 
-	private IndexQueryBuilder createIndexQueryBuilderWithIdTerms(IndexQueryBuilder builder, Optional<Long> parsedSearchStringOptional) {
+	private IndexQueryBuilder createIndexQueryBuilderWithIdTerms(IndexQueryBuilder builder, Long id) {
 		return builder
 				.finishIf(StringUtils.isEmpty(searchString))
 				.require(new IndexQueryBuilder()
-				.matchIf(anyFlagSet(SEARCH_BY_CONCEPT_ID), SnomedMappings.newQuery().id(parsedSearchStringOptional.get()).matchAll())
+				.matchIf(anyFlagSet(SEARCH_BY_CONCEPT_ID), SnomedMappings.newQuery().id(id).matchAll())
 				.matchParsedTermIf(anyFlagSet(SEARCH_BY_LABEL), Mappings.label().fieldName(), searchString)
 				.matchParsedTermIf(anyFlagSet(SEARCH_BY_FSN), SnomedIndexBrowserConstants.CONCEPT_FULLY_SPECIFIED_NAME, searchString)
 				.matchParsedTermIf(anyFlagSet(SEARCH_BY_SYNONYM), SnomedIndexBrowserConstants.CONCEPT_SYNONYM, searchString)

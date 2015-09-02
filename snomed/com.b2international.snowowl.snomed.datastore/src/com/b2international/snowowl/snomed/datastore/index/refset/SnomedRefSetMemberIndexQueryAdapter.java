@@ -26,8 +26,10 @@ import org.apache.lucene.search.Query;
 import com.b2international.commons.StringUtils;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.datastore.index.IndexAdapterBase;
+import com.b2international.snowowl.datastore.index.IndexUtils;
 import com.b2international.snowowl.datastore.index.mapping.Mappings;
 import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedMappings;
+import com.google.common.base.Optional;
 
 public class SnomedRefSetMemberIndexQueryAdapter extends IndexAdapterBase<SnomedRefSetMemberIndexEntry> implements Serializable {
 
@@ -55,20 +57,20 @@ public class SnomedRefSetMemberIndexQueryAdapter extends IndexAdapterBase<Snomed
 		return SnomedRefSetMemberIndexEntry.create(doc, branchPath);
 	}
 	
+	@SuppressWarnings("deprecation")
 	@Override
 	protected Query buildQuery() throws ParseException {
-		
-		final BooleanQuery main = new BooleanQuery();
-		
-		final BooleanQuery refSetIdQuery = new BooleanQuery();
-		refSetIdQuery.add(SnomedMappings.newQuery().memberRefSetId(refSetId).matchAll(), Occur.MUST);
-		main.add(refSetIdQuery, Occur.MUST);
+		final BooleanQuery main = new BooleanQuery(true);
+		main.add(SnomedMappings.newQuery().memberRefSetId(refSetId).matchAll(), Occur.MUST);
 		
 		if (!StringUtils.isEmpty(searchString)) {
-			final BooleanQuery fieldQuery = new BooleanQuery();
+			final BooleanQuery fieldQuery = new BooleanQuery(true);
 			addTermPrefixClause(fieldQuery, Mappings.label().fieldName(), searchString.toLowerCase());
 			//added by endre, see issue #242
-			fieldQuery.add(SnomedMappings.newQuery().memberReferencedComponentId(searchString.toLowerCase()).matchAll(), Occur.SHOULD);
+			final Optional<Long> parseLong = IndexUtils.parseLong(searchString.toLowerCase());
+			if (parseLong.isPresent()) {
+				fieldQuery.add(SnomedMappings.newQuery().memberReferencedComponentId(parseLong.get()).matchAll(), Occur.SHOULD);
+			}
 			main.add(fieldQuery, Occur.MUST);
 		}
 		

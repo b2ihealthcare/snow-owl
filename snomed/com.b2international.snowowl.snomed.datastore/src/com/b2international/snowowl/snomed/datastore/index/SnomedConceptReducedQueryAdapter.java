@@ -71,7 +71,7 @@ public class SnomedConceptReducedQueryAdapter extends SnomedConceptIndexQueryAda
 		if (anyFlagSet(SEARCH_BY_CONCEPT_ID)) {
 			Optional<Long> parsedSearchStringOptional = IndexUtils.parseLong(searchString);
 			if (parsedSearchStringOptional.isPresent()) {
-				return createIndexQueryBuilderWithIdTerms(builder);
+				return createIndexQueryBuilderWithIdTerms(builder, parsedSearchStringOptional.get());
 			} else {
 				return createIndexQueryBuilderWithoutIdTerms(builder);
 			}
@@ -82,12 +82,9 @@ public class SnomedConceptReducedQueryAdapter extends SnomedConceptIndexQueryAda
 		
 	}
 
-	private IndexQueryBuilder createIndexQueryBuilderWithIdTerms(IndexQueryBuilder builder) {
-		return builder
-				.requireIf(StringUtils.isEmpty(searchString), SnomedMappings.id().toExistsQuery())
-				.finishIf(StringUtils.isEmpty(searchString))
-				.require(new IndexQueryBuilder()
-				.match(SnomedMappings.newQuery().id(searchString).matchAll())
+	private IndexQueryBuilder createIndexQueryBuilderWithIdTerms(IndexQueryBuilder builder, Long id) {
+		return builder.require(new IndexQueryBuilder()
+				.match(SnomedMappings.newQuery().id(id).matchAll())
 				.matchAllTokenizedTermsIf(anyFlagSet(SEARCH_BY_LABEL), Mappings.label().fieldName(), searchString.toLowerCase())
 				.matchAllTokenizedTermPrefixesIf(anyFlagSet(SEARCH_BY_LABEL), Mappings.label().fieldName(), searchString.toLowerCase())
 				.matchAllTokenizedTermPrefixesIf(anyFlagSet(SEARCH_BY_FSN), SnomedIndexBrowserConstants.CONCEPT_FULLY_SPECIFIED_NAME, searchString.toLowerCase())
