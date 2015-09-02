@@ -74,8 +74,8 @@ public class SnomedRelationshipIndexMappingStrategy extends AbstractIndexMapping
 				.module(moduleId)
 				.relationshipType(typeId)
 				.relationshipCharacteristicType(characteristicTypeId)
-				.field(RELATIONSHIP_OBJECT_ID, sourceId)
-				.field(RELATIONSHIP_VALUE_ID, destinationId)
+				.docValuesField(RELATIONSHIP_OBJECT_ID, sourceId)
+				.docValuesField(RELATIONSHIP_VALUE_ID, destinationId)
 				.storedOnly(COMPONENT_RELEASED, relationship.isReleased() ? 1 : 0)
 				.storedOnly(RELATIONSHIP_GROUP, group)
 				.storedOnly(RELATIONSHIP_UNION_GROUP, unionGroup)
@@ -86,8 +86,6 @@ public class SnomedRelationshipIndexMappingStrategy extends AbstractIndexMapping
 				.build();
 
 		// TODO replace
-		doc.add(new NumericDocValuesField(RELATIONSHIP_VALUE_ID, destinationId));
-		doc.add(new NumericDocValuesField(RELATIONSHIP_OBJECT_ID, sourceId));
 		doc.add(new NumericDocValuesField(RELATIONSHIP_GROUP, group));
 		doc.add(new NumericDocValuesField(RELATIONSHIP_UNION_GROUP, unionGroup));
 		doc.add(new NumericDocValuesField(RELATIONSHIP_UNIVERSAL, universal ? 1 : 0));
