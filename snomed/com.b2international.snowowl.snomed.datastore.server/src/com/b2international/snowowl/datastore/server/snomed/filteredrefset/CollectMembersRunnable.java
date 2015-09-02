@@ -28,10 +28,10 @@ import bak.pcj.LongCollection;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.datastore.index.IndexUtils;
 import com.b2international.snowowl.datastore.index.LongDocValuesCollector;
-import com.b2international.snowowl.datastore.index.field.ComponentIdLongField;
 import com.b2international.snowowl.datastore.server.index.IndexServerService;
+import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants;
-import com.b2international.snowowl.snomed.datastore.browser.SnomedIndexQueries;
+import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedMappings;
 
 public final class CollectMembersRunnable implements Runnable {
 	
@@ -57,10 +57,7 @@ public final class CollectMembersRunnable implements Runnable {
 
 	@Override 
 	public void run() {
-
-		final BooleanQuery refSetMemberConceptQuery = new BooleanQuery(true);
-		refSetMemberConceptQuery.add(SnomedIndexQueries.ACTIVE_COMPONENT_QUERY, Occur.MUST);
-		refSetMemberConceptQuery.add(SnomedIndexQueries.CONCEPT_TYPE_QUERY, Occur.MUST);
+		final BooleanQuery refSetMemberConceptQuery = (BooleanQuery) SnomedMappings.newQuery().type(SnomedTerminologyComponentConstants.CONCEPT_NUMBER).active().matchAll();
 
 		final Occur refSetOccur = (existingMembersOnly) ? Occur.MUST : Occur.MUST_NOT;
 		refSetMemberConceptQuery.add(new TermQuery(new Term(SnomedIndexBrowserConstants.CONCEPT_REFERRING_REFERENCE_SET_ID, IndexUtils.longToPrefixCoded(refSetId))), refSetOccur);
@@ -70,7 +67,7 @@ public final class CollectMembersRunnable implements Runnable {
 			refSetMemberConceptQuery.add(labelQuery, Occur.MUST);
 		}
 
-		final LongDocValuesCollector conceptIdCollector = new LongDocValuesCollector(ComponentIdLongField.COMPONENT_ID, maxDoc);
+		final LongDocValuesCollector conceptIdCollector = new LongDocValuesCollector(SnomedMappings.id().fieldName(), maxDoc);
 		indexService.search(branchPath, refSetMemberConceptQuery, conceptIdCollector);
 		final LongCollection conceptIds = conceptIdCollector.getValues();
 		conceptIds.trimToSize();

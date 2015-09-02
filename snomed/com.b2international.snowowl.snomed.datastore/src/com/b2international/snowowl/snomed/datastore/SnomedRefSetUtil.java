@@ -48,6 +48,7 @@ import com.b2international.snowowl.datastore.index.IndexUtils;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants;
+import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedMappings;
 import com.b2international.snowowl.snomed.snomedrefset.DataType;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedMappingRefSet;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSet;
@@ -268,10 +269,7 @@ public abstract class SnomedRefSetUtil {
 	 * @return the terminology component ID.
 	 */
 	public static short getSpecialFieldComponentTypeId(final Document document) {
-		
-		Preconditions.checkNotNull(document, "Document argument cannot be null.");
-		final IndexableField field = document.getField(SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_REFERENCE_SET_TYPE);
-		SnomedRefSetType type = get(IndexUtils.getIntValue(Preconditions.checkNotNull(field, "Indexable field does not exist with name: " + SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_REFERENCE_SET_TYPE)));
+		SnomedRefSetType type = get(SnomedMappings.memberRefSetType().getValue(document));
 		IndexableField typeFiled = null;
 		switch (Preconditions.checkNotNull(type, "SNOMED CT reference set type was null for document: " + document)) {
 			

@@ -32,13 +32,12 @@ import com.b2international.commons.CompareUtils;
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.datastore.index.IndexUtils;
-import com.b2international.snowowl.datastore.index.field.ComponentAncestorLongField;
-import com.b2international.snowowl.datastore.index.field.ComponentParentLongField;
 import com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants;
 import com.b2international.snowowl.snomed.datastore.index.interest.ISearchProfileManager;
 import com.b2international.snowowl.snomed.datastore.index.interest.SearchProfile;
 import com.b2international.snowowl.snomed.datastore.index.interest.SearchProfileInterest;
 import com.b2international.snowowl.snomed.datastore.index.interest.SearchProfileRule;
+import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedMappings;
 import com.google.common.base.Preconditions;
 
 /**
@@ -102,13 +101,7 @@ public abstract class SearchProfileQueryProvider {
 				
 					case DESCENDANTS_OF_CONCEPT:
 						
-						final BooleanQuery descendantQuery = new BooleanQuery(true);
-						
-						final Query ancestorQuery = new ComponentAncestorLongField(conceptId).toQuery();
-						final Query parentQuery = new ComponentParentLongField(conceptId).toQuery();
-						
-						descendantQuery.add(ancestorQuery, Occur.SHOULD);
-						descendantQuery.add(parentQuery, Occur.SHOULD);
+						final Query descendantQuery = SnomedMappings.newQuery().parent(conceptId).ancestor(conceptId).matchAny();
 						
 						switch (interest) {
 	
@@ -138,7 +131,7 @@ public abstract class SearchProfileQueryProvider {
 						
 					case WITHIN_A_MODULE:
 						
-						final Query moduleQuery = new TermQuery(new Term(SnomedIndexBrowserConstants.COMPONENT_MODULE_ID, contextId));
+						final Query moduleQuery = SnomedMappings.newQuery().module(conceptId).matchAll();
 	
 						switch (interest) {
 	
@@ -327,18 +320,14 @@ public abstract class SearchProfileQueryProvider {
 				
 					case DESCENDANTS_OF_CONCEPT:
 						
-						final BooleanQuery descendantQuery = new BooleanQuery(true);
-						final Query ancestorQuery = new ComponentAncestorLongField(rule.getContextId()).toQuery();
-						final Query parentQuery = new ComponentParentLongField(rule.getContextId()).toQuery();
-						descendantQuery.add(ancestorQuery, Occur.SHOULD);
-						descendantQuery.add(parentQuery, Occur.SHOULD);
+						final Query descendantQuery = SnomedMappings.newQuery().parent(rule.getContextId()).ancestor(rule.getContextId()).matchAny();
 						searchProfileQuery.add(descendantQuery, Occur.MUST_NOT);
 						
 						break; //break 'descendants of concept' domain
 						
 					case WITHIN_A_MODULE:
 	
-						final Query moduleQuery = new TermQuery(new Term(SnomedIndexBrowserConstants.COMPONENT_MODULE_ID, contextId));
+						final Query moduleQuery = SnomedMappings.newQuery().module(rule.getContextId()).matchAll();
 						searchProfileQuery.add(moduleQuery, Occur.MUST_NOT);
 						
 						break; //break 'within a module' domain

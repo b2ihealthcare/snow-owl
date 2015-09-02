@@ -15,13 +15,13 @@
  */
 package com.b2international.snowowl.datastore.server.snomed.index;
 
+import static com.google.common.collect.Sets.newHashSet;
+
 import java.text.MessageFormat;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.concurrent.atomic.AtomicReference;
 
-import org.apache.lucene.search.BooleanClause.Occur;
-import org.apache.lucene.search.BooleanQuery;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.TermQuery;
 import org.slf4j.Logger;
@@ -42,20 +42,20 @@ import com.b2international.commons.concurrent.equinox.ForkJoinUtils;
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.datastore.index.LongDocValuesCollector;
-import com.b2international.snowowl.datastore.index.field.ComponentIdLongField;
-import com.b2international.snowowl.datastore.index.field.IntIndexField;
-import com.b2international.snowowl.datastore.index.query.IndexQueries;
 import com.b2international.snowowl.datastore.server.index.IndexServerService;
+import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.snomed.datastore.ConcreteDomainFragment;
 import com.b2international.snowowl.snomed.datastore.IsAStatement;
 import com.b2international.snowowl.snomed.datastore.StatementCollectionMode;
 import com.b2international.snowowl.snomed.datastore.StatementFragment;
 import com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants;
-import com.b2international.snowowl.snomed.datastore.browser.SnomedIndexQueries;
 import com.b2international.snowowl.snomed.datastore.index.SnomedIndexService;
+import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedMappings;
+import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedQueryBuilder;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType;
 import com.google.common.base.Stopwatch;
+import com.google.common.collect.Iterables;
 
 /**
  * Class for building the bare minimum representation of the state of the SNOMED&nbsp;CT ontology before processing changes.
@@ -78,11 +78,13 @@ public class InitialReasonerTaxonomyBuilder extends AbstractReasonerTaxonomyBuil
 
 		@Override
 		public void run() {
-
-			final BooleanQuery statementsQuery = new BooleanQuery(true);
-			statementsQuery.add(SnomedIndexQueries.ACTIVE_RELATIONSHIPS_QUERY, Occur.MUST);
-			statementsQuery.add(SnomedIndexQueries.ISA_TYPE_QUERY, Occur.MUST);
-			statementsQuery.add(createCharacteristicTypeQuery(), Occur.MUST);
+			final Query allowedCharacteristicTypeQuery = createAllowedCharacteristicTypeQuery(getAllowedCharacteristicTypes());
+			final Query statementsQuery = SnomedMappings.newQuery()
+					.active()
+					.type(SnomedTerminologyComponentConstants.RELATIONSHIP_NUMBER)
+					.relationshipType(Concepts.IS_A)
+					.and(allowedCharacteristicTypeQuery)
+					.matchAll();
 
 			final int hitCount = getIndexServerService().getHitCount(branchPath, statementsQuery, null);
 			final StatementCollector statementCollector = new StatementCollector(hitCount, StatementCollectionMode.NO_IDS);
@@ -111,13 +113,14 @@ public class InitialReasonerTaxonomyBuilder extends AbstractReasonerTaxonomyBuil
 
 		@Override
 		public void run() {
-			final BooleanQuery conceptQuery = (BooleanQuery) SnomedIndexQueries.ACTIVE_CONCEPTS_QUERY;
+			final SnomedQueryBuilder qb = SnomedMappings.newQuery().active().type(SnomedTerminologyComponentConstants.CONCEPT_NUMBER);
 			if (null != additionalClause) {
-				conceptQuery.add(additionalClause, Occur.MUST);
+				qb.and(additionalClause);
 			}
-			final int hitCount = getIndexServerService().getHitCount(branchPath, conceptQuery, null);
-			final LongDocValuesCollector collector = new LongDocValuesCollector(ComponentIdLongField.COMPONENT_ID, hitCount);
-			getIndexServerService().search(branchPath, conceptQuery, collector);
+			final Query query = qb.matchAll();
+			final int hitCount = getIndexServerService().getHitCount(branchPath, query, null);
+			final LongDocValuesCollector collector = new LongDocValuesCollector(SnomedMappings.id().fieldName(), hitCount);
+			getIndexServerService().search(branchPath, query, collector);
 			conceptIdsReference.set(new LongOpenHashSet(collector.getValues()));
 			checkpoint(taskName, MessageFormat.format("active concept IDs collection ({0})", additionalClause.getTerm().field()), stopwatch);
 		}
@@ -137,9 +140,10 @@ public class InitialReasonerTaxonomyBuilder extends AbstractReasonerTaxonomyBuil
 
 		@Override
 		public void run() {
-			final int hitCount = getIndexServerService().getHitCount(branchPath, SnomedIndexQueries.ACTIVE_CONCEPTS_QUERY, null);
+			final Query query = SnomedMappings.newQuery().active().type(SnomedTerminologyComponentConstants.CONCEPT_NUMBER).matchAll();
+			final int hitCount = getIndexServerService().getHitCount(branchPath, query, null);
 			final ConceptIdStorageKeyCollector collector = new ConceptIdStorageKeyCollector(hitCount);
-			getIndexServerService().search(branchPath, SnomedIndexQueries.ACTIVE_CONCEPTS_QUERY, collector);
+			getIndexServerService().search(branchPath, query, collector);
 
 			conceptIdsReference.set(collector.getIds());
 
@@ -235,30 +239,30 @@ public class InitialReasonerTaxonomyBuilder extends AbstractReasonerTaxonomyBuil
 		private final String taskName;
 		private final LongSet componentIds;
 		private final short referencedComponentType;
-		private final Query characteristicTypeQuery;
+		private final Collection<String> characteristicTypes;
 		private final AtomicReference<LongKeyMap> concreteDomainMapReference;
 
 		private GetConcreteDomainRunnable(final String taskName,
 				final LongSet componentIds,
 				final short referencedComponentType,
-				final Query characteristicTypeQuery,
+				final Collection<String> characteristicTypes,
 				final AtomicReference<LongKeyMap> concreteDomainMapReference) {
 
 			this.taskName = taskName;
 			this.componentIds = componentIds;
 			this.referencedComponentType = referencedComponentType;
-			this.characteristicTypeQuery = characteristicTypeQuery;
+			this.characteristicTypes = characteristicTypes;
 			this.concreteDomainMapReference = concreteDomainMapReference;
 		}
 
 		@Override
 		public void run() {
-
-			final BooleanQuery getConceptConcreteDomainQuery = new BooleanQuery(true);
-			getConceptConcreteDomainQuery.add(SnomedIndexQueries.ACTIVE_COMPONENT_QUERY, Occur.MUST);
-			getConceptConcreteDomainQuery.add(createIntTermQuery(SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_REFERENCE_SET_TYPE, SnomedRefSetType.CONCRETE_DATA_TYPE_VALUE), Occur.MUST);
-			getConceptConcreteDomainQuery.add(createIntTermQuery(SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_REFERENCED_COMPONENT_TYPE, referencedComponentType), Occur.MUST);
-			getConceptConcreteDomainQuery.add(characteristicTypeQuery, Occur.MUST);
+			final Query getConceptConcreteDomainQuery = SnomedMappings.newQuery()
+					.active()
+					.memberRefSetType(SnomedRefSetType.CONCRETE_DATA_TYPE)
+					.memberReferencedComponentType(referencedComponentType)
+					.and(createAllowedCharacteristicTypeQuery(characteristicTypes))
+					.matchAll();
 
 			final int hitCount = getIndexServerService().getHitCount(branchPath, getConceptConcreteDomainQuery, null);
 			final ConcreteDomainFragmentCollector collector = new ConcreteDomainFragmentCollector(hitCount);
@@ -298,7 +302,7 @@ public class InitialReasonerTaxonomyBuilder extends AbstractReasonerTaxonomyBuil
 		@Override
 		public void run() {
 			
-			conceptIdToStatements = getStatements(createCharacteristicTypeQuery());
+			conceptIdToStatements = getStatements(getAllowedCharacteristicTypes());
 			final LongKeyLongMap statementIdToConceptIds = new LongKeyLongOpenHashMap(conceptIdToStatements.size());
 
 			for (final LongIterator itr = conceptIdToStatements.keySet().iterator(); itr.hasNext(); /* nothing */) {
@@ -320,12 +324,18 @@ public class InitialReasonerTaxonomyBuilder extends AbstractReasonerTaxonomyBuil
 
 			statementIdToConceptIdReference.set(statementIdToConceptIds);
 			
-			inferredStatementMap = getStatements(SnomedIndexQueries.INFERRED_RELATIONSHIP_CHARACTERISTIC_TYPE_QUERY);
+			inferredStatementMap = getStatements(Collections.singleton(Concepts.INFERRED_RELATIONSHIP));
 			checkpoint(taskName, "mapping statements for classification", stopwatch);
 		}
 
-		private LongKeyMap getStatements(final Query createCharacteristicTypeQuery) {
-			final Query statementQuery = IndexQueries.and(SnomedIndexQueries.ACTIVE_RELATIONSHIPS_QUERY, createCharacteristicTypeQuery);
+		private LongKeyMap getStatements(final Collection<String> characteristicTypes) {
+			final SnomedQueryBuilder qb = SnomedMappings.newQuery().active().type(SnomedTerminologyComponentConstants.RELATIONSHIP_NUMBER);
+			if (characteristicTypes.size() == 1) {
+				qb.relationshipCharacteristicType(Iterables.getOnlyElement(characteristicTypes));
+			} else {
+				qb.and(createAllowedCharacteristicTypeQuery(characteristicTypes));
+			}
+			final Query statementQuery = qb.matchAll();
 			final StatementFragmentCollector collector = new StatementFragmentCollector();
 			getIndexServerService().search(branchPath, statementQuery, collector);
 			final LongKeyMap statementMap = collector.getStatementMap();
@@ -359,7 +369,7 @@ public class InitialReasonerTaxonomyBuilder extends AbstractReasonerTaxonomyBuil
 	}
 
 	private static TermQuery createIntTermQuery(final String fieldName, final int intValue) {
-		return (TermQuery) new IntIndexField(fieldName, intValue).toQuery();
+		return (TermQuery) SnomedMappings.newQuery().field(fieldName, intValue).matchAll();
 	}
 
 	/* returns with the server side index service for SNOMED CT. */
@@ -416,30 +426,30 @@ public class InitialReasonerTaxonomyBuilder extends AbstractReasonerTaxonomyBuil
 		
 		final Runnable taxonomyBuilderRunnable = new TaxonomyBuilderRunnable(taskName, conceptIdsReference, isAStatementsReference);
 
-		final BooleanQuery characteristicTypeQuery = createCharacteristicTypeQuery();
+		final Collection<String> allowedCharacteristicTypes = getAllowedCharacteristicTypes();
 		final Runnable getConceptConcreteDomainsRunnable = new GetConcreteDomainRunnable(taskName, 
 				conceptIds,
 				SnomedTerminologyComponentConstants.CONCEPT_NUMBER,
-				characteristicTypeQuery,
+				allowedCharacteristicTypes,
 				conceptConcreteDomainReference);
 
 		final LongSet relationshipIds = statementIdToConceptIdReference.get().keySet();
 
 		// XXX: Change processor mode needs additional concrete domain members as well (relationships only)
 		if (!isReasonerMode()) {
-			characteristicTypeQuery.add(SnomedIndexQueries.ADDITIONAL_MEMBER_CHARACTERISTIC_TYPE_QUERY, Occur.SHOULD);
+			allowedCharacteristicTypes.add(Concepts.ADDITIONAL_RELATIONSHIP);
 		}
 		
 		final Runnable getStatementConcreteDomainsRunnable = new GetConcreteDomainRunnable(taskName, 
 				relationshipIds,
 				SnomedTerminologyComponentConstants.RELATIONSHIP_NUMBER, 
-				characteristicTypeQuery,
+				allowedCharacteristicTypes,
 				relationshipConcreteDomainReference);
 
 		final Runnable getInferredConceptConcreteDomainsRunnable = new GetConcreteDomainRunnable(taskName, 
 				conceptIds,
 				SnomedTerminologyComponentConstants.CONCEPT_NUMBER,
-				SnomedIndexQueries.INFERRED_RELATIONSHIP_CHARACTERISTIC_TYPE_QUERY,
+				Collections.singleton(Concepts.INFERRED_RELATIONSHIP),
 				inferredConceptConcreteDomainReference);
 		
 		final Runnable getExhaustiveConceptIdsRunnable = new GetConceptIdsRunnable(taskName,
@@ -502,16 +512,22 @@ public class InitialReasonerTaxonomyBuilder extends AbstractReasonerTaxonomyBuil
 		return (Collection<ConcreteDomainFragment>) (null == concreteDomains ? Collections.emptySet() : concreteDomains);
 	}
 
-	private BooleanQuery createCharacteristicTypeQuery() {
-		final BooleanQuery result = new BooleanQuery(true);
-		result.add(SnomedIndexQueries.STATED_RELATIONSHIP_CHARACTERISTIC_TYPE_QUERY, Occur.SHOULD);
-
+	private Collection<String> getAllowedCharacteristicTypes() {
+		final Collection<String> result = newHashSet();
+		result.add(Concepts.STATED_RELATIONSHIP);
 		// XXX: Change processor mode requires all defining information, not just stated ones
 		if (!isReasonerMode()) {
-			result.add(SnomedIndexQueries.INFERRED_RELATIONSHIP_CHARACTERISTIC_TYPE_QUERY, Occur.SHOULD);
-			result.add(SnomedIndexQueries.DEFINING_RELATIONSHIP_CHARACTERISTIC_TYPE_QUERY, Occur.SHOULD);
+			result.add(Concepts.INFERRED_RELATIONSHIP);
+			result.add(Concepts.DEFINING_RELATIONSHIP);
 		}
-		
 		return result;
+	}
+	
+	private Query createAllowedCharacteristicTypeQuery(Collection<String> characteristicTypes) {
+		final SnomedQueryBuilder qb = SnomedMappings.newQuery();
+		for (String characteristicType : characteristicTypes) {
+			qb.relationshipCharacteristicType(characteristicType);
+		}
+		return qb.matchAny();
 	}
 }

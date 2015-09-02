@@ -17,23 +17,17 @@ package com.b2international.snowowl.datastore.server.snomed.filteredrefset;
 
 import java.util.concurrent.atomic.AtomicReference;
 
-import org.apache.lucene.index.Term;
 import org.apache.lucene.search.Query;
-import org.apache.lucene.search.TermQuery;
 
 import com.b2international.snowowl.core.api.IBranchPath;
-import com.b2international.snowowl.datastore.index.IndexUtils;
 import com.b2international.snowowl.datastore.index.LongDocValuesCollector;
-import com.b2international.snowowl.datastore.index.field.ComponentIdLongField;
-import com.b2international.snowowl.datastore.index.query.IndexQueries;
 import com.b2international.snowowl.datastore.server.index.IndexServerService;
 import com.b2international.snowowl.datastore.server.snomed.index.StatementCollector;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.datastore.IsAStatement;
 import com.b2international.snowowl.snomed.datastore.StatementCollectionMode;
-import com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants;
-import com.b2international.snowowl.snomed.datastore.browser.SnomedIndexQueries;
 import com.b2international.snowowl.snomed.datastore.index.SnomedHierarchy;
+import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedMappings;
 
 public final class InitTaxonomyRunnable implements Runnable {
 	
@@ -55,11 +49,11 @@ public final class InitTaxonomyRunnable implements Runnable {
 
 	@Override public void run() {
 		
-		final LongDocValuesCollector allConceptIdCollector = new LongDocValuesCollector(ComponentIdLongField.COMPONENT_ID, maxDoc);
-		indexService.search(branchPath, SnomedIndexQueries.ACTIVE_CONCEPTS_QUERY, allConceptIdCollector);
+		final LongDocValuesCollector allConceptIdCollector = new LongDocValuesCollector(SnomedMappings.id().fieldName(), maxDoc);
+		indexService.search(branchPath, SnomedMappings.newQuery().active().matchAll(), allConceptIdCollector);
 
 		final StatementCollector statementCollector = new StatementCollector(maxDoc, StatementCollectionMode.NO_IDS);
-		final Query statementQuery = IndexQueries.and(SnomedIndexQueries.ACTIVE_RELATIONSHIPS_QUERY, new TermQuery(new Term(SnomedIndexBrowserConstants.RELATIONSHIP_ATTRIBUTE_ID, IndexUtils.longToPrefixCoded(Concepts.IS_A))));
+		final Query statementQuery = SnomedMappings.newQuery().active().relationship().relationshipType(Concepts.IS_A).matchAll();
 		indexService.search(branchPath, statementQuery, statementCollector);
 
 		final IsAStatement[] statements = statementCollector.getStatements();
