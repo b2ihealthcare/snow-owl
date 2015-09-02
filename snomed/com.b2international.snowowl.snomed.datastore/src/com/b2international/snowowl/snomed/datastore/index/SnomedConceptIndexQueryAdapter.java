@@ -23,16 +23,13 @@ import org.apache.lucene.document.Document;
 import org.apache.lucene.search.Sort;
 
 import com.b2international.snowowl.core.api.IBranchPath;
-import com.b2international.snowowl.core.api.index.CommonIndexConstants;
 import com.b2international.snowowl.datastore.index.IndexQueryBuilder;
 import com.b2international.snowowl.datastore.index.IndexUtils;
-import com.b2international.snowowl.datastore.index.field.ComponentIdLongField;
-import com.b2international.snowowl.datastore.index.field.ComponentStorageKeyField;
-import com.b2international.snowowl.datastore.index.field.ComponentTypeField;
+import com.b2international.snowowl.datastore.index.mapping.Mappings;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.snomed.datastore.SnomedConceptIndexEntry;
 import com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants;
-import com.b2international.snowowl.snomed.datastore.browser.SnomedIndexQueries;
+import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedMappings;
 
 /**
  * Common abstract superclass for SNOMED CT concept-related query adapters.
@@ -62,24 +59,22 @@ public abstract class SnomedConceptIndexQueryAdapter extends SnomedDslIndexQuery
 	@Override
 	protected IndexQueryBuilder createIndexQueryBuilder() {
 		return super.createIndexQueryBuilder()
-				.require(new ComponentTypeField(SnomedTerminologyComponentConstants.CONCEPT_NUMBER).toQuery())
-				.requireIf(anyFlagSet(SEARCH_ACTIVE_CONCEPTS), SnomedIndexQueries.ACTIVE_COMPONENT_QUERY);
+				.require(Mappings.newQuery().type(SnomedTerminologyComponentConstants.CONCEPT_NUMBER).matchAll())
+				.requireIf(anyFlagSet(SEARCH_ACTIVE_CONCEPTS), SnomedMappings.newQuery().active().matchAll());
 	}
 	
 	@Override
 	public SnomedConceptIndexEntry buildSearchResult(final Document doc, final IBranchPath branchPath, final float score) {
-
-		final String id = ComponentIdLongField.getString(doc);
-		final String label = doc.get(CommonIndexConstants.COMPONENT_LABEL);
-		final String moduleId = doc.get(SnomedIndexBrowserConstants.COMPONENT_MODULE_ID);
-		final long storageKey = ComponentStorageKeyField.getLong(doc);
-		final byte flags = SnomedConceptIndexEntry.generateFlags(getBooleanValue(doc.getField(SnomedIndexBrowserConstants.COMPONENT_ACTIVE)), 
+		final String id = SnomedMappings.id().getValueAsString(doc);
+		final String label = Mappings.label().getValue(doc);
+		final String moduleId = SnomedMappings.module().getValueAsString(doc);
+		final long storageKey = Mappings.storageKey().getValue(doc);
+		final byte flags = SnomedConceptIndexEntry.generateFlags(SnomedMappings.active().getValue(doc) == 1, 
 				getBooleanValue(doc.getField(SnomedIndexBrowserConstants.CONCEPT_PRIMITIVE)),
 				getBooleanValue(doc.getField(SnomedIndexBrowserConstants.CONCEPT_EXHAUSTIVE)),
 				getBooleanValue(doc.getField(SnomedIndexBrowserConstants.COMPONENT_RELEASED)));
-		final String iconId = doc.get(CommonIndexConstants.COMPONENT_ICON_ID);
-		final long effectiveTime = IndexUtils.getLongValue(doc.getField(SnomedIndexBrowserConstants.CONCEPT_EFFECTIVE_TIME));
-		final SnomedConceptIndexEntry conceptMini = new SnomedConceptIndexEntry(id, moduleId, label, iconId, score, storageKey, flags, effectiveTime);
-		return conceptMini;
+		final String iconId = Mappings.iconId().getValue(doc);
+		final long effectiveTime = Mappings.longField(SnomedIndexBrowserConstants.CONCEPT_EFFECTIVE_TIME).getValue(doc);
+		return new SnomedConceptIndexEntry(id, moduleId, label, iconId, score, storageKey, flags, effectiveTime);
 	}
 }

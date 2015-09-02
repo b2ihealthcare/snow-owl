@@ -15,6 +15,8 @@
  */
 package com.b2international.snowowl.snomed.datastore.index;
 
+import static com.google.common.collect.Sets.newHashSet;
+
 import java.io.Serializable;
 
 import javax.annotation.Nullable;
@@ -24,9 +26,11 @@ import org.apache.lucene.search.CachingWrapperFilter;
 import org.apache.lucene.search.Filter;
 import org.apache.lucene.util.BytesRef;
 
+import com.b2international.commons.functions.StringToLongFunction;
 import com.b2international.snowowl.core.api.index.IIndexEntry;
 import com.b2international.snowowl.datastore.index.QueryDslIndexQueryAdapter;
-import com.b2international.snowowl.datastore.index.field.ComponentIdLongField;
+import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedMappings;
+import com.google.common.collect.FluentIterable;
 
 /**
  * Abstract index query adapter for retrieving SNOMED&nbsp;CT component from the index.
@@ -43,11 +47,9 @@ public abstract class SnomedDslIndexQueryAdapter<E extends IIndexEntry> extends 
 		super(searchString, searchFlags, componentIds);
 	}
 	
-	/* (non-Javadoc)
-	 * @see com.b2international.snowowl.datastore.index.QueryDslIndexQueryAdapter#createFilter()
-	 */
 	@Override
 	public Filter createFilter() {
-		return ComponentIdLongField.createFilter(componentIds);
+		final Long[] array = FluentIterable.from(newHashSet(componentIds)).transform(new StringToLongFunction()).toArray(Long.class);
+		return SnomedMappings.id().createFilter(array);
 	}
 }

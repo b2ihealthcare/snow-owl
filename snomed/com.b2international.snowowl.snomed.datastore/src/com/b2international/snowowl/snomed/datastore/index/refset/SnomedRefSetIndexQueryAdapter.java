@@ -34,19 +34,15 @@ import org.apache.lucene.search.Query;
 
 import com.b2international.commons.StringUtils;
 import com.b2international.snowowl.core.api.IBranchPath;
-import com.b2international.snowowl.core.api.index.CommonIndexConstants;
 import com.b2international.snowowl.core.api.index.IIndexQueryAdapter;
 import com.b2international.snowowl.core.api.index.IIndexService;
 import com.b2international.snowowl.datastore.index.DocumentWithScore;
 import com.b2international.snowowl.datastore.index.IndexQueryBuilder;
 import com.b2international.snowowl.datastore.index.IndexUtils;
-import com.b2international.snowowl.datastore.index.field.ComponentIdLongField;
-import com.b2international.snowowl.datastore.index.field.ComponentStorageKeyField;
-import com.b2international.snowowl.datastore.index.field.IntIndexField;
-import com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants;
-import com.b2international.snowowl.snomed.datastore.browser.SnomedIndexQueries;
+import com.b2international.snowowl.datastore.index.mapping.Mappings;
 import com.b2international.snowowl.snomed.datastore.index.SnomedDOIQueryAdapter;
 import com.b2international.snowowl.snomed.datastore.index.SnomedDslIndexQueryAdapter;
+import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedMappings;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType;
 import com.google.common.base.Optional;
 import com.google.common.base.Preconditions;
@@ -117,12 +113,10 @@ public class SnomedRefSetIndexQueryAdapter extends SnomedDslIndexQueryAdapter<Sn
 	@Override
 	public Query createQuery() {
 		final IndexQueryBuilder queryBuilder = new IndexQueryBuilder();
-		
-		//workaround for same reference set and identifier concept ID
-		queryBuilder.require(SnomedIndexQueries.REFSET_TYPE_QUERY);
+		queryBuilder.require(SnomedMappings.newQuery().refSet().matchAll());
 
 		if (referencedComponentType != null) {
-			queryBuilder.require(new IntIndexField(REFERENCE_SET_REFERENCED_COMPONENT_TYPE, referencedComponentType).toQuery());
+			queryBuilder.require(SnomedMappings.newQuery().field(REFERENCE_SET_REFERENCED_COMPONENT_TYPE, referencedComponentType.intValue()).matchAll());
 		}
 		
 		if (null != refSetTypes && refSetTypes.length > 0) {
@@ -131,14 +125,14 @@ public class SnomedRefSetIndexQueryAdapter extends SnomedDslIndexQueryAdapter<Sn
 			
 			for (final SnomedRefSetType refSetType : refSetTypes) {
 				// All of these are Occur.SHOULD, so at least one has to match
-				refsetTypeQuery.add(new IntIndexField(REFERENCE_SET_TYPE, refSetType.getValue()).toQuery(), Occur.SHOULD);
+				refsetTypeQuery.add(SnomedMappings.newQuery().field(REFERENCE_SET_TYPE, refSetType.getValue()).matchAll(), Occur.SHOULD);
 			}
 			
 			queryBuilder.require(refsetTypeQuery);
 		}
 
 		if ((searchFlags & SEARCH_REGULAR_ONLY) != 0) {
-			queryBuilder.require(new IntIndexField(REFERENCE_SET_STRUCTURAL, 0).toQuery());
+			queryBuilder.require(SnomedMappings.newQuery().field(REFERENCE_SET_STRUCTURAL, 0).matchAll());
 		}
 
 		// Shortcut for empty search terms: return all reference sets
@@ -156,12 +150,12 @@ public class SnomedRefSetIndexQueryAdapter extends SnomedDslIndexQueryAdapter<Sn
 					//even if the ID restriction was enabled and the query term was 'virtual'
 					//so we rather restrict the ID to an invalid one
 					//XXX zstorok: only add the invalid ID query if searching by label is not enabled
-					queryExpressionQueryBuilder.require(new ComponentIdLongField(-1L).toQuery());
+					queryExpressionQueryBuilder.require(SnomedMappings.newQuery().id(-1L).matchAll());
 				} else {
 					queryExpressionQueryBuilder.require(createLabelQueryBuilder());
 				}
 			} else {
-				final Query componentIdQuery= new ComponentIdLongField(parsedSearchStringOptional.get()).toQuery();
+				final Query componentIdQuery= SnomedMappings.newQuery().id(parsedSearchStringOptional.get()).matchAll();
 				if (anyFlagSet(SEARCH_BY_LABEL)) {
 					queryExpressionQueryBuilder.match(componentIdQuery);
 					queryExpressionQueryBuilder.match(createLabelQueryBuilder());
@@ -185,7 +179,7 @@ public class SnomedRefSetIndexQueryAdapter extends SnomedDslIndexQueryAdapter<Sn
 			
 			final DocumentWithScore refSetDocument = itr.next();
 			final Document doc = refSetDocument.getDocument();
-			final String refSetId = ComponentIdLongField.getString(doc);
+			final String refSetId = SnomedMappings.id().getValueAsString(doc);
 			if (!isEmpty(refSetId)) {
 				
 				@SuppressWarnings("rawtypes")
@@ -218,22 +212,22 @@ public class SnomedRefSetIndexQueryAdapter extends SnomedDslIndexQueryAdapter<Sn
 	private IndexQueryBuilder createLabelQueryBuilder() {
 		final IndexQueryBuilder labelQueryBuilder = new IndexQueryBuilder();
 		if ((searchFlags & SEARCH_PREFIXED_TERM) != 0) {
-			labelQueryBuilder.matchAllTokenizedTermPrefixes(CommonIndexConstants.COMPONENT_LABEL, searchString.toLowerCase());
+			labelQueryBuilder.matchAllTokenizedTermPrefixes(Mappings.label().fieldName(), searchString.toLowerCase());
 		} else {
 			//	analyzed query, there is no need of lowercasing the search string
-			labelQueryBuilder.matchParsedTerm(CommonIndexConstants.COMPONENT_LABEL, searchString);
+			labelQueryBuilder.matchParsedTerm(Mappings.label().fieldName(), searchString);
 		}
 		return labelQueryBuilder;
 	}
 	
 	private SnomedRefSetIndexEntry createEntry(final Document doc, final float score) {
 		return new SnomedRefSetIndexEntry(
-				ComponentIdLongField.getString(doc), 
-				doc.getField(CommonIndexConstants.COMPONENT_LABEL).stringValue(), 
-				doc.getField(CommonIndexConstants.COMPONENT_ICON_ID).stringValue(),
-				doc.get(SnomedIndexBrowserConstants.COMPONENT_MODULE_ID),
+				SnomedMappings.id().getValueAsString(doc), 
+				Mappings.label().getValue(doc), 
+				SnomedMappings.iconId().getValueAsString(doc),
+				SnomedMappings.module().getValueAsString(doc),
 				score,
-				ComponentStorageKeyField.getLong(doc), 
+				Mappings.storageKey().getValue(doc), 
 				SnomedRefSetType.get(IndexUtils.getIntValue(doc.getField(REFERENCE_SET_TYPE))),
 				IndexUtils.getShortValue(doc.getField(REFERENCE_SET_REFERENCED_COMPONENT_TYPE)), 
 				IndexUtils.getBooleanValue(doc.getField(REFERENCE_SET_STRUCTURAL)));
