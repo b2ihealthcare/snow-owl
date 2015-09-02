@@ -62,6 +62,9 @@ import com.b2international.snowowl.datastore.index.DelimiterStopAnalyzer;
 import com.b2international.snowowl.datastore.index.DocumentUpdater;
 import com.b2international.snowowl.datastore.index.IndexUtils;
 import com.b2international.snowowl.datastore.index.NullSearcherManager;
+import com.b2international.snowowl.datastore.index.mapping.DocumentBuilderBase;
+import com.b2international.snowowl.datastore.index.mapping.DocumentBuilderFactory;
+import com.b2international.snowowl.datastore.index.mapping.Mappings;
 import com.b2international.snowowl.datastore.server.internal.lucene.index.FilteringMergePolicy;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Predicate;
@@ -246,6 +249,10 @@ public class IndexBranchService implements Closeable {
 		}
 	}
 
+	public void updateDocument(final long storageKey, final Document document) throws IOException {
+		updateDocument(Mappings.storageKey().toTerm(storageKey), document);
+	}
+	
 	public void updateDocument(final Term term, final Document document) throws IOException {
 		checkClosed();
 		checkReadOnly();
@@ -254,7 +261,7 @@ public class IndexBranchService implements Closeable {
 		}
 	}
 	
-	public void update(Term term, DocumentUpdater documentUpdater) throws IOException {
+	public <D extends DocumentBuilderBase<D>> void update(Term term, DocumentUpdater<D> documentUpdater, DocumentBuilderFactory<D> builderFactory) throws IOException {
 		checkClosed();
 		checkReadOnly();
 		if (indexWriter != null) {
@@ -265,7 +272,7 @@ public class IndexBranchService implements Closeable {
 				checkState(docs.totalHits > 0, "Document couldn't be found with term ('%s')", term);
 				checkState(docs.totalHits == 1, "Multiple documents with same term ('%s') on a single branch path", term);
 				final Document doc = searcher.doc(docs.scoreDocs[0].doc);
-				documentUpdater.update(doc);
+				documentUpdater.update(builderFactory.createBuilder(doc));
 				updateDocument(term, doc);
 			} finally {
 				if (searcher != null) {

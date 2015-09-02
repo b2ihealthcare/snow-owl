@@ -33,7 +33,7 @@ import com.b2international.snowowl.core.api.index.IIndexEntry;
 import com.b2international.snowowl.core.api.index.IIndexQueryAdapter;
 import com.b2international.snowowl.core.api.index.IIndexService;
 import com.b2international.snowowl.core.api.index.IndexException;
-import com.b2international.snowowl.datastore.index.field.ComponentIdStringField;
+import com.b2international.snowowl.datastore.index.mapping.Mappings;
 
 /**
  * Abstract base implementation of the {@link IIndexQueryAdapter} interface.
@@ -78,7 +78,7 @@ public abstract class QueryDslIndexQueryAdapter<E extends IIndexEntry> extends A
 
 	@Nullable
 	protected Filter createFilter() {
-		return ComponentIdStringField.createFilter(componentIds);
+		return Mappings.id().createFilter(componentIds);
 	}
 
 	/**

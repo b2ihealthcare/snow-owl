@@ -32,8 +32,7 @@ import com.b2international.commons.CompareUtils;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.api.index.IndexException;
 import com.b2international.snowowl.datastore.index.AbstractIndexService;
-import com.b2international.snowowl.datastore.index.field.ComponentStorageKeyField;
-import com.b2international.snowowl.datastore.index.field.ComponentTypeField;
+import com.b2international.snowowl.datastore.index.mapping.Mappings;
 
 /**
  * Abstract implementation of the {@link IEClassProvider} interface.
@@ -101,7 +100,7 @@ public abstract class EClassProvider implements IEClassProvider {
 	 * @return a set of field names to load.
 	 */
 	protected Set<String> getFieldsToLoad() {
-		return ComponentTypeField.FIELDS_TO_LOAD;
+		return Mappings.fieldsToLoad().type().build();
 	}
 	
 	/**
@@ -109,7 +108,7 @@ public abstract class EClassProvider implements IEClassProvider {
 	 * @return the query.
 	 */
 	private Query getQuery(final long storageKey) {
-		return new ComponentStorageKeyField(storageKey).toQuery();
+		return Mappings.newQuery().storageKey(storageKey).matchAll();
 	}
 
 	/**

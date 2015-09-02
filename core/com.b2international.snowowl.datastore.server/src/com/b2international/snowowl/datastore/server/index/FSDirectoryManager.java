@@ -58,7 +58,7 @@ import com.b2international.snowowl.datastore.cdo.CDOUtils;
 import com.b2international.snowowl.datastore.cdo.ICDOConnection;
 import com.b2international.snowowl.datastore.cdo.ICDOConnectionManager;
 import com.b2international.snowowl.datastore.index.IndexUtils;
-import com.b2international.snowowl.datastore.index.field.ComponentStorageKeyField;
+import com.b2international.snowowl.datastore.index.mapping.Mappings;
 import com.b2international.snowowl.datastore.server.internal.lucene.store.CompositeDirectory;
 import com.b2international.snowowl.datastore.server.internal.lucene.store.ReadOnlyDirectory;
 import com.b2international.snowowl.terminologymetadata.CodeSystemVersion;
@@ -230,7 +230,7 @@ public class FSDirectoryManager implements IDirectoryManager {
 											final Document doc = mappingStrategy.createDocument();
 											try {
 												final long storageKey = CDOIDUtils.asLong(group.cdoID());
-												service.updateDocument(new ComponentStorageKeyField(storageKey).toTerm(), doc);
+												service.updateDocument(storageKey, doc);
 											} catch (IOException e) {
 												throw new IndexException("Failed to initialize index branch service for " + repositoryUuid);
 											}

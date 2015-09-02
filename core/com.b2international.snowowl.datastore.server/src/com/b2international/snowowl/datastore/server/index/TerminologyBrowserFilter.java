@@ -46,8 +46,7 @@ import com.b2international.snowowl.core.api.index.IIndexEntry;
 import com.b2international.snowowl.core.api.index.IndexException;
 import com.b2international.snowowl.datastore.index.DocIdCollector;
 import com.b2international.snowowl.datastore.index.DocIdCollector.DocIdsIterator;
-import com.b2international.snowowl.datastore.index.field.ComponentIdStringField;
-import com.b2international.snowowl.datastore.index.field.ComponentParentStringField;
+import com.b2international.snowowl.datastore.index.mapping.Mappings;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 
@@ -108,8 +107,8 @@ public class TerminologyBrowserFilter<E extends IIndexEntry> {
 				final int docId = itr.getDocID();
 				final Document doc = searcher.doc(docId);
 				
-				final Collection<String> parentIds = ComponentParentStringField.getValues(doc);
-				final String componentId = ComponentIdStringField.getString(doc);
+				final Collection<String> parentIds = Mappings.parent().getValues(doc);
+				final String componentId = Mappings.id().getValue(doc);
 				
 				componentIdDocMap.put(componentId, doc);
 				componentIdParentComponentIdMap.put(componentId, parentIds);

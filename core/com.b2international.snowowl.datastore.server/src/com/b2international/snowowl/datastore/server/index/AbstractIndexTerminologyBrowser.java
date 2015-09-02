@@ -15,7 +15,6 @@
  */
 package com.b2international.snowowl.datastore.server.index;
 
-import static com.b2international.snowowl.core.api.index.CommonIndexConstants.COMPONENT_ICON_ID;
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Preconditions.checkState;
@@ -29,7 +28,6 @@ import java.util.Set;
 import javax.annotation.Nullable;
 
 import org.apache.lucene.document.Document;
-import org.apache.lucene.index.IndexableField;
 import org.apache.lucene.search.BooleanClause.Occur;
 import org.apache.lucene.search.BooleanQuery;
 import org.apache.lucene.search.Query;
@@ -43,7 +41,6 @@ import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.api.IComponentWithChildFlag;
 import com.b2international.snowowl.core.api.browser.IFilterClientTerminologyBrowser;
 import com.b2international.snowowl.core.api.browser.ITerminologyBrowser;
-import com.b2international.snowowl.core.api.index.CommonIndexConstants;
 import com.b2international.snowowl.core.api.index.IIndexEntry;
 import com.b2international.snowowl.core.api.index.IIndexService;
 import com.b2international.snowowl.core.api.index.IndexException;
@@ -52,17 +49,11 @@ import com.b2international.snowowl.datastore.index.DocIdCollector;
 import com.b2international.snowowl.datastore.index.DocIdCollector.DocIdsIterator;
 import com.b2international.snowowl.datastore.index.IndexQueryBuilder;
 import com.b2international.snowowl.datastore.index.IndexUtils;
-import com.b2international.snowowl.datastore.index.field.ComponentIdField;
-import com.b2international.snowowl.datastore.index.field.ComponentIdStringField;
-import com.b2international.snowowl.datastore.index.field.ComponentParentField;
-import com.b2international.snowowl.datastore.index.field.ComponentParentStringField;
-import com.b2international.snowowl.datastore.index.field.ComponentStorageKeyField;
-import com.b2international.snowowl.datastore.index.field.ComponentTypeField;
-import com.b2international.snowowl.datastore.index.query.IndexQueries;
+import com.b2international.snowowl.datastore.index.mapping.FieldsToLoadBuilderBase.FieldsToLoadBuilder;
+import com.b2international.snowowl.datastore.index.mapping.Mappings;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableList.Builder;
-import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 
@@ -70,14 +61,8 @@ import com.google.common.collect.Sets;
  * Abstract superclass for index based terminology browsers.
  * 
  */
-abstract public class AbstractIndexTerminologyBrowser<E extends IIndexEntry> extends AbstractIndexBrowser<E> implements ITerminologyBrowser<E, String> {
+public abstract class AbstractIndexTerminologyBrowser<E extends IIndexEntry> extends AbstractIndexBrowser<E> implements ITerminologyBrowser<E, String> {
 
-	private static final Set<String> COMPONENT_ID_FIELD_TO_LOAD = Collections.unmodifiableSet(Sets.newHashSet(ComponentIdField.COMPONENT_ID));
-	private static final Set<String> LABEL_FIELD_TO_LOAD = Collections.unmodifiableSet(Sets.newHashSet(CommonIndexConstants.COMPONENT_LABEL));
-	
-	private static final Set<String> DEFAULT_EXTENDED_COMPONENT_FIELD_TO_LOAD = ImmutableSet.of(ComponentIdStringField.COMPONENT_ID,
-			ComponentTypeField.COMPONENT_TYPE, CommonIndexConstants.COMPONENT_LABEL, CommonIndexConstants.COMPONENT_ICON_ID);
-	
 	public AbstractIndexTerminologyBrowser(final IIndexService<?> service) {
 		super(service);
 	}
@@ -87,7 +72,7 @@ abstract public class AbstractIndexTerminologyBrowser<E extends IIndexEntry> ext
 		checkNotNull(branchPath, "branchPath");
 		checkArgument(storageKey > CDOUtils.NO_STORAGE_KEY);
 		
-		final TopDocs topDocs = service.search(branchPath, new ComponentStorageKeyField(storageKey).toQuery(), 1);
+		final TopDocs topDocs = service.search(branchPath, Mappings.newQuery().storageKey(storageKey).matchAll(), 1);
 		
 		if (IndexUtils.isEmpty(topDocs)) {
 			return null;
@@ -98,29 +83,36 @@ abstract public class AbstractIndexTerminologyBrowser<E extends IIndexEntry> ext
 	}
 
 	protected ExtendedComponent convertDocToExtendedComponent(final IBranchPath branchPath, final Document doc) {
-		final String id = ComponentIdStringField.getString(doc);
 		return new ExtendedComponentImpl(
-				id, 
-				doc.get(CommonIndexConstants.COMPONENT_LABEL), 
-				doc.get(COMPONENT_ICON_ID), 
-				ComponentTypeField.getShort(doc));
+				Mappings.id().getValue(doc), 
+				Mappings.label().getValue(doc), 
+				Mappings.iconId().getValue(doc), 
+				Mappings.type().getShortValue(doc));
 	}
 	
 	protected Set<String> getExtendedComponentFieldsToLoad() {
-		return DEFAULT_EXTENDED_COMPONENT_FIELD_TO_LOAD;
+		return Mappings.fieldsToLoad().id().type().label().iconId().build();
 	}
 	
 	@Override
+	protected Set<String> getFieldNamesToLoad() {
+		final FieldsToLoadBuilder defaultFieldsToLoad = Mappings.fieldsToLoad().id().label().iconId().storageKey().parent();
+		addAdditionalFieldsToLoad(defaultFieldsToLoad);
+		return defaultFieldsToLoad.build();
+	}
+	
+	protected void addAdditionalFieldsToLoad(FieldsToLoadBuilder fieldsToLoad) {
+	}
+
+	@Override
 	public long getStorageKey(final IBranchPath branchPath, final String conceptId) {
 		checkNotNull(branchPath, "Branch path argument cannot be null.");
-		checkNotNull(branchPath, "Concept ID argument cannot be null.");
-		
-		final Query query = IndexQueries.and(getTerminologyComponentTypeQuery(), getComponentIdQuery(conceptId));
+		checkNotNull(conceptId, "Concept ID argument cannot be null.");
+		final Query query = Mappings.newQuery().type(getConceptTerminologyComponentId()).id(conceptId).matchAll();
 		return getStorageKey(branchPath, query);
 	}
 
 	protected long getStorageKey(final IBranchPath branchPath, final Query query) {
-		
 		// FIXME: service.search and service.document in separate calls
 		final TopDocs topDocs = service.search(branchPath, query, 1);
 		
@@ -128,8 +120,8 @@ abstract public class AbstractIndexTerminologyBrowser<E extends IIndexEntry> ext
 			return CDOUtils.NO_STORAGE_KEY;
 		}
 		
-		final Document doc = service.document(branchPath, topDocs.scoreDocs[0].doc, ComponentStorageKeyField.FIELDS_TO_LOAD);
-		return ComponentStorageKeyField.getLong(doc);
+		final Document doc = service.document(branchPath, topDocs.scoreDocs[0].doc, Mappings.fieldsToLoad().storageKey().build());
+		return Mappings.storageKey().getValue(doc);
 	}	
 		
 	@Override
@@ -137,7 +129,7 @@ abstract public class AbstractIndexTerminologyBrowser<E extends IIndexEntry> ext
 		checkNotNull(branchPath, "Branch path must not be null.");
 		final List<E> rootConcepts = Lists.newArrayList();
 		// TODO: maybe this could become a cached filter, since the search criteria don't change
-		final Query query = getRootConceptsQueryBuilder().toQuery();
+		final Query query = getRootConceptsQuery();
 		final DocIdCollector collector = DocIdCollector.create(service.maxDoc(branchPath));
 		service.search(branchPath, query, collector);
 		DocIdsIterator iterator;
@@ -157,18 +149,16 @@ abstract public class AbstractIndexTerminologyBrowser<E extends IIndexEntry> ext
 	@Override
 	public Collection<String> getRootConceptIds(final IBranchPath branchPath) {
 		checkNotNull(branchPath, "Branch path must not be null.");
-		
 		final List<String> rootConceptIds = Lists.newArrayList();
 		// TODO: maybe this could become a cached filter, since the search criteria don't change
-		final Query query = getRootConceptsQueryBuilder().toQuery();
+		final Query query = getRootConceptsQuery();
 		final DocIdCollector collector = DocIdCollector.create(service.maxDoc(branchPath));
 		service.search(branchPath, query, collector);
-		DocIdsIterator iterator;
 		try {
-			iterator = collector.getDocIDs().iterator();
+			final DocIdsIterator iterator = collector.getDocIDs().iterator();
 			while (iterator.next()) {
-				final Document doc = service.document(branchPath, iterator.getDocID(), COMPONENT_ID_FIELD_TO_LOAD);
-				rootConceptIds.add(ComponentIdField.getString(doc));
+				final Document doc = service.document(branchPath, iterator.getDocID(), Mappings.fieldsToLoad().id().build());
+				rootConceptIds.add(Mappings.id().getValue(doc));
 			}
 		} catch (final IOException e) {
 			throw new IndexException("Error when querying root concepts.", e);
@@ -176,10 +166,10 @@ abstract public class AbstractIndexTerminologyBrowser<E extends IIndexEntry> ext
 		return rootConceptIds;
 	}
 	
-	protected IndexQueryBuilder getRootConceptsQueryBuilder() {
+	protected Query getRootConceptsQuery() {
 		return new IndexQueryBuilder()
-			.require(ComponentParentStringField.ROOT_PARENT.toQuery())
-			.require(getRootTerminologyComponentTypeQuery());
+			.require(Mappings.parent().toQuery(Mappings.ROOT_ID_STRING))
+			.require(getRootTerminologyComponentTypeQuery()).toQuery();
 	}
 
 	@Override
@@ -190,8 +180,8 @@ abstract public class AbstractIndexTerminologyBrowser<E extends IIndexEntry> ext
 		if (CompareUtils.isEmpty(topDocs.scoreDocs)) {
 			return Collections.emptyList();
 		}
-		final Document document = service.document(branchPath, topDocs.scoreDocs[0].doc, ComponentParentField.FIELDS_TO_LOAD);
-		return ComponentParentStringField.getValues(document);
+		final Document document = service.document(branchPath, topDocs.scoreDocs[0].doc, Mappings.fieldsToLoad().parent().build());
+		return Mappings.parent().getValues(document);
 	}
 	
 	/**
@@ -207,27 +197,13 @@ abstract public class AbstractIndexTerminologyBrowser<E extends IIndexEntry> ext
 	public String getComponentLabel(final IBranchPath branchPath, final String componentId) {
 		Preconditions.checkNotNull(branchPath, "Branch path argument cannot be null.");
 		Preconditions.checkNotNull(componentId, "Component ID argument cannot be null.");
-		
 		final TopDocs topDocs = service.search(branchPath, getConceptByIdQueryBuilder(componentId), 1);
-		
 		//cannot found matching label for component
 		if (null == topDocs || CompareUtils.isEmpty(topDocs.scoreDocs)) {
-			
 			return null;
-			
 		}
-		
-		final Document doc = service.document(branchPath, topDocs.scoreDocs[0].doc, LABEL_FIELD_TO_LOAD);
-		
-		final IndexableField field = doc.getField(CommonIndexConstants.COMPONENT_LABEL);
-		
-		if (null == field) {
-			
-			return null;
-			
-		}
-		
-		return field.stringValue();
+		final Document doc = service.document(branchPath, topDocs.scoreDocs[0].doc, Mappings.fieldsToLoad().label().build());
+		return Mappings.label().getValue(doc);
 	}
 	
 	@Override
@@ -240,7 +216,7 @@ abstract public class AbstractIndexTerminologyBrowser<E extends IIndexEntry> ext
 	}
 
 	protected Query getConceptByIdQueryBuilder(final String conceptId) {
-		return new ComponentIdStringField(conceptId).toQuery();
+		return Mappings.newQuery().id(conceptId).matchAll();
 	}
 
 	@Override
@@ -252,8 +228,8 @@ abstract public class AbstractIndexTerminologyBrowser<E extends IIndexEntry> ext
 		if (CompareUtils.isEmpty(topDocs.scoreDocs)) {
 			return Collections.emptyList();
 		}
-		final Document document = service.document(branchPath, topDocs.scoreDocs[0].doc, ComponentParentField.FIELDS_TO_LOAD);
-		final Collection<String> parents = ComponentParentStringField.getValues(document);
+		final Document document = service.document(branchPath, topDocs.scoreDocs[0].doc, Mappings.fieldsToLoad().parent().build());
+		final Collection<String> parents = Mappings.parent().getValues(document);
 		final Builder<E> builder = ImmutableList.builder();
 		for (final String parent : parents) {
 			builder.add(getConcept(branchPath, parent));
@@ -266,7 +242,7 @@ abstract public class AbstractIndexTerminologyBrowser<E extends IIndexEntry> ext
 		checkNotNull(branchPath, "Branch path must not be null.");
 		checkNotNull(id, "ID must not be null.");
 		
-		final Query query = getSubTypesQueryBuilder(id).toQuery();
+		final Query query = getSubTypesQuery(id);
 		try {
 			final DocIdCollector collector = DocIdCollector.create(service.maxDoc(branchPath));
 			service.search(branchPath, query, collector);
@@ -281,7 +257,7 @@ abstract public class AbstractIndexTerminologyBrowser<E extends IIndexEntry> ext
 		checkNotNull(branchPath, "Branch path must not be null.");
 		checkNotNull(id, "ID must not be null.");
 		
-		final Query query = getSubTypesQueryBuilder(id).toQuery();
+		final Query query = getSubTypesQuery(id);
 		final Set<String> subTypeIds = Sets.newHashSet();
 		
 		try {
@@ -291,8 +267,8 @@ abstract public class AbstractIndexTerminologyBrowser<E extends IIndexEntry> ext
 			final DocIdsIterator iterator = collector.getDocIDs().iterator();
 			
 			while (iterator.next()) {
-				final Document doc = service.document(branchPath, iterator.getDocID(), COMPONENT_ID_FIELD_TO_LOAD);
-				subTypeIds.add(ComponentIdField.getString(doc));
+				final Document doc = service.document(branchPath, iterator.getDocID(), Mappings.fieldsToLoad().id().build());
+				subTypeIds.add(Mappings.id().getValue(doc));
 			}
 			
 			return subTypeIds;
@@ -302,10 +278,11 @@ abstract public class AbstractIndexTerminologyBrowser<E extends IIndexEntry> ext
 		}
 	}
 	
-	protected IndexQueryBuilder getSubTypesQueryBuilder(final String id) {
-		return new IndexQueryBuilder()
-			.require(getTerminologyComponentTypeQuery())
-			.require(new ComponentParentStringField(id).toQuery());
+	protected Query getSubTypesQuery(final String id) {
+		return Mappings.newQuery()
+				.type(getConceptTerminologyComponentId())
+				.parent(id)
+				.matchAll();
 	}
 
 	
@@ -322,13 +299,7 @@ abstract public class AbstractIndexTerminologyBrowser<E extends IIndexEntry> ext
 	public int getSubTypeCountById(final IBranchPath branchPath, final String id) {
 		checkNotNull(branchPath, "Branch path must not be null.");
 		checkNotNull(id, "ID must not be null.");
-		
-		final Query query = getSubTypesQueryBuilder(id).toQuery();
-		try {
-			return getQueryResultCount(branchPath, query);
-		} catch (final IOException e) {
-			throw new RuntimeException("Error when retrieving the number of sub types of " + id + ".", e);
-		}
+		return getQueryResultCount(branchPath, getSubTypesQuery(id));
 	}
 	
 	@Override
@@ -358,15 +329,11 @@ abstract public class AbstractIndexTerminologyBrowser<E extends IIndexEntry> ext
 		query.add(getComponentIdQuery(componentId), Occur.MUST);
 		query.add(getTerminologyComponentTypeQuery(), Occur.MUST);
 
-		return exists(branchPath, query);
-	}
-
-	protected boolean exists(final IBranchPath branchPath, final Query query) {
 		return service.getTotalHitCount(branchPath, query) > 0;
 	}
 
 	// Even when we accept multiple component types, we only want to display root concepts from a particular type -- see Icd10AmServerTerminologyBrowser
-	protected Query getRootTerminologyComponentTypeQuery() {
+	private Query getRootTerminologyComponentTypeQuery() {
 		return getDefaultTerminologyComponentTypeQuery();
 	}
 	
@@ -377,13 +344,9 @@ abstract public class AbstractIndexTerminologyBrowser<E extends IIndexEntry> ext
 
 	// The default implementation restricts the query to a single component type only
 	private Query getDefaultTerminologyComponentTypeQuery() {
-		return getTerminologyComponentTypeQuery(getConceptTerminologyComponentId());
+		return Mappings.newQuery().type(getConceptTerminologyComponentId()).matchAll();
 	}
 
-	protected Query getTerminologyComponentTypeQuery(final short terminologyComponentId) {
-		return new ComponentTypeField(terminologyComponentId).toQuery();
-	}
-	
 	/**
 	 * Template method for creating an {@link IComponentWithChildFlag}.
 	 * 

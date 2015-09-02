@@ -17,22 +17,22 @@ package com.b2international.snowowl.datastore.index;
 
 import java.util.Collection;
 
-import org.apache.lucene.document.Document;
+import com.b2international.snowowl.datastore.index.mapping.DocumentBuilderBase;
 
 /**
  * @since 4.3 
  */
-public class DocumentCompositeUpdater implements DocumentUpdater {
+public class DocumentCompositeUpdater<D extends DocumentBuilderBase<D>> implements DocumentUpdater<D> {
 
-	private Collection<DocumentUpdater> updaters;
+	private Collection<DocumentUpdater<D>> updaters;
 
-	public DocumentCompositeUpdater(Collection<DocumentUpdater> updaters) {
+	public DocumentCompositeUpdater(Collection<DocumentUpdater<D>> updaters) {
 		this.updaters = updaters;
 	}
 	
 	@Override
-	public void update(Document doc) {
-		for (DocumentUpdater updater : updaters) {
+	public void update(D doc) {
+		for (DocumentUpdater<D> updater : updaters) {
 			updater.update(doc);
 		}
 	}

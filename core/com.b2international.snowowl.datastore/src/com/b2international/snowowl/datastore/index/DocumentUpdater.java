@@ -15,13 +15,13 @@
  */
 package com.b2international.snowowl.datastore.index;
 
-import org.apache.lucene.document.Document;
+import com.b2international.snowowl.datastore.index.mapping.DocumentBuilderBase;
 
 /**
  * @since 4.3
  */
-public interface DocumentUpdater {
+public interface DocumentUpdater<D extends DocumentBuilderBase<D>> {
 
-	void update(Document doc);
+	void update(D doc);
 	
 }

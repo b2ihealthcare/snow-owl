@@ -15,7 +15,7 @@
  */
 package com.b2international.snowowl.datastore.index;
 
-import com.b2international.snowowl.datastore.index.field.ComponentParentStringField;
+import com.b2international.snowowl.datastore.index.mapping.Mappings;
 
 /**
  * Represents a folder as an index entry
@@ -23,7 +23,7 @@ import com.b2international.snowowl.datastore.index.field.ComponentParentStringFi
  */
 public class FolderIndexEntry extends ParentFolderAwareIndexEntry {
 
-	public static final FolderIndexEntry ROOT_FOLDER = new FolderIndexEntry(ComponentParentStringField.ROOT_ID, "<label>", "<parent id>", 0L, true);
+	public static final FolderIndexEntry ROOT_FOLDER = new FolderIndexEntry(Mappings.ROOT_ID_STRING, "<label>", "<parent id>", 0L, true);
 
 	private static final long serialVersionUID = 2798747626697337577L;
 	private final boolean hasChildren;

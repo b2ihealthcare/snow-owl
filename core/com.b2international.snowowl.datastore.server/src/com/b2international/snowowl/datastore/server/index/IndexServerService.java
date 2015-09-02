@@ -60,9 +60,9 @@ import com.b2international.snowowl.datastore.index.DocIdCollector.DocIdsIterator
 import com.b2international.snowowl.datastore.index.DocumentUpdater;
 import com.b2international.snowowl.datastore.index.DocumentWithScore;
 import com.b2international.snowowl.datastore.index.FakeQueryAdapter;
-import com.b2international.snowowl.datastore.index.field.ComponentIdField;
-import com.b2international.snowowl.datastore.index.field.ComponentIdStringField;
-import com.b2international.snowowl.datastore.index.field.ComponentStorageKeyField;
+import com.b2international.snowowl.datastore.index.mapping.DocumentBuilderBase;
+import com.b2international.snowowl.datastore.index.mapping.DocumentBuilderFactory;
+import com.b2international.snowowl.datastore.index.mapping.Mappings;
 import com.google.common.base.Function;
 import com.google.common.base.Preconditions;
 import com.google.common.cache.CacheBuilder;
@@ -74,7 +74,6 @@ import com.google.common.collect.HashMultimap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Multimap;
-import com.google.common.collect.Sets;
 import com.google.common.util.concurrent.UncheckedExecutionException;
 
 /**
@@ -162,10 +161,14 @@ public abstract class IndexServerService<E extends IIndexEntry> extends Abstract
 		checkNotDisposed();
 		final IndexBranchService branchService = getBranchService(branchPath);
 		try {
-			branchService.deleteDocuments(new ComponentStorageKeyField(storageKey).toTerm());
+			branchService.deleteDocuments(toTerm(storageKey));
 		} catch (final IOException e) {
 			throw new IndexException(e);
 		}
+	}
+
+	private Term toTerm(final long storageKey) {
+		return Mappings.storageKey().toTerm(storageKey);
 	}
 
 	@Override
@@ -265,15 +268,21 @@ public abstract class IndexServerService<E extends IIndexEntry> extends Abstract
 	}
 	
 	@Override
-	public void update(IBranchPath branchPath, long storageKey, DocumentUpdater documentUpdater) {
-		update(branchPath, new ComponentStorageKeyField(storageKey).toTerm(), documentUpdater);
+	public void index(IBranchPath branchPath, Document document, long storageKey) {
+		index(branchPath, document, storageKey);
 	}
 	
 	@Override
-	public void update(IBranchPath branchPath, Term term, DocumentUpdater documentUpdater) {
+	public <D extends DocumentBuilderBase<D>> void update(IBranchPath branchPath, long storageKey, DocumentUpdater<D> documentUpdater,
+			DocumentBuilderFactory<D> builderFactory) {
+		update(branchPath, toTerm(storageKey), documentUpdater, builderFactory);		
+	}
+	
+	@Override
+	public <D extends DocumentBuilderBase<D>> void update(IBranchPath branchPath, Term term, DocumentUpdater<D> documentUpdater, DocumentBuilderFactory<D> builderFactory) {
 		checkNotDisposed();
 		try {
-			getBranchService(branchPath).update(term, documentUpdater);
+			getBranchService(branchPath).update(term, documentUpdater, builderFactory);
 		} catch (IOException e) {
 			throw new IndexException(e);
 		}
@@ -398,8 +407,8 @@ public abstract class IndexServerService<E extends IIndexEntry> extends Abstract
 			int size = 0;
 			
 			for (final ScoreDoc scoreDoc : topDocs.scoreDocs) {
-				final Document doc = searcher.doc(scoreDoc.doc, COMPONENT_ID_FIELD_TO_LOAD);
-				ids[size++] = ComponentIdStringField.getString(doc);
+				final Document doc = searcher.doc(scoreDoc.doc, Mappings.fieldsToLoad().id().build());
+				ids[size++] = Mappings.id().getValue(doc);
 			}
 			
 			return Arrays.asList(Arrays.copyOf(ids, size));
@@ -553,8 +562,8 @@ public abstract class IndexServerService<E extends IIndexEntry> extends Abstract
 
 			int size = 0;
 			while (itr.next()) {
-				final Document doc = searcher.doc(itr.getDocID(), COMPONENT_ID_FIELD_TO_LOAD);
-				ids[size++] = ComponentIdStringField.getString(doc);
+				final Document doc = searcher.doc(itr.getDocID(), Mappings.fieldsToLoad().id().build());
+				ids[size++] = Mappings.id().getValue(doc);
 			}
 			
 			return Arrays.asList(Arrays.copyOf(ids, size));
@@ -868,8 +877,6 @@ public abstract class IndexServerService<E extends IIndexEntry> extends Abstract
 	public boolean hasDocuments(final IBranchPath branchPath) {
 		return hasDocumentsInternal(branchPath);
 	}
-
-	private static final Set<String> COMPONENT_ID_FIELD_TO_LOAD = Sets.newHashSet(ComponentIdField.COMPONENT_ID);
 
 	private void checkNotDisposed() {
 		if (disposed) {

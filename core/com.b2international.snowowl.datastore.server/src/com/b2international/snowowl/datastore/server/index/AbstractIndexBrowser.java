@@ -18,7 +18,6 @@ package com.b2international.snowowl.datastore.server.index;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
-import java.io.IOException;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
@@ -43,7 +42,6 @@ import com.b2international.commons.CompareUtils;
 import com.b2international.snowowl.core.api.ComponentIdAndLabel;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.api.IComponent;
-import com.b2international.snowowl.core.api.index.CommonIndexConstants;
 import com.b2international.snowowl.core.api.index.IIndexEntry;
 import com.b2international.snowowl.core.api.index.IIndexService;
 import com.b2international.snowowl.datastore.ICodeSystem;
@@ -51,15 +49,12 @@ import com.b2international.snowowl.datastore.ICodeSystemVersion;
 import com.b2international.snowowl.datastore.InternalTerminologyRegistryService;
 import com.b2international.snowowl.datastore.index.DocIdCollector.DocIdsIterator;
 import com.b2international.snowowl.datastore.index.IndexUtils;
-import com.b2international.snowowl.datastore.index.field.ComponentIdLongField;
-import com.b2international.snowowl.datastore.index.field.ComponentIdStringField;
-import com.b2international.snowowl.datastore.index.field.ComponentStorageKeyField;
+import com.b2international.snowowl.datastore.index.mapping.Mappings;
 import com.b2international.snowowl.datastore.server.TerminologyRegistryServiceWrapper;
 import com.b2international.snowowl.terminologyregistry.core.index.TerminologyRegistryIndexConstants;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableList.Builder;
-import com.google.common.collect.Sets;
 
 /**
  * Abstract base class for index based terminology and statement browser implementations.
@@ -79,7 +74,7 @@ public abstract class AbstractIndexBrowser<E extends IIndexEntry> implements Int
 		}
 	}
 
-	private static final Set<String> ID_LABEL_FIELD_TO_LOAD = Collections.unmodifiableSet(Sets.newHashSet(ComponentIdLongField.COMPONENT_ID, CommonIndexConstants.COMPONENT_LABEL));
+	private static final Set<String> ID_LABEL_FIELD_TO_LOAD = Mappings.fieldsToLoad().id().label().build();
 	
 	/**
 	 * Returns with the terminology dependent unique ID and the human readable label of a component specified by its unique storage key.
@@ -91,7 +86,7 @@ public abstract class AbstractIndexBrowser<E extends IIndexEntry> implements Int
 	@Nullable public ComponentIdAndLabel getComponentIdAndLabel(final IBranchPath branchPath, final long storageKey) {
 		checkNotNull(branchPath, "Branch path argument cannot be null.");
 		
-		final TopDocs topDocs = service.search(branchPath, new ComponentStorageKeyField(storageKey).toQuery(), 1);
+		final TopDocs topDocs = service.search(branchPath, Mappings.newQuery().storageKey(storageKey).matchAll(), 1);
 		
 		if (null == topDocs || CompareUtils.isEmpty(topDocs.scoreDocs)) {
 			return null; //XXX null object pattern?
@@ -100,8 +95,8 @@ public abstract class AbstractIndexBrowser<E extends IIndexEntry> implements Int
 		final Document doc = service.document(branchPath, topDocs.scoreDocs[0].doc, ID_LABEL_FIELD_TO_LOAD);
 		
 		return new ComponentIdAndLabel(
-				Preconditions.checkNotNull(doc.get(CommonIndexConstants.COMPONENT_LABEL), "Component label was null for component. CDO ID: " + storageKey),
-				Preconditions.checkNotNull(doc.get(ComponentIdLongField.COMPONENT_ID), "Component ID was null for component. CDO ID: " + storageKey)); 
+				Preconditions.checkNotNull(Mappings.label().getValue(doc), "Component label was null for component. CDO ID: " + storageKey),
+				Preconditions.checkNotNull(Mappings.id().getValue(doc), "Component ID was null for component. CDO ID: " + storageKey)); 
 		
 	}
 	
@@ -236,7 +231,7 @@ public abstract class AbstractIndexBrowser<E extends IIndexEntry> implements Int
 	 */
 	protected abstract Set<String> getFieldNamesToLoad();
 
-	protected int getQueryResultCount(final IBranchPath branchPath, final Query query) throws IOException {
+	protected int getQueryResultCount(final IBranchPath branchPath, final Query query) {
 		return service.getTotalHitCount(branchPath, query);
 	}
 	
@@ -247,6 +242,6 @@ public abstract class AbstractIndexBrowser<E extends IIndexEntry> implements Int
 	
 	/**Returns with the query for the unique ID of the component.*/
 	protected Query getComponentIdQuery(final String componentId) {
-		return new ComponentIdStringField(componentId).toQuery();
+		return Mappings.newQuery().id(componentId).matchAll();
 	}
 }

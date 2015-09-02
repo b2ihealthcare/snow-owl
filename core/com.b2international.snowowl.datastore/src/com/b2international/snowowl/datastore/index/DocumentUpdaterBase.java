@@ -19,11 +19,13 @@ import static com.google.common.base.Preconditions.checkNotNull;
 
 import java.util.Objects;
 
+import com.b2international.snowowl.datastore.index.mapping.DocumentBuilderBase;
+
 
 /**
  * @since 4.3
  */
-public abstract class DocumentUpdaterBase implements DocumentUpdater {
+public abstract class DocumentUpdaterBase<D extends DocumentBuilderBase<D>> implements DocumentUpdater<D> {
 
 	private String componentId;
 
@@ -45,7 +47,7 @@ public abstract class DocumentUpdaterBase implements DocumentUpdater {
 		if (this == obj) return true;
 		if (obj == null) return false;
 		if (getClass() != obj.getClass()) return false;
-		DocumentUpdaterBase other = (DocumentUpdaterBase) obj;
+		DocumentUpdaterBase<?> other = (DocumentUpdaterBase<?>) obj;
 		return Objects.equals(componentId, other.componentId);
 	}
 	

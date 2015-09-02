@@ -41,8 +41,7 @@ import com.b2international.snowowl.datastore.advancedsearch.LongSearchCriteria;
 import com.b2international.snowowl.datastore.advancedsearch.StringSearchCriteria;
 import com.b2international.snowowl.datastore.index.IndexQueryBuilder;
 import com.b2international.snowowl.datastore.index.IndexUtils;
-import com.b2international.snowowl.datastore.index.field.ComponentTypeField;
-import com.b2international.snowowl.datastore.index.field.IntIndexField;
+import com.b2international.snowowl.datastore.index.mapping.Mappings;
 
 /**
  * @since 3.0.1
@@ -71,7 +70,7 @@ public abstract class AbstractAdvancedSearchQueryBuilder {
 			occur = Occur.SHOULD;
 		}
 		// TODO: handle unexpected match type
-		compoundQuery.add(new ComponentTypeField(terminologyComponentTypeId).toQuery(), Occur.MUST);
+		compoundQuery.add(Mappings.newQuery().type(terminologyComponentTypeId).matchAll(), Occur.MUST);
 		if (!searchCriterias.isEmpty()) {
 			final BooleanQuery subQuery = new BooleanQuery();
 
@@ -116,7 +115,7 @@ public abstract class AbstractAdvancedSearchQueryBuilder {
 			} else if (criteria instanceof BooleanSearchCriteria) {
 				
 				final BooleanSearchCriteria booleanSearchCriteria = (BooleanSearchCriteria) criteria;
-				return new IntIndexField(indexKey, toIntValue(booleanSearchCriteria.getValue())).toQuery();
+				return Mappings.newQuery().field(indexKey, toIntValue(booleanSearchCriteria.getValue())).matchAll();
 				
 			} else if (criteria instanceof DateRangeSearchCriteria) {
 

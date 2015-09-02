@@ -38,19 +38,12 @@ import com.b2international.snowowl.datastore.InternalTerminologyRegistryService;
 import com.b2international.snowowl.datastore.index.DocumentWithScore;
 import com.b2international.snowowl.datastore.index.FolderIndexEntry;
 import com.b2international.snowowl.datastore.index.IFolderIndexService;
-import com.b2international.snowowl.datastore.index.IndexQueryBuilder;
 import com.b2international.snowowl.datastore.index.IndexUtils;
 import com.b2international.snowowl.datastore.index.ParentFolderAwareIndexEntry;
-import com.b2international.snowowl.datastore.index.field.ComponentIdField;
-import com.b2international.snowowl.datastore.index.field.ComponentIdStringField;
-import com.b2international.snowowl.datastore.index.field.ComponentParentField;
-import com.b2international.snowowl.datastore.index.field.ComponentParentStringField;
-import com.b2international.snowowl.datastore.index.field.ComponentStorageKeyField;
-import com.b2international.snowowl.datastore.index.field.ComponentTypeField;
+import com.b2international.snowowl.datastore.index.mapping.Mappings;
 import com.b2international.snowowl.datastore.server.TerminologyRegistryServiceWrapper;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableList.Builder;
-import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Sets;
 
 /**
@@ -59,13 +52,6 @@ import com.google.common.collect.Sets;
  */
 public abstract class FolderIndexServerService extends FSIndexServerService<ParentFolderAwareIndexEntry> implements IFolderIndexService, InternalTerminologyRegistryService {
 
-	private static final Set<String> FOLDER_FIELD_NAMES_TO_LOAD = ImmutableSet.of(
-			ComponentIdField.COMPONENT_ID,
-			CommonIndexConstants.COMPONENT_LABEL,
-			ComponentParentField.COMPONENT_PARENT,
-			ComponentStorageKeyField.COMPONENT_STORAGE_KEY,
-			CommonIndexConstants.COMPONENT_RELEASED);
-	
 	protected FolderIndexServerService(final File indexPath) {
 		super(indexPath);
 		InternalTerminologyRegistryServiceRegistry.INSTANCE.register(getRepositoryUuid(), this);
@@ -74,14 +60,14 @@ public abstract class FolderIndexServerService extends FSIndexServerService<Pare
 	@Override
 	public Set<FolderIndexEntry> getTopLevelFolders(final IBranchPath branchPath) {
 		checkNotNull(branchPath, "Branch path must not be null.");
-		return getSubFoldersByParentField(branchPath, ComponentParentStringField.ROOT_PARENT);
+		return getSubFoldersByParentField(branchPath, Mappings.ROOT_ID_STRING);
 	}
 	
 	private FolderIndexEntry createFolderResultObject(final IBranchPath branchPath, final Document document) {
-		final String code = ComponentIdStringField.getString(document);
-		final String displayName = document.get(CommonIndexConstants.COMPONENT_LABEL);
-		final String parentId = ComponentParentStringField.getValue(document);
-		final long storageKey = ComponentStorageKeyField.getLong(document);
+		final String code = Mappings.id().getValue(document);
+		final String displayName = Mappings.label().getValue(document);
+		final String parentId = Mappings.parent().getValue(document);
+		final long storageKey = Mappings.storageKey().getValue(document);
 		return new FolderIndexEntry(code, displayName, parentId, storageKey, hasChildren(branchPath, code));
 	}
 
@@ -89,7 +75,7 @@ public abstract class FolderIndexServerService extends FSIndexServerService<Pare
 	public FolderIndexEntry getFolderById(final IBranchPath branchPath, final String folderId) {
 		checkNotNull(branchPath, "Branch path must not be null.");
 		checkNotNull(folderId, "Folder id must not be null.");
-		final Query query = new ComponentIdStringField(folderId).toQuery();
+		final Query query = Mappings.newQuery().id(folderId).matchAll();
 		return createSingleFolderResultObject(branchPath, search(branchPath, query, 1));
 	}
 	
@@ -97,35 +83,28 @@ public abstract class FolderIndexServerService extends FSIndexServerService<Pare
 		if (CompareUtils.isEmpty(docs.scoreDocs)) {
 			return null;
 		}
-		return createFolderResultObject(branchPath, document(branchPath, docs.scoreDocs[0].doc, FOLDER_FIELD_NAMES_TO_LOAD));
+		return createFolderResultObject(
+				branchPath,
+				document(branchPath, docs.scoreDocs[0].doc,
+						Mappings.fieldsToLoad().id().label().parent().storageKey().field(CommonIndexConstants.COMPONENT_RELEASED).build()));
 	}
 
 	@Override
 	public Set<FolderIndexEntry> getSubFoldersById(final IBranchPath branchPath, final String folderId) {
 		checkNotNull(branchPath, "Branch path must not be null.");
 		checkNotNull(folderId, "Folder id must not be null.");
-
-		final ComponentParentStringField parentField = new ComponentParentStringField(folderId);
-		return getSubFoldersByParentField(branchPath, parentField);
+		return getSubFoldersByParentField(branchPath, folderId);
 	}
 
-	private Set<FolderIndexEntry> getSubFoldersByParentField(final IBranchPath branchPath, final ComponentParentStringField parentField) {
+	private Set<FolderIndexEntry> getSubFoldersByParentField(final IBranchPath branchPath, final String parentId) {
 		final Set<FolderIndexEntry> results = Sets.newHashSet();
-		final Query query = new IndexQueryBuilder()
-				.require(parentField.toQuery())
-				.require(getFolderTypeQuery()).toQuery();
-
+		final Query query = Mappings.newQuery().type(getTerminologyFolderComponentNumber()).id(parentId).matchAll();
 		final Collection<DocumentWithScore> documents = searchUnordered(branchPath, query, null);
-
 		for (final DocumentWithScore documentWithScore : documents) {
 			final Document document = documentWithScore.getDocument();
 			results.add(createFolderResultObject(branchPath, document));
 		}
 		return results;
-	}
-
-	private Query getFolderTypeQuery() {
-		return new ComponentTypeField(getTerminologyFolderComponentNumber()).toQuery();
 	}
 
 	@Override
@@ -155,19 +134,18 @@ public abstract class FolderIndexServerService extends FSIndexServerService<Pare
 	public FolderIndexEntry getTopLevelFolderByName(final IBranchPath branchPath, final String folderName) {
 		checkNotNull(branchPath, "Branch path must not be null.");
 		checkNotNull(folderName, "Folder name must not be null.");
-		
-		final Query query = new IndexQueryBuilder()
-			.require(ComponentParentStringField.ROOT_PARENT.toQuery())
-			.requireExactTerm(CommonIndexConstants.COMPONENT_LABEL_SORT_KEY, IndexUtils.getSortKey(folderName))
-			.require(getFolderTypeQuery()).toQuery();
-	
+		final Query query = Mappings.newQuery()
+				.parent(Mappings.ROOT_ID_STRING)
+				.field(CommonIndexConstants.COMPONENT_LABEL_SORT_KEY, IndexUtils.getSortKey(folderName))
+				.type(getTerminologyFolderComponentNumber())
+				.matchAll();
 		return createSingleFolderResultObject(branchPath, search(branchPath, query, 1));
 	}
 	
 	protected abstract short getTerminologyFolderComponentNumber();
 	
 	private boolean hasChildren(final IBranchPath branchPath, final String folderId) {
-		return getHitCount(branchPath, new ComponentParentStringField(folderId).toQuery(), null) > 0;
+		return getHitCount(branchPath, Mappings.newQuery().parent(folderId).matchAll(), null) > 0;
 	}
 	
 	// TODO: place this method somewhere which is more component set specific
@@ -178,10 +156,10 @@ public abstract class FolderIndexServerService extends FSIndexServerService<Pare
 		final Set<ParentFolderAwareIndexEntry> results = Sets.newHashSet();
 		final boolean searchForAll = StringUtils.isEmpty(folderId);
 		if (searchForAll) {
-			final Query query = new IndexQueryBuilder()
-					.require(new ComponentTypeField(getTerminologyComponentSetNumber()).toQuery())
-					.requireExactTerm(CommonIndexConstants.COMPONENT_RELEASED, "1").toQuery(); // 1: released
-
+			final Query query = Mappings.newQuery()
+					.type(getTerminologyComponentSetNumber())
+					.field(CommonIndexConstants.COMPONENT_RELEASED, "1")
+					.matchAll();
 			final Collection<DocumentWithScore> documents = searchUnordered(branchPath, query, null);
 			for (final DocumentWithScore documentWithScore : documents) {
 				final Document document = documentWithScore.getDocument();
@@ -206,10 +184,11 @@ public abstract class FolderIndexServerService extends FSIndexServerService<Pare
 	private Set<? extends ParentFolderAwareIndexEntry> getPublishedComponentSetsByFolder(final IBranchPath branchPath, final String folderId) {
 		checkNotNull(branchPath, "Branch path must not be null.");
 
-		final Query query = new IndexQueryBuilder()
-				.require(new ComponentParentStringField(StringUtils.isEmpty(folderId) ? ComponentParentStringField.ROOT_ID : folderId).toQuery())
-				.require(new ComponentTypeField(getTerminologyComponentSetNumber()).toQuery())
-				.requireExactTerm(CommonIndexConstants.COMPONENT_RELEASED, "1").toQuery(); // 1: released
+		final Query query = Mappings.newQuery()
+				.type(getTerminologyComponentSetNumber())
+				.parent(StringUtils.isEmpty(folderId) ? Mappings.ROOT_ID_STRING : folderId)
+				.field(CommonIndexConstants.COMPONENT_RELEASED, "1")
+				.matchAll();
 
 		final Set<ParentFolderAwareIndexEntry> results = Sets.newHashSet();
 		final Collection<DocumentWithScore> documents = searchUnordered(branchPath, query, null);
@@ -225,19 +204,15 @@ public abstract class FolderIndexServerService extends FSIndexServerService<Pare
 	 * See {@link SuperTypeIdProvider#getSuperTypeIds(IBranchPath, Object)}.
 	 */
 	public Collection<String> getSuperTypeIds(final IBranchPath branchPath, final String conceptId) {
-
 		checkNotNull(branchPath, "branchPath");
 		checkNotNull(conceptId, "conceptId");
-		
-		final Query query = new ComponentIdStringField(conceptId).toQuery();
+		final Query query = Mappings.newQuery().id(conceptId).matchAll();
 		final TopDocs topDocs = search(branchPath, query, 1);
-		
 		if (IndexUtils.isEmpty(topDocs)) {
 			return Collections.emptySet();
 		}
-		
-		final Document doc = document(branchPath, topDocs.scoreDocs[0].doc, ComponentParentField.FIELDS_TO_LOAD);
-		return ComponentParentStringField.getValues(doc);
+		final Document doc = document(branchPath, topDocs.scoreDocs[0].doc, Mappings.fieldsToLoad().parent().build());
+		return Mappings.parent().getValues(doc);
 	}
 	
 	// TODO: place this method somewhere which is more component set specific

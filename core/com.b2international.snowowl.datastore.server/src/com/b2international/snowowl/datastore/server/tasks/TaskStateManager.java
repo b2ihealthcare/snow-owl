@@ -61,7 +61,7 @@ import com.b2international.snowowl.datastore.UserBranchPathMap;
 import com.b2international.snowowl.datastore.cdo.ICDOConnectionManager;
 import com.b2international.snowowl.datastore.config.RepositoryConfiguration;
 import com.b2international.snowowl.datastore.index.IndexUtils;
-import com.b2international.snowowl.datastore.index.field.IntIndexField;
+import com.b2international.snowowl.datastore.index.mapping.Mappings;
 import com.b2international.snowowl.datastore.net4j.push.PushServiceException;
 import com.b2international.snowowl.datastore.server.index.IndexServerServiceManager;
 import com.b2international.snowowl.datastore.server.net4j.push.PushServerService;
@@ -722,13 +722,14 @@ public class TaskStateManager extends SingleDirectoryIndexImpl implements ITaskS
 	private void insertOrUpdate(final String taskId, final boolean promoted, final IBranchPathMap taskBranchPathMap, final String contextId, final String repositoryUrl, 
 			final String description, final TaskScenario scenario) {
 
-		final Document document = new Document();
-		document.add(new StringField(FIELD_TASK_ID, taskId, Store.YES));
-		document.add(new StringField(FIELD_IS_CLOSED, promoted ? "1" : "0", Store.YES));
-		document.add(new StringField(FIELD_CONTEXT_ID, contextId, Store.YES));
-		document.add(new StringField(FIELD_REPOSITORY_URL, repositoryUrl, Store.YES));
-		document.add(new StringField(FIELD_DESCRIPTION, description, Store.YES));
-		new IntIndexField(FIELD_SCENARIO_ORDINAL, scenario.ordinal()).addTo(document);
+		final Document document = Mappings.doc()
+				.field(FIELD_TASK_ID, taskId)
+				.field(FIELD_IS_CLOSED, promoted ? "1" : "0")
+				.field(FIELD_CONTEXT_ID, contextId)
+				.field(FIELD_REPOSITORY_URL, repositoryUrl)
+				.field(FIELD_DESCRIPTION, description)
+				.field(FIELD_SCENARIO_ORDINAL, scenario.ordinal())
+				.build();
 
 		if (null != taskBranchPathMap) {
 			updateBranchPathMapFields(taskBranchPathMap, document);

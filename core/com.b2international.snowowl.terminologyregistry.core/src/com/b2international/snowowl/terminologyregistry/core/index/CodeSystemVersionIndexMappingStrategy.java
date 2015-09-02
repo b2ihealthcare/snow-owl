@@ -33,7 +33,7 @@ import org.apache.lucene.document.StringField;
 import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.datastore.cdo.CDOIDUtils;
 import com.b2international.snowowl.datastore.index.AbstractIndexMappingStrategy;
-import com.b2international.snowowl.datastore.index.field.ComponentStorageKeyField;
+import com.b2international.snowowl.datastore.index.mapping.Mappings;
 import com.b2international.snowowl.terminologymetadata.CodeSystemVersion;
 
 /**
@@ -58,7 +58,7 @@ public class CodeSystemVersionIndexMappingStrategy extends AbstractIndexMappingS
 		// XXX using EffectiveTimes here to handle possible null lastUpdateDate values 
 		doc.add(new LongField(VERSION_LATEST_UPDATE_DATE, EffectiveTimes.getEffectiveTime(version.getLastUpdateDate()), Store.YES));
 		doc.add(new LongField(VERSION_STORAGE_KEY, getStorageKey(), Store.YES));
-		new ComponentStorageKeyField(getStorageKey()).addTo(doc);
+		Mappings.storageKey().addTo(doc, getStorageKey());
 		addStringFieldIfExists(doc, VERSION_REPOSITORY_UUID, version.getCodeSystemVersionGroup().getRepositoryUuid());
 		return doc;
 	}
