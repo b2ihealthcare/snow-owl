@@ -41,7 +41,7 @@ import com.google.common.base.Splitter;
 
 /**
  * Builds Lucene-specific {@link Query} instances.
- * 
+ * @deprecated - if possible use {@link QueryBuilder} or specific subclass instead 
  */
 public class IndexQueryBuilder {
 

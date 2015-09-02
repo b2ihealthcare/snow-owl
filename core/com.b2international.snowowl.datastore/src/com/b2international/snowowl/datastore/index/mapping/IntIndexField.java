@@ -13,63 +13,61 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.datastore.index.field;
+package com.b2international.snowowl.datastore.index.mapping;
 
 import org.apache.lucene.document.Document;
-import org.apache.lucene.document.Field.Store;
 import org.apache.lucene.document.IntField;
 import org.apache.lucene.index.IndexableField;
+import org.apache.lucene.search.SortField.Type;
 import org.apache.lucene.util.BytesRef;
 import org.apache.lucene.util.NumericUtils;
-
-import com.b2international.snowowl.datastore.index.IndexUtils;
 
 /**
  * @since 4.3
  */
-public class IntIndexField extends IndexField {
+public class IntIndexField extends IndexFieldBase<Integer> {
 
-	private int value;
-	
-	public IntIndexField(String fieldName, short value) {
-		this(fieldName, (int) value);
+	public IntIndexField(String fieldName) {
+		this(fieldName, true);
 	}
 	
-	public IntIndexField(String fieldName, int value) {
-		super(fieldName);
-		this.value = value;
+	public IntIndexField(String fieldName, boolean store) {
+		super(fieldName, store);
 	}
 	
 	@Override
-	protected BytesRef toBytesRef() {
-		return toBytesRef(value);
+	protected IndexableField toField(Integer value) {
+		return new IntField(fieldName(), value, isStored());
 	}
 	
 	@Override
-	protected IndexableField toField() {
-		return new IntField(getFieldName(), value, Store.YES);
+	protected BytesRef toBytesRef(Integer value) {
+		return _toBytesRef(value);
+	}
+	
+	@Override
+	protected Type getSortFieldType() {
+		return Type.INT;
 	}
 
-	public static int getInt(Document doc, String fieldName) {
-		return IndexUtils.getIntValue(doc.getField(fieldName));
+	@Override
+	public Integer getValue(IndexableField field) {
+		return field.numericValue().intValue();
 	}
-
-	public static short getShort(Document doc, String fieldName) {
-		return IndexUtils.getShortValue(doc.getField(fieldName));
+	
+	public short getShortValue(Document doc) {
+		return getField(doc).numericValue().shortValue();
 	}
 	
 	/**
-	 * Converts the specified integer value to prefix coded bits.
-	 * 
-	 * @see NumericUtils#intToPrefixCoded(int, int, BytesRef)
-	 * 
 	 * @param value
 	 * @return
+	 * @deprecated - if possible don't use this API, use {@link Mappings} or {@link #IntIndexField(String) constructor} instead.
 	 */
-	public static BytesRef toBytesRef(final int value) {
+	public static BytesRef _toBytesRef(Integer value) {
 		final BytesRef bytesRef = new BytesRef();
 		NumericUtils.intToPrefixCoded(value, 0, bytesRef);
 		return bytesRef;
 	}
-	
+
 }

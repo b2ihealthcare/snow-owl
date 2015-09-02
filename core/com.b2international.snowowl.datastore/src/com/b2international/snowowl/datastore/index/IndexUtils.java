@@ -211,6 +211,7 @@ public abstract class IndexUtils {
 	 * @param value the boolean value to store
 	 * @return the populated {@link Field} instance
 	 */
+	@Deprecated
 	public static @Nonnull Field createBooleanField(final @Nonnull String name, final boolean value) {
 		return new StringField(name, value ? "1" : "0", Store.YES);
 	}
@@ -221,6 +222,7 @@ public abstract class IndexUtils {
 		return null == docs || CompareUtils.isEmpty(docs.scoreDocs);
 	}
 	
+	@Deprecated
 	public static boolean getBooleanValue(final @Nonnull IndexableField fieldable) {
 		checkNotNull(fieldable, "Field must not be null.");
 		final Number numericValue = fieldable.numericValue();
@@ -238,22 +240,27 @@ public abstract class IndexUtils {
 		}
 	}
 
+	@Deprecated
 	public static long getLongValue(final @Nonnull IndexableField fieldable) {
 		return getNumber(fieldable).longValue();
 	}
 
+	@Deprecated
 	public static short getShortValue(final @Nonnull IndexableField fieldable) {
 		return getNumber(fieldable).shortValue();
 	}
 	
+	@Deprecated
 	public static int getIntValue(final @Nonnull IndexableField fieldable) {
 		return getNumber(fieldable).intValue();
 	}
 
+	@Deprecated
 	public static float getFloatValue(final @Nonnull IndexableField fieldable) {
 		return getNumber(fieldable).floatValue();
 	}
 
+	@Deprecated
 	private static Number getNumber(final @Nonnull IndexableField fieldable) {
 		return fieldable.numericValue();
 	}
@@ -321,6 +328,7 @@ public abstract class IndexUtils {
 	 * @param label the label to create a sort key for (may not be {@code null})
 	 * @return the transformed sort key
 	 */
+	@Deprecated
 	public static String getSortKey(final @Nonnull String label) {
 		final String labelWithoutDiacriticals = StringUtils.removeDiacriticals(label);
 		// whitespace characters can be kept
@@ -328,6 +336,7 @@ public abstract class IndexUtils {
 		return labelWithoutDiacriticalsAndTermSeparators;
 	}
 	
+	@Deprecated
 	public static Collection<BytesRef> longToPrefixCoded(final Collection<String> values) {
 		return Collections2.transform(values, new Function<String, BytesRef>() {
 			@Override public BytesRef apply(final String input) {
@@ -337,6 +346,7 @@ public abstract class IndexUtils {
 	}
 
 	// TODO: remove method
+	@Deprecated
 	public static BytesRef longToPrefixCoded(final String value) {
 		if (StringUtils.isEmpty(value)) {
 			return new BytesRef();
@@ -349,6 +359,7 @@ public abstract class IndexUtils {
 		}
 	}
 	
+	@Deprecated
 	public static BytesRef longToPrefixCoded(final long value) {
 		final BytesRef bytesRef = new BytesRef();
 		NumericUtils.longToPrefixCoded(value, 0, bytesRef);

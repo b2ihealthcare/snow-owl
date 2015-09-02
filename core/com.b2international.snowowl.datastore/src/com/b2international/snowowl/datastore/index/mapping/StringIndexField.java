@@ -13,27 +13,27 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.datastore.index.field;
+package com.b2international.snowowl.datastore.index.mapping;
 
-import java.util.Collections;
-import java.util.Set;
-
-import org.apache.lucene.document.Document;
+import org.apache.lucene.document.StringField;
+import org.apache.lucene.index.IndexableField;
 
 /**
  * @since 4.3
  */
-public abstract class ComponentAncestorField extends IndexField {
+public class StringIndexField extends StringIndexFieldBase {
 
-	public static final String COMPONENT_ANCESTOR = "concept_ancestor_id";
-	public static final Set<String> FIELDS_TO_LOAD = Collections.singleton(COMPONENT_ANCESTOR);
-
-	public ComponentAncestorField(String fieldName) {
-		super(fieldName);
+	public StringIndexField(String fieldName) {
+		this(fieldName, true);
 	}
 	
-	public static void removeAll(Document doc) {
-		IndexField.removeAll(COMPONENT_ANCESTOR, doc);
+	public StringIndexField(String fieldName, boolean stored) {
+		super(fieldName, stored);
 	}
-	
+
+	@Override
+	protected IndexableField toField(String value) {
+		return new StringField(fieldName(), value, isStored());
+	}
+
 }
