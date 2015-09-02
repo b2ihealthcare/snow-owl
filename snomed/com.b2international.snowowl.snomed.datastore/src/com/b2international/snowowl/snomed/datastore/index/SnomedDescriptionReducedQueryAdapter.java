@@ -24,6 +24,7 @@ import com.b2international.snowowl.datastore.index.IndexQueryBuilder;
 import com.b2international.snowowl.datastore.index.IndexUtils;
 import com.b2international.snowowl.datastore.index.mapping.Mappings;
 import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedMappings;
+import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedQueryBuilder;
 import com.google.common.base.Optional;
 
 public class SnomedDescriptionReducedQueryAdapter extends SnomedDescriptionIndexQueryAdapter implements Serializable {
@@ -53,14 +54,8 @@ public class SnomedDescriptionReducedQueryAdapter extends SnomedDescriptionIndex
 	
 	@Override
 	protected IndexQueryBuilder createIndexQueryBuilder() {
-
 		if (StringUtils.isEmpty(searchString)) {
-			
-			return super.createIndexQueryBuilder()
-		        .requireIf(anyFlagSet(SEARCH_DESCRIPTION_ACTIVE_ONLY), SnomedMappings.newQuery().active().matchAll())
-		        .requireIf(!StringUtils.isEmpty(descriptionTypeId), SnomedMappings.newQuery().descriptionType(descriptionTypeId).matchAll())
-		        .requireIf(StringUtils.isEmpty(searchString), SnomedMappings.id().toExistsQuery());
-			
+			return getDescriptionTypeQuery(super.createIndexQueryBuilder());
 		} else {
 			if (anyFlagSet(SEARCH_DESCRIPTION_ID | SEARCH_DESCRIPTION_CONCEPT_ID)) {
 				Optional<Long> parsedSearchStringOptional = IndexUtils.parseLong(searchString);
@@ -79,15 +74,29 @@ public class SnomedDescriptionReducedQueryAdapter extends SnomedDescriptionIndex
 	}
 
 	private IndexQueryBuilder createIndexQueryBuilderWithIdTerms(Optional<Long> parsedSearchStringOptional) {
-		return super.createIndexQueryBuilder()
-				.requireIf(anyFlagSet(SEARCH_DESCRIPTION_ACTIVE_ONLY), SnomedMappings.newQuery().active().matchAll())
-				.requireIf(!StringUtils.isEmpty(descriptionTypeId), SnomedMappings.newQuery().descriptionType(descriptionTypeId).matchAll())
-				.requireIf(StringUtils.isEmpty(searchString), SnomedMappings.id().toExistsQuery())
+		return getDescriptionTypeQuery(super.createIndexQueryBuilder())
 				.finishIf(StringUtils.isEmpty(searchString))
 				.require(new IndexQueryBuilder()
 				.matchIf(anyFlagSet(SEARCH_DESCRIPTION_ID), SnomedMappings.newQuery().id(parsedSearchStringOptional.get()).matchAll())
 				.matchParsedTermIf(anyFlagSet(SEARCH_DESCRIPTION_TERM), Mappings.label().fieldName(), searchString)
 				.matchIf(anyFlagSet(SEARCH_DESCRIPTION_CONCEPT_ID), SnomedMappings.newQuery().descriptionConcept(parsedSearchStringOptional.get()).matchAll()));
+	}
+
+	private IndexQueryBuilder getDescriptionTypeQuery(IndexQueryBuilder builder) {
+		if (anyFlagSet(SEARCH_DESCRIPTION_ACTIVE_ONLY) || !StringUtils.isEmpty(descriptionTypeId) || StringUtils.isEmpty(searchString)) {
+			final SnomedQueryBuilder query = SnomedMappings.newQuery();
+			if (anyFlagSet(SEARCH_DESCRIPTION_ACTIVE_ONLY)) {
+				query.active();
+			}
+			if (!StringUtils.isEmpty(descriptionTypeId)) {
+				query.descriptionType(descriptionTypeId);
+			}
+			if (StringUtils.isEmpty(searchString)) {
+				query.and(SnomedMappings.id().toExistsQuery());
+			}
+			builder.require(query.matchAll());
+		}
+		return builder;
 	}
 
 	private IndexQueryBuilder createIndexQueryBuilderWithoutIdTerms() {

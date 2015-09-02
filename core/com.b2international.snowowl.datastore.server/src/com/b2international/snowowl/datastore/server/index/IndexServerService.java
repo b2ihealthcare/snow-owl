@@ -269,7 +269,7 @@ public abstract class IndexServerService<E extends IIndexEntry> extends Abstract
 	
 	@Override
 	public void index(IBranchPath branchPath, Document document, long storageKey) {
-		index(branchPath, document, storageKey);
+		index(branchPath, document, toTerm(storageKey));
 	}
 	
 	@Override

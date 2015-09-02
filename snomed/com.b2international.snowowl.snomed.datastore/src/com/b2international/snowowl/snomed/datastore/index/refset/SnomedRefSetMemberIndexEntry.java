@@ -26,7 +26,6 @@ import org.apache.lucene.document.Document;
 import org.eclipse.emf.cdo.CDOState;
 import org.eclipse.emf.cdo.common.id.CDOIDUtil;
 
-import com.b2international.commons.StringUtils;
 import com.b2international.snowowl.core.ComponentIdentifierPair;
 import com.b2international.snowowl.core.CoreTerminologyBroker;
 import com.b2international.snowowl.core.api.IBranchPath;
@@ -194,8 +193,8 @@ public class SnomedRefSetMemberIndexEntry extends SnomedIndexEntry implements IC
 		final String specialFieldLabel = doc.get(SnomedRefSetUtil.getSpecialComponentLabelIndexField(type));
 		final String mapTargetDescription = doc.get(SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_MAP_TARGET_COMPONENT_DESCRIPTION);
 		
-		String iconId = Mappings.iconId().getValue(doc);
-		if (StringUtils.isEmpty(iconId) && null != branchPath) {
+		String iconId = null;
+		if (null != branchPath) {
 			Object iconIdAsObjact = CoreTerminologyBroker.getInstance().getComponentIconIdProvider(referencedComponentType).getIconId(branchPath, referencedComponentId);
 			if (null != iconIdAsObjact) {
 				iconId = String.valueOf(iconIdAsObjact);

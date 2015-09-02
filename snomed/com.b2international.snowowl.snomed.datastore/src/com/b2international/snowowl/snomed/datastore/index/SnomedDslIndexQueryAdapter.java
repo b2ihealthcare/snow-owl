@@ -49,6 +49,7 @@ public abstract class SnomedDslIndexQueryAdapter<E extends IIndexEntry> extends 
 	
 	@Override
 	public Filter createFilter() {
+		if (componentIds == null) return null;
 		final Long[] array = FluentIterable.from(newHashSet(componentIds)).transform(new StringToLongFunction()).toArray(Long.class);
 		return SnomedMappings.id().createFilter(array);
 	}
