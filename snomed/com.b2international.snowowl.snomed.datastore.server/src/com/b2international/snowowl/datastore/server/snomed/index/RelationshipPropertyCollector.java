@@ -15,8 +15,6 @@
  */
 package com.b2international.snowowl.datastore.server.snomed.index;
 
-import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.COMPONENT_MODULE_ID;
-import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.RELATIONSHIP_ATTRIBUTE_ID;
 import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.RELATIONSHIP_OBJECT_ID;
 import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.RELATIONSHIP_UNIVERSAL;
 import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.RELATIONSHIP_VALUE_ID;
@@ -30,7 +28,7 @@ import org.apache.lucene.index.NumericDocValues;
 import bak.pcj.LongCollection;
 
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
-import com.b2international.snowowl.snomed.datastore.browser.SnomedIndexQueries;
+import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedMappings;
 
 /**
  * Class for collecting SNOMED CT relationship properties.
@@ -65,9 +63,9 @@ public class RelationshipPropertyCollector extends ComponentPropertyCollector {
 	@Override
 	protected void initDocValues(final AtomicReader leafReader) throws IOException {
 		super.initDocValues(leafReader);
-		characteristicTypeIds = leafReader.getNumericDocValues(SnomedIndexQueries.RELATIONSHIP_CHARACTERISTIC_TYPE_ID);
-		moduleIds = leafReader.getNumericDocValues(COMPONENT_MODULE_ID);
-		typeIds = leafReader.getNumericDocValues(RELATIONSHIP_ATTRIBUTE_ID);
+		characteristicTypeIds = SnomedMappings.relationshipCharacteristicType().getDocValues(leafReader);
+		moduleIds = SnomedMappings.module().getDocValues(leafReader);
+		typeIds = SnomedMappings.relationshipType().getDocValues(leafReader);
 		sourceIds = leafReader.getNumericDocValues(RELATIONSHIP_OBJECT_ID);
 		destinationIds = leafReader.getNumericDocValues(RELATIONSHIP_VALUE_ID);
 		modifierFlags = leafReader.getNumericDocValues(RELATIONSHIP_UNIVERSAL);

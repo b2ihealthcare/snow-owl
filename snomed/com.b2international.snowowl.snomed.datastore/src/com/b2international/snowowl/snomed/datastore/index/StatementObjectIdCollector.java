@@ -27,6 +27,7 @@ import bak.pcj.list.LongArrayList;
 
 import com.b2international.snowowl.datastore.index.AbstractDocsOutOfOrderCollector;
 import com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants;
+import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedMappings;
 
 /**
  * Collects all SNOMED CT relationship's source concept IDs where the statement's type ID and destination ID fulfills
@@ -85,7 +86,7 @@ public class StatementObjectIdCollector extends AbstractDocsOutOfOrderCollector 
 	@Override
 	protected void initDocValues(final AtomicReader leafReader) throws IOException {
 		sourceIdValues = leafReader.getNumericDocValues(SnomedIndexBrowserConstants.RELATIONSHIP_OBJECT_ID);
-		typeIdValues = leafReader.getNumericDocValues(SnomedIndexBrowserConstants.RELATIONSHIP_ATTRIBUTE_ID);
+		typeIdValues = SnomedMappings.relationshipType().getDocValues(leafReader);
 		destinationIdsValues = leafReader.getNumericDocValues(SnomedIndexBrowserConstants.RELATIONSHIP_VALUE_ID);
 	}
 

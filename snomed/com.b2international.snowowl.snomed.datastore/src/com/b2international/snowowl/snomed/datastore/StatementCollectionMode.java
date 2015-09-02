@@ -15,21 +15,16 @@
  */
 package com.b2international.snowowl.snomed.datastore;
 
-import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.RELATIONSHIP_ATTRIBUTE_ID;
-import static com.google.common.collect.Sets.newHashSet;
-
 import java.io.IOException;
 import java.text.MessageFormat;
-import java.util.Collection;
 
 import org.apache.lucene.index.AtomicReader;
 import org.apache.lucene.index.NumericDocValues;
 import org.apache.lucene.search.Query;
 
-import com.b2international.snowowl.datastore.index.field.ComponentIdLongField;
-import com.b2international.snowowl.datastore.index.query.IndexQueries;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
-import com.b2international.snowowl.snomed.datastore.browser.SnomedIndexQueries;
+import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedMappings;
+import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedQueryBuilder;
 
 /**
  * Enumerates the possible collection modes an array of {@link IsAStatement}s can be returned in.
@@ -61,7 +56,7 @@ public enum StatementCollectionMode {
 
 	WITH_RELATIONSHIP_IDS {
 		@Override public NumericDocValues getNumericDocValues(final AtomicReader leafReader) throws IOException {
-			return ComponentIdLongField.getNumericDocValues(leafReader);
+			return SnomedMappings.id().getDocValues(leafReader);
 		}
 
 		@Override public IsAStatementWithId createStatement(final long sourceId, final long destinationId, final long idOrKey) {
@@ -81,7 +76,7 @@ public enum StatementCollectionMode {
 		}
 		
 		@Override public String getIdValuesField() {
-			return RELATIONSHIP_ATTRIBUTE_ID;
+			return SnomedMappings.relationshipType().fieldName();
 		}
 
 		@Override public IsAStatement createStatement(final long sourceId, final long destinationId, final long idOrKey) {
@@ -102,7 +97,7 @@ public enum StatementCollectionMode {
 		}
 		
 		@Override public NumericDocValues getNumericDocValues(final AtomicReader leafReader) throws IOException {
-			return ComponentIdLongField.getNumericDocValues(leafReader);
+			return SnomedMappings.id().getDocValues(leafReader);
 		}
 		
 		@Override
@@ -124,7 +119,7 @@ public enum StatementCollectionMode {
 		}
 		
 		@Override public NumericDocValues getNumericDocValues(final AtomicReader leafReader) throws IOException {
-			return ComponentIdLongField.getNumericDocValues(leafReader);
+			return SnomedMappings.id().getDocValues(leafReader);
 		}
 		
 		@Override
@@ -172,18 +167,14 @@ public enum StatementCollectionMode {
 	 * Returns with the index query to collect all relevant relationships.
 	 */
 	public final Query getQuery() {
-		final Query baseQuery = SnomedIndexQueries.ACTIVE_RELATIONSHIPS_QUERY;
-		final Collection<Query> detailQueries = newHashSet();
+		final SnomedQueryBuilder query = SnomedMappings.newQuery().active().relationship();
 		if (getType() != null) {
-			detailQueries.add(SnomedIndexQueries.toRelationshipTypeQuery(getType()));
+			query.relationshipType(getType());
 		}
 		if (getCharacteristicType() != null) {
-			detailQueries.add(SnomedIndexQueries.toRelationshipCharacteristicTypeQuery(getCharacteristicType()));
+			query.relationshipCharacteristicType(getCharacteristicType());
 		}
-		if (!detailQueries.isEmpty()) {
-			return IndexQueries.and(baseQuery, IndexQueries.and(detailQueries.toArray(new Query[detailQueries.size()])));
-		}
-		return baseQuery;
+		return query.matchAll();
 	}
 
 	/**

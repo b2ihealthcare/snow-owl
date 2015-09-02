@@ -29,7 +29,8 @@ import com.b2international.commons.pcj.LongSets;
 import com.b2international.commons.pcj.LongSets.LongPredicate;
 import com.b2international.snowowl.core.api.index.CommonIndexConstants;
 import com.b2international.snowowl.datastore.index.AbstractDocsOutOfOrderCollector;
-import com.b2international.snowowl.datastore.index.field.ComponentIdLongField;
+import com.b2international.snowowl.datastore.index.mapping.Mappings;
+import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedMappings;
 
 /**
  * Collector for gathering SNOMED CT component IDs and a human readable label for the component.
@@ -86,9 +87,9 @@ public class SnomedComponentLabelCollector extends AbstractDocsOutOfOrderCollect
 	}
 
 	@Override
-	protected void initDocValues(final AtomicReader leafReader) throws IOException {
-		idDocValues = ComponentIdLongField.getNumericDocValues(leafReader);
-		labelDocValues = leafReader.getBinaryDocValues(CommonIndexConstants.COMPONENT_LABEL);
+	protected void initDocValues(final AtomicReader reader) throws IOException {
+		idDocValues = SnomedMappings.id().getDocValues(reader);
+		labelDocValues = Mappings.label().getDocValues(reader);
 	}
 
 	@Override

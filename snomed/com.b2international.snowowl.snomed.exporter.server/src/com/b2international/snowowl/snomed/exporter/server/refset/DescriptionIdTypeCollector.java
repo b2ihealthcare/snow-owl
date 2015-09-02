@@ -20,12 +20,11 @@ import java.io.IOException;
 import org.apache.lucene.index.AtomicReader;
 import org.apache.lucene.index.NumericDocValues;
 
-import com.b2international.snowowl.datastore.index.AbstractDocsOutOfOrderCollector;
-import com.b2international.snowowl.datastore.index.field.ComponentIdLongField;
-import com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants;
-
 import bak.pcj.map.LongKeyLongMap;
 import bak.pcj.map.LongKeyLongOpenHashMap;
+
+import com.b2international.snowowl.datastore.index.AbstractDocsOutOfOrderCollector;
+import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedMappings;
 
 /**
  * Collector for gathering the description ID and the description type concept ID of a subset of SNOMED CT
@@ -54,8 +53,8 @@ public class DescriptionIdTypeCollector extends AbstractDocsOutOfOrderCollector 
 
 	@Override
 	protected void initDocValues(final AtomicReader leafReader) throws IOException {
-		descriptionIds = ComponentIdLongField.getNumericDocValues(leafReader);
-		typeIds = leafReader.getNumericDocValues(SnomedIndexBrowserConstants.DESCRIPTION_TYPE_ID);
+		descriptionIds = SnomedMappings.id().getDocValues(leafReader);
+		typeIds = SnomedMappings.descriptionType().getDocValues(leafReader);
 	}
 
 	@Override

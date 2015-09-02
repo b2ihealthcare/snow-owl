@@ -26,8 +26,8 @@ import bak.pcj.list.LongArrayList;
 import bak.pcj.list.LongList;
 
 import com.b2international.snowowl.datastore.index.AbstractDocsOutOfOrderCollector;
-import com.b2international.snowowl.datastore.index.field.ComponentIdLongField;
-import com.b2international.snowowl.datastore.index.field.ComponentStorageKeyField;
+import com.b2international.snowowl.datastore.index.mapping.Mappings;
+import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedMappings;
 
 /**
  * Custom collector for extracting SNOMED CT concept identifiers and the unique storage keys as primitive longs.
@@ -61,8 +61,8 @@ public class ConceptIdStorageKeyCollector extends AbstractDocsOutOfOrderCollecto
 
 	@Override
 	protected void initDocValues(final AtomicReader leafReader) throws IOException {
-		conceptIdValues = ComponentIdLongField.getNumericDocValues(leafReader);
-		storageKeyValues = ComponentStorageKeyField.getNumericDocValues(leafReader);
+		conceptIdValues = SnomedMappings.id().getDocValues(leafReader);
+		storageKeyValues = Mappings.storageKey().getDocValues(leafReader);
 	}
 
 	@Override
