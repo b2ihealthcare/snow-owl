@@ -56,8 +56,9 @@ public class CDOBranchMerger extends DefaultCDOMerger.PerFeature.ManyValued {
 	}
 
 	public void postProcess(final CDOTransaction transaction) {
-		if (delegate.postProcess(transaction) != null) {
-			throw new BranchMergeException("Conflicts detected while post-processing transaction on branch %s.", transaction.getBranch().getPathName());
+		Conflict conflict = delegate.postProcess(transaction);
+		if ( conflict != null) {
+			throw new BranchMergeException("Conflicts detected while post-processing transaction on branch %s: %s - CDOID %s.", transaction.getBranch().getPathName(), conflict.getClass().getSimpleName(), conflict.getID().toString());
 		}
 	}
 }
