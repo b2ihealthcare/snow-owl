@@ -133,7 +133,7 @@ public class BranchEventHandler extends ApiEventHandler {
 					final Branch rebased = target.rebase(source, event.getCommitMessage());
 					return new BranchReply(rebased);
 				} catch (BranchMergeException e) {
-					throw new ConflictException("Cannot rebase target '%s' onto source '%s'.", target.path(), source.path());
+					throw new ConflictException("Cannot rebase target '%s' with source '%s'.", target.path(), source.path(),e);
 				}
 			}
 			
