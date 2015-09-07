@@ -142,10 +142,14 @@ public class SnomedBrowserRestService extends AbstractSnomedRestService {
 			@RequestHeader(value="Accept-Language", defaultValue="en-US;q=0.8,en-GB;q=0.6", required=false) 
 			final String languageSetting,
 
+			@ApiParam(value="Stated or inferred form", allowableValues="stated, inferred")
+			@RequestParam(value="form", defaultValue="inferred")
+			final String form,
+			
 			final HttpServletRequest request) {
 
 		final IComponentRef ref = createComponentRef(branchPath, conceptId);
-		return delegate.getConceptChildren(ref, Collections.list(request.getLocales()));
+		return delegate.getConceptChildren(ref, Collections.list(request.getLocales()), "stated".equals(form));
 	}
 
 	@ApiOperation(

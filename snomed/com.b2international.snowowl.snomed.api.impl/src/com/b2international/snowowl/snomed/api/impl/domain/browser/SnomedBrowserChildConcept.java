@@ -26,7 +26,8 @@ public class SnomedBrowserChildConcept implements ISnomedBrowserChildConcept {
 	private DefinitionStatus definitionStatus;
 	private boolean active;
 	private String moduleId;
-	private boolean hasChild;
+	private boolean leafStated;
+	private boolean leafInferred;
 	private CharacteristicType characteristicType;
 
 	@Override
@@ -55,8 +56,13 @@ public class SnomedBrowserChildConcept implements ISnomedBrowserChildConcept {
 	}
 
 	@Override
-	public boolean getHasChild() {
-		return hasChild;
+	public boolean getIsLeafStated() {
+		return leafStated;
+	}
+	
+	@Override
+	public boolean getIsLeafInferred() {
+		return leafInferred;
 	}
 
 	@Override
@@ -84,8 +90,14 @@ public class SnomedBrowserChildConcept implements ISnomedBrowserChildConcept {
 		this.moduleId = moduleId;
 	}
 
-	public void setHasChild(final boolean hasChild) {
-		this.hasChild = hasChild;
+	@Override
+	public void setIsLeafStated(final boolean leafStated) {
+		this.leafStated = leafStated;
+	}
+	
+	@Override
+	public void setIsLeafInferred(final boolean leafInferred) {
+		this.leafInferred = leafInferred;
 	}
 
 	public void setCharacteristicType(final CharacteristicType characteristicType) {
@@ -94,7 +106,7 @@ public class SnomedBrowserChildConcept implements ISnomedBrowserChildConcept {
 
 	@Override
 	public String toString() {
-		final StringBuilder builder = new StringBuilder();
+		StringBuilder builder = new StringBuilder();
 		builder.append("SnomedBrowserChildConcept [conceptId=");
 		builder.append(conceptId);
 		builder.append(", fsn=");
@@ -105,8 +117,10 @@ public class SnomedBrowserChildConcept implements ISnomedBrowserChildConcept {
 		builder.append(active);
 		builder.append(", moduleId=");
 		builder.append(moduleId);
-		builder.append(", hasChild=");
-		builder.append(hasChild);
+		builder.append(", leafStated=");
+		builder.append(leafStated);
+		builder.append(", leafInferred=");
+		builder.append(leafInferred);
 		builder.append(", characteristicType=");
 		builder.append(characteristicType);
 		builder.append("]");

@@ -57,11 +57,11 @@ public abstract class FsnJoinerOperation<T> {
 	private Table<String, String, Acceptability> descriptionAcceptability;
 	private ImmutableBiMap<Locale, String> languageIdMap;
 
-	protected static SnomedIndexService getIndexService() {
+	private static SnomedIndexService getIndexService() {
 		return ApplicationContext.getServiceForClass(SnomedIndexService.class);
 	}
 
-	protected static SnomedTerminologyBrowser getTerminologyBrowser() {
+	private static SnomedTerminologyBrowser getTerminologyBrowser() {
 		return ApplicationContext.getServiceForClass(SnomedTerminologyBrowser.class);
 	}
 

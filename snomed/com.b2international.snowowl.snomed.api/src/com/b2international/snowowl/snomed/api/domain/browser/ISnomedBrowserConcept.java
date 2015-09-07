@@ -20,13 +20,10 @@ import java.util.List;
 /**
  * Represents a specific SNOMED CT concept, carrying information for use in the IHTSDO SNOMED CT Browser.
  */
-public interface ISnomedBrowserConcept extends ISnomedBrowserComponent, IConceptIdWithFsnProvider, IDefinitionStatusProvider {
+public interface ISnomedBrowserConcept extends ISnomedBrowserComponent, IConceptIdWithFsnProvider, IDefinitionStatusProvider, TaxonomyNode {
 
 	/** @return the Preferred Term of this concept for the requested language code and dialect */
 	String getPreferredSynonym();
-	
-	/** @return {@code true} if this concept has no children in the inferred view of the tree, {@code false} otherwise */
-	boolean getIsLeafInferred();
 	
 	/** @return the list of descriptions associated with this concept */
 	List<ISnomedBrowserDescription> getDescriptions();

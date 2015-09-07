@@ -30,6 +30,7 @@ public class SnomedBrowserConcept extends SnomedBrowserComponent implements ISno
 	private DefinitionStatus definitionStatus;
 	private String preferredSynonym;
 	private boolean leafInferred;
+	private boolean leafStated;
 	private List<ISnomedBrowserDescription> descriptions = ImmutableList.of();
 	private List<ISnomedBrowserRelationship> relationships = ImmutableList.of(); 
 
@@ -56,6 +57,11 @@ public class SnomedBrowserConcept extends SnomedBrowserComponent implements ISno
 	@Override
 	public boolean getIsLeafInferred() {
 		return leafInferred;
+	}
+	
+	@Override
+	public boolean getIsLeafStated() {
+		return leafStated;
 	}
 
 	@Override
@@ -87,6 +93,10 @@ public class SnomedBrowserConcept extends SnomedBrowserComponent implements ISno
 	public void setIsLeafInferred(final boolean leafInferred) {
 		this.leafInferred = leafInferred;
 	}
+	
+	public void setIsLeafStated(final boolean leafStated) {
+		this.leafStated = leafStated;
+	}
 
 	public void setDescriptions(final List<ISnomedBrowserDescription> descriptions) {
 		this.descriptions = descriptions;
@@ -109,6 +119,8 @@ public class SnomedBrowserConcept extends SnomedBrowserComponent implements ISno
 		builder.append(preferredSynonym);
 		builder.append(", leafInferred=");
 		builder.append(leafInferred);
+		builder.append(", leafStated=");
+		builder.append(leafStated);
 		builder.append(", descriptions=");
 		builder.append(descriptions);
 		builder.append(", relationships=");
