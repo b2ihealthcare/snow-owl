@@ -79,6 +79,10 @@ public abstract class FsnJoinerOperation<T> {
 
 	public final List<T> run() {
 		initConceptEntries();
+		if (conceptEntries.isEmpty()) {
+			return ImmutableList.of();
+		}
+
 		initFsnDataStructures();
 		return convertConceptEntries();
 	}
