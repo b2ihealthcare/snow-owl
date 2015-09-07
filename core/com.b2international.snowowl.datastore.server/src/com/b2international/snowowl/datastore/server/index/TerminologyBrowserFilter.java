@@ -229,8 +229,7 @@ public class TerminologyBrowserFilter<E extends IIndexEntry> {
 		componentMap.put(componentId, createResultObject(branchPath, doc));
 		
 		Collection<String> superTypeIds = componentIdParentComponentIdMap.get(componentId);
-		
-		if (null == superTypeIds) {
+		if (!componentIdParentComponentIdMap.containsKey(componentId)) {
 			superTypeIds = getSuperTypeIds(branchPath, componentId);
 			componentIdParentComponentIdMap.putAll(componentId, superTypeIds);
 		}
@@ -251,16 +250,14 @@ public class TerminologyBrowserFilter<E extends IIndexEntry> {
 			}
 
 			if (componentMap.containsKey(parentId)) {
-				final SetMultimap<String, String> map = subTypeMap;
-				map.put(parentId, componentId);
-				final SetMultimap<String, String> map1 = superTypeMap;
-				map1.put(componentId, parentId);
+				subTypeMap.put(parentId, componentId);
+				superTypeMap.put(componentId, parentId);
 				continue;
 			}
 
 			Collection<String> parentSuperTypeIds = componentIdParentComponentIdMap.get(parentId);
 			
-			if (null == parentSuperTypeIds) {
+			if (!componentIdParentComponentIdMap.containsKey(parentId)) {
 				parentSuperTypeIds = getSuperTypeIds(branchPath, parentId);
 				componentIdParentComponentIdMap.putAll(parentId, parentSuperTypeIds);
 			}
@@ -294,7 +291,7 @@ public class TerminologyBrowserFilter<E extends IIndexEntry> {
 	private boolean trimTopLevels(final String candidateId, final int level) {
 
 		// Works from bottom to top
-		if (level >= 1) {
+		if (level >= 0) {
 			final Set<String> childrenIds = subTypeMap.get(candidateId);
 			final Iterator<String> childItr = childrenIds.iterator();
 			while (childItr.hasNext()) {
