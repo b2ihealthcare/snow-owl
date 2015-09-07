@@ -185,7 +185,7 @@ public abstract class AbstractSnomedTaxonomyBuilder implements ISnomedTaxonomyBu
 	 * @see com.b2international.snowowl.snomed.datastore.index.ISnomedTaxonomyBuilder#addEdge(com.b2international.snowowl.snomed.datastore.index.ISnomedTaxonomyBuilder.TaxonomyEdge)
 	 */
 	@Override
-	public void addEdge(final TaxonomyEdge edge) {
+	public void addEdge(final TaxonomyBuilderEdge edge) {
 		Preconditions.checkNotNull(edge, "Taxonomy edge argument cannot be null.");
 		
 		if (!edge.isValid()) { //ignore non IS_A relationships
@@ -212,7 +212,7 @@ public abstract class AbstractSnomedTaxonomyBuilder implements ISnomedTaxonomyBu
 	 * @see com.b2international.snowowl.snomed.datastore.index.ISnomedTaxonomyBuilder#addNode(com.b2international.snowowl.snomed.datastore.index.ISnomedTaxonomyBuilder.TaxonomyNode)
 	 */
 	@Override
-	public void addNode(final TaxonomyNode node) {
+	public void addNode(final TaxonomyBuilderNode node) {
 		Preconditions.checkNotNull(node, "Taxonomy node argument cannot be null.");
 		
 		if (!node.isCurrent()) {
@@ -247,7 +247,7 @@ public abstract class AbstractSnomedTaxonomyBuilder implements ISnomedTaxonomyBu
 	 * @see com.b2international.snowowl.snomed.datastore.index.ISnomedTaxonomyBuilder#removeEdge(com.b2international.snowowl.snomed.datastore.index.ISnomedTaxonomyBuilder.TaxonomyEdge)
 	 */
 	@Override
-	public void removeEdge(final TaxonomyEdge edge) {
+	public void removeEdge(final TaxonomyBuilderEdge edge) {
 		
 		Preconditions.checkNotNull(edge, "Taxonomy edge argument cannot be null.");
 		
@@ -265,7 +265,7 @@ public abstract class AbstractSnomedTaxonomyBuilder implements ISnomedTaxonomyBu
 	 * @see com.b2international.snowowl.snomed.datastore.index.ISnomedTaxonomyBuilder#removeNode(com.b2international.snowowl.snomed.datastore.index.ISnomedTaxonomyBuilder.TaxonomyNode)
 	 */
 	@Override
-	public void removeNode(final TaxonomyNode node) {
+	public void removeNode(final TaxonomyBuilderNode node) {
 
 		Preconditions.checkNotNull(node, "Taxonomy node argument cannot be null.");
 		

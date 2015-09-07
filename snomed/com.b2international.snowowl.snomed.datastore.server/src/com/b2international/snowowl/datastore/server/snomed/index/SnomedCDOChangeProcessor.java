@@ -131,8 +131,8 @@ import com.b2international.snowowl.snomed.datastore.index.update.ParentageUpdate
 import com.b2international.snowowl.snomed.datastore.index.update.ReferenceSetMembershipUpdater;
 import com.b2international.snowowl.snomed.datastore.services.ISnomedComponentService;
 import com.b2international.snowowl.snomed.datastore.taxonomy.ISnomedTaxonomyBuilder;
-import com.b2international.snowowl.snomed.datastore.taxonomy.ISnomedTaxonomyBuilder.TaxonomyEdge;
-import com.b2international.snowowl.snomed.datastore.taxonomy.ISnomedTaxonomyBuilder.TaxonomyNode;
+import com.b2international.snowowl.snomed.datastore.taxonomy.ISnomedTaxonomyBuilder.TaxonomyBuilderEdge;
+import com.b2international.snowowl.snomed.datastore.taxonomy.ISnomedTaxonomyBuilder.TaxonomyBuilderNode;
 import com.b2international.snowowl.snomed.datastore.taxonomy.SnomedTaxonomyBuilder;
 import com.b2international.snowowl.snomed.datastore.taxonomy.SnomedTaxonomyBuilderRunnable;
 import com.b2international.snowowl.snomed.mrcm.AttributeConstraint;
@@ -1258,8 +1258,8 @@ public class SnomedCDOChangeProcessor implements ICDOChangeProcessor {
 		}
 		
 		/*creates a taxonomy edge instance based on the given SNOMED CT relationship*/
-		private TaxonomyEdge createEdge(final Relationship relationship) {
-			return new TaxonomyEdge() {
+		private TaxonomyBuilderEdge createEdge(final Relationship relationship) {
+			return new TaxonomyBuilderEdge() {
 				@Override public boolean isCurrent() {
 					return relationship.isActive();
 				}
@@ -1279,8 +1279,8 @@ public class SnomedCDOChangeProcessor implements ICDOChangeProcessor {
 		}
 		
 		/*creates a taxonomy edge instance based on the given SNOMED CT relationship*/
-		private TaxonomyEdge createEdge(final SnomedRelationshipIndexEntry relationship) {
-			return new TaxonomyEdge() {
+		private TaxonomyBuilderEdge createEdge(final SnomedRelationshipIndexEntry relationship) {
+			return new TaxonomyBuilderEdge() {
 				@Override public boolean isCurrent() {
 					return relationship.isActive();
 				}
@@ -1300,8 +1300,8 @@ public class SnomedCDOChangeProcessor implements ICDOChangeProcessor {
 		}
 		
 		/*creates and returns with a new taxonomy node instance based on the given SNOMED CT concept*/
-		private TaxonomyNode createNode(final Concept concept) {
-			return new TaxonomyNode() {
+		private TaxonomyBuilderNode createNode(final Concept concept) {
+			return new TaxonomyBuilderNode() {
 				@Override public boolean isCurrent() {
 					return concept.isActive();
 				}
@@ -1312,8 +1312,8 @@ public class SnomedCDOChangeProcessor implements ICDOChangeProcessor {
 		}
 
 		/*creates and returns with a new taxonomy node instance based on the given SNOMED CT concept*/
-		private TaxonomyNode createNode(final SnomedConceptIndexEntry concept) {
-			return new TaxonomyNode() {
+		private TaxonomyBuilderNode createNode(final SnomedConceptIndexEntry concept) {
+			return new TaxonomyBuilderNode() {
 				@Override public boolean isCurrent() {
 					return concept.isActive();
 				}

@@ -122,7 +122,7 @@ public class Rf2BasedSnomedTaxonomyBuilder extends AbstractSnomedTaxonomyBuilder
 		parseFile(conceptFilePath, 5, new RecordParserCallback<String>() {
 			@Override public void handleRecord(final int recordCount, final List<String> record) {
 				
-				final TaxonomyNode node = new TaxonomyNode() {
+				final TaxonomyBuilderNode node = new TaxonomyBuilderNode() {
 					@Override public boolean isCurrent() { return ACTIVE_STATUS.equals(record.get(2)); }
 					@Override public String getId() { return record.get(0); }
 				};
@@ -141,7 +141,7 @@ public class Rf2BasedSnomedTaxonomyBuilder extends AbstractSnomedTaxonomyBuilder
 		parseFile(relationshipFilePath, 10, new RecordParserCallback<String>() {
 			@Override public void handleRecord(final int recordCount, final List<String> record) {
 				
-				addEdge(new TaxonomyEdge() {
+				addEdge(new TaxonomyBuilderEdge() {
 					@Override public boolean isCurrent() {
 						return ACTIVE_STATUS.equals(record.get(2));
 					}

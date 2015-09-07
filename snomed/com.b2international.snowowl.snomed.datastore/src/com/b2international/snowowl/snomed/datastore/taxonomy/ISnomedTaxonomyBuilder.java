@@ -32,17 +32,17 @@ public interface ISnomedTaxonomyBuilder {
 
 	ISnomedTaxonomyBuilder build();
 
-	void addEdge(final TaxonomyEdge edge);
+	void addEdge(final TaxonomyBuilderEdge edge);
 
-	void addNode(final TaxonomyNode node);
+	void addNode(final TaxonomyBuilderNode node);
 
 	boolean containsNode(final String nodeId);
 
 	boolean containsEdge(final String edgeId);
 
-	void removeEdge(final TaxonomyEdge edge);
+	void removeEdge(final TaxonomyBuilderEdge edge);
 
-	void removeNode(final TaxonomyNode node);
+	void removeNode(final TaxonomyBuilderNode node);
 
 	Pair<LongSet, LongSet> difference(final ISnomedTaxonomyBuilder other);
 
@@ -93,11 +93,11 @@ public interface ISnomedTaxonomyBuilder {
 		
 	}
 	
-	public static interface TaxonomyNode extends TaxonomyItem {
+	public static interface TaxonomyBuilderNode extends TaxonomyItem {
 		
 	}
 	
-	public static interface TaxonomyEdge extends TaxonomyItem {
+	public static interface TaxonomyBuilderEdge extends TaxonomyItem {
 		String getSoureId();
 		String getDestinationId();
 		boolean isValid();
