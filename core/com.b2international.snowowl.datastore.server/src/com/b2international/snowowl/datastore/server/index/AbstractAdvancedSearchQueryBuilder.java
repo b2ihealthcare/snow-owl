@@ -160,6 +160,6 @@ public abstract class AbstractAdvancedSearchQueryBuilder {
 
 	protected abstract short getTerminologyComponentId();
 
-	// XXX: unfortunately, method implementations don't always use 1 for true 
+	// XXX: unfortunately, method implementations don't always use 1 for true
 	protected abstract int toIntValue(boolean value);
 }

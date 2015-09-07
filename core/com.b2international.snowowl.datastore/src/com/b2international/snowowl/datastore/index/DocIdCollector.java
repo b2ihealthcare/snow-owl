@@ -71,6 +71,7 @@ public class DocIdCollector extends Collector {
 	@Override
 	public void collect(int doc) throws IOException {
 		docIds.set(docBase + doc);
+		
 		++numDocIds;
 	}
 

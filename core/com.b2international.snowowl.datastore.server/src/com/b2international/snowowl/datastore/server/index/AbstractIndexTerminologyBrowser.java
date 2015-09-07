@@ -329,6 +329,10 @@ public abstract class AbstractIndexTerminologyBrowser<E extends IIndexEntry> ext
 		query.add(getComponentIdQuery(componentId), Occur.MUST);
 		query.add(getTerminologyComponentTypeQuery(), Occur.MUST);
 
+		return exists(branchPath, query);
+	}
+
+	protected boolean exists(final IBranchPath branchPath, final Query query) {
 		return service.getTotalHitCount(branchPath, query) > 0;
 	}
 
