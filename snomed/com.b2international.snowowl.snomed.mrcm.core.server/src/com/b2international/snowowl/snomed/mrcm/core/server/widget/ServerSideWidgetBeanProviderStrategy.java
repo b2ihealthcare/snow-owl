@@ -31,7 +31,6 @@ import com.b2international.snowowl.core.api.index.IIndexQueryAdapter;
 import com.b2international.snowowl.datastore.server.snomed.index.SnomedIndexServerService;
 import com.b2international.snowowl.snomed.datastore.SnomedConceptIndexEntry;
 import com.b2international.snowowl.snomed.datastore.SnomedRefSetUtil;
-import com.b2international.snowowl.snomed.datastore.SnomedTaxonomyService;
 import com.b2international.snowowl.snomed.datastore.SnomedTerminologyBrowser;
 import com.b2international.snowowl.snomed.datastore.index.SnomedDescriptionContainerQueryAdapter;
 import com.b2international.snowowl.snomed.datastore.index.SnomedDescriptionIndexQueryAdapter;
@@ -103,18 +102,15 @@ public class ServerSideWidgetBeanProviderStrategy extends WidgetBeanProviderStra
 
 	@Override
 	protected Collection<SnomedRelationship> getRelationships() {
-		final SnomedTaxonomyService taxonomyService = getServiceForClass(SnomedTaxonomyService.class);
-		final int limit = taxonomyService.getOutboundConceptsCount(branchPath, conceptId) + taxonomyService.getSupertypesCount(branchPath, conceptId);
+		final int searchStyle = SnomedRelationshipIndexQueryAdapter.SEARCH_SOURCE_ID | SnomedRelationshipIndexQueryAdapter.SEARCH_ACTIVE_RELATIONSHIPS_ONLY;
+		final SnomedRelationshipIndexQueryAdapter adapter = new SnomedRelationshipIndexQueryAdapter(conceptId, searchStyle);
+		final int limit = getIndexService().getTotalHitCount(branchPath, adapter.createQuery());
 		
 		if (limit < 1) {
 			return Collections.emptySet();
+		} else {
+			return Collections2.transform(getIndexService().search(branchPath, adapter, limit), SnomedRelationship.IndexObjectConverterFunction.INSTANCE);
 		}
-		
-		final int searchStyle = SnomedRelationshipIndexQueryAdapter.SEARCH_SOURCE_ID
-				| SnomedRelationshipIndexQueryAdapter.SEARCH_ACTIVE_RELATIONSHIPS_ONLY;
-		
-		final SnomedRelationshipIndexQueryAdapter adapter = new SnomedRelationshipIndexQueryAdapter(conceptId, searchStyle);
-		return Collections2.transform(getIndexService().search(branchPath, adapter, limit), SnomedRelationship.IndexObjectConverterFunction.INSTANCE);
 	}
 
 	@Override
