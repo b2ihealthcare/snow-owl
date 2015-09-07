@@ -46,12 +46,6 @@ import org.apache.lucene.search.Query;
 import org.apache.lucene.search.ReferenceManager;
 import org.apache.lucene.search.TopDocs;
 
-import bak.pcj.LongCollection;
-import bak.pcj.map.LongKeyLongMap;
-import bak.pcj.map.LongKeyLongOpenHashMap;
-import bak.pcj.set.LongOpenHashSet;
-import bak.pcj.set.LongSet;
-
 import com.b2international.commons.CompareUtils;
 import com.b2international.commons.graph.GraphUtils;
 import com.b2international.commons.pcj.LongSets;
@@ -91,6 +85,12 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Multimaps;
+
+import bak.pcj.LongCollection;
+import bak.pcj.map.LongKeyLongMap;
+import bak.pcj.map.LongKeyLongOpenHashMap;
+import bak.pcj.set.LongOpenHashSet;
+import bak.pcj.set.LongSet;
 
 /**
  * Index-based SNOMED CT Terminology browser implementation.
@@ -208,8 +208,10 @@ public class SnomedServerTerminologyBrowser extends AbstractIndexTerminologyBrow
 	}
 
 	private Query getAllSubTypesQuery(final String id) {
-		checkNotNull(id, "ID must not be null.");
-		return SnomedMappings.newQuery().ancestor(id).and(getSubTypesQuery(id)).matchAll();
+		return SnomedMappings.newQuery()
+				.concept()
+				.and(SnomedMappings.newQuery().ancestor(id).parent(id).matchAny())
+				.matchAll();
 	}
 	
 	@Override
