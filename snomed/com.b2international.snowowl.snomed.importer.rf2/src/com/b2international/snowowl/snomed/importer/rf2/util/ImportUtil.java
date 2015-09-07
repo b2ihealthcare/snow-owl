@@ -74,6 +74,7 @@ import com.b2international.snowowl.snomed.datastore.ISnomedImportPostProcessor;
 import com.b2international.snowowl.snomed.datastore.SnomedEditingContext;
 import com.b2international.snowowl.snomed.datastore.SnomedRefSetBrowser;
 import com.b2international.snowowl.snomed.datastore.SnomedTerminologyBrowser;
+import com.b2international.snowowl.snomed.datastore.StatementCollectionMode;
 import com.b2international.snowowl.snomed.datastore.index.refset.SnomedRefSetIndexEntry;
 import com.b2international.snowowl.snomed.importer.net4j.ImportConfiguration;
 import com.b2international.snowowl.snomed.importer.net4j.SnomedImportResult;
@@ -406,7 +407,8 @@ public final class ImportUtil {
 		validationUtil.postValidate(subMonitor.newChild(1, SubMonitor.SUPPRESS_NONE));
 
 		result.getValidationDefects().addAll(validationUtil.getDefects());
-		result.getValidationDefects().addAll(new SnomedTaxonomyValidator(branchPath, configuration).validate());
+		result.getValidationDefects().addAll(new SnomedTaxonomyValidator(branchPath, configuration, StatementCollectionMode.INFERRED_ISA_ONLY).validate());
+		result.getValidationDefects().addAll(new SnomedTaxonomyValidator(branchPath, configuration, StatementCollectionMode.STATED_ISA_ONLY).validate());
 		
 		if (!isEmpty(result.getValidationDefects())) {
 

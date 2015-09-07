@@ -41,7 +41,6 @@ import org.slf4j.Logger;
 import com.b2international.commons.Pair;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.datastore.server.snomed.index.init.Rf2BasedSnomedTaxonomyBuilder;
-import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.datastore.SnomedTerminologyBrowser;
 import com.b2international.snowowl.snomed.datastore.StatementCollectionMode;
 import com.b2international.snowowl.snomed.datastore.services.SnomedConceptNameProvider;
@@ -64,10 +63,12 @@ public class SnomedTaxonomyValidator {
 	
 	private final IBranchPath branchPath;
 	private final ImportConfiguration configuration;
+	private final StatementCollectionMode mode;
 
-	public SnomedTaxonomyValidator(final IBranchPath branchPath, final ImportConfiguration configuration) {
+	public SnomedTaxonomyValidator(final IBranchPath branchPath, final ImportConfiguration configuration, final StatementCollectionMode mode) {
 		this.configuration = checkNotNull(configuration, "configuration");
 		this.branchPath = checkNotNull(branchPath, "branchPath");
+		this.mode = checkNotNull(mode, "mode");
 	}
 	
 	/**
@@ -209,8 +210,8 @@ public class SnomedTaxonomyValidator {
 	}
 
 	private Rf2BasedSnomedTaxonomyBuilder createBuilder() {
-		final AbstractSnomedTaxonomyBuilder original = new SnomedTaxonomyBuilder(branchPath, StatementCollectionMode.INFERRED_ISA_ONLY);
-		return newValidationInstance(original, Concepts.INFERRED_RELATIONSHIP);
+		final AbstractSnomedTaxonomyBuilder original = new SnomedTaxonomyBuilder(branchPath, mode);
+		return newValidationInstance(original, mode.getCharacteristicType());
 	}
 
 	private boolean isCoreImport() {
