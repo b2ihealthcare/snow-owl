@@ -22,7 +22,6 @@ import org.eclipse.emf.cdo.transaction.CDOTransaction;
 import com.b2international.snowowl.core.ComponentIdentifierPair;
 import com.b2international.snowowl.snomed.Concept;
 import com.b2international.snowowl.snomed.Relationship;
-import com.b2international.snowowl.snomed.SnomedConstants;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.snomed.datastore.SnomedConceptLookupService;
@@ -30,6 +29,7 @@ import com.b2international.snowowl.snomed.datastore.SnomedEditingContext;
 import com.b2international.snowowl.snomed.datastore.SnomedRelationshipLookupService;
 import com.b2international.snowowl.snomed.datastore.StatementFragment;
 import com.b2international.snowowl.snomed.datastore.id.SnomedIdentifiers;
+import com.b2international.snowowl.snomed.datastore.model.SnomedModelExtensions;
 import com.b2international.snowowl.snomed.reasoner.server.diff.OntologyChange.Nature;
 import com.b2international.snowowl.snomed.reasoner.server.diff.OntologyChangeProcessor;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedConcreteDataTypeRefSet;
@@ -38,26 +38,17 @@ import com.google.common.collect.Maps;
 
 /**
  * Applies changes related to relationships using the specified SNOMED CT editing context.
- * 
  */
 public class RelationshipPersister extends OntologyChangeProcessor<StatementFragment> {
 
 	private final Concept inferredRelationshipConcept;
-	
 	private final Concept existentialRelationshipConcept;
-	
 	private final Concept universalRelationshipConcept;
-	
 	private final SnomedConceptLookupService conceptLookupService;
-	
 	private final SnomedRelationshipLookupService relationshipLookupService;
-
 	private final CDOTransaction transaction;
-
 	private final SnomedEditingContext context;
-	
 	private final Map<Long, Concept> relationshipTypeConcepts;
-	
 	private final Nature nature;
 	
 	public RelationshipPersister(final SnomedEditingContext context, final Nature nature) {
@@ -83,72 +74,8 @@ public class RelationshipPersister extends OntologyChangeProcessor<StatementFrag
 			return;
 		}
 		
-		final Concept sourceConcept = conceptLookupService.getComponent(Long.toString(conceptId), transaction);
-		final Iterable<Relationship> outboundRelationships = sourceConcept.getOutboundRelationships();
-		
-		/*
-		 * Assume that we're going to deprecate the last IS A relationship with
-		 * this removal and thus the concept needs to be deactivated
-		 */
-		boolean lastIsARelationshipRemoved = true;
-		
-		Relationship foundRelationship = null;
-		
-		for (final Relationship rel : outboundRelationships) {
-			
-			if (rel.getId().equals(Long.toString(removedEntry.getStatementId()))) {
-				
-				// Found the relationship we were looking for
-				// XXX: Check for duplicate ids?
-				foundRelationship = rel;
-			
-			} else {
-
-				final String typeConceptId = rel.getType().getId();
-
-				// Another active IS A relationship found, no need to deactivate the concept
-				if (lastIsARelationshipRemoved && rel.isActive() && SnomedConstants.Concepts.IS_A.equals(typeConceptId)) {
-					lastIsARelationshipRemoved = false;
-				}
-			}
-			
-			if (!lastIsARelationshipRemoved && foundRelationship != null) {
-				/*
-				 * We know that we're not removing the last IS A and we also
-				 * found the relationship in question, no need to look further
-				 */
-				break;
-			}
-		}
-		
-		if (foundRelationship != null) {
-			
-			/*
-			 * Deactivate relationship if it was active and it's not the last IS
-			 * A removed (leaves inactive relationships inactive and last active
-			 * IS A relationships active)
-			 */
-			if (!lastIsARelationshipRemoved && foundRelationship.isActive()) {
-				foundRelationship.setActive(false);
-				foundRelationship.unsetEffectiveTime();
-			}
-			
-			/*
-			 * Leave the relationship as is and deactivate the concept instead
-			 * if the relationship is the last IS A
-			 */
-			if (lastIsARelationshipRemoved && sourceConcept.isActive()) {
-				sourceConcept.setActive(false);
-				sourceConcept.unsetEffectiveTime();
-			}
-			
-			for (final SnomedConcreteDataTypeRefSetMember member : foundRelationship.getConcreteDomainRefSetMembers()) {
-				if (member.isActive()) {
-					member.setActive(false);
-					member.unsetEffectiveTime();
-				}
-			}
-		}
+		final Relationship relationship = (Relationship) context.lookup(removedEntry.getStorageKey());
+		SnomedModelExtensions.removeOrDeactivate(relationship);
 	}
 	
 	@Override
