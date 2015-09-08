@@ -82,14 +82,14 @@ public class StatementFragmentCollector extends AbstractDocsOutOfOrderCollector 
 		final long sourceId = sourceIdValues.get(docId);
 
 		final StatementFragment statement = new StatementFragment(
-			idValues.get(docId), //relationship ID
-			storageKeyValues.get(docId), // storage key
-			destinationIdValues.get(docId), //destination ID
-			typeIdValues.get(docId),  //type ID
-			getBooleanValue(destinationNegatedValues, docId), //destination negated
-			getBooleanValue(universalValues, docId), //universal restriction
-			(byte) groupValues.get(docId), //group
-			(byte) unionGroupValues.get(docId) //union group
+			typeIdValues.get(docId),
+			destinationIdValues.get(docId), 
+			getBooleanValue(destinationNegatedValues, docId),
+			(byte) groupValues.get(docId),
+			(byte) unionGroupValues.get(docId),
+			getBooleanValue(universalValues, docId),
+			idValues.get(docId),
+			storageKeyValues.get(docId)
 		);
 
 		if (!statementMap.containsKey(sourceId)) {

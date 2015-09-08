@@ -318,7 +318,17 @@ public final class DeltaReasonerTaxonomyBuilder extends AbstractReasonerTaxonomy
 		final byte group = (byte) relationship.getGroup();
 		final byte unionGroup = (byte) relationship.getUnionGroup();
 		
-		final StatementFragment fragment = new StatementFragment(statementId, storageKey, destinationId, typeId, destinationNegated, universal, group, unionGroup);
+		final StatementFragment fragment = new StatementFragment(
+				typeId, 
+				destinationId, 
+				destinationNegated, 
+				group, 
+				unionGroup, 
+				universal, 
+				statementId, 
+				storageKey
+		);
+
 		addToMultimap(conceptIdToStatements, sourceId, fragment);
 	}
 
