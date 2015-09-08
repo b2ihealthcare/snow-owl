@@ -69,7 +69,6 @@ import static java.util.Collections.emptyMap;
 import static java.util.Collections.emptySet;
 import static java.util.Collections.unmodifiableMap;
 import static java.util.Collections.unmodifiableSet;
-import static org.apache.lucene.search.BooleanClause.Occur.MUST;
 import static org.apache.lucene.search.BooleanClause.Occur.SHOULD;
 
 import java.io.IOException;
@@ -965,7 +964,6 @@ public class SnomedComponentService implements ISnomedComponentService, IPostSto
 		final Set<SnomedRefSetType> types = EnumSet.noneOf(SnomedRefSetType.class);
 
 		
-		final BooleanQuery query = new BooleanQuery(true);
 
 		final SnomedQueryBuilder typeQuery = SnomedMappings.newQuery().memberRefSetType(typeOrdinal);
 		types.add(SnomedRefSetType.get(typeOrdinal));
@@ -975,7 +973,6 @@ public class SnomedComponentService implements ISnomedComponentService, IPostSto
 			types.add(SnomedRefSetType.get(otherType));
 		}
 		
-		query.add(typeQuery.matchAny(), MUST); // at least one of the type queries have to match
 		
 		final SnomedQueryBuilder idQuery = SnomedMappings.newQuery();
 		idQuery.memberReferencedComponentId(componentId);
@@ -987,7 +984,10 @@ public class SnomedComponentService implements ISnomedComponentService, IPostSto
 			}
 		}
 		
-		query.add(idQuery.matchAny(), MUST); //at least one of the ID queries have to match
+		final Query query = SnomedMappings.newQuery()
+				.and(typeQuery.matchAny()) // at least one of the type queries have to match
+				.and(idQuery.matchAny()) // at least one of the ID queries have to match
+				.matchAll();
 		
 		@SuppressWarnings("rawtypes")
 		final IndexServerService indexService = getIndexServerService();

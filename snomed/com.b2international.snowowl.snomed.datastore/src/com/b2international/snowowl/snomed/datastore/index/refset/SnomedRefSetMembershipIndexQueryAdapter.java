@@ -23,20 +23,15 @@ import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
 
 import java.io.Serializable;
-import java.util.ArrayList;
 import java.util.List;
-import java.util.StringTokenizer;
 
 import org.apache.lucene.document.Document;
-import org.apache.lucene.index.Term;
 import org.apache.lucene.queries.BooleanFilter;
 import org.apache.lucene.search.BooleanClause.Occur;
-import org.apache.lucene.search.BooleanQuery;
 import org.apache.lucene.search.Filter;
 import org.apache.lucene.search.FilteredQuery;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.QueryWrapperFilter;
-import org.apache.lucene.search.TermQuery;
 
 import com.b2international.commons.CompareUtils;
 import com.b2international.commons.StringUtils;
@@ -80,10 +75,7 @@ public class SnomedRefSetMembershipIndexQueryAdapter extends SnomedRefSetMemberI
 		return new SnomedRefSetMembershipIndexQueryAdapter() {
 			private static final long serialVersionUID = -4427757769646167620L;
 			@Override public Query createQuery() {
-				final BooleanQuery query = new BooleanQuery();
-				final BooleanQuery fieldQuery = new BooleanQuery();
-				query.add(internalAddParsedClause(fieldQuery, SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_UUID, uuid), Occur.MUST);
-				return query;
+				return SnomedMappings.newQuery().field(SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_UUID, uuid).matchAll();
 			}
 		};
 	}
@@ -122,27 +114,11 @@ public class SnomedRefSetMembershipIndexQueryAdapter extends SnomedRefSetMemberI
 		return new SnomedRefSetMembershipIndexQueryAdapter() {
 			private static final long serialVersionUID = -861338476226441708L;
 			@Override public Query createQuery() {
-				final BooleanQuery query = new BooleanQuery();
-				query.add(createReferencedComponentTypeQuery(terminologyComponentId), Occur.MUST);
-				query.add(createRefSetTypeQuery(types), Occur.MUST);
-				return new FilteredQuery(query, createComponentIdFilter(referencedComponentIds));
-			}
-		};
-	}
-	
-	public static SnomedRefSetMembershipIndexQueryAdapter createFindByRefSetTypeQuery(
-			final String terminologyComponentId, final Iterable<SnomedRefSetType> types) {
-		
-		checkArgument(!CompareUtils.isEmpty(types), "SNOMED CT reference set type argument cannot be empty.");
-		checkNotNull(terminologyComponentId, "Terminology component ID argument cannot be null.");
-		
-		return new SnomedRefSetMembershipIndexQueryAdapter() {
-			private static final long serialVersionUID = -861338476226441708L;
-			@Override public Query createQuery() {
-				final BooleanQuery query = new BooleanQuery();
-				query.add(createReferencedComponentTypeQuery(terminologyComponentId), Occur.MUST);
-				query.add(createRefSetTypeQuery(types), Occur.MUST);
-				return query;
+				final Query query = SnomedMappings.newQuery()
+						.and(createReferencedComponentTypeQuery(terminologyComponentId))
+						.and(createRefSetTypeQuery(types))
+						.matchAll();
+				return new FilteredQuery(query, createMemberReferencedComponentIdFilter(referencedComponentIds));
 			}
 		};
 	}
@@ -162,7 +138,7 @@ public class SnomedRefSetMembershipIndexQueryAdapter extends SnomedRefSetMemberI
 						.memberRefSetId(languageRefSetId)
 						.field(REFERENCE_SET_MEMBER_ACCEPTABILITY_ID, Long.valueOf(Concepts.REFSET_DESCRIPTION_ACCEPTABILITY_PREFERRED))
 						.matchAll(),
-						createComponentIdFilter(descriptionIds));
+						createMemberReferencedComponentIdFilter(descriptionIds));
 			}
 		};
 	}
@@ -177,7 +153,11 @@ public class SnomedRefSetMembershipIndexQueryAdapter extends SnomedRefSetMemberI
 		return new SnomedRefSetMembershipIndexQueryAdapter() {
 			private static final long serialVersionUID = -861338476226441708L;
 			@Override public Query createQuery() {
-				return new FilteredQuery(SnomedMappings.newQuery().active().memberRefSetId(languageRefSetId).matchAll(), createComponentIdFilter(descriptionIds));
+				return new FilteredQuery(SnomedMappings.newQuery()
+						.active()
+						.memberRefSetId(languageRefSetId)
+						.matchAll(), 
+						createMemberReferencedComponentIdFilter(descriptionIds));
 			}
 		};
 	}
@@ -196,10 +176,11 @@ public class SnomedRefSetMembershipIndexQueryAdapter extends SnomedRefSetMemberI
 		return new SnomedRefSetMembershipIndexQueryAdapter() {
 			private static final long serialVersionUID = -861338476226441708L;
 			@Override public Query createQuery() {
-				final BooleanQuery query = new BooleanQuery();
-				query.add(createReferencedComponentTypeQuery(componentType), Occur.MUST);
-				query.add(createRefSetIdQuery(refSetIds), Occur.MUST);
-				return new FilteredQuery(query, createComponentIdFilter(referencedComponentIds));
+				final Query query = SnomedMappings.newQuery()
+							.and(createReferencedComponentTypeQuery(componentType))
+							.and(createRefSetIdQuery(refSetIds))
+							.matchAll();
+				return new FilteredQuery(query, createMemberReferencedComponentIdFilter(referencedComponentIds));
 			}
 		};
 	} 
@@ -210,10 +191,10 @@ public class SnomedRefSetMembershipIndexQueryAdapter extends SnomedRefSetMemberI
 		return new SnomedRefSetMembershipIndexQueryAdapter() {
 			private static final long serialVersionUID = -861338476226441708L;
 			@Override public Query createQuery() {
-				final BooleanQuery query = new BooleanQuery();
-				query.add(createRefSetIdQuery(refSetIds), Occur.MUST);
-				query.add(new TermQuery(new Term(REFERENCE_SET_MEMBER_EFFECTIVE_TIME, EffectiveTimes.UNSET_EFFECTIVE_TIME_LABEL)), Occur.MUST);
-				return query;
+				return SnomedMappings.newQuery()
+						.and(createRefSetIdQuery(refSetIds))
+						.field(REFERENCE_SET_MEMBER_EFFECTIVE_TIME, EffectiveTimes.UNSET_EFFECTIVE_TIME_LABEL)
+						.matchAll();
 			}
 		};
 	}
@@ -227,28 +208,29 @@ public class SnomedRefSetMembershipIndexQueryAdapter extends SnomedRefSetMemberI
 		return new SnomedRefSetMembershipIndexQueryAdapter() {
 			private static final long serialVersionUID = 615721958388015634L;
 			@Override public Query createQuery() {
-				final BooleanQuery query = new BooleanQuery();
-				query.add(createRefSetTypeQuery(Lists.newArrayList(SnomedRefSetType.COMPLEX_MAP, SnomedRefSetType.SIMPLE_MAP, SnomedRefSetType.EXTENDED_MAP)), Occur.MUST);
-				
-				final BooleanQuery componentIdQuery = new BooleanQuery();
 				
 				final Query referencedComponentQuery = SnomedMappings.newQuery()
 						.memberReferencedComponentId(componentId)
-						.and(createReferencedComponentTypeQuery(componentType)).matchAll();
+						.and(createReferencedComponentTypeQuery(componentType))
+						.matchAll();
 
-				final BooleanQuery specialFieldQuery = new BooleanQuery();
-				specialFieldQuery.add(createSpecialFieldTypeQuery(componentType, REFERENCE_SET_MEMBER_MAP_TARGET_COMPONENT_TYPE_ID), Occur.MUST);
-				specialFieldQuery.add(new TermQuery(new Term(REFERENCE_SET_MEMBER_MAP_TARGET_COMPONENT_ID, componentId)), Occur.MUST);
-				
-				componentIdQuery.add(referencedComponentQuery, Occur.SHOULD);
-				componentIdQuery.add(specialFieldQuery, Occur.SHOULD);
-				query.add(componentIdQuery, Occur.MUST);
-				return query;
+				final Query specialFieldQuery = SnomedMappings.newQuery()
+						.and(createSpecialFieldTypeQuery(componentType, REFERENCE_SET_MEMBER_MAP_TARGET_COMPONENT_TYPE_ID))
+						.field(REFERENCE_SET_MEMBER_MAP_TARGET_COMPONENT_ID, componentId)
+						.matchAll();
+
+				return SnomedMappings.newQuery()
+						.and(createRefSetTypeQuery(Lists.newArrayList(SnomedRefSetType.COMPLEX_MAP, SnomedRefSetType.SIMPLE_MAP, SnomedRefSetType.EXTENDED_MAP)))
+						.and(SnomedMappings.newQuery()
+								.and(referencedComponentQuery)
+								.and(specialFieldQuery)
+							.matchAny())
+						.matchAll();
 			}
 		};
 	} 
 	
-	private static Filter createComponentIdFilter(final Iterable<String> ids) {
+	private static Filter createMemberReferencedComponentIdFilter(final Iterable<String> ids) {
 		final BooleanFilter idFilter = new BooleanFilter();
 		for (final String id : ids) {
 			final Query query = SnomedMappings.newQuery().memberReferencedComponentId(id).matchAll();
@@ -281,23 +263,6 @@ public class SnomedRefSetMembershipIndexQueryAdapter extends SnomedRefSetMemberI
 	private static Query createSpecialFieldTypeQuery(final String terminologyComponentId, final String fieldName) {
 		final int componentTypeValue = CoreTerminologyBroker.getInstance().getTerminologyComponentIdAsInt(terminologyComponentId);
 		return SnomedMappings.newQuery().field(fieldName, componentTypeValue).matchAll();
-	}
-	
-	private static Query internalAddParsedClause(final BooleanQuery query, final String fieldName, final String searchString) {
-		final List<String> tokens = internalTokenize(searchString);
-		for (final String token : tokens) {
-			query.add(new TermQuery(new Term(fieldName, token)), Occur.MUST);
-		}
-		return query;
-	}
-
-	private static List<String> internalTokenize(final String searchString) {
-		final List<String> queryTokens = new ArrayList<String>();
-		final StringTokenizer tokenizer = new StringTokenizer(searchString);
-		while (tokenizer.hasMoreTokens()) {
-			queryTokens.add(tokenizer.nextToken());
-		}
-		return queryTokens;
 	}
 	
 	@Override
@@ -344,7 +309,7 @@ public class SnomedRefSetMembershipIndexQueryAdapter extends SnomedRefSetMemberI
 					
 					final List<String> ids = Lists.newArrayList(referencedComponentIds);
 					if (ids.size() > 1) {
-						return new FilteredQuery(query.matchAll(), createComponentIdFilter(referencedComponentIds));
+						return new FilteredQuery(query.matchAll(), createMemberReferencedComponentIdFilter(referencedComponentIds));
 					} else {
 						return query.memberReferencedComponentId(ids.get(0)).matchAll();
 					}

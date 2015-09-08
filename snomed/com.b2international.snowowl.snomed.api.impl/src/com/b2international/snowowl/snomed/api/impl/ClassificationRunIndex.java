@@ -25,29 +25,25 @@ import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.UUID;
 
-import com.b2international.snowowl.core.ApplicationContext;
-import com.b2international.snowowl.snomed.datastore.SnomedRelationshipIndexEntry;
-import com.b2international.snowowl.snomed.datastore.index.SnomedIndexService;
-import com.b2international.snowowl.snomed.datastore.index.SnomedRelationshipIndexQueryAdapter;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.Field.Store;
 import org.apache.lucene.document.StoredField;
 import org.apache.lucene.document.StringField;
 import org.apache.lucene.index.Term;
-import org.apache.lucene.search.BooleanClause.Occur;
-import org.apache.lucene.search.BooleanQuery;
 import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.ScoreDoc;
 import org.apache.lucene.search.Sort;
-import org.apache.lucene.search.TermQuery;
 import org.apache.lucene.search.TopDocs;
 
 import com.b2international.snowowl.api.impl.domain.StorageRef;
+import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.datastore.BranchPathUtils;
 import com.b2international.snowowl.datastore.index.DocIdCollector;
 import com.b2international.snowowl.datastore.index.DocIdCollector.DocIdsIterator;
+import com.b2international.snowowl.datastore.index.mapping.Mappings;
+import com.b2international.snowowl.datastore.index.mapping.QueryBuilderBase.QueryBuilder;
 import com.b2international.snowowl.datastore.store.SingleDirectoryIndexImpl;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.api.domain.RelationshipModifier;
@@ -65,6 +61,9 @@ import com.b2international.snowowl.snomed.api.impl.domain.classification.Equival
 import com.b2international.snowowl.snomed.api.impl.domain.classification.RelationshipChange;
 import com.b2international.snowowl.snomed.api.impl.domain.classification.RelationshipChangeList;
 import com.b2international.snowowl.snomed.datastore.SnomedConceptIndexEntry;
+import com.b2international.snowowl.snomed.datastore.SnomedRelationshipIndexEntry;
+import com.b2international.snowowl.snomed.datastore.index.SnomedIndexService;
+import com.b2international.snowowl.snomed.datastore.index.SnomedRelationshipIndexQueryAdapter;
 import com.b2international.snowowl.snomed.reasoner.classification.AbstractEquivalenceSet;
 import com.b2international.snowowl.snomed.reasoner.classification.EquivalenceSet;
 import com.b2international.snowowl.snomed.reasoner.classification.GetResultResponseChanges;
@@ -85,17 +84,17 @@ public class ClassificationRunIndex extends SingleDirectoryIndexImpl {
 	}
 
 	public List<IClassificationRun> getAllClassificationRuns(final StorageRef storageRef, final String userId) throws IOException {
-
-		final BooleanQuery query = new BooleanQuery(true);
-		query.add(new TermQuery(new Term("class", ClassificationRun.class.getSimpleName())), Occur.MUST);
-		query.add(new TermQuery(new Term("userId", userId)), Occur.MUST);
-		query.add(new TermQuery(new Term("branchPath", storageRef.getBranchPath())), Occur.MUST);
-
+		final Query query = Mappings.newQuery()
+				.field("class", ClassificationRun.class.getSimpleName())
+				.field("userId", userId)
+				.field("branchPath", storageRef.getBranchPath())
+				.matchAll();
+		
 		return this.<IClassificationRun>search(query, ClassificationRun.class);
 	}
 
 	public IClassificationRun getClassificationRun(final StorageRef storageRef, final String classificationId, final String userId) throws IOException {
-		final BooleanQuery query = createClassQuery(ClassificationRun.class.getSimpleName(), classificationId, storageRef, null, userId);
+		final Query query = createClassQuery(ClassificationRun.class.getSimpleName(), classificationId, storageRef, null, userId);
 
 		try {
 			return Iterables.getOnlyElement(search(query, ClassificationRun.class, 1));
@@ -106,19 +105,21 @@ public class ClassificationRunIndex extends SingleDirectoryIndexImpl {
 
 	public void insertOrUpdateClassificationRun(final IBranchPath branchPath, final ClassificationRun classificationRun) throws IOException {
 
-		final Document updateDocument = new Document();
-		updateDocument.add(new StringField("class", ClassificationRun.class.getSimpleName(), Store.NO));
-		updateDocument.add(new StringField("id", classificationRun.getId(), Store.NO));
-		updateDocument.add(new StringField("userId", classificationRun.getUserId(), Store.YES));
-		updateDocument.add(new StringField("branchPath", branchPath.getPath(), Store.YES));
-		updateDocument.add(new StoredField("source", objectMapper.writer().writeValueAsString(classificationRun)));
+		final Document updatedDocument = Mappings.doc()
+				.searchOnlyField("class", ClassificationRun.class.getSimpleName())
+				.searchOnlyField("id", classificationRun.getId())
+				.field("userId", classificationRun.getUserId())
+				.field("branchPath", branchPath.getPath())
+				.storedOnly("source", objectMapper.writer().writeValueAsString(classificationRun))
+				.build();
 
-		final BooleanQuery query = new BooleanQuery(true);
-		query.add(new TermQuery(new Term("class", ClassificationRun.class.getSimpleName())), Occur.MUST);
-		query.add(new TermQuery(new Term("id", classificationRun.getId())), Occur.MUST);
+		final Query query = Mappings.newQuery()
+				.field("class", ClassificationRun.class.getSimpleName())
+				.field("id", classificationRun.getId())
+				.matchAll();
 
 		writer.deleteDocuments(query);
-		writer.addDocument(updateDocument);
+		writer.addDocument(updatedDocument);
 		commit();
 	}
 
@@ -251,7 +252,7 @@ public class ClassificationRunIndex extends SingleDirectoryIndexImpl {
 	 */
 	public List<IEquivalentConceptSet> getEquivalentConceptSets(final StorageRef storageRef, final String classificationId, final String userId) throws IOException {
 
-		final BooleanQuery query = createClassQuery(EquivalentConceptSet.class.getSimpleName(), classificationId, storageRef, null, userId);
+		final Query query = createClassQuery(EquivalentConceptSet.class.getSimpleName(), classificationId, storageRef, null, userId);
 		return this.<IEquivalentConceptSet>search(query, EquivalentConceptSet.class);
 	}
 
@@ -266,7 +267,7 @@ public class ClassificationRunIndex extends SingleDirectoryIndexImpl {
 	 */
 	public IRelationshipChangeList getRelationshipChanges(final StorageRef storageRef, final String classificationId, final String sourceConceptId, final String userId, final int offset, final int limit) throws IOException {
 
-		final BooleanQuery query = createClassQuery(RelationshipChange.class.getSimpleName(), classificationId, storageRef, sourceConceptId, userId);
+		final Query query = createClassQuery(RelationshipChange.class.getSimpleName(), classificationId, storageRef, sourceConceptId, userId);
 		final RelationshipChangeList result = new RelationshipChangeList();
 
 		result.setTotal(getHitCount(query));
@@ -290,25 +291,23 @@ public class ClassificationRunIndex extends SingleDirectoryIndexImpl {
 	}
 
 	private Document getClassificationRunDocument(final UUID id) throws IOException {
-		final BooleanQuery query = new BooleanQuery(true);
-		query.add(new TermQuery(new Term("class", ClassificationRun.class.getSimpleName())), Occur.MUST);
-		query.add(new TermQuery(new Term("id", id.toString())), Occur.MUST);
-
-		final Document sourceDocument = Iterables.getFirst(search(query, 1), null);
-		return sourceDocument;
+		final Query query = Mappings.newQuery()
+				.field("class", ClassificationRun.class.getSimpleName())
+				.field("id", id.toString())
+				.matchAll();
+		return Iterables.getFirst(search(query, 1), null);
 	}
 
-	private BooleanQuery createClassQuery(final String className, final String classificationId, final StorageRef storageRef, String componentId, final String userId) {
-
-		final BooleanQuery query = new BooleanQuery(true);
-		query.add(new TermQuery(new Term("class", className)), Occur.MUST);
-		query.add(new TermQuery(new Term("id", classificationId)), Occur.MUST);
-		query.add(new TermQuery(new Term("userId", userId)), Occur.MUST);
-		query.add(new TermQuery(new Term("branchPath", storageRef.getBranchPath())), Occur.MUST);
+	private Query createClassQuery(final String className, final String classificationId, final StorageRef storageRef, String componentId, final String userId) {
+		final QueryBuilder query = Mappings.newQuery()
+				.field("class", className)
+				.field("id", classificationId)
+				.field("userId", userId)
+				.field("branchPath", storageRef.getBranchPath());
 		if (componentId != null) {
-			query.add(new TermQuery(new Term("componentId", componentId)), Occur.MUST);
+			query.field("componentId", componentId);
 		}
-		return query;
+		return query.matchAll();
 	}
 
 	private <T> List<T> search(final Query query, final Class<? extends T> sourceClass) throws IOException {

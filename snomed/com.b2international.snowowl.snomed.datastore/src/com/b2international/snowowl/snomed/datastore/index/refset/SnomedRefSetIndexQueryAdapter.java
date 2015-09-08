@@ -28,8 +28,6 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
 import org.apache.lucene.document.Document;
-import org.apache.lucene.search.BooleanClause.Occur;
-import org.apache.lucene.search.BooleanQuery;
 import org.apache.lucene.search.Query;
 
 import com.b2international.commons.StringUtils;
@@ -43,6 +41,7 @@ import com.b2international.snowowl.datastore.index.mapping.Mappings;
 import com.b2international.snowowl.snomed.datastore.index.SnomedDOIQueryAdapter;
 import com.b2international.snowowl.snomed.datastore.index.SnomedDslIndexQueryAdapter;
 import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedMappings;
+import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedQueryBuilder;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType;
 import com.google.common.base.Optional;
 import com.google.common.base.Preconditions;
@@ -112,32 +111,29 @@ public class SnomedRefSetIndexQueryAdapter extends SnomedDslIndexQueryAdapter<Sn
 
 	@Override
 	public Query createQuery() {
-		final IndexQueryBuilder queryBuilder = new IndexQueryBuilder();
-		queryBuilder.require(SnomedMappings.newQuery().refSet().matchAll());
-
+		final SnomedQueryBuilder query = SnomedMappings.newQuery()
+				.refSet();
+		
 		if (referencedComponentType != null) {
-			queryBuilder.require(SnomedMappings.newQuery().field(REFERENCE_SET_REFERENCED_COMPONENT_TYPE, referencedComponentType.intValue()).matchAll());
+			query.field(REFERENCE_SET_REFERENCED_COMPONENT_TYPE, referencedComponentType.intValue());
 		}
 		
 		if (null != refSetTypes && refSetTypes.length > 0) {
-			
-			final BooleanQuery refsetTypeQuery = new BooleanQuery();
-			
+			final SnomedQueryBuilder refsetTypeQuery = SnomedMappings.newQuery();
 			for (final SnomedRefSetType refSetType : refSetTypes) {
-				// All of these are Occur.SHOULD, so at least one has to match
-				refsetTypeQuery.add(SnomedMappings.newQuery().field(REFERENCE_SET_TYPE, refSetType.getValue()).matchAll(), Occur.SHOULD);
+				refsetTypeQuery.field(REFERENCE_SET_TYPE, refSetType.getValue());
 			}
-			
-			queryBuilder.require(refsetTypeQuery);
+			// at least one type has to match
+			query.and(refsetTypeQuery.matchAny());
 		}
 
 		if ((searchFlags & SEARCH_REGULAR_ONLY) != 0) {
-			queryBuilder.require(SnomedMappings.newQuery().field(REFERENCE_SET_STRUCTURAL, 0).matchAll());
+			query.field(REFERENCE_SET_STRUCTURAL, 0);
 		}
 
 		// Shortcut for empty search terms: return all reference sets
 		if (StringUtils.isEmpty(searchString)) {
-			return queryBuilder.toQuery();
+			return query.matchAll();
 		}
 		
 		final IndexQueryBuilder queryExpressionQueryBuilder = new IndexQueryBuilder();
@@ -166,9 +162,7 @@ public class SnomedRefSetIndexQueryAdapter extends SnomedDslIndexQueryAdapter<Sn
 		} else {
 			queryExpressionQueryBuilder.require(createLabelQueryBuilder());
 		}
-		queryBuilder.require(queryExpressionQueryBuilder);
-		
-		return queryBuilder.toQuery();
+		return query.and(queryExpressionQueryBuilder.toQuery()).matchAll();
 	}
 	
 	@Override

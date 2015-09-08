@@ -32,10 +32,6 @@ import javax.annotation.Nullable;
 
 import org.apache.lucene.document.Document;
 import org.apache.lucene.index.IndexableField;
-import org.apache.lucene.index.Term;
-import org.apache.lucene.search.BooleanClause.Occur;
-import org.apache.lucene.search.BooleanQuery;
-import org.apache.lucene.search.TermQuery;
 import org.apache.lucene.search.TopDocs;
 
 import com.b2international.commons.CompareUtils;
@@ -51,6 +47,7 @@ import com.b2international.snowowl.snomed.datastore.SnomedTaxonomyService;
 import com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants;
 import com.b2international.snowowl.snomed.datastore.index.SnomedIndexService;
 import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedMappings;
+import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedQueryBuilder;
 import com.b2international.snowowl.snomed.datastore.services.ISnomedComponentService;
 import com.b2international.snowowl.snomed.datastore.snor.PredicateIndexEntry;
 import com.b2international.snowowl.snomed.datastore.snor.PredicateIndexEntry.PredicateType;
@@ -100,14 +97,13 @@ public class SnomedServerPredicateBrowser extends AbstractIndexBrowser<Predicate
 	
 	@Override
 	public Collection<PredicateIndexEntry> getPredicate(final IBranchPath branchPath, final String... uuids) {
-		final BooleanQuery query = new BooleanQuery(true) ;
+		final SnomedQueryBuilder query = SnomedMappings.newQuery();
 		for (final String uuid : uuids) {
-			final TermQuery termQuery = new TermQuery(new Term(SnomedIndexBrowserConstants.PREDICATE_UUID, uuid));
-			query.add(termQuery, Occur.SHOULD);
+			query.field(SnomedIndexBrowserConstants.PREDICATE_UUID, uuid);
 		}
 		final DocIdCollector collector = DocIdCollector.create(service.maxDoc(branchPath));
 		try {
-			service.search(branchPath, query, collector);
+			service.search(branchPath, query.matchAny(), collector);
 			return createResultObjects(branchPath, collector.getDocIDs().iterator());
 		} catch (final IOException e) {
 			throw new RuntimeException("Error whey retrieving predicates by UUIDs: " + uuids, e);

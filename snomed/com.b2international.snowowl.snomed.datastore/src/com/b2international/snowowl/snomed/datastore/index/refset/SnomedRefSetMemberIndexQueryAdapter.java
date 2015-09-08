@@ -29,6 +29,7 @@ import com.b2international.snowowl.datastore.index.IndexAdapterBase;
 import com.b2international.snowowl.datastore.index.IndexUtils;
 import com.b2international.snowowl.datastore.index.mapping.Mappings;
 import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedMappings;
+import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedQueryBuilder;
 import com.google.common.base.Optional;
 
 public class SnomedRefSetMemberIndexQueryAdapter extends IndexAdapterBase<SnomedRefSetMemberIndexEntry> implements Serializable {
@@ -60,8 +61,8 @@ public class SnomedRefSetMemberIndexQueryAdapter extends IndexAdapterBase<Snomed
 	@SuppressWarnings("deprecation")
 	@Override
 	protected Query buildQuery() throws ParseException {
-		final BooleanQuery main = new BooleanQuery(true);
-		main.add(SnomedMappings.newQuery().memberRefSetId(refSetId).matchAll(), Occur.MUST);
+		final SnomedQueryBuilder main = SnomedMappings.newQuery()
+				.memberRefSetId(refSetId);
 		
 		if (!StringUtils.isEmpty(searchString)) {
 			final BooleanQuery fieldQuery = new BooleanQuery(true);
@@ -71,13 +72,13 @@ public class SnomedRefSetMemberIndexQueryAdapter extends IndexAdapterBase<Snomed
 			if (parseLong.isPresent()) {
 				fieldQuery.add(SnomedMappings.newQuery().memberReferencedComponentId(parseLong.get()).matchAll(), Occur.SHOULD);
 			}
-			main.add(fieldQuery, Occur.MUST);
+			main.and(fieldQuery);
 		}
 		
 		if (excludeInactive) {
-			main.add(SnomedMappings.newQuery().active().matchAll(), Occur.MUST);
+			main.active();
 		}
 		
-		return main;
+		return main.matchAll();
 	}
 }

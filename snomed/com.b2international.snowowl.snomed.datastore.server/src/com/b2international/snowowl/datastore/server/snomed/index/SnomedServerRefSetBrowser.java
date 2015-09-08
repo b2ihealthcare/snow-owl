@@ -35,7 +35,6 @@ import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.collect.Maps.newHashMap;
 import static com.google.common.collect.Sets.newHashSet;
-import static org.apache.lucene.search.BooleanClause.Occur.SHOULD;
 import static org.apache.lucene.search.MultiTermQuery.CONSTANT_SCORE_FILTER_REWRITE;
 
 import java.io.IOException;
@@ -714,17 +713,20 @@ public class SnomedServerRefSetBrowser extends AbstractSnomedIndexBrowser<Snomed
 		
 		checkNotNull(branchPath, "branchPath");
 
-		final BooleanQuery membershipQuery = new BooleanQuery(true);
-		
 		final PrefixQuery refSetMembershipQuery = new PrefixQuery(new Term(CONCEPT_REFERRING_REFERENCE_SET_ID));
 		refSetMembershipQuery.setRewriteMethod(CONSTANT_SCORE_FILTER_REWRITE);
-		membershipQuery.add(refSetMembershipQuery, SHOULD);
 		
 		final PrefixQuery mappingMembershipQuery = new PrefixQuery(new Term(CONCEPT_REFERRING_MAPPING_REFERENCE_SET_ID));
 		mappingMembershipQuery.setRewriteMethod(CONSTANT_SCORE_FILTER_REWRITE);
-		membershipQuery.add(mappingMembershipQuery, SHOULD);
-
-		final Query query = SnomedMappings.newQuery().active().and(membershipQuery).matchAll();
+		
+		final Query query = SnomedMappings.newQuery()
+				.active()
+				.and(SnomedMappings.newQuery()
+						.and(refSetMembershipQuery)
+						.and(mappingMembershipQuery)
+						.matchAny())
+				.matchAll();
+		
 		final LongKeyMap refSetIdReferencedConceptIds = new LongKeyOpenHashMap();
 		
 		final DocIdCollector collector = DocIdCollector.create(service.maxDoc(branchPath));

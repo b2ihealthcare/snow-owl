@@ -30,7 +30,6 @@ import java.io.IOException;
 import java.text.MessageFormat;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -38,13 +37,11 @@ import java.util.Set;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.index.IndexableField;
-import org.apache.lucene.index.Term;
 import org.apache.lucene.search.BooleanClause.Occur;
 import org.apache.lucene.search.BooleanQuery;
 import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.ReferenceManager;
-import org.apache.lucene.search.TermQuery;
 import org.apache.lucene.search.TopDocs;
 
 import bak.pcj.map.LongKeyLongMap;
@@ -62,6 +59,7 @@ import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.datastore.index.DocIdCollector;
 import com.b2international.snowowl.datastore.index.DocIdCollector.DocIdsIterator;
 import com.b2international.snowowl.datastore.index.IndexUtils;
+import com.b2international.snowowl.datastore.index.mapping.IndexField;
 import com.b2international.snowowl.datastore.index.mapping.Mappings;
 import com.b2international.snowowl.snomed.datastore.IsAStatement;
 import com.b2international.snowowl.snomed.datastore.SnomedConceptIndexEntry;
@@ -73,7 +71,6 @@ import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedMappings
 import com.b2international.snowowl.snomed.datastore.services.ISnomedComponentService;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Maps;
-import com.google.common.collect.Sets;
 
 /**
  * Index based statement browser implementation.
@@ -96,10 +93,6 @@ public class SnomedServerStatementBrowser extends AbstractSnomedIndexBrowser<Sno
 			.field(RELATIONSHIP_INFERRED)
 			.field(RELATIONSHIP_UNIVERSAL)
 			.field(RELATIONSHIP_DESTINATION_NEGATED).build();
-
-	private static final Set<String> GROUP_FIELD_TO_LOAD = Collections.unmodifiableSet(Sets.newHashSet(RELATIONSHIP_GROUP));
-	private static final Set<String> STORAGE_KEY_GROUP_FIELD_TO_LOAD = SnomedMappings.fieldsToLoad().storageKey().field(RELATIONSHIP_GROUP).field(RELATIONSHIP_UNION_GROUP).build();
-	private static final Set<String> UNION_GROUP_FIELD_TO_LOAD = Collections.unmodifiableSet(Sets.newHashSet(RELATIONSHIP_UNION_GROUP));
 
 	/**
 	 * Class constructor.
@@ -184,12 +177,7 @@ public class SnomedServerStatementBrowser extends AbstractSnomedIndexBrowser<Sno
 		checkNotNull(conceptId, "SNOMED CT concept ID cannot be null.");
 		try {
 			final DocIdCollector collector = DocIdCollector.create(service.maxDoc(branchPath));
-			final TermQuery valueQuery = new TermQuery(new Term(RELATIONSHIP_VALUE_ID, IndexUtils.longToPrefixCoded(Long.valueOf(conceptId))));
-			final TermQuery objectQuery = new TermQuery(new Term(RELATIONSHIP_OBJECT_ID, IndexUtils.longToPrefixCoded(Long.valueOf(conceptId))));
-			final BooleanQuery query = new BooleanQuery();
-			query.add(valueQuery, Occur.SHOULD);
-			query.add(objectQuery, Occur.SHOULD);
-			service.search(branchPath, query, collector);
+			service.search(branchPath, getMatchRelationshipTypeOrValueQuery(conceptId), collector);
 			return createResultObjects(branchPath, collector.getDocIDs().iterator());
 		} catch (final IOException e) {
 			throw new RuntimeException("Error when querying inbound statements of concept. ID: " + conceptId, e);
@@ -201,8 +189,9 @@ public class SnomedServerStatementBrowser extends AbstractSnomedIndexBrowser<Sno
 		checkNotNull(branchPath, "Branch path argument cannot be null.");
 		checkNotNull(conceptId, "SNOMED CT concept ID cannot be null.");
 		try {
+			final Query query = SnomedMappings.newQuery().field(RELATIONSHIP_VALUE_ID, Long.valueOf(conceptId)).matchAll();
 			final DocIdCollector collector = DocIdCollector.create(service.maxDoc(branchPath));
-			service.search(branchPath, new TermQuery(new Term(RELATIONSHIP_VALUE_ID, IndexUtils.longToPrefixCoded(Long.valueOf(conceptId)))), collector);
+			service.search(branchPath, query, collector);
 			return createResultObjects(branchPath, collector.getDocIDs().iterator());
 		} catch (final IOException e) {
 			throw new RuntimeException("Error when querying inbound statements of concept. ID: " + conceptId, e);
@@ -228,7 +217,8 @@ public class SnomedServerStatementBrowser extends AbstractSnomedIndexBrowser<Sno
 		checkNotNull(conceptId, "SNOMED CT concept ID cannot be null.");
 		try {
 			final DocIdCollector collector = DocIdCollector.create(service.maxDoc(branchPath));
-			service.search(branchPath, new TermQuery(new Term(RELATIONSHIP_OBJECT_ID, IndexUtils.longToPrefixCoded(Long.valueOf(conceptId)))), collector);
+			final Query query = SnomedMappings.newQuery().field(RELATIONSHIP_OBJECT_ID, conceptId).matchAll();
+			service.search(branchPath, query, collector);
 			return createResultObjects(branchPath, collector.getDocIDs().iterator());
 		} catch (final IOException e) {
 			throw new RuntimeException("Error when querying outbound statements of concept. ID: " + conceptId, e);
@@ -251,13 +241,13 @@ public class SnomedServerStatementBrowser extends AbstractSnomedIndexBrowser<Sno
 			final DocIdsIterator itr = collector.getDocIDs().iterator();
 			searcher = manager.acquire();
 
+			final IndexField<Integer> groupField = Mappings.intField(RELATIONSHIP_GROUP);
 			while (itr.next()) {
-
-				final int group = IndexUtils.getIntValue(service.document(searcher, itr.getDocID(), GROUP_FIELD_TO_LOAD).getField(RELATIONSHIP_GROUP));
+				final Document doc = service.document(searcher, itr.getDocID(), Mappings.fieldsToLoad().field(groupField).build());
+				final int group = groupField.getValue(doc);
 				if (group > maxGroup) {
 					maxGroup = group;
 				}
-
 			}
 
 			return maxGroup;
@@ -286,8 +276,10 @@ public class SnomedServerStatementBrowser extends AbstractSnomedIndexBrowser<Sno
 
 			final DocIdsIterator itr = collector.getDocIDs().iterator();
 			searcher = manager.acquire();
+			final IndexField<Integer> unionGroupField = Mappings.intField(RELATIONSHIP_UNION_GROUP);
 			while (itr.next()) {
-				final int unionGroup = IndexUtils.getIntValue(service.document(searcher, itr.getDocID(), UNION_GROUP_FIELD_TO_LOAD).getField(RELATIONSHIP_UNION_GROUP));
+				final Document doc = service.document(searcher, itr.getDocID(), Mappings.fieldsToLoad().field(unionGroupField).build());
+				final int unionGroup = unionGroupField.getValue(doc);
 				if (unionGroup > maxUnionGroup) {
 					maxUnionGroup = unionGroup;
 				}
@@ -316,8 +308,9 @@ public class SnomedServerStatementBrowser extends AbstractSnomedIndexBrowser<Sno
 		return getStatementStorageKeysForGroupField(branchPath, conceptId, unionGroup, RELATIONSHIP_UNION_GROUP);
 	}
 
-	private long[] getStatementStorageKeysForGroupField(final IBranchPath branchPath, final long conceptId, final int value, final String groupField) {
+	private long[] getStatementStorageKeysForGroupField(final IBranchPath branchPath, final long conceptId, final int value, final String groupFieldName) {
 		checkNotNull(branchPath, "Branch path argument cannot be null.");
+		final IndexField<Integer> groupField = Mappings.intField(groupFieldName);
 		final ReferenceManager<IndexSearcher> manager = service.getManager(branchPath);
 		IndexSearcher searcher = null;
 
@@ -336,8 +329,8 @@ public class SnomedServerStatementBrowser extends AbstractSnomedIndexBrowser<Sno
 
 			int i = 0;
 			while (itr.next()) {
-				final Document doc = searcher.doc(itr.getDocID(), STORAGE_KEY_GROUP_FIELD_TO_LOAD);
-				final int groupValue = IndexUtils.getIntValue(doc.getField(groupField));
+				final Document doc = searcher.doc(itr.getDocID(), SnomedMappings.fieldsToLoad().storageKey().field(groupField).build());
+				final int groupValue = groupField.getValue(doc);
 				if (value == groupValue) {
 					statementStorageKeys[i++] = Mappings.storageKey().getValue(doc);
 				}
@@ -348,7 +341,7 @@ public class SnomedServerStatementBrowser extends AbstractSnomedIndexBrowser<Sno
 		} catch (final IOException e) {
 			throw new IndexException(MessageFormat.format(
 					"Error while getting active statement storage keys for concept: {0} for value: {1}, field: {2}",
-					conceptId, value, groupField), e);
+					conceptId, value, groupField.fieldName()), e);
 		} finally {
 			if (searcher != null)
 				try {
@@ -457,13 +450,10 @@ public class SnomedServerStatementBrowser extends AbstractSnomedIndexBrowser<Sno
 		checkNotNull(branchPath, "Branch path argument cannot be null.");
 		checkNotNull(conceptId, "SNOMED CT concept ID cannot be null.");
 
-		final StatementIdCollector collector = new StatementIdCollector();
-		
-		final BooleanQuery typeQuery = new BooleanQuery(true);
-		typeQuery.add(new TermQuery(new Term(RELATIONSHIP_VALUE_ID, IndexUtils.longToPrefixCoded(Long.valueOf(conceptId)))), Occur.SHOULD);
-		typeQuery.add(new TermQuery(new Term(RELATIONSHIP_OBJECT_ID, IndexUtils.longToPrefixCoded(Long.valueOf(conceptId)))), Occur.SHOULD);
 		final BooleanQuery query = new BooleanQuery(true);
-		query.add(typeQuery, Occur.MUST);
+		query.add(getMatchRelationshipTypeOrValueQuery(conceptId), Occur.MUST);
+		
+		final StatementIdCollector collector = new StatementIdCollector();
 		service.search(branchPath, query, collector);
 
 		final LongSet idsSet = collector.getIds();
@@ -497,12 +487,10 @@ public class SnomedServerStatementBrowser extends AbstractSnomedIndexBrowser<Sno
 		checkNotNull(branchPath, "Branch path argument cannot be null.");
 		checkNotNull(conceptId, "SNOMED CT concept ID cannot be null.");
 
-		final StatementIdCollector collector = new StatementIdCollector();
-		final BooleanQuery typeQuery = new BooleanQuery(true);
-		typeQuery.add(new TermQuery(new Term(RELATIONSHIP_VALUE_ID, IndexUtils.longToPrefixCoded(Long.valueOf(conceptId)))), Occur.SHOULD);
-		typeQuery.add(new TermQuery(new Term(RELATIONSHIP_OBJECT_ID, IndexUtils.longToPrefixCoded(Long.valueOf(conceptId)))), Occur.SHOULD);
 		final BooleanQuery query = new BooleanQuery(true);
-		query.add(typeQuery, Occur.MUST);
+		query.add(getMatchRelationshipTypeOrValueQuery(conceptId), Occur.MUST);
+		
+		final StatementIdCollector collector = new StatementIdCollector();
 		service.search(branchPath, query, collector);
 
 		final LongSet idsSet = collector.getIds();
@@ -521,6 +509,14 @@ public class SnomedServerStatementBrowser extends AbstractSnomedIndexBrowser<Sno
 			}
 			return $;
 		}
+	}
+
+	private Query getMatchRelationshipTypeOrValueQuery(final String conceptId) {
+		final Long longConceptId = Long.valueOf(conceptId);
+		return SnomedMappings.newQuery()
+				.field(RELATIONSHIP_VALUE_ID, longConceptId)
+				.field(RELATIONSHIP_OBJECT_ID, longConceptId)
+				.matchAny();
 	}
 
 	@Override

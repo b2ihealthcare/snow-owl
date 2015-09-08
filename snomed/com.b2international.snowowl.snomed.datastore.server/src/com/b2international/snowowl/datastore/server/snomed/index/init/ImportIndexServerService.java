@@ -35,8 +35,6 @@ import org.apache.lucene.document.LongField;
 import org.apache.lucene.document.StringField;
 import org.apache.lucene.index.IndexableField;
 import org.apache.lucene.index.Term;
-import org.apache.lucene.search.BooleanClause.Occur;
-import org.apache.lucene.search.BooleanQuery;
 import org.apache.lucene.search.CachingWrapperFilter;
 import org.apache.lucene.search.Filter;
 import org.apache.lucene.search.IndexSearcher;
@@ -534,9 +532,7 @@ public class ImportIndexServerService extends FSIndexServerService<IIndexEntry> 
             manager = getManager(SUPPORTING_INDEX_BRANCH_PATH);
             searcher = manager.acquire();
 
-            final BooleanQuery conceptActiveDescriptionsQuery = new BooleanQuery(true); 
-            conceptActiveDescriptionsQuery.add(createActiveQuery(), Occur.MUST);
-            conceptActiveDescriptionsQuery.add(createContainerConceptQuery(conceptId), Occur.MUST);
+            final Query conceptActiveDescriptionsQuery = SnomedMappings.newQuery().and(createActiveQuery()).and(createContainerConceptQuery(conceptId)).matchAll(); 
 
             final TotalHitCountCollector hitCountCollector = new TotalHitCountCollector();
             searcher.search(conceptActiveDescriptionsQuery, hitCountCollector);

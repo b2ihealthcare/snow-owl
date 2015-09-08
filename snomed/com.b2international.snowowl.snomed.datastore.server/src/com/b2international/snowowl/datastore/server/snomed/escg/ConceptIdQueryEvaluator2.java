@@ -84,7 +84,7 @@ public class ConceptIdQueryEvaluator2 implements Serializable, IQueryEvaluator<L
 			
 			final ConceptRef concept = (ConceptRef) expression;
 			final String conceptId = Preconditions.checkNotNull(concept.getConceptId());
-			final BooleanQuery mainQuery = (BooleanQuery) SnomedMappings.newQuery().active().type(SnomedTerminologyComponentConstants.CONCEPT_NUMBER).matchAll();
+			final BooleanQuery mainQuery = (BooleanQuery) SnomedMappings.newQuery().active().concept().matchAll();
 			final SnomedIndexServerService service = getIndexService();
 			final LongDocValuesCollector collector = new LongDocValuesCollector(SnomedMappings.id().fieldName());
 			
@@ -115,7 +115,7 @@ public class ConceptIdQueryEvaluator2 implements Serializable, IQueryEvaluator<L
 			final LongSet attributeIdSet = evaluate(clause.getLeft());
 			final LongSet valueIdSet = evaluate(clause.getRight());
 
-			final BooleanQuery query = (BooleanQuery) SnomedMappings.newQuery().active().type(SnomedTerminologyComponentConstants.RELATIONSHIP_NUMBER).matchAll();
+			final BooleanQuery query = (BooleanQuery) SnomedMappings.newQuery().active().relationship().matchAll();
 			
 			final BooleanQuery negatedQuery = new BooleanQuery(true);
 			//filter out the top most relationship types with index query if possible to better performance

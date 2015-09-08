@@ -29,7 +29,6 @@ import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.datastore.index.IndexUtils;
 import com.b2international.snowowl.datastore.index.LongDocValuesCollector;
 import com.b2international.snowowl.datastore.server.index.IndexServerService;
-import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants;
 import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedMappings;
 
@@ -57,7 +56,7 @@ public final class CollectMembersRunnable implements Runnable {
 
 	@Override 
 	public void run() {
-		final BooleanQuery refSetMemberConceptQuery = (BooleanQuery) SnomedMappings.newQuery().type(SnomedTerminologyComponentConstants.CONCEPT_NUMBER).active().matchAll();
+		final BooleanQuery refSetMemberConceptQuery = (BooleanQuery) SnomedMappings.newQuery().concept().active().matchAll();
 
 		final Occur refSetOccur = (existingMembersOnly) ? Occur.MUST : Occur.MUST_NOT;
 		refSetMemberConceptQuery.add(new TermQuery(new Term(SnomedIndexBrowserConstants.CONCEPT_REFERRING_REFERENCE_SET_ID, IndexUtils.longToPrefixCoded(refSetId))), refSetOccur);
