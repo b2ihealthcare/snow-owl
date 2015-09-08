@@ -35,6 +35,10 @@ public class StatementFragment implements Serializable {
 	private final long statementId;
 	private final long storageKey;
 
+	public StatementFragment(final long typeId, final long destinationId) {
+		this(typeId, destinationId, false, (byte) 0, (byte) 0, false, -1L, -1L);
+	}
+
 	public StatementFragment(final long typeId,
 			final long destinationId,
 			final boolean destinationNegated,
