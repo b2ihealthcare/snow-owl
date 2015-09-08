@@ -20,11 +20,8 @@ import static com.b2international.snowowl.core.ApplicationContext.getServiceForC
 import static com.b2international.snowowl.datastore.server.snomed.index.init.Rf2BasedSnomedTaxonomyBuilder.newValidationInstance;
 import static com.b2international.snowowl.snomed.common.ContentSubType.SNAPSHOT;
 import static com.google.common.base.Preconditions.checkNotNull;
-import static com.google.common.collect.Iterables.concat;
-import static com.google.common.collect.Lists.newArrayList;
 import static com.google.common.collect.Sets.newHashSet;
 import static java.util.Collections.emptySet;
-import static java.util.Collections.sort;
 import static org.slf4j.LoggerFactory.getLogger;
 
 import java.io.File;
@@ -52,6 +49,8 @@ import com.b2international.snowowl.snomed.importer.net4j.SnomedIncompleteTaxonom
 import com.b2international.snowowl.snomed.importer.net4j.SnomedValidationDefect;
 import com.b2international.snowowl.snomed.importer.net4j.SnomedValidationDefect.DefectType;
 import com.b2international.snowowl.snomed.importer.rf2.util.Rf2FileModifier;
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSortedSet;
 
 /**
  * Class for validating the taxonomy of active concepts and active IS_A relationships.
@@ -62,13 +61,24 @@ public class SnomedTaxonomyValidator {
 	private static final Logger LOGGER = getLogger(SnomedTaxonomyValidator.class);
 	
 	private final IBranchPath branchPath;
-	private final ImportConfiguration configuration;
 	private final StatementCollectionMode mode;
+	private final File conceptsFile;
+	private final File relationshipsFile;
+	private final boolean snapshot;
 
 	public SnomedTaxonomyValidator(final IBranchPath branchPath, final ImportConfiguration configuration, final StatementCollectionMode mode) {
-		this.configuration = checkNotNull(configuration, "configuration");
 		this.branchPath = checkNotNull(branchPath, "branchPath");
 		this.mode = checkNotNull(mode, "mode");
+		this.snapshot = SNAPSHOT.equals(configuration.getVersion());
+		this.conceptsFile = configuration.getConceptsFile();
+		
+		if (mode == StatementCollectionMode.STATED_ISA_ONLY) {
+			relationshipsFile = configuration.getStatedRelationshipsFile();
+		} else if (mode == StatementCollectionMode.INFERRED_ISA_ONLY) {
+			relationshipsFile = configuration.getRelationshipsFile();
+		} else {
+			throw new IllegalArgumentException("Collection mode " + mode + " is not allowed.");
+		}
 	}
 	
 	/**
@@ -80,7 +90,7 @@ public class SnomedTaxonomyValidator {
 	 */
 	public Collection<SnomedValidationDefect> validate() {
 		final Collection<SnomedValidationDefect> defects = newHashSet();
-		if (isCoreImport()) {
+		if (canValidate()) {
 			defects.addAll(doValidate());
 		}
 		return defects;
@@ -102,32 +112,39 @@ public class SnomedTaxonomyValidator {
 	private Collection<SnomedValidationDefect> doValidate() {
 		try {
 			
-			if (isSnapshot()) {
+			if (snapshot) {
 				
 				LOGGER.info("Validating SNOMED CT ontology based on the given RF2 release files...");
 				
-				final String conceptFilePath = removeConceptHeader();
-				final String relationshipFilePath = removeRelationshipHeader();
 				final Rf2BasedSnomedTaxonomyBuilder builder = createBuilder();
-				builder.applyNodeChanges(conceptFilePath);
-				builder.applyEdgeChanges(relationshipFilePath);
+				
+				if (hasConceptImport()) {
+					final String conceptFilePath = removeConceptHeader();
+					builder.applyNodeChanges(conceptFilePath);
+				}
+				
+				if (hasRelationshipImport()) {
+					final String relationshipFilePath = removeRelationshipHeader();
+					builder.applyEdgeChanges(relationshipFilePath);
+				}
+				
 				builder.build();
-				
-				
 					
 			} else {
 			
 				LOGGER.info("Validating SNOMED CT ontology based on the given RF2 release files...");
 				
-				final Map<String, File> conceptFiles = Rf2FileModifier.split(configuration.getConceptsFile());
-				final Map<String, File> relationshipFiles = Rf2FileModifier.split(configuration.getRelationshipsFile());
-				
+				final Map<String, File> conceptFiles = hasConceptImport() ? Rf2FileModifier.split(conceptsFile) : ImmutableMap.<String, File>of();
+				final Map<String, File> relationshipFiles = hasRelationshipImport() ? Rf2FileModifier.split(relationshipsFile) : ImmutableMap.<String, File>of();
+
 				final Rf2BasedSnomedTaxonomyBuilder builder = createBuilder();
-				final List<String> effectiveTimes = newArrayList(newHashSet(concat(conceptFiles.keySet(), relationshipFiles.keySet())));
-				sort(effectiveTimes);
+				final List<String> effectiveTimes = ImmutableSortedSet.<String>naturalOrder()
+						.addAll(conceptFiles.keySet())
+						.addAll(relationshipFiles.keySet())
+						.build()
+						.asList();
 				
 				for (final String effectiveTime : effectiveTimes) {
-					
 					LOGGER.info("Validating concepts and relationships from '" + effectiveTime + "'...");
 					
 					final File conceptFile = conceptFiles.get(effectiveTime);
@@ -137,7 +154,6 @@ public class SnomedTaxonomyValidator {
 					builder.applyEdgeChanges(getFilePath(relationshipFile));
 					builder.build();
 				}
-				
 			}
 			
 		} catch (final IOException e) {
@@ -198,15 +214,11 @@ public class SnomedTaxonomyValidator {
 	}
 	
 	private String removeConceptHeader() throws IOException {
-		return Rf2FileModifier.removeHeader(configuration.getConceptsFile()).getPath();
+		return Rf2FileModifier.removeHeader(conceptsFile).getPath();
 	}
 	
 	private String removeRelationshipHeader() throws IOException {
-		return Rf2FileModifier.removeHeader(configuration.getRelationshipsFile()).getPath();
-	}
-
-	private boolean isSnapshot() {
-		return SNAPSHOT.equals(configuration.getVersion());
+		return Rf2FileModifier.removeHeader(relationshipsFile).getPath();
 	}
 
 	private Rf2BasedSnomedTaxonomyBuilder createBuilder() {
@@ -214,15 +226,15 @@ public class SnomedTaxonomyValidator {
 		return newValidationInstance(original, mode.getCharacteristicType());
 	}
 
-	private boolean isCoreImport() {
-		return hasConceptImport() && hasRelationshipImport();
+	private boolean canValidate() {
+		return hasConceptImport() || hasRelationshipImport();
 	}
 
 	private boolean hasConceptImport() {
-		return null != configuration.getConceptsFile();
+		return null != conceptsFile && !conceptsFile.getPath().isEmpty();
 	}
 
 	private boolean hasRelationshipImport() {
-		return null != configuration.getRelationshipsFile();
+		return null != relationshipsFile && !relationshipsFile.getPath().isEmpty();
 	}
 }
