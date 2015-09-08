@@ -17,16 +17,13 @@ package com.b2international.snowowl.datastore.server.snomed.filteredrefset;
 
 import java.util.concurrent.atomic.AtomicReference;
 
-import org.apache.lucene.index.Term;
 import org.apache.lucene.search.BooleanClause.Occur;
 import org.apache.lucene.search.BooleanQuery;
 import org.apache.lucene.search.Query;
-import org.apache.lucene.search.TermQuery;
 
 import bak.pcj.LongCollection;
 
 import com.b2international.snowowl.core.api.IBranchPath;
-import com.b2international.snowowl.datastore.index.IndexUtils;
 import com.b2international.snowowl.datastore.index.LongDocValuesCollector;
 import com.b2international.snowowl.datastore.server.index.IndexServerService;
 import com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants;
@@ -59,7 +56,7 @@ public final class CollectMembersRunnable implements Runnable {
 		final BooleanQuery refSetMemberConceptQuery = (BooleanQuery) SnomedMappings.newQuery().concept().active().matchAll();
 
 		final Occur refSetOccur = (existingMembersOnly) ? Occur.MUST : Occur.MUST_NOT;
-		refSetMemberConceptQuery.add(new TermQuery(new Term(SnomedIndexBrowserConstants.CONCEPT_REFERRING_REFERENCE_SET_ID, IndexUtils.longToPrefixCoded(refSetId))), refSetOccur);
+		refSetMemberConceptQuery.add(SnomedMappings.newQuery().field(SnomedIndexBrowserConstants.CONCEPT_REFERRING_REFERENCE_SET_ID, refSetId).matchAll(), refSetOccur);
 
 		//label
 		if (null != labelQuery) {

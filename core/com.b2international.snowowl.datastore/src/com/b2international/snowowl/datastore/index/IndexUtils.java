@@ -64,6 +64,7 @@ import com.b2international.snowowl.core.api.index.CommonIndexConstants;
 import com.b2international.snowowl.core.api.index.IndexException;
 import com.b2international.snowowl.datastore.index.DocIdCollector.DocIds;
 import com.b2international.snowowl.datastore.index.DocIdCollector.DocIdsIterator;
+import com.b2international.snowowl.datastore.index.mapping.LongIndexField;
 import com.google.common.base.Function;
 import com.google.common.base.Optional;
 import com.google.common.base.Preconditions;
@@ -352,18 +353,11 @@ public abstract class IndexUtils {
 			return new BytesRef();
 		} else {
 			try {
-				return longToPrefixCoded(Long.valueOf(value));
+				return LongIndexField._toBytesRef(Long.valueOf(value));
 			} catch (final NumberFormatException e) {
 				return new BytesRef();
 			}
 		}
-	}
-	
-	@Deprecated
-	public static BytesRef longToPrefixCoded(final long value) {
-		final BytesRef bytesRef = new BytesRef();
-		NumericUtils.longToPrefixCoded(value, 0, bytesRef);
-		return bytesRef;
 	}
 	
 	/**

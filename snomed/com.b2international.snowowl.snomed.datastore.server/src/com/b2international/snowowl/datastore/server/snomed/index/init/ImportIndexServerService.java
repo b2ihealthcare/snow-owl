@@ -70,6 +70,7 @@ import com.b2international.snowowl.datastore.cdo.ICDOConnection;
 import com.b2international.snowowl.datastore.cdo.ICDOConnectionManager;
 import com.b2international.snowowl.datastore.index.DocumentWithScore;
 import com.b2international.snowowl.datastore.index.IndexUtils;
+import com.b2international.snowowl.datastore.index.mapping.LongIndexField;
 import com.b2international.snowowl.datastore.server.index.FSIndexServerService;
 import com.b2international.snowowl.datastore.server.index.IIndexPostProcessor;
 import com.b2international.snowowl.snomed.Description;
@@ -219,7 +220,7 @@ public class ImportIndexServerService extends FSIndexServerService<IIndexEntry> 
         doc.add(businessIdField);
         doc.add(new LongField(CDO_ID, storageKey, IndexUtils.TYPE_PRECISE_LONG_STORED));
 
-        index(SUPPORTING_INDEX_BRANCH_PATH, doc, new Term(CDO_ID, IndexUtils.longToPrefixCoded(storageKey)));
+        index(SUPPORTING_INDEX_BRANCH_PATH, doc, new Term(CDO_ID, LongIndexField._toBytesRef(storageKey)));
     }
 
     public long getMemberCdoId(final String uuid) {

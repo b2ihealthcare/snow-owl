@@ -499,11 +499,11 @@ public class SnomedServerRefSetBrowser extends AbstractSnomedIndexBrowser<Snomed
 
 		final BooleanQuery sourceModuleQuery = new BooleanQuery(true);
 		sourceModuleQuery.add(SnomedMappings.newQuery().module(id).matchAll(), Occur.MUST);
-		sourceModuleQuery.add(new TermQuery(new Term(REFERENCE_SET_MEMBER_SOURCE_EFFECTIVE_TIME, IndexUtils.longToPrefixCoded(EffectiveTimes.UNSET_EFFECTIVE_TIME))), Occur.MUST_NOT);
+		sourceModuleQuery.add(SnomedMappings.newQuery().field(REFERENCE_SET_MEMBER_SOURCE_EFFECTIVE_TIME, EffectiveTimes.UNSET_EFFECTIVE_TIME).matchAll(), Occur.MUST_NOT);
 		
 		final BooleanQuery targetModuleQuery = new BooleanQuery(true);
 		targetModuleQuery.add(SnomedMappings.newQuery().memberReferencedComponentId(id).matchAll(), Occur.MUST);
-		targetModuleQuery.add(new TermQuery(new Term(REFERENCE_SET_MEMBER_TARGET_EFFECTIVE_TIME, IndexUtils.longToPrefixCoded(EffectiveTimes.UNSET_EFFECTIVE_TIME))), Occur.MUST_NOT);
+		targetModuleQuery.add(SnomedMappings.newQuery().field(REFERENCE_SET_MEMBER_TARGET_EFFECTIVE_TIME, EffectiveTimes.UNSET_EFFECTIVE_TIME).matchAll(), Occur.MUST_NOT);
 		
 		final Query moduleQuery = SnomedMappings.newQuery().and(sourceModuleQuery).and(targetModuleQuery).matchAny();
 		final Query query = SnomedMappings.newQuery().memberRefSetId(Concepts.REFSET_MODULE_DEPENDENCY_TYPE).and(moduleQuery).matchAll();

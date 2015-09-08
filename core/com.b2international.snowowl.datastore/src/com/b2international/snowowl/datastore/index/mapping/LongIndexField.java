@@ -20,11 +20,10 @@ import org.apache.lucene.document.LongField;
 import org.apache.lucene.index.IndexableField;
 import org.apache.lucene.search.SortField.Type;
 import org.apache.lucene.util.BytesRef;
+import org.apache.lucene.util.NumericUtils;
 
 import bak.pcj.set.LongOpenHashSet;
 import bak.pcj.set.LongSet;
-
-import com.b2international.snowowl.datastore.index.IndexUtils;
 
 /**
  * @since 4.3
@@ -75,7 +74,9 @@ public class LongIndexField extends IndexFieldBase<Long> implements LongCollecti
 	 * @deprecated - if possible don't use this API, use {@link Mappings} or {@link #LongIndexField(String) constructor} instead
 	 */
 	public static BytesRef _toBytesRef(Long value) {
-		return IndexUtils.longToPrefixCoded(value);
+		final BytesRef bytesRef = new BytesRef();
+		NumericUtils.longToPrefixCoded(value, 0, bytesRef);
+		return bytesRef;
 	}
 
 }

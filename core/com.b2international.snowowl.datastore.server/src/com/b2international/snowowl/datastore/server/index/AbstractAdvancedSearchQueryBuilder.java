@@ -40,7 +40,6 @@ import com.b2international.snowowl.datastore.advancedsearch.DateRangeSearchCrite
 import com.b2international.snowowl.datastore.advancedsearch.LongSearchCriteria;
 import com.b2international.snowowl.datastore.advancedsearch.StringSearchCriteria;
 import com.b2international.snowowl.datastore.index.IndexQueryBuilder;
-import com.b2international.snowowl.datastore.index.IndexUtils;
 import com.b2international.snowowl.datastore.index.mapping.Mappings;
 
 /**
@@ -144,9 +143,8 @@ public abstract class AbstractAdvancedSearchQueryBuilder {
 				return NumericRangeQuery.newLongRange(indexKey, min, max, true, true);
 			
 			} else if (criteria instanceof LongSearchCriteria) {
-				
 				final LongSearchCriteria longSearchCriteria = (LongSearchCriteria) criteria;
-				return new TermQuery(new Term(indexKey, IndexUtils.longToPrefixCoded(longSearchCriteria.getSearchValue())));
+				return Mappings.newQuery().field(indexKey, longSearchCriteria.getSearchValue()).matchAll();
 			}
 		}
 		return new BooleanQuery(); // empty clause

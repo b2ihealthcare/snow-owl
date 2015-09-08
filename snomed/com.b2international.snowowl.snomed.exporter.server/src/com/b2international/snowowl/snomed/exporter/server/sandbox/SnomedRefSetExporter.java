@@ -16,7 +16,6 @@
 package com.b2international.snowowl.snomed.exporter.server.sandbox;
 
 import static com.b2international.snowowl.core.ApplicationContext.getServiceForClass;
-import static com.b2international.snowowl.datastore.index.IndexUtils.longToPrefixCoded;
 import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_EFFECTIVE_TIME;
 import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_UUID;
 import static com.google.common.base.Preconditions.checkNotNull;
@@ -24,9 +23,7 @@ import static com.google.common.base.Preconditions.checkNotNull;
 import java.util.Set;
 
 import org.apache.lucene.document.Document;
-import org.apache.lucene.index.Term;
 import org.apache.lucene.search.Query;
-import org.apache.lucene.search.TermQuery;
 import org.eclipse.emf.cdo.transaction.CDOTransaction;
 
 import com.b2international.snowowl.core.api.IBranchPath;
@@ -130,6 +127,7 @@ public class SnomedRefSetExporter extends SnomedCompositeExporter implements Sno
 		final IBranchPath branchPath = getConfiguration().getCurrentBranchPath();
 		final String refSetName = SnomedConceptNameProvider.INSTANCE.getComponentLabel(branchPath, refSetId);
 		return CDOUtils.apply(new CDOTransactionFunction<String>(connection, branchPath) {
+			@Override
 			protected String apply(final CDOTransaction transaction) {
 				final SnomedRefSet refSet = new SnomedRefSetLookupService().getComponent(getRefSetId(), transaction);
 				return SnomedRfFileNameBuilder.buildRefSetFileName(getConfiguration(), refSetName, refSet);
@@ -139,7 +137,7 @@ public class SnomedRefSetExporter extends SnomedCompositeExporter implements Sno
 	
 	@Override
 	protected Query getUnpublishedQuery(final long effectiveTime) {
-		return new TermQuery(new Term(getEffectiveTimeField(), longToPrefixCoded(effectiveTime)));
+		return SnomedMappings.newQuery().field(getEffectiveTimeField(), effectiveTime).matchAll();
 	}
 
 	@Override
