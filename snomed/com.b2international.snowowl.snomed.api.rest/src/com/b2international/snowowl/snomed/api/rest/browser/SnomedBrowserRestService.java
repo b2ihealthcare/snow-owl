@@ -33,6 +33,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import com.b2international.snowowl.api.domain.IComponentRef;
 import com.b2international.snowowl.api.impl.domain.StorageRef;
 import com.b2international.snowowl.core.exceptions.BadRequestException;
+import com.b2international.snowowl.snomed.api.ISnomedConceptService;
 import com.b2international.snowowl.snomed.api.browser.ISnomedBrowserService;
 import com.b2international.snowowl.snomed.api.domain.browser.ISnomedBrowserChildConcept;
 import com.b2international.snowowl.snomed.api.domain.browser.ISnomedBrowserConcept;
@@ -40,6 +41,7 @@ import com.b2international.snowowl.snomed.api.domain.browser.ISnomedBrowserConst
 import com.b2international.snowowl.snomed.api.domain.browser.ISnomedBrowserDescriptionResult;
 import com.b2international.snowowl.snomed.api.domain.browser.ISnomedBrowserParentConcept;
 import com.b2international.snowowl.snomed.api.impl.domain.browser.SnomedBrowserConcept;
+import com.b2international.snowowl.snomed.api.impl.domain.browser.SnomedBrowserConceptUpdate;
 import com.b2international.snowowl.snomed.api.rest.AbstractSnomedRestService;
 import com.wordnik.swagger.annotations.Api;
 import com.wordnik.swagger.annotations.ApiOperation;
@@ -63,8 +65,11 @@ public class SnomedBrowserRestService extends AbstractSnomedRestService {
 	public static final String IHTSDO_V1_MEDIA_TYPE = "application/vnd.org.ihtsdo.browser+json";
 
 	@Autowired
-	protected ISnomedBrowserService delegate;
-
+	protected ISnomedBrowserService browserService;
+	
+	@Autowired
+	private ISnomedConceptService conceptService;
+	
 	@ApiOperation(
 			value="Retrieve single concept properties",
 			notes="Retrieves a single concept and related information on a branch.")
@@ -89,7 +94,7 @@ public class SnomedBrowserRestService extends AbstractSnomedRestService {
 			final HttpServletRequest request) {
 
 		final IComponentRef conceptRef = createComponentRef(branchPath, conceptId);
-		return delegate.getConceptDetails(conceptRef, Collections.list(request.getLocales()));
+		return browserService.getConceptDetails(conceptRef, Collections.list(request.getLocales()));
 	}
 
 	@ApiOperation(
@@ -116,7 +121,7 @@ public class SnomedBrowserRestService extends AbstractSnomedRestService {
 		if (concept.getConceptId() != null) {
 			throw new BadRequestException("The concept in the request body should not have an ID when creating. When performing an update include the concept ID in the URL.");
 		}
-		return delegate.create(branchPath, concept, userId, Collections.list(request.getLocales()));
+		return browserService.create(branchPath, concept, userId, Collections.list(request.getLocales()));
 	}
 
 	@ApiOperation(
@@ -137,7 +142,7 @@ public class SnomedBrowserRestService extends AbstractSnomedRestService {
 			final String conceptId,
 
 			@RequestBody
-			final SnomedBrowserConcept concept,
+			final SnomedBrowserConceptUpdate concept,
 
 			final Principal principal,
 
@@ -148,7 +153,7 @@ public class SnomedBrowserRestService extends AbstractSnomedRestService {
 		}
 
 		final String userId = principal.getName();
-		return delegate.update(branchPath, concept, userId, Collections.list(request.getLocales()));
+		return browserService.update(branchPath, concept, userId, Collections.list(request.getLocales()));
 	}
 
 	@ApiOperation(
@@ -178,7 +183,7 @@ public class SnomedBrowserRestService extends AbstractSnomedRestService {
 			final HttpServletRequest request) {
 		
 		final IComponentRef ref = createComponentRef(branchPath, conceptId);
-		return delegate.getConceptParents(ref, Collections.list(request.getLocales()));
+		return browserService.getConceptParents(ref, Collections.list(request.getLocales()));
 	}
 	
 	@ApiOperation(
@@ -208,21 +213,21 @@ public class SnomedBrowserRestService extends AbstractSnomedRestService {
 			final HttpServletRequest request) {
 
 		final IComponentRef ref = createComponentRef(branchPath, conceptId);
-		return delegate.getConceptChildren(ref, Collections.list(request.getLocales()));
+		return browserService.getConceptChildren(ref, Collections.list(request.getLocales()));
 	}
 
 	@ApiOperation(
-			value = "Retrieve descriptions matching a query",
+			value = "Retrieve descriptions matching a query (hits DB to fetch FSN in concept section)",
 			notes = "Returns a list of descriptions which have a term matching the specified query string on a version.",
 			response=Void.class)
 	@ApiResponses({
-		@ApiResponse(code = 200, message = "OK"),
-		@ApiResponse(code = 404, message = "Code system version or concept not found")
+			@ApiResponse(code = 200, message = "OK"),
+			@ApiResponse(code = 404, message = "Code system version or concept not found")
 	})
 	@RequestMapping(
-			value="/descriptions",
+			value="/descriptions-fsn",
 			method = RequestMethod.GET)
-	public @ResponseBody List<ISnomedBrowserDescriptionResult> searchDescriptions(
+	public @ResponseBody List<ISnomedBrowserDescriptionResult> searchDescriptionsFSN(
 			@ApiParam(value="The branch path")
 			@PathVariable(value="path")
 			final String branchPath,
@@ -232,21 +237,59 @@ public class SnomedBrowserRestService extends AbstractSnomedRestService {
 			final String query,
 
 			@ApiParam(value="The starting offset in the list")
-			@RequestParam(value="offset", defaultValue="0", required=false) 
+			@RequestParam(value="offset", defaultValue="0", required=false)
 			final int offset,
 
 			@ApiParam(value="The maximum number of items to return")
-			@RequestParam(value="limit", defaultValue="50", required=false) 
+			@RequestParam(value="limit", defaultValue="50", required=false)
 			final int limit,
 
 			@ApiParam(value="Language codes and reference sets, in order of preference")
-			@RequestHeader(value="Accept-Language", defaultValue="en-US;q=0.8,en-GB;q=0.6", required=false) 
+			@RequestHeader(value="Accept-Language", defaultValue="en-US;q=0.8,en-GB;q=0.6", required=false)
 			final String languageSetting,
 
 			final HttpServletRequest request) {
 
 		final StorageRef ref = new StorageRef(codeSystemShortName, branchPath);
-		return delegate.getDescriptions(ref, query, Collections.list(request.getLocales()), offset, limit);
+		return browserService.getDescriptions(ref, query, Collections.list(request.getLocales()), ISnomedBrowserDescriptionResult.TermType.FSN, offset, limit);
+	}
+
+	@ApiOperation(
+			value = "Retrieve descriptions matching a query (returns indexed fields only - PT not FSN within concept section)",
+			notes = "Returns a list of descriptions which have a term matching the specified query string on a version.",
+			response=Void.class)
+	@ApiResponses({
+			@ApiResponse(code = 200, message = "OK"),
+			@ApiResponse(code = 404, message = "Code system version or concept not found")
+	})
+	@RequestMapping(
+			value="/descriptions",
+			method = RequestMethod.GET)
+	public @ResponseBody List<ISnomedBrowserDescriptionResult> searchDescriptionsPT(
+			@ApiParam(value="The branch path")
+			@PathVariable(value="path")
+			final String branchPath,
+
+			@ApiParam(value="The query string")
+			@RequestParam(value="query")
+			final String query,
+
+			@ApiParam(value="The starting offset in the list")
+			@RequestParam(value="offset", defaultValue="0", required=false)
+			final int offset,
+
+			@ApiParam(value="The maximum number of items to return")
+			@RequestParam(value="limit", defaultValue="50", required=false)
+			final int limit,
+
+			@ApiParam(value="Language codes and reference sets, in order of preference")
+			@RequestHeader(value="Accept-Language", defaultValue="en-US;q=0.8,en-GB;q=0.6", required=false)
+			final String languageSetting,
+
+			final HttpServletRequest request) {
+
+		final StorageRef ref = new StorageRef(codeSystemShortName, branchPath);
+		return browserService.getDescriptions(ref, query, Collections.list(request.getLocales()), ISnomedBrowserDescriptionResult.TermType.PT, offset, limit);
 	}
 
 	@ApiOperation(
@@ -268,7 +311,7 @@ public class SnomedBrowserRestService extends AbstractSnomedRestService {
 
 			final HttpServletRequest request) {
 		final StorageRef ref = new StorageRef(codeSystemShortName, branchPath);
-		return delegate.getConstants(ref, Collections.list(request.getLocales()));
+		return browserService.getConstants(ref, Collections.list(request.getLocales()));
 	}
 
 }

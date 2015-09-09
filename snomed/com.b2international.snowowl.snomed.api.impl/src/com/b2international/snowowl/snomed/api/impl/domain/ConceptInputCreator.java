@@ -4,6 +4,7 @@ import com.b2international.snowowl.core.terminology.ComponentCategory;
 import com.b2international.snowowl.snomed.api.domain.*;
 import com.b2international.snowowl.snomed.api.domain.browser.ISnomedBrowserDescription;
 import com.b2international.snowowl.snomed.api.impl.domain.browser.SnomedBrowserConcept;
+import com.b2international.snowowl.snomed.api.impl.domain.browser.SnomedBrowserConceptUpdate;
 
 import java.util.List;
 
@@ -46,6 +47,17 @@ public class ConceptInputCreator extends AbstractInputCreator implements Compone
 		if (!existingVersion.getDefinitionStatus().equals(newVersion.getDefinitionStatus())) {
 			anyDifference = true;
 			snomedConceptUpdate.setDefinitionStatus(newVersion.getDefinitionStatus());
+		}
+		
+		if (newVersion instanceof SnomedBrowserConceptUpdate) {
+			SnomedBrowserConceptUpdate update = (SnomedBrowserConceptUpdate) newVersion;
+			if (!newVersion.isActive()) {
+				InactivationIndicator inactivationIndicator = update.getInactivationIndicator();
+				if (inactivationIndicator != null) {
+					snomedConceptUpdate.setInactivationIndicator(inactivationIndicator);
+					anyDifference = true;
+				}
+			}
 		}
 
 		if (anyDifference) {
