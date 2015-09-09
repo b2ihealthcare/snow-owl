@@ -243,10 +243,25 @@ public class TerminologyBrowserFilter<E extends IIndexEntry> {
 			return;
 		}
 		
+		boolean hasResultParent = false;
+		
+		for (final String parentId : superTypeIds) {
+			if (filteredComponents.contains(parentId)) {
+				hasResultParent = true;
+				break;
+			}
+		}
+		
 		for (final String parentId : superTypeIds) {
 
+			/* 
+			 * An actual search result should only be connected to another search result 
+			 * as their parent, if any exist.
+			 */
 			if (filteredComponents.contains(parentId)) {
 				processComponentForTree(branchPath, parentId);
+			} else if (hasResultParent) {
+				continue;
 			}
 
 			if (componentMap.containsKey(parentId)) {
