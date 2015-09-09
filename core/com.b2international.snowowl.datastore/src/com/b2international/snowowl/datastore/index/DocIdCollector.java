@@ -18,7 +18,7 @@ package com.b2international.snowowl.datastore.index;
 import java.io.IOException;
 
 import org.apache.lucene.index.AtomicReaderContext;
-import org.apache.lucene.index.IndexReader;
+import org.apache.lucene.search.CollectionTerminatedException;
 import org.apache.lucene.search.Collector;
 import org.apache.lucene.search.DocIdSet;
 import org.apache.lucene.search.DocIdSetIterator;
@@ -28,7 +28,8 @@ import org.apache.lucene.util.FixedBitSet;
 import com.google.common.base.Preconditions;
 
 /**
- * A {@link Collector collector} storing all document ID in a {@link DocIds} instance. 
+ * A {@link Collector collector} storing all document ID in a {@link DocIds} instance.
+ * 
  * @see DocIds
  * @see DocIdsIterator
  */
@@ -41,8 +42,6 @@ public class DocIdCollector extends Collector {
 	/**
 	 * Factory method for creating {@link DocIdCollector} instance.
 	 * @param size the number of documents that are expected to be collected.
-	 * <br><b>Note:&nbsp;</b> if more documents are collected, unexpected exceptions may be thrown. Usually clients 
-	 * should pass {@link IndexReader#maxDoc()} of the same {@link IndexReader} with which the search is executed.
 	 */
 	public static DocIdCollector create(final int size) {
 		return new DocIdCollector(size);
@@ -53,38 +52,33 @@ public class DocIdCollector extends Collector {
 	 * @param size the size of the backing bit set. Preferably the maximum document ID. 
 	 * @see DocIdCollector#create(int)
 	 */
-	public DocIdCollector(final int size) {
+	private DocIdCollector(final int size) {
 		docIds = new FixedBitSet(size);
 	}
 	
-	/* (non-Javadoc)
-	 * @see org.apache.lucene.search.Collector#setScorer(org.apache.lucene.search.Scorer)
-	 */
 	@Override
 	public void setScorer(Scorer scorer) throws IOException {
 		//intentionally ignored
 	}
 
-	/* (non-Javadoc)
-	 * @see org.apache.lucene.search.Collector#collect(int)
-	 */
 	@Override
 	public void collect(int doc) throws IOException {
 		docIds.set(docBase + doc);
-		++numDocIds;
+		
+		if (++numDocIds >= docIds.length()) {
+			throw new CollectionTerminatedException();
+		}
 	}
 
-	/* (non-Javadoc)
-	 * @see org.apache.lucene.search.Collector#setNextReader(org.apache.lucene.index.AtomicReaderContext)
-	 */
 	@Override
 	public void setNextReader(AtomicReaderContext context) throws IOException {
+		if (numDocIds >= docIds.length()) {
+			throw new CollectionTerminatedException();
+		}
+		
 		docBase = Preconditions.checkNotNull(context, "Atomic reader context argument cannot be null.").docBase;
 	}
 
-	/* (non-Javadoc)
-	 * @see org.apache.lucene.search.Collector#acceptsDocsOutOfOrder()
-	 */
 	@Override
 	public boolean acceptsDocsOutOfOrder() {
 		return true;
