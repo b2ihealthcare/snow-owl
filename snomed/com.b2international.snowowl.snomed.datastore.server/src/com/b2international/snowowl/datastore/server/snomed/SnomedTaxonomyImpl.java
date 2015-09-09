@@ -612,15 +612,15 @@ public class SnomedTaxonomyImpl implements SnomedTaxonomy {
 
 			final int sourceConceptInternalId = concepts.getInternalId(sourceId);
 			if (sourceConceptInternalId < 0) {
-				throw new IllegalStateException("Cannot find internal source concept ID for: " + sourceId);
+				throw new IllegalStateException(String.format("Cannot find internal source concept ID for %s on branch: %s", sourceId, branchPath));
 			}
 			final int destinationConceptInternalId = concepts.getInternalId(destinationId);
 			if (destinationConceptInternalId < 0) {
-				throw new IllegalStateException("Cannot find internal destination concept ID for: " + destinationId);
+				throw new IllegalStateException(String.format("Cannot find internal destination concept ID for %s on branch: %s", destinationId, branchPath));
 			}
 			final int typeConceptInternalId = concepts.getInternalId(typeId);
 			if (destinationConceptInternalId < 0) {
-				throw new IllegalStateException("Cannot find internal type concept ID for: " + typeId);
+				throw new IllegalStateException(String.format("Cannot find internal type concept ID for %s on branch: %s ", typeId, branchPath));
 			}
 
 			incomingOtherHistorgram[destinationConceptInternalId]++;
