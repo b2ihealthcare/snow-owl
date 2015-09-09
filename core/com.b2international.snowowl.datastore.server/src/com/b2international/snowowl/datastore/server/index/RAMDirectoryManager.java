@@ -15,45 +15,37 @@
  */
 package com.b2international.snowowl.datastore.server.index;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
 
-import org.apache.lucene.index.IndexCommit;
 import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.RAMDirectory;
 
-import com.b2international.snowowl.core.api.IBranchPath;
-import com.b2international.snowowl.datastore.BranchPathUtils;
-import com.b2international.snowowl.datastore.server.internal.lucene.store.CompositeDirectory;
+import com.b2international.snowowl.core.api.BranchPath;
 
 /**
  * Directory manager for a {@link RAMDirectory}.
  */
-public class RAMDirectoryManager implements IDirectoryManager {
+public class RAMDirectoryManager extends AbstractDirectoryManager implements IDirectoryManager {
 
-	@Override
-	public Directory createDirectory(final IBranchPath branchPath, final IndexBranchService baseService) throws IOException {
-		if (BranchPathUtils.isMain(branchPath)) {
-			return new RAMDirectory();
-		} else {
-			final IndexCommit commit = baseService.getIndexCommit(branchPath);
-			return new CompositeDirectory(commit, new RAMDirectory());
-		}
+	public RAMDirectoryManager(final String repositoryUuid, final File indexRelativeRootPath) {
+		super(repositoryUuid, indexRelativeRootPath);
 	}
 
 	@Override
-	public void deleteIndex(final IBranchPath branchPath) {
-		//intentionally ignored
+	protected Directory openReadWriteDirectory(final File folderForBranchPath) throws IOException {
+		return new RAMDirectory();
 	}
 
 	@Override
-	public List<String> listFiles(final IBranchPath branchPath) {
+	public void firstStartup(final IndexBranchService service) {
+		return;
+	}
+
+	@Override
+	public List<String> listFiles(final BranchPath branchPath) {
 		return Collections.emptyList();
-	}
-	
-	@Override
-	public void fireFirstStartup(final IndexBranchService service) {
-		//does nothing
 	}
 }
