@@ -472,7 +472,7 @@ public class CDOTransactionImpl extends CDOViewImpl implements InternalCDOTransa
       throw new IllegalArgumentException("Source is already contained in " + target);
     }
 
-    if (sourceBase != null && CDOBranchUtil.isContainedBy(sourceBase, source))
+    if (sourceBase != null && !CDOBranchUtil.isContainedBy(sourceBase, source))
     {
       throw new IllegalArgumentException("Source base is not contained in " + source);
     }
