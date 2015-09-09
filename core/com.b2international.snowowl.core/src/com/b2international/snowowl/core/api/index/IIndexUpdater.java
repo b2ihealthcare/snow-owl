@@ -17,6 +17,7 @@ package com.b2international.snowowl.core.api.index;
 
 import java.util.List;
 
+import com.b2international.snowowl.core.api.BranchPath;
 import com.b2international.snowowl.core.api.IBranchPath;
 
 /**
@@ -34,7 +35,7 @@ public interface IIndexUpdater<E extends IIndexEntry> extends IIndexService<E> {
 	 * @param indexMappingStrategy generic strategy which is responsible for mapping to documents to be indexed (may not
 	 * be {@code null})
 	 */
-	void index(final IBranchPath branchPath, final IIndexMappingStrategy indexMappingStrategy);
+	void index(IBranchPath branchPath, IIndexMappingStrategy indexMappingStrategy);
 	
 	/**
 	 * Removes an entry from the index.
@@ -42,21 +43,21 @@ public interface IIndexUpdater<E extends IIndexEntry> extends IIndexService<E> {
 	 * @param branchPath the branch path reference limiting visibility to a particular branch (may not be {@code null})
 	 * @param storageKey the storage key of the document
 	 */
-	void delete(final IBranchPath branchPath, final long storageKey);
+	void delete(IBranchPath branchPath, long storageKey);
 
 	/**
 	 * Commits all pending changes to the index.
 	 * 
 	 * @param branchPath the branch path reference limiting visibility to a particular branch (may not be {@code null})
 	 */
-	void commit(final IBranchPath branchPath);
+	void commit(IBranchPath branchPath);
 	
 	/**
 	 * Rolls back all pending changes.
 	 * 
 	 * @param branchPath the branch path reference limiting visibility to a particular branch (may not be {@code null})
 	 */
-	void rollback(final IBranchPath branchPath);
+	void rollback(IBranchPath branchPath);
 	
 	/**
 	 * Calling this method will drop all of the documents in the index.
@@ -67,23 +68,22 @@ public interface IIndexUpdater<E extends IIndexEntry> extends IIndexService<E> {
 	 * 
 	 * @param branchPath the branch path reference limiting visibility to a particular branch (may not be {@code null})
 	 */
-	void deleteAll(final IBranchPath branchPath);
+	void deleteAll(IBranchPath branchPath);
 	
 	/**
 	 * Signals the index updater that the indexes for the specified branch path should be closed and removed from the disk.
 	 * 
 	 * @param branchPath
 	 */
-	void inactiveClose(final IBranchPath branchPath);
+	void inactiveClose(IBranchPath branchPath);
 
 	/**
 	 * Creates an empty commit with custom metadata set for a given branch index.
 	 * 
-	 * @param branchPath the branch path
-	 * @param cdoBranchPath a sequence of CDO branch identifiers, starting with 0 (MAIN)
-	 * @param baseTimestamp
+	 * @param logicalPath the branch-specific index service key to re-register
+	 * @param physicalPath the branch path to open
 	 */
-	void reopen(final IBranchPath branchPath, final int[] cdoBranchPath, final long baseTimestamp);
+	void reopen(IBranchPath logicalPath, BranchPath physicalPath);
 
 	/**
 	 * Returns with the UUID of the repository which is associated with the current index service. 
@@ -96,5 +96,5 @@ public interface IIndexUpdater<E extends IIndexEntry> extends IIndexService<E> {
 	 * may not be complete to reproduce an index by itself in case of "layered" indexes.
 	 * @return the list of files which carry data for this update, or an empty list (never {@code null})
 	 */
-	List<String> listFiles(final IBranchPath branchPath);
+	List<String> listFiles(IBranchPath branchPath);
 }
