@@ -29,11 +29,11 @@ import org.eclipse.emf.cdo.transaction.CDOTransaction;
 import org.eclipse.emf.cdo.util.CommitException;
 
 import com.b2international.snowowl.core.Metadata;
-import com.b2international.snowowl.core.api.SnowowlRuntimeException;
 import com.b2international.snowowl.datastore.BranchPathUtils;
 import com.b2international.snowowl.datastore.branch.Branch;
 import com.b2international.snowowl.datastore.branch.BranchManager;
 import com.b2international.snowowl.datastore.branch.BranchMergeException;
+import com.b2international.snowowl.datastore.cdo.CDOUtils;
 import com.b2international.snowowl.datastore.cdo.ICDOConnection;
 import com.b2international.snowowl.datastore.cdo.ICDORepository;
 import com.b2international.snowowl.datastore.server.internal.IRepository;
@@ -89,11 +89,8 @@ public class CDOBranchManagerImpl extends BranchManagerImpl {
 
     CDOBranch getCDOBranch(Branch branch) {
         checkArgument(!branch.isDeleted(), "Deleted branches cannot be retrieved.");
-        final Integer branchId = ((InternalCDOBasedBranch) branch).cdoBranchId();
-        if (branchId != null) {
-            return loadCDOBranch(branchId);
-        }
-        throw new SnowowlRuntimeException("Missing registered CDOBranch identifier for branch at path: " + branch.path());
+        final int branchId = ((InternalCDOBasedBranch) branch).cdoBranchId();
+        return loadCDOBranch(branchId);
     }
 
     private Branch getBranch(Integer branchId) {
@@ -116,7 +113,9 @@ public class CDOBranchManagerImpl extends BranchManagerImpl {
             targetTransaction = connection.createTransaction(targetBranch);
 
             CDOBranchMerger merger = new CDOBranchMerger(repository.getConflictProcessor());
-            targetTransaction.merge(sourceBranch.getHead(), merger);
+            
+            // XXX: specifying sourceBase instead of defaulting to the computed common ancestor point here
+            targetTransaction.merge(sourceBranch.getHead(), sourceBranch.getBase(), merger);
             merger.postProcess(targetTransaction);
 
             targetTransaction.setCommitComment(commitMessage);
@@ -143,12 +142,7 @@ public class CDOBranchManagerImpl extends BranchManagerImpl {
     InternalBranch reopen(InternalBranch parent, String name, Metadata metadata) {
         final CDOBranch childCDOBranch = createCDOBranch(parent, name);
         final CDOBranchPoint[] basePath = childCDOBranch.getBasePath();
-        final int[] cdoBranchPath = new int[basePath.length];
-        cdoBranchPath[basePath.length - 1] = childCDOBranch.getID();
-        
-        for (int i = 1; i < basePath.length; i++) {
-        	cdoBranchPath[i - 1] = basePath[i].getBranch().getID();
-        }
+        final int[] cdoBranchPath = CDOUtils.getCdoBranchPath(childCDOBranch);
 
         final long timeStamp = basePath[basePath.length - 1].getTimeStamp();
         repository.getIndexUpdater().reopen(BranchPathUtils.createPath(childCDOBranch), cdoBranchPath, timeStamp);

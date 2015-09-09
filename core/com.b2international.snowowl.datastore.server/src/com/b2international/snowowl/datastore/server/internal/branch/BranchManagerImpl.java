@@ -124,11 +124,10 @@ public abstract class BranchManagerImpl implements BranchManager {
 	}
 
 	final InternalBranch rebase(final InternalBranch source, final InternalBranch target, final String commitMessage) {
-		InternalBranch parent = (InternalBranch) source.parent();
-		applyChangeSet(parent, source, true, commitMessage);
-		final InternalBranch rebasedSource = reopen(parent, source.name(), source.metadata());
+		applyChangeSet(target, source, true, commitMessage);
+		final InternalBranch rebasedSource = reopen(target, source.name(), source.metadata());
 		
-		if (source.state() == BranchState.DIVERGED) {
+		if (source.state() == BranchState.DIVERGED || source.state() == BranchState.STALE) {
 			return applyChangeSet(rebasedSource, source, false, commitMessage);
 		} else {
 			return rebasedSource;
