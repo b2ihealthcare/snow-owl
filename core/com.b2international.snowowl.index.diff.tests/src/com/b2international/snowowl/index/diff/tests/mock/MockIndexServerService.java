@@ -18,11 +18,11 @@ package com.b2international.snowowl.index.diff.tests.mock;
 import static com.google.common.collect.Lists.newArrayList;
 import static com.google.common.collect.Sets.newHashSet;
 
+import java.io.File;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.concurrent.atomic.AtomicLong;
 
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.Field;
@@ -35,13 +35,14 @@ import org.apache.lucene.search.ScoreDoc;
 
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.datastore.BranchPathUtils;
+import com.b2international.snowowl.datastore.cdo.CDOBranchPath;
 import com.b2international.snowowl.datastore.server.index.ICommitTimeProvider;
 import com.b2international.snowowl.datastore.server.index.IDirectoryManager;
 import com.b2international.snowowl.datastore.server.index.IIndexAccessUpdater;
-import com.b2international.snowowl.datastore.server.index.IIndexPostProcessor;
 import com.b2international.snowowl.datastore.server.index.IndexServerService;
 import com.b2international.snowowl.datastore.server.index.RAMDirectoryManager;
 import com.google.common.base.Function;
+import com.google.common.base.Splitter;
 import com.google.common.collect.FluentIterable;
 
 /**
@@ -49,7 +50,6 @@ import com.google.common.collect.FluentIterable;
  */
 public class MockIndexServerService extends IndexServerService<MockIndexEntry> {
 
-	private AtomicLong clock = new AtomicLong(0L);
 	private static final String ID_FIELD = "id";
 	private static final String LABEL_FIELD = "label";
 	
@@ -59,17 +59,12 @@ public class MockIndexServerService extends IndexServerService<MockIndexEntry> {
 	private IDirectoryManager directoryManager;
 
 	public MockIndexServerService() {
-		directoryManager = new RAMDirectoryManager();
+		directoryManager = new RAMDirectoryManager(getRepositoryUuid(), new File(getRepositoryUuid()));
 	}
 	
 	@Override
 	public String getRepositoryUuid() {
 		return MockIndexServerService.class.getName();
-	}
-
-	@Override
-	protected IIndexPostProcessor getIndexPostProcessor() {
-		return IIndexPostProcessor.NOOP;
 	}
 
 	@Override
@@ -96,12 +91,13 @@ public class MockIndexServerService extends IndexServerService<MockIndexEntry> {
 
 	public void tag(String tag) {
 		final IBranchPath version = BranchPathUtils.createVersionPath(tag);
-		final String[] segments = version.getPath().split("/");
-		final int[] cdoBranchPath = new int[segments.length];
+		final int numSegments = Splitter.on('/').splitToList(version.getPath()).size();
+		final int[] segments = new int[numSegments];
 		for (int i = 0; i < segments.length ; i++) {
-			cdoBranchPath[i] = i;
+			segments[i] = i;
 		}
-		reopen(version, cdoBranchPath, clock.incrementAndGet());
+		
+		reopen(version, new CDOBranchPath(segments));
 	}
 	
 	public void indexIrrelevantDocs(IBranchPath branch, String...ids) {
