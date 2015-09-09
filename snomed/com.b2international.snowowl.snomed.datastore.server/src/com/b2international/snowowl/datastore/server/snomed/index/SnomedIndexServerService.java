@@ -34,27 +34,24 @@ import org.apache.lucene.search.BooleanClause.Occur;
 import org.apache.lucene.search.BooleanQuery;
 import org.apache.lucene.search.TermQuery;
 
-import bak.pcj.map.LongKeyMap;
-import bak.pcj.map.LongKeyMapIterator;
-import bak.pcj.map.LongKeyOpenHashMap;
-
 import com.b2international.commons.CompareUtils;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.api.SnowowlServiceException;
 import com.b2international.snowowl.core.api.index.CommonIndexConstants;
 import com.b2international.snowowl.core.api.index.IndexException;
-import com.b2international.snowowl.datastore.ICDOChangeProcessor;
 import com.b2international.snowowl.datastore.index.AbstractIndexMappingStrategy;
 import com.b2international.snowowl.datastore.index.DocumentWithScore;
 import com.b2international.snowowl.datastore.index.IDocumentUpdater;
 import com.b2international.snowowl.datastore.index.IndexUtils;
 import com.b2international.snowowl.datastore.server.index.FSIndexServerService;
-import com.b2international.snowowl.datastore.server.index.IIndexPostProcessor;
-import com.b2international.snowowl.datastore.server.index.IndexPostProcessor;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 import com.b2international.snowowl.snomed.datastore.index.SnomedIndexEntry;
 import com.google.common.collect.Iterables;
+
+import bak.pcj.map.LongKeyMap;
+import bak.pcj.map.LongKeyMapIterator;
+import bak.pcj.map.LongKeyOpenHashMap;
 
 /**
  * Server-side index service for SNOMED&nbsp;CT ontology.
@@ -70,33 +67,10 @@ public class SnomedIndexServerService extends FSIndexServerService<SnomedIndexEn
 		super(checkNotNull(indexPath, "indexPath"));
 		documentCache = new HashMap<IBranchPath, LongKeyMap>();
 	}
-	
 
-	/* (non-Javadoc)
-	 * @see com.b2international.snowowl.core.api.index.IIndexUpdater#getRepositoryUuid()
-	 */
 	@Override
 	public String getRepositoryUuid() {
 		return SnomedDatastoreActivator.REPOSITORY_UUID;
-	}
-
-	/* (non-Javadoc)
-	 * @see com.b2international.snowowl.datastore.server.index.IndexServerService#getIndexPostProcessor()
-	 */
-	@Override
-	protected IIndexPostProcessor getIndexPostProcessor() {
-		return new IndexPostProcessor() {
-			
-			@Override
-			protected String getRepositoryUuid() {
-				return SnomedIndexServerService.this.getRepositoryUuid();
-			}
-			
-			@Override
-			protected ICDOChangeProcessor getChangeProcessor(final IBranchPath branchPath) {
-				return new SnomedCDOChangeProcessor(SnomedIndexServerService.this, branchPath, false);
-			}
-		};
 	}
 	
 	/**
