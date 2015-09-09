@@ -660,14 +660,13 @@ public final class RelationshipNormalFormGenerator extends NormalFormGenerator<S
 			byte groupNumber = 1;
 
 			for (final Group group : groups) {
+				group.fillNumbers();
 
 				/* 
-				 * Group numbers are set on existing inferred relationship groups and 0 groups, and we only
-				 * need to renumber any union groups if the group number is not already set.
+				 * Group numbers will already be set on existing inferred relationship groups and 0 groups.
 				 */
 				if (group.getGroupNumber() == NUMBER_NOT_PRESERVED) {
 					group.setGroupNumber(groupNumber++);
-					group.fillNumbers();
 				}
 			}
 		}
