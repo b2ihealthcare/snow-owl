@@ -114,8 +114,8 @@ public class BranchImpl extends MetadataHolderImpl implements Branch, InternalBr
 
 	@Override
 	public Branch rebase(Branch target, String commitMessage) {
-		final Branch.BranchState state = state();
-		if (state == Branch.BranchState.BEHIND || state == Branch.BranchState.DIVERGED || state == Branch.BranchState.STALE) {
+		final BranchState state = state(target);
+		if (state == BranchState.BEHIND || state == BranchState.DIVERGED || state == BranchState.STALE) {
 			return branchManager.rebase(this, (BranchImpl) target, commitMessage);
 		} else {
 			return this;
@@ -128,10 +128,10 @@ public class BranchImpl extends MetadataHolderImpl implements Branch, InternalBr
 			throw new BadRequestException("Can't merge branch '%s' onto itself.", path());
 		}
 		
-		if (source.state() != Branch.BranchState.FORWARD) {
-			throw new BranchMergeException("Only source in the FORWARD state can merged.");
-		} else {
+		if (source.state() == BranchState.FORWARD) {
 			return branchManager.merge(this, (BranchImpl) source, commitMessage);
+		} else {
+			throw new BranchMergeException("Only source in the FORWARD state can merged.");
 		}
 	}
 
@@ -192,22 +192,22 @@ public class BranchImpl extends MetadataHolderImpl implements Branch, InternalBr
 	}
 
     @Override
-	public Branch.BranchState state() {
+	public BranchState state() {
 		return state(parent());
 	}
     
     @Override
-	public Branch.BranchState state(Branch target) {
+	public BranchState state(Branch target) {
 		if (baseTimestamp() < target.baseTimestamp()) {
-        	return Branch.BranchState.STALE;
+        	return BranchState.STALE;
         } else if (headTimestamp > baseTimestamp && target.headTimestamp() < baseTimestamp) {
-        	return Branch.BranchState.FORWARD;
+        	return BranchState.FORWARD;
         } else if (headTimestamp == baseTimestamp && target.headTimestamp() > baseTimestamp) {
-        	return Branch.BranchState.BEHIND;
+        	return BranchState.BEHIND;
         } else if (headTimestamp > baseTimestamp && target.headTimestamp() > baseTimestamp) {
-        	return Branch.BranchState.DIVERGED;
+        	return BranchState.DIVERGED;
         } else {
-    	    return Branch.BranchState.UP_TO_DATE;
+    	    return BranchState.UP_TO_DATE;
         }
     }
     
@@ -242,5 +242,4 @@ public class BranchImpl extends MetadataHolderImpl implements Branch, InternalBr
 		
 		return true;
 	}
-
 }
