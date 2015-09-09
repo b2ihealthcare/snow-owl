@@ -33,7 +33,7 @@ import com.b2international.snowowl.datastore.BranchPathUtils;
 import com.b2international.snowowl.datastore.branch.Branch;
 import com.b2international.snowowl.datastore.branch.BranchManager;
 import com.b2international.snowowl.datastore.branch.BranchMergeException;
-import com.b2international.snowowl.datastore.cdo.CDOUtils;
+import com.b2international.snowowl.datastore.cdo.CDOBranchPath;
 import com.b2international.snowowl.datastore.cdo.ICDOConnection;
 import com.b2international.snowowl.datastore.cdo.ICDORepository;
 import com.b2international.snowowl.datastore.server.internal.IRepository;
@@ -142,10 +142,10 @@ public class CDOBranchManagerImpl extends BranchManagerImpl {
     InternalBranch reopen(InternalBranch parent, String name, Metadata metadata) {
         final CDOBranch childCDOBranch = createCDOBranch(parent, name);
         final CDOBranchPoint[] basePath = childCDOBranch.getBasePath();
-        final int[] cdoBranchPath = CDOUtils.getCdoBranchPath(childCDOBranch);
+        final CDOBranchPath cdoBranchPath = new CDOBranchPath(childCDOBranch);
 
         final long timeStamp = basePath[basePath.length - 1].getTimeStamp();
-        repository.getIndexUpdater().reopen(BranchPathUtils.createPath(childCDOBranch), cdoBranchPath, timeStamp);
+        repository.getIndexUpdater().reopen(BranchPathUtils.createPath(childCDOBranch), cdoBranchPath);
 		return reopen(parent, name, metadata, timeStamp, childCDOBranch.getID());
     }
 
