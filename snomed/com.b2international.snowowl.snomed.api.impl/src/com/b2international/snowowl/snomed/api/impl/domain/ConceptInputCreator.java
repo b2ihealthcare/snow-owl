@@ -14,11 +14,11 @@ public class ConceptInputCreator extends AbstractInputCreator implements Compone
 	public SnomedConceptInput createInput(final String branchPath, SnomedBrowserConcept concept, InputFactory inputFactory) {
 		final SnomedConceptInput conceptInput = new SnomedConceptInput();
 		setCommonComponentProperties(branchPath, concept, conceptInput, ComponentCategory.CONCEPT);
-		conceptInput.setIsAIdGenerationStrategy(conceptInput.getIdGenerationStrategy());
-
+		
 		// Find a parent relationship
 		final String parentRelationshipId = getParentId(concept);
 		conceptInput.setParentId(parentRelationshipId);
+		conceptInput.setIsAIdGenerationStrategy(new UserIdGenerationStrategy(parentRelationshipId));
 
 		final List<ISnomedDescriptionInput> descriptionInputs = newArrayList();
 		for (ISnomedBrowserDescription description : concept.getDescriptions()) {
