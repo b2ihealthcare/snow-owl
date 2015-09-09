@@ -217,7 +217,7 @@ public class SnomedServerStatementBrowser extends AbstractSnomedIndexBrowser<Sno
 		checkNotNull(conceptId, "SNOMED CT concept ID cannot be null.");
 		try {
 			final DocIdCollector collector = DocIdCollector.create(service.maxDoc(branchPath));
-			final Query query = SnomedMappings.newQuery().field(RELATIONSHIP_OBJECT_ID, conceptId).matchAll();
+			final Query query = SnomedMappings.newQuery().field(RELATIONSHIP_OBJECT_ID, Long.valueOf(conceptId)).matchAll();
 			service.search(branchPath, query, collector);
 			return createResultObjects(branchPath, collector.getDocIDs().iterator());
 		} catch (final IOException e) {
