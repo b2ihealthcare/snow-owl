@@ -38,7 +38,7 @@ public class IndexFieldDelegate<T> implements IndexField<T> {
 	}
 
 	@Override
-	public String fieldName() {
+	public final String fieldName() {
 		return delegate.fieldName();
 	}
 
@@ -53,27 +53,27 @@ public class IndexFieldDelegate<T> implements IndexField<T> {
 	}
 	
 	@Override
-	public final List<String> getValuesAsString(Document doc) {
+	public List<String> getValuesAsString(Document doc) {
 		return delegate.getValuesAsString(doc);
 	}
 	
 	@Override
-	public final String getValueAsString(Document doc) {
+	public String getValueAsString(Document doc) {
 		return delegate.getValueAsString(doc);
 	}
 
 	@Override
-	public Query toQuery(T value) {
+	public final Query toQuery(T value) {
 		return delegate.toQuery(value);
 	}
 
 	@Override
-	public Query toExistsQuery() {
+	public final Query toExistsQuery() {
 		return delegate.toExistsQuery();
 	}
 
 	@Override
-	public Term toTerm(T value) {
+	public final Term toTerm(T value) {
 		return delegate.toTerm(value);
 	}
 
@@ -83,27 +83,27 @@ public class IndexFieldDelegate<T> implements IndexField<T> {
 	}
 
 	@Override
-	public void removeAll(Document doc) {
+	public final void removeAll(Document doc) {
 		delegate.removeAll(doc);
 	}
 	
 	@Override
-	public <D extends DocumentBuilderBase<D>> void removeAll(D doc) {
+	public final <D extends DocumentBuilderBase<D>> void removeAll(D doc) {
 		delegate.removeAll(doc);
 	}
 
 	@Override
-	public Sort createSort() {
+	public final Sort createSort() {
 		return delegate.createSort();
 	}
 
 	@Override
-	public Filter createFilter(T... values) {
+	public final Filter createFilter(T... values) {
 		return delegate.createFilter(values);
 	}
 	
 	@Override
-	public Filter createFilter(List<BytesRef> bytesRefs) {
+	public final Filter createFilter(List<BytesRef> bytesRefs) {
 		return delegate.createFilter(bytesRefs);
 	}
 	

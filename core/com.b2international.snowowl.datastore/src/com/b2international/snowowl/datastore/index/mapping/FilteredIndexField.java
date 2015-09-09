@@ -21,6 +21,7 @@ import java.util.List;
 
 import org.apache.lucene.document.Document;
 
+import com.google.common.base.Functions;
 import com.google.common.base.Predicate;
 import com.google.common.collect.FluentIterable;
 
@@ -36,10 +37,27 @@ public class FilteredIndexField<T> extends IndexFieldDelegate<T> {
 		super(delegate);
 		this.predicate = checkNotNull(predicate, "predicate");
 	}
-
+	
+	@Override
+	public T getValue(Document doc) {
+		final T value = super.getValue(doc);
+		return predicate.apply(value) ? value : null;
+	}
+	
+	@Override
+	public String getValueAsString(Document doc) {
+		final T value = getValue(doc);
+		return value == null ? null : value.toString();
+	}
+	
 	@Override
 	public List<T> getValues(Document doc) {
 		return FluentIterable.from(super.getValues(doc)).filter(predicate).toList();
+	}
+	
+	@Override
+	public List<String> getValuesAsString(Document doc) {
+		return FluentIterable.from(getValues(doc)).transform(Functions.toStringFunction()).toList();
 	}
 	
 	protected final Predicate<? super T> getPredicate() {
