@@ -256,7 +256,6 @@ public class SnomedComponentService implements ISnomedComponentService, IPostSto
 	private static final Query PREFERRED_LANGUAGE_QUERY = new TermQuery(new Term(REFERENCE_SET_MEMBER_ACCEPTABILITY_ID, longToPrefixCoded(Concepts.REFSET_DESCRIPTION_ACCEPTABILITY_PREFERRED)));
 	private static final Query ACCEPTED_LANGUAGE_QUERY = new TermQuery(new Term(REFERENCE_SET_MEMBER_ACCEPTABILITY_ID, longToPrefixCoded(Concepts.REFSET_DESCRIPTION_ACCEPTABILITY_ACCEPTABLE)));
 	private static final Query DESCRIPTION_INACTIVATION_REFSET_QUERY = SnomedMappings.newQuery().memberRefSetId(REFSET_DESCRIPTION_INACTIVITY_INDICATOR).matchAll();
-	private static final Query MODULE_MEMBER_QUERY = SnomedMappings.newQuery().active().memberReferencedComponentId(REFSET_MODULE_DEPENDENCY_TYPE).matchAll();
 	private static final Query ALL_CORE_COMPONENTS_QUERY;
 	
 	static {
@@ -1682,7 +1681,7 @@ public class SnomedComponentService implements ISnomedComponentService, IPostSto
 			
 			final int maxDoc = getIndexServerService().maxDoc(branchPath);
 			final DocIdCollector collector = create(maxDoc);
-			getIndexServerService().search(branchPath, MODULE_MEMBER_QUERY, collector);
+			getIndexServerService().search(branchPath, SnomedMappings.newQuery().active().memberRefSetId(REFSET_MODULE_DEPENDENCY_TYPE).matchAll(), collector);
 			final DocIdsIterator itr = collector.getDocIDs().iterator();
 			
 			while (itr.next()) {
