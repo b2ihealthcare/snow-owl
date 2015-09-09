@@ -41,7 +41,6 @@ import org.apache.lucene.search.CachingWrapperFilter;
 import org.apache.lucene.search.Filter;
 import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.Query;
-import org.apache.lucene.search.ReferenceManager;
 import org.apache.lucene.search.ScoreDoc;
 import org.apache.lucene.search.TermQuery;
 import org.apache.lucene.search.TermRangeFilter;
@@ -54,26 +53,22 @@ import org.eclipse.net4j.util.StringUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import bak.pcj.map.LongKeyMap;
-import bak.pcj.map.LongKeyMapIterator;
-import bak.pcj.map.LongKeyOpenHashMap;
-
 import com.b2international.commons.CompareUtils;
+import com.b2international.commons.FileUtils;
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.api.SnowowlRuntimeException;
-import com.b2international.snowowl.core.api.index.IIndexEntry;
+import com.b2international.snowowl.core.api.index.IndexException;
 import com.b2international.snowowl.core.date.DateFormats;
 import com.b2international.snowowl.core.date.Dates;
-import com.b2international.snowowl.datastore.BranchPathUtils;
 import com.b2international.snowowl.datastore.cdo.CDOUtils;
 import com.b2international.snowowl.datastore.cdo.CDOViewFunction;
 import com.b2international.snowowl.datastore.cdo.ICDOConnection;
 import com.b2international.snowowl.datastore.cdo.ICDOConnectionManager;
-import com.b2international.snowowl.datastore.index.DocumentWithScore;
+import com.b2international.snowowl.datastore.index.DocIdCollector;
+import com.b2international.snowowl.datastore.index.DocIdCollector.DocIdsIterator;
 import com.b2international.snowowl.datastore.index.IndexUtils;
-import com.b2international.snowowl.datastore.server.index.FSIndexServerService;
-import com.b2international.snowowl.datastore.server.index.IIndexPostProcessor;
+import com.b2international.snowowl.datastore.store.SingleDirectoryIndexImpl;
 import com.b2international.snowowl.snomed.Description;
 import com.b2international.snowowl.snomed.Relationship;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
@@ -89,14 +84,17 @@ import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
 import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.Iterables;
+
+import bak.pcj.map.LongKeyMap;
+import bak.pcj.map.LongKeyMapIterator;
+import bak.pcj.map.LongKeyOpenHashMap;
 
 /**
  * Index service for improving performance for SNOMED CT import.
  */
-public class ImportIndexServerService extends FSIndexServerService<IIndexEntry> {
+public class ImportIndexServerService extends SingleDirectoryIndexImpl {
 
-    protected static final Logger IMPORT_LOGGER = LoggerFactory.getLogger(ImportIndexServerService.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(ImportIndexServerService.class);
 
     /** Enumerates available term types for descriptions. */
     public enum TermType {
@@ -137,7 +135,6 @@ public class ImportIndexServerService extends FSIndexServerService<IIndexEntry> 
     private static final Set<String> TERM_AND_TYPE_ONLY = ImmutableSet.of(TERM, TERM_TYPE);
 
     private static final String DIRECTORY_PATH = "sct_import";
-    private static final IBranchPath SUPPORTING_INDEX_BRANCH_PATH = BranchPathUtils.createMainPath();
 
     private final IBranchPath importTargetBranchPath;
     private final LongKeyMap pendingDescriptionDocuments = new LongKeyOpenHashMap();
@@ -167,38 +164,27 @@ public class ImportIndexServerService extends FSIndexServerService<IIndexEntry> 
      * 
      */
     public ImportIndexServerService(final IBranchPath importTargetBranchPath, final String languageRefSetId) {
-        super(getDirectoryFolder());
+        super(createPath(), true);
         this.importTargetBranchPath = importTargetBranchPath;
         this.languageRefSetId = languageRefSetId;
-        getManager(SUPPORTING_INDEX_BRANCH_PATH); //triggers directory creation
     }
 
-    /*returns with the file pointing to the index directory.
-     *File#deleteOnExit is set on file.*/
-    private static final File getDirectoryFolder() {
-
+    private static final File createPath() {
         final StringBuilder sb = new StringBuilder();
         sb.append(DIRECTORY_PATH);
         sb.append("_");
         sb.append(Dates.formatByHostTimeZone(new Date(), DateFormats.FULL));
         sb.append("_");
         sb.append(UUID.randomUUID().toString());
-        final File file = new File(sb.toString());
-        file.deleteOnExit();
-        return file;
-
+        
+        return new File(sb.toString());
     }
 
     @Override
-    public void dispose() {
+    public void doDispose() {
     	clear();
-        super.dispose();
-        
-        try {
-			getDirectoryManager().deleteIndex(SUPPORTING_INDEX_BRANCH_PATH);
-		} catch (IOException e) {
-			LOGGER.error("Failed to delete index directory.", e);
-		}
+    	super.doDispose();
+    	FileUtils.deleteDirectory(getDirectory());
     }
 
     public void registerComponent(final String componentId, final CDOID cdoId) {
@@ -220,7 +206,7 @@ public class ImportIndexServerService extends FSIndexServerService<IIndexEntry> 
         doc.add(businessIdField);
         doc.add(new LongField(CDO_ID, storageKey, IndexUtils.TYPE_PRECISE_LONG_STORED));
 
-        index(SUPPORTING_INDEX_BRANCH_PATH, doc, new Term(CDO_ID, IndexUtils.longToPrefixCoded(storageKey)));
+        index(new Term(CDO_ID, IndexUtils.longToPrefixCoded(storageKey)), doc);
     }
 
     public long getMemberCdoId(final String uuid) {
@@ -279,12 +265,10 @@ public class ImportIndexServerService extends FSIndexServerService<IIndexEntry> 
 
     private long getItemCdoId(final Query idQuery) {
 
-        ReferenceManager<IndexSearcher> manager = null;
         IndexSearcher searcher = null;
 
         try {
 
-            manager = getManager(SUPPORTING_INDEX_BRANCH_PATH);
             searcher = manager.acquire();
 
             final TopDocs docs = searcher.search(idQuery, 1);
@@ -393,12 +377,10 @@ public class ImportIndexServerService extends FSIndexServerService<IIndexEntry> 
 
     private Document getDescriptionDocument(final String descriptionId) {
     	
-        ReferenceManager<IndexSearcher> manager = null;
         IndexSearcher searcher = null;
 
         try {
 
-            manager = getManager(SUPPORTING_INDEX_BRANCH_PATH);
             searcher = manager.acquire();
             
 	        final long longDescriptionId = Long.parseLong(descriptionId);
@@ -499,14 +481,11 @@ public class ImportIndexServerService extends FSIndexServerService<IIndexEntry> 
 		conceptLabelQuery.add(createContainerConceptQuery(conceptId), Occur.MUST);
 		conceptLabelQuery.add(new TermQuery(new Term(TERM_TYPE, IndexUtils.intToPrefixCoded(TermType.FSN.ordinal()))), Occur.MUST);
 		
-        final List<DocumentWithScore> fsnDescriptionDocuments = search(SUPPORTING_INDEX_BRANCH_PATH, conceptLabelQuery, null, null, 1);
-
-        if (!CompareUtils.isEmpty(fsnDescriptionDocuments)) {
-            final DocumentWithScore preferredDocument = Iterables.getFirst(fsnDescriptionDocuments, null);
-            final Document unwrappedDocument = preferredDocument.getDocument();
-            return unwrappedDocument.get(TERM);
-        }
-
+        final Iterable<Document> fsnDescriptionDocuments = searchOne(conceptLabelQuery, null);
+		for (Document document : fsnDescriptionDocuments) {
+			return document.get(TERM);
+		}
+		
         return null;
 	}
 
@@ -519,25 +498,20 @@ public class ImportIndexServerService extends FSIndexServerService<IIndexEntry> 
         
         final Filter preferredFilter = getPreferredFilter(languageRefSetId);
         
-        final List<DocumentWithScore> preferredDescriptionDocuments = search(SUPPORTING_INDEX_BRANCH_PATH, conceptLabelQuery, preferredFilter, null, 1);
-
-        if (!CompareUtils.isEmpty(preferredDescriptionDocuments)) {
-            final DocumentWithScore preferredDocument = Iterables.getFirst(preferredDescriptionDocuments, null);
-            final Document unwrappedDocument = preferredDocument.getDocument();
-            return unwrappedDocument.get(TERM);
-        }
+        final Iterable<Document> preferredDescriptionDocuments = searchOne(conceptLabelQuery, preferredFilter);
+        for (final Document document : preferredDescriptionDocuments) {
+        	return document.get(TERM);
+		}
 
         return null;
     }
 
-    public List<TermWithType> getConceptDescriptions(final String conceptId) {
+	public List<TermWithType> getConceptDescriptions(final String conceptId) {
 
-        ReferenceManager<IndexSearcher> manager = null;
         IndexSearcher searcher = null;
 
         try {
 
-            manager = getManager(SUPPORTING_INDEX_BRANCH_PATH);
             searcher = manager.acquire();
 
             final BooleanQuery conceptActiveDescriptionsQuery = new BooleanQuery(true); 
@@ -604,12 +578,10 @@ public class ImportIndexServerService extends FSIndexServerService<IIndexEntry> 
 
 	public String getDescriptionLabel(final String descriptionId) {
 
-        ReferenceManager<IndexSearcher> manager = null;
         IndexSearcher searcher = null;
 
         try {
 
-            manager = getManager(SUPPORTING_INDEX_BRANCH_PATH);
             searcher = manager.acquire();
 
             final Query descriptionQuery = createDescriptionQuery(descriptionId);
@@ -656,33 +628,33 @@ public class ImportIndexServerService extends FSIndexServerService<IIndexEntry> 
     }
 
     @Override
-    public final void commit(final IBranchPath branchPath) {
-        LOGGER.warn("Don't use #commit(IBranchPath) in Import time indexing, use the #commit() method instead.");
-        commit();
-    }
-
-    @Override
-    public final void rollback(final IBranchPath branchPath) {
-        LOGGER.warn("Don't use #rollback(IBranchPath) in Import time indexing, use the #rollback() method instead.");
-        rollback();
-    }
-
-    public final void commit() {
+    public void commit() {
     	for (final LongKeyMapIterator itr = pendingDescriptionDocuments.entries(); itr.hasNext(); /* empty */) {
     		itr.next();
     		
     		final long descriptionId = itr.getKey();
     		final Document descriptionDoc = (Document) itr.getValue();
-    		index(SUPPORTING_INDEX_BRANCH_PATH, descriptionDoc, new Term(DESCRIPTION_ID, String.valueOf(descriptionId)));
+    		index(new Term(DESCRIPTION_ID, String.valueOf(descriptionId)), descriptionDoc);
     	}
     	
     	clear();
-        super.commit(SUPPORTING_INDEX_BRANCH_PATH);
+        try {
+			super.commit();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
     }
 
     public final void rollback() {
-    	clear();
-        super.rollback(SUPPORTING_INDEX_BRANCH_PATH);
+        try {
+			writer.rollback();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+        doDispose();
+        initLucene(getDirectory(), false);
     }
 
 	private void clear() {
@@ -695,19 +667,42 @@ public class ImportIndexServerService extends FSIndexServerService<IIndexEntry> 
         return ApplicationContext.getInstance().getService(ICDOConnectionManager.class).get(SnomedPackage.eINSTANCE);
     }
 
-    /* (non-Javadoc)
-     * @see com.b2international.snowowl.core.api.index.IIndexUpdater#getRepositoryUuid()
-     */
-    @Override
-    public String getRepositoryUuid() {
-        return ImportIndexServerService.class.getName(); //intentionally a fake one
-    }
+	private void index(Term term, Document doc) {
+		try {
+			writer.updateDocument(term, doc);
+		} catch (IOException e) {
+			throw new IndexException(e);
+		}
+	}
+	
+    private Iterable<Document> searchOne(Query query, Filter filter) {
+        IndexSearcher searcher = null;
 
-    /* (non-Javadoc)
-     * @see com.b2international.snowowl.datastore.server.index.IndexServerService#getIndexPostProcessor()
-     */
-    @Override
-    protected IIndexPostProcessor getIndexPostProcessor() {
-        return IIndexPostProcessor.NOOP;
-    }
+        try {
+
+            searcher = manager.acquire();
+
+            final DocIdCollector collector = DocIdCollector.create(1);
+            searcher.search(query, filter, collector);
+
+            final DocIdsIterator itr = collector.getDocIDs().iterator();
+            while (itr.next()) {
+            	return Collections.singleton(searcher.doc(itr.getDocID())); 
+            }
+            
+            return Collections.emptySet();
+
+        } catch (final IOException e) {
+            throw new SnowowlRuntimeException(e);
+        } finally {
+            if (null != manager && null != searcher) {
+                try {
+                    manager.release(searcher);
+                } catch (final IOException e) {
+                    LOGGER.error("Error while releasing index searcher.");
+                    throw new SnowowlRuntimeException(e);
+                }
+            }
+        }		
+	}
 }
