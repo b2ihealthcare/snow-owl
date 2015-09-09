@@ -41,7 +41,7 @@ public abstract class SnomedCoreExporter extends SnomedCompositeExporter impleme
 	
 	@Override
 	protected Query getSnapshotQuery() {
-		return SnomedMappings.newQuery().concept().matchAll();
+		return SnomedMappings.newQuery().type(getTerminologyComponentType()).matchAll();
 	}
 	
 }
