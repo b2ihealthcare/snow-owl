@@ -104,7 +104,13 @@ public class IndexBranchService implements Closeable {
 			}
 
 		} else {
-			this.indexWriter = createIndexWriter(isMain(logicalBranchPath));
+			
+			if (!readOnly) {
+				this.indexWriter = createIndexWriter(isMain(logicalBranchPath));
+			} else {
+				this.indexWriter = null;
+			}
+			
 			this.manager = directory.createSearcherManager();
 		}
 	}

@@ -82,7 +82,7 @@ public abstract class AbstractDirectoryManager implements IDirectoryManager {
 		final String path = branchPath.path();
 
 		for (final IndexCommit indexCommit : indexCommits) {
-			if (indexCommit.getUserData().get(IndexUtils.INDEX_CDO_BRANCH_PATH_KEY).equals(path)) {
+			if (path.equals(indexCommit.getUserData().get(IndexUtils.INDEX_CDO_BRANCH_PATH_KEY))) {
 				return indexCommit;
 			}
 		}
