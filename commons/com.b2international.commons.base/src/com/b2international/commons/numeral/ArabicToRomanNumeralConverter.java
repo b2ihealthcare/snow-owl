@@ -21,8 +21,7 @@ package com.b2international.commons.numeral;
  */
 public abstract class ArabicToRomanNumeralConverter {
 
-	private static int[] NUMBERS = { 1000, 900, 500, 400, 100, 90, 50, 40, 10,
-			9, 5, 4, 1 };
+	private static int[] NUMBERS = { 1000, 900, 500, 400, 100, 90, 50, 40, 10, 9, 5, 4, 1 };
 
 	private static String[] LETTERS = { "M", "CM", "D", "CD", "C", "XC", "L", "XL", "X", "IX", "V", "IV", "I" };
 

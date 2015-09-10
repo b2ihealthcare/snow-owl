@@ -262,6 +262,7 @@ public abstract class SnomedConstants {
 		//complex map type reference sets
 		public static final String ICD_9_CM_REFERENCE_SET_ID = "447563008";
 		public static final String ICD_10_REFERENCE_SET_ID = "447562003";
+		public static final String ICD_10_CM_COMPLEX_MAP_REFERENCE_SET_ID = "6011000124106";
 
 		// Concepts that require special care when classifying
 		public static final String CONCEPT_MODEL_ATTRIBUTE = "410662002";
