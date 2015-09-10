@@ -682,7 +682,7 @@ public class ImportIndexServerService extends SingleDirectoryIndexImpl {
 
             searcher = manager.acquire();
 
-            final DocIdCollector collector = DocIdCollector.create(1);
+            final DocIdCollector collector = DocIdCollector.create(searcher.getIndexReader().maxDoc());
             searcher.search(query, filter, collector);
 
             final DocIdsIterator itr = collector.getDocIDs().iterator();
