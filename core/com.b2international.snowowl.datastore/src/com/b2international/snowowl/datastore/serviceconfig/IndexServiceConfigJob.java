@@ -17,6 +17,8 @@ package com.b2international.snowowl.datastore.serviceconfig;
 
 import static com.b2international.snowowl.datastore.BranchPathUtils.createMainPath;
 
+import java.io.File;
+
 import org.eclipse.net4j.util.container.IPluginContainer;
 
 import com.b2international.snowowl.core.ApplicationContext;
@@ -33,6 +35,8 @@ import com.b2international.snowowl.rpc.RpcUtil;
  */
 public abstract class IndexServiceConfigJob<U extends IIndexUpdater<?>> extends ServiceConfigJob {
 
+	private static final String INDEXES_CHILD_FOLDER = "indexes";
+
 	/**
 	 * Creates a new job for initializing and configuring the index service.
 	 * @param name the name of the job.
@@ -43,33 +47,40 @@ public abstract class IndexServiceConfigJob<U extends IIndexUpdater<?>> extends 
 	}
 
 	protected abstract U createServiceImplementation() throws SnowowlServiceException;
-	
+
 	protected abstract Class<? super U> getSearcherClass();
 
 	protected abstract Class<U> getUpdaterClass();
-	
+
+	protected File getIndexSubDirectory(final String suffix) {
+		return getEnvironment().getDataDirectory().toPath()
+				.resolve(INDEXES_CHILD_FOLDER)
+				.resolve(suffix)
+				.toFile();
+	}
+
 	@Override
 	protected final boolean initService() throws SnowowlServiceException {
-		
+
 		final ClientPreferences clientConfiguration = ApplicationContext.getInstance().getService(ClientPreferences.class);
-		
+
 		if (!clientConfiguration.isClientEmbedded()) {
 			return false;
 		}
-		
+
 		// Register implementation for both reading and writing
 		final U implementation = createServiceImplementation();
 		implementation.prepare(createMainPath());
 		final Class<? super U> searcherClass = getSearcherClass();
 		final Class<U> updaterClass = getUpdaterClass();
-		
+
 		ApplicationContext.getInstance().registerService(searcherClass, implementation);
 		ApplicationContext.getInstance().registerService(updaterClass, implementation);
-		
+
 		// Only register the searcher, as this is what can be called remotely
 		final RpcSession session = RpcUtil.getInitialServerSession(IPluginContainer.INSTANCE);
 		session.registerClassLoader(searcherClass, implementation.getClass().getClassLoader());
-		
+
 		return true;
 	}
 }
