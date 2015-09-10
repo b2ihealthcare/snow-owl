@@ -19,6 +19,7 @@ import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import java.util.Arrays;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.eclipse.emf.cdo.common.branch.CDOBranch;
@@ -135,11 +136,11 @@ public class MockInternalCDOBranchManager implements InternalCDOBranchManager {
 		return delegate.getBranches(startID, endID, handler);
 	}
 	
-	private void mockBase(InternalCDOBranch branch, long baseTimestamp) {
+	private CDOBranchPoint mockBase(InternalCDOBranch parent, long baseTimestamp) {
 		final CDOBranchPoint base = mock(CDOBranchPoint.class);
-		when(branch.getBase()).thenReturn(base);
-		when(base.getBranch()).thenReturn(branch);
-		when(base.getTimeStamp()).thenReturn(baseTimestamp);		
+		when(base.getBranch()).thenReturn(parent);
+		when(base.getTimeStamp()).thenReturn(baseTimestamp);
+		return base;
 	}
 	
 	private void mockBranchID(InternalCDOBranch branch, int id) {
@@ -165,8 +166,9 @@ public class MockInternalCDOBranchManager implements InternalCDOBranchManager {
 
 	private InternalCDOBranch mockCDOBranch(InternalCDOBranch parent, String name) {
 		final InternalCDOBranch branch = mock(InternalCDOBranch.class);
+		final CDOBranchPoint base = mockBase(parent, clock.getTimeStamp());
 		mockBranchID(branch, branchIds.getAndIncrement());
-		mockBase(branch, clock.getTimeStamp());
+		when(branch.getBase()).thenReturn(base);
 		mockBasePath(parent, branch);
 		if (parent == null) {
 			mockBranchPath(branch, "", name);
@@ -179,19 +181,15 @@ public class MockInternalCDOBranchManager implements InternalCDOBranchManager {
 	}
 
 	private void mockBasePath(InternalCDOBranch parent, InternalCDOBranch branch) {
-		final CDOBranchPoint[] parentBasePath = parent == null ? null : parent.getBasePath();
-		final CDOBranchPoint[] basePath = new CDOBranchPoint[parentBasePath == null ? 1 : (parentBasePath.length + 1)];
-		for (int i = 0; i < basePath.length; i++) {
-			if (parentBasePath != null) {
-				if (i == basePath.length - 1) {
-					basePath[i] = branch.getBase();
-				} else {
-					basePath[i] = parentBasePath[i];
-				}
-			} else {
-				basePath[i] = branch.getBase();
-			}
+		final CDOBranchPoint[] basePath;
+		
+		if (parent == null) {
+			basePath = new CDOBranchPoint[] { mockBase(null, clock.getTimeStamp()) };
+		} else {
+			basePath = Arrays.copyOf(parent.getBasePath(), parent.getBasePath().length + 1);
+			basePath[basePath.length - 1] = branch.getBase();
 		}
+		
 		when(branch.getBasePath()).thenReturn(basePath);
 	}
 
