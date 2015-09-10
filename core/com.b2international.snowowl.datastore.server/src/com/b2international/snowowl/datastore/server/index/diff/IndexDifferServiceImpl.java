@@ -17,11 +17,8 @@ package com.b2international.snowowl.datastore.server.index.diff;
 
 import static com.b2international.snowowl.datastore.BranchPathUtils.createPath;
 import static com.b2international.snowowl.datastore.BranchPathUtils.isMain;
-import static com.b2international.snowowl.datastore.server.index.IndexBranchService.getIndexCommit;
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
-
-import javax.annotation.Nullable;
 
 import org.apache.lucene.index.IndexCommit;
 import org.slf4j.Logger;
@@ -61,19 +58,19 @@ public class IndexDifferServiceImpl implements IndexDifferService {
 		
 		log("Calculating index diff between '" + sourceBranchPath + "' and '" + configuration.getTargetPath() + "' for " + configuration.getToolingName() + "...");
 		
-		@Nullable final IndexCommit ancestorCommit;
+		final IndexCommit ancestorCommit;
 		final IndexCommit sourceIndexCommit;
 		
 		if (configuration.isThreeWay()) {
-			ancestorCommit = getIndexCommit(indexService.getBranchService(sourceBranchPath).getDirectory(), sourceBranchPath);
-			sourceIndexCommit = indexService.getBranchService(createPath(sourceBranchPath)).getHeadIndexCommit();
+			// sourcePath is most likely an IBaseBranchPath here
+			ancestorCommit = indexService.getBranchService(sourceBranchPath).getIndexCommit(sourceBranchPath);
+			sourceIndexCommit = indexService.getBranchService(createPath(sourceBranchPath)).getLastIndexCommit();
 		} else {
-			final IndexBranchService sourceBranchService = indexService.getBranchService(sourceBranchPath);
 			ancestorCommit = null;
-			sourceIndexCommit = getIndexCommit(sourceBranchService.getDirectory(), sourceBranchPath);
+			sourceIndexCommit =  indexService.getBranchService(sourceBranchPath).getIndexCommit(sourceBranchPath);
 		}
 		
-		final IndexCommit targetIndexCommit = targetBranchService.getHeadIndexCommit(); 
+		final IndexCommit targetIndexCommit = targetBranchService.getLastIndexCommit(); 
 		
 		final IndexDiffer differ = IndexDifferFactory.INSTANCE.createDiffer();
 		final IndexDiff diff;
