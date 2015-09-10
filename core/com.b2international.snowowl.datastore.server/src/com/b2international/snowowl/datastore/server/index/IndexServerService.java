@@ -215,7 +215,7 @@ public abstract class IndexServerService<E extends IIndexEntry> extends Abstract
 		final IndexBranchService baseBranchService = getBranchService(logicalPath.getParent());
 		
 		try {
-			baseBranchService.createIndexCommit(physicalPath);
+			baseBranchService.createIndexCommit(logicalPath, physicalPath);
 			inactiveClose(logicalPath);
 			prepare(logicalPath);
 		} catch (final IOException e) {
