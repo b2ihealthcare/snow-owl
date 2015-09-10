@@ -35,7 +35,7 @@ public class RAMDirectoryManager extends AbstractDirectoryManager implements IDi
 	}
 
 	@Override
-	protected Directory openReadWriteDirectory(final File folderForBranchPath) throws IOException {
+	protected Directory openWritableLuceneDirectory(final File folderForBranchPath) throws IOException {
 		return new RAMDirectory();
 	}
 

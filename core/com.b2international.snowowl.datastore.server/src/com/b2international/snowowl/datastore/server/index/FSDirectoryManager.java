@@ -44,6 +44,7 @@ import org.eclipse.emf.ecore.EObject;
 
 import com.b2international.snowowl.core.api.BranchPath;
 import com.b2international.snowowl.core.api.index.IndexException;
+import com.b2international.snowowl.datastore.BranchPathUtils;
 import com.b2international.snowowl.datastore.cdo.CDOBranchPath;
 import com.b2international.snowowl.datastore.cdo.CDOIDUtils;
 import com.b2international.snowowl.datastore.cdo.CDORootResourceNameProvider;
@@ -65,12 +66,12 @@ import com.google.common.collect.Sets;
  */
 public class FSDirectoryManager extends AbstractDirectoryManager implements IDirectoryManager {
 
-	public FSDirectoryManager(final String repositoryUuid, final File indexRelativeRootPath) {
-		super(repositoryUuid, indexRelativeRootPath);
+	public FSDirectoryManager(final String repositoryUuid, final File indexPath) {
+		super(repositoryUuid, indexPath);
 	}
 
 	@Override
-	protected Directory openReadWriteDirectory(final File folderForBranchPath) throws IOException {
+	protected Directory openWritableLuceneDirectory(final File folderForBranchPath) throws IOException {
 		return IndexUtils.open(folderForBranchPath);
 	}
 
@@ -78,13 +79,13 @@ public class FSDirectoryManager extends AbstractDirectoryManager implements IDir
 	public List<String> listFiles(final BranchPath branchPath) throws IOException {
 
 		final Set<String> result = Sets.newHashSet();
-		final File folderForBranchPath = getFolderForBranchPath(branchPath);
+		final File folderForBranchPath = getIndexSubDirectory(branchPath.path());
 
-		final IPath base = new Path(getIndexRootPath().getAbsolutePath());
+		final IPath base = new Path(getIndexSubDirectory("..").getAbsolutePath());
 		final IPath actual = new Path(folderForBranchPath.getAbsolutePath());
 		final IPath relativePath = actual.makeRelativeTo(base);
 
-		try (final Directory directory = openReadWriteDirectory(folderForBranchPath)) {
+		try (final Directory directory = openWritableLuceneDirectory(folderForBranchPath)) {
 
 			final List<IndexCommit> commits = DirectoryReader.listCommits(directory);
 			for (final IndexCommit commit : commits) {
@@ -159,7 +160,7 @@ public class FSDirectoryManager extends AbstractDirectoryManager implements IDir
 									if (shouldTag) {
 										try {
 											service.commit();
-											service.createIndexCommit(new CDOBranchPath());
+											service.createIndexCommit(BranchPathUtils.createMainPath(), new CDOBranchPath());
 										} catch (final IOException e) {
 											throw new IndexException("Failed to initialize index branch service for " + repositoryUuid);
 										}

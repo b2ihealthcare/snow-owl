@@ -18,99 +18,49 @@ package com.b2international.snowowl.datastore.server.index;
 import static com.b2international.snowowl.datastore.BranchPathUtils.isBasePath;
 import static com.b2international.snowowl.datastore.BranchPathUtils.isMain;
 import static com.google.common.base.Preconditions.checkNotNull;
-import static com.google.common.collect.Iterables.getLast;
 
 import java.io.Closeable;
 import java.io.IOException;
 import java.util.Collections;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
-import javax.annotation.Nullable;
-
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.document.Document;
-import org.apache.lucene.index.DirectoryReader;
 import org.apache.lucene.index.IndexCommit;
 import org.apache.lucene.index.IndexDeletionPolicy;
 import org.apache.lucene.index.IndexWriter;
 import org.apache.lucene.index.IndexWriterConfig;
 import org.apache.lucene.index.IndexWriterConfig.OpenMode;
 import org.apache.lucene.index.LogByteSizeMergePolicy;
-import org.apache.lucene.index.SegmentInfos;
 import org.apache.lucene.index.SnapshotDeletionPolicy;
 import org.apache.lucene.index.Term;
 import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.MatchAllDocsQuery;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.ReferenceManager;
-import org.apache.lucene.search.SearcherManager;
 import org.apache.lucene.store.AlreadyClosedException;
-import org.apache.lucene.store.Directory;
 import org.apache.lucene.util.Version;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.b2international.commons.ReflectionUtils;
-import com.b2international.commons.collections.BackwardListIterator;
 import com.b2international.snowowl.core.api.BranchPath;
 import com.b2international.snowowl.core.api.IBranchPath;
-import com.b2international.snowowl.core.api.SnowowlRuntimeException;
 import com.b2international.snowowl.core.api.index.IndexException;
 import com.b2international.snowowl.datastore.index.DelimiterStopAnalyzer;
 import com.b2international.snowowl.datastore.index.IndexUtils;
 import com.b2international.snowowl.datastore.index.NullSearcherManager;
 import com.b2international.snowowl.datastore.server.internal.lucene.index.FilteringMergePolicy;
-import com.google.common.base.Predicate;
-import com.google.common.base.Predicates;
 import com.google.common.collect.ImmutableMap;
 
 public class IndexBranchService implements Closeable {
 
-	private static final IndexCommitFunction<Integer> GET_SEGMENT_COUNTER = new IndexCommitFunction<Integer>() {
-		@Override 
-		public Integer apply(final IndexCommit commit) {
-			try {
-				final SegmentInfos segmentInfos = new SegmentInfos();
-				segmentInfos.read(commit.getDirectory(), commit.getSegmentsFileName());
-				return segmentInfos.counter;
-			} catch (final IOException e) {
-				throw new SnowowlRuntimeException("Failed to extract segment counter from index commit: " + commit);
-			}
-		}
-
-		@Override 
-		public Integer getDefault() {
-			return 0;
-		}
-	};
-
-	private static final IndexCommitFunction<IndexCommit> GET_INDEX_COMMIT = new IndexCommitFunction<IndexCommit>() {
-		@Override 
-		public IndexCommit apply(final IndexCommit commit) {
-			return commit;
-		}
-
-		@Override 
-		public IndexCommit getDefault() {
-			return null;
-		}
-	};
-
-	private static final IndexCommitFunction<Boolean> COMMIT_EXISTS = new IndexCommitFunction<Boolean>() {
-		@Override 
-		public Boolean apply(final IndexCommit commit) {
-			return true;
-		}
-
-		@Override 
-		public Boolean getDefault() {
-			return false;
-		}
-	};
+	private static final Logger LOG = LoggerFactory.getLogger(IndexBranchService.class);
 
 	private volatile boolean closed;
 
-	private Directory directory;
+	private IndexDirectory directory;
 	private IndexWriter indexWriter;
 	private ReferenceManager<IndexSearcher> manager;
 	private boolean firstStartupAtMain;
@@ -120,38 +70,42 @@ public class IndexBranchService implements Closeable {
 	private final FilteringMergePolicy mergePolicy;
 	private final boolean readOnly;
 
-	public IndexBranchService(final IBranchPath branchPath, final BranchPath cdoBranchPath, final IDirectoryManager directoryManager) throws IOException {
+	public IndexBranchService(final IBranchPath logicalBranchPath, final BranchPath physicalBranchPath, final IDirectoryManager directoryManager) throws IOException {
 
 		this.directoryManager = checkNotNull(directoryManager, "directoryManager");
-		this.branchPath = cdoBranchPath;
+		this.branchPath = physicalBranchPath;
 		this.mergePolicy = new FilteringMergePolicy(new LogByteSizeMergePolicy());
-		this.readOnly = isBasePath(branchPath);
-		this.directory = directoryManager.openDirectory(cdoBranchPath, readOnly);
+		this.readOnly = isBasePath(logicalBranchPath);
+		this.directory = directoryManager.openDirectory(physicalBranchPath, readOnly);
 
-		if (!isMain(branchPath) && !DirectoryReader.indexExists(directory)) {
+		if (!isMain(logicalBranchPath) && !directory.indexExists()) {
 
 			if (!readOnly) {
-				final BranchPath baseCdoBranchPath = cdoBranchPath.parent();
-				try (final Directory baseDirectory = directoryManager.openDirectory(baseCdoBranchPath, true)) {
 
-					final IndexCommit commit = getIndexCommit(baseDirectory, cdoBranchPath);
-					if (commit == null) {
-						this.indexWriter = null;
-						this.manager = NullSearcherManager.getInstance();
-					} else {
-						this.indexWriter = createIndexWriter(false);
-						this.mergePolicy.setMinSegmentCount(getSegmentInfoCounter(baseDirectory));
-						this.manager = createSearcherManager();
-					}
+				final IndexCommit baseCommit = directory.getLastBaseIndexCommit(physicalBranchPath);
+
+				if (baseCommit == null) {
+					this.indexWriter = null;
+					this.manager = NullSearcherManager.getInstance();
+
+					LOG.warn("Requested a writable index for logical branch path {}, but no base IndexCommit is present "
+							+ "for physical branch path {}. Creating no-op instance.",
+							logicalBranchPath, 
+							physicalBranchPath);
+
+				} else {
+					this.indexWriter = createIndexWriter(false);
+					this.manager = directory.createSearcherManager();
 				}
+
 			} else {
 				this.indexWriter = null;
-				this.manager = createSearcherManager();
+				this.manager = directory.createSearcherManager();
 			}
 
 		} else {
-			this.indexWriter = createIndexWriter(isMain(branchPath));
-			this.manager = createSearcherManager();
+			this.indexWriter = createIndexWriter(isMain(logicalBranchPath));
+			this.manager = directory.createSearcherManager();
 		}
 	}
 
@@ -326,34 +280,13 @@ public class IndexBranchService implements Closeable {
 		}
 	}
 
-	/**
-	 * Returns {@code true} if the current index branch service has at least one index commit
-	 * representing a snapshot. In other words, at least one task/branch has been created on the current index.
-	 * Otherwise returns with {@code false}.
-	 */
-	public boolean hasSnapshotIndexCommit() throws IOException {
-		return getValueFromIndexCommit(directory, IndexUtils.INDEX_CDO_BRANCH_PATH_KEY, Predicates.<String>notNull(), COMMIT_EXISTS);
-	}
-
-	/**Returns with the last {@link IndexCommit index commit} from the underlying {@link Directory directory}. Never {@code null}.*/
-	public IndexCommit getHeadIndexCommit() {
-		try {
-			return getLast(DirectoryReader.listCommits(directory));
-		} catch (final IOException e) {
-			throw new IndexException("Error while getting HEAD commit from " + directory, e);
-		}
-	}
-
-	@Nullable public IndexCommit getIndexCommit(final BranchPath branchPath) throws IOException {
-		return getIndexCommit(directory, checkNotNull(branchPath, "branchPath"));
-	}
-
-	void createIndexCommit(final BranchPath branchPath) throws IOException {
+	void createIndexCommit(final IBranchPath logicalBranchPath, final BranchPath physicalBranchPath) throws IOException {
 		ensureOpen();
 		ensureWritable();
 
 		final Map<String, String> userData = ImmutableMap.<String, String>builder()
-				.put(IndexUtils.INDEX_CDO_BRANCH_PATH_KEY, branchPath.path())
+				.put(IndexUtils.INDEX_BRANCH_PATH_KEY, logicalBranchPath.getPath())
+				.put(IndexUtils.INDEX_CDO_BRANCH_PATH_KEY, physicalBranchPath.path())
 				.build();
 
 		indexWriter.setCommitData(userData);
@@ -361,57 +294,12 @@ public class IndexBranchService implements Closeable {
 		updateMergePolicy();
 	}
 
-	public Directory getDirectory() {
-		return directory;
-	}
-
 	public List<String> listFiles() throws IOException {
 		return directoryManager.listFiles(branchPath);
 	}
 
 	private void updateMergePolicy() throws IOException {
-		mergePolicy.setMinSegmentCount(getSegmentInfoCounter(directory));
-	}
-
-	public static IndexCommit getIndexCommit(final Directory directory, final BranchPath branchPath) {
-		final String branchPathAsString = branchPath.path();
-		
-		try {
-			return getValueFromIndexCommit(directory, IndexUtils.INDEX_CDO_BRANCH_PATH_KEY, Predicates.equalTo(branchPathAsString), GET_INDEX_COMMIT);
-		} catch (final IOException e) {
-			throw new IndexException("Couldn't get index commit for CDO branch path: '" + branchPathAsString + "'.", e);
-		}
-	}
-
-	private static int getSegmentInfoCounter(final Directory _directory) throws IOException {
-		try {
-			return getValueFromIndexCommit(_directory, IndexUtils.INDEX_CDO_BRANCH_PATH_KEY, Predicates.<String>notNull(), GET_SEGMENT_COUNTER);
-		} catch (final IOException e) {
-			throw new IndexException("Couldn't get segment generation counter for directory.", e);
-		}
-	}
-
-	private static <T> T getValueFromIndexCommit(final Directory directory, 
-			final String userDataKey, 
-			final Predicate<String> userDataPredicate, 
-			final IndexCommitFunction<T> indexCommitFunction) throws IOException {
-
-		checkNotNull(userDataKey, "userDataKey");
-		checkNotNull(userDataPredicate, "userDataPredicate");
-		checkNotNull(indexCommitFunction, "indexCommitFunction");
-
-		// Check most recent index commits first
-		final Iterator<IndexCommit> commitItr = new BackwardListIterator<IndexCommit>(DirectoryReader.listCommits(directory));
-		while (commitItr.hasNext()) {
-			final IndexCommit commit = commitItr.next();
-			final Map<String, String> userData = commit.getUserData();
-			final String value = userData.get(userDataKey);
-			if (userDataPredicate.apply(value)) {
-				return indexCommitFunction.apply(commit);
-			}
-		}
-
-		return indexCommitFunction.getDefault();
+		mergePolicy.setMinSegmentCount(directory.getSegmentInfoCounter());
 	}
 
 	private IndexWriter createIndexWriter(final boolean commitIfEmpty) throws IOException {
@@ -423,13 +311,13 @@ public class IndexBranchService implements Closeable {
 		final SnapshotDeletionPolicy outerPolicy = new SnapshotDeletionPolicy(innerPolicy);
 		config.setIndexDeletionPolicy(outerPolicy);
 		config.setMergePolicy(mergePolicy);
-		indexWriter = new IndexWriter(directory, config);
+		indexWriter = directory.createIndexWriter(config);
 
 		// Merges may trim fully deleted segments, which interferes with the overlay directories
 		ReflectionUtils.setField(IndexWriter.class, indexWriter, "keepFullyDeletedSegments", true);
 
 		// Create empty index, if it doesn't exist yet
-		if (commitIfEmpty && !DirectoryReader.indexExists(directory)) {
+		if (commitIfEmpty && !directory.indexExists()) {
 			firstStartupAtMain = true;
 			indexWriter.commit();
 		}
@@ -440,10 +328,6 @@ public class IndexBranchService implements Closeable {
 
 	public boolean isFirstStartupAtMain() {
 		return firstStartupAtMain;
-	}
-
-	private SearcherManager createSearcherManager() throws IOException {
-		return new SearcherManager(directory, null);
 	}
 
 	private void ensureOpen() {
@@ -466,5 +350,13 @@ public class IndexBranchService implements Closeable {
 		} else {
 			return (SnapshotDeletionPolicy) policy;
 		}
+	}
+
+	public IndexCommit getIndexCommit(final IBranchPath logicalBranchPath) {
+		return directory.getLastBaseIndexCommit(logicalBranchPath);
+	}
+
+	public IndexCommit getLastIndexCommit() {
+		return directory.getLastIndexCommit();
 	}
 }
