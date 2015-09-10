@@ -25,7 +25,6 @@ import org.apache.lucene.index.DirectoryReader;
 import org.apache.lucene.index.IndexCommit;
 import org.apache.lucene.store.Directory;
 
-import com.b2international.snowowl.core.SnowOwlApplication;
 import com.b2international.snowowl.core.api.BranchPath;
 import com.b2international.snowowl.datastore.index.IndexUtils;
 import com.b2international.snowowl.datastore.server.internal.lucene.store.CompositeDirectory;
@@ -34,37 +33,49 @@ import com.google.common.collect.Lists;
 
 public abstract class AbstractDirectoryManager implements IDirectoryManager {
 
-	private static final String INDEXES_CHILD_FOLDER = "indexes";
-
 	protected final String repositoryUuid;
-	protected final File indexRelativeRootPath;
+	protected final File indexPath;
 
-	protected AbstractDirectoryManager(final String repositoryUuid, final File indexRelativeRootPath) {
+	/**
+	 * @param repositoryUuid the repository identifier
+	 * @param indexPath the <b>absolute</b> path to the terminology index directories
+	 */
+	protected AbstractDirectoryManager(final String repositoryUuid, final File indexPath) {
 		this.repositoryUuid = checkNotNull(repositoryUuid, "repositoryUuid");
-		this.indexRelativeRootPath = checkNotNull(indexRelativeRootPath, "indexRelativeRootPath");
+		this.indexPath = checkNotNull(indexPath, "indexPath");
+	}
+
+	protected File getIndexSubDirectory(final String subDirectoryPath) throws IOException {
+		return new File(indexPath, subDirectoryPath);
 	}
 
 	@Override
-	public Directory openDirectory(final BranchPath branchPath, final boolean readOnly) throws IOException {
-		final File folderForBranchPath = getFolderForBranchPath(branchPath);
+	public final IndexDirectory openDirectory(final BranchPath branchPath, final boolean readOnly) throws IOException {
+		return new IndexDirectory(openLuceneDirectory(branchPath, readOnly));
+	}
+
+	private final Directory openLuceneDirectory(final BranchPath branchPath, final boolean readOnly) throws IOException {
+		final File indexSubDirectory = getIndexSubDirectory(branchPath.path());
 
 		if (branchPath.isMain()) {
-			final Directory mainDirectory = openReadWriteDirectory(folderForBranchPath);
+			final Directory mainDirectory = openWritableLuceneDirectory(indexSubDirectory);
 			return readOnly ? new ReadOnlyDirectory(mainDirectory) : mainDirectory;
 		}
 
 		// Don't bother wrapping the parents in a read-only instance
-		final Directory parentDirectory = openDirectory(branchPath.parent(), false);
+		final Directory parentDirectory = openLuceneDirectory(branchPath.parent(), false);
 		final IndexCommit parentCommit = getParentCommit(parentDirectory, branchPath);
 		final Directory parentCommitDirectory = new ReadOnlyDirectory(parentCommit);
 
 		if (readOnly) {
 			return parentCommitDirectory;
 		} else {
-			final Directory writeableDirectory = openReadWriteDirectory(folderForBranchPath);
+			final Directory writeableDirectory = openWritableLuceneDirectory(indexSubDirectory);
 			return new CompositeDirectory(parentCommitDirectory, writeableDirectory);
 		}
 	}
+
+	protected abstract Directory openWritableLuceneDirectory(final File folderForBranchPath) throws IOException;
 
 	private IndexCommit getParentCommit(final Directory parentDirectory, final BranchPath branchPath) throws IOException {
 		final List<IndexCommit> indexCommits = Lists.<IndexCommit>reverse(DirectoryReader.listCommits(parentDirectory));
@@ -78,22 +89,4 @@ public abstract class AbstractDirectoryManager implements IDirectoryManager {
 
 		return null;
 	}
-
-	private File getDataDirectory() {
-		return SnowOwlApplication.INSTANCE.getEnviroment().getDataDirectory();
-	}
-
-	protected File getIndexRootPath() {
-		return new File(getDataDirectory(), INDEXES_CHILD_FOLDER);
-	}
-
-	private File getIndexAbsolutePath() {
-		return new File(getIndexRootPath(), indexRelativeRootPath.getPath());
-	}
-
-	protected File getFolderForBranchPath(final BranchPath branchPath) throws IOException {
-		return new File(getIndexAbsolutePath(), branchPath.path());
-	}
-
-	protected abstract Directory openReadWriteDirectory(final File folderForBranchPath) throws IOException;
 }

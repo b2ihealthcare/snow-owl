@@ -18,12 +18,10 @@ package com.b2international.snowowl.datastore.server.index;
 import java.io.IOException;
 import java.util.List;
 
-import org.apache.lucene.store.Directory;
-
 import com.b2international.snowowl.core.api.BranchPath;
 
 /**
- * Represents a {@link Directory} initializer.
+ * Represents an {@link IndexDirectory} initializer.
  */
 public interface IDirectoryManager {
 
@@ -36,13 +34,13 @@ public interface IDirectoryManager {
 	void firstStartup(IndexBranchService service);
 
 	/** 
-	 * Creates a new {@link Directory} instance for the specified sequence of CDO branch identifiers.
+	 * Creates a new {@link IndexDirectory} instance for the specified sequence of CDO branch identifiers.
 	 *  
 	 * @param cdoBranchPath the sequence of CDO branch IDs to follow
 	 * @param readOnly {@code true} if an implementation should be returned which is not writable, {@code false} otherwise
 	 * @return the Directory for the given CDO branch sequence
 	 */
-	Directory openDirectory(BranchPath cdoBranchPath, boolean readOnly) throws IOException;
+	IndexDirectory openDirectory(BranchPath cdoBranchPath, boolean readOnly) throws IOException;
 
 	/**
 	 * Collects a list of absolute file paths that contain index data for the specified branch path. Note that the list

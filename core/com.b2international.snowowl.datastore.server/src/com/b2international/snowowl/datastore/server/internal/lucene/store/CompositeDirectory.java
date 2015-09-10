@@ -27,8 +27,10 @@ import org.apache.lucene.store.IndexInput;
 import org.apache.lucene.store.IndexOutput;
 import org.apache.lucene.store.Lock;
 import org.apache.lucene.store.LockFactory;
+import org.apache.lucene.store.NoSuchDirectoryException;
 
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Iterables;
 import com.google.common.collect.Sets;
 import com.google.common.collect.Sets.SetView;
 
@@ -49,12 +51,17 @@ public class CompositeDirectory extends Directory {
 
 	@Override
 	public String[] listAll() throws IOException {
-		final Set<String> files = ImmutableSet.<String>builder()
-				.add(baseDirectory.listAll())
-				.add(overlayDirectory.listAll())
-				.build();
-
-		return files.toArray(new String[files.size()]);
+		final ImmutableSet.Builder<String> files = ImmutableSet.builder();
+		
+		files.add(baseDirectory.listAll());
+		
+		try {
+			files.add(overlayDirectory.listAll());
+		} catch (final NoSuchDirectoryException ignored) {
+			// Allow overlay directory to not exist
+		}
+				
+		return Iterables.toArray(files.build(), String.class);
 	}
 
 	@Override
