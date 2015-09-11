@@ -25,8 +25,8 @@ import org.eclipse.osgi.framework.console.CommandProvider;
 import com.b2international.commons.CompareUtils;
 import com.b2international.commons.StringUtils;
 import com.b2international.snowowl.core.ApplicationContext;
-import com.b2international.snowowl.datastore.ISingleDirectoryIndexService;
-import com.b2international.snowowl.datastore.server.index.ISingleDirectoryIndexServiceManager;
+import com.b2international.snowowl.datastore.SingleDirectoryIndex;
+import com.b2international.snowowl.datastore.server.index.SingleDirectoryIndexManager;
 import com.google.common.base.Strings;
 
 /**
@@ -104,7 +104,7 @@ public class SupportingIndexCommandProvider implements CommandProvider {
 			return;
 		}
 
-		final ISingleDirectoryIndexService service = getService(serviceId, interpreter);
+		final SingleDirectoryIndex service = getService(serviceId, interpreter);
 		
 		if (null == service) {
 			return;
@@ -130,7 +130,7 @@ public class SupportingIndexCommandProvider implements CommandProvider {
 			return;
 		}
 
-		final ISingleDirectoryIndexService service = getService(serviceId, interpreter);
+		final SingleDirectoryIndex service = getService(serviceId, interpreter);
 		
 		if (null == service) {
 			return;
@@ -154,7 +154,7 @@ public class SupportingIndexCommandProvider implements CommandProvider {
 			return;
 		}
 
-		final ISingleDirectoryIndexService service = getService(serviceId, interpreter);
+		final SingleDirectoryIndex service = getService(serviceId, interpreter);
 		
 		if (null == service) {
 			return;
@@ -192,7 +192,7 @@ public class SupportingIndexCommandProvider implements CommandProvider {
 			return;
 		}
 
-		final ISingleDirectoryIndexService service = getService(serviceId, interpreter);
+		final SingleDirectoryIndex service = getService(serviceId, interpreter);
 		
 		if (null == service) {
 			return;
@@ -211,8 +211,8 @@ public class SupportingIndexCommandProvider implements CommandProvider {
 		}
 	}
 
-	private ISingleDirectoryIndexServiceManager getSingleDirectoryIndexManager() {
-		return ApplicationContext.getInstance().getService(ISingleDirectoryIndexServiceManager.class);
+	private SingleDirectoryIndexManager getSingleDirectoryIndexManager() {
+		return ApplicationContext.getInstance().getService(SingleDirectoryIndexManager.class);
 	}
 
 	private void printTable(final CommandInterpreter interpreter, final Collection<String> ids) {
@@ -225,9 +225,9 @@ public class SupportingIndexCommandProvider implements CommandProvider {
 		interpreter.println(Strings.repeat("-", 32));
 	}
 
-	private ISingleDirectoryIndexService getService(final String serviceId, final CommandInterpreter interpreter) {
+	private SingleDirectoryIndex getService(final String serviceId, final CommandInterpreter interpreter) {
 		
-		final ISingleDirectoryIndexService service = getSingleDirectoryIndexManager().getService(serviceId);
+		final SingleDirectoryIndex service = getSingleDirectoryIndexManager().getService(serviceId);
 		
 		if (null == service) {
 			interpreter.println("Supplementary index service with identifier '" + serviceId + "' could not be found. Available services are:");

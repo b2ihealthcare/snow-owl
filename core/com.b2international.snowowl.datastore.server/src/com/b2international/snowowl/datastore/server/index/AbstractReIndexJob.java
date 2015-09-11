@@ -15,8 +15,6 @@
  */
 package com.b2international.snowowl.datastore.server.index;
 
-import java.util.Collection;
-
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.OperationCanceledException;
@@ -24,11 +22,11 @@ import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.SubMonitor;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.emf.cdo.CDOObject;
-import org.eclipse.emf.ecore.EObject;
 import org.slf4j.Logger;
 
 import com.b2international.commons.CancelableProgressMonitorWrapper;
 import com.b2international.commons.LogProgressMonitorWrapper;
+import com.b2international.commons.time.TimeUtil;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.api.SnowowlServiceException;
 import com.b2international.snowowl.core.api.index.IIndexEntry;
@@ -36,6 +34,7 @@ import com.b2international.snowowl.core.api.index.IIndexMappingStrategy;
 import com.b2international.snowowl.core.api.index.IIndexUpdater;
 import com.b2international.snowowl.datastore.BranchPathUtils;
 import com.b2international.snowowl.datastore.CDOEditingContext;
+import com.google.common.base.Stopwatch;
 import com.google.common.collect.Iterables;
 
 /**
@@ -49,7 +48,7 @@ import com.google.common.collect.Iterables;
  */
 public abstract class AbstractReIndexJob<T extends CDOObject, E extends IIndexEntry> extends Job {
 
-	private IBranchPath branchPath = BranchPathUtils.createMainPath();
+	private final IBranchPath branchPath = BranchPathUtils.createMainPath();
 
 	public AbstractReIndexJob(final String name) {
 		super(name);
@@ -58,7 +57,11 @@ public abstract class AbstractReIndexJob<T extends CDOObject, E extends IIndexEn
 	@Override
 	protected IStatus run(final IProgressMonitor monitor) {
 		try {
-			return reIndex(createSubMonitor(monitor, getLogger()));
+			getLogger().info(String.format("%s has started.", getName()));
+			final Stopwatch watch = Stopwatch.createStarted();
+			final IStatus result = reIndex(createSubMonitor(monitor, getLogger()));
+			getLogger().info(String.format("%s has finished in %s.", getName(), TimeUtil.toString(watch)));
+			return result;
 		} catch (final OperationCanceledException e) {
 			return Status.CANCEL_STATUS;
 		} catch (final SnowowlServiceException e) {
@@ -129,10 +132,11 @@ public abstract class AbstractReIndexJob<T extends CDOObject, E extends IIndexEn
 	 * @param monitor
 	 */
 	protected void reIndex(final CDOEditingContext context, final IIndexUpdater<E> indexUpdater, final Class<? extends T> targetClass, final SubMonitor monitor) {
-		final Collection<EObject> contents = context.getContents();
-		final int size = contents.size();
-		monitor.setWorkRemaining(size + 5);
-		for (final T component : Iterables.filter(contents, targetClass)) {
+		
+		final Iterable<? extends T> filteredContents = Iterables.filter(context.getContents(), targetClass);
+		monitor.setWorkRemaining(Iterables.size(filteredContents));
+		
+		for (final T component : filteredContents) {
 			reIndex(component, indexUpdater);
 			monitor.worked(1);
 		}
@@ -163,10 +167,9 @@ public abstract class AbstractReIndexJob<T extends CDOObject, E extends IIndexEn
 	 * @param monitor
 	 */
 	protected void cleanIndex(final CDOEditingContext context, final IIndexUpdater<E> indexUpdater, final SubMonitor monitor) {
-		monitor.setWorkRemaining(3);
-		monitor.worked(1);
-		monitor.worked(1);
+		monitor.setWorkRemaining(1);
 		indexUpdater.deleteAll(branchPath);
+		monitor.worked(1);
 		monitor.done();
 	}
 

@@ -23,6 +23,7 @@ import static org.mockito.Mockito.mock;
 import org.junit.Before;
 import org.junit.Test;
 
+import com.b2international.snowowl.core.exceptions.BadRequestException;
 import com.b2international.snowowl.datastore.branch.Branch;
 import com.b2international.snowowl.datastore.branch.Branch.BranchState;
 
@@ -48,22 +49,22 @@ public class BranchTest {
 		return clock.getTimestamp();
 	}
 	
-	@Test(expected=IllegalArgumentException.class)
+	@Test(expected=BadRequestException.class)
 	public void createWithNameShouldNotContainSeparator() {
 		createBranch(main, "a/s");
 	}
 
-	@Test(expected=IllegalArgumentException.class)
+	@Test(expected=BadRequestException.class)
 	public void createWithNameShouldNotBeEmpty() {
 		createBranch(main, "");
 	}
 
-	@Test(expected=IllegalArgumentException.class)
+	@Test(expected=BadRequestException.class)
 	public void createWithNameShouldNotHaveInvalidCharacters() {
 		createBranch(main, "?b");
 	}
 
-	@Test(expected=IllegalArgumentException.class)
+	@Test(expected=BadRequestException.class)
 	public void createWithNameShouldNotHaveLongerThan50Char() {
 		createBranch(main, "123456789012345678901234567890123456789012345678901");
 	}

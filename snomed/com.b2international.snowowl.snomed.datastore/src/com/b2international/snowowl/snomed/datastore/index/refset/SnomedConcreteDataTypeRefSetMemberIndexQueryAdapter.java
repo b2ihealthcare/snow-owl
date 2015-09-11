@@ -80,6 +80,7 @@ public class SnomedConcreteDataTypeRefSetMemberIndexQueryAdapter extends SnomedR
 		member.setDataType(dataType);
 		Object deserializeValue = SnomedRefSetUtil.deserializeValue(dataType, doc.get(SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_SERIALIZED_VALUE));
 		member.setValue(deserializeValue);
+		member.setCharacteristicTypeId(doc.getField(SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_CHARACTERISTIC_TYPE_ID).stringValue());
 		return member;
 	}
 	

@@ -13,17 +13,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.datastore.server.index;
+package com.b2international.snowowl.datastore;
 
+import java.io.IOException;
 import java.util.List;
 
-import com.b2international.snowowl.datastore.ISingleDirectoryIndexService;
+public interface SingleDirectoryIndex {
 
-/**
- */
-public interface ISingleDirectoryIndexServiceManager {
+	void releaseSnapshot(final String snapshotId) throws IOException;
 
-	List<String> getServiceIds();
-	
-	ISingleDirectoryIndexService getService(String serviceId);
+	List<String> listFiles(final String snapshotId) throws IOException;
+
+	List<String> getSnapshotIds();
+
+	String snapshot() throws IOException;
+
+	String getIndexPath();
 }

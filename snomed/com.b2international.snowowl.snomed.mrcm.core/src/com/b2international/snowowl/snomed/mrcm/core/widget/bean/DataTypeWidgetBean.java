@@ -177,4 +177,8 @@ public class DataTypeWidgetBean extends LeafWidgetBean implements Serializable {
 	public ConceptWidgetBean getConcept() {
 		return cwb;
 	}
+
+	public final boolean isUninitialized() {
+		return DataTypeWidgetBean.UNINITIALIZED.equals(getUuid());
+	}
 }

@@ -26,7 +26,6 @@ import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.snomed.api.domain.CaseSignificance;
 import com.b2international.snowowl.snomed.api.impl.domain.*;
 import com.b2international.snowowl.snomed.datastore.*;
-import com.google.common.collect.*;
 
 import org.apache.lucene.search.Sort;
 import org.slf4j.Logger;
@@ -50,6 +49,9 @@ import com.b2international.snowowl.snomed.api.impl.domain.browser.*;
 import com.b2international.snowowl.snomed.datastore.index.*;
 import com.google.common.base.Function;
 import com.google.common.base.Optional;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Maps;
 
 public class SnomedBrowserService implements ISnomedBrowserService {
 
@@ -114,11 +116,8 @@ public class SnomedBrowserService implements ISnomedBrowserService {
 		result.setDefinitionStatus(concept.isPrimitive() ? DefinitionStatus.PRIMITIVE : DefinitionStatus.FULLY_DEFINED);
 		result.setEffectiveTime(EffectiveTimes.toDate(concept.getEffectiveTimeAsLong()));
 		result.setModuleId(concept.getModuleId());
-
 		result.setIsLeafInferred(inferredDescendantCount < 1);
-
 		result.setDescriptions(convertDescriptions(newArrayList(iSnomedDescriptions)));
-
 		result.setFsn(fullySpecifiedName.getTerm());
 		result.setPreferredSynonym(preferredSynonym.getTerm());
 
@@ -230,7 +229,6 @@ public class SnomedBrowserService implements ISnomedBrowserService {
 				LOGGER.warn("Unsupported description type ID {} on description {}, ignoring.", description.getTypeId(), descriptionId);
 				continue;
 			}
-
 			convertedDescription.setActive(description.isActive());
 			convertedDescription.setCaseSignificance(description.getCaseSignificance());
 			convertedDescription.setConceptId(description.getConceptId());
@@ -241,7 +239,6 @@ public class SnomedBrowserService implements ISnomedBrowserService {
 			convertedDescription.setTerm(description.getTerm());
 			convertedDescription.setType(descriptionType);
 			convertedDescription.setAcceptabilityMap(description.getAcceptabilityMap());
-
 			convertedDescriptionBuilder.add(convertedDescription);
 		}
 
@@ -265,7 +262,6 @@ public class SnomedBrowserService implements ISnomedBrowserService {
 			convertedRelationship.setSourceId(relationship.getObjectId());
 			convertedRelationshipBuilder.put(relationship.getId(), convertedRelationship);
 		}
-
 		final Map<String, ISnomedBrowserRelationship> convertedRelationships = convertedRelationshipBuilder.build();
 		
 		final List<SnomedBrowserRelationshipType> types = new FsnJoinerOperation<SnomedBrowserRelationshipType>(sourceConceptRef, locales, descriptionService) {
@@ -452,7 +448,6 @@ public class SnomedBrowserService implements ISnomedBrowserService {
 				details = detailCache.get(descriptionIndexEntry.getConceptId());
 			} else {
 				details = new SnomedBrowserDescriptionResultDetails();
-
 				final String term;
 				switch (resultConceptTermType) {
 					case FNS:
@@ -517,5 +512,4 @@ public class SnomedBrowserService implements ISnomedBrowserService {
 	private static SnomedIndexService getIndexService() {
 		return ApplicationContext.getServiceForClass(SnomedIndexService.class);
 	}
-
 }

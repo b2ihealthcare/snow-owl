@@ -45,8 +45,8 @@ import com.google.common.collect.Sets;
 
 /**
  * Contains utility methods for handling CDO queries. 
- *
  */
+@SuppressWarnings("restriction")
 public abstract class CDOQueryUtils {
 
 	/**
@@ -260,29 +260,6 @@ public abstract class CDOQueryUtils {
 	}
 	
 	/**
-	 * Executes the query and returns with a unique set of results presented as
-	 * a list that exist in the view associated with the query.
-	 * <p>
-	 * <b>Note</b>: to make duplicate removal effective, the requested object
-	 * class must have well-behaving {@link Object#equals(Object)} and
-	 * {@link Object#hashCode()} implementations, or reference equality has to
-	 * be ensured for objects of the same content. Object arrays don't have such
-	 * guarantees, and duplicates should not be expected to be removed in this
-	 * case.
-	 * 
-	 * @param query
-	 *            the query to execute (may not be <code>null</code>)
-	 * 
-	 * @param objectClass
-	 *            the result list type (may not be <code>null</code>)
-	 * 
-	 * @return the query result list
-	 */
-	public static <T> List<T> getViewResult(final CDOQuery query, final Class<T> objectClass) {
-		return getViewResult(query, objectClass, true);
-	}
-	
-	/**
 	 * Executes the query and returns with an optionally unique set of results
 	 * presented as a list that exist in the view associated with the query.
 	 * <p>
@@ -293,20 +270,12 @@ public abstract class CDOQueryUtils {
 	 * guarantees, and duplicates should not be expected to be removed in this
 	 * case.
 	 * 
-	 * @param query
-	 *            the query to execute (may not be <code>null</code>)
-	 * 
-	 * @param objectClass
-	 *            the result list type (may not be <code>null</code>)
-	 * 
-	 * @param unique
-	 *            {@code true} if no duplicate results should be returned,
-	 *            {@code false} otherwise
-	 * 
+	 * @param query the query to execute (may not be <code>null</code>)
+	 * @param objectClass the result list type (may not be <code>null</code>)
 	 * @return the query result list
 	 */
-	@SuppressWarnings({ "unchecked", "restriction" })
-	public static <T> List<T> getViewResult(final CDOQuery query, final Class<T> objectClass, final boolean unique) {
+	@SuppressWarnings("unchecked")
+	public static <T> List<T> getViewResult(final CDOQuery query, final Class<T> objectClass) {
 
 		checkNotNull(query, "query");
 		checkNotNull(objectClass, "objectClass");
@@ -315,10 +284,8 @@ public abstract class CDOQueryUtils {
 			return query.getResult(objectClass);
 		}
 		
-		final Collection<T> collectedResults = unique ? Sets.<T>newLinkedHashSet() : Lists.<T>newArrayList();
-
+		final Collection<T> collectedResults = Sets.<T>newLinkedHashSet();
 		final CDOBranchPoint branchPoint = query.getView();
-		
 		final CDOQuery branchQuery = createDecoratedQuery(query, branchPoint);
 
 		final List<T> result;
@@ -355,6 +322,6 @@ public abstract class CDOQueryUtils {
 	}
 
 	private CDOQueryUtils() {
-		// Prevent instantiation
+		throw new UnsupportedOperationException("This class is not supposed to be instantiated.");
 	}
 }

@@ -50,7 +50,8 @@ public class BranchManagerTest {
 	private class BranchManagerImplTest extends BranchManagerImpl {
 
 		private BranchManagerImplTest(Store<InternalBranch> branchStore, long mainBranchTimestamp) {
-			super(branchStore, mainBranchTimestamp);
+			super(branchStore);
+			initBranchStore(new MainBranchImpl(mainBranchTimestamp));
 		}
 
 		@Override
@@ -189,8 +190,8 @@ public class BranchManagerTest {
 		for (String name : newArrayList("/", "/a", "a/", "a/b")) {
 			try {
 				main.createChild(name);
-				fail("IllegalArgumentException should be thrown when creating child branch " + name);
-			} catch (IllegalArgumentException e) {
+				fail("BadRequestException should be thrown when creating child branch " + name);
+			} catch (BadRequestException e) {
 				// success
 			}
 		}

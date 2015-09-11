@@ -15,6 +15,8 @@
  */
 package com.b2international.snowowl.snomed.api.rest.domain;
 
+import com.b2international.snowowl.snomed.api.domain.CharacteristicType;
+import com.b2international.snowowl.snomed.api.domain.RelationshipModifier;
 import com.b2international.snowowl.snomed.api.impl.domain.SnomedRelationshipUpdate;
 
 
@@ -23,8 +25,55 @@ import com.b2international.snowowl.snomed.api.impl.domain.SnomedRelationshipUpda
  */
 public class SnomedRelationshipRestUpdate extends AbstractSnomedComponentRestUpdate<SnomedRelationshipUpdate> {
 
+	private Integer group;
+	private Integer unionGroup;
+	private CharacteristicType characteristicType;
+	private RelationshipModifier modifier;
+
+	public Integer getGroup() {
+		return group;
+	}
+
+	public void setGroup(final Integer group) {
+		this.group = group;
+	}
+
+	public Integer getUnionGroup() {
+		return unionGroup;
+	}
+
+	public void setUnionGroup(final Integer unionGroup) {
+		this.unionGroup = unionGroup;
+	}
+
+	public CharacteristicType getCharacteristicType() {
+		return characteristicType;
+	}
+
+	public void setCharacteristicType(final CharacteristicType characteristicType) {
+		this.characteristicType = characteristicType;
+	}
+
+	public RelationshipModifier getModifier() {
+		return modifier;
+	}
+
+	public void setModifier(final RelationshipModifier modifier) {
+		this.modifier = modifier;
+	}
+
 	@Override
 	protected SnomedRelationshipUpdate createComponentUpdate() {
 		return new SnomedRelationshipUpdate();
+	}
+
+	@Override
+	public SnomedRelationshipUpdate toComponentUpdate() {
+		final SnomedRelationshipUpdate result = super.toComponentUpdate();
+		result.setGroup(getGroup());
+		result.setUnionGroup(getUnionGroup());
+		result.setCharacteristicType(getCharacteristicType());
+		result.setModifier(getModifier());
+		return result;
 	}
 }

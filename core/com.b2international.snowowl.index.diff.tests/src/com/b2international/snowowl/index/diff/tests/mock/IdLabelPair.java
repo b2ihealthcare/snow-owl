@@ -1,6 +1,6 @@
 /*
  * Copyright 2011-2015 B2i Healthcare Pte Ltd, http://b2i.sg
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -13,22 +13,32 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.snomed.datastore
-
-import groovy.transform.EqualsAndHashCode
-import groovy.transform.ToString
+package com.b2international.snowowl.index.diff.tests.mock;
 
 /**
- * Bare minimum representation of a SNOMED&nbsp;CT module dependency reference set member.
+ * @since 4.3
  */
-@EqualsAndHashCode(includes = "storageKey")
-@ToString
-class SnomedModuleDependencyRefSetMemberFragment implements Serializable {
+public class IdLabelPair {
 
-	long storageKey
-	String moduleId
-	String referencedComponentId
-	Date sourceEffectiveTime
-	Date targetEffectiveTime
-	
+    private String id;
+    private String label;
+
+    public IdLabelPair(String id, String label) {
+        this.id = id;
+        this.label = label;
+    }
+
+    public String getId() {
+        return id;
+    }
+
+    public String getLabel() {
+        return label;
+    }
+
+    @Override
+    public String toString() {
+        return String.format("ID: %s | Label: %s", getId(), getLabel());
+    }
+
 }

@@ -27,16 +27,16 @@ import com.b2international.snowowl.api.admin.exception.SnapshotReleaseException;
 import com.b2international.snowowl.api.admin.exception.SupportingIndexNotFoundException;
 import com.b2international.snowowl.api.admin.exception.SupportingIndexSnapshotNotFoundException;
 import com.b2international.snowowl.core.ApplicationContext;
-import com.b2international.snowowl.datastore.ISingleDirectoryIndexService;
-import com.b2international.snowowl.datastore.server.index.ISingleDirectoryIndexServiceManager;
+import com.b2international.snowowl.datastore.SingleDirectoryIndex;
+import com.b2international.snowowl.datastore.server.index.SingleDirectoryIndexManager;
 import com.google.common.collect.ImmutableList;
 
 /**
  */
 public class SupportingIndexServiceImpl implements ISupportingIndexService {
 
-	private static ISingleDirectoryIndexServiceManager getSingleDirectoryIndexManager() {
-		return ApplicationContext.getServiceForClass(ISingleDirectoryIndexServiceManager.class);
+	private static SingleDirectoryIndexManager getSingleDirectoryIndexManager() {
+		return ApplicationContext.getServiceForClass(SingleDirectoryIndexManager.class);
 	}
 
 	@Override
@@ -49,7 +49,7 @@ public class SupportingIndexServiceImpl implements ISupportingIndexService {
 	public List<String> getSupportingIndexSnapshotIds(final String indexId) {
 		checkValidIndexId(indexId);
 
-		final ISingleDirectoryIndexService service = getSingleDirectoryIndexManager().getService(indexId);
+		final SingleDirectoryIndex service = getSingleDirectoryIndexManager().getService(indexId);
 		final List<String> snapshotIds = service.getSnapshotIds();
 		return ImmutableList.copyOf(snapshotIds);
 	}
@@ -59,7 +59,7 @@ public class SupportingIndexServiceImpl implements ISupportingIndexService {
 		checkValidIndexId(indexId);
 
 		try {
-			final ISingleDirectoryIndexService service = getSingleDirectoryIndexManager().getService(indexId);
+			final SingleDirectoryIndex service = getSingleDirectoryIndexManager().getService(indexId);
 			return service.snapshot();
 		} catch (final IOException e) {
 			throw new SnapshotCreationException(e.getMessage());
@@ -71,7 +71,7 @@ public class SupportingIndexServiceImpl implements ISupportingIndexService {
 		checkValidIndexAndSnapshotId(indexId, snapshotId);
 
 		try {
-			final ISingleDirectoryIndexService service = getSingleDirectoryIndexManager().getService(indexId);
+			final SingleDirectoryIndex service = getSingleDirectoryIndexManager().getService(indexId);
 			final List<String> listFiles = service.listFiles(snapshotId);
 			return ImmutableList.copyOf(listFiles);
 		} catch (final IOException e) {
@@ -84,7 +84,7 @@ public class SupportingIndexServiceImpl implements ISupportingIndexService {
 		checkValidIndexAndSnapshotId(indexId, snapshotId);
 
 		try {
-			final ISingleDirectoryIndexService service = getSingleDirectoryIndexManager().getService(indexId);
+			final SingleDirectoryIndex service = getSingleDirectoryIndexManager().getService(indexId);
 			service.releaseSnapshot(snapshotId);
 		} catch (final IOException e) {
 			throw new SnapshotReleaseException(e.getMessage());

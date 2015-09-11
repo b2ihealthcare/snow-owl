@@ -74,11 +74,6 @@
             terminologyId="UNSPECIFIED">
       </serviceConfigJob>
       <serviceConfigJob
-            class="com.b2international.snowowl.datastore.server.serviceconfig.SingleDirectoryIndexManagerConfigJob"
-            id="com.b2international.snowowl.datastore.server.serviceconfig.SingleDirectoryIndexManagerConfigJob"
-            terminologyId="UNSPECIFIED">
-      </serviceConfigJob>
-      <serviceConfigJob
             class="com.b2international.snowowl.datastore.server.serviceconfig.RemoteJobManagerServiceConfigJob"
             id="com.b2international.snowowl.datastore.server.serviceconfig.RemoteJobManagerServiceConfigJob"
             terminologyId="UNSPECIFIED">

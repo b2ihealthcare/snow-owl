@@ -415,7 +415,7 @@ public class ServerCDOView extends AbstractCDOView implements org.eclipse.emf.cd
   /**
    * @author Eike Stepper
    */
-  private final class ServerCDOSession implements InternalCDOSession, CDORepositoryInfo
+  public final class ServerCDOSession implements InternalCDOSession, CDORepositoryInfo
   {
     private InternalSession internalSession;
 
@@ -426,6 +426,16 @@ public class ServerCDOView extends AbstractCDOView implements org.eclipse.emf.cd
       this.internalSession = internalSession;
       repository = internalSession.getManager().getRepository();
     }
+    
+    /** @since Snow Owl 4.3 */
+    public InternalRepository getRepository() {
+		return repository;
+	}
+    
+    /** @since Snow Owl 4.3 */
+    public InternalSession getInternalSession() {
+		return internalSession;
+	}
 
     public CDOView[] getElements()
     {

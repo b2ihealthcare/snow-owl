@@ -15,6 +15,7 @@
  */
 package com.b2international.snowowl.snomed.api.impl;
 
+import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.collect.Lists.newArrayList;
 
 import java.io.File;
@@ -24,6 +25,10 @@ import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.UUID;
 
+import com.b2international.snowowl.core.ApplicationContext;
+import com.b2international.snowowl.snomed.datastore.SnomedRelationshipIndexEntry;
+import com.b2international.snowowl.snomed.datastore.index.SnomedIndexService;
+import com.b2international.snowowl.snomed.datastore.index.SnomedRelationshipIndexQueryAdapter;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.Field.Store;
 import org.apache.lucene.document.StoredField;
@@ -43,7 +48,7 @@ import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.datastore.BranchPathUtils;
 import com.b2international.snowowl.datastore.index.DocIdCollector;
 import com.b2international.snowowl.datastore.index.DocIdCollector.DocIdsIterator;
-import com.b2international.snowowl.datastore.store.SingleDirectoryIndexServerService;
+import com.b2international.snowowl.datastore.store.SingleDirectoryIndexImpl;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.api.domain.RelationshipModifier;
 import com.b2international.snowowl.snomed.api.domain.classification.ChangeNature;
@@ -70,11 +75,11 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
 
-public class ClassificationIndexServerService extends SingleDirectoryIndexServerService {
+public class ClassificationRunIndex extends SingleDirectoryIndexImpl {
 
 	private final ObjectMapper objectMapper;
 
-	public ClassificationIndexServerService(final File directory) {
+	public ClassificationRunIndex(final File directory) {
 		super(directory, true);
 		objectMapper = new ObjectMapper();
 	}
@@ -90,7 +95,7 @@ public class ClassificationIndexServerService extends SingleDirectoryIndexServer
 	}
 
 	public IClassificationRun getClassificationRun(final StorageRef storageRef, final String classificationId, final String userId) throws IOException {
-		final BooleanQuery query = createClassQuery(ClassificationRun.class.getSimpleName(), classificationId, storageRef, userId);
+		final BooleanQuery query = createClassQuery(ClassificationRun.class.getSimpleName(), classificationId, storageRef, null, userId);
 
 		try {
 			return Iterables.getOnlyElement(search(query, ClassificationRun.class, 1));
@@ -118,6 +123,10 @@ public class ClassificationIndexServerService extends SingleDirectoryIndexServer
 	}
 
 	public void updateClassificationRunStatus(final UUID id, final ClassificationStatus newStatus) throws IOException {
+		updateClassificationRunStatusAndIndexChanges(id, newStatus, null);
+	}
+
+	public void updateClassificationRunStatusAndIndexChanges(final UUID id, final ClassificationStatus newStatus, final GetResultResponseChanges changes) throws IOException {
 
 		final Document sourceDocument = getClassificationRunDocument(id);
 		if (null == sourceDocument) {
@@ -133,11 +142,31 @@ public class ClassificationIndexServerService extends SingleDirectoryIndexServer
 
 		classificationRun.setStatus(newStatus);
 
-		if (ClassificationStatus.COMPLETED.equals(newStatus) && null == classificationRun.getCompletionDate()) {
-			classificationRun.setCompletionDate(new Date());
+		if (ClassificationStatus.COMPLETED.equals(newStatus)) {
+			if(null == classificationRun.getCompletionDate()) {
+				classificationRun.setCompletionDate(new Date());
+			}
+			checkNotNull(changes, "GetResultResponseChanges are required to update a completed classification.");
+			final ClassificationIssueFlags issueFlags = indexChanges(sourceDocument, changes);
+			classificationRun.setRedundantStatedRelationshipsFound(issueFlags.isRedundantStatedFound());
+			classificationRun.setEquivalentConceptsFound(issueFlags.isEquivalentConceptsFound());
 		}
 
 		insertOrUpdateClassificationRun(branchPath, classificationRun);
+	}
+
+	private SnomedRelationshipIndexEntry getSnomedRelationshipIndexEntry(IBranchPath branchPath, RelationshipChangeEntry relationshipChange) {
+		SnomedRelationshipIndexEntry foundRelationshipIndexEntry = null;
+		final Long sourceId = relationshipChange.getSource().getId();
+		final List<SnomedRelationshipIndexEntry> relationshipIndexEntries = getIndexService().search(branchPath, new SnomedRelationshipIndexQueryAdapter(sourceId.toString(), SnomedRelationshipIndexQueryAdapter.SEARCH_SOURCE_ID));
+		for (SnomedRelationshipIndexEntry relationshipIndexEntry : relationshipIndexEntries) {
+			if (relationshipIndexEntry.getValueId().equals(relationshipChange.getDestination().getId().toString())
+				&& relationshipIndexEntry.getAttributeId().equals(relationshipChange.getType().getId().toString())
+				&& relationshipIndexEntry.getGroup() == relationshipChange.getGroup()) {
+				foundRelationshipIndexEntry = relationshipIndexEntry;
+			}
+		}
+		return foundRelationshipIndexEntry;
 	}
 
 	public void deleteClassificationData(final UUID id) throws IOException {
@@ -146,18 +175,15 @@ public class ClassificationIndexServerService extends SingleDirectoryIndexServer
 		commit();
 	}
 
-	public void indexChanges(final GetResultResponseChanges changes) throws IOException {
-
+	private ClassificationIssueFlags indexChanges(Document sourceDocument, final GetResultResponseChanges changes) throws IOException {
 		final UUID id = changes.getClassificationId();
-		final Document sourceDocument = getClassificationRunDocument(id);
-		if (null == sourceDocument) {
-			return;
-		}
-
 		final IBranchPath branchPath = BranchPathUtils.createPath(sourceDocument.get("branchPath"));
 		final String userId = sourceDocument.get("userId");
+		final ClassificationIssueFlags classificationIssueFlags = new ClassificationIssueFlags();
 
-		for (final AbstractEquivalenceSet equivalenceSet : changes.getEquivalenceSets()) {
+		final List<AbstractEquivalenceSet> equivalenceSets = changes.getEquivalenceSets();
+		classificationIssueFlags.setEquivalentConceptsFound(!equivalenceSets.isEmpty());
+		for (final AbstractEquivalenceSet equivalenceSet : equivalenceSets) {
 
 			final List<IEquivalentConcept> convertedEquivalentConcepts = newArrayList();
 			for (final SnomedConceptIndexEntry equivalentEntry : equivalenceSet.getConcepts()) {
@@ -172,15 +198,28 @@ public class ClassificationIndexServerService extends SingleDirectoryIndexServer
 			convertedEquivalenceSet.setUnsatisfiable(equivalenceSet.isUnsatisfiable());
 			convertedEquivalenceSet.setEquivalentConcepts(convertedEquivalentConcepts);
 
-			indexResult(id, branchPath, userId, EquivalentConceptSet.class, convertedEquivalenceSet);
+			indexResult(id, branchPath, userId, EquivalentConceptSet.class, equivalenceSet.getConcepts().get(0).getId(), convertedEquivalenceSet);
 		}
 
 		for (final RelationshipChangeEntry relationshipChange : changes.getRelationshipEntries()) {
 
 			final RelationshipChange convertedRelationshipChange = new RelationshipChange();
-			convertedRelationshipChange.setChangeNature(Nature.INFERRED.equals(relationshipChange.getNature()) ? ChangeNature.INFERRED : ChangeNature.REDUNDANT);
+			final ChangeNature changeNature = Nature.INFERRED.equals(relationshipChange.getNature()) ? ChangeNature.INFERRED : ChangeNature.REDUNDANT;
+			convertedRelationshipChange.setChangeNature(changeNature);
 			convertedRelationshipChange.setDestinationId(Long.toString(relationshipChange.getDestination().getId()));
 			convertedRelationshipChange.setDestinationNegated(relationshipChange.isDestinationNegated());
+
+			final String characteristicTypeId;
+			if (changeNature == ChangeNature.INFERRED) {
+				characteristicTypeId = Concepts.INFERRED_RELATIONSHIP;
+			} else {
+				final SnomedRelationshipIndexEntry snomedRelationshipIndexEntry = getSnomedRelationshipIndexEntry(branchPath, relationshipChange);
+				characteristicTypeId = snomedRelationshipIndexEntry.getCharacteristicTypeId();
+				if (changeNature == ChangeNature.REDUNDANT && characteristicTypeId.equals(Concepts.STATED_RELATIONSHIP)) {
+					classificationIssueFlags.setRedundantStatedFound(true);
+				}
+			}
+			convertedRelationshipChange.setCharacteristicTypeId(characteristicTypeId);
 			convertedRelationshipChange.setGroup(relationshipChange.getGroup());
 
 			final String modifierId = Long.toString(relationshipChange.getModifier().getId());
@@ -189,10 +228,11 @@ public class ClassificationIndexServerService extends SingleDirectoryIndexServer
 			convertedRelationshipChange.setTypeId(Long.toString(relationshipChange.getType().getId()));
 			convertedRelationshipChange.setUnionGroup(relationshipChange.getUnionGroup());
 
-			indexResult(id, branchPath, userId, RelationshipChange.class, convertedRelationshipChange);
+			indexResult(id, branchPath, userId, RelationshipChange.class, convertedRelationshipChange.getSourceId(), convertedRelationshipChange);
 		}
 
 		commit();
+		return classificationIssueFlags;
 	}
 
 	private void addEquivalentConcept(final List<IEquivalentConcept> convertedEquivalentConcepts, final SnomedConceptIndexEntry equivalentEntry) {
@@ -211,37 +251,39 @@ public class ClassificationIndexServerService extends SingleDirectoryIndexServer
 	 */
 	public List<IEquivalentConceptSet> getEquivalentConceptSets(final StorageRef storageRef, final String classificationId, final String userId) throws IOException {
 
-		final BooleanQuery query = createClassQuery(EquivalentConceptSet.class.getSimpleName(), classificationId, storageRef, userId);
+		final BooleanQuery query = createClassQuery(EquivalentConceptSet.class.getSimpleName(), classificationId, storageRef, null, userId);
 		return this.<IEquivalentConceptSet>search(query, EquivalentConceptSet.class);
 	}
 
 	/**
 	 * @param storageRef
 	 * @param classificationId
+	 * @param sourceConceptId used to restrict results, can be null
 	 * @param userId
-	 * @param limit 
-	 * @param offset 
+	 * @param limit
+	 * @param offset
 	 * @return
 	 */
-	public IRelationshipChangeList getRelationshipChanges(final StorageRef storageRef, final String classificationId, final String userId, final int offset, final int limit) throws IOException {
+	public IRelationshipChangeList getRelationshipChanges(final StorageRef storageRef, final String classificationId, final String sourceConceptId, final String userId, final int offset, final int limit) throws IOException {
 
-		final BooleanQuery query = createClassQuery(RelationshipChange.class.getSimpleName(), classificationId, storageRef, userId);
+		final BooleanQuery query = createClassQuery(RelationshipChange.class.getSimpleName(), classificationId, storageRef, sourceConceptId, userId);
 		final RelationshipChangeList result = new RelationshipChangeList();
-		
+
 		result.setTotal(getHitCount(query));
 		result.setChanges(this.<IRelationshipChange>search(query, RelationshipChange.class, offset, limit));
-		
+
 		return result;
 	}
 
-	private <T> void indexResult(final UUID id, final IBranchPath branchPath, final String userId, 
-			final Class<T> clazz, final T value) throws IOException {
+	private <T> void indexResult(final UUID id, final IBranchPath branchPath, final String userId,
+			final Class<T> clazz, String componentId, final T value) throws IOException {
 
 		final Document updateDocument = new Document();
 		updateDocument.add(new StringField("class", clazz.getSimpleName(), Store.NO));
 		updateDocument.add(new StringField("id", id.toString(), Store.NO));
 		updateDocument.add(new StringField("userId", userId, Store.NO));
 		updateDocument.add(new StringField("branchPath", branchPath.getPath(), Store.NO));
+		updateDocument.add(new StringField("componentId", componentId, Store.NO));
 		updateDocument.add(new StoredField("source", objectMapper.writer().writeValueAsString(value)));
 
 		writer.addDocument(updateDocument);
@@ -256,13 +298,16 @@ public class ClassificationIndexServerService extends SingleDirectoryIndexServer
 		return sourceDocument;
 	}
 
-	private BooleanQuery createClassQuery(final String className, final String classificationId, final StorageRef storageRef, final String userId) {
+	private BooleanQuery createClassQuery(final String className, final String classificationId, final StorageRef storageRef, String componentId, final String userId) {
 
 		final BooleanQuery query = new BooleanQuery(true);
 		query.add(new TermQuery(new Term("class", className)), Occur.MUST);
 		query.add(new TermQuery(new Term("id", classificationId)), Occur.MUST);
 		query.add(new TermQuery(new Term("userId", userId)), Occur.MUST);
 		query.add(new TermQuery(new Term("branchPath", storageRef.getBranchPath())), Occur.MUST);
+		if (componentId != null) {
+			query.add(new TermQuery(new Term("componentId", componentId)), Occur.MUST);
+		}
 		return query;
 	}
 
@@ -349,6 +394,31 @@ public class ClassificationIndexServerService extends SingleDirectoryIndexServer
 			if (null != searcher) {
 				manager.release(searcher);
 			}
+		}
+	}
+
+	private static SnomedIndexService getIndexService() {
+		return ApplicationContext.getServiceForClass(SnomedIndexService.class);
+	}
+
+	private class ClassificationIssueFlags {
+		private boolean redundantStatedFound;
+		private boolean equivalentConceptsFound;
+
+		public boolean isRedundantStatedFound() {
+			return redundantStatedFound;
+		}
+
+		public void setRedundantStatedFound(boolean redundantStatedFound) {
+			this.redundantStatedFound = redundantStatedFound;
+		}
+
+		public boolean isEquivalentConceptsFound() {
+			return equivalentConceptsFound;
+		}
+
+		public void setEquivalentConceptsFound(boolean equivalentConceptsFound) {
+			this.equivalentConceptsFound = equivalentConceptsFound;
 		}
 	}
 }

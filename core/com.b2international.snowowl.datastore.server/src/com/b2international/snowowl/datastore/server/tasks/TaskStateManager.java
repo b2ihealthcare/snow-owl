@@ -65,7 +65,7 @@ import com.b2international.snowowl.datastore.index.IndexUtils;
 import com.b2international.snowowl.datastore.net4j.push.PushServiceException;
 import com.b2international.snowowl.datastore.server.index.IndexServerServiceManager;
 import com.b2international.snowowl.datastore.server.net4j.push.PushServerService;
-import com.b2international.snowowl.datastore.store.SingleDirectoryIndexServerService;
+import com.b2international.snowowl.datastore.store.SingleDirectoryIndexImpl;
 import com.b2international.snowowl.datastore.tasks.ITaskContext;
 import com.b2international.snowowl.datastore.tasks.ITaskStateManager;
 import com.b2international.snowowl.datastore.tasks.Task;
@@ -88,7 +88,7 @@ import com.google.common.collect.ImmutableList;
 /**
  * 
  */
-public class TaskStateManager extends SingleDirectoryIndexServerService implements ITaskStateManager {
+public class TaskStateManager extends SingleDirectoryIndexImpl implements ITaskStateManager {
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(TaskStateManager.class);
 

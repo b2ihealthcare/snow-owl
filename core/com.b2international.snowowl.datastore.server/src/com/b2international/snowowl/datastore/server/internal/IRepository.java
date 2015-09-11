@@ -41,4 +41,8 @@ public interface IRepository {
 	String getCdoRepositoryId();
 	
 	ICDOConflictProcessor getConflictProcessor();
+
+	long getBaseTimestamp(CDOBranch branch);
+
+	long getHeadTimestamp(CDOBranch branch);
 }

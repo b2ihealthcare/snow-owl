@@ -25,22 +25,34 @@ import com.b2international.snowowl.datastore.branch.Branch;
 import com.b2international.snowowl.datastore.branch.BranchManager;
 import com.b2international.snowowl.datastore.branch.Branch.BranchState;
 import com.b2international.snowowl.datastore.store.Store;
+import com.b2international.snowowl.datastore.store.query.Query;
 import com.b2international.snowowl.datastore.store.query.QueryBuilder;
+import com.google.common.collect.Iterables;
 
 /**
  * @since 4.1
  */
 public abstract class BranchManagerImpl implements BranchManager {
 
-	protected static final String PATH_FIELD = "path";
+	private static final String PATH_FIELD = "path";
+	
 	private final Store<InternalBranch> branchStore;
 	
-	public BranchManagerImpl(final Store<InternalBranch> branchStore, final long mainBranchTimestamp) {
+	public BranchManagerImpl(final Store<InternalBranch> branchStore) {
 		this.branchStore = branchStore;
-		initMainBranch(new MainBranchImpl(mainBranchTimestamp));
+		branchStore.configureSearchable(PATH_FIELD);
 	}
 	
-	/*package*/ void initMainBranch(final InternalBranch main) {
+	protected final void initBranchStore(final InternalBranch main) {
+    	try {
+    		getMainBranch();
+    	} catch (NotFoundException e) {
+    		doInitBranchStore(main);
+    	}
+	}
+
+	protected void doInitBranchStore(InternalBranch main) {
+		branchStore.clear();
 		registerBranch(main);
 	}
 
@@ -76,6 +88,14 @@ public abstract class BranchManagerImpl implements BranchManager {
 		return branch;
 	}
 
+	protected final Branch getBranchFromStore(final Query query) {
+		final InternalBranch branch = Iterables.getOnlyElement(branchStore.search(query, 0, 1), null);
+		if (branch != null) {
+			branch.setBranchManager(this);
+		}
+		return branch;
+	}
+	
 	private final Branch getBranchFromStore(final String path) {
 		final InternalBranch branch = branchStore.get(path);
 		if (branch != null) {

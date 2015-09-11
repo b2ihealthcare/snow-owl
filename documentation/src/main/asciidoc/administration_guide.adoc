@@ -1,0 +1,374 @@
+= Administration guide
+
+== Introduction
+
+This document covers administrative and maintenance tasks in Snow Owl Server.
+
+== Startup and shutdown
+
+Scripts for starting and stopping a Snow Owl Server instance are located in `/opt/snowowl-community_{version}/bin/*.sh`
+files. Change the active user to `snowowl` when starting the server:
+
+--------------------------
+# su snowowl -s /bin/bash -c "nohup bin/startup.sh > /dev/null" &
+[1] 12473
+nohup: ignoring input and redirecting stderr to stdout
+
+# jobs
+[1]+  Running    su snowowl -s /bin/bash -c "nohup bin/startup.sh > /dev/null" &
+--------------------------
+
+Note that startup will continue in the background and the server stays running even if the user disconnects from
+the server.
+
+You can follow the startup sequence by inspecting `serviceability/logs/log.log`:
+
+--------------------------
+# tail -f serviceability/logs/log.log
+...
+[2015-07-24 02:50:12.753] INFO  start-signalling-2 WE0001I Started web bundle [...]
+[2015-07-24 02:50:12.756] INFO  start-signalling-2 DE0005I Started bundle [...]
+[2015-07-24 02:50:12.756] INFO  start-signalling-2 Thread context class loader [...]
+[2015-07-24 02:50:12.757] INFO  start-signalling-2 DE0005I Started plan 'osgi_server.plan' version '1.0.0'.
+--------------------------
+
+Snow Owl Server finishes the startup procedure after displaying the lines from above. You can connect with a
+telnet client to the server and check that everything is working properly:
+
+--------------------------
+# yum install telnet // <1>
+
+# telnet localhost 2501
+Trying ::1...
+Connected to localhost.
+Escape character is '^]'.
+
+osgi> snowowl checkservices
+Checking core services...
+[...]
+Core services are registered properly and available for use.
+
+osgi> disconnect
+Disconnect from console? (y/n; default=y) y
+Connection closed by foreign host.
+--------------------------
+<1> Install the client first (if not already present)
+
+The server can be stopped cleanly by running `bin/shutdown.sh`:
+
+--------------------------
+# cd /opt/snowowl-community_{version}
+# bin/shutdown.sh
+--------------------------
+
+== Importing content from a release archive
+
+To import a `SnomedCT_Release_XXX_xxxxxxxx.zip` release archive, the file must be present in the Snow Owl Server host
+file system, which we will refer to as {import_zip_directory}.
+
+=== Choosing the language reference set
+
+To list the available language reference set identifiers, use the following command:
+
+--------------------------
+osgi> sctimport rf2_languages {import_zip_directory}/SnomedCT_Release_XXX_xxxxxxxx.zip
+[...]
+900000000000508004  Great Britain English language reference set
+900000000000509007  United States of America English language reference set
+--------------------------
+
+Available language reference sets will be displayed as above, after parsing the archive is completed.
+
+=== Starting the import
+
+Use the following OSGi command to start the import process:
+
+--------------------------
+osgi> sctimport rf2_release -l <languageRefSetId> -t <type> <file>
+--------------------------
+
+<languageRefSetId>:: The language reference set identifier to use, selected from the list available identifiers in the
+previous step
+<type>:: One of `FULL`, `SNAPSHOT` or `DELTA`, depending on the import type the administrator wants to use
+<file>:: The absolute path of the release archive file to import, +
+`{import_zip_directory}/SnomedCT_Release_XXX_xxxxxxxx.zip`
+
+NOTE: While the import is running, there is no feedback on the OSGi console until the process is finished; log output
+can be observed throughout the import session in the file `serviceability/logs/log.log`. The import may take several
+hours depending on your hardware and JVM configuration.
+
+Example `FULL` import with US language reference set:
+
+--------------------------
+osgi> sctimport rf2_release -l 900000000000509007 -t FULL /opt/SnomedCT_Release_INT_20130131.zip
+--------------------------
+
+== Single administrator operations
+
+Import and export processes are dedicated single administrator operations. As these operations are long-running, administrators
+need to ensure that during these processes no other users should be connected to the system. The following steps describe how to
+disconnect all clients from the server and how to ensure that no one else, but the administrator is the only connected user while
+performing any import/export operations.
+
+=== List of single administrator operations
+
+[cols="4,2,1,1", options="header"]
+|===
+|Name
+|Console command
+|Snow Owl UI
+|Admin console
+
+|ATC import from ClaML
+|
+|✔
+|
+
+|ICD-10 import from ClaML
+|
+|✔
+|
+
+|ICD-10-AM import from .zip archive
+|
+|✔
+|
+
+|Local Code System import from Excel spreadsheet
+|`localcodesystem importXL`
+|✔
+|✔
+
+|LOINC import from .zip archive
+|`loinc import`
+|✔
+|✔
+
+|Mapping set import from Excel spreadsheet
+|`mappingset import`
+|✔
+|✔
+
+|SNOMED CT release import from RF2 files
+|`sctimport rf2_release`
+|✔ (zip only)
+|✔
+
+|SNOMED CT reference set import from RF2 file
+|`sctimport rf2_refset`
+|✔
+|✔
+
+|SNOMED CT reference set import from delimiter-separated file (includes RF1 subset files)
+|`sctimport dsv_refset`
+|✔
+|✔
+
+|Value domain import from Excel spreadsheet
+|
+|✔
+|
+
+|Value domain import from UMLS SVS XML file
+|`valueset import`
+|✔
+|✔
+
+|Import MRCM rules from XMI file
+|`mrcm import`
+|
+|✔
+
+|Export MRCM rules to XMI file
+|`mrcm export`
+|
+|✔
+|===
+
+=== List of operations that can be executed by regular users
+
+* ATC export to ClaML
+* Local Code System export to Excel spreadsheet
+* Mapping set export to Excel spreadsheet
+* SNOMED CT core components export to OWL 2
+* SNOMED CT reference set export to RF1 and RF2
+* SNOMED CT reference set export to Delimiter-Separated Values text file
+* Value domain export to Excel spreadsheet
+* Value domain export to UMLS SVS XML file
+
+=== Steps to perform single admin operations
+
+Checking the connected users from the OSGi server console, to list all connected users one should perform the following command:
+
+--------------------------
+osgi> session users
+User: info@b2international.com ,session id: 9
+--------------------------
+
+Before starting to gracefully disconnect users, the administrator should disable non-administrator user logins to the server.
+To check the login status on the server:
+
+--------------------------
+osgi> session login status
+Non-administrative logins are currently enabled.
+--------------------------
+
+As the response states above, there is no login restrictions applied. To restrict non-administrator logging, one should execute
+the following command:
+
+--------------------------
+osgi> session login disabled
+Disabled non-administrative logins.
+--------------------------
+
+Now any users with insufficient privileges (in other words; users without 'Administrator' role) will be refused by the server when
+trying to connect.
+
+NOTE: None of the currently connected users will be disconnected. Connected users have to be disconnected by the administrator via
+the OSGi console as described later.
+
+The administrator can send an informational message from the OSGi console to connected clients, so users can be informed about the
+upcoming maintenance:
+
+--------------------------
+osgi> session message ALL Server is going down in 10 minutes due to a SNOMED CT publication process. Please commit all your unsaved changes.
+Message sent to info@b2international.com
+--------------------------
+
+To disconnect all currently connected users:
+
+--------------------------
+osgi> session disconnect ALL
+User: info@b2international.com ,session id: 9 was disconnected.
+--------------------------
+
+NOTE: In this case, all clients, including the administrator will be logged out from the server, but the administrator may reconnect to the
+server as only non-administrative users are locked out.
+
+After disabling non-administrator user login, notifying and disconnecting users, double-check of the current status and the connected
+users at the server:
+
+--------------------------
+osgi> session login status
+Non-administrative logins are currently disabled.
+--------------------------
+
+--------------------------
+osgi> session users
+osgi>
+--------------------------
+
+It is now safe to perform any single administrator operations, such as an RF2 import. When finished, enable non-administrative connections again:
+
+--------------------------
+osgi> session login enabled
+Enabled non-administrative logins.
+--------------------------
+
+=== Impersonating users
+
+Snow Owl Server will ask for a user identifier for server-side import operations in the following cases:
+
+* SNOMED CT RF2 import
+* Local code system import from Excel
+* LOINC import from release archive
+* Mapping set import
+* Value domain import
+
+The user identifier will be used for associating commits to the terminology repository with a user in the commit information view.
+
+=== Taking backups
+
+==== "Hot" backups
+
+The example shell script `snowowl_hot_backup_mysql.sh` exercises all functionality mentioned above, and produces a .zip 
+archive containing database dumps and copies of index folders in the directory it is started from. Please update the variable 
+`SNOW_OWL_SERVER_HOME` so that it points to the installation folder of Snow Owl Server before running the script. 
+
+The return value is 0 for successful backups, and 1 if an error occurs while backing up content from the server. The script 
+produces timestamped diagnostic output on its standard output; error messages are directed to the standard error output.
+
+To create backups regularly, add a dedicated non-login user for backups as root:
+
+--------------------------
+# useradd -r -M -d / -s /sbin/nologin -c "Snow Owl Backup" snowowl-backup
+--------------------------
+
+Create and/or update access privileges of the backup destination, log output, and the location of the singleton instance lock file:
+
+--------------------------
+# mkdir -pv /storage/backups /var/log/snowowl-backup /var/run/snowowl-backup
+mkdir: created directory `/storage/backups'
+mkdir: created directory `/var/log/snowowl-backup'
+mkdir: created directory `/var/run/snowowl-backup'
+
+# chown -v root:snowowl-backup /storage/backups /var/log/snowowl-backup /var/run/snowowl-backup
+changed ownership of `/storage/backups' to root:snowowl-backup
+changed ownership of `/var/log/snowowl-backup' to root:snowowl-backup
+changed ownership of `/var/run/snowowl-backup' to root:snowowl-backup
+
+# chmod -v 775 /storage/backups /var/log/snowowl-backup /var/run/snowowl-backup
+mode of `/storage/backups' changed to 0775 (rwxrwxr-x)
+mode of `/var/log/snowowl-backup' changed to 0775 (rwxrwxr-x)
+mode of `/var/run/snowowl-backup' changed to 0775 (rwxrwxr-x)
+--------------------------
+
+Save the backup script in an accessible place, set the owner to snowowl-backup, and make it executable:
+
+--------------------------
+# chown -v snowowl-backup: /storage/backups/snowowl_full_backup_mysql.sh
+changed ownership of `/storage/backups/snowowl_full_backup_mysql.sh' to snowowl-backup:snowowl-backup
+
+# chmod -v 744 /storage/backups/snowowl_full_backup_mysql.sh
+mode of `/storage/backups/snowowl_full_backup_mysql.sh' changed to 0744 (rwxr--r--)
+--------------------------
+
+Add the script to the backup user's crontab (the example runs the script at 4 AM, and outputs log entries to logfiles 
+with a year-month-date suffix in /var/log/snowowl-backup):
+
+--------------------------
+# EDITOR=nano crontab -e -u snowowl-backups
+
+<nano opens; add the content below to the opened file, save, and exit the editor>
+
+# MAILTO="local-user"
+#
+# Minute - Hour - Day of month - Month - Day of week - Command
+0 4 * * * cd /storage/backups && ( ./snowowl_full_backup_mysql.sh >> /var/log/snowowl-backup/log-`date +\%Y\%m\%d` 2>&1 )
+--------------------------
+
+(If the standard error output is not redirected with the "2>&1" part of the command, errors will be captured by cron 
+and mailed to the snowowl-backup user's mailbox. The destination can be changed by uncommenting the MAILTO parameter 
+and setting it to a different address.)
+
+==== "Cold" backups
+
+When the server is shut down, the above mentioned REST service for enumerating store content and getting exclusive 
+write locks for the repositories is not available, so a separate script, `snowowl_cold_backup_mysql.sh` is being provided for this case.
+
+==== Backing up and restoring data in the issue tracker
+
+A detailed list of steps are available at the Move Installation page of Mozilla Wiki (which describes moving the installation from 
+one machine to another, but can also be applied for backup and restore on the same server). The important parts to take note of 
+are the commands used for dumping the SQL database:
+
+--------------------------
+$ mysqldump -u(username) -p(password) bugs > bugzilla-backup.sql
+--------------------------
+
+Reloading the SQL dump later requires the database to be cleared and recreated from the MySQL console:
+
+--------------------------
+mysql> DROP DATABASE bugs;
+mysql> CREATE DATABASE bugs DEFAULT CHARSET utf8;
+--------------------------
+
+Applying the dump goes as follows:
+
+--------------------------
+$ mysql -u (username) -p(password) bugs < /path/to/bugzilla-backup.sql
+--------------------------
+
+In addition to the contents of the database, the `data` directory and the `localconfig` file from Bugzilla's 
+installation directory should also be preserved.
+

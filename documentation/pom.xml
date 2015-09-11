@@ -11,12 +11,18 @@
 	<artifactId>documentation</artifactId>
 	<packaging>pom</packaging>
 
+	<properties>
+		<asciidoctor.version>1.5.2</asciidoctor.version>
+		<asciidoctorj.pdf.version>1.5.0-alpha.8</asciidoctorj.pdf.version>
+	</properties>
+
 	<build>
 		<plugins>
 			<plugin>
 				<groupId>org.asciidoctor</groupId>
 				<artifactId>asciidoctor-maven-plugin</artifactId>
-				<version>1.5.2</version>
+				<version>${asciidoctor.version}</version>
+
 				<executions>
 					<execution>
 						<id>output-html</id>
@@ -24,11 +30,32 @@
 						<goals>
 							<goal>process-asciidoc</goal>
 						</goals>
+						<configuration>
+							<backend>html5</backend>
+							<sourceHighlighter>coderay</sourceHighlighter>
+						</configuration>
+					</execution>
+
+					<execution>
+						<id>output-pdf</id>
+						<phase>generate-resources</phase>
+						<goals>
+							<goal>process-asciidoc</goal>
+						</goals>
+						<configuration>
+							<backend>pdf</backend>
+							<sourceHighlighter>coderay</sourceHighlighter>
+						</configuration>
 					</execution>
 				</executions>
-				<configuration>
-					<backend>html5</backend>
-				</configuration>
+
+				<dependencies>
+					<dependency>
+						<groupId>org.asciidoctor</groupId>
+						<artifactId>asciidoctorj-pdf</artifactId>
+						<version>${asciidoctorj.pdf.version}</version>
+					</dependency>
+				</dependencies>
 			</plugin>
 		</plugins>
 	</build>

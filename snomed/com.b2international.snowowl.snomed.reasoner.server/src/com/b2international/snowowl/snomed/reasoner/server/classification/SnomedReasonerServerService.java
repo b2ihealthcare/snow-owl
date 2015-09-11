@@ -512,7 +512,10 @@ public class SnomedReasonerServerService extends CollectingService<Reasoner, Cla
 		
 		remoteJob.addJobChangeListener(new JobChangeAdapter() {
 			public void done(final IJobChangeEvent event) {
-				getServiceForClass(IRemoteJobManager.class).cancelRemoteJob(persistenceId);
+				if (event.getResult().isOK()) {
+					getServiceForClass(IRemoteJobManager.class).cancelRemoteJob(persistenceId);
+				}
+				
 				getEventBus().send(SnomedReasonerServiceUtil.getChangesPersistedAddress(classificationId), new SerializableStatus(event.getResult()));
 			}
 		});

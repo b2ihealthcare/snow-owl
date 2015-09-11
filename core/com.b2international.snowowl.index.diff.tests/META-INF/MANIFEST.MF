@@ -2,7 +2,7 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: Snow Owl Index Diff Tests
 Bundle-SymbolicName: com.b2international.snowowl.index.diff.tests
-Bundle-Version: 4.2.0.qualifier
+Bundle-Version: 4.3.0.qualifier
 Bundle-Vendor: B2i Healthcare
 Bundle-RequiredExecutionEnvironment: JavaSE-1.7
 Bundle-ClassPath: lib/slf4j-simple-1.7.2.jar,
@@ -10,6 +10,7 @@ Bundle-ClassPath: lib/slf4j-simple-1.7.2.jar,
  .
 Require-Bundle: com.b2international.snowowl.datastore.server,
  com.b2international.snowowl.datastore,
- org.codehaus.groovy;bundle-version="2.0.7",
- com.b2international.snowowl.index.diff
+ com.b2international.snowowl.index.diff,
+ org.junit;bundle-version="4.11.0",
+ org.assertj.core;bundle-version="1.7.1"
 Import-Package: org.slf4j;version="1.7.2"

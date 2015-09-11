@@ -16,7 +16,7 @@
 package com.b2international.snowowl.datastore.personalization;
 
 import com.b2international.snowowl.core.ApplicationContext;
-import com.b2international.snowowl.datastore.ISingleDirectoryIndexService;
+import com.b2international.snowowl.datastore.SingleDirectoryIndex;
 
 /**
  * Provides access to components previously selected from the global quick search control.
@@ -24,4 +24,4 @@ import com.b2international.snowowl.datastore.ISingleDirectoryIndexService;
  * The interface only serves as an {@link ApplicationContext} service key.
  * 
  */
-public interface IPreviousPicksManager extends IComponentSetManager, ISingleDirectoryIndexService { }
+public interface IPreviousPicksManager extends IComponentSetManager, SingleDirectoryIndex { }

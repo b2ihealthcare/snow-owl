@@ -118,5 +118,9 @@ public class ReflectionUtils {
 		}
 		return values;
 	}
+
+	public static <T> void setField(T owner, String fieldName, Object value) {
+		setField((Class<T>) owner.getClass(), owner, fieldName, value);
+	}
 }
  

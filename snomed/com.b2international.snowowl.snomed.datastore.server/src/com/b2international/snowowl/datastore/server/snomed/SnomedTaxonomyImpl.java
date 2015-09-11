@@ -18,9 +18,7 @@ package com.b2international.snowowl.datastore.server.snomed;
 import static com.b2international.commons.StringUtils.isEmpty;
 import static com.b2international.commons.graph.GraphUtils.getLongestPath;
 import static com.b2international.commons.pcj.LongSets.newLongSet;
-import static com.b2international.commons.pcj.LongSets.newLongSetWithExpectedSize;
 import static com.b2international.commons.pcj.LongSets.toStringList;
-import static com.b2international.commons.pcj.LongSets.toStringSet;
 import static com.b2international.snowowl.core.ApplicationContext.getServiceForClass;
 import static com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator.REPOSITORY_UUID;
 import static com.google.common.base.Preconditions.checkNotNull;
@@ -50,6 +48,7 @@ import bak.pcj.LongCollection;
 import bak.pcj.LongIterator;
 import bak.pcj.list.IntArrayDeque;
 import bak.pcj.list.IntArrayList;
+import bak.pcj.list.LongArrayList;
 import bak.pcj.map.LongKeyMap;
 import bak.pcj.map.LongKeyMapIterator;
 import bak.pcj.set.IntBitSet;
@@ -60,6 +59,7 @@ import bak.pcj.set.LongSet;
 import com.b2international.commons.CompareUtils;
 import com.b2international.commons.arrays.LongBidiMapWithInternalId;
 import com.b2international.commons.concurrent.equinox.ForkJoinUtils;
+import com.b2international.commons.time.TimeUtil;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.datastore.tasks.TaskManager;
 import com.b2international.snowowl.dsl.escg.EscgUtils;
@@ -85,6 +85,7 @@ import com.b2international.snowowl.snomed.dsl.query.ast.SubExpression;
 import com.google.common.base.Function;
 import com.google.common.base.Predicate;
 import com.google.common.base.Predicates;
+import com.google.common.base.Stopwatch;
 import com.google.common.base.Supplier;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
@@ -121,6 +122,7 @@ public class SnomedTaxonomyImpl implements SnomedTaxonomy {
 	private final LoadingCache<String, Collection<String>> expressionCache = CacheBuilder.newBuilder()
 			.expireAfterAccess(EXPIRE_TIME, TimeUnit.MINUTES)
 			.build(new CacheLoader<String, Collection<String>>() {
+				@Override
 				public Collection<String> load(final String expression) throws Exception {
 					return getIds(evaluateInternalIds(EscgUtils.INSTANCE.parseRewrite(expression)));
 				}
@@ -268,8 +270,17 @@ public class SnomedTaxonomyImpl implements SnomedTaxonomy {
 			if (internalId < 0) {
 				return 0;
 			}
+			
 			final int ids[][] = outgoings[internalId];
-			return ids.length;
+			final int isATypeInternalId = getInternalId(IS_A);
+			
+			int count = 0;
+			for (final int[] id : ids) {
+				if (id[1] != isATypeInternalId) {
+					count++;
+				}
+			}
+			return count;
 		} else {
 			initializeTaxonomyInBackgroud();
 			return getOutboundRelationships(branchPath, conceptId).size();
@@ -284,10 +295,13 @@ public class SnomedTaxonomyImpl implements SnomedTaxonomy {
 				return emptyList();
 			}
 			final int ids[][] = outgoings[internalId];
-			final int[] internalIds = new int[ids.length];
-			int i = 0;
+			final IntCollection internalIds = new IntArrayList();
+			final int isATypeInternalId = getInternalId(IS_A);
+			
 			for (final int[] id : ids) {
-				internalIds[i++] = id[0];
+				if (id[1] != isATypeInternalId) {
+					internalIds.add(id[0]);
+				}
 			}
 			return getIds(internalIds);
 		} else {
@@ -300,7 +314,7 @@ public class SnomedTaxonomyImpl implements SnomedTaxonomy {
 	public Collection<String> getOutboundConcepts(final String conceptId, final String typeId) {
 		if (isInitialized()) {
 			final int internalId = getInternalId(conceptId);
-			if (internalId < 0) {
+			if (internalId < 0 || Concepts.IS_A.equals(typeId)) {
 				return emptyList();
 			}
 			final int ids[][] = outgoings[internalId];
@@ -317,10 +331,30 @@ public class SnomedTaxonomyImpl implements SnomedTaxonomy {
 			return newArrayList(transform(getOutboundRelationships(branchPath, conceptId, typeId), GET_TARGET_FUNCTION));
 		}
 	}
+	
+	@Override
+	public Collection<String> getAllOutboundConcepts(final String conceptId) {
+		if (isInitialized()) {
+			final int internalId = getInternalId(conceptId);
+			if (internalId < 0) {
+				return emptyList();
+			}
+			final int ids[][] = outgoings[internalId];
+			final IntCollection internalIds = new IntArrayList();
+			
+			for (final int[] id : ids) {
+				internalIds.add(id[0]);
+			}
+			return getIds(internalIds);
+		} else {
+			initializeTaxonomyInBackgroud();
+			return newArrayList(transform(getOutboundRelationships(branchPath, conceptId, true), GET_TARGET_FUNCTION));
+		}
+	}
 
 	@Override
 	public boolean hasOutboundRelationshipOfType(final String conceptId, final String typeId) {
-		return !isEmpty(getOutboundConcepts(conceptId, typeId));
+		return Concepts.IS_A.equals(typeId) ? !isEmpty(getSupertypes(conceptId)) : !isEmpty(getOutboundConcepts(conceptId, typeId));
 	}
 	
 	@Override
@@ -332,10 +366,14 @@ public class SnomedTaxonomyImpl implements SnomedTaxonomy {
 			}
 			
 			final int ids[][] = outgoings[internalId];
-			final int[] internalIds = new int[ids.length];
-			int i = 0;
+			final IntCollection internalIds = new IntArrayList();
+			final int isATypeInternalId = getInternalId(IS_A);
+			
 			for (final int[] id : ids) {
-				internalIds[i++] = id[1];
+				final int typeId = id[1];
+				if (typeId != isATypeInternalId) {
+					internalIds.add(typeId);
+				}
 			}
 			
 			return newArrayList(newHashSet(getIds(internalIds)));
@@ -353,10 +391,13 @@ public class SnomedTaxonomyImpl implements SnomedTaxonomy {
 				return emptyList();
 			}
 			final int ids[][] = incomings[internalId];
-			final int[] internalIds = new int[ids.length];
-			int i = 0;
+			final IntCollection internalIds = new IntArrayList();
+			final int isATypeInternalId = getInternalId(IS_A);
+			
 			for (final int[] id : ids) {
-				internalIds[i++] = id[0];
+				if (id[1] != isATypeInternalId) {
+					internalIds.add(id[0]);
+				}
 			}
 			return getIds(internalIds);
 		} else {
@@ -369,7 +410,7 @@ public class SnomedTaxonomyImpl implements SnomedTaxonomy {
 	public Collection<String> getInboundConcepts(final String conceptId, final String typeId) {
 		if (isInitialized()) {
 			final int internalId = getInternalId(conceptId);
-			if (internalId < 0) {
+			if (internalId < 0 || Concepts.IS_A.equals(typeId)) {
 				return emptyList();
 			}
 			final int ids[][] = incomings[internalId];
@@ -388,8 +429,28 @@ public class SnomedTaxonomyImpl implements SnomedTaxonomy {
 	}
 	
 	@Override
+	public Collection<String> getAllInboundConcepts(final String conceptId) {
+		if (isInitialized()) {
+			final int internalId = getInternalId(conceptId);
+			if (internalId < 0) {
+				return emptyList();
+			}
+			final int ids[][] = incomings[internalId];
+			final IntCollection internalIds = new IntArrayList();
+			
+			for (final int[] id : ids) {
+				internalIds.add(id[0]);
+			}
+			return getIds(internalIds);
+		} else {
+			initializeTaxonomyInBackgroud();
+			return newArrayList(transform(getInboundRelationships(branchPath, conceptId, true), GET_SOURCE_FUNCTION));
+		}
+	}
+	
+	@Override
 	public boolean hasInboundRelationshipOfType(final String conceptId, final String typeId) {
-		return !isEmpty(getInboundConcepts(conceptId, typeId));
+		return Concepts.IS_A.equals(typeId) ? !isEmpty(getSubtypes(conceptId)) : !isEmpty(getInboundConcepts(conceptId, typeId));
 	}
 
 	@Override
@@ -484,6 +545,8 @@ public class SnomedTaxonomyImpl implements SnomedTaxonomy {
 			state.set(state.get().nextState());
 		}
 		
+		final Stopwatch stopwatch = Stopwatch.createStarted();
+		
 		final AtomicReference<Statement[]> statementsReference = new AtomicReference<Statement[]>(new Statement[0]);
 		
 		final Runnable initStatementsRunnable = new Runnable() {
@@ -506,6 +569,7 @@ public class SnomedTaxonomyImpl implements SnomedTaxonomy {
 		};
 		
 		final Supplier<LongKeyMap> refSetMapSupplier = memoize(new Supplier<LongKeyMap>() {
+			@Override
 			public LongKeyMap get() {
 				return getServiceForClass(SnomedRefSetBrowser.class).getReferencedConceptIds(branchPath);
 		}});
@@ -548,15 +612,15 @@ public class SnomedTaxonomyImpl implements SnomedTaxonomy {
 
 			final int sourceConceptInternalId = concepts.getInternalId(sourceId);
 			if (sourceConceptInternalId < 0) {
-				throw new IllegalStateException("Cannot find internal source concept ID for: " + sourceId);
+				throw new IllegalStateException(String.format("Cannot find internal source concept ID for %s on branch: %s", sourceId, branchPath));
 			}
 			final int destinationConceptInternalId = concepts.getInternalId(destinationId);
 			if (destinationConceptInternalId < 0) {
-				throw new IllegalStateException("Cannot find internal destination concept ID for: " + destinationId);
+				throw new IllegalStateException(String.format("Cannot find internal destination concept ID for %s on branch: %s", destinationId, branchPath));
 			}
 			final int typeConceptInternalId = concepts.getInternalId(typeId);
 			if (destinationConceptInternalId < 0) {
-				throw new IllegalStateException("Cannot find internal type concept ID for: " + typeId);
+				throw new IllegalStateException(String.format("Cannot find internal type concept ID for %s on branch: %s ", typeId, branchPath));
 			}
 
 			incomingOtherHistorgram[destinationConceptInternalId]++;
@@ -607,6 +671,7 @@ public class SnomedTaxonomyImpl implements SnomedTaxonomy {
 		
 		state.set(state.get().nextState());
 
+		LOGGER.info("SNOMED CT taxonomy service has been successfully initialized on '{}'. [{}]", branchPath, TimeUtil.toString(stopwatch));
 	}
 	
 	private IntSet evaluateInternalIds(final com.b2international.snowowl.snomed.dsl.query.RValue expression) {
@@ -702,11 +767,11 @@ public class SnomedTaxonomyImpl implements SnomedTaxonomy {
 	}
 	
 	private Collection<String> getIds(final IntCollection internalIds) {
-		final LongSet ids = newLongSetWithExpectedSize(internalIds.size());
+		final LongArrayList ids = new LongArrayList(internalIds.size());
 		for (final IntIterator itr = internalIds.iterator(); itr.hasNext(); /**/) {
 			ids.add(concepts.get(itr.next()));
 		}
-		return toStringSet(ids);
+		return toStringList(ids);
 	}
 	
 	private int getInternalId(final String conceptId) {
@@ -716,8 +781,8 @@ public class SnomedTaxonomyImpl implements SnomedTaxonomy {
 		return getInternalId(Long.parseLong(conceptId));
 	}
 	
-	private int getInternalId(final long concpetId) {
-		return concepts.getInternalId(concpetId);
+	private int getInternalId(final long conceptId) {
+		return concepts.getInternalId(conceptId);
 	}
 
 	private int getConceptCount() {
@@ -836,6 +901,7 @@ public class SnomedTaxonomyImpl implements SnomedTaxonomy {
 	private void initializeTaxonomyInBackgroud() {
 		if (InitializationState.isUninitialized(state.get())) {
 			new Thread(new Runnable() {
+				@Override
 				public void run() {
 					build(branchPath);
 				}
@@ -844,11 +910,16 @@ public class SnomedTaxonomyImpl implements SnomedTaxonomy {
 	}
 	
 	private Collection<SnomedRelationshipIndexEntry> getOutboundRelationships(final IBranchPath branchPath, final String conceptId) {
-		return filter(getStatementBrowser().getOutboundStatementsById(branchPath, conceptId), Predicates.and(ACTIVE_RELATIONSHIP_PREDICATE, NON_ISA_RELATIONSHIP_PREDICATE));
+		return getOutboundRelationships(branchPath, conceptId, false);
+	}
+	
+	private Collection<SnomedRelationshipIndexEntry> getOutboundRelationships(final IBranchPath branchPath, final String conceptId, final boolean includeIsas) {
+		return filter(getStatementBrowser().getOutboundStatementsById(branchPath, conceptId), includeIsas ? ACTIVE_RELATIONSHIP_PREDICATE : Predicates.and(ACTIVE_RELATIONSHIP_PREDICATE, NON_ISA_RELATIONSHIP_PREDICATE));
 	}
 
 	private Collection<SnomedRelationshipIndexEntry> getOutboundRelationships(final IBranchPath branchPath, final String conceptId, final String typeId) {
 		return filter(getOutboundRelationships(branchPath, conceptId), new Predicate<SnomedRelationshipIndexEntry>() {
+			@Override
 			public boolean apply(final SnomedRelationshipIndexEntry relationship) {
 				return nullToEmpty(typeId).equals(relationship.getAttributeId());
 			}
@@ -856,11 +927,16 @@ public class SnomedTaxonomyImpl implements SnomedTaxonomy {
 	}
 	
 	private Collection<SnomedRelationshipIndexEntry> getInboundRelationships(final IBranchPath branchPath, final String conceptId) {
-		return filter(getStatementBrowser().getInboundStatementsById(branchPath, conceptId), Predicates.and(ACTIVE_RELATIONSHIP_PREDICATE, NON_ISA_RELATIONSHIP_PREDICATE));
+		return getInboundRelationships(branchPath, conceptId, false);
+	}
+	
+	private Collection<SnomedRelationshipIndexEntry> getInboundRelationships(final IBranchPath branchPath, final String conceptId, final boolean includeIsas) {
+		return filter(getStatementBrowser().getInboundStatementsById(branchPath, conceptId), includeIsas ? ACTIVE_RELATIONSHIP_PREDICATE : Predicates.and(ACTIVE_RELATIONSHIP_PREDICATE, NON_ISA_RELATIONSHIP_PREDICATE));
 	}
 	
 	private Collection<SnomedRelationshipIndexEntry> getInboundRelationships(final IBranchPath branchPath, final String conceptId, final String typeId) {
 		return filter(getInboundRelationships(branchPath, conceptId), new Predicate<SnomedRelationshipIndexEntry>() {
+			@Override
 			public boolean apply(final SnomedRelationshipIndexEntry relationship) {
 				return nullToEmpty(typeId).equals(relationship.getAttributeId());
 			}
@@ -868,30 +944,35 @@ public class SnomedTaxonomyImpl implements SnomedTaxonomy {
 	}
 	
 	private static final Predicate<SnomedRelationshipIndexEntry> ACTIVE_RELATIONSHIP_PREDICATE = new Predicate<SnomedRelationshipIndexEntry>() {
+		@Override
 		public boolean apply(final SnomedRelationshipIndexEntry relationship) {
 			return relationship.isActive();
 		}
 	};
 	
 	private static final Predicate<SnomedRelationshipIndexEntry> NON_ISA_RELATIONSHIP_PREDICATE = new Predicate<SnomedRelationshipIndexEntry>() {
+		@Override
 		public boolean apply(final SnomedRelationshipIndexEntry relationship) {
 			return !Concepts.IS_A.equals(relationship.getAttributeId());
 		}
 	};
 	
 	private static final Function<SnomedRelationshipIndexEntry, String> GET_TARGET_FUNCTION = new Function<SnomedRelationshipIndexEntry, String>() {
+		@Override
 		public String apply(final SnomedRelationshipIndexEntry relationship) {
 			return relationship.getValueId();
 		}
 	};
 	
 	private static final Function<SnomedRelationshipIndexEntry, String> GET_SOURCE_FUNCTION = new Function<SnomedRelationshipIndexEntry, String>() {
+		@Override
 		public String apply(final SnomedRelationshipIndexEntry relationship) {
 			return relationship.getObjectId();
 		}
 	};
 	
 	private static final Function<SnomedRelationshipIndexEntry, String> GET_TYPE_FUNCTION = new Function<SnomedRelationshipIndexEntry, String>() {
+		@Override
 		public String apply(final SnomedRelationshipIndexEntry relationship) {
 			return relationship.getAttributeId();
 		}

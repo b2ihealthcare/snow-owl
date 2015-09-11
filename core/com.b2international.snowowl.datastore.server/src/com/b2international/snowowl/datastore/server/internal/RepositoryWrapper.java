@@ -24,6 +24,7 @@ import com.b2international.snowowl.datastore.cdo.ICDOConnection;
 import com.b2international.snowowl.datastore.cdo.ICDOConnectionManager;
 import com.b2international.snowowl.datastore.cdo.ICDORepository;
 import com.b2international.snowowl.datastore.cdo.ICDORepositoryManager;
+import com.b2international.snowowl.datastore.server.CDOServerUtils;
 import com.b2international.snowowl.datastore.server.cdo.CDOConflictProcessorBroker;
 import com.b2international.snowowl.datastore.server.cdo.ICDOConflictProcessor;
 
@@ -81,5 +82,15 @@ public class RepositoryWrapper implements IRepository {
 	@Override
 	public ICDOConflictProcessor getConflictProcessor() {
 		return CDOConflictProcessorBroker.INSTANCE.getProcessor(repositoryId);
+	}
+	
+	@Override
+    public long getBaseTimestamp(CDOBranch branch) {
+        return branch.getBase().getTimeStamp();
+    }
+	
+	@Override
+	public long getHeadTimestamp(CDOBranch branch) {
+		return Math.max(getBaseTimestamp(branch), CDOServerUtils.getLastCommitTime(branch));
 	}
 }

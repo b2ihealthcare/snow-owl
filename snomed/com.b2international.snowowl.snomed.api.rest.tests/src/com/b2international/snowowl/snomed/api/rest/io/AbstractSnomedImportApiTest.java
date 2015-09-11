@@ -22,6 +22,7 @@ import java.util.Map;
 
 import com.b2international.snowowl.snomed.api.rest.AbstractSnomedApiTest;
 import com.b2international.snowowl.snomed.api.rest.SnomedApiTestConstants;
+import com.b2international.snowowl.test.commons.rest.RestExtensions;
 import com.jayway.restassured.http.ContentType;
 import com.jayway.restassured.response.Response;
 
@@ -40,10 +41,9 @@ public abstract class AbstractSnomedImportApiTest extends AbstractSnomedApiTest 
 	protected String assertImportConfigurationCanBeCreated(final Map<?, ?> importConfiguration) {
 		final Response response = whenCreatingImportConfiguration(importConfiguration);
 
-		final String location = response.then()
-				.assertThat().statusCode(201)
+		final String location = RestExtensions.expectStatus(response, 201)
 				.and().extract().response().header("Location");
-
+		
 		return lastPathSegment(location);
 	}
 }
