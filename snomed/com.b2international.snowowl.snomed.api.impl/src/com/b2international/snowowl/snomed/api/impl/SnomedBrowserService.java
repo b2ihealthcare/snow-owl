@@ -164,12 +164,8 @@ public class SnomedBrowserService implements ISnomedBrowserService {
 		LOGGER.info("Got relationship changes +{} -{} m{}, {}", relationshipInputs.size(), relationshipDeletionIds.size(), relationshipUpdates.size(), newVersionConcept.getFsn());
 
 		// Add updates to editing context
-		boolean inactivatingConcept = Boolean.FALSE.equals(conceptUpdate.isActive());
-		// In the case of inactivation, other updates seem to go more smoothly if this is done later
-		if (!inactivatingConcept) {
-			if (conceptUpdate != null) {
-				conceptService.doUpdate(componentRef, conceptUpdate, editingContext);
-			}
+		if (conceptUpdate != null) {
+			conceptService.doUpdate(componentRef, conceptUpdate, editingContext);
 		}
 		
 		for (String descriptionDeletionId : descriptionDeletionIds) {
@@ -192,14 +188,6 @@ public class SnomedBrowserService implements ISnomedBrowserService {
 		for (ISnomedRelationshipInput relationshipInput : relationshipInputs) {
 			relationshipService.convertAndRegister(relationshipInput, editingContext);
 		}
-		
-		if (inactivatingConcept) {
-			// Inactivate concept last
-			if (conceptUpdate != null) {
-				conceptService.doUpdate(componentRef, conceptUpdate, editingContext);
-			}
-		}
-
 		
 		// TODO - Add MRCM checks here
 

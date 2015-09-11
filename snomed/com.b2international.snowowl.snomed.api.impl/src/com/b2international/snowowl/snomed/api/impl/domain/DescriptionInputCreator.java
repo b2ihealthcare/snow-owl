@@ -25,14 +25,25 @@ public class DescriptionInputCreator extends AbstractInputCreator implements Com
 	@Override
 	public SnomedDescriptionUpdate createUpdate(SnomedBrowserDescription existingDesc, SnomedBrowserDescription newVersionDesc) {
 		final SnomedDescriptionUpdate update = new SnomedDescriptionUpdate();
-		update.setActive(newVersionDesc.isActive());
-		update.setModuleId(newVersionDesc.getModuleId());
+		boolean change = false;
+		if (existingDesc.isActive() != newVersionDesc.isActive()) {
+			change = true;
+			update.setActive(newVersionDesc.isActive());
+		}
+		if (!existingDesc.getModuleId().equals(newVersionDesc.getModuleId())) {
+			change = true;
+			update.setModuleId(newVersionDesc.getModuleId());
+		}
 		final Map<String, Acceptability> newAcceptabilityMap = newVersionDesc.getAcceptabilityMap();
 		if (!existingDesc.getAcceptabilityMap().equals(newAcceptabilityMap)) {
+			change = true;
 			update.setAcceptability(newAcceptabilityMap);
 		}
-		update.setCaseSignificance(newVersionDesc.getCaseSignificance());
-		return update;
+		if (existingDesc.getCaseSignificance() != newVersionDesc.getCaseSignificance()) {
+			change = true;
+			update.setCaseSignificance(newVersionDesc.getCaseSignificance());
+		}
+		return change ? update : null;
 	}
 
 	@Override

@@ -49,7 +49,9 @@ public class InputFactory {
 				final String existingVersionId = existingVersion.getId();
 				if (existingVersionId.equals(newVersion.getId())) {
 					final U update = (U) getUpdateDelegate(updateType).createUpdate(existingVersion, newVersion);
-					updateMap.put(existingVersionId, update);
+					if (update != null) {
+						updateMap.put(existingVersionId, update);
+					}
 				}
 			}
 		}
