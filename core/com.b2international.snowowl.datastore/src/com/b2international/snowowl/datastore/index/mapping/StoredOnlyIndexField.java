@@ -22,7 +22,7 @@ import org.apache.lucene.document.StoredField;
  * @since 4.3 
  * @param <T> - the type of the stored only field
  */
-public final class StoredOnlyIndexField<T> extends IndexFieldDelegate<T> {
+public final class StoredOnlyIndexField<T> extends IndexFieldDelegate<T> implements StoredIndexField<T> {
 	
 	public StoredOnlyIndexField(IndexField<T> delegate) {
 		super(delegate);
