@@ -55,6 +55,13 @@ public abstract class IndexFieldBase<T> implements IndexField<T> {
 		return store;
 	}
 	
+	@Override
+	public void copyTo(Document source, Document target) {
+		for (T t : getValues(source)) {
+			addTo(target, t);
+		}
+	}
+	
 	protected abstract T getValue(IndexableField field);
 	
 	protected abstract BytesRef toBytesRef(T value);

@@ -25,19 +25,20 @@ import org.apache.lucene.search.Sort;
 import org.apache.lucene.util.BytesRef;
 
 /**
- * @since 4.3 
- * @param <T> - the type of the value to store in this index field
+ * @since 4.3
+ * @param <T>
+ *            - the type of the value to store in this index field
  */
 public interface IndexField<T> {
 
 	String fieldName();
 
 	T getValue(Document doc);
-	
+
 	String getValueAsString(Document doc);
 
 	List<T> getValues(Document doc);
-	
+
 	List<String> getValuesAsString(Document doc);
 
 	Query toQuery(T value);
@@ -49,13 +50,21 @@ public interface IndexField<T> {
 	void addTo(Document doc, T value);
 
 	void removeAll(Document doc);
-	
+
 	<D extends DocumentBuilderBase<D>> void removeAll(D doc);
 
 	Sort createSort();
 
-	Filter createFilter(T...values);
-	
+	Filter createFilter(T... values);
+
 	Filter createFilter(List<BytesRef> bytesRefs);
+
+	/**
+	 * Reads the value from the given source {@link Document} and adds it to the target {@link Document}.
+	 * 
+	 * @param source
+	 * @param target
+	 */
+	void copyTo(Document source, Document target);
 
 }
