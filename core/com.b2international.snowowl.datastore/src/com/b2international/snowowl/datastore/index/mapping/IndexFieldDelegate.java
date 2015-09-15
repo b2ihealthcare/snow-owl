@@ -38,6 +38,11 @@ public class IndexFieldDelegate<T> implements IndexField<T> {
 	}
 
 	@Override
+	public void copyTo(Document source, Document target) {
+		this.delegate.copyTo(source, target);
+	}
+	
+	@Override
 	public final String fieldName() {
 		return delegate.fieldName();
 	}
