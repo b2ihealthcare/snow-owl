@@ -35,6 +35,8 @@ public class Mappings {
 	private static final String COMPONENT_ANCESTOR_FIELD_NAME = "concept_ancestor_id";
 	private static final String COMPONENT_LABEL_FIELD_NAME = "component_label";
 	private static final String COMPONENT_ICON_ID_FIELD_NAME = "component_icon_id";
+	private static final String COMPONENT_COMPARE_UNIQUE_KEY_FIELD_NAME = "component_compare_unique_key";
+	private static final String COMPONENT_IGNORE_COMPARE_UNIQUE_KEY_FIELD_NAME = "component_ignore_compare_unique_key";
 	
 	private static final IndexField<String> COMPONENT_ID = stringField(COMPONENT_ID_FIELD_NAME);
 	private static final IntIndexField COMPONENT_TYPE = new IntIndexField(COMPONENT_TYPE_FIELD_NAME);
@@ -43,6 +45,8 @@ public class Mappings {
 	private static final IndexField<String> COMPONENT_ANCESTOR = filteredField(stringField(COMPONENT_ANCESTOR_FIELD_NAME), Predicates.not(Predicates.equalTo(ROOT_ID_STRING)));
 	private static final BinaryDocValuesIndexField COMPONENT_LABEL = new DocValuesTextIndexField(COMPONENT_LABEL_FIELD_NAME);
 	private static final IndexField<String> COMPONENT_ICON_ID = stringField(COMPONENT_ICON_ID_FIELD_NAME);
+	private static final NumericDocValuesIndexField<Long> COMPONENT_COMPARE_UNIQUE_KEY = longDocValuesField(COMPONENT_COMPARE_UNIQUE_KEY_FIELD_NAME);
+	private static final NumericDocValuesIndexField<Long> COMPONENT_IGNORE_COMPARE_UNIQUE_KEY = longDocValuesField(COMPONENT_IGNORE_COMPARE_UNIQUE_KEY_FIELD_NAME);
 	
 	public static LongCollectionIndexField filteredLongField(LongIndexField field, Predicate<? super Long> predicate) {
 		return new FilteredLongIndexField(field, predicate);
@@ -78,6 +82,14 @@ public class Mappings {
 	
 	public static IndexField<String> iconId() {
 		return COMPONENT_ICON_ID;
+	}
+	
+	public static NumericDocValuesIndexField<Long> compareUniqueKey() {
+		return COMPONENT_COMPARE_UNIQUE_KEY;
+	}
+	
+	public static NumericDocValuesIndexField<Long> compareIgnoreUniqueKey() {
+		return COMPONENT_IGNORE_COMPARE_UNIQUE_KEY;
 	}
 	
 	public static QueryBuilder newQuery() {
@@ -123,20 +135,24 @@ public class Mappings {
 	public static IndexField<Float> floatDocValuesField(String fieldName) {
 		return new DocValuesFloatIndexField(fieldName);
 	}
+	
+	public static IndexField<Integer> intDocValuesField(String fieldName) {
+		return new DocValuesIntIndexField(fieldName);
+	}
 
-	public static IndexField<Integer> storedOnlyIntField(String fieldName) {
+	public static StoredIndexField<Integer> storedOnlyIntField(String fieldName) {
 		return new StoredOnlyIndexField<>(intField(fieldName));
 	}
 	
-	public static IndexField<Long> storedOnlyLongField(String fieldName) {
+	public static StoredIndexField<Long> storedOnlyLongField(String fieldName) {
 		return new StoredOnlyIndexField<>(longField(fieldName));
 	}
 	
-	public static IndexField<String> storedOnlyStringField(String fieldName) {
+	public static StoredIndexField<String> storedOnlyStringField(String fieldName) {
 		return new StoredOnlyIndexField<>(stringField(fieldName));
 	}
 	
-	public static IndexField<Float> storedOnlyFloatField(String fieldName) {
+	public static StoredIndexField<Float> storedOnlyFloatField(String fieldName) {
 		return new StoredOnlyIndexField<>(floatField(fieldName));
 	}
 	
@@ -162,6 +178,18 @@ public class Mappings {
 	
 	public static IndexField<String> searchOnlyTextField(String fieldName) {
 		return new TextIndexField(fieldName, false);
+	}
+	
+	public static IndexField<Integer> storedOnlyIntFieldWithDocValues(String fieldName) {
+		return new StoredOnlyDocValuesLongIndexField<>(Mappings.storedOnlyIntField(fieldName));
+	}
+
+	public static IndexField<Long> storedOnlyLongFieldWithDocValues(String fieldName) {
+		return new StoredOnlyDocValuesLongIndexField<>(Mappings.storedOnlyLongField(fieldName));
+	}
+	
+	public static BinaryDocValuesIndexField stringDocValuesField(String fieldName) {
+		return new DocValuesStringIndexField(fieldName);
 	}
 	
 	public static DocumentBuilder doc() {

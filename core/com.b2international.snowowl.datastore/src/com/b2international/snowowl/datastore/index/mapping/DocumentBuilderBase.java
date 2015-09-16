@@ -22,6 +22,7 @@ import java.util.List;
 
 import org.apache.lucene.document.Document;
 
+import com.b2international.snowowl.datastore.index.DocumentUpdater;
 import com.b2international.snowowl.datastore.index.SortKeyMode;
 
 /**
@@ -54,6 +55,10 @@ public abstract class DocumentBuilderBase<T extends DocumentBuilderBase<T>> {
 		this.doc = checkNotNull(doc, "doc");
 	}
 	
+	public final void clear() {
+		this.doc = new Document();
+	}
+	
 	public T id(String value) {
 		return addToDoc(Mappings.id(), value);
 	}
@@ -68,6 +73,14 @@ public abstract class DocumentBuilderBase<T extends DocumentBuilderBase<T>> {
 	
 	public T storageKey(Long value) {
 		return addToDoc(Mappings.storageKey(), value);
+	}
+	
+	public T compareUniqueKey(Long value) {
+		return addToDoc(Mappings.compareUniqueKey(), value);
+	}
+	
+	public T compareIgnoreUniqueKey(Long value) {
+		return addToDoc(Mappings.compareIgnoreUniqueKey(), value);
 	}
 	
 	public T parent(String value) {
@@ -111,7 +124,7 @@ public abstract class DocumentBuilderBase<T extends DocumentBuilderBase<T>> {
 	}
 	
 	public T docValuesField(String fieldName, String value) {
-		return addToDoc(new DocValuesStringIndexField(fieldName), value);
+		return addToDoc(Mappings.stringDocValuesField(fieldName), value);
 	}
 	
 	public T docValuesField(String fieldName, Float value) {
@@ -180,6 +193,14 @@ public abstract class DocumentBuilderBase<T extends DocumentBuilderBase<T>> {
 		return addToDoc(Mappings.storedOnlyFloatField(fieldName), value);
 	}
 	
+	public T storedOnlyWithDocValues(String fieldName, Integer value) {
+		return addToDoc(Mappings.storedOnlyIntFieldWithDocValues(fieldName), value);
+	}
+	
+	public T storedOnlyWithDocValues(String fieldName, Long value) {
+		return addToDoc(Mappings.storedOnlyLongFieldWithDocValues(fieldName), value);
+	}
+	
 	public final Document build() {
 		// TODO build the doc here, and register field - value entries while building
 		return doc;
@@ -199,6 +220,15 @@ public abstract class DocumentBuilderBase<T extends DocumentBuilderBase<T>> {
 	
 	protected T getSelf() {
 		return (T) this;
+	}
+	
+	public final T with(DocumentUpdater<T> updater) {
+		updater.update(getSelf());
+		return getSelf();
+	}
+	
+	protected final int toIntValue(boolean value) {
+		return value ? 1 : 0;
 	}
 
 }
