@@ -17,6 +17,7 @@ package com.b2international.snowowl.datastore.index;
 
 import org.apache.lucene.document.Document;
 import org.apache.lucene.index.Term;
+import org.apache.lucene.search.Query;
 
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.api.index.IIndexEntry;
@@ -61,5 +62,5 @@ public abstract class AbstractIndexUpdater<E extends IIndexEntry> extends Abstra
 	
 	public abstract <D extends DocumentBuilderBase<D>> void update(IBranchPath branchPath, long storageKey, DocumentUpdater<D> documentUpdater, DocumentBuilderFactory<D> builderFactory);
 	
-	public abstract <D extends DocumentBuilderBase<D>> void update(IBranchPath branchPath, Term term, DocumentUpdater<D> documentUpdater, DocumentBuilderFactory<D> builderFactory);
+	public abstract <D extends DocumentBuilderBase<D>> void upsert(IBranchPath branchPath, Query term, DocumentUpdater<D> documentUpdater, DocumentBuilderFactory<D> builderFactory);
 }

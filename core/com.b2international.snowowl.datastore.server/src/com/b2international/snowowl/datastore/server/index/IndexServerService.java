@@ -60,6 +60,7 @@ import com.b2international.snowowl.datastore.index.DocIdCollector.DocIdsIterator
 import com.b2international.snowowl.datastore.index.DocumentUpdater;
 import com.b2international.snowowl.datastore.index.DocumentWithScore;
 import com.b2international.snowowl.datastore.index.FakeQueryAdapter;
+import com.b2international.snowowl.datastore.index.IndexRead;
 import com.b2international.snowowl.datastore.index.mapping.DocumentBuilderBase;
 import com.b2international.snowowl.datastore.index.mapping.DocumentBuilderFactory;
 import com.b2international.snowowl.datastore.index.mapping.Mappings;
@@ -170,6 +171,10 @@ public abstract class IndexServerService<E extends IIndexEntry> extends Abstract
 	private Term toTerm(final long storageKey) {
 		return Mappings.storageKey().toTerm(storageKey);
 	}
+	
+	private Query toQuery(final long storageKey) {
+		return Mappings.storageKey().toQuery(storageKey);
+	}
 
 	@Override
 	public void rollback(final IBranchPath branchPath) {
@@ -275,14 +280,14 @@ public abstract class IndexServerService<E extends IIndexEntry> extends Abstract
 	@Override
 	public <D extends DocumentBuilderBase<D>> void update(IBranchPath branchPath, long storageKey, DocumentUpdater<D> documentUpdater,
 			DocumentBuilderFactory<D> builderFactory) {
-		update(branchPath, toTerm(storageKey), documentUpdater, builderFactory);		
+		upsert(branchPath, toQuery(storageKey), documentUpdater, builderFactory);		
 	}
 	
 	@Override
-	public <D extends DocumentBuilderBase<D>> void update(IBranchPath branchPath, Term term, DocumentUpdater<D> documentUpdater, DocumentBuilderFactory<D> builderFactory) {
+	public <D extends DocumentBuilderBase<D>> void upsert(IBranchPath branchPath, Query query, DocumentUpdater<D> documentUpdater, DocumentBuilderFactory<D> builderFactory) {
 		checkNotDisposed();
 		try {
-			getBranchService(branchPath).update(term, documentUpdater, builderFactory);
+			getBranchService(branchPath).upsert(query, documentUpdater, builderFactory);
 		} catch (IOException e) {
 			throw new IndexException(e);
 		}
@@ -892,6 +897,25 @@ public abstract class IndexServerService<E extends IIndexEntry> extends Abstract
 			return getBranchService(branchPath).hasDocuments();
 		} catch (final IOException e) {
 			throw new IndexException(e);
+		}
+	}
+
+	public <T> T executeReadTransaction(IBranchPath branchPath, IndexRead<T> read) {
+		final ReferenceManager<IndexSearcher> manager = getManager(branchPath);
+		IndexSearcher searcher = null;	
+		try {
+			searcher = manager.acquire();
+			return read.execute(searcher);
+		} catch (final IOException e) {
+			throw new IndexException(e);
+		} finally {
+			if (searcher != null) {
+				try {
+					manager.release(searcher);
+				} catch (final IOException e) {
+					throw new IndexException(e);
+				}			
+			}
 		}
 	}
 }

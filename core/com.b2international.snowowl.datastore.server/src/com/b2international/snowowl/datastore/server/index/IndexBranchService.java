@@ -47,7 +47,6 @@ import org.apache.lucene.search.MatchAllDocsQuery;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.ReferenceManager;
 import org.apache.lucene.search.SearcherManager;
-import org.apache.lucene.search.TermQuery;
 import org.apache.lucene.search.TopDocs;
 import org.apache.lucene.store.AlreadyClosedException;
 import org.apache.lucene.store.Directory;
@@ -64,6 +63,7 @@ import com.b2international.snowowl.datastore.index.IndexUtils;
 import com.b2international.snowowl.datastore.index.NullSearcherManager;
 import com.b2international.snowowl.datastore.index.mapping.DocumentBuilderBase;
 import com.b2international.snowowl.datastore.index.mapping.DocumentBuilderFactory;
+import com.b2international.snowowl.datastore.index.mapping.IndexField;
 import com.b2international.snowowl.datastore.index.mapping.Mappings;
 import com.b2international.snowowl.datastore.server.internal.lucene.index.FilteringMergePolicy;
 import com.google.common.base.Preconditions;
@@ -261,19 +261,32 @@ public class IndexBranchService implements Closeable {
 		}
 	}
 	
-	public <D extends DocumentBuilderBase<D>> void update(Term term, DocumentUpdater<D> documentUpdater, DocumentBuilderFactory<D> builderFactory) throws IOException {
+	public <D extends DocumentBuilderBase<D>> void upsert(Query query, DocumentUpdater<D> documentUpdater, DocumentBuilderFactory<D> builderFactory) throws IOException {
 		checkClosed();
 		checkReadOnly();
 		if (indexWriter != null) {
 			IndexSearcher searcher = null;
 			try {
 				searcher = manager.acquire();
-				final TopDocs docs = searcher.search(new TermQuery(term), 2);
-				checkState(docs.totalHits > 0, "Document couldn't be found with term ('%s')", term);
-				checkState(docs.totalHits == 1, "Multiple documents with same term ('%s') on a single branch path", term);
-				final Document doc = searcher.doc(docs.scoreDocs[0].doc);
-				documentUpdater.update(builderFactory.createBuilder(doc));
-				updateDocument(term, doc);
+				final TopDocs docs = searcher.search(query, 2);
+				checkState(docs.totalHits <= 1, "Multiple documents with same query ('%s') on a single branch path", query);
+				final D builder;
+				if (docs.totalHits == 0) {
+					// create new
+					builder = builderFactory.createBuilder();
+				} else {
+					final Document doc = searcher.doc(docs.scoreDocs[0].doc);
+					builder = builderFactory.createBuilder(doc);
+				}
+				documentUpdater.update(builder);
+				final Document updatedDoc = builder.build();
+				checkState(updatedDoc.getFields().size() > 0, "At least one field must be specified");
+				final IndexField<Long> storageKeyField = Mappings.storageKey();
+				final Long storageKey = storageKeyField.getValue(updatedDoc);
+				// update compare field here
+				Mappings.compareUniqueKey().addTo(updatedDoc, storageKey);
+				final Term key = storageKeyField.toTerm(storageKey);
+				updateDocument(key, updatedDoc);
 			} finally {
 				if (searcher != null) {
 					try {
