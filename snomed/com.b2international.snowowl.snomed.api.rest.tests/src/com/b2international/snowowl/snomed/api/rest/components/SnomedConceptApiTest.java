@@ -26,9 +26,14 @@ import static com.b2international.snowowl.snomed.api.rest.SnomedBranchingApiAsse
 import static com.b2international.snowowl.snomed.api.rest.SnomedBranchingApiAssert.whenDeletingBranchWithPath;
 import static com.b2international.snowowl.snomed.api.rest.SnomedComponentApiAssert.assertComponentCreated;
 import static com.b2international.snowowl.snomed.api.rest.SnomedComponentApiAssert.assertComponentCreatedWithStatus;
+import static com.b2international.snowowl.snomed.api.rest.SnomedComponentApiAssert.assertComponentHasProperty;
 import static com.b2international.snowowl.snomed.api.rest.SnomedComponentApiAssert.assertComponentNotCreated;
 import static com.b2international.snowowl.snomed.api.rest.SnomedComponentApiAssert.givenConceptRequestBody;
 import static com.b2international.snowowl.snomed.api.rest.SnomedComponentApiAssert.givenRelationshipRequestBody;
+import static com.b2international.snowowl.test.commons.rest.RestExtensions.asPath;
+import static com.b2international.snowowl.test.commons.rest.RestExtensions.postJson;
+import static com.google.common.collect.Lists.newArrayList;
+import static com.google.common.collect.Maps.newHashMap;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.hasItem;
 import static org.junit.Assert.assertEquals;
@@ -38,8 +43,10 @@ import java.util.Map;
 import org.junit.Test;
 
 import com.b2international.snowowl.snomed.api.rest.AbstractSnomedApiTest;
+import com.b2international.snowowl.snomed.api.rest.SnomedApiTestConstants;
 import com.b2international.snowowl.snomed.api.rest.SnomedComponentType;
 import com.b2international.snowowl.snomed.datastore.id.SnomedIdentifiers;
+import com.jayway.restassured.response.Response;
 
 /**
  * @since 2.0
@@ -145,5 +152,18 @@ public class SnomedConceptApiTest extends AbstractSnomedApiTest {
 		
 		final Map<?, ?> newRelationshipBody = givenRelationshipRequestBody(DISEASE, IS_A, newConceptId2, MODULE_SCT_CORE, "Trying to create a 2 long ISA cycle");
 		assertComponentNotCreated(createMainPath(), SnomedComponentType.RELATIONSHIP, newRelationshipBody);
+	}
+	
+	@Test
+	public void inactivateConcept() throws Exception {
+		givenBranchWithPath(testBranchPath);
+		final Map<?, ?> body = givenConceptRequestBody(null, ROOT_CONCEPT, MODULE_SCT_CORE, PREFERRED_ACCEPTABILITY_MAP, false);
+		final String componentId = assertComponentCreated(testBranchPath, SnomedComponentType.CONCEPT, body);
+		final Map<String, Object> inactivationBody = newHashMap();
+		inactivationBody.put("active", false);
+		inactivationBody.put("commitComment", "Inactivated " + componentId);
+		final Response response = postJson(SnomedApiTestConstants.SCT_API, inactivationBody, asPath(newArrayList(testBranchPath.getPath(), "concepts", componentId, "updates")));
+		response.then().statusCode(204);
+		assertComponentHasProperty(testBranchPath, SnomedComponentType.CONCEPT, componentId, "active", false);
 	}
 }
