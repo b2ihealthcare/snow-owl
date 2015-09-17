@@ -61,14 +61,6 @@ public interface SnomedTerminologyBrowser extends ITerminologyBrowser<SnomedConc
 	int getConceptCount(final IBranchPath branchPath);
 	
 	/**
-	 * Returns the value of the degree of interest of a SNOMED&nbsp;CT concept given by its unique ID.
-	 * @param branchPath the branch path.
-	 * @param conceptId the unique ID of the concept.
-	 * @return the degree of interest value.
-	 */
-	float getConceptDoi(final IBranchPath branchPath, final String conceptId);
-	
-	/**
 	 * Returns with a set of the active direct descendant concept IDs of a SNOMED&nbsp;CT concept given by its unique ID.
 	 * @param branchPath the branch path.
 	 * @param conceptId the unique ID of the concept.

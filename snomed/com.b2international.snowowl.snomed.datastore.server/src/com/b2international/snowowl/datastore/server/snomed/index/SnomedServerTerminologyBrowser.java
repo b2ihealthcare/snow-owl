@@ -20,7 +20,6 @@ import static com.b2international.commons.pcj.LongSets.newLongSetWithMurMur3Hash
 import static com.b2international.commons.pcj.LongSets.parallelForEach;
 import static com.b2international.commons.pcj.LongSets.toSet;
 import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.COMPONENT_RELEASED;
-import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.CONCEPT_DEGREE_OF_INTEREST;
 import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.CONCEPT_EFFECTIVE_TIME;
 import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.CONCEPT_EXHAUSTIVE;
 import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.CONCEPT_PRIMITIVE;
@@ -45,6 +44,12 @@ import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.ReferenceManager;
 import org.apache.lucene.search.TopDocs;
+
+import bak.pcj.LongCollection;
+import bak.pcj.map.LongKeyLongMap;
+import bak.pcj.map.LongKeyLongOpenHashMap;
+import bak.pcj.set.LongOpenHashSet;
+import bak.pcj.set.LongSet;
 
 import com.b2international.commons.CompareUtils;
 import com.b2international.commons.graph.GraphUtils;
@@ -71,7 +76,6 @@ import com.b2international.snowowl.snomed.datastore.SnomedTerminologyBrowser;
 import com.b2international.snowowl.snomed.datastore.escg.IEscgQueryEvaluatorService;
 import com.b2international.snowowl.snomed.datastore.filteredrefset.FilteredRefSetMemberBrowser2;
 import com.b2international.snowowl.snomed.datastore.filteredrefset.IRefSetMemberOperation;
-import com.b2international.snowowl.snomed.datastore.index.SnomedConceptModelMappingStrategy;
 import com.b2international.snowowl.snomed.datastore.index.SnomedConceptReducedQueryAdapter;
 import com.b2international.snowowl.snomed.datastore.index.SnomedIndexService;
 import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedMappings;
@@ -85,12 +89,6 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Multimaps;
-
-import bak.pcj.LongCollection;
-import bak.pcj.map.LongKeyLongMap;
-import bak.pcj.map.LongKeyLongOpenHashMap;
-import bak.pcj.set.LongOpenHashSet;
-import bak.pcj.set.LongSet;
 
 /**
  * Index-based SNOMED CT Terminology browser implementation.
@@ -107,8 +105,6 @@ public class SnomedServerTerminologyBrowser extends AbstractIndexTerminologyBrow
 	
 	private static final Set<String> ID_AND_PARENT_FIELDS_TO_LOAD = SnomedMappings.fieldsToLoad().id().parent().build();
 	private static final Set<String> PARENT_AND_ANCESTOR_FIELDS_TO_LOAD = SnomedMappings.fieldsToLoad().parent().ancestor().build();
-	
-	private static final Set<String> DOI_FIELDS_TO_LOAD = ImmutableSet.of(CONCEPT_DEGREE_OF_INTEREST);
 	private static final Set<String> COMPONENT_ID_FILEDS_TO_LOAD = SnomedMappings.fieldsToLoad().id().build();
 
 	/**
@@ -317,19 +313,6 @@ public class SnomedServerTerminologyBrowser extends AbstractIndexTerminologyBrow
 		return getQueryResultCount(branchPath, SnomedMappings.newQuery().concept().matchAll());
 	}
 
-	@Override
-	public float getConceptDoi(final IBranchPath branchPath, final String key) {
-		checkNotNull(key, "Key must not be null.");
-		final TopDocs topDocs = service.search(branchPath, getConceptByIdQueryBuilder(key), 1);
-		
-		if (topDocs.totalHits < 1) {
-			return SnomedConceptModelMappingStrategy.DEFAULT_DOI;
-		}
-		
-		final Document document = service.document(branchPath, topDocs.scoreDocs[0].doc, DOI_FIELDS_TO_LOAD);
-		return IndexUtils.getFloatValue(document.getField(CONCEPT_DEGREE_OF_INTEREST));
-	}
-	
 	@Override
 	public Collection<SnomedConceptIndexEntry> getConcepts(final IBranchPath branchPath, final Iterable<String> ids) {
 		checkNotNull(ids, "ids");
@@ -550,7 +533,7 @@ public class SnomedServerTerminologyBrowser extends AbstractIndexTerminologyBrow
 			
 		} else {
 			
-			String label = Mappings.label().getValue(doc);
+			String label = doc.get(Mappings.label().fieldName());
 			final String id = Long.toString(SnomedMappings.id().getValue(doc));
 			final short terminologyComponentId = IndexUtils.getShortValue(typeField);
 			if (null == label) {
@@ -560,9 +543,9 @@ public class SnomedServerTerminologyBrowser extends AbstractIndexTerminologyBrow
 			}
 			return new ExtendedComponentImpl(
 					id, 
-					label,
-					Mappings.iconId().getValue(doc), 
-					terminologyComponentId);
+					label, 
+					doc.get(Mappings.iconId().fieldName()), 
+					terminologyComponentId == SnomedTerminologyComponentConstants.REFSET_NUMBER ? SnomedTerminologyComponentConstants.CONCEPT_NUMBER : terminologyComponentId);
 		}	
 	}
 
