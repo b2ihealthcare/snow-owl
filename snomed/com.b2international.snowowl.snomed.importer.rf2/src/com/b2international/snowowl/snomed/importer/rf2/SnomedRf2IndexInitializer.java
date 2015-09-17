@@ -808,7 +808,6 @@ public class SnomedRf2IndexInitializer extends Job {
 		final ComponentLabelProvider labelProvider = new ComponentLabelProvider() {
 			@Override
 			public String getComponentLabel(String componentId) {
-				System.err.println("Getting concept label for: " + componentId);
 				return importIndexService.getConceptLabel(componentId);
 			}
 		};
