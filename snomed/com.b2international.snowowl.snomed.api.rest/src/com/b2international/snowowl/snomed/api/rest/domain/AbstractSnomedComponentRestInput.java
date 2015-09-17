@@ -84,8 +84,12 @@ public abstract class AbstractSnomedComponentRestInput<I extends AbstractSnomedC
 	}
 
 	protected IdGenerationStrategy createIdGenerationStrategy(final String idOrNull) {
+		return createIdGenerationStrategy(idOrNull, getComponentCategory());
+	}
+
+	protected IdGenerationStrategy createIdGenerationStrategy(final String idOrNull, ComponentCategory componentCategory) {
 		if (null == idOrNull) {
-			return new NamespaceIdGenerationStrategy(getComponentCategory(), getNamespaceId());
+			return new NamespaceIdGenerationStrategy(componentCategory, getNamespaceId());
 		} else {
 			return new UserIdGenerationStrategy(idOrNull);
 		}
