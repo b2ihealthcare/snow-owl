@@ -16,10 +16,9 @@
 package com.b2international.snowowl.datastore.server.snomed;
 
 import static com.b2international.snowowl.core.ApplicationContext.getServiceForClass;
-import static com.b2international.snowowl.datastore.index.IndexUtils.getIntValue;
 import static com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants.CONCEPT_NUMBER;
 import static com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants.DESCRIPTION_NUMBER;
-import static com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants.REFSET_NUMBER;
+import static com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants.PREDICATE_TYPE_ID;
 import static com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants.RELATIONSHIP_NUMBER;
 import static com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator.REPOSITORY_UUID;
 import static com.b2international.snowowl.snomed.datastore.SnomedRefSetUtil.getRefSetMemberClass;
@@ -32,7 +31,6 @@ import org.apache.lucene.index.IndexableField;
 import org.eclipse.emf.ecore.EClass;
 
 import com.b2international.snowowl.datastore.index.AbstractIndexService;
-import com.b2international.snowowl.datastore.index.IndexUtils;
 import com.b2international.snowowl.datastore.index.mapping.Mappings;
 import com.b2international.snowowl.datastore.server.EClassProvider;
 import com.b2international.snowowl.datastore.server.IEClassProvider;
@@ -47,36 +45,35 @@ import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetPackage;
  */
 public class SnomedEClassProvider extends EClassProvider {
 
-	private static final int PREDICATE_TYPE_ID = 999;
-
-	private static final Set<String> FIELDS_TO_LOAD = SnomedMappings.fieldsToLoad().type().memberReferenceSetType().build();
+	private static final Set<String> FIELDS_TO_LOAD = SnomedMappings.fieldsToLoad().type().memberReferenceSetType().storageKey().build();
 	
 	@Override
-	protected EClass extractEClass(final Document doc) {
-		
-		IndexableField indexableField = Mappings.type().getField(doc);
-		if (null == indexableField) {//component type is not stored for reference set members
-			indexableField = SnomedMappings.memberRefSetType().getField(doc);
-			if (null != indexableField) {
-				return getRefSetMemberClass(get(getIntValue(indexableField)));
+	protected EClass extractEClass(Document doc) {
+		throw new UnsupportedOperationException("Storage Key is required to determine correct EClass");
+	}
+	
+	@Override
+	protected EClass extractEClass(final Document doc, long storageKey) {
+		final IndexableField[] indexableFields = Mappings.type().getFields(doc);
+		if (indexableFields.length == 0) {//component type is not stored for reference set members
+			return getRefSetMemberClass(get(SnomedMappings.memberRefSetType().getValue(doc)));
+		} else if (indexableFields.length == 1) {
+			final int intValue = indexableFields[0].numericValue().intValue();
+			switch (intValue) {
+			case CONCEPT_NUMBER: return SnomedPackage.Literals.CONCEPT;
+			case DESCRIPTION_NUMBER: return SnomedPackage.Literals.DESCRIPTION;
+			case RELATIONSHIP_NUMBER: return SnomedPackage.Literals.RELATIONSHIP;
+			case PREDICATE_TYPE_ID: return MrcmPackage.Literals.ATTRIBUTE_CONSTRAINT;
 			}
-			return null;
+		} else {
+			// TODO implement proper type and storagekey match
+			final long conceptStorageKey = Mappings.storageKey().getValue(doc);
+			if (storageKey == conceptStorageKey) {
+				return SnomedPackage.Literals.CONCEPT;
+			} else {
+				return SnomedRefSetPackage.Literals.SNOMED_REF_SET;
+			}
 		}
-		
-		final int intValue = IndexUtils.getIntValue(indexableField);
-		
-		if (CONCEPT_NUMBER == intValue) {
-			return SnomedPackage.eINSTANCE.getConcept();
-		} else if (DESCRIPTION_NUMBER == intValue) {
-			return SnomedPackage.eINSTANCE.getDescription();
-		} else if (REFSET_NUMBER == intValue) {
-			return SnomedRefSetPackage.eINSTANCE.getSnomedRefSet();
-		} else if (RELATIONSHIP_NUMBER == intValue) {
-			return SnomedPackage.eINSTANCE.getRelationship();
-		} else if (PREDICATE_TYPE_ID == intValue) {
-			return MrcmPackage.eINSTANCE.getAttributeConstraint();
-		}
-
 		return null;
 	}
 

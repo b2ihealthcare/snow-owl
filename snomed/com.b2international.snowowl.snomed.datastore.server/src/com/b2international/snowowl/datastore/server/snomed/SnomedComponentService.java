@@ -34,7 +34,6 @@ import static com.b2international.snowowl.snomed.SnomedConstants.Concepts.REFSET
 import static com.b2international.snowowl.snomed.SnomedConstants.Concepts.ROOT_CONCEPT;
 import static com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants.CONCEPT_NUMBER;
 import static com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants.DESCRIPTION_NUMBER;
-import static com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants.REFSET_NUMBER;
 import static com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants.RELATIONSHIP_NUMBER;
 import static com.b2international.snowowl.snomed.datastore.SnomedRefSetUtil.deserializeValue;
 import static com.b2international.snowowl.snomed.datastore.SnomedRefSetUtil.getDataType;
@@ -146,6 +145,7 @@ import com.b2international.snowowl.datastore.index.DocIdCollector;
 import com.b2international.snowowl.datastore.index.DocIdCollector.DocIdsIterator;
 import com.b2international.snowowl.datastore.index.IndexUtils;
 import com.b2international.snowowl.datastore.index.LongDocValuesCollector;
+import com.b2international.snowowl.datastore.index.mapping.IndexField;
 import com.b2international.snowowl.datastore.index.mapping.Mappings;
 import com.b2international.snowowl.datastore.server.index.IndexServerService;
 import com.b2international.snowowl.datastore.server.snomed.index.NamespaceMapping;
@@ -1045,20 +1045,23 @@ public class SnomedComponentService implements ISnomedComponentService, IPostSto
 		
 		Query query = null;
 		Set<String> fieldsToLoad = null;
-		String idField = null;
+		String idField = SnomedMappings.id().fieldName();
+		IndexField<Long> storageKeyField = Mappings.storageKey();
 		
 		switch (terminologyComponentId) {
 			
 			case SnomedTerminologyComponentConstants.CONCEPT_NUMBER: //$FALL-THROUGH$
 			case SnomedTerminologyComponentConstants.DESCRIPTION_NUMBER: //$FALL-THROUGH$
 			case SnomedTerminologyComponentConstants.RELATIONSHIP_NUMBER: //$FALL-THROUGH$
-			case SnomedTerminologyComponentConstants.REFSET_NUMBER: //$FALL-THROUGH$
 				
 				query = SnomedMappings.newQuery().type(terminologyComponentId).matchAll();
 				fieldsToLoad = COMPONENT_ID_STORAGE_KEY_TO_LOAD;
-				idField = SnomedMappings.id().fieldName();
 				break;
-				
+			case SnomedTerminologyComponentConstants.REFSET_NUMBER:
+				query = SnomedMappings.newQuery().type(terminologyComponentId).matchAll();
+				fieldsToLoad = SnomedMappings.fieldsToLoad().id().refSetStorageKey().build();
+				storageKeyField = SnomedMappings.refSetStorageKey();
+				break;
 			case SnomedTerminologyComponentConstants.REFSET_MEMBER_NUMBER:
 				
 				query = new PrefixQuery(new Term(REFERENCE_SET_MEMBER_UUID));
@@ -1100,7 +1103,7 @@ public class SnomedComponentService implements ISnomedComponentService, IPostSto
 				final Document doc = searcher.doc(itr.getDocID(), fieldsToLoad);
 				$[i++] = new IdStorageKeyPair(
 						checkNotNull(doc.get(idField), "Cannot get ID field for document. [" + doc + "]"),
-						Mappings.storageKey().getValue(doc));
+						storageKeyField.getValue(doc));
 				
 			}
 			
@@ -1340,7 +1343,7 @@ public class SnomedComponentService implements ISnomedComponentService, IPostSto
 			final int maxDoc = indexService.maxDoc(branchPath);
 			final DocIdCollector collector = DocIdCollector.create(maxDoc);
 			
-			indexService.search(branchPath, SnomedMappings.newQuery().type(SnomedTerminologyComponentConstants.REFSET_NUMBER).matchAll(), collector);
+			indexService.search(branchPath, SnomedMappings.newQuery().refSet().matchAll(), collector);
 			
 			final LongSet $ = new LongOpenHashSet();
 			final DocIdsIterator itr = collector.getDocIDs().iterator();
@@ -1592,7 +1595,7 @@ public class SnomedComponentService implements ISnomedComponentService, IPostSto
 		checkNotNull(branchPath, "branchPath");
 		checkNotNull(refSetId, "branchPath");
 		
-		final Query refSetQuery = SnomedMappings.newQuery().type(REFSET_NUMBER).id(refSetId).matchAll();
+		final Query refSetQuery = SnomedMappings.newQuery().refSet().id(refSetId).matchAll();
 		final Query memberQuery = SnomedMappings.newQuery().memberRefSetId(refSetId).matchAll();
 		final int maxDoc = getIndexServerService().maxDoc(branchPath);
 		
@@ -2196,8 +2199,6 @@ public class SnomedComponentService implements ISnomedComponentService, IPostSto
 		
 		final short componentType = SnomedTerminologyComponentConstants.getTerminologyComponentIdValueSafe(componentId);
 		switch (componentType) {
-			
-			case SnomedTerminologyComponentConstants.REFSET_NUMBER: //$FALL-THROUGH$
 			case SnomedTerminologyComponentConstants.CONCEPT_NUMBER: //$FALL-THROUGH$
 			case SnomedTerminologyComponentConstants.DESCRIPTION_NUMBER: //$FALL-THROUGH$
 				labelQuery = SnomedMappings.newQuery().type(componentType).id(componentId).matchAll();
@@ -2208,10 +2209,8 @@ public class SnomedComponentService implements ISnomedComponentService, IPostSto
 				return isEmpty(properties) ? null : Joiner.on(" - ").join(getLabels(branchPath, properties[0], properties[1], properties[2]));
 				
 			default:
-				
 				//no chance to find SNOMED CT core component label in index, fall back to CDO
 				return null;
-			
 		}
 
 		final TopDocs topDocs = searcher.search(labelQuery, 1);
@@ -2282,7 +2281,7 @@ public class SnomedComponentService implements ISnomedComponentService, IPostSto
 	private Map<CDOID, String> internalGetRefSetCdoIdIdMapping(final IBranchPath branchPath) {
 		@SuppressWarnings("rawtypes")
 		final IndexServerService indexService = getIndexServerService();
-		final Query refSetTypeQuery = SnomedMappings.newQuery().type(SnomedTerminologyComponentConstants.REFSET_NUMBER).matchAll();
+		final Query refSetTypeQuery = SnomedMappings.newQuery().refSet().matchAll();
 		final int hitCount = indexService.getHitCount(branchPath, refSetTypeQuery, null);
 		final TopDocs topDocs = getIndexServerService().search(branchPath, refSetTypeQuery, hitCount);
 		if (isEmpty(topDocs)) {
@@ -2290,8 +2289,8 @@ public class SnomedComponentService implements ISnomedComponentService, IPostSto
 		}
 		final Map<CDOID, String> cdoIdToIdMap = newHashMap();
 		for (final ScoreDoc scoreDoc : topDocs.scoreDocs) {
-			final Document doc = indexService.document(branchPath, scoreDoc.doc, COMPONENT_ID_STORAGE_KEY_TO_LOAD);
-			final CDOID cdoId = CDOIDUtil.createLong(Mappings.storageKey().getValue(doc));
+			final Document doc = indexService.document(branchPath, scoreDoc.doc, SnomedMappings.fieldsToLoad().refSetStorageKey().id().build());
+			final CDOID cdoId = CDOIDUtil.createLong(SnomedMappings.refSetStorageKey().getValue(doc));
 			final String refSetId = SnomedMappings.id().getValueAsString(doc);
 			cdoIdToIdMap.put(cdoId, refSetId);
 		}
