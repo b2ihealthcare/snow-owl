@@ -67,7 +67,7 @@ public abstract class EClassProvider implements IEClassProvider {
 			}
 			
 			final Document doc = searcher.doc(topDocs.scoreDocs[0].doc, getFieldsToLoad());
-			return extractEClass(doc);
+			return extractEClass(doc, storageKey);
 		} catch (final IOException e) {
 			throw new IndexException("Error while getting EClass of a component. Storage key: " + storageKey, e);
 		} finally {
@@ -93,6 +93,10 @@ public abstract class EClassProvider implements IEClassProvider {
 	 * @return the {@link EClass}
 	 */
 	protected abstract EClass extractEClass(final Document doc);
+	
+	protected EClass extractEClass(final Document doc, long storageKey) {
+		return extractEClass(doc);
+	}
 
 	
 	/**
