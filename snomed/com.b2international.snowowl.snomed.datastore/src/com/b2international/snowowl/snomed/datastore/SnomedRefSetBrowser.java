@@ -82,16 +82,6 @@ public interface SnomedRefSetBrowser extends ITerminologyAndRefSetBrowser<Snomed
 	int getTypeOrdinal(final IBranchPath branchPath, final String refSetId);
 	
 	/**
-	 * Returns with the unique storage key (CDO ID) of the SNOMED&nbsp;CT reference set specified with it's unique identifier concept ID.
-	 * This method will return with {@code -1} if no reference set can be found on the specified branch with the given
-	 * identifier concept ID. 
-	 * @param branchPath the branch path.
-	 * @param conceptId the unique ID of the identifier concept.
-	 * @return the storage key of the reference set, or {@code -1} if the reference set does not exist.
-	 */
-	long getStorageKey(final IBranchPath branchPath, final String conceptId);
-	
-	/**
 	 * Returns with the unique storage key (CDO ID) of the SNOMED&nbsp;CT reference set member specified with it's unique UUID.
 	 * This method will return with {@code -1} if no reference set member can be found on the specified branch with the given UUID. 
 	 * @param branchPath the branch path.
