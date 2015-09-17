@@ -17,6 +17,7 @@ package com.b2international.snowowl.datastore.index;
 
 import com.b2international.snowowl.datastore.cdo.CDOUtils;
 import com.b2international.snowowl.datastore.index.mapping.DocumentBuilderBase;
+import com.b2international.snowowl.datastore.index.mapping.Mappings;
 
 /**
  * @since 4.3
@@ -38,6 +39,8 @@ public class ComponentCompareFieldsUpdater<D extends DocumentBuilderBase<D>> ext
 
 	@Override
 	public void update(D doc) {
+		doc.removeAll(Mappings.compareUniqueKey());
+		doc.removeAll(Mappings.compareIgnoreUniqueKey());
 		if (relevant) {
 			doc.compareUniqueKey(storageKey);
 		} else {
