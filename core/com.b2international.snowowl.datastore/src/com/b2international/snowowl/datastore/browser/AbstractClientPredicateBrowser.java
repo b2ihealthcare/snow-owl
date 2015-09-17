@@ -34,8 +34,8 @@ public abstract class AbstractClientPredicateBrowser<P> extends ActiveBranchPath
 	}
 
 	@Override
-	public Collection<P> getPredicate(final String... uuids) {
-		return delegateBrowser.getPredicate(getBranchPath(), uuids);
+	public Collection<P> getPredicate(final long... storageKeys) {
+		return delegateBrowser.getPredicate(getBranchPath(), storageKeys);
 	}
 
 	@Override

@@ -16,27 +16,37 @@
 package com.b2international.snowowl.snomed.datastore;
 
 import java.util.Collection;
+import java.util.Set;
 
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.api.browser.IPredicateBrowser;
+import com.b2international.snowowl.snomed.datastore.PredicateUtils.ConstraintDomain;
 import com.b2international.snowowl.snomed.datastore.snor.PredicateIndexEntry;
-import com.b2international.snowowl.snomed.mrcm.HierarchyInclusionType;
 
 /**
  * Service for the SNOMED&nbsp;CT MRCM rule based attribute constraints.
+ * 
  * @see IPredicateBrowser
  */
 public interface SnomedPredicateBrowser extends IPredicateBrowser<PredicateIndexEntry> {
 
-	String PREFIX_SELF = HierarchyInclusionType.SELF.name() + "#";
-	String PREFIX_DESCENDANT = HierarchyInclusionType.DESCENDANT.name() + "#";
-	String PREFIX_SELF_OR_DESCENDANT = HierarchyInclusionType.SELF_OR_DESCENDANT.name() + "#";
-	
 	/**
-	 * Returns with the MRCM constraint 
-	 * @param identifierId reference set identifier concept ID.
-	 * @param branchPath the branch path
+	 * Returns with the MRCM constraint
+	 * 
+	 * @param identifierId
+	 *            reference set identifier concept ID.
+	 * @param branchPath
+	 *            the branch path
 	 * @return a collection of predicate unique IDs applied to the reference set identified by the specified ID.
 	 */
 	Collection<String> getRefSetPredicateKeys(final IBranchPath branchPath, final String identifierId);
+
+	/**
+	 * Returns constraint domain definitions for the specified constraint storage key.
+	 * 
+	 * @param branchPath
+	 * @param storageKey
+	 * @return
+	 */
+	Set<ConstraintDomain> getConstraintDomains(IBranchPath branchPath, long storageKey);
 }

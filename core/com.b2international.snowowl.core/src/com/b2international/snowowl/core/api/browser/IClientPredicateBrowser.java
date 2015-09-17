@@ -29,10 +29,10 @@ public interface IClientPredicateBrowser<P> {
 
 	/**
 	 * Returns with a collection of SNOMED&nbsp;CT concept attribute predicate identified by their UUIDs.
-	 * @param uuids the UUID of the concept attribute predicate. Cannot be {@code null}.
+	 * @param storageKeys the storageKeys of the concept attribute predicates. Cannot be {@code null}.
 	 * @return the lightweight representation of the concept attribute predicates.
 	 */
-	Collection<P> getPredicate(String... uuids);
+	Collection<P> getPredicate(long... storageKeys);
 
 	/**
 	 * Returns with all the predicates.

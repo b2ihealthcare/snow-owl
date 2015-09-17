@@ -45,9 +45,8 @@ public abstract class SnomedIndexBrowserConstants {
 	
 	public static final String REFERENCE_SET_TYPE = "ref_set_type";
 	public static final String REFERENCE_SET_REFERENCED_COMPONENT_TYPE = "ref_set_referenced_component_type";
-	public static final String REFERENCE_SET_MEMBER_COUNT = "ref_set_member_count";
 	public static final String REFERENCE_SET_STRUCTURAL = "ref_set_structural";
-	public static final String PREDICATE_UUID = "predicate_uuid";
+	public static final String REFERENCE_SET_STORAGE_KEY = "ref_set_storageKey";
 	public static final String PREDICATE_TYPE = "predicate_type";
 	public static final String PREDICATE_DESCRIPTION_TYPE_ID = "predicate_description_type_id";
 	public static final String PREDICATE_DATA_TYPE_LABEL = "predicate_data_type_label";
