@@ -69,6 +69,7 @@ import com.b2international.snowowl.datastore.cdo.CDOViewFunction;
 import com.b2international.snowowl.datastore.cdo.ICDOConnection;
 import com.b2international.snowowl.datastore.cdo.ICDOConnectionManager;
 import com.b2international.snowowl.datastore.index.DocumentWithScore;
+import com.b2international.snowowl.datastore.index.IndexRead;
 import com.b2international.snowowl.datastore.index.IndexUtils;
 import com.b2international.snowowl.datastore.index.mapping.LongIndexField;
 import com.b2international.snowowl.datastore.server.index.FSIndexServerService;
@@ -278,42 +279,17 @@ public class ImportIndexServerService extends FSIndexServerService<IIndexEntry> 
     }
 
     private long getItemCdoId(final Query idQuery) {
-
-        ReferenceManager<IndexSearcher> manager = null;
-        IndexSearcher searcher = null;
-
-        try {
-
-            manager = getManager(SUPPORTING_INDEX_BRANCH_PATH);
-            searcher = manager.acquire();
-
-            final TopDocs docs = searcher.search(idQuery, 1);
-
-            if (null == docs || CompareUtils.isEmpty(docs.scoreDocs)) {
-                return CDOUtils.NO_STORAGE_KEY;
-            }
-
-            final Document cdoIdDocument = searcher.doc(docs.scoreDocs[0].doc, CDO_ID_ONLY);
-            final long storageKey = IndexUtils.getLongValue(cdoIdDocument.getField(CDO_ID));
-            return storageKey;
-
-        } catch (final IOException e) {
-
-            LOGGER.error("Error while retrieving CDOID.");
-            throw new SnowowlRuntimeException(e);
-
-        } finally {
-
-            if (null != manager && null != searcher) {
-
-                try {
-                    manager.release(searcher);
-                } catch (final IOException e) {
-                    LOGGER.error("Error while releasing index searcher.");
-                    throw new SnowowlRuntimeException(e);
-                }
-            }
-        }
+    	return executeReadTransaction(SUPPORTING_INDEX_BRANCH_PATH, new IndexRead<Long>() {
+			@Override
+			public Long execute(IndexSearcher index) throws IOException {
+				final TopDocs docs = index.search(idQuery, 1);
+	            if (null == docs || CompareUtils.isEmpty(docs.scoreDocs)) {
+	                return CDOUtils.NO_STORAGE_KEY;
+	            }
+	            final Document cdoIdDocument = index.doc(docs.scoreDocs[0].doc, CDO_ID_ONLY);
+	            return IndexUtils.getLongValue(cdoIdDocument.getField(CDO_ID));
+			}
+		});
     }
 
     public void registerDescription(final String descriptionId, final String conceptId, final String term, final TermType type, final boolean active) {
@@ -507,7 +483,7 @@ public class ImportIndexServerService extends FSIndexServerService<IIndexEntry> 
         return null;
 	}
 
-	public String getConceptLabel(final String conceptId, final String languageRefSetId) {
+	private String getConceptLabel(final String conceptId, final String languageRefSetId) {
 		final Query conceptLabelQuery = SnomedMappings.newQuery().and(createActiveQuery()).and(createContainerConceptQuery(conceptId)).field(TERM_TYPE, TermType.SYNONYM_AND_DESCENDANTS.ordinal()).matchAll(); 
         
         final Filter preferredFilter = getPreferredFilter(languageRefSetId);
