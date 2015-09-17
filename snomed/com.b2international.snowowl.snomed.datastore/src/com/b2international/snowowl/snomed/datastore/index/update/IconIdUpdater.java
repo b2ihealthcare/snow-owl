@@ -18,7 +18,7 @@ package com.b2international.snowowl.snomed.datastore.index.update;
 import java.util.Collection;
 
 import com.b2international.snowowl.core.exceptions.CycleDetectedException;
-import com.b2international.snowowl.datastore.index.mapping.Mappings;
+import com.b2international.snowowl.snomed.Component;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedDocumentBuilder;
 import com.b2international.snowowl.snomed.datastore.taxonomy.ISnomedTaxonomyBuilder;
@@ -31,6 +31,10 @@ public class IconIdUpdater extends SnomedDocumentUpdaterBase {
 	private Collection<String> availableImages;
 	private boolean active;
 	
+	public IconIdUpdater(ISnomedTaxonomyBuilder taxonomyBuilder, Component component, Collection<String> availableImages) {
+		this(taxonomyBuilder, component.getId(), component.isActive(), availableImages);
+	}
+	
 	public IconIdUpdater(ISnomedTaxonomyBuilder taxonomyBuilder, String conceptId, boolean active, Collection<String> availableImages) {
 		super(taxonomyBuilder, conceptId);
 		this.active = active;
@@ -39,7 +43,6 @@ public class IconIdUpdater extends SnomedDocumentUpdaterBase {
 	
 	@Override
 	public final void update(SnomedDocumentBuilder doc) {
-		doc.removeAll(Mappings.iconId());
 		final long iconIdLong = Long.parseLong(getIconId(getComponentId(), active));
 		doc.iconId(iconIdLong);
 	}

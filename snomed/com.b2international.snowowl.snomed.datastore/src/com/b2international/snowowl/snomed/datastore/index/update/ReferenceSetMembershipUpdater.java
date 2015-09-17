@@ -17,15 +17,15 @@ package com.b2international.snowowl.snomed.datastore.index.update;
 
 import static com.google.common.collect.Sets.newHashSet;
 
+import java.util.Collection;
 import java.util.Set;
 
 import org.apache.lucene.document.Document;
 
 import com.b2international.snowowl.datastore.index.DocumentUpdaterBase;
 import com.b2international.snowowl.datastore.index.mapping.IndexField;
-import com.b2international.snowowl.datastore.index.mapping.Mappings;
-import com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants;
 import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedDocumentBuilder;
+import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedMappings;
 import com.b2international.snowowl.snomed.datastore.index.refset.RefSetMemberChange;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType;
 
@@ -34,9 +34,9 @@ import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType;
  */
 public class ReferenceSetMembershipUpdater extends DocumentUpdaterBase<SnomedDocumentBuilder> {
 
-	private Set<RefSetMemberChange> memberChanges;
+	private Collection<RefSetMemberChange> memberChanges;
 
-	public ReferenceSetMembershipUpdater(String componentId, Set<RefSetMemberChange> memberChanges) {
+	public ReferenceSetMembershipUpdater(String componentId, Collection<RefSetMemberChange> memberChanges) {
 		super(componentId);
 		this.memberChanges = memberChanges;
 	}
@@ -44,8 +44,8 @@ public class ReferenceSetMembershipUpdater extends DocumentUpdaterBase<SnomedDoc
 	@Override
 	public void update(SnomedDocumentBuilder doc) {
 		Document document = doc.build();
-		final IndexField<Long> referringRefSetId = Mappings.longField(SnomedIndexBrowserConstants.CONCEPT_REFERRING_REFERENCE_SET_ID);
-		final IndexField<Long> referringMappingRefSetId = Mappings.longField(SnomedIndexBrowserConstants.CONCEPT_REFERRING_MAPPING_REFERENCE_SET_ID);
+		final IndexField<Long> referringRefSetId = SnomedMappings.conceptReferringRefSetId();
+		final IndexField<Long> referringMappingRefSetId = SnomedMappings.conceptReferringMappingRefSetId();
 		
 		// get reference set membership fields
 		final Set<Long> referencingRefSetIds = newHashSet(referringRefSetId.getValues(document));
@@ -82,11 +82,11 @@ public class ReferenceSetMembershipUpdater extends DocumentUpdaterBase<SnomedDoc
 		
 		// re-add reference set membership fields
 		for (final long refSetId : referencingRefSetIds) {
-			doc.field(SnomedIndexBrowserConstants.CONCEPT_REFERRING_REFERENCE_SET_ID, refSetId);
+			doc.conceptReferringRefSetId(refSetId);
 		}
 		// re-add mapping reference set membership fields
 		for (final long refSetId : mappingReferencingRefSetIds) {
-			doc.field(SnomedIndexBrowserConstants.CONCEPT_REFERRING_MAPPING_REFERENCE_SET_ID, refSetId);
+			doc.conceptReferringMappingRefSetId(refSetId);
 		}
 	}
 
