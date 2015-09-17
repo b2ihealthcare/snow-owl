@@ -18,7 +18,6 @@ package com.b2international.snowowl.snomed.datastore.snor;
 import static com.google.common.base.Preconditions.checkNotNull;
 
 import java.io.Serializable;
-import java.util.UUID;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -68,21 +67,21 @@ public class PredicateIndexEntry implements IIndexEntry, Serializable {
 	
 	/**
 	 * Creates a description type predicate.
-	 * @param uuid unique identifier of the SNOMED&nbsp;CT concept attribute predicate.
+	 * @param storageKey unique identifier of the SNOMED&nbsp;CT concept attribute constraint.
 	 * @param queryExpression the query expression describing the domain part of an MRCM attribute constraint.
 	 * @param descriptionTypeId the description type concept identifier.
 	 * @param flags a flag encapsulating the {@link #isRequired()} and {@link #isMultiple()} properties. 
 	 * @return the new description type predicate instance.
 	 */
-	public static PredicateIndexEntry createDescriptionTypePredicate(final String uuid, final String queryExpression, final long descriptionTypeId, final byte flags) {
-		final PredicateIndexEntry predicate = new PredicateIndexEntry(uuid, queryExpression, PredicateType.DESCRIPTION, flags);
+	public static PredicateIndexEntry createDescriptionTypePredicate(final long storageKey, final String queryExpression, final long descriptionTypeId, final byte flags) {
+		final PredicateIndexEntry predicate = new PredicateIndexEntry(storageKey, queryExpression, PredicateType.DESCRIPTION, flags);
 		predicate.descriptionTypeId = descriptionTypeId;
 		return predicate;
 	}
 
 	/**
 	 * Creates a concrete data type predicate.
-	 * @param uuid unique identifier of the SNOMED&nbsp;CT concept attribute predicate.
+	 * @param storageKey unique identifier of the SNOMED&nbsp;CT concept attribute constraint.
 	 * @param queryExpression the query expression describing the domain part of an MRCM attribute constraint.
 	 * @param dataType the data type of the concrete domain. See: {@link DataType}.
 	 * @param dataTypeName the unique name of the concrete data type. E.g.: {@code isVitamin} or {@code isClinicallySignificant}.
@@ -90,8 +89,8 @@ public class PredicateIndexEntry implements IIndexEntry, Serializable {
 	 * @param flags a flag encapsulating the {@link #isRequired()} and {@link #isMultiple()} properties. 
 	 * @return the new data type predicate instance.
 	 */
-	public static PredicateIndexEntry createDataTypeTypePredicate(final String uuid, final String queryExpression, final DataType dataType, final String dataTypeName, final String dataTypeLabel, final byte flags) {
-		final PredicateIndexEntry predicate = new PredicateIndexEntry(uuid, queryExpression, PredicateType.DATATYPE, flags);
+	public static PredicateIndexEntry createDataTypeTypePredicate(final long storageKey, final String queryExpression, final DataType dataType, final String dataTypeName, final String dataTypeLabel, final byte flags) {
+		final PredicateIndexEntry predicate = new PredicateIndexEntry(storageKey, queryExpression, PredicateType.DATATYPE, flags);
 		predicate.dataTypeType = checkNotNull(dataType, "Data type argument cannot be null.");
 		predicate.dataTypeLabel = checkNotNull(dataTypeLabel, "Concrete domain data type label argument cannot be null.");
 		predicate.dataTypeName = checkNotNull(dataTypeName, "Concrete domain data type name argument cannot be null.");
@@ -100,7 +99,7 @@ public class PredicateIndexEntry implements IIndexEntry, Serializable {
 	
 	/**
 	 * Factory method for creating a new relationship type predicate.
-	 * @param uuid unique identifier of the SNOMED&nbsp;CT concept attribute predicate.
+	 * @param storageKey unique identifier of the SNOMED&nbsp;CT concept attribute constraint.
 	 * @param queryExpression the query expression describing the domain part of an MRCM attribute constraint.
 	 * @param relationshipTypeExpression expression specifying the IDs of the allowed relationship type SNOMED&nbsp;CT concepts. 
 	 * @param relationshipvValueExpression expression specifying the IDs of the allowed relationship value SNOMED&nbsp;CT concepts.
@@ -109,10 +108,10 @@ public class PredicateIndexEntry implements IIndexEntry, Serializable {
 	 * @param flags a flag encapsulating the {@link #isRequired()} and {@link #isMultiple()} properties.
 	 * @return the new relationship type predicate.
 	 */
-	public static PredicateIndexEntry createRelationshipTypePredicate(final String uuid, final String queryExpression, final String relationshipTypeExpression, final String relationshipvValueExpression, 
+	public static PredicateIndexEntry createRelationshipTypePredicate(final long storageKey, final String queryExpression, final String relationshipTypeExpression, final String relationshipvValueExpression, 
 			final String characteristicTypeExpression, final GroupRule groupRule, final byte flags) {
 		
-		final PredicateIndexEntry predicate = new PredicateIndexEntry(uuid, queryExpression, PredicateType.RELATIONSHIP, flags);
+		final PredicateIndexEntry predicate = new PredicateIndexEntry(storageKey, queryExpression, PredicateType.RELATIONSHIP, flags);
 		predicate.relationshipTypeExpression = checkNotNull(relationshipTypeExpression, "Relationship type IDs argument cannot be null.");
 		predicate.relationshipvValueExpression = checkNotNull(relationshipvValueExpression, "Relationship value IDs argument cannot be null.");
 		predicate.characteristicTypeExpression = checkNotNull(characteristicTypeExpression, "Relationship characteristic type IDs argument cannot be null.");
@@ -165,24 +164,49 @@ public class PredicateIndexEntry implements IIndexEntry, Serializable {
 	@Nonnull private final String queryExpression;
 	/**Flags for representing the {@link #isMultiple()} and {@link #isRequired()} properties.*/
 	private final byte flags;
-	/** The least significant 64 bits of the SNOMED&nbsp;CT concept attribute's UUID.*/
-	private final long leastSigBits;
-	/** The most significant 64 bits of the SNOMED&nbsp;CT concept attribute's UUID.*/
-	private final long mostSigBits;
-	private float score;
 	private long storageKey;
 	
 	/**
-	 * Returns with the UUID of the SNOMED&nbsp;CT concept attribute predicate.
-	 * <p><b>NOTE:&nbsp;</b>This method always creates a new UUID instance and returns with its string representation.
-	 * <br>See: {@link UUID#UUID(long, long)}.
-	 * @return the UUID of the predicate.
+	 * Private constructor.
+	 * @param queryExpression query expression describing the domain part of the attribute constraint.
+	 * @param type the type of the predicate representation.
+	 * @param flags the flags for describing the {@code isMultiple} and {@code isRequired} boolean properties.
 	 */
-	public String getUuid() {
-		return new UUID(mostSigBits, leastSigBits).toString();
+	private PredicateIndexEntry(final long storageKey, final String queryExpression, final PredicateType type, final byte flags) {
+		this.storageKey = storageKey;
+		this.queryExpression = checkNotNull(queryExpression, "Query expression argument cannot be null.");
+		this.type = checkNotNull(type, "Predicate type argument cannot be null.");
+		this.flags = flags;
 	}
 	
-	/***
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + (int) (storageKey ^ (storageKey >>> 32));
+		return result;
+	}
+
+	@Override
+	public boolean equals(final Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		final PredicateIndexEntry other = (PredicateIndexEntry) obj;
+		if (storageKey != other.storageKey)
+			return false;
+		return true;
+	}
+	
+	@Override
+	public String toString() {
+		return Objects.toStringHelper(this).add("StorageKey", storageKey).add("Type", getType()).toString();
+	}
+
+	/**
 	 * Returns with the type of the current predicate instance.
 	 * @return the predicate type.
 	 * @see PredicateType.
@@ -295,65 +319,6 @@ public class PredicateIndexEntry implements IIndexEntry, Serializable {
 	public String getQueryExpression() {
 		return queryExpression;
 	}
-	
-	/*
-	 * (non-Javadoc)
-	 * @see java.lang.Object#hashCode()
-	 */
-	@Override
-	public int hashCode() {
-		final int prime = 31;
-		int result = 1;
-		result = prime * result + (int) (leastSigBits ^ (leastSigBits >>> 32));
-		result = prime * result + (int) (mostSigBits ^ (mostSigBits >>> 32));
-		return result;
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * @see java.lang.Object#equals(java.lang.Object)
-	 */
-	@Override
-	public boolean equals(final Object obj) {
-		if (this == obj)
-			return true;
-		if (obj == null)
-			return false;
-		if (getClass() != obj.getClass())
-			return false;
-		final PredicateIndexEntry other = (PredicateIndexEntry) obj;
-		if (leastSigBits != other.leastSigBits)
-			return false;
-		if (mostSigBits != other.mostSigBits)
-			return false;
-		return true;
-	}
-	
-	/*
-	 * (non-Javadoc)
-	 * @see java.lang.Object#toString()
-	 */
-	@Override
-	public String toString() {
-		return Objects.toStringHelper(this).add("UUID", getUuid()).add("Type", getType()).toString();
-	}
-
-	/**
-	 * Private constructor.
-	 * @param uuid unique identifier of the SNOMED&nbsp;CT concept attribute predicate. 
-	 * @param queryExpression query expression describing the domain part of the attribute constraint.
-	 * @param type the type of the predicate representation.
-	 * @param flags the flags for describing the {@code isMultiple} and {@code isRequired} boolean properties.
-	 */
-	private PredicateIndexEntry(final String uuid, final String queryExpression, final PredicateType type, final byte flags) {
-		final UUID tempUuid = UUID.fromString(checkNotNull(uuid, "UUID argument cannot be null."));
-		checkNotNull(tempUuid, "Creating UUID from '" + uuid + "' failed.");
-		this.queryExpression = checkNotNull(queryExpression, "Query expression argument cannot be null.");
-		this.mostSigBits = tempUuid.getMostSignificantBits();
-		this.leastSigBits = tempUuid.getLeastSignificantBits();
-		this.type = checkNotNull(type, "Predicate type argument cannot be null.");
-		this.flags = flags;
-	}
 
 	/*helper method to extract boolean properties from a byte flag*/
 	private boolean isAnyFlagSet(final int flag) {
@@ -362,7 +327,7 @@ public class PredicateIndexEntry implements IIndexEntry, Serializable {
 
 	@Override
 	public String getId() {
-		return getUuid();
+		return Long.toString(storageKey);
 	}
 
 	@Override
@@ -372,7 +337,7 @@ public class PredicateIndexEntry implements IIndexEntry, Serializable {
 
 	@Override
 	public float getScore() {
-		return score;
+		return 0.0f;
 	}
 
 	@Override
