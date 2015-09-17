@@ -55,8 +55,9 @@ public abstract class DocumentBuilderBase<T extends DocumentBuilderBase<T>> {
 		this.doc = checkNotNull(doc, "doc");
 	}
 	
-	public final void clear() {
+	public final T clear() {
 		this.doc = new Document();
+		return getSelf();
 	}
 	
 	public T id(String value) {
@@ -96,7 +97,7 @@ public abstract class DocumentBuilderBase<T extends DocumentBuilderBase<T>> {
 	}
 	
 	public T label(String value) {
-		return addToDoc(Mappings.label(), value);
+		return update(Mappings.label(), value);
 	}
 	
 	public T field(String fieldName, String value) {
@@ -113,6 +114,22 @@ public abstract class DocumentBuilderBase<T extends DocumentBuilderBase<T>> {
 	
 	public T field(String fieldName, Boolean value) {
 		return addToDoc(Mappings.boolField(fieldName), value);
+	}
+	
+	public T update(String fieldName, Long value) {
+		return update(Mappings.longField(fieldName), value);
+	}
+	
+	public T update(String fieldName, String value) {
+		return update(Mappings.stringField(fieldName), value);
+	}
+	
+	public T update(String fieldName, Integer value) {
+		return update(Mappings.intField(fieldName), value);
+	}
+	
+	public T update(String fieldName, Boolean value) {
+		return update(Mappings.boolField(fieldName), value);
 	}
 	
 	public T tokenizedField(String fieldName, String value) {
@@ -147,26 +164,18 @@ public abstract class DocumentBuilderBase<T extends DocumentBuilderBase<T>> {
 		return getSelf();
 	}
 	
+	public <F> T update(IndexField<F> field, F value) {
+		return removeAll(field).addToDoc(field, value);
+	}
+	
 	public final <F> T removeAll(IndexField<F> field) {
 		field.removeAll(doc);
 		return getSelf();
 	}
 	
-	public T labelWithSortKey(String value) {
+	public T labelWithSort(String value) {
 		label(value);
-		SortKeyMode.SORT_ONLY.add(doc, value);
-		return getSelf();
-	}
-	
-	public T labelWithSearchKey(String value) {
-		label(value);
-		SortKeyMode.SEARCH_ONLY.add(doc, value);
-		return getSelf();
-	}
-
-	public T labelWithSearchAndSort(String value) {
-		label(value);
-		SortKeyMode.SEARCH_AND_SORT.add(doc, value);
+		SortKeyMode.INSTANCE.update(this, value);
 		return getSelf();
 	}
 	

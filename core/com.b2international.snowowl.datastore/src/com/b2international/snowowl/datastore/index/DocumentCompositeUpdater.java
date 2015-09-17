@@ -24,9 +24,9 @@ import com.b2international.snowowl.datastore.index.mapping.DocumentBuilderBase;
  */
 public class DocumentCompositeUpdater<D extends DocumentBuilderBase<D>> implements DocumentUpdater<D> {
 
-	private Collection<DocumentUpdater<D>> updaters;
+	private Collection<? extends DocumentUpdater<D>> updaters;
 
-	public DocumentCompositeUpdater(Collection<DocumentUpdater<D>> updaters) {
+	public DocumentCompositeUpdater(Collection<? extends DocumentUpdater<D>> updaters) {
 		this.updaters = updaters;
 	}
 	
