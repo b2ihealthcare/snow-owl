@@ -283,8 +283,6 @@ public class IndexBranchService implements Closeable {
 				checkState(updatedDoc.getFields().size() > 0, "At least one field must be specified");
 				final IndexField<Long> storageKeyField = Mappings.storageKey();
 				final Long storageKey = storageKeyField.getValue(updatedDoc);
-				// update compare field here
-				Mappings.compareUniqueKey().addTo(updatedDoc, storageKey);
 				final Term key = storageKeyField.toTerm(storageKey);
 				updateDocument(key, updatedDoc);
 			} finally {
