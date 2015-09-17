@@ -70,6 +70,8 @@ public interface ICDOCommitChangeSet {
 	 * @return the timestamp.
 	 */
 	long getTimestamp();
+
+	boolean isEmpty();
 	
 
 }

@@ -89,6 +89,11 @@ public class CDOCommitChangeSet implements ICDOCommitChangeSet {
 	}
 
 	@Override
+	public boolean isEmpty() {
+		return dirtyComponents.isEmpty() && newComponents.isEmpty() && detachedComponents.isEmpty() && revisionDeltas.isEmpty();
+	}
+	
+	@Override
 	public Collection<CDOObject> getNewComponents() {
 		return Collections.unmodifiableCollection(newComponents);
 	}
