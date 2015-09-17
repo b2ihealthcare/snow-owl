@@ -122,7 +122,7 @@ public class DelegateCDOServerChangeManager {
 							try {
 								processor.process(commitChangeSet);
 								return Status.OK_STATUS;
-							} catch (final SnowowlServiceException e) {
+							} catch (final Exception e) {
 								return new Status(IStatus.ERROR, DatastoreServerActivator.PLUGIN_ID, "Error while processing changes with " + processor.getName() + " for branch: " + branchPath, e);
 							}
 							
