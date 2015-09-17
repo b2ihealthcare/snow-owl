@@ -17,7 +17,6 @@ package com.b2international.snowowl.snomed.datastore.index.mapping;
 
 import com.b2international.snowowl.datastore.index.mapping.QueryBuilderBase;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
-import com.b2international.snowowl.snomed.datastore.PredicateUtils;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType;
 
 /**
@@ -149,7 +148,11 @@ public class SnomedQueryBuilder extends QueryBuilderBase<SnomedQueryBuilder> {
 	}
 
 	public SnomedQueryBuilder predicate() {
-		return type(PredicateUtils.PREDICATE_TYPE_ID);
+		return type(SnomedTerminologyComponentConstants.PREDICATE_TYPE_ID);
+	}
+
+	public SnomedQueryBuilder refSetStorageKey(Long value) {
+		return addToQuery(SnomedMappings.refSetStorageKey(), value);
 	}
 
 }

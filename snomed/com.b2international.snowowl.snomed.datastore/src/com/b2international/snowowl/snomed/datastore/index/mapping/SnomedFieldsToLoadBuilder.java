@@ -61,5 +61,9 @@ public class SnomedFieldsToLoadBuilder extends FieldsToLoadBuilderBase<SnomedFie
 	public SnomedFieldsToLoadBuilder relationshipCharacteristicType() {
 		return field(SnomedMappings.relationshipCharacteristicType());
 	}
+
+	public SnomedFieldsToLoadBuilder refSetStorageKey() {
+		return field(SnomedMappings.refSetStorageKey());
+	}
 	
 }

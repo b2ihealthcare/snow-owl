@@ -15,12 +15,17 @@
  */
 package com.b2international.snowowl.snomed.datastore.index.mapping;
 
+import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.COMPONENT_RELEASED;
+import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.CONCEPT_EXHAUSTIVE;
+import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.CONCEPT_PRIMITIVE;
+
 import com.b2international.snowowl.datastore.index.mapping.IndexField;
 import com.b2international.snowowl.datastore.index.mapping.IntIndexField;
 import com.b2international.snowowl.datastore.index.mapping.LongCollectionIndexField;
 import com.b2international.snowowl.datastore.index.mapping.LongIndexField;
 import com.b2international.snowowl.datastore.index.mapping.Mappings;
 import com.b2international.snowowl.datastore.index.mapping.NumericDocValuesIndexField;
+import com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants;
 import com.google.common.base.Predicates;
 
 /**
@@ -138,6 +143,26 @@ public class SnomedMappings {
 		return DESCRIPTION_CONCEPT_ID;
 	}
 	
+	public static IndexField<Long> conceptReferringRefSetId() {
+		return Mappings.longField(SnomedIndexBrowserConstants.CONCEPT_REFERRING_REFERENCE_SET_ID);
+	}
+
+	public static IndexField<Long> conceptReferringMappingRefSetId() {
+		return Mappings.longField(SnomedIndexBrowserConstants.CONCEPT_REFERRING_MAPPING_REFERENCE_SET_ID);
+	}
+	
+	public static IndexField<Integer> released() {
+		return Mappings.storedOnlyIntField(COMPONENT_RELEASED);
+	}
+	
+	public static IndexField<Integer> primitive() {
+		return Mappings.intField(CONCEPT_PRIMITIVE);
+	}
+	
+	public static IndexField<Integer> exhaustive() {
+		return Mappings.intField(CONCEPT_EXHAUSTIVE);
+	}
+	
 	public static SnomedQueryBuilder newQuery() {
 		return new SnomedQueryBuilder();
 	}
@@ -148,6 +173,10 @@ public class SnomedMappings {
 
 	public static SnomedDocumentBuilder doc() {
 		return new SnomedDocumentBuilder();
+	}
+
+	public static IndexField<Long> refSetStorageKey() {
+		return Mappings.longField(SnomedIndexBrowserConstants.REFERENCE_SET_STORAGE_KEY);
 	}
 
 }
