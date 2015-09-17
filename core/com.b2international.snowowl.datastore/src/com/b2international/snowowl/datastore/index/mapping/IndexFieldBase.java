@@ -15,6 +15,8 @@
  */
 package com.b2international.snowowl.datastore.index.mapping;
 
+import static com.google.common.base.Preconditions.checkNotNull;
+
 import java.util.List;
 
 import org.apache.lucene.document.Document;
@@ -77,7 +79,7 @@ public abstract class IndexFieldBase<T> implements IndexField<T> {
 	
 	@Override
 	public final T getValue(Document doc) {
-		return getValue(getField(doc));
+		return getValue(checkNotNull(getField(doc), "Missing field %s from doc [%s]", fieldName(), doc));
 	}
 	
 	@Override
