@@ -32,7 +32,6 @@ import javax.annotation.Nullable;
 import com.b2international.commons.Change;
 import com.b2international.commons.ChangeKind;
 import com.b2international.commons.CompareUtils;
-import com.b2international.snowowl.core.api.ComponentIdAndLabel;
 import com.b2international.snowowl.core.api.ExtendedComponent;
 
 /**
@@ -72,12 +71,6 @@ public class NodeDiffImpl implements NodeDiff, Serializable {
 	
 	public NodeDiffImpl(final long storageKey, final ExtendedComponent component, @Nullable final NodeDiff parent, final Change change) {
 		this(checkNotNull(component, "component").getTerminologyComponentId(), storageKey, component.getId(), component.getLabel(), component.getIconId(), parent,  checkNotNull(change, "change"));
-	}
-	
-	public NodeDiffImpl(final short terminologyComponentId, final long storageKey, final ComponentIdAndLabel idAndLabel, 
-			@Nullable final String iconId, @Nullable final NodeDiff parent, final Change change) {
-		
-		this(terminologyComponentId, storageKey, checkNotNull(idAndLabel, "idAndLabel").getId(), idAndLabel.getLabel(), iconId, parent, checkNotNull(change, "change"));
 	}
 	
 	public NodeDiffImpl(final short terminologyComponentId, final long storageKey, final String id, final String label, 
