@@ -720,8 +720,7 @@ public class SnomedRf2IndexInitializer extends Job {
 										Long.parseLong(conceptModuleId), 
 										currentRefSetMemberships, 
 										currentMappingMemberships, 
-										EffectiveTimes.getEffectiveTime(concept.getEffectiveTime()), 
-										true);
+										EffectiveTimes.getEffectiveTime(concept.getEffectiveTime()));
 								
 								updater.update(factory.createBuilder(conceptDocument));
 								
@@ -941,8 +940,7 @@ public class SnomedRf2IndexInitializer extends Job {
 					moduleId, 
 					currentRefSetMemberships,
 					currentMappingMemberships,
-					concept.getEffectiveTimeAsLong(),
-					dirtyConceptsForCompareReindex.contains(sConceptId));
+					concept.getEffectiveTimeAsLong());
 			
 			snomedIndexService.index(branchPath, doc, conceptStorageKey);
 		}
@@ -986,8 +984,7 @@ public class SnomedRf2IndexInitializer extends Job {
 						moduleId, 
 						currentRefSetMemberships,
 						currentMappingMemberships,
-						effectiveTime,
-						true);
+						effectiveTime);
 				
 				snomedIndexService.index(branchPath, doc, conceptStorageKey);
 			}
@@ -996,7 +993,7 @@ public class SnomedRf2IndexInitializer extends Job {
 	
 	private Document createConceptDocument(final Multimap<Long, String> conceptIdToPredicateMap, final long conceptId, final long conceptStorageKey, final boolean active,
 			final boolean released, final boolean primitive, final boolean exhaustive, final long moduleId, final Collection<String> currentRefSetMemberships,
-			final Collection<String> currentMappingMemberships, final long effectiveTime, final boolean indexAsRelevantForCompare) {
+			final Collection<String> currentMappingMemberships, final long effectiveTime) {
 		
 		final String conceptIdString = Long.toString(conceptId);
 		final String preferredTerm = getImportIndexService().getConceptLabel(conceptIdString);
@@ -1012,7 +1009,7 @@ public class SnomedRf2IndexInitializer extends Job {
 				.field(CONCEPT_EFFECTIVE_TIME, effectiveTime)
 				.searchOnlyField(CONCEPT_NAMESPACE_ID, NamespaceMapping.getExtensionNamespaceId(conceptId))
 				.module(moduleId)
-				.with(new ComponentCompareFieldsUpdater<SnomedDocumentBuilder>(conceptIdString, indexAsRelevantForCompare, conceptStorageKey));
+				.with(new ComponentCompareFieldsUpdater<SnomedDocumentBuilder>(conceptIdString, conceptStorageKey));
 
 		final Document doc = docBuilder.build(); 
 		
