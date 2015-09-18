@@ -37,7 +37,6 @@ import java.util.concurrent.atomic.AtomicReference;
 import javax.annotation.Nullable;
 
 import org.apache.lucene.document.Document;
-import org.apache.lucene.index.IndexableField;
 import org.apache.lucene.search.BooleanClause.Occur;
 import org.apache.lucene.search.BooleanQuery;
 import org.apache.lucene.search.IndexSearcher;
@@ -520,9 +519,9 @@ public class SnomedServerTerminologyBrowser extends AbstractIndexTerminologyBrow
 	@Override
 	protected ExtendedComponent convertDocToExtendedComponent(IBranchPath branchPath, Document doc) {
 		// if type field is null, then we are processing a reference set _member_
-		final IndexableField typeField = Mappings.type().getField(doc);
+		final List<Integer> types = Mappings.type().getValues(doc);
 		
-		if (null == typeField) {
+		if (types.isEmpty()) {
 
 			final String uuid = doc.get(REFERENCE_SET_MEMBER_UUID);
 			return new ExtendedComponentImpl(
@@ -532,21 +531,31 @@ public class SnomedServerTerminologyBrowser extends AbstractIndexTerminologyBrow
 					SnomedTerminologyComponentConstants.REFSET_MEMBER_NUMBER);
 			
 		} else {
-			
-			String label = doc.get(Mappings.label().fieldName());
 			final String id = Long.toString(SnomedMappings.id().getValue(doc));
-			final short terminologyComponentId = IndexUtils.getShortValue(typeField);
-			if (null == label) {
-				if (SnomedTerminologyComponentConstants.RELATIONSHIP_NUMBER == terminologyComponentId) {
-					label = SnomedRelationshipNameProvider.INSTANCE.getComponentLabel(branchPath, id);
+			String label = doc.get(Mappings.label().fieldName());
+			final String iconId = doc.get(Mappings.iconId().fieldName());
+			if (types.size() == 1) {
+				// core SNOMED CT Component only
+				final short terminologyComponentId = types.get(0).shortValue();
+				if (null == label) {
+					if (SnomedTerminologyComponentConstants.RELATIONSHIP_NUMBER == terminologyComponentId) {
+						label = SnomedRelationshipNameProvider.INSTANCE.getComponentLabel(branchPath, id);
+					}
 				}
+				return new ExtendedComponentImpl(
+						id, 
+						label, 
+						iconId, 
+						terminologyComponentId);
+			} else {
+				// refset + identifier concept component
+				return new ExtendedComponentImpl(
+						id, 
+						label, 
+						iconId, 
+						SnomedTerminologyComponentConstants.CONCEPT_NUMBER);
 			}
-			return new ExtendedComponentImpl(
-					id, 
-					label, 
-					doc.get(Mappings.iconId().fieldName()), 
-					terminologyComponentId == SnomedTerminologyComponentConstants.REFSET_NUMBER ? SnomedTerminologyComponentConstants.CONCEPT_NUMBER : terminologyComponentId);
-		}	
+		}
 	}
 
 	@Override
