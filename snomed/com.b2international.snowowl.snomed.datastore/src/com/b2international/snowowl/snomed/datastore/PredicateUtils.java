@@ -41,7 +41,7 @@ import com.google.common.collect.Sets;
  */
 public abstract class PredicateUtils {
 
-	private static final String REFSET_PREDICATE_KEY_PREFIX = "RefSet";
+	public static final String REFSET_PREDICATE_KEY_PREFIX = "RefSet";
 	public static final String PREDICATE_SEPARATOR = "#";
 	
 	/**

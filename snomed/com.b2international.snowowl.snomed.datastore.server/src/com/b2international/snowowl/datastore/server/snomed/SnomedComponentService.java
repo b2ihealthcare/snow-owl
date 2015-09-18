@@ -158,6 +158,7 @@ import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.SnomedPackage;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.snomed.datastore.ILanguageConfigurationProvider;
+import com.b2international.snowowl.snomed.datastore.PredicateUtils;
 import com.b2international.snowowl.snomed.datastore.SnomedConceptInactivationIdCollector;
 import com.b2international.snowowl.snomed.datastore.SnomedConceptIndexEntry;
 import com.b2international.snowowl.snomed.datastore.SnomedConceptLookupService;
@@ -2325,29 +2326,24 @@ public class SnomedComponentService implements ISnomedComponentService, IPostSto
 			final DocIdsIterator itr = collector.getDocIDs().iterator();
 			
 			while (itr.next()) {
-				
 				final Document doc = service.document(branchPath, itr.getDocID(), SnomedMappings.fieldsToLoad().id().field(SnomedIndexBrowserConstants.COMPONENT_REFERRING_PREDICATE).build());
 				final IndexableField[] predicateFields = doc.getFields(SnomedIndexBrowserConstants.COMPONENT_REFERRING_PREDICATE);
 				final String componentId = SnomedMappings.id().getValueAsString(doc);
-				//XXX akitta: what if both reference set and its identifier concept have predicates? how to distinguish between them?
 				for (final IndexableField field : predicateFields) {
-					
-					final String[] split = field.stringValue().split("#", 2);
+					final String[] split = field.stringValue().split(PredicateUtils.PREDICATE_SEPARATOR, 2);
 					Preconditions.checkState(!isEmpty(split), "");
-					if (1 == split.length) {
-						predicates.get(HierarchyInclusionType.SELF).put(componentId, predicateMappings.get(split[0]));
+					final String predicateStorageKey = split[0];
+					final String key = split[1];
+					final PredicateIndexEntry predicate = predicateMappings.get(predicateStorageKey);
+					final HierarchyInclusionType type = HierarchyInclusionType.get(key);
+					if (type != null) {
+						predicates.get(type).put(componentId, predicate);	
+					} else if (SnomedTerminologyComponentConstants.getTerminologyComponentIdValueSafe(key) == CONCEPT_NUMBER) {
+						predicates.get(HierarchyInclusionType.SELF).put(predicateStorageKey + "#" + componentId, predicate);	
+					} else if (PredicateUtils.REFSET_PREDICATE_KEY_PREFIX.equals(key)) {
+						predicates.get(HierarchyInclusionType.SELF).put(componentId, predicate);
 					} else {
-						
-						if (HierarchyInclusionType.DESCENDANT.name().equals(split[0])) {
-							predicates.get(HierarchyInclusionType.DESCENDANT).put(componentId, predicateMappings.get(split[1]));	
-						} else if (HierarchyInclusionType.SELF_OR_DESCENDANT.name().equals(split[0])) {
-							predicates.get(HierarchyInclusionType.SELF_OR_DESCENDANT).put(componentId, predicateMappings.get(split[1]));
-						} else if (SnomedTerminologyComponentConstants.getTerminologyComponentIdValueSafe(split[0]) == CONCEPT_NUMBER) {
-							predicates.get(HierarchyInclusionType.SELF).put(split[0] + "#" + componentId, predicateMappings.get(split[1]));	
-						} else {
-							throw new IllegalArgumentException("Cannot parse predicate UUID field: " + field.stringValue());
-						}
-						
+						throw new IllegalArgumentException("Cannot parse component referring predicate field: " + field.stringValue());
 					}
 				}
 			}
