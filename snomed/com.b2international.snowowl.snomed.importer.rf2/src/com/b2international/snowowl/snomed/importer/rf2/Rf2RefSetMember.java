@@ -154,7 +154,7 @@ public class Rf2RefSetMember extends UnsupportedRf2RefSetMember {
 		if (record.size() > 12) {
 			return record.get(12);
 		}
-		throw new UnsupportedOperationException();
+		return null;
 	}
 
 	@Override
