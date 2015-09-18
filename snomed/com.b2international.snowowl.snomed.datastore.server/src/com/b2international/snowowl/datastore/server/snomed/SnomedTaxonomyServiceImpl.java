@@ -31,7 +31,6 @@ import com.b2international.snowowl.datastore.IPostStoreUpdateListener2;
 import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 import com.b2international.snowowl.snomed.datastore.SnomedTaxonomy;
 import com.b2international.snowowl.snomed.datastore.SnomedTaxonomyService;
-import com.google.common.base.Stopwatch;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
@@ -54,16 +53,16 @@ public class SnomedTaxonomyServiceImpl implements SnomedTaxonomyService, IPostSt
 			.expireAfterAccess(ONE, TimeUnit.MINUTES)
 			.maximumSize(MAX_BRANCH_CACHING_SUPPORT)
 			.removalListener(new RemovalListener<IBranchPath, SnomedTaxonomy>() {
+				@Override
 				public void onRemoval(final RemovalNotification<IBranchPath, SnomedTaxonomy> notification) {
-					LOGGER.info("SNOMED CT taxonomy has been successfully released from the cache on '" + notification.getKey() + "' branch.");
+					LOGGER.info("SNOMED CT taxonomy has been successfully released from the cache on '{}' branch.", notification.getKey());
 				}
 			})
 			.build(new CacheLoader<IBranchPath, SnomedTaxonomy>() {
+				@Override
 				public SnomedTaxonomy load(final IBranchPath branchPath) throws Exception {
-					final Stopwatch stopwatch = Stopwatch.createStarted();
-					LOGGER.info("Initializing and caching SNOMED CT taxonomy for on '" + branchPath + "' branch...");
+					LOGGER.info("Initializing SNOMED CT taxonomy service for '{}' branch...", branchPath);
 					final SnomedTaxonomy taxonomy = new SnomedTaxonomyImpl(branchPath);
-					LOGGER.info("SNOMED CT taxonomy has been successfully initialized and cached on '" + branchPath + "'. [" + stopwatch + "]");
 					return taxonomy;
 				}
 			});
@@ -159,8 +158,16 @@ public class SnomedTaxonomyServiceImpl implements SnomedTaxonomyService, IPostSt
 	}
 
 	@Override
+	public Collection<String> getAllOutboundConcepts(final IBranchPath branchPath, final String conceptId) {
+		if (isEmpty(conceptId)) {
+			return emptyList();
+		}
+		return getTaxonomy(branchPath).getAllOutboundConcepts(conceptId);
+	}
+	
+	@Override
 	public boolean hasOutboundRelationshipOfType(final IBranchPath branchPath, final String conceptId, final String typeId) {
-		return getOutboundConcepts(branchPath, conceptId, typeId).size() > 0;
+		return getTaxonomy(branchPath).hasOutboundRelationshipOfType(conceptId, typeId);
 	}
 
 	@Override
@@ -196,8 +203,16 @@ public class SnomedTaxonomyServiceImpl implements SnomedTaxonomyService, IPostSt
 	}
 
 	@Override
+	public Collection<String> getAllInboundConcepts(final IBranchPath branchPath, final String conceptId) {
+		if (isEmpty(conceptId)) {
+			return emptyList();
+		}
+		return getTaxonomy(branchPath).getAllInboundConcepts(conceptId);
+	}
+	
+	@Override
 	public boolean hasInboundRelationshipOfType(final IBranchPath branchPath, final String conceptId, final String typeId) {
-		return getInboundConcepts(branchPath, conceptId, typeId).size() > 0;
+		return getTaxonomy(branchPath).hasInboundRelationshipOfType(conceptId, typeId);
 	}
 
 	@Override

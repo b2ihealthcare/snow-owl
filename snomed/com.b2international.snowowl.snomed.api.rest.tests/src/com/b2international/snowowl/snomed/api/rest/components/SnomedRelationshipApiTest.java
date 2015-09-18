@@ -24,6 +24,7 @@ import static com.b2international.snowowl.snomed.api.rest.SnomedComponentApiAsse
 import static com.b2international.snowowl.snomed.api.rest.SnomedComponentApiAssert.assertComponentCanBeUpdated;
 import static com.b2international.snowowl.snomed.api.rest.SnomedComponentApiAssert.assertComponentCreated;
 import static com.b2international.snowowl.snomed.api.rest.SnomedComponentApiAssert.assertComponentCreatedWithStatus;
+import static com.b2international.snowowl.snomed.api.rest.SnomedComponentApiAssert.assertComponentUpdatedWithStatus;
 import static com.b2international.snowowl.snomed.api.rest.SnomedComponentApiAssert.assertComponentHasProperty;
 import static com.b2international.snowowl.snomed.api.rest.SnomedComponentApiAssert.assertComponentNotCreated;
 import static com.b2international.snowowl.snomed.api.rest.SnomedComponentApiAssert.assertRelationshipExists;
@@ -33,10 +34,12 @@ import static org.hamcrest.CoreMatchers.equalTo;
 
 import java.util.Map;
 
+import org.junit.Ignore;
 import org.junit.Test;
 
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.snomed.api.domain.CharacteristicType;
+import com.b2international.snowowl.snomed.api.domain.RelationshipModifier;
 import com.b2international.snowowl.snomed.api.rest.AbstractSnomedApiTest;
 import com.b2international.snowowl.snomed.api.rest.SnomedComponentType;
 import com.google.common.collect.ImmutableMap;
@@ -82,7 +85,7 @@ public class SnomedRelationshipApiTest extends AbstractSnomedApiTest {
 	}
 
 	private void assertCharacteristicType(final IBranchPath branchPath, final String relationshipId, final CharacteristicType characteristicType) {
-		assertComponentHasProperty(branchPath, SnomedComponentType.RELATIONSHIP, relationshipId, "characteristicType", characteristicType.toString());
+		assertComponentHasProperty(branchPath, SnomedComponentType.RELATIONSHIP, relationshipId, "characteristicType", characteristicType.name());
 	}
 
 	@Test
@@ -120,7 +123,7 @@ public class SnomedRelationshipApiTest extends AbstractSnomedApiTest {
 	public void inactivateRelationship() {
 		final Map<?, ?> createRequestBody = givenRelationshipRequestBody(DISEASE, TEMPORAL_CONTEXT, FINDING_CONTEXT, MODULE_SCT_CORE, "New relationship on MAIN");
 		final String relationshipId = assertComponentCreated(createMainPath(), SnomedComponentType.RELATIONSHIP, createRequestBody);
-		assertRelationshipActive(createMainPath(), relationshipId, true);
+		assertComponentActive(createMainPath(), SnomedComponentType.RELATIONSHIP, relationshipId, true);
 
 		final Map<?, ?> updateRequestBody = ImmutableMap.builder()
 				.put("active", false)
@@ -128,11 +131,83 @@ public class SnomedRelationshipApiTest extends AbstractSnomedApiTest {
 				.build();
 
 		assertRelationshipCanBeUpdated(createMainPath(), relationshipId, updateRequestBody);
-		assertRelationshipActive(createMainPath(), relationshipId, false);
+		assertComponentActive(createMainPath(), SnomedComponentType.RELATIONSHIP, relationshipId, false);
 	}
-
-	private void assertRelationshipActive(final IBranchPath branchPath, final String relationshipId, final boolean active) {
-		assertComponentActive(branchPath, SnomedComponentType.RELATIONSHIP, relationshipId, active);
+	
+	@Test
+	public void changeRelationshipGroup() {
+		final Map<?, ?> createRequestBody = givenRelationshipRequestBody(DISEASE, TEMPORAL_CONTEXT, FINDING_CONTEXT, MODULE_SCT_CORE, "New relationship on MAIN");
+		final String relationshipId = assertComponentCreated(createMainPath(), SnomedComponentType.RELATIONSHIP, createRequestBody);
+		assertComponentActive(createMainPath(), SnomedComponentType.RELATIONSHIP, relationshipId, true);
+		
+		final Map<?, ?> updateRequestBody = ImmutableMap.builder()
+				.put("group", 99)
+				.put("commitComment", "Changed group on relationship")
+				.build();
+		
+		assertRelationshipCanBeUpdated(createMainPath(), relationshipId, updateRequestBody);
+		assertComponentHasProperty(createMainPath(), SnomedComponentType.RELATIONSHIP, relationshipId, "group", 99);
+	}
+	
+	@Test
+	public void changeRelationshipGroupToInvalidValue() {
+		final Map<?, ?> createRequestBody = givenRelationshipRequestBody(DISEASE, TEMPORAL_CONTEXT, FINDING_CONTEXT, MODULE_SCT_CORE, "New relationship on MAIN");
+		final String relationshipId = assertComponentCreated(createMainPath(), SnomedComponentType.RELATIONSHIP, createRequestBody);
+		assertComponentActive(createMainPath(), SnomedComponentType.RELATIONSHIP, relationshipId, true);
+		
+		final Map<?, ?> updateRequestBody = ImmutableMap.builder()
+				.put("group", 299)
+				.put("commitComment", "Changed group on relationship")
+				.build();
+		
+		assertComponentUpdatedWithStatus(createMainPath(), SnomedComponentType.RELATIONSHIP, relationshipId, updateRequestBody, 400);
+		assertComponentHasProperty(createMainPath(), SnomedComponentType.RELATIONSHIP, relationshipId, "group", 0);
+	}
+	
+	@Test
+	public void changeRelationshipUnionGroup() {
+		final Map<?, ?> createRequestBody = givenRelationshipRequestBody(DISEASE, TEMPORAL_CONTEXT, FINDING_CONTEXT, MODULE_SCT_CORE, "New relationship on MAIN");
+		final String relationshipId = assertComponentCreated(createMainPath(), SnomedComponentType.RELATIONSHIP, createRequestBody);
+		assertComponentActive(createMainPath(), SnomedComponentType.RELATIONSHIP, relationshipId, true);
+		
+		final Map<?, ?> updateRequestBody = ImmutableMap.builder()
+				.put("unionGroup", 99)
+				.put("commitComment", "Changed union group on relationship")
+				.build();
+		
+		assertRelationshipCanBeUpdated(createMainPath(), relationshipId, updateRequestBody);
+		assertComponentHasProperty(createMainPath(), SnomedComponentType.RELATIONSHIP, relationshipId, "unionGroup", 99);
+	}
+	
+	@Test
+	public void changeRelationshipCharacteristicType() {
+		final Map<?, ?> createRequestBody = givenRelationshipRequestBody(DISEASE, TEMPORAL_CONTEXT, FINDING_CONTEXT, MODULE_SCT_CORE, "New relationship on MAIN");
+		final String relationshipId = assertComponentCreated(createMainPath(), SnomedComponentType.RELATIONSHIP, createRequestBody);
+		assertComponentActive(createMainPath(), SnomedComponentType.RELATIONSHIP, relationshipId, true);
+		
+		final Map<?, ?> updateRequestBody = ImmutableMap.builder()
+				.put("characteristicType", CharacteristicType.ADDITIONAL_RELATIONSHIP.name())
+				.put("commitComment", "Changed characteristic type on relationship")
+				.build();
+		
+		assertRelationshipCanBeUpdated(createMainPath(), relationshipId, updateRequestBody);
+		assertCharacteristicType(createMainPath(), relationshipId, CharacteristicType.ADDITIONAL_RELATIONSHIP);
+	}
+	
+	@Test
+	@Ignore("Additional relationship modifier concept not present in minified dataset")
+	public void changeRelationshipModifier() {
+		final Map<?, ?> createRequestBody = givenRelationshipRequestBody(DISEASE, TEMPORAL_CONTEXT, FINDING_CONTEXT, MODULE_SCT_CORE, "New relationship on MAIN");
+		final String relationshipId = assertComponentCreated(createMainPath(), SnomedComponentType.RELATIONSHIP, createRequestBody);
+		assertComponentActive(createMainPath(), SnomedComponentType.RELATIONSHIP, relationshipId, true);
+		
+		final Map<?, ?> updateRequestBody = ImmutableMap.builder()
+				.put("modifier", RelationshipModifier.UNIVERSAL.name())
+				.put("commitComment", "Changed modifier on relationship")
+				.build();
+		
+		assertRelationshipCanBeUpdated(createMainPath(), relationshipId, updateRequestBody);
+		assertComponentHasProperty(createMainPath(), SnomedComponentType.RELATIONSHIP, relationshipId, "modifier", RelationshipModifier.UNIVERSAL.name());
 	}
 
 	@Test

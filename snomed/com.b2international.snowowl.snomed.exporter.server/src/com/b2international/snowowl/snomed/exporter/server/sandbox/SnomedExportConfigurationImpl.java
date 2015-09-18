@@ -22,10 +22,8 @@ import static com.b2international.snowowl.datastore.BranchPathUtils.createVersio
 import static com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator.REPOSITORY_UUID;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Suppliers.memoize;
-import static com.google.common.collect.Iterables.filter;
-import static com.google.common.collect.Iterables.transform;
+import static com.google.common.collect.Lists.newArrayList;
 import static com.google.common.collect.Maps.newLinkedHashMap;
-import static com.google.common.collect.Sets.newHashSet;
 import static java.util.Collections.unmodifiableMap;
 
 import java.io.IOException;
@@ -41,7 +39,6 @@ import org.apache.lucene.index.IndexCommit;
 
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.api.SnowowlRuntimeException;
-import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.datastore.CodeSystemService;
 import com.b2international.snowowl.datastore.ICodeSystemVersion;
 import com.b2international.snowowl.datastore.server.index.IndexBranchService;
@@ -51,6 +48,7 @@ import com.b2international.snowowl.snomed.datastore.index.SnomedIndexService;
 import com.google.common.base.Function;
 import com.google.common.base.Predicate;
 import com.google.common.base.Supplier;
+import com.google.common.collect.FluentIterable;
 
 /**
  * Export configuration for the SNOMED CT export process.
@@ -74,29 +72,28 @@ public class SnomedExportConfigurationImpl implements SnomedExportConfiguration 
 					final IndexServerService<?> indexService = (IndexServerService<?>) getServiceForClass(SnomedIndexService.class);
 					final IndexBranchService branchService = indexService.getBranchService(createMainPath());
 					
-					final Map<IBranchPath, Long> branchPathMap = newLinkedHashMap();
+					final List<IBranchPath> versionPaths = newArrayList();
 					for (final ICodeSystemVersion version : getAllVersion()) {
-						branchPathMap.put(createVersionPath(version.getVersionId()), version.getEffectiveDate());
+						versionPaths.add(createVersionPath(version.getVersionId()));
 					}
-					branchPathMap.put(createMainPath(), EffectiveTimes.UNSET_EFFECTIVE_TIME);
+					versionPaths.add(createMainPath());
 					
 					final Map<IBranchPath, Collection<String>> branchPathToSegmentNamesMapping = newLinkedHashMap();
-					for (final IBranchPath branchPath : branchPathMap.keySet()) {
+					for (final IBranchPath branchPath : versionPaths) {
 						try {
 							final IndexCommit commit = branchService.getIndexCommit(branchPath);
 							if (null == commit) {
 								branchPathToSegmentNamesMapping.put(branchPath, Collections.<String>emptySet());
 							} else {
 								
-								final Collection<String> segmentNames = newHashSet(transform(filter(commit.getFileNames(), new Predicate<String>() {
-									@Override public boolean apply(final String fileName) {
-										return fileName.endsWith(SEGMENT_INFO_EXTENSION);
-									}
-								}), new Function<String, String>() {
-									@Override public String apply(final String fileName) {
-										return fileName.replace(SEGMENT_INFO_EXTENSION, EMPTY_STRING);
-									}
-								}));
+								final Collection<String> segmentNames = FluentIterable.from(commit.getFileNames())
+										.filter(new Predicate<String>() { @Override public boolean apply(final String fileName) {
+											return fileName.endsWith(SEGMENT_INFO_EXTENSION);
+										}})
+										.transform(new Function<String, String>() { @Override public String apply(final String fileName) {
+											return fileName.replace(SEGMENT_INFO_EXTENSION, EMPTY_STRING);
+										}})
+										.toSet();
 								
 								branchPathToSegmentNamesMapping.put(branchPath, segmentNames);
 							}

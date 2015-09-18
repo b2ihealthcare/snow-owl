@@ -20,6 +20,10 @@ package com.b2international.snowowl.snomed.api.domain.browser;
  */
 public interface ISnomedBrowserDescriptionResult {
 
+	enum TermType {
+		FNS, PT
+	}
+
 	/** @return the description's term which matched the query */
 	String getTerm();
 

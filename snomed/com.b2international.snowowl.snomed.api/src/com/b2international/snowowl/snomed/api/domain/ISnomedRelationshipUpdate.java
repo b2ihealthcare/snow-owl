@@ -18,9 +18,45 @@ package com.b2international.snowowl.snomed.api.domain;
 /**
  * Holds updatable properties of SNOMED CT relationships.
  * <p>
- * This interface is a placeholder; no properties outside of the ones in {@link ISnomedComponentUpdate} are currently
- * updatable on a relationship.
+ * The following properties (along with the ones in {@link ISnomedComponentUpdate}) are currently
+ * updatable on a relationship:
+ * <p>
+ * <ul>
+ * <li>group
+ * <li>unionGroup
+ * <li>characteristicType
+ * <li>modifier
+ * </ul>
  */
 public interface ISnomedRelationshipUpdate extends ISnomedComponentUpdate {
-	// Empty interface body
+
+	/**
+	 * Returns the updated relationship group number.
+	 * 
+	 * @return the relationship group, 0 if this relationship can not be grouped, or is in an unnumbered, singleton
+	 * group, or {@code null} if the existing group should not change
+	 */
+	Integer getGroup();
+
+	/**
+	 * Returns the updated relationship union group number.
+	 * 
+	 * @return the relationship union group, 0 if this relationship is not part of a disjunction, or {@code null} if
+	 * the existing union group should not change
+	 */
+	Integer getUnionGroup();
+
+	/**
+	 * Returns the updated relationship characteristic type value.
+	 * 
+	 * @return the characteristic type
+	 */
+	CharacteristicType getCharacteristicType();
+
+	/**
+	 * Returns the updated relationship modifier value.
+	 * 
+	 * @return the relationship modifier
+	 */
+	RelationshipModifier getModifier();
 }

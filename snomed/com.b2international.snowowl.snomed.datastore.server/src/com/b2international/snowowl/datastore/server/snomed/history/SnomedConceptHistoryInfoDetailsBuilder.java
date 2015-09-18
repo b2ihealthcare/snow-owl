@@ -33,6 +33,7 @@ import static com.b2international.snowowl.datastore.server.snomed.history.Snomed
 import static com.b2international.snowowl.datastore.server.snomed.history.SnomedHistoryInfoConstants.GROUP_FEATURE_NAME;
 import static com.b2international.snowowl.datastore.server.snomed.history.SnomedHistoryInfoConstants.MAP_GROUP_FEATURE_NAME;
 import static com.b2international.snowowl.datastore.server.snomed.history.SnomedHistoryInfoConstants.MAP_TARGET_TYPE_FEATURE_NAME;
+import static com.b2international.snowowl.datastore.server.snomed.history.SnomedHistoryInfoConstants.MODIFIER_FEATURE_NAME;
 import static com.b2international.snowowl.datastore.server.snomed.history.SnomedHistoryInfoConstants.MODULE_FEATURE_NAME;
 import static com.b2international.snowowl.datastore.server.snomed.history.SnomedHistoryInfoConstants.MODULE_ID_FEATURE_NAME;
 import static com.b2international.snowowl.datastore.server.snomed.history.SnomedHistoryInfoConstants.OPERATOR_TYPE_FEATURE_NAME;
@@ -41,6 +42,7 @@ import static com.b2international.snowowl.datastore.server.snomed.history.Snomed
 import static com.b2international.snowowl.datastore.server.snomed.history.SnomedHistoryInfoConstants.SOURCE_EFFECTIVE_TIME_FEATURE_NAME;
 import static com.b2international.snowowl.datastore.server.snomed.history.SnomedHistoryInfoConstants.STATUS_FEATURE_NAME;
 import static com.b2international.snowowl.datastore.server.snomed.history.SnomedHistoryInfoConstants.TARGET_EFFECTIVE_TIME_FEATURE_NAME;
+import static com.b2international.snowowl.datastore.server.snomed.history.SnomedHistoryInfoConstants.UNION_GROUP_FEATURE_NAME;
 import static com.b2international.snowowl.datastore.server.snomed.history.SnomedHistoryInfoConstants.UNIT_TYPE_FEATURE_NAME;
 import static com.b2international.snowowl.datastore.server.snomed.history.SnomedHistoryInfoConstants.VALUE_FEATURE_NAME;
 import static com.b2international.snowowl.datastore.server.snomed.history.SnomedHistoryInfoConstants.VALUE_ID_FEATURE_NAME;
@@ -237,7 +239,13 @@ public class SnomedConceptHistoryInfoDetailsBuilder extends AbstractHistoryInfoD
 			} else if (GROUP_FEATURE_NAME.equals(featureName)) {
 				return appendDescription(builder, getFeatureMapping().get(featureName), String.valueOf(featureValue), 
 						getLabel(relationship)).toString();
+			} else if (UNION_GROUP_FEATURE_NAME.equals(featureName)) {
+				return appendDescription(builder, getFeatureMapping().get(featureName), String.valueOf(featureValue), 
+						getLabel(relationship)).toString();
 			} else if (CHARACTERISTIC_TYPE_FEATURE_NAME.equals(featureName)) {
+				return appendDescription(builder, getFeatureMapping().get(featureName), SnomedHistoryUtils.getNewFeatureValue(featureValue), 
+						getLabel(relationship)).toString();
+			} else if (MODIFIER_FEATURE_NAME.equals(featureName)) {
 				return appendDescription(builder, getFeatureMapping().get(featureName), SnomedHistoryUtils.getNewFeatureValue(featureValue), 
 						getLabel(relationship)).toString();
 			} else if (RELEASED_FEATURE_NAME.equals(featureName)) {
@@ -518,7 +526,9 @@ public class SnomedConceptHistoryInfoDetailsBuilder extends AbstractHistoryInfoD
 					map.put(DESCRIPTION_TYPE_FEATURE_NAME, "description type");
 					map.put(DESCRIPTION_TERM_FEATURE_NAME, "description term");
 					map.put(GROUP_FEATURE_NAME, "relationship group");
+					map.put(UNION_GROUP_FEATURE_NAME, "relationship union group");
 					map.put(CHARACTERISTIC_TYPE_FEATURE_NAME, "characteristic type");
+					map.put(MODIFIER_FEATURE_NAME, "modifier");
 					map.put(CORRELATION_ID_FEATURE_NAME, "correlation identifier");
 					map.put(MAP_GROUP_FEATURE_NAME, "map group");
 					map.put(RELEASED_FEATURE_NAME, "published");

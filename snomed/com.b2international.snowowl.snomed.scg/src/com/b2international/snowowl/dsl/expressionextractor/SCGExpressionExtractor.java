@@ -27,6 +27,7 @@ import com.b2international.snowowl.dsl.scg.Concept;
 import com.b2international.snowowl.dsl.scg.Expression;
 import com.b2international.snowowl.dsl.scg.Group;
 import com.google.common.base.Function;
+import com.google.common.collect.FluentIterable;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 
@@ -52,17 +53,11 @@ public class SCGExpressionExtractor {
 	 * @return List<String> concept id list.
 	 */
 	public List<String> getFocusConceptIdList() {
-		EList<Concept> focusConcepts = expression.getConcepts();
-		
-		List<String> conceptIds = Lists.transform(focusConcepts, new Function<Concept, String>() {
-
-			@Override
-			public String apply(Concept concept) {
-				return concept.getId();
+		return FluentIterable.from(expression.getConcepts()).transform(new Function<Concept, String>() {
+			@Override public String apply(Concept input) {
+				return input.getId();
 			}
-		});
-		
-		return conceptIds;
+		}).toList();
 	}
 	
 	private Map<String, String> getUnGroupedAttributePairs() {

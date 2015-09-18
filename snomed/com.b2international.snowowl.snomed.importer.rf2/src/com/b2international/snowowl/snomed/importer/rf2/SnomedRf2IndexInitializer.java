@@ -89,6 +89,7 @@ import com.b2international.commons.csv.RecordParserCallback;
 import com.b2international.commons.pcj.LongSets;
 import com.b2international.commons.pcj.LongSets.LongCollectionProcedure;
 import com.b2international.snowowl.core.ApplicationContext;
+import com.b2international.snowowl.core.CoreTerminologyBroker;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.api.SnowowlRuntimeException;
 import com.b2international.snowowl.core.date.DateFormats;
@@ -686,7 +687,7 @@ public class SnomedRf2IndexInitializer extends Job {
 					}
 					
 					final SnomedRefSetType refSetType = SnomedRefSetType.get(getTypeOrdinal(type));
-					final short refComponentType = SnomedTerminologyComponentConstants.getTerminologyComponentIdValueSafe(record.get(5));
+					final short refComponentType = getRefSetComponentType(record.get(5), refSetType);
 					final SnomedRefSet refSet = new Rf2RefSet(storageKey, refSetId, refSetType, refComponentType);
 					final SnomedDocumentBuilder.Factory factory = new SnomedDocumentBuilder.Factory();
 					final RefSetMutablePropertyUpdater updater = new RefSetMutablePropertyUpdater(refSet);
@@ -781,6 +782,15 @@ public class SnomedRf2IndexInitializer extends Job {
 				indexRefSetMember(member, label);
 			}
 
+			private short getRefSetComponentType(final String representativeComponentId, final SnomedRefSetType refSetType) {
+				if (refSetType == SnomedRefSetType.CONCRETE_DATA_TYPE) {
+					// Concrete domain reference sets can have both concepts and relationships as referenced components
+					return CoreTerminologyBroker.UNSPECIFIED_NUMBER;
+				} else {
+					return SnomedTerminologyComponentConstants.getTerminologyComponentIdValueSafe(representativeComponentId); 
+				}
+			}
+			
 			private int getTypeOrdinal(final ComponentImportType type) {
 				switch (type) {
 					case LANGUAGE_TYPE_REFSET: return SnomedRefSetType.LANGUAGE_VALUE;
