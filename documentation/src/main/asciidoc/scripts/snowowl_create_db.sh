@@ -4,7 +4,6 @@
 # Copyright (c) 2015 B2i Healthcare. All rights reserved.
 #
 # This script creates all required databases and user for Snow Owl Server US edition.
-# MySQL password must be passed in as the first parameter.
 #
 
 DATABASES=( atcStore icd10Store icd10amStore \
