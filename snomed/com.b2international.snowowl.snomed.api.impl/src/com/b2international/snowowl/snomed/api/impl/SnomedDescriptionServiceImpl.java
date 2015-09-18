@@ -253,19 +253,24 @@ public class SnomedDescriptionServiceImpl
 
 	@Override
 	public ISnomedDescription getFullySpecifiedName(final IComponentRef conceptRef, final List<Locale> locales) {
+		final List<ISnomedDescription> descriptions = readConceptDescriptions(conceptRef);
+		return getFullySpecifiedName(descriptions, conceptRef, locales);
+	}
+
+	@Override
+	public ISnomedDescription getFullySpecifiedName(final List<ISnomedDescription> descriptions, final IComponentRef conceptRef, final List<Locale> locales) {
 		final InternalComponentRef internalRef = ClassUtils.checkAndCast(conceptRef, InternalComponentRef.class);
 //		internalRef.checkStorageExists();
 
 		final IBranchPath branch = internalRef.getBranch().branchPath();
 		final ImmutableBiMap<Locale, String> languageIdMap = getLanguageIdMap(locales, branch);
 		final Multimap<Locale, ISnomedDescription> descriptionsByLocale = HashMultimap.create();
-		final List<ISnomedDescription> descriptions = readConceptDescriptions(conceptRef);
 
 		for (final ISnomedDescription description : descriptions) {
 			if (!description.isActive()) {
 				continue;
 			}
-			
+
 			if (!Concepts.FULLY_SPECIFIED_NAME.equals(description.getTypeId())) {
 				continue;
 			}
@@ -291,31 +296,31 @@ public class SnomedDescriptionServiceImpl
 			if (!description.isActive()) {
 				continue;
 			}
-			
+
 			if (!Concepts.FULLY_SPECIFIED_NAME.equals(description.getTypeId())) {
 				continue;
 			}
-			
+
 			descriptionsByLanguage.put(description.getLanguageCode(), description);
 		}
-		
+
 		for (final Locale locale : locales) {
 			final Collection<ISnomedDescription> matchingDescriptions = descriptionsByLanguage.get(locale.getLanguage());
 			if (!matchingDescriptions.isEmpty()) {
 				return matchingDescriptions.iterator().next();
 			}
 		}
-		
+
 		// Last resort: pick an active FSN
 		for (ISnomedDescription description : descriptions) {
 			if (!description.isActive()) {
 				continue;
 			}
-			
+
 			if (!Concepts.FULLY_SPECIFIED_NAME.equals(description.getTypeId())) {
 				continue;
 			}
-			
+
 			return description;
 		}
 		
@@ -324,14 +329,18 @@ public class SnomedDescriptionServiceImpl
 
 	@Override
 	public ISnomedDescription getPreferredTerm(final IComponentRef conceptRef, final List<Locale> locales) {
+		final List<ISnomedDescription> descriptions = readConceptDescriptions(conceptRef);
+		return getPreferredTerm(descriptions, conceptRef, locales);
+	}
 
+	@Override
+	public ISnomedDescription getPreferredTerm(final List<ISnomedDescription> descriptions, final IComponentRef conceptRef, final List<Locale> locales) {
 		final InternalComponentRef internalRef = ClassUtils.checkAndCast(conceptRef, InternalComponentRef.class);
 		internalRef.checkStorageExists();
 
 		final IBranchPath branch = internalRef.getBranch().branchPath();
 		final ImmutableBiMap<Locale, String> languageIdMap = getLanguageIdMap(locales, branch);
 		final Multimap<Locale, ISnomedDescription> descriptionsByLocale = HashMultimap.create();
-		final List<ISnomedDescription> descriptions = readConceptDescriptions(conceptRef);
 		final Set<String> synonymAndDescendantIds = getSnomedComponentService().getSynonymAndDescendantIds(branch);
 
 		for (final ISnomedDescription description : descriptions) {
