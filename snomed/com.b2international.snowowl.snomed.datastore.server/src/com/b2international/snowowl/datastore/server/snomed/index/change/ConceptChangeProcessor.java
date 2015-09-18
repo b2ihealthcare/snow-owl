@@ -124,6 +124,7 @@ public class ConceptChangeProcessor extends ChangeSetProcessorBase<SnomedDocumen
 				.add(SnomedPackage.Literals.CONCEPT__DEFINITION_STATUS)
 				.add(SnomedPackage.Literals.CONCEPT__EXHAUSTIVE)
 				.add(SnomedPackage.Literals.CONCEPT__DESCRIPTIONS)
+				.add(SnomedPackage.Literals.CONCEPT__OUTBOUND_RELATIONSHIPS)
 				.build();
 		private boolean hasAllowedChanges;
 
