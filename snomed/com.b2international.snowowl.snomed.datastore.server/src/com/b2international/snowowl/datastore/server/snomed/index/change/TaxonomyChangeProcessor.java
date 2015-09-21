@@ -64,11 +64,15 @@ public class TaxonomyChangeProcessor extends ChangeSetProcessorBase<SnomedDocume
 		while (detachedIterator.hasNext()) {
 			final long relationshipId = detachedIterator.next();
 			final String conceptId = previousTaxonomy.getSourceNodeId(Long.toString(relationshipId));
-			registerUpdate(conceptId, new ParentageUpdater(newTaxonomy, conceptId, fieldSuffix));
+			if (newTaxonomy.containsNode(conceptId)) {
+				registerUpdate(conceptId, new ParentageUpdater(newTaxonomy, conceptId, fieldSuffix));
+			}
 			final LongIterator descendantIds = previousTaxonomy.getAllDescendantNodeIds(conceptId).iterator();
 			while (descendantIds.hasNext()) {
 				final String descendant = Long.toString(descendantIds.next());
-				registerUpdate(descendant, new ParentageUpdater(newTaxonomy, descendant, fieldSuffix));
+				if (newTaxonomy.containsNode(descendant)) {
+					registerUpdate(descendant, new ParentageUpdater(newTaxonomy, descendant, fieldSuffix));
+				}
 			}
 		}
 	}
