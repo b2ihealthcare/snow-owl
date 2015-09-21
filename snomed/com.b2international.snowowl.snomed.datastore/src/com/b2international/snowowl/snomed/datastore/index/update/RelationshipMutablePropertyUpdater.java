@@ -39,9 +39,8 @@ public class RelationshipMutablePropertyUpdater extends ComponentMutableProperty
 	}
 	
 	@Override
-	public void update(SnomedDocumentBuilder doc) {
-		super.update(doc);
-		
+	public void doUpdate(SnomedDocumentBuilder doc) {
+		super.doUpdate(doc);
 		doc
 			.removeAll(Mappings.storedOnlyIntFieldWithDocValues(RELATIONSHIP_UNIVERSAL))
 			.removeAll(Mappings.storedOnlyIntFieldWithDocValues(RELATIONSHIP_GROUP))

@@ -38,7 +38,7 @@ public class ComponentCompareFieldsUpdater<D extends DocumentBuilderBase<D>> ext
 	}
 
 	@Override
-	public void update(D doc) {
+	public void doUpdate(D doc) {
 		doc.removeAll(Mappings.compareUniqueKey());
 		doc.removeAll(Mappings.compareIgnoreUniqueKey());
 		if (relevant) {

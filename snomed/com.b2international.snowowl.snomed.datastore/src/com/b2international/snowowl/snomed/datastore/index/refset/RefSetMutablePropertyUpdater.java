@@ -41,7 +41,7 @@ public class RefSetMutablePropertyUpdater extends DocumentUpdaterBase<SnomedDocu
 	}
 
 	@Override
-	public void update(SnomedDocumentBuilder doc) {
+	public void doUpdate(SnomedDocumentBuilder doc) {
 		doc
 			.field(REFERENCE_SET_TYPE, refSet.getType().getValue())
 			.field(REFERENCE_SET_REFERENCED_COMPONENT_TYPE, (int) refSet.getReferencedComponentType())

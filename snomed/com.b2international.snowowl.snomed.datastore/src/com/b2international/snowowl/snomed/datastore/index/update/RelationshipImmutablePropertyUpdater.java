@@ -35,7 +35,7 @@ public class RelationshipImmutablePropertyUpdater extends DocumentUpdaterBase<Sn
 	}
 
 	@Override
-	public void update(SnomedDocumentBuilder doc) {
+	public void doUpdate(SnomedDocumentBuilder doc) {
 		final long typeId = parseLong(relationship.getType().getId());
 		final long sourceId = parseLong(relationship.getSource().getId());
 		final long destinationId = parseLong(relationship.getDestination().getId());

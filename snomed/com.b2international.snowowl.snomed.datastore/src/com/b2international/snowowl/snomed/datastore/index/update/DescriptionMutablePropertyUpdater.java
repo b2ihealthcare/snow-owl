@@ -33,8 +33,9 @@ public class DescriptionMutablePropertyUpdater extends ComponentMutablePropertyU
 	}
 	
 	@Override
-	public void update(SnomedDocumentBuilder doc) {
-		super.update(doc);
+	public void doUpdate(SnomedDocumentBuilder doc) {
+		super.doUpdate(doc);
+		
 		final long caseSignificanceId = parseLong(getComponent().getCaseSignificance().getId());
 		doc
 			.removeAll(Mappings.storedOnlyLongFieldWithDocValues(DESCRIPTION_CASE_SIGNIFICANCE_ID));

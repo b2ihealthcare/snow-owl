@@ -42,7 +42,7 @@ public class ConceptDescriptionUpdater extends DocumentUpdaterBase<SnomedDocumen
 	}
 
 	@Override
-	public void update(SnomedDocumentBuilder doc) {
+	public void doUpdate(SnomedDocumentBuilder doc) {
 		
 		for (DescriptionType type : DescriptionType.values()) {
 			doc.removeAll(Mappings.textField(type.getFieldName()));

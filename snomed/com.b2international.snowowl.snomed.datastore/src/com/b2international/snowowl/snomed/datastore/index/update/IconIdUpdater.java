@@ -42,7 +42,7 @@ public class IconIdUpdater extends SnomedDocumentUpdaterBase {
 	}
 	
 	@Override
-	public final void update(SnomedDocumentBuilder doc) {
+	public final void doUpdate(SnomedDocumentBuilder doc) {
 		final long iconIdLong = Long.parseLong(getIconId(getComponentId(), active));
 		doc.iconId(iconIdLong);
 	}

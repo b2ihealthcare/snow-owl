@@ -19,6 +19,9 @@ import static com.google.common.base.Preconditions.checkNotNull;
 
 import java.util.Objects;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.b2international.snowowl.datastore.index.mapping.DocumentBuilderBase;
 
 
@@ -27,6 +30,8 @@ import com.b2international.snowowl.datastore.index.mapping.DocumentBuilderBase;
  */
 public abstract class DocumentUpdaterBase<D extends DocumentBuilderBase<D>> implements DocumentUpdater<D> {
 
+	private static final Logger LOG = LoggerFactory.getLogger("repository");
+	
 	private String componentId;
 
 	public DocumentUpdaterBase(String componentId) {
@@ -36,6 +41,14 @@ public abstract class DocumentUpdaterBase<D extends DocumentBuilderBase<D>> impl
 	protected String getComponentId() {
 		return componentId;
 	}
+	
+	@Override
+	public final void update(D doc) {
+		LOG.info("Executing updater {} on {} doc:[{}]", getClass().getSimpleName(), getComponentId(), doc.build());
+		doUpdate(doc);
+	}
+	
+	protected abstract void doUpdate(D doc);
 	
 	@Override
 	public int hashCode() {

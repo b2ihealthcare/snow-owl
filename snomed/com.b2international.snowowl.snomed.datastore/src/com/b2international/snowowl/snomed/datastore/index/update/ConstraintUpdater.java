@@ -47,7 +47,7 @@ public class ConstraintUpdater extends DocumentUpdaterBase<SnomedDocumentBuilder
 	}
 
 	@Override
-	public void update(SnomedDocumentBuilder doc) {
+	public void doUpdate(SnomedDocumentBuilder doc) {
 		final ConceptSetDefinition domain = constraint.getDomain();
 		final String queryExpression = PredicateUtils.getEscgExpression(domain);
 		GroupRule groupRule = GroupRule.ALL_GROUPS;

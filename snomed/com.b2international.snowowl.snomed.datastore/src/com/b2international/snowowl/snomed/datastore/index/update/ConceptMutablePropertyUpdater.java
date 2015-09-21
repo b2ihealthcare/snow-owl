@@ -29,8 +29,8 @@ public class ConceptMutablePropertyUpdater extends ComponentMutablePropertyUpdat
 	}
 	
 	@Override
-	public void update(SnomedDocumentBuilder doc) {
-		super.update(doc);
+	public void doUpdate(SnomedDocumentBuilder doc) {
+		super.doUpdate(doc);
 		doc
 			.exhaustive(getComponent().isExhaustive())
 			.primitive(getComponent().isPrimitive());

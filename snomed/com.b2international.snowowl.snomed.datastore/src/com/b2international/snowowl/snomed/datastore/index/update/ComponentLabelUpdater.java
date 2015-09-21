@@ -21,7 +21,7 @@ public class ComponentLabelUpdater<D extends DocumentBuilderBase<D>> extends Doc
 	}
 
 	@Override
-	public final void update(D doc) {
+	public final void doUpdate(D doc) {
 		updateLabelFields(doc, getLabel());
 	}
 	

@@ -39,7 +39,7 @@ public class ConceptNamespaceUpdater extends DocumentUpdaterBase<SnomedDocumentB
 	}
 
 	@Override
-	public void update(SnomedDocumentBuilder doc) {
+	public void doUpdate(SnomedDocumentBuilder doc) {
 		doc.removeAll(Mappings.longField(CONCEPT_NAMESPACE_ID));
 		doc.searchOnlyField(CONCEPT_NAMESPACE_ID, namespaceId);
 	}

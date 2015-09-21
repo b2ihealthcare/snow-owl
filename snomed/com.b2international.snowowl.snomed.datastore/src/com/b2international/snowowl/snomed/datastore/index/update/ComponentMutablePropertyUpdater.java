@@ -36,7 +36,7 @@ public class ComponentMutablePropertyUpdater extends DocumentUpdaterBase<SnomedD
 	}
 	
 	@Override
-	public void update(SnomedDocumentBuilder doc) {
+	public void doUpdate(SnomedDocumentBuilder doc) {
 		doc
 			.removeAll(Mappings.longDocValuesField(effectiveTimeField));
 		doc

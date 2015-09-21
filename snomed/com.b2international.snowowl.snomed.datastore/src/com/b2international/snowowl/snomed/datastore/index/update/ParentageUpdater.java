@@ -58,7 +58,7 @@ public class ParentageUpdater extends SnomedDocumentUpdaterBase {
 	}
 
 	@Override
-	public final void update(SnomedDocumentBuilder doc) {
+	public final void doUpdate(SnomedDocumentBuilder doc) {
 		// throw out any parent or ancestor fields
 		final IndexField<Long> parentField = SnomedMappings.parent(fieldSuffix);
 		final IndexField<Long> ancestorField = SnomedMappings.ancestor(fieldSuffix);

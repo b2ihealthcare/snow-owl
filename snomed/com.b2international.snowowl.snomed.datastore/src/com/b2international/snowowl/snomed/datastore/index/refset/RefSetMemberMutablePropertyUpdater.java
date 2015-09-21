@@ -83,7 +83,7 @@ public class RefSetMemberMutablePropertyUpdater extends DocumentUpdaterBase<Snom
 	}
 
 	@Override
-	public void update(SnomedDocumentBuilder doc) {
+	public void doUpdate(SnomedDocumentBuilder doc) {
 		doc
 			.active(member.isActive())
 			.module(member.getModuleId())

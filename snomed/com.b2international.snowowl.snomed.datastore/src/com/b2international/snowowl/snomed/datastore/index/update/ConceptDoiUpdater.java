@@ -39,7 +39,7 @@ public class ConceptDoiUpdater extends DocumentUpdaterBase<SnomedDocumentBuilder
 	}
 
 	@Override
-	public void update(SnomedDocumentBuilder doc) {
+	public void doUpdate(SnomedDocumentBuilder doc) {
 		doc.removeAll(Mappings.floatDocValuesField(CONCEPT_DEGREE_OF_INTEREST));
 		doc.docValuesField(CONCEPT_DEGREE_OF_INTEREST, doi);
 	}

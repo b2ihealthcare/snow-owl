@@ -40,7 +40,7 @@ public class ComponentBaseUpdater<D extends DocumentBuilderBase<D>> extends Docu
 	}
 
 	@Override
-	public void update(D doc) {
+	public void doUpdate(D doc) {
 		doc
 			.id(getComponentId())
 			.type(type)

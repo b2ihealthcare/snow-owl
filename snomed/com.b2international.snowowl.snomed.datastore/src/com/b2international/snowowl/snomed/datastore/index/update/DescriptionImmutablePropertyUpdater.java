@@ -34,7 +34,7 @@ public class DescriptionImmutablePropertyUpdater extends DocumentUpdaterBase<Sno
 	}
 	
 	@Override
-	public void update(SnomedDocumentBuilder doc) {
+	public void doUpdate(SnomedDocumentBuilder doc) {
 		final long typeId = parseLong(description.getType().getId());
 		final long conceptId = parseLong(description.getConcept().getId());
 		doc

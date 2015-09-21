@@ -16,6 +16,7 @@
 package com.b2international.snowowl.datastore.index.mapping;
 
 import static com.google.common.base.Preconditions.checkNotNull;
+import static com.google.common.collect.Lists.newArrayList;
 
 import java.util.List;
 
@@ -162,7 +163,7 @@ public abstract class IndexFieldBase<T> implements IndexField<T> {
 
 	@Override
 	public final Filter createFilter(final List<BytesRef> bytesRefs) {
-		return new TermsFilter(fieldName(), bytesRefs.toArray(new BytesRef[bytesRefs.size()]));
+		return new TermsFilter(fieldName(), newArrayList(bytesRefs));
 	}
 
 	

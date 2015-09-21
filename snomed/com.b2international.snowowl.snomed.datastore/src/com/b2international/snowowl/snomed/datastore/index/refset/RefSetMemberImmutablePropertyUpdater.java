@@ -35,7 +35,7 @@ public class RefSetMemberImmutablePropertyUpdater extends DocumentUpdaterBase<Sn
 	}
 
 	@Override
-	public void update(SnomedDocumentBuilder doc) {
+	public void doUpdate(SnomedDocumentBuilder doc) {
 		doc
 			.storageKey(CDOIDUtil.getLong(member.cdoID()))
 			.field(SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_UUID, getComponentId())

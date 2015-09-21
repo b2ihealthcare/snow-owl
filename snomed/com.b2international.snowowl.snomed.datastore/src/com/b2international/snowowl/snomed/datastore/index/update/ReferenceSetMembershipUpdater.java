@@ -42,7 +42,7 @@ public class ReferenceSetMembershipUpdater extends DocumentUpdaterBase<SnomedDoc
 	}
 
 	@Override
-	public void update(SnomedDocumentBuilder doc) {
+	public void doUpdate(SnomedDocumentBuilder doc) {
 		Document document = doc.build();
 		final IndexField<Long> referringRefSetId = SnomedMappings.conceptReferringRefSetId();
 		final IndexField<Long> referringMappingRefSetId = SnomedMappings.conceptReferringMappingRefSetId();

@@ -37,7 +37,7 @@ public class ComponentConstraintUpdater extends DocumentUpdaterBase<SnomedDocume
 	}
 
 	@Override
-	public void update(SnomedDocumentBuilder doc) {
+	public void doUpdate(SnomedDocumentBuilder doc) {
 		final IndexField<String> field = Mappings.stringField(COMPONENT_REFERRING_PREDICATE);
 		doc.removeAll(field);
 		for (final String predicateKey : predicateKeys) {
