@@ -46,6 +46,7 @@ import com.b2international.commons.concurrent.equinox.ForkJoinUtils;
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.api.ComponentIdAndLabel;
 import com.b2international.snowowl.core.api.IBranchPath;
+import com.b2international.snowowl.core.api.SnowowlRuntimeException;
 import com.b2international.snowowl.core.api.SnowowlServiceException;
 import com.b2international.snowowl.core.api.index.IIndexUpdater;
 import com.b2international.snowowl.datastore.ChangeSetProcessor;
@@ -436,6 +437,7 @@ public class SnomedCDOChangeProcessor implements ICDOChangeProcessor {
 				index.upsert(branchPath, query.matchAny(), updater, new SnomedDocumentBuilder.Factory());
 			} catch (Exception e) {
 				LOGGER.error("Failed to upsert a document", e);
+				throw new SnowowlRuntimeException(e);
 			}
 		}
 		LOGGER.info("Processing and updating index changes successfully finished.");
