@@ -1657,14 +1657,14 @@ public class SnomedComponentService implements ISnomedComponentService, IPostSto
 	@Override
 	public LongSet getAllUnpublishedComponentStorageKeys(final IBranchPath branchPath) {
 		checkNotNull(branchPath, "branchPath");
-		final Query effectiveTimeQuery = SnomedMappings.newQuery()
-				.field(CONCEPT_EFFECTIVE_TIME, EffectiveTimes.UNSET_EFFECTIVE_TIME)
-				.field(DESCRIPTION_EFFECTIVE_TIME, EffectiveTimes.UNSET_EFFECTIVE_TIME)
-				.field(RELATIONSHIP_EFFECTIVE_TIME, EffectiveTimes.UNSET_EFFECTIVE_TIME)
-				.field(REFERENCE_SET_MEMBER_EFFECTIVE_TIME, EffectiveTimes.UNSET_EFFECTIVE_TIME)
-				.matchAny();
-		final Query query = SnomedMappings.newQuery().and(effectiveTimeQuery).matchAll();
-		return getUnpublishedStorageKeys(branchPath, query);
+		return getUnpublishedStorageKeys(
+				branchPath,
+				SnomedMappings.newQuery()
+						.field(CONCEPT_EFFECTIVE_TIME, EffectiveTimes.UNSET_EFFECTIVE_TIME)
+						.field(DESCRIPTION_EFFECTIVE_TIME, EffectiveTimes.UNSET_EFFECTIVE_TIME)
+						.field(RELATIONSHIP_EFFECTIVE_TIME, EffectiveTimes.UNSET_EFFECTIVE_TIME)
+						.field(REFERENCE_SET_MEMBER_EFFECTIVE_TIME, EffectiveTimes.UNSET_EFFECTIVE_TIME)
+						.matchAny());
 	}
 
 	@Override
