@@ -53,7 +53,7 @@ public class SnomedIndexServerService extends FSIndexServerService<SnomedIndexEn
 			
 			@Override
 			protected ICDOChangeProcessor getChangeProcessor(final IBranchPath branchPath) {
-				return new SnomedCDOChangeProcessor(SnomedIndexServerService.this, branchPath, false);
+				return new SnomedCDOChangeProcessor(SnomedCDOChangeProcessorFactory.CHANGE_PROC_EXECUTOR, SnomedIndexServerService.this, branchPath, false);
 			}
 		};
 	}

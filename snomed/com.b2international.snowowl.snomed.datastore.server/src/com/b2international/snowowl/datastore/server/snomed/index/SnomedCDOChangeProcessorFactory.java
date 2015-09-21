@@ -15,6 +15,9 @@
  */
 package com.b2international.snowowl.datastore.server.snomed.index;
 
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.api.SnowowlServiceException;
@@ -28,11 +31,8 @@ import com.b2international.snowowl.datastore.server.snomed.index.init.ImportInde
 public class SnomedCDOChangeProcessorFactory extends CDOChangeIndexProcessorFactory {
 
 	private static final String FACTORY_NAME = "SNOMED CT change processor factory";
+	static final ExecutorService CHANGE_PROC_EXECUTOR = Executors.newFixedThreadPool(8);
 
-	/*
-	 * (non-Javadoc)
-	 * @see com.b2international.snowowl.datastore.server.index.CDOChangeIndexProcessorFactory#doCreateChangeProcessor(com.b2international.snowowl.core.api.IBranchPath, boolean)
-	 */
 	@Override
 	protected ICDOChangeProcessor doCreateChangeProcessor(final IBranchPath branchPath, final boolean canCopyThreadLocal) throws SnowowlServiceException {
 		
@@ -42,12 +42,9 @@ public class SnomedCDOChangeProcessorFactory extends CDOChangeIndexProcessorFact
 		}
 		
 		final SnomedIndexUpdater indexService = ApplicationContext.getInstance().getService(SnomedIndexUpdater.class);
-		return new SnomedCDOChangeProcessor(indexService, branchPath, canCopyThreadLocal);
+		return new SnomedCDOChangeProcessor(CHANGE_PROC_EXECUTOR, indexService, branchPath, canCopyThreadLocal);
 	}
 
-	/* (non-Javadoc)
-	 * @see com.b2international.snowowl.datastore.CDOChangeProcessorFactory#getFactoryName()
-	 */
 	@Override
 	public String getFactoryName() {
 		return FACTORY_NAME;

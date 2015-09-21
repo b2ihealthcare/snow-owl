@@ -16,19 +16,30 @@
 package com.b2international.snowowl.datastore.server.snomed.index;
 
 import static com.google.common.base.Preconditions.checkNotNull;
+import static com.google.common.collect.Lists.newArrayList;
 import static com.google.common.collect.Sets.newHashSet;
+import static com.google.common.collect.Sets.newHashSetWithExpectedSize;
 
+import java.io.IOException;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Future;
 
 import org.apache.lucene.document.Document;
+import org.apache.lucene.index.Term;
+import org.apache.lucene.search.Filter;
+import org.apache.lucene.search.FilteredQuery;
+import org.apache.lucene.search.IndexSearcher;
+import org.apache.lucene.search.PrefixQuery;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.ScoreDoc;
 import org.apache.lucene.search.TopDocs;
+import org.apache.lucene.util.BytesRef;
 import org.eclipse.emf.cdo.CDOObject;
 import org.eclipse.emf.cdo.common.id.CDOID;
 import org.eclipse.emf.cdo.common.revision.delta.CDOFeatureDelta;
@@ -38,6 +49,8 @@ import org.eclipse.emf.spi.cdo.CDOStore;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import bak.pcj.list.LongArrayList;
+import bak.pcj.list.LongList;
 import bak.pcj.set.LongSet;
 
 import com.b2international.commons.CompareUtils;
@@ -57,8 +70,13 @@ import com.b2international.snowowl.datastore.cdo.ICDOConnection;
 import com.b2international.snowowl.datastore.cdo.ICDOConnectionManager;
 import com.b2international.snowowl.datastore.index.AbstractIndexUpdater;
 import com.b2international.snowowl.datastore.index.ChangeSetProcessorBase;
+import com.b2international.snowowl.datastore.index.DocIdCollector;
+import com.b2international.snowowl.datastore.index.DocIdCollector.DocIdsIterator;
 import com.b2international.snowowl.datastore.index.DocumentCompositeUpdater;
 import com.b2international.snowowl.datastore.index.DocumentUpdater;
+import com.b2international.snowowl.datastore.index.IndexRead;
+import com.b2international.snowowl.datastore.index.mapping.LongIndexField;
+import com.b2international.snowowl.datastore.index.mapping.Mappings;
 import com.b2international.snowowl.datastore.server.CDOServerUtils;
 import com.b2international.snowowl.datastore.server.snomed.index.change.ComponentLabelChangeProcessor;
 import com.b2international.snowowl.datastore.server.snomed.index.change.ConceptChangeProcessor;
@@ -69,6 +87,7 @@ import com.b2international.snowowl.datastore.server.snomed.index.change.IconChan
 import com.b2international.snowowl.datastore.server.snomed.index.change.RefSetMemberChangeProcessor;
 import com.b2international.snowowl.datastore.server.snomed.index.change.RelationshipChangeProcessor;
 import com.b2international.snowowl.datastore.server.snomed.index.change.TaxonomyChangeProcessor;
+import com.b2international.snowowl.datastore.server.snomed.index.collector.ComponentIdCollector;
 import com.b2international.snowowl.snomed.Component;
 import com.b2international.snowowl.snomed.Concept;
 import com.b2international.snowowl.snomed.Relationship;
@@ -105,7 +124,7 @@ import com.google.common.base.Suppliers;
 import com.google.common.collect.FluentIterable;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterables;
-import com.google.common.collect.LinkedListMultimap;
+import com.google.common.collect.LinkedHashMultimap;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Sets;
@@ -173,6 +192,8 @@ public class SnomedCDOChangeProcessor implements ICDOChangeProcessor {
 	
 	/**Represents the change set.*/
 	private ICDOCommitChangeSet commitChangeSet;
+
+	private ExecutorService executor;
 	
 	/**
 	 * Creates a new change processor for the SNOMED&nbsp;CT ontology. 
@@ -180,7 +201,7 @@ public class SnomedCDOChangeProcessor implements ICDOChangeProcessor {
 	 * @param branchPath the branch path where the changes has to be calculated and processed.
 	 * @param canCopyThreadLocal 
 	 */
-	public SnomedCDOChangeProcessor(final IIndexUpdater<SnomedIndexEntry> indexUpdater, final IBranchPath branchPath, final boolean canCopyThreadLocal) {
+	public SnomedCDOChangeProcessor(final ExecutorService executor, final IIndexUpdater<SnomedIndexEntry> indexUpdater, final IBranchPath branchPath, final boolean canCopyThreadLocal) {
 		
 		Preconditions.checkNotNull(indexUpdater, "Index service argument cannot be null.");
 		Preconditions.checkArgument(indexUpdater instanceof AbstractIndexUpdater, "Index updater must be instance of " + AbstractIndexUpdater.class + ". Was " + indexUpdater.getClass());
@@ -188,6 +209,7 @@ public class SnomedCDOChangeProcessor implements ICDOChangeProcessor {
 		this.index = (SnomedIndexServerService) indexUpdater; 
 		this.branchPath = Preconditions.checkNotNull(branchPath, "Branch path argument cannot be null.");
 		this.canCopyThreadLocal = canCopyThreadLocal;
+		this.executor = executor;
 		
 		inferredNewTaxonomyBuilderSupplier = Suppliers.memoize(new Supplier<ISnomedTaxonomyBuilder>() {
 			@Override public ISnomedTaxonomyBuilder get() {
@@ -409,17 +431,67 @@ public class SnomedCDOChangeProcessor implements ICDOChangeProcessor {
 			processor.process(commitChangeSet);
 		}
 		LOGGER.info("Updating indexes...");
+
+		final List<BytesRef> deletedStorageKeys = newArrayList();
 		
 		for (ChangeSetProcessor<SnomedDocumentBuilder> processor : changeSetProcessors) {
 			for (Long storageKey : processor.getDeletedStorageKeys()) {
+				LOGGER.info("Deleting document {}", storageKey);
 				index.delete(branchPath, storageKey);
+				deletedStorageKeys.add(LongIndexField._toBytesRef(storageKey));
 			}
 		}
-		final Multimap<String, DocumentUpdater<SnomedDocumentBuilder>> updates = LinkedListMultimap.create();
+
+		
+		final LongList deletedComponentIds;
+		final Collection<String> deletedMemberIds;
+		if (!deletedStorageKeys.isEmpty()) {
+			final Filter filter = Mappings.storageKey().createFilter(deletedStorageKeys);
+			// query component IDs
+			final Query deletedComponentIdQuery = new FilteredQuery(new PrefixQuery(new Term(SnomedMappings.id().fieldName())), filter);
+			final ComponentIdCollector collector = new ComponentIdCollector(deletedStorageKeys.size());
+			index.search(branchPath, deletedComponentIdQuery, collector);
+			deletedComponentIds = collector.getIds();
+			deletedMemberIds = index.executeReadTransaction(branchPath, new IndexRead<Collection<String>>() {
+				@Override
+				public Collection<String> execute(IndexSearcher index) throws IOException {
+					final Query deletedMemberIdQuery = new FilteredQuery(new PrefixQuery(new Term(SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_UUID)), filter);
+					final DocIdCollector collector = DocIdCollector.create(index.getIndexReader().maxDoc());
+					index.search(deletedMemberIdQuery, filter, collector);
+					final DocIdsIterator it = collector.getDocIDs().iterator();
+					final Collection<String> memberIds = newHashSet();
+					while (it.next()) {
+						final int docId = it.getDocID();
+						final Document doc = index.doc(docId, SnomedMappings.fieldsToLoad().field(SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_UUID).build());
+						memberIds.add(doc.get(SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_UUID));
+					}
+					return memberIds;
+				}
+			});
+		} else {
+			deletedComponentIds	= new LongArrayList();
+			deletedMemberIds = Collections.emptySet();
+		}
+		
+		final Multimap<String, DocumentUpdater<SnomedDocumentBuilder>> updates = LinkedHashMultimap.create();
 		for (ChangeSetProcessor<SnomedDocumentBuilder> processor : changeSetProcessors) {
 			updates.putAll(processor.getUpdates());
 		}
+		
+		final Collection<Future<?>> promises = newHashSetWithExpectedSize(updates.keySet().size());
 		for (String componentId : updates.keySet()) {
+			try {
+				if (deletedComponentIds.contains(Long.parseLong(componentId))) {
+					// skip deleted components
+					continue;
+				}
+			} catch (NumberFormatException e) {
+				// ignore, multiple ID formats are expected, so parsing a long may not work all the time
+			}
+			if (deletedMemberIds.contains(componentId)) {
+				continue;
+			}
+			
 			final Collection<DocumentUpdater<SnomedDocumentBuilder>> updaters = updates.get(componentId);
 			final DocumentCompositeUpdater<SnomedDocumentBuilder> updater = new DocumentCompositeUpdater<>(updaters);
 
@@ -433,13 +505,38 @@ public class SnomedCDOChangeProcessor implements ICDOChangeProcessor {
 				// members are indexes with their UUID
 				query.field(SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_UUID, componentId);
 			}
+			final Future<?> promise = executor.submit(new Runnable() {
+				@Override
+				public void run() {
+					try {
+						index.upsert(branchPath, query.matchAny(), updater, new SnomedDocumentBuilder.Factory());						
+					} catch (Exception e) {
+						LOGGER.error("Failed to upsert a document", e);
+						throw new SnowowlRuntimeException(e);
+					}
+				}
+			});
+			promises.add(promise);
+		}
+		
+
+		// wait for all index updates
+		Throwable ex = null; 
+		for (Future<?> promise : promises) {
 			try {
-				index.upsert(branchPath, query.matchAny(), updater, new SnomedDocumentBuilder.Factory());
+				if (ex != null) {
+					promise.cancel(false);
+				} else {
+					promise.get();
+				}
 			} catch (Exception e) {
-				LOGGER.error("Failed to upsert a document", e);
-				throw new SnowowlRuntimeException(e);
+				ex = e.getCause();
 			}
 		}
+		if (ex != null) {
+			throw SnowowlRuntimeException.wrap(ex);
+		}
+		
 		LOGGER.info("Processing and updating index changes successfully finished.");
 	}
 
