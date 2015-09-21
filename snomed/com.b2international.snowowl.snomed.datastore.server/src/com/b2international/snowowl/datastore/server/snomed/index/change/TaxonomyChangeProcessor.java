@@ -52,15 +52,11 @@ public class TaxonomyChangeProcessor extends ChangeSetProcessorBase<SnomedDocume
 			final long relationshipId = newIterator.next();
 			final String conceptId = newTaxonomy.getSourceNodeId(Long.toString(relationshipId));
 			// update only if not new concept
-			if (previousTaxonomy.containsNode(conceptId)) {
-				registerUpdate(conceptId, new ParentageUpdater(newTaxonomy, conceptId, fieldSuffix));
-			}
+			registerUpdate(conceptId, new ParentageUpdater(newTaxonomy, conceptId, fieldSuffix));
 			final LongIterator descendantIds = newTaxonomy.getAllDescendantNodeIds(conceptId).iterator();
 			while (descendantIds.hasNext()) {
 				final String descendant = Long.toString(descendantIds.next());
-				if (previousTaxonomy.containsNode(descendant)) {
-					registerUpdate(descendant, new ParentageUpdater(newTaxonomy, descendant, fieldSuffix));
-				}
+				registerUpdate(descendant, new ParentageUpdater(newTaxonomy, descendant, fieldSuffix));
 			}
 		}
 		// process detach relationships
@@ -68,15 +64,11 @@ public class TaxonomyChangeProcessor extends ChangeSetProcessorBase<SnomedDocume
 		while (detachedIterator.hasNext()) {
 			final long relationshipId = detachedIterator.next();
 			final String conceptId = previousTaxonomy.getSourceNodeId(Long.toString(relationshipId));
-			if (newTaxonomy.containsNode(conceptId)) {
-				registerUpdate(conceptId, new ParentageUpdater(newTaxonomy, conceptId, fieldSuffix));
-			}
+			registerUpdate(conceptId, new ParentageUpdater(newTaxonomy, conceptId, fieldSuffix));
 			final LongIterator descendantIds = previousTaxonomy.getAllDescendantNodeIds(conceptId).iterator();
 			while (descendantIds.hasNext()) {
 				final String descendant = Long.toString(descendantIds.next());
-				if (newTaxonomy.containsNode(descendant)) {
-					registerUpdate(descendant, new ParentageUpdater(newTaxonomy, descendant, fieldSuffix));
-				}
+				registerUpdate(descendant, new ParentageUpdater(newTaxonomy, descendant, fieldSuffix));
 			}
 		}
 	}
