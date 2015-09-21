@@ -172,8 +172,9 @@ public class SnomedDocumentBuilder extends DocumentBuilderBase<SnomedDocumentBui
 						.add(Mappings.intField(REFERENCE_SET_MEMBER_MAP_TARGET_COMPONENT_TYPE_ID))
 						.add(Mappings.stringField(REFERENCE_SET_MEMBER_MAP_TARGET_COMPONENT_LABEL))
 						.add(Mappings.textField(REFERENCE_SET_MEMBER_MAP_TARGET_COMPONENT_DESCRIPTION));
-					final String componentDescription = Mappings.textField(REFERENCE_SET_MEMBER_MAP_TARGET_COMPONENT_DESCRIPTION).getValue(doc);
-					Mappings.searchOnlyStringField(REFERENCE_SET_MEMBER_MAP_TARGET_COMPONENT_DESCRIPTION_SORT_KEY).addTo(newDoc, IndexUtils.getSortKey(componentDescription));
+					for (String value : Mappings.textField(REFERENCE_SET_MEMBER_MAP_TARGET_COMPONENT_DESCRIPTION).getValues(doc)) {
+						Mappings.searchOnlyStringField(REFERENCE_SET_MEMBER_MAP_TARGET_COMPONENT_DESCRIPTION_SORT_KEY).addTo(newDoc, IndexUtils.getSortKey(value));
+					}
 					break;
 				case MODULE_DEPENDENCY:
 					fieldsToCopy
