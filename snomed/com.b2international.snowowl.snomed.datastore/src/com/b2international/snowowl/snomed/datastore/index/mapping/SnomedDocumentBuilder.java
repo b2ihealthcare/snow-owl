@@ -197,6 +197,7 @@ public class SnomedDocumentBuilder extends DocumentBuilderBase<SnomedDocumentBui
 				case SnomedTerminologyComponentConstants.REFSET_NUMBER:
 					fieldsToCopy
 						.add(label)
+						.add(SnomedMappings.refSetStorageKey())
 						.add(SnomedMappings.active())
 						.add(SnomedMappings.ancestor())
 						.add(SnomedMappings.parent())
