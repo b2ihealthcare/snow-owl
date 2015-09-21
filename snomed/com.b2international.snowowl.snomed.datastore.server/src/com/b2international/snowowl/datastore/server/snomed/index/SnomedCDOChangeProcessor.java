@@ -398,7 +398,7 @@ public class SnomedCDOChangeProcessor implements ICDOChangeProcessor {
 				.add(new DescriptionChangeProcessor(synonymIds))
 				.add(new TaxonomyChangeProcessor(getAndCheckInferredNewTaxonomyBuilder(), getInferredPreviousTaxonomyBuilder(), inferredDifferenceSupplier,  ""))
 				.add(new TaxonomyChangeProcessor(getAndCheckStatedNewTaxonomyBuilder(), getStatedPreviousTaxonomyBuilder(), statedDifferenceSupplier, Concepts.STATED_RELATIONSHIP))
-				.add(new IconChangeProcessor(branchPath, getAndCheckInferredNewTaxonomyBuilder(), inferredDifferenceSupplier))
+				.add(new IconChangeProcessor(branchPath, getAndCheckInferredNewTaxonomyBuilder(), getInferredPreviousTaxonomyBuilder(), inferredDifferenceSupplier))
 				.add(labelChangeProcessor)
 				.add(new RefSetMemberChangeProcessor(labelChangeProcessor))
 				.add(new ConstraintChangeProcessor(branchPath))

@@ -43,28 +43,47 @@ public class IconChangeProcessor extends ChangeSetProcessorBase<SnomedDocumentBu
 
 	private Supplier<Pair<LongSet, LongSet>> differenceSupplier;
 	private ISnomedTaxonomyBuilder newTaxonomy;
+	private ISnomedTaxonomyBuilder oldTaxonomy;
 	private IBranchPath branchPath;
 
-	public IconChangeProcessor(IBranchPath branchPath, ISnomedTaxonomyBuilder newTaxonomy, Supplier<Pair<LongSet, LongSet>> differenceSupplier) {
+	public IconChangeProcessor(IBranchPath branchPath, ISnomedTaxonomyBuilder newTaxonomy, ISnomedTaxonomyBuilder oldTaxonomy, Supplier<Pair<LongSet, LongSet>> differenceSupplier) {
 		super("icon changes");
 		this.branchPath = branchPath;
 		this.newTaxonomy = newTaxonomy;
+		this.oldTaxonomy = oldTaxonomy;
 		this.differenceSupplier = differenceSupplier;
 	}
 
 	@Override
 	public void process(ICDOCommitChangeSet commitChangeSet) {
 		final Set<String> iconIdUpdates = newHashSet();
-		final LongIterator it = differenceSupplier.get().getB().iterator();
+		// process new/reactivated relationships
+		final LongIterator it = differenceSupplier.get().getA().iterator();
 		while (it.hasNext()) {
-			final long relationshipId = it.next();
-			final String sourceNodeId = newTaxonomy.getSourceNodeId(Long.toString(relationshipId));
-			final LongSet allAncestorNodeIds = newTaxonomy.getAllAncestorNodeIds(sourceNodeId);
-			final String oldIconId = SnomedIconProvider.getInstance().getIconId(sourceNodeId, branchPath);
-			if (!allAncestorNodeIds.contains(Long.parseLong(oldIconId))) {
+			final String relationshipId = Long.toString(it.next());
+			final String sourceNodeId = this.newTaxonomy.getSourceNodeId(relationshipId);
+			iconIdUpdates.add(sourceNodeId);
+			// add all descendants
+			iconIdUpdates.addAll(LongSets.toStringSet(this.newTaxonomy.getAllDescendantNodeIds(sourceNodeId)));
+		}
+		
+		// process detached/inactivated relationships
+		final LongIterator detachedIt = differenceSupplier.get().getB().iterator();
+		while (detachedIt.hasNext()) {
+			final String relationshipId = Long.toString(detachedIt.next());
+			final String sourceNodeId = this.oldTaxonomy.getSourceNodeId(relationshipId);
+			// if concept still exists a relationship became inactive or deleted
+			if (this.newTaxonomy.containsNode(sourceNodeId)) {
+				final LongSet allAncestorNodeIds = this.newTaxonomy.getAllAncestorNodeIds(sourceNodeId);
+				final String oldIconId = SnomedIconProvider.getInstance().getIconId(sourceNodeId, branchPath);
+				if (!allAncestorNodeIds.contains(Long.parseLong(oldIconId))) {
+					iconIdUpdates.add(sourceNodeId);
+					// add all descendants
+					iconIdUpdates.addAll(LongSets.toStringSet(newTaxonomy.getAllDescendantNodeIds(sourceNodeId)));
+				}
+			} else {
 				iconIdUpdates.add(sourceNodeId);
-				// add all descendants
-				iconIdUpdates.addAll(LongSets.toStringSet(newTaxonomy.getAllDescendantNodeIds(sourceNodeId)));
+				iconIdUpdates.addAll(LongSets.toStringSet(oldTaxonomy.getAllDescendantNodeIds(sourceNodeId)));
 			}
 		}
 		
