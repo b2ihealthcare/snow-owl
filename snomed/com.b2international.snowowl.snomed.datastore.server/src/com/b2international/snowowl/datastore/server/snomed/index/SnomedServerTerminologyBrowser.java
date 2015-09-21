@@ -597,7 +597,7 @@ public class SnomedServerTerminologyBrowser extends AbstractIndexTerminologyBrow
 	public boolean isUniqueId(final IBranchPath branchPath, final String componentId) {
 		checkNotNull(componentId, "SNOMED CT core component ID argument cannot be null.");
 		if (SnomedTerminologyComponentConstants.isCoreComponentId(componentId)) {
-			return service.getHitCount(branchPath, getConceptByIdQueryBuilder(componentId), null) == 0;
+			return service.getHitCount(branchPath, SnomedMappings.newQuery().id(componentId).matchAll(), null) == 0;
 		}
 		return false;
 	}
