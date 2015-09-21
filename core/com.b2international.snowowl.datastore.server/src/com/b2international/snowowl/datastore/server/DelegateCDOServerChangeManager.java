@@ -156,6 +156,8 @@ public class DelegateCDOServerChangeManager {
 			if (e instanceof RuntimeException) {
 				if (e.getCause() instanceof ApiException) {
 					throw (ApiException) e.getCause();
+				} else {
+					throw new SnowowlRuntimeException("Error when executing change processors on branch: " + branchPath, e);
 				}
 			} else {
 				throw new SnowowlRuntimeException("Error when executing change processors on branch: " + branchPath, e);
