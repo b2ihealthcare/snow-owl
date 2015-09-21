@@ -230,7 +230,7 @@ public abstract class AbstractSnomedTaxonomyBuilder implements ISnomedTaxonomyBu
 	 */
 	@Override
 	public boolean containsNode(final String nodeId) {
-		return 0 < getNodes().get(Long.parseLong(nodeId));
+		return 0 < getNodes().getByKey(Long.parseLong(nodeId));
 	}
 	
 	/*
@@ -424,7 +424,7 @@ public abstract class AbstractSnomedTaxonomyBuilder implements ISnomedTaxonomyBu
 	 */
 	public long getNodeId(final int internalNodeId) {
 		checkState();
-		return getNodes().get(internalNodeId);
+		return getNodes().getByInternalId(internalNodeId);
 	}
 	
 	protected void setDirty(boolean dirty) {

@@ -79,16 +79,16 @@ public class LongBidiMapWithInternalId implements Serializable {
 	/**
 	 * @return element for the specified key, or null if not found
 	 */
-	public long get(long key) {
+	public long getByKey(long key) {
 		int id = getInternalId(key);
-		return id < 0 ? -1 : elements.get(id);
+		return id < 0 ? -1L : elements.get(id);
 	}
 
 	/**
 	 * @return element for the specified internal id
 	 * @throws IndexOutOfBoundsException
 	 */
-	public long get(int internalId) {
+	public long getByInternalId(int internalId) {
 		return elements.get(internalId);
 	}
 

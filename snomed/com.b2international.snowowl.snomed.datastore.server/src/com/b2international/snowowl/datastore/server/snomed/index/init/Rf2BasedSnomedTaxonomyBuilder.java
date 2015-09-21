@@ -104,6 +104,11 @@ public class Rf2BasedSnomedTaxonomyBuilder extends AbstractSnomedTaxonomyBuilder
 	}
 
 	@Override
+	public long getNodeStorageKey(String nodeId) {
+		throw new UnsupportedOperationException("Not implemented");
+	}
+	
+	@Override
 	protected SnomedTaxonomyBuilderMode getMode() {
 		return mode;
 	}

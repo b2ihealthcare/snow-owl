@@ -60,6 +60,8 @@ public interface ISnomedTaxonomyBuilder {
 
 	String getDestinationNodeId(final String edgeId);
 	
+	long getNodeStorageKey(String nodeId);
+	
 	/**
 	 * Workaround to avoid autoboxing.
 	 */

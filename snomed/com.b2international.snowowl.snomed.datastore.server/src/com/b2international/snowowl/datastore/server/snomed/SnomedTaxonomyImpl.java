@@ -769,7 +769,7 @@ public class SnomedTaxonomyImpl implements SnomedTaxonomy {
 	private Collection<String> getIds(final IntCollection internalIds) {
 		final LongArrayList ids = new LongArrayList(internalIds.size());
 		for (final IntIterator itr = internalIds.iterator(); itr.hasNext(); /**/) {
-			ids.add(concepts.get(itr.next()));
+			ids.add(concepts.getByInternalId(itr.next()));
 		}
 		return toStringList(ids);
 	}
