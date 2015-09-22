@@ -19,8 +19,6 @@ import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBr
 import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.COMPONENT_RELEASED;
 import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.CONCEPT_DEGREE_OF_INTEREST;
 import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.CONCEPT_EFFECTIVE_TIME;
-import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.CONCEPT_EXHAUSTIVE;
-import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.CONCEPT_PRIMITIVE;
 import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.DESCRIPTION_CASE_SIGNIFICANCE_ID;
 import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.DESCRIPTION_EFFECTIVE_TIME;
 import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_ACCEPTABILITY_ID;
@@ -113,11 +111,12 @@ public class SnomedDocumentBuilder extends DocumentBuilderBase<SnomedDocumentBui
 				fieldsToCopy
 					.add(label)
 					.add(SnomedMappings.active())
+					.add(SnomedMappings.module())
 					.add(SnomedMappings.memberRefSetType())
 					.add(SnomedMappings.memberRefSetId())
 					.add(SnomedMappings.memberReferencedComponentId())
 					.add(SnomedMappings.memberReferencedComponentType())
-					.add(Mappings.storedOnlyIntField(COMPONENT_RELEASED))
+					.add(SnomedMappings.released())
 					.add(Mappings.stringField(REFERENCE_SET_MEMBER_UUID))
 					.add(Mappings.longField(REFERENCE_SET_MEMBER_EFFECTIVE_TIME));
 				final SnomedRefSetType refSetType = SnomedRefSetType.get(SnomedMappings.memberRefSetType().getValue(doc));
@@ -206,9 +205,9 @@ public class SnomedDocumentBuilder extends DocumentBuilderBase<SnomedDocumentBui
 						.add(SnomedMappings.parent(Concepts.STATED_RELATIONSHIP))
 						.add(SnomedMappings.conceptReferringRefSetId())
 						.add(SnomedMappings.conceptReferringMappingRefSetId())
-						.add(Mappings.intField(CONCEPT_PRIMITIVE))
-						.add(Mappings.intField(CONCEPT_EXHAUSTIVE))
-						.add(Mappings.storedOnlyIntField(COMPONENT_RELEASED))
+						.add(SnomedMappings.primitive())
+						.add(SnomedMappings.exhaustive())
+						.add(SnomedMappings.released())
 						.add(Mappings.longField(CONCEPT_EFFECTIVE_TIME))
 						.add(Mappings.floatDocValuesField(CONCEPT_DEGREE_OF_INTEREST))
 						.add(Mappings.stringField(COMPONENT_REFERRING_PREDICATE))
