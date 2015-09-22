@@ -143,13 +143,13 @@ public class SnomedDocumentBuilder extends DocumentBuilderBase<SnomedDocumentBui
 						.add(Mappings.longField(REFERENCE_SET_MEMBER_CORRELATION_ID))
 						.add(Mappings.stringField(REFERENCE_SET_MEMBER_MAP_TARGET_COMPONENT_ID))
 						.add(Mappings.intField(REFERENCE_SET_MEMBER_MAP_TARGET_COMPONENT_TYPE_ID))
-						.add(Mappings.intField(REFERENCE_SET_MEMBER_MAP_TARGET_COMPONENT_LABEL));
+						.add(Mappings.stringField(REFERENCE_SET_MEMBER_MAP_TARGET_COMPONENT_LABEL));
 					break;
 				case DESCRIPTION_TYPE:
 					fieldsToCopy
 						.add(Mappings.longField(REFERENCE_SET_MEMBER_DESCRIPTION_FORMAT_ID))
 						.add(Mappings.intField(REFERENCE_SET_MEMBER_DESCRIPTION_LENGTH))
-						.add(Mappings.intField(REFERENCE_SET_MEMBER_DESCRIPTION_FORMAT_LABEL));
+						.add(Mappings.stringField(REFERENCE_SET_MEMBER_DESCRIPTION_FORMAT_LABEL));
 					break;
 				case LANGUAGE:
 					fieldsToCopy
