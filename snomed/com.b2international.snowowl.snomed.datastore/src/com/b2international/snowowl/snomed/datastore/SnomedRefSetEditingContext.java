@@ -15,6 +15,7 @@
  */
 package com.b2international.snowowl.snomed.datastore;
 
+import static com.b2international.snowowl.snomed.SnomedConstants.Concepts.IS_A;
 import static com.google.common.base.Preconditions.checkArgument;
 
 import java.io.File;
@@ -295,6 +296,9 @@ public class SnomedRefSetEditingContext extends BaseSnomedEditingContext {
 	public SnomedRegularRefSet createSnomedSimpleTypeRefSet(final String label, final short terminologyComponentId, final String namespace, final Concept module, final Concept parent) {
 		final SnomedRegularRefSet refSet = createSnomedRegularRefSet(terminologyComponentId, SnomedRefSetType.SIMPLE);
 		final Concept concept = getSnomedEditingContext().buildDefaultConcept(label, namespace, module, parent);
+		final Relationship relationship = getSnomedEditingContext().buildDefaultRelationship(concept, getSnomedEditingContext().findConceptById(IS_A), parent, 
+				getSnomedEditingContext().findConceptById(Concepts.INFERRED_RELATIONSHIP), module, namespace);
+		concept.getOutboundRelationships().add(relationship);
 		updateIdIfCMTConcept(label, concept);
 		refSet.setIdentifierId(concept.getId());
 		add(refSet);
@@ -960,6 +964,10 @@ public class SnomedRefSetEditingContext extends BaseSnomedEditingContext {
 		final Concept identifier = context.buildDefaultConcept(name, parentRefSetTypeConceptId);
 		final Description synonym = context.buildDefaultDescription(name, Concepts.SYNONYM);
 		synonym.setConcept(identifier);
+		
+		final Relationship inferredIsa = context.buildDefaultRelationship(identifier, context.findConceptById(Concepts.IS_A),
+				context.findConceptById(parentRefSetTypeConceptId), context.findConceptById(Concepts.INFERRED_RELATIONSHIP));
+		identifier.getOutboundRelationships().add(inferredIsa);
 		
 		// create language reference set members for the descriptions, one FSN and PT both should be preferred
 		final SnomedStructuralRefSet languageRefSet = getLanguageRefSet();
