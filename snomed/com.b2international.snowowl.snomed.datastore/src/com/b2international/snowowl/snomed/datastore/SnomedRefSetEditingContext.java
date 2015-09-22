@@ -305,6 +305,7 @@ public class SnomedRefSetEditingContext extends BaseSnomedEditingContext {
 	 * Creates a SNOMED CT concrete domain type reference set.
 	 * @param fullySpecifiedName the fully specified name reference set identifier concept.
 	 * @return the new SNOMED CT simple map type reference set.
+	 * @deprecated - unused, will be removed in 4.4
 	 */
 	public SnomedRefSet createSnomedConcreteDataTypeTypeRefSet(final String fullySpecifiedName, final String referencedComponentType) {
 		final SnomedRefSet snomedRefSet = createSnomedRegularRefSet(getTerminologyComponentTypeAsShort(referencedComponentType), SnomedRefSetType.CONCRETE_DATA_TYPE);
@@ -461,7 +462,7 @@ public class SnomedRefSetEditingContext extends BaseSnomedEditingContext {
 	 * 
 	 * @return the populated reference set member instance
 	 */
-	public SnomedSimpleMapRefSetMember createSimpleMapRefSetMember(final ComponentIdentifierPair<String> referencedComponentPair, 
+	private SnomedSimpleMapRefSetMember createSimpleMapRefSetMember(final ComponentIdentifierPair<String> referencedComponentPair, 
 			@Nullable final ComponentIdentifierPair<String> mapTargetPair,
 			@Nullable final String mapTargetDescription,
 			final String moduleId,
@@ -951,26 +952,23 @@ public class SnomedRefSetEditingContext extends BaseSnomedEditingContext {
 	} 
 
 	// create identifier concept with the given arguments, save it locally
-	private void createIdentifierAndAddRefSet(final SnomedRefSet snomedRefSet, final String typeId, final String name) {
-		final Concept identifierParent = new SnomedConceptLookupService().getComponent(typeId, transaction);
-		final Concept identifier = snomedEditingContext.buildDefaultConcept(name, identifierParent);
-		identifier.getDescriptions().add(snomedEditingContext.buildDefaultDescription(name, new SnomedConceptLookupService().getComponent(Concepts.SYNONYM, transaction)));
+	private void createIdentifierAndAddRefSet(final SnomedRefSet snomedRefSet, final String parentRefSetTypeConceptId, final String name) {
+		final SnomedEditingContext context = getSnomedEditingContext();
 		
-		//create language reference set members for the descriptions.
+		// FIXME replace with proper builder, 
+		// create identifier concept with one FSN
+		final Concept identifier = context.buildDefaultConcept(name, parentRefSetTypeConceptId);
+		final Description synonym = context.buildDefaultDescription(name, Concepts.SYNONYM);
+		synonym.setConcept(identifier);
+		
+		// create language reference set members for the descriptions, one FSN and PT both should be preferred
 		final SnomedStructuralRefSet languageRefSet = getLanguageRefSet();
 		for (final Description description : identifier.getDescriptions()) {
 			if (description.isActive()) { //this point all description should be active
-				final String descriptionTypeId = description.getType().getId();
-				final ComponentIdentifierPair<String> acceptabilityPair;
-				if (Concepts.FULLY_SPECIFIED_NAME.equals(descriptionTypeId)) { //FSN should be associated with preferred acceptability 
-					acceptabilityPair = createConceptTypePair(Concepts.REFSET_DESCRIPTION_ACCEPTABILITY_PREFERRED);
-				} else {
-					acceptabilityPair = createConceptTypePair(Concepts.REFSET_DESCRIPTION_ACCEPTABILITY_ACCEPTABLE); //all the others got acceptable acceptability
-				}
-				
+				final ComponentIdentifierPair<String> acceptabilityPair = createConceptTypePair(Concepts.REFSET_DESCRIPTION_ACCEPTABILITY_PREFERRED);
 				//create language reference set membership
 				final ComponentIdentifierPair<String> referencedComponentPair = SnomedRefSetEditingContext.createDescriptionTypePair(description.getId());
-				final SnomedLanguageRefSetMember member = createLanguageRefSetMember(referencedComponentPair, acceptabilityPair, getSnomedEditingContext().getDefaultModuleConcept().getId(), languageRefSet);
+				final SnomedLanguageRefSetMember member = createLanguageRefSetMember(referencedComponentPair, acceptabilityPair, context.getDefaultModuleConcept().getId(), languageRefSet);
 				description.getLanguageRefSetMembers().add(member);
 			}
 		}
@@ -982,7 +980,7 @@ public class SnomedRefSetEditingContext extends BaseSnomedEditingContext {
 	// create identifier concept with the given arguments and parent concept, save it locally
 	private void createIdentifierWithParentAndAddRefSet(SnomedRefSet snomedRefSet, String refsetSimpleType, String fullySpecifiedName, Concept parentConcept) {
 		final Concept identifier = snomedEditingContext.buildDefaultConcept(fullySpecifiedName, parentConcept);
-		identifier.getDescriptions().add(snomedEditingContext.buildDefaultDescription(fullySpecifiedName, new SnomedConceptLookupService().getComponent(Concepts.SYNONYM, transaction)));
+		identifier.getDescriptions().add(snomedEditingContext.buildDefaultDescription(fullySpecifiedName, Concepts.SYNONYM));
 		snomedRefSet.setIdentifierId(identifier.getId());
 		add(snomedRefSet);
 	}

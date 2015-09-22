@@ -413,8 +413,7 @@ public class WidgetBeanUpdater implements IWidgetBeanUpdater {
 		//create description and add to concept 
 		final String term = bean.getTerm();
 		final IComponent<String> selectedType = bean.getSelectedType();
-		final Concept selectedDescriptionType = new SnomedConceptLookupService().getComponent(selectedType.getId(), context.getTransaction());
-		final Description newDescription = context.buildDefaultDescription(term, selectedDescriptionType);
+		final Description newDescription = context.buildDefaultDescription(term, selectedType.getId());
 		newDescription.setCaseSignificance(new SnomedConceptLookupService().getComponent(bean.getCaseSensitivity().getId(), context.getTransaction()));
 		concept.getDescriptions().add(newDescription);
 
