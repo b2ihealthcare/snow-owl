@@ -66,7 +66,7 @@ public abstract class FolderIndexServerService extends FSIndexServerService<Pare
 	private FolderIndexEntry createFolderResultObject(final IBranchPath branchPath, final Document document) {
 		final String code = Mappings.id().getValue(document);
 		final String displayName = Mappings.label().getValue(document);
-		final String parentId = Mappings.parent().getValue(document);
+		final String parentId = Mappings.unfilteredParent().getValue(document);
 		final long storageKey = Mappings.storageKey().getValue(document);
 		return new FolderIndexEntry(code, displayName, parentId, storageKey, hasChildren(branchPath, code));
 	}
@@ -212,7 +212,7 @@ public abstract class FolderIndexServerService extends FSIndexServerService<Pare
 			return Collections.emptySet();
 		}
 		final Document doc = document(branchPath, topDocs.scoreDocs[0].doc, Mappings.fieldsToLoad().parent().build());
-		return Mappings.parent().getValues(doc);
+		return Mappings.unfilteredParent().getValues(doc);
 	}
 	
 	// TODO: place this method somewhere which is more component set specific

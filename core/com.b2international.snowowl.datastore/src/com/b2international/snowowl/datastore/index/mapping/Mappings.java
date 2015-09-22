@@ -42,6 +42,7 @@ public class Mappings {
 	private static final IntIndexField COMPONENT_TYPE = new IntIndexField(COMPONENT_TYPE_FIELD_NAME);
 	private static final NumericDocValuesIndexField<Long> COMPONENT_STORAGE_KEY = longDocValuesField(COMPONENT_STORAGEKEY_FIELD_NAME);
 	private static final IndexField<String> COMPONENT_PARENT = filteredField(stringField(COMPONENT_PARENT_FIELD_NAME), Predicates.not(Predicates.equalTo(ROOT_ID_STRING)));
+	private static final IndexField<String> UNFILTERED_COMPONENT_PARENT = stringField(COMPONENT_PARENT_FIELD_NAME); // TODO move to proper bundle
 	private static final IndexField<String> COMPONENT_ANCESTOR = filteredField(stringField(COMPONENT_ANCESTOR_FIELD_NAME), Predicates.not(Predicates.equalTo(ROOT_ID_STRING)));
 	private static final BinaryDocValuesIndexField COMPONENT_LABEL = new DocValuesTextIndexField(COMPONENT_LABEL_FIELD_NAME);
 	private static final IndexField<String> COMPONENT_ICON_ID = stringField(COMPONENT_ICON_ID_FIELD_NAME);
@@ -66,6 +67,10 @@ public class Mappings {
 	
 	public static IndexField<String> parent() {
 		return COMPONENT_PARENT;
+	}
+	
+	public static IndexField<String> unfilteredParent() {
+		return UNFILTERED_COMPONENT_PARENT;
 	}
 	
 	public static IndexField<String> ancestor() {
