@@ -98,7 +98,7 @@ public abstract class FolderIndexServerService extends FSIndexServerService<Pare
 
 	private Set<FolderIndexEntry> getSubFoldersByParentField(final IBranchPath branchPath, final String parentId) {
 		final Set<FolderIndexEntry> results = Sets.newHashSet();
-		final Query query = Mappings.newQuery().type(getTerminologyFolderComponentNumber()).id(parentId).matchAll();
+		final Query query = Mappings.newQuery().type(getTerminologyFolderComponentNumber()).parent(parentId).matchAll();
 		final Collection<DocumentWithScore> documents = searchUnordered(branchPath, query, null);
 		for (final DocumentWithScore documentWithScore : documents) {
 			final Document document = documentWithScore.getDocument();
