@@ -15,6 +15,8 @@
  */
 package com.b2international.snowowl.datastore.index.mapping;
 
+import static com.google.common.base.Preconditions.checkNotNull;
+
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.LongField;
 import org.apache.lucene.index.IndexableField;
@@ -55,7 +57,9 @@ public class LongIndexField extends IndexFieldBase<Long> implements LongCollecti
 	
 	@Override
 	public Long getValue(IndexableField field) {
-		return field.numericValue().longValue();
+		final Number num = field.numericValue();
+		checkNotNull(num, "Cannot get numeric value from field '%s'");
+		return num.longValue();
 	}
 	
 	@Override

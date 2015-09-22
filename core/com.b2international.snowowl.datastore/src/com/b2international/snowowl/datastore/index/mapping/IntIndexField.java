@@ -15,6 +15,8 @@
  */
 package com.b2international.snowowl.datastore.index.mapping;
 
+import static com.google.common.base.Preconditions.checkNotNull;
+
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.IntField;
 import org.apache.lucene.index.IndexableField;
@@ -52,11 +54,15 @@ public class IntIndexField extends IndexFieldBase<Integer> {
 
 	@Override
 	public Integer getValue(IndexableField field) {
-		return field.numericValue().intValue();
+		return getNumber(field).intValue();
+	}
+
+	public short getShortValue(Document doc) {
+		return getNumber(getField(doc)).shortValue();
 	}
 	
-	public short getShortValue(Document doc) {
-		return getField(doc).numericValue().shortValue();
+	private Number getNumber(IndexableField field) {
+		return checkNotNull(field.numericValue(), "Cannot get numeric value from field '%s'");
 	}
 	
 	/**
