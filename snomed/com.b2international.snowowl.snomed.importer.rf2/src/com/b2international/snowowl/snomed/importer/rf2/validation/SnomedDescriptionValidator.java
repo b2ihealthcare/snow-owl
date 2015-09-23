@@ -26,6 +26,7 @@ import java.util.Set;
 import com.b2international.commons.StringUtils;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
+import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.snomed.importer.net4j.ImportConfiguration;
 import com.b2international.snowowl.snomed.importer.net4j.SnomedValidationDefect;
 import com.b2international.snowowl.snomed.importer.net4j.SnomedValidationDefect.DefectType;
@@ -64,6 +65,8 @@ public class SnomedDescriptionValidator extends AbstractSnomedValidator {
 	
 	@Override
 	protected void doValidate(final List<String> row, final int lineNumber) {
+		collectIfInvalid(row.get(0), SnomedTerminologyComponentConstants.DESCRIPTION_NUMBER);
+		
 		validateComponentExists(row.get(4), row.get(4), ReleaseComponentType.CONCEPT, descriptionConceptNotExist, lineNumber);
 		validateComponentExists(row.get(6), row.get(4), ReleaseComponentType.CONCEPT, typeConceptNotExist, lineNumber);
 		validateComponentExists(row.get(8), row.get(4), ReleaseComponentType.CONCEPT, caseSignificanceConceptNotExist, lineNumber);
@@ -76,6 +79,7 @@ public class SnomedDescriptionValidator extends AbstractSnomedValidator {
 	
 	@Override
 	protected void addDefects() {
+		super.addDefects();
 		addDefects(new SnomedValidationDefect(DefectType.NOT_UNIQUE_DESCRIPTION_ID, descriptionIdNotUnique),
 				new SnomedValidationDefect(DefectType.NOT_UNIQUE_FULLY_SPECIFIED_NAME, new HashSet<String>(fullySpecifiedNameNotUnique.values())),
 				new SnomedValidationDefect(DefectType.DESCRIPTION_CONCEPT_NOT_EXIST, descriptionConceptNotExist),

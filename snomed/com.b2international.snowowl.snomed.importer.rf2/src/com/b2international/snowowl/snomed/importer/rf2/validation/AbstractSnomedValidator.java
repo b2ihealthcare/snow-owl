@@ -40,7 +40,6 @@ import org.supercsv.prefs.CsvPreference;
 
 import com.b2international.commons.CompareUtils;
 import com.b2international.commons.FileUtils;
-import com.b2international.commons.StringUtils;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.api.SnowowlRuntimeException;
 import com.b2international.snowowl.core.date.EffectiveTimes;
@@ -49,6 +48,7 @@ import com.b2international.snowowl.datastore.BranchPathUtils;
 import com.b2international.snowowl.importer.ImportException;
 import com.b2international.snowowl.snomed.SnomedConstants;
 import com.b2international.snowowl.snomed.common.ContentSubType;
+import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.snomed.datastore.SnomedConceptLookupService;
 import com.b2international.snowowl.snomed.datastore.SnomedDescriptionLookupService;
 import com.b2international.snowowl.snomed.datastore.SnomedRelationshipLookupService;
@@ -80,6 +80,7 @@ public abstract class AbstractSnomedValidator {
 	private Set<String> invalidEffectiveTimeFormat;
 	/**Set containing all visited SNOMED CT module concept IDs. Consider this as a cache to avoid excessive module concept existence check.*/
 	private final Set<String> visitedModuleIds;
+	private final Set<String> invalidIds;
 
 	protected final SnomedConceptLookupService conceptLookupService;
 	protected final SnomedDescriptionLookupService descriptionLookupService;
@@ -112,6 +113,7 @@ public abstract class AbstractSnomedValidator {
 		relationshipLookupService = new SnomedRelationshipLookupService();
 		
 		visitedModuleIds = Sets.newHashSet();
+		invalidIds = Sets.newHashSet();
 	}
 	
 	/**
@@ -132,7 +134,9 @@ public abstract class AbstractSnomedValidator {
 	/**
 	 * Release type specific method to gather the defects.
 	 */
-	protected abstract void addDefects();
+	protected void addDefects() {
+		addDefects(new SnomedValidationDefect(DefectType.INVALID_ID, invalidIds));
+	}
 	
 	/**
 	 * Performs any one-time initialization necessary for the validation.
@@ -515,6 +519,12 @@ public abstract class AbstractSnomedValidator {
 		return true;
 	}
 	
+	protected void collectIfInvalid(final String conceptId, final short expectedComponentType) {
+		if (SnomedTerminologyComponentConstants.getTerminologyComponentIdValueSafe(conceptId) != expectedComponentType) {
+			invalidIds.add(conceptId);
+		}
+	}
+
 	protected IBranchPath createActivePath() {
 		return BranchPathUtils.createPath(configuration.getBranchPath());
 	}

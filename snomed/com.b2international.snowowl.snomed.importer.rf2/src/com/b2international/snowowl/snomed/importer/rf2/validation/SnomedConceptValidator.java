@@ -26,6 +26,7 @@ import java.util.Set;
 
 import com.b2international.commons.StringUtils;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
+import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.snomed.importer.net4j.ImportConfiguration;
 import com.b2international.snowowl.snomed.importer.net4j.SnomedValidationDefect;
 import com.b2international.snowowl.snomed.importer.net4j.SnomedValidationDefect.DefectType;
@@ -67,6 +68,8 @@ public class SnomedConceptValidator extends AbstractSnomedValidator {
 	
 	@Override
 	protected void doValidate(final List<String> row, final int lineNumber) {
+		collectIfInvalid(row.get(0), SnomedTerminologyComponentConstants.CONCEPT_NUMBER);
+		
 		if (!conceptIdsWithEffectivetimeStatus.containsKey(row.get(0))) {
 			final List<String> statusEffectiveTime = Lists.newArrayList();
 			statusEffectiveTime.add(row.get(2));
@@ -93,6 +96,7 @@ public class SnomedConceptValidator extends AbstractSnomedValidator {
 
 	@Override
 	protected void addDefects() {
+		super.addDefects();
 		addDefects(new SnomedValidationDefect(DefectType.MODULE_CONCEPT_NOT_EXIST, moduleIdNotExist));
 		addDefects(new SnomedValidationDefect(DefectType.CONCEPT_DEFINITION_STATUS_NOT_EXIST, definitionStatusIdNotExist));
 	}

@@ -73,7 +73,8 @@ public class SnomedValidationDefect implements Serializable {
 		ASSOCIATION_REFSET_TARGET_COMPONENT_NOT_EXIST("Association reference set member refers to a non-existing concept in column 'targetComponentId'"),
 		INVALID_EFFECTIVE_TIME_FORMAT("Effective time format is not valid. Acceptable effective time format is 'yyyyMMdd'."),
 		INCONSISTENT_TAXONOMY("The concepts below are referenced in active IS A relationships, but are inactive or otherwise not known."),
-		IO_PROBLEM("Encountered an I/O error while running validation.");
+		IO_PROBLEM("Encountered an I/O error while running validation."), 
+		INVALID_ID("Component identifier is not of the expected type, malformed, or has an incorrect Verhoeff check digit.");
 		
 		private final String label;
 		private final boolean critical;
