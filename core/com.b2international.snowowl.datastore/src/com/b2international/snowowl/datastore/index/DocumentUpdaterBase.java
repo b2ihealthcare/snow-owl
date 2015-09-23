@@ -44,8 +44,12 @@ public abstract class DocumentUpdaterBase<D extends DocumentBuilderBase<D>> impl
 	
 	@Override
 	public final void update(D doc) {
-		LOG.info("Executing updater {} on {} doc:[{}]", getClass().getSimpleName(), getComponentId(), doc.build());
-		doUpdate(doc);
+		try {
+			LOG.info("Executing updater {} on {} doc:[{}]", getClass().getSimpleName(), getComponentId(), doc.build());
+			doUpdate(doc);
+		} finally {
+			LOG.info("Executed updater {} on {} doc:[{}]", getClass().getSimpleName(), getComponentId(), doc.build());
+		}
 	}
 	
 	protected abstract void doUpdate(D doc);
