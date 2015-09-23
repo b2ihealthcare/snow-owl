@@ -136,7 +136,7 @@ public class ApplicationContext {
 		final List<T> services = Lists.newArrayList();
 		
 		for (final ServiceRegistryEntry<?> entry : serviceMap.asMap().values()) {
-			if (serviceInterface.isAssignableFrom(entry.serviceInterface) && entry.implementation != null) {
+			if (serviceInterface.isAssignableFrom(entry.serviceInterface)) {
 				services.add((T) entry.implementation);
 			}
 			
