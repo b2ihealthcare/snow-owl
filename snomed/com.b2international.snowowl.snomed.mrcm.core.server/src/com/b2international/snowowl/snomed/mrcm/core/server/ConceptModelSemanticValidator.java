@@ -84,9 +84,11 @@ public class ConceptModelSemanticValidator {
 				return true;
 			}
 			
-			final ImportIndexServerService importService = ApplicationContext.getInstance().getService(ImportIndexServerService.class);
-			if (importService != null && importService.componentExists(value)) {
-				return true;
+			if (ApplicationContext.getInstance().exists(ImportIndexServerService.class)) {
+				final ImportIndexServerService importService = ApplicationContext.getInstance().getService(ImportIndexServerService.class);
+				if (importService != null && importService.componentExists(value)) {
+					return true;
+				}
 			}
 		}
 
