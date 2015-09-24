@@ -17,8 +17,8 @@ package com.b2international.snowowl.snomed.datastore;
 
 import static com.b2international.snowowl.snomed.SnomedConstants.Concepts.IS_A;
 import static com.google.common.base.Preconditions.checkArgument;
+import static com.google.common.base.Preconditions.checkNotNull;
 
-import java.io.File;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -36,7 +36,6 @@ import org.eclipse.emf.spi.cdo.FSMUtil;
 import bak.pcj.LongIterator;
 import bak.pcj.set.LongSet;
 
-import com.b2international.commons.Pair;
 import com.b2international.commons.StringUtils;
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.ComponentIdentifierPair;
@@ -73,7 +72,6 @@ import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRegularRefSet;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedSimpleMapRefSetMember;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedStructuralRefSet;
-import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 
@@ -113,70 +111,49 @@ public class SnomedRefSetEditingContext extends BaseSnomedEditingContext {
 	protected final SnomedEditingContext snomedEditingContext;
 
 	/**
-	 * Creates a reference set on the specified editing context. After creating the object graph changes, the change set will be committed to the returning file.
-	 * The returning pair consists of the identifier concept ID of the brand new concept and the file containing the changes.
-	 * <p>Clients should take care of disposing the specified context.
+	 * Creates and returns a reference set based on the given values.
 	 * 
-	 * <p> The {@link File} in the returned pair, is scheduled for removal on VM shutdown, thus clients may want to persist it to avoid information loss.
-	 * 
-	 * @param context the editing context. Should be clean.
 	 * @param parentIdentifierConceptId concept ID the reference set identifier concept's parent. 
 	 * @param label the preferred term for the reference set.
 	 * @param referencedComponentType the referenced component type.
 	 * @param mapTargetType the map target component type. Ignored in case of *NON* mapping {@link SnomedRefSetType reference set type}s.
 	 * @param type the reference set type.
-	 * @return a file containing the object graph changes as a commit.
-	 * @throws CommitException if the commit failed.
+	 * @return the created reference set
 	 */
-	public static Pair<String, File> createReferenceSet(final SnomedRefSetEditingContext context, final String parentIdentifierConceptId, final String label, 
-			final String referencedComponentType, final short mapTargetType, final SnomedRefSetType type) throws CommitException {
+	public SnomedRefSet createReferenceSet(final String parentIdentifierConceptId, final String label, final String referencedComponentType, final short mapTargetType, final SnomedRefSetType type) throws CommitException {
+		checkNotNull(parentIdentifierConceptId, "Parent identifier concept ID argument cannot be null.");
+		checkNotNull(type, "SNOMED CT reference set type argument cannot be null.");
+		checkNotNull(label, "Label argument cannot be null.");
+		checkNotNull(referencedComponentType, "Referenced component type argument cannot be null.");
 		
-		Preconditions.checkNotNull(context, "Reference set editing context argument cannot be null.");
-		Preconditions.checkArgument(!context.transaction.isDirty(), "Editing context for SNOMED CT reference sets cannot be dirty.");
-		Preconditions.checkNotNull(parentIdentifierConceptId, "Parent identifier concept ID argument cannot be null.");
-		Preconditions.checkNotNull(type, "SNOMED CT reference set type argument cannot be null.");
-		Preconditions.checkNotNull(label, "Label argument cannot be null.");
-		Preconditions.checkNotNull(referencedComponentType, "Referenced component type argument cannot be null.");
-		
-		final Concept parentConcept = new SnomedConceptLookupService().getComponent(parentIdentifierConceptId, context.transaction);
-		Preconditions.checkNotNull(parentConcept, "Concept cannot be found in store. ID: " + parentIdentifierConceptId + ". [" + BranchPathUtils.createPath(context.transaction) + "]");
-		
-		String identifierConceptId = null;
+		final Concept parentConcept = new SnomedConceptLookupService().getComponent(parentIdentifierConceptId, transaction);
+		checkNotNull(parentConcept, "Concept cannot be found in store. ID: " + parentIdentifierConceptId + ". [" + BranchPathUtils.createPath(transaction) + "]");
 		
 		switch (type) {
 			
 			case SIMPLE:
-				final SnomedRegularRefSet refSet = context.createSnomedSimpleTypeRefSet(label, referencedComponentType, parentConcept);
-				identifierConceptId = refSet.getIdentifierId();
-				break;
+				return createSnomedSimpleTypeRefSet(label, referencedComponentType, parentConcept);
 			case ATTRIBUTE_VALUE:
-				final SnomedRegularRefSet attributeRefSet = context.createSnomedAttributeRefSet(label, referencedComponentType);
-				identifierConceptId = attributeRefSet.getIdentifierId();
-				break;
+				return createSnomedAttributeRefSet(label, referencedComponentType);
 			case SIMPLE_MAP:
-				final SnomedMappingRefSet simpleMap = context.createSnomedSimpleMapRefSet(label, referencedComponentType, parentIdentifierConceptId);
+				final SnomedMappingRefSet simpleMap = createSnomedSimpleMapRefSet(label, referencedComponentType, parentIdentifierConceptId);
 				simpleMap.setMapTargetComponentType(mapTargetType);
-				identifierConceptId = simpleMap.getIdentifierId();
-				break;
+				return simpleMap;
 			case EXTENDED_MAP: //$FALL-THROUGH$
 			case COMPLEX_MAP:
-				final SnomedMappingRefSet complexMap = context.createSnomedComplexMapRefSet(label, referencedComponentType, type);
-				identifierConceptId = complexMap.getIdentifierId();
+				final SnomedMappingRefSet complexMap = createSnomedComplexMapRefSet(label, referencedComponentType, type);
 				complexMap.setMapTargetComponentType(mapTargetType);
-				break;
+				return complexMap;
 			case ASSOCIATION: //$FALL-THROUGH$
 			case CONCRETE_DATA_TYPE: //$FALL-THROUGH$
 			case DESCRIPTION_TYPE: //$FALL-THROUGH$
 			case QUERY: //$FALL-THROUGH$ 
 			case LANGUAGE: //$FALL-THROUGH$
 				throw new UnsupportedOperationException("Creating " + type + " reference set is currently not supported.");
-				
 			default:
 				throw new IllegalArgumentException("Unknown SNOMED CT reference set type: " + type);
 			
 		} 
-
-		return new Pair<String, File>(identifierConceptId, commitToFile(context));
 	}
 	
 	/**
@@ -788,7 +765,7 @@ public class SnomedRefSetEditingContext extends BaseSnomedEditingContext {
 	public SnomedRefSet findRefSetByIdentifierConceptId(final String identifierConceptId) {
 		
 		
-		Preconditions.checkArgument(!StringUtils.isEmpty(identifierConceptId), "Identifier SNOMED CT concept ID cannot be null.");
+		checkArgument(!StringUtils.isEmpty(identifierConceptId), "Identifier SNOMED CT concept ID cannot be null.");
 
 		return new SnomedRefSetLookupService().getComponent(identifierConceptId, transaction);
 	}
@@ -820,7 +797,7 @@ public class SnomedRefSetEditingContext extends BaseSnomedEditingContext {
 
 	protected List<SnomedRefSetMember> getReferringMembers(final Component component, final SnomedRefSetType type, final SnomedRefSetType... others) {
 		
-		Preconditions.checkNotNull(component, "Component argument cannot be null.");
+		checkNotNull(component, "Component argument cannot be null.");
 		
 		//already detached. nothing to do
 		if (FSMUtil.isTransient(component)) {
@@ -829,7 +806,7 @@ public class SnomedRefSetEditingContext extends BaseSnomedEditingContext {
 		
 		final List<SnomedRefSetMember> $ = Lists.newArrayList();
 
-		final String id = Preconditions.checkNotNull(component.getId(), "Component ID was null for component. [" + component + "]");
+		final String id = checkNotNull(component.getId(), "Component ID was null for component. [" + component + "]");
 		
 		//process new referring members from the transaction.
 		if (CDOState.NEW.equals(component.cdoState())) {
