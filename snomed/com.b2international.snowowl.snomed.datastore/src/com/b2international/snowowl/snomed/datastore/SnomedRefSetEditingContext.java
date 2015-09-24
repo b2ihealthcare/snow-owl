@@ -383,11 +383,6 @@ public class SnomedRefSetEditingContext extends BaseSnomedEditingContext {
 		return mappingRefSet;
 	}
 
-	/*
-	 * Reference set member builder methods start here
-	 * TODO: move to separate class, this one is getting too big
-	 */
-	
 	/**
 	 * Creates a new SNOMED CT <i>simple type</i> reference set member with the specified arguments.
 	 * <p>
