@@ -121,18 +121,9 @@ public class SnomedRefSetEditingContext extends BaseSnomedEditingContext {
 	 * @return the created reference set
 	 */
 	public SnomedRefSet createReferenceSet(final String parentIdentifierConceptId, final String label, final String referencedComponentType, final short mapTargetType, final SnomedRefSetType type) throws CommitException {
-		checkNotNull(parentIdentifierConceptId, "Parent identifier concept ID argument cannot be null.");
-		checkNotNull(type, "SNOMED CT reference set type argument cannot be null.");
-		checkNotNull(label, "Label argument cannot be null.");
-		checkNotNull(referencedComponentType, "Referenced component type argument cannot be null.");
-		
-		final Concept parentConcept = new SnomedConceptLookupService().getComponent(parentIdentifierConceptId, transaction);
-		checkNotNull(parentConcept, "Concept cannot be found in store. ID: " + parentIdentifierConceptId + ". [" + BranchPathUtils.createPath(transaction) + "]");
-		
 		switch (type) {
-			
 			case SIMPLE:
-				return createSnomedSimpleTypeRefSet(label, referencedComponentType, parentConcept);
+				return createSnomedSimpleTypeRefSet(label, referencedComponentType, parentIdentifierConceptId);
 			case ATTRIBUTE_VALUE:
 				return createSnomedAttributeRefSet(label, referencedComponentType);
 			case SIMPLE_MAP:
@@ -229,9 +220,7 @@ public class SnomedRefSetEditingContext extends BaseSnomedEditingContext {
 	 * @return the brand new reference set.
 	 */
 	public SnomedRegularRefSet createSnomedSimpleTypeRefSet(final String fullySpecifiedName, final String referencedComponentType) {
-		final SnomedRegularRefSet snomedRefSet = createSnomedRegularRefSet(getTerminologyComponentTypeAsShort(referencedComponentType), SnomedRefSetType.SIMPLE);
-		createIdentifierAndAddRefSet(snomedRefSet, Concepts.REFSET_SIMPLE_TYPE, fullySpecifiedName);
-		return snomedRefSet;
+		return createSnomedSimpleTypeRefSet(fullySpecifiedName, referencedComponentType, Concepts.REFSET_SIMPLE_TYPE);
 	}
 	
 	/**
@@ -255,9 +244,9 @@ public class SnomedRefSetEditingContext extends BaseSnomedEditingContext {
 	 * @param parentConcept the parent concept of the new concept.
 	 * @return the brand new reference set.
 	 */
-	public SnomedRegularRefSet createSnomedSimpleTypeRefSet(final String fullySpecifiedName, final String referencedComponentType, final Concept parentConcept) {
+	public SnomedRegularRefSet createSnomedSimpleTypeRefSet(final String fullySpecifiedName, final String referencedComponentType, final String parentConceptId) {
 		final SnomedRegularRefSet snomedRefSet = createSnomedRegularRefSet(getTerminologyComponentTypeAsShort(referencedComponentType), SnomedRefSetType.SIMPLE);
-		createIdentifierWithParentAndAddRefSet(snomedRefSet, Concepts.REFSET_SIMPLE_TYPE, fullySpecifiedName, parentConcept);
+		createIdentifierAndAddRefSet(snomedRefSet, parentConceptId, fullySpecifiedName);
 		return snomedRefSet;
 	}
 	
@@ -269,15 +258,16 @@ public class SnomedRefSetEditingContext extends BaseSnomedEditingContext {
 	 * @param module
 	 * @param parent
 	 * @return
+	 * @deprecated - refactor it, only the subset importer uses it now
 	 */
 	public SnomedRegularRefSet createSnomedSimpleTypeRefSet(final String label, final short terminologyComponentId, final String namespace, final Concept module, final Concept parent) {
 		final SnomedRegularRefSet refSet = createSnomedRegularRefSet(terminologyComponentId, SnomedRefSetType.SIMPLE);
-		final Concept concept = getSnomedEditingContext().buildDefaultConcept(label, namespace, module, parent);
-		final Relationship relationship = getSnomedEditingContext().buildDefaultRelationship(concept, getSnomedEditingContext().findConceptById(IS_A), parent, 
+		final Concept identifier = getSnomedEditingContext().buildDefaultConcept(label, namespace, module, parent);
+		final Relationship relationship = getSnomedEditingContext().buildDefaultRelationship(identifier, getSnomedEditingContext().findConceptById(IS_A), parent, 
 				getSnomedEditingContext().findConceptById(Concepts.INFERRED_RELATIONSHIP), module, namespace);
-		concept.getOutboundRelationships().add(relationship);
-		updateIdIfCMTConcept(label, concept);
-		refSet.setIdentifierId(concept.getId());
+		identifier.getOutboundRelationships().add(relationship);
+		updateIdIfCMTConcept(label, identifier);
+		refSet.setIdentifierId(identifier.getId());
 		add(refSet);
 		return refSet;
 	}
@@ -928,17 +918,23 @@ public class SnomedRefSetEditingContext extends BaseSnomedEditingContext {
 	} 
 
 	// create identifier concept with the given arguments, save it locally
-	private void createIdentifierAndAddRefSet(final SnomedRefSet snomedRefSet, final String parentRefSetTypeConceptId, final String name) {
+	private void createIdentifierAndAddRefSet(final SnomedRefSet snomedRefSet, final String parentConceptId, final String name) {
+		final Concept identifier = createIdentifierConcept(parentConceptId, name);
+		snomedRefSet.setIdentifierId(identifier.getId());
+		add(snomedRefSet);
+	}
+
+	private Concept createIdentifierConcept(final String parentConceptId, final String name) {
 		final SnomedEditingContext context = getSnomedEditingContext();
 		
 		// FIXME replace with proper builder, 
 		// create identifier concept with one FSN
-		final Concept identifier = context.buildDefaultConcept(name, parentRefSetTypeConceptId);
+		final Concept identifier = context.buildDefaultConcept(name, parentConceptId);
 		final Description synonym = context.buildDefaultDescription(name, Concepts.SYNONYM);
 		synonym.setConcept(identifier);
 		
 		final Relationship inferredIsa = context.buildDefaultRelationship(identifier, context.findConceptById(Concepts.IS_A),
-				context.findConceptById(parentRefSetTypeConceptId), context.findConceptById(Concepts.INFERRED_RELATIONSHIP));
+				context.findConceptById(parentConceptId), context.findConceptById(Concepts.INFERRED_RELATIONSHIP));
 		identifier.getOutboundRelationships().add(inferredIsa);
 		
 		// create language reference set members for the descriptions, one FSN and PT both should be preferred
@@ -952,19 +948,9 @@ public class SnomedRefSetEditingContext extends BaseSnomedEditingContext {
 				description.getLanguageRefSetMembers().add(member);
 			}
 		}
-		
-		snomedRefSet.setIdentifierId(identifier.getId());
-		add(snomedRefSet);
+		return identifier;
 	}
 	
-	// create identifier concept with the given arguments and parent concept, save it locally
-	private void createIdentifierWithParentAndAddRefSet(SnomedRefSet snomedRefSet, String refsetSimpleType, String fullySpecifiedName, Concept parentConcept) {
-		final Concept identifier = snomedEditingContext.buildDefaultConcept(fullySpecifiedName, parentConcept);
-		identifier.getDescriptions().add(snomedEditingContext.buildDefaultDescription(fullySpecifiedName, Concepts.SYNONYM));
-		snomedRefSet.setIdentifierId(identifier.getId());
-		add(snomedRefSet);
-	}
-
 	/*returns with the currently used language type reference set*/
 	private SnomedStructuralRefSet getLanguageRefSet() {
 		return snomedEditingContext.getLanguageRefSet();
