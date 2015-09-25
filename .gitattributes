@@ -1,0 +1,2 @@
+# Normalize file endings for all text files detected by Git
+*	text=auto
