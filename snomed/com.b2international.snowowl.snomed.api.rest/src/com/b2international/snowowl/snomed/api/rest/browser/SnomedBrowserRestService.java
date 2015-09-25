@@ -215,9 +215,11 @@ public class SnomedBrowserRestService extends AbstractSnomedRestService {
 			final String form,
 
 			final HttpServletRequest request) {
-
-		final IComponentRef ref = createComponentRef(branchPath, conceptId);
-		return browserService.getConceptChildren(ref, Collections.list(request.getLocales()), "stated".equals(form));
+		if ("stated".equals(form) || "inferred".equals(form)) {
+			final IComponentRef ref = createComponentRef(branchPath, conceptId);
+			return browserService.getConceptChildren(ref, Collections.list(request.getLocales()), "stated".equals(form));
+		}
+		throw new BadRequestException("Form parameter should be either 'stated' or 'inferred'");
 	}
 
 	@ApiOperation(
