@@ -10,26 +10,21 @@ The required JDK version is Java 7 update 55 or later.
 ## Dev
 
 Snow Owl is an Equinox-OSGi based server (using either Virgo or standalone OSGi). To develop plug-ins for Snow Owl you need to use Eclipse as IDE: 
-* Use latest Modeling Luna version http://www.eclipse.org/downloads/packages/eclipse-modeling-tools/lunasr2
+* Use latest Mars Java for DSL developers package: http://www.eclipse.org/downloads/packages/eclipse-ide-java-and-dsl-developers/marsr
 
 Required Eclipse plug-ins (install the listed features):
 
 *Note: you may have to untick the `Show only the latest versions of the available software` checkbox to get older versions of a feature.*
 
-* Groovy (http://dist.springsource.org/release/GRECLIPSE/e4.4/)
- * Groovy-Eclipse
- * Extra Groovy compilers > Groovy compiler 2.0 feature
 * Xtext/Xtend (http://download.eclipse.org/modeling/tmf/xtext/updates/composite/releases/)
- * MWE 2 Language SDK 2.6.1
- * Xtend SDK 2.6.2
- * Xtext SDK 2.6.2
+ * MWE 2 Language SDK 2.8.1
+ * Xtend SDK 2.8.4
+ * Xtext SDK 2.8.4
 * Optional: Maven integration (http://download.eclipse.org/technology/m2e/releases) 
  
 ### Eclipse Preferences
 
 Make sure you have the following preferences enabled/disabled.
-* Groovy compiler level is set to 2.0.7 (Preferences > Groovy > Compiler)
-* 'Enable checking for mismatches between the project an workspace Groovy compiler levels' is checked under Preferences > Groovy > Compiler. (If you have error in any of the Groovy projects with 'compiler mismatch' message then you can fix at project properties > Groovy Compiler > set compiler level to 2.0)
 * Plug-in development API baseline errors is set to Ignored (Preferences > Plug-in Development > API Baselines)
 
 ### Target platform
