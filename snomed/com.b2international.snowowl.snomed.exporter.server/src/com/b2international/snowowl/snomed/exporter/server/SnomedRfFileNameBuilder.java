@@ -24,6 +24,7 @@ import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.CoreTerminologyBroker;
 import com.b2international.snowowl.core.date.DateFormats;
 import com.b2international.snowowl.core.date.Dates;
+import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.snomed.datastore.ILanguageConfigurationProvider;
 import com.b2international.snowowl.snomed.datastore.LanguageConfiguration;
 import com.b2international.snowowl.snomed.datastore.services.SnomedConceptNameProvider;
@@ -45,7 +46,7 @@ public class SnomedRfFileNameBuilder {
 				.append("s_")
 				.append(ComponentExportType.DESCRIPTION.equals(type) ? getLanguageCode() : "Core")
 				.append("_INT_")
-				.append(getExportTime())
+				.append(getReleaseDate(configuration))
 				.append(".txt")
 				.toString();
 	}
@@ -58,13 +59,24 @@ public class SnomedRfFileNameBuilder {
 				.append(ComponentExportType.DESCRIPTION.equals(type) ? "-" : "")
 				.append(ComponentExportType.DESCRIPTION.equals(type) ? getLanguageCode() : "")
 				.append("_INT_")
-				.append(getExportTime())
+				.append(getReleaseDate(configuration))
 				.append(".txt")
 				.toString();
 	}
 
 	public static String buildRefSetFileName(final SnomedExportConfiguration configuration, final SnomedRefSet refSet) {
 		return buildRefSetFileName(configuration, toCamelCase(getPreferredTerm(refSet)), refSet);
+	}
+	
+	/*
+	 * return the transient effective time if set, otherwise today's date
+	 */
+	private static String getReleaseDate(final SnomedExportConfiguration config) {
+		String releaseDate = getExportTime();
+		if (!config.getUnsetEffectiveTimeLabel().isEmpty() && !config.getUnsetEffectiveTimeLabel().equals(EffectiveTimes.UNSET_EFFECTIVE_TIME_LABEL)) {
+			releaseDate = config.getUnsetEffectiveTimeLabel();
+		}
+		return releaseDate;
 	}
 
 	public static String buildRefSetFileName(final SnomedExportConfiguration configuration, final String refSetName, final SnomedRefSet refSet) {
@@ -76,7 +88,7 @@ public class SnomedRfFileNameBuilder {
 				.append(isLanguageType(refSet) ? "-" : "")
 				.append(isLanguageType(refSet) ? getLanguageCode(refSet) : "")
 				.append("_INT_")
-				.append(getExportTime())
+				.append(getReleaseDate(configuration))
 				.append(".txt")
 				.toString();
 	}
