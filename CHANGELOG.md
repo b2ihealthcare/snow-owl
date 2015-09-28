@@ -3,10 +3,10 @@ All notable changes to this project will be documented in this file.
 
 ## 2015-09-25
 ### Added
-- Support for relationships with stated characteristic types
+- Support for relationships with stated characteristic type
  * Importing/exporting sct2_StatedRelationship*.txt files
  * Indexing stated parentage (parent and ancestor fields) on concepts
-- Java low-level API
+- Low-level Java API improvements
  * Revamped index APIs (document building, query building, fields)
  * Revamped change processing API (partial updates, parallel execution)
 
@@ -15,7 +15,7 @@ All notable changes to this project will be documented in this file.
  * Classifier now uses the stated graph to produce changes to the DNF (inferred view)
  * Classifier now deletes any unpublished redundant inferred relationships instead of inactivating them
  * /browser/concepts/{id}/children now has a new parameter `form` (allowed values are `stated` and `inferred`)
-- Reference set documents are not part of the concept documents
+- Reference set lucene documents fields merged into their corresponding identifier concept doc
  
 ### Merged pull requests
  * https://github.com/b2ihealthcare/snow-owl/pull/20
