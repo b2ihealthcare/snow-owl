@@ -22,21 +22,17 @@ import javax.annotation.Nullable;
 
 import org.apache.lucene.document.Document;
 import org.apache.lucene.index.IndexableField;
-import org.apache.lucene.index.Term;
 import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.ReferenceManager;
-import org.apache.lucene.search.TermQuery;
 import org.apache.lucene.search.TopDocs;
 import org.eclipse.emf.ecore.EClass;
 
 import com.b2international.commons.CompareUtils;
 import com.b2international.snowowl.core.api.IBranchPath;
-import com.b2international.snowowl.core.api.index.CommonIndexConstants;
 import com.b2international.snowowl.core.api.index.IndexException;
 import com.b2international.snowowl.datastore.index.AbstractIndexService;
-import com.b2international.snowowl.datastore.index.IndexUtils;
-import com.google.common.collect.Sets;
+import com.b2international.snowowl.datastore.index.mapping.Mappings;
 
 /**
  * Abstract implementation of the {@link IEClassProvider} interface.
@@ -56,10 +52,6 @@ public abstract class EClassProvider implements IEClassProvider {
 	 * <p>
 	 * {@inheritDoc}
 	 */
-	/*
-	 * (non-Javadoc)
-	 * @see com.b2international.snowowl.datastore.server.IEClassProvider#getEClass(com.b2international.snowowl.core.api.IBranchPath, long)
-	 */
 	@Override
 	@Nullable public EClass getEClass(final IBranchPath branchPath, final long storageKey) {
 		
@@ -75,23 +67,21 @@ public abstract class EClassProvider implements IEClassProvider {
 			}
 			
 			final Document doc = searcher.doc(topDocs.scoreDocs[0].doc, getFieldsToLoad());
-			return extractEClass(doc);
+			return extractEClass(doc, storageKey);
 		} catch (final IOException e) {
 			throw new IndexException("Error while getting EClass of a component. Storage key: " + storageKey, e);
 		} finally {
-			if (searcher != null)
+			if (searcher != null) {
 				try {
 					manager.release(searcher);
 				} catch (IOException e) {
 					throw new IndexException(e);
 				}
+			}
 		}
 		
 	}
 	
-	/* (non-Javadoc)
-	 * @see com.b2international.snowowl.datastore.server.IEClassProvider#getPriority()
-	 */
 	@Override
 	public int getPriority() {
 		return PRIORITY;
@@ -103,6 +93,10 @@ public abstract class EClassProvider implements IEClassProvider {
 	 * @return the {@link EClass}
 	 */
 	protected abstract EClass extractEClass(final Document doc);
+	
+	protected EClass extractEClass(final Document doc, long storageKey) {
+		return extractEClass(doc);
+	}
 
 	
 	/**
@@ -110,17 +104,15 @@ public abstract class EClassProvider implements IEClassProvider {
 	 * @return a set of field names to load.
 	 */
 	protected Set<String> getFieldsToLoad() {
-		return COMPONENT_TYPE_TO_LOAD;
+		return Mappings.fieldsToLoad().type().build();
 	}
 	
-	private static final Set<String> COMPONENT_TYPE_TO_LOAD = Sets.newHashSet(CommonIndexConstants.COMPONENT_TYPE);
-
 	/**
 	 * Returns with the query that will be performed to find {@link EClass} based on unique storage key.
 	 * @return the query.
 	 */
-	protected Query getQuery(final long storageKey) {
-		return new TermQuery(new Term(CommonIndexConstants.COMPONENT_STORAGE_KEY, IndexUtils.longToPrefixCoded(storageKey)));
+	private Query getQuery(final long storageKey) {
+		return Mappings.newQuery().storageKey(storageKey).matchAll();
 	}
 
 	/**

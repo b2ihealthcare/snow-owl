@@ -86,7 +86,7 @@ public class MrcmConceptValidator {
 		this.refSetBrowse = refSetBrowser;
 	}
 
-	public List<IDiagnostic> validate(final Map<String, AttributeConstraint> predicateIdConstraintBaseMap, final Concept concept) {
+	public List<IDiagnostic> validate(final Map<String, AttributeConstraint> predicateStorageKeyConstraintBaseMap, final Concept concept) {
 		final List<IDiagnostic> result = Lists.newArrayList();
 		final SnomedClientPredicateBrowser predicateBrowser = ApplicationContext.getInstance().getService(SnomedClientPredicateBrowser.class);
 		final Collection<PredicateIndexEntry> predicates = predicateBrowser.getPredicates(concept.getId(), null);
@@ -95,7 +95,7 @@ public class MrcmConceptValidator {
 		
 		final Iterable<AttributeConstraint> constraints = Iterables.transform(predicates, new Function<PredicateIndexEntry, AttributeConstraint>() {
 			@Override public AttributeConstraint apply(final PredicateIndexEntry predicate) {
-				return predicateIdConstraintBaseMap.get(predicate.getUuid());
+				return predicateStorageKeyConstraintBaseMap.get(predicate.getId());
 			}
 		});
 		

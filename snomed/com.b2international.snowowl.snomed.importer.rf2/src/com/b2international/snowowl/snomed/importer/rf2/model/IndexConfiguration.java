@@ -20,23 +20,52 @@ import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.text.MessageFormat;
 import java.util.List;
+import java.util.Map;
 
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.SubMonitor;
 import org.slf4j.Logger;
 
 import com.b2international.commons.StringUtils;
+import com.b2international.snowowl.snomed.importer.rf2.refset.SnomedAssociationRefSetImporter;
+import com.b2international.snowowl.snomed.importer.rf2.refset.SnomedAttributeValueRefSetImporter;
+import com.b2international.snowowl.snomed.importer.rf2.refset.SnomedComplexMapTypeRefSetImporter;
+import com.b2international.snowowl.snomed.importer.rf2.refset.SnomedConcreteDataTypeRefSetImporter;
+import com.b2international.snowowl.snomed.importer.rf2.refset.SnomedDescriptionTypeRefSetImporter;
+import com.b2international.snowowl.snomed.importer.rf2.refset.SnomedLanguageRefSetImporter;
+import com.b2international.snowowl.snomed.importer.rf2.refset.SnomedQueryRefSetImporter;
+import com.b2international.snowowl.snomed.importer.rf2.refset.SnomedSimpleMapTypeRefSetImporter;
+import com.b2international.snowowl.snomed.importer.rf2.refset.SnomedSimpleTypeRefSetImporter;
+import com.b2international.snowowl.snomed.importer.rf2.terminology.SnomedConceptImporter;
+import com.b2international.snowowl.snomed.importer.rf2.terminology.SnomedDescriptionImporter;
+import com.b2international.snowowl.snomed.importer.rf2.terminology.SnomedRelationshipImporter;
 import com.google.common.base.Joiner;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 
 /**
  * Stores index and column names for setting up and tearing down database indexes.
- *
  */
 public class IndexConfiguration {
+
+	public static final Map<ComponentImportType, List<IndexConfiguration>> createConfigurationMap() {
+		return ImmutableMap.<ComponentImportType, List<IndexConfiguration>>builder()
+			.put(ComponentImportType.ASSOCIATION_TYPE_REFSET, SnomedAssociationRefSetImporter.INDEXES)
+			.put(ComponentImportType.ATTRIBUTE_VALUE_REFSET, SnomedAttributeValueRefSetImporter.INDEXES)
+			.put(ComponentImportType.COMPLEX_MAP_TYPE_REFSET, SnomedComplexMapTypeRefSetImporter.INDEXES)
+			.put(ComponentImportType.CONCEPT, SnomedConceptImporter.INDEXES)
+			.put(ComponentImportType.CONCRETE_DOMAIN_REFSET, SnomedConcreteDataTypeRefSetImporter.INDEXES)
+			.put(ComponentImportType.DESCRIPTION, SnomedDescriptionImporter.INDEXES)
+			.put(ComponentImportType.DESCRIPTION_TYPE_REFSET, SnomedDescriptionTypeRefSetImporter.INDEXES)
+			.put(ComponentImportType.LANGUAGE_TYPE_REFSET, SnomedLanguageRefSetImporter.INDEXES)
+			.put(ComponentImportType.QUERY_TYPE_REFSET, SnomedQueryRefSetImporter.INDEXES)
+			.put(ComponentImportType.RELATIONSHIP, SnomedRelationshipImporter.INDEXES)
+			.put(ComponentImportType.SIMPLE_MAP_TYPE_REFSET, SnomedSimpleMapTypeRefSetImporter.INDEXES)
+			.put(ComponentImportType.SIMPLE_TYPE_REFSET, SnomedSimpleTypeRefSetImporter.INDEXES)
+			.build();
+	}
 	
 	/**
-	 * 
 	 * @param logger
 	 * @param connection
 	 * @param monitor 
@@ -44,15 +73,16 @@ public class IndexConfiguration {
 	 */
 	public static int dropAll(final Logger logger, final Connection connection, IProgressMonitor monitor) {
 		
-		final SubMonitor subMonitor = SubMonitor.convert(monitor, "Dropping SNOMED CT database indexes", IndexConfigurationConstants.CONFIGURATIONS_BY_TYPE.size());
+		final Map<ComponentImportType, List<IndexConfiguration>> configurationMap = createConfigurationMap();
+		final SubMonitor subMonitor = SubMonitor.convert(monitor, "Dropping SNOMED CT database indexes", configurationMap.size());
 		
 		int dropCount = 0;
 		
-		for (ComponentImportType type : IndexConfigurationConstants.CONFIGURATIONS_BY_TYPE.keySet()) {
+		for (ComponentImportType type : configurationMap.keySet()) {
 			final SubMonitor typeMonitor = subMonitor.newChild(1, SubMonitor.SUPPRESS_NONE);
-			typeMonitor.beginTask("Processing " + StringUtils.capitalizeFirstLetter(type.getDisplayName()) + "s", IndexConfigurationConstants.CONFIGURATIONS_BY_TYPE.get(type).size());
+			typeMonitor.beginTask("Processing " + StringUtils.capitalizeFirstLetter(type.getDisplayName()) + "s", configurationMap.get(type).size());
 			
-			for (IndexConfiguration configuration : IndexConfigurationConstants.CONFIGURATIONS_BY_TYPE.get(type)) {
+			for (IndexConfiguration configuration : configurationMap.get(type)) {
 				typeMonitor.subTask(configuration.indexName);
 				if (configuration.drop(logger, connection)) {
 					++dropCount;
@@ -72,15 +102,16 @@ public class IndexConfiguration {
 	 */
 	public static int createAll(final Logger logger, final Connection connection, IProgressMonitor monitor) {
 		
-		final SubMonitor subMonitor = SubMonitor.convert(monitor, "Creating SNOMED CT database indexes", IndexConfigurationConstants.CONFIGURATIONS_BY_TYPE.size());
+		final Map<ComponentImportType, List<IndexConfiguration>> configurationMap = createConfigurationMap();
+		final SubMonitor subMonitor = SubMonitor.convert(monitor, "Creating SNOMED CT database indexes", configurationMap.size());
 		
 		int createCount = 0;
 		
-		for (ComponentImportType type : IndexConfigurationConstants.CONFIGURATIONS_BY_TYPE.keySet()) {
+		for (ComponentImportType type : configurationMap.keySet()) {
 			final SubMonitor typeMonitor = subMonitor.newChild(1, SubMonitor.SUPPRESS_NONE);
-			typeMonitor.beginTask("Processing " + StringUtils.capitalizeFirstLetter(type.getDisplayName()) + "s", IndexConfigurationConstants.CONFIGURATIONS_BY_TYPE.get(type).size());
+			typeMonitor.beginTask("Processing " + StringUtils.capitalizeFirstLetter(type.getDisplayName()) + "s", configurationMap.get(type).size());
 			
-			for (IndexConfiguration configuration : IndexConfigurationConstants.CONFIGURATIONS_BY_TYPE.get(type)) {
+			for (IndexConfiguration configuration : configurationMap.get(type)) {
 				typeMonitor.subTask(configuration.indexName);
 				if (configuration.create(logger, connection)) {
 					++createCount;

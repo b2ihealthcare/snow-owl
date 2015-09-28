@@ -52,7 +52,6 @@ import com.b2international.snowowl.datastore.oplock.impl.DatastoreLockContextDes
 import com.b2international.snowowl.datastore.server.CDOServerCommitBuilder;
 import com.b2international.snowowl.datastore.server.CDOServerUtils;
 import com.b2international.snowowl.datastore.server.snomed.index.SnomedIndexServerService;
-import com.b2international.snowowl.datastore.server.snomed.index.SnomedTaxonomyBuilder;
 import com.b2international.snowowl.datastore.server.snomed.index.init.ImportIndexServerService;
 import com.b2international.snowowl.datastore.server.snomed.index.init.IndexBasedImportIndexServiceFeeder;
 import com.b2international.snowowl.datastore.server.snomed.index.init.Rf2BasedImportIndexServiceFeeder;
@@ -70,7 +69,9 @@ import com.b2international.snowowl.snomed.common.ContentSubType;
 import com.b2international.snowowl.snomed.datastore.SnomedCodeSystemFactory;
 import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 import com.b2international.snowowl.snomed.datastore.SnomedEditingContext;
+import com.b2international.snowowl.snomed.datastore.StatementCollectionMode;
 import com.b2international.snowowl.snomed.datastore.index.SnomedIndexService;
+import com.b2international.snowowl.snomed.datastore.taxonomy.SnomedTaxonomyBuilder;
 import com.b2international.snowowl.snomed.importer.rf2.model.AbstractSnomedImporter;
 import com.b2international.snowowl.snomed.importer.rf2.model.ComponentImportType;
 import com.b2international.snowowl.snomed.importer.rf2.model.ComponentImportUnit;
@@ -105,6 +106,8 @@ public class SnomedCompositeImporter extends AbstractLoggingImporter {
 	private final List<Importer> importers;
 	private final Ordering<AbstractImportUnit> unitOrdering;
 	private final SnomedImportContext importContext; //will be used when tagging version (Snow Owl 3.1)
+	private Rf2BasedSnomedTaxonomyBuilder inferredTaxonomyBuilder;
+	private Rf2BasedSnomedTaxonomyBuilder statedTaxonomyBuilder;
 	
 	public SnomedCompositeImporter(final Logger logger, final SnomedImportContext importContext, final List<Importer> importers, final Ordering<AbstractImportUnit> unitOrdering) {
 		super(logger);
@@ -230,9 +233,6 @@ public class SnomedCompositeImporter extends AbstractLoggingImporter {
 				ApplicationContext.getInstance().unregisterService(ImportIndexServerService.class);
 			}
 
-			if (ApplicationContext.getInstance().exists(Rf2BasedSnomedTaxonomyBuilder.class)) {
-				ApplicationContext.getInstance().unregisterService(Rf2BasedSnomedTaxonomyBuilder.class);
-			}
 		}
 		
 	}
@@ -268,9 +268,10 @@ public class SnomedCompositeImporter extends AbstractLoggingImporter {
 		}
 		
 		String conceptFilePath = null;
-		String descriptionFilePath = null;
+		Set<String> descriptionFilePaths = newHashSet();
 		String relationshipFilePath = null;
 		Set<String> languageFilePaths = newHashSet();
+		String statedRelationshipFilePath = null;
 		
 		for (final ComponentImportUnit unit : units) {
 			
@@ -279,51 +280,61 @@ public class SnomedCompositeImporter extends AbstractLoggingImporter {
 				final String path = unit.getUnitFile().getAbsolutePath();
 				
 				switch (unit.getType()) {
-					case CONCEPT: if (null == conceptFilePath) conceptFilePath = path;  break;
-					case DESCRIPTION: if (null == descriptionFilePath) descriptionFilePath = path; break;
-					case LANGUAGE_TYPE_REFSET: languageFilePaths.add(path); break;
-					case RELATIONSHIP: if (null == relationshipFilePath) relationshipFilePath = path; break;
+					case CONCEPT: 
+						if (null == conceptFilePath) {
+							conceptFilePath = path;
+						}
+						break;
+					case DESCRIPTION: 
+					case TEXT_DEFINITION: 
+						descriptionFilePaths.add(path); 
+						break;
+					case LANGUAGE_TYPE_REFSET: 
+						languageFilePaths.add(path); 
+						break;
+					case RELATIONSHIP: 
+						if (null == relationshipFilePath) {
+							relationshipFilePath = path; 
+						}
+						break;
+					case STATED_RELATIONSHIP:
+						if (null == statedRelationshipFilePath) {
+							statedRelationshipFilePath = path; 
+						}
 					default: /*intentionally ignored*/ break;
 				}
 			}
 		}
 		
-		Rf2BasedSnomedTaxonomyBuilder currentBuilder = ApplicationContext.getInstance().getService(Rf2BasedSnomedTaxonomyBuilder.class);
-		
-		if (null == currentBuilder) {
-			
+		if (null == inferredTaxonomyBuilder) {
 			// First iteration: initialize release file-based builder with existing contents (if any)
-			final SnomedTaxonomyBuilder baseBuilder = new SnomedTaxonomyBuilder(branchPath);
-			baseBuilder.build();
-			
-			if (baseBuilder.getNodes().size() > 0) {
-				final Rf2BasedSnomedTaxonomyBuilder rf2TaxonomyBuilder = Rf2BasedSnomedTaxonomyBuilder.newInstance(baseBuilder, conceptFilePath, relationshipFilePath);
-				rf2TaxonomyBuilder.applyNodeChanges(conceptFilePath);
-				rf2TaxonomyBuilder.applyEdgeChanges(relationshipFilePath);
-				rf2TaxonomyBuilder.build();
-				currentBuilder = rf2TaxonomyBuilder;
-			} else {
-				currentBuilder = new Rf2BasedSnomedTaxonomyBuilder(conceptFilePath, relationshipFilePath);
-				currentBuilder.build();
-			}
-			
-			ApplicationContext.getInstance().registerService(Rf2BasedSnomedTaxonomyBuilder.class, currentBuilder);
-		
-		} else {
-
-			// ...then apply changes to the current builder to have the most up to date state
-			((Rf2BasedSnomedTaxonomyBuilder) currentBuilder).applyNodeChanges(conceptFilePath);
-			((Rf2BasedSnomedTaxonomyBuilder) currentBuilder).applyEdgeChanges(relationshipFilePath);
-			currentBuilder.build();
+			final SnomedTaxonomyBuilder baseBuilder = new SnomedTaxonomyBuilder(branchPath, StatementCollectionMode.INFERRED_ISA_ONLY);
+			final Rf2BasedSnomedTaxonomyBuilder rf2TaxonomyBuilder = Rf2BasedSnomedTaxonomyBuilder.newInstance(baseBuilder, Concepts.INFERRED_RELATIONSHIP);
+			inferredTaxonomyBuilder = rf2TaxonomyBuilder;
 		}
 		
-		final Set<String> synonymAndDescendants = LongSets.toStringSet(currentBuilder.getAllDescendantNodeIds(Concepts.SYNONYM));
+		inferredTaxonomyBuilder.applyNodeChanges(conceptFilePath);
+		inferredTaxonomyBuilder.applyEdgeChanges(relationshipFilePath);
+		inferredTaxonomyBuilder.build();
+		
+		if (null == statedTaxonomyBuilder) {
+			// First iteration: initialize release file-based builder with existing contents (if any)
+			final SnomedTaxonomyBuilder baseBuilder = new SnomedTaxonomyBuilder(branchPath, StatementCollectionMode.STATED_ISA_ONLY);
+			final Rf2BasedSnomedTaxonomyBuilder rf2TaxonomyBuilder = Rf2BasedSnomedTaxonomyBuilder.newInstance(baseBuilder, Concepts.STATED_RELATIONSHIP);
+			statedTaxonomyBuilder = rf2TaxonomyBuilder;
+		}
+		
+		statedTaxonomyBuilder.applyNodeChanges(conceptFilePath);
+		statedTaxonomyBuilder.applyEdgeChanges(statedRelationshipFilePath);
+		statedTaxonomyBuilder.build();
+		
+		final Set<String> synonymAndDescendants = LongSets.toStringSet(inferredTaxonomyBuilder.getAllDescendantNodeIds(Concepts.SYNONYM));
 		synonymAndDescendants.add(Concepts.SYNONYM);
 		
 		final ImportIndexServerService importIndexService = ApplicationContext.getInstance().getService(ImportIndexServerService.class);
 		
 		final Rf2BasedImportIndexServiceFeeder feeder = new Rf2BasedImportIndexServiceFeeder(
-				descriptionFilePath, 
+				descriptionFilePaths, 
 				languageFilePaths, 
 				synonymAndDescendants, 
 				getImportBranchPath());
@@ -353,7 +364,7 @@ public class SnomedCompositeImporter extends AbstractLoggingImporter {
 	}
 
 	private void initializeIndex(final IBranchPath branchPath, final String lastUnitEffectiveTimeKey, final List<ComponentImportUnit> units) {
-		final SnomedRf2IndexInitializer snomedRf2IndexInitializer = new SnomedRf2IndexInitializer(branchPath, lastUnitEffectiveTimeKey, units, importContext.getLanguageRefSetId());
+		final SnomedRf2IndexInitializer snomedRf2IndexInitializer = new SnomedRf2IndexInitializer(branchPath, lastUnitEffectiveTimeKey, units, importContext.getLanguageRefSetId(), inferredTaxonomyBuilder, statedTaxonomyBuilder);
 		snomedRf2IndexInitializer.run(new NullProgressMonitor());
 	}
 

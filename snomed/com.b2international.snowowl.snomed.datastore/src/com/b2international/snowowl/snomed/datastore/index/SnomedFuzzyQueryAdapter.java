@@ -23,12 +23,10 @@ import java.util.List;
 import javax.annotation.Nullable;
 
 import org.apache.lucene.index.Term;
-import org.apache.lucene.search.BooleanClause;
 import org.apache.lucene.search.BooleanClause.Occur;
 import org.apache.lucene.search.BooleanQuery;
 import org.apache.lucene.search.FuzzyQuery;
 import org.apache.lucene.search.Query;
-import org.apache.lucene.search.TermQuery;
 import org.apache.lucene.util.automaton.LevenshteinAutomata;
 
 import com.b2international.snowowl.core.TextConstants;
@@ -37,10 +35,9 @@ import com.b2international.snowowl.core.api.index.IIndexService;
 import com.b2international.snowowl.datastore.index.AbstractIndexService;
 import com.b2international.snowowl.datastore.index.DocumentWithScore;
 import com.b2international.snowowl.datastore.index.IndexQueryBuilder;
-import com.b2international.snowowl.datastore.index.IndexUtils;
-import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.snomed.datastore.SnomedConceptIndexEntry;
 import com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants;
+import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedMappings;
 import com.google.common.base.Splitter;
 import com.google.common.base.Strings;
 
@@ -72,8 +69,7 @@ public class SnomedFuzzyQueryAdapter extends SnomedConceptIndexQueryAdapter impl
 		final BooleanQuery query = new BooleanQuery();
 		
 		// Only find active and not excluded concepts
-		query.add(new BooleanClause(new TermQuery(new Term(SnomedIndexBrowserConstants.COMPONENT_ACTIVE, IndexUtils.intToPrefixCoded(1))), Occur.MUST));
-		query.add(new BooleanClause(new TermQuery(new Term(SnomedIndexBrowserConstants.COMPONENT_TYPE, IndexUtils.intToPrefixCoded(SnomedTerminologyComponentConstants.CONCEPT_NUMBER))), Occur.MUST));
+		query.add(SnomedMappings.newQuery().active().matchAll(), Occur.MUST);
 		
 		// If the search string is empty, build a query that finds all active concepts
 		if (searchString.isEmpty()) {

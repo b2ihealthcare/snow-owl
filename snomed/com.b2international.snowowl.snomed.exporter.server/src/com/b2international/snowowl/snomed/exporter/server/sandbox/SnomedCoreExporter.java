@@ -15,15 +15,11 @@
  */
 package com.b2international.snowowl.snomed.exporter.server.sandbox;
 
-import static com.b2international.snowowl.core.api.index.CommonIndexConstants.COMPONENT_TYPE;
-import static com.b2international.snowowl.datastore.index.IndexUtils.intToPrefixCoded;
-import static com.b2international.snowowl.datastore.index.IndexUtils.longToPrefixCoded;
 import static com.google.common.base.Preconditions.checkNotNull;
 
-import org.apache.lucene.index.Term;
 import org.apache.lucene.search.Query;
-import org.apache.lucene.search.TermQuery;
 
+import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedMappings;
 import com.b2international.snowowl.snomed.exporter.server.SnomedRf2Exporter;
 
 /**
@@ -40,12 +36,12 @@ public abstract class SnomedCoreExporter extends SnomedCompositeExporter impleme
 	
 	@Override
 	protected Query getUnpublishedQuery(final long effectiveTime) {
-		return new TermQuery(new Term(getEffectiveTimeField(), longToPrefixCoded(effectiveTime)));
+		return SnomedMappings.newQuery().field(getEffectiveTimeField(), effectiveTime).matchAll();
 	}
 	
 	@Override
 	protected Query getSnapshotQuery() {
-		return new TermQuery(new Term(COMPONENT_TYPE, intToPrefixCoded(getTerminologyComponentType())));
+		return SnomedMappings.newQuery().type(getTerminologyComponentType()).matchAll();
 	}
 	
 }

@@ -22,44 +22,47 @@ import java.io.Serializable;
 
 import javax.annotation.Nullable;
 
-import bak.pcj.set.LongSet;
-
 import com.b2international.commons.Change;
 import com.b2international.commons.ChangeKind;
+import com.b2international.commons.pcj.LongSets;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.api.IconIdProvider;
 import com.b2international.snowowl.core.api.LabelProvider;
 import com.b2international.snowowl.core.api.TerminologyComponentIdProvider;
 import com.google.common.base.Objects;
 import com.google.common.base.Preconditions;
-import com.google.common.primitives.Shorts;
+
+import bak.pcj.set.LongSet;
 
 /**
  * Abstract representation of a component modification.
- * @see Serializable
  */
-public abstract class ComponentDelta implements IChangedComponentCDOIDs, Serializable, Change, 
-	IconIdProvider<String>, LabelProvider, TerminologyComponentIdProvider, Comparable<ComponentDelta> {
+public abstract class ComponentDelta implements IChangedComponentCDOIDs, Serializable, Change, IconIdProvider<String>, LabelProvider, TerminologyComponentIdProvider, Comparable<ComponentDelta> {
 
 	private static final long serialVersionUID = 2026011761057989030L;
-	
+
 	private final String id;
 	private final String label;
 	private final long cdoId;
 	private final short terminologyComponentId;
 	private final ChangeKind change;
-	private final RelatedComponentChanges componentChanges;
+	private final LongSet relatedCdoIds;
 	private final IBranchPath branchPath;
 	private final String iconId;
 	private final String codeSystemOID;
-	
-	protected ComponentDelta(final String id, final long cdoId, final IBranchPath branchPath, final String label, final String iconId, final short terminologyComponentId, final String codeSystemOID) {
+
+	protected ComponentDelta(final String id, final long cdoId, final IBranchPath branchPath, final String label, final String iconId, 
+			final short terminologyComponentId, 
+			final String codeSystemOID) {
+
 		this(id, cdoId, branchPath, label, iconId, terminologyComponentId, codeSystemOID, ChangeKind.UNCHANGED);
-		
 	}
-	
-	protected ComponentDelta(final String id, final long cdoId, final IBranchPath branchPath, final String label, final String iconId, final short terminologyComponentId, final String codeSystemOID, final ChangeKind change) {
-		
+
+	protected ComponentDelta(final String id, final long cdoId, final IBranchPath branchPath, final String label, final String iconId, 
+			final short terminologyComponentId, 
+			final String codeSystemOID, 
+			final ChangeKind change) {
+
 		this.codeSystemOID = codeSystemOID;
 		this.id = Preconditions.checkNotNull(id, "ID argument cannot be null.");
 		this.cdoId = cdoId;
@@ -68,18 +71,17 @@ public abstract class ComponentDelta implements IChangedComponentCDOIDs, Seriali
 		this.iconId = iconId;
 		this.change = Preconditions.checkNotNull(change, "Component change kind argument cannot be null.");
 		this.terminologyComponentId = terminologyComponentId;
-		componentChanges = new RelatedComponentChanges(cdoId);
-		
+		this.relatedCdoIds = LongSets.newLongSet(cdoId);
 	}
 
 	@Override
 	public long getCdoId() {
 		return cdoId;
 	}
-	
+
 	@Override
 	public LongSet getRelatedCdoIds() {
-		return getComponentChanges().getIds();
+		return relatedCdoIds;
 	}
 
 	@Override
@@ -101,7 +103,7 @@ public abstract class ComponentDelta implements IChangedComponentCDOIDs, Seriali
 	public boolean hasChanged() {
 		return change.hasChanged();
 	}
-	
+
 	@Override
 	public String getLabel() {
 		return label;
@@ -116,7 +118,7 @@ public abstract class ComponentDelta implements IChangedComponentCDOIDs, Seriali
 	public short getTerminologyComponentId() {
 		return terminologyComponentId;
 	}
-	
+
 	/**
 	 * Returns with the {@link ChangeKind change} of the delta.
 	 */
@@ -138,23 +140,16 @@ public abstract class ComponentDelta implements IChangedComponentCDOIDs, Seriali
 	public IBranchPath getBranchPath() {
 		return branchPath;
 	}
-	
-	/**
-	 * Returns with the related component changes, representing the reason why the
-	 * current instance become a changed component in task context.
-	 */
-	public RelatedComponentChanges getComponentChanges() {
-		return componentChanges;
-	}
-	
+
 	/**
 	 * Returns with the code system OID of the component delta.
-	 * <p>Can be {@code null}.
+	 * <p>
+	 * Can be {@code null}.
 	 */
 	@Nullable public String getCodeSystemOID() {
 		return codeSystemOID;
 	}
-	
+
 	@Override
 	public int hashCode() {
 		final int prime = 31;
@@ -166,36 +161,28 @@ public abstract class ComponentDelta implements IChangedComponentCDOIDs, Seriali
 	}
 
 	@Override
-	public boolean equals(Object obj) {
-		if (this == obj)
-			return true;
-		if (obj == null)
-			return false;
-		if (getClass() != obj.getClass())
-			return false;
-		ComponentDelta other = (ComponentDelta) obj;
-		if (branchPath == null) {
-			if (other.branchPath != null)
-				return false;
-		} else if (!branchPath.equals(other.branchPath))
-			return false;
-		if (cdoId != other.cdoId)
-			return false;
-		if (codeSystemOID == null) {
-			if (other.codeSystemOID != null)
-				return false;
-		} else if (!codeSystemOID.equals(other.codeSystemOID))
-			return false;
+	public boolean equals(final Object obj) {
+		if (this == obj) { return true; }
+		if (obj == null) { return false; }
+		if (getClass() != obj.getClass()) { return false; }
+
+		final ComponentDelta other = (ComponentDelta) obj;
+
+		if (branchPath == null && other.branchPath != null) { return false; }
+		if (!branchPath.equals(other.branchPath)) { return false; }
+		if (cdoId != other.cdoId) { return false; }
+		if (codeSystemOID == null && other.codeSystemOID != null) { return false; }
+		if (!codeSystemOID.equals(other.codeSystemOID)) { return false; }
+
 		return true;
 	}
 
 	@Override
 	public int compareTo(final ComponentDelta other) {
-		
 		if (null == other) {
 			return -1;
 		}
-		
+
 		int result = compareId(other);
 		if (result != 0) {
 			return result;
@@ -205,43 +192,27 @@ public abstract class ComponentDelta implements IChangedComponentCDOIDs, Seriali
 		if (result != 0) {
 			return result;
 		}
-		
+
 		result = compareCodeSystemOID(other);
 		if (result != 0) {
 			return result;
 		}
-		
+
 		return result;
 	}
-	
-	/**
-	 * Compares the ID of the current instance with the argument one. 
-	 * @param other the other delta to compare with.
-	 * @return see {@link String#compareTo(String)}
-	 */
-	protected int compareId(final ComponentDelta other) {
-		return null == other ? -1 : id.compareTo(nullToEmpty(other.id));
+
+	private int compareId(final ComponentDelta other) {
+		return null == other ? -1 : nullToEmpty(id).compareTo(nullToEmpty(other.id));
 	}
-	
-	/**
-	 * Compares the terminology component ID of the current instance with the argument one. 
-	 * @param other the other delta to compare with.
-	 * @return see {@link Shorts#compare(short, short)}
-	 */
-	protected int compareTerminologyComponentId(final ComponentDelta other) {
+
+	private int compareTerminologyComponentId(final ComponentDelta other) {
 		return null == other ? -1 : compare(terminologyComponentId, other.terminologyComponentId);
 	}
 
-	/**
-	 * Compares the code system OID of the current instance with the argument one. 
-	 * @param other the other delta to compare with.
-	 * @return see {@link Shorts#compare(short, short)}
-	 */
-	protected int compareCodeSystemOID(final ComponentDelta other) {
+	private int compareCodeSystemOID(final ComponentDelta other) {
 		return null == other ? -1 : nullToEmpty(codeSystemOID).compareTo(nullToEmpty(other.codeSystemOID));
 	}
-	
-	
+
 	@Override
 	public String toString() {
 		return Objects.toStringHelper(this)
@@ -255,5 +226,4 @@ public abstract class ComponentDelta implements IChangedComponentCDOIDs, Seriali
 				.add("Change type", change)
 				.toString();
 	}
-	
 }

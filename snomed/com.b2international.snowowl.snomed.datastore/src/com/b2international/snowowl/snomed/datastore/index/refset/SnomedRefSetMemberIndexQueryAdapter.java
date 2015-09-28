@@ -15,26 +15,22 @@
  */
 package com.b2international.snowowl.snomed.datastore.index.refset;
 
-import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.COMPONENT_ACTIVE;
-import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.COMPONENT_LABEL;
-import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_REFERENCED_COMPONENT_ID;
-import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_REFERENCE_SET_ID;
-
 import java.io.Serializable;
 
 import org.apache.lucene.document.Document;
-import org.apache.lucene.index.Term;
 import org.apache.lucene.queryparser.classic.ParseException;
-import org.apache.lucene.search.BooleanClause;
 import org.apache.lucene.search.BooleanClause.Occur;
 import org.apache.lucene.search.BooleanQuery;
 import org.apache.lucene.search.Query;
-import org.apache.lucene.search.TermQuery;
 
 import com.b2international.commons.StringUtils;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.datastore.index.IndexAdapterBase;
 import com.b2international.snowowl.datastore.index.IndexUtils;
+import com.b2international.snowowl.datastore.index.mapping.Mappings;
+import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedMappings;
+import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedQueryBuilder;
+import com.google.common.base.Optional;
 
 public class SnomedRefSetMemberIndexQueryAdapter extends IndexAdapterBase<SnomedRefSetMemberIndexEntry> implements Serializable {
 
@@ -57,42 +53,32 @@ public class SnomedRefSetMemberIndexQueryAdapter extends IndexAdapterBase<Snomed
 		this.excludeInactive = excludeInactive;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see com.b2international.snowowl.core.api.IIndexQueryAdapter#buildSearchResult(org.apache.lucene.document.Document, float)
-	 */
 	@Override
 	public SnomedRefSetMemberIndexEntry buildSearchResult(final Document doc, final IBranchPath branchPath, final float score) {
 		return SnomedRefSetMemberIndexEntry.create(doc, branchPath);
 	}
 	
-	/*
-	 * (non-Javadoc)
-	 * @see com.b2international.snowowl.core.index.IndexAdapterBase#buildQuery()
-	 */
+	@SuppressWarnings("deprecation")
 	@Override
 	protected Query buildQuery() throws ParseException {
-		
-		final BooleanQuery main = new BooleanQuery();
-		
-		final BooleanQuery refSetIdQuery = new BooleanQuery();
-		refSetIdQuery.add(new BooleanClause(new TermQuery(new Term(REFERENCE_SET_MEMBER_REFERENCE_SET_ID, IndexUtils.longToPrefixCoded(refSetId))), Occur.MUST));
-		main.add(refSetIdQuery, Occur.MUST);
+		final SnomedQueryBuilder main = SnomedMappings.newQuery()
+				.memberRefSetId(refSetId);
 		
 		if (!StringUtils.isEmpty(searchString)) {
-			final BooleanQuery fieldQuery = new BooleanQuery();
-			addTermPrefixClause(fieldQuery, COMPONENT_LABEL, searchString.toLowerCase());
+			final BooleanQuery fieldQuery = new BooleanQuery(true);
+			addTermPrefixClause(fieldQuery, Mappings.label().fieldName(), searchString.toLowerCase());
 			//added by endre, see issue #242
-			fieldQuery.add(new TermQuery(new Term(REFERENCE_SET_MEMBER_REFERENCED_COMPONENT_ID, searchString.toLowerCase())), Occur.SHOULD);
-			main.add(fieldQuery, Occur.MUST);
+			final Optional<Long> parseLong = IndexUtils.parseLong(searchString.toLowerCase());
+			if (parseLong.isPresent()) {
+				fieldQuery.add(SnomedMappings.newQuery().memberReferencedComponentId(parseLong.get()).matchAll(), Occur.SHOULD);
+			}
+			main.and(fieldQuery);
 		}
 		
 		if (excludeInactive) {
-			final BooleanQuery inactivityQuery = new BooleanQuery();
-			inactivityQuery.add(new BooleanClause(new TermQuery(new Term(COMPONENT_ACTIVE, IndexUtils.intToPrefixCoded(1))), Occur.MUST));
-			main.add(inactivityQuery, Occur.MUST);
+			main.active();
 		}
 		
-		return main;
+		return main.matchAll();
 	}
 }

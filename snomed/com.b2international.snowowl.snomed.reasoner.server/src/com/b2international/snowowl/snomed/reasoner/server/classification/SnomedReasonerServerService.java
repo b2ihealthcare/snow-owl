@@ -28,10 +28,6 @@ import java.util.Set;
 import java.util.UUID;
 
 import org.apache.lucene.document.Document;
-import org.apache.lucene.index.Term;
-import org.apache.lucene.search.BooleanClause.Occur;
-import org.apache.lucene.search.BooleanQuery;
-import org.apache.lucene.search.TermQuery;
 import org.apache.lucene.search.TopDocs;
 import org.eclipse.core.runtime.jobs.IJobChangeEvent;
 import org.eclipse.core.runtime.jobs.Job;
@@ -55,13 +51,12 @@ import com.b2international.snowowl.core.IDisposableService;
 import com.b2international.snowowl.core.IServiceChangeListener;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.api.IComponent;
-import com.b2international.snowowl.core.api.index.CommonIndexConstants;
 import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.core.users.SpecialUserStore;
 import com.b2international.snowowl.datastore.BranchPathUtils;
 import com.b2international.snowowl.datastore.cdo.ICDOConnection;
 import com.b2international.snowowl.datastore.cdo.ICDOConnectionManager;
-import com.b2international.snowowl.datastore.index.IndexUtils;
+import com.b2international.snowowl.datastore.index.mapping.Mappings;
 import com.b2international.snowowl.datastore.oplock.OperationLockException;
 import com.b2international.snowowl.datastore.remotejobs.IRemoteJobManager;
 import com.b2international.snowowl.datastore.remotejobs.RemoteJobUtils;
@@ -74,12 +69,12 @@ import com.b2international.snowowl.rpc.RpcSession;
 import com.b2international.snowowl.rpc.RpcThreadLocal;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.SnomedPackage;
-import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.snomed.datastore.ConcreteDomainFragment;
 import com.b2international.snowowl.snomed.datastore.SnomedConceptIndexEntry;
 import com.b2international.snowowl.snomed.datastore.SnomedTerminologyBrowser;
 import com.b2international.snowowl.snomed.datastore.StatementFragment;
 import com.b2international.snowowl.snomed.datastore.index.SnomedIndexService;
+import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedMappings;
 import com.b2international.snowowl.snomed.reasoner.classification.AbstractEquivalenceSet;
 import com.b2international.snowowl.snomed.reasoner.classification.AbstractResponse.Type;
 import com.b2international.snowowl.snomed.reasoner.classification.ClassificationRequest;
@@ -105,7 +100,6 @@ import com.b2international.snowowl.snomed.reasoner.server.normalform.ConceptConc
 import com.b2international.snowowl.snomed.reasoner.server.normalform.RelationshipNormalFormGenerator;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Ordering;
-import com.google.common.collect.Sets;
 
 /**
  * Manages reasoners that operate on the OWL representation of a SNOMED&nbsp;CT repository branch path. 
@@ -117,7 +111,7 @@ public class SnomedReasonerServerService extends CollectingService<Reasoner, Cla
 	
 	private static final Logger LOGGER = LoggerFactory.getLogger(SnomedReasonerServerService.class);
 	
-	private static final Set<String> FIELDS_TO_LOAD = Collections.unmodifiableSet(Sets.newHashSet(CommonIndexConstants.COMPONENT_LABEL, CommonIndexConstants.COMPONENT_ICON_ID));
+	private static final Set<String> FIELDS_TO_LOAD = SnomedMappings.fieldsToLoad().label().iconId().build();
 
 	private final IListener invalidationListener = new IListener() {
 		@Override 
@@ -291,7 +285,7 @@ public class SnomedReasonerServerService extends CollectingService<Reasoner, Cla
 	private GetResultResponseChanges doGetResult(final UUID classificationId, final ReasonerTaxonomy taxonomy) {
 		
 		final IBranchPath branchPath = taxonomy.getBranchPath();
-		final InitialReasonerTaxonomyBuilder reasonerTaxonomyBuilder = new InitialReasonerTaxonomyBuilder(branchPath, false);
+		final InitialReasonerTaxonomyBuilder reasonerTaxonomyBuilder = new InitialReasonerTaxonomyBuilder(branchPath, InitialReasonerTaxonomyBuilder.Type.REASONER);
 		final SnomedTerminologyBrowser terminologyBrowser = getTerminologyBrowser();
 		
 		final ImmutableList.Builder<RelationshipChangeEntry> relationshipBuilder = ImmutableList.builder();
@@ -400,15 +394,12 @@ public class SnomedReasonerServerService extends CollectingService<Reasoner, Cla
 		
 		final IndexServerService<?> indexService = getIndexServerService();
 		
-		final BooleanQuery query = new BooleanQuery(true);
-		query.add(new TermQuery(new Term(CommonIndexConstants.COMPONENT_ID, IndexUtils.longToPrefixCoded(id))), Occur.MUST);
-		query.add(new TermQuery(new Term(CommonIndexConstants.COMPONENT_TYPE, IndexUtils.intToPrefixCoded(SnomedTerminologyComponentConstants.CONCEPT_NUMBER))), Occur.MUST);
-		final TopDocs topDocs = indexService.search(branchPath, query, 1);
+		final TopDocs topDocs = indexService.search(branchPath, SnomedMappings.newQuery().concept().id(id).matchAll(), 1);
 		if (null == topDocs || CompareUtils.isEmpty(topDocs.scoreDocs)) {
 			return new LongComponent(id, id + " (unresolved)", Long.parseLong(Concepts.ROOT_CONCEPT));
 		} else {
 			final Document doc = indexService.document(branchPath, topDocs.scoreDocs[0].doc, FIELDS_TO_LOAD);
-			return new LongComponent(id, doc.get(CommonIndexConstants.COMPONENT_LABEL), IndexUtils.getLongValue(doc.getField(CommonIndexConstants.COMPONENT_ICON_ID)));
+			return new LongComponent(id, Mappings.label().getValue(doc), SnomedMappings.iconId().getValue(doc));
 		}
 	}
 
@@ -511,6 +502,7 @@ public class SnomedReasonerServerService extends CollectingService<Reasoner, Cla
 		RemoteJobUtils.configureProperties(remoteJob, userId, null, persistenceId);
 		
 		remoteJob.addJobChangeListener(new JobChangeAdapter() {
+			@Override
 			public void done(final IJobChangeEvent event) {
 				if (event.getResult().isOK()) {
 					getServiceForClass(IRemoteJobManager.class).cancelRemoteJob(persistenceId);

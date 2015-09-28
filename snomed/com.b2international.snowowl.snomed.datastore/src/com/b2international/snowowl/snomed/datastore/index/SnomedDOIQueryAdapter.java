@@ -32,14 +32,15 @@ import org.apache.lucene.search.Query;
 
 import com.b2international.commons.StringUtils;
 import com.b2international.snowowl.core.api.IBranchPath;
-import com.b2international.snowowl.core.api.index.CommonIndexConstants;
 import com.b2international.snowowl.core.api.index.IIndexService;
 import com.b2international.snowowl.datastore.index.AbstractIndexService;
 import com.b2international.snowowl.datastore.index.DocumentWithScore;
 import com.b2international.snowowl.datastore.index.IndexQueryBuilder;
 import com.b2international.snowowl.datastore.index.IndexUtils;
+import com.b2international.snowowl.datastore.index.mapping.Mappings;
 import com.b2international.snowowl.snomed.datastore.SnomedConceptIndexEntry;
 import com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants;
+import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedMappings;
 import com.google.common.base.Optional;
 import com.google.common.base.Strings;
 
@@ -84,20 +85,20 @@ public class SnomedDOIQueryAdapter extends SnomedConceptIndexQueryAdapter implem
 			return super.createIndexQueryBuilder()
 					.finishIf(StringUtils.isEmpty(searchString))
 					.require(new IndexQueryBuilder()
-					.matchExactTerm(CommonIndexConstants.COMPONENT_ID, IndexUtils.longToPrefixCoded(parsedSearchStringOptional.get())).boost(10.0f)
-					.matchAllTokenizedTerms(CommonIndexConstants.COMPONENT_LABEL, searchString).boost(5.0f)
+					.match(SnomedMappings.newQuery().id(parsedSearchStringOptional.get()).matchAll()).toQuery()).boost(10.0f)
+					.matchAllTokenizedTerms(Mappings.label().fieldName(), searchString).boost(5.0f)
 					.matchAllTokenizedTerms(SnomedIndexBrowserConstants.CONCEPT_SYNONYM, searchString).boost(4.0f)
-					.matchAllTokenizedTermPrefixSequences(SnomedIndexBrowserConstants.COMPONENT_LABEL, searchString).boost(3.0f)
-					.matchTokenizedTermSequence(SnomedIndexBrowserConstants.COMPONENT_LABEL, searchString).boost(2.0f)
-					.matchAllTokenizedTermPrefixes(SnomedIndexBrowserConstants.CONCEPT_SYNONYM, searchString));
+					.matchAllTokenizedTermPrefixSequences(Mappings.label().fieldName(), searchString).boost(3.0f)
+					.matchTokenizedTermSequence(Mappings.label().fieldName(), searchString).boost(2.0f)
+					.matchAllTokenizedTermPrefixes(SnomedIndexBrowserConstants.CONCEPT_SYNONYM, searchString);
 		} else {
 			return super.createIndexQueryBuilder()
 					.finishIf(StringUtils.isEmpty(searchString))
 					.require(new IndexQueryBuilder()
-					.matchAllTokenizedTerms(CommonIndexConstants.COMPONENT_LABEL, searchString).boost(5.0f)
+					.matchAllTokenizedTerms(Mappings.label().fieldName(), searchString).boost(5.0f)
 					.matchAllTokenizedTerms(SnomedIndexBrowserConstants.CONCEPT_SYNONYM, searchString).boost(4.0f)
-					.matchAllTokenizedTermPrefixSequences(SnomedIndexBrowserConstants.COMPONENT_LABEL, searchString).boost(3.0f)
-					.matchTokenizedTermSequence(SnomedIndexBrowserConstants.COMPONENT_LABEL, searchString).boost(2.0f)
+					.matchAllTokenizedTermPrefixSequences(Mappings.label().fieldName(), searchString).boost(3.0f)
+					.matchTokenizedTermSequence(Mappings.label().fieldName(), searchString).boost(2.0f)
 					.matchAllTokenizedTermPrefixes(SnomedIndexBrowserConstants.CONCEPT_SYNONYM, searchString));
 		}
 	}

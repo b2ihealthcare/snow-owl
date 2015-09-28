@@ -21,17 +21,14 @@ import static java.util.Collections.emptyList;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.Set;
 
 import org.apache.lucene.document.Document;
-import org.apache.lucene.index.Term;
 import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.ReferenceManager;
-import org.apache.lucene.search.TermQuery;
 import org.apache.lucene.search.TopDocs;
 
 import bak.pcj.map.LongKeyLongMap;
@@ -42,22 +39,20 @@ import bak.pcj.set.LongSet;
 import com.b2international.commons.CompareUtils;
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.api.SnowowlRuntimeException;
-import com.b2international.snowowl.core.api.index.CommonIndexConstants;
 import com.b2international.snowowl.core.date.DateFormats;
 import com.b2international.snowowl.core.date.Dates;
 import com.b2international.snowowl.datastore.index.IndexUtils;
 import com.b2international.snowowl.datastore.server.index.IndexServerService;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
-import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants;
 import com.b2international.snowowl.snomed.datastore.index.SnomedIndexService;
+import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedMappings;
 import com.b2international.snowowl.snomed.exporter.server.ComponentExportType;
 import com.b2international.snowowl.snomed.exporter.server.Id2Rf1PropertyMapper;
 import com.b2international.snowowl.snomed.exporter.server.SnomedRf1Exporter;
 import com.b2international.snowowl.snomed.exporter.server.sandbox.SnomedExportConfiguration;
 import com.google.common.base.Function;
 import com.google.common.collect.Iterators;
-import com.google.common.collect.Sets;
 
 /**
  * Implementation of the SNOMED&nbsp;CT subset exporter. Supports RF1 output format. Used for simple type and language type reference sets.
@@ -75,17 +70,13 @@ public class SnomedSubsetMemberExporter extends AbstractSnomedSubsetExporter {
 	private final Id2Rf1PropertyMapper mapper;
 	private final LongSet distinctEffectiveTimeSet;
 	
-	private static final Set<String> NON_LANGUAGE_MEMBER_FIELD_TO_LOAD = Collections.unmodifiableSet(Sets.newHashSet(
-			SnomedIndexBrowserConstants.COMPONENT_ACTIVE,
-			SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_REFERENCED_COMPONENT_ID,
-			SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_EFFECTIVE_TIME
-			));
+	private static final Set<String> NON_LANGUAGE_MEMBER_FIELD_TO_LOAD = SnomedMappings.fieldsToLoad().active().memberReferencedComponentId().field(SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_EFFECTIVE_TIME).build();
 	
-	private static final Set<String> LANGUAGE_MEMBER_FIELD_TO_LOAD = Collections.unmodifiableSet(Sets.newHashSet(
-			SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_ACCEPTABILITY_ID,
-			SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_REFERENCED_COMPONENT_ID,
-			SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_EFFECTIVE_TIME
-			));
+	private static final Set<String> LANGUAGE_MEMBER_FIELD_TO_LOAD = SnomedMappings.fieldsToLoad()
+			.memberReferencedComponentId()
+			.field(SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_ACCEPTABILITY_ID)
+			.field(SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_EFFECTIVE_TIME).build();
+	
 	private Iterator<String> itr;
 	
 	public SnomedSubsetMemberExporter(final SnomedExportConfiguration configuration, final String refSetId) {
@@ -116,14 +107,14 @@ public class SnomedSubsetMemberExporter extends AbstractSnomedSubsetExporter {
 		
 		//get referenced component's (description) ID to description type ID mapping 
 		if (languageType) {
-			final Query query = new TermQuery(new Term(CommonIndexConstants.COMPONENT_TYPE, IndexUtils.intToPrefixCoded(SnomedTerminologyComponentConstants.DESCRIPTION_NUMBER)));
-			final int expectedSize = indexService.getHitCount(getBranchPath(), query, null);
+			final Query descriptions = SnomedMappings.newQuery().description().matchAll();
+			final int expectedSize = indexService.getHitCount(getBranchPath(), descriptions, null);
 			final DescriptionIdTypeCollector collector = new DescriptionIdTypeCollector(expectedSize);
-			indexService.search(getBranchPath(), query, collector);
+			indexService.search(getBranchPath(), descriptions, collector);
 			descriptionIdTypeMap = collector.getIdMap();
 		} 
 			
-		final Query query = new TermQuery(new Term(SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_REFERENCE_SET_ID, IndexUtils.longToPrefixCoded(getRefSetId())));
+		final Query query = SnomedMappings.newQuery().memberRefSetId(getRefSetId()).matchAll();
 		final int limit = indexService.getHitCount(getBranchPath(), query, null);
 		
 		if (limit > 0) {
@@ -146,11 +137,11 @@ public class SnomedSubsetMemberExporter extends AbstractSnomedSubsetExporter {
 
 						final Document doc = searcher.doc(topDocs.scoreDocs[i].doc, languageType ? LANGUAGE_MEMBER_FIELD_TO_LOAD : NON_LANGUAGE_MEMBER_FIELD_TO_LOAD);
 						final ReferencedComponentIdStatus idStatus = new ReferencedComponentIdStatus();
-						idStatus.referencedComponentId = doc.get(SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_REFERENCED_COMPONENT_ID);
+						idStatus.referencedComponentId = SnomedMappings.memberReferencedComponentId().getValueAsString(doc);
 						
 						if (!languageType) {
 							
-							if (1 == IndexUtils.getIntValue(doc.getField(SnomedIndexBrowserConstants.COMPONENT_ACTIVE))) {
+							if (1 == SnomedMappings.active().getValue(doc)) {
 								idStatus.status = "1";
 							} else {
 								idStatus.status = "0";

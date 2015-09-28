@@ -53,7 +53,7 @@ public class ConceptConcreteDomainNormalFormGenerator extends NormalFormGenerato
 
 	@Override
 	public Collection<ConcreteDomainFragment> getExistingComponents(final long conceptId) {
-		return reasonerTaxonomyBuilder.getConceptConcreteDomainFragments(conceptId);
+		return reasonerTaxonomyBuilder.getInferredConceptConcreteDomainFragments(conceptId);
 	}
 	
 	@Override

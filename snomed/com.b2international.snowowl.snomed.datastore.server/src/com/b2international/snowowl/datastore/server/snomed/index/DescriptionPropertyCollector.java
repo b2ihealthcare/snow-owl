@@ -16,9 +16,6 @@
 package com.b2international.snowowl.datastore.server.snomed.index;
 
 import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.DESCRIPTION_CASE_SIGNIFICANCE_ID;
-import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.DESCRIPTION_CONCEPT_ID;
-import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.DESCRIPTION_MODULE_ID;
-import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.DESCRIPTION_TYPE_ID;
 import static com.google.common.base.Preconditions.checkNotNull;
 
 import java.io.IOException;
@@ -27,6 +24,8 @@ import org.apache.lucene.index.AtomicReader;
 import org.apache.lucene.index.NumericDocValues;
 
 import bak.pcj.LongCollection;
+
+import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedMappings;
 
 /**
  * Collector for gathering the container concept ID, the description type ID and the case significance concept IDs of each
@@ -44,12 +43,12 @@ public class DescriptionPropertyCollector extends ComponentPropertyCollector {
 	}
 
 	@Override
-	protected void initDocValues(final AtomicReader leafReader) throws IOException {
-		super.initDocValues(leafReader);
-		conceptIds = leafReader.getNumericDocValues(DESCRIPTION_CONCEPT_ID);
-		moduleIds = leafReader.getNumericDocValues(DESCRIPTION_MODULE_ID);
-		typeIds = leafReader.getNumericDocValues(DESCRIPTION_TYPE_ID);
-		caseSignificanceIds = leafReader.getNumericDocValues(DESCRIPTION_CASE_SIGNIFICANCE_ID);
+	protected void initDocValues(final AtomicReader reader) throws IOException {
+		super.initDocValues(reader);
+		conceptIds = SnomedMappings.descriptionConcept().getDocValues(reader);
+		moduleIds = SnomedMappings.module().getDocValues(reader);
+		typeIds = SnomedMappings.descriptionType().getDocValues(reader);
+		caseSignificanceIds = reader.getNumericDocValues(DESCRIPTION_CASE_SIGNIFICANCE_ID);
 	}
 
 	@Override

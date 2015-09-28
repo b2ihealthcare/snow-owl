@@ -58,15 +58,17 @@ public class SnomedRelationshipImporter extends AbstractSnomedTerminologyImporte
 			.add(new IndexConfiguration("SNOMED_RELATIONSHIP_IDX1004", "SNOMED_RELATIONSHIP", "DESTINATION", "ACTIVE", "CDO_VERSION"))
 			.build();
 
-	private static final SnomedImportConfiguration<RelationshipRow> IMPORT_CONFIGURATION = new SnomedImportConfiguration<RelationshipRow>(
-			ComponentImportType.RELATIONSHIP, 
-			CELLPROCESSOR_MAPPING, 
-			RelationshipRow.class, 
-			SnomedRf2Headers.RELATIONSHIP_HEADER,
-			INDEXES);
+	private static SnomedImportConfiguration<RelationshipRow> createImportConfiguration(final ComponentImportType type) {
+		return new SnomedImportConfiguration<RelationshipRow>(
+				type, 
+				CELLPROCESSOR_MAPPING, 
+				RelationshipRow.class, 
+				SnomedRf2Headers.RELATIONSHIP_HEADER,
+				INDEXES);
+	}
 
-	public SnomedRelationshipImporter(final SnomedImportContext importContext, final InputStream releaseFileStream, final String releaseFileIdentifier) {
-		super(IMPORT_CONFIGURATION, importContext, releaseFileStream, releaseFileIdentifier);
+	public SnomedRelationshipImporter(final SnomedImportContext importContext, final InputStream releaseFileStream, final String releaseFileIdentifier, final ComponentImportType type) {
+		super(createImportConfiguration(type), importContext, releaseFileStream, releaseFileIdentifier);
 	}
 
 	@Override

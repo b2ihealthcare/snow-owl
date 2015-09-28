@@ -17,8 +17,6 @@ package com.b2international.snowowl.datastore.server.snomed.index;
 
 import static com.b2international.commons.StringUtils.valueOfOrEmptyString;
 import static com.b2international.snowowl.core.ApplicationContext.getServiceForClass;
-import static com.b2international.snowowl.core.api.index.CommonIndexConstants.COMPONENT_TYPE;
-import static com.b2international.snowowl.datastore.index.IndexUtils.intToPrefixCoded;
 import static com.b2international.snowowl.datastore.server.snomed.InitializationState.BUILDING;
 import static com.b2international.snowowl.datastore.server.snomed.InitializationState.INITIALIZED;
 import static com.b2international.snowowl.datastore.server.snomed.InitializationState.UNINITIALIZED;
@@ -31,9 +29,7 @@ import static com.google.common.collect.Maps.newHashMap;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicReference;
 
-import org.apache.lucene.index.Term;
 import org.apache.lucene.search.Query;
-import org.apache.lucene.search.TermQuery;
 
 import bak.pcj.map.LongKeyMap;
 import bak.pcj.map.LongKeyMapIterator;
@@ -46,6 +42,7 @@ import com.b2international.snowowl.core.api.TerminologyComponentIdProvider;
 import com.b2international.snowowl.datastore.server.index.IndexServerService;
 import com.b2international.snowowl.datastore.server.snomed.InitializationState;
 import com.b2international.snowowl.snomed.datastore.index.SnomedIndexService;
+import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedMappings;
 import com.google.common.collect.ImmutableMap.Builder;
 
 /**
@@ -93,7 +90,7 @@ import com.google.common.collect.ImmutableMap.Builder;
 	private Map<String, String> getComponentLabelMapping() {
 		final SnomedComponentLabelCollector collector = new SnomedComponentLabelCollector();
 		final IndexServerService<?> indexService = getIndexService();
-		final Query query = new TermQuery(new Term(COMPONENT_TYPE, intToPrefixCoded(getTerminologyComponentId())));
+		final Query query = SnomedMappings.newQuery().type(getTerminologyComponentId()).matchAll();
 		indexService.search(getBranchPath(), query, collector);
 		return transformMap(collector.getIdLabelMapping());
 	}
@@ -109,6 +106,7 @@ import com.google.common.collect.ImmutableMap.Builder;
 		if (isUninitialized(state.get())) {
 			state.set(BUILDING);
 			new Thread(new Runnable() {
+				@Override
 				public void run() {
 					labelCache.putAll(getComponentLabelMapping());
 					state.set(INITIALIZED);

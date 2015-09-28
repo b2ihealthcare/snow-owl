@@ -20,12 +20,7 @@ import com.b2international.snowowl.snomed.api.domain.CharacteristicType;
 /**
  * Represents a summary of a specific SNOMED CT concept, returned when requesting concept children the IHTSDO SNOMED CT Browser.
  */
-public interface ISnomedBrowserChildConcept extends IConceptIdWithFsnProvider, IDefinitionStatusProvider, IStatusWithModuleIdProvider {
-
-	/**
-	 * @return {@code true} if this concept has other children in the tree, {@code false} otherwise
-	 */
-	boolean getHasChild();
+public interface ISnomedBrowserChildConcept extends IConceptIdWithFsnProvider, IDefinitionStatusProvider, IStatusWithModuleIdProvider, TaxonomyNode {
 
 	/**
 	 * @return the characteristic type of the IS A relationship where the link to the child concept originates from

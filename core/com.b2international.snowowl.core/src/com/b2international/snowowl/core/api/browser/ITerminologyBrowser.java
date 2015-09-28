@@ -22,9 +22,6 @@ import javax.annotation.Nullable;
 
 import org.eclipse.core.runtime.IProgressMonitor;
 
-import bak.pcj.set.LongSet;
-
-import com.b2international.snowowl.core.CoreTerminologyBroker;
 import com.b2international.snowowl.core.api.ComponentIdAndLabel;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.api.IComponentWithChildFlag;
@@ -43,13 +40,6 @@ public interface ITerminologyBrowser<C, K> extends ExtendedComponentProvider, Su
 	 */
 	Collection<C> getRootConcepts(final IBranchPath branchPath);
 	
-	/**
-	 * Returns with the storage keys of the root components from the terminology.
-	 * @param branchPath the branch path.
-	 * @return a set of storage keys for the root components.
-	 */
-	LongSet getRootConceptStorageKeys(final IBranchPath branchPath);
-
 	/**
 	 * Returns with the component IDs of the root components from the terminology.
 	 * @param branchPath the branch path.
@@ -70,22 +60,6 @@ public interface ITerminologyBrowser<C, K> extends ExtendedComponentProvider, Su
 	 * @return the parent concepts for the specified concept
 	 */
 	Collection<C> getSuperTypes(final IBranchPath branchPath, final C concept);
-	
-	/**
-	 * Returns all ancestor component storage keys of the specified component.
-	 * @param branchPath the branch path reference limiting visibility to a particular branch (final may not be {@code null})
-	 * @param conceptId the component ID.
-	 * @return a collection of all ancestor component storage keys.
-	 */
-	LongSet getSuperTypeStorageKeys(final IBranchPath branchPath, final K concpetId);
-
-	/**
-	 * Returns all direct ancestor component storage keys of the specified component.
-	 * @param branchPath the branch path reference limiting visibility to a particular branch (final may not be {@code null})
-	 * @param storageKey the unique storage key of the component.
-	 * @return a collection of all ancestor component storage keys.
-	 */
-	LongSet getSuperTypeStorageKeys(final IBranchPath branchPath, final long storageKey);
 	
 	/**
 	 * Returns with the unique storage key of the component. 
@@ -250,13 +224,6 @@ public interface ITerminologyBrowser<C, K> extends ExtendedComponentProvider, Su
 	IFilterClientTerminologyBrowser<C, K> filterTerminologyBrowser(final IBranchPath branchPath, @Nullable final String expression, @Nullable final IProgressMonitor monitor);
 	
 	/**
-	 * @param branchPath
-	 * @param expression
-	 * @return
-	 */
-	Collection<C> getFilteredConcepts(final IBranchPath branchPath, final String expression, final K...conceptIds);
-	
-	/**
 	 * Returns with the terminology dependent unique ID and the human readable label of a component specified by its unique storage key.
 	 * <br>This method could return with {@code null} if the component does not exist in the store on the specified branch.  
 	 * @param branchPath the branch path.
@@ -280,16 +247,6 @@ public interface ITerminologyBrowser<C, K> extends ExtendedComponentProvider, Su
 	Collection<IComponentWithChildFlag<K>> getSubTypesWithChildFlag(final IBranchPath branchPath, final C concept);
 
 	/**
-	 * Returns with the application specific unique component type of a component given with its unique storage key.
-	 * This method will return with {@link CoreTerminologyBroker#UNSPECIFIED_NUMBER_SHORT unspecified} if the component does not 
-	 * exist on the given branch or does not have any associated concrete component type.
-	 * @param branchPath the branch path.
-	 * @param storageKey the storage key of the component.
-	 * @return the component type as a short.
-	 */
-	short getComponentType(final IBranchPath branchPath, final long storageKey);
-	
-	/**
 	 * Checks whether a component identified by its terminology specific unique ID exits on the given branch.
 	 * Returns with {@code true} if the component exists, otherwise returns with {@code false}.
 	 * @param branchPath the branch path identifying the branch to check the existence.
@@ -297,15 +254,4 @@ public interface ITerminologyBrowser<C, K> extends ExtendedComponentProvider, Su
 	 * @return {@code true} if the component exists, otherwise returns with {@code false}.
 	 */
 	boolean exists(final IBranchPath branchPath, final String componentId);
-	
-	/**
-	 * Checks whether a component identified by its terminology specific unique ID exits on the given branch.
-	 * Returns with {@code true} if the component exists, otherwise returns with {@code false}.
-	 * @param branchPath the branch path identifying the branch to check the existence.
-	 * @param componentId the terminology specific unique ID.
-	 * @param codeSystemShortName unique short name of an existing code system.
-	 * @return {@code true} if the component exists, otherwise returns with {@code false}.
-	 */
-	boolean exists(final IBranchPath branchPath, final String componentId, final String codeSystemShortName);
-	
 }

@@ -23,9 +23,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicReference;
 
-import org.apache.lucene.index.Term;
 import org.apache.lucene.search.Query;
-import org.apache.lucene.search.TermQuery;
 
 import bak.pcj.IntIterator;
 import bak.pcj.LongCollection;
@@ -43,20 +41,16 @@ import com.b2international.commons.StringUtils;
 import com.b2international.commons.arrays.BidiMapWithInternalId;
 import com.b2international.commons.concurrent.equinox.ForkJoinUtils;
 import com.b2international.snowowl.core.api.IBranchPath;
-import com.b2international.snowowl.core.api.index.CommonIndexConstants;
-import com.b2international.snowowl.datastore.index.IndexUtils;
 import com.b2international.snowowl.datastore.server.index.IndexServerService;
 import com.b2international.snowowl.datastore.server.snomed.index.SnomedServerTerminologyBrowser;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
-import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
-import com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants;
 import com.b2international.snowowl.snomed.datastore.filteredrefset.FilteredRefSetMemberBrowser2;
 import com.b2international.snowowl.snomed.datastore.filteredrefset.IRefSetMemberNode;
 import com.b2international.snowowl.snomed.datastore.filteredrefset.IRefSetMemberOperation;
 import com.b2international.snowowl.snomed.datastore.filteredrefset.TopLevelRefSetMemberNode;
-import com.b2international.snowowl.snomed.datastore.index.SnomedHierarchy;
 import com.b2international.snowowl.snomed.datastore.index.SnomedConceptIndexQueryAdapter;
 import com.b2international.snowowl.snomed.datastore.index.SnomedConceptReducedQueryAdapter;
+import com.b2international.snowowl.snomed.datastore.index.SnomedHierarchy;
 
 /**
  * 
@@ -107,8 +101,6 @@ public class FilteredRefSetMemberBrowser2Builder {
 		final AtomicReference<LongCollection> filteredCandidateConceptIds = new AtomicReference<LongCollection>();
 		final AtomicReference<SnomedHierarchy> hierarchyReference = new AtomicReference<SnomedHierarchy>();
 		
-		final TermQuery conceptTypeQuery = new TermQuery(new Term(CommonIndexConstants.COMPONENT_TYPE, IndexUtils.intToPrefixCoded(SnomedTerminologyComponentConstants.CONCEPT_NUMBER)));
-		final TermQuery activeComponentQuery = new TermQuery(new Term(SnomedIndexBrowserConstants.COMPONENT_ACTIVE, IndexUtils.intToPrefixCoded(1)));
 		final Query labelQuery;
 		
 		if (!StringUtils.isEmpty(filterExpression)) {
@@ -125,9 +117,7 @@ public class FilteredRefSetMemberBrowser2Builder {
 		final int maxDoc = indexService.maxDoc(branchPath);
 		final List<Runnable> runnables = newArrayList();
 		
-		runnables.add(new CollectMembersRunnable(activeComponentQuery, 
-				conceptTypeQuery, 
-				labelQuery,
+		runnables.add(new CollectMembersRunnable(labelQuery,
 				filteredMemberConceptIds, 
 				maxDoc,
 				true, 
@@ -137,9 +127,7 @@ public class FilteredRefSetMemberBrowser2Builder {
 		
 		if (!StringUtils.isEmpty(filterExpression) && containsAddition()) {
 			
-			runnables.add(new CollectMembersRunnable(activeComponentQuery, 
-					conceptTypeQuery, 
-					labelQuery,
+			runnables.add(new CollectMembersRunnable(labelQuery,
 					filteredCandidateConceptIds,
 					maxDoc,
 					false,
@@ -148,7 +136,7 @@ public class FilteredRefSetMemberBrowser2Builder {
 					refSetId));
 		}
 
-		runnables.add(new InitTaxonomyRunnable(maxDoc, conceptTypeQuery, hierarchyReference, activeComponentQuery, indexService, branchPath));
+		runnables.add(new InitTaxonomyRunnable(maxDoc, hierarchyReference, indexService, branchPath));
 
 		ForkJoinUtils.runInParallel(runnables);
 

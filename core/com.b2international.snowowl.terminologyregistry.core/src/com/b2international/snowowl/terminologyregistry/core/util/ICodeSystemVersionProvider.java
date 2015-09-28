@@ -16,20 +16,23 @@
 package com.b2international.snowowl.terminologyregistry.core.util;
 
 import com.b2international.snowowl.core.api.IBranchPath;
+import com.b2international.snowowl.datastore.ICodeSystemVersion;
 
 /**
- * Component code system version should be determined based on the following
- * rules:
+ * Component code system version should be determined based on the following rules:
  * <ul>
- * 	<li>
- * 	When the component has been changed since its containing code system's last version,
- * 	then the provided version literal is ICodeSystemVersion.UNVERSIONED.</li>
- * 	<li>
- * 	When the component has been created since its containing code system's last version, 
- * 	then the provided version literal is ICodeSystemVersion.UNVERSIONED.</li>
- * 	<li>
- * 	When the component has not been changed since its containing code system's last version, 
- * 	then the provided version literal is the component's last version.</li>
+ * <li>
+ * When the component has been changed since its containing code system's last version,
+ * then the provided version literal is ICodeSystemVersion.UNVERSIONED.
+ * </li>
+ * <li>
+ * When the component has been created after its containing code system's last version, 
+ * then the provided version literal is ICodeSystemVersion.UNVERSIONED.
+ * </li>
+ * <li>
+ * When the component has not been changed since its containing code system's last version, 
+ * then the provided version literal is the component's last version.
+ * </li>
  * </ul>
  * 
  * @since 3.1.0
@@ -37,16 +40,16 @@ import com.b2international.snowowl.core.api.IBranchPath;
 public interface ICodeSystemVersionProvider {
 
 	/**
-	 * Returns the component's container code system's last version. 
+	 * Returns the component's container code system's last version.
+	 * <p> 
 	 * Please note, that the last version depends on the currently active version of
 	 * the component's container code system.
 	 * 
-	 * @param terminologyComponentId 
-	 * @param codeSystemShortName the short name of the code system where the current component belongs to.
-	 * @param componentId
-	 * @param branchPathMap
-	 * @return
+	 * @param terminologyComponentId the terminology component identifier, eg. SnomedTerminologyComponentConstant.CONCEPT  
+	 * @param componentId the identifier of the component for which the latest version should be computed 
+	 * @param branchPath the branch to inspect
+	 * 
+	 * @return the container code system's last version, or {@link ICodeSystemVersion#UNVERSIONED} if the version can not be determined
 	 */
-	public String getVersion(String terminologyComponentId, final String codeSystemShortName, String componentId, IBranchPath branchPath);
-
+	String getVersion(String terminologyComponentId, String componentId, IBranchPath branchPath);
 }

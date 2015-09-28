@@ -36,6 +36,7 @@ import com.b2international.snowowl.snomed.exporter.server.sandbox.SnomedDescript
 import com.b2international.snowowl.snomed.exporter.server.sandbox.SnomedExportConfiguration;
 import com.b2international.snowowl.snomed.exporter.server.sandbox.SnomedExporter;
 import com.b2international.snowowl.snomed.exporter.server.sandbox.SnomedRelationshipExporter;
+import com.b2international.snowowl.snomed.exporter.server.sandbox.SnomedStatedRelationshipExporter;
 import com.google.common.base.Predicate;
 import com.google.common.collect.Iterables;
 
@@ -117,9 +118,19 @@ public class SnomedExporterFacade {
 			monitor.worked(2);
 		}
 		
-		logActivity("Publishing SNOMED CT relationships into RF2 format.");
+		logActivity("Publishing SNOMED CT non-stated relationships into RF2 format.");
 		SnomedExporter relationshipExporter = new SnomedRelationshipExporter(configuration);
 		new SnomedExportExecutor(relationshipExporter, workingDirectory, modulesToExport, clientNamespace).execute();
+		
+		if (monitor.isCanceled()) {
+			return;
+		} else {
+			monitor.worked(2);
+		}
+		
+		logActivity("Publishing SNOMED CT stated relationships into RF2 format.");
+		SnomedExporter statedRelationshipExporter = new SnomedStatedRelationshipExporter(configuration);
+		new SnomedExportExecutor(statedRelationshipExporter, workingDirectory, modulesToExport, clientNamespace).execute();
 		
 		if (includeRf1) {
 			

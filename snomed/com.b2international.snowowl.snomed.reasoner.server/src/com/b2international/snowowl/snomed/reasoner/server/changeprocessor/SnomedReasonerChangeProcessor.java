@@ -40,6 +40,7 @@ import com.b2international.snowowl.datastore.ICDOChangeProcessor;
 import com.b2international.snowowl.datastore.ICDOCommitChangeSet;
 import com.b2international.snowowl.datastore.server.snomed.index.DeltaReasonerTaxonomyBuilder;
 import com.b2international.snowowl.datastore.server.snomed.index.InitialReasonerTaxonomyBuilder;
+import com.b2international.snowowl.datastore.server.snomed.index.AbstractReasonerTaxonomyBuilder.Type;
 import com.b2international.snowowl.snomed.datastore.ConcreteDomainFragment;
 import com.b2international.snowowl.snomed.datastore.StatementFragment;
 import com.b2international.snowowl.snomed.reasoner.model.ConceptDefinition;
@@ -86,8 +87,8 @@ public class SnomedReasonerChangeProcessor implements ICDOChangeProcessor {
 			LOGGER.info(">>> Processing OWL ontology changes");
 			final Stopwatch changeProcessorStopwatch = Stopwatch.createStarted();
 
-			final InitialReasonerTaxonomyBuilder oldReasonerTaxonomy = new InitialReasonerTaxonomyBuilder(branchPath, false);
-			final DeltaReasonerTaxonomyBuilder newReasonerTaxonomy = new DeltaReasonerTaxonomyBuilder(oldReasonerTaxonomy, commitChangeSet, false);
+			final InitialReasonerTaxonomyBuilder oldReasonerTaxonomy = new InitialReasonerTaxonomyBuilder(branchPath, Type.REASONER);
+			final DeltaReasonerTaxonomyBuilder newReasonerTaxonomy = new DeltaReasonerTaxonomyBuilder(oldReasonerTaxonomy, Type.REASONER, commitChangeSet);
 			
 			for (final LongIterator itr = newReasonerTaxonomy.getConceptIdsToRemove().iterator(); itr.hasNext(); /* empty */) {
 				final long conceptId = itr.next();

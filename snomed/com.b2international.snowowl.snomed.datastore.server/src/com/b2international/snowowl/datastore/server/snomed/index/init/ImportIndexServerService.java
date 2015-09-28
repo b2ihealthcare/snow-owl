@@ -35,8 +35,6 @@ import org.apache.lucene.document.LongField;
 import org.apache.lucene.document.StringField;
 import org.apache.lucene.index.IndexableField;
 import org.apache.lucene.index.Term;
-import org.apache.lucene.search.BooleanClause.Occur;
-import org.apache.lucene.search.BooleanQuery;
 import org.apache.lucene.search.CachingWrapperFilter;
 import org.apache.lucene.search.Filter;
 import org.apache.lucene.search.IndexSearcher;
@@ -67,7 +65,9 @@ import com.b2international.snowowl.datastore.cdo.ICDOConnection;
 import com.b2international.snowowl.datastore.cdo.ICDOConnectionManager;
 import com.b2international.snowowl.datastore.index.DocIdCollector;
 import com.b2international.snowowl.datastore.index.DocIdCollector.DocIdsIterator;
+import com.b2international.snowowl.datastore.index.IndexRead;
 import com.b2international.snowowl.datastore.index.IndexUtils;
+import com.b2international.snowowl.datastore.index.mapping.LongIndexField;
 import com.b2international.snowowl.datastore.store.SingleDirectoryIndexImpl;
 import com.b2international.snowowl.snomed.Description;
 import com.b2international.snowowl.snomed.Relationship;
@@ -79,6 +79,7 @@ import com.b2international.snowowl.snomed.datastore.SnomedRefSetBrowser;
 import com.b2international.snowowl.snomed.datastore.SnomedRelationshipLookupService;
 import com.b2international.snowowl.snomed.datastore.SnomedStatementBrowser;
 import com.b2international.snowowl.snomed.datastore.SnomedTerminologyBrowser;
+import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedMappings;
 import com.b2international.snowowl.snomed.datastore.services.ISnomedComponentService;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
@@ -206,7 +207,7 @@ public class ImportIndexServerService extends SingleDirectoryIndexImpl {
         doc.add(businessIdField);
         doc.add(new LongField(CDO_ID, storageKey, IndexUtils.TYPE_PRECISE_LONG_STORED));
 
-        index(new Term(CDO_ID, IndexUtils.longToPrefixCoded(storageKey)), doc);
+        index(new Term(CDO_ID, LongIndexField._toBytesRef(storageKey)), doc);
     }
 
     public long getMemberCdoId(final String uuid) {
@@ -264,40 +265,17 @@ public class ImportIndexServerService extends SingleDirectoryIndexImpl {
     }
 
     private long getItemCdoId(final Query idQuery) {
-
-        IndexSearcher searcher = null;
-
-        try {
-
-            searcher = manager.acquire();
-
-            final TopDocs docs = searcher.search(idQuery, 1);
-
-            if (null == docs || CompareUtils.isEmpty(docs.scoreDocs)) {
-                return CDOUtils.NO_STORAGE_KEY;
-            }
-
-            final Document cdoIdDocument = searcher.doc(docs.scoreDocs[0].doc, CDO_ID_ONLY);
-            final long storageKey = IndexUtils.getLongValue(cdoIdDocument.getField(CDO_ID));
-            return storageKey;
-
-        } catch (final IOException e) {
-
-            LOGGER.error("Error while retrieving CDOID.");
-            throw new SnowowlRuntimeException(e);
-
-        } finally {
-
-            if (null != manager && null != searcher) {
-
-                try {
-                    manager.release(searcher);
-                } catch (final IOException e) {
-                    LOGGER.error("Error while releasing index searcher.");
-                    throw new SnowowlRuntimeException(e);
-                }
-            }
-        }
+    	return executeReadTransaction(new IndexRead<Long>() {
+			@Override
+			public Long execute(IndexSearcher index) throws IOException {
+				final TopDocs docs = index.search(idQuery, 1);
+	            if (null == docs || CompareUtils.isEmpty(docs.scoreDocs)) {
+	                return CDOUtils.NO_STORAGE_KEY;
+	            }
+	            final Document cdoIdDocument = index.doc(docs.scoreDocs[0].doc, CDO_ID_ONLY);
+	            return IndexUtils.getLongValue(cdoIdDocument.getField(CDO_ID));
+			}
+		});
     }
 
     public void registerDescription(final String descriptionId, final String conceptId, final String term, final TermType type, final boolean active) {
@@ -476,28 +454,18 @@ public class ImportIndexServerService extends SingleDirectoryIndexImpl {
 	}
 
     private String getFullySpecifiedName(final String conceptId) {
-		final BooleanQuery conceptLabelQuery = new BooleanQuery(true); 
-		conceptLabelQuery.add(createActiveQuery(), Occur.MUST);
-		conceptLabelQuery.add(createContainerConceptQuery(conceptId), Occur.MUST);
-		conceptLabelQuery.add(new TermQuery(new Term(TERM_TYPE, IndexUtils.intToPrefixCoded(TermType.FSN.ordinal()))), Occur.MUST);
-		
+		final Query conceptLabelQuery = SnomedMappings.newQuery().and(createActiveQuery()).and(createContainerConceptQuery(conceptId)).field(TERM_TYPE, TermType.FSN.ordinal()).matchAll(); 
         final Iterable<Document> fsnDescriptionDocuments = searchOne(conceptLabelQuery, null);
-		for (Document document : fsnDescriptionDocuments) {
-			return document.get(TERM);
-		}
-		
+        for (final Document document : fsnDescriptionDocuments) {
+            return document.get(TERM);
+        }
+
         return null;
 	}
 
 	public String getConceptLabel(final String conceptId, final String languageRefSetId) {
-
-        final BooleanQuery conceptLabelQuery = new BooleanQuery(true); 
-        conceptLabelQuery.add(createActiveQuery(), Occur.MUST);
-        conceptLabelQuery.add(createContainerConceptQuery(conceptId), Occur.MUST);
-        conceptLabelQuery.add(new TermQuery(new Term(TERM_TYPE, IndexUtils.intToPrefixCoded(TermType.SYNONYM_AND_DESCENDANTS.ordinal()))), Occur.MUST);
-        
+		final Query conceptLabelQuery = SnomedMappings.newQuery().and(createActiveQuery()).and(createContainerConceptQuery(conceptId)).field(TERM_TYPE, TermType.SYNONYM_AND_DESCENDANTS.ordinal()).matchAll(); 
         final Filter preferredFilter = getPreferredFilter(languageRefSetId);
-        
         final Iterable<Document> preferredDescriptionDocuments = searchOne(conceptLabelQuery, preferredFilter);
         for (final Document document : preferredDescriptionDocuments) {
         	return document.get(TERM);
@@ -514,10 +482,7 @@ public class ImportIndexServerService extends SingleDirectoryIndexImpl {
 
             searcher = manager.acquire();
 
-            final BooleanQuery conceptActiveDescriptionsQuery = new BooleanQuery(true); 
-            conceptActiveDescriptionsQuery.add(createActiveQuery(), Occur.MUST);
-            conceptActiveDescriptionsQuery.add(createContainerConceptQuery(conceptId), Occur.MUST);
-
+            final Query conceptActiveDescriptionsQuery = SnomedMappings.newQuery().and(createActiveQuery()).and(createContainerConceptQuery(conceptId)).matchAll(); 
             final TotalHitCountCollector hitCountCollector = new TotalHitCountCollector();
             searcher.search(conceptActiveDescriptionsQuery, hitCountCollector);
 
@@ -704,5 +669,23 @@ public class ImportIndexServerService extends SingleDirectoryIndexImpl {
                 }
             }
         }		
+	}
+    
+	public <T> T executeReadTransaction(IndexRead<T> read) {
+		IndexSearcher searcher = null;	
+		try {
+			searcher = manager.acquire();
+			return read.execute(searcher);
+		} catch (final IOException e) {
+			throw new IndexException(e);
+		} finally {
+			if (searcher != null) {
+				try {
+					manager.release(searcher);
+				} catch (final IOException e) {
+					throw new IndexException(e);
+				}			
+			}
+		}
 	}
 }

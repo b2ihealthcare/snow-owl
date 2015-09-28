@@ -54,6 +54,9 @@ public abstract class Net4jProtocolConstants {
 	public static final short ICD10AM_IMPORT_SIGNAL = 601;
 	public static final short ICD10_AM_INDEX_SEARCHER_SIGNAL = 602;
 	
+	//ICD-10-CM protocol
+	public static final short ICD10CM_IMPORT_SIGNAL = 501;
+	
 	//UMLS protocol
 	public static final short UMLS_IMPORT_SIGNAL = 401;
 	public static final short UMLS_EXPORT_SIGNAL = 402;

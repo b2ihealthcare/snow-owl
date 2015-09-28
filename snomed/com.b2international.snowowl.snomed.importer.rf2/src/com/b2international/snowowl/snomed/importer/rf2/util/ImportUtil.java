@@ -30,11 +30,9 @@ import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.collect.Iterables.get;
 import static com.google.common.collect.Iterables.isEmpty;
 
-import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.lang.reflect.InvocationTargetException;
 import java.net.URL;
 import java.text.MessageFormat;
@@ -76,6 +74,7 @@ import com.b2international.snowowl.snomed.datastore.ISnomedImportPostProcessor;
 import com.b2international.snowowl.snomed.datastore.SnomedEditingContext;
 import com.b2international.snowowl.snomed.datastore.SnomedRefSetBrowser;
 import com.b2international.snowowl.snomed.datastore.SnomedTerminologyBrowser;
+import com.b2international.snowowl.snomed.datastore.StatementCollectionMode;
 import com.b2international.snowowl.snomed.datastore.index.refset.SnomedRefSetIndexEntry;
 import com.b2international.snowowl.snomed.importer.net4j.ImportConfiguration;
 import com.b2international.snowowl.snomed.importer.net4j.SnomedImportResult;
@@ -85,8 +84,8 @@ import com.b2international.snowowl.snomed.importer.release.ReleaseFileSet;
 import com.b2international.snowowl.snomed.importer.release.ReleaseFileSetSelectors;
 import com.b2international.snowowl.snomed.importer.rf2.SnomedCompositeImportUnit;
 import com.b2international.snowowl.snomed.importer.rf2.SnomedCompositeImporter;
+import com.b2international.snowowl.snomed.importer.rf2.model.ComponentImportType;
 import com.b2international.snowowl.snomed.importer.rf2.model.ComponentImportUnit;
-import com.b2international.snowowl.snomed.importer.rf2.model.RF2RelationshipsMerger;
 import com.b2international.snowowl.snomed.importer.rf2.model.SnomedImportContext;
 import com.b2international.snowowl.snomed.importer.rf2.refset.AbstractSnomedRefSetImporter;
 import com.b2international.snowowl.snomed.importer.rf2.refset.SnomedRefSetImporterFactory;
@@ -95,7 +94,6 @@ import com.b2international.snowowl.snomed.importer.rf2.terminology.SnomedDescrip
 import com.b2international.snowowl.snomed.importer.rf2.terminology.SnomedRelationshipImporter;
 import com.b2international.snowowl.snomed.importer.rf2.validation.SnomedTaxonomyValidator;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType;
-import com.google.common.base.Charsets;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Predicates;
 import com.google.common.base.Strings;
@@ -256,27 +254,23 @@ public final class ImportUtil {
 			}
 
 			if (ImportConfiguration.isValidReleaseFile(configuration.getDescriptionsFile())) {
-				
-				if (ImportConfiguration.isValidReleaseFile(configuration.getTextDefinitionFile())) {
-
-					final URL mergedFileUrl = new Rf2FileMerger(configuration.getDescriptionsFile().toURI()).add(configuration.getTextDefinitionFile().toURI()).merge().toURI().toURL();
-					importers.add(new SnomedDescriptionImporter(context, mergedFileUrl.openStream(), configuration.getMappedName(mergedFileUrl.getPath())));
-					
-				} else {
-					final URL url = configuration.toURL(configuration.getDescriptionsFile());
-					importers.add(new SnomedDescriptionImporter(context, url.openStream(), configuration.getMappedName(url.getPath())));
-				}
+				final URL url = configuration.toURL(configuration.getDescriptionsFile());
+				importers.add(new SnomedDescriptionImporter(context, url.openStream(), configuration.getMappedName(url.getPath()), ComponentImportType.DESCRIPTION));
+			}
+			
+			if (ImportConfiguration.isValidReleaseFile(configuration.getTextDefinitionFile())) {
+				final URL url = configuration.toURL(configuration.getTextDefinitionFile());
+				importers.add(new SnomedDescriptionImporter(context, url.openStream(), configuration.getMappedName(url.getPath()), ComponentImportType.TEXT_DEFINITION));
 			}
 
 			if (ImportConfiguration.isValidReleaseFile(configuration.getRelationshipsFile())) {
 				final URL url = configuration.toURL(configuration.getRelationshipsFile());
+				importers.add(new SnomedRelationshipImporter(context, url.openStream(), configuration.getMappedName(url.getPath()), ComponentImportType.RELATIONSHIP));
+			}
 
-				// XXX: even if we have a stated relationships file specified, this will still report as being imported from the inferred file
-				if (ImportConfiguration.isValidReleaseFile(configuration.getStatedRelationshipsFile())) {
-					importers.add(new SnomedRelationshipImporter(context, createMergedRelationshipFile(configuration).openStream(), configuration.getMappedName(url.getPath())));
-				} else {
-					importers.add(new SnomedRelationshipImporter(context, url.openStream(), configuration.getMappedName(url.getPath())));
-				}
+			if (ImportConfiguration.isValidReleaseFile(configuration.getStatedRelationshipsFile())) {
+				final URL url = configuration.toURL(configuration.getStatedRelationshipsFile());
+				importers.add(new SnomedRelationshipImporter(context, url.openStream(), configuration.getMappedName(url.getPath()), ComponentImportType.STATED_RELATIONSHIP));
 			}
 
 		} catch (final IOException e) {
@@ -413,7 +407,8 @@ public final class ImportUtil {
 		validationUtil.postValidate(subMonitor.newChild(1, SubMonitor.SUPPRESS_NONE));
 
 		result.getValidationDefects().addAll(validationUtil.getDefects());
-		result.getValidationDefects().addAll(new SnomedTaxonomyValidator(branchPath, configuration).validate());
+		result.getValidationDefects().addAll(new SnomedTaxonomyValidator(branchPath, configuration, StatementCollectionMode.INFERRED_ISA_ONLY).validate());
+		result.getValidationDefects().addAll(new SnomedTaxonomyValidator(branchPath, configuration, StatementCollectionMode.STATED_ISA_ONLY).validate());
 		
 		if (!isEmpty(result.getValidationDefects())) {
 
@@ -465,30 +460,6 @@ public final class ImportUtil {
 			}
 		}
 
-	}
-
-	private URL createMergedRelationshipFile(final ImportConfiguration configuration) throws IOException {
-		final RF2RelationshipsMerger relationshipsMerger = new RF2RelationshipsMerger();
-		final URL url = configuration.toURL(configuration.getStatedRelationshipsFile());
-		readRelationshipFile(url, relationshipsMerger);
-		
-		return createNewRF2RelationshipsFile(relationshipsMerger, configuration.toURL(configuration.getRelationshipsFile())).toURI().toURL();
-	}
-
-	private File createNewRF2RelationshipsFile(final RF2RelationshipsMerger relationshipsStore, final URL inferredRelationshipsUrl) throws IOException {
-		final File tempFile = File.createTempFile("MergedRF2Relationships", ".txt");
-		relationshipsStore.writeRelationshipsToFile(tempFile, inferredRelationshipsUrl);
-		return tempFile;
-	}
-
-	private void readRelationshipFile(final URL url, final RF2RelationshipsMerger relationshipsMerger) throws IOException {
-		String stringLine = "";
-		final BufferedReader inputStream = new BufferedReader(new InputStreamReader(url.openStream(), Charsets.UTF_8));
-		inputStream.readLine();
-		while ((stringLine = inputStream.readLine()) != null) {
-			relationshipsMerger.addNewMember(stringLine);
-		}
-		inputStream.close();
 	}
 
 	private void postProcess(final SnomedImportContext context) {

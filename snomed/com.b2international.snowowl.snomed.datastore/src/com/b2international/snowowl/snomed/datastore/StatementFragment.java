@@ -17,60 +17,68 @@ package com.b2international.snowowl.snomed.datastore;
 
 import java.io.Serializable;
 
-
 /**
- * Bare minimum of a SNOMED&nbsp;CT relationship.
- *
+ * Represents the bare minimum of a SNOMED CT relationship (without binding the source concept).
  */
 public class StatementFragment implements Serializable {
 
 	private static final long serialVersionUID = 8281299401725022928L;
 
-	private final boolean destinationNegated;
-	private final boolean universal;
-	private final byte group;
-	private final byte unionGroup;
 	private final long typeId;
 	private final long destinationId;
+	private final boolean destinationNegated;
+	private final byte group;
+	private final byte unionGroup;
+	private final boolean universal;
+
+	// Only stored if the original relationship identifier and storage key is known
 	private final long statementId;
 	private final long storageKey;
 
-	/**
-	 * Creates a statement fragment.
-	 * @param statementId the ID of the statement.
-	 * @param destinationId ID of the destination concept.
-	 * @param typeId ID of the statement type concept.
-	 * @param l
-	 * @param destinationNegated {@code true} if destination is negated, otherwise {@code false}.
-	 * @param universal {@code true} if universal restriction, otherwise {@code false}.
-	 * @param group the statement group.
-	 * @param unionGroup the statement union group.
-	 */
-	public StatementFragment(final long statementId,
-			final long storageKey,
-			final long destinationId,
-			final long typeId,
-			final boolean destinationNegated,
-			final boolean universal,
-			final byte group,
-			final byte unionGroup) {
+	public StatementFragment(final long typeId, final long destinationId) {
+		this(typeId, destinationId, false, (byte) 0, (byte) 0, false, -1L, -1L);
+	}
 
-		this.storageKey = storageKey;
-		this.destinationNegated = destinationNegated;
-		this.universal = universal;
-		this.group = group;
-		this.unionGroup = unionGroup;
+	public StatementFragment(final long typeId,
+			final long destinationId,
+			final boolean destinationNegated,
+			final byte group,
+			final byte unionGroup,
+			final boolean universal) {
+
+		this(typeId, destinationId, destinationNegated, group, unionGroup, universal, -1L, -1L);
+	}
+
+	public StatementFragment(final long typeId,
+			final long destinationId,
+			final boolean destinationNegated,
+			final byte group,
+			final byte unionGroup,
+			final boolean universal,
+			final long statementId,
+			final long storageKey) {
+
 		this.typeId = typeId;
 		this.destinationId = destinationId;
+		this.destinationNegated = destinationNegated;
+		this.group = group;
+		this.unionGroup = unionGroup;
+		this.universal = universal;
+
 		this.statementId = statementId;
+		this.storageKey = storageKey;
+	}
+
+	public long getTypeId() {
+		return typeId;
+	}
+
+	public long getDestinationId() {
+		return destinationId;
 	}
 
 	public boolean isDestinationNegated() {
 		return destinationNegated;
-	}
-
-	public boolean isUniversal() {
-		return universal;
 	}
 
 	public byte getGroup() {
@@ -81,12 +89,8 @@ public class StatementFragment implements Serializable {
 		return unionGroup;
 	}
 
-	public long getTypeId() {
-		return typeId;
-	}
-
-	public long getDestinationId() {
-		return destinationId;
+	public boolean isUniversal() {
+		return universal;
 	}
 
 	public long getStatementId() {
@@ -99,8 +103,24 @@ public class StatementFragment implements Serializable {
 
 	@Override
 	public String toString() {
-		return "StatementFragment [destinationNegated=" + destinationNegated + ", universal=" + universal + ", group=" + group + ", unionGroup="
-				+ unionGroup + ", typeId=" + typeId + ", destinationId=" + destinationId + ", statementId=" + statementId + ", storageKey="
-				+ storageKey + "]";
+		final StringBuilder builder = new StringBuilder();
+		builder.append("StatementFragment [typeId=");
+		builder.append(typeId);
+		builder.append(", destinationId=");
+		builder.append(destinationId);
+		builder.append(", destinationNegated=");
+		builder.append(destinationNegated);
+		builder.append(", group=");
+		builder.append(group);
+		builder.append(", unionGroup=");
+		builder.append(unionGroup);
+		builder.append(", universal=");
+		builder.append(universal);
+		builder.append(", statementId=");
+		builder.append(statementId);
+		builder.append(", storageKey=");
+		builder.append(storageKey);
+		builder.append("]");
+		return builder.toString();
 	}
 }

@@ -27,6 +27,7 @@ import com.b2international.snowowl.snomed.datastore.SnomedEditingContext;
 import com.b2international.snowowl.snomed.datastore.SnomedRefSetEditingContext;
 import com.b2international.snowowl.snomed.datastore.SnomedRefSetLookupService;
 import com.b2international.snowowl.snomed.datastore.SnomedRefSetUtil;
+import com.b2international.snowowl.snomed.datastore.model.SnomedModelExtensions;
 import com.b2international.snowowl.snomed.reasoner.server.diff.OntologyChange.Nature;
 import com.b2international.snowowl.snomed.reasoner.server.diff.OntologyChangeProcessor;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedConcreteDataTypeRefSet;
@@ -34,20 +35,14 @@ import com.b2international.snowowl.snomed.snomedrefset.SnomedConcreteDataTypeRef
 
 /**
  * Applies changes related to concrete domain elements using the specified SNOMED CT editing context.
- * 
  */
 public class ConcreteDomainPersister extends OntologyChangeProcessor<ConcreteDomainFragment> {
 
 	private final SnomedRefSetEditingContext refSetEditingContext;
-	
 	private final CDOTransaction cdoTransaction;
-	
 	private final Concept moduleConcept;
-	
 	private final SnomedConceptLookupService conceptLookupService;
-	
 	private final SnomedRefSetLookupService refSetLookupService;
-
 	private final Nature nature;
 	
 	public ConcreteDomainPersister(final SnomedEditingContext context, final Nature nature) {
@@ -60,10 +55,6 @@ public class ConcreteDomainPersister extends OntologyChangeProcessor<ConcreteDom
 		refSetLookupService = new SnomedRefSetLookupService();
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see com.b2international.snowowl.snomed.reasoner.server.diff.OntologyChangeProcessor#handleRemovedSubject(java.io.Serializable)
-	 */
 	@Override
 	protected void handleRemovedSubject(final long conceptId, final ConcreteDomainFragment removedEntry) {
 		
@@ -72,14 +63,9 @@ public class ConcreteDomainPersister extends OntologyChangeProcessor<ConcreteDom
 		}
 		
 		final SnomedConcreteDataTypeRefSetMember existingMember = (SnomedConcreteDataTypeRefSetMember) refSetEditingContext.lookup(removedEntry.getStorageKey());
-		existingMember.setActive(false);
-		existingMember.unsetEffectiveTime();
+		SnomedModelExtensions.removeOrDeactivate(existingMember);
 	}
 	
-	/*
-	 * (non-Javadoc)
-	 * @see com.b2international.snowowl.snomed.reasoner.server.diff.OntologyChangeProcessor#handleAddedSubject(java.io.Serializable)
-	 */
 	@Override
 	protected void handleAddedSubject(final long conceptId, final ConcreteDomainFragment addedEntry) {
 		

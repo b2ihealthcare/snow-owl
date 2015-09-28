@@ -15,13 +15,8 @@
  */
 package com.b2international.snowowl.snomed.validation.constraints.component;
 
-import static com.b2international.snowowl.datastore.index.IndexUtils.intToPrefixCoded;
-import static com.b2international.snowowl.datastore.index.IndexUtils.longToPrefixCoded;
 import static com.b2international.snowowl.snomed.SnomedConstants.Concepts.FULLY_SPECIFIED_NAME;
 import static com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants.CONCEPT_NUMBER;
-import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.COMPONENT_ACTIVE;
-import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.DESCRIPTION_CONCEPT_ID;
-import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.DESCRIPTION_TYPE_ID;
 import static com.google.common.base.Preconditions.checkNotNull;
 
 import org.apache.lucene.search.Query;
@@ -31,10 +26,10 @@ import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.validation.ComponentValidationConstraint;
 import com.b2international.snowowl.core.validation.ComponentValidationDiagnostic;
 import com.b2international.snowowl.core.validation.ComponentValidationDiagnosticImpl;
-import com.b2international.snowowl.datastore.index.IndexQueryBuilder;
 import com.b2international.snowowl.datastore.server.snomed.index.SnomedIndexServerService;
 import com.b2international.snowowl.snomed.datastore.SnomedConceptIndexEntry;
 import com.b2international.snowowl.snomed.datastore.index.SnomedIndexService;
+import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedMappings;
 
 /**
  * All concepts should have a fully-specified name of appropriate status.
@@ -69,11 +64,11 @@ public class SnomedConceptFsnStatusConstraint extends ComponentValidationConstra
 	}
 
 	private Query createQuery(final String conceptId) {
-		return new IndexQueryBuilder()
-			.requireExactTerm(COMPONENT_ACTIVE, intToPrefixCoded(1))
-			.requireExactTerm(DESCRIPTION_CONCEPT_ID, longToPrefixCoded(conceptId))
-			.requireExactTerm(DESCRIPTION_TYPE_ID, longToPrefixCoded(FULLY_SPECIFIED_NAME))
-			.toQuery();
+		return SnomedMappings.newQuery()
+				.active()
+				.descriptionConcept(conceptId)
+				.descriptionType(FULLY_SPECIFIED_NAME)
+				.matchAll();
 	}
 
 }

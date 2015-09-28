@@ -18,6 +18,7 @@ package com.b2international.snowowl.datastore.server.index;
 import static com.b2international.snowowl.datastore.BranchPathUtils.isBasePath;
 import static com.b2international.snowowl.datastore.BranchPathUtils.isMain;
 import static com.google.common.base.Preconditions.checkNotNull;
+import static com.google.common.base.Preconditions.checkState;
 
 import java.io.Closeable;
 import java.io.IOException;
@@ -39,6 +40,7 @@ import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.MatchAllDocsQuery;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.ReferenceManager;
+import org.apache.lucene.search.TopDocs;
 import org.apache.lucene.store.AlreadyClosedException;
 import org.apache.lucene.util.Version;
 import org.slf4j.Logger;
@@ -49,8 +51,13 @@ import com.b2international.snowowl.core.api.BranchPath;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.api.index.IndexException;
 import com.b2international.snowowl.datastore.index.DelimiterStopAnalyzer;
+import com.b2international.snowowl.datastore.index.DocumentUpdater;
 import com.b2international.snowowl.datastore.index.IndexUtils;
 import com.b2international.snowowl.datastore.index.NullSearcherManager;
+import com.b2international.snowowl.datastore.index.mapping.DocumentBuilderBase;
+import com.b2international.snowowl.datastore.index.mapping.DocumentBuilderFactory;
+import com.b2international.snowowl.datastore.index.mapping.IndexField;
+import com.b2international.snowowl.datastore.index.mapping.Mappings;
 import com.b2international.snowowl.datastore.server.internal.lucene.index.FilteringMergePolicy;
 import com.google.common.collect.ImmutableMap;
 
@@ -205,6 +212,10 @@ public class IndexBranchService implements Closeable {
 		}
 	}
 
+	public void updateDocument(final long storageKey, final Document document) throws IOException {
+		updateDocument(Mappings.storageKey().toTerm(storageKey), document);
+	}
+	
 	public void updateDocument(final Term term, final Document document) throws IOException {
 		ensureOpen();
 		ensureWritable();
@@ -212,6 +223,43 @@ public class IndexBranchService implements Closeable {
 			indexWriter.updateDocument(term, document);
 		}
 	}
+
+	public <D extends DocumentBuilderBase<D>> void upsert(Query query, DocumentUpdater<D> documentUpdater, DocumentBuilderFactory<D> builderFactory) throws IOException {
+		ensureOpen();
+		ensureWritable();
+		if (indexWriter != null) {
+			IndexSearcher searcher = null;
+			try {
+				searcher = manager.acquire();
+				final TopDocs docs = searcher.search(query, 2);
+				checkState(docs.totalHits <= 1, "Multiple documents with same query ('%s') on a single branch path", query);
+				final D builder;
+				if (docs.totalHits == 0) {
+					// create new
+					builder = builderFactory.createBuilder();
+				} else {
+					final Document doc = searcher.doc(docs.scoreDocs[0].doc);
+					builder = builderFactory.createBuilder(doc);
+				}
+				documentUpdater.update(builder);
+				final Document updatedDoc = builder.build();
+				checkState(updatedDoc.getFields().size() > 0, "At least one field must be specified");
+				final IndexField<Long> storageKeyField = Mappings.storageKey();
+				final Long storageKey = storageKeyField.getValue(updatedDoc);
+				final Term key = storageKeyField.toTerm(storageKey);
+				updateDocument(key, updatedDoc);
+			} finally {
+				if (searcher != null) {
+					try {
+						manager.release(searcher);
+					} catch (IOException e) {
+						e.printStackTrace();
+					}
+				}
+			}
+		}
+	}
+
 
 	public void commit() throws IOException {
 		ensureOpen();

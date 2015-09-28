@@ -75,16 +75,24 @@ public class ConceptModelSemanticValidator {
 	private boolean exists(IBranchPath branchPath, Object featureValue) {
 		if (featureValue instanceof String) {
 			final String value = (String) featureValue;
-			if (!value.isEmpty()) {
-				if (lookupService.exists(branchPath, value)) {
-					return true;
-				}
+			
+			if (value.isEmpty()) {
+				return true;
+			}
+			
+			if (lookupService.exists(branchPath, value)) {
+				return true;
+			}
+			
+			if (ApplicationContext.getInstance().exists(ImportIndexServerService.class)) {
 				final ImportIndexServerService importService = ApplicationContext.getInstance().getService(ImportIndexServerService.class);
 				if (importService != null && importService.componentExists(value)) {
 					return true;
 				}
 			}
 		}
-		return false;
+
+		// XXX: feature values can be optional (eg. relationship predicate, characteristic type)
+		return featureValue == null;
 	}
 }

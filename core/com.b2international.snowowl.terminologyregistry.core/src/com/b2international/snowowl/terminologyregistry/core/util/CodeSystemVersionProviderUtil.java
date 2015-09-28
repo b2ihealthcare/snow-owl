@@ -15,8 +15,6 @@
  */
 package com.b2international.snowowl.terminologyregistry.core.util;
 
-import static com.google.common.base.Strings.nullToEmpty;
-
 import org.eclipse.core.runtime.IConfigurationElement;
 
 import com.b2international.snowowl.core.CoreTerminologyBroker;
@@ -29,15 +27,14 @@ public class CodeSystemVersionProviderUtil {
 	
 	public static final String COMPONENT_VERSION_PROVIDER_EXTENSION_POINT_ID = "com.b2international.snowowl.terminologyregistry.core.codeSystemVersionProvider";
 
-	private static ICodeSystemVersionProvider getComponentVersionProvider(String terminologyComponentId) {
+	public static ICodeSystemVersionProvider getComponentVersionProvider(String terminologyComponentId) {
 		CoreTerminologyBroker broker = CoreTerminologyBroker.getInstance();
 		IConfigurationElement configurationElement = broker.getTerminologyComponentLevelConfigurationElement(terminologyComponentId, COMPONENT_VERSION_PROVIDER_EXTENSION_POINT_ID);
 		return (ICodeSystemVersionProvider) broker.createExecutableExtension(configurationElement);
 	}
 	
-	public static String getVersion(final String terminologyComponentId, final String codeSystemShortName, final String componentId, final IBranchPath branchPath) {
+	public static String getVersion(final String terminologyComponentId, final String componentId, final IBranchPath branchPath) {
 		ICodeSystemVersionProvider versionProvider = getComponentVersionProvider(terminologyComponentId);
-		return versionProvider.getVersion(terminologyComponentId, nullToEmpty(codeSystemShortName), componentId, branchPath);
+		return versionProvider.getVersion(terminologyComponentId, componentId, branchPath);
 	}
-
 }

@@ -20,7 +20,6 @@ import java.util.List;
 
 import org.eclipse.core.runtime.IProgressMonitor;
 
-import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.api.IComponent;
 import com.b2international.snowowl.core.api.IComponentWithChildFlag;
 import com.b2international.snowowl.core.api.browser.IClientTerminologyAndRefSetBrowser;
@@ -323,24 +322,11 @@ public abstract class AbstractClientRefSetBrowser<R extends IComponent<K>, C ext
 		return wrapperService.getSubTypesWithChildFlag(getBranchPath(), concept);
 	}
 
-	@Override
-	public Collection<C> getFilteredConcepts(final IBranchPath branchPath, final String expression, final K... conceptIds) {
-		return wrapperService.getFilteredConcepts(branchPath, expression, conceptIds);
-	}
-
 	/* (non-Javadoc)
 	 * @see com.b2international.snowowl.core.api.browser.IClientTerminologyBrowser#exists(java.lang.String)
 	 */
 	@Override
 	public boolean exists(final String componentId) {
 		return wrapperService.exists(getBranchPath(), componentId);
-	}
-
-	/* (non-Javadoc)
-	 * @see com.b2international.snowowl.core.api.browser.IClientTerminologyBrowser#exists(java.lang.String, java.lang.String)
-	 */
-	@Override
-	public boolean exists(final String componentId, final String codeSystemShortName) {
-		return wrapperService.exists(getBranchPath(), componentId, codeSystemShortName);
 	}
 }

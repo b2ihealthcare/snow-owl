@@ -75,7 +75,7 @@ public class SnomedConceptRestInput extends AbstractSnomedComponentRestInput<Sno
 	public SnomedConceptInput toComponentInput(final String branchPath, final String codeSystemShortName) {
 		final SnomedConceptInput result = super.toComponentInput(branchPath, codeSystemShortName);
 
-		result.setIsAIdGenerationStrategy(createIdGenerationStrategy(getIsAId()));
+		result.setIsAIdGenerationStrategy(createIdGenerationStrategy(getIsAId(), ComponentCategory.RELATIONSHIP));
 
 		final List<SnomedDescriptionInput> descriptionInputs = newArrayList();
 		for (SnomedDescriptionRestInput restDescription : getDescriptions()) {

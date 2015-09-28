@@ -15,9 +15,15 @@
  */
 package com.b2international.snowowl.snomed.datastore;
 
-import java.util.Collection;
+import java.util.List;
+import java.util.Set;
 
+import org.apache.lucene.document.Document;
+
+import com.b2international.snowowl.datastore.index.mapping.Mappings;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
+import com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants;
+import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedMappings;
 import com.b2international.snowowl.snomed.mrcm.CardinalityPredicate;
 import com.b2international.snowowl.snomed.mrcm.CompositeConceptSetDefinition;
 import com.b2international.snowowl.snomed.mrcm.ConceptSetDefinition;
@@ -26,7 +32,7 @@ import com.b2international.snowowl.snomed.mrcm.HierarchyConceptSetDefinition;
 import com.b2international.snowowl.snomed.mrcm.HierarchyInclusionType;
 import com.b2international.snowowl.snomed.mrcm.ReferenceSetConceptSetDefinition;
 import com.b2international.snowowl.snomed.mrcm.RelationshipConceptSetDefinition;
-import com.google.common.base.Preconditions;
+import com.google.common.base.Splitter;
 import com.google.common.collect.Sets;
 
 /**
@@ -35,11 +41,8 @@ import com.google.common.collect.Sets;
  */
 public abstract class PredicateUtils {
 
-	/**
-	 * Fake terminology component type ID for predicates.
-	 * <br>ID: {@value}. 
-	 */
-	public static final int PREDICATE_TYPE_ID = 999;
+	public static final String REFSET_PREDICATE_KEY_PREFIX = "RefSet";
+	public static final String PREDICATE_SEPARATOR = "#";
 	
 	/**
 	 * Descendant. {@value}
@@ -60,6 +63,7 @@ public abstract class PredicateUtils {
 	 * Or. {@value}
 	 */
 	public static final String OR = "OR";
+
 	
 	/**
 	 * Builds an ESCG expression that represents the specified concept set definition.
@@ -140,54 +144,44 @@ public abstract class PredicateUtils {
 		
 	}
 	
-	public static Collection<ConstraintDomain> processConstraintDomain(final String uuid, final ConceptSetDefinition domain) {
+	public static Set<ConstraintDomain> processConstraintDomain(final long storageKey, final ConceptSetDefinition domain) {
 
-		final Collection<ConstraintDomain> $ = Sets.newHashSet();
+		final Set<ConstraintDomain> $ = Sets.newHashSet();
 		
 		if (domain instanceof HierarchyConceptSetDefinition) {
 			
 			final HierarchyConceptSetDefinition hierarchyConceptSetDefinition = (HierarchyConceptSetDefinition) domain;
 			final Long focusConceptId = Long.valueOf(hierarchyConceptSetDefinition.getFocusConceptId());
 			final HierarchyInclusionType inclusionType = hierarchyConceptSetDefinition.getInclusionType();
-			final String predicateKey = inclusionType.name() + "#" + uuid;
-			$.add(new ConstraintDomain(focusConceptId, DefinitionType.CONCEPT, predicateKey));
+			$.add(new ConstraintDomain(focusConceptId, inclusionType.name(), storageKey));
 			
 		} else if (domain instanceof ReferenceSetConceptSetDefinition) {
 			
 			final ReferenceSetConceptSetDefinition referenceSetConceptSetDefinition = (ReferenceSetConceptSetDefinition) domain;
 			final long refSetIdentifierConceptId = Long.valueOf(referenceSetConceptSetDefinition.getRefSetIdentifierConceptId());
-			$.add(new ConstraintDomain(refSetIdentifierConceptId, DefinitionType.REFSET, uuid));
+			$.add(new ConstraintDomain(refSetIdentifierConceptId, REFSET_PREDICATE_KEY_PREFIX, storageKey));
 			
 		} else if (domain instanceof RelationshipConceptSetDefinition) {
 			
 			final RelationshipConceptSetDefinition relationshipConceptSetDefinition = (RelationshipConceptSetDefinition) domain;
 			final long destinationConceptId = Long.valueOf(relationshipConceptSetDefinition.getDestinationConceptId());
-			final String predicateKey = relationshipConceptSetDefinition.getTypeConceptId() + "#" + uuid;
-			$.add(new ConstraintDomain(destinationConceptId, DefinitionType.CONCEPT, predicateKey));
+			$.add(new ConstraintDomain(destinationConceptId, relationshipConceptSetDefinition.getTypeConceptId(), storageKey));
 			
 		} else if (domain instanceof EnumeratedConceptSetDefinition) {
 			
 			final EnumeratedConceptSetDefinition enumeratedConceptSetDefinition = (EnumeratedConceptSetDefinition) domain;
 			for (final String conceptId : enumeratedConceptSetDefinition.getConceptIds()) {
-				
 				final long id = Long.valueOf(conceptId);
-				final String predicateKey = HierarchyInclusionType.SELF.name() + "#" + uuid;
-				$.add(new ConstraintDomain(id, DefinitionType.CONCEPT, predicateKey));
-				
+				$.add(new ConstraintDomain(id, HierarchyInclusionType.SELF.name(), storageKey));
 			}
 			
 		} else if (domain instanceof CompositeConceptSetDefinition) {
-			
 			final CompositeConceptSetDefinition compositeConceptSetDefinition = (CompositeConceptSetDefinition) domain;
-			
 			for (ConceptSetDefinition childConceptSetDefinition : compositeConceptSetDefinition.getChildren()) {
-				$.addAll(processConstraintDomain(uuid, childConceptSetDefinition));
+				$.addAll(processConstraintDomain(storageKey, childConceptSetDefinition));
 			}
-			
 		}
-		
 		return $;
-		
 	}
 
 	/**
@@ -196,13 +190,17 @@ public abstract class PredicateUtils {
 	public static final class ConstraintDomain {
 		
 		private final long componentId;
-		private final DefinitionType type;
 		private final String predicateKey;
+		private long storageKey;
 
-		private ConstraintDomain(final long componentId, final DefinitionType type, final String predicateKey) {
+		private ConstraintDomain(final long componentId, final String predicateKeySuffix, final long storageKey) {
 			this.componentId = componentId;
-			this.predicateKey = Preconditions.checkNotNull(predicateKey, "Predicate key argument cannot be null.");
-			this.type = Preconditions.checkNotNull(type, "Definition type argument cannot be null.");
+			this.storageKey = storageKey;
+			this.predicateKey = String.format("%s#%s", storageKey, predicateKeySuffix);
+		}
+		
+		public long getStorageKey() {
+			return storageKey;
 		}
 
 		/**Returns with the component ID.*/
@@ -210,34 +208,20 @@ public abstract class PredicateUtils {
 			return componentId;
 		}
 
-		/**Returns with the definition type.*/
-		public DefinitionType getType() {
-			return type;
-		}
-
 		/**Returns with the predicate key.*/
 		public String getPredicateKey() {
 			return predicateKey;
 		}
 
-		/*
-		 * (non-Javadoc)
-		 * @see java.lang.Object#hashCode()
-		 */
 		@Override
 		public int hashCode() {
 			final int prime = 31;
 			int result = 1;
 			result = prime * result + (int) (componentId ^ (componentId >>> 32));
-			result = prime * result + ((predicateKey == null) ? 0 : predicateKey.hashCode());
-			result = prime * result + ((type == null) ? 0 : type.hashCode());
+			result = prime * result + (int) (storageKey ^ (storageKey >>> 32));
 			return result;
 		}
 
-		/*
-		 * (non-Javadoc)
-		 * @see java.lang.Object#equals(java.lang.Object)
-		 */
 		@Override
 		public boolean equals(final Object obj) {
 			if (this == obj)
@@ -249,14 +233,18 @@ public abstract class PredicateUtils {
 			final ConstraintDomain other = (ConstraintDomain) obj;
 			if (componentId != other.componentId)
 				return false;
-			if (predicateKey == null) {
-				if (other.predicateKey != null)
-					return false;
-			} else if (!predicateKey.equals(other.predicateKey))
-				return false;
-			if (type != other.type)
+			if (storageKey != other.storageKey) 
 				return false;
 			return true;
+		}
+		
+		public static ConstraintDomain of(Document conceptDoc) {
+			final Long componentId = SnomedMappings.id().getValue(conceptDoc);
+			final String predicateKey = Mappings.stringField(SnomedIndexBrowserConstants.COMPONENT_REFERRING_PREDICATE).getValue(conceptDoc);
+			final List<String> segments = Splitter.on(PREDICATE_SEPARATOR).limit(2).splitToList(predicateKey);
+			final long storageKey = Long.parseLong(segments.get(0));
+			final String predicateKeySuffix = segments.get(1);
+			return new ConstraintDomain(componentId, predicateKeySuffix, storageKey);
 		}
 		
 	}

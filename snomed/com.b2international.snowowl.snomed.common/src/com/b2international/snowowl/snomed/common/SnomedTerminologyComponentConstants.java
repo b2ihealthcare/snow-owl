@@ -58,6 +58,12 @@ public abstract class SnomedTerminologyComponentConstants {
 	public static final String DATA_TYPE_DATE = "com.b2international.snowowl.terminology.snomed.datatype.date";
 	public static final short DATA_TYPE_DATE_NUMBER = 109;
 	
+	/**
+	 * Fake terminology component type ID for predicates.
+	 * <br>ID: {@value}. 
+	 */
+	public static final int PREDICATE_TYPE_ID = 999;
+	
 	private static final Pattern PATTERN = Pattern.compile("^\\d*$");
 
 	/**
@@ -183,6 +189,16 @@ public abstract class SnomedTerminologyComponentConstants {
 		} else {
 			throw new IllegalArgumentException("Unknown terminology component identifier: " + id);
 		}
+	}
+
+	public static boolean isCoreComponentId(String componentId) {
+		return isCoreComponentType(getTerminologyComponentIdValueSafe(componentId));
+	}
+
+	public static boolean isCoreComponentType(short componentType) {
+		return SnomedTerminologyComponentConstants.CONCEPT_NUMBER == componentType || 
+				SnomedTerminologyComponentConstants.DESCRIPTION_NUMBER == componentType || 
+				SnomedTerminologyComponentConstants.RELATIONSHIP_NUMBER == componentType;
 	}
 	
 }

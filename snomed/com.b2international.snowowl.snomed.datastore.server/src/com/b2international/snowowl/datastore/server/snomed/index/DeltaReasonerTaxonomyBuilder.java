@@ -60,23 +60,18 @@ public final class DeltaReasonerTaxonomyBuilder extends AbstractReasonerTaxonomy
 
 	private final LongSet conceptIdsToRemove = new LongOpenHashSet();
 	private final LongSet conceptIdsToAdd = new LongOpenHashSet();
-	private final boolean includeAdditionalStatementConcreteDomains;
 	
 	/**
 	 * Creates a new {@link DeltaReasonerTaxonomyBuilder} instance with the specified arguments.
 	 * 
 	 * @param source the taxonomy builder used as a baseline for changes (may not be {@code null})
+	 * @param type the requested mode of operation
 	 * @param changeSet the change set to apply (may not be {@code null})
-	 * @param includeAdditionalStatementConcreteDomains {@code true} if statement concrete domains with additional
-	 * characteristic type should be tracked, {@code false} otherwise
 	 */
-	public DeltaReasonerTaxonomyBuilder(final AbstractReasonerTaxonomyBuilder source, final ICDOCommitChangeSet changeSet, 
-			final boolean includeAdditionalStatementConcreteDomains) {
+	public DeltaReasonerTaxonomyBuilder(final AbstractReasonerTaxonomyBuilder source, final Type type, final ICDOCommitChangeSet changeSet) {
 		
-		super(checkNotNull(source, "source"));
+		super(checkNotNull(source, "source"), type);
 		checkNotNull(changeSet, "changeSet");
-
-		this.includeAdditionalStatementConcreteDomains = includeAdditionalStatementConcreteDomains;
 
 		for (final Entry<CDOID, EClass> detachedComponent : changeSet.getDetachedComponents().entrySet()) {
 			if (TRACKED_ECLASSES.contains(detachedComponent.getValue())) {
@@ -241,7 +236,7 @@ public final class DeltaReasonerTaxonomyBuilder extends AbstractReasonerTaxonomy
 		} else if (SnomedPackage.Literals.RELATIONSHIP.equals(eClass)) {
 			
 			final Relationship relationship = (Relationship) object;
-			if (relationship.isActive() && isDefining(relationship.getCharacteristicType().getId())) {			
+			if (relationship.isActive()) {			
 				addRelationship(relationship);
 			}
 			
@@ -255,15 +250,20 @@ public final class DeltaReasonerTaxonomyBuilder extends AbstractReasonerTaxonomy
 		}
 	}
 
-	// TODO (apeteri): ConceptDefinitionBuilder has related (duplicate) methods
-	private boolean isDefining(final String characteristicTypeId) {
-		return Concepts.DEFINING_CHARACTERISTIC_TYPES.contains(characteristicTypeId);
+	private boolean isCharacteristicTypeApplicable (final String characteristicTypeId) {
+		
+		if (isReasonerMode()) {
+			return Concepts.STATED_RELATIONSHIP.equals(characteristicTypeId);
+		} else {
+			return Concepts.DEFINING_CHARACTERISTIC_TYPES.contains(characteristicTypeId);
+		}
 	}
 
 	private void addRelationshipConcreteDomainMember(final SnomedConcreteDataTypeRefSetMember member) {
 
-		// Ignore additional relationship concrete domain members, unless the flag is set
-		if (!includeAdditionalStatementConcreteDomains && Concepts.ADDITIONAL_RELATIONSHIP.equals(member.getCharacteristicTypeId())) {
+		final String characteristicTypeId = member.getCharacteristicTypeId();
+		
+		if (!isCharacteristicTypeApplicable(characteristicTypeId) && !Concepts.ADDITIONAL_RELATIONSHIP.equals(characteristicTypeId)) {
 			return;
 		}
 		
@@ -274,8 +274,7 @@ public final class DeltaReasonerTaxonomyBuilder extends AbstractReasonerTaxonomy
 
 	private void addConceptConcreteDomainMember(final SnomedConcreteDataTypeRefSetMember member) {
 		
-		// Additional concept concrete domain members are always ignored
-		if (Concepts.ADDITIONAL_RELATIONSHIP.equals(member.getCharacteristicTypeId())) {
+		if (!isCharacteristicTypeApplicable(member.getCharacteristicTypeId())) {
 			return;
 		}
 
@@ -304,6 +303,10 @@ public final class DeltaReasonerTaxonomyBuilder extends AbstractReasonerTaxonomy
 
 	private void addRelationship(final Relationship relationship) {
 		
+		if (!isCharacteristicTypeApplicable(relationship.getCharacteristicType().getId())) {
+			return;
+		}
+		
 		final long sourceId = Long.valueOf(relationship.getSource().getId());
 		
 		final long statementId = Long.valueOf(relationship.getId());
@@ -315,7 +318,17 @@ public final class DeltaReasonerTaxonomyBuilder extends AbstractReasonerTaxonomy
 		final byte group = (byte) relationship.getGroup();
 		final byte unionGroup = (byte) relationship.getUnionGroup();
 		
-		final StatementFragment fragment = new StatementFragment(statementId, storageKey, destinationId, typeId, destinationNegated, universal, group, unionGroup);
+		final StatementFragment fragment = new StatementFragment(
+				typeId, 
+				destinationId, 
+				destinationNegated, 
+				group, 
+				unionGroup, 
+				universal, 
+				statementId, 
+				storageKey
+		);
+
 		addToMultimap(conceptIdToStatements, sourceId, fragment);
 	}
 

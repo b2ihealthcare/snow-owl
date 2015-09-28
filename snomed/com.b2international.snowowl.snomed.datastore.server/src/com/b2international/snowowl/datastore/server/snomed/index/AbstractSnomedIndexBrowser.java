@@ -15,13 +15,12 @@
  */
 package com.b2international.snowowl.datastore.server.snomed.index;
 
-import org.apache.lucene.index.Term;
+import org.apache.lucene.search.Query;
 
-import com.b2international.snowowl.core.api.index.CommonIndexConstants;
 import com.b2international.snowowl.core.api.index.IIndexEntry;
 import com.b2international.snowowl.core.api.index.IIndexService;
-import com.b2international.snowowl.datastore.index.IndexUtils;
 import com.b2international.snowowl.datastore.server.index.AbstractIndexBrowser;
+import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedMappings;
 import com.google.common.base.Preconditions;
 
 /**
@@ -33,14 +32,9 @@ public abstract class AbstractSnomedIndexBrowser<E extends IIndexEntry> extends 
 	protected AbstractSnomedIndexBrowser(final IIndexService<?> service) {
 		super(Preconditions.checkNotNull(service, "Index service argument cannot be null."));
 	}
-
-	/**
-	 * Overridden to create prefix coded numeric value of {@link CommonIndexConstants#COMPONENT_ID} field.
-	 * <p>  
-	 */
-	@Override
-	protected Term getIdTerm(final String componentId) {
-		return new Term(CommonIndexConstants.COMPONENT_ID, IndexUtils.longToPrefixCoded(componentId));
-	}
 	
+	@Override
+	protected Query getComponentIdQuery(String componentId) {
+		return SnomedMappings.newQuery().id(componentId).matchAll();
+	}
 }

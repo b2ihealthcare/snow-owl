@@ -15,10 +15,6 @@
  */
 package com.b2international.snowowl.datastore.server.snomed.escg;
 
-import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.COMPONENT_ACTIVE;
-import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.COMPONENT_ID;
-import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.CONCEPT_ANCESTOR;
-import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.CONCEPT_PARENT;
 import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.CONCEPT_REFERRING_MAPPING_REFERENCE_SET_ID;
 import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.CONCEPT_REFERRING_REFERENCE_SET_ID;
 
@@ -32,6 +28,7 @@ import org.apache.lucene.search.TermQuery;
 
 import com.b2international.snowowl.datastore.index.IndexUtils;
 import com.b2international.snowowl.snomed.datastore.escg.IQueryEvaluator;
+import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedMappings;
 import com.b2international.snowowl.snomed.dsl.query.ast.AndClause;
 import com.b2international.snowowl.snomed.dsl.query.ast.ConceptRef;
 import com.b2international.snowowl.snomed.dsl.query.ast.NotClause;
@@ -53,9 +50,6 @@ public class IndexQueryQueryEvaluator implements Serializable, IQueryEvaluator<B
 
 	private static final long serialVersionUID = 1976491781836431852L;
 
-	/* (non-Javadoc)
-	 * @see com.b2international.snowowl.datastore.server.snomed.escg.IQueryEvaluator#evaluate(com.b2international.snowowl.snomed.dsl.query.RValue)
-	 */
 	@Override
 	public BooleanQuery evaluate(final com.b2international.snowowl.snomed.dsl.query.RValue expression) {
 		
@@ -75,28 +69,16 @@ public class IndexQueryQueryEvaluator implements Serializable, IQueryEvaluator<B
 			switch (concept.getQuantifier()) {
 				case SELF:
 					
-					mainQuery.add(createIdQuery(conceptId), Occur.MUST);
+					mainQuery.add(SnomedMappings.newQuery().id(conceptId).matchAll(), Occur.MUST);
 					return mainQuery;
 					
 				case ANY_SUBTYPE:
-					
-					final BooleanQuery descendatQuery = new BooleanQuery();
-					
-					descendatQuery.add(createAncestorQuery(conceptId), Occur.SHOULD);
-					descendatQuery.add(createParentQuery(conceptId), Occur.SHOULD);
-				
-					mainQuery.add(descendatQuery, Occur.MUST);
+					mainQuery.add(SnomedMappings.newQuery().parent(conceptId).ancestor(conceptId).matchAny(), Occur.MUST);
 					return mainQuery;
 					
 				case SELF_AND_ANY_SUBTYPE:
 					
-					final BooleanQuery descendatOrSelfQuery = new BooleanQuery();
-					
-					descendatOrSelfQuery.add(createAncestorQuery(conceptId), Occur.SHOULD);
-					descendatOrSelfQuery.add(createParentQuery(conceptId), Occur.SHOULD);
-					descendatOrSelfQuery.add(createIdQuery(conceptId), Occur.SHOULD);
-				
-					mainQuery.add(descendatOrSelfQuery, Occur.MUST);
+					mainQuery.add(SnomedMappings.newQuery().id(conceptId).parent(conceptId).ancestor(conceptId).matchAny(), Occur.MUST);
 					return mainQuery;
 					
 				default:
@@ -183,34 +165,6 @@ public class IndexQueryQueryEvaluator implements Serializable, IQueryEvaluator<B
 		return mainQuery;
 	}
 	
-	private Query createParentQuery(final String conceptId) {
-		return new TermQuery(createConceptParentTerm(conceptId));
-	}
-
-	private Term createConceptParentTerm(final String conceptId) {
-		return new Term(CONCEPT_PARENT, IndexUtils.longToPrefixCoded(conceptId));
-	}
-
-	private Query createAncestorQuery(final String conceptId) {
-		return new TermQuery(createConceptAncestorTerm(conceptId));
-	}
-
-	private Term createConceptAncestorTerm(final String conceptId) {
-		return new Term(CONCEPT_ANCESTOR, IndexUtils.longToPrefixCoded(conceptId));
-	}
-
-	private TermQuery createIdQuery(final String conceptId) {
-		return new TermQuery(createConceptIdTerm(conceptId));
-	}
-
-	private Term createConceptIdTerm(final String conceptId) {
-		return new Term(COMPONENT_ID, IndexUtils.longToPrefixCoded(conceptId));
-	}
-	
-	private Query createActiveQuery() {
-		return new TermQuery(new Term(COMPONENT_ACTIVE, IndexUtils.intToPrefixCoded(1)));
-	}
-	
 	private Term createRefSetTerm(String refSetId) {
 		return new Term(CONCEPT_REFERRING_REFERENCE_SET_ID, IndexUtils.longToPrefixCoded(refSetId));
 	}
@@ -225,7 +179,7 @@ public class IndexQueryQueryEvaluator implements Serializable, IQueryEvaluator<B
 		refSetQuery.add(new TermQuery(createMappingRefSetTerm(refSetId)), Occur.SHOULD);
 		final BooleanQuery query = new BooleanQuery(true);
 		query.add(refSetQuery, Occur.MUST);
-		query.add(createActiveQuery(), Occur.MUST);
+		query.add(SnomedMappings.newQuery().active().matchAll(), Occur.MUST);
 		return query;
 	}
 

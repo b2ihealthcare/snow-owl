@@ -53,7 +53,6 @@ import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.IDisposableService;
 import com.b2international.snowowl.core.api.BranchPath;
 import com.b2international.snowowl.core.api.IBranchPath;
-import com.b2international.snowowl.core.api.index.CommonIndexConstants;
 import com.b2international.snowowl.core.api.index.IIndexEntry;
 import com.b2international.snowowl.core.api.index.IIndexQueryAdapter;
 import com.b2international.snowowl.core.api.index.IndexException;
@@ -64,9 +63,13 @@ import com.b2international.snowowl.datastore.cdo.ICDOConnectionManager;
 import com.b2international.snowowl.datastore.index.AbstractIndexUpdater;
 import com.b2international.snowowl.datastore.index.DocIdCollector;
 import com.b2international.snowowl.datastore.index.DocIdCollector.DocIdsIterator;
+import com.b2international.snowowl.datastore.index.DocumentUpdater;
 import com.b2international.snowowl.datastore.index.DocumentWithScore;
 import com.b2international.snowowl.datastore.index.FakeQueryAdapter;
-import com.b2international.snowowl.datastore.index.IndexUtils;
+import com.b2international.snowowl.datastore.index.IndexRead;
+import com.b2international.snowowl.datastore.index.mapping.DocumentBuilderBase;
+import com.b2international.snowowl.datastore.index.mapping.DocumentBuilderFactory;
+import com.b2international.snowowl.datastore.index.mapping.Mappings;
 import com.google.common.base.Function;
 import com.google.common.base.Preconditions;
 import com.google.common.cache.CacheBuilder;
@@ -78,7 +81,6 @@ import com.google.common.collect.HashMultimap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Multimap;
-import com.google.common.collect.Sets;
 import com.google.common.util.concurrent.UncheckedExecutionException;
 
 /**
@@ -163,27 +165,29 @@ public abstract class IndexServerService<E extends IIndexEntry> extends Abstract
 	
 	@Override
 	public void delete(final IBranchPath branchPath, final long storageKey) {
-
 		checkNotNull(branchPath, "branchPath");
 		checkNotDisposed();
-		
 		final IndexBranchService branchService = getBranchService(branchPath);
-		
 		try {
-			branchService.deleteDocuments(new Term(CommonIndexConstants.COMPONENT_STORAGE_KEY, IndexUtils.longToPrefixCoded(storageKey)));
+			branchService.deleteDocuments(toTerm(storageKey));
 		} catch (final IOException e) {
 			throw new IndexException(e);
 		}
 	}
 
+	private Term toTerm(final long storageKey) {
+		return Mappings.storageKey().toTerm(storageKey);
+	}
+	
+	private Query toQuery(final long storageKey) {
+		return Mappings.storageKey().toQuery(storageKey);
+	}
+
 	@Override
 	public void rollback(final IBranchPath branchPath) {
-		
 		checkNotNull(branchPath, "branchPath");
 		checkNotDisposed();
-
 		final IndexBranchService branchService = getBranchService(branchPath);
-		
 		try {
 			branchService.rollback();
 		} catch (final IOException e) {
@@ -193,12 +197,9 @@ public abstract class IndexServerService<E extends IIndexEntry> extends Abstract
 
 	@Override
 	public void deleteAll(final IBranchPath branchPath) {
-		
 		checkNotNull(branchPath, "branchPath");
 		checkNotDisposed();
-
 		final IndexBranchService branchService = getBranchService(branchPath);
-		
 		try {
 			branchService.deleteAll();
 		} catch (final IOException e) {
@@ -267,8 +268,6 @@ public abstract class IndexServerService<E extends IIndexEntry> extends Abstract
 
 	@Override
 	public void index(final IBranchPath branchPath, final Document document, final Term id) {
-
-		checkNotNull(branchPath, "branchPath");
 		checkNotNull(document, "document");
 		checkNotNull(id, "id");
 		checkNotDisposed();
@@ -278,6 +277,27 @@ public abstract class IndexServerService<E extends IIndexEntry> extends Abstract
 		try {
 			branchService.updateDocument(id, document);
 		} catch (final IOException e) {
+			throw new IndexException(e);
+		}
+	}
+	
+	@Override
+	public void index(IBranchPath branchPath, Document document, long storageKey) {
+		index(branchPath, document, toTerm(storageKey));
+	}
+	
+	@Override
+	public <D extends DocumentBuilderBase<D>> void update(IBranchPath branchPath, long storageKey, DocumentUpdater<D> documentUpdater,
+			DocumentBuilderFactory<D> builderFactory) {
+		upsert(branchPath, toQuery(storageKey), documentUpdater, builderFactory);		
+	}
+	
+	@Override
+	public <D extends DocumentBuilderBase<D>> void upsert(IBranchPath branchPath, Query query, DocumentUpdater<D> documentUpdater, DocumentBuilderFactory<D> builderFactory) {
+		checkNotDisposed();
+		try {
+			getBranchService(branchPath).upsert(query, documentUpdater, builderFactory);
+		} catch (IOException e) {
 			throw new IndexException(e);
 		}
 	}
@@ -401,7 +421,8 @@ public abstract class IndexServerService<E extends IIndexEntry> extends Abstract
 			int size = 0;
 			
 			for (final ScoreDoc scoreDoc : topDocs.scoreDocs) {
-				ids[size++] = searcher.doc(scoreDoc.doc, COMPONENT_ID_FIELD_TO_LOAD).get(CommonIndexConstants.COMPONENT_ID);
+				final Document doc = searcher.doc(scoreDoc.doc, Mappings.fieldsToLoad().id().build());
+				ids[size++] = Mappings.id().getValue(doc);
 			}
 			
 			return Arrays.asList(Arrays.copyOf(ids, size));
@@ -555,7 +576,8 @@ public abstract class IndexServerService<E extends IIndexEntry> extends Abstract
 
 			int size = 0;
 			while (itr.next()) {
-				ids[size++] = searcher.doc(itr.getDocID(), COMPONENT_ID_FIELD_TO_LOAD).get(CommonIndexConstants.COMPONENT_ID);
+				final Document doc = searcher.doc(itr.getDocID(), Mappings.fieldsToLoad().id().build());
+				ids[size++] = Mappings.id().getValue(doc);
 			}
 			
 			return Arrays.asList(Arrays.copyOf(ids, size));
@@ -701,7 +723,7 @@ public abstract class IndexServerService<E extends IIndexEntry> extends Abstract
 	
 	@Override
 	public int maxDoc(final IBranchPath branchPath) {
-		final ReferenceManager<IndexSearcher> manager = getManager(Preconditions.checkNotNull(branchPath, "Branch path argument cannot be null."));
+		final ReferenceManager<IndexSearcher> manager = getManager(branchPath);
 		IndexSearcher searcher = null;
 		try {
 			
@@ -839,11 +861,28 @@ public abstract class IndexServerService<E extends IIndexEntry> extends Abstract
 		}
 	}
 
-	private static final Set<String> COMPONENT_ID_FIELD_TO_LOAD = Sets.newHashSet(CommonIndexConstants.COMPONENT_ID);
-
 	private void checkNotDisposed() {
 		if (disposed) {
 			throw new IndexException("IndexServerService is already disposed.");
+		}
+	}
+	
+	public <T> T executeReadTransaction(IBranchPath branchPath, IndexRead<T> read) {
+		final ReferenceManager<IndexSearcher> manager = getManager(branchPath);
+		IndexSearcher searcher = null;	
+		try {
+			searcher = manager.acquire();
+			return read.execute(searcher);
+		} catch (final IOException e) {
+			throw new IndexException(e);
+		} finally {
+			if (searcher != null) {
+				try {
+					manager.release(searcher);
+				} catch (final IOException e) {
+					throw new IndexException(e);
+				}			
+			}
 		}
 	}
 }

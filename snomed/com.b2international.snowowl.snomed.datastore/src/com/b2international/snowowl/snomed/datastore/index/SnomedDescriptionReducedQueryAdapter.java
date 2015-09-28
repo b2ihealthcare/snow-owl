@@ -22,7 +22,9 @@ import javax.annotation.Nullable;
 import com.b2international.commons.StringUtils;
 import com.b2international.snowowl.datastore.index.IndexQueryBuilder;
 import com.b2international.snowowl.datastore.index.IndexUtils;
-import com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants;
+import com.b2international.snowowl.datastore.index.mapping.Mappings;
+import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedMappings;
+import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedQueryBuilder;
 import com.google.common.base.Optional;
 
 public class SnomedDescriptionReducedQueryAdapter extends SnomedDescriptionIndexQueryAdapter implements Serializable {
@@ -52,24 +54,18 @@ public class SnomedDescriptionReducedQueryAdapter extends SnomedDescriptionIndex
 	
 	@Override
 	protected IndexQueryBuilder createIndexQueryBuilder() {
-
 		if (StringUtils.isEmpty(searchString)) {
-			
-			return super.createIndexQueryBuilder()
-		        .requireExactTermIf(anyFlagSet(SEARCH_DESCRIPTION_ACTIVE_ONLY), SnomedIndexBrowserConstants.COMPONENT_ACTIVE, IndexUtils.intToPrefixCoded(1))
-		        .requireExactTermIf(!StringUtils.isEmpty(descriptionTypeId), SnomedIndexBrowserConstants.DESCRIPTION_TYPE_ID, IndexUtils.longToPrefixCoded(descriptionTypeId))
-		        .requireExistingTermIf(StringUtils.isEmpty(searchString), SnomedIndexBrowserConstants.COMPONENT_ID);
-			
+			return getDescriptionTypeQuery(super.createIndexQueryBuilder());
 		} else {
 			if (anyFlagSet(SEARCH_DESCRIPTION_ID | SEARCH_DESCRIPTION_CONCEPT_ID)) {
 				Optional<Long> parsedSearchStringOptional = IndexUtils.parseLong(searchString);
 				if (parsedSearchStringOptional.isPresent()) {
-					return createIndexQueryBuilderWithIdTerms(parsedSearchStringOptional);
+					return createIndexQueryBuilderWithIdTerms(parsedSearchStringOptional.get());
 				} else if (anyFlagSet(SEARCH_DESCRIPTION_TERM)) {
 					return createIndexQueryBuilderWithoutIdTerms();
 				} else {
 					// XXX: Search string could not be parsed into a long, so we query for an invalid ID instead. See SnomedRefSetIndexQueryAdapter.
-					return new IndexQueryBuilder().requireExactTerm(SnomedIndexBrowserConstants.COMPONENT_ID, IndexUtils.longToPrefixCoded(-1L));
+					return new IndexQueryBuilder().require(SnomedMappings.newQuery().id(-1L).matchAll());
 				}
 			} else {
 				return createIndexQueryBuilderWithoutIdTerms();
@@ -77,25 +73,44 @@ public class SnomedDescriptionReducedQueryAdapter extends SnomedDescriptionIndex
 		}
 	}
 
-	private IndexQueryBuilder createIndexQueryBuilderWithIdTerms(Optional<Long> parsedSearchStringOptional) {
-		return super.createIndexQueryBuilder()
-				.requireExactTermIf(anyFlagSet(SEARCH_DESCRIPTION_ACTIVE_ONLY), SnomedIndexBrowserConstants.COMPONENT_ACTIVE, IndexUtils.intToPrefixCoded(1))
-				.requireExactTermIf(!StringUtils.isEmpty(descriptionTypeId), SnomedIndexBrowserConstants.DESCRIPTION_TYPE_ID, IndexUtils.longToPrefixCoded(descriptionTypeId))
-				.requireExistingTermIf(StringUtils.isEmpty(searchString), SnomedIndexBrowserConstants.COMPONENT_ID)
-				.finishIf(StringUtils.isEmpty(searchString))
+	private IndexQueryBuilder createIndexQueryBuilderWithIdTerms(Long id) {
+		return getDescriptionTypeQuery(super.createIndexQueryBuilder())
 				.require(new IndexQueryBuilder()
-				.matchExactTermIf(anyFlagSet(SEARCH_DESCRIPTION_ID), SnomedIndexBrowserConstants.COMPONENT_ID, IndexUtils.longToPrefixCoded(parsedSearchStringOptional.get()))
-				.matchParsedTermIf(anyFlagSet(SEARCH_DESCRIPTION_TERM), SnomedIndexBrowserConstants.COMPONENT_LABEL, searchString)
-				.matchExactTermIf(anyFlagSet(SEARCH_DESCRIPTION_CONCEPT_ID), SnomedIndexBrowserConstants.DESCRIPTION_CONCEPT_ID, IndexUtils.longToPrefixCoded(parsedSearchStringOptional.get())));
+				.matchIf(anyFlagSet(SEARCH_DESCRIPTION_ID), SnomedMappings.newQuery().id(id).matchAll())
+				.matchParsedTermIf(anyFlagSet(SEARCH_DESCRIPTION_TERM), Mappings.label().fieldName(), searchString)
+				.matchIf(anyFlagSet(SEARCH_DESCRIPTION_CONCEPT_ID), SnomedMappings.newQuery().descriptionConcept(id).matchAll()));
+	}
+
+	private IndexQueryBuilder getDescriptionTypeQuery(IndexQueryBuilder builder) {
+		if (anyFlagSet(SEARCH_DESCRIPTION_ACTIVE_ONLY) || !StringUtils.isEmpty(descriptionTypeId) || StringUtils.isEmpty(searchString)) {
+			final SnomedQueryBuilder query = SnomedMappings.newQuery();
+			if (anyFlagSet(SEARCH_DESCRIPTION_ACTIVE_ONLY)) {
+				query.active();
+			}
+			if (!StringUtils.isEmpty(descriptionTypeId)) {
+				query.descriptionType(descriptionTypeId);
+			}
+			if (StringUtils.isEmpty(searchString)) {
+				query.and(SnomedMappings.id().toExistsQuery());
+			}
+			builder.require(query.matchAll());
+		}
+		return builder;
 	}
 
 	private IndexQueryBuilder createIndexQueryBuilderWithoutIdTerms() {
-		return super.createIndexQueryBuilder()
-				.requireExactTermIf(anyFlagSet(SEARCH_DESCRIPTION_ACTIVE_ONLY), SnomedIndexBrowserConstants.COMPONENT_ACTIVE, IndexUtils.intToPrefixCoded(1))
-				.requireExactTermIf(!StringUtils.isEmpty(descriptionTypeId), SnomedIndexBrowserConstants.DESCRIPTION_TYPE_ID, IndexUtils.longToPrefixCoded(descriptionTypeId))
-				.requireExistingTermIf(StringUtils.isEmpty(searchString), SnomedIndexBrowserConstants.COMPONENT_ID)
+		return requireType(super.createIndexQueryBuilder())
+				.requireIf(anyFlagSet(SEARCH_DESCRIPTION_ACTIVE_ONLY), SnomedMappings.newQuery().active().matchAll())
+				.requireIf(StringUtils.isEmpty(searchString), SnomedMappings.id().toExistsQuery())
 				.finishIf(StringUtils.isEmpty(searchString))
-				.require(new IndexQueryBuilder()
-				.matchParsedTerm(SnomedIndexBrowserConstants.COMPONENT_LABEL, searchString));
+				.require(new IndexQueryBuilder().matchParsedTerm(Mappings.label().fieldName(), searchString));
 	}	
+	
+	private IndexQueryBuilder requireType(IndexQueryBuilder builder) {
+		if (!StringUtils.isEmpty(descriptionTypeId)) {
+			builder.require(SnomedMappings.newQuery().descriptionType(descriptionTypeId).matchAll());
+		}
+		return builder;
+	}
+	
 }

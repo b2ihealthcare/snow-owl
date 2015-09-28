@@ -114,6 +114,7 @@ public class SnomedImportApiExamplesTest extends AbstractSnomedImportApiTest {
 		assertConceptNotExists(testBranchPath, "63961392103");
 		assertImportFileCanBeImported("SnomedCT_Release_INT_20150131_new_concept.zip");
 		assertConceptExists(testBranchPath, "63961392103");
+		assertPreferredTermEquals(testBranchPath, "63961392103", "13809498114");
 		givenAuthenticatedRequest("/admin").when().get("/codesystems/{shortName}/versions/{version}", "SNOMEDCT", "2015-01-31").then().statusCode(200);
 	}
 

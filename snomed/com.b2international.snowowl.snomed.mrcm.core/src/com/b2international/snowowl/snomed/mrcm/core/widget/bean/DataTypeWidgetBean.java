@@ -24,6 +24,7 @@ import com.b2international.snowowl.core.api.IComponent;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.mrcm.DataType;
 import com.b2international.snowowl.snomed.mrcm.core.widget.model.DataTypeWidgetModel;
+import com.google.common.base.Strings;
 import com.google.common.collect.Iterables;
 
 public class DataTypeWidgetBean extends LeafWidgetBean implements Serializable {
@@ -40,7 +41,7 @@ public class DataTypeWidgetBean extends LeafWidgetBean implements Serializable {
 	private String selectedLabel = "";
 	private String selectedValue = "";
 	private String selectedUom;
-	private String characteristicTypeId = Concepts.DEFINING_RELATIONSHIP;
+	private String characteristicTypeId = Concepts.STATED_RELATIONSHIP;
 
 	private ConceptWidgetBean cwb;
 	
@@ -181,4 +182,50 @@ public class DataTypeWidgetBean extends LeafWidgetBean implements Serializable {
 	public final boolean isUninitialized() {
 		return DataTypeWidgetBean.UNINITIALIZED.equals(getUuid());
 	}
+	
+	/**
+	 * Returns <code>true</code> if the boolean value of this {@link DataTypeWidgetBean} is Yes.
+	 * 
+	 * @return
+	 * @throws IllegalArgumentException
+	 *             if the given {@link DataTypeWidgetBean}'s allowed type is not a boolean.
+	 */
+	public boolean isTrue() {
+		if (DataType.BOOLEAN.equals(getAllowedType())) {
+			return "1".equals(getSelectedValue());
+		} else {
+			throw new IllegalArgumentException("The given dataType is not a boolean.");
+		}
+	}
+
+	/**
+	 * Returns <code>true</code> if the boolean value of this {@link DataTypeWidgetBean} is No.
+	 * 
+	 * @return
+	 * @throws IllegalArgumentException
+	 *             if the given {@link DataTypeWidgetBean}'s allowed type is not a boolean.
+	 */
+	public boolean isFalse() {
+		if (DataType.BOOLEAN.equals(getAllowedType())) {
+			return "0".equals(getSelectedValue());
+		} else {
+			throw new IllegalArgumentException("The given dataType is not a boolean.");
+		}
+	}
+
+	/**
+	 * Returns <code>true</code> if the boolean value of this {@link DataTypeWidgetBean} is N/A.
+	 * 
+	 * @return
+	 * @throws IllegalArgumentException
+	 *             if the given {@link DataTypeWidgetBean}'s allowed type is not a boolean.
+	 */
+	public boolean isNotSpecified() {
+		if (DataType.BOOLEAN.equals(getAllowedType())) {
+			return Strings.isNullOrEmpty(getSelectedValue());
+		} else {
+			throw new IllegalArgumentException("The given dataType is not a boolean.");
+		}
+	}
+	
 }

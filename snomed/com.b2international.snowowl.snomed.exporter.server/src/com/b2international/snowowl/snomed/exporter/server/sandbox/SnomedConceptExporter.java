@@ -19,20 +19,16 @@ import static com.b2international.snowowl.datastore.index.IndexUtils.getIntValue
 import static com.b2international.snowowl.snomed.SnomedConstants.Concepts.FULLY_DEFINED;
 import static com.b2international.snowowl.snomed.SnomedConstants.Concepts.PRIMITIVE;
 import static com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants.CONCEPT_NUMBER;
-import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.COMPONENT_ACTIVE;
-import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.COMPONENT_ID;
 import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.CONCEPT_EFFECTIVE_TIME;
-import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.CONCEPT_MODULE_ID;
 import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.CONCEPT_PRIMITIVE;
 import static com.google.common.base.Preconditions.checkNotNull;
-import static com.google.common.collect.Sets.newHashSet;
-import static java.util.Collections.unmodifiableSet;
 
 import java.util.Set;
 
 import org.apache.lucene.document.Document;
 
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
+import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedMappings;
 import com.b2international.snowowl.snomed.exporter.server.ComponentExportType;
 
 /**
@@ -41,13 +37,7 @@ import com.b2international.snowowl.snomed.exporter.server.ComponentExportType;
  */
 public class SnomedConceptExporter extends SnomedCoreExporter {
 
-	private static final Set<String> FIELDS_TO_LOAD = unmodifiableSet(newHashSet(
-			COMPONENT_ID,
-			CONCEPT_EFFECTIVE_TIME,
-			COMPONENT_ACTIVE,
-			CONCEPT_MODULE_ID,
-			CONCEPT_PRIMITIVE
-		));
+	private static final Set<String> FIELDS_TO_LOAD = SnomedMappings.fieldsToLoad().id().field(CONCEPT_EFFECTIVE_TIME).active().module().field(CONCEPT_PRIMITIVE).build();
 	
 	public SnomedConceptExporter(final SnomedExportConfiguration configuration) {
 		super(checkNotNull(configuration, "configuration"));
@@ -61,13 +51,13 @@ public class SnomedConceptExporter extends SnomedCoreExporter {
 	@Override
 	public String transform(final Document doc) {
 		final StringBuilder sb = new StringBuilder();
-		sb.append(doc.get(COMPONENT_ID));
+		sb.append(SnomedMappings.id().getValueAsString(doc));
 		sb.append(HT);
 		sb.append(formatEffectiveTime(doc.getField(getEffectiveTimeField())));
 		sb.append(HT);
-		sb.append(getIntValue(doc.getField(COMPONENT_ACTIVE)));
+		sb.append(SnomedMappings.active().getValue(doc));
 		sb.append(HT);
-		sb.append(doc.get(CONCEPT_MODULE_ID));
+		sb.append(SnomedMappings.module().getValueAsString(doc));
 		sb.append(HT);
 		sb.append(getDefinitionStatusValue(doc));
 		return sb.toString();

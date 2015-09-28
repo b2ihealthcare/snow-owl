@@ -37,6 +37,7 @@ import com.b2international.snowowl.snomed.datastore.index.interest.ISearchProfil
 import com.b2international.snowowl.snomed.datastore.index.interest.SearchProfile;
 import com.b2international.snowowl.snomed.datastore.index.interest.SearchProfileInterest;
 import com.b2international.snowowl.snomed.datastore.index.interest.SearchProfileRule;
+import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedMappings;
 import com.google.common.base.Preconditions;
 
 /**
@@ -87,7 +88,8 @@ public abstract class SearchProfileQueryProvider {
 			//in case of average not much we can do
 			if (!SearchProfileInterest.AVERAGE.equals(interest)) {
 				
-				final BytesRef contextId = IndexUtils.longToPrefixCoded(rule.getContextId());
+				final String conceptId = rule.getContextId();
+				final BytesRef contextId = IndexUtils.longToPrefixCoded(conceptId);
 				
 				if (null == searchProfileQuery) {
 					
@@ -99,13 +101,7 @@ public abstract class SearchProfileQueryProvider {
 				
 					case DESCENDANTS_OF_CONCEPT:
 						
-						final BooleanQuery descendantQuery = new BooleanQuery(true);
-						
-						final Query ancestorQuery = new TermQuery(new Term(SnomedIndexBrowserConstants.CONCEPT_ANCESTOR, contextId));
-						final Query parentQuery = new TermQuery(new Term(SnomedIndexBrowserConstants.CONCEPT_PARENT, contextId));
-						
-						descendantQuery.add(ancestorQuery, Occur.SHOULD);
-						descendantQuery.add(parentQuery, Occur.SHOULD);
+						final Query descendantQuery = SnomedMappings.newQuery().parent(conceptId).ancestor(conceptId).matchAny();
 						
 						switch (interest) {
 	
@@ -135,7 +131,7 @@ public abstract class SearchProfileQueryProvider {
 						
 					case WITHIN_A_MODULE:
 						
-						final Query moduleQuery = new TermQuery(new Term(SnomedIndexBrowserConstants.CONCEPT_MODULE_ID, contextId));
+						final Query moduleQuery = SnomedMappings.newQuery().module(conceptId).matchAll();
 	
 						switch (interest) {
 	
@@ -228,8 +224,7 @@ public abstract class SearchProfileQueryProvider {
 						
 					case WITHIN_A_NAMESPACE:
 						
-						final String conceptId = rule.getContextId();
-						final Query namespaceQuery = new TermQuery(new Term(SnomedIndexBrowserConstants.CONCEPT_NAMESPACE_ID, IndexUtils.longToPrefixCoded(conceptId)));
+						final Query namespaceQuery = new TermQuery(new Term(SnomedIndexBrowserConstants.CONCEPT_NAMESPACE_ID, contextId));
 						
 						switch (interest) {
 							
@@ -325,18 +320,14 @@ public abstract class SearchProfileQueryProvider {
 				
 					case DESCENDANTS_OF_CONCEPT:
 						
-						final BooleanQuery descendantQuery = new BooleanQuery(true);
-						final Query ancestorQuery = new TermQuery(new Term(SnomedIndexBrowserConstants.CONCEPT_ANCESTOR, contextId));
-						final Query parentQuery = new TermQuery(new Term(SnomedIndexBrowserConstants.CONCEPT_PARENT, contextId));
-						descendantQuery.add(ancestorQuery, Occur.SHOULD);
-						descendantQuery.add(parentQuery, Occur.SHOULD);
+						final Query descendantQuery = SnomedMappings.newQuery().parent(rule.getContextId()).ancestor(rule.getContextId()).matchAny();
 						searchProfileQuery.add(descendantQuery, Occur.MUST_NOT);
 						
 						break; //break 'descendants of concept' domain
 						
 					case WITHIN_A_MODULE:
 	
-						final Query moduleQuery = new TermQuery(new Term(SnomedIndexBrowserConstants.CONCEPT_MODULE_ID, contextId));
+						final Query moduleQuery = SnomedMappings.newQuery().module(rule.getContextId()).matchAll();
 						searchProfileQuery.add(moduleQuery, Occur.MUST_NOT);
 						
 						break; //break 'within a module' domain

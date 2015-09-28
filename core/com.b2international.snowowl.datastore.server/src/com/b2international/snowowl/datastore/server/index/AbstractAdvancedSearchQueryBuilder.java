@@ -26,10 +26,8 @@ import org.apache.lucene.search.BooleanQuery;
 import org.apache.lucene.search.NumericRangeQuery;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.TermQuery;
-import org.apache.lucene.util.BytesRef;
 
 import com.b2international.snowowl.core.api.SnowowlServiceException;
-import com.b2international.snowowl.core.api.index.CommonIndexConstants;
 import com.b2international.snowowl.core.api.index.IndexException;
 import com.b2international.snowowl.core.date.Dates;
 import com.b2international.snowowl.core.date.EffectiveTimes;
@@ -42,7 +40,7 @@ import com.b2international.snowowl.datastore.advancedsearch.DateRangeSearchCrite
 import com.b2international.snowowl.datastore.advancedsearch.LongSearchCriteria;
 import com.b2international.snowowl.datastore.advancedsearch.StringSearchCriteria;
 import com.b2international.snowowl.datastore.index.IndexQueryBuilder;
-import com.b2international.snowowl.datastore.index.IndexUtils;
+import com.b2international.snowowl.datastore.index.mapping.Mappings;
 
 /**
  * @since 3.0.1
@@ -71,9 +69,7 @@ public abstract class AbstractAdvancedSearchQueryBuilder {
 			occur = Occur.SHOULD;
 		}
 		// TODO: handle unexpected match type
-
-		compoundQuery.add(new TermQuery(new Term(CommonIndexConstants.COMPONENT_TYPE, IndexUtils.intToPrefixCoded(terminologyComponentTypeId))),
-				Occur.MUST);
+		compoundQuery.add(Mappings.newQuery().type(terminologyComponentTypeId).matchAll(), Occur.MUST);
 		if (!searchCriterias.isEmpty()) {
 			final BooleanQuery subQuery = new BooleanQuery();
 
@@ -88,8 +84,8 @@ public abstract class AbstractAdvancedSearchQueryBuilder {
 
 	protected Query createQuery(final AbstractSearchCriteria criteria) throws SnowowlServiceException {
 
-		final String searchConstant = criteria.getType();
-		final String indexKey = getIndexKey(searchConstant);
+		final String type = criteria.getType();
+		final String indexKey = getIndexKey(type);
 
 		if (indexKey != null) {
 
@@ -108,7 +104,7 @@ public abstract class AbstractAdvancedSearchQueryBuilder {
 						Throwable tokenMgrError = e.getCause().getCause();
 						if (e.getCause() instanceof ParseException && tokenMgrError instanceof TokenMgrError) {
 							String message = tokenMgrError.getMessage();
-							throw new AdvancedSearchQueryParseException(message, tokenMgrError, searchConstant, searchString);
+							throw new AdvancedSearchQueryParseException(message, tokenMgrError, type, searchString);
 						} else {
 							throw new SnowowlServiceException(e);
 						}
@@ -116,12 +112,10 @@ public abstract class AbstractAdvancedSearchQueryBuilder {
 				}
 
 			} else if (criteria instanceof BooleanSearchCriteria) {
-
+				
 				final BooleanSearchCriteria booleanSearchCriteria = (BooleanSearchCriteria) criteria;
-				final BytesRef searchString = booleanToBytesRef(booleanSearchCriteria.getValue());
-
-				return new TermQuery(new Term(indexKey, searchString));
-
+				return Mappings.newQuery().field(indexKey, toIntValue(booleanSearchCriteria.getValue())).matchAll();
+				
 			} else if (criteria instanceof DateRangeSearchCriteria) {
 
 				final DateRangeSearchCriteria dateIntervalSearchCriteria = (DateRangeSearchCriteria) criteria;
@@ -149,9 +143,8 @@ public abstract class AbstractAdvancedSearchQueryBuilder {
 				return NumericRangeQuery.newLongRange(indexKey, min, max, true, true);
 			
 			} else if (criteria instanceof LongSearchCriteria) {
-				
 				final LongSearchCriteria longSearchCriteria = (LongSearchCriteria) criteria;
-				return new TermQuery(new Term(indexKey, IndexUtils.longToPrefixCoded(longSearchCriteria.getSearchValue())));
+				return Mappings.newQuery().field(indexKey, longSearchCriteria.getSearchValue()).matchAll();
 			}
 		}
 		return new BooleanQuery(); // empty clause
@@ -165,6 +158,6 @@ public abstract class AbstractAdvancedSearchQueryBuilder {
 
 	protected abstract short getTerminologyComponentId();
 
-	protected abstract BytesRef booleanToBytesRef(boolean value);
-
+	// XXX: unfortunately, method implementations don't always use 1 for true
+	protected abstract int toIntValue(boolean value);
 }

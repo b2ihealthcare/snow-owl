@@ -21,12 +21,9 @@ import java.io.IOException;
 import java.util.Set;
 
 import org.apache.lucene.document.Document;
-import org.apache.lucene.index.Term;
-import org.apache.lucene.search.BooleanClause.Occur;
-import org.apache.lucene.search.BooleanQuery;
 import org.apache.lucene.search.IndexSearcher;
+import org.apache.lucene.search.Query;
 import org.apache.lucene.search.ReferenceManager;
-import org.apache.lucene.search.TermQuery;
 
 import bak.pcj.LongCollection;
 import bak.pcj.LongIterator;
@@ -36,12 +33,12 @@ import bak.pcj.set.LongSet;
 
 import com.b2international.commons.arrays.BidiMapWithInternalId;
 import com.b2international.snowowl.core.api.IBranchPath;
-import com.b2international.snowowl.core.api.index.CommonIndexConstants;
 import com.b2international.snowowl.core.api.index.IndexException;
 import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.datastore.index.DocIdCollector;
 import com.b2international.snowowl.datastore.index.DocIdCollector.DocIdsIterator;
 import com.b2international.snowowl.datastore.index.IndexUtils;
+import com.b2international.snowowl.datastore.index.mapping.Mappings;
 import com.b2international.snowowl.datastore.server.index.IndexServerService;
 import com.b2international.snowowl.datastore.server.snomed.index.SnomedServerTerminologyBrowser;
 import com.b2international.snowowl.snomed.datastore.SnomedConceptIndexEntry;
@@ -49,27 +46,24 @@ import com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserCo
 import com.b2international.snowowl.snomed.datastore.filteredrefset.IRefSetMemberNode;
 import com.b2international.snowowl.snomed.datastore.filteredrefset.NewRefSetMemberNode;
 import com.b2international.snowowl.snomed.datastore.filteredrefset.RegularRefSetMemberNode;
-import com.google.common.collect.ImmutableSet;
+import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedMappings;
 
 /**
  * 
  */
 public class CollectReferencedComponentMapRunnable implements Runnable {
 	
-	private static final Set<String> REFERENCED_COMPONENT_ID_FIELD_TO_LOAD = ImmutableSet.of(SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_REFERENCED_COMPONENT_ID);
+	private static final Set<String> REFERENCED_COMPONENT_ID_FIELD_TO_LOAD = SnomedMappings.fieldsToLoad().memberReferencedComponentId().build();
 	
-	private static final Set<String> ACTIVE_MEMBER_FIELDS_TO_LOAD = ImmutableSet.of(
-			SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_UUID,
-			SnomedIndexBrowserConstants.COMPONENT_STORAGE_KEY,
-			SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_UUID,
-			SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_MODULE_ID,
-			SnomedIndexBrowserConstants.COMPONENT_LABEL,
-			SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_EFFECTIVE_TIME);
-	
-	private static final Set<String> ALL_MEMBER_FIELDS_TO_LOAD = ImmutableSet.<String>builder()
-			.addAll(ACTIVE_MEMBER_FIELDS_TO_LOAD)
-			.add(SnomedIndexBrowserConstants.COMPONENT_ACTIVE)
+	private static final Set<String> ACTIVE_MEMBER_FIELDS_TO_LOAD = SnomedMappings.fieldsToLoad()
+			.storageKey()
+			.module()
+			.label()
+			.field(SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_UUID)
+			.field(SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_EFFECTIVE_TIME)
 			.build();
+	
+	private static final Set<String> ALL_MEMBER_FIELDS_TO_LOAD = SnomedMappings.fieldsToLoad().fields(ACTIVE_MEMBER_FIELDS_TO_LOAD).active().build();
 	
 	private final int maxDoc;
 	private final LongCollection conceptIds;
@@ -100,12 +94,11 @@ public class CollectReferencedComponentMapRunnable implements Runnable {
 	@Override
 	public void run() {
 		
-		final BooleanQuery memberQuery = new BooleanQuery(true);
-		memberQuery.add(new TermQuery(new Term(SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_REFERENCE_SET_ID, IndexUtils.longToPrefixCoded(refSetId))), Occur.MUST);
+		Query memberQuery = SnomedMappings.newQuery().memberRefSetId(refSetId).matchAll();
 		
 		if (!includeInactive) {
 			//exclude inactive members
-			memberQuery.add(new TermQuery(new Term(SnomedIndexBrowserConstants.COMPONENT_ACTIVE, IndexUtils.intToPrefixCoded(1))), Occur.MUST);
+			memberQuery = SnomedMappings.newQuery().and(memberQuery).active().matchAll();
 		}
 
 		final LongSet visitedIds = new LongOpenHashSet();
@@ -124,18 +117,18 @@ public class CollectReferencedComponentMapRunnable implements Runnable {
 
 				final int docId = itr.getDocID();
 				Document doc = searcher.doc(docId, REFERENCED_COMPONENT_ID_FIELD_TO_LOAD);
-				final long referencedComponentId = Long.parseLong(doc.get(SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_REFERENCED_COMPONENT_ID));
+				final long referencedComponentId = SnomedMappings.memberReferencedComponentId().getValue(doc);
 
 				if (conceptIds.contains(referencedComponentId)) {
 					doc = searcher.doc(docId, includeInactive ? ALL_MEMBER_FIELDS_TO_LOAD : ACTIVE_MEMBER_FIELDS_TO_LOAD);
 
-					final boolean active = includeInactive ? IndexUtils.getBooleanValue(doc.getField(SnomedIndexBrowserConstants.COMPONENT_ACTIVE)) : true;
+					final boolean active = includeInactive ? SnomedMappings.active().getValue(doc) == 1 : true;
 					final long effectiveTime = IndexUtils.getLongValue(doc.getField(SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_EFFECTIVE_TIME));
 					final boolean released = EffectiveTimes.UNSET_EFFECTIVE_TIME != effectiveTime;
 					final String uuid = doc.get(SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_UUID);
-					final String label = doc.get(SnomedIndexBrowserConstants.COMPONENT_LABEL);
-					final long storageKey = IndexUtils.getLongValue(doc.getField(CommonIndexConstants.COMPONENT_STORAGE_KEY));
-					final long moduleId = IndexUtils.getLongValue(doc.getField(SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_MODULE_ID));
+					final String label = Mappings.label().getValue(doc);
+					final long storageKey = Mappings.storageKey().getValue(doc);
+					final long moduleId = SnomedMappings.module().getValue(doc);
 
 					final IRefSetMemberNode node = new RegularRefSetMemberNode(referencedComponentId, 
 							label, 

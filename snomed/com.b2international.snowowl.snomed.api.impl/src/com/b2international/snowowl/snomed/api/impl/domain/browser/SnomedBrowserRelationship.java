@@ -17,15 +17,39 @@ import com.b2international.snowowl.snomed.api.domain.RelationshipModifier;
 import com.b2international.snowowl.snomed.api.domain.browser.ISnomedBrowserRelationship;
 import com.b2international.snowowl.snomed.api.domain.browser.ISnomedBrowserRelationshipTarget;
 import com.b2international.snowowl.snomed.api.domain.browser.ISnomedBrowserRelationshipType;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 
 public class SnomedBrowserRelationship extends SnomedBrowserComponent implements ISnomedBrowserRelationship {
 
+	private String relationshipId;
+	
+	public SnomedBrowserRelationship () {
+	}
+	
+	public SnomedBrowserRelationship (String relationshipId) {
+		this.relationshipId = relationshipId;
+	}
+
+	@JsonDeserialize(as=SnomedBrowserRelationshipType.class)
 	private ISnomedBrowserRelationshipType type;
+
+	@JsonDeserialize(as=SnomedBrowserRelationshipTarget.class)
 	private ISnomedBrowserRelationshipTarget target;
+
 	private String sourceId;
 	private int groupId;
 	private CharacteristicType characteristicType;
 	private RelationshipModifier modifier;
+
+	@Override
+	public String getId() {
+		return relationshipId;
+	}
+
+	@Override
+	public String getRelationshipId() {
+		return relationshipId;
+	}
 
 	@Override
 	public ISnomedBrowserRelationshipType getType() {
@@ -57,6 +81,10 @@ public class SnomedBrowserRelationship extends SnomedBrowserComponent implements
 		return modifier;
 	}
 
+	public void setRelationshipId(String relationshipId) {
+		this.relationshipId = relationshipId;
+	}
+
 	public void setType(final ISnomedBrowserRelationshipType type) {
 		this.type = type;
 	}
@@ -84,8 +112,12 @@ public class SnomedBrowserRelationship extends SnomedBrowserComponent implements
 	@Override
 	public String toString() {
 		final StringBuilder builder = new StringBuilder();
-		builder.append("SnomedBrowserRelationship [type=");
+		builder.append("SnomedBrowserRelationship [ id=");
+		builder.append(relationshipId);
+		builder.append(", type=");
 		builder.append(type);
+		builder.append(", relationshipId=");
+		builder.append(relationshipId);
 		builder.append(", target=");
 		builder.append(target);
 		builder.append(", sourceId=");

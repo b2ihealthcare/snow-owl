@@ -30,6 +30,7 @@ import com.google.common.base.Function;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
+import com.google.common.collect.SetMultimap;
 import com.google.common.collect.Sets;
 
 public class FilteredTerminologyBrowser<C extends IComponent<K>, K> implements IFilterClientTerminologyBrowser<C, K>, Serializable {
@@ -37,8 +38,8 @@ public class FilteredTerminologyBrowser<C extends IComponent<K>, K> implements I
 	private static final long serialVersionUID = -8406487265076249122L;
 
 	private Map<K, C> componentMap;
-	private Map<K, Set<K>> subTypeMap;
-	private Map<K, Set<K>> superTypeMap;
+	private SetMultimap<K, K> subTypeMap;
+	private SetMultimap<K, K> superTypeMap;
 	private Set<K> filteredComponents;
 
 	private FilterTerminologyBrowserType type = FilterTerminologyBrowserType.HIERARCHICAL;
@@ -50,8 +51,8 @@ public class FilteredTerminologyBrowser<C extends IComponent<K>, K> implements I
 		
 	}
 	
-	public FilteredTerminologyBrowser(final Map<K, C> componentMap, final Map<K, Set<K>> subTypeMap, 
-			final Map<K, Set<K>> superTypeMap, final FilterTerminologyBrowserType type, final Set<K> filteredComponents) {
+	public FilteredTerminologyBrowser(final Map<K, C> componentMap, final SetMultimap<K, K> subTypeMap, 
+			final SetMultimap<K, K> superTypeMap, final FilterTerminologyBrowserType type, final Set<K> filteredComponents) {
 		
 		
 		this.componentMap = Preconditions.checkNotNull(componentMap, "Component map argument cannot be null.");
@@ -253,24 +254,7 @@ public class FilteredTerminologyBrowser<C extends IComponent<K>, K> implements I
 	}
 
 	@Override
-	public Collection<C> getFilteredConcepts(IBranchPath branchPath, String expression, K... conceptIds) {
-		// TODO Auto-generated method stub
-		throw new UnsupportedOperationException("Not implemented.");
-	};
-	
-	/* (non-Javadoc)
-	 * @see com.b2international.snowowl.core.api.browser.IClientTerminologyBrowser#exists(java.lang.String)
-	 */
-	@Override
 	public boolean exists(String componentId) {
 		return filteredComponents.contains(componentId);
-	}
-
-	/* (non-Javadoc)
-	 * @see com.b2international.snowowl.core.api.browser.IClientTerminologyBrowser#exists(java.lang.String, java.lang.String)
-	 */
-	@Override
-	public boolean exists(String componentId, String codeSystemShortName) {
-		return exists(componentId);
 	}
 }

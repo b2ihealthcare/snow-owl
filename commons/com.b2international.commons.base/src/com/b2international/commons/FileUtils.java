@@ -19,6 +19,7 @@ import static com.b2international.commons.CompareUtils.isEmpty;
 import static com.b2international.commons.StringUtils.isEmpty;
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
+import static com.google.common.collect.Lists.newArrayList;
 import static java.util.UUID.randomUUID;
 
 import java.io.BufferedInputStream;
@@ -33,10 +34,14 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.Reader;
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.Deque;
 import java.util.LinkedList;
 import java.util.Set;
 import java.util.zip.ZipEntry;
+import java.util.zip.ZipFile;
 import java.util.zip.ZipInputStream;
 import java.util.zip.ZipOutputStream;
 
@@ -201,6 +206,33 @@ public final class FileUtils {
 		zip(rootDirectoryToZipUp, archiveFile);
 		return archiveFile;
 	}
+	
+	/**
+	 * Returns the name of all ZipEntries in a zip archive. Inclusion of directories can be set by the includeDirectories parameter.
+	 * 
+	 * @param archive
+	 *            - the zip file
+	 * @param includeDirectories
+	 *            - include directories or not
+	 * @return A list of zip entry names
+	 * @throws IOException
+	 */
+	public static Collection<String> getZipEntries(final File archive, final boolean includeDirectories) throws IOException {
+		final ArrayList<String> entries = newArrayList();
+		try (ZipFile zipFile = new ZipFile(archive)) {
+			final ArrayList<? extends ZipEntry> zipEntries = Collections.list(zipFile.entries());
+			for (final ZipEntry zipEntry : zipEntries) {
+				if (!includeDirectories) {
+					if (!zipEntry.isDirectory()) {
+						entries.add(zipEntry.getName());
+					}
+				} else {
+					entries.add(zipEntry.getName());
+				}
+			}
+		}
+		return entries;
+	}
 
 	/**
 	 * Takes a zip file and decompress it to the given root directory.
@@ -247,22 +279,22 @@ public final class FileUtils {
 		fis.close();
 	}
 
-	private static void zip(File directory, final File zipFile) throws IOException {
+	private static void zip(final File directory, final File zipFile) throws IOException {
 		checkArgument(directory != null && directory.isDirectory() && directory.canWrite(), "The given directory %s is not found or it's read-only", directory);
 		checkNotNull(zipFile, "zipFile");
 
 		try (FileOutputStream fos = new FileOutputStream(zipFile)) {
 			try (ZipOutputStream zos = new ZipOutputStream(fos)) {
 
-				Deque<File> queue = new LinkedList<File>();
+				final Deque<File> queue = new LinkedList<File>();
 				queue.push(directory);
 
 				while (!queue.isEmpty()) {
-					File first = queue.pop();
+					final File first = queue.pop();
 					final File[] content = first.listFiles();
 					if (content != null) {
-						for (File file : content) {
-							String relativeName = getRelativeName(directory, file);
+						for (final File file : content) {
+							final String relativeName = getRelativeName(directory, file);
 							if (file.isDirectory()) {
 								zos.putNextEntry(new ZipEntry(relativeName));
 								queue.push(file);
@@ -281,16 +313,16 @@ public final class FileUtils {
 		}
 	}
 
-	private static void copy(InputStream is, OutputStream os) throws IOException {
-		byte[] buffer = new byte[DEFAULT_BUFFER_SIZE];
+	private static void copy(final InputStream is, final OutputStream os) throws IOException {
+		final byte[] buffer = new byte[DEFAULT_BUFFER_SIZE];
 		int length;
 		while ((length = is.read(buffer)) > 0) {
 			os.write(buffer, 0, length);
 		}
 	}
 
-	private static String getRelativeName(File directory, File file) {
-		String name = directory.toURI().relativize(file.toURI()).getPath();
+	private static String getRelativeName(final File directory, final File file) {
+		final String name = directory.toURI().relativize(file.toURI()).getPath();
 		if (file.isDirectory()) {
 			// URI always uses forward slashes (http://www.ietf.org/rfc/rfc1738.txt), regardless of platform, therefore the OS specific file separator
 			// on windows ('\' character) is not working in this case

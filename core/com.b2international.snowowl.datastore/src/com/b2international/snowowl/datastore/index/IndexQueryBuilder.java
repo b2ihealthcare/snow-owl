@@ -41,7 +41,7 @@ import com.google.common.base.Splitter;
 
 /**
  * Builds Lucene-specific {@link Query} instances.
- * 
+ * @deprecated - if possible use {@link QueryBuilder} or specific subclass instead 
  */
 public class IndexQueryBuilder {
 
@@ -172,6 +172,11 @@ public class IndexQueryBuilder {
 		return this;
 	}
 	
+	public IndexQueryBuilder matchIf(final boolean condition, final Query query) {
+		if (!done && condition) match(query);
+		return this;
+	}
+
 	public IndexQueryBuilder match(final IndexQueryBuilder builder) {
 		builtQuery.add(builder.toQuery(), Occur.SHOULD);
 		return this;
@@ -349,6 +354,11 @@ public class IndexQueryBuilder {
 		return this;
 	}
 
+	public IndexQueryBuilder requireIf(final boolean condition, final Query query) {
+		if (!done && condition) require(query);
+		return this;
+	}
+
 	public IndexQueryBuilder requireNot(final Query query) {
 		builtQuery.add(query, Occur.MUST_NOT);
 		return this;
@@ -445,7 +455,7 @@ public class IndexQueryBuilder {
 		return this;
 	}
 
-	public IndexQueryBuilder exclude(IndexQueryBuilder queryBuilder) {
+	public IndexQueryBuilder exclude(final IndexQueryBuilder queryBuilder) {
 		builtQuery.add(queryBuilder.toQuery(), Occur.MUST_NOT);
 		return this;
 	}

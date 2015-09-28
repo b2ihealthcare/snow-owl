@@ -16,35 +16,18 @@
 package com.b2international.snowowl.snomed.datastore.index;
 
 import static com.b2international.snowowl.datastore.cdo.CDOIDUtils.asLong;
-import static com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants.DESCRIPTION_NUMBER;
-import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.COMPONENT_ACTIVE;
-import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.COMPONENT_ID;
-import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.COMPONENT_LABEL;
-import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.COMPONENT_RELEASED;
-import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.COMPONENT_STORAGE_KEY;
-import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.COMPONENT_TYPE;
-import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.DESCRIPTION_CASE_SIGNIFICANCE_ID;
-import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.DESCRIPTION_CONCEPT_ID;
-import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.DESCRIPTION_EFFECTIVE_TIME;
-import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.DESCRIPTION_MODULE_ID;
-import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.DESCRIPTION_TYPE_ID;
-import static com.google.common.base.Strings.nullToEmpty;
-import static java.lang.Long.parseLong;
-import static org.apache.lucene.document.Field.Store.YES;
 
-import org.apache.lucene.document.BinaryDocValuesField;
 import org.apache.lucene.document.Document;
-import org.apache.lucene.document.IntField;
-import org.apache.lucene.document.LongField;
-import org.apache.lucene.document.NumericDocValuesField;
-import org.apache.lucene.document.StoredField;
-import org.apache.lucene.document.TextField;
-import org.apache.lucene.util.BytesRef;
 
-import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.datastore.index.AbstractIndexMappingStrategy;
-import com.b2international.snowowl.datastore.index.SortKeyMode;
+import com.b2international.snowowl.datastore.index.ComponentBaseUpdater;
 import com.b2international.snowowl.snomed.Description;
+import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
+import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedDocumentBuilder;
+import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedMappings;
+import com.b2international.snowowl.snomed.datastore.index.update.ComponentModuleUpdater;
+import com.b2international.snowowl.snomed.datastore.index.update.DescriptionImmutablePropertyUpdater;
+import com.b2international.snowowl.snomed.datastore.index.update.DescriptionMutablePropertyUpdater;
 
 /**
  * Mapping strategy for SNOMED CT descriptions.
@@ -59,41 +42,12 @@ public class SnomedDescriptionIndexMappingStrategy extends AbstractIndexMappingS
 
 	@Override
 	public Document createDocument() {
-		
-		final String descriptionId = description.getId();
-		final String term = nullToEmpty(description.getTerm());
-		final boolean active = description.isActive();
-		final long storageKey = asLong(description.cdoID());
-		final long caseSignificanceId = parseLong(description.getCaseSignificance().getId());
-		final long typeId = parseLong(description.getType().getId());
-		final long conceptId = parseLong(description.getConcept().getId());
-		final long moduleId = parseLong(description.getModule().getId());
-		final long effectiveTime = EffectiveTimes.getEffectiveTime(description.getEffectiveTime());
-		
-		final Document doc = new Document();
-		doc.add(new LongField(COMPONENT_ID, parseLong(descriptionId), YES));
-		doc.add(new IntField(COMPONENT_TYPE, DESCRIPTION_NUMBER, YES));
-		doc.add(new TextField(COMPONENT_LABEL, term, YES));
-		SortKeyMode.SEARCH_ONLY.add(doc, term);
-		doc.add(new BinaryDocValuesField(COMPONENT_LABEL, new BytesRef(term)));
-		doc.add(new IntField(COMPONENT_ACTIVE, active ? 1 : 0, YES));
-		doc.add(new LongField(COMPONENT_STORAGE_KEY, storageKey, YES));
-		doc.add(new StoredField(DESCRIPTION_CASE_SIGNIFICANCE_ID, caseSignificanceId));
-		doc.add(new StoredField(COMPONENT_RELEASED, description.isReleased() ? 1 : 0));
-		doc.add(new LongField(DESCRIPTION_TYPE_ID, typeId, YES));
-		doc.add(new LongField(DESCRIPTION_CONCEPT_ID, conceptId, YES));
-		doc.add(new LongField(DESCRIPTION_MODULE_ID, moduleId, YES));
-		doc.add(new LongField(DESCRIPTION_EFFECTIVE_TIME, effectiveTime, YES));
-
-		doc.add(new NumericDocValuesField(COMPONENT_ID, parseLong(descriptionId)));
-		doc.add(new NumericDocValuesField(COMPONENT_STORAGE_KEY, storageKey));
-		doc.add(new NumericDocValuesField(DESCRIPTION_CASE_SIGNIFICANCE_ID, caseSignificanceId));
-		doc.add(new NumericDocValuesField(DESCRIPTION_TYPE_ID, typeId));
-		doc.add(new NumericDocValuesField(DESCRIPTION_CONCEPT_ID, conceptId));
-		doc.add(new NumericDocValuesField(DESCRIPTION_MODULE_ID, moduleId));
-		doc.add(new NumericDocValuesField(DESCRIPTION_EFFECTIVE_TIME, effectiveTime));
-		
-		return doc;
+		return SnomedMappings.doc()
+				.with(new ComponentBaseUpdater<SnomedDocumentBuilder>(description.getId(), SnomedTerminologyComponentConstants.DESCRIPTION_NUMBER, description.cdoID()))
+				.with(new ComponentModuleUpdater(description))
+				.with(new DescriptionMutablePropertyUpdater(description))
+				.with(new DescriptionImmutablePropertyUpdater(description))
+				.build();
 	}
 	
 	@Override

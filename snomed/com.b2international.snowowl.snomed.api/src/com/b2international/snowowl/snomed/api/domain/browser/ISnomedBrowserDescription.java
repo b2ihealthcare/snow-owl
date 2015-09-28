@@ -15,12 +15,15 @@
  */
 package com.b2international.snowowl.snomed.api.domain.browser;
 
+import com.b2international.snowowl.snomed.api.domain.Acceptability;
 import com.b2international.snowowl.snomed.api.domain.CaseSignificance;
+
+import java.util.Map;
 
 /**
  * Represents a specific SNOMED CT description, carrying information for use in the IHTSDO SNOMED CT Browser.
  */
-public interface ISnomedBrowserDescription extends ISnomedBrowserComponent {
+public interface ISnomedBrowserDescription extends ISnomedBrowserComponentWithId {
 
 	/** @return the descriptions's unique component identifier */
 	String getDescriptionId();
@@ -37,9 +40,9 @@ public interface ISnomedBrowserDescription extends ISnomedBrowserComponent {
 	/** @return the description term */
 	String getTerm();
 	
-	/** @return the length of the description term */
-	int getLength();
-	
 	/** @return the case sensitivity of the description term */
 	CaseSignificance getCaseSignificance();
+
+	/** @return language reference set member acceptability values for this description, keyed by language reference set identifier. */
+	Map<String, Acceptability> getAcceptabilityMap();
 }

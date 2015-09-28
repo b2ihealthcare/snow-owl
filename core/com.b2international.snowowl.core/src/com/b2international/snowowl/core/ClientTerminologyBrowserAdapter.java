@@ -23,7 +23,6 @@ import org.eclipse.core.runtime.IProgressMonitor;
 
 import com.b2international.snowowl.core.api.EmptyTerminologyBrowser;
 import com.b2international.snowowl.core.api.FilteredTerminologyBrowser;
-import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.api.IComponent;
 import com.b2international.snowowl.core.api.IComponentWithChildFlag;
 import com.b2international.snowowl.core.api.NullComponent;
@@ -174,23 +173,7 @@ public class ClientTerminologyBrowserAdapter<C, K> implements IClientTerminology
 	}
 
 	@Override
-	public Collection<C> getFilteredConcepts(final IBranchPath branchPath, final String expression, @SuppressWarnings("unchecked") final K... conceptIds) {
-		return Collections.emptyList();
-	}
-
-	/* (non-Javadoc)
-	 * @see com.b2international.snowowl.core.api.browser.IClientTerminologyBrowser#exists(java.lang.String)
-	 */
-	@Override
 	public boolean exists(final String componentId) {
-		return false;
-	}
-
-	/* (non-Javadoc)
-	 * @see com.b2international.snowowl.core.api.browser.IClientTerminologyBrowser#exists(java.lang.String, java.lang.String)
-	 */
-	@Override
-	public boolean exists(final String componentId, final String codeSystemShortName) {
 		return false;
 	}
 }

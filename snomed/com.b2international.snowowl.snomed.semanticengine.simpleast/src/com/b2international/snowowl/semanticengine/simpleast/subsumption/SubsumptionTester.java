@@ -19,28 +19,23 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
-import org.apache.lucene.index.Term;
-import org.apache.lucene.search.BooleanClause.Occur;
-import org.apache.lucene.search.BooleanQuery;
 import org.apache.lucene.search.Query;
-import org.apache.lucene.search.TermQuery;
 
 import com.b2international.commons.CompareUtils;
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.api.browser.IClientTerminologyBrowser;
-import com.b2international.snowowl.core.api.index.CommonIndexConstants;
-import com.b2international.snowowl.datastore.index.IndexUtils;
 import com.b2international.snowowl.semanticengine.simpleast.normalform.AttributeClauseList;
 import com.b2international.snowowl.semanticengine.simpleast.utils.QueryAstUtils;
-import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
+import com.b2international.snowowl.snomed.Concept;
 import com.b2international.snowowl.snomed.datastore.SnomedClientStatementBrowser;
 import com.b2international.snowowl.snomed.datastore.SnomedClientTerminologyBrowser;
 import com.b2international.snowowl.snomed.datastore.SnomedConceptIndexEntry;
 import com.b2international.snowowl.snomed.datastore.SnomedRelationshipIndexEntry;
 import com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants;
-import com.b2international.snowowl.snomed.datastore.index.SnomedHierarchy;
 import com.b2international.snowowl.snomed.datastore.index.SnomedClientIndexService;
+import com.b2international.snowowl.snomed.datastore.index.SnomedHierarchy;
 import com.b2international.snowowl.snomed.datastore.index.SnomedRelationshipIndexQueryAdapter;
+import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedMappings;
 import com.b2international.snowowl.snomed.dsl.query.queryast.AttributeClause;
 import com.b2international.snowowl.snomed.dsl.query.queryast.AttributeClauseGroup;
 import com.b2international.snowowl.snomed.dsl.query.queryast.ConceptRef;
@@ -558,35 +553,14 @@ public class SubsumptionTester {
 		private static final long serialVersionUID = 1L;
 
 		@Override public Query createQuery() {
-			
-			final BooleanQuery $ = new BooleanQuery(true);
-			
-			//relationship
-			$.add(new TermQuery(new Term(CommonIndexConstants.COMPONENT_TYPE, 
-					IndexUtils.intToPrefixCoded(SnomedTerminologyComponentConstants.RELATIONSHIP_NUMBER))), Occur.MUST);
-			
-			//active
-			$.add(new TermQuery(new Term(SnomedIndexBrowserConstants.COMPONENT_ACTIVE, 
-					IndexUtils.intToPrefixCoded(1))), Occur.MUST);
-			
-			//where source concept is the candidate
-			$.add(new TermQuery(new Term(SnomedIndexBrowserConstants.RELATIONSHIP_OBJECT_ID, 
-					IndexUtils.longToPrefixCoded(candidateId))), Occur.MUST);
-			
-			final BooleanQuery typeQuery = new BooleanQuery(true);
-			
-			//type concept: same as
-			typeQuery.add(new TermQuery(new Term(SnomedIndexBrowserConstants.RELATIONSHIP_ATTRIBUTE_ID, 
-					IndexUtils.longToPrefixCoded(CONCEPT_ID_SAME_AS))), Occur.SHOULD);
-			
-			//type concept: replaced by
-			typeQuery.add(new TermQuery(new Term(SnomedIndexBrowserConstants.RELATIONSHIP_ATTRIBUTE_ID, 
-					IndexUtils.longToPrefixCoded(CONCEPT_ID_REPLACED_BY))), Occur.SHOULD);
-			
-			$.add(typeQuery, Occur.MUST);
-			
-			return $;
-			
+			// type concept: same as or replaced by
+			final Query types = SnomedMappings.newQuery().relationshipType(CONCEPT_ID_SAME_AS).relationshipType(CONCEPT_ID_REPLACED_BY).matchAny();
+			return SnomedMappings.newQuery()
+					.relationship()
+						.active()
+						.field(SnomedIndexBrowserConstants.RELATIONSHIP_OBJECT_ID, candidateId)
+						.and(types)
+					.matchAll();
 		};
 		
 	}

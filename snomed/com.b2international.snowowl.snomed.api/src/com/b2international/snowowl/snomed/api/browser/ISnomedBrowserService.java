@@ -15,6 +15,7 @@
  */
 package com.b2international.snowowl.snomed.api.browser;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -61,12 +62,13 @@ public interface ISnomedBrowserService {
 	 * 
 	 * @param conceptRef the component reference pointing to the concept whose children should be retrieved (may not be {@code null})
 	 * @param locales the {@link Locale}s to inspect when determining FSN, in decreasing order of preference
+	 * @param stated {@code true} if stated children should be returned, {@code false} if inferred
 	 * @return the child concept list for the requested concept
 	 * @throws CodeSystemNotFoundException if a code system with the given short name is not registered
 	 * @throws CodeSystemVersionNotFoundException if a code system version for the code system with the given identifier is not registered
 	 * @throws ComponentNotFoundException if the component identifier does not match any concept on the given task
 	 */
-	List<ISnomedBrowserChildConcept> getConceptChildren(IComponentRef conceptRef, List<Locale> locales);
+	List<ISnomedBrowserChildConcept> getConceptChildren(IComponentRef conceptRef, List<Locale> locales, boolean stated);
 	
 	/**
 	 * Retrieves a list of descriptions matching the entered query string.
@@ -81,11 +83,11 @@ public interface ISnomedBrowserService {
 	 * @throws CodeSystemVersionNotFoundException if a code system version for the code system with the given identifier is not registered
 	 * @throws IllegalArgumentException if the query is {@code null} or too short
 	 */
-	List<ISnomedBrowserDescriptionResult> getDescriptions(IStorageRef storageRef, String query, List<Locale> locales, int offset, int limit);
-	
+	List<ISnomedBrowserDescriptionResult> getDescriptions(IStorageRef storageRef, String query, List<Locale> locales, ISnomedBrowserDescriptionResult.TermType resultConceptTermType, int offset, int limit);
+
 	/**
 	 * Retrieves a map of enum constants and corresponding concepts.
-	 * 
+	 *
 	 * @param storageRef the storage reference locating the version and branch to inspect (may not be {@code null})
 	 * @param locales the {@link Locale}s to inspect when determining FSN, in decreasing order of preference
 	 * @throws CodeSystemNotFoundException if a code system with the given short name is not registered
@@ -94,4 +96,7 @@ public interface ISnomedBrowserService {
 	 */
 	Map<String, ISnomedBrowserConstant> getConstants(IStorageRef storageRef, List<Locale> locales);
 
+	ISnomedBrowserConcept create(String branchPath, ISnomedBrowserConcept concept, String userId, List<Locale> locales);
+
+	ISnomedBrowserConcept update(String branchPath, ISnomedBrowserConceptUpdate concept, String userId, ArrayList<Locale> locales);
 }

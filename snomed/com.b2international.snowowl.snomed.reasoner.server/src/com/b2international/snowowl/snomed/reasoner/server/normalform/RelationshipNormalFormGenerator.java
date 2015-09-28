@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright (c) 2009 International Health Terminology Standards Development
  * Organisation
  *
@@ -30,20 +30,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import javax.annotation.Nullable;
-
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import bak.pcj.LongIterator;
-import bak.pcj.adapter.LongSetToSetAdapter;
-import bak.pcj.map.LongKeyMap;
-import bak.pcj.map.LongKeyOpenHashMap;
-import bak.pcj.set.LongOpenHashSet;
-import bak.pcj.set.LongSet;
-
 import com.b2international.commons.pcj.LongSets;
+import com.b2international.commons.pcj.LongSets.InverseLongFunction;
 import com.b2international.snowowl.datastore.server.snomed.index.InitialReasonerTaxonomyBuilder;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.datastore.StatementFragment;
@@ -52,17 +44,30 @@ import com.b2international.snowowl.snomed.reasoner.server.diff.OntologyChangePro
 import com.b2international.snowowl.snomed.reasoner.server.diff.relationship.StatementFragmentOrdering;
 import com.google.common.base.Function;
 import com.google.common.base.Objects;
+import com.google.common.base.Optional;
+import com.google.common.base.Predicate;
+import com.google.common.base.Predicates;
 import com.google.common.base.Stopwatch;
 import com.google.common.collect.Collections2;
-import com.google.common.collect.HashMultimap;
+import com.google.common.collect.FluentIterable;
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMultimap;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Maps.EntryTransformer;
-import com.google.common.collect.Multimap;
+import com.google.common.collect.Multimaps;
 import com.google.common.collect.Sets;
+
+import bak.pcj.LongIterator;
+import bak.pcj.map.ByteKeyMap;
+import bak.pcj.map.ByteKeyOpenHashMap;
+import bak.pcj.map.LongKeyMap;
+import bak.pcj.map.LongKeyOpenHashMap;
+import bak.pcj.map.ObjectKeyByteMap;
+import bak.pcj.map.ObjectKeyByteMapIterator;
+import bak.pcj.map.ObjectKeyByteOpenHashMap;
+import bak.pcj.set.LongOpenHashSet;
+import bak.pcj.set.LongSet;
 
 /**
  * Transforms a subsumption hierarchy and a set of non-ISA relationships into
@@ -106,66 +111,33 @@ public final class RelationshipNormalFormGenerator extends NormalFormGenerator<S
 	 */
 	private static final class Group implements SemanticComparable<Group> {
 
-		/**
-		 * Special group number indicating that the next free group number
-		 * should be used when the fragments in this group are converted into
-		 * relationships.
-		 */
-		private static final byte NUMBER_NOT_PRESERVED = -1;
-
-		private final byte groupNumber;
 		private final List<UnionGroup> unionGroups;
 
+		private byte groupNumber = NUMBER_NOT_PRESERVED;
+
 		/**
-		 * Creates a new group instance where the group number is not preserved.
+		 * Creates a new group instance.
 		 *
 		 * @param unionGroups
 		 *            the relationship union groups to associate with this group
 		 *            (may not be <code>null</code>)
 		 */
 		public Group(final Iterable<UnionGroup> unionGroups) {
-			this(NUMBER_NOT_PRESERVED, unionGroups);
-		}
-
-		public Group(final byte groupNumber, final Iterable<UnionGroup> unionGroups) {
-			this(groupNumber, unionGroups, new SkippingByteIterator());
-		}
-
-		/**
-		 * Creates a new group instance with the specified parameters,
-		 * preserving the group number for later reference.
-		 *
-		 * @param groupNumber
-		 *            the group identifier (must be non-negative)
-		 *
-		 * @param unionGroups
-		 *            the relationship union groups to associate with this group
-		 *            (may not be <code>null</code>)
-		 */
-		public Group(final byte groupNumber, final Iterable<UnionGroup> unionGroups, final SkippingByteIterator unionGroupIterator) {
-			checkArgument(groupNumber >= NUMBER_NOT_PRESERVED, "illegal groupNumber: %s.", groupNumber);
 			checkArgument(unionGroups != null, "unionGroups is null.");
-
-			this.groupNumber = groupNumber;
 			this.unionGroups = ImmutableList.copyOf(unionGroups);
-
-			for (final UnionGroup unionGroup : unionGroups) {
-				if (unionGroup.isGroupNumberPreserved()) {
-					unionGroupIterator.skip(unionGroup.getUnionGroupNumber());
-				}
-			}
-		}
-
-		public byte getGroupNumber() {
-			return groupNumber;
 		}
 
 		public List<UnionGroup> getUnionGroups() {
 			return unionGroups;
 		}
 
-		public boolean isGroupNumberPreserved() {
-			return groupNumber != NUMBER_NOT_PRESERVED;
+		public byte getGroupNumber() {
+			return groupNumber;
+		}
+
+		public void setGroupNumber(final byte groupNumber) {
+			checkArgument(groupNumber > NUMBER_NOT_PRESERVED, "Illegal group number '%s'.", groupNumber);
+			this.groupNumber = groupNumber;
 		}
 
 		@Override
@@ -202,49 +174,126 @@ public final class RelationshipNormalFormGenerator extends NormalFormGenerator<S
 		}
 
 		@Override
-		public String toString() {
+		public int hashCode() {
+			return 31 + unionGroups.hashCode();
+		}
 
-			return MessageFormat.format("number: {0}, union groups: {1}",
-					isGroupNumberPreserved() ? getGroupNumber() : "?", unionGroups);
+		@Override
+		public boolean equals(final Object obj) {
+			if (this == obj) { 
+				return true; 
+			}
+
+			if (!(obj instanceof Group)) { 
+				return false; 
+			}
+
+			final Group other = (Group) obj;
+
+			if (unionGroups.size() != other.unionGroups.size()) {
+				return false;
+			}
+
+			// containsAll should be symmetric in this case
+			return unionGroups.containsAll(other.unionGroups);
+		}
+
+		public void adjustOrder(final Group other) {
+			if (unionGroups.isEmpty()) {
+				return;
+			}
+
+			final ByteKeyMap oldNumberMap = new ByteKeyOpenHashMap(unionGroups.size());
+			for (final UnionGroup unionGroup : unionGroups) {
+				oldNumberMap.put(unionGroup.getUnionGroupNumber(), unionGroup);
+			}
+
+			final ObjectKeyByteMap newNumberMap = new ObjectKeyByteOpenHashMap(unionGroups.size());
+			for (final UnionGroup unionGroup : unionGroups) {
+				final Optional<UnionGroup> otherUnionGroup = Iterables.tryFind(other.unionGroups, Predicates.equalTo(unionGroup));
+				if (otherUnionGroup.isPresent()) {
+					final byte oldNumber = unionGroup.getUnionGroupNumber();
+					final byte newNumber = otherUnionGroup.get().getUnionGroupNumber();
+
+					if (oldNumber != newNumber) {
+						newNumberMap.put(unionGroup, newNumber);
+					}
+				}
+			}
+
+			final ObjectKeyByteMapIterator itr = newNumberMap.entries();
+			while (itr.hasNext()) {
+				itr.next();
+
+				final UnionGroup unionGroupToAdjust = (UnionGroup) itr.getKey();
+				final byte oldNumber = unionGroupToAdjust.getUnionGroupNumber();
+				final byte newNumber = itr.getValue();
+
+				final UnionGroup swap = (UnionGroup) oldNumberMap.get(newNumber);
+				if (swap != null) {
+					swap.setUnionGroupNumber(oldNumber);
+					oldNumberMap.put(oldNumber, swap);
+				} else {
+					oldNumberMap.remove(oldNumber);
+				}
+
+				unionGroupToAdjust.setUnionGroupNumber(newNumber);
+				oldNumberMap.put(newNumber, unionGroupToAdjust);
+			}
+		}
+
+		public void fillNumbers() {
+			byte unionGroupNumber = 1;
+
+			for (final UnionGroup unionGroup : unionGroups) {
+				if (unionGroup.getUnionGroupNumber() == NUMBER_NOT_PRESERVED) {
+					unionGroup.setUnionGroupNumber(unionGroupNumber++);
+				}
+			}
+		}
+
+		@Override
+		public String toString() {
+			final StringBuilder builder = new StringBuilder();
+			builder.append("Group [unionGroups=");
+			builder.append(unionGroups);
+			builder.append("]");
+			return builder.toString();
 		}
 	}
 
 	private static final class UnionGroup implements SemanticComparable<UnionGroup> {
 
-		private static final byte NUMBER_NOT_PRESERVED = -1;
-
-		private final byte unionGroupNumber;
 		private final List<RelationshipFragment> fragments;
+
+		private byte unionGroupNumber = NUMBER_NOT_PRESERVED;
 
 		/**
 		 * Creates a new union group instance with the specified parameters,
 		 * preserving the union group number for later reference.
-		 *
-		 * @param unionGroupNumber
-		 *            the union group identifier (must be non-negative)
-		 *
+		 * 
 		 * @param fragments
 		 *            the relationship fragments to associate with this union
 		 *            group (may not be <code>null</code>)
+		 *            
+		 * @param unionGroupNumber the union group number
 		 */
-		public UnionGroup(final byte unionGroupNumber, final Iterable<RelationshipFragment> fragments) {
-			checkArgument(unionGroupNumber >= NUMBER_NOT_PRESERVED, "illegal unionGroupNumber: %s.", unionGroupNumber);
+		public UnionGroup(final Iterable<RelationshipFragment> fragments) {
 			checkArgument(fragments != null, "fragments is null.");
-
-			this.unionGroupNumber = unionGroupNumber;
 			this.fragments = ImmutableList.copyOf(fragments);
-		}
-
-		public byte getUnionGroupNumber() {
-			return unionGroupNumber;
 		}
 
 		public List<RelationshipFragment> getRelationshipFragments() {
 			return fragments;
 		}
 
-		public boolean isGroupNumberPreserved() {
-			return unionGroupNumber != NUMBER_NOT_PRESERVED;
+		public byte getUnionGroupNumber() {
+			return unionGroupNumber;
+		}
+
+		public void setUnionGroupNumber(final byte unionGroupNumber) {
+			checkArgument(unionGroupNumber > NUMBER_NOT_PRESERVED, "Illegal union group number '%s'.", unionGroupNumber);
+			this.unionGroupNumber = unionGroupNumber;
 		}
 
 		@Override
@@ -282,10 +331,37 @@ public final class RelationshipNormalFormGenerator extends NormalFormGenerator<S
 		}
 
 		@Override
-		public String toString() {
+		public int hashCode() {
+			return 31 + fragments.hashCode();
+		}
 
-			return MessageFormat.format("number: {0}, fragments: {1}",
-					isGroupNumberPreserved() ? getUnionGroupNumber() : "?", fragments);
+		@Override
+		public boolean equals(final Object obj) {
+			if (this == obj) { 
+				return true; 
+			}
+
+			if (!(obj instanceof UnionGroup)) { 
+				return false; 
+			}
+
+			final UnionGroup other = (UnionGroup) obj;
+
+			if (fragments.size() != other.fragments.size()) {
+				return false;
+			}
+
+			// containsAll should be symmetric in this case
+			return fragments.containsAll(other.fragments);
+		}
+
+		@Override
+		public String toString() {
+			final StringBuilder builder = new StringBuilder();
+			builder.append("UnionGroup [fragments=");
+			builder.append(fragments);
+			builder.append("]");
+			return builder.toString();
 		}
 	}
 
@@ -430,9 +506,30 @@ public final class RelationshipNormalFormGenerator extends NormalFormGenerator<S
 			return reasonerTaxonomyBuilder.isExhaustive(conceptId);
 		}
 
+		/**
+		 * Collects all parent concepts reachable from the specified concept. The
+		 * returned set also includes the starting concept.
+		 *
+		 * @param conceptId
+		 *            the concept to start from
+		 *
+		 * @return a set containing the starting concept and all reachable
+		 *         supertypes
+		 */
+		private LongSet getConceptAndAllSuperTypes(final long conceptId) {
+			final LongSet ancestors = reasonerTaxonomy.getAncestors(conceptId);
+			final LongSet conceptAndAncestors;
+			if (ancestors instanceof LongOpenHashSet) {
+				conceptAndAncestors = (LongSet) ((LongOpenHashSet) ancestors).clone();
+			} else {
+				conceptAndAncestors = new LongOpenHashSet(ancestors);
+			}
+			conceptAndAncestors.add(conceptId);
+			return conceptAndAncestors;
+		}
+
 		@Override
 		public boolean equals(final Object obj) {
-
 			if (this == obj) {
 				return true;
 			}
@@ -456,17 +553,16 @@ public final class RelationshipNormalFormGenerator extends NormalFormGenerator<S
 
 		@Override
 		public String toString() {
-			return MessageFormat.format("{0} : {3} {1} ({2})", getTypeId(), getDestinationId(), isUniversal(), isDestinationNegated() ? "NOT" : "");
+			return MessageFormat.format("{0,number,#} : {1}{2,number,#} ({3})", getTypeId(), (isDestinationNegated() ? "NOT" : ""), getDestinationId(), isUniversal());
 		}
 	}
 
 	/**
 	 * Represents a set of groups that do not allow redundant elements.
-	 *
 	 */
 	private static final class GroupSet extends AbstractSet<Group> {
 
-		private final List<Group> delegate = Lists.newArrayList();
+		private final List<Group> groups = Lists.newArrayList();
 
 		/**
 		 * Adds the specified group to this set if it is not already present.
@@ -482,7 +578,7 @@ public final class RelationshipNormalFormGenerator extends NormalFormGenerator<S
 		public boolean add(final Group e) {
 			final List<Group> redundant = Lists.newArrayList();
 
-			for (final Group existingGroup : delegate) {
+			for (final Group existingGroup : groups) {
 				if (existingGroup.isSameOrStrongerThan(e)) {
 					return false;
 				} else if (e.isSameOrStrongerThan(existingGroup)) {
@@ -490,20 +586,89 @@ public final class RelationshipNormalFormGenerator extends NormalFormGenerator<S
 				}
 			}
 
-			delegate.removeAll(redundant);
-			delegate.add(e);
+			groups.removeAll(redundant);
+			groups.add(e);
 
 			return true;
 		}
 
+		/**
+		 * Adds a group to the set, bypassing redundancy checks.
+		 * 
+		 * @see #add(Group)
+		 */
+		public boolean addUnique(final Group e) {
+			return groups.add(e);
+		}
+
 		@Override
 		public Iterator<Group> iterator() {
-			return delegate.iterator();
+			return groups.iterator();
 		}
 
 		@Override
 		public int size() {
-			return delegate.size();
+			return groups.size();
+		}
+
+		public void adjustOrder(final GroupSet other) {
+			if (isEmpty()) {
+				return;
+			}
+
+			final ByteKeyMap oldNumberMap = new ByteKeyOpenHashMap(groups.size());
+			for (final Group group : groups) {
+				oldNumberMap.put(group.getGroupNumber(), group);
+			}
+
+			final ObjectKeyByteMap newNumberMap = new ObjectKeyByteOpenHashMap(groups.size());
+			for (final Group group : groups) {
+				final Optional<Group> otherGroup = Iterables.tryFind(other.groups, Predicates.equalTo(group));
+				if (otherGroup.isPresent()) {
+					final byte oldNumber = group.getGroupNumber();
+					final byte newNumber = otherGroup.get().getGroupNumber();
+
+					if (oldNumber != newNumber) {
+						newNumberMap.put(group, newNumber);
+						group.adjustOrder(otherGroup.get());
+					}
+				}
+			}
+
+			final ObjectKeyByteMapIterator itr = newNumberMap.entries();
+			while (itr.hasNext()) {
+				itr.next();
+
+				final Group groupToAdjust = (Group) itr.getKey();
+				final byte oldNumber = groupToAdjust.getGroupNumber();
+				final byte newNumber = itr.getValue();
+
+				final Group swap = (Group) oldNumberMap.get(newNumber);
+				if (swap != null) {
+					swap.setGroupNumber(oldNumber);
+					oldNumberMap.put(oldNumber, swap);
+				} else {
+					oldNumberMap.remove(oldNumber);
+				}
+
+				groupToAdjust.setGroupNumber(newNumber);
+				oldNumberMap.put(newNumber, groupToAdjust);
+			}
+		}
+
+		public void fillNumbers() {
+			byte groupNumber = 1;
+
+			for (final Group group : groups) {
+				group.fillNumbers();
+
+				/* 
+				 * Group numbers will already be set on existing inferred relationship groups and 0 groups.
+				 */
+				if (group.getGroupNumber() == NUMBER_NOT_PRESERVED) {
+					group.setGroupNumber(groupNumber++);
+				}
+			}
 		}
 	}
 
@@ -511,14 +676,21 @@ public final class RelationshipNormalFormGenerator extends NormalFormGenerator<S
 
 	private static final long IS_A_LONG = Long.valueOf(Concepts.IS_A);
 
+	/**
+	 * Special group number indicating that the next free group/union group number
+	 * should be used when the fragments in this group/union group are converted into
+	 * relationships.
+	 */
+	private static final byte NUMBER_NOT_PRESERVED = -1;
+
+	private static final byte ZERO_GROUP = 0;
+
 	private final LongKeyMap generatedNonIsACache = new LongKeyOpenHashMap();
 
 	/**
 	 * Creates a new distribution normal form generator instance.
 	 *
-	 * @param reasonerTaxonomy
-	 *            the reasoner to extract results from (may not be
-	 *            <code>null</code>)
+	 * @param reasonerTaxonomy the reasoner to extract results from (may not be {@code null})
 	 */
 	public RelationshipNormalFormGenerator(final ReasonerTaxonomy reasonerTaxonomy, final InitialReasonerTaxonomyBuilder reasonerTaxonomyBuilder) {
 		super(reasonerTaxonomy, reasonerTaxonomyBuilder);
@@ -526,282 +698,228 @@ public final class RelationshipNormalFormGenerator extends NormalFormGenerator<S
 
 	@Override
 	public Collection<StatementFragment> getExistingComponents(final long conceptId) {
-		return reasonerTaxonomyBuilder.getStatementFragments(conceptId);
+		return reasonerTaxonomyBuilder.getInferredStatementFragments(conceptId);
 	}
 
 	/**
 	 * Outbound relationships are calculated in the following fashion:
-	 *
+	 * 
 	 * <ol>
-	 *
-	 * <li>The given concept's <i>direct supertypes</i> are collected from the
-	 * terminology browser, and IS_A relationships are created for all of them
-	 * (assuming the terminology browser only links concepts where the
-	 * corresponding relationship, object, attribute and value concepts are
-	 * active);
-	 *
-	 * <li>The <i>given concept and all of its ancestors</i> are gathered from
-	 * the terminology browser; the outbound relationship set reachable from
-	 * these concepts is reduced to relationships which are active and non-IS_A;
-	 * this set is further reduced to contain only non-redundant relationships
-	 * with appropriate group numbers;
-	 *
-	 * <li>The relationships representing IS_A connections to direct supertypes
-	 * and the non-redundant relationships are returned after being copied into
-	 * an immutable list.
-	 *
+	 * <li>
+	 * The given concept's <i>direct supertypes</i> are collected from the
+	 * inferred taxonomy, and IS_A relationships are created for all of 
+	 * them;
+	 * </li>
+	 * <li>
+	 * The <i>given concept and all of its ancestors</i> are gathered from
+	 * the taxonomy; the outbound non-IS_A relationship set reachable from
+	 * these concepts is extracted; this set is further reduced to contain 
+	 * only non-redundant relationships; the resulting relationship groups 
+	 * are numbered continuously from 1;
+	 * </li>
+	 * <li>
+	 * Existing inferred non-IS_A relationships are collected for the 
+	 * concept, forming relationship groups;
+	 * </li>
+	 * <li>
+	 * Where applicable, new inferred relationship group and union group 
+	 * numbers are shuffled to preserve existing values.
+	 * </li>
 	 * </ol>
 	 *
-	 * @return a collection of outbound relationships for the specified
-	 *         concept in distribution normal form
+	 * @return a collection of outbound relationships for the specified concept in distribution normal form
 	 */
 	@Override
 	public Collection<StatementFragment> getGeneratedComponents(final long conceptId) {
 		final LongSet directSuperTypes = reasonerTaxonomy.getParents(conceptId);
 
 		// Step 1: create IS-A relationships
-		final Iterable<StatementFragment> filteredIsARelationships = getFilteredIsARelationships(conceptId, directSuperTypes);
+		final Iterable<StatementFragment> inferredIsAFragments = getInferredIsAFragments(conceptId, directSuperTypes);
 
 		// Step 2: get all non IS-A relationships from ancestors and remove redundancy, then cache the results for later use
 		final LongKeyMap otherNonIsAFragments = new LongKeyOpenHashMap();
 
+		/* 
+		 * We can rely on the fact that the tree is processed in breadth-first order, so the parents' non-IS A relationships
+		 * will already be present in the cache
+		 */
 		for (final LongIterator itr = directSuperTypes.iterator(); itr.hasNext(); /* empty */) {
 			final long directSuperTypeId = itr.next();
 			otherNonIsAFragments.put(directSuperTypeId, getCachedNonIsAFragments(directSuperTypeId));
 		}
 
-		final Collection<StatementFragment> ownNonIsaFragments = reasonerTaxonomyBuilder.getNonIsAFragments(conceptId);
-		final Iterable<StatementFragment> filteredNonIsARelationships = getDisjointGroups(conceptId, ownNonIsaFragments, otherNonIsAFragments);
-		generatedNonIsACache.put(conceptId, filteredNonIsARelationships);
-
-		// Step 3: concatenate and return
-		return ImmutableList.copyOf(Iterables.concat(filteredIsARelationships, filteredNonIsARelationships));
-	}
-
-	@SuppressWarnings("unchecked")
-	private Collection<StatementFragment> getCachedNonIsAFragments(final long directSuperTypeId) {
-		return (Collection<StatementFragment>) generatedNonIsACache.get(directSuperTypeId);
-	}
-
-	private Iterable<StatementFragment> getFilteredIsARelationships(final long conceptId, final LongSet parentIds) {
-		final Function<Long, StatementFragment> superTypeRelationshipFactory = new Function<Long, StatementFragment>() {
+		final Collection<StatementFragment> ownStatedNonIsaFragments = reasonerTaxonomyBuilder.getNonIsAFragments(conceptId);
+		final Collection<StatementFragment> ownInferredFragments = reasonerTaxonomyBuilder.getInferredStatementFragments(conceptId);
+		final Collection<StatementFragment> ownInferredNonIsaFragments = Collections2.filter(ownInferredFragments, new Predicate<StatementFragment>() {
 			@Override
-			public StatementFragment apply(final Long parentId) {
-				return createStatementFragment(-1L, -1L, IS_A_LONG, parentId.longValue(), (byte)0, (byte)0, false, false);
-			}
-		};
-
-		return Iterables.transform(new LongSetToSetAdapter(parentIds), superTypeRelationshipFactory);
-	}
-
-	/**
-	 * Collects all parent concepts reachable from the specified concept. The
-	 * returned set also includes the starting concept.
-	 *
-	 * @param conceptId
-	 *            the concept to start from
-	 *
-	 * @return a set containing the starting concept and all reachable
-	 *         supertypes
-	 */
-	private LongSet getConceptAndAllSuperTypes(final long conceptId) {
-		final LongSet ancestors = reasonerTaxonomy.getAncestors(conceptId);
-		final LongSet conceptAndAncestors;
-		if (ancestors instanceof LongOpenHashSet) {
-			conceptAndAncestors = (LongSet) ((LongOpenHashSet) ancestors).clone();
-		} else {
-			conceptAndAncestors = new LongOpenHashSet(ancestors);
-		}
-		conceptAndAncestors.add(conceptId);
-		return conceptAndAncestors;
-	}
-
-	/**
-	 * Filters grouped relationships so that the returned Iterable only contains
-	 * relationships for groups that are not redundant with respect to each
-	 * other.
-	 * <p>
-	 * The returned Iterable is backed by an immutable data structure;
-	 * <code>remove()</code> is not available.
-	 *
-	 * @param sourceId
-	 *            the concept to build relationships for
-	 *
-	 * @param nonIsARelationships
-	 *            the relationships which have a source concept that is a member
-	 *            of the set returned by
-	 *            {@link #getConceptAndAllSuperTypes(Long)}
-	 *
-	 * @return an {@link Iterable} containing the reduced set of relationships
-	 */
-	private Iterable<StatementFragment> getDisjointGroups(final long sourceId,
-			final Collection<StatementFragment> ownNonIsAFragments,
-			final LongKeyMap otherNonIsAFragments) {
-
-		final GroupSet groups = new GroupSet();
-		final SkippingByteIterator groupIterator = new SkippingByteIterator();
-		final SkippingByteIterator unionGroupIterator = new SkippingByteIterator();
-
-		final Iterable<Group> ownGroups = createGroupsForObject(true, groupIterator, unionGroupIterator, ownNonIsAFragments);
-		Iterables.addAll(groups, ownGroups);
-
-		for (final LongIterator itr = otherNonIsAFragments.keySet().iterator(); itr.hasNext(); /* empty */) {
-			final long parentId = itr.next();
-			final Iterable<Group> otherGroups = createGroupsForObject(false, groupIterator, unionGroupIterator, (Collection<StatementFragment>) otherNonIsAFragments.get(parentId));
-			Iterables.addAll(groups, otherGroups);
-		}
-
-		final Iterable<Iterable<Iterable<StatementFragment>>> results = Iterables.transform(groups, new Function<Group, Iterable<Iterable<StatementFragment>>>() {
-
-			@Override
-			public Iterable<Iterable<StatementFragment>> apply(final Group group) {
-
-				final byte groupId = group.isGroupNumberPreserved()
-						? group.getGroupNumber()
-						: groupIterator.nextByte();
-
-				return Iterables.transform(group.getUnionGroups(), new Function<UnionGroup, Iterable<StatementFragment>>() {
-
-					@Override
-					public Iterable<StatementFragment> apply(final UnionGroup unionInput) {
-
-						final byte unionGroupId = unionInput.isGroupNumberPreserved()
-								? unionInput.getUnionGroupNumber()
-								: unionGroupIterator.nextByte();
-
-						return Iterables.transform(unionInput.getRelationshipFragments(), new Function<RelationshipFragment, StatementFragment>() {
-
-							@Override
-							public StatementFragment apply(final RelationshipFragment input) {
-
-								return createStatementFragment(input.getStatementId(),
-										input.getStorageKey(),
-										input.getTypeId(),
-										input.getDestinationId(),
-										groupId,
-										unionGroupId,
-										input.isUniversal(),
-										input.isDestinationNegated());
-							}
-						});
-					};
-				});
+			public boolean apply(final StatementFragment input) {
+				return input.getTypeId() != IS_A_LONG;
 			}
 		});
 
-		return ImmutableList.copyOf(Iterables.concat(Iterables.concat(results)));
+		final Iterable<StatementFragment> inferredNonIsAFragments = getInferredNonIsAFragments(conceptId, 
+				ownInferredNonIsaFragments, 
+				ownStatedNonIsaFragments,
+				otherNonIsAFragments);
+
+		// Place results in the cache, so children can re-use it
+		generatedNonIsACache.put(conceptId, ImmutableList.copyOf(inferredNonIsAFragments));
+
+		// Step 3: concatenate and return
+		return ImmutableList.copyOf(Iterables.concat(inferredIsAFragments, inferredNonIsAFragments));
 	}
 
-	/**
-	 * Extracts group information for the given relationships. All supplied
-	 * relationships must have the same object concept, as relationship group
-	 * numbers are only locally unique; the result is otherwise undefined.
-	 *
-	 * @param sourceOwned
-	 *            <code>true</code> if the object of the specified relationships
-	 *            is equal to the source concept for which normal form
-	 *            relationships are generated (group numbers need to be
-	 *            preserved in this case), <code>false</code> otherwise
-	 *
-	 * @param groupNumberIterator
-	 *            the group iterator to configure (used for skipping
-	 *            source-owned relationship group numbers)
-	 *
-	 * @param ownNonIsARelationshipFragments
-	 *            the relationships to process
-	 *
-	 * @return an {@link Iterable} of Groups that store the appropriate
-	 *         relationships fragments with an optionally preserved
-	 */
-	private Iterable<Group> createGroupsForObject(final boolean sourceOwned, final SkippingByteIterator groupNumberIterator,
-			final SkippingByteIterator zeroGroupUnionGroupIterator, final Collection<StatementFragment> ownNonIsARelationshipFragments) {
-
-		final Map<Byte, Collection<StatementFragment>> relationshipsByGroupId = getRelationshipsByGroupId(ownNonIsARelationshipFragments).asMap();
-
-		final Map<Byte, Collection<Group>> groupsByGroupId = Maps.transformEntries(relationshipsByGroupId,
-				new EntryTransformer<Byte, Collection<StatementFragment>, Collection<Group>>() {
-
-					@Override
-					public Collection<Group> transformEntry(final Byte key, final Collection<StatementFragment> value) {
-
-						if (key == 0) {
-							return ImmutableList.copyOf(transformZeroGroups(value));
-						} else {
-							return ImmutableList.of(transformNonZeroGroup(key, value));
-						}
-					}
-
-					private Iterable<Group> transformZeroGroups(final Collection<StatementFragment> values) {
-
-						// Relationships in group 0 are considered separate groups
-						return Iterables.concat(Collections2.transform(values, new Function<StatementFragment, Iterable<Group>>() {
-							@Override
-							public Iterable<Group> apply(final StatementFragment input) {
-
-								final Iterable<UnionGroup> unionGroups = getUnionGroups(sourceOwned, values);
-								final Iterable<UnionGroup> disjointUnionGroups = getDisjointComparables(unionGroups);
-
-								return Iterables.transform(disjointUnionGroups, new Function<UnionGroup, Group>() {
-									@Override
-									public Group apply(@Nullable final UnionGroup input) {
-										return new Group((byte)0, ImmutableList.of(input), zeroGroupUnionGroupIterator);
-									}
-								});
-							}
-						}));
-					}
-
-					private Group transformNonZeroGroup(final Byte key, final Collection<StatementFragment> values) {
-
-						final Iterable<UnionGroup> unionGroups = getUnionGroups(sourceOwned, values);
-						final Iterable<UnionGroup> disjointUnionGroups = getDisjointComparables(unionGroups);
-
-						if (sourceOwned) {
-							groupNumberIterator.skip(key);
-							return new Group(key, disjointUnionGroups);
-						} else {
-							return new Group(disjointUnionGroups);
-						}
-					}
-				});
-
-		return Iterables.concat(groupsByGroupId.values());
+	private Collection<StatementFragment> getCachedNonIsAFragments(final long directSuperTypeId) {
+		return getStatementFragments(generatedNonIsACache, directSuperTypeId);
 	}
 
-	private Multimap<Byte, StatementFragment> getRelationshipsByGroupId(final Iterable<StatementFragment> relationshipsForObject) {
-
-		final ImmutableMultimap.Builder<Byte, StatementFragment> relationshipsByGroupId = ImmutableMultimap.builder();
-
-		for (final StatementFragment rmini : relationshipsForObject) {
-			relationshipsByGroupId.put(rmini.getGroup(), rmini);
-		}
-
-		return relationshipsByGroupId.build();
+	@SuppressWarnings("unchecked")
+	private Collection<StatementFragment> getStatementFragments(final LongKeyMap statementFragmentMap, final long conceptId) {
+		return (Collection<StatementFragment>) statementFragmentMap.get(conceptId);
 	}
 
-	private Iterable<UnionGroup> getUnionGroups(final boolean sourceOwned, final Iterable<StatementFragment> relationshipsForGroup) {
-
-		final Multimap<Byte, RelationshipFragment> fragmentsByUnionGroupId = HashMultimap.create();
-		final List<UnionGroup> result = Lists.newArrayList();
-
-		for (final StatementFragment rmini : relationshipsForGroup) {
-
-			if (rmini.getUnionGroup() == 0) {
-				// Union groups should be in non-zero groups; goes straight into the result list
-				result.add(new UnionGroup((byte)0, ImmutableList.of(new RelationshipFragment(rmini))));
-			} else {
-				fragmentsByUnionGroupId.put(rmini.getUnionGroup(), new RelationshipFragment(rmini));
+	private Iterable<StatementFragment> getInferredIsAFragments(final long conceptId, final LongSet parentIds) {
+		return LongSets.transform(parentIds, new InverseLongFunction<StatementFragment>() {
+			@Override
+			public StatementFragment apply(final long parentId) {
+				return new StatementFragment(IS_A_LONG, parentId);
 			}
+		});
+	}
+
+	private Iterable<StatementFragment> getInferredNonIsAFragments(final long sourceId,
+			final Collection<StatementFragment> ownInferredNonIsAFragments,
+			final Collection<StatementFragment> ownStatedNonIsAFragments,
+			final LongKeyMap parentStatedNonIsAFragments) {
+
+		// Index existing inferred non-IS A relationship groups into a GroupSet (without redundancy check)
+		final GroupSet inferredGroups = new GroupSet();
+		final Iterable<Group> ownInferredGroups = toGroups(true, ownInferredNonIsAFragments);
+		for (final Group ownInferredGroup : ownInferredGroups) {
+			inferredGroups.addUnique(ownInferredGroup);
 		}
 
-		for (final byte group : fragmentsByUnionGroupId.keySet()) {
+		// Eliminate redundancy between existing stated non-IS A relationship groups
+		final GroupSet groups = new GroupSet();
+		final Iterable<Group> ownGroups = toGroups(false, ownStatedNonIsAFragments);
+		Iterables.addAll(groups, ownGroups);
 
-			result.add(new UnionGroup(
-						sourceOwned ? group : UnionGroup.NUMBER_NOT_PRESERVED,
-						fragmentsByUnionGroupId.get(group)));
+		// Continue by adding stated non-IS A relationship groups from parents indicated by the reasoner
+		for (final LongIterator itr = parentStatedNonIsAFragments.keySet().iterator(); itr.hasNext(); /* empty */) {
+			final long parentId = itr.next();
+			final Iterable<Group> otherGroups = toGroups(false, getStatementFragments(parentStatedNonIsAFragments, parentId));
+			Iterables.addAll(groups, otherGroups);
 		}
 
-		return result;
+		// The remaining non-redundant groups should be numbered from 1
+		groups.fillNumbers();
+
+		// Shuffle around the numbers to match existing inferred group numbers as much as possible 
+		groups.adjustOrder(inferredGroups);
+
+		// Convert groups back to individual statement fragments
+		return fromGroupSet(groups);
+	}
+
+	private Iterable<Group> toGroups(final boolean preserveNumbers, final Collection<StatementFragment> nonIsARelationshipFragments) {
+
+		final Map<Byte, Collection<StatementFragment>> relationshipsByGroupId = Multimaps.index(nonIsARelationshipFragments, 
+				new Function<StatementFragment, Byte>() {
+			@Override
+			public Byte apply(final StatementFragment input) {
+				return input.getGroup();
+			}
+		}).asMap();
+
+		final Collection<Collection<Group>> groups = Maps.transformEntries(relationshipsByGroupId, 
+				new EntryTransformer<Byte, Collection<StatementFragment>, Collection<Group>>() {
+			@Override
+			public Collection<Group> transformEntry(final Byte key, final Collection<StatementFragment> values) {
+				final Iterable<UnionGroup> unionGroups = toUnionGroups(preserveNumbers, values);
+				final Iterable<UnionGroup> disjointUnionGroups = getDisjointComparables(unionGroups);
+
+				if (key == 0) {
+					// Relationships in group 0 form separate groups
+					return ImmutableList.copyOf(toZeroGroups(preserveNumbers, disjointUnionGroups));
+				} else {
+					// Other group numbers produce a single group from all fragments
+					return ImmutableList.of(toNonZeroGroup(preserveNumbers, key, disjointUnionGroups));
+				}
+			}
+		}).values();
+
+		return Iterables.concat(groups);
+	}
+
+	private Iterable<Group> toZeroGroups(final boolean preserveNumbers, final Iterable<UnionGroup> disjointUnionGroups) {
+		return FluentIterable.from(disjointUnionGroups).transform(new Function<UnionGroup, Group>() {
+			@Override
+			public Group apply(final UnionGroup input) {
+				final Group group = new Group(ImmutableList.of(input));
+				group.setGroupNumber(ZERO_GROUP);
+				return group;
+			}
+		});
+	}
+
+	private Group toNonZeroGroup(final boolean preserveNumbers, final byte groupNumber, final Iterable<UnionGroup> disjointUnionGroups) {
+		final Group group = new Group(disjointUnionGroups);
+		if (preserveNumbers) {
+			group.setGroupNumber(groupNumber);
+		}
+		return group;
+	}
+
+	private Iterable<UnionGroup> toUnionGroups(final boolean preserveNumbers, final Collection<StatementFragment> values) {
+		final Map<Byte, Collection<StatementFragment>> relationshipsByUnionGroupId = Multimaps.index(values, 
+				new Function<StatementFragment, Byte>() {
+			@Override
+			public Byte apply(final StatementFragment input) {
+				return input.getUnionGroup();
+			}
+		}).asMap();
+
+		final Collection<Collection<UnionGroup>> unionGroups = Maps.transformEntries(relationshipsByUnionGroupId, 
+				new EntryTransformer<Byte, Collection<StatementFragment>, Collection<UnionGroup>>() {
+			@Override
+			public Collection<UnionGroup> transformEntry(final Byte key, final Collection<StatementFragment> values) {
+				if (key == 0) {
+					// Relationships in union group 0 form separate union groups
+					return ImmutableList.copyOf(toZeroUnionGroups(values));
+				} else {
+					// Other group numbers produce a single union group from all fragments
+					return ImmutableList.of(toNonZeroUnionGroup(preserveNumbers, key, values));
+				}
+			}
+		}).values();
+
+		return Iterables.concat(unionGroups);
+	}
+
+	private Iterable<UnionGroup> toZeroUnionGroups(final Collection<StatementFragment> values) {
+		return FluentIterable.from(values).transform(new Function<StatementFragment, UnionGroup>() {
+			@Override
+			public UnionGroup apply(final StatementFragment input) {
+				final UnionGroup unionGroup = new UnionGroup(ImmutableList.of(new RelationshipFragment(input)));
+				unionGroup.setUnionGroupNumber(ZERO_GROUP); 
+				return unionGroup;
+			}
+		});
+	}
+
+	private UnionGroup toNonZeroUnionGroup(final boolean preserveNumbers, final byte unionGroupNumber, final Collection<StatementFragment> values) {
+		final Iterable<RelationshipFragment> fragments = FluentIterable.from(values).transform(new Function<StatementFragment, RelationshipFragment>() {
+			@Override
+			public RelationshipFragment apply(final StatementFragment input) {
+				return new RelationshipFragment(input);
+			}
+		});
+
+		final UnionGroup unionGroup = new UnionGroup(fragments);
+		if (preserveNumbers) {
+			unionGroup.setUnionGroupNumber(unionGroupNumber);
+		}
+		return unionGroup;
 	}
 
 	/**
@@ -809,22 +927,22 @@ public final class RelationshipNormalFormGenerator extends NormalFormGenerator<S
 	 * includes elements that are not redundant with respect to each other. The
 	 * following steps are taken to ensure that no redundant SemanticComparables
 	 * remain in the output Iterable:
-	 *
+	 * <p>
 	 * <ol>
-	 *
-	 * <li>a candidate set is maintained for possible results;
-	 *
-	 * <li>each incoming item is checked against all existing candidates to see
+	 * <li>
+	 * a candidate set is maintained for possible results;
+	 * </li>
+	 * <li>
+	 * each incoming item is checked against all existing candidates to see
 	 * if they are redundant (in which case the incoming item is skipped), or if
 	 * it makes any of the candidates redundant (in which case the redundant
 	 * candidates are removed from the set, and the incoming item gets added);
-	 *
-	 * <li>all surviving items are returned.
-	 *
+	 * </li>
+	 * <li>
+	 * all surviving items are returned.
+	 * </li>
 	 * </ol>
-	 *
 	 * <p>
-	 *
 	 * The returned Iterable is backed by a locally created Set, and supports
 	 * <code>remove()</code>.
 	 *
@@ -834,7 +952,6 @@ public final class RelationshipNormalFormGenerator extends NormalFormGenerator<S
 	 * @return an {@link Iterable} that only includes the reduced comparables
 	 */
 	private <T extends SemanticComparable<T>> Iterable<T> getDisjointComparables(final Iterable<T> comparables) {
-
 		final Set<T> candidates = Sets.newHashSet();
 		final Set<T> redundant = Sets.newHashSet();
 
@@ -862,25 +979,39 @@ public final class RelationshipNormalFormGenerator extends NormalFormGenerator<S
 		return candidates;
 	}
 
-	/**
-	 * Creates a new {@link StatementFragment} instance with the specified arguments. The created instance has no
-	 * identifier, is un-published, active and inferred by default. If there's an existing relationship with the same
-	 * triple and group given, it will take precedence during the comparison.
-	 *
-	 * @param originatingRelationshipId the identifier of the relationship that originally captured the information in
-	 * this relationship (may be {@code -1L} to indicate a relationship without a source)
-	 * @oaram storageKey
-	 * @param objectId the object concept
-	 * @param attributeId the attribute concept
-	 * @param valueId the value concept
-	 * @param l
-	 * @param group the group number
-	 * @return the created instance
-	 */
-	private StatementFragment createStatementFragment(final long originatingRelationshipId, final long storageKey, final long attributeId, final long valueId,
-			final byte group, final byte unionGroup, final boolean isUniversal, final boolean destinationNegated) {
+	private Iterable<StatementFragment> fromGroupSet(final GroupSet groups) {
+		return FluentIterable.from(groups).transformAndConcat(new Function<Group, Iterable<StatementFragment>>() {
+			@Override
+			public Iterable<StatementFragment> apply(final Group group) {
+				return fromGroup(group);
+			}
+		});
+	}
 
-		return new StatementFragment(originatingRelationshipId, storageKey, valueId, attributeId, destinationNegated, isUniversal, group, unionGroup);
+	private Iterable<StatementFragment> fromGroup(final Group group) {
+		return FluentIterable.from(group.getUnionGroups()).transformAndConcat(new Function<UnionGroup, Iterable<StatementFragment>>() {
+			@Override
+			public Iterable<StatementFragment> apply(final UnionGroup unionGroup) {
+				return fromUnionGroup(unionGroup, group.getGroupNumber(), unionGroup.getUnionGroupNumber());
+			}
+		});
+	}
+
+	private Iterable<StatementFragment> fromUnionGroup(final UnionGroup unionGroup, final byte groupNumber, final byte unionGroupNumber) {
+		return FluentIterable.from(unionGroup.getRelationshipFragments()).transform(new Function<RelationshipFragment, StatementFragment>() {
+			@Override
+			public StatementFragment apply(final RelationshipFragment input) {
+				return new StatementFragment(
+						input.getTypeId(),
+						input.getDestinationId(),
+						input.isDestinationNegated(),
+						groupNumber,
+						unionGroupNumber,
+						input.isUniversal(),
+						input.getStatementId(),
+						input.getStorageKey());
+			}
+		});
 	}
 
 	public final int collectNormalFormChanges(final IProgressMonitor monitor, final OntologyChangeProcessor<StatementFragment> processor) {

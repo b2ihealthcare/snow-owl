@@ -118,6 +118,7 @@ public class FSDirectoryManager extends AbstractDirectoryManager implements IDir
 				for (final String rootResourceName : rootResourceNameProvider.getRootResourceNames()) {
 
 					final boolean metaRoot = any(rootResourceNameProviders, new Predicate<CDORootResourceNameProvider>() {
+						@Override
 						public boolean apply(final CDORootResourceNameProvider provider) {
 							return provider.isMetaRootResource(rootResourceName);
 						}
@@ -127,6 +128,7 @@ public class FSDirectoryManager extends AbstractDirectoryManager implements IDir
 
 						final ICDOConnection connection = getServiceForClass(ICDOConnectionManager.class).getByUuid(repositoryUuid);
 						CDOUtils.apply(new CDOTransactionFunction<Void>(connection.getMainBranch()) {
+							@Override
 							protected Void apply(final CDOTransaction transaction) {
 
 								final CDOResource resource = transaction.getOrCreateResource(rootResourceName);
@@ -135,6 +137,7 @@ public class FSDirectoryManager extends AbstractDirectoryManager implements IDir
 
 									final CDOResource cdoResource = (CDOResource) resource;
 									final EObject object = find(cdoResource.getContents(), new Predicate<EObject>() {
+										@Override
 										public boolean apply(final EObject eObject) {
 											return TerminologymetadataPackage.eINSTANCE.getCodeSystemVersionGroup().isSuperTypeOf(eObject.eClass());
 										}
@@ -148,7 +151,8 @@ public class FSDirectoryManager extends AbstractDirectoryManager implements IDir
 											final CodeSystemVersionIndexMappingStrategy mappingStrategy = new CodeSystemVersionIndexMappingStrategy(version);
 											final Document doc = mappingStrategy.createDocument();
 											try {
-												service.updateDocument(IndexUtils.getStorageKeyTerm(CDOIDUtils.asLong(group.cdoID())), doc);
+												final long storageKey = CDOIDUtils.asLong(group.cdoID());
+												service.updateDocument(storageKey, doc);
 											} catch (final IOException e) {
 												throw new IndexException("Failed to initialize index branch service for " + repositoryUuid);
 											}

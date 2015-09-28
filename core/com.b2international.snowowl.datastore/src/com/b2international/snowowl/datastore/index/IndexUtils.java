@@ -31,18 +31,15 @@ import javax.annotation.Nullable;
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.TokenStream;
 import org.apache.lucene.analysis.tokenattributes.CharTermAttribute;
-import org.apache.lucene.document.Document;
 import org.apache.lucene.document.Field;
 import org.apache.lucene.document.Field.Store;
 import org.apache.lucene.document.FieldType;
-import org.apache.lucene.document.IntField;
 import org.apache.lucene.document.StringField;
 import org.apache.lucene.index.AtomicReaderContext;
 import org.apache.lucene.index.FieldInfo.IndexOptions;
 import org.apache.lucene.index.IndexCommit;
 import org.apache.lucene.index.IndexWriter;
 import org.apache.lucene.index.IndexableField;
-import org.apache.lucene.index.Term;
 import org.apache.lucene.search.ScoreDoc;
 import org.apache.lucene.search.Sort;
 import org.apache.lucene.search.SortField;
@@ -67,6 +64,7 @@ import com.b2international.snowowl.core.api.index.CommonIndexConstants;
 import com.b2international.snowowl.core.api.index.IndexException;
 import com.b2international.snowowl.datastore.index.DocIdCollector.DocIds;
 import com.b2international.snowowl.datastore.index.DocIdCollector.DocIdsIterator;
+import com.b2international.snowowl.datastore.index.mapping.LongIndexField;
 import com.google.common.base.Function;
 import com.google.common.base.Optional;
 import com.google.common.base.Preconditions;
@@ -82,7 +80,7 @@ public abstract class IndexUtils {
 
 	/**Transforms an {@link IndexableField} into the stored string value.*/
 	public static final Function<IndexableField, String> TO_STRING_VALUE_FUNC = new Function<IndexableField, String>() {
-		public String apply(final IndexableField field) {
+		@Override public String apply(final IndexableField field) {
 			return checkNotNull(field, "field").stringValue();
 		}
 	};
@@ -214,19 +212,9 @@ public abstract class IndexUtils {
 	 * @param value the boolean value to store
 	 * @return the populated {@link Field} instance
 	 */
+	@Deprecated
 	public static @Nonnull Field createBooleanField(final @Nonnull String name, final boolean value) {
 		return new StringField(name, value ? "1" : "0", Store.YES);
-	}
-	
-	/**
-	 * Creates a field with the specified integer value. The value will be analyzed and stored.
-	 * 
-	 * @param name the name of the new field (may not be {@code null})
-	 * @param value the integer value to store
-	 * @return the populated {@link NumericField} instance
-	 */
-	public static @Nonnull IntField createIntField(final @Nonnull String name, final int value) {
-		return new IntField(name, value, Store.YES);
 	}
 	
 	/**Returns {@code true} if the {@link TopDocs} argument is either {@code null} or the {@link ScoreDoc} is empty or {@code null}.
@@ -235,6 +223,7 @@ public abstract class IndexUtils {
 		return null == docs || CompareUtils.isEmpty(docs.scoreDocs);
 	}
 	
+	@Deprecated
 	public static boolean getBooleanValue(final @Nonnull IndexableField fieldable) {
 		checkNotNull(fieldable, "Field must not be null.");
 		final Number numericValue = fieldable.numericValue();
@@ -252,22 +241,27 @@ public abstract class IndexUtils {
 		}
 	}
 
+	@Deprecated
 	public static long getLongValue(final @Nonnull IndexableField fieldable) {
 		return getNumber(fieldable).longValue();
 	}
 
+	@Deprecated
 	public static short getShortValue(final @Nonnull IndexableField fieldable) {
 		return getNumber(fieldable).shortValue();
 	}
 	
+	@Deprecated
 	public static int getIntValue(final @Nonnull IndexableField fieldable) {
 		return getNumber(fieldable).intValue();
 	}
 
+	@Deprecated
 	public static float getFloatValue(final @Nonnull IndexableField fieldable) {
 		return getNumber(fieldable).floatValue();
 	}
 
+	@Deprecated
 	private static Number getNumber(final @Nonnull IndexableField fieldable) {
 		return fieldable.numericValue();
 	}
@@ -335,6 +329,7 @@ public abstract class IndexUtils {
 	 * @param label the label to create a sort key for (may not be {@code null})
 	 * @return the transformed sort key
 	 */
+	@Deprecated
 	public static String getSortKey(final @Nonnull String label) {
 		final String labelWithoutDiacriticals = StringUtils.removeDiacriticals(label);
 		// whitespace characters can be kept
@@ -342,20 +337,7 @@ public abstract class IndexUtils {
 		return labelWithoutDiacriticalsAndTermSeparators;
 	}
 	
-	/**
-	 * Converts the specified integer value to prefix coded bits.
-	 * 
-	 * @see NumericUtils#intToPrefixCoded(int, int, BytesRef)
-	 * 
-	 * @param value
-	 * @return
-	 */
-	public static BytesRef intToPrefixCoded(final int value) {
-		final BytesRef bytesRef = new BytesRef();
-		NumericUtils.intToPrefixCoded(value, 0, bytesRef);
-		return bytesRef;
-	}
-	
+	@Deprecated
 	public static Collection<BytesRef> longToPrefixCoded(final Collection<String> values) {
 		return Collections2.transform(values, new Function<String, BytesRef>() {
 			@Override public BytesRef apply(final String input) {
@@ -363,33 +345,21 @@ public abstract class IndexUtils {
 			}
 		});
 	}
-	
+
+	// TODO: remove method
+	@Deprecated
 	public static BytesRef longToPrefixCoded(final String value) {
 		if (StringUtils.isEmpty(value)) {
 			return new BytesRef();
 		} else {
 			try {
-				return longToPrefixCoded(Long.valueOf(value));
+				return LongIndexField._toBytesRef(Long.valueOf(value));
 			} catch (final NumberFormatException e) {
 				return new BytesRef();
 			}
 		}
 	}
 	
-	public static BytesRef longToPrefixCoded(final long value) {
-		final BytesRef bytesRef = new BytesRef();
-		NumericUtils.longToPrefixCoded(value, 0, bytesRef);
-		return bytesRef;
-	}
-	
-	/**
-	 * @return the {@link Term} which uniquely identifies the {@link #createDocument() created document}, eg. a
-	 * component identifier; should be indexed as part of the {@link Document}
-	 */
-	public static final Term getStorageKeyTerm(final long storageKey) {
-		return new Term(CommonIndexConstants.COMPONENT_STORAGE_KEY, longToPrefixCoded(storageKey));
-	}
-
 	/**
 	 * Comparator for ordering {@link AtomicReaderContext}s based on their ordinal.
 	 */
@@ -446,6 +416,7 @@ public abstract class IndexUtils {
 		}
 
 		parallelForEach(new LongArrayList(ids), new LongSets.LongCollectionProcedure() {
+			@Override
 			public void apply(final long docId) {
 				try {
 					procedure.apply(Ints.checkedCast(docId));

@@ -26,26 +26,22 @@ import java.util.Iterator;
 import java.util.Set;
 
 import org.apache.lucene.document.Document;
-import org.apache.lucene.index.Term;
-import org.apache.lucene.search.BooleanClause.Occur;
-import org.apache.lucene.search.BooleanQuery;
 import org.apache.lucene.search.IndexSearcher;
+import org.apache.lucene.search.Query;
 import org.apache.lucene.search.ReferenceManager;
-import org.apache.lucene.search.TermQuery;
 import org.apache.lucene.search.TopDocs;
 
 import com.b2international.commons.CompareUtils;
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.api.SnowowlRuntimeException;
-import com.b2international.snowowl.core.api.index.CommonIndexConstants;
-import com.b2international.snowowl.datastore.index.IndexUtils;
 import com.b2international.snowowl.datastore.server.index.IndexServerService;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.snomed.datastore.SnomedRefSetLookupService;
 import com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants;
 import com.b2international.snowowl.snomed.datastore.index.SnomedIndexService;
+import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedMappings;
 import com.b2international.snowowl.snomed.datastore.services.ISnomedComponentService;
 import com.b2international.snowowl.snomed.datastore.services.ISnomedComponentService.IdStorageKeyPair;
 import com.b2international.snowowl.snomed.exporter.server.ComponentExportType;
@@ -65,23 +61,14 @@ import com.google.common.collect.Sets;
  */
 public class SnomedRf1RelationshipExporter implements SnomedRf1Exporter {
 
-	private final static TermQuery TYPE_QUERY = 
-			new TermQuery(new Term(CommonIndexConstants.COMPONENT_TYPE, IndexUtils.intToPrefixCoded(SnomedTerminologyComponentConstants.RELATIONSHIP_NUMBER)));
+	private static final Set<String> RELATIONSHIP_FILEDS_TO_LOAD = SnomedMappings.fieldsToLoad()
+			.relationshipCharacteristicType()
+			.relationshipType()
+			.field(SnomedIndexBrowserConstants.RELATIONSHIP_OBJECT_ID)
+			.field(SnomedIndexBrowserConstants.RELATIONSHIP_VALUE_ID)
+			.field(SnomedIndexBrowserConstants.RELATIONSHIP_GROUP).build();
 	
-	private static final Set<String> RELATIONSHIP_FILEDS_TO_LOAD = Collections.unmodifiableSet(Sets.newHashSet(
-			SnomedIndexBrowserConstants.RELATIONSHIP_OBJECT_ID,
-			SnomedIndexBrowserConstants.RELATIONSHIP_ATTRIBUTE_ID,
-			SnomedIndexBrowserConstants.RELATIONSHIP_VALUE_ID,
-			SnomedIndexBrowserConstants.RELATIONSHIP_CHARACTERISTIC_TYPE_ID,
-			SnomedIndexBrowserConstants.RELATIONSHIP_GROUP
-			));
-	
-	private static final Set<String> REFINABILITY_ID_FIELD_TO_LOAD = Collections.unmodifiableSet(Sets.newHashSet(
-			SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_VALUE_ID
-			));
-	
-	private final static TermQuery REFINABILITY_QUERY = 
-			new TermQuery(new Term(SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_REFERENCE_SET_ID, IndexUtils.longToPrefixCoded(Concepts.REFSET_RELATIONSHIP_REFINABILITY)));
+	private static final Set<String> REFINABILITY_ID_FIELD_TO_LOAD = Collections.unmodifiableSet(Sets.newHashSet(SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_VALUE_ID));
 	
 	private final Id2Rf1PropertyMapper mapper;
 	private final SnomedExportConfiguration configuration;
@@ -97,6 +84,7 @@ public class SnomedRf1RelationshipExporter implements SnomedRf1Exporter {
 	
 	private Supplier<Iterator<String>> createSupplier() {
 		return memoize(new Supplier<Iterator<String>>() {
+			@Override
 			public Iterator<String> get() {
 				return new AbstractIterator<String>() {
 					
@@ -108,6 +96,7 @@ public class SnomedRf1RelationshipExporter implements SnomedRf1Exporter {
 					private Object[] _values;
 					
 					@SuppressWarnings("unchecked")
+					@Override
 					protected String computeNext() {
 						
 						while (idIterator.hasNext()) {
@@ -124,10 +113,7 @@ public class SnomedRf1RelationshipExporter implements SnomedRf1Exporter {
 								searcher = manager.acquire();
 								
 								
-								final BooleanQuery relationshipQuery = new BooleanQuery(true);
-								relationshipQuery.add(new TermQuery(new Term(CommonIndexConstants.COMPONENT_ID, IndexUtils.longToPrefixCoded(relationshipId))), Occur.MUST);
-								relationshipQuery.add(TYPE_QUERY, Occur.MUST);
-								
+								final Query relationshipQuery = SnomedMappings.newQuery().relationship().id(relationshipId).matchAll();
 								final TopDocs conceptTopDocs = indexService.search(getBranchPath(), relationshipQuery, 1);
 								
 								Preconditions.checkState(null != conceptTopDocs && !CompareUtils.isEmpty(conceptTopDocs.scoreDocs));
@@ -136,15 +122,13 @@ public class SnomedRf1RelationshipExporter implements SnomedRf1Exporter {
 								
 								_values[0] = relationshipId;
 								_values[1] = doc.get(SnomedIndexBrowserConstants.RELATIONSHIP_OBJECT_ID);
-								_values[2] = doc.get(SnomedIndexBrowserConstants.RELATIONSHIP_ATTRIBUTE_ID);
+								_values[2] = SnomedMappings.relationshipType().getValueAsString(doc);
 								_values[3] = doc.get(SnomedIndexBrowserConstants.RELATIONSHIP_VALUE_ID);
-								_values[4] = doc.get(SnomedIndexBrowserConstants.RELATIONSHIP_CHARACTERISTIC_TYPE_ID);
+								_values[4] = SnomedMappings.relationshipCharacteristicType().getValueAsString(doc);
 								_values[6] = doc.get(SnomedIndexBrowserConstants.RELATIONSHIP_GROUP);
 								
 								if (refinabilityExists) {
-									final BooleanQuery inactivationQuery = new BooleanQuery(true);
-									inactivationQuery.add(REFINABILITY_QUERY, Occur.MUST);
-									inactivationQuery.add(new TermQuery(new Term(SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_REFERENCED_COMPONENT_ID, relationshipId)), Occur.MUST);
+									final Query inactivationQuery = SnomedMappings.newQuery().memberReferencedComponentId(relationshipId).memberRefSetId(Concepts.REFSET_RELATIONSHIP_REFINABILITY).matchAll();
 									final TopDocs inactivationTopDocs = indexService.search(getBranchPath(), inactivationQuery, 1);
 									
 									if (null != inactivationTopDocs && !CompareUtils.isEmpty(inactivationTopDocs.scoreDocs)) {

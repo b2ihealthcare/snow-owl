@@ -17,67 +17,43 @@ package com.b2international.snowowl.datastore.server.snomed.filteredrefset;
 
 import java.util.concurrent.atomic.AtomicReference;
 
-import org.apache.lucene.index.Term;
-import org.apache.lucene.search.BooleanQuery;
-import org.apache.lucene.search.TermQuery;
-import org.apache.lucene.search.BooleanClause.Occur;
+import org.apache.lucene.search.Query;
 
 import com.b2international.snowowl.core.api.IBranchPath;
-import com.b2international.snowowl.core.api.index.CommonIndexConstants;
-import com.b2international.snowowl.datastore.index.IndexUtils;
 import com.b2international.snowowl.datastore.index.LongDocValuesCollector;
 import com.b2international.snowowl.datastore.server.index.IndexServerService;
 import com.b2international.snowowl.datastore.server.snomed.index.StatementCollector;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
-import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.snomed.datastore.IsAStatement;
 import com.b2international.snowowl.snomed.datastore.StatementCollectionMode;
-import com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants;
 import com.b2international.snowowl.snomed.datastore.index.SnomedHierarchy;
+import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedMappings;
 
-/**
- * 
- */
 public final class InitTaxonomyRunnable implements Runnable {
 	
 	private final int maxDoc;
-	private final TermQuery conceptTypeQuery;
 	private final AtomicReference<SnomedHierarchy> hierarchyReference;
-	private final TermQuery activeComponentQuery;
 	private final IndexServerService<?> indexService;
 	private final IBranchPath branchPath;
 
 	public InitTaxonomyRunnable(int maxDoc, 
-			TermQuery conceptTypeQuery,
 			AtomicReference<SnomedHierarchy> hierarchyReference, 
-			TermQuery activeComponentQuery,
 			IndexServerService<?> indexService,
 			IBranchPath branchPath) {
 		
 		this.maxDoc = maxDoc;
-		this.conceptTypeQuery = conceptTypeQuery;
 		this.hierarchyReference = hierarchyReference;
-		this.activeComponentQuery = activeComponentQuery;
 		this.indexService = indexService;
 		this.branchPath = branchPath;
 	}
 
 	@Override public void run() {
 		
-		final BooleanQuery allConceptQuery = new BooleanQuery(true);
-
-		allConceptQuery.add(conceptTypeQuery, Occur.MUST);
-		allConceptQuery.add(activeComponentQuery, Occur.MUST);
-
-		final BooleanQuery statementQuery = new BooleanQuery(true);
-		statementQuery.add(new TermQuery(new Term(CommonIndexConstants.COMPONENT_TYPE, IndexUtils.intToPrefixCoded(SnomedTerminologyComponentConstants.RELATIONSHIP_NUMBER))), Occur.MUST);
-		statementQuery.add(new TermQuery(new Term(SnomedIndexBrowserConstants.COMPONENT_ACTIVE, IndexUtils.intToPrefixCoded(1))), Occur.MUST);
-		statementQuery.add(new TermQuery(new Term(SnomedIndexBrowserConstants.RELATIONSHIP_ATTRIBUTE_ID, IndexUtils.longToPrefixCoded(Concepts.IS_A))), Occur.MUST);
-
-		final LongDocValuesCollector allConceptIdCollector = new LongDocValuesCollector(CommonIndexConstants.COMPONENT_ID, maxDoc);
-		indexService.search(branchPath, allConceptQuery, allConceptIdCollector);
+		final LongDocValuesCollector allConceptIdCollector = new LongDocValuesCollector(SnomedMappings.id().fieldName(), maxDoc);
+		indexService.search(branchPath, SnomedMappings.newQuery().active().matchAll(), allConceptIdCollector);
 
 		final StatementCollector statementCollector = new StatementCollector(maxDoc, StatementCollectionMode.NO_IDS);
+		final Query statementQuery = SnomedMappings.newQuery().active().relationship().relationshipType(Concepts.IS_A).matchAll();
 		indexService.search(branchPath, statementQuery, statementCollector);
 
 		final IsAStatement[] statements = statementCollector.getStatements();

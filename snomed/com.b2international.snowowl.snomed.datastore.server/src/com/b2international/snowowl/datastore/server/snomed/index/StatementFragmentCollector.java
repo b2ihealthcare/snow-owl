@@ -27,8 +27,10 @@ import bak.pcj.map.LongKeyMap;
 import bak.pcj.map.LongKeyOpenHashMap;
 
 import com.b2international.snowowl.datastore.index.AbstractDocsOutOfOrderCollector;
+import com.b2international.snowowl.datastore.index.mapping.Mappings;
 import com.b2international.snowowl.snomed.datastore.StatementFragment;
 import com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants;
+import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedMappings;
 
 /**
  * Collector for gathering SNOMED CT relationship representations after performing an index search.
@@ -80,14 +82,14 @@ public class StatementFragmentCollector extends AbstractDocsOutOfOrderCollector 
 		final long sourceId = sourceIdValues.get(docId);
 
 		final StatementFragment statement = new StatementFragment(
-			idValues.get(docId), //relationship ID
-			storageKeyValues.get(docId), // storage key
-			destinationIdValues.get(docId), //destination ID
-			typeIdValues.get(docId),  //type ID
-			getBooleanValue(destinationNegatedValues, docId), //destination negated
-			getBooleanValue(universalValues, docId), //universal restriction
-			(byte) groupValues.get(docId), //group
-			(byte) unionGroupValues.get(docId) //union group
+			typeIdValues.get(docId),
+			destinationIdValues.get(docId), 
+			getBooleanValue(destinationNegatedValues, docId),
+			(byte) groupValues.get(docId),
+			(byte) unionGroupValues.get(docId),
+			getBooleanValue(universalValues, docId),
+			idValues.get(docId),
+			storageKeyValues.get(docId)
 		);
 
 		if (!statementMap.containsKey(sourceId)) {
@@ -102,16 +104,16 @@ public class StatementFragmentCollector extends AbstractDocsOutOfOrderCollector 
 	}
 
 	@Override
-	protected void initDocValues(final AtomicReader leafReader) throws IOException {
-		idValues = leafReader.getNumericDocValues(SnomedIndexBrowserConstants.COMPONENT_ID);
-		storageKeyValues = leafReader.getNumericDocValues(SnomedIndexBrowserConstants.COMPONENT_STORAGE_KEY);
-		sourceIdValues = leafReader.getNumericDocValues(SnomedIndexBrowserConstants.RELATIONSHIP_OBJECT_ID);
-		destinationIdValues = leafReader.getNumericDocValues(SnomedIndexBrowserConstants.RELATIONSHIP_VALUE_ID);
-		typeIdValues = leafReader.getNumericDocValues(SnomedIndexBrowserConstants.RELATIONSHIP_ATTRIBUTE_ID);
-		groupValues = leafReader.getNumericDocValues(SnomedIndexBrowserConstants.RELATIONSHIP_GROUP);
-		unionGroupValues = leafReader.getNumericDocValues(SnomedIndexBrowserConstants.RELATIONSHIP_UNION_GROUP);
-		universalValues = leafReader.getNumericDocValues(SnomedIndexBrowserConstants.RELATIONSHIP_UNIVERSAL);
-		destinationNegatedValues = leafReader.getNumericDocValues(SnomedIndexBrowserConstants.RELATIONSHIP_DESTINATION_NEGATED);
+	protected void initDocValues(final AtomicReader reader) throws IOException {
+		idValues = SnomedMappings.id().getDocValues(reader);
+		storageKeyValues = Mappings.storageKey().getDocValues(reader);
+		sourceIdValues = reader.getNumericDocValues(SnomedIndexBrowserConstants.RELATIONSHIP_OBJECT_ID);
+		destinationIdValues = reader.getNumericDocValues(SnomedIndexBrowserConstants.RELATIONSHIP_VALUE_ID);
+		typeIdValues = SnomedMappings.relationshipType().getDocValues(reader);
+		groupValues = reader.getNumericDocValues(SnomedIndexBrowserConstants.RELATIONSHIP_GROUP);
+		unionGroupValues = reader.getNumericDocValues(SnomedIndexBrowserConstants.RELATIONSHIP_UNION_GROUP);
+		universalValues = reader.getNumericDocValues(SnomedIndexBrowserConstants.RELATIONSHIP_UNIVERSAL);
+		destinationNegatedValues = reader.getNumericDocValues(SnomedIndexBrowserConstants.RELATIONSHIP_DESTINATION_NEGATED);
 	}
 
 	@Override

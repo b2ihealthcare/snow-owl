@@ -24,6 +24,7 @@ import org.apache.lucene.document.Document;
 import org.apache.lucene.index.IndexableField;
 
 import com.b2international.snowowl.core.api.IBranchPath;
+import com.b2international.snowowl.datastore.index.mapping.Mappings;
 import com.b2international.snowowl.snomed.datastore.SnomedRefSetUtil;
 import com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants;
 import com.b2international.snowowl.snomed.snomedrefset.DataType;
@@ -74,7 +75,7 @@ public class SnomedConcreteDataTypeRefSetMemberIndexQueryAdapter extends SnomedR
 		if (null != uomFieldable) {
 			member.setUomComponentId(uomFieldable.stringValue());
 		}
-		member.setAttributeLabel(doc.getField(SnomedIndexBrowserConstants.COMPONENT_LABEL).stringValue());
+		member.setAttributeLabel(Mappings.label().getValue(doc));
 		
 		DataType dataType = SnomedRefSetUtil.DATA_TYPE_BIMAP.get(SnomedRefSetUtil.getDataType(member.getRefSetIdentifierId()));
 		member.setDataType(dataType);

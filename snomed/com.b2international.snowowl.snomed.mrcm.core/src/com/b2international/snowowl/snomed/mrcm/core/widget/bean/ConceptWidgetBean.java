@@ -17,6 +17,7 @@ package com.b2international.snowowl.snomed.mrcm.core.widget.bean;
 
 import static com.b2international.commons.StringUtils.isEmpty;
 import static com.b2international.snowowl.core.ApplicationContext.getServiceForClass;
+import static com.google.common.collect.Lists.newArrayList;
 import static com.google.common.collect.Maps.newHashMap;
 import static com.google.common.collect.Sets.newHashSet;
 
@@ -30,6 +31,7 @@ import com.b2international.snowowl.core.api.IComponent;
 import com.b2international.snowowl.core.api.NullComponent;
 import com.b2international.snowowl.snomed.datastore.SnomedClientTerminologyBrowser;
 import com.b2international.snowowl.snomed.mrcm.core.widget.model.ConceptWidgetModel;
+import com.google.common.collect.Iterables;
 
 /**
  * Represents the root element of the backing bean tree, forming the simplified representation of a SNOMED CT concept.
@@ -38,7 +40,7 @@ import com.b2international.snowowl.snomed.mrcm.core.widget.model.ConceptWidgetMo
 public class ConceptWidgetBean extends ModeledWidgetBean implements Serializable {
 
 	private static final long serialVersionUID = 6737791419471322048L;
-	
+
 	private DescriptionContainerWidgetBean descriptions;
 	private ContainerWidgetBean properties;
 	private ContainerWidgetBean mappings;
@@ -51,20 +53,21 @@ public class ConceptWidgetBean extends ModeledWidgetBean implements Serializable
 	protected ConceptWidgetBean() {
 		super();
 	}
-	
+
 	public ConceptWidgetBean(final ConceptWidgetModel model, final String conceptId, final boolean active) {
 		super(model);
 		this.conceptId = conceptId;
 		this.active = active;
 	}
-	
+
 	@Override
 	public ConceptWidgetModel getModel() {
 		return (ConceptWidgetModel) super.getModel();
 	}
-	
+
 	/**
 	 * Returns with the unique ID of the SNOMED&nbsp;CT concept.
+	 * 
 	 * @return the SNOMED&nbsp;CT concept. Can have temporary CDO ID and NEW state.
 	 */
 	public String getConceptId() {
@@ -73,12 +76,13 @@ public class ConceptWidgetBean extends ModeledWidgetBean implements Serializable
 
 	/**
 	 * Returns with the status of the SNOMED&nbsp;CT concept.
+	 * 
 	 * @return {@code true} if active, otherwise {@code false}.
 	 */
 	public boolean isActive() {
 		return active;
 	}
-	
+
 	public ContainerWidgetBean getProperties() {
 		return properties;
 	}
@@ -90,34 +94,75 @@ public class ConceptWidgetBean extends ModeledWidgetBean implements Serializable
 	public DescriptionContainerWidgetBean getDescriptions() {
 		return descriptions;
 	}
-	
+
 	public void setDescriptions(final DescriptionContainerWidgetBean descriptions) {
 		this.descriptions = descriptions;
 	}
-	
+
 	public ContainerWidgetBean getMappings() {
 		return mappings;
 	}
-	
+
 	public void setMappings(ContainerWidgetBean mappings) {
 		this.mappings = mappings;
+	}
+
+	/**
+	 * Returns all {@link RelationshipWidgetBean} of this {@link ConceptWidgetBean} instance.
+	 * 
+	 * @param concept
+	 * @return
+	 */
+	public Iterable<RelationshipWidgetBean> getRelationships() {
+		// all grouped properties
+		final Collection<RelationshipWidgetBean> relationships = newArrayList();
+		final Iterable<RelationshipGroupWidgetBean> groups = Iterables.filter(getProperties().getElements(), RelationshipGroupWidgetBean.class);
+		for (RelationshipGroupWidgetBean group : groups) {
+			relationships.addAll(newArrayList(Iterables.filter(group.getElements(), RelationshipWidgetBean.class)));
+		}
+		return relationships;
+	}
+
+	/**
+	 * Returns all {@link DataTypeWidgetBean} of this {@link ConceptWidgetBean} instance.
+	 * 
+	 * @param concept
+	 * @return
+	 */
+	public Iterable<DataTypeWidgetBean> getDataTypes() {
+		// all grouped properties
+		final Collection<DataTypeWidgetBean> dataTypes = newArrayList();
+		final Iterable<RelationshipGroupWidgetBean> groups = Iterables.filter(getProperties().getElements(), RelationshipGroupWidgetBean.class);
+		for (RelationshipGroupWidgetBean group : groups) {
+			dataTypes.addAll(newArrayList(Iterables.filter(group.getElements(), DataTypeWidgetBean.class)));
+		}
+		return dataTypes;
+	}
+
+	/**
+	 * Returns all {@link DescriptionWidgetBean} of this {@link ConceptWidgetBean} instance.
+	 * 
+	 * @return
+	 */
+	public Iterable<DescriptionWidgetBean> getDescriptionBeans() {
+		return Iterables.filter(getDescriptions().getElements(), DescriptionWidgetBean.class);
 	}
 
 	@Override
 	public ConceptWidgetBean getConcept() {
 		return this;
 	}
-	
+
 	@Override
 	public String toString() {
-		return String.format("ConceptWidgetBean [descriptions=%s, properties=%s, concept ID=%s, active=%s]",
-				descriptions, properties, conceptId, active);
+		return String.format("ConceptWidgetBean [descriptions=%s, properties=%s, concept ID=%s, active=%s]", descriptions, properties, conceptId,
+				active);
 	}
-	
+
 	public void add(final String id) {
 		if (!isEmpty(id)) {
 			synchronized (componentMapMutex) {
-				componentMap.put(id, NullComponent.<String>getNullImplementation());
+				componentMap.put(id, NullComponent.<String> getNullImplementation());
 			}
 		}
 	}
@@ -129,36 +174,37 @@ public class ConceptWidgetBean extends ModeledWidgetBean implements Serializable
 			}
 		}
 	}
-	
+
 	public IComponent<String> getComponent(final String id) {
 		if (isEmpty(id)) {
 			return NullComponent.getNullImplementation();
 		}
-		
+
 		synchronized (componentMapMutex) {
-			
+
 			IComponent<String> component = componentMap.get(id);
 			if (NullComponent.isNullComponent(component)) {
-				
+
 				final Collection<String> unresolvedComponentIds = newHashSet();
 				for (final Entry<String, IComponent<String>> entry : componentMap.entrySet()) {
 					if (NullComponent.isNullComponent(entry.getValue())) {
 						unresolvedComponentIds.add(entry.getKey());
 					}
 				}
-				
+
 				for (final IComponent<String> concept : getServiceForClass(SnomedClientTerminologyBrowser.class).getConcepts(unresolvedComponentIds)) {
 					componentMap.put(concept.getId(), concept);
 				}
-				
+
 				return componentMap.get(id);
-				
+
 			} else {
 				return component;
 			}
 		}
 	}
-	
+
 	private final Map<String, IComponent<String>> componentMap = newHashMap();
 	private final Object componentMapMutex = UUID.randomUUID();
-}	
+
+}

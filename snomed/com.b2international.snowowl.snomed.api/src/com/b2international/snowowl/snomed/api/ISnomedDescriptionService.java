@@ -72,6 +72,8 @@ public interface ISnomedDescriptionService extends ISnomedComponentService<ISnom
 	 */
 	ISnomedDescription getPreferredTerm(IComponentRef conceptRef, List<Locale> locales);
 
+	ISnomedDescription getPreferredTerm(List<ISnomedDescription> descriptions, IComponentRef conceptRef, List<Locale> locales);
+
 	/**
 	 * Retrieves the fully specified name for the concept identified by the given {@link IComponentRef component reference}, if it exists. 
 	 * <p>
@@ -99,7 +101,9 @@ public interface ISnomedDescriptionService extends ISnomedComponentService<ISnom
 	 * @throws FullySpecifiedNameNotFoundException if no fully specified name could be collected as a result of the process above
 	 */
 	ISnomedDescription getFullySpecifiedName(IComponentRef conceptRef, List<Locale> locales);
-	
+
+	ISnomedDescription getFullySpecifiedName(List<ISnomedDescription> descriptions, IComponentRef conceptRef, List<Locale> locales);
+
 	/**
 	 * Converts a list of user-specified {@link Locale}s to language reference set identifiers.
 	 * 

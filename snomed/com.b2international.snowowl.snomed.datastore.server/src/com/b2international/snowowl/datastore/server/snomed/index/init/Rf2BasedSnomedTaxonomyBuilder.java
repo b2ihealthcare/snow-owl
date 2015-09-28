@@ -34,11 +34,11 @@ import com.b2international.commons.csv.CsvParser;
 import com.b2international.commons.csv.CsvSettings;
 import com.b2international.commons.csv.RecordParserCallback;
 import com.b2international.snowowl.core.api.SnowowlRuntimeException;
-import com.b2international.snowowl.datastore.server.snomed.index.AbstractSnomedTaxonomyBuilder;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.datastore.IsAStatementWithId;
 import com.b2international.snowowl.snomed.datastore.SnomedTaxonomyBuilderMode;
 import com.b2international.snowowl.snomed.datastore.index.StatementMap;
+import com.b2international.snowowl.snomed.datastore.taxonomy.AbstractSnomedTaxonomyBuilder;
 import com.google.common.base.Preconditions;
 
 /**
@@ -55,43 +55,33 @@ public class Rf2BasedSnomedTaxonomyBuilder extends AbstractSnomedTaxonomyBuilder
 	 * @param builder the builder to replicate.
 	 * @return the new builder instance.
 	 */
-	public static Rf2BasedSnomedTaxonomyBuilder newInstance(final Rf2BasedSnomedTaxonomyBuilder builder) {
-		return newInstance(builder, builder.getMode(), builder.conceptFilePath, builder.relationshipFilePath);
+	public static Rf2BasedSnomedTaxonomyBuilder newInstance(final Rf2BasedSnomedTaxonomyBuilder builder, final String characteristicTypeId) {
+		return newInstance(builder, builder.getMode(), characteristicTypeId);
 	}
 	
-	public static Rf2BasedSnomedTaxonomyBuilder newInstance(final AbstractSnomedTaxonomyBuilder builder, 
-			final String conceptFilePath, final String relationshipFilePath) {
-		return newInstance(builder, DEFAULT, conceptFilePath, relationshipFilePath);
+	public static Rf2BasedSnomedTaxonomyBuilder newInstance(final AbstractSnomedTaxonomyBuilder builder, final String characteristicTypeId) {
+		return newInstance(builder, DEFAULT, characteristicTypeId);
 		
 	}
 	
-	public static Rf2BasedSnomedTaxonomyBuilder newValidationInstance(final AbstractSnomedTaxonomyBuilder builder, 
-			final String conceptFilePath, final String relationshipFilePath) {
-		return newInstance(builder, VALIDATE, conceptFilePath, relationshipFilePath);
+	public static Rf2BasedSnomedTaxonomyBuilder newValidationInstance(final AbstractSnomedTaxonomyBuilder builder, final String characteristicTypeId) {
+		return newInstance(builder, VALIDATE, characteristicTypeId);
 		
 	}
 	
-	private static Rf2BasedSnomedTaxonomyBuilder newInstance(final AbstractSnomedTaxonomyBuilder builder, final SnomedTaxonomyBuilderMode mode, 
-			final String conceptFilePath, final String relationshipFilePath) {
+	private static Rf2BasedSnomedTaxonomyBuilder newInstance(final AbstractSnomedTaxonomyBuilder builder, final SnomedTaxonomyBuilderMode mode, final String characteristicTypeId) {
 		
 		Preconditions.checkNotNull(builder, "Builder argument cannot be null.");
 		
-		final Rf2BasedSnomedTaxonomyBuilder $ = new Rf2BasedSnomedTaxonomyBuilder(mode);
+		final Rf2BasedSnomedTaxonomyBuilder $ = new Rf2BasedSnomedTaxonomyBuilder(mode, characteristicTypeId);
 		$.nodes = new LongBidiMapWithInternalId(builder.getNodes());
 		$.edges = (StatementMap) ((StatementMap) builder.getEdges()).clone();
 		$.setDirty(builder.isDirty());
 		$.descendants = Arrays2.copy(builder.getDescendants());
 		$.ancestors = Arrays2.copy(builder.getAncestors());
-		$.conceptFilePath = conceptFilePath;
-		$.relationshipFilePath = relationshipFilePath;
 		
 		return $;
 	}
-	
-	private final Object edgeMutex = new Object();
-	private final Object nodeMutex = new Object();
-	private String conceptFilePath;
-	private String relationshipFilePath;
 	
 	/**
 	 * Bi-directional map for storing SNOMED CT concept IDs. 
@@ -104,14 +94,13 @@ public class Rf2BasedSnomedTaxonomyBuilder extends AbstractSnomedTaxonomyBuilder
 	 */
 	private LongKeyMap edges;
 	private SnomedTaxonomyBuilderMode mode;
+	private String characteristicTypeId;
 	
-	public Rf2BasedSnomedTaxonomyBuilder(final String conceptFilePath, final String relationshipFilePath) {
-		this.conceptFilePath = conceptFilePath;
-		this.relationshipFilePath = relationshipFilePath;
-	}
-	
-	private Rf2BasedSnomedTaxonomyBuilder(final SnomedTaxonomyBuilderMode mode) {
+	private Rf2BasedSnomedTaxonomyBuilder(final SnomedTaxonomyBuilderMode mode, final String characteristicTypeId) {
 		this.mode = mode;
+		this.characteristicTypeId = characteristicTypeId;
+		this.nodes = new LongBidiMapWithInternalId(EXPECTED_SIZE);
+		this.edges = new StatementMap();
 	}
 
 	@Override
@@ -121,69 +110,19 @@ public class Rf2BasedSnomedTaxonomyBuilder extends AbstractSnomedTaxonomyBuilder
 	
 	@Override
 	public LongBidiMapWithInternalId getNodes() {
-		
-		if (null == nodes) {
-			
-			synchronized (nodeMutex) {
-				
-				if (null == nodes) {
-					
-					nodes = new LongBidiMapWithInternalId(EXPECTED_SIZE);
-					parseFile(conceptFilePath, 5, new RecordParserCallback<String>() {
-						@Override public void handleRecord(final int recordCount, final List<String> record) {
-							final long id = Long.parseLong(record.get(0));
-							nodes.put(id, id);
-						}
-					});
-		
-					
-				}
-				
-			}
-			
-		}
-		
 		return nodes;
 	}
 
 	@Override
 	public LongKeyMap getEdges() {
-		
-		if (null == edges) {
-			
-			synchronized (edgeMutex) {
-				
-				if (null == edges) {
-					
-					edges = new StatementMap();
-					parseFile(relationshipFilePath, 10, new RecordParserCallback<String>() {
-						@Override public void handleRecord(final int recordCount, final List<String> record) {
-							
-							if (ACTIVE_STATUS.equals(record.get(2)) && Concepts.IS_A.equals(record.get(7))) {
-								
-								edges.put(Long.parseLong(record.get(0)), 
-										new long[] { 
-											Long.parseLong(record.get(5)), 
-											Long.parseLong(record.get(4)) });
-							}
-						}
-					});
-					
-				}
-				
-			}
-			
-		}
-		
 		return edges;
-		
 	}
 	
 	public void applyNodeChanges(final String conceptFilePath) {
 		parseFile(conceptFilePath, 5, new RecordParserCallback<String>() {
 			@Override public void handleRecord(final int recordCount, final List<String> record) {
 				
-				final TaxonomyNode node = new TaxonomyNode() {
+				final TaxonomyBuilderNode node = new TaxonomyBuilderNode() {
 					@Override public boolean isCurrent() { return ACTIVE_STATUS.equals(record.get(2)); }
 					@Override public String getId() { return record.get(0); }
 				};
@@ -202,7 +141,7 @@ public class Rf2BasedSnomedTaxonomyBuilder extends AbstractSnomedTaxonomyBuilder
 		parseFile(relationshipFilePath, 10, new RecordParserCallback<String>() {
 			@Override public void handleRecord(final int recordCount, final List<String> record) {
 				
-				addEdge(new TaxonomyEdge() {
+				addEdge(new TaxonomyBuilderEdge() {
 					@Override public boolean isCurrent() {
 						return ACTIVE_STATUS.equals(record.get(2));
 					}
@@ -210,7 +149,7 @@ public class Rf2BasedSnomedTaxonomyBuilder extends AbstractSnomedTaxonomyBuilder
 						return record.get(0);
 					}
 					@Override public boolean isValid() {
-						return Concepts.IS_A.equals(record.get(7));
+						return Concepts.IS_A.equals(record.get(7)) && characteristicTypeId.equals(record.get(8));
 					}
 					@Override public String getSoureId() {
 						return record.get(4);
@@ -236,51 +175,5 @@ public class Rf2BasedSnomedTaxonomyBuilder extends AbstractSnomedTaxonomyBuilder
 			throw new SnowowlRuntimeException(MessageFormat.format("Exception caught while parsing file ''{0}''.", filePath));
 		}
 	}
-	
-	/**
-	 * Specialized taxonomy builder wrapping any arbitrary {@link AbstractSnomedTaxonomyBuilder} instance and delegating into it.
-	 * {@link #applyEdgeChanges(String)} and {@link #applyNodeChanges(String)} does nothing for any instance of the current class.
-	 */
-	public static final class ReducedRf2BasedSnomedTaxonomyBuilder extends Rf2BasedSnomedTaxonomyBuilder {
-	
-		private final AbstractSnomedTaxonomyBuilder delegate;
-
-		public ReducedRf2BasedSnomedTaxonomyBuilder(final AbstractSnomedTaxonomyBuilder delegate) {
-			super(DEFAULT);
-			this.delegate = delegate;
-			this.setDirty(delegate.isDirty());
-			this.descendants = Arrays2.copy(delegate.getDescendants());
-			this.ancestors = Arrays2.copy(delegate.getAncestors());
-		}
-
-		@Override
-		public LongKeyMap getEdges() {
-			return delegate.getEdges();
-		}
-		
-		@Override
-		public LongBidiMapWithInternalId getNodes() {
-			return delegate.getNodes();
-		}
-		
-		@Override
-		public AbstractSnomedTaxonomyBuilder build() {
-			return delegate.build();
-		}
-		
-		public static Rf2BasedSnomedTaxonomyBuilder createNewReeducedInstance(final AbstractSnomedTaxonomyBuilder builder) {
-			return new ReducedRf2BasedSnomedTaxonomyBuilder(builder);
-		}
-		
-		@Override public final void applyNodeChanges(String conceptFilePath) {
-			//does nothing
-		}
-		
-		@Override public final void applyEdgeChanges(String relationshipFilePath) {
-			//intentionally does nothing
-		}
-		
-	}
-	
 	
 }

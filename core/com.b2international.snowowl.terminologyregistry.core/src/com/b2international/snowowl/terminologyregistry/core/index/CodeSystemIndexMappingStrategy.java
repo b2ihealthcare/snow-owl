@@ -15,7 +15,6 @@
  */
 package com.b2international.snowowl.terminologyregistry.core.index;
 
-import static com.b2international.snowowl.core.api.index.CommonIndexConstants.COMPONENT_STORAGE_KEY;
 import static com.b2international.snowowl.datastore.cdo.CDOUtils.check;
 import static com.b2international.snowowl.terminologyregistry.core.index.TerminologyRegistryIndexConstants.SYSTEM_CITATION;
 import static com.b2international.snowowl.terminologyregistry.core.index.TerminologyRegistryIndexConstants.SYSTEM_ICON_PATH;
@@ -35,6 +34,7 @@ import org.apache.lucene.document.StringField;
 
 import com.b2international.snowowl.datastore.cdo.CDOIDUtils;
 import com.b2international.snowowl.datastore.index.AbstractIndexMappingStrategy;
+import com.b2international.snowowl.datastore.index.mapping.Mappings;
 import com.b2international.snowowl.terminologymetadata.CodeSystem;
 
 /**
@@ -61,7 +61,7 @@ public class CodeSystemIndexMappingStrategy extends AbstractIndexMappingStrategy
 		addStringFieldIfExists(doc, SYSTEM_ICON_PATH, codeSystem.getIconPath());
 		addStringFieldIfExists(doc, SYSTEM_TERMINOLOGY_COMPONENT_ID, codeSystem.getTerminologyComponentId());
 		doc.add(new LongField(SYSTEM_STORAGE_KEY, getStorageKey(), Store.YES));
-		doc.add(new LongField(COMPONENT_STORAGE_KEY, getStorageKey(), Store.YES));
+		Mappings.storageKey().addTo(doc, getStorageKey());
 		addStringFieldIfExists(doc, SYSTEM_REPOSITORY_UUID, codeSystem.getCodeSystemVersionGroup().getRepositoryUuid());
 		return doc;
 	}

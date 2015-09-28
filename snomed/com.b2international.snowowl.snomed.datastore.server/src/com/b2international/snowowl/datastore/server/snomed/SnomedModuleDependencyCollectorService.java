@@ -19,14 +19,10 @@ import static com.b2international.commons.pcj.LongSets.forEach;
 import static com.b2international.snowowl.core.ApplicationContext.getServiceForClass;
 import static com.b2international.snowowl.datastore.BranchPathUtils.createPath;
 import static com.b2international.snowowl.datastore.cdo.CDOUtils.check;
-import static com.b2international.snowowl.datastore.index.IndexUtils.intToPrefixCoded;
 import static com.b2international.snowowl.datastore.server.snomed.ModuleCollectorConfigurationThreadLocal.getConfiguration;
 import static com.b2international.snowowl.datastore.server.snomed.ModuleCollectorConfigurationThreadLocal.reset;
 import static com.b2international.snowowl.datastore.server.snomed.ModuleCollectorConfigurationThreadLocal.setConfiguration;
 import static com.b2international.snowowl.snomed.SnomedConstants.Concepts.REFSET_MODULE_DEPENDENCY_TYPE;
-import static com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants.DESCRIPTION_NUMBER;
-import static com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants.RELATIONSHIP_NUMBER;
-import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.COMPONENT_TYPE;
 import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_OPERATOR_ID;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Stopwatch.createStarted;
@@ -46,7 +42,6 @@ import org.apache.lucene.index.Term;
 import org.apache.lucene.search.MultiTermQuery;
 import org.apache.lucene.search.PrefixQuery;
 import org.apache.lucene.search.Query;
-import org.apache.lucene.search.TermQuery;
 import org.eclipse.emf.cdo.view.CDOView;
 import org.slf4j.Logger;
 
@@ -72,6 +67,7 @@ import com.b2international.snowowl.snomed.datastore.SnomedRelationshipIndexEntry
 import com.b2international.snowowl.snomed.datastore.SnomedStatementBrowser;
 import com.b2international.snowowl.snomed.datastore.SnomedTerminologyBrowser;
 import com.b2international.snowowl.snomed.datastore.index.SnomedIndexService;
+import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedMappings;
 import com.b2international.snowowl.snomed.datastore.services.ISnomedComponentService;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedModuleDependencyRefSetMember;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSet;
@@ -98,8 +94,6 @@ public enum SnomedModuleDependencyCollectorService {
 	private static final long MODULE_ROOT = parseLong(Concepts.MODULE_ROOT);
 	private static final long IS_A = parseLong(Concepts.IS_A);
 	
-	private static final Query ALL_DESCRIPTIONS_QUERY = new TermQuery(new Term(COMPONENT_TYPE, intToPrefixCoded(DESCRIPTION_NUMBER)));
-	private static final Query ALL_RELATIONSHIPS_QUERY = new TermQuery(new Term(COMPONENT_TYPE, intToPrefixCoded(RELATIONSHIP_NUMBER)));
 	private static final Query ALL_CDT_MEMBERS_QUERY;
 	
 	static {
@@ -192,7 +186,7 @@ public enum SnomedModuleDependencyCollectorService {
 
 	private void tryCreateMembersForDescriptionChanges() {
 		final DescriptionPropertyCollector collector = new DescriptionPropertyCollector(getUnpublishedStorageKeys());
-		getIndexServerService().search(getBranchPath(), ALL_DESCRIPTIONS_QUERY, collector);
+		getIndexServerService().search(getBranchPath(), SnomedMappings.newQuery().description().matchAll(), collector);
 		
 		for (final LongKeyMapIterator itr = collector.getMapping().entries(); itr.hasNext(); /**/) {
 			itr.next();
@@ -211,7 +205,7 @@ public enum SnomedModuleDependencyCollectorService {
 
 	private void tryCreateMembersForRelationshipChanges() {
 		final RelationshipPropertyCollector collector = new RelationshipPropertyCollector(getUnpublishedStorageKeys());
-		getIndexServerService().search(getBranchPath(), ALL_RELATIONSHIPS_QUERY, collector);
+		getIndexServerService().search(getBranchPath(), SnomedMappings.newQuery().relationship().matchAll(), collector);
 		
 		for (final LongKeyMapIterator itr = collector.getMapping().entries(); itr.hasNext(); /**/) {
 			itr.next();
@@ -249,6 +243,7 @@ public enum SnomedModuleDependencyCollectorService {
 
 	private void tryCreateMembersForNewModules() {
 		forEach(getAllModuleConceptIds(), new LongCollectionProcedure() {
+			@Override
 			public void apply(final long moduleConceptId) {
 				
 				for (final SnomedRelationshipIndexEntry isARelationship : getInboundIsARelationships(moduleConceptId)) {

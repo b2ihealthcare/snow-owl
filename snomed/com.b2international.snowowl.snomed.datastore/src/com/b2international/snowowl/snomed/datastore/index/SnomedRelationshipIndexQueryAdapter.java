@@ -16,12 +16,7 @@
 package com.b2international.snowowl.snomed.datastore.index;
 
 import static com.b2international.snowowl.datastore.index.IndexUtils.getBooleanValue;
-import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.COMPONENT_ACTIVE;
-import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.COMPONENT_ID;
 import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.COMPONENT_RELEASED;
-import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.COMPONENT_STORAGE_KEY;
-import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.RELATIONSHIP_ATTRIBUTE_ID;
-import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.RELATIONSHIP_CHARACTERISTIC_TYPE_ID;
 import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.RELATIONSHIP_DESTINATION_NEGATED;
 import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.RELATIONSHIP_GROUP;
 import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.RELATIONSHIP_INFERRED;
@@ -35,14 +30,15 @@ import org.apache.lucene.index.IndexableField;
 
 import com.b2international.commons.StringUtils;
 import com.b2international.snowowl.core.api.IBranchPath;
-import com.b2international.snowowl.core.api.index.CommonIndexConstants;
 import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.datastore.index.IndexQueryBuilder;
 import com.b2international.snowowl.datastore.index.IndexUtils;
 import com.b2international.snowowl.datastore.index.QueryDslIndexQueryAdapter;
-import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
+import com.b2international.snowowl.datastore.index.mapping.LongIndexField;
+import com.b2international.snowowl.datastore.index.mapping.Mappings;
 import com.b2international.snowowl.snomed.datastore.SnomedRelationshipIndexEntry;
 import com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants;
+import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedMappings;
 import com.google.common.base.Optional;
 
 /**
@@ -82,20 +78,20 @@ public class SnomedRelationshipIndexQueryAdapter extends QueryDslIndexQueryAdapt
 	@Override
 	public SnomedRelationshipIndexEntry buildSearchResult(final Document doc, final IBranchPath branchPath, final float score) {
 		
-		final String id = doc.get(COMPONENT_ID);
+		final String id = SnomedMappings.id().getValueAsString(doc);
 		final String objectId = doc.get(RELATIONSHIP_OBJECT_ID);
-		final String attributeId = doc.get(RELATIONSHIP_ATTRIBUTE_ID);
+		final String attributeId = SnomedMappings.relationshipType().getValueAsString(doc);
 		final String valueId = doc.get(RELATIONSHIP_VALUE_ID);
-		final String characteristicTypeId = doc.get(RELATIONSHIP_CHARACTERISTIC_TYPE_ID);
+		final String characteristicTypeId = SnomedMappings.relationshipCharacteristicType().getValueAsString(doc);
 		byte group = (byte) doc.getField(RELATIONSHIP_GROUP).numericValue().intValue();
 		byte unionGroup = (byte) doc.getField(RELATIONSHIP_UNION_GROUP).numericValue().intValue();
 		byte flags = SnomedRelationshipIndexEntry.generateFlags(getBooleanValue(doc.getField(COMPONENT_RELEASED)), 
-				getBooleanValue(doc.getField(COMPONENT_ACTIVE)), 
+				SnomedMappings.active().getValue(doc) == 1, 
 				getBooleanValue(doc.getField(RELATIONSHIP_INFERRED)),
 				getBooleanValue(doc.getField(RELATIONSHIP_UNIVERSAL)),
 				getBooleanValue(doc.getField(RELATIONSHIP_DESTINATION_NEGATED)));
-		final String moduleId = doc.get(SnomedIndexBrowserConstants.RELATIONSHIP_MODULE_ID);
-		final long storageKey = IndexUtils.getLongValue(doc.getField(COMPONENT_STORAGE_KEY));
+		final String moduleId = SnomedMappings.module().getValueAsString(doc);
+		final long storageKey = Mappings.storageKey().getValue(doc);
 		// FIXME: remove null check
 		final IndexableField effectiveTimeField = doc.getField(SnomedIndexBrowserConstants.RELATIONSHIP_EFFECTIVE_TIME);
 		final long effectiveTime = (null == effectiveTimeField) ? EffectiveTimes.UNSET_EFFECTIVE_TIME : IndexUtils.getLongValue(effectiveTimeField);
@@ -105,22 +101,20 @@ public class SnomedRelationshipIndexQueryAdapter extends QueryDslIndexQueryAdapt
 	@Override
 	protected IndexQueryBuilder createIndexQueryBuilder() {
 		Optional<Long> parsedSearchStringOptional = IndexUtils.parseLong(searchString);
+		final IndexQueryBuilder activeRelationshipsQuery = new IndexQueryBuilder()
+			.requireIf(anyFlagSet(SEARCH_ACTIVE_RELATIONSHIPS_ONLY), SnomedMappings.newQuery().active().matchAll())
+			.requireIf(StringUtils.isEmpty(searchString), SnomedMappings.newQuery().relationship().matchAll());
 		if (parsedSearchStringOptional.isPresent()) {
-			return new IndexQueryBuilder()
-			.requireExactTermIf(anyFlagSet(SEARCH_ACTIVE_RELATIONSHIPS_ONLY), COMPONENT_ACTIVE, IndexUtils.intToPrefixCoded(1))
-			.requireExactTermIf(StringUtils.isEmpty(searchString), CommonIndexConstants.COMPONENT_TYPE, 
-					IndexUtils.intToPrefixCoded(SnomedTerminologyComponentConstants.RELATIONSHIP_NUMBER))
+			final Long id = parsedSearchStringOptional.get();
+			return activeRelationshipsQuery
 			.finishIf(StringUtils.isEmpty(searchString))
-			.requireExactTermIf(anyFlagSet(SEARCH_SOURCE_ID), RELATIONSHIP_OBJECT_ID, IndexUtils.longToPrefixCoded(parsedSearchStringOptional.get()))
-			.requireExactTermIf(anyFlagSet(SEARCH_DESTINATION_ID), RELATIONSHIP_VALUE_ID, IndexUtils.longToPrefixCoded(parsedSearchStringOptional.get()))
-			.requireExactTermIf(anyFlagSet(SEARCH_STORAGE_KEY), COMPONENT_STORAGE_KEY, IndexUtils.longToPrefixCoded(parsedSearchStringOptional.get()))
-			.requireExactTermIf(anyFlagSet(SEARCH_RELATIONSHIP_ID), COMPONENT_ID, IndexUtils.longToPrefixCoded(parsedSearchStringOptional.get()));
+			.requireExactTermIf(anyFlagSet(SEARCH_SOURCE_ID), RELATIONSHIP_OBJECT_ID, LongIndexField._toBytesRef(id))
+			.requireExactTermIf(anyFlagSet(SEARCH_DESTINATION_ID), RELATIONSHIP_VALUE_ID, LongIndexField._toBytesRef(id))
+			.requireIf(anyFlagSet(SEARCH_STORAGE_KEY), SnomedMappings.newQuery().storageKey(id).matchAll())
+			.requireIf(anyFlagSet(SEARCH_RELATIONSHIP_ID), SnomedMappings.newQuery().id(id).matchAll());
 		} else {
 			// TODO: this query adapter only searches by IDs, what to return here?
-			return new IndexQueryBuilder()
-				.requireExactTermIf(anyFlagSet(SEARCH_ACTIVE_RELATIONSHIPS_ONLY), COMPONENT_ACTIVE, IndexUtils.intToPrefixCoded(1))
-				.requireExactTermIf(StringUtils.isEmpty(searchString), SnomedIndexBrowserConstants.COMPONENT_TYPE, 
-						IndexUtils.intToPrefixCoded(SnomedTerminologyComponentConstants.RELATIONSHIP_NUMBER));
+			return activeRelationshipsQuery;
 		}
 	}
 }

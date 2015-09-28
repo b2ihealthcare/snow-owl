@@ -15,17 +15,13 @@
  */
 package com.b2international.snowowl.datastore.server.snomed.index.init;
 
-import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_REFERENCE_SET_TYPE;
-
 import java.io.IOException;
 import java.util.Set;
 
 import org.apache.lucene.document.Document;
-import org.apache.lucene.index.Term;
 import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.ReferenceManager;
-import org.apache.lucene.search.TermQuery;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.emf.cdo.common.id.CDOID;
 import org.eclipse.emf.cdo.common.id.CDOIDUtil;
@@ -35,25 +31,28 @@ import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.api.SnowowlRuntimeException;
 import com.b2international.snowowl.datastore.index.DocIdCollector;
 import com.b2international.snowowl.datastore.index.DocIdCollector.DocIdsIterator;
-import com.b2international.snowowl.datastore.index.IndexUtils;
 import com.b2international.snowowl.datastore.server.index.IndexServerService;
 import com.b2international.snowowl.datastore.server.snomed.index.init.ImportIndexServerService.TermType;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants;
 import com.b2international.snowowl.snomed.datastore.index.SnomedIndexService;
+import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedMappings;
 import com.b2international.snowowl.snomed.datastore.services.ISnomedComponentService;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType;
-import com.google.common.collect.ImmutableSet;
 
 /**
  * 
  */
 public class IndexBasedImportIndexServiceFeeder implements IImportIndexServiceFeeder {
 
-	/*
-	 * (non-Javadoc)
-	 * @see com.b2international.snowowl.datastore.server.snomed.index.init.IImportIndexServiceFeeder#initContent(com.b2international.snowowl.datastore.server.snomed.index.init.ImportIndexServerService, com.b2international.snowowl.core.api.IBranchPath, org.eclipse.core.runtime.IProgressMonitor)
-	 */
+	private static final Set<String> LANGUAGE_MEMBER_FIELDS_TO_LOAD = SnomedMappings.fieldsToLoad()
+			.active()
+			.memberReferencedComponentId()
+			.memberReferenceSetId()
+			.field(SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_UUID)
+			.field(SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_ACCEPTABILITY_ID)
+			.build();
+	
 	@Override
 	public void initContent(final ImportIndexServerService service, final IBranchPath branchPath, final IProgressMonitor monitor) {
 
@@ -66,20 +65,12 @@ public class IndexBasedImportIndexServiceFeeder implements IImportIndexServiceFe
 		service.commit();
 	}
 
-	private static final Set<String> LANGUAGE_MEMBER_FIELDS_TO_LOAD = ImmutableSet.of(
-			SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_UUID,
-			SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_REFERENCE_SET_ID,
-			SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_REFERENCED_COMPONENT_ID,
-			SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_ACCEPTABILITY_ID,
-			SnomedIndexBrowserConstants.COMPONENT_ACTIVE
-	);
-	
 	@SuppressWarnings("unchecked")
 	private void registerAcceptability(final ImportIndexServerService service, final IBranchPath branchPath) {
 		
 		@SuppressWarnings("rawtypes")
 		final IndexServerService indexService = (IndexServerService) ApplicationContext.getInstance().getServiceChecked(SnomedIndexService.class);
-		final Query memberQuery = new TermQuery(new Term(REFERENCE_SET_MEMBER_REFERENCE_SET_TYPE, IndexUtils.intToPrefixCoded(SnomedRefSetType.LANGUAGE_VALUE)));
+		final Query memberQuery = SnomedMappings.newQuery().memberRefSetType(SnomedRefSetType.LANGUAGE).matchAll();
 		
 		ReferenceManager<IndexSearcher> manager = null;
 		IndexSearcher searcher = null;
@@ -100,12 +91,12 @@ public class IndexBasedImportIndexServiceFeeder implements IImportIndexServiceFe
 				final Document doc = searcher.doc(itr.getDocID(), LANGUAGE_MEMBER_FIELDS_TO_LOAD);
 				
 				final String memberId = doc.get(SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_UUID);
-				final String refSetId = doc.get(SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_REFERENCE_SET_ID);
-				final String descriptionId = doc.get(SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_REFERENCED_COMPONENT_ID);
+				final String refSetId = SnomedMappings.memberRefSetId().getValueAsString(doc);
+				final String descriptionId = SnomedMappings.memberReferencedComponentId().getValueAsString(doc);
 				final String acceptabilityId = doc.get(SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_ACCEPTABILITY_ID);
 				
 				final boolean preferred = Concepts.REFSET_DESCRIPTION_ACCEPTABILITY_PREFERRED.equals(acceptabilityId);
-				final boolean active = IndexUtils.getBooleanValue(doc.getField(SnomedIndexBrowserConstants.COMPONENT_ACTIVE));
+				final boolean active = SnomedMappings.active().getValue(doc) == 1;
 				
 				service.registerAcceptability(descriptionId, refSetId, memberId, preferred, active);
 			}

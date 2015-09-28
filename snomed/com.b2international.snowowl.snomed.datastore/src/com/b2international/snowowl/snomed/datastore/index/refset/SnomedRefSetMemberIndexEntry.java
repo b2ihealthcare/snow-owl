@@ -26,7 +26,6 @@ import org.apache.lucene.document.Document;
 import org.eclipse.emf.cdo.CDOState;
 import org.eclipse.emf.cdo.common.id.CDOIDUtil;
 
-import com.b2international.commons.StringUtils;
 import com.b2international.snowowl.core.ComponentIdentifierPair;
 import com.b2international.snowowl.core.CoreTerminologyBroker;
 import com.b2international.snowowl.core.api.IBranchPath;
@@ -36,6 +35,7 @@ import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.datastore.BranchPathUtils;
 import com.b2international.snowowl.datastore.cdo.CDOUtils;
 import com.b2international.snowowl.datastore.index.IndexUtils;
+import com.b2international.snowowl.datastore.index.mapping.Mappings;
 import com.b2international.snowowl.datastore.utils.ComponentUtils2;
 import com.b2international.snowowl.snomed.Concept;
 import com.b2international.snowowl.snomed.Description;
@@ -47,6 +47,7 @@ import com.b2international.snowowl.snomed.datastore.SnomedIconProvider;
 import com.b2international.snowowl.snomed.datastore.SnomedRefSetUtil;
 import com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants;
 import com.b2international.snowowl.snomed.datastore.index.SnomedIndexEntry;
+import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedMappings;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedAttributeValueRefSetMember;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedConcreteDataTypeRefSetMember;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedDescriptionTypeRefSetMember;
@@ -177,25 +178,23 @@ public class SnomedRefSetMemberIndexEntry extends SnomedIndexEntry implements IC
 	public static SnomedRefSetMemberIndexEntry create(final Document doc, @Nullable final IBranchPath branchPath) {
 		Preconditions.checkNotNull(doc, "Document argument cannot be null.");
 		
-		final SnomedRefSetType type = SnomedRefSetType.get(IndexUtils.getIntValue(doc.getField(SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_REFERENCE_SET_TYPE)));
+		final SnomedRefSetType type = SnomedRefSetType.get(SnomedMappings.memberRefSetType().getValue(doc));
 		final String uuid = doc.get(SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_UUID);
-		final String moduleId = doc.get(SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_MODULE_ID);
-		final long storageKey = Long.parseLong(doc.get(SnomedIndexBrowserConstants.COMPONENT_STORAGE_KEY));
-		final float score = 0.0F;
-		final boolean active = IndexUtils.getBooleanValue(doc.getField(SnomedIndexBrowserConstants.COMPONENT_ACTIVE));
+		final String moduleId = SnomedMappings.module().getValueAsString(doc);
+		final long storageKey = Mappings.storageKey().getValue(doc);
+		final boolean active = SnomedMappings.active().getValue(doc) == 1;
 		final boolean released = IndexUtils.getBooleanValue(doc.getField(SnomedIndexBrowserConstants.COMPONENT_RELEASED));
-		final long refSetId = Long.parseLong(doc.get(SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_REFERENCE_SET_ID));
-		final short referencedComponentType = Short.parseShort(doc.get(SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_REFERENCED_COMPONENT_TYPE));
-		final String referencedComponentId = doc.get(SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_REFERENCED_COMPONENT_ID);
+		final long refSetId = SnomedMappings.memberRefSetId().getValue(doc);
+		final short referencedComponentType = SnomedMappings.memberReferencedComponentType().getShortValue(doc);
+		final String referencedComponentId = SnomedMappings.memberReferencedComponentId().getValueAsString(doc);
 		final long effectiveTimeLong = doc.getField(SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_EFFECTIVE_TIME).numericValue().longValue();
-		final String label = doc.get(SnomedIndexBrowserConstants.COMPONENT_LABEL);
 		final short specialFieldComponentType = isMapping(type) ? getSpecialFieldComponentTypeId(doc) : getSpecialFieldComponentTypeId(type);
 		final String specialFieldId = doc.get(SnomedRefSetUtil.getSpecialComponentIdIndexField(type));
 		final String specialFieldLabel = doc.get(SnomedRefSetUtil.getSpecialComponentLabelIndexField(type));
-		String iconId = doc.get(SnomedIndexBrowserConstants.COMPONENT_ICON_ID);
 		final String mapTargetDescription = doc.get(SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_MAP_TARGET_COMPONENT_DESCRIPTION);
 		
-		if (StringUtils.isEmpty(iconId) && null != branchPath) {
+		String iconId = null;
+		if (null != branchPath) {
 			Object iconIdAsObjact = CoreTerminologyBroker.getInstance().getComponentIconIdProvider(referencedComponentType).getIconId(branchPath, referencedComponentId);
 			if (null != iconIdAsObjact) {
 				iconId = String.valueOf(iconIdAsObjact);
@@ -204,10 +203,10 @@ public class SnomedRefSetMemberIndexEntry extends SnomedIndexEntry implements IC
 		
 		return new SnomedRefSetMemberIndexEntry(
 				uuid, 
-				label, 
+				Mappings.label().getValue(doc), 
 				iconId, 
 				moduleId, 
-				score, 
+				0.0F, 
 				storageKey, 
 				released, 
 				active, 

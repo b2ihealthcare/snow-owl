@@ -35,7 +35,6 @@ import javax.annotation.concurrent.GuardedBy;
 
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.Field.Store;
-import org.apache.lucene.document.IntField;
 import org.apache.lucene.document.StoredField;
 import org.apache.lucene.document.StringField;
 import org.apache.lucene.index.Term;
@@ -43,6 +42,7 @@ import org.apache.lucene.search.BooleanClause.Occur;
 import org.apache.lucene.search.BooleanQuery;
 import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.PrefixQuery;
+import org.apache.lucene.search.Query;
 import org.apache.lucene.search.TermQuery;
 import org.apache.lucene.search.TopDocs;
 import org.slf4j.Logger;
@@ -62,6 +62,7 @@ import com.b2international.snowowl.datastore.UserBranchPathMap;
 import com.b2international.snowowl.datastore.cdo.ICDOConnectionManager;
 import com.b2international.snowowl.datastore.config.RepositoryConfiguration;
 import com.b2international.snowowl.datastore.index.IndexUtils;
+import com.b2international.snowowl.datastore.index.mapping.Mappings;
 import com.b2international.snowowl.datastore.net4j.push.PushServiceException;
 import com.b2international.snowowl.datastore.server.index.IndexServerServiceManager;
 import com.b2international.snowowl.datastore.server.net4j.push.PushServerService;
@@ -252,11 +253,10 @@ public class TaskStateManager extends SingleDirectoryIndexImpl implements ITaskS
 	 */
 	@Override
 	public boolean isClosed(final String taskId) {
-
-		final BooleanQuery taskQuery = new BooleanQuery(true); 
-		taskQuery.add(new TermQuery(new Term(FIELD_TASK_ID, taskId)), Occur.MUST);
-		taskQuery.add(new TermQuery(new Term(FIELD_IS_CLOSED, "1")), Occur.MUST);
-		return documentExists(taskQuery);
+		return documentExists(Mappings.newQuery()
+				.field(FIELD_TASK_ID, taskId)
+				.field(FIELD_IS_CLOSED, "1")
+				.matchAll());
 	}
 	
 	@Override
@@ -307,18 +307,14 @@ public class TaskStateManager extends SingleDirectoryIndexImpl implements ITaskS
 		}
 	}
 	
-	/* (non-Javadoc)
-	 * @see com.b2international.snowowl.datastore.tasks.ITaskStateManager#exists(java.lang.String)
-	 */
 	@Override
 	public boolean exists(final String taskId) {
-	
-		final BooleanQuery taskQuery = new BooleanQuery(true); 
-		taskQuery.add(new TermQuery(new Term(FIELD_TASK_ID, taskId)), Occur.MUST);
-		return documentExists(taskQuery);
+		return documentExists(Mappings.newQuery()
+				.field(FIELD_TASK_ID, taskId)
+				.matchAll());
 	}
 
-	private boolean documentExists(final BooleanQuery taskQuery) {
+	private boolean documentExists(final Query taskQuery) {
 		
 		IndexSearcher searcher = null;
 		final TopDocs results;
@@ -341,10 +337,6 @@ public class TaskStateManager extends SingleDirectoryIndexImpl implements ITaskS
 		return results.totalHits > 0;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see com.b2international.snowowl.datastore.tasks.ITaskStateManager#createOrUpdate(java.lang.String, boolean, com.b2international.snowowl.datastore.TaskBranchPathMap, java.lang.String, java.lang.String, java.lang.String, com.b2international.snowowl.datastore.tasks.TaskScenario)
-	 */
 	@Override
 	public Task createOrUpdate(final String taskId, final boolean promoted, final IBranchPathMap taskBranchPathMap, final String contextId, final String repositoryUrl, final String description, final TaskScenario scenario) {
 		insertOrUpdate(taskId, promoted, taskBranchPathMap, contextId, repositoryUrl, description, scenario);
@@ -554,36 +546,17 @@ public class TaskStateManager extends SingleDirectoryIndexImpl implements ITaskS
 
 	private Task getTaskFromDoc(final String taskId, final Document doc) {
 		// XXX: the description is not part of the index. Should it be?
-		final ITaskContext context = TaskContextManager.INSTANCE.createNewById(getTaskContextId(doc));
-		final String repositoryUrl = getRepositoryUrl(doc);
-		final String description = getDescription(doc);
-		final TaskScenario scenario = getScenario(doc);
+		final String taskContextId = doc.get(FIELD_CONTEXT_ID);
+		final ITaskContext context = TaskContextManager.INSTANCE.createNewById(taskContextId);
+		final String repositoryUrl = doc.get(FIELD_REPOSITORY_URL);
+		final String description = doc.get(FIELD_DESCRIPTION);
+		final TaskScenario scenario = TaskScenario.get(IndexUtils.getIntValue(doc.getField(FIELD_SCENARIO_ORDINAL)));
 		final boolean promoted = IndexUtils.getBooleanValue(doc.getField(FIELD_IS_CLOSED)); 
 		final Task result = new Task(taskId, promoted, createNewTaskBranchPathMap(doc), context, repositoryUrl, description, scenario);
 
 		return result;
 	}
 	
-	private String getDescription(final Document doc) {
-		return doc.get(FIELD_DESCRIPTION);
-	}
-
-	private String getRepositoryUrl(final Document doc) {
-		return doc.get(FIELD_REPOSITORY_URL);
-	}
-	
-	private TaskScenario getScenario(final Document doc) {
-		return TaskScenario.get(IndexUtils.getIntValue(doc.getField(FIELD_SCENARIO_ORDINAL)));
-	}
-
-	/**
-	 * @param doc
-	 * @return
-	 */
-	private String getTaskContextId(final Document doc) {
-		return doc.get(FIELD_CONTEXT_ID);
-	}
-
 	private Document getTaskDocument(final String taskId) throws IOException {
 		
 		final TermQuery taskQuery = new TermQuery(new Term(FIELD_TASK_ID, taskId));
@@ -722,13 +695,14 @@ public class TaskStateManager extends SingleDirectoryIndexImpl implements ITaskS
 	private void insertOrUpdate(final String taskId, final boolean promoted, final IBranchPathMap taskBranchPathMap, final String contextId, final String repositoryUrl, 
 			final String description, final TaskScenario scenario) {
 
-		final Document document = new Document();
-		document.add(new StringField(FIELD_TASK_ID, taskId, Store.YES));
-		document.add(new StringField(FIELD_IS_CLOSED, promoted ? "1" : "0", Store.YES));
-		document.add(new StringField(FIELD_CONTEXT_ID, contextId, Store.YES));
-		document.add(new StringField(FIELD_REPOSITORY_URL, repositoryUrl, Store.YES));
-		document.add(new StringField(FIELD_DESCRIPTION, description, Store.YES));
-		document.add(new IntField(FIELD_SCENARIO_ORDINAL, scenario.ordinal(), Store.YES));
+		final Document document = Mappings.doc()
+				.field(FIELD_TASK_ID, taskId)
+				.field(FIELD_IS_CLOSED, promoted ? "1" : "0")
+				.field(FIELD_CONTEXT_ID, contextId)
+				.field(FIELD_REPOSITORY_URL, repositoryUrl)
+				.field(FIELD_DESCRIPTION, description)
+				.field(FIELD_SCENARIO_ORDINAL, scenario.ordinal())
+				.build();
 
 		if (null != taskBranchPathMap) {
 			updateBranchPathMapFields(taskBranchPathMap, document);

@@ -27,13 +27,9 @@ import java.util.Iterator;
 import java.util.Set;
 
 import org.apache.lucene.document.Document;
-import org.apache.lucene.index.Term;
-import org.apache.lucene.search.BooleanClause.Occur;
-import org.apache.lucene.search.BooleanQuery;
 import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.ReferenceManager;
-import org.apache.lucene.search.TermQuery;
 import org.apache.lucene.search.TopDocs;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -42,14 +38,13 @@ import com.b2international.commons.CompareUtils;
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.api.SnowowlRuntimeException;
-import com.b2international.snowowl.core.api.index.CommonIndexConstants;
-import com.b2international.snowowl.datastore.index.IndexUtils;
+import com.b2international.snowowl.datastore.index.mapping.Mappings;
 import com.b2international.snowowl.datastore.server.index.IndexServerService;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
-import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.snomed.datastore.ILanguageConfigurationProvider;
 import com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants;
 import com.b2international.snowowl.snomed.datastore.index.SnomedIndexService;
+import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedMappings;
 import com.b2international.snowowl.snomed.datastore.services.ISnomedComponentService;
 import com.b2international.snowowl.snomed.datastore.services.ISnomedComponentService.IdStorageKeyPair;
 import com.b2international.snowowl.snomed.exporter.server.ComponentExportType;
@@ -73,24 +68,21 @@ public class SnomedRf1DescriptionExporter implements SnomedRf1Exporter {
 	
 	private static final String LANGUAGE_CODE = "en";
 	
-	private static final Set<String> DESCRIPTION_FILEDS_TO_LOAD = Collections.unmodifiableSet(Sets.newHashSet(
-			SnomedIndexBrowserConstants.COMPONENT_ACTIVE,
-			SnomedIndexBrowserConstants.DESCRIPTION_CONCEPT_ID,
-			CommonIndexConstants.COMPONENT_LABEL,
-			SnomedIndexBrowserConstants.DESCRIPTION_CASE_SIGNIFICANCE_ID,
-			SnomedIndexBrowserConstants.DESCRIPTION_TYPE_ID
-			));
+	private static final Set<String> DESCRIPTION_FILEDS_TO_LOAD = SnomedMappings.fieldsToLoad()
+			.active()
+			.label()
+			.descriptionConcept()
+			.descriptionType()
+			.field(SnomedIndexBrowserConstants.DESCRIPTION_CASE_SIGNIFICANCE_ID)
+			.build();
 	
 	private static final Set<String> INACTIVATION_ID_FIELD_TO_LOAD = Collections.unmodifiableSet(Sets.newHashSet(
 			SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_VALUE_ID
 			));
 	
-	private final static TermQuery TYPE_QUERY = 
-			new TermQuery(new Term(CommonIndexConstants.COMPONENT_TYPE, IndexUtils.intToPrefixCoded(SnomedTerminologyComponentConstants.DESCRIPTION_NUMBER)));
-	private final static TermQuery INACTIVATION_QUERY = 
-			new TermQuery(new Term(SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_REFERENCE_SET_ID, IndexUtils.longToPrefixCoded(Concepts.REFSET_DESCRIPTION_INACTIVITY_INDICATOR)));
-	private static final Query PREFERRED_MEMBER_QUERY = 
-			new TermQuery(new Term(SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_ACCEPTABILITY_ID, IndexUtils.longToPrefixCoded(Concepts.REFSET_DESCRIPTION_ACCEPTABILITY_PREFERRED)));
+	private final static Query INACTIVATION_QUERY = SnomedMappings.newQuery().memberRefSetId(Concepts.REFSET_DESCRIPTION_INACTIVITY_INDICATOR).matchAll();
+	private static final Query PREFERRED_MEMBER_QUERY = SnomedMappings.newQuery().field(SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_ACCEPTABILITY_ID, 
+			Long.parseLong(Concepts.REFSET_DESCRIPTION_ACCEPTABILITY_PREFERRED)).matchAll();
 	
 	private final Id2Rf1PropertyMapper mapper;
 	private final SnomedExportConfiguration configuration;
@@ -98,19 +90,20 @@ public class SnomedRf1DescriptionExporter implements SnomedRf1Exporter {
 	private final Supplier<Iterator<String>> itrSupplier;
 	private final Set<String> undefinedDescriptionTypeIds = Sets.newHashSet();
 	private String preferredLanguageId;
-	private TermQuery languageRefSetQuery;
+	private Query languageRefSetQuery;
 	
 	public SnomedRf1DescriptionExporter(final SnomedExportConfiguration configuration, final Id2Rf1PropertyMapper mapper, final boolean includeExtendedDescriptionTypes) {
 		this.configuration = checkNotNull(configuration, "configuration");
 		this.mapper = checkNotNull(mapper, "mapper");
 		this.includeExtendedDescriptionTypes = includeExtendedDescriptionTypes;
 		preferredLanguageId = ApplicationContext.getInstance().getService(ILanguageConfigurationProvider.class).getLanguageConfiguration().getLanguageRefSetId();
-		languageRefSetQuery = new TermQuery(new Term(SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_REFERENCE_SET_ID, IndexUtils.longToPrefixCoded(preferredLanguageId)));
+		languageRefSetQuery = SnomedMappings.newQuery().memberRefSetId(preferredLanguageId).matchAll();
 		itrSupplier = createSupplier();
 	}
 	
 	private Supplier<Iterator<String>> createSupplier() {
 		return memoize(new Supplier<Iterator<String>>() {
+			@Override
 			public Iterator<String> get() {
 				return new AbstractIterator<String>() {
 					
@@ -122,6 +115,7 @@ public class SnomedRf1DescriptionExporter implements SnomedRf1Exporter {
 					private Object[] _values;
 					
 					@SuppressWarnings("unchecked")
+					@Override
 					protected String computeNext() {
 						
 						while (idIterator.hasNext()) {
@@ -139,10 +133,7 @@ public class SnomedRf1DescriptionExporter implements SnomedRf1Exporter {
 								searcher = manager.acquire();
 								
 								
-								final BooleanQuery descriptionQuery = new BooleanQuery(true);
-								descriptionQuery.add(new TermQuery(new Term(CommonIndexConstants.COMPONENT_ID, IndexUtils.longToPrefixCoded(descriptionId))), Occur.MUST);
-								descriptionQuery.add(TYPE_QUERY, Occur.MUST);
-								
+								final Query descriptionQuery = SnomedMappings.newQuery().type(DESCRIPTION_NUMBER).id(descriptionId).matchAll();
 								final TopDocs conceptTopDocs = indexService.search(getBranchPath(), descriptionQuery, 1);
 								
 								Preconditions.checkState(null != conceptTopDocs && !CompareUtils.isEmpty(conceptTopDocs.scoreDocs));
@@ -150,24 +141,18 @@ public class SnomedRf1DescriptionExporter implements SnomedRf1Exporter {
 								final Document doc = searcher.doc(conceptTopDocs.scoreDocs[0].doc, DESCRIPTION_FILEDS_TO_LOAD);
 								
 								_values[0] = descriptionId;
-								_values[1] = 1 == IndexUtils.getIntValue(doc.getField(SnomedIndexBrowserConstants.COMPONENT_ACTIVE)) ? "1" : "0";
-								_values[2] = doc.get(SnomedIndexBrowserConstants.DESCRIPTION_CONCEPT_ID);
-								_values[3] = doc.get(CommonIndexConstants.COMPONENT_LABEL);
+								_values[1] = 1 == SnomedMappings.active().getValue(doc) ? "1" : "0";
+								_values[2] = SnomedMappings.descriptionConcept().getValueAsString(doc);
+								_values[3] = Mappings.label().getValue(doc);
 								_values[4] = doc.get(SnomedIndexBrowserConstants.DESCRIPTION_CASE_SIGNIFICANCE_ID);
-								_values[5] = doc.get(SnomedIndexBrowserConstants.DESCRIPTION_TYPE_ID);
+								_values[5] = SnomedMappings.descriptionType().getValueAsString(doc);
 								
 								if ("0".equals(String.valueOf(_values[1]))) {
-									
-									final BooleanQuery inactivationQuery = new BooleanQuery(true);
-									inactivationQuery.add(INACTIVATION_QUERY, Occur.MUST);
-									inactivationQuery.add(new TermQuery(new Term(SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_REFERENCED_COMPONENT_ID, descriptionId)), Occur.MUST);
+									final Query inactivationQuery = SnomedMappings.newQuery().memberReferencedComponentId(descriptionId).and(INACTIVATION_QUERY).matchAll();
 									final TopDocs inactivationTopDocs = indexService.search(getBranchPath(), inactivationQuery, 1);
 									
 									if (null != inactivationTopDocs && !CompareUtils.isEmpty(inactivationTopDocs.scoreDocs)) {
-										
 										_values[1] = searcher.doc(inactivationTopDocs.scoreDocs[0].doc, INACTIVATION_ID_FIELD_TO_LOAD).get(SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_VALUE_ID);
-										
-										
 									} 
 									
 								}
@@ -181,14 +166,8 @@ public class SnomedRf1DescriptionExporter implements SnomedRf1Exporter {
 								if (Concepts.FULLY_SPECIFIED_NAME.equals(_values[5])) {
 									preferredTerm = false;
 								} else {
-									
-									final BooleanQuery preferredQuery = new BooleanQuery(true);
-									preferredQuery.add(new TermQuery(new Term(SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_REFERENCED_COMPONENT_ID, descriptionId)), Occur.MUST);
-									preferredQuery.add(languageRefSetQuery, Occur.MUST);
-									preferredQuery.add(PREFERRED_MEMBER_QUERY, Occur.MUST);
-									
+									final Query preferredQuery = SnomedMappings.newQuery().memberReferencedComponentId(descriptionId).and(languageRefSetQuery).and(PREFERRED_MEMBER_QUERY).matchAll();
 									preferredTerm = indexService.getHitCount(getBranchPath(), preferredQuery, null) > 0;
-									
 								}
 								
 								if (includeExtendedDescriptionTypes && null == descriptionTypeId && !preferredTerm) {

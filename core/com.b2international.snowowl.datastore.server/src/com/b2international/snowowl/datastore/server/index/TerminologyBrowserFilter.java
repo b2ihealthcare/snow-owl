@@ -17,17 +17,13 @@ package com.b2international.snowowl.datastore.server.index;
 
 import java.io.IOException;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.Iterator;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Set;
 
-import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
 import org.apache.lucene.document.Document;
-import org.apache.lucene.index.IndexableField;
 import org.apache.lucene.search.Collector;
 import org.apache.lucene.search.Filter;
 import org.apache.lucene.search.IndexSearcher;
@@ -44,24 +40,33 @@ import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.api.browser.FilterTerminologyBrowserType;
 import com.b2international.snowowl.core.api.browser.IFilterClientTerminologyBrowser;
 import com.b2international.snowowl.core.api.browser.ITerminologyBrowser;
-import com.b2international.snowowl.core.api.index.CommonIndexConstants;
 import com.b2international.snowowl.core.api.index.IIndexEntry;
 import com.b2international.snowowl.core.api.index.IndexException;
 import com.b2international.snowowl.datastore.index.DocIdCollector;
 import com.b2international.snowowl.datastore.index.DocIdCollector.DocIdsIterator;
+import com.b2international.snowowl.datastore.index.mapping.Mappings;
+import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Maps;
+import com.google.common.collect.SetMultimap;
 import com.google.common.collect.Sets;
 
 /**
  * Generic terminology browser filter.
- * 
  */
 public class TerminologyBrowserFilter<E extends IIndexEntry> {
 
-	private final IndexServerService<E> indexService;
-	private final AbstractIndexTerminologyBrowser<E> terminologyBrowser;
+	private final IndexServerService<? extends E> indexService;
+	private final AbstractIndexTerminologyBrowser<? extends E> terminologyBrowser;
 	
-	public TerminologyBrowserFilter(final AbstractIndexTerminologyBrowser<E> terminologyBrowser, final IndexServerService<E> indexService) {
+	private Map<String, Document> componentIdDocMap;
+	private SetMultimap<String, String> componentIdParentComponentIdMap;
+	private Map<String, E> componentMap;
+	private SetMultimap<String, String> subTypeMap;
+	private SetMultimap<String, String> superTypeMap;
+	private Set<String> filteredComponents;
+	private int topLevelDepth;
+	
+	public TerminologyBrowserFilter(final AbstractIndexTerminologyBrowser<? extends E> terminologyBrowser, final IndexServerService<? extends E> indexService) {
 		this.terminologyBrowser = terminologyBrowser;
 		this.indexService = indexService;
 	}
@@ -87,63 +92,43 @@ public class TerminologyBrowserFilter<E extends IIndexEntry> {
 			doBeforeSearch(branchPath, searcher);
 			
 			final Query query = createQuery(expression);
-	
 			final int maxDoc = indexService.maxDoc(branchPath);
 			final DocIdCollector collector = DocIdCollector.create(maxDoc);
 			doSearch(branchPath, query, collector);
 	
+			componentIdDocMap = Maps.newHashMap();
+			componentIdParentComponentIdMap = HashMultimap.create();
+			
+			componentMap = Maps.newHashMap();
+			subTypeMap = HashMultimap.create();
+			superTypeMap = HashMultimap.create();
+			filteredComponents = Sets.newHashSet();
+			
+			topLevelDepth = getTopLevelDepth();
+			
 			final DocIdsIterator itr = collector.getDocIDs().iterator();
-			
-			final Map<String, Document> componentIdDocMap = Maps.newHashMap();
-			final Map<String, Collection<String>> componentIdParentComponentIdMap = Maps.newHashMap();
-			
-			final Map<String, E> componentMap = Maps.newHashMap();
-			final Map<String, Set<String>> subTypeMap = Maps.newHashMap();
-			final Map<String, Set<String>> superTypeMap = Maps.newHashMap();
-			final Set<String> filteredComponents = Sets.newHashSet();
-			
-			final int topLevel = getTopLevelDepth();
-			
 			while (itr.next()) {
-				
 				final int docId = itr.getDocID();
 				final Document doc = searcher.doc(docId);
+				final Collection<String> parentIds = Mappings.parent().getValues(doc);
+				final String componentId = Mappings.id().getValue(doc);
 				
-				final IndexableField[] parentFields = doc.getFields(CommonIndexConstants.COMPONENT_PARENT);
-				
-				final Set<String> parentIds = CompareUtils.isEmpty(parentFields) 
-						? Collections.<String>emptySet() 
-						: Sets.<String>newLinkedHashSetWithExpectedSize(parentFields.length);
-				
-				for (final IndexableField field : parentFields) {
-					
-					parentIds.add(field.stringValue());
-				}
-				
-				
-				final String componentId = doc.getField(CommonIndexConstants.COMPONENT_ID).stringValue();
-				componentIdDocMap.put(componentId, doc);
-				
-				componentIdParentComponentIdMap.put(componentId, parentIds);
-
 				filteredComponents.add(componentId);
-				
+				componentIdDocMap.put(componentId, doc);
+				componentIdParentComponentIdMap.putAll(componentId, parentIds);
 			}
 			
 			if (monitor.isCanceled()) {
 				return EmptyTerminologyBrowser.getInstance();
 			}
 			
-			addTopLevels(branchPath, null, getRootIds(branchPath), componentMap, subTypeMap, superTypeMap, topLevel);
+			addTopLevels(branchPath, null, getRootIds(branchPath), topLevelDepth);
 			
-			for (final Entry<String, Document> entry : componentIdDocMap.entrySet()) {
-				final String componentId = entry.getKey();
-				
-				processComponentForTree(branchPath, componentId, filteredComponents, componentMap, subTypeMap, superTypeMap, componentIdParentComponentIdMap, componentIdDocMap);
-				
+			for (final String componentId : componentIdDocMap.keySet()) {
+				processComponentForTree(branchPath, componentId);
 			}
 
-			trimTopLevels(null, topLevel, subTypeMap, superTypeMap, componentMap, filteredComponents);
+			trimTopLevels(null, topLevelDepth);
 			
 			if (monitor.isCanceled()) {
 				return EmptyTerminologyBrowser.getInstance();
@@ -151,27 +136,17 @@ public class TerminologyBrowserFilter<E extends IIndexEntry> {
 			
 			return new FilteredTerminologyBrowser<E, String>(componentMap, subTypeMap, superTypeMap, FilterTerminologyBrowserType.HIERARCHICAL, filteredComponents);
 			
-			
 		} catch (final IOException e) {
 			throw new IndexException("Error while building taxonomy.", e);
 		} finally {
-			if (searcher != null)
+			if (searcher != null) {
 				try {
 					manager.release(searcher);
 				} catch (final IOException e) {
 					throw new IndexException(e);
 				}
+			}
 		}
-	}
-
-	/**
-	 * Returns with the root node IDs.
-	 * <p>By default it uses the {@link ITerminologyBrowser#getRootConceptIds(IBranchPath)}.
-	 * @param branchPath the branch path for the visibility.
-	 * @return a collection of root node IDs.
-	 */
-	protected Collection<String> getRootIds(final IBranchPath branchPath) {
-		return terminologyBrowser.getRootConceptIds(branchPath);
 	}
 
 	/**
@@ -229,7 +204,7 @@ public class TerminologyBrowserFilter<E extends IIndexEntry> {
 	 * Returns with the index service.
 	 * @return the underlying index service.
 	 */
-	protected IndexServerService<E> getIndexService() {
+	protected IndexServerService<? extends E> getIndexService() {
 		return indexService;
 	}
 	
@@ -243,9 +218,7 @@ public class TerminologyBrowserFilter<E extends IIndexEntry> {
 		return null;
 	}
 	
-	private void processComponentForTree(final IBranchPath branchPath, final String componentId, 
-			final Set<String> filteredComponents, final Map<String, E> componentMap, final Map<String, Set<String>> subTypeMap,  final Map<String, Set<String>> superTypeMap, 
-			final Map<String, Collection<String>> componentIdParentComponentIdMap, final Map<String, Document> componentIdDocMap) {
+	private void processComponentForTree(final IBranchPath branchPath, final String componentId) {
 
 		//check for already processed concepts
 		if (componentMap.containsKey(componentId)) {
@@ -253,125 +226,142 @@ public class TerminologyBrowserFilter<E extends IIndexEntry> {
 		}
 		
 		final Document doc = componentIdDocMap.get(componentId);
-		componentMap.put(componentId, terminologyBrowser.createResultObject(branchPath, doc));
+		componentMap.put(componentId, createResultObject(branchPath, doc));
 		
 		Collection<String> superTypeIds = componentIdParentComponentIdMap.get(componentId);
-		
-		if (null == superTypeIds) {
-			
-			superTypeIds = terminologyBrowser.getSuperTypeIds(branchPath, componentId);
-			componentIdParentComponentIdMap.put(componentId, superTypeIds);
-			
+		if (!componentIdParentComponentIdMap.containsKey(componentId)) {
+			superTypeIds = getSuperTypeIds(branchPath, componentId);
+			componentIdParentComponentIdMap.putAll(componentId, superTypeIds);
 		}
 		
-		
-		processConceptSuperTypes(branchPath, componentId, superTypeIds, filteredComponents, componentMap, subTypeMap, superTypeMap, componentIdParentComponentIdMap, componentIdDocMap);
-		
+		processConceptSuperTypes(branchPath, componentId, superTypeIds);
 	}
-	
-	
-	private void processConceptSuperTypes(final IBranchPath branchPath, final String componentId, @Nonnull final Collection<String> superTypeIds, final Set<String> filteredComponents, final Map<String, E> componentMap, final Map<String, Set<String>> subTypeMap,  final Map<String, Set<String>> superTypeMap, 
-			final Map<String, Collection<String>> componentIdParentComponentIdMap, final Map<String, Document> componentIdDocMap) {
 
+	private void processConceptSuperTypes(final IBranchPath branchPath, final String componentId, final Collection<String> superTypeIds) {
 
 		if (superTypeIds.isEmpty()) {
 			return;
 		}
 		
+		boolean hasResultParent = false;
+		
+		for (final String parentId : superTypeIds) {
+			if (filteredComponents.contains(parentId)) {
+				hasResultParent = true;
+				break;
+			}
+		}
+		
 		for (final String parentId : superTypeIds) {
 
+			/* 
+			 * An actual search result should only be connected to another search result 
+			 * as their parent, if any exist.
+			 */
 			if (filteredComponents.contains(parentId)) {
-				processComponentForTree(branchPath, parentId, filteredComponents, componentMap, subTypeMap, superTypeMap, componentIdParentComponentIdMap, componentIdDocMap);
+				processComponentForTree(branchPath, parentId);
+			} else if (hasResultParent) {
+				continue;
 			}
 
 			if (componentMap.containsKey(parentId)) {
-				
-				put(subTypeMap, parentId, componentId);
-				put(superTypeMap, componentId, parentId);
-
+				subTypeMap.put(parentId, componentId);
+				superTypeMap.put(componentId, parentId);
 				continue;
 			}
 
 			Collection<String> parentSuperTypeIds = componentIdParentComponentIdMap.get(parentId);
 			
-			if (null == parentSuperTypeIds) {
-				
-				parentSuperTypeIds = terminologyBrowser.getSuperTypeIds(branchPath, parentId);
-				componentIdParentComponentIdMap.put(parentId, parentSuperTypeIds);
-				
+			if (!componentIdParentComponentIdMap.containsKey(parentId)) {
+				parentSuperTypeIds = getSuperTypeIds(branchPath, parentId);
+				componentIdParentComponentIdMap.putAll(parentId, parentSuperTypeIds);
 			}
 			
-			
-			processConceptSuperTypes(branchPath, componentId, parentSuperTypeIds, filteredComponents, componentMap, subTypeMap, superTypeMap, componentIdParentComponentIdMap, componentIdDocMap);
+			processConceptSuperTypes(branchPath, componentId, parentSuperTypeIds);
 		}
 	}
 
-	private boolean trimTopLevels(final String conceptId, final int level, final Map<String, Set<String>> subTypeMap,  final Map<String, Set<String>> superTypeMap, final Map<String, E> componentMap, final Set<String> filteredComponents) {
-
-		// go down recursively to the specified levels
-		if (level >= 1) {
-			final Set<String> subTypeIds = subTypeMap.get(conceptId);
-			if (!CompareUtils.isEmpty(subTypeIds)) {
-				final Iterator<String> it = subTypeIds.iterator();
-				while (it.hasNext()) {
-					final String id = it.next();
-					if (trimTopLevels(id, level - 1, subTypeMap, superTypeMap, componentMap, filteredComponents)) {
-						it.remove();
-					}
-				}
-			}
-		}
-
-		if (conceptId != null) {
-			final Set<String> subTypeIds = subTypeMap.get(conceptId);
-			if (CompareUtils.isEmpty(subTypeIds) && !filteredComponents.contains(conceptId)) {
-				superTypeMap.remove(conceptId);
-				componentMap.remove(conceptId);
-				return true;
-			}
-		}
-		return false;
-	}
-	
-	private void addTopLevels(final IBranchPath branchPath, final String parentId, final Collection<String> subTypeIds, 
-			final Map<String, E> componentMap, final Map<String, Set<String>> subTypeMap,  final Map<String, Set<String>> superTypeMap, final int level) {
+	private void addTopLevels(final IBranchPath branchPath, final String parentId, final Collection<String> childrenIds, int level) {
 		
-		
+		// Works from top to bottom
 		if (level < 1) {
 			return;
 		}
 		
-		for (final String subTypeId : subTypeIds) {
+		for (final String childId : childrenIds) {
 			
-			final E subType = terminologyBrowser.getConcept(branchPath, subTypeId);
-			
-			componentMap.put(subTypeId, subType);
-			put(subTypeMap, parentId, subTypeId);
+			final E childConcept = getConcept(branchPath, childId);
+			componentMap.put(childId, childConcept);
+			subTypeMap.put(parentId, childId);
 			
 			if (parentId != null) {
-				put(superTypeMap, subTypeId, parentId);
+				superTypeMap.put(childId, parentId);
 			}
 			
-			addTopLevels(branchPath, subTypeId, terminologyBrowser.getSubTypeIds(branchPath, subTypeId), componentMap, subTypeMap, superTypeMap, level - 1);
+			Collection<String> nextChildrenIds = getSubTypeIds(branchPath, childId);
+			addTopLevels(branchPath, childId, nextChildrenIds, level - 1);
 		}
 	}
-	
-	private void put(final Map<String, Set<String>> map, final String key, final String value) {
-		Set<String> values = map.get(key);
-		
-		if (values == null) {
-		
-			values = Sets.newHashSet();
-			map.put(key, values);
-			
-		} else {
-			
-			if (values.contains(value)) {
-				return;
+
+	private boolean trimTopLevels(final String candidateId, final int level) {
+
+		// Works from bottom to top
+		if (level >= 0) {
+			final Set<String> childrenIds = subTypeMap.get(candidateId);
+			final Iterator<String> childItr = childrenIds.iterator();
+			while (childItr.hasNext()) {
+				final String childId = childItr.next();
+				if (trimTopLevels(childId, level - 1)) {
+					childItr.remove();
+				}
 			}
-			
 		}
-		
-		values.add(value);
+
+		// If all children have been removed by the block above, we can remove this component as well
+		// -- except if it a search result
+		if (filteredComponents.contains(candidateId)) {
+			return false;
+		}
+
+		if (candidateId != null) {
+			final Set<String> childrenIds = subTypeMap.get(candidateId);
+			if (CompareUtils.isEmpty(childrenIds)) {
+				superTypeMap.removeAll(candidateId);
+				componentMap.remove(candidateId);
+				return true;
+			}
+		}
+
+		return false;
+	}
+
+	/**
+	 * Returns with the root node IDs.
+	 * <p>By default it uses the {@link ITerminologyBrowser#getRootConceptIds(IBranchPath)}.
+	 * @param branchPath the branch path for the visibility.
+	 * @return a collection of root node IDs.
+	 */
+	protected Collection<String> getRootIds(final IBranchPath branchPath) {
+		return terminologyBrowser.getRootConceptIds(branchPath);
+	}
+
+	protected Collection<String> getSuperTypeIds(final IBranchPath branchPath, final String componentId) {
+		return terminologyBrowser.getSuperTypeIds(branchPath, componentId);
+	}
+
+	protected Collection<String> getSubTypeIds(final IBranchPath branchPath, final String componentId) {
+		return terminologyBrowser.getSubTypeIds(branchPath, componentId);
+	}
+
+	protected E getConcept(final IBranchPath branchPath, final String componentId) {
+		return terminologyBrowser.getConcept(branchPath, componentId);
+	}
+
+	protected E createResultObject(final IBranchPath branchPath, final Document doc) {
+		return terminologyBrowser.createResultObject(branchPath, doc);
+	}
+	
+	protected AbstractIndexTerminologyBrowser<? extends E> getTerminologyBrowser() {
+		return terminologyBrowser;
 	}
 }

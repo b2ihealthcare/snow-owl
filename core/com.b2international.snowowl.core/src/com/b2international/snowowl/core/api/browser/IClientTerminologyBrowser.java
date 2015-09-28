@@ -22,7 +22,6 @@ import javax.annotation.Nullable;
 
 import org.eclipse.core.runtime.IProgressMonitor;
 
-import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.api.IComponentWithChildFlag;
 
 /**
@@ -200,8 +199,6 @@ public interface IClientTerminologyBrowser<C, K> {
 	
 	public IFilterClientTerminologyBrowser<C, K> filterTerminologyBrowser(@Nullable final String expression, @Nullable final IProgressMonitor monitor);
 
-	public Collection<C> getFilteredConcepts(IBranchPath branchPath, String expression, K... conceptIds);
-	
 	/**
 	 * Returns the direct children of the specified concept, with an additional flag to indicate whether the returned concepts have children or not.
 	 * 
@@ -217,14 +214,4 @@ public interface IClientTerminologyBrowser<C, K> {
 	 * @return {@code true} if the component exists, otherwise returns with {@code false}.
 	 */
 	boolean exists(final String componentId);
-	
-	/**
-	 * Checks whether a component identified by its terminology specific unique ID exits on the currently active branch.
-	 * Returns with {@code true} if the component exists, otherwise returns with {@code false}.
-	 * @param componentId the terminology specific unique ID.
-	 * @param codeSystemShortName unique short name of an existing code system.
-	 * @return {@code true} if the component exists, otherwise returns with {@code false}.
-	 */
-	boolean exists(final String componentId, final String codeSystemShortName);
-
 }

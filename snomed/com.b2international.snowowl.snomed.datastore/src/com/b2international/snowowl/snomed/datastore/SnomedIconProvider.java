@@ -28,7 +28,6 @@ import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.api.IComponent;
 import com.b2international.snowowl.core.api.IComponentWithIconId;
-import com.b2international.snowowl.core.exceptions.CycleDetectedException;
 import com.b2international.snowowl.datastore.BranchPathUtils;
 import com.b2international.snowowl.datastore.BranchPointUtils;
 import com.b2international.snowowl.datastore.ComponentIconProvider;
@@ -41,7 +40,6 @@ import com.b2international.snowowl.snomed.Relationship;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.SnomedPackage;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
-import com.b2international.snowowl.snomed.datastore.index.ISnomedTaxonomyBuilder;
 import com.b2international.snowowl.snomed.datastore.index.SnomedDescriptionIndexEntry;
 import com.google.common.base.Supplier;
 import com.google.common.base.Suppliers;
@@ -194,19 +192,6 @@ public class SnomedIconProvider extends ComponentIconProvider<String> {
 		return entry == null ? Concepts.ROOT_CONCEPT : entry.getIconId();
 	}
 	
-	public String getIconComponentId(String componentId, ISnomedTaxonomyBuilder taxonomyBuilder) {
-		if (componentId == null) {
-			return null;
-		}
-		if (taxonomyBuilder.getAllAncestorNodeIds(componentId).contains(Long.valueOf(componentId))) {
-			throw new CycleDetectedException("Concept " + componentId + " would introduce a cycle in the ISA graph (loop).");
-		}
-		String iconId = getParentFrom(componentId, readAvailableImageNames(), taxonomyBuilder);
-		return iconId != null ? iconId : Concepts.ROOT_CONCEPT;
-	}
-	
-	
-	
 	/**
 	 * Returns with a view of IDs that have matching image resource.
 	 * @return a collection of SNOMED&nbsp;CT concept IDs that have associated image file resource. 
@@ -246,16 +231,6 @@ public class SnomedIconProvider extends ComponentIconProvider<String> {
 			return concept;
 		}
 		return getParentFrom(getTerminologyBrowser().getSuperTypesById(branchPath, id).iterator().next(), parentIds);
-	}
-	
-	private String getParentFrom(final String conceptId, final Collection<String> parentIds, ISnomedTaxonomyBuilder taxonomyBuilder) {
-		if (taxonomyBuilder.getAncestorNodeIds(conceptId).size() == 0) {
-			return conceptId;
-		}
-		if (parentIds.contains(conceptId)) {
-			return conceptId;
-		}
-		return getParentFrom(Long.toString(taxonomyBuilder.getAncestorNodeIds(conceptId).iterator().next()), parentIds, taxonomyBuilder);
 	}
 	
 	private IComponentWithIconId<String> getParentFrom(final IComponentWithIconId<String> concept, final Collection<String> parentIds) {

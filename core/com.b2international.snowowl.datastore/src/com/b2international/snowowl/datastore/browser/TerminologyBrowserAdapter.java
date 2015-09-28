@@ -20,7 +20,6 @@ import java.util.List;
 
 import org.eclipse.core.runtime.IProgressMonitor;
 
-import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.api.IComponentWithChildFlag;
 import com.b2international.snowowl.core.api.browser.IClientTerminologyBrowser;
 import com.b2international.snowowl.core.api.browser.IFilterClientTerminologyBrowser;
@@ -159,24 +158,7 @@ public class TerminologyBrowserAdapter<C, K> implements IClientTerminologyBrowse
 	}
 
 	@Override
-	public Collection<C> getFilteredConcepts(IBranchPath branchPath, String expression, K... conceptIds) {
-		return delegate.getFilteredConcepts(branchPath, expression, conceptIds);
-	}
-
-	/* (non-Javadoc)
-	 * @see com.b2international.snowowl.core.api.browser.IClientTerminologyBrowser#exists(java.lang.String)
-	 */
-	@Override
 	public boolean exists(String componentId) {
 		return delegate.exists(componentId);
 	}
-	
-	/* (non-Javadoc)
-	 * @see com.b2international.snowowl.core.api.browser.IClientTerminologyBrowser#exists(java.lang.String, java.lang.String)
-	 */
-	@Override
-	public boolean exists(String componentId, String codeSystemShortName) {
-		return delegate.exists(componentId, codeSystemShortName);
-	}
-	
 }

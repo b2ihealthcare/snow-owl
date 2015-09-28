@@ -18,8 +18,6 @@ package com.b2international.snowowl.snomed.api.impl;
 import java.util.List;
 
 import org.apache.lucene.search.Sort;
-import org.apache.lucene.search.SortField;
-import org.apache.lucene.search.SortField.Type;
 
 import com.b2international.commons.ClassUtils;
 import com.b2international.snowowl.api.domain.IComponentList;
@@ -27,7 +25,6 @@ import com.b2international.snowowl.api.domain.IComponentRef;
 import com.b2international.snowowl.api.impl.domain.InternalComponentRef;
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.api.IBranchPath;
-import com.b2international.snowowl.core.api.index.CommonIndexConstants;
 import com.b2international.snowowl.core.exceptions.ComponentNotFoundException;
 import com.b2international.snowowl.core.terminology.ComponentCategory;
 import com.b2international.snowowl.snomed.api.ISnomedStatementBrowserService;
@@ -36,6 +33,7 @@ import com.b2international.snowowl.snomed.api.impl.domain.SnomedRelationshipList
 import com.b2international.snowowl.snomed.datastore.SnomedRelationshipIndexEntry;
 import com.b2international.snowowl.snomed.datastore.index.SnomedIndexService;
 import com.b2international.snowowl.snomed.datastore.index.SnomedRelationshipIndexQueryAdapter;
+import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedMappings;
 import com.b2international.snowowl.snomed.datastore.services.SnomedBranchRefSetMembershipLookupService;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
@@ -52,7 +50,7 @@ public class SnomedStatementBrowserServiceImpl implements ISnomedStatementBrowse
 
 		@Override
 		protected Sort createSort() {
-			return new Sort(new SortField(CommonIndexConstants.COMPONENT_ID, Type.LONG));
+			return SnomedMappings.id().createSort();
 		}
 	}
 

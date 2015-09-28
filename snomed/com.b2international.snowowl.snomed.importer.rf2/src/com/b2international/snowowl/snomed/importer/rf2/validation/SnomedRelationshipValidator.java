@@ -25,6 +25,7 @@ import java.util.Set;
 import com.b2international.commons.StringUtils;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
+import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.snomed.importer.net4j.ImportConfiguration;
 import com.b2international.snowowl.snomed.importer.net4j.SnomedValidationDefect;
 import com.b2international.snowowl.snomed.importer.net4j.SnomedValidationDefect.DefectType;
@@ -64,6 +65,8 @@ public class SnomedRelationshipValidator extends AbstractSnomedValidator {
 
 	@Override
 	protected void doValidate(final List<String> row, final int lineNumber) {
+		collectIfInvalid(row.get(0), SnomedTerminologyComponentConstants.RELATIONSHIP_NUMBER);
+		
 		validateComponentUnique(row, relationshipIdsWithEffectivetimeStatus, relationshipIdNotUnique, lineNumber);
 		validationUtil.getRelationshipIds().add(row.get(0));
 		

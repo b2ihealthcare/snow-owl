@@ -24,17 +24,16 @@ import javax.annotation.Nullable;
 import javax.annotation.OverridingMethodsMustInvokeSuper;
 
 import org.apache.lucene.document.Document;
-import org.apache.lucene.search.FieldCacheTermsFilter;
 import org.apache.lucene.search.Filter;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.Sort;
 
 import com.b2international.snowowl.core.api.IBranchPath;
-import com.b2international.snowowl.core.api.index.CommonIndexConstants;
 import com.b2international.snowowl.core.api.index.IIndexEntry;
 import com.b2international.snowowl.core.api.index.IIndexQueryAdapter;
 import com.b2international.snowowl.core.api.index.IIndexService;
 import com.b2international.snowowl.core.api.index.IndexException;
+import com.b2international.snowowl.datastore.index.mapping.Mappings;
 
 /**
  * Abstract base implementation of the {@link IIndexQueryAdapter} interface.
@@ -79,7 +78,7 @@ public abstract class QueryDslIndexQueryAdapter<E extends IIndexEntry> extends A
 
 	@Nullable
 	protected Filter createFilter() {
-		return (null == componentIds) ? null : new FieldCacheTermsFilter(CommonIndexConstants.COMPONENT_ID, componentIds);
+		return Mappings.id().createFilter(componentIds);
 	}
 
 	/**

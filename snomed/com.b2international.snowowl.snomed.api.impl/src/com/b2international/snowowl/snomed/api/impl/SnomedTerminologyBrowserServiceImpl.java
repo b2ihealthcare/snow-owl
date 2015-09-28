@@ -16,7 +16,6 @@
 package com.b2international.snowowl.snomed.api.impl;
 
 import static com.b2international.commons.pcj.LongSets.toStringSet;
-import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.ROOT_ID;
 
 import java.util.Collection;
 import java.util.List;
@@ -24,9 +23,6 @@ import java.util.List;
 import javax.annotation.Resource;
 
 import org.apache.lucene.search.Sort;
-import org.apache.lucene.search.SortField;
-import org.apache.lucene.search.SortField.Type;
-import org.apache.lucene.util.BytesRef;
 
 import com.b2international.commons.ClassUtils;
 import com.b2international.snowowl.api.domain.IComponentList;
@@ -36,20 +32,18 @@ import com.b2international.snowowl.api.impl.domain.InternalComponentRef;
 import com.b2international.snowowl.api.impl.domain.InternalStorageRef;
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.api.IBranchPath;
-import com.b2international.snowowl.core.api.index.CommonIndexConstants;
 import com.b2international.snowowl.core.exceptions.ComponentNotFoundException;
 import com.b2international.snowowl.core.terminology.ComponentCategory;
 import com.b2international.snowowl.datastore.index.IndexQueryBuilder;
-import com.b2international.snowowl.datastore.index.IndexUtils;
 import com.b2international.snowowl.snomed.api.ISnomedConceptService;
 import com.b2international.snowowl.snomed.api.ISnomedTerminologyBrowserService;
 import com.b2international.snowowl.snomed.api.domain.ISnomedConcept;
 import com.b2international.snowowl.snomed.api.impl.domain.SnomedConceptList;
 import com.b2international.snowowl.snomed.datastore.SnomedConceptIndexEntry;
 import com.b2international.snowowl.snomed.datastore.SnomedTerminologyBrowser;
-import com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants;
 import com.b2international.snowowl.snomed.datastore.index.SnomedConceptIndexQueryAdapter;
 import com.b2international.snowowl.snomed.datastore.index.SnomedIndexService;
+import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedMappings;
 import com.b2international.snowowl.snomed.datastore.services.SnomedBranchRefSetMembershipLookupService;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
@@ -87,18 +81,17 @@ public class SnomedTerminologyBrowserServiceImpl implements ISnomedTerminologyBr
 
 		@Override
 		protected IndexQueryBuilder createIndexQueryBuilder() {
-			final BytesRef conceptIdBytesRef = IndexUtils.longToPrefixCoded(searchString);
 			return super.createIndexQueryBuilder()
-					.requireExactTermIf(allFlagsSet(SEARCH_ROOTS), SnomedIndexBrowserConstants.CONCEPT_PARENT, IndexUtils.longToPrefixCoded(ROOT_ID))
+					.requireIf(allFlagsSet(SEARCH_ROOTS), SnomedMappings.newQuery().parent(SnomedMappings.ROOT_ID).matchAll())
 					.require(new IndexQueryBuilder()
-						.matchExactTermIf(allFlagsSet(SEARCH_PARENT), SnomedIndexBrowserConstants.CONCEPT_PARENT, conceptIdBytesRef)
-						.matchExactTermIf(allFlagsSet(SEARCH_ANCESTOR), SnomedIndexBrowserConstants.CONCEPT_ANCESTOR, conceptIdBytesRef)
+						.matchIf(allFlagsSet(SEARCH_PARENT), SnomedMappings.newQuery().parent(searchString).matchAll())
+						.matchIf(allFlagsSet(SEARCH_ANCESTOR), SnomedMappings.newQuery().ancestor(searchString).matchAll())
 					);
 		}
 
 		@Override
 		public Sort createSort() {
-			return new Sort(new SortField(CommonIndexConstants.COMPONENT_ID, Type.LONG));
+			return SnomedMappings.id().createSort();
 		}
 	}
 
