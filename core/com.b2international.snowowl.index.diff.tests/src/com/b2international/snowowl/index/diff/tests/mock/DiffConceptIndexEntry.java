@@ -15,45 +15,67 @@
  */
 package com.b2international.snowowl.index.diff.tests.mock;
 
+import static com.google.common.base.Preconditions.checkArgument;
+import static com.google.common.base.Preconditions.checkNotNull;
+
 import com.b2international.snowowl.core.api.index.IIndexEntry;
+import com.b2international.snowowl.datastore.cdo.CDOUtils;
 
 /**
+ * Represents indexed document contents (including score) as a POJO.
+ * 
  * @since 4.3
  */
-public class MockIndexEntry implements IIndexEntry {
+public class DiffConceptIndexEntry implements IIndexEntry {
 
 	private static final long serialVersionUID = 8495046782045849702L;
-	
-	private String id;
-	private String label;
-	private float score;
-	private long storageKey;
-	
-	public MockIndexEntry(String id, String label, long storageKey, float score) {
-		this.id = id;
-		this.label = label;
+
+	private final String id;
+	private final String label;
+	private final float score;
+	private final long storageKey;
+
+	public DiffConceptIndexEntry(final String id, final String label, final long storageKey, final float score) {
+		checkArgument(storageKey > CDOUtils.NO_STORAGE_KEY, "storageKey may not be negative");
+
+		this.id = checkNotNull(id, "id");
+		this.label = checkNotNull(label, "label");
 		this.storageKey = storageKey;
 		this.score = score;
 	}
-	
+
 	@Override
 	public String getId() {
 		return id;
 	}
-	
+
 	@Override
 	public String getLabel() {
 		return label;
 	}
-	
+
 	@Override
 	public float getScore() {
 		return score;
 	}
-	
+
 	@Override
 	public long getStorageKey() {
 		return storageKey;
 	}
-	
+
+	@Override
+	public String toString() {
+		final StringBuilder builder = new StringBuilder();
+		builder.append("DiffConceptIndexEntry [id=");
+		builder.append(id);
+		builder.append(", label=");
+		builder.append(label);
+		builder.append(", score=");
+		builder.append(score);
+		builder.append(", storageKey=");
+		builder.append(storageKey);
+		builder.append("]");
+		return builder.toString();
+	}
 }

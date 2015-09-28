@@ -92,11 +92,7 @@ public abstract class IndexServerService<E extends IIndexEntry> extends Abstract
 
 	private final class StateCacheLoader extends CacheLoader<IBranchPath, IndexBranchService> {
 		@Override public IndexBranchService load(final IBranchPath key) throws Exception {
-			
-			final ICDOConnection connection = ApplicationContext.getServiceForClass(ICDOConnectionManager.class).getByUuid(getRepositoryUuid());
-			final CDOBranch branch = connection.getBranch(key);
-			final BranchPath branchPath = new CDOBranchPath(branch);
-			
+			final BranchPath branchPath = getMostRecentPhysicalPath(key);
 			final IndexBranchService branchService = new IndexBranchService(key, branchPath, getDirectoryManager());
 			
 			if (branchService.isFirstStartupAtMain()) {
@@ -222,6 +218,12 @@ public abstract class IndexServerService<E extends IIndexEntry> extends Abstract
 		} catch (final IOException e) {
 			throw new IndexException("Failed to update snapshot for '" + logicalPath.getPath() + "'.", e);
 		}
+	}
+	
+	protected BranchPath getMostRecentPhysicalPath(final IBranchPath logicalPath) {
+		final ICDOConnection connection = ApplicationContext.getServiceForClass(ICDOConnectionManager.class).getByUuid(getRepositoryUuid());
+		final CDOBranch branch = connection.getBranch(logicalPath);
+		return new CDOBranchPath(branch);
 	}
 	
 	@SuppressWarnings("unchecked")
@@ -834,10 +836,6 @@ public abstract class IndexServerService<E extends IIndexEntry> extends Abstract
 		} catch (final IOException e) {
 			throw new IndexException(e);
 		}		
-	}
-	
-	protected ICommitTimeProvider getCommitTimeProvider() {
-		return new CommitTimeProvider(getRepositoryUuid());
 	}
 	
 	protected IIndexAccessUpdater getIndexAccessUpdater() {
