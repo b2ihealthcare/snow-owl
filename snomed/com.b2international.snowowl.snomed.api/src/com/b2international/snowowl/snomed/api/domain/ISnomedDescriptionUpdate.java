@@ -38,4 +38,12 @@ public interface ISnomedDescriptionUpdate extends ISnomedComponentUpdate {
 	 * @return the acceptability value map after the update
 	 */
 	Map<String, Acceptability> getAcceptability();
+
+	/**
+	 * Returns the requested inactivation indicator when inactivating the description.
+	 *
+	 * @return the inactivation indicator after the update
+	 */
+	DescriptionInactivationIndicator getInactivationIndicator();
+
 }

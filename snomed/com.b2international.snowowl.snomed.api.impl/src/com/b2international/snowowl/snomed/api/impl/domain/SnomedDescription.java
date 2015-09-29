@@ -67,7 +67,7 @@ public class SnomedDescription extends AbstractSnomedComponent implements ISnome
 	}
 
 	@Override
-	public DescriptionInactivationIndicator getDescriptionInactivationIndicator() {
+	public DescriptionInactivationIndicator getInactivationIndicator() {
 		return descriptionInactivationIndicator;
 	}
 

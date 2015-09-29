@@ -74,5 +74,6 @@ public interface ISnomedDescription extends ISnomedComponent {
 	 * @return the inactivation reason for this description, or {@code null} if the description is still active, or no
 	 * reason has been given
 	 */
-	DescriptionInactivationIndicator getDescriptionInactivationIndicator();
+	DescriptionInactivationIndicator getInactivationIndicator();
+
 }

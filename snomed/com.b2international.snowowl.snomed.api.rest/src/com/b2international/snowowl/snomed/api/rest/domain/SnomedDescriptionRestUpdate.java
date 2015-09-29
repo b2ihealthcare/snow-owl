@@ -19,6 +19,7 @@ import java.util.Map;
 
 import com.b2international.snowowl.snomed.api.domain.Acceptability;
 import com.b2international.snowowl.snomed.api.domain.CaseSignificance;
+import com.b2international.snowowl.snomed.api.domain.DescriptionInactivationIndicator;
 import com.b2international.snowowl.snomed.api.impl.domain.SnomedDescriptionUpdate;
 
 /**
@@ -28,16 +29,18 @@ public class SnomedDescriptionRestUpdate extends AbstractSnomedComponentRestUpda
 
 	private CaseSignificance caseSignificance;
 	private Map<String, Acceptability> acceptability;
+	private DescriptionInactivationIndicator inactivationIndicator;
 
-	/**
-	 * @return
-	 */
 	public CaseSignificance getCaseSignificance() {
 		return caseSignificance;
 	}
 
 	public Map<String, Acceptability> getAcceptability() {
 		return acceptability;
+	}
+
+	public DescriptionInactivationIndicator getInactivationIndicator() {
+		return inactivationIndicator;
 	}
 
 	public void setCaseSignificance(final CaseSignificance caseSignificance) {
@@ -48,19 +51,21 @@ public class SnomedDescriptionRestUpdate extends AbstractSnomedComponentRestUpda
 		this.acceptability = acceptability;
 	}
 
+	public void setInactivationIndicator(DescriptionInactivationIndicator inactivationIndicator) {
+		this.inactivationIndicator = inactivationIndicator;
+	}
+
 	@Override
 	protected SnomedDescriptionUpdate createComponentUpdate() {
 		return new SnomedDescriptionUpdate();
 	}
 
-	/**
-	 * @return
-	 */
 	@Override
 	public SnomedDescriptionUpdate toComponentUpdate() {
 		final SnomedDescriptionUpdate result = super.toComponentUpdate();
 		result.setCaseSignificance(getCaseSignificance());
 		result.setAcceptability(getAcceptability());
+		result.setInactivationIndicator(getInactivationIndicator());
 		return result;
 	}
 }

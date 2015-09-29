@@ -15,6 +15,7 @@
  */
 package com.b2international.snowowl.snomed.api.impl;
 
+import static com.google.common.collect.Lists.newArrayList;
 import static com.google.common.collect.Maps.newHashMap;
 
 import java.util.*;
@@ -45,7 +46,9 @@ import com.b2international.snowowl.snomed.datastore.index.SnomedDescriptionIndex
 import com.b2international.snowowl.snomed.datastore.index.SnomedDescriptionIndexQueryAdapter;
 import com.b2international.snowowl.snomed.datastore.index.SnomedIndexService;
 import com.b2international.snowowl.snomed.datastore.index.refset.SnomedRefSetIndexEntry;
+import com.b2international.snowowl.snomed.datastore.model.SnomedModelExtensions;
 import com.b2international.snowowl.snomed.datastore.services.ISnomedComponentService;
+import com.b2international.snowowl.snomed.snomedrefset.SnomedAttributeValueRefSetMember;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedLanguageRefSetMember;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedStructuralRefSet;
@@ -138,6 +141,7 @@ public class SnomedDescriptionServiceImpl
 		changed |= updateModule(update.getModuleId(), description, editingContext);
 		changed |= updateStatus(update.isActive(), description, editingContext);
 		changed |= updateCaseSignificance(update.getCaseSignificance(), description, editingContext);
+		changed |= updateInactivationIndicator(update.isActive(), update.getInactivationIndicator(), description, editingContext);
 
 		// XXX: acceptability changes do not push the effective time forward on the description 
 		updateAcceptabilityMap(update.getAcceptability(), description, editingContext);
@@ -145,6 +149,31 @@ public class SnomedDescriptionServiceImpl
 		if (changed) {
 			description.unsetEffectiveTime();
 		}
+	}
+
+	private boolean updateInactivationIndicator(Boolean active, DescriptionInactivationIndicator inactivationIndicator, Description description, SnomedEditingContext context) {
+		if (active != null && inactivationIndicator != null) {
+			boolean found = false;
+			for (SnomedAttributeValueRefSetMember member : description.getInactivationIndicatorRefSetMembers()) {
+				if (member.isActive()) {
+					found = member.getValueId().equals(inactivationIndicator.getValueId());
+				}
+			}
+			if (!found) {
+				// inactivate or remove any active member(s) and add the new one
+				for (SnomedAttributeValueRefSetMember member : newArrayList(description.getInactivationIndicatorRefSetMembers())) {
+					SnomedModelExtensions.removeOrDeactivate(member);
+				}
+				final SnomedAttributeValueRefSetMember member = context.getRefSetEditingContext().createAttributeValueRefSetMember(
+						SnomedRefSetEditingContext.createDescriptionTypePair(description.getId()),
+						SnomedRefSetEditingContext.createConceptTypePair(inactivationIndicator.getValueId()),
+						description.getModule().getId(),
+						context.getRefSetEditingContext().findRefSetByIdentifierConceptId(Concepts.REFSET_DESCRIPTION_INACTIVITY_INDICATOR));
+				description.getInactivationIndicatorRefSetMembers().add(member);
+				return true;
+			}
+		}
+		return false;
 	}
 
 	private boolean updateCaseSignificance(final CaseSignificance newCaseSignificance, final Description description, final SnomedEditingContext editingContext) {
