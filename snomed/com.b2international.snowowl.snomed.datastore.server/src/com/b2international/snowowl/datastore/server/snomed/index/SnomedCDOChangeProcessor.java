@@ -43,6 +43,7 @@ import org.apache.lucene.util.BytesRef;
 import org.eclipse.emf.cdo.CDOObject;
 import org.eclipse.emf.cdo.common.id.CDOID;
 import org.eclipse.emf.cdo.common.revision.delta.CDOFeatureDelta;
+import org.eclipse.emf.cdo.server.IStoreAccessor;
 import org.eclipse.emf.cdo.server.StoreThreadLocal;
 import org.eclipse.emf.cdo.spi.common.revision.InternalCDORevision;
 import org.eclipse.emf.spi.cdo.CDOStore;
@@ -479,6 +480,7 @@ public class SnomedCDOChangeProcessor implements ICDOChangeProcessor {
 		}
 		
 		final Collection<Future<?>> promises = newHashSetWithExpectedSize(updates.keySet().size());
+		final IStoreAccessor accessor = StoreThreadLocal.getAccessor();
 		for (String componentId : updates.keySet()) {
 			try {
 				if (deletedComponentIds.contains(Long.parseLong(componentId))) {
@@ -509,10 +511,13 @@ public class SnomedCDOChangeProcessor implements ICDOChangeProcessor {
 				@Override
 				public void run() {
 					try {
+						StoreThreadLocal.setAccessor(accessor);
 						index.upsert(branchPath, query.matchAny(), updater, new SnomedDocumentBuilder.Factory());						
 					} catch (Exception e) {
 						LOGGER.error("Failed to upsert a document", e);
 						throw new SnowowlRuntimeException(e);
+					} finally {
+						StoreThreadLocal.setAccessor(null);
 					}
 				}
 			});
