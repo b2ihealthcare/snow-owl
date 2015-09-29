@@ -141,7 +141,8 @@ public class SnomedDescriptionServiceImpl
 		changed |= updateModule(update.getModuleId(), description, editingContext);
 		changed |= updateStatus(update.isActive(), description, editingContext);
 		changed |= updateCaseSignificance(update.getCaseSignificance(), description, editingContext);
-		changed |= updateInactivationIndicator(update.isActive(), update.getInactivationIndicator(), description, editingContext);
+		
+		updateInactivationIndicator(update.isActive(), update.getInactivationIndicator(), description, editingContext);
 		
 		updateAssociationTargets(update.getAssociationTargets(), description, editingContext);
 
@@ -153,8 +154,9 @@ public class SnomedDescriptionServiceImpl
 		}
 	}
 
-	private boolean updateInactivationIndicator(Boolean active, DescriptionInactivationIndicator inactivationIndicator, Description description, SnomedEditingContext context) {
-		if (active != null && inactivationIndicator != null) {
+	private void updateInactivationIndicator(Boolean active, DescriptionInactivationIndicator inactivationIndicator, Description description, SnomedEditingContext context) {
+		// the description should be inactive (indicated in the update) to be able to update the indicators
+		if (Boolean.FALSE.equals(active) && inactivationIndicator != null) {
 			boolean found = false;
 			for (SnomedAttributeValueRefSetMember member : description.getInactivationIndicatorRefSetMembers()) {
 				if (member.isActive()) {
@@ -172,10 +174,8 @@ public class SnomedDescriptionServiceImpl
 						description.getModule().getId(),
 						context.getRefSetEditingContext().findRefSetByIdentifierConceptId(Concepts.REFSET_DESCRIPTION_INACTIVITY_INDICATOR));
 				description.getInactivationIndicatorRefSetMembers().add(member);
-				return true;
 			}
 		}
-		return false;
 	}
 
 	private boolean updateCaseSignificance(final CaseSignificance newCaseSignificance, final Description description, final SnomedEditingContext editingContext) {
