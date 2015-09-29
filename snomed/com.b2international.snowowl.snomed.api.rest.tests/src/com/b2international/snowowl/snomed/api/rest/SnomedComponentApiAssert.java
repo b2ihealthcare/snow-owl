@@ -257,7 +257,7 @@ public abstract class SnomedComponentApiAssert {
 			final int statusCode) {
 
 		whenUpdatingComponent(branchPath, componentType, componentId, requestBody)
-		.then().assertThat().statusCode(statusCode);
+		.then().log().ifValidationFails().assertThat().statusCode(statusCode);
 	}
 
 	private static Response whenUpdatingComponent(final IBranchPath branchPath, 
