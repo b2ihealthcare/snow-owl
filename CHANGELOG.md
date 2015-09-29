@@ -1,7 +1,21 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
-## 2015-09-25
+## 4.3.1
+
+### Added
+- GET /:path/descriptions - support for association targets in SNOMED CT Description representations
+- POST /:path/descriptions/:id/updates - support for inactivation indicators in SNOMED CT Description updates
+- POST /:path/descriptions/:id/updates - support for association targets in SNOMED CT Description updates
+
+### Changed
+- Renamed `descriptionInactivationIndicator` to `inactivationIndicator` in SNOMED CT Description representations
+- Changed commit notification logging to be more readable and traceable
+
+### Bugs
+- Fixed major commit processing bug (https://github.com/b2ihealthcare/snow-owl/commit/4f1ec749bd74f065f9463b75a4a54e0c7f257d0f)
+
+## 4.3.0
 ### Added
 - Support for relationships with stated characteristic types
  * Importing/exporting sct2_StatedRelationship*.txt files
@@ -23,7 +37,7 @@ All notable changes to this project will be documented in this file.
  * https://github.com/b2ihealthcare/snow-owl/pull/18
  * https://github.com/b2ihealthcare/snow-owl/pull/17
 
-## 2015-07-23
+## 4.2.0
 ### Added
 - Support for terminology reviews
   * `POST` `/reviews`
@@ -37,7 +51,7 @@ All notable changes to this project will be documented in this file.
   
   Concept change sets and review resources are kept for a limited time, which is configurable using the `snowowl_configuration.yml` file.
 
-## 2015-05-27
+## 4.1.0
 ### Added
 - Deep branching support has been implemented
   * `POST` `/branches` endpoint
