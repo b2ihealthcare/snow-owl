@@ -36,6 +36,7 @@ import com.b2international.snowowl.index.diff.tests.mock.DiffConcept;
 import com.b2international.snowowl.index.diff.tests.mock.DiffIndexServerService;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Iterators;
 
 import bak.pcj.set.LongOpenHashSet;
 import bak.pcj.set.LongSet;
@@ -458,10 +459,10 @@ public class IndexServiceSmokeTest {
 				.put("8", "s")
 				.build());
 
-		final IndexDiff indexDiff = createDiffAgainstHead(main_A_B, main_A_B);
-		assertIdsExactly(indexDiff.getNewIds());
-		assertIdsExactly(indexDiff.getChangedIds(), 2L);
-		assertIdsExactly(indexDiff.getDetachedIds(), 1L);
+		final IndexDiff indexDiff = createDiffAgainstHeadInContext(main_A_B, main_A, main_A);
+		assertIdsExactly(indexDiff.getNewIds(), 4L, 7L, 8L);
+		assertIdsExactly(indexDiff.getChangedIds(), 1L, 3L);
+		assertIdsExactly(indexDiff.getDetachedIds(), 6L);
 	}
 
 	private void assertIdsExactly(final LongSet actual, final long... expected) {
@@ -491,6 +492,20 @@ public class IndexServiceSmokeTest {
 		final IndexCommit sourceCommit = sourceService.getIndexCommit(sourceBranchPath);
 		final IndexCommit targetCommit = targetService.getLastIndexCommit();
 
+		return IndexDifferFactory.INSTANCE.createDiffer().calculateDiff(sourceCommit, targetCommit);
+	}
+	
+	private IndexDiff createDiffAgainstHeadInContext(final IBranchPath contextBranchPath, final IBranchPath sourceBranchPath, final IBranchPath targetBranchPath) {
+		if (!Iterators.contains(BranchPathUtils.topToBottomIterator(contextBranchPath), sourceBranchPath)) {
+			throw new IllegalStateException(String.format("Context %s must be a descendant of source %s.", contextBranchPath, sourceBranchPath));
+		}
+		
+		final IndexBranchService sourceService = service.getBranchService(contextBranchPath);
+		final IndexBranchService targetService = service.getBranchService(targetBranchPath);
+		
+		final IndexCommit sourceCommit = sourceService.getIndexCommit(sourceBranchPath);
+		final IndexCommit targetCommit = targetService.getLastIndexCommit();
+		
 		return IndexDifferFactory.INSTANCE.createDiffer().calculateDiff(sourceCommit, targetCommit);
 	}
 
