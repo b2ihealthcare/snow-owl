@@ -20,15 +20,45 @@ import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
 
+import org.apache.lucene.store.AlreadyClosedException;
 import org.apache.lucene.store.Directory;
+import org.apache.lucene.store.FilterDirectory;
 import org.apache.lucene.store.RAMDirectory;
 
 import com.b2international.snowowl.core.api.BranchPath;
+import com.google.common.cache.CacheBuilder;
+import com.google.common.cache.CacheLoader;
+import com.google.common.cache.LoadingCache;
 
 /**
  * Directory manager for a {@link RAMDirectory}.
  */
 public class RAMDirectoryManager extends AbstractDirectoryManager implements IDirectoryManager {
+
+	private final LoadingCache<File, Directory> directoryCache = CacheBuilder.newBuilder().build(new CacheLoader<File, Directory>() {
+		@Override
+		public Directory load(final File key) throws Exception {
+			/* 
+			 * Regular file-based directories can be opened many times in different instances, but we have to introduce a layer of indirection to avoid
+			 * sharing the single RAMDirectory instance for a "physical path".
+			 */
+			return new FilterDirectory(new RAMDirectory()) {
+				private volatile boolean open = true;
+
+				@Override
+				protected void ensureOpen() throws AlreadyClosedException {
+					if (!open) {
+						throw new AlreadyClosedException("This wrapped RAMDirectory is already closed.");
+					}
+				}
+
+				@Override
+				public void close() throws IOException {
+					open = false;
+				}
+			};
+		}
+	});
 
 	public RAMDirectoryManager(final String repositoryUuid, final File indexRelativeRootPath) {
 		super(repositoryUuid, indexRelativeRootPath);
@@ -36,7 +66,27 @@ public class RAMDirectoryManager extends AbstractDirectoryManager implements IDi
 
 	@Override
 	protected Directory openWritableLuceneDirectory(final File folderForBranchPath) throws IOException {
-		return new RAMDirectory();
+		final Directory delegate = directoryCache.getUnchecked(folderForBranchPath);
+		
+		/* 
+		 * Regular file-based directories can be opened many times in different instances, but we have to introduce a layer of indirection to avoid
+		 * sharing the single RAMDirectory instance for a "physical path".
+		 */
+		return new FilterDirectory(delegate) {
+			private volatile boolean open = true;
+
+			@Override
+			protected void ensureOpen() throws AlreadyClosedException {
+				if (!open) {
+					throw new AlreadyClosedException("This wrapped RAMDirectory is already closed.");
+				}
+			}
+
+			@Override
+			public void close() throws IOException {
+				open = false;
+			}
+		};
 	}
 
 	@Override
