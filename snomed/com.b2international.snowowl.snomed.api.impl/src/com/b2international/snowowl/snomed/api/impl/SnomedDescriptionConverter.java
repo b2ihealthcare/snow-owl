@@ -33,14 +33,10 @@ import com.b2international.snowowl.snomed.datastore.services.AbstractSnomedRefSe
 import com.b2international.snowowl.snomed.datastore.services.ISnomedComponentService;
 import com.google.common.collect.ImmutableMap;
 
-/**
- */
 public class SnomedDescriptionConverter extends AbstractSnomedComponentConverter<SnomedDescriptionIndexEntry, ISnomedDescription> {
 
-	private final AbstractSnomedRefSetMembershipLookupService snomedRefSetMembershipLookupService;
-
-	public SnomedDescriptionConverter(final AbstractSnomedRefSetMembershipLookupService snomedRefSetMembershipLookupService) {
-		this.snomedRefSetMembershipLookupService = snomedRefSetMembershipLookupService;
+	public SnomedDescriptionConverter(final AbstractSnomedRefSetMembershipLookupService refSetMembershipLookupService) {
+		super(refSetMembershipLookupService);
 	}
 
 	@Override
@@ -71,11 +67,11 @@ public class SnomedDescriptionConverter extends AbstractSnomedComponentConverter
 	}
 
 	private IBranchPath getBranchPath() {
-		return snomedRefSetMembershipLookupService.getBranchPath();
+		return getRefSetMembershipLookupService().getBranchPath();
 	}
 
 	private Map<String, Acceptability> toAcceptabilityMap(final String descriptionId) {
-		final Collection<SnomedRefSetMemberIndexEntry> languageMembers = snomedRefSetMembershipLookupService.getLanguageMembersForDescription(descriptionId);
+		final Collection<SnomedRefSetMemberIndexEntry> languageMembers = getRefSetMembershipLookupService().getLanguageMembersForDescription(descriptionId);
 		final ImmutableMap.Builder<String, Acceptability> resultsBuilder = ImmutableMap.builder();
 
 		for (final SnomedRefSetMemberIndexEntry languageMember : languageMembers) {

@@ -20,13 +20,23 @@ import java.util.Date;
 import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.snomed.api.domain.ISnomedComponent;
 import com.b2international.snowowl.snomed.datastore.index.SnomedIndexEntry;
+import com.b2international.snowowl.snomed.datastore.services.AbstractSnomedRefSetMembershipLookupService;
 import com.google.common.base.Function;
 
-/**
- */
 public abstract class AbstractSnomedComponentConverter<F extends SnomedIndexEntry, T extends ISnomedComponent> implements Function<F, T> {
 
-	protected Date toEffectiveTime(final long effectiveTimeAsLong) {
+	private final AbstractSnomedRefSetMembershipLookupService refSetMembershipLookupService;
+
+	public AbstractSnomedComponentConverter(AbstractSnomedRefSetMembershipLookupService refSetMembershipLookupService) {
+		this.refSetMembershipLookupService = refSetMembershipLookupService;
+	}
+
+	protected final Date toEffectiveTime(final long effectiveTimeAsLong) {
 		return EffectiveTimes.toDate(effectiveTimeAsLong);
 	}
+
+	protected final AbstractSnomedRefSetMembershipLookupService getRefSetMembershipLookupService() {
+		return refSetMembershipLookupService;
+	}
+
 }
