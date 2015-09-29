@@ -142,6 +142,8 @@ public class SnomedDescriptionServiceImpl
 		changed |= updateStatus(update.isActive(), description, editingContext);
 		changed |= updateCaseSignificance(update.getCaseSignificance(), description, editingContext);
 		changed |= updateInactivationIndicator(update.isActive(), update.getInactivationIndicator(), description, editingContext);
+		
+		updateAssociationTargets(update.getAssociationTargets(), description, editingContext);
 
 		// XXX: acceptability changes do not push the effective time forward on the description 
 		updateAcceptabilityMap(update.getAcceptability(), description, editingContext);
