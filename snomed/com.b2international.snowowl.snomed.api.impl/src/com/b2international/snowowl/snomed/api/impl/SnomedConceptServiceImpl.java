@@ -56,7 +56,6 @@ import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.SnomedFactory;
 import com.b2international.snowowl.snomed.api.ISnomedConceptService;
 import com.b2international.snowowl.snomed.api.domain.Acceptability;
-import com.b2international.snowowl.snomed.api.domain.AssociationType;
 import com.b2international.snowowl.snomed.api.domain.DefinitionStatus;
 import com.b2international.snowowl.snomed.api.domain.ISnomedConcept;
 import com.b2international.snowowl.snomed.api.domain.ISnomedConceptInput;
@@ -71,7 +70,6 @@ import com.b2international.snowowl.snomed.datastore.SnomedConceptIndexEntry;
 import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 import com.b2international.snowowl.snomed.datastore.SnomedEditingContext;
 import com.b2international.snowowl.snomed.datastore.SnomedInactivationPlan;
-import com.b2international.snowowl.snomed.datastore.SnomedRefSetEditingContext;
 import com.b2international.snowowl.snomed.datastore.escg.IEscgQueryEvaluatorService;
 import com.b2international.snowowl.snomed.datastore.index.SnomedConceptIndexQueryAdapter;
 import com.b2international.snowowl.snomed.datastore.index.SnomedConceptReducedQueryAdapter;
@@ -82,13 +80,10 @@ import com.b2international.snowowl.snomed.datastore.services.ISnomedComponentSer
 import com.b2international.snowowl.snomed.dsl.query.SyntaxErrorException;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedAssociationRefSetMember;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedAttributeValueRefSetMember;
-import com.b2international.snowowl.snomed.snomedrefset.SnomedStructuralRefSet;
 import com.google.common.base.Strings;
-import com.google.common.collect.HashMultimap;
 import com.google.common.collect.HashMultiset;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
-import com.google.common.collect.Multimap;
 import com.google.common.collect.Multiset;
 
 public class SnomedConceptServiceImpl 
@@ -354,61 +349,6 @@ public class SnomedConceptServiceImpl
 		for (final SnomedAttributeValueRefSetMember attributeValueMember : ImmutableList.copyOf(component.getInactivationIndicatorRefSetMembers())) {
 			SnomedModelExtensions.removeOrDeactivate(attributeValueMember);
 		}
-	}
-
-	private void updateAssociationTargets(final Multimap<AssociationType, String> newAssociationTargets, final Concept concept, 
-			final SnomedEditingContext editingContext) {
-
-		if (null == newAssociationTargets) {
-			return;
-		}
-
-		final List<SnomedAssociationRefSetMember> associationMembers = ImmutableList.copyOf(concept.getAssociationRefSetMembers());
-		final Multimap<AssociationType, String> newAssociationTargetsToCreate = HashMultimap.create(newAssociationTargets);
-
-		for (final SnomedAssociationRefSetMember associationMember : associationMembers) {
-			if (!associationMember.isActive()) {
-				continue;
-			}
-
-			final AssociationType type = AssociationType.getByConceptId(associationMember.getRefSetIdentifierId());
-			if (null == type) {
-				continue;
-			}
-
-			final String targetId = associationMember.getTargetComponentId();
-			if (newAssociationTargets.containsEntry(type, targetId)) {
-				newAssociationTargetsToCreate.remove(type, targetId);
-			} else {
-				removeOrDeactivate(associationMember);
-			}
-		}
-
-		for (final Entry<AssociationType, String> newAssociationEntry : newAssociationTargetsToCreate.entries()) {
-
-			final SnomedAssociationRefSetMember newAssociationMember = createAssociationRefSetMember(
-					newAssociationEntry.getKey().getConceptId(), 
-					newAssociationEntry.getValue(),
-					concept.getId(),
-					editingContext);
-
-			concept.getAssociationRefSetMembers().add(newAssociationMember);
-		}
-	}
-
-	// Taken from SnomedInactivationPlan
-	private SnomedAssociationRefSetMember createAssociationRefSetMember(final String refSetId, final String targetId, 
-			final String conceptId, final SnomedEditingContext editingContext) {
-
-		final SnomedRefSetEditingContext refSetEditingContext = editingContext.getRefSetEditingContext();
-		final SnomedStructuralRefSet associationRefSet = getStructuralRefSet(refSetId, refSetEditingContext.getTransaction());
-		final String moduleId = editingContext.getDefaultModuleConcept().getId();
-
-		return refSetEditingContext.createAssociationRefSetMember(
-				SnomedRefSetEditingContext.createConceptTypePair(conceptId), 
-				SnomedRefSetEditingContext.createConceptTypePair(targetId), 
-				moduleId, 
-				associationRefSet);
 	}
 
 	@Override
