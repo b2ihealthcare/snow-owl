@@ -27,6 +27,7 @@ import com.b2international.snowowl.snomed.api.domain.CaseSignificance;
 import com.b2international.snowowl.snomed.api.domain.DescriptionInactivationIndicator;
 import com.b2international.snowowl.snomed.api.domain.ISnomedDescription;
 import com.b2international.snowowl.snomed.api.impl.domain.SnomedDescription;
+import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.snomed.datastore.index.SnomedDescriptionIndexEntry;
 import com.b2international.snowowl.snomed.datastore.index.refset.SnomedRefSetMemberIndexEntry;
 import com.b2international.snowowl.snomed.datastore.services.AbstractSnomedRefSetMembershipLookupService;
@@ -49,6 +50,7 @@ public class SnomedDescriptionConverter extends AbstractSnomedComponentConverter
 		result.setEffectiveTime(toEffectiveTime(input.getEffectiveTimeAsLong()));
 		result.setId(input.getId());
 		result.setDescriptionInactivationIndicator(getDescriptionInactivationIndicator(input.getId()));
+		result.setAssociationTargets(toAssociationTargets(SnomedTerminologyComponentConstants.DESCRIPTION, input.getId()));
 
 		// TODO: index language code on SnomedDescriptionIndexEntries -- it's the only property which is not present.
 		result.setLanguageCode("en");
