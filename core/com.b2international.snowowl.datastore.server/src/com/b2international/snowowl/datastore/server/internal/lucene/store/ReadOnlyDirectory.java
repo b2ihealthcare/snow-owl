@@ -44,15 +44,17 @@ public class ReadOnlyDirectory extends Directory {
 	private final Directory directory;
 
 	public ReadOnlyDirectory(final IndexCommit commit) throws IOException {
-		checkNotNull(commit, "Index commit may not be null.");
-		this.fileNames = ImmutableSet.copyOf(commit.getFileNames());
-		this.directory = commit.getDirectory();
+		this(checkNotNull(commit, "Index commit may not be null.").getDirectory(), commit.getFileNames());
 	}
 
 	public ReadOnlyDirectory(final Directory directory) throws IOException {
+		this(directory, ImmutableSet.copyOf(directory.listAll()));
+	}
+
+	public ReadOnlyDirectory(final Directory directory, final Collection<String> fileNames) {
 		checkNotNull(directory, "Wrapped directory may not be null.");
-		this.fileNames = ImmutableSet.copyOf(directory.listAll());
 		this.directory = directory;
+		this.fileNames = ImmutableSet.copyOf(fileNames);
 	}
 
 	private void checkExists(final String name) throws FileNotFoundException {
