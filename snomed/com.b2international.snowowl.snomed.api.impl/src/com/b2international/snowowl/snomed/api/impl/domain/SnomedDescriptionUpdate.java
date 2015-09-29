@@ -18,15 +18,18 @@ package com.b2international.snowowl.snomed.api.impl.domain;
 import java.util.Map;
 
 import com.b2international.snowowl.snomed.api.domain.Acceptability;
+import com.b2international.snowowl.snomed.api.domain.AssociationType;
 import com.b2international.snowowl.snomed.api.domain.CaseSignificance;
 import com.b2international.snowowl.snomed.api.domain.DescriptionInactivationIndicator;
 import com.b2international.snowowl.snomed.api.domain.ISnomedDescriptionUpdate;
+import com.google.common.collect.Multimap;
 
 public class SnomedDescriptionUpdate extends AbstractSnomedComponentUpdate implements ISnomedDescriptionUpdate {
 
 	private CaseSignificance caseSignificance;
 	private Map<String, Acceptability> acceptability;
 	private DescriptionInactivationIndicator inactivationIndicator;
+	private Multimap<AssociationType, String> associationTargets;
 
 	@Override
 	public CaseSignificance getCaseSignificance() {
@@ -38,6 +41,16 @@ public class SnomedDescriptionUpdate extends AbstractSnomedComponentUpdate imple
 		return acceptability;
 	}
 
+	@Override
+	public DescriptionInactivationIndicator getInactivationIndicator() {
+		return inactivationIndicator;
+	}
+	
+	@Override
+	public Multimap<AssociationType, String> getAssociationTargets() {
+		return associationTargets;
+	}
+	
 	public void setCaseSignificance(final CaseSignificance caseSignificance) {
 		this.caseSignificance = caseSignificance;
 	}
@@ -49,10 +62,9 @@ public class SnomedDescriptionUpdate extends AbstractSnomedComponentUpdate imple
 	public void setInactivationIndicator(DescriptionInactivationIndicator inactivationIndicator) {
 		this.inactivationIndicator = inactivationIndicator;
 	}
-
-	@Override
-	public DescriptionInactivationIndicator getInactivationIndicator() {
-		return inactivationIndicator;
+	
+	public void setAssociationTargets(Multimap<AssociationType, String> associationTargets) {
+		this.associationTargets = associationTargets;
 	}
 
 	@Override
@@ -70,6 +82,8 @@ public class SnomedDescriptionUpdate extends AbstractSnomedComponentUpdate imple
 		builder.append(getModuleId());
 		builder.append(", getInactivationIndicator()=");
 		builder.append(getInactivationIndicator());
+		builder.append(", getAssociationTargets()=");
+		builder.append(getAssociationTargets());
 		builder.append("]");
 		return builder.toString();
 	}
