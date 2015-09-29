@@ -15,7 +15,6 @@
  */
 package com.b2international.snowowl.datastore.server.index.diff;
 
-import static com.b2international.snowowl.datastore.BranchPathUtils.createPath;
 import static com.b2international.snowowl.datastore.BranchPathUtils.isMain;
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
@@ -24,7 +23,6 @@ import org.apache.lucene.index.IndexCommit;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.datastore.index.diff.IndexDifferService;
 import com.b2international.snowowl.datastore.index.diff.VersionCompareConfiguration;
 import com.b2international.snowowl.datastore.server.index.IndexBranchService;
@@ -36,7 +34,6 @@ import com.b2international.snowowl.index.diff.IndexDifferFactory;
 
 /**
  * Index differ service implementation.
- *
  */
 public class IndexDifferServiceImpl implements IndexDifferService {
 
@@ -48,41 +45,33 @@ public class IndexDifferServiceImpl implements IndexDifferService {
 	}
 
 	private IndexDiff calculateDiff(final IndexServerService<?> indexService, final VersionCompareConfiguration configuration) {
-		
 		checkNotNull(indexService, "indexService");
 		checkNotNull(configuration, "configuration");
-		final IBranchPath sourceBranchPath = configuration.getSourcePath();
-		checkArgument(!isMain(sourceBranchPath), "Source path argument cannot reference onto the MAIN branch.");
-
+		checkArgument(!isMain(configuration.getSourcePath()), "Source path argument cannot reference onto the MAIN branch.");
+		
+		final IndexBranchService sourceBranchService = indexService.getBranchService(configuration.getSourceContextPath());
+		final IndexCommit sourceBase = sourceBranchService.getIndexCommit(configuration.getSourcePath());
+		
 		final IndexBranchService targetBranchService = indexService.getBranchService(configuration.getTargetPath());
+		final IndexCommit targetHead = targetBranchService.getLastIndexCommit();
 		
-		log("Calculating index diff between '" + sourceBranchPath + "' and '" + configuration.getTargetPath() + "' for " + configuration.getToolingName() + "...");
-		
-		final IndexCommit ancestorCommit;
-		final IndexCommit sourceIndexCommit;
-		
-		if (configuration.isThreeWay()) {
-			// sourcePath is most likely an IBaseBranchPath here
-			ancestorCommit = indexService.getBranchService(sourceBranchPath).getIndexCommit(sourceBranchPath);
-			sourceIndexCommit = indexService.getBranchService(createPath(sourceBranchPath)).getLastIndexCommit();
-		} else {
-			ancestorCommit = null;
-			sourceIndexCommit =  indexService.getBranchService(sourceBranchPath).getIndexCommit(sourceBranchPath);
-		}
-		
-		final IndexCommit targetIndexCommit = targetBranchService.getLastIndexCommit(); 
+		log("Calculating index diff between '{}' as seen on '{}' and '{}' for {}...", 
+				configuration.getSourcePath(), 
+				configuration.getSourceContextPath(),
+				configuration.getTargetPath(),
+				configuration.getToolingName());
 		
 		final IndexDiffer differ = IndexDifferFactory.INSTANCE.createDiffer();
 		final IndexDiff diff;
 		
 		if (configuration.isThreeWay()) {
-			diff = differ.calculateDiff(ancestorCommit, sourceIndexCommit, targetIndexCommit);
+			final IndexCommit sourceHead = sourceBranchService.getLastIndexCommit(); 
+			diff = differ.calculateDiff(sourceBase, sourceHead, targetHead);
 		} else {
-			diff = differ.calculateDiff(sourceIndexCommit, targetIndexCommit);
+			diff = differ.calculateDiff(sourceBase, targetHead);
 		}
 		
 		log(getDiffStatisticMessage(diff));
-		
 		return diff;
 	}
 
@@ -102,8 +91,7 @@ public class IndexDifferServiceImpl implements IndexDifferService {
 		return (IndexServerService<?>) IndexServerServiceManager.INSTANCE.getByUuid(checkNotNull(repositoryUuid, "repositoryUuid"));
 	}
 
-	private void log(final String message) {
-		LOGGER.info(message);
+	private void log(final String message, final Object... arguments) {
+		LOGGER.info(message, arguments);
 	}
-	
 }

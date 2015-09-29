@@ -16,11 +16,14 @@
 package com.b2international.snowowl.datastore.server.internal.review;
 
 import static com.b2international.snowowl.core.ApplicationContext.getServiceForClass;
-import static com.b2international.snowowl.datastore.BranchPathUtils.convertIntoBasePath;
 import static com.google.common.collect.Sets.newHashSet;
 
 import java.text.MessageFormat;
-import java.util.*;
+import java.util.Date;
+import java.util.Set;
+import java.util.Timer;
+import java.util.TimerTask;
+import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
 import org.eclipse.core.runtime.IProgressMonitor;
@@ -208,18 +211,37 @@ public class ReviewManagerImpl implements ReviewManager {
 			throw new BadRequestException("Cannot create a review with the same source and target '%s'.", source.path());
 		}
 		
-		final IBranchPath headPath = source.branchPath();
-		final IBranchPath basePath;
+		// We are always comparing the base and head commits of the source branch, but we'll have to figure out where to retrieve the base commit from.
+		final IBranchPath comparePath = source.branchPath();
+		final IBranchPath baseContextPath;
 		
 		if (source.parent().equals(target)) {
-			basePath = convertIntoBasePath(source.branchPath());	
+			/* 
+			 * target is the parent of source 
+			 * source is the child of target
+			 * review is for changes on child (source) that will be made visible on parent (target) by merging
+			 * 
+			 * Source context is source, the child's base point is not expected to be moving around.
+			 */
+			baseContextPath = source.branchPath();	
 		} else if (target.parent().equals(source)) {
-			basePath = convertIntoBasePath(target.branchPath());
+			/* 
+			 * source is the parent of target
+			 * target is the child of source
+			 * review is for changes on parent (source) that will be made visible on child (target) by rebasing
+			 * 
+			 * Source context is target, as the parent (source) might have been rebased in the meantime.  
+			 */
+			baseContextPath = target.branchPath();
 		} else {
 			throw new BadRequestException("Cannot create review for source '%s' and target '%s', because there is no relation between them.", source.path(), target.path());
 		}
 		
-		final VersionCompareConfiguration configuration = new VersionCompareConfiguration(repositoryId, basePath, headPath, false, true, false);
+		final VersionCompareConfiguration configuration = VersionCompareConfiguration.builder(repositoryId, false)
+				.source(baseContextPath, comparePath, false)
+				.target(comparePath, false)
+				.build();
+		
 		final String reviewId = UUID.randomUUID().toString();
 		final CreateReviewJob compareJob = new CreateReviewJob(reviewId, configuration);
 
