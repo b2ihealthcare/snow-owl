@@ -78,4 +78,19 @@ public class CDOBranchPath implements BranchPath {
 	public String toString() {
 		return path();
 	}
+
+	@Override
+	public int hashCode() {
+		return 31 + Arrays.hashCode(branchIds);
+	}
+
+	@Override
+	public boolean equals(final Object obj) {
+		if (this == obj) { return true; }
+		if (obj == null) { return false;} 
+		if (getClass() != obj.getClass()) { return false; }
+
+		final CDOBranchPath other = (CDOBranchPath) obj;
+		return Arrays.equals(branchIds, other.branchIds);
+	}
 }
