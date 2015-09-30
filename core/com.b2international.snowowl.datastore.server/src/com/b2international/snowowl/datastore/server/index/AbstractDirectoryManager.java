@@ -66,16 +66,17 @@ public abstract class AbstractDirectoryManager implements IDirectoryManager {
 
 		// Don't bother wrapping the parents in a read-only instance
 		final Directory parentDirectory = openLuceneDirectory(branchPath.parent(), false);
-		final IndexCommit parentCommit = getParentCommit(parentDirectory, branchPath);
-		final Set<String> visibleFiles = Sets.newHashSet(parentCommit.getFileNames());
+		final Set<String> visibleFiles = Sets.newHashSet();
 		
-		// Make index commit files for ancestors visible as well (these should only refer to files already in parentCommit)
-		for (BranchPath ancestorPath = branchPath.parent(); !ancestorPath.isMain(); ancestorPath = ancestorPath.parent()) {
+		// Make files in index commits for ancestors visible as well
+		for (BranchPath ancestorPath = branchPath; !ancestorPath.isMain(); ancestorPath = ancestorPath.parent()) {
 			final IndexCommit ancestorCommit = getParentCommit(parentDirectory, ancestorPath);
-			visibleFiles.add(ancestorCommit.getSegmentsFileName());
-			if (!visibleFiles.containsAll(ancestorCommit.getFileNames())) {
-				throw new IllegalStateException("Files referenced in commit " + ancestorPath + " introduce new files.");
-			}
+			/* 
+			 * XXX: .del files are not incremental. If they were, we could start by adding files 
+			 * referenced in the immediate parent commit, and check that ancestors are only contributing 
+			 * segment_n files to the existing set. 
+			 */
+			visibleFiles.addAll(ancestorCommit.getFileNames());
 		}
 		
 		final Directory parentCommitDirectory = new ReadOnlyDirectory(parentDirectory, visibleFiles);
