@@ -38,10 +38,10 @@ import org.eclipse.emf.cdo.common.commit.CDOCommitInfoHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.exceptions.BadRequestException;
 import com.b2international.snowowl.core.exceptions.NotFoundException;
 import com.b2international.snowowl.datastore.branch.Branch;
+import com.b2international.snowowl.datastore.branch.Branch.BranchState;
 import com.b2international.snowowl.datastore.cdo.ICDORepository;
 import com.b2international.snowowl.datastore.index.diff.CompareResult;
 import com.b2international.snowowl.datastore.index.diff.NodeDiff;
@@ -210,37 +210,40 @@ public class ReviewManagerImpl implements ReviewManager {
 			throw new BadRequestException("Cannot create a review with the same source and target '%s'.", source.path());
 		}
 
-		// We are always comparing the base and head commits of the source branch, but we'll have to figure out where to retrieve the base commit from.
-		final IBranchPath comparePath = source.branchPath();
-		final IBranchPath baseContextPath;
+		// Comparison ends with the head commit of the source branch, but we'll have to figure out where to retrieve the starting commit from.
+		final VersionCompareConfiguration.Builder configurationBuilder = VersionCompareConfiguration.builder(repositoryId, false).target(source.branchPath(), false);
 		
 		if (source.parent().equals(target)) { 
+
 			/* 
 			 * target is the parent of source 
 			 * source is the child of target
 			 * review is for changes on child (source) that will be made visible on parent (target) by merging
 			 * 
-			 * Source context is source, the child's base point is not expected to be moving around.
+			 * Comparison starts from the base of the child (source) branch.
 			 */
-			baseContextPath = source.branchPath();	
+			configurationBuilder.source(source.branchPath(), false);
+
 		} else if (target.parent().equals(source)) {
+
 			/* 
 			 * source is the parent of target
 			 * target is the child of source
 			 * review is for changes on parent (source) that will be made visible on child (target) by rebasing
-			 * 
-			 * Source context is target, as the parent (source) might have been rebased in the meantime.  
 			 */
-			baseContextPath = target.branchPath();
+			if (target.state(source) == BranchState.STALE) {
+				// Start from the parent (source) base _as seen from the child (target) branch_, if parent (source) itself has been rebased in the meantime 
+				configurationBuilder.source(target.branchPath(), source.branchPath(), false);
+			} else {
+				// Start from the child (target) base
+				configurationBuilder.source(target.branchPath(), false);
+			}
+
 		} else {
 			throw new BadRequestException("Cannot create review for source '%s' and target '%s', because there is no relation between them.", source.path(), target.path());
 		}
 		
-		final VersionCompareConfiguration configuration = VersionCompareConfiguration.builder(repositoryId, false)
-				.source(baseContextPath, comparePath, false)
-				.target(comparePath, false)
-				.build();
-		
+		final VersionCompareConfiguration configuration = configurationBuilder.build();
 		final String reviewId = UUID.randomUUID().toString();
 		final CreateReviewJob compareJob = new CreateReviewJob(reviewId, configuration);
 
