@@ -530,39 +530,55 @@ public class StatementMap extends AbstractLongKeyMap implements LongKeyMap, Clon
         //  first hash
         int h = Math.abs(keyhash.hash(key));
         int i = h % keys.length;
-        if (states[i] == OCCUPIED) {
-            if (keys[i] == key) {
-                long oldValue = valueIds[i];
-                long oldObject = objectIds[i];
-                valueIds[i] = valueArray[0];
-                objectIds[i] = valueArray[1];
-                return new long[] { oldValue, oldObject };
-            }
-            //  second hash
-            int c = 1 + (h % (keys.length - 2));
-            for (;;) {
-                i -= c;
-                if (i < 0)
-                    i += keys.length;
-                //  Empty entries are re-used
-                if (states[i] == EMPTY || states[i] == REMOVED)
-                    break;
-                if (states[i] == OCCUPIED && keys[i] == key) {
+        int firstUnusedSlot;
+        
+        if (states[i] == EMPTY) {
+            firstUnusedSlot = i;
+        } else {
+            if (states[i] == OCCUPIED) {
+                if (keys[i] == key) {
                     long oldValue = valueIds[i];
                     long oldObject = objectIds[i];
                     valueIds[i] = valueArray[0];
                     objectIds[i] = valueArray[1];
                     return new long[] { oldValue, oldObject };
                 }
+
+                firstUnusedSlot = -1;
+            } else {
+                firstUnusedSlot = i;
+            }
+
+            //  second hash
+            int c = 1 + (h % (keys.length - 2));
+            for (;;) {
+                i -= c;
+                if (i < 0)
+                    i += keys.length;
+                
+                if (states[i] == OCCUPIED) {
+                    if (keys[i] == key) {
+                        long oldValue = valueIds[i];
+                        long oldObject = objectIds[i];
+                        valueIds[i] = valueArray[0];
+                        objectIds[i] = valueArray[1];
+                        return new long[] { oldValue, oldObject };
+                    }
+                } else {
+                    if (firstUnusedSlot < 0) firstUnusedSlot = i;
+
+                    if (states[i] == EMPTY)
+                        break;
+                }
             }
         }
 
-        if (states[i] == EMPTY)
+        if (states[firstUnusedSlot] == EMPTY)
             used++;
-        states[i] = OCCUPIED;
-        keys[i] = key;
-        valueIds[i] = valueArray[0];
-        objectIds[i] = valueArray[1];
+        states[firstUnusedSlot] = OCCUPIED;
+        keys[firstUnusedSlot] = key;
+        valueIds[firstUnusedSlot] = valueArray[0];
+        objectIds[firstUnusedSlot] = valueArray[1];
         size++;
         ensureCapacity(used);
         return null;
@@ -932,5 +948,22 @@ public class StatementMap extends AbstractLongKeyMap implements LongKeyMap, Clon
             objectIds[i] = objectId;
         }
     }
+    
+    public static void main(String[] args) {
+		final StatementMap map = new StatementMap();
+		map.put(3, new long[]{3,3});
+		map.remove(3);
+		map.put(6, new long[]{6,6});
+		map.remove(7);
+		map.put(15, new long[]{15,15});
+		map.remove(6);
+		map.put(14, new long[]{14,14});
+		map.put(17, new long[]{17,17});
+		map.remove(14);
+		final long[] oldValue = (long[]) map.put(17, new long[]{18,18});
+		final long[] newValue = (long[]) map.get(17);
+		assert Arrays.equals(new long[] {17, 17}, oldValue);
+		assert Arrays.equals(new long[] {18, 18}, newValue);
+	}
 
 }
