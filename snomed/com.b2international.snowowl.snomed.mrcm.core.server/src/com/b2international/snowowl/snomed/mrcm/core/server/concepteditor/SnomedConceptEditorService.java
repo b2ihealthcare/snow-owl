@@ -187,8 +187,10 @@ public class SnomedConceptEditorService implements ISnomedConceptEditorService {
 	}
 
 	private void addToMaps(final IBranchPath branchPath, final LongKeyMap conceptIdToLabelMap, final LongKeyLongMap conceptIdToIconIdMap, final SnomedConceptIndexEntry conceptIndexEntry) {
-		final String conceptId = conceptIndexEntry.getId();
-		conceptIdToIconIdMap.put(Long.valueOf(conceptId), Long.valueOf(conceptIndexEntry.getIconId()));
-		conceptIdToLabelMap.put(Long.valueOf(conceptId), conceptIndexEntry.getLabel());
+		if (conceptIndexEntry != null) {
+			final String conceptId = conceptIndexEntry.getId();
+			conceptIdToIconIdMap.put(Long.valueOf(conceptId), Long.valueOf(conceptIndexEntry.getIconId()));
+			conceptIdToLabelMap.put(Long.valueOf(conceptId), conceptIndexEntry.getLabel());
+		}
 	}
 }
