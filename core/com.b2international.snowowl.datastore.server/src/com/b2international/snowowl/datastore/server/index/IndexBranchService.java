@@ -39,6 +39,7 @@ import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.MatchAllDocsQuery;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.ReferenceManager;
+import org.apache.lucene.search.SearcherManager;
 import org.apache.lucene.store.AlreadyClosedException;
 import org.apache.lucene.util.Version;
 import org.slf4j.Logger;
@@ -52,6 +53,7 @@ import com.b2international.snowowl.datastore.index.DelimiterStopAnalyzer;
 import com.b2international.snowowl.datastore.index.IndexUtils;
 import com.b2international.snowowl.datastore.index.NullSearcherManager;
 import com.b2international.snowowl.datastore.server.internal.lucene.index.FilteringMergePolicy;
+import com.b2international.snowowl.datastore.server.internal.lucene.store.ReadOnlyDirectory;
 import com.google.common.collect.ImmutableMap;
 
 public class IndexBranchService implements Closeable {
@@ -100,18 +102,20 @@ public class IndexBranchService implements Closeable {
 
 			} else {
 				this.indexWriter = null;
-				this.manager = directory.createSearcherManager();
+				final IndexCommit baseCommit = directory.getLastBaseIndexCommit(logicalBranchPath);
+				this.manager = new SearcherManager(new ReadOnlyDirectory(baseCommit), null);
 			}
 
 		} else {
 			
 			if (!readOnly) {
 				this.indexWriter = createIndexWriter(isMain(logicalBranchPath));
+				this.manager = directory.createSearcherManager();
 			} else {
 				this.indexWriter = null;
+				final IndexCommit baseCommit = directory.getLastBaseIndexCommit(logicalBranchPath);
+				this.manager = new SearcherManager(new ReadOnlyDirectory(baseCommit), null);
 			}
-			
-			this.manager = directory.createSearcherManager();
 		}
 	}
 

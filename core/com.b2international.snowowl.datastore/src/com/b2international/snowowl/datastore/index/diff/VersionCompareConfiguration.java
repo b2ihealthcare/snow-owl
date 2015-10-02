@@ -35,7 +35,6 @@ public class VersionCompareConfiguration implements Serializable {
 	private final String toolingName;
 	private final boolean threeWay;
 	
-	private final IBranchPath sourceContextPath;
 	private final IBranchPath sourcePath;
 	private final boolean sourcePatched;
 	
@@ -51,7 +50,6 @@ public class VersionCompareConfiguration implements Serializable {
 		private final String toolingName;
 		private final boolean threeWay;
 		
-		private IBranchPath sourceContextPath;
 		private IBranchPath sourcePath;
 		private boolean sourcePatched;
 
@@ -74,11 +72,6 @@ public class VersionCompareConfiguration implements Serializable {
 		}
 
 		public Builder source(final IBranchPath sourcePath, final boolean sourcePatched) {
-			return source(sourcePath, sourcePath, sourcePatched);
-		}
-		
-		public Builder source(final IBranchPath sourceContextPath, final IBranchPath sourcePath, final boolean sourcePatched) {
-			this.sourceContextPath = sourceContextPath;
 			this.sourcePath = sourcePath;
 			this.sourcePatched = sourcePatched;
 			return this;
@@ -100,7 +93,6 @@ public class VersionCompareConfiguration implements Serializable {
 		}
 		
 		public VersionCompareConfiguration build() {
-			checkNotNull(sourceContextPath, "sourceContextPath");
 			checkNotNull(sourcePath, "sourcePath");
 			checkNotNull(targetPath, "targetPath");
 			return new VersionCompareConfiguration(this);
@@ -112,7 +104,6 @@ public class VersionCompareConfiguration implements Serializable {
 		this.toolingName = builder.toolingName;
 		this.threeWay = builder.threeWay;
 		
-		this.sourceContextPath = builder.sourceContextPath;
 		this.sourcePath = builder.sourcePath;
 		this.sourcePatched = builder.sourcePatched;
 		
@@ -125,10 +116,6 @@ public class VersionCompareConfiguration implements Serializable {
 		return repositoryUuid;
 	}
 
-	public IBranchPath getSourceContextPath() {
-		return sourceContextPath;
-	}
-	
 	/**Returns with the source {@link IBranchPath branch path}.*/
 	public IBranchPath getSourcePath() {
 		return sourcePath;
@@ -172,7 +159,6 @@ public class VersionCompareConfiguration implements Serializable {
 		int result = 1;
 		result = prime * result + ((repositoryUuid == null) ? 0 : repositoryUuid.hashCode());
 		result = prime * result + ((sourcePath == null) ? 0 : sourcePath.hashCode());
-		result = prime * result + ((sourceContextPath == null) ? 0 : sourceContextPath.hashCode());
 		result = prime * result + ((targetPath == null) ? 0 : targetPath.hashCode());
 		result = prime * result + (threeWay ? 1231 : 1237);
 		return result;
@@ -197,11 +183,6 @@ public class VersionCompareConfiguration implements Serializable {
 				return false;
 		} else if (!sourcePath.equals(other.sourcePath))
 			return false;
-		if (sourceContextPath == null) {
-			if (other.sourceContextPath != null)
-				return false;
-		} else if (!sourceContextPath.equals(other.sourceContextPath))
-			return false;
 		if (targetPath == null) {
 			if (other.targetPath != null)
 				return false;
@@ -219,8 +200,6 @@ public class VersionCompareConfiguration implements Serializable {
 		sb.append(": ");
 		sb.append(sourcePath.getPath());
 		sb.append((sourcePatched ? "*" : ""));
-		sb.append(" on ");
-		sb.append(sourceContextPath.getPath());
 		sb.append(" - ");
 		sb.append(targetPath.getPath());
 		sb.append((targetPatched ? "*" : ""));
