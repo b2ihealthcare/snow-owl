@@ -26,6 +26,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
 
 import javax.annotation.Nullable;
 
@@ -52,6 +53,7 @@ import org.slf4j.LoggerFactory;
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.IDisposableService;
 import com.b2international.snowowl.core.api.BranchPath;
+import com.b2international.snowowl.core.api.IBaseBranchPath;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.api.index.IIndexEntry;
 import com.b2international.snowowl.core.api.index.IIndexQueryAdapter;
@@ -92,8 +94,15 @@ public abstract class IndexServerService<E extends IIndexEntry> extends Abstract
 
 	private final class StateCacheLoader extends CacheLoader<IBranchPath, IndexBranchService> {
 		@Override public IndexBranchService load(final IBranchPath key) throws Exception {
-			final BranchPath branchPath = getMostRecentPhysicalPath(key);
-			final IndexBranchService branchService = new IndexBranchService(key, branchPath, getDirectoryManager());
+			final BranchPath physicalPath;
+
+			if (BranchPathUtils.isBasePath(key)) {
+				physicalPath = getMostRecentPhysicalPath(((IBaseBranchPath) key).getContextPath());
+			} else {
+				physicalPath = getMostRecentPhysicalPath(key);
+			}
+			
+			final IndexBranchService branchService = new IndexBranchService(key, physicalPath, getDirectoryManager());
 			
 			if (branchService.isFirstStartupAtMain()) {
 				getDirectoryManager().firstStartup(branchService);
@@ -120,6 +129,7 @@ public abstract class IndexServerService<E extends IIndexEntry> extends Abstract
 	 */
 	protected IndexServerService() {
 		this.branchServices = CacheBuilder.newBuilder()
+				.expireAfterAccess(30L, TimeUnit.MINUTES)
 				.removalListener(new StateRemovalListener())
 				.build(new StateCacheLoader());
 	}

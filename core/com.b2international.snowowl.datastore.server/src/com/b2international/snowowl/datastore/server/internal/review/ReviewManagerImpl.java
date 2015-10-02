@@ -40,6 +40,7 @@ import org.slf4j.LoggerFactory;
 
 import com.b2international.snowowl.core.exceptions.BadRequestException;
 import com.b2international.snowowl.core.exceptions.NotFoundException;
+import com.b2international.snowowl.datastore.BranchPathUtils;
 import com.b2international.snowowl.datastore.branch.Branch;
 import com.b2international.snowowl.datastore.branch.Branch.BranchState;
 import com.b2international.snowowl.datastore.cdo.ICDORepository;
@@ -222,7 +223,7 @@ public class ReviewManagerImpl implements ReviewManager {
 			 * 
 			 * Comparison starts from the base of the child (source) branch.
 			 */
-			configurationBuilder.source(source.branchPath(), false);
+			configurationBuilder.source(BranchPathUtils.convertIntoBasePath(source.branchPath()), false);
 
 		} else if (target.parent().equals(source)) {
 
@@ -233,10 +234,10 @@ public class ReviewManagerImpl implements ReviewManager {
 			 */
 			if (target.state(source) == BranchState.STALE) {
 				// Start from the parent (source) base _as seen from the child (target) branch_, if parent (source) itself has been rebased in the meantime 
-				configurationBuilder.source(target.branchPath(), source.branchPath(), false);
+				configurationBuilder.source(BranchPathUtils.convertIntoBasePath(source.branchPath(), target.branchPath()), false);
 			} else {
 				// Start from the child (target) base
-				configurationBuilder.source(target.branchPath(), false);
+				configurationBuilder.source(BranchPathUtils.convertIntoBasePath(target.branchPath()), false);
 			}
 
 		} else {
