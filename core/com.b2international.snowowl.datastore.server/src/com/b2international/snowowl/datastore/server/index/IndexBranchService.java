@@ -135,7 +135,7 @@ public class IndexBranchService implements Closeable {
 			return;
 		}
 
-		LOG.info("Service for {} closed after {}.", branchPath.path(), stopwatch.stop().elapsed(TimeUnit.SECONDS));
+		LOG.debug("Service for physical path {} closed after {} second(s).", branchPath.path(), stopwatch.stop().elapsed(TimeUnit.SECONDS));
 		
 		closed = true;
 		IOException caught = null;
