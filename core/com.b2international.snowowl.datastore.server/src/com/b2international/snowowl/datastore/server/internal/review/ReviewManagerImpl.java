@@ -103,7 +103,7 @@ public class ReviewManagerImpl implements ReviewManager {
 	private final class StaleHandler implements IHandler<IMessage> {
 		@Override
 		public void handle(final IMessage message) {
-			final BranchChangedEvent changeEvent = (BranchChangedEvent) message.body();
+			final BranchChangedEvent changeEvent = message.body(BranchChangedEvent.class);
 			final String path = changeEvent.getBranch().path();
 
 			synchronized (reviewStore) {
