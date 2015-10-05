@@ -15,15 +15,11 @@
  */
 package com.b2international.snowowl.snomed.importer.rf2;
 
-import static com.b2international.commons.FileUtils.copyContentToTempFile;
 import static com.b2international.snowowl.datastore.cdo.CDOUtils.check;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.collect.Sets.newHashSet;
 
-import java.io.File;
 import java.io.IOException;
-import java.net.MalformedURLException;
-import java.net.URI;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
@@ -76,8 +72,6 @@ import com.b2international.snowowl.snomed.importer.rf2.model.ComponentImportType
 import com.b2international.snowowl.snomed.importer.rf2.model.ComponentImportUnit;
 import com.b2international.snowowl.snomed.importer.rf2.model.EffectiveTimeUnitOrdering;
 import com.b2international.snowowl.snomed.importer.rf2.model.SnomedImportContext;
-import com.b2international.snowowl.snomed.mrcm.core.server.MrcmFileRegistryImpl;
-import com.b2international.snowowl.snomed.mrcm.core.server.MrcmImporter;
 import com.b2international.snowowl.terminologymetadata.CodeSystemVersion;
 import com.b2international.snowowl.terminologymetadata.CodeSystemVersionGroup;
 import com.google.common.base.Objects;
@@ -329,26 +323,10 @@ public class SnomedCompositeImporter extends AbstractLoggingImporter {
 				getImportBranchPath());
 		
 		try {
-
 			feeder.initContent(importIndexService, branchPath, new NullProgressMonitor());
-			importMrcmRules(lastUnitEffectiveTimeKey);
 			initializeIndex(branchPath, lastUnitEffectiveTimeKey, units);
-			
 		} catch (final SnowowlServiceException e) {
 			throw new ImportException(e);
-		}
-	}
-
-	private void importMrcmRules(final String lastUnitEffectiveTimeKey) {
-		final String userId = importContext.getUserId();
-		final URI mrcmFileUri = MrcmFileRegistryImpl.INSTANCE.getMrcmFileUri();
-		if (null != mrcmFileUri) {
-			try {
-				final File mrcmFile = copyContentToTempFile(mrcmFileUri.toURL());
-				MrcmImporter.INSTANCE.doImport(userId, mrcmFile, false, importContext.getAggregator(lastUnitEffectiveTimeKey));
-			} catch (final MalformedURLException e) {
-				getLogger().warn("Error while trying to load the content of the MRCM file. Ignoring MRCM import for SNOMED CT.", e);
-			}
 		}
 	}
 
