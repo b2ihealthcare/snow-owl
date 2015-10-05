@@ -23,6 +23,7 @@ import javax.annotation.concurrent.Immutable;
 import com.b2international.snowowl.core.api.IComponent;
 import com.b2international.snowowl.core.api.IStatement;
 import com.b2international.snowowl.core.api.index.IIndexEntry;
+import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.datastore.index.SnomedIndexEntry;
 import com.google.common.base.Preconditions;
 
@@ -246,4 +247,13 @@ public class SnomedRelationshipIndexEntry extends SnomedIndexEntry implements IS
 	private boolean isAnyFlagSet(final int flag) {
 		return (flags & flag) != 0;
 	}
+
+	public boolean isDefining() {
+		return Concepts.DEFINING_RELATIONSHIP.equals(getCharacteristicTypeId());
+	}
+
+	public boolean isAdditional() {
+		return Concepts.ADDITIONAL_RELATIONSHIP.equals(getCharacteristicTypeId());
+	}
+	
 }
