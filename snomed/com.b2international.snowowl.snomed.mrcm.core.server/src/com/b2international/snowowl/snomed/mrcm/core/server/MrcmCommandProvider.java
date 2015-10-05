@@ -62,12 +62,6 @@ public class MrcmCommandProvider implements CommandProvider {
 			} else if ("export".equals(nextArgument)) {
 				_export(interpreter);
 				return;
-			} else if ("configure_mrcm_file_for_sct_full_import_process".equals(nextArgument)) {
-				_configure(interpreter);
-				return;
-			} else if ("show_configured_mrcm_file_for_sct_full_import_process".equals(nextArgument)) {
-				_showConfiguredFile(interpreter);
-				return;
 			} else {
 				interpreter.println(getHelp());
 			}
@@ -78,40 +72,6 @@ public class MrcmCommandProvider implements CommandProvider {
 		
 	}
 	
-	private synchronized void _showConfiguredFile(final CommandInterpreter interpreter) {
-		java.net.URI mrcmFileUri = MrcmFileRegistryImpl.INSTANCE.getMrcmFileUri();
-		if (null == mrcmFileUri) {
-			interpreter.println("No MRCM files are configured.");
-		} else {
-			interpreter.println(mrcmFileUri);
-		}
-	}
-
-	private synchronized void _configure(final CommandInterpreter interpreter) {
-		
-		final String filePath = interpreter.nextArgument();
-		
-		if (StringUtils.isEmpty(filePath)) {
-			interpreter.println("MRCM import file path should be specified.");
-			return;
-		}
-		
-		final File file = new File(filePath);
-		
-		if (!file.exists() || !file.isFile()) {
-			interpreter.print("MRCM import file cannot be found.");
-			return;
-		}
-		
-		if (!file.canRead()) {
-			interpreter.print("Cannot read MRCM import file content.");
-			return;
-		}
-		
-		MrcmFileRegistryImpl.INSTANCE.configureMrcmFile(file.toURI());
-		
-	}
-
 	public synchronized void _import(final CommandInterpreter interpreter) {
 		
 		final String filePath = interpreter.nextArgument();
