@@ -29,8 +29,8 @@ import com.b2international.snowowl.snomed.datastore.index.SnomedIndexEntry;
  */
 public class SnomedIndexServerService extends FSIndexServerService<SnomedIndexEntry> implements SnomedIndexUpdater {
 
-	public SnomedIndexServerService(File indexPath) throws SnowowlServiceException {
-		super(checkNotNull(indexPath, "indexPath"));
+	public SnomedIndexServerService(File indexPath, final long timeout) throws SnowowlServiceException {
+		super(checkNotNull(indexPath, "indexPath"), timeout);
 	}
 
 	@Override

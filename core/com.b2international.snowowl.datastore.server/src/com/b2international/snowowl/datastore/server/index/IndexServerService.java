@@ -127,9 +127,9 @@ public abstract class IndexServerService<E extends IIndexEntry> extends Abstract
 	/**
 	 * Initializes a new index index service instance. 
 	 */
-	protected IndexServerService() {
+	protected IndexServerService(final long timeout) {
 		this.branchServices = CacheBuilder.newBuilder()
-				.expireAfterAccess(30L, TimeUnit.MINUTES)
+				.expireAfterAccess(timeout, TimeUnit.SECONDS)
 				.removalListener(new StateRemovalListener())
 				.build(new StateCacheLoader());
 	}

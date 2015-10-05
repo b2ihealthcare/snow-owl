@@ -23,6 +23,7 @@ import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.api.SnowowlServiceException;
 import com.b2international.snowowl.core.api.index.IIndexUpdater;
 import com.b2international.snowowl.core.config.ClientPreferences;
+import com.b2international.snowowl.datastore.config.RepositoryConfiguration;
 import com.b2international.snowowl.rpc.RpcSession;
 import com.b2international.snowowl.rpc.RpcUtil;
 
@@ -47,6 +48,10 @@ public abstract class IndexServiceConfigJob<U extends IIndexUpdater<?>> extends 
 	protected abstract Class<? super U> getSearcherClass();
 
 	protected abstract Class<U> getUpdaterClass();
+	
+	protected final long getIndexTimeout() {
+		return getSnowOwlConfiguration().getModuleConfig(RepositoryConfiguration.class).getIndexTimeout();
+	}
 	
 	@Override
 	protected final boolean initService() throws SnowowlServiceException {

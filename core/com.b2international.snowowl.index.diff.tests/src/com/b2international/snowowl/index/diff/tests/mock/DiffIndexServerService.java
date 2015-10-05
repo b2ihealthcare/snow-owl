@@ -56,6 +56,8 @@ import bak.pcj.list.IntArrayList;
  */
 public class DiffIndexServerService extends IndexServerService<DiffConceptIndexEntry> {
 
+	private static final long DEFAULT_TIMEOUT = 4L * 60L;
+
 	private final LoadingCache<IBranchPath, Integer> branchPathToCdoBranchId = CacheBuilder.newBuilder().build(new CacheLoader<IBranchPath, Integer>() {
 		@Override
 		public Integer load(IBranchPath key) throws Exception {
@@ -67,6 +69,7 @@ public class DiffIndexServerService extends IndexServerService<DiffConceptIndexE
 	private volatile int lastUsedBranchId = CDOBranch.MAIN_BRANCH_ID;
 	
 	public DiffIndexServerService() {
+		super(DEFAULT_TIMEOUT);
 		directoryManager = new RAMDirectoryManager(getRepositoryUuid(), new File(getRepositoryUuid()));
 		branchPathToCdoBranchId.put(BranchPathUtils.createMainPath(), CDOBranch.MAIN_BRANCH_ID);
 	}

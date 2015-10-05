@@ -48,6 +48,6 @@ public class SnomedIndexServerServiceConfigJob extends IndexServiceConfigJob<Sno
 
 	@Override
 	protected SnomedIndexServerService createServiceImplementation() throws SnowowlServiceException {
-		return new SnomedIndexServerService(new File(DIRECTORY_PATH));
+		return new SnomedIndexServerService(new File(DIRECTORY_PATH), getIndexTimeout());
 	}
 }

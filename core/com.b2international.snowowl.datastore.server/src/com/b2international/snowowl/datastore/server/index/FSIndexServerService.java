@@ -38,7 +38,8 @@ public abstract class FSIndexServerService<E extends IIndexEntry> extends IndexS
 
 	private final Path indexPath;	
 	
-	protected FSIndexServerService(final File indexPath) {
+	protected FSIndexServerService(final File indexPath, final long timeout) {
+		super(timeout);
 		this.indexPath = checkNotNull(indexPath, "indexPath").toPath();
 	}
 	
