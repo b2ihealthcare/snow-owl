@@ -33,8 +33,6 @@ import org.eclipse.core.runtime.jobs.IJobChangeEvent;
 import org.eclipse.core.runtime.jobs.IJobChangeListener;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.core.runtime.jobs.JobChangeAdapter;
-import org.eclipse.emf.cdo.common.commit.CDOCommitInfo;
-import org.eclipse.emf.cdo.common.commit.CDOCommitInfoHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -43,10 +41,11 @@ import com.b2international.snowowl.core.exceptions.NotFoundException;
 import com.b2international.snowowl.datastore.BranchPathUtils;
 import com.b2international.snowowl.datastore.branch.Branch;
 import com.b2international.snowowl.datastore.branch.Branch.BranchState;
-import com.b2international.snowowl.datastore.cdo.ICDORepository;
 import com.b2international.snowowl.datastore.index.diff.CompareResult;
 import com.b2international.snowowl.datastore.index.diff.NodeDiff;
 import com.b2international.snowowl.datastore.index.diff.VersionCompareConfiguration;
+import com.b2international.snowowl.datastore.server.events.BranchChangedEvent;
+import com.b2international.snowowl.datastore.server.internal.IRepository;
 import com.b2international.snowowl.datastore.server.review.ConceptChanges;
 import com.b2international.snowowl.datastore.server.review.Review;
 import com.b2international.snowowl.datastore.server.review.ReviewManager;
@@ -55,6 +54,8 @@ import com.b2international.snowowl.datastore.store.Store;
 import com.b2international.snowowl.datastore.store.query.Query;
 import com.b2international.snowowl.datastore.store.query.QueryBuilder;
 import com.b2international.snowowl.datastore.version.VersionCompareService;
+import com.b2international.snowowl.eventbus.IHandler;
+import com.b2international.snowowl.eventbus.IMessage;
 import com.fasterxml.jackson.databind.util.ISO8601Utils;
 import com.google.common.collect.ImmutableSet;
 
@@ -62,7 +63,6 @@ import com.google.common.collect.ImmutableSet;
  * @since 4.2
  */
 public class ReviewManagerImpl implements ReviewManager {
-
 
 	private final class CreateReviewJob extends Job {
 
@@ -99,15 +99,11 @@ public class ReviewManagerImpl implements ReviewManager {
 		}
 	}
 
-	private final class SetStaleHandler implements CDOCommitInfoHandler {
+	private final class StaleHandler implements IHandler<IMessage> {
 		@Override
-		@SuppressWarnings("restriction")
-		public void handleCommitInfo(final CDOCommitInfo commitInfo) {
-			if (commitInfo instanceof org.eclipse.emf.cdo.internal.common.commit.FailureCommitInfo) {
-				return;
-			}
-
-			final String path = commitInfo.getBranch().getPathName();
+		public void handle(final IMessage message) {
+			final BranchChangedEvent changeEvent = (BranchChangedEvent) message.body();
+			final String path = changeEvent.getBranch().path();
 
 			synchronized (reviewStore) {
 				final Set<ReviewImpl> affectedReviews = ImmutableSet.<ReviewImpl>builder()
@@ -167,7 +163,7 @@ public class ReviewManagerImpl implements ReviewManager {
 	private final Store<ReviewImpl> reviewStore;
 	private final Store<ConceptChangesImpl> conceptChangesStore;
 	private final IJobChangeListener jobChangeListener = new ReviewJobChangeListener();
-	private final SetStaleHandler commitInfoHandler = new SetStaleHandler();
+	private final StaleHandler staleHandler = new StaleHandler();
 	private final TimerTask cleanupTask = new CleanupTask();
 
 	private static final long REFRESH_INTERVAL = TimeUnit.MINUTES.toMillis(1L);
@@ -179,15 +175,15 @@ public class ReviewManagerImpl implements ReviewManager {
 		private static final Timer CLEANUP_TIMER = new Timer("Review cleanup", true);
 	}
 
-	public ReviewManagerImpl(final ICDORepository repository, final Store<ReviewImpl> reviewStore, final Store<ConceptChangesImpl> conceptChangesStore) {
+	public ReviewManagerImpl(final IRepository repository, final Store<ReviewImpl> reviewStore, final Store<ConceptChangesImpl> conceptChangesStore) {
 		this(repository, reviewStore, conceptChangesStore, 15, 5);
 	}
 
-	public ReviewManagerImpl(final ICDORepository repository, 
+	public ReviewManagerImpl(final IRepository repository, 
 			final Store<ReviewImpl> reviewStore, final Store<ConceptChangesImpl> conceptChangesStore, 
 			final long keepCurrentMins, final int keepOtherMins) {
 
-		this.repositoryId = repository.getUuid();
+		this.repositoryId = repository.getCdoRepositoryId();
 		this.keepCurrentMillis = TimeUnit.MINUTES.toMillis(keepCurrentMins);
 		this.keepOtherMillis = TimeUnit.MINUTES.toMillis(keepOtherMins);
 
@@ -199,10 +195,12 @@ public class ReviewManagerImpl implements ReviewManager {
 
 		this.conceptChangesStore = conceptChangesStore;
 
-		repository.getRepository().addCommitInfoHandler(commitInfoHandler);
-
 		// Check every minute if there's something to remove
 		Holder.CLEANUP_TIMER.schedule(cleanupTask, REFRESH_INTERVAL, REFRESH_INTERVAL);
+	}
+	
+	public IHandler<IMessage> getStaleHandler() {
+		return staleHandler;
 	}
 
 	@Override
