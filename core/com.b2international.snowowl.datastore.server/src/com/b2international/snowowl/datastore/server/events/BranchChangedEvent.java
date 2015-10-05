@@ -13,23 +13,30 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.datastore.server.index;
+package com.b2international.snowowl.datastore.server.events;
 
-import com.b2international.snowowl.core.api.IBranchPath;
+import static com.google.common.base.Preconditions.checkNotNull;
+
+import com.b2international.snowowl.datastore.branch.Branch;
 
 /**
- * Provides commit timestamp to the clients.
+ * @since 4.3
  */
-public interface ICommitTimeProvider {
+public class BranchChangedEvent extends BaseBranchEvent {
+	
+	private final Branch branch;
+	
+	public BranchChangedEvent(final String repositoryId, final Branch branch) {
+		super(repositoryId);
+		this.branch = checkNotNull(branch, "branch");
+	}
+	
+	public Branch getBranch() {
+		return branch;
+	}
 
-	/**Returns with the latest commit timestamp on the given branch.*/
-	long getCommitTime(final IBranchPath branchPath);
-	
-	/**Returns with a commit time from {@link System#currentTimeMillis()}.*/
-	ICommitTimeProvider DEFAULT = new ICommitTimeProvider() {
-		@Override public long getCommitTime(final IBranchPath branchPath) {
-			return System.currentTimeMillis();
-		}
-	};
-	
+	@Override
+	protected String getAddress() {
+		return super.getAddress() + "/changes";
+	}
 }

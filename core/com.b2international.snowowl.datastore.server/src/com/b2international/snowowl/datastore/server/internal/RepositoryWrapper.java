@@ -27,6 +27,7 @@ import com.b2international.snowowl.datastore.cdo.ICDORepositoryManager;
 import com.b2international.snowowl.datastore.server.CDOServerUtils;
 import com.b2international.snowowl.datastore.server.cdo.CDOConflictProcessorBroker;
 import com.b2international.snowowl.datastore.server.cdo.ICDOConflictProcessor;
+import com.b2international.snowowl.eventbus.IEventBus;
 
 /**
  * @since 4.1
@@ -36,17 +37,20 @@ public class RepositoryWrapper implements IRepository {
 	private final String repositoryId;
 	private final ICDOConnectionManager connectionManager;
 	private final IIndexServerServiceManager indexServerServiceManager;
-	private ICDORepositoryManager repositoryManager;
+	private final ICDORepositoryManager repositoryManager;
+	private final IEventBus eventBus;
 
 	public RepositoryWrapper(String repositoryId, 
 			ICDOConnectionManager connectionManager,
 			ICDORepositoryManager repositoryManager, 
-			IIndexServerServiceManager indexServerServiceManager) {
+			IIndexServerServiceManager indexServerServiceManager,
+			IEventBus eventBus) {
 
 		this.repositoryId = repositoryId;
 		this.connectionManager = connectionManager;
 		this.repositoryManager = repositoryManager;
 		this.indexServerServiceManager = indexServerServiceManager;
+		this.eventBus = eventBus;
 	}
 
 	@Override
@@ -92,5 +96,10 @@ public class RepositoryWrapper implements IRepository {
 	@Override
 	public long getHeadTimestamp(CDOBranch branch) {
 		return Math.max(getBaseTimestamp(branch), CDOServerUtils.getLastCommitTime(branch));
+	}
+	
+	@Override
+	public IEventBus getEventBus() {
+		return eventBus;
 	}
 }

@@ -19,6 +19,7 @@ import static com.b2international.snowowl.snomed.SnomedConstants.Concepts.MODULE
 import static com.b2international.snowowl.snomed.SnomedConstants.Concepts.ROOT_CONCEPT;
 import static com.b2international.snowowl.snomed.api.rest.SnomedApiTestConstants.PREFERRED_ACCEPTABILITY_MAP;
 import static com.b2international.snowowl.snomed.api.rest.SnomedBranchingApiAssert.assertBranchCanBeMerged;
+import static com.b2international.snowowl.snomed.api.rest.SnomedBranchingApiAssert.assertBranchCanBeRebased;
 import static com.b2international.snowowl.snomed.api.rest.SnomedBranchingApiAssert.givenBranchWithPath;
 import static com.b2international.snowowl.snomed.api.rest.SnomedBranchingApiAssert.whenMergingOrRebasingBranches;
 import static com.b2international.snowowl.snomed.api.rest.SnomedComponentApiAssert.assertComponentCanBeDeleted;
@@ -29,8 +30,10 @@ import static com.b2international.snowowl.test.commons.rest.RestExtensions.given
 import static com.b2international.snowowl.test.commons.rest.RestExtensions.lastPathSegment;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.hasItem;
+import static org.hamcrest.CoreMatchers.hasItems;
 import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.CoreMatchers.notNullValue;
+import static org.hamcrest.CoreMatchers.nullValue;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
 
@@ -229,6 +232,95 @@ public class SnomedReviewApiTest extends AbstractSnomedApiTest {
 			.body("changedConcepts", not(hasItem(FINDING_CONTEXT)))
 			.body("deletedConcepts", equalTo(ImmutableList.of(c1)));
 	}
+	
+	@Test
+	public void reviewAfterParentRebase() {
+		// Open the setup branch
+		IBranchPath setupBranchPath = createNestedBranch("A");
+		
+		// Create a new concept on the setup branch so that it can be deleted on the test branch
+		final Map<?, ?> conceptRequestBody = givenConceptRequestBody(null, ROOT_CONCEPT, MODULE_SCT_CORE, PREFERRED_ACCEPTABILITY_MAP, false);
+		final String c1 = assertComponentCreated(setupBranchPath, SnomedComponentType.CONCEPT, conceptRequestBody);
+		assertBranchCanBeMerged(setupBranchPath, "Creating concept which can be deleted");
+		
+		// Create a nested branch after C1 appears
+		IBranchPath nestedBranchPath = BranchPathUtils.createPath(testBranchPath, "B");
+		givenBranchWithPath(nestedBranchPath);
+		
+		// Create new concept on test branch
+		final String c2 = assertComponentCreated(testBranchPath, SnomedComponentType.CONCEPT, conceptRequestBody);
+		
+		// Create new relationship, which will mark "Disease" as changed, but not "Finding context"
+		final Map<?, ?> relationshipRequestBody = givenRelationshipRequestBody(DISEASE, TEMPORAL_CONTEXT, FINDING_CONTEXT, MODULE_SCT_CORE, "New relationship");
+		assertComponentCreated(testBranchPath, SnomedComponentType.RELATIONSHIP, relationshipRequestBody);
+		
+		// Delete the concept we have created earlier
+		assertComponentCanBeDeleted(testBranchPath, SnomedComponentType.CONCEPT, c1);
+		
+		// Add new concept on MAIN
+		final String c3 = assertComponentCreated(testBranchPath.getParent(), SnomedComponentType.CONCEPT, conceptRequestBody);
+		
+		// Rebase testBranchPath on MAIN
+		assertBranchCanBeRebased(testBranchPath, "Rebasing testBranchPath on MAIN");
+		
+		// See what happened on testBranchPath's newest instance, before we actually decide to rebase (reopen) nestedBranchPath on top of it
+		final String reviewId = andCreatedReview(testBranchPath.getPath(), nestedBranchPath.getPath());
+		assertReviewCurrent(reviewId);
+		
+		whenRetrievingChangesWithId(reviewId)
+		.then()
+			.statusCode(200)
+			.body("id", equalTo(reviewId))
+			.body("newConcepts", hasItems(c2, c3))
+			.body("changedConcepts", hasItem(DISEASE))
+			.body("changedConcepts", not(hasItem(FINDING_CONTEXT)))
+			.body("deletedConcepts", nullValue()); // In this test case we never see c1
+	}
+	
+	@Test
+	public void reviewAfterParentMerge() {
+		// Open the setup branch
+		IBranchPath setupBranchPath = createNestedBranch("A");
+		
+		// Create a new concept on the setup branch so that it can be deleted on the test branch
+		final Map<?, ?> conceptRequestBody = givenConceptRequestBody(null, ROOT_CONCEPT, MODULE_SCT_CORE, PREFERRED_ACCEPTABILITY_MAP, false);
+		final String c1 = assertComponentCreated(setupBranchPath, SnomedComponentType.CONCEPT, conceptRequestBody);
+		assertBranchCanBeMerged(setupBranchPath, "Creating concept which can be deleted");
+		
+		// Create a nested branch after C1 appears
+		IBranchPath nestedBranchPath = BranchPathUtils.createPath(testBranchPath, "B");
+		givenBranchWithPath(nestedBranchPath);
+		
+		// Create new concept on test branch
+		final String c2 = assertComponentCreated(testBranchPath, SnomedComponentType.CONCEPT, conceptRequestBody);
+		
+		// Create new relationship, which will mark "Disease" as changed, but not "Finding context"
+		final Map<?, ?> relationshipRequestBody = givenRelationshipRequestBody(DISEASE, TEMPORAL_CONTEXT, FINDING_CONTEXT, MODULE_SCT_CORE, "New relationship");
+		assertComponentCreated(testBranchPath, SnomedComponentType.RELATIONSHIP, relationshipRequestBody);
+		
+		// Delete the concept we have created earlier
+		assertComponentCanBeDeleted(testBranchPath, SnomedComponentType.CONCEPT, c1);
+		
+		// Merge testBranchPath to MAIN
+		assertBranchCanBeMerged(testBranchPath, "Merging testBranchPath on MAIN");
+		
+		// Create another concept on MAIN
+		final String c3 = assertComponentCreated(testBranchPath.getParent(), SnomedComponentType.CONCEPT, conceptRequestBody);
+		
+		// See what happened on testBranchPath's newest instance, before we actually decide to rebase (reopen) nestedBranchPath on top of it
+		final String reviewId = andCreatedReview(testBranchPath.getPath(), nestedBranchPath.getPath());
+		assertReviewCurrent(reviewId);
+		
+		whenRetrievingChangesWithId(reviewId)
+		.then()
+			.statusCode(200)
+			.body("id", equalTo(reviewId))
+			.body("newConcepts", hasItem(c2))
+			.body("newConcepts", not(hasItem(c3))) // c3 happened after the last reopening of the parent, it should not be visible
+			.body("changedConcepts", hasItem(DISEASE))
+			.body("changedConcepts", not(hasItem(FINDING_CONTEXT)))
+			.body("deletedConcepts", nullValue());
+	}
 
 	private Response whenRetrievingChangesWithId(final String reviewId) {
 		return givenAuthenticatedRequest(SnomedApiTestConstants.SCT_API)
@@ -255,11 +347,35 @@ public class SnomedReviewApiTest extends AbstractSnomedApiTest {
 	@Test
 	public void setReviewStale() {
 		givenBranchWithPath(testBranchPath);
-		final String reviewId = andCreatedReview("MAIN", testBranchPath.getPath());
 
+		final String reviewId = andCreatedReview("MAIN", testBranchPath.getPath());
+		assertReviewCurrent(reviewId);
+		
 		final Map<?, ?> conceptRequestBody = givenConceptRequestBody(null, ROOT_CONCEPT, MODULE_SCT_CORE, PREFERRED_ACCEPTABILITY_MAP, false);
 		assertComponentCreated(testBranchPath, SnomedComponentType.CONCEPT, conceptRequestBody);
 		
+		whenRetrievingReviewWithId(reviewId)
+		.then()
+			.statusCode(200)
+			.body("status", equalTo(ReviewStatus.STALE.toString()));		
+	}
+	
+	@Test
+	public void setReviewStaleAfterParentRebase() {
+		// Create all branches down to MAIN/test/A
+		IBranchPath nestedBranchPath = createNestedBranch("A");
+		
+		// Create a new concept on MAIN
+		final Map<?, ?> conceptRequestBody = givenConceptRequestBody(null, ROOT_CONCEPT, MODULE_SCT_CORE, PREFERRED_ACCEPTABILITY_MAP, false);
+		assertComponentCreated(testBranchPath.getParent(), SnomedComponentType.CONCEPT, conceptRequestBody);
+
+		// Set up review for a rebase of MAIN/test/A
+		final String reviewId = andCreatedReview(testBranchPath.getPath(), nestedBranchPath.getPath());
+		assertReviewCurrent(reviewId);
+
+		// Rebase testBranchPath on MAIN
+		assertBranchCanBeRebased(testBranchPath, "Rebasing testBranchPath on MAIN");
+
 		whenRetrievingReviewWithId(reviewId)
 		.then()
 			.statusCode(200)

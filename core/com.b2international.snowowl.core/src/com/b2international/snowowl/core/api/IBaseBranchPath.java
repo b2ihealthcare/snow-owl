@@ -24,5 +24,5 @@ import java.io.Serializable;
  * @noextend This interface is not intended to be extended by clients.
  */
 public interface IBaseBranchPath extends IBranchPath, Serializable {
-
+	IBranchPath getContextPath();
 }
