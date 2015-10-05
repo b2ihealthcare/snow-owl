@@ -24,6 +24,7 @@ import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.document.Document;
@@ -54,6 +55,7 @@ import com.b2international.snowowl.datastore.index.IndexUtils;
 import com.b2international.snowowl.datastore.index.NullSearcherManager;
 import com.b2international.snowowl.datastore.server.internal.lucene.index.FilteringMergePolicy;
 import com.b2international.snowowl.datastore.server.internal.lucene.store.ReadOnlyDirectory;
+import com.google.common.base.Stopwatch;
 import com.google.common.collect.ImmutableMap;
 
 public class IndexBranchService implements Closeable {
@@ -72,8 +74,11 @@ public class IndexBranchService implements Closeable {
 	private final FilteringMergePolicy mergePolicy;
 	private final boolean readOnly;
 
+	private final Stopwatch stopwatch;
+
 	public IndexBranchService(final IBranchPath logicalBranchPath, final BranchPath physicalBranchPath, final IDirectoryManager directoryManager) throws IOException {
 
+		this.stopwatch = Stopwatch.createStarted();
 		this.directoryManager = checkNotNull(directoryManager, "directoryManager");
 		this.branchPath = physicalBranchPath;
 		this.mergePolicy = new FilteringMergePolicy(new LogByteSizeMergePolicy());
@@ -122,7 +127,7 @@ public class IndexBranchService implements Closeable {
 	public ReferenceManager<IndexSearcher> getManager() {
 		return manager;
 	}
-
+	
 	@Override
 	public void close() {
 
@@ -130,6 +135,8 @@ public class IndexBranchService implements Closeable {
 			return;
 		}
 
+		LOG.info("Service for {} closed after {}.", branchPath.path(), stopwatch.stop().elapsed(TimeUnit.SECONDS));
+		
 		closed = true;
 		IOException caught = null;
 

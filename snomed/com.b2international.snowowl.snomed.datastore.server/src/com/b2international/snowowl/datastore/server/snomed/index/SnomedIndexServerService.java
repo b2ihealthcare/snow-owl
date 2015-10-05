@@ -63,8 +63,8 @@ public class SnomedIndexServerService extends FSIndexServerService<SnomedIndexEn
 	 */
 	private final Map<IBranchPath, LongKeyMap> documentCache;
 	
-	public SnomedIndexServerService(File indexPath) throws SnowowlServiceException {
-		super(checkNotNull(indexPath, "indexPath"));
+	public SnomedIndexServerService(File indexPath, final long timeout) throws SnowowlServiceException {
+		super(checkNotNull(indexPath, "indexPath"), timeout);
 		documentCache = new HashMap<IBranchPath, LongKeyMap>();
 	}
 
