@@ -35,7 +35,7 @@ public abstract class BaseBranchEvent extends BaseEvent {
 	}
 
 	@Override
-	protected final String getAddress() {
+	protected String getAddress() {
 		return "/" + repositoryId + "/branches";
 	}
 }

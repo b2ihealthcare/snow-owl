@@ -144,12 +144,13 @@ public class DatastoreServerBootstrap implements PreRunCapableBootstrapFragment 
 		final ICDOConnectionManager cdoConnectionManager = environment.service(ICDOConnectionManager.class);
 		final ICDORepositoryManager cdoRepositoryManager = environment.service(ICDORepositoryManager.class);
 		final IIndexServerServiceManager indexServerServiceManager = environment.service(IIndexServerServiceManager.class); 
+		final IEventBus eventBus = environment.service(IEventBus.class);
 		
 		final BranchSerializer branchSerializer = new BranchSerializer();
 		final ReviewSerializer reviewSerializer = new ReviewSerializer();
 		
 		for (String repositoryId : cdoRepositoryManager.uuidKeySet()) {
-			final RepositoryWrapper wrapper = new RepositoryWrapper(repositoryId, cdoConnectionManager, cdoRepositoryManager, indexServerServiceManager);
+			final RepositoryWrapper wrapper = new RepositoryWrapper(repositoryId, cdoConnectionManager, cdoRepositoryManager, indexServerServiceManager, eventBus);
 			initializeBranchingSupport(environment, wrapper, branchSerializer, reviewSerializer, reviewConfiguration);
 		}
 		
