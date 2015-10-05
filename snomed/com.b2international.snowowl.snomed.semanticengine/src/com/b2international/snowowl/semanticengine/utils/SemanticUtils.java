@@ -60,12 +60,9 @@ public final class SemanticUtils {
 	public static final String CAUSATIVE_AGENT_ID = "246075003";
 	public static final String HAS_ACTIVE_INGREDIENT_ID = "127489000";
 	public static final String HAS_DOSE_FORM_ID = "411116001";
-	public static final String ADDITIONAL_RELATIONSHIP = "900000000000227009";
 	
 	private static final List<String> VALID_CONTEXT_ATTRIBUTE_NAMES = Arrays.asList(ASSOCIATED_FINDING_ID, ASSOCIATED_PROCEDURE_ID,
 			FINDING_CONTEXT_ID, PROCEDURE_CONTEXT_ID, TEMPORAL_CONTEXT_ID, SUBJECT_RELATIONSHIP_CONTEXT_ID);
-	
-	public static final String IS_A = "116680003";
 	
 	private SemanticUtils() { } // suppress default constructor
 

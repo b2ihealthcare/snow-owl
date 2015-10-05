@@ -30,6 +30,7 @@ import com.b2international.snowowl.dsl.scg.Expression;
 import com.b2international.snowowl.dsl.scg.Group;
 import com.b2international.snowowl.dsl.scg.ScgFactory;
 import com.b2international.snowowl.semanticengine.utils.SemanticUtils;
+import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.datastore.SnomedClientStatementBrowser;
 import com.b2international.snowowl.snomed.datastore.SnomedConceptIndexEntry;
 import com.b2international.snowowl.snomed.datastore.SnomedRelationshipIndexEntry;
@@ -79,8 +80,8 @@ public class ConceptDefinitionNormalizer {
 			final Collection<SnomedRelationshipIndexEntry> outboundRelationships = statementBrowser.getActiveOutboundStatementsById(focusConcept.getId());
 			//for (int i = 0; i < outgoingRelationships.length; i++) {
 			for (SnomedRelationshipIndexEntry relationship : outboundRelationships) {
-				if (!relationship.getAttributeId().equals(SemanticUtils.IS_A) 
-						&& !SemanticUtils.ADDITIONAL_RELATIONSHIP.equals(relationship.getCharacteristicTypeId())) {
+				if (!relationship.getAttributeId().equals(Concepts.IS_A) 
+						&& !relationship.isAdditional()) {
 					
 					int relationshipGroup = relationship.getGroup();
 					Attribute attribute = ScgFactory.eINSTANCE.createAttribute();

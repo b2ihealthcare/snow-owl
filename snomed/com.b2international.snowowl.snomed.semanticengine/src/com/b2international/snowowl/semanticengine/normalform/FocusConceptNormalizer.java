@@ -27,6 +27,7 @@ import com.b2international.snowowl.core.api.browser.IClientTerminologyBrowser;
 import com.b2international.snowowl.dsl.scg.Concept;
 import com.b2international.snowowl.semanticengine.subsumption.SubsumptionTester;
 import com.b2international.snowowl.semanticengine.utils.SemanticUtils;
+import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.datastore.SnomedClientStatementBrowser;
 import com.b2international.snowowl.snomed.datastore.SnomedConceptIndexEntry;
 import com.b2international.snowowl.snomed.datastore.SnomedRelationshipIndexEntry;
@@ -142,7 +143,7 @@ public class FocusConceptNormalizer {
 		SnomedClientStatementBrowser statementBrowser = ApplicationContext.getInstance().getService(SnomedClientStatementBrowser.class);
 		Collection<SnomedRelationshipIndexEntry> outboundRelationships = statementBrowser.getActiveOutboundStatementsById(concept.getId());
 		for (SnomedRelationshipIndexEntry relationship : outboundRelationships) {
-			if (relationship.getAttributeId().equals(SemanticUtils.IS_A)) {
+			if (relationship.getAttributeId().equals(Concepts.IS_A)) {
 				if (terminologyBrowser.getConcept(relationship.getValueId()).isPrimitive()) {
 					proximatePrimitiveSuperTypes.add(terminologyBrowser.getConcept(relationship.getValueId()));
 				} else {

@@ -226,7 +226,7 @@ public class MrcmImportTransformer {
 		predicate.setUuid(uuid);
 		predicate.setActive(status);
 		// default to 'defining' characteristic type
-		predicate.setCharacteristicTypeConceptId(Concepts.DEFINING_RELATIONSHIP);
+		predicate.setCharacteristicTypeConceptId(Concepts.STATED_RELATIONSHIP);
 		if (topLevelConceptSetDefinitionMap.containsKey(testRelationship.getRefAttributeUid())) {
 			predicate.setAttribute(topLevelConceptSetDefinitionMap.get(testRelationship.getRefAttributeUid()));
 		}
