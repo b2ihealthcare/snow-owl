@@ -911,45 +911,41 @@ public class SnomedRf2IndexInitializer extends Job {
 	
 
 	private void indexUnvisitedConcepts(final Set<String> unvisitedConcepts, final Set<String> dirtyConceptsForCompareReindex) {
-		
 		final SnomedIndexServerService snomedIndexService = getSnomedIndexService();
 		for (final String sConceptId : unvisitedConcepts) {
-			
 			final SnomedConceptIndexEntry concept = ApplicationContext.getInstance().getService(SnomedTerminologyBrowser.class).getConcept(branchPath, sConceptId);
-			
-			final long conceptId = Long.parseLong(sConceptId);
-			final long conceptStorageKey = concept.getStorageKey();
-			final boolean active = concept.isActive(); 
-			final boolean released = concept.isReleased();
-			final boolean primitive = concept.isPrimitive();
-			final boolean exhaustive = concept.isExhaustive();
-			final long moduleId = Long.parseLong(concept.getModuleId());
-			final Collection<String> currentRefSetMemberships = getCurrentRefSetMemberships(sConceptId, newRefSetMemberships, detachedRefSetMemberships);
-			final Collection<String> currentMappingMemberships = getCurrentMappingMemberships(sConceptId, newMappingMemberships, detachedMappingMemberships);
-			
-			final Document doc = createConceptDocument(
-					conceptIdToPredicateMap, 
-					conceptId, 
-					conceptStorageKey, 
-					active, 
-					released, 
-					primitive, 
-					exhaustive, 
-					moduleId, 
-					currentRefSetMemberships,
-					currentMappingMemberships,
-					concept.getEffectiveTimeAsLong());
-			
-			snomedIndexService.index(branchPath, doc, conceptStorageKey);
+			// can happen as concepts referenced in MRCM rules might not exist at this time
+			if (concept != null) {
+				final long conceptId = Long.parseLong(sConceptId);
+				final long conceptStorageKey = concept.getStorageKey();
+				final boolean active = concept.isActive(); 
+				final boolean released = concept.isReleased();
+				final boolean primitive = concept.isPrimitive();
+				final boolean exhaustive = concept.isExhaustive();
+				final long moduleId = Long.parseLong(concept.getModuleId());
+				final Collection<String> currentRefSetMemberships = getCurrentRefSetMemberships(sConceptId, newRefSetMemberships, detachedRefSetMemberships);
+				final Collection<String> currentMappingMemberships = getCurrentMappingMemberships(sConceptId, newMappingMemberships, detachedMappingMemberships);
+				
+				final Document doc = createConceptDocument(
+						conceptIdToPredicateMap, 
+						conceptId, 
+						conceptStorageKey, 
+						active, 
+						released, 
+						primitive, 
+						exhaustive, 
+						moduleId, 
+						currentRefSetMemberships,
+						currentMappingMemberships,
+						concept.getEffectiveTimeAsLong());
+				
+				snomedIndexService.index(branchPath, doc, conceptStorageKey);
+			}
 		}
-		
-		
 	}
 	
 	private void indexConcepts(final String absolutePath) {
-		
 		final SnomedIndexServerService snomedIndexService = getSnomedIndexService();
-		
 		parseFile(absolutePath, 5, new RecordParserCallback<String>() {
 
 			@Override
