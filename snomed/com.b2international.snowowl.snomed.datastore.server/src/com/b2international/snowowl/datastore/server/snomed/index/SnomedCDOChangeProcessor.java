@@ -26,6 +26,7 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
@@ -42,20 +43,19 @@ import org.apache.lucene.search.TopDocs;
 import org.apache.lucene.util.BytesRef;
 import org.eclipse.emf.cdo.CDOObject;
 import org.eclipse.emf.cdo.common.id.CDOID;
+import org.eclipse.emf.cdo.common.id.CDOIDUtil;
 import org.eclipse.emf.cdo.common.revision.delta.CDOFeatureDelta;
 import org.eclipse.emf.cdo.server.StoreThreadLocal;
 import org.eclipse.emf.cdo.spi.common.revision.InternalCDORevision;
+import org.eclipse.emf.ecore.EClass;
 import org.eclipse.emf.spi.cdo.CDOStore;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import bak.pcj.list.LongArrayList;
-import bak.pcj.list.LongList;
-import bak.pcj.set.LongSet;
-
 import com.b2international.commons.CompareUtils;
 import com.b2international.commons.Pair;
 import com.b2international.commons.concurrent.equinox.ForkJoinUtils;
+import com.b2international.commons.pcj.LongSets;
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.api.ComponentIdAndLabel;
 import com.b2international.snowowl.core.api.IBranchPath;
@@ -128,6 +128,11 @@ import com.google.common.collect.LinkedHashMultimap;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Sets;
+
+import bak.pcj.LongCollection;
+import bak.pcj.list.LongArrayList;
+import bak.pcj.list.LongList;
+import bak.pcj.set.LongSet;
 
 /**
  * Change processor implementation for SNOMED&nbsp;CT ontology. This class is responsible for updating indexes based on the new, dirty and detached components 
@@ -407,6 +412,18 @@ public class SnomedCDOChangeProcessor implements ICDOChangeProcessor {
 
 		// execute component/use case  base change processors
 		final Set<String> synonymIds = ApplicationContext.getInstance().getService(ISnomedComponentService.class).getSynonymAndDescendantIds(branchPath);
+		final LongCollection allIndexedConceptIds = getTerminologyBrowser().getAllConceptIds(branchPath);
+		final LongSet allConceptIds = LongSets.newLongSet(allIndexedConceptIds);
+		for (Concept newConcept : FluentIterable.from(commitChangeSet.getNewComponents()).filter(Concept.class)) {
+			allConceptIds.add(Long.parseLong(newConcept.getId()));
+		}
+		
+		for (Entry<CDOID, EClass> entry : commitChangeSet.getDetachedComponents().entrySet()) {
+			if (entry.getValue() == SnomedPackage.Literals.CONCEPT) {
+				final ComponentIdAndLabel componentIdAndLabel = getTerminologyBrowser().getComponentIdAndLabel(branchPath, CDOIDUtil.getLong(entry.getKey()));
+				allConceptIds.remove(Long.parseLong(componentIdAndLabel.getId()));
+			}
+		}
 		
 		final ComponentLabelChangeProcessor labelChangeProcessor = new ComponentLabelChangeProcessor(branchPath, index);
 		final List<ChangeSetProcessor<SnomedDocumentBuilder>> changeSetProcessors = ImmutableList.<ChangeSetProcessor<SnomedDocumentBuilder>>builder()
@@ -423,7 +440,7 @@ public class SnomedCDOChangeProcessor implements ICDOChangeProcessor {
 				.add(new IconChangeProcessor(branchPath, getAndCheckInferredNewTaxonomyBuilder(), getInferredPreviousTaxonomyBuilder(), inferredDifferenceSupplier))
 				.add(labelChangeProcessor)
 				.add(new RefSetMemberChangeProcessor(labelChangeProcessor))
-				.add(new ConstraintChangeProcessor(branchPath))
+				.add(new ConstraintChangeProcessor(branchPath, allConceptIds))
 				.build();
 		
 		for (ChangeSetProcessor<SnomedDocumentBuilder> processor : changeSetProcessors) {
@@ -436,7 +453,7 @@ public class SnomedCDOChangeProcessor implements ICDOChangeProcessor {
 		
 		for (ChangeSetProcessor<SnomedDocumentBuilder> processor : changeSetProcessors) {
 			for (Long storageKey : processor.getDeletedStorageKeys()) {
-				LOGGER.info("Deleting document {}", storageKey);
+				LOGGER.trace("Deleting document {}", storageKey);
 				index.delete(branchPath, storageKey);
 				deletedStorageKeys.add(LongIndexField._toBytesRef(storageKey));
 			}
