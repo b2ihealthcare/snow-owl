@@ -13,10 +13,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.datastore.tasks;
+package com.b2international.snowowl.core.api;
 
+/**
+ * Provides a terminology component id.
+ */
 public interface ITerminologyComponentIdProvider {
 
+	/**
+	 * Returns the terminology component ID.
+	 * 
+	 * @return
+	 */
 	String getTerminologyComponentId();
 
 }
