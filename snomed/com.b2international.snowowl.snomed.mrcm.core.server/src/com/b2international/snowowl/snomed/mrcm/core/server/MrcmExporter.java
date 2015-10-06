@@ -15,21 +15,22 @@
  */
 package com.b2international.snowowl.snomed.mrcm.core.server;
 
-import java.io.File;
+import java.nio.file.Path;
 
 /**
- * @since 4.4
+ * 4.4
  */
-public interface MrcmImporter {
+public interface MrcmExporter {
 
 	/**
-	 * Imports the given MRCM file impersonating a user given with the user name argument.
+	 * Exports the current state of the MRCM rules.
 	 * 
-	 * @param userName
-	 *            the user name.
-	 * @param mrcmFile
-	 *            the MRCM file to process and import.
+	 * @param user
+	 *            - the authenticated user to perform the export
+	 * @param outputFolder
+	 *            - the folder to put the exported file
+	 * @return - the exported file path
 	 */
-	void doImport(String user, File source);
+	Path doExport(String user, Path outputFolder);
 
 }
