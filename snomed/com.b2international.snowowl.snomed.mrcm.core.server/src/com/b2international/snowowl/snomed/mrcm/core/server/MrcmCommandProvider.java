@@ -16,6 +16,8 @@
 package com.b2international.snowowl.snomed.mrcm.core.server;
 
 import java.io.File;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Date;
 
 import org.eclipse.emf.common.util.URI;
@@ -48,8 +50,6 @@ import com.b2international.snowowl.snomed.mrcm.ConceptModel;
 
 public class MrcmCommandProvider implements CommandProvider {
 
-	private static final Logger LOGGER = LoggerFactory.getLogger(MrcmCommandProvider.class);
-	
 	public void _mrcm(final CommandInterpreter interpreter) {
 		
 		try {
@@ -106,81 +106,33 @@ public class MrcmCommandProvider implements CommandProvider {
 			return;
 		}
 
-		MrcmImporter.INSTANCE.doImport(authenticator.getUsername(), file, true, null);
+		new XMIMrcmImporter().doImport(authenticator.getUsername(), file);
 	}
 
 	public synchronized void _export(final CommandInterpreter interpreter) {
 
-		final String destinationFolderPath = interpreter.nextArgument();
+		final String destinationFolder = interpreter.nextArgument();
 		
-		if (StringUtils.isEmpty(destinationFolderPath)) {
+		if (StringUtils.isEmpty(destinationFolder)) {
 			interpreter.println("Export destination folder should be specified.");
 			return;
 		}
 		
-		final File folder = new File(destinationFolderPath);
-		
-		if (!folder.exists() || !folder.isDirectory()) {
-			interpreter.print("Export destination folder cannot be found.");
-			return;
-		}
-		
-		if (!folder.canRead()) {
-			interpreter.print("Cannot read destination folder.");
-			return;
-		}
-
 		final CommandLineAuthenticator authenticator = new CommandLineAuthenticator();
 		final IAuthorizationService authorizationService = ApplicationContext.getInstance().getService(IAuthorizationService.class);
 		if (authenticator.authenticate(interpreter) && !authorizationService.isAuthorized(authenticator.getUsername(), new Permission(PermissionIdConstant.MRCM_EXPORT))) {
 			interpreter.print("User is unauthorized to export MRCM rules.");
 			return;
 		}
-
+		
 		// final String userId = authenticator.getUsername();
-		final String userId = SpecialUserStore.SYSTEM_USER_NAME;
+		final String user = SpecialUserStore.SYSTEM_USER_NAME;
 
 		interpreter.println("Exporting MRCM rules...");
-		LogUtils.logExportActivity(LOGGER, userId, BranchPathUtils.createMainPath(), "Exporting MRCM rules...");
-		
-		MrcmEditingContext context = null;
-		
-		try {
-		
-			context = new MrcmEditingContext();
-			
-			final File exportXmi = new File(folder, "mrcm_" + Dates.formatByHostTimeZone(new Date(), DateFormats.FULL) + ".xmi");
-			final URI uri = URI.createFileURI(exportXmi.getAbsolutePath());
-			
-			final ResourceSet resourceSet = new ResourceSetImpl();
-			resourceSet.getResourceFactoryRegistry().getExtensionToFactoryMap().put("xmi", new XMIResourceFactoryImpl());
-			final Resource resource = resourceSet.createResource(uri);
-			ConceptModel model = null; 
-			model = context.getConceptModel();
-			resource.getContents().add(model);
-			resource.save(null);
-			
-			interpreter.print("MRCM rule export successfully finished.");
-			LogUtils.logExportActivity(LOGGER, userId, BranchPathUtils.createMainPath(), "MRCM rule export successfully finished.");
-			
-		} catch (final Throwable t) {
-			
-			interpreter.println("Failed to export MRCM rules.");
-			LogUtils.logExportActivity(LOGGER, userId, BranchPathUtils.createMainPath(), "Failed to export MRCM rules.");
-			interpreter.println(t.getStackTrace());
-			
-		} finally {
-			
-			if (null != context) {
-				context.close();
-			}
-			
-		}
+		final Path exportedFile = new XMIMrcmExporter().doExport(user, Paths.get(destinationFolder));
+		interpreter.print("Exported MRCM rules to " + exportedFile);
 	}
 
-	/* (non-Javadoc)
-	 * @see org.eclipse.osgi.framework.console.CommandProvider#getHelp()
-	 */
 	@Override
 	public String getHelp() {
 		return new StringBuilder("--- MRCM commands ---\n")
