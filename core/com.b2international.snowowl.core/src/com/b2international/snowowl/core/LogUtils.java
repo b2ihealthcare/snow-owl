@@ -116,10 +116,10 @@ public class LogUtils {
 	 * @param branchPath
 	 * @param message
 	 */
-	public static void logImportActivity(Logger logger, String user, IBranchPath branchPath, String message) {
+	public static void logImportActivity(Logger logger, String user, IBranchPath branchPath, String message, Object...arguments) {
 		MDC.put(MDC_USER_KEY, user);
 		MDC.put(MDC_BRANCH_KEY, branchPath.getPath());
-		logger.info(MarkerFactory.getMarker(SNOWOWL_IMPORT_MARKER), message);
+		logger.info(MarkerFactory.getMarker(SNOWOWL_IMPORT_MARKER), message, arguments);
 		MDC.remove(MDC_USER_KEY);
 		MDC.remove(MDC_BRANCH_KEY);
 	}
