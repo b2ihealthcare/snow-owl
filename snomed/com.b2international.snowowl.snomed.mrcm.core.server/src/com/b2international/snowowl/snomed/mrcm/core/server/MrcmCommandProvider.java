@@ -130,7 +130,7 @@ public class MrcmCommandProvider implements CommandProvider {
 
 		interpreter.println("Exporting MRCM rules...");
 		final Path exportedFile = new XMIMrcmExporter().doExport(user, Paths.get(destinationFolder));
-		interpreter.print("Exported MRCM rules to " + exportedFile);
+		interpreter.println("Exported MRCM rules to " + exportedFile);
 	}
 
 	@Override
