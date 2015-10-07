@@ -67,6 +67,7 @@ import com.b2international.snowowl.datastore.index.mapping.Mappings;
 import com.b2international.snowowl.datastore.server.index.AbstractIndexTerminologyBrowser;
 import com.b2international.snowowl.datastore.server.snomed.escg.EscgParseFailedException;
 import com.b2international.snowowl.datastore.server.snomed.filteredrefset.FilteredRefSetMemberBrowser2Builder;
+import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.snomed.datastore.EscgExpressionConstants;
 import com.b2international.snowowl.snomed.datastore.SnomedConceptIndexEntry;
@@ -112,6 +113,11 @@ public class SnomedServerTerminologyBrowser extends AbstractIndexTerminologyBrow
 	 */
 	public SnomedServerTerminologyBrowser(final SnomedIndexService indexService) {
 		super(indexService);
+	}
+	
+	@Override
+	public boolean isTerminologyAvailable(IBranchPath branchPath) {
+		return exists(branchPath, Concepts.ROOT_CONCEPT);
 	}
 	
 	@Override
