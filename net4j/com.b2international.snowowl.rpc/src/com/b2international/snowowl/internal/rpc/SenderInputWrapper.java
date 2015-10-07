@@ -49,6 +49,9 @@ public class SenderInputWrapper implements RpcInput {
 	public byte[] read(final int len) throws IOException {
 		final byte[] b = new byte[len];
 		final int read = delegate.read(b);
+		if (read < 0) {
+			return null;
+		}
 		
 		// Truncate to actually read size
 		return Arrays.copyOf(b, read); 
