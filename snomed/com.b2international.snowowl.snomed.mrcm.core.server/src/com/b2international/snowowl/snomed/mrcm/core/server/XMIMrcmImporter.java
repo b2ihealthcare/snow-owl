@@ -58,9 +58,9 @@ public class XMIMrcmImporter implements MrcmImporter {
 			context.add(model);
 
 			LogUtils.logImportActivity(LOGGER, userName, branch, "MRCM rule import to {} successfully finished.", branch.getPath());
-			CDOServerUtils.commit(context, userName, "Imported MRCM rules from " + uri.lastSegment(), null);
+			CDOServerUtils.commit(context, userName, "Imported MRCM rules", null);
 		} catch (final Throwable t) {
-			LogUtils.logImportActivity(LOGGER, userName, branch, "Failed to import MRCM rules to {}", branch);
+			LogUtils.logImportActivity(LOGGER, userName, branch, "Failed to import MRCM rules to {}", branch, t);
 			throw new SnowowlRuntimeException(t);
 		}
 	}
