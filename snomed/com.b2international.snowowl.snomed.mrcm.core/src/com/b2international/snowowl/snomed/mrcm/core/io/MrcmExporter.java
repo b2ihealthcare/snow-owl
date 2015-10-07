@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.snomed.mrcm.core.server;
+package com.b2international.snowowl.snomed.mrcm.core.io;
 
 import java.io.OutputStream;
 
