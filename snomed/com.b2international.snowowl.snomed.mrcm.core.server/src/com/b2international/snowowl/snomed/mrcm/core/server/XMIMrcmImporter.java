@@ -33,6 +33,7 @@ import com.b2international.snowowl.datastore.BranchPathUtils;
 import com.b2international.snowowl.datastore.server.CDOServerUtils;
 import com.b2international.snowowl.snomed.datastore.MrcmEditingContext;
 import com.b2international.snowowl.snomed.mrcm.ConceptModel;
+import com.b2international.snowowl.snomed.mrcm.core.io.MrcmImporter;
 
 /**
  * @since 4.4

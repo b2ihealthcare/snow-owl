@@ -13,23 +13,24 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.snomed.mrcm.core.server;
+package com.b2international.snowowl.snomed.mrcm.core.io;
 
-import java.io.InputStream;
+import java.io.OutputStream;
 
 /**
  * @since 4.4
  */
-public interface MrcmImporter {
+public interface MrcmExporter {
 
 	/**
-	 * Imports the given MRCM file impersonating a user given with the user name argument.
+	 * Exports the current state of the MRCM rules.
 	 * 
-	 * @param userName
-	 *            the user name.
-	 * @param mrcmFile
-	 *            the MRCM file to process and import.
+	 * @param user
+	 *            - the authenticated user to perform the export
+	 * @param stream
+	 *            - the outputstream to write MRCM release content to
+	 * @return - the exported file path
 	 */
-	void doImport(String user, InputStream source);
+	void doExport(String user, OutputStream content);
 
 }
