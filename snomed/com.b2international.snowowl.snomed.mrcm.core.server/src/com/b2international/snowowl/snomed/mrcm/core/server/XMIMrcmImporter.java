@@ -15,7 +15,8 @@
  */
 package com.b2international.snowowl.snomed.mrcm.core.server;
 
-import java.io.File;
+import java.io.InputStream;
+import java.util.UUID;
 
 import org.eclipse.emf.common.util.URI;
 import org.eclipse.emf.ecore.resource.Resource;
@@ -41,24 +42,16 @@ public class XMIMrcmImporter implements MrcmImporter {
 	private static final Logger LOGGER = LoggerFactory.getLogger(MrcmImporter.class);
 
 	@Override
-	public void doImport(final String userName, final File mrcmFile) {
-		if (!mrcmFile.exists() || !mrcmFile.isFile()) {
-			LOGGER.warn("MRCM import file cannot be found at " + mrcmFile);
-			return;
-		}
-		if (!mrcmFile.canRead()) {
-			LOGGER.warn("Cannot read MRCM import file content.");
-			return;
-		}
+	public void doImport(final String userName, final InputStream content) {
 		final IBranchPath branch = BranchPathUtils.createMainPath();
 		LogUtils.logImportActivity(LOGGER, userName, branch, "Importing MRCM rules...");
-		final URI uri = URI.createFileURI(mrcmFile.getAbsolutePath());
+		final URI uri = URI.createFileURI(UUID.randomUUID().toString());
 		try (MrcmEditingContext context = new MrcmEditingContext(branch)) {
-
+			
 			final ResourceSet resourceSet = new ResourceSetImpl();
 			resourceSet.getResourceFactoryRegistry().getExtensionToFactoryMap().put("xmi", new XMIResourceFactoryImpl());
 			final Resource resource = resourceSet.createResource(uri);
-			resource.load(null);
+			resource.load(content, null);
 			final ConceptModel model = (ConceptModel) resource.getContents().get(0);
 			context.clearContents();
 			context.add(model);

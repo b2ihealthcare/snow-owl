@@ -15,11 +15,16 @@
  */
 package com.b2international.snowowl.snomed.mrcm.core.server.tests;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
-import java.io.File;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.StandardOpenOption;
 import java.util.Collection;
 
 import org.junit.Test;
@@ -27,6 +32,7 @@ import org.junit.Test;
 import com.b2international.commons.platform.PlatformUtil;
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.api.IBranchPath;
+import com.b2international.snowowl.core.date.Dates;
 import com.b2international.snowowl.datastore.BranchPathUtils;
 import com.b2international.snowowl.snomed.datastore.MrcmEditingContext;
 import com.b2international.snowowl.snomed.datastore.SnomedPredicateBrowser;
@@ -43,9 +49,12 @@ public class MrcmImportExportTest {
 	public void importTest() throws Exception {
 		// default/old MRCM import file contains 58 rules
 		final IBranchPath branch = BranchPathUtils.createMainPath();
-		final File defaultMrcmFile = new File(PlatformUtil.toAbsolutePath(MrcmImportExportTest.class, "mrcm_defaults.xmi"));
+		final Path path = Paths.get(PlatformUtil.toAbsolutePath(MrcmImportExportTest.class, "mrcm_defaults.xmi"));
 		
-		new XMIMrcmImporter().doImport("test", defaultMrcmFile);
+		try (final InputStream stream = Files.newInputStream(path, StandardOpenOption.READ)) {
+			new XMIMrcmImporter().doImport("test", stream);
+		} 
+		
 		
 		// verify CDO content
 		try (MrcmEditingContext context = new MrcmEditingContext(branch)) {
@@ -60,7 +69,11 @@ public class MrcmImportExportTest {
 	public void exportTest() throws Exception {
 		importTest();
 		
-		final Path exportedFile = new XMIMrcmExporter().doExport("test", Paths.get("target"));
+		final Path exportedFile = Paths.get("target", "mrcm_" + Dates.now() + ".xmi");
+		assertFalse(exportedFile.toFile().exists());
+		try (final OutputStream stream = Files.newOutputStream(exportedFile, StandardOpenOption.CREATE)) {
+			new XMIMrcmExporter().doExport("test", stream);
+		}
 		assertTrue(exportedFile.toFile().exists());
 	}
 	
