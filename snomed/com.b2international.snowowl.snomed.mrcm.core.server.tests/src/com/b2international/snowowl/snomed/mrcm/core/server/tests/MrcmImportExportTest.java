@@ -37,8 +37,9 @@ import com.b2international.snowowl.datastore.BranchPathUtils;
 import com.b2international.snowowl.snomed.datastore.MrcmEditingContext;
 import com.b2international.snowowl.snomed.datastore.SnomedPredicateBrowser;
 import com.b2international.snowowl.snomed.datastore.snor.PredicateIndexEntry;
-import com.b2international.snowowl.snomed.mrcm.core.server.XMIMrcmExporter;
-import com.b2international.snowowl.snomed.mrcm.core.server.XMIMrcmImporter;
+import com.b2international.snowowl.snomed.mrcm.core.io.MrcmExporter;
+import com.b2international.snowowl.snomed.mrcm.core.io.MrcmImporter;
+import com.b2international.snowowl.test.commons.Services;
 
 /**
  * @since 4.4
@@ -52,7 +53,7 @@ public class MrcmImportExportTest {
 		final Path path = Paths.get(PlatformUtil.toAbsolutePath(MrcmImportExportTest.class, "mrcm_defaults.xmi"));
 		
 		try (final InputStream stream = Files.newInputStream(path, StandardOpenOption.READ)) {
-			new XMIMrcmImporter().doImport("test", stream);
+			Services.service(MrcmImporter.class).doImport("test", stream);
 		} 
 		
 		
@@ -72,7 +73,7 @@ public class MrcmImportExportTest {
 		final Path exportedFile = Paths.get("target", "mrcm_" + Dates.now() + ".xmi");
 		assertFalse(exportedFile.toFile().exists());
 		try (final OutputStream stream = Files.newOutputStream(exportedFile, StandardOpenOption.CREATE)) {
-			new XMIMrcmExporter().doExport("test", stream);
+			Services.service(MrcmExporter.class).doExport("test", stream);
 		}
 		assertTrue(exportedFile.toFile().exists());
 	}
