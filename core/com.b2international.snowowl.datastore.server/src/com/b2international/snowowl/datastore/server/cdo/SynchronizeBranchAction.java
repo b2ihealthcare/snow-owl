@@ -16,9 +16,9 @@
 package com.b2international.snowowl.datastore.server.cdo;
 
 import static com.google.common.collect.Lists.newArrayList;
+import static com.google.common.collect.Sets.newHashSet;
 
 import java.text.MessageFormat;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.ExecutionException;
@@ -76,7 +76,7 @@ public class SynchronizeBranchAction extends AbstractCDOBranchAction {
 		final IBranchPath parentBranchPath = taskBranchPath.getParent();
 		final CDOBranch parentBranch = taskBranch.getBase().getBranch();
 
-		// Does the parent branch exist?
+		// Did someone set the main branch as taskBranch ("base of main branch is null")?
 		if (null == parentBranch) {
 			return;
 		}
@@ -86,6 +86,16 @@ public class SynchronizeBranchAction extends AbstractCDOBranchAction {
 				taskBranchPath, 
 				connection.getRepositoryName()));
 
+		// Do a test run against the parent branch first
+		CDOTransaction testTransaction = null;
+		try {
+			testTransaction = applyChangeSet(connection, taskBranch, parentBranchPath);
+		} finally {
+			if (testTransaction != null) {
+				testTransaction.close();
+			}
+		}
+		
 		final IEventBus eventBus = ApplicationContext.getServiceForClass(IEventBus.class);
 		final ReopenBranchEvent event = new ReopenBranchEvent(repositoryId, taskBranchPath.getPath());
 		final BranchReply reply;
@@ -97,34 +107,42 @@ public class SynchronizeBranchAction extends AbstractCDOBranchAction {
 			throw e.getCause();
 		}
 		
-		applyChangeSet(connection, taskBranch, reply.getBranch().branchPath());
+		// This transaction now holds the actual change set on the reopened child
+		final CDOTransaction syncTransaction = applyChangeSet(connection, taskBranch, reply.getBranch().branchPath());
+		if (syncTransaction.isDirty()) {
+			transactions.add(syncTransaction);
+		} else {
+			syncTransaction.close();
+		}
 	}
 
-	private void applyChangeSet(final ICDOConnection connection, final CDOBranch taskBranch, IBranchPath newTaskBranchPath) throws CustomConflictException {
+	private CDOTransaction applyChangeSet(final ICDOConnection connection, final CDOBranch taskBranch, IBranchPath newTaskBranchPath) throws CustomConflictException {
 		
 		final CDOBranchMerger branchMerger = new CDOBranchMerger(CDOConflictProcessorBroker.INSTANCE.getProcessor(connection.getUuid()));
-		final Set<ConflictWrapper> conflictWrappers = new HashSet<ConflictWrapper>(); 
+		CDOTransaction transaction = null;
 
 		try {
 			
-			final CDOTransaction transaction = connection.createTransaction(newTaskBranchPath);
+			transaction = connection.createTransaction(newTaskBranchPath);
 			transaction.merge(taskBranch.getHead(), branchMerger);
 
 			LOGGER.info(MessageFormat.format("Post-processing components in ''{0}''...", connection.getRepositoryName()));
 			branchMerger.postProcess(transaction);
-
-			if (transaction.isDirty()) {
-				transactions.add(transaction);
-			}
-
+			
+			return transaction;
+			
 		} catch (final ConflictException e) {
+
+			final Set<ConflictWrapper> conflictWrappers = newHashSet(); 
 
 			for (final Conflict cdoConflict : branchMerger.getConflicts().values()) {	
 				CDOConflictProcessorBroker.INSTANCE.processConflict(cdoConflict, conflictWrappers);
-			}			
-		}
+			}
 
-		if (!conflictWrappers.isEmpty()) {
+			if (transaction != null) {
+				transaction.close();
+			}
+			
 			throw new CustomConflictException("Conflicts detected while synchronizing task", conflictWrappers);
 		}
 	}
