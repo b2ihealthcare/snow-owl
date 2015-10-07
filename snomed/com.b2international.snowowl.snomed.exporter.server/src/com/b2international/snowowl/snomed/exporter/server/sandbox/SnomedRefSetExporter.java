@@ -130,9 +130,13 @@ public class SnomedRefSetExporter extends SnomedCompositeExporter implements Sno
 			@Override
 			protected String apply(final CDOTransaction transaction) {
 				final SnomedRefSet refSet = new SnomedRefSetLookupService().getComponent(getRefSetId(), transaction);
-				return SnomedRfFileNameBuilder.buildRefSetFileName(getConfiguration(), refSetName, refSet);
+				return buildRefSetFileName(refSetName, refSet);
 			}
 		});
+	}
+	
+	protected String buildRefSetFileName(final String refSetName, final SnomedRefSet refSet) {
+		return SnomedRfFileNameBuilder.buildRefSetFileName(getConfiguration(), refSetName, refSet);
 	}
 	
 	@Override
