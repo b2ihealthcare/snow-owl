@@ -91,6 +91,7 @@ import com.b2international.snowowl.datastore.index.IndexUtils;
 import com.b2international.snowowl.datastore.index.LongDocValuesCollector;
 import com.b2international.snowowl.datastore.server.snomed.escg.EscgParseFailedException;
 import com.b2international.snowowl.datastore.server.snomed.filteredrefset.FilteredRefSetMemberBrowser2Builder;
+import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.snomed.datastore.EscgExpressionConstants;
 import com.b2international.snowowl.snomed.datastore.SnomedConceptIndexEntry;
@@ -173,6 +174,11 @@ public class SnomedServerTerminologyBrowser extends AbstractSnomedIndexTerminolo
 		super(indexService);
 	}
 	
+	@Override
+	public boolean isTerminologyAvailable(IBranchPath branchPath) {
+		return exists(branchPath, Concepts.ROOT_CONCEPT);
+	}
+
 	@Override
 	protected SnomedConceptIndexEntry createResultObject(final IBranchPath branchPath, final Document doc) {
 		final String id = doc.get(COMPONENT_ID);
