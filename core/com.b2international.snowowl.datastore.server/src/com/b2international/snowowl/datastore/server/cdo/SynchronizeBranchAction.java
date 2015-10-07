@@ -139,11 +139,17 @@ public class SynchronizeBranchAction extends AbstractCDOBranchAction {
 				CDOConflictProcessorBroker.INSTANCE.processConflict(cdoConflict, conflictWrappers);
 			}
 
-			if (transaction != null) {
-				transaction.close();
+			// TODO: Check if we rely on this functionality (ie. skipping certain CDO-level conflicts)
+			if (conflictWrappers.isEmpty()) {
+				LOGGER.warn("CDO conflicts are present, but were not converted: {}. Continuing.", branchMerger.getConflicts().values());
+				return transaction;
+			} else {
+				if (transaction != null) {
+					transaction.close();
+				}
+				
+				throw new CustomConflictException("Conflicts detected while synchronizing task", conflictWrappers);
 			}
-			
-			throw new CustomConflictException("Conflicts detected while synchronizing task", conflictWrappers);
 		}
 	}
 
