@@ -15,10 +15,10 @@
  */
 package com.b2international.snowowl.snomed.mrcm.core.server;
 
-import java.nio.file.Path;
+import java.io.OutputStream;
 
 /**
- * 4.4
+ * @since 4.4
  */
 public interface MrcmExporter {
 
@@ -27,10 +27,10 @@ public interface MrcmExporter {
 	 * 
 	 * @param user
 	 *            - the authenticated user to perform the export
-	 * @param outputFolder
-	 *            - the folder to put the exported file
+	 * @param stream
+	 *            - the outputstream to write MRCM release content to
 	 * @return - the exported file path
 	 */
-	Path doExport(String user, Path outputFolder);
+	void doExport(String user, OutputStream content);
 
 }

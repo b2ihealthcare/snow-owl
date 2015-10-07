@@ -15,8 +15,8 @@
  */
 package com.b2international.snowowl.snomed.mrcm.core.server;
 
-import java.io.File;
-import java.nio.file.Path;
+import java.io.OutputStream;
+import java.util.UUID;
 
 import org.eclipse.emf.common.util.URI;
 import org.eclipse.emf.ecore.resource.Resource;
@@ -29,8 +29,6 @@ import org.slf4j.LoggerFactory;
 import com.b2international.snowowl.core.LogUtils;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.api.SnowowlRuntimeException;
-import com.b2international.snowowl.core.date.Dates;
-import com.b2international.snowowl.core.exceptions.BadRequestException;
 import com.b2international.snowowl.datastore.BranchPathUtils;
 import com.b2international.snowowl.snomed.datastore.MrcmEditingContext;
 
@@ -42,38 +40,23 @@ public class XMIMrcmExporter implements MrcmExporter {
 	private static final Logger LOG = LoggerFactory.getLogger(MrcmExporter.class);
 	
 	@Override
-	public Path doExport(String user, Path outputFolder) {
-		checkOutputFolder(outputFolder);
-		
+	public void doExport(String user, OutputStream stream) {
 		final IBranchPath branch = BranchPathUtils.createMainPath();
-		LogUtils.logExportActivity(LOG, user, branch, "Exporting MRCM rules...");
-		
 		try (MrcmEditingContext context = new MrcmEditingContext(branch)) {
-			final Path exportPath = outputFolder.resolve("mrcm_" + Dates.now() + ".xmi");
+			LogUtils.logExportActivity(LOG, user, branch, "Exporting MRCM rules...");
 
 			final ResourceSet resourceSet = new ResourceSetImpl();
 			resourceSet.getResourceFactoryRegistry().getExtensionToFactoryMap().put("xmi", new XMIResourceFactoryImpl());
-			final URI fileURI = URI.createFileURI(exportPath.toAbsolutePath().toString());
+			final URI fileURI = URI.createFileURI(UUID.randomUUID().toString());
 			final Resource resource = resourceSet.createResource(fileURI);
 			resource.getContents().add(context.getConceptModel());
-			resource.save(null);
+			resource.save(stream, null);
 			
 			LogUtils.logExportActivity(LOG, user, branch, "MRCM rule export successfully finished.");
-			return exportPath;
 		} catch (final Throwable t) {
 			LogUtils.logExportActivity(LOG, user, branch, "Failed to export MRCM rules.");
 			throw new SnowowlRuntimeException("Failed to export MRCM rules.", t);
 		}
-	}
-
-	private void checkOutputFolder(Path outputFolder) {
-		final File folder = outputFolder.toFile();
-		if (!folder.exists() || !folder.isDirectory()) {
-			throw new BadRequestException("Export destination folder cannot be found.");
-		}
-		if (!folder.canRead()) {
-			throw new BadRequestException("Cannot read destination folder.");
-		}		
 	}
 
 }

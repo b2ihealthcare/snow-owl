@@ -16,33 +16,26 @@
 package com.b2international.snowowl.snomed.mrcm.core.server;
 
 import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.Date;
+import java.nio.file.StandardOpenOption;
 
-import org.eclipse.emf.common.util.URI;
-import org.eclipse.emf.ecore.resource.Resource;
-import org.eclipse.emf.ecore.resource.ResourceSet;
-import org.eclipse.emf.ecore.resource.impl.ResourceSetImpl;
-import org.eclipse.emf.ecore.xmi.impl.XMIResourceFactoryImpl;
 import org.eclipse.osgi.framework.console.CommandInterpreter;
 import org.eclipse.osgi.framework.console.CommandProvider;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import com.b2international.commons.StringUtils;
 import com.b2international.snowowl.core.ApplicationContext;
-import com.b2international.snowowl.core.LogUtils;
-import com.b2international.snowowl.core.date.DateFormats;
 import com.b2international.snowowl.core.date.Dates;
+import com.b2international.snowowl.core.exceptions.BadRequestException;
 import com.b2international.snowowl.core.users.IAuthorizationService;
 import com.b2international.snowowl.core.users.Permission;
 import com.b2international.snowowl.core.users.PermissionIdConstant;
 import com.b2international.snowowl.core.users.SpecialUserStore;
-import com.b2international.snowowl.datastore.BranchPathUtils;
 import com.b2international.snowowl.server.console.CommandLineAuthenticator;
-import com.b2international.snowowl.snomed.datastore.MrcmEditingContext;
-import com.b2international.snowowl.snomed.mrcm.ConceptModel;
 
 /**
  * OSGi command provider for MRCM import and export.
@@ -81,18 +74,6 @@ public class MrcmCommandProvider implements CommandProvider {
 			return;
 		}
 		
-		final File file = new File(filePath);
-		
-		if (!file.exists() || !file.isFile()) {
-			interpreter.print("MRCM import file cannot be found.");
-			return;
-		}
-		
-		if (!file.canRead()) {
-			interpreter.print("Cannot read MRCM import file content.");
-			return;
-		}
-		
 		final CommandLineAuthenticator authenticator = new CommandLineAuthenticator();
 		
 		if (!authenticator.authenticate(interpreter)) {
@@ -106,7 +87,13 @@ public class MrcmCommandProvider implements CommandProvider {
 			return;
 		}
 
-		new XMIMrcmImporter().doImport(authenticator.getUsername(), file);
+		final Path file = Paths.get(filePath);
+		try (final InputStream content = Files.newInputStream(file, StandardOpenOption.READ)) {
+			new XMIMrcmImporter().doImport(authenticator.getUsername(), content);
+		} catch (IOException e) {
+			interpreter.printStackTrace(e);
+		}
+		
 	}
 
 	public synchronized void _export(final CommandInterpreter interpreter) {
@@ -129,8 +116,27 @@ public class MrcmCommandProvider implements CommandProvider {
 		final String user = SpecialUserStore.SYSTEM_USER_NAME;
 
 		interpreter.println("Exporting MRCM rules...");
-		final Path exportedFile = new XMIMrcmExporter().doExport(user, Paths.get(destinationFolder));
-		interpreter.println("Exported MRCM rules to " + exportedFile);
+		
+		final Path outputFolder = Paths.get(destinationFolder);
+		checkOutputFolder(outputFolder);
+		final Path exportPath = outputFolder.resolve("mrcm_" + Dates.now() + ".xmi");
+		
+		try (final OutputStream stream = Files.newOutputStream(exportPath, StandardOpenOption.CREATE)) {
+			new XMIMrcmExporter().doExport(user, stream);
+			interpreter.println("Exported MRCM rules to " + exportPath);
+		} catch (IOException e) {
+			interpreter.printStackTrace(e);
+		}
+	}
+	
+	private void checkOutputFolder(Path outputFolder) {
+		final File folder = outputFolder.toFile();
+		if (!folder.exists() || !folder.isDirectory()) {
+			throw new BadRequestException("Export destination folder cannot be found.");
+		}
+		if (!folder.canRead()) {
+			throw new BadRequestException("Cannot read destination folder.");
+		}		
 	}
 
 	@Override

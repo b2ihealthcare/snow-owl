@@ -15,7 +15,7 @@
  */
 package com.b2international.snowowl.snomed.mrcm.core.server;
 
-import java.io.File;
+import java.io.InputStream;
 
 /**
  * @since 4.4
@@ -30,5 +30,5 @@ public interface MrcmImporter {
 	 * @param mrcmFile
 	 *            the MRCM file to process and import.
 	 */
-	void doImport(String user, File source);
+	void doImport(String user, InputStream source);
 }
