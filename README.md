@@ -38,7 +38,7 @@ Make sure you have the following preferences enabled/disabled.
 ### Run from development environment
 
 1. Find `com.b2international.snowowl.server.update` project
-2. Open `so_server.product` file, click on `Run as Eclipse application` and terminate it
+2. Open `so_server.product` file, click on `Launch an Eclipse application` and terminate it
 3. Open Run Configurations and find the launch config `so_server.product`
 4. Open Arguments tab
  * Add `-Djetty.home.bundle=org.eclipse.jetty.osgi.boot` to the end of VM arguments
