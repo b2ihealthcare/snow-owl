@@ -18,7 +18,7 @@ Required Eclipse plug-ins (install the listed features):
 
 * Xtext/Xtend (http://download.eclipse.org/modeling/tmf/xtext/updates/composite/releases/)
  * MWE 2 Language SDK 2.8.1
- * Xtend SDK 2.8.4
+ * Xtend IDE 2.8.4
  * Xtext SDK 2.8.4
 * Optional: Maven integration (http://download.eclipse.org/technology/m2e/releases) 
  
