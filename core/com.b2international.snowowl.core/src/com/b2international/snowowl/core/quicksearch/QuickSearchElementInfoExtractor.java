@@ -52,11 +52,6 @@ public class QuickSearchElementInfoExtractor {
 		
 		for (final String labelToken : labelTokens) {
 			
-			// Ignore stop words in the candidate label
-			if (TextConstants.STOPWORDS.contains(labelToken)) {
-				continue;
-			}
-			
 			startIndex = lowerCaseLabel.indexOf(labelToken, startIndex);
 			
 			for (int i = 0; i < filterTokens.size(); i++) {
