@@ -49,9 +49,10 @@ public class SnomedAttributeValueRefSetValidator extends SnomedRefSetValidator {
 	}
 
 	@Override
-	protected void doValidate(IProgressMonitor monitor) {
-		super.doValidate(monitor);
+	protected void doValidate(String effectiveTime, IProgressMonitor monitor) {
+		super.doValidate(effectiveTime, monitor);
 		addDefect(DefectType.ATTRIBUTE_REFSET_VALUE_CONCEPT_NOT_EXIST, refsetMemberValueNotExist);
+		refsetMemberValueNotExist.clear();
 	}
 	
 	@Override

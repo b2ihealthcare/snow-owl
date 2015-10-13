@@ -47,10 +47,12 @@ public class SnomedAssociationRefSetValidator extends SnomedRefSetValidator {
 		validateTargetComponent(row, lineNumber);
 	}
 
+
 	@Override
-	protected void doValidate(IProgressMonitor monitor) {
-		super.doValidate(monitor);
+	protected void doValidate(String effectiveTime, IProgressMonitor monitor) {
+		super.doValidate(effectiveTime, monitor);
 		addDefect(DefectType.ASSOCIATION_REFSET_TARGET_COMPONENT_NOT_EXIST, targetComponentNotExist);
+		targetComponentNotExist.clear();
 	}
 	
 	@Override

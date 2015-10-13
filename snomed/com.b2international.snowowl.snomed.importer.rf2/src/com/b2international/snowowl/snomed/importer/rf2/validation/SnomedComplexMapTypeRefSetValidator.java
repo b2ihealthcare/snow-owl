@@ -21,7 +21,10 @@ import java.net.URL;
 import java.util.List;
 import java.util.Set;
 
+import org.eclipse.core.runtime.IProgressMonitor;
+
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
+import com.b2international.snowowl.snomed.importer.net4j.DefectType;
 import com.b2international.snowowl.snomed.importer.net4j.ImportConfiguration;
 import com.b2international.snowowl.snomed.importer.release.ReleaseFileSet.ReleaseComponentType;
 import com.b2international.snowowl.snomed.importer.rf2.model.ComponentImportType;
@@ -32,7 +35,7 @@ import com.b2international.snowowl.snomed.importer.rf2.model.ComponentImportType
  */
 public class SnomedComplexMapTypeRefSetValidator extends SnomedRefSetValidator {
 	
-	private Set<String> correlationConceptNotExist = newHashSet();
+	private final Set<String> correlationConceptNotExist = newHashSet();
 
 	public SnomedComplexMapTypeRefSetValidator(final ImportConfiguration configuration, final URL releaseUrl, final SnomedValidationContext context) {
 		super(configuration, releaseUrl, ComponentImportType.COMPLEX_MAP_TYPE_REFSET, context, SnomedRf2Headers.COMPLEX_MAP_TYPE_HEADER);
@@ -43,6 +46,13 @@ public class SnomedComplexMapTypeRefSetValidator extends SnomedRefSetValidator {
 		super.doValidate(row, lineNumber);
 		
 		validateCorrelationConcept(row, lineNumber);
+	}
+	
+	@Override
+	protected void doValidate(String effectiveTime, IProgressMonitor monitor) {
+		super.doValidate(effectiveTime, monitor);
+		addDefect(DefectType.COMPLEX_MAP_REFERENCED_INVALID_CONCEPT, correlationConceptNotExist);
+		correlationConceptNotExist.clear();
 	}
 	
 	@Override

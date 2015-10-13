@@ -28,6 +28,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.SubMonitor;
@@ -43,6 +44,7 @@ import com.b2international.snowowl.datastore.BranchPathUtils;
 import com.b2international.snowowl.importer.ImportException;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
 import com.b2international.snowowl.snomed.datastore.SnomedConceptLookupService;
+import com.b2international.snowowl.snomed.datastore.SnomedDescriptionLookupService;
 import com.b2international.snowowl.snomed.datastore.SnomedRelationshipLookupService;
 import com.b2international.snowowl.snomed.datastore.StatementCollectionMode;
 import com.b2international.snowowl.snomed.datastore.id.SnomedIdentifierValidator;
@@ -59,6 +61,7 @@ import com.google.common.collect.Iterables;
 import com.google.common.collect.LinkedHashMultimap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Multimap;
+import com.google.common.collect.Ordering;
 
 import bak.pcj.set.LongSet;
 
@@ -84,7 +87,9 @@ public final class SnomedValidationContext {
 	private final IBranchPath branchPath;
 	private final Logger logger;
 	private final SnomedConceptLookupService conceptLookupService = new SnomedConceptLookupService();
+	private final SnomedDescriptionLookupService descriptionLookupService = new SnomedDescriptionLookupService();
 	private final SnomedRelationshipLookupService relationshipLookupService = new SnomedRelationshipLookupService();
+	private final Set<String> effectiveTimes = newHashSet();
 	
 	public SnomedValidationContext(String requestingUserId, final ImportConfiguration configuration, Logger logger) {
 		this.logger = logger;
@@ -100,18 +105,32 @@ public final class SnomedValidationContext {
 	}
 	
 	private void preValidate(final SubMonitor monitor) {
+		
 		for (final AbstractSnomedValidator releaseFileValidator : releaseFileValidators) {
-			releaseFileValidator.preValidate(monitor);
+			effectiveTimes.addAll(releaseFileValidator.preValidate(monitor));
 		}
 	}
 
 	private void doValidate(final SubMonitor monitor) {
-		for (final AbstractSnomedValidator releaseFileValidator : releaseFileValidators) {
-			LogUtils.logImportActivity(logger, requestingUserId, branchPath, "Validating '" + releaseFileValidator.getReleaseFileName() + "' release file.");
-			releaseFileValidator.doValidate(monitor);
+		final SubMonitor subMonitor = SubMonitor.convert(monitor, effectiveTimes.size());
+		for (String effectiveTime : Ordering.natural().immutableSortedCopy(effectiveTimes)) {
+			if (!"".equals(effectiveTime)) {
+				runValidators(effectiveTime, subMonitor);
+			}
+		}
+		
+		// validate Unpublished effective time last
+		if (effectiveTimes.contains("")) {
+			runValidators("", subMonitor.newChild(1));
 		}
 	}
 	
+	private void runValidators(String effectiveTime, SubMonitor subMonitor) {
+		for (final AbstractSnomedValidator releaseFileValidator : releaseFileValidators) {
+			releaseFileValidator.doValidate(effectiveTime, subMonitor.newChild(1));
+		}		
+	}
+
 	private void postValidate(final SubMonitor monitor) {
 		for (final AbstractSnomedValidator releaseFileValidator : releaseFileValidators) {
 			releaseFileValidator.postValidate(monitor);
@@ -246,15 +265,19 @@ public final class SnomedValidationContext {
 		return exists;
 	}
 
-	/*package*/ boolean isComponentActive(String componentId) {
-		return componentStatus.get(componentId);
+	/*package*/ boolean isComponentActive(String componentId, ComponentCategory category) {
+		if (componentStatus.containsKey(componentId)) {
+			return componentStatus.get(componentId);
+		} else {
+			return activeInStore(componentId, category);
+		}
 	}
 	
 	/*package*/ void addDefect(DefectType type, String...defects) {
 		addDefect(type, Arrays.asList(defects));
 	}
 	
-	/*package*/ void addDefect(DefectType type, Collection<String> defects) {
+	/*package*/ void addDefect(DefectType type, Iterable<String> defects) {
 		this.defects.putAll(type, defects);
 	}
 	
@@ -267,6 +290,15 @@ public final class SnomedValidationContext {
 		case CONCEPT: return conceptLookupService.exists(branchPath, componentId);
 		case DESCRIPTION: return descriptionIdSupplier.get().contains(Long.parseLong(componentId));
 		case RELATIONSHIP: return relationshipLookupService.exists(branchPath, componentId);
+		default: throw new UnsupportedOperationException("Cannot get lookup service for " + componentCategory);
+		}
+	}
+	
+	private boolean activeInStore(String componentId, ComponentCategory componentCategory) {
+		switch (componentCategory) {
+		case CONCEPT: return conceptLookupService.getComponent(branchPath, componentId).isActive();
+		case DESCRIPTION: return descriptionLookupService.getComponent(branchPath, componentId).isActive();
+		case RELATIONSHIP: return relationshipLookupService.getComponent(branchPath, componentId).isActive();
 		default: throw new UnsupportedOperationException("Cannot get lookup service for " + componentCategory);
 		}
 	}
