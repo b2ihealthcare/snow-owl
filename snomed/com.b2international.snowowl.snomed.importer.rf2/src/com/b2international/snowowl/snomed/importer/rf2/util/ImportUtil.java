@@ -409,10 +409,8 @@ public final class ImportUtil {
 				}
 			});
 			final String message = String.format("Validation encountered %s error(s).", defects.size());
-			IMPORT_LOGGER.error(message);
 			LogUtils.logImportActivity(IMPORT_LOGGER, requestingUserId, branchPath, message);
 			for (String defect : defects) {
-				IMPORT_LOGGER.error(defect);
 				LogUtils.logImportActivity(IMPORT_LOGGER, requestingUserId, branchPath, defect);
 			}
 			LogUtils.logImportActivity(IMPORT_LOGGER, requestingUserId, branchPath, "SNOMED CT import failed due to invalid RF2 release file(s).");
