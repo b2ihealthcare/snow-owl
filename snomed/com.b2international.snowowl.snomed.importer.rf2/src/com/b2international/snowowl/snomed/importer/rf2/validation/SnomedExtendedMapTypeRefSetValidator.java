@@ -44,10 +44,10 @@ public class SnomedExtendedMapTypeRefSetValidator extends SnomedRefSetValidator 
 	}
 
 	@Override
-	protected void doValidate(final List<String> row, final int lineNumber) {
-		super.doValidate(row, lineNumber);
-		validateCorrelationConcept(row, lineNumber);
-		validateMapCategory(row, lineNumber);
+	protected void doValidate(final List<String> row) {
+		super.doValidate(row);
+		validateCorrelationConcept(row);
+		validateMapCategory(row);
 	}
 	
 	@Override
@@ -63,17 +63,21 @@ public class SnomedExtendedMapTypeRefSetValidator extends SnomedRefSetValidator 
 		return "extended map type";
 	}
 	
-	private void validateMapCategory(final List<String> row, final int lineNumber) {
+	private void validateMapCategory(final List<String> row) {
+		final String uuid = row.get(0);
+		final String effectiveTime = row.get(1);
 		final String mapCategory = row.get(12);
 		if (!isComponentExists(mapCategory, ReleaseComponentType.CONCEPT)) {
-			addDefectDescription(mapCategoryConceptNotExist, lineNumber, mapCategory);
+			mapCategoryConceptNotExist.add(getMissingComponentMessage(uuid, effectiveTime, "map category", mapCategory));
 		}
 	}
 	
-	private void validateCorrelationConcept(final List<String> row, final int lineNumber) {
+	private void validateCorrelationConcept(final List<String> row) {
+		final String uuid = row.get(0);
+		final String effectiveTime = row.get(1);
 		final String correlation = row.get(11);
 		if (!isComponentExists(correlation, ReleaseComponentType.CONCEPT)) {
-			addDefectDescription(correlationConceptNotExist, lineNumber, correlation);
+			correlationConceptNotExist.add(getMissingComponentMessage(uuid, effectiveTime, "correlation", correlation));
 		}
 	}
 

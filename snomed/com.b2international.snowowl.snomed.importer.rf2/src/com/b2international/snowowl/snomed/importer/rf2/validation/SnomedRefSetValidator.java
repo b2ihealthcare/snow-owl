@@ -18,7 +18,6 @@ package com.b2international.snowowl.snomed.importer.rf2.validation;
 import static com.google.common.collect.Sets.newHashSet;
 
 import java.net.URL;
-import java.text.MessageFormat;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -85,9 +84,9 @@ public abstract class SnomedRefSetValidator extends AbstractSnomedValidator {
 	protected abstract String getName();
 	
 	@Override
-	protected void doValidate(final List<String> row, final int lineNumber) {
-		validateIdUniqueness(row, lineNumber);
-		validateReferencedComponent(row, lineNumber);
+	protected void doValidate(final List<String> row) {
+		validateIdUniqueness(row);
+		validateReferencedComponent(row);
 	}
 
 	/**
@@ -96,15 +95,15 @@ public abstract class SnomedRefSetValidator extends AbstractSnomedValidator {
 	 * @param row the current row
 	 * @param lineNumber the current line number
 	 */
-	protected void validateIdUniqueness(final List<String> row, final int lineNumber) {
-		
-		final String uuidString = row.get(COLUMN_UUID);
+	protected void validateIdUniqueness(final List<String> row) {
+		final String uuid = row.get(COLUMN_UUID);
+		final String effectiveTime = row.get(1);
 		final UUID rowUuid;
 		
 		try {
-			rowUuid = UUID.fromString(uuidString);
+			rowUuid = UUID.fromString(uuid);
 		} catch (final IllegalArgumentException e) {
-			addDefectDescription(uuidInvalid, lineNumber);
+			uuidInvalid.add(String.format("Invalid UUID '%s' in effective time '%s' in file '%s'", uuid, effectiveTime, releaseFileName));
 			return;
 		}
 		
@@ -114,15 +113,13 @@ public abstract class SnomedRefSetValidator extends AbstractSnomedValidator {
 		final ReferencedComponentIdAndStatus existingData = memberDataByUuid.get(rowUuid);
 		
 		if (null != existingData) {
-
 			if (existingData.getReferencedComponentId().equals(rowReferencedComponentId)) {
 				// if the id is for the same component as before, update the active flag
 				existingData.setActive(rowActive);
 			} else if (existingData.isActive()) { 
 				// if it's for different component and the member referring to the previous component is still active, report it as an issue
-				addDefectDescription(uuidNotUnique, lineNumber);
+				uuidNotUnique.add(String.format("UUID '%s' is not unique in file '%s'", uuid, releaseFileName));
 			}
-			
 		} else {
 			memberDataByUuid.put(rowUuid, new ReferencedComponentIdAndStatus(rowReferencedComponentId, rowActive));
 		}
@@ -134,11 +131,21 @@ public abstract class SnomedRefSetValidator extends AbstractSnomedValidator {
 	 * @param row the current row
 	 * @param lineNumber the current line number
 	 */
-	private void validateReferencedComponent(final List<String> row, final int lineNumber) {
+	private void validateReferencedComponent(final List<String> row) {
+		final String uuid = row.get(0);
+		final String effectiveTime = row.get(1);
 		final String componentId = row.get(COLUMN_REFERENCED_COMPONENT_ID);
 		if (!isComponentExists(componentId, getComponentType(componentId))) {
-			addDefectDescription(referencedComponentNotExist, lineNumber, row.get(5));
+			referencedComponentNotExist.add(getMissingComponentMessage(uuid, effectiveTime, componentId));
 		}
+	}
+
+	protected String getMissingComponentMessage(final String uuid, final String effectiveTime, final String componentId) {
+		return getMissingComponentMessage(uuid, effectiveTime, "component", componentId); 
+	}
+	
+	protected String getMissingComponentMessage(final String uuid, final String effectiveTime, final String type, final String componentId) {
+		return String.format("Reference set member '%s' references non-existent %s '%s' in effective time '%s'", uuid, type, componentId, effectiveTime);
 	}
 
 	@Override
@@ -151,29 +158,6 @@ public abstract class SnomedRefSetValidator extends AbstractSnomedValidator {
 		referencedComponentNotExist.clear();
 	}
 	
-	/**
-	 * Add a reference set defect to the given set.
-	 * 
-	 * @param refsetDefects the set of the defects of a given defect type
-	 * @param lineNumber the number of the line where the defect can be found
-	 */
-	protected void addDefectDescription(final Set<String> refsetDefects, final int lineNumber) {
-		refsetDefects.add(MessageFormat.format("Line number {0} in the ''{1}'' {2} reference set file.", 
-				lineNumber, releaseFileName, getName()));
-	}
-	
-	/**
-	 * Add a reference set defect to the given set.
-	 * 
-	 * @param refsetDefects the set of the defects of a given defect type
-	 * @param lineNumber the number of the line where the defect can be found
-	 * @param componentId the ID of the component
-	 */
-	protected void addDefectDescription(final Set<String> refsetDefects, final int lineNumber, final String componentId) {
-		refsetDefects.add(MessageFormat.format("Line number {0} in the ''{1}'' {2} reference set file with component ID {3}.", 
-				lineNumber, releaseFileName, getName(), componentId));
-	}
-
 	/**returns with the proper import component type based on the component ID argument.*/
 	private ReleaseComponentType getComponentType(final String componentId) {
 		final short value = SnomedTerminologyComponentConstants.getTerminologyComponentIdValueSafe(componentId);

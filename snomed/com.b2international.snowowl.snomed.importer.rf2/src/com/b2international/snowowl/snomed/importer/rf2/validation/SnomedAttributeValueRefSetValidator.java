@@ -42,10 +42,9 @@ public class SnomedAttributeValueRefSetValidator extends SnomedRefSetValidator {
 	}
 
 	@Override
-	protected void doValidate(final List<String> row, final int lineNumber) {
-		super.doValidate(row, lineNumber);
-		
-		isValueComponentExist(row, lineNumber);
+	protected void doValidate(final List<String> row) {
+		super.doValidate(row);
+		validateValueComponent(row);
 	}
 
 	@Override
@@ -60,10 +59,12 @@ public class SnomedAttributeValueRefSetValidator extends SnomedRefSetValidator {
 		return "attribute value";
 	}
 	
-	private void isValueComponentExist(final List<String> row, final int lineNumber) {
-		final String valueComponent = row.get(6);
-		if (!isComponentExists(valueComponent, ReleaseComponentType.CONCEPT)) {
-			addDefectDescription(refsetMemberValueNotExist, lineNumber, valueComponent);
+	private void validateValueComponent(final List<String> row) {
+		final String uuid = row.get(0);
+		final String effectiveTime = row.get(1);
+		final String valueConcept = row.get(6);
+		if (!isComponentExists(valueConcept, ReleaseComponentType.CONCEPT)) {
+			refsetMemberValueNotExist.add(getMissingComponentMessage(uuid, effectiveTime, "value concept", valueConcept));
 		}
 	}
 	

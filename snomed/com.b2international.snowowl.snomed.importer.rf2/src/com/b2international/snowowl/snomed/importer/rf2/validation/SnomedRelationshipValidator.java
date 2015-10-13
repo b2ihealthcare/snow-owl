@@ -16,7 +16,6 @@
 package com.b2international.snowowl.snomed.importer.rf2.validation;
 
 import java.io.IOException;
-import java.text.MessageFormat;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
@@ -49,14 +48,14 @@ public class SnomedRelationshipValidator extends AbstractSnomedValidator {
 	}
 
 	@Override
-	protected void doValidate(final List<String> row, final int lineNumber) {
+	protected void doValidate(final List<String> row) {
 		final String componentId = row.get(0);
 		final String effectiveTime = row.get(1);
 		final boolean active = "1".equals(row.get(2));
 		final String source = row.get(4);
 		
 		registerComponent(ComponentCategory.RELATIONSHIP, componentId, active);
-		validateComponentUnique(row, relationshipIdsWithEffectivetimeStatus, relationshipIdNotUnique, lineNumber);
+		validateComponentUnique(row, relationshipIdsWithEffectivetimeStatus, relationshipIdNotUnique);
 		
 		final String destination = row.get(5);
 		final String type = row.get(7);
@@ -64,8 +63,7 @@ public class SnomedRelationshipValidator extends AbstractSnomedValidator {
 		final String modifier = row.get(9);
 		
 		if (type.equals(Concepts.IS_A) && source.equals(destination)) {
-			relationshipSourceAndDestinationAreEqual.add(MessageFormat.format("Line number {0} in the ''{1}'' file with relationship ID {2}",
-					lineNumber, releaseFileName, componentId));
+			relationshipSourceAndDestinationAreEqual.add(String.format("'%s' IS A relationship has same source and destination concept '%s' in effective time '%s'", componentId, source, effectiveTime));
 		}
 
 		for (String referencedConcept : ImmutableList.of(source, destination, type, characteristicType, modifier)) {

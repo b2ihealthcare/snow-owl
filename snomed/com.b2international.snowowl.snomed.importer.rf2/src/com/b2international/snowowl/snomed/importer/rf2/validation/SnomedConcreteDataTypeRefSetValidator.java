@@ -51,12 +51,12 @@ public class SnomedConcreteDataTypeRefSetValidator extends SnomedRefSetValidator
 	}
 
 	@Override
-	protected void doValidate(final List<String> row, final int lineNumber) {
-		super.doValidate(row, lineNumber);
+	protected void doValidate(final List<String> row) {
+		super.doValidate(row);
 		
-		validateUnitConcept(row, lineNumber);
-		validateOperatorConcept(row, lineNumber);
-		validateValue(row, lineNumber);
+		validateUnitConcept(row);
+		validateOperatorConcept(row);
+		validateValue(row);
 	}
 
 	@Override
@@ -75,26 +75,32 @@ public class SnomedConcreteDataTypeRefSetValidator extends SnomedRefSetValidator
 		return "concrete domain";
 	}
 	
-	private void validateUnitConcept(final List<String> row, final int lineNumber) {
+	private void validateUnitConcept(final List<String> row) {
+		final String uuid = row.get(0);
+		final String effectiveTime = row.get(1);
 		final String unit = row.get(6);
 		if (!unit.isEmpty()) {
 			if (!isComponentExists(unit, ReleaseComponentType.CONCEPT)) {
-				addDefectDescription(unitConceptNotExist, lineNumber);
+				operatorConceptNotExist.add(getMissingComponentMessage(uuid, effectiveTime, "unit", unit));
 			}
 		}
 	}
 	
-	private void validateOperatorConcept(final List<String> row, final int lineNumber) {
+	private void validateOperatorConcept(final List<String> row) {
+		final String uuid = row.get(0);
+		final String effectiveTime = row.get(1);
 		final String operator = row.get(7);
 		if (!isComponentExists(operator, ReleaseComponentType.CONCEPT)) {
-			addDefectDescription(operatorConceptNotExist, lineNumber, operator);
+			operatorConceptNotExist.add(getMissingComponentMessage(uuid, effectiveTime, "operator", operator));
 		}
 	}
 
-	private void validateValue(final List<String> row, final int lineNumber) {
+	private void validateValue(final List<String> row) {
+		final String uuid = row.get(0);
+		final String effectiveTime = row.get(1);
 		final String value = withLabel ? row.get(9) : row.get(8);
 		if (value.isEmpty()) {
-			addDefectDescription(valueIsEmpty, lineNumber);
+			valueIsEmpty.add(String.format("Reference set member '%s''s value property is empty in effective time '%s'", uuid, effectiveTime));
 		}
 	}
 

@@ -43,11 +43,11 @@ public class SnomedDescriptionTypeRefSetValidator extends SnomedRefSetValidator 
 	}
 	
 	@Override
-	protected void doValidate(List<String> row, int lineNumber) {
-		super.doValidate(row, lineNumber);
+	protected void doValidate(List<String> row) {
+		super.doValidate(row);
 		
-		validateDescriptionFormat(row, lineNumber);
-		validateDescriptionLength(row, lineNumber);
+		validateDescriptionFormat(row);
+		validateDescriptionLength(row);
 	}
 
 	@Override
@@ -64,17 +64,21 @@ public class SnomedDescriptionTypeRefSetValidator extends SnomedRefSetValidator 
 		return "description type";
 	}
 
-	private void validateDescriptionFormat(List<String> row, int lineNumber) {
+	private void validateDescriptionFormat(List<String> row) {
+		final String uuid = row.get(0);
+		final String effectiveTime = row.get(1);
 		final String descriptionFormat = row.get(6);
 		if (!isComponentExists(descriptionFormat, ReleaseComponentType.CONCEPT)) {
-			addDefectDescription(descriptionFormatNotExist, lineNumber, descriptionFormat);
+			descriptionFormatNotExist.add(getMissingComponentMessage(uuid, effectiveTime, "description format", descriptionFormat));
 		}
 	}
 	
-	private void validateDescriptionLength(List<String> row, int lineNumber) {
+	private void validateDescriptionLength(List<String> row) {
+		final String uuid = row.get(0);
+		final String effectiveTime = row.get(1);
 		final String length = row.get(7);
 		if (length.isEmpty()) {
-			addDefectDescription(descriptionLengthIsEmpty, lineNumber);
+			descriptionLengthIsEmpty.add(String.format("Reference set member '%s' description length property is empty in effective time '%s'", uuid, effectiveTime));
 		}
 	}
 

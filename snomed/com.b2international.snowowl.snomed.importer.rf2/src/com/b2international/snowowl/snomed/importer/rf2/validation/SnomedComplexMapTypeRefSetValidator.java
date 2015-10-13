@@ -42,10 +42,9 @@ public class SnomedComplexMapTypeRefSetValidator extends SnomedRefSetValidator {
 	}
 	
 	@Override
-	protected void doValidate(final List<String> row, final int lineNumber) {
-		super.doValidate(row, lineNumber);
-		
-		validateCorrelationConcept(row, lineNumber);
+	protected void doValidate(final List<String> row) {
+		super.doValidate(row);
+		validateCorrelationConcept(row);
 	}
 	
 	@Override
@@ -60,10 +59,12 @@ public class SnomedComplexMapTypeRefSetValidator extends SnomedRefSetValidator {
 		return "complex map type";
 	}
 	
-	private void validateCorrelationConcept(final List<String> row, final int lineNumber) {
+	private void validateCorrelationConcept(final List<String> row) {
+		final String uuid = row.get(0);
+		final String effectiveTime = row.get(1);
 		final String correlation = row.get(11);
 		if (!isComponentExists(correlation, ReleaseComponentType.CONCEPT)) {
-			addDefectDescription(correlationConceptNotExist, lineNumber, correlation);
+			correlationConceptNotExist.add(getMissingComponentMessage(uuid, effectiveTime, "correlation", correlation));
 		}
 	}
 
