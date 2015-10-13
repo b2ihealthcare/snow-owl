@@ -15,17 +15,19 @@
  */
 package com.b2international.snowowl.snomed.importer.rf2.validation;
 
+import static com.google.common.collect.Sets.newHashSet;
+
 import java.net.URL;
 import java.util.List;
 import java.util.Set;
 
+import org.eclipse.core.runtime.IProgressMonitor;
+
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
+import com.b2international.snowowl.snomed.importer.net4j.DefectType;
 import com.b2international.snowowl.snomed.importer.net4j.ImportConfiguration;
-import com.b2international.snowowl.snomed.importer.net4j.SnomedValidationDefect;
-import com.b2international.snowowl.snomed.importer.net4j.SnomedValidationDefect.DefectType;
 import com.b2international.snowowl.snomed.importer.release.ReleaseFileSet.ReleaseComponentType;
 import com.b2international.snowowl.snomed.importer.rf2.model.ComponentImportType;
-import com.b2international.snowowl.snomed.importer.rf2.util.ValidationUtil;
 import com.google.common.collect.Sets;
 
 /**
@@ -34,11 +36,11 @@ import com.google.common.collect.Sets;
  */
 public class SnomedDescriptionTypeRefSetValidator extends SnomedRefSetValidator {
 
-	private Set<String> descriptionFormatNotExist;
-	private Set<String> descriptionLengthIsEmpty;
+	private Set<String> descriptionFormatNotExist = newHashSet();
+	private Set<String> descriptionLengthIsEmpty = newHashSet();
 
-	public SnomedDescriptionTypeRefSetValidator(ImportConfiguration configuration, URL releaseUrl, Set<SnomedValidationDefect> defects, ValidationUtil validationUtil) {
-		super(configuration, releaseUrl, ComponentImportType.DESCRIPTION_TYPE_REFSET, defects, validationUtil, SnomedRf2Headers.DESCRIPTION_TYPE_HEADER.length);
+	public SnomedDescriptionTypeRefSetValidator(ImportConfiguration configuration, URL releaseUrl, SnomedValidationContext context) {
+		super(configuration, releaseUrl, ComponentImportType.DESCRIPTION_TYPE_REFSET, context, SnomedRf2Headers.DESCRIPTION_TYPE_HEADER);
 	}
 	
 	@Override
@@ -48,13 +50,12 @@ public class SnomedDescriptionTypeRefSetValidator extends SnomedRefSetValidator 
 		validateDescriptionFormat(row, lineNumber);
 		validateDescriptionLength(row, lineNumber);
 	}
-	
+
 	@Override
-	protected void addDefects() {
-		super.addDefects();
-		
-		addDefects(new SnomedValidationDefect(DefectType.DESCRIPTION_TYPE_DESCRIPTION_FORMAT_NOT_EXIST, descriptionFormatNotExist),
-				new SnomedValidationDefect(DefectType.DESCRIPTION_TYPE_DESCRIPTION_LENGTH_IS_EMPTY, descriptionLengthIsEmpty));
+	protected void doValidate(IProgressMonitor monitor) {
+		super.doValidate(monitor);
+		addDefect(DefectType.DESCRIPTION_TYPE_DESCRIPTION_FORMAT_NOT_EXIST, descriptionFormatNotExist);
+		addDefect(DefectType.DESCRIPTION_TYPE_DESCRIPTION_LENGTH_IS_EMPTY, descriptionLengthIsEmpty);
 	}
 
 	@Override
@@ -62,23 +63,20 @@ public class SnomedDescriptionTypeRefSetValidator extends SnomedRefSetValidator 
 		return "description type";
 	}
 
-	@Override
-	protected String[] getExpectedHeader() {
-		return SnomedRf2Headers.DESCRIPTION_TYPE_HEADER;
-	}
-
 	private void validateDescriptionFormat(List<String> row, int lineNumber) {
-		if (isComponentNotExist(row.get(6), ReleaseComponentType.CONCEPT)) {
+		final String descriptionFormat = row.get(6);
+		if (!isComponentExists(descriptionFormat, ReleaseComponentType.CONCEPT)) {
 			if (null == descriptionFormatNotExist) {
 				descriptionFormatNotExist = Sets.newHashSet();
 			}
 			
-			addDefectDescription(descriptionFormatNotExist, lineNumber, row.get(6));
+			addDefectDescription(descriptionFormatNotExist, lineNumber, descriptionFormat);
 		}
 	}
 	
 	private void validateDescriptionLength(List<String> row, int lineNumber) {
-		if (row.get(7).isEmpty()) {
+		final String length = row.get(7);
+		if (length.isEmpty()) {
 			if (null == descriptionLengthIsEmpty) {
 				descriptionLengthIsEmpty = Sets.newHashSet();
 			}

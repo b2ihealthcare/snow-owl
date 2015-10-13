@@ -15,32 +15,28 @@
  */
 package com.b2international.snowowl.snomed.importer.rf2.validation;
 
+import static com.google.common.collect.Sets.newHashSet;
+
 import java.net.URL;
 import java.util.List;
 import java.util.Set;
 
+import org.eclipse.core.runtime.IProgressMonitor;
+
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
+import com.b2international.snowowl.snomed.importer.net4j.DefectType;
 import com.b2international.snowowl.snomed.importer.net4j.ImportConfiguration;
-import com.b2international.snowowl.snomed.importer.net4j.SnomedValidationDefect;
-import com.b2international.snowowl.snomed.importer.net4j.SnomedValidationDefect.DefectType;
-import com.b2international.snowowl.snomed.importer.release.ReleaseFileSet.ReleaseComponentType;
 import com.b2international.snowowl.snomed.importer.rf2.model.ComponentImportType;
-import com.b2international.snowowl.snomed.importer.rf2.util.ValidationUtil;
-import com.google.common.collect.Sets;
 
 /**
  * Represents a release file validator that validates the simple map type reference set.
- * 
  */
 public class SnomedSimpleMapTypeRefSetValidator extends SnomedRefSetValidator {
 	
-	private Set<String> mapTargetIsEmpty;
-	private boolean extended;
+	private Set<String> mapTargetIsEmpty = newHashSet();
 
-	public SnomedSimpleMapTypeRefSetValidator(final ImportConfiguration configuration, final URL releaseUrl, final Set<SnomedValidationDefect> defects, final ValidationUtil validationUtil, final boolean extended) {
-		super(configuration, releaseUrl, ComponentImportType.SIMPLE_MAP_TYPE_REFSET, defects, 
-				validationUtil, extended? SnomedRf2Headers.SIMPLE_MAP_TYPE_HEADER_WITH_DESCRIPTION.length : SnomedRf2Headers.SIMPLE_MAP_TYPE_HEADER.length);
-		this.extended = extended;
+	public SnomedSimpleMapTypeRefSetValidator(final ImportConfiguration configuration, final URL releaseUrl, final SnomedValidationContext context, final boolean extended) {
+		super(configuration, releaseUrl, ComponentImportType.SIMPLE_MAP_TYPE_REFSET, context, extended ? SnomedRf2Headers.SIMPLE_MAP_TYPE_HEADER_WITH_DESCRIPTION : SnomedRf2Headers.SIMPLE_MAP_TYPE_HEADER);
 	}
 	
 	@Override
@@ -49,43 +45,21 @@ public class SnomedSimpleMapTypeRefSetValidator extends SnomedRefSetValidator {
 		
 		validateMapTarget(row, lineNumber);
 	}
-	
-	@Override
-	protected void addDefects() {
-		super.addDefects();
-		
-		addDefects(new SnomedValidationDefect(DefectType.SIMPLE_MAP_TARGET_IS_EMPTY, mapTargetIsEmpty));
-	}
 
+	@Override
+	protected void doValidate(IProgressMonitor monitor) {
+		super.doValidate(monitor);
+		addDefect(DefectType.SIMPLE_MAP_TARGET_IS_EMPTY, mapTargetIsEmpty);
+	}
+	
 	@Override
 	protected String getName() {
 		return "simple map type";
 	}
 	
-	@Override
-	protected String[] getExpectedHeader() {
-		return extended? SnomedRf2Headers.SIMPLE_MAP_TYPE_HEADER_WITH_DESCRIPTION : SnomedRf2Headers.SIMPLE_MAP_TYPE_HEADER;
-	}
-	
-	@Override
-	protected void validateReferencedComponent(final List<String> row, final int lineNumber) {
-		if (isComponentNotExist(row.get(5), ReleaseComponentType.CONCEPT) && isComponentNotExist(row.get(5), ReleaseComponentType.DESCRIPTION)) {
-			if (null == referencedComponentNotExist) {
-				referencedComponentNotExist = Sets.newHashSet();
-			}
-			
-			addDefectDescription(referencedComponentNotExist, lineNumber, row.get(5));
-		}
-	}
-	
 	private void validateMapTarget(final List<String> row, final int lineNumber) {
-		final String value = row.get(6);
-		
-		if (value.isEmpty()) {
-			if (null == mapTargetIsEmpty) {
-				mapTargetIsEmpty = Sets.newHashSet();
-			}
-			
+		final String mapTarget = row.get(6);
+		if (mapTarget.isEmpty()) {
 			addDefectDescription(mapTargetIsEmpty, lineNumber);
 		}
 	}

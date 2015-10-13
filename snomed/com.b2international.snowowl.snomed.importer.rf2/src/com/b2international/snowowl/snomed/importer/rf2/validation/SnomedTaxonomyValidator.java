@@ -44,10 +44,10 @@ import com.b2international.snowowl.snomed.datastore.services.SnomedConceptNamePr
 import com.b2international.snowowl.snomed.datastore.taxonomy.AbstractSnomedTaxonomyBuilder;
 import com.b2international.snowowl.snomed.datastore.taxonomy.IncompleteTaxonomyException;
 import com.b2international.snowowl.snomed.datastore.taxonomy.SnomedTaxonomyBuilder;
+import com.b2international.snowowl.snomed.importer.net4j.DefectType;
 import com.b2international.snowowl.snomed.importer.net4j.ImportConfiguration;
 import com.b2international.snowowl.snomed.importer.net4j.SnomedIncompleteTaxonomyValidationDefect;
 import com.b2international.snowowl.snomed.importer.net4j.SnomedValidationDefect;
-import com.b2international.snowowl.snomed.importer.net4j.SnomedValidationDefect.DefectType;
 import com.b2international.snowowl.snomed.importer.rf2.util.Rf2FileModifier;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSortedSet;
@@ -89,12 +89,10 @@ public class SnomedTaxonomyValidator {
 	 * @return
 	 */
 	public Collection<SnomedValidationDefect> validate() {
-		final Collection<SnomedValidationDefect> defects = newHashSet();
 		if (canValidate()) {
-			defects.addAll(doValidate());
+			return doValidate();
 		}
-		return defects;
-		
+		return Collections.emptySet();
 	}
 
 	/*

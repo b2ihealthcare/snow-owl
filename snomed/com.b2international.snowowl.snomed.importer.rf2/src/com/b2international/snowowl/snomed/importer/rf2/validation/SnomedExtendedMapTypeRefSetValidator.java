@@ -13,7 +13,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.snomed.importer.rf2.util;
+package com.b2international.snowowl.snomed.importer.rf2.validation;
+
+import static com.google.common.collect.Sets.newHashSet;
 
 import java.net.URL;
 import java.util.List;
@@ -21,11 +23,8 @@ import java.util.Set;
 
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
 import com.b2international.snowowl.snomed.importer.net4j.ImportConfiguration;
-import com.b2international.snowowl.snomed.importer.net4j.SnomedValidationDefect;
 import com.b2international.snowowl.snomed.importer.release.ReleaseFileSet.ReleaseComponentType;
 import com.b2international.snowowl.snomed.importer.rf2.model.ComponentImportType;
-import com.b2international.snowowl.snomed.importer.rf2.validation.SnomedRefSetValidator;
-import com.google.common.collect.Sets;
 
 /**
  * RF2 file validator for SNOMED&nbsp;CT extended maps.
@@ -33,11 +32,11 @@ import com.google.common.collect.Sets;
  */
 public class SnomedExtendedMapTypeRefSetValidator extends SnomedRefSetValidator {
 
-	private Set<String> mapCategoryConceptNotExist;
-	private Set<String> correlationConceptNotExist;
+	private Set<String> mapCategoryConceptNotExist = newHashSet();
+	private Set<String> correlationConceptNotExist = newHashSet();
 	
-	public SnomedExtendedMapTypeRefSetValidator(final ImportConfiguration configuration, final URL releaseUrl, final Set<SnomedValidationDefect> defects, final ValidationUtil validationUtil) {
-		super(configuration, releaseUrl, ComponentImportType.EXTENDED_MAP_TYPE_REFSET, defects, validationUtil, SnomedRf2Headers.EXTENDED_MAP_TYPE_HEADER.length);
+	public SnomedExtendedMapTypeRefSetValidator(final ImportConfiguration configuration, final URL releaseUrl, final SnomedValidationContext context) {
+		super(configuration, releaseUrl, ComponentImportType.EXTENDED_MAP_TYPE_REFSET, context, SnomedRf2Headers.EXTENDED_MAP_TYPE_HEADER);
 	}
 
 	@Override
@@ -52,28 +51,17 @@ public class SnomedExtendedMapTypeRefSetValidator extends SnomedRefSetValidator 
 		return "extended map type";
 	}
 	
-	@Override
-	protected String[] getExpectedHeader() {
-		return SnomedRf2Headers.EXTENDED_MAP_TYPE_HEADER;
-	}
-	
 	private void validateMapCategory(final List<String> row, final int lineNumber) {
-		if (isComponentNotExist(row.get(12), ReleaseComponentType.CONCEPT)) {
-			if (null == mapCategoryConceptNotExist) {
-				mapCategoryConceptNotExist = Sets.newHashSet();
-			}
-			
-			addDefectDescription(mapCategoryConceptNotExist, lineNumber, row.get(12));
+		final String mapCategory = row.get(12);
+		if (!isComponentExists(mapCategory, ReleaseComponentType.CONCEPT)) {
+			addDefectDescription(mapCategoryConceptNotExist, lineNumber, mapCategory);
 		}
 	}
 	
 	private void validateCorrelationConcept(final List<String> row, final int lineNumber) {
-		if (isComponentNotExist(row.get(11), ReleaseComponentType.CONCEPT)) {
-			if (null == correlationConceptNotExist) {
-				correlationConceptNotExist = Sets.newHashSet();
-			}
-			
-			addDefectDescription(correlationConceptNotExist, lineNumber, row.get(11));
+		final String correlation = row.get(11);
+		if (!isComponentExists(correlation, ReleaseComponentType.CONCEPT)) {
+			addDefectDescription(correlationConceptNotExist, lineNumber, correlation);
 		}
 	}
 
