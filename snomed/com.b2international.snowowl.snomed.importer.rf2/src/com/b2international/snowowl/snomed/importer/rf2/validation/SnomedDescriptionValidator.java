@@ -53,22 +53,31 @@ public class SnomedDescriptionValidator extends AbstractSnomedValidator {
 	}
 
 	@Override
-	protected void doValidate(final List<String> row, final int lineNumber) {
+	protected void doValidate(final List<String> row) {
 		final String componentId = row.get(0);
+		final String effectiveTime = row.get(1);
 		final boolean active = "1".equals(row.get(2));
-		
-		registerComponent(ComponentCategory.DESCRIPTION, componentId, active);
-		
 		final String concept = row.get(4);
 		final String type = row.get(6);
 		final String caseSignificance = row.get(8);
 		
-		validateComponentExists(concept, concept, ReleaseComponentType.CONCEPT, descriptionConceptNotExist, lineNumber);
-		validateComponentExists(type, concept, ReleaseComponentType.CONCEPT, typeConceptNotExist, lineNumber);
-		validateComponentExists(caseSignificance, concept, ReleaseComponentType.CONCEPT, caseSignificanceConceptNotExist, lineNumber);
+		registerComponent(ComponentCategory.DESCRIPTION, componentId, active);
 		
-		validateComponentUnique(row, descriptionIdsWithEffectivetimeStatus, descriptionIdNotUnique, lineNumber);
-		validateFullySpecifiedName(row, lineNumber);
+		
+		validateComponentExists(effectiveTime, concept, concept, ReleaseComponentType.CONCEPT, descriptionConceptNotExist);
+		validateComponentExists(effectiveTime, type, concept, ReleaseComponentType.CONCEPT, typeConceptNotExist);
+		validateComponentExists(effectiveTime, caseSignificance, concept, ReleaseComponentType.CONCEPT, caseSignificanceConceptNotExist);
+		
+		validateComponentUnique(row, descriptionIdsWithEffectivetimeStatus, descriptionIdNotUnique);
+		
+		if (Concepts.FULLY_SPECIFIED_NAME.equals(type)) {
+			final String term = row.get(7);
+			if (active) {
+				fullySpecifiedNames.put(term, concept);
+			} else {
+				fullySpecifiedNames.remove(term, concept);
+			}
+		}
 	}
 
 	@Override
@@ -102,21 +111,4 @@ public class SnomedDescriptionValidator extends AbstractSnomedValidator {
 		caseSignificanceConceptNotExist.clear();
 	}
 	
-	private void validateFullySpecifiedName(final List<String> row, final int lineNumber) {
-		final boolean active = "1".equals(row.get(2));
-		final String concept = row.get(4);
-		final String type = row.get(6);
-		final String term = row.get(7);
-
-		if (!Concepts.FULLY_SPECIFIED_NAME.equals(type)) {
-			return;
-		}
-		
-		if (active) {
-			fullySpecifiedNames.put(term, concept);
-		} else {
-			fullySpecifiedNames.remove(term, concept);
-		}
-	}
-
 }

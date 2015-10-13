@@ -40,10 +40,9 @@ public class SnomedSimpleMapTypeRefSetValidator extends SnomedRefSetValidator {
 	}
 	
 	@Override
-	protected void doValidate(final List<String> row, final int lineNumber) {
-		super.doValidate(row, lineNumber);
-		
-		validateMapTarget(row, lineNumber);
+	protected void doValidate(final List<String> row) {
+		super.doValidate(row);
+		validateMapTarget(row);
 	}
 
 	@Override
@@ -58,10 +57,12 @@ public class SnomedSimpleMapTypeRefSetValidator extends SnomedRefSetValidator {
 		return "simple map type";
 	}
 	
-	private void validateMapTarget(final List<String> row, final int lineNumber) {
+	private void validateMapTarget(final List<String> row) {
+		final String uuid = row.get(0);
+		final String effectiveTime = row.get(1);
 		final String mapTarget = row.get(6);
 		if (mapTarget.isEmpty()) {
-			addDefectDescription(mapTargetIsEmpty, lineNumber);
+			mapTargetIsEmpty.add(String.format("Reference set member '%s''s map target is empty", uuid, effectiveTime));
 		}
 	}
 

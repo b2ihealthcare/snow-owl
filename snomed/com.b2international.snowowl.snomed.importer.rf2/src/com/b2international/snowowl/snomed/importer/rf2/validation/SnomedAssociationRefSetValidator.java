@@ -42,9 +42,9 @@ public class SnomedAssociationRefSetValidator extends SnomedRefSetValidator {
 	}
 	
 	@Override
-	protected void doValidate(List<String> row, int lineNumber) {
-		super.doValidate(row, lineNumber);
-		validateTargetComponent(row, lineNumber);
+	protected void doValidate(List<String> row) {
+		super.doValidate(row);
+		validateTargetComponent(row);
 	}
 
 
@@ -60,10 +60,12 @@ public class SnomedAssociationRefSetValidator extends SnomedRefSetValidator {
 		return "association type";
 	}
 
-	private void validateTargetComponent(List<String> row, int lineNumber) {
+	private void validateTargetComponent(List<String> row) {
+		final String uuid = row.get(0);
+		final String effectiveTime = row.get(1);
 		final String targetComponent = row.get(6);
 		if (!isComponentExists(targetComponent, ReleaseComponentType.CONCEPT)) {
-			addDefectDescription(targetComponentNotExist, lineNumber, targetComponent);
+			targetComponentNotExist.add(getMissingComponentMessage(uuid, effectiveTime, "target component", targetComponent));
 		}
 	}
 

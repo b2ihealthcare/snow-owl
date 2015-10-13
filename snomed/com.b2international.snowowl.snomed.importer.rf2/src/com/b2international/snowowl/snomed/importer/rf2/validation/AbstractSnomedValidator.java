@@ -108,7 +108,7 @@ public abstract class AbstractSnomedValidator {
 	 * @param row the row which contains the release file specific elements
 	 * @param lineNumber the number of the given row
 	 */
-	protected abstract void doValidate(List<String> row, int lineNumber);
+	protected abstract void doValidate(List<String> row);
 	
 	/**
 	 * Performs any one-time initialization necessary for the validation.
@@ -182,7 +182,7 @@ public abstract class AbstractSnomedValidator {
 		final String effectiveTimeMessage = effectiveTime.length() == 0 ? "Unpublished" : effectiveTime;
 		final String message = String.format("Validating %s file in '%s'...", importType.getDisplayName(), effectiveTimeMessage);
 		monitor.beginTask(message, 1);
-		validationContext.getLogger().info(message);
+		validationContext.getLogger().trace(message);
 		
 		final int expectedNumberOfColumns = this.expectedHeader.length;
 		
@@ -206,8 +206,8 @@ public abstract class AbstractSnomedValidator {
 				}
 				
 				if (row.size() != expectedNumberOfColumns) {
-					addDefect(DefectType.INCORRECT_COLUMN_NUMBER, MessageFormat.format("Line number {0} in the ''{1}'' file, got {2}, expected {3}",
-							lineNumber, releaseFileName, row.size(), expectedNumberOfColumns));
+					addDefect(DefectType.INCORRECT_COLUMN_NUMBER, String.format("Expected '%s' number of columns, but got '%s' in file %s",
+							expectedNumberOfColumns, row.size(), releaseFileName));
 					continue;
 				}
 				
@@ -216,13 +216,13 @@ public abstract class AbstractSnomedValidator {
 					validateModuleId(row, lineNumber);
 				}
 				
-				doValidate(row, lineNumber);
+				doValidate(row);
 			}
 		} catch (final IOException e) {
 			throw new ImportException(MessageFormat.format("Exception when reading {0}s for validating.", importType.getDisplayName()), e);
 		} finally {
 			monitor.worked(1);
-			validationContext.getLogger().info("Validated {} file in '{}' [{}]", importType.getDisplayName(), effectiveTimeMessage, watch);
+			validationContext.getLogger().trace("Validated {} file in '{}' [{}]", importType.getDisplayName(), effectiveTimeMessage, watch);
 		}
 		// add additional defects after validation
 		addDefect(DefectType.MODULE_CONCEPT_NOT_EXIST, moduleIdNotExist);
@@ -352,7 +352,7 @@ public abstract class AbstractSnomedValidator {
 	 * @param messages the {@code Set} where the not unique IDs are stored (may not be {@code null})
 	 * @param lineNumber the number of the line
 	 */
-	public void validateComponentUnique(final List<String> row, final Map<String, List<String>> componentIds, final Collection<String> messages, final int lineNumber) {
+	public void validateComponentUnique(final List<String> row, final Map<String, List<String>> componentIds, final Collection<String> messages) {
 		final String id = row.get(0);
 		if (componentIds.containsKey(id)) {
 			// if the id is for the same component as before
@@ -361,26 +361,19 @@ public abstract class AbstractSnomedValidator {
 				// we set the new status
 				componentIds.get(id).set(1, row.get(2));
 			} else if (!componentIds.get(id).get(1).equals("0")) {
-				messages.add(MessageFormat.format("Line number {0} in the ''{1}'' file part of concept ID {2}", lineNumber, releaseFileName, conceptId));
+				messages.add(String.format("Component ID '%s' is not unique in file '%s'", id, releaseFileName));
 			}
 		} else {
 			componentIds.put(id, createConceptIdStatusList(row));
 		}
 	}
 	
-
-	/**
-	 * @param componentId
-	 * @param componentType
-	 * @param messages
-	 * @param lineNumber
-	 */
-	public void validateComponentExists(final String componentId, final String partOfConceptId, final ReleaseComponentType componentType, final Set<String> messages, final int lineNumber) {
+	protected void validateComponentExists(final String effectiveTime, final String componentId, final String partOfComponentId, final ReleaseComponentType componentType, final Set<String> messages) {
 		if (!isComponentExists(componentId, componentType)) {
-			if (componentId.equals(partOfConceptId)) {
-				messages.add(MessageFormat.format("Line number {0} in the ''{1}'' file with concept ID {2}", lineNumber, releaseFileName, componentId));
+			if (componentId.equals(partOfComponentId)) {
+				messages.add(String.format("Missing component '%s' in effective time '%s'", componentId, effectiveTime));
 			} else {
-				messages.add(MessageFormat.format("Line number {0} in the ''{1}'' file, part of concept ID {2}, missing concept ID {3}", lineNumber, releaseFileName, partOfConceptId, componentId));
+				messages.add(String.format("Component '%s' references missing component '%' in effective time '%s'", partOfComponentId, componentId, effectiveTime));
 			}
 		}
 	}
