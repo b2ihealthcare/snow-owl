@@ -47,10 +47,10 @@ import com.b2international.snowowl.datastore.server.snomed.index.init.Rf2BasedSn
 import com.b2international.snowowl.snomed.datastore.SnomedTerminologyBrowser;
 import com.b2international.snowowl.snomed.datastore.index.IncompleteTaxonomyException;
 import com.b2international.snowowl.snomed.datastore.services.SnomedConceptNameProvider;
+import com.b2international.snowowl.snomed.importer.net4j.DefectType;
 import com.b2international.snowowl.snomed.importer.net4j.ImportConfiguration;
 import com.b2international.snowowl.snomed.importer.net4j.SnomedIncompleteTaxonomyValidationDefect;
 import com.b2international.snowowl.snomed.importer.net4j.SnomedValidationDefect;
-import com.b2international.snowowl.snomed.importer.net4j.SnomedValidationDefect.DefectType;
 import com.b2international.snowowl.snomed.importer.rf2.util.Rf2FileModifier;
 
 /**
@@ -82,7 +82,6 @@ public class SnomedTaxonomyValidator {
 			defects.addAll(doValidate());
 		}
 		return defects;
-		
 	}
 
 	/*
