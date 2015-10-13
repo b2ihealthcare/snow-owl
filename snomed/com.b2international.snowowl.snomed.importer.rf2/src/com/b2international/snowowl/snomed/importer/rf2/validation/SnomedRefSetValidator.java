@@ -142,11 +142,13 @@ public abstract class SnomedRefSetValidator extends AbstractSnomedValidator {
 	}
 
 	@Override
-	protected void doValidate(IProgressMonitor monitor) {
-		super.doValidate(monitor);
+	protected void doValidate(String effectiveTime, IProgressMonitor monitor) {
+		super.doValidate(effectiveTime, monitor);
 		addDefect(DefectType.NOT_UNIQUE_REFSET_MEMBER_ID, uuidNotUnique);
 		addDefect(DefectType.INCORRECT_REFSET_MEMBER_ID, uuidInvalid);
 		addDefect(DefectType.REFSET_MEMBER_COMPONENT_NOT_EXIST, referencedComponentNotExist);
+		uuidInvalid.clear();
+		referencedComponentNotExist.clear();
 	}
 	
 	/**

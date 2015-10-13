@@ -46,10 +46,12 @@ public class SnomedConceptValidator extends AbstractSnomedValidator {
 	}
 
 	@Override
-	protected void doValidate(IProgressMonitor monitor) {
-		super.doValidate(monitor);
+	protected void doValidate(String effectiveTime, IProgressMonitor monitor) {
+		super.doValidate(effectiveTime, monitor);
 		checkConceptIds(DefectType.MODULE_CONCEPT_NOT_EXIST, requiredModules);
 		checkConceptIds(DefectType.CONCEPT_DEFINITION_STATUS_NOT_EXIST, requiredDefinitionStatuses);
+		requiredModules.clear();
+		requiredDefinitionStatuses.clear();
 	}
 	
 	@Override

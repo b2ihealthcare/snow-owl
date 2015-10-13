@@ -47,9 +47,10 @@ public class SnomedSimpleMapTypeRefSetValidator extends SnomedRefSetValidator {
 	}
 
 	@Override
-	protected void doValidate(IProgressMonitor monitor) {
-		super.doValidate(monitor);
+	protected void doValidate(String effectiveTime, IProgressMonitor monitor) {
+		super.doValidate(effectiveTime, monitor);
 		addDefect(DefectType.SIMPLE_MAP_TARGET_IS_EMPTY, mapTargetIsEmpty);
+		mapTargetIsEmpty.clear();
 	}
 	
 	@Override

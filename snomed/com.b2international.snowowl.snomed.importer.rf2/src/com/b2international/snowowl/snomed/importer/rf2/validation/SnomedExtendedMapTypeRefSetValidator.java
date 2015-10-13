@@ -21,10 +21,14 @@ import java.net.URL;
 import java.util.List;
 import java.util.Set;
 
+import org.eclipse.core.runtime.IProgressMonitor;
+
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
+import com.b2international.snowowl.snomed.importer.net4j.DefectType;
 import com.b2international.snowowl.snomed.importer.net4j.ImportConfiguration;
 import com.b2international.snowowl.snomed.importer.release.ReleaseFileSet.ReleaseComponentType;
 import com.b2international.snowowl.snomed.importer.rf2.model.ComponentImportType;
+import com.google.common.collect.Iterables;
 
 /**
  * RF2 file validator for SNOMED&nbsp;CT extended maps.
@@ -44,6 +48,14 @@ public class SnomedExtendedMapTypeRefSetValidator extends SnomedRefSetValidator 
 		super.doValidate(row, lineNumber);
 		validateCorrelationConcept(row, lineNumber);
 		validateMapCategory(row, lineNumber);
+	}
+	
+	@Override
+	protected void doValidate(String effectiveTime, IProgressMonitor monitor) {
+		super.doValidate(effectiveTime, monitor);
+		addDefect(DefectType.EXTENDED_MAP_REFERENCED_INVALID_CONCEPT, Iterables.concat(mapCategoryConceptNotExist, correlationConceptNotExist));
+		mapCategoryConceptNotExist.clear();
+		correlationConceptNotExist.clear();
 	}
 
 	@Override

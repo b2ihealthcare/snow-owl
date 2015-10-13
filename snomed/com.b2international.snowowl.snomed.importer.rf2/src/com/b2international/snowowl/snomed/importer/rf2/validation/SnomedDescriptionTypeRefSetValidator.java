@@ -28,7 +28,6 @@ import com.b2international.snowowl.snomed.importer.net4j.DefectType;
 import com.b2international.snowowl.snomed.importer.net4j.ImportConfiguration;
 import com.b2international.snowowl.snomed.importer.release.ReleaseFileSet.ReleaseComponentType;
 import com.b2international.snowowl.snomed.importer.rf2.model.ComponentImportType;
-import com.google.common.collect.Sets;
 
 /**
  * Represents a release file validator that validates the description type reference set.
@@ -52,12 +51,14 @@ public class SnomedDescriptionTypeRefSetValidator extends SnomedRefSetValidator 
 	}
 
 	@Override
-	protected void doValidate(IProgressMonitor monitor) {
-		super.doValidate(monitor);
+	protected void doValidate(String effectiveTime, IProgressMonitor monitor) {
+		super.doValidate(effectiveTime, monitor);
 		addDefect(DefectType.DESCRIPTION_TYPE_DESCRIPTION_FORMAT_NOT_EXIST, descriptionFormatNotExist);
 		addDefect(DefectType.DESCRIPTION_TYPE_DESCRIPTION_LENGTH_IS_EMPTY, descriptionLengthIsEmpty);
+		descriptionFormatNotExist.clear();
+		descriptionLengthIsEmpty.clear();
 	}
-
+	
 	@Override
 	protected String getName() {
 		return "description type";
@@ -66,10 +67,6 @@ public class SnomedDescriptionTypeRefSetValidator extends SnomedRefSetValidator 
 	private void validateDescriptionFormat(List<String> row, int lineNumber) {
 		final String descriptionFormat = row.get(6);
 		if (!isComponentExists(descriptionFormat, ReleaseComponentType.CONCEPT)) {
-			if (null == descriptionFormatNotExist) {
-				descriptionFormatNotExist = Sets.newHashSet();
-			}
-			
 			addDefectDescription(descriptionFormatNotExist, lineNumber, descriptionFormat);
 		}
 	}
@@ -77,10 +74,6 @@ public class SnomedDescriptionTypeRefSetValidator extends SnomedRefSetValidator 
 	private void validateDescriptionLength(List<String> row, int lineNumber) {
 		final String length = row.get(7);
 		if (length.isEmpty()) {
-			if (null == descriptionLengthIsEmpty) {
-				descriptionLengthIsEmpty = Sets.newHashSet();
-			}
-			
 			addDefectDescription(descriptionLengthIsEmpty, lineNumber);
 		}
 	}

@@ -60,11 +60,14 @@ public class SnomedConcreteDataTypeRefSetValidator extends SnomedRefSetValidator
 	}
 
 	@Override
-	protected void doValidate(IProgressMonitor monitor) {
-		super.doValidate(monitor);
+	protected void doValidate(String effectiveTime, IProgressMonitor monitor) {
+		super.doValidate(effectiveTime, monitor);
 		addDefect(DefectType.CONCRETE_DOMAIN_UNIT_CONCEPT_NOT_EXIST, unitConceptNotExist);
 		addDefect(DefectType.CONCRETE_DOMAIN_OPERATOR_CONCEPT_NOT_EXIST, operatorConceptNotExist);
 		addDefect(DefectType.CONCRETE_DOMAIN_VALUE_IS_EMPTY, valueIsEmpty);
+		unitConceptNotExist.clear();
+		operatorConceptNotExist.clear();
+		valueIsEmpty.clear();
 	}
 
 	@Override

@@ -15,7 +15,6 @@
  */
 package com.b2international.snowowl.snomed.importer.rf2.validation;
 
-import static com.google.common.collect.Lists.newArrayList;
 import static com.google.common.collect.Maps.newHashMap;
 import static com.google.common.collect.Sets.newHashSet;
 
@@ -60,7 +59,6 @@ import com.google.common.base.Splitter;
 import com.google.common.base.Stopwatch;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
-import com.google.common.collect.Ordering;
 import com.google.common.collect.Sets;
 import com.google.common.io.Closeables;
 import com.google.common.io.Closer;
@@ -88,9 +86,8 @@ public abstract class AbstractSnomedValidator {
 	
 	private final SnomedValidationContext validationContext;
 	private final String[] expectedHeader;
+	private final Collection<String> effectiveTimes = newHashSet();
 	
-	private Set<String> effectiveTimes = newHashSet();
-
 	public AbstractSnomedValidator(final ImportConfiguration configuration, 
 			final URL releaseUrl,
 			final ComponentImportType importType, 
@@ -117,8 +114,9 @@ public abstract class AbstractSnomedValidator {
 	 * Performs any one-time initialization necessary for the validation.
 	 * 
 	 * @param monitor the SubMonitor instance to report progress on
+	 * @return the seen effective times
 	 */
-	protected void preValidate(final SubMonitor monitor) {
+	protected Collection<String> preValidate(final SubMonitor monitor) {
 		monitor.beginTask(MessageFormat.format("Preparing {0}s validation", importType.getDisplayName()), 1);
 		
 		final Map<String, CsvListWriter> writers = newHashMap();
@@ -158,44 +156,28 @@ public abstract class AbstractSnomedValidator {
 				
 				writers.get(effectiveTime).write(row);
 			}
-			
+
+			return ImmutableList.copyOf(effectiveTimes);
 		} catch (final IOException e) {
 			throw new ImportException(MessageFormat.format("Couldn''t read row from {0} release file.", releaseFileName), e);
 		} finally {
 			Closeables.closeQuietly(closer);
 			monitor.worked(1);
 		}
-		
 	}
 	
 	private Path getEffectiveTimeFile(String effectiveTime) {
 		return componentStagingDirectory.toPath().resolve(effectiveTime + "_"+ releaseFileName);
 	}
 
-	protected void doValidate(IProgressMonitor monitor) {
-		final SubMonitor subMonitor = SubMonitor.convert(monitor, effectiveTimes.size());
-		for (String effectiveTime : Ordering.natural().immutableSortedCopy(effectiveTimes)) {
-			if (!"".equals(effectiveTime)) {
-				doValidate(effectiveTime, subMonitor.newChild(1));
-			}
-		}
-		
-		// validate Unpublished effective time last
-		if (effectiveTimes.contains("")) {
-			doValidate("", subMonitor.newChild(1));
-		}
-		
-		// add additional defects after validation
-		addDefect(DefectType.MODULE_CONCEPT_NOT_EXIST, moduleIdNotExist);
-		addDefect(DefectType.INVALID_EFFECTIVE_TIME_FORMAT, invalidEffectiveTimeFormat);
-	}
-	
 	/**
-	 * Validates a release file.
+	 * Validates a release file. If the release file does not have the specified effective time, then it skips execution.
 	 * 
 	 * @param monitor the SubMonitor instance to report progress on
 	 */
-	private void doValidate(final String effectiveTime, IProgressMonitor monitor) {
+	protected void doValidate(final String effectiveTime, IProgressMonitor monitor) {
+		if (!effectiveTimes.contains(effectiveTime)) return;
+		
 		final Stopwatch watch = Stopwatch.createStarted();
 		final String effectiveTimeMessage = effectiveTime.length() == 0 ? "Unpublished" : effectiveTime;
 		final String message = String.format("Validating %s file in '%s'...", importType.getDisplayName(), effectiveTimeMessage);
@@ -242,6 +224,12 @@ public abstract class AbstractSnomedValidator {
 			monitor.worked(1);
 			validationContext.getLogger().info("Validated {} file in '{}' [{}]", importType.getDisplayName(), effectiveTimeMessage, watch);
 		}
+		// add additional defects after validation
+		addDefect(DefectType.MODULE_CONCEPT_NOT_EXIST, moduleIdNotExist);
+		addDefect(DefectType.INVALID_EFFECTIVE_TIME_FORMAT, invalidEffectiveTimeFormat);
+		
+		moduleIdNotExist.clear();
+		invalidEffectiveTimeFormat.clear();
 	}
 	
 	protected void postValidate(final SubMonitor monitor) {
@@ -262,7 +250,7 @@ public abstract class AbstractSnomedValidator {
 	 * 
 	 * @param validationDefect the defect to be added
 	 */
-	protected void addDefect(final DefectType type, Collection<String> defects) {
+	protected void addDefect(final DefectType type, Iterable<String> defects) {
 		this.validationContext.addDefect(type, defects);
 	}
 	
@@ -348,8 +336,8 @@ public abstract class AbstractSnomedValidator {
 		}
 	}
 	
-	protected boolean isComponentActive(final String id) {
-		return validationContext.isComponentActive(id);
+	protected boolean isComponentActive(final String componentId) {
+		return validationContext.isComponentActive(componentId, getComponentCategory(componentId));
 	}
 	
 	protected void registerComponent(ComponentCategory category, String componentId, boolean status) throws AlreadyExistsException {
@@ -364,7 +352,7 @@ public abstract class AbstractSnomedValidator {
 	 * @param messages the {@code Set} where the not unique IDs are stored (may not be {@code null})
 	 * @param lineNumber the number of the line
 	 */
-	public void validateComponentUnique(final List<String> row, final Map<String, List<String>> componentIds, final Set<String> messages, final int lineNumber) {
+	public void validateComponentUnique(final List<String> row, final Map<String, List<String>> componentIds, final Collection<String> messages, final int lineNumber) {
 		final String id = row.get(0);
 		if (componentIds.containsKey(id)) {
 			// if the id is for the same component as before
