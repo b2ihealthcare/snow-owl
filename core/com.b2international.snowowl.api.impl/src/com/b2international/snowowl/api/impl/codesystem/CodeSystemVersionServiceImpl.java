@@ -26,7 +26,6 @@ import org.eclipse.core.runtime.IStatus;
 import com.b2international.snowowl.api.codesystem.ICodeSystemVersionService;
 import com.b2international.snowowl.api.codesystem.domain.ICodeSystemVersion;
 import com.b2international.snowowl.api.codesystem.domain.ICodeSystemVersionProperties;
-import com.b2international.snowowl.api.exception.LockedException;
 import com.b2international.snowowl.api.impl.codesystem.domain.CodeSystemVersion;
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.api.SnowowlRuntimeException;
@@ -36,6 +35,7 @@ import com.b2international.snowowl.core.domain.exceptions.CodeSystemVersionNotFo
 import com.b2international.snowowl.core.exceptions.AlreadyExistsException;
 import com.b2international.snowowl.core.exceptions.BadRequestException;
 import com.b2international.snowowl.core.exceptions.ConflictException;
+import com.b2international.snowowl.core.exceptions.LockedException;
 import com.b2international.snowowl.core.exceptions.NotFoundException;
 import com.b2international.snowowl.datastore.ICodeSystem;
 import com.b2international.snowowl.datastore.TerminologyRegistryService;

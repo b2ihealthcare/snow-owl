@@ -17,6 +17,7 @@ package com.b2international.snowowl.api;
 
 import java.util.List;
 
+import com.b2international.snowowl.core.component.IComponentService;
 import com.b2international.snowowl.core.domain.IComponentList;
 import com.b2international.snowowl.core.domain.IComponentNode;
 import com.b2international.snowowl.core.domain.IComponentRef;

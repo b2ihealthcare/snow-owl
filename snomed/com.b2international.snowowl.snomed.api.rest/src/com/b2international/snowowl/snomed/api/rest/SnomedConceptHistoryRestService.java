@@ -21,8 +21,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.b2international.snowowl.api.history.domain.IHistoryInfo;
 import com.b2international.snowowl.core.domain.IComponentRef;
+import com.b2international.snowowl.core.history.domain.IHistoryInfo;
 import com.b2international.snowowl.snomed.api.ISnomedConceptHistoryService;
 import com.b2international.snowowl.snomed.api.rest.domain.CollectionResource;
 import com.wordnik.swagger.annotations.Api;

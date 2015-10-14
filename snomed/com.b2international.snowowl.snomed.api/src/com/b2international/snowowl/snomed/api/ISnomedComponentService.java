@@ -15,7 +15,7 @@
  */
 package com.b2international.snowowl.snomed.api;
 
-import com.b2international.snowowl.api.IComponentService;
+import com.b2international.snowowl.core.component.IComponentService;
 import com.b2international.snowowl.snomed.core.domain.ISnomedComponent;
 import com.b2international.snowowl.snomed.core.domain.ISnomedComponentInput;
 import com.b2international.snowowl.snomed.core.domain.ISnomedComponentUpdate;
