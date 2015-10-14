@@ -13,25 +13,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.snomed.api.domain;
+package com.b2international.snowowl.snomed.core.domain;
 
 /**
- * Holds common updatable properties of SNOMED CT components.
+ * Implementations allow clients to generate component identifiers conforming to the specified constraints.
  */
-public interface ISnomedComponentUpdate {
+public interface IdGenerationStrategy {
 
 	/**
-	 * Returns the identifier of the component's requested new module.
+	 * Generates a component identifier.
+	 * <p>
+	 * This method may return different results each time it is invoked. 
 	 * 
-	 * @return the requested new module identifier for the component
+	 * @return the generated identifier
 	 */
-	String getModuleId();
-
-	/**
-	 * Returns the component's requested new status as a tri-state value.
-	 * 
-	 * @return {@code true} if the component should be re-activated, {@code false} if it is about to be deactivated,
-	 * {@code null} if the component status should be unchanged
-	 */
-	Boolean isActive();
+	String getId();
 }

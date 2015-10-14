@@ -13,16 +13,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.snomed.api.domain;
+package com.b2international.snowowl.snomed.core.domain;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
 import java.util.Date;
 
-import com.b2international.snowowl.snomed.api.ISnomedRf2ImportService;
-
 /**
- * Represents the configuration object used by the {@link ISnomedRf2ImportService SNOMED CT RF2 import service}.
+ * Represents the configuration object used by a SNOMED CT RF2 Importer implementation.
  */
 public interface ISnomedImportConfiguration extends ISnomedRF2Configuration {
 

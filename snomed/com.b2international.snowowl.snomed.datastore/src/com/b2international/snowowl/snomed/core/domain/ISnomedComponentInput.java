@@ -13,33 +13,25 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.snomed.api.domain;
+package com.b2international.snowowl.snomed.core.domain;
 
-import java.util.Date;
-
-import com.b2international.snowowl.core.domain.IComponent;
+import com.b2international.snowowl.core.domain.IComponentInput;
 
 /**
- * Holds common properties of SNOMED CT components.
+ * Holds common properties required for creating SNOMED CT components.
  */
-public interface ISnomedComponent extends IComponent {
+public interface ISnomedComponentInput extends IComponentInput {
 
 	/**
-	 * Returns the component's current status as a boolean value.
-	 *  
-	 * @return {@code true} if the component is active, {@code false} if it is inactive
-	 */
-	boolean isActive();
-
-	/**
-	 * Returns the date at which the current state of the component becomes effective.
+	 * Returns the component identifier generation strategy for this component (and optionally other, nested components,
+	 * eg. descriptions of a concept).
 	 * 
-	 * @return the component's effective time
+	 * @return the component identifier generation strategy
 	 */
-	Date getEffectiveTime();
+	IdGenerationStrategy getIdGenerationStrategy();
 
 	/**
-	 * Returns the containing module's concept identifier.
+	 * Returns the identifier of the component's module.
 	 * 
 	 * @return the module identifier for the component
 	 */

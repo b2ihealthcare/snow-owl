@@ -13,34 +13,22 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.snomed.api.domain;
+package com.b2international.snowowl.snomed.core.domain;
 
-import com.b2international.snowowl.snomed.api.ISnomedConceptService;
+import com.b2international.snowowl.core.domain.IBranchAwareConfig;
 
 /**
- * Enumerates different search criteria which can be used when looking up concepts.
+ * Common super interface for RF2 based import-export configurations.
  * 
- * @see ISnomedConceptService
+ * @since 2.0
  */
-public enum SearchKind {
+public interface ISnomedRF2Configuration extends IBranchAwareConfig {
 
 	/**
-	 * Search by concept label (a preferred term in a system-defined dialect)
+	 * Returns the RF2 release type of the current export configuration.
+	 * 
+	 * @return the desired RF2 release type
 	 */
-	LABEL,
-
-	/**
-	 * Search by ESCG expression
-	 */
-	ESCG,
-
-	/**
-	 * Search by matching concept module
-	 */
-	MODULE,
-
-	/**
-	 * Search by matching namespace part of concept identifier
-	 */
-	NAMESPACE;
+	Rf2ReleaseType getRf2ReleaseType();
+	
 }

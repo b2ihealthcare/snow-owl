@@ -13,22 +13,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.snomed.api.domain;
-
-import com.b2international.snowowl.core.domain.IBranchAwareConfig;
 
 /**
- * Common super interface for RF2 based import-export configurations.
- * 
- * @since 2.0
+ * Contains domain classes for Snow Owl's RESTful API for SNOMED CT.  
  */
-public interface ISnomedRF2Configuration extends IBranchAwareConfig {
-
-	/**
-	 * Returns the RF2 release type of the current export configuration.
-	 * 
-	 * @return the desired RF2 release type
-	 */
-	Rf2ReleaseType getRf2ReleaseType();
-	
-}
+package com.b2international.snowowl.snomed.core.domain;

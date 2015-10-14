@@ -13,15 +13,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.snomed.api.domain;
+package com.b2international.snowowl.snomed.core.domain;
 
 import java.util.Collection;
 import java.util.Date;
 
-import com.b2international.snowowl.snomed.api.ISnomedExportService;
-
 /**
- * Represents the configuration object used by the {@link ISnomedExportService SNOMED CT export service}.
+ * Represents the configuration object used by a SNOMED CT RF2 Export implementation.
  */
 public interface ISnomedExportConfiguration extends ISnomedRF2Configuration {
 

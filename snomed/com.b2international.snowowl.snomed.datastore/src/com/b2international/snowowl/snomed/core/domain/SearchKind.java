@@ -13,24 +13,30 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.snomed.api.domain;
+package com.b2international.snowowl.snomed.core.domain;
 
 /**
- * Enumerations implementing this interface can provide a SNOMED CT concept identifier for each value.
+ * Enumerates different search criteria which can be used when looking up concepts.
  */
-public interface ConceptEnum {
+public enum SearchKind {
 
-	/** 
-	 * Retrieves the concept identifier for this enum value.
-	 *  
-	 * @return the concept identifier associated with this enum constant 
+	/**
+	 * Search by concept label (a preferred term in a system-defined dialect)
 	 */
-	String getConceptId();
+	LABEL,
 
-	/** 
-	 * Returns the name of this enum value.
-	 * 
-	 * @return the enum constant's name, same as {@link Enum#name()}
+	/**
+	 * Search by ESCG expression
 	 */
-	String name(); // XXX: method name must be the same as Enum.name()
+	ESCG,
+
+	/**
+	 * Search by matching concept module
+	 */
+	MODULE,
+
+	/**
+	 * Search by matching namespace part of concept identifier
+	 */
+	NAMESPACE;
 }

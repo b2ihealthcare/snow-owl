@@ -13,8 +13,24 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package com.b2international.snowowl.snomed.core.domain;
 
 /**
- * Contains domain classes for Snow Owl's RESTful API for SNOMED CT.  
+ * Enumerations implementing this interface can provide a SNOMED CT concept identifier for each value.
  */
-package com.b2international.snowowl.snomed.api.domain;
+public interface ConceptEnum {
+
+	/** 
+	 * Retrieves the concept identifier for this enum value.
+	 *  
+	 * @return the concept identifier associated with this enum constant 
+	 */
+	String getConceptId();
+
+	/** 
+	 * Returns the name of this enum value.
+	 * 
+	 * @return the enum constant's name, same as {@link Enum#name()}
+	 */
+	String name(); // XXX: method name must be the same as Enum.name()
+}
