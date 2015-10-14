@@ -2,10 +2,10 @@ package com.b2international.snowowl.snomed.api.impl.domain;
 
 import com.b2international.commons.ClassUtils;
 import com.b2international.snowowl.core.terminology.ComponentCategory;
-import com.b2international.snowowl.snomed.api.domain.Acceptability;
-import com.b2international.snowowl.snomed.api.domain.ISnomedComponentInput;
-import com.b2international.snowowl.snomed.api.domain.ISnomedComponentUpdate;
 import com.b2international.snowowl.snomed.api.impl.domain.browser.SnomedBrowserDescription;
+import com.b2international.snowowl.snomed.core.domain.Acceptability;
+import com.b2international.snowowl.snomed.core.domain.ISnomedComponentInput;
+import com.b2international.snowowl.snomed.core.domain.ISnomedComponentUpdate;
 
 import java.util.Map;
 

@@ -16,7 +16,7 @@
 package com.b2international.snowowl.snomed.api;
 
 import com.b2international.snowowl.api.IComponentNodeService;
-import com.b2international.snowowl.snomed.api.domain.ISnomedConcept;
+import com.b2international.snowowl.snomed.core.domain.ISnomedConcept;
 
 /**
  * Implementations allow browsing SNOMED CT concepts as a directed, acyclic graph (DAG).

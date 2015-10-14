@@ -15,9 +15,9 @@
  */
 package com.b2international.snowowl.snomed.api.impl.domain.browser;
 
-import com.b2international.snowowl.snomed.api.domain.CharacteristicType;
-import com.b2international.snowowl.snomed.api.domain.DefinitionStatus;
 import com.b2international.snowowl.snomed.api.domain.browser.ISnomedBrowserChildConcept;
+import com.b2international.snowowl.snomed.core.domain.CharacteristicType;
+import com.b2international.snowowl.snomed.core.domain.DefinitionStatus;
 
 public class SnomedBrowserChildConcept implements ISnomedBrowserChildConcept {
 

@@ -15,10 +15,10 @@
  */
 package com.b2international.snowowl.snomed.api.impl.domain;
 
-import com.b2international.snowowl.snomed.api.domain.CharacteristicType;
-import com.b2international.snowowl.snomed.api.domain.ISnomedRelationship;
-import com.b2international.snowowl.snomed.api.domain.RelationshipModifier;
-import com.b2international.snowowl.snomed.api.domain.RelationshipRefinability;
+import com.b2international.snowowl.snomed.core.domain.CharacteristicType;
+import com.b2international.snowowl.snomed.core.domain.ISnomedRelationship;
+import com.b2international.snowowl.snomed.core.domain.RelationshipModifier;
+import com.b2international.snowowl.snomed.core.domain.RelationshipRefinability;
 
 /**
  * Represents a SNOMEd&nbsp;CT relationship.

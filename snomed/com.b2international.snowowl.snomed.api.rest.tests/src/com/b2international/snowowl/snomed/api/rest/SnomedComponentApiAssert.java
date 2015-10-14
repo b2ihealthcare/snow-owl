@@ -27,7 +27,7 @@ import java.util.Date;
 import java.util.Map;
 
 import com.b2international.snowowl.core.api.IBranchPath;
-import com.b2international.snowowl.snomed.api.domain.CharacteristicType;
+import com.b2international.snowowl.snomed.core.domain.CharacteristicType;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableMap.Builder;

@@ -16,7 +16,7 @@
 package com.b2international.snowowl.snomed.api;
 
 import com.b2international.snowowl.api.IComponentEdgeService;
-import com.b2international.snowowl.snomed.api.domain.ISnomedRelationship;
+import com.b2international.snowowl.snomed.core.domain.ISnomedRelationship;
 
 /**
  * Implementations of this interface allow browsing inbound and outbound SNOMED CT relationships that connect concepts.

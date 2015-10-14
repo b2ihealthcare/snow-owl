@@ -15,11 +15,11 @@
  */
 package com.b2international.snowowl.snomed.api.impl.domain;
 
-import com.b2international.snowowl.snomed.api.domain.AssociationType;
-import com.b2international.snowowl.snomed.api.domain.DefinitionStatus;
-import com.b2international.snowowl.snomed.api.domain.ISnomedConcept;
-import com.b2international.snowowl.snomed.api.domain.InactivationIndicator;
-import com.b2international.snowowl.snomed.api.domain.SubclassDefinitionStatus;
+import com.b2international.snowowl.snomed.core.domain.AssociationType;
+import com.b2international.snowowl.snomed.core.domain.DefinitionStatus;
+import com.b2international.snowowl.snomed.core.domain.ISnomedConcept;
+import com.b2international.snowowl.snomed.core.domain.InactivationIndicator;
+import com.b2international.snowowl.snomed.core.domain.SubclassDefinitionStatus;
 import com.google.common.collect.Multimap;
 
 /**

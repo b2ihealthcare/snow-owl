@@ -23,9 +23,9 @@ import javax.validation.constraints.Size;
 
 import org.hibernate.validator.constraints.NotEmpty;
 
-import com.b2international.snowowl.snomed.api.domain.ISnomedConceptInput;
-import com.b2international.snowowl.snomed.api.domain.ISnomedDescriptionInput;
-import com.b2international.snowowl.snomed.api.domain.IdGenerationStrategy;
+import com.b2international.snowowl.snomed.core.domain.ISnomedConceptInput;
+import com.b2international.snowowl.snomed.core.domain.ISnomedDescriptionInput;
+import com.b2international.snowowl.snomed.core.domain.IdGenerationStrategy;
 import com.google.common.collect.ImmutableList;
 
 /**

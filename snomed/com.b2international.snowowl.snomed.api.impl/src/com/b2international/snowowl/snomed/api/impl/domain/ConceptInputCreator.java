@@ -5,6 +5,12 @@ import com.b2international.snowowl.snomed.api.domain.*;
 import com.b2international.snowowl.snomed.api.domain.browser.ISnomedBrowserDescription;
 import com.b2international.snowowl.snomed.api.impl.domain.browser.SnomedBrowserConcept;
 import com.b2international.snowowl.snomed.api.impl.domain.browser.SnomedBrowserConceptUpdate;
+import com.b2international.snowowl.snomed.core.domain.ISnomedComponentInput;
+import com.b2international.snowowl.snomed.core.domain.ISnomedComponentUpdate;
+import com.b2international.snowowl.snomed.core.domain.ISnomedConceptInput;
+import com.b2international.snowowl.snomed.core.domain.ISnomedConceptUpdate;
+import com.b2international.snowowl.snomed.core.domain.ISnomedDescriptionInput;
+import com.b2international.snowowl.snomed.core.domain.InactivationIndicator;
 
 import java.util.List;
 

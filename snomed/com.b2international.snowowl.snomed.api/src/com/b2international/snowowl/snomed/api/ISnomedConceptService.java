@@ -20,10 +20,10 @@ import java.util.Map;
 import com.b2international.snowowl.api.exception.IllegalQueryParameterException;
 import com.b2international.snowowl.core.domain.IComponentList;
 import com.b2international.snowowl.core.exceptions.NotFoundException;
-import com.b2international.snowowl.snomed.api.domain.ISnomedConcept;
-import com.b2international.snowowl.snomed.api.domain.ISnomedConceptInput;
-import com.b2international.snowowl.snomed.api.domain.ISnomedConceptUpdate;
-import com.b2international.snowowl.snomed.api.domain.SearchKind;
+import com.b2international.snowowl.snomed.core.domain.ISnomedConcept;
+import com.b2international.snowowl.snomed.core.domain.ISnomedConceptInput;
+import com.b2international.snowowl.snomed.core.domain.ISnomedConceptUpdate;
+import com.b2international.snowowl.snomed.core.domain.SearchKind;
 
 /**
  * SNOMED CT concept service implementations provide methods for creating, reading, updating and deleting single concepts, as well as searching for

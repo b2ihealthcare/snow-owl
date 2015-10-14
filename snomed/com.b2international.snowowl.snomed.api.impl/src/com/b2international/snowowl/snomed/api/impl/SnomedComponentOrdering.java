@@ -15,7 +15,7 @@
  */
 package com.b2international.snowowl.snomed.api.impl;
 
-import com.b2international.snowowl.snomed.api.domain.ISnomedComponent;
+import com.b2international.snowowl.snomed.core.domain.ISnomedComponent;
 import com.google.common.base.Function;
 import com.google.common.collect.Ordering;
 

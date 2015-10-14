@@ -14,7 +14,7 @@ package com.b2international.snowowl.snomed.api.rest.domain;
 
 import java.util.Date;
 
-import com.b2international.snowowl.snomed.api.domain.ISnomedComponent;
+import com.b2international.snowowl.snomed.core.domain.ISnomedComponent;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonFormat.Shape;
 

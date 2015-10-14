@@ -20,9 +20,9 @@ import javax.validation.constraints.NotNull;
 
 import org.hibernate.validator.constraints.NotEmpty;
 
-import com.b2international.snowowl.snomed.api.domain.CharacteristicType;
-import com.b2international.snowowl.snomed.api.domain.ISnomedRelationshipInput;
-import com.b2international.snowowl.snomed.api.domain.RelationshipModifier;
+import com.b2international.snowowl.snomed.core.domain.CharacteristicType;
+import com.b2international.snowowl.snomed.core.domain.ISnomedRelationshipInput;
+import com.b2international.snowowl.snomed.core.domain.RelationshipModifier;
 
 /**
  * @since 4.0

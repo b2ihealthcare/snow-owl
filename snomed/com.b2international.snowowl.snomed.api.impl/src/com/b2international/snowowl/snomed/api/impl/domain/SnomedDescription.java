@@ -17,10 +17,10 @@ package com.b2international.snowowl.snomed.api.impl.domain;
 
 import java.util.Map;
 
-import com.b2international.snowowl.snomed.api.domain.Acceptability;
-import com.b2international.snowowl.snomed.api.domain.CaseSignificance;
-import com.b2international.snowowl.snomed.api.domain.DescriptionInactivationIndicator;
-import com.b2international.snowowl.snomed.api.domain.ISnomedDescription;
+import com.b2international.snowowl.snomed.core.domain.Acceptability;
+import com.b2international.snowowl.snomed.core.domain.CaseSignificance;
+import com.b2international.snowowl.snomed.core.domain.DescriptionInactivationIndicator;
+import com.b2international.snowowl.snomed.core.domain.ISnomedDescription;
 
 /**
  * Represents a SNOMED&nbsp;CT description.

@@ -16,9 +16,9 @@
 package com.b2international.snowowl.snomed.api;
 
 import com.b2international.snowowl.api.IComponentService;
-import com.b2international.snowowl.snomed.api.domain.ISnomedComponent;
-import com.b2international.snowowl.snomed.api.domain.ISnomedComponentInput;
-import com.b2international.snowowl.snomed.api.domain.ISnomedComponentUpdate;
+import com.b2international.snowowl.snomed.core.domain.ISnomedComponent;
+import com.b2international.snowowl.snomed.core.domain.ISnomedComponentInput;
+import com.b2international.snowowl.snomed.core.domain.ISnomedComponentUpdate;
 
 /**
  * SNOMED CT component service implementations provide methods for <b>c</b>reating, <b>r</b>eading, <b>u</b>pdating and

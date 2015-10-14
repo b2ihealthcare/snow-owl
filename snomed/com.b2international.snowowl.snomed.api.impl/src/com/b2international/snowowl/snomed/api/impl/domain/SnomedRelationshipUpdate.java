@@ -15,9 +15,9 @@
  */
 package com.b2international.snowowl.snomed.api.impl.domain;
 
-import com.b2international.snowowl.snomed.api.domain.CharacteristicType;
-import com.b2international.snowowl.snomed.api.domain.ISnomedRelationshipUpdate;
-import com.b2international.snowowl.snomed.api.domain.RelationshipModifier;
+import com.b2international.snowowl.snomed.core.domain.CharacteristicType;
+import com.b2international.snowowl.snomed.core.domain.ISnomedRelationshipUpdate;
+import com.b2international.snowowl.snomed.core.domain.RelationshipModifier;
 
 public class SnomedRelationshipUpdate extends AbstractSnomedComponentUpdate implements ISnomedRelationshipUpdate {
 

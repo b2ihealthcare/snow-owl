@@ -15,7 +15,7 @@
  */
 package com.b2international.snowowl.snomed.api.domain.browser;
 
-import com.b2international.snowowl.snomed.api.domain.DefinitionStatus;
+import com.b2international.snowowl.snomed.core.domain.DefinitionStatus;
 
 /**
  * Holds a SNOMED CT concept's definition status.

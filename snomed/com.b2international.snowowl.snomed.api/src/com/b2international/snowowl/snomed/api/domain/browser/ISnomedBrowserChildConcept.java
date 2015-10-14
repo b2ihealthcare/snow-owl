@@ -15,7 +15,7 @@
  */
 package com.b2international.snowowl.snomed.api.domain.browser;
 
-import com.b2international.snowowl.snomed.api.domain.CharacteristicType;
+import com.b2international.snowowl.snomed.core.domain.CharacteristicType;
 
 /**
  * Represents a summary of a specific SNOMED CT concept, returned when requesting concept children the IHTSDO SNOMED CT Browser.

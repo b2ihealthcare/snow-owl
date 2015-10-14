@@ -28,14 +28,14 @@ import org.springframework.web.bind.annotation.*;
 
 import com.b2international.snowowl.core.domain.IComponentRef;
 import com.b2international.snowowl.snomed.api.ISnomedRelationshipService;
-import com.b2international.snowowl.snomed.api.domain.ISnomedRelationship;
-import com.b2international.snowowl.snomed.api.domain.ISnomedRelationshipInput;
-import com.b2international.snowowl.snomed.api.domain.ISnomedRelationshipUpdate;
 import com.b2international.snowowl.snomed.api.rest.domain.ChangeRequest;
 import com.b2international.snowowl.snomed.api.rest.domain.RestApiError;
 import com.b2international.snowowl.snomed.api.rest.domain.SnomedRelationshipRestInput;
 import com.b2international.snowowl.snomed.api.rest.domain.SnomedRelationshipRestUpdate;
 import com.b2international.snowowl.snomed.api.rest.util.Responses;
+import com.b2international.snowowl.snomed.core.domain.ISnomedRelationship;
+import com.b2international.snowowl.snomed.core.domain.ISnomedRelationshipInput;
+import com.b2international.snowowl.snomed.core.domain.ISnomedRelationshipUpdate;
 import com.wordnik.swagger.annotations.*;
 
 /**

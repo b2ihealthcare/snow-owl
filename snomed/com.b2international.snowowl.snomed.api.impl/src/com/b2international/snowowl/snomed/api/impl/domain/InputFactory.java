@@ -1,10 +1,10 @@
 package com.b2international.snowowl.snomed.api.impl.domain;
 
-import com.b2international.snowowl.snomed.api.domain.ISnomedComponentInput;
-import com.b2international.snowowl.snomed.api.domain.ISnomedComponentUpdate;
 import com.b2international.snowowl.snomed.api.domain.browser.ISnomedBrowserComponentWithId;
 import com.b2international.snowowl.snomed.api.domain.browser.ISnomedBrowserConcept;
 import com.b2international.snowowl.snomed.api.domain.browser.ISnomedBrowserConceptUpdate;
+import com.b2international.snowowl.snomed.core.domain.ISnomedComponentInput;
+import com.b2international.snowowl.snomed.core.domain.ISnomedComponentUpdate;
 import com.google.common.collect.Sets;
 
 import java.util.*;

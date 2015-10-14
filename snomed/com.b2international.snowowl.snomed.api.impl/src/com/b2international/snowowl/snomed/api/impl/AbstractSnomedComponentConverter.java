@@ -18,7 +18,7 @@ package com.b2international.snowowl.snomed.api.impl;
 import java.util.Date;
 
 import com.b2international.snowowl.core.date.EffectiveTimes;
-import com.b2international.snowowl.snomed.api.domain.ISnomedComponent;
+import com.b2international.snowowl.snomed.core.domain.ISnomedComponent;
 import com.b2international.snowowl.snomed.datastore.index.SnomedIndexEntry;
 import com.google.common.base.Function;
 

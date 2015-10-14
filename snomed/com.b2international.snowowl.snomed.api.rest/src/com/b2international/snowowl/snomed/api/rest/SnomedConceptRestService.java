@@ -32,12 +32,12 @@ import org.springframework.web.bind.annotation.*;
 import com.b2international.snowowl.core.domain.IComponentList;
 import com.b2international.snowowl.core.domain.IComponentRef;
 import com.b2international.snowowl.snomed.api.ISnomedConceptService;
-import com.b2international.snowowl.snomed.api.domain.ISnomedConcept;
-import com.b2international.snowowl.snomed.api.domain.ISnomedConceptInput;
-import com.b2international.snowowl.snomed.api.domain.ISnomedConceptUpdate;
-import com.b2international.snowowl.snomed.api.domain.SearchKind;
 import com.b2international.snowowl.snomed.api.rest.domain.*;
 import com.b2international.snowowl.snomed.api.rest.util.Responses;
+import com.b2international.snowowl.snomed.core.domain.ISnomedConcept;
+import com.b2international.snowowl.snomed.core.domain.ISnomedConceptInput;
+import com.b2international.snowowl.snomed.core.domain.ISnomedConceptUpdate;
+import com.b2international.snowowl.snomed.core.domain.SearchKind;
 import com.google.common.base.Strings;
 import com.wordnik.swagger.annotations.*;
 
