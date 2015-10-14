@@ -13,18 +13,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.api.domain;
 
 /**
- * @since 2.0
+ * This package contains the domain objects of the Snow Owl RESTful API.
  */
-public interface IBranchAwareConfig {
-
-	/**
-	 * Returns the branch path, eg. "{@code MAIN/projectA/task1}".
-	 * 
-	 * @return the branch path
-	 */
-	String getBranchPath();
-	
-}
+package com.b2international.snowowl.core.domain;

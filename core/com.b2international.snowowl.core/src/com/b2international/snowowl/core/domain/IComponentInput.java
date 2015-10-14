@@ -13,22 +13,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.api.domain;
+package com.b2international.snowowl.core.domain;
 
 /**
- * Represents a component node in a component graph.
- * <p>
- * Component node representations can be different from {@link IComponent component representations}; the former is
- * usually a subset of the latter.
- * 
- * @see IComponentEdge
+ * The common interface of component-creating input models, pointing to the code system, version and task in which the
+ * component should be created.
  */
-public interface IComponentNode {
+public interface IComponentInput extends IBranchAwareConfig {
 
 	/**
-	 * Returns the component identifier.
+	 * Returns the code system short name, eg. "{@code SNOMEDCT}"
 	 * 
-	 * @return the component identifier
+	 * @return the code system short name
 	 */
-	String getId();
+	String getCodeSystemShortName();
+
 }

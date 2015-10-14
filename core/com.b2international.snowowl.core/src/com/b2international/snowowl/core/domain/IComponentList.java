@@ -13,25 +13,28 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.api.domain;
+package com.b2international.snowowl.core.domain;
+
+import java.util.List;
 
 /**
- * Points to a versioned component storage space of a code system, on a particular branch. 
+ * Represents a partial list of components, in which the total number of components is stored separately.
+ * 
+ * @param <C> the component type
  */
-public interface IStorageRef {
+public interface IComponentList<C> {
 
 	/**
-	 * Returns the code system short name, eg. "{@code SNOMEDCT}"
-	 * 
-	 * @return the code system short name
+	 * Returns the number of total members of this list, which is the upper limit of the number of elements in {@link #getMembers()}.
+	 *   
+	 * @return the number of total members of this list
 	 */
-	String getShortName();
+	int getTotalMembers();
 
 	/**
-	 * Returns the branch path eg. "{@code MAIN/projectA/task1}".
+	 * Returns the partial list of members for this component list.
 	 * 
-	 * @return the branch path
+	 * @return the partial list of members
 	 */
-	String getBranchPath();
-
+	List<C> getMembers();
 }

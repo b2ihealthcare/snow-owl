@@ -13,28 +13,22 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.api.domain;
-
-import java.util.List;
+package com.b2international.snowowl.core.domain;
 
 /**
- * Represents a partial list of components, in which the total number of components is stored separately.
+ * Represents a component node in a component graph.
+ * <p>
+ * Component node representations can be different from {@link IComponent component representations}; the former is
+ * usually a subset of the latter.
  * 
- * @param <C> the component type
+ * @see IComponentEdge
  */
-public interface IComponentList<C> {
+public interface IComponentNode {
 
 	/**
-	 * Returns the number of total members of this list, which is the upper limit of the number of elements in {@link #getMembers()}.
-	 *   
-	 * @return the number of total members of this list
-	 */
-	int getTotalMembers();
-
-	/**
-	 * Returns the partial list of members for this component list.
+	 * Returns the component identifier.
 	 * 
-	 * @return the partial list of members
+	 * @return the component identifier
 	 */
-	List<C> getMembers();
+	String getId();
 }

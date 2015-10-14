@@ -13,17 +13,25 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.api.domain;
+package com.b2international.snowowl.core.domain;
 
 /**
- * Points to an identifiable, versioned component in a code system, on a particular task.
+ * Points to a versioned component storage space of a code system, on a particular branch. 
  */
-public interface IComponentRef extends Comparable<IComponentRef>, IStorageRef {
+public interface IStorageRef {
 
 	/**
-	 * Returns the identifier of the component, eg. "{@code 116680003}".
+	 * Returns the code system short name, eg. "{@code SNOMEDCT}"
 	 * 
-	 * @return the component identifier
+	 * @return the code system short name
 	 */
-	String getComponentId();
+	String getShortName();
+
+	/**
+	 * Returns the branch path eg. "{@code MAIN/projectA/task1}".
+	 * 
+	 * @return the branch path
+	 */
+	String getBranchPath();
+
 }

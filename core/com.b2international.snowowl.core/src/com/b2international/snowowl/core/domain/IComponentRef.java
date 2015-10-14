@@ -13,19 +13,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.api.domain;
+package com.b2international.snowowl.core.domain;
 
 /**
- * The common interface of component-creating input models, pointing to the code system, version and task in which the
- * component should be created.
+ * Points to an identifiable, versioned component in a code system, on a particular task.
  */
-public interface IComponentInput extends IBranchAwareConfig {
+public interface IComponentRef extends Comparable<IComponentRef>, IStorageRef {
 
 	/**
-	 * Returns the code system short name, eg. "{@code SNOMEDCT}"
+	 * Returns the identifier of the component, eg. "{@code 116680003}".
 	 * 
-	 * @return the code system short name
+	 * @return the component identifier
 	 */
-	String getCodeSystemShortName();
-
+	String getComponentId();
 }
