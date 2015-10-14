@@ -17,7 +17,7 @@ package com.b2international.snowowl.snomed.api.impl.domain;
 
 import java.util.Date;
 
-import com.b2international.snowowl.api.impl.domain.AbstractComponent;
+import com.b2international.snowowl.core.domain.AbstractComponent;
 import com.b2international.snowowl.snomed.core.domain.ISnomedComponent;
 
 /**

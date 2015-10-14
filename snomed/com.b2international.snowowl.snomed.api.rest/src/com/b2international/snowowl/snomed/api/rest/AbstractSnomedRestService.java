@@ -18,8 +18,8 @@ package com.b2international.snowowl.snomed.api.rest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 
-import com.b2international.snowowl.api.impl.domain.ComponentRef;
 import com.b2international.snowowl.core.domain.IComponentRef;
+import com.b2international.snowowl.datastore.server.domain.ComponentRef;
 
 /**
  * Abstract SNOMED CT REST service base class.

@@ -25,8 +25,6 @@ import javax.annotation.Resource;
 import org.apache.lucene.search.Sort;
 
 import com.b2international.commons.ClassUtils;
-import com.b2international.snowowl.api.impl.domain.InternalComponentRef;
-import com.b2international.snowowl.api.impl.domain.InternalStorageRef;
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.domain.IComponentList;
@@ -35,6 +33,8 @@ import com.b2international.snowowl.core.domain.IStorageRef;
 import com.b2international.snowowl.core.exceptions.ComponentNotFoundException;
 import com.b2international.snowowl.core.terminology.ComponentCategory;
 import com.b2international.snowowl.datastore.index.IndexQueryBuilder;
+import com.b2international.snowowl.datastore.server.domain.InternalComponentRef;
+import com.b2international.snowowl.datastore.server.domain.InternalStorageRef;
 import com.b2international.snowowl.snomed.api.ISnomedConceptService;
 import com.b2international.snowowl.snomed.api.ISnomedTerminologyBrowserService;
 import com.b2international.snowowl.snomed.api.impl.domain.SnomedConceptList;

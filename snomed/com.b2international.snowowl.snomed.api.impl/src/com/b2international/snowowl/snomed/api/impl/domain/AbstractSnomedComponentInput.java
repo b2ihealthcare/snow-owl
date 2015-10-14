@@ -17,7 +17,7 @@ package com.b2international.snowowl.snomed.api.impl.domain;
 
 import javax.validation.constraints.NotNull;
 
-import com.b2international.snowowl.api.impl.domain.AbstractComponentInput;
+import com.b2international.snowowl.core.domain.AbstractComponentInput;
 import com.b2international.snowowl.snomed.core.domain.ISnomedComponentInput;
 import com.b2international.snowowl.snomed.core.domain.IdGenerationStrategy;
 

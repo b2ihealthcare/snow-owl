@@ -31,7 +31,6 @@ import bak.pcj.set.LongSet;
 
 import com.b2international.commons.StringUtils;
 import com.b2international.commons.pcj.LongSets;
-import com.b2international.snowowl.api.impl.domain.StorageRef;
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.api.SnowowlRuntimeException;
@@ -39,6 +38,7 @@ import com.b2international.snowowl.core.date.DateFormats;
 import com.b2international.snowowl.core.date.Dates;
 import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.core.exceptions.BadRequestException;
+import com.b2international.snowowl.datastore.server.domain.StorageRef;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.api.ISnomedExportService;
 import com.b2international.snowowl.snomed.api.exception.SnomedExportException;

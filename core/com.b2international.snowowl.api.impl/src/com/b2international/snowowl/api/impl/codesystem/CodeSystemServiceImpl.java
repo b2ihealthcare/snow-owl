@@ -23,9 +23,9 @@ import java.util.List;
 
 import com.b2international.snowowl.api.codesystem.ICodeSystemService;
 import com.b2international.snowowl.api.codesystem.domain.ICodeSystem;
-import com.b2international.snowowl.api.codesystem.exception.CodeSystemNotFoundException;
 import com.b2international.snowowl.api.impl.codesystem.domain.CodeSystem;
 import com.b2international.snowowl.core.ApplicationContext;
+import com.b2international.snowowl.core.domain.exceptions.CodeSystemNotFoundException;
 import com.b2international.snowowl.datastore.TerminologyRegistryService;
 import com.b2international.snowowl.datastore.UserBranchPathMap;
 import com.google.common.base.Function;

@@ -18,10 +18,10 @@ package com.b2international.snowowl.snomed.api;
 import java.util.List;
 import java.util.Locale;
 
-import com.b2international.snowowl.api.codesystem.exception.CodeSystemNotFoundException;
-import com.b2international.snowowl.api.codesystem.exception.CodeSystemVersionNotFoundException;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.domain.IComponentRef;
+import com.b2international.snowowl.core.domain.exceptions.CodeSystemNotFoundException;
+import com.b2international.snowowl.core.domain.exceptions.CodeSystemVersionNotFoundException;
 import com.b2international.snowowl.snomed.api.exception.FullySpecifiedNameNotFoundException;
 import com.b2international.snowowl.snomed.api.exception.PreferredTermNotFoundException;
 import com.b2international.snowowl.snomed.core.domain.ISnomedDescription;

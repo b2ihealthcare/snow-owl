@@ -26,7 +26,6 @@ import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
 
 import com.b2international.commons.status.SerializableStatus;
-import com.b2international.snowowl.api.impl.domain.StorageRef;
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.SnowOwlApplication;
 import com.b2international.snowowl.core.api.IBranchPath;
@@ -40,6 +39,7 @@ import com.b2international.snowowl.datastore.remotejobs.RemoteJobEventSwitch;
 import com.b2international.snowowl.datastore.remotejobs.RemoteJobRemovedEvent;
 import com.b2international.snowowl.datastore.remotejobs.RemoteJobState;
 import com.b2international.snowowl.datastore.remotejobs.RemoteJobUtils;
+import com.b2international.snowowl.datastore.server.domain.StorageRef;
 import com.b2international.snowowl.datastore.server.index.SingleDirectoryIndexManager;
 import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.eventbus.IHandler;

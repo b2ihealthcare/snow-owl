@@ -22,13 +22,13 @@ import org.eclipse.emf.ecore.util.EcoreUtil;
 
 import com.b2international.commons.ClassUtils;
 import com.b2international.snowowl.api.impl.AbstractComponentServiceImpl;
-import com.b2international.snowowl.api.impl.domain.InternalComponentRef;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.domain.IComponentRef;
 import com.b2international.snowowl.core.exceptions.AlreadyExistsException;
 import com.b2international.snowowl.core.exceptions.BadRequestException;
 import com.b2international.snowowl.core.exceptions.ComponentNotFoundException;
 import com.b2international.snowowl.core.terminology.ComponentCategory;
+import com.b2international.snowowl.datastore.server.domain.InternalComponentRef;
 import com.b2international.snowowl.snomed.Component;
 import com.b2international.snowowl.snomed.Concept;
 import com.b2international.snowowl.snomed.api.ISnomedComponentService;

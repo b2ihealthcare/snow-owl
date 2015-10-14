@@ -19,8 +19,8 @@ import java.util.List;
 
 import com.b2international.snowowl.api.codesystem.domain.ICodeSystemVersion;
 import com.b2international.snowowl.api.codesystem.domain.ICodeSystemVersionProperties;
-import com.b2international.snowowl.api.codesystem.exception.CodeSystemNotFoundException;
-import com.b2international.snowowl.api.codesystem.exception.CodeSystemVersionNotFoundException;
+import com.b2international.snowowl.core.domain.exceptions.CodeSystemNotFoundException;
+import com.b2international.snowowl.core.domain.exceptions.CodeSystemVersionNotFoundException;
 
 /**
  * Implementations of this interface allow browsing released versions of a code system.

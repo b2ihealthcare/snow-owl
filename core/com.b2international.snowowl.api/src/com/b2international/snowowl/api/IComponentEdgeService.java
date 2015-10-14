@@ -15,11 +15,11 @@
  */
 package com.b2international.snowowl.api;
 
-import com.b2international.snowowl.api.codesystem.exception.CodeSystemNotFoundException;
-import com.b2international.snowowl.api.codesystem.exception.CodeSystemVersionNotFoundException;
 import com.b2international.snowowl.core.domain.IComponentEdge;
 import com.b2international.snowowl.core.domain.IComponentList;
 import com.b2international.snowowl.core.domain.IComponentRef;
+import com.b2international.snowowl.core.domain.exceptions.CodeSystemNotFoundException;
+import com.b2international.snowowl.core.domain.exceptions.CodeSystemVersionNotFoundException;
 import com.b2international.snowowl.core.exceptions.ComponentNotFoundException;
 
 /**

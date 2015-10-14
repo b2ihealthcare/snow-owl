@@ -24,6 +24,7 @@ Bundle-RequiredExecutionEnvironment: JavaSE-1.7
 Bundle-ActivationPolicy: lazy
 Export-Package: com.b2international.snowowl.datastore.server,
  com.b2international.snowowl.datastore.server.cdo,
+ com.b2international.snowowl.datastore.server.domain,
  com.b2international.snowowl.datastore.server.editor.job,
  com.b2international.snowowl.datastore.server.editor.operation.executor,
  com.b2international.snowowl.datastore.server.editor.service,

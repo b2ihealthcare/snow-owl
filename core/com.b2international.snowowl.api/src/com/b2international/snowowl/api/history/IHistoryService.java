@@ -17,10 +17,10 @@ package com.b2international.snowowl.api.history;
 
 import java.util.List;
 
-import com.b2international.snowowl.api.codesystem.exception.CodeSystemNotFoundException;
-import com.b2international.snowowl.api.codesystem.exception.CodeSystemVersionNotFoundException;
 import com.b2international.snowowl.api.history.domain.IHistoryInfo;
 import com.b2international.snowowl.core.domain.IComponentRef;
+import com.b2international.snowowl.core.domain.exceptions.CodeSystemNotFoundException;
+import com.b2international.snowowl.core.domain.exceptions.CodeSystemVersionNotFoundException;
 import com.b2international.snowowl.core.exceptions.ComponentNotFoundException;
 
 /**
