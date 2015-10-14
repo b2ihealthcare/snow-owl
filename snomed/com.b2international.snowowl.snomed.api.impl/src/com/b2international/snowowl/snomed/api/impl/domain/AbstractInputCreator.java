@@ -7,6 +7,7 @@ import com.b2international.snowowl.snomed.api.domain.browser.ISnomedBrowserCompo
 import com.b2international.snowowl.snomed.api.domain.browser.ISnomedBrowserConcept;
 import com.b2international.snowowl.snomed.api.domain.browser.ISnomedBrowserRelationship;
 import com.b2international.snowowl.snomed.api.domain.browser.ISnomedBrowserRelationshipType;
+import com.b2international.snowowl.snomed.core.domain.AbstractSnomedComponentInput;
 
 public abstract class AbstractInputCreator {
 

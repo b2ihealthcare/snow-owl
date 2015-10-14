@@ -15,6 +15,6 @@
  */
 
 /**
- * Contains domain classes for Snow Owl's RESTful API for SNOMED CT.  
+ * Contains domain classes for SNOMED CT.  
  */
 package com.b2international.snowowl.snomed.core.domain;

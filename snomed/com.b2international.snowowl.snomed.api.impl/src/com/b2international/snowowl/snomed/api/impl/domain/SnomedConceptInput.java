@@ -23,6 +23,7 @@ import javax.validation.constraints.Size;
 
 import org.hibernate.validator.constraints.NotEmpty;
 
+import com.b2international.snowowl.snomed.core.domain.AbstractSnomedComponentInput;
 import com.b2international.snowowl.snomed.core.domain.ISnomedConceptInput;
 import com.b2international.snowowl.snomed.core.domain.ISnomedDescriptionInput;
 import com.b2international.snowowl.snomed.core.domain.IdGenerationStrategy;
