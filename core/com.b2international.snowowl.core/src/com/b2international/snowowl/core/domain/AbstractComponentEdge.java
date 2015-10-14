@@ -13,9 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.api.impl.domain;
-
-import com.b2international.snowowl.core.domain.IComponentEdge;
+package com.b2international.snowowl.core.domain;
 
 /**
  */

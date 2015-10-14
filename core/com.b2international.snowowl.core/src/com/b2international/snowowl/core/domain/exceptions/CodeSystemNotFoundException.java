@@ -13,8 +13,23 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package com.b2international.snowowl.core.domain.exceptions;
+
+import com.b2international.snowowl.core.exceptions.NotFoundException;
 
 /**
- * Contains exception classes related to code system metadata in the Snow Owl RESTful API.
+ * Thrown when a code system can not be found for the given short name.
  */
-package com.b2international.snowowl.api.codesystem.exception;
+public class CodeSystemNotFoundException extends NotFoundException {
+
+	private static final long serialVersionUID = 1L;
+
+	/**
+	 * Creates a new instance with the specified short name.
+	 * 
+	 * @param shortName the short name of the code system which could not be found (may not be {@code null})
+	 */
+	public CodeSystemNotFoundException(final String shortName) {
+		super("Code system", shortName);
+	}
+}

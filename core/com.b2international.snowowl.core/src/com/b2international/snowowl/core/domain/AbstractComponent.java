@@ -13,12 +13,30 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.api.impl.domain;
-
-import com.b2international.snowowl.core.domain.IComponentRef;
+package com.b2international.snowowl.core.domain;
 
 /**
  */
-public interface InternalComponentRef extends InternalStorageRef, IComponentRef {
-	// Empty interface body
+public abstract class AbstractComponent implements IComponent {
+
+	private String id;
+	private boolean released;
+
+	@Override
+	public String getId() {
+		return id;
+	}
+
+	@Override
+	public boolean isReleased() {
+		return released;
+	}
+
+	public void setId(final String id) {
+		this.id = id;
+	}
+
+	public void setReleased(final boolean released) {
+		this.released = released;
+	}
 }

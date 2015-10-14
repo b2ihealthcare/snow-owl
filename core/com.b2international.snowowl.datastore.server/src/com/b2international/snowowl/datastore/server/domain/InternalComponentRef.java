@@ -13,34 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.api.impl.domain;
+package com.b2international.snowowl.datastore.server.domain;
 
-import com.b2international.snowowl.core.domain.IComponentInput;
+import com.b2international.snowowl.core.domain.IComponentRef;
 
 /**
- * @since 1.0
  */
-public abstract class AbstractComponentInput implements IComponentInput {
-
-	private String codeSystemShortName;
-	private String branchPath;
-
-	@Override
-	public String getCodeSystemShortName() {
-		return codeSystemShortName;
-	}
-
-	@Override
-	public String getBranchPath() {
-		return branchPath;
-	}
-	
-	public void setCodeSystemShortName(String codeSystemShortName) {
-		this.codeSystemShortName = codeSystemShortName;
-	}
-	
-	public void setBranchPath(String branchPath) {
-		this.branchPath = branchPath;
-	}
-
+public interface InternalComponentRef extends InternalStorageRef, IComponentRef {
+	// Empty interface body
 }

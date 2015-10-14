@@ -13,34 +13,32 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.api.impl.domain;
-
-import java.util.List;
-
-import com.b2international.snowowl.core.domain.IComponentList;
+package com.b2international.snowowl.core.domain;
 
 /**
+ * @since 1.0
  */
-public abstract class AbstractComponentList<C> implements IComponentList<C> {
+public abstract class AbstractComponentInput implements IComponentInput {
 
-	private int totalMembers;
-	private List<C> members;
-
-	@Override
-	public int getTotalMembers() {
-		return totalMembers;
-	}
+	private String codeSystemShortName;
+	private String branchPath;
 
 	@Override
-	public List<C> getMembers() {
-		return members;
+	public String getCodeSystemShortName() {
+		return codeSystemShortName;
 	}
 
-	public void setTotalMembers(final int totalMembers) {
-		this.totalMembers = totalMembers;
+	@Override
+	public String getBranchPath() {
+		return branchPath;
+	}
+	
+	public void setCodeSystemShortName(String codeSystemShortName) {
+		this.codeSystemShortName = codeSystemShortName;
+	}
+	
+	public void setBranchPath(String branchPath) {
+		this.branchPath = branchPath;
 	}
 
-	public void setMembers(final List<C> members) {
-		this.members = members;
-	}
 }

@@ -13,23 +13,23 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.api.codesystem.exception;
+package com.b2international.snowowl.core.domain.exceptions;
 
 import com.b2international.snowowl.core.exceptions.NotFoundException;
 
 /**
- * Thrown when a component type within a code system can not be found for a given type identifier.
+ * Thrown when a version within a code system can not be found for a given version identifier.
  */
-public class CodeSystemComponentTypeNotFoundException extends NotFoundException {
+public class CodeSystemVersionNotFoundException extends NotFoundException {
 
 	private static final long serialVersionUID = 1L;
 
 	/**
-	 * Creates a new instance with the specified code system component type identifier.
+	 * Creates a new instance with the specified code system version identifier.
 	 * 
-	 * @param typeId the identifier of the component type which could not be found (may not be {@code null})
+	 * @param version the identifier of the version which could not be found (may not be {@code null})
 	 */
-	public CodeSystemComponentTypeNotFoundException(final String typeId) {
-		super("Code system component type", typeId);
+	public CodeSystemVersionNotFoundException(final String version) {
+		super("Code system version", version);
 	}
 }

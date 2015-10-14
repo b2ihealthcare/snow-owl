@@ -13,23 +13,32 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.api.codesystem.exception;
+package com.b2international.snowowl.core.domain;
 
-import com.b2international.snowowl.core.exceptions.NotFoundException;
+import java.util.List;
 
 /**
- * Thrown when a code system can not be found for the given short name.
  */
-public class CodeSystemNotFoundException extends NotFoundException {
+public abstract class AbstractComponentList<C> implements IComponentList<C> {
 
-	private static final long serialVersionUID = 1L;
+	private int totalMembers;
+	private List<C> members;
 
-	/**
-	 * Creates a new instance with the specified short name.
-	 * 
-	 * @param shortName the short name of the code system which could not be found (may not be {@code null})
-	 */
-	public CodeSystemNotFoundException(final String shortName) {
-		super("Code system", shortName);
+	@Override
+	public int getTotalMembers() {
+		return totalMembers;
+	}
+
+	@Override
+	public List<C> getMembers() {
+		return members;
+	}
+
+	public void setTotalMembers(final int totalMembers) {
+		this.totalMembers = totalMembers;
+	}
+
+	public void setMembers(final List<C> members) {
+		this.members = members;
 	}
 }
