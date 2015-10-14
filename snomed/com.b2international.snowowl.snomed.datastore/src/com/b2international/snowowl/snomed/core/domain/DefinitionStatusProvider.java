@@ -13,14 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.snomed.api.domain.browser;
-
-import com.b2international.snowowl.snomed.core.domain.DefinitionStatus;
+package com.b2international.snowowl.snomed.core.domain;
 
 /**
  * Holds a SNOMED CT concept's definition status.
  */
-public interface IDefinitionStatusProvider {
+public interface DefinitionStatusProvider {
 
 	/** 
 	 * @return the definition status of this concept (either {@link DefinitionStatus#PRIMITIVE PRIMITIVE} or 
