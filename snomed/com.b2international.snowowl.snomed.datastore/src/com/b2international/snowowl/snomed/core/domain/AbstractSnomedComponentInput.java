@@ -13,13 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.snomed.api.impl.domain;
+package com.b2international.snowowl.snomed.core.domain;
 
 import javax.validation.constraints.NotNull;
 
 import com.b2international.snowowl.core.domain.AbstractComponentInput;
-import com.b2international.snowowl.snomed.core.domain.ISnomedComponentInput;
-import com.b2international.snowowl.snomed.core.domain.IdGenerationStrategy;
 
 /**
  * @since 4.0
