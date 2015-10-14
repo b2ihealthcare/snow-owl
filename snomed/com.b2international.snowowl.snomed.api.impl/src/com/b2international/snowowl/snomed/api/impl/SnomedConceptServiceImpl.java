@@ -47,7 +47,6 @@ import com.b2international.snowowl.core.terminology.ComponentCategory;
 import com.b2international.snowowl.datastore.BranchPathUtils;
 import com.b2international.snowowl.datastore.server.domain.InternalComponentRef;
 import com.b2international.snowowl.datastore.server.domain.InternalStorageRef;
-import com.b2international.snowowl.datastore.server.domain.StorageRef;
 import com.b2international.snowowl.snomed.Concept;
 import com.b2international.snowowl.snomed.Description;
 import com.b2international.snowowl.snomed.Inactivatable;
@@ -447,12 +446,6 @@ public class SnomedConceptServiceImpl
 		final String label = Strings.nullToEmpty(queryParams.get(SearchKind.LABEL));
 		final SnomedDOIQueryAdapter queryAdapter = new SnomedDOIQueryAdapter(label, "", restrictionQuery);
 		return search(offset, limit, queryAdapter, branch);
-	}
-
-	private InternalStorageRef createStorageRef(final String branchPath) {
-		final StorageRef storageRef = new StorageRef("SNOMEDCT", branchPath);
-		storageRef.checkStorageExists();
-		return storageRef;
 	}
 
 	private IComponentList<ISnomedConcept> search(final int offset, final int limit, final SnomedConceptIndexQueryAdapter queryAdapter, final IBranchPath branchPath) {
