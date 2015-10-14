@@ -15,9 +15,11 @@
  */
 package com.b2international.snowowl.snomed.api.domain.browser;
 
+import com.b2international.snowowl.snomed.core.domain.DefinitionStatusProvider;
+
 /**
  * Carries information about a relationship target concept.
  */
-public interface ISnomedBrowserRelationshipTarget extends ISnomedBrowserComponent, IConceptIdWithFsnProvider, IDefinitionStatusProvider {
+public interface ISnomedBrowserRelationshipTarget extends ISnomedBrowserComponent, IConceptIdWithFsnProvider, DefinitionStatusProvider {
 	// Empty interface body
 }

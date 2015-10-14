@@ -15,9 +15,11 @@
  */
 package com.b2international.snowowl.snomed.api.domain.browser;
 
+import com.b2international.snowowl.snomed.core.domain.DefinitionStatusProvider;
+
 /**
  * Holds information about a description's container concept.
  */
-public interface ISnomedBrowserDescriptionResultDetails extends IConceptIdWithFsnProvider, IStatusWithModuleIdProvider, IDefinitionStatusProvider {
+public interface ISnomedBrowserDescriptionResultDetails extends IConceptIdWithFsnProvider, IStatusWithModuleIdProvider, DefinitionStatusProvider {
 	// Empty interface body
 }
