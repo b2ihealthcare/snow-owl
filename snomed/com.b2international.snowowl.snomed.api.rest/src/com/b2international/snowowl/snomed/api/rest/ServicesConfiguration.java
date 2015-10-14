@@ -56,6 +56,7 @@ import com.b2international.snowowl.snomed.api.rest.domain.BranchStateMixin;
 import com.b2international.snowowl.snomed.api.rest.domain.ISnomedComponentMixin;
 import com.b2international.snowowl.snomed.api.rest.domain.ReviewMixin;
 import com.b2international.snowowl.snomed.core.domain.ISnomedComponent;
+import com.b2international.snowowl.snomed.core.refset.SnomedReferenceSetService;
 import com.fasterxml.classmate.TypeResolver;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -190,6 +191,11 @@ public class ServicesConfiguration extends WebMvcConfigurerAdapter {
 	@Bean
 	public IEventBus eventBus() {
 		return com.b2international.snowowl.core.ApplicationContext.getInstance().getServiceChecked(IEventBus.class);
+	}
+	
+	@Bean
+	public SnomedReferenceSetService referenceSetService() {
+		return com.b2international.snowowl.core.ApplicationContext.getInstance().getServiceChecked(SnomedReferenceSetService.class);
 	}
 
 	@Override

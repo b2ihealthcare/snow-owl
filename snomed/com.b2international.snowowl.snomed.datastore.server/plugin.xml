@@ -189,4 +189,10 @@
             executorClass="com.b2international.snowowl.datastore.server.snomed.history.SnomedRefSetHistoryInfoQueryExecutor">
       </executor>
    </extension>
+   <extension
+         point="com.b2international.snowowl.core.bootstrapFragments">
+      <bootstrapFragment
+            class="com.b2international.snowowl.snomed.datastore.server.boot.SnomedServerBootstrap">
+      </bootstrapFragment>
+   </extension>
 </plugin>
