@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.api.impl;
+package com.b2international.snowowl.datastore.server.components;
 
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
@@ -24,9 +24,8 @@ import org.eclipse.emf.cdo.CDOObject;
 import org.eclipse.emf.cdo.util.CommitException;
 
 import com.b2international.commons.exceptions.Exceptions;
-import com.b2international.snowowl.api.IComponentService;
-import com.b2international.snowowl.api.exception.LockedException;
 import com.b2international.snowowl.core.api.SnowowlRuntimeException;
+import com.b2international.snowowl.core.component.IComponentService;
 import com.b2international.snowowl.core.domain.IComponent;
 import com.b2international.snowowl.core.domain.IComponentInput;
 import com.b2international.snowowl.core.domain.IComponentRef;
@@ -35,11 +34,14 @@ import com.b2international.snowowl.core.exceptions.ApiValidation;
 import com.b2international.snowowl.core.exceptions.ComponentNotFoundException;
 import com.b2international.snowowl.core.exceptions.ConflictException;
 import com.b2international.snowowl.core.exceptions.CycleDetectedException;
+import com.b2international.snowowl.core.exceptions.LockedException;
 import com.b2international.snowowl.core.terminology.ComponentCategory;
 import com.b2international.snowowl.datastore.CDOEditingContext;
 import com.b2international.snowowl.datastore.exception.RepositoryLockException;
 import com.b2international.snowowl.datastore.server.CDOServerUtils;
 import com.b2international.snowowl.datastore.server.domain.ComponentRef;
+import com.b2international.snowowl.datastore.server.domain.InternalStorageRef;
+import com.b2international.snowowl.datastore.server.domain.StorageRef;
 import com.google.common.base.Strings;
 
 /**
@@ -130,6 +132,12 @@ public abstract class AbstractComponentServiceImpl<C extends IComponentInput, R 
 		final ComponentRef result = new ComponentRef(input.getCodeSystemShortName(), input.getBranchPath(), componentId);
 		result.checkStorageExists();
 		return result;
+	}
+	
+	protected InternalStorageRef createStorageRef(final String codeSystemShortName, final String branchPath) {
+		final StorageRef storageRef = new StorageRef(codeSystemShortName, branchPath);
+		storageRef.checkStorageExists();
+		return storageRef;
 	}
 
 	private E createEditingContext(final C input) {

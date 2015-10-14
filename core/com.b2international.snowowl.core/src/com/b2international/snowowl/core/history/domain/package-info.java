@@ -13,28 +13,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.api.history.domain;
-
 
 /**
- * Represents a version with a major and a minor version number.
- * <p>
- * Successive edits of a component either increment the minor version by one, or reset it to zero and increment the
- * major version number instead, depending on extent the of the change.
+ * Contains domain model objects related to component history.
  */
-public interface IHistoryVersion extends Comparable<IHistoryVersion> {
-
-	/**
-	 * Returns the major version number.
-	 * 
-	 * @return the major version number
-	 */
-	int getMajorVersion();
-
-	/**
-	 * Returns the minor version number.
-	 * 
-	 * @return the minor version number
-	 */
-	int getMinorVersion();
-}
+package com.b2international.snowowl.core.history.domain;

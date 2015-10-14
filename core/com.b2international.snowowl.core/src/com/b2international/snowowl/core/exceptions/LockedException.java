@@ -13,25 +13,24 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.api.history.domain;
+package com.b2international.snowowl.core.exceptions;
 
 /**
- * Enumerates the nature of the change for a component of the code system.
+ * Thrown when a request can not be processed due to a lock existing on the underlying repository. The client
+ * has to send the request again, after the lock was released.
+ * 
+ * @since 4.0
  */
-public enum ChangeType {
+public class LockedException extends ConflictException {
+
+	private static final long serialVersionUID = 185734899707722505L;
 
 	/**
-	 * The component has just been added to the code system.
+	 * Creates a new exception instance with the specified message.
+	 * 
+	 * @param message the exception message
 	 */
-	NEW,
-
-	/**
-	 * The component has been removed from the code system.
-	 */
-	DETACHED,
-
-	/**
-	 * A mutable property of the component has been changed.
-	 */
-	CHANGED;
+	public LockedException(final String message) {
+		super(message);
+	}
 }

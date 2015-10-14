@@ -13,15 +13,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.api.history;
+package com.b2international.snowowl.core.history;
 
 import java.util.List;
 
-import com.b2international.snowowl.api.history.domain.IHistoryInfo;
 import com.b2international.snowowl.core.domain.IComponentRef;
 import com.b2international.snowowl.core.domain.exceptions.CodeSystemNotFoundException;
 import com.b2international.snowowl.core.domain.exceptions.CodeSystemVersionNotFoundException;
 import com.b2international.snowowl.core.exceptions.ComponentNotFoundException;
+import com.b2international.snowowl.core.history.domain.IHistoryInfo;
 
 /**
  * History service implementations provide a list of past modifications for a particular component type.

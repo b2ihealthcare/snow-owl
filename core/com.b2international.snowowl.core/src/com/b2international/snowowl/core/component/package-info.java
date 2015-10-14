@@ -15,6 +15,6 @@
  */
 
 /**
- * Contains domain model objects related to component history.
+ * Contains the service interface for retrieving component history.
  */
-package com.b2international.snowowl.api.history.domain;
+package com.b2international.snowowl.core.component;

@@ -13,15 +13,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.api;
+package com.b2international.snowowl.core.component;
 
-import com.b2international.snowowl.api.history.IHistoryService;
 import com.b2international.snowowl.core.domain.IComponent;
 import com.b2international.snowowl.core.domain.IComponentInput;
 import com.b2international.snowowl.core.domain.IComponentRef;
 import com.b2international.snowowl.core.domain.exceptions.CodeSystemNotFoundException;
 import com.b2international.snowowl.core.domain.exceptions.CodeSystemVersionNotFoundException;
 import com.b2international.snowowl.core.exceptions.ComponentNotFoundException;
+import com.b2international.snowowl.core.history.IHistoryService;
 
 /**
  * Component service implementations provide methods for <b>c</b>reating, <b>r</b>eading, <b>u</b>pdating and
