@@ -20,8 +20,8 @@ import java.util.Locale;
 
 import com.b2international.snowowl.api.codesystem.exception.CodeSystemNotFoundException;
 import com.b2international.snowowl.api.codesystem.exception.CodeSystemVersionNotFoundException;
-import com.b2international.snowowl.api.domain.IComponentRef;
 import com.b2international.snowowl.core.api.IBranchPath;
+import com.b2international.snowowl.core.domain.IComponentRef;
 import com.b2international.snowowl.snomed.api.domain.ISnomedDescription;
 import com.b2international.snowowl.snomed.api.domain.ISnomedDescriptionInput;
 import com.b2international.snowowl.snomed.api.domain.ISnomedDescriptionUpdate;

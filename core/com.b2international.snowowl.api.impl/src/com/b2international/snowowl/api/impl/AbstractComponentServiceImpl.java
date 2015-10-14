@@ -25,12 +25,12 @@ import org.eclipse.emf.cdo.util.CommitException;
 
 import com.b2international.commons.exceptions.Exceptions;
 import com.b2international.snowowl.api.IComponentService;
-import com.b2international.snowowl.api.domain.IComponent;
-import com.b2international.snowowl.api.domain.IComponentInput;
-import com.b2international.snowowl.api.domain.IComponentRef;
 import com.b2international.snowowl.api.exception.LockedException;
 import com.b2international.snowowl.api.impl.domain.ComponentRef;
 import com.b2international.snowowl.core.api.SnowowlRuntimeException;
+import com.b2international.snowowl.core.domain.IComponent;
+import com.b2international.snowowl.core.domain.IComponentInput;
+import com.b2international.snowowl.core.domain.IComponentRef;
 import com.b2international.snowowl.core.exceptions.AlreadyExistsException;
 import com.b2international.snowowl.core.exceptions.ApiValidation;
 import com.b2international.snowowl.core.exceptions.ComponentNotFoundException;

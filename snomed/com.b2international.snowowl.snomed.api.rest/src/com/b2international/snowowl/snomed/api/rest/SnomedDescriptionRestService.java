@@ -26,7 +26,7 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import com.b2international.snowowl.api.domain.IComponentRef;
+import com.b2international.snowowl.core.domain.IComponentRef;
 import com.b2international.snowowl.snomed.api.ISnomedDescriptionService;
 import com.b2international.snowowl.snomed.api.domain.ISnomedDescription;
 import com.b2international.snowowl.snomed.api.domain.ISnomedDescriptionInput;

@@ -17,7 +17,7 @@ package com.b2international.snowowl.snomed.api.domain;
 
 import java.util.Date;
 
-import com.b2international.snowowl.api.domain.IComponent;
+import com.b2international.snowowl.core.domain.IComponent;
 
 /**
  * Holds common properties of SNOMED CT components.

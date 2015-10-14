@@ -29,8 +29,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
-import com.b2international.snowowl.api.domain.IComponentList;
-import com.b2international.snowowl.api.domain.IComponentRef;
+import com.b2international.snowowl.core.domain.IComponentList;
+import com.b2international.snowowl.core.domain.IComponentRef;
 import com.b2international.snowowl.snomed.api.ISnomedConceptService;
 import com.b2international.snowowl.snomed.api.domain.ISnomedConcept;
 import com.b2international.snowowl.snomed.api.domain.ISnomedConceptInput;

@@ -28,8 +28,8 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.b2international.snowowl.api.domain.IComponentList;
-import com.b2international.snowowl.api.domain.IComponentRef;
+import com.b2international.snowowl.core.domain.IComponentList;
+import com.b2international.snowowl.core.domain.IComponentRef;
 import com.b2international.snowowl.snomed.api.ISnomedDescriptionService;
 import com.b2international.snowowl.snomed.api.ISnomedStatementBrowserService;
 import com.b2international.snowowl.snomed.api.ISnomedTerminologyBrowserService;

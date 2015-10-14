@@ -15,7 +15,7 @@
  */
 package com.b2international.snowowl.snomed.api.domain;
 
-import com.b2international.snowowl.api.domain.IBranchAwareConfig;
+import com.b2international.snowowl.core.domain.IBranchAwareConfig;
 
 /**
  * Common super interface for RF2 based import-export configurations.

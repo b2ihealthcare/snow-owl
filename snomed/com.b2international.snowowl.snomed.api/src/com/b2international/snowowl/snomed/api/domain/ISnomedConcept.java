@@ -15,7 +15,7 @@
  */
 package com.b2international.snowowl.snomed.api.domain;
 
-import com.b2international.snowowl.api.domain.IComponentNode;
+import com.b2international.snowowl.core.domain.IComponentNode;
 import com.google.common.collect.Multimap;
 
 /**

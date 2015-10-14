@@ -15,8 +15,8 @@
  */
 package com.b2international.snowowl.snomed.api.impl.domain;
 
-import com.b2international.snowowl.api.domain.IComponentList;
 import com.b2international.snowowl.api.impl.domain.AbstractComponentList;
+import com.b2international.snowowl.core.domain.IComponentList;
 import com.b2international.snowowl.snomed.api.domain.ISnomedRelationship;
 
 /**

@@ -17,8 +17,8 @@ package com.b2international.snowowl.snomed.api;
 
 import java.util.Map;
 
-import com.b2international.snowowl.api.domain.IComponentList;
 import com.b2international.snowowl.api.exception.IllegalQueryParameterException;
+import com.b2international.snowowl.core.domain.IComponentList;
 import com.b2international.snowowl.core.exceptions.NotFoundException;
 import com.b2international.snowowl.snomed.api.domain.ISnomedConcept;
 import com.b2international.snowowl.snomed.api.domain.ISnomedConceptInput;

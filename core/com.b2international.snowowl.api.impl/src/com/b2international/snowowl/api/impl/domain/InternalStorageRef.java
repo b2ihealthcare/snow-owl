@@ -17,7 +17,7 @@ package com.b2international.snowowl.api.impl.domain;
 
 import org.eclipse.emf.cdo.common.branch.CDOBranch;
 
-import com.b2international.snowowl.api.domain.IStorageRef;
+import com.b2international.snowowl.core.domain.IStorageRef;
 import com.b2international.snowowl.datastore.ICodeSystem;
 import com.b2international.snowowl.datastore.branch.Branch;
 

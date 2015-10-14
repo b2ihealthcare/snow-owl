@@ -23,7 +23,6 @@ import java.util.List;
 
 import com.b2international.commons.ChangeKind;
 import com.b2international.commons.ClassUtils;
-import com.b2international.snowowl.api.domain.IComponentRef;
 import com.b2international.snowowl.api.history.IHistoryService;
 import com.b2international.snowowl.api.history.domain.ChangeType;
 import com.b2international.snowowl.api.history.domain.IHistoryInfo;
@@ -35,6 +34,7 @@ import com.b2international.snowowl.api.impl.history.domain.HistoryInfoDetails;
 import com.b2international.snowowl.api.impl.history.domain.HistoryVersion;
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.api.IBranchPath;
+import com.b2international.snowowl.core.domain.IComponentRef;
 import com.b2international.snowowl.core.exceptions.ComponentNotFoundException;
 import com.b2international.snowowl.core.terminology.ComponentCategory;
 import com.b2international.snowowl.datastore.cdo.CDOCommitInfoUtils;

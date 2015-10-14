@@ -17,7 +17,7 @@ package com.b2international.snowowl.api.impl.domain;
 
 import java.util.List;
 
-import com.b2international.snowowl.api.domain.IComponentList;
+import com.b2international.snowowl.core.domain.IComponentList;
 
 /**
  */

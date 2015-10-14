@@ -22,8 +22,8 @@ import java.util.Map;
 
 import com.b2international.snowowl.api.codesystem.exception.CodeSystemNotFoundException;
 import com.b2international.snowowl.api.codesystem.exception.CodeSystemVersionNotFoundException;
-import com.b2international.snowowl.api.domain.IComponentRef;
-import com.b2international.snowowl.api.domain.IStorageRef;
+import com.b2international.snowowl.core.domain.IComponentRef;
+import com.b2international.snowowl.core.domain.IStorageRef;
 import com.b2international.snowowl.core.exceptions.ComponentNotFoundException;
 import com.b2international.snowowl.snomed.api.domain.browser.*;
 

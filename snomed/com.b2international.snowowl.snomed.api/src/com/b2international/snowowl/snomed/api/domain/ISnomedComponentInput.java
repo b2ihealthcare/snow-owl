@@ -15,7 +15,7 @@
  */
 package com.b2international.snowowl.snomed.api.domain;
 
-import com.b2international.snowowl.api.domain.IComponentInput;
+import com.b2international.snowowl.core.domain.IComponentInput;
 
 /**
  * Holds common properties required for creating SNOMED CT components.

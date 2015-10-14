@@ -15,7 +15,7 @@
  */
 package com.b2international.snowowl.api.impl.domain;
 
-import com.b2international.snowowl.api.domain.IComponentInput;
+import com.b2international.snowowl.core.domain.IComponentInput;
 
 /**
  * @since 1.0

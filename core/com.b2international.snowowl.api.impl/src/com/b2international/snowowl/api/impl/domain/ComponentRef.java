@@ -18,8 +18,8 @@ package com.b2international.snowowl.api.impl.domain;
 import static com.google.common.base.Preconditions.checkNotNull;
 
 import com.b2international.commons.ClassUtils;
-import com.b2international.snowowl.api.domain.IComponentRef;
-import com.b2international.snowowl.api.domain.IStorageRef;
+import com.b2international.snowowl.core.domain.IComponentRef;
+import com.b2international.snowowl.core.domain.IStorageRef;
 
 /**
  * @since 1.0
