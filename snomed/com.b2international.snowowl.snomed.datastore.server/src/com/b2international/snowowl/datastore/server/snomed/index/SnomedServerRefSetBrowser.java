@@ -120,6 +120,8 @@ public class SnomedServerRefSetBrowser extends AbstractSnomedIndexBrowser<Snomed
 			.refSetStorageKey()
 			.iconId()
 			.module()
+			.active()
+			.released()
 			.field(REFERENCE_SET_REFERENCED_COMPONENT_TYPE)
 			.field(REFERENCE_SET_TYPE)
 			.field(REFERENCE_SET_STRUCTURAL)
