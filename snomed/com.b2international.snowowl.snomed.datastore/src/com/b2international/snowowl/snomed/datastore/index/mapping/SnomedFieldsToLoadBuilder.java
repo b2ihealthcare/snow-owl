@@ -45,6 +45,10 @@ public class SnomedFieldsToLoadBuilder extends FieldsToLoadBuilderBase<SnomedFie
 	public SnomedFieldsToLoadBuilder active() {
 		return field(SnomedMappings.active());
 	}
+	
+	public SnomedFieldsToLoadBuilder released() {
+		return field(SnomedMappings.released());
+	}
 
 	public SnomedFieldsToLoadBuilder descriptionType() {
 		return field(SnomedMappings.descriptionType());
