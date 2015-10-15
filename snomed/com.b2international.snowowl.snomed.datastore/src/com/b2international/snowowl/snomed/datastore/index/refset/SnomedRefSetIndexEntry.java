@@ -60,7 +60,7 @@ public class SnomedRefSetIndexEntry extends SnomedIndexEntry implements IRefSetC
 				SnomedMappings.iconId().getValueAsString(doc),
 				SnomedMappings.module().getValueAsString(doc),
 				score,
-				Mappings.storageKey().getValue(doc), 
+				SnomedMappings.refSetStorageKey().getValue(doc), 
 				SnomedMappings.released().getValue(doc) == 1,
 				SnomedMappings.active().getValue(doc) == 1,
 				SnomedRefSetType.get(IndexUtils.getIntValue(doc.getField(REFERENCE_SET_TYPE))),
