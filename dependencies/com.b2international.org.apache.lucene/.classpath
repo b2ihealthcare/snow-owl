@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
 	<classpathentry kind="src" path="src"/>
-	<classpathentry exported="true" kind="lib" path="lucene-analyzers-common-4.9.0.jar"/>
+	<classpathentry exported="true" kind="lib" path="lucene-analyzers-common-4.9.0.jar" sourcepath="lucene-4.9.0-src.zip"/>
 	<classpathentry exported="true" kind="lib" path="lucene-codecs-4.9.0.jar" sourcepath="lucene-4.9.0-src.zip"/>
 	<classpathentry exported="true" kind="lib" path="lucene-core-4.9.0.jar" sourcepath="lucene-4.9.0-src.zip"/>
 	<classpathentry exported="true" kind="lib" path="lucene-facet-4.9.0.jar" sourcepath="lucene-4.9.0-src.zip"/>
