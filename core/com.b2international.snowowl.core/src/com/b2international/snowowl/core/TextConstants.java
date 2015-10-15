@@ -17,6 +17,9 @@ package com.b2international.snowowl.core;
 
 import com.google.common.base.CharMatcher;
 
+/**
+ * Holds constants related to text manipulation in terminology indexes.
+ */
 public abstract class TextConstants {
 	
 	/**
@@ -40,6 +43,6 @@ public abstract class TextConstants {
 	public static final CharMatcher WHITESPACE_OR_DELIMITER_MATCHER = CharMatcher.WHITESPACE.or(DELIMITER_MATCHER);
 
 	private TextConstants() {
-		// Prevent instantiation
+		throw new UnsupportedOperationException("This class is not supposed to be instantiated.");
 	}
 }

@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.datastore.index;
+package com.b2international.snowowl.datastore.index.lucene;
 
 import java.io.IOException;
 
@@ -34,59 +34,75 @@ public class BookendTokenFilter extends TokenFilter {
 	/**
 	 * Leading marker character: U+EC00 (PRIVATE USE AREA: EC00) 
 	 */
-	public static final char PUA_EC00_MARKER = '\uEC00';
+	public static final char LEADING_MARKER = '\uEC00';
 
 	/**
 	 * Trailing marker character: U+EC01 (PRIVATE USE AREA: EC01) 
 	 */
-	public static final char PUA_EC01_MARKER = '\uEC01';
+	public static final char TRAILING_MARKER = '\uEC01';
 
-	private enum State {
-		LEAD_IN,
-		FILTER,
-		LEAD_OUT;
+	private enum BookendState {
+		START,
+		PASS_THROUGH,
+		EOS;
 	}
 
 	private final CharTermAttribute termAtt = addAttribute(CharTermAttribute.class);
 	private final KeywordAttribute keywordAtt = addAttribute(KeywordAttribute.class);
-	private State state = State.LEAD_IN;
+	private BookendState bookendState;
 
-	public BookendTokenFilter(final TokenStream input) {
+	private final boolean includeLead;
+	private final boolean includeTrail;
+
+	public BookendTokenFilter(final TokenStream input, final boolean includeLead, final boolean includeTrail) {
 		super(input);
+		this.includeLead = includeLead;
+		this.includeTrail = includeTrail;
+		resetBookendState();
+	}
+
+	private void resetBookendState() {
+		bookendState = includeLead ? BookendState.START : BookendState.PASS_THROUGH;
 	}
 
 	@Override
 	public void reset() throws IOException {
 		super.reset();
-		state = State.LEAD_IN;
+		resetBookendState();
 	}
 
 	@Override
 	public boolean incrementToken() throws IOException {
-		switch (state) {
-		case LEAD_IN:
-			termAtt.setLength(1);
-			termAtt.setEmpty();
-			termAtt.append(PUA_EC00_MARKER);
+		switch (bookendState) {
+		case START:
+			clearAttributes();
+			termAtt.setEmpty().append(LEADING_MARKER);
 			keywordAtt.setKeyword(true);
-			state = State.FILTER;
+			bookendState = BookendState.PASS_THROUGH;
 			return true;
 
-		case FILTER:
-			if (!input.incrementToken()) {
-				termAtt.setLength(1);
-				termAtt.setEmpty();
-				termAtt.append(PUA_EC01_MARKER);
-				keywordAtt.setKeyword(true);
-				state = State.LEAD_OUT;
+		case PASS_THROUGH:
+			if (input.incrementToken()) {
+				return true;
 			}
-			return true;
 
-		case LEAD_OUT:
+			// If more input could not be gathered, the next state will be end-of-stream 
+			bookendState = BookendState.EOS;
+
+			if (includeTrail) {
+				clearAttributes();
+				termAtt.setEmpty().append(TRAILING_MARKER);
+				keywordAtt.setKeyword(true);
+				return true;
+			} else {
+				return false;
+			}
+
+		case EOS:
 			return false;
 
 		default:
-			throw new IllegalStateException("Unhandled state '" + state + "'.");
+			throw new IllegalStateException("Unhandled state '" + bookendState + "'.");
 		}
 	}
 }
