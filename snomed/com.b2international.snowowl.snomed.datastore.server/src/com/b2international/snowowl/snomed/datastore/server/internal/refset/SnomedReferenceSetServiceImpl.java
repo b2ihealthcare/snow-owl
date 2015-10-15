@@ -58,8 +58,8 @@ public class SnomedReferenceSetServiceImpl extends AbstractComponentServiceImpl<
 			final SnomedReferenceSetImpl refset = new SnomedReferenceSetImpl();
 			refset.setId(entry.getId());
 			refset.setEffectiveTime(new Date(entry.getEffectiveTimeAsLong()));
-			// refset.setActive(entry.isActive()); TODO fix index entry
-			// refset.setReleased(entry.isReleased()); TODO fix index entry
+			refset.setActive(entry.isActive());
+			refset.setReleased(entry.isReleased());
 			refset.setModuleId(entry.getModuleId());
 			refset.setReferencedComponent(CoreTerminologyBroker.getInstance().getComponentInformation(entry.getReferencedComponentType()).getName());
 			refset.setType(entry.getType());
