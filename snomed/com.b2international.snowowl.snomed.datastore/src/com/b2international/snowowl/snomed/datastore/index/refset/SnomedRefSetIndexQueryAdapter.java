@@ -105,8 +105,7 @@ public class SnomedRefSetIndexQueryAdapter extends SnomedDslIndexQueryAdapter<Sn
 
 	@Override
 	public SnomedRefSetIndexEntry buildSearchResult(final Document document, final IBranchPath branchPath, final float score) {
-		Preconditions.checkNotNull(document, "Document argument cannot be null.");
-		return createEntry(document, score);
+		return new SnomedRefSetIndexEntry(document, score);
 	}
 
 	@Override
@@ -214,16 +213,4 @@ public class SnomedRefSetIndexQueryAdapter extends SnomedDslIndexQueryAdapter<Sn
 		return labelQueryBuilder;
 	}
 	
-	private SnomedRefSetIndexEntry createEntry(final Document doc, final float score) {
-		return new SnomedRefSetIndexEntry(
-				SnomedMappings.id().getValueAsString(doc), 
-				Mappings.label().getValue(doc), 
-				SnomedMappings.iconId().getValueAsString(doc),
-				SnomedMappings.module().getValueAsString(doc),
-				score,
-				Mappings.storageKey().getValue(doc), 
-				SnomedRefSetType.get(IndexUtils.getIntValue(doc.getField(REFERENCE_SET_TYPE))),
-				IndexUtils.getShortValue(doc.getField(REFERENCE_SET_REFERENCED_COMPONENT_TYPE)), 
-				IndexUtils.getBooleanValue(doc.getField(REFERENCE_SET_STRUCTURAL)));
-	}
 }

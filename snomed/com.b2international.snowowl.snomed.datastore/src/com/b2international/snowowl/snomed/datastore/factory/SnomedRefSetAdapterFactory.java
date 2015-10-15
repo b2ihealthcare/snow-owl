@@ -35,14 +35,8 @@ import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSet;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetPackage;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedStructuralRefSet;
 
-/**
- */
 public class SnomedRefSetAdapterFactory extends TypeSafeAdapterFactory {
 
-	/*
-	 * (non-Javadoc)
-	 * @see com.b2international.commons.TypeSafeAdapterFactory#getAdapterSafe(java.lang.Object, java.lang.Class)
-	 */
 	@Override
 	public <T> T getAdapterSafe(Object adaptableObject, Class<T> adapterType) {
 
@@ -70,10 +64,6 @@ public class SnomedRefSetAdapterFactory extends TypeSafeAdapterFactory {
 		return null;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see com.b2international.commons.TypeSafeAdapterFactory#getAdapterListSafe()
-	 */
 	@Override
 	public Class<?>[] getAdapterListSafe() {
 		return new Class<?>[] { IComponent.class };
@@ -86,7 +76,9 @@ public class SnomedRefSetAdapterFactory extends TypeSafeAdapterFactory {
 				SnomedIconProvider.getInstance().getIconComponentId(refSet.getIdentifierId()),
 				new SnomedConceptLookupService().getComponent(refSet.getIdentifierId(), refSet.cdoView()).getModule().getId(),
 				0.0F, 
-				CDOIDUtils.asLongSafe(refSet.cdoID()), 
+				CDOIDUtils.asLongSafe(refSet.cdoID()),
+				false, 
+				true,
 				refSet.getType(), 
 				refSet.getReferencedComponentType(), refSet instanceof SnomedStructuralRefSet);
 	}

@@ -15,6 +15,9 @@
  */
 package com.b2international.snowowl.snomed.datastore.index.refset;
 
+import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.REFERENCE_SET_REFERENCED_COMPONENT_TYPE;
+import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.REFERENCE_SET_STRUCTURAL;
+import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.REFERENCE_SET_TYPE;
 import static com.google.common.base.Preconditions.checkNotNull;
 
 import java.io.Serializable;
@@ -22,9 +25,14 @@ import java.io.Serializable;
 import javax.annotation.concurrent.Immutable;
 import javax.annotation.concurrent.ThreadSafe;
 
+import org.apache.lucene.document.Document;
+
 import com.b2international.snowowl.core.api.IComponent;
+import com.b2international.snowowl.datastore.index.IndexUtils;
+import com.b2international.snowowl.datastore.index.mapping.Mappings;
 import com.b2international.snowowl.snomed.datastore.IRefSetComponent;
 import com.b2international.snowowl.snomed.datastore.index.SnomedIndexEntry;
+import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedMappings;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType;
 import com.google.common.base.Objects;
 
@@ -42,6 +50,24 @@ public class SnomedRefSetIndexEntry extends SnomedIndexEntry implements IRefSetC
 	private final short referencedComponentType;
 	private final boolean structural;
 
+	public SnomedRefSetIndexEntry(final Document doc) {
+		this(doc, 0.0f);
+	}
+	
+	public SnomedRefSetIndexEntry(final Document doc, final float score) {
+		this(SnomedMappings.id().getValueAsString(doc), 
+				Mappings.label().getValue(doc), 
+				SnomedMappings.iconId().getValueAsString(doc),
+				SnomedMappings.module().getValueAsString(doc),
+				score,
+				Mappings.storageKey().getValue(doc), 
+				SnomedMappings.released().getValue(doc) == 1,
+				SnomedMappings.active().getValue(doc) == 1,
+				SnomedRefSetType.get(IndexUtils.getIntValue(doc.getField(REFERENCE_SET_TYPE))),
+				IndexUtils.getShortValue(doc.getField(REFERENCE_SET_REFERENCED_COMPONENT_TYPE)), 
+				IndexUtils.getBooleanValue(doc.getField(REFERENCE_SET_STRUCTURAL)));
+	}
+	
 	/**
 	 * Creates a new instance of this class.
 	 * @param id the unique ID of the identifier concept.
@@ -52,10 +78,9 @@ public class SnomedRefSetIndexEntry extends SnomedIndexEntry implements IRefSetC
 	 * @param type the type of the reference set.
 	 * @param referencedComponentType the numeric ID of the referenced component's type
 	 */
-	public SnomedRefSetIndexEntry(final String id, final String label, String iconId, final String moduleId, final float score, 
-			final long storageKey, final SnomedRefSetType type, final short referencedComponentType, final boolean structural) {
-		
-		super(id, label, iconId, moduleId, score, storageKey, false, false, -1L); //TODO consider associating boolean flags with reference set identifier concept
+	public SnomedRefSetIndexEntry(final String id, final String label, final String iconId, final String moduleId, final float score, 
+			final long storageKey, final boolean released, final boolean active, final SnomedRefSetType type, final short referencedComponentType, final boolean structural) {
+		super(id, label, iconId, moduleId, score, storageKey, released, active, -1L); 
 		this.type = checkNotNull(type, "type");
 		this.referencedComponentType = referencedComponentType;
 		this.structural = structural;
@@ -67,29 +92,6 @@ public class SnomedRefSetIndexEntry extends SnomedIndexEntry implements IRefSetC
 	 */
 	public SnomedRefSetType getType() {
 		return type;
-	}
-	
-	/**
-	 * <b>NOTE:</b> always throws {@link UnsupportedOperationException}.
-	 */
-	/* (non-Javadoc)
-	 * @see com.b2international.snowowl.snomed.datastore.index.SnomedIndexEntry#isActive()
-	 */
-	@Override
-	public boolean isActive() {
-		throw new UnsupportedOperationException("SNOMED CT reference set does not have active property. Operation is unsupported.");
-	}
-	
-	/**
-	 * <b>NOTE:</b> always throws {@link UnsupportedOperationException}.
-	 */
-	/*
-	 * (non-Javadoc)
-	 * @see com.b2international.snowowl.snomed.datastore.index.SnomedIndexEntry#isReleased()
-	 */
-	@Override
-	public boolean isReleased() {
-		throw new UnsupportedOperationException("SNOMED CT reference set cannot be published. Operation is unsupported.");
 	}
 	
 	/**

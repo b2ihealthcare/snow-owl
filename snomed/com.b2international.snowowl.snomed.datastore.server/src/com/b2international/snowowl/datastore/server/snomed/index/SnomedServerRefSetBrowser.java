@@ -614,27 +614,7 @@ public class SnomedServerRefSetBrowser extends AbstractSnomedIndexBrowser<Snomed
 
 	@Override
 	protected SnomedRefSetIndexEntry createResultObject(final IBranchPath branchPath, final Document doc) {
-		final String id = SnomedMappings.id().getValueAsString(doc);
-		final String label = Mappings.label().getValue(doc);
-		final IndexableField referencedComponentTypeField = doc.getField(REFERENCE_SET_REFERENCED_COMPONENT_TYPE);
-		final short referencedComponentType = referencedComponentTypeField.numericValue().shortValue();
-		final IndexableField referenceSetTypeField = doc.getField(REFERENCE_SET_TYPE);
-		final SnomedRefSetType refSetType = SnomedRefSetType.get(referenceSetTypeField.numericValue().intValue());
-		final long storageKey = SnomedMappings.refSetStorageKey().getValue(doc);
-		final boolean structural = IndexUtils.getBooleanValue(doc.getField(REFERENCE_SET_STRUCTURAL));
-		final String iconId = Mappings.iconId().getValue(doc);
-		final String moduleId = SnomedMappings.module().getValueAsString(doc);
-		
-		return new SnomedRefSetIndexEntry(
-				id, 
-				label, 
-				iconId,
-				moduleId,
-				0.0F, 
-				storageKey, 
-				refSetType, 
-				referencedComponentType, 
-				structural);
+		return new SnomedRefSetIndexEntry(doc);
 	}
 
 	@Override
