@@ -241,6 +241,16 @@ public class SnomedClientRefSetBrowser extends AbstractClientRefSetBrowser<Snome
 		return getWrapperService().getMapppings(getBranchPath(), refSetId);
 	}
 	
+	@Override
+	public Collection<SnomedConceptIndexEntry> getSubTypesWithActiveMembers(final String refsetId, final String... excludedIds) {
+		return getWrapperService().getSubTypesWithActiveMembers(getBranchPath(), refsetId, excludedIds);
+	}
+	
+	@Override
+	public Collection<SnomedConceptIndexEntry> getAllSubTypesWithActiveMembers(final String refsetId, final String... excludedIds) {
+		return getWrapperService().getAllSubTypesWithActiveMembers(getBranchPath(), refsetId, excludedIds);
+	}
+	
 	/* (non-Javadoc)
 	 * @see com.b2international.snowowl.snomed.datastore.AbstractClientRefSetBrowser#getWrapperService()
 	 */
