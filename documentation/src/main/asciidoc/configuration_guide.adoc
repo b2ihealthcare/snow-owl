@@ -862,7 +862,7 @@ Snow Owl can be configured to obtain valid SNOMED CT identifiers from IHTSDO's C
 
 |idGenerationSource
 |`INTERNAL`
-|`INTERNAL`, `EXTERNAL_IHTSDO` - The source of the id generation. 
+|`INTERNAL`, `CIS` - The source of the id generation. 
 
 |externalIdGeneratorUrl
 |
