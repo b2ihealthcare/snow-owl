@@ -23,6 +23,7 @@ import javax.validation.constraints.Size;
 
 import org.hibernate.validator.constraints.NotEmpty;
 
+import com.b2international.snowowl.snomed.api.domain.DefinitionStatus;
 import com.b2international.snowowl.snomed.api.domain.ISnomedConceptInput;
 import com.b2international.snowowl.snomed.api.domain.ISnomedDescriptionInput;
 import com.b2international.snowowl.snomed.api.domain.IdGenerationStrategy;
@@ -41,6 +42,9 @@ public class SnomedConceptInput extends AbstractSnomedComponentInput implements 
 	@NotNull
 	private IdGenerationStrategy isAIdGenerationStrategy;
 
+	@NotNull
+	private DefinitionStatus definitionStatus = DefinitionStatus.PRIMITIVE;
+	
 	@Override
 	public List<ISnomedDescriptionInput> getDescriptions() {
 		return descriptions;
@@ -56,6 +60,11 @@ public class SnomedConceptInput extends AbstractSnomedComponentInput implements 
 		return isAIdGenerationStrategy;
 	}
 
+	@Override
+	public DefinitionStatus getDefinitionStatus() {
+		return definitionStatus;
+	}
+
 	public void setParentId(final String parentId) {
 		this.parentId = parentId;
 	}
@@ -68,6 +77,10 @@ public class SnomedConceptInput extends AbstractSnomedComponentInput implements 
 		this.descriptions = ImmutableList.copyOf(descriptions);
 	}
 
+	public void setDefinitionStatus(DefinitionStatus definitionStatus) {
+		this.definitionStatus = definitionStatus;
+	}
+	
 	@Override
 	public String toString() {
 		final StringBuilder builder = new StringBuilder();
@@ -83,6 +96,8 @@ public class SnomedConceptInput extends AbstractSnomedComponentInput implements 
 		builder.append(getParentId());
 		builder.append(", getIsAIdGenerationStrategy()=");
 		builder.append(getIsAIdGenerationStrategy());
+		builder.append(", getDefinitionStatus()=");
+		builder.append(getDefinitionStatus());
 		builder.append(", getDescriptions()=");
 		builder.append(getDescriptions());
 		builder.append("]");

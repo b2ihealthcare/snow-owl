@@ -20,6 +20,8 @@ public class ConceptInputCreator extends AbstractInputCreator implements Compone
 		if (conceptId != null) {
 			conceptInput.setIdGenerationStrategy(new UserIdGenerationStrategy(conceptId));
 		}
+		
+		conceptInput.setDefinitionStatus(concept.getDefinitionStatus());
 
 		// Find a parent relationship
 		final String parentRelationshipId = getParentId(concept);
