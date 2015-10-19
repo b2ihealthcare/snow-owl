@@ -209,22 +209,28 @@ public class SnomedRefSetMembershipIndexQueryAdapter extends SnomedRefSetMemberI
 			private static final long serialVersionUID = 615721958388015634L;
 			@Override public Query createQuery() {
 				
-				final Query referencedComponentQuery = SnomedMappings.newQuery()
-						.memberReferencedComponentId(componentId)
-						.and(createReferencedComponentTypeQuery(componentType))
-						.matchAll();
-
+				final SnomedQueryBuilder queryBuilder = SnomedMappings.newQuery();
+				
+				try { // workaround to skip component IDs with alphabetic characters
+					Long.parseLong(componentId);
+					final Query referencedComponentQuery = SnomedMappings.newQuery()
+							.memberReferencedComponentId(componentId)
+							.and(createReferencedComponentTypeQuery(componentType))
+							.matchAll();
+					queryBuilder.and(referencedComponentQuery);
+					
+				} catch (final NumberFormatException e) { /* ignore */ }
+				
 				final Query specialFieldQuery = SnomedMappings.newQuery()
 						.and(createSpecialFieldTypeQuery(componentType, REFERENCE_SET_MEMBER_MAP_TARGET_COMPONENT_TYPE_ID))
 						.field(REFERENCE_SET_MEMBER_MAP_TARGET_COMPONENT_ID, componentId)
 						.matchAll();
 
+				queryBuilder.and(specialFieldQuery);
+				
 				return SnomedMappings.newQuery()
 						.and(createRefSetTypeQuery(Lists.newArrayList(SnomedRefSetType.COMPLEX_MAP, SnomedRefSetType.SIMPLE_MAP, SnomedRefSetType.EXTENDED_MAP)))
-						.and(SnomedMappings.newQuery()
-								.and(referencedComponentQuery)
-								.and(specialFieldQuery)
-							.matchAny())
+						.and(queryBuilder.matchAny())
 						.matchAll();
 			}
 		};
