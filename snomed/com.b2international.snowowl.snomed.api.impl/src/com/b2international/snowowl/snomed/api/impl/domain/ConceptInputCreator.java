@@ -1,7 +1,10 @@
 package com.b2international.snowowl.snomed.api.impl.domain;
 
+import static com.google.common.collect.Lists.newArrayList;
+
+import java.util.List;
+
 import com.b2international.snowowl.core.terminology.ComponentCategory;
-import com.b2international.snowowl.snomed.api.domain.*;
 import com.b2international.snowowl.snomed.api.domain.browser.ISnomedBrowserDescription;
 import com.b2international.snowowl.snomed.api.impl.domain.browser.SnomedBrowserConcept;
 import com.b2international.snowowl.snomed.api.impl.domain.browser.SnomedBrowserConceptUpdate;
@@ -11,10 +14,8 @@ import com.b2international.snowowl.snomed.core.domain.ISnomedConceptInput;
 import com.b2international.snowowl.snomed.core.domain.ISnomedConceptUpdate;
 import com.b2international.snowowl.snomed.core.domain.ISnomedDescriptionInput;
 import com.b2international.snowowl.snomed.core.domain.InactivationIndicator;
-
-import java.util.List;
-
-import static com.google.common.collect.Lists.newArrayList;
+import com.b2international.snowowl.snomed.core.domain.UserIdGenerationStrategy;
+import com.b2international.snowowl.snomed.datastore.server.domain.SnomedConceptInput;
 
 public class ConceptInputCreator extends AbstractInputCreator implements ComponentInputCreator<SnomedConceptInput, SnomedConceptUpdate, SnomedBrowserConcept> {
 	@Override

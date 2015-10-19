@@ -15,19 +15,19 @@
  */
 package com.b2international.snowowl.snomed.api.rest.browser;
 
-import com.b2international.snowowl.core.exceptions.BadRequestException;
-import com.b2international.snowowl.core.terminology.ComponentCategory;
-import com.b2international.snowowl.snomed.SnomedConstants;
-import com.b2international.snowowl.snomed.api.impl.domain.SnomedConceptInput;
-import com.b2international.snowowl.snomed.api.impl.domain.SnomedDescriptionInput;
-import com.b2international.snowowl.snomed.api.rest.domain.AbstractSnomedComponentRestInput;
-import com.b2international.snowowl.snomed.api.rest.domain.SnomedDescriptionRestInput;
-import com.b2international.snowowl.snomed.api.rest.domain.SnomedRelationshipRestInput;
+import static com.google.common.collect.Lists.newArrayList;
 
 import java.util.Collections;
 import java.util.List;
 
-import static com.google.common.collect.Lists.newArrayList;
+import com.b2international.snowowl.core.exceptions.BadRequestException;
+import com.b2international.snowowl.core.terminology.ComponentCategory;
+import com.b2international.snowowl.snomed.SnomedConstants;
+import com.b2international.snowowl.snomed.api.impl.domain.SnomedDescriptionInput;
+import com.b2international.snowowl.snomed.api.rest.domain.AbstractSnomedComponentRestInput;
+import com.b2international.snowowl.snomed.api.rest.domain.SnomedDescriptionRestInput;
+import com.b2international.snowowl.snomed.api.rest.domain.SnomedRelationshipRestInput;
+import com.b2international.snowowl.snomed.datastore.server.domain.SnomedConceptInput;
 
 /**
  * @since 1.0

@@ -16,10 +16,10 @@
 package com.b2international.snowowl.snomed.api.rest.domain;
 
 import com.b2international.snowowl.core.terminology.ComponentCategory;
-import com.b2international.snowowl.snomed.api.impl.domain.NamespaceIdGenerationStrategy;
-import com.b2international.snowowl.snomed.api.impl.domain.UserIdGenerationStrategy;
 import com.b2international.snowowl.snomed.core.domain.AbstractSnomedComponentInput;
 import com.b2international.snowowl.snomed.core.domain.IdGenerationStrategy;
+import com.b2international.snowowl.snomed.core.domain.NamespaceIdGenerationStrategy;
+import com.b2international.snowowl.snomed.core.domain.UserIdGenerationStrategy;
 
 /**
  * @since 4.0
