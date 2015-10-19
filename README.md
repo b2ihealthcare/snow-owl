@@ -27,6 +27,9 @@ Required Eclipse plug-ins (install the listed features):
 Make sure you have the following preferences enabled/disabled.
 * Plug-in development API baseline errors is set to Ignored (Preferences > Plug-in Development > API Baselines)
 * The *Plugin execution not covered by lifecycle configuration: org.apache.maven.plugins:maven-clean-plugin:2.5:clean* type of errors can be ignored or changed to *Warnings* in *Preferences->Maven->Errors/Warnings*.
+* Set the workspace encoding to *UTF-8* (Preferences->General->Workspace)
+* Set the line endings to *Unix* style (Preferences->General->Workspace)
+* Make sure the Git line endings are set to *input* (Preferences->Team->Git->Configuration - add key if missing *core.autocrlf = input*)
 
 ### Target platform
 
