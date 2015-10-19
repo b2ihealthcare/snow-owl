@@ -159,7 +159,7 @@ public abstract class SnomedComponentApiAssert {
 			final int statusCode) {
 
 		return whenCreatingComponent(branchPath, componentType, requestBody)
-				.then().assertThat().statusCode(statusCode);
+				.then().log().ifValidationFails().assertThat().statusCode(statusCode);
 	}
 
 	/**
