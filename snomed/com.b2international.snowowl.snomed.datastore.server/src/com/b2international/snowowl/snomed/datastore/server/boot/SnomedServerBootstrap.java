@@ -20,9 +20,12 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import com.b2international.snowowl.core.config.SnowOwlConfiguration;
 import com.b2international.snowowl.core.setup.BootstrapFragment;
 import com.b2international.snowowl.core.setup.Environment;
+import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.snomed.core.refset.SnomedReferenceSetService;
+import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 import com.b2international.snowowl.snomed.datastore.SnomedRefSetBrowser;
 import com.b2international.snowowl.snomed.datastore.SnomedRefSetLookupService;
+import com.b2international.snowowl.snomed.datastore.server.internal.refset.SnomedReferenceSetEventHandler;
 import com.b2international.snowowl.snomed.datastore.server.internal.refset.SnomedReferenceSetServiceImpl;
 import com.google.inject.Provider;
 import com.google.inject.util.Providers;
@@ -38,8 +41,11 @@ public class SnomedServerBootstrap implements BootstrapFragment {
 
 	@Override
 	public void run(SnowOwlConfiguration configuration, Environment env, IProgressMonitor monitor) throws Exception {
-		final Provider<SnomedRefSetBrowser> refSetBrowser = env.provider(SnomedRefSetBrowser.class);
-		env.services().registerService(SnomedReferenceSetService.class, new SnomedReferenceSetServiceImpl(refSetBrowser, Providers.of(new SnomedRefSetLookupService())));
+		if (env.isServer()) {
+			final Provider<SnomedRefSetBrowser> refSetBrowser = env.provider(SnomedRefSetBrowser.class);
+			env.services().registerService(SnomedReferenceSetService.class, new SnomedReferenceSetServiceImpl(refSetBrowser, Providers.of(new SnomedRefSetLookupService())));
+			env.service(IEventBus.class).registerHandler("/" + SnomedDatastoreActivator.REPOSITORY_UUID + "/refset", new SnomedReferenceSetEventHandler(env));
+		}
 	}
 
 }
