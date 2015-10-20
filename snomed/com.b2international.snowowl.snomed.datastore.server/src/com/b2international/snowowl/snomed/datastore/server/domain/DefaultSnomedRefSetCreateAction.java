@@ -13,26 +13,32 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.snomed.core.refset;
+package com.b2international.snowowl.snomed.datastore.server.domain;
 
-import java.util.List;
-
-import com.b2international.snowowl.core.component.IComponentService;
-import com.b2international.snowowl.core.domain.TerminologyAction;
 import com.b2international.snowowl.snomed.core.domain.SnomedRefSetCreateAction;
+import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType;
 
 /**
  * @since 4.5
  */
-public interface SnomedReferenceSetService extends IComponentService<SnomedRefSetCreateAction, SnomedReferenceSet, TerminologyAction> {
+public class DefaultSnomedRefSetCreateAction extends DefaultSnomedConceptCreateAction implements SnomedRefSetCreateAction {
 
-	/**
-	 * Returns all reference set available on the given branch path.
-	 * 
-	 * @param path
-	 *            - the path of the branch to query for reference sets
-	 * @return a {@link List} of {@link SnomedReferenceSet} instances found on the given path, or an empty list if no reference sets are available
-	 */
-	List<SnomedReferenceSet> getReferenceSets(String path);
+	private final SnomedRefSetType type;
+	private final String referencedComponentType;
+	
+	public DefaultSnomedRefSetCreateAction(SnomedRefSetType type, String referencedComponentType) {
+		this.type = type;
+		this.referencedComponentType = referencedComponentType;
+	}
 
+	@Override
+	public SnomedRefSetType getType() {
+		return type;
+	}
+	
+	@Override
+	public String getReferencedComponentType() {
+		return referencedComponentType;
+	}
+	
 }

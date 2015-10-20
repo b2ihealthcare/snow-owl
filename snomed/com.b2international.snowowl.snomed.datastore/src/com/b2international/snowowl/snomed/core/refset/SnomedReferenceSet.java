@@ -35,6 +35,6 @@ public interface SnomedReferenceSet extends ISnomedComponent {
 	 * 
 	 * @return
 	 */
-	String getReferencedComponent();
+	String getReferencedComponentType();
 
 }

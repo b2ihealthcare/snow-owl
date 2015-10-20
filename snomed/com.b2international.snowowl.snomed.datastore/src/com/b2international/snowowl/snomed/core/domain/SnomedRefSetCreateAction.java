@@ -13,26 +13,27 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.snomed.api.rest;
+package com.b2international.snowowl.snomed.core.domain;
 
-import java.util.Locale;
+import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType;
 
 /**
- * Enumerates SNOMED CT component types used in the REST API tests.
- * 
- * @since 2.0
+ * @since 4.5
  */
-public enum SnomedComponentType {
-
-	CONCEPT,
-	DESCRIPTION,
-	RELATIONSHIP, 
-	REFSET;
+public interface SnomedRefSetCreateAction extends SnomedConceptCreateAction {
 
 	/**
-	 * @return the all-lower case plural form of this type
+	 * Returns the type of the new reference set.
+	 * 
+	 * @return
 	 */
-	public String toLowerCasePlural() {
-		return toString().toLowerCase(Locale.ENGLISH) + "s";
-	}
+	SnomedRefSetType getType();
+
+	/**
+	 * Returns the referenced component of the new reference set.
+	 * 
+	 * @return the referenced component ID, or <code>null</code> if unspecified.
+	 */
+	String getReferencedComponentType();
+
 }

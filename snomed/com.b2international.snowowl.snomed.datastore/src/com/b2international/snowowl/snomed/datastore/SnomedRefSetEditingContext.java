@@ -43,6 +43,7 @@ import com.b2international.snowowl.core.CoreTerminologyBroker;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.api.IComponentNameProvider;
 import com.b2international.snowowl.core.api.ILookupService;
+import com.b2international.snowowl.core.terminology.ComponentCategory;
 import com.b2international.snowowl.datastore.BranchPathUtils;
 import com.b2international.snowowl.datastore.cdo.CDOUtils;
 import com.b2international.snowowl.datastore.utils.ComponentUtils2;
@@ -917,19 +918,29 @@ public class SnomedRefSetEditingContext extends BaseSnomedEditingContext {
 		
 	} 
 
-	// create identifier concept with the given arguments, save it locally
 	private void createIdentifierAndAddRefSet(final SnomedRefSet snomedRefSet, final String parentConceptId, final String name) {
-		final Concept identifier = createIdentifierConcept(parentConceptId, name);
+		createIdentifierAndAddRefSet(snomedRefSet, getSnomedEditingContext().generateComponentId(ComponentCategory.CONCEPT), name);
+	}
+	
+	// create identifier concept with the given arguments, save it locally
+	private void createIdentifierAndAddRefSet(final SnomedRefSet snomedRefSet, final String conceptId, final String parentConceptId, final String name) {
+		final Concept identifier = createIdentifierConcept(conceptId, parentConceptId, name);
 		snomedRefSet.setIdentifierId(identifier.getId());
 		add(snomedRefSet);
 	}
 
-	private Concept createIdentifierConcept(final String parentConceptId, final String name) {
+	/**
+	 * non-API - will be refactored later
+	 * @param parentConceptId
+	 * @param name
+	 * @return
+	 */
+	public Concept createIdentifierConcept(final String conceptId, final String parentConceptId, final String name) {
 		final SnomedEditingContext context = getSnomedEditingContext();
 		
 		// FIXME replace with proper builder, 
 		// create identifier concept with one FSN
-		final Concept identifier = context.buildDefaultConcept(name, parentConceptId);
+		final Concept identifier = context.buildDefaultConcept(conceptId, name, parentConceptId);
 		final Description synonym = context.buildDefaultDescription(name, Concepts.SYNONYM);
 		synonym.setConcept(identifier);
 		

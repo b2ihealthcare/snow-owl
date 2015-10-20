@@ -627,8 +627,19 @@ public class SnomedEditingContext extends BaseSnomedEditingContext {
 	 * @return
 	 * @deprecated - will be removed in 4.4
 	 */
-	public Concept buildDefaultConcept(String fullySpecifiedName, String parentConceptId) {
-		return buildDefaultConcept(fullySpecifiedName, findConceptById(parentConceptId));
+	public Concept buildDefaultConcept(String conceptId, String fullySpecifiedName, String parentConceptId) {
+		return buildDefaultConcept(conceptId, fullySpecifiedName, findConceptById(parentConceptId));
+	}
+	
+	/**
+	 * Builds a new default SNOMED CT concept with a fully specified name description and ISA relationship to the specified parent concept with the given identifier. 
+	 * @param fullySpecifiedName
+	 * @param parentConcept
+	 * @return
+	 * @deprecated - will be removed in 4.5
+	 */
+	public Concept buildDefaultConcept(String fullySpecifiedName, Concept parentConcept) {
+		return buildDefaultConcept(generateComponentId(ComponentCategory.CONCEPT, getNamespace()), fullySpecifiedName, parentConcept);
 	}
 	
 	/**
@@ -637,7 +648,7 @@ public class SnomedEditingContext extends BaseSnomedEditingContext {
 	 * @return a valid concept populated with default values and the specified properties
 	 * @deprecated - will be replaced with new component builder API in 4.4
 	 */
-	public Concept buildDefaultConcept(String fullySpecifiedName, Concept parentConcept) {
+	public Concept buildDefaultConcept(String conceptId, String fullySpecifiedName, Concept parentConcept) {
 		
 		checkNotNull(parentConcept, "parentConcept");
 		
@@ -645,7 +656,7 @@ public class SnomedEditingContext extends BaseSnomedEditingContext {
 		add(concept);
 		
 		// set concept properties
-		concept.setId(generateComponentId(concept));
+		concept.setId(conceptId);
 		concept.setActive(true);
 		concept.setDefinitionStatus(findConceptById(PRIMITIVE));
 		concept.setModule(getDefaultModuleConcept());
@@ -1688,7 +1699,11 @@ public class SnomedEditingContext extends BaseSnomedEditingContext {
 		throw new IllegalArgumentException(MessageFormat.format("Unexpected component class ''{0}''.", component));
 	}
 	
-	private String generateComponentId(final ComponentCategory componentNature, final String namespace) {
+	public String generateComponentId(final ComponentCategory componentNature) {
+		return identifiers.generateId(componentNature, getNamespace());
+	}
+	
+	public String generateComponentId(final ComponentCategory componentNature, final String namespace) {
 		return identifiers.generateId(componentNature, namespace);
 	}
 	

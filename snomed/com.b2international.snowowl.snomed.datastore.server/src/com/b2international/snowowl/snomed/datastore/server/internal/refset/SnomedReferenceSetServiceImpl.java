@@ -22,18 +22,19 @@ import java.util.List;
 import com.b2international.commons.ClassUtils;
 import com.b2international.snowowl.core.CoreTerminologyBroker;
 import com.b2international.snowowl.core.api.IBranchPath;
-import com.b2international.snowowl.core.domain.IComponentInput;
+import com.b2international.snowowl.core.domain.TerminologyAction;
 import com.b2international.snowowl.core.domain.IComponentRef;
 import com.b2international.snowowl.core.exceptions.AlreadyExistsException;
 import com.b2international.snowowl.core.terminology.ComponentCategory;
 import com.b2international.snowowl.datastore.server.components.AbstractComponentServiceImpl;
 import com.b2international.snowowl.datastore.server.domain.InternalComponentRef;
+import com.b2international.snowowl.snomed.core.domain.SnomedRefSetCreateAction;
+import com.b2international.snowowl.snomed.core.domain.UserIdGenerationStrategy;
 import com.b2international.snowowl.snomed.core.refset.SnomedReferenceSet;
 import com.b2international.snowowl.snomed.core.refset.SnomedReferenceSetService;
 import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 import com.b2international.snowowl.snomed.datastore.SnomedEditingContext;
 import com.b2international.snowowl.snomed.datastore.SnomedRefSetBrowser;
-import com.b2international.snowowl.snomed.datastore.SnomedRefSetEditingContext;
 import com.b2international.snowowl.snomed.datastore.SnomedRefSetLookupService;
 import com.b2international.snowowl.snomed.datastore.index.refset.SnomedRefSetIndexEntry;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSet;
@@ -43,7 +44,7 @@ import com.google.inject.Provider;
 /**
  * @since 4.5
  */
-public class SnomedReferenceSetServiceImpl extends AbstractComponentServiceImpl<IComponentInput, SnomedReferenceSet, IComponentInput, SnomedRefSetEditingContext, SnomedRefSet> implements SnomedReferenceSetService {
+public class SnomedReferenceSetServiceImpl extends AbstractComponentServiceImpl<SnomedRefSetCreateAction, SnomedReferenceSet, TerminologyAction, SnomedEditingContext, SnomedRefSet> implements SnomedReferenceSetService {
 
 	private final Provider<SnomedRefSetBrowser> refSetBrowser;
 	private final Provider<SnomedRefSetLookupService> refSetLookupService;
@@ -66,30 +67,34 @@ public class SnomedReferenceSetServiceImpl extends AbstractComponentServiceImpl<
 	}
 
 	@Override
-	protected boolean componentExists(IComponentInput input) {
-		throw new UnsupportedOperationException();
+	protected boolean componentExists(SnomedRefSetCreateAction input) {
+		if (input.getIdGenerationStrategy() instanceof UserIdGenerationStrategy) {
+			final IBranchPath branchPath = createStorageRef("SNOMEDCT", input.getBranchPath()).getBranch().branchPath();
+			return exists(branchPath, input.getIdGenerationStrategy().getId());
+		} else {
+			return false;
+		}
 	}
 
 	@Override
 	protected boolean componentExists(IComponentRef ref) {
 		final InternalComponentRef internalRef = ClassUtils.checkAndCast(ref, InternalComponentRef.class);
 		internalRef.checkStorageExists();
-		return refSetLookupService.get().exists(internalRef.getBranch().branchPath(), internalRef.getComponentId());
+		return exists(internalRef.getBranch().branchPath(), internalRef.getComponentId());
+	}
+
+	private boolean exists(final IBranchPath branchPath, final String id) {
+		return refSetLookupService.get().exists(branchPath, id);
 	}
 
 	@Override
-	protected AlreadyExistsException createDuplicateComponentException(IComponentInput input) {
+	protected AlreadyExistsException createDuplicateComponentException(SnomedRefSetCreateAction input) {
 		return null;
 	}
 
 	@Override
-	protected SnomedRefSetEditingContext createEditingContext(IComponentRef ref) {
-		return new SnomedEditingContext().getRefSetEditingContext();
-	}
-
-	@Override
-	protected SnomedRefSet convertAndRegister(IComponentInput input, SnomedRefSetEditingContext editingContext) {
-		throw new UnsupportedOperationException();
+	protected SnomedEditingContext createEditingContext(IComponentRef ref) {
+		return new SnomedEditingContext();
 	}
 
 	@Override
@@ -105,12 +110,12 @@ public class SnomedReferenceSetServiceImpl extends AbstractComponentServiceImpl<
 	}
 
 	@Override
-	protected void doUpdate(IComponentRef ref, IComponentInput update, SnomedRefSetEditingContext editingContext) {
+	protected void doUpdate(IComponentRef ref, TerminologyAction update, SnomedEditingContext editingContext) {
 		throw new UnsupportedOperationException();
 	}
 
 	@Override
-	protected void doDelete(IComponentRef ref, SnomedRefSetEditingContext editingContext) {
+	protected void doDelete(IComponentRef ref, SnomedEditingContext editingContext) {
 		throw new UnsupportedOperationException();
 	}
 	

@@ -33,7 +33,7 @@ public class SnomedReferenceSetImpl extends AbstractSnomedComponent implements S
 	}
 
 	@Override
-	public String getReferencedComponent() {
+	public String getReferencedComponentType() {
 		return referencedComponent;
 	}
 	

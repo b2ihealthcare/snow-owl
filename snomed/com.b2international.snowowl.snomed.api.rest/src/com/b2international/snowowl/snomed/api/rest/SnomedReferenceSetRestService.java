@@ -15,17 +15,28 @@
  */
 package com.b2international.snowowl.snomed.api.rest;
 
+import static org.springframework.hateoas.mvc.ControllerLinkBuilder.linkTo;
+
+import java.net.URI;
+import java.security.Principal;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
 
+import com.b2international.snowowl.snomed.api.rest.domain.ChangeRequest;
 import com.b2international.snowowl.snomed.api.rest.domain.CollectionResource;
+import com.b2international.snowowl.snomed.api.rest.domain.SnomedRefSetRestInput;
+import com.b2international.snowowl.snomed.api.rest.util.Responses;
 import com.b2international.snowowl.snomed.core.refset.SnomedReferenceSet;
 import com.b2international.snowowl.snomed.core.refset.SnomedReferenceSetService;
+import com.b2international.snowowl.snomed.datastore.server.domain.DefaultSnomedRefSetCreateAction;
 import com.wordnik.swagger.annotations.Api;
 import com.wordnik.swagger.annotations.ApiOperation;
 import com.wordnik.swagger.annotations.ApiParam;
@@ -75,6 +86,40 @@ public class SnomedReferenceSetRestService extends AbstractSnomedRestService {
 			@PathVariable(value="refSetId")
 			final String refSetId) {
 		return delegate.read(createComponentRef(branchPath, refSetId));
+	}
+	
+	@ApiOperation(
+			value="Create a reference set",
+			notes="Creates a new reference set directly on a branch. Creates the corresponding identifier concept.")
+	@ApiResponses({
+		@ApiResponse(code = 200, message = "OK", response = Void.class),
+		@ApiResponse(code = 404, message = "Branch not found")
+	})
+	@RequestMapping(value="/{path:**}/refsets", method=RequestMethod.POST)
+	public ResponseEntity<Void> create(
+			@ApiParam(value="The branch path")
+			@PathVariable(value="path")
+			final String branchPath,
+			
+			@ApiParam(value="Reference set parameters")
+			@RequestBody 
+			final ChangeRequest<SnomedRefSetRestInput> body,
+
+			final Principal principal) {
+		
+		final SnomedReferenceSet createdRefSet = doCreate(branchPath, body, principal);
+		return Responses.created(getRefSetLocationURI(branchPath, createdRefSet)).build();
+	}
+	
+	private SnomedReferenceSet doCreate(final String branchPath, final ChangeRequest<SnomedRefSetRestInput> body, final Principal principal) {
+		final DefaultSnomedRefSetCreateAction input = body.getChange().toComponentInput(branchPath, codeSystemShortName);
+		final String userId = principal.getName();
+		final String commitComment = body.getCommitComment();
+		return delegate.create(input, userId, commitComment);
+	}
+
+	private URI getRefSetLocationURI(String branchPath, SnomedReferenceSet refSet) {
+		return linkTo(SnomedConceptRestService.class).slash(branchPath).slash("refsets").slash(refSet.getId()).toUri();
 	}
 	
 }
