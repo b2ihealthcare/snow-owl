@@ -55,14 +55,14 @@ import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.SnomedFactory;
 import com.b2international.snowowl.snomed.api.ISnomedConceptService;
 import com.b2international.snowowl.snomed.api.impl.domain.SnomedConceptList;
-import com.b2international.snowowl.snomed.api.impl.domain.SnomedDescriptionInput;
+import com.b2international.snowowl.snomed.api.impl.domain.DefaultSnomedDescriptionCreateAction;
 import com.b2international.snowowl.snomed.core.domain.Acceptability;
 import com.b2international.snowowl.snomed.core.domain.AssociationType;
 import com.b2international.snowowl.snomed.core.domain.DefinitionStatus;
 import com.b2international.snowowl.snomed.core.domain.ISnomedConcept;
-import com.b2international.snowowl.snomed.core.domain.ISnomedConceptInput;
+import com.b2international.snowowl.snomed.core.domain.SnomedConceptCreateAction;
 import com.b2international.snowowl.snomed.core.domain.ISnomedConceptUpdate;
-import com.b2international.snowowl.snomed.core.domain.ISnomedDescriptionInput;
+import com.b2international.snowowl.snomed.core.domain.SnomedDescriptionCreateAction;
 import com.b2international.snowowl.snomed.core.domain.InactivationIndicator;
 import com.b2international.snowowl.snomed.core.domain.SearchKind;
 import com.b2international.snowowl.snomed.core.domain.SubclassDefinitionStatus;
@@ -91,7 +91,7 @@ import com.google.common.collect.Multimap;
 import com.google.common.collect.Multiset;
 
 public class SnomedConceptServiceImpl 
-	extends AbstractSnomedComponentServiceImpl<ISnomedConceptInput, ISnomedConcept, ISnomedConceptUpdate, Concept>
+	extends AbstractSnomedComponentServiceImpl<SnomedConceptCreateAction, ISnomedConcept, ISnomedConceptUpdate, Concept>
 	implements ISnomedConceptService {
 
 	private SnomedDescriptionServiceImpl descriptionService;
@@ -128,7 +128,7 @@ public class SnomedConceptServiceImpl
 	}
 
 	@Override
-	protected Concept convertAndRegister(final ISnomedConceptInput conceptInput, final SnomedEditingContext editingContext) {
+	protected Concept convertAndRegister(final SnomedConceptCreateAction conceptInput, final SnomedEditingContext editingContext) {
 		final Concept concept = convertConcept(conceptInput, editingContext);
 		convertParentIsARelationship(conceptInput, concept, editingContext); 
 		editingContext.add(concept);
@@ -137,8 +137,8 @@ public class SnomedConceptServiceImpl
 		final Multiset<String> preferredLanguageRefSetIds = HashMultiset.create();
 		final Set<String> synonymAndDescendantIds = getSnomedComponentService().getSynonymAndDescendantIds(BranchPathUtils.createPath(editingContext.getTransaction()));
 
-		for (final ISnomedDescriptionInput descriptionInput : conceptInput.getDescriptions()) {
-			final SnomedDescriptionInput internalDescriptionInput = ClassUtils.checkAndCast(descriptionInput, SnomedDescriptionInput.class);
+		for (final SnomedDescriptionCreateAction descriptionInput : conceptInput.getDescriptions()) {
+			final DefaultSnomedDescriptionCreateAction internalDescriptionInput = ClassUtils.checkAndCast(descriptionInput, DefaultSnomedDescriptionCreateAction.class);
 
 			internalDescriptionInput.setConceptId(concept.getId());
 
@@ -175,7 +175,7 @@ public class SnomedConceptServiceImpl
 		return concept;
 	}
 
-	private Concept convertConcept(final ISnomedConceptInput input, final SnomedEditingContext editingContext) {
+	private Concept convertConcept(final SnomedConceptCreateAction input, final SnomedEditingContext editingContext) {
 		try {
 
 			final Concept concept = SnomedFactory.eINSTANCE.createConcept();
@@ -195,7 +195,7 @@ public class SnomedConceptServiceImpl
 		}
 	}
 
-	private Relationship convertParentIsARelationship(final ISnomedConceptInput input, final Concept concept, final SnomedEditingContext editingContext) {
+	private Relationship convertParentIsARelationship(final SnomedConceptCreateAction input, final Concept concept, final SnomedEditingContext editingContext) {
 		try {
 
 			final Relationship parentIsARelationship = SnomedFactory.eINSTANCE.createRelationship();

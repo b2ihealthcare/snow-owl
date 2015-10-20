@@ -30,7 +30,7 @@ public interface SnomedConceptCreateAction extends SnomedComponentCreateAction {
 	 * 
 	 * @return the list of descriptions to create
 	 */
-	List<ISnomedDescriptionInput> getDescriptions();
+	List<SnomedDescriptionCreateAction> getDescriptions();
 
 	/**
 	 * Returns the identifier of a parent concept. The new concept will be attached to the existing concept graph via a new {@code IS A} relationship,

@@ -23,33 +23,33 @@ import java.util.List;
 import com.b2international.snowowl.core.exceptions.BadRequestException;
 import com.b2international.snowowl.core.terminology.ComponentCategory;
 import com.b2international.snowowl.snomed.SnomedConstants;
-import com.b2international.snowowl.snomed.api.impl.domain.SnomedDescriptionInput;
+import com.b2international.snowowl.snomed.api.impl.domain.DefaultSnomedDescriptionCreateAction;
 import com.b2international.snowowl.snomed.api.rest.domain.AbstractSnomedComponentRestInput;
 import com.b2international.snowowl.snomed.api.rest.domain.SnomedDescriptionRestInput;
 import com.b2international.snowowl.snomed.api.rest.domain.SnomedRelationshipRestInput;
-import com.b2international.snowowl.snomed.datastore.server.domain.SnomedConceptInput;
+import com.b2international.snowowl.snomed.datastore.server.domain.DefaultSnomedConceptCreateAction;
 
 /**
  * @since 1.0
  */
-public class SnomedBrowserConceptRestInput extends AbstractSnomedComponentRestInput<SnomedConceptInput> {
+public class SnomedBrowserConceptRestInput extends AbstractSnomedComponentRestInput<DefaultSnomedConceptCreateAction> {
 
 	private List<SnomedDescriptionRestInput> descriptions = Collections.emptyList();
 	private List<SnomedRelationshipRestInput> relationships = Collections.emptyList();
 
 	@Override
-	protected SnomedConceptInput createComponentInput() {
-		return new SnomedConceptInput();
+	protected DefaultSnomedConceptCreateAction createComponentInput() {
+		return new DefaultSnomedConceptCreateAction();
 	}
 
 	@Override
-	public SnomedConceptInput toComponentInput(final String branchPath, final String codeSystemShortName) {
+	public DefaultSnomedConceptCreateAction toComponentInput(final String branchPath, final String codeSystemShortName) {
 		final String parentRelationshipId = getParentId();
 
-		final SnomedConceptInput result = super.toComponentInput(branchPath,codeSystemShortName);
+		final DefaultSnomedConceptCreateAction result = super.toComponentInput(branchPath,codeSystemShortName);
 		result.setIsAIdGenerationStrategy(createIdGenerationStrategy(parentRelationshipId));
 
-		final List<SnomedDescriptionInput> descriptionInputs = newArrayList();
+		final List<DefaultSnomedDescriptionCreateAction> descriptionInputs = newArrayList();
 		for (SnomedDescriptionRestInput restDescription : getDescriptions()) {
 			// Propagate namespace from concept if present, and the description does not already have one
 			if (null == restDescription.getNamespaceId()) {

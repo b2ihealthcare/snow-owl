@@ -40,7 +40,7 @@ import com.b2international.snowowl.snomed.api.exception.PreferredTermNotFoundExc
 import com.b2international.snowowl.snomed.core.domain.Acceptability;
 import com.b2international.snowowl.snomed.core.domain.CaseSignificance;
 import com.b2international.snowowl.snomed.core.domain.ISnomedDescription;
-import com.b2international.snowowl.snomed.core.domain.ISnomedDescriptionInput;
+import com.b2international.snowowl.snomed.core.domain.SnomedDescriptionCreateAction;
 import com.b2international.snowowl.snomed.core.domain.ISnomedDescriptionUpdate;
 import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 import com.b2international.snowowl.snomed.datastore.SnomedDescriptionLookupService;
@@ -58,7 +58,7 @@ import com.google.common.collect.*;
 import com.google.common.primitives.Longs;
 
 public class SnomedDescriptionServiceImpl 
-	extends AbstractSnomedComponentServiceImpl<ISnomedDescriptionInput, ISnomedDescription, ISnomedDescriptionUpdate, Description> 
+	extends AbstractSnomedComponentServiceImpl<SnomedDescriptionCreateAction, ISnomedDescription, ISnomedDescriptionUpdate, Description> 
 	implements ISnomedDescriptionService {
 
 	private static SnomedIndexService getIndexService() {
@@ -87,7 +87,7 @@ public class SnomedDescriptionServiceImpl
 	}
 
 	@Override
-	protected Description convertAndRegister(final ISnomedDescriptionInput input, final SnomedEditingContext editingContext) {
+	protected Description convertAndRegister(final SnomedDescriptionCreateAction input, final SnomedEditingContext editingContext) {
 		try {
 			final Description description = SnomedFactory.eINSTANCE.createDescription();
 			

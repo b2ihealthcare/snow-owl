@@ -4,16 +4,16 @@ import com.b2international.commons.ClassUtils;
 import com.b2international.snowowl.core.terminology.ComponentCategory;
 import com.b2international.snowowl.snomed.api.impl.domain.browser.SnomedBrowserDescription;
 import com.b2international.snowowl.snomed.core.domain.Acceptability;
-import com.b2international.snowowl.snomed.core.domain.ISnomedComponentInput;
+import com.b2international.snowowl.snomed.core.domain.SnomedComponentCreateAction;
 import com.b2international.snowowl.snomed.core.domain.ISnomedComponentUpdate;
 
 import java.util.Map;
 
-public class DescriptionInputCreator extends AbstractInputCreator implements ComponentInputCreator<SnomedDescriptionInput, SnomedDescriptionUpdate, SnomedBrowserDescription> {
+public class DescriptionInputCreator extends AbstractInputCreator implements ComponentInputCreator<DefaultSnomedDescriptionCreateAction, SnomedDescriptionUpdate, SnomedBrowserDescription> {
 
 	@Override
-	public SnomedDescriptionInput createInput(String branchPath, SnomedBrowserDescription description, InputFactory inputFactory) {
-		final SnomedDescriptionInput descriptionInput = new SnomedDescriptionInput();
+	public DefaultSnomedDescriptionCreateAction createInput(String branchPath, SnomedBrowserDescription description, InputFactory inputFactory) {
+		final DefaultSnomedDescriptionCreateAction descriptionInput = new DefaultSnomedDescriptionCreateAction();
 		setCommonComponentProperties(branchPath, description, descriptionInput, ComponentCategory.DESCRIPTION);
 		descriptionInput.setLanguageCode(description.getLang());
 		descriptionInput.setTypeId(description.getType().getConceptId());
@@ -47,8 +47,8 @@ public class DescriptionInputCreator extends AbstractInputCreator implements Com
 	}
 
 	@Override
-	public boolean canCreateInput(Class<? extends ISnomedComponentInput> inputType) {
-		return ClassUtils.isClassAssignableFrom(SnomedDescriptionInput.class, inputType.getName());
+	public boolean canCreateInput(Class<? extends SnomedComponentCreateAction> inputType) {
+		return ClassUtils.isClassAssignableFrom(DefaultSnomedDescriptionCreateAction.class, inputType.getName());
 	}
 
 	@Override

@@ -27,7 +27,7 @@ import com.b2international.commons.exceptions.Exceptions;
 import com.b2international.snowowl.core.api.SnowowlRuntimeException;
 import com.b2international.snowowl.core.component.IComponentService;
 import com.b2international.snowowl.core.domain.IComponent;
-import com.b2international.snowowl.core.domain.IComponentInput;
+import com.b2international.snowowl.core.domain.TerminologyAction;
 import com.b2international.snowowl.core.domain.IComponentRef;
 import com.b2international.snowowl.core.exceptions.AlreadyExistsException;
 import com.b2international.snowowl.core.exceptions.ApiValidation;
@@ -48,7 +48,7 @@ import com.google.common.base.Strings;
  * TODO: validate misguided references (eg. when the incoming code system short name is ATC in SnomedConceptServiceImpl)?
  * 
  */
-public abstract class AbstractComponentServiceImpl<C extends IComponentInput, R extends IComponent, U, E extends CDOEditingContext, M extends CDOObject> 
+public abstract class AbstractComponentServiceImpl<C extends TerminologyAction, R extends IComponent, U, E extends CDOEditingContext, M extends CDOObject> 
 	implements IComponentService<C, R, U> {
 
 	protected final String handledRepositoryUuid;

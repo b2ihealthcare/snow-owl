@@ -7,14 +7,14 @@ import com.b2international.snowowl.snomed.api.domain.browser.ISnomedBrowserCompo
 import com.b2international.snowowl.snomed.api.domain.browser.ISnomedBrowserConcept;
 import com.b2international.snowowl.snomed.api.domain.browser.ISnomedBrowserRelationship;
 import com.b2international.snowowl.snomed.api.domain.browser.ISnomedBrowserRelationshipType;
-import com.b2international.snowowl.snomed.core.domain.AbstractSnomedComponentInput;
+import com.b2international.snowowl.snomed.core.domain.BaseSnomedComponentCreateAction;
 import com.b2international.snowowl.snomed.core.domain.NamespaceIdGenerationStrategy;
 
 public abstract class AbstractInputCreator {
 
 	public static final String SNOMEDCT = "SNOMEDCT";
 
-	void setCommonComponentProperties(String branchPath, ISnomedBrowserComponent component, AbstractSnomedComponentInput componentInput, ComponentCategory componentCategory) {
+	void setCommonComponentProperties(String branchPath, ISnomedBrowserComponent component, BaseSnomedComponentCreateAction componentInput, ComponentCategory componentCategory) {
 		componentInput.setBranchPath(branchPath);
 		componentInput.setCodeSystemShortName(SNOMEDCT);
 		final String moduleId = component.getModuleId();

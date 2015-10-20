@@ -21,13 +21,13 @@ import java.util.Collections;
 import java.util.List;
 
 import com.b2international.snowowl.core.terminology.ComponentCategory;
-import com.b2international.snowowl.snomed.api.impl.domain.SnomedDescriptionInput;
-import com.b2international.snowowl.snomed.datastore.server.domain.SnomedConceptInput;
+import com.b2international.snowowl.snomed.api.impl.domain.DefaultSnomedDescriptionCreateAction;
+import com.b2international.snowowl.snomed.datastore.server.domain.DefaultSnomedConceptCreateAction;
 
 /**
  * @since 1.0
  */
-public class SnomedConceptRestInput extends AbstractSnomedComponentRestInput<SnomedConceptInput> {
+public class SnomedConceptRestInput extends AbstractSnomedComponentRestInput<DefaultSnomedConceptCreateAction> {
 
 	private List<SnomedDescriptionRestInput> descriptions = Collections.emptyList();
 	private String isAId;
@@ -67,17 +67,17 @@ public class SnomedConceptRestInput extends AbstractSnomedComponentRestInput<Sno
 	}
 
 	@Override
-	protected SnomedConceptInput createComponentInput() {
-		return new SnomedConceptInput();
+	protected DefaultSnomedConceptCreateAction createComponentInput() {
+		return new DefaultSnomedConceptCreateAction();
 	}
 
 	@Override
-	public SnomedConceptInput toComponentInput(final String branchPath, final String codeSystemShortName) {
-		final SnomedConceptInput result = super.toComponentInput(branchPath, codeSystemShortName);
+	public DefaultSnomedConceptCreateAction toComponentInput(final String branchPath, final String codeSystemShortName) {
+		final DefaultSnomedConceptCreateAction result = super.toComponentInput(branchPath, codeSystemShortName);
 
 		result.setIsAIdGenerationStrategy(createIdGenerationStrategy(getIsAId(), ComponentCategory.RELATIONSHIP));
 
-		final List<SnomedDescriptionInput> descriptionInputs = newArrayList();
+		final List<DefaultSnomedDescriptionCreateAction> descriptionInputs = newArrayList();
 		for (SnomedDescriptionRestInput restDescription : getDescriptions()) {
 			// Propagate namespace from concept if present, and the description does not already have one
 			if (null == restDescription.getNamespaceId()) {

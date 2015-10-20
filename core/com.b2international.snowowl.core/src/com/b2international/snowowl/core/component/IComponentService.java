@@ -16,7 +16,7 @@
 package com.b2international.snowowl.core.component;
 
 import com.b2international.snowowl.core.domain.IComponent;
-import com.b2international.snowowl.core.domain.IComponentInput;
+import com.b2international.snowowl.core.domain.TerminologyAction;
 import com.b2international.snowowl.core.domain.IComponentRef;
 import com.b2international.snowowl.core.domain.exceptions.CodeSystemNotFoundException;
 import com.b2international.snowowl.core.domain.exceptions.CodeSystemVersionNotFoundException;
@@ -29,11 +29,11 @@ import com.b2international.snowowl.core.history.IHistoryService;
  * <p>
  * Components are parts of a code system which can be identified uniquely by a {@link IComponentRef component reference}.
  * 
- * @param <C> the input model type (used when creating a new component; must implement {@link IComponentInput})
+ * @param <C> the input model type (used when creating a new component; must implement {@link TerminologyAction})
  * @param <R> the read model type (used when retrieving component details; must implement {@link IComponent})
  * @param <U> the update model type (used when updating an existing component)
  */
-public interface IComponentService<C extends IComponentInput, R extends IComponent, U> {
+public interface IComponentService<C extends TerminologyAction, R extends IComponent, U> {
 
 	/**
 	 * Creates a new component using the specified input model, then commits changes with the given commit comment to

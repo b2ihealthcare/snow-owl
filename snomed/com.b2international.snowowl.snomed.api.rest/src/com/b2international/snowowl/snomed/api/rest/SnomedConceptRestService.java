@@ -35,7 +35,7 @@ import com.b2international.snowowl.snomed.api.ISnomedConceptService;
 import com.b2international.snowowl.snomed.api.rest.domain.*;
 import com.b2international.snowowl.snomed.api.rest.util.Responses;
 import com.b2international.snowowl.snomed.core.domain.ISnomedConcept;
-import com.b2international.snowowl.snomed.core.domain.ISnomedConceptInput;
+import com.b2international.snowowl.snomed.core.domain.SnomedConceptCreateAction;
 import com.b2international.snowowl.snomed.core.domain.ISnomedConceptUpdate;
 import com.b2international.snowowl.snomed.core.domain.SearchKind;
 import com.google.common.base.Strings;
@@ -225,7 +225,7 @@ public class SnomedConceptRestService extends AbstractSnomedRestService {
 	}
 
 	private ISnomedConcept doCreate(final String branchPath, final ChangeRequest<SnomedConceptRestInput> body, final Principal principal) {
-		final ISnomedConceptInput input = body.getChange().toComponentInput(branchPath, codeSystemShortName);
+		final SnomedConceptCreateAction input = body.getChange().toComponentInput(branchPath, codeSystemShortName);
 		final String userId = principal.getName();
 		final String commitComment = body.getCommitComment();
 		return delegate.create(input, userId, commitComment);

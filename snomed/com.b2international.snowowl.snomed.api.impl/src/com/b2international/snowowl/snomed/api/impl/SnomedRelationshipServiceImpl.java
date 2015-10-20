@@ -27,7 +27,7 @@ import com.b2international.snowowl.snomed.SnomedFactory;
 import com.b2international.snowowl.snomed.api.ISnomedRelationshipService;
 import com.b2international.snowowl.snomed.core.domain.CharacteristicType;
 import com.b2international.snowowl.snomed.core.domain.ISnomedRelationship;
-import com.b2international.snowowl.snomed.core.domain.ISnomedRelationshipInput;
+import com.b2international.snowowl.snomed.core.domain.SnomedRelationshipCreateAction;
 import com.b2international.snowowl.snomed.core.domain.ISnomedRelationshipUpdate;
 import com.b2international.snowowl.snomed.core.domain.RelationshipModifier;
 import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
@@ -38,7 +38,7 @@ import com.b2international.snowowl.snomed.datastore.SnomedRelationshipLookupServ
 /**
  */
 public class SnomedRelationshipServiceImpl 
-	extends AbstractSnomedComponentServiceImpl<ISnomedRelationshipInput, ISnomedRelationship, ISnomedRelationshipUpdate, Relationship> 
+	extends AbstractSnomedComponentServiceImpl<SnomedRelationshipCreateAction, ISnomedRelationship, ISnomedRelationshipUpdate, Relationship> 
 	implements ISnomedRelationshipService {
 
 	private final SnomedRelationshipLookupService snomedRelationshipLookupService = new SnomedRelationshipLookupService();
@@ -58,7 +58,7 @@ public class SnomedRelationshipServiceImpl
 	}
 
 	@Override
-	protected Relationship convertAndRegister(final ISnomedRelationshipInput input, final SnomedEditingContext editingContext) {
+	protected Relationship convertAndRegister(final SnomedRelationshipCreateAction input, final SnomedEditingContext editingContext) {
 		
 		try {
 			final Relationship relationship = SnomedFactory.eINSTANCE.createRelationship();

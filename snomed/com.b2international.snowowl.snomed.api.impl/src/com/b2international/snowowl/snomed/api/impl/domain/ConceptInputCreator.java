@@ -8,19 +8,19 @@ import com.b2international.snowowl.core.terminology.ComponentCategory;
 import com.b2international.snowowl.snomed.api.domain.browser.ISnomedBrowserDescription;
 import com.b2international.snowowl.snomed.api.impl.domain.browser.SnomedBrowserConcept;
 import com.b2international.snowowl.snomed.api.impl.domain.browser.SnomedBrowserConceptUpdate;
-import com.b2international.snowowl.snomed.core.domain.ISnomedComponentInput;
+import com.b2international.snowowl.snomed.core.domain.SnomedComponentCreateAction;
 import com.b2international.snowowl.snomed.core.domain.ISnomedComponentUpdate;
-import com.b2international.snowowl.snomed.core.domain.ISnomedConceptInput;
+import com.b2international.snowowl.snomed.core.domain.SnomedConceptCreateAction;
 import com.b2international.snowowl.snomed.core.domain.ISnomedConceptUpdate;
-import com.b2international.snowowl.snomed.core.domain.ISnomedDescriptionInput;
+import com.b2international.snowowl.snomed.core.domain.SnomedDescriptionCreateAction;
 import com.b2international.snowowl.snomed.core.domain.InactivationIndicator;
 import com.b2international.snowowl.snomed.core.domain.UserIdGenerationStrategy;
-import com.b2international.snowowl.snomed.datastore.server.domain.SnomedConceptInput;
+import com.b2international.snowowl.snomed.datastore.server.domain.DefaultSnomedConceptCreateAction;
 
-public class ConceptInputCreator extends AbstractInputCreator implements ComponentInputCreator<SnomedConceptInput, SnomedConceptUpdate, SnomedBrowserConcept> {
+public class ConceptInputCreator extends AbstractInputCreator implements ComponentInputCreator<DefaultSnomedConceptCreateAction, SnomedConceptUpdate, SnomedBrowserConcept> {
 	@Override
-	public SnomedConceptInput createInput(final String branchPath, SnomedBrowserConcept concept, InputFactory inputFactory) {
-		final SnomedConceptInput conceptInput = new SnomedConceptInput();
+	public DefaultSnomedConceptCreateAction createInput(final String branchPath, SnomedBrowserConcept concept, InputFactory inputFactory) {
+		final DefaultSnomedConceptCreateAction conceptInput = new DefaultSnomedConceptCreateAction();
 		setCommonComponentProperties(branchPath, concept, conceptInput, ComponentCategory.CONCEPT);
 		
 		// Find a parent relationship
@@ -28,9 +28,9 @@ public class ConceptInputCreator extends AbstractInputCreator implements Compone
 		conceptInput.setParentId(parentRelationshipId);
 		conceptInput.setIsAIdGenerationStrategy(new UserIdGenerationStrategy(parentRelationshipId));
 
-		final List<ISnomedDescriptionInput> descriptionInputs = newArrayList();
+		final List<SnomedDescriptionCreateAction> descriptionInputs = newArrayList();
 		for (ISnomedBrowserDescription description : concept.getDescriptions()) {
-			descriptionInputs.add(inputFactory.createComponentInput(branchPath, description, ISnomedDescriptionInput.class));
+			descriptionInputs.add(inputFactory.createComponentInput(branchPath, description, SnomedDescriptionCreateAction.class));
 		}
 
 		conceptInput.setDescriptions(descriptionInputs);
@@ -75,8 +75,8 @@ public class ConceptInputCreator extends AbstractInputCreator implements Compone
 	}
 
 	@Override
-	public boolean canCreateInput(Class<? extends ISnomedComponentInput> inputType) {
-		return ISnomedConceptInput.class.isAssignableFrom(inputType);
+	public boolean canCreateInput(Class<? extends SnomedComponentCreateAction> inputType) {
+		return SnomedConceptCreateAction.class.isAssignableFrom(inputType);
 	}
 
 	@Override

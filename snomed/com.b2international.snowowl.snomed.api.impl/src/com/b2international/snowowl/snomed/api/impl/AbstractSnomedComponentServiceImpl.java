@@ -34,7 +34,7 @@ import com.b2international.snowowl.snomed.Component;
 import com.b2international.snowowl.snomed.Concept;
 import com.b2international.snowowl.snomed.api.ISnomedComponentService;
 import com.b2international.snowowl.snomed.core.domain.ISnomedComponent;
-import com.b2international.snowowl.snomed.core.domain.ISnomedComponentInput;
+import com.b2international.snowowl.snomed.core.domain.SnomedComponentCreateAction;
 import com.b2international.snowowl.snomed.core.domain.ISnomedComponentUpdate;
 import com.b2international.snowowl.snomed.core.domain.UserIdGenerationStrategy;
 import com.b2international.snowowl.snomed.datastore.SnomedConceptLookupService;
@@ -47,7 +47,7 @@ import com.b2international.snowowl.snomed.snomedrefset.SnomedStructuralRefSet;
 
 /**
  */
-public abstract class AbstractSnomedComponentServiceImpl<C extends ISnomedComponentInput, R extends ISnomedComponent, U extends ISnomedComponentUpdate, M extends Component>
+public abstract class AbstractSnomedComponentServiceImpl<C extends SnomedComponentCreateAction, R extends ISnomedComponent, U extends ISnomedComponentUpdate, M extends Component>
 extends AbstractComponentServiceImpl<C, R, U, SnomedEditingContext, M>
 implements ISnomedComponentService<C, R, U> {
 
@@ -62,7 +62,7 @@ implements ISnomedComponentService<C, R, U> {
 		return new SnomedBranchRefSetMembershipLookupService(branchPath);
 	}
 
-	protected Concept getModuleConcept(final ISnomedComponentInput input, final SnomedEditingContext editingContext) {
+	protected Concept getModuleConcept(final SnomedComponentCreateAction input, final SnomedEditingContext editingContext) {
 		return getConcept(input.getModuleId(), editingContext);
 	}
 

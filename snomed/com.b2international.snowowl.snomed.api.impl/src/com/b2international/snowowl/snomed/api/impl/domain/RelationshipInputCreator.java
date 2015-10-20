@@ -3,13 +3,13 @@ package com.b2international.snowowl.snomed.api.impl.domain;
 import com.b2international.commons.ClassUtils;
 import com.b2international.snowowl.core.terminology.ComponentCategory;
 import com.b2international.snowowl.snomed.api.impl.domain.browser.SnomedBrowserRelationship;
-import com.b2international.snowowl.snomed.core.domain.ISnomedComponentInput;
+import com.b2international.snowowl.snomed.core.domain.SnomedComponentCreateAction;
 import com.b2international.snowowl.snomed.core.domain.ISnomedComponentUpdate;
 
-public class RelationshipInputCreator extends AbstractInputCreator implements ComponentInputCreator<SnomedRelationshipInput, SnomedRelationshipUpdate, SnomedBrowserRelationship> {
+public class RelationshipInputCreator extends AbstractInputCreator implements ComponentInputCreator<DefaultSnomedRelationshipCreateAction, SnomedRelationshipUpdate, SnomedBrowserRelationship> {
 	@Override
-	public SnomedRelationshipInput createInput(String branchPath, SnomedBrowserRelationship relationship, InputFactory inputFactory) {
-		final SnomedRelationshipInput relationshipInput = new SnomedRelationshipInput();
+	public DefaultSnomedRelationshipCreateAction createInput(String branchPath, SnomedBrowserRelationship relationship, InputFactory inputFactory) {
+		final DefaultSnomedRelationshipCreateAction relationshipInput = new DefaultSnomedRelationshipCreateAction();
 		setCommonComponentProperties(branchPath, relationship, relationshipInput, ComponentCategory.RELATIONSHIP);
 		relationshipInput.setTypeId(relationship.getType().getConceptId());
 		relationshipInput.setCharacteristicType(relationship.getCharacteristicType());
@@ -36,8 +36,8 @@ public class RelationshipInputCreator extends AbstractInputCreator implements Co
 	}
 
 	@Override
-	public boolean canCreateInput(Class<? extends ISnomedComponentInput> inputType) {
-		return ClassUtils.isClassAssignableFrom(SnomedRelationshipInput.class, inputType.getName());
+	public boolean canCreateInput(Class<? extends SnomedComponentCreateAction> inputType) {
+		return ClassUtils.isClassAssignableFrom(DefaultSnomedRelationshipCreateAction.class, inputType.getName());
 	}
 
 	@Override
