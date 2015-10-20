@@ -22,29 +22,31 @@ import javax.validation.constraints.NotNull;
 import org.hibernate.validator.constraints.NotEmpty;
 
 import com.b2international.snowowl.snomed.core.domain.BaseSnomedComponentCreateAction;
+import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.snomed.core.domain.Acceptability;
 import com.b2international.snowowl.snomed.core.domain.CaseSignificance;
+import com.b2international.snowowl.snomed.core.domain.ISnomedDescription;
 import com.b2international.snowowl.snomed.core.domain.SnomedDescriptionCreateAction;
 
 /**
  * @since 4.5
  */
-public class DefaultSnomedDescriptionCreateAction extends BaseSnomedComponentCreateAction implements SnomedDescriptionCreateAction {
+public class DefaultSnomedDescriptionCreateAction extends BaseSnomedComponentCreateAction<ISnomedDescription> implements SnomedDescriptionCreateAction {
 
 	private String conceptId;
-	
+
 	@NotEmpty
 	private String typeId;
-	
+
 	@NotEmpty
 	private String term;
-	
+
 	@NotEmpty
 	private String languageCode;
-	
+
 	@NotNull
 	private CaseSignificance caseSignificance = CaseSignificance.INITIAL_CHARACTER_CASE_INSENSITIVE;
-	
+
 	@NotEmpty
 	private Map<String, Acceptability> acceptability;
 
@@ -100,6 +102,11 @@ public class DefaultSnomedDescriptionCreateAction extends BaseSnomedComponentCre
 
 	public void setAcceptability(final Map<String, Acceptability> acceptability) {
 		this.acceptability = acceptability;
+	}
+
+	@Override
+	public ISnomedDescription execute(RepositoryContext context) {
+		throw new UnsupportedOperationException("Not migrated yet");
 	}
 
 	@Override

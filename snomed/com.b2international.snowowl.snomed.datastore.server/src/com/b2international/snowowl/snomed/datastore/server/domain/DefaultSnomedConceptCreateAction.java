@@ -1,6 +1,6 @@
 /*
  * Copyright 2011-2015 B2i Healthcare Pte Ltd, http://b2i.sg
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -23,20 +23,23 @@ import javax.validation.constraints.Size;
 
 import org.hibernate.validator.constraints.NotEmpty;
 
+import com.b2international.snowowl.core.domain.RepositoryContext;
+import com.b2international.snowowl.core.exceptions.NotImplementedException;
 import com.b2international.snowowl.snomed.core.domain.BaseSnomedComponentCreateAction;
+import com.b2international.snowowl.snomed.core.domain.ISnomedConcept;
+import com.b2international.snowowl.snomed.core.domain.IdGenerationStrategy;
 import com.b2international.snowowl.snomed.core.domain.SnomedConceptCreateAction;
 import com.b2international.snowowl.snomed.core.domain.SnomedDescriptionCreateAction;
-import com.b2international.snowowl.snomed.core.domain.IdGenerationStrategy;
 import com.google.common.collect.ImmutableList;
 
-public class DefaultSnomedConceptCreateAction extends BaseSnomedComponentCreateAction implements SnomedConceptCreateAction {
+public class DefaultSnomedConceptCreateAction extends BaseSnomedComponentCreateAction<ISnomedConcept> implements SnomedConceptCreateAction {
 
 	@Size(min = 2)
 	private List<SnomedDescriptionCreateAction> descriptions = Collections.emptyList();
-	
+
 	@NotEmpty
 	private String parentId;
-	
+
 	@NotNull
 	private IdGenerationStrategy isAIdGenerationStrategy;
 
@@ -65,6 +68,11 @@ public class DefaultSnomedConceptCreateAction extends BaseSnomedComponentCreateA
 
 	public void setDescriptions(final List<? extends SnomedDescriptionCreateAction> descriptions) {
 		this.descriptions = ImmutableList.copyOf(descriptions);
+	}
+
+	@Override
+	public ISnomedConcept execute(RepositoryContext context) {
+		throw new NotImplementedException();
 	}
 
 	@Override

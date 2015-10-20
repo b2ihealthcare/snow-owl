@@ -1,6 +1,6 @@
 /*
  * Copyright 2011-2015 B2i Healthcare Pte Ltd, http://b2i.sg
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -19,15 +19,15 @@ import java.util.List;
 
 /**
  * Action to create SNOMED CT concepts.
- * 
+ *
  * @since 4.5
  */
-public interface SnomedConceptCreateAction extends SnomedComponentCreateAction {
+public interface SnomedConceptCreateAction extends SnomedComponentCreateAction<ISnomedConcept> {
 
 	/**
 	 * Returns the list of descriptions to create along with the concept. Must contain at least one fully specified name and one synonym with
 	 * preferred acceptability.
-	 * 
+	 *
 	 * @return the list of descriptions to create
 	 */
 	List<SnomedDescriptionCreateAction> getDescriptions();
@@ -37,14 +37,14 @@ public interface SnomedConceptCreateAction extends SnomedComponentCreateAction {
 	 * which will have this concept as the destination.
 	 * <p>
 	 * Extra relationships can be added in a separate call.
-	 * 
+	 *
 	 * @return the parent concept identifier
 	 */
 	String getParentId();
 
 	/**
 	 * Returns the identifier generation strategy for the new {@code IS A} relationship.
-	 * 
+	 *
 	 * @return the {@code IS A} relationship identifier generation strategy
 	 */
 	IdGenerationStrategy getIsAIdGenerationStrategy();

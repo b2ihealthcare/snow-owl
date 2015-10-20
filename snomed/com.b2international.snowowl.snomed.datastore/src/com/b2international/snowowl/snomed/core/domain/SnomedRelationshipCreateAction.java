@@ -1,6 +1,6 @@
 /*
  * Copyright 2011-2015 B2i Healthcare Pte Ltd, http://b2i.sg
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -18,39 +18,39 @@ package com.b2international.snowowl.snomed.core.domain;
 /**
  * Action to create SNOMED CT relationships.
  */
-public interface SnomedRelationshipCreateAction extends SnomedComponentCreateAction {
+public interface SnomedRelationshipCreateAction extends SnomedComponentCreateAction<ISnomedRelationship> {
 
 	/**
 	 * Returns the new relationship's source concept identifier.
-	 * 
+	 *
 	 * @return the source identifier
 	 */
 	String getSourceId();
 
 	/**
 	 * Returns the new relationship's destination concept identifier.
-	 * 
+	 *
 	 * @return the destination identifier
 	 */
 	String getDestinationId();
 
 	/**
 	 * Returns the negation flag for the new relationship's destination concept.
-	 * 
+	 *
 	 * @return {@code true} if the destination concept should be considered negated, {@code false} otherwise
 	 */
 	boolean isDestinationNegated();
 
 	/**
 	 * Returns the new relationship's type identifier.
-	 * 
+	 *
 	 * @return the type identifier
 	 */
 	String getTypeId();
 
 	/**
 	 * Returns the new relationship's group number.
-	 * 
+	 *
 	 * @return the relationship group, or 0 if this relationship can not be grouped, or is in an unnumbered, singleton
 	 * group
 	 */
@@ -58,21 +58,21 @@ public interface SnomedRelationshipCreateAction extends SnomedComponentCreateAct
 
 	/**
 	 * Returns the new relationship's union group number.
-	 * 
+	 *
 	 * @return the relationship union group, or 0 if this relationship is not part of a disjunction
 	 */
 	int getUnionGroup();
 
 	/**
 	 * Returns the new relationship's characteristic type value.
-	 * 
+	 *
 	 * @return the characteristic type
 	 */
 	CharacteristicType getCharacteristicType();
 
 	/**
 	 * Returns the new relationship's modifier value.
-	 * 
+	 *
 	 * @return the relationship modifier
 	 */
 	RelationshipModifier getModifier();

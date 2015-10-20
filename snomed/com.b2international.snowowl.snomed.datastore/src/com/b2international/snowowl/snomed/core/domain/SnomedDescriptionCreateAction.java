@@ -1,6 +1,6 @@
 /*
  * Copyright 2011-2015 B2i Healthcare Pte Ltd, http://b2i.sg
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -19,35 +19,35 @@ import java.util.Map;
 
 /**
  * Action to create SNOMED CT descriptions.
- * 
+ *
  * @since 4.5
  */
-public interface SnomedDescriptionCreateAction extends SnomedComponentCreateAction {
+public interface SnomedDescriptionCreateAction extends SnomedComponentCreateAction<ISnomedDescription> {
 
 	/**
 	 * Returns the new description's associated concept identifier, eg. "{@code 363698007}".
-	 * 
+	 *
 	 * @return the concept identifier
 	 */
 	String getConceptId();
 
 	/**
 	 * Returns the new description's type identifier, eg. "{@code 900000000000013009}".
-	 * 
+	 *
 	 * @return the type identifier
 	 */
 	String getTypeId();
 
 	/**
 	 * Returns the new description's term, eg. "{@code Finding site}".
-	 * 
+	 *
 	 * @return the description term
 	 */
 	String getTerm();
 
 	/**
 	 * Returns the new description's language code, not including any dialects or variations, eg. "{@code en}".
-	 * 
+	 *
 	 * @return the language code of this description
 	 */
 	String getLanguageCode();
@@ -55,7 +55,7 @@ public interface SnomedDescriptionCreateAction extends SnomedComponentCreateActi
 	/**
 	 * Returns the new description's case significance attribute, indicating whether character case within the term should be preserved or is
 	 * interchangeable.
-	 * 
+	 *
 	 * @return the case significance of this description
 	 */
 	CaseSignificance getCaseSignificance();
@@ -65,7 +65,7 @@ public interface SnomedDescriptionCreateAction extends SnomedComponentCreateActi
 	 * identifier.
 	 * <p>
 	 * Language reference set members will be created along with the description in accordance with the map values.
-	 * 
+	 *
 	 * @return the acceptability map for this description
 	 */
 	Map<String, Acceptability> getAcceptability();

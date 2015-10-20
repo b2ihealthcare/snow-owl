@@ -1,6 +1,6 @@
 /*
  * Copyright 2011-2015 B2i Healthcare Pte Ltd, http://b2i.sg
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -13,21 +13,24 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.datastore.server.events;
+package com.b2international.snowowl.core.events;
 
-import com.b2international.snowowl.core.events.BaseRepositoryEvent;
+import static com.google.common.base.Preconditions.checkNotNull;
 
 /**
- * @since 4.1
+ * @since 4.5
  */
-public abstract class BaseBranchEvent extends BaseRepositoryEvent {
+public abstract class BaseRepositoryBranchEvent extends BaseRepositoryEvent {
 
-	protected BaseBranchEvent(String repositoryId) {
+	private final String branchPath;
+
+	protected BaseRepositoryBranchEvent(String repositoryId, String branchPath) {
 		super(repositoryId);
+		this.branchPath = checkNotNull(branchPath, "branchPath");
 	}
 
-	@Override
-	protected final String getPath() {
-		return "/branches";
+	public final String getBranchPath() {
+		return branchPath;
 	}
+
 }

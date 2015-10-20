@@ -20,36 +20,38 @@ import javax.validation.constraints.NotNull;
 
 import org.hibernate.validator.constraints.NotEmpty;
 
+import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.snomed.core.domain.BaseSnomedComponentCreateAction;
 import com.b2international.snowowl.snomed.core.domain.CharacteristicType;
+import com.b2international.snowowl.snomed.core.domain.ISnomedRelationship;
 import com.b2international.snowowl.snomed.core.domain.SnomedRelationshipCreateAction;
 import com.b2international.snowowl.snomed.core.domain.RelationshipModifier;
 
 /**
  * @since 4.0
  */
-public class DefaultSnomedRelationshipCreateAction extends BaseSnomedComponentCreateAction implements SnomedRelationshipCreateAction {
+public class DefaultSnomedRelationshipCreateAction extends BaseSnomedComponentCreateAction<ISnomedRelationship> implements SnomedRelationshipCreateAction {
 
 	@NotEmpty
 	private String sourceId;
-	
+
 	@NotEmpty
 	private String destinationId;
-	
+
 	@NotEmpty
 	private String typeId;
-	
+
 	private boolean destinationNegated;
-	
+
 	@Min(0)
 	private int group;
-	
+
 	@Min(0)
 	private int unionGroup;
-	
+
 	@NotNull
 	private CharacteristicType characteristicType;
-	
+
 	@NotNull
 	private RelationshipModifier modifier;
 
@@ -123,6 +125,11 @@ public class DefaultSnomedRelationshipCreateAction extends BaseSnomedComponentCr
 
 	public void setModifier(final RelationshipModifier modifier) {
 		this.modifier = modifier;
+	}
+
+	@Override
+	public ISnomedRelationship execute(RepositoryContext context) {
+		throw new UnsupportedOperationException("Not migrated yet");
 	}
 
 	@Override
