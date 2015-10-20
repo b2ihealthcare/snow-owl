@@ -20,15 +20,15 @@ import javax.validation.constraints.NotNull;
 
 import org.hibernate.validator.constraints.NotEmpty;
 
-import com.b2international.snowowl.snomed.core.domain.AbstractSnomedComponentInput;
+import com.b2international.snowowl.snomed.core.domain.BaseSnomedComponentCreateAction;
 import com.b2international.snowowl.snomed.core.domain.CharacteristicType;
-import com.b2international.snowowl.snomed.core.domain.ISnomedRelationshipInput;
+import com.b2international.snowowl.snomed.core.domain.SnomedRelationshipCreateAction;
 import com.b2international.snowowl.snomed.core.domain.RelationshipModifier;
 
 /**
  * @since 4.0
  */
-public class SnomedRelationshipInput extends AbstractSnomedComponentInput implements ISnomedRelationshipInput {
+public class DefaultSnomedRelationshipCreateAction extends BaseSnomedComponentCreateAction implements SnomedRelationshipCreateAction {
 
 	@NotEmpty
 	private String sourceId;

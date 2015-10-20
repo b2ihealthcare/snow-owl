@@ -15,11 +15,15 @@
  */
 package com.b2international.snowowl.core.domain;
 
+import com.b2international.snowowl.core.ServiceProvider;
+import com.b2international.snowowl.core.actions.Action;
+
 /**
- * The common interface of component-creating input models, pointing to the code system, version and task in which the
- * component should be created.
+ * The common interface of terminology scoped actions. Actions can be performed on a branch within a terminology.
+ * 
+ * @since 4.5
  */
-public interface IComponentInput extends IBranchAwareConfig {
+public interface TerminologyAction extends IBranchAwareConfig, Action<ServiceProvider> {
 
 	/**
 	 * Returns the code system short name, eg. "{@code SNOMEDCT}"

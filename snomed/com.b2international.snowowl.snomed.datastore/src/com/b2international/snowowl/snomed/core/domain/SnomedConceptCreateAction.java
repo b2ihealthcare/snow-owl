@@ -19,22 +19,24 @@ import java.util.List;
 
 /**
  * Contains properties required for creating SNOMED CT concepts.
+ * 
+ * @since 4.5
  */
-public interface ISnomedConceptInput extends ISnomedComponentInput {
+public interface SnomedConceptCreateAction extends SnomedComponentCreateAction {
 
 	/**
-	 * Returns the list of descriptions to create along with the concept. Must contain at least one fully specified name and one
-	 * synonym with preferred acceptability.
+	 * Returns the list of descriptions to create along with the concept. Must contain at least one fully specified name and one synonym with
+	 * preferred acceptability.
 	 * 
 	 * @return the list of descriptions to create
 	 */
 	List<ISnomedDescriptionInput> getDescriptions();
 
 	/**
-	 * Returns the identifier of a parent concept. The new concept will be attached to the existing concept graph via a new {@code IS A}
-	 * relationship, which will have this concept as the destination.
+	 * Returns the identifier of a parent concept. The new concept will be attached to the existing concept graph via a new {@code IS A} relationship,
+	 * which will have this concept as the destination.
 	 * <p>
-	 * Extra relationships can be added in a separate call. 
+	 * Extra relationships can be added in a separate call.
 	 * 
 	 * @return the parent concept identifier
 	 */

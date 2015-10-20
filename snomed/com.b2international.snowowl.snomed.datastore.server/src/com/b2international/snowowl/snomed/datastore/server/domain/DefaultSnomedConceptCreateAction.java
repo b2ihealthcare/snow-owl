@@ -23,18 +23,16 @@ import javax.validation.constraints.Size;
 
 import org.hibernate.validator.constraints.NotEmpty;
 
-import com.b2international.snowowl.snomed.core.domain.AbstractSnomedComponentInput;
-import com.b2international.snowowl.snomed.core.domain.ISnomedConceptInput;
-import com.b2international.snowowl.snomed.core.domain.ISnomedDescriptionInput;
+import com.b2international.snowowl.snomed.core.domain.BaseSnomedComponentCreateAction;
+import com.b2international.snowowl.snomed.core.domain.SnomedConceptCreateAction;
+import com.b2international.snowowl.snomed.core.domain.SnomedDescriptionCreateAction;
 import com.b2international.snowowl.snomed.core.domain.IdGenerationStrategy;
 import com.google.common.collect.ImmutableList;
 
-/**
- */
-public class SnomedConceptInput extends AbstractSnomedComponentInput implements ISnomedConceptInput {
+public class DefaultSnomedConceptCreateAction extends BaseSnomedComponentCreateAction implements SnomedConceptCreateAction {
 
 	@Size(min = 2)
-	private List<ISnomedDescriptionInput> descriptions = Collections.emptyList();
+	private List<SnomedDescriptionCreateAction> descriptions = Collections.emptyList();
 	
 	@NotEmpty
 	private String parentId;
@@ -43,7 +41,7 @@ public class SnomedConceptInput extends AbstractSnomedComponentInput implements 
 	private IdGenerationStrategy isAIdGenerationStrategy;
 
 	@Override
-	public List<ISnomedDescriptionInput> getDescriptions() {
+	public List<SnomedDescriptionCreateAction> getDescriptions() {
 		return descriptions;
 	}
 
@@ -65,7 +63,7 @@ public class SnomedConceptInput extends AbstractSnomedComponentInput implements 
 		this.isAIdGenerationStrategy = isAIdGenerationStrategy;
 	}
 
-	public void setDescriptions(final List<? extends ISnomedDescriptionInput> descriptions) {
+	public void setDescriptions(final List<? extends SnomedDescriptionCreateAction> descriptions) {
 		this.descriptions = ImmutableList.copyOf(descriptions);
 	}
 

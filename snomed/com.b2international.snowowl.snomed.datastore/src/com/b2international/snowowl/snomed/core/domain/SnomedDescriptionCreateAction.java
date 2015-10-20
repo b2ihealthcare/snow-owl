@@ -20,7 +20,7 @@ import java.util.Map;
 /**
  * Contains properties required for creating SNOMED CT descriptions.
  */
-public interface ISnomedDescriptionInput extends ISnomedComponentInput {
+public interface SnomedDescriptionCreateAction extends SnomedComponentCreateAction {
 
 	/**
 	 * Returns the new description's associated concept identifier, eg. "{@code 363698007}".

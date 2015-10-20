@@ -15,16 +15,18 @@
  */
 package com.b2international.snowowl.snomed.core.domain;
 
-import com.b2international.snowowl.core.domain.IComponentInput;
+import com.b2international.snowowl.core.domain.TerminologyAction;
 
 /**
  * Holds common properties required for creating SNOMED CT components.
+ * 
+ * @since 4.5
  */
-public interface ISnomedComponentInput extends IComponentInput {
+public interface SnomedComponentCreateAction extends TerminologyAction {
 
 	/**
-	 * Returns the component identifier generation strategy for this component (and optionally other, nested components,
-	 * eg. descriptions of a concept).
+	 * Returns the component identifier generation strategy for this component (and optionally other, nested components, eg. descriptions of a
+	 * concept).
 	 * 
 	 * @return the component identifier generation strategy
 	 */
@@ -36,4 +38,5 @@ public interface ISnomedComponentInput extends IComponentInput {
 	 * @return the module identifier for the component
 	 */
 	String getModuleId();
+
 }

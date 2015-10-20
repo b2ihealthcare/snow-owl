@@ -13,32 +13,22 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.core.domain;
+package com.b2international.snowowl.core.actions;
+
+import com.b2international.snowowl.core.ServiceProvider;
 
 /**
- * @since 1.0
+ * An {@link Action} represents an executable form of user intent.
+ * 
+ * @since 4.5
  */
-public abstract class AbstractComponentInput implements IComponentInput {
+public interface Action<T extends ServiceProvider> {
 
-	private String codeSystemShortName;
-	private String branchPath;
-
-	@Override
-	public String getCodeSystemShortName() {
-		return codeSystemShortName;
-	}
-
-	@Override
-	public String getBranchPath() {
-		return branchPath;
-	}
-	
-	public void setCodeSystemShortName(String codeSystemShortName) {
-		this.codeSystemShortName = codeSystemShortName;
-	}
-	
-	public void setBranchPath(String branchPath) {
-		this.branchPath = branchPath;
-	}
+	/**
+	 * Executes this action on the given context.
+	 * 
+	 * @param context
+	 */
+	void execute(T context);
 
 }
