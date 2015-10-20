@@ -15,6 +15,6 @@
  */
 
 /**
- * This package contains the domain objects of the Snow Owl RESTful API.
+ * This package contains the domain objects of the Snow Owl API.
  */
 package com.b2international.snowowl.core.domain;
