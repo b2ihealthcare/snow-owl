@@ -18,7 +18,7 @@ package com.b2international.snowowl.core.domain;
 /**
  * @since 4.5
  */
-public abstract class BaseTerminologyAction implements TerminologyAction {
+public abstract class BaseRepositoryAction<B> implements RepositoryAction<B> {
 
 	private String codeSystemShortName;
 	private String branchPath;
