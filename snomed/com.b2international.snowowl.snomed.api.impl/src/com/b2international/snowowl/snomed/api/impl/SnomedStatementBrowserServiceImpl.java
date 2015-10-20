@@ -15,6 +15,9 @@
  */
 package com.b2international.snowowl.snomed.api.impl;
 
+import static com.b2international.snowowl.core.ApplicationContext.getServiceForClass;
+
+import java.util.Collection;
 import java.util.List;
 
 import org.apache.lucene.search.Sort;
@@ -27,14 +30,18 @@ import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.exceptions.ComponentNotFoundException;
 import com.b2international.snowowl.core.terminology.ComponentCategory;
+import com.b2international.snowowl.snomed.api.ISnomedDescriptionService;
 import com.b2international.snowowl.snomed.api.ISnomedStatementBrowserService;
 import com.b2international.snowowl.snomed.api.domain.ISnomedRelationship;
 import com.b2international.snowowl.snomed.api.impl.domain.SnomedRelationshipList;
+import com.b2international.snowowl.snomed.datastore.SnomedConceptIndexEntry;
 import com.b2international.snowowl.snomed.datastore.SnomedRelationshipIndexEntry;
 import com.b2international.snowowl.snomed.datastore.index.SnomedIndexService;
 import com.b2international.snowowl.snomed.datastore.index.SnomedRelationshipIndexQueryAdapter;
 import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedMappings;
+import com.b2international.snowowl.snomed.datastore.services.ISnomedComponentService;
 import com.b2international.snowowl.snomed.datastore.services.SnomedBranchRefSetMembershipLookupService;
+import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 
