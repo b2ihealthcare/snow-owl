@@ -18,7 +18,7 @@ package com.b2international.snowowl.snomed.core.domain;
 import java.util.List;
 
 /**
- * Contains properties required for creating SNOMED CT concepts.
+ * Action to create SNOMED CT concepts.
  * 
  * @since 4.5
  */

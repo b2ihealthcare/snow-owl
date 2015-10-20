@@ -16,7 +16,7 @@
 package com.b2international.snowowl.snomed.core.domain;
 
 /**
- * Contains properties required for creating SNOMED CT relationships.
+ * Action to create SNOMED CT relationships.
  */
 public interface SnomedRelationshipCreateAction extends SnomedComponentCreateAction {
 

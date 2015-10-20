@@ -18,7 +18,9 @@ package com.b2international.snowowl.snomed.core.domain;
 import java.util.Map;
 
 /**
- * Contains properties required for creating SNOMED CT descriptions.
+ * Action to create SNOMED CT descriptions.
+ * 
+ * @since 4.5
  */
 public interface SnomedDescriptionCreateAction extends SnomedComponentCreateAction {
 
@@ -51,15 +53,16 @@ public interface SnomedDescriptionCreateAction extends SnomedComponentCreateActi
 	String getLanguageCode();
 
 	/**
-	 * Returns the new description's case significance attribute, indicating whether character case within the term should
-	 * be preserved or is interchangeable.
+	 * Returns the new description's case significance attribute, indicating whether character case within the term should be preserved or is
+	 * interchangeable.
 	 * 
 	 * @return the case significance of this description
 	 */
 	CaseSignificance getCaseSignificance();
 
 	/**
-	 * Returns the new descriptions's language reference set member acceptability values for this description, keyed by language reference set identifier.
+	 * Returns the new descriptions's language reference set member acceptability values for this description, keyed by language reference set
+	 * identifier.
 	 * <p>
 	 * Language reference set members will be created along with the description in accordance with the map values.
 	 * 
