@@ -1,6 +1,6 @@
 /*
  * Copyright 2011-2015 B2i Healthcare Pte Ltd, http://b2i.sg
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -15,19 +15,18 @@
  */
 package com.b2international.snowowl.core.domain;
 
-import com.b2international.snowowl.core.ServiceProvider;
-import com.b2international.snowowl.core.actions.Action;
+import com.b2international.snowowl.core.events.Action;
 
 /**
  * The common interface of terminology scoped actions. Actions can be performed on a branch within a terminology.
- * 
+ *
  * @since 4.5
  */
-public interface TerminologyAction extends IBranchAwareConfig, Action<ServiceProvider> {
+public interface RepositoryAction<B> extends IBranchAwareConfig, Action<RepositoryContext, B> {
 
 	/**
 	 * Returns the code system short name, eg. "{@code SNOMEDCT}"
-	 * 
+	 *
 	 * @return the code system short name
 	 */
 	String getCodeSystemShortName();

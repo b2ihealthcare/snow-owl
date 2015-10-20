@@ -21,8 +21,8 @@ import com.b2international.snowowl.eventbus.IHandler;
 import com.b2international.snowowl.eventbus.IMessage;
 
 /**
- * {@link Event}s represent
- * 
+ * {@link Event}s represent messages coming from different parts of the system to execute something or just notify us.
+ *
  * @since 4.1
  */
 public interface Event {
