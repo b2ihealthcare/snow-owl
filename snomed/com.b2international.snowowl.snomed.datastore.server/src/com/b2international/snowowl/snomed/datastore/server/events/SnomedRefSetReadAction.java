@@ -24,7 +24,7 @@ import com.b2international.snowowl.snomed.datastore.index.refset.SnomedRefSetInd
 /**
  * @since 4.5
  */
-public class SnomedRefSetReadAction extends SnomedRefSetAction<SnomedReferenceSet> {
+class SnomedRefSetReadAction extends SnomedRefSetAction<SnomedReferenceSet> {
 
 	private String referenceSetId;
 

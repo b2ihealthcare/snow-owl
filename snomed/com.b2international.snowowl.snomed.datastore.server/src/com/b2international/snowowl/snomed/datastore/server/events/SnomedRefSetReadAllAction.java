@@ -27,7 +27,7 @@ import com.google.common.collect.ImmutableList;
 /**
  * @since 4.5
  */
-public class SnomedRefSetReadAllAction extends SnomedRefSetAction<Collection<SnomedReferenceSet>> {
+class SnomedRefSetReadAllAction extends SnomedRefSetAction<Collection<SnomedReferenceSet>> {
 
 	private final SnomedReferenceSetConverter converter = new SnomedReferenceSetConverter();
 

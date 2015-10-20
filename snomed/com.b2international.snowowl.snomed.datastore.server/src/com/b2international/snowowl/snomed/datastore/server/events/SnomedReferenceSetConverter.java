@@ -26,7 +26,7 @@ import com.google.common.base.Function;
 /**
  * @since 4.5
  */
-public class SnomedReferenceSetConverter implements Function<SnomedRefSetIndexEntry, SnomedReferenceSet> {
+class SnomedReferenceSetConverter implements Function<SnomedRefSetIndexEntry, SnomedReferenceSet> {
 
 	@Override
 	public SnomedReferenceSet apply(SnomedRefSetIndexEntry entry) {
