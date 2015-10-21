@@ -20,7 +20,7 @@ import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.events.Request;
 
 /**
- * Execution context for {@link Request actions} targeting a branch in a single repository.
+ * Execution context for {@link Request requests} targeting a branch in a single repository.
  *
  * @since 4.5
  */
