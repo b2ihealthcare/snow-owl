@@ -15,6 +15,9 @@
  */
 package com.b2international.snowowl.snomed.api.impl.domain;
 
+import javax.validation.constraints.Max;
+import javax.validation.constraints.Min;
+
 import com.b2international.snowowl.snomed.core.domain.AbstractSnomedComponentUpdate;
 import com.b2international.snowowl.snomed.core.domain.CharacteristicType;
 import com.b2international.snowowl.snomed.core.domain.ISnomedRelationshipUpdate;
@@ -22,8 +25,14 @@ import com.b2international.snowowl.snomed.core.domain.RelationshipModifier;
 
 public class SnomedRelationshipUpdate extends AbstractSnomedComponentUpdate implements ISnomedRelationshipUpdate {
 
+	@Min(0)
+	@Max(Byte.MAX_VALUE)
 	private Integer group;
+	
+	@Min(0)
+	@Max(Byte.MAX_VALUE)
 	private Integer unionGroup;
+	
 	private CharacteristicType characteristicType;
 	private RelationshipModifier modifier;
 

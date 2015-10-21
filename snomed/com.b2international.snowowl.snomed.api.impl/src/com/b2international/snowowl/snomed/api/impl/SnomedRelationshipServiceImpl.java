@@ -61,14 +61,15 @@ public class SnomedRelationshipServiceImpl
 		try {
 			return SnomedComponents.newRelationship()
 					.withId(input.getIdGenerationStrategy())
+					.withModule(input.getModuleId())
+					.withSource(input.getSourceId())
 					.withDestination(input.getDestinationId())
-					.withCharacteristicType(input.getCharacteristicType())
-					.withDestinationNegated(input.isDestinationNegated())
-					.withModifier(input.getModifier())
 					.withType(input.getTypeId())
 					.withGroup(input.getGroup())
 					.withUnionGroup(input.getUnionGroup())
-					.withSource(input.getSourceId())
+					.withCharacteristicType(input.getCharacteristicType())
+					.withModifier(input.getModifier())
+					.withDestinationNegated(input.isDestinationNegated())
 					// TODO: add a refinability refset member here?
 					.build(editingContext);
 		} catch (ComponentNotFoundException e) {
