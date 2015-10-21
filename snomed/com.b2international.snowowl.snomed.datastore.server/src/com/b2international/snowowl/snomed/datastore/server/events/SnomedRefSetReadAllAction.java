@@ -18,8 +18,9 @@ package com.b2international.snowowl.snomed.datastore.server.events;
 import java.util.Collection;
 
 import com.b2international.snowowl.core.api.IBranchPath;
+import com.b2international.snowowl.core.domain.CollectionResource;
 import com.b2international.snowowl.core.domain.RepositoryContext;
-import com.b2international.snowowl.snomed.core.refset.SnomedReferenceSet;
+import com.b2international.snowowl.snomed.core.domain.SnomedReferenceSet;
 import com.b2international.snowowl.snomed.datastore.SnomedRefSetBrowser;
 import com.b2international.snowowl.snomed.datastore.index.refset.SnomedRefSetIndexEntry;
 import com.google.common.collect.ImmutableList;
@@ -27,7 +28,7 @@ import com.google.common.collect.ImmutableList;
 /**
  * @since 4.5
  */
-class SnomedRefSetReadAllAction extends SnomedRefSetAction<Collection<SnomedReferenceSet>> {
+class SnomedRefSetReadAllAction extends SnomedRefSetAction<CollectionResource<SnomedReferenceSet>> {
 
 	private final SnomedReferenceSetConverter converter = new SnomedReferenceSetConverter();
 
@@ -36,7 +37,7 @@ class SnomedRefSetReadAllAction extends SnomedRefSetAction<Collection<SnomedRefe
 	}
 
 	@Override
-	public Collection<SnomedReferenceSet> execute(RepositoryContext context) {
+	public CollectionResource<SnomedReferenceSet> execute(RepositoryContext context) {
 		final IBranchPath branchPath = context.branch();
 		final SnomedRefSetBrowser browser = context.service(SnomedRefSetBrowser.class);
 
@@ -47,7 +48,7 @@ class SnomedRefSetReadAllAction extends SnomedRefSetAction<Collection<SnomedRefe
 			result.add(converter.apply(entry));
 		}
 
-		return result.build();
+		return CollectionResource.of(result.build());
 	}
 
 }

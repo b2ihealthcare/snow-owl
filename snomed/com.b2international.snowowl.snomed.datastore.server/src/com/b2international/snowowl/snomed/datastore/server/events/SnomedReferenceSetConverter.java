@@ -18,9 +18,9 @@ package com.b2international.snowowl.snomed.datastore.server.events;
 import java.util.Date;
 
 import com.b2international.snowowl.core.CoreTerminologyBroker;
-import com.b2international.snowowl.snomed.core.refset.SnomedReferenceSet;
+import com.b2international.snowowl.snomed.core.domain.SnomedReferenceSet;
 import com.b2international.snowowl.snomed.datastore.index.refset.SnomedRefSetIndexEntry;
-import com.b2international.snowowl.snomed.datastore.server.internal.refset.SnomedReferenceSetImpl;
+import com.b2international.snowowl.snomed.datastore.server.domain.SnomedReferenceSetImpl;
 import com.google.common.base.Function;
 
 /**

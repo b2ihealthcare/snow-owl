@@ -17,7 +17,7 @@ package com.b2international.snowowl.snomed.datastore.server.events;
 
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.domain.RepositoryContext;
-import com.b2international.snowowl.snomed.core.refset.SnomedReferenceSet;
+import com.b2international.snowowl.snomed.core.domain.SnomedReferenceSet;
 import com.b2international.snowowl.snomed.datastore.SnomedRefSetBrowser;
 import com.b2international.snowowl.snomed.datastore.index.refset.SnomedRefSetIndexEntry;
 
