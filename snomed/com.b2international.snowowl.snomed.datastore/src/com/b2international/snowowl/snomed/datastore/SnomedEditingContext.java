@@ -82,6 +82,7 @@ import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.api.SnowowlRuntimeException;
 import com.b2international.snowowl.core.api.browser.IClientTerminologyBrowser;
 import com.b2international.snowowl.core.api.index.IIndexEntry;
+import com.b2international.snowowl.core.exceptions.ComponentNotFoundException;
 import com.b2international.snowowl.core.terminology.ComponentCategory;
 import com.b2international.snowowl.datastore.BranchPathUtils;
 import com.b2international.snowowl.datastore.CDOEditingContext;
@@ -603,21 +604,28 @@ public class SnomedEditingContext extends BaseSnomedEditingContext {
 	/////////////////////////////////////////////////////////////////////////
 
 	/**
-	 * @param conceptId the concept identifier
-	 * @return the concept with the specified SCT ID
-	 * @throws IllegalArgumentException if the concept could not be retrieved
-	 * @deprecated use {@link SnomedConceptLookupService#getComponent(String, CDOView)} instead.
+	 * Returns a SNOMED CT Concept database object from the store by loading it, or from the transaction if previously added via {@link #add(EObject)}
+	 * or {@link #addAll(Collection)}, otherwise if not found throws a {@link ComponentNotFoundException}.
+	 * 
+	 * @param conceptId
+	 *            - the SNOMED CT identifier of the concept
+	 * @return the concept, never <code>null</code>
+	 * @throws ComponentNotFoundException
+	 *             if the concept could not be retrieved
 	 */
-	@Deprecated
-	public Concept findConceptById(final String conceptId) {
-		
+	public final Concept getConcept(String conceptId) {
 		final Concept concept = new SnomedConceptLookupService().getComponent(conceptId, transaction);
-
 		if (null == concept) {
-			throw new IllegalArgumentException("Concept doesn't exist in the store with id: " + conceptId);
+			throw new ComponentNotFoundException(ComponentCategory.CONCEPT, conceptId);
 		}
-		
-		return concept;
+		return concept; 
+	}
+	
+	/**
+	 * @deprecated - use and see {@link SnomedEditingContext#getConcept(String)}, will be removed in 4.6
+	 */
+	public Concept findConceptById(final String conceptId) {
+		return getConcept(conceptId);
 	}
 
 	/**
