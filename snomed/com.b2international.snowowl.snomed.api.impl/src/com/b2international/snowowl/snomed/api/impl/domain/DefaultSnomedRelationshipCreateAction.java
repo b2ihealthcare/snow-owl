@@ -15,6 +15,7 @@
  */
 package com.b2international.snowowl.snomed.api.impl.domain;
 
+import javax.validation.constraints.Max;
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
 
@@ -44,9 +45,11 @@ public class DefaultSnomedRelationshipCreateAction extends BaseSnomedComponentCr
 	private boolean destinationNegated;
 
 	@Min(0)
+	@Max(Byte.MAX_VALUE)
 	private int group;
 
 	@Min(0)
+	@Max(Byte.MAX_VALUE)
 	private int unionGroup;
 
 	@NotNull
