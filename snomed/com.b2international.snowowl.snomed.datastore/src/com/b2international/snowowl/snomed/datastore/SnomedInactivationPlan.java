@@ -81,24 +81,24 @@ public class SnomedInactivationPlan {
 	 * Enumeration representing the reason of the SNOMED&nbsp;CT concept inactivation.
 	 * <p>The following reasons are available:
 	 * <ul>
-	 * <li>{@link #AMBIGUOUS <em>Ambiguous</em>}</li>
 	 * <li>{@link #DUPLICATE <em>Duplicate</em>}</li>
+	 * <li>{@link #OUTDATED <em>Outdated</em>}</li>
+	 * <li>{@link #AMBIGUOUS <em>Ambiguous</em>}</li>
 	 * <li>{@link #ERRONEOUS <em>Erroneous</em>}</li>
-	 * <li>{@link #MOVED_TO <em>Moved to</em>}</li>
+	 * <li>{@link #LIMITED <em>Limited</em>}</li>
+	 * <li>{@link #MOVED_ELSEWEHERE <em>Moved elsewhere</em>}</li>
+	 * <li>{@link #PENDING_MOVE <em>Pending move</em>}</li>
 	 * <li>{@link #RETIRED <em>Retired</em>}</li>
 	 * </ul>
-	 * </p> 
+	 * </p>
+	 * <p>
+	 * Note that "Pending move" is present for completeness, however the process requires the concept to stay active, and so can not be 
+	 * handled by {@code SnomedInactivationPlan} correctly at this time.
+	 * </p>
 	 * @see SnomedInactivationPlan
 	 */
 	public static enum InactivationReason {
 
-		/**
-		 * Ambiguous. <br>SNOMED&nbsp;CT reference set: POSSIBLY EQUIVALENT TO (ID: 900000000000523009)
-		 * <br>SNOMED&nbsp;CT concept of the inactivation reason: AMBIGUOUS (ID: 900000000000484002)
-		 * @see InactivationReason
-		 */
-		AMBIGUOUS("Ambiguous", Concepts.REFSET_POSSIBLY_EQUIVALENT_TO_ASSOCIATION, Concepts.AMBIGUOUS), //POSSIBLY EQUIVALENT TO
-		
 		/**
 		 * Duplicate. <br>SNOMED&nbsp;CT reference set: SAME AS (ID: 900000000000527005)
 		 * <br>SNOMED&nbsp;CT concept of the inactivation reason: DUPLICATE (ID: 900000000000482003)
@@ -107,23 +107,50 @@ public class SnomedInactivationPlan {
 		DUPLICATE("Duplicate", Concepts.REFSET_SAME_AS_ASSOCIATION, Concepts.DUPLICATE), //SAME AS
 		
 		/**
+		 * Outdated. <br>SNOMED&nbsp;CT reference set: REPLACED BY (ID: 900000000000526001)
+		 * <br>SNOMED&nbsp;CT concept of the inactivation reason: OUTDATED (ID: 900000000000483008)
+		 * @see InactivationReason
+		 */
+		OUTDATED("Outdated", Concepts.REFSET_REPLACED_BY_ASSOCIATION, Concepts.OUTDATED), // REPLACED BY
+		
+		/**
+		 * Ambiguous. <br>SNOMED&nbsp;CT reference set: POSSIBLY EQUIVALENT TO (ID: 900000000000523009)
+		 * <br>SNOMED&nbsp;CT concept of the inactivation reason: AMBIGUOUS (ID: 900000000000484002)
+		 * @see InactivationReason
+		 */
+		AMBIGUOUS("Ambiguous", Concepts.REFSET_POSSIBLY_EQUIVALENT_TO_ASSOCIATION, Concepts.AMBIGUOUS), //POSSIBLY EQUIVALENT TO
+		
+		/**
 		 * Erroneous. <br>SNOMED&nbsp;CT reference set: REPLACED BY (ID: 900000000000526001)
 		 * <br>SNOMED&nbsp;CT concept of the inactivation reason: ERRONEOUS (ID: 900000000000485001)
 		 * @see InactivationReason
 		 */
 		ERRONEOUS("Erroneous", Concepts.REFSET_REPLACED_BY_ASSOCIATION, Concepts.ERRONEOUS), //REPLACED BY
+
+		/**
+		 * Limited. <br>SNOMED&nbsp;CT reference set: WAS A (ID: 900000000000528000)
+		 * <br>SNOMED&nbsp;CT concept of the inactivation reason: LIMITED (ID: 900000000000486000)
+		 * @see InactivationReason
+		 */
+		LIMITED("Limited", Concepts.REFSET_WAS_A_ASSOCIATION, Concepts.LIMITED), // WAS A (may not be applicable universally)
 		
 		/**
-		 * Moved to. <br>SNOMED&nbsp;CT reference set: MOVED TO (ID: 900000000000524003)
+		 * Moved elsewhere. <br>SNOMED&nbsp;CT reference set: MOVED TO (ID: 900000000000524003)
 		 * <br>SNOMED&nbsp;CT concept of the inactivation reason: MOVED_ELSEWHERE (ID: 900000000000487009)
 		 * @see InactivationReason
 		 */
-		MOVED_TO("Moved to", Concepts.REFSET_MOVED_TO_ASSOCIATION, Concepts.MOVED_ELSEWHERE),  //MOVED TO
+		MOVED_ELSEWEHERE("Moved elsewhere", Concepts.REFSET_MOVED_TO_ASSOCIATION, Concepts.MOVED_ELSEWHERE),  //MOVED TO
 		
 		/**
-		 * Retired. Neither historical association reference set member nor concept inactivation reference set member is not required.
-		 * <p>From SNOMED&nbsp;CT Technical Implementation Guide:<br>
-		 * <b>Retired:</b> The Concept should not be used. No further information is available.</p>
+		 * Pending move. <br>SNOMED&nbsp;CT reference set: MOVED TO (ID: 900000000000524003)
+		 * <br>SNOMED&nbsp;CT concept of the inactivation reason: PENDING_MOVE (ID: 900000000000492006)
+		 * @see InactivationReason 
+		 */
+		PENDING_MOVE("Pending move", Concepts.REFSET_MOVED_TO_ASSOCIATION, Concepts.PENDING_MOVE), // MOVED TO
+		
+		/**
+		 * Retired ("inactive with no reason given for inactivation"). Neither a historical association reference set member 
+		 * nor a component inactivation reference set member is required.
 		 * @see InactivationReason
 		 */
 		RETIRED("Retired", "", "");
@@ -260,8 +287,7 @@ public class SnomedInactivationPlan {
 	
 	/**
 	 * Performs the inactivation process, but it does not commits changes to the backend. After this method call {@link #commitPlan(String, IProgressMonitor)} to actually save the plan's content.
-	 * <p>
-	 * <b>NOTE:&nbsp;</b>after performing this method the underlying {@link SnomedEditingContext editing context} will be disposed and cannot be referenced by clients.</p>
+	 * 
 	 * @param reason inactivation reason for the process.
 	 * @param targetComponentId the SNOMED&nbsp;CT concept ID which is the association target. Can be {@code null}. If {@code null} no historical association reference set will be created.
 	 */
