@@ -15,9 +15,8 @@
  */
 package com.b2international.snowowl.snomed.datastore.server.events;
 
-import java.util.Collection;
-
-import com.b2international.snowowl.snomed.core.refset.SnomedReferenceSet;
+import com.b2international.snowowl.core.domain.CollectionResource;
+import com.b2international.snowowl.snomed.core.domain.SnomedReferenceSet;
 
 /**
  * @since 4.5
@@ -27,7 +26,7 @@ public abstract class SnomedRefSetActions {
 	private SnomedRefSetActions() {
 	}
 	
-	public static SnomedRefSetAction<Collection<SnomedReferenceSet>> readAll(String branch) {
+	public static SnomedRefSetAction<CollectionResource<SnomedReferenceSet>> readAll(String branch) {
 		return new SnomedRefSetReadAllAction(branch);
 	}
 	

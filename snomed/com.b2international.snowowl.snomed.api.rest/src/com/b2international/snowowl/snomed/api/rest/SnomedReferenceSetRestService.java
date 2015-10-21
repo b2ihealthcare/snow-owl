@@ -15,9 +15,6 @@
  */
 package com.b2international.snowowl.snomed.api.rest;
 
-import static org.springframework.hateoas.mvc.ControllerLinkBuilder.linkTo;
-
-import java.net.URI;
 import java.security.Principal;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,14 +26,15 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.context.request.async.DeferredResult;
 
+import com.b2international.snowowl.core.domain.CollectionResource;
+import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.snomed.api.rest.domain.ChangeRequest;
-import com.b2international.snowowl.snomed.api.rest.domain.CollectionResource;
 import com.b2international.snowowl.snomed.api.rest.domain.SnomedRefSetRestInput;
-import com.b2international.snowowl.snomed.api.rest.util.Responses;
-import com.b2international.snowowl.snomed.core.refset.SnomedReferenceSet;
-import com.b2international.snowowl.snomed.core.refset.SnomedReferenceSetService;
-import com.b2international.snowowl.snomed.datastore.server.domain.DefaultSnomedRefSetCreateAction;
+import com.b2international.snowowl.snomed.api.rest.util.DeferredResults;
+import com.b2international.snowowl.snomed.core.domain.SnomedReferenceSet;
+import com.b2international.snowowl.snomed.datastore.server.events.SnomedRefSetActions;
 import com.wordnik.swagger.annotations.Api;
 import com.wordnik.swagger.annotations.ApiOperation;
 import com.wordnik.swagger.annotations.ApiParam;
@@ -52,7 +50,7 @@ import com.wordnik.swagger.annotations.ApiResponses;
 public class SnomedReferenceSetRestService extends AbstractSnomedRestService {
 
 	@Autowired
-	private SnomedReferenceSetService delegate;
+	private IEventBus bus;
 	
 	@ApiOperation(
 			value="Retrieve Reference Sets from a branch", 
@@ -62,11 +60,11 @@ public class SnomedReferenceSetRestService extends AbstractSnomedRestService {
 		@ApiResponse(code = 404, message = "Branch not found")
 	})
 	@RequestMapping(value="/{path:**}/refsets", method=RequestMethod.GET)	
-	public @ResponseBody CollectionResource<SnomedReferenceSet> getReferenceSets(
+	public @ResponseBody DeferredResult<CollectionResource<SnomedReferenceSet>> getReferenceSets(
 			@ApiParam(value="The branch path")
 			@PathVariable(value="path")
 			final String branchPath) {
-		return CollectionResource.of(delegate.getReferenceSets(branchPath));
+		return DeferredResults.ofCollection(bus, SnomedRefSetActions.readAll(branchPath), SnomedReferenceSet.class);
 	}
 	
 	@ApiOperation(
@@ -77,7 +75,7 @@ public class SnomedReferenceSetRestService extends AbstractSnomedRestService {
 		@ApiResponse(code = 404, message = "Branch or Reference set not found")
 	})
 	@RequestMapping(value="/{path:**}/refsets/{refSetId}", method=RequestMethod.GET)
-	public @ResponseBody SnomedReferenceSet read(
+	public @ResponseBody DeferredResult<SnomedReferenceSet> read(
 			@ApiParam(value="The branch path")
 			@PathVariable(value="path")
 			final String branchPath,
@@ -85,7 +83,7 @@ public class SnomedReferenceSetRestService extends AbstractSnomedRestService {
 			@ApiParam(value="The Reference set identifier")
 			@PathVariable(value="refSetId")
 			final String refSetId) {
-		return delegate.read(createComponentRef(branchPath, refSetId));
+		return DeferredResults.of(bus, SnomedRefSetActions.read(branchPath, refSetId), SnomedReferenceSet.class);
 	}
 	
 	@ApiOperation(
@@ -106,20 +104,20 @@ public class SnomedReferenceSetRestService extends AbstractSnomedRestService {
 			final ChangeRequest<SnomedRefSetRestInput> body,
 
 			final Principal principal) {
-		
-		final SnomedReferenceSet createdRefSet = doCreate(branchPath, body, principal);
-		return Responses.created(getRefSetLocationURI(branchPath, createdRefSet)).build();
+		throw new UnsupportedOperationException();
+//		final SnomedReferenceSet createdRefSet = doCreate(branchPath, body, principal);
+//		return Responses.created(getRefSetLocationURI(branchPath, createdRefSet)).build();
 	}
 	
-	private SnomedReferenceSet doCreate(final String branchPath, final ChangeRequest<SnomedRefSetRestInput> body, final Principal principal) {
-		final DefaultSnomedRefSetCreateAction input = body.getChange().toComponentInput(branchPath, codeSystemShortName);
-		final String userId = principal.getName();
-		final String commitComment = body.getCommitComment();
-		return delegate.create(input, userId, commitComment);
-	}
-
-	private URI getRefSetLocationURI(String branchPath, SnomedReferenceSet refSet) {
-		return linkTo(SnomedConceptRestService.class).slash(branchPath).slash("refsets").slash(refSet.getId()).toUri();
-	}
+//	private SnomedReferenceSet doCreate(final String branchPath, final ChangeRequest<SnomedRefSetRestInput> body, final Principal principal) {
+//		final DefaultSnomedRefSetCreateAction input = body.getChange().toComponentInput(branchPath, codeSystemShortName);
+//		final String userId = principal.getName();
+//		final String commitComment = body.getCommitComment();
+//		return delegate.create(input, userId, commitComment);
+//	}
+//
+//	private URI getRefSetLocationURI(String branchPath, SnomedReferenceSet refSet) {
+//		return linkTo(SnomedConceptRestService.class).slash(branchPath).slash("refsets").slash(refSet.getId()).toUri();
+//	}
 	
 }
