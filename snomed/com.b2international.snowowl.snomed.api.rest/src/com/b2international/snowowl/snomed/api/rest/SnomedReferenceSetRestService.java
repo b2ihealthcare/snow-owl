@@ -64,7 +64,7 @@ public class SnomedReferenceSetRestService extends AbstractSnomedRestService {
 			@ApiParam(value="The branch path")
 			@PathVariable(value="path")
 			final String branchPath) {
-		return DeferredResults.ofCollection(bus, SnomedRefSetRequests.readAll(branchPath), SnomedReferenceSet.class);
+		return DeferredResults.ofCollection(bus, SnomedRefSetRequests.getAll(branchPath), SnomedReferenceSet.class);
 	}
 	
 	@ApiOperation(
@@ -83,7 +83,7 @@ public class SnomedReferenceSetRestService extends AbstractSnomedRestService {
 			@ApiParam(value="The Reference set identifier")
 			@PathVariable(value="refSetId")
 			final String refSetId) {
-		return DeferredResults.of(bus, SnomedRefSetRequests.read(branchPath, refSetId), SnomedReferenceSet.class);
+		return DeferredResults.of(bus, SnomedRefSetRequests.get(branchPath, refSetId), SnomedReferenceSet.class);
 	}
 	
 	@ApiOperation(

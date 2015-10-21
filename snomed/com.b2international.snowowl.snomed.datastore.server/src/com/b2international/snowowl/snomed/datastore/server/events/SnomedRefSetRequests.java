@@ -26,11 +26,11 @@ public abstract class SnomedRefSetRequests {
 	private SnomedRefSetRequests() {
 	}
 	
-	public static SnomedRefSetRequest<CollectionResource<SnomedReferenceSet>> readAll(String branch) {
+	public static SnomedRefSetRequest<CollectionResource<SnomedReferenceSet>> getAll(String branch) {
 		return new SnomedRefSetReadAllRequest(branch);
 	}
 	
-	public static SnomedRefSetRequest<SnomedReferenceSet> read(String branch, String referenceSetId) {
+	public static SnomedRefSetRequest<SnomedReferenceSet> get(String branch, String referenceSetId) {
 		return new SnomedRefSetReadRequest(branch, referenceSetId);
 	}
 	
