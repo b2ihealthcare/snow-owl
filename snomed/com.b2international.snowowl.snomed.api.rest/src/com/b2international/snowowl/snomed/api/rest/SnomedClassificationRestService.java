@@ -33,6 +33,8 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
 
+import com.b2international.snowowl.core.domain.CollectionResource;
+import com.b2international.snowowl.core.domain.PageableCollectionResource;
 import com.b2international.snowowl.core.exceptions.ApiValidation;
 import com.b2international.snowowl.snomed.api.ISnomedClassificationService;
 import com.b2international.snowowl.snomed.api.domain.classification.ClassificationStatus;
@@ -42,8 +44,6 @@ import com.b2international.snowowl.snomed.api.domain.classification.IRelationshi
 import com.b2international.snowowl.snomed.api.domain.classification.IRelationshipChangeList;
 import com.b2international.snowowl.snomed.api.rest.domain.ClassificationRestInput;
 import com.b2international.snowowl.snomed.api.rest.domain.ClassificationRestRun;
-import com.b2international.snowowl.snomed.api.rest.domain.CollectionResource;
-import com.b2international.snowowl.snomed.api.rest.domain.PageableCollectionResource;
 import com.b2international.snowowl.snomed.api.rest.domain.RestApiError;
 import com.b2international.snowowl.snomed.api.rest.util.Responses;
 import com.wordnik.swagger.annotations.Api;

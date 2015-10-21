@@ -31,6 +31,7 @@ import org.springframework.web.bind.annotation.*;
 
 import com.b2international.snowowl.core.domain.IComponentList;
 import com.b2international.snowowl.core.domain.IComponentRef;
+import com.b2international.snowowl.core.domain.PageableCollectionResource;
 import com.b2international.snowowl.snomed.api.ISnomedConceptService;
 import com.b2international.snowowl.snomed.api.rest.domain.*;
 import com.b2international.snowowl.snomed.api.rest.util.Responses;

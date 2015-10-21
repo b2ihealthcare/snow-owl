@@ -30,10 +30,10 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.b2international.snowowl.core.domain.IComponentList;
 import com.b2international.snowowl.core.domain.IComponentRef;
+import com.b2international.snowowl.core.domain.PageableCollectionResource;
 import com.b2international.snowowl.snomed.api.ISnomedDescriptionService;
 import com.b2international.snowowl.snomed.api.ISnomedStatementBrowserService;
 import com.b2international.snowowl.snomed.api.ISnomedTerminologyBrowserService;
-import com.b2international.snowowl.snomed.api.rest.domain.PageableCollectionResource;
 import com.b2international.snowowl.snomed.api.rest.domain.SnomedConceptDescriptions;
 import com.b2international.snowowl.snomed.api.rest.domain.SnomedInboundRelationships;
 import com.b2international.snowowl.snomed.api.rest.domain.SnomedOutboundRelationships;

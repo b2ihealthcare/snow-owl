@@ -13,29 +13,27 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.snomed.api.rest.domain;
+package com.b2international.snowowl.core.domain;
 
 import java.util.List;
 
 import com.google.common.base.Objects;
-import com.wordnik.swagger.annotations.ApiModel;
-import com.wordnik.swagger.annotations.ApiModelProperty;
 
 /**
  * {@link CollectionResource} containing paging information like offset, limit and total.
  * 
  * @since 1.0
  */
-@ApiModel("Pageable Collection")
+//@ApiModel("Pageable Collection")
 public class PageableCollectionResource<T> extends CollectionResource<T> {
 
-	@ApiModelProperty("Offset in the total collection")
+//	@ApiModelProperty("Offset in the total collection")
 	private int offset;
 	
-	@ApiModelProperty("The number of requested maximum items")
+//	@ApiModelProperty("The number of requested maximum items")
 	private int limit;
 	
-	@ApiModelProperty("Total number of results available")
+//	@ApiModelProperty("Total number of results available")
 	private int total;
 
 	protected PageableCollectionResource(List<T> items, int offset, int limit, int total) {

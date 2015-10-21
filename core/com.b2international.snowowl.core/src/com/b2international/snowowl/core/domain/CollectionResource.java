@@ -13,25 +13,22 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.api.rest.domain;
+package com.b2international.snowowl.core.domain;
 
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
 import com.google.common.base.Objects;
-import com.wordnik.swagger.annotations.ApiModel;
-import com.wordnik.swagger.annotations.ApiModelProperty;
+import com.google.common.collect.ImmutableList;
 
 /**
  * Represents a collection resource in the RESTful API.
  * 
  * @since 1.0
  */
-@ApiModel("Collection")
 public class CollectionResource<T> {
 
-	@ApiModelProperty(value = "Collection of items contained in this resource", dataType = "array")
 	private List<T> items;
 
 	protected CollectionResource(List<T> items) {
@@ -55,6 +52,19 @@ public class CollectionResource<T> {
 	 */
 	public static <T> CollectionResource<T> of(List<T> items) {
 		return new CollectionResource<T>(items);
+	}
+	
+	/**
+	 * Creates a new {@link CollectionResource} for the given items.
+	 * 
+	 * @param items
+	 * @return
+	 */
+	public static <T> CollectionResource<T> of(Collection<T> items) {
+		if (items instanceof List) {
+			return of((List<T>)items);
+		}
+		return of(ImmutableList.copyOf(items));
 	}
 	
 	@Override

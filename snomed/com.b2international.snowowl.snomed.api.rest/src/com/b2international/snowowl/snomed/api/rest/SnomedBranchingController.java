@@ -32,6 +32,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.context.request.async.DeferredResult;
 
 import com.b2international.commons.collections.Procedure;
+import com.b2international.snowowl.core.domain.CollectionResource;
 import com.b2international.snowowl.core.exceptions.ApiValidation;
 import com.b2international.snowowl.datastore.branch.Branch;
 import com.b2international.snowowl.datastore.server.events.BranchReply;
@@ -41,7 +42,6 @@ import com.b2international.snowowl.datastore.server.events.ReadAllBranchEvent;
 import com.b2international.snowowl.datastore.server.events.ReadBranchChildrenEvent;
 import com.b2international.snowowl.datastore.server.events.ReadBranchEvent;
 import com.b2international.snowowl.eventbus.IEventBus;
-import com.b2international.snowowl.snomed.api.rest.domain.CollectionResource;
 import com.b2international.snowowl.snomed.api.rest.domain.CreateBranchRequest;
 import com.b2international.snowowl.snomed.api.rest.domain.RestApiError;
 import com.b2international.snowowl.snomed.api.rest.util.Responses;
