@@ -29,11 +29,13 @@ public final class SnomedDescriptionBuilder extends SnomedComponentBuilder<Snome
 	private CaseSignificance caseSignificance = CaseSignificance.INITIAL_CHARACTER_CASE_INSENSITIVE;
 	private String type;
 	private String term;
+	private String languageCode = "en";
+	private String concept;
 
 	protected SnomedDescriptionBuilder() {
 		super(ComponentCategory.DESCRIPTION);
 	}
-	
+
 	/**
 	 * Specifies the type of the new SNOMED CT Description.
 	 * 
@@ -67,11 +69,37 @@ public final class SnomedDescriptionBuilder extends SnomedComponentBuilder<Snome
 		return getSelf();
 	}
 
+	/**
+	 * Specifies the language code of the new SNOMED CT Description.
+	 * 
+	 * @param languageCode
+	 * @return
+	 */
+	public SnomedDescriptionBuilder withLanguageCode(String languageCode) {
+		this.languageCode = languageCode;
+		return getSelf();
+	}
+
+	/**
+	 * Adds the new SNOMED CT Description to the specified existing SNOMED CT Concept.
+	 * 
+	 * @param concept
+	 * @return
+	 */
+	public SnomedDescriptionBuilder withConcept(String concept) {
+		this.concept = concept;
+		return getSelf();
+	}
+
 	@Override
 	protected void init(Description component, SnomedEditingContext context) {
 		component.setCaseSignificance(context.findConceptById(caseSignificance.getConceptId()));
 		component.setType(context.findConceptById(type));
 		component.setTerm(term);
+		component.setLanguageCode(languageCode);
+		if (concept != null) {
+			component.setConcept(context.findConceptById(concept));
+		}
 	}
 
 	@Override

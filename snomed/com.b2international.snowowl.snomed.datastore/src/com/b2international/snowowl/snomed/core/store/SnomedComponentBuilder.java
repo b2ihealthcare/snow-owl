@@ -131,6 +131,7 @@ public abstract class SnomedComponentBuilder<B extends SnomedComponentBuilder<B,
 			component.setEffectiveTime(effectiveTime);
 			component.setReleased(effectiveTime != null);
 			component.setModule(module);
+			component.unsetEffectiveTime();
 		}
 		init(t, context);
 		return t;

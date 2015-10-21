@@ -26,11 +26,12 @@ import com.b2international.snowowl.snomed.datastore.SnomedEditingContext;
 /**
  * @since 4.5
  */
-public class SnomedRelationshipBuilder extends SnomedComponentBuilder<SnomedRelationshipBuilder, Relationship> {
+public final class SnomedRelationshipBuilder extends SnomedComponentBuilder<SnomedRelationshipBuilder, Relationship> {
 
 	private CharacteristicType characteristicType = CharacteristicType.STATED_RELATIONSHIP;
 	private RelationshipModifier modifier = RelationshipModifier.EXISTENTIAL;
 	private String type;
+	private String source;
 	private String destination;
 	private int group = 0;
 	private int unionGroup = 0;
@@ -132,6 +133,17 @@ public class SnomedRelationshipBuilder extends SnomedComponentBuilder<SnomedRela
 		return getSelf();
 	}
 
+	/**
+	 * Specifies the source of the SNOMED CT Relationship.
+	 * 
+	 * @param source
+	 * @return
+	 */
+	public SnomedRelationshipBuilder withSource(String source) {
+		this.source = source;
+		return getSelf();
+	}
+
 	@Override
 	protected Relationship create() {
 		return SnomedFactory.eINSTANCE.createRelationship();
@@ -142,6 +154,9 @@ public class SnomedRelationshipBuilder extends SnomedComponentBuilder<SnomedRela
 		component.setCharacteristicType(context.findConceptById(characteristicType.getConceptId()));
 		component.setModifier(context.findConceptById(modifier.getConceptId()));
 		component.setType(context.findConceptById(type));
+		if (source != null) {
+			component.setSource(context.findConceptById(source));
+		}
 		component.setDestination(context.findConceptById(destination));
 		component.setDestinationNegated(destinationNegated);
 		component.setGroup(group);
