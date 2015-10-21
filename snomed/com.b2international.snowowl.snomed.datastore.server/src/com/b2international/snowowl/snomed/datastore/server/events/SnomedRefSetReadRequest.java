@@ -24,11 +24,11 @@ import com.b2international.snowowl.snomed.datastore.index.refset.SnomedRefSetInd
 /**
  * @since 4.5
  */
-class SnomedRefSetReadAction extends SnomedRefSetAction<SnomedReferenceSet> {
+class SnomedRefSetReadRequest extends SnomedRefSetRequest<SnomedReferenceSet> {
 
 	private String referenceSetId;
 
-	protected SnomedRefSetReadAction(String branch, String referenceSetId) {
+	protected SnomedRefSetReadRequest(String branch, String referenceSetId) {
 		super(branch);
 		this.referenceSetId = referenceSetId;
 	}

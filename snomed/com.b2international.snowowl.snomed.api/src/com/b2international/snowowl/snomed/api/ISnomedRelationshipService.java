@@ -16,13 +16,13 @@
 package com.b2international.snowowl.snomed.api;
 
 import com.b2international.snowowl.snomed.core.domain.ISnomedRelationship;
-import com.b2international.snowowl.snomed.core.domain.SnomedRelationshipCreateAction;
+import com.b2international.snowowl.snomed.core.domain.SnomedRelationshipCreateRequest;
 import com.b2international.snowowl.snomed.core.domain.ISnomedRelationshipUpdate;
 
 /**
  * SNOMED CT relationship service implementations provide methods for <b>c</b>reating, <b>r</b>eading, <b>u</b>pdating and
  * <b>d</b>eleting individual relationships.
  */
-public interface ISnomedRelationshipService extends ISnomedComponentService<SnomedRelationshipCreateAction, ISnomedRelationship, ISnomedRelationshipUpdate> {
+public interface ISnomedRelationshipService extends ISnomedComponentService<SnomedRelationshipCreateRequest, ISnomedRelationship, ISnomedRelationshipUpdate> {
 	// Empty interface body
 }

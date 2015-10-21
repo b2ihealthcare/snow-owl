@@ -16,16 +16,16 @@
 package com.b2international.snowowl.snomed.datastore.server.events;
 
 import com.b2international.snowowl.core.domain.RepositoryContext;
-import com.b2international.snowowl.core.events.Action;
+import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.core.events.BaseRepositoryBranchEvent;
 import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 
 /**
  * @since 4.5
  */
-public abstract class SnomedRefSetAction<B> extends BaseRepositoryBranchEvent implements Action<RepositoryContext, B> {
+public abstract class SnomedRefSetRequest<B> extends BaseRepositoryBranchEvent implements Request<RepositoryContext, B> {
 
-	protected SnomedRefSetAction(String branch) {
+	protected SnomedRefSetRequest(String branch) {
 		super(SnomedDatastoreActivator.REPOSITORY_UUID, branch);
 	}
 

@@ -50,7 +50,7 @@ import com.b2international.snowowl.snomed.Inactivatable;
 import com.b2international.snowowl.snomed.Relationship;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.api.ISnomedConceptService;
-import com.b2international.snowowl.snomed.api.impl.domain.DefaultSnomedDescriptionCreateAction;
+import com.b2international.snowowl.snomed.api.impl.domain.DefaultSnomedDescriptionCreateRequest;
 import com.b2international.snowowl.snomed.api.impl.domain.SnomedConceptList;
 import com.b2international.snowowl.snomed.core.domain.Acceptability;
 import com.b2international.snowowl.snomed.core.domain.AssociationType;
@@ -59,8 +59,8 @@ import com.b2international.snowowl.snomed.core.domain.ISnomedConcept;
 import com.b2international.snowowl.snomed.core.domain.ISnomedConceptUpdate;
 import com.b2international.snowowl.snomed.core.domain.InactivationIndicator;
 import com.b2international.snowowl.snomed.core.domain.SearchKind;
-import com.b2international.snowowl.snomed.core.domain.SnomedConceptCreateAction;
-import com.b2international.snowowl.snomed.core.domain.SnomedDescriptionCreateAction;
+import com.b2international.snowowl.snomed.core.domain.SnomedConceptCreateRequest;
+import com.b2international.snowowl.snomed.core.domain.SnomedDescriptionCreateRequest;
 import com.b2international.snowowl.snomed.core.domain.SubclassDefinitionStatus;
 import com.b2international.snowowl.snomed.core.store.SnomedComponents;
 import com.b2international.snowowl.snomed.datastore.SnomedConceptIndexEntry;
@@ -88,7 +88,7 @@ import com.google.common.collect.Multimap;
 import com.google.common.collect.Multiset;
 
 public class SnomedConceptServiceImpl 
-	extends AbstractSnomedComponentServiceImpl<SnomedConceptCreateAction, ISnomedConcept, ISnomedConceptUpdate, Concept>
+	extends AbstractSnomedComponentServiceImpl<SnomedConceptCreateRequest, ISnomedConcept, ISnomedConceptUpdate, Concept>
 	implements ISnomedConceptService {
 
 	private SnomedDescriptionServiceImpl descriptionService;
@@ -125,7 +125,7 @@ public class SnomedConceptServiceImpl
 	}
 
 	@Override
-	protected Concept convertAndRegister(final SnomedConceptCreateAction conceptInput, final SnomedEditingContext editingContext) {
+	protected Concept convertAndRegister(final SnomedConceptCreateRequest conceptInput, final SnomedEditingContext editingContext) {
 		final Concept concept = convertConcept(conceptInput, editingContext);
 		concept.getOutboundRelationships().add(convertParentIsARelationship(conceptInput, editingContext));
 		editingContext.add(concept);
@@ -134,8 +134,8 @@ public class SnomedConceptServiceImpl
 		final Multiset<String> preferredLanguageRefSetIds = HashMultiset.create();
 		final Set<String> synonymAndDescendantIds = getSnomedComponentService().getSynonymAndDescendantIds(BranchPathUtils.createPath(editingContext.getTransaction()));
 
-		for (final SnomedDescriptionCreateAction descriptionInput : conceptInput.getDescriptions()) {
-			final DefaultSnomedDescriptionCreateAction internalDescriptionInput = ClassUtils.checkAndCast(descriptionInput, DefaultSnomedDescriptionCreateAction.class);
+		for (final SnomedDescriptionCreateRequest descriptionInput : conceptInput.getDescriptions()) {
+			final DefaultSnomedDescriptionCreateRequest internalDescriptionInput = ClassUtils.checkAndCast(descriptionInput, DefaultSnomedDescriptionCreateRequest.class);
 
 			internalDescriptionInput.setConceptId(concept.getId());
 
@@ -172,7 +172,7 @@ public class SnomedConceptServiceImpl
 		return concept;
 	}
 
-	private Concept convertConcept(final SnomedConceptCreateAction input, final SnomedEditingContext context) {
+	private Concept convertConcept(final SnomedConceptCreateRequest input, final SnomedEditingContext context) {
 		try {
 			return SnomedComponents.newConcept()
 					.withId(input.getIdGenerationStrategy())
@@ -183,7 +183,7 @@ public class SnomedConceptServiceImpl
 		}
 	}
 
-	private Relationship convertParentIsARelationship(final SnomedConceptCreateAction input, final SnomedEditingContext context) {
+	private Relationship convertParentIsARelationship(final SnomedConceptCreateRequest input, final SnomedEditingContext context) {
 		try {
 			final Relationship parentIsARelationship = SnomedComponents.newRelationship()
 					.withId(input.getIsAIdGenerationStrategy())

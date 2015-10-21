@@ -21,7 +21,7 @@ import com.b2international.snowowl.api.exception.IllegalQueryParameterException;
 import com.b2international.snowowl.core.domain.IComponentList;
 import com.b2international.snowowl.core.exceptions.NotFoundException;
 import com.b2international.snowowl.snomed.core.domain.ISnomedConcept;
-import com.b2international.snowowl.snomed.core.domain.SnomedConceptCreateAction;
+import com.b2international.snowowl.snomed.core.domain.SnomedConceptCreateRequest;
 import com.b2international.snowowl.snomed.core.domain.ISnomedConceptUpdate;
 import com.b2international.snowowl.snomed.core.domain.SearchKind;
 
@@ -29,7 +29,7 @@ import com.b2international.snowowl.snomed.core.domain.SearchKind;
  * SNOMED CT concept service implementations provide methods for creating, reading, updating and deleting single concepts, as well as searching for
  * and enumerating pageable subsets of all concepts on a particular version and task.
  */
-public interface ISnomedConceptService extends ISnomedComponentService<SnomedConceptCreateAction, ISnomedConcept, ISnomedConceptUpdate> {
+public interface ISnomedConceptService extends ISnomedComponentService<SnomedConceptCreateRequest, ISnomedConcept, ISnomedConceptUpdate> {
 
 	/**
 	 * Returns a subset of all stored concepts.

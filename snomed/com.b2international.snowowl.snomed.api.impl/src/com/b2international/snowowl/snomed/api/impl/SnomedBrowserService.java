@@ -58,7 +58,7 @@ import com.b2international.snowowl.snomed.api.domain.browser.ISnomedBrowserRelat
 import com.b2international.snowowl.snomed.api.domain.browser.SnomedBrowserDescriptionType;
 import com.b2international.snowowl.snomed.api.domain.browser.TaxonomyNode;
 import com.b2international.snowowl.snomed.api.impl.domain.InputFactory;
-import com.b2international.snowowl.snomed.api.impl.domain.DefaultSnomedDescriptionCreateAction;
+import com.b2international.snowowl.snomed.api.impl.domain.DefaultSnomedDescriptionCreateRequest;
 import com.b2international.snowowl.snomed.api.impl.domain.browser.SnomedBrowserChildConcept;
 import com.b2international.snowowl.snomed.api.impl.domain.browser.SnomedBrowserConcept;
 import com.b2international.snowowl.snomed.api.impl.domain.browser.SnomedBrowserConstant;
@@ -74,12 +74,12 @@ import com.b2international.snowowl.snomed.core.domain.CharacteristicType;
 import com.b2international.snowowl.snomed.core.domain.ConceptEnum;
 import com.b2international.snowowl.snomed.core.domain.DefinitionStatus;
 import com.b2international.snowowl.snomed.core.domain.ISnomedConcept;
-import com.b2international.snowowl.snomed.core.domain.SnomedConceptCreateAction;
+import com.b2international.snowowl.snomed.core.domain.SnomedConceptCreateRequest;
 import com.b2international.snowowl.snomed.core.domain.ISnomedConceptUpdate;
 import com.b2international.snowowl.snomed.core.domain.ISnomedDescription;
-import com.b2international.snowowl.snomed.core.domain.SnomedDescriptionCreateAction;
+import com.b2international.snowowl.snomed.core.domain.SnomedDescriptionCreateRequest;
 import com.b2international.snowowl.snomed.core.domain.ISnomedDescriptionUpdate;
-import com.b2international.snowowl.snomed.core.domain.SnomedRelationshipCreateAction;
+import com.b2international.snowowl.snomed.core.domain.SnomedRelationshipCreateRequest;
 import com.b2international.snowowl.snomed.core.domain.ISnomedRelationshipUpdate;
 import com.b2international.snowowl.snomed.core.domain.RelationshipModifier;
 import com.b2international.snowowl.snomed.datastore.SnomedConceptIndexEntry;
@@ -221,7 +221,7 @@ public class SnomedBrowserService implements ISnomedBrowserService {
 
 	@Override
 	public ISnomedBrowserConcept create(String branchPath, ISnomedBrowserConcept concept, String userId, List<Locale> locales) {
-		final SnomedConceptCreateAction snomedConceptInput = inputFactory.createComponentInput(branchPath, concept, SnomedConceptCreateAction.class);
+		final SnomedConceptCreateRequest snomedConceptInput = inputFactory.createComponentInput(branchPath, concept, SnomedConceptCreateRequest.class);
 		String commitComment = getCommitComment(userId, concept, "creating");
 		final ISnomedConcept iSnomedConcept = conceptService.create(snomedConceptInput, userId, commitComment);
 		final IComponentRef componentRef = createComponentRef(branchPath, iSnomedConcept.getId());
@@ -244,7 +244,7 @@ public class SnomedBrowserService implements ISnomedBrowserService {
 		final List<ISnomedBrowserDescription> newVersionDescriptions = newVersionConcept.getDescriptions();
 		Set<String> descriptionDeletionIds = inputFactory.getComponentDeletions(existingVersionDescriptions, newVersionDescriptions);
 		Map<String, ISnomedDescriptionUpdate> descriptionUpdates = inputFactory.createComponentUpdates(existingVersionDescriptions, newVersionDescriptions, ISnomedDescriptionUpdate.class);
-		List<SnomedDescriptionCreateAction> descriptionInputs = inputFactory.createComponentInputs(branchPath, newVersionDescriptions, SnomedDescriptionCreateAction.class);
+		List<SnomedDescriptionCreateRequest> descriptionInputs = inputFactory.createComponentInputs(branchPath, newVersionDescriptions, SnomedDescriptionCreateRequest.class);
 		LOGGER.info("Got description changes +{} -{} m{}, {}", descriptionInputs.size(), descriptionDeletionIds.size(), descriptionUpdates.size(), newVersionConcept.getFsn());
 
 		// Relationship updates
@@ -252,7 +252,7 @@ public class SnomedBrowserService implements ISnomedBrowserService {
 		final List<ISnomedBrowserRelationship> newVersionRelationships = newVersionConcept.getRelationships();
 		Set<String> relationshipDeletionIds = inputFactory.getComponentDeletions(existingVersionRelationships, newVersionRelationships);
 		Map<String, ISnomedRelationshipUpdate> relationshipUpdates = inputFactory.createComponentUpdates(existingVersionRelationships, newVersionRelationships, ISnomedRelationshipUpdate.class);
-		List<SnomedRelationshipCreateAction> relationshipInputs = inputFactory.createComponentInputs(branchPath, newVersionRelationships, SnomedRelationshipCreateAction.class);
+		List<SnomedRelationshipCreateRequest> relationshipInputs = inputFactory.createComponentInputs(branchPath, newVersionRelationships, SnomedRelationshipCreateRequest.class);
 		LOGGER.info("Got relationship changes +{} -{} m{}, {}", relationshipInputs.size(), relationshipDeletionIds.size(), relationshipUpdates.size(), newVersionConcept.getFsn());
 
 		// Add updates to editing context
@@ -266,8 +266,8 @@ public class SnomedBrowserService implements ISnomedBrowserService {
 		for (String descriptionId : descriptionUpdates.keySet()) {
 			descriptionService.doUpdate(createComponentRef(branchPath, descriptionId), descriptionUpdates.get(descriptionId), editingContext);
 		}
-		for (SnomedDescriptionCreateAction descriptionInput : descriptionInputs) {
-			((DefaultSnomedDescriptionCreateAction)descriptionInput).setConceptId(existingVersionConcept.getConceptId());
+		for (SnomedDescriptionCreateRequest descriptionInput : descriptionInputs) {
+			((DefaultSnomedDescriptionCreateRequest)descriptionInput).setConceptId(existingVersionConcept.getConceptId());
 			descriptionService.convertAndRegister(descriptionInput, editingContext);
 		}
 
@@ -277,7 +277,7 @@ public class SnomedBrowserService implements ISnomedBrowserService {
 		for (String relationshipId : relationshipUpdates.keySet()) {
 			relationshipService.doUpdate(createComponentRef(branchPath, relationshipId), relationshipUpdates.get(relationshipId), editingContext);
 		}
-		for (SnomedRelationshipCreateAction relationshipInput : relationshipInputs) {
+		for (SnomedRelationshipCreateRequest relationshipInput : relationshipInputs) {
 			relationshipService.convertAndRegister(relationshipInput, editingContext);
 		}
 		

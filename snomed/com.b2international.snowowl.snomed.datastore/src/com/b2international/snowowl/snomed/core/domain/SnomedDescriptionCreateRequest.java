@@ -22,7 +22,7 @@ import java.util.Map;
  *
  * @since 4.5
  */
-public interface SnomedDescriptionCreateAction extends SnomedComponentCreateAction<ISnomedDescription> {
+public interface SnomedDescriptionCreateRequest extends SnomedComponentCreateRequest<ISnomedDescription> {
 
 	/**
 	 * Returns the new description's associated concept identifier, eg. "{@code 363698007}".

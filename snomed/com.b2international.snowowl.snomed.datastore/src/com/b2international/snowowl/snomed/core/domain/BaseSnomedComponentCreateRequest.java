@@ -17,12 +17,12 @@ package com.b2international.snowowl.snomed.core.domain;
 
 import javax.validation.constraints.NotNull;
 
-import com.b2international.snowowl.core.domain.BaseRepositoryAction;
+import com.b2international.snowowl.core.domain.BaseRepositoryRequest;
 
 /**
  * @since 4.0
  */
-public abstract class BaseSnomedComponentCreateAction<B> extends BaseRepositoryAction<B> implements SnomedComponentCreateAction<B> {
+public abstract class BaseSnomedComponentCreateRequest<B> extends BaseRepositoryRequest<B> implements SnomedComponentCreateRequest<B> {
 
 	@NotNull
 	private IdGenerationStrategy idGenerationStrategy;

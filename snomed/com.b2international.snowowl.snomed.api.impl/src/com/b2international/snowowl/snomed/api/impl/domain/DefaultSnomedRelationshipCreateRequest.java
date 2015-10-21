@@ -22,16 +22,16 @@ import javax.validation.constraints.NotNull;
 import org.hibernate.validator.constraints.NotEmpty;
 
 import com.b2international.snowowl.core.domain.RepositoryContext;
-import com.b2international.snowowl.snomed.core.domain.BaseSnomedComponentCreateAction;
+import com.b2international.snowowl.snomed.core.domain.BaseSnomedComponentCreateRequest;
 import com.b2international.snowowl.snomed.core.domain.CharacteristicType;
 import com.b2international.snowowl.snomed.core.domain.ISnomedRelationship;
-import com.b2international.snowowl.snomed.core.domain.SnomedRelationshipCreateAction;
+import com.b2international.snowowl.snomed.core.domain.SnomedRelationshipCreateRequest;
 import com.b2international.snowowl.snomed.core.domain.RelationshipModifier;
 
 /**
  * @since 4.0
  */
-public class DefaultSnomedRelationshipCreateAction extends BaseSnomedComponentCreateAction<ISnomedRelationship> implements SnomedRelationshipCreateAction {
+public class DefaultSnomedRelationshipCreateRequest extends BaseSnomedComponentCreateRequest<ISnomedRelationship> implements SnomedRelationshipCreateRequest {
 
 	@NotEmpty
 	private String sourceId;

@@ -25,17 +25,17 @@ import org.hibernate.validator.constraints.NotEmpty;
 
 import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.core.exceptions.NotImplementedException;
-import com.b2international.snowowl.snomed.core.domain.BaseSnomedComponentCreateAction;
+import com.b2international.snowowl.snomed.core.domain.BaseSnomedComponentCreateRequest;
 import com.b2international.snowowl.snomed.core.domain.ISnomedConcept;
 import com.b2international.snowowl.snomed.core.domain.IdGenerationStrategy;
-import com.b2international.snowowl.snomed.core.domain.SnomedConceptCreateAction;
-import com.b2international.snowowl.snomed.core.domain.SnomedDescriptionCreateAction;
+import com.b2international.snowowl.snomed.core.domain.SnomedConceptCreateRequest;
+import com.b2international.snowowl.snomed.core.domain.SnomedDescriptionCreateRequest;
 import com.google.common.collect.ImmutableList;
 
-public class DefaultSnomedConceptCreateAction extends BaseSnomedComponentCreateAction<ISnomedConcept> implements SnomedConceptCreateAction {
+public class DefaultSnomedConceptCreateRequest extends BaseSnomedComponentCreateRequest<ISnomedConcept> implements SnomedConceptCreateRequest {
 
 	@Size(min = 2)
-	private List<SnomedDescriptionCreateAction> descriptions = Collections.emptyList();
+	private List<SnomedDescriptionCreateRequest> descriptions = Collections.emptyList();
 
 	@NotEmpty
 	private String parentId;
@@ -44,7 +44,7 @@ public class DefaultSnomedConceptCreateAction extends BaseSnomedComponentCreateA
 	private IdGenerationStrategy isAIdGenerationStrategy;
 
 	@Override
-	public List<SnomedDescriptionCreateAction> getDescriptions() {
+	public List<SnomedDescriptionCreateRequest> getDescriptions() {
 		return descriptions;
 	}
 
@@ -66,7 +66,7 @@ public class DefaultSnomedConceptCreateAction extends BaseSnomedComponentCreateA
 		this.isAIdGenerationStrategy = isAIdGenerationStrategy;
 	}
 
-	public void setDescriptions(final List<? extends SnomedDescriptionCreateAction> descriptions) {
+	public void setDescriptions(final List<? extends SnomedDescriptionCreateRequest> descriptions) {
 		this.descriptions = ImmutableList.copyOf(descriptions);
 	}
 

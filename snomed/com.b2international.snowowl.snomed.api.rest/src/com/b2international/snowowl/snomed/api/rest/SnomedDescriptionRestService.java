@@ -33,7 +33,7 @@ import com.b2international.snowowl.snomed.api.rest.domain.SnomedDescriptionRestI
 import com.b2international.snowowl.snomed.api.rest.domain.SnomedDescriptionRestUpdate;
 import com.b2international.snowowl.snomed.api.rest.util.Responses;
 import com.b2international.snowowl.snomed.core.domain.ISnomedDescription;
-import com.b2international.snowowl.snomed.core.domain.SnomedDescriptionCreateAction;
+import com.b2international.snowowl.snomed.core.domain.SnomedDescriptionCreateRequest;
 import com.b2international.snowowl.snomed.core.domain.ISnomedDescriptionUpdate;
 import com.wordnik.swagger.annotations.*;
 
@@ -158,7 +158,7 @@ public class SnomedDescriptionRestService extends AbstractSnomedRestService {
 	}
 	
 	private ISnomedDescription doCreate(final String branchPath, final ChangeRequest<SnomedDescriptionRestInput> body, final Principal principal) {
-		final SnomedDescriptionCreateAction input = body.getChange().toComponentInput(branchPath, codeSystemShortName);
+		final SnomedDescriptionCreateRequest input = body.getChange().toComponentInput(branchPath, codeSystemShortName);
 		final String userId = principal.getName();
 		final String commitComment = body.getCommitComment();
 		return delegate.create(input, userId, commitComment);

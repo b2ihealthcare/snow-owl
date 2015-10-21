@@ -18,21 +18,23 @@ package com.b2international.snowowl.core.events;
 import com.b2international.snowowl.core.ServiceProvider;
 
 /**
- * An {@link Action} represents an executable form of user intent.
+ * An {@link Request} represents an executable form of user intent. They can be executed in a specific context usually within a
+ * {@link ServiceProvider}. Executing a {@link Request} will result in either a success or failure. Success usually returns the requested object or
+ * success message while failure usually delivers an error object or {@link Throwable} to the caller.
  *
  * @since 4.5
  * @param <T>
- *            - the type of context where this {@link Action} can be executed
+ *            - the type of context where this {@link Request} can be executed
  * @param <B>
  *            - the type of the result
  */
-public interface Action<T extends ServiceProvider, B> extends Event {
+public interface Request<T extends ServiceProvider, B> extends Event {
 
 	/**
 	 * Executes this action on the given {@link ExecutionContext}.
 	 *
 	 * @param context
-	 * @return - the result of the {@link Action}
+	 * @return - the result of the {@link Request}
 	 */
 	B execute(T context);
 

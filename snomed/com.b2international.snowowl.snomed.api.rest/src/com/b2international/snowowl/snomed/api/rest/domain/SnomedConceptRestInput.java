@@ -21,13 +21,13 @@ import java.util.Collections;
 import java.util.List;
 
 import com.b2international.snowowl.core.terminology.ComponentCategory;
-import com.b2international.snowowl.snomed.api.impl.domain.DefaultSnomedDescriptionCreateAction;
-import com.b2international.snowowl.snomed.datastore.server.domain.DefaultSnomedConceptCreateAction;
+import com.b2international.snowowl.snomed.api.impl.domain.DefaultSnomedDescriptionCreateRequest;
+import com.b2international.snowowl.snomed.datastore.server.domain.DefaultSnomedConceptCreateRequest;
 
 /**
  * @since 1.0
  */
-public class SnomedConceptRestInput extends AbstractSnomedComponentRestInput<DefaultSnomedConceptCreateAction> {
+public class SnomedConceptRestInput extends AbstractSnomedComponentRestInput<DefaultSnomedConceptCreateRequest> {
 
 	private List<SnomedDescriptionRestInput> descriptions = Collections.emptyList();
 	private String isAId;
@@ -67,17 +67,17 @@ public class SnomedConceptRestInput extends AbstractSnomedComponentRestInput<Def
 	}
 
 	@Override
-	protected DefaultSnomedConceptCreateAction createComponentInput() {
-		return new DefaultSnomedConceptCreateAction();
+	protected DefaultSnomedConceptCreateRequest createComponentInput() {
+		return new DefaultSnomedConceptCreateRequest();
 	}
 
 	@Override
-	public DefaultSnomedConceptCreateAction toComponentInput(final String branchPath, final String codeSystemShortName) {
-		final DefaultSnomedConceptCreateAction result = super.toComponentInput(branchPath, codeSystemShortName);
+	public DefaultSnomedConceptCreateRequest toComponentInput(final String branchPath, final String codeSystemShortName) {
+		final DefaultSnomedConceptCreateRequest result = super.toComponentInput(branchPath, codeSystemShortName);
 
 		result.setIsAIdGenerationStrategy(createIdGenerationStrategy(getIsAId(), ComponentCategory.RELATIONSHIP));
 
-		final List<DefaultSnomedDescriptionCreateAction> descriptionInputs = newArrayList();
+		final List<DefaultSnomedDescriptionCreateRequest> descriptionInputs = newArrayList();
 		for (SnomedDescriptionRestInput restDescription : getDescriptions()) {
 			// Propagate namespace from concept if present, and the description does not already have one
 			if (null == restDescription.getNamespaceId()) {

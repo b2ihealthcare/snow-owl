@@ -21,17 +21,17 @@ import com.b2international.snowowl.snomed.core.domain.SnomedReferenceSet;
 /**
  * @since 4.5
  */
-public abstract class SnomedRefSetActions {
+public abstract class SnomedRefSetRequests {
 
-	private SnomedRefSetActions() {
+	private SnomedRefSetRequests() {
 	}
 	
-	public static SnomedRefSetAction<CollectionResource<SnomedReferenceSet>> readAll(String branch) {
-		return new SnomedRefSetReadAllAction(branch);
+	public static SnomedRefSetRequest<CollectionResource<SnomedReferenceSet>> readAll(String branch) {
+		return new SnomedRefSetReadAllRequest(branch);
 	}
 	
-	public static SnomedRefSetAction<SnomedReferenceSet> read(String branch, String referenceSetId) {
-		return new SnomedRefSetReadAction(branch, referenceSetId);
+	public static SnomedRefSetRequest<SnomedReferenceSet> read(String branch, String referenceSetId) {
+		return new SnomedRefSetReadRequest(branch, referenceSetId);
 	}
 	
 }

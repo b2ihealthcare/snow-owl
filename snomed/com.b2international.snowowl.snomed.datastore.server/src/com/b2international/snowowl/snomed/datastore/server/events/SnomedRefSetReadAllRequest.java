@@ -28,11 +28,11 @@ import com.google.common.collect.ImmutableList;
 /**
  * @since 4.5
  */
-class SnomedRefSetReadAllAction extends SnomedRefSetAction<CollectionResource<SnomedReferenceSet>> {
+class SnomedRefSetReadAllRequest extends SnomedRefSetRequest<CollectionResource<SnomedReferenceSet>> {
 
 	private final SnomedReferenceSetConverter converter = new SnomedReferenceSetConverter();
 
-	protected SnomedRefSetReadAllAction(String branch) {
+	protected SnomedRefSetReadAllRequest(String branch) {
 		super(branch);
 	}
 

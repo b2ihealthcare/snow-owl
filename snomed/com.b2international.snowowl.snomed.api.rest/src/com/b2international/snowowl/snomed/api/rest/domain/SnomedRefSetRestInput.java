@@ -15,8 +15,8 @@
  */
 package com.b2international.snowowl.snomed.api.rest.domain;
 
-import com.b2international.snowowl.snomed.datastore.server.domain.DefaultSnomedConceptCreateAction;
-import com.b2international.snowowl.snomed.datastore.server.domain.DefaultSnomedRefSetCreateAction;
+import com.b2international.snowowl.snomed.datastore.server.domain.DefaultSnomedConceptCreateRequest;
+import com.b2international.snowowl.snomed.datastore.server.domain.DefaultSnomedRefSetCreateRequest;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType;
 
 /**
@@ -44,9 +44,9 @@ public class SnomedRefSetRestInput extends SnomedConceptRestInput {
 	}
 	
 	@Override
-	public DefaultSnomedRefSetCreateAction toComponentInput(String branchPath, String codeSystemShortName) {
-		final DefaultSnomedConceptCreateAction conceptInput = super.toComponentInput(branchPath, codeSystemShortName);
-		final DefaultSnomedRefSetCreateAction input = new DefaultSnomedRefSetCreateAction(getType(), getReferencedComponentType());
+	public DefaultSnomedRefSetCreateRequest toComponentInput(String branchPath, String codeSystemShortName) {
+		final DefaultSnomedConceptCreateRequest conceptInput = super.toComponentInput(branchPath, codeSystemShortName);
+		final DefaultSnomedRefSetCreateRequest input = new DefaultSnomedRefSetCreateRequest(getType(), getReferencedComponentType());
 		input.setBranchPath(conceptInput.getBranchPath());
 		input.setCodeSystemShortName(conceptInput.getCodeSystemShortName());
 		input.setDescriptions(conceptInput.getDescriptions());

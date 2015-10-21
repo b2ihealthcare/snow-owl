@@ -18,7 +18,7 @@ package com.b2international.snowowl.snomed.core.domain;
 /**
  * Action to create SNOMED CT relationships.
  */
-public interface SnomedRelationshipCreateAction extends SnomedComponentCreateAction<ISnomedRelationship> {
+public interface SnomedRelationshipCreateRequest extends SnomedComponentCreateRequest<ISnomedRelationship> {
 
 	/**
 	 * Returns the new relationship's source concept identifier.

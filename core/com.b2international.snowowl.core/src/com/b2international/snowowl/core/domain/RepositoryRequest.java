@@ -15,14 +15,15 @@
  */
 package com.b2international.snowowl.core.domain;
 
-import com.b2international.snowowl.core.events.Action;
+import com.b2international.snowowl.core.events.Request;
 
 /**
- * The common interface of terminology scoped actions. Actions can be performed on a branch within a terminology.
+ * The common interface of terminology scoped {@link Request requests}. {@link RepositoryRequest}s are always branch specific and have a path defined
+ * by the repository identifier and the branch.
  *
  * @since 4.5
  */
-public interface RepositoryAction<B> extends IBranchAwareConfig, Action<RepositoryContext, B> {
+public interface RepositoryRequest<B> extends IBranchAwareConfig, Request<RepositoryContext, B> {
 
 	/**
 	 * Returns the code system short name, eg. "{@code SNOMEDCT}"

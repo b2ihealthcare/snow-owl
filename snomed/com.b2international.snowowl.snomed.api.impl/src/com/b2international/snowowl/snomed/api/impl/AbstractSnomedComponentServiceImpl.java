@@ -38,7 +38,7 @@ import com.b2international.snowowl.snomed.api.ISnomedComponentService;
 import com.b2international.snowowl.snomed.core.domain.AssociationType;
 import com.b2international.snowowl.snomed.core.domain.ISnomedComponent;
 import com.b2international.snowowl.snomed.core.domain.ISnomedComponentUpdate;
-import com.b2international.snowowl.snomed.core.domain.SnomedComponentCreateAction;
+import com.b2international.snowowl.snomed.core.domain.SnomedComponentCreateRequest;
 import com.b2international.snowowl.snomed.core.domain.UserIdGenerationStrategy;
 import com.b2international.snowowl.snomed.datastore.SnomedConceptLookupService;
 import com.b2international.snowowl.snomed.datastore.SnomedEditingContext;
@@ -53,7 +53,7 @@ import com.google.common.collect.HashMultimap;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Multimap;
 
-public abstract class AbstractSnomedComponentServiceImpl<C extends SnomedComponentCreateAction, R extends ISnomedComponent, U extends ISnomedComponentUpdate, M extends Component>
+public abstract class AbstractSnomedComponentServiceImpl<C extends SnomedComponentCreateRequest, R extends ISnomedComponent, U extends ISnomedComponentUpdate, M extends Component>
 extends AbstractComponentServiceImpl<C, R, U, SnomedEditingContext, M>
 implements ISnomedComponentService<C, R, U> {
 

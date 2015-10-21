@@ -21,7 +21,7 @@ import com.b2international.commons.collections.Procedure;
 import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.domain.CollectionResource;
 import com.b2international.snowowl.core.domain.PageableCollectionResource;
-import com.b2international.snowowl.core.events.Action;
+import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.eventbus.IEventBus;
 
 /**
@@ -43,7 +43,7 @@ public class DeferredResults {
 	 *            - the type of the response object
 	 * @return
 	 */
-	public static <S extends ServiceProvider, B> DeferredResult<B> of(IEventBus bus, Action<S, B> action, Class<B> responseType) {
+	public static <S extends ServiceProvider, B> DeferredResult<B> of(IEventBus bus, Request<S, B> action, Class<B> responseType) {
 		final DeferredResult<B> result = new DeferredResult<>();
 		action.send(bus, responseType)
 			.then(new Procedure<B>() {
@@ -60,7 +60,7 @@ public class DeferredResults {
 		return result;
 	}
 	
-	public static <S extends ServiceProvider, B> DeferredResult<CollectionResource<B>> ofCollection(IEventBus bus, Action<S, CollectionResource<B>> action, Class<B> responseType) {
+	public static <S extends ServiceProvider, B> DeferredResult<CollectionResource<B>> ofCollection(IEventBus bus, Request<S, CollectionResource<B>> action, Class<B> responseType) {
 		final DeferredResult<CollectionResource<B>> result = new DeferredResult<>();
 		action.send(bus, CollectionResource.class)
 			.then(new Procedure<CollectionResource>() {

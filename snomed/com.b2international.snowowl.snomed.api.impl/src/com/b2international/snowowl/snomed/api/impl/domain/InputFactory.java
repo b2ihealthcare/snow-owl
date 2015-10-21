@@ -3,7 +3,7 @@ package com.b2international.snowowl.snomed.api.impl.domain;
 import com.b2international.snowowl.snomed.api.domain.browser.ISnomedBrowserComponentWithId;
 import com.b2international.snowowl.snomed.api.domain.browser.ISnomedBrowserConcept;
 import com.b2international.snowowl.snomed.api.domain.browser.ISnomedBrowserConceptUpdate;
-import com.b2international.snowowl.snomed.core.domain.SnomedComponentCreateAction;
+import com.b2international.snowowl.snomed.core.domain.SnomedComponentCreateRequest;
 import com.b2international.snowowl.snomed.core.domain.ISnomedComponentUpdate;
 import com.google.common.collect.Sets;
 
@@ -20,11 +20,11 @@ public class InputFactory {
 		creators.add(new RelationshipInputCreator());
 	}
 
-	public <I extends SnomedComponentCreateAction> I createComponentInput(String branchPath, ISnomedBrowserComponentWithId component, Class<I> inputType) {
+	public <I extends SnomedComponentCreateRequest> I createComponentInput(String branchPath, ISnomedBrowserComponentWithId component, Class<I> inputType) {
 		return (I) getInputDelegate(inputType).createInput(branchPath, component, this);
 	}
 
-	public <I extends SnomedComponentCreateAction> List<I> createComponentInputs(String branchPath,
+	public <I extends SnomedComponentCreateRequest> List<I> createComponentInputs(String branchPath,
 			List<? extends ISnomedBrowserComponentWithId> newVersionComponents, Class<I> inputType) {
 		List<I> inputs = new ArrayList<>();
 		for (ISnomedBrowserComponentWithId component : newVersionComponents) {
@@ -70,7 +70,7 @@ public class InputFactory {
 		return ids;
 	}
 
-	private <T extends SnomedComponentCreateAction> ComponentInputCreator getInputDelegate(Class<T> inputType) {
+	private <T extends SnomedComponentCreateRequest> ComponentInputCreator getInputDelegate(Class<T> inputType) {
 		for (ComponentInputCreator creator : creators) {
 			if (creator.canCreateInput(inputType)) {
 				return creator;

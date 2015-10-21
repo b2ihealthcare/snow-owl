@@ -22,7 +22,7 @@ import java.util.List;
  *
  * @since 4.5
  */
-public interface SnomedConceptCreateAction extends SnomedComponentCreateAction<ISnomedConcept> {
+public interface SnomedConceptCreateRequest extends SnomedComponentCreateRequest<ISnomedConcept> {
 
 	/**
 	 * Returns the list of descriptions to create along with the concept. Must contain at least one fully specified name and one synonym with
@@ -30,7 +30,7 @@ public interface SnomedConceptCreateAction extends SnomedComponentCreateAction<I
 	 *
 	 * @return the list of descriptions to create
 	 */
-	List<SnomedDescriptionCreateAction> getDescriptions();
+	List<SnomedDescriptionCreateRequest> getDescriptions();
 
 	/**
 	 * Returns the identifier of a parent concept. The new concept will be attached to the existing concept graph via a new {@code IS A} relationship,

@@ -20,7 +20,7 @@ import com.b2international.snowowl.core.events.BaseEvent;
 /**
  * @since 4.5
  */
-public abstract class BaseRepositoryAction<B> extends BaseEvent implements RepositoryAction<B> {
+public abstract class BaseRepositoryRequest<B> extends BaseEvent implements RepositoryRequest<B> {
 
 	private String codeSystemShortName;
 	private String branchPath;

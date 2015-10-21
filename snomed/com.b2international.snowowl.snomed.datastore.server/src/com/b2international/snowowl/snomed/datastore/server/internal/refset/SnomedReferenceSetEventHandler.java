@@ -21,7 +21,7 @@ import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.core.events.util.ApiEventHandler;
 import com.b2international.snowowl.core.events.util.Handler;
 import com.b2international.snowowl.datastore.BranchPathUtils;
-import com.b2international.snowowl.snomed.datastore.server.events.SnomedRefSetAction;
+import com.b2international.snowowl.snomed.datastore.server.events.SnomedRefSetRequest;
 import com.google.inject.Provider;
 
 /**
@@ -36,7 +36,7 @@ public final class SnomedReferenceSetEventHandler extends ApiEventHandler {
 	}
 
 	@Handler
-	public Object handle(SnomedRefSetAction<?> read) {
+	public Object handle(SnomedRefSetRequest<?> read) {
 		return read.execute(newContext(read.getBranchPath()));
 	}
 

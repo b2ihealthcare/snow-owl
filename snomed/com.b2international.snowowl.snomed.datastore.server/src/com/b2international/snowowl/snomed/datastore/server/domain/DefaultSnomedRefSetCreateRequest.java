@@ -15,18 +15,18 @@
  */
 package com.b2international.snowowl.snomed.datastore.server.domain;
 
-import com.b2international.snowowl.snomed.core.domain.SnomedRefSetCreateAction;
+import com.b2international.snowowl.snomed.core.domain.SnomedRefSetCreateRequest;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType;
 
 /**
  * @since 4.5
  */
-public class DefaultSnomedRefSetCreateAction extends DefaultSnomedConceptCreateAction implements SnomedRefSetCreateAction {
+public class DefaultSnomedRefSetCreateRequest extends DefaultSnomedConceptCreateRequest implements SnomedRefSetCreateRequest {
 
 	private final SnomedRefSetType type;
 	private final String referencedComponentType;
 	
-	public DefaultSnomedRefSetCreateAction(SnomedRefSetType type, String referencedComponentType) {
+	public DefaultSnomedRefSetCreateRequest(SnomedRefSetType type, String referencedComponentType) {
 		this.type = type;
 		this.referencedComponentType = referencedComponentType;
 	}

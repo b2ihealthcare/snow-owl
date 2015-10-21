@@ -21,17 +21,17 @@ import javax.validation.constraints.NotNull;
 
 import org.hibernate.validator.constraints.NotEmpty;
 
-import com.b2international.snowowl.snomed.core.domain.BaseSnomedComponentCreateAction;
+import com.b2international.snowowl.snomed.core.domain.BaseSnomedComponentCreateRequest;
 import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.snomed.core.domain.Acceptability;
 import com.b2international.snowowl.snomed.core.domain.CaseSignificance;
 import com.b2international.snowowl.snomed.core.domain.ISnomedDescription;
-import com.b2international.snowowl.snomed.core.domain.SnomedDescriptionCreateAction;
+import com.b2international.snowowl.snomed.core.domain.SnomedDescriptionCreateRequest;
 
 /**
  * @since 4.5
  */
-public class DefaultSnomedDescriptionCreateAction extends BaseSnomedComponentCreateAction<ISnomedDescription> implements SnomedDescriptionCreateAction {
+public class DefaultSnomedDescriptionCreateRequest extends BaseSnomedComponentCreateRequest<ISnomedDescription> implements SnomedDescriptionCreateRequest {
 
 	private String conceptId;
 

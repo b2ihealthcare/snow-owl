@@ -20,7 +20,7 @@ import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType;
 /**
  * @since 4.5
  */
-public interface SnomedRefSetCreateAction extends SnomedConceptCreateAction {
+public interface SnomedRefSetCreateRequest extends SnomedConceptCreateRequest {
 
 	/**
 	 * Returns the type of the new reference set.
