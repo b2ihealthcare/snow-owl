@@ -15,18 +15,55 @@
  */
 package com.b2international.snowowl.snomed.api.impl;
 
+import java.util.Collection;
 import java.util.Date;
 
 import com.b2international.snowowl.core.date.EffectiveTimes;
+import com.b2international.snowowl.snomed.api.domain.AssociationType;
 import com.b2international.snowowl.snomed.api.domain.ISnomedComponent;
 import com.b2international.snowowl.snomed.datastore.index.SnomedIndexEntry;
+import com.b2international.snowowl.snomed.datastore.index.refset.SnomedRefSetMemberIndexEntry;
+import com.b2international.snowowl.snomed.datastore.services.AbstractSnomedRefSetMembershipLookupService;
 import com.google.common.base.Function;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMultimap;
+import com.google.common.collect.Multimap;
 
-/**
- */
 public abstract class AbstractSnomedComponentConverter<F extends SnomedIndexEntry, T extends ISnomedComponent> implements Function<F, T> {
 
-	protected Date toEffectiveTime(final long effectiveTimeAsLong) {
+	private final AbstractSnomedRefSetMembershipLookupService refSetMembershipLookupService;
+
+	public AbstractSnomedComponentConverter(AbstractSnomedRefSetMembershipLookupService refSetMembershipLookupService) {
+		this.refSetMembershipLookupService = refSetMembershipLookupService;
+	}
+
+	protected final Date toEffectiveTime(final long effectiveTimeAsLong) {
 		return EffectiveTimes.toDate(effectiveTimeAsLong);
 	}
+
+	protected final AbstractSnomedRefSetMembershipLookupService getRefSetMembershipLookupService() {
+		return refSetMembershipLookupService;
+	}
+	
+	protected final Multimap<AssociationType, String> toAssociationTargets(final String type, final String id) {
+		final ImmutableMultimap.Builder<AssociationType, String> resultBuilder = ImmutableMultimap.builder();
+	
+		for (final AssociationType associationType : AssociationType.values()) {
+			// TODO: it might be quicker to collect the refset IDs first and retrieve all members with a single call
+			final Collection<SnomedRefSetMemberIndexEntry> members = getRefSetMembershipLookupService().getMembers(
+					type,
+					ImmutableList.of(associationType.getConceptId()),
+					id);
+	
+			for (final SnomedRefSetMemberIndexEntry member : members) {
+				// FIXME: inactive inactivation indicators are shown in the desktop form UI
+				if (member.isActive()) {
+					resultBuilder.put(associationType, member.getSpecialFieldId());
+				}
+			}
+		}
+	
+		return resultBuilder.build();
+	}
+
 }

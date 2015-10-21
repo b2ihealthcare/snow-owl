@@ -118,7 +118,7 @@ public abstract class SnomedComponentApiAssert {
 
 		return givenAuthenticatedRequest(SnomedApiTestConstants.SCT_API)
 				.when().get("/{path}/{componentType}/{id}", branchPath.getPath(), componentType.toLowerCasePlural(), componentId)
-				.then().assertThat().statusCode(statusCode);
+				.then().log().ifValidationFails().assertThat().statusCode(statusCode);
 	}
 
 	/**
@@ -128,8 +128,8 @@ public abstract class SnomedComponentApiAssert {
 	 * @param componentType the expected component type
 	 * @param componentId the expected component identifier
 	 */
-	public static void assertComponentExists(final IBranchPath branchPath, final SnomedComponentType componentType, final String componentId) {
-		assertComponentReadWithStatus(branchPath, componentType, componentId, 200);
+	public static ValidatableResponse assertComponentExists(final IBranchPath branchPath, final SnomedComponentType componentType, final String componentId) {
+		return assertComponentReadWithStatus(branchPath, componentType, componentId, 200);
 	}
 
 	/**
@@ -157,9 +157,8 @@ public abstract class SnomedComponentApiAssert {
 			final SnomedComponentType componentType, 
 			final Map<?, ?> requestBody, 
 			final int statusCode) {
-
 		return whenCreatingComponent(branchPath, componentType, requestBody)
-				.then().assertThat().statusCode(statusCode);
+				.then().log().ifValidationFails().assertThat().statusCode(statusCode);
 	}
 
 	/**
@@ -258,7 +257,7 @@ public abstract class SnomedComponentApiAssert {
 			final int statusCode) {
 
 		whenUpdatingComponent(branchPath, componentType, componentId, requestBody)
-		.then().assertThat().statusCode(statusCode);
+		.then().log().ifValidationFails().assertThat().statusCode(statusCode);
 	}
 
 	private static Response whenUpdatingComponent(final IBranchPath branchPath, 

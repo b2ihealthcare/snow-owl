@@ -20,16 +20,10 @@ import java.io.File;
 import com.b2international.snowowl.core.api.SnowowlServiceException;
 import com.b2international.snowowl.datastore.server.snomed.SnomedDatastoreServerActivator;
 import com.b2international.snowowl.datastore.serviceconfig.IndexServiceConfigJob;
-import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 import com.b2international.snowowl.snomed.datastore.index.SnomedIndexService;
 
 /**
- * Job for creating, initializing and registering some Lucene specific service for the SNOMED CT core.
- * <p>
- * <b>Note: </b>this class belongs to the {@link SnomedDatastoreActivator#PLUGIN_ID SNOMED CT data store plug-in identifier} job family.
- * 
- * 
- * @see IndexServiceConfigJob
+ * Job for creating, initializing and registering the component index service for the SNOMED CT store.
  */
 public class SnomedIndexServerServiceConfigJob extends IndexServiceConfigJob<SnomedIndexUpdater> {
 
@@ -54,6 +48,6 @@ public class SnomedIndexServerServiceConfigJob extends IndexServiceConfigJob<Sno
 
 	@Override
 	protected SnomedIndexServerService createServiceImplementation() throws SnowowlServiceException {
-		return new SnomedIndexServerService(new File(DIRECTORY_PATH));
+		return new SnomedIndexServerService(new File(DIRECTORY_PATH), getIndexTimeout());
 	}
 }

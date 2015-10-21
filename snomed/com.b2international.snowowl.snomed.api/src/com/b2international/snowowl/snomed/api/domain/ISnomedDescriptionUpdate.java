@@ -17,6 +17,8 @@ package com.b2international.snowowl.snomed.api.domain;
 
 import java.util.Map;
 
+import com.google.common.collect.Multimap;
+
 /**
  * Holds updatable properties of SNOMED CT descriptions.
  */
@@ -38,4 +40,21 @@ public interface ISnomedDescriptionUpdate extends ISnomedComponentUpdate {
 	 * @return the acceptability value map after the update
 	 */
 	Map<String, Acceptability> getAcceptability();
+
+	/**
+	 * Returns the requested inactivation indicator when inactivating the description.
+	 *
+	 * @return the inactivation indicator after the update
+	 */
+	DescriptionInactivationIndicator getInactivationIndicator();
+	
+	/**
+	 * Returns the desired new association target component identifiers, keyed by association type.
+	 * <p>
+	 * Conflicting existing associations will be removed or deactivated (if they were part of a previous release of SNOMED CT). 
+	 * 
+	 * @return the association target components after the update
+	 */
+	Multimap<AssociationType, String> getAssociationTargets();
+
 }

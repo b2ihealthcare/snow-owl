@@ -18,7 +18,6 @@ package com.b2international.snowowl.snomed.api.impl;
 import java.util.Collection;
 
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
-import com.b2international.snowowl.snomed.api.domain.AssociationType;
 import com.b2international.snowowl.snomed.api.domain.DefinitionStatus;
 import com.b2international.snowowl.snomed.api.domain.ISnomedConcept;
 import com.b2international.snowowl.snomed.api.domain.InactivationIndicator;
@@ -29,17 +28,11 @@ import com.b2international.snowowl.snomed.datastore.SnomedConceptIndexEntry;
 import com.b2international.snowowl.snomed.datastore.index.refset.SnomedRefSetMemberIndexEntry;
 import com.b2international.snowowl.snomed.datastore.services.AbstractSnomedRefSetMembershipLookupService;
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMultimap;
-import com.google.common.collect.Multimap;
 
-/**
- */
 public class SnomedConceptConverter extends AbstractSnomedComponentConverter<SnomedConceptIndexEntry, ISnomedConcept> {
 
-	private final AbstractSnomedRefSetMembershipLookupService snomedRefSetMembershipLookupService;
-
-	public SnomedConceptConverter(final AbstractSnomedRefSetMembershipLookupService snomedRefSetMembershipLookupService) {
-		this.snomedRefSetMembershipLookupService = snomedRefSetMembershipLookupService;
+	public SnomedConceptConverter(final AbstractSnomedRefSetMembershipLookupService refSetMembershipLookupService) {
+		super(refSetMembershipLookupService);
 	}
 
 	@Override
@@ -52,8 +45,8 @@ public class SnomedConceptConverter extends AbstractSnomedComponentConverter<Sno
 		result.setModuleId(input.getModuleId());
 		result.setReleased(input.isReleased());
 		result.setSubclassDefinitionStatus(toSubclassDefinitionStatus(input.isExhaustive()));
-		result.setInactivationIndicator(toInactivationIndicator(input));
-		result.setAssociationTargets(toAssociationTargets(input.getId()));
+		result.setInactivationIndicator(toInactivationIndicator(input.getId()));
+		result.setAssociationTargets(toAssociationTargets(SnomedTerminologyComponentConstants.CONCEPT, input.getId()));
 		return result;
 	}
 
@@ -65,12 +58,11 @@ public class SnomedConceptConverter extends AbstractSnomedComponentConverter<Sno
 		return exhaustive ? SubclassDefinitionStatus.DISJOINT_SUBCLASSES : SubclassDefinitionStatus.NON_DISJOINT_SUBCLASSES;
 	}
 
-	private InactivationIndicator toInactivationIndicator(final SnomedConceptIndexEntry input) {
-
-		final Collection<SnomedRefSetMemberIndexEntry> members = snomedRefSetMembershipLookupService.getMembers(
-				SnomedTerminologyComponentConstants.CONCEPT, 
-				ImmutableList.of(Concepts.REFSET_CONCEPT_INACTIVITY_INDICATOR), 
-				input.getId());
+	private InactivationIndicator toInactivationIndicator(final String id) {
+		final Collection<SnomedRefSetMemberIndexEntry> members = getRefSetMembershipLookupService().getMembers(
+				SnomedTerminologyComponentConstants.CONCEPT,
+				ImmutableList.of(Concepts.REFSET_CONCEPT_INACTIVITY_INDICATOR),
+				id);
 
 		for (final SnomedRefSetMemberIndexEntry member : members) {
 			if (member.isActive()) {
@@ -81,25 +73,4 @@ public class SnomedConceptConverter extends AbstractSnomedComponentConverter<Sno
 		return null;
 	}
 
-	private Multimap<AssociationType, String> toAssociationTargets(final String conceptId) {
-		final ImmutableMultimap.Builder<AssociationType, String> resultBuilder = ImmutableMultimap.builder();
-
-		for (final AssociationType associationType : AssociationType.values()) {
-
-			// TODO: it might be quicker to collect the refset IDs first and retrieve all members with a single call
-			final Collection<SnomedRefSetMemberIndexEntry> members = snomedRefSetMembershipLookupService.getMembers(
-					SnomedTerminologyComponentConstants.CONCEPT, 
-					ImmutableList.of(associationType.getConceptId()), 
-					conceptId);
-
-			for (final SnomedRefSetMemberIndexEntry member : members) {
-				// FIXME: inactive inactivation indicators are shown in the desktop form UI
-				if (member.isActive()) {
-					resultBuilder.put(associationType, member.getSpecialFieldId());
-				}
-			}
-		}
-
-		return resultBuilder.build();
-	}
 }

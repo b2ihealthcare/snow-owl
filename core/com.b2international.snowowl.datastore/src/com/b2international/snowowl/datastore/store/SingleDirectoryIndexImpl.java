@@ -98,7 +98,7 @@ public abstract class SingleDirectoryIndexImpl implements SingleDirectoryIndex, 
 		initLucene(indexDirectory, clean);
 	}
 
-	private void initLucene(final File indexDirectory, final boolean clean) {
+	protected void initLucene(final File indexDirectory, final boolean clean) {
 		try {
 			this.directory = IndexUtils.open(indexDirectory);
 			final Analyzer analyzer = new DelimiterStopAnalyzer();
@@ -237,7 +237,7 @@ public abstract class SingleDirectoryIndexImpl implements SingleDirectoryIndex, 
 		getSnapshotDeletionPolicy().release(indexCommit);
 	}
 	
-	protected final void commit() throws IOException {
+	protected void commit() throws IOException {
 		writer.commit();
 		manager.maybeRefreshBlocking();
 	}

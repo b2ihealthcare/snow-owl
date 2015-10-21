@@ -17,15 +17,16 @@ package com.b2international.snowowl.datastore.server.index;
 
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
+import static com.google.common.base.Preconditions.checkState;
 
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
 
 import javax.annotation.Nullable;
 
@@ -45,15 +46,22 @@ import org.apache.lucene.search.grouping.GroupDocs;
 import org.apache.lucene.search.grouping.GroupingSearch;
 import org.apache.lucene.search.grouping.TopGroups;
 import org.apache.lucene.util.BytesRef;
+import org.eclipse.emf.cdo.common.branch.CDOBranch;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.IDisposableService;
+import com.b2international.snowowl.core.api.BranchPath;
+import com.b2international.snowowl.core.api.IBaseBranchPath;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.api.index.IIndexEntry;
 import com.b2international.snowowl.core.api.index.IIndexQueryAdapter;
 import com.b2international.snowowl.core.api.index.IndexException;
 import com.b2international.snowowl.datastore.BranchPathUtils;
+import com.b2international.snowowl.datastore.cdo.CDOBranchPath;
+import com.b2international.snowowl.datastore.cdo.ICDOConnection;
+import com.b2international.snowowl.datastore.cdo.ICDOConnectionManager;
 import com.b2international.snowowl.datastore.index.AbstractIndexUpdater;
 import com.b2international.snowowl.datastore.index.DocIdCollector;
 import com.b2international.snowowl.datastore.index.DocIdCollector.DocIdsIterator;
@@ -80,20 +88,24 @@ import com.google.common.util.concurrent.UncheckedExecutionException;
 /**
  * Terminology independent server side Lucene specific index service responsible for managing indexed documents.
  * 
- * 
  * @see AbstractIndexUpdater
  */
 public abstract class IndexServerService<E extends IIndexEntry> extends AbstractIndexUpdater<E> implements IDisposableService, IBranchIndexServiceProvider {
 
 	private final class StateCacheLoader extends CacheLoader<IBranchPath, IndexBranchService> {
 		@Override public IndexBranchService load(final IBranchPath key) throws Exception {
-			final IndexBranchService branchService = new IndexBranchService(
-					key, //branch path 
-					getDirectoryManager(), //the directory manager 
-					BranchPathUtils.isMain(key) ? null : getBranchService(key.getParent()));  //master service (if any)
+			final BranchPath physicalPath;
+
+			if (BranchPathUtils.isBasePath(key)) {
+				physicalPath = getMostRecentPhysicalPath(((IBaseBranchPath) key).getContextPath());
+			} else {
+				physicalPath = getMostRecentPhysicalPath(key);
+			}
+			
+			final IndexBranchService branchService = new IndexBranchService(key, physicalPath, getDirectoryManager());
 			
 			if (branchService.isFirstStartupAtMain()) {
-				getDirectoryManager().fireFirstStartup(branchService);
+				getDirectoryManager().firstStartup(branchService);
 			}
 			
 			return branchService;
@@ -115,8 +127,9 @@ public abstract class IndexServerService<E extends IIndexEntry> extends Abstract
 	/**
 	 * Initializes a new index index service instance. 
 	 */
-	protected IndexServerService() {
+	protected IndexServerService(final long timeout) {
 		this.branchServices = CacheBuilder.newBuilder()
+				.expireAfterAccess(timeout, TimeUnit.SECONDS)
 				.removalListener(new StateRemovalListener())
 				.build(new StateCacheLoader());
 	}
@@ -201,18 +214,26 @@ public abstract class IndexServerService<E extends IIndexEntry> extends Abstract
 	}
 
 	@Override
-	public synchronized void reopen(final IBranchPath branchPath, final int[] cdoBranchPath, final long baseTimestamp) {
-		Preconditions.checkNotNull(branchPath, "Branch path argument cannot be null.");
-		Preconditions.checkState(!BranchPathUtils.isMain(branchPath), "Branch path cannot be MAIN.");
-		final IndexBranchService baseBranchService = getBranchService(branchPath.getParent());
+	public synchronized void reopen(final IBranchPath logicalPath, final BranchPath physicalPath) {
+		checkNotNull(logicalPath, "Logical path argument cannot be null.");
+		checkNotNull(physicalPath, "Physical path argument cannot be null.");
+		checkState(!physicalPath.isMain(), "Physical path cannot be MAIN.");
+		
+		final IndexBranchService baseBranchService = getBranchService(logicalPath.getParent());
 		
 		try {
-			baseBranchService.createIndexCommit(branchPath, cdoBranchPath, baseTimestamp);
-			inactiveClose(branchPath);
-			prepare(branchPath);
+			baseBranchService.createIndexCommit(logicalPath, physicalPath);
+			inactiveClose(logicalPath);
+			prepare(logicalPath);
 		} catch (final IOException e) {
-			throw new IndexException("Failed to update snapshot for '" + branchPath + "'. [" + baseTimestamp + "]", e);
+			throw new IndexException("Failed to update snapshot for '" + logicalPath.getPath() + "'.", e);
 		}
+	}
+	
+	protected BranchPath getMostRecentPhysicalPath(final IBranchPath logicalPath) {
+		final ICDOConnection connection = ApplicationContext.getServiceForClass(ICDOConnectionManager.class).getByUuid(getRepositoryUuid());
+		final CDOBranch branch = connection.getBranch(logicalPath);
+		return new CDOBranchPath(branch);
 	}
 	
 	@SuppressWarnings("unchecked")
@@ -805,74 +826,32 @@ public abstract class IndexServerService<E extends IIndexEntry> extends Abstract
 		// Record usage
 		if (!BranchPathUtils.isMain(branchPath)) {
 			getIndexAccessUpdater().registerAccessAndRecordUsage(branchPath);
-	
-			//to ensure recursive index structure revive
-			for (final Iterator<IBranchPath> itr = BranchPathUtils.topToBottomIterator(branchPath); itr.hasNext(); /**/) {
-				final IBranchPath currentBranchPath = itr.next();
-				if (!currentBranchPath.equals(branchPath) && !BranchPathUtils.isMain(currentBranchPath)) {
-					getBranchService(currentBranchPath);
-				}
-			}
 		}
 		
-		/*
-		 * XXX: getIfPresent in combination with the synchronized block works effectively like the double-checked locking pattern. If two
-		 * threads find the branch-specific service unpopulated, they will attempt to get the lock and initialize it sequentially. The first
-		 * thread entering the synchronized block will initialize the IndexBranchService for the branch, while the second will find an
-		 * already initialized instance. Both of them will call postProcess on it, but because of the branch-specific service's
-		 * AtomicBoolean switch, the second invocation will have no effect at all.
-		 * 
-		 * Calling postProcess the first time on the IndexBranchService, however, will result in a recursive getBranchService() call from
-		 * other (change processing job) threads. These will already get the snapshotted, but not yet processed instance from
-		 * getIfPresent, will not enter the synchronized block, and will use the instance to apply changes from the branch on it, as
-		 * expected.
-		 */
-		IndexBranchService branchService =  branchServices.getIfPresent(branchPath);
-		
-		if (null == branchService) {
-			synchronized (this) {
-				try {
-					branchService = branchServices.get(branchPath);
-					postProcess(branchService);
-				} catch (final ExecutionException e) {
-					throw IndexException.wrap(e.getCause());
-				} catch (final UncheckedExecutionException e) {
-					throw IndexException.wrap(e.getCause());
-				}
-			}
+		try {
+			return branchServices.get(branchPath);
+		} catch (final ExecutionException e) {
+			throw IndexException.wrap(e.getCause());
+		} catch (final UncheckedExecutionException e) {
+			throw IndexException.wrap(e.getCause());
 		}
-	
-		return branchService;
 	}
 
-	/* (non-Javadoc)
-	 * @see com.b2international.snowowl.core.api.index.IIndexUpdater#listFiles(com.b2international.snowowl.core.api.IBranchPath)
-	 */
 	@Override
 	public List<String> listFiles(final IBranchPath branchPath) {
+		checkNotNull(branchPath, "branchPath");
 		try {
 			checkNotDisposed();
-			return getDirectoryManager().listFiles(checkNotNull(branchPath, "branchPath"));
+			return getBranchService(branchPath).listFiles();
 		} catch (final IOException e) {
 			throw new IndexException(e);
 		}		
-	}
-	
-	protected abstract IIndexPostProcessor getIndexPostProcessor();
-	
-	protected ICommitTimeProvider getCommitTimeProvider() {
-		return new CommitTimeProvider(getRepositoryUuid());
 	}
 	
 	protected IIndexAccessUpdater getIndexAccessUpdater() {
 		return new IndexAccessUpdater();
 	}
 	
-	public void postProcess(final IndexBranchService branchService) {
-		final IIndexPostProcessingConfiguration configuration = branchService.getPostProcessingConfiguration();
-		getIndexPostProcessor().postProcess(configuration);
-	}
-
 	/**
 	 * (non-API)
 	 * 
@@ -880,16 +859,6 @@ public abstract class IndexServerService<E extends IIndexEntry> extends Abstract
 	 * @return
 	 */
 	public boolean hasDocuments(final IBranchPath branchPath) {
-		return hasDocumentsInternal(branchPath);
-	}
-
-	private void checkNotDisposed() {
-		if (disposed) {
-			throw new IndexException("IndexServerService is already disposed.");
-		}
-	}
-
-	private boolean hasDocumentsInternal(final IBranchPath branchPath) {
 		checkNotNull(branchPath, "branchPath");
 		checkNotDisposed();
 		
@@ -900,6 +869,12 @@ public abstract class IndexServerService<E extends IIndexEntry> extends Abstract
 		}
 	}
 
+	private void checkNotDisposed() {
+		if (disposed) {
+			throw new IndexException("IndexServerService is already disposed.");
+		}
+	}
+	
 	public <T> T executeReadTransaction(IBranchPath branchPath, IndexRead<T> read) {
 		final ReferenceManager<IndexSearcher> manager = getManager(branchPath);
 		IndexSearcher searcher = null;	

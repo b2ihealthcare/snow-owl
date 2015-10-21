@@ -23,7 +23,6 @@ import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.api.index.IIndexEntry;
 import com.b2international.snowowl.core.api.index.IIndexMappingStrategy;
 import com.b2international.snowowl.core.api.index.IIndexUpdater;
-import com.b2international.snowowl.datastore.index.mapping.Mappings;
 
 /**
  * Abstract superclass for {@link IIndexMappingStrategy IIndexMappingStrategies} that work with a Lucene-based {@link AbstractIndexUpdater}. 

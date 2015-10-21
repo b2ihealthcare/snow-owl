@@ -18,8 +18,11 @@ package com.b2international.snowowl.snomed.api.rest.domain;
 import java.util.Map;
 
 import com.b2international.snowowl.snomed.api.domain.Acceptability;
+import com.b2international.snowowl.snomed.api.domain.AssociationType;
 import com.b2international.snowowl.snomed.api.domain.CaseSignificance;
+import com.b2international.snowowl.snomed.api.domain.DescriptionInactivationIndicator;
 import com.b2international.snowowl.snomed.api.impl.domain.SnomedDescriptionUpdate;
+import com.google.common.collect.Multimap;
 
 /**
  * @since 1.0
@@ -28,16 +31,23 @@ public class SnomedDescriptionRestUpdate extends AbstractSnomedComponentRestUpda
 
 	private CaseSignificance caseSignificance;
 	private Map<String, Acceptability> acceptability;
+	private DescriptionInactivationIndicator inactivationIndicator;
+	private Multimap<AssociationType, String> associationTargets;
 
-	/**
-	 * @return
-	 */
 	public CaseSignificance getCaseSignificance() {
 		return caseSignificance;
 	}
 
 	public Map<String, Acceptability> getAcceptability() {
 		return acceptability;
+	}
+
+	public DescriptionInactivationIndicator getInactivationIndicator() {
+		return inactivationIndicator;
+	}
+	
+	public Multimap<AssociationType, String> getAssociationTargets() {
+		return associationTargets;
 	}
 
 	public void setCaseSignificance(final CaseSignificance caseSignificance) {
@@ -48,19 +58,26 @@ public class SnomedDescriptionRestUpdate extends AbstractSnomedComponentRestUpda
 		this.acceptability = acceptability;
 	}
 
+	public void setInactivationIndicator(DescriptionInactivationIndicator inactivationIndicator) {
+		this.inactivationIndicator = inactivationIndicator;
+	}
+	
+	public void setAssociationTargets(Multimap<AssociationType, String> associationTargets) {
+		this.associationTargets = associationTargets;
+	}
+
 	@Override
 	protected SnomedDescriptionUpdate createComponentUpdate() {
 		return new SnomedDescriptionUpdate();
 	}
 
-	/**
-	 * @return
-	 */
 	@Override
 	public SnomedDescriptionUpdate toComponentUpdate() {
 		final SnomedDescriptionUpdate result = super.toComponentUpdate();
 		result.setCaseSignificance(getCaseSignificance());
 		result.setAcceptability(getAcceptability());
+		result.setInactivationIndicator(getInactivationIndicator());
+		result.setAssociationTargets(getAssociationTargets());
 		return result;
 	}
 }

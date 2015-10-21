@@ -52,8 +52,8 @@ import com.google.common.collect.Sets;
  */
 public abstract class FolderIndexServerService extends FSIndexServerService<ParentFolderAwareIndexEntry> implements IFolderIndexService, InternalTerminologyRegistryService {
 
-	protected FolderIndexServerService(final File indexPath) {
-		super(indexPath);
+	protected FolderIndexServerService(final File indexPath, final long timeout) {
+		super(indexPath, timeout);
 		InternalTerminologyRegistryServiceRegistry.INSTANCE.register(getRepositoryUuid(), this);
 	}
 

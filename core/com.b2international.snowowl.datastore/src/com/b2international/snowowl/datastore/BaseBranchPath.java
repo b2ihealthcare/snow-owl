@@ -24,24 +24,56 @@ import com.b2international.snowowl.core.api.IBranchPath;
 
 /**
  * {@link IBaseBranchPath} implementation.
- *
  */
 /*default*/ class BaseBranchPath extends BranchPath implements IBaseBranchPath {
 
 	private static final long serialVersionUID = -9220838024236069672L;
+	
+	private final IBranchPath contextPath;
 
-	BaseBranchPath(final IBranchPath branchPath) {
-		super(check(branchPath).getPath());
+	BaseBranchPath(final IBranchPath logicalPath, final IBranchPath contextPath) {
+		super(checkPath(logicalPath).getPath());
+		this.contextPath = checkPath(contextPath);
 	}
 	
 	@Override
-	public String toString() {
-		return "BASE PATH: " + super.toString();
+	public IBranchPath getContextPath() {
+		return contextPath;
 	}
 	
-	private static IBranchPath check(final IBranchPath branchPath) {
-		checkArgument(!isMain(checkNotNull(branchPath, "branchPath")), "Base branch path cannot be the MAIN path.");
-		return branchPath;
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = super.hashCode();
+		result = prime * result + ((contextPath == null) ? 0 : contextPath.hashCode());
+		return result;
 	}
 
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (!super.equals(obj))
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		BaseBranchPath other = (BaseBranchPath) obj;
+		if (contextPath == null) {
+			if (other.contextPath != null)
+				return false;
+		} else if (!contextPath.equals(other.contextPath))
+			return false;
+		return true;
+	}
+
+	@Override
+	public String toString() {
+		return String.format("BASE PATH: %s [%s]", getPath(), getContextPath());
+	}
+	
+	private static IBranchPath checkPath(final IBranchPath branchPath) {
+		checkNotNull(branchPath, "branchPath");
+		checkArgument(!isMain(branchPath), "Base branch path cannot be the MAIN path.");
+		return branchPath;
+	}
 }

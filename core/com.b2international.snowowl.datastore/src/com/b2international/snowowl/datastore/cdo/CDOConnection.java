@@ -16,14 +16,10 @@
 package com.b2international.snowowl.datastore.cdo;
 
 import static com.b2international.snowowl.datastore.BranchPathUtils.isBasePath;
-import static com.b2international.snowowl.datastore.BranchPathUtils.isMain;
 import static com.b2international.snowowl.datastore.BranchPointUtils.create;
 import static com.b2international.snowowl.datastore.BranchPointUtils.createBase;
 import static com.google.common.base.Preconditions.checkNotNull;
-import static java.util.Collections.emptyList;
 
-import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 
 import javax.annotation.Nullable;
@@ -39,16 +35,19 @@ import org.eclipse.emf.cdo.view.CDOView;
 import org.eclipse.net4j.util.lifecycle.LifecycleUtil;
 import org.eclipse.net4j.util.ref.ReferenceType;
 
-import com.b2international.commons.CompareUtils;
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.api.IBranchPoint;
 import com.b2international.snowowl.core.config.SnowOwlConfiguration;
 import com.b2international.snowowl.core.users.User;
+import com.b2international.snowowl.datastore.BranchPathUtils;
 import com.b2international.snowowl.datastore.PostStoreUpdateManager;
 import com.b2international.snowowl.datastore.cdo.ICDOBranchActionManager.BranchPathPredicate;
 import com.b2international.snowowl.datastore.connection.RepositoryConnectionConfiguration;
 import com.google.common.base.Preconditions;
+import com.google.common.collect.FluentIterable;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSortedSet;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 
@@ -133,23 +132,15 @@ import com.google.common.collect.Lists;
 	@Override
 	public CDOBranch getBranch(final IBranchPath branchPath) {
 		Preconditions.checkNotNull(branchPath, "Branch path argument cannot be null.");
-		if (isMain(branchPath)) {
-			return getMainBranch();
-		} else {
-			final List<CDOBranch> $ = getBranches(branchPath, true);
-			return CompareUtils.isEmpty($) ? null : Iterables.getLast($);
-		}
+		final List<CDOBranch> branches = getBranches(branchPath);
+		return Iterables.getLast(branches, null);
 	}
 	
 	@Override
 	public CDOBranch getOldestBranch(final IBranchPath branchPath) {
 		Preconditions.checkNotNull(branchPath, "Branch path argument cannot be null.");
-		if (isMain(branchPath)) {
-			return getMainBranch();
-		} else {
-			final List<CDOBranch> $ = getBranches(branchPath, false);
-			return CompareUtils.isEmpty($) ? null : Iterables.getLast($);
-		}
+		final List<CDOBranch> branches = getBranches(branchPath);
+		return Iterables.getFirst(branches, null);
 	}
 	
 	@Override
@@ -181,21 +172,32 @@ import com.google.common.collect.Lists;
 		return getContainer().getSessionConfiguration(this);
 	}
 	
-	/*returns with the branches associated with the given path. in this context most recent is the branch where timestamp is the greatest.*/
-	private List<CDOBranch> getBranches(final IBranchPath branchPath, final boolean oldestFirst) {
-		Preconditions.checkArgument(!isMain(branchPath), "Branch path must not be MAIN branch.");
-		final CDOBranch parentBranch = getBranch(branchPath.getParent());
-		if (null == parentBranch) {
-			return emptyList();
+	/* 
+	 * Returns all branches matching the specified path, sorted by base timestamp (ascending) --per level--. 
+	 *
+	 * The last item of the list is the most recent branch with the specified path, 
+	 * on the most recent branch of the parent path,
+	 * on the most recent branch of the parent's parent path, 
+	 * etc.
+	 */
+	private List<CDOBranch> getBranches(final IBranchPath branchPath) {
+		if (BranchPathUtils.isMain(branchPath)) {
+			return ImmutableList.of(getMainBranch());
 		}
-		final List<CDOBranch> $ = Lists.newArrayList(Iterables.filter(Arrays.asList(parentBranch.getBranches()), new BranchPathPredicate(branchPath)));
-		Collections.sort($, ICDOBranchActionManager.BRANCH_BASE_COMPARATOR);
 		
-		if (!oldestFirst) {
-			Collections.reverse($);
+		final List<CDOBranch> parents = getBranches(branchPath.getParent());
+		final List<CDOBranch> results = Lists.newArrayList();
+		
+		for (final CDOBranch parent : parents) {
+			final ImmutableSortedSet<CDOBranch> resultsForParent = FluentIterable
+				.from(ImmutableList.copyOf(parent.getBranches()))
+				.filter(new BranchPathPredicate(branchPath))
+				.toSortedSet(ICDOBranchActionManager.BRANCH_BASE_COMPARATOR);
+			
+			results.addAll(resultsForParent);
 		}
 		
-		return $;
+		return results;
 	}
 
 	private CDONet4jSession openCdoSession() {
