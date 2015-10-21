@@ -39,8 +39,8 @@ import com.b2international.snowowl.datastore.cdo.CDOConnectionFactoryProvider;
 import com.b2international.snowowl.datastore.cdo.ICDOConnectionManager;
 import com.b2international.snowowl.datastore.cdo.ICDORepositoryManager;
 import com.b2international.snowowl.datastore.net4j.Net4jUtils;
-import com.b2international.snowowl.datastore.server.index.SingleDirectoryIndexManager;
 import com.b2international.snowowl.datastore.server.index.IndexServerServiceManager;
+import com.b2international.snowowl.datastore.server.index.SingleDirectoryIndexManager;
 import com.b2international.snowowl.datastore.server.index.SingleDirectoryIndexManagerImpl;
 import com.b2international.snowowl.datastore.server.internal.RepositoryWrapper;
 import com.b2international.snowowl.datastore.server.internal.branch.BranchEventHandler;
@@ -52,7 +52,6 @@ import com.b2international.snowowl.datastore.server.internal.review.ReviewEventH
 import com.b2international.snowowl.datastore.server.internal.review.ReviewImpl;
 import com.b2international.snowowl.datastore.server.internal.review.ReviewManagerImpl;
 import com.b2international.snowowl.datastore.server.internal.review.ReviewSerializer;
-import com.b2international.snowowl.datastore.server.review.ReviewManager;
 import com.b2international.snowowl.datastore.server.session.ApplicationSessionManager;
 import com.b2international.snowowl.datastore.server.session.LogListener;
 import com.b2international.snowowl.datastore.server.session.VersionProcessor;
@@ -144,12 +143,13 @@ public class DatastoreServerBootstrap implements PreRunCapableBootstrapFragment 
 		final ICDOConnectionManager cdoConnectionManager = environment.service(ICDOConnectionManager.class);
 		final ICDORepositoryManager cdoRepositoryManager = environment.service(ICDORepositoryManager.class);
 		final IIndexServerServiceManager indexServerServiceManager = environment.service(IIndexServerServiceManager.class); 
+		final IEventBus eventBus = environment.service(IEventBus.class);
 		
 		final BranchSerializer branchSerializer = new BranchSerializer();
 		final ReviewSerializer reviewSerializer = new ReviewSerializer();
 		
 		for (String repositoryId : cdoRepositoryManager.uuidKeySet()) {
-			final RepositoryWrapper wrapper = new RepositoryWrapper(repositoryId, cdoConnectionManager, cdoRepositoryManager, indexServerServiceManager);
+			final RepositoryWrapper wrapper = new RepositoryWrapper(repositoryId, cdoConnectionManager, cdoRepositoryManager, indexServerServiceManager, eventBus);
 			initializeBranchingSupport(environment, wrapper, branchSerializer, reviewSerializer, reviewConfiguration);
 		}
 		
@@ -181,12 +181,13 @@ public class DatastoreServerBootstrap implements PreRunCapableBootstrapFragment 
 		final IndexStore<ReviewImpl> reviewStore = new IndexStore<ReviewImpl>(reviewsIndexDirectory, reviewSerializer, ReviewImpl.class);
 		final IndexStore<ConceptChangesImpl> conceptChangesStore = new IndexStore<ConceptChangesImpl>(conceptChangesIndexDirectory, reviewSerializer, ConceptChangesImpl.class);
 		
-		final ReviewManager reviewManager = new ReviewManagerImpl(wrapper.getCdoRepository(), 
-				reviewStore, conceptChangesStore,
+		final ReviewManagerImpl reviewManager = new ReviewManagerImpl(wrapper, reviewStore, conceptChangesStore,
 				reviewConfiguration.getKeepCurrentMins(), reviewConfiguration.getKeepOtherMins());
 
 		environment.service(IEventBus.class).registerHandler("/" + repositoryId + "/branches" , new BranchEventHandler(branchManager, reviewManager));
+		environment.service(IEventBus.class).registerHandler("/" + repositoryId + "/branches/changes" , reviewManager.getStaleHandler());
 		environment.service(IEventBus.class).registerHandler("/" + repositoryId + "/reviews" , new ReviewEventHandler(branchManager, reviewManager));
+		
 		// register stores to index manager
 		final SingleDirectoryIndexManager indexManager = environment.service(SingleDirectoryIndexManager.class);
 		indexManager.registerIndex(branchStore);

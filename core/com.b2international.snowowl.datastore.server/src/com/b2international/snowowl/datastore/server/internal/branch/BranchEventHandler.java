@@ -119,7 +119,7 @@ public class BranchEventHandler extends ApiEventHandler {
 			}
 			
 			if (source.parent().equals(target)) {
-				// merge into target
+				// merge source into target (only if target is the most recent version of source's parent)
 				try {
 					final Branch merged = target.merge(source, event.getCommitMessage());
 					return new BranchReply(merged);
@@ -128,7 +128,7 @@ public class BranchEventHandler extends ApiEventHandler {
 				}
 				
 			} else if (target.parent().equals(source)) {
-				// rebase onto target
+				// rebase target on source (also allow STALE targets on not the most recent source branches)
 				try {
 					final Branch rebased = target.rebase(source, event.getCommitMessage());
 					return new BranchReply(rebased);

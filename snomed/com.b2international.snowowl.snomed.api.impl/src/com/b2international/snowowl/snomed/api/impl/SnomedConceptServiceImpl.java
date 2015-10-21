@@ -328,61 +328,6 @@ public class SnomedConceptServiceImpl
 		}
 	}
 
-	private void updateAssociationTargets(final Multimap<AssociationType, String> newAssociationTargets, final Concept concept, 
-			final SnomedEditingContext editingContext) {
-
-		if (null == newAssociationTargets) {
-			return;
-		}
-
-		final List<SnomedAssociationRefSetMember> associationMembers = ImmutableList.copyOf(concept.getAssociationRefSetMembers());
-		final Multimap<AssociationType, String> newAssociationTargetsToCreate = HashMultimap.create(newAssociationTargets);
-
-		for (final SnomedAssociationRefSetMember associationMember : associationMembers) {
-			if (!associationMember.isActive()) {
-				continue;
-			}
-
-			final AssociationType type = AssociationType.getByConceptId(associationMember.getRefSetIdentifierId());
-			if (null == type) {
-				continue;
-			}
-
-			final String targetId = associationMember.getTargetComponentId();
-			if (newAssociationTargets.containsEntry(type, targetId)) {
-				newAssociationTargetsToCreate.remove(type, targetId);
-			} else {
-				removeOrDeactivate(associationMember);
-			}
-		}
-
-		for (final Entry<AssociationType, String> newAssociationEntry : newAssociationTargetsToCreate.entries()) {
-
-			final SnomedAssociationRefSetMember newAssociationMember = createAssociationRefSetMember(
-					newAssociationEntry.getKey().getConceptId(), 
-					newAssociationEntry.getValue(),
-					concept.getId(),
-					editingContext);
-
-			concept.getAssociationRefSetMembers().add(newAssociationMember);
-		}
-	}
-
-	// Taken from SnomedInactivationPlan
-	private SnomedAssociationRefSetMember createAssociationRefSetMember(final String refSetId, final String targetId, 
-			final String conceptId, final SnomedEditingContext editingContext) {
-
-		final SnomedRefSetEditingContext refSetEditingContext = editingContext.getRefSetEditingContext();
-		final SnomedStructuralRefSet associationRefSet = getStructuralRefSet(refSetId, refSetEditingContext.getTransaction());
-		final String moduleId = editingContext.getDefaultModuleConcept().getId();
-
-		return refSetEditingContext.createAssociationRefSetMember(
-				SnomedRefSetEditingContext.createConceptTypePair(conceptId), 
-				SnomedRefSetEditingContext.createConceptTypePair(targetId), 
-				moduleId, 
-				associationRefSet);
-	}
-
 	@Override
 	protected void doDelete(final IComponentRef ref, final SnomedEditingContext editingContext) {
 		final Concept concept = editingContext.getConcept(ref.getComponentId());

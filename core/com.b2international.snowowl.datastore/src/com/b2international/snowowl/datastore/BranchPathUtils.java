@@ -192,13 +192,28 @@ public abstract class BranchPathUtils {
 	/**
 	 * Converts the given branch path argument into a {@link IBaseBranchPath} instance.
 	 * <p>The branch path representing the {@link IBranchPath#MAIN_BRANCH MAIN} branch is prohibited. 
-	 * @param branchPath the branch path to convert. Cannot be the MAIN path.
+	 * @param logicalPath the branch path to convert. Cannot be the MAIN path.
+	 * @param contextPath the branch path to use for opening an index service.
 	 * @return the converted branch path representing the base of a particular branch.
 	 */
-	public static IBranchPath convertIntoBasePath(final IBranchPath branchPath) {
-		checkNotNull(branchPath, "branchPath");
-		checkArgument(!isMain(branchPath), "Cannot convert MAIN branch path into base path.");
-		return branchPath instanceof IBaseBranchPath ? branchPath : new BaseBranchPath(branchPath);
+	public static IBranchPath convertIntoBasePath(final IBranchPath logicalPath, final IBranchPath contextPath) {
+		checkNotNull(logicalPath, "logicalPath");
+		checkNotNull(contextPath, "contextPath");
+		checkArgument(!isMain(logicalPath), "Cannot convert MAIN branch path into base path.");
+		
+		if (logicalPath instanceof IBaseBranchPath) {
+			final IBranchPath existingContextPath = ((IBaseBranchPath) logicalPath).getContextPath();
+			checkArgument(contextPath.equals(existingContextPath), "Base branch path references a different context path (%s instead of %s).", existingContextPath, contextPath);
+			return logicalPath;
+		} else {
+			return new BaseBranchPath(logicalPath, contextPath);
+		}
+	}
+	
+	public static IBranchPath convertIntoBasePath(final IBranchPath logicalPath) {
+		checkNotNull(logicalPath, "logicalPath");
+		checkArgument(!isMain(logicalPath), "Cannot convert MAIN branch path into base path.");
+		return convertIntoBasePath(logicalPath, logicalPath);
 	}
 	
 	/**

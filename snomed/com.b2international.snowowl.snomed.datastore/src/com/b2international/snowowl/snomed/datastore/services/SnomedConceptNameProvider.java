@@ -19,6 +19,7 @@ import static com.b2international.snowowl.datastore.utils.ComponentUtils2.getNew
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
 
+import java.util.Collection;
 import java.util.Iterator;
 import java.util.Set;
 
@@ -44,11 +45,15 @@ import com.b2international.snowowl.snomed.datastore.SnomedClientTerminologyBrows
 import com.b2international.snowowl.snomed.datastore.SnomedConceptIndexEntry;
 import com.b2international.snowowl.snomed.datastore.SnomedConceptLookupService;
 import com.b2international.snowowl.snomed.datastore.SnomedTerminologyBrowser;
+import com.b2international.snowowl.snomed.datastore.index.SnomedClientIndexService;
+import com.b2international.snowowl.snomed.datastore.index.SnomedDescriptionIndexEntry;
+import com.b2international.snowowl.snomed.datastore.index.SnomedDescriptionIndexQueryAdapter;
 import com.b2international.snowowl.snomed.datastore.index.refset.SnomedRefSetIndexEntry;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedLanguageRefSetMember;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSet;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetMember;
 import com.google.common.base.Preconditions;
+import com.google.common.collect.Iterables;
 import com.google.common.collect.Sets;
 
 /**
@@ -146,6 +151,30 @@ public enum SnomedConceptNameProvider implements IComponentNameProvider {
 		}
 		
 		return null == label ? conceptId : label;
+	}
+	
+	/**
+	 * Returns the fully specified name of the concept specified by its unique ID.
+	 * Multiple FSNs are not handled, the first in the row is returned.
+	 * Returns <code>null</code> if no FSN exists for the concept.
+	 * 
+	 * @param conceptId - the unique identifier of the concept
+	 * @return - the fully specified name of the concept
+	 */
+	public String getFullySpecifiedName(final String conceptId) {
+		checkNotNull(conceptId, "conceptId cannot be null");
+		
+		final SnomedClientIndexService snomedClientIndexService = ApplicationContext.getServiceForClass(SnomedClientIndexService.class);
+		
+		final SnomedDescriptionIndexQueryAdapter queryAdapter = SnomedDescriptionIndexQueryAdapter.findActiveDescriptionsByType(conceptId, Concepts.FULLY_SPECIFIED_NAME);
+		final Collection<SnomedDescriptionIndexEntry> fsns = snomedClientIndexService.searchUnsorted(queryAdapter);
+		
+		if (!fsns.isEmpty()) {
+			// ignore multi-FSN cases, return the first
+			return Iterables.getFirst(fsns, null).getLabel();
+		}
+		
+		return null;
 	}
 	
 	/*returns with a human readable representation of the SNOMED CT concept's label*/

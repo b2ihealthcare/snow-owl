@@ -27,7 +27,7 @@ public abstract class BaseBranchEvent extends BaseRepositoryEvent {
 	}
 
 	@Override
-	protected final String getPath() {
+	protected String getPath() {
 		return "/branches";
 	}
 }

@@ -18,18 +18,24 @@ package com.b2international.snowowl.snomed.api.rest.components;
 import static com.b2international.snowowl.datastore.BranchPathUtils.createMainPath;
 import static com.b2international.snowowl.datastore.BranchPathUtils.createPath;
 import static com.b2international.snowowl.snomed.api.rest.SnomedComponentApiAssert.*;
+import static com.google.common.collect.Lists.newArrayList;
 import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.hasItem;
 
 import java.util.Map;
 
 import org.junit.Test;
 
 import com.b2international.snowowl.core.api.IBranchPath;
+import com.b2international.snowowl.datastore.BranchPathUtils;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.api.rest.AbstractSnomedApiTest;
 import com.b2international.snowowl.snomed.api.rest.SnomedApiTestConstants;
 import com.b2international.snowowl.snomed.api.rest.SnomedComponentType;
+import com.b2international.snowowl.snomed.core.domain.AssociationType;
 import com.b2international.snowowl.snomed.core.domain.CaseSignificance;
+import com.b2international.snowowl.snomed.core.domain.DescriptionInactivationIndicator;
+import com.b2international.snowowl.snomed.core.domain.InactivationIndicator;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableMap.Builder;
 
@@ -161,6 +167,84 @@ public class SnomedDescriptionApiTest extends AbstractSnomedApiTest {
 
 		assertDescriptionCanBeUpdated(createMainPath(), descriptionId, updateRequestBody);
 		assertActive(createMainPath(), descriptionId, false);
+	}
+
+	@Test
+	public void inactivateDescriptionWithIndicator() {
+		final IBranchPath branch = BranchPathUtils.createMainPath();
+		final Map<?, ?> createRequestBody = createRequestBody(DISEASE, "Rare disease 2", Concepts.MODULE_SCT_CORE, Concepts.SYNONYM, "New description Rare disease 2");
+		final String descriptionId = assertComponentCreated(branch, SnomedComponentType.DESCRIPTION, createRequestBody);
+		final Map<?, ?> updateRequestBody = ImmutableMap.builder()
+				.put("active", false)
+				.put("inactivationIndicator", DescriptionInactivationIndicator.DUPLICATE)
+				.put("commitComment", "Inactivated description")
+				.build();
+
+		assertDescriptionCanBeUpdated(branch, descriptionId, updateRequestBody);
+		assertComponentExists(branch, SnomedComponentType.DESCRIPTION, descriptionId)
+			.and()
+			.body("active", equalTo(false))
+			.and()
+			.body("inactivationIndicator", equalTo(InactivationIndicator.DUPLICATE.toString()));
+	}
+
+	@Test
+	public void updateInactivationIndicatorAfterInactivation() {
+		final IBranchPath branch = BranchPathUtils.createMainPath();
+		final Map<?, ?> createRequestBody = createRequestBody(DISEASE, "Rare disease 3", Concepts.MODULE_SCT_CORE, Concepts.SYNONYM, "New description Rare disease 3");
+		final String descriptionId = assertComponentCreated(branch, SnomedComponentType.DESCRIPTION, createRequestBody);
+		Map<?, ?> updateRequestBody = ImmutableMap.builder()
+				.put("active", false)
+				.put("inactivationIndicator", DescriptionInactivationIndicator.DUPLICATE)
+				.put("commitComment", "Inactivated description")
+				.build();
+
+		assertDescriptionCanBeUpdated(branch, descriptionId, updateRequestBody);
+		assertComponentExists(branch, SnomedComponentType.DESCRIPTION, descriptionId)
+			.and()
+			.body("active", equalTo(false))
+			.and()
+			.body("inactivationIndicator", equalTo(DescriptionInactivationIndicator.DUPLICATE.toString()));
+
+		updateRequestBody = ImmutableMap.builder()
+				.put("active", false)
+				.put("inactivationIndicator", DescriptionInactivationIndicator.OUTDATED)
+				.put("commitComment", "Changed inactivation indicator to " + DescriptionInactivationIndicator.OUTDATED)
+				.build();
+		assertDescriptionCanBeUpdated(branch, descriptionId, updateRequestBody);
+		assertComponentExists(branch, SnomedComponentType.DESCRIPTION, descriptionId)
+			.and()
+			.body("active", equalTo(false))
+			.and()
+			.body("inactivationIndicator", equalTo(DescriptionInactivationIndicator.OUTDATED.toString()));
+	}
+	
+	@Test
+	public void inactivateDescriptionWithIndicatorAndAssociationTarget() {
+		final IBranchPath branch = BranchPathUtils.createMainPath();
+		final Map<?, ?> createRequestBody1 = createRequestBody(DISEASE, "Rare disease 4", Concepts.MODULE_SCT_CORE, Concepts.SYNONYM, "New description Rare disease 4");
+		final Map<?, ?> createRequestBody2 = createRequestBody(DISEASE, "Rare disease 4", Concepts.MODULE_SCT_CORE, Concepts.SYNONYM, "New description Rare disease 4");
+		
+		final String descriptionId = assertComponentCreated(branch, SnomedComponentType.DESCRIPTION, createRequestBody1);
+		final String sameAsDescriptionId = assertComponentCreated(branch, SnomedComponentType.DESCRIPTION, createRequestBody2);
+		
+		final Map<?, ?> updateRequestBody = ImmutableMap.builder()
+				.put("active", false)
+				.put("inactivationIndicator", DescriptionInactivationIndicator.DUPLICATE)
+				.put("associationTargets", ImmutableMap.builder()
+						.put(AssociationType.POSSIBLY_EQUIVALENT_TO.name(), newArrayList(sameAsDescriptionId))
+						.build())
+				.put("commitComment", "Inactivated description with DUPLICATE indicator and SAME_AS association target")
+				.build();
+
+		assertDescriptionCanBeUpdated(branch, descriptionId, updateRequestBody);
+		assertComponentExists(branch, SnomedComponentType.DESCRIPTION, descriptionId)
+			.and()
+			.body("active", equalTo(false))
+			.and()
+			.body("inactivationIndicator", equalTo(InactivationIndicator.DUPLICATE.toString()))
+			.and()
+			.body("associationTargets." + AssociationType.POSSIBLY_EQUIVALENT_TO.name(), hasItem(sameAsDescriptionId));
 	}
 
 	@Test

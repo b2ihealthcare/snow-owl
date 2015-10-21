@@ -18,7 +18,6 @@ package com.b2international.snowowl.datastore;
 import static com.b2international.snowowl.core.ApplicationContext.getServiceForClass;
 import static com.b2international.snowowl.datastore.BranchPathUtils.createPath;
 
-import java.text.MessageFormat;
 import java.util.Collection;
 import java.util.Set;
 
@@ -36,6 +35,7 @@ import org.slf4j.LoggerFactory;
 import com.b2international.commons.CompareUtils;
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.api.IBranchPath;
+import com.b2international.snowowl.datastore.cdo.CDOCommitInfoUtils;
 import com.b2international.snowowl.datastore.cdo.ICDOConnection;
 import com.b2international.snowowl.datastore.cdo.ICDOConnectionManager;
 import com.b2international.snowowl.datastore.cdo.IPostStoreUpdateManager;
@@ -172,9 +172,9 @@ public class PostStoreUpdateManager implements IPostStoreUpdateManager {
 			if (null != branch) {
 				final IBranchPath branchPath = createPath(branch);
 				final String repositoryName = getServiceForClass(ICDOConnectionManager.class).get(branch).getRepositoryName();
-				LOGGER.info(MessageFormat.format("Commit notification received for user {0} on ''{1}'' branch from ''{2}''.", invalidationEvent.getUserID(), branchPath, repositoryName));
+				LOGGER.info("Commit notification from '{}' on '{}/{}', message: {}.", invalidationEvent.getUserID(), repositoryName, branchPath, CDOCommitInfoUtils.removeUuidPrefix(invalidationEvent.getComment()));
 			} else {
-				LOGGER.info(MessageFormat.format("Commit notification received for user {0}.", invalidationEvent.getUserID()));
+				LOGGER.info("Commit notification from user {}.", invalidationEvent.getUserID());
 			}
 
 			final TaskManager taskManager = ApplicationContext.getInstance().getService(TaskManager.class);

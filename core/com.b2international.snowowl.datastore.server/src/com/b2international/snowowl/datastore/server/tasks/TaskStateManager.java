@@ -116,7 +116,7 @@ public class TaskStateManager extends SingleDirectoryIndexImpl implements ITaskS
 			}
 
 			final String message = MessageFormat.format("No modifications have happened on this task for {0}. "
-					+ "Snow Owl will now deactivate the task to save disk space; to continue working on this task, "
+					+ "Snow Owl will now deactivate the task; to continue working on this task, "
 					+ "please reactivate it from the Task List view.", getTimeString(usageTime));
 
 			try {

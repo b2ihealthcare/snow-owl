@@ -19,9 +19,11 @@ import java.util.Map;
 
 import com.b2international.snowowl.snomed.core.domain.AbstractSnomedComponent;
 import com.b2international.snowowl.snomed.core.domain.Acceptability;
+import com.b2international.snowowl.snomed.core.domain.AssociationType;
 import com.b2international.snowowl.snomed.core.domain.CaseSignificance;
 import com.b2international.snowowl.snomed.core.domain.DescriptionInactivationIndicator;
 import com.b2international.snowowl.snomed.core.domain.ISnomedDescription;
+import com.google.common.collect.Multimap;
 
 /**
  * Represents a SNOMED&nbsp;CT description.
@@ -36,6 +38,7 @@ public class SnomedDescription extends AbstractSnomedComponent implements ISnome
 	private CaseSignificance caseSignificance;
 	private DescriptionInactivationIndicator descriptionInactivationIndicator;
 	private Map<String, Acceptability> acceptabilityMap;
+	private Multimap<AssociationType, String> associationTargets;
 
 	@Override
 	public String getConceptId() {
@@ -68,8 +71,13 @@ public class SnomedDescription extends AbstractSnomedComponent implements ISnome
 	}
 
 	@Override
-	public DescriptionInactivationIndicator getDescriptionInactivationIndicator() {
+	public DescriptionInactivationIndicator getInactivationIndicator() {
 		return descriptionInactivationIndicator;
+	}
+	
+	@Override
+	public Multimap<AssociationType, String> getAssociationTargets() {
+		return associationTargets;
 	}
 
 	public void setConceptId(final String conceptId) {
@@ -99,7 +107,10 @@ public class SnomedDescription extends AbstractSnomedComponent implements ISnome
 	public void setDescriptionInactivationIndicator(final DescriptionInactivationIndicator descriptionInactivationIndicator) {
 		this.descriptionInactivationIndicator = descriptionInactivationIndicator;
 	}
-
+	
+	public void setAssociationTargets(Multimap<AssociationType, String> associationTargets) {
+		this.associationTargets = associationTargets;
+	}
 
 	@Override
 	public String toString() {
@@ -129,6 +140,8 @@ public class SnomedDescription extends AbstractSnomedComponent implements ISnome
 				.append(descriptionInactivationIndicator);
 			
 		}
+		builder.append(", getAssociationTargets()=");
+		builder.append(getAssociationTargets());
 		builder.append("]");
 		return builder.toString();
 	}

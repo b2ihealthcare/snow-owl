@@ -60,6 +60,10 @@ public abstract class SnomedDescriptionIndexQueryAdapter extends SnomedDslIndexQ
 				SnomedDescriptionReducedQueryAdapter.SEARCH_DESCRIPTION_ACTIVE_ONLY);
 	}
 	
+	public static final SnomedDescriptionIndexQueryAdapter findActiveDescriptionsByType(final String conceptId, final String typeId) {
+		return new SnomedDescriptionByTypeIndexQueryAdapter(conceptId, typeId);
+	}
+	
 	public static final SnomedDescriptionIndexQueryAdapter createFindByConceptIds(final String... conceptIds) {
 		return createFindByConceptIds(ImmutableSet.copyOf(conceptIds));
 	}

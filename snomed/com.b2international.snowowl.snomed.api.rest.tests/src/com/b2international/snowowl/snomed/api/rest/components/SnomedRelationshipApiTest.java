@@ -195,7 +195,7 @@ public class SnomedRelationshipApiTest extends AbstractSnomedApiTest {
 	}
 	
 	@Test
-	@Ignore("Additional relationship modifier concept not present in minified dataset")
+	@Ignore("Universal relationship modifier concept not present in minified dataset")
 	public void changeRelationshipModifier() {
 		final Map<?, ?> createRequestBody = givenRelationshipRequestBody(DISEASE, TEMPORAL_CONTEXT, FINDING_CONTEXT, MODULE_SCT_CORE, "New relationship on MAIN");
 		final String relationshipId = assertComponentCreated(createMainPath(), SnomedComponentType.RELATIONSHIP, createRequestBody);

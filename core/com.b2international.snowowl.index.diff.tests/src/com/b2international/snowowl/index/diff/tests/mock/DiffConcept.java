@@ -15,30 +15,33 @@
  */
 package com.b2international.snowowl.index.diff.tests.mock;
 
+import static com.google.common.base.Preconditions.checkNotNull;
+
 /**
+ * A minimal representation of an indexed concept, to be used in index-based diff tests.
+ * 
  * @since 4.3
  */
-public class IdLabelPair {
+public class DiffConcept {
 
-    private String id;
-    private String label;
+	private final String id;
+	private final String label;
 
-    public IdLabelPair(String id, String label) {
-        this.id = id;
-        this.label = label;
-    }
+	public DiffConcept(final String id, final String label) {
+		this.id = checkNotNull(id, "id");
+		this.label = checkNotNull(label, "label");
+	}
 
-    public String getId() {
-        return id;
-    }
+	public String getId() {
+		return id;
+	}
 
-    public String getLabel() {
-        return label;
-    }
+	public String getLabel() {
+		return label;
+	}
 
-    @Override
-    public String toString() {
-        return String.format("ID: %s | Label: %s", getId(), getLabel());
-    }
-
+	@Override
+	public String toString() {
+		return String.format("%s | %s |", id, label);
+	}
 }
