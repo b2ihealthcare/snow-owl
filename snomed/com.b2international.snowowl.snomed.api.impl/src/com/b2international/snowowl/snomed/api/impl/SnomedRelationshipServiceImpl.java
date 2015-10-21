@@ -18,18 +18,17 @@ package com.b2international.snowowl.snomed.api.impl;
 import com.b2international.commons.ClassUtils;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.domain.IComponentRef;
-import com.b2international.snowowl.core.exceptions.BadRequestException;
 import com.b2international.snowowl.core.exceptions.ComponentNotFoundException;
 import com.b2international.snowowl.core.terminology.ComponentCategory;
 import com.b2international.snowowl.datastore.server.domain.InternalComponentRef;
 import com.b2international.snowowl.snomed.Relationship;
-import com.b2international.snowowl.snomed.SnomedFactory;
 import com.b2international.snowowl.snomed.api.ISnomedRelationshipService;
 import com.b2international.snowowl.snomed.core.domain.CharacteristicType;
 import com.b2international.snowowl.snomed.core.domain.ISnomedRelationship;
-import com.b2international.snowowl.snomed.core.domain.SnomedRelationshipCreateAction;
 import com.b2international.snowowl.snomed.core.domain.ISnomedRelationshipUpdate;
 import com.b2international.snowowl.snomed.core.domain.RelationshipModifier;
+import com.b2international.snowowl.snomed.core.domain.SnomedRelationshipCreateAction;
+import com.b2international.snowowl.snomed.core.store.SnomedComponents;
 import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 import com.b2international.snowowl.snomed.datastore.SnomedEditingContext;
 import com.b2international.snowowl.snomed.datastore.SnomedRelationshipIndexEntry;
@@ -59,30 +58,19 @@ public class SnomedRelationshipServiceImpl
 
 	@Override
 	protected Relationship convertAndRegister(final SnomedRelationshipCreateAction input, final SnomedEditingContext editingContext) {
-		
 		try {
-			final Relationship relationship = SnomedFactory.eINSTANCE.createRelationship();
-			
-			relationship.setId(input.getIdGenerationStrategy().getId());
-			relationship.setActive(true);
-			relationship.unsetEffectiveTime();
-			relationship.setReleased(false);
-			relationship.setModule(getModuleConcept(input, editingContext));
-			relationship.setCharacteristicType(getConcept(input.getCharacteristicType().getConceptId(), editingContext));
-			relationship.setDestination(getConcept(input.getDestinationId(), editingContext));
-			relationship.setDestinationNegated(input.isDestinationNegated());
-			relationship.setModifier(getConcept(input.getModifier().getConceptId(), editingContext));
-			relationship.setSource(getConcept(input.getSourceId(), editingContext));
-			relationship.setType(getConcept(input.getTypeId(), editingContext));
-			
-			validateGroup(input.getGroup(), relationship);
-			relationship.setGroup(input.getGroup());
-			
-			validateUnionGroup(input.getUnionGroup(), relationship);
-			relationship.setUnionGroup(input.getUnionGroup());
-			
-			// TODO: add a refinability refset member here?
-			return relationship;
+			return SnomedComponents.newRelationship()
+					.withId(input.getIdGenerationStrategy())
+					.withDestination(input.getDestinationId())
+					.withCharacteristicType(input.getCharacteristicType())
+					.withDestinationNegated(input.isDestinationNegated())
+					.withModifier(input.getModifier())
+					.withType(input.getTypeId())
+					.withGroup(input.getGroup())
+					.withUnionGroup(input.getUnionGroup())
+					.withSource(input.getSourceId())
+					// TODO: add a refinability refset member here?
+					.build(editingContext);
 		} catch (ComponentNotFoundException e) {
 			throw e.toBadRequestException();
 		}
@@ -122,8 +110,6 @@ public class SnomedRelationshipServiceImpl
 			return false;
 		}
 
-		validateGroup(newGroup, relationship);
-
 		if (relationship.getGroup() != newGroup) {
 			relationship.setGroup(newGroup);
 			return true;
@@ -132,30 +118,16 @@ public class SnomedRelationshipServiceImpl
 		}
 	}
 
-	private void validateGroup(final Integer group, final Relationship relationship) {
-		if (group < 0 || group > Byte.MAX_VALUE) {
-			throw new BadRequestException("Group value for relationship %s must be between 0 and 127.", relationship.getId());
-		}
-	}
-
 	private boolean updateUnionGroup(final Integer newUnionGroup, final Relationship relationship, final SnomedEditingContext editingContext) {
 		if (null == newUnionGroup) {
 			return false;
 		}
-
-		validateUnionGroup(newUnionGroup, relationship);
 
 		if (relationship.getUnionGroup() != newUnionGroup) {
 			relationship.setUnionGroup(newUnionGroup);
 			return true;
 		} else {
 			return false;
-		}
-	}
-
-	private void validateUnionGroup(final Integer unionGroup, final Relationship relationship) {
-		if (unionGroup < 0 || unionGroup > Byte.MAX_VALUE) {
-			throw new BadRequestException("Union group value for relationship %s must be between 0 and 127.", relationship.getId());
 		}
 	}
 
@@ -166,7 +138,7 @@ public class SnomedRelationshipServiceImpl
 
 		final CharacteristicType currentCharacteristicType = CharacteristicType.getByConceptId(relationship.getCharacteristicType().getId());
 		if (!currentCharacteristicType.equals(newCharacteristicType)) {
-			relationship.setCharacteristicType(getConcept(newCharacteristicType.getConceptId(), editingContext));
+			relationship.setCharacteristicType(editingContext.getConcept(newCharacteristicType.getConceptId()));
 			return true;
 		} else {
 			return false;
@@ -180,7 +152,7 @@ public class SnomedRelationshipServiceImpl
 
 		final RelationshipModifier currentModifier = RelationshipModifier.getByConceptId(relationship.getModifier().getId());
 		if (!currentModifier.equals(newModifier)) {
-			relationship.setModifier(getConcept(newModifier.getConceptId(), editingContext));
+			relationship.setModifier(editingContext.getConcept(newModifier.getConceptId()));
 			return true;
 		} else {
 			return false;

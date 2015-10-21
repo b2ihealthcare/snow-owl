@@ -34,8 +34,8 @@ import com.b2international.snowowl.snomed.Component;
 import com.b2international.snowowl.snomed.Concept;
 import com.b2international.snowowl.snomed.api.ISnomedComponentService;
 import com.b2international.snowowl.snomed.core.domain.ISnomedComponent;
-import com.b2international.snowowl.snomed.core.domain.SnomedComponentCreateAction;
 import com.b2international.snowowl.snomed.core.domain.ISnomedComponentUpdate;
+import com.b2international.snowowl.snomed.core.domain.SnomedComponentCreateAction;
 import com.b2international.snowowl.snomed.core.domain.UserIdGenerationStrategy;
 import com.b2international.snowowl.snomed.datastore.SnomedConceptLookupService;
 import com.b2international.snowowl.snomed.datastore.SnomedEditingContext;
@@ -45,8 +45,6 @@ import com.b2international.snowowl.snomed.datastore.services.SnomedBranchRefSetM
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetMember;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedStructuralRefSet;
 
-/**
- */
 public abstract class AbstractSnomedComponentServiceImpl<C extends SnomedComponentCreateAction, R extends ISnomedComponent, U extends ISnomedComponentUpdate, M extends Component>
 extends AbstractComponentServiceImpl<C, R, U, SnomedEditingContext, M>
 implements ISnomedComponentService<C, R, U> {
@@ -62,19 +60,6 @@ implements ISnomedComponentService<C, R, U> {
 		return new SnomedBranchRefSetMembershipLookupService(branchPath);
 	}
 
-	protected Concept getModuleConcept(final SnomedComponentCreateAction input, final SnomedEditingContext editingContext) {
-		return getConcept(input.getModuleId(), editingContext);
-	}
-
-	protected Concept getConcept(final String conceptId, final SnomedEditingContext editingContext) {
-		final Concept concept = snomedConceptLookupService.getComponent(conceptId, editingContext.getTransaction());
-		if (null == concept) {
-			throw new ComponentNotFoundException(ComponentCategory.CONCEPT, conceptId);
-		}
-
-		return concept;
-	}
-	
 	protected SnomedStructuralRefSet getStructuralRefSet(final String refSetId, final CDOTransaction transaction) {
 		final SnomedStructuralRefSet structuralRefSet = (SnomedStructuralRefSet) snomedRefSetLookupService.getComponent(refSetId, transaction);
 		if (null == structuralRefSet) {
@@ -111,14 +96,14 @@ implements ISnomedComponentService<C, R, U> {
 		return component.getId();
 	}
 
-	protected boolean updateModule(final String newModuleId, final Component component, final SnomedEditingContext editingContext) {
+	protected boolean updateModule(final String newModuleId, final Component component, final SnomedEditingContext context) {
 		if (null == newModuleId) {
 			return false;
 		}
 
 		final String currentModuleId = component.getModule().getId();
 		if (!currentModuleId.equals(newModuleId)) {
-			component.setModule(getConcept(newModuleId, editingContext));
+			component.setModule(context.getConcept(newModuleId));
 			return true;
 		} else {
 			return false;

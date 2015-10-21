@@ -16,10 +16,7 @@
 package com.b2international.snowowl.snomed.api.impl;
 
 import static com.b2international.snowowl.core.ApplicationContext.getServiceForClass;
-import static com.b2international.snowowl.snomed.SnomedConstants.Concepts.EXISTENTIAL_RESTRICTION_MODIFIER;
 import static com.b2international.snowowl.snomed.SnomedConstants.Concepts.IS_A;
-import static com.b2international.snowowl.snomed.SnomedConstants.Concepts.PRIMITIVE;
-import static com.b2international.snowowl.snomed.SnomedConstants.Concepts.STATED_RELATIONSHIP;
 import static com.google.common.collect.Sets.newHashSet;
 
 import java.util.List;
@@ -52,20 +49,20 @@ import com.b2international.snowowl.snomed.Description;
 import com.b2international.snowowl.snomed.Inactivatable;
 import com.b2international.snowowl.snomed.Relationship;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
-import com.b2international.snowowl.snomed.SnomedFactory;
 import com.b2international.snowowl.snomed.api.ISnomedConceptService;
-import com.b2international.snowowl.snomed.api.impl.domain.SnomedConceptList;
 import com.b2international.snowowl.snomed.api.impl.domain.DefaultSnomedDescriptionCreateAction;
+import com.b2international.snowowl.snomed.api.impl.domain.SnomedConceptList;
 import com.b2international.snowowl.snomed.core.domain.Acceptability;
 import com.b2international.snowowl.snomed.core.domain.AssociationType;
 import com.b2international.snowowl.snomed.core.domain.DefinitionStatus;
 import com.b2international.snowowl.snomed.core.domain.ISnomedConcept;
-import com.b2international.snowowl.snomed.core.domain.SnomedConceptCreateAction;
 import com.b2international.snowowl.snomed.core.domain.ISnomedConceptUpdate;
-import com.b2international.snowowl.snomed.core.domain.SnomedDescriptionCreateAction;
 import com.b2international.snowowl.snomed.core.domain.InactivationIndicator;
 import com.b2international.snowowl.snomed.core.domain.SearchKind;
+import com.b2international.snowowl.snomed.core.domain.SnomedConceptCreateAction;
+import com.b2international.snowowl.snomed.core.domain.SnomedDescriptionCreateAction;
 import com.b2international.snowowl.snomed.core.domain.SubclassDefinitionStatus;
+import com.b2international.snowowl.snomed.core.store.SnomedComponents;
 import com.b2international.snowowl.snomed.datastore.SnomedConceptIndexEntry;
 import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 import com.b2international.snowowl.snomed.datastore.SnomedEditingContext;
@@ -130,7 +127,7 @@ public class SnomedConceptServiceImpl
 	@Override
 	protected Concept convertAndRegister(final SnomedConceptCreateAction conceptInput, final SnomedEditingContext editingContext) {
 		final Concept concept = convertConcept(conceptInput, editingContext);
-		convertParentIsARelationship(conceptInput, concept, editingContext); 
+		concept.getOutboundRelationships().add(convertParentIsARelationship(conceptInput, editingContext));
 		editingContext.add(concept);
 
 		final Set<String> requiredDescriptionTypes = newHashSet(Concepts.FULLY_SPECIFIED_NAME, Concepts.REFSET_DESCRIPTION_ACCEPTABILITY_PREFERRED);
@@ -175,49 +172,26 @@ public class SnomedConceptServiceImpl
 		return concept;
 	}
 
-	private Concept convertConcept(final SnomedConceptCreateAction input, final SnomedEditingContext editingContext) {
+	private Concept convertConcept(final SnomedConceptCreateAction input, final SnomedEditingContext context) {
 		try {
-
-			final Concept concept = SnomedFactory.eINSTANCE.createConcept();
-
-			concept.setId(input.getIdGenerationStrategy().getId());
-			concept.setActive(true);
-			concept.unsetEffectiveTime();
-			concept.setReleased(false);
-			concept.setModule(getModuleConcept(input, editingContext));
-			concept.setDefinitionStatus(getConcept(PRIMITIVE, editingContext));
-			concept.setExhaustive(false);
-
-			return concept;
-
+			return SnomedComponents.newConcept()
+					.withId(input.getIdGenerationStrategy())
+					.withModule(input.getModuleId())
+					.build(context);
 		} catch (final ComponentNotFoundException e) {
 			throw e.toBadRequestException();
 		}
 	}
 
-	private Relationship convertParentIsARelationship(final SnomedConceptCreateAction input, final Concept concept, final SnomedEditingContext editingContext) {
+	private Relationship convertParentIsARelationship(final SnomedConceptCreateAction input, final SnomedEditingContext context) {
 		try {
-
-			final Relationship parentIsARelationship = SnomedFactory.eINSTANCE.createRelationship();
-
-			parentIsARelationship.setId(input.getIsAIdGenerationStrategy().getId());
-			parentIsARelationship.setActive(true);
-			parentIsARelationship.unsetEffectiveTime();
-			parentIsARelationship.setReleased(false);
-			parentIsARelationship.setModule(getModuleConcept(input, editingContext));
-			parentIsARelationship.setSource(concept);
-
-			parentIsARelationship.setDestination(getConcept(input.getParentId(), editingContext));
-
-			parentIsARelationship.setDestinationNegated(false);
-			parentIsARelationship.setType(getConcept(IS_A, editingContext));
-			parentIsARelationship.setGroup(0);
-			parentIsARelationship.setUnionGroup(0);
-			parentIsARelationship.setCharacteristicType(getConcept(STATED_RELATIONSHIP, editingContext));
-			parentIsARelationship.setModifier(getConcept(EXISTENTIAL_RESTRICTION_MODIFIER, editingContext));
-
+			final Relationship parentIsARelationship = SnomedComponents.newRelationship()
+					.withId(input.getIsAIdGenerationStrategy())
+					.withModule(input.getModuleId())
+					.withDestination(input.getParentId())
+					.withType(IS_A)
+					.build(context);
 			return parentIsARelationship;
-
 		} catch (final ComponentNotFoundException e) {
 			throw e.toBadRequestException();
 		}
@@ -233,7 +207,7 @@ public class SnomedConceptServiceImpl
 
 	@Override
 	protected void doUpdate(final IComponentRef ref, final ISnomedConceptUpdate update, final SnomedEditingContext editingContext) {
-		final Concept concept = getConcept(ref.getComponentId(), editingContext);
+		final Concept concept = editingContext.getConcept(ref.getComponentId());
 
 		boolean changed = false;
 		changed |= updateModule(update.getModuleId(), concept, editingContext);
@@ -248,8 +222,7 @@ public class SnomedConceptServiceImpl
 		}
 	}
 
-	private boolean updateDefinitionStatus(final DefinitionStatus newDefinitionStatus, final Concept concept, 
-			final SnomedEditingContext editingContext) {
+	private boolean updateDefinitionStatus(final DefinitionStatus newDefinitionStatus, final Concept concept, final SnomedEditingContext context) {
 
 		if (null == newDefinitionStatus) {
 			return false;
@@ -258,7 +231,7 @@ public class SnomedConceptServiceImpl
 		final String existingDefinitionStatusId = concept.getDefinitionStatus().getId();
 		final String newDefinitionStatusId = newDefinitionStatus.getConceptId();
 		if (!existingDefinitionStatusId.equals(newDefinitionStatusId)) {
-			concept.setDefinitionStatus(getConcept(newDefinitionStatusId, editingContext));
+			concept.setDefinitionStatus(context.getConcept(newDefinitionStatusId));
 			return true;
 		} else {
 			return false;
@@ -412,7 +385,7 @@ public class SnomedConceptServiceImpl
 
 	@Override
 	protected void doDelete(final IComponentRef ref, final SnomedEditingContext editingContext) {
-		final Concept concept = getConcept(ref.getComponentId(), editingContext);
+		final Concept concept = editingContext.getConcept(ref.getComponentId());
 		editingContext.delete(concept);
 	}
 

@@ -17,8 +17,12 @@ package com.b2international.snowowl.snomed.api.impl;
 
 import static com.google.common.collect.Maps.newHashMap;
 
-import java.util.*;
+import java.util.Collection;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
 
 import com.b2international.commons.ClassUtils;
 import com.b2international.snowowl.core.ApplicationContext;
@@ -32,16 +36,15 @@ import com.b2international.snowowl.datastore.server.domain.InternalComponentRef;
 import com.b2international.snowowl.snomed.Description;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.SnomedConstants.LanguageCodeReferenceSetIdentifierMapping;
-import com.b2international.snowowl.snomed.SnomedFactory;
 import com.b2international.snowowl.snomed.api.ISnomedDescriptionService;
-import com.b2international.snowowl.snomed.api.domain.*;
 import com.b2international.snowowl.snomed.api.exception.FullySpecifiedNameNotFoundException;
 import com.b2international.snowowl.snomed.api.exception.PreferredTermNotFoundException;
 import com.b2international.snowowl.snomed.core.domain.Acceptability;
 import com.b2international.snowowl.snomed.core.domain.CaseSignificance;
 import com.b2international.snowowl.snomed.core.domain.ISnomedDescription;
-import com.b2international.snowowl.snomed.core.domain.SnomedDescriptionCreateAction;
 import com.b2international.snowowl.snomed.core.domain.ISnomedDescriptionUpdate;
+import com.b2international.snowowl.snomed.core.domain.SnomedDescriptionCreateAction;
+import com.b2international.snowowl.snomed.core.store.SnomedComponents;
 import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 import com.b2international.snowowl.snomed.datastore.SnomedDescriptionLookupService;
 import com.b2international.snowowl.snomed.datastore.SnomedEditingContext;
@@ -54,7 +57,11 @@ import com.b2international.snowowl.snomed.datastore.services.ISnomedComponentSer
 import com.b2international.snowowl.snomed.snomedrefset.SnomedLanguageRefSetMember;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedStructuralRefSet;
-import com.google.common.collect.*;
+import com.google.common.collect.Collections2;
+import com.google.common.collect.HashMultimap;
+import com.google.common.collect.ImmutableBiMap;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.Multimap;
 import com.google.common.primitives.Longs;
 
 public class SnomedDescriptionServiceImpl 
@@ -87,22 +94,19 @@ public class SnomedDescriptionServiceImpl
 	}
 
 	@Override
-	protected Description convertAndRegister(final SnomedDescriptionCreateAction input, final SnomedEditingContext editingContext) {
+	protected Description convertAndRegister(final SnomedDescriptionCreateAction input, final SnomedEditingContext context) {
 		try {
-			final Description description = SnomedFactory.eINSTANCE.createDescription();
+			final Description description = SnomedComponents.newDescription()
+				.withId(input.getIdGenerationStrategy())
+				.withModule(input.getModuleId())
+				.withCaseSignificance(input.getCaseSignificance())
+				.withTerm(input.getTerm())
+				.withType(input.getTypeId())
+				.withLanguageCode(input.getLanguageCode())
+				.withConcept(input.getConceptId())
+				.build(context);
 			
-			description.setId(input.getIdGenerationStrategy().getId());
-			description.setActive(true);
-			description.unsetEffectiveTime();
-			description.setReleased(false);
-			description.setModule(getModuleConcept(input, editingContext));
-			description.setConcept(getConcept(input.getConceptId(), editingContext));
-			description.setCaseSignificance(getConcept(input.getCaseSignificance().getConceptId(), editingContext));
-			description.setType(getConcept(input.getTypeId(), editingContext));
-			description.setTerm(input.getTerm());
-			description.setLanguageCode(input.getLanguageCode());
-			
-			updateAcceptabilityMap(input.getAcceptability(), description, editingContext);
+			updateAcceptabilityMap(input.getAcceptability(), description, context);
 			return description;
 		} catch (ComponentNotFoundException e) {
 			throw e.toBadRequestException();
@@ -160,7 +164,7 @@ public class SnomedDescriptionServiceImpl
 		final String existingCaseSignificanceId = description.getCaseSignificance().getId();
 		final String newCaseSignificanceId = newCaseSignificance.getConceptId();
 		if (!existingCaseSignificanceId.equals(newCaseSignificanceId)) {
-			description.setCaseSignificance(getConcept(newCaseSignificanceId, editingContext));
+			description.setCaseSignificance(editingContext.getConcept(newCaseSignificanceId));
 			return true;
 		} else {
 			return false;
