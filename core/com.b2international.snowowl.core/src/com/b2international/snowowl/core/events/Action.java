@@ -24,15 +24,15 @@ import com.b2international.snowowl.core.ServiceProvider;
  * @param <T>
  *            - the type of context where this {@link Action} can be executed
  * @param <B>
- *            - the type of the reply body
+ *            - the type of the result
  */
-public interface Action<T extends ServiceProvider, B> {
+public interface Action<T extends ServiceProvider, B> extends Event {
 
 	/**
 	 * Executes this action on the given {@link ExecutionContext}.
 	 *
 	 * @param context
-	 * @return - a {@link Reply} as a result of the {@link Action}
+	 * @return - the result of the {@link Action}
 	 */
 	B execute(T context);
 

@@ -15,10 +15,12 @@
  */
 package com.b2international.snowowl.core.domain;
 
+import com.b2international.snowowl.core.events.BaseEvent;
+
 /**
  * @since 4.5
  */
-public abstract class BaseRepositoryAction<B> implements RepositoryAction<B> {
+public abstract class BaseRepositoryAction<B> extends BaseEvent implements RepositoryAction<B> {
 
 	private String codeSystemShortName;
 	private String branchPath;
@@ -39,6 +41,11 @@ public abstract class BaseRepositoryAction<B> implements RepositoryAction<B> {
 
 	public void setBranchPath(String branchPath) {
 		this.branchPath = branchPath;
+	}
+	
+	@Override
+	protected String getAddress() {
+		throw new UnsupportedOperationException();
 	}
 
 }
