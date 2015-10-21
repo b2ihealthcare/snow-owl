@@ -28,9 +28,11 @@ import javax.annotation.concurrent.ThreadSafe;
 import org.apache.lucene.document.Document;
 
 import com.b2international.snowowl.core.api.IComponent;
+import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.datastore.index.IndexUtils;
 import com.b2international.snowowl.datastore.index.mapping.Mappings;
 import com.b2international.snowowl.snomed.datastore.IRefSetComponent;
+import com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants;
 import com.b2international.snowowl.snomed.datastore.index.SnomedIndexEntry;
 import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedMappings;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType;
@@ -58,6 +60,7 @@ public class SnomedRefSetIndexEntry extends SnomedIndexEntry implements IRefSetC
 		this(SnomedMappings.id().getValueAsString(doc), 
 				Mappings.label().getValue(doc), 
 				SnomedMappings.iconId().getValueAsString(doc),
+				Mappings.longField(SnomedIndexBrowserConstants.CONCEPT_EFFECTIVE_TIME).getValue(doc),
 				SnomedMappings.module().getValueAsString(doc),
 				score,
 				SnomedMappings.refSetStorageKey().getValue(doc), 
@@ -68,22 +71,29 @@ public class SnomedRefSetIndexEntry extends SnomedIndexEntry implements IRefSetC
 				IndexUtils.getBooleanValue(doc.getField(REFERENCE_SET_STRUCTURAL)));
 	}
 	
+	public SnomedRefSetIndexEntry(final String id, final String label, final String iconId, final String moduleId, final float score, 
+			final long storageKey, final boolean released, final boolean active, final SnomedRefSetType type, final short referencedComponentType, final boolean structural) {
+		this(id, label, iconId, EffectiveTimes.UNSET_EFFECTIVE_TIME, moduleId, score, storageKey, released, active, type, referencedComponentType, structural);
+	}
+	
 	/**
 	 * Creates a new instance of this class.
 	 * @param id the unique ID of the identifier concept.
 	 * @param label the label of the associated concept.
 	 * @param iconId TODO
+	 * @param effectiveTime 
 	 * @param score the score for the index.
 	 * @param storageKey unique identifier of the component in the database.
 	 * @param type the type of the reference set.
 	 * @param referencedComponentType the numeric ID of the referenced component's type
 	 */
-	public SnomedRefSetIndexEntry(final String id, final String label, final String iconId, final String moduleId, final float score, 
+	public SnomedRefSetIndexEntry(final String id, final String label, final String iconId, long effectiveTime, final String moduleId, final float score, 
 			final long storageKey, final boolean released, final boolean active, final SnomedRefSetType type, final short referencedComponentType, final boolean structural) {
 		super(id, label, iconId, moduleId, score, storageKey, released, active, -1L); 
 		this.type = checkNotNull(type, "type");
 		this.referencedComponentType = referencedComponentType;
 		this.structural = structural;
+		setEffectiveTime(effectiveTime);
 	}
 
 	/**

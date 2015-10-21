@@ -89,6 +89,7 @@ import com.b2international.snowowl.snomed.datastore.SnomedConceptIndexEntry;
 import com.b2international.snowowl.snomed.datastore.SnomedRefSetBrowser;
 import com.b2international.snowowl.snomed.datastore.SnomedRefSetUtil;
 import com.b2international.snowowl.snomed.datastore.SnomedTerminologyBrowser;
+import com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants;
 import com.b2international.snowowl.snomed.datastore.index.SnomedIndexService;
 import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedMappings;
 import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedQueryBuilder;
@@ -122,6 +123,7 @@ public class SnomedServerRefSetBrowser extends AbstractSnomedIndexBrowser<Snomed
 			.module()
 			.active()
 			.released()
+			.field(SnomedIndexBrowserConstants.CONCEPT_EFFECTIVE_TIME)
 			.field(REFERENCE_SET_REFERENCED_COMPONENT_TYPE)
 			.field(REFERENCE_SET_TYPE)
 			.field(REFERENCE_SET_STRUCTURAL)
