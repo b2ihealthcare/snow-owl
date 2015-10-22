@@ -17,12 +17,12 @@ package com.b2international.snowowl.snomed.core.domain;
 
 import javax.validation.constraints.NotNull;
 
-import com.b2international.snowowl.core.domain.BaseRepositoryRequest;
+import com.b2international.snowowl.core.events.BaseEvent;
 
 /**
  * @since 4.0
  */
-public abstract class BaseSnomedComponentCreateRequest<B> extends BaseRepositoryRequest<B> implements SnomedComponentCreateRequest<B> {
+public abstract class BaseSnomedComponentCreateRequest<B> extends BaseEvent implements SnomedComponentCreateRequest<B> {
 
 	@NotNull
 	private IdGenerationStrategy idGenerationStrategy;
@@ -45,4 +45,10 @@ public abstract class BaseSnomedComponentCreateRequest<B> extends BaseRepository
 	public void setModuleId(final String moduleId) {
 		this.moduleId = moduleId;
 	}
+	
+	@Override
+	public String getAddress() {
+		throw new UnsupportedOperationException();
+	}
+	
 }

@@ -111,7 +111,7 @@ public abstract class SnomedComponentApiAssert {
 				.build();
 	}
 	
-	private static ValidatableResponse assertComponentReadWithStatus(final IBranchPath branchPath, 
+	public static ValidatableResponse assertComponentReadWithStatus(final IBranchPath branchPath, 
 			final SnomedComponentType componentType, 
 			final String componentId, 
 			final int statusCode) {

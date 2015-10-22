@@ -17,28 +17,35 @@ package com.b2international.snowowl.snomed.datastore.server.events;
 
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.domain.RepositoryContext;
+import com.b2international.snowowl.core.exceptions.ComponentNotFoundException;
+import com.b2international.snowowl.core.terminology.ComponentCategory;
 import com.b2international.snowowl.snomed.core.domain.SnomedReferenceSet;
 import com.b2international.snowowl.snomed.datastore.SnomedRefSetBrowser;
+import com.b2international.snowowl.snomed.datastore.SnomedRefSetLookupService;
 import com.b2international.snowowl.snomed.datastore.index.refset.SnomedRefSetIndexEntry;
 
 /**
  * @since 4.5
  */
-class SnomedRefSetReadRequest extends SnomedRefSetRequest<SnomedReferenceSet> {
+class SnomedRefSetReadRequest extends SnomedRefSetRequest<RepositoryContext, SnomedReferenceSet> {
 
 	private String referenceSetId;
 
-	protected SnomedRefSetReadRequest(String branch, String referenceSetId) {
-		super(branch);
+	protected SnomedRefSetReadRequest(String referenceSetId) {
 		this.referenceSetId = referenceSetId;
 	}
 
 	@Override
 	public SnomedReferenceSet execute(RepositoryContext context) {
-		final IBranchPath branch = context.branch();
-		final SnomedRefSetBrowser browser = context.service(SnomedRefSetBrowser.class);
-		final SnomedRefSetIndexEntry entry = browser.getRefSet(branch, referenceSetId);
-		return new SnomedReferenceSetConverter().apply(entry);
+		final IBranchPath branch = context.branch().branchPath();
+		final SnomedRefSetLookupService lookupService = new SnomedRefSetLookupService();
+		if (!lookupService.exists(branch, referenceSetId)) {
+			throw new ComponentNotFoundException(ComponentCategory.SET, referenceSetId);
+		} else {
+			final SnomedRefSetBrowser browser = context.service(SnomedRefSetBrowser.class);
+			final SnomedRefSetIndexEntry entry = browser.getRefSet(branch, referenceSetId);
+			return new SnomedReferenceSetConverter().apply(entry);
+		}
 	}
 
 }

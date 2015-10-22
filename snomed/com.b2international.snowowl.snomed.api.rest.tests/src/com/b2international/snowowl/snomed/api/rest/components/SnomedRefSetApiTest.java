@@ -15,8 +15,18 @@
  */
 package com.b2international.snowowl.snomed.api.rest.components;
 
+import static com.b2international.snowowl.snomed.api.rest.SnomedBranchingApiAssert.givenBranchWithPath;
+import static com.b2international.snowowl.snomed.api.rest.SnomedComponentApiAssert.assertComponentCreated;
+import static com.b2international.snowowl.snomed.api.rest.SnomedComponentApiAssert.assertComponentExists;
+import static com.b2international.snowowl.snomed.api.rest.SnomedComponentApiAssert.assertComponentReadWithStatus;
+import static com.b2international.snowowl.snomed.api.rest.SnomedComponentApiAssert.givenConceptRequestBody;
+
+import java.util.Map;
+
+import org.junit.Ignore;
 import org.junit.Test;
 
+import com.b2international.snowowl.datastore.BranchPathUtils;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.api.rest.AbstractSnomedApiTest;
 import com.b2international.snowowl.snomed.api.rest.SnomedApiTestConstants;
@@ -26,16 +36,22 @@ import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableMap.Builder;
 
-import static com.b2international.snowowl.snomed.api.rest.SnomedComponentApiAssert.*;
-import static com.b2international.snowowl.snomed.api.rest.SnomedBranchingApiAssert.*;
-
-import java.util.Map;
-
 /**
  * @since 4.5
  */
 public class SnomedRefSetApiTest extends AbstractSnomedApiTest {
 
+	@Test
+	public void getReferenceSetFromNonExistingBranch() throws Exception {
+		assertComponentReadWithStatus(BranchPathUtils.createPath("MAIN/nonexistent"), SnomedComponentType.REFSET, "fake", 404);
+	}
+	
+	@Test
+	public void getNonExistingReferenceSet() throws Exception {
+		assertComponentReadWithStatus(BranchPathUtils.createMainPath(), SnomedComponentType.REFSET, "123456789", 404);
+	}
+	
+	@Ignore("Unsupported")
 	@Test
 	public void createSimpleTypeRefSet() throws Exception {
 		givenBranchWithPath(testBranchPath);

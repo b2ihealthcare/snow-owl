@@ -21,12 +21,12 @@ import javax.validation.constraints.NotNull;
 
 import org.hibernate.validator.constraints.NotEmpty;
 
-import com.b2international.snowowl.core.domain.RepositoryContext;
+import com.b2international.snowowl.core.domain.RepositoryTransactionContext;
 import com.b2international.snowowl.snomed.core.domain.BaseSnomedComponentCreateRequest;
 import com.b2international.snowowl.snomed.core.domain.CharacteristicType;
 import com.b2international.snowowl.snomed.core.domain.ISnomedRelationship;
-import com.b2international.snowowl.snomed.core.domain.SnomedRelationshipCreateRequest;
 import com.b2international.snowowl.snomed.core.domain.RelationshipModifier;
+import com.b2international.snowowl.snomed.core.domain.SnomedRelationshipCreateRequest;
 
 /**
  * @since 4.0
@@ -131,7 +131,7 @@ public class DefaultSnomedRelationshipCreateRequest extends BaseSnomedComponentC
 	}
 
 	@Override
-	public ISnomedRelationship execute(RepositoryContext context) {
+	public ISnomedRelationship execute(RepositoryTransactionContext context) {
 		throw new UnsupportedOperationException("Not migrated yet");
 	}
 
@@ -142,10 +142,6 @@ public class DefaultSnomedRelationshipCreateRequest extends BaseSnomedComponentC
 		builder.append(getIdGenerationStrategy());
 		builder.append(", getModuleId()=");
 		builder.append(getModuleId());
-		builder.append(", getCodeSystemShortName()=");
-		builder.append(getCodeSystemShortName());
-		builder.append(", getBranchPath()=");
-		builder.append(getBranchPath());
 		builder.append(", getSourceId()=");
 		builder.append(getSourceId());
 		builder.append(", getDestinationId()=");

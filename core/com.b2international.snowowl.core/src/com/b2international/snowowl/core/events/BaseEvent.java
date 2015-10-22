@@ -51,6 +51,6 @@ public abstract class BaseEvent implements Event {
 	 * 
 	 * @return
 	 */
-	protected abstract String getAddress();
+	public abstract String getAddress();
 
 }

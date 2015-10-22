@@ -1,6 +1,6 @@
 /*
  * Copyright 2011-2015 B2i Healthcare Pte Ltd, http://b2i.sg
- *
+ * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -13,21 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.snomed.datastore.server.events;
-
-import com.b2international.snowowl.core.domain.RepositoryContext;
-import com.b2international.snowowl.core.events.BaseEvent;
-import com.b2international.snowowl.core.events.Request;
-import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
+package com.b2international.snowowl.core.domain;
 
 /**
  * @since 4.5
  */
-public abstract class SnomedRefSetRequest<C extends RepositoryContext, B> extends BaseEvent implements Request<C, B> {
+public interface RepositoryTransactionContext extends RepositoryContext {
 
-	@Override
-	public final String getAddress() {
-		return "/" + SnomedDatastoreActivator.REPOSITORY_UUID + "/refsets";
-	}
-	
 }

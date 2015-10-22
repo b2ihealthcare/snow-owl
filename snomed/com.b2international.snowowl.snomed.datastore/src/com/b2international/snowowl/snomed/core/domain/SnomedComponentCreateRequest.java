@@ -15,14 +15,15 @@
  */
 package com.b2international.snowowl.snomed.core.domain;
 
-import com.b2international.snowowl.core.domain.RepositoryRequest;
+import com.b2international.snowowl.core.domain.RepositoryTransactionContext;
+import com.b2international.snowowl.core.events.Request;
 
 /**
  * Holds common properties required for creating SNOMED CT components.
  *
  * @since 4.5
  */
-public interface SnomedComponentCreateRequest<B> extends RepositoryRequest<B> {
+public interface SnomedComponentCreateRequest<B> extends Request<RepositoryTransactionContext, B> {
 
 	/**
 	 * Returns the component identifier generation strategy for this component (and optionally other, nested components, eg. descriptions of a

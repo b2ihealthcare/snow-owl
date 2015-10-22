@@ -23,7 +23,7 @@ import javax.validation.constraints.Size;
 
 import org.hibernate.validator.constraints.NotEmpty;
 
-import com.b2international.snowowl.core.domain.RepositoryContext;
+import com.b2international.snowowl.core.domain.RepositoryTransactionContext;
 import com.b2international.snowowl.core.exceptions.NotImplementedException;
 import com.b2international.snowowl.snomed.core.domain.BaseSnomedComponentCreateRequest;
 import com.b2international.snowowl.snomed.core.domain.ISnomedConcept;
@@ -71,7 +71,7 @@ public class DefaultSnomedConceptCreateRequest extends BaseSnomedComponentCreate
 	}
 
 	@Override
-	public ISnomedConcept execute(RepositoryContext context) {
+	public ISnomedConcept execute(RepositoryTransactionContext context) {
 		throw new NotImplementedException();
 	}
 
@@ -82,10 +82,6 @@ public class DefaultSnomedConceptCreateRequest extends BaseSnomedComponentCreate
 		builder.append(getIdGenerationStrategy());
 		builder.append(", getModuleId()=");
 		builder.append(getModuleId());
-		builder.append(", getCodeSystemShortName()=");
-		builder.append(getCodeSystemShortName());
-		builder.append(", getBranchPath()=");
-		builder.append(getBranchPath());
 		builder.append(", getParentId()=");
 		builder.append(getParentId());
 		builder.append(", getIsAIdGenerationStrategy()=");

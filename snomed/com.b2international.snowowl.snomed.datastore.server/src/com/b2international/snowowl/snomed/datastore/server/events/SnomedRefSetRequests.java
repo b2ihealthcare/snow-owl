@@ -15,7 +15,10 @@
  */
 package com.b2international.snowowl.snomed.datastore.server.events;
 
+import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.domain.CollectionResource;
+import com.b2international.snowowl.core.events.Request;
+import com.b2international.snowowl.datastore.request.RepositoryRequest;
 import com.b2international.snowowl.snomed.core.domain.SnomedReferenceSet;
 
 /**
@@ -26,12 +29,12 @@ public abstract class SnomedRefSetRequests {
 	private SnomedRefSetRequests() {
 	}
 	
-	public static SnomedRefSetRequest<CollectionResource<SnomedReferenceSet>> getAll(String branch) {
-		return new SnomedRefSetReadAllRequest(branch);
+	public static Request<? extends ServiceProvider, CollectionResource<SnomedReferenceSet>> prepareGetReferenceSets(String branch) {
+		return new RepositoryRequest<>("SNOMEDCT", branch, new SnomedRefSetReadAllRequest());
 	}
 	
-	public static SnomedRefSetRequest<SnomedReferenceSet> get(String branch, String referenceSetId) {
-		return new SnomedRefSetReadRequest(branch, referenceSetId);
+	public static Request<? extends ServiceProvider, SnomedReferenceSet> prepareGetReferenceSet(String branch, String referenceSetId) {
+		return new RepositoryRequest<>("SNOMEDCT", branch, new SnomedRefSetReadRequest(referenceSetId));
 	}
 	
 }

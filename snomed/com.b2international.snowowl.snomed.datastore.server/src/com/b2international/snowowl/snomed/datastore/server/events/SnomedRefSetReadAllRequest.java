@@ -28,17 +28,13 @@ import com.google.common.collect.ImmutableList;
 /**
  * @since 4.5
  */
-class SnomedRefSetReadAllRequest extends SnomedRefSetRequest<CollectionResource<SnomedReferenceSet>> {
+class SnomedRefSetReadAllRequest extends SnomedRefSetRequest<RepositoryContext, CollectionResource<SnomedReferenceSet>> {
 
 	private final SnomedReferenceSetConverter converter = new SnomedReferenceSetConverter();
 
-	protected SnomedRefSetReadAllRequest(String branch) {
-		super(branch);
-	}
-
 	@Override
 	public CollectionResource<SnomedReferenceSet> execute(RepositoryContext context) {
-		final IBranchPath branchPath = context.branch();
+		final IBranchPath branchPath = context.branch().branchPath();
 		final SnomedRefSetBrowser browser = context.service(SnomedRefSetBrowser.class);
 
 		final ImmutableList.Builder<SnomedReferenceSet> result = ImmutableList.builder();
