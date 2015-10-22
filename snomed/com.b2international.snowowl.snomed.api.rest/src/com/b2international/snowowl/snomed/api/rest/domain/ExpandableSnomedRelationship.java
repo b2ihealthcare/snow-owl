@@ -11,6 +11,7 @@ public class ExpandableSnomedRelationship implements ISnomedRelationship {
 	
 	private ISnomedRelationship wrappedRelationship;
 	private SnomedConceptMini source;
+	private SnomedConceptMini type;
 	
 	public ExpandableSnomedRelationship(ISnomedRelationship wrappedRelationship) {
 		this.wrappedRelationship = wrappedRelationship;
@@ -22,6 +23,14 @@ public class ExpandableSnomedRelationship implements ISnomedRelationship {
 
 	public SnomedConceptMini getSource() {
 		return source;
+	}
+
+	public void setType(SnomedConceptMini type) {
+		this.type = type;
+	}
+
+	public SnomedConceptMini getType() {
+		return type;
 	}
 
 	@Override

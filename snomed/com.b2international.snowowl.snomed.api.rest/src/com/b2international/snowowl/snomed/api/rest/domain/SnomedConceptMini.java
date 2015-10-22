@@ -9,6 +9,11 @@ public class SnomedConceptMini {
 		this.id = id;
 	}
 	
+	public SnomedConceptMini(String id, String fsn) {
+		this.id = id;
+		this.fsn = fsn;
+	}
+
 	public void setFsn(String fsn) {
 		this.fsn = fsn;
 	}

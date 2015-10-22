@@ -24,7 +24,7 @@ import com.b2international.snowowl.snomed.api.domain.ISnomedRelationship;
  */
 public class SnomedInboundRelationships {
 
-	private static String[] expandable = {"source.fsn"};
+	private static String[] expandable = {"source.fsn, type.fsn"};
 
 	private List<ISnomedRelationship> inboundRelationships;
 	private int total;
