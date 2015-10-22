@@ -13,18 +13,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.datastore.branch;
-
-import com.b2international.commons.exceptions.FormattedRuntimeException;
+package com.b2international.snowowl.core.branch;
 
 /**
+ * Represents an object capable of providing timestamp(s).
+ * 
  * @since 4.1
  */
-public class BranchMergeException extends FormattedRuntimeException {
+public interface TimestampProvider {
 
-	private static final long serialVersionUID = -119878531358715593L;
-	
-	public BranchMergeException(String template, Object... args) {
-		super(template, args);
-	}
+	/**
+	 * Provides a timestamp. Timestamps may be repeated on multiple invocations. 
+	 * 
+	 * @return
+	 */
+	long getTimestamp();
 }
