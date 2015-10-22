@@ -57,6 +57,8 @@ import com.b2international.commons.StringUtils;
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.api.SnowowlServiceException;
+import com.b2international.snowowl.core.branch.Branch;
+import com.b2international.snowowl.core.domain.TransactionContext;
 import com.b2international.snowowl.datastore.cdo.CDOQueryUtils;
 import com.b2international.snowowl.datastore.cdo.CDOUtils;
 import com.b2international.snowowl.datastore.cdo.ICDOConnection;
@@ -65,6 +67,7 @@ import com.b2international.snowowl.datastore.exception.RepositoryLockException;
 import com.b2international.snowowl.datastore.tasks.TaskManager;
 import com.b2international.snowowl.terminologymetadata.CodeSystemVersionGroup;
 import com.google.common.base.Preconditions;
+import com.google.inject.Provider;
 
 /**
  * This class is a thin, generic wrapper around the underlying {@link CDOTransaction}. 
@@ -72,7 +75,7 @@ import com.google.common.base.Preconditions;
  * specific classes.
  * 
  */
-public abstract class CDOEditingContext implements AutoCloseable {
+public abstract class CDOEditingContext implements AutoCloseable, TransactionContext {
 
 	/**
 	 * Number of retires to successfully commit the changes from an editing context.
@@ -102,6 +105,25 @@ public abstract class CDOEditingContext implements AutoCloseable {
 	
 	protected CDOEditingContext(final CDOTransaction cdoTransaction) {
 		this.transaction = CDOUtils.check(cdoTransaction);
+	}
+	
+	@Override
+	public Branch branch() {
+		return null;
+	}
+	
+	@Override
+	public void commit(String userId, String commitComment) {
+	}
+	
+	@Override
+	public <T> Provider<T> provider(Class<T> type) {
+		return null;
+	}
+	
+	@Override
+	public <T> T service(Class<T> type) {
+		return null;
 	}
 	
 	/*

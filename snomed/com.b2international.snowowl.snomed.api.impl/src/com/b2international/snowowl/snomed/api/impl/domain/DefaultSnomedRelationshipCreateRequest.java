@@ -21,7 +21,7 @@ import javax.validation.constraints.NotNull;
 
 import org.hibernate.validator.constraints.NotEmpty;
 
-import com.b2international.snowowl.core.domain.RepositoryTransactionContext;
+import com.b2international.snowowl.core.domain.TransactionContext;
 import com.b2international.snowowl.snomed.core.domain.BaseSnomedComponentCreateRequest;
 import com.b2international.snowowl.snomed.core.domain.CharacteristicType;
 import com.b2international.snowowl.snomed.core.domain.ISnomedRelationship;
@@ -131,7 +131,7 @@ public class DefaultSnomedRelationshipCreateRequest extends BaseSnomedComponentC
 	}
 
 	@Override
-	public ISnomedRelationship execute(RepositoryTransactionContext context) {
+	public ISnomedRelationship execute(TransactionContext context) {
 		throw new UnsupportedOperationException("Not migrated yet");
 	}
 

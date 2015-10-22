@@ -18,6 +18,10 @@ package com.b2international.snowowl.core.domain;
 /**
  * @since 4.5
  */
-public interface RepositoryTransactionContext extends RepositoryContext {
+public interface TransactionContext extends RepositoryContext, AutoCloseable {
+
+	void preCommit();
+	
+	void commit(String userId, String commitComment);
 
 }

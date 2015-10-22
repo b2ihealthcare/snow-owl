@@ -23,7 +23,7 @@ import javax.validation.constraints.Size;
 
 import org.hibernate.validator.constraints.NotEmpty;
 
-import com.b2international.snowowl.core.domain.RepositoryTransactionContext;
+import com.b2international.snowowl.core.domain.TransactionContext;
 import com.b2international.snowowl.core.exceptions.NotImplementedException;
 import com.b2international.snowowl.snomed.core.domain.BaseSnomedComponentCreateRequest;
 import com.b2international.snowowl.snomed.core.domain.ISnomedConcept;
@@ -71,7 +71,7 @@ public class DefaultSnomedConceptCreateRequest extends BaseSnomedComponentCreate
 	}
 
 	@Override
-	public ISnomedConcept execute(RepositoryTransactionContext context) {
+	public ISnomedConcept execute(TransactionContext context) {
 		throw new NotImplementedException();
 	}
 
