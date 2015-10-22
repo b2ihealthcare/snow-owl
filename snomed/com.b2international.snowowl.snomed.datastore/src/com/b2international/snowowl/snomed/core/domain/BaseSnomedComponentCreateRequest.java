@@ -47,7 +47,7 @@ public abstract class BaseSnomedComponentCreateRequest<B> extends BaseEvent impl
 	}
 	
 	@Override
-	public String getAddress() {
+	protected String getAddress() {
 		throw new UnsupportedOperationException();
 	}
 	

@@ -33,7 +33,7 @@ public abstract class BaseRepositoryEvent extends BaseEvent {
 	}
 
 	@Override
-	public final String getAddress() {
+	protected final String getAddress() {
 		return String.format("/%s%s", repositoryId, getPath());
 	}
 

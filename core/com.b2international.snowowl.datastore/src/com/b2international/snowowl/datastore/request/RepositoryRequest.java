@@ -21,13 +21,12 @@ import java.util.concurrent.TimeoutException;
 
 import org.eclipse.emf.cdo.common.branch.CDOBranch;
 
-import com.b2international.commons.ClassUtils;
 import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.api.SnowowlRuntimeException;
 import com.b2international.snowowl.core.branch.Branch;
 import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.core.domain.exceptions.CodeSystemNotFoundException;
-import com.b2international.snowowl.core.events.BaseEvent;
+import com.b2international.snowowl.core.events.DelegatingRequest;
 import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.core.exceptions.BadRequestException;
 import com.b2international.snowowl.core.exceptions.NotFoundException;
@@ -46,20 +45,19 @@ import com.google.inject.Provider;
 /**
  * @since 4.5
  */
-public final class RepositoryRequest<B> extends BaseEvent implements Request<ServiceProvider, B>{
+public final class RepositoryRequest<B> extends DelegatingRequest<ServiceProvider, RepositoryContext, B> {
 
 	private static final IBranchPathMap MAIN_BRANCH_PATH_MAP = new UserBranchPathMap();
 	private static final long DEFAULT_ASYNC_TIMEOUT_DELAY = 5000;
 	
 	private final String codeSystemShortName;
 	private final String branchPath;
-	private final Request<RepositoryContext, B> original;
 
 	// TODO replace short name with repositoryId or define which is the one true ID
 	public RepositoryRequest(String codeSystemShortName, String branchPath, Request<RepositoryContext, B> original) {
+		super(original);
 		this.codeSystemShortName = codeSystemShortName;
 		this.branchPath = branchPath;
-		this.original = original;
 	}
 	
 	@Override
@@ -67,7 +65,7 @@ public final class RepositoryRequest<B> extends BaseEvent implements Request<Ser
 		final Branch branch = ensureAvailability(context);
 		// TODO replace execution with event bus dispatch??? or pass it onto a worker thread and do not execute on event thread
 		// repositories could have fixed (but configurable) amount of worker thread
-		return original.execute(new RepositoryContext() {
+		return next(new RepositoryContext() {
 			@Override
 			public <T> T service(Class<T> type) {
 				return context.service(type);
@@ -132,12 +130,6 @@ public final class RepositoryRequest<B> extends BaseEvent implements Request<Ser
 		}
 		
 		return branch;
-	}
-	
-	@Override
-	public String getAddress() {
-		final BaseEvent originalBase = ClassUtils.checkAndCast(original, BaseEvent.class);
-		return originalBase.getAddress();
 	}
 	
 }

@@ -37,7 +37,7 @@ public abstract class BaseReviewEvent extends BaseEvent {
 	}
 
 	@Override
-	public final String getAddress() {
+	protected final String getAddress() {
 		return "/" + repositoryId + "/reviews";
 	}
 }

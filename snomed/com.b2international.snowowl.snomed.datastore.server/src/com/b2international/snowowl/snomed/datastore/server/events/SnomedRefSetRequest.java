@@ -26,7 +26,7 @@ import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 public abstract class SnomedRefSetRequest<C extends RepositoryContext, B> extends BaseEvent implements Request<C, B> {
 
 	@Override
-	public final String getAddress() {
+	protected final String getAddress() {
 		return "/" + SnomedDatastoreActivator.REPOSITORY_UUID + "/refsets";
 	}
 	
