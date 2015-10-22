@@ -15,7 +15,7 @@
  */
 package com.b2international.snowowl.datastore.server.internal.review;
 
-import com.b2international.snowowl.datastore.server.review.ConceptChangesMixin;
+import com.b2international.snowowl.datastore.review.ConceptChangesMixin;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 /**

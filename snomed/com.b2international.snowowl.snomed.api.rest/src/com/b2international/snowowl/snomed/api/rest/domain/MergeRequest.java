@@ -18,7 +18,7 @@ package com.b2international.snowowl.snomed.api.rest.domain;
 import org.hibernate.validator.constraints.NotEmpty;
 
 import com.b2international.snowowl.core.events.Event;
-import com.b2international.snowowl.datastore.server.events.MergeEvent;
+import com.b2international.snowowl.datastore.events.MergeEvent;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.wordnik.swagger.annotations.ApiModel;
 import com.wordnik.swagger.annotations.ApiModelProperty;

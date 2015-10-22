@@ -16,7 +16,7 @@
 package com.b2international.snowowl.core.domain;
 
 import com.b2international.snowowl.core.ServiceProvider;
-import com.b2international.snowowl.core.api.IBranchPath;
+import com.b2international.snowowl.core.branch.Branch;
 import com.b2international.snowowl.core.events.Request;
 
 /**
@@ -27,8 +27,10 @@ import com.b2international.snowowl.core.events.Request;
 public interface RepositoryContext extends ServiceProvider {
 
 	/**
-	 * @deprecated - replace it with Branch
+	 * Returns the branch where a {@link Request} should be executed.
+	 * 
+	 * @return
 	 */
-	IBranchPath branch();
+	Branch branch();
 
 }

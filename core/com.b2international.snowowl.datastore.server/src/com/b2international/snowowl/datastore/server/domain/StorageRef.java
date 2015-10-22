@@ -21,9 +21,10 @@ import java.util.concurrent.TimeoutException;
 
 import org.eclipse.emf.cdo.common.branch.CDOBranch;
 
-import com.b2international.snowowl.core.domain.exceptions.CodeSystemNotFoundException;
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.api.SnowowlRuntimeException;
+import com.b2international.snowowl.core.branch.Branch;
+import com.b2international.snowowl.core.domain.exceptions.CodeSystemNotFoundException;
 import com.b2international.snowowl.core.exceptions.BadRequestException;
 import com.b2international.snowowl.core.exceptions.NotFoundException;
 import com.b2international.snowowl.core.exceptions.RequestTimeoutException;
@@ -31,10 +32,9 @@ import com.b2international.snowowl.datastore.IBranchPathMap;
 import com.b2international.snowowl.datastore.ICodeSystem;
 import com.b2international.snowowl.datastore.TerminologyRegistryService;
 import com.b2international.snowowl.datastore.UserBranchPathMap;
-import com.b2international.snowowl.datastore.branch.Branch;
 import com.b2international.snowowl.datastore.cdo.ICDOConnectionManager;
-import com.b2international.snowowl.datastore.server.events.BranchReply;
-import com.b2international.snowowl.datastore.server.events.ReadBranchEvent;
+import com.b2international.snowowl.datastore.events.BranchReply;
+import com.b2international.snowowl.datastore.events.ReadBranchEvent;
 import com.b2international.snowowl.eventbus.IEventBus;
 
 /**

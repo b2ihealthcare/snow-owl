@@ -19,7 +19,7 @@ import java.util.concurrent.atomic.AtomicLong;
 
 import org.eclipse.emf.cdo.common.util.CDOTimeProvider;
 
-import com.b2international.snowowl.datastore.branch.TimestampProvider;
+import com.b2international.snowowl.core.branch.TimestampProvider;
 
 /**
  * @since 4.1

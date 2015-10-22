@@ -39,10 +39,10 @@ import com.b2international.snowowl.datastore.IBranchPathMap;
 import com.b2international.snowowl.datastore.cdo.ConflictWrapper;
 import com.b2international.snowowl.datastore.cdo.CustomConflictException;
 import com.b2international.snowowl.datastore.cdo.ICDOConnection;
+import com.b2international.snowowl.datastore.events.BranchReply;
+import com.b2international.snowowl.datastore.events.ReopenBranchEvent;
 import com.b2international.snowowl.datastore.oplock.impl.DatastoreLockContextDescriptions;
 import com.b2international.snowowl.datastore.server.CDOServerCommitBuilder;
-import com.b2international.snowowl.datastore.server.events.BranchReply;
-import com.b2international.snowowl.datastore.server.events.ReopenBranchEvent;
 import com.b2international.snowowl.datastore.server.internal.branch.CDOBranchMerger;
 import com.b2international.snowowl.eventbus.IEventBus;
 

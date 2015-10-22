@@ -17,15 +17,21 @@ package com.b2international.snowowl.datastore.server.internal.review;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
+import com.b2international.snowowl.core.branch.Branch;
+import com.b2international.snowowl.core.branch.BranchManager;
 import com.b2international.snowowl.core.events.util.ApiEventHandler;
 import com.b2international.snowowl.core.events.util.Handler;
 import com.b2international.snowowl.core.exceptions.NotFoundException;
-import com.b2international.snowowl.datastore.branch.Branch;
-import com.b2international.snowowl.datastore.branch.BranchManager;
-import com.b2international.snowowl.datastore.server.events.*;
-import com.b2international.snowowl.datastore.server.review.ConceptChanges;
-import com.b2international.snowowl.datastore.server.review.Review;
-import com.b2international.snowowl.datastore.server.review.ReviewManager;
+import com.b2international.snowowl.datastore.events.ConceptChangesReply;
+import com.b2international.snowowl.datastore.events.CreateReviewEvent;
+import com.b2international.snowowl.datastore.events.DeleteReviewEvent;
+import com.b2international.snowowl.datastore.events.ReadConceptChangesEvent;
+import com.b2international.snowowl.datastore.events.ReadReviewEvent;
+import com.b2international.snowowl.datastore.events.ReviewEvent;
+import com.b2international.snowowl.datastore.events.ReviewReply;
+import com.b2international.snowowl.datastore.review.ConceptChanges;
+import com.b2international.snowowl.datastore.review.Review;
+import com.b2international.snowowl.datastore.review.ReviewManager;
 
 /**
  * @since 4.2

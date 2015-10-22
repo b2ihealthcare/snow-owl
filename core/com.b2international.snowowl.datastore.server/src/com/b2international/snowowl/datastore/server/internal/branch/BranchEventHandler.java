@@ -18,27 +18,27 @@ package com.b2international.snowowl.datastore.server.internal.branch;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.collect.Sets.newHashSet;
 
+import com.b2international.snowowl.core.branch.Branch;
+import com.b2international.snowowl.core.branch.BranchManager;
+import com.b2international.snowowl.core.branch.BranchMergeException;
 import com.b2international.snowowl.core.events.util.ApiEventHandler;
 import com.b2international.snowowl.core.events.util.Handler;
 import com.b2international.snowowl.core.exceptions.BadRequestException;
 import com.b2international.snowowl.core.exceptions.ConflictException;
 import com.b2international.snowowl.core.exceptions.NotFoundException;
-import com.b2international.snowowl.datastore.branch.Branch;
-import com.b2international.snowowl.datastore.branch.BranchManager;
-import com.b2international.snowowl.datastore.branch.BranchMergeException;
-import com.b2international.snowowl.datastore.server.events.BranchEvent;
-import com.b2international.snowowl.datastore.server.events.BranchReply;
-import com.b2international.snowowl.datastore.server.events.BranchesReply;
-import com.b2international.snowowl.datastore.server.events.CreateBranchEvent;
-import com.b2international.snowowl.datastore.server.events.DeleteBranchEvent;
-import com.b2international.snowowl.datastore.server.events.MergeEvent;
-import com.b2international.snowowl.datastore.server.events.ReadAllBranchEvent;
-import com.b2international.snowowl.datastore.server.events.ReadBranchChildrenEvent;
-import com.b2international.snowowl.datastore.server.events.ReadBranchEvent;
-import com.b2international.snowowl.datastore.server.events.ReopenBranchEvent;
-import com.b2international.snowowl.datastore.server.review.BranchState;
-import com.b2international.snowowl.datastore.server.review.Review;
-import com.b2international.snowowl.datastore.server.review.ReviewManager;
+import com.b2international.snowowl.datastore.events.BranchEvent;
+import com.b2international.snowowl.datastore.events.BranchReply;
+import com.b2international.snowowl.datastore.events.BranchesReply;
+import com.b2international.snowowl.datastore.events.CreateBranchEvent;
+import com.b2international.snowowl.datastore.events.DeleteBranchEvent;
+import com.b2international.snowowl.datastore.events.MergeEvent;
+import com.b2international.snowowl.datastore.events.ReadAllBranchEvent;
+import com.b2international.snowowl.datastore.events.ReadBranchChildrenEvent;
+import com.b2international.snowowl.datastore.events.ReadBranchEvent;
+import com.b2international.snowowl.datastore.events.ReopenBranchEvent;
+import com.b2international.snowowl.datastore.review.BranchState;
+import com.b2international.snowowl.datastore.review.Review;
+import com.b2international.snowowl.datastore.review.ReviewManager;
 
 /**
  * @since 4.1

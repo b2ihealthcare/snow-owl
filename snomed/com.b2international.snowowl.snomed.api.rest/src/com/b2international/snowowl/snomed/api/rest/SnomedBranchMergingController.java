@@ -28,7 +28,7 @@ import org.springframework.web.context.request.async.DeferredResult;
 
 import com.b2international.commons.collections.Procedure;
 import com.b2international.snowowl.core.exceptions.ApiValidation;
-import com.b2international.snowowl.datastore.server.events.BranchReply;
+import com.b2international.snowowl.datastore.events.BranchReply;
 import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.snomed.api.rest.domain.MergeRequest;
 import com.b2international.snowowl.snomed.api.rest.domain.RestApiError;

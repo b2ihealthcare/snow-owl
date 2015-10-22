@@ -18,8 +18,8 @@ package com.b2international.snowowl.datastore.server.internal.branch;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
-import com.b2international.snowowl.datastore.branch.Branch;
-import com.b2international.snowowl.datastore.branch.Branch.BranchState;
+import com.b2international.snowowl.core.branch.Branch;
+import com.b2international.snowowl.core.branch.Branch.BranchState;
 
 /**
  * @since 4.1
