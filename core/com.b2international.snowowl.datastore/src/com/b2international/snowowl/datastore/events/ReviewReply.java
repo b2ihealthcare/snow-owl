@@ -13,16 +13,24 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.datastore.server.events;
+package com.b2international.snowowl.datastore.events;
+
+import com.b2international.snowowl.datastore.review.Review;
 
 /**
- * Sent when a user requests to read the details of a terminology review with the specified identifier.
+ * Sent when a terminology review object is successfully created, read or deleted.
  * 
  * @since 4.2
  */
-public class ReadReviewEvent extends ReviewEvent {
+public class ReviewReply {
 
-	public ReadReviewEvent(final String repositoryId, final String reviewId) {
-		super(repositoryId, reviewId);
+	private final Review review;
+
+	public ReviewReply(final Review review) {
+		this.review = review;
+	}
+
+	public Review getReview() {
+		return review;
 	}
 }

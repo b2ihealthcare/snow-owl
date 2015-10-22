@@ -13,9 +13,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.datastore.server.events;
+package com.b2international.snowowl.datastore.events;
 
-import com.b2international.snowowl.datastore.server.review.ConceptChanges;
+import com.b2international.snowowl.datastore.review.ConceptChanges;
 
 /**
  * Sent when a review change set is successfully read.

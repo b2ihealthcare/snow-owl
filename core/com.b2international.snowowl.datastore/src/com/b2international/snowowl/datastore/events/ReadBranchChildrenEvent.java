@@ -13,16 +13,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.datastore.server.events;
+package com.b2international.snowowl.datastore.events;
 
 /**
- * Sent when a user requests to read change set of a terminology review with the specified identifier.
- * 
- * @since 4.2
+ * @since 4.1
  */
-public class ReadConceptChangesEvent extends ReviewEvent {
+public class ReadBranchChildrenEvent extends BranchEvent {
 
-	public ReadConceptChangesEvent(final String repositoryId, final String reviewId) {
-		super(repositoryId, reviewId);
+	public ReadBranchChildrenEvent(String repositoryId, String branchPath) {
+		super(repositoryId, branchPath);
 	}
+	
 }

@@ -13,15 +13,21 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.datastore.server.events;
+package com.b2international.snowowl.datastore.events;
 
+import com.b2international.snowowl.core.events.BaseRepositoryEvent;
 
 /**
  * @since 4.1
  */
-public class ReadBranchEvent extends BranchEvent {
+public abstract class BaseBranchEvent extends BaseRepositoryEvent {
 
-	public ReadBranchEvent(final String repositoryId, final String branchPath) {
-		super(repositoryId, branchPath);
+	protected BaseBranchEvent(String repositoryId) {
+		super(repositoryId);
+	}
+
+	@Override
+	protected String getPath() {
+		return "/branches";
 	}
 }

@@ -13,31 +13,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.datastore.server.events;
-
-import static com.google.common.base.Preconditions.checkNotNull;
-
-import com.b2international.snowowl.core.events.BaseEvent;
+package com.b2international.snowowl.datastore.events;
 
 /**
- * Abstract superclass for events related to reviewing changes between branches.
+ * Sent when a user requests to read change set of a terminology review with the specified identifier.
  * 
  * @since 4.2
  */
-public abstract class BaseReviewEvent extends BaseEvent {
+public class ReadConceptChangesEvent extends ReviewEvent {
 
-	private final String repositoryId;
-
-	protected BaseReviewEvent(final String repositoryId) {
-		this.repositoryId = checkNotNull(repositoryId, "repositoryId");
-	}
-
-	public String getRepositoryId() {
-		return repositoryId;
-	}
-
-	@Override
-	protected final String getAddress() {
-		return "/" + repositoryId + "/reviews";
+	public ReadConceptChangesEvent(final String repositoryId, final String reviewId) {
+		super(repositoryId, reviewId);
 	}
 }

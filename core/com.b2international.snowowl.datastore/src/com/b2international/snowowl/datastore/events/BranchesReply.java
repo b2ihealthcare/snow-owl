@@ -13,24 +13,25 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.datastore.server.events;
+package com.b2international.snowowl.datastore.events;
 
-import com.b2international.snowowl.datastore.branch.Branch;
+import java.util.Collection;
+import java.util.Collections;
+
+import com.b2international.snowowl.core.branch.Branch;
 
 /**
- * Common success reply used when sending {@link BaseBranchEvent}s into the system.
- * 
  * @since 4.1
  */
-public class BranchReply {
+public class BranchesReply {
 
-	private final Branch branch;
+	private final Collection<Branch> branches;
 
-	public BranchReply(final Branch branch) {
-		this.branch = branch;
+	public BranchesReply(final Collection<Branch> branches) {
+		this.branches = branches == null ? Collections.<Branch>emptySet() : branches;
 	}
 
-	public Branch getBranch() {
-		return branch;
+	public Collection<Branch> getBranches() {
+		return branches;
 	}
 }

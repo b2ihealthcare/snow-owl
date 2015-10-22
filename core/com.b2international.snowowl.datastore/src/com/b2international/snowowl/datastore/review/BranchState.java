@@ -13,24 +13,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.datastore.server.review;
+package com.b2international.snowowl.datastore.review;
+
+import com.b2international.snowowl.core.branch.Branch;
 
 /**
- * Enumerates possible states of a terminology review.
- *
  * @since 4.2
  */
-public enum ReviewStatus {
+public interface BranchState {
 
-	/** New, changed and detached concepts are still being collected. */
-	PENDING,
-
-	/** Changes are available, no commits have happened since the start of the review. */
-	CURRENT,
-
-	/** Computed differences are not up-to-date; a commit on either of the compared branches invalidated it. */
-	STALE,
+	String path();
 	
-	/** Differences could not be computed for some reason. */
-	FAILED
+	long baseTimestamp();
+	
+	long headTimestamp();
+	
+	boolean matches(Branch branch);
 }

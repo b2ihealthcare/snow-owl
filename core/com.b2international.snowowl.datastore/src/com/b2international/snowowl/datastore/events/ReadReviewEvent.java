@@ -13,25 +13,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.datastore.server.events;
-
-import java.util.Collection;
-import java.util.Collections;
-
-import com.b2international.snowowl.datastore.branch.Branch;
+package com.b2international.snowowl.datastore.events;
 
 /**
- * @since 4.1
+ * Sent when a user requests to read the details of a terminology review with the specified identifier.
+ * 
+ * @since 4.2
  */
-public class BranchesReply {
+public class ReadReviewEvent extends ReviewEvent {
 
-	private final Collection<Branch> branches;
-
-	public BranchesReply(final Collection<Branch> branches) {
-		this.branches = branches == null ? Collections.<Branch>emptySet() : branches;
-	}
-
-	public Collection<Branch> getBranches() {
-		return branches;
+	public ReadReviewEvent(final String repositoryId, final String reviewId) {
+		super(repositoryId, reviewId);
 	}
 }

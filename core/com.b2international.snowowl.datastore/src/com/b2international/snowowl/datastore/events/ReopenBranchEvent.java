@@ -13,20 +13,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.datastore.server.review;
-
-import com.b2international.snowowl.datastore.branch.Branch;
+package com.b2international.snowowl.datastore.events;
 
 /**
- * @since 4.2
+ * @since 4.1
  */
-public interface BranchState {
-
-	String path();
-	
-	long baseTimestamp();
-	
-	long headTimestamp();
-	
-	boolean matches(Branch branch);
+public class ReopenBranchEvent extends BranchEvent {
+	public ReopenBranchEvent(final String repositoryId, final String path) {
+		super(repositoryId, path);
+	}
 }

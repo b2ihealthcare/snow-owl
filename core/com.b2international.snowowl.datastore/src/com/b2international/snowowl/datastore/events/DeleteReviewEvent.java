@@ -13,14 +13,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.datastore.server.events;
+package com.b2international.snowowl.datastore.events;
 
 /**
- * @since 4.1
+ * Sent when a user requests a review to be deleted.
+ * 
+ * @since 4.2
  */
-public class ReadAllBranchEvent extends BaseBranchEvent {
+public class DeleteReviewEvent extends ReviewEvent {
 
-	public ReadAllBranchEvent(final String repositoryId) {
-		super(repositoryId);
+	public DeleteReviewEvent(final String repositoryId, final String diffId) {
+		super(repositoryId, diffId);
 	}
 }

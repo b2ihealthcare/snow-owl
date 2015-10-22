@@ -13,24 +13,30 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.datastore.server.events;
+package com.b2international.snowowl.datastore.events;
 
-import com.b2international.snowowl.datastore.server.review.Review;
+import static com.google.common.base.Preconditions.checkNotNull;
+
+import com.b2international.snowowl.core.branch.Branch;
 
 /**
- * Sent when a terminology review object is successfully created, read or deleted.
- * 
- * @since 4.2
+ * @since 4.3
  */
-public class ReviewReply {
-
-	private final Review review;
-
-	public ReviewReply(final Review review) {
-		this.review = review;
+public class BranchChangedEvent extends BaseBranchEvent {
+	
+	private final Branch branch;
+	
+	public BranchChangedEvent(final String repositoryId, final Branch branch) {
+		super(repositoryId);
+		this.branch = checkNotNull(branch, "branch");
+	}
+	
+	public Branch getBranch() {
+		return branch;
 	}
 
-	public Review getReview() {
-		return review;
+	@Override
+	protected String getPath() {
+		return super.getPath() + "/changes";
 	}
 }

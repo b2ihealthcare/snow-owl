@@ -13,30 +13,23 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.datastore.server.events;
+package com.b2international.snowowl.datastore.events;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
-import com.b2international.snowowl.datastore.branch.Branch;
-
 /**
- * @since 4.3
+ * @since 4.1
  */
-public class BranchChangedEvent extends BaseBranchEvent {
-	
-	private final Branch branch;
-	
-	public BranchChangedEvent(final String repositoryId, final Branch branch) {
+public abstract class BranchEvent extends BaseBranchEvent {
+
+	private final String branchPath;
+
+	public BranchEvent(final String repositoryId, final String branchPath) {
 		super(repositoryId);
-		this.branch = checkNotNull(branch, "branch");
-	}
-	
-	public Branch getBranch() {
-		return branch;
+		this.branchPath = checkNotNull(branchPath, "branchPath");
 	}
 
-	@Override
-	protected String getPath() {
-		return super.getPath() + "/changes";
+	public final String getBranchPath() {
+		return branchPath;
 	}
 }

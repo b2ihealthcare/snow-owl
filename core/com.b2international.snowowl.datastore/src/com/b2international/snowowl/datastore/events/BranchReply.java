@@ -13,23 +13,24 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.datastore.server.events;
+package com.b2international.snowowl.datastore.events;
 
-import static com.google.common.base.Preconditions.checkNotNull;
+import com.b2international.snowowl.core.branch.Branch;
 
 /**
+ * Common success reply used when sending {@link BaseBranchEvent}s into the system.
+ * 
  * @since 4.1
  */
-public abstract class BranchEvent extends BaseBranchEvent {
+public class BranchReply {
 
-	private final String branchPath;
+	private final Branch branch;
 
-	public BranchEvent(final String repositoryId, final String branchPath) {
-		super(repositoryId);
-		this.branchPath = checkNotNull(branchPath, "branchPath");
+	public BranchReply(final Branch branch) {
+		this.branch = branch;
 	}
 
-	public final String getBranchPath() {
-		return branchPath;
+	public Branch getBranch() {
+		return branch;
 	}
 }

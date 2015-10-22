@@ -13,25 +13,24 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.datastore.server.events;
-
-import static com.google.common.base.Preconditions.checkNotNull;
+package com.b2international.snowowl.datastore.review;
 
 /**
- * An abstract superclass for terminology review events which include the affected review's identifier.
- * 
+ * Enumerates possible states of a terminology review.
+ *
  * @since 4.2
  */
-public abstract class ReviewEvent extends BaseReviewEvent {
+public enum ReviewStatus {
 
-	private final String reviewId;
+	/** New, changed and detached concepts are still being collected. */
+	PENDING,
 
-	public ReviewEvent(final String repositoryId, final String reviewId) {
-		super(repositoryId);
-		this.reviewId = checkNotNull(reviewId, "reviewId");
-	}
+	/** Changes are available, no commits have happened since the start of the review. */
+	CURRENT,
 
-	public final String getReviewId() {
-		return reviewId;
-	}
+	/** Computed differences are not up-to-date; a commit on either of the compared branches invalidated it. */
+	STALE,
+	
+	/** Differences could not be computed for some reason. */
+	FAILED
 }
