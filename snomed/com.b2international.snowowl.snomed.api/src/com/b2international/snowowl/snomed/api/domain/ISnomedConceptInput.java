@@ -46,4 +46,13 @@ public interface ISnomedConceptInput extends ISnomedComponentInput {
 	 * @return the {@code IS A} relationship identifier generation strategy
 	 */
 	IdGenerationStrategy getIsAIdGenerationStrategy();
+	
+	/**
+	 * Returns the desired definition status of the concept.
+	 * 
+	 * @return {@link DefinitionStatus#PRIMITIVE} if the concept should be created as primitive,
+	 * {@link DefinitionStatus#FULLY_DEFINED} if the status should be set to fully defined.
+	 */
+	DefinitionStatus getDefinitionStatus();
+
 }

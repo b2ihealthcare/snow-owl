@@ -181,7 +181,7 @@ public class SnomedConceptServiceImpl
 			concept.unsetEffectiveTime();
 			concept.setReleased(false);
 			concept.setModule(getModuleConcept(input, editingContext));
-			concept.setDefinitionStatus(getConcept(PRIMITIVE, editingContext));
+			concept.setDefinitionStatus(getConcept(input.getDefinitionStatus().getConceptId(), editingContext));
 			concept.setExhaustive(false);
 
 			return concept;
