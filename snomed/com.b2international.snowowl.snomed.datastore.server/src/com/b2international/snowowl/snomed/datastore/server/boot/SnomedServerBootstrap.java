@@ -18,11 +18,11 @@ package com.b2international.snowowl.snomed.datastore.server.boot;
 import org.eclipse.core.runtime.IProgressMonitor;
 
 import com.b2international.snowowl.core.config.SnowOwlConfiguration;
+import com.b2international.snowowl.core.events.util.ApiRequestHandler;
 import com.b2international.snowowl.core.setup.BootstrapFragment;
 import com.b2international.snowowl.core.setup.Environment;
 import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
-import com.b2international.snowowl.snomed.datastore.server.internal.refset.SnomedReferenceSetEventHandler;
 
 /**
  * @since 4.5
@@ -36,7 +36,7 @@ public class SnomedServerBootstrap implements BootstrapFragment {
 	@Override
 	public void run(SnowOwlConfiguration configuration, Environment env, IProgressMonitor monitor) throws Exception {
 		if (env.isServer() || env.isEmbedded()) {
-			env.service(IEventBus.class).registerHandler("/" + SnomedDatastoreActivator.REPOSITORY_UUID + "/refsets", new SnomedReferenceSetEventHandler(env));
+			env.service(IEventBus.class).registerHandler("/" + SnomedDatastoreActivator.REPOSITORY_UUID + "/refsets", new ApiRequestHandler(env));
 		}
 	}
 
