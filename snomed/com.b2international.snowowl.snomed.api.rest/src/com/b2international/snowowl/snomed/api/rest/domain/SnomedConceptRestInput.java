@@ -23,7 +23,7 @@ import java.util.List;
 import com.b2international.snowowl.core.terminology.ComponentCategory;
 import com.b2international.snowowl.snomed.datastore.server.events.SnomedConceptCreateRequest;
 import com.b2international.snowowl.snomed.core.domain.ISnomedConcept;
-import com.b2international.snowowl.snomed.datastore.server.events.DefaultSnomedDescriptionCreateRequest;
+import com.b2international.snowowl.snomed.datastore.server.events.SnomedDescriptionCreateRequest;
 
 /**
  * @since 1.0
@@ -78,7 +78,7 @@ public class SnomedConceptRestInput extends AbstractSnomedComponentRestInput<Sno
 
 		result.setIsAIdGenerationStrategy(createIdGenerationStrategy(getIsAId(), ComponentCategory.RELATIONSHIP));
 
-		final List<DefaultSnomedDescriptionCreateRequest> descriptionInputs = newArrayList();
+		final List<SnomedDescriptionCreateRequest> descriptionInputs = newArrayList();
 		for (SnomedDescriptionRestInput restDescription : getDescriptions()) {
 			// Propagate namespace from concept if present, and the description does not already have one
 			if (null == restDescription.getNamespaceId()) {

@@ -19,12 +19,12 @@ import com.b2international.snowowl.core.terminology.ComponentCategory;
 import com.b2international.snowowl.snomed.core.domain.CharacteristicType;
 import com.b2international.snowowl.snomed.core.domain.ISnomedRelationship;
 import com.b2international.snowowl.snomed.core.domain.RelationshipModifier;
-import com.b2international.snowowl.snomed.datastore.server.events.DefaultSnomedRelationshipCreateRequest;
+import com.b2international.snowowl.snomed.datastore.server.events.SnomedRelationshipCreateRequest;
 
 /**
  * @since 1.0
  */
-public class SnomedRelationshipRestInput extends AbstractSnomedComponentRestInput<DefaultSnomedRelationshipCreateRequest, ISnomedRelationship> {
+public class SnomedRelationshipRestInput extends AbstractSnomedComponentRestInput<SnomedRelationshipCreateRequest, ISnomedRelationship> {
 
 	private CharacteristicType characteristicType = CharacteristicType.STATED_RELATIONSHIP;
 	private String destinationId;
@@ -100,16 +100,16 @@ public class SnomedRelationshipRestInput extends AbstractSnomedComponentRestInpu
 	}
 
 	@Override
-	protected DefaultSnomedRelationshipCreateRequest createComponentInput() {
-		return new DefaultSnomedRelationshipCreateRequest();
+	protected SnomedRelationshipCreateRequest createComponentInput() {
+		return new SnomedRelationshipCreateRequest();
 	}
 
 	/**
 	 * @return
 	 */
 	@Override
-	public DefaultSnomedRelationshipCreateRequest toComponentInput(final String branchPath, final String codeSystemShortName) {
-		final DefaultSnomedRelationshipCreateRequest result = super.toComponentInput(branchPath, codeSystemShortName);
+	public SnomedRelationshipCreateRequest toComponentInput(final String branchPath, final String codeSystemShortName) {
+		final SnomedRelationshipCreateRequest result = super.toComponentInput(branchPath, codeSystemShortName);
 
 		result.setCharacteristicType(getCharacteristicType());
 		result.setDestinationId(getDestinationId());

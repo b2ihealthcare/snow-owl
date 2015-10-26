@@ -21,18 +21,15 @@ import javax.validation.constraints.NotNull;
 
 import org.hibernate.validator.constraints.NotEmpty;
 
-import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.core.domain.TransactionContext;
 import com.b2international.snowowl.snomed.core.domain.Acceptability;
-import com.b2international.snowowl.snomed.core.domain.BaseSnomedComponentCreateRequest;
 import com.b2international.snowowl.snomed.core.domain.CaseSignificance;
 import com.b2international.snowowl.snomed.core.domain.ISnomedDescription;
-import com.b2international.snowowl.snomed.core.domain.SnomedDescriptionCreateRequest;
 
 /**
  * @since 4.5
  */
-public class DefaultSnomedDescriptionCreateRequest extends BaseSnomedComponentCreateRequest<ISnomedDescription> implements SnomedDescriptionCreateRequest {
+public class SnomedDescriptionCreateRequest extends BaseSnomedComponentCreateRequest<ISnomedDescription> {
 
 	private String conceptId;
 
@@ -51,32 +48,26 @@ public class DefaultSnomedDescriptionCreateRequest extends BaseSnomedComponentCr
 	@NotEmpty
 	private Map<String, Acceptability> acceptability;
 
-	@Override
 	public String getConceptId() {
 		return conceptId;
 	}
 
-	@Override
 	public String getTypeId() {
 		return typeId;
 	}
 
-	@Override
 	public String getTerm() {
 		return term;
 	}
 
-	@Override
 	public String getLanguageCode() {
 		return languageCode;
 	}
 
-	@Override
 	public CaseSignificance getCaseSignificance() {
 		return caseSignificance;
 	}
 
-	@Override
 	public Map<String, Acceptability> getAcceptability() {
 		return acceptability;
 	}

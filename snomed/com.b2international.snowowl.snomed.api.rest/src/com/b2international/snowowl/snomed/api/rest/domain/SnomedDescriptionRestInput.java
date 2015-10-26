@@ -21,12 +21,12 @@ import com.b2international.snowowl.core.terminology.ComponentCategory;
 import com.b2international.snowowl.snomed.core.domain.Acceptability;
 import com.b2international.snowowl.snomed.core.domain.CaseSignificance;
 import com.b2international.snowowl.snomed.core.domain.ISnomedDescription;
-import com.b2international.snowowl.snomed.datastore.server.events.DefaultSnomedDescriptionCreateRequest;
+import com.b2international.snowowl.snomed.datastore.server.events.SnomedDescriptionCreateRequest;
 
 /**
  * @since 1.0
  */
-public class SnomedDescriptionRestInput extends AbstractSnomedComponentRestInput<DefaultSnomedDescriptionCreateRequest, ISnomedDescription> {
+public class SnomedDescriptionRestInput extends AbstractSnomedComponentRestInput<SnomedDescriptionCreateRequest, ISnomedDescription> {
 
 	private String typeId;
 	private String term;
@@ -99,16 +99,16 @@ public class SnomedDescriptionRestInput extends AbstractSnomedComponentRestInput
 	}
 
 	@Override
-	protected DefaultSnomedDescriptionCreateRequest createComponentInput() {
-		return new DefaultSnomedDescriptionCreateRequest();
+	protected SnomedDescriptionCreateRequest createComponentInput() {
+		return new SnomedDescriptionCreateRequest();
 	}
 
 	/**
 	 * @return
 	 */
 	@Override
-	public DefaultSnomedDescriptionCreateRequest toComponentInput(final String branchPath, final String codeSystemShortName) {
-		final DefaultSnomedDescriptionCreateRequest result = super.toComponentInput(branchPath, codeSystemShortName);
+	public SnomedDescriptionCreateRequest toComponentInput(final String branchPath, final String codeSystemShortName) {
+		final SnomedDescriptionCreateRequest result = super.toComponentInput(branchPath, codeSystemShortName);
 
 		result.setCaseSignificance(getCaseSignificance());
 		result.setConceptId(getConceptId());

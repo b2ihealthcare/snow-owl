@@ -36,7 +36,6 @@ import com.b2international.snowowl.snomed.Concept;
 import com.b2international.snowowl.snomed.Relationship;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.core.domain.Acceptability;
-import com.b2international.snowowl.snomed.core.domain.BaseSnomedComponentCreateRequest;
 import com.b2international.snowowl.snomed.core.domain.ISnomedConcept;
 import com.b2international.snowowl.snomed.core.domain.IdGenerationStrategy;
 import com.b2international.snowowl.snomed.core.store.SnomedComponents;
@@ -48,7 +47,7 @@ import com.google.common.collect.Multiset;
 public class SnomedConceptCreateRequest extends BaseSnomedComponentCreateRequest<ISnomedConcept> {
 
 	@Size(min = 2)
-	private List<DefaultSnomedDescriptionCreateRequest> descriptions = Collections.emptyList();
+	private List<SnomedDescriptionCreateRequest> descriptions = Collections.emptyList();
 
 	@NotEmpty
 	private String parentId;
@@ -64,7 +63,7 @@ public class SnomedConceptCreateRequest extends BaseSnomedComponentCreateRequest
 		this.isAIdGenerationStrategy = isAIdGenerationStrategy;
 	}
 
-	public void setDescriptions(final List<DefaultSnomedDescriptionCreateRequest> descriptions) {
+	public void setDescriptions(final List<SnomedDescriptionCreateRequest> descriptions) {
 		this.descriptions = ImmutableList.copyOf(descriptions);
 	}
 
@@ -80,7 +79,7 @@ public class SnomedConceptCreateRequest extends BaseSnomedComponentCreateRequest
 		final Multiset<String> preferredLanguageRefSetIds = HashMultiset.create();
 		final Set<String> synonymAndDescendantIds = context.service(ISnomedComponentService.class).getSynonymAndDescendantIds(branchPath);
 
-		for (final DefaultSnomedDescriptionCreateRequest descriptionRequest : descriptions) {
+		for (final SnomedDescriptionCreateRequest descriptionRequest : descriptions) {
 
 			descriptionRequest.setConceptId(concept.getId());
 

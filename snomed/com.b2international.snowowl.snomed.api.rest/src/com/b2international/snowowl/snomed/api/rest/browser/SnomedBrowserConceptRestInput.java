@@ -27,7 +27,7 @@ import com.b2international.snowowl.snomed.api.rest.domain.AbstractSnomedComponen
 import com.b2international.snowowl.snomed.api.rest.domain.SnomedDescriptionRestInput;
 import com.b2international.snowowl.snomed.api.rest.domain.SnomedRelationshipRestInput;
 import com.b2international.snowowl.snomed.datastore.server.events.SnomedConceptCreateRequest;
-import com.b2international.snowowl.snomed.datastore.server.events.DefaultSnomedDescriptionCreateRequest;
+import com.b2international.snowowl.snomed.datastore.server.events.SnomedDescriptionCreateRequest;
 
 /**
  * @since 1.0
@@ -49,7 +49,7 @@ public class SnomedBrowserConceptRestInput extends AbstractSnomedComponentRestIn
 		final SnomedConceptCreateRequest result = super.toComponentInput(branchPath,codeSystemShortName);
 		result.setIsAIdGenerationStrategy(createIdGenerationStrategy(parentRelationshipId));
 
-		final List<DefaultSnomedDescriptionCreateRequest> descriptionInputs = newArrayList();
+		final List<SnomedDescriptionCreateRequest> descriptionInputs = newArrayList();
 		for (SnomedDescriptionRestInput restDescription : getDescriptions()) {
 			// Propagate namespace from concept if present, and the description does not already have one
 			if (null == restDescription.getNamespaceId()) {

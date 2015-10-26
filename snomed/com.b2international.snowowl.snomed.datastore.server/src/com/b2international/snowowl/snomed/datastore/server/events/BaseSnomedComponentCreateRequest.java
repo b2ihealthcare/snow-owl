@@ -13,28 +13,27 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.snomed.core.domain;
+package com.b2international.snowowl.snomed.datastore.server.events;
 
 import javax.validation.constraints.NotNull;
 
 import com.b2international.snowowl.core.domain.TransactionContext;
 import com.b2international.snowowl.core.events.BaseRequest;
+import com.b2international.snowowl.snomed.core.domain.IdGenerationStrategy;
 
 /**
  * @since 4.0
  */
-public abstract class BaseSnomedComponentCreateRequest<B> extends BaseRequest<TransactionContext, B> implements SnomedComponentCreateRequest<B> {
+public abstract class BaseSnomedComponentCreateRequest<B> extends BaseRequest<TransactionContext, B> {
 
 	@NotNull
 	private IdGenerationStrategy idGenerationStrategy;
 	private String moduleId;
 
-	@Override
 	public IdGenerationStrategy getIdGenerationStrategy() {
 		return idGenerationStrategy;
 	}
 
-	@Override
 	public String getModuleId() {
 		return moduleId;
 	}

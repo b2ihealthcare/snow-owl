@@ -22,16 +22,14 @@ import javax.validation.constraints.NotNull;
 import org.hibernate.validator.constraints.NotEmpty;
 
 import com.b2international.snowowl.core.domain.TransactionContext;
-import com.b2international.snowowl.snomed.core.domain.BaseSnomedComponentCreateRequest;
 import com.b2international.snowowl.snomed.core.domain.CharacteristicType;
 import com.b2international.snowowl.snomed.core.domain.ISnomedRelationship;
 import com.b2international.snowowl.snomed.core.domain.RelationshipModifier;
-import com.b2international.snowowl.snomed.core.domain.SnomedRelationshipCreateRequest;
 
 /**
  * @since 4.0
  */
-public class DefaultSnomedRelationshipCreateRequest extends BaseSnomedComponentCreateRequest<ISnomedRelationship> implements SnomedRelationshipCreateRequest {
+public class SnomedRelationshipCreateRequest extends BaseSnomedComponentCreateRequest<ISnomedRelationship> {
 
 	@NotEmpty
 	private String sourceId;
@@ -58,42 +56,34 @@ public class DefaultSnomedRelationshipCreateRequest extends BaseSnomedComponentC
 	@NotNull
 	private RelationshipModifier modifier;
 
-	@Override
 	public String getSourceId() {
 		return sourceId;
 	}
 
-	@Override
 	public String getDestinationId() {
 		return destinationId;
 	}
 
-	@Override
 	public boolean isDestinationNegated() {
 		return destinationNegated;
 	}
 
-	@Override
 	public String getTypeId() {
 		return typeId;
 	}
 
-	@Override
 	public int getGroup() {
 		return group;
 	}
 
-	@Override
 	public int getUnionGroup() {
 		return unionGroup;
 	}
 
-	@Override
 	public CharacteristicType getCharacteristicType() {
 		return characteristicType;
 	}
 
-	@Override
 	public RelationshipModifier getModifier() {
 		return modifier;
 	}

@@ -93,7 +93,7 @@ import com.b2international.snowowl.snomed.datastore.index.SnomedDescriptionReduc
 import com.b2international.snowowl.snomed.datastore.index.SnomedIndexService;
 import com.b2international.snowowl.snomed.datastore.index.SnomedRelationshipIndexQueryAdapter;
 import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedMappings;
-import com.b2international.snowowl.snomed.datastore.server.events.DefaultSnomedDescriptionCreateRequest;
+import com.b2international.snowowl.snomed.datastore.server.events.SnomedDescriptionCreateRequest;
 import com.b2international.snowowl.snomed.datastore.server.events.SnomedConceptCreateRequest;
 import com.google.common.base.Function;
 import com.google.common.base.Optional;
@@ -267,7 +267,7 @@ public class SnomedBrowserService implements ISnomedBrowserService {
 			descriptionService.doUpdate(createComponentRef(branchPath, descriptionId), descriptionUpdates.get(descriptionId), editingContext);
 		}
 		for (SnomedDescriptionCreateRequest descriptionInput : descriptionInputs) {
-			((DefaultSnomedDescriptionCreateRequest)descriptionInput).setConceptId(existingVersionConcept.getConceptId());
+			((SnomedDescriptionCreateRequest)descriptionInput).setConceptId(existingVersionConcept.getConceptId());
 			descriptionService.convertAndRegister(descriptionInput, editingContext);
 		}
 
