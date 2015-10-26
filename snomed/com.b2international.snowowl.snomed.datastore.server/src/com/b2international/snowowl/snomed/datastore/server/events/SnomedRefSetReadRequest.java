@@ -27,7 +27,7 @@ import com.b2international.snowowl.snomed.datastore.index.refset.SnomedRefSetInd
 /**
  * @since 4.5
  */
-class SnomedRefSetReadRequest extends SnomedRefSetRequest<RepositoryContext, SnomedReferenceSet> {
+final class SnomedRefSetReadRequest extends SnomedRefSetRequest<RepositoryContext, SnomedReferenceSet> {
 
 	private String referenceSetId;
 
@@ -46,6 +46,11 @@ class SnomedRefSetReadRequest extends SnomedRefSetRequest<RepositoryContext, Sno
 			final SnomedRefSetIndexEntry entry = browser.getRefSet(branch, referenceSetId);
 			return new SnomedReferenceSetConverter().apply(entry);
 		}
+	}
+	
+	@Override
+	protected Class<SnomedReferenceSet> getReturnType() {
+		return SnomedReferenceSet.class;
 	}
 
 }

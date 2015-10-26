@@ -18,9 +18,9 @@ package com.b2international.snowowl.snomed.datastore.server.events;
 import java.util.Collection;
 
 import com.b2international.snowowl.core.api.IBranchPath;
-import com.b2international.snowowl.core.domain.CollectionResource;
 import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.snomed.core.domain.SnomedReferenceSet;
+import com.b2international.snowowl.snomed.core.domain.SnomedReferenceSets;
 import com.b2international.snowowl.snomed.datastore.SnomedRefSetBrowser;
 import com.b2international.snowowl.snomed.datastore.index.refset.SnomedRefSetIndexEntry;
 import com.google.common.collect.ImmutableList;
@@ -28,12 +28,12 @@ import com.google.common.collect.ImmutableList;
 /**
  * @since 4.5
  */
-class SnomedRefSetReadAllRequest extends SnomedRefSetRequest<RepositoryContext, CollectionResource<SnomedReferenceSet>> {
+final class SnomedRefSetReadAllRequest extends SnomedRefSetRequest<RepositoryContext, SnomedReferenceSets> {
 
 	private final SnomedReferenceSetConverter converter = new SnomedReferenceSetConverter();
-
+	
 	@Override
-	public CollectionResource<SnomedReferenceSet> execute(RepositoryContext context) {
+	public SnomedReferenceSets execute(RepositoryContext context) {
 		final IBranchPath branchPath = context.branch().branchPath();
 		final SnomedRefSetBrowser browser = context.service(SnomedRefSetBrowser.class);
 
@@ -44,7 +44,12 @@ class SnomedRefSetReadAllRequest extends SnomedRefSetRequest<RepositoryContext, 
 			result.add(converter.apply(entry));
 		}
 
-		return CollectionResource.of(result.build());
+		return new SnomedReferenceSets(result.build());
+	}
+	
+	@Override
+	protected Class<SnomedReferenceSets> getReturnType() {
+		return SnomedReferenceSets.class;
 	}
 
 }
