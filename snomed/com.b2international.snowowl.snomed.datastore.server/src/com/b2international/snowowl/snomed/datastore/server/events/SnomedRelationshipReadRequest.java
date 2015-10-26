@@ -17,6 +17,8 @@ package com.b2international.snowowl.snomed.datastore.server.events;
 
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.domain.RepositoryContext;
+import com.b2international.snowowl.core.exceptions.ComponentNotFoundException;
+import com.b2international.snowowl.core.terminology.ComponentCategory;
 import com.b2international.snowowl.snomed.core.domain.ISnomedRelationship;
 import com.b2international.snowowl.snomed.datastore.SnomedRelationshipIndexEntry;
 import com.b2international.snowowl.snomed.datastore.SnomedRelationshipLookupService;
@@ -36,6 +38,9 @@ final class SnomedRelationshipReadRequest extends SnomedRelationshipRequest<Repo
 	public ISnomedRelationship execute(RepositoryContext context) {
 		final IBranchPath branchPath = context.branch().branchPath();
 		final SnomedRelationshipLookupService lookupService = new SnomedRelationshipLookupService();
+		if (!lookupService.exists(branchPath, componentId)) {
+			throw new ComponentNotFoundException(ComponentCategory.RELATIONSHIP, componentId);
+		}
 		final SnomedRelationshipIndexEntry relationship = lookupService.getComponent(branchPath, componentId);
 		return getConverter(branchPath).apply(relationship);
 	}
