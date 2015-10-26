@@ -1,6 +1,6 @@
 /*
  * Copyright 2011-2015 B2i Healthcare Pte Ltd, http://b2i.sg
- *
+ * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -19,12 +19,15 @@ import com.b2international.snowowl.core.domain.RepositoryContext;
 
 /**
  * @since 4.5
+ *
+ * @param <C>
+ * @param <B>
  */
-abstract class SnomedRefSetRequest<C extends RepositoryContext, B> extends SnomedRequest<C, B> {
+abstract class SnomedConceptRequest<C extends RepositoryContext, B> extends SnomedRequest<C, B> {
 
 	@Override
 	protected final String getPath() {
-		return "/refsets";
+		return "/concepts";
 	}
 	
 }

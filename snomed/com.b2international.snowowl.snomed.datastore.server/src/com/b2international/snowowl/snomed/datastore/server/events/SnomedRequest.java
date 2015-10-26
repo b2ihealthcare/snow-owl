@@ -1,6 +1,6 @@
 /*
  * Copyright 2011-2015 B2i Healthcare Pte Ltd, http://b2i.sg
- *
+ * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -16,15 +16,26 @@
 package com.b2international.snowowl.snomed.datastore.server.events;
 
 import com.b2international.snowowl.core.domain.RepositoryContext;
+import com.b2international.snowowl.core.events.BaseRequest;
+import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 
 /**
  * @since 4.5
+ * @param <C>
+ * @param <B>
  */
-abstract class SnomedRefSetRequest<C extends RepositoryContext, B> extends SnomedRequest<C, B> {
+abstract class SnomedRequest<C extends RepositoryContext, B> extends BaseRequest<C, B> {
 
 	@Override
-	protected final String getPath() {
-		return "/refsets";
+	protected final String getAddress() {
+		return "/" + SnomedDatastoreActivator.REPOSITORY_UUID + getPath();
 	}
-	
+
+	/**
+	 * Returns the path of the address where this request should be sent.
+	 * 
+	 * @return
+	 */
+	protected abstract String getPath();
+
 }
