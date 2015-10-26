@@ -57,6 +57,10 @@ public class SnomedConceptReducedQueryAdapter extends SnomedConceptIndexQueryAda
 		};
 	} 
 	
+	public SnomedConceptReducedQueryAdapter() {
+		this("", SEARCH_DEFAULT);
+	}
+	
 	public SnomedConceptReducedQueryAdapter(final String searchString, final int searchFlags) {
 		this(searchString, searchFlags, null);
 	}
