@@ -16,29 +16,13 @@
 package com.b2international.snowowl.datastore.request;
 
 import static com.google.common.base.Preconditions.checkArgument;
-import static com.google.common.base.Preconditions.checkNotNull;
 
-import java.util.ConcurrentModificationException;
-
-import org.eclipse.emf.cdo.util.CommitException;
-
-import com.b2international.commons.exceptions.Exceptions;
 import com.b2international.snowowl.core.api.SnowowlRuntimeException;
-import com.b2international.snowowl.core.branch.Branch;
 import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.core.domain.TransactionContext;
-import com.b2international.snowowl.core.events.BaseEvent;
 import com.b2international.snowowl.core.events.DelegatingRequest;
 import com.b2international.snowowl.core.events.Request;
-import com.b2international.snowowl.core.exceptions.ApiValidation;
-import com.b2international.snowowl.core.exceptions.ConflictException;
-import com.b2international.snowowl.core.exceptions.CycleDetectedException;
-import com.b2international.snowowl.core.exceptions.LockedException;
-import com.b2international.snowowl.datastore.CDOEditingContext;
-import com.b2international.snowowl.datastore.exception.RepositoryLockException;
-import com.b2international.snowowl.datastore.server.CDOServerUtils;
 import com.google.common.base.Strings;
-import com.google.inject.Provider;
 
 /**
  * @since 4.5
@@ -57,40 +41,20 @@ public final class TransactionalRequest<B> extends DelegatingRequest<RepositoryC
 	
 	@Override
 	public B execute(RepositoryContext context) {
-		try (TransactionContext transaction = context.provider(TransactionContext.class).get()) {
+		try (final TransactionContext transaction = context.provider(TransactionContext.class).get()) {
 			final B component = next(transaction);
+			// TODO consider moving preCommit into commit(userId, commitComment)
 			transaction.preCommit();
-
+			
 			/*
 			 * FIXME: at this point, the component identifier might have changed even though the input 
 			 * required an exact ID to be assigned. What to do?
 			 */
-			doCommit(transaction);
+			transaction.commit(userId, commitComment);
 			return component;
+		} catch (Exception e) {
+			throw new SnowowlRuntimeException(e);
 		}
 	}
 	
-	private void doCommit(final TransactionContext transaction) {
-		try {
-			transaction.commit(userId, commitComment);
-//			CDOServerUtils.commit(context.getTransaction(), userId, commitComment, null);
-		} catch (final CommitException e) {
-			final RepositoryLockException cause = Exceptions.extractCause(e, getClass().getClassLoader(), RepositoryLockException.class);
-			if (cause != null) {
-				throw new LockedException(cause.getMessage());
-			}
-			
-			final ConcurrentModificationException cause2 = Exceptions.extractCause(e, getClass().getClassLoader(), ConcurrentModificationException.class);
-			if (cause2 != null) {
-				throw new ConflictException("Concurrent modifications prevented the concept from being persisted. Please try again.");
-			}
-			
-			final CycleDetectedException cause3 = Exceptions.extractCause(e.getCause(), getClass().getClassLoader(), CycleDetectedException.class);
-			if (cause3 != null) {
-				throw cause3;
-			}
-			throw new SnowowlRuntimeException(e.getMessage(), e);
-		}
-	}
-
 }
