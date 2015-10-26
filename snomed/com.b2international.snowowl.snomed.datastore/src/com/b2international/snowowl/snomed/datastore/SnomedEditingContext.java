@@ -79,6 +79,7 @@ import com.b2international.commons.Pair;
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.ComponentIdentifierPair;
 import com.b2international.snowowl.core.api.IBranchPath;
+import com.b2international.snowowl.core.api.ILookupService;
 import com.b2international.snowowl.core.api.SnowowlRuntimeException;
 import com.b2international.snowowl.core.api.browser.IClientTerminologyBrowser;
 import com.b2international.snowowl.core.api.index.IIndexEntry;
@@ -614,11 +615,7 @@ public class SnomedEditingContext extends BaseSnomedEditingContext {
 	 *             if the concept could not be retrieved
 	 */
 	public final Concept getConcept(String conceptId) {
-		final Concept concept = new SnomedConceptLookupService().getComponent(conceptId, transaction);
-		if (null == concept) {
-			throw new ComponentNotFoundException(ComponentCategory.CONCEPT, conceptId);
-		}
-		return concept; 
+		return lookup(conceptId, Concept.class);
 	}
 	
 	/**
@@ -1212,7 +1209,19 @@ public class SnomedEditingContext extends BaseSnomedEditingContext {
 		});
 	}
 	
-	public void delete(Concept concept) {
+	@Override
+	public void delete(EObject object) {
+		if (object instanceof Concept) {
+			delete((Concept) object);
+		} else if (object instanceof Description) {
+			delete((Description) object);
+		} else if (object instanceof Relationship) {
+			delete((Relationship) object);
+		}
+		super.delete(object);
+	}
+	
+	private void delete(Concept concept) {
 		
 		SnomedDeletionPlan deletionPlan = canDelete(concept, null);
 		if(deletionPlan.isRejected()) {
@@ -1295,13 +1304,11 @@ public class SnomedEditingContext extends BaseSnomedEditingContext {
 		return new SnomedDescriptionReducedQueryAdapter(conceptId, SnomedDescriptionReducedQueryAdapter.SEARCH_DESCRIPTION_CONCEPT_ID);
 	}
 
-	public void delete(Relationship relationship) {
-		
+	private void delete(Relationship relationship) {
 		SnomedDeletionPlan deletionPlan = canDelete(relationship, null);
 		if(deletionPlan.isRejected()) {
 			throw new IllegalArgumentException(deletionPlan.getRejectionReasons().toString());
 		}
-		
 		delete(deletionPlan);
 	}
 	
@@ -1367,14 +1374,11 @@ public class SnomedEditingContext extends BaseSnomedEditingContext {
 		return deletionPlan;
 	}
 	
-	public void delete(Description description) {
-		
+	private void delete(Description description) {
 		SnomedDeletionPlan deletionPlan = canDelete(description, null);
-
 		if(deletionPlan.isRejected()) {
 			throw new IllegalArgumentException(deletionPlan.getRejectionReasons().toString());
 		}
-		
 		delete(deletionPlan);
 	}
 	
@@ -1544,6 +1548,19 @@ public class SnomedEditingContext extends BaseSnomedEditingContext {
 			LOGGER.warn("Error while loading and caching SNOMED CT module concept.");
 		
 		return moduleConcept;
+	}
+	
+	@Override
+	protected <T> ILookupService<String, T, CDOView> getComponentLookupService(Class<T> type) {
+		if (type == Concept.class) {
+			return (ILookupService<String, T, CDOView>) new SnomedConceptLookupService();
+		} else if (type == Description.class) {
+			return (ILookupService<String, T, CDOView>) new SnomedDescriptionLookupService();
+		} else if (type == Relationship.class) {
+			return (ILookupService<String, T, CDOView>) new SnomedRelationshipLookupService();
+		} else {
+			return super.getComponentLookupService(type);
+		}
 	}
 	
 	/**
