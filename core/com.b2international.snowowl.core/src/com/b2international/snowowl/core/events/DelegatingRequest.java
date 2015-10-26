@@ -29,7 +29,7 @@ import com.b2international.snowowl.core.ServiceProvider;
  * @param <B>
  *            - the type of the result
  */
-public abstract class DelegatingRequest<C extends ServiceProvider, T extends ServiceProvider, B> extends BaseEvent implements Request<C, B> {
+public abstract class DelegatingRequest<C extends ServiceProvider, T extends ServiceProvider, B> extends BaseRequest<C, B> {
 
 	private Request<T, B> next;
 
@@ -51,6 +51,12 @@ public abstract class DelegatingRequest<C extends ServiceProvider, T extends Ser
 	@Override
 	protected final String getAddress() {
 		return ClassUtils.checkAndCast(next, BaseEvent.class).getAddress();
+	}
+	
+	@Override
+	@SuppressWarnings("unchecked")
+	protected final Class<B> getReturnType() {
+		return ClassUtils.checkAndCast(next, BaseRequest.class).getReturnType();
 	}
 
 }
