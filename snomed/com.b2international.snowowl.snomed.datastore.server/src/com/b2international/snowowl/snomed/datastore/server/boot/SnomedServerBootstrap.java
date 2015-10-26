@@ -38,6 +38,8 @@ public class SnomedServerBootstrap implements BootstrapFragment {
 		if (env.isServer() || env.isEmbedded()) {
 			env.service(IEventBus.class).registerHandler("/" + SnomedDatastoreActivator.REPOSITORY_UUID + "/refsets", new ApiRequestHandler(env));
 			env.service(IEventBus.class).registerHandler("/" + SnomedDatastoreActivator.REPOSITORY_UUID + "/concepts", new ApiRequestHandler(env));
+			env.service(IEventBus.class).registerHandler("/" + SnomedDatastoreActivator.REPOSITORY_UUID + "/descriptions", new ApiRequestHandler(env));
+			env.service(IEventBus.class).registerHandler("/" + SnomedDatastoreActivator.REPOSITORY_UUID + "/relationships", new ApiRequestHandler(env));
 		}
 	}
 
