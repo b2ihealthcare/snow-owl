@@ -15,8 +15,8 @@
  */
 package com.b2international.snowowl.snomed.api.rest.domain;
 
-import com.b2international.snowowl.snomed.datastore.server.events.DefaultSnomedConceptCreateRequest;
-import com.b2international.snowowl.snomed.datastore.server.events.DefaultSnomedRefSetCreateRequest;
+import com.b2international.snowowl.snomed.datastore.server.events.SnomedConceptCreateRequest;
+import com.b2international.snowowl.snomed.datastore.server.events.SnomedRefSetCreateRequest;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType;
 
 /**
@@ -44,9 +44,9 @@ public class SnomedRefSetRestInput extends SnomedConceptRestInput {
 	}
 	
 	@Override
-	public DefaultSnomedRefSetCreateRequest toComponentInput(String branchPath, String codeSystemShortName) {
-		final DefaultSnomedConceptCreateRequest conceptInput = super.toComponentInput(branchPath, codeSystemShortName);
-		final DefaultSnomedRefSetCreateRequest input = new DefaultSnomedRefSetCreateRequest(getType(), getReferencedComponentType());
+	public SnomedRefSetCreateRequest toComponentInput(String branchPath, String codeSystemShortName) {
+		final SnomedConceptCreateRequest conceptInput = super.toComponentInput(branchPath, codeSystemShortName);
+		final SnomedRefSetCreateRequest input = new SnomedRefSetCreateRequest(getType(), getReferencedComponentType());
 		input.setDescriptions(conceptInput.getDescriptions());
 		input.setIdGenerationStrategy(conceptInput.getIdGenerationStrategy());
 		input.setIsAIdGenerationStrategy(conceptInput.getIsAIdGenerationStrategy());

@@ -15,12 +15,12 @@ import com.b2international.snowowl.snomed.core.domain.ISnomedConceptUpdate;
 import com.b2international.snowowl.snomed.core.domain.SnomedDescriptionCreateRequest;
 import com.b2international.snowowl.snomed.core.domain.InactivationIndicator;
 import com.b2international.snowowl.snomed.core.domain.UserIdGenerationStrategy;
-import com.b2international.snowowl.snomed.datastore.server.events.DefaultSnomedConceptCreateRequest;
+import com.b2international.snowowl.snomed.datastore.server.events.SnomedConceptCreateRequest;
 
-public class ConceptInputCreator extends AbstractInputCreator implements ComponentInputCreator<DefaultSnomedConceptCreateRequest, SnomedConceptUpdate, SnomedBrowserConcept> {
+public class ConceptInputCreator extends AbstractInputCreator implements ComponentInputCreator<SnomedConceptCreateRequest, SnomedConceptUpdate, SnomedBrowserConcept> {
 	@Override
-	public DefaultSnomedConceptCreateRequest createInput(final String branchPath, SnomedBrowserConcept concept, InputFactory inputFactory) {
-		final DefaultSnomedConceptCreateRequest conceptInput = new DefaultSnomedConceptCreateRequest();
+	public SnomedConceptCreateRequest createInput(final String branchPath, SnomedBrowserConcept concept, InputFactory inputFactory) {
+		final SnomedConceptCreateRequest conceptInput = new SnomedConceptCreateRequest();
 		setCommonComponentProperties(branchPath, concept, conceptInput, ComponentCategory.CONCEPT);
 		
 		// Find a parent relationship

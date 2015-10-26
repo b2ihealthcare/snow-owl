@@ -21,7 +21,6 @@ import com.b2international.snowowl.api.exception.IllegalQueryParameterException;
 import com.b2international.snowowl.core.domain.IComponentList;
 import com.b2international.snowowl.core.exceptions.NotFoundException;
 import com.b2international.snowowl.snomed.core.domain.ISnomedConcept;
-import com.b2international.snowowl.snomed.core.domain.SnomedConceptCreateRequest;
 import com.b2international.snowowl.snomed.core.domain.ISnomedConceptUpdate;
 import com.b2international.snowowl.snomed.core.domain.SearchKind;
 

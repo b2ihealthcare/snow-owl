@@ -21,13 +21,13 @@ import java.util.Collections;
 import java.util.List;
 
 import com.b2international.snowowl.core.terminology.ComponentCategory;
-import com.b2international.snowowl.snomed.datastore.server.events.DefaultSnomedConceptCreateRequest;
+import com.b2international.snowowl.snomed.datastore.server.events.SnomedConceptCreateRequest;
 import com.b2international.snowowl.snomed.datastore.server.events.DefaultSnomedDescriptionCreateRequest;
 
 /**
  * @since 1.0
  */
-public class SnomedConceptRestInput extends AbstractSnomedComponentRestInput<DefaultSnomedConceptCreateRequest> {
+public class SnomedConceptRestInput extends AbstractSnomedComponentRestInput<SnomedConceptCreateRequest> {
 
 	private List<SnomedDescriptionRestInput> descriptions = Collections.emptyList();
 	private String isAId;
@@ -67,13 +67,13 @@ public class SnomedConceptRestInput extends AbstractSnomedComponentRestInput<Def
 	}
 
 	@Override
-	protected DefaultSnomedConceptCreateRequest createComponentInput() {
-		return new DefaultSnomedConceptCreateRequest();
+	protected SnomedConceptCreateRequest createComponentInput() {
+		return new SnomedConceptCreateRequest();
 	}
 
 	@Override
-	public DefaultSnomedConceptCreateRequest toComponentInput(final String branchPath, final String codeSystemShortName) {
-		final DefaultSnomedConceptCreateRequest result = super.toComponentInput(branchPath, codeSystemShortName);
+	public SnomedConceptCreateRequest toComponentInput(final String branchPath, final String codeSystemShortName) {
+		final SnomedConceptCreateRequest result = super.toComponentInput(branchPath, codeSystemShortName);
 
 		result.setIsAIdGenerationStrategy(createIdGenerationStrategy(getIsAId(), ComponentCategory.RELATIONSHIP));
 

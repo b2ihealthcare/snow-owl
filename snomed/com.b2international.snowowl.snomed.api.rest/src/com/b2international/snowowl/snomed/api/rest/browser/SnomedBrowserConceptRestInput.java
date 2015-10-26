@@ -26,27 +26,27 @@ import com.b2international.snowowl.snomed.SnomedConstants;
 import com.b2international.snowowl.snomed.api.rest.domain.AbstractSnomedComponentRestInput;
 import com.b2international.snowowl.snomed.api.rest.domain.SnomedDescriptionRestInput;
 import com.b2international.snowowl.snomed.api.rest.domain.SnomedRelationshipRestInput;
-import com.b2international.snowowl.snomed.datastore.server.events.DefaultSnomedConceptCreateRequest;
+import com.b2international.snowowl.snomed.datastore.server.events.SnomedConceptCreateRequest;
 import com.b2international.snowowl.snomed.datastore.server.events.DefaultSnomedDescriptionCreateRequest;
 
 /**
  * @since 1.0
  */
-public class SnomedBrowserConceptRestInput extends AbstractSnomedComponentRestInput<DefaultSnomedConceptCreateRequest> {
+public class SnomedBrowserConceptRestInput extends AbstractSnomedComponentRestInput<SnomedConceptCreateRequest> {
 
 	private List<SnomedDescriptionRestInput> descriptions = Collections.emptyList();
 	private List<SnomedRelationshipRestInput> relationships = Collections.emptyList();
 
 	@Override
-	protected DefaultSnomedConceptCreateRequest createComponentInput() {
-		return new DefaultSnomedConceptCreateRequest();
+	protected SnomedConceptCreateRequest createComponentInput() {
+		return new SnomedConceptCreateRequest();
 	}
 
 	@Override
-	public DefaultSnomedConceptCreateRequest toComponentInput(final String branchPath, final String codeSystemShortName) {
+	public SnomedConceptCreateRequest toComponentInput(final String branchPath, final String codeSystemShortName) {
 		final String parentRelationshipId = getParentId();
 
-		final DefaultSnomedConceptCreateRequest result = super.toComponentInput(branchPath,codeSystemShortName);
+		final SnomedConceptCreateRequest result = super.toComponentInput(branchPath,codeSystemShortName);
 		result.setIsAIdGenerationStrategy(createIdGenerationStrategy(parentRelationshipId));
 
 		final List<DefaultSnomedDescriptionCreateRequest> descriptionInputs = newArrayList();
