@@ -75,7 +75,7 @@ import com.google.inject.Provider;
  * specific classes.
  * 
  */
-public abstract class CDOEditingContext implements AutoCloseable, TransactionContext {
+public abstract class CDOEditingContext implements AutoCloseable {
 
 	/**
 	 * Number of retires to successfully commit the changes from an editing context.
@@ -105,25 +105,6 @@ public abstract class CDOEditingContext implements AutoCloseable, TransactionCon
 	
 	protected CDOEditingContext(final CDOTransaction cdoTransaction) {
 		this.transaction = CDOUtils.check(cdoTransaction);
-	}
-	
-	@Override
-	public Branch branch() {
-		return null;
-	}
-	
-	@Override
-	public void commit(String userId, String commitComment) {
-	}
-	
-	@Override
-	public <T> Provider<T> provider(Class<T> type) {
-		return null;
-	}
-	
-	@Override
-	public <T> T service(Class<T> type) {
-		return null;
 	}
 	
 	/*
