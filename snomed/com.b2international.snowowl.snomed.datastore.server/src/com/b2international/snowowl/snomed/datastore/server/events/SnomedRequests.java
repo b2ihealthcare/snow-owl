@@ -16,25 +16,30 @@
 package com.b2international.snowowl.snomed.datastore.server.events;
 
 import com.b2international.snowowl.core.ServiceProvider;
-import com.b2international.snowowl.core.domain.CollectionResource;
 import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.datastore.request.RepositoryRequest;
+import com.b2international.snowowl.snomed.core.domain.SnomedConcepts;
 import com.b2international.snowowl.snomed.core.domain.SnomedReferenceSet;
+import com.b2international.snowowl.snomed.core.domain.SnomedReferenceSets;
 
 /**
  * @since 4.5
  */
-public abstract class SnomedRefSetRequests {
+public abstract class SnomedRequests {
 
-	private SnomedRefSetRequests() {
+	private SnomedRequests() {
 	}
 	
-	public static Request<? extends ServiceProvider, CollectionResource<SnomedReferenceSet>> prepareGetReferenceSets(String branch) {
+	public static Request<ServiceProvider, SnomedReferenceSets> prepareGetReferenceSets(String branch) {
 		return new RepositoryRequest<>("SNOMEDCT", branch, new SnomedRefSetReadAllRequest());
 	}
 	
-	public static Request<? extends ServiceProvider, SnomedReferenceSet> prepareGetReferenceSet(String branch, String referenceSetId) {
+	public static Request<ServiceProvider, SnomedReferenceSet> prepareGetReferenceSet(String branch, String referenceSetId) {
 		return new RepositoryRequest<>("SNOMEDCT", branch, new SnomedRefSetReadRequest(referenceSetId));
+	}
+
+	public static Request<ServiceProvider, SnomedConcepts> prepareGetConcepts(String branch, int offset, int limit) {
+		return new RepositoryRequest<>("SNOMEDCT", branch, new SnomedConceptReadAllRequest(offset, limit));
 	}
 	
 }
