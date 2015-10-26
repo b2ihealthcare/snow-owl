@@ -50,7 +50,6 @@ import com.b2international.snowowl.snomed.Inactivatable;
 import com.b2international.snowowl.snomed.Relationship;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.api.ISnomedConceptService;
-import com.b2international.snowowl.snomed.api.impl.domain.DefaultSnomedDescriptionCreateRequest;
 import com.b2international.snowowl.snomed.api.impl.domain.SnomedConceptList;
 import com.b2international.snowowl.snomed.core.domain.Acceptability;
 import com.b2international.snowowl.snomed.core.domain.AssociationType;
@@ -74,6 +73,7 @@ import com.b2international.snowowl.snomed.datastore.index.SnomedConceptReducedQu
 import com.b2international.snowowl.snomed.datastore.index.SnomedDOIQueryAdapter;
 import com.b2international.snowowl.snomed.datastore.index.SnomedIndexService;
 import com.b2international.snowowl.snomed.datastore.model.SnomedModelExtensions;
+import com.b2international.snowowl.snomed.datastore.server.events.DefaultSnomedDescriptionCreateRequest;
 import com.b2international.snowowl.snomed.datastore.server.events.SnomedConceptConverter;
 import com.b2international.snowowl.snomed.datastore.services.ISnomedComponentService;
 import com.b2international.snowowl.snomed.dsl.query.SyntaxErrorException;

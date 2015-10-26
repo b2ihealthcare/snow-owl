@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.snomed.api.impl.domain;
+package com.b2international.snowowl.snomed.datastore.server.events;
 
 import java.util.Map;
 
@@ -108,6 +108,11 @@ public class DefaultSnomedDescriptionCreateRequest extends BaseSnomedComponentCr
 	@Override
 	public ISnomedDescription execute(TransactionContext context) {
 		throw new UnsupportedOperationException("Not migrated yet");
+	}
+	
+	@Override
+	protected Class<ISnomedDescription> getReturnType() {
+		return ISnomedDescription.class;
 	}
 
 	@Override

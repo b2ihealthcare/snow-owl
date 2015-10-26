@@ -21,8 +21,8 @@ import java.util.Collections;
 import java.util.List;
 
 import com.b2international.snowowl.core.terminology.ComponentCategory;
-import com.b2international.snowowl.snomed.api.impl.domain.DefaultSnomedDescriptionCreateRequest;
 import com.b2international.snowowl.snomed.datastore.server.events.DefaultSnomedConceptCreateRequest;
+import com.b2international.snowowl.snomed.datastore.server.events.DefaultSnomedDescriptionCreateRequest;
 
 /**
  * @since 1.0

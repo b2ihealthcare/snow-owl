@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.snomed.api.impl.domain;
+package com.b2international.snowowl.snomed.datastore.server.events;
 
 import javax.validation.constraints.Max;
 import javax.validation.constraints.Min;
@@ -133,6 +133,11 @@ public class DefaultSnomedRelationshipCreateRequest extends BaseSnomedComponentC
 	@Override
 	public ISnomedRelationship execute(TransactionContext context) {
 		throw new UnsupportedOperationException("Not migrated yet");
+	}
+	
+	@Override
+	protected Class<ISnomedRelationship> getReturnType() {
+		return ISnomedRelationship.class;
 	}
 
 	@Override

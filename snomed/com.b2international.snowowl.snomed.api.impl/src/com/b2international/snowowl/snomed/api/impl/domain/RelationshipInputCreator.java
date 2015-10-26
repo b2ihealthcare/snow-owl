@@ -4,6 +4,7 @@ import com.b2international.commons.ClassUtils;
 import com.b2international.snowowl.core.terminology.ComponentCategory;
 import com.b2international.snowowl.snomed.api.impl.domain.browser.SnomedBrowserRelationship;
 import com.b2international.snowowl.snomed.core.domain.SnomedComponentCreateRequest;
+import com.b2international.snowowl.snomed.datastore.server.events.DefaultSnomedRelationshipCreateRequest;
 import com.b2international.snowowl.snomed.core.domain.ISnomedComponentUpdate;
 
 public class RelationshipInputCreator extends AbstractInputCreator implements ComponentInputCreator<DefaultSnomedRelationshipCreateRequest, SnomedRelationshipUpdate, SnomedBrowserRelationship> {
