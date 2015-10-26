@@ -24,20 +24,28 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.ResponseStatus;
+import org.springframework.web.bind.annotation.RestController;
 
 import com.b2international.snowowl.core.domain.IComponentRef;
-import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.snomed.api.ISnomedDescriptionService;
 import com.b2international.snowowl.snomed.api.rest.domain.ChangeRequest;
 import com.b2international.snowowl.snomed.api.rest.domain.SnomedDescriptionRestInput;
 import com.b2international.snowowl.snomed.api.rest.domain.SnomedDescriptionRestUpdate;
 import com.b2international.snowowl.snomed.api.rest.util.Responses;
 import com.b2international.snowowl.snomed.core.domain.ISnomedDescription;
+import com.b2international.snowowl.snomed.core.domain.ISnomedDescriptionUpdate;
 import com.b2international.snowowl.snomed.core.domain.SnomedDescriptionCreateRequest;
 import com.b2international.snowowl.snomed.datastore.server.events.SnomedRequests;
-import com.b2international.snowowl.snomed.core.domain.ISnomedDescriptionUpdate;
-import com.wordnik.swagger.annotations.*;
+import com.wordnik.swagger.annotations.Api;
+import com.wordnik.swagger.annotations.ApiOperation;
+import com.wordnik.swagger.annotations.ApiParam;
+import com.wordnik.swagger.annotations.ApiResponse;
+import com.wordnik.swagger.annotations.ApiResponses;
 
 /**
  * @since 1.0
@@ -161,7 +169,7 @@ public class SnomedDescriptionRestService extends AbstractSnomedRestService {
 		final SnomedDescriptionCreateRequest input = body.getChange().toComponentInput(branchPath, codeSystemShortName);
 		final String userId = principal.getName();
 		final String commitComment = body.getCommitComment();
-		return delegate.create(input, userId, commitComment);
+		return SnomedRequests.prepareCreateDescription(branchPath, userId, commitComment, input).executeSync(bus, 120L * 1000L);
 	}
 	
 	private URI getDescriptionLocation(final String branchPath, final ISnomedDescription createdDescription) {

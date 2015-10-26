@@ -165,7 +165,7 @@ public class SnomedRelationshipRestService extends AbstractSnomedRestService {
 		final SnomedRelationshipCreateRequest input = body.getChange().toComponentInput(branchPath, codeSystemShortName);
 		final String userId = principal.getName();
 		final String commitComment = body.getCommitComment();
-		return delegate.create(input, userId, commitComment);
+		return SnomedRequests.prepareCreateRelationship(branchPath, userId, commitComment, input).executeSync(bus, 120L * 1000L);
 	}
 	
 	private URI getRelationshipLocation(final String branchPath, final ISnomedRelationship createdRelationship) {

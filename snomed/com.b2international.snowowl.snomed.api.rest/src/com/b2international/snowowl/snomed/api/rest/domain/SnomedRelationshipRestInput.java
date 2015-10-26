@@ -17,13 +17,14 @@ package com.b2international.snowowl.snomed.api.rest.domain;
 
 import com.b2international.snowowl.core.terminology.ComponentCategory;
 import com.b2international.snowowl.snomed.core.domain.CharacteristicType;
+import com.b2international.snowowl.snomed.core.domain.ISnomedRelationship;
 import com.b2international.snowowl.snomed.core.domain.RelationshipModifier;
 import com.b2international.snowowl.snomed.datastore.server.events.DefaultSnomedRelationshipCreateRequest;
 
 /**
  * @since 1.0
  */
-public class SnomedRelationshipRestInput extends AbstractSnomedComponentRestInput<DefaultSnomedRelationshipCreateRequest> {
+public class SnomedRelationshipRestInput extends AbstractSnomedComponentRestInput<DefaultSnomedRelationshipCreateRequest, ISnomedRelationship> {
 
 	private CharacteristicType characteristicType = CharacteristicType.STATED_RELATIONSHIP;
 	private String destinationId;

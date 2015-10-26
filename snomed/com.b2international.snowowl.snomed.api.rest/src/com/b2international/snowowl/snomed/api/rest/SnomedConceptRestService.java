@@ -39,7 +39,6 @@ import org.springframework.web.context.request.async.DeferredResult;
 import com.b2international.snowowl.core.domain.IComponentList;
 import com.b2international.snowowl.core.domain.IComponentRef;
 import com.b2international.snowowl.core.domain.PageableCollectionResource;
-import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.snomed.api.ISnomedConceptService;
 import com.b2international.snowowl.snomed.api.rest.domain.ChangeRequest;
 import com.b2international.snowowl.snomed.api.rest.domain.RestApiError;
@@ -245,7 +244,7 @@ public class SnomedConceptRestService extends AbstractSnomedRestService {
 		final SnomedConceptCreateRequest input = body.getChange().toComponentInput(branchPath, codeSystemShortName);
 		final String userId = principal.getName();
 		final String commitComment = body.getCommitComment();
-		return delegate.create(input, userId, commitComment);
+		return SnomedRequests.prepareCreateConcept(branchPath, userId, commitComment, input).executeSync(bus, 120L * 1000L);
 	}
 
 	private URI getConceptLocationURI(String branchPath, ISnomedConcept concept) {

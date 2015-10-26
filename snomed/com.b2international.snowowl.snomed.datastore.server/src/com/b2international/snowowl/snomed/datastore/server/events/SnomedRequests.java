@@ -24,9 +24,13 @@ import com.b2international.snowowl.snomed.Concept;
 import com.b2international.snowowl.snomed.Description;
 import com.b2international.snowowl.snomed.Relationship;
 import com.b2international.snowowl.snomed.core.domain.ISnomedConcept;
+import com.b2international.snowowl.snomed.core.domain.ISnomedDescription;
+import com.b2international.snowowl.snomed.core.domain.ISnomedRelationship;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcepts;
+import com.b2international.snowowl.snomed.core.domain.SnomedDescriptionCreateRequest;
 import com.b2international.snowowl.snomed.core.domain.SnomedReferenceSet;
 import com.b2international.snowowl.snomed.core.domain.SnomedReferenceSets;
+import com.b2international.snowowl.snomed.core.domain.SnomedRelationshipCreateRequest;
 
 /**
  * @since 4.5
@@ -66,6 +70,18 @@ public abstract class SnomedRequests {
 
 	private static Request<ServiceProvider, Void> prepareDeleteComponent(String branch, String componentId, String userId, String commitComment, Class<? extends Component> type) {
 		return new RepositoryRequest<>("SNOMEDCT", branch, new TransactionalRequest<>(userId, commitComment, new SnomedComponentDeleteRequest(componentId, type)));
+	}
+	
+	public static Request<ServiceProvider, ISnomedConcept> prepareCreateConcept(String branch, String userId, String commitComment, SnomedConceptCreateRequest next) {
+		return new RepositoryRequest<>("SNOMEDCT", branch, new TransactionalRequest<>(userId, commitComment, next));
+	}
+	
+	public static Request<ServiceProvider, ISnomedDescription> prepareCreateDescription(String branch, String userId, String commitComment, SnomedDescriptionCreateRequest next) {
+		return new RepositoryRequest<>("SNOMEDCT", branch, new TransactionalRequest<>(userId, commitComment, next));
+	}
+	
+	public static Request<ServiceProvider, ISnomedRelationship> prepareCreateRelationship(String branch, String userId, String commitComment, SnomedRelationshipCreateRequest next) {
+		return new RepositoryRequest<>("SNOMEDCT", branch, new TransactionalRequest<>(userId, commitComment, next));
 	}
 	
 }

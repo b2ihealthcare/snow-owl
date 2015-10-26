@@ -24,7 +24,7 @@ import com.b2international.snowowl.snomed.core.domain.UserIdGenerationStrategy;
 /**
  * @since 4.0
  */
-public abstract class AbstractSnomedComponentRestInput<I extends BaseSnomedComponentCreateRequest> {
+public abstract class AbstractSnomedComponentRestInput<I extends BaseSnomedComponentCreateRequest<B>, B> {
 
 	private String id;
 	private String moduleId;
@@ -73,13 +73,8 @@ public abstract class AbstractSnomedComponentRestInput<I extends BaseSnomedCompo
 	
 	protected I toComponentInput(final String branchPath, final String codeSystemShortName) {
 		final I result = createComponentInput();
-
-		result.setCodeSystemShortName(codeSystemShortName);
-		result.setBranchPath(branchPath);
-
 		result.setIdGenerationStrategy(createIdGenerationStrategy(getId()));
 		result.setModuleId(getModuleId());
-
 		return result;
 	}
 

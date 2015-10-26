@@ -64,7 +64,7 @@ public class SnomedConceptCreateRequest extends BaseSnomedComponentCreateRequest
 		this.isAIdGenerationStrategy = isAIdGenerationStrategy;
 	}
 
-	public void setDescriptions(final List<? extends DefaultSnomedDescriptionCreateRequest> descriptions) {
+	public void setDescriptions(final List<DefaultSnomedDescriptionCreateRequest> descriptions) {
 		this.descriptions = ImmutableList.copyOf(descriptions);
 	}
 
