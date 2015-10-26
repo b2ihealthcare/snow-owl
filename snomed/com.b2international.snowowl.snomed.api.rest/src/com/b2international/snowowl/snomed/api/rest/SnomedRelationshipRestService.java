@@ -35,6 +35,7 @@ import com.b2international.snowowl.snomed.api.rest.domain.SnomedRelationshipRest
 import com.b2international.snowowl.snomed.api.rest.util.Responses;
 import com.b2international.snowowl.snomed.core.domain.ISnomedRelationship;
 import com.b2international.snowowl.snomed.core.domain.SnomedRelationshipCreateRequest;
+import com.b2international.snowowl.snomed.datastore.server.events.SnomedRequests;
 import com.b2international.snowowl.snomed.core.domain.ISnomedRelationshipUpdate;
 import com.wordnik.swagger.annotations.*;
 
@@ -156,9 +157,8 @@ public class SnomedRelationshipRestService extends AbstractSnomedRestService {
 			
 			final Principal principal) {
 
-		final IComponentRef relationshipRef = createComponentRef(branchPath, relationshipId);
 		final String userId = principal.getName();
-		delegate.delete(relationshipRef, userId, String.format("Deleted Relationship '%s' from store.", relationshipId));
+		SnomedRequests.prepareDeleteRelationship(branchPath, relationshipId, userId, String.format("Deleted Relationship '%s' from store.", relationshipId)).executeSync(bus, 120L * 1000L);
 	}
 
 	private ISnomedRelationship doCreate(final String branchPath, final ChangeRequest<SnomedRelationshipRestInput> body, final Principal principal) {

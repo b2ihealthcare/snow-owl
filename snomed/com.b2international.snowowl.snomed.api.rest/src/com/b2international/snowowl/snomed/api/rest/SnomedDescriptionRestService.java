@@ -27,6 +27,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import com.b2international.snowowl.core.domain.IComponentRef;
+import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.snomed.api.ISnomedDescriptionService;
 import com.b2international.snowowl.snomed.api.rest.domain.ChangeRequest;
 import com.b2international.snowowl.snomed.api.rest.domain.SnomedDescriptionRestInput;
@@ -34,6 +35,7 @@ import com.b2international.snowowl.snomed.api.rest.domain.SnomedDescriptionRestU
 import com.b2international.snowowl.snomed.api.rest.util.Responses;
 import com.b2international.snowowl.snomed.core.domain.ISnomedDescription;
 import com.b2international.snowowl.snomed.core.domain.SnomedDescriptionCreateRequest;
+import com.b2international.snowowl.snomed.datastore.server.events.SnomedRequests;
 import com.b2international.snowowl.snomed.core.domain.ISnomedDescriptionUpdate;
 import com.wordnik.swagger.annotations.*;
 
@@ -151,10 +153,8 @@ public class SnomedDescriptionRestService extends AbstractSnomedRestService {
 			final String descriptionId,
 			
 			final Principal principal) {
-
-		final IComponentRef descriptionRef = createComponentRef(branchPath, descriptionId);
 		final String userId = principal.getName();
-		delegate.delete(descriptionRef, userId, String.format("Deleted Description '%s' from store.", descriptionId));
+		SnomedRequests.prepareDeleteDescription(branchPath, descriptionId, userId, String.format("Deleted Description '%s' from store.", descriptionId)).executeSync(bus, 120L * 1000L);
 	}
 	
 	private ISnomedDescription doCreate(final String branchPath, final ChangeRequest<SnomedDescriptionRestInput> body, final Principal principal) {

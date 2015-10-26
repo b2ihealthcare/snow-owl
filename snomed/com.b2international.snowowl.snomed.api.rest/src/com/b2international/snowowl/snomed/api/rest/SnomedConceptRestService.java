@@ -71,9 +71,6 @@ public class SnomedConceptRestService extends AbstractSnomedRestService {
 	@Autowired
 	protected ISnomedConceptService delegate;
 	
-	@Autowired
-	protected IEventBus bus;
-
 	@ApiOperation(
 			value="Retrieve Concepts from a branch", 
 			notes="Returns a list with all/filtered Concepts from a branch.")
@@ -241,9 +238,7 @@ public class SnomedConceptRestService extends AbstractSnomedRestService {
 			final String conceptId, 
 
 			final Principal principal) {
-		final IComponentRef conceptRef = createComponentRef(branchPath, conceptId);
-		final String userId = principal.getName();
-		delegate.delete(conceptRef, userId, String.format("Deleted Concept '%s' from store.", conceptId));
+		SnomedRequests.prepareDeleteConcept(branchPath, conceptId, principal.getName(), String.format("Deleted Concept '%s' from store.", conceptId)).executeSync(bus, 120L * 1000L);
 	}
 
 	private ISnomedConcept doCreate(final String branchPath, final ChangeRequest<SnomedConceptRestInput> body, final Principal principal) {

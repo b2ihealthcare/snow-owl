@@ -18,6 +18,11 @@ package com.b2international.snowowl.snomed.datastore.server.events;
 import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.datastore.request.RepositoryRequest;
+import com.b2international.snowowl.datastore.request.TransactionalRequest;
+import com.b2international.snowowl.snomed.Component;
+import com.b2international.snowowl.snomed.Concept;
+import com.b2international.snowowl.snomed.Description;
+import com.b2international.snowowl.snomed.Relationship;
 import com.b2international.snowowl.snomed.core.domain.ISnomedConcept;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcepts;
 import com.b2international.snowowl.snomed.core.domain.SnomedReferenceSet;
@@ -45,6 +50,22 @@ public abstract class SnomedRequests {
 	
 	public static Request<ServiceProvider, ISnomedConcept> prepareGetConcept(String branch, String componentId) {
 		return new RepositoryRequest<>("SNOMEDCT", branch, new SnomedConceptReadRequest(componentId));
+	}
+	
+	public static Request<ServiceProvider, Void> prepareDeleteConcept(String branch, String componentId, String userId, String commitComment) {
+		return prepareDeleteComponent(branch, componentId, userId, commitComment, Concept.class);
+	}
+	
+	public static Request<ServiceProvider, Void> prepareDeleteDescription(String branch, String componentId, String userId, String commitComment) {
+		return prepareDeleteComponent(branch, componentId, userId, commitComment, Description.class);
+	}
+	
+	public static Request<ServiceProvider, Void> prepareDeleteRelationship(String branch, String componentId, String userId, String commitComment) {
+		return prepareDeleteComponent(branch, componentId, userId, commitComment, Relationship.class);
+	}
+
+	private static Request<ServiceProvider, Void> prepareDeleteComponent(String branch, String componentId, String userId, String commitComment, Class<? extends Component> type) {
+		return new RepositoryRequest<>("SNOMEDCT", branch, new TransactionalRequest<>(userId, commitComment, new SnomedComponentDeleteRequest(componentId, type)));
 	}
 	
 }

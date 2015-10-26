@@ -20,6 +20,7 @@ import org.springframework.beans.factory.annotation.Value;
 
 import com.b2international.snowowl.core.domain.IComponentRef;
 import com.b2international.snowowl.datastore.server.domain.ComponentRef;
+import com.b2international.snowowl.eventbus.IEventBus;
 
 /**
  * Abstract SNOMED CT REST service base class.
@@ -31,6 +32,9 @@ public abstract class AbstractSnomedRestService extends AbstractRestService {
 	@Autowired
 	@Value("${codeSystemShortName}")
 	protected String codeSystemShortName;
+	
+	@Autowired
+	protected IEventBus bus;
 
 	protected IComponentRef createComponentRef(final String branchPath, final String componentId) {
 		final ComponentRef conceptRef = new ComponentRef(codeSystemShortName, branchPath, componentId);
