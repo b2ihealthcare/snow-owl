@@ -18,6 +18,7 @@ package com.b2international.snowowl.datastore.server.request;
 import java.util.ConcurrentModificationException;
 
 import org.eclipse.emf.cdo.util.CommitException;
+import org.eclipse.emf.ecore.EObject;
 
 import com.b2international.commons.exceptions.Exceptions;
 import com.b2international.snowowl.core.api.SnowowlRuntimeException;
@@ -34,13 +35,28 @@ import com.b2international.snowowl.datastore.server.CDOServerUtils;
 /**
  * @since 4.5
  */
-public class CDOTransactionContext extends DelegatingRepositoryContext implements TransactionContext {
+public final class CDOTransactionContext extends DelegatingRepositoryContext implements TransactionContext {
 
 	private CDOEditingContext editingContext;
 
 	public CDOTransactionContext(RepositoryContext context, CDOEditingContext editingContext) {
 		super(context);
 		this.editingContext = editingContext;
+	}
+	
+	@Override
+	public <T extends EObject> T lookup(String componentId, Class<T> type) {
+		return editingContext.lookup(componentId, type);
+	}
+	
+	@Override
+	public void add(EObject o) {
+		editingContext.add(o);
+	}
+	
+	@Override
+	public void delete(EObject o) {
+		editingContext.delete(o);
 	}
 	
 	@Override

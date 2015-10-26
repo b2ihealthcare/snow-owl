@@ -33,7 +33,19 @@ public class ComponentNotFoundException extends NotFoundException {
 	 *            the identifier of the missing component (may not be {@code null})
 	 */
 	public ComponentNotFoundException(final ComponentCategory category, final String key) {
-		super(category.getDisplayName(), key);
+		this(category.getDisplayName(), key);
+	}
+	
+	/**
+	 * Creates a new exception instance with the specified category and component identifier.
+	 * 
+	 * @param category
+	 *            the category of the missing component (may not be {@code null})
+	 * @param key
+	 *            the identifier of the missing component (may not be {@code null})
+	 */
+	public ComponentNotFoundException(final String category, final String key) {
+		super(category, key);
 	}
 
 }

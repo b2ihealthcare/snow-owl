@@ -15,13 +15,53 @@
  */
 package com.b2international.snowowl.core.domain;
 
+import org.eclipse.emf.ecore.EObject;
+
+import com.b2international.snowowl.core.exceptions.ComponentNotFoundException;
+
 /**
  * @since 4.5
  */
 public interface TransactionContext extends RepositoryContext, AutoCloseable {
 
+	/**
+	 * Adds the given {@link EObject} to this transaction context.
+	 * 
+	 * @param o
+	 */
+	void add(EObject o);
+
+	/**
+	 * Removes the given EObject from the transaction context and from the store as well.
+	 * 
+	 * @param o
+	 */
+	void delete(EObject o);
+
+	/**
+	 * Prepares the commit.
+	 */
 	void preCommit();
-	
+
+	/**
+	 * Commits any changes made to {@link EObject}s into the store.
+	 * 
+	 * @param userId
+	 *            - the owner of the commit
+	 * @param commitComment
+	 *            - a message for the commit
+	 */
 	void commit(String userId, String commitComment);
+
+	/**
+	 * Returns a persisted component from the store with the given component id and type.
+	 * 
+	 * @param componentId
+	 * @param type
+	 * @return
+	 * @throws ComponentNotFoundException
+	 *             - if the component cannot be found
+	 */
+	<T extends EObject> T lookup(String componentId, Class<T> type);
 
 }

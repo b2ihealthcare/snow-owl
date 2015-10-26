@@ -45,8 +45,10 @@ import org.eclipse.emf.cdo.transaction.CDOPushTransaction;
 import org.eclipse.emf.cdo.transaction.CDOTransaction;
 import org.eclipse.emf.cdo.util.CommitException;
 import org.eclipse.emf.cdo.view.CDOQuery;
+import org.eclipse.emf.cdo.view.CDOView;
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.EPackage;
+import org.eclipse.emf.ecore.util.EcoreUtil;
 import org.eclipse.net4j.util.lifecycle.LifecycleUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -56,9 +58,9 @@ import com.b2international.commons.FileUtils;
 import com.b2international.commons.StringUtils;
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.api.IBranchPath;
+import com.b2international.snowowl.core.api.ILookupService;
 import com.b2international.snowowl.core.api.SnowowlServiceException;
-import com.b2international.snowowl.core.branch.Branch;
-import com.b2international.snowowl.core.domain.TransactionContext;
+import com.b2international.snowowl.core.exceptions.ComponentNotFoundException;
 import com.b2international.snowowl.datastore.cdo.CDOQueryUtils;
 import com.b2international.snowowl.datastore.cdo.CDOUtils;
 import com.b2international.snowowl.datastore.cdo.ICDOConnection;
@@ -67,7 +69,6 @@ import com.b2international.snowowl.datastore.exception.RepositoryLockException;
 import com.b2international.snowowl.datastore.tasks.TaskManager;
 import com.b2international.snowowl.terminologymetadata.CodeSystemVersionGroup;
 import com.google.common.base.Preconditions;
-import com.google.inject.Provider;
 
 /**
  * This class is a thin, generic wrapper around the underlying {@link CDOTransaction}. 
@@ -168,7 +169,18 @@ public abstract class CDOEditingContext implements AutoCloseable {
 		return CDOUtils.getObjectIfExists(transaction, storageKey);
 	}
 	
+	public <T extends EObject> T lookup(final String componentId, Class<T> type) {
+		final T component = getComponentLookupService(type).getComponent(componentId, getTransaction());
+		if (null == component) {
+			throw new ComponentNotFoundException(type.getSimpleName(), componentId);
+		}
+		return component;
+	}
 	
+	protected <T> ILookupService<String, T, CDOView> getComponentLookupService(Class<T> type) {
+		throw new UnsupportedOperationException("Lookup not supported for type: " + type.getName());
+	}
+
 	/**
 	 * Commits the content of the transaction into the underlying Snow Owl storage.
 	 * 
@@ -353,6 +365,14 @@ public abstract class CDOEditingContext implements AutoCloseable {
 	 */
 	public void addAll(final Collection<? extends EObject> objects) {
 		getContents().addAll(checkNotNull(objects, "objects"));
+	}
+	
+	/**
+	 * Deletes the object from this editing context and from his parent.
+	 * @param object
+	 */
+	public void delete(EObject object) {
+		EcoreUtil.remove(object);
 	}
 
 	/**
