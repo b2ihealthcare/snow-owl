@@ -25,7 +25,7 @@ import com.google.common.collect.ImmutableList;
 /**
  * Represents a collection resource in the RESTful API.
  * 
- * @since 1.0
+ * @since 4.0
  */
 public class CollectionResource<T> {
 

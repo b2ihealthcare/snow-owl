@@ -22,7 +22,7 @@ import com.google.common.base.Objects;
 /**
  * {@link CollectionResource} containing paging information like offset, limit and total.
  * 
- * @since 1.0
+ * @since 4.0
  */
 //@ApiModel("Pageable Collection")
 public class PageableCollectionResource<T> extends CollectionResource<T> {
