@@ -15,13 +15,14 @@
  */
 package com.b2international.snowowl.snomed.core.store;
 
+import com.b2international.snowowl.core.domain.TransactionContext;
 import com.b2international.snowowl.core.terminology.ComponentCategory;
+import com.b2international.snowowl.snomed.Concept;
 import com.b2international.snowowl.snomed.Relationship;
-import com.b2international.snowowl.snomed.SnomedFactory;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
+import com.b2international.snowowl.snomed.SnomedFactory;
 import com.b2international.snowowl.snomed.core.domain.CharacteristicType;
 import com.b2international.snowowl.snomed.core.domain.RelationshipModifier;
-import com.b2international.snowowl.snomed.datastore.SnomedEditingContext;
 
 /**
  * @since 4.5
@@ -150,14 +151,14 @@ public final class SnomedRelationshipBuilder extends SnomedComponentBuilder<Snom
 	}
 
 	@Override
-	protected void init(Relationship component, SnomedEditingContext context) {
-		component.setCharacteristicType(context.findConceptById(characteristicType.getConceptId()));
-		component.setModifier(context.findConceptById(modifier.getConceptId()));
-		component.setType(context.findConceptById(type));
+	protected void init(Relationship component, TransactionContext context) {
+		component.setCharacteristicType(context.lookup(characteristicType.getConceptId(), Concept.class));
+		component.setModifier(context.lookup(modifier.getConceptId(), Concept.class));
+		component.setType(context.lookup(type, Concept.class));
 		if (source != null) {
-			component.setSource(context.findConceptById(source));
+			component.setSource(context.lookup(source, Concept.class));
 		}
-		component.setDestination(context.findConceptById(destination));
+		component.setDestination(context.lookup(destination, Concept.class));
 		component.setDestinationNegated(destinationNegated);
 		component.setGroup(group);
 		component.setUnionGroup(unionGroup);

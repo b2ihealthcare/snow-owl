@@ -19,6 +19,7 @@ import java.util.Date;
 
 import org.eclipse.emf.cdo.CDOObject;
 
+import com.b2international.snowowl.core.domain.TransactionContext;
 import com.b2international.snowowl.core.terminology.ComponentCategory;
 import com.b2international.snowowl.snomed.Component;
 import com.b2international.snowowl.snomed.Concept;
@@ -120,10 +121,10 @@ public abstract class SnomedComponentBuilder<B extends SnomedComponentBuilder<B,
 	 *            - the context to use when building the component.
 	 * @return
 	 */
-	public final T build(SnomedEditingContext context) {
+	public final T build(TransactionContext context) {
 		final T t = create();
 		final String identifier = identifierGenerationStrategy.getId();
-		final Concept module = moduleId == null ? context.getDefaultModuleConcept() : context.findConceptById(moduleId);
+		final Concept module = moduleId == null ? context.getDefaultModuleConcept() : context.lookup(moduleId, Concept.class);
 		if (t instanceof Component) {
 			final Component component = (Component) t;
 			component.setId(identifier);
@@ -145,7 +146,7 @@ public abstract class SnomedComponentBuilder<B extends SnomedComponentBuilder<B,
 	 * @param context
 	 *            - the context to use to get configuration options and other components
 	 */
-	protected abstract void init(T component, SnomedEditingContext context);
+	protected abstract void init(T component, TransactionContext context);
 
 	/**
 	 * Creates an instance of the component.

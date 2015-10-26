@@ -19,13 +19,13 @@ import static com.google.common.collect.Sets.newHashSet;
 
 import java.util.Collection;
 
+import com.b2international.snowowl.core.domain.TransactionContext;
 import com.b2international.snowowl.core.terminology.ComponentCategory;
 import com.b2international.snowowl.snomed.Concept;
 import com.b2international.snowowl.snomed.Description;
 import com.b2international.snowowl.snomed.Relationship;
 import com.b2international.snowowl.snomed.SnomedFactory;
 import com.b2international.snowowl.snomed.core.domain.DefinitionStatus;
-import com.b2international.snowowl.snomed.datastore.SnomedEditingContext;
 
 /**
  * @since 4.5
@@ -94,8 +94,8 @@ public final class SnomedConceptBuilder extends SnomedComponentBuilder<SnomedCon
 	}
 
 	@Override
-	protected void init(Concept component, SnomedEditingContext context) {
-		component.setDefinitionStatus(context.findConceptById(definitionStatus.getConceptId()));
+	protected void init(Concept component, TransactionContext context) {
+		component.setDefinitionStatus(context.lookup(definitionStatus.getConceptId(), Concept.class));
 		component.setExhaustive(exhaustive);
 		component.getDescriptions().addAll(descriptions);
 		component.getOutboundRelationships().addAll(relationships);

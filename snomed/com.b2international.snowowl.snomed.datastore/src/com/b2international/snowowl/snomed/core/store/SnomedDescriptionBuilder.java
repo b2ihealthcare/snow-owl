@@ -15,11 +15,12 @@
  */
 package com.b2international.snowowl.snomed.core.store;
 
+import com.b2international.snowowl.core.domain.TransactionContext;
 import com.b2international.snowowl.core.terminology.ComponentCategory;
+import com.b2international.snowowl.snomed.Concept;
 import com.b2international.snowowl.snomed.Description;
 import com.b2international.snowowl.snomed.SnomedFactory;
 import com.b2international.snowowl.snomed.core.domain.CaseSignificance;
-import com.b2international.snowowl.snomed.datastore.SnomedEditingContext;
 
 /**
  * @since 4.5
@@ -92,13 +93,13 @@ public final class SnomedDescriptionBuilder extends SnomedComponentBuilder<Snome
 	}
 
 	@Override
-	protected void init(Description component, SnomedEditingContext context) {
-		component.setCaseSignificance(context.findConceptById(caseSignificance.getConceptId()));
-		component.setType(context.findConceptById(type));
+	protected void init(Description component, TransactionContext context) {
+		component.setCaseSignificance(context.lookup(caseSignificance.getConceptId(), Concept.class));
+		component.setType(context.lookup(type, Concept.class));
 		component.setTerm(term);
 		component.setLanguageCode(languageCode);
 		if (concept != null) {
-			component.setConcept(context.findConceptById(concept));
+			component.setConcept(context.lookup(concept, Concept.class));
 		}
 	}
 
