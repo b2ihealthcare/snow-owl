@@ -24,6 +24,7 @@ import org.eclipse.emf.cdo.common.branch.CDOBranch;
 import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.api.SnowowlRuntimeException;
 import com.b2international.snowowl.core.branch.Branch;
+import com.b2international.snowowl.core.domain.DefaultRepositoryContext;
 import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.core.domain.exceptions.CodeSystemNotFoundException;
 import com.b2international.snowowl.core.events.DelegatingRequest;
@@ -40,7 +41,6 @@ import com.b2international.snowowl.datastore.cdo.ICDOConnectionManager;
 import com.b2international.snowowl.datastore.events.BranchReply;
 import com.b2international.snowowl.datastore.events.ReadBranchEvent;
 import com.b2international.snowowl.eventbus.IEventBus;
-import com.google.inject.Provider;
 
 /**
  * @since 4.5
@@ -65,22 +65,7 @@ public final class RepositoryRequest<B> extends DelegatingRequest<ServiceProvide
 		final Branch branch = ensureAvailability(context);
 		// TODO replace execution with event bus dispatch??? or pass it onto a worker thread and do not execute on event thread
 		// repositories could have fixed (but configurable) amount of worker thread
-		return next(new RepositoryContext() {
-			@Override
-			public <T> T service(Class<T> type) {
-				return context.service(type);
-			}
-			
-			@Override
-			public <T> Provider<T> provider(Class<T> type) {
-				return context.provider(type);
-			}
-			
-			@Override
-			public Branch branch() {
-				return branch;
-			}
-		});
+		return next(new DefaultRepositoryContext(context, branch));
 	}
 	
 	private Branch ensureAvailability(ServiceProvider context) {
