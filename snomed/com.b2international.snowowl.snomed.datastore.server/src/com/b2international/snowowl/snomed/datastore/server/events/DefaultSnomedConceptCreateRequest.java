@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.snomed.datastore.server.domain;
+package com.b2international.snowowl.snomed.datastore.server.events;
 
 import java.util.Collections;
 import java.util.List;
@@ -73,6 +73,11 @@ public class DefaultSnomedConceptCreateRequest extends BaseSnomedComponentCreate
 	@Override
 	public ISnomedConcept execute(TransactionContext context) {
 		throw new NotImplementedException();
+	}
+	
+	@Override
+	protected Class<ISnomedConcept> getReturnType() {
+		return ISnomedConcept.class;
 	}
 
 	@Override

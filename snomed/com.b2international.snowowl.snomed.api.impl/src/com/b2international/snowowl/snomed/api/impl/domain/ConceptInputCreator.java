@@ -15,7 +15,7 @@ import com.b2international.snowowl.snomed.core.domain.ISnomedConceptUpdate;
 import com.b2international.snowowl.snomed.core.domain.SnomedDescriptionCreateRequest;
 import com.b2international.snowowl.snomed.core.domain.InactivationIndicator;
 import com.b2international.snowowl.snomed.core.domain.UserIdGenerationStrategy;
-import com.b2international.snowowl.snomed.datastore.server.domain.DefaultSnomedConceptCreateRequest;
+import com.b2international.snowowl.snomed.datastore.server.events.DefaultSnomedConceptCreateRequest;
 
 public class ConceptInputCreator extends AbstractInputCreator implements ComponentInputCreator<DefaultSnomedConceptCreateRequest, SnomedConceptUpdate, SnomedBrowserConcept> {
 	@Override

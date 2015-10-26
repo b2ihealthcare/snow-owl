@@ -15,8 +15,8 @@
  */
 package com.b2international.snowowl.snomed.api.rest.domain;
 
-import com.b2international.snowowl.snomed.datastore.server.domain.DefaultSnomedConceptCreateRequest;
-import com.b2international.snowowl.snomed.datastore.server.domain.DefaultSnomedRefSetCreateRequest;
+import com.b2international.snowowl.snomed.datastore.server.events.DefaultSnomedConceptCreateRequest;
+import com.b2international.snowowl.snomed.datastore.server.events.DefaultSnomedRefSetCreateRequest;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType;
 
 /**

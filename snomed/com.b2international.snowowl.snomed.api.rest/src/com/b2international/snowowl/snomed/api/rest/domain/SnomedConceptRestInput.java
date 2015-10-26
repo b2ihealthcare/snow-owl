@@ -22,7 +22,7 @@ import java.util.List;
 
 import com.b2international.snowowl.core.terminology.ComponentCategory;
 import com.b2international.snowowl.snomed.api.impl.domain.DefaultSnomedDescriptionCreateRequest;
-import com.b2international.snowowl.snomed.datastore.server.domain.DefaultSnomedConceptCreateRequest;
+import com.b2international.snowowl.snomed.datastore.server.events.DefaultSnomedConceptCreateRequest;
 
 /**
  * @since 1.0
