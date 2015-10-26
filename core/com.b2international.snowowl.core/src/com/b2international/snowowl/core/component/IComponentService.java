@@ -16,12 +16,10 @@
 package com.b2international.snowowl.core.component;
 
 import com.b2international.snowowl.core.domain.IComponent;
-import com.b2international.snowowl.core.domain.RepositoryRequest;
 import com.b2international.snowowl.core.domain.IComponentRef;
 import com.b2international.snowowl.core.domain.exceptions.CodeSystemNotFoundException;
 import com.b2international.snowowl.core.domain.exceptions.CodeSystemVersionNotFoundException;
 import com.b2international.snowowl.core.exceptions.ComponentNotFoundException;
-import com.b2international.snowowl.core.history.IHistoryService;
 
 /**
  * Component service implementations provide methods for <b>c</b>reating, <b>r</b>eading, <b>u</b>pdating and
@@ -33,7 +31,7 @@ import com.b2international.snowowl.core.history.IHistoryService;
  * @param <R> the read model type (used when retrieving component details; must implement {@link IComponent})
  * @param <U> the update model type (used when updating an existing component)
  */
-public interface IComponentService<C extends RepositoryRequest, R extends IComponent, U> {
+public interface IComponentService<R extends IComponent, U> {
 
 	/**
 	 * Creates a new component using the specified input model, then commits changes with the given commit comment to
@@ -59,7 +57,7 @@ public interface IComponentService<C extends RepositoryRequest, R extends ICompo
 	 * @throws ComponentValidationException       if the component input fails validation
 	 * @throws ComponentCreationException         if creating the component fails for any other reason
 	 */
-	R create(C input, String userId, String commitComment);
+//	R create(C input, String userId, String commitComment);
 
 	/**
 	 * Retrieves component details identified by the given {@link IComponentRef component reference}, if it exists.
@@ -114,5 +112,5 @@ public interface IComponentService<C extends RepositoryRequest, R extends ICompo
 	 * @throws ComponentNotFoundException         if the component identifier does not match any component on the given task
 	 * @throws ComponentDeleteException           if deleting the component fails for any other reason
 	 */
-	void delete(IComponentRef ref, String userId, String commitComment);
+//	void delete(IComponentRef ref, String userId, String commitComment);
 }

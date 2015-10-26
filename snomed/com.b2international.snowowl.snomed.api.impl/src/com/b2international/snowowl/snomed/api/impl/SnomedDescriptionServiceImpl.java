@@ -45,7 +45,6 @@ import com.b2international.snowowl.snomed.core.domain.CaseSignificance;
 import com.b2international.snowowl.snomed.core.domain.DescriptionInactivationIndicator;
 import com.b2international.snowowl.snomed.core.domain.ISnomedDescription;
 import com.b2international.snowowl.snomed.core.domain.ISnomedDescriptionUpdate;
-import com.b2international.snowowl.snomed.core.domain.SnomedDescriptionCreateRequest;
 import com.b2international.snowowl.snomed.core.store.SnomedComponents;
 import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 import com.b2international.snowowl.snomed.datastore.SnomedDescriptionLookupService;
@@ -57,6 +56,7 @@ import com.b2international.snowowl.snomed.datastore.index.SnomedIndexService;
 import com.b2international.snowowl.snomed.datastore.index.refset.SnomedRefSetIndexEntry;
 import com.b2international.snowowl.snomed.datastore.model.SnomedModelExtensions;
 import com.b2international.snowowl.snomed.datastore.server.events.SnomedDescriptionConverter;
+import com.b2international.snowowl.snomed.datastore.server.events.SnomedDescriptionCreateRequest;
 import com.b2international.snowowl.snomed.datastore.services.ISnomedComponentService;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedAttributeValueRefSetMember;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedLanguageRefSetMember;
@@ -70,7 +70,7 @@ import com.google.common.collect.Multimap;
 import com.google.common.primitives.Longs;
 
 public class SnomedDescriptionServiceImpl 
-	extends AbstractSnomedComponentServiceImpl<SnomedDescriptionCreateRequest, ISnomedDescription, ISnomedDescriptionUpdate, Description> 
+	extends AbstractSnomedComponentServiceImpl<ISnomedDescription, ISnomedDescriptionUpdate, Description> 
 	implements ISnomedDescriptionService {
 
 	private static SnomedIndexService getIndexService() {
@@ -249,7 +249,7 @@ public class SnomedDescriptionServiceImpl
 			final Acceptability acceptability) {
 
 		final SnomedRefSetEditingContext refSetEditingContext = editingContext.getRefSetEditingContext();
-		final SnomedStructuralRefSet languageRefSet = getStructuralRefSet(languageRefSetId, refSetEditingContext.getTransaction());
+		final SnomedStructuralRefSet languageRefSet = refSetEditingContext.lookup(languageRefSetId, SnomedStructuralRefSet.class);
 		final ComponentIdentifierPair<String> acceptibilityPair = SnomedRefSetEditingContext.createConceptTypePair(acceptability.getConceptId());
 		final ComponentIdentifierPair<String> referencedComponentPair = SnomedRefSetEditingContext.createDescriptionTypePair(description.getId());
 		final SnomedLanguageRefSetMember newMember = refSetEditingContext.createLanguageRefSetMember(referencedComponentPair, acceptibilityPair, description.getModule().getId(), languageRefSet);
@@ -285,12 +285,6 @@ public class SnomedDescriptionServiceImpl
 				}
 			}
 		}
-	}
-
-	@Override
-	protected void doDelete(final IComponentRef ref, final SnomedEditingContext editingContext) {
-		final Description description = getDescription(ref.getComponentId(), editingContext);
-		editingContext.delete(description);
 	}
 
 	@Override

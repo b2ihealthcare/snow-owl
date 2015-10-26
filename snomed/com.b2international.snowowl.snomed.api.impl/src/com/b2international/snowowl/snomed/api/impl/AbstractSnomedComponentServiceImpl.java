@@ -15,19 +15,14 @@
  */
 package com.b2international.snowowl.snomed.api.impl;
 
-import static com.google.common.base.Preconditions.checkState;
-
 import java.util.List;
 import java.util.Map.Entry;
 
-import org.eclipse.emf.cdo.transaction.CDOTransaction;
 import org.eclipse.emf.ecore.util.EcoreUtil;
 
 import com.b2international.commons.ClassUtils;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.domain.IComponentRef;
-import com.b2international.snowowl.core.exceptions.AlreadyExistsException;
-import com.b2international.snowowl.core.exceptions.BadRequestException;
 import com.b2international.snowowl.core.terminology.ComponentCategory;
 import com.b2international.snowowl.datastore.server.components.AbstractComponentServiceImpl;
 import com.b2international.snowowl.datastore.server.domain.InternalComponentRef;
@@ -38,8 +33,6 @@ import com.b2international.snowowl.snomed.api.ISnomedComponentService;
 import com.b2international.snowowl.snomed.core.domain.AssociationType;
 import com.b2international.snowowl.snomed.core.domain.ISnomedComponent;
 import com.b2international.snowowl.snomed.core.domain.ISnomedComponentUpdate;
-import com.b2international.snowowl.snomed.core.domain.SnomedComponentCreateRequest;
-import com.b2international.snowowl.snomed.core.domain.UserIdGenerationStrategy;
 import com.b2international.snowowl.snomed.datastore.SnomedConceptLookupService;
 import com.b2international.snowowl.snomed.datastore.SnomedEditingContext;
 import com.b2international.snowowl.snomed.datastore.SnomedRefSetEditingContext;
@@ -53,9 +46,9 @@ import com.google.common.collect.HashMultimap;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Multimap;
 
-public abstract class AbstractSnomedComponentServiceImpl<C extends SnomedComponentCreateRequest, R extends ISnomedComponent, U extends ISnomedComponentUpdate, M extends Component>
-extends AbstractComponentServiceImpl<C, R, U, SnomedEditingContext, M>
-implements ISnomedComponentService<C, R, U> {
+public abstract class AbstractSnomedComponentServiceImpl<R extends ISnomedComponent, U extends ISnomedComponentUpdate, M extends Component>
+extends AbstractComponentServiceImpl<R, U, SnomedEditingContext, M>
+implements ISnomedComponentService<R, U> {
 
 	protected final SnomedConceptLookupService snomedConceptLookupService = new SnomedConceptLookupService();
 	protected final SnomedRefSetLookupService snomedRefSetLookupService = new SnomedRefSetLookupService();
@@ -68,30 +61,21 @@ implements ISnomedComponentService<C, R, U> {
 		return new SnomedBranchRefSetMembershipLookupService(branchPath);
 	}
 
-	protected SnomedStructuralRefSet getStructuralRefSet(final String refSetId, final CDOTransaction transaction) {
-		final SnomedStructuralRefSet structuralRefSet = (SnomedStructuralRefSet) snomedRefSetLookupService.getComponent(refSetId, transaction);
-		if (null == structuralRefSet) {
-			throw new BadRequestException("Reference set with identifier %s does not exist.", refSetId);
-		}
+//	@Override
+//	protected boolean componentExists(final C input) {
+//		if (input.getIdGenerationStrategy() instanceof UserIdGenerationStrategy) {
+//			return componentExists(createComponentRef(input, input.getIdGenerationStrategy().getId())); 
+//		} else {
+//			return false;
+//		}
+//	}
 
-		return structuralRefSet;
-	}
-
-	@Override
-	protected boolean componentExists(final C input) {
-		if (input.getIdGenerationStrategy() instanceof UserIdGenerationStrategy) {
-			return componentExists(createComponentRef(input, input.getIdGenerationStrategy().getId())); 
-		} else {
-			return false;
-		}
-	}
-
-	@Override
-	protected AlreadyExistsException createDuplicateComponentException(final C input) {
-		// XXX: If we arrive here, the component ID must have been given by the user, any other case does not make sense
-		checkState(input.getIdGenerationStrategy() instanceof UserIdGenerationStrategy);
-		return new AlreadyExistsException(handledCategory.getDisplayName(), input.getIdGenerationStrategy().getId());
-	}
+//	@Override
+//	protected AlreadyExistsException createDuplicateComponentException(final C input) {
+//		// XXX: If we arrive here, the component ID must have been given by the user, any other case does not make sense
+//		checkState(input.getIdGenerationStrategy() instanceof UserIdGenerationStrategy);
+//		return new AlreadyExistsException(handledCategory.getDisplayName(), input.getIdGenerationStrategy().getId());
+//	}
 
 	@Override
 	protected SnomedEditingContext createEditingContext(final IComponentRef ref) {
@@ -193,7 +177,7 @@ implements ISnomedComponentService<C, R, U> {
 			final String conceptId, final SnomedEditingContext editingContext) {
 
 		final SnomedRefSetEditingContext refSetEditingContext = editingContext.getRefSetEditingContext();
-		final SnomedStructuralRefSet associationRefSet = getStructuralRefSet(refSetId, refSetEditingContext.getTransaction());
+		final SnomedStructuralRefSet associationRefSet = refSetEditingContext.lookup(refSetId, SnomedStructuralRefSet.class);
 		final String moduleId = editingContext.getDefaultModuleConcept().getId();
 
 		return refSetEditingContext.createAssociationRefSetMember(

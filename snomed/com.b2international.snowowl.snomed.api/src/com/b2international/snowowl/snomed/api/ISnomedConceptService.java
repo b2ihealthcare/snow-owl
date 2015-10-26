@@ -17,7 +17,6 @@ package com.b2international.snowowl.snomed.api;
 
 import java.util.Map;
 
-import com.b2international.snowowl.api.exception.IllegalQueryParameterException;
 import com.b2international.snowowl.core.domain.IComponentList;
 import com.b2international.snowowl.core.exceptions.NotFoundException;
 import com.b2international.snowowl.snomed.core.domain.ISnomedConcept;
@@ -28,7 +27,7 @@ import com.b2international.snowowl.snomed.core.domain.SearchKind;
  * SNOMED CT concept service implementations provide methods for creating, reading, updating and deleting single concepts, as well as searching for
  * and enumerating pageable subsets of all concepts on a particular version and task.
  */
-public interface ISnomedConceptService extends ISnomedComponentService<SnomedConceptCreateRequest, ISnomedConcept, ISnomedConceptUpdate> {
+public interface ISnomedConceptService extends ISnomedComponentService<ISnomedConcept, ISnomedConceptUpdate> {
 
 	/**
 	 * Returns a subset of all stored concepts.
@@ -46,7 +45,7 @@ public interface ISnomedConceptService extends ISnomedComponentService<SnomedCon
 	 *             - if SNOMED CT as a code system is not registered or the branch associated with the given branchPath is not found
 	 */
 	@Deprecated
-	IComponentList<ISnomedConcept> getAllConcepts(String branchPath, int offset, int limit);
+//	IComponentList<ISnomedConcept> getAllConcepts(String branchPath, int offset, int limit);
 
 	/**
 	 * Searches for concepts matching the specified query parameters.

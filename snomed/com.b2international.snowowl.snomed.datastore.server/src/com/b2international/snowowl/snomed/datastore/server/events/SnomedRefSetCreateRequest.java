@@ -15,19 +15,33 @@
  */
 package com.b2international.snowowl.snomed.datastore.server.events;
 
+import com.b2international.snowowl.core.domain.TransactionContext;
+import com.b2international.snowowl.snomed.core.domain.SnomedReferenceSet;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType;
 
 /**
  * @since 4.5
  */
-public class SnomedRefSetCreateRequest extends SnomedConceptCreateRequest {
+public class SnomedRefSetCreateRequest extends SnomedRefSetRequest<TransactionContext, SnomedReferenceSet> {
 
 	private final SnomedRefSetType type;
 	private final String referencedComponentType;
+	private SnomedConceptCreateRequest conceptReq;
 	
-	public SnomedRefSetCreateRequest(SnomedRefSetType type, String referencedComponentType) {
+	public SnomedRefSetCreateRequest(SnomedRefSetType type, String referencedComponentType, SnomedConceptCreateRequest conceptReq) {
 		this.type = type;
 		this.referencedComponentType = referencedComponentType;
+		this.conceptReq = conceptReq;
 	}
-
+	
+	@Override
+	public SnomedReferenceSet execute(TransactionContext context) {
+		return null;
+	}
+	
+	@Override
+	protected Class<SnomedReferenceSet> getReturnType() {
+		return SnomedReferenceSet.class;
+	}
+	
 }

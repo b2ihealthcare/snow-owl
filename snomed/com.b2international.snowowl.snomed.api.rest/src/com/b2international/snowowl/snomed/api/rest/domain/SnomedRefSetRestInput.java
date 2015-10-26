@@ -44,15 +44,9 @@ public class SnomedRefSetRestInput extends SnomedConceptRestInput {
 	}
 	
 	@Override
-	public SnomedRefSetCreateRequest toComponentInput(String branchPath, String codeSystemShortName) {
+	public SnomedConceptCreateRequest toComponentInput(String branchPath, String codeSystemShortName) {
 		final SnomedConceptCreateRequest conceptInput = super.toComponentInput(branchPath, codeSystemShortName);
-		final SnomedRefSetCreateRequest input = new SnomedRefSetCreateRequest(getType(), getReferencedComponentType());
-		input.setDescriptions(conceptInput.getDescriptions());
-		input.setIdGenerationStrategy(conceptInput.getIdGenerationStrategy());
-		input.setIsAIdGenerationStrategy(conceptInput.getIsAIdGenerationStrategy());
-		input.setModuleId(conceptInput.getModuleId());
-		input.setParentId(conceptInput.getParentId());
-		return input;
+		return new SnomedRefSetCreateRequest(getType(), getReferencedComponentType(), conceptInput);
 	}
 	
 }

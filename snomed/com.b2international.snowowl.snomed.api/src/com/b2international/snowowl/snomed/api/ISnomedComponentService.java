@@ -17,7 +17,6 @@ package com.b2international.snowowl.snomed.api;
 
 import com.b2international.snowowl.core.component.IComponentService;
 import com.b2international.snowowl.snomed.core.domain.ISnomedComponent;
-import com.b2international.snowowl.snomed.core.domain.SnomedComponentCreateRequest;
 import com.b2international.snowowl.snomed.core.domain.ISnomedComponentUpdate;
 
 /**
@@ -28,7 +27,7 @@ import com.b2international.snowowl.snomed.core.domain.ISnomedComponentUpdate;
  * @param <R> the read model type (used when retrieving component details; must implement {@link ISnomedComponent})
  * @param <U> the update model type (used when updating an existing component; must implement {@link ISnomedComponentUpdate})
  */
-public interface ISnomedComponentService<C extends SnomedComponentCreateRequest, R extends ISnomedComponent, U extends ISnomedComponentUpdate> 
-	extends IComponentService<C, R, U> {
+public interface ISnomedComponentService<R extends ISnomedComponent, U extends ISnomedComponentUpdate> 
+	extends IComponentService<R, U> {
 	// Empty interface body
 }

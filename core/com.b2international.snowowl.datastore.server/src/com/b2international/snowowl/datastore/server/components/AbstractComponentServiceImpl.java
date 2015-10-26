@@ -15,7 +15,6 @@
  */
 package com.b2international.snowowl.datastore.server.components;
 
-import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
 
 import java.util.ConcurrentModificationException;
@@ -27,9 +26,7 @@ import com.b2international.commons.exceptions.Exceptions;
 import com.b2international.snowowl.core.api.SnowowlRuntimeException;
 import com.b2international.snowowl.core.component.IComponentService;
 import com.b2international.snowowl.core.domain.IComponent;
-import com.b2international.snowowl.core.domain.RepositoryRequest;
 import com.b2international.snowowl.core.domain.IComponentRef;
-import com.b2international.snowowl.core.exceptions.AlreadyExistsException;
 import com.b2international.snowowl.core.exceptions.ApiValidation;
 import com.b2international.snowowl.core.exceptions.ComponentNotFoundException;
 import com.b2international.snowowl.core.exceptions.ConflictException;
@@ -39,17 +36,15 @@ import com.b2international.snowowl.core.terminology.ComponentCategory;
 import com.b2international.snowowl.datastore.CDOEditingContext;
 import com.b2international.snowowl.datastore.exception.RepositoryLockException;
 import com.b2international.snowowl.datastore.server.CDOServerUtils;
-import com.b2international.snowowl.datastore.server.domain.ComponentRef;
 import com.b2international.snowowl.datastore.server.domain.InternalStorageRef;
 import com.b2international.snowowl.datastore.server.domain.StorageRef;
-import com.google.common.base.Strings;
 
 /**
  * TODO: validate misguided references (eg. when the incoming code system short name is ATC in SnomedConceptServiceImpl)?
  * 
  */
-public abstract class AbstractComponentServiceImpl<C extends RepositoryRequest, R extends IComponent, U, E extends CDOEditingContext, M extends CDOObject> 
-	implements IComponentService<C, R, U> {
+public abstract class AbstractComponentServiceImpl<R extends IComponent, U, E extends CDOEditingContext, M extends CDOObject> 
+	implements IComponentService<R, U> {
 
 	protected final String handledRepositoryUuid;
 	protected final ComponentCategory handledCategory;
@@ -63,32 +58,32 @@ public abstract class AbstractComponentServiceImpl<C extends RepositoryRequest, 
 		this.handledCategory = handledCategory;
 	}
 
-	@Override
-	public R create(final C input, final String userId, final String commitComment) {
-		checkNotNull(input, "Component input may not be null.");
-		checkNotNull(userId, "User identifier may not be null.");
-		checkArgument(!Strings.isNullOrEmpty(commitComment), "Commit comment may not be null or empty.");
-		ApiValidation.checkInput(input);
-		
-		if (componentExists(input)) {
-			throw createDuplicateComponentException(input);
-		}
-
-		try (E editingContext = createEditingContext(input)) {
-
-			final M component = convertAndRegister(input, editingContext);
-			editingContext.preCommit();
-
-			/*
-			 * FIXME: at this point, the component identifier might have changed even though the input 
-			 * required an exact ID to be assigned. What to do?
-			 */
-			final String componentId = getComponentId(component);
-			doCommit(userId, commitComment, editingContext);
-			return read(createComponentRef(input, componentId));
-		
-		}
-	}
+//	@Override
+//	public R create(final C input, final String userId, final String commitComment) {
+//		checkNotNull(input, "Component input may not be null.");
+//		checkNotNull(userId, "User identifier may not be null.");
+//		checkArgument(!Strings.isNullOrEmpty(commitComment), "Commit comment may not be null or empty.");
+//		ApiValidation.checkInput(input);
+//		
+//		if (componentExists(input)) {
+//			throw createDuplicateComponentException(input);
+//		}
+//
+//		try (E editingContext = createEditingContext(input)) {
+//
+//			final M component = convertAndRegister(input, editingContext);
+//			editingContext.preCommit();
+//
+//			/*
+//			 * FIXME: at this point, the component identifier might have changed even though the input 
+//			 * required an exact ID to be assigned. What to do?
+//			 */
+//			final String componentId = getComponentId(component);
+//			doCommit(userId, commitComment, editingContext);
+//			return read(createComponentRef(input, componentId));
+//		
+//		}
+//	}
 
 	@Override
 	public R read(final IComponentRef ref) {
@@ -111,16 +106,16 @@ public abstract class AbstractComponentServiceImpl<C extends RepositoryRequest, 
 		}
 	}
 
-	@Override
-	public void delete(final IComponentRef ref, final String userId, final String commitComment) {
-		checkComponentExists(ref);
-
-		try (E editingContext = createEditingContext(ref)) {
-			doDelete(ref, editingContext);
-			doCommit(userId, commitComment, editingContext);
-			return;
-		}
-	}
+//	@Override
+//	public void delete(final IComponentRef ref, final String userId, final String commitComment) {
+//		checkComponentExists(ref);
+//
+//		try (E editingContext = createEditingContext(ref)) {
+//			doDelete(ref, editingContext);
+//			doCommit(userId, commitComment, editingContext);
+//			return;
+//		}
+//	}
 
 	protected void checkComponentExists(final IComponentRef ref) {
 		if (!componentExists(ref)) {
@@ -128,11 +123,11 @@ public abstract class AbstractComponentServiceImpl<C extends RepositoryRequest, 
 		}
 	}
 
-	protected IComponentRef createComponentRef(final C input, final String componentId) {
-		final ComponentRef result = new ComponentRef(input.getCodeSystemShortName(), input.getBranchPath(), componentId);
-		result.checkStorageExists();
-		return result;
-	}
+//	protected IComponentRef createComponentRef(final C input, final String componentId) {
+//		final ComponentRef result = new ComponentRef(input.getCodeSystemShortName(), input.getBranchPath(), componentId);
+//		result.checkStorageExists();
+//		return result;
+//	}
 	
 	protected InternalStorageRef createStorageRef(final String codeSystemShortName, final String branchPath) {
 		final StorageRef storageRef = new StorageRef(codeSystemShortName, branchPath);
@@ -140,10 +135,10 @@ public abstract class AbstractComponentServiceImpl<C extends RepositoryRequest, 
 		return storageRef;
 	}
 
-	private E createEditingContext(final C input) {
-		// XXX: Since we don't know what the componentId will become at this point, we set it to null
-		return createEditingContext(createComponentRef(input, null));
-	}
+//	private E createEditingContext(final C input) {
+//		// XXX: Since we don't know what the componentId will become at this point, we set it to null
+//		return createEditingContext(createComponentRef(input, null));
+//	}
 
 	public void doCommit(final String userId, final String commitComment, final E editingContext) {
 		try {
@@ -167,15 +162,15 @@ public abstract class AbstractComponentServiceImpl<C extends RepositoryRequest, 
 		}
 	}
 
-	protected abstract boolean componentExists(C input);
+//	protected abstract boolean componentExists(C input);
 
 	protected abstract boolean componentExists(IComponentRef ref);
 
-	protected abstract AlreadyExistsException createDuplicateComponentException(C input);
+//	protected abstract AlreadyExistsException createDuplicateComponentException(C input);
 
 	protected abstract E createEditingContext(IComponentRef ref);
 
-	protected abstract M convertAndRegister(C input, E editingContext);
+//	protected abstract M convertAndRegister(C input, E editingContext);
 
 	protected abstract String getComponentId(M component);
 
@@ -183,5 +178,5 @@ public abstract class AbstractComponentServiceImpl<C extends RepositoryRequest, 
 
 	protected abstract void doUpdate(IComponentRef ref, U update, E editingContext);
 
-	protected abstract void doDelete(IComponentRef ref, E editingContext);
+//	protected abstract void doDelete(IComponentRef ref, E editingContext);
 }
