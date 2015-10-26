@@ -46,6 +46,7 @@ public interface ISnomedConceptService extends ISnomedComponentService<SnomedCon
 	 * @throws NotFoundException
 	 *             - if SNOMED CT as a code system is not registered or the branch associated with the given branchPath is not found
 	 */
+	@Deprecated
 	IComponentList<ISnomedConcept> getAllConcepts(String branchPath, int offset, int limit);
 
 	/**

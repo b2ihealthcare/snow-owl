@@ -15,7 +15,12 @@
  */
 package com.b2international.snowowl.snomed.datastore.server.events;
 
+import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.domain.RepositoryContext;
+import com.b2international.snowowl.snomed.core.domain.ISnomedConcept;
+import com.b2international.snowowl.snomed.datastore.SnomedConceptIndexEntry;
+import com.b2international.snowowl.snomed.datastore.services.SnomedBranchRefSetMembershipLookupService;
+import com.google.common.base.Function;
 
 /**
  * @since 4.5
@@ -28,6 +33,10 @@ abstract class SnomedConceptRequest<C extends RepositoryContext, B> extends Snom
 	@Override
 	protected final String getPath() {
 		return "/concepts";
+	}
+
+	protected final Function<SnomedConceptIndexEntry, ISnomedConcept> getConverter(final IBranchPath branchPath) {
+		return new SnomedConceptConverter(new SnomedBranchRefSetMembershipLookupService(branchPath));
 	}
 	
 }

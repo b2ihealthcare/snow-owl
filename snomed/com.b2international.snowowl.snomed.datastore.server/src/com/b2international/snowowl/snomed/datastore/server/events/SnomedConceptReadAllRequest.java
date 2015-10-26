@@ -25,7 +25,6 @@ import com.b2international.snowowl.snomed.core.domain.SnomedConcepts;
 import com.b2international.snowowl.snomed.datastore.SnomedConceptIndexEntry;
 import com.b2international.snowowl.snomed.datastore.index.SnomedConceptReducedQueryAdapter;
 import com.b2international.snowowl.snomed.datastore.index.SnomedIndexService;
-import com.b2international.snowowl.snomed.datastore.services.SnomedBranchRefSetMembershipLookupService;
 import com.google.common.collect.Lists;
 
 /**
@@ -52,9 +51,9 @@ class SnomedConceptReadAllRequest extends SnomedConceptRequest<RepositoryContext
 		final int total = index.getHitCount(branchPath, queryAdapter);
 		final List<SnomedConceptIndexEntry> hits = index.search(branchPath, queryAdapter, offset, limit); 
 		
-		return new SnomedConcepts(Lists.transform(hits, new SnomedConceptConverter(new SnomedBranchRefSetMembershipLookupService(branchPath))), offset, limit, total);
+		return new SnomedConcepts(Lists.transform(hits, getConverter(branchPath)), offset, limit, total);
 	}
-	
+
 	@Override
 	protected Class<SnomedConcepts> getReturnType() {
 		return SnomedConcepts.class;

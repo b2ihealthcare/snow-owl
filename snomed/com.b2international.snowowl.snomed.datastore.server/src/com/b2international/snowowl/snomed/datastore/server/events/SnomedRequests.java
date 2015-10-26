@@ -18,6 +18,7 @@ package com.b2international.snowowl.snomed.datastore.server.events;
 import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.datastore.request.RepositoryRequest;
+import com.b2international.snowowl.snomed.core.domain.ISnomedConcept;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcepts;
 import com.b2international.snowowl.snomed.core.domain.SnomedReferenceSet;
 import com.b2international.snowowl.snomed.core.domain.SnomedReferenceSets;
@@ -40,6 +41,10 @@ public abstract class SnomedRequests {
 
 	public static Request<ServiceProvider, SnomedConcepts> prepareGetConcepts(String branch, int offset, int limit) {
 		return new RepositoryRequest<>("SNOMEDCT", branch, new SnomedConceptReadAllRequest(offset, limit));
+	}
+	
+	public static Request<ServiceProvider, ISnomedConcept> prepareGetConcept(String branch, String componentId) {
+		return new RepositoryRequest<>("SNOMEDCT", branch, new SnomedConceptReadRequest(componentId));
 	}
 	
 }

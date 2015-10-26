@@ -28,6 +28,7 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.context.request.async.DeferredResult;
 
 import com.b2international.snowowl.core.domain.IComponentList;
 import com.b2international.snowowl.core.domain.IComponentRef;
@@ -35,6 +36,7 @@ import com.b2international.snowowl.core.domain.PageableCollectionResource;
 import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.snomed.api.ISnomedConceptService;
 import com.b2international.snowowl.snomed.api.rest.domain.*;
+import com.b2international.snowowl.snomed.api.rest.util.DeferredResults;
 import com.b2international.snowowl.snomed.api.rest.util.Responses;
 import com.b2international.snowowl.snomed.core.domain.ISnomedConcept;
 import com.b2international.snowowl.snomed.core.domain.SnomedConceptCreateRequest;
@@ -119,7 +121,7 @@ public class SnomedConceptRestService extends AbstractSnomedRestService {
 		@ApiResponse(code = 404, message = "Branch or Concept not found")
 	})
 	@RequestMapping(value="/{path:**}/concepts/{conceptId}", method=RequestMethod.GET)
-	public @ResponseBody ISnomedConcept read(
+	public @ResponseBody DeferredResult<ISnomedConcept> read(
 			@ApiParam(value="The branch path")
 			@PathVariable(value="path")
 			final String branchPath,
@@ -128,8 +130,7 @@ public class SnomedConceptRestService extends AbstractSnomedRestService {
 			@PathVariable(value="conceptId")
 			final String conceptId) {
 
-		final IComponentRef conceptRef = createComponentRef(branchPath, conceptId);
-		return delegate.read(conceptRef);
+		return DeferredResults.wrap(SnomedRequests.prepareGetConcept(branchPath, conceptId).execute(bus));
 	}
 
 	@ApiOperation(
