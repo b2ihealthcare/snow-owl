@@ -1558,6 +1558,8 @@ public class SnomedEditingContext extends BaseSnomedEditingContext {
 			return (ILookupService<String, T, CDOView>) new SnomedDescriptionLookupService();
 		} else if (type == Relationship.class) {
 			return (ILookupService<String, T, CDOView>) new SnomedRelationshipLookupService();
+		} else if (SnomedRefSet.class.isAssignableFrom(type)) {
+			return (ILookupService<String, T, CDOView>) new SnomedRefSetLookupService();
 		} else {
 			return super.getComponentLookupService(type);
 		}
