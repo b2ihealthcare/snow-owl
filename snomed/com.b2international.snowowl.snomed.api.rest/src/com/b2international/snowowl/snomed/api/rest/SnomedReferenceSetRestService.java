@@ -34,7 +34,8 @@ import com.b2international.snowowl.snomed.api.rest.domain.ChangeRequest;
 import com.b2international.snowowl.snomed.api.rest.domain.SnomedRefSetRestInput;
 import com.b2international.snowowl.snomed.api.rest.util.DeferredResults;
 import com.b2international.snowowl.snomed.core.domain.SnomedReferenceSet;
-import com.b2international.snowowl.snomed.datastore.server.events.SnomedRefSetRequests;
+import com.b2international.snowowl.snomed.core.domain.SnomedReferenceSets;
+import com.b2international.snowowl.snomed.datastore.server.events.SnomedRequests;
 import com.wordnik.swagger.annotations.Api;
 import com.wordnik.swagger.annotations.ApiOperation;
 import com.wordnik.swagger.annotations.ApiParam;
@@ -60,11 +61,11 @@ public class SnomedReferenceSetRestService extends AbstractSnomedRestService {
 		@ApiResponse(code = 404, message = "Branch not found")
 	})
 	@RequestMapping(value="/{path:**}/refsets", method=RequestMethod.GET)	
-	public @ResponseBody DeferredResult<CollectionResource<SnomedReferenceSet>> getReferenceSets(
+	public @ResponseBody DeferredResult<SnomedReferenceSets> getReferenceSets(
 			@ApiParam(value="The branch path")
 			@PathVariable(value="path")
 			final String branchPath) {
-		return DeferredResults.ofCollection(bus, SnomedRefSetRequests.prepareGetReferenceSets(branchPath), SnomedReferenceSet.class);
+		return DeferredResults.wrap(SnomedRequests.prepareGetReferenceSets(branchPath).execute(bus));
 	}
 	
 	@ApiOperation(
@@ -83,7 +84,7 @@ public class SnomedReferenceSetRestService extends AbstractSnomedRestService {
 			@ApiParam(value="The Reference set identifier")
 			@PathVariable(value="refSetId")
 			final String referenceSetId) {
-		return DeferredResults.of(bus, SnomedRefSetRequests.prepareGetReferenceSet(branchPath, referenceSetId), SnomedReferenceSet.class);
+		return DeferredResults.wrap(SnomedRequests.prepareGetReferenceSet(branchPath, referenceSetId).execute(bus));
 	}
 	
 	@ApiOperation(

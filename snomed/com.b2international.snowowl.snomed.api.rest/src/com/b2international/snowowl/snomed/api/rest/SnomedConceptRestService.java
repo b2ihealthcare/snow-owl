@@ -32,11 +32,14 @@ import org.springframework.web.bind.annotation.*;
 import com.b2international.snowowl.core.domain.IComponentList;
 import com.b2international.snowowl.core.domain.IComponentRef;
 import com.b2international.snowowl.core.domain.PageableCollectionResource;
+import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.snomed.api.ISnomedConceptService;
 import com.b2international.snowowl.snomed.api.rest.domain.*;
 import com.b2international.snowowl.snomed.api.rest.util.Responses;
 import com.b2international.snowowl.snomed.core.domain.ISnomedConcept;
 import com.b2international.snowowl.snomed.core.domain.SnomedConceptCreateRequest;
+import com.b2international.snowowl.snomed.core.domain.SnomedConcepts;
+import com.b2international.snowowl.snomed.datastore.server.events.SnomedRequests;
 import com.b2international.snowowl.snomed.core.domain.ISnomedConceptUpdate;
 import com.b2international.snowowl.snomed.core.domain.SearchKind;
 import com.google.common.base.Strings;
@@ -52,6 +55,9 @@ public class SnomedConceptRestService extends AbstractSnomedRestService {
 
 	@Autowired
 	protected ISnomedConceptService delegate;
+	
+	@Autowired
+	protected IEventBus bus;
 
 	@ApiOperation(
 			value="Retrieve Concepts from a branch", 
@@ -62,7 +68,7 @@ public class SnomedConceptRestService extends AbstractSnomedRestService {
 		@ApiResponse(code = 404, message = "Branch not found")
 	})
 	@RequestMapping(value="/{path:**}/concepts", method=RequestMethod.GET)
-	public @ResponseBody PageableCollectionResource<ISnomedConcept> getConcepts(
+	public @ResponseBody SnomedConcepts getConcepts(
 			@ApiParam(value="The branch path")
 			@PathVariable(value="path")
 			final String branchPath,
@@ -83,19 +89,20 @@ public class SnomedConceptRestService extends AbstractSnomedRestService {
 			@RequestParam(value="limit", defaultValue="50", required=false) 
 			final int limit) {
 
-		final IComponentList<ISnomedConcept> concepts;
+		final SnomedConcepts concepts;
 		final Map<SearchKind, String> queryParams = newHashMap();
 
 		registerIfNotNull(SearchKind.LABEL, labelFilter, queryParams);
 		registerIfNotNull(SearchKind.ESCG, escgFilter, queryParams);
 
 		if (queryParams.isEmpty()) {
-			concepts = delegate.getAllConcepts(branchPath, offset, limit);
+			concepts = SnomedRequests.prepareGetConcepts(branchPath, offset, limit).executeSync(bus);
 		} else {
-			concepts = delegate.search(branchPath, queryParams, offset, limit);
+			final IComponentList<ISnomedConcept> list = delegate.search(branchPath, queryParams, offset, limit);
+			concepts = new SnomedConcepts(list.getMembers(), offset, limit, list.getTotalMembers());
 		}
 
-		return PageableCollectionResource.of(concepts.getMembers(), offset, limit, concepts.getTotalMembers());
+		return concepts;
 	}
 
 	private void registerIfNotNull(SearchKind kind, final String filterText, final Map<SearchKind, String> queryParams) {
