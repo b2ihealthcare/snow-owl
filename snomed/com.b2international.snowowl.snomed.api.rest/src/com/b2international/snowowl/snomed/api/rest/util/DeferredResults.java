@@ -18,11 +18,7 @@ package com.b2international.snowowl.snomed.api.rest.util;
 import org.springframework.web.context.request.async.DeferredResult;
 
 import com.b2international.commons.collections.Procedure;
-import com.b2international.snowowl.core.ServiceProvider;
-import com.b2international.snowowl.core.domain.CollectionResource;
-import com.b2international.snowowl.core.domain.PageableCollectionResource;
-import com.b2international.snowowl.core.events.Request;
-import com.b2international.snowowl.eventbus.IEventBus;
+import com.b2international.snowowl.core.events.util.Promise;
 
 /**
  * @since 4.5
@@ -33,48 +29,25 @@ public class DeferredResults {
 	}
 
 	/**
-	 * Constructs a {@link DeferredResult} for an async action executed via the {@link IEventBus}.
+	 * Wraps a {@link Promise} into Spring's {@link DeferredResult}.
 	 * 
-	 * @param bus
-	 *            - the bus to use when executing the action
-	 * @param action
-	 *            - the action to send and execute
-	 * @param responseType
-	 *            - the type of the response object
-	 * @return
+	 * @param promise - the promise to wrap
+	 * @return - the {@link DeferredResult}
 	 */
-	public static <S extends ServiceProvider, B> DeferredResult<B> of(IEventBus bus, Request<S, B> action, Class<B> responseType) {
-		final DeferredResult<B> result = new DeferredResult<>();
-		action.send(bus, responseType)
-			.then(new Procedure<B>() {
-				@Override
-				protected void doApply(B input) {
-					result.setResult(input);
-				}
-			}).fail(new Procedure<Throwable>() {
-				@Override
-				protected void doApply(Throwable err) {
-					result.setErrorResult(err);
-				}
-			});
+	public static <T> DeferredResult<T> wrap(Promise<T> promise) {
+		final DeferredResult<T> result = new DeferredResult<>();
+		promise.then(new Procedure<T>() {
+			@Override
+			protected void doApply(T input) {
+				result.setResult(input);
+			}
+		}).fail(new Procedure<Throwable>() {
+			@Override
+			protected void doApply(Throwable err) {
+				result.setErrorResult(err);
+			}
+		});
 		return result;
 	}
-	
-	public static <S extends ServiceProvider, B> DeferredResult<CollectionResource<B>> ofCollection(IEventBus bus, Request<S, CollectionResource<B>> action, Class<B> responseType) {
-		final DeferredResult<CollectionResource<B>> result = new DeferredResult<>();
-		action.send(bus, CollectionResource.class)
-			.then(new Procedure<CollectionResource>() {
-				@Override
-				protected void doApply(CollectionResource input) {
-					result.setResult(input);
-				}
-			}).fail(new Procedure<Throwable>() {
-				@Override
-				protected void doApply(Throwable err) {
-					result.setErrorResult(err);
-				}
-			});
-		return result;
-	}
-	
+
 }
