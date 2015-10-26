@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.snomed.api.impl.domain;
+package com.b2international.snowowl.snomed.datastore.server.domain;
 
 import com.b2international.snowowl.snomed.core.domain.AbstractSnomedComponent;
 import com.b2international.snowowl.snomed.core.domain.CharacteristicType;

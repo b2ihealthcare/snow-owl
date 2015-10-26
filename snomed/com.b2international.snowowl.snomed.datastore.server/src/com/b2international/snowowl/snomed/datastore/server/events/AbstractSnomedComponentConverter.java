@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.snomed.api.impl;
+package com.b2international.snowowl.snomed.datastore.server.events;
 
 import java.util.Collection;
 import java.util.Date;

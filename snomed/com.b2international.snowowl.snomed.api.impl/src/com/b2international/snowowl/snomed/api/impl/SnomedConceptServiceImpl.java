@@ -74,6 +74,7 @@ import com.b2international.snowowl.snomed.datastore.index.SnomedConceptReducedQu
 import com.b2international.snowowl.snomed.datastore.index.SnomedDOIQueryAdapter;
 import com.b2international.snowowl.snomed.datastore.index.SnomedIndexService;
 import com.b2international.snowowl.snomed.datastore.model.SnomedModelExtensions;
+import com.b2international.snowowl.snomed.datastore.server.events.SnomedConceptConverter;
 import com.b2international.snowowl.snomed.datastore.services.ISnomedComponentService;
 import com.b2international.snowowl.snomed.dsl.query.SyntaxErrorException;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedAssociationRefSetMember;
