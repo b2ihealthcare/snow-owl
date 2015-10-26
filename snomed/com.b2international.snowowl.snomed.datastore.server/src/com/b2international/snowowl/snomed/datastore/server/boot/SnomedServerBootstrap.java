@@ -37,6 +37,7 @@ public class SnomedServerBootstrap implements BootstrapFragment {
 	public void run(SnowOwlConfiguration configuration, Environment env, IProgressMonitor monitor) throws Exception {
 		if (env.isServer() || env.isEmbedded()) {
 			env.service(IEventBus.class).registerHandler("/" + SnomedDatastoreActivator.REPOSITORY_UUID + "/refsets", new ApiRequestHandler(env));
+			env.service(IEventBus.class).registerHandler("/" + SnomedDatastoreActivator.REPOSITORY_UUID + "/concepts", new ApiRequestHandler(env));
 		}
 	}
 
