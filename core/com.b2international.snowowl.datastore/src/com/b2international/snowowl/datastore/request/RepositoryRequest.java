@@ -54,8 +54,8 @@ public final class RepositoryRequest<B> extends DelegatingRequest<ServiceProvide
 	private final String branchPath;
 
 	// TODO replace short name with repositoryId or define which is the one true ID
-	public RepositoryRequest(String codeSystemShortName, String branchPath, Request<RepositoryContext, B> original) {
-		super(original);
+	public RepositoryRequest(String codeSystemShortName, String branchPath, Request<RepositoryContext, B> next) {
+		super(next);
 		this.codeSystemShortName = codeSystemShortName;
 		this.branchPath = branchPath;
 	}
