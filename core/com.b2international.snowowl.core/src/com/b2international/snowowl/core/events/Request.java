@@ -16,11 +16,13 @@
 package com.b2international.snowowl.core.events;
 
 import com.b2international.snowowl.core.ServiceProvider;
+import com.b2international.snowowl.core.events.util.Promise;
+import com.b2international.snowowl.eventbus.IEventBus;
 
 /**
- * An {@link Request} represents an executable form of user intent. They can be executed in a specific context usually within a
- * {@link ServiceProvider}. Executing a {@link Request} will result in either a success or failure. Success usually returns the requested object or
- * success message while failure usually delivers an error object or {@link Throwable} to the caller.
+ * A {@link Request} represents an executable form of user intent. They can be executed in a specific context usually within a {@link ServiceProvider}
+ * . Executing a {@link Request} will result in either a success or failure. Success usually returns the requested object or success message while
+ * failure usually delivers an error object or {@link Throwable} to the caller.
  *
  * @since 4.5
  * @param <T>
@@ -31,9 +33,42 @@ import com.b2international.snowowl.core.ServiceProvider;
 public interface Request<T extends ServiceProvider, B> extends Event {
 
 	/**
-	 * Executes this action on the given {@link ExecutionContext}.
+	 * Sends and executes this {@link Request} asynchronously via the given dispatcher. The returned {@link Promise} will be either resolved or
+	 * rejected after execution of the {@link Request}.
+	 * 
+	 * @param bus
+	 *            - the dispatcher of the request
+	 * @return a {@link Promise} representing the execution of the {@link Request}
+	 */
+	Promise<B> execute(IEventBus bus);
+
+	/**
+	 * Sends this {@link Request} to existing handlers and waits for the response synchronously until it arrives or a timeout happens. The default
+	 * timeout value is <b>5</b> seconds.
+	 * 
+	 * @param bus
+	 *            - the dispatcher of the request
+	 * @return
+	 */
+	B executeSync(IEventBus bus);
+
+	/**
+	 * Sends this {@link Request} to existing handlers and waits for the response synchronously until it arrives or the timeout (defined in
+	 * milliseconds) happens.
+	 * 
+	 * @param bus
+	 *            - the dispatcher of the request
+	 * @param timeout
+	 *            - timeout value defined in milliseconds
+	 * @return
+	 */
+	B executeSync(IEventBus bus, long timeout);
+
+	/**
+	 * Executes this action on the given {@link ExecutionContext} directly without dispatching it.
 	 *
 	 * @param context
+	 *            - the context within this {@link Request} can be executed
 	 * @return - the result of the {@link Request}
 	 */
 	B execute(T context);

@@ -44,7 +44,7 @@ public final class AsyncSupport<T> {
 			public void handle(IMessage message) {
 				try {
 					if (message.isSucceeded()) {
-						promise.resolve(clazz.cast(message.body()));
+						promise.resolve(message.body(clazz));
 					} else {
 						promise.reject((Throwable) message.body());
 					}
