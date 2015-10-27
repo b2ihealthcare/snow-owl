@@ -16,16 +16,12 @@
 package com.b2international.snowowl.snomed.datastore.server.events;
 
 import com.b2international.snowowl.core.ServiceProvider;
+import com.b2international.snowowl.core.domain.TransactionContext;
 import com.b2international.snowowl.core.events.Request;
+import com.b2international.snowowl.datastore.request.RepositoryCommitRequestBuilder;
 import com.b2international.snowowl.datastore.request.RepositoryRequest;
-import com.b2international.snowowl.datastore.request.TransactionalRequest;
+import com.b2international.snowowl.datastore.request.RepositoryRequests;
 import com.b2international.snowowl.snomed.Component;
-import com.b2international.snowowl.snomed.Concept;
-import com.b2international.snowowl.snomed.Description;
-import com.b2international.snowowl.snomed.Relationship;
-import com.b2international.snowowl.snomed.core.domain.ISnomedConcept;
-import com.b2international.snowowl.snomed.core.domain.ISnomedDescription;
-import com.b2international.snowowl.snomed.core.domain.ISnomedRelationship;
 import com.b2international.snowowl.snomed.core.domain.SnomedReferenceSet;
 import com.b2international.snowowl.snomed.core.domain.SnomedReferenceSets;
 import com.b2international.snowowl.snomed.datastore.server.request.SnomedConceptGetRequestBuilder;
@@ -39,6 +35,10 @@ public abstract class SnomedRequests {
 	private SnomedRequests() {
 	}
 	
+	public static <B> RepositoryCommitRequestBuilder<B> prepareCommit(String userId, String branchPath) {
+		return RepositoryRequests.prepareCommit(userId, "SNOMEDCT", branchPath);
+	}
+	
 	public static SnomedConceptSearchRequestBuilder prepareSearch(String branch) {
 		return new SnomedConceptSearchRequestBuilder(branch);
 	}
@@ -47,45 +47,17 @@ public abstract class SnomedRequests {
 		return new SnomedConceptGetRequestBuilder(branch);
 	}
 	
-	// TODO migrate initial API 
+	public static Request<TransactionContext, Void> prepareDeleteComponent(String componentId, Class<? extends Component> type) {
+		return new SnomedComponentDeleteRequest(componentId, type);
+	}
+	
+	// TODO migrate initial API to builders
 	public static Request<ServiceProvider, SnomedReferenceSets> prepareGetReferenceSets(String branch) {
 		return new RepositoryRequest<>("SNOMEDCT", branch, new SnomedRefSetReadAllRequest());
 	}
 	
 	public static Request<ServiceProvider, SnomedReferenceSet> prepareGetReferenceSet(String branch, String referenceSetId) {
 		return new RepositoryRequest<>("SNOMEDCT", branch, new SnomedRefSetReadRequest(referenceSetId));
-	}
-
-	public static Request<ServiceProvider, Void> prepareDeleteConcept(String branch, String componentId, String userId, String commitComment) {
-		return prepareDeleteComponent(branch, componentId, userId, commitComment, Concept.class);
-	}
-	
-	public static Request<ServiceProvider, Void> prepareDeleteDescription(String branch, String componentId, String userId, String commitComment) {
-		return prepareDeleteComponent(branch, componentId, userId, commitComment, Description.class);
-	}
-	
-	public static Request<ServiceProvider, Void> prepareDeleteRelationship(String branch, String componentId, String userId, String commitComment) {
-		return prepareDeleteComponent(branch, componentId, userId, commitComment, Relationship.class);
-	}
-
-	private static Request<ServiceProvider, Void> prepareDeleteComponent(String branch, String componentId, String userId, String commitComment, Class<? extends Component> type) {
-		return new RepositoryRequest<>("SNOMEDCT", branch, new TransactionalRequest<>(userId, commitComment, new SnomedComponentDeleteRequest(componentId, type)));
-	}
-	
-	public static Request<ServiceProvider, ISnomedConcept> prepareCreateConcept(String branch, String userId, String commitComment, SnomedConceptCreateRequest next) {
-		return new RepositoryRequest<>("SNOMEDCT", branch, new TransactionalRequest<>(userId, commitComment, next));
-	}
-	
-	public static Request<ServiceProvider, ISnomedDescription> prepareCreateDescription(String branch, String userId, String commitComment, SnomedDescriptionCreateRequest next) {
-		return new RepositoryRequest<>("SNOMEDCT", branch, new TransactionalRequest<>(userId, commitComment, next));
-	}
-	
-	public static Request<ServiceProvider, ISnomedRelationship> prepareCreateRelationship(String branch, String userId, String commitComment, SnomedRelationshipCreateRequest next) {
-		return new RepositoryRequest<>("SNOMEDCT", branch, new TransactionalRequest<>(userId, commitComment, next));
-	}
-
-	public static Request<ServiceProvider, SnomedReferenceSet> prepareCreateRefSet(String branch, String userId, String commitComment, SnomedRefSetCreateRequest next) {
-		return new RepositoryRequest<>("SNOMEDCT", branch, new TransactionalRequest<>(userId, commitComment, next));
 	}
 	
 }

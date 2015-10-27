@@ -31,9 +31,7 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.context.request.async.DeferredResult;
 
-import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.domain.CollectionResource;
-import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.snomed.api.rest.domain.ChangeRequest;
 import com.b2international.snowowl.snomed.api.rest.domain.SnomedRefSetRestInput;
@@ -112,9 +110,18 @@ public class SnomedReferenceSetRestService extends AbstractSnomedRestService {
 			final ChangeRequest<SnomedRefSetRestInput> body,
 
 			final Principal principal) {
+		
 		final SnomedRefSetRestInput change = body.getChange();
-		final Request<ServiceProvider, SnomedReferenceSet> req = SnomedRequests.prepareCreateRefSet(branchPath, principal.getName(), body.getCommitComment(), new SnomedRefSetCreateRequest(change.getType(), change.getReferencedComponentType(), change.toComponentInput()));
-		final SnomedReferenceSet createdRefSet = req.executeSync(bus, 120L * 1000L);
+		final SnomedRefSetCreateRequest req = new SnomedRefSetCreateRequest(change.getType(), change.getReferencedComponentType(), change.toComponentInput());
+		
+		final SnomedReferenceSet createdRefSet = 
+				SnomedRequests
+					.<SnomedReferenceSet>prepareCommit(principal.getName(), branchPath)
+					.setBody(req)
+					.setCommitComment(body.getCommitComment())
+					.build()
+					.executeSync(bus, 120L * 1000L);
+		
 		return Responses.created(getRefSetLocationURI(branchPath, createdRefSet)).build();
 	}
 	

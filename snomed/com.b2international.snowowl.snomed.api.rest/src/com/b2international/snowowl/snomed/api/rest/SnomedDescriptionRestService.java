@@ -32,6 +32,7 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.b2international.snowowl.core.domain.IComponentRef;
+import com.b2international.snowowl.snomed.Description;
 import com.b2international.snowowl.snomed.api.ISnomedDescriptionService;
 import com.b2international.snowowl.snomed.api.rest.domain.ChangeRequest;
 import com.b2international.snowowl.snomed.api.rest.domain.SnomedDescriptionRestInput;
@@ -82,7 +83,17 @@ public class SnomedDescriptionRestService extends AbstractSnomedRestService {
 			
 			final Principal principal) {
 		
-		final ISnomedDescription createdDescription = doCreate(branchPath, body, principal);
+		final String commitComment = body.getCommitComment();
+		final SnomedDescriptionCreateRequest req = body.getChange().toComponentInput();
+		
+		final ISnomedDescription createdDescription = 
+				SnomedRequests
+					.<ISnomedDescription>prepareCommit(principal.getName(), branchPath)
+					.setCommitComment(commitComment)
+					.setBody(req)
+					.build()
+					.executeSync(bus, 120L * 1000L);
+		
 		return Responses.created(getDescriptionLocation(branchPath, createdDescription)).build();
 	}
 
@@ -161,15 +172,13 @@ public class SnomedDescriptionRestService extends AbstractSnomedRestService {
 			final String descriptionId,
 			
 			final Principal principal) {
-		final String userId = principal.getName();
-		SnomedRequests.prepareDeleteDescription(branchPath, descriptionId, userId, String.format("Deleted Description '%s' from store.", descriptionId)).executeSync(bus, 120L * 1000L);
-	}
-	
-	private ISnomedDescription doCreate(final String branchPath, final ChangeRequest<SnomedDescriptionRestInput> body, final Principal principal) {
-		final SnomedDescriptionCreateRequest input = body.getChange().toComponentInput();
-		final String userId = principal.getName();
-		final String commitComment = body.getCommitComment();
-		return SnomedRequests.prepareCreateDescription(branchPath, userId, commitComment, input).executeSync(bus, 120L * 1000L);
+		
+		SnomedRequests
+			.<Void>prepareCommit(principal.getName(), branchPath)
+			.setBody(SnomedRequests.prepareDeleteComponent(descriptionId, Description.class))
+			.setCommitComment(String.format("Deleted Description '%s' from store.", descriptionId))
+			.build()
+			.executeSync(bus, 120L * 1000L);
 	}
 	
 	private URI getDescriptionLocation(final String branchPath, final ISnomedDescription createdDescription) {

@@ -36,6 +36,7 @@ import org.springframework.web.context.request.async.DeferredResult;
 
 import com.b2international.snowowl.core.domain.IComponentRef;
 import com.b2international.snowowl.core.domain.PageableCollectionResource;
+import com.b2international.snowowl.snomed.Concept;
 import com.b2international.snowowl.snomed.api.ISnomedConceptService;
 import com.b2international.snowowl.snomed.api.rest.domain.ChangeRequest;
 import com.b2international.snowowl.snomed.api.rest.domain.RestApiError;
@@ -48,7 +49,6 @@ import com.b2international.snowowl.snomed.core.domain.ISnomedConceptUpdate;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcepts;
 import com.b2international.snowowl.snomed.datastore.server.events.SnomedConceptCreateRequest;
 import com.b2international.snowowl.snomed.datastore.server.events.SnomedRequests;
-import com.b2international.snowowl.snomed.datastore.server.request.SnomedConceptSearchRequestBuilder;
 import com.wordnik.swagger.annotations.Api;
 import com.wordnik.swagger.annotations.ApiOperation;
 import com.wordnik.swagger.annotations.ApiParam;
@@ -154,8 +154,21 @@ public class SnomedConceptRestService extends AbstractSnomedRestService {
 			final ChangeRequest<SnomedConceptRestInput> body,
 
 			final Principal principal) {
+
+		final String userId = principal.getName();
 		
-		final ISnomedConcept createdConcept = doCreate(branchPath, body, principal);
+		final SnomedConceptRestInput change = body.getChange();
+		final String commitComment = body.getCommitComment();
+		
+		final SnomedConceptCreateRequest input = change.toComponentInput();
+		
+		final ISnomedConcept createdConcept = SnomedRequests
+			.<ISnomedConcept>prepareCommit(userId, branchPath)
+			.setBody(input)
+			.setCommitComment(commitComment)
+			.build()
+			.executeSync(bus, 120L * 1000L);
+		
 		return Responses.created(getConceptLocationURI(branchPath, createdConcept)).build();
 	}
 
@@ -227,14 +240,12 @@ public class SnomedConceptRestService extends AbstractSnomedRestService {
 			final String conceptId, 
 
 			final Principal principal) {
-		SnomedRequests.prepareDeleteConcept(branchPath, conceptId, principal.getName(), String.format("Deleted Concept '%s' from store.", conceptId)).executeSync(bus, 120L * 1000L);
-	}
-
-	private ISnomedConcept doCreate(final String branchPath, final ChangeRequest<SnomedConceptRestInput> body, final Principal principal) {
-		final SnomedConceptCreateRequest input = body.getChange().toComponentInput();
-		final String userId = principal.getName();
-		final String commitComment = body.getCommitComment();
-		return SnomedRequests.prepareCreateConcept(branchPath, userId, commitComment, input).executeSync(bus, 120L * 1000L);
+		SnomedRequests
+			.<Void>prepareCommit(principal.getName(), branchPath)
+			.setBody(SnomedRequests.prepareDeleteComponent(conceptId, Concept.class))
+			.setCommitComment(String.format("Deleted Concept '%s' from store.", conceptId))
+			.build()
+			.executeSync(bus, 120L * 1000L);
 	}
 
 	private URI getConceptLocationURI(String branchPath, ISnomedConcept concept) {
