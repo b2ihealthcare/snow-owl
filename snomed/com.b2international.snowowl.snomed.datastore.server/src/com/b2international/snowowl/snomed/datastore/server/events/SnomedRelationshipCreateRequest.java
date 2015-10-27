@@ -22,9 +22,11 @@ import javax.validation.constraints.NotNull;
 import org.hibernate.validator.constraints.NotEmpty;
 
 import com.b2international.snowowl.core.domain.TransactionContext;
+import com.b2international.snowowl.core.exceptions.ComponentNotFoundException;
 import com.b2international.snowowl.snomed.core.domain.CharacteristicType;
 import com.b2international.snowowl.snomed.core.domain.ISnomedRelationship;
 import com.b2international.snowowl.snomed.core.domain.RelationshipModifier;
+import com.b2international.snowowl.snomed.core.store.SnomedComponents;
 
 /**
  * @since 4.0
@@ -122,7 +124,26 @@ public class SnomedRelationshipCreateRequest extends BaseSnomedComponentCreateRe
 
 	@Override
 	public ISnomedRelationship execute(TransactionContext context) {
-		throw new UnsupportedOperationException("Not migrated yet");
+		try {
+			SnomedComponents.newRelationship()
+					.withId(getIdGenerationStrategy())
+					.withModule(getModuleId())
+					.withSource(getSourceId())
+					.withDestination(getDestinationId())
+					.withType(getTypeId())
+					.withGroup(getGroup())
+					.withUnionGroup(getUnionGroup())
+					.withCharacteristicType(getCharacteristicType())
+					.withModifier(getModifier())
+					.withDestinationNegated(isDestinationNegated())
+					// TODO: add a refinability refset member here?
+					.build(context);
+
+			// TODO convert relationship to representation
+			return null;
+		} catch (ComponentNotFoundException e) {
+			throw e.toBadRequestException();
+		}
 	}
 	
 	@Override

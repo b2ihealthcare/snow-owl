@@ -18,7 +18,6 @@ package com.b2international.snowowl.snomed.api.impl;
 import com.b2international.commons.ClassUtils;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.domain.IComponentRef;
-import com.b2international.snowowl.core.exceptions.ComponentNotFoundException;
 import com.b2international.snowowl.core.terminology.ComponentCategory;
 import com.b2international.snowowl.datastore.server.domain.InternalComponentRef;
 import com.b2international.snowowl.snomed.Relationship;
@@ -27,13 +26,11 @@ import com.b2international.snowowl.snomed.core.domain.CharacteristicType;
 import com.b2international.snowowl.snomed.core.domain.ISnomedRelationship;
 import com.b2international.snowowl.snomed.core.domain.ISnomedRelationshipUpdate;
 import com.b2international.snowowl.snomed.core.domain.RelationshipModifier;
-import com.b2international.snowowl.snomed.core.store.SnomedComponents;
 import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 import com.b2international.snowowl.snomed.datastore.SnomedEditingContext;
 import com.b2international.snowowl.snomed.datastore.SnomedRelationshipIndexEntry;
 import com.b2international.snowowl.snomed.datastore.SnomedRelationshipLookupService;
 import com.b2international.snowowl.snomed.datastore.server.events.SnomedRelationshipConverter;
-import com.b2international.snowowl.snomed.datastore.server.events.SnomedRelationshipCreateRequest;
 
 /**
  */
@@ -55,27 +52,6 @@ public class SnomedRelationshipServiceImpl
 	protected boolean componentExists(final IComponentRef ref) {
 		final InternalComponentRef internalRef = ClassUtils.checkAndCast(ref, InternalComponentRef.class);
 		return snomedRelationshipLookupService.exists(internalRef.getBranch().branchPath(), internalRef.getComponentId());
-	}
-
-	@Override
-	protected Relationship convertAndRegister(final SnomedRelationshipCreateRequest input, final SnomedEditingContext editingContext) {
-		try {
-			return SnomedComponents.newRelationship()
-					.withId(input.getIdGenerationStrategy())
-					.withModule(input.getModuleId())
-					.withSource(input.getSourceId())
-					.withDestination(input.getDestinationId())
-					.withType(input.getTypeId())
-					.withGroup(input.getGroup())
-					.withUnionGroup(input.getUnionGroup())
-					.withCharacteristicType(input.getCharacteristicType())
-					.withModifier(input.getModifier())
-					.withDestinationNegated(input.isDestinationNegated())
-					// TODO: add a refinability refset member here?
-					.build(editingContext);
-		} catch (ComponentNotFoundException e) {
-			throw e.toBadRequestException();
-		}
 	}
 
 	@Override
