@@ -29,6 +29,8 @@ import com.b2international.snowowl.snomed.core.domain.IdGenerationStrategy;
 import com.b2international.snowowl.snomed.core.domain.NamespaceIdGenerationStrategy;
 import com.b2international.snowowl.snomed.core.domain.UserIdGenerationStrategy;
 import com.b2international.snowowl.snomed.datastore.SnomedEditingContext;
+import com.b2international.snowowl.snomed.datastore.config.SnomedCoreConfiguration;
+import com.google.common.base.Strings;
 
 /**
  * @since 4.5
@@ -124,14 +126,14 @@ public abstract class SnomedComponentBuilder<B extends SnomedComponentBuilder<B,
 	public final T build(TransactionContext context) {
 		final T t = create();
 		final String identifier = identifierGenerationStrategy.getId();
-		final Concept module = moduleId == null ? context.getDefaultModuleConcept() : context.lookup(moduleId, Concept.class);
+		final String module = Strings.isNullOrEmpty(moduleId) ? context.config().getModuleConfig(SnomedCoreConfiguration.class).getDefaultModule() : moduleId; 
 		if (t instanceof Component) {
 			final Component component = (Component) t;
 			component.setId(identifier);
 			component.setActive(active);
 			component.setEffectiveTime(effectiveTime);
 			component.setReleased(effectiveTime != null);
-			component.setModule(module);
+			component.setModule(context.lookup(module, Concept.class));
 			component.unsetEffectiveTime();
 		}
 		init(t, context);
