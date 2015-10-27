@@ -17,6 +17,7 @@ package com.b2international.snowowl.core.domain;
 
 import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.branch.Branch;
+import com.b2international.snowowl.core.config.SnowOwlConfiguration;
 import com.b2international.snowowl.core.events.Request;
 
 /**
@@ -32,5 +33,12 @@ public interface RepositoryContext extends ServiceProvider {
 	 * @return
 	 */
 	Branch branch();
+
+	/**
+	 * Returns the current application configuration object.
+	 * 
+	 * @return
+	 */
+	SnowOwlConfiguration config();
 
 }

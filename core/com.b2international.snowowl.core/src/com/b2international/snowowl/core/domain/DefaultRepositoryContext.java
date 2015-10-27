@@ -19,6 +19,7 @@ import static com.google.common.base.Preconditions.checkNotNull;
 
 import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.branch.Branch;
+import com.b2international.snowowl.core.config.SnowOwlConfiguration;
 import com.google.inject.Provider;
 
 /**
@@ -47,6 +48,11 @@ public final class DefaultRepositoryContext implements RepositoryContext {
 	@Override
 	public Branch branch() {
 		return branch;
+	}
+	
+	@Override
+	public SnowOwlConfiguration config() {
+		return service(SnowOwlConfiguration.class);
 	}
 
 }
