@@ -24,7 +24,7 @@ import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
  * @param <C>
  * @param <B>
  */
-abstract class SnomedRequest<C extends RepositoryContext, B> extends BaseRequest<C, B> {
+public abstract class SnomedRequest<C extends RepositoryContext, B> extends BaseRequest<C, B> {
 
 	@Override
 	protected final String getAddress() {

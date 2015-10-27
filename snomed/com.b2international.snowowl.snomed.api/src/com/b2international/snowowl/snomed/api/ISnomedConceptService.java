@@ -44,7 +44,7 @@ public interface ISnomedConceptService extends ISnomedComponentService<ISnomedCo
 	 * @throws NotFoundException
 	 *             - if SNOMED CT as a code system is not registered or the branch associated with the given branchPath is not found
 	 */
-	@Deprecated
+//	@Deprecated
 //	IComponentList<ISnomedConcept> getAllConcepts(String branchPath, int offset, int limit);
 
 	/**
@@ -69,5 +69,5 @@ public interface ISnomedConceptService extends ISnomedComponentService<ISnomedCo
 	 * @throws IllegalQueryParameterException
 	 *             if an invalid ESCG expression was passed in as a query parameter
 	 */
-	IComponentList<ISnomedConcept> search(String branchPath, Map<SearchKind, String> queryParams, int offset, int limit);
+//	IComponentList<ISnomedConcept> search(String branchPath, Map<SearchKind, String> queryParams, int offset, int limit);
 }

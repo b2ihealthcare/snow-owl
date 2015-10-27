@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.snomed.datastore.server.events;
+package com.b2international.snowowl.snomed.datastore.server.request;
 
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.domain.RepositoryContext;
@@ -30,7 +30,7 @@ final class SnomedConceptReadRequest extends SnomedConceptRequest<RepositoryCont
 
 	private String componentId;
 
-	public SnomedConceptReadRequest(String componentId) {
+	SnomedConceptReadRequest(String componentId) {
 		this.componentId = componentId;
 	}
 	

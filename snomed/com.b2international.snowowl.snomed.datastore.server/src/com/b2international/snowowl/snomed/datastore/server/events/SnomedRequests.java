@@ -26,9 +26,10 @@ import com.b2international.snowowl.snomed.Relationship;
 import com.b2international.snowowl.snomed.core.domain.ISnomedConcept;
 import com.b2international.snowowl.snomed.core.domain.ISnomedDescription;
 import com.b2international.snowowl.snomed.core.domain.ISnomedRelationship;
-import com.b2international.snowowl.snomed.core.domain.SnomedConcepts;
 import com.b2international.snowowl.snomed.core.domain.SnomedReferenceSet;
 import com.b2international.snowowl.snomed.core.domain.SnomedReferenceSets;
+import com.b2international.snowowl.snomed.datastore.server.request.SnomedConceptGetRequestBuilder;
+import com.b2international.snowowl.snomed.datastore.server.request.SnomedConceptSearchRequestBuilder;
 
 /**
  * @since 4.5
@@ -38,6 +39,15 @@ public abstract class SnomedRequests {
 	private SnomedRequests() {
 	}
 	
+	public static SnomedConceptSearchRequestBuilder prepareSearch(String branch) {
+		return new SnomedConceptSearchRequestBuilder(branch);
+	}
+	
+	public static SnomedConceptGetRequestBuilder prepareGet(String branch) {
+		return new SnomedConceptGetRequestBuilder(branch);
+	}
+	
+	// TODO migrate initial API 
 	public static Request<ServiceProvider, SnomedReferenceSets> prepareGetReferenceSets(String branch) {
 		return new RepositoryRequest<>("SNOMEDCT", branch, new SnomedRefSetReadAllRequest());
 	}
@@ -46,14 +56,6 @@ public abstract class SnomedRequests {
 		return new RepositoryRequest<>("SNOMEDCT", branch, new SnomedRefSetReadRequest(referenceSetId));
 	}
 
-	public static Request<ServiceProvider, SnomedConcepts> prepareGetConcepts(String branch, int offset, int limit) {
-		return new RepositoryRequest<>("SNOMEDCT", branch, new SnomedConceptReadAllRequest(offset, limit));
-	}
-	
-	public static Request<ServiceProvider, ISnomedConcept> prepareGetConcept(String branch, String componentId) {
-		return new RepositoryRequest<>("SNOMEDCT", branch, new SnomedConceptReadRequest(componentId));
-	}
-	
 	public static Request<ServiceProvider, Void> prepareDeleteConcept(String branch, String componentId, String userId, String commitComment) {
 		return prepareDeleteComponent(branch, componentId, userId, commitComment, Concept.class);
 	}

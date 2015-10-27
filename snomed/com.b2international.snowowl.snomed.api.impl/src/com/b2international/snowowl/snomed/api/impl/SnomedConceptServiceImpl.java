@@ -231,38 +231,38 @@ public class SnomedConceptServiceImpl
 		}
 	}
 
-	@Override
-	public IComponentList<ISnomedConcept> search(final String branchPath, final Map<SearchKind, String> queryParams, final int offset, final int limit) {
-		final InternalStorageRef internalRef = createStorageRef(branchPath);
-		final IBranchPath branch = internalRef.getBranch().branchPath();
-		final Query restrictionQuery;
-
-		if (queryParams.containsKey(SearchKind.ESCG)) {
-
-			try {
-				restrictionQuery = getQueryEvaluatorService().evaluateBooleanQuery(branch, queryParams.get(SearchKind.ESCG));
-			} catch (final SyntaxErrorException e) {
-				throw new IllegalQueryParameterException(e.getMessage());
-			}
-
-		} else {
-			restrictionQuery = new MatchAllDocsQuery();
-		}
-
-		final String label = Strings.nullToEmpty(queryParams.get(SearchKind.LABEL));
-		final SnomedDOIQueryAdapter queryAdapter = new SnomedDOIQueryAdapter(label, "", restrictionQuery);
-		return search(offset, limit, queryAdapter, branch);
-	}
-
-	private IComponentList<ISnomedConcept> search(final int offset, final int limit, final SnomedConceptIndexQueryAdapter queryAdapter, final IBranchPath branchPath) {
-		final int totalComponents = getIndexService().getHitCount(branchPath, queryAdapter);
-		final List<SnomedConceptIndexEntry> conceptIndexEntries = getIndexService().search(branchPath, queryAdapter, offset, limit);
-		final List<ISnomedConcept> concepts = Lists.transform(conceptIndexEntries, getConceptConverter(branchPath));
-
-		final SnomedConceptList result = new SnomedConceptList();
-		result.setTotalMembers(totalComponents);
-		result.setMembers(ImmutableList.copyOf(concepts));
-
-		return result;
-	}
+//	@Override
+//	public IComponentList<ISnomedConcept> search(final String branchPath, final Map<SearchKind, String> queryParams, final int offset, final int limit) {
+//		final InternalStorageRef internalRef = createStorageRef(branchPath);
+//		final IBranchPath branch = internalRef.getBranch().branchPath();
+//		final Query restrictionQuery;
+//
+//		if (queryParams.containsKey(SearchKind.ESCG)) {
+//
+//			try {
+//				restrictionQuery = getQueryEvaluatorService().evaluateBooleanQuery(branch, queryParams.get(SearchKind.ESCG));
+//			} catch (final SyntaxErrorException e) {
+//				throw new IllegalQueryParameterException(e.getMessage());
+//			}
+//
+//		} else {
+//			restrictionQuery = new MatchAllDocsQuery();
+//		}
+//
+//		final String label = Strings.nullToEmpty(queryParams.get(SearchKind.LABEL));
+//		final SnomedDOIQueryAdapter queryAdapter = new SnomedDOIQueryAdapter(label, "", restrictionQuery);
+//		return search(offset, limit, queryAdapter, branch);
+//	}
+//
+//	private IComponentList<ISnomedConcept> search(final int offset, final int limit, final SnomedConceptIndexQueryAdapter queryAdapter, final IBranchPath branchPath) {
+//		final int totalComponents = getIndexService().getHitCount(branchPath, queryAdapter);
+//		final List<SnomedConceptIndexEntry> conceptIndexEntries = getIndexService().search(branchPath, queryAdapter, offset, limit);
+//		final List<ISnomedConcept> concepts = Lists.transform(conceptIndexEntries, getConceptConverter(branchPath));
+//
+//		final SnomedConceptList result = new SnomedConceptList();
+//		result.setTotalMembers(totalComponents);
+//		result.setMembers(ImmutableList.copyOf(concepts));
+//
+//		return result;
+//	}
 }
