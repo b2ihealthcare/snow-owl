@@ -24,8 +24,8 @@ public class ConceptInputCreator extends AbstractInputCreator implements Compone
 		conceptInput.setDefinitionStatus(concept.getDefinitionStatus());
 
 		// Find a parent relationship
-		final String parentRelationshipId = getParentId(concept);
-		conceptInput.setParentId(parentRelationshipId);
+		final String parentId = getParentId(concept);
+		conceptInput.setParentId(parentId);
 		conceptInput.setIsAIdGenerationStrategy(new NamespaceIdGenerationStrategy(ComponentCategory.RELATIONSHIP, null));
 
 		final List<ISnomedDescriptionInput> descriptionInputs = newArrayList();
