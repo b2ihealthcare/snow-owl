@@ -15,8 +15,6 @@
  */
 package com.b2international.snowowl.snomed.api.rest.domain;
 
-import com.b2international.snowowl.snomed.datastore.server.events.SnomedConceptCreateRequest;
-import com.b2international.snowowl.snomed.datastore.server.events.SnomedRefSetCreateRequest;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType;
 
 /**
@@ -41,12 +39,6 @@ public class SnomedRefSetRestInput extends SnomedConceptRestInput {
 	
 	public void setReferencedComponentType(String referencedComponentType) {
 		this.referencedComponentType = referencedComponentType;
-	}
-	
-	@Override
-	public SnomedConceptCreateRequest toComponentInput(String branchPath, String codeSystemShortName) {
-		final SnomedConceptCreateRequest conceptInput = super.toComponentInput(branchPath, codeSystemShortName);
-		return new SnomedRefSetCreateRequest(getType(), getReferencedComponentType(), conceptInput);
 	}
 	
 }

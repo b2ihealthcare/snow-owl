@@ -15,6 +15,9 @@
  */
 package com.b2international.snowowl.snomed.api.rest;
 
+import static org.springframework.hateoas.mvc.ControllerLinkBuilder.linkTo;
+
+import java.net.URI;
 import java.security.Principal;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,13 +31,17 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.context.request.async.DeferredResult;
 
+import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.domain.CollectionResource;
+import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.snomed.api.rest.domain.ChangeRequest;
 import com.b2international.snowowl.snomed.api.rest.domain.SnomedRefSetRestInput;
 import com.b2international.snowowl.snomed.api.rest.util.DeferredResults;
+import com.b2international.snowowl.snomed.api.rest.util.Responses;
 import com.b2international.snowowl.snomed.core.domain.SnomedReferenceSet;
 import com.b2international.snowowl.snomed.core.domain.SnomedReferenceSets;
+import com.b2international.snowowl.snomed.datastore.server.events.SnomedRefSetCreateRequest;
 import com.b2international.snowowl.snomed.datastore.server.events.SnomedRequests;
 import com.wordnik.swagger.annotations.Api;
 import com.wordnik.swagger.annotations.ApiOperation;
@@ -105,20 +112,14 @@ public class SnomedReferenceSetRestService extends AbstractSnomedRestService {
 			final ChangeRequest<SnomedRefSetRestInput> body,
 
 			final Principal principal) {
-		throw new UnsupportedOperationException();
-//		final SnomedReferenceSet createdRefSet = doCreate(branchPath, body, principal);
-//		return Responses.created(getRefSetLocationURI(branchPath, createdRefSet)).build();
+		final SnomedRefSetRestInput change = body.getChange();
+		final Request<ServiceProvider, SnomedReferenceSet> req = SnomedRequests.prepareCreateRefSet(branchPath, principal.getName(), body.getCommitComment(), new SnomedRefSetCreateRequest(change.getType(), change.getReferencedComponentType(), change.toComponentInput()));
+		final SnomedReferenceSet createdRefSet = req.executeSync(bus, 120L * 1000L);
+		return Responses.created(getRefSetLocationURI(branchPath, createdRefSet)).build();
 	}
 	
-//	private SnomedReferenceSet doCreate(final String branchPath, final ChangeRequest<SnomedRefSetRestInput> body, final Principal principal) {
-//		final DefaultSnomedRefSetCreateAction input = body.getChange().toComponentInput(branchPath, codeSystemShortName);
-//		final String userId = principal.getName();
-//		final String commitComment = body.getCommitComment();
-//		return delegate.create(input, userId, commitComment);
-//	}
-//
-//	private URI getRefSetLocationURI(String branchPath, SnomedReferenceSet refSet) {
-//		return linkTo(SnomedConceptRestService.class).slash(branchPath).slash("refsets").slash(refSet.getId()).toUri();
-//	}
+	private URI getRefSetLocationURI(String branchPath, SnomedReferenceSet refSet) {
+		return linkTo(SnomedReferenceSetRestService.class).slash(branchPath).slash("refsets").slash(refSet.getId()).toUri();
+	}
 	
 }

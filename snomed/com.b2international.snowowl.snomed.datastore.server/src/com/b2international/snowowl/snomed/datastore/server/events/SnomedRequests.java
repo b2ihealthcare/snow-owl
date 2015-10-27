@@ -81,5 +81,9 @@ public abstract class SnomedRequests {
 	public static Request<ServiceProvider, ISnomedRelationship> prepareCreateRelationship(String branch, String userId, String commitComment, SnomedRelationshipCreateRequest next) {
 		return new RepositoryRequest<>("SNOMEDCT", branch, new TransactionalRequest<>(userId, commitComment, next));
 	}
+
+	public static Request<ServiceProvider, SnomedReferenceSet> prepareCreateRefSet(String branch, String userId, String commitComment, SnomedRefSetCreateRequest next) {
+		return new RepositoryRequest<>("SNOMEDCT", branch, new TransactionalRequest<>(userId, commitComment, next));
+	}
 	
 }
