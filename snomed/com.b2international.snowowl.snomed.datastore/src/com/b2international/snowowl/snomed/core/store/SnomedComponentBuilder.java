@@ -15,6 +15,8 @@
  */
 package com.b2international.snowowl.snomed.core.store;
 
+import static com.google.common.base.Preconditions.checkArgument;
+
 import java.util.Date;
 
 import org.eclipse.emf.cdo.CDOObject;
@@ -23,13 +25,12 @@ import com.b2international.snowowl.core.domain.TransactionContext;
 import com.b2international.snowowl.core.terminology.ComponentCategory;
 import com.b2international.snowowl.snomed.Component;
 import com.b2international.snowowl.snomed.Concept;
-import com.b2international.snowowl.snomed.SnomedFactory;
-import com.b2international.snowowl.snomed.SnomedPackage;
 import com.b2international.snowowl.snomed.core.domain.IdGenerationStrategy;
 import com.b2international.snowowl.snomed.core.domain.NamespaceIdGenerationStrategy;
+import com.b2international.snowowl.snomed.core.domain.UUIDIdGenerationStrategy;
 import com.b2international.snowowl.snomed.core.domain.UserIdGenerationStrategy;
-import com.b2international.snowowl.snomed.datastore.SnomedEditingContext;
 import com.b2international.snowowl.snomed.datastore.config.SnomedCoreConfiguration;
+import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetMember;
 import com.google.common.base.Strings;
 
 /**
@@ -125,16 +126,24 @@ public abstract class SnomedComponentBuilder<B extends SnomedComponentBuilder<B,
 	 */
 	public final T build(TransactionContext context) {
 		final T t = create();
-		final String identifier = identifierGenerationStrategy.getId();
 		final String module = Strings.isNullOrEmpty(moduleId) ? context.config().getModuleConfig(SnomedCoreConfiguration.class).getDefaultModule() : moduleId; 
 		if (t instanceof Component) {
 			final Component component = (Component) t;
+			final String identifier = identifierGenerationStrategy.getId();
 			component.setId(identifier);
 			component.setActive(active);
 			component.setEffectiveTime(effectiveTime);
 			component.setReleased(effectiveTime != null);
 			component.setModule(context.lookup(module, Concept.class));
 			component.unsetEffectiveTime();
+		} else if (t instanceof SnomedRefSetMember) {
+			final SnomedRefSetMember member = (SnomedRefSetMember) t;
+			checkArgument(identifierGenerationStrategy instanceof UUIDIdGenerationStrategy, "Only UUIDs can be used for reference set member IDs");
+			member.setUuid(identifierGenerationStrategy.getId());
+			member.setActive(active);
+			member.setEffectiveTime(effectiveTime);
+			member.setReleased(effectiveTime != null);
+			member.setModuleId(module);
 		}
 		init(t, context);
 		return t;

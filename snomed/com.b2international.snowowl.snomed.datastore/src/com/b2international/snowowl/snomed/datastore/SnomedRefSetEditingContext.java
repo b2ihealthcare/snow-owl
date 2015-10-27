@@ -33,9 +33,6 @@ import org.eclipse.emf.cdo.view.CDOView;
 import org.eclipse.emf.ecore.EPackage;
 import org.eclipse.emf.spi.cdo.FSMUtil;
 
-import bak.pcj.LongIterator;
-import bak.pcj.set.LongSet;
-
 import com.b2international.commons.StringUtils;
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.ComponentIdentifierPair;
@@ -53,6 +50,7 @@ import com.b2international.snowowl.snomed.Description;
 import com.b2international.snowowl.snomed.Relationship;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
+import com.b2international.snowowl.snomed.core.store.SnomedComponents;
 import com.b2international.snowowl.snomed.datastore.services.IClientSnomedComponentService;
 import com.b2international.snowowl.snomed.datastore.services.SnomedConceptNameProvider;
 import com.b2international.snowowl.snomed.datastore.services.SnomedModuleDependencyRefSetService;
@@ -75,6 +73,9 @@ import com.b2international.snowowl.snomed.snomedrefset.SnomedSimpleMapRefSetMemb
 import com.b2international.snowowl.snomed.snomedrefset.SnomedStructuralRefSet;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
+
+import bak.pcj.LongIterator;
+import bak.pcj.set.LongSet;
 
 /**
  * SNOMED CT reference set editing context. Delegates to {@link SnomedEditingContext} to persist the identifier concept when persisting a
@@ -646,6 +647,7 @@ public class SnomedRefSetEditingContext extends BaseSnomedEditingContext {
 	 * @param languageRefSet the parent reference set
 	 * 
 	 * @return the populated reference set member instance
+	 * @deprecated - use {@link SnomedComponents#newLanguageMember()} instead
 	 */
 	public SnomedLanguageRefSetMember createLanguageRefSetMember(final ComponentIdentifierPair<String> referencedComponentPair, 
 			@Nullable final ComponentIdentifierPair<String> acceptabilityPair, 

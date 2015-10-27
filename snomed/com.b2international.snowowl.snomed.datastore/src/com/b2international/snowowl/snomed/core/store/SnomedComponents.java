@@ -49,4 +49,13 @@ public class SnomedComponents {
 		return new SnomedRelationshipBuilder();
 	}
 
+	/**
+	 * Creates and returns a new {@link SnomedLanguageReferenceSetMemberBuilder SNOMED CT Language Reference set member builder}
+	 * 
+	 * @return
+	 */
+	public static SnomedLanguageReferenceSetMemberBuilder newLanguageMember() {
+		return new SnomedLanguageReferenceSetMemberBuilder();
+	}
+
 }
