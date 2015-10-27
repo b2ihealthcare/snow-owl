@@ -13,21 +13,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.core.api;
-
-import java.io.Serializable;
+package com.b2international.snowowl.core.api.component;
 
 /**
- * Provides any arbitrary human readable label or description for the clients. 
- *
+ * Implementing classes provide a label for display or logging purposes. 
  */
-public interface LabelProvider extends Serializable {
+public interface LabelProvider {
 
 	/**
-	 * Returns with a human readable label of the current instance.
-	 * @return a human readable label or description of the current instance.
-	 * @see LabelProvider
+	 * @return a human-readable label for this instance
 	 */
 	String getLabel();
-	
 }

@@ -13,20 +13,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.core.api;
+package com.b2international.snowowl.core.api.component;
 
 /**
- * Represents an ID provider.
- * @param <K> type of the identifier.
+ * Implementing classes provide an identifier unique within a particular terminology. 
  * 
+ * @param <K> the identifier's type
  */
 public interface IdProvider<K> {
 
 	/**
-	 * Returns with an ID that uniquely identifies the current component in a terminology.
-	 * @return the unique identifier of the component.
-	 * @see IdProvider
+	 * @return the unique identifier for this instance
 	 */
 	K getId();
-	
 }

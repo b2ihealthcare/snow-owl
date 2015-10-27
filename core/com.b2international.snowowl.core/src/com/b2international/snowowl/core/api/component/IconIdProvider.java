@@ -13,21 +13,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.core.api;
-
-import java.io.Serializable;
+package com.b2international.snowowl.core.api.component;
 
 /**
- * Provides an icon component identifier to use for UI rendering
+ * Implementing classes provide an icon identifier, which can be used for UI rendering.
  * 
- *
+ * @param <K> the icon identifier's type
  */
-public interface IconIdProvider<K> extends Serializable {
+public interface IconIdProvider<K> {
 
 	/**
-	 * Returns an ID that uniquely identifies the component to be used for the icon.
-	 * @return the unique identifier of the icon component
+	 * @return the icon identifier for this instance
 	 */
 	public K getIconId();
-	
 }
