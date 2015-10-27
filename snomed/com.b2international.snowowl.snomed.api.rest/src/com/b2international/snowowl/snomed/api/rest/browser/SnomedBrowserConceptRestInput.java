@@ -44,10 +44,10 @@ public class SnomedBrowserConceptRestInput extends AbstractSnomedComponentRestIn
 	}
 
 	@Override
-	public SnomedConceptCreateRequest toComponentInput(final String branchPath, final String codeSystemShortName) {
+	public SnomedConceptCreateRequest toComponentInput() {
 		final String parentRelationshipId = getParentId();
 
-		final SnomedConceptCreateRequest result = super.toComponentInput(branchPath,codeSystemShortName);
+		final SnomedConceptCreateRequest result = super.toComponentInput();
 		result.setIsAIdGenerationStrategy(createIdGenerationStrategy(parentRelationshipId));
 
 		final List<SnomedDescriptionCreateRequest> descriptionInputs = newArrayList();
@@ -57,7 +57,7 @@ public class SnomedBrowserConceptRestInput extends AbstractSnomedComponentRestIn
 				restDescription.setNamespaceId(getNamespaceId());
 			}
 			
-			descriptionInputs.add(restDescription.toComponentInput(branchPath,codeSystemShortName));
+			descriptionInputs.add(restDescription.toComponentInput());
 		}
 
 		result.setDescriptions(descriptionInputs);

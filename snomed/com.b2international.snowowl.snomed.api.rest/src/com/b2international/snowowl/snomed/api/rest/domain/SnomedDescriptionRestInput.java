@@ -107,8 +107,8 @@ public class SnomedDescriptionRestInput extends AbstractSnomedComponentRestInput
 	 * @return
 	 */
 	@Override
-	public SnomedDescriptionCreateRequest toComponentInput(final String branchPath, final String codeSystemShortName) {
-		final SnomedDescriptionCreateRequest result = super.toComponentInput(branchPath, codeSystemShortName);
+	public SnomedDescriptionCreateRequest toComponentInput() {
+		final SnomedDescriptionCreateRequest result = super.toComponentInput();
 
 		result.setCaseSignificance(getCaseSignificance());
 		result.setConceptId(getConceptId());

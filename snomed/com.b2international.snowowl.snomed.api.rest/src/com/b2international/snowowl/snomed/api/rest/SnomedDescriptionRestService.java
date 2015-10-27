@@ -166,7 +166,7 @@ public class SnomedDescriptionRestService extends AbstractSnomedRestService {
 	}
 	
 	private ISnomedDescription doCreate(final String branchPath, final ChangeRequest<SnomedDescriptionRestInput> body, final Principal principal) {
-		final SnomedDescriptionCreateRequest input = body.getChange().toComponentInput(branchPath, codeSystemShortName);
+		final SnomedDescriptionCreateRequest input = body.getChange().toComponentInput();
 		final String userId = principal.getName();
 		final String commitComment = body.getCommitComment();
 		return SnomedRequests.prepareCreateDescription(branchPath, userId, commitComment, input).executeSync(bus, 120L * 1000L);

@@ -241,7 +241,7 @@ public class SnomedConceptRestService extends AbstractSnomedRestService {
 	}
 
 	private ISnomedConcept doCreate(final String branchPath, final ChangeRequest<SnomedConceptRestInput> body, final Principal principal) {
-		final SnomedConceptCreateRequest input = body.getChange().toComponentInput(branchPath, codeSystemShortName);
+		final SnomedConceptCreateRequest input = body.getChange().toComponentInput();
 		final String userId = principal.getName();
 		final String commitComment = body.getCommitComment();
 		return SnomedRequests.prepareCreateConcept(branchPath, userId, commitComment, input).executeSync(bus, 120L * 1000L);

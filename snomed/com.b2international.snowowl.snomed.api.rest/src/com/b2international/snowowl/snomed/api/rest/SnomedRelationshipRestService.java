@@ -171,7 +171,7 @@ public class SnomedRelationshipRestService extends AbstractSnomedRestService {
 	}
 
 	private ISnomedRelationship doCreate(final String branchPath, final ChangeRequest<SnomedRelationshipRestInput> body, final Principal principal) {
-		final SnomedRelationshipCreateRequest input = body.getChange().toComponentInput(branchPath, codeSystemShortName);
+		final SnomedRelationshipCreateRequest input = body.getChange().toComponentInput();
 		final String userId = principal.getName();
 		final String commitComment = body.getCommitComment();
 		return SnomedRequests.prepareCreateRelationship(branchPath, userId, commitComment, input).executeSync(bus, 120L * 1000L);

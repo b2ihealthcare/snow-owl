@@ -73,7 +73,7 @@ public abstract class AbstractSnomedComponentRestInput<I extends BaseSnomedCompo
 	 */
 	protected abstract ComponentCategory getComponentCategory();
 	
-	protected I toComponentInput(final String branchPath, final String codeSystemShortName) {
+	protected I toComponentInput() {
 		final I result = createComponentInput();
 		result.setIdGenerationStrategy(createIdGenerationStrategy(getId()));
 		result.setModuleId(getModuleId());
