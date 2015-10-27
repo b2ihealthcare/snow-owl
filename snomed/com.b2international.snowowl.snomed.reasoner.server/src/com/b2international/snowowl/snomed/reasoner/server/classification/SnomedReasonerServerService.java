@@ -56,7 +56,6 @@ import com.b2international.snowowl.core.users.SpecialUserStore;
 import com.b2international.snowowl.datastore.BranchPathUtils;
 import com.b2international.snowowl.datastore.cdo.ICDOConnection;
 import com.b2international.snowowl.datastore.cdo.ICDOConnectionManager;
-import com.b2international.snowowl.datastore.index.mapping.Mappings;
 import com.b2international.snowowl.datastore.oplock.OperationLockException;
 import com.b2international.snowowl.datastore.remotejobs.IRemoteJobManager;
 import com.b2international.snowowl.datastore.remotejobs.RemoteJobUtils;
@@ -90,7 +89,7 @@ import com.b2international.snowowl.snomed.reasoner.classification.entry.Abstract
 import com.b2international.snowowl.snomed.reasoner.classification.entry.ConceptConcreteDomainChangeEntry;
 import com.b2international.snowowl.snomed.reasoner.classification.entry.ConcreteDomainElement;
 import com.b2international.snowowl.snomed.reasoner.classification.entry.IConcreteDomainChangeEntry;
-import com.b2international.snowowl.snomed.reasoner.classification.entry.LongComponent;
+import com.b2international.snowowl.snomed.reasoner.classification.entry.ChangeConcept;
 import com.b2international.snowowl.snomed.reasoner.classification.entry.RelationshipChangeEntry;
 import com.b2international.snowowl.snomed.reasoner.classification.entry.RelationshipConcreteDomainChangeEntry;
 import com.b2international.snowowl.snomed.reasoner.model.LongConcepts;
@@ -304,15 +303,15 @@ public class SnomedReasonerServerService extends CollectingService<Reasoner, Cla
 	
 			private void registerEntry(final long conceptId, final StatementFragment subject, final Nature changeNature) {
 				
-				final LongComponent sourceComponent = createReasonerResponseComponent(branchPath, terminologyBrowser, conceptId);
-				final LongComponent typeComponent = createReasonerResponseComponent(branchPath, terminologyBrowser, subject.getTypeId());
-				final LongComponent destinationComponent = createReasonerResponseComponent(branchPath, terminologyBrowser, subject.getDestinationId());
+				final ChangeConcept sourceComponent = createChangeConcept(branchPath, terminologyBrowser, conceptId);
+				final ChangeConcept typeComponent = createChangeConcept(branchPath, terminologyBrowser, subject.getTypeId());
+				final ChangeConcept destinationComponent = createChangeConcept(branchPath, terminologyBrowser, subject.getDestinationId());
 				
 				final long modifierId = subject.isUniversal() 
 						? LongConcepts.UNIVERSAL_RESTRICTION_MODIFIER_ID
 						: LongConcepts.EXISTENTIAL_RESTRICTION_MODIFIER_ID;
 				
-				final LongComponent modifierComponent = createReasonerResponseComponent(branchPath, terminologyBrowser, modifierId);
+				final ChangeConcept modifierComponent = createChangeConcept(branchPath, terminologyBrowser, modifierId);
 				
 				final RelationshipChangeEntry entry = new RelationshipChangeEntry(
 						changeNature, 
@@ -366,7 +365,7 @@ public class SnomedReasonerServerService extends CollectingService<Reasoner, Cla
 						terminologyBrowser, 
 						subject);
 				
-				final LongComponent sourceComponent = createReasonerResponseComponent(
+				final ChangeConcept sourceComponent = createChangeConcept(
 						branchPath, 
 						terminologyBrowser, 
 						conceptId);
@@ -390,29 +389,29 @@ public class SnomedReasonerServerService extends CollectingService<Reasoner, Cla
 		return convertedChanges;
 	}
 
-	private LongComponent createReasonerResponseComponent(final IBranchPath branchPath, final SnomedTerminologyBrowser terminologyBrowser, final long id) {
+	private ChangeConcept createChangeConcept(final IBranchPath branchPath, final SnomedTerminologyBrowser terminologyBrowser, final long id) {
 		
 		final IndexServerService<?> indexService = getIndexServerService();
 		
 		final TopDocs topDocs = indexService.search(branchPath, SnomedMappings.newQuery().concept().id(id).matchAll(), 1);
 		if (null == topDocs || CompareUtils.isEmpty(topDocs.scoreDocs)) {
-			return new LongComponent(id, id + " (unresolved)", Long.parseLong(Concepts.ROOT_CONCEPT));
+			return new ChangeConcept(id, Long.parseLong(Concepts.ROOT_CONCEPT));
 		} else {
 			final Document doc = indexService.document(branchPath, topDocs.scoreDocs[0].doc, FIELDS_TO_LOAD);
-			return new LongComponent(id, Mappings.label().getValue(doc), SnomedMappings.iconId().getValue(doc));
+			return new ChangeConcept(id, SnomedMappings.iconId().getValue(doc));
 		}
 	}
 
 	private ConcreteDomainElement createConcreteDomainElement(final IBranchPath branchPath, final SnomedTerminologyBrowser terminologyBrowser, final ConcreteDomainFragment fragment) {
 		
-		final IComponent<Long> unitComponent = (ConcreteDomainFragment.UNSET_UOM_ID == fragment.getUomId()) 
+		final ChangeConcept unitConcept = (ConcreteDomainFragment.UNSET_UOM_ID == fragment.getUomId()) 
 				? null
-				: createReasonerResponseComponent(branchPath, terminologyBrowser, fragment.getUomId());
+				: createChangeConcept(branchPath, terminologyBrowser, fragment.getUomId());
 		
 		final ConcreteDomainElement concreteDomainElement = new ConcreteDomainElement(
 				fragment.getLabel().utf8ToString(), 
 				fragment.getValue().utf8ToString(), 
-				unitComponent);
+				unitConcept);
 		
 		return concreteDomainElement;
 	}
