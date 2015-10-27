@@ -15,8 +15,6 @@
  */
 package com.b2international.snowowl.snomed.reasoner.classification.entry;
 
-import com.b2international.snowowl.core.api.IComponentWithIconId;
-
 /**
  * Represents a reasoner change entry about a relationship.
  */
@@ -26,7 +24,7 @@ public class RelationshipChangeEntry extends RelationshipChangeEntryBase {
 
 	private final byte group;
 	private final byte unionGroup;
-	private final IComponentWithIconId<Long> modifier;
+	private final LongComponent modifier;
 	private final boolean destinationNegated;
 
 	/**
@@ -40,8 +38,8 @@ public class RelationshipChangeEntry extends RelationshipChangeEntryBase {
 	 * @param modifier the modifier component
 	 * @param destinationNegated {@code true} if the destination component is to be negated, {@code false} otherwise
 	 */
-	public RelationshipChangeEntry(final Nature nature, final IComponentWithIconId<Long> source, final IComponentWithIconId<Long> type,
-			final IComponentWithIconId<Long> destination, final byte group, final byte unionGroup, final IComponentWithIconId<Long> modifier,
+	public RelationshipChangeEntry(final Nature nature, final LongComponent source, final LongComponent type,
+			final LongComponent destination, final byte group, final byte unionGroup, final LongComponent modifier,
 			final boolean destinationNegated) {
 		super(nature, source, type, destination);
 		this.group = group;
@@ -67,7 +65,7 @@ public class RelationshipChangeEntry extends RelationshipChangeEntryBase {
 	/**
 	 * @return the modifier component
 	 */
-	public IComponentWithIconId<Long> getModifier() {
+	public LongComponent getModifier() {
 		return modifier;
 	}
 

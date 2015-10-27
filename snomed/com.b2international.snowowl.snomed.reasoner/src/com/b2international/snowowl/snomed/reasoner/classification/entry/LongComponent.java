@@ -15,14 +15,15 @@
  */
 package com.b2international.snowowl.snomed.reasoner.classification.entry;
 
-import com.b2international.snowowl.core.api.IComponentWithIconId;
+import com.b2international.snowowl.core.api.IComponent;
+import com.b2international.snowowl.core.api.component.IconIdProvider;
 
 /**
  * Minimal {@link IComponentWithIconId} implementation with {@code long} component key.
  * <p>
  * <b>TODO</b>: add non-boxing getter methods if the current ones cause performance problems
  */
-public class LongComponent implements IComponentWithIconId<Long> {
+public class LongComponent implements IComponent<Long>, IconIdProvider<Long> {
 
 	private static final long serialVersionUID = -1213161598884377108L;
 

@@ -15,8 +15,6 @@
  */
 package com.b2international.snowowl.snomed.reasoner.classification.entry;
 
-import com.b2international.snowowl.core.api.IComponentWithIconId;
-
 /**
  * Represents a change entry of a concrete domain element related to a relationship.
  */
@@ -34,8 +32,8 @@ public class RelationshipConcreteDomainChangeEntry extends RelationshipChangeEnt
 	 * @param destination the relationship destination component
 	 * @param concreteDomainElement the contained concrete domain element
 	 */
-	public RelationshipConcreteDomainChangeEntry(final Nature nature, final IComponentWithIconId<Long> source, final IComponentWithIconId<Long> type,
-			final IComponentWithIconId<Long> destination, final ConcreteDomainElement concreteDomainElement) {
+	public RelationshipConcreteDomainChangeEntry(final Nature nature, final LongComponent source, final LongComponent type,
+			final LongComponent destination, final ConcreteDomainElement concreteDomainElement) {
 		super(nature, source, type, destination);
 		this.concreteDomainElement = concreteDomainElement;
 	}

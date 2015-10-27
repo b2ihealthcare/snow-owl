@@ -15,8 +15,6 @@
  */
 package com.b2international.snowowl.snomed.reasoner.classification.entry;
 
-import com.b2international.snowowl.core.api.IComponentWithIconId;
-
 /**
  * Abstract base class for relationship related reasoner response entries.
  * @see RelationshipChangeEntry
@@ -26,11 +24,11 @@ public abstract class RelationshipChangeEntryBase extends AbstractChangeEntry {
 
 	private static final long serialVersionUID = 445232862733257314L;
 
-	private final IComponentWithIconId<Long> type;
-	private final IComponentWithIconId<Long> destination;
+	private final LongComponent type;
+	private final LongComponent destination;
 
-	protected RelationshipChangeEntryBase(final Nature nature, final IComponentWithIconId<Long> source, final IComponentWithIconId<Long> type,
-			final IComponentWithIconId<Long> destination) {
+	protected RelationshipChangeEntryBase(final Nature nature, final LongComponent source, final LongComponent type,
+			final LongComponent destination) {
 		super(nature, source);
 		this.type = type;
 		this.destination = destination;
@@ -40,7 +38,7 @@ public abstract class RelationshipChangeEntryBase extends AbstractChangeEntry {
 	 * (non-Javadoc)
 	 * @see com.b2international.snowowl.snomed.reasoner.classification.entry.IChangeEntry#getType()
 	 */
-	@Override public IComponentWithIconId<Long> getType() {
+	@Override public LongComponent getType() {
 		return type;
 	}
 
@@ -48,7 +46,7 @@ public abstract class RelationshipChangeEntryBase extends AbstractChangeEntry {
 	 * (non-Javadoc)
 	 * @see com.b2international.snowowl.snomed.reasoner.classification.entry.IChangeEntry#getDestination()
 	 */
-	@Override public IComponentWithIconId<Long> getDestination() {
+	@Override public LongComponent getDestination() {
 		return destination;
 	}
 

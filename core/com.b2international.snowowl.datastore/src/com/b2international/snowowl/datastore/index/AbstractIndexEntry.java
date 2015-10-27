@@ -20,7 +20,7 @@ import static com.google.common.base.Preconditions.checkNotNull;
 import org.eclipse.emf.cdo.common.id.CDOID;
 import org.eclipse.emf.cdo.common.id.CDOIDUtil;
 
-import com.b2international.snowowl.core.api.IComponentWithIconId;
+import com.b2international.snowowl.core.api.component.IconIdProvider;
 import com.b2international.snowowl.core.api.index.IIndexEntry;
 
 /**
@@ -36,7 +36,7 @@ import com.b2international.snowowl.core.api.index.IIndexEntry;
  * </ul>
  * 
  */
-public abstract class AbstractIndexEntry implements IIndexEntry, IComponentWithIconId<String> {
+public abstract class AbstractIndexEntry implements IIndexEntry, IconIdProvider<String> {
 
 	private static final long serialVersionUID = -4158003369170743548L;
 
@@ -75,9 +75,7 @@ public abstract class AbstractIndexEntry implements IIndexEntry, IComponentWithI
 		return storageKey;
 	}
 	
-	/**
-	 * @return the iconId
-	 */
+	@Override
 	public String getIconId() {
 		return iconId;
 	}

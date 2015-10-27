@@ -17,7 +17,6 @@ package com.b2international.snowowl.snomed.reasoner.classification.entry;
 
 import java.io.Serializable;
 
-import com.b2international.snowowl.core.api.IComponentWithIconId;
 import com.b2international.snowowl.snomed.reasoner.classification.entry.AbstractChangeEntry.Nature;
 
 /**
@@ -30,19 +29,19 @@ public interface IChangeEntry extends Serializable {
 	 * @return the component for the source column (referenced concept for concept concrete domain members, the relationship source concept for
 	 *         relationship concrete domain members and relationships)
 	 */
-	IComponentWithIconId<Long> getSource();
+	LongComponent getSource();
 
 	/**
 	 * @return the component for the type column ({@code null} for concept concrete domain members, the relationship type concept for relationship
 	 *         concrete domain members and relationships)
 	 */
-	IComponentWithIconId<Long> getType();
+	LongComponent getType();
 
 	/**
 	 * @return the component for the destination column ({@code null} for concept concrete domain members, the relationship destination concept for
 	 *         relationship concrete domain members and relationships)
 	 */
-	IComponentWithIconId<Long> getDestination();
+	LongComponent getDestination();
 
 	/**
 	 * @return the change nature {@link Nature#INFERRED} or {@link Nature#REDUNDANT}

@@ -15,8 +15,6 @@
  */
 package com.b2international.snowowl.snomed.reasoner.classification.entry;
 
-import com.b2international.snowowl.core.api.IComponentWithIconId;
-
 /**
  * Abstract base class for reasoner change entries.
  */
@@ -31,10 +29,10 @@ public abstract class AbstractChangeEntry implements IChangeEntry {
 		INFERRED, REDUNDANT
 	}
 
-	private final IComponentWithIconId<Long> source;
+	private final LongComponent source;
 	private final Nature nature;
 
-	protected AbstractChangeEntry(final Nature nature, final IComponentWithIconId<Long> source) {
+	protected AbstractChangeEntry(final Nature nature, final LongComponent source) {
 		this.source = source;
 		this.nature = nature;
 	}
@@ -43,7 +41,7 @@ public abstract class AbstractChangeEntry implements IChangeEntry {
 	 * (non-Javadoc)
 	 * @see com.b2international.snowowl.snomed.reasoner.classification.entry.IChangeEntry#getSource()
 	 */
-	@Override public IComponentWithIconId<Long> getSource() {
+	@Override public LongComponent getSource() {
 		return source;
 	}
 

@@ -15,8 +15,6 @@
  */
 package com.b2international.snowowl.snomed.reasoner.classification.entry;
 
-import com.b2international.snowowl.core.api.IComponentWithIconId;
-
 /**
  * Represents a change entry of a concrete domain element related to a concept.
  */
@@ -32,7 +30,7 @@ public class ConceptConcreteDomainChangeEntry extends AbstractChangeEntry implem
 	 * @param source the component corresponding to the referenced concept
 	 * @param concreteDomainElement the contained concrete domain element
 	 */
-	public ConceptConcreteDomainChangeEntry(final Nature nature, final IComponentWithIconId<Long> source, final ConcreteDomainElement concreteDomainElement) {
+	public ConceptConcreteDomainChangeEntry(final Nature nature, final LongComponent source, final ConcreteDomainElement concreteDomainElement) {
 		super(nature, source);
 		this.concreteDomainElement = concreteDomainElement;
 	}
@@ -49,7 +47,7 @@ public class ConceptConcreteDomainChangeEntry extends AbstractChangeEntry implem
 	 * (non-Javadoc)
 	 * @see com.b2international.snowowl.snomed.reasoner.classification.entry.IConcreteDomainChangeEntry#getType()
 	 */
-	@Override public IComponentWithIconId<Long> getType() {
+	@Override public LongComponent getType() {
 		return null;
 	}
 
@@ -57,7 +55,7 @@ public class ConceptConcreteDomainChangeEntry extends AbstractChangeEntry implem
 	 * (non-Javadoc)
 	 * @see com.b2international.snowowl.snomed.reasoner.classification.entry.IConcreteDomainChangeEntry#getDestination()
 	 */
-	@Override public IComponentWithIconId<Long> getDestination() {
+	@Override public LongComponent getDestination() {
 		return null;
 	}
 
