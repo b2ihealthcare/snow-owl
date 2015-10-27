@@ -30,7 +30,6 @@ import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.ComponentIdentifierPair;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.domain.IComponentRef;
-import com.b2international.snowowl.core.exceptions.ComponentNotFoundException;
 import com.b2international.snowowl.core.terminology.ComponentCategory;
 import com.b2international.snowowl.datastore.BranchPathUtils;
 import com.b2international.snowowl.datastore.server.domain.InternalComponentRef;
@@ -45,7 +44,6 @@ import com.b2international.snowowl.snomed.core.domain.CaseSignificance;
 import com.b2international.snowowl.snomed.core.domain.DescriptionInactivationIndicator;
 import com.b2international.snowowl.snomed.core.domain.ISnomedDescription;
 import com.b2international.snowowl.snomed.core.domain.ISnomedDescriptionUpdate;
-import com.b2international.snowowl.snomed.core.store.SnomedComponents;
 import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 import com.b2international.snowowl.snomed.datastore.SnomedDescriptionLookupService;
 import com.b2international.snowowl.snomed.datastore.SnomedEditingContext;
@@ -96,26 +94,6 @@ public class SnomedDescriptionServiceImpl
 		final InternalComponentRef internalRef = ClassUtils.checkAndCast(ref, InternalComponentRef.class);
 		final IBranchPath branch = internalRef.getBranch().branchPath();
 		return snomedDescriptionLookupService.exists(branch, internalRef.getComponentId());
-	}
-
-	@Override
-	protected Description convertAndRegister(final SnomedDescriptionCreateRequest input, final SnomedEditingContext context) {
-		try {
-			final Description description = SnomedComponents.newDescription()
-				.withId(input.getIdGenerationStrategy())
-				.withModule(input.getModuleId())
-				.withCaseSignificance(input.getCaseSignificance())
-				.withTerm(input.getTerm())
-				.withType(input.getTypeId())
-				.withLanguageCode(input.getLanguageCode())
-				.withConcept(input.getConceptId())
-				.build(context);
-			
-			updateAcceptabilityMap(input.getAcceptability(), description, context);
-			return description;
-		} catch (ComponentNotFoundException e) {
-			throw e.toBadRequestException();
-		}
 	}
 
 	@Override
@@ -204,6 +182,9 @@ public class SnomedDescriptionServiceImpl
 		}
 	}
 
+	/**
+	 * @deprecated - moved to {@link SnomedDescriptionCreateRequest}
+	 */
 	private void updateAcceptabilityMap(final Map<String, Acceptability> newAcceptabilityMap, final Description description, final SnomedEditingContext editingContext) {
 		if (null == newAcceptabilityMap) {
 			return;
@@ -244,7 +225,10 @@ public class SnomedDescriptionServiceImpl
 		}
 	}
 
-	// Partially taken from WidgetBeanUpdater
+	/**
+	 * @deprecated - moved to {@link SnomedDescriptionCreateRequest}
+	 * Partially taken from WidgetBeanUpdater
+	 */
 	private void addLanguageMember(final Description description, final SnomedEditingContext editingContext, final String languageRefSetId, 
 			final Acceptability acceptability) {
 
@@ -257,6 +241,9 @@ public class SnomedDescriptionServiceImpl
 		description.getLanguageRefSetMembers().add(newMember);
 	}
 
+	/**
+	 * @deprecated - moved to {@link SnomedDescriptionCreateRequest}
+	 */
 	private void updateOtherPreferredDescriptions(final List<Description> descriptions, final Description preferredDescription, final String languageRefSetId, 
 			final Set<String> synonymAndDescendantIds, final SnomedEditingContext editingContext) {
 
