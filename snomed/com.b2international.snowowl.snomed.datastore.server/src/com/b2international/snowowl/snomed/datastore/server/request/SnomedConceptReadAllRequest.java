@@ -26,14 +26,12 @@ import org.apache.lucene.search.Query;
 
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.api.index.IIndexQueryAdapter;
-import com.b2international.snowowl.core.domain.IComponentList;
 import com.b2international.snowowl.core.domain.RepositoryContext;
-import com.b2international.snowowl.snomed.core.domain.ISnomedConcept;
+import com.b2international.snowowl.core.exceptions.IllegalQueryParameterException;
 import com.b2international.snowowl.snomed.core.domain.SearchKind;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcepts;
 import com.b2international.snowowl.snomed.datastore.SnomedConceptIndexEntry;
 import com.b2international.snowowl.snomed.datastore.escg.IEscgQueryEvaluatorService;
-import com.b2international.snowowl.snomed.datastore.index.SnomedConceptIndexQueryAdapter;
 import com.b2international.snowowl.snomed.datastore.index.SnomedConceptReducedQueryAdapter;
 import com.b2international.snowowl.snomed.datastore.index.SnomedDOIQueryAdapter;
 import com.b2international.snowowl.snomed.datastore.index.SnomedIndexService;

@@ -28,13 +28,13 @@ import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.emf.common.util.EList;
 
 import com.b2international.commons.ClassUtils;
-import com.b2international.snowowl.api.exception.ComponentStatusConflictException;
-import com.b2international.snowowl.api.exception.IllegalQueryParameterException;
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.domain.IComponentList;
 import com.b2international.snowowl.core.domain.IComponentRef;
 import com.b2international.snowowl.core.exceptions.BadRequestException;
+import com.b2international.snowowl.core.exceptions.ComponentStatusConflictException;
+import com.b2international.snowowl.core.exceptions.IllegalQueryParameterException;
 import com.b2international.snowowl.core.terminology.ComponentCategory;
 import com.b2international.snowowl.datastore.server.domain.InternalComponentRef;
 import com.b2international.snowowl.datastore.server.domain.InternalStorageRef;

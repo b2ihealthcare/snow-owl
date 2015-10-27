@@ -13,9 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.api.exception;
-
-import com.b2international.snowowl.core.exceptions.ConflictException;
+package com.b2international.snowowl.core.exceptions;
 
 /**
  * Thrown when a component has been already inactivated in a previous request.

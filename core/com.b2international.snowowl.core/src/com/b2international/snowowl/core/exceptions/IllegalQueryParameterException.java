@@ -13,8 +13,27 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package com.b2international.snowowl.core.exceptions;
 
 /**
- * Contains exception classes thrown from service methods of the Snow Owl RESTful API.
+ * Thrown when the supplied query parameters are not acceptable.
  */
-package com.b2international.snowowl.api.exception;
+public class IllegalQueryParameterException extends BadRequestException {
+
+	private static final long serialVersionUID = 1L;
+
+	/**
+	 * Creates a new exception instance with the specified message.
+	 * 
+	 * @param message the exception message
+	 */
+	public IllegalQueryParameterException(final String message) {
+		super(message);
+	}
+	
+	@Override
+	protected String getDeveloperMessage() {
+		return "One or more supplied query parameters were invalid. Check input values.";
+	}
+	
+}
