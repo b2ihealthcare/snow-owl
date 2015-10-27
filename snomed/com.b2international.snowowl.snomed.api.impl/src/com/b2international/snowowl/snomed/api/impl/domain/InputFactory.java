@@ -1,13 +1,18 @@
 package com.b2international.snowowl.snomed.api.impl.domain;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
 import com.b2international.snowowl.snomed.api.domain.browser.ISnomedBrowserComponentWithId;
 import com.b2international.snowowl.snomed.api.domain.browser.ISnomedBrowserConcept;
 import com.b2international.snowowl.snomed.api.domain.browser.ISnomedBrowserConceptUpdate;
-import com.b2international.snowowl.snomed.core.domain.SnomedComponentCreateRequest;
 import com.b2international.snowowl.snomed.core.domain.ISnomedComponentUpdate;
+import com.b2international.snowowl.snomed.datastore.server.events.SnomedComponentCreateRequest;
 import com.google.common.collect.Sets;
-
-import java.util.*;
 
 public class InputFactory {
 

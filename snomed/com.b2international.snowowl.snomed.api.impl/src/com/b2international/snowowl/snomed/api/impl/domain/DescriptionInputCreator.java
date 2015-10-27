@@ -1,14 +1,14 @@
 package com.b2international.snowowl.snomed.api.impl.domain;
 
+import java.util.Map;
+
 import com.b2international.commons.ClassUtils;
 import com.b2international.snowowl.core.terminology.ComponentCategory;
 import com.b2international.snowowl.snomed.api.impl.domain.browser.SnomedBrowserDescription;
 import com.b2international.snowowl.snomed.core.domain.Acceptability;
-import com.b2international.snowowl.snomed.core.domain.SnomedComponentCreateRequest;
-import com.b2international.snowowl.snomed.datastore.server.events.SnomedDescriptionCreateRequest;
 import com.b2international.snowowl.snomed.core.domain.ISnomedComponentUpdate;
-
-import java.util.Map;
+import com.b2international.snowowl.snomed.datastore.server.events.SnomedComponentCreateRequest;
+import com.b2international.snowowl.snomed.datastore.server.events.SnomedDescriptionCreateRequest;
 
 public class DescriptionInputCreator extends AbstractInputCreator implements ComponentInputCreator<SnomedDescriptionCreateRequest, SnomedDescriptionUpdate, SnomedBrowserDescription> {
 
