@@ -27,18 +27,18 @@ import com.b2international.snowowl.snomed.core.domain.CharacteristicType;
 import com.b2international.snowowl.snomed.core.domain.ISnomedRelationship;
 import com.b2international.snowowl.snomed.core.domain.ISnomedRelationshipUpdate;
 import com.b2international.snowowl.snomed.core.domain.RelationshipModifier;
-import com.b2international.snowowl.snomed.core.domain.SnomedRelationshipCreateRequest;
 import com.b2international.snowowl.snomed.core.store.SnomedComponents;
 import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 import com.b2international.snowowl.snomed.datastore.SnomedEditingContext;
 import com.b2international.snowowl.snomed.datastore.SnomedRelationshipIndexEntry;
 import com.b2international.snowowl.snomed.datastore.SnomedRelationshipLookupService;
 import com.b2international.snowowl.snomed.datastore.server.events.SnomedRelationshipConverter;
+import com.b2international.snowowl.snomed.datastore.server.events.SnomedRelationshipCreateRequest;
 
 /**
  */
 public class SnomedRelationshipServiceImpl 
-	extends AbstractSnomedComponentServiceImpl<SnomedRelationshipCreateRequest, ISnomedRelationship, ISnomedRelationshipUpdate, Relationship> 
+	extends AbstractSnomedComponentServiceImpl<ISnomedRelationship, ISnomedRelationshipUpdate, Relationship> 
 	implements ISnomedRelationshipService {
 
 	private final SnomedRelationshipLookupService snomedRelationshipLookupService = new SnomedRelationshipLookupService();
@@ -161,9 +161,4 @@ public class SnomedRelationshipServiceImpl
 		}
 	}
 
-	@Override
-	protected void doDelete(final IComponentRef ref, final SnomedEditingContext editingContext) {
-		final Relationship relationship = getRelationship(ref.getComponentId(), editingContext);
-		editingContext.delete(relationship);
-	}
 }
