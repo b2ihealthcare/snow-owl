@@ -24,16 +24,18 @@ import com.b2international.snowowl.snomed.core.domain.IdGenerationStrategy;
 /**
  * @since 4.0
  */
-public abstract class BaseSnomedComponentCreateRequest<B> extends BaseRequest<TransactionContext, B> {
+public abstract class BaseSnomedComponentCreateRequest<B> extends BaseRequest<TransactionContext, B> implements SnomedComponentCreateRequest {
 
 	@NotNull
 	private IdGenerationStrategy idGenerationStrategy;
 	private String moduleId;
 
+	@Override
 	public IdGenerationStrategy getIdGenerationStrategy() {
 		return idGenerationStrategy;
 	}
 
+	@Override
 	public String getModuleId() {
 		return moduleId;
 	}
