@@ -24,7 +24,7 @@ import org.eclipse.emf.cdo.common.commit.CDOCommitInfo;
 import org.eclipse.emf.cdo.view.CDOView;
 
 import com.b2international.snowowl.core.api.IHistoryInfoDetails;
-import com.b2international.snowowl.core.api.TerminologyComponentIdProvider;
+import com.b2international.snowowl.core.api.component.TerminologyComponentIdProvider;
 
 /**
  * Representation of a historical information details builder for terminology

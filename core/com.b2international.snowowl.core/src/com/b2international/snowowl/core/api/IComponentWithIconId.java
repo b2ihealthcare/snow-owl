@@ -15,6 +15,7 @@
  */
 package com.b2international.snowowl.core.api;
 
+import com.b2international.snowowl.core.api.component.IconIdProvider;
 
 /**
  * Represents a terminology independent component, which also provides an icon component identifier to use for UI rendering.

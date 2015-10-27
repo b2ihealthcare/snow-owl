@@ -19,10 +19,10 @@ import java.io.Serializable;
 
 import com.b2international.commons.Change;
 import com.b2international.commons.hierarchy.HierarchicalElement;
-import com.b2international.snowowl.core.api.IconIdProvider;
-import com.b2international.snowowl.core.api.IdProvider;
-import com.b2international.snowowl.core.api.LabelProvider;
-import com.b2international.snowowl.core.api.TerminologyComponentIdProvider;
+import com.b2international.snowowl.core.api.component.IconIdProvider;
+import com.b2international.snowowl.core.api.component.IdProvider;
+import com.b2international.snowowl.core.api.component.LabelProvider;
+import com.b2international.snowowl.core.api.component.TerminologyComponentIdProvider;
 
 /**
  * Represents an individual index diff.

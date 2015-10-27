@@ -20,8 +20,8 @@ import java.io.Serializable;
 import com.b2international.snowowl.core.CoreTerminologyBroker;
 import com.b2international.snowowl.core.api.ExtendedComponentImpl;
 import com.b2international.snowowl.core.api.IComponent;
-import com.b2international.snowowl.core.api.IconIdProvider;
 import com.b2international.snowowl.core.api.NullComponent;
+import com.b2international.snowowl.core.api.component.IconIdProvider;
 import com.b2international.snowowl.snomed.mrcm.core.widget.model.MappingWidgetModel;
 import com.b2international.snowowl.snomed.mrcm.core.widget.model.WidgetModel;
 

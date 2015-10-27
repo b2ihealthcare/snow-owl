@@ -17,6 +17,9 @@ package com.b2international.snowowl.core.api;
 
 import java.io.Serializable;
 
+import com.b2international.snowowl.core.api.component.IdProvider;
+import com.b2international.snowowl.core.api.component.LabelProvider;
+
 /**
  * Represents a terminology independent component with a unique identifier and a human readable label.
  * <p>
