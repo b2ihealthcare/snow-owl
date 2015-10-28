@@ -49,7 +49,7 @@ import com.b2international.snowowl.datastore.review.ConceptChanges;
 import com.b2international.snowowl.datastore.review.Review;
 import com.b2international.snowowl.datastore.review.ReviewManager;
 import com.b2international.snowowl.datastore.review.ReviewStatus;
-import com.b2international.snowowl.datastore.server.internal.IRepository;
+import com.b2international.snowowl.datastore.server.internal.InternalRepository;
 import com.b2international.snowowl.datastore.store.Store;
 import com.b2international.snowowl.datastore.store.query.Query;
 import com.b2international.snowowl.datastore.store.query.QueryBuilder;
@@ -175,15 +175,15 @@ public class ReviewManagerImpl implements ReviewManager {
 		private static final Timer CLEANUP_TIMER = new Timer("Review cleanup", true);
 	}
 
-	public ReviewManagerImpl(final IRepository repository, final Store<ReviewImpl> reviewStore, final Store<ConceptChangesImpl> conceptChangesStore) {
+	public ReviewManagerImpl(final InternalRepository repository, final Store<ReviewImpl> reviewStore, final Store<ConceptChangesImpl> conceptChangesStore) {
 		this(repository, reviewStore, conceptChangesStore, 15, 5);
 	}
 
-	public ReviewManagerImpl(final IRepository repository, 
+	public ReviewManagerImpl(final InternalRepository repository, 
 			final Store<ReviewImpl> reviewStore, final Store<ConceptChangesImpl> conceptChangesStore, 
 			final long keepCurrentMins, final int keepOtherMins) {
 
-		this.repositoryId = repository.getCdoRepositoryId();
+		this.repositoryId = repository.id();
 		this.keepCurrentMillis = TimeUnit.MINUTES.toMillis(keepCurrentMins);
 		this.keepOtherMillis = TimeUnit.MINUTES.toMillis(keepOtherMins);
 

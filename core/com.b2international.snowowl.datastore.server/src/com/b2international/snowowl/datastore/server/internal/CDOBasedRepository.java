@@ -32,7 +32,7 @@ import com.b2international.snowowl.eventbus.IEventBus;
 /**
  * @since 4.1
  */
-public class RepositoryWrapper implements IRepository {
+public class CDOBasedRepository implements InternalRepository {
 
 	private final String repositoryId;
 	private final ICDOConnectionManager connectionManager;
@@ -40,7 +40,7 @@ public class RepositoryWrapper implements IRepository {
 	private final ICDORepositoryManager repositoryManager;
 	private final IEventBus eventBus;
 
-	public RepositoryWrapper(String repositoryId, 
+	public CDOBasedRepository(String repositoryId, 
 			ICDOConnectionManager connectionManager,
 			ICDORepositoryManager repositoryManager, 
 			IIndexServerServiceManager indexServerServiceManager,
@@ -79,7 +79,7 @@ public class RepositoryWrapper implements IRepository {
 	}
 	
 	@Override
-	public String getCdoRepositoryId() {
+	public String id() {
 		return repositoryId;
 	}
 	
@@ -99,7 +99,13 @@ public class RepositoryWrapper implements IRepository {
 	}
 	
 	@Override
-	public IEventBus getEventBus() {
+	public IEventBus events() {
 		return eventBus;
 	}
+	
+	@Override
+	public IEventBus handlers() {
+		throw new UnsupportedOperationException("Initialize handlers/workers bus");
+	}
+	
 }

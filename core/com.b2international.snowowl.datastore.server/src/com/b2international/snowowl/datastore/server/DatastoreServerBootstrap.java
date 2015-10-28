@@ -43,7 +43,8 @@ import com.b2international.snowowl.datastore.net4j.Net4jUtils;
 import com.b2international.snowowl.datastore.server.index.IndexServerServiceManager;
 import com.b2international.snowowl.datastore.server.index.SingleDirectoryIndexManager;
 import com.b2international.snowowl.datastore.server.index.SingleDirectoryIndexManagerImpl;
-import com.b2international.snowowl.datastore.server.internal.RepositoryWrapper;
+import com.b2international.snowowl.datastore.server.internal.InternalRepository;
+import com.b2international.snowowl.datastore.server.internal.CDOBasedRepository;
 import com.b2international.snowowl.datastore.server.internal.branch.BranchSerializer;
 import com.b2international.snowowl.datastore.server.internal.branch.CDOBranchManagerImpl;
 import com.b2international.snowowl.datastore.server.internal.branch.InternalBranch;
@@ -149,17 +150,17 @@ public class DatastoreServerBootstrap implements PreRunCapableBootstrapFragment 
 		final ReviewSerializer reviewSerializer = new ReviewSerializer();
 		
 		for (String repositoryId : cdoRepositoryManager.uuidKeySet()) {
-			final RepositoryWrapper wrapper = new RepositoryWrapper(repositoryId, cdoConnectionManager, cdoRepositoryManager, indexServerServiceManager, eventBus);
+			final InternalRepository wrapper = new CDOBasedRepository(repositoryId, cdoConnectionManager, cdoRepositoryManager, indexServerServiceManager, eventBus);
 			initializeBranchingSupport(environment, wrapper, branchSerializer, reviewSerializer, reviewConfiguration);
 		}
 		
 		LOG.info("<<< Branch and review services registered. [{}]", branchStopwatch);
 	}
 
-	private void initializeBranchingSupport(Environment environment, RepositoryWrapper wrapper, BranchSerializer branchSerializer, 
+	private void initializeBranchingSupport(Environment environment, InternalRepository wrapper, BranchSerializer branchSerializer, 
 			ReviewSerializer reviewSerializer, ReviewConfiguration reviewConfiguration) {
 		
-		final String repositoryId = wrapper.getCdoRepositoryId();
+		final String repositoryId = wrapper.id();
 		final File branchIndexDirectory = environment.getDataDirectory()
 				.toPath()
 				.resolve(Paths.get("indexes", "branches", repositoryId))
