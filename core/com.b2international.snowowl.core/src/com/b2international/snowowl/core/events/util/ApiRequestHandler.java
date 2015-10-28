@@ -25,15 +25,15 @@ import com.b2international.snowowl.core.events.Request;
  */
 public final class ApiRequestHandler extends ApiEventHandler {
 
-	private final ServiceProvider serviceProvider;
+	private final ServiceProvider context;
 
-	public ApiRequestHandler(ServiceProvider serviceProvider) {
-		this.serviceProvider = serviceProvider;
+	public ApiRequestHandler(ServiceProvider context) {
+		this.context = context;
 	}
 
 	@Handler
-	public Object handle(Request<ServiceProvider, Object> read) {
-		return read.execute(serviceProvider);
+	public Object handle(Request<ServiceProvider, Object> req) {
+		return req.execute(context);
 	}
-
+	
 }
