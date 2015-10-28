@@ -15,47 +15,88 @@
  */
 package com.b2international.snowowl.datastore.server.internal;
 
+import java.io.File;
+import java.nio.file.Paths;
+
 import org.eclipse.emf.cdo.common.branch.CDOBranch;
 import org.eclipse.emf.cdo.common.branch.CDOBranchManager;
 
 import com.b2international.snowowl.core.api.index.IIndexServerServiceManager;
 import com.b2international.snowowl.core.api.index.IIndexUpdater;
+import com.b2international.snowowl.core.branch.BranchManager;
+import com.b2international.snowowl.core.config.SnowOwlConfiguration;
+import com.b2international.snowowl.core.events.Request;
+import com.b2international.snowowl.core.events.util.ApiRequestHandler;
+import com.b2international.snowowl.core.setup.Environment;
 import com.b2international.snowowl.datastore.cdo.ICDOConnection;
 import com.b2international.snowowl.datastore.cdo.ICDOConnectionManager;
 import com.b2international.snowowl.datastore.cdo.ICDORepository;
 import com.b2international.snowowl.datastore.cdo.ICDORepositoryManager;
 import com.b2international.snowowl.datastore.server.CDOServerUtils;
+import com.b2international.snowowl.datastore.server.ReviewConfiguration;
 import com.b2international.snowowl.datastore.server.cdo.CDOConflictProcessorBroker;
 import com.b2international.snowowl.datastore.server.cdo.ICDOConflictProcessor;
+import com.b2international.snowowl.datastore.server.index.SingleDirectoryIndexManager;
+import com.b2international.snowowl.datastore.server.internal.branch.BranchSerializer;
+import com.b2international.snowowl.datastore.server.internal.branch.CDOBranchManagerImpl;
+import com.b2international.snowowl.datastore.server.internal.branch.InternalBranch;
+import com.b2international.snowowl.datastore.server.internal.review.ConceptChangesImpl;
+import com.b2international.snowowl.datastore.server.internal.review.ReviewEventHandler;
+import com.b2international.snowowl.datastore.server.internal.review.ReviewImpl;
+import com.b2international.snowowl.datastore.server.internal.review.ReviewManagerImpl;
+import com.b2international.snowowl.datastore.server.internal.review.ReviewSerializer;
+import com.b2international.snowowl.datastore.store.IndexStore;
+import com.b2international.snowowl.eventbus.EventBusUtil;
 import com.b2international.snowowl.eventbus.IEventBus;
+import com.b2international.snowowl.eventbus.IHandler;
+import com.b2international.snowowl.eventbus.IMessage;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 /**
  * @since 4.1
  */
-public class CDOBasedRepository implements InternalRepository {
+public final class CDOBasedRepository implements InternalRepository {
 
 	private final String repositoryId;
-	private final ICDOConnectionManager connectionManager;
-	private final IIndexServerServiceManager indexServerServiceManager;
-	private final ICDORepositoryManager repositoryManager;
-	private final IEventBus eventBus;
+	private final Environment env;
+	private final int numberOfWorkers;
+	private final IEventBus handlers;
 
-	public CDOBasedRepository(String repositoryId, 
-			ICDOConnectionManager connectionManager,
-			ICDORepositoryManager repositoryManager, 
-			IIndexServerServiceManager indexServerServiceManager,
-			IEventBus eventBus) {
-
+	CDOBasedRepository(String repositoryId, int numberOfWorkers, Environment env) {
 		this.repositoryId = repositoryId;
-		this.connectionManager = connectionManager;
-		this.repositoryManager = repositoryManager;
-		this.indexServerServiceManager = indexServerServiceManager;
-		this.eventBus = eventBus;
+		this.numberOfWorkers = numberOfWorkers;
+		this.env = env;
+		this.handlers = EventBusUtil.getBus(repositoryId, numberOfWorkers);
+		initializeBranchingSupport();
+		initializeRequestSupport();
 	}
 
 	@Override
+	public String id() {
+		return repositoryId;
+	}
+	
+	@Override
+	public IEventBus events() {
+		return env.service(IEventBus.class);
+	}
+	
+	@Override
+	public IEventBus handlers() {
+		return handlers;
+	}
+	
+	private String address() {
+		return String.format("/%s", repositoryId);
+	}
+	
+	private String address(String path) {
+		return String.format("%s%s", address(), path);
+	}
+	
+	@Override
 	public ICDOConnection getConnection() {
-		return connectionManager.getByUuid(repositoryId);
+		return env.service(ICDOConnectionManager.class).getByUuid(repositoryId);
 	}
 	
 	@Override
@@ -70,17 +111,12 @@ public class CDOBasedRepository implements InternalRepository {
 	
 	@Override
 	public IIndexUpdater<?> getIndexUpdater() {
-		return indexServerServiceManager.getByUuid(repositoryId);
+		return env.service(IIndexServerServiceManager.class).getByUuid(repositoryId);
 	}
 	
 	@Override
 	public ICDORepository getCdoRepository() {
-		return repositoryManager.getByUuid(repositoryId);
-	}
-	
-	@Override
-	public String id() {
-		return repositoryId;
+		return env.service(ICDORepositoryManager.class).getByUuid(repositoryId);
 	}
 	
 	@Override
@@ -98,14 +134,69 @@ public class CDOBasedRepository implements InternalRepository {
 		return Math.max(getBaseTimestamp(branch), CDOServerUtils.getLastCommitTime(branch));
 	}
 	
-	@Override
-	public IEventBus events() {
-		return eventBus;
+	private void initializeRequestSupport() {
+		for (int i = 0; i < numberOfWorkers; i++) {
+			handlers().registerHandler(address(), new ApiRequestHandler(env));
+		}
+		
+		// register event bridge/pipe between events and handlers
+		events().registerHandler("/" + repositoryId, new IHandler<IMessage>() {
+			@Override
+			public void handle(final IMessage outer) {
+				try {
+					final Object body = outer.body();
+					if (body instanceof Request) {
+						if (outer.isSend()) {
+							handlers().send("/" + repositoryId, body, new IHandler<IMessage>() {
+								@Override
+								public void handle(IMessage inner) {
+									if (inner.isSucceeded()) {
+										outer.reply(inner.body());
+									} else {
+										outer.fail(inner.body());
+									}
+								}
+							});
+						}
+					}
+				} catch (Exception e) {
+					outer.fail(e);
+				}
+			}
+		});		
 	}
 	
-	@Override
-	public IEventBus handlers() {
-		throw new UnsupportedOperationException("Initialize handlers/workers bus");
+	private void initializeBranchingSupport() {
+		final BranchSerializer branchSerializer = env.service(BranchSerializer.class);
+		final ReviewSerializer reviewSerializer = env.service(ReviewSerializer.class);
+		final ReviewConfiguration reviewConfiguration = env.service(SnowOwlConfiguration.class).getModuleConfig(ReviewConfiguration.class);
+		
+		final IndexStore<InternalBranch> branchStore = createIndex("branches", branchSerializer, InternalBranch.class);
+		final IndexStore<ReviewImpl> reviewStore = createIndex("reviews", reviewSerializer, ReviewImpl.class);
+		final IndexStore<ConceptChangesImpl> conceptChangesStore = createIndex("concept_changes", reviewSerializer, ConceptChangesImpl.class);
+		
+		final BranchManager branchManager = new CDOBranchManagerImpl(this, branchStore);
+		final ReviewManagerImpl reviewManager = new ReviewManagerImpl(this, reviewStore, conceptChangesStore, reviewConfiguration);
+
+		events().registerHandler(address("/branches/changes") , reviewManager.getStaleHandler());
+		
+		// TODO migrate review events to requests
+		events().registerHandler(address("/reviews"), new ReviewEventHandler(branchManager, reviewManager));
+		
+		// register stores to index manager
+		final SingleDirectoryIndexManager indexManager = env.service(SingleDirectoryIndexManager.class);
+		indexManager.registerIndex(branchStore);
+		indexManager.registerIndex(reviewStore);
+		indexManager.registerIndex(conceptChangesStore);
+	}
+	
+	private <T> IndexStore<T> createIndex(final String name, ObjectMapper mapper, Class<T> type) {
+		// TODO consider moving from index layout /feature/repositoryId to /repositoryId/feature
+		final File dir = env.getDataDirectory()
+				.toPath()
+				.resolve(Paths.get("indexes", name, repositoryId))
+				.toFile();
+		return new IndexStore<>(dir, mapper, type);
 	}
 	
 }
