@@ -15,12 +15,16 @@
  */
 package com.b2international.snowowl.datastore.server.internal;
 
+import static com.google.common.collect.Maps.newHashMap;
+
 import java.io.File;
 import java.nio.file.Paths;
+import java.util.Map;
 
 import org.eclipse.emf.cdo.common.branch.CDOBranch;
 import org.eclipse.emf.cdo.common.branch.CDOBranchManager;
 
+import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.api.index.IIndexServerServiceManager;
 import com.b2international.snowowl.core.api.index.IIndexUpdater;
 import com.b2international.snowowl.core.branch.BranchManager;
@@ -32,6 +36,7 @@ import com.b2international.snowowl.datastore.cdo.ICDOConnection;
 import com.b2international.snowowl.datastore.cdo.ICDOConnectionManager;
 import com.b2international.snowowl.datastore.cdo.ICDORepository;
 import com.b2international.snowowl.datastore.cdo.ICDORepositoryManager;
+import com.b2international.snowowl.datastore.review.ReviewManager;
 import com.b2international.snowowl.datastore.server.CDOServerUtils;
 import com.b2international.snowowl.datastore.server.ReviewConfiguration;
 import com.b2international.snowowl.datastore.server.cdo.CDOConflictProcessorBroker;
@@ -41,7 +46,6 @@ import com.b2international.snowowl.datastore.server.internal.branch.BranchSerial
 import com.b2international.snowowl.datastore.server.internal.branch.CDOBranchManagerImpl;
 import com.b2international.snowowl.datastore.server.internal.branch.InternalBranch;
 import com.b2international.snowowl.datastore.server.internal.review.ConceptChangesImpl;
-import com.b2international.snowowl.datastore.server.internal.review.ReviewEventHandler;
 import com.b2international.snowowl.datastore.server.internal.review.ReviewImpl;
 import com.b2international.snowowl.datastore.server.internal.review.ReviewManagerImpl;
 import com.b2international.snowowl.datastore.server.internal.review.ReviewSerializer;
@@ -51,6 +55,7 @@ import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.eventbus.IHandler;
 import com.b2international.snowowl.eventbus.IMessage;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.inject.Provider;
 
 /**
  * @since 4.1
@@ -61,6 +66,8 @@ public final class CDOBasedRepository implements InternalRepository {
 	private final Environment env;
 	private final int numberOfWorkers;
 	private final IEventBus handlers;
+	
+	private final Map<Class<?>, Object> registry = newHashMap();
 
 	CDOBasedRepository(String repositoryId, int numberOfWorkers, Environment env) {
 		this.repositoryId = repositoryId;
@@ -136,18 +143,18 @@ public final class CDOBasedRepository implements InternalRepository {
 	
 	private void initializeRequestSupport() {
 		for (int i = 0; i < numberOfWorkers; i++) {
-			handlers().registerHandler(address(), new ApiRequestHandler(env));
+			handlers().registerHandler(address(), new ApiRequestHandler(services()));
 		}
 		
 		// register event bridge/pipe between events and handlers
-		events().registerHandler("/" + repositoryId, new IHandler<IMessage>() {
+		events().registerHandler(address(), new IHandler<IMessage>() {
 			@Override
 			public void handle(final IMessage outer) {
 				try {
 					final Object body = outer.body();
 					if (body instanceof Request) {
 						if (outer.isSend()) {
-							handlers().send("/" + repositoryId, body, new IHandler<IMessage>() {
+							handlers().send(address(), body, new IHandler<IMessage>() {
 								@Override
 								public void handle(IMessage inner) {
 									if (inner.isSucceeded()) {
@@ -166,6 +173,23 @@ public final class CDOBasedRepository implements InternalRepository {
 		});		
 	}
 	
+	private ServiceProvider services() {
+		return new ServiceProvider() {
+			@Override
+			public <T> T service(Class<T> type) {
+				if (registry.containsKey(type)) {
+					return (T) registry.get(type);
+				}
+				return env.service(type);
+			}
+			
+			@Override
+			public <T> Provider<T> provider(Class<T> type) {
+				return env.provider(type);
+			}
+		};
+	}
+
 	private void initializeBranchingSupport() {
 		final BranchSerializer branchSerializer = env.service(BranchSerializer.class);
 		final ReviewSerializer reviewSerializer = env.service(ReviewSerializer.class);
@@ -175,13 +199,11 @@ public final class CDOBasedRepository implements InternalRepository {
 		final IndexStore<ReviewImpl> reviewStore = createIndex("reviews", reviewSerializer, ReviewImpl.class);
 		final IndexStore<ConceptChangesImpl> conceptChangesStore = createIndex("concept_changes", reviewSerializer, ConceptChangesImpl.class);
 		
-		final BranchManager branchManager = new CDOBranchManagerImpl(this, branchStore);
+		registry.put(BranchManager.class, new CDOBranchManagerImpl(this, branchStore));
 		final ReviewManagerImpl reviewManager = new ReviewManagerImpl(this, reviewStore, conceptChangesStore, reviewConfiguration);
+		registry.put(ReviewManager.class, reviewManager);
 
 		events().registerHandler(address("/branches/changes") , reviewManager.getStaleHandler());
-		
-		// TODO migrate review events to requests
-		events().registerHandler(address("/reviews"), new ReviewEventHandler(branchManager, reviewManager));
 		
 		// register stores to index manager
 		final SingleDirectoryIndexManager indexManager = env.service(SingleDirectoryIndexManager.class);
