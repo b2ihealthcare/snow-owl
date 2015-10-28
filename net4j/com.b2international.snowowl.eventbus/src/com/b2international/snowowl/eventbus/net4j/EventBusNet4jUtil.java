@@ -61,8 +61,18 @@ public class EventBusNet4jUtil {
 	 * @return
 	 */
 	public static IEventBus getBus(IManagedContainer container) {
-		return (IEventBus) container.getElement(EventBusConstants.EVENT_BUS_PRODUCT_GROUP,
-				EventBusConstants.PROTOCOL_NAME, EventBusConstants.GLOBAL_BUS, true);
+		return getBus(container, Runtime.getRuntime().availableProcessors());
+	}
+	
+	/**
+	 * Returns the event bus associated with the description of globalBus.
+	 * 
+	 * @param container
+	 * @param numberOfWorkers
+	 * @return
+	 */
+	public static IEventBus getBus(IManagedContainer container, int numberOfWorkers) {
+		return getBus(container, EventBusConstants.GLOBAL_BUS, numberOfWorkers);
 	}
 
 	/**
@@ -70,11 +80,12 @@ public class EventBusNet4jUtil {
 	 * 
 	 * @param container
 	 * @param name
+	 * @param numberOfWorkers
 	 * @return
 	 */
-	public static IEventBus getBus(IManagedContainer container, String name) {
+	public static IEventBus getBus(IManagedContainer container, String name, int numberOfWorkers) {
 		return (IEventBus) container.getElement(EventBusConstants.EVENT_BUS_PRODUCT_GROUP,
-				EventBusConstants.PROTOCOL_NAME, name, true);
+				EventBusConstants.PROTOCOL_NAME, String.format("%s:%s", name, numberOfWorkers), true);
 	}
 
 }
