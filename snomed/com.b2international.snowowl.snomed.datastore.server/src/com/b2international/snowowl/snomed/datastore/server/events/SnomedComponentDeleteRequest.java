@@ -16,16 +16,13 @@
 package com.b2international.snowowl.snomed.datastore.server.events;
 
 import com.b2international.snowowl.core.domain.TransactionContext;
+import com.b2international.snowowl.core.events.BaseRequest;
 import com.b2international.snowowl.snomed.Component;
-import com.b2international.snowowl.snomed.Concept;
-import com.b2international.snowowl.snomed.Description;
-import com.b2international.snowowl.snomed.Relationship;
-import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSet;
 
 /**
  * @since 4.5
  */
-final class SnomedComponentDeleteRequest extends SnomedRequest<TransactionContext, Void> {
+final class SnomedComponentDeleteRequest extends BaseRequest<TransactionContext, Void> {
 
 	private String componentId;
 	private Class<? extends Component> type;
@@ -44,20 +41,6 @@ final class SnomedComponentDeleteRequest extends SnomedRequest<TransactionContex
 	@Override
 	protected Class<Void> getReturnType() {
 		return Void.class;
-	}
-
-	@Override
-	protected String getPath() {
-		if (type == Concept.class) {
-			return "/concepts";
-		} else if (type == Relationship.class) {
-			return "/relationships";
-		} else if (type == Description.class) {
-			return "/descriptions";
-		} else if (SnomedRefSet.class.isAssignableFrom(type)) {
-			return "/refsets";
-		}
-		throw new UnsupportedOperationException("Unsupported component type: " + type.getName());
 	}
 
 }

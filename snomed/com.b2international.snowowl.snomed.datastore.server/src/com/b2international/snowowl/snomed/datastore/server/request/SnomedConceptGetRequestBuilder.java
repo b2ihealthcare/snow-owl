@@ -18,8 +18,9 @@ package com.b2international.snowowl.snomed.datastore.server.request;
 import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.datastore.request.BranchRequest;
-import com.b2international.snowowl.datastore.request.RepositoryRequest;
+import com.b2international.snowowl.datastore.request.RepositoryRequests;
 import com.b2international.snowowl.snomed.core.domain.ISnomedConcept;
+import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 
 /**
  * @since 4.5
@@ -39,7 +40,7 @@ public final class SnomedConceptGetRequestBuilder {
 	}
 	
 	public Request<ServiceProvider, ISnomedConcept> build() {
-		return new RepositoryRequest<>("SNOMEDCT", new BranchRequest<>(branch, new SnomedConceptReadRequest(componentId)));
+		return RepositoryRequests.wrap(SnomedDatastoreActivator.REPOSITORY_UUID, new BranchRequest<>(branch, new SnomedConceptReadRequest(componentId)));
 	}
 	
 }

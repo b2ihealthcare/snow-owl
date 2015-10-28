@@ -60,6 +60,11 @@ public abstract class BaseRequest<C extends ServiceProvider, B> extends BaseEven
 		}
 	}
 
+	@Override
+	protected String getAddress() {
+		throw new UnsupportedOperationException("This request cannot be sent over the bus on its own, wrap it into a RepositoryRequest");
+	}
+	
 	/**
 	 * Returns the class of the actual return type.
 	 * 

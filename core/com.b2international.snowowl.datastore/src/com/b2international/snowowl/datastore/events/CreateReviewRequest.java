@@ -18,6 +18,7 @@ package com.b2international.snowowl.datastore.events;
 import com.b2international.snowowl.core.branch.Branch;
 import com.b2international.snowowl.core.branch.BranchManager;
 import com.b2international.snowowl.core.domain.RepositoryContext;
+import com.b2international.snowowl.core.events.BaseRequest;
 import com.b2international.snowowl.core.exceptions.NotFoundException;
 import com.b2international.snowowl.datastore.review.Review;
 import com.b2international.snowowl.datastore.review.ReviewManager;
@@ -28,7 +29,7 @@ import com.b2international.snowowl.datastore.review.ReviewManager;
  * 
  * @since 4.2
  */
-public class CreateReviewRequest extends BaseReviewRequest<Review> {
+public class CreateReviewRequest extends BaseRequest<RepositoryContext, Review> {
 
 	private final String sourcePath;
 	private final String targetPath;

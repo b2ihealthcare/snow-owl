@@ -19,6 +19,7 @@ import com.b2international.snowowl.core.branch.Branch;
 import com.b2international.snowowl.core.branch.BranchManager;
 import com.b2international.snowowl.core.branch.BranchMergeException;
 import com.b2international.snowowl.core.domain.RepositoryContext;
+import com.b2international.snowowl.core.events.BaseRequest;
 import com.b2international.snowowl.core.exceptions.BadRequestException;
 import com.b2international.snowowl.core.exceptions.ConflictException;
 import com.b2international.snowowl.core.exceptions.NotFoundException;
@@ -30,7 +31,7 @@ import com.google.common.base.Strings;
 /**
  * @since 4.1
  */
-public final class MergeRequest extends BaseBranchRequest<Branch> {
+public final class MergeRequest extends BaseRequest<RepositoryContext, Branch> {
 
 	private final String source;
 	private final String target;

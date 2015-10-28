@@ -21,7 +21,6 @@ import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.datastore.request.BranchRequest;
 import com.b2international.snowowl.datastore.request.Branching;
 import com.b2international.snowowl.datastore.request.RepositoryCommitRequestBuilder;
-import com.b2international.snowowl.datastore.request.RepositoryRequest;
 import com.b2international.snowowl.datastore.request.RepositoryRequests;
 import com.b2international.snowowl.datastore.request.Reviews;
 import com.b2international.snowowl.snomed.Component;
@@ -40,7 +39,7 @@ public abstract class SnomedRequests {
 	}
 	
 	public static <B> RepositoryCommitRequestBuilder<B> prepareCommit(String userId, String branchPath) {
-		return RepositoryRequests.prepareCommit(userId, "SNOMEDCT", branchPath);
+		return RepositoryRequests.prepareCommit(userId, SnomedDatastoreActivator.REPOSITORY_UUID, branchPath);
 	}
 	
 	public static SnomedConceptSearchRequestBuilder prepareSearch(String branch) {
@@ -57,11 +56,11 @@ public abstract class SnomedRequests {
 	
 	// TODO migrate initial API to builders
 	public static Request<ServiceProvider, SnomedReferenceSets> prepareGetReferenceSets(String branch) {
-		return new RepositoryRequest<>("SNOMEDCT", new BranchRequest<>(branch, new SnomedRefSetReadAllRequest()));
+		return RepositoryRequests.wrap(SnomedDatastoreActivator.REPOSITORY_UUID, new BranchRequest<>(branch, new SnomedRefSetReadAllRequest()));
 	}
 	
 	public static Request<ServiceProvider, SnomedReferenceSet> prepareGetReferenceSet(String branch, String referenceSetId) {
-		return new RepositoryRequest<>("SNOMEDCT", new BranchRequest<>(branch, new SnomedRefSetReadRequest(referenceSetId)));
+		return RepositoryRequests.wrap(SnomedDatastoreActivator.REPOSITORY_UUID, new BranchRequest<>(branch, new SnomedRefSetReadRequest(referenceSetId)));
 	}
 
 	public static Branching branching() {

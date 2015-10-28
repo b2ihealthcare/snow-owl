@@ -17,6 +17,7 @@ package com.b2international.snowowl.snomed.datastore.server.events;
 
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.domain.RepositoryContext;
+import com.b2international.snowowl.core.events.BaseRequest;
 import com.b2international.snowowl.snomed.core.domain.ISnomedDescription;
 import com.b2international.snowowl.snomed.datastore.index.SnomedDescriptionIndexEntry;
 import com.b2international.snowowl.snomed.datastore.services.SnomedBranchRefSetMembershipLookupService;
@@ -25,13 +26,8 @@ import com.google.common.base.Function;
 /**
  * @since 4.5
  */
-abstract class SnomedDescriptionRequest<C extends RepositoryContext, B> extends SnomedRequest<C, B> {
+abstract class SnomedDescriptionRequest<C extends RepositoryContext, B> extends BaseRequest<C, B> {
 
-	@Override
-	protected String getPath() {
-		return "/descriptions";
-	}
-	
 	protected final Function<SnomedDescriptionIndexEntry, ISnomedDescription> getConverter(IBranchPath branchPath) {
 		return new SnomedDescriptionConverter(new SnomedBranchRefSetMembershipLookupService(branchPath));
 	}

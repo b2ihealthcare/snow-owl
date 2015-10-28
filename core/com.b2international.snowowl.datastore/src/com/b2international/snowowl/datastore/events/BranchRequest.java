@@ -17,10 +17,13 @@ package com.b2international.snowowl.datastore.events;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
+import com.b2international.snowowl.core.domain.RepositoryContext;
+import com.b2international.snowowl.core.events.BaseRequest;
+
 /**
  * @since 4.1
  */
-public abstract class BranchRequest<B> extends BaseBranchRequest<B> {
+public abstract class BranchRequest<B> extends BaseRequest<RepositoryContext, B> {
 
 	private final String branchPath;
 

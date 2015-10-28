@@ -34,7 +34,6 @@ import com.b2international.snowowl.snomed.core.domain.Acceptability;
 import com.b2international.snowowl.snomed.core.domain.CaseSignificance;
 import com.b2international.snowowl.snomed.core.domain.ISnomedDescription;
 import com.b2international.snowowl.snomed.core.store.SnomedComponents;
-import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 import com.b2international.snowowl.snomed.datastore.model.SnomedModelExtensions;
 import com.b2international.snowowl.snomed.datastore.services.ISnomedComponentService;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedLanguageRefSetMember;
@@ -210,11 +209,6 @@ public class SnomedDescriptionCreateRequest extends BaseSnomedComponentCreateReq
 		return ISnomedDescription.class;
 	}
 	
-	@Override
-	protected String getAddress() {
-		return String.format("/%s/%s", SnomedDatastoreActivator.REPOSITORY_UUID, "descriptions");
-	}
-
 	@Override
 	public String toString() {
 		final StringBuilder builder = new StringBuilder();

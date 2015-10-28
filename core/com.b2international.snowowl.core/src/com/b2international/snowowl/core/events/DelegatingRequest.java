@@ -49,11 +49,6 @@ public abstract class DelegatingRequest<C extends ServiceProvider, T extends Ser
 	}
 
 	@Override
-	protected final String getAddress() {
-		return ClassUtils.checkAndCast(next, BaseEvent.class).getAddress();
-	}
-	
-	@Override
 	@SuppressWarnings("unchecked")
 	protected final Class<B> getReturnType() {
 		return ClassUtils.checkAndCast(next, BaseRequest.class).getReturnType();

@@ -18,12 +18,13 @@ package com.b2international.snowowl.datastore.events;
 import com.b2international.snowowl.core.branch.BranchManager;
 import com.b2international.snowowl.core.branch.Branches;
 import com.b2international.snowowl.core.domain.RepositoryContext;
+import com.b2international.snowowl.core.events.BaseRequest;
 import com.google.common.collect.ImmutableList;
 
 /**
  * @since 4.1
  */
-public class SearchBranchRequest extends BaseBranchRequest<Branches> {
+public class SearchBranchRequest extends BaseRequest<RepositoryContext, Branches> {
 
 	@Override
 	public Branches execute(RepositoryContext context) {
