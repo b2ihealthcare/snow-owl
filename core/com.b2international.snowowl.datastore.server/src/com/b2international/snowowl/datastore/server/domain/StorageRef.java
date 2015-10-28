@@ -15,26 +15,19 @@
  */
 package com.b2international.snowowl.datastore.server.domain;
 
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
-
 import org.eclipse.emf.cdo.common.branch.CDOBranch;
 
 import com.b2international.snowowl.core.ApplicationContext;
-import com.b2international.snowowl.core.api.SnowowlRuntimeException;
 import com.b2international.snowowl.core.branch.Branch;
 import com.b2international.snowowl.core.domain.exceptions.CodeSystemNotFoundException;
 import com.b2international.snowowl.core.exceptions.BadRequestException;
 import com.b2international.snowowl.core.exceptions.NotFoundException;
-import com.b2international.snowowl.core.exceptions.RequestTimeoutException;
 import com.b2international.snowowl.datastore.IBranchPathMap;
 import com.b2international.snowowl.datastore.ICodeSystem;
 import com.b2international.snowowl.datastore.TerminologyRegistryService;
 import com.b2international.snowowl.datastore.UserBranchPathMap;
 import com.b2international.snowowl.datastore.cdo.ICDOConnectionManager;
-import com.b2international.snowowl.datastore.events.BranchReply;
-import com.b2international.snowowl.datastore.events.ReadBranchEvent;
+import com.b2international.snowowl.datastore.request.RepositoryRequests;
 import com.b2international.snowowl.eventbus.IEventBus;
 
 /**
@@ -99,20 +92,10 @@ public class StorageRef implements InternalStorageRef {
 	@Override
 	public Branch getBranch() {
 		if (branch == null) {
-			try {
-				final ReadBranchEvent event = new ReadBranchEvent(getRepositoryUuid(), getBranchPath());
-				branch = event.send(getEventBus(), BranchReply.class).get(DEFAULT_ASYNC_TIMEOUT_DELAY, TimeUnit.MILLISECONDS).getBranch();
-			} catch (InterruptedException e) {
-				throw new SnowowlRuntimeException(e);
-			} catch (TimeoutException e) {
-				throw new RequestTimeoutException(e);
-			} catch (ExecutionException e) {
-				final Throwable cause = e.getCause();
-				if (cause instanceof RuntimeException) {
-					throw (RuntimeException) cause;
-				}
-				throw new SnowowlRuntimeException(cause);
-			}
+			branch = RepositoryRequests
+						.branching(getRepositoryUuid())
+						.prepareGet(branchPath)
+						.executeSync(getEventBus(), DEFAULT_ASYNC_TIMEOUT_DELAY);
 		}
 		if (branch == null) {
 			throw new NotFoundException("Branch", getBranchPath());

@@ -15,6 +15,7 @@
  */
 package com.b2international.snowowl.snomed.api.rest.util;
 
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.context.request.async.DeferredResult;
 
 import com.b2international.commons.collections.Procedure;
@@ -31,7 +32,8 @@ public class DeferredResults {
 	/**
 	 * Wraps a {@link Promise} into Spring's {@link DeferredResult}.
 	 * 
-	 * @param promise - the promise to wrap
+	 * @param promise
+	 *            - the promise to wrap
 	 * @return - the {@link DeferredResult}
 	 */
 	public static <T> DeferredResult<T> wrap(Promise<T> promise) {
@@ -40,6 +42,31 @@ public class DeferredResults {
 			@Override
 			protected void doApply(T input) {
 				result.setResult(input);
+			}
+		}).fail(new Procedure<Throwable>() {
+			@Override
+			protected void doApply(Throwable err) {
+				result.setErrorResult(err);
+			}
+		});
+		return result;
+	}
+
+	/**
+	 * Wraps a {@link Promise} into Spring's {@link DeferredResult} and resolve it with the given {@link ResponseEntity response}.
+	 * 
+	 * @param promise
+	 *            - the promise to wait for
+	 * @param response
+	 *            - the response to send back when the promise has been resolved
+	 * @return
+	 */
+	public static <T extends ResponseEntity<B>, B, C> DeferredResult<T> wrap(Promise<C> promise, final T response) {
+		final DeferredResult<T> result = new DeferredResult<>();
+		promise.then(new Procedure<C>() {
+			@Override
+			protected void doApply(C input) {
+				result.setResult(response);
 			}
 		}).fail(new Procedure<Throwable>() {
 			@Override

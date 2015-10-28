@@ -29,7 +29,7 @@ import com.google.common.collect.ImmutableList;
  */
 public class CollectionResource<T> {
 
-	private List<T> items;
+	private final List<T> items;
 
 	protected CollectionResource(List<T> items) {
 		this.items = items == null ? Collections.<T> emptyList() : items;

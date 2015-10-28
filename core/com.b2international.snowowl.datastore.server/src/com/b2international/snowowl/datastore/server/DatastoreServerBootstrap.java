@@ -31,6 +31,7 @@ import com.b2international.snowowl.core.api.index.IIndexServerServiceManager;
 import com.b2international.snowowl.core.branch.BranchManager;
 import com.b2international.snowowl.core.config.ClientPreferences;
 import com.b2international.snowowl.core.config.SnowOwlConfiguration;
+import com.b2international.snowowl.core.events.util.ApiRequestHandler;
 import com.b2international.snowowl.core.setup.Environment;
 import com.b2international.snowowl.core.setup.ModuleConfig;
 import com.b2international.snowowl.core.setup.PreRunCapableBootstrapFragment;
@@ -43,7 +44,6 @@ import com.b2international.snowowl.datastore.server.index.IndexServerServiceMana
 import com.b2international.snowowl.datastore.server.index.SingleDirectoryIndexManager;
 import com.b2international.snowowl.datastore.server.index.SingleDirectoryIndexManagerImpl;
 import com.b2international.snowowl.datastore.server.internal.RepositoryWrapper;
-import com.b2international.snowowl.datastore.server.internal.branch.BranchEventHandler;
 import com.b2international.snowowl.datastore.server.internal.branch.BranchSerializer;
 import com.b2international.snowowl.datastore.server.internal.branch.CDOBranchManagerImpl;
 import com.b2international.snowowl.datastore.server.internal.branch.InternalBranch;
@@ -184,7 +184,7 @@ public class DatastoreServerBootstrap implements PreRunCapableBootstrapFragment 
 		final ReviewManagerImpl reviewManager = new ReviewManagerImpl(wrapper, reviewStore, conceptChangesStore,
 				reviewConfiguration.getKeepCurrentMins(), reviewConfiguration.getKeepOtherMins());
 
-		environment.service(IEventBus.class).registerHandler("/" + repositoryId + "/branches" , new BranchEventHandler(branchManager, reviewManager));
+		environment.service(IEventBus.class).registerHandler("/" + repositoryId + "/branches" , new ApiRequestHandler(environment));
 		environment.service(IEventBus.class).registerHandler("/" + repositoryId + "/branches/changes" , reviewManager.getStaleHandler());
 		environment.service(IEventBus.class).registerHandler("/" + repositoryId + "/reviews" , new ReviewEventHandler(branchManager, reviewManager));
 		
