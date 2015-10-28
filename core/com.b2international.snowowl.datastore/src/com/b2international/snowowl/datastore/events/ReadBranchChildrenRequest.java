@@ -15,39 +15,30 @@
  */
 package com.b2international.snowowl.datastore.events;
 
-import com.b2international.snowowl.core.Metadata;
 import com.b2international.snowowl.core.branch.Branch;
-
+import com.b2international.snowowl.core.branch.BranchManager;
+import com.b2international.snowowl.core.branch.Branches;
+import com.b2international.snowowl.core.domain.RepositoryContext;
+import com.google.common.collect.ImmutableList;
 
 /**
  * @since 4.1
  */
-public class CreateBranchEvent extends BranchEvent {
+public class ReadBranchChildrenRequest extends BranchRequest<Branches> {
 
-	private final String parent;
-	private final String name;
-	private final Metadata metadata;
-
-	public CreateBranchEvent(final String repositoryId, final String parent, final String name, final Metadata metadata) {
-		super(repositoryId, path(parent, name));
-		this.parent = parent;
-		this.name = name;
-		this.metadata = metadata;
+	public ReadBranchChildrenRequest(String branchPath) {
+		super(branchPath);
 	}
 
-	private static String path(final String parent, final String name) {
-		return parent + Branch.SEPARATOR + name;
+	@Override
+	public Branches execute(RepositoryContext context) {
+		final Branch branch = context.service(BranchManager.class).getBranch(getBranchPath());
+		return new Branches(ImmutableList.copyOf(branch.children()));
 	}
 
-	public String getParent() {
-		return parent;
+	@Override
+	protected Class<Branches> getReturnType() {
+		return Branches.class;
 	}
-
-	public String getName() {
-		return name;
-	}
-
-	public Metadata getMetadata() {
-		return metadata;
-	}
+	
 }

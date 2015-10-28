@@ -15,23 +15,34 @@
  */
 package com.b2international.snowowl.datastore.events;
 
-import java.util.Collection;
-import java.util.Collections;
-
 import com.b2international.snowowl.core.branch.Branch;
+import com.b2international.snowowl.core.branch.BranchManager;
+import com.b2international.snowowl.core.domain.RepositoryContext;
+import com.b2international.snowowl.core.exceptions.NotFoundException;
 
 /**
  * @since 4.1
  */
-public class BranchesReply {
-
-	private final Collection<Branch> branches;
-
-	public BranchesReply(final Collection<Branch> branches) {
-		this.branches = branches == null ? Collections.<Branch>emptySet() : branches;
+public final class ReopenBranchRequest extends BranchRequest<Branch> {
+	
+	public ReopenBranchRequest(final String path) {
+		super(path);
+	}
+	
+	@Override
+	public Branch execute(RepositoryContext context) {
+		try {
+			final Branch branch = context.service(BranchManager.class).getBranch(getBranchPath());
+			return branch.reopen();
+		} catch (NotFoundException e) {
+			// if parent not found, convert it to BadRequestException
+			throw e.toBadRequestException();
+		}
 	}
 
-	public Collection<Branch> getBranches() {
-		return branches;
+	@Override
+	protected Class<Branch> getReturnType() {
+		return Branch.class;
 	}
+	
 }

@@ -16,21 +16,25 @@
 package com.b2international.snowowl.datastore.events;
 
 import com.b2international.snowowl.core.branch.Branch;
+import com.b2international.snowowl.core.branch.BranchManager;
+import com.b2international.snowowl.core.domain.RepositoryContext;
 
 /**
- * Common success reply used when sending {@link BaseBranchEvent}s into the system.
- * 
  * @since 4.1
  */
-public class BranchReply {
+public class DeleteBranchRequest extends BranchRequest<Branch> {
 
-	private final Branch branch;
-
-	public BranchReply(final Branch branch) {
-		this.branch = branch;
+	public DeleteBranchRequest(final String branchPath) {
+		super(branchPath);
 	}
 
-	public Branch getBranch() {
-		return branch;
+	@Override
+	public Branch execute(RepositoryContext context) {
+		return context.service(BranchManager.class).getBranch(getBranchPath()).delete();
+	}
+
+	@Override
+	protected Class<Branch> getReturnType() {
+		return Branch.class;
 	}
 }

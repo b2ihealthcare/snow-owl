@@ -13,13 +13,36 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.datastore.events;
+package com.b2international.snowowl.snomed.api.rest.domain;
+
+import org.hibernate.validator.constraints.NotEmpty;
+
+import com.b2international.snowowl.core.MetadataHolderImpl;
+import com.b2international.snowowl.core.branch.Branch;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 /**
  * @since 4.1
  */
-public class ReopenBranchEvent extends BranchEvent {
-	public ReopenBranchEvent(final String repositoryId, final String path) {
-		super(repositoryId, path);
+public class CreateBranchRestRequest extends MetadataHolderImpl {
+
+	@JsonProperty
+	@NotEmpty
+	private String parent = "MAIN";
+
+	@JsonProperty
+	@NotEmpty
+	private String name;
+
+	public String getName() {
+		return name;
+	}
+	
+	public String getParent() {
+		return parent;
+	}
+	
+	public String path() {
+		return parent + Branch.SEPARATOR + name;
 	}
 }

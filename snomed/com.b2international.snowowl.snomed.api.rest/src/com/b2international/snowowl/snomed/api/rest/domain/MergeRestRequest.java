@@ -17,29 +17,48 @@ package com.b2international.snowowl.snomed.api.rest.domain;
 
 import org.hibernate.validator.constraints.NotEmpty;
 
-import com.b2international.snowowl.core.MetadataHolderImpl;
-import com.b2international.snowowl.core.branch.Branch;
-import com.b2international.snowowl.datastore.events.CreateBranchEvent;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.wordnik.swagger.annotations.ApiModel;
+import com.wordnik.swagger.annotations.ApiModelProperty;
 
 /**
  * @since 4.1
  */
-public class CreateBranchRequest extends MetadataHolderImpl {
+@ApiModel
+public class MergeRestRequest {
 
+	@ApiModelProperty(required = true)
 	@JsonProperty
 	@NotEmpty
-	private String parent = "MAIN";
+	private String source;
 
+	@ApiModelProperty(required = true)
 	@JsonProperty
 	@NotEmpty
-	private String name;
+	private String target;
 
-	public CreateBranchEvent toEvent(final String repositoryId) {
-		return new CreateBranchEvent(repositoryId, parent, name, metadata());
-	}
+	@ApiModelProperty(required = false)
+	@JsonProperty
+	private String commitComment;
+	
+	@ApiModelProperty(required = false)
+	@JsonProperty
+	private String reviewId;
 
-	public String path() {
-		return parent + Branch.SEPARATOR + name;
+	public String getCommitComment() {
+		return commitComment;
 	}
+	
+	public String getReviewId() {
+		return reviewId;
+	}
+	
+	public String getSource() {
+		return source;
+	}
+	
+	public String getTarget() {
+		return target;
+	}
+	
 }

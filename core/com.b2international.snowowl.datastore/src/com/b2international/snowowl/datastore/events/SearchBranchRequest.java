@@ -15,13 +15,24 @@
  */
 package com.b2international.snowowl.datastore.events;
 
+import com.b2international.snowowl.core.branch.BranchManager;
+import com.b2international.snowowl.core.branch.Branches;
+import com.b2international.snowowl.core.domain.RepositoryContext;
+import com.google.common.collect.ImmutableList;
+
 /**
  * @since 4.1
  */
-public class ReadBranchChildrenEvent extends BranchEvent {
+public class SearchBranchRequest extends BaseBranchRequest<Branches> {
 
-	public ReadBranchChildrenEvent(String repositoryId, String branchPath) {
-		super(repositoryId, branchPath);
+	@Override
+	public Branches execute(RepositoryContext context) {
+		return new Branches(ImmutableList.copyOf(context.service(BranchManager.class).getBranches()));
+	}
+
+	@Override
+	protected Class<Branches> getReturnType() {
+		return Branches.class;
 	}
 	
 }

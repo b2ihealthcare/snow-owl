@@ -15,21 +15,16 @@
  */
 package com.b2international.snowowl.datastore.events;
 
-import static com.google.common.base.Preconditions.checkNotNull;
+import com.b2international.snowowl.core.domain.RepositoryContext;
+import com.b2international.snowowl.core.events.BaseRequest;
 
 /**
  * @since 4.1
  */
-public abstract class BranchEvent extends BaseBranchEvent {
+public abstract class BaseBranchRequest<B> extends BaseRequest<RepositoryContext, B> {
 
-	private final String branchPath;
-
-	public BranchEvent(final String repositoryId, final String branchPath) {
-		super(repositoryId);
-		this.branchPath = checkNotNull(branchPath, "branchPath");
-	}
-
-	public final String getBranchPath() {
-		return branchPath;
+	@Override
+	protected String getAddress() {
+		return "/branches";
 	}
 }

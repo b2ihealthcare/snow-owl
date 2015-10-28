@@ -15,19 +15,27 @@
  */
 package com.b2international.snowowl.datastore.events;
 
-import com.b2international.snowowl.core.events.BaseRepositoryEvent;
+import com.b2international.snowowl.core.branch.Branch;
+import com.b2international.snowowl.core.branch.BranchManager;
+import com.b2international.snowowl.core.domain.RepositoryContext;
 
 /**
  * @since 4.1
  */
-public abstract class BaseBranchEvent extends BaseRepositoryEvent {
+public class ReadBranchRequest extends BranchRequest<Branch> {
 
-	protected BaseBranchEvent(String repositoryId) {
-		super(repositoryId);
+	public ReadBranchRequest(final String branchPath) {
+		super(branchPath);
 	}
-
+	
 	@Override
-	protected String getPath() {
-		return "/branches";
+	public Branch execute(RepositoryContext context) {
+		return context.service(BranchManager.class).getBranch(getBranchPath());
 	}
+	
+	@Override
+	protected Class<Branch> getReturnType() {
+		return Branch.class;
+	}
+	
 }
