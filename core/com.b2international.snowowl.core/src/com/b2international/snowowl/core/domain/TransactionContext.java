@@ -54,6 +54,11 @@ public interface TransactionContext extends BranchContext, AutoCloseable {
 	void commit(String userId, String commitComment);
 
 	/**
+	 * Rolls back any changes the underlying transaction has since its creation.
+	 */
+	void rollback();
+
+	/**
 	 * Returns a persisted component from the store with the given component id and type.
 	 * 
 	 * @param componentId

@@ -67,6 +67,11 @@ public final class CDOTransactionContext extends DelegatingBranchContext impleme
 	public void preCommit() {
 		editingContext.preCommit();
 	}
+	
+	@Override
+	public void rollback() {
+		editingContext.rollback();
+	}
 
 	@Override
 	public void commit(String userId, String commitComment) {
