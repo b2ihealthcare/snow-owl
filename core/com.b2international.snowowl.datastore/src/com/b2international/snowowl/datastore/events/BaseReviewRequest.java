@@ -15,14 +15,18 @@
  */
 package com.b2international.snowowl.datastore.events;
 
+import com.b2international.snowowl.core.domain.RepositoryContext;
+import com.b2international.snowowl.core.events.BaseRequest;
+
 /**
- * Sent when a user requests a review to be deleted.
+ * Abstract superclass for events related to reviewing changes between branches.
  * 
  * @since 4.2
  */
-public class DeleteReviewEvent extends ReviewEvent {
+public abstract class BaseReviewRequest<B> extends BaseRequest<RepositoryContext, B> {
 
-	public DeleteReviewEvent(final String repositoryId, final String diffId) {
-		super(repositoryId, diffId);
+	@Override
+	protected final String getAddress() {
+		return "/reviews";
 	}
 }

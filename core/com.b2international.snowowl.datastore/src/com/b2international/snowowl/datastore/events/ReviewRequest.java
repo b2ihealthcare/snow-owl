@@ -15,14 +15,23 @@
  */
 package com.b2international.snowowl.datastore.events;
 
+import static com.google.common.base.Preconditions.checkNotNull;
+
 /**
- * Sent when a user requests to read change set of a terminology review with the specified identifier.
+ * An abstract superclass for terminology review events which include the affected review's identifier.
  * 
  * @since 4.2
  */
-public class ReadConceptChangesEvent extends ReviewEvent {
+public abstract class ReviewRequest<B> extends BaseReviewRequest<B> {
 
-	public ReadConceptChangesEvent(final String repositoryId, final String reviewId) {
-		super(repositoryId, reviewId);
+	private final String reviewId;
+
+	public ReviewRequest(final String reviewId) {
+		this.reviewId = checkNotNull(reviewId, "reviewId");
 	}
+
+	protected final String getReviewId() {
+		return reviewId;
+	}
+
 }

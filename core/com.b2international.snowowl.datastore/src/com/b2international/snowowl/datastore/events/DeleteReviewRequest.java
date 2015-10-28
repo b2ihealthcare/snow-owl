@@ -15,22 +15,29 @@
  */
 package com.b2international.snowowl.datastore.events;
 
+import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.datastore.review.Review;
+import com.b2international.snowowl.datastore.review.ReviewManager;
 
 /**
- * Sent when a terminology review object is successfully created, read or deleted.
+ * Sent when a user requests a review to be deleted.
  * 
  * @since 4.2
  */
-public class ReviewReply {
+public class DeleteReviewRequest extends ReviewRequest<Review> {
 
-	private final Review review;
-
-	public ReviewReply(final Review review) {
-		this.review = review;
+	public DeleteReviewRequest(final String reviewId) {
+		super(reviewId);
 	}
-
-	public Review getReview() {
-		return review;
+	
+	@Override
+	public Review execute(RepositoryContext context) {
+		return context.service(ReviewManager.class).getReview(getReviewId()).delete();
 	}
+	
+	@Override
+	protected Class<Review> getReturnType() {
+		return Review.class;
+	}
+	
 }

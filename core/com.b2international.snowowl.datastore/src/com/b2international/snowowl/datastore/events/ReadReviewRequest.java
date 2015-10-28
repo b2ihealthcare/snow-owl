@@ -15,28 +15,29 @@
  */
 package com.b2international.snowowl.datastore.events;
 
+import com.b2international.snowowl.core.domain.RepositoryContext;
+import com.b2international.snowowl.datastore.review.Review;
+import com.b2international.snowowl.datastore.review.ReviewManager;
+
 /**
- * An event encapsulating a request to review differences between the specified source and target branch, identified by
- * their corresponding branch paths.
+ * Sent when a user requests to read the details of a terminology review with the specified identifier.
  * 
  * @since 4.2
  */
-public class CreateReviewEvent extends BaseReviewEvent {
+public class ReadReviewRequest extends ReviewRequest<Review> {
 
-	private final String sourcePath;
-	private final String targetPath;
-
-	public CreateReviewEvent(final String repositoryId, final String sourcePath, final String targetPath) {
-		super(repositoryId);
-		this.sourcePath = sourcePath;
-		this.targetPath = targetPath;
+	public ReadReviewRequest(final String reviewId) {
+		super(reviewId);
 	}
-
-	public String getSourcePath() {
-		return sourcePath;
+	
+	@Override
+	public Review execute(RepositoryContext context) {
+		return context.service(ReviewManager.class).getReview(getReviewId());
 	}
-
-	public String getTargetPath() {
-		return targetPath;
+	
+	@Override
+	protected Class<Review> getReturnType() {
+		return Review.class;
 	}
+	
 }

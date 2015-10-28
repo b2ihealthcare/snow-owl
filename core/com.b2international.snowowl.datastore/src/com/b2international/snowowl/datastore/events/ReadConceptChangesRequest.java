@@ -15,22 +15,29 @@
  */
 package com.b2international.snowowl.datastore.events;
 
+import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.datastore.review.ConceptChanges;
+import com.b2international.snowowl.datastore.review.ReviewManager;
 
 /**
- * Sent when a review change set is successfully read.
+ * Sent when a user requests to read change set of a terminology review with the specified identifier.
  * 
  * @since 4.2
  */
-public class ConceptChangesReply {
+public class ReadConceptChangesRequest extends ReviewRequest<ConceptChanges> {
 
-	private final ConceptChanges conceptChanges;
-
-	public ConceptChangesReply(final ConceptChanges conceptChanges) {
-		this.conceptChanges = conceptChanges;
+	public ReadConceptChangesRequest(final String reviewId) {
+		super(reviewId);
 	}
 
-	public ConceptChanges getConceptChanges() {
-		return conceptChanges;
+	@Override
+	public ConceptChanges execute(RepositoryContext context) {
+		return context.service(ReviewManager.class).getConceptChanges(getReviewId());
 	}
+
+	@Override
+	protected Class<ConceptChanges> getReturnType() {
+		return ConceptChanges.class;
+	}
+	
 }
