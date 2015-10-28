@@ -47,7 +47,7 @@ public final class RepositoryCommitRequestBuilder<B> {
 	}
 	
 	public Request<ServiceProvider, B> build() {
-		return new RepositoryRequest<>(repositoryId, branch, new TransactionalRequest<>(userId, commitComment, body));
+		return new RepositoryRequest<>(repositoryId, new BranchRequest<>(branch, new TransactionalRequest<>(userId, commitComment, body)));
 	}
 
 }

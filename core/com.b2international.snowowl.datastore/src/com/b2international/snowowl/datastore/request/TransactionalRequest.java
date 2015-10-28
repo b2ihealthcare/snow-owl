@@ -18,7 +18,7 @@ package com.b2international.snowowl.datastore.request;
 import static com.google.common.base.Preconditions.checkArgument;
 
 import com.b2international.snowowl.core.api.SnowowlRuntimeException;
-import com.b2international.snowowl.core.domain.RepositoryContext;
+import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.domain.TransactionContext;
 import com.b2international.snowowl.core.events.DelegatingRequest;
 import com.b2international.snowowl.core.events.Request;
@@ -27,7 +27,7 @@ import com.google.common.base.Strings;
 /**
  * @since 4.5
  */
-public final class TransactionalRequest<B> extends DelegatingRequest<RepositoryContext, TransactionContext, B> {
+public final class TransactionalRequest<B> extends DelegatingRequest<BranchContext, TransactionContext, B> {
 
 	private final String commitComment;
 	private final String userId;
@@ -40,7 +40,7 @@ public final class TransactionalRequest<B> extends DelegatingRequest<RepositoryC
 	}
 	
 	@Override
-	public B execute(RepositoryContext context) {
+	public B execute(BranchContext context) {
 		try (final TransactionContext transaction = context.provider(TransactionContext.class).get()) {
 			final B component = next(transaction);
 			// TODO consider moving preCommit into commit(userId, commitComment)

@@ -22,7 +22,7 @@ import com.b2international.snowowl.core.exceptions.ComponentNotFoundException;
 /**
  * @since 4.5
  */
-public interface TransactionContext extends RepositoryContext, AutoCloseable {
+public interface TransactionContext extends BranchContext, AutoCloseable {
 
 	/**
 	 * Adds the given {@link EObject} to this transaction context.

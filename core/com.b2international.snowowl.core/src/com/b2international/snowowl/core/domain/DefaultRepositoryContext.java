@@ -18,7 +18,6 @@ package com.b2international.snowowl.core.domain;
 import static com.google.common.base.Preconditions.checkNotNull;
 
 import com.b2international.snowowl.core.ServiceProvider;
-import com.b2international.snowowl.core.branch.Branch;
 import com.b2international.snowowl.core.config.SnowOwlConfiguration;
 import com.google.inject.Provider;
 
@@ -28,11 +27,11 @@ import com.google.inject.Provider;
 public final class DefaultRepositoryContext implements RepositoryContext {
 
 	private final ServiceProvider serviceProvider;
-	private final Branch branch;
+	private final String id;
 
-	public DefaultRepositoryContext(ServiceProvider serviceProvider, Branch branch) {
+	public DefaultRepositoryContext(ServiceProvider serviceProvider, String id) {
 		this.serviceProvider = checkNotNull(serviceProvider, "serviceProvider");
-		this.branch = checkNotNull(branch, "branch");
+		this.id = checkNotNull(id, "id");
 	}
 
 	@Override
@@ -46,13 +45,13 @@ public final class DefaultRepositoryContext implements RepositoryContext {
 	}
 
 	@Override
-	public Branch branch() {
-		return branch;
+	public SnowOwlConfiguration config() {
+		return service(SnowOwlConfiguration.class);
 	}
 	
 	@Override
-	public SnowOwlConfiguration config() {
-		return service(SnowOwlConfiguration.class);
+	public String id() {
+		return id;
 	}
 
 }

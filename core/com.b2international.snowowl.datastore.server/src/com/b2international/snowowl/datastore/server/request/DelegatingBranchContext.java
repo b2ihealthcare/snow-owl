@@ -1,6 +1,6 @@
 /*
  * Copyright 2011-2015 B2i Healthcare Pte Ltd, http://b2i.sg
- *
+ * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -13,31 +13,29 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.core.domain;
+package com.b2international.snowowl.datastore.server.request;
 
-import com.b2international.snowowl.core.ServiceProvider;
-import com.b2international.snowowl.core.config.SnowOwlConfiguration;
-import com.b2international.snowowl.core.events.Request;
+import com.b2international.snowowl.core.branch.Branch;
+import com.b2international.snowowl.core.domain.BranchContext;
+import com.b2international.snowowl.core.domain.DelegatingRepositoryContext;
 
 /**
- * Execution context for {@link Request requests} targeting a branch in a single repository.
- *
  * @since 4.5
  */
-public interface RepositoryContext extends ServiceProvider {
+public class DelegatingBranchContext extends DelegatingRepositoryContext implements BranchContext {
 
-	/**
-	 * Returns the current application configuration object.
-	 * 
-	 * @return
-	 */
-	SnowOwlConfiguration config();
+	public DelegatingBranchContext(BranchContext context) {
+		super(context);
+	}
 
-	/**
-	 * Returns the unique repository identifier.
-	 * 
-	 * @return
-	 */
-	String id();
+	@Override
+	public Branch branch() {
+		return getContext().branch();
+	}
+	
+	@Override
+	protected BranchContext getContext() {
+		return (BranchContext) super.getContext();
+	}
 
 }

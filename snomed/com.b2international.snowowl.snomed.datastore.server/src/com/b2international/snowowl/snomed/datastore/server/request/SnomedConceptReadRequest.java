@@ -16,7 +16,7 @@
 package com.b2international.snowowl.snomed.datastore.server.request;
 
 import com.b2international.snowowl.core.api.IBranchPath;
-import com.b2international.snowowl.core.domain.RepositoryContext;
+import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.exceptions.ComponentNotFoundException;
 import com.b2international.snowowl.core.terminology.ComponentCategory;
 import com.b2international.snowowl.snomed.core.domain.ISnomedConcept;
@@ -26,7 +26,7 @@ import com.b2international.snowowl.snomed.datastore.SnomedConceptLookupService;
 /**
  * @since 4.5
  */
-final class SnomedConceptReadRequest extends SnomedConceptRequest<RepositoryContext, ISnomedConcept> {
+final class SnomedConceptReadRequest extends SnomedConceptRequest<BranchContext, ISnomedConcept> {
 
 	private String componentId;
 
@@ -35,7 +35,7 @@ final class SnomedConceptReadRequest extends SnomedConceptRequest<RepositoryCont
 	}
 	
 	@Override
-	public ISnomedConcept execute(RepositoryContext context) {
+	public ISnomedConcept execute(BranchContext context) {
 		final IBranchPath branchPath = context.branch().branchPath();
 		final SnomedConceptLookupService lookupService = new SnomedConceptLookupService();
 		if (!lookupService.exists(branchPath, componentId)) {

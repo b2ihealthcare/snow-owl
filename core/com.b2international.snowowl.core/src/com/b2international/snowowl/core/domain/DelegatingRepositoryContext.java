@@ -17,7 +17,6 @@ package com.b2international.snowowl.core.domain;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
-import com.b2international.snowowl.core.branch.Branch;
 import com.b2international.snowowl.core.config.SnowOwlConfiguration;
 import com.google.inject.Provider;
 
@@ -31,25 +30,34 @@ public abstract class DelegatingRepositoryContext implements RepositoryContext {
 	public DelegatingRepositoryContext(RepositoryContext context) {
 		this.context = checkNotNull(context, "context");
 	}
-	
+
 	@Override
-	public <T> T service(Class<T> type) {
+	public final <T> T service(Class<T> type) {
 		return context.service(type);
 	}
 
 	@Override
-	public <T> Provider<T> provider(Class<T> type) {
+	public final <T> Provider<T> provider(Class<T> type) {
 		return context.provider(type);
 	}
 
 	@Override
-	public Branch branch() {
-		return context.branch();
+	public final SnowOwlConfiguration config() {
+		return context.config();
 	}
 	
 	@Override
-	public SnowOwlConfiguration config() {
-		return context.config();
+	public final String id() {
+		return context.id();
+	}
+
+	/**
+	 * Returns the context delegate
+	 * 
+	 * @return
+	 */
+	protected RepositoryContext getContext() {
+		return context;
 	}
 
 }

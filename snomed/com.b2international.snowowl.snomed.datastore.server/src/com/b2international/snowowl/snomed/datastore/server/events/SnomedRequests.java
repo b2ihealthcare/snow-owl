@@ -18,6 +18,7 @@ package com.b2international.snowowl.snomed.datastore.server.events;
 import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.domain.TransactionContext;
 import com.b2international.snowowl.core.events.Request;
+import com.b2international.snowowl.datastore.request.BranchRequest;
 import com.b2international.snowowl.datastore.request.RepositoryCommitRequestBuilder;
 import com.b2international.snowowl.datastore.request.RepositoryRequest;
 import com.b2international.snowowl.datastore.request.RepositoryRequests;
@@ -53,11 +54,11 @@ public abstract class SnomedRequests {
 	
 	// TODO migrate initial API to builders
 	public static Request<ServiceProvider, SnomedReferenceSets> prepareGetReferenceSets(String branch) {
-		return new RepositoryRequest<>("SNOMEDCT", branch, new SnomedRefSetReadAllRequest());
+		return new RepositoryRequest<>("SNOMEDCT", new BranchRequest<>(branch, new SnomedRefSetReadAllRequest()));
 	}
 	
 	public static Request<ServiceProvider, SnomedReferenceSet> prepareGetReferenceSet(String branch, String referenceSetId) {
-		return new RepositoryRequest<>("SNOMEDCT", branch, new SnomedRefSetReadRequest(referenceSetId));
+		return new RepositoryRequest<>("SNOMEDCT", new BranchRequest<>(branch, new SnomedRefSetReadRequest(referenceSetId)));
 	}
 	
 }

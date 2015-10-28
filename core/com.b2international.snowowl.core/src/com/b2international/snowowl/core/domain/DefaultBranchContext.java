@@ -1,6 +1,6 @@
 /*
  * Copyright 2011-2015 B2i Healthcare Pte Ltd, http://b2i.sg
- *
+ * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -15,29 +15,25 @@
  */
 package com.b2international.snowowl.core.domain;
 
-import com.b2international.snowowl.core.ServiceProvider;
-import com.b2international.snowowl.core.config.SnowOwlConfiguration;
-import com.b2international.snowowl.core.events.Request;
+import static com.google.common.base.Preconditions.checkNotNull;
+
+import com.b2international.snowowl.core.branch.Branch;
 
 /**
- * Execution context for {@link Request requests} targeting a branch in a single repository.
- *
  * @since 4.5
  */
-public interface RepositoryContext extends ServiceProvider {
+public final class DefaultBranchContext extends DelegatingRepositoryContext implements BranchContext {
 
-	/**
-	 * Returns the current application configuration object.
-	 * 
-	 * @return
-	 */
-	SnowOwlConfiguration config();
+	private Branch branch;
 
-	/**
-	 * Returns the unique repository identifier.
-	 * 
-	 * @return
-	 */
-	String id();
+	public DefaultBranchContext(RepositoryContext context, Branch branch) {
+		super(context);
+		this.branch = checkNotNull(branch, "branch");
+	}
+	
+	@Override
+	public Branch branch() {
+		return branch;
+	}
 
 }

@@ -1,6 +1,6 @@
 /*
  * Copyright 2011-2015 B2i Healthcare Pte Ltd, http://b2i.sg
- *
+ * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -15,29 +15,19 @@
  */
 package com.b2international.snowowl.core.domain;
 
-import com.b2international.snowowl.core.ServiceProvider;
-import com.b2international.snowowl.core.config.SnowOwlConfiguration;
+import com.b2international.snowowl.core.branch.Branch;
 import com.b2international.snowowl.core.events.Request;
 
 /**
- * Execution context for {@link Request requests} targeting a branch in a single repository.
- *
  * @since 4.5
  */
-public interface RepositoryContext extends ServiceProvider {
+public interface BranchContext extends RepositoryContext {
 
 	/**
-	 * Returns the current application configuration object.
+	 * Returns the branch where a {@link Request} should be executed.
 	 * 
 	 * @return
 	 */
-	SnowOwlConfiguration config();
-
-	/**
-	 * Returns the unique repository identifier.
-	 * 
-	 * @return
-	 */
-	String id();
-
+	Branch branch();
+	
 }

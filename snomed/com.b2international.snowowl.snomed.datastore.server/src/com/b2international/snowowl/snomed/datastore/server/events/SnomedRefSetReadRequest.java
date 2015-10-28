@@ -16,7 +16,7 @@
 package com.b2international.snowowl.snomed.datastore.server.events;
 
 import com.b2international.snowowl.core.api.IBranchPath;
-import com.b2international.snowowl.core.domain.RepositoryContext;
+import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.exceptions.ComponentNotFoundException;
 import com.b2international.snowowl.core.terminology.ComponentCategory;
 import com.b2international.snowowl.snomed.core.domain.SnomedReferenceSet;
@@ -27,7 +27,7 @@ import com.b2international.snowowl.snomed.datastore.index.refset.SnomedRefSetInd
 /**
  * @since 4.5
  */
-final class SnomedRefSetReadRequest extends SnomedRefSetRequest<RepositoryContext, SnomedReferenceSet> {
+final class SnomedRefSetReadRequest extends SnomedRefSetRequest<BranchContext, SnomedReferenceSet> {
 
 	private String referenceSetId;
 
@@ -36,7 +36,7 @@ final class SnomedRefSetReadRequest extends SnomedRefSetRequest<RepositoryContex
 	}
 
 	@Override
-	public SnomedReferenceSet execute(RepositoryContext context) {
+	public SnomedReferenceSet execute(BranchContext context) {
 		final IBranchPath branch = context.branch().branchPath();
 		final SnomedRefSetLookupService lookupService = new SnomedRefSetLookupService();
 		if (!lookupService.exists(branch, referenceSetId)) {

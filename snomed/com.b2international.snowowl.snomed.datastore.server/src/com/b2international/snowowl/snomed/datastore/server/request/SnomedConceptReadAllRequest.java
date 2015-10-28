@@ -26,6 +26,7 @@ import org.apache.lucene.search.Query;
 
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.api.index.IIndexQueryAdapter;
+import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.core.exceptions.IllegalQueryParameterException;
 import com.b2international.snowowl.snomed.core.domain.SearchKind;
@@ -42,7 +43,7 @@ import com.google.common.collect.Lists;
 /**
  * @since 4.5
  */
-final class SnomedConceptReadAllRequest extends SnomedConceptRequest<RepositoryContext, SnomedConcepts> {
+final class SnomedConceptReadAllRequest extends SnomedConceptRequest<BranchContext, SnomedConcepts> {
 
 	private int offset;
 	private int limit;
@@ -57,7 +58,7 @@ final class SnomedConceptReadAllRequest extends SnomedConceptRequest<RepositoryC
 	}
 
 	@Override
-	public SnomedConcepts execute(RepositoryContext context) {
+	public SnomedConcepts execute(BranchContext context) {
 		final IBranchPath branchPath = context.branch().branchPath();
 		final SnomedIndexService index = context.service(SnomedIndexService.class);
 		

@@ -16,9 +16,9 @@
 package com.b2international.snowowl.snomed.datastore.server.events;
 
 import com.b2international.snowowl.core.api.IBranchPath;
-import com.b2international.snowowl.core.domain.RepositoryContext;
-import com.b2international.snowowl.core.terminology.ComponentCategory;
+import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.exceptions.ComponentNotFoundException;
+import com.b2international.snowowl.core.terminology.ComponentCategory;
 import com.b2international.snowowl.snomed.core.domain.ISnomedDescription;
 import com.b2international.snowowl.snomed.datastore.SnomedDescriptionLookupService;
 import com.b2international.snowowl.snomed.datastore.index.SnomedDescriptionIndexEntry;
@@ -26,7 +26,7 @@ import com.b2international.snowowl.snomed.datastore.index.SnomedDescriptionIndex
 /**
  * @since 4.5
  */
-final class SnomedDescriptionReadRequest extends SnomedDescriptionRequest<RepositoryContext, ISnomedDescription> {
+final class SnomedDescriptionReadRequest extends SnomedDescriptionRequest<BranchContext, ISnomedDescription> {
 
 	private String componentId;
 
@@ -35,7 +35,7 @@ final class SnomedDescriptionReadRequest extends SnomedDescriptionRequest<Reposi
 	}
 	
 	@Override
-	public ISnomedDescription execute(RepositoryContext context) {
+	public ISnomedDescription execute(BranchContext context) {
 		final IBranchPath branchPath = context.branch().branchPath();
 		final SnomedDescriptionLookupService lookupService = new SnomedDescriptionLookupService();
 		if (!lookupService.exists(branchPath, componentId)) {

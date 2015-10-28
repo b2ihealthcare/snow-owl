@@ -22,8 +22,7 @@ import org.eclipse.emf.ecore.EObject;
 
 import com.b2international.commons.exceptions.Exceptions;
 import com.b2international.snowowl.core.api.SnowowlRuntimeException;
-import com.b2international.snowowl.core.domain.DelegatingRepositoryContext;
-import com.b2international.snowowl.core.domain.RepositoryContext;
+import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.domain.TransactionContext;
 import com.b2international.snowowl.core.exceptions.ConflictException;
 import com.b2international.snowowl.core.exceptions.CycleDetectedException;
@@ -35,11 +34,11 @@ import com.b2international.snowowl.datastore.server.CDOServerUtils;
 /**
  * @since 4.5
  */
-public final class CDOTransactionContext extends DelegatingRepositoryContext implements TransactionContext {
+public final class CDOTransactionContext extends DelegatingBranchContext implements TransactionContext {
 
 	private CDOEditingContext editingContext;
 
-	public CDOTransactionContext(RepositoryContext context, CDOEditingContext editingContext) {
+	public CDOTransactionContext(BranchContext context, CDOEditingContext editingContext) {
 		super(context);
 		this.editingContext = editingContext;
 	}

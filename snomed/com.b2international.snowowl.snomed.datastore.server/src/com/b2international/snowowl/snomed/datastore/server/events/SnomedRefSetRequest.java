@@ -15,12 +15,12 @@
  */
 package com.b2international.snowowl.snomed.datastore.server.events;
 
-import com.b2international.snowowl.core.domain.RepositoryContext;
+import com.b2international.snowowl.core.domain.BranchContext;
 
 /**
  * @since 4.5
  */
-abstract class SnomedRefSetRequest<C extends RepositoryContext, B> extends SnomedRequest<C, B> {
+abstract class SnomedRefSetRequest<C extends BranchContext, B> extends SnomedRequest<C, B> {
 
 	@Override
 	protected final String getPath() {
