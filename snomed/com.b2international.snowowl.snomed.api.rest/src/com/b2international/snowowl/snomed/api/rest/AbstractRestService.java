@@ -26,7 +26,18 @@ public abstract class AbstractRestService {
 	/**
 	 * The currently supported versioned media type of the snowowl RESTful API.
 	 */
-	public static final String SO_MEDIA_TYPE = "application/vnd.com.b2international.snowowl+json";
+	public static final String SO_MEDIA_TYPE = "application/vnd.com.b2international.snowowl+json; charset=utf-8";
+
+	/**
+	 * The currently supported versioned media type of the IHTSDO SNOMED CT Browser RESTful API.
+	 */
+	public static final String IHTSDO_V1_MEDIA_TYPE = "application/vnd.org.ihtsdo.browser+json; charset=utf-8";
+
+	public static final String APPLICATION_JSON_VALUE = "application/json; charset=utf-8";
+
+	public static final String APPLICATION_CSV_VALUE = "text/csv; charset=utf-8";
+
+	public static final String APPLICATION_OCTET_STREAM_VALUE = "application/octet-stream; charset=utf-8";
 
 	@Autowired
 	@Value("${repositoryId}")

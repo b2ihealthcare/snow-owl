@@ -24,7 +24,6 @@ import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
@@ -134,7 +133,7 @@ public class SnomedConceptRestService extends AbstractSnomedRestService {
 	@RequestMapping(
 			value="/{path:**}/concepts", 
 			method=RequestMethod.POST, 
-			consumes={ AbstractRestService.SO_MEDIA_TYPE, MediaType.APPLICATION_JSON_VALUE })
+			consumes={ AbstractRestService.SO_MEDIA_TYPE, AbstractRestService.APPLICATION_JSON_VALUE })
 	@ResponseStatus(HttpStatus.CREATED)
 	public ResponseEntity<Void> create(
 			@ApiParam(value="The branch path")
@@ -172,7 +171,7 @@ public class SnomedConceptRestService extends AbstractSnomedRestService {
 	@RequestMapping(
 			value="/{path:**}/concepts/{conceptId}/updates", 
 			method=RequestMethod.POST,
-			consumes={ AbstractRestService.SO_MEDIA_TYPE, MediaType.APPLICATION_JSON_VALUE })
+			consumes={ AbstractRestService.SO_MEDIA_TYPE, AbstractRestService.APPLICATION_JSON_VALUE })
 	@ResponseStatus(HttpStatus.NO_CONTENT)
 	public void update(			
 			@ApiParam(value="The branch path")

@@ -55,7 +55,7 @@ import com.wordnik.swagger.annotations.ApiResponses;
 @RestController
 @RequestMapping(
 		value="/imports",
-		produces={ AbstractRestService.SO_MEDIA_TYPE, MediaType.APPLICATION_JSON_VALUE })
+		produces={ AbstractRestService.SO_MEDIA_TYPE, AbstractRestService.APPLICATION_JSON_VALUE })
 public class SnomedImportRestService extends AbstractSnomedRestService {
 
 	@Autowired
@@ -72,7 +72,7 @@ public class SnomedImportRestService extends AbstractSnomedRestService {
 		@ApiResponse(code = 404, message = "Task not found"),
 	})
 	@RequestMapping(method=RequestMethod.POST,
-		consumes={ AbstractRestService.SO_MEDIA_TYPE, MediaType.APPLICATION_JSON_VALUE })
+		consumes={ AbstractRestService.SO_MEDIA_TYPE, AbstractRestService.APPLICATION_JSON_VALUE })
 	@ResponseStatus(HttpStatus.CREATED)
 	public ResponseEntity<Void> create(
 			@ApiParam(value="Import parameters")
