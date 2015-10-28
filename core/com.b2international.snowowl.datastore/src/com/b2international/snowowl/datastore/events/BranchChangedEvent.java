@@ -18,11 +18,12 @@ package com.b2international.snowowl.datastore.events;
 import static com.google.common.base.Preconditions.checkNotNull;
 
 import com.b2international.snowowl.core.branch.Branch;
+import com.b2international.snowowl.core.events.BaseRepositoryEvent;
 
 /**
  * @since 4.3
  */
-public class BranchChangedEvent extends BaseBranchEvent {
+public final class BranchChangedEvent extends BaseRepositoryEvent {
 	
 	private final Branch branch;
 	
@@ -37,6 +38,7 @@ public class BranchChangedEvent extends BaseBranchEvent {
 
 	@Override
 	protected String getPath() {
-		return super.getPath() + "/changes";
+		return "/branches/changes";
 	}
+
 }
