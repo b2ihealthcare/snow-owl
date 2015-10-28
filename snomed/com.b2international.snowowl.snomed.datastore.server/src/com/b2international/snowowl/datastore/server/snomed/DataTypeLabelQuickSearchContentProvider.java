@@ -38,10 +38,8 @@ import com.b2international.snowowl.snomed.datastore.snor.PredicateIndexEntry;
 import com.b2international.snowowl.snomed.mrcm.DataType;
 import com.google.common.base.Function;
 import com.google.common.base.Predicate;
-import com.google.common.collect.Collections2;
+import com.google.common.collect.FluentIterable;
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.Lists;
-import com.google.common.collect.Sets;
 
 /**
  * Quick search content provider for data type labels.
@@ -52,38 +50,58 @@ import com.google.common.collect.Sets;
 public class DataTypeLabelQuickSearchContentProvider extends AbstractQuickSearchContentProvider implements IQuickSearchContentProvider {
 
 	private static final class DataTypeLabelToQuickSearchElementFunction implements Function<String, QuickSearchElement> {
+		private String queryExpression;
 		private String terminologyComponentId;
 
-		public DataTypeLabelToQuickSearchElementFunction(String terminologyComponentId) {
+		public DataTypeLabelToQuickSearchElementFunction(String queryExpression, String terminologyComponentId) {
+			this.queryExpression = queryExpression;
 			this.terminologyComponentId = terminologyComponentId;
 		}
 
 		@Override
 		public QuickSearchElement apply(String input) {
-			// TODO: icon ID?
-			return new FullQuickSearchElement(input, Concepts.ROOT_CONCEPT, DataTypeUtils.getDataTypePredicateLabel(input, Collections.<PredicateIndexEntry>emptyList()), false, terminologyComponentId);
+			// TODO: Add an icon ID for each reference set, reflecting the data type (#, abc, calendar, #.##, checkbox?)
+			final String label = DataTypeUtils.getDataTypePredicateLabel(input, Collections.<PredicateIndexEntry>emptyList());
+
+			return new FullQuickSearchElement(
+					input, 
+					Concepts.ROOT_CONCEPT, 
+					label, 
+					false, 
+					terminologyComponentId,
+					getMatchRegions(queryExpression, label),
+					getSuffixes(queryExpression, label));
 		}
 	};
-	
+
 	@Override
 	public QuickSearchContentResult getComponents(final String queryExpression, IBranchPathMap branchPathMap, int limit, Map<String, Object> configuration) {
 		final IBranchPath branchPath = getBranchPath(branchPathMap);
-		Object object = configuration.get(DataTypeLabelQuickSearchProvider.CONFIGURATION_DATA_TYPE);
+		final Object object = configuration.get(DataTypeLabelQuickSearchProvider.CONFIGURATION_DATA_TYPE);
+		final List<QuickSearchElement> elements;
+
 		if (object instanceof DataType) {
-			DataType dataType = (DataType) object;
-			Set<String> filteredDataTypeLabels = getFilteredDataTypeLabelSet(queryExpression, branchPath, dataType);
-			List<QuickSearchElement> list = Lists.newArrayList(Collections2.transform(filteredDataTypeLabels, new DataTypeLabelToQuickSearchElementFunction(getTerminologyComponentId(dataType))));
-			return new QuickSearchContentResult(list.size(), list);
+			final DataType dataType = (DataType) object;
+			elements = getElementsForDataType(queryExpression, branchPath, dataType);
 		} else {
-			// if data type not specified, return labels for all data types
-			ImmutableList.Builder<QuickSearchElement> resultBuilder = ImmutableList.<QuickSearchElement>builder();
-			for (DataType dataType : DataType.class.getEnumConstants()) {
-				Set<String> filteredDataTypeLabelSet = getFilteredDataTypeLabelSet(queryExpression, branchPath, dataType);
-				resultBuilder.addAll(Collections2.transform(filteredDataTypeLabelSet, new DataTypeLabelToQuickSearchElementFunction(getTerminologyComponentId(dataType))));
-			}
-			ImmutableList<QuickSearchElement> list = resultBuilder.build();
-			return new QuickSearchContentResult(list.size(), list);
+			elements = FluentIterable
+					.from(ImmutableList.copyOf(DataType.values()))
+					.transformAndConcat(new Function<DataType, Iterable<QuickSearchElement>>() {
+						@Override
+						public Iterable<QuickSearchElement> apply(DataType input) {
+							return getElementsForDataType(queryExpression, branchPath, input);
+						}
+					})
+					.toList();
 		}
+
+		return new QuickSearchContentResult(elements.size(), elements);
+	}
+
+	private ImmutableList<QuickSearchElement> getElementsForDataType(final String queryExpression, final IBranchPath branchPath, final DataType dataType) {
+		return getFilteredDataTypeLabelSet(queryExpression, branchPath, dataType)
+				.transform(new DataTypeLabelToQuickSearchElementFunction(queryExpression, getTerminologyComponentId(dataType)))
+				.toList();
 	}
 
 	private String getTerminologyComponentId(DataType dataType) {
@@ -102,21 +120,22 @@ public class DataTypeLabelQuickSearchContentProvider extends AbstractQuickSearch
 			throw new IllegalArgumentException("Unexpected data type: " + dataType);
 		}
 	}
-	
-	private Set<String> getFilteredDataTypeLabelSet(final String queryExpression, IBranchPath branchPath, DataType dataType) {
+
+	private FluentIterable<String> getFilteredDataTypeLabelSet(final String queryExpression, IBranchPath branchPath, DataType dataType) {
 		Set<String> availableDataTypeLabels = new SnomedComponentService().getAvailableDataTypeLabels(branchPath, dataType);
-		Set<String> filteredDataTypeLabels = Sets.filter(availableDataTypeLabels, new Predicate<String>() {
-			@Override
-			public boolean apply(String input) {
-				return input.toLowerCase().contains(queryExpression.toLowerCase());
-			}
-		});
-		return filteredDataTypeLabels;
+
+		return FluentIterable
+				.from(availableDataTypeLabels)
+				.filter(new Predicate<String>() {
+					@Override
+					public boolean apply(String input) {
+						return input.toLowerCase().contains(queryExpression.toLowerCase());
+					}
+				});
 	}
 
 	@Override
 	protected EPackage getEPackage() {
 		return SnomedPackage.eINSTANCE;
 	}
-
 }

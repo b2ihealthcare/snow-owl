@@ -17,19 +17,10 @@ package com.b2international.snowowl.core.quicksearch;
 
 /**
  * Wraps a {@link QuickSearchElement}, extending it with information required for rendering the element. 
- *
  */
 public class QuickSearchEntryBase {
 
-	protected static final int[][] EMPTY_REGIONS = new int[0][0];
-	
-	protected static final String[] EMPTY_SUFFIXES = new String[0];
-	
 	protected final QuickSearchElement element;
-	
-	protected final int[][] elementMatchRegions;
-	
-	protected final String[] elementSuffixes;
 	
 	protected int providerCount;
 	
@@ -39,14 +30,8 @@ public class QuickSearchEntryBase {
 	
 	protected boolean drawApproximate;
 
-	public QuickSearchEntryBase(final QuickSearchElement element, final int[][] elementMatchRegions, final String[] elementSuffixes) {
-		this.element = element;
-		this.elementMatchRegions = elementMatchRegions;
-		this.elementSuffixes = elementSuffixes;
-	}
-	
 	public QuickSearchEntryBase(final QuickSearchElement element) {
-		this(element, EMPTY_REGIONS, EMPTY_SUFFIXES);
+		this.element = element;
 	}
 
 	public void setProviderCount(final int count) {
@@ -58,11 +43,11 @@ public class QuickSearchEntryBase {
 	}
 
 	public String[] getElementSuffixes() {
-		return elementSuffixes;
+		return element.getSuffixes();
 	}
 	
 	public int[][] getElementMatchRegions() {
-		return elementMatchRegions;
+		return element.getMatchRegions();
 	}
 
 	public void setDrawProviderText() {
