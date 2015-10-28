@@ -19,12 +19,14 @@ import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.domain.TransactionContext;
 import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.datastore.request.BranchRequest;
+import com.b2international.snowowl.datastore.request.Branching;
 import com.b2international.snowowl.datastore.request.RepositoryCommitRequestBuilder;
 import com.b2international.snowowl.datastore.request.RepositoryRequest;
 import com.b2international.snowowl.datastore.request.RepositoryRequests;
 import com.b2international.snowowl.snomed.Component;
 import com.b2international.snowowl.snomed.core.domain.SnomedReferenceSet;
 import com.b2international.snowowl.snomed.core.domain.SnomedReferenceSets;
+import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 import com.b2international.snowowl.snomed.datastore.server.request.SnomedConceptGetRequestBuilder;
 import com.b2international.snowowl.snomed.datastore.server.request.SnomedConceptSearchRequestBuilder;
 
@@ -59,6 +61,10 @@ public abstract class SnomedRequests {
 	
 	public static Request<ServiceProvider, SnomedReferenceSet> prepareGetReferenceSet(String branch, String referenceSetId) {
 		return new RepositoryRequest<>("SNOMEDCT", new BranchRequest<>(branch, new SnomedRefSetReadRequest(referenceSetId)));
+	}
+
+	public static Branching branching() {
+		return RepositoryRequests.branching(SnomedDatastoreActivator.REPOSITORY_UUID);
 	}
 	
 }
