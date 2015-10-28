@@ -13,11 +13,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.core.quicksearch;
+package com.b2international.snowowl.datastore.quicksearch;
 
 import java.util.List;
 
 import com.b2international.snowowl.core.TextConstants;
+import com.b2international.snowowl.core.quicksearch.QuickSearchElement;
+import com.b2international.snowowl.core.quicksearch.QuickSearchElementInfo;
+import com.b2international.snowowl.core.quicksearch.QuickSearchExtractor;
 import com.google.common.base.Splitter;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
@@ -26,7 +29,7 @@ import com.google.common.collect.Lists;
  * Utility class to extract additional information from a quick search result element.
  * 
  */
-public class QuickSearchElementInfoExtractor {
+public class QuickSearchElementInfoExtractor implements QuickSearchExtractor {
 
 	private final String filter;
 	
@@ -40,6 +43,7 @@ public class QuickSearchElementInfoExtractor {
 	 * @param element
 	 * @return the extracted additional information
 	 */
+	@Override
 	public QuickSearchElementInfo process(QuickSearchElement element) {
 		final Splitter tokenSplitter = Splitter.on(TextConstants.WHITESPACE_OR_DELIMITER_MATCHER).omitEmptyStrings();
 		final List<String> filterTokens = ImmutableList.copyOf(tokenSplitter.split(filter.toLowerCase()));
