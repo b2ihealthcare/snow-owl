@@ -49,6 +49,7 @@ import com.b2international.snowowl.datastore.review.ConceptChanges;
 import com.b2international.snowowl.datastore.review.Review;
 import com.b2international.snowowl.datastore.review.ReviewManager;
 import com.b2international.snowowl.datastore.review.ReviewStatus;
+import com.b2international.snowowl.datastore.server.ReviewConfiguration;
 import com.b2international.snowowl.datastore.server.internal.InternalRepository;
 import com.b2international.snowowl.datastore.store.Store;
 import com.b2international.snowowl.datastore.store.query.Query;
@@ -176,16 +177,16 @@ public class ReviewManagerImpl implements ReviewManager {
 	}
 
 	public ReviewManagerImpl(final InternalRepository repository, final Store<ReviewImpl> reviewStore, final Store<ConceptChangesImpl> conceptChangesStore) {
-		this(repository, reviewStore, conceptChangesStore, 15, 5);
+		this(repository, reviewStore, conceptChangesStore, new ReviewConfiguration());
 	}
 
 	public ReviewManagerImpl(final InternalRepository repository, 
 			final Store<ReviewImpl> reviewStore, final Store<ConceptChangesImpl> conceptChangesStore, 
-			final long keepCurrentMins, final int keepOtherMins) {
+			final ReviewConfiguration config) {
 
 		this.repositoryId = repository.id();
-		this.keepCurrentMillis = TimeUnit.MINUTES.toMillis(keepCurrentMins);
-		this.keepOtherMillis = TimeUnit.MINUTES.toMillis(keepOtherMins);
+		this.keepCurrentMillis = TimeUnit.MINUTES.toMillis(config.getKeepCurrentMins());
+		this.keepOtherMillis = TimeUnit.MINUTES.toMillis(config.getKeepOtherMins());
 
 		this.reviewStore = reviewStore;
 		reviewStore.configureSearchable("status");
