@@ -27,6 +27,7 @@ import com.b2international.snowowl.snomed.core.domain.CharacteristicType;
 import com.b2international.snowowl.snomed.core.domain.ISnomedRelationship;
 import com.b2international.snowowl.snomed.core.domain.RelationshipModifier;
 import com.b2international.snowowl.snomed.core.store.SnomedComponents;
+import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 
 /**
  * @since 4.0
@@ -149,6 +150,11 @@ public class SnomedRelationshipCreateRequest extends BaseSnomedComponentCreateRe
 	@Override
 	protected Class<ISnomedRelationship> getReturnType() {
 		return ISnomedRelationship.class;
+	}
+	
+	@Override
+	protected String getAddress() {
+		return String.format("/%s/%s", SnomedDatastoreActivator.REPOSITORY_UUID, "relationships");
 	}
 
 	@Override

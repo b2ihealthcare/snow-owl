@@ -48,9 +48,4 @@ public abstract class BaseSnomedComponentCreateRequest<B> extends BaseRequest<Tr
 		this.moduleId = moduleId;
 	}
 	
-	@Override
-	protected String getAddress() {
-		throw new UnsupportedOperationException();
-	}
-	
 }

@@ -39,6 +39,7 @@ import com.b2international.snowowl.snomed.core.domain.Acceptability;
 import com.b2international.snowowl.snomed.core.domain.ISnomedConcept;
 import com.b2international.snowowl.snomed.core.domain.IdGenerationStrategy;
 import com.b2international.snowowl.snomed.core.store.SnomedComponents;
+import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 import com.b2international.snowowl.snomed.datastore.services.ISnomedComponentService;
 import com.google.common.collect.HashMultiset;
 import com.google.common.collect.ImmutableList;
@@ -144,6 +145,11 @@ public class SnomedConceptCreateRequest extends BaseSnomedComponentCreateRequest
 	@Override
 	protected Class<ISnomedConcept> getReturnType() {
 		return ISnomedConcept.class;
+	}
+	
+	@Override
+	protected String getAddress() {
+		return String.format("/%s/%s", SnomedDatastoreActivator.REPOSITORY_UUID, "concepts");
 	}
 
 	@Override
