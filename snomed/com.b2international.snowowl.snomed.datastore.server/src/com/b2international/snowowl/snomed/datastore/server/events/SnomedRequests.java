@@ -23,6 +23,7 @@ import com.b2international.snowowl.datastore.request.Branching;
 import com.b2international.snowowl.datastore.request.RepositoryCommitRequestBuilder;
 import com.b2international.snowowl.datastore.request.RepositoryRequest;
 import com.b2international.snowowl.datastore.request.RepositoryRequests;
+import com.b2international.snowowl.datastore.request.Reviews;
 import com.b2international.snowowl.snomed.Component;
 import com.b2international.snowowl.snomed.core.domain.SnomedReferenceSet;
 import com.b2international.snowowl.snomed.core.domain.SnomedReferenceSets;
@@ -65,6 +66,10 @@ public abstract class SnomedRequests {
 
 	public static Branching branching() {
 		return RepositoryRequests.branching(SnomedDatastoreActivator.REPOSITORY_UUID);
+	}
+
+	public static Reviews review() {
+		return RepositoryRequests.reviews(SnomedDatastoreActivator.REPOSITORY_UUID);
 	}
 	
 }
