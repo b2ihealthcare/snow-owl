@@ -44,8 +44,6 @@ public final class RepositoryRequest<B> extends DelegatingRequest<ServiceProvide
 	@Override
 	public B execute(final ServiceProvider context) {
 		final String repositoryId = ensureAvailability(context);
-		// TODO replace execution with event bus dispatch??? or pass it onto a worker thread and do not execute on event thread
-		// repositories could have fixed (but configurable) amount of worker thread
 		return next(new DefaultRepositoryContext(context, repositoryId));
 	}
 	
