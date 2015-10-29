@@ -40,9 +40,6 @@ import org.eclipse.net4j.util.event.IListener;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import bak.pcj.LongIterator;
-import bak.pcj.set.LongSet;
-
 import com.b2international.commons.ClassUtils;
 import com.b2international.commons.CompareUtils;
 import com.b2international.commons.status.SerializableStatus;
@@ -50,7 +47,6 @@ import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.IDisposableService;
 import com.b2international.snowowl.core.IServiceChangeListener;
 import com.b2international.snowowl.core.api.IBranchPath;
-import com.b2international.snowowl.core.api.IComponent;
 import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.core.users.SpecialUserStore;
 import com.b2international.snowowl.datastore.BranchPathUtils;
@@ -86,10 +82,10 @@ import com.b2international.snowowl.snomed.reasoner.classification.SnomedReasoner
 import com.b2international.snowowl.snomed.reasoner.classification.SnomedReasonerServiceUtil;
 import com.b2international.snowowl.snomed.reasoner.classification.UnsatisfiableSet;
 import com.b2international.snowowl.snomed.reasoner.classification.entry.AbstractChangeEntry.Nature;
+import com.b2international.snowowl.snomed.reasoner.classification.entry.ChangeConcept;
 import com.b2international.snowowl.snomed.reasoner.classification.entry.ConceptConcreteDomainChangeEntry;
 import com.b2international.snowowl.snomed.reasoner.classification.entry.ConcreteDomainElement;
 import com.b2international.snowowl.snomed.reasoner.classification.entry.IConcreteDomainChangeEntry;
-import com.b2international.snowowl.snomed.reasoner.classification.entry.ChangeConcept;
 import com.b2international.snowowl.snomed.reasoner.classification.entry.RelationshipChangeEntry;
 import com.b2international.snowowl.snomed.reasoner.classification.entry.RelationshipConcreteDomainChangeEntry;
 import com.b2international.snowowl.snomed.reasoner.model.LongConcepts;
@@ -99,6 +95,9 @@ import com.b2international.snowowl.snomed.reasoner.server.normalform.ConceptConc
 import com.b2international.snowowl.snomed.reasoner.server.normalform.RelationshipNormalFormGenerator;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Ordering;
+
+import bak.pcj.LongIterator;
+import bak.pcj.set.LongSet;
 
 /**
  * Manages reasoners that operate on the OWL representation of a SNOMED&nbsp;CT repository branch path. 
@@ -456,13 +455,19 @@ public class SnomedReasonerServerService extends CollectingService<Reasoner, Cla
 			final String conceptId = String.valueOf(itr.next());
 			SnomedConceptIndexEntry conceptIndexEntry = terminologyBrowser.getConcept(branchPath, conceptId);
 			if (null == conceptIndexEntry) {
-				// Set Long.MAX_VALUE storage key to never suggest it as a replacement for others, except when all equivalent concepts are non-existent
-				conceptIndexEntry = new SnomedConceptIndexEntry(conceptId, Concepts.MODULE_ROOT, conceptId + " (unresolved)", 
-						Concepts.ROOT_CONCEPT, Long.MAX_VALUE, (byte) 0, EffectiveTimes.UNSET_EFFECTIVE_TIME);
+				conceptIndexEntry = SnomedConceptIndexEntry.builder()
+						.id(conceptId)
+						.label(conceptId + " (unresolved)")
+						.iconId(Concepts.ROOT_CONCEPT) 
+						.moduleId(Concepts.MODULE_ROOT)
+						.storageKey(Long.MAX_VALUE) // XXX: set Long.MAX_VALUE storage key to never suggest it as a replacement	
+						.effectiveTimeLong(EffectiveTimes.UNSET_EFFECTIVE_TIME)
+						.build();
 			}
 			
 			convertedSet.add(conceptIndexEntry);
 		}
+		
 		Collections.sort(convertedSet, STORAGE_KEY_ORDERING);
 		return convertedSet;
 	}

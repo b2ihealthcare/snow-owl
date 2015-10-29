@@ -17,163 +17,167 @@ package com.b2international.snowowl.snomed.datastore;
 
 import java.io.Serializable;
 
-import javax.annotation.Nullable;
-import javax.annotation.concurrent.Immutable;
-
 import com.b2international.snowowl.core.api.IComponent;
-import com.b2international.snowowl.core.api.NullComponent;
 import com.b2international.snowowl.core.api.index.IIndexEntry;
 import com.b2international.snowowl.snomed.datastore.index.SnomedIndexEntry;
+import com.google.common.base.Objects;
 
 /**
- * Represents a SNOMED&nbsp;CT concept.
- *
+ * A transfer object representing a SNOMED CT concept.
  */
-@Immutable
 public class SnomedConceptIndexEntry extends SnomedIndexEntry implements IComponent<String>, IIndexEntry, Serializable {
-	
+
 	private static final long serialVersionUID = -824286402410205210L;
 
-	/**
-	 * Returns {@code true} if and if only the specified SNOMED&nbsp;CT {@link SnomedConceptIndexEntry concept} is either {@code null}
-	 *  or {@code equals} with the {@link NullComponent#getNullImplementation() null implementation}, otherwise returns {@code false}.
-	 * @param concept the concept to check.
-	 * @return {@code true} if the specified concept is unset. Otherwise returns with {@code false}.
-	 */
-	public static boolean isUnset(@Nullable final SnomedConceptIndexEntry concept) {
-		return null == concept ? true : NullComponent.getNullImplementation().equals(concept);
+	public static Builder builder() {
+		return new Builder();
+	}
+
+	public static class Builder {
+
+		private String id;
+		private String label;
+		private String iconId;
+		private String moduleId;
+		private long storageKey;
+		private float score;
+		private boolean active;
+		private boolean released;
+		private long effectiveTimeLong;
+		private boolean primitive;
+		private boolean exhaustive;
+
+		private Builder() {
+			// Disallow instantiation outside static method
+		}
+
+		public Builder id(final String id) {
+			this.id = id;
+			return this;
+		}
+
+		public Builder label(final String label) {
+			this.label = label;
+			return this;
+		}
+
+		public Builder iconId(final String iconId) {
+			this.iconId = iconId;
+			return this;
+		}
+
+		public Builder moduleId(final String moduleId) {
+			this.moduleId = moduleId;
+			return this;
+		}
+
+		public Builder storageKey(final long storageKey) {
+			this.storageKey = storageKey;
+			return this;
+		}
+
+		public Builder score(final float score) {
+			this.score = score;
+			return this;
+		}
+
+		public Builder active(final boolean active) {
+			this.active = active;
+			return this;
+		}
+
+		public Builder released(final boolean released) {
+			this.released = released;
+			return this;
+		}
+
+		public Builder effectiveTimeLong(final long effectiveTimeLong) {
+			this.effectiveTimeLong = effectiveTimeLong;
+			return this;
+		}
+
+		public Builder primitive(final boolean primitive) {
+			this.primitive = primitive;
+			return this;
+		}
+
+		public Builder exhaustive(final boolean exhaustive) {
+			this.exhaustive = exhaustive;
+			return this;
+		}
+
+		public SnomedConceptIndexEntry build() {
+			return new SnomedConceptIndexEntry(id, 
+					label, 
+					iconId, 
+					moduleId, 
+					score,
+					storageKey, 
+					released, 
+					active, 
+					effectiveTimeLong, 
+					primitive, 
+					exhaustive);
+		}
+	}
+
+	private final boolean primitive;
+	private final boolean exhaustive;
+
+	protected SnomedConceptIndexEntry(final String id, 
+			final String label, 
+			final String iconId, 
+			final String moduleId, 
+			final float score, 
+			final long storageKey,
+			final boolean released,
+			final boolean active,
+			final long effectiveTimeLong,
+			final boolean primitive,
+			final boolean exhaustive) {
+
+		super(id, 
+				label, 
+				iconId, 
+				moduleId, 
+				score, 
+				storageKey, 
+				released,
+				active,
+				effectiveTimeLong);
+
+		this.primitive = primitive;
+		this.exhaustive = exhaustive;
 	}
 
 	/**
-	 * Generates a flag indicating the following concept properties: status,
-	 * definition status, subclass enumeration status.
-	 * 
-	 * @param active
-	 *            indicates the concept status.
-	 * 
-	 * @param primitive
-	 *            indicates that the concept is not fully defined.
-	 * 
-	 * @param exhaustive
-	 *            indicates that the concept's direct subclasses are given in
-	 *            full, no other category exists, and the subclasses are
-	 *            mutually disjoint.
-	 * 
-	 * @param released flag indicating whether a SNOMED&nbsp;CT concept is published or not.
-	 * @return a byte value representing all specified flags
-	 */
-	public static byte generateFlags(final boolean active, final boolean primitive, final boolean exhaustive, final boolean released) {
-		byte flags = 0;
-		if (active) flags |= FLAG_IS_ACTIVE;
-		if (primitive) flags |= FLAG_IS_PRIMITIVE;
-		if (exhaustive) flags |= FLAG_IS_EXHAUSTIVE;
-		if (released) flags |= FLAG_IS_RELEASED;
-		return flags;
-	}
-	
-	/**
-	 * Checks if any of the flags in the specified mask is set. This method has an <tt>int</tt> parameter so flags can be 
-	 * bitwise OR-ed together inline without requiring a cast or a local assignment.
-	 * 
-	 * @param mask the mask to use for flag checking
-	 * @return <code>true</code> if the specified flag is set, <code>false</code> otherwise
-	 */
-	private static boolean isAnyFlagSet(final byte flags, final int mask) {
-		return (flags & mask) != 0;
-	}
-
-	/**
-	 * Indicates that the concept definition is active.
-	 */
-	public static final byte FLAG_IS_ACTIVE = 1 << 0;
-	
-	/**
-	 * Indicates that the concept's definition has not been fully given.
-	 */
-	public static final byte FLAG_IS_PRIMITIVE = 1 << 1;
-	
-	/**
-	 * Indicates that direct subclasses from a partition over the set of elements represented by this concept. 
-	 */
-	public static final byte FLAG_IS_EXHAUSTIVE = 1 << 2;
-	
-	/**
-	 * Indicates that the concept has been published or not. 
-	 */
-	public static final byte FLAG_IS_RELEASED = 1 << 3;
-	
-	private byte flags;
-
-
-	/**
-	 * Creates a new ConceptMini instance with the specified parameters.
-	 * 
-	 * @param conceptId external concept identifier (SNOMED CT ID for example)
-	 * @param moduleId the concept's module identifier
-	 * @param label the concept's human readable name
-	 * @param iconId icon ID of the concept.
-	 * @param storageKey internal primary key (CDO key for example)
-	 * @param flags concept flags
-	 */
-	public SnomedConceptIndexEntry(final String conceptId, final String moduleId, final String label, String iconId, final long storageKey, final byte flags, final long effectiveTime) {
-		super(conceptId, label, iconId, moduleId, /*storage key*/0f, storageKey, isAnyFlagSet(flags, FLAG_IS_RELEASED), isAnyFlagSet(flags, FLAG_IS_ACTIVE), effectiveTime);
-		this.flags = flags;
-	}
-	
-	/**
-	 * Creates a SNOMED&nbsp;CT concept.
-	 * @param conceptId the concept ID.
-	 * @param moduleId ID of the module concept.
-	 * @param label preferred term of the concept.
-	 * @param iconId icon concept ID.
-	 * @param score score from the index.
-	 * @param storageKey the unique storage key of the concept. (CDO ID).
-	 * @param flags storing additional information for the concept.
-	 */
-	public SnomedConceptIndexEntry(final String conceptId, final String moduleId, final String label, String iconId, final float score, final long storageKey, final byte flags, final long effectiveTime) {
-		super(conceptId, label, iconId, moduleId, score, storageKey, isAnyFlagSet(flags, FLAG_IS_RELEASED), isAnyFlagSet(flags, FLAG_IS_ACTIVE), effectiveTime);
-		this.flags = flags;
-	}
-
-	/**
-	 * Returns {@code true} if the SNOMED&nbsp;CT concept is primitive, otherwise returns {@code false}.
-	 * @return {@code true} if primitive, {@code false} if the concept is fully defined.
+	 * @return {@code true} if the concept definition status is 900000000000074008 (primitive), {@code false} otherwise
 	 */
 	public boolean isPrimitive() {
-		return isAnyFlagSet(FLAG_IS_PRIMITIVE);
+		return primitive;
 	}
-	
+
 	/**
-	 * Returns {@code true} if the SNOMED&nbsp;CT concept is exhaustive, otherwise returns {@code false}.
-	 * @return {@code true} if exhaustive, otherwise {@code false}.
+	 * @return {@code true} if the concept subclass definition status is exhaustive, {@code false} otherwise
 	 */
 	public boolean isExhaustive() {
-		return isAnyFlagSet(FLAG_IS_EXHAUSTIVE);
+		return exhaustive;
 	}
 
 	@Override
 	public int hashCode() {
-		final int prime = 31;
-		int result = 1;
-		result = prime * result
-				+ ((getId() == null) ? 0 : getId().hashCode());
-		return result;
+		return 31 + getId().hashCode();
 	}
 
 	@Override
 	public boolean equals(final Object obj) {
-		if (this == obj)
-			return true;
-		if (obj == null)
-			return false;
-		if (getClass() != obj.getClass())
-			return false;
+		if (this == obj) { return true; }
+		if (obj == null) { return false; }
+		if (getClass() != obj.getClass()) { return false; }
+		
 		final SnomedConceptIndexEntry other = (SnomedConceptIndexEntry) obj;
-		if (getId() == null) {
-			if (other.getId() != null)
-				return false;
-		} else if (!getId().equals(other.getId()))
-			return false;
+		
+		if (!Objects.equal(getId(), other.getId())) { return false; }
 		return true;
 	}
 
@@ -181,16 +185,4 @@ public class SnomedConceptIndexEntry extends SnomedIndexEntry implements ICompon
 	public String toString() {
 		return getId() + " - " + getLabel() + " - " + this.isActive();
 	}
-
-	/**
-	 * Checks if any of the flags in the specified mask is set. This method has an <tt>int</tt> parameter so flags can be 
-	 * bitwise OR-ed together inline without requiring a cast or a local assignment.
-	 * 
-	 * @param mask the mask to use for flag checking
-	 * @return <code>true</code> if the specified flag is set, <code>false</code> otherwise
-	 */
-	private boolean isAnyFlagSet(final int flag) {
-		return (flags & flag) != 0;
-	}
-
 }

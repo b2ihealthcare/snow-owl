@@ -53,20 +53,26 @@ public class SnomedConceptAdapterFactory extends TypeSafeAdapterFactory {
 
 			final Concept concept = (Concept) adaptableObject;
 			final SnomedClientTerminologyBrowser terminologyBrowser = getTerminologyBrowser();
-			SnomedConceptIndexEntry conceptMini = terminologyBrowser.getConcept(concept.getId());
+			SnomedConceptIndexEntry indexEntry = terminologyBrowser.getConcept(concept.getId());
 
-			if (null != conceptMini) {
-				return adapterType.cast(conceptMini);
+			if (null != indexEntry) {
+				return adapterType.cast(indexEntry);
 			}
 			
-			conceptMini = new SnomedConceptIndexEntry(concept.getId(), 
-					concept.getModule().getId(), 
-					SnomedConceptNameProvider.INSTANCE.getText(concept.getId(), concept.cdoView()), 
-					SnomedIconProvider.getInstance().getIconComponentId(concept.getId()), 
-					CDOUtils.getStorageKey(concept), SnomedConceptIndexEntry.generateFlags(concept.isActive(), concept.isPrimitive(), concept.isExhaustive(), concept.isReleased()), 
-					null == concept.getEffectiveTime() ? EffectiveTimes.UNSET_EFFECTIVE_TIME : concept.getEffectiveTime().getTime());
+			indexEntry = SnomedConceptIndexEntry.builder()
+					.id(concept.getId())
+					.label(SnomedConceptNameProvider.INSTANCE.getText(concept.getId(), concept.cdoView())) 
+					.iconId(SnomedIconProvider.getInstance().getIconComponentId(concept.getId())) 
+					.moduleId(concept.getModule().getId()) 
+					.storageKey(CDOUtils.getStorageKey(concept))
+					.active(concept.isActive())
+					.primitive(concept.isPrimitive())
+					.exhaustive(concept.isExhaustive())
+					.released(concept.isReleased()) 
+					.effectiveTimeLong(concept.isSetEffectiveTime() ? concept.getEffectiveTime().getTime() : EffectiveTimes.UNSET_EFFECTIVE_TIME)
+					.build();
 			
-			return adapterType.cast(conceptMini);
+			return adapterType.cast(indexEntry);
 		}
 		
 		return null;

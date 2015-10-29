@@ -19,26 +19,34 @@ import com.b2international.snowowl.core.api.IComponentWithChildFlag;
 
 /**
  * Adds a boolean to {@link SnomedConceptIndexEntry} to indicate whether the concept has children.
- * 
  */
 public class SnomedConceptIndexEntryWithChildFlag extends SnomedConceptIndexEntry implements IComponentWithChildFlag<String> {
-	
+
 	private static final long serialVersionUID = -3327828639334867594L;
 
 	private final boolean hasChildren;
-	
-	public SnomedConceptIndexEntryWithChildFlag(SnomedConceptIndexEntry conceptIndexEntry, boolean hasChildren) {
-		super(conceptIndexEntry.getId(), conceptIndexEntry.getModuleId(), conceptIndexEntry.getLabel(), conceptIndexEntry.getIconId(), 
-			conceptIndexEntry.getStorageKey(), SnomedConceptIndexEntry.generateFlags(conceptIndexEntry.isActive(), conceptIndexEntry.isPrimitive(), 
-					conceptIndexEntry.isExhaustive(), conceptIndexEntry.isReleased()), conceptIndexEntry.getEffectiveTimeAsLong());
+
+	public SnomedConceptIndexEntryWithChildFlag(final SnomedConceptIndexEntry conceptIndexEntry, final boolean hasChildren) {
+
+		super(conceptIndexEntry.getId(), 
+				conceptIndexEntry.getLabel(), 
+				conceptIndexEntry.getIconId(), 
+				conceptIndexEntry.getModuleId(), 
+				conceptIndexEntry.getScore(),
+				conceptIndexEntry.getStorageKey(),
+				conceptIndexEntry.isReleased(),
+				conceptIndexEntry.isActive(),
+				conceptIndexEntry.getEffectiveTimeAsLong(),
+				conceptIndexEntry.isPrimitive(),
+				conceptIndexEntry.isExhaustive());
+
 		this.hasChildren = hasChildren;
 	}
-	
+
 	/**
-	 * @return true if the component has children, false otherwise
+	 * @return {@code true} if the component has children, {@code false} otherwise
 	 */
 	public boolean hasChildren() {
 		return hasChildren;
 	}
-	
 }
