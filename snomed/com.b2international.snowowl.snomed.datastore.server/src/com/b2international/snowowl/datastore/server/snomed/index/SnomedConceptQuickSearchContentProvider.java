@@ -51,6 +51,7 @@ import com.b2international.snowowl.snomed.datastore.index.SnomedDOIQueryAdapter;
 import com.b2international.snowowl.snomed.datastore.index.SnomedFuzzyQueryAdapter;
 import com.b2international.snowowl.snomed.datastore.index.SnomedIndexService;
 import com.b2international.snowowl.snomed.datastore.quicksearch.SnomedConceptQuickSearchProvider;
+import com.b2international.snowowl.snomed.datastore.services.SnomedConceptNameProvider;
 import com.google.common.base.Function;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Supplier;
@@ -61,7 +62,6 @@ import bak.pcj.LongCollection;
 
 /**
  * Server side, Net4j independent service for providing the SNOMED&nbsp;CT concepts as the content of quick search provider.
- *  
  * 
  * @see IQuickSearchContentProvider
  * @see IIndexServerService
@@ -71,23 +71,32 @@ public class SnomedConceptQuickSearchContentProvider extends AbstractQuickSearch
 
 	private static final class SnomedConceptConverterFunction implements Function<SnomedConceptIndexEntry, QuickSearchElement> {
 		
+		private final IBranchPath branchPath;
 		private final String queryExpression;
 		private final boolean approximate;
 		
-		private SnomedConceptConverterFunction(String queryExpression, boolean approximate) {
+		private SnomedConceptConverterFunction(IBranchPath branchPath, String queryExpression, boolean approximate) {
+			this.branchPath = branchPath;
 			this.queryExpression = queryExpression;
 			this.approximate = approximate;
 		}
 
 		@Override 
 		public QuickSearchElement apply(@Nullable final SnomedConceptIndexEntry input) {
+			final String label = getLabel(input.getId());
+			
 			return new CompactQuickSearchElement(
 					input.getId(), 
 					input.getIconId(), 
-					input.getLabel(), 
+					label, 
 					approximate,
-					getMatchRegions(queryExpression, input.getLabel()),
-					getSuffixes(queryExpression, input.getLabel()));
+					getMatchRegions(queryExpression, label),
+					getSuffixes(queryExpression, label));
+		}
+
+		private String getLabel(final String componentId) {
+			// TODO: this will be driven by the user's language preferences
+			return SnomedConceptNameProvider.INSTANCE.getComponentLabel(branchPath, componentId);
 		}
 	}
 
@@ -187,7 +196,7 @@ public class SnomedConceptQuickSearchContentProvider extends AbstractQuickSearch
 			approximateResults.addAll(searcher.search(branchPath, fuzzyAdapter, limit));
 		}
 		
-		return new QuickSearchContentResult(totalHitCount, convertToDTO(queryExpression, results, approximateResults));
+		return new QuickSearchContentResult(totalHitCount, convertToDTO(branchPath, queryExpression, results, approximateResults));
 	}
 
 	@Override
@@ -195,22 +204,21 @@ public class SnomedConceptQuickSearchContentProvider extends AbstractQuickSearch
 		return SnomedPackage.eINSTANCE;
 	}
 	
-	private List<QuickSearchElement> convertToDTO(final String queryExpression,
+	private List<QuickSearchElement> convertToDTO(final IBranchPath branchPath,
+			final String queryExpression,
 			final List<SnomedConceptIndexEntry> results,
 			final List<SnomedConceptIndexEntry> approximateResults) {
 
-		
-		
 		final List<QuickSearchElement> convertedItems = newArrayList();
 		final Set<String> conceptIds = Sets.newHashSetWithExpectedSize(results.size());
 		
-		final SnomedConceptConverterFunction exactConverter = new SnomedConceptConverterFunction(queryExpression, false);
+		final SnomedConceptConverterFunction exactConverter = new SnomedConceptConverterFunction(branchPath, queryExpression, false);
 		for (SnomedConceptIndexEntry concept : results) {
 			convertedItems.add(exactConverter.apply(concept));
 			conceptIds.add(concept.getId());
 		}
 		
-		final SnomedConceptConverterFunction approximateConverter = new SnomedConceptConverterFunction(queryExpression, true);
+		final SnomedConceptConverterFunction approximateConverter = new SnomedConceptConverterFunction(branchPath, queryExpression, true);
 		for (final SnomedConceptIndexEntry concept : approximateResults) {
 			if (!conceptIds.contains(concept.getId())) {
 				convertedItems.add(approximateConverter.apply(concept));
