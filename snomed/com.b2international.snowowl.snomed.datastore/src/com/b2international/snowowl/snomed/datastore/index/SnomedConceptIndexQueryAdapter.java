@@ -66,7 +66,6 @@ public abstract class SnomedConceptIndexQueryAdapter extends SnomedDslIndexQuery
 		
 		return SnomedConceptIndexEntry.builder()
 				.id(SnomedMappings.id().getValueAsString(doc))
-				.label(Mappings.label().getValue(doc))
 				.moduleId(SnomedMappings.module().getValueAsString(doc))
 				.storageKey(Mappings.storageKey().getValue(doc))
 				.active(SnomedMappings.active().getValue(doc) == 1) 

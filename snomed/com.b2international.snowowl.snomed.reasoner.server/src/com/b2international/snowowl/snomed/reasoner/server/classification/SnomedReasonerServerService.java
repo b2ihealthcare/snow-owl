@@ -457,7 +457,6 @@ public class SnomedReasonerServerService extends CollectingService<Reasoner, Cla
 			if (null == conceptIndexEntry) {
 				conceptIndexEntry = SnomedConceptIndexEntry.builder()
 						.id(conceptId)
-						.label(conceptId + " (unresolved)")
 						.iconId(Concepts.ROOT_CONCEPT) 
 						.moduleId(Concepts.MODULE_ROOT)
 						.storageKey(Long.MAX_VALUE) // XXX: set Long.MAX_VALUE storage key to never suggest it as a replacement	

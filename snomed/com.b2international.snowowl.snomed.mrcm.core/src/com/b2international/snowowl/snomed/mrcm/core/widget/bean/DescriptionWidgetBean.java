@@ -48,7 +48,6 @@ public class DescriptionWidgetBean extends LeafWidgetBean {
 	 */
 	public static final SnomedConceptIndexEntry PREFERRED_TERM_PLACEHOLDER = SnomedConceptIndexEntry.builder()
 			.id("225857101000154102") 
-			.label("Preferred term")
 			.iconId(Concepts.SYNONYM)
 			.moduleId(Concepts.MODULE_SCT_CORE)
 			.storageKey(0L)

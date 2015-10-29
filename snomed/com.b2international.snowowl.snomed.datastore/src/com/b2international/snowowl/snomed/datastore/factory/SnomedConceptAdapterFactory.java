@@ -24,7 +24,6 @@ import com.b2international.snowowl.snomed.Concept;
 import com.b2international.snowowl.snomed.datastore.SnomedClientTerminologyBrowser;
 import com.b2international.snowowl.snomed.datastore.SnomedConceptIndexEntry;
 import com.b2international.snowowl.snomed.datastore.SnomedIconProvider;
-import com.b2international.snowowl.snomed.datastore.services.SnomedConceptNameProvider;
 
 /**
  */
@@ -61,7 +60,6 @@ public class SnomedConceptAdapterFactory extends TypeSafeAdapterFactory {
 			
 			indexEntry = SnomedConceptIndexEntry.builder()
 					.id(concept.getId())
-					.label(SnomedConceptNameProvider.INSTANCE.getText(concept.getId(), concept.cdoView())) 
 					.iconId(SnomedIconProvider.getInstance().getIconComponentId(concept.getId())) 
 					.moduleId(concept.getModule().getId()) 
 					.storageKey(CDOUtils.getStorageKey(concept))

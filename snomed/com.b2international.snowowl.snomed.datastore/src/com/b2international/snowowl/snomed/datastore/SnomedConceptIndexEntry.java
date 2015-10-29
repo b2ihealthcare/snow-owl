@@ -36,7 +36,6 @@ public class SnomedConceptIndexEntry extends SnomedIndexEntry implements ICompon
 	public static class Builder {
 
 		private String id;
-		private String label;
 		private String iconId;
 		private String moduleId;
 		private long storageKey;
@@ -53,11 +52,6 @@ public class SnomedConceptIndexEntry extends SnomedIndexEntry implements ICompon
 
 		public Builder id(final String id) {
 			this.id = id;
-			return this;
-		}
-
-		public Builder label(final String label) {
-			this.label = label;
 			return this;
 		}
 
@@ -108,7 +102,6 @@ public class SnomedConceptIndexEntry extends SnomedIndexEntry implements ICompon
 
 		public SnomedConceptIndexEntry build() {
 			return new SnomedConceptIndexEntry(id, 
-					label, 
 					iconId, 
 					moduleId, 
 					score,
@@ -125,7 +118,6 @@ public class SnomedConceptIndexEntry extends SnomedIndexEntry implements ICompon
 	private final boolean exhaustive;
 
 	protected SnomedConceptIndexEntry(final String id, 
-			final String label, 
 			final String iconId, 
 			final String moduleId, 
 			final float score, 
@@ -137,7 +129,7 @@ public class SnomedConceptIndexEntry extends SnomedIndexEntry implements ICompon
 			final boolean exhaustive) {
 
 		super(id, 
-				label, 
+				id, // XXX: concept ID is the same as the label, client code requires localization
 				iconId, 
 				moduleId, 
 				score, 
@@ -183,6 +175,26 @@ public class SnomedConceptIndexEntry extends SnomedIndexEntry implements ICompon
 
 	@Override
 	public String toString() {
-		return getId() + " - " + getLabel() + " - " + this.isActive();
+		final StringBuilder builder = new StringBuilder();
+		builder.append("SnomedConceptIndexEntry [primitive=");
+		builder.append(primitive);
+		builder.append(", exhaustive=");
+		builder.append(exhaustive);
+		builder.append(", isReleased()=");
+		builder.append(isReleased());
+		builder.append(", isActive()=");
+		builder.append(isActive());
+		builder.append(", getEffectiveTimeAsLong()=");
+		builder.append(getEffectiveTimeAsLong());
+		builder.append(", getId()=");
+		builder.append(getId());
+		builder.append(", getScore()=");
+		builder.append(getScore());
+		builder.append(", getStorageKey()=");
+		builder.append(getStorageKey());
+		builder.append(", getIconId()=");
+		builder.append(getIconId());
+		builder.append("]");
+		return builder.toString();
 	}
 }

@@ -77,7 +77,6 @@ import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedMappings
 import com.b2international.snowowl.snomed.datastore.services.SnomedRefSetMemberNameProvider;
 import com.b2international.snowowl.snomed.datastore.services.SnomedRelationshipNameProvider;
 import com.google.common.base.Preconditions;
-import com.google.common.base.Strings;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableList.Builder;
@@ -137,7 +136,6 @@ public class SnomedServerTerminologyBrowser extends AbstractIndexTerminologyBrow
 		
 		return SnomedConceptIndexEntry.builder()
 				.id(SnomedMappings.id().getValueAsString(doc))
-				.label(Strings.nullToEmpty(Mappings.label().getValue(doc))) // TODO: workaround for missing labels 
 				.moduleId(SnomedMappings.module().getValueAsString(doc))
 				.storageKey(Mappings.storageKey().getValue(doc))
 				.active(SnomedMappings.active().getValue(doc) == 1) 
