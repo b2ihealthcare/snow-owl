@@ -22,7 +22,6 @@ import javax.annotation.Nullable;
 
 import org.eclipse.core.runtime.IProgressMonitor;
 
-import com.b2international.snowowl.core.api.ComponentIdAndLabel;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.api.IComponentWithChildFlag;
 
@@ -222,27 +221,6 @@ public interface ITerminologyBrowser<C, K> extends ExtendedComponentProvider, Su
 	 * @return the filtered snapshot of the current terminology.
 	 */
 	IFilterClientTerminologyBrowser<C, K> filterTerminologyBrowser(final IBranchPath branchPath, @Nullable final String expression, @Nullable final IProgressMonitor monitor);
-	
-	/**
-	 * Returns with the terminology dependent unique ID and the human readable label of a component specified by its unique storage key.
-	 * <br>This method could return with {@code null} if the component does not exist in the store on the specified branch.  
-	 * @param branchPath the branch path.
-	 * @param storageKey the primary storage key of the component
-	 * @return the {@link ComponentIdAndLabel ID and label pair} of a component. May return with {@code null} if the component does not exist in store.
-	 */
-	//TODO this method should be somewhere else.
-	@Nullable ComponentIdAndLabel getComponentIdAndLabel(final IBranchPath branchPath, final long storageKey);
-	
-	/**
-	 * Returns with the human readable label of a terminology independent component identified by its unique ID
-	 * from the given branch. This method may return with {@code null} if the component cannot be found on the 
-	 * specified branch with the given component ID.
-	 * @param branchPath the branch path uniquely identifying the branch where the lookup has to be performed.
-	 * @param componentId the terminology specific unique ID of the component.
-	 * @return the name/label of the component. Or {@code null} if the component cannot be found.
-	 */
-	//TODO this method should be somewhere else.
-	@Nullable String getComponentLabel(final IBranchPath branchPath, final String componentId);
 
 	Collection<IComponentWithChildFlag<K>> getSubTypesWithChildFlag(final IBranchPath branchPath, final C concept);
 

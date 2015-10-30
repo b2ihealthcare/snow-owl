@@ -184,28 +184,6 @@ public abstract class AbstractIndexTerminologyBrowser<E extends IIndexEntry> ext
 		return Mappings.parent().getValues(document);
 	}
 	
-	/**
-	 * Returns with the human readable label of a terminology independent component identified by its unique ID
-	 * from the given branch. This method may return with {@code null} if the component cannot be found on the 
-	 * specified branch with the given component ID.
-	 * @param branchPath the branch path uniquely identifying the branch where the lookup has to be performed.
-	 * @param componentId the terminology specific unique ID of the component.
-	 * @return the name/label of the component. Or {@code null} if the component cannot be found.
-	 */
-	@Override
-	@Nullable 
-	public String getComponentLabel(final IBranchPath branchPath, final String componentId) {
-		Preconditions.checkNotNull(branchPath, "Branch path argument cannot be null.");
-		Preconditions.checkNotNull(componentId, "Component ID argument cannot be null.");
-		final TopDocs topDocs = service.search(branchPath, getConceptByIdQueryBuilder(componentId), 1);
-		//cannot found matching label for component
-		if (null == topDocs || CompareUtils.isEmpty(topDocs.scoreDocs)) {
-			return null;
-		}
-		final Document doc = service.document(branchPath, topDocs.scoreDocs[0].doc, Mappings.fieldsToLoad().label().build());
-		return Mappings.label().getValue(doc);
-	}
-	
 	@Override
 	public E getConcept(final IBranchPath branchPath, final String conceptId) {
 		checkNotNull(branchPath, "Branch path must not be null.");
