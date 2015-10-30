@@ -22,6 +22,7 @@ import org.eclipse.core.runtime.IStatus;
 
 import com.b2international.commons.CompareUtils;
 import com.b2international.snowowl.core.ApplicationContext;
+import com.b2international.snowowl.core.api.ComponentIdAndLabel;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.api.IComponentNameProvider;
 import com.b2international.snowowl.snomed.Description;
@@ -32,16 +33,11 @@ import com.b2international.snowowl.snomed.datastore.index.SnomedDescriptionReduc
 import com.google.common.base.Preconditions;
 
 /**
- * Singleton class for providing a human readable label for SNOMED CT descriptions.
- * @see IComponentNameProvider
+ * Component name provider implementation for SNOMED CT descriptions.
  */
 public enum SnomedDescriptionNameProvider implements IComponentNameProvider {
 
-	/**
-	 * The label provider singleton for SNOMED CT descriptions.
-	 */
 	INSTANCE;
-	
 	
 	/**
 	 * Accepts the followings as argument:
@@ -54,10 +50,6 @@ public enum SnomedDescriptionNameProvider implements IComponentNameProvider {
 	 * </ul>
 	 * </p>
 	 */
-	/* (non-Javadoc)
-	 * @see com.b2international.snowowl.core.api.IComponentNameProvider#getText(java.lang.Object)
-	 */
-	@Override
 	public String getText(final Object object) {
 		if (object instanceof Description) {
 			final Description description = (Description) object;
@@ -76,36 +68,33 @@ public enum SnomedDescriptionNameProvider implements IComponentNameProvider {
 		return null == object ? "" : String.valueOf(object);
 	}
 
-	/* (non-Javadoc)
-	 * @see com.b2international.snowowl.core.api.IComponentNameProvider#getComponentLabel(com.b2international.snowowl.core.api.IBranchPath, java.lang.String)
-	 */
 	@Override
 	public String getComponentLabel(final IBranchPath branchPath, final String componentId) {
-		
 		Preconditions.checkNotNull(branchPath, "Branch path argument cannot be null.");
 		Preconditions.checkNotNull(componentId, "Component ID argument cannot be null.");
 		
 		return ApplicationContext.getInstance().getService(ISnomedComponentService.class).getLabels(branchPath, componentId)[0];
 	}
 	
-	/*execute the Lucene query*/
+	// TODO
+	@Override
+	public ComponentIdAndLabel getComponentIdAndLabel(IBranchPath branchPath, long storageKey) {
+		return null;
+	}
+	
 	private List<SnomedDescriptionIndexEntry> executeQuery(final SnomedClientIndexService indexSearcher, final SnomedDescriptionIndexQueryAdapter queryBuilder) {
 		return indexSearcher.search(queryBuilder, 1);
 	}
 
-	/*returns true if the passed in collection is not empty or null*/
 	private boolean isValidResult(final Collection<SnomedDescriptionIndexEntry> result) {
 		return !CompareUtils.isEmpty(result);
 	}
 
-	/*creates a query adapter to search for description by ID*/
 	private SnomedDescriptionIndexQueryAdapter createQueryAdapter(final Object element) {
 		return new SnomedDescriptionReducedQueryAdapter((String) element, SnomedDescriptionReducedQueryAdapter.SEARCH_DESCRIPTION_ID);
 	}
 
-	/*returns with the Lucene index service instance*/
 	private SnomedClientIndexService getIndexService() {
 		return ApplicationContext.getInstance().getService(SnomedClientIndexService.class);
 	}
-
 }

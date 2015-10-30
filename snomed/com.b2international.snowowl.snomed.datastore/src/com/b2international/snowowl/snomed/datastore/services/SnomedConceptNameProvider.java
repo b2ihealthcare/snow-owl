@@ -32,6 +32,7 @@ import org.eclipse.emf.cdo.view.CDOView;
 import com.b2international.commons.StringUtils;
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.CoreTerminologyBroker;
+import com.b2international.snowowl.core.api.ComponentIdAndLabel;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.api.IComponent;
 import com.b2international.snowowl.core.api.IComponentNameProvider;
@@ -44,7 +45,6 @@ import com.b2international.snowowl.snomed.datastore.ILanguageConfigurationProvid
 import com.b2international.snowowl.snomed.datastore.SnomedClientTerminologyBrowser;
 import com.b2international.snowowl.snomed.datastore.SnomedConceptIndexEntry;
 import com.b2international.snowowl.snomed.datastore.SnomedConceptLookupService;
-import com.b2international.snowowl.snomed.datastore.SnomedTerminologyBrowser;
 import com.b2international.snowowl.snomed.datastore.index.SnomedClientIndexService;
 import com.b2international.snowowl.snomed.datastore.index.SnomedDescriptionIndexEntry;
 import com.b2international.snowowl.snomed.datastore.index.SnomedDescriptionIndexQueryAdapter;
@@ -52,23 +52,14 @@ import com.b2international.snowowl.snomed.datastore.index.refset.SnomedRefSetInd
 import com.b2international.snowowl.snomed.snomedrefset.SnomedLanguageRefSetMember;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSet;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetMember;
-import com.google.common.base.Preconditions;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Sets;
 
 /**
- * Singleton for retrieving a human readable label for SNOMED CT concepts.
- * <p>
- * 
- * 
- * 
- * @see IComponentNameProvider
+ * Component name provider implementation for SNOMED CT concepts.
  */
 public enum SnomedConceptNameProvider implements IComponentNameProvider {
 
-	/**
-	 * The headless label provider instance for the SNOMED CT concepts.
-	 */
 	INSTANCE;
 	
 	/**
@@ -85,25 +76,21 @@ public enum SnomedConceptNameProvider implements IComponentNameProvider {
 	 * </ul>
 	 * </p>
 	 */
-	/* (non-Javadoc)
-	 * @see com.b2international.snowowl.core.api.IComponentNameProvider#getText(java.lang.Object)
-	 */
-	@Override
 	public String getText(final Object object) {
 		final String label = getConceptLabel(object);
 		return null == label ? null == object ? "" : String.valueOf(object) : label;
 	}
 	
-	/* (non-Javadoc)
-	 * @see com.b2international.snowowl.core.api.IComponentNameProvider#getComponentLabel(com.b2international.snowowl.core.api.IBranchPath, java.lang.String)
-	 */
+	// TODO
 	@Override
 	public String getComponentLabel(final IBranchPath branchPath, final String componentId) {
-		
-		Preconditions.checkNotNull(branchPath, "Branch path argument cannot be null.");
-		Preconditions.checkNotNull(componentId, "Component ID argument cannot be null.");
-		
-		return ApplicationContext.getInstance().getService(SnomedTerminologyBrowser.class).getComponentLabel(branchPath, componentId);
+		return null;
+	}
+	
+	// TODO
+	@Override
+	public ComponentIdAndLabel getComponentIdAndLabel(IBranchPath branchPath, long storageKey) {
+		return null;
 	}
 	
 	/**
