@@ -248,7 +248,7 @@ public class RefSetMemberDeltaBuilder extends SnomedConceptDeltaBuilder {
 			
 			final SnomedRefSetMember member = (SnomedRefSetMember) object;
 			final String referencedComponentId = member.getReferencedComponentId();
-			final String label = referencedComponentNameProvider.getText(referencedComponentId);
+			final String label = referencedComponentNameProvider.getComponentLabel(getBranchPath(), referencedComponentId);
 			final long cdoId = CDOIDUtils.asLong(member.cdoID());
 			
 				final HierarchicalComponentDelta delta = new HierarchicalComponentDelta(
@@ -298,29 +298,22 @@ public class RefSetMemberDeltaBuilder extends SnomedConceptDeltaBuilder {
 							getCodeSystemOID(targetComponentType));
 					
 					put(new CompositeComponentDelta(delta, target));
-					
-				
 			}
-			
 		}
-		
-		
 	}
 
 	
 	private String getComponentLabel(final String targetComponentId) {
 		return CoreTerminologyBroker.UNSPECIFIED_NUMBER_SHORT == targetComponentType 
-				? targetComponentNameProvider.getText(targetComponentId) 
-						: targetComponentNameProvider.getComponentLabel(targetComponentBranchPathSupplier.get(), targetComponentId);
+				? targetComponentId 
+				: targetComponentNameProvider.getComponentLabel(targetComponentBranchPathSupplier.get(), targetComponentId);
 	}
-
 
 	private String getComponentIconId(final String targetComponentId) {
 		return CoreTerminologyBroker.UNSPECIFIED_NUMBER_SHORT == targetComponentType
 				? targetComponentId
 				: targetComponentIconIdProvider.getIconId(BranchPointUtils.create(targetComponentRepositoryUuid, targetComponentBranchPathSupplier.get()), targetComponentId);
 	}
-
 	
 	/*collapses the taxonomy built among the components to have the same as we have in reference set editors*/
 	private void collapseTaxonomy() {
@@ -358,12 +351,8 @@ public class RefSetMemberDeltaBuilder extends SnomedConceptDeltaBuilder {
 				
 				delta.getChildren().clear();
 				remove(delta);
-				
 			}
-			
 		}
-
-		
 	}
 	
 	/*collects and returns with a collection of all deltas that has to be removed*/
@@ -484,6 +473,4 @@ public class RefSetMemberDeltaBuilder extends SnomedConceptDeltaBuilder {
 		return CoreTerminologyBroker.getInstance().getComponentIconIdProvider(_terminologyComponentId);
 		
 	}
-	
-
 }

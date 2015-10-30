@@ -33,9 +33,6 @@ import org.eclipse.emf.cdo.view.CDOView;
 import org.eclipse.emf.ecore.EPackage;
 import org.eclipse.emf.spi.cdo.FSMUtil;
 
-import bak.pcj.LongIterator;
-import bak.pcj.set.LongSet;
-
 import com.b2international.commons.StringUtils;
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.ComponentIdentifierPair;
@@ -74,6 +71,9 @@ import com.b2international.snowowl.snomed.snomedrefset.SnomedSimpleMapRefSetMemb
 import com.b2international.snowowl.snomed.snomedrefset.SnomedStructuralRefSet;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
+
+import bak.pcj.LongIterator;
+import bak.pcj.set.LongSet;
 
 /**
  * SNOMED CT reference set editing context. Delegates to {@link SnomedEditingContext} to persist the identifier concept when persisting a
@@ -553,7 +553,7 @@ public class SnomedRefSetEditingContext extends BaseSnomedEditingContext {
 		// No label given up front, extract label from referenced component. Use regular name providers if the referenced component is not a relationship
 		if (!SnomedTerminologyComponentConstants.RELATIONSHIP.equals(referencedComponentPair.getTerminologyComponentId())) {
 			final IComponentNameProvider nameProvider = getNameProvider(referencedComponentPair);
-			return nameProvider.getText(referencedComponentPair.getComponentId());
+			return nameProvider.getComponentLabel(BranchPathUtils.createPath(transaction), referencedComponentPair.getComponentId());
 		}			
 			
 		// Look up relationship
