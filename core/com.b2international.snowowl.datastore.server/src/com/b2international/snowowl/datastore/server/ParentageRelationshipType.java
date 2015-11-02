@@ -20,9 +20,9 @@ package com.b2international.snowowl.datastore.server;
  */
 public enum ParentageRelationshipType {
 	
-	STATED("stated"),
-	INFERRED("inferred"),
-	ANY("any");
+	STATED("Stated"),
+	INFERRED("Inferred"),
+	ANY("Any");
 	
 	private String displayName;
 
