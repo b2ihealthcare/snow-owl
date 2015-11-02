@@ -17,14 +17,14 @@ package com.b2international.snowowl.datastore.server.snomed.jobs;
 
 import com.b2international.snowowl.datastore.server.snomed.SnomedDatastoreServerActivator;
 import com.b2international.snowowl.datastore.server.snomed.index.SnomedServerPredicateBrowser;
-import com.b2international.snowowl.datastore.serviceconfig.BrowserConfigJob;
+import com.b2international.snowowl.datastore.serviceconfig.IndexServiceTrackingConfigJob;
 import com.b2international.snowowl.snomed.datastore.SnomedPredicateBrowser;
 import com.b2international.snowowl.snomed.datastore.index.SnomedIndexService;
 
 /**
  * Job for initializing and registering predicate browser service for SNOMED&nbsp;CT ontology on the server side.
  */
-public class SnomedServerPredicateBrowserConfigJob extends BrowserConfigJob<SnomedPredicateBrowser, SnomedIndexService> {
+public class SnomedServerPredicateBrowserConfigJob extends IndexServiceTrackingConfigJob<SnomedPredicateBrowser, SnomedIndexService> {
 
 	/**
 	 * Creates a new job instance to register predicate browser service for SNOMED&nbsp;CT ontology on the server side.
@@ -37,7 +37,7 @@ public class SnomedServerPredicateBrowserConfigJob extends BrowserConfigJob<Snom
 	 * @see com.b2international.snowowl.datastore.serviceconfig.BrowserConfigJob#getBrowserClass()
 	 */
 	@Override
-	protected Class<SnomedPredicateBrowser> getBrowserClass() {
+	protected Class<SnomedPredicateBrowser> getTargetServiceClass() {
 		return SnomedPredicateBrowser.class;
 	}
 
@@ -53,7 +53,7 @@ public class SnomedServerPredicateBrowserConfigJob extends BrowserConfigJob<Snom
 	 * @see com.b2international.snowowl.datastore.serviceconfig.BrowserConfigJob#createBrowser(com.b2international.snowowl.core.api.index.IIndexService)
 	 */
 	@Override
-	protected SnomedPredicateBrowser createBrowser(final SnomedIndexService indexService) {
+	protected SnomedPredicateBrowser createServiceImplementation(final SnomedIndexService indexService) {
 		return new SnomedServerPredicateBrowser(indexService);
 	}
 
