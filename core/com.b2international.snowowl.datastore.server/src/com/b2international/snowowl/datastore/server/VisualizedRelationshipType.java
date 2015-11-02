@@ -18,7 +18,7 @@ package com.b2international.snowowl.datastore.server;
 /**
  * The relationship types to distinguish when building trees
  */
-public enum ParentageRelationshipType {
+public enum VisualizedRelationshipType {
 	
 	STATED("Stated"),
 	INFERRED("Inferred"),
@@ -26,7 +26,7 @@ public enum ParentageRelationshipType {
 	
 	private String displayName;
 
-	private ParentageRelationshipType(String displayName) {
+	private VisualizedRelationshipType(String displayName) {
 		this.displayName = displayName;
 	}
 
