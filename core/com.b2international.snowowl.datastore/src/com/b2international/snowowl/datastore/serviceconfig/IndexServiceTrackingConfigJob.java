@@ -25,25 +25,22 @@ import com.b2international.snowowl.core.config.ClientPreferences;
 import com.b2international.snowowl.rpc.RpcSession;
 import com.b2international.snowowl.rpc.RpcUtil;
 
-/**
- */
-public abstract class BrowserConfigJob<T, I extends IIndexService<?>> extends ServiceConfigJob {
+public abstract class IndexServiceTrackingConfigJob<T, I extends IIndexService<?>> extends ServiceConfigJob {
 
-	protected BrowserConfigJob(final String name, final Object family) {
+	protected IndexServiceTrackingConfigJob(final String name, final Object family) {
 		super(name, family);
 	}
 	
-	protected abstract Class<T> getBrowserClass();
+	protected abstract Class<T> getTargetServiceClass();
 	
 	protected abstract Class<I> getIndexServiceClass();
 	
-	protected abstract T createBrowser(I indexService);
+	protected abstract T createServiceImplementation(I indexService);
 	
 	@Override
 	protected boolean initService() throws SnowowlServiceException {
 		
 		final ClientPreferences clientConfiguration = ApplicationContext.getInstance().getService(ClientPreferences.class);
-		
 		if (!clientConfiguration.isClientEmbedded()) {
 			return false;
 		}
@@ -52,16 +49,13 @@ public abstract class BrowserConfigJob<T, I extends IIndexService<?>> extends Se
 		ApplicationContext.getInstance().addServiceListener(getIndexServiceClass(), new IServiceChangeListener<I>() {
 			@Override public void serviceChanged(final I oldService, final I newService) {
 				//null can be the newService while un-registering an existing service.
-				final T impl = null == newService ? null : createBrowser(newService);
-				ApplicationContext.getInstance().registerService(getBrowserClass(), impl);
+				final T impl = null == newService ? null : createServiceImplementation(newService);
+				ApplicationContext.getInstance().registerService(getTargetServiceClass(), impl);
 				
 				if (null != impl) {
-				
 					final RpcSession session = RpcUtil.getInitialServerSession(IPluginContainer.INSTANCE);
-					session.registerClassLoader(getBrowserClass(), impl.getClass().getClassLoader());
-					
+					session.registerClassLoader(getTargetServiceClass(), impl.getClass().getClassLoader());
 				}
-				
 			}
 		});
 		
