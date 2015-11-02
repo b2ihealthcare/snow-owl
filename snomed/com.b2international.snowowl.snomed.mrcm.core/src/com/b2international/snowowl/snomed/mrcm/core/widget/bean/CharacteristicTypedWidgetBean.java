@@ -21,8 +21,8 @@ package com.b2international.snowowl.snomed.mrcm.core.widget.bean;
 public interface CharacteristicTypedWidgetBean {
 
 	/**
-	 * Returns the widget bean's characteristic type
-	 * @return
+	 * Returns the widget bean's characteristic type id
+	 * @return characteristic type id
 	 */
 	String getSelectedCharacteristicTypeId();
 
