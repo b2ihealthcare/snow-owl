@@ -27,7 +27,10 @@ import com.b2international.snowowl.snomed.mrcm.core.widget.model.DataTypeWidgetM
 import com.google.common.base.Strings;
 import com.google.common.collect.Iterables;
 
-public class DataTypeWidgetBean extends LeafWidgetBean implements Serializable {
+/**
+ * Bean to back data type widget
+ */
+public class DataTypeWidgetBean extends LeafWidgetBean implements Serializable, CharacteristicTypedWidgetBean {
 
 	private static final long serialVersionUID = -6852248209336970236L;
 
@@ -226,6 +229,14 @@ public class DataTypeWidgetBean extends LeafWidgetBean implements Serializable {
 		} else {
 			throw new IllegalArgumentException("The given dataType is not a boolean.");
 		}
+	}
+
+	/* (non-Javadoc)
+	 * @see com.b2international.snowowl.snomed.mrcm.core.widget.bean.CharacteristicTypedWidgetBean#getSelectedCharacteristicTypeId()
+	 */
+	@Override
+	public String getSelectedCharacteristicTypeId() {
+		return characteristicTypeId;
 	}
 	
 }
