@@ -19,6 +19,10 @@ import static org.springframework.hateoas.mvc.ControllerLinkBuilder.linkTo;
 
 import java.net.URI;
 import java.security.Principal;
+import java.util.Collections;
+
+import com.b2international.snowowl.api.domain.IComponentRef;
+import com.b2international.snowowl.snomed.api.domain.browser.ISnomedBrowserConcept;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -27,6 +31,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -51,6 +56,8 @@ import com.wordnik.swagger.annotations.ApiOperation;
 import com.wordnik.swagger.annotations.ApiParam;
 import com.wordnik.swagger.annotations.ApiResponse;
 import com.wordnik.swagger.annotations.ApiResponses;
+
+import javax.servlet.http.HttpServletRequest;
 
 /**
  * @since 1.0
@@ -184,6 +191,39 @@ public class SnomedClassificationRestService extends AbstractSnomedRestService {
 
 		final IRelationshipChangeList relationshipChangeList = delegate.getRelationshipChanges(branchPath, classificationId, principal.getName(), offset, limit);
 		return PageableCollectionResource.of(relationshipChangeList.getChanges(), offset, limit, relationshipChangeList.getTotal());
+	}
+
+	@ApiOperation(
+			value="Retrieve a preview of a concept with classification changes applied",
+			notes="Retrieves a preview of single concept and related information on a branch with classification changes applied.")
+	@ApiResponses({
+			@ApiResponse(code = 200, message = "OK", response = Void.class),
+			@ApiResponse(code = 404, message = "Code system version or concept not found")
+	})
+	@RequestMapping(value="/{path:**}/classifications/{classificationId}/concept-preview/{conceptId}", method=RequestMethod.GET)
+	public @ResponseBody
+	ISnomedBrowserConcept getConceptDetails(
+			@ApiParam(value="The branch path")
+			@PathVariable(value="path")
+			final String branchPath,
+
+			@ApiParam(value="The classification identifier")
+			@PathVariable(value="classificationId")
+			final String classificationId,
+
+			@ApiParam(value="The concept identifier")
+			@PathVariable(value="conceptId")
+			final String conceptId,
+
+			@ApiParam(value="Language codes and reference sets, in order of preference")
+			@RequestHeader(value="Accept-Language", defaultValue="en-US;q=0.8,en-GB;q=0.6", required=false)
+			final String languageSetting,
+
+			final Principal principal,
+
+			final HttpServletRequest request) {
+
+		return delegate.getConceptPreview(branchPath, classificationId, conceptId, Collections.list(request.getLocales()), principal.getName());
 	}
 
 	@ApiOperation(
