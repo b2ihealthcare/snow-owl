@@ -390,6 +390,11 @@
             id="com.b2international.snowowl.snomed.datastore.serviceconfig.SnomedDescriptionLabelProviderClientServiceConfigJob"
             terminologyId="com.b2international.snowowl.terminology.snomed">
       </serviceConfigJob>
+      <serviceConfigJob
+            class="com.b2international.snowowl.snomed.datastore.serviceconfig.SnomedStatedClientTerminologyBrowserConfigJob"
+            id="com.b2international.snowowl.snomed.datastore.serviceconfig.SnomedStatedClientTerminologyBrowserConfigJob"
+            terminologyId="com.b2international.snowowl.terminology.snomed">
+      </serviceConfigJob>
    </extension>
    <extension
          point="com.b2international.snowowl.datastore.revisionCacheWarmerJob">

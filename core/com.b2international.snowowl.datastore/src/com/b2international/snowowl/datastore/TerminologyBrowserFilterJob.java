@@ -132,6 +132,8 @@ public abstract class TerminologyBrowserFilterJob<K, C extends IComponent<K>> ex
 	 * Set of callbacks listening for notifications if the number of matching search results exceeds a specified threshold level. 
 	 */
 	private final Set<IFilterJobCallback> callbacks;
+
+	private IClientTerminologyBrowser<C, K> terminologyBrowser;
 	
 	/**
 	 * Creates a new terminology browser filter job.
@@ -178,6 +180,10 @@ public abstract class TerminologyBrowserFilterJob<K, C extends IComponent<K>> ex
 	 */
 	public FilterJobState getJobState() {
 		return state;
+	}
+
+	public void setTerminologyBrowser(IClientTerminologyBrowser<C, K> terminologyBrowser) {
+		this.terminologyBrowser = terminologyBrowser;
 	}
 
 	/* (non-Javadoc)
@@ -270,8 +276,9 @@ public abstract class TerminologyBrowserFilterJob<K, C extends IComponent<K>> ex
 	 */
 	@SuppressWarnings("unchecked")
 	protected IClientTerminologyBrowser<C, K> getTerminologyBrowser() {
-		return (IClientTerminologyBrowser<C, K>) CoreTerminologyBroker.getInstance()
-				.getTerminologyBrowserFactory(terminologyComponentId).getTerminologyBrowser();
+		if (terminologyBrowser == null) {
+			terminologyBrowser = (IClientTerminologyBrowser<C, K>) CoreTerminologyBroker.getInstance().getTerminologyBrowserFactory(terminologyComponentId).getTerminologyBrowser();
+		}
+		return terminologyBrowser;
 	}
-
 }

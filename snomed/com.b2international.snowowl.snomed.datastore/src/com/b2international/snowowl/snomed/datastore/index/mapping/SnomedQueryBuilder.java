@@ -51,8 +51,24 @@ public class SnomedQueryBuilder extends QueryBuilderBase<SnomedQueryBuilder> {
 		return addToQuery(SnomedMappings.parent(), value);
 	}
 	
+	public final SnomedQueryBuilder parent(String value, String characteristicTypeId) {
+		return field(SnomedMappings.parent(characteristicTypeId).fieldName(), Long.valueOf(value));
+	}
+	
+	public final SnomedQueryBuilder parent(Long value, String characteristicTypeId) {
+		return field(SnomedMappings.parent(characteristicTypeId).fieldName(), Long.valueOf(value));
+	}
+
 	public SnomedQueryBuilder ancestor(Long value) {
 		return addToQuery(SnomedMappings.ancestor(), value);
+	}
+	
+	public final SnomedQueryBuilder ancestor(String value, String characteristicTypeId) {
+		return field(SnomedMappings.ancestor(characteristicTypeId).fieldName(), Long.valueOf(value));
+	}
+	
+	public final SnomedQueryBuilder ancestor(Long value, String characteristicTypeId) {
+		return field(SnomedMappings.ancestor(characteristicTypeId).fieldName(), Long.valueOf(value));
 	}
 
 	public SnomedQueryBuilder memberRefSetType(SnomedRefSetType type) {
