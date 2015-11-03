@@ -52,7 +52,7 @@ import com.b2international.commons.ReflectionUtils;
 import com.b2international.snowowl.core.api.BranchPath;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.api.index.IndexException;
-import com.b2international.snowowl.datastore.index.DelimiterStopAnalyzer;
+import com.b2international.snowowl.datastore.index.DelimiterAnalyzer;
 import com.b2international.snowowl.datastore.index.DocumentUpdater;
 import com.b2international.snowowl.datastore.index.IndexUtils;
 import com.b2international.snowowl.datastore.index.NullSearcherManager;
@@ -368,7 +368,7 @@ public class IndexBranchService implements Closeable {
 	}
 
 	private IndexWriter createIndexWriter(final boolean commitIfEmpty) throws IOException {
-		final Analyzer analyzer = new DelimiterStopAnalyzer();
+		final Analyzer analyzer = new DelimiterAnalyzer();
 		final IndexWriterConfig config = new IndexWriterConfig(Version.LUCENE_4_9, analyzer);
 		config.setOpenMode(OpenMode.CREATE_OR_APPEND);
 

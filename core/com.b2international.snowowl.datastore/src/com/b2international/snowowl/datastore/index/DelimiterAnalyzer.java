@@ -19,21 +19,15 @@ import java.io.Reader;
 
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.Tokenizer;
-import org.apache.lucene.analysis.core.StopFilter;
-import org.apache.lucene.analysis.util.CharArraySet;
-import org.apache.lucene.util.Version;
-
-import com.b2international.snowowl.core.TextConstants;
 
 /**
- * A Lucene-based analyzer that uses {@link DelimiterTokenizer} to tokenize items, then runs {@link StopFilter} to remove stopwords.
- *
+ * A Lucene-based analyzer that uses {@link DelimiterTokenizer} to tokenize items.
  */
-public final class DelimiterStopAnalyzer extends Analyzer {
+public final class DelimiterAnalyzer extends Analyzer {
 
 	@Override
-	protected TokenStreamComponents createComponents(String fieldName, Reader reader) {
-	    final Tokenizer source = new DelimiterTokenizer(reader);
-	    return new TokenStreamComponents(source, new StopFilter(Version.LUCENE_4_9, source, new CharArraySet(Version.LUCENE_4_9, TextConstants.STOPWORDS, true)));
+	protected TokenStreamComponents createComponents(final String fieldName, final Reader reader) {
+		final Tokenizer source = new DelimiterTokenizer(reader);
+		return new TokenStreamComponents(source);
 	}
 }

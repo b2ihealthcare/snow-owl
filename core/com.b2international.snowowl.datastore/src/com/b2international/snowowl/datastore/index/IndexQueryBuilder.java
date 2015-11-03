@@ -118,7 +118,7 @@ public class IndexQueryBuilder {
 	private boolean done = false;
 	
 	public IndexQueryBuilder() {
-		this(new DelimiterStopAnalyzer());
+		this(new DelimiterAnalyzer());
 	}
 	
 	public IndexQueryBuilder(final Analyzer analyzer) {
