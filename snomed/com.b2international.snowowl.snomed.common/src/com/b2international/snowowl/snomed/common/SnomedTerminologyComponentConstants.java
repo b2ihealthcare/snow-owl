@@ -62,6 +62,7 @@ public abstract class SnomedTerminologyComponentConstants {
 	 * Fake terminology component type ID for predicates.
 	 * <br>ID: {@value}. 
 	 */
+	public static final String PREDICATE_TYPE = "com.b2international.snowowl.terminology.snomed.predicate";
 	public static final int PREDICATE_TYPE_ID = 999;
 	
 	private static final Pattern PATTERN = Pattern.compile("^\\d*$");

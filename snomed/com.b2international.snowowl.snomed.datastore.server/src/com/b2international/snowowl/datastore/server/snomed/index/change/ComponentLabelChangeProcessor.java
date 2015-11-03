@@ -102,7 +102,12 @@ public class ComponentLabelChangeProcessor extends ChangeSetProcessorBase<Snomed
 		this.labelCache = CacheBuilder.newBuilder().build(new CacheLoader<String, String>() {
 			@Override
 			public String load(String key) throws Exception {
-				return componentService.getLabels(getBranchPath(), key)[0];
+				final String label = componentService.getLabels(getBranchPath(), key)[0];
+				if (Strings.isNullOrEmpty(label)) {
+					return key;
+				} else {
+					return label;
+				}
 			}
 		});
 	}

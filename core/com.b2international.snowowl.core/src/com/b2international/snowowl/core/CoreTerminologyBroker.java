@@ -43,6 +43,7 @@ import com.b2international.snowowl.core.api.IMappingSetMembershipLookupService;
 import com.b2international.snowowl.core.api.INameProviderFactory;
 import com.b2international.snowowl.core.api.IRefSetMembershipLookupService;
 import com.b2international.snowowl.core.api.ISearchResultProvider;
+import com.b2international.snowowl.core.api.ITerminologyComponentIdProvider;
 import com.b2international.snowowl.core.api.IValueSetMembershipLookupService;
 import com.b2international.snowowl.core.api.browser.IClientTerminologyBrowser;
 import com.b2international.snowowl.core.api.browser.IClientTerminologyBrowserFactory;
@@ -267,6 +268,8 @@ public class CoreTerminologyBroker {
 			return terminologyComponentId;
 		} else if (object instanceof ExtendedComponent) {
 			return getTerminologyComponentId(((ExtendedComponent) object).getTerminologyComponentId());
+		} else if (object instanceof ITerminologyComponentIdProvider) {
+			return ((ITerminologyComponentIdProvider) object).getTerminologyComponentId();
 		}
 
 		for (final IConfigurationElement element : Platform.getExtensionRegistry().getConfigurationElementsFor(REPRESENTATION_EXTENSION_POINT_ID)) {

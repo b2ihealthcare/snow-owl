@@ -44,6 +44,8 @@ import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Multimap;
 
+import bak.pcj.set.LongSet;
+
 /**
  * @since 4.3
  */
@@ -51,10 +53,12 @@ public class ConstraintChangeProcessor extends ChangeSetProcessorBase<SnomedDocu
 
 	private IBranchPath branchPath;
 	private SnomedPredicateBrowser constraintService;
+	private LongSet allConceptIds;
 
-	public ConstraintChangeProcessor(IBranchPath branchPath) {
+	public ConstraintChangeProcessor(IBranchPath branchPath, LongSet allConceptIds) {
 		super("predicate changes");
 		this.branchPath = branchPath;
+		this.allConceptIds = allConceptIds;
 		this.constraintService = ApplicationContext.getInstance().getServiceChecked(SnomedPredicateBrowser.class);
 	}
 
@@ -109,13 +113,15 @@ public class ConstraintChangeProcessor extends ChangeSetProcessorBase<SnomedDocu
 		}
 		
 		for (String conceptId : conceptToPredicateKeys.keySet()) {
-			final Collection<String> predicateKeys = FluentIterable.from(conceptToPredicateKeys.get(conceptId)).transform(new Function<ConstraintDomain, String>() {
-				@Override
-				public String apply(ConstraintDomain input) {
-					return input.getPredicateKey();
-				}
-			}).toSet();
-			registerUpdate(conceptId, new ComponentConstraintUpdater(conceptId, predicateKeys));
+			if (allConceptIds.contains(Long.parseLong(conceptId))) {
+				final Collection<String> predicateKeys = FluentIterable.from(conceptToPredicateKeys.get(conceptId)).transform(new Function<ConstraintDomain, String>() {
+					@Override
+					public String apply(ConstraintDomain input) {
+						return input.getPredicateKey();
+					}
+				}).toSet();
+				registerUpdate(conceptId, new ComponentConstraintUpdater(conceptId, predicateKeys));
+			}
 		}
 	}
 
