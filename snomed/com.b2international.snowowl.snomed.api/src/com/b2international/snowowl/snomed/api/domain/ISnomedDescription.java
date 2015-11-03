@@ -17,6 +17,8 @@ package com.b2international.snowowl.snomed.api.domain;
 
 import java.util.Map;
 
+import com.google.common.collect.Multimap;
+
 /**
  * Represents a SNOMED CT description.
  * <p>
@@ -74,5 +76,13 @@ public interface ISnomedDescription extends ISnomedComponent {
 	 * @return the inactivation reason for this description, or {@code null} if the description is still active, or no
 	 * reason has been given
 	 */
-	DescriptionInactivationIndicator getDescriptionInactivationIndicator();
+	DescriptionInactivationIndicator getInactivationIndicator();
+	
+	/**
+	 * Returns association reference set member targets keyed by the association type.
+	 * 
+	 * @return related association targets, or {@code null} if the description is still active
+	 */
+	Multimap<AssociationType, String> getAssociationTargets();
+
 }

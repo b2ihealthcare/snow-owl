@@ -18,15 +18,20 @@ package com.b2international.snowowl.snomed.api.rest.components;
 import static com.b2international.snowowl.datastore.BranchPathUtils.createMainPath;
 import static com.b2international.snowowl.datastore.BranchPathUtils.createPath;
 import static com.b2international.snowowl.snomed.api.rest.SnomedComponentApiAssert.*;
-import static org.hamcrest.CoreMatchers.equalTo;
+import static com.google.common.collect.Lists.newArrayList;
+import static org.hamcrest.CoreMatchers.*;
 
 import java.util.Map;
 
 import org.junit.Test;
 
 import com.b2international.snowowl.core.api.IBranchPath;
+import com.b2international.snowowl.datastore.BranchPathUtils;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
+import com.b2international.snowowl.snomed.api.domain.AssociationType;
 import com.b2international.snowowl.snomed.api.domain.CaseSignificance;
+import com.b2international.snowowl.snomed.api.domain.DescriptionInactivationIndicator;
+import com.b2international.snowowl.snomed.api.domain.InactivationIndicator;
 import com.b2international.snowowl.snomed.api.rest.AbstractSnomedApiTest;
 import com.b2international.snowowl.snomed.api.rest.SnomedApiTestConstants;
 import com.b2international.snowowl.snomed.api.rest.SnomedComponentType;
@@ -87,13 +92,13 @@ public class SnomedDescriptionApiTest extends AbstractSnomedApiTest {
 
 	@Test
 	public void createDescriptionWithNonExistentConcept() {
-		final Map<?, ?> requestBody = createRequestBody("1", "Rare disease", Concepts.MODULE_SCT_CORE, Concepts.SYNONYM, "New description with a non-existent concept ID");		
+		final Map<?, ?> requestBody = createRequestBody("1", "Rare disease", Concepts.MODULE_SCT_CORE, Concepts.SYNONYM, "New description with a non-existent concept ID");
 		assertComponentNotCreated(createMainPath(), SnomedComponentType.DESCRIPTION, requestBody);
 	}
 
 	@Test
 	public void createDescriptionWithNonexistentType() {
-		final Map<?, ?> requestBody = createRequestBody(DISEASE, "Rare disease", Concepts.MODULE_SCT_CORE, "2", "New description with a non-existent type ID");		
+		final Map<?, ?> requestBody = createRequestBody(DISEASE, "Rare disease", Concepts.MODULE_SCT_CORE, "2", "New description with a non-existent type ID");
 		assertComponentNotCreated(createMainPath(), SnomedComponentType.DESCRIPTION, requestBody);
 	}
 
@@ -164,6 +169,84 @@ public class SnomedDescriptionApiTest extends AbstractSnomedApiTest {
 	}
 
 	@Test
+	public void inactivateDescriptionWithIndicator() {
+		final IBranchPath branch = BranchPathUtils.createMainPath();
+		final Map<?, ?> createRequestBody = createRequestBody(DISEASE, "Rare disease 2", Concepts.MODULE_SCT_CORE, Concepts.SYNONYM, "New description Rare disease 2");
+		final String descriptionId = assertComponentCreated(branch, SnomedComponentType.DESCRIPTION, createRequestBody);
+		final Map<?, ?> updateRequestBody = ImmutableMap.builder()
+				.put("active", false)
+				.put("inactivationIndicator", DescriptionInactivationIndicator.DUPLICATE)
+				.put("commitComment", "Inactivated description")
+				.build();
+
+		assertDescriptionCanBeUpdated(branch, descriptionId, updateRequestBody);
+		assertComponentExists(branch, SnomedComponentType.DESCRIPTION, descriptionId)
+			.and()
+			.body("active", equalTo(false))
+			.and()
+			.body("inactivationIndicator", equalTo(InactivationIndicator.DUPLICATE.toString()));
+	}
+
+	@Test
+	public void updateInactivationIndicatorAfterInactivation() {
+		final IBranchPath branch = BranchPathUtils.createMainPath();
+		final Map<?, ?> createRequestBody = createRequestBody(DISEASE, "Rare disease 3", Concepts.MODULE_SCT_CORE, Concepts.SYNONYM, "New description Rare disease 3");
+		final String descriptionId = assertComponentCreated(branch, SnomedComponentType.DESCRIPTION, createRequestBody);
+		Map<?, ?> updateRequestBody = ImmutableMap.builder()
+				.put("active", false)
+				.put("inactivationIndicator", DescriptionInactivationIndicator.DUPLICATE)
+				.put("commitComment", "Inactivated description")
+				.build();
+
+		assertDescriptionCanBeUpdated(branch, descriptionId, updateRequestBody);
+		assertComponentExists(branch, SnomedComponentType.DESCRIPTION, descriptionId)
+			.and()
+			.body("active", equalTo(false))
+			.and()
+			.body("inactivationIndicator", equalTo(DescriptionInactivationIndicator.DUPLICATE.toString()));
+
+		updateRequestBody = ImmutableMap.builder()
+				.put("active", false)
+				.put("inactivationIndicator", DescriptionInactivationIndicator.OUTDATED)
+				.put("commitComment", "Changed inactivation indicator to " + DescriptionInactivationIndicator.OUTDATED)
+				.build();
+		assertDescriptionCanBeUpdated(branch, descriptionId, updateRequestBody);
+		assertComponentExists(branch, SnomedComponentType.DESCRIPTION, descriptionId)
+			.and()
+			.body("active", equalTo(false))
+			.and()
+			.body("inactivationIndicator", equalTo(DescriptionInactivationIndicator.OUTDATED.toString()));
+	}
+	
+	@Test
+	public void inactivateDescriptionWithIndicatorAndAssociationTarget() {
+		final IBranchPath branch = BranchPathUtils.createMainPath();
+		final Map<?, ?> createRequestBody1 = createRequestBody(DISEASE, "Rare disease 4", Concepts.MODULE_SCT_CORE, Concepts.SYNONYM, "New description Rare disease 4");
+		final Map<?, ?> createRequestBody2 = createRequestBody(DISEASE, "Rare disease 4", Concepts.MODULE_SCT_CORE, Concepts.SYNONYM, "New description Rare disease 4");
+		
+		final String descriptionId = assertComponentCreated(branch, SnomedComponentType.DESCRIPTION, createRequestBody1);
+		final String sameAsDescriptionId = assertComponentCreated(branch, SnomedComponentType.DESCRIPTION, createRequestBody2);
+		
+		final Map<?, ?> updateRequestBody = ImmutableMap.builder()
+				.put("active", false)
+				.put("inactivationIndicator", DescriptionInactivationIndicator.DUPLICATE)
+				.put("associationTargets", ImmutableMap.builder()
+						.put(AssociationType.POSSIBLY_EQUIVALENT_TO.name(), newArrayList(sameAsDescriptionId))
+						.build())
+				.put("commitComment", "Inactivated description with DUPLICATE indicator and SAME_AS association target")
+				.build();
+
+		assertDescriptionCanBeUpdated(branch, descriptionId, updateRequestBody);
+		assertComponentExists(branch, SnomedComponentType.DESCRIPTION, descriptionId)
+			.and()
+			.body("active", equalTo(false))
+			.and()
+			.body("inactivationIndicator", equalTo(InactivationIndicator.DUPLICATE.toString()))
+			.and()
+			.body("associationTargets." + AssociationType.POSSIBLY_EQUIVALENT_TO.name(), hasItem(sameAsDescriptionId));
+	}
+
+	@Test
 	public void updateCaseSignificance() {
 		final Map<?, ?> createRequestBody = createRequestBody(DISEASE, "Rare disease", Concepts.MODULE_SCT_CORE, Concepts.SYNONYM, "New description on MAIN");
 		final String descriptionId = assertComponentCreated(createMainPath(), SnomedComponentType.DESCRIPTION, createRequestBody);
@@ -196,7 +279,7 @@ public class SnomedDescriptionApiTest extends AbstractSnomedApiTest {
 	public void createDescriptionOnNestedBranch() {
 		final IBranchPath nestedBranchPath = createNestedBranch("a", "b");
 		final Map<?, ?> createRequestBody = createRequestBody(DISEASE, "Rare disease", Concepts.MODULE_SCT_CORE, Concepts.SYNONYM, "New description on MAIN");
-		final String descriptionId = assertComponentCreated(nestedBranchPath, SnomedComponentType.DESCRIPTION, createRequestBody);		
+		final String descriptionId = assertComponentCreated(nestedBranchPath, SnomedComponentType.DESCRIPTION, createRequestBody);
 
 		assertDescriptionExists(nestedBranchPath, descriptionId);
 		assertDescriptionNotExists(nestedBranchPath.getParent(), descriptionId);
@@ -208,7 +291,7 @@ public class SnomedDescriptionApiTest extends AbstractSnomedApiTest {
 	public void deleteDescriptionOnNestedBranch() {
 		final IBranchPath nestedBranchPath = createNestedBranch("a", "b");
 		final Map<?, ?> createRequestBody = createRequestBody(DISEASE, "Rare disease", Concepts.MODULE_SCT_CORE, Concepts.SYNONYM, "New description on MAIN");
-		final String descriptionId = assertComponentCreated(nestedBranchPath, SnomedComponentType.DESCRIPTION, createRequestBody);		
+		final String descriptionId = assertComponentCreated(nestedBranchPath, SnomedComponentType.DESCRIPTION, createRequestBody);
 
 		assertDescriptionCanBeDeleted(nestedBranchPath, descriptionId);
 		assertDescriptionNotExists(nestedBranchPath, descriptionId);

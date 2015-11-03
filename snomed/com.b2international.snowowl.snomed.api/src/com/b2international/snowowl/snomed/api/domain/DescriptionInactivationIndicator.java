@@ -29,41 +29,41 @@ public enum DescriptionInactivationIndicator {
 	 * The description duplicates another description.
 	 */
 	DUPLICATE(Concepts.DUPLICATE),
-
+	
 	/**
-	 * The description is still active, but it refers to an inactive concept.
+	 * The description is outdated, and should not be used.
 	 */
-	CONCEPT_NON_CURRENT(Concepts.CONCEPT_NON_CURRENT),
-
-	/**
-	 * The description does not describe the concept properly. 
-	 */
-	INAPPROPRIATE(Concepts.INAPPROPRIATE),
-
-	/**
-	 * The description was moved to another namespace. 
-	 */
-	MOVED_ELSEWHERE(Concepts.MOVED_ELSEWHERE),
-
-	/**
-	 * The description is still active, but will be moved to another namespace.
-	 */
-	PENDING_MOVE(Concepts.PENDING_MOVE),
-
-	/**
-	 * The description refers to a limited concept. 
-	 */
-	LIMITED(Concepts.LIMITED),
-
+	OUTDATED(Concepts.OUTDATED),
+	
 	/**
 	 * The description contains mistakes in its text, or was otherwise added in error.
 	 */
 	ERRONEOUS(Concepts.ERRONEOUS),
 
 	/**
-	 * The description is outdated, and should not be used.
+	 * The description refers to a limited concept. 
 	 */
-	OUTDATED(Concepts.OUTDATED);
+	LIMITED(Concepts.LIMITED),
+	
+	/**
+	 * The description was moved to another namespace. 
+	 */
+	MOVED_ELSEWHERE(Concepts.MOVED_ELSEWHERE),
+	
+	/**
+	 * The description is still active, but will be moved to another namespace.
+	 */
+	PENDING_MOVE(Concepts.PENDING_MOVE),
+	
+	/**
+	 * The description does not describe the concept properly. 
+	 */
+	INAPPROPRIATE(Concepts.INAPPROPRIATE),
+
+	/**
+	 * The description is still active, but it refers to an inactive concept.
+	 */
+	CONCEPT_NON_CURRENT(Concepts.CONCEPT_NON_CURRENT);
 
 	private String valueId;
 

@@ -17,6 +17,9 @@ package com.b2international.snowowl.snomed.api.impl;
 
 import static com.google.common.base.Preconditions.checkState;
 
+import java.util.List;
+import java.util.Map.Entry;
+
 import org.eclipse.emf.cdo.transaction.CDOTransaction;
 import org.eclipse.emf.ecore.util.EcoreUtil;
 
@@ -31,18 +34,25 @@ import com.b2international.snowowl.core.exceptions.ComponentNotFoundException;
 import com.b2international.snowowl.core.terminology.ComponentCategory;
 import com.b2international.snowowl.snomed.Component;
 import com.b2international.snowowl.snomed.Concept;
+import com.b2international.snowowl.snomed.Inactivatable;
 import com.b2international.snowowl.snomed.api.ISnomedComponentService;
+import com.b2international.snowowl.snomed.api.domain.AssociationType;
 import com.b2international.snowowl.snomed.api.domain.ISnomedComponent;
 import com.b2international.snowowl.snomed.api.domain.ISnomedComponentInput;
 import com.b2international.snowowl.snomed.api.domain.ISnomedComponentUpdate;
 import com.b2international.snowowl.snomed.api.impl.domain.UserIdGenerationStrategy;
 import com.b2international.snowowl.snomed.datastore.SnomedConceptLookupService;
 import com.b2international.snowowl.snomed.datastore.SnomedEditingContext;
+import com.b2international.snowowl.snomed.datastore.SnomedRefSetEditingContext;
 import com.b2international.snowowl.snomed.datastore.SnomedRefSetLookupService;
 import com.b2international.snowowl.snomed.datastore.services.AbstractSnomedRefSetMembershipLookupService;
 import com.b2international.snowowl.snomed.datastore.services.SnomedBranchRefSetMembershipLookupService;
+import com.b2international.snowowl.snomed.snomedrefset.SnomedAssociationRefSetMember;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetMember;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedStructuralRefSet;
+import com.google.common.collect.HashMultimap;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.Multimap;
 
 /**
  */
@@ -145,5 +155,63 @@ implements ISnomedComponentService<C, R, U> {
 		} else {
 			EcoreUtil.remove(member);
 		}
+	}
+
+	protected final void updateAssociationTargets(final Multimap<AssociationType, String> newAssociationTargets, final Inactivatable component, final SnomedEditingContext editingContext) {
+	
+		if (null == newAssociationTargets) {
+			return;
+		}
+		
+		if (!(component instanceof Component)) {
+			throw new IllegalArgumentException("Only concepts and descriptions can  can be inactivated");
+		}
+	
+		final List<SnomedAssociationRefSetMember> associationMembers = ImmutableList.copyOf(component.getAssociationRefSetMembers());
+		final Multimap<AssociationType, String> newAssociationTargetsToCreate = HashMultimap.create(newAssociationTargets);
+	
+		for (final SnomedAssociationRefSetMember associationMember : associationMembers) {
+			if (!associationMember.isActive()) {
+				continue;
+			}
+	
+			final AssociationType type = AssociationType.getByConceptId(associationMember.getRefSetIdentifierId());
+			if (null == type) {
+				continue;
+			}
+	
+			final String targetId = associationMember.getTargetComponentId();
+			if (newAssociationTargets.containsEntry(type, targetId)) {
+				newAssociationTargetsToCreate.remove(type, targetId);
+			} else {
+				removeOrDeactivate(associationMember);
+			}
+		}
+	
+		for (final Entry<AssociationType, String> newAssociationEntry : newAssociationTargetsToCreate.entries()) {
+	
+			final SnomedAssociationRefSetMember newAssociationMember = createAssociationRefSetMember(
+					newAssociationEntry.getKey().getConceptId(), 
+					newAssociationEntry.getValue(),
+					((Component) component).getId(),
+					editingContext);
+	
+			component.getAssociationRefSetMembers().add(newAssociationMember);
+		}
+	}
+	
+	// Taken from SnomedInactivationPlan
+	private SnomedAssociationRefSetMember createAssociationRefSetMember(final String refSetId, final String targetId, 
+			final String conceptId, final SnomedEditingContext editingContext) {
+
+		final SnomedRefSetEditingContext refSetEditingContext = editingContext.getRefSetEditingContext();
+		final SnomedStructuralRefSet associationRefSet = getStructuralRefSet(refSetId, refSetEditingContext.getTransaction());
+		final String moduleId = editingContext.getDefaultModuleConcept().getId();
+
+		return refSetEditingContext.createAssociationRefSetMember(
+				SnomedRefSetEditingContext.createConceptTypePair(conceptId), 
+				SnomedRefSetEditingContext.createConceptTypePair(targetId), 
+				moduleId, 
+				associationRefSet);
 	}
 }

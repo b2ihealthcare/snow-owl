@@ -16,11 +16,14 @@
 package com.b2international.snowowl.datastore.server.internal.review;
 
 import static com.b2international.snowowl.core.ApplicationContext.getServiceForClass;
-import static com.b2international.snowowl.datastore.BranchPathUtils.convertIntoBasePath;
 import static com.google.common.collect.Sets.newHashSet;
 
 import java.text.MessageFormat;
-import java.util.*;
+import java.util.Date;
+import java.util.Set;
+import java.util.Timer;
+import java.util.TimerTask;
+import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
 import org.eclipse.core.runtime.IProgressMonitor;
@@ -30,19 +33,19 @@ import org.eclipse.core.runtime.jobs.IJobChangeEvent;
 import org.eclipse.core.runtime.jobs.IJobChangeListener;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.core.runtime.jobs.JobChangeAdapter;
-import org.eclipse.emf.cdo.common.commit.CDOCommitInfo;
-import org.eclipse.emf.cdo.common.commit.CDOCommitInfoHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.exceptions.BadRequestException;
 import com.b2international.snowowl.core.exceptions.NotFoundException;
+import com.b2international.snowowl.datastore.BranchPathUtils;
 import com.b2international.snowowl.datastore.branch.Branch;
-import com.b2international.snowowl.datastore.cdo.ICDORepository;
+import com.b2international.snowowl.datastore.branch.Branch.BranchState;
 import com.b2international.snowowl.datastore.index.diff.CompareResult;
 import com.b2international.snowowl.datastore.index.diff.NodeDiff;
 import com.b2international.snowowl.datastore.index.diff.VersionCompareConfiguration;
+import com.b2international.snowowl.datastore.server.events.BranchChangedEvent;
+import com.b2international.snowowl.datastore.server.internal.IRepository;
 import com.b2international.snowowl.datastore.server.review.ConceptChanges;
 import com.b2international.snowowl.datastore.server.review.Review;
 import com.b2international.snowowl.datastore.server.review.ReviewManager;
@@ -51,6 +54,8 @@ import com.b2international.snowowl.datastore.store.Store;
 import com.b2international.snowowl.datastore.store.query.Query;
 import com.b2international.snowowl.datastore.store.query.QueryBuilder;
 import com.b2international.snowowl.datastore.version.VersionCompareService;
+import com.b2international.snowowl.eventbus.IHandler;
+import com.b2international.snowowl.eventbus.IMessage;
 import com.fasterxml.jackson.databind.util.ISO8601Utils;
 import com.google.common.collect.ImmutableSet;
 
@@ -58,7 +63,6 @@ import com.google.common.collect.ImmutableSet;
  * @since 4.2
  */
 public class ReviewManagerImpl implements ReviewManager {
-
 
 	private final class CreateReviewJob extends Job {
 
@@ -95,15 +99,11 @@ public class ReviewManagerImpl implements ReviewManager {
 		}
 	}
 
-	private final class SetStaleHandler implements CDOCommitInfoHandler {
+	private final class StaleHandler implements IHandler<IMessage> {
 		@Override
-		@SuppressWarnings("restriction")
-		public void handleCommitInfo(final CDOCommitInfo commitInfo) {
-			if (commitInfo instanceof org.eclipse.emf.cdo.internal.common.commit.FailureCommitInfo) {
-				return;
-			}
-
-			final String path = commitInfo.getBranch().getPathName();
+		public void handle(final IMessage message) {
+			final BranchChangedEvent changeEvent = message.body(BranchChangedEvent.class);
+			final String path = changeEvent.getBranch().path();
 
 			synchronized (reviewStore) {
 				final Set<ReviewImpl> affectedReviews = ImmutableSet.<ReviewImpl>builder()
@@ -163,7 +163,7 @@ public class ReviewManagerImpl implements ReviewManager {
 	private final Store<ReviewImpl> reviewStore;
 	private final Store<ConceptChangesImpl> conceptChangesStore;
 	private final IJobChangeListener jobChangeListener = new ReviewJobChangeListener();
-	private final SetStaleHandler commitInfoHandler = new SetStaleHandler();
+	private final StaleHandler staleHandler = new StaleHandler();
 	private final TimerTask cleanupTask = new CleanupTask();
 
 	private static final long REFRESH_INTERVAL = TimeUnit.MINUTES.toMillis(1L);
@@ -175,15 +175,15 @@ public class ReviewManagerImpl implements ReviewManager {
 		private static final Timer CLEANUP_TIMER = new Timer("Review cleanup", true);
 	}
 
-	public ReviewManagerImpl(final ICDORepository repository, final Store<ReviewImpl> reviewStore, final Store<ConceptChangesImpl> conceptChangesStore) {
+	public ReviewManagerImpl(final IRepository repository, final Store<ReviewImpl> reviewStore, final Store<ConceptChangesImpl> conceptChangesStore) {
 		this(repository, reviewStore, conceptChangesStore, 15, 5);
 	}
 
-	public ReviewManagerImpl(final ICDORepository repository, 
+	public ReviewManagerImpl(final IRepository repository, 
 			final Store<ReviewImpl> reviewStore, final Store<ConceptChangesImpl> conceptChangesStore, 
 			final long keepCurrentMins, final int keepOtherMins) {
 
-		this.repositoryId = repository.getUuid();
+		this.repositoryId = repository.getCdoRepositoryId();
 		this.keepCurrentMillis = TimeUnit.MINUTES.toMillis(keepCurrentMins);
 		this.keepOtherMillis = TimeUnit.MINUTES.toMillis(keepOtherMins);
 
@@ -195,31 +195,54 @@ public class ReviewManagerImpl implements ReviewManager {
 
 		this.conceptChangesStore = conceptChangesStore;
 
-		repository.getRepository().addCommitInfoHandler(commitInfoHandler);
-
 		// Check every minute if there's something to remove
 		Holder.CLEANUP_TIMER.schedule(cleanupTask, REFRESH_INTERVAL, REFRESH_INTERVAL);
+	}
+	
+	public IHandler<IMessage> getStaleHandler() {
+		return staleHandler;
 	}
 
 	@Override
 	public Review createReview(final Branch source, final Branch target) {
-
 		if (source.path().equals(target.path())) {
 			throw new BadRequestException("Cannot create a review with the same source and target '%s'.", source.path());
 		}
+
+		// Comparison ends with the head commit of the source branch, but we'll have to figure out where to retrieve the starting commit from.
+		final VersionCompareConfiguration.Builder configurationBuilder = VersionCompareConfiguration.builder(repositoryId, false).target(source.branchPath(), false);
 		
-		final IBranchPath headPath = source.branchPath();
-		final IBranchPath basePath;
-		
-		if (source.parent().equals(target)) {
-			basePath = convertIntoBasePath(source.branchPath());	
+		if (source.parent().equals(target)) { 
+
+			/* 
+			 * target is the parent of source 
+			 * source is the child of target
+			 * review is for changes on child (source) that will be made visible on parent (target) by merging
+			 * 
+			 * Comparison starts from the base of the child (source) branch.
+			 */
+			configurationBuilder.source(BranchPathUtils.convertIntoBasePath(source.branchPath()), false);
+
 		} else if (target.parent().equals(source)) {
-			basePath = convertIntoBasePath(target.branchPath());
+
+			/* 
+			 * source is the parent of target
+			 * target is the child of source
+			 * review is for changes on parent (source) that will be made visible on child (target) by rebasing
+			 */
+			if (target.state(source) == BranchState.STALE) {
+				// Start from the parent (source) base _as seen from the child (target) branch_, if parent (source) itself has been rebased in the meantime 
+				configurationBuilder.source(BranchPathUtils.convertIntoBasePath(source.branchPath(), target.branchPath()), false);
+			} else {
+				// Start from the child (target) base
+				configurationBuilder.source(BranchPathUtils.convertIntoBasePath(target.branchPath()), false);
+			}
+
 		} else {
 			throw new BadRequestException("Cannot create review for source '%s' and target '%s', because there is no relation between them.", source.path(), target.path());
 		}
 		
-		final VersionCompareConfiguration configuration = new VersionCompareConfiguration(repositoryId, basePath, headPath, false, true, false);
+		final VersionCompareConfiguration configuration = configurationBuilder.build();
 		final String reviewId = UUID.randomUUID().toString();
 		final CreateReviewJob compareJob = new CreateReviewJob(reviewId, configuration);
 

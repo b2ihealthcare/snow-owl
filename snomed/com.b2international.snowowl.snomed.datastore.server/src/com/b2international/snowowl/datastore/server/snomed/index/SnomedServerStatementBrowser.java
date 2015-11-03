@@ -44,12 +44,6 @@ import org.apache.lucene.search.Query;
 import org.apache.lucene.search.ReferenceManager;
 import org.apache.lucene.search.TopDocs;
 
-import bak.pcj.map.LongKeyLongMap;
-import bak.pcj.map.LongKeyLongMapIterator;
-import bak.pcj.map.LongKeyMap;
-import bak.pcj.map.LongKeyMapIterator;
-import bak.pcj.set.LongSet;
-
 import com.b2international.commons.CompareUtils;
 import com.b2international.commons.pcj.LongSets;
 import com.b2international.snowowl.core.ApplicationContext;
@@ -71,6 +65,12 @@ import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedMappings
 import com.b2international.snowowl.snomed.datastore.services.ISnomedComponentService;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Maps;
+
+import bak.pcj.map.LongKeyLongMap;
+import bak.pcj.map.LongKeyLongMapIterator;
+import bak.pcj.map.LongKeyMap;
+import bak.pcj.map.LongKeyMapIterator;
+import bak.pcj.set.LongSet;
 
 /**
  * Index based statement browser implementation.
@@ -343,12 +343,13 @@ public class SnomedServerStatementBrowser extends AbstractSnomedIndexBrowser<Sno
 					"Error while getting active statement storage keys for concept: {0} for value: {1}, field: {2}",
 					conceptId, value, groupField.fieldName()), e);
 		} finally {
-			if (searcher != null)
+			if (searcher != null) {
 				try {
 					manager.release(searcher);
 				} catch (final IOException e) {
 					throw new IndexException(e);
 				}
+			}
 		}
 	}
 
@@ -445,6 +446,22 @@ public class SnomedServerStatementBrowser extends AbstractSnomedIndexBrowser<Sno
 		}
 	}
 
+	@Override
+	public Collection<SnomedRelationshipIndexEntry> getActiveOutboundStatementsById(final IBranchPath branchPath, final String conceptId, final String relationshipTypeId) {
+		checkNotNull(branchPath, "Branch path argument cannot be null.");
+		checkNotNull(conceptId, "SNOMED CT concept ID cannot be null.");
+		checkNotNull(conceptId, "Relationship type ID cannot be null.");
+		
+		try {
+			final DocIdCollector collector = DocIdCollector.create(service.maxDoc(branchPath));
+			final Query query = SnomedMappings.newQuery().active().relationshipType(relationshipTypeId).field(RELATIONSHIP_OBJECT_ID, Long.valueOf(conceptId)).matchAll();
+			service.search(branchPath, query, collector);
+			return createResultObjects(branchPath, collector.getDocIDs().iterator());
+		} catch (final IOException e) {
+			throw new RuntimeException("Error when querying active outbound statements with type for concept. ID: " + conceptId, e);
+		}
+	}
+	
 	@Override
 	public Map<String, String> getAllStatementLabelsById(final IBranchPath branchPath, final String conceptId) {
 		checkNotNull(branchPath, "Branch path argument cannot be null.");

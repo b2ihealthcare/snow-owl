@@ -19,6 +19,7 @@ public class DescriptionInputCreator extends AbstractInputCreator implements Com
 		descriptionInput.setTypeId(description.getType().getConceptId());
 		descriptionInput.setTerm(description.getTerm());
 		descriptionInput.setAcceptability(description.getAcceptabilityMap());
+		descriptionInput.setCaseSignificance(description.getCaseSignificance());
 		return descriptionInput;
 	}
 

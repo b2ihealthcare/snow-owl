@@ -19,12 +19,8 @@ import static com.google.common.base.Preconditions.checkNotNull;
 
 import java.io.File;
 
-import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.api.SnowowlServiceException;
-import com.b2international.snowowl.datastore.ICDOChangeProcessor;
 import com.b2international.snowowl.datastore.server.index.FSIndexServerService;
-import com.b2international.snowowl.datastore.server.index.IIndexPostProcessor;
-import com.b2international.snowowl.datastore.server.index.IndexPostProcessor;
 import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 import com.b2international.snowowl.snomed.datastore.index.SnomedIndexEntry;
 
@@ -33,29 +29,12 @@ import com.b2international.snowowl.snomed.datastore.index.SnomedIndexEntry;
  */
 public class SnomedIndexServerService extends FSIndexServerService<SnomedIndexEntry> implements SnomedIndexUpdater {
 
-	public SnomedIndexServerService(File indexPath) throws SnowowlServiceException {
-		super(checkNotNull(indexPath, "indexPath"));
+	public SnomedIndexServerService(File indexPath, final long timeout) throws SnowowlServiceException {
+		super(checkNotNull(indexPath, "indexPath"), timeout);
 	}
 
 	@Override
 	public String getRepositoryUuid() {
 		return SnomedDatastoreActivator.REPOSITORY_UUID;
 	}
-
-	@Override
-	protected IIndexPostProcessor getIndexPostProcessor() {
-		return new IndexPostProcessor() {
-			
-			@Override
-			protected String getRepositoryUuid() {
-				return SnomedIndexServerService.this.getRepositoryUuid();
-			}
-			
-			@Override
-			protected ICDOChangeProcessor getChangeProcessor(final IBranchPath branchPath) {
-				return new SnomedCDOChangeProcessor(SnomedCDOChangeProcessorFactory.CHANGE_PROC_EXECUTOR, SnomedIndexServerService.this, branchPath, false);
-			}
-		};
-	}
-	
 }

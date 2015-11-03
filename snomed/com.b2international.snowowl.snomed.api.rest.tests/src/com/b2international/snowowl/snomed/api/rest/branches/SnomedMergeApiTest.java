@@ -339,6 +339,51 @@ public class SnomedMergeApiTest extends AbstractSnomedApiTest {
 	}
 
 	@Test
+	public void rebaseNewConceptStale() {
+		IBranchPath branchPath = createNestedBranch("A", "B");
+
+		assertConceptCreated(branchPath, "CB1");
+		assertConceptExists(branchPath, "CB1");
+		assertConceptNotExists(branchPath.getParent(), "CB1");
+		assertConceptNotExists(branchPath.getParent().getParent(), "CB1");
+
+		assertConceptCreated(branchPath.getParent(), "CA");
+		assertConceptExists(branchPath.getParent(), "CA");
+		assertConceptNotExists(branchPath, "CA");
+		assertConceptNotExists(branchPath.getParent().getParent(), "CA");
+
+		assertConceptCreated(branchPath.getParent().getParent(), "Cm");
+		assertConceptExists(branchPath.getParent().getParent(), "Cm");
+		assertConceptNotExists(branchPath, "Cm");
+		assertConceptNotExists(branchPath.getParent(), "Cm");
+
+		assertBranchCanBeRebased(branchPath.getParent(), "Rebase test/A");
+
+		assertConceptExists(branchPath, "CB1");
+		assertConceptExists(branchPath.getParent(), "CA");
+		assertConceptExists(branchPath.getParent().getParent(), "Cm");
+
+		assertConceptExists(branchPath.getParent(), "Cm"); // The rebase made the concept on test visible to test/A
+		assertConceptNotExists(branchPath, "CA"); // test/A/B is left behind, and still doesn't know about the other concepts
+		assertConceptNotExists(branchPath, "Cm");
+
+		assertConceptCreated(branchPath, "CB2");
+		assertConceptExists(branchPath, "CB2");
+		assertConceptNotExists(branchPath.getParent(), "CB2");
+		assertConceptNotExists(branchPath.getParent().getParent(), "CB2");
+
+		assertBranchCanBeRebased(branchPath, "Rebase test/A/B");
+
+		assertConceptExists(branchPath, "CB1");
+		assertConceptExists(branchPath, "CB2");
+		assertConceptExists(branchPath.getParent(), "CA");
+		assertConceptExists(branchPath.getParent().getParent(), "Cm");
+
+		assertConceptExists(branchPath.getParent(), "Cm"); // The rebase made the concept on test and test/A visible to test/A/B
+		assertConceptExists(branchPath, "CA");
+	}
+
+	@Test
 	public void noRebaseNewPreferredTerm() {
 		givenBranchWithPath(testBranchPath);
 

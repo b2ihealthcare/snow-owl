@@ -13,23 +13,25 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.datastore.server.index;
-
-import com.b2international.snowowl.core.api.IBranchPath;
+package com.b2international.snowowl.snomed.datastore;
 
 /**
- * Provides commit timestamp to the clients.
+ * The relationship types to distinguish when building trees
  */
-public interface ICommitTimeProvider {
+public enum VisualizedRelationshipType {
+	
+	STATED("Stated"),
+	INFERRED("Inferred"),
+	ANY("Any");
+	
+	private String displayName;
 
-	/**Returns with the latest commit timestamp on the given branch.*/
-	long getCommitTime(final IBranchPath branchPath);
-	
-	/**Returns with a commit time from {@link System#currentTimeMillis()}.*/
-	ICommitTimeProvider DEFAULT = new ICommitTimeProvider() {
-		@Override public long getCommitTime(final IBranchPath branchPath) {
-			return System.currentTimeMillis();
-		}
-	};
-	
+	private VisualizedRelationshipType(String displayName) {
+		this.displayName = displayName;
+	}
+
+	public String getDisplayName() {
+		return displayName;
+	}
+
 }

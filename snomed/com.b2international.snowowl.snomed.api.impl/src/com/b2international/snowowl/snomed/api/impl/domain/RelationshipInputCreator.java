@@ -32,6 +32,18 @@ public class RelationshipInputCreator extends AbstractInputCreator implements Co
 			change = true;
 			update.setActive(newVersion.isActive());
 		}
+		if (existingVersion.getGroupId() != newVersion.getGroupId()) {
+			change = true;
+			update.setGroup(newVersion.getGroupId());
+		}
+		if (existingVersion.getCharacteristicType() != newVersion.getCharacteristicType()) {
+			change = true;
+			update.setCharacteristicType(newVersion.getCharacteristicType());
+		}
+		if (existingVersion.getModifier() != newVersion.getModifier()) {
+			change = true;
+			update.setModifier(newVersion.getModifier());
+		}
 		return change ? update : null;
 	}
 

@@ -17,8 +17,6 @@ package com.b2international.snowowl.datastore.server.index;
 
 import static com.b2international.commons.platform.Extensions.getExtensions;
 import static com.b2international.snowowl.core.ApplicationContext.getServiceForClass;
-import static com.b2international.snowowl.datastore.BranchPathUtils.createVersionPath;
-import static com.b2international.snowowl.datastore.BranchPathUtils.isBasePath;
 import static com.b2international.snowowl.datastore.cdo.CDORootResourceNameProvider.ROOT_RESOURCE_NAMEPROVIDER_EXTENSION_POINT_ID;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.collect.Iterables.any;
@@ -40,17 +38,14 @@ import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.FSDirectory;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.Path;
-import org.eclipse.emf.cdo.common.branch.CDOBranch;
 import org.eclipse.emf.cdo.eresource.CDOResource;
 import org.eclipse.emf.cdo.transaction.CDOTransaction;
 import org.eclipse.emf.ecore.EObject;
 
-import com.b2international.commons.FileUtils;
-import com.b2international.snowowl.core.SnowOwlApplication;
-import com.b2international.snowowl.core.api.IBranchPath;
+import com.b2international.snowowl.core.api.BranchPath;
 import com.b2international.snowowl.core.api.index.IndexException;
 import com.b2international.snowowl.datastore.BranchPathUtils;
-import com.b2international.snowowl.datastore.ICodeSystemVersion;
+import com.b2international.snowowl.datastore.cdo.CDOBranchPath;
 import com.b2international.snowowl.datastore.cdo.CDOIDUtils;
 import com.b2international.snowowl.datastore.cdo.CDORootResourceNameProvider;
 import com.b2international.snowowl.datastore.cdo.CDOTransactionFunction;
@@ -58,9 +53,6 @@ import com.b2international.snowowl.datastore.cdo.CDOUtils;
 import com.b2international.snowowl.datastore.cdo.ICDOConnection;
 import com.b2international.snowowl.datastore.cdo.ICDOConnectionManager;
 import com.b2international.snowowl.datastore.index.IndexUtils;
-import com.b2international.snowowl.datastore.index.mapping.Mappings;
-import com.b2international.snowowl.datastore.server.internal.lucene.store.CompositeDirectory;
-import com.b2international.snowowl.datastore.server.internal.lucene.store.ReadOnlyDirectory;
 import com.b2international.snowowl.terminologymetadata.CodeSystemVersion;
 import com.b2international.snowowl.terminologymetadata.CodeSystemVersionGroup;
 import com.b2international.snowowl.terminologymetadata.TerminologymetadataPackage;
@@ -72,103 +64,33 @@ import com.google.common.collect.Sets;
 /**
  * Directory manager for a a file system based {@link FSDirectory}.
  */
-public class FSDirectoryManager implements IDirectoryManager {
+public class FSDirectoryManager extends AbstractDirectoryManager implements IDirectoryManager {
 
-	private static final String INDEXES_CHILD_FOLDER = "indexes";
-
-	private final String repositoryUuid;
-	private final File indexRelativeRootPath;
-	private final IndexServerService<?> indexServerService;
-
-	public FSDirectoryManager(final String repositoryUuid, final File indexRelativeRootPath, final IndexServerService<?> indexServerService) {
-		this.repositoryUuid = checkNotNull(repositoryUuid, "repositoryUuid");
-		this.indexRelativeRootPath = checkNotNull(indexRelativeRootPath, "indexRelativeRootPath");
-		this.indexServerService = checkNotNull(indexServerService, "indexServerService");
+	public FSDirectoryManager(final String repositoryUuid, final File indexPath) {
+		super(repositoryUuid, indexPath);
 	}
 
 	@Override
-	public Directory createDirectory(final IBranchPath branchPath, final IndexBranchService baseService) throws IOException {
-		final IndexCommit baseCommit = getBaseCommit(branchPath, baseService);
-		final File folderForBranchPath = getFolderForBranchPath(branchPath, baseCommit);
-		
-		if (BranchPathUtils.isMain(branchPath)) {
-			return IndexUtils.open(folderForBranchPath);
-		} else if (isBasePath(branchPath)) {
-			return new ReadOnlyDirectory(baseCommit);
-		} else {
-			final Directory writeableDirectory = IndexUtils.open(folderForBranchPath);
-			return new CompositeDirectory(baseCommit, writeableDirectory);
-		}
-	}
-
-	private File getDataDirectory() {
-		return SnowOwlApplication.INSTANCE.getEnviroment().getDataDirectory();
-	}
-
-	private File getIndexRootPath() {
-		return new File(getDataDirectory(), INDEXES_CHILD_FOLDER);
-	}
-
-	private File getIndexAbsolutePath() {
-		final File indexRootPath = getIndexRootPath();
-		final File indexTerminologyRootPath = new File(indexRootPath, indexRelativeRootPath.getPath());
-		return indexTerminologyRootPath;
-	}
-
-	private File getFolderForBranchPath(final IBranchPath branchPath) throws IOException {
-		if (BranchPathUtils.isMain(branchPath)) {
-			return getFolderForBranchPath(branchPath, null);
-		} else {
-			IBranchPath parent = branchPath.getParent();
-			IndexBranchService baseService = indexServerService.getBranchService(parent);
-			IndexCommit baseCommit = getBaseCommit(branchPath, baseService);
-			return getFolderForBranchPath(branchPath, baseCommit);
-		}
-	}
-	
-	private File getFolderForBranchPath(final IBranchPath branchPath, IndexCommit baseCommit) throws IOException {
-		final File indexTerminologyRootPath = getIndexAbsolutePath();
-		final String child;
-		
-		if (BranchPathUtils.isMain(branchPath)) {
-			child = String.valueOf(CDOBranch.MAIN_BRANCH_ID);
-		} else {
-			child = baseCommit.getUserData().get(IndexUtils.INDEX_CDO_BRANCH_PATH_KEY);
-		}
-		
-		return new File(indexTerminologyRootPath, child);
-	}
-
-	private IndexCommit getBaseCommit(IBranchPath branchPath, IndexBranchService baseService) throws IOException {
-		if (BranchPathUtils.isMain(branchPath)) {
-			return null;
-		} else {
-			return baseService.getIndexCommit(branchPath);
-		}
+	protected Directory openWritableLuceneDirectory(final File folderForBranchPath) throws IOException {
+		return IndexUtils.open(folderForBranchPath);
 	}
 
 	@Override
-	public void deleteIndex(final IBranchPath branchPath) throws IOException {
-		FileUtils.deleteDirectory(getFolderForBranchPath(branchPath));
-	}
-
-	@Override
-	public List<String> listFiles(final IBranchPath branchPath) throws IOException {
+	public List<String> listFiles(final BranchPath branchPath) throws IOException {
 
 		final Set<String> result = Sets.newHashSet();
-		final File folderForBranchPath = getFolderForBranchPath(branchPath);
+		final File folderForBranchPath = getIndexSubDirectory(branchPath.path());
 
-		final IPath base = new Path(getIndexRootPath().getAbsolutePath());
+		final IPath base = new Path(getIndexSubDirectory("..").getAbsolutePath());
 		final IPath actual = new Path(folderForBranchPath.getAbsolutePath());
 		final IPath relativePath = actual.makeRelativeTo(base);
 
-		try {
+		try (final Directory directory = openWritableLuceneDirectory(folderForBranchPath)) {
 
-			final List<IndexCommit> commits = DirectoryReader.listCommits(indexServerService.getBranchService(branchPath).getDirectory());
-
+			final List<IndexCommit> commits = DirectoryReader.listCommits(directory);
 			for (final IndexCommit commit : commits) {
-				final Collection<String> fileNames = commit.getFileNames();
 
+				final Collection<String> fileNames = commit.getFileNames();
 				for (final String fileName : fileNames) {
 					final File indexFilePath = new File(folderForBranchPath, fileName);
 
@@ -187,7 +109,7 @@ public class FSDirectoryManager implements IDirectoryManager {
 	}
 
 	@Override
-	public void fireFirstStartup(final IndexBranchService service) {
+	public void firstStartup(final IndexBranchService service) {
 		try {
 			service.getIndexWriter().commit();
 
@@ -231,7 +153,7 @@ public class FSDirectoryManager implements IDirectoryManager {
 											try {
 												final long storageKey = CDOIDUtils.asLong(group.cdoID());
 												service.updateDocument(storageKey, doc);
-											} catch (IOException e) {
+											} catch (final IOException e) {
 												throw new IndexException("Failed to initialize index branch service for " + repositoryUuid);
 											}
 										}
@@ -242,8 +164,8 @@ public class FSDirectoryManager implements IDirectoryManager {
 									if (shouldTag) {
 										try {
 											service.commit();
-											service.createIndexCommit(createVersionPath(ICodeSystemVersion.INITIAL_STATE), new int[] { 0 }, -1L);
-										} catch (IOException e) {
+											service.createIndexCommit(BranchPathUtils.createMainPath(), new CDOBranchPath());
+										} catch (final IOException e) {
 											throw new IndexException("Failed to initialize index branch service for " + repositoryUuid);
 										}
 									}
@@ -261,10 +183,10 @@ public class FSDirectoryManager implements IDirectoryManager {
 		}
 	}
 
-	private Collection<CDORootResourceNameProvider> getRootResourceNameProvidersForRepository(final String repsotiryUuid) {
+	private Collection<CDORootResourceNameProvider> getRootResourceNameProvidersForRepository(final String repositoryUuid) {
 		final Collection<CDORootResourceNameProvider> providers = newHashSet();
 		for (final CDORootResourceNameProvider provider : getAllRootResourceProviders()) {
-			if (repsotiryUuid.equals(checkNotNull(provider, "provider").getRepositoryUuid())) {
+			if (repositoryUuid.equals(checkNotNull(provider, "provider").getRepositoryUuid())) {
 				providers.add(provider);
 			}
 		}

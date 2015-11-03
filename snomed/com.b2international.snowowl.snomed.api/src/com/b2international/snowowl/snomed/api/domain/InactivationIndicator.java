@@ -29,29 +29,44 @@ import com.b2international.snowowl.snomed.datastore.SnomedInactivationPlan.Inact
 public enum InactivationIndicator {
 
 	/**
-	 * The concept has been retired without any particular indication. 
-	 */
-	RETIRED(InactivationReason.RETIRED),
-
-	/**
-	 * The concept is ambiguous.
-	 */
-	AMBIGUOUS(InactivationReason.AMBIGUOUS),
-
-	/**
 	 * The concept duplicates the definition of another concept.
 	 */
 	DUPLICATE(InactivationReason.DUPLICATE),
 
+	/**
+	 * The concept is outdated, and no longer used.
+	 */
+	OUTDATED(InactivationReason.OUTDATED),
+	
+	/**
+	 * The concept is ambiguous.
+	 */
+	AMBIGUOUS(InactivationReason.AMBIGUOUS),
+	
 	/**
 	 * The concept contains an error.
 	 */
 	ERRONEOUS(InactivationReason.ERRONEOUS),
 
 	/**
+	 * The concept is of limited value as it contains classification categories which do not have a stable meaning.
+	 */
+	LIMITED(InactivationReason.LIMITED),
+	
+	/**
 	 * The concept was moved to another namespace.
 	 */
-	MOVED_ELSEWHERE(InactivationReason.MOVED_TO);
+	MOVED_ELSEWHERE(InactivationReason.MOVED_ELSEWEHERE),
+	
+	/**
+	 * The concept is still active, but is in the process of being moved to another namespace.
+	 */
+	PENDING_MOVE(InactivationReason.PENDING_MOVE),
+	
+	/**
+	 * The concept has been retired without any particular indication. 
+	 */
+	RETIRED(InactivationReason.RETIRED);
 
 	private final InactivationReason inactivationReason;
 

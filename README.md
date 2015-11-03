@@ -18,14 +18,18 @@ Required Eclipse plug-ins (install the listed features):
 
 * Xtext/Xtend (http://download.eclipse.org/modeling/tmf/xtext/updates/composite/releases/)
  * MWE 2 Language SDK 2.8.1
- * Xtend SDK 2.8.4
- * Xtext SDK 2.8.4
+ * Xtend IDE 2.8.4
+ * Xtext Complete SDK 2.8.4
 * Optional: Maven integration (http://download.eclipse.org/technology/m2e/releases) 
  
 ### Eclipse Preferences
 
 Make sure you have the following preferences enabled/disabled.
 * Plug-in development API baseline errors is set to Ignored (Preferences > Plug-in Development > API Baselines)
+* The *Plugin execution not covered by lifecycle configuration: org.apache.maven.plugins:maven-clean-plugin:2.5:clean* type of errors can be ignored or changed to *Warnings* in *Preferences->Maven->Errors/Warnings*.
+* Set the workspace encoding to *UTF-8* (Preferences->General->Workspace)
+* Set the line endings to *Unix* style (Preferences->General->Workspace)
+* Make sure the Git line endings are set to *input* (Preferences->Team->Git->Configuration - add key if missing *core.autocrlf = input*)
 
 ### Target platform
 
@@ -37,7 +41,7 @@ Make sure you have the following preferences enabled/disabled.
 ### Run from development environment
 
 1. Find `com.b2international.snowowl.server.update` project
-2. Open `so_server.product` file, click on `Run as Eclipse application` and terminate it
+2. Open `so_server.product` file, click on `Launch an Eclipse application` and terminate it
 3. Open Run Configurations and find the launch config `so_server.product`
 4. Open Arguments tab
  * Add `-Djetty.home.bundle=org.eclipse.jetty.osgi.boot` to the end of VM arguments

@@ -850,6 +850,56 @@ snomed:
   maxReasonerCount: 1
 --------------------------
 
+==== IHTSDO's SNOMED CT Component Identifier Service (CIS) integration
+
+Snow Owl can be configured to obtain valid SNOMED CT identifiers from IHTSDO's CIS service. The configuration needs to be placed within the *snomed* section. If omitted, Snow Owl's internal id generator service is used.
+
+[cols="3*", options="header"]
+|===
+|Name
+|Default
+|Description
+
+|idGenerationSource
+|`INTERNAL`
+|`INTERNAL`, `CIS` - The source of the id generation. 
+
+|externalIdGeneratorUrl
+|
+|The service's URL without port and context root. 
+
+|externalIdGeneratorPort
+|
+|The id generation service's port.
+
+|externalIdGeneratorContextRoot
+|
+|The context root of the id generation service. 
+
+|externalIdGeneratorUserName
+|
+|The registered user name at the CIS site.
+
+|externalIdGeneratorPassword
+|
+|The registered user name at the CIS site.
+
+|externalIdGeneratorClientSoftwareKey
+|Snow Owl
+|The client software key to be persisted within CIS as reference.
+|===
+
+--------------------------
+snomed:
+  idGenerationSource : CIS
+  externalIdGeneratorUrl : http://107.170.101.181
+  externalIdGeneratorPort : 3000
+  externalIdGeneratorContextRoot : api
+  externalIdGeneratorUserName : snowowl-dev-b2i
+  externalIdGeneratorPassword : hAAYLYMX5gc98SDEz9cr
+  externalIdGeneratorClientSoftwareKey : Snow Owl dev. deployment
+--------------------------
+
 === Logging
 
 Log files are stored under `./opt/snowowl-community_{version}/serviceability` directory of the Snow Owl server. 

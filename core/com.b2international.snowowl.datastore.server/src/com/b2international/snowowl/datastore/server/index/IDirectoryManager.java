@@ -18,31 +18,34 @@ package com.b2international.snowowl.datastore.server.index;
 import java.io.IOException;
 import java.util.List;
 
-import org.apache.lucene.store.Directory;
-
-import com.b2international.snowowl.core.api.IBranchPath;
+import com.b2international.snowowl.core.api.BranchPath;
 
 /**
- * Represents a {@link Directory} initializer.
+ * Represents an {@link IndexDirectory} initializer.
  */
-public interface IDirectoryManager extends IndexDirectoryFirstStartupCallback {
+public interface IDirectoryManager {
+
+	/**
+	 * Initializes the the specified {@link IndexBranchService} if it represents the MAIN branch and its directory does 
+	 * not exist on the file system.
+	 * 
+	 * @param service the service which is initialized first time
+	 */
+	void firstStartup(IndexBranchService service);
 
 	/** 
-	 * Creates and returns with a new {@link Directory} instance. 
-	 * @param baseService 
+	 * Creates a new {@link IndexDirectory} instance for the specified sequence of CDO branch identifiers.
+	 *  
+	 * @param cdoBranchPath the sequence of CDO branch IDs to follow
+	 * @param readOnly {@code true} if an implementation should be returned which is not writable, {@code false} otherwise
+	 * @return the Directory for the given CDO branch sequence
 	 */
-	Directory createDirectory(IBranchPath branchPath, IndexBranchService baseService) throws IOException;
-	
-	/** 
-	 * Cleans up underlying resources. 
-	 * @throws IOException 
-	 */
-	void deleteIndex(IBranchPath branchPath) throws IOException;
-	
+	IndexDirectory openDirectory(BranchPath cdoBranchPath, boolean readOnly) throws IOException;
+
 	/**
 	 * Collects a list of absolute file paths that contain index data for the specified branch path. Note that the list
 	 * may not be complete to reproduce an index by itself in case of "layered" indexes.
 	 * @return the list of files which carry data for this update, or an empty list (never {@code null})
 	 */
-	List<String> listFiles(IBranchPath branchPath) throws IOException;
+	List<String> listFiles(BranchPath cdoBranchPath) throws IOException;
 }

@@ -13,21 +13,30 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.datastore.server.index;
+package com.b2international.snowowl.datastore.server.events;
 
-import org.apache.lucene.store.Directory;
+import static com.google.common.base.Preconditions.checkNotNull;
+
+import com.b2international.snowowl.datastore.branch.Branch;
 
 /**
- * Fired when a directory is being created on the very first time.
- *
+ * @since 4.3
  */
-public interface IndexDirectoryFirstStartupCallback {
-
-	/**
-	 * Fires when the {@link Directory} is first initialized on the MAIN branch
-	 * for the {@link IndexBranchService} argument.
-	 * @param service the service which is initialized first time.
-	 */
-	void fireFirstStartup(IndexBranchService service);
+public class BranchChangedEvent extends BaseBranchEvent {
 	
+	private final Branch branch;
+	
+	public BranchChangedEvent(final String repositoryId, final Branch branch) {
+		super(repositoryId);
+		this.branch = checkNotNull(branch, "branch");
+	}
+	
+	public Branch getBranch() {
+		return branch;
+	}
+
+	@Override
+	protected String getAddress() {
+		return super.getAddress() + "/changes";
+	}
 }

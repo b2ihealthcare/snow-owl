@@ -13,22 +13,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.datastore.server.index;
-
+package com.b2international.snowowl.snomed.mrcm.core.widget.bean;
 
 /**
- * Represents an index post processor. Used to perform any arbitrary content modification.
+ * Widget beans with characteristic type properties
  */
-public interface IIndexPostProcessor {
+public interface CharacteristicTypedWidgetBean {
 
-	/**Performs the post processing on the given branch with the specified timestamp.*/
-	void postProcess(final IIndexPostProcessingConfiguration configuration);
+	/**
+	 * Returns the widget bean's characteristic type id
+	 * @return characteristic type id
+	 */
+	String getSelectedCharacteristicTypeId();
 
-	/**Noop index post processor implementation. Does nothing.*/
-	IIndexPostProcessor NOOP = new IIndexPostProcessor() {
-		@Override public void postProcess(final IIndexPostProcessingConfiguration configuration) {
-			//intentionally ignored.
-		}
-	};
-	
 }

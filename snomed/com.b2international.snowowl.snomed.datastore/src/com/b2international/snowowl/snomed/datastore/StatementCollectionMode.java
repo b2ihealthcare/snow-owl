@@ -54,20 +54,6 @@ public enum StatementCollectionMode {
 		}
 	},
 
-	WITH_RELATIONSHIP_IDS {
-		@Override public NumericDocValues getNumericDocValues(final AtomicReader leafReader) throws IOException {
-			return SnomedMappings.id().getDocValues(leafReader);
-		}
-
-		@Override public IsAStatementWithId createStatement(final long sourceId, final long destinationId, final long idOrKey) {
-			return new SnomedIsAStatementWithId(sourceId, destinationId, idOrKey);
-		}
-
-		@Override public IsAStatement[] createArray(final int expectedSize) {
-			return new SnomedIsAStatementWithId[expectedSize];
-		}
-	},
-
 	ALL_TYPES_NO_IDS {
 		
 		@Override

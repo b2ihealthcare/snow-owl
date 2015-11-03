@@ -31,7 +31,7 @@ import com.google.common.base.Strings;
  * Backing bean for the relationship selector UI widget.
  * 
  */
-public class RelationshipWidgetBean extends LeafWidgetBean {
+public class RelationshipWidgetBean extends LeafWidgetBean implements CharacteristicTypedWidgetBean {
 
 	private static final long serialVersionUID = -4424239339860251671L;
 
@@ -212,6 +212,11 @@ public class RelationshipWidgetBean extends LeafWidgetBean {
 		this.selectedCharacteristicType = selectedCharacteristicType;
 		getConcept().add(selectedCharacteristicType);
 		firePropertyChange(PROP_CHAR_TYPE, oldSelectedCharType, selectedCharacteristicType);
+	}
+	
+	@Override
+	public String getSelectedCharacteristicTypeId() {
+		return selectedCharacteristicType;
 	}
 
 	/**

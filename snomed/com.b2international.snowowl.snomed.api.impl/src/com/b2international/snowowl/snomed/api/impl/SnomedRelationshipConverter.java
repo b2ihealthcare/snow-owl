@@ -28,14 +28,10 @@ import com.b2international.snowowl.snomed.datastore.index.refset.SnomedRefSetMem
 import com.b2international.snowowl.snomed.datastore.services.AbstractSnomedRefSetMembershipLookupService;
 import com.google.common.collect.ImmutableSet;
 
-/**
- */
 public class SnomedRelationshipConverter extends AbstractSnomedComponentConverter<SnomedRelationshipIndexEntry, ISnomedRelationship> {
 
-	private final AbstractSnomedRefSetMembershipLookupService snomedRefSetMembershipLookupService;
-
-	public SnomedRelationshipConverter(final AbstractSnomedRefSetMembershipLookupService snomedRefSetMembershipLookupService) {
-		this.snomedRefSetMembershipLookupService = snomedRefSetMembershipLookupService;
+	public SnomedRelationshipConverter(final AbstractSnomedRefSetMembershipLookupService refSetMembershipLookupService) {
+		super(refSetMembershipLookupService);
 	}
 
 	@Override
@@ -68,8 +64,8 @@ public class SnomedRelationshipConverter extends AbstractSnomedComponentConverte
 	}
 
 	private RelationshipRefinability getRelationshipRefinability(final String relationshipId) {
-		final Collection<SnomedRefSetMemberIndexEntry> relationshipMembers = snomedRefSetMembershipLookupService.getRelationshipMembers(
-				ImmutableSet.of(Concepts.REFSET_RELATIONSHIP_REFINABILITY), 
+		final Collection<SnomedRefSetMemberIndexEntry> relationshipMembers = getRefSetMembershipLookupService().getRelationshipMembers(
+				ImmutableSet.of(Concepts.REFSET_RELATIONSHIP_REFINABILITY),
 				ImmutableSet.of(relationshipId));
 
 		for (final SnomedRefSetMemberIndexEntry relationshipMember : relationshipMembers) {

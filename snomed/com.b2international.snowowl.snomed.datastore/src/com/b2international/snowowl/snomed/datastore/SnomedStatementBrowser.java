@@ -126,6 +126,15 @@ public interface SnomedStatementBrowser extends IStatementBrowser<SnomedConceptI
 	*/
 	Collection<SnomedRelationshipIndexEntry> getActiveOutboundStatementsById(final IBranchPath branchPath, final String conceptId);
 
+   /**
+	* Returns a collection of all active source relationships for the specified concept and relationship type.
+	* @param branchPath the branch path reference limiting visibility to a particular branch.
+	* @param conceptId the concept ID.
+	* @param relationshipTypeId the id of the type of the relationship
+	* @return a collection of active outbound statements for the specified concept
+	*/
+	Collection<SnomedRelationshipIndexEntry> getActiveOutboundStatementsById(final IBranchPath branchPath, final String id, final String relationshipTypeId);
+	
 	/**
 	* Returns a map of concept IDs and the associated preferred terms for the concepts. The concept IDs are a set of
 	* object, value and attribute concept IDs of all source and destination relationships of the concept identifier by
@@ -146,4 +155,5 @@ public interface SnomedStatementBrowser extends IStatementBrowser<SnomedConceptI
 	Map<String, String> getAllStatementImageIdsById(final IBranchPath branchPath, final String conceptId);
 
 	Map<String, String> getAllDestinationLabels(IBranchPath branchPath, Collection<String> sourceIds, String typeId);
+
 }
