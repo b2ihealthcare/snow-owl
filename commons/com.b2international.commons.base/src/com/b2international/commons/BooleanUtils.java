@@ -66,6 +66,6 @@ public final class BooleanUtils {
 		if (null == bool) {
 			return null;
 		}
-		return bool.booleanValue() ? new Integer(1) : new Integer(0);
+		return bool.booleanValue() ? Integer.valueOf(1) : Integer.valueOf(0);
 	}
 }
