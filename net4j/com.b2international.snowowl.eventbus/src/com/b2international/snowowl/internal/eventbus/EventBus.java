@@ -69,9 +69,9 @@ public class EventBus extends Lifecycle implements IEventBus {
 	@Override
 	protected void doActivate() throws Exception {
 		super.doActivate();
+		final String groupName = getClass().getSimpleName().toLowerCase().concat("-" + description);
+		final ThreadGroup group = new ThreadGroup(groupName);
 		for (int i = 0; i < numberOfWorkers; i++) {
-			final String groupName = getClass().getSimpleName().toLowerCase().concat("-" + description + "-" + i);
-			final ThreadGroup group = new ThreadGroup(groupName);
 			final ExecutorService context = Executors.newSingleThreadExecutor(new ThreadFactory() {
 				@Override
 				public Thread newThread(Runnable r) {
