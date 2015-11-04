@@ -39,6 +39,7 @@ import com.b2international.snowowl.datastore.server.index.IndexServerServiceMana
 import com.b2international.snowowl.datastore.server.index.SingleDirectoryIndexManager;
 import com.b2international.snowowl.datastore.server.index.SingleDirectoryIndexManagerImpl;
 import com.b2international.snowowl.datastore.server.internal.DefaultRepositoryManager;
+import com.b2international.snowowl.datastore.server.internal.ExtensionBasedEditingContextFactoryProvider;
 import com.b2international.snowowl.datastore.server.internal.branch.BranchSerializer;
 import com.b2international.snowowl.datastore.server.internal.review.ReviewSerializer;
 import com.b2international.snowowl.datastore.server.session.ApplicationSessionManager;
@@ -101,6 +102,7 @@ public class DatastoreServerBootstrap implements PreRunCapableBootstrapFragment 
 			env.services().registerService(SingleDirectoryIndexManager.class, new SingleDirectoryIndexManagerImpl());
 
 			env.services().registerService(RepositoryManager.class, new DefaultRepositoryManager());
+			env.services().registerService(EditingContextFactoryProvider.class, new ExtensionBasedEditingContextFactoryProvider());
 			
 			LOG.info("<<< Server-side datastore bundle started. [{}]", serverStopwatch);
 		} else {

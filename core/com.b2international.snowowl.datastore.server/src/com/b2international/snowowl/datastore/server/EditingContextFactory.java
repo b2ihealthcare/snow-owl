@@ -19,7 +19,8 @@ import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.datastore.CDOEditingContext;
 
 /**
- * @param <T> The type of CDOEditingContext that can be created.
+ * @param <T>
+ *            The type of CDOEditingContext that can be created.
  * 
  * @since 2.9
  */
@@ -27,9 +28,18 @@ public interface EditingContextFactory {
 
 	/**
 	 * Create an {@link CDOEditingContext} on the given {@link IBranchPath}
+	 * 
 	 * @param branchPath
 	 * @return
 	 */
 	CDOEditingContext createEditingContext(IBranchPath branchPath);
-	
+
+	/**
+	 * Returns whether the {@link CDOEditingContext} returned by this factory belongs to the repository identified by the given repositoryId or not.
+	 * 
+	 * @param repositoryId
+	 * @return
+	 */
+	boolean belongsTo(String repositoryId);
+
 }
