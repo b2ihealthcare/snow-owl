@@ -25,9 +25,9 @@ import com.b2international.snowowl.snomed.mrcm.core.widget.bean.RelationshipWidg
  * Validator to check whether the concept has at least one stated IS_A relationship.
  * @since 4.4
  */
-public class IsARelationshipWidgetBeanValidator implements ModeledWidgetBeanValidator {
+public class StatedIsARelationshipWidgetBeanValidator implements ModeledWidgetBeanValidator {
 
-	public IsARelationshipWidgetBeanValidator(SnomedTerminologyBrowser browser) {
+	public StatedIsARelationshipWidgetBeanValidator(SnomedTerminologyBrowser browser) {
 	}
 
 	@Override
@@ -42,6 +42,7 @@ public class IsARelationshipWidgetBeanValidator implements ModeledWidgetBeanVali
 		
 		int numberOfStatedIsARelationships = 0;
 		
+		//these are only active relationships by definition
 		for (RelationshipWidgetBean relationshipWidgetBean : relationships) {
 			if (relationshipWidgetBean.isIsA() && relationshipWidgetBean.getSelectedCharacteristicTypeId().equals(Concepts.STATED_RELATIONSHIP)) {
 				numberOfStatedIsARelationships ++;
