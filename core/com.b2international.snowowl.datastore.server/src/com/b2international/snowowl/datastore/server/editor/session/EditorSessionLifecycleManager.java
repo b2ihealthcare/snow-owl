@@ -26,6 +26,7 @@ import org.slf4j.LoggerFactory;
 
 import com.b2international.commons.StringUtils;
 import com.b2international.snowowl.datastore.IBranchPathMap;
+import com.b2international.snowowl.datastore.server.EditingContextFactory;
 import com.b2international.snowowl.datastore.server.editor.operation.executor.OperationExecutorFactory;
 import com.google.common.base.Optional;
 import com.google.common.base.Preconditions;

@@ -18,6 +18,7 @@ package com.b2international.snowowl.datastore.server.editor.session;
 import java.util.UUID;
 
 import com.b2international.snowowl.datastore.IBranchPathMap;
+import com.b2international.snowowl.datastore.server.EditingContextFactory;
 import com.b2international.snowowl.datastore.server.editor.operation.executor.OperationExecutorFactory;
 
 /**

@@ -34,9 +34,9 @@ import com.b2international.snowowl.datastore.editor.operation.status.IOperationE
 import com.b2international.snowowl.datastore.editor.service.EditorSessionInitializationException;
 import com.b2international.snowowl.datastore.editor.service.IEditorService;
 import com.b2international.snowowl.datastore.net4j.push.PushConstants;
+import com.b2international.snowowl.datastore.server.EditingContextFactory;
 import com.b2international.snowowl.datastore.server.editor.operation.executor.AbstractOperationExecutor;
 import com.b2international.snowowl.datastore.server.editor.operation.executor.OperationExecutorFactory;
-import com.b2international.snowowl.datastore.server.editor.session.EditingContextFactory;
 import com.b2international.snowowl.datastore.server.editor.session.EditorSession;
 import com.b2international.snowowl.datastore.server.editor.session.EditorSessionLifecycleManager;
 import com.b2international.snowowl.datastore.server.net4j.push.PushServerService;

@@ -60,6 +60,7 @@ import com.b2international.snowowl.datastore.editor.operation.AbstractOperation;
 import com.b2international.snowowl.datastore.editor.operation.status.IOperationExecutionStatus;
 import com.b2international.snowowl.datastore.exception.RepositoryLockException;
 import com.b2international.snowowl.datastore.server.CDOServerUtils;
+import com.b2international.snowowl.datastore.server.EditingContextFactory;
 import com.b2international.snowowl.datastore.server.editor.job.EditorSessionCommitInfoProcessingJobChangeAdapter;
 import com.b2international.snowowl.datastore.server.editor.job.JobInitializationException;
 import com.b2international.snowowl.datastore.server.editor.operation.executor.AbstractOperationExecutor;
