@@ -13,11 +13,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.datastore.server.request;
+package com.b2international.snowowl.core.domain;
 
 import com.b2international.snowowl.core.branch.Branch;
-import com.b2international.snowowl.core.domain.BranchContext;
-import com.b2international.snowowl.core.domain.DelegatingRepositoryContext;
 
 /**
  * @since 4.5

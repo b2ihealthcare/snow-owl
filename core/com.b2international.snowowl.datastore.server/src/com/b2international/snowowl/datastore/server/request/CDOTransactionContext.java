@@ -23,6 +23,7 @@ import org.eclipse.emf.ecore.EObject;
 import com.b2international.commons.exceptions.Exceptions;
 import com.b2international.snowowl.core.api.SnowowlRuntimeException;
 import com.b2international.snowowl.core.domain.BranchContext;
+import com.b2international.snowowl.core.domain.DelegatingBranchContext;
 import com.b2international.snowowl.core.domain.TransactionContext;
 import com.b2international.snowowl.core.exceptions.ConflictException;
 import com.b2international.snowowl.core.exceptions.CycleDetectedException;
