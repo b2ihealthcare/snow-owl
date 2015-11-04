@@ -27,6 +27,8 @@ import java.util.Set;
 import org.apache.lucene.document.Document;
 
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
+import com.b2international.snowowl.snomed.exporter.server.SnomedRfFileNameBuilder;
+import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSet;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType;
 
 /**
@@ -56,6 +58,11 @@ public class SnomedSimpleMapRefSetExporter extends SnomedRefSetExporter {
 	@Override
 	public Set<String> getFieldsToLoad() {
 		return FIELD_TO_LOAD;
+	}
+	
+	@Override
+	protected String buildRefSetFileName(final String refSetName, final SnomedRefSet refSet) {
+		return SnomedRfFileNameBuilder.buildRefSetFileName(getConfiguration(), refSetName, refSet, includeMapTargetDescription);
 	}
 
 	@Override

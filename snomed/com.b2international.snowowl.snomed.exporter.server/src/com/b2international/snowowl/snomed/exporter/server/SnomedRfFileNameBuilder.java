@@ -21,15 +21,12 @@ import java.util.Date;
 
 import com.b2international.commons.StringUtils;
 import com.b2international.snowowl.core.ApplicationContext;
-import com.b2international.snowowl.core.CoreTerminologyBroker;
 import com.b2international.snowowl.core.date.DateFormats;
 import com.b2international.snowowl.core.date.Dates;
 import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.snomed.datastore.ILanguageConfigurationProvider;
 import com.b2international.snowowl.snomed.datastore.LanguageConfiguration;
-import com.b2international.snowowl.snomed.datastore.services.SnomedConceptNameProvider;
 import com.b2international.snowowl.snomed.exporter.server.sandbox.SnomedExportConfiguration;
-import com.b2international.snowowl.snomed.snomedrefset.SnomedMappingRefSet;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSet;
 import com.google.common.base.Preconditions;
 
@@ -64,10 +61,6 @@ public class SnomedRfFileNameBuilder {
 				.toString();
 	}
 
-	public static String buildRefSetFileName(final SnomedExportConfiguration configuration, final SnomedRefSet refSet) {
-		return buildRefSetFileName(configuration, toCamelCase(getPreferredTerm(refSet)), refSet);
-	}
-	
 	/*
 	 * return the transient effective time if set, otherwise today's date
 	 */
@@ -80,8 +73,12 @@ public class SnomedRfFileNameBuilder {
 	}
 
 	public static String buildRefSetFileName(final SnomedExportConfiguration configuration, final String refSetName, final SnomedRefSet refSet) {
+		return buildRefSetFileName(configuration, refSetName, refSet, false);
+	}
+
+	public static String buildRefSetFileName(final SnomedExportConfiguration configuration, final String refSetName, final SnomedRefSet refSet, final boolean includeMapTargetDescription) {
 		return new StringBuilder("der2_")
-				.append(getPrefix(refSet))
+				.append(getPrefix(refSet, includeMapTargetDescription))
 				.append("Refset_")
 				.append(toCamelCase(refSetName))
 				.append(String.valueOf(configuration.getContentSubType()))
@@ -123,11 +120,6 @@ public class SnomedRfFileNameBuilder {
 		return result.substring(0, writeIdx);
 	}
 
-	/*returns with the preferred term of the reference set identifier concept*/	
-	private static String getPreferredTerm(final SnomedRefSet refSet) {
-		return SnomedConceptNameProvider.INSTANCE.getText(refSet.getIdentifierId(), refSet.cdoView()); 
-	}
-
 	/*returns with the language code for the reference set*/
 	private static String getLanguageCode(final SnomedRefSet refSet) {
 		return com.b2international.snowowl.snomed.SnomedConstants.LanguageCodeReferenceSetIdentifierMapping.getLanguageCode(refSet.getIdentifierId()); 
@@ -139,7 +131,7 @@ public class SnomedRfFileNameBuilder {
 	}
 
 	/*returns with the RF2 file name prefix for the reference set*/
-	private static String getPrefix(final SnomedRefSet refSet) {
+	private static String getPrefix(final SnomedRefSet refSet, final boolean includeMapTargetDescription) {
 		switch (Preconditions.checkNotNull(refSet, "SNOMED CT reference set argument cannot be null.").getType()) {
 		case CONCRETE_DATA_TYPE: return "ccss";
 		case QUERY: return "s";
@@ -150,10 +142,14 @@ public class SnomedRfFileNameBuilder {
 		case DESCRIPTION_TYPE: return "ci";
 		case COMPLEX_MAP: return "iisssc";
 		case EXTENDED_MAP: return "iissscc";
-		case SIMPLE_MAP: return ((SnomedMappingRefSet) refSet).getMapTargetComponentType() == CoreTerminologyBroker.UNSPECIFIED_NUMBER_SHORT ? "s" : "c";
+		case SIMPLE_MAP: return getSimpleMapPrefix(refSet, includeMapTargetDescription);
 		case MODULE_DEPENDENCY: return "ss";
 		}
 		throw new IllegalArgumentException ("Unknown reference set type. Type: " + refSet.getType());
+	}
+	
+	private static String getSimpleMapPrefix(final SnomedRefSet refSet, final boolean includeMapTargetDescription) {
+		return includeMapTargetDescription ? "ss" : "s";
 	}
 
 	/*returns with the previously configured release time in yyyyMMdd format*/
