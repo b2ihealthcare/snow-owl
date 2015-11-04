@@ -20,6 +20,8 @@ import static com.google.common.base.Preconditions.checkNotNull;
 import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.config.SnowOwlConfiguration;
 import com.b2international.snowowl.core.domain.RepositoryContext;
+import com.b2international.snowowl.datastore.server.EditingContextFactory;
+import com.b2international.snowowl.datastore.server.EditingContextFactoryProvider;
 import com.google.inject.Provider;
 
 /**
@@ -30,13 +32,16 @@ public final class DefaultRepositoryContext implements RepositoryContext {
 	private final ServiceProvider serviceProvider;
 	private final String id;
 
-	public DefaultRepositoryContext(ServiceProvider serviceProvider, String id) {
+	DefaultRepositoryContext(ServiceProvider serviceProvider, String id) {
 		this.serviceProvider = checkNotNull(serviceProvider, "serviceProvider");
 		this.id = checkNotNull(id, "id");
 	}
 
 	@Override
 	public <T> T service(Class<T> type) {
+		if (EditingContextFactory.class.isAssignableFrom(type)) {
+			return type.cast(service(EditingContextFactoryProvider.class).get(id));
+		}
 		return serviceProvider.service(type);
 	}
 

@@ -39,7 +39,7 @@ public final class CDOTransactionContext extends DelegatingBranchContext impleme
 
 	private CDOEditingContext editingContext;
 
-	public CDOTransactionContext(BranchContext context, CDOEditingContext editingContext) {
+	CDOTransactionContext(BranchContext context, CDOEditingContext editingContext) {
 		super(context);
 		this.editingContext = editingContext;
 	}

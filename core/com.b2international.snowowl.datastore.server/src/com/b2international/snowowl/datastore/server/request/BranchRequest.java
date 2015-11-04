@@ -22,7 +22,6 @@ import org.eclipse.emf.cdo.common.branch.CDOBranch;
 import com.b2international.snowowl.core.branch.Branch;
 import com.b2international.snowowl.core.branch.BranchManager;
 import com.b2international.snowowl.core.domain.BranchContext;
-import com.b2international.snowowl.core.domain.DefaultBranchContext;
 import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.core.events.DelegatingRequest;
 import com.b2international.snowowl.core.events.Request;
@@ -46,7 +45,7 @@ public final class BranchRequest<B> extends DelegatingRequest<RepositoryContext,
 	@Override
 	public B execute(RepositoryContext context) {
 		final Branch branch = ensureAvailability(context);
-		return next(new DefaultBranchContext(context, branch));
+		return next(new CDOBranchContext(context, branch));
 	}
 	
 	private Branch ensureAvailability(RepositoryContext context) {
