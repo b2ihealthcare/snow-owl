@@ -18,6 +18,7 @@ package com.b2international.snowowl.datastore.server.request;
 import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.domain.TransactionContext;
 import com.b2international.snowowl.core.events.Request;
+import com.b2international.snowowl.core.exceptions.ApiValidation;
 
 /**
  * @since 4.5
@@ -47,6 +48,7 @@ public final class RepositoryCommitRequestBuilder {
 	}
 	
 	public Request<ServiceProvider, CommitInfo> build() {
+		ApiValidation.checkInput(body);
 		return new RepositoryRequest<>(repositoryId, new BranchRequest<>(branch, new TransactionalRequest(userId, commitComment, body)));
 	}
 
