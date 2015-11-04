@@ -36,6 +36,7 @@ import com.b2international.snowowl.snomed.Concept;
 import com.b2international.snowowl.snomed.Relationship;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.core.domain.Acceptability;
+import com.b2international.snowowl.snomed.core.domain.DefinitionStatus;
 import com.b2international.snowowl.snomed.core.domain.ISnomedConcept;
 import com.b2international.snowowl.snomed.core.domain.IdGenerationStrategy;
 import com.b2international.snowowl.snomed.core.store.SnomedComponents;
@@ -55,7 +56,14 @@ public class SnomedConceptCreateRequest extends BaseSnomedComponentCreateRequest
 
 	@NotNull
 	private IdGenerationStrategy isAIdGenerationStrategy;
+	
+	@NotNull
+	private DefinitionStatus definitionStatus = DefinitionStatus.PRIMITIVE;
 
+	public void setDefinitionStatus(DefinitionStatus definitionStatus) {
+		this.definitionStatus = definitionStatus;
+	}
+	
 	public void setParentId(final String parentId) {
 		this.parentId = parentId;
 	}
@@ -122,6 +130,7 @@ public class SnomedConceptCreateRequest extends BaseSnomedComponentCreateRequest
 			return SnomedComponents.newConcept()
 					.withId(getIdGenerationStrategy())
 					.withModule(getModuleId())
+					.withDefinitionStatus(definitionStatus)
 					.build(context);
 		} catch (final ComponentNotFoundException e) {
 			throw e.toBadRequestException();
@@ -158,6 +167,8 @@ public class SnomedConceptCreateRequest extends BaseSnomedComponentCreateRequest
 		builder.append(parentId);
 		builder.append(", getIsAIdGenerationStrategy()=");
 		builder.append(isAIdGenerationStrategy);
+		builder.append(", getDefinitionStatus()=");
+		builder.append(definitionStatus);
 		builder.append(", getDescriptions()=");
 		builder.append(descriptions);
 		builder.append("]");
