@@ -29,7 +29,6 @@ import com.b2international.snowowl.core.api.index.IIndexServerServiceManager;
 import com.b2international.snowowl.core.api.index.IIndexUpdater;
 import com.b2international.snowowl.core.branch.BranchManager;
 import com.b2international.snowowl.core.config.SnowOwlConfiguration;
-import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.core.events.util.ApiRequestHandler;
 import com.b2international.snowowl.core.setup.Environment;
 import com.b2international.snowowl.datastore.cdo.ICDOConnection;
@@ -52,8 +51,7 @@ import com.b2international.snowowl.datastore.server.internal.review.ReviewSerial
 import com.b2international.snowowl.datastore.store.IndexStore;
 import com.b2international.snowowl.eventbus.EventBusUtil;
 import com.b2international.snowowl.eventbus.IEventBus;
-import com.b2international.snowowl.eventbus.IHandler;
-import com.b2international.snowowl.eventbus.IMessage;
+import com.b2international.snowowl.eventbus.Pipe;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.inject.Provider;
 
@@ -147,30 +145,7 @@ public final class CDOBasedRepository implements InternalRepository {
 		}
 		
 		// register event bridge/pipe between events and handlers
-		events().registerHandler(address(), new IHandler<IMessage>() {
-			@Override
-			public void handle(final IMessage outer) {
-				try {
-					final Object body = outer.body();
-					if (body instanceof Request) {
-						if (outer.isSend()) {
-							handlers().send(address(), body, new IHandler<IMessage>() {
-								@Override
-								public void handle(IMessage inner) {
-									if (inner.isSucceeded()) {
-										outer.reply(inner.body());
-									} else {
-										outer.fail(inner.body());
-									}
-								}
-							});
-						}
-					}
-				} catch (Exception e) {
-					outer.fail(e);
-				}
-			}
-		});		
+		events().registerHandler(address(), new Pipe(handlers(), address()));
 	}
 	
 	private ServiceProvider services() {
