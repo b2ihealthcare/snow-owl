@@ -28,7 +28,7 @@ import com.b2international.snowowl.core.TextConstants;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.quicksearch.IQuickSearchProvider;
 import com.b2international.snowowl.datastore.IBranchPathMap;
-import com.b2international.snowowl.datastore.index.DelimiterStopAnalyzer;
+import com.b2international.snowowl.datastore.index.DelimiterAnalyzer;
 import com.b2international.snowowl.datastore.index.IndexUtils;
 import com.google.common.base.Splitter;
 import com.google.common.collect.Iterables;
@@ -50,7 +50,7 @@ public abstract class AbstractQuickSearchContentProvider {
 	}
 
 	protected static int[][] getMatchRegions(final String queryExpression, final String label) {
-		final Analyzer analyzer = new DelimiterStopAnalyzer();
+		final Analyzer analyzer = new DelimiterAnalyzer();
 		final List<String> filterTokens = IndexUtils.split(analyzer, queryExpression);
 		// FIXME: Remove this when the new Analyzer chain is used
 		final String sortKeyLabel = IndexUtils.getSortKey(label.toLowerCase(Locale.ENGLISH));
@@ -89,11 +89,6 @@ public abstract class AbstractQuickSearchContentProvider {
 		
 		for (final String labelToken : labelTokens) {
 			
-			// TODO: remove this part
-			if (TextConstants.STOPWORDS.contains(labelToken)) {
-				continue;
-			}
-
 			final Iterator<String> itr = filterTokens.iterator();
 			while (itr.hasNext()) {
 				final String filterToken = itr.next();
