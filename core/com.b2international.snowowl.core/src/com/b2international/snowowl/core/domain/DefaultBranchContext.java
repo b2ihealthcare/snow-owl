@@ -24,7 +24,7 @@ import com.b2international.snowowl.core.branch.Branch;
  */
 public class DefaultBranchContext extends DelegatingRepositoryContext implements BranchContext {
 
-	private Branch branch;
+	private final Branch branch;
 
 	public DefaultBranchContext(RepositoryContext context, Branch branch) {
 		super(context);
@@ -32,7 +32,7 @@ public class DefaultBranchContext extends DelegatingRepositoryContext implements
 	}
 	
 	@Override
-	public Branch branch() {
+	public final Branch branch() {
 		return branch;
 	}
 
