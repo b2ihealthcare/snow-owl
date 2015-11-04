@@ -54,6 +54,11 @@ public interface IQuickSearchProvider {
 	static final String TERMINOLOGY_COMPONENT_ID = "TERMINOLOGY_COMPONENT_ID";
 
 	/**
+	 * Configuration key to specify that the quick search should show the entered expression as missing component in the results.
+	 */
+	static final String CONFIGURATION_SHOW_MISSING_COMPONENT = "SHOW_MISSING_COMPONENT_ID";
+
+	/**
 	 * Returns the quick search provider's unique identifier, preferably the fully qualified name of the provider's
 	 * class.
 	 * 

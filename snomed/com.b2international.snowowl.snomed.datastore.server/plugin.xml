@@ -73,6 +73,11 @@
            id="com.b2international.snowowl.datastore.server.snomed.jobs.SnomedDescriptionLabelProviderServiceConfigJob"
            terminologyId="com.b2international.snowowl.terminology.snomed">
      </serviceConfigJob>
+     <serviceConfigJob
+           class="com.b2international.snowowl.datastore.server.snomed.jobs.SnomedStatedServerTerminologyBrowserConfigJob"
+           id="com.b2international.snowowl.datastore.server.snomed.jobs.SnomedStatedServerTerminologyBrowserConfigJob"
+           terminologyId="com.b2international.snowowl.terminology.snomed">
+     </serviceConfigJob>
    </extension>
    <extension
          point="com.b2international.snowowl.datastore.changeProcessorFactory">
@@ -141,6 +146,11 @@
             class="com.b2international.snowowl.datastore.server.snomed.DataTypeLabelQuickSearchContentProvider"
             quickSearchProviderId="com.b2international.snowowl.snomed.datastore.quicksearch.DataTypeLabelQuickSearchProvider"
             terminologyComponentId="UNSPECIFIED">
+      </provider>
+      <provider
+            class="com.b2international.snowowl.snomed.datastore.quicksearch.MissingSnomedComponentQuickSearchContentProvider"
+            quickSearchProviderId="com.b2international.snowowl.snomed.datastore.quicksearch.MissingComponentQuickSearchProvider"
+            terminologyComponentId="com.b2international.snowowl.terminology.snomed.concept">
       </provider>      
    </extension>
    <extension

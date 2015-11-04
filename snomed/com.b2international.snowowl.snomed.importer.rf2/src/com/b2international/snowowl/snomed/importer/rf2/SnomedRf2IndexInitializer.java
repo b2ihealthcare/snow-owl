@@ -19,28 +19,7 @@ import static com.b2international.commons.pcj.LongSets.forEach;
 import static com.b2international.commons.pcj.LongSets.newLongSet;
 import static com.b2international.commons.pcj.LongSets.toStringList;
 import static com.b2international.snowowl.core.ApplicationContext.getServiceForClass;
-import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.COMPONENT_REFERRING_PREDICATE;
-import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.COMPONENT_RELEASED;
-import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.CONCEPT_DEGREE_OF_INTEREST;
-import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.CONCEPT_EFFECTIVE_TIME;
-import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.CONCEPT_EXHAUSTIVE;
-import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.CONCEPT_FULLY_SPECIFIED_NAME;
-import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.CONCEPT_NAMESPACE_ID;
-import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.CONCEPT_OTHER_DESCRIPTION;
-import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.CONCEPT_PRIMITIVE;
-import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.CONCEPT_REFERRING_MAPPING_REFERENCE_SET_ID;
-import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.CONCEPT_REFERRING_REFERENCE_SET_ID;
-import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.CONCEPT_SYNONYM;
-import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.DESCRIPTION_CASE_SIGNIFICANCE_ID;
-import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.DESCRIPTION_EFFECTIVE_TIME;
-import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.RELATIONSHIP_DESTINATION_NEGATED;
-import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.RELATIONSHIP_EFFECTIVE_TIME;
-import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.RELATIONSHIP_GROUP;
-import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.RELATIONSHIP_INFERRED;
-import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.RELATIONSHIP_OBJECT_ID;
-import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.RELATIONSHIP_UNION_GROUP;
-import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.RELATIONSHIP_UNIVERSAL;
-import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.RELATIONSHIP_VALUE_ID;
+import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.*;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.collect.Lists.newArrayList;
 import static com.google.common.collect.Maps.newHashMap;
@@ -69,16 +48,11 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.core.runtime.Status;
-import org.eclipse.core.runtime.SubMonitor;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.emf.cdo.CDOObject;
 import org.eclipse.emf.cdo.common.id.CDOIDUtil;
 import org.eclipse.emf.cdo.transaction.CDOTransaction;
 import org.eclipse.emf.cdo.view.CDOView;
-
-import bak.pcj.map.LongKeyFloatMap;
-import bak.pcj.set.LongOpenHashSet;
-import bak.pcj.set.LongSet;
 
 import com.b2international.commons.CompareUtils;
 import com.b2international.commons.StringUtils;
@@ -111,7 +85,6 @@ import com.b2international.snowowl.datastore.server.snomed.index.init.DoiInitial
 import com.b2international.snowowl.datastore.server.snomed.index.init.ImportIndexServerService;
 import com.b2international.snowowl.datastore.server.snomed.index.init.ImportIndexServerService.TermType;
 import com.b2international.snowowl.datastore.server.snomed.index.init.ImportIndexServerService.TermWithType;
-import com.b2international.snowowl.datastore.server.snomed.index.init.MrcmIndexInitializer;
 import com.b2international.snowowl.importer.ImportException;
 import com.b2international.snowowl.snomed.Concept;
 import com.b2international.snowowl.snomed.Description;
@@ -119,6 +92,9 @@ import com.b2international.snowowl.snomed.Relationship;
 import com.b2international.snowowl.snomed.SnomedConstants;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
+import com.b2international.snowowl.snomed.datastore.MrcmEditingContext;
+import com.b2international.snowowl.snomed.datastore.PredicateUtils;
+import com.b2international.snowowl.snomed.datastore.PredicateUtils.ConstraintDomain;
 import com.b2international.snowowl.snomed.datastore.SnomedConceptIndexEntry;
 import com.b2international.snowowl.snomed.datastore.SnomedConceptLookupService;
 import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
@@ -140,9 +116,12 @@ import com.b2international.snowowl.snomed.datastore.index.update.RefSetIconIdUpd
 import com.b2international.snowowl.snomed.datastore.index.update.RefSetParentageUpdater;
 import com.b2international.snowowl.snomed.datastore.services.ISnomedComponentService;
 import com.b2international.snowowl.snomed.datastore.services.SnomedBranchRefSetMembershipLookupService;
+import com.b2international.snowowl.snomed.datastore.snor.ConstraintFormIsApplicableForValidationPredicate;
 import com.b2international.snowowl.snomed.datastore.taxonomy.ISnomedTaxonomyBuilder;
 import com.b2international.snowowl.snomed.importer.rf2.model.ComponentImportType;
 import com.b2international.snowowl.snomed.importer.rf2.model.ComponentImportUnit;
+import com.b2international.snowowl.snomed.mrcm.AttributeConstraint;
+import com.b2international.snowowl.snomed.mrcm.ConceptModel;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedConcreteDataTypeRefSetMember;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedLanguageRefSetMember;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSet;
@@ -150,10 +129,15 @@ import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetMember;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType;
 import com.google.common.base.Objects;
 import com.google.common.base.Preconditions;
+import com.google.common.collect.FluentIterable;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Sets;
+
+import bak.pcj.map.LongKeyFloatMap;
+import bak.pcj.set.LongOpenHashSet;
+import bak.pcj.set.LongSet;
 
 /**
  * RF2 based incremental index initializer job.
@@ -202,11 +186,6 @@ public class SnomedRf2IndexInitializer extends Job {
 		getImportIndexService();
 	}
 
-	
-	/*
-	 * (non-Javadoc)
-	 * @see org.eclipse.core.runtime.jobs.Job#run(org.eclipse.core.runtime.IProgressMonitor)
-	 */
 	@Override
 	public IStatus run(final IProgressMonitor monitor) {
 
@@ -221,10 +200,19 @@ public class SnomedRf2IndexInitializer extends Job {
 		doiData = new DoiInitializer().run(delegateMonitor);
 		
 		LOGGER.info("Collecting MRCM rule related changes...");
-		final MrcmIndexInitializer mrcmIndexInitializer = new MrcmIndexInitializer(getSnomedIndexService(), branchPath);
-		LOGGER.info("MRCM rule related changes successfully collected.");
-		mrcmIndexInitializer.run(SubMonitor.convert(delegateMonitor, 1));
-		conceptIdToPredicateMap = mrcmIndexInitializer.getComponentIdToPredicateMap();
+		final Multimap<Long, String> componentIdToConstraints = HashMultimap.create();
+		try (MrcmEditingContext context = new MrcmEditingContext()) {
+			ConceptModel conceptModel = context.getConceptModel();
+			final Iterable<AttributeConstraint> constraints = FluentIterable.from(conceptModel.getConstraints())
+					.filter(new ConstraintFormIsApplicableForValidationPredicate()).filter(AttributeConstraint.class);
+			for (final AttributeConstraint constraint : constraints) {
+				final long storageKey = CDOIDUtil.getLong(constraint.cdoID());
+				for (final ConstraintDomain constraintDomain : PredicateUtils.processConstraintDomain(storageKey, constraint.getDomain())) {
+					componentIdToConstraints.put(constraintDomain.getComponentId(), constraintDomain.getPredicateKey());
+				}
+			}
+		}
+		conceptIdToPredicateMap = componentIdToConstraints;
 		
 		newRefSetMemberships = HashMultimap.create();
 		newMappingMemberships = HashMultimap.create();
@@ -923,45 +911,41 @@ public class SnomedRf2IndexInitializer extends Job {
 	
 
 	private void indexUnvisitedConcepts(final Set<String> unvisitedConcepts, final Set<String> dirtyConceptsForCompareReindex) {
-		
 		final SnomedIndexServerService snomedIndexService = getSnomedIndexService();
 		for (final String sConceptId : unvisitedConcepts) {
-			
 			final SnomedConceptIndexEntry concept = ApplicationContext.getInstance().getService(SnomedTerminologyBrowser.class).getConcept(branchPath, sConceptId);
-			
-			final long conceptId = Long.parseLong(sConceptId);
-			final long conceptStorageKey = concept.getStorageKey();
-			final boolean active = concept.isActive(); 
-			final boolean released = concept.isReleased();
-			final boolean primitive = concept.isPrimitive();
-			final boolean exhaustive = concept.isExhaustive();
-			final long moduleId = Long.parseLong(concept.getModuleId());
-			final Collection<String> currentRefSetMemberships = getCurrentRefSetMemberships(sConceptId, newRefSetMemberships, detachedRefSetMemberships);
-			final Collection<String> currentMappingMemberships = getCurrentMappingMemberships(sConceptId, newMappingMemberships, detachedMappingMemberships);
-			
-			final Document doc = createConceptDocument(
-					conceptIdToPredicateMap, 
-					conceptId, 
-					conceptStorageKey, 
-					active, 
-					released, 
-					primitive, 
-					exhaustive, 
-					moduleId, 
-					currentRefSetMemberships,
-					currentMappingMemberships,
-					concept.getEffectiveTimeAsLong());
-			
-			snomedIndexService.index(branchPath, doc, conceptStorageKey);
+			// can happen as concepts referenced in MRCM rules might not exist at this time
+			if (concept != null) {
+				final long conceptId = Long.parseLong(sConceptId);
+				final long conceptStorageKey = concept.getStorageKey();
+				final boolean active = concept.isActive(); 
+				final boolean released = concept.isReleased();
+				final boolean primitive = concept.isPrimitive();
+				final boolean exhaustive = concept.isExhaustive();
+				final long moduleId = Long.parseLong(concept.getModuleId());
+				final Collection<String> currentRefSetMemberships = getCurrentRefSetMemberships(sConceptId, newRefSetMemberships, detachedRefSetMemberships);
+				final Collection<String> currentMappingMemberships = getCurrentMappingMemberships(sConceptId, newMappingMemberships, detachedMappingMemberships);
+				
+				final Document doc = createConceptDocument(
+						conceptIdToPredicateMap, 
+						conceptId, 
+						conceptStorageKey, 
+						active, 
+						released, 
+						primitive, 
+						exhaustive, 
+						moduleId, 
+						currentRefSetMemberships,
+						currentMappingMemberships,
+						concept.getEffectiveTimeAsLong());
+				
+				snomedIndexService.index(branchPath, doc, conceptStorageKey);
+			}
 		}
-		
-		
 	}
 	
 	private void indexConcepts(final String absolutePath) {
-		
 		final SnomedIndexServerService snomedIndexService = getSnomedIndexService();
-		
 		parseFile(absolutePath, 5, new RecordParserCallback<String>() {
 
 			@Override

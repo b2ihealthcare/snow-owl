@@ -134,7 +134,6 @@ public class SnomedLanguageRefSetImporter extends AbstractSnomedRefSetImporter<A
 			editedMember.setReleased(true);
 		} else {
 			editedMember.unsetEffectiveTime();
-			editedMember.setReleased(false);
 		}
 
 		editedMember.setRefSet(getOrCreateRefSet(currentRow.getRefSetId(), currentRow.getReferencedComponentId()));

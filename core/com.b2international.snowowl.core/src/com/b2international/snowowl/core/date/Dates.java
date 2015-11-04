@@ -228,4 +228,21 @@ public abstract class Dates {
 		return DateFormatter.REGISTRY.getDateFormatter(timeZone);
 	}
 
+	/**
+	 * Returns the current time using {@link DateFormats#FULL} format.
+	 * @return a String representation of the current time
+	 */
+	public static String now() {
+		return now(DateFormats.FULL);
+	}
+	
+	/**
+	 * Returns the current time using the given format.
+	 * @param format - format to use
+	 * @return a String representation of the current time
+	 */
+	public static String now(String format) {
+		return formatByHostTimeZone(new Date(), format);
+	}
+
 }

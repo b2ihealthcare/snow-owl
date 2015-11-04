@@ -72,8 +72,6 @@ import org.eclipse.emf.ecore.util.EcoreUtil;
 import org.eclipse.net4j.util.lifecycle.ILifecycle;
 import org.eclipse.net4j.util.lifecycle.LifecycleEventAdapter;
 
-import bak.pcj.set.LongSet;
-
 import com.b2international.commons.CompareUtils;
 import com.b2international.commons.Pair;
 import com.b2international.snowowl.core.ApplicationContext;
@@ -93,6 +91,7 @@ import com.b2international.snowowl.snomed.Concept;
 import com.b2international.snowowl.snomed.Concepts;
 import com.b2international.snowowl.snomed.Description;
 import com.b2international.snowowl.snomed.Relationship;
+import com.b2international.snowowl.snomed.SnomedConstants;
 import com.b2international.snowowl.snomed.SnomedFactory;
 import com.b2international.snowowl.snomed.SnomedPackage;
 import com.b2international.snowowl.snomed.datastore.NormalFormWrapper.AttributeConceptGroupWrapper;
@@ -126,6 +125,8 @@ import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Ordering;
 import com.google.common.collect.Sets;
+
+import bak.pcj.set.LongSet;
 
 /**
  * SNOMED CT RF2 specific editing context subclass of {@link CDOEditingContext}
@@ -387,7 +388,9 @@ public class SnomedEditingContext extends BaseSnomedEditingContext {
 				continue;
 			}
 			
-			if (IS_A.equals(sourceRelationship.getType().getId())) {
+			//Copy non-inferred IS-A relationships
+			if (IS_A.equals(sourceRelationship.getType().getId()) 
+					&& !(sourceRelationship.getCharacteristicType().getId().equals(SnomedConstants.Concepts.INFERRED_RELATIONSHIP))) {
 				final Relationship relationship = editingContext.buildDefaultRelationship(
 						concept, 
 						sourceRelationship.getType(), 

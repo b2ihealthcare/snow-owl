@@ -110,7 +110,7 @@ public abstract class IndexAdapterBase<E extends IIndexEntry> extends QueryDslIn
 	 */
 	protected Query addTermClause(final BooleanQuery query, final String fieldName, final String searchString) {
 		
-		final List<String> tokens = IndexUtils.split(new DelimiterStopAnalyzer(), searchString);
+		final List<String> tokens = IndexUtils.split(new DelimiterAnalyzer(), searchString);
 		
 		for (final String token : tokens) {
 			query.add(new BooleanClause(new TermQuery(new Term(fieldName, token)), Occur.SHOULD));
@@ -132,7 +132,7 @@ public abstract class IndexAdapterBase<E extends IIndexEntry> extends QueryDslIn
 	protected Query addTermClauseWithAndOperator(final BooleanQuery query, final String fieldName, final String searchString) throws ParseException {
 		
 		final BooleanQuery wrapper = new BooleanQuery();
-		final List<String> tokens = IndexUtils.split(new DelimiterStopAnalyzer(), searchString);
+		final List<String> tokens = IndexUtils.split(new DelimiterAnalyzer(), searchString);
 		
 		for (final String token : tokens) {
 			wrapper.add(new BooleanClause(new TermQuery(new Term(fieldName, token)), Occur.MUST));
@@ -153,7 +153,7 @@ public abstract class IndexAdapterBase<E extends IIndexEntry> extends QueryDslIn
 	 */
 	protected Query addParsedClause(final BooleanQuery query, final String fieldName, final String searchString) throws ParseException {
 		
-		final QueryParser parser = new QueryParser(Version.LUCENE_4_9, fieldName, new DelimiterStopAnalyzer());
+		final QueryParser parser = new QueryParser(Version.LUCENE_4_9, fieldName, new DelimiterAnalyzer());
 		parser.setDefaultOperator(Operator.AND);
 		parser.setAllowLeadingWildcard(true);
 		

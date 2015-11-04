@@ -42,15 +42,12 @@ import org.apache.lucene.index.IndexableField;
 import org.eclipse.emf.ecore.EClass;
 
 import com.b2international.snowowl.core.CoreTerminologyBroker;
-import com.b2international.snowowl.datastore.CodeSystemUtils;
-import com.b2international.snowowl.datastore.ContentAvailabilityInfoManager;
 import com.b2international.snowowl.datastore.index.IndexUtils;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants;
 import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedMappings;
 import com.b2international.snowowl.snomed.snomedrefset.DataType;
-import com.b2international.snowowl.snomed.snomedrefset.SnomedMappingRefSet;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSet;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetPackage;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType;
@@ -204,27 +201,6 @@ public abstract class SnomedRefSetUtil {
 			default:
 				throw new IllegalArgumentException("Unsupported reference set type: " + type);
 		}
-	}
-
-	/**
-	 * Returns with {@code true} if the given reference set is a simple map type reference set,
-	 * and the map target component is either {@link CoreTerminologyBroker#UNSPECIFIED} or
-	 * the tooling supports it but the content is not available yet. Otherwise returns with {@code false}.
-	 * @param refSet the reference set to check.
-	 * @return {@code true} if the map target descriptions are interpreted for the reference set, otherwise {@code false}.
-	 */
-	public static boolean isSimpleMapWithDescription(final SnomedRefSet refSet) {
-		if (check(refSet) instanceof SnomedMappingRefSet) {
-			final short mapTargetComponentType = ((SnomedMappingRefSet) refSet).getMapTargetComponentType();
-			if (CoreTerminologyBroker.UNSPECIFIED_NUMBER_SHORT == mapTargetComponentType) {
-				return true;
-			}
-			
-			final String repositoryUuid = CodeSystemUtils.getRepositoryUuid(mapTargetComponentType);
-			return !ContentAvailabilityInfoManager.INSTANCE.isAvailable(repositoryUuid);
-			
-		}
-		return false;
 	}
 	
 	/**

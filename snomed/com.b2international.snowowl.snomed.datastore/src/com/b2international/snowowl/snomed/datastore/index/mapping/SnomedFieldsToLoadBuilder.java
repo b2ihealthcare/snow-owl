@@ -26,6 +26,14 @@ public class SnomedFieldsToLoadBuilder extends FieldsToLoadBuilderBase<SnomedFie
 		super();
 	}
 
+	public SnomedFieldsToLoadBuilder parent(String characteristicTypeId) {
+		return field(SnomedMappings.parent(characteristicTypeId));
+	}
+	
+	public SnomedFieldsToLoadBuilder ancestor(String characteristicTypeId) {
+		return field(SnomedMappings.ancestor(characteristicTypeId));
+	}
+	
 	public SnomedFieldsToLoadBuilder memberReferencedComponentId() {
 		return field(SnomedMappings.memberReferencedComponentId());
 	}

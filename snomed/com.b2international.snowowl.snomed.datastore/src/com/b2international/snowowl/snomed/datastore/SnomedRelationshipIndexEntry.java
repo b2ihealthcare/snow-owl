@@ -23,6 +23,9 @@ import javax.annotation.concurrent.Immutable;
 import com.b2international.snowowl.core.api.IComponent;
 import com.b2international.snowowl.core.api.IStatement;
 import com.b2international.snowowl.core.api.index.IIndexEntry;
+import com.b2international.snowowl.core.date.EffectiveTimes;
+import com.b2international.snowowl.datastore.cdo.CDOIDUtils;
+import com.b2international.snowowl.snomed.Relationship;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.datastore.index.SnomedIndexEntry;
 import com.google.common.base.Preconditions;
@@ -131,6 +134,31 @@ public class SnomedRelationshipIndexEntry extends SnomedIndexEntry implements IS
 		this.group = group;
 		this.unionGroup = unionGroup;
 		this.flags = flags;
+	}
+	
+	/**
+	 * Creates a {@link SnomedRelationshipIndexEntry} from the specified {@link Relationship}
+	 * 
+	 * @param relationship
+	 */
+	public SnomedRelationshipIndexEntry(Relationship relationship) {
+		this(
+				relationship.getId(), 
+				relationship.getSource().getId(), 
+				relationship.getType().getId(), 
+				relationship.getDestination().getId(), 
+				relationship.getCharacteristicType().getId(), 
+				CDOIDUtils.asLongSafe(relationship.cdoID()), 
+				relationship.getModule().getId(), 
+				(byte) relationship.getGroup(), 
+				(byte) relationship.getUnionGroup(), 
+				generateFlags(
+						relationship.isReleased(),
+						relationship.isActive(),
+						Concepts.INFERRED_RELATIONSHIP.equals(relationship.getCharacteristicType().getId()),
+						Concepts.UNIVERSAL_RESTRICTION_MODIFIER.equals(relationship.getModifier().getId()),
+						relationship.isDestinationNegated()), 
+				EffectiveTimes.getEffectiveTime(relationship.getEffectiveTime()));
 	}
 
 	@Override

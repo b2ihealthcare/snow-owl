@@ -33,17 +33,15 @@ import com.b2international.snowowl.core.TextConstants;
  */
 public class DelimiterTokenizer extends CharTokenizer {
 
-  // Excludes 2000-2000a, which is handled as a range
-  private static final String BREAKING_WHITESPACE_CHARS =
-      "\t\n\013\f\r \u0085\u1680\u2028\u2029\u205f\u3000";
+	// Excludes 2000-2000a, which is handled as a range
+	private static final String BREAKING_WHITESPACE_CHARS = "\t\n\013\f\r \u0085\u1680\u2028\u2029\u205f\u3000";
 
-  // Excludes 2007, which is handled as a gap in a pair of ranges
-  private static final String NON_BREAKING_WHITESPACE_CHARS =
-      "\u00a0\u180e\u202f";
+	// Excludes 2007, which is handled as a gap in a pair of ranges
+	private static final String NON_BREAKING_WHITESPACE_CHARS = "\u00a0\u180e\u202f";
 	
-  /**
-   * @see TextConstants#WHITESPACE_OR_DELIMITER_MATCHER
-   */
+	/**
+	 * @see TextConstants#WHITESPACE_OR_DELIMITER_MATCHER
+	 */
 	private static final IntSet TOKEN_CHARS;
 	
 	static {

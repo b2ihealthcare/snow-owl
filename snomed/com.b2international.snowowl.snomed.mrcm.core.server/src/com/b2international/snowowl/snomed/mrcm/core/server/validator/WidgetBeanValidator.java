@@ -57,6 +57,7 @@ public class WidgetBeanValidator implements IWidgetBeanValidator {
 		final Collection<ModeledWidgetBeanValidator> validators = newHashSet();
 		validators.add(new DescriptionWidgetBeanValidator(browser));
 		validators.add(new RelationshipWidgetBeanValidator(browser));
+		validators.add(new StatedIsARelationshipWidgetBeanValidator(browser));
 		
 		for (ModeledWidgetBeanValidator validator : validators) {
 			validator.validate(branchPath, concept, reporter);

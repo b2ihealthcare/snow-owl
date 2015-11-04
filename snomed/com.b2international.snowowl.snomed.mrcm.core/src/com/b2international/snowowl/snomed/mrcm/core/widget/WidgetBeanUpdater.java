@@ -259,6 +259,8 @@ public class WidgetBeanUpdater implements IWidgetBeanUpdater {
 			final ComponentIdentifierPair<String> mapTargetPair = ComponentIdentifierPair.<String>create(mapping.getModel().getAllowedTerminologyComponentId(), mapping.getSelectedValue().getId());
 			final String moduleId = context.getDefaultModuleConcept().getId();
 			final SnomedSimpleMapRefSetMember member = refSetEditingContext.createSimpleMapRefSetMember(referencedComponentPair, mapTargetPair, moduleId, mappingRefSet);
+			// FIXME: This is only useful for "Simple map with map target description"-type reference sets, should be more general
+			member.setMapTargetComponentDescription(mapping.getSelectedValue().getLabel());
 			mappingRefSet.getMembers().add(member);
 			mapping.setUuid(member.getUuid());
 		}

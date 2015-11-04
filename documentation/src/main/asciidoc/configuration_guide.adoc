@@ -889,7 +889,7 @@ Snow Owl can be configured to obtain valid SNOMED CT identifiers from IHTSDO's C
 |
 |The registered user name at the CIS site.
 
-|externalIdGeneratorClientKey
+|externalIdGeneratorClientSoftwareKey
 |Snow Owl
 |The client software key to be persisted within CIS as reference.
 |===
@@ -902,7 +902,7 @@ snomed:
   externalIdGeneratorContextRoot : api
   externalIdGeneratorUserName : snowowl-dev-b2i
   externalIdGeneratorPassword : hAAYLYMX5gc98SDEz9cr
-  externalIdGeneratorClientKey : Snow Owl dev. deployment
+  externalIdGeneratorClientSoftwareKey : Snow Owl dev. deployment
 --------------------------
 
 === Logging

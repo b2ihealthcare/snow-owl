@@ -24,6 +24,7 @@ import com.b2international.snowowl.snomed.Annotatable;
 import com.b2international.snowowl.snomed.Component;
 import com.b2international.snowowl.snomed.Description;
 import com.b2international.snowowl.snomed.Relationship;
+import com.b2international.snowowl.snomed.snomedrefset.SnomedAttributeValueRefSetMember;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedConcreteDataTypeRefSetMember;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetMember;
 
@@ -130,6 +131,9 @@ public class SnomedModelExtensions {
 		if (relationship.isReleased()) {
 			deactivate(relationship);
 			deactivateConcreteDomains(relationship);
+			for (SnomedAttributeValueRefSetMember refSetMember : relationship.getRefinabilityRefSetMembers()) {
+				deactivate(refSetMember);
+			}
 		} else {
 			remove(relationship);
 		}
