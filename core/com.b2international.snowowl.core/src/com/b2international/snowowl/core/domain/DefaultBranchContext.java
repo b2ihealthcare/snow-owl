@@ -22,7 +22,7 @@ import com.b2international.snowowl.core.branch.Branch;
 /**
  * @since 4.5
  */
-public final class DefaultBranchContext extends DelegatingRepositoryContext implements BranchContext {
+public class DefaultBranchContext extends DelegatingRepositoryContext implements BranchContext {
 
 	private Branch branch;
 

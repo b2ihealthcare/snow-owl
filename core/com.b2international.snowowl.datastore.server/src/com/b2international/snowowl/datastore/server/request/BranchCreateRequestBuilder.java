@@ -13,51 +13,47 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.datastore.request;
+package com.b2international.snowowl.datastore.server.request;
 
+import com.b2international.snowowl.core.Metadata;
+import com.b2international.snowowl.core.MetadataImpl;
 import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.branch.Branch;
 import com.b2international.snowowl.core.events.Request;
-import com.b2international.snowowl.datastore.events.MergeRequest;
+import com.b2international.snowowl.datastore.events.CreateBranchRequest;
 
 /**
  * @since 4.5
  */
-public final class BranchMergeRequestBuilder {
-	
-	private String source;
-	private String target;
-	private String commitComment;
-	private String reviewId;
+public final class BranchCreateRequestBuilder {
+
+	private String parent;
+	private String name;
+	private Metadata metadata = new MetadataImpl();
 	
 	private String repositoryId;
 	
-	BranchMergeRequestBuilder(String repositoryId) {
+	BranchCreateRequestBuilder(String repositoryId) {
 		this.repositoryId = repositoryId;
 	}
 	
-	public BranchMergeRequestBuilder setSource(String source) {
-		this.source = source;
+	public BranchCreateRequestBuilder setMetadata(Metadata metadata) {
+		this.metadata = metadata;
 		return this;
 	}
 	
-	public BranchMergeRequestBuilder setTarget(String target) {
-		this.target = target;
+	public BranchCreateRequestBuilder setName(String name) {
+		this.name = name;
 		return this;
 	}
 	
-	public BranchMergeRequestBuilder setCommitComment(String commitComment) {
-		this.commitComment = commitComment;
-		return this;
-	}
-	
-	public BranchMergeRequestBuilder setReviewId(String reviewId) {
-		this.reviewId = reviewId;
+	public BranchCreateRequestBuilder setParent(String parent) {
+		this.parent = parent;
 		return this;
 	}
 	
 	public Request<ServiceProvider, Branch> build() {
-		return RepositoryRequests.wrap(repositoryId, new MergeRequest(source, target, commitComment, reviewId));
+		return RepositoryRequests.wrap(repositoryId, new CreateBranchRequest(parent, name, metadata));
 	}
 	
 }

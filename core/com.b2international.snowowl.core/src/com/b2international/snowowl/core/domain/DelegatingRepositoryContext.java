@@ -32,12 +32,12 @@ public abstract class DelegatingRepositoryContext implements RepositoryContext {
 	}
 
 	@Override
-	public final <T> T service(Class<T> type) {
+	public <T> T service(Class<T> type) {
 		return context.service(type);
 	}
 
 	@Override
-	public final <T> Provider<T> provider(Class<T> type) {
+	public <T> Provider<T> provider(Class<T> type) {
 		return context.provider(type);
 	}
 

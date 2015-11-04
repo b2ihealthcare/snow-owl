@@ -13,34 +13,27 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.datastore.request;
+package com.b2international.snowowl.datastore.server.request;
 
 import com.b2international.snowowl.core.ServiceProvider;
-import com.b2international.snowowl.core.domain.DefaultRepositoryContext;
-import com.b2international.snowowl.core.domain.RepositoryContext;
-import com.b2international.snowowl.core.events.DelegatingRequest;
+import com.b2international.snowowl.core.branch.Branches;
 import com.b2international.snowowl.core.events.Request;
+import com.b2international.snowowl.datastore.events.SearchBranchRequest;
 
 /**
+ * TODO filter them by date, deleted flag, path match etc.
  * @since 4.5
  */
-public final class RepositoryRequest<B> extends DelegatingRequest<ServiceProvider, RepositoryContext, B> {
+public final class BranchSearchRequestBuilder {
 
-	private final String repositoryId;
+	private String repositoryId;
 
-	RepositoryRequest(String repositoryId, Request<RepositoryContext, B> next) {
-		super(next);
+	public BranchSearchRequestBuilder(String repositoryId) {
 		this.repositoryId = repositoryId;
 	}
 	
-	@Override
-	public B execute(final ServiceProvider context) {
-		return next(new DefaultRepositoryContext(context, repositoryId));
-	}
-	
-	@Override
-	protected String getAddress() {
-		return "/"+repositoryId;
+	public Request<ServiceProvider, Branches> build() {
+		return RepositoryRequests.wrap(repositoryId, new SearchBranchRequest());
 	}
 	
 }
