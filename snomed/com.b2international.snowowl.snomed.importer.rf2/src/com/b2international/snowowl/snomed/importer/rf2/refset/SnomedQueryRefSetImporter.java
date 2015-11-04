@@ -93,7 +93,6 @@ public class SnomedQueryRefSetImporter extends AbstractSnomedRefSetImporter<Quer
 			editedMember.setReleased(true);
 		} else {
 			editedMember.unsetEffectiveTime();
-			editedMember.setReleased(false);
 		}
 
 		editedMember.setRefSet(getOrCreateRefSet(currentRow.getRefSetId(), currentRow.getReferencedComponentId()));

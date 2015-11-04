@@ -153,7 +153,6 @@ public class SnomedConceptImporter extends AbstractSnomedTerminologyImporter<Con
 			editedConcept.setReleased(true);
 		} else {
 			editedConcept.unsetEffectiveTime();
-			editedConcept.setReleased(false);
 		}
 		
 		editedConcept.setExhaustive(false);
