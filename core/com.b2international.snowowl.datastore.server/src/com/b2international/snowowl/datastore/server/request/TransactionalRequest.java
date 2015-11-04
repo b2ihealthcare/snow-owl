@@ -22,6 +22,7 @@ import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.domain.TransactionContext;
 import com.b2international.snowowl.core.events.DelegatingRequest;
 import com.b2international.snowowl.core.events.Request;
+import com.b2international.snowowl.core.exceptions.ApiException;
 import com.google.common.base.Strings;
 
 /**
@@ -52,6 +53,8 @@ public final class TransactionalRequest<B> extends DelegatingRequest<BranchConte
 			 */
 			transaction.commit(userId, commitComment);
 			return component;
+		} catch (ApiException e) {
+			throw e;
 		} catch (Exception e) {
 			throw new SnowowlRuntimeException(e);
 		}
