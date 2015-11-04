@@ -17,6 +17,7 @@ package com.b2international.snowowl.snomed.datastore.server.events;
 
 import java.util.Collection;
 
+import com.b2international.snowowl.snomed.Concept;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.snomed.core.domain.DefinitionStatus;
@@ -47,6 +48,20 @@ public class SnomedConceptConverter extends AbstractSnomedComponentConverter<Sno
 		result.setSubclassDefinitionStatus(toSubclassDefinitionStatus(input.isExhaustive()));
 		result.setInactivationIndicator(toInactivationIndicator(input.getId()));
 		result.setAssociationTargets(toAssociationTargets(SnomedTerminologyComponentConstants.CONCEPT, input.getId()));
+		return result;
+	}
+	
+	public ISnomedConcept apply(final Concept concept) {
+		final SnomedConcept result = new SnomedConcept();
+		result.setId(concept.getId());
+		result.setEffectiveTime(concept.getEffectiveTime());
+		result.setActive(concept.isActive());
+		result.setDefinitionStatus(toDefinitionStatus(concept.isPrimitive()));
+		result.setModuleId(concept.getModule().getId());
+		result.setReleased(concept.isReleased());
+		result.setSubclassDefinitionStatus(toSubclassDefinitionStatus(concept.isExhaustive()));
+		result.setInactivationIndicator(toInactivationIndicator(concept.getId()));
+		result.setAssociationTargets(toAssociationTargets(SnomedTerminologyComponentConstants.CONCEPT, concept.getId()));
 		return result;
 	}
 
