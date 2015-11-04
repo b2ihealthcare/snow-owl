@@ -13,12 +13,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.core.domain;
+package com.b2international.snowowl.datastore.server.request;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
 import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.config.SnowOwlConfiguration;
+import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.google.inject.Provider;
 
 /**

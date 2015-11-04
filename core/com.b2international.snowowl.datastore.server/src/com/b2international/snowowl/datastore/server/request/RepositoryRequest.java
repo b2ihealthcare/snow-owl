@@ -16,7 +16,6 @@
 package com.b2international.snowowl.datastore.server.request;
 
 import com.b2international.snowowl.core.ServiceProvider;
-import com.b2international.snowowl.core.domain.DefaultRepositoryContext;
 import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.core.events.DelegatingRequest;
 import com.b2international.snowowl.core.events.Request;
