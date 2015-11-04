@@ -121,11 +121,11 @@ public class DatastoreServerBootstrap implements PreRunCapableBootstrapFragment 
 		ServiceConfigJobManager.INSTANCE.registerServices(monitor);
 		
 		if (env.isEmbedded() || env.isServer()) {
-			initializeBranchingSupport(env);
+			initializeRepositories(env);
 		}
 	}
 
-	private void initializeBranchingSupport(Environment env) {
+	private void initializeRepositories(Environment env) {
 		final Stopwatch branchStopwatch = Stopwatch.createStarted();
 		LOG.info(">>> Initializing branch and review services.");
 		
