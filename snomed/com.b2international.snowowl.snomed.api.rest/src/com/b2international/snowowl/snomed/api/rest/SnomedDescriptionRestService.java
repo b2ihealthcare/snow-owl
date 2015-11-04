@@ -92,7 +92,8 @@ public class SnomedDescriptionRestService extends AbstractSnomedRestService {
 					.setCommitComment(commitComment)
 					.setBody(req)
 					.build()
-					.executeSync(bus, 120L * 1000L);
+					.executeSync(bus, 120L * 1000L)
+					.getResultAs(ISnomedDescription.class);
 		
 		return Responses.created(getDescriptionLocation(branchPath, createdDescription)).build();
 	}

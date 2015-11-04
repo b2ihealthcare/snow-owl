@@ -167,7 +167,8 @@ public class SnomedConceptRestService extends AbstractSnomedRestService {
 			.setBody(input)
 			.setCommitComment(commitComment)
 			.build()
-			.executeSync(bus, 120L * 1000L);
+			.executeSync(bus, 120L * 1000L)
+			.getResultAs(ISnomedConcept.class);
 		
 		return Responses.created(getConceptLocationURI(branchPath, createdConcept)).build();
 	}

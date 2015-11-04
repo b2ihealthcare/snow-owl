@@ -92,7 +92,8 @@ public class SnomedRelationshipRestService extends AbstractSnomedRestService {
 				.setBody(req)
 				.setCommitComment(commitComment)
 				.build()
-				.executeSync(bus, 120L * 1000L);
+				.executeSync(bus, 120L * 1000L)
+				.getResultAs(ISnomedRelationship.class);
 				
 		return Responses.created(getRelationshipLocation(branchPath, createdRelationship)).build();
 	}

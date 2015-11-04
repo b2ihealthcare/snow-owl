@@ -120,7 +120,8 @@ public class SnomedReferenceSetRestService extends AbstractSnomedRestService {
 					.setBody(req)
 					.setCommitComment(body.getCommitComment())
 					.build()
-					.executeSync(bus, 120L * 1000L);
+					.executeSync(bus, 120L * 1000L)
+					.getResultAs(SnomedReferenceSet.class);
 		
 		return Responses.created(getRefSetLocationURI(branchPath, createdRefSet)).build();
 	}
