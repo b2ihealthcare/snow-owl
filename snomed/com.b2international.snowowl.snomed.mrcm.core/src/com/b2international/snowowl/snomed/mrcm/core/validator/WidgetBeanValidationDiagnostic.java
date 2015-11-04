@@ -19,7 +19,7 @@ import java.io.Serializable;
 import java.util.Collection;
 import java.util.List;
 
-import com.b2international.snowowl.core.api.IdProvider;
+import com.b2international.snowowl.core.api.component.IdProvider;
 import com.b2international.snowowl.core.markers.IDiagnostic;
 import com.b2international.snowowl.snomed.mrcm.core.widget.bean.ModeledWidgetBean;
 import com.google.common.collect.Lists;

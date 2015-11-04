@@ -15,6 +15,9 @@
  */
 package com.b2international.snowowl.core.api;
 
+import com.b2international.snowowl.core.api.component.IdProvider;
+import com.b2international.snowowl.core.api.component.TerminologyComponentIdProvider;
+
 /**
  * Aggregation of a {@link IdProvider} and a {@link TerminologyComponentIdProvider} interface.
  *

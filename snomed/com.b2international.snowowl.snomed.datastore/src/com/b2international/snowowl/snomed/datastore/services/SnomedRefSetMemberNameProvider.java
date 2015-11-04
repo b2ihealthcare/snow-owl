@@ -24,6 +24,7 @@ import org.slf4j.LoggerFactory;
 
 import com.b2international.commons.Pair;
 import com.b2international.snowowl.core.CoreTerminologyBroker;
+import com.b2international.snowowl.core.api.ComponentIdAndLabel;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.api.IComponent;
 import com.b2international.snowowl.core.api.IComponentNameProvider;
@@ -37,14 +38,10 @@ import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetMember;
 import com.google.common.base.Preconditions;
 
 /**
- * Singleton for providing humane readable labels for SNOMED CT reference set members.
- * @see IComponentNameProvider
+ * Component name provider implementation for SNOMED CT reference set members.
  */
 public enum SnomedRefSetMemberNameProvider implements IComponentNameProvider {
 
-	/**
-	 * SNOMED CT reference set member label provider instance. 
-	 */
 	INSTANCE;
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(SnomedRefSetMemberNameProvider.class);
@@ -59,10 +56,6 @@ public enum SnomedRefSetMemberNameProvider implements IComponentNameProvider {
 	 * </ul>
 	 * </p>
 	 */
-	/* (non-Javadoc)
-	 * @see com.b2international.snowowl.core.api.IComponentNameProvider#getText(java.lang.Object)
-	 */
-	@Override
 	public String getText(final Object object) {
 		return getText(object, null);
 	}
@@ -102,12 +95,8 @@ public enum SnomedRefSetMemberNameProvider implements IComponentNameProvider {
 		return null == component ? null == object ? "" : String.valueOf(object) : component.getLabel();
 	}
 	
-	/* (non-Javadoc)
-	 * @see com.b2international.snowowl.core.api.IComponentNameProvider#getComponentLabel(com.b2international.snowowl.core.api.IBranchPath, java.lang.String)
-	 */
 	@Override
 	public String getComponentLabel(final IBranchPath branchPath, final String componentId) {
-
 		Preconditions.checkNotNull(branchPath, "Branch path argument cannot be null.");
 		Preconditions.checkNotNull(componentId, "Component ID argument cannot be null.");
 		
@@ -120,5 +109,10 @@ public enum SnomedRefSetMemberNameProvider implements IComponentNameProvider {
 		}
 		return sb.toString();
 	}
-	
+
+	// TODO
+	@Override
+	public ComponentIdAndLabel getComponentIdAndLabel(IBranchPath branchPath, long storageKey) {
+		return null;
+	}
 }

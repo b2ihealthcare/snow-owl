@@ -31,7 +31,9 @@ import com.b2international.snowowl.core.CoreTerminologyBroker;
 import com.b2international.snowowl.core.api.ExtendedComponentImpl;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.api.IComponent;
-import com.b2international.snowowl.core.api.IComponentWithIconId;
+import com.b2international.snowowl.core.api.browser.IClientTerminologyBrowser;
+import com.b2international.snowowl.core.api.component.IconIdProvider;
+import com.b2international.snowowl.core.api.component.IconIdProviderUtil;
 import com.b2international.snowowl.snomed.datastore.ILanguageConfigurationProvider;
 import com.b2international.snowowl.snomed.datastore.SnomedTaxonomyService;
 import com.b2international.snowowl.snomed.datastore.index.refset.SnomedRefSetMemberIndexEntry;
@@ -169,12 +171,15 @@ public class WidgetBeanProvider {
 				final short terminologyComponentId = CoreTerminologyBroker.getInstance().getTerminologyComponentIdAsShort(entry.getSpecialFieldComponentType());
 				
 				// XXX: as WidgetBeanProvider currently being used via the RPC mechanism which serializes class values, we cannot use returned terminologyDepenendentSelectedValue, instead we use ExtendedComponent
-				final IComponent<String> terminologyDependentSelectedValue = CoreTerminologyBroker.getInstance().getTerminologyBrowserFactory(entry.getSpecialFieldComponentType()).getTerminologyBrowser().getConcept(entry.getSpecialFieldId());
-				final Object rawIconId = terminologyDependentSelectedValue instanceof IComponentWithIconId<?> ? ((IComponentWithIconId<?>) terminologyDependentSelectedValue).getIconId() : null;
-				final String iconId = rawIconId instanceof String ? (String) rawIconId : null; 
-				final IComponent<String> selectedValue = new ExtendedComponentImpl(entry.getSpecialFieldId(), entry.getSpecialFieldLabel(), iconId, terminologyComponentId);
+				final IClientTerminologyBrowser<IComponent<String>, String> terminologyBrowser = CoreTerminologyBroker.getInstance()
+						.getTerminologyBrowserFactory(entry.getSpecialFieldComponentType())
+						.getTerminologyBrowser();
 				
-				bean.setSelectedValue(selectedValue);
+				final IComponent<String> localSelectedValue = terminologyBrowser.getConcept(entry.getSpecialFieldId());
+				final String iconId = IconIdProviderUtil.getIconId(localSelectedValue); 
+				final IComponent<String> serializableSelectedValue = new ExtendedComponentImpl(entry.getSpecialFieldId(), entry.getSpecialFieldLabel(), iconId, terminologyComponentId);
+				
+				bean.setSelectedValue(serializableSelectedValue);
 				bean.setUuid(entry.getId());
 				result.add(bean);
 				unusedModels.remove(model);

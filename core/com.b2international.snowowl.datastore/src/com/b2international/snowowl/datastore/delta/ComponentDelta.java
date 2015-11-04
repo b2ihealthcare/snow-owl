@@ -26,9 +26,9 @@ import com.b2international.commons.Change;
 import com.b2international.commons.ChangeKind;
 import com.b2international.commons.pcj.LongSets;
 import com.b2international.snowowl.core.api.IBranchPath;
-import com.b2international.snowowl.core.api.IconIdProvider;
-import com.b2international.snowowl.core.api.LabelProvider;
-import com.b2international.snowowl.core.api.TerminologyComponentIdProvider;
+import com.b2international.snowowl.core.api.component.IconIdProvider;
+import com.b2international.snowowl.core.api.component.LabelProvider;
+import com.b2international.snowowl.core.api.component.TerminologyComponentIdProvider;
 import com.google.common.base.Objects;
 import com.google.common.base.Preconditions;
 

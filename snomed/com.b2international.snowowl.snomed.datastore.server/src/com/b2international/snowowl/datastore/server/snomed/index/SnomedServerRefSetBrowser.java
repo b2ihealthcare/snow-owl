@@ -61,14 +61,6 @@ import org.apache.lucene.search.TopDocs;
 import org.apache.lucene.search.TotalHitCountCollector;
 import org.eclipse.core.runtime.IProgressMonitor;
 
-import bak.pcj.LongIterator;
-import bak.pcj.list.LongArrayList;
-import bak.pcj.list.LongList;
-import bak.pcj.map.LongKeyMap;
-import bak.pcj.map.LongKeyOpenHashMap;
-import bak.pcj.set.LongOpenHashSet;
-import bak.pcj.set.LongSet;
-
 import com.b2international.commons.CompareUtils;
 import com.b2international.commons.pcj.LongSets;
 import com.b2international.snowowl.core.ApplicationContext;
@@ -106,6 +98,14 @@ import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import com.google.common.primitives.Ints;
+
+import bak.pcj.LongIterator;
+import bak.pcj.list.LongArrayList;
+import bak.pcj.list.LongList;
+import bak.pcj.map.LongKeyMap;
+import bak.pcj.map.LongKeyOpenHashMap;
+import bak.pcj.set.LongOpenHashSet;
+import bak.pcj.set.LongSet;
 
 /**
  * Lucene based reference set browser implementation.
@@ -226,13 +226,6 @@ public class SnomedServerRefSetBrowser extends AbstractSnomedIndexBrowser<Snomed
 		Preconditions.checkNotNull(branchPath, "Branch path argument cannot be null");
 		final Query query = SnomedMappings.newQuery().type(CONCEPT_NUMBER).id(conceptId).field(CONCEPT_REFERRING_REFERENCE_SET_ID, Long.valueOf(identifierConceptId)).matchAll();
 		return service.getHitCount(branchPath, query, null) > 0;
-	}
-	
-	@Override
-	public String getComponentLabel(final IBranchPath branchPath, final String componentId) {
-		Preconditions.checkNotNull(branchPath, "Branch path argument cannot be null.");
-		Preconditions.checkNotNull(componentId, "Component ID argument cannot be null.");
-		return getTerminologyBrowser().getComponentLabel(branchPath, componentId);
 	}
 	
 	@Override

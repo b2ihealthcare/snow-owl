@@ -15,47 +15,42 @@
  */
 package com.b2international.snowowl.snomed.reasoner.classification.entry;
 
-import com.google.common.base.Objects;
+import java.io.Serializable;
+
+import com.b2international.snowowl.core.api.component.IconIdProvider;
+import com.b2international.snowowl.core.api.component.IdProvider;
 
 /**
- * Abstract base class for reasoner change entries.
+ * A compact representation of a SNOMED CT concept, used in reasoner change reports.
  */
-public abstract class AbstractChangeEntry implements IChangeEntry {
+public class ChangeConcept implements IdProvider<Long>, IconIdProvider<Long>, Serializable {
 
-	private static final long serialVersionUID = -4015153137195793820L;
+	private static final long serialVersionUID = -1213161598884377108L;
 
-	/**
-	 * Enumerates the possible natures of an {@link AbstractChangeEntry}.
-	 */
-	public enum Nature {
-		INFERRED, 
-		REDUNDANT
-	}
+	private final long id;
+	private final long iconId;
 
-	private final ChangeConcept source;
-	private final Nature nature;
-
-	protected AbstractChangeEntry(final Nature nature, final ChangeConcept source) {
-		this.source = source;
-		this.nature = nature;
+	public ChangeConcept(final long id, final long iconId) {
+		this.id = id;
+		this.iconId = iconId;
 	}
 
 	@Override 
-	public ChangeConcept getSource() {
-		return source;
+	public Long getId() {
+		return id;
 	}
 
 	@Override 
-	public Nature getNature() {
-		return nature;
+	public Long getIconId() {
+		return iconId;
 	}
 
 	@Override 
 	public int hashCode() {
 		final int prime = 31;
 		int result = 1;
-		result = prime * result + ((nature == null) ? 0 : nature.hashCode());
-		result = prime * result + ((source == null) ? 0 : source.hashCode());
+		result = prime * result + (int) (iconId ^ (iconId >>> 32));
+		result = prime * result + (int) (id ^ (id >>> 32));
 		return result;
 	}
 
@@ -65,10 +60,10 @@ public abstract class AbstractChangeEntry implements IChangeEntry {
 		if (obj == null) { return false; }
 		if (getClass() != obj.getClass()) { return false; }
 
-		final AbstractChangeEntry other = (AbstractChangeEntry) obj;
+		final ChangeConcept other = (ChangeConcept) obj;
 
-		if (nature != other.nature) { return false; }
-		if (!Objects.equal(source, other.source)) { return false; }
+		if (iconId != other.iconId) { return false;	}
+		if (id != other.id) { return false; }
 		return true;
 	}
 }

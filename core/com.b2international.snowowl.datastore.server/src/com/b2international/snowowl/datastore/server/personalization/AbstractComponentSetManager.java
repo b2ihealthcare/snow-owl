@@ -135,7 +135,13 @@ public abstract class AbstractComponentSetManager extends SingleDirectoryIndexIm
 				final QuickSearchContentResult componentResult = provider.getComponents(queryExpression, branchPathMap, limit, configurationCopy);
 				
 				for (final QuickSearchElement element : componentResult.getElements()) {
-					results.add(new FullQuickSearchElement(element.getId(), element.getImageId(), element.getLabel(), element.isApproximate(), terminologyComponentId));
+					results.add(new FullQuickSearchElement(element.getId(), 
+							element.getImageId(), 
+							element.getLabel(), 
+							element.isApproximate(), 
+							terminologyComponentId, 
+							element.getMatchRegions(), 
+							element.getSuffixes()));
 				}
 			}
 		}

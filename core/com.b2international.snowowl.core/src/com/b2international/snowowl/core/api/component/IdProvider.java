@@ -13,19 +13,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.core.api;
+package com.b2international.snowowl.core.api.component;
 
 /**
- * Represents a terminology component ID provider responsible for
- * supplying an application specific terminology component ID.
- *
+ * Implementing classes provide an identifier unique within a particular terminology. 
+ * 
+ * @param <K> the identifier's type
  */
-public interface TerminologyComponentIdProvider {
+public interface IdProvider<K> {
 
 	/**
-	 * Returns with the application specific unique terminology component ID.
-	 * @return the terminology component ID as a short.
+	 * @return the unique identifier for this instance
 	 */
-	short getTerminologyComponentId();
-	
+	K getId();
 }

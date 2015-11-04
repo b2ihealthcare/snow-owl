@@ -39,8 +39,7 @@ import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType;
 import com.google.common.base.Objects;
 
 /**
- * Representation of a SNOMED&nbsp;CT reference set.
- * @see SnomedIndexEntry
+ * Representation of a SNOMED CT reference set.
  */
 @ThreadSafe
 @Immutable

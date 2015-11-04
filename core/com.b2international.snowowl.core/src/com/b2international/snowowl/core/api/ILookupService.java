@@ -84,13 +84,4 @@ public interface ILookupService<K extends Serializable, T, V> {
 	 * @return the unique storage key of the component.
 	 */
 	long getStorageKey(final IBranchPath branchPath, final K id);
-	
-	/**
-	 * Returns with the terminology dependent unique ID and the human readable label of a component specified by its unique storage key.
-	 * <br>This method could return with {@code null} if the component does not exist in the store on the specified branch.  
-	 * @param branchPath the branch path.
-	 * @param storageKey the primary storage key of the component
-	 * @return the {@link ComponentIdAndLabel ID and label pair} of a component. May return with {@code null} if the component does not exist in store.
-	 */
-	ComponentIdAndLabel getComponentIdAndLabel(final IBranchPath branchPath, final long storageKey);
 }

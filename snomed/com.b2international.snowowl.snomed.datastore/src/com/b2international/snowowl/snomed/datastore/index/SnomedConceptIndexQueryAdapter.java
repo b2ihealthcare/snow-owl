@@ -32,7 +32,6 @@ import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedMappings
 
 /**
  * Common abstract superclass for SNOMED CT concept-related query adapters.
- *
  */
 public abstract class SnomedConceptIndexQueryAdapter extends SnomedDslIndexQueryAdapter<SnomedConceptIndexEntry> {
 
@@ -64,16 +63,17 @@ public abstract class SnomedConceptIndexQueryAdapter extends SnomedDslIndexQuery
 	
 	@Override
 	public SnomedConceptIndexEntry buildSearchResult(final Document doc, final IBranchPath branchPath, final float score) {
-		final String id = SnomedMappings.id().getValueAsString(doc);
-		final String label = Mappings.label().getValue(doc);
-		final String moduleId = SnomedMappings.module().getValueAsString(doc);
-		final long storageKey = Mappings.storageKey().getValue(doc);
-		final byte flags = SnomedConceptIndexEntry.generateFlags(SnomedMappings.active().getValue(doc) == 1, 
-				getBooleanValue(doc.getField(SnomedIndexBrowserConstants.CONCEPT_PRIMITIVE)),
-				getBooleanValue(doc.getField(SnomedIndexBrowserConstants.CONCEPT_EXHAUSTIVE)),
-				getBooleanValue(doc.getField(SnomedIndexBrowserConstants.COMPONENT_RELEASED)));
-		final String iconId = Mappings.iconId().getValue(doc);
-		final long effectiveTime = Mappings.longField(SnomedIndexBrowserConstants.CONCEPT_EFFECTIVE_TIME).getValue(doc);
-		return new SnomedConceptIndexEntry(id, moduleId, label, iconId, score, storageKey, flags, effectiveTime);
+		
+		return SnomedConceptIndexEntry.builder()
+				.id(SnomedMappings.id().getValueAsString(doc))
+				.moduleId(SnomedMappings.module().getValueAsString(doc))
+				.storageKey(Mappings.storageKey().getValue(doc))
+				.active(SnomedMappings.active().getValue(doc) == 1) 
+				.primitive(getBooleanValue(doc.getField(SnomedIndexBrowserConstants.CONCEPT_PRIMITIVE)))
+				.exhaustive(getBooleanValue(doc.getField(SnomedIndexBrowserConstants.CONCEPT_EXHAUSTIVE)))
+				.released(getBooleanValue(doc.getField(SnomedIndexBrowserConstants.COMPONENT_RELEASED)))
+				.iconId(Mappings.iconId().getValue(doc))
+				.effectiveTimeLong(Mappings.longField(SnomedIndexBrowserConstants.CONCEPT_EFFECTIVE_TIME).getValue(doc))
+				.build();
 	}
 }

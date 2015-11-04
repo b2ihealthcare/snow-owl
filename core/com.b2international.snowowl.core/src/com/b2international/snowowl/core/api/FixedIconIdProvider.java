@@ -16,17 +16,23 @@
 package com.b2international.snowowl.core.api;
 
 /**
- * Represents an ID provider.
- * @param <K> type of the identifier.
- * 
+ * An implementation of {@link IComponentIconIdProvider} which returns a pre-defined identifier for all requests.
  */
-public interface IdProvider<K> {
+public final class FixedIconIdProvider implements IComponentIconIdProvider<String> {
 
-	/**
-	 * Returns with an ID that uniquely identifies the current component in a terminology.
-	 * @return the unique identifier of the component.
-	 * @see IdProvider
-	 */
-	K getId();
-	
+	private final String iconId;
+
+	public FixedIconIdProvider(final String iconId) {
+		this.iconId = iconId;
+	}
+
+	@Override
+	public String getIconId(final IBranchPath branchPath, final String componentId) {
+		return iconId;
+	}
+
+	@Override
+	public String getIconId(final IBranchPoint branchPoint, final String componentId) {
+		return iconId;
+	}
 }

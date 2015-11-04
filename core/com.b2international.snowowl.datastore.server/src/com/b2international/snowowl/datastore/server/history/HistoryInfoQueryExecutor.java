@@ -25,7 +25,7 @@ import java.util.Map;
 import org.eclipse.emf.cdo.common.id.CDOID;
 
 import com.b2international.snowowl.core.api.IHistoryInfo.IVersion;
-import com.b2international.snowowl.core.api.TerminologyComponentIdProvider;
+import com.b2international.snowowl.core.api.component.TerminologyComponentIdProvider;
 
 /**
  * Representation of a historical information query executor implementation.

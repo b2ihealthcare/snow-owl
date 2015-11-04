@@ -560,7 +560,7 @@ public class SnomedRefSetEditingContext extends BaseSnomedEditingContext {
 		// No label given up front, extract label from referenced component. Use regular name providers if the referenced component is not a relationship
 		if (!SnomedTerminologyComponentConstants.RELATIONSHIP.equals(referencedComponentPair.getTerminologyComponentId())) {
 			final IComponentNameProvider nameProvider = getNameProvider(referencedComponentPair);
-			return nameProvider.getText(referencedComponentPair.getComponentId());
+			return nameProvider.getComponentLabel(BranchPathUtils.createPath(transaction), referencedComponentPair.getComponentId());
 		}			
 			
 		// Look up relationship

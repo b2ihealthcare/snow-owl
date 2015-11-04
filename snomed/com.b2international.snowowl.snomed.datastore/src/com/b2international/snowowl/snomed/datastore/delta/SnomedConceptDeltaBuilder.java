@@ -421,13 +421,17 @@ public class SnomedConceptDeltaBuilder extends AbstractHierarchicalComponentDelt
 		 * XXX: copied from SnomedConceptAdapterFactory, as there a client terminology browser lookup is performed first, which might
 		 * find a different result.
 		 */
-		return new SnomedConceptIndexEntry(concept.getId(), 
-				concept.getModule().getId(), 
-				SnomedConceptNameProvider.INSTANCE.getText(concept.getId(), concept.cdoView()), 
-				SnomedIconProvider.getInstance().getIconComponentId(concept.getId()), 
-				CDOUtils.getStorageKey(concept), 
-				SnomedConceptIndexEntry.generateFlags(concept.isActive(), concept.isPrimitive(), concept.isExhaustive(), concept.isReleased()),
-				null == concept.getEffectiveTime() ? EffectiveTimes.UNSET_EFFECTIVE_TIME : concept.getEffectiveTime().getTime());
+		return SnomedConceptIndexEntry.builder()
+				.id(concept.getId())
+				.iconId(SnomedIconProvider.getInstance().getIconComponentId(concept.getId())) 
+				.moduleId(concept.getModule().getId()) 
+				.storageKey(CDOUtils.getStorageKey(concept))
+				.active(concept.isActive())
+				.primitive(concept.isPrimitive())
+				.exhaustive(concept.isExhaustive())
+				.released(concept.isReleased()) 
+				.effectiveTimeLong(concept.isSetEffectiveTime() ? concept.getEffectiveTime().getTime() : EffectiveTimes.UNSET_EFFECTIVE_TIME)
+				.build();
 	}
 
 	/* (non-Javadoc)

@@ -19,58 +19,75 @@ import static com.google.common.base.Preconditions.checkNotNull;
 
 import java.io.Serializable;
 
-import com.google.common.base.Preconditions;
+import com.google.common.base.Objects;
 
 /**
  * Represents a single result of a filter operation carried out using a quick search content provider. 
- *
  */
 public abstract class QuickSearchElement implements Serializable {
 
 	private static final long serialVersionUID = -3524236322333923445L;
 
 	protected IQuickSearchProvider parentProvider;
-	
-	protected final String id;
-	protected final String imageId;
-	protected final String label;
-	protected final boolean approximate;
-	
-	protected QuickSearchElement(final String id, final String imageId, final String label, final boolean approximate) {
-		this.id = Preconditions.checkNotNull(id, "ID argument cannot be null.");
-		this.imageId = Preconditions.checkNotNull(imageId, "Image ID argument cannot be null.");
-		this.label = Preconditions.checkNotNull(label, "Label argument cannot be null.");
+
+	private final String id;
+	private final String imageId;
+	private final String label;
+	private final boolean approximate;
+	private final int[][] matchRegions;
+	private final String[] suffixes;
+
+	protected QuickSearchElement(final String id, 
+			final String imageId, 
+			final String label, 
+			final boolean approximate,
+			final int[][] matchRegions,
+			final String[] suffixes) {
+
+		this.id = checkNotNull(id, "ID argument cannot be null.");
+		this.imageId = checkNotNull(imageId, "Image ID argument cannot be null.");
+		this.label = checkNotNull(label, "Label argument cannot be null.");
 		this.approximate = approximate;
-	}
-	
-	public String getLabel() {
-		return label;
-	}
-
-	public String getId() {
-		return id;
-	}
-	
-	public String getImageId() {
-		return imageId;
-	}
-	
-	public abstract String getTerminologyComponentId();
-
-	public boolean isApproximate() {
-		return approximate;
-	}
-
-	public void execute() {
-		parentProvider.handleSelection(this);
+		this.matchRegions = checkNotNull(matchRegions, "Match regions array cannot be null.");
+		this.suffixes = checkNotNull(suffixes, "Suffix array cannot be null.");
 	}
 
 	public IQuickSearchProvider getParentProvider() {
 		return checkNotNull(parentProvider, "No parent provider has been set on the element.");
 	}
-	
+
 	public void setParentProvider(final IQuickSearchProvider parentProvider) {
 		this.parentProvider = parentProvider;
+	}
+
+	public String getId() {
+		return id;
+	}
+
+	public String getImageId() {
+		return imageId;
+	}
+
+	public String getLabel() {
+		return label;
+	}
+
+	public boolean isApproximate() {
+		return approximate;
+	}
+
+	public int[][] getMatchRegions() {
+		return matchRegions;
+	}
+
+	public String[] getSuffixes() {
+		return suffixes;
+	}
+
+	public abstract String getTerminologyComponentId();
+
+	public void execute() {
+		parentProvider.handleSelection(this);
 	}
 
 	@Override
@@ -83,37 +100,15 @@ public abstract class QuickSearchElement implements Serializable {
 	}
 
 	@Override
-	public boolean equals(Object obj) {
-		if (this == obj) {
-			return true;
-		}
-		
-		if (obj == null) {
-			return false;
-		}
-		
-		if (!(obj instanceof QuickSearchElement)) {
-			return false;
-		}
-		
-		QuickSearchElement other = (QuickSearchElement) obj;
-		
-		if (id == null) {
-			if (other.id != null) {
-				return false;
-			}
-		} else if (!id.equals(other.id)) {
-			return false;
-		}
-		
-		if (getTerminologyComponentId() == null) {
-			if (other.getTerminologyComponentId() != null) {
-				return false;
-			}
-		} else if (!getTerminologyComponentId().equals(other.getTerminologyComponentId())) {
-			return false;
-		}
-		
+	public boolean equals(final Object obj) {
+		if (this == obj) { return true; }
+		if (obj == null) { return false; }
+		if (!(obj instanceof QuickSearchElement)) { return false; }
+
+		final QuickSearchElement other = (QuickSearchElement) obj;
+
+		if (!Objects.equal(id, other.id)) { return false; }
+		if (!Objects.equal(getTerminologyComponentId(), other.getTerminologyComponentId())) { return false; }
 		return true;
 	}
 }

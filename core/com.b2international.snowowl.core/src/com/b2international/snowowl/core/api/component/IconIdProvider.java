@@ -13,30 +13,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.core.quicksearch;
-
+package com.b2international.snowowl.core.api.component;
 
 /**
- * Implements the {@link IQuickSearchMatchRegion} interface.
+ * Implementing classes provide an icon identifier, which can be used for UI rendering.
  * 
+ * @param <K> the icon identifier's type
  */
-public class QuickSearchMatchRegion implements IQuickSearchMatchRegion {
+public interface IconIdProvider<K> {
 
-	private final int start;
-	private final int end;
-	
-	public QuickSearchMatchRegion(int start, int end) {
-		this.start = start;
-		this.end = end;
-	}
-
-	@Override
-	public int getStart() {
-		return start;
-	}
-
-	@Override
-	public int getEnd() {
-		return end;
-	}
+	/**
+	 * @return the icon identifier for this instance
+	 */
+	public K getIconId();
 }

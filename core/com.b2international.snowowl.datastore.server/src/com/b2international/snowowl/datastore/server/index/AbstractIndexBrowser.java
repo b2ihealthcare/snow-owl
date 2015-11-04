@@ -24,8 +24,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import javax.annotation.Nullable;
-
 import org.apache.lucene.document.Document;
 import org.apache.lucene.index.Term;
 import org.apache.lucene.search.BooleanClause.Occur;
@@ -39,7 +37,6 @@ import org.apache.lucene.search.TopDocs;
 
 import com.b2international.commons.ClassUtils;
 import com.b2international.commons.CompareUtils;
-import com.b2international.snowowl.core.api.ComponentIdAndLabel;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.api.IComponent;
 import com.b2international.snowowl.core.api.index.IIndexEntry;
@@ -52,7 +49,6 @@ import com.b2international.snowowl.datastore.index.IndexUtils;
 import com.b2international.snowowl.datastore.index.mapping.Mappings;
 import com.b2international.snowowl.datastore.server.TerminologyRegistryServiceWrapper;
 import com.b2international.snowowl.terminologyregistry.core.index.TerminologyRegistryIndexConstants;
-import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableList.Builder;
 
@@ -72,32 +68,6 @@ public abstract class AbstractIndexBrowser<E extends IIndexEntry> implements Int
 		if (service instanceof IndexServerService<?>) {
 			InternalTerminologyRegistryServiceRegistry.INSTANCE.register(((IndexServerService<?>) service).getRepositoryUuid(), this);
 		}
-	}
-
-	private static final Set<String> ID_LABEL_FIELD_TO_LOAD = Mappings.fieldsToLoad().id().label().build();
-	
-	/**
-	 * Returns with the terminology dependent unique ID and the human readable label of a component specified by its unique storage key.
-	 * <br>This method could return with {@code null} if the component does not exist in the store on the specified branch.  
-	 * @param branchPath the branch path.
-	 * @param storageKey the primary storage key of the component
-	 * @return the {@link ComponentIdAndLabel ID and label pair} of a component. May return with {@code null} if the component does not exist in store. 
-	 */
-	@Nullable public ComponentIdAndLabel getComponentIdAndLabel(final IBranchPath branchPath, final long storageKey) {
-		checkNotNull(branchPath, "Branch path argument cannot be null.");
-		
-		final TopDocs topDocs = service.search(branchPath, Mappings.newQuery().storageKey(storageKey).matchAll(), 1);
-		
-		if (null == topDocs || CompareUtils.isEmpty(topDocs.scoreDocs)) {
-			return null; //XXX null object pattern?
-		}
-		
-		final Document doc = service.document(branchPath, topDocs.scoreDocs[0].doc, ID_LABEL_FIELD_TO_LOAD);
-		
-		return new ComponentIdAndLabel(
-				Preconditions.checkNotNull(Mappings.label().getValue(doc), "Component label was null for component. CDO ID: " + storageKey),
-				Preconditions.checkNotNull(Mappings.id().getValue(doc), "Component ID was null for component. CDO ID: " + storageKey)); 
-		
 	}
 	
 	public boolean isTerminologyAvailable(final IBranchPath branchPath) {

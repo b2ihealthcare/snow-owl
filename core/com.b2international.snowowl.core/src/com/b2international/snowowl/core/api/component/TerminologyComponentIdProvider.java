@@ -13,24 +13,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.core.quicksearch;
+package com.b2international.snowowl.core.api.component;
 
 /**
- * Represents a matching text region within a {@link IQuickSearchProviderResponseEntry quick search result entry}.
- * 
+ * Implementing classes provide an application-specific terminology component identifier.
  */
-public interface IQuickSearchMatchRegion {
+public interface TerminologyComponentIdProvider {
+
 	/**
-	 * Returns the start index of the matching region.
-	 * 
-	 * @return the start index of the matching region
+	 * @return the numeric terminology component identifier for this instance
 	 */
-	int getStart();
-	
-	/**
-	 * Returns the end index of the matching region.
-	 * 
-	 * @return the end index of the matching region
-	 */
-	int getEnd();
+	short getTerminologyComponentId();
 }

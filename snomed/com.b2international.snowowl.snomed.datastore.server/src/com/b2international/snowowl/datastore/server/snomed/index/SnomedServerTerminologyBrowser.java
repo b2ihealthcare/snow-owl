@@ -44,12 +44,6 @@ import org.apache.lucene.search.Query;
 import org.apache.lucene.search.ReferenceManager;
 import org.apache.lucene.search.TopDocs;
 
-import bak.pcj.LongCollection;
-import bak.pcj.map.LongKeyLongMap;
-import bak.pcj.map.LongKeyLongOpenHashMap;
-import bak.pcj.set.LongOpenHashSet;
-import bak.pcj.set.LongSet;
-
 import com.b2international.commons.BooleanUtils;
 import com.b2international.commons.CompareUtils;
 import com.b2international.commons.graph.GraphUtils;
@@ -74,6 +68,7 @@ import com.b2international.snowowl.snomed.datastore.EscgExpressionConstants;
 import com.b2international.snowowl.snomed.datastore.SnomedConceptIndexEntry;
 import com.b2international.snowowl.snomed.datastore.SnomedConceptIndexEntryWithChildFlag;
 import com.b2international.snowowl.snomed.datastore.SnomedTerminologyBrowser;
+import com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants;
 import com.b2international.snowowl.snomed.datastore.escg.IEscgQueryEvaluatorService;
 import com.b2international.snowowl.snomed.datastore.filteredrefset.FilteredRefSetMemberBrowser2;
 import com.b2international.snowowl.snomed.datastore.filteredrefset.IRefSetMemberOperation;
@@ -90,6 +85,12 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Multimaps;
+
+import bak.pcj.LongCollection;
+import bak.pcj.map.LongKeyLongMap;
+import bak.pcj.map.LongKeyLongOpenHashMap;
+import bak.pcj.set.LongOpenHashSet;
+import bak.pcj.set.LongSet;
 
 /**
  * Index-based SNOMED CT Terminology browser implementation.
@@ -134,21 +135,17 @@ public class SnomedServerTerminologyBrowser extends AbstractIndexTerminologyBrow
 	
 	@Override
 	protected SnomedConceptIndexEntry createResultObject(final IBranchPath branchPath, final Document doc) {
-		final String id = Long.toString(SnomedMappings.id().getValue(doc));
-		String label = Mappings.label().getValue(doc);
-		label = label == null ? "" : label;
-		final String moduleId = SnomedMappings.module().getValueAsString(doc);
-		final long storageKey = Mappings.storageKey().getValue(doc);
-		final String iconId = Mappings.iconId().getValue(doc);
-		final long effectiveTime = Mappings.longField(CONCEPT_EFFECTIVE_TIME).getValue(doc);
-		
-		final byte flags = SnomedConceptIndexEntry.generateFlags(
-				BooleanUtils.valueOf(SnomedMappings.active().getValue(doc).intValue()),
-				BooleanUtils.valueOf(SnomedMappings.primitive().getValue(doc).intValue()),
-				BooleanUtils.valueOf(SnomedMappings.exhaustive().getValue(doc).intValue()),
-				BooleanUtils.valueOf(SnomedMappings.released().getValue(doc).intValue()));
-		// TODO: workaround for missing labels
-		return new SnomedConceptIndexEntry(id, moduleId, label, iconId, storageKey, flags, effectiveTime);
+		return SnomedConceptIndexEntry.builder()
+				.id(SnomedMappings.id().getValueAsString(doc))
+				.moduleId(SnomedMappings.module().getValueAsString(doc))
+				.storageKey(Mappings.storageKey().getValue(doc))
+				.active(BooleanUtils.valueOf(SnomedMappings.active().getValue(doc).intValue())) 
+				.primitive(BooleanUtils.valueOf(SnomedMappings.primitive().getValue(doc).intValue()))
+				.exhaustive(BooleanUtils.valueOf(SnomedMappings.exhaustive().getValue(doc).intValue()))
+				.released(BooleanUtils.valueOf(SnomedMappings.released().getValue(doc).intValue()))
+				.iconId(Mappings.iconId().getValue(doc))
+				.effectiveTimeLong(Mappings.longField(SnomedIndexBrowserConstants.CONCEPT_EFFECTIVE_TIME).getValue(doc))
+				.build();
 	}
 
 	@Override

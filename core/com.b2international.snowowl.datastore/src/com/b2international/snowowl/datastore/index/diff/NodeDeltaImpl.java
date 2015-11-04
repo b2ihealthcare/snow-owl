@@ -19,8 +19,8 @@ import static com.google.common.base.Preconditions.checkNotNull;
 
 import com.b2international.commons.Change;
 import com.b2international.commons.ChangeKind;
-import com.b2international.snowowl.core.api.LabelProvider;
-import com.b2international.snowowl.core.api.TerminologyComponentIdProvider;
+import com.b2international.snowowl.core.api.component.LabelProvider;
+import com.b2international.snowowl.core.api.component.TerminologyComponentIdProvider;
 
 /**
  * {@link NodeDelta Node delta} implementation.

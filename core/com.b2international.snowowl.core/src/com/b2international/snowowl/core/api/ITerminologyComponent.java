@@ -15,13 +15,14 @@
  */
 package com.b2international.snowowl.core.api;
 
+import com.b2international.snowowl.core.api.component.IconIdProvider;
 import com.google.common.base.Optional;
 
 /**
  * Extends the {@link IComponent} interface with information about the component's containing terminology.
  * 
  */
-public interface ITerminologyComponent<K> extends IComponentWithIconId<K> {
+public interface ITerminologyComponent<K> extends IComponent<K>, IconIdProvider<K> {
 
 	/**
 	 * Returns the terminology short name
@@ -36,5 +37,4 @@ public interface ITerminologyComponent<K> extends IComponentWithIconId<K> {
 	 * @return an {@link Optional} wrapping the terminology OID
 	 */
 	public Optional<String> getTerminologyOid();
-
 }

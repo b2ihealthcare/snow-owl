@@ -24,13 +24,13 @@ import com.google.common.base.Preconditions;
 /**
  *
  */
-public class QuickSearchResponse implements Serializable {
+public class QuickSearchServiceResult implements Serializable {
 
 	private static final long serialVersionUID = -7065711512213305688L;
 
 	private final Map<String, QuickSearchContentResult> results;
 	
-	public QuickSearchResponse(final Map<String, QuickSearchContentResult> results) {
+	public QuickSearchServiceResult(final Map<String, QuickSearchContentResult> results) {
 		this.results = Preconditions.checkNotNull(results, "Results argument cannot be null.");
 	}
 	
