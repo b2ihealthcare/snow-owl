@@ -17,7 +17,6 @@ package com.b2international.snowowl.datastore.server.editor.session;
 
 import java.util.UUID;
 
-import com.b2international.snowowl.datastore.CDOEditingContext;
 import com.b2international.snowowl.datastore.IBranchPathMap;
 import com.b2international.snowowl.datastore.server.editor.operation.executor.OperationExecutorFactory;
 
@@ -44,7 +43,7 @@ public interface EditorSessionFactory {
 			String userId, 
 			String editedComponentId, 
 			IBranchPathMap branchPathMap,
-			EditingContextFactory<CDOEditingContext> contextFactory, 
+			EditingContextFactory contextFactory, 
 			OperationExecutorFactory executorFactory);
 
 }

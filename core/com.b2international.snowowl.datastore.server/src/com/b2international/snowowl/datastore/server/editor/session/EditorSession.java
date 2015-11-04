@@ -84,7 +84,7 @@ public abstract class EditorSession<C extends EObject> implements IEditorSession
 	protected final UUID uuid;
 	protected final String userId;
 	protected final IBranchPathMap branchPathMap;
-	protected final EditingContextFactory<CDOEditingContext> editingContextFactory;
+	protected final EditingContextFactory editingContextFactory;
 	protected final OperationExecutorFactory executorFactory;
 	protected final IPostOperationExecutionStartegy postOperationExecutionStartegy;
 	protected final Stack<AbstractOperation> operationStack;
@@ -102,7 +102,7 @@ public abstract class EditorSession<C extends EObject> implements IEditorSession
 			final String userId, 
 			final IBranchPathMap branchPathMap, 
 			final UUID uuid, 
-			final EditingContextFactory<CDOEditingContext> editingContextFactory, 
+			final EditingContextFactory editingContextFactory, 
 			final OperationExecutorFactory executorFactory) {
 		
 		this.userId = userId;
@@ -356,7 +356,7 @@ public abstract class EditorSession<C extends EObject> implements IEditorSession
 		return branchPathMap;
 	}
 	
-	public EditingContextFactory<CDOEditingContext> getEditingContextFactory() {
+	public EditingContextFactory getEditingContextFactory() {
 		return editingContextFactory;
 	}
 	

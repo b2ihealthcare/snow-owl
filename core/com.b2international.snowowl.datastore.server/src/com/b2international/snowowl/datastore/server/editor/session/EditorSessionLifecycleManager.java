@@ -25,7 +25,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.b2international.commons.StringUtils;
-import com.b2international.snowowl.datastore.CDOEditingContext;
 import com.b2international.snowowl.datastore.IBranchPathMap;
 import com.b2international.snowowl.datastore.server.editor.operation.executor.OperationExecutorFactory;
 import com.google.common.base.Optional;
@@ -69,7 +68,7 @@ public class EditorSessionLifecycleManager {
 	 *            the branch path map
 	 * @return the unique identifier of the editor session
 	 */
-	public UUID openSession(final String userId, final String editedComponentId, final IBranchPathMap branchPathMap, final EditingContextFactory<CDOEditingContext> contextFactory,
+	public UUID openSession(final String userId, final String editedComponentId, final IBranchPathMap branchPathMap, final EditingContextFactory contextFactory,
 			final OperationExecutorFactory executorFactory) {
 		checkArgument(!StringUtils.isEmpty(userId), "userId");
 		checkArgument(!StringUtils.isEmpty(editedComponentId), "editedComponentId");

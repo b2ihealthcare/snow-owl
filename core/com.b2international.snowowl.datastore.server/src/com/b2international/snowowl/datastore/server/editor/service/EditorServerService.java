@@ -24,7 +24,6 @@ import org.eclipse.core.runtime.IProgressMonitor;
 
 import com.b2international.snowowl.core.IDisposableService;
 import com.b2international.snowowl.core.api.SnowowlServiceException;
-import com.b2international.snowowl.datastore.CDOEditingContext;
 import com.b2international.snowowl.datastore.IBranchPathMap;
 import com.b2international.snowowl.datastore.editor.bean.IdentifiedBean;
 import com.b2international.snowowl.datastore.editor.notification.BroadcastNotificationMessage;
@@ -49,10 +48,10 @@ import com.b2international.snowowl.datastore.validation.SessionValidationResults
 public class EditorServerService implements IEditorService, IDisposableService {
 
 	private final EditorSessionLifecycleManager lifecycleManager;
-	private final EditingContextFactory<CDOEditingContext> contextFactory;
+	private final EditingContextFactory contextFactory;
 	private final OperationExecutorFactory operationExecutorFactory;
 
-	public EditorServerService(EditorSessionLifecycleManager lifecycleManager, EditingContextFactory<CDOEditingContext> contextFactory, OperationExecutorFactory executorFactory) {
+	public EditorServerService(EditorSessionLifecycleManager lifecycleManager, EditingContextFactory contextFactory, OperationExecutorFactory executorFactory) {
 		this.lifecycleManager = lifecycleManager;
 		this.contextFactory = contextFactory;
 		this.operationExecutorFactory = executorFactory;

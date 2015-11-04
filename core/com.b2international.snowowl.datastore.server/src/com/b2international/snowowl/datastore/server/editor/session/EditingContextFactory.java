@@ -23,8 +23,13 @@ import com.b2international.snowowl.datastore.CDOEditingContext;
  * 
  * @since 2.9
  */
-public interface EditingContextFactory<T extends CDOEditingContext> {
+public interface EditingContextFactory {
 
-	public T createEditingContext(IBranchPath branchPath);
+	/**
+	 * Create an {@link CDOEditingContext} on the given {@link IBranchPath}
+	 * @param branchPath
+	 * @return
+	 */
+	CDOEditingContext createEditingContext(IBranchPath branchPath);
 	
 }
