@@ -43,7 +43,7 @@ public final class Reviews {
 	}
 
 	public Request<ServiceProvider, ConceptChanges> prepareGetConceptChanges(String reviewId) {
-		return RepositoryRequests.wrap(reviewId, new ReadConceptChangesRequest(reviewId));
+		return RepositoryRequests.wrap(repositoryId, new ReadConceptChangesRequest(reviewId));
 	}
 
 	public Request<ServiceProvider, Review> prepareDelete(String reviewId) {
