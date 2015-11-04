@@ -37,7 +37,7 @@ public class SnomedMetadataImpl implements SnomedMetadata {
 	
 	@Override
 	public Collection<String> getCharacteristicTypeIds(IBranchPath branchPath) {
-		return LongSets.toStringSet(getTerminologyBrowser().getAllSuperTypeIds(branchPath, Long.valueOf(Concepts.CHARACTERISTIC_TYPE)));
+		return LongSets.toStringSet(getTerminologyBrowser().getAllSubTypeIds(branchPath, Long.valueOf(Concepts.CHARACTERISTIC_TYPE)));
 	}
 
 	@Override
