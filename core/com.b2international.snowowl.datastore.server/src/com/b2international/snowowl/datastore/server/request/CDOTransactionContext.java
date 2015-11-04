@@ -75,9 +75,9 @@ public final class CDOTransactionContext extends DelegatingBranchContext impleme
 	}
 
 	@Override
-	public void commit(String userId, String commitComment) {
+	public long commit(String userId, String commitComment) {
 		try {
-			CDOServerUtils.commit(editingContext.getTransaction(), userId, commitComment, null);
+			return CDOServerUtils.commit(editingContext.getTransaction(), userId, commitComment, null).getTimeStamp();
 		} catch (final CommitException e) {
 			final RepositoryLockException cause = Exceptions.extractCause(e, getClass().getClassLoader(), RepositoryLockException.class);
 			if (cause != null) {
