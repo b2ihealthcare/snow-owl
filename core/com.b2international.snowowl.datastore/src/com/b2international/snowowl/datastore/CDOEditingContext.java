@@ -69,6 +69,7 @@ import com.b2international.snowowl.datastore.exception.RepositoryLockException;
 import com.b2international.snowowl.datastore.tasks.TaskManager;
 import com.b2international.snowowl.terminologymetadata.CodeSystemVersionGroup;
 import com.google.common.base.Preconditions;
+import com.google.common.base.Strings;
 
 /**
  * This class is a thin, generic wrapper around the underlying {@link CDOTransaction}. 
@@ -170,6 +171,9 @@ public abstract class CDOEditingContext implements AutoCloseable {
 	}
 	
 	public <T extends EObject> T lookup(final String componentId, Class<T> type) {
+		if (Strings.isNullOrEmpty(componentId)) {
+			throw new ComponentNotFoundException(type.getSimpleName(), componentId);
+		}
 		final T component = getComponentLookupService(type).getComponent(componentId, getTransaction());
 		if (null == component) {
 			throw new ComponentNotFoundException(type.getSimpleName(), componentId);
