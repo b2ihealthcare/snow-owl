@@ -195,4 +195,10 @@
             class="com.b2international.snowowl.snomed.datastore.server.boot.SnomedServerBootstrap">
       </bootstrapFragment>
    </extension>
+   <extension
+         point="com.b2international.snowowl.datastore.server.editingContextFactory">
+      <factory
+            class="com.b2international.snowowl.datastore.server.snomed.SnomedEditingContextFactory">
+      </factory>
+   </extension>
 </plugin>
