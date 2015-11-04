@@ -87,7 +87,6 @@ public class SnomedRelationshipImporter extends AbstractSnomedTerminologyImporte
 			editedRelationship.setReleased(true);
 		} else {
 			editedRelationship.unsetEffectiveTime();
-			editedRelationship.setReleased(false);
 		}
 
 		editedRelationship.setActive(currentRow.isActive());

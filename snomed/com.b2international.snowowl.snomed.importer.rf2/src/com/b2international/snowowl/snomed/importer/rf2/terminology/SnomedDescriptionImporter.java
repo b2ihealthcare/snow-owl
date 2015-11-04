@@ -80,7 +80,6 @@ public class SnomedDescriptionImporter extends AbstractSnomedTerminologyImporter
 			editedDescription.setReleased(true);
 		} else {
 			editedDescription.unsetEffectiveTime();
-			editedDescription.setReleased(false);
 		}
 		
 		editedDescription.setActive(currentRow.isActive());

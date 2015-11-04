@@ -93,7 +93,6 @@ public class SnomedDescriptionTypeRefSetImporter extends AbstractSnomedRefSetImp
 			editedMember.setReleased(true);
 		} else {
 			editedMember.unsetEffectiveTime();
-			editedMember.setReleased(false);
 		}
 
 		editedMember.setRefSet(getOrCreateRefSet(currentRow.getRefSetId(), currentRow.getReferencedComponentId()));
