@@ -21,8 +21,7 @@ package com.b2international.snowowl.snomed.datastore;
 public enum VisualizedRelationshipType {
 	
 	STATED("Stated"),
-	INFERRED("Inferred"),
-	ANY("Any");
+	INFERRED("Inferred");
 	
 	private String displayName;
 
