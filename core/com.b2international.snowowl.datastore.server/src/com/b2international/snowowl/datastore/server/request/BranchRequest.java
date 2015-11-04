@@ -37,7 +37,7 @@ public final class BranchRequest<B> extends DelegatingRequest<RepositoryContext,
 
 	private final String branchPath;
 	
-	public BranchRequest(String branchPath, Request<BranchContext, B> next) {
+	BranchRequest(String branchPath, Request<BranchContext, B> next) {
 		super(next);
 		this.branchPath = checkNotNull(branchPath, "branchPath");
 	}

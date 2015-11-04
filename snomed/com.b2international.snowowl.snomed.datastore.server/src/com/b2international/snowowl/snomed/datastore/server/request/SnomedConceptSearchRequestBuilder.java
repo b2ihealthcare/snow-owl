@@ -17,7 +17,6 @@ package com.b2international.snowowl.snomed.datastore.server.request;
 
 import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.events.Request;
-import com.b2international.snowowl.datastore.server.request.BranchRequest;
 import com.b2international.snowowl.datastore.server.request.RepositoryRequests;
 import com.b2international.snowowl.snomed.core.domain.SearchKind;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcepts;
@@ -64,7 +63,7 @@ public final class SnomedConceptSearchRequestBuilder {
 	}
 	
 	public Request<ServiceProvider, SnomedConcepts> build() {
-		return RepositoryRequests.wrap(SnomedDatastoreActivator.REPOSITORY_UUID, new BranchRequest<>(branch, new SnomedConceptReadAllRequest(offset, limit, filters.build())));
+		return RepositoryRequests.wrap(SnomedDatastoreActivator.REPOSITORY_UUID, branch, new SnomedConceptReadAllRequest(offset, limit, filters.build()));
 	}
 
 }

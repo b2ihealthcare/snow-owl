@@ -18,7 +18,6 @@ package com.b2international.snowowl.snomed.datastore.server.events;
 import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.domain.TransactionContext;
 import com.b2international.snowowl.core.events.Request;
-import com.b2international.snowowl.datastore.server.request.BranchRequest;
 import com.b2international.snowowl.datastore.server.request.Branching;
 import com.b2international.snowowl.datastore.server.request.RepositoryCommitRequestBuilder;
 import com.b2international.snowowl.datastore.server.request.RepositoryRequests;
@@ -56,11 +55,11 @@ public abstract class SnomedRequests {
 	
 	// TODO migrate initial API to builders
 	public static Request<ServiceProvider, SnomedReferenceSets> prepareGetReferenceSets(String branch) {
-		return RepositoryRequests.wrap(SnomedDatastoreActivator.REPOSITORY_UUID, new BranchRequest<>(branch, new SnomedRefSetReadAllRequest()));
+		return RepositoryRequests.wrap(SnomedDatastoreActivator.REPOSITORY_UUID, branch, new SnomedRefSetReadAllRequest());
 	}
 	
 	public static Request<ServiceProvider, SnomedReferenceSet> prepareGetReferenceSet(String branch, String referenceSetId) {
-		return RepositoryRequests.wrap(SnomedDatastoreActivator.REPOSITORY_UUID, new BranchRequest<>(branch, new SnomedRefSetReadRequest(referenceSetId)));
+		return RepositoryRequests.wrap(SnomedDatastoreActivator.REPOSITORY_UUID, branch, new SnomedRefSetReadRequest(referenceSetId));
 	}
 
 	public static Branching branching() {

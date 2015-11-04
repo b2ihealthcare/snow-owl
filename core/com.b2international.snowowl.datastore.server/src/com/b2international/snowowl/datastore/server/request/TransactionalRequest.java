@@ -35,7 +35,7 @@ public final class TransactionalRequest extends BaseRequest<BranchContext, Commi
 	private final String userId;
 	private final Request<TransactionContext, ?> next;
 
-	public TransactionalRequest(String userId, String commitComment, Request<TransactionContext, ?> next) {
+	TransactionalRequest(String userId, String commitComment, Request<TransactionContext, ?> next) {
 		this.next = checkNotNull(next, "next");
 		this.userId = userId;
 		checkArgument(!Strings.isNullOrEmpty(commitComment), "Commit comment may not be null or empty.");

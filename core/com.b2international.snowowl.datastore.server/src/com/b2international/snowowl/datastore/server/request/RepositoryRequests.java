@@ -16,6 +16,7 @@
 package com.b2international.snowowl.datastore.server.request;
 
 import com.b2international.snowowl.core.ServiceProvider;
+import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.core.events.Request;
 
@@ -35,6 +36,10 @@ public class RepositoryRequests {
 		return new RepositoryRequest<>(repositoryId, next);
 	}
 	
+	public static <B> Request<ServiceProvider, B> wrap(String repositoryId, String branch, Request<BranchContext, B> next) {
+		return wrap(repositoryId, new BranchRequest<>(branch, next));
+	}
+	
 	public static Branching branching(String repositoryId) {
 		return new Branching(repositoryId);
 	}
@@ -42,5 +47,5 @@ public class RepositoryRequests {
 	public static Reviews reviews(String repositoryId) {
 		return new Reviews(repositoryId);
 	}
-	
+
 }
