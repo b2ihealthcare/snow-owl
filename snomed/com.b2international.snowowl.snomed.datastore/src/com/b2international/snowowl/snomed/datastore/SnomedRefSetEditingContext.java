@@ -149,6 +149,11 @@ public class SnomedRefSetEditingContext extends BaseSnomedEditingContext {
 		} 
 	}
 	
+	@Override
+	protected <T> ILookupService<String, T, CDOView> getComponentLookupService(Class<T> type) {
+		return getSnomedEditingContext().getComponentLookupService(type);
+	}
+	
 	/**
 	 * Creates a new SNOMED CT reference set editing context on the currently active branch of the SNOMED CT repository.
 	 * 
