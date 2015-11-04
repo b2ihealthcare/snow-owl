@@ -17,6 +17,7 @@ package com.b2international.snowowl.snomed.datastore.server.events;
 
 import java.util.Collection;
 
+import com.b2international.snowowl.snomed.Relationship;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.core.domain.CharacteristicType;
 import com.b2international.snowowl.snomed.core.domain.ISnomedRelationship;
@@ -54,11 +55,35 @@ public class SnomedRelationshipConverter extends AbstractSnomedComponentConverte
 
 		return result;
 	}
+	
+	public ISnomedRelationship apply(Relationship input) {
+		final SnomedRelationship result = new SnomedRelationship();
+		result.setActive(input.isActive());
+		result.setCharacteristicType(toCharacteristicType(input.getCharacteristicType().getId()));
+		result.setDestinationId(input.getDestination().getId());
+		result.setDestinationNegated(input.isDestinationNegated());
+		result.setEffectiveTime(input.getEffectiveTime());
+		result.setGroup(input.getGroup());
+		result.setId(input.getId());
+		result.setModifier(toRelationshipModifier(input.getModifier().getId()));
+		result.setModuleId(input.getModule().getId());
+		result.setRefinability(getRelationshipRefinability(input.getId()));
+		result.setReleased(input.isReleased());
+		result.setSourceId(input.getSource().getId());
+		result.setTypeId(input.getType().getId());
+		result.setUnionGroup(input.getUnionGroup());
+
+		return result;
+	}
 
 	private CharacteristicType toCharacteristicType(final String characteristicTypeId) {
 		return CharacteristicType.getByConceptId(characteristicTypeId);
 	}
 
+	private RelationshipModifier toRelationshipModifier(final String modifiedId) {
+		return RelationshipModifier.getByConceptId(modifiedId);
+	}
+	
 	private RelationshipModifier toRelationshipModifier(final boolean universal) {
 		return universal ? RelationshipModifier.UNIVERSAL : RelationshipModifier.EXISTENTIAL;
 	}
@@ -77,4 +102,5 @@ public class SnomedRelationshipConverter extends AbstractSnomedComponentConverte
 		// TODO: is this the proper fallback value?
 		return RelationshipRefinability.NOT_REFINABLE;
 	}
+
 }

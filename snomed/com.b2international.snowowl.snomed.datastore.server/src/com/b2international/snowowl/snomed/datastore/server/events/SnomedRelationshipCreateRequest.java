@@ -23,10 +23,12 @@ import org.hibernate.validator.constraints.NotEmpty;
 
 import com.b2international.snowowl.core.domain.TransactionContext;
 import com.b2international.snowowl.core.exceptions.ComponentNotFoundException;
+import com.b2international.snowowl.snomed.Relationship;
 import com.b2international.snowowl.snomed.core.domain.CharacteristicType;
 import com.b2international.snowowl.snomed.core.domain.ISnomedRelationship;
 import com.b2international.snowowl.snomed.core.domain.RelationshipModifier;
 import com.b2international.snowowl.snomed.core.store.SnomedComponents;
+import com.b2international.snowowl.snomed.datastore.services.SnomedBranchRefSetMembershipLookupService;
 
 /**
  * @since 4.0
@@ -125,7 +127,7 @@ public class SnomedRelationshipCreateRequest extends BaseSnomedComponentCreateRe
 	@Override
 	public ISnomedRelationship execute(TransactionContext context) {
 		try {
-			SnomedComponents.newRelationship()
+			final Relationship relationship = SnomedComponents.newRelationship()
 					.withId(getIdGenerationStrategy())
 					.withModule(getModuleId())
 					.withSource(getSourceId())
@@ -139,8 +141,7 @@ public class SnomedRelationshipCreateRequest extends BaseSnomedComponentCreateRe
 					// TODO: add a refinability refset member here?
 					.build(context);
 
-			// TODO convert relationship to representation
-			return null;
+			return new SnomedRelationshipConverter(new SnomedBranchRefSetMembershipLookupService(context.branch().branchPath())).apply(relationship);
 		} catch (ComponentNotFoundException e) {
 			throw e.toBadRequestException();
 		}
