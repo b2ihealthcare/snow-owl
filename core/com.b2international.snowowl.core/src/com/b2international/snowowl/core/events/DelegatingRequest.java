@@ -47,11 +47,15 @@ public abstract class DelegatingRequest<C extends ServiceProvider, T extends Ser
 	protected final B next(T context) {
 		return next.execute(context);
 	}
+	
+	protected final Request<T, B> next() {
+		return next;
+	}
 
 	@Override
 	@SuppressWarnings("unchecked")
 	protected final Class<B> getReturnType() {
 		return ClassUtils.checkAndCast(next, BaseRequest.class).getReturnType();
 	}
-
+	
 }

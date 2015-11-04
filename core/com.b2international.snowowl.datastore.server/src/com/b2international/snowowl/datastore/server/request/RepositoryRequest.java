@@ -42,4 +42,9 @@ public final class RepositoryRequest<B> extends DelegatingRequest<ServiceProvide
 		return "/"+repositoryId;
 	}
 	
+	@Override
+	public String toString() {
+		return String.format("{address:%s, next:%s}", getAddress(), next());
+	}
+	
 }

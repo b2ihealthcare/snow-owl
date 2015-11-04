@@ -66,5 +66,10 @@ public final class BranchRequest<B> extends DelegatingRequest<RepositoryContext,
 		
 		return branch;
 	}
+	
+	@Override
+	public String toString() {
+		return String.format("{branch:%s, next: %s}", branchPath, next());
+	}
 
 }

@@ -67,4 +67,9 @@ public final class TransactionalRequest extends BaseRequest<BranchContext, Commi
 		return CommitInfo.class;
 	}
 	
+	@Override
+	public String toString() {
+		return String.format("{userId:%s, commitComment: %s, next: %s}", userId, commitComment, next);
+	}
+	
 }
