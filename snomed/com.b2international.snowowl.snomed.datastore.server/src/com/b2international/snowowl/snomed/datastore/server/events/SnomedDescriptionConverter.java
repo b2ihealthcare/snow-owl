@@ -22,6 +22,7 @@ import java.util.Collection;
 import java.util.Map;
 
 import com.b2international.snowowl.core.api.IBranchPath;
+import com.b2international.snowowl.snomed.Description;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.snomed.core.domain.Acceptability;
 import com.b2international.snowowl.snomed.core.domain.CaseSignificance;
@@ -62,6 +63,28 @@ public class SnomedDescriptionConverter extends AbstractSnomedComponentConverter
 
 		return result;
 	}
+	
+	public ISnomedDescription apply(Description input) {
+		final SnomedDescription result = new SnomedDescription();
+		result.setAcceptabilityMap(toAcceptabilityMap(input.getId()));
+		result.setActive(input.isActive());
+		result.setCaseSignificance(toCaseSignificance(input.getCaseSignificance().getId()));
+		result.setConceptId(input.getConcept().getId());
+		result.setEffectiveTime(input.getEffectiveTime());
+		result.setId(input.getId());
+		result.setDescriptionInactivationIndicator(getDescriptionInactivationIndicator(input.getId()));
+		result.setAssociationTargets(toAssociationTargets(SnomedTerminologyComponentConstants.DESCRIPTION, input.getId()));
+
+		// TODO: index language code on SnomedDescriptionIndexEntries -- it's the only property which is not present.
+		result.setLanguageCode("en");
+
+		result.setModuleId(input.getModule().getId());
+		result.setReleased(input.isReleased());
+		result.setTerm(input.getTerm());
+		result.setTypeId(input.getType().getId());
+
+		return result;
+	}
 
 	private DescriptionInactivationIndicator getDescriptionInactivationIndicator(final String descriptionId) {
 		final String inactivationId = getServiceForClass(ISnomedComponentService.class).getDescriptionInactivationId(getBranchPath(), descriptionId);
@@ -92,4 +115,5 @@ public class SnomedDescriptionConverter extends AbstractSnomedComponentConverter
 	private CaseSignificance toCaseSignificance(final String caseSignificanceId) {
 		return CaseSignificance.getByConceptId(caseSignificanceId);
 	}
+
 }

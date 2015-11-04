@@ -36,6 +36,7 @@ import com.b2international.snowowl.snomed.core.domain.ISnomedDescription;
 import com.b2international.snowowl.snomed.core.store.SnomedComponents;
 import com.b2international.snowowl.snomed.datastore.model.SnomedModelExtensions;
 import com.b2international.snowowl.snomed.datastore.services.ISnomedComponentService;
+import com.b2international.snowowl.snomed.datastore.services.SnomedBranchRefSetMembershipLookupService;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedLanguageRefSetMember;
 import com.google.common.collect.ImmutableList;
 
@@ -123,7 +124,7 @@ public class SnomedDescriptionCreateRequest extends BaseSnomedComponentCreateReq
 				.build(context);
 			
 			updateAcceptabilityMap(getAcceptability(), description, context);
-			return null;
+			return new SnomedDescriptionConverter(new SnomedBranchRefSetMembershipLookupService(context.branch().branchPath())).apply(description);
 		} catch (ComponentNotFoundException e) {
 			throw e.toBadRequestException();
 		}
