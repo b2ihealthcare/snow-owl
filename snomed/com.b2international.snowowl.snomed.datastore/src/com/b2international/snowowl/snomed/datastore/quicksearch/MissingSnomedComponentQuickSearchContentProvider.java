@@ -17,11 +17,15 @@ package com.b2international.snowowl.snomed.datastore.quicksearch;
 
 import java.util.Map;
 
+import org.eclipse.emf.ecore.EPackage;
+
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.quicksearch.CompactQuickSearchElement;
 import com.b2international.snowowl.core.quicksearch.QuickSearchContentResult;
+import com.b2international.snowowl.core.quicksearch.QuickSearchElement;
 import com.b2international.snowowl.datastore.IBranchPathMap;
+import com.b2international.snowowl.datastore.quicksearch.AbstractQuickSearchContentProvider;
 import com.b2international.snowowl.datastore.quicksearch.IQuickSearchContentProvider;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.SnomedPackage;
@@ -32,20 +36,37 @@ import com.google.common.collect.ImmutableList;
 /**
  * @since 4.4
  */
-public class MissingSnomedComponentQuickSearchContentProvider implements IQuickSearchContentProvider {
+public class MissingSnomedComponentQuickSearchContentProvider extends AbstractQuickSearchContentProvider implements IQuickSearchContentProvider {
 
 	@Override
 	public QuickSearchContentResult getComponents(String queryExpression, IBranchPathMap branchPathMap, int limit, Map<String, Object> configuration) {
+		
 		try {
 			SnomedIdentifiers.validate(queryExpression);
-			final IBranchPath branch = branchPathMap.getBranchPath(SnomedPackage.eINSTANCE);
-			if (!ApplicationContext.getInstance().getServiceChecked(SnomedTerminologyBrowser.class).exists(branch, queryExpression)) {
-				return new QuickSearchContentResult(1, ImmutableList.of(new CompactQuickSearchElement(queryExpression, Concepts.ROOT_CONCEPT, queryExpression, false)));
-			}
 		} catch (IllegalArgumentException e) {
 			// ignore invalid SNOMED CT IDs and return empty result
+			return new QuickSearchContentResult();
 		}
-		return new QuickSearchContentResult();
+
+		final IBranchPath branchPath = getBranchPath(branchPathMap);
+		final SnomedTerminologyBrowser terminologyBrowser = ApplicationContext.getInstance().getServiceChecked(SnomedTerminologyBrowser.class);
+		
+		if (terminologyBrowser.exists(branchPath, queryExpression)) {
+			return new QuickSearchContentResult();
+		}
+				
+		QuickSearchElement singleResult = new CompactQuickSearchElement(queryExpression, 
+				Concepts.ROOT_CONCEPT, 
+				queryExpression, 
+				false,
+				getMatchRegions(queryExpression, queryExpression),
+				getSuffixes(queryExpression, queryExpression));
+		
+		return new QuickSearchContentResult(1, ImmutableList.of(singleResult));
 	}
 
+	@Override
+	protected EPackage getEPackage() {
+		return SnomedPackage.eINSTANCE;
+	}
 }
