@@ -32,11 +32,11 @@ public class SnomedConfiguration extends PreferenceBase {
 
 	public static final String NODE_NAME = "Snomed";
 	
-	public static final String KEY_MODULE_IDS = "com.b2international.snowowl.snomed.moduleid"; //$NON-NLS-N$
-	public static final String KEY_SNOMED_NAMESPACES = "com.b2international.snowowl.snomed.namespaces"; //$NON-NLS-N$
-	public static final String KEY_HIDDEN_REFERENCE_SETS = "com.b2international.snowowl.snomed.refset.hidden"; //$NON-NLS-N$
-	public static final String KEY_MAP_ADVICES= "com.b2international.snowowl.snomed.mapadvice"; //$NON-NLS-N$
-	public static final String KEY_MAP_RULE= "com.b2international.snowowl.snomed.maprule"; //$NON-NLS-N$
+	public static final String KEY_MODULE_IDS = "com.b2international.snowowl.snomed.moduleid"; //$NON-NLS-1$
+	public static final String KEY_SNOMED_NAMESPACES = "com.b2international.snowowl.snomed.namespaces"; //$NON-NLS-1$ 
+	public static final String KEY_HIDDEN_REFERENCE_SETS = "com.b2international.snowowl.snomed.refset.hidden"; //$NON-NLS-1$
+	public static final String KEY_MAP_ADVICES= "com.b2international.snowowl.snomed.mapadvice"; //$NON-NLS-1$
+	public static final String KEY_MAP_RULE= "com.b2international.snowowl.snomed.maprule"; //$NON-NLS-1$
 
 	public ConfigurationEntrySerializer<ConfigNode<String, String>> moduleIdsSerializer;
 	public ConfigurationEntrySerializer<ConfigNode<String, String>> namespacesSerializer;
@@ -52,6 +52,7 @@ public class SnomedConfiguration extends PreferenceBase {
 	public void init(File defaultsPath) {
 		
 		hiddenReferenceSetsSerializer = new ConfigurationEntrySerializer<ConfigNode<String,String>>(preferences, KEY_HIDDEN_REFERENCE_SETS, new File(defaultsPath, "hiddenReferenceSets.xml")) {
+			@Override
 			public ConfigNode<String, String> computeDefault() {
 				return new ConfigNode<String, String>(KEY_HIDDEN_REFERENCE_SETS)
 						
@@ -65,21 +66,21 @@ public class SnomedConfiguration extends PreferenceBase {
 					.addChild("900000000000529008", "SIMILAR TO association reference set")
 					.addChild("900000000000528000", "WAS A association reference set")
 						
-//					.addChild("32570271000036106", "Australian English language reference set"); //XXX commented out for Snow Owl 1.6 release
 					.addChild("900000000000489007", "Concept inactivation indicator reference set")
 					.addChild("900000000000490003", "Description inactivation indicator reference set")
-//					.addChild("900000000000547002", "Relationship inactivation indicator reference set") //XXX commented out for Snow Owl 1.6 release
+					.addChild("900000000000547002", "Relationship inactivation indicator reference set")
+					.addChild("900000000000488004", "Relationship refinability reference set")
 					.addChild("900000000000508004", "Great Britain English language reference set")
 					.addChild("900000000000509007", "United States of America English language reference set")
 					.addChild(Concepts.REFSET_DRUG_TO_GROUPER_SIMPLE_MAP, "Ontology to grouper simple map")
 					.addChild(Concepts.REFSET_DRUG_TO_PACKAGING_SIMPLE_MAP, "Ontology to packaging simple map")
 					.addChild(Concepts.REFSET_DRUG_TO_SOURCE_DRUG_SIMPLE_MAP, "Ontology to product simple map");
-//					.addChild("900000000000488004", "Relationship refinability reference set"); //XXX commented out for Snow Owl 1.6 release
 			};
 		};
 		
 		moduleIdsSerializer = new ConfigurationEntrySerializer<ConfigNode<String, String>>(preferences, KEY_MODULE_IDS, new File(defaultsPath, "moduleIds.xml")) {
 			
+			@Override
 			public ConfigNode<String, String> computeDefault() {
 				return new ConfigNode<String, String>(KEY_MODULE_IDS)
 					.addChild("900000000000445007", "IHTSDO maintained module")
@@ -91,6 +92,7 @@ public class SnomedConfiguration extends PreferenceBase {
 
 		namespacesSerializer = new ConfigurationEntrySerializer<ConfigNode<String, String>>(preferences, KEY_SNOMED_NAMESPACES, new File(defaultsPath, "snomedNamespaces.xml")) {
 			
+			@Override
 			public ConfigNode<String, String> computeDefault() {
 				return new ConfigNode<String, String>(KEY_MODULE_IDS)
 					.addChild("", "IHTSDO core")
