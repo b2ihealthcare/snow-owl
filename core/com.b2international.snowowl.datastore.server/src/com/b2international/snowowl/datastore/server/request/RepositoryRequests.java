@@ -27,8 +27,8 @@ public class RepositoryRequests {
 	private RepositoryRequests() {
 	}
 	
-	public static <B> RepositoryCommitRequestBuilder<B> prepareCommit(String userId, String repositoryId, String branch) {
-		return new RepositoryCommitRequestBuilder<>(userId, repositoryId, branch);
+	public static <B> RepositoryCommitRequestBuilder prepareCommit(String userId, String repositoryId, String branch) {
+		return new RepositoryCommitRequestBuilder(userId, repositoryId, branch);
 	}
 
 	public static <B> Request<ServiceProvider, B> wrap(String repositoryId, Request<RepositoryContext, B> next) {

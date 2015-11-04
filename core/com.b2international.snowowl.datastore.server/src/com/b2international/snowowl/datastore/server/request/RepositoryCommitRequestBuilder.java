@@ -22,13 +22,13 @@ import com.b2international.snowowl.core.events.Request;
 /**
  * @since 4.5
  */
-public final class RepositoryCommitRequestBuilder<B> {
+public final class RepositoryCommitRequestBuilder {
 	
 	private String userId;
 	private String repositoryId;
 	private String branch;
 	private String commitComment = "";
-	private Request<TransactionContext, B> body;
+	private Request<TransactionContext, ?> body;
 
 	RepositoryCommitRequestBuilder(String userId, String repositoryId, String branch) {
 		this.userId = userId;
@@ -36,18 +36,18 @@ public final class RepositoryCommitRequestBuilder<B> {
 		this.branch = branch;
 	}
 	
-	public RepositoryCommitRequestBuilder<B> setBody(Request<TransactionContext, B> body) {
+	public RepositoryCommitRequestBuilder setBody(Request<TransactionContext, ?> body) {
 		this.body = body;
 		return this;
 	}
 	
-	public RepositoryCommitRequestBuilder<B> setCommitComment(String commitComment) {
+	public RepositoryCommitRequestBuilder setCommitComment(String commitComment) {
 		this.commitComment = commitComment;
 		return this;
 	}
 	
-	public Request<ServiceProvider, B> build() {
-		return new RepositoryRequest<>(repositoryId, new BranchRequest<>(branch, new TransactionalRequest<>(userId, commitComment, body)));
+	public Request<ServiceProvider, CommitInfo> build() {
+		return new RepositoryRequest<>(repositoryId, new BranchRequest<>(branch, new TransactionalRequest(userId, commitComment, body)));
 	}
 
 }

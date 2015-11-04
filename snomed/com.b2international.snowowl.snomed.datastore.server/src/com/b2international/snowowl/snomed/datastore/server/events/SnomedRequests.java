@@ -38,7 +38,7 @@ public abstract class SnomedRequests {
 	private SnomedRequests() {
 	}
 	
-	public static <B> RepositoryCommitRequestBuilder<B> prepareCommit(String userId, String branchPath) {
+	public static <B> RepositoryCommitRequestBuilder prepareCommit(String userId, String branchPath) {
 		return RepositoryRequests.prepareCommit(userId, SnomedDatastoreActivator.REPOSITORY_UUID, branchPath);
 	}
 	
