@@ -17,9 +17,10 @@ package com.b2international.snowowl.snomed.api.rest.components;
 
 import static com.b2international.snowowl.snomed.api.rest.SnomedBranchingApiAssert.givenBranchWithPath;
 import static com.b2international.snowowl.snomed.api.rest.SnomedComponentApiAssert.assertComponentCreated;
-import static com.b2international.snowowl.snomed.api.rest.SnomedComponentApiAssert.assertComponentExists;
+import static com.b2international.snowowl.snomed.api.rest.SnomedComponentApiAssert.*;
 import static com.b2international.snowowl.snomed.api.rest.SnomedComponentApiAssert.assertComponentReadWithStatus;
 import static com.b2international.snowowl.snomed.api.rest.SnomedComponentApiAssert.givenConceptRequestBody;
+import static org.junit.Assert.*;
 
 import java.util.Map;
 
@@ -51,18 +52,42 @@ public class SnomedRefSetApiTest extends AbstractSnomedApiTest {
 	}
 	
 	@Test
-	public void createSimpleTypeRefSet() throws Exception {
+	public void createSimpleTypeConceptRefSet() throws Exception {
 		givenBranchWithPath(testBranchPath);
-		
-		final Map<String, Object> conceptBody = (Map<String, Object>) givenConceptRequestBody(null, Concepts.REFSET_SIMPLE_TYPE, Concepts.MODULE_SCT_CORE, SnomedApiTestConstants.PREFERRED_ACCEPTABILITY_MAP, true);
+		final Map<String,Object> requestBody = createRefSetRequestBody(SnomedRefSetType.SIMPLE, SnomedTerminologyComponentConstants.CONCEPT, Concepts.REFSET_SIMPLE_TYPE);
+		final String refSetId = assertComponentCreated(testBranchPath, SnomedComponentType.REFSET, requestBody);
+		assertComponentExists(testBranchPath, SnomedComponentType.REFSET, refSetId);
+	}
+	
+	@Test
+	public void createSimpleTypeRefSetWithWrongReferencedComponentType() throws Exception {
+		givenBranchWithPath(testBranchPath);
+		final Map<String,Object> requestBody = createRefSetRequestBody(SnomedRefSetType.SIMPLE, SnomedTerminologyComponentConstants.REFSET, Concepts.REFSET_SIMPLE_TYPE);
+		assertComponentNotCreated(testBranchPath, SnomedComponentType.REFSET, requestBody);
+	}
+	
+	@Test
+	public void createQueryTypeRefSetWithWrongReferencedComponentType() throws Exception {
+		final Map<String,Object> requestBody = createRefSetRequestBody(SnomedRefSetType.QUERY, SnomedTerminologyComponentConstants.CONCEPT, Concepts.REFSET_QUERY_SPECIFICATION_TYPE);
+		assertComponentNotCreated(BranchPathUtils.createMainPath(), SnomedComponentType.REFSET, requestBody);
+	}
+	
+	@Test
+	public void createQueryTypeRefSet() throws Exception {
+		givenBranchWithPath(testBranchPath);
+		final Map<String,Object> requestBody = createRefSetRequestBody(SnomedRefSetType.QUERY, SnomedTerminologyComponentConstants.REFSET, Concepts.REFSET_QUERY_SPECIFICATION_TYPE);
+		final String refSetId = assertComponentCreated(testBranchPath, SnomedComponentType.REFSET, requestBody);
+		assertComponentExists(testBranchPath, SnomedComponentType.REFSET, refSetId);
+	}
+	
+	private ImmutableMap<String, Object> createRefSetRequestBody(SnomedRefSetType type, String referencedComponentType, String parent) {
+		final Map<String, Object> conceptBody = (Map<String, Object>) givenConceptRequestBody(null, parent, Concepts.MODULE_SCT_CORE, SnomedApiTestConstants.PREFERRED_ACCEPTABILITY_MAP, true);
 		final Builder<String, Object> requestBody = ImmutableMap.builder();
 		requestBody.putAll(conceptBody);
-		requestBody.put("commitComment", "New simple type reference set");
-		requestBody.put("type", SnomedRefSetType.SIMPLE);
-		requestBody.put("referencedComponentType", SnomedTerminologyComponentConstants.CONCEPT);
-		
-		final String refSetId = assertComponentCreated(testBranchPath, SnomedComponentType.REFSET, requestBody.build());
-		assertComponentExists(testBranchPath, SnomedComponentType.REFSET, refSetId);
+		requestBody.put("commitComment", String.format("New %s type reference set with %s members", type, referencedComponentType));
+		requestBody.put("type", type);
+		requestBody.put("referencedComponentType", referencedComponentType);
+		return requestBody.build();
 	}
 	
 }
