@@ -66,9 +66,9 @@ public class DatastoreServerBootstrap implements PreRunCapableBootstrapFragment 
 	public void init(SnowOwlConfiguration configuration, Environment env) throws Exception {
 		final IManagedContainer container = env.container();
 		final RpcConfiguration rpcConfig = configuration.getModuleConfig(RpcConfiguration.class);
-		LOG.info("Preparing RPC communication with config {}", rpcConfig);
+		LOG.debug("Preparing RPC communication with config {}", rpcConfig);
 		RpcUtil.prepareContainer(container, rpcConfig);
-		LOG.info("Preparing EventBus communication");
+		LOG.debug("Preparing EventBus communication");
 		EventBusNet4jUtil.prepareContainer(container);
 		env.services().registerService(IEventBus.class, EventBusNet4jUtil.getBus(container));
 	}
@@ -76,7 +76,7 @@ public class DatastoreServerBootstrap implements PreRunCapableBootstrapFragment 
 	@Override
 	public void preRun(SnowOwlConfiguration configuration, Environment env) {
 		if (env.isServer() || env.isEmbedded()) {
-			LOG.info(">>> Starting server-side datastore bundle.");
+			LOG.debug(">>> Starting server-side datastore bundle.");
 			final IManagedContainer container = env.container();
 			final Stopwatch serverStopwatch = Stopwatch.createStarted();
 			
@@ -104,9 +104,9 @@ public class DatastoreServerBootstrap implements PreRunCapableBootstrapFragment 
 			env.services().registerService(RepositoryManager.class, new DefaultRepositoryManager());
 			env.services().registerService(EditingContextFactoryProvider.class, new ExtensionBasedEditingContextFactoryProvider());
 			
-			LOG.info("<<< Server-side datastore bundle started. [{}]", serverStopwatch);
+			LOG.debug("<<< Server-side datastore bundle started. [{}]", serverStopwatch);
 		} else {
-			LOG.info("Snow Owl application is running in remote mode.");
+			LOG.debug("Snow Owl application is running in remote mode.");
 			LOG.info("Connecting to Snow Owl Terminology Server at {}", env.service(ClientPreferences.class).getCDOUrl());
 		}
 		if (configuration.isSystemUserNeeded() || env.isServer()) {
@@ -129,7 +129,7 @@ public class DatastoreServerBootstrap implements PreRunCapableBootstrapFragment 
 
 	private void initializeRepositories(Environment env) {
 		final Stopwatch branchStopwatch = Stopwatch.createStarted();
-		LOG.info(">>> Initializing branch and review services.");
+		LOG.debug(">>> Initializing branch and review services.");
 		
 		final DefaultRepositoryManager repositories = (DefaultRepositoryManager) env.service(RepositoryManager.class);
 		env.services().registerService(BranchSerializer.class, new BranchSerializer());
@@ -139,7 +139,7 @@ public class DatastoreServerBootstrap implements PreRunCapableBootstrapFragment 
 			repositories.prepareCreate(repositoryId).build(env);
 		}
 		
-		LOG.info("<<< Branch and review services registered. [{}]", branchStopwatch);
+		LOG.debug("<<< Branch and review services registered. [{}]", branchStopwatch);
 	}
 
 	private void connectSystemUser(IManagedContainer container) throws SnowowlServiceException {

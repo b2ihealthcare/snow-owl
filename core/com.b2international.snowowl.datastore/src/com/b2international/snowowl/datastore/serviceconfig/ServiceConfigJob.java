@@ -63,7 +63,7 @@ public abstract class ServiceConfigJob extends SimpleFamilyJob {
 	@Override
 	protected final IStatus run(final IProgressMonitor monitor) {
 		final Stopwatch serviceStopwatch = Stopwatch.createStarted();
-		LOGGER.info(">>> " + getName());
+		LOGGER.debug(">>> " + getName());
 		monitor.beginTask(getName(), IProgressMonitor.UNKNOWN);
 		
 		try {
@@ -73,7 +73,7 @@ public abstract class ServiceConfigJob extends SimpleFamilyJob {
 			throw new SnowowlRuntimeException("Error when initializing service.", e);
 		} finally {
 			monitor.done();
-			LOGGER.info(MessageFormat.format("<<< {0} [{1}]", getName(), serviceStopwatch));
+			LOGGER.debug(MessageFormat.format("<<< {0} [{1}]", getName(), serviceStopwatch));
 		}
 	}
 	
