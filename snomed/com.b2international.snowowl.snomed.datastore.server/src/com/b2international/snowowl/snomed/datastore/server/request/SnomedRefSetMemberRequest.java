@@ -1,6 +1,6 @@
 /*
  * Copyright 2011-2015 B2i Healthcare Pte Ltd, http://b2i.sg
- *
+ * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -22,5 +22,5 @@ import com.b2international.snowowl.core.events.BaseRequest;
  * @since 4.5
  * @see BaseRequest
  */
-abstract class SnomedRefSetRequest<C extends BranchContext, B> extends BaseRequest<C, B> {
+abstract class SnomedRefSetMemberRequest<C extends BranchContext, B> extends BaseRequest<C, B> {
 }

@@ -1,6 +1,6 @@
 /*
  * Copyright 2011-2015 B2i Healthcare Pte Ltd, http://b2i.sg
- *
+ * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -13,14 +13,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.snomed.datastore.server.request;
+package com.b2international.snowowl.snomed.core.domain;
 
-import com.b2international.snowowl.core.domain.BranchContext;
-import com.b2international.snowowl.core.events.BaseRequest;
+import java.util.List;
+
+import com.b2international.snowowl.core.domain.CollectionResource;
 
 /**
  * @since 4.5
- * @see BaseRequest
  */
-abstract class SnomedRefSetRequest<C extends BranchContext, B> extends BaseRequest<C, B> {
+public class SnomedReferenceSetMembers extends CollectionResource<SnomedReferenceSetMember> {
+
+	public SnomedReferenceSetMembers(List<SnomedReferenceSetMember> items) {
+		super(items);
+	}
+
 }
