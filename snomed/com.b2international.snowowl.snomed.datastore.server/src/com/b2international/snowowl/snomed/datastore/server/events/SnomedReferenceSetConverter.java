@@ -17,9 +17,11 @@ package com.b2international.snowowl.snomed.datastore.server.events;
 
 import com.b2international.snowowl.core.CoreTerminologyBroker;
 import com.b2international.snowowl.core.date.EffectiveTimes;
+import com.b2international.snowowl.snomed.core.domain.ISnomedConcept;
 import com.b2international.snowowl.snomed.core.domain.SnomedReferenceSet;
 import com.b2international.snowowl.snomed.datastore.index.refset.SnomedRefSetIndexEntry;
 import com.b2international.snowowl.snomed.datastore.server.domain.SnomedReferenceSetImpl;
+import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSet;
 import com.google.common.base.Function;
 
 /**
@@ -39,4 +41,17 @@ class SnomedReferenceSetConverter implements Function<SnomedRefSetIndexEntry, Sn
 		refset.setType(entry.getType());
 		return refset;
 	}
+	
+	public SnomedReferenceSet apply(SnomedRefSet refSet, ISnomedConcept concept) {
+		final SnomedReferenceSetImpl refset = new SnomedReferenceSetImpl();
+		refset.setId(concept.getId());
+		refset.setEffectiveTime(concept.getEffectiveTime());
+		refset.setActive(concept.isActive());
+		refset.setReleased(concept.isReleased());
+		refset.setModuleId(concept.getModuleId());
+		refset.setReferencedComponent(CoreTerminologyBroker.getInstance().getComponentInformation(refSet.getReferencedComponentType()).getName());
+		refset.setType(refSet.getType());
+		return refset;
+	}
+	
 }
