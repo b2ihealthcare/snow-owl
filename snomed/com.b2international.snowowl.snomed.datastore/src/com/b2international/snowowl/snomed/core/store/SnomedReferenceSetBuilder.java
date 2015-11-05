@@ -27,12 +27,13 @@ import com.b2international.snowowl.snomed.snomedrefset.SnomedRegularRefSet;
 /**
  * @since 4.5
  */
-public final class SnomedSimpleReferenceSetBuilder extends SnomedBaseComponentBuilder<SnomedSimpleReferenceSetBuilder, SnomedRegularRefSet> {
+public final class SnomedReferenceSetBuilder extends SnomedBaseComponentBuilder<SnomedReferenceSetBuilder, SnomedRegularRefSet> {
 
 	private String referencedComponentType = SnomedTerminologyComponentConstants.CONCEPT;
 	private String identifierConceptId;
+	private SnomedRefSetType type;
 
-	protected SnomedSimpleReferenceSetBuilder() {
+	protected SnomedReferenceSetBuilder() {
 	}
 
 	/**
@@ -41,7 +42,7 @@ public final class SnomedSimpleReferenceSetBuilder extends SnomedBaseComponentBu
 	 * @param referencedComponentType
 	 * @return
 	 */
-	public SnomedSimpleReferenceSetBuilder setReferencedComponentType(String referencedComponentType) {
+	public SnomedReferenceSetBuilder setReferencedComponentType(String referencedComponentType) {
 		this.referencedComponentType = referencedComponentType;
 		return getSelf();
 	}
@@ -52,8 +53,19 @@ public final class SnomedSimpleReferenceSetBuilder extends SnomedBaseComponentBu
 	 * @param identifierConceptId
 	 * @return
 	 */
-	public SnomedSimpleReferenceSetBuilder setIdentifierConceptId(String identifierConceptId) {
+	public SnomedReferenceSetBuilder setIdentifierConceptId(String identifierConceptId) {
 		this.identifierConceptId = identifierConceptId;
+		return getSelf();
+	}
+
+	/**
+	 * Specifies the type of the new SNOMED CT Reference Set.
+	 * 
+	 * @param type - the type of the refset
+	 * @return
+	 */
+	public SnomedReferenceSetBuilder setType(SnomedRefSetType type) {
+		this.type = type;
 		return getSelf();
 	}
 
@@ -67,7 +79,7 @@ public final class SnomedSimpleReferenceSetBuilder extends SnomedBaseComponentBu
 		checkNotNull(identifierConceptId, "Specify the identifier concept ID");
 		checkNotNull(referencedComponentType, "Specify the referenced component type");
 		final CoreTerminologyBroker terminologies = context.service(CoreTerminologyBroker.class);
-		component.setType(SnomedRefSetType.SIMPLE);
+		component.setType(type);
 		component.setReferencedComponentType(terminologies.getTerminologyComponentIdAsShort(referencedComponentType));
 		component.setIdentifierId(identifierConceptId);
 	}
