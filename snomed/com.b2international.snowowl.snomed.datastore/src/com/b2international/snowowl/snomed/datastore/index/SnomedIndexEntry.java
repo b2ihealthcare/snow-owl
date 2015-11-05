@@ -18,6 +18,7 @@ package com.b2international.snowowl.snomed.datastore.index;
 import java.io.Serializable;
 
 import com.b2international.snowowl.core.api.IComponent;
+import com.b2international.snowowl.core.date.DateFormats;
 import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.datastore.index.AbstractIndexEntry;
 import com.google.common.base.Preconditions;
@@ -39,7 +40,7 @@ public abstract class SnomedIndexEntry extends AbstractIndexEntry implements ICo
 	private final String moduleId;
 	
 	/**Effective time is the point in time when the current SNOMED&nbsp;CT component has been modified.<br> 
-	 *Could be {@link DateUtils#UNSET_EFFECTIVE_TIME} if not set.*/
+	 *Could be {@link EffectiveTimes#UNSET_EFFECTIVE_TIME} if not set.*/
 	private long effectiveTimeLong;
 	/**Human readable representation of the effective time of the component.*/
 	private String effectiveTime;
@@ -85,15 +86,15 @@ public abstract class SnomedIndexEntry extends AbstractIndexEntry implements ICo
 		return moduleId;
 	}
 	
-	/**Returns with the effective time of the component in {@link DateUtils#DEFAULT_DATE_FORMAT} format.
-	 * May return with {@link DateUtils#UNSET_EFFECTIVE_TIME_LABEL} if the effective time is not set.
+	/**Returns with the effective time of the component in {@link DateFormats#DEFAULT} format.
+	 * May return with {@link EffectiveTimes#UNSET_EFFECTIVE_TIME_LABEL} if the effective time is not set.
 	 * @return the effective time of the current component.*/
 	public String getEffectiveTime() {
 		return effectiveTime;
 	}
 	
 	/***
-	 * Returns with the effective time of the current component. May return with {@link DateUtils#UNSET_EFFECTIVE_TIME}
+	 * Returns with the effective time of the current component. May return with {@link EffectiveTimes#UNSET_EFFECTIVE_TIME}
 	 * if the component is unpublished.
 	 * @return the effective time as long.
 	 */
@@ -106,7 +107,7 @@ public abstract class SnomedIndexEntry extends AbstractIndexEntry implements ICo
 	 * <p>
 	 * Note that the actual component represented by this index entry will not be changed as a result of this call.
 	 * 
-	 * @param effectiveTimeLong the effective time in number of milliseconds, or {@link DateUtils#UNSET_EFFECTIVE_TIME}
+	 * @param effectiveTimeLong the effective time in number of milliseconds, or {@link EffectiveTimes#UNSET_EFFECTIVE_TIME}
 	 */
 	public void setEffectiveTime(final long effectiveTimeLong) {
 		this.effectiveTimeLong = effectiveTimeLong;
