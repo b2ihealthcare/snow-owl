@@ -24,6 +24,8 @@ import com.b2international.snowowl.datastore.server.request.RepositoryRequests;
 import com.b2international.snowowl.datastore.server.request.Reviews;
 import com.b2international.snowowl.snomed.Component;
 import com.b2international.snowowl.snomed.core.domain.SnomedReferenceSet;
+import com.b2international.snowowl.snomed.core.domain.SnomedReferenceSetMember;
+import com.b2international.snowowl.snomed.core.domain.SnomedReferenceSetMembers;
 import com.b2international.snowowl.snomed.core.domain.SnomedReferenceSets;
 import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 
@@ -59,6 +61,14 @@ public abstract class SnomedRequests {
 	public static Request<ServiceProvider, SnomedReferenceSet> prepareGetReferenceSet(String branch, String referenceSetId) {
 		return RepositoryRequests.wrap(SnomedDatastoreActivator.REPOSITORY_UUID, branch, new SnomedRefSetReadRequest(referenceSetId));
 	}
+	
+	public static Request<ServiceProvider, SnomedReferenceSetMembers> prepareGetReferenceSetMembers(String branch, int offset, int limit) {
+		return RepositoryRequests.wrap(SnomedDatastoreActivator.REPOSITORY_UUID, branch, new SnomedRefSetMemberReadAllRequest(offset, limit));
+	}
+	
+	public static Request<ServiceProvider, SnomedReferenceSetMember> prepareGetReferenceSetMember(String branch, String memberId) {
+		return RepositoryRequests.wrap(SnomedDatastoreActivator.REPOSITORY_UUID, branch, new SnomedRefSetMemberReadRequest(memberId));
+	}
 
 	public static Branching branching() {
 		return RepositoryRequests.branching(SnomedDatastoreActivator.REPOSITORY_UUID);
@@ -67,5 +77,5 @@ public abstract class SnomedRequests {
 	public static Reviews review() {
 		return RepositoryRequests.reviews(SnomedDatastoreActivator.REPOSITORY_UUID);
 	}
-	
+
 }

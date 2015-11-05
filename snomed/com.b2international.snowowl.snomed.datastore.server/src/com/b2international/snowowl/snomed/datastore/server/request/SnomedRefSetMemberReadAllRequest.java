@@ -31,10 +31,14 @@ import com.google.common.collect.FluentIterable;
  */
 public class SnomedRefSetMemberReadAllRequest extends SnomedRefSetMemberRequest<BranchContext, SnomedReferenceSetMembers> {
 
-	private int limit = 50;
-	private int offset = 0;
+	private final int limit;
+	private final int offset;
 
-	SnomedRefSetMemberReadAllRequest(int limit, int offset) {
+	SnomedRefSetMemberReadAllRequest() {
+		this(0, 50);
+	}
+	
+	SnomedRefSetMemberReadAllRequest(int offset, int limit) {
 		this.limit = limit;
 		this.offset = offset;
 	}

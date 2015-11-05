@@ -20,7 +20,6 @@ import static org.springframework.hateoas.mvc.ControllerLinkBuilder.linkTo;
 import java.net.URI;
 import java.security.Principal;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
@@ -32,7 +31,6 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.context.request.async.DeferredResult;
 
 import com.b2international.snowowl.core.domain.CollectionResource;
-import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.snomed.api.rest.domain.ChangeRequest;
 import com.b2international.snowowl.snomed.api.rest.domain.SnomedRefSetRestInput;
 import com.b2international.snowowl.snomed.api.rest.util.DeferredResults;
@@ -55,9 +53,6 @@ import com.wordnik.swagger.annotations.ApiResponses;
 @RequestMapping(produces={ AbstractRestService.SO_MEDIA_TYPE, MediaType.APPLICATION_JSON_VALUE })
 public class SnomedReferenceSetRestService extends AbstractSnomedRestService {
 
-	@Autowired
-	private IEventBus bus;
-	
 	@ApiOperation(
 			value="Retrieve Reference Sets from a branch", 
 			notes="Returns a list with all reference sets from a branch.")
@@ -80,14 +75,14 @@ public class SnomedReferenceSetRestService extends AbstractSnomedRestService {
 		@ApiResponse(code = 200, message = "OK", response = Void.class),
 		@ApiResponse(code = 404, message = "Branch or Reference set not found")
 	})
-	@RequestMapping(value="/{path:**}/refsets/{refSetId}", method=RequestMethod.GET)
+	@RequestMapping(value="/{path:**}/refsets/{id}", method=RequestMethod.GET)
 	public @ResponseBody DeferredResult<SnomedReferenceSet> read(
 			@ApiParam(value="The branch path")
 			@PathVariable(value="path")
 			final String branchPath,
 
 			@ApiParam(value="The Reference set identifier")
-			@PathVariable(value="refSetId")
+			@PathVariable(value="id")
 			final String referenceSetId) {
 		return DeferredResults.wrap(SnomedRequests.prepareGetReferenceSet(branchPath, referenceSetId).execute(bus));
 	}
