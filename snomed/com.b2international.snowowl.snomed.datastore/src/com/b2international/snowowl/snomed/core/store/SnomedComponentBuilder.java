@@ -19,6 +19,8 @@ import static com.google.common.base.Preconditions.checkArgument;
 
 import java.util.Date;
 
+import javax.annotation.OverridingMethodsMustInvokeSuper;
+
 import org.eclipse.emf.cdo.CDOObject;
 
 import com.b2international.snowowl.core.domain.TransactionContext;
@@ -39,7 +41,7 @@ import com.google.common.base.Strings;
  * @param <T>
  *            - the type of the Component to build.
  */
-public abstract class SnomedComponentBuilder<B extends SnomedComponentBuilder<B, T>, T extends CDOObject> {
+public abstract class SnomedComponentBuilder<B extends SnomedComponentBuilder<B, T>, T extends CDOObject> extends SnomedBaseComponentBuilder<B, T> {
 
 	private Date effectiveTime;
 	private String moduleId;
@@ -124,8 +126,8 @@ public abstract class SnomedComponentBuilder<B extends SnomedComponentBuilder<B,
 	 *            - the context to use when building the component.
 	 * @return
 	 */
-	public final T build(TransactionContext context) {
-		final T t = create();
+	@OverridingMethodsMustInvokeSuper
+	protected void init(T t, TransactionContext context) {
 		final String module = Strings.isNullOrEmpty(moduleId) ? context.config().getModuleConfig(SnomedCoreConfiguration.class).getDefaultModule() : moduleId; 
 		if (t instanceof Component) {
 			final Component component = (Component) t;
@@ -144,31 +146,8 @@ public abstract class SnomedComponentBuilder<B extends SnomedComponentBuilder<B,
 			member.setEffectiveTime(effectiveTime);
 			member.setReleased(effectiveTime != null);
 			member.setModuleId(module);
+			member.unsetEffectiveTime();
 		}
-		init(t, context);
-		return t;
-	}
-
-	/**
-	 * Initialize any additional properties on the given component.
-	 * 
-	 * @param component
-	 *            - the component to initialize with additional props
-	 * @param context
-	 *            - the context to use to get configuration options and other components
-	 */
-	protected abstract void init(T component, TransactionContext context);
-
-	/**
-	 * Creates an instance of the component.
-	 * 
-	 * @return
-	 */
-	protected abstract T create();
-
-	@SuppressWarnings("unchecked")
-	protected final B getSelf() {
-		return (B) this;
 	}
 
 }

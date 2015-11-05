@@ -15,6 +15,8 @@
  */
 package com.b2international.snowowl.snomed.core.store;
 
+import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSet;
+
 /**
  * Main entry point of SNOMED CT Component based APIs.
  * 
@@ -56,6 +58,10 @@ public class SnomedComponents {
 	 */
 	public static SnomedLanguageReferenceSetMemberBuilder newLanguageMember() {
 		return new SnomedLanguageReferenceSetMemberBuilder();
+	}
+
+	public static SnomedSimpleReferenceSetBuilder newSimpleTypeReferenceSet() {
+		return new SnomedSimpleReferenceSetBuilder();
 	}
 
 }

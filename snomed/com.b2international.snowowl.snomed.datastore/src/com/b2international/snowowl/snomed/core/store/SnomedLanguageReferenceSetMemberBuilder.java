@@ -89,6 +89,7 @@ public final class SnomedLanguageReferenceSetMemberBuilder
 
 	@Override
 	protected void init(SnomedLanguageRefSetMember component, TransactionContext context) {
+		super.init(component, context);
 		component.setReferencedComponentId(referencedComponent);
 		component.setAcceptabilityId(acceptability.getConceptId());
 		component.setRefSet(context.lookup(referenceSetId, SnomedStructuralRefSet.class));
