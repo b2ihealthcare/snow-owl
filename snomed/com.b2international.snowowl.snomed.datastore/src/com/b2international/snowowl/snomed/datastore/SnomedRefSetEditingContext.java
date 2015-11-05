@@ -926,7 +926,7 @@ public class SnomedRefSetEditingContext extends BaseSnomedEditingContext {
 	} 
 
 	private void createIdentifierAndAddRefSet(final SnomedRefSet snomedRefSet, final String parentConceptId, final String name) {
-		createIdentifierAndAddRefSet(snomedRefSet, getSnomedEditingContext().generateComponentId(ComponentCategory.CONCEPT), name);
+		createIdentifierAndAddRefSet(snomedRefSet, getSnomedEditingContext().generateComponentId(ComponentCategory.CONCEPT), parentConceptId, name);
 	}
 	
 	// create identifier concept with the given arguments, save it locally
