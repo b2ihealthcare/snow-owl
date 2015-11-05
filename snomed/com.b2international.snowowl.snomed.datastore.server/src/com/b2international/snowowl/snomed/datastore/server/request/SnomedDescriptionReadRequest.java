@@ -13,41 +13,41 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.snomed.datastore.server.events;
+package com.b2international.snowowl.snomed.datastore.server.request;
 
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.exceptions.ComponentNotFoundException;
 import com.b2international.snowowl.core.terminology.ComponentCategory;
-import com.b2international.snowowl.snomed.core.domain.ISnomedRelationship;
-import com.b2international.snowowl.snomed.datastore.SnomedRelationshipIndexEntry;
-import com.b2international.snowowl.snomed.datastore.SnomedRelationshipLookupService;
+import com.b2international.snowowl.snomed.core.domain.ISnomedDescription;
+import com.b2international.snowowl.snomed.datastore.SnomedDescriptionLookupService;
+import com.b2international.snowowl.snomed.datastore.index.SnomedDescriptionIndexEntry;
 
 /**
  * @since 4.5
  */
-final class SnomedRelationshipReadRequest extends SnomedRelationshipRequest<BranchContext, ISnomedRelationship> {
+final class SnomedDescriptionReadRequest extends SnomedDescriptionRequest<BranchContext, ISnomedDescription> {
 
 	private String componentId;
 
-	public SnomedRelationshipReadRequest(String componentId) {
+	public SnomedDescriptionReadRequest(String componentId) {
 		this.componentId = componentId;
 	}
 	
 	@Override
-	public ISnomedRelationship execute(BranchContext context) {
+	public ISnomedDescription execute(BranchContext context) {
 		final IBranchPath branchPath = context.branch().branchPath();
-		final SnomedRelationshipLookupService lookupService = new SnomedRelationshipLookupService();
+		final SnomedDescriptionLookupService lookupService = new SnomedDescriptionLookupService();
 		if (!lookupService.exists(branchPath, componentId)) {
-			throw new ComponentNotFoundException(ComponentCategory.RELATIONSHIP, componentId);
+			throw new ComponentNotFoundException(ComponentCategory.DESCRIPTION, componentId);
 		}
-		final SnomedRelationshipIndexEntry relationship = lookupService.getComponent(branchPath, componentId);
-		return getConverter(branchPath).apply(relationship);
+		final SnomedDescriptionIndexEntry descriptionIndexEntry = lookupService.getComponent(branchPath, componentId);
+		return getConverter(branchPath).apply(descriptionIndexEntry);
 	}
 
 	@Override
-	protected Class<ISnomedRelationship> getReturnType() {
-		return ISnomedRelationship.class;
+	protected Class<ISnomedDescription> getReturnType() {
+		return ISnomedDescription.class;
 	}
 
 }

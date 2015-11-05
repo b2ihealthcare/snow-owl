@@ -11,7 +11,7 @@ import com.b2international.snowowl.snomed.api.domain.browser.ISnomedBrowserCompo
 import com.b2international.snowowl.snomed.api.domain.browser.ISnomedBrowserConcept;
 import com.b2international.snowowl.snomed.api.domain.browser.ISnomedBrowserConceptUpdate;
 import com.b2international.snowowl.snomed.core.domain.ISnomedComponentUpdate;
-import com.b2international.snowowl.snomed.datastore.server.events.SnomedComponentCreateRequest;
+import com.b2international.snowowl.snomed.datastore.server.request.SnomedComponentCreateRequest;
 import com.google.common.collect.Sets;
 
 public class InputFactory {

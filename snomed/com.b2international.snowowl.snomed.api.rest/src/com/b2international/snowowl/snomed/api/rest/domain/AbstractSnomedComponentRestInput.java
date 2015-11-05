@@ -19,7 +19,7 @@ import com.b2international.snowowl.core.terminology.ComponentCategory;
 import com.b2international.snowowl.snomed.core.domain.IdGenerationStrategy;
 import com.b2international.snowowl.snomed.core.domain.NamespaceIdGenerationStrategy;
 import com.b2international.snowowl.snomed.core.domain.UserIdGenerationStrategy;
-import com.b2international.snowowl.snomed.datastore.server.events.BaseSnomedComponentCreateRequest;
+import com.b2international.snowowl.snomed.datastore.server.request.BaseSnomedComponentCreateRequest;
 
 /**
  * @since 4.0

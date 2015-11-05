@@ -34,7 +34,7 @@ import com.b2international.snowowl.snomed.datastore.SnomedRelationshipIndexEntry
 import com.b2international.snowowl.snomed.datastore.index.SnomedIndexService;
 import com.b2international.snowowl.snomed.datastore.index.SnomedRelationshipIndexQueryAdapter;
 import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedMappings;
-import com.b2international.snowowl.snomed.datastore.server.events.SnomedRelationshipConverter;
+import com.b2international.snowowl.snomed.datastore.server.request.SnomedRelationshipConverter;
 import com.b2international.snowowl.snomed.datastore.services.SnomedBranchRefSetMembershipLookupService;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;

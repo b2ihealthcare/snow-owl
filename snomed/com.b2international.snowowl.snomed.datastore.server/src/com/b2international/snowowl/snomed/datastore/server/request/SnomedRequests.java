@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.snomed.datastore.server.events;
+package com.b2international.snowowl.snomed.datastore.server.request;
 
 import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.domain.TransactionContext;
@@ -26,8 +26,6 @@ import com.b2international.snowowl.snomed.Component;
 import com.b2international.snowowl.snomed.core.domain.SnomedReferenceSet;
 import com.b2international.snowowl.snomed.core.domain.SnomedReferenceSets;
 import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
-import com.b2international.snowowl.snomed.datastore.server.request.SnomedConceptGetRequestBuilder;
-import com.b2international.snowowl.snomed.datastore.server.request.SnomedConceptSearchRequestBuilder;
 
 /**
  * @since 4.5

@@ -8,7 +8,7 @@ import com.b2international.snowowl.snomed.api.domain.browser.ISnomedBrowserConce
 import com.b2international.snowowl.snomed.api.domain.browser.ISnomedBrowserRelationship;
 import com.b2international.snowowl.snomed.api.domain.browser.ISnomedBrowserRelationshipType;
 import com.b2international.snowowl.snomed.core.domain.NamespaceIdGenerationStrategy;
-import com.b2international.snowowl.snomed.datastore.server.events.BaseSnomedComponentCreateRequest;
+import com.b2international.snowowl.snomed.datastore.server.request.BaseSnomedComponentCreateRequest;
 
 public abstract class AbstractInputCreator {
 

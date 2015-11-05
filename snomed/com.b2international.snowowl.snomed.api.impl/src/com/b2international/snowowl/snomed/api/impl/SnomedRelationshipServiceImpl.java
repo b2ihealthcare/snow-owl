@@ -30,7 +30,7 @@ import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 import com.b2international.snowowl.snomed.datastore.SnomedEditingContext;
 import com.b2international.snowowl.snomed.datastore.SnomedRelationshipIndexEntry;
 import com.b2international.snowowl.snomed.datastore.SnomedRelationshipLookupService;
-import com.b2international.snowowl.snomed.datastore.server.events.SnomedRelationshipConverter;
+import com.b2international.snowowl.snomed.datastore.server.request.SnomedRelationshipConverter;
 
 /**
  */

@@ -27,8 +27,8 @@ import com.b2international.snowowl.snomed.api.rest.domain.AbstractSnomedComponen
 import com.b2international.snowowl.snomed.api.rest.domain.SnomedDescriptionRestInput;
 import com.b2international.snowowl.snomed.api.rest.domain.SnomedRelationshipRestInput;
 import com.b2international.snowowl.snomed.core.domain.ISnomedConcept;
-import com.b2international.snowowl.snomed.datastore.server.events.SnomedConceptCreateRequest;
-import com.b2international.snowowl.snomed.datastore.server.events.SnomedDescriptionCreateRequest;
+import com.b2international.snowowl.snomed.datastore.server.request.SnomedConceptCreateRequest;
+import com.b2international.snowowl.snomed.datastore.server.request.SnomedDescriptionCreateRequest;
 
 /**
  * @since 1.0

@@ -13,23 +13,23 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.snomed.datastore.server.events;
+package com.b2international.snowowl.snomed.datastore.server.request;
 
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.core.events.BaseRequest;
-import com.b2international.snowowl.snomed.core.domain.ISnomedDescription;
-import com.b2international.snowowl.snomed.datastore.index.SnomedDescriptionIndexEntry;
+import com.b2international.snowowl.snomed.core.domain.ISnomedRelationship;
+import com.b2international.snowowl.snomed.datastore.SnomedRelationshipIndexEntry;
 import com.b2international.snowowl.snomed.datastore.services.SnomedBranchRefSetMembershipLookupService;
 import com.google.common.base.Function;
 
 /**
  * @since 4.5
  */
-abstract class SnomedDescriptionRequest<C extends RepositoryContext, B> extends BaseRequest<C, B> {
+abstract class SnomedRelationshipRequest<C extends RepositoryContext, B> extends BaseRequest<C, B> {
 
-	protected final Function<SnomedDescriptionIndexEntry, ISnomedDescription> getConverter(IBranchPath branchPath) {
-		return new SnomedDescriptionConverter(new SnomedBranchRefSetMembershipLookupService(branchPath));
+	protected final Function<SnomedRelationshipIndexEntry, ISnomedRelationship> getConverter(IBranchPath branchPath) {
+		return new SnomedRelationshipConverter(new SnomedBranchRefSetMembershipLookupService(branchPath));
 	}
 	
 }
