@@ -26,6 +26,8 @@ import com.b2international.snowowl.snomed.core.domain.SnomedReferenceSet;
 import com.b2international.snowowl.snomed.core.store.SnomedComponents;
 import com.b2international.snowowl.snomed.datastore.SnomedEditingContext;
 import com.b2international.snowowl.snomed.datastore.SnomedRefSetEditingContext;
+import com.b2international.snowowl.snomed.datastore.SnomedRefSetUtil;
+import com.b2international.snowowl.snomed.datastore.SnomedTerminologyBrowser;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRegularRefSet;
 import com.google.common.base.Joiner;
@@ -52,14 +54,20 @@ public class SnomedRefSetCreateRequest extends SnomedRefSetRequest<TransactionCo
 		this.type = type;
 		this.referencedComponentType = referencedComponentType;
 		this.conceptReq = conceptReq;
+		// FIXME create proper refset create request builder which wraps and create a snomed concept req as well
+		if (this.conceptReq.getParentId() == null) {
+			this.conceptReq.setParentId(SnomedRefSetUtil.getConceptId(type));
+		}
 	}
 	
 	@Override
 	public SnomedReferenceSet execute(TransactionContext context) {
 		checkRefSetSupport();
+		checkParent(context);
+		
 		final ISnomedConcept identifierConcept = this.conceptReq.execute(context);
 		
-		// FIXME due to different resource lists we have to access to the specific editing context (which will be removed later on)
+		// FIXME due to different resource lists we need access to the specific editing context (which will be removed later)
 		final SnomedRefSetEditingContext refSetContext = context.service(SnomedEditingContext.class).getRefSetEditingContext();
 		
 		final SnomedRegularRefSet refSet = SnomedComponents
@@ -73,6 +81,14 @@ public class SnomedRefSetCreateRequest extends SnomedRefSetRequest<TransactionCo
 		return new SnomedReferenceSetConverter().apply(refSet, identifierConcept);
 	}
 	
+	private void checkParent(TransactionContext context) {
+		final String refSetTypeRootParent = SnomedRefSetUtil.getConceptId(type);
+		final String desiredParent = conceptReq.getParentId();
+		if (!refSetTypeRootParent.equals(desiredParent) && !context.service(SnomedTerminologyBrowser.class).isSuperTypeOfById(context.branch().branchPath(), refSetTypeRootParent, desiredParent)) {
+			throw new BadRequestException("'%s' type reference sets should be subtype of '%s' concept. Cannot create as subtype of '%s'.", type, refSetTypeRootParent, desiredParent);
+		}
+	}
+
 	private void checkRefSetSupport() {
 		if (!SUPPORTED_REFERENCED_COMPONENTS.containsKey(type)) {
 			throw new NotImplementedException("'%s' type reference sets are not supported", type);

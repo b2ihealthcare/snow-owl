@@ -60,6 +60,10 @@ public class SnomedConceptCreateRequest extends BaseSnomedComponentCreateRequest
 	@NotNull
 	private DefinitionStatus definitionStatus = DefinitionStatus.PRIMITIVE;
 
+	public String getParentId() {
+		return parentId;
+	}
+	
 	public void setDefinitionStatus(DefinitionStatus definitionStatus) {
 		this.definitionStatus = definitionStatus;
 	}

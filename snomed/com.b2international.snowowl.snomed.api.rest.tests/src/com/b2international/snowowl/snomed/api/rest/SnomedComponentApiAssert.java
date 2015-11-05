@@ -60,10 +60,13 @@ public abstract class SnomedComponentApiAssert {
 				.build();
 
 		final ImmutableMap.Builder<String, Object> conceptBuilder = ImmutableMap.<String, Object>builder()
-				.put("parentId", parentId)
 				.put("moduleId", moduleId)
 				.put("descriptions", ImmutableList.of(fsnDescription, ptDescription));
 
+		if (parentId != null) {
+			conceptBuilder.put("parentId", parentId);
+		}
+		
 		if (conceptId != null) {
 			conceptBuilder.put("id", conceptId);
 		}

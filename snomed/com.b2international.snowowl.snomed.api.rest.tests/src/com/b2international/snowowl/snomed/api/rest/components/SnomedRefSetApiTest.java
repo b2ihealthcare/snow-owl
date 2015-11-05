@@ -17,10 +17,10 @@ package com.b2international.snowowl.snomed.api.rest.components;
 
 import static com.b2international.snowowl.snomed.api.rest.SnomedBranchingApiAssert.givenBranchWithPath;
 import static com.b2international.snowowl.snomed.api.rest.SnomedComponentApiAssert.assertComponentCreated;
-import static com.b2international.snowowl.snomed.api.rest.SnomedComponentApiAssert.*;
+import static com.b2international.snowowl.snomed.api.rest.SnomedComponentApiAssert.assertComponentExists;
+import static com.b2international.snowowl.snomed.api.rest.SnomedComponentApiAssert.assertComponentNotCreated;
 import static com.b2international.snowowl.snomed.api.rest.SnomedComponentApiAssert.assertComponentReadWithStatus;
 import static com.b2international.snowowl.snomed.api.rest.SnomedComponentApiAssert.givenConceptRequestBody;
-import static org.junit.Assert.*;
 
 import java.util.Map;
 
@@ -78,6 +78,22 @@ public class SnomedRefSetApiTest extends AbstractSnomedApiTest {
 		final Map<String,Object> requestBody = createRefSetRequestBody(SnomedRefSetType.QUERY, SnomedTerminologyComponentConstants.REFSET, Concepts.REFSET_QUERY_SPECIFICATION_TYPE);
 		final String refSetId = assertComponentCreated(testBranchPath, SnomedComponentType.REFSET, requestBody);
 		assertComponentExists(testBranchPath, SnomedComponentType.REFSET, refSetId);
+	}
+	
+	@Test
+	public void createSimpleTypeRefSetUnderDefaultParent() {
+		givenBranchWithPath(testBranchPath);
+		final Map<String,Object> requestBody = createRefSetRequestBody(SnomedRefSetType.QUERY, SnomedTerminologyComponentConstants.REFSET, null);
+		final String refSetId = assertComponentCreated(testBranchPath, SnomedComponentType.REFSET, requestBody);
+		assertComponentExists(testBranchPath, SnomedComponentType.REFSET, refSetId);
+		
+	}
+	
+	@Test
+	public void createSimpleTypeRefSetUnderInvalidParent() throws Exception {
+		givenBranchWithPath(testBranchPath);
+		final Map<String,Object> requestBody = createRefSetRequestBody(SnomedRefSetType.QUERY, SnomedTerminologyComponentConstants.REFSET, Concepts.ROOT_CONCEPT);
+		assertComponentNotCreated(BranchPathUtils.createMainPath(), SnomedComponentType.REFSET, requestBody);
 	}
 	
 	private ImmutableMap<String, Object> createRefSetRequestBody(SnomedRefSetType type, String referencedComponentType, String parent) {
