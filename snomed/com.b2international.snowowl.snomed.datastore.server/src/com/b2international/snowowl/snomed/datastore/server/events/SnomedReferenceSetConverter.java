@@ -15,9 +15,8 @@
  */
 package com.b2international.snowowl.snomed.datastore.server.events;
 
-import java.util.Date;
-
 import com.b2international.snowowl.core.CoreTerminologyBroker;
+import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.snomed.core.domain.SnomedReferenceSet;
 import com.b2international.snowowl.snomed.datastore.index.refset.SnomedRefSetIndexEntry;
 import com.b2international.snowowl.snomed.datastore.server.domain.SnomedReferenceSetImpl;
@@ -32,7 +31,7 @@ class SnomedReferenceSetConverter implements Function<SnomedRefSetIndexEntry, Sn
 	public SnomedReferenceSet apply(SnomedRefSetIndexEntry entry) {
 		final SnomedReferenceSetImpl refset = new SnomedReferenceSetImpl();
 		refset.setId(entry.getId());
-		refset.setEffectiveTime(new Date(entry.getEffectiveTimeAsLong()));
+		refset.setEffectiveTime(EffectiveTimes.toDate(entry.getEffectiveTimeAsLong()));
 		refset.setActive(entry.isActive());
 		refset.setReleased(entry.isReleased());
 		refset.setModuleId(entry.getModuleId());
