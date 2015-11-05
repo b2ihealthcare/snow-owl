@@ -59,6 +59,7 @@ import com.b2international.commons.concurrent.equinox.ForkJoinUtils;
 import com.b2international.commons.pcj.LongSets;
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.api.ComponentIdAndLabel;
+import com.b2international.snowowl.core.api.ExtendedComponent;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.api.SnowowlRuntimeException;
 import com.b2international.snowowl.core.api.SnowowlServiceException;
@@ -421,7 +422,7 @@ public class SnomedCDOChangeProcessor implements ICDOChangeProcessor {
 		
 		for (Entry<CDOID, EClass> entry : commitChangeSet.getDetachedComponents().entrySet()) {
 			if (entry.getValue() == SnomedPackage.Literals.CONCEPT) {
-				final ComponentIdAndLabel componentIdAndLabel = getTerminologyBrowser().getComponentIdAndLabel(branchPath, CDOIDUtil.getLong(entry.getKey()));
+				final ExtendedComponent componentIdAndLabel = getTerminologyBrowser().getExtendedComponent(branchPath, CDOIDUtil.getLong(entry.getKey()));
 				allConceptIds.remove(Long.parseLong(componentIdAndLabel.getId()));
 			}
 		}

@@ -27,7 +27,6 @@ import com.b2international.snowowl.datastore.cdo.CDOIDUtils;
 import com.b2international.snowowl.datastore.index.AbstractIndexMappingStrategy;
 import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedMappings;
 import com.b2international.snowowl.snomed.datastore.index.update.ComponentLabelProvider;
-import com.b2international.snowowl.snomed.datastore.index.update.RefSetMemberLabelUpdater;
 import com.b2international.snowowl.snomed.datastore.services.ISnomedComponentService;
 import com.b2international.snowowl.snomed.datastore.services.SnomedConceptNameProvider;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetMember;
@@ -62,7 +61,6 @@ public class SnomedRefSetMemberIndexMappingStrategy extends AbstractIndexMapping
 				.with(new RefSetMemberImmutablePropertyUpdater(member))
 				// mutable fields
 				.with(new RefSetMemberMutablePropertyUpdater(member, labelProvider))
-				.with(new RefSetMemberLabelUpdater(member, label, labelProvider))
 				.build();
 	}
 

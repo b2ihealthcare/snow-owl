@@ -134,14 +134,6 @@ public class RefSetMemberMutablePropertyUpdater extends DocumentUpdaterBase<Snom
 			
 			doc.update(REFERENCE_SET_MEMBER_MAP_TARGET_COMPONENT_ID, complexMapTargetComponentId);
 			doc.update(REFERENCE_SET_MEMBER_MAP_TARGET_COMPONENT_TYPE_ID, (int) complexMapTargetComponentType);
-			
-			if (CoreTerminologyBroker.UNSPECIFIED_NUMBER_SHORT == complexMapTargetComponentType) {
-				doc.update(Mappings.storedOnlyStringField(REFERENCE_SET_MEMBER_MAP_TARGET_COMPONENT_LABEL), complexMapTargetComponentId); //unknown map target
-			} else {
-				final INameProviderFactory nameProviderFactory = CoreTerminologyBroker.getInstance().getNameProviderFactory(getTerminologyComponentId(complexMapTargetComponentType));
-				final String mapTargetLabel = nameProviderFactory.getNameProvider().getText(complexMapTargetComponentId);
-				doc.update(REFERENCE_SET_MEMBER_MAP_TARGET_COMPONENT_LABEL, mapTargetLabel);
-			}
 			break;
 			
 		case DESCRIPTION_TYPE:
