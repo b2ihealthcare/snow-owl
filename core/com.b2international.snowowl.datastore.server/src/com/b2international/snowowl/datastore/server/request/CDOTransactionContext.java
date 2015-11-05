@@ -45,6 +45,14 @@ public final class CDOTransactionContext extends DelegatingBranchContext impleme
 	}
 	
 	@Override
+	public <T> T service(Class<T> type) {
+		if (CDOEditingContext.class.isAssignableFrom(type)) {
+			return type.cast(editingContext);
+		}
+		return super.service(type);
+	}
+	
+	@Override
 	public <T extends EObject> T lookup(String componentId, Class<T> type) {
 		return editingContext.lookup(componentId, type);
 	}
