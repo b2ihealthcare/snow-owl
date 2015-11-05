@@ -69,6 +69,7 @@ public final class SnomedSimpleReferenceSetBuilder extends SnomedBaseComponentBu
 		final CoreTerminologyBroker terminologies = context.service(CoreTerminologyBroker.class);
 		component.setType(SnomedRefSetType.SIMPLE);
 		component.setReferencedComponentType(terminologies.getTerminologyComponentIdAsShort(referencedComponentType));
+		component.setIdentifierId(identifierConceptId);
 	}
 
 }

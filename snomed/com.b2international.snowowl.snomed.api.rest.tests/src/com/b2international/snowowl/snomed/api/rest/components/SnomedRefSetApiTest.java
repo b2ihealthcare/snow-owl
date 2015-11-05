@@ -23,7 +23,6 @@ import static com.b2international.snowowl.snomed.api.rest.SnomedComponentApiAsse
 
 import java.util.Map;
 
-import org.junit.Ignore;
 import org.junit.Test;
 
 import com.b2international.snowowl.datastore.BranchPathUtils;
@@ -51,7 +50,6 @@ public class SnomedRefSetApiTest extends AbstractSnomedApiTest {
 		assertComponentReadWithStatus(BranchPathUtils.createMainPath(), SnomedComponentType.REFSET, "123456789", 404);
 	}
 	
-	@Ignore("Unsupported")
 	@Test
 	public void createSimpleTypeRefSet() throws Exception {
 		givenBranchWithPath(testBranchPath);

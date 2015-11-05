@@ -16,8 +16,14 @@
 package com.b2international.snowowl.snomed.datastore.server.events;
 
 import com.b2international.snowowl.core.domain.TransactionContext;
+import com.b2international.snowowl.core.exceptions.NotImplementedException;
+import com.b2international.snowowl.snomed.core.domain.ISnomedConcept;
 import com.b2international.snowowl.snomed.core.domain.SnomedReferenceSet;
+import com.b2international.snowowl.snomed.core.store.SnomedComponents;
+import com.b2international.snowowl.snomed.datastore.SnomedEditingContext;
+import com.b2international.snowowl.snomed.datastore.SnomedRefSetEditingContext;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType;
+import com.b2international.snowowl.snomed.snomedrefset.SnomedRegularRefSet;
 
 /**
  * @since 4.5
@@ -36,9 +42,29 @@ public class SnomedRefSetCreateRequest extends SnomedRefSetRequest<TransactionCo
 	
 	@Override
 	public SnomedReferenceSet execute(TransactionContext context) {
-		return null;
+		checkType(type);
+		final ISnomedConcept identifierConcept = this.conceptReq.execute(context);
+		
+		// FIXME due to different resource lists we have to access to the specific editing context (which will be removed later on)
+		final SnomedRefSetEditingContext refSetContext = context.service(SnomedEditingContext.class).getRefSetEditingContext();
+		
+		final SnomedRegularRefSet refSet = SnomedComponents
+			.newSimpleTypeReferenceSet()
+			.setReferencedComponentType(referencedComponentType)
+			.setIdentifierConceptId(identifierConcept.getId())
+			.build(context);
+		
+		refSetContext.add(refSet);
+		return new SnomedReferenceSetConverter().apply(refSet, identifierConcept);
 	}
 	
+	private void checkType(SnomedRefSetType type) {
+		switch (type) {
+		case SIMPLE: return;
+		default: throw new NotImplementedException("SNOMED CT Reference Set type '%s' is unsupported");
+		}
+	}
+
 	@Override
 	protected Class<SnomedReferenceSet> getReturnType() {
 		return SnomedReferenceSet.class;
