@@ -16,13 +16,10 @@
 package com.b2international.snowowl.snomed.importer.rf2.validation;
 
 import java.net.URL;
-import java.util.Set;
 
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
 import com.b2international.snowowl.snomed.importer.net4j.ImportConfiguration;
-import com.b2international.snowowl.snomed.importer.net4j.SnomedValidationDefect;
 import com.b2international.snowowl.snomed.importer.rf2.model.ComponentImportType;
-import com.b2international.snowowl.snomed.importer.rf2.util.ValidationUtil;
 
 /**
  * Represents a release file validator that validates the module dependency reference set.
@@ -31,18 +28,13 @@ import com.b2international.snowowl.snomed.importer.rf2.util.ValidationUtil;
  */
 public class SnomedModuleDependencyRefSetValidator extends SnomedRefSetValidator {
 	
-	public SnomedModuleDependencyRefSetValidator(ImportConfiguration configuration, URL releaseUrl, Set<SnomedValidationDefect> defects, ValidationUtil validationUtil) {
-		super(configuration, releaseUrl, ComponentImportType.MODULE_DEPENDENCY_REFSET, defects, validationUtil, SnomedRf2Headers.MODULE_DEPENDENCY_HEADER.length);
+	public SnomedModuleDependencyRefSetValidator(ImportConfiguration configuration, URL releaseUrl, SnomedValidationContext context) {
+		super(configuration, releaseUrl, ComponentImportType.MODULE_DEPENDENCY_REFSET, context, SnomedRf2Headers.MODULE_DEPENDENCY_HEADER);
 	}
 
 	@Override
 	protected String getName() {
 		return "module dependency";
-	}
-
-	@Override
-	protected String[] getExpectedHeader() {
-		return SnomedRf2Headers.MODULE_DEPENDENCY_HEADER;
 	}
 
 }

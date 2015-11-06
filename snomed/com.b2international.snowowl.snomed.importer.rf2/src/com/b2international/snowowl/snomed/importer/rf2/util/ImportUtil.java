@@ -27,7 +27,6 @@ import static com.b2international.snowowl.snomed.importer.release.ReleaseFileSet
 import static com.b2international.snowowl.snomed.importer.rf2.util.RF2ReleaseRefSetFileCollector.collectUrlFromRelease;
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
-import static com.google.common.collect.Iterables.get;
 import static com.google.common.collect.Iterables.isEmpty;
 
 import java.io.File;
@@ -74,12 +73,11 @@ import com.b2international.snowowl.snomed.datastore.ISnomedImportPostProcessor;
 import com.b2international.snowowl.snomed.datastore.SnomedEditingContext;
 import com.b2international.snowowl.snomed.datastore.SnomedRefSetBrowser;
 import com.b2international.snowowl.snomed.datastore.SnomedTerminologyBrowser;
-import com.b2international.snowowl.snomed.datastore.StatementCollectionMode;
 import com.b2international.snowowl.snomed.datastore.index.refset.SnomedRefSetIndexEntry;
+import com.b2international.snowowl.snomed.importer.net4j.DefectType;
 import com.b2international.snowowl.snomed.importer.net4j.ImportConfiguration;
 import com.b2international.snowowl.snomed.importer.net4j.SnomedImportResult;
 import com.b2international.snowowl.snomed.importer.net4j.SnomedValidationDefect;
-import com.b2international.snowowl.snomed.importer.net4j.SnomedValidationDefect.DefectType;
 import com.b2international.snowowl.snomed.importer.release.ReleaseFileSet;
 import com.b2international.snowowl.snomed.importer.release.ReleaseFileSetSelectors;
 import com.b2international.snowowl.snomed.importer.rf2.SnomedCompositeImportUnit;
@@ -92,11 +90,14 @@ import com.b2international.snowowl.snomed.importer.rf2.refset.SnomedRefSetImport
 import com.b2international.snowowl.snomed.importer.rf2.terminology.SnomedConceptImporter;
 import com.b2international.snowowl.snomed.importer.rf2.terminology.SnomedDescriptionImporter;
 import com.b2international.snowowl.snomed.importer.rf2.terminology.SnomedRelationshipImporter;
-import com.b2international.snowowl.snomed.importer.rf2.validation.SnomedTaxonomyValidator;
+import com.b2international.snowowl.snomed.importer.rf2.validation.SnomedValidationContext;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType;
+import com.google.common.base.Function;
 import com.google.common.base.Preconditions;
+import com.google.common.base.Predicate;
 import com.google.common.base.Predicates;
 import com.google.common.base.Strings;
+import com.google.common.collect.FluentIterable;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
@@ -396,70 +397,31 @@ public final class ImportUtil {
 
 	// result is populated with validation errors if the return value is false
 	private boolean isContentValid(final SnomedImportResult result, final String requestingUserId, final ImportConfiguration configuration, final IBranchPath branchPath, final SubMonitor subMonitor) {
-
-		final ValidationUtil validationUtil = new ValidationUtil(requestingUserId, configuration, IMPORT_LOGGER);
-
-		IMPORT_LOGGER.info("Validating release files...");
-		LogUtils.logImportActivity(IMPORT_LOGGER, requestingUserId, branchPath, "Validating RF2 release files.");
-
-		validationUtil.preValidate(subMonitor.newChild(1, SubMonitor.SUPPRESS_NONE));
-		validationUtil.doValidate(subMonitor.newChild(1, SubMonitor.SUPPRESS_NONE));
-		validationUtil.postValidate(subMonitor.newChild(1, SubMonitor.SUPPRESS_NONE));
-
-		result.getValidationDefects().addAll(validationUtil.getDefects());
-		result.getValidationDefects().addAll(new SnomedTaxonomyValidator(branchPath, configuration, StatementCollectionMode.INFERRED_ISA_ONLY).validate());
-		result.getValidationDefects().addAll(new SnomedTaxonomyValidator(branchPath, configuration, StatementCollectionMode.STATED_ISA_ONLY).validate());
+		final SnomedValidationContext validator = new SnomedValidationContext(requestingUserId, configuration, IMPORT_LOGGER);
+		result.getValidationDefects().addAll(validator.validate(subMonitor.newChild(1)));
 		
 		if (!isEmpty(result.getValidationDefects())) {
-
-			if (get(result.getValidationDefects(), 0).getDefectType().equals(DefectType.HEADER_DIFFERENCES)) {
-				IMPORT_LOGGER.info("Header format differences in one or more release files:");
-				for (final String defect : get(result.getValidationDefects(), 0).getDefects()) {
-					IMPORT_LOGGER.info(defect);
-				}
-			}
-
 			// If only header differences exist, continue the import
-			for (final SnomedValidationDefect defect : result.getValidationDefects()) {
-				if (!DefectType.HEADER_DIFFERENCES.equals(defect.getDefectType())) {
-
-					IMPORT_LOGGER.error("Validation encountered one or more errors:");
-
-					int counter = 0;
-					for (final SnomedValidationDefect validationDefect : result.getValidationDefects()) {
-						counter += validationDefect.getDefects().size();
-					}
-
-					if (counter > 1) {
-						LogUtils.logImportActivity(IMPORT_LOGGER, requestingUserId, branchPath, "Validation encountered with " + counter + " errors. SNOMED CT import is aborting.");
-					} else {
-						LogUtils.logImportActivity(IMPORT_LOGGER, requestingUserId, branchPath, "Validation encountered with an error. SNOMED CT import is aborting.");
-					}
-
-					//logs all defects to server logger
-					logDefects(result.getValidationDefects(), branchPath, requestingUserId);
-					final String s = result.getValidationDefects().size() > 1 ? "s" : "";
-					LogUtils.logImportActivity(IMPORT_LOGGER, requestingUserId, branchPath, "SNOMED CT import failed due to invalid RF2 release file" + s + ".");
-
-					return false;
+			final FluentIterable<String> defects = FluentIterable.from(result.getValidationDefects()).transformAndConcat(new Function<SnomedValidationDefect, Iterable<? extends String>>() {
+				@Override
+				public Iterable<? extends String> apply(SnomedValidationDefect input) {
+					return input.getDefects();
 				}
+			});
+			final String message = String.format("Validation encountered %s error(s).", defects.size());
+			LogUtils.logImportActivity(IMPORT_LOGGER, requestingUserId, branchPath, message);
+			for (String defect : defects) {
+				LogUtils.logImportActivity(IMPORT_LOGGER, requestingUserId, branchPath, defect);
 			}
+			LogUtils.logImportActivity(IMPORT_LOGGER, requestingUserId, branchPath, "SNOMED CT import failed due to invalid RF2 release file(s).");
 		}
 
-		return true;
-	}
-
-	/*logs the defects*/
-	private void logDefects(final Set<SnomedValidationDefect> defects, final IBranchPath branchPath, final String requestingUserId) {
-
-		for (final SnomedValidationDefect defect : defects) {
-			for (final String offendingId : defect.getDefects()) {
-				final String message = MessageFormat.format("{0} {1}", defect.getDefectType(), offendingId);
-				IMPORT_LOGGER.error(message);
-				LogUtils.logImportActivity(IMPORT_LOGGER, requestingUserId, branchPath, message);
+		return !Iterables.tryFind(result.getValidationDefects(), new Predicate<SnomedValidationDefect>() {
+			@Override
+			public boolean apply(SnomedValidationDefect input) {
+				return !DefectType.HEADER_DIFFERENCES.equals(input.getDefectType());
 			}
-		}
-
+		}).isPresent();
 	}
 
 	private void postProcess(final SnomedImportContext context) {

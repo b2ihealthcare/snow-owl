@@ -28,44 +28,58 @@ import com.b2international.snowowl.snomed.importer.net4j.DefectType;
 import com.b2international.snowowl.snomed.importer.net4j.ImportConfiguration;
 import com.b2international.snowowl.snomed.importer.release.ReleaseFileSet.ReleaseComponentType;
 import com.b2international.snowowl.snomed.importer.rf2.model.ComponentImportType;
+import com.google.common.collect.Iterables;
 
 /**
- * Represents a release file validator that validates the attribute value reference set.
- * 
+ * RF2 file validator for SNOMED&nbsp;CT extended maps.
+ *
  */
-public class SnomedAttributeValueRefSetValidator extends SnomedRefSetValidator {
-	
-	private Set<String> refsetMemberValueNotExist = newHashSet();
+public class SnomedExtendedMapTypeRefSetValidator extends SnomedRefSetValidator {
 
-	public SnomedAttributeValueRefSetValidator(final ImportConfiguration configuration, final URL releaseUrl, final SnomedValidationContext context) {
-		super(configuration, releaseUrl, ComponentImportType.ATTRIBUTE_VALUE_REFSET, context, SnomedRf2Headers.ATTRIBUTE_VALUE_TYPE_HEADER);
+	private Set<String> mapCategoryConceptNotExist = newHashSet();
+	private Set<String> correlationConceptNotExist = newHashSet();
+	
+	public SnomedExtendedMapTypeRefSetValidator(final ImportConfiguration configuration, final URL releaseUrl, final SnomedValidationContext context) {
+		super(configuration, releaseUrl, ComponentImportType.EXTENDED_MAP_TYPE_REFSET, context, SnomedRf2Headers.EXTENDED_MAP_TYPE_HEADER);
 	}
 
 	@Override
 	protected void doValidate(final List<String> row) {
 		super.doValidate(row);
-		validateValueComponent(row);
+		validateCorrelationConcept(row);
+		validateMapCategory(row);
 	}
-
+	
 	@Override
 	protected void doValidate(String effectiveTime, IProgressMonitor monitor) {
 		super.doValidate(effectiveTime, monitor);
-		addDefect(DefectType.ATTRIBUTE_REFSET_VALUE_CONCEPT_NOT_EXIST, refsetMemberValueNotExist);
-		refsetMemberValueNotExist.clear();
+		addDefect(DefectType.EXTENDED_MAP_REFERENCED_INVALID_CONCEPT, Iterables.concat(mapCategoryConceptNotExist, correlationConceptNotExist));
+		mapCategoryConceptNotExist.clear();
+		correlationConceptNotExist.clear();
 	}
-	
+
 	@Override
 	protected String getName() {
-		return "attribute value";
+		return "extended map type";
 	}
 	
-	private void validateValueComponent(final List<String> row) {
+	private void validateMapCategory(final List<String> row) {
 		final String uuid = row.get(0);
 		final String effectiveTime = row.get(1);
-		final String valueConcept = row.get(6);
-		if (!isComponentExists(valueConcept, ReleaseComponentType.CONCEPT)) {
-			refsetMemberValueNotExist.add(getMissingComponentMessage(uuid, effectiveTime, "value concept", valueConcept));
+		final String mapCategory = row.get(12);
+		if (!isComponentExists(mapCategory, ReleaseComponentType.CONCEPT)) {
+			mapCategoryConceptNotExist.add(getMissingComponentMessage(uuid, effectiveTime, "map category", mapCategory));
 		}
 	}
+	
+	private void validateCorrelationConcept(final List<String> row) {
+		final String uuid = row.get(0);
+		final String effectiveTime = row.get(1);
+		final String correlation = row.get(11);
+		if (!isComponentExists(correlation, ReleaseComponentType.CONCEPT)) {
+			correlationConceptNotExist.add(getMissingComponentMessage(uuid, effectiveTime, "correlation", correlation));
+		}
+	}
+
 	
 }

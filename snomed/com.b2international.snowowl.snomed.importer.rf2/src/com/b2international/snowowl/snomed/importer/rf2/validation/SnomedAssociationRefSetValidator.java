@@ -15,18 +15,19 @@
  */
 package com.b2international.snowowl.snomed.importer.rf2.validation;
 
+import static com.google.common.collect.Sets.newHashSet;
+
 import java.net.URL;
 import java.util.List;
 import java.util.Set;
 
+import org.eclipse.core.runtime.IProgressMonitor;
+
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
+import com.b2international.snowowl.snomed.importer.net4j.DefectType;
 import com.b2international.snowowl.snomed.importer.net4j.ImportConfiguration;
-import com.b2international.snowowl.snomed.importer.net4j.SnomedValidationDefect;
-import com.b2international.snowowl.snomed.importer.net4j.SnomedValidationDefect.DefectType;
 import com.b2international.snowowl.snomed.importer.release.ReleaseFileSet.ReleaseComponentType;
 import com.b2international.snowowl.snomed.importer.rf2.model.ComponentImportType;
-import com.b2international.snowowl.snomed.importer.rf2.util.ValidationUtil;
-import com.google.common.collect.Sets;
 
 /**
  * Represents a release file validator that validates the association type reference set.
@@ -34,54 +35,37 @@ import com.google.common.collect.Sets;
  */
 public class SnomedAssociationRefSetValidator extends SnomedRefSetValidator {
 	
-	private Set<String> targetComponentNotExist;
+	private Set<String> targetComponentNotExist = newHashSet();
 
-	public SnomedAssociationRefSetValidator(ImportConfiguration configuration, URL releaseUrl, Set<SnomedValidationDefect> defects, ValidationUtil validationUtil) {
-		super(configuration, releaseUrl, ComponentImportType.ASSOCIATION_TYPE_REFSET, defects, validationUtil, SnomedRf2Headers.ASSOCIATION_TYPE_HEADER.length);
+	public SnomedAssociationRefSetValidator(ImportConfiguration configuration, URL releaseUrl, SnomedValidationContext context) {
+		super(configuration, releaseUrl, ComponentImportType.ASSOCIATION_TYPE_REFSET, context, SnomedRf2Headers.ASSOCIATION_TYPE_HEADER);
 	}
 	
 	@Override
-	protected void doValidate(List<String> row, int lineNumber) {
-		super.doValidate(row, lineNumber);
-		
-		validateTargetComponent(row, lineNumber);
+	protected void doValidate(List<String> row) {
+		super.doValidate(row);
+		validateTargetComponent(row);
 	}
+
 
 	@Override
-	protected void addDefects() {
-		super.addDefects();
-		
-		addDefects(new SnomedValidationDefect(DefectType.ASSOCIATION_REFSET_TARGET_COMPONENT_NOT_EXIST, targetComponentNotExist));
+	protected void doValidate(String effectiveTime, IProgressMonitor monitor) {
+		super.doValidate(effectiveTime, monitor);
+		addDefect(DefectType.ASSOCIATION_REFSET_TARGET_COMPONENT_NOT_EXIST, targetComponentNotExist);
+		targetComponentNotExist.clear();
 	}
-
+	
 	@Override
 	protected String getName() {
 		return "association type";
 	}
 
-	@Override
-	protected String[] getExpectedHeader() {
-		return SnomedRf2Headers.ASSOCIATION_TYPE_HEADER;
-	}
-	
-	@Override
-	protected void validateReferencedComponent(final List<String> row, final int lineNumber) {
-		if (isComponentNotExist(row.get(5))) {
-			if (null == referencedComponentNotExist) {
-				referencedComponentNotExist = Sets.newHashSet();
-			}
-			
-			addDefectDescription(referencedComponentNotExist, lineNumber, row.get(5));
-		}
-	}
-	
-	private void validateTargetComponent(List<String> row, int lineNumber) {
-		if (isComponentNotExist(row.get(6), ReleaseComponentType.CONCEPT)) {
-			if (null == targetComponentNotExist) {
-				targetComponentNotExist = Sets.newHashSet();
-			}
-			
-			addDefectDescription(targetComponentNotExist, lineNumber, row.get(6));
+	private void validateTargetComponent(List<String> row) {
+		final String uuid = row.get(0);
+		final String effectiveTime = row.get(1);
+		final String targetComponent = row.get(6);
+		if (!isComponentExists(targetComponent, ReleaseComponentType.CONCEPT)) {
+			targetComponentNotExist.add(getMissingComponentMessage(uuid, effectiveTime, "target component", targetComponent));
 		}
 	}
 

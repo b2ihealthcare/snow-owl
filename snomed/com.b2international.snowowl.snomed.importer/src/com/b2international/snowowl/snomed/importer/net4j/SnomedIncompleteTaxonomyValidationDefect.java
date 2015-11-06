@@ -15,7 +15,6 @@
  */
 package com.b2international.snowowl.snomed.importer.net4j;
 
-import static com.b2international.snowowl.snomed.importer.net4j.SnomedValidationDefect.DefectType.INCONSISTENT_TAXONOMY;
 import static com.google.common.base.Preconditions.checkNotNull;
 
 import java.util.Collection;
@@ -33,7 +32,7 @@ public class SnomedIncompleteTaxonomyValidationDefect extends SnomedValidationDe
 	public SnomedIncompleteTaxonomyValidationDefect(final Collection<String> defects, 
 			final Collection<String> conceptIdsToInactivate) {
 		
-		super(INCONSISTENT_TAXONOMY, defects);
+		super(DefectType.INCONSISTENT_TAXONOMY, defects);
 		this.conceptIdsToInactivate = checkNotNull(conceptIdsToInactivate, "conceptIdsToInactivate");
 	}
 	

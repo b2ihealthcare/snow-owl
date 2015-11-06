@@ -15,23 +15,20 @@
  */
 package com.b2international.snowowl.snomed.importer.rf2.validation;
 
-import java.io.File;
 import java.io.IOException;
-import java.text.MessageFormat;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
-import com.b2international.commons.StringUtils;
+import org.eclipse.core.runtime.IProgressMonitor;
+
+import com.b2international.snowowl.core.terminology.ComponentCategory;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
-import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
+import com.b2international.snowowl.snomed.importer.net4j.DefectType;
 import com.b2international.snowowl.snomed.importer.net4j.ImportConfiguration;
-import com.b2international.snowowl.snomed.importer.net4j.SnomedValidationDefect;
-import com.b2international.snowowl.snomed.importer.net4j.SnomedValidationDefect.DefectType;
-import com.b2international.snowowl.snomed.importer.release.ReleaseFileSet.ReleaseComponentType;
 import com.b2international.snowowl.snomed.importer.rf2.model.ComponentImportType;
-import com.b2international.snowowl.snomed.importer.rf2.util.ValidationUtil;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 
@@ -42,54 +39,56 @@ import com.google.common.collect.Sets;
 public class SnomedRelationshipValidator extends AbstractSnomedValidator {
 	
 	private final Map<String, List<String>> relationshipIdsWithEffectivetimeStatus = Maps.newHashMap();
-	private Set<String> relationshipIdNotUnique = Sets.newHashSet();
-	private Set<String> relationshipSourceAndDestinationAreEqual = Sets.newHashSet();
-	private Set<String> sourceConceptNotExist = Sets.newHashSet();
-	private Set<String> destinationConceptNotExist = Sets.newHashSet();
-	private Set<String> typeConceptNotExist = Sets.newHashSet();
-	private Set<String> characteristicTypeConceptNotExist = Sets.newHashSet();
-	private Set<String> modifierConceptNotExist = Sets.newHashSet();
+	private Collection<String> relationshipIdNotUnique = Sets.newHashSet();
+	private Collection<String> relationshipSourceAndDestinationAreEqual = Sets.newHashSet();
+	private Collection<String> missingReferencedConcepts = Sets.newHashSet();
 	
-	public SnomedRelationshipValidator(final ImportConfiguration configuration, final File releaseRelativePath, final Set<SnomedValidationDefect> defects, final ValidationUtil validationUtil) throws IOException {
-		super(configuration, configuration.toURL(releaseRelativePath), ComponentImportType.RELATIONSHIP, defects, validationUtil, SnomedRf2Headers.RELATIONSHIP_HEADER.length);
+	public SnomedRelationshipValidator(final ImportConfiguration configuration, final SnomedValidationContext context) throws IOException {
+		super(configuration, configuration.toURL(configuration.getRelationshipsFile()), ComponentImportType.RELATIONSHIP, context, SnomedRf2Headers.RELATIONSHIP_HEADER);
 	}
 
 	@Override
-	public void checkReleaseFileHeader(final String[] actualHeader) {
-		if (!StringUtils.equalsIgnoreCase(actualHeader, SnomedRf2Headers.RELATIONSHIP_HEADER)) {
-			final Set<String> headerDifference = Sets.newHashSet();
-			headerDifference.add(MessageFormat.format("In the ''{0}'' relationship file", releaseFileName));
-			addDefects(new SnomedValidationDefect(DefectType.HEADER_DIFFERENCES, headerDifference));
+	protected void doValidate(final List<String> row) {
+		final String componentId = row.get(0);
+		final String effectiveTime = row.get(1);
+		final boolean active = "1".equals(row.get(2));
+		final String source = row.get(4);
+		
+		registerComponent(ComponentCategory.RELATIONSHIP, componentId, active);
+		
+		validateComponentUnique(row, relationshipIdsWithEffectivetimeStatus, relationshipIdNotUnique);
+		
+		final String destination = row.get(5);
+		final String type = row.get(7);
+		final String characteristicType = row.get(8);
+		final String modifier = row.get(9);
+		
+		if (type.equals(Concepts.IS_A) && source.equals(destination)) {
+			relationshipSourceAndDestinationAreEqual.add(String.format("'%s' IS A relationship has same source and destination concept '%s' in effective time '%s'", componentId, source, effectiveTime));
+		}
+
+		for (String referencedConcept : ImmutableList.of(source, destination, type, characteristicType, modifier)) {
+			if (!missingReferencedConcepts.contains(referencedConcept)) {
+				if (!isComponentExists(referencedConcept)) {
+					final String missingConceptMessage = String.format("'%s' relationship refers to a non-existent concept '%s' in effective time '%s'", componentId, referencedConcept, effectiveTime);
+					addDefect(DefectType.RELATIONSHIP_REFERENCED_INVALID_CONCEPT, missingConceptMessage);
+				} else if (active && !isComponentActive(referencedConcept)) {
+					final String inactiveConceptMessage = String.format("'%s' relationship refers to an inactive concept '%s' in effective time '%s'", componentId, referencedConcept, effectiveTime);
+					addDefect(DefectType.RELATIONSHIP_REFERENCED_INVALID_CONCEPT, inactiveConceptMessage);
+				}
+			}
 		}
 	}
 
 	@Override
-	protected void doValidate(final List<String> row, final int lineNumber) {
-		collectIfInvalid(row.get(0), SnomedTerminologyComponentConstants.RELATIONSHIP_NUMBER);
+	protected void doValidate(String effectiveTime, IProgressMonitor monitor) {
+		super.doValidate(effectiveTime, monitor);
+		addDefect(DefectType.NOT_UNIQUE_RELATIONSHIP_ID, relationshipIdNotUnique);
+		addDefect(DefectType.RELATIONSHIP_SOURCE_DESTINATION_EQUALS, relationshipSourceAndDestinationAreEqual);
+		addDefect(DefectType.RELATIONSHIP_REFERENCED_INVALID_CONCEPT, missingReferencedConcepts);
 		
-		validateComponentUnique(row, relationshipIdsWithEffectivetimeStatus, relationshipIdNotUnique, lineNumber);
-		validationUtil.getRelationshipIds().add(row.get(0));
-		
-		if (row.get(7).equals(Concepts.IS_A) && row.get(4).equals(row.get(5))) {
-			relationshipSourceAndDestinationAreEqual.add(MessageFormat.format("Line number {0} in the ''{1}'' file with relationship ID {2}",
-					lineNumber, releaseFileName, row.get(0)));
-		}
-
-		validateComponentExists(row.get(4), row.get(4), ReleaseComponentType.CONCEPT, sourceConceptNotExist, lineNumber);
-		validateComponentExists(row.get(5), row.get(4), ReleaseComponentType.CONCEPT, destinationConceptNotExist, lineNumber);
-		validateComponentExists(row.get(7), row.get(4), ReleaseComponentType.CONCEPT, typeConceptNotExist, lineNumber);
-		validateComponentExists(row.get(8), row.get(4), ReleaseComponentType.CONCEPT, characteristicTypeConceptNotExist, lineNumber);
-		validateComponentExists(row.get(9), row.get(4), ReleaseComponentType.CONCEPT, modifierConceptNotExist, lineNumber);
+		relationshipSourceAndDestinationAreEqual.clear();
+		missingReferencedConcepts.clear();
 	}
-
-	@Override
-	protected void addDefects() {
-		addDefects(new SnomedValidationDefect(DefectType.NOT_UNIQUE_RELATIONSHIP_ID, relationshipIdNotUnique),
-				new SnomedValidationDefect(DefectType.RELATIONSHIP_SOURCE_DESTINATION_EQUALS, relationshipSourceAndDestinationAreEqual),
-				new SnomedValidationDefect(DefectType.RELATIONSHIP_SOURCE_NOT_EXIST, sourceConceptNotExist),
-				new SnomedValidationDefect(DefectType.RELATIONSHIP_DESTINATION_NOT_EXIST, destinationConceptNotExist),
-				new SnomedValidationDefect(DefectType.RELATIONSHIP_TYPE_NOT_EXIST, typeConceptNotExist),
-				new SnomedValidationDefect(DefectType.RELATIONSHIP_CHARACTERISTIC_TYPE_NOT_EXIST, characteristicTypeConceptNotExist),
-				new SnomedValidationDefect(DefectType.RELATIONSHIP_MODIFIER_NOT_EXIST, modifierConceptNotExist));
-	}
+	
 }

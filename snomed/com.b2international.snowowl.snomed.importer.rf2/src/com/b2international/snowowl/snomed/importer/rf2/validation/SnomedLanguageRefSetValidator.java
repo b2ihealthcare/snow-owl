@@ -17,22 +17,10 @@ package com.b2international.snowowl.snomed.importer.rf2.validation;
 
 import java.io.IOException;
 import java.net.URL;
-import java.util.List;
-import java.util.Set;
 
-import bak.pcj.set.LongSet;
-
-import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
-import com.b2international.snowowl.snomed.datastore.services.IClientSnomedComponentService;
 import com.b2international.snowowl.snomed.importer.net4j.ImportConfiguration;
-import com.b2international.snowowl.snomed.importer.net4j.SnomedValidationDefect;
-import com.b2international.snowowl.snomed.importer.release.ReleaseFileSet.ReleaseComponentType;
 import com.b2international.snowowl.snomed.importer.rf2.model.ComponentImportType;
-import com.b2international.snowowl.snomed.importer.rf2.util.ValidationUtil;
-import com.google.common.base.Supplier;
-import com.google.common.base.Suppliers;
-import com.google.common.collect.Sets;
 
 /**
  * Represents a release file validator that validates the language type reference set.
@@ -40,21 +28,8 @@ import com.google.common.collect.Sets;
  */
 public class SnomedLanguageRefSetValidator extends SnomedRefSetValidator {
 	
-	private final Supplier<LongSet> descriptionIdSupplier = Suppliers.memoize(new Supplier<LongSet>() {
-		@Override public LongSet get() {
-			return ApplicationContext.getInstance().getService(IClientSnomedComponentService.class).getAllDescriptionIds();
-		}
-	});
-	
-	public SnomedLanguageRefSetValidator(final ImportConfiguration configuration, final URL url, final Set<SnomedValidationDefect> defects, final ValidationUtil validationUtil) throws IOException {
-		super(configuration, url, ComponentImportType.LANGUAGE_TYPE_REFSET, defects, validationUtil, SnomedRf2Headers.LANGUAGE_TYPE_HEADER.length);
-	}
-
-	@Override
-	protected void doValidate(final List<String> row, final int lineNumber) {
-		super.doValidate(row, lineNumber);
-		
-		// TODO add more validation check
+	public SnomedLanguageRefSetValidator(final ImportConfiguration configuration, final URL url, final SnomedValidationContext context) throws IOException {
+		super(configuration, url, ComponentImportType.LANGUAGE_TYPE_REFSET, context, SnomedRf2Headers.LANGUAGE_TYPE_HEADER);
 	}
 
 	@Override
@@ -62,29 +37,4 @@ public class SnomedLanguageRefSetValidator extends SnomedRefSetValidator {
 		return "language type";
 	}
 	
-	@Override
-	protected String[] getExpectedHeader() {
-		return SnomedRf2Headers.LANGUAGE_TYPE_HEADER;
-	}
-	
-	@Override
-	protected void validateReferencedComponent(final List<String> row, final int lineNumber) {
-		
-		final String descriptionId = row.get(5);
-		
-		//existing description
-		if (descriptionIdSupplier.get().contains(Long.parseLong(descriptionId))) {
-			return;
-		}
-		
-		
-		if (isComponentNotExist(descriptionId, ReleaseComponentType.DESCRIPTION)) {
-			if (null == referencedComponentNotExist) {
-				referencedComponentNotExist = Sets.newHashSet();
-			}
-			
-			addDefectDescription(referencedComponentNotExist, lineNumber, row.get(5));
-		}
-	}
-
 }
