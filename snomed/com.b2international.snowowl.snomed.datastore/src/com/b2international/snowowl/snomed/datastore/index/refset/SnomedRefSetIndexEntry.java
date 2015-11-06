@@ -32,6 +32,7 @@ import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.datastore.index.IndexUtils;
 import com.b2international.snowowl.datastore.index.mapping.Mappings;
 import com.b2international.snowowl.snomed.datastore.IRefSetComponent;
+import com.b2international.snowowl.snomed.datastore.SnomedRefSetUtil;
 import com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants;
 import com.b2international.snowowl.snomed.datastore.index.SnomedIndexEntry;
 import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedMappings;
@@ -120,6 +121,13 @@ public class SnomedRefSetIndexEntry extends SnomedIndexEntry implements IRefSetC
 		return structural;
 	}
 	
+	/**
+	 * @return <code>true</code> if the reference set is a mapping type reference set, returns <code>false</code> otherwise.
+	 */
+	public boolean isMapping() {
+		return SnomedRefSetUtil.isMapping(getType());
+	}
+	
 	@Override
 	public String toString() {
 		
@@ -158,4 +166,5 @@ public class SnomedRefSetIndexEntry extends SnomedIndexEntry implements IRefSetC
 			return false;
 		return true;
 	}
+
 }
