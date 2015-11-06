@@ -175,7 +175,7 @@ public class SnomedIdentifiers {
 		case DESCRIPTION:
 		case RELATIONSHIP:
 			return new SnomedComponentIdentifierValidator(category);
-		default: throw new UnsupportedOperationException(""+category);
+		default: throw new UnsupportedOperationException("Can't create validator for category: " + category);
 		}
 	}
 
