@@ -66,4 +66,30 @@ public class SnomedRefSetMemberApiTest extends AbstractSnomedApiTest {
 		assertComponentExists(testBranchPath, SnomedComponentType.MEMBER, memberId);
 	}
 	
+	// TODO create member with wrong referenced component, like create a concept, get his description and try to put one of that as member into a concept based refset
+	// TODO try to create a member with invalid refcompid
+	// TODO try to create a member in a non existent reference set
+	
+	@Test
+	public void deleteSimpleReferenceSetMember() throws Exception {
+		// create branch
+		givenBranchWithPath(testBranchPath);
+		// create concept
+		final Map<?, ?> conceptReq = givenConceptRequestBody(null, ROOT_CONCEPT, MODULE_SCT_CORE, PREFERRED_ACCEPTABILITY_MAP, false);
+		final String createdConceptId = assertComponentCreated(testBranchPath, SnomedComponentType.CONCEPT, conceptReq);
+		
+		// create refset
+		final Map<String,Object> refSetReq = createRefSetRequestBody(SnomedRefSetType.SIMPLE, SnomedTerminologyComponentConstants.CONCEPT, Concepts.REFSET_SIMPLE_TYPE);
+		final String createdRefSetId = assertComponentCreated(testBranchPath, SnomedComponentType.REFSET, refSetReq);
+		assertComponentExists(testBranchPath, SnomedComponentType.REFSET, createdRefSetId);
+		
+		// create member
+		final Map<String, Object> memberReq = createRefSetMemberRequestBody(Concepts.MODULE_SCT_CORE, createdConceptId, createdRefSetId);
+		final String memberId = assertComponentCreated(testBranchPath, SnomedComponentType.MEMBER, memberReq);
+		assertComponentExists(testBranchPath, SnomedComponentType.MEMBER, memberId);
+		
+		assertComponentCanBeDeleted(testBranchPath, SnomedComponentType.MEMBER, memberId);
+		assertComponentNotExists(testBranchPath, SnomedComponentType.MEMBER, memberId);
+	}
+	
 }
