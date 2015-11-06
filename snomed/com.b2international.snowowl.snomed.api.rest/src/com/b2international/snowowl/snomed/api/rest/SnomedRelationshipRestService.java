@@ -32,7 +32,6 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.b2international.snowowl.core.domain.IComponentRef;
-import com.b2international.snowowl.snomed.Relationship;
 import com.b2international.snowowl.snomed.api.ISnomedRelationshipService;
 import com.b2international.snowowl.snomed.api.rest.domain.ChangeRequest;
 import com.b2international.snowowl.snomed.api.rest.domain.RestApiError;
@@ -179,7 +178,7 @@ public class SnomedRelationshipRestService extends AbstractSnomedRestService {
 
 		SnomedRequests
 			.<Void>prepareCommit(principal.getName(), branchPath)
-			.setBody(SnomedRequests.prepareDeleteComponent(relationshipId, Relationship.class))
+			.setBody(SnomedRequests.prepareDeleteRelationship(relationshipId))
 			.setCommitComment(String.format("Deleted Relationship '%s' from store.", relationshipId))
 			.build()
 			.executeSync(bus, 120L * 1000L);

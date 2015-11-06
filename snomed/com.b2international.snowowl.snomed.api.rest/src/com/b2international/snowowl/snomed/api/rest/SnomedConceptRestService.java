@@ -36,7 +36,6 @@ import org.springframework.web.context.request.async.DeferredResult;
 
 import com.b2international.snowowl.core.domain.IComponentRef;
 import com.b2international.snowowl.core.domain.PageableCollectionResource;
-import com.b2international.snowowl.snomed.Concept;
 import com.b2international.snowowl.snomed.api.ISnomedConceptService;
 import com.b2international.snowowl.snomed.api.rest.domain.ChangeRequest;
 import com.b2international.snowowl.snomed.api.rest.domain.RestApiError;
@@ -243,7 +242,7 @@ public class SnomedConceptRestService extends AbstractSnomedRestService {
 			final Principal principal) {
 		SnomedRequests
 			.<Void>prepareCommit(principal.getName(), branchPath)
-			.setBody(SnomedRequests.prepareDeleteComponent(conceptId, Concept.class))
+			.setBody(SnomedRequests.prepareDeleteConcept(conceptId))
 			.setCommitComment(String.format("Deleted Concept '%s' from store.", conceptId))
 			.build()
 			.executeSync(bus, 120L * 1000L);

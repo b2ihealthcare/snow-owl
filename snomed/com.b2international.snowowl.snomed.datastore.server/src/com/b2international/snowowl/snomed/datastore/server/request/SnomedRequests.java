@@ -15,6 +15,8 @@
  */
 package com.b2international.snowowl.snomed.datastore.server.request;
 
+import org.eclipse.emf.ecore.EObject;
+
 import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.domain.TransactionContext;
 import com.b2international.snowowl.core.events.Request;
@@ -22,12 +24,15 @@ import com.b2international.snowowl.datastore.server.request.Branching;
 import com.b2international.snowowl.datastore.server.request.RepositoryCommitRequestBuilder;
 import com.b2international.snowowl.datastore.server.request.RepositoryRequests;
 import com.b2international.snowowl.datastore.server.request.Reviews;
-import com.b2international.snowowl.snomed.Component;
+import com.b2international.snowowl.snomed.Concept;
+import com.b2international.snowowl.snomed.Description;
+import com.b2international.snowowl.snomed.Relationship;
 import com.b2international.snowowl.snomed.core.domain.SnomedReferenceSet;
 import com.b2international.snowowl.snomed.core.domain.SnomedReferenceSetMember;
 import com.b2international.snowowl.snomed.core.domain.SnomedReferenceSetMembers;
 import com.b2international.snowowl.snomed.core.domain.SnomedReferenceSets;
 import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
+import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetMember;
 
 /**
  * @since 4.5
@@ -51,8 +56,24 @@ public abstract class SnomedRequests {
 		return new SnomedConceptGetRequestBuilder(branch);
 	}
 	
-	public static Request<TransactionContext, Void> prepareDeleteComponent(String componentId, Class<? extends Component> type) {
+	public static Request<TransactionContext, Void> prepareDeleteComponent(String componentId, Class<? extends EObject> type) {
 		return new SnomedComponentDeleteRequest(componentId, type);
+	}
+	
+	public static Request<TransactionContext, ?> prepareDeleteMember(String memberId) {
+		return prepareDeleteComponent(memberId, SnomedRefSetMember.class);
+	}
+	
+	public static Request<TransactionContext, ?> prepareDeleteConcept(String conceptId) {
+		return prepareDeleteComponent(conceptId, Concept.class);
+	}
+	
+	public static Request<TransactionContext, ?> prepareDeleteDescription(String descriptionId) {
+		return prepareDeleteComponent(descriptionId, Description.class);
+	}
+	
+	public static Request<TransactionContext, ?> prepareDeleteRelationship(String relationshipId) {
+		return prepareDeleteComponent(relationshipId, Relationship.class);
 	}
 	
 	public static Request<TransactionContext, SnomedReferenceSetMember> prepareNewMember(String moduleId, String referencedComponentId, String referenceSetId) {

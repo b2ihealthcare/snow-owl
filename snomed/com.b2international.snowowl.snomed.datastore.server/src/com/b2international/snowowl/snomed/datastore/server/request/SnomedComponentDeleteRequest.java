@@ -15,9 +15,10 @@
  */
 package com.b2international.snowowl.snomed.datastore.server.request;
 
+import org.eclipse.emf.ecore.EObject;
+
 import com.b2international.snowowl.core.domain.TransactionContext;
 import com.b2international.snowowl.core.events.BaseRequest;
-import com.b2international.snowowl.snomed.Component;
 
 /**
  * @since 4.5
@@ -25,9 +26,9 @@ import com.b2international.snowowl.snomed.Component;
 final class SnomedComponentDeleteRequest extends BaseRequest<TransactionContext, Void> {
 
 	private String componentId;
-	private Class<? extends Component> type;
+	private Class<? extends EObject> type;
 
-	public SnomedComponentDeleteRequest(String componentId, Class<? extends Component> type) {
+	public SnomedComponentDeleteRequest(String componentId, Class<? extends EObject> type) {
 		this.componentId = componentId;
 		this.type = type;
 	}

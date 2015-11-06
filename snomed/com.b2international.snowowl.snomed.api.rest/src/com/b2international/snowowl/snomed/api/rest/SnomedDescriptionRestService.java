@@ -32,7 +32,6 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.b2international.snowowl.core.domain.IComponentRef;
-import com.b2international.snowowl.snomed.Description;
 import com.b2international.snowowl.snomed.api.ISnomedDescriptionService;
 import com.b2international.snowowl.snomed.api.rest.domain.ChangeRequest;
 import com.b2international.snowowl.snomed.api.rest.domain.SnomedDescriptionRestInput;
@@ -176,7 +175,7 @@ public class SnomedDescriptionRestService extends AbstractSnomedRestService {
 		
 		SnomedRequests
 			.<Void>prepareCommit(principal.getName(), branchPath)
-			.setBody(SnomedRequests.prepareDeleteComponent(descriptionId, Description.class))
+			.setBody(SnomedRequests.prepareDeleteDescription(descriptionId))
 			.setCommitComment(String.format("Deleted Description '%s' from store.", descriptionId))
 			.build()
 			.executeSync(bus, 120L * 1000L);
