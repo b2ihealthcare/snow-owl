@@ -49,7 +49,7 @@ public final class RepositoryCommitRequestBuilder {
 	
 	public Request<ServiceProvider, CommitInfo> build() {
 		ApiValidation.checkInput(body);
-		return new RepositoryRequest<>(repositoryId, new BranchRequest<>(branch, new TransactionalRequest(userId, commitComment, body)));
+		return RepositoryRequests.wrap(repositoryId, branch, new TransactionalRequest(userId, commitComment, body));
 	}
 
 }
