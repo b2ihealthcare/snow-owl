@@ -15,12 +15,8 @@
  */
 package com.b2international.snowowl.snomed.datastore.server.request;
 
-import java.util.Collection;
-
 import com.b2international.snowowl.core.domain.TransactionContext;
 import com.b2international.snowowl.core.exceptions.BadRequestException;
-import com.b2international.snowowl.core.exceptions.NotImplementedException;
-import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.snomed.core.domain.ISnomedConcept;
 import com.b2international.snowowl.snomed.core.domain.SnomedReferenceSet;
 import com.b2international.snowowl.snomed.core.store.SnomedComponents;
@@ -30,25 +26,15 @@ import com.b2international.snowowl.snomed.datastore.SnomedRefSetUtil;
 import com.b2international.snowowl.snomed.datastore.SnomedTerminologyBrowser;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRegularRefSet;
-import com.google.common.base.Joiner;
-import com.google.common.collect.ImmutableMultimap;
-import com.google.common.collect.Multimap;
 
 /**
  * @since 4.5
  */
 public class SnomedRefSetCreateRequest extends SnomedRefSetRequest<TransactionContext, SnomedReferenceSet> {
 
-	private static final Multimap<SnomedRefSetType, String> SUPPORTED_REFERENCED_COMPONENTS = ImmutableMultimap.<SnomedRefSetType, String>builder()
-			.put(SnomedRefSetType.SIMPLE, SnomedTerminologyComponentConstants.CONCEPT)
-			.put(SnomedRefSetType.SIMPLE, SnomedTerminologyComponentConstants.DESCRIPTION)
-			.put(SnomedRefSetType.SIMPLE, SnomedTerminologyComponentConstants.RELATIONSHIP)
-			.put(SnomedRefSetType.QUERY, SnomedTerminologyComponentConstants.REFSET)
-			.build();
-	
 	private final SnomedRefSetType type;
 	private final String referencedComponentType;
-	private SnomedConceptCreateRequest conceptReq;
+	private final SnomedConceptCreateRequest conceptReq;
 	
 	public SnomedRefSetCreateRequest(SnomedRefSetType type, String referencedComponentType, SnomedConceptCreateRequest conceptReq) {
 		this.type = type;
@@ -62,7 +48,8 @@ public class SnomedRefSetCreateRequest extends SnomedRefSetRequest<TransactionCo
 	
 	@Override
 	public SnomedReferenceSet execute(TransactionContext context) {
-		checkRefSetSupport();
+		RefSetSupport.check(type);
+		RefSetSupport.checkType(type, referencedComponentType);
 		checkParent(context);
 		
 		final ISnomedConcept identifierConcept = this.conceptReq.execute(context);
@@ -86,16 +73,6 @@ public class SnomedRefSetCreateRequest extends SnomedRefSetRequest<TransactionCo
 		final String desiredParent = conceptReq.getParentId();
 		if (!refSetTypeRootParent.equals(desiredParent) && !context.service(SnomedTerminologyBrowser.class).isSuperTypeOfById(context.branch().branchPath(), refSetTypeRootParent, desiredParent)) {
 			throw new BadRequestException("'%s' type reference sets should be subtype of '%s' concept. Cannot create as subtype of '%s'.", type, refSetTypeRootParent, desiredParent);
-		}
-	}
-
-	private void checkRefSetSupport() {
-		if (!SUPPORTED_REFERENCED_COMPONENTS.containsKey(type)) {
-			throw new NotImplementedException("'%s' type reference sets are not supported", type);
-		}
-		final Collection<String> supportedReferencedComponents = SUPPORTED_REFERENCED_COMPONENTS.get(type);
-		if (!supportedReferencedComponents.contains(referencedComponentType)) {
-			throw new BadRequestException("'%s' type reference set does not support '%s' referenced component type. Only '%s' are supported.", type, referencedComponentType, Joiner.on(",").join(supportedReferencedComponents));
 		}
 	}
 

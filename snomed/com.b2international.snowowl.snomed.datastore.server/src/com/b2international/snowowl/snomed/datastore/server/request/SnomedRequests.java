@@ -34,11 +34,13 @@ import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
  */
 public abstract class SnomedRequests {
 
+	private static final String REPOSITORY_ID = SnomedDatastoreActivator.REPOSITORY_UUID;
+
 	private SnomedRequests() {
 	}
 	
-	public static <B> RepositoryCommitRequestBuilder prepareCommit(String userId, String branchPath) {
-		return RepositoryRequests.prepareCommit(userId, SnomedDatastoreActivator.REPOSITORY_UUID, branchPath);
+	public static <B> RepositoryCommitRequestBuilder prepareCommit(String userId, String branch) {
+		return RepositoryRequests.prepareCommit(userId, REPOSITORY_ID, branch);
 	}
 	
 	public static SnomedConceptSearchRequestBuilder prepareSearch(String branch) {
@@ -53,29 +55,37 @@ public abstract class SnomedRequests {
 		return new SnomedComponentDeleteRequest(componentId, type);
 	}
 	
+	public static Request<TransactionContext, SnomedReferenceSetMember> prepareNewMember(String moduleId, String referencedComponentId, String referenceSetId) {
+		final SnomedRefSetMemberCreateRequest req = new SnomedRefSetMemberCreateRequest();
+		req.setModuleId(moduleId);
+		req.setReferencedComponentId(referencedComponentId);
+		req.setReferenceSetId(referenceSetId);
+		return req;
+	}
+	
 	// TODO migrate initial API to builders
 	public static Request<ServiceProvider, SnomedReferenceSets> prepareGetReferenceSets(String branch) {
-		return RepositoryRequests.wrap(SnomedDatastoreActivator.REPOSITORY_UUID, branch, new SnomedRefSetReadAllRequest());
+		return RepositoryRequests.wrap(REPOSITORY_ID, branch, new SnomedRefSetReadAllRequest());
 	}
 	
 	public static Request<ServiceProvider, SnomedReferenceSet> prepareGetReferenceSet(String branch, String referenceSetId) {
-		return RepositoryRequests.wrap(SnomedDatastoreActivator.REPOSITORY_UUID, branch, new SnomedRefSetReadRequest(referenceSetId));
+		return RepositoryRequests.wrap(REPOSITORY_ID, branch, new SnomedRefSetReadRequest(referenceSetId));
 	}
 	
 	public static Request<ServiceProvider, SnomedReferenceSetMembers> prepareGetReferenceSetMembers(String branch, int offset, int limit) {
-		return RepositoryRequests.wrap(SnomedDatastoreActivator.REPOSITORY_UUID, branch, new SnomedRefSetMemberReadAllRequest(offset, limit));
+		return RepositoryRequests.wrap(REPOSITORY_ID, branch, new SnomedRefSetMemberReadAllRequest(offset, limit));
 	}
 	
 	public static Request<ServiceProvider, SnomedReferenceSetMember> prepareGetReferenceSetMember(String branch, String memberId) {
-		return RepositoryRequests.wrap(SnomedDatastoreActivator.REPOSITORY_UUID, branch, new SnomedRefSetMemberReadRequest(memberId));
+		return RepositoryRequests.wrap(REPOSITORY_ID, branch, new SnomedRefSetMemberReadRequest(memberId));
 	}
 
 	public static Branching branching() {
-		return RepositoryRequests.branching(SnomedDatastoreActivator.REPOSITORY_UUID);
+		return RepositoryRequests.branching(REPOSITORY_ID);
 	}
 
 	public static Reviews review() {
-		return RepositoryRequests.reviews(SnomedDatastoreActivator.REPOSITORY_UUID);
+		return RepositoryRequests.reviews(REPOSITORY_ID);
 	}
 
 }

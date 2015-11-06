@@ -69,7 +69,7 @@ public interface Request<T extends ServiceProvider, B> extends Event {
 	 *
 	 * @param context
 	 *            - the context within this {@link Request} can be executed
-	 * @return - the result of the {@link Request}
+	 * @return - the result of the {@link Request}, never <code>null</code>.
 	 */
 	B execute(T context);
 
