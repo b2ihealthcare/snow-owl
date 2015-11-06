@@ -93,8 +93,11 @@ public abstract class SingleDirectoryIndexImpl implements SingleDirectoryIndex, 
 	
 	protected SingleDirectoryIndexImpl(final File directory, final boolean clean) {
 		checkNotNull(directory, "indexDirectory");
-		checkArgument(directory.exists() || directory.mkdirs(), "Couldn't create directories for path '%s'", directory);
-		this.indexDirectory = directory;
+		this.indexDirectory = SnowOwlApplication.INSTANCE.getEnviroment().getDataDirectory().toPath()
+				.resolve("indexes")
+				.resolve(directory.toPath())
+				.toFile();
+		checkArgument(this.indexDirectory.exists() || this.indexDirectory.mkdirs(), "Couldn't create directories for path '%s'", this.indexDirectory);
 		initLucene(indexDirectory, clean);
 	}
 
