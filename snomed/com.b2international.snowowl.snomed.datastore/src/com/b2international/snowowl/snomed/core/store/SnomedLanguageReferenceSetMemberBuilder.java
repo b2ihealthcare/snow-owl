@@ -19,36 +19,19 @@ import com.b2international.snowowl.core.domain.TransactionContext;
 import com.b2international.snowowl.core.terminology.ComponentCategory;
 import com.b2international.snowowl.snomed.Description;
 import com.b2international.snowowl.snomed.core.domain.Acceptability;
-import com.b2international.snowowl.snomed.core.domain.UUIDIdGenerationStrategy;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedLanguageRefSetMember;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetFactory;
-import com.b2international.snowowl.snomed.snomedrefset.SnomedStructuralRefSet;
 
 /**
  * @since 4.5
  */
 public final class SnomedLanguageReferenceSetMemberBuilder
-		extends SnomedComponentBuilder<SnomedLanguageReferenceSetMemberBuilder, SnomedLanguageRefSetMember> {
+		extends SnomedMemberBuilder<SnomedLanguageReferenceSetMemberBuilder, SnomedLanguageRefSetMember> {
 
-	private String referenceSetId;
-	private String referencedComponent;
 	private Acceptability acceptability = Acceptability.ACCEPTABLE;
 
 	protected SnomedLanguageReferenceSetMemberBuilder() {
 		super(ComponentCategory.SET_MEMBER);
-		withId(new UUIDIdGenerationStrategy());
-	}
-
-	/**
-	 * Specifies the referenced component ID of the new language reference set member.
-	 * 
-	 * @param referencedComponent
-	 *            - the referenced component to refer to
-	 * @return
-	 */
-	public SnomedLanguageReferenceSetMemberBuilder withReferencedComponent(String referencedComponent) {
-		this.referencedComponent = referencedComponent;
-		return getSelf();
 	}
 
 	/**
@@ -64,35 +47,25 @@ public final class SnomedLanguageReferenceSetMemberBuilder
 	}
 
 	/**
-	 * Specifies the reference set this language reference set member belongs to.
-	 * 
-	 * @param referenceSetId
-	 *            - the identifier concept ID of the Language reference set
-	 * @return
-	 */
-	public SnomedLanguageReferenceSetMemberBuilder withRefSet(String referenceSetId) {
-		this.referenceSetId = referenceSetId;
-		return getSelf();
-	}
-
-	/**
 	 * Builds and adds a new SNOMED CT Language reference set member to the given description using the given {@link TransactionContext}.
 	 * 
-	 * @param context
-	 * @param description
+	 * @param context - the context where the new member should be made available
+	 * @param description - the corresponding description of the referenced component
 	 */
-	public void addTo(TransactionContext context, Description description) {
-		withReferencedComponent(description.getId());
-		withModule(description.getModule().getId());
-		description.getLanguageRefSetMembers().add(build(context));
+	public SnomedLanguageRefSetMember addTo(TransactionContext context, Description description) {
+		// FIXME default module handling (sometimes we would like to specify other modules for member than the description's)
+		final SnomedLanguageRefSetMember member = this
+				.withReferencedComponent(description.getId())
+				.withModule(description.getModule().getId())
+				.addTo(context);
+		description.getLanguageRefSetMembers().add(member);
+		return member;
 	}
 
 	@Override
 	protected void init(SnomedLanguageRefSetMember component, TransactionContext context) {
 		super.init(component, context);
-		component.setReferencedComponentId(referencedComponent);
 		component.setAcceptabilityId(acceptability.getConceptId());
-		component.setRefSet(context.lookup(referenceSetId, SnomedStructuralRefSet.class));
 	}
 
 	@Override

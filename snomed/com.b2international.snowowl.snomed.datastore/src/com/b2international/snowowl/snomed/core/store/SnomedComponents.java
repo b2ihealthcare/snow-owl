@@ -50,6 +50,15 @@ public class SnomedComponents {
 	}
 
 	/**
+	 * Creates and returns a new {@link SnomedReferenceSetBuilder SNOMED CT Reference Set builder}.
+	 * 
+	 * @return
+	 */
+	public static SnomedReferenceSetBuilder newReferenceSet() {
+		return new SnomedReferenceSetBuilder();
+	}
+
+	/**
 	 * Creates and returns a new {@link SnomedLanguageReferenceSetMemberBuilder SNOMED CT Language Reference set member builder}.
 	 * 
 	 * @return
@@ -59,12 +68,12 @@ public class SnomedComponents {
 	}
 
 	/**
-	 * Creates and returns a new {@link SnomedReferenceSetBuilder SNOMED CT Reference Set builder}.
+	 * Creates and returns a new {@link SnomedSimpleReferenceSetMemberBuilder SNOMED CT Simple Reference set member builder}.
 	 * 
 	 * @return
 	 */
-	public static SnomedReferenceSetBuilder newReferenceSet() {
-		return new SnomedReferenceSetBuilder();
+	public static SnomedSimpleReferenceSetMemberBuilder newSimpleMember() {
+		return new SnomedSimpleReferenceSetMemberBuilder();
 	}
 
 }
