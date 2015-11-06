@@ -25,6 +25,7 @@ import java.util.List;
 
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.Field;
+import org.apache.lucene.document.StoredField;
 import org.apache.lucene.document.StringField;
 import org.apache.lucene.index.Term;
 import org.apache.lucene.search.BooleanClause.Occur;
@@ -211,7 +212,7 @@ public class IndexStore<T> extends SingleDirectoryIndexImpl implements Store<T> 
 	private Document createDoc(String key, T value) throws IOException {
 		final Document doc = new Document();
 		doc.add(new StringField(ID_FIELD, key, Field.Store.NO));
-		doc.add(new StringField(SOURCE_FIELD, serialize(value), Field.Store.YES));
+		doc.add(new StoredField(SOURCE_FIELD, serialize(value)));
 		for (String property : newHashSet(this.additionalSearchableFields)) {
 			doc.add(new StringField(property, String.valueOf(ReflectionUtils.getGetterValue(value, property)), Field.Store.NO));
 		}
