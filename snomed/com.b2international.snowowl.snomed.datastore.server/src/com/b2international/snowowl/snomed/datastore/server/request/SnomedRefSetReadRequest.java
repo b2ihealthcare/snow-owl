@@ -18,9 +18,7 @@ package com.b2international.snowowl.snomed.datastore.server.request;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.exceptions.ComponentNotFoundException;
-import com.b2international.snowowl.core.terminology.ComponentCategory;
 import com.b2international.snowowl.snomed.core.domain.SnomedReferenceSet;
-import com.b2international.snowowl.snomed.datastore.SnomedRefSetBrowser;
 import com.b2international.snowowl.snomed.datastore.SnomedRefSetLookupService;
 import com.b2international.snowowl.snomed.datastore.index.refset.SnomedRefSetIndexEntry;
 
@@ -39,11 +37,10 @@ final class SnomedRefSetReadRequest extends SnomedRefSetRequest<BranchContext, S
 	public SnomedReferenceSet execute(BranchContext context) {
 		final IBranchPath branch = context.branch().branchPath();
 		final SnomedRefSetLookupService lookupService = new SnomedRefSetLookupService();
-		if (!lookupService.exists(branch, referenceSetId)) {
-			throw new ComponentNotFoundException(ComponentCategory.SET, referenceSetId);
+		final SnomedRefSetIndexEntry entry = lookupService.getComponent(branch, referenceSetId);
+		if (entry == null) {
+			throw new ComponentNotFoundException("Reference Set", referenceSetId);
 		} else {
-			final SnomedRefSetBrowser browser = context.service(SnomedRefSetBrowser.class);
-			final SnomedRefSetIndexEntry entry = browser.getRefSet(branch, referenceSetId);
 			return new SnomedReferenceSetConverter().apply(entry);
 		}
 	}
