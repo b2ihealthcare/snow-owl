@@ -20,7 +20,7 @@ import static com.b2international.snowowl.snomed.api.rest.SnomedComponentApiAsse
 import static com.b2international.snowowl.snomed.api.rest.SnomedComponentApiAssert.assertComponentExists;
 import static com.b2international.snowowl.snomed.api.rest.SnomedComponentApiAssert.assertComponentNotCreated;
 import static com.b2international.snowowl.snomed.api.rest.SnomedComponentApiAssert.assertComponentReadWithStatus;
-import static com.b2international.snowowl.snomed.api.rest.SnomedComponentApiAssert.givenConceptRequestBody;
+import static com.b2international.snowowl.snomed.api.rest.SnomedComponentApiAssert.createRefSetRequestBody;
 
 import java.util.Map;
 
@@ -29,12 +29,9 @@ import org.junit.Test;
 import com.b2international.snowowl.datastore.BranchPathUtils;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.api.rest.AbstractSnomedApiTest;
-import com.b2international.snowowl.snomed.api.rest.SnomedApiTestConstants;
 import com.b2international.snowowl.snomed.api.rest.SnomedComponentType;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType;
-import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ImmutableMap.Builder;
 
 /**
  * @since 4.5
@@ -94,16 +91,6 @@ public class SnomedRefSetApiTest extends AbstractSnomedApiTest {
 		givenBranchWithPath(testBranchPath);
 		final Map<String,Object> requestBody = createRefSetRequestBody(SnomedRefSetType.QUERY, SnomedTerminologyComponentConstants.REFSET, Concepts.ROOT_CONCEPT);
 		assertComponentNotCreated(BranchPathUtils.createMainPath(), SnomedComponentType.REFSET, requestBody);
-	}
-	
-	private ImmutableMap<String, Object> createRefSetRequestBody(SnomedRefSetType type, String referencedComponentType, String parent) {
-		final Map<String, Object> conceptBody = (Map<String, Object>) givenConceptRequestBody(null, parent, Concepts.MODULE_SCT_CORE, SnomedApiTestConstants.PREFERRED_ACCEPTABILITY_MAP, true);
-		final Builder<String, Object> requestBody = ImmutableMap.builder();
-		requestBody.putAll(conceptBody);
-		requestBody.put("commitComment", String.format("New %s type reference set with %s members", type, referencedComponentType));
-		requestBody.put("type", type);
-		requestBody.put("referencedComponentType", referencedComponentType);
-		return requestBody.build();
 	}
 	
 }

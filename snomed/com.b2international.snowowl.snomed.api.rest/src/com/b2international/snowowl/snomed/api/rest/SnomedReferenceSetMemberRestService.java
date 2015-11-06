@@ -15,10 +15,17 @@
  */
 package com.b2international.snowowl.snomed.api.rest;
 
+import static org.springframework.hateoas.mvc.ControllerLinkBuilder.linkTo;
+
+import java.net.URI;
+import java.security.Principal;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -26,10 +33,19 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.context.request.async.DeferredResult;
 
 import com.b2international.snowowl.core.domain.PageableCollectionResource;
+import com.b2international.snowowl.core.domain.TransactionContext;
+import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.eventbus.IEventBus;
+import com.b2international.snowowl.snomed.api.rest.domain.ChangeRequest;
+import com.b2international.snowowl.snomed.api.rest.domain.SnomedRefSetMemberRestInput;
+import com.b2international.snowowl.snomed.api.rest.domain.SnomedRefSetRestInput;
 import com.b2international.snowowl.snomed.api.rest.util.DeferredResults;
+import com.b2international.snowowl.snomed.api.rest.util.Responses;
+import com.b2international.snowowl.snomed.core.domain.SnomedReferenceSet;
 import com.b2international.snowowl.snomed.core.domain.SnomedReferenceSetMember;
 import com.b2international.snowowl.snomed.core.domain.SnomedReferenceSetMembers;
+import com.b2international.snowowl.snomed.datastore.server.request.SnomedRefSetCreateRequest;
+import com.b2international.snowowl.snomed.datastore.server.request.SnomedRefSetMemberCreateRequest;
 import com.b2international.snowowl.snomed.datastore.server.request.SnomedRequests;
 import com.wordnik.swagger.annotations.Api;
 import com.wordnik.swagger.annotations.ApiOperation;
@@ -88,6 +104,45 @@ public class SnomedReferenceSetMemberRestService extends AbstractSnomedRestServi
 			@PathVariable(value="id")
 			final String memberId) {
 		return DeferredResults.wrap(SnomedRequests.prepareGetReferenceSetMember(branchPath, memberId).execute(bus));
+	}
+	
+	@ApiOperation(
+			value="Create a reference set member",
+			notes="Creates a new reference set member directly on a branch.")
+	@ApiResponses({
+		@ApiResponse(code = 200, message = "OK", response = Void.class),
+		@ApiResponse(code = 404, message = "Branch not found")
+	})
+	@RequestMapping(value="/{path:**}/members", method=RequestMethod.POST)
+	public ResponseEntity<Void> create(
+			@ApiParam(value="The branch path")
+			@PathVariable(value="path")
+			final String branchPath,
+			
+			@ApiParam(value="Reference set member parameters")
+			@RequestBody 
+			final ChangeRequest<SnomedRefSetMemberRestInput> body,
+
+			final Principal principal) {
+		
+		final SnomedRefSetMemberRestInput change = body.getChange();
+		final Request<TransactionContext, SnomedReferenceSetMember> req = SnomedRequests.prepareNewMember(change.getModuleId(),
+				change.getReferencedComponentId(), change.getReferenceSetId());
+		
+		final SnomedReferenceSetMember createdRefSetMember = 
+				SnomedRequests
+					.<SnomedReferenceSetMember>prepareCommit(principal.getName(), branchPath)
+					.setBody(req)
+					.setCommitComment(body.getCommitComment())
+					.build()
+					.executeSync(bus, 120L * 1000L)
+					.getResultAs(SnomedReferenceSetMember.class);
+		
+		return Responses.created(getRefSetMemberLocationURI(branchPath, createdRefSetMember)).build();
+	}
+	
+	private URI getRefSetMemberLocationURI(String branchPath, SnomedReferenceSetMember refSetMember) {
+		return linkTo(SnomedReferenceSetMemberRestService.class).slash(branchPath).slash("members").slash(refSetMember.getId()).toUri();
 	}
 	
 }

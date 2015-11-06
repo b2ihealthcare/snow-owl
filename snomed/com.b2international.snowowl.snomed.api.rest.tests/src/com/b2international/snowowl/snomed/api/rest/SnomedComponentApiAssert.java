@@ -18,6 +18,7 @@ package com.b2international.snowowl.snomed.api.rest;
 import static com.b2international.snowowl.snomed.SnomedConstants.Concepts.FULLY_SPECIFIED_NAME;
 import static com.b2international.snowowl.snomed.SnomedConstants.Concepts.SYNONYM;
 import static com.b2international.snowowl.snomed.api.rest.SnomedApiTestConstants.PREFERRED_ACCEPTABILITY_MAP;
+import static com.b2international.snowowl.snomed.api.rest.SnomedComponentApiAssert.givenConceptRequestBody;
 import static com.b2international.snowowl.test.commons.rest.RestExtensions.givenAuthenticatedRequest;
 import static com.b2international.snowowl.test.commons.rest.RestExtensions.lastPathSegment;
 import static org.hamcrest.CoreMatchers.containsString;
@@ -27,7 +28,9 @@ import java.util.Date;
 import java.util.Map;
 
 import com.b2international.snowowl.core.api.IBranchPath;
+import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.core.domain.CharacteristicType;
+import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableMap.Builder;
@@ -361,4 +364,24 @@ public abstract class SnomedComponentApiAssert {
 	private SnomedComponentApiAssert() {
 		throw new UnsupportedOperationException("This class is not supposed to be instantiated.");
 	}
+	
+	public static Map<String, Object> createRefSetRequestBody(SnomedRefSetType type, String referencedComponentType, String parent) {
+		final Map<String, Object> conceptBody = (Map<String, Object>) givenConceptRequestBody(null, parent, Concepts.MODULE_SCT_CORE, SnomedApiTestConstants.PREFERRED_ACCEPTABILITY_MAP, true);
+		final Builder<String, Object> requestBody = ImmutableMap.builder();
+		requestBody.putAll(conceptBody);
+		requestBody.put("commitComment", String.format("New %s type reference set with %s members", type, referencedComponentType));
+		requestBody.put("type", type);
+		requestBody.put("referencedComponentType", referencedComponentType);
+		return requestBody.build();
+	}
+	
+	public static Map<String, Object> createRefSetMemberRequestBody(String moduleId, String referencedComponentId, String referenceSetId) {
+		final Builder<String, Object> requestBody = ImmutableMap.builder();
+		requestBody.put("moduleId", moduleId);
+		requestBody.put("referenceSetId", referenceSetId);
+		requestBody.put("referencedComponentId", referencedComponentId);
+		requestBody.put("commitComment", String.format("New reference set member '%s' in refset '%s'", referencedComponentId, referenceSetId));
+		return requestBody.build();
+	}
+	
 }
