@@ -15,21 +15,21 @@
  */
 package com.b2international.snowowl.snomed.importer.rf2.validation;
 
+import static com.google.common.collect.Sets.newHashSet;
+
 import java.net.URL;
-import java.text.MessageFormat;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 
-import com.b2international.commons.StringUtils;
+import org.eclipse.core.runtime.IProgressMonitor;
+
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
+import com.b2international.snowowl.snomed.importer.net4j.DefectType;
 import com.b2international.snowowl.snomed.importer.net4j.ImportConfiguration;
-import com.b2international.snowowl.snomed.importer.net4j.SnomedValidationDefect;
-import com.b2international.snowowl.snomed.importer.net4j.SnomedValidationDefect.DefectType;
 import com.b2international.snowowl.snomed.importer.release.ReleaseFileSet.ReleaseComponentType;
 import com.b2international.snowowl.snomed.importer.rf2.model.ComponentImportType;
-import com.b2international.snowowl.snomed.importer.rf2.util.ValidationUtil;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 
@@ -66,16 +66,13 @@ public abstract class SnomedRefSetValidator extends AbstractSnomedValidator {
 	private static final int COLUMN_STATUS = 1;
 	private static final int COLUMN_REFERENCED_COMPONENT_ID = 5;
 	
-	private Set<String> uuidNotUnique;
-	private Set<String> uuidInvalid;
+	private final Set<String> uuidNotUnique = newHashSet();
+	private final Set<String> uuidInvalid = newHashSet();
 	private final Map<UUID, ReferencedComponentIdAndStatus> memberDataByUuid;
+	private final Set<String> referencedComponentNotExist = Sets.newHashSet();
 
-	protected Set<String> referencedComponentNotExist;
-
-	public SnomedRefSetValidator(final ImportConfiguration configuration, final URL releaseUrl, final ComponentImportType importType, final Set<SnomedValidationDefect> defects, 
-			final ValidationUtil validationUtil, final int columnNumber) {
-		
-		super(configuration, releaseUrl, importType, defects, validationUtil, columnNumber);
+	public SnomedRefSetValidator(final ImportConfiguration configuration, final URL releaseUrl, final ComponentImportType importType, final SnomedValidationContext validationUtil, final String[] expectedHeader) {
+		super(configuration, releaseUrl, importType, validationUtil, expectedHeader);
 		memberDataByUuid = Maps.newHashMap();
 	}
 	
@@ -86,27 +83,10 @@ public abstract class SnomedRefSetValidator extends AbstractSnomedValidator {
 	 */
 	protected abstract String getName();
 	
-	/**
-	 * Gets the release type specific header.
-	 * 
-	 * @return
-	 */
-	protected abstract String[] getExpectedHeader();
-
 	@Override
-	protected void checkReleaseFileHeader(final String[] actualHeader) {
-		if (!StringUtils.equalsIgnoreCase(actualHeader, getExpectedHeader())) {
-			final Set<String> headerDifference = Sets.newHashSet();
-			headerDifference.add(MessageFormat.format("In the ''{0}'' {1} reference set file", releaseFileName, getName()));
-			
-			addDefects(new SnomedValidationDefect(DefectType.HEADER_DIFFERENCES, headerDifference));
-		}
-	}
-
-	@Override
-	protected void doValidate(final List<String> row, final int lineNumber) {
-		validateIdUniqueness(row, lineNumber);
-		validateReferencedComponent(row, lineNumber);
+	protected void doValidate(final List<String> row) {
+		validateIdUniqueness(row);
+		validateReferencedComponent(row);
 	}
 
 	/**
@@ -115,19 +95,15 @@ public abstract class SnomedRefSetValidator extends AbstractSnomedValidator {
 	 * @param row the current row
 	 * @param lineNumber the current line number
 	 */
-	protected void validateIdUniqueness(final List<String> row, final int lineNumber) {
-		
-		final String uuidString = row.get(COLUMN_UUID);
+	protected void validateIdUniqueness(final List<String> row) {
+		final String uuid = row.get(COLUMN_UUID);
+		final String effectiveTime = row.get(1);
 		final UUID rowUuid;
 		
 		try {
-			rowUuid = UUID.fromString(uuidString);
+			rowUuid = UUID.fromString(uuid);
 		} catch (final IllegalArgumentException e) {
-			if (null == uuidInvalid) {
-				uuidInvalid = Sets.newHashSet();
-			}
-			
-			addDefectDescription(uuidInvalid, lineNumber);
+			uuidInvalid.add(String.format("Invalid UUID '%s' in effective time '%s' in file '%s'", uuid, effectiveTime, releaseFileName));
 			return;
 		}
 		
@@ -137,19 +113,13 @@ public abstract class SnomedRefSetValidator extends AbstractSnomedValidator {
 		final ReferencedComponentIdAndStatus existingData = memberDataByUuid.get(rowUuid);
 		
 		if (null != existingData) {
-
 			if (existingData.getReferencedComponentId().equals(rowReferencedComponentId)) {
 				// if the id is for the same component as before, update the active flag
 				existingData.setActive(rowActive);
 			} else if (existingData.isActive()) { 
 				// if it's for different component and the member referring to the previous component is still active, report it as an issue
-				if (null == uuidNotUnique) {
-					uuidNotUnique = Sets.newHashSet();
-				}
-				
-				addDefectDescription(uuidNotUnique, lineNumber);
+				uuidNotUnique.add(String.format("UUID '%s' is not unique in file '%s'", uuid, releaseFileName));
 			}
-			
 		} else {
 			memberDataByUuid.put(rowUuid, new ReferencedComponentIdAndStatus(rowReferencedComponentId, rowActive));
 		}
@@ -161,48 +131,33 @@ public abstract class SnomedRefSetValidator extends AbstractSnomedValidator {
 	 * @param row the current row
 	 * @param lineNumber the current line number
 	 */
-	protected void validateReferencedComponent(final List<String> row, final int lineNumber) {
-		
-		final String componentId = row.get(5);
-		if (isComponentNotExist(componentId, getComponentType(componentId))) {
-			if (null == referencedComponentNotExist) {
-				referencedComponentNotExist = Sets.newHashSet();
-			}
-			
-			addDefectDescription(referencedComponentNotExist, lineNumber, row.get(5));
+	private void validateReferencedComponent(final List<String> row) {
+		final String uuid = row.get(0);
+		final String effectiveTime = row.get(1);
+		final String componentId = row.get(COLUMN_REFERENCED_COMPONENT_ID);
+		if (!isComponentExists(componentId, getComponentType(componentId))) {
+			referencedComponentNotExist.add(getMissingComponentMessage(uuid, effectiveTime, componentId));
 		}
 	}
 
-	@Override
-	protected void addDefects() {
-		addDefects(new SnomedValidationDefect(DefectType.NOT_UNIQUE_REFSET_MEMBER_ID, uuidNotUnique),
-				new SnomedValidationDefect(DefectType.INCORRECT_REFSET_MEMBER_ID, uuidInvalid),
-				new SnomedValidationDefect(DefectType.REFSET_MEMBER_COMPONENT_NOT_EXIST, referencedComponentNotExist));
+	protected String getMissingComponentMessage(final String uuid, final String effectiveTime, final String componentId) {
+		return getMissingComponentMessage(uuid, effectiveTime, "component", componentId); 
 	}
 	
-	/**
-	 * Add a reference set defect to the given set.
-	 * 
-	 * @param refsetDefects the set of the defects of a given defect type
-	 * @param lineNumber the number of the line where the defect can be found
-	 */
-	protected void addDefectDescription(final Set<String> refsetDefects, final int lineNumber) {
-		refsetDefects.add(MessageFormat.format("Line number {0} in the ''{1}'' {2} reference set file.", 
-				lineNumber, releaseFileName, getName()));
-	}
-	
-	/**
-	 * Add a reference set defect to the given set.
-	 * 
-	 * @param refsetDefects the set of the defects of a given defect type
-	 * @param lineNumber the number of the line where the defect can be found
-	 * @param componentId the ID of the component
-	 */
-	protected void addDefectDescription(final Set<String> refsetDefects, final int lineNumber, final String componentId) {
-		refsetDefects.add(MessageFormat.format("Line number {0} in the ''{1}'' {2} reference set file with component ID {3}.", 
-				lineNumber, releaseFileName, getName(), componentId));
+	protected String getMissingComponentMessage(final String uuid, final String effectiveTime, final String type, final String componentId) {
+		return String.format("Reference set member '%s' references non-existent %s '%s' in effective time '%s'", uuid, type, componentId, effectiveTime);
 	}
 
+	@Override
+	protected void doValidate(String effectiveTime, IProgressMonitor monitor) {
+		super.doValidate(effectiveTime, monitor);
+		addDefect(DefectType.NOT_UNIQUE_REFSET_MEMBER_ID, uuidNotUnique);
+		addDefect(DefectType.INCORRECT_REFSET_MEMBER_ID, uuidInvalid);
+		addDefect(DefectType.REFSET_MEMBER_COMPONENT_NOT_EXIST, referencedComponentNotExist);
+		uuidInvalid.clear();
+		referencedComponentNotExist.clear();
+	}
+	
 	/**returns with the proper import component type based on the component ID argument.*/
 	private ReleaseComponentType getComponentType(final String componentId) {
 		final short value = SnomedTerminologyComponentConstants.getTerminologyComponentIdValueSafe(componentId);

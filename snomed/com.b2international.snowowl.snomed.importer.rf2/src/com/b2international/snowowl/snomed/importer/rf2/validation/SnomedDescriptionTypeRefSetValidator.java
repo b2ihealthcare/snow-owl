@@ -15,18 +15,19 @@
  */
 package com.b2international.snowowl.snomed.importer.rf2.validation;
 
+import static com.google.common.collect.Sets.newHashSet;
+
 import java.net.URL;
 import java.util.List;
 import java.util.Set;
 
+import org.eclipse.core.runtime.IProgressMonitor;
+
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
+import com.b2international.snowowl.snomed.importer.net4j.DefectType;
 import com.b2international.snowowl.snomed.importer.net4j.ImportConfiguration;
-import com.b2international.snowowl.snomed.importer.net4j.SnomedValidationDefect;
-import com.b2international.snowowl.snomed.importer.net4j.SnomedValidationDefect.DefectType;
 import com.b2international.snowowl.snomed.importer.release.ReleaseFileSet.ReleaseComponentType;
 import com.b2international.snowowl.snomed.importer.rf2.model.ComponentImportType;
-import com.b2international.snowowl.snomed.importer.rf2.util.ValidationUtil;
-import com.google.common.collect.Sets;
 
 /**
  * Represents a release file validator that validates the description type reference set.
@@ -34,56 +35,50 @@ import com.google.common.collect.Sets;
  */
 public class SnomedDescriptionTypeRefSetValidator extends SnomedRefSetValidator {
 
-	private Set<String> descriptionFormatNotExist;
-	private Set<String> descriptionLengthIsEmpty;
+	private Set<String> descriptionFormatNotExist = newHashSet();
+	private Set<String> descriptionLengthIsEmpty = newHashSet();
 
-	public SnomedDescriptionTypeRefSetValidator(ImportConfiguration configuration, URL releaseUrl, Set<SnomedValidationDefect> defects, ValidationUtil validationUtil) {
-		super(configuration, releaseUrl, ComponentImportType.DESCRIPTION_TYPE_REFSET, defects, validationUtil, SnomedRf2Headers.DESCRIPTION_TYPE_HEADER.length);
+	public SnomedDescriptionTypeRefSetValidator(ImportConfiguration configuration, URL releaseUrl, SnomedValidationContext context) {
+		super(configuration, releaseUrl, ComponentImportType.DESCRIPTION_TYPE_REFSET, context, SnomedRf2Headers.DESCRIPTION_TYPE_HEADER);
 	}
 	
 	@Override
-	protected void doValidate(List<String> row, int lineNumber) {
-		super.doValidate(row, lineNumber);
+	protected void doValidate(List<String> row) {
+		super.doValidate(row);
 		
-		validateDescriptionFormat(row, lineNumber);
-		validateDescriptionLength(row, lineNumber);
-	}
-	
-	@Override
-	protected void addDefects() {
-		super.addDefects();
-		
-		addDefects(new SnomedValidationDefect(DefectType.DESCRIPTION_TYPE_DESCRIPTION_FORMAT_NOT_EXIST, descriptionFormatNotExist),
-				new SnomedValidationDefect(DefectType.DESCRIPTION_TYPE_DESCRIPTION_LENGTH_IS_EMPTY, descriptionLengthIsEmpty));
+		validateDescriptionFormat(row);
+		validateDescriptionLength(row);
 	}
 
+	@Override
+	protected void doValidate(String effectiveTime, IProgressMonitor monitor) {
+		super.doValidate(effectiveTime, monitor);
+		addDefect(DefectType.DESCRIPTION_TYPE_DESCRIPTION_FORMAT_NOT_EXIST, descriptionFormatNotExist);
+		addDefect(DefectType.DESCRIPTION_TYPE_DESCRIPTION_LENGTH_IS_EMPTY, descriptionLengthIsEmpty);
+		descriptionFormatNotExist.clear();
+		descriptionLengthIsEmpty.clear();
+	}
+	
 	@Override
 	protected String getName() {
 		return "description type";
 	}
 
-	@Override
-	protected String[] getExpectedHeader() {
-		return SnomedRf2Headers.DESCRIPTION_TYPE_HEADER;
-	}
-
-	private void validateDescriptionFormat(List<String> row, int lineNumber) {
-		if (isComponentNotExist(row.get(6), ReleaseComponentType.CONCEPT)) {
-			if (null == descriptionFormatNotExist) {
-				descriptionFormatNotExist = Sets.newHashSet();
-			}
-			
-			addDefectDescription(descriptionFormatNotExist, lineNumber, row.get(6));
+	private void validateDescriptionFormat(List<String> row) {
+		final String uuid = row.get(0);
+		final String effectiveTime = row.get(1);
+		final String descriptionFormat = row.get(6);
+		if (!isComponentExists(descriptionFormat, ReleaseComponentType.CONCEPT)) {
+			descriptionFormatNotExist.add(getMissingComponentMessage(uuid, effectiveTime, "description format", descriptionFormat));
 		}
 	}
 	
-	private void validateDescriptionLength(List<String> row, int lineNumber) {
-		if (row.get(7).isEmpty()) {
-			if (null == descriptionLengthIsEmpty) {
-				descriptionLengthIsEmpty = Sets.newHashSet();
-			}
-			
-			addDefectDescription(descriptionLengthIsEmpty, lineNumber);
+	private void validateDescriptionLength(List<String> row) {
+		final String uuid = row.get(0);
+		final String effectiveTime = row.get(1);
+		final String length = row.get(7);
+		if (length.isEmpty()) {
+			descriptionLengthIsEmpty.add(String.format("Reference set member '%s' description length property is empty in effective time '%s'", uuid, effectiveTime));
 		}
 	}
 

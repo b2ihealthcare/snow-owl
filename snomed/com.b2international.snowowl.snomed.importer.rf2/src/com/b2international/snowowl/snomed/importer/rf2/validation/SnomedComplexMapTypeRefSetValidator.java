@@ -15,17 +15,19 @@
  */
 package com.b2international.snowowl.snomed.importer.rf2.validation;
 
+import static com.google.common.collect.Sets.newHashSet;
+
 import java.net.URL;
 import java.util.List;
 import java.util.Set;
 
+import org.eclipse.core.runtime.IProgressMonitor;
+
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
+import com.b2international.snowowl.snomed.importer.net4j.DefectType;
 import com.b2international.snowowl.snomed.importer.net4j.ImportConfiguration;
-import com.b2international.snowowl.snomed.importer.net4j.SnomedValidationDefect;
 import com.b2international.snowowl.snomed.importer.release.ReleaseFileSet.ReleaseComponentType;
 import com.b2international.snowowl.snomed.importer.rf2.model.ComponentImportType;
-import com.b2international.snowowl.snomed.importer.rf2.util.ValidationUtil;
-import com.google.common.collect.Sets;
 
 /**
  * Represents a release file validator that validates the complex map type reference set.
@@ -33,41 +35,36 @@ import com.google.common.collect.Sets;
  */
 public class SnomedComplexMapTypeRefSetValidator extends SnomedRefSetValidator {
 	
-	private Set<String> correlationConceptNotExist;
+	private final Set<String> correlationConceptNotExist = newHashSet();
 
-	public SnomedComplexMapTypeRefSetValidator(final ImportConfiguration configuration, final URL releaseUrl, final Set<SnomedValidationDefect> defects, final ValidationUtil validationUtil) {
-		super(configuration, releaseUrl, ComponentImportType.COMPLEX_MAP_TYPE_REFSET, defects, validationUtil, SnomedRf2Headers.COMPLEX_MAP_TYPE_HEADER.length);
+	public SnomedComplexMapTypeRefSetValidator(final ImportConfiguration configuration, final URL releaseUrl, final SnomedValidationContext context) {
+		super(configuration, releaseUrl, ComponentImportType.COMPLEX_MAP_TYPE_REFSET, context, SnomedRf2Headers.COMPLEX_MAP_TYPE_HEADER);
 	}
 	
 	@Override
-	protected void doValidate(final List<String> row, final int lineNumber) {
-		super.doValidate(row, lineNumber);
-		
-		validateCorrelationConcept(row, lineNumber);
+	protected void doValidate(final List<String> row) {
+		super.doValidate(row);
+		validateCorrelationConcept(row);
 	}
 	
 	@Override
-	protected void addDefects() {
-		super.addDefects();
+	protected void doValidate(String effectiveTime, IProgressMonitor monitor) {
+		super.doValidate(effectiveTime, monitor);
+		addDefect(DefectType.COMPLEX_MAP_REFERENCED_INVALID_CONCEPT, correlationConceptNotExist);
+		correlationConceptNotExist.clear();
 	}
-
+	
 	@Override
 	protected String getName() {
 		return "complex map type";
 	}
 	
-	@Override
-	protected String[] getExpectedHeader() {
-		return SnomedRf2Headers.COMPLEX_MAP_TYPE_HEADER;
-	}
-	
-	private void validateCorrelationConcept(final List<String> row, final int lineNumber) {
-		if (isComponentNotExist(row.get(11), ReleaseComponentType.CONCEPT)) {
-			if (null == correlationConceptNotExist) {
-				correlationConceptNotExist = Sets.newHashSet();
-			}
-			
-			addDefectDescription(correlationConceptNotExist, lineNumber, row.get(11));
+	private void validateCorrelationConcept(final List<String> row) {
+		final String uuid = row.get(0);
+		final String effectiveTime = row.get(1);
+		final String correlation = row.get(11);
+		if (!isComponentExists(correlation, ReleaseComponentType.CONCEPT)) {
+			correlationConceptNotExist.add(getMissingComponentMessage(uuid, effectiveTime, "correlation", correlation));
 		}
 	}
 
