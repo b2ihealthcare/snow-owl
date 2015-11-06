@@ -283,7 +283,7 @@ public abstract class SnomedComponentApiAssert {
 
 		givenAuthenticatedRequest(SnomedApiTestConstants.SCT_API)
 		.when().delete("/{path}/{componentType}/{id}", branchPath.getPath(), componentType.toLowerCasePlural(), componentId)
-		.then().assertThat().statusCode(204);
+		.then().log().ifValidationFails().assertThat().statusCode(204);
 	}
 
 	/**
