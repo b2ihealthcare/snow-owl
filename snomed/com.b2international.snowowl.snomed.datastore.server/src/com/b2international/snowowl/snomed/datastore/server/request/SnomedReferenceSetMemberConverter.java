@@ -19,6 +19,7 @@ import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.snomed.core.domain.SnomedReferenceSetMember;
 import com.b2international.snowowl.snomed.datastore.index.refset.SnomedRefSetMemberIndexEntry;
 import com.b2international.snowowl.snomed.datastore.server.domain.SnomedReferenceSetMemberImpl;
+import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetMember;
 import com.google.common.base.Function;
 
 /**
@@ -31,6 +32,18 @@ public class SnomedReferenceSetMemberConverter implements Function<SnomedRefSetM
 		final SnomedReferenceSetMemberImpl member = new SnomedReferenceSetMemberImpl();
 		member.setId(input.getId());
 		member.setEffectiveTime(EffectiveTimes.toDate(input.getEffectiveTimeAsLong()));
+		member.setReleased(input.isReleased());
+		member.setActive(input.isActive());
+		member.setModuleId(input.getModuleId());
+		member.setReferencedComponentId(input.getReferencedComponentId());
+		member.setReferenceSetId(input.getRefSetIdentifierId());
+		return member;
+	}
+
+	public SnomedReferenceSetMember apply(SnomedRefSetMember input) {
+		final SnomedReferenceSetMemberImpl member = new SnomedReferenceSetMemberImpl();
+		member.setId(input.getUuid());
+		member.setEffectiveTime(input.getEffectiveTime());
 		member.setReleased(input.isReleased());
 		member.setActive(input.isActive());
 		member.setModuleId(input.getModuleId());
