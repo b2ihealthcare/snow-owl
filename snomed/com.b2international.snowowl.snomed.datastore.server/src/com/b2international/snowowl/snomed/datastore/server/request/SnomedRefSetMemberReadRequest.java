@@ -16,7 +16,7 @@
 package com.b2international.snowowl.snomed.datastore.server.request;
 
 import com.b2international.snowowl.core.domain.BranchContext;
-import com.b2international.snowowl.datastore.editor.service.ComponentNotFoundException;
+import com.b2international.snowowl.core.exceptions.ComponentNotFoundException;
 import com.b2international.snowowl.snomed.core.domain.SnomedReferenceSetMember;
 import com.b2international.snowowl.snomed.datastore.SnomedRefSetMemberLookupService;
 import com.b2international.snowowl.snomed.datastore.index.refset.SnomedRefSetMemberIndexEntry;
