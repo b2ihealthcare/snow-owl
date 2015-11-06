@@ -57,7 +57,7 @@ public class SnomedRefSetMemberReadAllRequest extends SnomedRefSetMemberRequest<
 			})
 			.skip(offset)
 			.limit(limit)
-			.transform(new SnomedReferenceSetMemberConverter()).toList();
+			.transform(new SnomedReferenceSetMemberConverter(context)).toList();
 		
 		return new SnomedReferenceSetMembers(members);
 	}

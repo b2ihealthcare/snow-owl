@@ -81,7 +81,7 @@ public class SnomedRefSetMemberCreateRequest extends SnomedRefSetMemberRequest<T
 		default: throw new UnsupportedOperationException("Not implemented support for creation of '"+type+"' members");
 		}
 		
-		return new SnomedReferenceSetMemberConverter().apply(member);
+		return new SnomedReferenceSetMemberConverter(context).apply(member);
 	}
 
 	@Override
