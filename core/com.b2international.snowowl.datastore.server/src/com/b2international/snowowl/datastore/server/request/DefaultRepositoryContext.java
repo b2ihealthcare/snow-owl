@@ -20,6 +20,8 @@ import static com.google.common.base.Preconditions.checkNotNull;
 import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.config.SnowOwlConfiguration;
 import com.b2international.snowowl.core.domain.RepositoryContext;
+import com.b2international.snowowl.datastore.cdo.ICDOConnection;
+import com.b2international.snowowl.datastore.cdo.ICDOConnectionManager;
 import com.b2international.snowowl.datastore.server.EditingContextFactory;
 import com.b2international.snowowl.datastore.server.EditingContextFactoryProvider;
 import com.google.inject.Provider;
@@ -41,6 +43,9 @@ public final class DefaultRepositoryContext implements RepositoryContext {
 	public <T> T service(Class<T> type) {
 		if (EditingContextFactory.class.isAssignableFrom(type)) {
 			return type.cast(service(EditingContextFactoryProvider.class).get(id));
+		}
+		if (ICDOConnection.class.isAssignableFrom(type)) {
+			return type.cast(service(ICDOConnectionManager.class).getByUuid(id));
 		}
 		return serviceProvider.service(type);
 	}
