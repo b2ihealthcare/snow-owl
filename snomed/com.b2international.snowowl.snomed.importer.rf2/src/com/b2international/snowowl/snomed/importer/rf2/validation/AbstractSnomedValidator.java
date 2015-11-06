@@ -349,7 +349,7 @@ public abstract class AbstractSnomedValidator {
 	 * 
 	 * @param row the row where the ID can be found
 	 * @param componentIds the previously processed IDs
-	 * @param messages the {@code Set} where the not unique IDs are stored (may not be {@code null})
+	 * @param messages a collection where the not unique validation messages are stored (may not be {@code null})
 	 * @param lineNumber the number of the line
 	 */
 	public void validateComponentUnique(final List<String> row, final Map<String, List<String>> componentIds, final Collection<String> messages) {
