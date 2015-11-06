@@ -15,6 +15,10 @@
  */
 package com.b2international.snowowl.snomed.core.domain;
 
+import java.util.Map;
+
+import com.fasterxml.jackson.annotation.JsonAnyGetter;
+
 /**
  * @since 4.5
  */
@@ -33,5 +37,13 @@ public interface SnomedReferenceSetMember extends ISnomedComponent {
 	 * @return
 	 */
 	String getReferenceSetId();
+
+	/**
+	 * Returns special properties of the SNOMED CT Reference Set or an empty {@link Map} if none found.
+	 * 
+	 * @return
+	 */
+	@JsonAnyGetter
+	Map<String, Object> getProperties();
 
 }

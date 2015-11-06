@@ -16,11 +16,15 @@
 package com.b2international.snowowl.snomed.datastore.server.request;
 
 import com.b2international.snowowl.core.date.EffectiveTimes;
+import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
 import com.b2international.snowowl.snomed.core.domain.SnomedReferenceSetMember;
 import com.b2international.snowowl.snomed.datastore.index.refset.SnomedRefSetMemberIndexEntry;
 import com.b2international.snowowl.snomed.datastore.server.domain.SnomedReferenceSetMemberImpl;
+import com.b2international.snowowl.snomed.snomedrefset.SnomedQueryRefSetMember;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetMember;
+import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType;
 import com.google.common.base.Function;
+import com.google.common.collect.ImmutableMap;
 
 /**
  * @since 4.5
@@ -37,6 +41,10 @@ public class SnomedReferenceSetMemberConverter implements Function<SnomedRefSetM
 		member.setModuleId(input.getModuleId());
 		member.setReferencedComponentId(input.getReferencedComponentId());
 		member.setReferenceSetId(input.getRefSetIdentifierId());
+		if (SnomedRefSetType.QUERY == input.getRefSetType()) {
+			// in case of query type refset the actual ESCG query is stored in the specialFieldId prop 
+			member.setProperties(ImmutableMap.<String, Object>of(SnomedRf2Headers.FIELD_QUERY, input.getSpecialFieldId()));
+		}
 		return member;
 	}
 
@@ -49,6 +57,9 @@ public class SnomedReferenceSetMemberConverter implements Function<SnomedRefSetM
 		member.setModuleId(input.getModuleId());
 		member.setReferencedComponentId(input.getReferencedComponentId());
 		member.setReferenceSetId(input.getRefSetIdentifierId());
+		if (input instanceof SnomedQueryRefSetMember) {
+			member.setProperties(ImmutableMap.<String, Object>of(SnomedRf2Headers.FIELD_QUERY, ((SnomedQueryRefSetMember) input).getQuery()));
+		}
 		return member;
 	}
 

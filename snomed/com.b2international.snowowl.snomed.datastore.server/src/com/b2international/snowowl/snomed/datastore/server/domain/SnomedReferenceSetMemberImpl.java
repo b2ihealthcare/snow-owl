@@ -15,6 +15,8 @@
  */
 package com.b2international.snowowl.snomed.datastore.server.domain;
 
+import java.util.Map;
+
 import com.b2international.snowowl.snomed.core.domain.AbstractSnomedComponent;
 import com.b2international.snowowl.snomed.core.domain.SnomedReferenceSetMember;
 
@@ -25,6 +27,7 @@ public class SnomedReferenceSetMemberImpl extends AbstractSnomedComponent implem
 
 	private String referencedComponentId;
 	private String referenceSetId;
+	private Map<String, Object> properties;
 	
 	@Override
 	public String getReferencedComponentId() {
@@ -36,12 +39,21 @@ public class SnomedReferenceSetMemberImpl extends AbstractSnomedComponent implem
 		return referenceSetId;
 	}
 	
+	@Override
+	public Map<String, Object> getProperties() {
+		return properties;
+	}
+	
 	public void setReferencedComponentId(String referencedComponentId) {
 		this.referencedComponentId = referencedComponentId;
 	}
 	
 	public void setReferenceSetId(String referenceSetId) {
 		this.referenceSetId = referenceSetId;
+	}
+	
+	public void setProperties(Map<String, Object> properties) {
+		this.properties = properties;
 	}
 
 }
