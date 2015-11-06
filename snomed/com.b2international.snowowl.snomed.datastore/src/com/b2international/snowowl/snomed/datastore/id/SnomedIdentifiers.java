@@ -119,7 +119,12 @@ public class SnomedIdentifiers {
 	 * @return
 	 */
 	public static int getComponentIdentifier(String componentId) {
-		return Character.getNumericValue(componentId.charAt(componentId.length() - 2));
+		final char ciChar = componentId.charAt(componentId.length() - 2);
+		final int ci = Character.digit(ciChar, 10);
+		if (ci == -1) {
+			throw new IllegalArgumentException("Invalid component identifier " + ciChar);
+		}
+		return ci;
 	}
 	
 	/**
