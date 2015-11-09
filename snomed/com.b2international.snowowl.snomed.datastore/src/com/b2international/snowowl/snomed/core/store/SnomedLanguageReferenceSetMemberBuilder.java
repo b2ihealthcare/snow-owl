@@ -30,7 +30,7 @@ public final class SnomedLanguageReferenceSetMemberBuilder
 
 	private Acceptability acceptability = Acceptability.ACCEPTABLE;
 
-	protected SnomedLanguageReferenceSetMemberBuilder() {
+	SnomedLanguageReferenceSetMemberBuilder() {
 		super(ComponentCategory.SET_MEMBER);
 	}
 

@@ -22,9 +22,9 @@ import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetMember;
 /**
  * @since 4.5
  */
-public class SnomedSimpleReferenceSetMemberBuilder extends SnomedMemberBuilder<SnomedSimpleReferenceSetMemberBuilder, SnomedRefSetMember> {
+public final class SnomedSimpleReferenceSetMemberBuilder extends SnomedMemberBuilder<SnomedSimpleReferenceSetMemberBuilder, SnomedRefSetMember> {
 
-	protected SnomedSimpleReferenceSetMemberBuilder() {
+	SnomedSimpleReferenceSetMemberBuilder() {
 		super(ComponentCategory.SET_MEMBER);
 	}
 

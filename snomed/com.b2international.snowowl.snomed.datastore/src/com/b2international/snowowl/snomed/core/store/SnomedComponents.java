@@ -76,4 +76,13 @@ public class SnomedComponents {
 		return new SnomedSimpleReferenceSetMemberBuilder();
 	}
 
+	/**
+	 * Creates and returns a new {@link SnomedQueryReferenceSetMemberBuilder SNOMED CT Query Reference set member builder}.
+	 * 
+	 * @return
+	 */
+	public static SnomedQueryReferenceSetMemberBuilder newQueryMember() {
+		return new SnomedQueryReferenceSetMemberBuilder();
+	}
+
 }
