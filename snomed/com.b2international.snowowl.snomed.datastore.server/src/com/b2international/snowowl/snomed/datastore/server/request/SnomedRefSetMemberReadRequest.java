@@ -38,7 +38,7 @@ class SnomedRefSetMemberReadRequest extends SnomedRefSetMemberRequest<BranchCont
 		if (member == null) {
 			throw new ComponentNotFoundException("Reference Set Member", componentId);
 		} else {
-			return new SnomedReferenceSetMemberConverter(context).apply(member);
+			return new SnomedReferenceSetMemberConverter().apply(member);
 		}
 	}
 	
