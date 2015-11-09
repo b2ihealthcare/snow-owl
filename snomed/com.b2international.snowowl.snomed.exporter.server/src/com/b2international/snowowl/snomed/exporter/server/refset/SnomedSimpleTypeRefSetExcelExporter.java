@@ -35,11 +35,8 @@ import org.eclipse.emf.cdo.common.id.CDOID;
 import org.eclipse.net4j.util.om.monitor.OMMonitor;
 import org.eclipse.net4j.util.om.monitor.OMMonitor.Async;
 
-import bak.pcj.set.LongSet;
-
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.api.IBranchPath;
-import com.b2international.snowowl.core.api.IComponentNameProvider;
 import com.b2international.snowowl.datastore.CDOEditingContext;
 import com.b2international.snowowl.datastore.cdo.CDOIDUtils;
 import com.b2international.snowowl.datastore.server.importer.AbstractTerminologyExporter;
@@ -52,11 +49,13 @@ import com.b2international.snowowl.snomed.datastore.SnomedEditingContext;
 import com.b2international.snowowl.snomed.datastore.SnomedRefSetBrowser;
 import com.b2international.snowowl.snomed.datastore.index.refset.SnomedRefSetMemberIndexEntry;
 import com.b2international.snowowl.snomed.datastore.services.ISnomedComponentService;
-import com.b2international.snowowl.snomed.datastore.services.SnomedConceptNameProvider;
+import com.b2international.snowowl.snomed.datastore.services.ISnomedConceptNameProvider;
 import com.b2international.snowowl.snomed.datastore.services.SnomedRefSetMembershipLookupService;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
+
+import bak.pcj.set.LongSet;
 
 /**
  * Exporter class to export simple type reference sets to Excel format where the 
@@ -76,7 +75,6 @@ public class SnomedSimpleTypeRefSetExcelExporter extends AbstractTerminologyExpo
 	private final SnomedRefSetBrowser browser;
 	private final SnomedConceptLookupService lookupService;
 	private final SnomedRefSetMembershipLookupService memberLookupService;
-	private final IComponentNameProvider nameProvider = SnomedConceptNameProvider.INSTANCE;
 	
 	private final CellStyle DEFAULT_STYLE;
 	private final CellStyle BOLD_STYLE;
@@ -180,7 +178,7 @@ public class SnomedSimpleTypeRefSetExcelExporter extends AbstractTerminologyExpo
 		
 		try {
 			
-			final String refSetLabel = formatSheetName(nameProvider.getComponentLabel(getBranchPath(), refSetId));
+			final String refSetLabel = formatSheetName(ApplicationContext.getServiceForClass(ISnomedConceptNameProvider.class).getComponentLabel(getBranchPath(), refSetId));
 			final Sheet sheet = workbook.createSheet(refSetLabel);
 			
 			async = monitor.forkAsync(70);

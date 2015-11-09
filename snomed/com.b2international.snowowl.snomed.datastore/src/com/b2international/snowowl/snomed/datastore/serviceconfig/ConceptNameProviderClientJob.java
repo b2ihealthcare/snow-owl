@@ -13,18 +13,23 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.snomed.datastore.server;
+package com.b2international.snowowl.snomed.datastore.serviceconfig;
 
-import com.b2international.snowowl.datastore.server.index.AbstractIndexNameProvider;
-import com.b2international.snowowl.snomed.datastore.index.SnomedIndexService;
+import com.b2international.snowowl.datastore.serviceconfig.AbstractClientServiceConfigJob;
+import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 import com.b2international.snowowl.snomed.datastore.services.ISnomedConceptNameProvider;
 
 /**
- * Component name provider implementation for SNOMED CT concepts.
+ * Configuration job to initialize and register the SNOMED CT concept name provider on the client side.
  */
-public class SnomedConceptNameProvider extends AbstractIndexNameProvider implements ISnomedConceptNameProvider {
+public class ConceptNameProviderClientJob extends AbstractClientServiceConfigJob<ISnomedConceptNameProvider> {
 
-	public SnomedConceptNameProvider(SnomedIndexService service) {
-		super(service);
+	public ConceptNameProviderClientJob() {
+		super("SNOMED CT concept name provider client service configuration...", SnomedDatastoreActivator.PLUGIN_ID);
+	}
+
+	@Override
+	protected Class<ISnomedConceptNameProvider> getServiceClass() {
+		return ISnomedConceptNameProvider.class;
 	}
 }

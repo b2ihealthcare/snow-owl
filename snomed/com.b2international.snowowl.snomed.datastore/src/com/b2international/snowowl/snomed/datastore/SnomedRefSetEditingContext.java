@@ -42,6 +42,7 @@ import com.b2international.snowowl.core.api.IComponentNameProvider;
 import com.b2international.snowowl.core.api.ILookupService;
 import com.b2international.snowowl.core.terminology.ComponentCategory;
 import com.b2international.snowowl.datastore.BranchPathUtils;
+import com.b2international.snowowl.datastore.CdoViewComponentTextProvider;
 import com.b2international.snowowl.datastore.cdo.CDOUtils;
 import com.b2international.snowowl.datastore.utils.ComponentUtils2;
 import com.b2international.snowowl.snomed.Component;
@@ -52,7 +53,7 @@ import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.snomed.core.store.SnomedComponents;
 import com.b2international.snowowl.snomed.datastore.services.IClientSnomedComponentService;
-import com.b2international.snowowl.snomed.datastore.services.SnomedConceptNameProvider;
+import com.b2international.snowowl.snomed.datastore.services.ISnomedConceptNameProvider;
 import com.b2international.snowowl.snomed.datastore.services.SnomedModuleDependencyRefSetService;
 import com.b2international.snowowl.snomed.snomedrefset.DataType;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedAssociationRefSetMember;
@@ -111,6 +112,8 @@ public class SnomedRefSetEditingContext extends BaseSnomedEditingContext {
 			.build();
 	
 	protected final SnomedEditingContext snomedEditingContext;
+
+	private final CdoViewComponentTextProvider transactionTextProvider;
 
 	/**
 	 * Creates and returns a reference set based on the given values.
@@ -197,6 +200,7 @@ public class SnomedRefSetEditingContext extends BaseSnomedEditingContext {
 	/*default*/ SnomedRefSetEditingContext(final SnomedEditingContext snomedEditingContext) {
 		super(snomedEditingContext.getTransaction());
 		this.snomedEditingContext = snomedEditingContext;
+		this.transactionTextProvider = new CdoViewComponentTextProvider(ApplicationContext.getServiceForClass(ISnomedConceptNameProvider.class), snomedEditingContext.getTransaction());
 	}
 
 	public SnomedEditingContext getSnomedEditingContext() {
@@ -585,10 +589,10 @@ public class SnomedRefSetEditingContext extends BaseSnomedEditingContext {
 				}
 			}
 			
-			return SnomedConceptNameProvider.INSTANCE.getText(relationship.getType().getId(), transaction);
+			return transactionTextProvider.getText(relationship.getType().getId());
 		}
 			
-		return SnomedConceptNameProvider.INSTANCE.getText(relationshipMini.getAttributeId(), transaction);
+		return transactionTextProvider.getText(relationshipMini.getAttributeId());
 	}
 	
 	/**

@@ -75,8 +75,8 @@ import com.b2international.snowowl.snomed.datastore.filteredrefset.IRefSetMember
 import com.b2international.snowowl.snomed.datastore.index.SnomedConceptReducedQueryAdapter;
 import com.b2international.snowowl.snomed.datastore.index.SnomedIndexService;
 import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedMappings;
-import com.b2international.snowowl.snomed.datastore.services.SnomedRefSetMemberNameProvider;
-import com.b2international.snowowl.snomed.datastore.services.SnomedRelationshipNameProvider;
+import com.b2international.snowowl.snomed.datastore.services.ISnomedRelationshipNameProvider;
+import com.b2international.snowowl.snomed.refset.core.services.SnomedRefSetMemberNameProvider;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.ImmutableList;
@@ -538,7 +538,7 @@ public class SnomedServerTerminologyBrowser extends AbstractIndexTerminologyBrow
 				final short terminologyComponentId = types.get(0).shortValue();
 				if (null == label) {
 					if (SnomedTerminologyComponentConstants.RELATIONSHIP_NUMBER == terminologyComponentId) {
-						label = SnomedRelationshipNameProvider.INSTANCE.getComponentLabel(branchPath, id);
+						label = ApplicationContext.getServiceForClass(ISnomedRelationshipNameProvider.class).getComponentLabel(branchPath, id);
 					}
 				}
 				return new ExtendedComponentImpl(

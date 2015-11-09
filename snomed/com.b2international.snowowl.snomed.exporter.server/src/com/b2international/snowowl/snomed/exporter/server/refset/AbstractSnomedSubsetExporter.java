@@ -26,7 +26,7 @@ import com.b2international.snowowl.snomed.datastore.SnomedRefSetLookupService;
 import com.b2international.snowowl.snomed.datastore.index.SnomedClientIndexService;
 import com.b2international.snowowl.snomed.datastore.index.refset.SnomedRefSetIndexEntry;
 import com.b2international.snowowl.snomed.datastore.index.refset.SnomedRefSetIndexQueryAdapter;
-import com.b2international.snowowl.snomed.datastore.services.SnomedConceptNameProvider;
+import com.b2international.snowowl.snomed.datastore.services.ISnomedConceptNameProvider;
 import com.b2international.snowowl.snomed.exporter.server.SnomedRf1Exporter;
 import com.b2international.snowowl.snomed.exporter.server.SnomedRfFileNameBuilder;
 import com.b2international.snowowl.snomed.exporter.server.sandbox.SnomedExportConfiguration;
@@ -81,7 +81,7 @@ public abstract class AbstractSnomedSubsetExporter implements SnomedRf1Exporter 
 		this.configuration = configuration;
 		this.refSetId = refSetId;
 		referencedComponentType = getReferencedComponentType(refSetId);
-		label = SnomedConceptNameProvider.INSTANCE.getComponentLabel(getBranchPath(), refSetId);
+		label = ApplicationContext.getServiceForClass(ISnomedConceptNameProvider.class).getComponentLabel(getBranchPath(), refSetId);
 		if (isLanguageType(refSetId)) {
 			folderName = "Language-" + getLanguageCode(refSetId);
 		} else {

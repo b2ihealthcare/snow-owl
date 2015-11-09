@@ -31,18 +31,20 @@ import org.eclipse.emf.cdo.CDOState;
 import org.eclipse.emf.cdo.common.id.CDOIDUtil;
 import org.eclipse.emf.cdo.view.CDOView;
 
+import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.CoreTerminologyBroker;
 import com.b2international.snowowl.core.api.IComponent;
 import com.b2international.snowowl.core.api.ILookupService;
 import com.b2international.snowowl.core.api.IStatement;
 import com.b2international.snowowl.datastore.BranchPathUtils;
+import com.b2international.snowowl.datastore.CdoViewComponentTextProvider;
 import com.b2international.snowowl.datastore.utils.ComponentUtils2;
 import com.b2international.snowowl.snomed.Relationship;
 import com.b2international.snowowl.snomed.SnomedConstants;
 import com.b2international.snowowl.snomed.SnomedPackage;
 import com.b2international.snowowl.snomed.datastore.SnomedRefSetLookupService;
 import com.b2international.snowowl.snomed.datastore.SnomedRefSetUtil;
-import com.b2international.snowowl.snomed.datastore.services.SnomedConceptNameProvider;
+import com.b2international.snowowl.snomed.datastore.services.ISnomedConceptNameProvider;
 import com.b2international.snowowl.snomed.snomedrefset.DataType;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedConcreteDataTypeRefSet;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedConcreteDataTypeRefSetMember;
@@ -337,8 +339,9 @@ public class SnomedConcreteDataTypeRefSetMemberIndexEntry extends SnomedRefSetMe
 				final IComponent<String> component = service.getComponent(BranchPathUtils.createActivePath(SnomedPackage.eINSTANCE), referencedComponentId);
 				//look into the lightweight store
 				if (component instanceof IStatement) {
+					// FIXME: Used active branch path through name provider?
 					final IStatement<?> statement = castToStatement(component);
-					return SnomedConceptNameProvider.INSTANCE.getText(statement.getAttributeId());
+					return ApplicationContext.getServiceForClass(ISnomedConceptNameProvider.class).getComponentLabel(BranchPathUtils.createActivePath(SnomedPackage.eINSTANCE), (String) statement.getAttributeId());
 					//if we found the relationship type's preferred term
 				}
 				//else look into the CDO
@@ -359,7 +362,7 @@ public class SnomedConcreteDataTypeRefSetMemberIndexEntry extends SnomedRefSetMe
 				if (null == conceptId)
 					conceptId = referencedComponentId;
 				
-				return SnomedConceptNameProvider.INSTANCE.getText(conceptId, member.cdoView());
+				return new CdoViewComponentTextProvider(ApplicationContext.getServiceForClass(ISnomedConceptNameProvider.class), member.cdoView()).getText(conceptId);
 			default:
 				throw new IllegalArgumentException("Illegal referenced component identifier. ID: " + referencedComponentId);
 		}

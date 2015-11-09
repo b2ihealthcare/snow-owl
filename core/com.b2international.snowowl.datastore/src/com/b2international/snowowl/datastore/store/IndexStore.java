@@ -25,10 +25,21 @@ import java.util.List;
 
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.Field;
+import org.apache.lucene.document.StoredField;
 import org.apache.lucene.document.StringField;
 import org.apache.lucene.index.Term;
 import org.apache.lucene.search.BooleanClause.Occur;
-import org.apache.lucene.search.*;
+import org.apache.lucene.search.BooleanQuery;
+import org.apache.lucene.search.IndexSearcher;
+import org.apache.lucene.search.MatchAllDocsQuery;
+import org.apache.lucene.search.PrefixQuery;
+import org.apache.lucene.search.Query;
+import org.apache.lucene.search.ScoreDoc;
+import org.apache.lucene.search.Sort;
+import org.apache.lucene.search.TermQuery;
+import org.apache.lucene.search.TermRangeQuery;
+import org.apache.lucene.search.TopDocs;
+import org.apache.lucene.search.TotalHitCountCollector;
 import org.apache.lucene.util.BytesRef;
 
 import com.b2international.commons.ReflectionUtils;
@@ -211,7 +222,7 @@ public class IndexStore<T> extends SingleDirectoryIndexImpl implements Store<T> 
 	private Document createDoc(String key, T value) throws IOException {
 		final Document doc = new Document();
 		doc.add(new StringField(ID_FIELD, key, Field.Store.NO));
-		doc.add(new StringField(SOURCE_FIELD, serialize(value), Field.Store.YES));
+		doc.add(new StoredField(SOURCE_FIELD, serialize(value)));
 		for (String property : newHashSet(this.additionalSearchableFields)) {
 			doc.add(new StringField(property, String.valueOf(ReflectionUtils.getGetterValue(value, property)), Field.Store.NO));
 		}

@@ -64,9 +64,11 @@ import org.eclipse.emf.spi.cdo.CDOStore;
 
 import com.b2international.commons.ChangeKind;
 import com.b2international.commons.Pair;
+import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.CoreTerminologyBroker;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.api.IHistoryInfoDetails;
+import com.b2international.snowowl.datastore.BranchPathUtils;
 import com.b2international.snowowl.datastore.cdo.CDOUtils;
 import com.b2international.snowowl.datastore.history.HistoryInfoDetails;
 import com.b2international.snowowl.datastore.server.history.AbstractHistoryInfoDetailsBuilder;
@@ -75,9 +77,8 @@ import com.b2international.snowowl.snomed.Description;
 import com.b2international.snowowl.snomed.Relationship;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
-import com.b2international.snowowl.snomed.datastore.SnomedConceptLabelProviderService;
-import com.b2international.snowowl.snomed.datastore.SnomedDescriptionLabelProviderService;
-import com.b2international.snowowl.snomed.datastore.services.SnomedConceptNameProvider;
+import com.b2international.snowowl.snomed.datastore.services.ISnomedConceptNameProvider;
+import com.b2international.snowowl.snomed.datastore.services.ISnomedDescriptionNameProvider;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedAttributeValueRefSetMember;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedComplexMapRefSetMember;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedConcreteDataTypeRefSetMember;
@@ -289,7 +290,7 @@ public class SnomedConceptHistoryInfoDetailsBuilder extends AbstractHistoryInfoD
 						getReferencedComponentLabel((SnomedRefSetMember) changedObject)).toString();
 			} else if (DESCRIPTION_FORMAT_FEATURE_NAME.equals(featureName)) {
 				return appendDescription(builder, getFeatureMapping().get(featureName), 
-						SnomedConceptNameProvider.INSTANCE.getText(String.valueOf(featureValue), changedObject.cdoView()), 
+						getConceptNameProvider().getComponentLabel(BranchPathUtils.createPath(changedObject.cdoView()), String.valueOf(featureValue)), 
 						getReferencedComponentLabel((SnomedRefSetMember) changedObject)).toString();
 			} else if (STATUS_FEATURE_NAME.equals(featureName)) {
 				return appendDescription(builder, getFeatureMapping().get(featureName), getBooleanValue(featureValue), 
@@ -302,11 +303,11 @@ public class SnomedConceptHistoryInfoDetailsBuilder extends AbstractHistoryInfoD
 				return getPublishedChange(featureName, builder, getReferencedComponentLabel((SnomedRefSetMember) changedObject), featureValue);
 			} else if (VALUE_ID_FEATURE_NAME.equals(featureName)) {
 				return appendDescription(builder, getFeatureMapping().get(featureName), 
-						SnomedConceptNameProvider.INSTANCE.getText(String.valueOf(featureValue), changedObject.cdoView()), 
+						getConceptNameProvider().getComponentLabel(BranchPathUtils.createPath(changedObject.cdoView()), String.valueOf(featureValue)), 
 						getReferencedComponentLabel((SnomedRefSetMember) changedObject)).toString();
 			} else if (MODULE_ID_FEATURE_NAME.equals(featureName)) {
 				return appendDescription(builder, getFeatureMapping().get(featureName), 
-						SnomedConceptNameProvider.INSTANCE.getText(String.valueOf(featureValue), changedObject.cdoView()), 
+						getConceptNameProvider().getComponentLabel(BranchPathUtils.createPath(changedObject.cdoView()), String.valueOf(featureValue)), 
 						getReferencedComponentLabel((SnomedRefSetMember) changedObject)).toString();
 			} else if (SOURCE_EFFECTIVE_TIME_FEATURE_NAME.equals(featureName)) {
 				return appendDescription(builder, getFeatureMapping().get(featureName), 
@@ -329,12 +330,12 @@ public class SnomedConceptHistoryInfoDetailsBuilder extends AbstractHistoryInfoD
 			
 		} else if (changedObject instanceof SnomedMappingRefSet) {
 			if (MAP_TARGET_TYPE_FEATURE_NAME.equals(featureName)) {
-				final String label = SnomedConceptNameProvider.INSTANCE.getText(((SnomedMappingRefSet) changedObject).getIdentifierId());
+				final String label = getConceptNameProvider().getComponentLabel(BranchPathUtils.createPath(changedObject.cdoView()), ((SnomedMappingRefSet) changedObject).getIdentifierId());
 				return appendDescription(builder, getFeatureMapping().get(featureName), getTerminologyComponentName(featureValue), label).toString();
 			}
 		} else if (changedObject instanceof SnomedRefSet) {
 			if (RELEASED_FEATURE_NAME.equals(featureName)) {
-				final String label = SnomedConceptNameProvider.INSTANCE.getText(((SnomedRefSet) changedObject).getIdentifierId());
+				final String label = getConceptNameProvider().getComponentLabel(BranchPathUtils.createPath(changedObject.cdoView()), ((SnomedRefSet) changedObject).getIdentifierId());
 				return getPublishedChange(featureName, builder, label, featureValue);
 			}
 		}
@@ -448,11 +449,15 @@ public class SnomedConceptHistoryInfoDetailsBuilder extends AbstractHistoryInfoD
 		builder.append(" " + String.valueOf(cdtMember.getSerializedValue()));
 		final String uomComponentId = cdtMember.getUomComponentId();
 		if (null != uomComponentId) {
-			builder.append(" " + SnomedConceptNameProvider.INSTANCE.getText(uomComponentId, cdtMember.cdoView()));
+			builder.append(" " + getConceptNameProvider().getComponentLabel(BranchPathUtils.createPath(cdtMember.cdoView()), uomComponentId));
 		}
 		return builder.toString();
 	}
 	
+	private ISnomedConceptNameProvider getConceptNameProvider() {
+		return ApplicationContext.getServiceForClass(ISnomedConceptNameProvider.class);
+	}
+
 	private String getComponent(final CDOObject cdoObject) {
 		if (isPtLanguageMember(cdoObject)) { //act as a concept change if the PT changed
 			return CoreTerminologyBroker.getInstance().getComponentInformation(SnomedTerminologyComponentConstants.CONCEPT_NUMBER).getName();
@@ -549,7 +554,7 @@ public class SnomedConceptHistoryInfoDetailsBuilder extends AbstractHistoryInfoD
 	}
 
 	private String getPreferredTerm(final IBranchPath branchPath, final String id) {
-		return getServiceForClass(SnomedConceptLabelProviderService.class).getLabel(branchPath, id);
+		return getServiceForClass(ISnomedConceptNameProvider.class).getComponentLabel(branchPath, id);
 	}
 	
 	private String getReferencedComponentLabel(final SnomedRefSetMember member) {
@@ -563,7 +568,7 @@ public class SnomedConceptHistoryInfoDetailsBuilder extends AbstractHistoryInfoD
 			case SnomedTerminologyComponentConstants.REFSET_MEMBER_NUMBER:
 				return getPreferredTerm(branchPath, id);
 			case SnomedTerminologyComponentConstants.DESCRIPTION_NUMBER: //$FALL-THROUGH$
-				return getServiceForClass(SnomedDescriptionLabelProviderService.class).getLabel(branchPath, id);
+				return getServiceForClass(ISnomedDescriptionNameProvider.class).getComponentLabel(branchPath, id);
 			case SnomedTerminologyComponentConstants.RELATIONSHIP_NUMBER:
 				final String terminologyComponentId = CoreTerminologyBroker.getInstance().getTerminologyComponentId(referencedComponentType);
 				return CoreTerminologyBroker.getInstance().getNameProviderFactory(terminologyComponentId).getNameProvider().getComponentLabel(createPath(member), id);

@@ -39,8 +39,8 @@ import com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserCo
 import com.b2international.snowowl.snomed.datastore.index.SnomedIndexService;
 import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedMappings;
 import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedQueryBuilder;
-import com.b2international.snowowl.snomed.datastore.services.SnomedConceptNameProvider;
-import com.b2international.snowowl.snomed.datastore.services.SnomedRelationshipNameProvider;
+import com.b2international.snowowl.snomed.datastore.services.ISnomedConceptNameProvider;
+import com.b2international.snowowl.snomed.datastore.services.ISnomedRelationshipNameProvider;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Lists;
 
@@ -83,9 +83,9 @@ public class SnomedConceptUngroupedRelationshipConstraint extends ComponentValid
 				int relationshipGroup = doc.getField(SnomedIndexBrowserConstants.RELATIONSHIP_GROUP).numericValue().intValue();
 				if (relationshipGroup != 0) {
 					final long relationshipTypeId = SnomedMappings.relationshipType().getValue(doc);
-					final String relationshipTypeLabel = SnomedConceptNameProvider.INSTANCE.getText(String.valueOf(relationshipTypeId));
+					final String relationshipTypeLabel = ApplicationContext.getServiceForClass(ISnomedConceptNameProvider.class).getComponentLabel(branchPath, String.valueOf(relationshipTypeId));
 					final String relationshipId = SnomedMappings.id().getValueAsString(doc);
-					final String relationshipLabel = SnomedRelationshipNameProvider.INSTANCE.getText(relationshipId);
+					final String relationshipLabel = ApplicationContext.getServiceForClass(ISnomedRelationshipNameProvider.class).getComponentLabel(branchPath, relationshipId);
 					final String errorMessage = "'" + component.getLabel() + "' has a grouped relationship '" + relationshipLabel 
 							+ "' of the type '" + relationshipTypeLabel + "' that must always be ungrouped.";
 					diagnostics.add(new ComponentValidationDiagnosticImpl(component.getId(), errorMessage, ID, SnomedTerminologyComponentConstants.CONCEPT_NUMBER, error()));

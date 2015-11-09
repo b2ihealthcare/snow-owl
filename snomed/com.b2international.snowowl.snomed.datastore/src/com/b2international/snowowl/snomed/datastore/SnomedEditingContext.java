@@ -94,6 +94,7 @@ import com.b2international.snowowl.snomed.Relationship;
 import com.b2international.snowowl.snomed.SnomedConstants;
 import com.b2international.snowowl.snomed.SnomedFactory;
 import com.b2international.snowowl.snomed.SnomedPackage;
+import com.b2international.snowowl.snomed.core.store.SnomedComponentBuilder;
 import com.b2international.snowowl.snomed.datastore.NormalFormWrapper.AttributeConceptGroupWrapper;
 import com.b2international.snowowl.snomed.datastore.id.ISnomedIdentifierService;
 import com.b2international.snowowl.snomed.datastore.id.SnomedIdentifier;
@@ -106,9 +107,10 @@ import com.b2international.snowowl.snomed.datastore.index.SnomedDescriptionReduc
 import com.b2international.snowowl.snomed.datastore.index.refset.SnomedRefSetMemberIndexEntry;
 import com.b2international.snowowl.snomed.datastore.services.IClientSnomedComponentService;
 import com.b2international.snowowl.snomed.datastore.services.ISnomedComponentService;
+import com.b2international.snowowl.snomed.datastore.services.ISnomedConceptNameProvider;
+import com.b2international.snowowl.snomed.datastore.services.ISnomedRelationshipNameProvider;
 import com.b2international.snowowl.snomed.datastore.services.SnomedModuleDependencyRefSetService;
 import com.b2international.snowowl.snomed.datastore.services.SnomedRefSetMembershipLookupService;
-import com.b2international.snowowl.snomed.datastore.services.SnomedRelationshipNameProvider;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedLanguageRefSetMember;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedMappingRefSet;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSet;
@@ -1318,12 +1320,11 @@ public class SnomedEditingContext extends BaseSnomedEditingContext {
 	private String toString(final Component component) {
 		final String id = getAttribute(component, SnomedPackage.eINSTANCE.getComponent_Id(), String.class);
 		if (component instanceof Concept) {
-			final SnomedConceptLabelProviderService conceptLabelProviderService = getServiceForClass(SnomedConceptLabelProviderService.class);
-			return conceptLabelProviderService.getLabel(createPath(component), id);
+			return getServiceForClass(ISnomedConceptNameProvider.class).getComponentLabel(createPath(component), id);
 		} else if (component instanceof Description) {
 			return getAttribute(component, SnomedPackage.eINSTANCE.getDescription_Term(), String.class);
 		} else if (component instanceof Relationship) {
-			return SnomedRelationshipNameProvider.INSTANCE.getComponentLabel(createPath(component), id); 
+			return getServiceForClass(ISnomedRelationshipNameProvider.class).getComponentLabel(createPath(component), id); 
 		} else {
 			return id;
 		}

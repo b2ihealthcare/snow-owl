@@ -51,7 +51,7 @@ import com.b2international.snowowl.snomed.datastore.index.SnomedDOIQueryAdapter;
 import com.b2international.snowowl.snomed.datastore.index.SnomedFuzzyQueryAdapter;
 import com.b2international.snowowl.snomed.datastore.index.SnomedIndexService;
 import com.b2international.snowowl.snomed.datastore.quicksearch.SnomedConceptQuickSearchProvider;
-import com.b2international.snowowl.snomed.datastore.services.SnomedConceptNameProvider;
+import com.b2international.snowowl.snomed.datastore.services.ISnomedConceptNameProvider;
 import com.google.common.base.Function;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Supplier;
@@ -96,7 +96,7 @@ public class SnomedConceptQuickSearchContentProvider extends AbstractQuickSearch
 
 		private String getLabel(final String componentId) {
 			// TODO: this will be driven by the user's language preferences
-			return SnomedConceptNameProvider.INSTANCE.getComponentLabel(branchPath, componentId);
+			return ApplicationContext.getServiceForClass(ISnomedConceptNameProvider.class).getComponentLabel(branchPath, componentId);
 		}
 	}
 

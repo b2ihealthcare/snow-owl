@@ -20,7 +20,6 @@ import static com.b2international.snowowl.core.ApplicationContext.getServiceForC
 import static com.b2international.snowowl.datastore.cdo.CDOUtils.NO_STORAGE_KEY;
 import static com.b2international.snowowl.snomed.SnomedConstants.Concepts.ROOT_CONCEPT;
 import static com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants.CONCEPT_NUMBER;
-import static com.b2international.snowowl.snomed.datastore.services.SnomedConceptNameProvider.INSTANCE;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Predicates.and;
 import static com.google.common.base.Predicates.not;
@@ -41,6 +40,7 @@ import com.b2international.snowowl.datastore.version.NodeDiffPredicate;
 import com.b2international.snowowl.snomed.datastore.SnomedConceptIconIdProvider;
 import com.b2international.snowowl.snomed.datastore.SnomedTerminologyBrowser;
 import com.b2international.snowowl.snomed.datastore.index.SnomedCachingSuperTypeIdProvider;
+import com.b2international.snowowl.snomed.datastore.services.ISnomedConceptNameProvider;
 import com.google.common.base.Predicate;
 
 /**
@@ -79,7 +79,7 @@ public class SnomedVersionCompareHierarchyBuilder extends VersionCompareHierarch
 	
 	@Override
 	protected IComponentNameProvider getNameProvider() {
-		return INSTANCE;
+		return getServiceForClass(ISnomedConceptNameProvider.class);
 	}
 	
 	@Override

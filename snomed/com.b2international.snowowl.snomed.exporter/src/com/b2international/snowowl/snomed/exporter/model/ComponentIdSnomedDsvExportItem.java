@@ -18,7 +18,10 @@ package com.b2international.snowowl.snomed.exporter.model;
 import java.io.DataOutputStream;
 import java.io.IOException;
 
-import com.b2international.snowowl.snomed.datastore.services.SnomedConceptNameProvider;
+import com.b2international.snowowl.core.ApplicationContext;
+import com.b2international.snowowl.datastore.BranchPathUtils;
+import com.b2international.snowowl.snomed.SnomedPackage;
+import com.b2international.snowowl.snomed.datastore.services.ISnomedConceptNameProvider;
 
 /**
  * 
@@ -50,6 +53,8 @@ public class ComponentIdSnomedDsvExportItem extends AbstractSnomedDsvExportItem 
 	 */
 	@Override
 	public String getDisplayName() {
-		return SnomedConceptNameProvider.INSTANCE.getText(String.valueOf(getComponentId()));
+		// FIXME: Any way to get to the branch path here?
+		return ApplicationContext.getServiceForClass(ISnomedConceptNameProvider.class)
+				.getComponentLabel(BranchPathUtils.createActivePath(SnomedPackage.eINSTANCE), String.valueOf(getComponentId()));
 	}
 }

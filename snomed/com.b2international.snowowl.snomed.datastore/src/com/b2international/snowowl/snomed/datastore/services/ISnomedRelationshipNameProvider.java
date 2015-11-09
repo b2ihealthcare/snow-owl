@@ -15,17 +15,11 @@
  */
 package com.b2international.snowowl.snomed.datastore.services;
 
-import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.api.IComponentNameProvider;
-import com.b2international.snowowl.core.api.INameProviderFactory;
 
 /**
- * Name provider factory implementation for SNOMED CT descriptions. 
+ * Marker interface for the SNOMED CT relationship name provider.
  */
-public class SnomedDescriptionNameProviderFactory implements INameProviderFactory {
-
-	@Override
-	public IComponentNameProvider getNameProvider() {
-		return ApplicationContext.getServiceForClass(ISnomedDescriptionNameProvider.class);
-	}
+public interface ISnomedRelationshipNameProvider extends IComponentNameProvider {
+	// Empty interface body
 }

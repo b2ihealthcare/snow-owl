@@ -15,9 +15,6 @@
  */
 package com.b2international.snowowl.snomed.datastore.factory;
 
-import org.eclipse.emf.cdo.transaction.CDOTransaction;
-
-import com.b2international.commons.StringUtils;
 import com.b2international.commons.TypeSafeAdapterFactory;
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.CoreTerminologyBroker;
@@ -30,7 +27,6 @@ import com.b2international.snowowl.snomed.datastore.SnomedClientRefSetBrowser;
 import com.b2international.snowowl.snomed.datastore.SnomedConceptLookupService;
 import com.b2international.snowowl.snomed.datastore.SnomedIconProvider;
 import com.b2international.snowowl.snomed.datastore.index.refset.SnomedRefSetIndexEntry;
-import com.b2international.snowowl.snomed.datastore.services.SnomedConceptNameProvider;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSet;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetPackage;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedStructuralRefSet;
@@ -91,16 +87,17 @@ public class SnomedRefSetAdapterFactory extends TypeSafeAdapterFactory {
 		if (null != component)
 			label = component.getLabel();
 		if (null == label) {
-			//TODO refactor this. we can fix read only exception, because no PT is created for the reference set identifier concept. 
-			final Object cdoObject = CoreTerminologyBroker.getInstance().getLookupService(SnomedTerminologyComponentConstants.CONCEPT).getComponent(refSet.getIdentifierId(), refSet.cdoView());
-			label = SnomedConceptNameProvider.INSTANCE.getText(cdoObject);
-			if (StringUtils.isEmpty(label)) {
-				if (refSet.cdoView() instanceof CDOTransaction) {
-					label = SnomedConceptNameProvider.INSTANCE.getText(refSet.getIdentifierId(), (CDOTransaction) refSet.cdoView());
-					if (null == label)
-						label = id;
-				}
-			}
+			// TODO: refactor this. we can fix read only exception, because no PT is created for the reference set identifier concept.
+//			 
+//			final Object cdoObject = CoreTerminologyBroker.getInstance().getLookupService(SnomedTerminologyComponentConstants.CONCEPT).getComponent(refSet.getIdentifierId(), refSet.cdoView());
+//			label = SnomedConceptNameProvider.INSTANCE.getText(cdoObject);
+//			if (StringUtils.isEmpty(label)) {
+//				if (refSet.cdoView() instanceof CDOTransaction) {
+//					label = SnomedConceptNameProvider.INSTANCE.getText(refSet.getIdentifierId(), (CDOTransaction) refSet.cdoView());
+//					if (null == label)
+//						label = id;
+//				}
+//			}
 			return label;
 		}
 		return label;

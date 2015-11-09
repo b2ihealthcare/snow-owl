@@ -17,7 +17,6 @@ package com.b2international.snowowl.snomed.refset.core.services;
 
 import com.b2international.snowowl.core.api.IComponentNameProvider;
 import com.b2international.snowowl.core.api.INameProviderFactory;
-import com.b2international.snowowl.snomed.datastore.services.SnomedRefSetMemberNameProvider;
 
 /**
  * Factory for retrieving SNOMED CT reference set member {@link IComponentNameProvider label provider} instances.

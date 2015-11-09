@@ -42,7 +42,7 @@ import com.b2international.snowowl.snomed.datastore.index.refset.SnomedComplexMa
 import com.b2international.snowowl.snomed.datastore.index.refset.SnomedComplexMapRefSetMemberIndexQueryAdapter;
 import com.b2international.snowowl.snomed.datastore.index.refset.SnomedRefSetMemberIndexEntry;
 import com.b2international.snowowl.snomed.datastore.index.refset.SnomedRefSetMemberIndexQueryAdapter;
-import com.b2international.snowowl.snomed.datastore.services.SnomedConceptNameProvider;
+import com.b2international.snowowl.snomed.datastore.services.ISnomedConceptNameProvider;
 import com.b2international.snowowl.snomed.exporter.model.AbstractSnomedDsvExportItem;
 import com.b2international.snowowl.snomed.exporter.model.SnomedDsvExportItemType;
 import com.b2international.snowowl.snomed.exporter.model.SnomedRefSetDSVExportModel;
@@ -58,10 +58,14 @@ public class MapTypeRefSetDSVExporter implements IRefSetDSVExporter {
 	private static String TEMPORARY_WORKING_DIRECTORY;
 	private static String DELIMITER;
 	private static String LINE_SEPARATOR;
+	
 	private final SnomedRefSetDSVExportModel exportSetting;
+	private final IBranchPath branchPath; 
 
 	public MapTypeRefSetDSVExporter(final SnomedRefSetDSVExportModel exportSetting) {
 		this.exportSetting = exportSetting;
+		this.branchPath = BranchPathUtils.createPath(exportSetting.getBranchPath());
+		
 		TEMPORARY_WORKING_DIRECTORY = exportSetting.getExportPath();
 		DELIMITER = exportSetting.getDelimiter();
 		LINE_SEPARATOR = System.getProperty("line.separator");
@@ -69,7 +73,7 @@ public class MapTypeRefSetDSVExporter implements IRefSetDSVExporter {
 
 	@Override
 	public File executeDSVExport(final OMMonitor monitor) throws SnowowlServiceException {
-		final IBranchPath branchPath = BranchPathUtils.createPath(exportSetting.getBranchPath());
+		
 		final SnomedRefSetBrowser refSetBrowser = ApplicationContext.getInstance().getService(SnomedRefSetBrowser.class);
 		monitor.begin(refSetBrowser.getActiveMemberCount(branchPath, exportSetting.getRefSetId()));
 		final File file = new File(TEMPORARY_WORKING_DIRECTORY);
@@ -162,7 +166,7 @@ public class MapTypeRefSetDSVExporter implements IRefSetDSVExporter {
 			case MODULE_ID:
 				return member.getModuleId();
 			case MODULE_LABEL:
-				return SnomedConceptNameProvider.INSTANCE.getText(member.getModuleId());
+				return getConceptLabel(member.getModuleId());
 			case MEMBER_ID:
 				return member.getId();
 			case MAP_GROUP:
@@ -188,21 +192,21 @@ public class MapTypeRefSetDSVExporter implements IRefSetDSVExporter {
 			case CORRELATION:
 				if (member instanceof SnomedComplexMapRefSetMemberIndexEntry) {
 					final SnomedComplexMapRefSetMemberIndexEntry complexEntry = (SnomedComplexMapRefSetMemberIndexEntry) member;
-					return SnomedConceptNameProvider.INSTANCE.getText(complexEntry.getCorrelationId());
+					return getConceptLabel(complexEntry.getCorrelationId());
 				}
 			case SDD_CLASS:
 				final List<SnomedRelationshipIndexEntry> relationships = ApplicationContext.getInstance().getService(SnomedClientStatementBrowser.class)
 						.getOutboundStatementsById(member.getReferencedComponentId());
 				for (final SnomedRelationshipIndexEntry relationship : relationships) {
 					if (Concepts.HAS_SDD_CLASS.equals(relationship.getAttributeId())) {
-						return SnomedConceptNameProvider.INSTANCE.getText(relationship.getValueId());
+						return getConceptLabel(relationship.getValueId());
 					}
 				}
 			case MAP_CATEGORY:
 				if (member instanceof SnomedComplexMapRefSetMemberIndexEntry) {
 					final SnomedComplexMapRefSetMemberIndexEntry complexMember = (SnomedComplexMapRefSetMemberIndexEntry) member;
 					final String mapCategoryId = complexMember.getMapCategoryId();
-					return isEmpty(mapCategoryId) ? nullToEmpty(mapCategoryId) : SnomedConceptNameProvider.INSTANCE.getText(mapCategoryId);
+					return isEmpty(mapCategoryId) ? nullToEmpty(mapCategoryId) : getConceptLabel(mapCategoryId);
 				}
 			case MAP_TARGET_DESCRIPTION:
 				return nullToEmpty(member.getMapTargetDescription());
@@ -211,4 +215,7 @@ public class MapTypeRefSetDSVExporter implements IRefSetDSVExporter {
 		}
 	}
 
+	private String getConceptLabel(String conceptId) {
+		return ApplicationContext.getServiceForClass(ISnomedConceptNameProvider.class).getComponentLabel(branchPath, conceptId);
+	}
 }

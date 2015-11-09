@@ -35,7 +35,7 @@ import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
 import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 import com.b2international.snowowl.snomed.datastore.SnomedRefSetLookupService;
 import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedMappings;
-import com.b2international.snowowl.snomed.datastore.services.SnomedConceptNameProvider;
+import com.b2international.snowowl.snomed.datastore.services.ISnomedConceptNameProvider;
 import com.b2international.snowowl.snomed.exporter.server.ComponentExportType;
 import com.b2international.snowowl.snomed.exporter.server.SnomedRf2Exporter;
 import com.b2international.snowowl.snomed.exporter.server.SnomedRfFileNameBuilder;
@@ -125,7 +125,7 @@ public class SnomedRefSetExporter extends SnomedCompositeExporter implements Sno
 	public String getFileName() {
 		final ICDOConnection connection = getServiceForClass(ICDOConnectionManager.class).getByUuid(SnomedDatastoreActivator.REPOSITORY_UUID);
 		final IBranchPath branchPath = getConfiguration().getCurrentBranchPath();
-		final String refSetName = SnomedConceptNameProvider.INSTANCE.getComponentLabel(branchPath, refSetId);
+		final String refSetName = getServiceForClass(ISnomedConceptNameProvider.class).getComponentLabel(branchPath, refSetId);
 		return CDOUtils.apply(new CDOTransactionFunction<String>(connection, branchPath) {
 			@Override
 			protected String apply(final CDOTransaction transaction) {
