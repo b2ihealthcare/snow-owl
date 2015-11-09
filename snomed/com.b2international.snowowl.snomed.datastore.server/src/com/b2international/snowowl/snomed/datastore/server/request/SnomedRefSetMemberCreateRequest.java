@@ -15,9 +15,17 @@
  */
 package com.b2international.snowowl.snomed.datastore.server.request;
 
+import static com.google.common.collect.Maps.newHashMap;
+
+import java.util.Map;
+
 import org.hibernate.validator.constraints.NotEmpty;
 
+import com.b2international.commons.ClassUtils;
 import com.b2international.snowowl.core.domain.TransactionContext;
+import com.b2international.snowowl.core.exceptions.BadRequestException;
+import com.b2international.snowowl.core.exceptions.ComponentNotFoundException;
+import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.snomed.core.domain.SnomedReferenceSet;
 import com.b2international.snowowl.snomed.core.domain.SnomedReferenceSetMember;
@@ -25,6 +33,8 @@ import com.b2international.snowowl.snomed.core.store.SnomedComponents;
 import com.b2international.snowowl.snomed.datastore.id.SnomedIdentifiers;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetMember;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType;
+import com.google.common.base.Strings;
+import com.google.common.collect.ImmutableMap;
 
 /**
  * @since 4.5
@@ -38,6 +48,8 @@ public class SnomedRefSetMemberCreateRequest extends SnomedRefSetMemberRequest<T
 	private String referenceSetId;
 	
 	private String referencedComponentId;
+	
+	private Map<String, Object> properties = newHashMap();
 
 	SnomedRefSetMemberCreateRequest() {
 	}
@@ -54,17 +66,44 @@ public class SnomedRefSetMemberCreateRequest extends SnomedRefSetMemberRequest<T
 		this.moduleId = moduleId;
 	}
 	
+	public void setProperties(Map<String, Object> properties) {
+		this.properties.putAll(properties);
+	}
+	
 	@Override
 	public SnomedReferenceSetMember execute(TransactionContext context) {
-		final SnomedReferenceSet refSet = new SnomedRefSetReadRequest(referenceSetId).execute(context);
+		final SnomedReferenceSet refSet;
+		// TODO convert this 404 -> 400 logic into an interceptor one level higher (like all create requests should work the same way)
+		try {
+			refSet = new SnomedRefSetReadRequest(referenceSetId).execute(context);
+		} catch (ComponentNotFoundException e) {
+			throw e.toBadRequestException();
+		}
 		final SnomedRefSetType type = refSet.getType();
 		RefSetSupport.check(type);
-		if (referencedComponentId != null) {
+		if (!Strings.isNullOrEmpty(referencedComponentId)) {
+			if (SnomedRefSetType.QUERY == type) {
+				throw new BadRequestException("'%s' type reference set members can't reference components manually, specify a '%s' property instead.", type, SnomedRf2Headers.FIELD_QUERY);
+			}
 			// XXX referenced component ID for query type reference set cannot be defined, validate only if defined
 			// TODO support for other terminologies when enabling mappings
 			SnomedIdentifiers.validate(referencedComponentId);
 			final String referencedComponentType = SnomedTerminologyComponentConstants.getTerminologyComponentId(referencedComponentId);
-			RefSetSupport.checkType(type, referencedComponentType);
+			if (!refSet.getReferencedComponentType().equals(referencedComponentType)) {
+				throw new BadRequestException("'%s' reference set can't reference '%s | %s' component. Only '%s' components are allowed.", refSet.getId(), referencedComponentId, referencedComponentType, refSet.getReferencedComponentType());
+			}
+		} else if (SnomedRefSetType.QUERY != type) {
+			throw new BadRequestException("'%s' cannot be null or empty for '%s' type reference sets.", SnomedRf2Headers.FIELD_REFERENCED_COMPONENT_ID, type);
+		} else if (!properties.containsKey(SnomedRf2Headers.FIELD_QUERY)) {
+			// only QUERY type refset members can have empty refCompIds during creation, but it should have a single additional property called 'query'
+			// TODO support refCompIds for query type member as well, it creates the refset with the specified ID (probably required for the thick client as well)
+			throw new BadRequestException("'%s' cannot be null or empty for '%s' type reference sets.", SnomedRf2Headers.FIELD_QUERY, type);
+		} else {
+			// if contains the query, validate
+			final String query = getQuery();
+			if (Strings.isNullOrEmpty(query)) {
+				throw new BadRequestException("'%s' cannot be empty or null", SnomedRf2Headers.FIELD_QUERY);
+			}
 		}
 		
 		final SnomedRefSetMember member;
@@ -78,15 +117,27 @@ public class SnomedRefSetMemberCreateRequest extends SnomedRefSetMemberRequest<T
 				.withRefSet(referenceSetId)
 				.addTo(context);
 			break;
+		case QUERY:
+			member = SnomedComponents
+				.newQueryMember()
+				.withModule(moduleId)
+				.withRefSet(referenceSetId)
+				.withQuery(getQuery())
+				.addTo(context);
+			break;
 		default: throw new UnsupportedOperationException("Not implemented support for creation of '"+type+"' members");
 		}
 		
-		return new SnomedReferenceSetMemberConverter(context).apply(member);
+		return new SnomedReferenceSetMemberConverter().apply(member);
 	}
 
 	@Override
 	protected Class<SnomedReferenceSetMember> getReturnType() {
 		return SnomedReferenceSetMember.class;
+	}
+	
+	private String getQuery() {
+		return ClassUtils.checkAndCast(properties.get(SnomedRf2Headers.FIELD_QUERY), String.class);
 	}
 
 }

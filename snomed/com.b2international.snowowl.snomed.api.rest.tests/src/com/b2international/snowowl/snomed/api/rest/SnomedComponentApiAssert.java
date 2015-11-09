@@ -24,6 +24,7 @@ import static com.b2international.snowowl.test.commons.rest.RestExtensions.lastP
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.equalTo;
 
+import java.util.Collections;
 import java.util.Date;
 import java.util.Map;
 
@@ -375,12 +376,25 @@ public abstract class SnomedComponentApiAssert {
 		return requestBody.build();
 	}
 	
+	public static Map<String, Object> createRefSetMemberRequestBody(String referencedComponentId, String referenceSetId) {
+		return createRefSetMemberRequestBody(Concepts.MODULE_SCT_CORE, referencedComponentId, referenceSetId);
+	}
+	
 	public static Map<String, Object> createRefSetMemberRequestBody(String moduleId, String referencedComponentId, String referenceSetId) {
+		return createRefSetMemberRequestBody(moduleId, referencedComponentId, referenceSetId, Collections.<String, Object>emptyMap());
+	}
+	
+	public static Map<String, Object> createRefSetMemberRequestBody(String moduleId, String referencedComponentId, String referenceSetId, Map<String, Object> props) {
 		final Builder<String, Object> requestBody = ImmutableMap.builder();
 		requestBody.put("moduleId", moduleId);
 		requestBody.put("referenceSetId", referenceSetId);
-		requestBody.put("referencedComponentId", referencedComponentId);
+		if (referencedComponentId != null) {
+			requestBody.put("referencedComponentId", referencedComponentId);
+		}
 		requestBody.put("commitComment", String.format("New reference set member '%s' in refset '%s'", referencedComponentId, referenceSetId));
+		if (props != null) {
+			requestBody.putAll(props);
+		}
 		return requestBody.build();
 	}
 	

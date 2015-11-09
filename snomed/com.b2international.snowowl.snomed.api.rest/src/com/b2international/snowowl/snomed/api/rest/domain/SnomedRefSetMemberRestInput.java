@@ -15,6 +15,13 @@
  */
 package com.b2international.snowowl.snomed.api.rest.domain;
 
+import static com.google.common.collect.Maps.newHashMap;
+
+import java.util.Map;
+
+import com.fasterxml.jackson.annotation.JsonAnyGetter;
+import com.fasterxml.jackson.annotation.JsonAnySetter;
+
 /**
  * @since 4.5
  */
@@ -23,6 +30,17 @@ public class SnomedRefSetMemberRestInput {
 	private String moduleId;
 	private String referencedComponentId;
 	private String referenceSetId;
+	private Map<String, Object> properties = newHashMap();
+
+	@JsonAnyGetter
+	public Map<String, Object> getProperties() {
+		return properties;
+	}
+	
+	@JsonAnySetter
+	public void setProperties(String key, Object value) {
+		this.properties.put(key, value);
+	}
 	
 	public void setModuleId(String moduleId) {
 		this.moduleId = moduleId;
