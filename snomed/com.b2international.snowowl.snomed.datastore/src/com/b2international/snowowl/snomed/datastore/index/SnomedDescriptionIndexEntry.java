@@ -16,90 +16,221 @@
 package com.b2international.snowowl.snomed.datastore.index;
 
 import java.io.Serializable;
-
-import javax.annotation.concurrent.Immutable;
+import java.util.Map;
 
 import com.b2international.snowowl.core.api.IComponent;
 import com.b2international.snowowl.core.api.index.IIndexEntry;
+import com.b2international.snowowl.snomed.core.domain.Acceptability;
 import com.google.common.base.Objects;
-import com.google.common.base.Preconditions;
+import com.google.common.collect.ImmutableMap;
 
 /**
- * Class for representing a SNOMED&nbsp;CT description.
- * 
- * @see SnomedIndexEntry
+ * A transfer object representing a SNOMED CT description.
  */
-@Immutable
 public class SnomedDescriptionIndexEntry extends SnomedIndexEntry implements IComponent<String>, IIndexEntry, Serializable {
-	
+
 	private static final long serialVersionUID = 301681633674309020L;
 
-	private final String type;
+	public static Builder builder() {
+		return new Builder();
+	}
+
+	public static class Builder {
+
+		private String id;
+		private String term;
+		private String moduleId;
+		private long storageKey;
+		private float score;
+		private boolean active;
+		private boolean released;
+		private long effectiveTimeLong;
+		private String conceptId;
+		private String languageCode = "en"; // FIXME: Should not be optional once it is indexed
+		private String typeId;
+		private String caseSignificanceId;
+		private ImmutableMap.Builder<String, Acceptability> acceptabilityMapBuilder;
+
+		private Builder() {
+			// Disallow instantiation outside static method
+		}
+
+		public Builder id(final String id) {
+			this.id = id;
+			return this;
+		}
+
+		public Builder term(final String term) {
+			this.term = term;
+			return this;
+		}
+
+		public Builder moduleId(final String moduleId) {
+			this.moduleId = moduleId;
+			return this;
+		}
+
+		public Builder storageKey(final long storageKey) {
+			this.storageKey = storageKey;
+			return this;
+		}
+
+		public Builder score(final float score) {
+			this.score = score;
+			return this;
+		}
+
+		public Builder active(final boolean active) {
+			this.active = active;
+			return this;
+		}
+
+		public Builder released(final boolean released) {
+			this.released = released;
+			return this;
+		}
+
+		public Builder effectiveTimeLong(final long effectiveTimeLong) {
+			this.effectiveTimeLong = effectiveTimeLong;
+			return this;
+		}
+
+		public Builder conceptId(final String conceptId) {
+			this.conceptId = conceptId;
+			return this;
+		}
+
+		public Builder languageCode(final String languageCode) {
+			this.languageCode = languageCode;
+			return this;
+		}
+
+		public Builder typeId(final String typeId) {
+			this.typeId = typeId;
+			return this;
+		}
+
+		public Builder caseSignificanceId(final String caseSignificanceId) {
+			this.caseSignificanceId = caseSignificanceId;
+			return this;
+		}
+		
+		public Builder acceptability(final String languageRefSetId, final Acceptability acceptability) {
+			this.acceptabilityMapBuilder.put(languageRefSetId, acceptability);
+			return this;
+		}
+		
+		public Builder acceptability(final Map<String, Acceptability> acceptabilityMap) {
+			this.acceptabilityMapBuilder.putAll(acceptabilityMap);
+			return this;
+		}
+
+		public SnomedDescriptionIndexEntry build() {
+			return new SnomedDescriptionIndexEntry(id,
+					term,
+					moduleId, 
+					score,
+					storageKey, 
+					released, 
+					active, 
+					effectiveTimeLong, 
+					conceptId,
+					languageCode,
+					typeId,
+					caseSignificanceId,
+					acceptabilityMapBuilder.build());
+		}
+	}
+
 	private final String conceptId;
-	private final String caseSignificance;
-	
-	/**
-	 * Creates a index based SNOMED&nbsp;CT description.
-	 * @param id the unique description ID.
-	 * @param term the term.
-	 * @param iconId TODO
-	 * @param moduleId the module concept ID.
-	 * @param score the index based score.
-	 * @param storageKey the unique CDO ID.
-	 * @param released flag indicating if the description has been published or not.
-	 * @param active flag indicating the status of the description.
-	 * @param type the description type concept ID.
-	 * @param caseSignificance the description case significance concept ID
-	 * @param conceptId the container SNOMED&nbsp;CT concept ID.
-	 * @param effectiveTime effective time of the description. Could be {@link DateUtils#UNSET_EFFECTIVE_TIME}.
-	 */
-	public SnomedDescriptionIndexEntry(final String id, final String term, final String moduleId, final float score, 
-			final long storageKey, final boolean released, final boolean active, final String type, String caseSignificance, final String conceptId, final long effectiveTime) {
-		super(id, term, type, moduleId, score, storageKey, released, active, effectiveTime);
-		this.type = Preconditions.checkNotNull(type, "Description type concept ID argument cannot be null.");
-		this.conceptId = Preconditions.checkNotNull(conceptId, "Container SNOMED CT concept ID argument cannot be null.");
-		this.caseSignificance = Preconditions.checkNotNull(caseSignificance, "Case significance argument ID cannot be null.");
+	private final String languageCode;
+	private final String typeId;
+	private final String caseSignificanceId;
+	private final ImmutableMap<String, Acceptability> acceptabilityMap;
+
+	private SnomedDescriptionIndexEntry (final String id, 
+			final String term, 
+			final String moduleId, 
+			final float score, 
+			final long storageKey, 
+			final boolean released, 
+			final boolean active, 
+			final long effectiveTimeLong,
+			final String conceptId,
+			final String languageCode,
+			final String typeId, 
+			final String caseSignificanceId,
+			final ImmutableMap<String, Acceptability> acceptabilityMap) {
+
+		super(id, 
+				term, 
+				typeId, // XXX: iconId is the same as typeId
+				moduleId, 
+				score, 
+				storageKey, 
+				released, 
+				active, 
+				effectiveTimeLong);
+
+		this.conceptId = conceptId;
+		this.languageCode = languageCode;
+		this.typeId = typeId;
+		this.caseSignificanceId = caseSignificanceId;
+		this.acceptabilityMap = acceptabilityMap; 
 	}
-	
+
 	/**
-	 * Returns with the SNOMED&nbsp;CT description type concept ID of the current description.
-	 * @return the description type concept ID.
-	 */
-	public String getType() {
-		return type;
-	}
-	
-	/**
-	 * Returns with the unique identifier of the container SNOMED&nbsp;C T concept.
-	 * @return the container concept ID.
+	 * @return the parent concept identifier
 	 */
 	public String getConceptId() {
 		return conceptId;
 	}
-	
+
 	/**
-	 * Returns with the SNOMED&nbsp;CT description case significance concept ID of the current description.
-	 * @return the caseSignificance
+	 * @return the description Locale (of which only the ISO-639 language code should be populated) 
 	 */
-	public String getCaseSignificance() {
-		return caseSignificance;
+	public String getLanguageCode() {
+		return languageCode;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see com.b2international.snowowl.datastore.index.AbstractIndexEntry#toString()
+	/**
+	 * @return the description type concept identifier
 	 */
+	public String getTypeId() {
+		return typeId;
+	}
+
+	/**
+	 * @return the case significance concept identifier
+	 */
+	public String getCaseSignificance() {
+		return caseSignificanceId;
+	}
+	
+	/**
+	 * @return the map of active acceptability values for the description, keyed by language reference set identifier
+	 */
+	public ImmutableMap<String, Acceptability> getAcceptabilityMap() {
+		return acceptabilityMap;
+	}
+
 	@Override
 	public String toString() {
-		
 		return Objects.toStringHelper(this)
 				.add("id", id)
 				.add("label", label)
+				.add("iconId", iconId)
+				.add("moduleId", getModuleId())
 				.add("score", score)
 				.add("storageKey", storageKey)
-				.add("type", type)
-				.add("conceptId", conceptId)
+				.add("released", isReleased())
 				.add("active", isActive())
+				.add("effectiveTime", getEffectiveTimeAsLong())
+				.add("conceptId", conceptId)
+				.add("locale", languageCode)
+				.add("typeId", typeId)
+				.add("caseSignificanceId", caseSignificanceId)
+				.add("acceptabilityMap", acceptabilityMap)
 				.toString();
 	}
 }

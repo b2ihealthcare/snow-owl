@@ -235,7 +235,7 @@ public abstract class AbstractSnomedRefSetMembershipLookupService implements IRe
 
 		final List<String> ids = Lists.newArrayList(ComponentUtils.getIds(Iterables.filter(descriptions, new Predicate<SnomedDescriptionIndexEntry>() {
 			@Override public boolean apply(final SnomedDescriptionIndexEntry description) {
-				return preferredIds.contains(description.getType());
+				return preferredIds.contains(description.getTypeId());
 			}
 		})));
 

@@ -74,7 +74,7 @@ public final class SnomedDescription {
 	public SnomedDescription(final SnomedDescriptionIndexEntry description) {
 		id = description.getId();
 		label = description.getLabel();
-		typeId = description.getType();
+		typeId = description.getTypeId();
 		active = description.isActive();
 		released = description.isReleased();
 		caseSensitivity = CaseSignificance.getForDescriptionIndexEntry(description);

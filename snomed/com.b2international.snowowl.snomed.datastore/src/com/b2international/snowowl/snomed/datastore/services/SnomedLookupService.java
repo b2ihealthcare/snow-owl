@@ -560,7 +560,7 @@ public class SnomedLookupService implements IDisposableService, ISnomedLookupSer
 		//we have to filter out FSN descriptions as it also associated with language reference set member with preferred acceptability
 		for (final Iterator<SnomedDescriptionIndexEntry> itr = descriptionMap.values().iterator(); itr.hasNext(); /* */) {
 			final SnomedDescriptionIndexEntry entry = itr.next();
-			if (Concepts.FULLY_SPECIFIED_NAME.equals(entry.getType())) { //remove FSNs from the map
+			if (Concepts.FULLY_SPECIFIED_NAME.equals(entry.getTypeId())) { //remove FSNs from the map
 				itr.remove();
 			}
 		}
@@ -601,7 +601,7 @@ public class SnomedLookupService implements IDisposableService, ISnomedLookupSer
 		
 		//add all the rest if description type ID equals with the specified one
 		for (final SnomedDescriptionIndexEntry otherDescription : descriptionMap.values()) {
-			if (descriptionTypeId.equals(otherDescription.getType())) {
+			if (descriptionTypeId.equals(otherDescription.getTypeId())) {
 				descriptions.add(otherDescription);
 			}
 		}

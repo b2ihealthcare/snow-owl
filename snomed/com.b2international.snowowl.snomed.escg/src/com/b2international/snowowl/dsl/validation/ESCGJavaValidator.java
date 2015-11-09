@@ -213,10 +213,10 @@ public class ESCGJavaValidator extends AbstractESCGJavaValidator {
 		List<SnomedDescriptionIndexEntry> result = indexSearcher.search(queryAdapter);
 		
 		for (SnomedDescriptionIndexEntry snomedDescriptionIndexEntry : result) {
-			if (snomedDescriptionIndexEntry.getLabel().equals(term) && Concepts.FULLY_SPECIFIED_NAME.equals(snomedDescriptionIndexEntry.getType())) {
+			if (snomedDescriptionIndexEntry.getLabel().equals(term) && Concepts.FULLY_SPECIFIED_NAME.equals(snomedDescriptionIndexEntry.getTypeId())) {
 				warning("This is the fully specified name, not the preferred term.", termAttribute, NON_MATCHING_TERM);
 				return;
-			} else if (snomedDescriptionIndexEntry.getLabel().equals(term) && Concepts.SYNONYM.equals(snomedDescriptionIndexEntry.getType())) {
+			} else if (snomedDescriptionIndexEntry.getLabel().equals(term) && Concepts.SYNONYM.equals(snomedDescriptionIndexEntry.getTypeId())) {
 				warning("This is a synonym, not the preferred term.", termAttribute, NON_MATCHING_TERM);
 				return;
 			}

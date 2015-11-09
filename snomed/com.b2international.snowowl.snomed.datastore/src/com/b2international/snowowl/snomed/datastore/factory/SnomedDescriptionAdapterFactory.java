@@ -48,18 +48,19 @@ public class SnomedDescriptionAdapterFactory extends TypeSafeAdapterFactory {
 		if (adaptableObject instanceof Description) {
 			
 			final Description description = (Description) adaptableObject;
-			final SnomedDescriptionIndexEntry adaptedEntry = new SnomedDescriptionIndexEntry(
-					description.getId(), 
-					description.getTerm(), 
-					description.getModule().getId(),
-					0.0f,
-					CDOUtils.getStorageKey(description),
-					description.isReleased(), 
-					description.isActive(), 
-					description.getType().getId(), 
-					description.getCaseSignificance().getId(), 
-					description.getConcept().getId(),
-					null == description.getEffectiveTime() ? EffectiveTimes.UNSET_EFFECTIVE_TIME : description.getEffectiveTime().getTime());
+			final SnomedDescriptionIndexEntry adaptedEntry = SnomedDescriptionIndexEntry.builder()
+					.id(description.getId()) 
+					.term(description.getTerm())
+					.moduleId(description.getModule().getId())
+					.storageKey(CDOUtils.getStorageKey(description))
+					.released(description.isReleased()) 
+					.active(description.isActive()) 
+					.typeId(description.getType().getId()) 
+					.caseSignificanceId(description.getCaseSignificance().getId()) 
+					.conceptId(description.getConcept().getId())
+					.languageCode(description.getLanguageCode())
+					.effectiveTimeLong(description.isSetEffectiveTime() ? description.getEffectiveTime().getTime() : EffectiveTimes.UNSET_EFFECTIVE_TIME)
+					.build();
 			
 			return adapterType.cast(adaptedEntry);
 		}

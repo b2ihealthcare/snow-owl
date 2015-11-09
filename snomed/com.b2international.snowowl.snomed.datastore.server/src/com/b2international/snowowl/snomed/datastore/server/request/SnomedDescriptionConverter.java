@@ -44,7 +44,7 @@ public class SnomedDescriptionConverter extends AbstractSnomedComponentConverter
 	@Override
 	public ISnomedDescription apply(final SnomedDescriptionIndexEntry input) {
 		final SnomedDescription result = new SnomedDescription();
-		result.setAcceptabilityMap(toAcceptabilityMap(input.getId()));
+		result.setAcceptabilityMap(input.getAcceptabilityMap());
 		result.setActive(input.isActive());
 		result.setCaseSignificance(toCaseSignificance(input.getCaseSignificance()));
 		result.setConceptId(input.getConceptId());
@@ -52,15 +52,11 @@ public class SnomedDescriptionConverter extends AbstractSnomedComponentConverter
 		result.setId(input.getId());
 		result.setDescriptionInactivationIndicator(getDescriptionInactivationIndicator(input.getId()));
 		result.setAssociationTargets(toAssociationTargets(SnomedTerminologyComponentConstants.DESCRIPTION, input.getId()));
-
-		// TODO: index language code on SnomedDescriptionIndexEntries -- it's the only property which is not present.
-		result.setLanguageCode("en");
-
+		result.setLanguageCode(input.getLanguageCode());
 		result.setModuleId(input.getModuleId());
 		result.setReleased(input.isReleased());
 		result.setTerm(input.getLabel());
-		result.setTypeId(input.getType());
-
+		result.setTypeId(input.getTypeId());
 		return result;
 	}
 	
@@ -74,15 +70,11 @@ public class SnomedDescriptionConverter extends AbstractSnomedComponentConverter
 		result.setId(input.getId());
 		result.setDescriptionInactivationIndicator(getDescriptionInactivationIndicator(input.getId()));
 		result.setAssociationTargets(toAssociationTargets(SnomedTerminologyComponentConstants.DESCRIPTION, input.getId()));
-
-		// TODO: index language code on SnomedDescriptionIndexEntries -- it's the only property which is not present.
-		result.setLanguageCode("en");
-
+		result.setLanguageCode(input.getLanguageCode());
 		result.setModuleId(input.getModule().getId());
 		result.setReleased(input.isReleased());
 		result.setTerm(input.getTerm());
 		result.setTypeId(input.getType().getId());
-
 		return result;
 	}
 
@@ -115,5 +107,4 @@ public class SnomedDescriptionConverter extends AbstractSnomedComponentConverter
 	private CaseSignificance toCaseSignificance(final String caseSignificanceId) {
 		return CaseSignificance.getByConceptId(caseSignificanceId);
 	}
-
 }

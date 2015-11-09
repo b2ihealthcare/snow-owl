@@ -551,7 +551,7 @@ public class SnomedBrowserService implements ISnomedBrowserService {
 		
 		for (final SnomedDescriptionIndexEntry descriptionIndexEntry : descriptionIndexEntries) {
 			
-			final String typeId = descriptionIndexEntry.getType();
+			final String typeId = descriptionIndexEntry.getTypeId();
 			if (!Concepts.FULLY_SPECIFIED_NAME.equals(typeId) && !Concepts.SYNONYM.equals(typeId)) {
 				continue;
 			}

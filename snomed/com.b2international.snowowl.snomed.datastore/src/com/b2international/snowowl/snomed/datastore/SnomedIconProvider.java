@@ -111,7 +111,7 @@ public class SnomedIconProvider extends ComponentIconProvider<String> {
 		} else if (source instanceof AbstractIndexEntry) {
 			// SNOMED Description entry sometimes contains false iconId (probably a bug in the indexing), so using the type
 			if (source instanceof SnomedDescriptionIndexEntry) {
-				return getIconComponentId(((SnomedDescriptionIndexEntry) source).getType(), branchPath);
+				return getIconComponentId(((SnomedDescriptionIndexEntry) source).getTypeId(), branchPath);
 			}
 			return ((AbstractIndexEntry) source).getIconId();
 		} else if (source instanceof IComponent<?>) {

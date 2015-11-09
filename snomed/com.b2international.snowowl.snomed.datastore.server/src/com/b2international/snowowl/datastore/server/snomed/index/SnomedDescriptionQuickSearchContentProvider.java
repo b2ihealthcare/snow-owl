@@ -55,7 +55,7 @@ public class SnomedDescriptionQuickSearchContentProvider extends AbstractQuickSe
 		@Override 
 		public QuickSearchElement apply(final SnomedDescriptionIndexEntry input) {
 			return new CompactQuickSearchElement(input.getId(), 
-					input.getType(), 
+					input.getTypeId(), 
 					input.getLabel(), 
 					false,
 					getMatchRegions(queryExpression, input.getLabel()),

@@ -175,26 +175,18 @@ public class SnomedConceptIndexEntry extends SnomedIndexEntry implements ICompon
 
 	@Override
 	public String toString() {
-		final StringBuilder builder = new StringBuilder();
-		builder.append("SnomedConceptIndexEntry [primitive=");
-		builder.append(primitive);
-		builder.append(", exhaustive=");
-		builder.append(exhaustive);
-		builder.append(", isReleased()=");
-		builder.append(isReleased());
-		builder.append(", isActive()=");
-		builder.append(isActive());
-		builder.append(", getEffectiveTimeAsLong()=");
-		builder.append(getEffectiveTimeAsLong());
-		builder.append(", getId()=");
-		builder.append(getId());
-		builder.append(", getScore()=");
-		builder.append(getScore());
-		builder.append(", getStorageKey()=");
-		builder.append(getStorageKey());
-		builder.append(", getIconId()=");
-		builder.append(getIconId());
-		builder.append("]");
-		return builder.toString();
+		return Objects.toStringHelper(this)
+				.add("id", id)
+				.add("label", label)
+				.add("iconId", iconId)
+				.add("moduleId", getModuleId())
+				.add("score", score)
+				.add("storageKey", storageKey)
+				.add("released", isReleased())
+				.add("active", isActive())
+				.add("effectiveTime", getEffectiveTimeAsLong())
+				.add("primitive", primitive)
+				.add("exhaustive", exhaustive)
+				.toString();
 	}
 }
