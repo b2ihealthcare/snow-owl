@@ -26,7 +26,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.ExecutionException;
-import java.util.concurrent.TimeUnit;
 
 import javax.annotation.Nullable;
 
@@ -129,7 +128,6 @@ public abstract class IndexServerService<E extends IIndexEntry> extends Abstract
 	 */
 	protected IndexServerService(final long timeout) {
 		this.branchServices = CacheBuilder.newBuilder()
-				.expireAfterAccess(timeout, TimeUnit.SECONDS)
 				.removalListener(new StateRemovalListener())
 				.build(new StateCacheLoader());
 	}
