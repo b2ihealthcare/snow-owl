@@ -37,7 +37,8 @@ class SnomedReferenceSetConverter implements Function<SnomedRefSetIndexEntry, Sn
 		refset.setActive(entry.isActive());
 		refset.setReleased(entry.isReleased());
 		refset.setModuleId(entry.getModuleId());
-		refset.setReferencedComponent(CoreTerminologyBroker.getInstance().getComponentInformation(entry.getReferencedComponentType()).getName());
+		final short referencedComponentType = entry.getReferencedComponentType();
+		refset.setReferencedComponent(getReferencedComponentType(referencedComponentType));
 		refset.setType(entry.getType());
 		return refset;
 	}
@@ -49,9 +50,14 @@ class SnomedReferenceSetConverter implements Function<SnomedRefSetIndexEntry, Sn
 		refset.setActive(concept.isActive());
 		refset.setReleased(concept.isReleased());
 		refset.setModuleId(concept.getModuleId());
-		refset.setReferencedComponent(CoreTerminologyBroker.getInstance().getComponentInformation(refSet.getReferencedComponentType()).getName());
+		final short referencedComponentType = refSet.getReferencedComponentType();
+		refset.setReferencedComponent(getReferencedComponentType(referencedComponentType));
 		refset.setType(refSet.getType());
 		return refset;
+	}
+
+	private String getReferencedComponentType(final short referencedComponentType) {
+		return CoreTerminologyBroker.getInstance().getComponentInformation(referencedComponentType).getId();
 	}
 	
 }
