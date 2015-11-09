@@ -68,6 +68,21 @@
            id="com.b2international.snowowl.datastore.server.snomed.jobs.SnomedStatedServerTerminologyBrowserConfigJob"
            terminologyId="com.b2international.snowowl.terminology.snomed">
      </serviceConfigJob>
+     <serviceConfigJob
+           class="com.b2international.snowowl.datastore.server.snomed.jobs.SnomedConceptNameProviderServiceConfigJob"
+           id="com.b2international.snowowl.datastore.server.snomed.jobs.SnomedConceptNameProviderServiceConfigJob"
+           terminologyId="com.b2international.snowowl.terminology.snomed">
+     </serviceConfigJob>
+     <serviceConfigJob
+           class="com.b2international.snowowl.datastore.server.snomed.jobs.SnomedDescriptionNameProviderServiceConfigJob"
+           id="com.b2international.snowowl.datastore.server.snomed.jobs.SnomedDescriptionNameProviderServiceConfigJob"
+           terminologyId="com.b2international.snowowl.terminology.snomed">
+     </serviceConfigJob>
+     <serviceConfigJob
+           class="com.b2international.snowowl.datastore.server.snomed.jobs.SnomedRelationshipNameProviderServiceConfigJob"
+           id="com.b2international.snowowl.datastore.server.snomed.jobs.SnomedRelationshipNameProviderServiceConfigJob"
+           terminologyId="com.b2international.snowowl.terminology.snomed">
+     </serviceConfigJob>
    </extension>
    <extension
          point="com.b2international.snowowl.datastore.changeProcessorFactory">
