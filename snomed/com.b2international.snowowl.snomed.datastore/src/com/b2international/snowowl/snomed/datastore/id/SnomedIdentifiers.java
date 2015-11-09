@@ -55,7 +55,7 @@ public class SnomedIdentifiers {
 	}
 
 	public static String generateDescriptionId() {
-		return generateRelationshipId(null);
+		return generateDescriptionId(null);
 	}
 
 	public static String generateDescriptionId(String namespace) {
