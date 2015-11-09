@@ -33,5 +33,6 @@ Export-Package: com.b2international.snowowl.datastore.server.snomed,
  com.b2international.snowowl.datastore.server.snomed.validation,
  com.b2international.snowowl.datastore.server.snomed.version,
  com.b2international.snowowl.snomed.datastore.server.domain,
+ com.b2international.snowowl.snomed.datastore.server.refset,
  com.b2international.snowowl.snomed.datastore.server.request
 Import-Package: org.slf4j;version="1.7.2"
