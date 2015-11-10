@@ -13,104 +13,164 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.snomed.datastore.index;
+package com.b2international.snowowl.snomed.datastore.index.entry;
+
+import static com.google.common.base.Preconditions.checkArgument;
+import static com.google.common.base.Preconditions.checkNotNull;
 
 import java.io.Serializable;
 
 import com.b2international.snowowl.core.api.IComponent;
-import com.b2international.snowowl.core.date.DateFormats;
 import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.datastore.index.AbstractIndexEntry;
-import com.google.common.base.Preconditions;
+import com.google.common.base.Objects;
+import com.google.common.base.Objects.ToStringHelper;
 
 /**
- * Abstract representation of a SNOMED&nbsp;CT component.
- * @see IComponent
- * @see AbstractIndexEntry
+ * Common superclass for SNOMED CT transfer objects.
  */
 public abstract class SnomedIndexEntry extends AbstractIndexEntry implements IComponent<String>, Serializable {
 
 	private static final long serialVersionUID = 1158021444792053062L;
 
-	/**Flag indicating whether the component is published or not.*/
-	private final boolean released;
-	/**Flag indicating whether the component is active or retired.*/
-	private final boolean active;
-	/**SNOMED&nbsp;CT concept ID of the module.*/
-	private final String moduleId;
-	
-	/**Effective time is the point in time when the current SNOMED&nbsp;CT component has been modified.<br> 
-	 *Could be {@link EffectiveTimes#UNSET_EFFECTIVE_TIME} if not set.*/
-	private long effectiveTimeLong;
-	/**Human readable representation of the effective time of the component.*/
-	private String effectiveTime;
-	
-	/**
-	 * Creates a new index entry representing a SNOMED&nbsp;CT component. 
-	 * @param id the unique identifier of the component.
-	 * @param label the humane readable name of the component.
-	 * @param iconId the concept ID for the icon.
-	 * @param score the index scoring.
-	 * @param storageKey the primary unique database key of the component.
-	 * @param released flag indicating whether the component is published or not.
-	 */
-	public SnomedIndexEntry(final String id, final String label, String iconId, final String moduleId, final float score, final long storageKey, final boolean released, final boolean active, final long effectiveTimeLong) {
-		super(id, label, iconId, score, storageKey);
-		this.moduleId = Preconditions.checkNotNull(moduleId, "SNOMED CT module concept ID argument cannot be null");
+	// XXX: Type parameter reveals subclass to AbstractBuilder for fluent API
+	protected static abstract class AbstractBuilder<B extends AbstractBuilder<B>> {
+
+		protected String id;
+		protected String moduleId;
+		protected long storageKey;
+		protected float score;
+		protected boolean active;
+		protected boolean released;
+		protected long effectiveTimeLong;
+
+		public B id(final String id) {
+			this.id = id;
+			return getSelf();
+		}
+
+		public B moduleId(final String moduleId) {
+			this.moduleId = moduleId;
+			return getSelf();
+		}
+
+		public B storageKey(final long storageKey) {
+			this.storageKey = storageKey;
+			return getSelf();
+		}
+
+		public B score(final float score) {
+			this.score = score;
+			return getSelf();
+		}
+
+		public B active(final boolean active) {
+			this.active = active;
+			return getSelf();
+		}
+
+		public B released(final boolean released) {
+			this.released = released;
+			return getSelf();
+		}
+
+		public B effectiveTimeLong(final long effectiveTimeLong) {
+			this.effectiveTimeLong = effectiveTimeLong;
+			return getSelf();
+		}
+
+		protected abstract B getSelf();
+	}
+
+	protected final String moduleId;
+	protected final boolean released;
+	protected final boolean active;
+	protected final long effectiveTimeLong;
+
+	protected SnomedIndexEntry(final String id, 
+			final String iconId, 
+			final float score, 
+			final long storageKey, 
+			final String moduleId, 
+			final boolean released, 
+			final boolean active, 
+			final long effectiveTimeLong) {
+
+		super(id, 
+				null, // XXX: As there are no definitive labels for SnomedIndexEntries, the identifier is set to null 
+				iconId, 
+				score, 
+				storageKey);
+
+		checkArgument(effectiveTimeLong >= EffectiveTimes.UNSET_EFFECTIVE_TIME, "Effective time argument '%s' is invalid.", effectiveTimeLong);
+
+		this.moduleId = checkNotNull(moduleId, "Component module identifier may not be null.");
 		this.released = released;
 		this.active = active;
-		setEffectiveTime(effectiveTimeLong);
+		this.effectiveTimeLong = effectiveTimeLong;
+	}
+
+	@Override
+	public String getLabel() {
+		throw new UnsupportedOperationException("Labels are not supported in SNOMED CT entries.");
 	}
 
 	/**
-	 * Returns {@code true} if the represented SNOMED&nbsp;CT component is already published. Otherwise returns {@code false}. 
-	 * @return {@code true} if the component is released. Otherwise returns with {@code false}.
+	 * @return {@code true} if the component has already appeared in an RF2 release, {@code false} otherwise
 	 */
 	public boolean isReleased() {
 		return released;
 	}
-	
+
 	/**
-	 * Returns {@code true} if the SNOMED&nbsp;CT component has active status. It returns with {@code false} if the component has been retired.
-	 * @return {@code true} if the component is active, otherwise returns with {@code false}.
+	 * @return {@code true} if the component is active, {@code false} otherwise
 	 */
 	public boolean isActive() {
 		return active;
 	}
-	
+
 	/**
-	 * Returns with the ID of the SNOMED&nbsp;CT module concept.
-	 * @return the concept ID of the module.
+	 * @return the module concept identifier of this component
 	 */
 	public String getModuleId() {
 		return moduleId;
 	}
-	
-	/**Returns with the effective time of the component in {@link DateFormats#DEFAULT} format.
-	 * May return with {@link EffectiveTimes#UNSET_EFFECTIVE_TIME_LABEL} if the effective time is not set.
-	 * @return the effective time of the current component.*/
-	public String getEffectiveTime() {
-		return effectiveTime;
-	}
-	
-	/***
-	 * Returns with the effective time of the current component. May return with {@link EffectiveTimes#UNSET_EFFECTIVE_TIME}
-	 * if the component is unpublished.
-	 * @return the effective time as long.
+
+	/**
+	 * @return the effective time of the component, or {@link EffectiveTimes#UNSET_EFFECTIVE_TIME} if the component currently has
+	 *         no effective time set
 	 */
 	public long getEffectiveTimeAsLong() {
 		return effectiveTimeLong;
 	}
 
-	/**
-	 * Sets the effective time of this entry to the specified number of elapsed milliseconds since the Unix epoch in UTC.
-	 * <p>
-	 * Note that the actual component represented by this index entry will not be changed as a result of this call.
-	 * 
-	 * @param effectiveTimeLong the effective time in number of milliseconds, or {@link EffectiveTimes#UNSET_EFFECTIVE_TIME}
-	 */
-	public void setEffectiveTime(final long effectiveTimeLong) {
-		this.effectiveTimeLong = effectiveTimeLong;
-		this.effectiveTime = EffectiveTimes.format(effectiveTimeLong);
+	@Override
+	public int hashCode() {
+		return 31 + id.hashCode();
+	}
+
+	@Override
+	public boolean equals(final Object obj) {
+		if (this == obj) { return true; }
+		if (obj == null) { return false; }
+		if (getClass() != obj.getClass()) { return false; }
+
+		final SnomedIndexEntry other = (SnomedIndexEntry) obj;
+
+		if (!Objects.equal(id, other.id)) { return false; }
+		return true;
+	}
+
+	protected ToStringHelper toStringHelper() {
+		return Objects.toStringHelper(this)
+				.add("id", id)
+				.add("label", label)
+				.add("iconId", iconId)
+				.add("moduleId", moduleId)
+				.add("score", score)
+				.add("storageKey", storageKey)
+				.add("released", released)
+				.add("active", active)
+				.add("effectiveTime", effectiveTimeLong);
 	}
 }

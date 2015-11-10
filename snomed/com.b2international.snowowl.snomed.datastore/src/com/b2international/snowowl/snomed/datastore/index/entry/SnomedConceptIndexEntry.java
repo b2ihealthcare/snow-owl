@@ -13,14 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.snomed.datastore;
+package com.b2international.snowowl.snomed.datastore.index.entry;
 
 import java.io.Serializable;
 
 import com.b2international.snowowl.core.api.IComponent;
 import com.b2international.snowowl.core.api.index.IIndexEntry;
-import com.b2international.snowowl.snomed.datastore.index.SnomedIndexEntry;
-import com.google.common.base.Objects;
 
 /**
  * A transfer object representing a SNOMED CT concept.
@@ -33,79 +31,42 @@ public class SnomedConceptIndexEntry extends SnomedIndexEntry implements ICompon
 		return new Builder();
 	}
 
-	public static class Builder {
+	public static class Builder extends AbstractBuilder<Builder> {
 
-		private String id;
 		private String iconId;
-		private String moduleId;
-		private long storageKey;
-		private float score;
-		private boolean active;
-		private boolean released;
-		private long effectiveTimeLong;
 		private boolean primitive;
 		private boolean exhaustive;
 
 		private Builder() {
 			// Disallow instantiation outside static method
 		}
-
-		public Builder id(final String id) {
-			this.id = id;
+		
+		@Override
+		protected Builder getSelf() {
 			return this;
 		}
 
 		public Builder iconId(final String iconId) {
 			this.iconId = iconId;
-			return this;
-		}
-
-		public Builder moduleId(final String moduleId) {
-			this.moduleId = moduleId;
-			return this;
-		}
-
-		public Builder storageKey(final long storageKey) {
-			this.storageKey = storageKey;
-			return this;
-		}
-
-		public Builder score(final float score) {
-			this.score = score;
-			return this;
-		}
-
-		public Builder active(final boolean active) {
-			this.active = active;
-			return this;
-		}
-
-		public Builder released(final boolean released) {
-			this.released = released;
-			return this;
-		}
-
-		public Builder effectiveTimeLong(final long effectiveTimeLong) {
-			this.effectiveTimeLong = effectiveTimeLong;
-			return this;
+			return getSelf();
 		}
 
 		public Builder primitive(final boolean primitive) {
 			this.primitive = primitive;
-			return this;
+			return getSelf();
 		}
 
 		public Builder exhaustive(final boolean exhaustive) {
 			this.exhaustive = exhaustive;
-			return this;
+			return getSelf();
 		}
 
 		public SnomedConceptIndexEntry build() {
 			return new SnomedConceptIndexEntry(id, 
 					iconId, 
+					score, 
+					storageKey,
 					moduleId, 
-					score,
-					storageKey, 
 					released, 
 					active, 
 					effectiveTimeLong, 
@@ -119,9 +80,9 @@ public class SnomedConceptIndexEntry extends SnomedIndexEntry implements ICompon
 
 	protected SnomedConceptIndexEntry(final String id, 
 			final String iconId, 
-			final String moduleId, 
 			final float score, 
-			final long storageKey,
+			final long storageKey, 
+			final String moduleId,
 			final boolean released,
 			final boolean active,
 			final long effectiveTimeLong,
@@ -129,12 +90,11 @@ public class SnomedConceptIndexEntry extends SnomedIndexEntry implements ICompon
 			final boolean exhaustive) {
 
 		super(id, 
-				id, // XXX: concept ID is the same as the label, client code requires localization
-				iconId, 
-				moduleId, 
+				iconId,
 				score, 
 				storageKey, 
-				released,
+				moduleId, 
+				released, 
 				active,
 				effectiveTimeLong);
 
@@ -157,36 +117,11 @@ public class SnomedConceptIndexEntry extends SnomedIndexEntry implements ICompon
 	}
 
 	@Override
-	public int hashCode() {
-		return 31 + getId().hashCode();
-	}
-
-	@Override
-	public boolean equals(final Object obj) {
-		if (this == obj) { return true; }
-		if (obj == null) { return false; }
-		if (getClass() != obj.getClass()) { return false; }
-		
-		final SnomedConceptIndexEntry other = (SnomedConceptIndexEntry) obj;
-		
-		if (!Objects.equal(getId(), other.getId())) { return false; }
-		return true;
-	}
-
-	@Override
 	public String toString() {
-		return Objects.toStringHelper(this)
-				.add("id", id)
-				.add("label", label)
-				.add("iconId", iconId)
-				.add("moduleId", getModuleId())
-				.add("score", score)
-				.add("storageKey", storageKey)
-				.add("released", isReleased())
-				.add("active", isActive())
-				.add("effectiveTime", getEffectiveTimeAsLong())
+		return toStringHelper()
 				.add("primitive", primitive)
 				.add("exhaustive", exhaustive)
 				.toString();
 	}
 }
+

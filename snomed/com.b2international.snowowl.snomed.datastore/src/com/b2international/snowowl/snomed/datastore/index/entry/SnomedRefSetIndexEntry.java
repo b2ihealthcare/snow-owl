@@ -13,158 +13,162 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.snomed.datastore.index.refset;
+package com.b2international.snowowl.snomed.datastore.index.entry;
 
-import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.REFERENCE_SET_REFERENCED_COMPONENT_TYPE;
-import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.REFERENCE_SET_STRUCTURAL;
-import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.REFERENCE_SET_TYPE;
+import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
 
 import java.io.Serializable;
 
-import javax.annotation.concurrent.Immutable;
-import javax.annotation.concurrent.ThreadSafe;
-
-import org.apache.lucene.document.Document;
-
+import com.b2international.snowowl.core.CoreTerminologyBroker;
 import com.b2international.snowowl.core.api.IComponent;
-import com.b2international.snowowl.core.date.EffectiveTimes;
-import com.b2international.snowowl.datastore.index.IndexUtils;
-import com.b2international.snowowl.datastore.index.mapping.Mappings;
 import com.b2international.snowowl.snomed.datastore.IRefSetComponent;
 import com.b2international.snowowl.snomed.datastore.SnomedRefSetUtil;
-import com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants;
-import com.b2international.snowowl.snomed.datastore.index.SnomedIndexEntry;
-import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedMappings;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType;
-import com.google.common.base.Objects;
 
 /**
- * Representation of a SNOMED CT reference set.
+ * A transfer object representing a SNOMED CT reference set.
  */
-@ThreadSafe
-@Immutable
 public class SnomedRefSetIndexEntry extends SnomedIndexEntry implements IRefSetComponent, IComponent<String>, Serializable {
 
 	private static final long serialVersionUID = 2943070736359287904L;
 
+	public static Builder builder() {
+		return new Builder();
+	}
+
+	public static class Builder extends AbstractBuilder<Builder> {
+
+		private SnomedRefSetType type;
+		private short referencedComponentType;
+		private short mapTargetComponentType = CoreTerminologyBroker.UNSPECIFIED_NUMBER_SHORT;
+		private boolean structural;
+
+		private Builder() {
+			// Disallow instantiation outside static method
+		}
+		
+		@Override
+		protected Builder getSelf() {
+			return this;
+		}
+
+		public Builder type(final SnomedRefSetType type) {
+			this.type = type;
+			return getSelf();
+		}
+
+		public Builder referencedComponentType(final short referencedComponentType) {
+			this.referencedComponentType = referencedComponentType;
+			return getSelf();
+		}
+
+		public Builder mapTargetComponentType(final short mapTargetComponentType) {
+			this.mapTargetComponentType = mapTargetComponentType;
+			return getSelf();
+		}
+
+		public Builder structural(final boolean structural) {
+			this.structural = structural;
+			return getSelf();
+		}
+
+		public SnomedRefSetIndexEntry build() {
+			return new SnomedRefSetIndexEntry(id, 
+					score, 
+					storageKey, 
+					moduleId, 
+					released, 
+					active, 
+					effectiveTimeLong, 
+					type, 
+					referencedComponentType, 
+					mapTargetComponentType, 
+					structural);
+		}
+	}
+
 	private final SnomedRefSetType type;
 	private final short referencedComponentType;
+	private final short mapTargetComponentType;
 	private final boolean structural;
 
-	public SnomedRefSetIndexEntry(final Document doc) {
-		this(doc, 0.0f);
-	}
-	
-	public SnomedRefSetIndexEntry(final Document doc, final float score) {
-		this(SnomedMappings.id().getValueAsString(doc), 
-				Mappings.label().getValue(doc), 
-				SnomedMappings.iconId().getValueAsString(doc),
-				Mappings.longField(SnomedIndexBrowserConstants.CONCEPT_EFFECTIVE_TIME).getValue(doc),
-				SnomedMappings.module().getValueAsString(doc),
-				score,
-				SnomedMappings.refSetStorageKey().getValue(doc), 
-				SnomedMappings.released().getValue(doc) == 1,
-				SnomedMappings.active().getValue(doc) == 1,
-				SnomedRefSetType.get(IndexUtils.getIntValue(doc.getField(REFERENCE_SET_TYPE))),
-				IndexUtils.getShortValue(doc.getField(REFERENCE_SET_REFERENCED_COMPONENT_TYPE)), 
-				IndexUtils.getBooleanValue(doc.getField(REFERENCE_SET_STRUCTURAL)));
-	}
-	
-	public SnomedRefSetIndexEntry(final String id, final String label, final String iconId, final String moduleId, final float score, 
-			final long storageKey, final boolean released, final boolean active, final SnomedRefSetType type, final short referencedComponentType, final boolean structural) {
-		this(id, label, iconId, EffectiveTimes.UNSET_EFFECTIVE_TIME, moduleId, score, storageKey, released, active, type, referencedComponentType, structural);
-	}
-	
-	/**
-	 * Creates a new instance of this class.
-	 * @param id the unique ID of the identifier concept.
-	 * @param label the label of the associated concept.
-	 * @param iconId TODO
-	 * @param effectiveTime 
-	 * @param score the score for the index.
-	 * @param storageKey unique identifier of the component in the database.
-	 * @param type the type of the reference set.
-	 * @param referencedComponentType the numeric ID of the referenced component's type
-	 */
-	public SnomedRefSetIndexEntry(final String id, final String label, final String iconId, long effectiveTime, final String moduleId, final float score, 
-			final long storageKey, final boolean released, final boolean active, final SnomedRefSetType type, final short referencedComponentType, final boolean structural) {
-		super(id, label, iconId, moduleId, score, storageKey, released, active, -1L); 
-		this.type = checkNotNull(type, "type");
+	private SnomedRefSetIndexEntry(final String id, 
+			final float score, 
+			final long storageKey, 
+			final String moduleId, 
+			final boolean released,
+			final boolean active, 
+			final long effectiveTimeLong, 
+			final SnomedRefSetType type, 
+			final short referencedComponentType,
+			final short mapTargetComponentType, 
+			final boolean structural) {
+
+		super(id, 
+				id, // XXX: iconId is the same as the identifier ID; reference sets might have a specialized icon
+				score, 
+				storageKey, 
+				moduleId, 
+				released, 
+				active, 
+				effectiveTimeLong);
+
+		checkArgument(referencedComponentType >= CoreTerminologyBroker.UNSPECIFIED_NUMBER_SHORT, "Referenced component type '%s' is invalid.", referencedComponentType);
+		checkArgument(mapTargetComponentType >= CoreTerminologyBroker.UNSPECIFIED_NUMBER_SHORT, "Map target component type '%s' is invalid.", referencedComponentType);
+
+		this.type = checkNotNull(type, "Reference set type may not be null.");
 		this.referencedComponentType = referencedComponentType;
+		this.mapTargetComponentType = mapTargetComponentType;
 		this.structural = structural;
-		setEffectiveTime(effectiveTime);
 	}
 
 	/**
-	 * Returns with the {@link SnomedRefSetType type} of the reference set.
-	 * @return the reference set type.
+	 * @return the reference set type
 	 */
 	public SnomedRefSetType getType() {
 		return type;
 	}
-	
+
 	/**
-	 * (non-API)
-	 * Returns with the application specific component identifier as a numeric value of the referenced component.
-	 * @return the application specific terminology component identifier value for the referenced component.
+	 * @return the terminology component identifier value for the referenced component
 	 */
 	public short getReferencedComponentType() {
 		return referencedComponentType;
 	}
-	
+
 	/**
-	 * @return {@code true} if reference set members need to be gathered from lists on the referenced components they
-	 * refer to, {@code false} if they are retrievable from the reference set itself (a single list)
+	 * @return the terminology component identifier value for the map target, or
+	 *         {@link CoreTerminologyBroker#UNSPECIFIED_NUMBER_SHORT} if not known (or the reference set is not a map)
+	 * 
+	 * @see #isMapping()
+	 */
+	public short getMapTargetComponentType() {
+		return mapTargetComponentType;
+	}
+
+	/**
+	 * @return {@code true} if reference set members are contained in lists on the components they refer to, {@code false} if they
+	 *         can be retrieved from the reference set itself
 	 */
 	public boolean isStructural() {
 		return structural;
 	}
-	
+
 	/**
 	 * @return <code>true</code> if the reference set is a mapping type reference set, returns <code>false</code> otherwise.
 	 */
 	public boolean isMapping() {
 		return SnomedRefSetUtil.isMapping(getType());
 	}
-	
+
 	@Override
 	public String toString() {
-		
-		return Objects.toStringHelper(this)
-				.add("id", id)
-				.add("label", label)
-				.add("score", score)
-				.add("storageKey", storageKey)
+		return toStringHelper()
 				.add("type", type)
 				.add("referencedComponentType", referencedComponentType)
+				.add("mapTargetComponentType", mapTargetComponentType)
 				.add("structural", structural)
 				.toString();
 	}
-	
-	public int hashCode() {
-		final int prime = 31;
-		int result = 1;
-		result = prime * result
-				+ ((getId() == null) ? 0 : getId().hashCode());
-		return result;
-	}
-
-	@Override
-	public boolean equals(final Object obj) {
-		if (this == obj)
-			return true;
-		if (obj == null)
-			return false;
-		if (getClass() != obj.getClass())
-			return false;
-		final SnomedRefSetIndexEntry other = (SnomedRefSetIndexEntry) obj;
-		if (getId() == null) {
-			if (other.getId() != null)
-				return false;
-		} else if (!getId().equals(other.getId()))
-			return false;
-		return true;
-	}
-
 }

@@ -13,7 +13,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.snomed.datastore.index;
+package com.b2international.snowowl.snomed.datastore.index.entry;
+
+import static com.google.common.base.Preconditions.checkNotNull;
 
 import java.io.Serializable;
 import java.util.Map;
@@ -35,16 +37,9 @@ public class SnomedDescriptionIndexEntry extends SnomedIndexEntry implements ICo
 		return new Builder();
 	}
 
-	public static class Builder {
+	public static class Builder extends AbstractBuilder<Builder> {
 
-		private String id;
 		private String term;
-		private String moduleId;
-		private long storageKey;
-		private float score;
-		private boolean active;
-		private boolean released;
-		private long effectiveTimeLong;
 		private String conceptId;
 		private String languageCode = "en"; // FIXME: Should not be optional once it is indexed
 		private String typeId;
@@ -54,88 +49,58 @@ public class SnomedDescriptionIndexEntry extends SnomedIndexEntry implements ICo
 		private Builder() {
 			// Disallow instantiation outside static method
 		}
-
-		public Builder id(final String id) {
-			this.id = id;
+		
+		@Override
+		protected Builder getSelf() {
 			return this;
 		}
 
 		public Builder term(final String term) {
 			this.term = term;
-			return this;
-		}
-
-		public Builder moduleId(final String moduleId) {
-			this.moduleId = moduleId;
-			return this;
-		}
-
-		public Builder storageKey(final long storageKey) {
-			this.storageKey = storageKey;
-			return this;
-		}
-
-		public Builder score(final float score) {
-			this.score = score;
-			return this;
-		}
-
-		public Builder active(final boolean active) {
-			this.active = active;
-			return this;
-		}
-
-		public Builder released(final boolean released) {
-			this.released = released;
-			return this;
-		}
-
-		public Builder effectiveTimeLong(final long effectiveTimeLong) {
-			this.effectiveTimeLong = effectiveTimeLong;
-			return this;
+			return getSelf();
 		}
 
 		public Builder conceptId(final String conceptId) {
 			this.conceptId = conceptId;
-			return this;
+			return getSelf();
 		}
 
 		public Builder languageCode(final String languageCode) {
 			this.languageCode = languageCode;
-			return this;
+			return getSelf();
 		}
 
 		public Builder typeId(final String typeId) {
 			this.typeId = typeId;
-			return this;
+			return getSelf();
 		}
 
 		public Builder caseSignificanceId(final String caseSignificanceId) {
 			this.caseSignificanceId = caseSignificanceId;
-			return this;
+			return getSelf();
 		}
 		
 		public Builder acceptability(final String languageRefSetId, final Acceptability acceptability) {
 			this.acceptabilityMapBuilder.put(languageRefSetId, acceptability);
-			return this;
+			return getSelf();
 		}
 		
-		public Builder acceptability(final Map<String, Acceptability> acceptabilityMap) {
+		public Builder acceptabilityMap(final Map<String, Acceptability> acceptabilityMap) {
 			this.acceptabilityMapBuilder.putAll(acceptabilityMap);
-			return this;
+			return getSelf();
 		}
 
 		public SnomedDescriptionIndexEntry build() {
 			return new SnomedDescriptionIndexEntry(id,
-					term,
-					moduleId, 
 					score,
 					storageKey, 
+					moduleId,
 					released, 
 					active, 
 					effectiveTimeLong, 
-					conceptId,
+					conceptId, 
 					languageCode,
+					term,
 					typeId,
 					caseSignificanceId,
 					acceptabilityMapBuilder.build());
@@ -144,39 +109,40 @@ public class SnomedDescriptionIndexEntry extends SnomedIndexEntry implements ICo
 
 	private final String conceptId;
 	private final String languageCode;
+	private final String term;
 	private final String typeId;
 	private final String caseSignificanceId;
 	private final ImmutableMap<String, Acceptability> acceptabilityMap;
 
-	private SnomedDescriptionIndexEntry (final String id, 
-			final String term, 
-			final String moduleId, 
+	private SnomedDescriptionIndexEntry(final String id, 
 			final float score, 
 			final long storageKey, 
+			final String moduleId, 
 			final boolean released, 
 			final boolean active, 
-			final long effectiveTimeLong,
+			final long effectiveTimeLong, 
 			final String conceptId,
 			final String languageCode,
+			final String term,
 			final String typeId, 
 			final String caseSignificanceId,
 			final ImmutableMap<String, Acceptability> acceptabilityMap) {
 
 		super(id, 
-				term, 
-				typeId, // XXX: iconId is the same as typeId
-				moduleId, 
+				typeId, // XXX: iconId is the same as typeId 
 				score, 
 				storageKey, 
+				moduleId, 
 				released, 
 				active, 
 				effectiveTimeLong);
 
-		this.conceptId = conceptId;
-		this.languageCode = languageCode;
-		this.typeId = typeId;
-		this.caseSignificanceId = caseSignificanceId;
-		this.acceptabilityMap = acceptabilityMap; 
+		this.conceptId = checkNotNull(conceptId, "Description concept identifier may not be null.");
+		this.languageCode = checkNotNull(languageCode, "Description language code may not be null.");
+		this.term = checkNotNull(term, "Description term may not be null.");
+		this.typeId = checkNotNull(typeId, "Description type identifier may not be null.");
+		this.caseSignificanceId = checkNotNull(caseSignificanceId, "Description case significance identifier may not be null.");
+		this.acceptabilityMap = checkNotNull(acceptabilityMap, "Description acceptability map may not be null."); 
 	}
 
 	/**
@@ -191,6 +157,13 @@ public class SnomedDescriptionIndexEntry extends SnomedIndexEntry implements ICo
 	 */
 	public String getLanguageCode() {
 		return languageCode;
+	}
+	
+	/**
+	 * @return the description term
+	 */
+	public String getTerm() {
+		return term;
 	}
 
 	/**
@@ -220,14 +193,15 @@ public class SnomedDescriptionIndexEntry extends SnomedIndexEntry implements ICo
 				.add("id", id)
 				.add("label", label)
 				.add("iconId", iconId)
-				.add("moduleId", getModuleId())
+				.add("moduleId", moduleId)
 				.add("score", score)
 				.add("storageKey", storageKey)
-				.add("released", isReleased())
-				.add("active", isActive())
-				.add("effectiveTime", getEffectiveTimeAsLong())
+				.add("released", released)
+				.add("active", active)
+				.add("effectiveTime", effectiveTimeLong)
 				.add("conceptId", conceptId)
-				.add("locale", languageCode)
+				.add("languageCode", languageCode)
+				.add("term", term)
 				.add("typeId", typeId)
 				.add("caseSignificanceId", caseSignificanceId)
 				.add("acceptabilityMap", acceptabilityMap)
