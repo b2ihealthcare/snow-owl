@@ -167,7 +167,8 @@ public class SnomedRefSetMemberApiTest extends AbstractSnomedApiTest {
 		
 		// create query type reference set member with query (ALL characteristic types)
 		final String query = "<"+Concepts.CHARACTERISTIC_TYPE;
-		final Map<String, Object> memberReq = createRefSetMemberRequestBody(Concepts.MODULE_SCT_CORE, null, createdRefSetId, ImmutableMap.<String, Object>of(SnomedRf2Headers.FIELD_QUERY, query));
+		final ImmutableMap<String, Object> queryProps = ImmutableMap.<String, Object>of(SnomedRf2Headers.FIELD_QUERY, query, "refSetDescription", "QTM-AllCharTypes");
+		final Map<String, Object> memberReq = createRefSetMemberRequestBody(Concepts.MODULE_SCT_CORE, null, createdRefSetId, queryProps);
 		final String memberId = assertComponentCreated(testBranchPath, SnomedComponentType.MEMBER, memberReq);
 		assertComponentExists(testBranchPath, SnomedComponentType.MEMBER, memberId)
 			.and().body("query", CoreMatchers.equalTo(query));
