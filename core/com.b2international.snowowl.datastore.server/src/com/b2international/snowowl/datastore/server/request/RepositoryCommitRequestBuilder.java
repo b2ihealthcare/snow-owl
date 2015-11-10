@@ -18,12 +18,13 @@ package com.b2international.snowowl.datastore.server.request;
 import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.domain.TransactionContext;
 import com.b2international.snowowl.core.events.Request;
+import com.b2international.snowowl.core.events.RequestBuilder;
 import com.b2international.snowowl.core.exceptions.ApiValidation;
 
 /**
  * @since 4.5
  */
-public final class RepositoryCommitRequestBuilder {
+public final class RepositoryCommitRequestBuilder implements RequestBuilder<ServiceProvider, CommitInfo> {
 	
 	private String userId;
 	private String repositoryId;
@@ -37,6 +38,11 @@ public final class RepositoryCommitRequestBuilder {
 		this.branch = branch;
 	}
 	
+	public RepositoryCommitRequestBuilder setBody(RequestBuilder<TransactionContext, ?> req) {
+		this.body = req.build();
+		return this;
+	}
+	
 	public RepositoryCommitRequestBuilder setBody(Request<TransactionContext, ?> body) {
 		this.body = body;
 		return this;
@@ -46,7 +52,8 @@ public final class RepositoryCommitRequestBuilder {
 		this.commitComment = commitComment;
 		return this;
 	}
-	
+
+	@Override
 	public Request<ServiceProvider, CommitInfo> build() {
 		ApiValidation.checkInput(body);
 		return RepositoryRequests.wrap(repositoryId, branch, new TransactionalRequest(userId, commitComment, body));
