@@ -15,13 +15,17 @@
  */
 package com.b2international.snowowl.datastore.server.request;
 
+import java.io.Serializable;
+
 import com.b2international.commons.ClassUtils;
 
 /**
  * @since 4.5
  */
-public final class CommitInfo {
+public final class CommitInfo implements Serializable {
 
+	private static final long serialVersionUID = -7479022976959306232L;
+	
 	private final long commitTimestamp;
 	private final Object result;
 
