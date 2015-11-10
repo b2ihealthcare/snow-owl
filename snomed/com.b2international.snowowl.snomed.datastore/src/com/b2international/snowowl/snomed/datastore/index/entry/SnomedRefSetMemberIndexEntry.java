@@ -203,7 +203,7 @@ public class SnomedRefSetMemberIndexEntry extends SnomedIndexEntry implements IC
 		
 		return new SnomedRefSetMemberIndexEntry(
 				uuid, 
-				referencedComponentId, 
+				uuid, 
 				iconId, 
 				moduleId, 
 				0.0F, 
