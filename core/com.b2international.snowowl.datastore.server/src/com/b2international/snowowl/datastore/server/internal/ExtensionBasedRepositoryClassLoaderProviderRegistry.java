@@ -30,7 +30,7 @@ public class ExtensionBasedRepositoryClassLoaderProviderRegistry implements Repo
 	private final Collection<RepositoryClassLoaderProvider> extensions;
 
 	public ExtensionBasedRepositoryClassLoaderProviderRegistry() {
-		this.extensions = Extensions.getExtensions("com.b2international.snowowol.datastore.server.classLoaderProvider", RepositoryClassLoaderProvider.class);
+		this.extensions = Extensions.getExtensions("com.b2international.snowowl.datastore.server.classLoaderProvider", RepositoryClassLoaderProvider.class);
 	}
 	
 	@Override
