@@ -36,7 +36,7 @@ public class SnomedRefSetCreateRequest extends SnomedRefSetRequest<TransactionCo
 	private final String referencedComponentType;
 	private final SnomedConceptCreateRequest conceptReq;
 	
-	public SnomedRefSetCreateRequest(SnomedRefSetType type, String referencedComponentType, SnomedConceptCreateRequest conceptReq) {
+	SnomedRefSetCreateRequest(SnomedRefSetType type, String referencedComponentType, SnomedConceptCreateRequest conceptReq) {
 		this.type = type;
 		this.referencedComponentType = referencedComponentType;
 		this.conceptReq = conceptReq;

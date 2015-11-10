@@ -16,15 +16,16 @@
 package com.b2international.snowowl.snomed.api.rest.domain;
 
 import com.b2international.snowowl.core.terminology.ComponentCategory;
+import com.b2international.snowowl.snomed.core.domain.ISnomedComponent;
 import com.b2international.snowowl.snomed.core.domain.IdGenerationStrategy;
 import com.b2international.snowowl.snomed.core.domain.NamespaceIdGenerationStrategy;
 import com.b2international.snowowl.snomed.core.domain.UserIdGenerationStrategy;
-import com.b2international.snowowl.snomed.datastore.server.request.BaseSnomedComponentCreateRequest;
+import com.b2international.snowowl.snomed.datastore.server.request.SnomedComponentCreateRequestBuilder;
 
 /**
  * @since 4.0
  */
-public abstract class AbstractSnomedComponentRestInput<I extends BaseSnomedComponentCreateRequest<B>, B> {
+public abstract class AbstractSnomedComponentRestInput<I extends SnomedComponentCreateRequestBuilder<I, B>, B extends ISnomedComponent> {
 
 	private String id;
 	private String moduleId;
@@ -72,10 +73,10 @@ public abstract class AbstractSnomedComponentRestInput<I extends BaseSnomedCompo
 	protected abstract ComponentCategory getComponentCategory();
 	
 	protected I toComponentInput() {
-		final I result = createComponentInput();
-		result.setIdGenerationStrategy(createIdGenerationStrategy(getId()));
-		result.setModuleId(getModuleId());
-		return result;
+		final I req = createComponentInput();
+		req.setId(createIdGenerationStrategy(getId()));
+		req.setModuleId(getModuleId());
+		return req;
 	}
 
 	protected IdGenerationStrategy createIdGenerationStrategy(final String idOrNull) {

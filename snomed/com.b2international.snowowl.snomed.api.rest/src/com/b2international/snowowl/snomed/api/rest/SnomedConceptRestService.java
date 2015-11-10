@@ -46,7 +46,7 @@ import com.b2international.snowowl.snomed.api.rest.util.Responses;
 import com.b2international.snowowl.snomed.core.domain.ISnomedConcept;
 import com.b2international.snowowl.snomed.core.domain.ISnomedConceptUpdate;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcepts;
-import com.b2international.snowowl.snomed.datastore.server.request.SnomedConceptCreateRequest;
+import com.b2international.snowowl.snomed.datastore.server.request.SnomedConceptCreateRequestBuilder;
 import com.b2international.snowowl.snomed.datastore.server.request.SnomedRequests;
 import com.wordnik.swagger.annotations.Api;
 import com.wordnik.swagger.annotations.ApiOperation;
@@ -159,7 +159,7 @@ public class SnomedConceptRestService extends AbstractSnomedRestService {
 		final SnomedConceptRestInput change = body.getChange();
 		final String commitComment = body.getCommitComment();
 		
-		final SnomedConceptCreateRequest input = change.toComponentInput();
+		final SnomedConceptCreateRequestBuilder input = change.toComponentInput();
 		
 		final ISnomedConcept createdConcept = SnomedRequests
 			.<ISnomedConcept>prepareCommit(userId, branchPath)

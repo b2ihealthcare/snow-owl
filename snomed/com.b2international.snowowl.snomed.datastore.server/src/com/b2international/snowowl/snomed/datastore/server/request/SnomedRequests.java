@@ -92,6 +92,22 @@ public abstract class SnomedRequests {
 		return req;
 	}
 	
+	public static SnomedRefSetCreateRequestBuilder prepareNewRefSet() {
+		return new SnomedRefSetCreateRequestBuilder();
+	}
+	
+	public static SnomedConceptCreateRequestBuilder prepareNewConcept() {
+		return new SnomedConceptCreateRequestBuilder();
+	}
+	
+	public static SnomedDescriptionCreateRequestBuilder prepareNewDescription() {
+		return new SnomedDescriptionCreateRequestBuilder();
+	}
+	
+	public static SnomedRelationshipCreateRequestBuilder prepareNewRelationship() {
+		return new SnomedRelationshipCreateRequestBuilder();
+	}
+	
 	// TODO migrate initial API to builders
 	public static Request<ServiceProvider, SnomedReferenceSets> prepareGetReferenceSets(String branch) {
 		return RepositoryRequests.wrap(REPOSITORY_ID, branch, new SnomedRefSetReadAllRequest());

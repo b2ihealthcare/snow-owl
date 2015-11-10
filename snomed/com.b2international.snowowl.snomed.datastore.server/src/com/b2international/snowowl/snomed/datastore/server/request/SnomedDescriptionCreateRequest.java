@@ -57,11 +57,14 @@ public class SnomedDescriptionCreateRequest extends BaseSnomedComponentCreateReq
 	private String languageCode;
 
 	@NotNull
-	private CaseSignificance caseSignificance = CaseSignificance.INITIAL_CHARACTER_CASE_INSENSITIVE;
+	private CaseSignificance caseSignificance;
 
 	@NotEmpty
 	private Map<String, Acceptability> acceptability;
 
+	SnomedDescriptionCreateRequest() {
+	}
+	
 	public String getConceptId() {
 		return conceptId;
 	}

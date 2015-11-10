@@ -60,6 +60,8 @@ public class SnomedRelationshipCreateRequest extends BaseSnomedComponentCreateRe
 	@NotNull
 	private RelationshipModifier modifier;
 
+	SnomedRelationshipCreateRequest() {}
+	
 	public String getSourceId() {
 		return sourceId;
 	}

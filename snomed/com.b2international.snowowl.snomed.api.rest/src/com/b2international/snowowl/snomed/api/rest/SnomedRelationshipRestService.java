@@ -40,7 +40,7 @@ import com.b2international.snowowl.snomed.api.rest.domain.SnomedRelationshipRest
 import com.b2international.snowowl.snomed.api.rest.util.Responses;
 import com.b2international.snowowl.snomed.core.domain.ISnomedRelationship;
 import com.b2international.snowowl.snomed.core.domain.ISnomedRelationshipUpdate;
-import com.b2international.snowowl.snomed.datastore.server.request.SnomedRelationshipCreateRequest;
+import com.b2international.snowowl.snomed.datastore.server.request.SnomedRelationshipCreateRequestBuilder;
 import com.b2international.snowowl.snomed.datastore.server.request.SnomedRequests;
 import com.wordnik.swagger.annotations.Api;
 import com.wordnik.swagger.annotations.ApiOperation;
@@ -84,7 +84,7 @@ public class SnomedRelationshipRestService extends AbstractSnomedRestService {
 			final Principal principal) {
 
 		final String commitComment = body.getCommitComment();
-		final SnomedRelationshipCreateRequest req = body.getChange().toComponentInput();
+		final SnomedRelationshipCreateRequestBuilder req = body.getChange().toComponentInput();
 		
 		final ISnomedRelationship createdRelationship = SnomedRequests
 				.<ISnomedRelationship>prepareCommit(principal.getName(), branchPath)

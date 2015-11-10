@@ -21,12 +21,13 @@ import com.b2international.snowowl.core.terminology.ComponentCategory;
 import com.b2international.snowowl.snomed.core.domain.Acceptability;
 import com.b2international.snowowl.snomed.core.domain.CaseSignificance;
 import com.b2international.snowowl.snomed.core.domain.ISnomedDescription;
-import com.b2international.snowowl.snomed.datastore.server.request.SnomedDescriptionCreateRequest;
+import com.b2international.snowowl.snomed.datastore.server.request.SnomedDescriptionCreateRequestBuilder;
+import com.b2international.snowowl.snomed.datastore.server.request.SnomedRequests;
 
 /**
  * @since 1.0
  */
-public class SnomedDescriptionRestInput extends AbstractSnomedComponentRestInput<SnomedDescriptionCreateRequest, ISnomedDescription> {
+public class SnomedDescriptionRestInput extends AbstractSnomedComponentRestInput<SnomedDescriptionCreateRequestBuilder, ISnomedDescription> {
 
 	private String typeId;
 	private String term;
@@ -99,25 +100,22 @@ public class SnomedDescriptionRestInput extends AbstractSnomedComponentRestInput
 	}
 
 	@Override
-	protected SnomedDescriptionCreateRequest createComponentInput() {
-		return new SnomedDescriptionCreateRequest();
+	protected SnomedDescriptionCreateRequestBuilder createComponentInput() {
+		return SnomedRequests.prepareNewDescription();
 	}
 
 	/**
 	 * @return
 	 */
 	@Override
-	public SnomedDescriptionCreateRequest toComponentInput() {
-		final SnomedDescriptionCreateRequest result = super.toComponentInput();
-
-		result.setCaseSignificance(getCaseSignificance());
-		result.setConceptId(getConceptId());
-		result.setLanguageCode(getLanguageCode());
-		result.setTerm(getTerm());
-		result.setTypeId(getTypeId());
-		result.setAcceptability(getAcceptability());
-
-		return result;
+	public SnomedDescriptionCreateRequestBuilder toComponentInput() {
+		return super.toComponentInput()
+				.setCaseSignificance(getCaseSignificance())
+				.setConceptId(getConceptId())
+				.setLanguageCode(getLanguageCode())
+				.setTerm(getTerm())
+				.setTypeId(getTypeId())
+				.setAcceptability(getAcceptability());
 	}
 
 	@Override

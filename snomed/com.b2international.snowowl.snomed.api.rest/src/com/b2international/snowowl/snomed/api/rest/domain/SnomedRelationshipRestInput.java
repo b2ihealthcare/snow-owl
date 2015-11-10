@@ -19,12 +19,13 @@ import com.b2international.snowowl.core.terminology.ComponentCategory;
 import com.b2international.snowowl.snomed.core.domain.CharacteristicType;
 import com.b2international.snowowl.snomed.core.domain.ISnomedRelationship;
 import com.b2international.snowowl.snomed.core.domain.RelationshipModifier;
-import com.b2international.snowowl.snomed.datastore.server.request.SnomedRelationshipCreateRequest;
+import com.b2international.snowowl.snomed.datastore.server.request.SnomedRelationshipCreateRequestBuilder;
+import com.b2international.snowowl.snomed.datastore.server.request.SnomedRequests;
 
 /**
  * @since 1.0
  */
-public class SnomedRelationshipRestInput extends AbstractSnomedComponentRestInput<SnomedRelationshipCreateRequest, ISnomedRelationship> {
+public class SnomedRelationshipRestInput extends AbstractSnomedComponentRestInput<SnomedRelationshipCreateRequestBuilder, ISnomedRelationship> {
 
 	private CharacteristicType characteristicType = CharacteristicType.STATED_RELATIONSHIP;
 	private String destinationId;
@@ -100,27 +101,21 @@ public class SnomedRelationshipRestInput extends AbstractSnomedComponentRestInpu
 	}
 
 	@Override
-	protected SnomedRelationshipCreateRequest createComponentInput() {
-		return new SnomedRelationshipCreateRequest();
+	protected SnomedRelationshipCreateRequestBuilder createComponentInput() {
+		return SnomedRequests.prepareNewRelationship();
 	}
 
-	/**
-	 * @return
-	 */
 	@Override
-	public SnomedRelationshipCreateRequest toComponentInput() {
-		final SnomedRelationshipCreateRequest result = super.toComponentInput();
-
-		result.setCharacteristicType(getCharacteristicType());
-		result.setDestinationId(getDestinationId());
-		result.setDestinationNegated(isDestinationNegated());
-		result.setGroup(getGroup());
-		result.setModifier(getModifier());
-		result.setSourceId(getSourceId());
-		result.setTypeId(getTypeId());
-		result.setUnionGroup(getUnionGroup());
-
-		return result;
+	public SnomedRelationshipCreateRequestBuilder toComponentInput() {
+		return super.toComponentInput()
+				.setCharacteristicType(getCharacteristicType())
+				.setDestinationId(getDestinationId())
+				.setDestinationNegated(isDestinationNegated())
+				.setGroup(getGroup())
+				.setModifier(getModifier())
+				.setSourceId(getSourceId())
+				.setTypeId(getTypeId())
+				.setUnionGroup(getUnionGroup());
 	}
 
 	@Override

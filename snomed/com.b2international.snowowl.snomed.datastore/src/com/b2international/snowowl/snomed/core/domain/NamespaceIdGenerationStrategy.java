@@ -26,6 +26,10 @@ public class NamespaceIdGenerationStrategy implements IdGenerationStrategy {
 	private final ComponentCategory category;
 	private final String namespaceId;
 
+	public NamespaceIdGenerationStrategy(final ComponentCategory category) {
+		this(category, null);
+	}
+	
 	/**
 	 * @param category
 	 * @param namespaceId

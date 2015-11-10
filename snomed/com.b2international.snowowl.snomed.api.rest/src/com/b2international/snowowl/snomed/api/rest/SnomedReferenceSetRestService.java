@@ -37,7 +37,7 @@ import com.b2international.snowowl.snomed.api.rest.util.DeferredResults;
 import com.b2international.snowowl.snomed.api.rest.util.Responses;
 import com.b2international.snowowl.snomed.core.domain.SnomedReferenceSet;
 import com.b2international.snowowl.snomed.core.domain.SnomedReferenceSets;
-import com.b2international.snowowl.snomed.datastore.server.request.SnomedRefSetCreateRequest;
+import com.b2international.snowowl.snomed.datastore.server.request.SnomedRefSetCreateRequestBuilder;
 import com.b2international.snowowl.snomed.datastore.server.request.SnomedRequests;
 import com.wordnik.swagger.annotations.Api;
 import com.wordnik.swagger.annotations.ApiOperation;
@@ -107,7 +107,12 @@ public class SnomedReferenceSetRestService extends AbstractSnomedRestService {
 			final Principal principal) {
 		
 		final SnomedRefSetRestInput change = body.getChange();
-		final SnomedRefSetCreateRequest req = new SnomedRefSetCreateRequest(change.getType(), change.getReferencedComponentType(), change.toComponentInput());
+		
+		final SnomedRefSetCreateRequestBuilder req = SnomedRequests
+			.prepareNewRefSet()
+			.setIdentifierConcept(change.toComponentInput())
+			.setType(change.getType())
+			.setReferencedComponentType(change.getReferencedComponentType());
 		
 		final SnomedReferenceSet createdRefSet = 
 				SnomedRequests
