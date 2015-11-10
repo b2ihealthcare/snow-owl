@@ -24,6 +24,7 @@ import java.util.Map;
 import org.eclipse.emf.cdo.common.branch.CDOBranch;
 import org.eclipse.emf.cdo.common.branch.CDOBranchManager;
 
+import com.b2international.snowowl.core.ClassLoaderProvider;
 import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.api.index.IIndexServerServiceManager;
 import com.b2international.snowowl.core.api.index.IIndexUpdater;
@@ -37,6 +38,7 @@ import com.b2international.snowowl.datastore.cdo.ICDORepository;
 import com.b2international.snowowl.datastore.cdo.ICDORepositoryManager;
 import com.b2international.snowowl.datastore.review.ReviewManager;
 import com.b2international.snowowl.datastore.server.CDOServerUtils;
+import com.b2international.snowowl.datastore.server.RepositoryClassLoaderProviderRegistry;
 import com.b2international.snowowl.datastore.server.ReviewConfiguration;
 import com.b2international.snowowl.datastore.server.cdo.CDOConflictProcessorBroker;
 import com.b2international.snowowl.datastore.server.cdo.ICDOConflictProcessor;
@@ -140,8 +142,9 @@ public final class CDOBasedRepository implements InternalRepository {
 	}
 	
 	private void initializeRequestSupport() {
+		final ClassLoaderProvider classLoaderProvider = env.service(RepositoryClassLoaderProviderRegistry.class).get(repositoryId);
 		for (int i = 0; i < numberOfWorkers; i++) {
-			handlers().registerHandler(address(), new ApiRequestHandler(services()));
+			handlers().registerHandler(address(), new ApiRequestHandler(services(), classLoaderProvider));
 		}
 		
 		// register event bridge/pipe between events and handlers
