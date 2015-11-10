@@ -21,23 +21,7 @@ import static com.b2international.snowowl.datastore.BranchPathUtils.createPath;
 import static com.b2international.snowowl.datastore.cdo.CDOIDUtils.STORAGE_KEY_TO_CDO_ID_FUNCTION;
 import static com.b2international.snowowl.datastore.cdo.CDOUtils.getAttribute;
 import static com.b2international.snowowl.datastore.cdo.CDOUtils.getObjectIfExists;
-import static com.b2international.snowowl.snomed.SnomedConstants.Concepts.B2I_NAMESPACE;
-import static com.b2international.snowowl.snomed.SnomedConstants.Concepts.ENTIRE_TERM_CASE_INSENSITIVE;
-import static com.b2international.snowowl.snomed.SnomedConstants.Concepts.ENTIRE_TERM_CASE_SENSITIVE;
-import static com.b2international.snowowl.snomed.SnomedConstants.Concepts.EXISTENTIAL_RESTRICTION_MODIFIER;
-import static com.b2international.snowowl.snomed.SnomedConstants.Concepts.FULLY_SPECIFIED_NAME;
-import static com.b2international.snowowl.snomed.SnomedConstants.Concepts.IS_A;
-import static com.b2international.snowowl.snomed.SnomedConstants.Concepts.MODULE_B2I_EXTENSION;
-import static com.b2international.snowowl.snomed.SnomedConstants.Concepts.MODULE_SCT_CORE;
-import static com.b2international.snowowl.snomed.SnomedConstants.Concepts.PRIMITIVE;
-import static com.b2international.snowowl.snomed.SnomedConstants.Concepts.QUALIFIER_VALUE_TOPLEVEL_CONCEPT;
-import static com.b2international.snowowl.snomed.SnomedConstants.Concepts.QUALIFYING_RELATIONSHIP;
-import static com.b2international.snowowl.snomed.SnomedConstants.Concepts.REFSET_COMPLEX_MAP_TYPE;
-import static com.b2international.snowowl.snomed.SnomedConstants.Concepts.REFSET_DESCRIPTION_ACCEPTABILITY_ACCEPTABLE;
-import static com.b2international.snowowl.snomed.SnomedConstants.Concepts.REFSET_DESCRIPTION_ACCEPTABILITY_PREFERRED;
-import static com.b2international.snowowl.snomed.SnomedConstants.Concepts.REFSET_SIMPLE_TYPE;
-import static com.b2international.snowowl.snomed.SnomedConstants.Concepts.STATED_RELATIONSHIP;
-import static com.b2international.snowowl.snomed.SnomedConstants.Concepts.SYNONYM;
+import static com.b2international.snowowl.snomed.SnomedConstants.Concepts.*;
 import static com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants.CONCEPT;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.collect.Iterables.toArray;
@@ -94,6 +78,7 @@ import com.b2international.snowowl.snomed.Relationship;
 import com.b2international.snowowl.snomed.SnomedConstants;
 import com.b2international.snowowl.snomed.SnomedFactory;
 import com.b2international.snowowl.snomed.SnomedPackage;
+import com.b2international.snowowl.snomed.core.preference.ModulePreference;
 import com.b2international.snowowl.snomed.core.store.SnomedComponentBuilder;
 import com.b2international.snowowl.snomed.datastore.NormalFormWrapper.AttributeConceptGroupWrapper;
 import com.b2international.snowowl.snomed.datastore.id.ISnomedIdentifierService;
@@ -1533,24 +1518,21 @@ public class SnomedEditingContext extends BaseSnomedEditingContext {
 	/**
 	 * @return the module concept specified in the preferences, or falls back to the <em>SNOMED CT core module</em>
 	 * concept if the specified concept is not found.
+	 * @deprecated - use {@link ModulePreference} instead to get the module ID on client side
 	 */
 	public Concept getDefaultModuleConcept() {
 		if (null == moduleConcept) {
-			final String moduleId = checkNotNull(
-					getSnomedConfiguration().getModuleIds().getDefaultChildKey(), 
-					"No default module configured.");
-			try {
-				moduleConcept = new SnomedConceptLookupService().getComponent(moduleId, transaction);
-			} catch (IllegalArgumentException e) {
-				LOGGER.info("Could not find default module concept with id " + moduleId + ", falling back to SNOMED CT core module");
+			for (String modulePreference : ModulePreference.getModulePreference()) {
+				try {
+					moduleConcept = getConcept(modulePreference);
+				} catch (ComponentNotFoundException e) {
+					// ignore and proceed to the next preference
+				}
 			}
 			if (null == moduleConcept) {
-				moduleConcept = new SnomedConceptLookupService().getComponent(MODULE_SCT_CORE, transaction);
+				LOGGER.warn("Error while loading and caching SNOMED CT module concept.");
 			}
 		}
-		if (null == moduleConcept)
-			LOGGER.warn("Error while loading and caching SNOMED CT module concept.");
-		
 		return moduleConcept;
 	}
 	
