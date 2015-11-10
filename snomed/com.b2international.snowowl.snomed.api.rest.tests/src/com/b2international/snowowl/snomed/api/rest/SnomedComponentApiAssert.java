@@ -18,7 +18,6 @@ package com.b2international.snowowl.snomed.api.rest;
 import static com.b2international.snowowl.snomed.SnomedConstants.Concepts.FULLY_SPECIFIED_NAME;
 import static com.b2international.snowowl.snomed.SnomedConstants.Concepts.SYNONYM;
 import static com.b2international.snowowl.snomed.api.rest.SnomedApiTestConstants.PREFERRED_ACCEPTABILITY_MAP;
-import static com.b2international.snowowl.snomed.api.rest.SnomedComponentApiAssert.givenConceptRequestBody;
 import static com.b2international.snowowl.test.commons.rest.RestExtensions.givenAuthenticatedRequest;
 import static com.b2international.snowowl.test.commons.rest.RestExtensions.lastPathSegment;
 import static org.hamcrest.CoreMatchers.containsString;
@@ -123,9 +122,13 @@ public abstract class SnomedComponentApiAssert {
 			final String componentId, 
 			final int statusCode) {
 
-		return givenAuthenticatedRequest(SnomedApiTestConstants.SCT_API)
-				.when().get("/{path}/{componentType}/{id}", branchPath.getPath(), componentType.toLowerCasePlural(), componentId)
+		return getComponent(branchPath, componentType, componentId)
 				.then().log().ifValidationFails().assertThat().statusCode(statusCode);
+	}
+
+	public static Response getComponent(final IBranchPath branchPath, final SnomedComponentType componentType, final String componentId) {
+		return givenAuthenticatedRequest(SnomedApiTestConstants.SCT_API)
+				.when().get("/{path}/{componentType}/{id}", branchPath.getPath(), componentType.toLowerCasePlural(), componentId);
 	}
 
 	/**

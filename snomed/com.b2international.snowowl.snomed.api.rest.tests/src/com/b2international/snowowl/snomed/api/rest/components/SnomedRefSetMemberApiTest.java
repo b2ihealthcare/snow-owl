@@ -20,8 +20,8 @@ import static com.b2international.snowowl.snomed.SnomedConstants.Concepts.ROOT_C
 import static com.b2international.snowowl.snomed.api.rest.SnomedApiTestConstants.PREFERRED_ACCEPTABILITY_MAP;
 import static com.b2international.snowowl.snomed.api.rest.SnomedBranchingApiAssert.givenBranchWithPath;
 import static com.b2international.snowowl.snomed.api.rest.SnomedComponentApiAssert.assertComponentCanBeDeleted;
-import static com.b2international.snowowl.snomed.api.rest.SnomedComponentApiAssert.assertComponentCreated;
-import static com.b2international.snowowl.snomed.api.rest.SnomedComponentApiAssert.assertComponentExists;
+import static com.b2international.snowowl.snomed.api.rest.SnomedComponentApiAssert.*;
+import static com.b2international.snowowl.snomed.api.rest.SnomedComponentApiAssert.*;
 import static com.b2international.snowowl.snomed.api.rest.SnomedComponentApiAssert.assertComponentNotCreated;
 import static com.b2international.snowowl.snomed.api.rest.SnomedComponentApiAssert.assertComponentNotExists;
 import static com.b2international.snowowl.snomed.api.rest.SnomedComponentApiAssert.assertComponentReadWithStatus;
@@ -40,9 +40,12 @@ import com.b2international.snowowl.snomed.api.rest.AbstractSnomedApiTest;
 import com.b2international.snowowl.snomed.api.rest.SnomedComponentType;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
+import com.b2international.snowowl.snomed.core.domain.SnomedReferenceSetMember;
 import com.b2international.snowowl.snomed.datastore.id.SnomedIdentifiers;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType;
 import com.google.common.collect.ImmutableMap;
+import com.jayway.restassured.response.Response;
+import com.jayway.restassured.response.ValidatableResponse;
 
 /**
  * TODO try to create a member with invalid refcompid
@@ -170,8 +173,15 @@ public class SnomedRefSetMemberApiTest extends AbstractSnomedApiTest {
 		final ImmutableMap<String, Object> queryProps = ImmutableMap.<String, Object>of(SnomedRf2Headers.FIELD_QUERY, query, "refSetDescription", "QTM-AllCharTypes");
 		final Map<String, Object> memberReq = createRefSetMemberRequestBody(Concepts.MODULE_SCT_CORE, null, createdRefSetId, queryProps);
 		final String memberId = assertComponentCreated(testBranchPath, SnomedComponentType.MEMBER, memberReq);
-		assertComponentExists(testBranchPath, SnomedComponentType.MEMBER, memberId)
-			.and().body("query", CoreMatchers.equalTo(query));
+		Response response = getComponent(testBranchPath, SnomedComponentType.MEMBER, memberId);
+		response.then().assertThat()
+			.statusCode(200)
+			.and()
+			.body("query", CoreMatchers.equalTo(query));
+			
+		final String referencedComponentId = response.body().path("referencedComponentId");
+		assertComponentExists(testBranchPath, SnomedComponentType.REFSET, referencedComponentId);
+		// TODO assert number of members in the refset
 	}
 	
 	@Test
