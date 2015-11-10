@@ -15,6 +15,7 @@
  */
 package com.b2international.snowowl.core.events.util;
 
+import com.b2international.snowowl.core.ClassLoaderProvider;
 import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.events.Request;
 
@@ -27,7 +28,8 @@ public final class ApiRequestHandler extends ApiEventHandler {
 
 	private final ServiceProvider context;
 
-	public ApiRequestHandler(ServiceProvider context) {
+	public ApiRequestHandler(ServiceProvider context, ClassLoaderProvider classLoaderProvider) {
+		super(classLoaderProvider);
 		this.context = context;
 	}
 

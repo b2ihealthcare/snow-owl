@@ -46,7 +46,7 @@ public final class AsyncSupport<T> {
 					if (message.isSucceeded()) {
 						promise.resolve(message.body(clazz));
 					} else {
-						promise.reject((Throwable) message.body());
+						promise.reject(message.body(Throwable.class, AsyncSupport.class.getClassLoader()));
 					}
 				} catch (Throwable e) {
 					promise.reject(e);
