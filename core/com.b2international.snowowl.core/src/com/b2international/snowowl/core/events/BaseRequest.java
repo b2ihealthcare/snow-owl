@@ -40,17 +40,27 @@ public abstract class BaseRequest<C extends ServiceProvider, B> extends BaseEven
 
 	@Override
 	public final B executeSync(IEventBus bus) {
-		return executeSync(bus, 5000L);
+		try {
+			return execute(bus).get();
+		} catch (InterruptedException e) {
+			throw new SnowowlRuntimeException(e);
+		} catch (ExecutionException e) {
+			final Throwable cause = e.getCause();
+			if (cause instanceof RuntimeException) {
+				throw (RuntimeException) cause;
+			}
+			throw new SnowowlRuntimeException(cause);
+		}
 	}
 
 	@Override
 	public final B executeSync(IEventBus bus, long timeout) {
 		try {
 			return execute(bus).get(timeout, TimeUnit.MILLISECONDS);
-		} catch (InterruptedException e) {
-			throw new SnowowlRuntimeException(e);
 		} catch (TimeoutException e) {
 			throw new RequestTimeoutException(e);
+		} catch (InterruptedException e) {
+			throw new SnowowlRuntimeException(e);
 		} catch (ExecutionException e) {
 			final Throwable cause = e.getCause();
 			if (cause instanceof RuntimeException) {

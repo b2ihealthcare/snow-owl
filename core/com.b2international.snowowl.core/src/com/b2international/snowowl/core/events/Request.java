@@ -43,8 +43,8 @@ public interface Request<T extends ServiceProvider, B> extends Event {
 	Promise<B> execute(IEventBus bus);
 
 	/**
-	 * Sends this {@link Request} to existing handlers and waits for the response synchronously until it arrives or a timeout happens. The default
-	 * timeout value is <b>5</b> seconds.
+	 * Sends this {@link Request} to existing handlers and waits for the response synchronously until it arrives. Basically converts this async
+	 * operation to a sync one.
 	 * 
 	 * @param bus
 	 *            - the dispatcher of the request
