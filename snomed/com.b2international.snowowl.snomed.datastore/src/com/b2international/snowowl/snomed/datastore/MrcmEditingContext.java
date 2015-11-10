@@ -15,13 +15,17 @@
  */
 package com.b2international.snowowl.snomed.datastore;
 
+import java.util.UUID;
+
 import org.eclipse.emf.cdo.CDOState;
 import org.eclipse.emf.ecore.EPackage;
 
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.datastore.BranchPathUtils;
 import com.b2international.snowowl.datastore.CDOEditingContext;
+import com.b2international.snowowl.snomed.mrcm.AttributeConstraint;
 import com.b2international.snowowl.snomed.mrcm.ConceptModel;
+import com.b2international.snowowl.snomed.mrcm.ConstraintForm;
 import com.b2international.snowowl.snomed.mrcm.MrcmFactory;
 import com.google.common.collect.Iterables;
 
@@ -46,8 +50,8 @@ public class MrcmEditingContext extends BaseSnomedEditingContext {
 	 * If the concept model does not exist creates a new instance. The new concept model instance will be added to the root resource.
 	 * @return the concept model.
 	 */
-	public ConceptModel getConceptModel() {
-		ConceptModel conceptModel = (ConceptModel) Iterables.getFirst(getContents(), null);
+	public ConceptModel getOrCreateConceptModel() {
+		ConceptModel conceptModel = Iterables.getFirst(Iterables.filter(getContents(), ConceptModel.class), null);
 		if (null == conceptModel) {
 			conceptModel = createConceptModel();
 			add(conceptModel);
@@ -55,6 +59,18 @@ public class MrcmEditingContext extends BaseSnomedEditingContext {
 		return conceptModel;
 	}
 
+	public AttributeConstraint createAttributeConstraint() {
+		
+		AttributeConstraint attributeConstraint = MrcmFactory.eINSTANCE.createAttributeConstraint();
+		
+		attributeConstraint.setActive(true);
+		attributeConstraint.setUuid(UUID.randomUUID().toString());
+		attributeConstraint.setStrength(null);
+		attributeConstraint.setForm(ConstraintForm.ALL_FORMS);
+		
+		return attributeConstraint;
+	}
+	
 	@Override
 	protected String getRootResourceName() {
 		return SnomedCDORootResourceNameProvider.MRCM_ROOT_RESOURCE_NAME;

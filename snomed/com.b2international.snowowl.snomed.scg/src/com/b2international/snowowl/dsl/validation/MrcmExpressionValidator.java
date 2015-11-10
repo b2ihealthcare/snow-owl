@@ -75,7 +75,7 @@ public class MrcmExpressionValidator {
 			final SnomedClientRefSetBrowser refSetBrowser = ApplicationContext.getInstance().getServiceChecked(SnomedClientRefSetBrowser.class);
 
 			context = new MrcmEditingContext();
-			conceptModel = context.getConceptModel();
+			conceptModel = context.getOrCreateConceptModel();
 
 			for (final String focusConceptId : focusConceptIdList) {
 				constraints.addAll(getConceptModelProvider().getConstraintsForValidation(conceptModel, focusConceptId, terminologyBrowser, refSetBrowser));

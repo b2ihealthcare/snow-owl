@@ -118,7 +118,7 @@ public class MrcmConceptValidator {
 			final List<IDiagnostic> result = Lists.newArrayList();
 
 			context = new MrcmEditingContext();
-			conceptModel = context.getConceptModel();
+			conceptModel = context.getOrCreateConceptModel();
 
 			final Set<ConstraintBase> constraints = getConceptModelProvider().getConstraintsForValidation(conceptModel, concept.getId(), terminologyBrowser, refSetBrowse);
 			final List<Relationship> outboundRelationships = concept.getOutboundRelationships();

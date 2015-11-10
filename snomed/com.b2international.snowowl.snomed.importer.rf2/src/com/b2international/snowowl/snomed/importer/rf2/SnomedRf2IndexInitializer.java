@@ -202,7 +202,7 @@ public class SnomedRf2IndexInitializer extends Job {
 		LOGGER.info("Collecting MRCM rule related changes...");
 		final Multimap<Long, String> componentIdToConstraints = HashMultimap.create();
 		try (MrcmEditingContext context = new MrcmEditingContext()) {
-			ConceptModel conceptModel = context.getConceptModel();
+			ConceptModel conceptModel = context.getOrCreateConceptModel();
 			final Iterable<AttributeConstraint> constraints = FluentIterable.from(conceptModel.getConstraints())
 					.filter(new ConstraintFormIsApplicableForValidationPredicate()).filter(AttributeConstraint.class);
 			for (final AttributeConstraint constraint : constraints) {
