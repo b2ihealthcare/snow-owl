@@ -15,6 +15,7 @@
  */
 package com.b2international.snowowl.snomed.datastore.server.request;
 
+import java.util.Collections;
 import java.util.Map;
 
 import org.eclipse.emf.ecore.EObject;
@@ -76,6 +77,10 @@ public abstract class SnomedRequests {
 	
 	public static Request<TransactionContext, ?> prepareDeleteRelationship(String relationshipId) {
 		return prepareDeleteComponent(relationshipId, Relationship.class);
+	}
+	
+	public static Request<TransactionContext, SnomedReferenceSetMember> prepareNewMember(String moduleId, String referencedComponentId, String referenceSetId) {
+		return prepareNewMember(moduleId, referencedComponentId, referenceSetId, Collections.<String, Object>emptyMap());
 	}
 	
 	public static Request<TransactionContext, SnomedReferenceSetMember> prepareNewMember(String moduleId, String referencedComponentId, String referenceSetId, Map<String, Object> properties) {
