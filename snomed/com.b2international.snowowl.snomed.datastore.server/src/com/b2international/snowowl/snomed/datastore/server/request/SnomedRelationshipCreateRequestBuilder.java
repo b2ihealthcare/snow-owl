@@ -15,6 +15,7 @@
  */
 package com.b2international.snowowl.snomed.datastore.server.request;
 
+import com.b2international.snowowl.core.terminology.ComponentCategory;
 import com.b2international.snowowl.snomed.core.domain.CharacteristicType;
 import com.b2international.snowowl.snomed.core.domain.ISnomedRelationship;
 import com.b2international.snowowl.snomed.core.domain.RelationshipModifier;
@@ -33,7 +34,9 @@ public final class SnomedRelationshipCreateRequestBuilder extends SnomedComponen
 	private int unionGroup = 0;
 	private String typeId;
 
-	SnomedRelationshipCreateRequestBuilder() {}
+	SnomedRelationshipCreateRequestBuilder() {
+		super(ComponentCategory.RELATIONSHIP);
+	}
 	
 	public SnomedRelationshipCreateRequestBuilder setDestinationId(String destinationId) {
 		this.destinationId = destinationId;

@@ -15,6 +15,8 @@
  */
 package com.b2international.snowowl.snomed.datastore.server.request;
 
+import static com.google.common.base.Preconditions.checkNotNull;
+
 import javax.annotation.OverridingMethodsMustInvokeSuper;
 
 import com.b2international.snowowl.core.domain.TransactionContext;
@@ -34,6 +36,11 @@ public abstract class SnomedComponentCreateRequestBuilder<B extends SnomedCompon
 	
 	private String moduleId;
 	private IdGenerationStrategy idGenerationStrategy;
+	private ComponentCategory category;
+	
+	protected SnomedComponentCreateRequestBuilder(ComponentCategory category) {
+		this.category = checkNotNull(category);
+	}
 	
 	public final B setId(String id) {
 		this.idGenerationStrategy = new UserIdGenerationStrategy(id);
@@ -41,7 +48,7 @@ public abstract class SnomedComponentCreateRequestBuilder<B extends SnomedCompon
 	}
 	
 	public final B setIdFromNamespace(String namespace) {
-		this.idGenerationStrategy = new NamespaceIdGenerationStrategy(ComponentCategory.CONCEPT, namespace);
+		this.idGenerationStrategy = new NamespaceIdGenerationStrategy(category, namespace);
 		return getSelf();
 	}
 	
@@ -62,7 +69,8 @@ public abstract class SnomedComponentCreateRequestBuilder<B extends SnomedCompon
 	@Override
 	public final Request<TransactionContext, R> build() {
 		final BaseSnomedComponentCreateRequest<R> req = createRequest();
-		req.setIdGenerationStrategy(idGenerationStrategy);
+		// FIXME use default namespace???
+		req.setIdGenerationStrategy(idGenerationStrategy == null ? new NamespaceIdGenerationStrategy(category) : idGenerationStrategy);
 		req.setModuleId(moduleId);
 		init(req);
 		return req;

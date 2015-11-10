@@ -19,6 +19,7 @@ import static com.google.common.collect.Maps.newHashMap;
 
 import java.util.Map;
 
+import com.b2international.snowowl.core.terminology.ComponentCategory;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.core.domain.Acceptability;
 import com.b2international.snowowl.snomed.core.domain.CaseSignificance;
@@ -36,7 +37,9 @@ public final class SnomedDescriptionCreateRequestBuilder extends SnomedComponent
 	private String languageCode = "en";
 	private Map<String, Acceptability> acceptabilityMap = newHashMap();
 	
-	SnomedDescriptionCreateRequestBuilder() {}
+	SnomedDescriptionCreateRequestBuilder() {
+		super(ComponentCategory.DESCRIPTION);
+	}
 	
 	public SnomedDescriptionCreateRequestBuilder setCaseSignificance(CaseSignificance caseSignificance) {
 		this.caseSignificance = caseSignificance;
