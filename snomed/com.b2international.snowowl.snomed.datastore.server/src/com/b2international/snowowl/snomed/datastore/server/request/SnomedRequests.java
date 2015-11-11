@@ -132,4 +132,8 @@ public abstract class SnomedRequests {
 		return RepositoryRequests.reviews(REPOSITORY_ID);
 	}
 
+	public static QueryRefSetEvaluationRequestBuilder prepareQueryRefSetEvaluation(String referenceSetId) {
+		return new QueryRefSetEvaluationRequestBuilder(REPOSITORY_ID).setReferenceSetId(referenceSetId);
+	}
+
 }
