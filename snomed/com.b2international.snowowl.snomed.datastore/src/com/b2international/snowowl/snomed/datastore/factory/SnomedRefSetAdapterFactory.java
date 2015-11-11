@@ -16,98 +16,54 @@
 package com.b2international.snowowl.snomed.datastore.factory;
 
 import com.b2international.commons.TypeSafeAdapterFactory;
-import com.b2international.snowowl.core.ApplicationContext;
-import com.b2international.snowowl.core.CoreTerminologyBroker;
 import com.b2international.snowowl.core.api.IComponent;
-import com.b2international.snowowl.core.api.ILookupService;
-import com.b2international.snowowl.datastore.BranchPathUtils;
+import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.datastore.cdo.CDOIDUtils;
-import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
-import com.b2international.snowowl.snomed.datastore.SnomedClientRefSetBrowser;
+import com.b2international.snowowl.snomed.Concept;
 import com.b2international.snowowl.snomed.datastore.SnomedConceptLookupService;
-import com.b2international.snowowl.snomed.datastore.SnomedIconProvider;
-import com.b2international.snowowl.snomed.datastore.index.refset.SnomedRefSetIndexEntry;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetIndexEntry;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetIndexEntry.Builder;
+import com.b2international.snowowl.snomed.snomedrefset.SnomedMappingRefSet;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSet;
-import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetPackage;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedStructuralRefSet;
 
+/**
+ * Adapter factory implementation for SNOMED CT reference sets.
+ */
 public class SnomedRefSetAdapterFactory extends TypeSafeAdapterFactory {
 
-	@Override
-	public <T> T getAdapterSafe(Object adaptableObject, Class<T> adapterType) {
+	public SnomedRefSetAdapterFactory() {
+		super(IComponent.class, SnomedRefSetIndexEntry.class);
+	}
 
-		if (IComponent.class != adapterType) {
-			return null;
-		}
-		
-		if (adaptableObject instanceof SnomedRefSetIndexEntry || adaptableObject instanceof SnomedRefSetIndexEntry) {
+	@Override
+	protected <T> T getAdapterSafe(final Object adaptableObject, final Class<T> adapterType) {
+
+		if (adaptableObject instanceof SnomedRefSetIndexEntry) {
 			return adapterType.cast(adaptableObject);
 		} 
-		
+
 		if (adaptableObject instanceof SnomedRefSet) {
-			
 			final SnomedRefSet refSet = (SnomedRefSet) adaptableObject;
-			final SnomedClientRefSetBrowser refSetBrowser = ApplicationContext.getInstance().getService(SnomedClientRefSetBrowser.class);
-			final SnomedRefSetIndexEntry refSetMini = refSetBrowser.getRefSet(refSet.getIdentifierId());
-			
-			if (null != refSetMini) {
-				return adapterType.cast(refSetMini);
+			final Concept identifierConcept = new SnomedConceptLookupService().getComponent(refSet.getIdentifierId(), refSet.cdoView());
+			final Builder builder = SnomedRefSetIndexEntry.builder()
+					.id(refSet.getIdentifierId()) 
+					.moduleId(identifierConcept.getModule().getId())
+					.storageKey(CDOIDUtils.asLongSafe(refSet.cdoID()))
+					.active(identifierConcept.isActive())
+					.released(identifierConcept.isReleased())
+					.effectiveTimeLong(identifierConcept.isSetEffectiveTime() ? identifierConcept.getEffectiveTime().getTime() : EffectiveTimes.UNSET_EFFECTIVE_TIME)
+					.type(refSet.getType()) 
+					.referencedComponentType(refSet.getReferencedComponentType())
+					.structural(refSet instanceof SnomedStructuralRefSet);
+
+			if (refSet instanceof SnomedMappingRefSet) {
+				builder.mapTargetComponentType(((SnomedMappingRefSet) refSet).getMapTargetComponentType());
 			}
-			
-			return adapterType.cast(createRefSetMini(refSet));
+
+			return adapterType.cast(builder.build());
 		}
-		
+
 		return null;
-	}
-
-	@Override
-	public Class<?>[] getAdapterListSafe() {
-		return new Class<?>[] { IComponent.class };
-	}
-	
-	private SnomedRefSetIndexEntry createRefSetMini(final SnomedRefSet refSet) {
-		return new SnomedRefSetIndexEntry(
-				refSet.getIdentifierId(), 
-				getIdentifierLabel(refSet), 
-				SnomedIconProvider.getInstance().getIconComponentId(refSet.getIdentifierId()),
-				new SnomedConceptLookupService().getComponent(refSet.getIdentifierId(), refSet.cdoView()).getModule().getId(),
-				0.0F, 
-				CDOIDUtils.asLongSafe(refSet.cdoID()),
-				false, 
-				true,
-				refSet.getType(), 
-				refSet.getReferencedComponentType(), refSet instanceof SnomedStructuralRefSet);
-	}
-
-	private String getIdentifierLabel(final SnomedRefSet refSet) {
-		
-		final String id = refSet.getIdentifierId();
-		IComponent<String> component = getConcept(id);
-		String label = null;
-		if (null != component)
-			label = component.getLabel();
-		if (null == label) {
-			// TODO: refactor this. we can fix read only exception, because no PT is created for the reference set identifier concept.
-//			 
-//			final Object cdoObject = CoreTerminologyBroker.getInstance().getLookupService(SnomedTerminologyComponentConstants.CONCEPT).getComponent(refSet.getIdentifierId(), refSet.cdoView());
-//			label = SnomedConceptNameProvider.INSTANCE.getText(cdoObject);
-//			if (StringUtils.isEmpty(label)) {
-//				if (refSet.cdoView() instanceof CDOTransaction) {
-//					label = SnomedConceptNameProvider.INSTANCE.getText(refSet.getIdentifierId(), (CDOTransaction) refSet.cdoView());
-//					if (null == label)
-//						label = id;
-//				}
-//			}
-			return label;
-		}
-		return label;
-	}
-
-	private IComponent<String> getConcept(final String id) {
-		return getConceptLookupService().getComponent(BranchPathUtils.createActivePath(SnomedRefSetPackage.eINSTANCE), id);
-	}
-
-	private ILookupService<String, Object, Object> getConceptLookupService() {
-		return CoreTerminologyBroker.getInstance().getLookupService(SnomedTerminologyComponentConstants.CONCEPT);
 	}
 }

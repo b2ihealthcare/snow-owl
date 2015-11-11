@@ -20,33 +20,26 @@ import com.b2international.snowowl.core.api.IComponent;
 import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.datastore.cdo.CDOUtils;
 import com.b2international.snowowl.snomed.Description;
-import com.b2international.snowowl.snomed.datastore.index.SnomedDescriptionIndexEntry;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDescriptionIndexEntry;
 
 /**
+ * Adapter factory implementation for SNOMED CT descriptions.
  */
 public class SnomedDescriptionAdapterFactory extends TypeSafeAdapterFactory {
 
-	/*
-	 * (non-Javadoc)
-	 * @see com.b2international.commons.TypeSafeAdapterFactory#getAdapterSafe(java.lang.Object, java.lang.Class)
-	 */
+	public SnomedDescriptionAdapterFactory() {
+		super(IComponent.class, SnomedDescriptionIndexEntry.class);
+	}
+
 	@Override
-	public <T> T getAdapterSafe(Object adaptableObject, Class<T> adapterType) {
-		
-		if (null == adaptableObject) {
-			return null;
-		}
-		
-		if (IComponent.class != adapterType) {
-			return null;
-		}
-		
+	protected <T> T getAdapterSafe(final Object adaptableObject, final Class<T> adapterType) {
+
 		if (adaptableObject instanceof SnomedDescriptionIndexEntry) {
 			return adapterType.cast(adaptableObject);
 		}
-		
+
 		if (adaptableObject instanceof Description) {
-			
+
 			final Description description = (Description) adaptableObject;
 			final SnomedDescriptionIndexEntry adaptedEntry = SnomedDescriptionIndexEntry.builder()
 					.id(description.getId()) 
@@ -61,19 +54,10 @@ public class SnomedDescriptionAdapterFactory extends TypeSafeAdapterFactory {
 					.languageCode(description.getLanguageCode())
 					.effectiveTimeLong(description.isSetEffectiveTime() ? description.getEffectiveTime().getTime() : EffectiveTimes.UNSET_EFFECTIVE_TIME)
 					.build();
-			
+
 			return adapterType.cast(adaptedEntry);
 		}
-	
-		return null;
-	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see com.b2international.commons.TypeSafeAdapterFactory#getAdapterListSafe()
-	 */
-	@Override
-	public Class<?>[] getAdapterListSafe() {
-		return new Class<?>[] { IComponent.class };
+		return null;
 	}
 }
