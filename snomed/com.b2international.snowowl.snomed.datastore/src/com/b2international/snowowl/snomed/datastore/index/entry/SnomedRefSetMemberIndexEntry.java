@@ -19,12 +19,20 @@ import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
 
 import java.io.Serializable;
+import java.math.BigDecimal;
+import java.util.Date;
 import java.util.Map;
 
 import com.b2international.commons.functions.UncheckedCastFunction;
 import com.b2international.snowowl.core.CoreTerminologyBroker;
 import com.b2international.snowowl.core.api.IComponent;
+import com.b2international.snowowl.snomed.core.domain.Acceptability;
+import com.b2international.snowowl.snomed.core.domain.InactivationIndicator;
+import com.b2international.snowowl.snomed.core.domain.RelationshipRefinability;
+import com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants;
+import com.b2international.snowowl.snomed.snomedrefset.DataType;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType;
+import com.google.common.base.Function;
 import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableMap;
 
@@ -52,12 +60,12 @@ public class SnomedRefSetMemberIndexEntry extends SnomedIndexEntry implements IC
 		private Builder() {
 			// Disallow instantiation outside static method
 		}
-		
+
 		@Override
 		protected Builder getSelf() {
 			return this;
 		}
-		
+
 		public Builder referencedComponentId(final String referencedComponentId) {
 			this.referencedComponentId = referencedComponentId;
 			return this;
@@ -445,18 +453,63 @@ public class SnomedRefSetMemberIndexEntry extends SnomedIndexEntry implements IC
 
 	/**
 	 * @param fieldName the name of the additional field
-	 * @return the {@code Number} value stored for the field
+	 * @return the {@code Integer} value stored for the field
 	 * @throws IllegalStateException if no value was set for the field
-	 * @throws ClassCastException if the value is not of type {@code Number}
+	 * @throws ClassCastException if the value is not of type {@code Integer}
 	 */
-	public Number getNumericField(final String fieldName) {
-		return getField(fieldName, Number.class);
+	public Integer getIntegerField(final String fieldName) {
+		return getField(fieldName, Integer.class);
+	}
+
+	/**
+	 * @param fieldName the name of the additional field
+	 * @return the {@code BigDecimal} value stored for the field
+	 * @throws IllegalStateException if no value was set for the field
+	 * @throws ClassCastException if the value is not of type {@code BigDecimal}
+	 */
+	public BigDecimal getBigDecimalField(final String fieldName) {
+		return getField(fieldName, BigDecimal.class);
+	}
+
+	/**
+	 * @param fieldName the name of the additional field
+	 * @return the {@code Date} value stored for the field
+	 * @throws IllegalStateException if no value was set for the field
+	 * @throws ClassCastException if the value is not of type {@code Date}
+	 */
+	public Date getDateField(final String fieldName) {
+		return getField(fieldName, Date.class);
+	}
+
+	/**
+	 * @param fieldName the name of the additional field
+	 * @return the {@code Boolean} value stored for the field
+	 * @throws IllegalStateException if no value was set for the field
+	 * @throws ClassCastException if the value is not of type {@code Boolean}
+	 */
+	public Boolean getBooleanField(final String fieldName) {
+		return getField(fieldName, Boolean.class);
+	}
+
+	/**
+	 * @param fieldName the name of the additional field
+	 * @return the {@code Object} value stored for the field
+	 * @throws IllegalStateException if no value was set for the field
+	 */	
+	public Object getField(final String fieldName) {
+		return getOptionalField(fieldName).get();
+	}
+
+	private Optional<Object> getOptionalField(final String fieldName) {
+		return Optional.fromNullable(additionalFields.get(fieldName));
 	}
 
 	private <T> T getField(final String fieldName, final Class<T> type) {
-		return Optional.fromNullable(additionalFields.get(fieldName))
-				.transform(new UncheckedCastFunction<Object, T>(type))
-				.get();
+		return getField(fieldName, new UncheckedCastFunction<Object, T>(type));
+	}
+
+	private <T> T getField(final String fieldName, Function<Object, T> transformFunction) {
+		return getOptionalField(fieldName).transform(transformFunction).get();
 	}
 
 	/**
@@ -474,17 +527,25 @@ public class SnomedRefSetMemberIndexEntry extends SnomedIndexEntry implements IC
 	}
 
 	/**
-	 * @return the terminology component identifier of the component referenced in this member
+	 * @return the {@code String} terminology component identifier of the component referenced in this member
 	 */
-	public short getReferencedComponentType() {
-		return referencedComponentType;
+	public String getReferencedComponentType() {
+		return CoreTerminologyBroker.getInstance().getTerminologyComponentId(referencedComponentType);
 	}
 
 	/**
-	 * @return the terminology component identifier of the map target in this member, or
+	 * @return the {@code String} terminology component identifier of the map target in this member, or
+	 *         {@link CoreTerminologyBroker#UNSPECIFIED} if not known (or the reference set is not a map)
+	 */
+	public String getMapTargetComponentType() {
+		return CoreTerminologyBroker.getInstance().getTerminologyComponentId(mapTargetComponentType);
+	}
+	
+	/**
+	 * @return the {@code String} terminology component identifier of the map target in this member, or
 	 *         {@link CoreTerminologyBroker#UNSPECIFIED_NUMBER_SHORT} if not known (or the reference set is not a map)
 	 */
-	public short getMapTargetComponentType() {
+	public short getMapTargetComponentTypeAsShort() {
 		return mapTargetComponentType;
 	}
 
@@ -497,5 +558,103 @@ public class SnomedRefSetMemberIndexEntry extends SnomedIndexEntry implements IC
 				.add("referencedComponentType", referencedComponentType)
 				.add("mapTargetComponentType", mapTargetComponentType)
 				.toString();
+	}
+
+	// -----------------------------------
+	// FIXME: Methods below should be replaced with field-based access(?)
+	// -----------------------------------
+
+	@SuppressWarnings("unchecked")
+	public <T> T getValue() {
+		return (T) getField(SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_SERIALIZED_VALUE); 
+	}
+
+	public DataType getRefSetPackageDataType() {
+		return DataType.get(getIntegerField(SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_DATA_TYPE_VALUE));
+	}
+
+	public String getUomComponentId() {
+		return getStringField(SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_UOM_ID);
+	}
+
+	public String getAttributeLabel() {
+		return getStringField(SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_DATA_TYPE_LABEL);
+	}
+
+	public String getOperatorComponentId() {
+		return getStringField(SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_OPERATOR_ID);
+	}
+
+	public String getCharacteristicTypeId() {
+		return getStringField(SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_CHARACTERISTIC_TYPE_ID);
+	}	
+
+	public Acceptability getAcceptability() {
+		return Acceptability.getByConceptId(getAcceptabilityId());
+	}
+
+	public String getAcceptabilityId() {
+		return getStringField(SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_ACCEPTABILITY_ID);
+	}
+
+	public Integer getDescriptionLength() {
+		return getIntegerField(SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_DESCRIPTION_LENGTH);
+	}
+
+	public String getMapTargetComponentId() {
+		return getStringField(SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_MAP_TARGET_COMPONENT_ID);
+	}
+
+	public int getMapGroup() {
+		return getIntegerField(SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_MAP_GROUP);
+	}
+
+	public int getMapPriority() {
+		return getIntegerField(SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_MAP_PRIORITY);
+	}
+
+	public String getMapRule() {
+		return getStringField(SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_MAP_RULE);
+	}
+
+	public String getMapAdvice() {
+		return getStringField(SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_MAP_ADVICE);
+	}
+	
+	public String getMapCategoryId() {
+		return getStringField(SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_MAP_CATEGORY_ID);
+	}
+	
+	public String getCorrelationId() {
+		return getStringField(SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_CORRELATION_ID);
+	}
+
+	public String getMapTargetDescription() {
+		return getStringField(SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_MAP_TARGET_COMPONENT_DESCRIPTION);
+	}
+	
+	public String getQuery() {
+		return getStringField(SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_QUERY);
+	}
+	
+	public String getTargetComponentId() {
+		return getStringField(SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_TARGET_COMPONENT_ID);
+	}
+
+	public RelationshipRefinability getRefinability() {
+		return RelationshipRefinability.getByConceptId(getValueId());
+	}
+	
+	public InactivationIndicator getInactivationIndicator() {
+		return InactivationIndicator.getByConceptId(getValueId());
+	}
+
+	public String getValueId() {
+		return getStringField(SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_VALUE_ID);
+	}
+
+	@Deprecated
+	public String getSpecialFieldLabel() {
+		throw new UnsupportedOperationException("Special field label needs to be computed separately.");
 	}
 }

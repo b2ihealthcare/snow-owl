@@ -25,6 +25,8 @@ import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.datastore.index.AbstractIndexEntry;
 import com.google.common.base.Objects;
 import com.google.common.base.Objects.ToStringHelper;
+import com.google.common.base.Supplier;
+import com.google.common.base.Suppliers;
 
 /**
  * Common superclass for SNOMED CT transfer objects.
@@ -86,6 +88,13 @@ public abstract class SnomedIndexEntry extends AbstractIndexEntry implements ICo
 	protected final boolean released;
 	protected final boolean active;
 	protected final long effectiveTimeLong;
+	
+	private final Supplier<String> effectiveTimeSupplier = Suppliers.memoize(new Supplier<String>() {
+		@Override
+		public String get() {
+			return EffectiveTimes.format(effectiveTimeLong);
+		}
+	});
 
 	protected SnomedIndexEntry(final String id, 
 			final String iconId, 
@@ -97,7 +106,7 @@ public abstract class SnomedIndexEntry extends AbstractIndexEntry implements ICo
 			final long effectiveTimeLong) {
 
 		super(id, 
-				null, // XXX: As there are no definitive labels for SnomedIndexEntries, the identifier is set to null 
+				null, // XXX: As there are no definitive labels for SnomedIndexEntries, it is set to null 
 				iconId, 
 				score, 
 				storageKey);
@@ -111,6 +120,7 @@ public abstract class SnomedIndexEntry extends AbstractIndexEntry implements ICo
 	}
 
 	@Override
+	@Deprecated
 	public String getLabel() {
 		throw new UnsupportedOperationException("Labels are not supported in SNOMED CT entries.");
 	}
@@ -142,6 +152,14 @@ public abstract class SnomedIndexEntry extends AbstractIndexEntry implements ICo
 	 */
 	public long getEffectiveTimeAsLong() {
 		return effectiveTimeLong;
+	}
+
+	/**
+	 * @return the effective time of the component formatted using {@link EffectiveTimes#format(Object)}, or
+	 *         {@link EffectiveTimes#UNSET_EFFECTIVE_TIME_LABEL} if the component currently has no effective time set
+	 */
+	public String getEffectiveTime() {
+		return effectiveTimeSupplier.get();
 	}
 
 	@Override
