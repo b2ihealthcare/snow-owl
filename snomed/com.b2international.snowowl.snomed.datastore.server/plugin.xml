@@ -150,7 +150,7 @@
       <provider
             class="com.b2international.snowowl.snomed.datastore.quicksearch.MissingSnomedComponentQuickSearchContentProvider"
             quickSearchProviderId="com.b2international.snowowl.snomed.datastore.quicksearch.MissingComponentQuickSearchProvider"
-            terminologyComponentId="com.b2international.snowowl.terminology.snomed.concept">
+            terminologyComponentId="UNSPECIFIED">
       </provider>      
    </extension>
    <extension
