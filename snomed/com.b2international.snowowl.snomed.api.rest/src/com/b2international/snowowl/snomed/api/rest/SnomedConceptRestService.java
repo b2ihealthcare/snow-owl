@@ -97,12 +97,12 @@ public class SnomedConceptRestService extends AbstractSnomedRestService {
 
 		return DeferredResults.wrap(
 				SnomedRequests
-					.prepareSearch(branch)
+					.prepareConceptSearch()
 					.setLimit(limit)
 					.setOffset(offset)
-					.setLabel(labelFilter)
-					.setEscg(escgFilter)
-					.build()
+					.filterByLabel(labelFilter)
+					.filterByEscg(escgFilter)
+					.build(branch)
 					.execute(bus));
 	}
 

@@ -83,7 +83,7 @@ public class SnomedReferenceSetMemberRestService extends AbstractSnomedRestServi
 			@ApiParam(value="The maximum number of items to return")
 			@RequestParam(value="limit", defaultValue="50", required=false) 
 			final int limit) {
-		return DeferredResults.wrap(SnomedRequests.prepareGetReferenceSetMembers(branchPath, offset, limit).execute(bus));
+		return DeferredResults.wrap(SnomedRequests.prepareMemberSearch().setLimit(limit).setOffset(offset).build(branchPath).execute(bus));
 	}
 	
 	@ApiOperation(

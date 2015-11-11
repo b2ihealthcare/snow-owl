@@ -65,7 +65,7 @@ public class SnomedReferenceSetRestService extends AbstractSnomedRestService {
 			@ApiParam(value="The branch path")
 			@PathVariable(value="path")
 			final String branchPath) {
-		return DeferredResults.wrap(SnomedRequests.prepareGetReferenceSets(branchPath).execute(bus));
+		return DeferredResults.wrap(SnomedRequests.prepareRefSetSearch(branchPath).execute(bus));
 	}
 	
 	@ApiOperation(

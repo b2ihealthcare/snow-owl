@@ -28,7 +28,7 @@ import com.google.common.collect.ImmutableList;
 /**
  * @since 4.5
  */
-final class SnomedRefSetReadAllRequest extends SnomedRefSetRequest<BranchContext, SnomedReferenceSets> {
+final class SnomedRefSetSearchRequest extends SearchRequest<SnomedReferenceSets> {
 
 	private final SnomedReferenceSetConverter converter = new SnomedReferenceSetConverter();
 	

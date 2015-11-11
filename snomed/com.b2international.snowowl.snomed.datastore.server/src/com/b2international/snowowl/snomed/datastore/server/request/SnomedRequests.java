@@ -32,7 +32,6 @@ import com.b2international.snowowl.snomed.Description;
 import com.b2international.snowowl.snomed.Relationship;
 import com.b2international.snowowl.snomed.core.domain.SnomedReferenceSet;
 import com.b2international.snowowl.snomed.core.domain.SnomedReferenceSetMember;
-import com.b2international.snowowl.snomed.core.domain.SnomedReferenceSetMembers;
 import com.b2international.snowowl.snomed.core.domain.SnomedReferenceSets;
 import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetMember;
@@ -51,8 +50,8 @@ public abstract class SnomedRequests {
 		return RepositoryRequests.prepareCommit(userId, REPOSITORY_ID, branch);
 	}
 	
-	public static SnomedConceptSearchRequestBuilder prepareSearch(String branch) {
-		return new SnomedConceptSearchRequestBuilder(branch);
+	public static SnomedConceptSearchRequestBuilder prepareConceptSearch() {
+		return new SnomedConceptSearchRequestBuilder(REPOSITORY_ID);
 	}
 	
 	public static SnomedConceptGetRequestBuilder prepareGet(String branch) {
@@ -109,16 +108,16 @@ public abstract class SnomedRequests {
 	}
 	
 	// TODO migrate initial API to builders
-	public static Request<ServiceProvider, SnomedReferenceSets> prepareGetReferenceSets(String branch) {
-		return RepositoryRequests.wrap(REPOSITORY_ID, branch, new SnomedRefSetReadAllRequest());
+	public static Request<ServiceProvider, SnomedReferenceSets> prepareRefSetSearch(String branch) {
+		return RepositoryRequests.wrap(REPOSITORY_ID, branch, new SnomedRefSetSearchRequest());
 	}
 	
 	public static Request<ServiceProvider, SnomedReferenceSet> prepareGetReferenceSet(String branch, String referenceSetId) {
 		return RepositoryRequests.wrap(REPOSITORY_ID, branch, new SnomedRefSetReadRequest(referenceSetId));
 	}
 	
-	public static Request<ServiceProvider, SnomedReferenceSetMembers> prepareGetReferenceSetMembers(String branch, int offset, int limit) {
-		return RepositoryRequests.wrap(REPOSITORY_ID, branch, new SnomedRefSetMemberReadAllRequest(offset, limit));
+	public static SnomedRefSetMemberSearchRequestBuilder prepareMemberSearch() {
+		return new SnomedRefSetMemberSearchRequestBuilder(REPOSITORY_ID);
 	}
 	
 	public static Request<ServiceProvider, SnomedReferenceSetMember> prepareGetReferenceSetMember(String branch, String memberId) {
