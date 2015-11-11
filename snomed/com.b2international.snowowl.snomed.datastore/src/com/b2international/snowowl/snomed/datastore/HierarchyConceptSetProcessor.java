@@ -20,6 +20,7 @@ import java.util.Iterator;
 
 import com.b2international.snowowl.core.api.browser.IClientTerminologyBrowser;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptIndexEntry;
 import com.b2international.snowowl.snomed.mrcm.HierarchyConceptSetDefinition;
 import com.google.common.collect.Iterators;
 

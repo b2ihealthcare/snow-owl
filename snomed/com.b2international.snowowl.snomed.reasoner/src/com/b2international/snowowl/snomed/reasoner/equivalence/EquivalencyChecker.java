@@ -23,7 +23,7 @@ import bak.pcj.map.LongKeyLongOpenHashMap;
 import bak.pcj.set.LongOpenHashSet;
 import bak.pcj.set.LongSet;
 
-import com.b2international.snowowl.snomed.datastore.SnomedConceptIndexEntry;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptIndexEntry;
 import com.b2international.snowowl.snomed.reasoner.classification.AbstractEquivalenceSet;
 import com.b2international.snowowl.snomed.reasoner.classification.AbstractResponse.Type;
 import com.b2international.snowowl.snomed.reasoner.classification.ClassificationRequest;

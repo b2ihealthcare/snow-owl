@@ -29,7 +29,7 @@ import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedDocument
 public class DescriptionMutablePropertyUpdater extends ComponentMutablePropertyUpdater {
 
 	public DescriptionMutablePropertyUpdater(Description component) {
-		super(component, SnomedIndexBrowserConstants.DESCRIPTION_EFFECTIVE_TIME);
+		super(component);
 	}
 	
 	@Override

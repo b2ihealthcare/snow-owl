@@ -18,6 +18,7 @@ package com.b2international.snowowl.snomed.datastore.index;
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.api.index.IIndexService;
 import com.b2international.snowowl.core.api.index.IIndexUpdater;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedIndexEntry;
 
 /**
  * Index service for the SNOMED CT terminology on the client side. Responsible for 

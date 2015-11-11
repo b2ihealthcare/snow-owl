@@ -17,7 +17,7 @@ package com.b2international.snowowl.snomed.datastore.validation;
 
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.validation.IComponentValidationService;
-import com.b2international.snowowl.snomed.datastore.SnomedConceptIndexEntry;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptIndexEntry;
 
 /**
  * Server side SNOMED&nbsp;CT component validation service.

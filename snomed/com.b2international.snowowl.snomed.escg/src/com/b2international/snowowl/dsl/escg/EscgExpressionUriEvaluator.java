@@ -24,8 +24,8 @@ import java.util.List;
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.uri.IExpressionUriEvaluator;
 import com.b2international.snowowl.core.uri.UriUtils;
-import com.b2international.snowowl.snomed.datastore.SnomedConceptIndexEntry;
 import com.b2international.snowowl.snomed.datastore.escg.IEscgQueryEvaluatorClientService;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptIndexEntry;
 import com.google.common.collect.ImmutableList;
 
 /**

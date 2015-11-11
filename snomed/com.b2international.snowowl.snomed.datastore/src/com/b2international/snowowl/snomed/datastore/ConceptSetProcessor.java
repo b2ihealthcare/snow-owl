@@ -17,6 +17,7 @@ package com.b2international.snowowl.snomed.datastore;
 
 import java.util.Iterator;
 
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptIndexEntry;
 import com.b2international.snowowl.snomed.mrcm.ConceptSetDefinition;
 import com.google.common.collect.Iterators;
 

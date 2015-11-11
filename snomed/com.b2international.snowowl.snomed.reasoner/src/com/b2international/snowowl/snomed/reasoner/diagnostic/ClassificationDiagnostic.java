@@ -28,7 +28,7 @@ import com.b2international.snowowl.core.markers.IDiagnostic;
 import com.b2international.snowowl.core.markers.MarkerAttributeIdValuePair;
 import com.b2international.snowowl.core.markers.MarkerManager;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
-import com.b2international.snowowl.snomed.datastore.SnomedConceptIndexEntry;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptIndexEntry;
 import com.b2international.snowowl.snomed.reasoner.classification.AbstractEquivalenceSet;
 import com.google.common.base.Function;
 import com.google.common.collect.Maps;

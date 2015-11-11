@@ -26,9 +26,9 @@ import com.b2international.snowowl.core.api.ComponentUtils;
 import com.b2international.snowowl.core.api.IComponent;
 import com.b2international.snowowl.datastore.cdo.ICDOConnectionManager;
 import com.b2international.snowowl.scripting.services.api.IQueryEvaluatorService;
-import com.b2international.snowowl.snomed.datastore.SnomedConceptIndexEntry;
 import com.b2international.snowowl.snomed.datastore.index.SnomedClientIndexService;
 import com.b2international.snowowl.snomed.datastore.index.SnomedDOIQueryAdapter;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptIndexEntry;
 import com.google.common.collect.Iterables;
 
 /**
