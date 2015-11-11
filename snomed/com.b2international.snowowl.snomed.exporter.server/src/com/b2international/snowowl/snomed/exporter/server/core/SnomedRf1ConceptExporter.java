@@ -18,7 +18,6 @@ package com.b2international.snowowl.snomed.exporter.server.core;
 import static com.b2international.commons.StringUtils.valueOfOrEmptyString;
 import static com.b2international.snowowl.core.ApplicationContext.getServiceForClass;
 import static com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants.CONCEPT_NUMBER;
-import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.CONCEPT_FULLY_SPECIFIED_NAME;
 import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.CONCEPT_PRIMITIVE;
 import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_MAP_TARGET_COMPONENT_ID;
 import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_VALUE_ID;
@@ -62,7 +61,7 @@ import com.google.common.collect.AbstractIterator;
  */
 public class SnomedRf1ConceptExporter implements SnomedRf1Exporter {
 
-	private static final Set<String> CONCEPT_FILEDS_TO_LOAD = SnomedMappings.fieldsToLoad().active().field(CONCEPT_FULLY_SPECIFIED_NAME).field(CONCEPT_PRIMITIVE).build();
+	private static final Set<String> CONCEPT_FIELDS_TO_LOAD = SnomedMappings.fieldsToLoad().active().field(CONCEPT_PRIMITIVE).build();
 	
 	private static final Set<String> MAP_TARGET_ID_FIELD_TO_LOAD = SnomedMappings.fieldsToLoad().field(REFERENCE_SET_MEMBER_MAP_TARGET_COMPONENT_ID).build();
 	
@@ -86,6 +85,10 @@ public class SnomedRf1ConceptExporter implements SnomedRf1Exporter {
 					
 					private final Iterator<IdStorageKeyPair> idIterator = getServiceForClass(ISnomedComponentService.class)
 							.getAllComponentIdStorageKeys(getBranchPath(), CONCEPT_NUMBER).iterator();
+					
+					//////////////////////////////
+					// TODO: Map FSNs here
+					//////////////////////////////
 					
 					@SuppressWarnings("rawtypes")
 					private final IndexServerService indexService = (IndexServerService) ApplicationContext.getInstance().getService(SnomedIndexService.class);
@@ -113,7 +116,7 @@ public class SnomedRf1ConceptExporter implements SnomedRf1Exporter {
 								
 								Preconditions.checkState(null != conceptTopDocs && !CompareUtils.isEmpty(conceptTopDocs.scoreDocs));
 								
-								final Document doc = searcher.doc(conceptTopDocs.scoreDocs[0].doc, CONCEPT_FILEDS_TO_LOAD);
+								final Document doc = searcher.doc(conceptTopDocs.scoreDocs[0].doc, CONCEPT_FIELDS_TO_LOAD);
 								
 								_values[0] = conceptId;
 								_values[1] = 1 == SnomedMappings.active().getValue(doc) ? "1" : "0";

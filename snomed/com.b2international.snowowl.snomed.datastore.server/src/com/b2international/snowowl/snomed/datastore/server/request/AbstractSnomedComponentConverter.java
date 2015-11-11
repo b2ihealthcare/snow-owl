@@ -21,8 +21,8 @@ import java.util.Date;
 import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.snomed.core.domain.AssociationType;
 import com.b2international.snowowl.snomed.core.domain.ISnomedComponent;
-import com.b2international.snowowl.snomed.datastore.index.SnomedIndexEntry;
-import com.b2international.snowowl.snomed.datastore.index.refset.SnomedRefSetMemberIndexEntry;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedIndexEntry;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry;
 import com.b2international.snowowl.snomed.datastore.services.AbstractSnomedRefSetMembershipLookupService;
 import com.google.common.base.Function;
 import com.google.common.collect.ImmutableList;
@@ -58,7 +58,7 @@ public abstract class AbstractSnomedComponentConverter<F extends SnomedIndexEntr
 			for (final SnomedRefSetMemberIndexEntry member : members) {
 				// FIXME: inactive inactivation indicators are shown in the desktop form UI
 				if (member.isActive()) {
-					resultBuilder.put(associationType, member.getSpecialFieldId());
+					resultBuilder.put(associationType, member.getTargetComponentId());
 				}
 			}
 		}

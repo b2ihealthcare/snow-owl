@@ -18,28 +18,21 @@ package com.b2international.snowowl.snomed.datastore.index.mapping;
 import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.COMPONENT_REFERRING_PREDICATE;
 import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.COMPONENT_RELEASED;
 import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.CONCEPT_DEGREE_OF_INTEREST;
-import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.CONCEPT_EFFECTIVE_TIME;
 import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.DESCRIPTION_CASE_SIGNIFICANCE_ID;
-import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.DESCRIPTION_EFFECTIVE_TIME;
 import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_ACCEPTABILITY_ID;
-import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_ACCEPTABILITY_LABEL;
 import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_CHARACTERISTIC_TYPE_ID;
 import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_CONTAINER_MODULE_ID;
 import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_CORRELATION_ID;
 import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_DATA_TYPE_VALUE;
 import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_DESCRIPTION_FORMAT_ID;
-import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_DESCRIPTION_FORMAT_LABEL;
 import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_DESCRIPTION_LENGTH;
-import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_EFFECTIVE_TIME;
 import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_MAP_ADVICE;
 import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_MAP_CATEGORY_ID;
 import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_MAP_GROUP;
 import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_MAP_PRIORITY;
 import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_MAP_RULE;
 import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_MAP_TARGET_COMPONENT_DESCRIPTION;
-import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_MAP_TARGET_COMPONENT_DESCRIPTION_SORT_KEY;
 import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_MAP_TARGET_COMPONENT_ID;
-import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_MAP_TARGET_COMPONENT_LABEL;
 import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_MAP_TARGET_COMPONENT_TYPE_ID;
 import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_OPERATOR_ID;
 import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_QUERY;
@@ -54,7 +47,6 @@ import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBr
 import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.REFERENCE_SET_STRUCTURAL;
 import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.REFERENCE_SET_TYPE;
 import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.RELATIONSHIP_DESTINATION_NEGATED;
-import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.RELATIONSHIP_EFFECTIVE_TIME;
 import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.RELATIONSHIP_GROUP;
 import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.RELATIONSHIP_INFERRED;
 import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.RELATIONSHIP_OBJECT_ID;
@@ -66,7 +58,6 @@ import org.apache.lucene.document.Document;
 
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.datastore.BranchPathUtils;
-import com.b2international.snowowl.datastore.index.IndexUtils;
 import com.b2international.snowowl.datastore.index.SortKeyMode;
 import com.b2international.snowowl.datastore.index.mapping.DocumentBuilderBase;
 import com.b2international.snowowl.datastore.index.mapping.DocumentBuilderFactory;
@@ -76,7 +67,6 @@ import com.b2international.snowowl.datastore.index.mapping.Mappings;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants;
-import com.b2international.snowowl.snomed.datastore.index.update.ConceptDescriptionUpdater.DescriptionType;
 import com.b2international.snowowl.snomed.datastore.services.ISnomedComponentService;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType;
 import com.google.common.collect.ImmutableSet;
@@ -118,7 +108,7 @@ public class SnomedDocumentBuilder extends DocumentBuilderBase<SnomedDocumentBui
 					.add(SnomedMappings.memberReferencedComponentType())
 					.add(SnomedMappings.released())
 					.add(Mappings.stringField(REFERENCE_SET_MEMBER_UUID))
-					.add(Mappings.longField(REFERENCE_SET_MEMBER_EFFECTIVE_TIME));
+					.add(SnomedMappings.effectiveTime());
 				final SnomedRefSetType refSetType = SnomedRefSetType.get(SnomedMappings.memberRefSetType().getValue(doc));
 				switch (refSetType) {
 				case SIMPLE: break;
@@ -141,19 +131,16 @@ public class SnomedDocumentBuilder extends DocumentBuilderBase<SnomedDocumentBui
 						.add(Mappings.longField(REFERENCE_SET_MEMBER_MAP_CATEGORY_ID))
 						.add(Mappings.longField(REFERENCE_SET_MEMBER_CORRELATION_ID))
 						.add(Mappings.stringField(REFERENCE_SET_MEMBER_MAP_TARGET_COMPONENT_ID))
-						.add(Mappings.intField(REFERENCE_SET_MEMBER_MAP_TARGET_COMPONENT_TYPE_ID))
-						.add(Mappings.stringField(REFERENCE_SET_MEMBER_MAP_TARGET_COMPONENT_LABEL));
+						.add(Mappings.intField(REFERENCE_SET_MEMBER_MAP_TARGET_COMPONENT_TYPE_ID));
 					break;
 				case DESCRIPTION_TYPE:
 					fieldsToCopy
 						.add(Mappings.longField(REFERENCE_SET_MEMBER_DESCRIPTION_FORMAT_ID))
-						.add(Mappings.intField(REFERENCE_SET_MEMBER_DESCRIPTION_LENGTH))
-						.add(Mappings.stringField(REFERENCE_SET_MEMBER_DESCRIPTION_FORMAT_LABEL));
+						.add(Mappings.intField(REFERENCE_SET_MEMBER_DESCRIPTION_LENGTH));
 					break;
 				case LANGUAGE:
 					fieldsToCopy
-						.add(Mappings.longField(REFERENCE_SET_MEMBER_ACCEPTABILITY_ID))
-						.add(Mappings.stringField(REFERENCE_SET_MEMBER_ACCEPTABILITY_LABEL));
+						.add(Mappings.longField(REFERENCE_SET_MEMBER_ACCEPTABILITY_ID));
 					break;
 				case CONCRETE_DATA_TYPE:
 					fieldsToCopy
@@ -169,11 +156,7 @@ public class SnomedDocumentBuilder extends DocumentBuilderBase<SnomedDocumentBui
 					fieldsToCopy
 						.add(Mappings.stringField(REFERENCE_SET_MEMBER_MAP_TARGET_COMPONENT_ID))
 						.add(Mappings.intField(REFERENCE_SET_MEMBER_MAP_TARGET_COMPONENT_TYPE_ID))
-						.add(Mappings.stringField(REFERENCE_SET_MEMBER_MAP_TARGET_COMPONENT_LABEL))
 						.add(Mappings.textField(REFERENCE_SET_MEMBER_MAP_TARGET_COMPONENT_DESCRIPTION));
-					for (String value : Mappings.textField(REFERENCE_SET_MEMBER_MAP_TARGET_COMPONENT_DESCRIPTION).getValues(doc)) {
-						Mappings.searchOnlyStringField(REFERENCE_SET_MEMBER_MAP_TARGET_COMPONENT_DESCRIPTION_SORT_KEY).addTo(newDoc, IndexUtils.getSortKey(value));
-					}
 					break;
 				case MODULE_DEPENDENCY:
 					fieldsToCopy
@@ -208,15 +191,12 @@ public class SnomedDocumentBuilder extends DocumentBuilderBase<SnomedDocumentBui
 						.add(SnomedMappings.primitive())
 						.add(SnomedMappings.exhaustive())
 						.add(SnomedMappings.released())
-						.add(Mappings.longField(CONCEPT_EFFECTIVE_TIME))
+						.add(SnomedMappings.effectiveTime())
 						.add(Mappings.floatDocValuesField(CONCEPT_DEGREE_OF_INTEREST))
 						.add(Mappings.stringField(COMPONENT_REFERRING_PREDICATE))
 						.add(Mappings.intField(REFERENCE_SET_TYPE))
 						.add(Mappings.intField(REFERENCE_SET_REFERENCED_COMPONENT_TYPE))
 						.add(Mappings.intField(REFERENCE_SET_STRUCTURAL));
-					for (DescriptionType descType : DescriptionType.values()) {
-						fieldsToCopy.add(Mappings.textField(descType.getFieldName()));
-					}
 					// handle special fields here
 					SortKeyMode.INSTANCE.update(newDocBuilder, label.getValue(doc));
 					final ISnomedComponentService componentService = ApplicationContext.getInstance().getService(ISnomedComponentService.class);
@@ -230,7 +210,7 @@ public class SnomedDocumentBuilder extends DocumentBuilderBase<SnomedDocumentBui
 						.add(SnomedMappings.active())
 						.add(Mappings.storedOnlyLongFieldWithDocValues(DESCRIPTION_CASE_SIGNIFICANCE_ID))
 						.add(Mappings.storedOnlyIntField(COMPONENT_RELEASED))
-						.add(Mappings.longDocValuesField(DESCRIPTION_EFFECTIVE_TIME))
+						.add(SnomedMappings.effectiveTime())
 						.add(SnomedMappings.descriptionConcept())
 						.add(SnomedMappings.descriptionType());
 					
@@ -244,7 +224,7 @@ public class SnomedDocumentBuilder extends DocumentBuilderBase<SnomedDocumentBui
 						.add(Mappings.longDocValuesField(RELATIONSHIP_VALUE_ID))
 						.add(Mappings.longDocValuesField(RELATIONSHIP_OBJECT_ID))
 						.add(Mappings.storedOnlyIntField(COMPONENT_RELEASED))
-						.add(Mappings.longField(RELATIONSHIP_EFFECTIVE_TIME))
+						.add(SnomedMappings.effectiveTime())
 						.add(Mappings.storedOnlyIntFieldWithDocValues(RELATIONSHIP_GROUP))
 						.add(Mappings.storedOnlyIntFieldWithDocValues(RELATIONSHIP_UNION_GROUP))
 						.add(Mappings.storedOnlyIntFieldWithDocValues(RELATIONSHIP_DESTINATION_NEGATED))
@@ -272,6 +252,11 @@ public class SnomedDocumentBuilder extends DocumentBuilderBase<SnomedDocumentBui
 	
 	protected SnomedDocumentBuilder(Document doc) {
 		super(doc);
+	}
+	
+	@Override
+	protected SnomedDocumentBuilder getSelf() {
+		return this;
 	}
 
 	@Override
@@ -386,4 +371,7 @@ public class SnomedDocumentBuilder extends DocumentBuilderBase<SnomedDocumentBui
 		return addToDoc(SnomedMappings.conceptReferringMappingRefSetId(), value);
 	}
 
+	public final SnomedDocumentBuilder effectiveTime(Long value) {
+		return addToDoc(SnomedMappings.effectiveTime(), value);
+	}
 }

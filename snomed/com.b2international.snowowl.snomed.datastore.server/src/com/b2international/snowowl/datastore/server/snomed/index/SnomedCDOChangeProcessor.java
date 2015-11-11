@@ -95,20 +95,19 @@ import com.b2international.snowowl.snomed.Concept;
 import com.b2international.snowowl.snomed.Relationship;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.SnomedPackage;
-import com.b2international.snowowl.snomed.datastore.SnomedConceptIndexEntry;
-import com.b2international.snowowl.snomed.datastore.SnomedRelationshipIndexEntry;
 import com.b2international.snowowl.snomed.datastore.SnomedTerminologyBrowser;
 import com.b2international.snowowl.snomed.datastore.StatementCollectionMode;
 import com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants;
 import com.b2international.snowowl.snomed.datastore.index.SnomedConceptIndexQueryAdapter;
 import com.b2international.snowowl.snomed.datastore.index.SnomedConceptReducedQueryAdapter;
-import com.b2international.snowowl.snomed.datastore.index.SnomedIndexEntry;
 import com.b2international.snowowl.snomed.datastore.index.SnomedIndexService;
 import com.b2international.snowowl.snomed.datastore.index.SnomedRelationshipIndexQueryAdapter;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptIndexEntry;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedIndexEntry;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRelationshipIndexEntry;
 import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedDocumentBuilder;
 import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedMappings;
 import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedQueryBuilder;
-import com.b2international.snowowl.snomed.datastore.services.ISnomedComponentService;
 import com.b2international.snowowl.snomed.datastore.taxonomy.ISnomedTaxonomyBuilder;
 import com.b2international.snowowl.snomed.datastore.taxonomy.ISnomedTaxonomyBuilder.TaxonomyBuilderEdge;
 import com.b2international.snowowl.snomed.datastore.taxonomy.ISnomedTaxonomyBuilder.TaxonomyBuilderNode;
@@ -413,7 +412,6 @@ public class SnomedCDOChangeProcessor implements ICDOChangeProcessor {
 		}
 
 		// execute component/use case  base change processors
-		final Set<String> synonymIds = ApplicationContext.getInstance().getService(ISnomedComponentService.class).getSynonymAndDescendantIds(branchPath);
 		final LongCollection allIndexedConceptIds = getTerminologyBrowser().getAllConceptIds(branchPath);
 		final LongSet allConceptIds = LongSets.newLongSet(allIndexedConceptIds);
 		for (Concept newConcept : FluentIterable.from(commitChangeSet.getNewComponents()).filter(Concept.class)) {
@@ -429,19 +427,19 @@ public class SnomedCDOChangeProcessor implements ICDOChangeProcessor {
 		
 		final ComponentLabelChangeProcessor labelChangeProcessor = new ComponentLabelChangeProcessor(branchPath, index);
 		final List<ChangeSetProcessor<SnomedDocumentBuilder>> changeSetProcessors = ImmutableList.<ChangeSetProcessor<SnomedDocumentBuilder>>builder()
-				.add(new ConceptChangeProcessor(synonymIds))
+				.add(new ConceptChangeProcessor())
 				.add(new ConceptReferringMemberChangeProcessor(new Function<CDOID, Document>() {
 					@Override public Document apply(CDOID input) {
 						return getDocumentForDetachedMember(input);
 					}
 				}))
 				.add(new RelationshipChangeProcessor())
-				.add(new DescriptionChangeProcessor(synonymIds))
+				.add(new DescriptionChangeProcessor())
 				.add(new TaxonomyChangeProcessor(getAndCheckInferredNewTaxonomyBuilder(), getInferredPreviousTaxonomyBuilder(), inferredDifferenceSupplier,  ""))
 				.add(new TaxonomyChangeProcessor(getAndCheckStatedNewTaxonomyBuilder(), getStatedPreviousTaxonomyBuilder(), statedDifferenceSupplier, Concepts.STATED_RELATIONSHIP))
 				.add(new IconChangeProcessor(branchPath, getAndCheckInferredNewTaxonomyBuilder(), getInferredPreviousTaxonomyBuilder(), inferredDifferenceSupplier))
 				.add(labelChangeProcessor)
-				.add(new RefSetMemberChangeProcessor(labelChangeProcessor))
+				.add(new RefSetMemberChangeProcessor())
 				.add(new ConstraintChangeProcessor(branchPath, allConceptIds))
 				.build();
 		

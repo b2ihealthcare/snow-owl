@@ -26,8 +26,8 @@ import com.b2international.snowowl.snomed.core.domain.ISnomedConcept;
 import com.b2international.snowowl.snomed.core.domain.InactivationIndicator;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
 import com.b2international.snowowl.snomed.core.domain.SubclassDefinitionStatus;
-import com.b2international.snowowl.snomed.datastore.SnomedConceptIndexEntry;
-import com.b2international.snowowl.snomed.datastore.index.refset.SnomedRefSetMemberIndexEntry;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptIndexEntry;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry;
 import com.b2international.snowowl.snomed.datastore.services.AbstractSnomedRefSetMembershipLookupService;
 import com.google.common.collect.FluentIterable;
 import com.google.common.collect.ImmutableList;
@@ -83,7 +83,7 @@ public class SnomedConceptConverter extends AbstractSnomedComponentConverter<Sno
 
 		for (final SnomedRefSetMemberIndexEntry member : members) {
 			if (member.isActive()) {
-				return InactivationIndicator.getByConceptId(member.getSpecialFieldId());
+				return member.getInactivationIndicator();
 			}
 		}
 

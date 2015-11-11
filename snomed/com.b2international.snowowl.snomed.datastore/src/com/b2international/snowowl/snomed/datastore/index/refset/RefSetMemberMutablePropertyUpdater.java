@@ -16,24 +16,19 @@
 package com.b2international.snowowl.snomed.datastore.index.refset;
 
 import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_ACCEPTABILITY_ID;
-import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_ACCEPTABILITY_LABEL;
 import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_CHARACTERISTIC_TYPE_ID;
 import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_CONTAINER_MODULE_ID;
 import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_CORRELATION_ID;
 import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_DATA_TYPE_VALUE;
 import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_DESCRIPTION_FORMAT_ID;
-import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_DESCRIPTION_FORMAT_LABEL;
 import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_DESCRIPTION_LENGTH;
-import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_EFFECTIVE_TIME;
 import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_MAP_ADVICE;
 import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_MAP_CATEGORY_ID;
 import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_MAP_GROUP;
 import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_MAP_PRIORITY;
 import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_MAP_RULE;
 import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_MAP_TARGET_COMPONENT_DESCRIPTION;
-import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_MAP_TARGET_COMPONENT_DESCRIPTION_SORT_KEY;
 import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_MAP_TARGET_COMPONENT_ID;
-import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_MAP_TARGET_COMPONENT_LABEL;
 import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_MAP_TARGET_COMPONENT_TYPE_ID;
 import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_OPERATOR_ID;
 import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_QUERY;
@@ -44,17 +39,12 @@ import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBr
 import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_UOM_ID;
 import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_VALUE_ID;
 
-import com.b2international.snowowl.core.CoreTerminologyBroker;
-import com.b2international.snowowl.core.api.INameProviderFactory;
 import com.b2international.snowowl.core.date.EffectiveTimes;
-import com.b2international.snowowl.datastore.BranchPathUtils;
 import com.b2international.snowowl.datastore.index.DocumentUpdaterBase;
-import com.b2international.snowowl.datastore.index.IndexUtils;
 import com.b2international.snowowl.datastore.index.mapping.Mappings;
 import com.b2international.snowowl.snomed.Component;
 import com.b2international.snowowl.snomed.datastore.SnomedRefSetUtil;
 import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedDocumentBuilder;
-import com.b2international.snowowl.snomed.datastore.index.update.ComponentLabelProvider;
 import com.b2international.snowowl.snomed.mrcm.DataType;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedAssociationRefSetMember;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedAttributeValueRefSetMember;
@@ -74,12 +64,10 @@ import com.google.common.base.Strings;
 public class RefSetMemberMutablePropertyUpdater extends DocumentUpdaterBase<SnomedDocumentBuilder> {
 
 	private SnomedRefSetMember member;
-	private ComponentLabelProvider labelProvider;
 
-	public RefSetMemberMutablePropertyUpdater(SnomedRefSetMember member, ComponentLabelProvider labelProvider) {
+	public RefSetMemberMutablePropertyUpdater(SnomedRefSetMember member) {
 		super(member.getUuid());
 		this.member = member;
-		this.labelProvider = labelProvider;
 	}
 
 	@Override
@@ -87,7 +75,7 @@ public class RefSetMemberMutablePropertyUpdater extends DocumentUpdaterBase<Snom
 		doc
 			.active(member.isActive())
 			.module(member.getModuleId())
-			.update(REFERENCE_SET_MEMBER_EFFECTIVE_TIME, EffectiveTimes.getEffectiveTime(member.getEffectiveTime()))
+			.effectiveTime(member.isSetEffectiveTime() ? member.getEffectiveTime().getTime() : EffectiveTimes.UNSET_EFFECTIVE_TIME)
 			.released(member.isReleased());
 		updateSpecialFields(doc);
 	}
@@ -141,18 +129,12 @@ public class RefSetMemberMutablePropertyUpdater extends DocumentUpdaterBase<Snom
 			final SnomedDescriptionTypeRefSetMember descriptionMember = (SnomedDescriptionTypeRefSetMember) member;
 			doc.update(REFERENCE_SET_MEMBER_DESCRIPTION_FORMAT_ID, Long.valueOf(descriptionMember.getDescriptionFormat()));
 			doc.update(Mappings.storedOnlyIntField(REFERENCE_SET_MEMBER_DESCRIPTION_LENGTH), descriptionMember.getDescriptionLength());
-			//description type must be a SNOMED CT concept
-			final String descriptionFormatLabel = labelProvider.getComponentLabel(descriptionMember.getDescriptionFormat());
-			doc.update(REFERENCE_SET_MEMBER_DESCRIPTION_FORMAT_LABEL, descriptionFormatLabel);
 			break;
 			
 		case LANGUAGE:
 			//set description acceptability label and ID
 			final SnomedLanguageRefSetMember languageMember = (SnomedLanguageRefSetMember) member;
 			doc.update(REFERENCE_SET_MEMBER_ACCEPTABILITY_ID, Long.valueOf(languageMember.getAcceptabilityId()));
-			//acceptability ID always represents a SNOMED CT concept
-			final String acceptabilityLabel = labelProvider.getComponentLabel(languageMember.getAcceptabilityId());
-			doc.update(REFERENCE_SET_MEMBER_ACCEPTABILITY_LABEL, acceptabilityLabel);
 			break;
 			
 		case CONCRETE_DATA_TYPE:
@@ -187,25 +169,9 @@ public class RefSetMemberMutablePropertyUpdater extends DocumentUpdaterBase<Snom
 			doc.update(REFERENCE_SET_MEMBER_MAP_TARGET_COMPONENT_ID, simpleMapTargetComponentId);
 			doc.update(REFERENCE_SET_MEMBER_MAP_TARGET_COMPONENT_TYPE_ID, (int) simpleMapTargetComponentType);
 			
-			if (CoreTerminologyBroker.UNSPECIFIED_NUMBER_SHORT == simpleMapTargetComponentType) {
-				doc.update(Mappings.storedOnlyStringField(REFERENCE_SET_MEMBER_MAP_TARGET_COMPONENT_LABEL), simpleMapTargetComponentId); //unknown map target
-			} else {
-				final CoreTerminologyBroker terminologyBroker = CoreTerminologyBroker.getInstance();
-				final String terminologyComponentId = getTerminologyComponentId(simpleMapTargetComponentType);
-				final INameProviderFactory nameProviderFactory = terminologyBroker.getNameProviderFactory(terminologyComponentId);
-				
-				//TODO: Balazs: hack to map to MAIN regardless to the source/target branch settings. This will change.
-				String mapTargetLabel = nameProviderFactory.getNameProvider().getComponentLabel(BranchPathUtils.createMainPath(), simpleMapTargetComponentId);
-				if (Strings.isNullOrEmpty(mapTargetLabel)) {
-					mapTargetLabel = simpleMapTargetComponentId;
-				}
-				doc.field(REFERENCE_SET_MEMBER_MAP_TARGET_COMPONENT_LABEL, mapTargetLabel);
-			}
-			
 			final String componentDescription = mapMember.getMapTargetComponentDescription();
 			if (null != componentDescription) {
 				doc.update(Mappings.textField(REFERENCE_SET_MEMBER_MAP_TARGET_COMPONENT_DESCRIPTION), componentDescription);
-				doc.update(Mappings.searchOnlyStringField(REFERENCE_SET_MEMBER_MAP_TARGET_COMPONENT_DESCRIPTION_SORT_KEY), IndexUtils.getSortKey(componentDescription));
 			}
 			break;
 		case MODULE_DEPENDENCY:
@@ -216,10 +182,4 @@ public class RefSetMemberMutablePropertyUpdater extends DocumentUpdaterBase<Snom
 		default: throw new IllegalArgumentException("Unknown SNOMED CT reference set type: " + member.getRefSet().getType());
 		}
 	}
-	
-	/*returns with the short value of the passed in unique terminology component identifier*/
-	private String getTerminologyComponentId(final short terminologyComponentIdValue) {
-		return CoreTerminologyBroker.getInstance().getTerminologyComponentId(terminologyComponentIdValue);
-	}
-	
 }

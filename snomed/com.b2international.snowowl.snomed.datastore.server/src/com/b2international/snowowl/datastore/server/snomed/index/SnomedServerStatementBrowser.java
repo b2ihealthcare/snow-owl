@@ -17,7 +17,6 @@ package com.b2international.snowowl.datastore.server.snomed.index;
 
 import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.COMPONENT_RELEASED;
 import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.RELATIONSHIP_DESTINATION_NEGATED;
-import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.RELATIONSHIP_EFFECTIVE_TIME;
 import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.RELATIONSHIP_GROUP;
 import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.RELATIONSHIP_INFERRED;
 import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.RELATIONSHIP_OBJECT_ID;
@@ -36,7 +35,6 @@ import java.util.Set;
 
 import org.apache.lucene.document.Document;
 import org.apache.lucene.index.IndexReader;
-import org.apache.lucene.index.IndexableField;
 import org.apache.lucene.search.BooleanClause.Occur;
 import org.apache.lucene.search.BooleanQuery;
 import org.apache.lucene.search.IndexSearcher;
@@ -44,23 +42,23 @@ import org.apache.lucene.search.Query;
 import org.apache.lucene.search.ReferenceManager;
 import org.apache.lucene.search.TopDocs;
 
+import com.b2international.commons.BooleanUtils;
 import com.b2international.commons.CompareUtils;
 import com.b2international.commons.pcj.LongSets;
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.api.index.IndexException;
-import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.datastore.index.DocIdCollector;
 import com.b2international.snowowl.datastore.index.DocIdCollector.DocIdsIterator;
-import com.b2international.snowowl.datastore.index.IndexUtils;
 import com.b2international.snowowl.datastore.index.mapping.IndexField;
 import com.b2international.snowowl.datastore.index.mapping.Mappings;
+import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.datastore.IsAStatement;
-import com.b2international.snowowl.snomed.datastore.SnomedConceptIndexEntry;
-import com.b2international.snowowl.snomed.datastore.SnomedRelationshipIndexEntry;
 import com.b2international.snowowl.snomed.datastore.SnomedStatementBrowser;
 import com.b2international.snowowl.snomed.datastore.StatementCollectionMode;
 import com.b2international.snowowl.snomed.datastore.index.SnomedIndexService;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptIndexEntry;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRelationshipIndexEntry;
 import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedMappings;
 import com.b2international.snowowl.snomed.datastore.services.ISnomedComponentService;
 import com.google.common.base.Preconditions;
@@ -84,7 +82,7 @@ public class SnomedServerStatementBrowser extends AbstractSnomedIndexBrowser<Sno
 			.storageKey()
 			.relationshipType()
 			.relationshipCharacteristicType()
-			.field(RELATIONSHIP_EFFECTIVE_TIME)
+			.effectiveTime()
 			.field(RELATIONSHIP_OBJECT_ID)
 			.field(RELATIONSHIP_VALUE_ID)
 			.field(RELATIONSHIP_GROUP)
@@ -104,24 +102,38 @@ public class SnomedServerStatementBrowser extends AbstractSnomedIndexBrowser<Sno
 
 	@Override
 	protected SnomedRelationshipIndexEntry createResultObject(final IBranchPath branchPath, final Document doc) {
+		
 		final String id = SnomedMappings.id().getValueAsString(doc);
 		final String objectId = doc.get(RELATIONSHIP_OBJECT_ID);
 		final String attributeId = SnomedMappings.relationshipType().getValueAsString(doc);
 		final String valueId = doc.get(RELATIONSHIP_VALUE_ID);
 		final String characteristicTypeId = SnomedMappings.relationshipCharacteristicType().getValueAsString(doc);
-		final byte group = (byte) doc.getField(RELATIONSHIP_GROUP).numericValue().intValue();
-		final byte unionGroup = (byte) doc.getField(RELATIONSHIP_UNION_GROUP).numericValue().intValue();
-		final byte flags = SnomedRelationshipIndexEntry.generateFlags(IndexUtils.getBooleanValue(doc.getField(COMPONENT_RELEASED)),
-				SnomedMappings.active().getValue(doc) == 1,
-				IndexUtils.getBooleanValue(doc.getField(RELATIONSHIP_INFERRED)),
-				IndexUtils.getBooleanValue(doc.getField(RELATIONSHIP_UNIVERSAL)),
-				IndexUtils.getBooleanValue(doc.getField(RELATIONSHIP_DESTINATION_NEGATED)));
+		byte group = (byte) doc.getField(RELATIONSHIP_GROUP).numericValue().intValue();
+		byte unionGroup = (byte) doc.getField(RELATIONSHIP_UNION_GROUP).numericValue().intValue();
+		final boolean active = BooleanUtils.valueOf(SnomedMappings.active().getValue(doc));
+		final boolean released = BooleanUtils.valueOf(SnomedMappings.released().getValue(doc)); 
+		final boolean universal = BooleanUtils.valueOf(Mappings.intField(RELATIONSHIP_UNIVERSAL).getValue(doc)); 
+		final boolean destinationNegated = BooleanUtils.valueOf(Mappings.intField(RELATIONSHIP_DESTINATION_NEGATED).getValue(doc)); 
 		final String moduleId = SnomedMappings.module().getValueAsString(doc);
 		final long storageKey = Mappings.storageKey().getValue(doc);
-		// FIXME: remove null check
-		final IndexableField effectiveTimeField = doc.getField(RELATIONSHIP_EFFECTIVE_TIME);
-		final long effectiveTime = (null == effectiveTimeField) ? EffectiveTimes.UNSET_EFFECTIVE_TIME : IndexUtils.getLongValue(effectiveTimeField);
-		return new SnomedRelationshipIndexEntry(id, objectId, attributeId, valueId, characteristicTypeId, storageKey, moduleId, group, unionGroup, flags, effectiveTime);
+		final long effectiveTime = SnomedMappings.effectiveTime().getValue(doc);
+		
+		return SnomedRelationshipIndexEntry.builder()
+				.id(id)
+				.sourceId(objectId)
+				.typeId(attributeId)
+				.destinationId(valueId)
+				.characteristicTypeId(characteristicTypeId)
+				.group(group)
+				.unionGroup(unionGroup)
+				.active(active)
+				.released(released)
+				.modifierId(universal ? Concepts.UNIVERSAL_RESTRICTION_MODIFIER : Concepts.EXISTENTIAL_RESTRICTION_MODIFIER)
+				.destinationNegated(destinationNegated)
+				.moduleId(moduleId)
+				.storageKey(storageKey)
+				.effectiveTimeLong(effectiveTime)
+				.build();
 	}
 
 	@Override

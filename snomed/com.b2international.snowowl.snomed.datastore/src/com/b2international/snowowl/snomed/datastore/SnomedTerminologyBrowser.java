@@ -29,6 +29,7 @@ import com.b2international.snowowl.core.api.IComponentWithChildFlag;
 import com.b2international.snowowl.core.api.browser.ITerminologyBrowser;
 import com.b2international.snowowl.snomed.datastore.filteredrefset.FilteredRefSetMemberBrowser2;
 import com.b2international.snowowl.snomed.datastore.filteredrefset.IRefSetMemberOperation;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptIndexEntry;
 
 /**
  * Concept hierarchy browser service for the SNOMED&nbsp;CT ontology. 

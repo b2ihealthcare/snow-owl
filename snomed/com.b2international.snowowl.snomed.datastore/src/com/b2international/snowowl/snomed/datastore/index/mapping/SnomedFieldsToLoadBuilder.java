@@ -77,5 +77,8 @@ public class SnomedFieldsToLoadBuilder extends FieldsToLoadBuilderBase<SnomedFie
 	public SnomedFieldsToLoadBuilder refSetStorageKey() {
 		return field(SnomedMappings.refSetStorageKey());
 	}
-	
+
+	public SnomedFieldsToLoadBuilder effectiveTime() {
+		return field(SnomedMappings.effectiveTime());
+	}
 }

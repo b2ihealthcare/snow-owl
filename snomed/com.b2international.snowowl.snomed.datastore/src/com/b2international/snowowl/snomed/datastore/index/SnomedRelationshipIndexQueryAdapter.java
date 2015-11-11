@@ -15,29 +15,25 @@
  */
 package com.b2international.snowowl.snomed.datastore.index;
 
-import static com.b2international.snowowl.datastore.index.IndexUtils.getBooleanValue;
-import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.COMPONENT_RELEASED;
 import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.RELATIONSHIP_DESTINATION_NEGATED;
 import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.RELATIONSHIP_GROUP;
-import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.RELATIONSHIP_INFERRED;
 import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.RELATIONSHIP_OBJECT_ID;
 import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.RELATIONSHIP_UNION_GROUP;
 import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.RELATIONSHIP_UNIVERSAL;
 import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.RELATIONSHIP_VALUE_ID;
 
 import org.apache.lucene.document.Document;
-import org.apache.lucene.index.IndexableField;
 
+import com.b2international.commons.BooleanUtils;
 import com.b2international.commons.StringUtils;
 import com.b2international.snowowl.core.api.IBranchPath;
-import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.datastore.index.IndexQueryBuilder;
 import com.b2international.snowowl.datastore.index.IndexUtils;
 import com.b2international.snowowl.datastore.index.QueryDslIndexQueryAdapter;
 import com.b2international.snowowl.datastore.index.mapping.LongIndexField;
 import com.b2international.snowowl.datastore.index.mapping.Mappings;
-import com.b2international.snowowl.snomed.datastore.SnomedRelationshipIndexEntry;
-import com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants;
+import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRelationshipIndexEntry;
 import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedMappings;
 import com.google.common.base.Optional;
 
@@ -85,17 +81,31 @@ public class SnomedRelationshipIndexQueryAdapter extends QueryDslIndexQueryAdapt
 		final String characteristicTypeId = SnomedMappings.relationshipCharacteristicType().getValueAsString(doc);
 		byte group = (byte) doc.getField(RELATIONSHIP_GROUP).numericValue().intValue();
 		byte unionGroup = (byte) doc.getField(RELATIONSHIP_UNION_GROUP).numericValue().intValue();
-		byte flags = SnomedRelationshipIndexEntry.generateFlags(getBooleanValue(doc.getField(COMPONENT_RELEASED)), 
-				SnomedMappings.active().getValue(doc) == 1, 
-				getBooleanValue(doc.getField(RELATIONSHIP_INFERRED)),
-				getBooleanValue(doc.getField(RELATIONSHIP_UNIVERSAL)),
-				getBooleanValue(doc.getField(RELATIONSHIP_DESTINATION_NEGATED)));
+		final boolean active = BooleanUtils.valueOf(SnomedMappings.active().getValue(doc));
+		final boolean released = BooleanUtils.valueOf(SnomedMappings.released().getValue(doc)); 
+		final boolean universal = BooleanUtils.valueOf(Mappings.intField(RELATIONSHIP_UNIVERSAL).getValue(doc)); 
+		final boolean destinationNegated = BooleanUtils.valueOf(Mappings.intField(RELATIONSHIP_DESTINATION_NEGATED).getValue(doc)); 
 		final String moduleId = SnomedMappings.module().getValueAsString(doc);
 		final long storageKey = Mappings.storageKey().getValue(doc);
-		// FIXME: remove null check
-		final IndexableField effectiveTimeField = doc.getField(SnomedIndexBrowserConstants.RELATIONSHIP_EFFECTIVE_TIME);
-		final long effectiveTime = (null == effectiveTimeField) ? EffectiveTimes.UNSET_EFFECTIVE_TIME : IndexUtils.getLongValue(effectiveTimeField);
-		return new SnomedRelationshipIndexEntry(id, objectId, attributeId, valueId, characteristicTypeId, storageKey, moduleId, group, unionGroup, flags, effectiveTime);
+		final long effectiveTime = SnomedMappings.effectiveTime().getValue(doc);
+		
+		return SnomedRelationshipIndexEntry.builder()
+				.score(score)
+				.id(id)
+				.sourceId(objectId)
+				.typeId(attributeId)
+				.destinationId(valueId)
+				.characteristicTypeId(characteristicTypeId)
+				.group(group)
+				.unionGroup(unionGroup)
+				.active(active)
+				.released(released)
+				.modifierId(universal ? Concepts.UNIVERSAL_RESTRICTION_MODIFIER : Concepts.EXISTENTIAL_RESTRICTION_MODIFIER)
+				.destinationNegated(destinationNegated)
+				.moduleId(moduleId)
+				.storageKey(storageKey)
+				.effectiveTimeLong(effectiveTime)
+				.build();
 	}
 	
 	@Override

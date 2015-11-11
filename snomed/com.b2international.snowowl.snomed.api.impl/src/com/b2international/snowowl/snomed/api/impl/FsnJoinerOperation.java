@@ -29,12 +29,12 @@ import com.b2international.snowowl.core.terminology.ComponentCategory;
 import com.b2international.snowowl.datastore.server.domain.InternalComponentRef;
 import com.b2international.snowowl.snomed.api.ISnomedDescriptionService;
 import com.b2international.snowowl.snomed.core.domain.Acceptability;
-import com.b2international.snowowl.snomed.datastore.SnomedConceptIndexEntry;
 import com.b2international.snowowl.snomed.datastore.SnomedTerminologyBrowser;
-import com.b2international.snowowl.snomed.datastore.index.SnomedDescriptionIndexEntry;
 import com.b2international.snowowl.snomed.datastore.index.SnomedDescriptionIndexQueryAdapter;
 import com.b2international.snowowl.snomed.datastore.index.SnomedIndexService;
-import com.b2international.snowowl.snomed.datastore.index.refset.SnomedRefSetMemberIndexEntry;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptIndexEntry;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDescriptionIndexEntry;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry;
 import com.b2international.snowowl.snomed.datastore.index.refset.SnomedRefSetMembershipIndexQueryAdapter;
 import com.google.common.base.Function;
 import com.google.common.base.Optional;
@@ -129,7 +129,7 @@ public abstract class FsnJoinerOperation<T> {
 				final Collection<SnomedRefSetMemberIndexEntry> languageMemberEntries = getIndexService().searchUnsorted(branchPath, languageMembersQuery);
 
 				for (final SnomedRefSetMemberIndexEntry languageMemberEntry : languageMemberEntries) {
-					final Acceptability acceptability = Acceptability.getByConceptId(languageMemberEntry.getSpecialFieldId());
+					final Acceptability acceptability = languageMemberEntry.getAcceptability();
 					descriptionAcceptability.put(languageMemberEntry.getReferencedComponentId(), languageMemberEntry.getRefSetIdentifierId(), acceptability);
 				}
 			}

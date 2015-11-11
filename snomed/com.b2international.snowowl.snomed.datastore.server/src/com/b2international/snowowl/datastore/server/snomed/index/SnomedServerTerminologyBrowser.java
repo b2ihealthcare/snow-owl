@@ -20,7 +20,6 @@ import static com.b2international.commons.pcj.LongSets.newLongSetWithMurMur3Hash
 import static com.b2international.commons.pcj.LongSets.parallelForEach;
 import static com.b2international.commons.pcj.LongSets.toSet;
 import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.COMPONENT_RELEASED;
-import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.CONCEPT_EFFECTIVE_TIME;
 import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.CONCEPT_EXHAUSTIVE;
 import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.CONCEPT_PRIMITIVE;
 import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_UUID;
@@ -65,15 +64,14 @@ import com.b2international.snowowl.datastore.server.snomed.filteredrefset.Filter
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.snomed.datastore.EscgExpressionConstants;
-import com.b2international.snowowl.snomed.datastore.SnomedConceptIndexEntry;
-import com.b2international.snowowl.snomed.datastore.SnomedConceptIndexEntryWithChildFlag;
 import com.b2international.snowowl.snomed.datastore.SnomedTerminologyBrowser;
-import com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants;
 import com.b2international.snowowl.snomed.datastore.escg.IEscgQueryEvaluatorService;
 import com.b2international.snowowl.snomed.datastore.filteredrefset.FilteredRefSetMemberBrowser2;
 import com.b2international.snowowl.snomed.datastore.filteredrefset.IRefSetMemberOperation;
 import com.b2international.snowowl.snomed.datastore.index.SnomedConceptReducedQueryAdapter;
 import com.b2international.snowowl.snomed.datastore.index.SnomedIndexService;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptIndexEntry;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptIndexEntryWithChildFlag;
 import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedMappings;
 import com.b2international.snowowl.snomed.datastore.services.ISnomedRelationshipNameProvider;
 import com.b2international.snowowl.snomed.refset.core.services.SnomedRefSetMemberNameProvider;
@@ -98,8 +96,13 @@ import bak.pcj.set.LongSet;
 public class SnomedServerTerminologyBrowser extends AbstractIndexTerminologyBrowser<SnomedConceptIndexEntry> implements SnomedTerminologyBrowser {
 
 	private static final Set<String> CONCEPT_FIELDS_TO_LOAD = SnomedMappings.fieldsToLoad()
-			.id().label().iconId().storageKey().module().active()
-			.field(CONCEPT_EFFECTIVE_TIME)
+			.id()
+			.label()
+			.iconId()
+			.storageKey()
+			.module()
+			.active()
+			.effectiveTime()
 			.field(CONCEPT_PRIMITIVE)
 			.field(CONCEPT_EXHAUSTIVE)
 			.field(COMPONENT_RELEASED)
@@ -144,7 +147,7 @@ public class SnomedServerTerminologyBrowser extends AbstractIndexTerminologyBrow
 				.exhaustive(BooleanUtils.valueOf(SnomedMappings.exhaustive().getValue(doc).intValue()))
 				.released(BooleanUtils.valueOf(SnomedMappings.released().getValue(doc).intValue()))
 				.iconId(Mappings.iconId().getValue(doc))
-				.effectiveTimeLong(Mappings.longField(SnomedIndexBrowserConstants.CONCEPT_EFFECTIVE_TIME).getValue(doc))
+				.effectiveTimeLong(SnomedMappings.effectiveTime().getValue(doc))
 				.build();
 	}
 

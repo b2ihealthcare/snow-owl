@@ -27,6 +27,7 @@ import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.datastore.index.IndexQueryBuilder;
 import com.b2international.snowowl.datastore.index.mapping.Mappings;
 import com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDescriptionIndexEntry;
 import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedMappings;
 import com.google.common.collect.ImmutableSet;
 
@@ -110,7 +111,7 @@ public abstract class SnomedDescriptionIndexQueryAdapter extends SnomedDslIndexQ
 				.typeId(SnomedMappings.descriptionType().getValueAsString(doc))
 				.conceptId(SnomedMappings.descriptionConcept().getValueAsString(doc))
 				.caseSignificanceId(doc.getField(SnomedIndexBrowserConstants.DESCRIPTION_CASE_SIGNIFICANCE_ID).stringValue())
-				.effectiveTimeLong(doc.getField(SnomedIndexBrowserConstants.DESCRIPTION_EFFECTIVE_TIME).numericValue().longValue())
+				.effectiveTimeLong(SnomedMappings.effectiveTime().getValue(doc))
 				.build();
 	}
 }

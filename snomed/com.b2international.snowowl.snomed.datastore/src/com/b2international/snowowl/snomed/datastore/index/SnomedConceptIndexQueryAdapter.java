@@ -26,8 +26,8 @@ import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.datastore.index.IndexQueryBuilder;
 import com.b2international.snowowl.datastore.index.IndexUtils;
 import com.b2international.snowowl.datastore.index.mapping.Mappings;
-import com.b2international.snowowl.snomed.datastore.SnomedConceptIndexEntry;
 import com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptIndexEntry;
 import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedMappings;
 
 /**
@@ -73,7 +73,7 @@ public abstract class SnomedConceptIndexQueryAdapter extends SnomedDslIndexQuery
 				.exhaustive(getBooleanValue(doc.getField(SnomedIndexBrowserConstants.CONCEPT_EXHAUSTIVE)))
 				.released(getBooleanValue(doc.getField(SnomedIndexBrowserConstants.COMPONENT_RELEASED)))
 				.iconId(Mappings.iconId().getValue(doc))
-				.effectiveTimeLong(Mappings.longField(SnomedIndexBrowserConstants.CONCEPT_EFFECTIVE_TIME).getValue(doc))
+				.effectiveTimeLong(SnomedMappings.effectiveTime().getValue(doc))
 				.build();
 	}
 }

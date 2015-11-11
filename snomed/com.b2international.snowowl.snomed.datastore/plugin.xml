@@ -145,7 +145,7 @@
             terminologyComponentId="com.b2international.snowowl.terminology.snomed.concept">
       </representation>
       <representation
-            class="com.b2international.snowowl.snomed.datastore.SnomedConceptIndexEntry"
+            class="com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptIndexEntry"
             terminologyComponentId="com.b2international.snowowl.terminology.snomed.concept">
       </representation>
       <representation
@@ -153,11 +153,11 @@
             terminologyComponentId="com.b2international.snowowl.terminology.snomed.description">
       </representation>
       <representation
-            class="com.b2international.snowowl.snomed.datastore.index.SnomedDescriptionIndexEntry"
+            class="com.b2international.snowowl.snomed.datastore.index.entry.SnomedDescriptionIndexEntry"
             terminologyComponentId="com.b2international.snowowl.terminology.snomed.description">
       </representation>
       <representation
-            class="com.b2international.snowowl.snomed.datastore.SnomedRelationshipIndexEntry"
+            class="com.b2international.snowowl.snomed.datastore.index.entry.SnomedRelationshipIndexEntry"
             terminologyComponentId="com.b2international.snowowl.terminology.snomed.relationship">
       </representation>
       <representation
@@ -173,11 +173,11 @@
             terminologyComponentId="com.b2international.snowowl.terminology.snomed.refsetmember">
       </representation>
       <representation
-            class="com.b2international.snowowl.snomed.datastore.index.refset.SnomedRefSetMemberIndexEntry"
+            class="com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry"
             terminologyComponentId="com.b2international.snowowl.terminology.snomed.refsetmember">
       </representation>
       <representation
-            class="com.b2international.snowowl.snomed.datastore.index.refset.SnomedRefSetIndexEntry"
+            class="com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetIndexEntry"
             terminologyComponentId="com.b2international.snowowl.terminology.snomed.refset">
       </representation>
       <representation
@@ -229,7 +229,7 @@
          </adapter>
       </factory>
       <factory
-            adaptableType="com.b2international.snowowl.snomed.datastore.SnomedConceptIndexEntry"
+            adaptableType="com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptIndexEntry"
             class="com.b2international.snowowl.snomed.datastore.factory.SnomedConceptAdapterFactory">
          <adapter
                type="com.b2international.snowowl.core.api.IComponent">
@@ -243,7 +243,7 @@
          </adapter>
       </factory>
       <factory
-            adaptableType="com.b2international.snowowl.snomed.datastore.index.SnomedDescriptionIndexEntry"
+            adaptableType="com.b2international.snowowl.snomed.datastore.index.entry.SnomedDescriptionIndexEntry"
             class="com.b2international.snowowl.snomed.datastore.factory.SnomedDescriptionAdapterFactory">
          <adapter
                type="com.b2international.snowowl.core.api.IComponent">
@@ -257,7 +257,7 @@
          </adapter>
       </factory>
       <factory
-            adaptableType="com.b2international.snowowl.snomed.datastore.SnomedRelationshipIndexEntry"
+            adaptableType="com.b2international.snowowl.snomed.datastore.index.entry.SnomedRelationshipIndexEntry"
             class="com.b2international.snowowl.snomed.datastore.factory.SnomedRelationshipAdapterFactory">
          <adapter
                type="com.b2international.snowowl.core.api.IComponent">
@@ -271,7 +271,7 @@
          </adapter>
       </factory>
       <factory
-            adaptableType="com.b2international.snowowl.snomed.datastore.index.refset.SnomedRefSetMemberIndexEntry"
+            adaptableType="com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry"
             class="com.b2international.snowowl.snomed.datastore.factory.SnomedRefSetMemberAdapterFactory">
          <adapter
                type="com.b2international.snowowl.core.api.IComponent">

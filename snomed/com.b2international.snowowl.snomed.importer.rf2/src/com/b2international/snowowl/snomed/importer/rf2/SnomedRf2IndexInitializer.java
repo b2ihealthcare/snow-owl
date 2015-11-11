@@ -19,7 +19,22 @@ import static com.b2international.commons.pcj.LongSets.forEach;
 import static com.b2international.commons.pcj.LongSets.newLongSet;
 import static com.b2international.commons.pcj.LongSets.toStringList;
 import static com.b2international.snowowl.core.ApplicationContext.getServiceForClass;
-import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.*;
+import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.COMPONENT_REFERRING_PREDICATE;
+import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.COMPONENT_RELEASED;
+import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.CONCEPT_DEGREE_OF_INTEREST;
+import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.CONCEPT_EXHAUSTIVE;
+import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.CONCEPT_NAMESPACE_ID;
+import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.CONCEPT_PRIMITIVE;
+import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.CONCEPT_REFERRING_MAPPING_REFERENCE_SET_ID;
+import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.CONCEPT_REFERRING_REFERENCE_SET_ID;
+import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.DESCRIPTION_CASE_SIGNIFICANCE_ID;
+import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.RELATIONSHIP_DESTINATION_NEGATED;
+import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.RELATIONSHIP_GROUP;
+import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.RELATIONSHIP_INFERRED;
+import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.RELATIONSHIP_OBJECT_ID;
+import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.RELATIONSHIP_UNION_GROUP;
+import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.RELATIONSHIP_UNIVERSAL;
+import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.RELATIONSHIP_VALUE_ID;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.collect.Lists.newArrayList;
 import static com.google.common.collect.Maps.newHashMap;
@@ -43,7 +58,6 @@ import org.apache.lucene.document.LongField;
 import org.apache.lucene.document.NumericDocValuesField;
 import org.apache.lucene.document.StoredField;
 import org.apache.lucene.document.StringField;
-import org.apache.lucene.document.TextField;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.NullProgressMonitor;
@@ -83,8 +97,6 @@ import com.b2international.snowowl.datastore.server.snomed.index.NamespaceMappin
 import com.b2international.snowowl.datastore.server.snomed.index.SnomedIndexServerService;
 import com.b2international.snowowl.datastore.server.snomed.index.init.DoiInitializer;
 import com.b2international.snowowl.datastore.server.snomed.index.init.ImportIndexServerService;
-import com.b2international.snowowl.datastore.server.snomed.index.init.ImportIndexServerService.TermType;
-import com.b2international.snowowl.datastore.server.snomed.index.init.ImportIndexServerService.TermWithType;
 import com.b2international.snowowl.importer.ImportException;
 import com.b2international.snowowl.snomed.Concept;
 import com.b2international.snowowl.snomed.Description;
@@ -95,7 +107,6 @@ import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConst
 import com.b2international.snowowl.snomed.datastore.MrcmEditingContext;
 import com.b2international.snowowl.snomed.datastore.PredicateUtils;
 import com.b2international.snowowl.snomed.datastore.PredicateUtils.ConstraintDomain;
-import com.b2international.snowowl.snomed.datastore.SnomedConceptIndexEntry;
 import com.b2international.snowowl.snomed.datastore.SnomedConceptLookupService;
 import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 import com.b2international.snowowl.snomed.datastore.SnomedIconProvider;
@@ -104,13 +115,13 @@ import com.b2international.snowowl.snomed.datastore.SnomedTerminologyBrowser;
 import com.b2international.snowowl.snomed.datastore.index.SnomedDescriptionIndexMappingStrategy;
 import com.b2international.snowowl.snomed.datastore.index.SnomedIndexService;
 import com.b2international.snowowl.snomed.datastore.index.SnomedRelationshipIndexMappingStrategy;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptIndexEntry;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry;
 import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedDocumentBuilder;
 import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedMappings;
 import com.b2international.snowowl.snomed.datastore.index.refset.RefSetMemberImmutablePropertyUpdater;
 import com.b2international.snowowl.snomed.datastore.index.refset.RefSetMemberMutablePropertyUpdater;
 import com.b2international.snowowl.snomed.datastore.index.refset.RefSetMutablePropertyUpdater;
-import com.b2international.snowowl.snomed.datastore.index.refset.SnomedRefSetMemberIndexEntry;
-import com.b2international.snowowl.snomed.datastore.index.update.ComponentLabelProvider;
 import com.b2international.snowowl.snomed.datastore.index.update.ComponentLabelUpdater;
 import com.b2international.snowowl.snomed.datastore.index.update.RefSetIconIdUpdater;
 import com.b2international.snowowl.snomed.datastore.index.update.RefSetParentageUpdater;
@@ -606,7 +617,7 @@ public class SnomedRf2IndexInitializer extends Job {
 					.relationshipType(typeConceptId)
 					.relationshipCharacteristicType(characteristicTypeConceptSctId)
 					.module(moduleConceptId)
-					.field(RELATIONSHIP_EFFECTIVE_TIME, effectiveTime)
+					.effectiveTime(effectiveTime)
 					.field(RELATIONSHIP_OBJECT_ID, sourceConceptId)
 					.field(RELATIONSHIP_VALUE_ID, destinationConceptId)
 					.storedOnly(COMPONENT_RELEASED, released ? 1 : 0)
@@ -801,16 +812,9 @@ public class SnomedRf2IndexInitializer extends Job {
 	}
 	
 	private void indexRefSetMember(final SnomedRefSetMember member, final String label) {
-		final ImportIndexServerService importIndexService = getImportIndexService();
-		final ComponentLabelProvider labelProvider = new ComponentLabelProvider() {
-			@Override
-			public String getComponentLabel(String componentId) {
-				return importIndexService.getConceptLabel(componentId);
-			}
-		};
 		final Document doc = SnomedMappings.doc()
 			.with(new RefSetMemberImmutablePropertyUpdater(member))
-			.with(new RefSetMemberMutablePropertyUpdater(member, labelProvider))
+			.with(new RefSetMemberMutablePropertyUpdater(member))
 			.with(new ComponentLabelUpdater<SnomedDocumentBuilder>(member.getUuid(), label) {
 				@Override
 				protected void updateLabelFields(SnomedDocumentBuilder doc, String label) {
@@ -900,7 +904,7 @@ public class SnomedRf2IndexInitializer extends Job {
 						.module(moduleId)
 						.storedOnly(DESCRIPTION_CASE_SIGNIFICANCE_ID, caseSignificanceId)
 						.storedOnly(COMPONENT_RELEASED, released ? 1 : 0)
-						.docValuesField(DESCRIPTION_EFFECTIVE_TIME, effectiveTime)
+						.effectiveTime(effectiveTime)
 						.build();
 				
 				doc.add(new NumericDocValuesField(DESCRIPTION_CASE_SIGNIFICANCE_ID, caseSignificanceId));
@@ -990,17 +994,15 @@ public class SnomedRf2IndexInitializer extends Job {
 			final Collection<String> currentMappingMemberships, final long effectiveTime) {
 		
 		final String conceptIdString = Long.toString(conceptId);
-		final String preferredTerm = getImportIndexService().getConceptLabel(conceptIdString);
 		final SnomedDocumentBuilder docBuilder = SnomedMappings.doc()
 				.id(conceptId)
 				.type(SnomedTerminologyComponentConstants.CONCEPT_NUMBER)
 				.storageKey(conceptStorageKey)
 				.active(active)
-				.labelWithSort(preferredTerm)
 				.field(CONCEPT_EXHAUSTIVE, exhaustive ? 1 : 0)
 				.field(CONCEPT_PRIMITIVE, primitive ? 1 : 0)
 				.storedOnly(COMPONENT_RELEASED, released ? 1 : 0)
-				.field(CONCEPT_EFFECTIVE_TIME, effectiveTime)
+				.effectiveTime(effectiveTime)
 				.searchOnlyField(CONCEPT_NAMESPACE_ID, NamespaceMapping.getExtensionNamespaceId(conceptId))
 				.module(moduleId)
 				.with(new ComponentCompareFieldsUpdater<SnomedDocumentBuilder>(conceptIdString, conceptStorageKey));
@@ -1027,30 +1029,6 @@ public class SnomedRf2IndexInitializer extends Job {
 		// update parents and ancestors
 		new RefSetParentageUpdater(inferredTaxonomyBuilder, conceptIdString, identifierConceptIdsForNewRefSets).update(docBuilder);
 		new RefSetParentageUpdater(statedTaxonomyBuilder, conceptIdString, identifierConceptIdsForNewRefSets, Concepts.STATED_RELATIONSHIP).update(docBuilder);
-		
-		final List<TermWithType> descriptions = getImportIndexService().getConceptDescriptions(conceptIdString);
-		for (final TermWithType termWithType : descriptions) {
-			
-			final String term = termWithType.term;
-			final TermType type = termWithType.type;
-			
-			switch (type) {
-				case FSN:
-					doc.add(new TextField(CONCEPT_FULLY_SPECIFIED_NAME, term, Store.YES));
-					break;
-
-				case SYNONYM_AND_DESCENDANTS:
-					doc.add(new TextField(CONCEPT_SYNONYM, term, Store.YES));
-					break;
-
-				case OTHER:
-					doc.add(new TextField(CONCEPT_OTHER_DESCRIPTION, term, Store.YES));
-					break;
-					
-				default:
-					throw new IllegalStateException(MessageFormat.format("Unhandled term type ''{0}''.", type.name()));
-			}
-		}
 			
 		float doi = doiData.get(conceptId);
 		if (0.0f == doi) {

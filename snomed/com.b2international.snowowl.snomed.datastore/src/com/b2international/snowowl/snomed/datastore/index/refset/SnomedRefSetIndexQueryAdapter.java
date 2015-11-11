@@ -30,6 +30,7 @@ import javax.annotation.Nullable;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.search.Query;
 
+import com.b2international.commons.BooleanUtils;
 import com.b2international.commons.StringUtils;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.api.index.IIndexQueryAdapter;
@@ -38,13 +39,15 @@ import com.b2international.snowowl.datastore.index.DocumentWithScore;
 import com.b2international.snowowl.datastore.index.IndexQueryBuilder;
 import com.b2international.snowowl.datastore.index.IndexUtils;
 import com.b2international.snowowl.datastore.index.mapping.Mappings;
+import com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants;
 import com.b2international.snowowl.snomed.datastore.index.SnomedDOIQueryAdapter;
 import com.b2international.snowowl.snomed.datastore.index.SnomedDslIndexQueryAdapter;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetIndexEntry;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetIndexEntry.Builder;
 import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedMappings;
 import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedQueryBuilder;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType;
 import com.google.common.base.Optional;
-import com.google.common.base.Preconditions;
 
 /**
  * Index query adapter for retrieving search results from lightweight store and building 
@@ -105,7 +108,20 @@ public class SnomedRefSetIndexQueryAdapter extends SnomedDslIndexQueryAdapter<Sn
 
 	@Override
 	public SnomedRefSetIndexEntry buildSearchResult(final Document document, final IBranchPath branchPath, final float score) {
-		return new SnomedRefSetIndexEntry(document, score);
+		
+		final Builder builder = SnomedRefSetIndexEntry.builder()
+				.score(score)
+				.id(SnomedMappings.id().getValueAsString(document))
+				.moduleId(SnomedMappings.module().getValueAsString(document))
+				.storageKey(SnomedMappings.refSetStorageKey().getValue(document)) // XXX: Different than concept storage key
+				.active(BooleanUtils.valueOf(SnomedMappings.active().getValue(document).intValue())) 
+				.released(BooleanUtils.valueOf(SnomedMappings.released().getValue(document).intValue()))
+				.effectiveTimeLong(SnomedMappings.effectiveTime().getValue(document))
+				.type(SnomedRefSetType.get(Mappings.intField(SnomedIndexBrowserConstants.REFERENCE_SET_TYPE).getValue(document)))
+				.referencedComponentType(Mappings.intField(SnomedIndexBrowserConstants.REFERENCE_SET_REFERENCED_COMPONENT_TYPE).getShortValue(document));
+				// TODO: .mapTargetComponentType(...) is not indexed yet 
+				
+		return builder.build();
 	}
 
 	@Override

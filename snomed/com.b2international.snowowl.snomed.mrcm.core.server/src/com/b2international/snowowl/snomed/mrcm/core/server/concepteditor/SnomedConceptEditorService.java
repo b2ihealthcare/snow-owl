@@ -34,11 +34,11 @@ import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
-import com.b2international.snowowl.snomed.datastore.SnomedConceptIndexEntry;
 import com.b2international.snowowl.snomed.datastore.SnomedPredicateBrowser;
 import com.b2international.snowowl.snomed.datastore.SnomedRefSetUtil;
 import com.b2international.snowowl.snomed.datastore.SnomedTerminologyBrowser;
-import com.b2international.snowowl.snomed.datastore.index.refset.SnomedRefSetMemberIndexEntry;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptIndexEntry;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry;
 import com.b2international.snowowl.snomed.datastore.services.ISnomedComponentService;
 import com.b2international.snowowl.snomed.datastore.services.SnomedRefSetMembershipLookupService;
 import com.b2international.snowowl.snomed.datastore.snor.PredicateIndexEntry;
@@ -163,9 +163,7 @@ public class SnomedConceptEditorService implements ISnomedConceptEditorService {
 
 			if (null != members) {
 				for (final SnomedRefSetMemberIndexEntry entry : members) {
-					if (SnomedTerminologyComponentConstants.CONCEPT.equals(entry.getSpecialFieldComponentType())) {
-						addToMaps(branchPath, conceptIdToLabelMap, conceptIdToIconIdMap, terminologyBrowser.getConcept(branchPath, entry.getSpecialFieldId()));
-					}
+					addToMaps(branchPath, conceptIdToLabelMap, conceptIdToIconIdMap, terminologyBrowser.getConcept(branchPath, entry.getTargetComponentId()));
 				}
 			}
 		}

@@ -29,8 +29,7 @@ import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType;
 
 /**
- * SNOMED&nbsp;CT module dependency reference set exporter.
- *
+ * SNOMED CT module dependency reference set exporter.
  */
 public class SnomedModuleDependencyRefSetExporter extends SnomedRefSetExporter {
 
@@ -57,9 +56,9 @@ public class SnomedModuleDependencyRefSetExporter extends SnomedRefSetExporter {
 		final StringBuilder sb = new StringBuilder();
 		sb.append(super.transform(doc));
 		sb.append(HT);
-		sb.append(formatEffectiveTime(doc.getField(REFERENCE_SET_MEMBER_SOURCE_EFFECTIVE_TIME)));
+		sb.append(formatEffectiveTime(doc.getField(REFERENCE_SET_MEMBER_SOURCE_EFFECTIVE_TIME).numericValue().longValue()));
 		sb.append(HT);
-		sb.append(formatEffectiveTime(doc.getField(REFERENCE_SET_MEMBER_TARGET_EFFECTIVE_TIME)));
+		sb.append(formatEffectiveTime(doc.getField(REFERENCE_SET_MEMBER_TARGET_EFFECTIVE_TIME).numericValue().longValue()));
 		return sb.toString();
 	}
 	
@@ -67,5 +66,4 @@ public class SnomedModuleDependencyRefSetExporter extends SnomedRefSetExporter {
 	public String[] getColumnHeaders() {
 		return SnomedRf2Headers.MODULE_DEPENDENCY_HEADER;
 	}
-	
 }

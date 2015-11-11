@@ -29,8 +29,8 @@ import com.b2international.snowowl.snomed.core.domain.CaseSignificance;
 import com.b2international.snowowl.snomed.core.domain.DescriptionInactivationIndicator;
 import com.b2international.snowowl.snomed.core.domain.ISnomedDescription;
 import com.b2international.snowowl.snomed.core.domain.SnomedDescription;
-import com.b2international.snowowl.snomed.datastore.index.SnomedDescriptionIndexEntry;
-import com.b2international.snowowl.snomed.datastore.index.refset.SnomedRefSetMemberIndexEntry;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDescriptionIndexEntry;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry;
 import com.b2international.snowowl.snomed.datastore.services.AbstractSnomedRefSetMembershipLookupService;
 import com.b2international.snowowl.snomed.datastore.services.ISnomedComponentService;
 import com.google.common.collect.ImmutableMap;
@@ -93,15 +93,11 @@ public class SnomedDescriptionConverter extends AbstractSnomedComponentConverter
 
 		for (final SnomedRefSetMemberIndexEntry languageMember : languageMembers) {
 			if (languageMember.isActive()) {
-				resultsBuilder.put(languageMember.getRefSetIdentifierId(), toAcceptability(languageMember.getSpecialFieldId()));
+				resultsBuilder.put(languageMember.getRefSetIdentifierId(), languageMember.getAcceptability());
 			}
 		}
 
 		return resultsBuilder.build();
-	}
-
-	private Acceptability toAcceptability(final String acceptabilityId) {
-		return Acceptability.getByConceptId(acceptabilityId);
 	}
 
 	private CaseSignificance toCaseSignificance(final String caseSignificanceId) {

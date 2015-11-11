@@ -16,7 +16,6 @@
 package com.b2international.snowowl.snomed.datastore.index.update;
 
 import com.b2international.snowowl.snomed.Concept;
-import com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants;
 import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedDocumentBuilder;
 
 /**
@@ -25,7 +24,7 @@ import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedDocument
 public class ConceptMutablePropertyUpdater extends ComponentMutablePropertyUpdater {
 
 	public ConceptMutablePropertyUpdater(Concept concept) {
-		super(concept, SnomedIndexBrowserConstants.CONCEPT_EFFECTIVE_TIME);
+		super(concept);
 	}
 	
 	@Override
@@ -40,5 +39,4 @@ public class ConceptMutablePropertyUpdater extends ComponentMutablePropertyUpdat
 	protected Concept getComponent() {
 		return (Concept) super.getComponent();
 	}
-	
 }

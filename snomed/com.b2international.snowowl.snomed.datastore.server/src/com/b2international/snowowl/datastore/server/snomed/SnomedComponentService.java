@@ -38,12 +38,8 @@ import static com.b2international.snowowl.snomed.common.SnomedTerminologyCompone
 import static com.b2international.snowowl.snomed.datastore.SnomedRefSetUtil.deserializeValue;
 import static com.b2international.snowowl.snomed.datastore.SnomedRefSetUtil.getDataType;
 import static com.b2international.snowowl.snomed.datastore.SnomedRefSetUtil.isMapping;
-import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.CONCEPT_EFFECTIVE_TIME;
 import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.CONCEPT_REFERRING_REFERENCE_SET_ID;
-import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.DESCRIPTION_EFFECTIVE_TIME;
 import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_ACCEPTABILITY_ID;
-import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_EFFECTIVE_TIME;
-import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_MAP_TARGET_COMPONENT_LABEL;
 import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_SERIALIZED_VALUE;
 import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_SOURCE_EFFECTIVE_TIME;
 import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_TARGET_EFFECTIVE_TIME;
@@ -51,7 +47,6 @@ import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBr
 import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_VALUE_ID;
 import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.REFERENCE_SET_TYPE;
 import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.RELATIONSHIP_DESTINATION_NEGATED;
-import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.RELATIONSHIP_EFFECTIVE_TIME;
 import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.RELATIONSHIP_OBJECT_ID;
 import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.RELATIONSHIP_VALUE_ID;
 import static com.google.common.base.Preconditions.checkNotNull;
@@ -111,20 +106,6 @@ import org.eclipse.emf.cdo.common.id.CDOIDUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import bak.pcj.LongCollection;
-import bak.pcj.LongIterator;
-import bak.pcj.list.LongArrayList;
-import bak.pcj.list.LongList;
-import bak.pcj.list.LongListIterator;
-import bak.pcj.map.LongKeyLongMap;
-import bak.pcj.map.LongKeyLongOpenHashMap;
-import bak.pcj.map.LongKeyMap;
-import bak.pcj.map.LongKeyMapIterator;
-import bak.pcj.set.LongChainedHashSet;
-import bak.pcj.set.LongOpenHashSet;
-import bak.pcj.set.LongSet;
-import bak.pcj.set.UnmodifiableLongSet;
-
 import com.b2international.commons.CompareUtils;
 import com.b2international.commons.Pair;
 import com.b2international.commons.StringUtils;
@@ -160,7 +141,6 @@ import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConst
 import com.b2international.snowowl.snomed.datastore.ILanguageConfigurationProvider;
 import com.b2international.snowowl.snomed.datastore.PredicateUtils;
 import com.b2international.snowowl.snomed.datastore.SnomedConceptInactivationIdCollector;
-import com.b2international.snowowl.snomed.datastore.SnomedConceptIndexEntry;
 import com.b2international.snowowl.snomed.datastore.SnomedConceptLookupService;
 import com.b2international.snowowl.snomed.datastore.SnomedDescriptionFragment;
 import com.b2international.snowowl.snomed.datastore.SnomedEditingContext;
@@ -172,11 +152,11 @@ import com.b2international.snowowl.snomed.datastore.SnomedRefSetUtil;
 import com.b2international.snowowl.snomed.datastore.SnomedTerminologyBrowser;
 import com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants;
 import com.b2international.snowowl.snomed.datastore.index.SnomedIndexService;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptIndexEntry;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry;
 import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedMappings;
 import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedQueryBuilder;
-import com.b2international.snowowl.snomed.datastore.index.refset.SnomedDescriptionTypeRefSetMemberIndexEntry;
-import com.b2international.snowowl.snomed.datastore.index.refset.SnomedDescriptionTypeRefSetMemberIndexQueryAdapter;
-import com.b2international.snowowl.snomed.datastore.index.refset.SnomedRefSetMemberIndexEntry;
+import com.b2international.snowowl.snomed.datastore.index.refset.SnomedRefSetMemberIndexQueryAdapter;
 import com.b2international.snowowl.snomed.datastore.index.refset.SnomedRefSetMemberIndexQueryAdapter;
 import com.b2international.snowowl.snomed.datastore.services.ISnomedComponentService;
 import com.b2international.snowowl.snomed.datastore.snor.PredicateIndexEntry;
@@ -204,6 +184,20 @@ import com.google.common.collect.Multimaps;
 import com.google.common.collect.Sets;
 import com.google.common.util.concurrent.UncheckedExecutionException;
 
+import bak.pcj.LongCollection;
+import bak.pcj.LongIterator;
+import bak.pcj.list.LongArrayList;
+import bak.pcj.list.LongList;
+import bak.pcj.list.LongListIterator;
+import bak.pcj.map.LongKeyLongMap;
+import bak.pcj.map.LongKeyLongOpenHashMap;
+import bak.pcj.map.LongKeyMap;
+import bak.pcj.map.LongKeyMapIterator;
+import bak.pcj.set.LongChainedHashSet;
+import bak.pcj.set.LongOpenHashSet;
+import bak.pcj.set.LongSet;
+import bak.pcj.set.UnmodifiableLongSet;
+
 /**
  * Service singleton for the SNOMED&nbsp;CT core components.
  * <p>This class is an implementation of {@link IPostStoreUpdateListener}. 
@@ -218,7 +212,6 @@ public class SnomedComponentService implements ISnomedComponentService, IPostSto
 
 	private static final Set<String> MEMBER_REF_SET_ID_FILDS_TO_LOAD = SnomedMappings.fieldsToLoad().memberReferenceSetId().build();
 	private static final Set<String> COMPONENT_ID_MODULE_FIELDS_TO_LOAD = SnomedMappings.fieldsToLoad().id().module().build();
-	private static final Set<String> MEMBER_LABEL_FIELDS_TO_LOAD = SnomedMappings.fieldsToLoad().label().field(REFERENCE_SET_MEMBER_MAP_TARGET_COMPONENT_LABEL).build();
 	private static final Set<String> MEMBER_REFERENCED_COMPONENT_ID_FIELDS_TO_LOAD = SnomedMappings.fieldsToLoad().memberReferencedComponentId().build();
 	private static final Set<String> MEMBER_VALUE_ID_FIELDS_TO_LOAD = SnomedMappings.fieldsToLoad().field(REFERENCE_SET_MEMBER_VALUE_ID).build();
 	private static final Set<String> MEMBER_ID_FIELDS_TO_LOAD = SnomedMappings.fieldsToLoad().field(REFERENCE_SET_MEMBER_UUID).active().memberReferencedComponentId().build();
@@ -245,7 +238,13 @@ public class SnomedComponentService implements ISnomedComponentService, IPostSto
 	private static final Set<String> DESCRIPTION_FIELDS_TO_LOAD = SnomedMappings.fieldsToLoad().descriptionType().descriptionConcept().label().build();
 	
 	private static final Set<String> DESCRIPTION_EXTENDED_FIELDS_TO_LOAD = SnomedMappings.fieldsToLoad()
-			.id().storageKey().label().descriptionConcept().descriptionType().field(DESCRIPTION_EFFECTIVE_TIME).build();
+			.id()
+			.effectiveTime()
+			.storageKey()
+			.label()
+			.descriptionConcept()
+			.descriptionType()
+			.build();
 	
 	private static final Function<String, Boolean> ALWAYS_FALSE_FUNC = new Function<String, Boolean>() {
 		@Override
@@ -699,7 +698,7 @@ public class SnomedComponentService implements ISnomedComponentService, IPostSto
 					Mappings.label().getValue(descriptionDoc),
 					SnomedMappings.descriptionConcept().getValueAsString(descriptionDoc),
 					SnomedMappings.descriptionType().getValueAsString(descriptionDoc),
-					EffectiveTimes.format(getLongValue(descriptionDoc.getField(DESCRIPTION_EFFECTIVE_TIME)))
+					EffectiveTimes.format(SnomedMappings.effectiveTime().getValue(descriptionDoc))
 				});
 			}
 			
@@ -1657,14 +1656,7 @@ public class SnomedComponentService implements ISnomedComponentService, IPostSto
 	@Override
 	public LongSet getAllUnpublishedComponentStorageKeys(final IBranchPath branchPath) {
 		checkNotNull(branchPath, "branchPath");
-		return getUnpublishedStorageKeys(
-				branchPath,
-				SnomedMappings.newQuery()
-						.field(CONCEPT_EFFECTIVE_TIME, EffectiveTimes.UNSET_EFFECTIVE_TIME)
-						.field(DESCRIPTION_EFFECTIVE_TIME, EffectiveTimes.UNSET_EFFECTIVE_TIME)
-						.field(RELATIONSHIP_EFFECTIVE_TIME, EffectiveTimes.UNSET_EFFECTIVE_TIME)
-						.field(REFERENCE_SET_MEMBER_EFFECTIVE_TIME, EffectiveTimes.UNSET_EFFECTIVE_TIME)
-						.matchAny());
+		return getUnpublishedStorageKeys(branchPath, SnomedMappings.newQuery().effectiveTime(EffectiveTimes.UNSET_EFFECTIVE_TIME).matchAll());
 	}
 
 	@Override
@@ -2515,13 +2507,13 @@ public class SnomedComponentService implements ISnomedComponentService, IPostSto
 	 * @param branchPath
 	 */
 	private Map<String, Integer> getAvailableDescriptionTypes(final IBranchPath branchPath) {
-		final SnomedDescriptionTypeRefSetMemberIndexQueryAdapter adapter = new SnomedDescriptionTypeRefSetMemberIndexQueryAdapter(Concepts.REFSET_DESCRIPTION_TYPE, null);
+		final SnomedRefSetMemberIndexQueryAdapter adapter = new SnomedRefSetMemberIndexQueryAdapter(Concepts.REFSET_DESCRIPTION_TYPE, null);
 		final Collection<SnomedRefSetMemberIndexEntry> members = getRefSetIndexService().searchUnsorted(branchPath, adapter);
 		
-		final Iterable<SnomedDescriptionTypeRefSetMemberIndexEntry> descriptionTypeMembers = Iterables.filter(members, SnomedDescriptionTypeRefSetMemberIndexEntry.class);
+		final Iterable<SnomedRefSetMemberIndexEntry> descriptionTypeMembers = Iterables.filter(members, SnomedRefSetMemberIndexEntry.class);
 		
-		final Iterable<SnomedDescriptionTypeRefSetMemberIndexEntry> activeDescriptionTypeMembers = Iterables.filter(descriptionTypeMembers, new Predicate<SnomedDescriptionTypeRefSetMemberIndexEntry>() {
-			@Override public boolean apply(final SnomedDescriptionTypeRefSetMemberIndexEntry member) {
+		final Iterable<SnomedRefSetMemberIndexEntry> activeDescriptionTypeMembers = Iterables.filter(descriptionTypeMembers, new Predicate<SnomedRefSetMemberIndexEntry>() {
+			@Override public boolean apply(final SnomedRefSetMemberIndexEntry member) {
 				return member.isActive();
 			}
 		});
@@ -2542,7 +2534,7 @@ public class SnomedComponentService implements ISnomedComponentService, IPostSto
 		final Map<String, Integer> $ = Maps.newHashMap();
 		
 		//if active description type member has a corresponding active concept as well.
-		for (final SnomedDescriptionTypeRefSetMemberIndexEntry entry : activeDescriptionTypeMembers) {
+		for (final SnomedRefSetMemberIndexEntry entry : activeDescriptionTypeMembers) {
 			
 			final String referencedComponentId = entry.getReferencedComponentId();
 			if (activeDescriptionTypeIds.contains(referencedComponentId)) {
