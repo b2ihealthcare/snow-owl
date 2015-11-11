@@ -38,6 +38,11 @@ public class StatedIsARelationshipWidgetBeanValidator implements ModeledWidgetBe
 			return;
 		}
 		
+		// ignore inactive concepts
+		if (!concept.isActive()) {
+			return;
+		}
+		
 		Iterable<RelationshipWidgetBean> relationships = concept.getRelationships();
 		
 		int numberOfStatedIsARelationships = 0;
@@ -48,7 +53,7 @@ public class StatedIsARelationshipWidgetBeanValidator implements ModeledWidgetBe
 				numberOfStatedIsARelationships ++;
 			}
 		}
-		if (numberOfStatedIsARelationships<1) {
+		if (numberOfStatedIsARelationships < 1) {
 			reporter.error(concept, "The concept has no stated is-a relationships.");
 		}
 	}
