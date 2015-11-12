@@ -18,9 +18,13 @@ package com.b2international.snowowl.snomed.datastore.id;
 import java.util.Collection;
 
 import com.b2international.snowowl.core.terminology.ComponentCategory;
-import com.b2international.snowowl.snomed.datastore.id.IdAction.IdActionType;
-import com.google.common.base.Predicate;
-import com.google.common.collect.Collections2;
+import com.b2international.snowowl.snomed.datastore.id.action.DeprecateAction;
+import com.b2international.snowowl.snomed.datastore.id.action.GenerateAction;
+import com.b2international.snowowl.snomed.datastore.id.action.IIdAction;
+import com.b2international.snowowl.snomed.datastore.id.action.PublishAction;
+import com.b2international.snowowl.snomed.datastore.id.action.RegisterAction;
+import com.b2international.snowowl.snomed.datastore.id.action.ReleaseAction;
+import com.b2international.snowowl.snomed.datastore.id.action.ReserveAction;
 import com.google.common.collect.Lists;
 
 /**
@@ -28,29 +32,7 @@ import com.google.common.collect.Lists;
  */
 public class IdManagerImpl implements IdManager {
 
-	private enum Type {
-		ROLLBACK, COMMIT
-	}
-
-	private class PostJob {
-		private Type type;
-		private IdAction action;
-
-		public PostJob(final Type type, final IdAction action) {
-			this.type = type;
-			this.action = action;
-		}
-
-		public Type getType() {
-			return type;
-		}
-
-		public IdAction getAction() {
-			return action;
-		}
-	}
-
-	private final Collection<PostJob> postJobs = Lists.newArrayList();
+	private final Collection<IIdAction> actions = Lists.newArrayList();
 
 	private final ISnomedIdentifierService identifierService;
 
@@ -60,96 +42,61 @@ public class IdManagerImpl implements IdManager {
 
 	@Override
 	public void rollback() {
-		executeActions(Type.ROLLBACK);
+		for (final IIdAction action : actions) {
+			action.rollback();
+		}
 	}
 
 	@Override
 	public void commit() {
-		executeActions(Type.COMMIT);
+		for (final IIdAction action : actions) {
+			action.commit();
+		}
 	}
 
 	@Override
 	public SnomedIdentifier generate(final String namespace, final ComponentCategory category) {
-		final SnomedIdentifier identifier = identifierService.generate(namespace, category);
-		addAction(Type.ROLLBACK, identifier, IdActionType.RELEASE);
+		final GenerateAction action = new GenerateAction(namespace, category, identifierService);
+		executeAction(action);
 
-		return identifier;
+		return action.getIdentifier();
 	}
 
 	@Override
 	public void register(final SnomedIdentifier identifier) {
-		identifierService.register(identifier);
-		// TODO check: rollback should not be executed when exception occurred
-		// because of already registered id
-		addAction(Type.ROLLBACK, identifier, IdActionType.RELEASE);
+		final RegisterAction action = new RegisterAction(identifier, identifierService);
+		executeAction(action);
 	}
 
 	@Override
 	public SnomedIdentifier reserve(final String namespace, final ComponentCategory category) {
-		final SnomedIdentifier identifier = identifierService.reserve(namespace, category);
-		addAction(Type.ROLLBACK, identifier, IdActionType.RELEASE);
-		addAction(Type.COMMIT, identifier, IdActionType.REGISTER);
+		final ReserveAction action = new ReserveAction(namespace, category, identifierService);
+		executeAction(action);
 
-		return identifier;
+		return action.getIdentifier();
 	}
 
 	@Override
 	public void deprecate(final SnomedIdentifier identifier) {
-		identifierService.deprecate(identifier);
+		final DeprecateAction action = new DeprecateAction(identifier, identifierService);
+		executeAction(action);
 	}
 
 	@Override
 	public void release(final SnomedIdentifier identifier) {
-		identifierService.release(identifier);
-		addAction(Type.ROLLBACK, identifier, IdActionType.REGISTER);
+		final ReleaseAction action = new ReleaseAction(identifier, identifierService);
+		executeAction(action);
 	}
 
 	@Override
 	public void publish(final SnomedIdentifier identifier) {
-		identifierService.publish(identifier);
+		final PublishAction action = new PublishAction(identifier, identifierService);
+		executeAction(action);
 	}
 
-	private void addAction(final Type type, final SnomedIdentifier identifier, final IdActionType actionType) {
-		final IdAction idAction = new IdAction(identifier, actionType);
-		postJobs.add(new PostJob(type, idAction));
-	}
-
-	private void executeActions(final Type type) {
-		final Collection<PostJob> filteredJobs = Collections2.filter(postJobs, new Predicate<PostJob>() {
-			@Override
-			public boolean apply(PostJob input) {
-				return type == input.getType();
-			}
-		});
-
-		for (final PostJob job : filteredJobs) {
-			executeAction(job.getAction());
-		}
-	}
-
-	private void executeAction(final IdAction action) {
-		final SnomedIdentifier identifier = action.getIdentifier();
-
-		switch (action.getType()) {
-		case GENERATE:
-			identifierService.generate(identifier.getNamespace(), identifier.getComponentCategory());
-			break;
-		case REGISTER:
-			identifierService.register(identifier);
-			break;
-		case RESERVE:
-			identifierService.reserve(identifier.getNamespace(), identifier.getComponentCategory());
-			break;
-		case DEPRECATE:
-			identifierService.deprecate(identifier);
-			break;
-		case RELEASE:
-			identifierService.release(identifier);
-			break;
-		case PUBLISH:
-			identifierService.publish(identifier);
-			break;
-		}
+	private void executeAction(final IIdAction action) {
+		action.execute();
+		actions.add(action);
 	}
 
 }
