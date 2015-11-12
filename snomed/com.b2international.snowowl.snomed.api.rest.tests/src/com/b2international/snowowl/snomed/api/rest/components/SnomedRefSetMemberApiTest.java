@@ -19,15 +19,7 @@ import static com.b2international.snowowl.snomed.SnomedConstants.Concepts.MODULE
 import static com.b2international.snowowl.snomed.SnomedConstants.Concepts.ROOT_CONCEPT;
 import static com.b2international.snowowl.snomed.api.rest.SnomedApiTestConstants.PREFERRED_ACCEPTABILITY_MAP;
 import static com.b2international.snowowl.snomed.api.rest.SnomedBranchingApiAssert.givenBranchWithPath;
-import static com.b2international.snowowl.snomed.api.rest.SnomedComponentApiAssert.assertComponentCanBeDeleted;
 import static com.b2international.snowowl.snomed.api.rest.SnomedComponentApiAssert.*;
-import static com.b2international.snowowl.snomed.api.rest.SnomedComponentApiAssert.*;
-import static com.b2international.snowowl.snomed.api.rest.SnomedComponentApiAssert.assertComponentNotCreated;
-import static com.b2international.snowowl.snomed.api.rest.SnomedComponentApiAssert.assertComponentNotExists;
-import static com.b2international.snowowl.snomed.api.rest.SnomedComponentApiAssert.assertComponentReadWithStatus;
-import static com.b2international.snowowl.snomed.api.rest.SnomedComponentApiAssert.createRefSetMemberRequestBody;
-import static com.b2international.snowowl.snomed.api.rest.SnomedComponentApiAssert.createRefSetRequestBody;
-import static com.b2international.snowowl.snomed.api.rest.SnomedComponentApiAssert.givenConceptRequestBody;
 
 import java.util.Map;
 
@@ -40,12 +32,10 @@ import com.b2international.snowowl.snomed.api.rest.AbstractSnomedApiTest;
 import com.b2international.snowowl.snomed.api.rest.SnomedComponentType;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
-import com.b2international.snowowl.snomed.core.domain.SnomedReferenceSetMember;
 import com.b2international.snowowl.snomed.datastore.id.SnomedIdentifiers;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType;
 import com.google.common.collect.ImmutableMap;
 import com.jayway.restassured.response.Response;
-import com.jayway.restassured.response.ValidatableResponse;
 
 /**
  * TODO try to create a member with invalid refcompid
@@ -180,8 +170,12 @@ public class SnomedRefSetMemberApiTest extends AbstractSnomedApiTest {
 			.body("query", CoreMatchers.equalTo(query));
 			
 		final String referencedComponentId = response.body().path("referencedComponentId");
-		assertComponentExists(testBranchPath, SnomedComponentType.REFSET, referencedComponentId);
-		// TODO assert number of members in the refset
+		getComponent(testBranchPath, SnomedComponentType.REFSET, referencedComponentId, "members")
+			.then()
+			.assertThat()
+			.statusCode(200)
+			.and()
+			.body("members.items.referencedComponentId", CoreMatchers.hasItems(Concepts.STATED_RELATIONSHIP, Concepts.INFERRED_RELATIONSHIP, Concepts.DEFINING_RELATIONSHIP));
 	}
 	
 	@Test

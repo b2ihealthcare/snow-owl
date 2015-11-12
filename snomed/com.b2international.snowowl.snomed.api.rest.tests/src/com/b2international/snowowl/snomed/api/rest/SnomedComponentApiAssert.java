@@ -31,6 +31,7 @@ import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.core.domain.CharacteristicType;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType;
+import com.google.common.base.Joiner;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableMap.Builder;
@@ -126,11 +127,14 @@ public abstract class SnomedComponentApiAssert {
 				.then().log().ifValidationFails().assertThat().statusCode(statusCode);
 	}
 
-	public static Response getComponent(final IBranchPath branchPath, final SnomedComponentType componentType, final String componentId) {
-		return givenAuthenticatedRequest(SnomedApiTestConstants.SCT_API)
-				.when().get("/{path}/{componentType}/{id}", branchPath.getPath(), componentType.toLowerCasePlural(), componentId);
+	public static Response getComponent(final IBranchPath branchPath, final SnomedComponentType componentType, final String componentId, final String...expansions) {
+		String url = "/{path}/{componentType}/{id}";
+		if (expansions != null && expansions.length > 0) {
+			url = url.concat("?expand="+Joiner.on(",").join(expansions));
+		}
+		return givenAuthenticatedRequest(SnomedApiTestConstants.SCT_API).when().get(url, branchPath.getPath(), componentType.toLowerCasePlural(), componentId);
 	}
-
+	
 	/**
 	 * Asserts that the component with the given type and identifier exists on the given branch.
 	 *  
