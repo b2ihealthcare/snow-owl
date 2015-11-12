@@ -71,11 +71,13 @@ public interface IIndexUpdater<E extends IIndexEntry> extends IIndexService<E> {
 	void deleteAll(IBranchPath branchPath);
 	
 	/**
-	 * Signals the index updater that the indexes for the specified branch path should be closed and removed from the disk.
+	 * Signals the index updater that the indexes for the specified branch path should be closed.
 	 * 
-	 * @param branchPath
+	 * @param branchPath the branch path for the service which should be closed down due to inactivity
+	 * @param force if the index should be closed even if it has uncommitted changes
+	 * @return {@code true} if the service was closed as a result, {@code false} if it is still live 
 	 */
-	void inactiveClose(IBranchPath branchPath);
+	boolean inactiveClose(IBranchPath branchPath, boolean force);
 
 	/**
 	 * Creates an empty commit with custom metadata set for a given branch index.
