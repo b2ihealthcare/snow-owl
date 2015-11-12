@@ -28,6 +28,8 @@ import com.b2international.snowowl.core.exceptions.ComponentNotFoundException;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
+import com.b2international.snowowl.snomed.core.domain.ISnomedConcept;
+import com.b2international.snowowl.snomed.core.domain.SnomedConcepts;
 import com.b2international.snowowl.snomed.core.domain.SnomedReferenceSet;
 import com.b2international.snowowl.snomed.core.domain.SnomedReferenceSetMember;
 import com.b2international.snowowl.snomed.core.store.SnomedComponents;
@@ -173,7 +175,7 @@ public class SnomedRefSetMemberCreateRequest extends SnomedRefSetMemberRequest<T
 					.setTypeId(Concepts.SYNONYM)
 					.preferredIn(Concepts.REFSET_LANGUAGE_TYPE_UK));
 		
-		// create new simple type reference set
+		// create new simple type reference set first
 		final SnomedReferenceSet memberRefSet = SnomedRequests
 			.prepareNewRefSet()
 			.setType(SnomedRefSetType.SIMPLE)
@@ -181,6 +183,14 @@ public class SnomedRefSetMemberCreateRequest extends SnomedRefSetMemberRequest<T
 			.setIdentifierConcept(conceptReq)
 			.build()
 			.execute(context);
+		
+		// then add 
+		final SnomedConcepts matchingEscgConcepts = SnomedRequests.prepareConceptSearch().filterByEscg(getQuery()).all().build().execute(context);
+		for (ISnomedConcept concept : matchingEscgConcepts.getItems()) {
+			SnomedRequests
+				.prepareNewMember(moduleId, concept.getId(), memberRefSet.getId())
+				.execute(context);
+		}
 		
 		return SnomedComponents
 			.newQueryMember()

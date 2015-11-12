@@ -22,17 +22,16 @@ import static com.google.common.collect.Sets.newHashSet;
 import java.util.Collection;
 import java.util.Map;
 
-import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.events.BaseRequest;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
+import com.b2international.snowowl.snomed.core.domain.ISnomedConcept;
 import com.b2international.snowowl.snomed.core.domain.MemberChangeImpl;
 import com.b2international.snowowl.snomed.core.domain.QueryRefSetMemberEvaluationImpl;
+import com.b2international.snowowl.snomed.core.domain.SnomedConcepts;
 import com.b2international.snowowl.snomed.core.domain.SnomedReferenceSetMember;
 import com.b2international.snowowl.snomed.core.domain.refset.MemberChange;
 import com.b2international.snowowl.snomed.core.domain.refset.QueryRefSetMemberEvaluation;
-import com.b2international.snowowl.snomed.datastore.SnomedConceptIndexEntry;
-import com.b2international.snowowl.snomed.datastore.escg.IEscgQueryEvaluatorClientService;
 import com.google.common.collect.Maps;
 
 /**
@@ -53,16 +52,15 @@ public class EvaluateQueryRefSetMemberRequest extends BaseRequest<BranchContext,
 		final String query = (String) member.getProperties().get(SnomedRf2Headers.FIELD_QUERY);
 		final String targetReferenceSet = member.getReferencedComponentId();
 
-		// TODO convert this to request call if required
-		final IEscgQueryEvaluatorClientService queryEvaluatorService = ApplicationContext.getInstance().getService(IEscgQueryEvaluatorClientService.class);
-		final Collection<SnomedConceptIndexEntry> matchingQueryConcepts = queryEvaluatorService.evaluate(query);
-
-		final Map<String, SnomedConceptIndexEntry> conceptsToAdd = newHashMap();
+		// GET matching members of a query
+		final SnomedConcepts matchingConcepts = SnomedRequests.prepareConceptSearch().filterByEscg(query).all().build().execute(context);
+		
+		final Map<String, ISnomedConcept> conceptsToAdd = newHashMap();
 		final Collection<SnomedReferenceSetMember> membersToRemove = newHashSet();
 		final Map<String, String> conceptsToActivate = Maps.newHashMap();
 
 		// add all matching first
-		for (SnomedConceptIndexEntry matchedConcept : matchingQueryConcepts) {
+		for (ISnomedConcept matchedConcept : matchingConcepts.getItems()) {
 			if (matchedConcept.isActive()) {
 				conceptsToAdd.put(matchedConcept.getId(), matchedConcept);
 			}
@@ -75,6 +73,7 @@ public class EvaluateQueryRefSetMemberRequest extends BaseRequest<BranchContext,
 					.build()
 					.execute(context)
 					.getItems();
+		
 		for (SnomedReferenceSetMember currentMember : curretMembersOfTarget) {
 			final String referencedComponentId = currentMember.getReferencedComponentId();
 			if (conceptsToAdd.containsKey(referencedComponentId)) {
