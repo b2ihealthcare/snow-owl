@@ -68,7 +68,7 @@ public class CisSnomedIdentfierServiceImpl extends AbstractSnomedIdentifierServi
 
 	@Override
 	public boolean includes(final SnomedIdentifier identifier) {
-		final SctId sctId = getSctId(identifier);
+		final SctId sctId = getSctId(identifier.toString());
 		return super.includes(identifier) || sctId.getStatus().equals(IdentifierStatus.AVAILABLE.getSerializedName());
 	}
 
@@ -180,12 +180,12 @@ public class CisSnomedIdentfierServiceImpl extends AbstractSnomedIdentifierServi
 		}
 	}
 
-	public SctId getSctId(final SnomedIdentifier identifier) {
+	public SctId getSctId(final String componentId) {
 		HttpGet request = null;
 		final String token = login();
 
 		try {
-			request = httpGet(String.format("sct/ids/%s?token=%s", identifier.toString(), token));
+			request = httpGet(String.format("sct/ids/%s?token=%s", componentId, token));
 			final String response = execute(request);
 
 			return mapper.readValue(response, SctId.class);
