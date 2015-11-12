@@ -31,7 +31,6 @@ import java.util.List;
 import java.util.Set;
 
 import org.apache.lucene.document.Document;
-import org.apache.lucene.index.DirectoryReader;
 import org.apache.lucene.index.IndexCommit;
 import org.apache.lucene.index.IndexNotFoundException;
 import org.apache.lucene.store.Directory;
@@ -85,9 +84,9 @@ public class FSDirectoryManager extends AbstractDirectoryManager implements IDir
 		final IPath actual = new Path(folderForBranchPath.getAbsolutePath());
 		final IPath relativePath = actual.makeRelativeTo(base);
 
-		try (final Directory directory = openWritableLuceneDirectory(folderForBranchPath)) {
+		try (final IndexDirectory directory = openDirectory(branchPath, false)) {
 
-			final List<IndexCommit> commits = DirectoryReader.listCommits(directory);
+			final List<IndexCommit> commits = directory.listCommits();
 			for (final IndexCommit commit : commits) {
 
 				final Collection<String> fileNames = commit.getFileNames();
