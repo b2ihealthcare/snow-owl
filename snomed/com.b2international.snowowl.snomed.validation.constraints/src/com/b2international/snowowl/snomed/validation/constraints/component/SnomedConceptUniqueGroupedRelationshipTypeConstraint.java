@@ -59,8 +59,9 @@ public class SnomedConceptUniqueGroupedRelationshipTypeConstraint extends
 		@Override
 		public boolean apply(final SnomedRelationshipIndexEntry input) {
 			// don't check ungrouped relationships
-			if (input.getGroup() == 0)
+			if (input.getGroup() == 0) {
 				return true;
+			}
 			final Collection<SnomedRelationshipIndexEntry> relationshipsInGroup = groupToRelationshipMultimap.get(input.getGroup());
 			for (final SnomedRelationshipIndexEntry relationship : relationshipsInGroup) {
 				if (relationship != input && relationshipsEquivalent(input, relationship))
@@ -75,6 +76,11 @@ public class SnomedConceptUniqueGroupedRelationshipTypeConstraint extends
 					return false;
 			} else if (!r1.getAttributeId().equals(r2.getAttributeId()))
 				return false;
+			
+			if (!r1.getCharacteristicTypeId().equals(r2.getCharacteristicTypeId())) {
+				return false;
+			}
+			
 			if (r1.getGroup() != r2.getGroup()) {
 				return false;
 			}
