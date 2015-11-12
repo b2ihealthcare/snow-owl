@@ -20,7 +20,6 @@ import org.eclipse.emf.ecore.EObject;
 import com.b2international.snowowl.core.domain.TransactionContext;
 import com.b2international.snowowl.core.events.BaseRequest;
 import com.b2international.snowowl.snomed.datastore.id.IdManager;
-import com.b2international.snowowl.snomed.datastore.id.SnomedIdentifiers;
 
 /**
  * @since 4.5
@@ -39,7 +38,7 @@ final class SnomedComponentDeleteRequest extends BaseRequest<TransactionContext,
 	public Void execute(TransactionContext context) {
 		// TODO handle refset member deletion?
 		final IdManager idManager = context.service(IdManager.class);
-		idManager.release(SnomedIdentifiers.of(componentId));
+		idManager.release(componentId);
 		
 		context.delete(context.lookup(componentId, type));
 		return null;

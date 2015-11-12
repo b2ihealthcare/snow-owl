@@ -26,7 +26,6 @@ import com.b2international.snowowl.core.terminology.ComponentCategory;
 import com.b2international.snowowl.snomed.datastore.SnomedTerminologyBrowser;
 import com.b2international.snowowl.snomed.datastore.id.AbstractSnomedIdentifierServiceImpl;
 import com.b2international.snowowl.snomed.datastore.id.SnomedIdentifier;
-import com.b2international.snowowl.snomed.datastore.id.SnomedIdentifiers;
 import com.b2international.snowowl.snomed.datastore.id.cis.IdentifierStatus;
 import com.b2international.snowowl.snomed.datastore.id.cis.SctId;
 import com.b2international.snowowl.snomed.datastore.id.gen.ItemIdGenerationStrategy;
@@ -67,7 +66,7 @@ public class InMemorySnomedIdentifierServiceImpl extends AbstractSnomedIdentifie
 	}
 
 	@Override
-	public SnomedIdentifier generate(final String namespace, final ComponentCategory category) {
+	public String generate(final String namespace, final ComponentCategory category) {
 		checkNotNull(category, "Component category must not be null.");
 		checkCategory(category);
 
@@ -75,22 +74,22 @@ public class InMemorySnomedIdentifierServiceImpl extends AbstractSnomedIdentifie
 		final SctId sctId = buildSctId(componentId, IdentifierStatus.ASSIGNED);
 		store.put(componentId, sctId);
 
-		return SnomedIdentifiers.of(componentId);
+		return componentId;
 	}
 
 	@Override
-	public void register(final SnomedIdentifier identifier) {
-		if (reservationService.isReserved(identifier.toString())) {
+	public void register(final String componentId) {
+		if (reservationService.isReserved(componentId)) {
 			// TODO change exception
 			throw new RuntimeException("Component ID is already registered.");
 		} else {
-			final SctId sctId = buildSctId(identifier, IdentifierStatus.ASSIGNED);
-			store.put(identifier.toString(), sctId);
+			final SctId sctId = buildSctId(componentId, IdentifierStatus.ASSIGNED);
+			store.put(componentId, sctId);
 		}
 	}
 
 	@Override
-	public SnomedIdentifier reserve(final String namespace, final ComponentCategory category) {
+	public String reserve(final String namespace, final ComponentCategory category) {
 		checkNotNull(category, "Component category must not be null.");
 		checkCategory(category);
 
@@ -98,12 +97,12 @@ public class InMemorySnomedIdentifierServiceImpl extends AbstractSnomedIdentifie
 		final SctId sctId = buildSctId(componentId, IdentifierStatus.RESERVED);
 		store.put(componentId, sctId);
 
-		return SnomedIdentifiers.of(componentId);
+		return componentId;
 	}
 
 	@Override
-	public void deprecate(final SnomedIdentifier identifier) {
-		final SctId sctId = getSctId(identifier.toString());
+	public void deprecate(final String componentId) {
+		final SctId sctId = getSctId(componentId);
 		if (hasStatus(sctId, IdentifierStatus.ASSIGNED, IdentifierStatus.PUBLISHED)) {
 		} else {
 			throw new BadRequestException("");
@@ -111,8 +110,8 @@ public class InMemorySnomedIdentifierServiceImpl extends AbstractSnomedIdentifie
 	}
 
 	@Override
-	public void release(final SnomedIdentifier identifier) {
-		final SctId sctId = getSctId(identifier.toString());
+	public void release(final String componentId) {
+		final SctId sctId = getSctId(componentId);
 		if (hasStatus(sctId, IdentifierStatus.ASSIGNED, IdentifierStatus.RESERVED)) {
 		} else {
 			throw new BadRequestException("");
@@ -120,8 +119,8 @@ public class InMemorySnomedIdentifierServiceImpl extends AbstractSnomedIdentifie
 	}
 
 	@Override
-	public void publish(final SnomedIdentifier identifier) {
-		final SctId sctId = getSctId(identifier.toString());
+	public void publish(final String componentId) {
+		final SctId sctId = getSctId(componentId);
 		if (hasStatus(sctId, IdentifierStatus.ASSIGNED, IdentifierStatus.PUBLISHED)) {
 		} else {
 			throw new BadRequestException("");
@@ -160,10 +159,6 @@ public class InMemorySnomedIdentifierServiceImpl extends AbstractSnomedIdentifie
 	}
 
 	private SctId buildSctId(final String componentId, final IdentifierStatus status) {
-		throw new NotImplementedException("Not implemented.");
-	}
-
-	private SctId buildSctId(final SnomedIdentifier identifier, final IdentifierStatus status) {
 		throw new NotImplementedException("Not implemented.");
 	}
 

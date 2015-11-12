@@ -42,7 +42,7 @@ public interface ISnomedIdentifierService extends Reservation {
 	 *            - the component type to generate ID for
 	 * @return a valid SNOMED CT identifier, never <code>null</code>
 	 */
-	SnomedIdentifier generate(String namespace, ComponentCategory category);
+	String generate(String namespace, ComponentCategory category);
 
 	/**
 	 * Generates a single SNOMED CT ID for the defined {@link ComponentCategory}
@@ -54,7 +54,7 @@ public interface ISnomedIdentifierService extends Reservation {
 	 *            - the component type to generate ID for
 	 * @return a valid SNOMED CT identifier, never <code>null</code>
 	 */
-	void register(SnomedIdentifier identifier);
+	void register(String componentId);
 
 	/**
 	 * Reserves a single SNOMED CT ID for the defined {@link ComponentCategory}
@@ -66,7 +66,7 @@ public interface ISnomedIdentifierService extends Reservation {
 	 *            - the component type to generate ID for
 	 * @return a valid SNOMED CT identifier, never <code>null</code>
 	 */
-	SnomedIdentifier reserve(String namespace, ComponentCategory category);
+	String reserve(String namespace, ComponentCategory category);
 
 	/**
 	 * Deprecates the given SNOMED CT ID.
@@ -74,7 +74,7 @@ public interface ISnomedIdentifierService extends Reservation {
 	 * @param identifier
 	 *            - the identifier to deprecate.
 	 */
-	void deprecate(SnomedIdentifier identifier);
+	void deprecate(String componentId);
 
 	/**
 	 * Releases a single SNOMED CT ID.
@@ -82,7 +82,7 @@ public interface ISnomedIdentifierService extends Reservation {
 	 * @param identifier
 	 *            - the identifier to release.
 	 */
-	void release(SnomedIdentifier identifier);
+	void release(String componentId);
 
 	/**
 	 * Publishes a single SNOMED CT ID.
@@ -90,6 +90,6 @@ public interface ISnomedIdentifierService extends Reservation {
 	 * @param identifier
 	 *            - the identifier to publish.
 	 */
-	void publish(SnomedIdentifier identifier);
+	void publish(String componentId);
 
 }

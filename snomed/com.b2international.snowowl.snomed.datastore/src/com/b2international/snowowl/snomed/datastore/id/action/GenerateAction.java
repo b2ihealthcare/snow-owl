@@ -17,7 +17,6 @@ package com.b2international.snowowl.snomed.datastore.id.action;
 
 import com.b2international.snowowl.core.terminology.ComponentCategory;
 import com.b2international.snowowl.snomed.datastore.id.ISnomedIdentifierService;
-import com.b2international.snowowl.snomed.datastore.id.SnomedIdentifier;
 
 /**
  * @since 4.5
@@ -27,7 +26,7 @@ public class GenerateAction extends IdAction {
 	private final String namespace;
 	private final ComponentCategory category;
 
-	private SnomedIdentifier identifier;
+	private String componentId;
 
 	public GenerateAction(final String namespace, final ComponentCategory category, ISnomedIdentifierService identifierService) {
 		super(identifierService);
@@ -37,12 +36,12 @@ public class GenerateAction extends IdAction {
 
 	@Override
 	public void rollback() {
-		identifierService.release(identifier);
+		identifierService.release(componentId);
 	}
 
 	@Override
 	public void execute() {
-		this.identifier = identifierService.generate(namespace, category);
+		this.componentId = identifierService.generate(namespace, category);
 	}
 
 	@Override
@@ -51,8 +50,8 @@ public class GenerateAction extends IdAction {
 	}
 
 	@Override
-	public SnomedIdentifier getIdentifier() {
-		return identifier;
+	public String getComponentId() {
+		return componentId;
 	}
 
 }

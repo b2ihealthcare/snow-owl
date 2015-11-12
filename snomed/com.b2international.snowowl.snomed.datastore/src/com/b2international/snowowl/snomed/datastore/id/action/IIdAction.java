@@ -15,14 +15,12 @@
  */
 package com.b2international.snowowl.snomed.datastore.id.action;
 
-import com.b2international.snowowl.snomed.datastore.id.SnomedIdentifier;
-
 /**
  * @since 4.5
  */
 public interface IIdAction {
 
-	SnomedIdentifier getIdentifier();
+	String getComponentId();
 
 	void rollback();
 

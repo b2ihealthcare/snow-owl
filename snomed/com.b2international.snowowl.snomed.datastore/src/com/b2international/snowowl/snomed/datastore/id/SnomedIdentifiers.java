@@ -66,7 +66,7 @@ public class SnomedIdentifiers {
 	}
 
 	private static String generateComponentId(ComponentCategory component, String namespace) {
-		return getSnomedIdentifierService().generate(namespace, component).toString();
+		return getSnomedIdentifierService().generate(namespace, component);
 	}
 
 	private static ISnomedIdentifierService getSnomedIdentifierService() {
@@ -165,7 +165,7 @@ public class SnomedIdentifiers {
 	 */
 	public static SnomedIdentifier generateFrom(int itemId, String namespace, ComponentCategory component) {
 		final String id = new InMemorySnomedIdentifierServiceImpl(new SingleItemIdGenerationStrategy(String.valueOf(itemId)),
-				getTerminologyBrowserProvider()).generate(namespace, component).toString();
+				getTerminologyBrowserProvider()).generate(namespace, component);
 		return of(id);
 	}
 	

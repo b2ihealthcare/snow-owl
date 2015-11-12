@@ -40,12 +40,15 @@ public interface IdManager {
 	 * @param category
 	 *            the category for the ID.
 	 */
-	SnomedIdentifier generate(String namespace, ComponentCategory category);
+	String generate(String namespace, ComponentCategory category);
 
 	/**
+	 * Registers the SNOMED identifier.
 	 * 
+	 * @param componentId
+	 *            the ID to register.
 	 */
-	void register(SnomedIdentifier identifier);
+	void register(String componentId);
 
 	/**
 	 * Reserves a new SNOMED identifier.
@@ -55,30 +58,30 @@ public interface IdManager {
 	 * @param category
 	 *            the category for the ID.
 	 */
-	SnomedIdentifier reserve(String namespace, ComponentCategory category);
+	String reserve(String namespace, ComponentCategory category);
 
 	/**
 	 * Deprecates the given SNOMED identifier.
 	 * 
-	 * @param identifier
-	 *            the identifier to deprecate.
+	 * @param componentId
+	 *            the component ID to deprecate.
 	 */
-	void deprecate(SnomedIdentifier identifier);
+	void deprecate(String componentId);
 
 	/**
 	 * Releases the given SNOMED identifier.
 	 * 
-	 * @param identifier
-	 *            the identifier to release.
+	 * @param componentId
+	 *            the component ID to release.
 	 */
-	void release(SnomedIdentifier identifier);
+	void release(String componentId);
 
 	/**
 	 * Publishes the given SNOMED identifier.
 	 * 
-	 * @param identifier
-	 *            the identifier to publish.
+	 * @param componentId
+	 *            the component ID to publish.
 	 */
-	void publish(SnomedIdentifier identifier);
+	void publish(String componentId);
 
 }

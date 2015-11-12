@@ -17,7 +17,6 @@ package com.b2international.snowowl.snomed.core.domain;
 
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.snomed.datastore.id.IdManager;
-import com.b2international.snowowl.snomed.datastore.id.SnomedIdentifiers;
 
 /**
  */
@@ -36,7 +35,7 @@ public class UserIdGenerationStrategy implements IdGenerationStrategy {
 	public String generate(final BranchContext context) {
 		final IdManager idManager = context.service(IdManager.class);
 		// XXX is the ID already registered at this point or not?
-		idManager.register(SnomedIdentifiers.of(id));
+		idManager.register(id);
 		return id;
 	}
 

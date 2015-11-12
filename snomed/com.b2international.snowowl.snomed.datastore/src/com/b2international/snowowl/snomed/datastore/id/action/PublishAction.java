@@ -16,18 +16,17 @@
 package com.b2international.snowowl.snomed.datastore.id.action;
 
 import com.b2international.snowowl.snomed.datastore.id.ISnomedIdentifierService;
-import com.b2international.snowowl.snomed.datastore.id.SnomedIdentifier;
 
 /**
  * @since 4.5
  */
 public class PublishAction extends IdAction {
 
-	private final SnomedIdentifier identifier;
+	private final String componentId;
 
-	public PublishAction(final SnomedIdentifier identifier, final ISnomedIdentifierService identifierService) {
+	public PublishAction(final String componentId, final ISnomedIdentifierService identifierService) {
 		super(identifierService);
-		this.identifier = identifier;
+		this.componentId = componentId;
 	}
 
 	@Override
@@ -37,17 +36,17 @@ public class PublishAction extends IdAction {
 
 	@Override
 	public void execute() {
-		identifierService.publish(identifier);
+		identifierService.publish(componentId);
 	}
 
 	@Override
 	public void commit() {
 		// do nothing
 	}
-	
+
 	@Override
-	public SnomedIdentifier getIdentifier() {
-		return identifier;
+	public String getComponentId() {
+		return componentId;
 	}
 
 }

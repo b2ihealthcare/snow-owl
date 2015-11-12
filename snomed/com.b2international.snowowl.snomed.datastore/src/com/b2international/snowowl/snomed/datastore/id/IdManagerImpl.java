@@ -55,41 +55,41 @@ public class IdManagerImpl implements IdManager {
 	}
 
 	@Override
-	public SnomedIdentifier generate(final String namespace, final ComponentCategory category) {
+	public String generate(final String namespace, final ComponentCategory category) {
 		final GenerateAction action = new GenerateAction(namespace, category, identifierService);
 		executeAction(action);
 
-		return action.getIdentifier();
+		return action.getComponentId();
 	}
 
 	@Override
-	public void register(final SnomedIdentifier identifier) {
+	public void register(final String identifier) {
 		final RegisterAction action = new RegisterAction(identifier, identifierService);
 		executeAction(action);
 	}
 
 	@Override
-	public SnomedIdentifier reserve(final String namespace, final ComponentCategory category) {
+	public String reserve(final String namespace, final ComponentCategory category) {
 		final ReserveAction action = new ReserveAction(namespace, category, identifierService);
 		executeAction(action);
 
-		return action.getIdentifier();
+		return action.getComponentId();
 	}
 
 	@Override
-	public void deprecate(final SnomedIdentifier identifier) {
+	public void deprecate(final String identifier) {
 		final DeprecateAction action = new DeprecateAction(identifier, identifierService);
 		executeAction(action);
 	}
 
 	@Override
-	public void release(final SnomedIdentifier identifier) {
+	public void release(final String identifier) {
 		final ReleaseAction action = new ReleaseAction(identifier, identifierService);
 		executeAction(action);
 	}
 
 	@Override
-	public void publish(final SnomedIdentifier identifier) {
+	public void publish(final String identifier) {
 		final PublishAction action = new PublishAction(identifier, identifierService);
 		executeAction(action);
 	}

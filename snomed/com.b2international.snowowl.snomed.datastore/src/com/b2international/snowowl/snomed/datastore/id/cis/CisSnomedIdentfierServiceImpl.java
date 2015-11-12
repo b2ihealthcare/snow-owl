@@ -73,7 +73,7 @@ public class CisSnomedIdentfierServiceImpl extends AbstractSnomedIdentifierServi
 	}
 
 	@Override
-	public SnomedIdentifier generate(String namespace, ComponentCategory category) {
+	public String generate(String namespace, ComponentCategory category) {
 		HttpPost request = null;
 		final String token = login();
 
@@ -82,7 +82,7 @@ public class CisSnomedIdentfierServiceImpl extends AbstractSnomedIdentifierServi
 			final String response = execute(request);
 			final String sctid = mapper.readValue(response, SctId.class).getSctid();
 
-			return SnomedIdentifiers.of(sctid);
+			return sctid;
 		} catch (IOException e) {
 			// TODO change exception
 			throw new RuntimeException("Exception while generating ID.", e);
@@ -93,13 +93,12 @@ public class CisSnomedIdentfierServiceImpl extends AbstractSnomedIdentifierServi
 	}
 
 	@Override
-	public void register(SnomedIdentifier identifier) {
+	public void register(final String componentId) {
 		HttpPost request = null;
 		final String token = login();
 
 		try {
-			request = httpPost(String.format("sct/register?token=%s", token),
-					registrationData(identifier.toString(), identifier.getNamespace()));
+			request = httpPost(String.format("sct/register?token=%s", token), registrationData(componentId));
 			execute(request);
 		} catch (IOException e) {
 			// TODO change exception
@@ -111,7 +110,7 @@ public class CisSnomedIdentfierServiceImpl extends AbstractSnomedIdentifierServi
 	}
 
 	@Override
-	public SnomedIdentifier reserve(String namespace, ComponentCategory category) {
+	public String reserve(final String namespace, final ComponentCategory category) {
 		HttpPost request = null;
 		final String token = login();
 
@@ -120,7 +119,7 @@ public class CisSnomedIdentfierServiceImpl extends AbstractSnomedIdentifierServi
 			final String response = execute(request);
 			final String sctid = mapper.readValue(response, SctId.class).getSctid();
 
-			return SnomedIdentifiers.of(sctid);
+			return sctid;
 		} catch (IOException e) {
 			// TODO change exception
 			throw new RuntimeException("Exception while reserving ID.", e);
@@ -131,13 +130,12 @@ public class CisSnomedIdentfierServiceImpl extends AbstractSnomedIdentifierServi
 	}
 
 	@Override
-	public void deprecate(SnomedIdentifier identifier) {
+	public void deprecate(final String componentId) {
 		HttpPut request = null;
 		final String token = login();
 
 		try {
-			request = httpPut(String.format("sct/deprecate?token=%s", token),
-					deprecationData(identifier.toString(), identifier.getNamespace()));
+			request = httpPut(String.format("sct/deprecate?token=%s", token), deprecationData(componentId));
 			execute(request);
 		} catch (IOException e) {
 			// TODO change exception
@@ -149,12 +147,12 @@ public class CisSnomedIdentfierServiceImpl extends AbstractSnomedIdentifierServi
 	}
 
 	@Override
-	public void release(SnomedIdentifier identifier) {
+	public void release(final String componentId) {
 		HttpPut request = null;
 		final String token = login();
 
 		try {
-			request = httpPut(String.format("sct/release?token=%s", token), releaseData(identifier.toString(), identifier.getNamespace()));
+			request = httpPut(String.format("sct/release?token=%s", token), releaseData(componentId));
 			execute(request);
 		} catch (IOException e) {
 			// TODO change exception
@@ -166,12 +164,12 @@ public class CisSnomedIdentfierServiceImpl extends AbstractSnomedIdentifierServi
 	}
 
 	@Override
-	public void publish(SnomedIdentifier identifier) {
+	public void publish(final String componentId) {
 		HttpPut request = null;
 		final String token = login();
 
 		try {
-			request = httpPut(String.format("sct/publish?token=%s", token), publishData(identifier.toString(), identifier.getNamespace()));
+			request = httpPut(String.format("sct/publish?token=%s", token), publishData(componentId));
 			execute(request);
 		} catch (IOException e) {
 			// TODO change exception
@@ -181,7 +179,7 @@ public class CisSnomedIdentfierServiceImpl extends AbstractSnomedIdentifierServi
 			logout(token);
 		}
 	}
-	
+
 	public SctId getSctId(final SnomedIdentifier identifier) {
 		HttpGet request = null;
 		final String token = login();
@@ -235,13 +233,13 @@ public class CisSnomedIdentfierServiceImpl extends AbstractSnomedIdentifierServi
 		return mapper.writeValueAsString(data);
 	}
 
-	private String registrationData(final String id, final String namespace) throws IOException {
-		final RegistrationData data = new RegistrationData(Integer.valueOf(namespace), clientKey, id, "");
+	private String registrationData(final String componentId) throws IOException {
+		final RegistrationData data = new RegistrationData(getNamespace(componentId), clientKey, componentId, "");
 		return mapper.writeValueAsString(data);
 	}
 
-	private String deprecationData(final String id, final String namespace) throws IOException {
-		final DeprecationData data = new DeprecationData(Integer.parseInt(namespace), clientKey, id);
+	private String deprecationData(final String componentId) throws IOException {
+		final DeprecationData data = new DeprecationData(getNamespace(componentId), clientKey, componentId);
 		return mapper.writeValueAsString(data);
 	}
 
@@ -255,14 +253,18 @@ public class CisSnomedIdentfierServiceImpl extends AbstractSnomedIdentifierServi
 		return mapper.writeValueAsString(data);
 	}
 
-	private String releaseData(final String id, final String namespace) throws IOException {
-		final ReleaseData data = new ReleaseData(Integer.parseInt(namespace), clientKey, id);
+	private String releaseData(final String componentId) throws IOException {
+		final ReleaseData data = new ReleaseData(getNamespace(componentId), clientKey, componentId);
 		return mapper.writeValueAsString(data);
 	}
 
-	private String publishData(final String id, final String namespace) throws IOException {
-		final PublicationData data = new PublicationData(Integer.parseInt(namespace), clientKey, id);
+	private String publishData(final String componentId) throws IOException {
+		final PublicationData data = new PublicationData(getNamespace(componentId), clientKey, componentId);
 		return mapper.writeValueAsString(data);
+	}
+
+	private int getNamespace(final String componentId) {
+		return Integer.valueOf(SnomedIdentifiers.of(componentId).getNamespace());
 	}
 
 }

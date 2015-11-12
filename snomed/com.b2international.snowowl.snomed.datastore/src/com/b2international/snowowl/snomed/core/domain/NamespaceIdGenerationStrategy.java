@@ -20,7 +20,6 @@ import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.terminology.ComponentCategory;
 import com.b2international.snowowl.snomed.datastore.config.SnomedCoreConfiguration;
 import com.b2international.snowowl.snomed.datastore.id.IdManager;
-import com.b2international.snowowl.snomed.datastore.id.SnomedIdentifier;
 
 public class NamespaceIdGenerationStrategy implements IdGenerationStrategy {
 
@@ -44,8 +43,8 @@ public class NamespaceIdGenerationStrategy implements IdGenerationStrategy {
 	public String generate(BranchContext context) {
 		final IdManager idManager = context.service(IdManager.class);
 		// TODO use reserve instead?
-		final SnomedIdentifier identifier = idManager.generate(getNamespaceIdOrDefault(), category);
-		return identifier.toString();
+		final String componentId = idManager.generate(getNamespaceIdOrDefault(), category);
+		return componentId;
 	}
 
 	private String getNamespaceIdOrDefault() {
