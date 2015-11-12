@@ -20,7 +20,6 @@ import static java.lang.Long.parseLong;
 
 import com.b2international.snowowl.datastore.index.mapping.Mappings;
 import com.b2international.snowowl.snomed.Description;
-import com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants;
 import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedDocumentBuilder;
 
 /**
@@ -36,11 +35,13 @@ public class DescriptionMutablePropertyUpdater extends ComponentMutablePropertyU
 	public void doUpdate(SnomedDocumentBuilder doc) {
 		super.doUpdate(doc);
 		
-		final long caseSignificanceId = parseLong(getComponent().getCaseSignificance().getId());
 		doc
-			.removeAll(Mappings.storedOnlyLongFieldWithDocValues(DESCRIPTION_CASE_SIGNIFICANCE_ID));
-		doc
-			.storedOnlyWithDocValues(DESCRIPTION_CASE_SIGNIFICANCE_ID, caseSignificanceId);
+			.update(Mappings.storedOnlyLongFieldWithDocValues(DESCRIPTION_CASE_SIGNIFICANCE_ID), getCaseSignificanceId())
+			.update(Mappings.label(), getComponent().getTerm());
+	}
+
+	private long getCaseSignificanceId() {
+		return parseLong(getComponent().getCaseSignificance().getId());
 	}
 	
 	@Override
