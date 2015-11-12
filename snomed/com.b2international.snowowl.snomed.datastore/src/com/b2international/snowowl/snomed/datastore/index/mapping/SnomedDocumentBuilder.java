@@ -58,7 +58,6 @@ import org.apache.lucene.document.Document;
 
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.datastore.BranchPathUtils;
-import com.b2international.snowowl.datastore.index.SortKeyMode;
 import com.b2international.snowowl.datastore.index.mapping.DocumentBuilderBase;
 import com.b2international.snowowl.datastore.index.mapping.DocumentBuilderFactory;
 import com.b2international.snowowl.datastore.index.mapping.IndexField;
@@ -93,13 +92,11 @@ public class SnomedDocumentBuilder extends DocumentBuilderBase<SnomedDocumentBui
 			
 			final Builder<IndexField<?>> fieldsToCopy = ImmutableSet.<IndexField<?>>builder();
 			final IndexField<Long> storageKey = Mappings.storageKey();
-			final IndexField<String> label = Mappings.label();
 			fieldsToCopy.add(storageKey);
 			
 			// compute type specific fields
 			if (refSetMember) {
 				fieldsToCopy
-					.add(label)
 					.add(SnomedMappings.active())
 					.add(SnomedMappings.module())
 					.add(SnomedMappings.memberRefSetType())
@@ -150,7 +147,6 @@ public class SnomedDocumentBuilder extends DocumentBuilderBase<SnomedDocumentBui
 						.add(Mappings.longField(REFERENCE_SET_MEMBER_CHARACTERISTIC_TYPE_ID))
 						.add(Mappings.intDocValuesField(REFERENCE_SET_MEMBER_DATA_TYPE_VALUE))
 						.add(Mappings.longDocValuesField(REFERENCE_SET_MEMBER_CONTAINER_MODULE_ID));
-					SortKeyMode.INSTANCE.update(newDocBuilder, label.getValue(doc));
 					break;
 				case SIMPLE_MAP:
 					fieldsToCopy
@@ -178,7 +174,6 @@ public class SnomedDocumentBuilder extends DocumentBuilderBase<SnomedDocumentBui
 				case SnomedTerminologyComponentConstants.CONCEPT_NUMBER:
 				case SnomedTerminologyComponentConstants.REFSET_NUMBER:
 					fieldsToCopy
-						.add(label)
 						.add(SnomedMappings.refSetStorageKey())
 						.add(SnomedMappings.active())
 						.add(SnomedMappings.ancestor())
@@ -198,7 +193,6 @@ public class SnomedDocumentBuilder extends DocumentBuilderBase<SnomedDocumentBui
 						.add(Mappings.intField(REFERENCE_SET_REFERENCED_COMPONENT_TYPE))
 						.add(Mappings.intField(REFERENCE_SET_STRUCTURAL));
 					// handle special fields here
-					SortKeyMode.INSTANCE.update(newDocBuilder, label.getValue(doc));
 					final ISnomedComponentService componentService = ApplicationContext.getInstance().getService(ISnomedComponentService.class);
 					//XXX intentionally works on MAIN
 					final long namespaceId = componentService.getExtensionConceptId(BranchPathUtils.createMainPath(), SnomedMappings.id().getValueAsString(doc));
@@ -206,15 +200,13 @@ public class SnomedDocumentBuilder extends DocumentBuilderBase<SnomedDocumentBui
 					break;
 				case SnomedTerminologyComponentConstants.DESCRIPTION_NUMBER:
 					fieldsToCopy
-						.add(label)
+						.add(Mappings.label())
 						.add(SnomedMappings.active())
 						.add(Mappings.storedOnlyLongFieldWithDocValues(DESCRIPTION_CASE_SIGNIFICANCE_ID))
 						.add(Mappings.storedOnlyIntField(COMPONENT_RELEASED))
 						.add(SnomedMappings.effectiveTime())
 						.add(SnomedMappings.descriptionConcept())
 						.add(SnomedMappings.descriptionType());
-					
-					SortKeyMode.INSTANCE.update(newDocBuilder, label.getValue(doc));
 					break;
 				case SnomedTerminologyComponentConstants.RELATIONSHIP_NUMBER:
 					fieldsToCopy
