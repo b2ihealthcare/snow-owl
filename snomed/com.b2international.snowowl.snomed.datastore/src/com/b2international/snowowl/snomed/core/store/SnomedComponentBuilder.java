@@ -131,7 +131,7 @@ public abstract class SnomedComponentBuilder<B extends SnomedComponentBuilder<B,
 		final String module = Strings.isNullOrEmpty(moduleId) ? context.config().getModuleConfig(SnomedCoreConfiguration.class).getDefaultModule() : moduleId; 
 		if (t instanceof Component) {
 			final Component component = (Component) t;
-			final String identifier = identifierGenerationStrategy.getId();
+			final String identifier = identifierGenerationStrategy.generate(context);
 			component.setId(identifier);
 			component.setActive(active);
 			component.setEffectiveTime(effectiveTime);
@@ -141,7 +141,7 @@ public abstract class SnomedComponentBuilder<B extends SnomedComponentBuilder<B,
 		} else if (t instanceof SnomedRefSetMember) {
 			final SnomedRefSetMember member = (SnomedRefSetMember) t;
 			checkArgument(identifierGenerationStrategy instanceof UUIDIdGenerationStrategy, "Only UUIDs can be used for reference set member IDs");
-			member.setUuid(identifierGenerationStrategy.getId());
+			member.setUuid(identifierGenerationStrategy.generate(context));
 			member.setActive(active);
 			member.setEffectiveTime(effectiveTime);
 			member.setReleased(effectiveTime != null);
