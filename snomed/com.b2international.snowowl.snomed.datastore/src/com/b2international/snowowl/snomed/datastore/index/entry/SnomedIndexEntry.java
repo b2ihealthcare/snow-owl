@@ -106,7 +106,7 @@ public abstract class SnomedIndexEntry extends AbstractIndexEntry implements ICo
 			final long effectiveTimeLong) {
 
 		super(id, 
-				null, // XXX: As there are no definitive labels for SnomedIndexEntries, it is set to null 
+				id, // XXX: As there are no definitive labels for SnomedIndexEntries, it is set to the identifier 
 				iconId, 
 				score, 
 				storageKey);
