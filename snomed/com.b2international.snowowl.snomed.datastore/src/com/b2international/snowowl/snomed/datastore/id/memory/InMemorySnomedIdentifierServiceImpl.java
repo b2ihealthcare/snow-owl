@@ -17,18 +17,22 @@ package com.b2international.snowowl.snomed.datastore.id.memory;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
-import java.util.Set;
+import java.util.Collection;
 
 import com.b2international.commons.VerhoeffCheck;
+import com.b2international.snowowl.core.exceptions.BadRequestException;
+import com.b2international.snowowl.core.exceptions.NotImplementedException;
 import com.b2international.snowowl.core.terminology.ComponentCategory;
 import com.b2international.snowowl.snomed.datastore.SnomedTerminologyBrowser;
 import com.b2international.snowowl.snomed.datastore.id.AbstractSnomedIdentifierServiceImpl;
 import com.b2international.snowowl.snomed.datastore.id.SnomedIdentifier;
 import com.b2international.snowowl.snomed.datastore.id.SnomedIdentifiers;
+import com.b2international.snowowl.snomed.datastore.id.cis.IdentifierStatus;
+import com.b2international.snowowl.snomed.datastore.id.cis.SctId;
 import com.b2international.snowowl.snomed.datastore.id.gen.ItemIdGenerationStrategy;
 import com.b2international.snowowl.snomed.datastore.id.reservations.ISnomedIdentiferReservationService;
+import com.b2international.snowowl.snomed.datastore.id.store.SnomedIdentifierMemStore;
 import com.google.common.base.Strings;
-import com.google.common.collect.Sets;
 import com.google.inject.Provider;
 
 /**
@@ -41,8 +45,15 @@ public class InMemorySnomedIdentifierServiceImpl extends AbstractSnomedIdentifie
 	private ISnomedIdentiferReservationService reservationService;
 	private ItemIdGenerationStrategy generationStrategy;
 
-	// TODO update that this contains only IDs during transactions
-	private Set<String> reservedComponentIds = Sets.newHashSet();
+	private SnomedIdentifierMemStore store = new SnomedIdentifierMemStore();
+
+	public SctId getSctId(final String componentId) {
+		return store.get(componentId);
+	}
+
+	public Collection<SctId> getSctIds() {
+		return store.values();
+	}
 
 	public InMemorySnomedIdentifierServiceImpl(final ItemIdGenerationStrategy generationStrategy,
 			final Provider<SnomedTerminologyBrowser> provider) {
@@ -52,7 +63,7 @@ public class InMemorySnomedIdentifierServiceImpl extends AbstractSnomedIdentifie
 
 	@Override
 	public boolean includes(final SnomedIdentifier identifier) {
-		return super.includes(identifier) || reservedComponentIds.contains(identifier.toString());
+		return super.includes(identifier) || getSctId(identifier.toString()).getStatus() != IdentifierStatus.AVAILABLE.getSerializedName();
 	}
 
 	@Override
@@ -61,7 +72,8 @@ public class InMemorySnomedIdentifierServiceImpl extends AbstractSnomedIdentifie
 		checkCategory(category);
 
 		final String componentId = generateId(namespace, category);
-		reservedComponentIds.add(componentId);
+		final SctId sctId = buildSctId(componentId, IdentifierStatus.ASSIGNED);
+		store.put(componentId, sctId);
 
 		return SnomedIdentifiers.of(componentId);
 	}
@@ -72,7 +84,8 @@ public class InMemorySnomedIdentifierServiceImpl extends AbstractSnomedIdentifie
 			// TODO change exception
 			throw new RuntimeException("Component ID is already registered.");
 		} else {
-			reservedComponentIds.add(identifier.toString());
+			final SctId sctId = buildSctId(identifier, IdentifierStatus.ASSIGNED);
+			store.put(identifier.toString(), sctId);
 		}
 	}
 
@@ -82,26 +95,37 @@ public class InMemorySnomedIdentifierServiceImpl extends AbstractSnomedIdentifie
 		checkCategory(category);
 
 		final String componentId = generateId(namespace, category);
-		reservedComponentIds.add(componentId);
+		final SctId sctId = buildSctId(componentId, IdentifierStatus.RESERVED);
+		store.put(componentId, sctId);
 
 		return SnomedIdentifiers.of(componentId);
 	}
 
 	@Override
 	public void deprecate(final SnomedIdentifier identifier) {
-		// TODO what to do in memory implementation?
-		// do nothing for now
+		final SctId sctId = getSctId(identifier.toString());
+		if (hasStatus(sctId, IdentifierStatus.ASSIGNED, IdentifierStatus.PUBLISHED)) {
+		} else {
+			throw new BadRequestException("");
+		}
 	}
 
 	@Override
 	public void release(final SnomedIdentifier identifier) {
-		reservedComponentIds.remove(identifier.toString());
+		final SctId sctId = getSctId(identifier.toString());
+		if (hasStatus(sctId, IdentifierStatus.ASSIGNED, IdentifierStatus.RESERVED)) {
+		} else {
+			throw new BadRequestException("");
+		}
 	}
 
 	@Override
 	public void publish(final SnomedIdentifier identifier) {
-		// TODO what to do in memory implementation?
-		// do nothing for now
+		final SctId sctId = getSctId(identifier.toString());
+		if (hasStatus(sctId, IdentifierStatus.ASSIGNED, IdentifierStatus.PUBLISHED)) {
+		} else {
+			throw new BadRequestException("");
+		}
 	}
 
 	private String generateId(final String namespace, final ComponentCategory category) {
@@ -133,6 +157,18 @@ public class InMemorySnomedIdentifierServiceImpl extends AbstractSnomedIdentifie
 		builder.append(VerhoeffCheck.calculateChecksum(builder, false));
 
 		return builder.toString();
+	}
+
+	private SctId buildSctId(final String componentId, final IdentifierStatus status) {
+		throw new NotImplementedException("Not implemented.");
+	}
+
+	private SctId buildSctId(final SnomedIdentifier identifier, final IdentifierStatus status) {
+		throw new NotImplementedException("Not implemented.");
+	}
+
+	private boolean hasStatus(final SctId sctId, final IdentifierStatus... status) {
+		throw new NotImplementedException("Not implemented.");
 	}
 
 }
