@@ -21,7 +21,6 @@ import java.util.Collection;
 
 import com.b2international.commons.VerhoeffCheck;
 import com.b2international.snowowl.core.exceptions.BadRequestException;
-import com.b2international.snowowl.core.exceptions.NotImplementedException;
 import com.b2international.snowowl.core.terminology.ComponentCategory;
 import com.b2international.snowowl.datastore.store.MemStore;
 import com.b2international.snowowl.snomed.datastore.SnomedTerminologyBrowser;
@@ -53,17 +52,7 @@ public class InMemorySnomedIdentifierServiceImpl extends AbstractSnomedIdentifie
 		if (null != storedSctId) {
 			return storedSctId;
 		} else {
-			final SnomedIdentifier identifier = SnomedIdentifiers.of(componentId);
-			final SctId sctId = new SctId();
-			sctId.setSctid(componentId);
-			sctId.setStatus(IdentifierStatus.AVAILABLE.getSerializedName());
-			sctId.setNamespace(Integer.valueOf(identifier.getNamespace()));
-			sctId.setPartitionId(String.valueOf(identifier.getPartitionIdentifier()));
-			sctId.setCheckDigit(identifier.getCheckDigit());
-
-			// TODO set remaining attributes?
-
-			return sctId;
+			return buildSctId(componentId, IdentifierStatus.AVAILABLE);
 		}
 	}
 
@@ -121,8 +110,10 @@ public class InMemorySnomedIdentifierServiceImpl extends AbstractSnomedIdentifie
 	public void deprecate(final String componentId) {
 		final SctId sctId = getSctId(componentId);
 		if (hasStatus(sctId, IdentifierStatus.ASSIGNED, IdentifierStatus.PUBLISHED)) {
+			sctId.setStatus(IdentifierStatus.DEPRECATED.getSerializedName());
+			store.put(componentId, sctId);
 		} else {
-			throw new BadRequestException("");
+			throw new BadRequestException(String.format("Cannot deprecate ID in state %s.", sctId.getStatus()));
 		}
 	}
 
@@ -130,17 +121,20 @@ public class InMemorySnomedIdentifierServiceImpl extends AbstractSnomedIdentifie
 	public void release(final String componentId) {
 		final SctId sctId = getSctId(componentId);
 		if (hasStatus(sctId, IdentifierStatus.ASSIGNED, IdentifierStatus.RESERVED)) {
+			store.remove(componentId);
 		} else {
-			throw new BadRequestException("");
+			throw new BadRequestException(String.format("Cannot release ID in state %s.", sctId.getStatus()));
 		}
 	}
 
 	@Override
 	public void publish(final String componentId) {
 		final SctId sctId = getSctId(componentId);
-		if (hasStatus(sctId, IdentifierStatus.ASSIGNED, IdentifierStatus.PUBLISHED)) {
+		if (hasStatus(sctId, IdentifierStatus.ASSIGNED)) {
+			sctId.setStatus(IdentifierStatus.PUBLISHED.getSerializedName());
+			store.put(componentId, sctId);
 		} else {
-			throw new BadRequestException("");
+			throw new BadRequestException(String.format("Cannot publish ID in state %s.", sctId.getStatus()));
 		}
 	}
 
@@ -176,11 +170,28 @@ public class InMemorySnomedIdentifierServiceImpl extends AbstractSnomedIdentifie
 	}
 
 	private SctId buildSctId(final String componentId, final IdentifierStatus status) {
-		throw new NotImplementedException("Not implemented.");
+		final SnomedIdentifier identifier = SnomedIdentifiers.of(componentId);
+		final SctId sctId = new SctId();
+		sctId.setSctid(componentId);
+		sctId.setStatus(status.getSerializedName());
+		sctId.setNamespace(Integer.valueOf(identifier.getNamespace()));
+		sctId.setPartitionId(String.valueOf(identifier.getPartitionIdentifier()));
+		sctId.setCheckDigit(identifier.getCheckDigit());
+		
+		// TODO set remaining attributes?
+
+		return sctId;
 	}
 
 	private boolean hasStatus(final SctId sctId, final IdentifierStatus... status) {
-		throw new NotImplementedException("Not implemented.");
+		for (final IdentifierStatus s : status) {
+			if (s.getSerializedName().equals(sctId.getStatus())) {
+				return true;
+			}
+
+		}
+
+		return false;
 	}
 
 }
