@@ -28,7 +28,7 @@ public class ComponentLabelUpdater<D extends DocumentBuilderBase<D>> extends Doc
 	@OverridingMethodsMustInvokeSuper
 	protected void updateLabelFields(D doc, String label) {
 		checkNotNull(label, "Label shouldn't be null %s", getComponentId());
-		doc.labelWithSort(label);
+		doc.label(label);
 	}
 
 	protected String getLabel() {

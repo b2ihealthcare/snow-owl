@@ -20,9 +20,9 @@ import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedDocument
 /**
  * @since 4.3
  */
-public class ConceptLabelUpdater extends ComponentLabelUpdater<SnomedDocumentBuilder> {
+public class ComponentLabelWithSortUpdater extends ComponentLabelUpdater<SnomedDocumentBuilder> {
 
-	public ConceptLabelUpdater(String componentId, String label) {
+	public ComponentLabelWithSortUpdater(String componentId, String label) {
 		super(componentId, label);
 	}
 	

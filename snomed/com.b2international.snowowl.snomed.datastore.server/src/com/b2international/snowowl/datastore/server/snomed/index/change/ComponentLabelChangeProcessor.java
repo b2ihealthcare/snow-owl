@@ -22,11 +22,6 @@ import java.util.Map;
 
 import org.eclipse.emf.cdo.common.id.CDOIDUtil;
 
-import bak.pcj.map.LongKeyMap;
-import bak.pcj.map.LongKeyMapIterator;
-import bak.pcj.set.LongOpenHashSet;
-import bak.pcj.set.LongSet;
-
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.datastore.ICDOCommitChangeSet;
@@ -45,8 +40,7 @@ import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedMappings
 import com.b2international.snowowl.snomed.datastore.index.refset.SnomedRefSetMemberIndexEntry;
 import com.b2international.snowowl.snomed.datastore.index.refset.SnomedRefSetMembershipIndexQueryAdapter;
 import com.b2international.snowowl.snomed.datastore.index.update.ComponentLabelProvider;
-import com.b2international.snowowl.snomed.datastore.index.update.ComponentLabelUpdater;
-import com.b2international.snowowl.snomed.datastore.index.update.ConceptLabelUpdater;
+import com.b2international.snowowl.snomed.datastore.index.update.ComponentLabelWithSortUpdater;
 import com.b2international.snowowl.snomed.datastore.index.update.RefSetMemberLabelUpdater;
 import com.b2international.snowowl.snomed.datastore.services.ISnomedComponentService;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedConcreteDataTypeRefSetMember;
@@ -62,6 +56,11 @@ import com.google.common.cache.LoadingCache;
 import com.google.common.collect.FluentIterable;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Maps;
+
+import bak.pcj.map.LongKeyMap;
+import bak.pcj.map.LongKeyMapIterator;
+import bak.pcj.set.LongOpenHashSet;
+import bak.pcj.set.LongSet;
 
 /**
  * Map for storing concept IDs and associated new labels. Basically this map will contain PTs as values. We will track only new language reference set
@@ -133,7 +132,7 @@ public class ComponentLabelChangeProcessor extends ChangeSetProcessorBase<Snomed
 					
 					// register label update for concept and their reference set membes
 					final String newLabel = getComponentLabel(conceptId);
-					registerUpdate(conceptId, new ConceptLabelUpdater(conceptId, newLabel));
+					registerUpdate(conceptId, new ComponentLabelWithSortUpdater(conceptId, newLabel));
 					registerUpdate(conceptId, new ComponentCompareFieldsUpdater<SnomedDocumentBuilder>(conceptId, CDOIDUtil.getLong(relatedConcept.cdoID())));
 					
 					final Collection<SnomedRefSetMemberIndexEntry> referringMembers = index.search(branchPath, SnomedRefSetMembershipIndexQueryAdapter.createFindReferencingMembers(conceptId));
@@ -156,11 +155,9 @@ public class ComponentLabelChangeProcessor extends ChangeSetProcessorBase<Snomed
 			}
 		}
 		
-		// update label on reference set members referring descriptions
 		for (Description description : getNewComponents(commitChangeSet, Description.class)) {
-			registerUpdate(description.getId(), new ComponentLabelUpdater<SnomedDocumentBuilder>(description.getId(), Strings.nullToEmpty(description.getTerm())));
+			registerUpdate(description.getId(), new ComponentLabelWithSortUpdater(description.getId(), Strings.nullToEmpty(description.getTerm())));
 		}
-		
 	}
 
 	private void populateExistingLabels(ICDOCommitChangeSet commitChangeSet) {
