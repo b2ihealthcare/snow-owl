@@ -23,14 +23,15 @@ import com.b2international.commons.VerhoeffCheck;
 import com.b2international.snowowl.core.exceptions.BadRequestException;
 import com.b2international.snowowl.core.exceptions.NotImplementedException;
 import com.b2international.snowowl.core.terminology.ComponentCategory;
+import com.b2international.snowowl.datastore.store.MemStore;
 import com.b2international.snowowl.snomed.datastore.SnomedTerminologyBrowser;
 import com.b2international.snowowl.snomed.datastore.id.AbstractSnomedIdentifierServiceImpl;
 import com.b2international.snowowl.snomed.datastore.id.SnomedIdentifier;
+import com.b2international.snowowl.snomed.datastore.id.SnomedIdentifiers;
 import com.b2international.snowowl.snomed.datastore.id.cis.IdentifierStatus;
 import com.b2international.snowowl.snomed.datastore.id.cis.SctId;
 import com.b2international.snowowl.snomed.datastore.id.gen.ItemIdGenerationStrategy;
 import com.b2international.snowowl.snomed.datastore.id.reservations.ISnomedIdentiferReservationService;
-import com.b2international.snowowl.snomed.datastore.id.store.SnomedIdentifierMemStore;
 import com.google.common.base.Strings;
 import com.google.inject.Provider;
 
@@ -44,10 +45,26 @@ public class InMemorySnomedIdentifierServiceImpl extends AbstractSnomedIdentifie
 	private ISnomedIdentiferReservationService reservationService;
 	private ItemIdGenerationStrategy generationStrategy;
 
-	private SnomedIdentifierMemStore store = new SnomedIdentifierMemStore();
+	private MemStore<SctId> store = new MemStore<SctId>();
 
 	public SctId getSctId(final String componentId) {
-		return store.get(componentId);
+		final SctId storedSctId = store.get(componentId);
+
+		if (null != storedSctId) {
+			return storedSctId;
+		} else {
+			final SnomedIdentifier identifier = SnomedIdentifiers.of(componentId);
+			final SctId sctId = new SctId();
+			sctId.setSctid(componentId);
+			sctId.setStatus(IdentifierStatus.AVAILABLE.getSerializedName());
+			sctId.setNamespace(Integer.valueOf(identifier.getNamespace()));
+			sctId.setPartitionId(String.valueOf(identifier.getPartitionIdentifier()));
+			sctId.setCheckDigit(identifier.getCheckDigit());
+
+			// TODO set remaining attributes?
+
+			return sctId;
+		}
 	}
 
 	public Collection<SctId> getSctIds() {
