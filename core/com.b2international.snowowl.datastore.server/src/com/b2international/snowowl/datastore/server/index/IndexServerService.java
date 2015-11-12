@@ -26,7 +26,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.ExecutionException;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import javax.annotation.Nullable;
 
@@ -45,6 +45,7 @@ import org.apache.lucene.search.TotalHitCountCollector;
 import org.apache.lucene.search.grouping.GroupDocs;
 import org.apache.lucene.search.grouping.GroupingSearch;
 import org.apache.lucene.search.grouping.TopGroups;
+import org.apache.lucene.store.AlreadyClosedException;
 import org.apache.lucene.util.BytesRef;
 import org.eclipse.emf.cdo.common.branch.CDOBranch;
 import org.slf4j.Logger;
@@ -118,18 +119,20 @@ public abstract class IndexServerService<E extends IIndexEntry> extends Abstract
 	
 	protected static final Logger LOGGER = LoggerFactory.getLogger(IndexServerService.class);
 	
-	protected volatile boolean disposed;
-
 	private final LoadingCache<IBranchPath, IndexBranchService> branchServices;
+	private final Object branchServicesLock = new Object();
+	private final IndexAccessUpdater updater;
+	private final AtomicBoolean disposed = new AtomicBoolean();
 	
 	/**
 	 * Initializes a new index index service instance. 
 	 */
-	protected IndexServerService(final long timeout) {
+	protected IndexServerService(final long timeoutMinutes) {
 		this.branchServices = CacheBuilder.newBuilder()
-				.expireAfterAccess(timeout, TimeUnit.SECONDS)
 				.removalListener(new StateRemovalListener())
 				.build(new StateCacheLoader());
+		
+		this.updater = new IndexAccessUpdater(this, timeoutMinutes);
 	}
 
 	protected abstract IDirectoryManager getDirectoryManager();
@@ -169,12 +172,9 @@ public abstract class IndexServerService<E extends IIndexEntry> extends Abstract
 	
 	@Override
 	public void delete(final IBranchPath branchPath, final long storageKey) {
-
 		checkNotNull(branchPath, "branchPath");
 		checkNotDisposed();
-		
 		final IndexBranchService branchService = getBranchService(branchPath);
-		
 		try {
 			branchService.deleteDocuments(new Term(CommonIndexConstants.COMPONENT_STORAGE_KEY, IndexUtils.longToPrefixCoded(storageKey)));
 		} catch (final IOException e) {
@@ -184,12 +184,9 @@ public abstract class IndexServerService<E extends IIndexEntry> extends Abstract
 
 	@Override
 	public void rollback(final IBranchPath branchPath) {
-		
 		checkNotNull(branchPath, "branchPath");
 		checkNotDisposed();
-
 		final IndexBranchService branchService = getBranchService(branchPath);
-		
 		try {
 			branchService.rollback();
 		} catch (final IOException e) {
@@ -199,12 +196,9 @@ public abstract class IndexServerService<E extends IIndexEntry> extends Abstract
 
 	@Override
 	public void deleteAll(final IBranchPath branchPath) {
-		
 		checkNotNull(branchPath, "branchPath");
 		checkNotDisposed();
-
 		final IndexBranchService branchService = getBranchService(branchPath);
-		
 		try {
 			branchService.deleteAll();
 		} catch (final IOException e) {
@@ -213,17 +207,20 @@ public abstract class IndexServerService<E extends IIndexEntry> extends Abstract
 	}
 
 	@Override
-	public synchronized void reopen(final IBranchPath logicalPath, final BranchPath physicalPath) {
+	public void reopen(final IBranchPath logicalPath, final BranchPath physicalPath) {
 		checkNotNull(logicalPath, "Logical path argument cannot be null.");
 		checkNotNull(physicalPath, "Physical path argument cannot be null.");
 		checkState(!physicalPath.isMain(), "Physical path cannot be MAIN.");
 		
-		final IndexBranchService baseBranchService = getBranchService(logicalPath.getParent());
-		
 		try {
-			baseBranchService.createIndexCommit(logicalPath, physicalPath);
-			inactiveClose(logicalPath);
-			prepare(logicalPath);
+
+			synchronized (branchServicesLock) {
+				final IndexBranchService baseBranchService = getBranchService(logicalPath.getParent());
+				baseBranchService.createIndexCommit(logicalPath, physicalPath);
+				inactiveClose(logicalPath, true);
+				prepare(logicalPath);
+			}
+			
 		} catch (final IOException e) {
 			throw new IndexException("Failed to update snapshot for '" + logicalPath.getPath() + "'.", e);
 		}
@@ -253,34 +250,42 @@ public abstract class IndexServerService<E extends IIndexEntry> extends Abstract
 	}
 
 	@Override
-	public synchronized void inactiveClose(final IBranchPath branchPath) {
+	public boolean inactiveClose(final IBranchPath branchPath, final boolean force) {
 		
-		// XXX: Don't check if this service is disposed here; we can still remove directories on shutdown without it running.
-		final IndexBranchService branchService = branchServices.asMap().remove(branchPath);
+		try {
 
-		if (null != branchService) {
-			branchService.close();
+			synchronized (branchServicesLock) {
+				final IndexBranchService branchService = branchServices.getIfPresent(branchPath);
+				if (branchService != null && (!branchService.isDirty() || force)) {
+					branchServices.invalidate(branchPath);
+					return true;
+				}
+			}
+
+		} catch (AlreadyClosedException e) {
+			// Nothing to do
 		}
+		
+		return false;
 	}
 	
 	@Override
 	public void dispose() {
-		if (!disposed) {
-			branchServices.invalidateAll();
+		synchronized (branchServicesLock) {
+			if (disposed.compareAndSet(false, true)) {
+				updater.close();
+				branchServices.invalidateAll();
+			}
 		}
-		
-		disposed = true;
 	}
 
 	@Override
 	public boolean isDisposed() {
-		return disposed;
+		return disposed.get();
 	}
 
 	@Override
 	public void index(final IBranchPath branchPath, final Document document, final Term id) {
-
-		checkNotNull(branchPath, "branchPath");
 		checkNotNull(document, "document");
 		checkNotNull(id, "id");
 		checkNotDisposed();
@@ -713,7 +718,7 @@ public abstract class IndexServerService<E extends IIndexEntry> extends Abstract
 	
 	@Override
 	public int maxDoc(final IBranchPath branchPath) {
-		final ReferenceManager<IndexSearcher> manager = getManager(Preconditions.checkNotNull(branchPath, "Branch path argument cannot be null."));
+		final ReferenceManager<IndexSearcher> manager = getManager(branchPath);
 		IndexSearcher searcher = null;
 		try {
 			
@@ -803,11 +808,15 @@ public abstract class IndexServerService<E extends IIndexEntry> extends Abstract
 		
 		// Record usage
 		if (!BranchPathUtils.isMain(branchPath)) {
-			getIndexAccessUpdater().registerAccessAndRecordUsage(branchPath);
+			updater.registerAccessAndRecordUsage(branchPath);
 		}
 		
 		try {
-			return branchServices.get(branchPath);
+			
+			synchronized (branchServicesLock) {
+				return branchServices.get(branchPath);
+			}
+			
 		} catch (final ExecutionException e) {
 			throw IndexException.wrap(e.getCause());
 		} catch (final UncheckedExecutionException e) {
@@ -831,7 +840,7 @@ public abstract class IndexServerService<E extends IIndexEntry> extends Abstract
 	}
 	
 	protected IIndexAccessUpdater getIndexAccessUpdater() {
-		return new IndexAccessUpdater();
+		return updater;
 	}
 	
 	/**
@@ -854,7 +863,7 @@ public abstract class IndexServerService<E extends IIndexEntry> extends Abstract
 	private static final Set<String> COMPONENT_ID_FIELD_TO_LOAD = Sets.newHashSet(CommonIndexConstants.COMPONENT_ID);
 
 	private void checkNotDisposed() {
-		if (disposed) {
+		if (isDisposed()) {
 			throw new IndexException("IndexServerService is already disposed.");
 		}
 	}

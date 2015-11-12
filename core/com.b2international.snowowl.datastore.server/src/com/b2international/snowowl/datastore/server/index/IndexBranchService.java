@@ -25,6 +25,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.document.Document;
@@ -62,7 +63,8 @@ public class IndexBranchService implements Closeable {
 
 	private static final Logger LOG = LoggerFactory.getLogger(IndexBranchService.class);
 
-	private volatile boolean closed;
+	private final AtomicBoolean closed = new AtomicBoolean();
+	private final AtomicBoolean dirty = new AtomicBoolean(); 
 
 	private IndexDirectory directory;
 	private IndexWriter indexWriter;
@@ -131,13 +133,12 @@ public class IndexBranchService implements Closeable {
 	@Override
 	public void close() {
 
-		if (closed) {
+		if (!closed.compareAndSet(false, true)) {
 			return;
 		}
 
 		LOG.debug("Service for physical path {} closed after {} second(s).", branchPath.path(), stopwatch.stop().elapsed(TimeUnit.SECONDS));
 		
-		closed = true;
 		IOException caught = null;
 
 		// Close components in reverse order.
@@ -197,6 +198,7 @@ public class IndexBranchService implements Closeable {
 		ensureWritable();
 		if (null != indexWriter) {
 			indexWriter.addDocument(document);
+			setDirty();
 		}
 	}
 
@@ -205,6 +207,7 @@ public class IndexBranchService implements Closeable {
 		ensureWritable();
 		if (null != indexWriter) {
 			indexWriter.deleteDocuments(query);
+			setDirty();
 		}
 	}
 
@@ -213,6 +216,7 @@ public class IndexBranchService implements Closeable {
 		ensureWritable();
 		if (null != indexWriter) {
 			indexWriter.deleteDocuments(term);
+			setDirty();
 		}
 	}
 
@@ -221,6 +225,7 @@ public class IndexBranchService implements Closeable {
 		ensureWritable();
 		if (null != indexWriter) {
 			indexWriter.updateDocument(term, document);
+			setDirty();
 		}
 	}
 
@@ -230,6 +235,7 @@ public class IndexBranchService implements Closeable {
 		if (null != indexWriter) {
 			indexWriter.setCommitData(Collections.<String, String>emptyMap()); //override snapshot commit data
 			indexWriter.commit();
+			clearDirty();
 			manager.maybeRefreshBlocking();
 		}
 	}
@@ -253,6 +259,7 @@ public class IndexBranchService implements Closeable {
 		 */
 		if (null != indexWriter) {
 			indexWriter.rollback();
+			clearDirty();
 			indexWriter = createIndexWriter(false);
 		}
 	}
@@ -300,7 +307,8 @@ public class IndexBranchService implements Closeable {
 	void createIndexCommit(final IBranchPath logicalBranchPath, final BranchPath physicalBranchPath) throws IOException {
 		ensureOpen();
 		ensureWritable();
-
+		ensureNotDirty();
+		
 		final Map<String, String> userData = ImmutableMap.<String, String>builder()
 				.put(IndexUtils.INDEX_BRANCH_PATH_KEY, logicalBranchPath.getPath())
 				.put(IndexUtils.INDEX_CDO_BRANCH_PATH_KEY, physicalBranchPath.path())
@@ -348,7 +356,7 @@ public class IndexBranchService implements Closeable {
 	}
 
 	private void ensureOpen() {
-		if (closed) {
+		if (closed.get()) {
 			throw new AlreadyClosedException("Index branch service is already closed.");
 		}
 	}
@@ -356,6 +364,12 @@ public class IndexBranchService implements Closeable {
 	private void ensureWritable() {
 		if (readOnly) {
 			throw new UnsupportedOperationException("Index branch service is read-only.");
+		}
+	}
+	
+	private void ensureNotDirty() {
+		if (dirty.get()) {
+			throw new IllegalStateException("Index branch service for physical path " + branchPath + " contains uncommitted changes.");
 		}
 	}
 
@@ -375,5 +389,18 @@ public class IndexBranchService implements Closeable {
 
 	public IndexCommit getLastIndexCommit() {
 		return directory.getLastIndexCommit();
+	}
+
+	private void setDirty() {
+		dirty.compareAndSet(false, true);
+	}
+
+	private void clearDirty() {
+		dirty.compareAndSet(true, false);
+	}
+
+	public boolean isDirty() {
+		ensureOpen();
+		return dirty.get();
 	}
 }
