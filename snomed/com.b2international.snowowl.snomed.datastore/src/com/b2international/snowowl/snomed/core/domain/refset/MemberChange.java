@@ -15,7 +15,12 @@
  */
 package com.b2international.snowowl.snomed.core.domain.refset;
 
-public interface MemberChange {
+import java.io.Serializable;
+
+/**
+ * @since 4.5
+ */
+public interface MemberChange extends Comparable<MemberChange>, Serializable {
 
 	public enum MemberChangeKind {
 		ADD, REMOVE

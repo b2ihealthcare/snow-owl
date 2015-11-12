@@ -15,12 +15,13 @@
  */
 package com.b2international.snowowl.snomed.core.domain.refset;
 
+import java.io.Serializable;
 import java.util.Collection;
 
 /**
  * @since 4.5
  */
-public interface QueryRefSetMemberEvaluation {
+public interface QueryRefSetMemberEvaluation extends Serializable {
 
 	/**
 	 * Returns the target reference set ID of the evaluated member.
