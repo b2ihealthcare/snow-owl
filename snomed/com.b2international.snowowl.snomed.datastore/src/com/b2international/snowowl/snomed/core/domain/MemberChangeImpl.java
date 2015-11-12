@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.snomed.datastore.server.domain;
+package com.b2international.snowowl.snomed.core.domain;
 
 import java.util.Objects;
 
@@ -22,11 +22,11 @@ import com.b2international.snowowl.snomed.core.domain.refset.MemberChange;
 /**
  * @since 4.5
  */
-public class MemberChangeImpl implements MemberChange, Comparable<MemberChange> {
+public class MemberChangeImpl implements MemberChange {
 
-	private MemberChangeKind changeKind;
-	private String referencedComponentId;
-	private String memberId;
+	private final MemberChangeKind changeKind;
+	private final String referencedComponentId;
+	private final String memberId;
 
 	private MemberChangeImpl(MemberChangeKind changeKind, String referencedComponentId, String memberId) {
 		this.changeKind = changeKind;

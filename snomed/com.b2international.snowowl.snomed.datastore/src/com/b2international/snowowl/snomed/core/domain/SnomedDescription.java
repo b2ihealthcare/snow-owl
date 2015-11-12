@@ -13,16 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.snomed.datastore.server.domain;
+package com.b2international.snowowl.snomed.core.domain;
 
 import java.util.Map;
 
-import com.b2international.snowowl.snomed.core.domain.AbstractSnomedComponent;
-import com.b2international.snowowl.snomed.core.domain.Acceptability;
-import com.b2international.snowowl.snomed.core.domain.AssociationType;
-import com.b2international.snowowl.snomed.core.domain.CaseSignificance;
-import com.b2international.snowowl.snomed.core.domain.DescriptionInactivationIndicator;
-import com.b2international.snowowl.snomed.core.domain.ISnomedDescription;
 import com.google.common.collect.Multimap;
 
 /**
