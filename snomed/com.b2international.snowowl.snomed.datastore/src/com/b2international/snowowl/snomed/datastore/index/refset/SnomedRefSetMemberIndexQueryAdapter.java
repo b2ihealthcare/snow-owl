@@ -29,6 +29,7 @@ import com.b2international.snowowl.datastore.index.IndexAdapterBase;
 import com.b2international.snowowl.datastore.index.IndexUtils;
 import com.b2international.snowowl.datastore.index.mapping.Mappings;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry.Builder;
 import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedMappings;
 import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedQueryBuilder;
 import com.google.common.base.Optional;
@@ -56,7 +57,9 @@ public class SnomedRefSetMemberIndexQueryAdapter extends IndexAdapterBase<Snomed
 
 	@Override
 	public SnomedRefSetMemberIndexEntry buildSearchResult(final Document doc, final IBranchPath branchPath, final float score) {
-		return SnomedRefSetMemberIndexEntry.create(doc, branchPath);
+		return SnomedRefSetMemberIndexEntry.builder(doc)
+				.score(score)
+				.build();
 	}
 	
 	@SuppressWarnings("deprecation")

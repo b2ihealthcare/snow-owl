@@ -16,10 +16,12 @@
 package com.b2international.snowowl.snomed.datastore.index.refset;
 
 
+import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_DATA_TYPE_VALUE;
+import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_SERIALIZED_VALUE;
+
 import java.io.Serializable;
 
 import org.apache.lucene.document.Document;
-import org.apache.lucene.index.IndexableField;
 
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.datastore.index.mapping.Mappings;
@@ -56,27 +58,14 @@ public class SnomedConcreteDataTypeRefSetMemberIndexQueryAdapter extends SnomedR
 		super(refSetId, searchString, excludeInactive);
 	}
 	
-	
-	/*
-	 * (non-Javadoc)
-	 * @see com.b2international.snowowl.snomed.datastore.index.refset.SnomedRefSetMemberIndexQueryAdapter#buildSearchResultDTO(org.apache.lucene.document.Document, float)
-	 */
 	@Override
 	public SnomedRefSetMemberIndexEntry buildSearchResult(final Document doc, final IBranchPath branchPath, final float score) {
-//		final SnomedRefSetMemberIndexEntry member = createFromIndexEntry(super.buildSearchResult(doc, branchPath, score));
-//		member.setOperatorComponentId(doc.getField(SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_OPERATOR_ID).stringValue());
-//		final IndexableField uomFieldable = doc.getField(SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_UOM_ID);
-//		//can happen for SG concrete data types
-//		if (null != uomFieldable) {
-//			member.setUomComponentId(uomFieldable.stringValue());
-//		}
-//		member.setAttributeLabel(Mappings.label().getValue(doc));
-//		
-//		DataType dataType = SnomedRefSetUtil.DATA_TYPE_BIMAP.get(SnomedRefSetUtil.getDataType(member.getRefSetIdentifierId()));
-//		member.setDataType(dataType);
-//		Object deserializeValue = SnomedRefSetUtil.deserializeValue(dataType, doc.get(SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_SERIALIZED_VALUE));
-//		member.setValue(deserializeValue);
-//		member.setCharacteristicTypeId(doc.getField(SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_CHARACTERISTIC_TYPE_ID).stringValue());
-		return member;
+		final DataType dataType = DataType.get(Mappings.intDocValuesField(REFERENCE_SET_MEMBER_DATA_TYPE_VALUE).getValue(doc));
+		final String serializedValue = Mappings.stringDocValuesField(REFERENCE_SET_MEMBER_SERIALIZED_VALUE).getValue(doc);
+		
+		return SnomedRefSetMemberIndexEntry.builder(doc)
+				.score(score)
+				.additionalField(SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_SERIALIZED_VALUE, SnomedRefSetUtil.deserializeValue(dataType, serializedValue))
+				.build();
 	}
 }

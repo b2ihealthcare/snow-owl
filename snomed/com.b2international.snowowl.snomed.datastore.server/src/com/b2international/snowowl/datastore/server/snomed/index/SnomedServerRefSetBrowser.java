@@ -61,7 +61,6 @@ import org.apache.lucene.search.TopDocs;
 import org.apache.lucene.search.TotalHitCountCollector;
 import org.eclipse.core.runtime.IProgressMonitor;
 
-import com.b2international.commons.BooleanUtils;
 import com.b2international.commons.CompareUtils;
 import com.b2international.commons.pcj.LongSets;
 import com.b2international.snowowl.core.ApplicationContext;
@@ -82,12 +81,10 @@ import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConst
 import com.b2international.snowowl.snomed.datastore.SnomedRefSetBrowser;
 import com.b2international.snowowl.snomed.datastore.SnomedRefSetUtil;
 import com.b2international.snowowl.snomed.datastore.SnomedTerminologyBrowser;
-import com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants;
 import com.b2international.snowowl.snomed.datastore.index.SnomedIndexService;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptIndexEntry;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetIndexEntry;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry;
-import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetIndexEntry.Builder;
 import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedMappings;
 import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedQueryBuilder;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType;
@@ -650,19 +647,7 @@ public class SnomedServerRefSetBrowser extends AbstractSnomedIndexBrowser<Snomed
 
 	@Override
 	protected SnomedRefSetIndexEntry createResultObject(final IBranchPath branchPath, final Document doc) {
-
-		final Builder builder = SnomedRefSetIndexEntry.builder()
-				.id(SnomedMappings.id().getValueAsString(doc))
-				.moduleId(SnomedMappings.module().getValueAsString(doc))
-				.storageKey(SnomedMappings.refSetStorageKey().getValue(doc)) // XXX: Different than concept storage key
-				.active(BooleanUtils.valueOf(SnomedMappings.active().getValue(doc).intValue())) 
-				.released(BooleanUtils.valueOf(SnomedMappings.released().getValue(doc).intValue()))
-				.effectiveTimeLong(SnomedMappings.effectiveTime().getValue(doc))
-				.type(SnomedRefSetType.get(Mappings.intField(SnomedIndexBrowserConstants.REFERENCE_SET_TYPE).getValue(doc)))
-				.referencedComponentType(Mappings.intField(SnomedIndexBrowserConstants.REFERENCE_SET_REFERENCED_COMPONENT_TYPE).getShortValue(doc));
-				// TODO: .mapTargetComponentType(...) is not indexed yet 
-				
-		return builder.build();
+		return SnomedRefSetIndexEntry.builder(doc).build();
 	}
 
 	@Override

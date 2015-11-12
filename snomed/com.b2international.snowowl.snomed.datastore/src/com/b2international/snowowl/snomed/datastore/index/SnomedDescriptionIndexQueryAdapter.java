@@ -22,11 +22,8 @@ import javax.annotation.OverridingMethodsMustInvokeSuper;
 
 import org.apache.lucene.document.Document;
 
-import com.b2international.commons.BooleanUtils;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.datastore.index.IndexQueryBuilder;
-import com.b2international.snowowl.datastore.index.mapping.Mappings;
-import com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDescriptionIndexEntry;
 import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedMappings;
 import com.google.common.collect.ImmutableSet;
@@ -100,18 +97,8 @@ public abstract class SnomedDescriptionIndexQueryAdapter extends SnomedDslIndexQ
 	
 	@Override
 	public SnomedDescriptionIndexEntry buildSearchResult(final Document doc, final IBranchPath branchPath, final float score) {
-		return SnomedDescriptionIndexEntry.builder()
-				.id(SnomedMappings.id().getValueAsString(doc)) 
-				.term(Mappings.label().getValue(doc)) 
-				.moduleId(SnomedMappings.module().getValueAsString(doc)) 
+		return SnomedDescriptionIndexEntry.builder(doc)
 				.score(score)
-				.storageKey(Mappings.storageKey().getValue(doc))
-				.released(BooleanUtils.valueOf(doc.getField(SnomedIndexBrowserConstants.COMPONENT_RELEASED).numericValue().intValue()))
-				.active(BooleanUtils.valueOf(SnomedMappings.active().getValue(doc)))
-				.typeId(SnomedMappings.descriptionType().getValueAsString(doc))
-				.conceptId(SnomedMappings.descriptionConcept().getValueAsString(doc))
-				.caseSignificanceId(doc.getField(SnomedIndexBrowserConstants.DESCRIPTION_CASE_SIGNIFICANCE_ID).stringValue())
-				.effectiveTimeLong(SnomedMappings.effectiveTime().getValue(doc))
 				.build();
 	}
 }

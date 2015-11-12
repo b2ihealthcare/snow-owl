@@ -43,7 +43,6 @@ import org.apache.lucene.search.Query;
 import org.apache.lucene.search.ReferenceManager;
 import org.apache.lucene.search.TopDocs;
 
-import com.b2international.commons.BooleanUtils;
 import com.b2international.commons.CompareUtils;
 import com.b2international.commons.graph.GraphUtils;
 import com.b2international.commons.pcj.LongSets;
@@ -138,17 +137,7 @@ public class SnomedServerTerminologyBrowser extends AbstractIndexTerminologyBrow
 	
 	@Override
 	protected SnomedConceptIndexEntry createResultObject(final IBranchPath branchPath, final Document doc) {
-		return SnomedConceptIndexEntry.builder()
-				.id(SnomedMappings.id().getValueAsString(doc))
-				.moduleId(SnomedMappings.module().getValueAsString(doc))
-				.storageKey(Mappings.storageKey().getValue(doc))
-				.active(BooleanUtils.valueOf(SnomedMappings.active().getValue(doc).intValue())) 
-				.primitive(BooleanUtils.valueOf(SnomedMappings.primitive().getValue(doc).intValue()))
-				.exhaustive(BooleanUtils.valueOf(SnomedMappings.exhaustive().getValue(doc).intValue()))
-				.released(BooleanUtils.valueOf(SnomedMappings.released().getValue(doc).intValue()))
-				.iconId(Mappings.iconId().getValue(doc))
-				.effectiveTimeLong(SnomedMappings.effectiveTime().getValue(doc))
-				.build();
+		return SnomedConceptIndexEntry.builder(doc).build();
 	}
 
 	@Override

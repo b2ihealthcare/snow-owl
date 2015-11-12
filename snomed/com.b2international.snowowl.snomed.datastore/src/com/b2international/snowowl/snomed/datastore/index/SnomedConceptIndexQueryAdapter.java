@@ -15,8 +15,6 @@
  */
 package com.b2international.snowowl.snomed.datastore.index;
 
-import static com.b2international.snowowl.datastore.index.IndexUtils.getBooleanValue;
-
 import javax.annotation.Nullable;
 
 import org.apache.lucene.document.Document;
@@ -25,8 +23,6 @@ import org.apache.lucene.search.Sort;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.datastore.index.IndexQueryBuilder;
 import com.b2international.snowowl.datastore.index.IndexUtils;
-import com.b2international.snowowl.datastore.index.mapping.Mappings;
-import com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptIndexEntry;
 import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedMappings;
 
@@ -63,17 +59,8 @@ public abstract class SnomedConceptIndexQueryAdapter extends SnomedDslIndexQuery
 	
 	@Override
 	public SnomedConceptIndexEntry buildSearchResult(final Document doc, final IBranchPath branchPath, final float score) {
-		
-		return SnomedConceptIndexEntry.builder()
-				.id(SnomedMappings.id().getValueAsString(doc))
-				.moduleId(SnomedMappings.module().getValueAsString(doc))
-				.storageKey(Mappings.storageKey().getValue(doc))
-				.active(SnomedMappings.active().getValue(doc) == 1) 
-				.primitive(getBooleanValue(doc.getField(SnomedIndexBrowserConstants.CONCEPT_PRIMITIVE)))
-				.exhaustive(getBooleanValue(doc.getField(SnomedIndexBrowserConstants.CONCEPT_EXHAUSTIVE)))
-				.released(getBooleanValue(doc.getField(SnomedIndexBrowserConstants.COMPONENT_RELEASED)))
-				.iconId(Mappings.iconId().getValue(doc))
-				.effectiveTimeLong(SnomedMappings.effectiveTime().getValue(doc))
+		return SnomedConceptIndexEntry.builder(doc)
+				.score(score)
 				.build();
 	}
 }

@@ -35,6 +35,7 @@ import org.eclipse.emf.cdo.spi.common.revision.InternalCDORevisionManager;
 import org.eclipse.emf.cdo.view.CDOView;
 import org.eclipse.emf.ecore.EClass;
 import org.eclipse.emf.spi.cdo.InternalCDOSession;
+import org.eclipse.net4j.util.AdapterUtil;
 
 import com.b2international.commons.ChangeKind;
 import com.b2international.commons.CompareUtils;
@@ -42,7 +43,6 @@ import com.b2international.commons.StringUtils;
 import com.b2international.commons.pcj.LongSets;
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.api.ComponentTextProvider;
-import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.datastore.BranchPointUtils;
 import com.b2international.snowowl.datastore.CdoViewComponentTextProvider;
 import com.b2international.snowowl.datastore.cdo.CDOIDUtils;
@@ -61,7 +61,6 @@ import com.b2international.snowowl.snomed.SnomedPackage;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.snomed.datastore.SnomedConceptIconIdProvider;
 import com.b2international.snowowl.snomed.datastore.SnomedConceptLookupService;
-import com.b2international.snowowl.snomed.datastore.SnomedIconProvider;
 import com.b2international.snowowl.snomed.datastore.SnomedTerminologyBrowser;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptIndexEntry;
 import com.b2international.snowowl.snomed.datastore.services.ISnomedComponentService;
@@ -430,23 +429,9 @@ public class SnomedConceptDeltaBuilder extends AbstractHierarchicalComponentDelt
 
 		if (null == concept) {
 			return null;
+		} else {
+			return AdapterUtil.adapt(concept, SnomedConceptIndexEntry.class);
 		}
-		
-		/*
-		 * XXX: copied from SnomedConceptAdapterFactory, as there a client terminology browser lookup is performed first, which might
-		 * find a different result.
-		 */
-		return SnomedConceptIndexEntry.builder()
-				.id(concept.getId())
-				.iconId(SnomedIconProvider.getInstance().getIconComponentId(concept.getId())) 
-				.moduleId(concept.getModule().getId()) 
-				.storageKey(CDOUtils.getStorageKey(concept))
-				.active(concept.isActive())
-				.primitive(concept.isPrimitive())
-				.exhaustive(concept.isExhaustive())
-				.released(concept.isReleased()) 
-				.effectiveTimeLong(concept.isSetEffectiveTime() ? concept.getEffectiveTime().getTime() : EffectiveTimes.UNSET_EFFECTIVE_TIME)
-				.build();
 	}
 
 	/* (non-Javadoc)

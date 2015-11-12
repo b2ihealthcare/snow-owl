@@ -15,24 +15,17 @@
  */
 package com.b2international.snowowl.snomed.datastore.index;
 
-import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.RELATIONSHIP_DESTINATION_NEGATED;
-import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.RELATIONSHIP_GROUP;
 import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.RELATIONSHIP_OBJECT_ID;
-import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.RELATIONSHIP_UNION_GROUP;
-import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.RELATIONSHIP_UNIVERSAL;
 import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.RELATIONSHIP_VALUE_ID;
 
 import org.apache.lucene.document.Document;
 
-import com.b2international.commons.BooleanUtils;
 import com.b2international.commons.StringUtils;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.datastore.index.IndexQueryBuilder;
 import com.b2international.snowowl.datastore.index.IndexUtils;
 import com.b2international.snowowl.datastore.index.QueryDslIndexQueryAdapter;
 import com.b2international.snowowl.datastore.index.mapping.LongIndexField;
-import com.b2international.snowowl.datastore.index.mapping.Mappings;
-import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRelationshipIndexEntry;
 import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedMappings;
 import com.google.common.base.Optional;
@@ -73,38 +66,8 @@ public class SnomedRelationshipIndexQueryAdapter extends QueryDslIndexQueryAdapt
 	
 	@Override
 	public SnomedRelationshipIndexEntry buildSearchResult(final Document doc, final IBranchPath branchPath, final float score) {
-		
-		final String id = SnomedMappings.id().getValueAsString(doc);
-		final String objectId = doc.get(RELATIONSHIP_OBJECT_ID);
-		final String attributeId = SnomedMappings.relationshipType().getValueAsString(doc);
-		final String valueId = doc.get(RELATIONSHIP_VALUE_ID);
-		final String characteristicTypeId = SnomedMappings.relationshipCharacteristicType().getValueAsString(doc);
-		byte group = (byte) doc.getField(RELATIONSHIP_GROUP).numericValue().intValue();
-		byte unionGroup = (byte) doc.getField(RELATIONSHIP_UNION_GROUP).numericValue().intValue();
-		final boolean active = BooleanUtils.valueOf(SnomedMappings.active().getValue(doc));
-		final boolean released = BooleanUtils.valueOf(SnomedMappings.released().getValue(doc)); 
-		final boolean universal = BooleanUtils.valueOf(Mappings.intField(RELATIONSHIP_UNIVERSAL).getValue(doc)); 
-		final boolean destinationNegated = BooleanUtils.valueOf(Mappings.intField(RELATIONSHIP_DESTINATION_NEGATED).getValue(doc)); 
-		final String moduleId = SnomedMappings.module().getValueAsString(doc);
-		final long storageKey = Mappings.storageKey().getValue(doc);
-		final long effectiveTime = SnomedMappings.effectiveTime().getValue(doc);
-		
-		return SnomedRelationshipIndexEntry.builder()
+		return SnomedRelationshipIndexEntry.builder(doc)
 				.score(score)
-				.id(id)
-				.sourceId(objectId)
-				.typeId(attributeId)
-				.destinationId(valueId)
-				.characteristicTypeId(characteristicTypeId)
-				.group(group)
-				.unionGroup(unionGroup)
-				.active(active)
-				.released(released)
-				.modifierId(universal ? Concepts.UNIVERSAL_RESTRICTION_MODIFIER : Concepts.EXISTENTIAL_RESTRICTION_MODIFIER)
-				.destinationNegated(destinationNegated)
-				.moduleId(moduleId)
-				.storageKey(storageKey)
-				.effectiveTimeLong(effectiveTime)
 				.build();
 	}
 	
