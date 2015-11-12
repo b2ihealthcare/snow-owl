@@ -36,4 +36,11 @@ public interface SnomedReferenceSet extends ISnomedComponent {
 	 */
 	String getReferencedComponentType();
 
+	/**
+	 * Returns all members of the reference set.
+	 * 
+	 * @return
+	 */
+	SnomedReferenceSetMembers getMembers();
+
 }

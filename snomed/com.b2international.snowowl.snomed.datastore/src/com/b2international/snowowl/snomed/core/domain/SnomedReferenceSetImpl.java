@@ -24,6 +24,7 @@ public class SnomedReferenceSetImpl extends AbstractSnomedComponent implements S
 
 	private SnomedRefSetType type;
 	private String referencedComponent;
+	private SnomedReferenceSetMembers members;
 	
 	@Override
 	public SnomedRefSetType getType() {
@@ -34,6 +35,11 @@ public class SnomedReferenceSetImpl extends AbstractSnomedComponent implements S
 	public String getReferencedComponentType() {
 		return referencedComponent;
 	}
+
+	@Override
+	public SnomedReferenceSetMembers getMembers() {
+		return members;
+	}
 	
 	public void setReferencedComponent(String referencedComponent) {
 		this.referencedComponent = referencedComponent;
@@ -41,6 +47,10 @@ public class SnomedReferenceSetImpl extends AbstractSnomedComponent implements S
 	
 	public void setType(SnomedRefSetType type) {
 		this.type = type;
+	}
+	
+	public void setMembers(SnomedReferenceSetMembers members) {
+		this.members = members;
 	}
 
 }
