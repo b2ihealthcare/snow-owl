@@ -16,6 +16,7 @@
 package com.b2international.snowowl.datastore.server.request;
 
 import com.b2international.snowowl.core.ServiceProvider;
+import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.domain.TransactionContext;
 import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.core.events.RequestBuilder;
@@ -24,7 +25,7 @@ import com.b2international.snowowl.core.exceptions.ApiValidation;
 /**
  * @since 4.5
  */
-public final class RepositoryCommitRequestBuilder implements RequestBuilder<ServiceProvider, CommitInfo> {
+public class RepositoryCommitRequestBuilder implements RequestBuilder<ServiceProvider, CommitInfo> {
 	
 	private String userId;
 	private String repositoryId;
@@ -32,7 +33,7 @@ public final class RepositoryCommitRequestBuilder implements RequestBuilder<Serv
 	private String commitComment = "";
 	private Request<TransactionContext, ?> body;
 
-	RepositoryCommitRequestBuilder(String userId, String repositoryId, String branch) {
+	protected RepositoryCommitRequestBuilder(String userId, String repositoryId, String branch) {
 		this.userId = userId;
 		this.repositoryId = repositoryId;
 		this.branch = branch;
@@ -56,7 +57,11 @@ public final class RepositoryCommitRequestBuilder implements RequestBuilder<Serv
 	@Override
 	public Request<ServiceProvider, CommitInfo> build() {
 		ApiValidation.checkInput(body);
-		return RepositoryRequests.wrap(repositoryId, branch, new TransactionalRequest(userId, commitComment, body));
+		return RepositoryRequests.wrap(repositoryId, branch, createRequest());
+	}
+
+	protected Request<BranchContext, CommitInfo> createRequest() {
+		return new TransactionalRequest(userId, commitComment, body);
 	}
 
 }

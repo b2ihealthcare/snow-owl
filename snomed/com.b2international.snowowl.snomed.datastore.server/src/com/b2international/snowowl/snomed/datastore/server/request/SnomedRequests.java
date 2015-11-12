@@ -48,7 +48,7 @@ public abstract class SnomedRequests {
 	}
 	
 	public static <B> RepositoryCommitRequestBuilder prepareCommit(String userId, String branch) {
-		return RepositoryRequests.prepareCommit(userId, REPOSITORY_ID, branch);
+		return new SnomedRepositoryCommitRequestBuilder(userId, REPOSITORY_ID, branch);
 	}
 	
 	public static SnomedConceptSearchRequestBuilder prepareSearch(String branch) {
