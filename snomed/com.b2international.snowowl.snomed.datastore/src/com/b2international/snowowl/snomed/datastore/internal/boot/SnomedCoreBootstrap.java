@@ -25,13 +25,9 @@ import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.snomed.datastore.SnomedTerminologyBrowser;
 import com.b2international.snowowl.snomed.datastore.config.SnomedCoreConfiguration;
 import com.b2international.snowowl.snomed.datastore.id.ISnomedIdentifierService;
-import com.b2international.snowowl.snomed.datastore.id.reservations.ISnomedIdentiferReservationService;
-import com.b2international.snowowl.snomed.datastore.id.reservations.Reservations;
-import com.b2international.snowowl.snomed.datastore.internal.id.SnomedIdentifierServiceImpl;
-import com.b2international.snowowl.snomed.datastore.internal.id.reservations.SnomedIdentifierReservationServiceImpl;
+import com.b2international.snowowl.snomed.datastore.id.SnomedIdentifierServiceFactory;
 import com.b2international.snowowl.snomed.metadata.SnomedMetadata;
 import com.b2international.snowowl.snomed.metadata.SnomedMetadataImpl;
-import com.google.inject.Provider;
 
 /**
  * @since 3.4
@@ -39,16 +35,10 @@ import com.google.inject.Provider;
 @ModuleConfig(fieldName = "snomed", type = SnomedCoreConfiguration.class)
 public class SnomedCoreBootstrap extends DefaultBootstrapFragment {
 
-	private static final String STORE_RESERVATIONS = "internal_store_reservations";
-
 	@Override
 	public void init(SnowOwlConfiguration configuration, Environment env) throws Exception {
-		final Provider<SnomedTerminologyBrowser> browser = env.provider(SnomedTerminologyBrowser.class);
-		final ISnomedIdentiferReservationService reservationService = new SnomedIdentifierReservationServiceImpl();
-		reservationService.create(STORE_RESERVATIONS, Reservations.uniqueInStore(browser));
-		final ISnomedIdentifierService idService = new SnomedIdentifierServiceImpl(reservationService);
-		env.services().registerService(ISnomedIdentiferReservationService.class, reservationService);
-		env.services().registerService(ISnomedIdentifierService.class, idService);
+		SnomedIdentifierServiceFactory.registerService(configuration, env);
+		
 		env.services().registerService(SnomedCoreConfiguration.class, configuration.getModuleConfig(SnomedCoreConfiguration.class));
 		env.services().registerService(SnomedMetadata.class, new SnomedMetadataImpl(env.provider(SnomedTerminologyBrowser.class)));
 	}
