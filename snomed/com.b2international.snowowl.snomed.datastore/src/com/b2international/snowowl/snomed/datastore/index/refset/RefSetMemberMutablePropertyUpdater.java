@@ -201,7 +201,9 @@ public class RefSetMemberMutablePropertyUpdater extends DocumentUpdaterBase<Snom
 				final CoreTerminologyBroker terminologyBroker = CoreTerminologyBroker.getInstance();
 				final String terminologyComponentId = getTerminologyComponentId(simpleMapTargetComponentType);
 				final INameProviderFactory nameProviderFactory = terminologyBroker.getNameProviderFactory(terminologyComponentId);
-				String mapTargetLabel = nameProviderFactory.getNameProvider().getComponentLabel(BranchPathUtils.createPath(member.cdoView()), simpleMapTargetComponentId);
+				
+				//TODO: Balazs: hack to map to MAIN regardless to the source/target branch settings. This will change.
+				String mapTargetLabel = nameProviderFactory.getNameProvider().getComponentLabel(BranchPathUtils.createMainPath(), simpleMapTargetComponentId);
 				if (Strings.isNullOrEmpty(mapTargetLabel)) {
 					mapTargetLabel = simpleMapTargetComponentId;
 				}
