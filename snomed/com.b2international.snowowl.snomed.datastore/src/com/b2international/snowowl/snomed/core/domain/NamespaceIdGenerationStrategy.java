@@ -15,11 +15,12 @@
  */
 package com.b2international.snowowl.snomed.core.domain;
 
-import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.SnowOwlApplication;
+import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.terminology.ComponentCategory;
 import com.b2international.snowowl.snomed.datastore.config.SnomedCoreConfiguration;
-import com.b2international.snowowl.snomed.datastore.id.ISnomedIdentifierService;
+import com.b2international.snowowl.snomed.datastore.id.IdManager;
+import com.b2international.snowowl.snomed.datastore.id.SnomedIdentifier;
 
 public class NamespaceIdGenerationStrategy implements IdGenerationStrategy {
 
@@ -40,8 +41,11 @@ public class NamespaceIdGenerationStrategy implements IdGenerationStrategy {
 	}
 
 	@Override
-	public String getId() {
-		return ApplicationContext.getServiceForClass(ISnomedIdentifierService.class).generateId(category, getNamespaceIdOrDefault());
+	public String generate(BranchContext context) {
+		final IdManager idManager = context.service(IdManager.class);
+		// TODO use reserve instead?
+		final SnomedIdentifier identifier = idManager.generate(getNamespaceIdOrDefault(), category);
+		return identifier.toString();
 	}
 
 	private String getNamespaceIdOrDefault() {

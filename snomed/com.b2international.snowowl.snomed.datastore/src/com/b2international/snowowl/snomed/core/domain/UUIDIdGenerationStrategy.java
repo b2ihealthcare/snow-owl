@@ -17,13 +17,15 @@ package com.b2international.snowowl.snomed.core.domain;
 
 import java.util.UUID;
 
+import com.b2international.snowowl.core.domain.BranchContext;
+
 /**
  * @since 4.5
  */
 public final class UUIDIdGenerationStrategy implements IdGenerationStrategy {
 
 	@Override
-	public String getId() {
+	public String generate(final BranchContext context) {
 		return UUID.randomUUID().toString();
 	}
 
