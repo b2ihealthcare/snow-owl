@@ -28,7 +28,6 @@ import com.b2international.snowowl.snomed.datastore.id.cis.CisSnomedIdentfierSer
 import com.b2international.snowowl.snomed.datastore.id.gen.ItemIdGenerationStrategy;
 import com.b2international.snowowl.snomed.datastore.id.memory.InMemorySnomedIdentifierServiceImpl;
 import com.b2international.snowowl.snomed.datastore.id.reservations.ISnomedIdentiferReservationService;
-import com.b2international.snowowl.snomed.datastore.id.reservations.Reservations;
 import com.b2international.snowowl.snomed.datastore.internal.id.reservations.SnomedIdentifierReservationServiceImpl;
 import com.google.inject.Provider;
 
@@ -40,7 +39,6 @@ import com.google.inject.Provider;
 public class SnomedIdentifierServiceFactory {
 	private static final Logger LOGGER = LoggerFactory.getLogger(SnomedIdentifierServiceFactory.class);
 
-	private static final String STORE_RESERVATIONS = "internal_store_reservations";
 	private static final String IDENTIFIER_SERVICE_RESERVATIONS = "identifier_service_reservations";
 
 	public static void registerService(final SnowOwlConfiguration configuration, final Environment env) {
@@ -49,7 +47,6 @@ public class SnomedIdentifierServiceFactory {
 		final SnomedCoreConfiguration coreConfiguration = configuration.getModuleConfig(SnomedCoreConfiguration.class);
 		final ISnomedIdentiferReservationService reservationService = new SnomedIdentifierReservationServiceImpl();
 
-		registerBrowser(reservationService);
 		registerSnomedIdentifierService(coreConfiguration, env, reservationService);
 	}
 
@@ -62,29 +59,20 @@ public class SnomedIdentifierServiceFactory {
 		}
 	}
 
-	private static void registerBrowser(final ISnomedIdentiferReservationService reservationService) {
-		final Provider<SnomedTerminologyBrowser> provider = new Provider<SnomedTerminologyBrowser>() {
-			@Override
-			public SnomedTerminologyBrowser get() {
-				return ApplicationContext.getInstance().getService(SnomedTerminologyBrowser.class);
-			}
-		};
-
-		reservationService.create(STORE_RESERVATIONS, Reservations.uniqueInStore(provider));
-	}
-
 	private static void registerSnomedIdentifierService(final SnomedCoreConfiguration conf, final Environment env,
 			final ISnomedIdentiferReservationService reservationService) {
 		ISnomedIdentifierService identifierService = null;
 
+		final Provider<SnomedTerminologyBrowser> provider = getTerminologyBrowserProvider();
+
 		switch (conf.getIdGenerationStrategy()) {
 		case MEMORY:
 			LOGGER.info("Snow Owl is configured to use memory based identifier serivce.");
-			identifierService = new InMemorySnomedIdentifierServiceImpl(reservationService, ItemIdGenerationStrategy.RANDOM);
+			identifierService = new InMemorySnomedIdentifierServiceImpl(ItemIdGenerationStrategy.RANDOM, provider);
 			break;
 		case CIS:
 			LOGGER.info("Snow Owl is configured to use CIS based identifier serivce.");
-			identifierService = new CisSnomedIdentfierServiceImpl(conf);
+			identifierService = new CisSnomedIdentfierServiceImpl(conf, provider);
 			break;
 		default:
 			throw new IllegalStateException(String.format("Unknown ID generation source configured: %s. ", conf.getIdGenerationStrategy()));
@@ -92,5 +80,14 @@ public class SnomedIdentifierServiceFactory {
 
 		reservationService.create(IDENTIFIER_SERVICE_RESERVATIONS, identifierService);
 		env.services().registerService(ISnomedIdentifierService.class, identifierService);
+	}
+
+	private static Provider<SnomedTerminologyBrowser> getTerminologyBrowserProvider() {
+		return new Provider<SnomedTerminologyBrowser>() {
+			@Override
+			public SnomedTerminologyBrowser get() {
+				return ApplicationContext.getInstance().getService(SnomedTerminologyBrowser.class);
+			}
+		};
 	}
 }
