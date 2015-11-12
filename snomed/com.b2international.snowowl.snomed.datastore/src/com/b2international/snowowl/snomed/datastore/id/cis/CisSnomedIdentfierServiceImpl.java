@@ -26,8 +26,9 @@ import org.apache.http.client.methods.HttpPut;
 import org.apache.http.client.methods.HttpRequestBase;
 
 import com.b2international.snowowl.core.terminology.ComponentCategory;
+import com.b2international.snowowl.snomed.datastore.SnomedTerminologyBrowser;
 import com.b2international.snowowl.snomed.datastore.config.SnomedCoreConfiguration;
-import com.b2international.snowowl.snomed.datastore.id.ISnomedIdentifierService;
+import com.b2international.snowowl.snomed.datastore.id.AbstractSnomedIdentifierServiceImpl;
 import com.b2international.snowowl.snomed.datastore.id.SnomedIdentifier;
 import com.b2international.snowowl.snomed.datastore.id.SnomedIdentifiers;
 import com.b2international.snowowl.snomed.datastore.id.cis.request.DeprecationData;
@@ -37,13 +38,14 @@ import com.b2international.snowowl.snomed.datastore.id.cis.request.RegistrationD
 import com.b2international.snowowl.snomed.datastore.id.cis.request.ReleaseData;
 import com.b2international.snowowl.snomed.datastore.id.cis.request.ReservationData;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.inject.Provider;
 
 /**
  * CIS (IHTSDO) based implementation of the identifier service.
  * 
  * @since 4.5
  */
-public class CisSnomedIdentfierServiceImpl implements ISnomedIdentifierService {
+public class CisSnomedIdentfierServiceImpl extends AbstractSnomedIdentifierServiceImpl {
 
 	private String clientKey;
 	private final String username;
@@ -54,7 +56,8 @@ public class CisSnomedIdentfierServiceImpl implements ISnomedIdentifierService {
 
 	private final ObjectMapper mapper = new ObjectMapper();
 
-	public CisSnomedIdentfierServiceImpl(final SnomedCoreConfiguration conf) {
+	public CisSnomedIdentfierServiceImpl(final SnomedCoreConfiguration conf, final Provider<SnomedTerminologyBrowser> provider) {
+		super(provider);
 		this.clientKey = conf.getCisClientSoftwareKey();
 		this.username = conf.getCisUserName();
 		this.password = conf.getCisPassword();
@@ -66,7 +69,7 @@ public class CisSnomedIdentfierServiceImpl implements ISnomedIdentifierService {
 	@Override
 	public boolean includes(final SnomedIdentifier identifier) {
 		final SctId sctId = getSctId(identifier);
-		return sctId.getStatus().equals(IdentifierStatus.AVAILABLE.getSerializedName());
+		return super.includes(identifier) || sctId.getStatus().equals(IdentifierStatus.AVAILABLE.getSerializedName());
 	}
 
 	@Override
@@ -178,7 +181,7 @@ public class CisSnomedIdentfierServiceImpl implements ISnomedIdentifierService {
 			logout(token);
 		}
 	}
-
+	
 	public SctId getSctId(final SnomedIdentifier identifier) {
 		HttpGet request = null;
 		final String token = login();

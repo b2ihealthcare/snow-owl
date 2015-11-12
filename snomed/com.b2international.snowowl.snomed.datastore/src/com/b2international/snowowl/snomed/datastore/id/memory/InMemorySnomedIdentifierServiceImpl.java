@@ -15,27 +15,28 @@
  */
 package com.b2international.snowowl.snomed.datastore.id.memory;
 
-import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
 
 import java.util.Set;
 
 import com.b2international.commons.VerhoeffCheck;
 import com.b2international.snowowl.core.terminology.ComponentCategory;
-import com.b2international.snowowl.snomed.datastore.id.ISnomedIdentifierService;
+import com.b2international.snowowl.snomed.datastore.SnomedTerminologyBrowser;
+import com.b2international.snowowl.snomed.datastore.id.AbstractSnomedIdentifierServiceImpl;
 import com.b2international.snowowl.snomed.datastore.id.SnomedIdentifier;
 import com.b2international.snowowl.snomed.datastore.id.SnomedIdentifiers;
 import com.b2international.snowowl.snomed.datastore.id.gen.ItemIdGenerationStrategy;
 import com.b2international.snowowl.snomed.datastore.id.reservations.ISnomedIdentiferReservationService;
 import com.google.common.base.Strings;
 import com.google.common.collect.Sets;
+import com.google.inject.Provider;
 
 /**
  * In memory implementation of the identifier service.
  * 
  * @since 4.5
  */
-public class InMemorySnomedIdentifierServiceImpl implements ISnomedIdentifierService {
+public class InMemorySnomedIdentifierServiceImpl extends AbstractSnomedIdentifierServiceImpl {
 
 	private ISnomedIdentiferReservationService reservationService;
 	private ItemIdGenerationStrategy generationStrategy;
@@ -43,15 +44,15 @@ public class InMemorySnomedIdentifierServiceImpl implements ISnomedIdentifierSer
 	// TODO update that this contains only IDs during transactions
 	private Set<String> reservedComponentIds = Sets.newHashSet();
 
-	public InMemorySnomedIdentifierServiceImpl(final ISnomedIdentiferReservationService reservationService,
-			final ItemIdGenerationStrategy generationStrategy) {
-		this.reservationService = reservationService;
+	public InMemorySnomedIdentifierServiceImpl(final ItemIdGenerationStrategy generationStrategy,
+			final Provider<SnomedTerminologyBrowser> provider) {
+		super(provider);
 		this.generationStrategy = generationStrategy;
 	}
 
 	@Override
 	public boolean includes(final SnomedIdentifier identifier) {
-		return reservedComponentIds.contains(identifier.toString());
+		return super.includes(identifier) || reservedComponentIds.contains(identifier.toString());
 	}
 
 	@Override
@@ -101,11 +102,6 @@ public class InMemorySnomedIdentifierServiceImpl implements ISnomedIdentifierSer
 	public void publish(final SnomedIdentifier identifier) {
 		// TODO what to do in memory implementation?
 		// do nothing for now
-	}
-
-	private void checkCategory(ComponentCategory category) {
-		checkArgument(category == ComponentCategory.CONCEPT || category == ComponentCategory.DESCRIPTION
-				|| category == ComponentCategory.RELATIONSHIP, "Cannot generate ID for componentCategory %s", category);
 	}
 
 	private String generateId(final String namespace, final ComponentCategory category) {
