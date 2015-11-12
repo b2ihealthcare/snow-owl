@@ -227,10 +227,9 @@ public abstract class TerminologyBrowserFilterJob<K, C extends IComponent<K>> ex
 			return Status.CANCEL_STATUS;
 		}
 		
-		final int size = filteredBrowser.size();
-		count = size;
-
-		if (size < 1) {
+		count = filteredBrowser.size();
+		
+		if (isEmpty(filteredBrowser)) {
 			filteredBrowser = EmptyTerminologyBrowser.<C, K>getInstance();
 			state = FilterJobState.NO_RESULT;
 			return Status.OK_STATUS;
@@ -241,6 +240,10 @@ public abstract class TerminologyBrowserFilterJob<K, C extends IComponent<K>> ex
 		return Status.OK_STATUS;
 	}
 
+	protected boolean isEmpty(IFilterClientTerminologyBrowser<C, K> filteredTerminologyBrowser) {
+		return filteredTerminologyBrowser.size() < 1;
+	}
+	
 	/**
 	 * Returns with the delay before scheduling the current job instance.
 	 * <p>Clients may specify some different value.
