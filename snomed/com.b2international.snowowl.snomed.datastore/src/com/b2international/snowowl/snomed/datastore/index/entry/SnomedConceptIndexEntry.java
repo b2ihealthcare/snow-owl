@@ -17,8 +17,13 @@ package com.b2international.snowowl.snomed.datastore.index.entry;
 
 import java.io.Serializable;
 
+import org.apache.lucene.document.Document;
+
+import com.b2international.commons.BooleanUtils;
 import com.b2international.snowowl.core.api.IComponent;
 import com.b2international.snowowl.core.api.index.IIndexEntry;
+import com.b2international.snowowl.datastore.index.mapping.Mappings;
+import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedMappings;
 
 /**
  * A transfer object representing a SNOMED CT concept.
@@ -29,6 +34,19 @@ public class SnomedConceptIndexEntry extends SnomedIndexEntry implements ICompon
 
 	public static Builder builder() {
 		return new Builder();
+	}
+	
+	public static Builder builder(final Document doc) {
+		return builder()
+				.id(SnomedMappings.id().getValueAsString(doc))
+				.moduleId(SnomedMappings.module().getValueAsString(doc))
+				.storageKey(Mappings.storageKey().getValue(doc))
+				.active(BooleanUtils.valueOf(SnomedMappings.active().getValue(doc).intValue())) 
+				.released(BooleanUtils.valueOf(SnomedMappings.released().getValue(doc).intValue()))
+				.effectiveTimeLong(SnomedMappings.effectiveTime().getValue(doc))
+				.iconId(Mappings.iconId().getValue(doc))
+				.primitive(BooleanUtils.valueOf(SnomedMappings.primitive().getValue(doc).intValue()))
+				.exhaustive(BooleanUtils.valueOf(SnomedMappings.exhaustive().getValue(doc).intValue()));
 	}
 
 	public static class Builder extends AbstractBuilder<Builder> {

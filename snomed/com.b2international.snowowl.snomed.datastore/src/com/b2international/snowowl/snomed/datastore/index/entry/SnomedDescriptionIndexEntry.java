@@ -20,9 +20,15 @@ import static com.google.common.base.Preconditions.checkNotNull;
 import java.io.Serializable;
 import java.util.Map;
 
+import org.apache.lucene.document.Document;
+
+import com.b2international.commons.BooleanUtils;
 import com.b2international.snowowl.core.api.IComponent;
 import com.b2international.snowowl.core.api.index.IIndexEntry;
+import com.b2international.snowowl.datastore.index.mapping.Mappings;
 import com.b2international.snowowl.snomed.core.domain.Acceptability;
+import com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants;
+import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedMappings;
 import com.google.common.base.Objects;
 import com.google.common.collect.ImmutableMap;
 
@@ -36,6 +42,20 @@ public class SnomedDescriptionIndexEntry extends SnomedIndexEntry implements ICo
 	public static Builder builder() {
 		return new Builder();
 	}
+	
+	public static Builder builder(final Document doc) {
+		return builder()
+				.id(SnomedMappings.id().getValueAsString(doc)) 
+				.term(Mappings.label().getValue(doc)) 
+				.moduleId(SnomedMappings.module().getValueAsString(doc)) 
+				.storageKey(Mappings.storageKey().getValue(doc))
+				.released(BooleanUtils.valueOf(doc.getField(SnomedIndexBrowserConstants.COMPONENT_RELEASED).numericValue().intValue()))
+				.active(BooleanUtils.valueOf(SnomedMappings.active().getValue(doc)))
+				.typeId(SnomedMappings.descriptionType().getValueAsString(doc))
+				.conceptId(SnomedMappings.descriptionConcept().getValueAsString(doc))
+				.caseSignificanceId(doc.getField(SnomedIndexBrowserConstants.DESCRIPTION_CASE_SIGNIFICANCE_ID).stringValue())
+				.effectiveTimeLong(SnomedMappings.effectiveTime().getValue(doc));
+	}
 
 	public static class Builder extends AbstractBuilder<Builder> {
 
@@ -44,7 +64,7 @@ public class SnomedDescriptionIndexEntry extends SnomedIndexEntry implements ICo
 		private String languageCode = "en"; // FIXME: Should not be optional once it is indexed
 		private String typeId;
 		private String caseSignificanceId;
-		private ImmutableMap.Builder<String, Acceptability> acceptabilityMapBuilder;
+		private final ImmutableMap.Builder<String, Acceptability> acceptabilityMapBuilder = ImmutableMap.builder();
 
 		private Builder() {
 			// Disallow instantiation outside static method

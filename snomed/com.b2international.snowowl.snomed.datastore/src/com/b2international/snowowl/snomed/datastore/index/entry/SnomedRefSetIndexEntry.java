@@ -20,10 +20,16 @@ import static com.google.common.base.Preconditions.checkNotNull;
 
 import java.io.Serializable;
 
+import org.apache.lucene.document.Document;
+
+import com.b2international.commons.BooleanUtils;
 import com.b2international.snowowl.core.CoreTerminologyBroker;
 import com.b2international.snowowl.core.api.IComponent;
+import com.b2international.snowowl.datastore.index.mapping.Mappings;
 import com.b2international.snowowl.snomed.datastore.IRefSetComponent;
 import com.b2international.snowowl.snomed.datastore.SnomedRefSetUtil;
+import com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants;
+import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedMappings;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType;
 
 /**
@@ -35,6 +41,19 @@ public class SnomedRefSetIndexEntry extends SnomedIndexEntry implements IRefSetC
 
 	public static Builder builder() {
 		return new Builder();
+	}
+	
+	public static Builder builder(final Document doc) {
+		return builder()
+				.id(SnomedMappings.id().getValueAsString(doc))
+				.moduleId(SnomedMappings.module().getValueAsString(doc))
+				.storageKey(SnomedMappings.refSetStorageKey().getValue(doc)) // XXX: This is different than the concept's storage key
+				.active(BooleanUtils.valueOf(SnomedMappings.active().getValue(doc).intValue())) 
+				.released(BooleanUtils.valueOf(SnomedMappings.released().getValue(doc).intValue()))
+				.effectiveTimeLong(SnomedMappings.effectiveTime().getValue(doc))
+				.type(SnomedRefSetType.get(Mappings.intField(SnomedIndexBrowserConstants.REFERENCE_SET_TYPE).getValue(doc)))
+				.referencedComponentType(Mappings.intField(SnomedIndexBrowserConstants.REFERENCE_SET_REFERENCED_COMPONENT_TYPE).getShortValue(doc));
+				// TODO: .mapTargetComponentType(...) is not indexed yet
 	}
 
 	public static class Builder extends AbstractBuilder<Builder> {

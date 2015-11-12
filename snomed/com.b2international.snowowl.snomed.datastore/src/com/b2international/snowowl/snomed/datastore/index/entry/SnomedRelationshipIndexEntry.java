@@ -15,16 +15,27 @@
  */
 package com.b2international.snowowl.snomed.datastore.index.entry;
 
+import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.RELATIONSHIP_DESTINATION_NEGATED;
+import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.RELATIONSHIP_GROUP;
+import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.RELATIONSHIP_OBJECT_ID;
+import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.RELATIONSHIP_UNION_GROUP;
+import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.RELATIONSHIP_UNIVERSAL;
+import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.RELATIONSHIP_VALUE_ID;
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
 
 import java.io.Serializable;
 
+import org.apache.lucene.document.Document;
+
+import com.b2international.commons.BooleanUtils;
 import com.b2international.snowowl.core.api.IComponent;
 import com.b2international.snowowl.core.api.IStatement;
 import com.b2international.snowowl.core.api.index.IIndexEntry;
+import com.b2international.snowowl.datastore.index.mapping.Mappings;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.core.domain.CharacteristicType;
+import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedMappings;
 
 /**
  * A transfer object representing a SNOMED CT description.
@@ -35,6 +46,24 @@ public class SnomedRelationshipIndexEntry extends SnomedIndexEntry implements IS
 
 	public static Builder builder() {
 		return new Builder();
+	}
+	
+	public static Builder builder(final Document doc) {
+		return builder()
+				.id(SnomedMappings.id().getValueAsString(doc))
+				.sourceId(doc.get(RELATIONSHIP_OBJECT_ID))
+				.typeId(SnomedMappings.relationshipType().getValueAsString(doc))
+				.destinationId(doc.get(RELATIONSHIP_VALUE_ID))
+				.characteristicTypeId(SnomedMappings.relationshipCharacteristicType().getValueAsString(doc))
+				.group((byte) doc.getField(RELATIONSHIP_GROUP).numericValue().intValue())
+				.unionGroup((byte) doc.getField(RELATIONSHIP_UNION_GROUP).numericValue().intValue())
+				.active(BooleanUtils.valueOf(SnomedMappings.active().getValue(doc)))
+				.released(BooleanUtils.valueOf(SnomedMappings.released().getValue(doc)))
+				.modifierId(BooleanUtils.valueOf(Mappings.intField(RELATIONSHIP_UNIVERSAL).getValue(doc)) ? Concepts.UNIVERSAL_RESTRICTION_MODIFIER : Concepts.EXISTENTIAL_RESTRICTION_MODIFIER)
+				.destinationNegated(BooleanUtils.valueOf(Mappings.intField(RELATIONSHIP_DESTINATION_NEGATED).getValue(doc)))
+				.moduleId(SnomedMappings.module().getValueAsString(doc))
+				.storageKey(Mappings.storageKey().getValue(doc))
+				.effectiveTimeLong(SnomedMappings.effectiveTime().getValue(doc));
 	}
 
 	public static class Builder extends AbstractBuilder<Builder> {

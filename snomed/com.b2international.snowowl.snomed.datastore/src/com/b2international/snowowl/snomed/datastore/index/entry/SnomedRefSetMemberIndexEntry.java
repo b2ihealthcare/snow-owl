@@ -22,29 +22,102 @@ import java.io.Serializable;
 import java.math.BigDecimal;
 import java.util.Date;
 import java.util.Map;
+import java.util.Set;
 
+import org.apache.lucene.document.Document;
+import org.apache.lucene.index.IndexableField;
+
+import com.b2international.commons.BooleanUtils;
 import com.b2international.commons.functions.UncheckedCastFunction;
 import com.b2international.snowowl.core.CoreTerminologyBroker;
 import com.b2international.snowowl.core.api.IComponent;
+import com.b2international.snowowl.datastore.index.mapping.Mappings;
 import com.b2international.snowowl.snomed.core.domain.Acceptability;
 import com.b2international.snowowl.snomed.core.domain.InactivationIndicator;
 import com.b2international.snowowl.snomed.core.domain.RelationshipRefinability;
+import com.b2international.snowowl.snomed.datastore.SnomedRefSetUtil;
 import com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants;
+import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedMappings;
 import com.b2international.snowowl.snomed.snomedrefset.DataType;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType;
 import com.google.common.base.Function;
 import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
 
 /**
  * Lightweight representation of a SNOMED CT reference set member.
  */
 public class SnomedRefSetMemberIndexEntry extends SnomedIndexEntry implements IComponent<String>, Serializable {
 
+	private static final Set<String> ADDITIONAL_FIELDS = ImmutableSet.<String>builder()
+			.add(SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_ACCEPTABILITY_ID)
+			.add(SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_VALUE_ID)
+			.add(SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_TARGET_COMPONENT_ID)
+			.add(SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_MAP_TARGET_COMPONENT_ID)
+			.add(SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_MAP_TARGET_COMPONENT_DESCRIPTION)
+			.add(SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_MAP_GROUP)
+			.add(SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_MAP_PRIORITY)
+			.add(SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_MAP_RULE)
+			.add(SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_MAP_ADVICE)
+			.add(SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_MAP_CATEGORY_ID)
+			.add(SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_CORRELATION_ID)
+			.add(SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_DESCRIPTION_FORMAT_ID)
+			.add(SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_DESCRIPTION_LENGTH)
+			.add(SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_OPERATOR_ID)
+			.add(SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_CONTAINER_MODULE_ID)
+			.add(SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_UOM_ID)
+			.add(SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_DATA_TYPE_LABEL)
+			.add(SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_DATA_TYPE_VALUE)
+			.add(SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_CHARACTERISTIC_TYPE_ID)
+			.add(SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_QUERY)
+			.add(SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_SOURCE_EFFECTIVE_TIME)
+			.add(SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_TARGET_EFFECTIVE_TIME)
+			.build();
+
+	/**
+	 * @param name the field name to check
+	 * @return {@code true} if the specified field name is valid as an additional {@code String} or {@link Number} value, {@code false} otherwise
+	 */
+	public static boolean isAdditionalField(final String name) {
+		return ADDITIONAL_FIELDS.contains(name);
+	}
+	
 	private static final long serialVersionUID = 3504576207161692354L;
 
 	public static Builder builder() {
 		return new Builder();
+	}
+	
+	public static Builder builder(final Document doc) {
+		final SnomedRefSetType refSetType = SnomedRefSetType.get(SnomedMappings.memberRefSetType().getValue(doc));
+		final Builder builder = builder() 
+				.active(BooleanUtils.valueOf(SnomedMappings.active().getValue(doc)))
+				.effectiveTimeLong(SnomedMappings.effectiveTime().getValue(doc))
+				.id(Mappings.stringField(SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_UUID).getValue(doc))
+				.moduleId(SnomedMappings.module().getValueAsString(doc))
+				.referencedComponentId(SnomedMappings.memberReferencedComponentId().getValueAsString(doc))
+				.referencedComponentType(SnomedMappings.memberReferencedComponentType().getShortValue(doc))
+				.referenceSetId(SnomedMappings.memberRefSetId().getValueAsString(doc))
+				.referenceSetType(refSetType)
+				.released(BooleanUtils.valueOf(SnomedMappings.released().getValue(doc)))
+				.storageKey(Mappings.storageKey().getValue(doc));
+		
+		if (SnomedRefSetUtil.isMapping(refSetType)) {
+			builder.mapTargetComponentType(Mappings.intField(SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_MAP_TARGET_COMPONENT_TYPE_ID).getShortValue(doc));
+		}
+		
+		for (IndexableField storedField : doc) {
+			if (SnomedRefSetMemberIndexEntry.isAdditionalField(storedField.name())) {
+				if (storedField.numericValue() != null) {
+					builder.additionalField(storedField.name(), storedField.numericValue());
+				} else {
+					builder.additionalField(storedField.name(), storedField.stringValue());
+				}
+			}
+		}
+		
+		return builder;
 	}
 
 	public static class Builder extends AbstractBuilder<Builder> {
