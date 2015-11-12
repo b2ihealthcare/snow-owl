@@ -15,11 +15,15 @@
  */
 package com.b2international.snowowl.snomed.datastore.factory;
 
+import org.eclipse.emf.spi.cdo.FSMUtil;
+
 import com.b2international.commons.TypeSafeAdapterFactory;
 import com.b2international.snowowl.core.api.IComponent;
 import com.b2international.snowowl.core.date.EffectiveTimes;
+import com.b2international.snowowl.datastore.BranchPathUtils;
 import com.b2international.snowowl.datastore.cdo.CDOUtils;
 import com.b2international.snowowl.snomed.Concept;
+import com.b2international.snowowl.snomed.datastore.SnomedConceptLookupService;
 import com.b2international.snowowl.snomed.datastore.SnomedIconProvider;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptIndexEntry;
 
@@ -42,17 +46,23 @@ public class SnomedConceptAdapterFactory extends TypeSafeAdapterFactory {
 		if (adaptableObject instanceof Concept) {
 
 			final Concept concept = (Concept) adaptableObject;
-			final SnomedConceptIndexEntry adaptedEntry = SnomedConceptIndexEntry.builder()
-					.id(concept.getId())
-					.iconId(SnomedIconProvider.getInstance().getIconComponentId(concept.getId())) 
-					.moduleId(concept.getModule().getId()) 
-					.storageKey(CDOUtils.getStorageKey(concept))
-					.active(concept.isActive())
-					.primitive(concept.isPrimitive())
-					.exhaustive(concept.isExhaustive())
-					.released(concept.isReleased()) 
-					.effectiveTimeLong(concept.isSetEffectiveTime() ? concept.getEffectiveTime().getTime() : EffectiveTimes.UNSET_EFFECTIVE_TIME)
-					.build();
+			final SnomedConceptIndexEntry adaptedEntry;
+			
+			if (FSMUtil.isClean(concept) && !concept.cdoRevision().isHistorical()) {
+				adaptedEntry = new SnomedConceptLookupService().getComponent(BranchPathUtils.createPath(concept), concept.getId());
+			} else {
+				adaptedEntry = SnomedConceptIndexEntry.builder()
+						.id(concept.getId())
+						.iconId(SnomedIconProvider.getInstance().getIconComponentId(concept.getId())) 
+						.moduleId(concept.getModule().getId()) 
+						.storageKey(CDOUtils.getStorageKey(concept))
+						.active(concept.isActive())
+						.primitive(concept.isPrimitive())
+						.exhaustive(concept.isExhaustive())
+						.released(concept.isReleased()) 
+						.effectiveTimeLong(concept.isSetEffectiveTime() ? concept.getEffectiveTime().getTime() : EffectiveTimes.UNSET_EFFECTIVE_TIME)
+						.build();
+			}
 
 			return adapterType.cast(adaptedEntry);
 		}

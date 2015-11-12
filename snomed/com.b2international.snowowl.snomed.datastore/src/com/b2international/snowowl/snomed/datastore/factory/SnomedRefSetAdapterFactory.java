@@ -15,12 +15,16 @@
  */
 package com.b2international.snowowl.snomed.datastore.factory;
 
+import org.eclipse.emf.spi.cdo.FSMUtil;
+
 import com.b2international.commons.TypeSafeAdapterFactory;
 import com.b2international.snowowl.core.api.IComponent;
 import com.b2international.snowowl.core.date.EffectiveTimes;
+import com.b2international.snowowl.datastore.BranchPathUtils;
 import com.b2international.snowowl.datastore.cdo.CDOIDUtils;
 import com.b2international.snowowl.snomed.Concept;
 import com.b2international.snowowl.snomed.datastore.SnomedConceptLookupService;
+import com.b2international.snowowl.snomed.datastore.SnomedRefSetLookupService;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetIndexEntry;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetIndexEntry.Builder;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedMappingRefSet;
@@ -46,22 +50,30 @@ public class SnomedRefSetAdapterFactory extends TypeSafeAdapterFactory {
 		if (adaptableObject instanceof SnomedRefSet) {
 			final SnomedRefSet refSet = (SnomedRefSet) adaptableObject;
 			final Concept identifierConcept = new SnomedConceptLookupService().getComponent(refSet.getIdentifierId(), refSet.cdoView());
-			final Builder builder = SnomedRefSetIndexEntry.builder()
-					.id(refSet.getIdentifierId()) 
-					.moduleId(identifierConcept.getModule().getId())
-					.storageKey(CDOIDUtils.asLongSafe(refSet.cdoID()))
-					.active(identifierConcept.isActive())
-					.released(identifierConcept.isReleased())
-					.effectiveTimeLong(identifierConcept.isSetEffectiveTime() ? identifierConcept.getEffectiveTime().getTime() : EffectiveTimes.UNSET_EFFECTIVE_TIME)
-					.type(refSet.getType()) 
-					.referencedComponentType(refSet.getReferencedComponentType())
-					.structural(refSet instanceof SnomedStructuralRefSet);
-
-			if (refSet instanceof SnomedMappingRefSet) {
-				builder.mapTargetComponentType(((SnomedMappingRefSet) refSet).getMapTargetComponentType());
+			final SnomedRefSetIndexEntry refSetIndexEntry;
+			
+			if (FSMUtil.isClean(refSet) && FSMUtil.isClean(identifierConcept) && !refSet.cdoRevision().isHistorical() && !identifierConcept.cdoRevision().isHistorical()) {
+				refSetIndexEntry = new SnomedRefSetLookupService().getComponent(BranchPathUtils.createPath(refSet), refSet.getIdentifierId());
+			} else {
+				final Builder builder = SnomedRefSetIndexEntry.builder()
+						.id(refSet.getIdentifierId()) 
+						.moduleId(identifierConcept.getModule().getId())
+						.storageKey(CDOIDUtils.asLongSafe(refSet.cdoID()))
+						.active(identifierConcept.isActive())
+						.released(identifierConcept.isReleased())
+						.effectiveTimeLong(identifierConcept.isSetEffectiveTime() ? identifierConcept.getEffectiveTime().getTime() : EffectiveTimes.UNSET_EFFECTIVE_TIME)
+						.type(refSet.getType()) 
+						.referencedComponentType(refSet.getReferencedComponentType())
+						.structural(refSet instanceof SnomedStructuralRefSet);
+	
+				if (refSet instanceof SnomedMappingRefSet) {
+					builder.mapTargetComponentType(((SnomedMappingRefSet) refSet).getMapTargetComponentType());
+				}
+				
+				refSetIndexEntry = builder.build();
 			}
 
-			return adapterType.cast(builder.build());
+			return adapterType.cast(refSetIndexEntry);
 		}
 
 		return null;

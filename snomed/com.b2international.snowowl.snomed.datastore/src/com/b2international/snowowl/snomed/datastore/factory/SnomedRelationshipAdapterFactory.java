@@ -15,11 +15,15 @@
  */
 package com.b2international.snowowl.snomed.datastore.factory;
 
+import org.eclipse.emf.spi.cdo.FSMUtil;
+
 import com.b2international.commons.TypeSafeAdapterFactory;
 import com.b2international.snowowl.core.api.IComponent;
 import com.b2international.snowowl.core.date.EffectiveTimes;
+import com.b2international.snowowl.datastore.BranchPathUtils;
 import com.b2international.snowowl.datastore.cdo.CDOUtils;
 import com.b2international.snowowl.snomed.Relationship;
+import com.b2international.snowowl.snomed.datastore.SnomedRelationshipLookupService;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRelationshipIndexEntry;
 
 /**
@@ -41,22 +45,28 @@ public class SnomedRelationshipAdapterFactory extends TypeSafeAdapterFactory {
 		if (adaptableObject instanceof Relationship) {
 
 			final Relationship relationship = (Relationship) adaptableObject;
-			final SnomedRelationshipIndexEntry adaptedEntry = SnomedRelationshipIndexEntry.builder()
-					.id(relationship.getId())
-					.storageKey(CDOUtils.getStorageKey(relationship))
-					.moduleId(relationship.getModule().getId())
-					.released(relationship.isReleased())
-					.active(relationship.isActive())
-					.effectiveTimeLong(relationship.isSetEffectiveTime() ? relationship.getEffectiveTime().getTime() : EffectiveTimes.UNSET_EFFECTIVE_TIME)
-					.sourceId(relationship.getSource().getId())
-					.typeId(relationship.getType().getId())
-					.destinationId(relationship.getDestination().getId())
-					.characteristicTypeId(relationship.getCharacteristicType().getId())
-					.modifierId(relationship.getModifier().getId())
-					.group((byte) relationship.getGroup())
-					.unionGroup((byte) relationship.getUnionGroup())
-					.destinationNegated(relationship.isDestinationNegated())
-					.build();
+			final SnomedRelationshipIndexEntry adaptedEntry;
+			
+			if (FSMUtil.isClean(relationship) && !relationship.cdoRevision().isHistorical()) {
+				adaptedEntry = new SnomedRelationshipLookupService().getComponent(BranchPathUtils.createPath(relationship), relationship.getId());
+			} else {
+				adaptedEntry = SnomedRelationshipIndexEntry.builder()
+						.id(relationship.getId())
+						.storageKey(CDOUtils.getStorageKey(relationship))
+						.moduleId(relationship.getModule().getId())
+						.released(relationship.isReleased())
+						.active(relationship.isActive())
+						.effectiveTimeLong(relationship.isSetEffectiveTime() ? relationship.getEffectiveTime().getTime() : EffectiveTimes.UNSET_EFFECTIVE_TIME)
+						.sourceId(relationship.getSource().getId())
+						.typeId(relationship.getType().getId())
+						.destinationId(relationship.getDestination().getId())
+						.characteristicTypeId(relationship.getCharacteristicType().getId())
+						.modifierId(relationship.getModifier().getId())
+						.group((byte) relationship.getGroup())
+						.unionGroup((byte) relationship.getUnionGroup())
+						.destinationNegated(relationship.isDestinationNegated())
+						.build();
+			}
 
 			return adapterType.cast(adaptedEntry);
 		}
