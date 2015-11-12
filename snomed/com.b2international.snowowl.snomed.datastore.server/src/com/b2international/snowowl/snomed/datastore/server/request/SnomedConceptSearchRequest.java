@@ -63,14 +63,14 @@ final class SnomedConceptSearchRequest extends SearchRequest<SnomedConcepts> {
 	}
 
 	private IIndexQueryAdapter<SnomedConceptIndexEntry> getQuery(RepositoryContext context, IBranchPath branch) {
-		if (parameters().isEmpty()) {
+		if (options().isEmpty()) {
 			return new SnomedConceptReducedQueryAdapter();
 		} else {
 			final Query restrictionQuery;
 			
-			if (parameters().containsKey(SearchKind.ESCG.name())) {
+			if (options().containsKey(SearchKind.ESCG.name())) {
 				try {
-					restrictionQuery = context.service(IEscgQueryEvaluatorService.class).evaluateBooleanQuery(branch, parameters().get(SearchKind.ESCG.name()));
+					restrictionQuery = context.service(IEscgQueryEvaluatorService.class).evaluateBooleanQuery(branch, options().getString(SearchKind.ESCG.name()));
 				} catch (final SyntaxErrorException e) {
 					throw new IllegalQueryParameterException(e.getMessage());
 				}
@@ -78,7 +78,7 @@ final class SnomedConceptSearchRequest extends SearchRequest<SnomedConcepts> {
 				restrictionQuery = new MatchAllDocsQuery();
 			}
 			
-			final String label = Strings.nullToEmpty(parameters().get(SearchKind.LABEL.name()));
+			final String label = Strings.nullToEmpty(options().getString(SearchKind.LABEL.name()));
 			return new SnomedDOIQueryAdapter(label, "", restrictionQuery);
 		}
 	}

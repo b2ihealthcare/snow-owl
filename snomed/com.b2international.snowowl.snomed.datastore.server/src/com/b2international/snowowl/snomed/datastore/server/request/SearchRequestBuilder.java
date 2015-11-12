@@ -15,10 +15,7 @@
  */
 package com.b2international.snowowl.snomed.datastore.server.request;
 
-import static com.google.common.collect.Maps.newHashMap;
-
-import java.util.Map;
-
+import com.b2international.commons.options.OptionsBuilder;
 import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.events.Request;
@@ -34,7 +31,7 @@ public abstract class SearchRequestBuilder<B extends SearchRequestBuilder<B, R>,
 	
 	private int offset = 0;
 	private int limit = 50;
-	private final Map<String, String> parameters = newHashMap();
+	private final OptionsBuilder options = OptionsBuilder.newBuilder();
 	
 	protected SearchRequestBuilder(String repositoryId) {
 		this.repositoryId = repositoryId;
@@ -54,8 +51,8 @@ public abstract class SearchRequestBuilder<B extends SearchRequestBuilder<B, R>,
 		return setLimit(Integer.MAX_VALUE);
 	}
 	
-	protected final B match(String key, String value) {
-		parameters.put(key, value);
+	protected final B addOption(String key, String value) {
+		options.put(key, value);
 		return getSelf();
 	}
 	
@@ -68,7 +65,7 @@ public abstract class SearchRequestBuilder<B extends SearchRequestBuilder<B, R>,
 		final SearchRequest<R> req = create();
 		req.setLimit(limit);
 		req.setOffset(offset);
-		req.setParameters(parameters);
+		req.setOptions(options.build());
 		return req;
 	}
 	

@@ -33,7 +33,7 @@ public final class SnomedRefSetMemberSearchRequestBuilder extends SearchRequestB
 	}
 	
 	public SnomedRefSetMemberSearchRequestBuilder filterByRefSet(String referenceSetId) {
-		return match(SnomedMappings.memberRefSetId().fieldName(), referenceSetId);
+		return addOption(SnomedMappings.memberRefSetId().fieldName(), referenceSetId);
 	}
 
 }

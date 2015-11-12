@@ -15,11 +15,10 @@
  */
 package com.b2international.snowowl.snomed.datastore.server.request;
 
-import java.util.Map;
-
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
 
+import com.b2international.commons.options.Options;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.events.BaseRequest;
 
@@ -35,7 +34,7 @@ public abstract class SearchRequest<B> extends BaseRequest<BranchContext, B> {
 	private int limit;
 	
 	@NotNull
-	private Map<String, String> parameters;
+	private Options options;
 	
 	protected SearchRequest() {}
 	
@@ -47,8 +46,8 @@ public abstract class SearchRequest<B> extends BaseRequest<BranchContext, B> {
 		this.offset = offset;
 	}
 	
-	void setParameters(Map<String, String> parameters) {
-		this.parameters = parameters;
+	void setOptions(Options options) {
+		this.options = options;
 	}
 	
 	protected final int offset() {
@@ -59,8 +58,8 @@ public abstract class SearchRequest<B> extends BaseRequest<BranchContext, B> {
 		return this.limit;
 	}
 	
-	protected final Map<String, String> parameters() {
-		return parameters;
+	protected final Options options() {
+		return options;
 	}
 	
 }

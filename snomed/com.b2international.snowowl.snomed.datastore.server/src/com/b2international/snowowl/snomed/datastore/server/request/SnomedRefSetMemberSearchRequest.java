@@ -44,7 +44,7 @@ public class SnomedRefSetMemberSearchRequest extends SearchRequest<SnomedReferen
 		final SnomedRefSetBrowser browser = context.service(SnomedRefSetBrowser.class);
 		// TODO convert this to proper index query when index API is ready
 		// TODO fix collection like parameters
-		final Collection<String> referenceSetIds = newArrayList(parameters().get(SnomedMappings.memberRefSetId().fieldName()));
+		final Collection<String> referenceSetIds = newArrayList(options().getString(SnomedMappings.memberRefSetId().fieldName()));
 		final List<SnomedReferenceSetMember> members = FluentIterable
 			.from(browser.getAllRefSetIds(branchPath))
 			.filter(new Predicate<String>() {

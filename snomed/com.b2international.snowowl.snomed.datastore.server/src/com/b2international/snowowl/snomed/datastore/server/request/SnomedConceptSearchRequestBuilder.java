@@ -30,14 +30,14 @@ public final class SnomedConceptSearchRequestBuilder extends SearchRequestBuilde
 
 	public final SnomedConceptSearchRequestBuilder filterByLabel(String label) {
 		if (!Strings.isNullOrEmpty(label)) {
-			match(SearchKind.LABEL.name(), label);
+			addOption(SearchKind.LABEL.name(), label);
 		}
 		return getSelf();
 	}
 	
 	public final SnomedConceptSearchRequestBuilder filterByEscg(String escg) {
 		if (!Strings.isNullOrEmpty(escg)) {
-			match(SearchKind.ESCG.name(), escg);
+			addOption(SearchKind.ESCG.name(), escg);
 		}
 		return getSelf();
 	}
