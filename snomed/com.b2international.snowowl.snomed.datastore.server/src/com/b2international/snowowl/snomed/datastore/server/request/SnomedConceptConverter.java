@@ -16,6 +16,7 @@
 package com.b2international.snowowl.snomed.datastore.server.request;
 
 import java.util.Collection;
+import java.util.List;
 
 import com.b2international.snowowl.snomed.Concept;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
@@ -28,6 +29,7 @@ import com.b2international.snowowl.snomed.core.domain.SubclassDefinitionStatus;
 import com.b2international.snowowl.snomed.datastore.SnomedConceptIndexEntry;
 import com.b2international.snowowl.snomed.datastore.index.refset.SnomedRefSetMemberIndexEntry;
 import com.b2international.snowowl.snomed.datastore.services.AbstractSnomedRefSetMembershipLookupService;
+import com.google.common.collect.FluentIterable;
 import com.google.common.collect.ImmutableList;
 
 public class SnomedConceptConverter extends AbstractSnomedComponentConverter<SnomedConceptIndexEntry, ISnomedConcept> {
@@ -86,6 +88,10 @@ public class SnomedConceptConverter extends AbstractSnomedComponentConverter<Sno
 		}
 
 		return null;
+	}
+
+	public List<ISnomedConcept> convert(Collection<SnomedConceptIndexEntry> entries) {
+		return FluentIterable.from(entries).transform(this).toList();
 	}
 
 }
