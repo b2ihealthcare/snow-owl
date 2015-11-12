@@ -15,8 +15,11 @@
  */
 package com.b2international.snowowl.snomed.datastore.server.request;
 
+import java.util.List;
+
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.domain.BranchContext;
+import com.b2international.snowowl.core.events.BaseRequest;
 import com.b2international.snowowl.core.exceptions.ComponentNotFoundException;
 import com.b2international.snowowl.snomed.core.domain.SnomedReferenceSet;
 import com.b2international.snowowl.snomed.datastore.SnomedRefSetLookupService;
@@ -25,12 +28,14 @@ import com.b2international.snowowl.snomed.datastore.index.refset.SnomedRefSetInd
 /**
  * @since 4.5
  */
-final class SnomedRefSetReadRequest extends SnomedRefSetRequest<BranchContext, SnomedReferenceSet> {
+final class SnomedRefSetReadRequest extends BaseRequest<BranchContext, SnomedReferenceSet> {
 
-	private String referenceSetId;
+	private final String referenceSetId;
+	private final List<String> expansions;
 
-	protected SnomedRefSetReadRequest(String referenceSetId) {
+	protected SnomedRefSetReadRequest(String referenceSetId, List<String> expansions) {
 		this.referenceSetId = referenceSetId;
+		this.expansions = expansions;
 	}
 
 	@Override
@@ -41,7 +46,7 @@ final class SnomedRefSetReadRequest extends SnomedRefSetRequest<BranchContext, S
 		if (entry == null) {
 			throw new ComponentNotFoundException("Reference Set", referenceSetId);
 		} else {
-			return new SnomedReferenceSetConverter().apply(entry);
+			return new SnomedReferenceSetConverter(context, expansions).apply(entry);
 		}
 	}
 	

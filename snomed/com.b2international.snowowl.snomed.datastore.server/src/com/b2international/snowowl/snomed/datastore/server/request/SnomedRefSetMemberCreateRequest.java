@@ -17,6 +17,7 @@ package com.b2international.snowowl.snomed.datastore.server.request;
 
 import static com.google.common.collect.Maps.newHashMap;
 
+import java.util.Collections;
 import java.util.Map;
 
 import org.hibernate.validator.constraints.NotEmpty;
@@ -79,7 +80,7 @@ public class SnomedRefSetMemberCreateRequest extends SnomedRefSetMemberRequest<T
 		final SnomedReferenceSet refSet;
 		// TODO convert this 404 -> 400 logic into an interceptor one level higher (like all create requests should work the same way)
 		try {
-			refSet = new SnomedRefSetReadRequest(referenceSetId).execute(context);
+			refSet = new SnomedRefSetReadRequest(referenceSetId, Collections.<String>emptyList()).execute(context);
 		} catch (ComponentNotFoundException e) {
 			throw e.toBadRequestException();
 		}
@@ -184,12 +185,15 @@ public class SnomedRefSetMemberCreateRequest extends SnomedRefSetMemberRequest<T
 			.build()
 			.execute(context);
 		
-		// then add 
+		// then add all matching members 
 		final SnomedConcepts matchingEscgConcepts = SnomedRequests.prepareConceptSearch().filterByEscg(getQuery()).all().build().execute(context);
 		for (ISnomedConcept concept : matchingEscgConcepts.getItems()) {
-			SnomedRequests
-				.prepareNewMember(moduleId, concept.getId(), memberRefSet.getId())
-				.execute(context);
+			 SnomedComponents
+				.newSimpleMember()
+				.withReferencedComponent(concept.getId())
+				.withModule(moduleId)
+				.withRefSet(memberRefSet.getId())
+				.addTo(context);
 		}
 		
 		return SnomedComponents

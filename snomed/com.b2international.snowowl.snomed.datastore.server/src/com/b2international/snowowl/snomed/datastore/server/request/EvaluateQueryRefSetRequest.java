@@ -16,6 +16,7 @@
 package com.b2international.snowowl.snomed.datastore.server.request;
 
 import java.util.Collection;
+import java.util.Collections;
 
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.events.BaseRequest;
@@ -42,7 +43,7 @@ public class EvaluateQueryRefSetRequest extends BaseRequest<BranchContext, Query
 	
 	@Override
 	public QueryRefSetMemberEvaluations execute(final BranchContext context) {
-		final SnomedReferenceSet referenceSet = new SnomedRefSetReadRequest(referenceSetId).execute(context);
+		final SnomedReferenceSet referenceSet = new SnomedRefSetReadRequest(referenceSetId, Collections.<String>emptyList()).execute(context);
 		return new QueryRefSetMemberEvaluations(
 				FluentIterable
 				.from(getQueryMembers(context, referenceSet))

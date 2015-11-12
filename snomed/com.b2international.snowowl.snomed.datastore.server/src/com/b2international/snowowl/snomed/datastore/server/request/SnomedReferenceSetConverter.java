@@ -15,8 +15,12 @@
  */
 package com.b2international.snowowl.snomed.datastore.server.request;
 
+import java.util.Collections;
+import java.util.List;
+
 import com.b2international.snowowl.core.CoreTerminologyBroker;
 import com.b2international.snowowl.core.date.EffectiveTimes;
+import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.snomed.core.domain.ISnomedConcept;
 import com.b2international.snowowl.snomed.core.domain.SnomedReferenceSet;
 import com.b2international.snowowl.snomed.core.domain.SnomedReferenceSetImpl;
@@ -29,6 +33,18 @@ import com.google.common.base.Function;
  */
 class SnomedReferenceSetConverter implements Function<SnomedRefSetIndexEntry, SnomedReferenceSet> {
 
+	private final List<String> expansions;
+	private final BranchContext context;
+
+	public SnomedReferenceSetConverter(BranchContext context) {
+		this(context, null);
+	}
+	
+	public SnomedReferenceSetConverter(BranchContext context, List<String> expansions) {
+		this.context = context;
+		this.expansions = expansions == null ? Collections.<String>emptyList() : expansions;
+	}
+	
 	@Override
 	public SnomedReferenceSet apply(SnomedRefSetIndexEntry entry) {
 		final SnomedReferenceSetImpl refset = new SnomedReferenceSetImpl();
@@ -40,9 +56,10 @@ class SnomedReferenceSetConverter implements Function<SnomedRefSetIndexEntry, Sn
 		final short referencedComponentType = entry.getReferencedComponentType();
 		refset.setReferencedComponent(getReferencedComponentType(referencedComponentType));
 		refset.setType(entry.getType());
+		expand(refset);
 		return refset;
 	}
-	
+
 	public SnomedReferenceSet apply(SnomedRefSet refSet, ISnomedConcept concept) {
 		final SnomedReferenceSetImpl refset = new SnomedReferenceSetImpl();
 		refset.setId(concept.getId());
@@ -53,11 +70,18 @@ class SnomedReferenceSetConverter implements Function<SnomedRefSetIndexEntry, Sn
 		final short referencedComponentType = refSet.getReferencedComponentType();
 		refset.setReferencedComponent(getReferencedComponentType(referencedComponentType));
 		refset.setType(refSet.getType());
+		expand(refset);
 		return refset;
 	}
 
 	private String getReferencedComponentType(final short referencedComponentType) {
 		return CoreTerminologyBroker.getInstance().getComponentInformation(referencedComponentType).getId();
+	}
+	
+	private void expand(final SnomedReferenceSetImpl refset) {
+		if (expansions.contains("members")) {
+			refset.setMembers(SnomedRequests.prepareMemberSearch().all().filterByRefSet(refset.getId()).build().execute(context));
+		}
 	}
 	
 }

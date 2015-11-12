@@ -30,8 +30,6 @@ import com.google.common.collect.ImmutableList;
  */
 final class SnomedRefSetSearchRequest extends SearchRequest<SnomedReferenceSets> {
 
-	private final SnomedReferenceSetConverter converter = new SnomedReferenceSetConverter();
-	
 	@Override
 	public SnomedReferenceSets execute(BranchContext context) {
 		final IBranchPath branchPath = context.branch().branchPath();
@@ -40,6 +38,7 @@ final class SnomedRefSetSearchRequest extends SearchRequest<SnomedReferenceSets>
 		final ImmutableList.Builder<SnomedReferenceSet> result = ImmutableList.builder();
 
 		final Collection<SnomedRefSetIndexEntry> referenceSets = browser.getAllReferenceSets(branchPath);
+		final SnomedReferenceSetConverter converter = new SnomedReferenceSetConverter(context);
 		for (SnomedRefSetIndexEntry entry : referenceSets) {
 			result.add(converter.apply(entry));
 		}
