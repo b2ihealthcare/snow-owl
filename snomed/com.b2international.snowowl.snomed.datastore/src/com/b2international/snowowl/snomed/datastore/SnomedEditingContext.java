@@ -683,7 +683,7 @@ public class SnomedEditingContext extends BaseSnomedEditingContext {
 		add(concept);
 		
 		// set concept properties
-		concept.setId(identifiers.generateId(ComponentCategory.CONCEPT, namespace));
+		concept.setId(identifiers.generate(namespace, ComponentCategory.CONCEPT).toString());
 		concept.setActive(true);
 		concept.setDefinitionStatus(findConceptById(PRIMITIVE));
 		concept.setModule(moduleConcept);
@@ -974,7 +974,7 @@ public class SnomedEditingContext extends BaseSnomedEditingContext {
 	 */
 	public Relationship buildEmptyRelationship(final String namespace) {
 		final Relationship relationship = SnomedFactory.eINSTANCE.createRelationship();
-		relationship.setId(identifiers.generateId(ComponentCategory.RELATIONSHIP, namespace));
+		relationship.setId(identifiers.generate(namespace, ComponentCategory.RELATIONSHIP).toString());
 		return relationship;
 	}
 	
@@ -1003,7 +1003,7 @@ public class SnomedEditingContext extends BaseSnomedEditingContext {
 	/*builds a description with the specified description type, module concept, language code and namespace.*/
 	private Description buildDefaultDescription(String term, final String nameSpace, final Concept type, final Concept moduleConcept, final String languageCode) {
 		Description description = SnomedFactory.eINSTANCE.createDescription();
-		description.setId(identifiers.generateId(ComponentCategory.DESCRIPTION, nameSpace));
+		description.setId(identifiers.generate(nameSpace, ComponentCategory.DESCRIPTION).toString());
 		description.setActive(true);
 		description.setCaseSignificance(findConceptById(ENTIRE_TERM_CASE_INSENSITIVE));
 		description.setType(type);
@@ -1716,11 +1716,11 @@ public class SnomedEditingContext extends BaseSnomedEditingContext {
 	}
 	
 	public String generateComponentId(final ComponentCategory componentNature) {
-		return identifiers.generateId(componentNature, getNamespace());
+		return identifiers.generate(getNamespace(), componentNature).toString();
 	}
 	
 	public String generateComponentId(final ComponentCategory componentNature, final String namespace) {
-		return identifiers.generateId(componentNature, namespace);
+		return identifiers.generate(namespace, componentNature).toString();
 	}
 	
 	public boolean isUniqueInTransaction(SnomedIdentifier identifier) {

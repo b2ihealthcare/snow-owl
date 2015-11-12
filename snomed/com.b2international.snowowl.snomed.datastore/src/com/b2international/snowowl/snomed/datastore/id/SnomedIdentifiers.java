@@ -18,13 +18,16 @@ package com.b2international.snowowl.snomed.datastore.id;
 import static com.google.common.base.Preconditions.checkArgument;
 
 import com.b2international.commons.VerhoeffCheck;
+import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.terminology.ComponentCategory;
+import com.b2international.snowowl.snomed.datastore.SnomedTerminologyBrowser;
+import com.b2international.snowowl.snomed.datastore.id.gen.ItemIdGenerationStrategy;
 import com.b2international.snowowl.snomed.datastore.id.gen.SingleItemIdGenerationStrategy;
+import com.b2international.snowowl.snomed.datastore.id.memory.InMemorySnomedIdentifierServiceImpl;
 import com.b2international.snowowl.snomed.datastore.internal.id.SnomedComponentIdentifierValidator;
 import com.b2international.snowowl.snomed.datastore.internal.id.SnomedIdentifierImpl;
-import com.b2international.snowowl.snomed.datastore.internal.id.SnomedIdentifierServiceImpl;
-import com.b2international.snowowl.snomed.datastore.internal.id.reservations.SnomedIdentifierReservationServiceImpl;
 import com.google.common.base.Strings;
+import com.google.inject.Provider;
 
 /**
  * Shortcut methods to create SNOMED CT Identifiers.
@@ -63,11 +66,11 @@ public class SnomedIdentifiers {
 	}
 
 	private static String generateComponentId(ComponentCategory component, String namespace) {
-		return getSnomedIdentifierService().generateId(component, namespace);
+		return getSnomedIdentifierService().generate(namespace, component).toString();
 	}
 
 	private static ISnomedIdentifierService getSnomedIdentifierService() {
-		return new SnomedIdentifierServiceImpl(new SnomedIdentifierReservationServiceImpl());
+		return new InMemorySnomedIdentifierServiceImpl(ItemIdGenerationStrategy.RANDOM, getTerminologyBrowserProvider());
 	}
 
 	/**
@@ -161,7 +164,9 @@ public class SnomedIdentifiers {
 	 * @return
 	 */
 	public static SnomedIdentifier generateFrom(int itemId, String namespace, ComponentCategory component) {
-		return of(new SnomedIdentifierServiceImpl(new SnomedIdentifierReservationServiceImpl(), new SingleItemIdGenerationStrategy(String.valueOf(itemId))).generateId(component, namespace));
+		final String id = new InMemorySnomedIdentifierServiceImpl(new SingleItemIdGenerationStrategy(String.valueOf(itemId)),
+				getTerminologyBrowserProvider()).generate(namespace, component).toString();
+		return of(id);
 	}
 	
 	/**
@@ -177,6 +182,15 @@ public class SnomedIdentifiers {
 			return new SnomedComponentIdentifierValidator(category);
 		default: throw new UnsupportedOperationException("Can't create validator for category: " + category);
 		}
+	}
+	
+	private static Provider<SnomedTerminologyBrowser> getTerminologyBrowserProvider() {
+		return new Provider<SnomedTerminologyBrowser>() {
+			@Override
+			public SnomedTerminologyBrowser get() {
+				return ApplicationContext.getInstance().getService(SnomedTerminologyBrowser.class);
+			}
+		};
 	}
 
 }

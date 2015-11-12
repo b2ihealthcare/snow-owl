@@ -43,7 +43,7 @@ public class SnomedIdentifierServiceEventHandler implements IHandler<IMessage> {
 		final SnomedIdentifierRequestEvent ev = message.body(SnomedIdentifierRequestEvent.class);
 		final ComponentCategory category = ev.getCategory();
 		final String namespace = ev.getNamespace();
-		message.reply(identifierService.get().generateId(category, namespace));
+		message.reply(identifierService.get().generate(namespace, category));
 	}
 
 }
