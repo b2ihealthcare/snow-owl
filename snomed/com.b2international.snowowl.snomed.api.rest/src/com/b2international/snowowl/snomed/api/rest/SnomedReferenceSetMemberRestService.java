@@ -38,6 +38,7 @@ import com.b2international.snowowl.core.domain.PageableCollectionResource;
 import com.b2international.snowowl.core.domain.TransactionContext;
 import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.eventbus.IEventBus;
+import com.b2international.snowowl.snomed.api.rest.action.SnomedRefSetMemberAction;
 import com.b2international.snowowl.snomed.api.rest.domain.ChangeRequest;
 import com.b2international.snowowl.snomed.api.rest.domain.RestApiError;
 import com.b2international.snowowl.snomed.api.rest.domain.SnomedRefSetMemberRestInput;
@@ -172,6 +173,32 @@ public class SnomedReferenceSetMemberRestService extends AbstractSnomedRestServi
 			.setCommitComment(String.format("Deleted reference set member '%s' from store.", memberId))
 			.build()
 			.executeSync(bus, 120L * 1000L);
+	}
+	
+	@ApiOperation(
+			value="Executes an action",
+			notes="TODO write documentation in repo's doc folder")
+	@ApiResponses({
+		@ApiResponse(code = 200, message = "Action execution successful"),
+		@ApiResponse(code = 204, message = "No content"),
+		@ApiResponse(code = 404, message = "Branch or member not found")
+	})
+	@RequestMapping(value="/{path:**}/members/{id}/actions", method=RequestMethod.POST)
+	public @ResponseBody <R> R executeAction(
+			@ApiParam(value="The branch path")
+			@PathVariable(value="path")
+			final String branchPath,
+			
+			@ApiParam(value="The reference set member identifier")
+			@PathVariable(value="id")
+			final String memberId,
+			
+			@ApiParam(value="Reference set member parameters")
+			@RequestBody 
+			final SnomedRefSetMemberAction<R> action,
+			
+			final Principal principal) {
+		return action.toRequest(branchPath, principal.getName(), memberId).executeSync(bus);
 	}
 	
 	private URI getRefSetMemberLocationURI(String branchPath, SnomedReferenceSetMember refSetMember) {

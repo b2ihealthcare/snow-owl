@@ -63,19 +63,19 @@ public abstract class SnomedRequests {
 		return new SnomedComponentDeleteRequest(componentId, type);
 	}
 	
-	public static Request<TransactionContext, ?> prepareDeleteMember(String memberId) {
+	public static Request<TransactionContext, Void> prepareDeleteMember(String memberId) {
 		return prepareDeleteComponent(memberId, SnomedRefSetMember.class);
 	}
 	
-	public static Request<TransactionContext, ?> prepareDeleteConcept(String conceptId) {
+	public static Request<TransactionContext, Void> prepareDeleteConcept(String conceptId) {
 		return prepareDeleteComponent(conceptId, Concept.class);
 	}
 	
-	public static Request<TransactionContext, ?> prepareDeleteDescription(String descriptionId) {
+	public static Request<TransactionContext, Void> prepareDeleteDescription(String descriptionId) {
 		return prepareDeleteComponent(descriptionId, Description.class);
 	}
 	
-	public static Request<TransactionContext, ?> prepareDeleteRelationship(String relationshipId) {
+	public static Request<TransactionContext, Void> prepareDeleteRelationship(String relationshipId) {
 		return prepareDeleteComponent(relationshipId, Relationship.class);
 	}
 	
@@ -139,6 +139,10 @@ public abstract class SnomedRequests {
 	
 	public static QueryRefSetMemberEvaluationRequestBuilder prepareQueryRefSetMemberEvaluation(String memberId) {
 		return new QueryRefSetMemberEvaluationRequestBuilder(REPOSITORY_ID).setMemberId(memberId);
+	}
+
+	public static QueryRefSetMemberUpdateRequestBuilder prepareUpdateQueryRefSetMember(String memberId) {
+		return new QueryRefSetMemberUpdateRequestBuilder(REPOSITORY_ID).setMemberId(memberId);
 	}
 
 }
