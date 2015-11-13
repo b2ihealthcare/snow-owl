@@ -20,14 +20,9 @@ import static com.google.common.base.Preconditions.checkArgument;
 import com.b2international.commons.VerhoeffCheck;
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.terminology.ComponentCategory;
-import com.b2international.snowowl.snomed.datastore.SnomedTerminologyBrowser;
-import com.b2international.snowowl.snomed.datastore.id.gen.ItemIdGenerationStrategy;
-import com.b2international.snowowl.snomed.datastore.id.gen.SingleItemIdGenerationStrategy;
-import com.b2international.snowowl.snomed.datastore.id.memory.InMemorySnomedIdentifierServiceImpl;
 import com.b2international.snowowl.snomed.datastore.internal.id.SnomedComponentIdentifierValidator;
 import com.b2international.snowowl.snomed.datastore.internal.id.SnomedIdentifierImpl;
 import com.google.common.base.Strings;
-import com.google.inject.Provider;
 
 /**
  * Shortcut methods to create SNOMED CT Identifiers.
@@ -70,7 +65,7 @@ public class SnomedIdentifiers {
 	}
 
 	private static ISnomedIdentifierService getSnomedIdentifierService() {
-		return new InMemorySnomedIdentifierServiceImpl(ItemIdGenerationStrategy.RANDOM, getTerminologyBrowserProvider());
+		return ApplicationContext.getInstance().getServiceChecked(ISnomedIdentifierService.class);
 	}
 
 	/**
@@ -164,8 +159,7 @@ public class SnomedIdentifiers {
 	 * @return
 	 */
 	public static SnomedIdentifier generateFrom(int itemId, String namespace, ComponentCategory component) {
-		final String id = new InMemorySnomedIdentifierServiceImpl(new SingleItemIdGenerationStrategy(String.valueOf(itemId)),
-				getTerminologyBrowserProvider()).generate(namespace, component);
+		final String id = ApplicationContext.getInstance().getServiceChecked(ISnomedIdentifierService.class).generate(namespace, component);
 		return of(id);
 	}
 	
@@ -184,13 +178,4 @@ public class SnomedIdentifiers {
 		}
 	}
 	
-	private static Provider<SnomedTerminologyBrowser> getTerminologyBrowserProvider() {
-		return new Provider<SnomedTerminologyBrowser>() {
-			@Override
-			public SnomedTerminologyBrowser get() {
-				return ApplicationContext.getInstance().getService(SnomedTerminologyBrowser.class);
-			}
-		};
-	}
-
 }

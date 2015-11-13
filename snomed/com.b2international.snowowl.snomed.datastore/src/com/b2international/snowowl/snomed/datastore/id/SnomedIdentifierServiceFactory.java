@@ -46,6 +46,7 @@ public class SnomedIdentifierServiceFactory {
 
 		final SnomedCoreConfiguration coreConfiguration = configuration.getModuleConfig(SnomedCoreConfiguration.class);
 		final ISnomedIdentiferReservationService reservationService = new SnomedIdentifierReservationServiceImpl();
+		env.services().registerService(ISnomedIdentiferReservationService.class, reservationService);
 
 		registerSnomedIdentifierService(coreConfiguration, env, reservationService);
 	}
@@ -68,7 +69,7 @@ public class SnomedIdentifierServiceFactory {
 		switch (conf.getIdGenerationStrategy()) {
 		case MEMORY:
 			LOGGER.info("Snow Owl is configured to use memory based identifier serivce.");
-			identifierService = new InMemorySnomedIdentifierServiceImpl(ItemIdGenerationStrategy.RANDOM, provider);
+			identifierService = new InMemorySnomedIdentifierServiceImpl(ItemIdGenerationStrategy.RANDOM, provider, reservationService);
 			break;
 		case CIS:
 			LOGGER.info("Snow Owl is configured to use CIS based identifier serivce.");
