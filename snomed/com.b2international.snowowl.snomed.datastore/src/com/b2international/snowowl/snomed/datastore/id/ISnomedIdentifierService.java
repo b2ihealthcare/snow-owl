@@ -16,6 +16,7 @@
 package com.b2international.snowowl.snomed.datastore.id;
 
 import com.b2international.snowowl.core.terminology.ComponentCategory;
+import com.b2international.snowowl.snomed.datastore.id.cis.SctId;
 import com.b2international.snowowl.snomed.datastore.id.reservations.Reservation;
 
 /**
@@ -91,5 +92,21 @@ public interface ISnomedIdentifierService extends Reservation {
 	 *            - the identifier to publish.
 	 */
 	void publish(String componentId);
+
+	/**
+	 * Gets the {@link SctId} for the given component ID.
+	 * 
+	 * @param componentId
+	 *            the ID of the component.
+	 */
+	SctId getSctId(String componentId);
+
+	/**
+	 * Checks if the component ID is present in the underlying store.
+	 * 
+	 * @param componentId
+	 *            the ID to check.
+	 */
+	boolean contains(String componentId);
 
 }

@@ -19,6 +19,9 @@ import static com.google.common.base.Preconditions.checkNotNull;
 
 import java.util.Collection;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.b2international.commons.VerhoeffCheck;
 import com.b2international.snowowl.core.exceptions.BadRequestException;
 import com.b2international.snowowl.core.terminology.ComponentCategory;
@@ -41,11 +44,14 @@ import com.google.inject.Provider;
  */
 public class InMemorySnomedIdentifierServiceImpl extends AbstractSnomedIdentifierServiceImpl {
 
+	private static final Logger LOGGER = LoggerFactory.getLogger(InMemorySnomedIdentifierServiceImpl.class);
+
 	private ISnomedIdentiferReservationService reservationService;
 	private ItemIdGenerationStrategy generationStrategy;
 
 	private MemStore<SctId> store = new MemStore<SctId>();
 
+	@Override
 	public SctId getSctId(final String componentId) {
 		final SctId storedSctId = store.get(componentId);
 
@@ -68,11 +74,6 @@ public class InMemorySnomedIdentifierServiceImpl extends AbstractSnomedIdentifie
 	}
 
 	@Override
-	public boolean includes(final SnomedIdentifier identifier) {
-		return super.includes(identifier) || getSctId(identifier.toString()).getStatus() != IdentifierStatus.AVAILABLE.getSerializedName();
-	}
-
-	@Override
 	public String generate(final String namespace, final ComponentCategory category) {
 		checkNotNull(category, "Component category must not be null.");
 		checkCategory(category);
@@ -89,6 +90,9 @@ public class InMemorySnomedIdentifierServiceImpl extends AbstractSnomedIdentifie
 		if (reservationService.isReserved(componentId)) {
 			// TODO change exception
 			throw new RuntimeException("Component ID is already registered.");
+		} else if (contains(componentId)) {
+			final SctId sctId = getSctId(componentId);
+			LOGGER.warn(String.format("Cannot register ID %s as it is already present with status %s.", componentId, sctId.getStatus()));
 		} else {
 			final SctId sctId = buildSctId(componentId, IdentifierStatus.ASSIGNED);
 			store.put(componentId, sctId);
@@ -139,9 +143,14 @@ public class InMemorySnomedIdentifierServiceImpl extends AbstractSnomedIdentifie
 		}
 	}
 
+	@Override
+	public boolean contains(final String componentId) {
+		return store.containsKey(componentId);
+	}
+
 	private String generateId(final String namespace, final ComponentCategory category) {
 		String componentId = createComponentId(namespace, category);
-		while (reservationService.isReserved(componentId)) {
+		while (reservationService.isReserved(componentId) && !contains(componentId)) {
 			componentId = createComponentId(namespace, category);
 		}
 
