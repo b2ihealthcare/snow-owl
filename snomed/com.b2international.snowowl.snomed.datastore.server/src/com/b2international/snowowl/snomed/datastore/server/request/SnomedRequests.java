@@ -34,6 +34,7 @@ import com.b2international.snowowl.snomed.Relationship;
 import com.b2international.snowowl.snomed.core.domain.SnomedReferenceSet;
 import com.b2international.snowowl.snomed.core.domain.SnomedReferenceSetMember;
 import com.b2international.snowowl.snomed.core.domain.SnomedReferenceSets;
+import com.b2international.snowowl.snomed.core.domain.refset.MemberChange;
 import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetMember;
 
@@ -143,6 +144,10 @@ public abstract class SnomedRequests {
 
 	public static QueryRefSetMemberUpdateRequestBuilder prepareUpdateQueryRefSetMember(String memberId) {
 		return new QueryRefSetMemberUpdateRequestBuilder(REPOSITORY_ID).setMemberId(memberId);
+	}
+
+	public static SnomedRefSetMemberChangeRequestBuilder prepareMemberChangeRequest(MemberChange change, String moduleId, String referenceSetId) {
+		return new SnomedRefSetMemberChangeRequestBuilder(change, moduleId, referenceSetId);
 	}
 
 }

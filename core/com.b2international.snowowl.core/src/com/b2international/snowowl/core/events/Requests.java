@@ -44,4 +44,19 @@ public class Requests {
 		return (Request<C, R>) NOOP;
 	}
 	
+	public static <C extends ServiceProvider> Request<C, Void> noContent(final Request<C, ?> req) {
+		return new BaseRequest<C, Void>() {
+			@Override
+			public Void execute(C context) {
+				req.execute(context);
+				return null;
+			}
+
+			@Override
+			protected Class<Void> getReturnType() {
+				return Void.class;
+			}
+		};
+	}
+	
 }
