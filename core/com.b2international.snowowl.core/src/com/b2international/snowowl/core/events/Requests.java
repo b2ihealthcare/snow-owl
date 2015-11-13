@@ -15,33 +15,33 @@
  */
 package com.b2international.snowowl.core.events;
 
-import static com.google.common.collect.Lists.newArrayList;
-
-import java.util.List;
-
 import com.b2international.snowowl.core.ServiceProvider;
 
 /**
  * @since 4.5
  */
-public class BulkRequestBuilder<C extends ServiceProvider> implements RequestBuilder<C, Void> {
-	
-	private List<Request<C, ?>> requests = newArrayList();
-	
-	BulkRequestBuilder() {}
+@SuppressWarnings("rawtypes")
+public class Requests {
 
-	public BulkRequestBuilder<C> add(Request<C, ?> req) {
-		this.requests.add(req);
-		return this;
-	}
-	
-	public BulkRequestBuilder<C> add(RequestBuilder<C, ?> req) {
-		return add(req.build());
-	}
-	
-	@Override
-	public Request<C, Void> build() {
-		return new BulkRequest<>(requests);
-	}
+	private static final Request NOOP = new BaseRequest() {
+		private static final long serialVersionUID = -7606836203771540944L;
 
+		@Override
+		public Object execute(ServiceProvider context) {
+			return null;
+		}
+		
+		@Override
+		protected Class getReturnType() {
+			return Object.class;
+		}
+	};
+	
+	private Requests() {}
+	
+	@SuppressWarnings("unchecked")
+	public static <C extends ServiceProvider, R> Request<C, R> noop() {
+		return (Request<C, R>) NOOP;
+	}
+	
 }
