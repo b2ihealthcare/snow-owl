@@ -30,6 +30,9 @@ public class UpdateQueryRefSetMemberAction implements SnomedRefSetMemberAction<C
 
 	@NotEmpty
 	private String commitComment;
+
+	@NotEmpty
+	private String moduleId;
 	
 	@Override
 	public String getType() {
@@ -43,7 +46,11 @@ public class UpdateQueryRefSetMemberAction implements SnomedRefSetMemberAction<C
 
 	@Override
 	public Request<ServiceProvider, CommitInfo> toRequest(String branch, String userId, String memberId) {
-		return SnomedRequests.prepareUpdateQueryRefSetMember(memberId).build(userId, branch, commitComment);
+		return SnomedRequests
+				.prepareUpdateQueryRefSetMember()
+				.setMemberId(memberId)
+				.setModuleId(moduleId)
+				.build(userId, branch, commitComment);
 	}
 	
 }

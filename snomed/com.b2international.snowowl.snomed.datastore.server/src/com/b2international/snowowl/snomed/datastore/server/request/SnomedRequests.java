@@ -142,8 +142,8 @@ public abstract class SnomedRequests {
 		return new QueryRefSetMemberEvaluationRequestBuilder(REPOSITORY_ID).setMemberId(memberId);
 	}
 
-	public static QueryRefSetMemberUpdateRequestBuilder prepareUpdateQueryRefSetMember(String memberId) {
-		return new QueryRefSetMemberUpdateRequestBuilder(REPOSITORY_ID).setMemberId(memberId);
+	public static QueryRefSetMemberUpdateRequestBuilder prepareUpdateQueryRefSetMember() {
+		return new QueryRefSetMemberUpdateRequestBuilder(REPOSITORY_ID);
 	}
 
 	public static SnomedRefSetMemberChangeRequestBuilder prepareMemberChangeRequest(MemberChange change, String moduleId, String referenceSetId) {

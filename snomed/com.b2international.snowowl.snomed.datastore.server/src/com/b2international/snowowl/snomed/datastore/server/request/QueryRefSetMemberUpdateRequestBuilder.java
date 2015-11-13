@@ -29,6 +29,7 @@ public final class QueryRefSetMemberUpdateRequestBuilder implements RequestBuild
 	private final String repositoryId;
 	
 	private String memberId;
+	private String moduleId;
 
 	QueryRefSetMemberUpdateRequestBuilder(String repositoryId) {
 		this.repositoryId = repositoryId;
@@ -39,9 +40,14 @@ public final class QueryRefSetMemberUpdateRequestBuilder implements RequestBuild
 		return this;
 	}
 	
+	public QueryRefSetMemberUpdateRequestBuilder setModuleId(String moduleId) {
+		this.moduleId = moduleId;
+		return this;
+	}
+	
 	@Override
 	public Request<TransactionContext, Void> build() {
-		return new QueryRefSetMemberUpdateRequest(memberId);
+		return new QueryRefSetMemberUpdateRequest(memberId, moduleId);
 	}
 
 	public Request<ServiceProvider, CommitInfo> build(String userId, String branch, String commitComment) {
