@@ -61,9 +61,10 @@ public class InMemorySnomedIdentifierServiceImpl extends AbstractSnomedIdentifie
 	}
 
 	public InMemorySnomedIdentifierServiceImpl(final ItemIdGenerationStrategy generationStrategy,
-			final Provider<SnomedTerminologyBrowser> provider) {
+			final Provider<SnomedTerminologyBrowser> provider, final ISnomedIdentiferReservationService reservationService) {
 		super(provider);
 		this.generationStrategy = generationStrategy;
+		this.reservationService = reservationService;
 	}
 
 	@Override
@@ -174,10 +175,10 @@ public class InMemorySnomedIdentifierServiceImpl extends AbstractSnomedIdentifie
 		final SctId sctId = new SctId();
 		sctId.setSctid(componentId);
 		sctId.setStatus(status.getSerializedName());
-		sctId.setNamespace(Integer.valueOf(identifier.getNamespace()));
+		sctId.setNamespace(null == identifier.getNamespace() ? 0 : Integer.valueOf(identifier.getNamespace()));
 		sctId.setPartitionId(String.valueOf(identifier.getPartitionIdentifier()));
 		sctId.setCheckDigit(identifier.getCheckDigit());
-		
+
 		// TODO set remaining attributes?
 
 		return sctId;

@@ -28,6 +28,8 @@ import org.apache.http.entity.ContentType;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.util.EntityUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.b2international.snowowl.core.exceptions.BadRequestException;
 import com.b2international.snowowl.snomed.datastore.config.SnomedCoreConfiguration;
@@ -38,6 +40,8 @@ import com.b2international.snowowl.snomed.datastore.config.SnomedCoreConfigurati
  * @since 4.5
  */
 public class ComponentIdentifierServiceClient {
+	
+	private static final Logger LOGGER = LoggerFactory.getLogger(ComponentIdentifierServiceClient.class);
 
 	private final String url;
 	private final String port;
@@ -77,6 +81,7 @@ public class ComponentIdentifierServiceClient {
 			final HttpEntity entity = response.getEntity();
 			return EntityUtils.toString(entity);
 		} catch (IOException e) {
+			LOGGER.error("Exception while executing HTTP request.", e);
 			// TODO change exception
 			throw new RuntimeException("Exception while executing HTTP request.", e);
 		}
@@ -97,6 +102,7 @@ public class ComponentIdentifierServiceClient {
 		case 200:
 			break;
 		default:
+			LOGGER.error(response.getStatusLine().getReasonPhrase());
 			// TODO check other status codes
 			throw new BadRequestException(response.getStatusLine().getReasonPhrase());
 		}

@@ -24,7 +24,10 @@ import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.methods.HttpPut;
 import org.apache.http.client.methods.HttpRequestBase;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
+import com.b2international.commons.StringUtils;
 import com.b2international.snowowl.core.terminology.ComponentCategory;
 import com.b2international.snowowl.snomed.datastore.SnomedTerminologyBrowser;
 import com.b2international.snowowl.snomed.datastore.config.SnomedCoreConfiguration;
@@ -46,6 +49,8 @@ import com.google.inject.Provider;
  * @since 4.5
  */
 public class CisSnomedIdentfierServiceImpl extends AbstractSnomedIdentifierServiceImpl {
+	
+	private static final Logger LOGGER = LoggerFactory.getLogger(CisSnomedIdentfierServiceImpl.class);
 
 	private String clientKey;
 	private final String username;
@@ -78,6 +83,8 @@ public class CisSnomedIdentfierServiceImpl extends AbstractSnomedIdentifierServi
 		final String token = login();
 
 		try {
+			LOGGER.info(String.format("Sending %s ID generation request.", category.getDisplayName()));
+			
 			request = httpPost(String.format("sct/generate?token=%s", token), generationData(namespace, category));
 			final String response = execute(request);
 			final String sctid = mapper.readValue(response, SctId.class).getSctid();
@@ -98,6 +105,8 @@ public class CisSnomedIdentfierServiceImpl extends AbstractSnomedIdentifierServi
 		final String token = login();
 
 		try {
+			LOGGER.info(String.format("Sending %s ID registration request.", componentId));
+			
 			request = httpPost(String.format("sct/register?token=%s", token), registrationData(componentId));
 			execute(request);
 		} catch (IOException e) {
@@ -115,6 +124,8 @@ public class CisSnomedIdentfierServiceImpl extends AbstractSnomedIdentifierServi
 		final String token = login();
 
 		try {
+			LOGGER.info(String.format("Sending %s ID reservation request.", category.getDisplayName()));
+			
 			request = httpPost(String.format("sct/reserve?token=%s", token), reservationData(namespace, category));
 			final String response = execute(request);
 			final String sctid = mapper.readValue(response, SctId.class).getSctid();
@@ -135,6 +146,8 @@ public class CisSnomedIdentfierServiceImpl extends AbstractSnomedIdentifierServi
 		final String token = login();
 
 		try {
+			LOGGER.info(String.format("Sending component ID %s deprecation request.", componentId));
+			
 			request = httpPut(String.format("sct/deprecate?token=%s", token), deprecationData(componentId));
 			execute(request);
 		} catch (IOException e) {
@@ -152,6 +165,8 @@ public class CisSnomedIdentfierServiceImpl extends AbstractSnomedIdentifierServi
 		final String token = login();
 
 		try {
+			LOGGER.info(String.format("Sending component ID %s release request.", componentId));
+			
 			request = httpPut(String.format("sct/release?token=%s", token), releaseData(componentId));
 			execute(request);
 		} catch (IOException e) {
@@ -169,6 +184,8 @@ public class CisSnomedIdentfierServiceImpl extends AbstractSnomedIdentifierServi
 		final String token = login();
 
 		try {
+			LOGGER.info(String.format("Sending component ID %s publication request.", componentId));
+			
 			request = httpPut(String.format("sct/publish?token=%s", token), publishData(componentId));
 			execute(request);
 		} catch (IOException e) {
@@ -185,6 +202,8 @@ public class CisSnomedIdentfierServiceImpl extends AbstractSnomedIdentifierServi
 		final String token = login();
 
 		try {
+			LOGGER.info(String.format("Sending component ID %s get request.", componentId));
+			
 			request = httpGet(String.format("sct/ids/%s?token=%s", componentId, token));
 			final String response = execute(request);
 
@@ -229,7 +248,7 @@ public class CisSnomedIdentfierServiceImpl extends AbstractSnomedIdentifierServi
 	}
 
 	private String generationData(final String namespace, final ComponentCategory category) throws IOException {
-		final GenerationData data = new GenerationData(Integer.valueOf(namespace), clientKey, category);
+		final GenerationData data = new GenerationData(convertNamesapce(namespace), clientKey, category);
 		return mapper.writeValueAsString(data);
 	}
 
@@ -248,7 +267,7 @@ public class CisSnomedIdentfierServiceImpl extends AbstractSnomedIdentifierServi
 		calendar.add(Calendar.DATE, 1);
 		final Date expirationDate = calendar.getTime();
 
-		final ReservationData data = new ReservationData(Integer.valueOf(namespace), clientKey,
+		final ReservationData data = new ReservationData(convertNamesapce(namespace), clientKey,
 				new SimpleDateFormat("yyyy-MM-dd").format(expirationDate), category);
 		return mapper.writeValueAsString(data);
 	}
@@ -262,9 +281,14 @@ public class CisSnomedIdentfierServiceImpl extends AbstractSnomedIdentifierServi
 		final PublicationData data = new PublicationData(getNamespace(componentId), clientKey, componentId);
 		return mapper.writeValueAsString(data);
 	}
+	
+	private int convertNamesapce(final String namespace) {
+		return StringUtils.isEmpty(namespace) ? 0 : Integer.valueOf(namespace);
+	}
 
 	private int getNamespace(final String componentId) {
-		return Integer.valueOf(SnomedIdentifiers.of(componentId).getNamespace());
+		final String namespace = SnomedIdentifiers.of(componentId).getNamespace();
+		return null == namespace ? 0 : Integer.valueOf(namespace);
 	}
 
 }
