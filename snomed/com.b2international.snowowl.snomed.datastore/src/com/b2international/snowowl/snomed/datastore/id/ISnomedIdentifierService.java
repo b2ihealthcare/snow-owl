@@ -15,6 +15,8 @@
  */
 package com.b2international.snowowl.snomed.datastore.id;
 
+import java.util.Collection;
+
 import com.b2international.snowowl.core.terminology.ComponentCategory;
 import com.b2international.snowowl.snomed.datastore.id.cis.SctId;
 import com.b2international.snowowl.snomed.datastore.id.reservations.Reservation;
@@ -108,5 +110,17 @@ public interface ISnomedIdentifierService extends Reservation {
 	 *            the ID to check.
 	 */
 	boolean contains(String componentId);
+
+	Collection<String> bulkGenerate(String namespace, ComponentCategory category, int quantity);
+
+	void bulkRegister(Collection<String> componentIds);
+
+	Collection<String> bulkReserve(String namespace, ComponentCategory category, int quantity);
+
+	void bulkRelease(Collection<String> componentIds);
+
+	void bulkDeprecate(Collection<String> componentIds);
+
+	void bulkPublish(Collection<String> componentIds);
 
 }
