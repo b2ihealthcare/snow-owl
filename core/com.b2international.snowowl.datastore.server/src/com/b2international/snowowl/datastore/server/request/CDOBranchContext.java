@@ -16,32 +16,35 @@
 package com.b2international.snowowl.datastore.server.request;
 
 import com.b2international.snowowl.core.branch.Branch;
+import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.domain.DefaultBranchContext;
 import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.core.domain.TransactionContext;
+import com.b2international.snowowl.core.domain.TransactionContextProvider;
+import com.b2international.snowowl.datastore.CDOEditingContext;
 import com.b2international.snowowl.datastore.server.EditingContextFactory;
-import com.google.inject.Provider;
 
 /**
  * @since 4.5
  */
-public class CDOBranchContext extends DefaultBranchContext {
-
-	CDOBranchContext(RepositoryContext context, Branch branch) {
+public class CDOBranchContext extends DefaultBranchContext implements TransactionContextProvider {
+	
+	protected CDOBranchContext(RepositoryContext context, Branch branch) {
 		super(context, branch);
 	}
 	
 	@Override
-	public <T> Provider<T> provider(Class<T> type) {
-		if (TransactionContext.class.isAssignableFrom(type)) {
-			return (Provider<T>) new Provider<TransactionContext>() {
-				@Override
-				public TransactionContext get() {
-					return new CDOTransactionContext(CDOBranchContext.this, service(EditingContextFactory.class).createEditingContext(branch().branchPath()));
-				}
-			};
+	public <T> T service(Class<T> type) {
+		if (TransactionContextProvider.class.isAssignableFrom(type)) {
+			return type.cast(this);
 		}
-		return super.provider(type);
+		return super.service(type);
 	}
-
+	
+	@Override
+	public TransactionContext get(BranchContext context) {
+		final CDOEditingContext ec = service(EditingContextFactory.class).createEditingContext(branch().branchPath());
+		return new CDOTransactionContext(context, ec);
+	}
+	
 }
