@@ -15,11 +15,7 @@
  */
 package com.b2international.snowowl.snomed.datastore.server.request;
 
-import static com.google.common.base.Preconditions.checkArgument;
-
-import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 
 import org.apache.lucene.search.MatchAllDocsQuery;
 import org.apache.lucene.search.Query;
@@ -29,6 +25,7 @@ import com.b2international.snowowl.core.api.index.IIndexQueryAdapter;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.core.exceptions.IllegalQueryParameterException;
+import com.b2international.snowowl.snomed.core.domain.ISnomedConcept;
 import com.b2international.snowowl.snomed.core.domain.SearchKind;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcepts;
 import com.b2international.snowowl.snomed.datastore.SnomedConceptIndexEntry;
@@ -36,26 +33,18 @@ import com.b2international.snowowl.snomed.datastore.escg.IEscgQueryEvaluatorServ
 import com.b2international.snowowl.snomed.datastore.index.SnomedConceptReducedQueryAdapter;
 import com.b2international.snowowl.snomed.datastore.index.SnomedDOIQueryAdapter;
 import com.b2international.snowowl.snomed.datastore.index.SnomedIndexService;
+import com.b2international.snowowl.snomed.datastore.services.SnomedBranchRefSetMembershipLookupService;
 import com.b2international.snowowl.snomed.dsl.query.SyntaxErrorException;
+import com.google.common.base.Function;
 import com.google.common.base.Strings;
 import com.google.common.collect.Lists;
 
 /**
  * @since 4.5
  */
-final class SnomedConceptReadAllRequest extends SnomedConceptRequest<BranchContext, SnomedConcepts> {
+final class SnomedConceptSearchRequest extends SearchRequest<SnomedConcepts> {
 
-	private int offset;
-	private int limit;
-	private Map<SearchKind, String> filters;
-
-	SnomedConceptReadAllRequest(int offset, int limit, Map<SearchKind, String> filters) {
-		checkArgument(offset >= 0, "Offset should be greater than or equal to zero");
-		checkArgument(limit > 0, "Limit should be greater than zero");
-		this.offset = offset;
-		this.limit = limit;
-		this.filters = filters == null ? Collections.<SearchKind, String>emptyMap() : filters;
-	}
+	SnomedConceptSearchRequest() {}
 
 	@Override
 	public SnomedConcepts execute(BranchContext context) {
@@ -64,19 +53,24 @@ final class SnomedConceptReadAllRequest extends SnomedConceptRequest<BranchConte
 		
 		final IIndexQueryAdapter<SnomedConceptIndexEntry> queryAdapter = getQuery(context, branchPath);
 		final int total = index.getHitCount(branchPath, queryAdapter);
-		final List<SnomedConceptIndexEntry> hits = index.search(branchPath, queryAdapter, offset, limit);
-		return new SnomedConcepts(Lists.transform(hits, getConverter(branchPath)), offset, limit, total);
+		final List<SnomedConceptIndexEntry> hits = index.search(branchPath, queryAdapter, offset(), limit());
+		return new SnomedConcepts(Lists.transform(hits, getConverter(branchPath)), offset(), limit(), total);
+	}
+	
+	// TODO move this to SnomedComponentConverters factory class
+	protected final Function<SnomedConceptIndexEntry, ISnomedConcept> getConverter(final IBranchPath branchPath) {
+		return new SnomedConceptConverter(new SnomedBranchRefSetMembershipLookupService(branchPath));
 	}
 
 	private IIndexQueryAdapter<SnomedConceptIndexEntry> getQuery(RepositoryContext context, IBranchPath branch) {
-		if (filters.isEmpty()) {
+		if (options().isEmpty()) {
 			return new SnomedConceptReducedQueryAdapter();
 		} else {
 			final Query restrictionQuery;
 			
-			if (filters.containsKey(SearchKind.ESCG)) {
+			if (options().containsKey(SearchKind.ESCG.name())) {
 				try {
-					restrictionQuery = context.service(IEscgQueryEvaluatorService.class).evaluateBooleanQuery(branch, filters.get(SearchKind.ESCG));
+					restrictionQuery = context.service(IEscgQueryEvaluatorService.class).evaluateBooleanQuery(branch, options().getString(SearchKind.ESCG.name()));
 				} catch (final SyntaxErrorException e) {
 					throw new IllegalQueryParameterException(e.getMessage());
 				}
@@ -84,7 +78,7 @@ final class SnomedConceptReadAllRequest extends SnomedConceptRequest<BranchConte
 				restrictionQuery = new MatchAllDocsQuery();
 			}
 			
-			final String label = Strings.nullToEmpty(filters.get(SearchKind.LABEL));
+			final String label = Strings.nullToEmpty(options().getString(SearchKind.LABEL.name()));
 			return new SnomedDOIQueryAdapter(label, "", restrictionQuery);
 		}
 	}

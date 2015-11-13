@@ -25,7 +25,7 @@ import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType;
 /**
  * @since 4.5
  */
-public class SnomedRefSetCreateRequestBuilder implements RequestBuilder<TransactionContext, SnomedReferenceSet> {
+public final class SnomedRefSetCreateRequestBuilder implements RequestBuilder<TransactionContext, SnomedReferenceSet> {
 
 	private SnomedRefSetType type;
 	private String referencedComponentType;

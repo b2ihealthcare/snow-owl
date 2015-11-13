@@ -15,32 +15,32 @@
  */
 package com.b2international.snowowl.snomed.core.domain;
 
-import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType;
+import java.util.Collection;
+
+import com.b2international.snowowl.snomed.core.domain.refset.MemberChange;
+import com.b2international.snowowl.snomed.core.domain.refset.QueryRefSetMemberEvaluation;
 
 /**
  * @since 4.5
  */
-public interface SnomedReferenceSet extends ISnomedComponent {
+public class QueryRefSetMemberEvaluationImpl implements QueryRefSetMemberEvaluation {
 
-	/**
-	 * Returns the type of the reference set.
-	 * 
-	 * @return
-	 */
-	SnomedRefSetType getType();
+	private final String referenceSetId;
+	private final Collection<MemberChange> changes;
 
-	/**
-	 * Returns the type of the referenced component.
-	 * 
-	 * @return
-	 */
-	String getReferencedComponentType();
+	public QueryRefSetMemberEvaluationImpl(String referenceSetId, Collection<MemberChange> changes) {
+		this.referenceSetId = referenceSetId;
+		this.changes = changes;
+	}
+	
+	@Override
+	public String getReferenceSetId() {
+		return referenceSetId;
+	}
 
-	/**
-	 * Returns all members of the reference set.
-	 * 
-	 * @return
-	 */
-	SnomedReferenceSetMembers getMembers();
-
+	@Override
+	public Collection<MemberChange> getChanges() {
+		return changes;
+	}
+	
 }

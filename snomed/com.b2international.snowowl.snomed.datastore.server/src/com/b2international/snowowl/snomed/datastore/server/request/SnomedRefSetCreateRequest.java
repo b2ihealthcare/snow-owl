@@ -73,7 +73,7 @@ public class SnomedRefSetCreateRequest extends SnomedRefSetRequest<TransactionCo
 			.build(context);
 		
 		refSetContext.add(refSet);
-		return new SnomedReferenceSetConverter().apply(refSet, identifierConcept);
+		return new SnomedReferenceSetConverter(context).apply(refSet, identifierConcept);
 	}
 	
 	private void checkParent(TransactionContext context) {

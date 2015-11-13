@@ -25,6 +25,7 @@ Require-Bundle: org.eclipse.core.runtime;bundle-version="[3.8.0,3.9.0)",
  org.apache.httpcomponents.httpclient;bundle-version="4.2.6",
  org.apache.httpcomponents.httpcore;bundle-version="4.2.5"
 Export-Package: com.b2international.snowowl.snomed.core.domain,
+ com.b2international.snowowl.snomed.core.domain.refset,
  com.b2international.snowowl.snomed.core.events,
  com.b2international.snowowl.snomed.core.preference,
  com.b2international.snowowl.snomed.core.store,

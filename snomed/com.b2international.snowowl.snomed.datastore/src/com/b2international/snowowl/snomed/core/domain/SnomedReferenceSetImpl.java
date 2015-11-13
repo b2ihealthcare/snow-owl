@@ -13,10 +13,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.snomed.datastore.server.domain;
+package com.b2international.snowowl.snomed.core.domain;
 
-import com.b2international.snowowl.snomed.core.domain.AbstractSnomedComponent;
-import com.b2international.snowowl.snomed.core.domain.SnomedReferenceSet;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType;
 
 /**
@@ -26,6 +24,7 @@ public class SnomedReferenceSetImpl extends AbstractSnomedComponent implements S
 
 	private SnomedRefSetType type;
 	private String referencedComponent;
+	private SnomedReferenceSetMembers members;
 	
 	@Override
 	public SnomedRefSetType getType() {
@@ -36,6 +35,11 @@ public class SnomedReferenceSetImpl extends AbstractSnomedComponent implements S
 	public String getReferencedComponentType() {
 		return referencedComponent;
 	}
+
+	@Override
+	public SnomedReferenceSetMembers getMembers() {
+		return members;
+	}
 	
 	public void setReferencedComponent(String referencedComponent) {
 		this.referencedComponent = referencedComponent;
@@ -43,6 +47,10 @@ public class SnomedReferenceSetImpl extends AbstractSnomedComponent implements S
 	
 	public void setType(SnomedRefSetType type) {
 		this.type = type;
+	}
+	
+	public void setMembers(SnomedReferenceSetMembers members) {
+		this.members = members;
 	}
 
 }

@@ -21,6 +21,7 @@ import static com.google.common.base.Preconditions.checkNotNull;
 import com.b2international.snowowl.core.api.SnowowlRuntimeException;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.domain.TransactionContext;
+import com.b2international.snowowl.core.domain.TransactionContextProvider;
 import com.b2international.snowowl.core.events.BaseRequest;
 import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.core.exceptions.ApiException;
@@ -44,7 +45,7 @@ public final class TransactionalRequest extends BaseRequest<BranchContext, Commi
 	
 	@Override
 	public CommitInfo execute(BranchContext context) {
-		try (final TransactionContext transaction = context.provider(TransactionContext.class).get()) {
+		try (final TransactionContext transaction = context.service(TransactionContextProvider.class).get(context)) {
 			final Object body = next.execute(transaction);
 			// TODO consider moving preCommit into commit(userId, commitComment)
 			transaction.preCommit();

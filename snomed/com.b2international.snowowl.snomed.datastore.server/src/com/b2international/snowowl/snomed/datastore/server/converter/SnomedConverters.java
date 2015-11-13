@@ -13,34 +13,21 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.snomed.core.domain;
+package com.b2international.snowowl.snomed.datastore.server.converter;
 
-import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType;
+import com.b2international.snowowl.core.domain.BranchContext;
+import com.b2international.snowowl.snomed.datastore.server.request.SnomedConceptConverter;
+import com.b2international.snowowl.snomed.datastore.services.SnomedBranchRefSetMembershipLookupService;
 
 /**
  * @since 4.5
  */
-public interface SnomedReferenceSet extends ISnomedComponent {
-
-	/**
-	 * Returns the type of the reference set.
-	 * 
-	 * @return
-	 */
-	SnomedRefSetType getType();
-
-	/**
-	 * Returns the type of the referenced component.
-	 * 
-	 * @return
-	 */
-	String getReferencedComponentType();
-
-	/**
-	 * Returns all members of the reference set.
-	 * 
-	 * @return
-	 */
-	SnomedReferenceSetMembers getMembers();
+public class SnomedConverters {
+	
+	private SnomedConverters() {}
+	
+	public static SnomedConceptConverter newConceptConverter(BranchContext context) {
+		return new SnomedConceptConverter(new SnomedBranchRefSetMembershipLookupService(context.branch().branchPath()));
+	}
 
 }

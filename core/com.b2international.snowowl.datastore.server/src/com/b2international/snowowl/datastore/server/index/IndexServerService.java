@@ -376,10 +376,11 @@ public abstract class IndexServerService<E extends IIndexEntry> extends Abstract
 			if (null == sort) {
 				sort = Sort.INDEXORDER;
 			}
-
+			
 			final TopDocs topDocs = searcher.search(query, filter, offset + limit, sort, true, false);
 			final ScoreDoc[] scoreDocs = topDocs.scoreDocs;
-			final List<DocumentWithScore> result = Lists.newArrayListWithExpectedSize(limit);
+			final int expectedSize = Math.max(0, scoreDocs.length - offset);
+			final List<DocumentWithScore> result = Lists.newArrayListWithExpectedSize(expectedSize);
 
 			for (int i = offset; i < offset + limit && i < scoreDocs.length; i++) {
 				result.add(new DocumentWithScore(searcher.doc(scoreDocs[i].doc), branchPath, scoreDocs[i].score));

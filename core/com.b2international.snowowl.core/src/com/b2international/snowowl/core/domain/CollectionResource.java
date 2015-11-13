@@ -15,6 +15,7 @@
  */
 package com.b2international.snowowl.core.domain;
 
+import java.io.Serializable;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
@@ -27,8 +28,10 @@ import com.google.common.collect.ImmutableList;
  * 
  * @since 4.0
  */
-public class CollectionResource<T> {
+public class CollectionResource<T> implements Serializable {
 
+	private static final long serialVersionUID = -840552452105348114L;
+	
 	private final List<T> items;
 
 	protected CollectionResource(List<T> items) {

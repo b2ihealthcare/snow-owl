@@ -15,55 +15,36 @@
  */
 package com.b2international.snowowl.snomed.datastore.server.request;
 
-import com.b2international.snowowl.core.ServiceProvider;
-import com.b2international.snowowl.core.events.Request;
-import com.b2international.snowowl.datastore.server.request.RepositoryRequests;
 import com.b2international.snowowl.snomed.core.domain.SearchKind;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcepts;
-import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 import com.google.common.base.Strings;
-import com.google.common.collect.ImmutableMap;
 
 /**
  * @since 4.5
  */
-public final class SnomedConceptSearchRequestBuilder {
+public final class SnomedConceptSearchRequestBuilder extends SearchRequestBuilder<SnomedConceptSearchRequestBuilder, SnomedConcepts> {
+	
+	SnomedConceptSearchRequestBuilder(String repositoryId) {
+		super(repositoryId);
+	}
 
-	private String branch;
-	private int offset = 0;
-	private int limit = 50;
-	private ImmutableMap.Builder<SearchKind, String> filters = ImmutableMap.builder();
-	
-	public SnomedConceptSearchRequestBuilder(String branch) {
-		this.branch = branch;
-	}
-	
-	public final SnomedConceptSearchRequestBuilder setOffset(int offset) {
-		this.offset = offset;
-		return this;
-	}
-	
-	public final SnomedConceptSearchRequestBuilder setLimit(int limit) {
-		this.limit = limit;
-		return this;
-	}
-	
-	public SnomedConceptSearchRequestBuilder setLabel(String label) {
+	public final SnomedConceptSearchRequestBuilder filterByLabel(String label) {
 		if (!Strings.isNullOrEmpty(label)) {
-			filters.put(SearchKind.LABEL, label);
+			addOption(SearchKind.LABEL.name(), label);
 		}
-		return this;
+		return getSelf();
 	}
 	
-	public SnomedConceptSearchRequestBuilder setEscg(String escg) {
+	public final SnomedConceptSearchRequestBuilder filterByEscg(String escg) {
 		if (!Strings.isNullOrEmpty(escg)) {
-			filters.put(SearchKind.ESCG, escg);
+			addOption(SearchKind.ESCG.name(), escg);
 		}
-		return this;
-	}
-	
-	public Request<ServiceProvider, SnomedConcepts> build() {
-		return RepositoryRequests.wrap(SnomedDatastoreActivator.REPOSITORY_UUID, branch, new SnomedConceptReadAllRequest(offset, limit, filters.build()));
+		return getSelf();
 	}
 
+	@Override
+	protected SearchRequest<SnomedConcepts> create() {
+		return new SnomedConceptSearchRequest();
+	}
+	
 }

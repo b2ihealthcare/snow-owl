@@ -83,7 +83,7 @@ public class SnomedReferenceSetMemberRestService extends AbstractSnomedRestServi
 			@ApiParam(value="The maximum number of items to return")
 			@RequestParam(value="limit", defaultValue="50", required=false) 
 			final int limit) {
-		return DeferredResults.wrap(SnomedRequests.prepareGetReferenceSetMembers(branchPath, offset, limit).execute(bus));
+		return DeferredResults.wrap(SnomedRequests.prepareMemberSearch().setLimit(limit).setOffset(offset).build(branchPath).execute(bus));
 	}
 	
 	@ApiOperation(
@@ -107,7 +107,10 @@ public class SnomedReferenceSetMemberRestService extends AbstractSnomedRestServi
 	
 	@ApiOperation(
 			value="Create a reference set member",
-			notes="Creates a new reference set member directly on a branch.")
+			notes="Creates a new reference set member directly on a branch. "
+					+ "On top of the basic member properties you can include other properties relevant for specific reference set member types."
+					+ "For example, for query type reference set member we support _query_ and _refsetDescription_. "
+					+ "The _query_ parameter defines the ESCG query property of the new member, while the _refsetDescription_ used for the description of the new simple type reference set.")
 	@ApiResponses({
 		@ApiResponse(code = 200, message = "OK", response = Void.class),
 		@ApiResponse(code = 404, message = "Branch not found")

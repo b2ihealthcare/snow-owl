@@ -13,34 +13,32 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.snomed.core.domain;
+package com.b2international.commons.options;
 
-import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType;
+import static com.google.common.collect.Maps.newHashMap;
+
+import java.util.Map;
 
 /**
  * @since 4.5
  */
-public interface SnomedReferenceSet extends ISnomedComponent {
-
-	/**
-	 * Returns the type of the reference set.
-	 * 
-	 * @return
-	 */
-	SnomedRefSetType getType();
-
-	/**
-	 * Returns the type of the referenced component.
-	 * 
-	 * @return
-	 */
-	String getReferencedComponentType();
-
-	/**
-	 * Returns all members of the reference set.
-	 * 
-	 * @return
-	 */
-	SnomedReferenceSetMembers getMembers();
+public final class OptionsBuilder {
+	
+	private Map<String, Object> options = newHashMap();
+	
+	OptionsBuilder() {}
+	
+	public OptionsBuilder put(String key, Object value) {
+		options.put(key, value);
+		return this;
+	}
+	
+	public Options build() {
+		return new HashMapOptions(options);
+	}
+	
+	public static OptionsBuilder newBuilder() {
+		return new OptionsBuilder();
+	}
 
 }

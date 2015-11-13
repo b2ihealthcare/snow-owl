@@ -13,34 +13,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.snomed.core.domain;
+package com.b2international.snowowl.snomed.core.domain.refset;
 
-import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType;
+import java.util.List;
+
+import com.b2international.snowowl.core.domain.CollectionResource;
 
 /**
  * @since 4.5
  */
-public interface SnomedReferenceSet extends ISnomedComponent {
+public class QueryRefSetMemberEvaluations extends CollectionResource<QueryRefSetMemberEvaluation> {
 
-	/**
-	 * Returns the type of the reference set.
-	 * 
-	 * @return
-	 */
-	SnomedRefSetType getType();
-
-	/**
-	 * Returns the type of the referenced component.
-	 * 
-	 * @return
-	 */
-	String getReferencedComponentType();
-
-	/**
-	 * Returns all members of the reference set.
-	 * 
-	 * @return
-	 */
-	SnomedReferenceSetMembers getMembers();
-
+	public QueryRefSetMemberEvaluations(List<QueryRefSetMemberEvaluation> items) {
+		super(items);
+	}
+	
 }

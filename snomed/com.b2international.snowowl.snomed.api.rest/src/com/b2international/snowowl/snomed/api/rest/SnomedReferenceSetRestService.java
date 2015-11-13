@@ -19,6 +19,7 @@ import static org.springframework.hateoas.mvc.ControllerLinkBuilder.linkTo;
 
 import java.net.URI;
 import java.security.Principal;
+import java.util.List;
 
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -27,6 +28,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.context.request.async.DeferredResult;
 
@@ -61,11 +63,11 @@ public class SnomedReferenceSetRestService extends AbstractSnomedRestService {
 		@ApiResponse(code = 404, message = "Branch not found")
 	})
 	@RequestMapping(value="/{path:**}/refsets", method=RequestMethod.GET)	
-	public @ResponseBody DeferredResult<SnomedReferenceSets> getReferenceSets(
+	public @ResponseBody DeferredResult<SnomedReferenceSets> search(
 			@ApiParam(value="The branch path")
 			@PathVariable(value="path")
 			final String branchPath) {
-		return DeferredResults.wrap(SnomedRequests.prepareGetReferenceSets(branchPath).execute(bus));
+		return DeferredResults.wrap(SnomedRequests.prepareRefSetSearch(branchPath).execute(bus));
 	}
 	
 	@ApiOperation(
@@ -76,15 +78,19 @@ public class SnomedReferenceSetRestService extends AbstractSnomedRestService {
 		@ApiResponse(code = 404, message = "Branch or Reference set not found")
 	})
 	@RequestMapping(value="/{path:**}/refsets/{id}", method=RequestMethod.GET)
-	public @ResponseBody DeferredResult<SnomedReferenceSet> read(
+	public @ResponseBody DeferredResult<SnomedReferenceSet> get(
 			@ApiParam(value="The branch path")
 			@PathVariable(value="path")
 			final String branchPath,
 
 			@ApiParam(value="The Reference set identifier")
 			@PathVariable(value="id")
-			final String referenceSetId) {
-		return DeferredResults.wrap(SnomedRequests.prepareGetReferenceSet(branchPath, referenceSetId).execute(bus));
+			final String referenceSetId,
+			
+			@ApiParam(value="Expansion parameters")
+			@RequestParam(value="expand", required=false)
+			final List<String> expand) {
+		return DeferredResults.wrap(SnomedRequests.prepareGetReferenceSet(branchPath, referenceSetId, expand).execute(bus));
 	}
 	
 	@ApiOperation(

@@ -28,10 +28,8 @@ import com.google.common.collect.ImmutableList;
 /**
  * @since 4.5
  */
-final class SnomedRefSetReadAllRequest extends SnomedRefSetRequest<BranchContext, SnomedReferenceSets> {
+final class SnomedRefSetSearchRequest extends SearchRequest<SnomedReferenceSets> {
 
-	private final SnomedReferenceSetConverter converter = new SnomedReferenceSetConverter();
-	
 	@Override
 	public SnomedReferenceSets execute(BranchContext context) {
 		final IBranchPath branchPath = context.branch().branchPath();
@@ -40,6 +38,7 @@ final class SnomedRefSetReadAllRequest extends SnomedRefSetRequest<BranchContext
 		final ImmutableList.Builder<SnomedReferenceSet> result = ImmutableList.builder();
 
 		final Collection<SnomedRefSetIndexEntry> referenceSets = browser.getAllReferenceSets(branchPath);
+		final SnomedReferenceSetConverter converter = new SnomedReferenceSetConverter(context);
 		for (SnomedRefSetIndexEntry entry : referenceSets) {
 			result.add(converter.apply(entry));
 		}

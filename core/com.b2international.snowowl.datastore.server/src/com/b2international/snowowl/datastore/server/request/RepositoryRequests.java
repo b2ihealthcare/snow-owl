@@ -36,8 +36,12 @@ public class RepositoryRequests {
 		return new RepositoryRequest<>(repositoryId, next);
 	}
 	
+	public static <B> Request<RepositoryContext, B> toBranchReq(String branch, Request<BranchContext, B> next) {
+		return new BranchRequest<>(branch, next);
+	}
+	
 	public static <B> Request<ServiceProvider, B> wrap(String repositoryId, String branch, Request<BranchContext, B> next) {
-		return wrap(repositoryId, new BranchRequest<>(branch, next));
+		return wrap(repositoryId, toBranchReq(branch, next));
 	}
 	
 	public static Branching branching(String repositoryId) {
