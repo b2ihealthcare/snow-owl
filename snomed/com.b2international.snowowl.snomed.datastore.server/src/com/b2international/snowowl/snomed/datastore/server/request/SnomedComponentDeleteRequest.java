@@ -19,6 +19,9 @@ import org.eclipse.emf.ecore.EObject;
 
 import com.b2international.snowowl.core.domain.TransactionContext;
 import com.b2international.snowowl.core.events.BaseRequest;
+import com.b2international.snowowl.snomed.Concept;
+import com.b2international.snowowl.snomed.Description;
+import com.b2international.snowowl.snomed.Relationship;
 import com.b2international.snowowl.snomed.datastore.id.IdManager;
 
 /**
@@ -36,12 +39,23 @@ final class SnomedComponentDeleteRequest extends BaseRequest<TransactionContext,
 	
 	@Override
 	public Void execute(TransactionContext context) {
-		// TODO handle refset member deletion?
-		final IdManager idManager = context.service(IdManager.class);
-		idManager.release(componentId);
+		if (isAssignable(Concept.class, Description.class, Relationship.class)) {
+			final IdManager idManager = context.service(IdManager.class);
+			idManager.release(componentId);
+		}
 		
 		context.delete(context.lookup(componentId, type));
 		return null;
+	}
+	
+	private boolean isAssignable(Class<?>... classes) {
+		for (final Class<?> clazz : classes) {
+			if (type.isAssignableFrom(clazz)) {
+				return true;
+			}
+		}
+		
+		return false;
 	}
 
 	@Override
