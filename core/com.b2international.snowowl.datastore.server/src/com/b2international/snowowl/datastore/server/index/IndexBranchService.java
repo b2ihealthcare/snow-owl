@@ -204,8 +204,8 @@ public class IndexBranchService implements Closeable {
 		ensureOpen();
 		ensureWritable();
 		if (null != indexWriter) {
-			indexWriter.addDocument(document);
 			setDirty();
+			indexWriter.addDocument(document);
 		}
 	}
 
@@ -213,8 +213,8 @@ public class IndexBranchService implements Closeable {
 		ensureOpen();
 		ensureWritable();
 		if (null != indexWriter) {
-			indexWriter.deleteDocuments(query);
 			setDirty();
+			indexWriter.deleteDocuments(query);
 		}
 	}
 
@@ -222,8 +222,8 @@ public class IndexBranchService implements Closeable {
 		ensureOpen();
 		ensureWritable();
 		if (null != indexWriter) {
-			indexWriter.deleteDocuments(term);
 			setDirty();
+			indexWriter.deleteDocuments(term);
 		}
 	}
 
@@ -235,8 +235,8 @@ public class IndexBranchService implements Closeable {
 		ensureOpen();
 		ensureWritable();
 		if (null != indexWriter) {
-			indexWriter.updateDocument(term, document);
 			setDirty();
+			indexWriter.updateDocument(term, document);
 		}
 	}
 
@@ -283,8 +283,8 @@ public class IndexBranchService implements Closeable {
 		if (null != indexWriter) {
 			indexWriter.setCommitData(Collections.<String, String>emptyMap()); //override snapshot commit data
 			indexWriter.commit();
-			clearDirty();
 			manager.maybeRefreshBlocking();
+			clearDirty();
 		}
 	}
 
@@ -307,8 +307,8 @@ public class IndexBranchService implements Closeable {
 		 */
 		if (null != indexWriter) {
 			indexWriter.rollback();
-			clearDirty();
 			indexWriter = createIndexWriter(false);
+			clearDirty();
 		}
 	}
 
