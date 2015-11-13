@@ -132,25 +132,22 @@ public class SnomedConceptApiTest extends AbstractSnomedApiTest {
 	
 	@Test
 	public void createConceptISACycle_Simple() throws Exception {
-		final String newConceptId = "91559698001"; // randomly generated concept ID
-		final Map<?, ?> body = givenConceptRequestBody(newConceptId, DISEASE, MODULE_SCT_CORE, PREFERRED_ACCEPTABILITY_MAP, false);
-		assertComponentCreated(createMainPath(), SnomedComponentType.CONCEPT, body);
+		final Map<?, ?> body = givenConceptRequestBody(null, DISEASE, MODULE_SCT_CORE, PREFERRED_ACCEPTABILITY_MAP, false);
+		String conceptId = assertComponentCreated(createMainPath(), SnomedComponentType.CONCEPT, body);
 		// try creating a relationship between the ROOT_CONCEPT and the newConceptId
-		final Map<?, ?> newRelationshipBody = givenRelationshipRequestBody(DISEASE, IS_A, newConceptId, MODULE_SCT_CORE, "Trying to create a 1 long ISA cycle");
+		final Map<?, ?> newRelationshipBody = givenRelationshipRequestBody(DISEASE, IS_A, conceptId, MODULE_SCT_CORE, "Trying to create a 1 long ISA cycle");
 		assertComponentNotCreated(createMainPath(), SnomedComponentType.RELATIONSHIP, newRelationshipBody);
 	}
 	
 	@Test
 	public void createConceptISACycle_Long() throws Exception {
-		final String newConceptId = "80844557002"; // randomly generated concept ID
-		final Map<?, ?> body = givenConceptRequestBody(newConceptId, DISEASE, MODULE_SCT_CORE, PREFERRED_ACCEPTABILITY_MAP, false);
-		assertComponentCreated(createMainPath(), SnomedComponentType.CONCEPT, body);
+		final Map<?, ?> body = givenConceptRequestBody(null, DISEASE, MODULE_SCT_CORE, PREFERRED_ACCEPTABILITY_MAP, false);
+		final String conceptId = assertComponentCreated(createMainPath(), SnomedComponentType.CONCEPT, body);
 		
-		final String newConceptId2 = "45933887007"; // randomly generated concept ID
-		final Map<?, ?> body2 = givenConceptRequestBody(newConceptId2, newConceptId, MODULE_SCT_CORE, PREFERRED_ACCEPTABILITY_MAP, false);
+		final Map<?, ?> body2 = givenConceptRequestBody(null, conceptId, MODULE_SCT_CORE, PREFERRED_ACCEPTABILITY_MAP, false);
 		assertComponentCreated(createMainPath(), SnomedComponentType.CONCEPT, body2);
 		
-		final Map<?, ?> newRelationshipBody = givenRelationshipRequestBody(DISEASE, IS_A, newConceptId2, MODULE_SCT_CORE, "Trying to create a 2 long ISA cycle");
+		final Map<?, ?> newRelationshipBody = givenRelationshipRequestBody(DISEASE, IS_A, conceptId, MODULE_SCT_CORE, "Trying to create a 2 long ISA cycle");
 		assertComponentNotCreated(createMainPath(), SnomedComponentType.RELATIONSHIP, newRelationshipBody);
 	}
 	
