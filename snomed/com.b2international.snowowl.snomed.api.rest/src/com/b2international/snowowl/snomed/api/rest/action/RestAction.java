@@ -15,42 +15,44 @@
  */
 package com.b2international.snowowl.snomed.api.rest.action;
 
-import org.hibernate.validator.constraints.NotEmpty;
+import static com.google.common.collect.Maps.newHashMap;
+
+import java.util.Map;
 
 import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.events.Request;
-import com.b2international.snowowl.datastore.server.request.CommitInfo;
-import com.b2international.snowowl.snomed.datastore.server.request.SnomedRequests;
+import com.fasterxml.jackson.annotation.JsonAnySetter;
+import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 /**
  * @since 4.5
  */
-public class UpdateQueryRefSetMemberAction implements SnomedRefSetMemberAction<CommitInfo> {
+public final class RestAction {
 
-	@NotEmpty
-	private String commitComment;
+	private String action;
 
-	@NotEmpty
-	private String moduleId;
-	
-	@Override
-	public String getType() {
-		return "update";
+	private Map<String, Object> source = newHashMap();
+
+	@JsonCreator
+	RestAction(@JsonProperty("action") String action) {
+		this.action = action;
 	}
 
-	@JsonProperty
-	void setCommitComment(String commitComment) {
-		this.commitComment = commitComment;
+	@JsonAnySetter
+	void setSource(String key, Object value) {
+		source.put(key, value);
 	}
 
-	@Override
-	public Request<ServiceProvider, CommitInfo> toRequest(String branch, String userId, String memberId) {
-		return SnomedRequests
-				.prepareUpdateQueryRefSetMember()
-				.setMemberId(memberId)
-				.setModuleId(moduleId)
-				.build(userId, branch, commitComment);
+	/**
+	 * Converts this {@link RestAction} to a {@link Request} with the given {@link ActionResolver} that can be executed.
+	 *
+	 * @param resolver
+	 *            - the resolver to use for {@link Request} resolution
+	 * @return
+	 */
+	public Request<ServiceProvider, ?> resolve(ActionResolver resolver) {
+		return resolver.resolve(action, source);
 	}
-	
+
 }

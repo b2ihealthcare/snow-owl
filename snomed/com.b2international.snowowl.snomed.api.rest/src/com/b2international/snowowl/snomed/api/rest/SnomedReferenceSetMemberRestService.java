@@ -38,7 +38,9 @@ import com.b2international.snowowl.core.domain.PageableCollectionResource;
 import com.b2international.snowowl.core.domain.TransactionContext;
 import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.eventbus.IEventBus;
-import com.b2international.snowowl.snomed.api.rest.action.SnomedRefSetMemberAction;
+import com.b2international.snowowl.snomed.api.rest.action.ActionResolver;
+import com.b2international.snowowl.snomed.api.rest.action.RefSetMemberActionResolver;
+import com.b2international.snowowl.snomed.api.rest.action.RestAction;
 import com.b2international.snowowl.snomed.api.rest.domain.ChangeRequest;
 import com.b2international.snowowl.snomed.api.rest.domain.RestApiError;
 import com.b2international.snowowl.snomed.api.rest.domain.SnomedRefSetMemberRestInput;
@@ -184,7 +186,7 @@ public class SnomedReferenceSetMemberRestService extends AbstractSnomedRestServi
 		@ApiResponse(code = 404, message = "Branch or member not found")
 	})
 	@RequestMapping(value="/{path:**}/members/{id}/actions", method=RequestMethod.POST)
-	public @ResponseBody <R> R executeAction(
+	public @ResponseBody Object executeAction(
 			@ApiParam(value="The branch path")
 			@PathVariable(value="path")
 			final String branchPath,
@@ -193,12 +195,13 @@ public class SnomedReferenceSetMemberRestService extends AbstractSnomedRestServi
 			@PathVariable(value="id")
 			final String memberId,
 			
-			@ApiParam(value="Reference set member parameters")
+			@ApiParam(value="Reference set member action")
 			@RequestBody 
-			final SnomedRefSetMemberAction<R> action,
+			final RestAction action,
 			
 			final Principal principal) {
-		return action.toRequest(branchPath, principal.getName(), memberId).executeSync(bus);
+		final ActionResolver resolver = new RefSetMemberActionResolver(principal.getName(), branchPath, memberId);
+		return action.resolve(resolver).executeSync(bus);
 	}
 	
 	private URI getRefSetMemberLocationURI(String branchPath, SnomedReferenceSetMember refSetMember) {
