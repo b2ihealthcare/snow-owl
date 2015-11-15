@@ -40,22 +40,18 @@ public interface ISnomedIdentifierService extends Reservation {
 	 * with the defined extension namespace.
 	 * 
 	 * @param namespace
-	 *            - the extension namespace to use when generating the ID
+	 *            the extension namespace to use when generating the ID
 	 * @param category
-	 *            - the component type to generate ID for
+	 *            the component type to generate ID for
 	 * @return a valid SNOMED CT identifier, never <code>null</code>
 	 */
 	String generate(String namespace, ComponentCategory category);
 
 	/**
-	 * Generates a single SNOMED CT ID for the defined {@link ComponentCategory}
-	 * with the defined extension namespace.
+	 * Registers a single SNOMED CT ID.
 	 * 
-	 * @param namespace
-	 *            - the extension namespace to use when generating the ID
-	 * @param category
-	 *            - the component type to generate ID for
-	 * @return a valid SNOMED CT identifier, never <code>null</code>
+	 * @param componnetId
+	 *            the ID to register.
 	 */
 	void register(String componentId);
 
@@ -64,9 +60,9 @@ public interface ISnomedIdentifierService extends Reservation {
 	 * with the defined extension namespace.
 	 * 
 	 * @param namespace
-	 *            - the extension namespace to use when generating the ID
+	 *            the extension namespace to use when generating the ID
 	 * @param category
-	 *            - the component type to generate ID for
+	 *            the component type to generate ID for
 	 * @return a valid SNOMED CT identifier, never <code>null</code>
 	 */
 	String reserve(String namespace, ComponentCategory category);
@@ -74,24 +70,24 @@ public interface ISnomedIdentifierService extends Reservation {
 	/**
 	 * Deprecates the given SNOMED CT ID.
 	 * 
-	 * @param identifier
-	 *            - the identifier to deprecate.
+	 * @param componentId
+	 *            the ID to deprecate.
 	 */
 	void deprecate(String componentId);
 
 	/**
 	 * Releases a single SNOMED CT ID.
 	 * 
-	 * @param identifier
-	 *            - the identifier to release.
+	 * @param componentId
+	 *            the ID to release.
 	 */
 	void release(String componentId);
 
 	/**
 	 * Publishes a single SNOMED CT ID.
 	 * 
-	 * @param identifier
-	 *            - the identifier to publish.
+	 * @param componentId
+	 *            the ID to publish.
 	 */
 	void publish(String componentId);
 
@@ -111,18 +107,70 @@ public interface ISnomedIdentifierService extends Reservation {
 	 */
 	boolean contains(String componentId);
 
+	/**
+	 * Generates multiple SNOMED CT IDs for the defined
+	 * {@link ComponentCategory} with the defined extension namespace.
+	 * 
+	 * @param namespace
+	 *            the extension namespace to use when generating the ID
+	 * @param category
+	 *            the component type to generate ID for
+	 * @param quantity
+	 *            the number of IDs to generate.
+	 * @return a collection of generated IDs.
+	 */
 	Collection<String> bulkGenerate(String namespace, ComponentCategory category, int quantity);
 
+	/**
+	 * Registers multiple SNOMED CT IDs.
+	 * 
+	 * @param componnetIds
+	 *            the IDs to register.
+	 */
 	void bulkRegister(Collection<String> componentIds);
 
+	/**
+	 * Reserves multiple SNOMED CT ID for the defined {@link ComponentCategory}
+	 * with the defined extension namespace.
+	 * 
+	 * @param namespace
+	 *            the extension namespace to use when generating the ID
+	 * @param category
+	 *            the component type to generate ID for
+	 * @return a collection of reserved IDs.
+	 */
 	Collection<String> bulkReserve(String namespace, ComponentCategory category, int quantity);
 
+	/**
+	 * Releases the given SNOMED CT IDs.
+	 * 
+	 * @param componnetIds
+	 *            the IDs to release.
+	 */
 	void bulkRelease(Collection<String> componentIds);
 
+	/**
+	 * Deprecates the given SNOMED CT IDs.
+	 * 
+	 * @param componentIds
+	 *            the IDs to deprecate.
+	 */
 	void bulkDeprecate(Collection<String> componentIds);
 
+	/**
+	 * Publishes the given SNOMED CT IDs.
+	 * 
+	 * @param componentIds
+	 *            the IDs to publish.
+	 */
 	void bulkPublish(Collection<String> componentIds);
-	
+
+	/**
+	 * Gets the {@link SctId}s for the given component IDs.
+	 * 
+	 * @param componentIds
+	 *            the IDs of the components.
+	 */
 	Collection<SctId> getSctIds(Collection<String> componentIds);
 
 }
