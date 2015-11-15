@@ -278,6 +278,16 @@ public class InMemorySnomedIdentifierServiceImpl extends AbstractSnomedIdentifie
 		putAll(publishedSctIds);
 	}
 
+	@Override
+	public Collection<SctId> getSctIds(final Collection<String> componentIds) {
+		final Collection<SctId> sctIds = Lists.newArrayList();
+		for (final String componentId : componentIds) {
+			sctIds.add(getSctId(componentId));
+		}
+
+		return sctIds;
+	}
+
 	private String generateId(final String namespace, final ComponentCategory category) {
 		return generateIds(namespace, category, 1).iterator().next();
 	}
