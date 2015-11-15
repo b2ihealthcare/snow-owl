@@ -122,5 +122,7 @@ public interface ISnomedIdentifierService extends Reservation {
 	void bulkDeprecate(Collection<String> componentIds);
 
 	void bulkPublish(Collection<String> componentIds);
+	
+	Collection<SctId> getSctIds(Collection<String> componentIds);
 
 }
