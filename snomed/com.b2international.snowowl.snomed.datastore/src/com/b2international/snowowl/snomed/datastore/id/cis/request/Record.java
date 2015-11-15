@@ -15,28 +15,32 @@
  */
 package com.b2international.snowowl.snomed.datastore.id.cis.request;
 
-import java.util.Collection;
-
-import com.google.common.collect.Lists;
-
 /**
  * @since 4.5
  */
-public class BulkRegistrationData extends RequestData {
+public class Record {
 
-	private Collection<Record> records = Lists.newArrayList();
+	private String sctid;
+	private String systemId = "";
 
-	public BulkRegistrationData(final int namespace, final String software, final Collection<Record> records) {
-		super(namespace, software);
-		this.records = records;
+	public Record(final String sctid) {
+		this.sctid = sctid;
 	}
 
-	public Collection<Record> getRecords() {
-		return records;
+	public String getSctid() {
+		return sctid;
 	}
 
-	public void setRecords(Collection<Record> records) {
-		this.records = records;
+	public void setSctid(String sctid) {
+		this.sctid = sctid;
+	}
+
+	public String getSystemId() {
+		return systemId;
+	}
+
+	public void setSystemId(String systemId) {
+		this.systemId = systemId;
 	}
 
 }
