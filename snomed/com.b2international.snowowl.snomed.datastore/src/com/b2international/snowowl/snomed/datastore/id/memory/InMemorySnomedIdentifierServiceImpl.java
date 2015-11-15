@@ -68,7 +68,8 @@ public class InMemorySnomedIdentifierServiceImpl extends AbstractSnomedIdentifie
 	}
 
 	public InMemorySnomedIdentifierServiceImpl(final ItemIdGenerationStrategy generationStrategy,
-			final Provider<SnomedTerminologyBrowser> provider, final ISnomedIdentiferReservationService reservationService) {
+			final Provider<SnomedTerminologyBrowser> provider,
+			final ISnomedIdentiferReservationService reservationService) {
 		super(provider);
 		this.generationStrategy = generationStrategy;
 		this.reservationService = reservationService;
@@ -89,10 +90,18 @@ public class InMemorySnomedIdentifierServiceImpl extends AbstractSnomedIdentifie
 	@Override
 	public void register(final String componentId) {
 		if (reservationService.isReserved(componentId)) {
-			throw new BadRequestException(String.format("Component with ID %s already exists in the system.", componentId));
+			throw new BadRequestException(
+					String.format("Component with ID %s already exists in the system.", componentId));
 		} else if (contains(componentId)) {
 			final SctId sctId = getSctId(componentId);
-			LOGGER.warn(String.format("Cannot register ID %s as it is already present with status %s.", componentId, sctId.getStatus()));
+			if (sctId.getStatus() == IdentifierStatus.AVAILABLE.getSerializedName()
+					|| sctId.getStatus().equals(IdentifierStatus.RESERVED.getSerializedName())) {
+				sctId.setStatus(IdentifierStatus.ASSIGNED.getSerializedName());
+				store.put(componentId, sctId);
+			} else {
+				LOGGER.warn(String.format("Cannot register ID %s as it is already present with status %s.", componentId,
+						sctId.getStatus()));
+			}
 		} else {
 			final SctId sctId = buildSctId(componentId, IdentifierStatus.ASSIGNED);
 			store.put(componentId, sctId);
@@ -149,7 +158,8 @@ public class InMemorySnomedIdentifierServiceImpl extends AbstractSnomedIdentifie
 	}
 
 	@Override
-	public Collection<String> bulkGenerate(final String namespace, final ComponentCategory category, final int quantity) {
+	public Collection<String> bulkGenerate(final String namespace, final ComponentCategory category,
+			final int quantity) {
 		checkNotNull(category, "Component category must not be null.");
 		checkCategory(category);
 
@@ -169,11 +179,19 @@ public class InMemorySnomedIdentifierServiceImpl extends AbstractSnomedIdentifie
 		try {
 			for (final String componentId : componentIds) {
 				if (reservationService.isReserved(componentId)) {
-					throw new BadRequestException(String.format("Component with ID %s already exists in the system.", componentId));
+					throw new BadRequestException(
+							String.format("Component with ID %s already exists in the system.", componentId));
 				} else if (contains(componentId)) {
 					final SctId sctId = getSctId(componentId);
-					LOGGER.warn(String.format("Cannot register ID %s as it is already present with status %s.", componentId,
-							sctId.getStatus()));
+					if (sctId.getStatus() == IdentifierStatus.AVAILABLE.getSerializedName()
+							|| sctId.getStatus().equals(IdentifierStatus.RESERVED.getSerializedName())) {
+						sctId.setStatus(IdentifierStatus.ASSIGNED.getSerializedName());
+						store.put(componentId, sctId);
+						registeredComponentIds.add(componentId);
+					} else {
+						LOGGER.warn(String.format("Cannot register ID %s as it is already present with status %s.",
+								componentId, sctId.getStatus()));
+					}
 				} else {
 					final SctId sctId = buildSctId(componentId, IdentifierStatus.ASSIGNED);
 					store.put(componentId, sctId);
@@ -191,7 +209,8 @@ public class InMemorySnomedIdentifierServiceImpl extends AbstractSnomedIdentifie
 	}
 
 	@Override
-	public Collection<String> bulkReserve(final String namespace, final ComponentCategory category, final int quantity) {
+	public Collection<String> bulkReserve(final String namespace, final ComponentCategory category,
+			final int quantity) {
 		checkNotNull(category, "Component category must not be null.");
 		checkCategory(category);
 
@@ -263,7 +282,8 @@ public class InMemorySnomedIdentifierServiceImpl extends AbstractSnomedIdentifie
 		return generateIds(namespace, category, 1).iterator().next();
 	}
 
-	private Collection<String> generateIds(final String namespace, final ComponentCategory category, final int quantity) {
+	private Collection<String> generateIds(final String namespace, final ComponentCategory category,
+			final int quantity) {
 		int i = 0;
 		final Collection<String> componentIds = Lists.newArrayList();
 
