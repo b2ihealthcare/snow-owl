@@ -55,9 +55,9 @@ public interface IndexField<T> {
 
 	Sort createSort();
 
-	Filter createFilter(T... values);
+	Filter createTermsFilter(Iterable<T> values);
 
-	Filter createFilter(List<BytesRef> bytesRefs);
+	Filter createBytesRefFilter(Iterable<BytesRef> bytesRefs);
 
 	/**
 	 * Reads the value from the given source {@link Document} and adds it to the target {@link Document}.
