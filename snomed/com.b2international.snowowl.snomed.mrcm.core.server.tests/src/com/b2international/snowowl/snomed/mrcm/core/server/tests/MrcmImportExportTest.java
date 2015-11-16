@@ -59,7 +59,7 @@ public class MrcmImportExportTest {
 		
 		// verify CDO content
 		try (MrcmEditingContext context = new MrcmEditingContext(branch)) {
-			assertEquals(58, context.getConceptModel().getConstraints().size());
+			assertEquals(58, context.getOrCreateConceptModel().getConstraints().size());
 		}
 		// verify index
 		final Collection<PredicateIndexEntry> allPredicates = ApplicationContext.getServiceForClass(SnomedPredicateBrowser.class).getAllPredicates(branch);

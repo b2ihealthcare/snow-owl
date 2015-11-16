@@ -56,6 +56,8 @@ import org.eclipse.emf.ecore.util.EcoreUtil;
 import org.eclipse.net4j.util.lifecycle.ILifecycle;
 import org.eclipse.net4j.util.lifecycle.LifecycleEventAdapter;
 
+import bak.pcj.set.LongSet;
+
 import com.b2international.commons.CompareUtils;
 import com.b2international.commons.Pair;
 import com.b2international.snowowl.core.ApplicationContext;
@@ -112,8 +114,6 @@ import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Ordering;
 import com.google.common.collect.Sets;
-
-import bak.pcj.set.LongSet;
 
 /**
  * SNOMED CT RF2 specific editing context subclass of {@link CDOEditingContext}
@@ -1081,8 +1081,9 @@ public class SnomedEditingContext extends BaseSnomedEditingContext {
 			}
 			
 			final Concept concept = getConceptChecked(cdoId);
+			
 			if (updateSubtypeRelationships) {
-				updateParentage(concept);
+				updateChildren(concept, plan);
 			}
 			
 			if (monitor.isCanceled()) {
@@ -1136,67 +1137,70 @@ public class SnomedEditingContext extends BaseSnomedEditingContext {
 		return plan;
 	}
 	
+	private void updateChildren(Concept conceptToInactivate, SnomedInactivationPlan plan) {
+		
+		Iterable<Concept> parents = getStatedParents(conceptToInactivate);
+		Iterable<Concept> children = getStatedChildren(conceptToInactivate);
+		
+		if (Iterables.isEmpty(parents) || Iterables.isEmpty(children)) {
+			return;
+		}
+		
+		final Concept isAConcept = findConceptById(IS_A);
+		final Concept statedRelationshipTypeConcept = findConceptById(STATED_RELATIONSHIP);
+		final Concept defaultModuleConcept = getDefaultModuleConcept();
+		
+		// connect all former children to the former parents by stated IS_As
+		for (Concept parent : parents) {
+			for (Concept child : children) {
+				buildDefaultRelationship(child, isAConcept, parent, statedRelationshipTypeConcept, defaultModuleConcept, getDefaultNamespace());
+			}
+		}
+		
+		// inactivate any remaining inferred relationships of the children
+		for (Concept child : children) {
+			Iterable<Relationship> inferredRelationships = Iterables.filter(child.getOutboundRelationships(), new Predicate<Relationship>() {
+				@Override public boolean apply(Relationship input) {
+					return input.isActive() && INFERRED_RELATIONSHIP.equals(input.getCharacteristicType().getId());
+				}
+			});
+			
+			plan.markForInactivation(Iterables.toArray(inferredRelationships, Relationship.class));
+		}
+	}
+
+	private Iterable<Concept> getStatedParents(Concept conceptToInactivate) {
+		Iterable<Relationship> statedActiveOutboundIsaRelationships = filterActiveStatedIsaRelationships(conceptToInactivate.getOutboundRelationships());
+		Iterable<Concept> parents = Iterables.transform(statedActiveOutboundIsaRelationships, new Function<Relationship, Concept>() {
+			@Override public Concept apply(Relationship input) {
+				return input.getDestination();
+			}
+		});
+		return parents;
+	}
+	
+	private Iterable<Concept> getStatedChildren(Concept conceptToInactivate) {
+		Iterable<Relationship> statedActiveInboundIsaRelationships = filterActiveStatedIsaRelationships(conceptToInactivate.getInboundRelationships());
+		Iterable<Concept> children = Iterables.transform(statedActiveInboundIsaRelationships, new Function<Relationship, Concept>() {
+			@Override public Concept apply(Relationship input) {
+				return input.getSource();
+			}
+		});
+		return children;
+	}
+
+	private Iterable<Relationship> filterActiveStatedIsaRelationships(Collection<Relationship> relationships) {
+		return Iterables.filter(relationships, new Predicate<Relationship>() {
+			@Override public boolean apply(Relationship input) {
+				return input.isActive() && IS_A.equals(input.getType().getId()) && STATED_RELATIONSHIP.equals(input.getCharacteristicType().getId());
+			}
+		});
+	}
+
 	private Concept getConceptChecked(final CDOID cdoId) {
 		final CDOObject object = transaction.getObject(cdoId);
 		Preconditions.checkState(object instanceof Concept, "CDO object must be a SNOMED CT concept with ID: " + cdoId);
 		return (Concept) object; 
-	}
-	
-	/*the children of the specified concept become children of the specified concept’s parent*/
-	private void updateParentage(final Concept concept) {
-		final Set<Concept> parents = Sets.newHashSet(getParents(concept));
-		if (parents.isEmpty())
-			return;
-		
-		final Concept isAConcept = findConceptById(IS_A);
-		final Concept statedRelationshipTypeConcept = findConceptById(STATED_RELATIONSHIP);
-		
-		for (final Concept parent : parents) {
-			for (final Concept child : getChildren(concept)) {
-				buildDefaultRelationship(child, isAConcept, parent, statedRelationshipTypeConcept);
-			}
-		}
-	}
-	
-	/*returns with all the children concept of the specified concept specified with an active inbound IS_A relationship*/
-	private Iterable<Concept> getChildren(final Concept concept) {
-		return Iterables.transform(getAllInboundIsA(concept), new Function<Relationship, Concept>() {
-			@Override public Concept apply(Relationship relationship) {
-				return relationship.getSource();
-			}
-		});
-	}
-	
-	/*returns with all the parent concept of the specified concept specified with an active outbound IS_A relationship*/
-	private Iterable<Concept> getParents(final Concept concept) {
-		return Iterables.transform(getAllOutboundIsA(concept), new Function<Relationship, Concept>() {
-			@Override public Concept apply(Relationship relationship) {
-				return relationship.getDestination();
-			}
-		});
-	}
-	
-	/*returns all the active in-bound (destination) IS_A relationship of the concept.*/
-	private Iterable<Relationship> getAllInboundIsA(final Concept concept) {
-		return getAllIsA(concept.getInboundRelationships());
-	}
-	
-	/*returns all the active out-bound (source) IS_A relationship of the concept.*/
-	private Iterable<Relationship> getAllOutboundIsA(final Concept concept) {
-		return getAllIsA(concept.getOutboundRelationships());
-	}
-	
-	/*filters out all non IS_A relationships. also excludes the inactive IS_As*/
-	private Iterable<Relationship> getAllIsA(final Iterable<Relationship> relationships) {
-		return Iterables.filter(relationships, new Predicate<Relationship>() {
-			@Override public boolean apply(final Relationship relationship) {
-				Preconditions.checkNotNull(relationship, "SNOMED CT relationship argument cannot be null");
-				if (!relationship.isActive())
-					return false;
-				
-				return IS_A.equals(relationship.getType().getId());
-			}
-		});
 	}
 	
 	@Override

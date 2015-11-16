@@ -1,6 +1,40 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
+## 4.4.0
+
+### Added
+- Support of MRCM rules import before/after SNOMED CT import (previously was part of the SNOMED CT import)
+- Few missing SNOMED CT Inactivation Indicators have been added
+
+### Changed
+- RF2 validation in SNOMED CT import validates content based on effective times (fixes invalid errors/warnings)
+- Concept inactivation rewires immediate children to immediate parent (keeping all STATED ISA relationships and inactivating all inferred relationships)
+- Hot backup script copies entire index folder of a repository instead of just the version indexes
+- IndexService inactivity default timeout value changed to 30 minutes
+
+### Removed
+- PostProcessing support has been completely removed
+- Stopwords in index services have been completely removed
+
+### Bugs
+- Fixed stored mapTargetDescription values in SNOMED CT Simple Map Reference Set Members
+- Fixed invalid setting of released flag to false in case of already published component import (set only the effective time)
+- Removed tokenization of source field in IndexStore
+- Keep dirty indexes alive when running service inactivity checker
+
+### Merged pull requests
+- https://github.com/b2ihealthcare/snow-owl/pull/21
+- https://github.com/b2ihealthcare/snow-owl/pull/22
+- https://github.com/b2ihealthcare/snow-owl/pull/23
+- https://github.com/b2ihealthcare/snow-owl/pull/24
+- https://github.com/b2ihealthcare/snow-owl/pull/25
+- https://github.com/b2ihealthcare/snow-owl/pull/26
+- https://github.com/b2ihealthcare/snow-owl/pull/27
+- https://github.com/b2ihealthcare/snow-owl/pull/28
+- https://github.com/b2ihealthcare/snow-owl/pull/33
+- https://github.com/b2ihealthcare/snow-owl/pull/34
+
 ## 4.3.1
 
 ### Added
@@ -11,6 +45,7 @@ All notable changes to this project will be documented in this file.
 ### Changed
 - Renamed `descriptionInactivationIndicator` to `inactivationIndicator` in SNOMED CT Description representations
 - Changed commit notification logging to be more readable and traceable
+- Rebase across deep branches is now supported
 
 ### Bugs
 - Fixed major commit processing bug (https://github.com/b2ihealthcare/snow-owl/commit/4f1ec749bd74f065f9463b75a4a54e0c7f257d0f)

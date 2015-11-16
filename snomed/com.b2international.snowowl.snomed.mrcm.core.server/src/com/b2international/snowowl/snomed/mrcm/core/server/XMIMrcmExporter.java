@@ -50,7 +50,7 @@ public class XMIMrcmExporter implements MrcmExporter {
 			resourceSet.getResourceFactoryRegistry().getExtensionToFactoryMap().put("xmi", new XMIResourceFactoryImpl());
 			final URI fileURI = URI.createFileURI(UUID.randomUUID().toString());
 			final Resource resource = resourceSet.createResource(fileURI);
-			resource.getContents().add(context.getConceptModel());
+			resource.getContents().add(context.getOrCreateConceptModel());
 			resource.save(stream, null);
 			
 			LogUtils.logExportActivity(LOG, user, branch, "MRCM rule export successfully finished.");

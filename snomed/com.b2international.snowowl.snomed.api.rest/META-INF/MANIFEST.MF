@@ -1,5 +1,5 @@
 Manifest-Version: 1.0
-Bundle-Version: 4.4.0.qualifier
+Bundle-Version: 4.5.0.qualifier
 Bundle-Name: Snow Owl SNOMED CT REST Service
 Bundle-ManifestVersion: 2
 Bundle-SymbolicName: com.b2international.snowowl.snomed.api.rest;singleton:=true
@@ -58,7 +58,8 @@ Require-Bundle: com.google.guava;bundle-version="[15.0.0,16.0.0)",
  org.eclipse.equinox.security;bundle-version="1.1.100",
  com.fasterxml.jackson.core.jackson-annotations;bundle-version="[2.4.5,2.5.0)",
  com.fasterxml.jackson.core.jackson-core;bundle-version="[2.4.5,2.5.0)",
- com.fasterxml.jackson.core.jackson-databind;bundle-version="[2.4.5,2.5.0)"
+ com.fasterxml.jackson.core.jackson-databind;bundle-version="[2.4.5,2.5.0)",
+ com.fasterxml.jackson.dataformat.jackson-dataformat-csv;bundle-version="[2.4.5,2.5.0)"
 Bundle-ClassPath: .,
  WEB-INF/lib/aopalliance-1.0.jar,
  WEB-INF/lib/classmate-1.1.0.jar,
@@ -97,4 +98,5 @@ Bundle-ClassPath: .,
  WEB-INF/lib/jackson-jaxrs-json-provider-2.4.5.jar,
  WEB-INF/lib/jackson-module-jaxb-annotations-2.4.5.jar,
  WEB-INF/lib/jackson-module-jsonSchema-2.4.5.jar,
+ WEB-INF/lib/jackson-dataformat-csv-2.4.5.jar,
  WEB-INF/lib/jackson-module-scala_2.10-2.4.5.jar

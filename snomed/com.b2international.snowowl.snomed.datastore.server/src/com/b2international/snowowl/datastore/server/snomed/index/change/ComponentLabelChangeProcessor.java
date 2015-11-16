@@ -36,8 +36,7 @@ import com.b2international.snowowl.snomed.datastore.SnomedDescriptionLookupServi
 import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedDocumentBuilder;
 import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedMappings;
 import com.b2international.snowowl.snomed.datastore.index.update.ComponentLabelProvider;
-import com.b2international.snowowl.snomed.datastore.index.update.ComponentLabelUpdater;
-import com.b2international.snowowl.snomed.datastore.index.update.ConceptLabelUpdater;
+import com.b2international.snowowl.snomed.datastore.index.update.ComponentLabelWithSortUpdater;
 import com.b2international.snowowl.snomed.datastore.services.ISnomedComponentService;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedConcreteDataTypeRefSetMember;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedLanguageRefSetMember;
@@ -126,15 +125,14 @@ public class ComponentLabelChangeProcessor extends ChangeSetProcessorBase<Snomed
 					
 					// register label update for concept and their reference set membes
 					final String newLabel = getComponentLabel(conceptId);
-					registerUpdate(conceptId, new ConceptLabelUpdater(conceptId, newLabel));
+					registerUpdate(conceptId, new ComponentLabelWithSortUpdater(conceptId, newLabel));
 					registerUpdate(conceptId, new ComponentCompareFieldsUpdater<SnomedDocumentBuilder>(conceptId, CDOIDUtil.getLong(relatedConcept.cdoID())));
 				}
 			}
 		}
 		
-		// update label on reference set members referring descriptions
 		for (Description description : getNewComponents(commitChangeSet, Description.class)) {
-			registerUpdate(description.getId(), new ComponentLabelUpdater<SnomedDocumentBuilder>(description.getId(), Strings.nullToEmpty(description.getTerm())));
+			registerUpdate(description.getId(), new ComponentLabelWithSortUpdater(description.getId(), Strings.nullToEmpty(description.getTerm())));
 		}
 	}
 

@@ -40,7 +40,6 @@ import com.b2international.snowowl.datastore.cdo.CDOBranchPath;
 import com.b2international.snowowl.datastore.index.IndexRead;
 import com.b2international.snowowl.datastore.index.mapping.Mappings;
 import com.b2international.snowowl.datastore.server.index.IDirectoryManager;
-import com.b2international.snowowl.datastore.server.index.IIndexAccessUpdater;
 import com.b2international.snowowl.datastore.server.index.IndexServerService;
 import com.b2international.snowowl.datastore.server.index.RAMDirectoryManager;
 import com.google.common.base.Function;
@@ -56,7 +55,7 @@ import bak.pcj.list.IntArrayList;
  */
 public class DiffIndexServerService extends IndexServerService<DiffConceptIndexEntry> {
 
-	private static final long DEFAULT_TIMEOUT = 4L * 60L;
+	private static final long DEFAULT_TIMEOUT_MINUTES = 30L;
 
 	private final LoadingCache<IBranchPath, Integer> branchPathToCdoBranchId = CacheBuilder.newBuilder().build(new CacheLoader<IBranchPath, Integer>() {
 		@Override
@@ -69,7 +68,7 @@ public class DiffIndexServerService extends IndexServerService<DiffConceptIndexE
 	private volatile int lastUsedBranchId = CDOBranch.MAIN_BRANCH_ID;
 	
 	public DiffIndexServerService() {
-		super(DEFAULT_TIMEOUT);
+		super(DEFAULT_TIMEOUT_MINUTES);
 		directoryManager = new RAMDirectoryManager(getRepositoryUuid(), new File(getRepositoryUuid()));
 		branchPathToCdoBranchId.put(BranchPathUtils.createMainPath(), CDOBranch.MAIN_BRANCH_ID);
 	}
@@ -82,11 +81,6 @@ public class DiffIndexServerService extends IndexServerService<DiffConceptIndexE
 	@Override
 	protected IDirectoryManager getDirectoryManager() {
 		return directoryManager;
-	}
-
-	@Override
-	protected IIndexAccessUpdater getIndexAccessUpdater() {
-		return IIndexAccessUpdater.NOOP;
 	}
 
 	public void deleteDocs(final IBranchPath branchPath, final long... storageKeys) {
