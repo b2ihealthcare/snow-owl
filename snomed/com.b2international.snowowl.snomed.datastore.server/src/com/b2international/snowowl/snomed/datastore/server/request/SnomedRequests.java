@@ -150,4 +150,8 @@ public abstract class SnomedRequests {
 		return new SnomedRefSetMemberChangeRequestBuilder(change, moduleId, referenceSetId);
 	}
 
+	public static QueryRefSetUpdateRequestBuilder prepareUpdateQueryRefSet() {
+		return new QueryRefSetUpdateRequestBuilder(REPOSITORY_ID);
+	}
+
 }

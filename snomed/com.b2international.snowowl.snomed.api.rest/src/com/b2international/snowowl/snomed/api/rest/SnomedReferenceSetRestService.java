@@ -33,6 +33,9 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.context.request.async.DeferredResult;
 
 import com.b2international.snowowl.core.domain.CollectionResource;
+import com.b2international.snowowl.snomed.api.rest.action.ActionResolver;
+import com.b2international.snowowl.snomed.api.rest.action.RefSetActionResolver;
+import com.b2international.snowowl.snomed.api.rest.action.RestAction;
 import com.b2international.snowowl.snomed.api.rest.domain.ChangeRequest;
 import com.b2international.snowowl.snomed.api.rest.domain.SnomedRefSetRestInput;
 import com.b2international.snowowl.snomed.api.rest.util.DeferredResults;
@@ -130,6 +133,33 @@ public class SnomedReferenceSetRestService extends AbstractSnomedRestService {
 					.getResultAs(SnomedReferenceSet.class);
 		
 		return Responses.created(getRefSetLocationURI(branchPath, createdRefSet)).build();
+	}
+	
+	@ApiOperation(
+			value="Executes an action on a reference set",
+			notes="TODO write documentation in repo's doc folder")
+	@ApiResponses({
+		@ApiResponse(code = 200, message = "Action execution successful"),
+		@ApiResponse(code = 204, message = "No content"),
+		@ApiResponse(code = 404, message = "Branch or reference set not found")
+	})
+	@RequestMapping(value="/{path:**}/refsets/{id}/actions", method=RequestMethod.POST)
+	public @ResponseBody Object executeAction(
+			@ApiParam(value="The branch path")
+			@PathVariable(value="path")
+			final String branchPath,
+			
+			@ApiParam(value="The reference set identifier")
+			@PathVariable(value="id")
+			final String refSetId,
+			
+			@ApiParam(value="Reference set action")
+			@RequestBody 
+			final RestAction action,
+			
+			final Principal principal) {
+		final ActionResolver resolver = new RefSetActionResolver(principal.getName(), branchPath, refSetId);
+		return action.resolve(resolver).executeSync(bus);
 	}
 	
 	private URI getRefSetLocationURI(String branchPath, SnomedReferenceSet refSet) {

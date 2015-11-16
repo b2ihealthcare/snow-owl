@@ -25,16 +25,16 @@ import com.b2international.snowowl.snomed.datastore.server.request.SnomedRequest
 /**
  * @since 4.5
  */
-public class RefSetMemberActionResolver implements ActionResolver {
+public class RefSetActionResolver implements ActionResolver {
 
 	private final String userId;
 	private final String branch;
-	private final String memberId;
+	private final String id;
 
-	public RefSetMemberActionResolver(String userId, String branch, String memberId) {
+	public RefSetActionResolver(String userId, String branch, String id) {
 		this.userId = userId;
 		this.branch = branch;
-		this.memberId = memberId;
+		this.id = id;
 	}
 	
 	@Override
@@ -44,13 +44,13 @@ public class RefSetMemberActionResolver implements ActionResolver {
 		default: throw new BadRequestException("Invalid action type '%s'.", action); 
 		}
 	}
-	
+
 	private Request<ServiceProvider, ?> toUpdateRequest(Map<String, Object> source) {
 		return SnomedRequests
-				.prepareUpdateQueryRefSetMember()
-				.setMemberId(memberId)
+				.prepareUpdateQueryRefSet()
 				.setModuleId((String) source.get("moduleId"))
+				.setRefSetId(id)
 				.build(userId, branch, (String) source.get("commitComment"));
 	}
-	
+
 }
