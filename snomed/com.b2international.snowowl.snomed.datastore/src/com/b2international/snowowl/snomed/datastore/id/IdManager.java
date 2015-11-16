@@ -15,6 +15,8 @@
  */
 package com.b2international.snowowl.snomed.datastore.id;
 
+import java.util.Collection;
+
 import com.b2international.snowowl.core.terminology.ComponentCategory;
 
 /**
@@ -83,5 +85,61 @@ public interface IdManager {
 	 *            the component ID to publish.
 	 */
 	void publish(String componentId);
+
+	/**
+	 * Generates multiple SNOMED identifiers.
+	 * 
+	 * @param namespace
+	 *            the namespace for the ID.
+	 * @param category
+	 *            the category for the ID.
+	 * @param quantity
+	 *            the number of IDs to generate.
+	 */
+	Collection<String> bulkGenerate(String namespace, ComponentCategory category, int quantity);
+
+	/**
+	 * Registers multiple SNOMED identifiers.
+	 * 
+	 * @param componentIds
+	 *            the IDs to register.
+	 */
+	void bulkRegister(Collection<String> componentIds);
+
+	/**
+	 * Reserves multiple new SNOMED identifiers.
+	 * 
+	 * @param namespace
+	 *            the namespace for the ID.
+	 * @param category
+	 *            the category for the ID.
+	 * @param quantity
+	 *            the number of IDs to reserve.
+	 */
+	Collection<String> bulkReserve(String namespace, ComponentCategory category, int quantity);
+
+	/**
+	 * Deprecates the given SNOMED identifiers.
+	 * 
+	 * @param componentIds
+	 *            the component IDs to deprecate.
+	 */
+	void bulkDeprecate(Collection<String> componentIds);
+
+	/**
+	 * Releases the given SNOMED identifiers.
+	 * 
+	 * @param componentIds
+	 *            the component IDs to release.
+	 */
+	void bulkRelease(Collection<String> componentIds);
+
+	/**
+	 * Publishes the given SNOMED identifiers.
+	 * 
+	 * @param componentIds
+	 *            the component IDs to publish.
+	 */
+	void bulkPublish(Collection<String> componentIds);
 
 }
