@@ -21,8 +21,7 @@ import java.net.URI;
 import java.security.Principal;
 import java.util.Collections;
 
-import com.b2international.snowowl.api.domain.IComponentRef;
-import com.b2international.snowowl.snomed.api.domain.browser.ISnomedBrowserConcept;
+import javax.servlet.http.HttpServletRequest;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -42,6 +41,7 @@ import com.b2international.snowowl.core.domain.CollectionResource;
 import com.b2international.snowowl.core.domain.PageableCollectionResource;
 import com.b2international.snowowl.core.exceptions.ApiValidation;
 import com.b2international.snowowl.snomed.api.ISnomedClassificationService;
+import com.b2international.snowowl.snomed.api.domain.browser.ISnomedBrowserConcept;
 import com.b2international.snowowl.snomed.api.domain.classification.ClassificationStatus;
 import com.b2international.snowowl.snomed.api.domain.classification.IClassificationRun;
 import com.b2international.snowowl.snomed.api.domain.classification.IEquivalentConceptSet;
@@ -56,8 +56,6 @@ import com.wordnik.swagger.annotations.ApiOperation;
 import com.wordnik.swagger.annotations.ApiParam;
 import com.wordnik.swagger.annotations.ApiResponse;
 import com.wordnik.swagger.annotations.ApiResponses;
-
-import javax.servlet.http.HttpServletRequest;
 
 /**
  * @since 1.0

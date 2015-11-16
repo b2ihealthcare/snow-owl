@@ -15,10 +15,10 @@
  */
 package com.b2international.snowowl.snomed.api.rest.domain;
 
+import java.util.Date;
+
 import com.b2international.snowowl.snomed.api.domain.classification.ClassificationStatus;
 import com.b2international.snowowl.snomed.api.domain.classification.IClassificationRun;
-
-import java.util.Date;
 
 /**
  */

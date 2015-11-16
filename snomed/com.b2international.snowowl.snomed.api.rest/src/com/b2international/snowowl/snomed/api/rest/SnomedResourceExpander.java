@@ -7,12 +7,12 @@ import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
 
-import com.b2international.snowowl.api.domain.IComponentRef;
+import com.b2international.snowowl.core.domain.IComponentRef;
 import com.b2international.snowowl.core.exceptions.BadRequestException;
-import com.b2international.snowowl.snomed.api.domain.ISnomedRelationship;
 import com.b2international.snowowl.snomed.api.impl.FsnService;
 import com.b2international.snowowl.snomed.api.rest.domain.ExpandableSnomedRelationship;
 import com.b2international.snowowl.snomed.api.rest.domain.SnomedConceptMini;
+import com.b2international.snowowl.snomed.core.domain.ISnomedRelationship;
 import com.google.common.base.Function;
 import com.google.common.collect.Lists;
 

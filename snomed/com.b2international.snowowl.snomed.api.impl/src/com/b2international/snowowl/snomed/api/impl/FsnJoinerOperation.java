@@ -38,7 +38,13 @@ import com.b2international.snowowl.snomed.datastore.index.refset.SnomedRefSetMem
 import com.b2international.snowowl.snomed.datastore.index.refset.SnomedRefSetMembershipIndexQueryAdapter;
 import com.google.common.base.Function;
 import com.google.common.base.Optional;
-import com.google.common.collect.*;
+import com.google.common.collect.FluentIterable;
+import com.google.common.collect.HashBasedTable;
+import com.google.common.collect.ImmutableBiMap;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.Multimap;
+import com.google.common.collect.Multimaps;
+import com.google.common.collect.Table;
 
 /**
  * Given a set of {@link SnomedConceptIndexEntry concept index entries}, collects the corresponding "preferred" fully
