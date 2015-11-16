@@ -19,17 +19,7 @@ import static com.b2international.snowowl.snomed.SnomedConstants.Concepts.MODULE
 import static com.b2international.snowowl.snomed.SnomedConstants.Concepts.ROOT_CONCEPT;
 import static com.b2international.snowowl.snomed.api.rest.SnomedApiTestConstants.PREFERRED_ACCEPTABILITY_MAP;
 import static com.b2international.snowowl.snomed.api.rest.SnomedBranchingApiAssert.givenBranchWithPath;
-import static com.b2international.snowowl.snomed.api.rest.SnomedComponentApiAssert.assertComponentCanBeDeleted;
-import static com.b2international.snowowl.snomed.api.rest.SnomedComponentApiAssert.assertComponentCreated;
-import static com.b2international.snowowl.snomed.api.rest.SnomedComponentApiAssert.assertComponentExists;
-import static com.b2international.snowowl.snomed.api.rest.SnomedComponentApiAssert.assertComponentNotCreated;
-import static com.b2international.snowowl.snomed.api.rest.SnomedComponentApiAssert.assertComponentNotExists;
-import static com.b2international.snowowl.snomed.api.rest.SnomedComponentApiAssert.assertComponentReadWithStatus;
-import static com.b2international.snowowl.snomed.api.rest.SnomedComponentApiAssert.createRefSetMemberRequestBody;
-import static com.b2international.snowowl.snomed.api.rest.SnomedComponentApiAssert.createRefSetRequestBody;
-import static com.b2international.snowowl.snomed.api.rest.SnomedComponentApiAssert.getComponent;
-import static com.b2international.snowowl.snomed.api.rest.SnomedComponentApiAssert.givenConceptRequestBody;
-import static com.b2international.snowowl.snomed.api.rest.SnomedComponentApiAssert.givenRelationshipRequestBody;
+import static com.b2international.snowowl.snomed.api.rest.SnomedComponentApiAssert.*;
 import static com.b2international.snowowl.test.commons.rest.RestExtensions.givenAuthenticatedRequest;
 
 import java.util.Map;
@@ -53,6 +43,7 @@ import com.jayway.restassured.response.Response;
 
 /**
  * TODO try to create a member with invalid refcompid
+ * TODO update query refset member's query
  * @since 4.5
  */
 public class SnomedRefSetMemberApiTest extends AbstractSnomedApiTest {
@@ -284,6 +275,39 @@ public class SnomedRefSetMemberApiTest extends AbstractSnomedApiTest {
 		
 		assertComponentCanBeDeleted(testBranchPath, SnomedComponentType.MEMBER, memberId);
 		assertComponentNotExists(testBranchPath, SnomedComponentType.MEMBER, memberId);
+	}
+	
+	@Test
+	public void inactivateSimpleReferenceSetMember() throws Exception {
+		// create branch
+		givenBranchWithPath(testBranchPath);
+		// create concept
+		final Map<?, ?> conceptReq = givenConceptRequestBody(null, ROOT_CONCEPT, MODULE_SCT_CORE, PREFERRED_ACCEPTABILITY_MAP, false);
+		final String createdConceptId = assertComponentCreated(testBranchPath, SnomedComponentType.CONCEPT, conceptReq);
+		
+		// create refset
+		final Map<String,Object> refSetReq = createRefSetRequestBody(SnomedRefSetType.SIMPLE, SnomedTerminologyComponentConstants.CONCEPT, Concepts.REFSET_SIMPLE_TYPE);
+		final String createdRefSetId = assertComponentCreated(testBranchPath, SnomedComponentType.REFSET, refSetReq);
+		assertComponentExists(testBranchPath, SnomedComponentType.REFSET, createdRefSetId);
+		
+		// create member
+		final Map<String, Object> memberReq = createRefSetMemberRequestBody(createdConceptId, createdRefSetId);
+		final String memberId = assertComponentCreated(testBranchPath, SnomedComponentType.MEMBER, memberReq);
+		assertComponentExists(testBranchPath, SnomedComponentType.MEMBER, memberId);
+		
+		// inactivate member by sending update with active flag set to false
+		final Map<?, ?> inactivationReq = ImmutableMap.of("active", "false", "moduleId", Concepts.MODULE_ROOT, "commitComment", "Inactivate member and move to root module: " + memberId);
+		givenAuthenticatedRequest(SnomedApiTestConstants.SCT_API)
+			.with().contentType(ContentType.JSON)
+			.and().body(inactivationReq)
+			.when().put("/{path}/{componentType}/{id}", testBranchPath.getPath(), SnomedComponentType.MEMBER.toLowerCasePlural(), memberId);
+		
+		// verify that member has been inactivated successfully
+		getComponent(testBranchPath, SnomedComponentType.MEMBER, memberId)
+			.then()
+			.body("active", CoreMatchers.equalTo(false))
+			.and()
+			.body("moduleId", CoreMatchers.equalTo(Concepts.MODULE_ROOT));
 	}
 	
 }

@@ -43,6 +43,7 @@ import com.b2international.snowowl.snomed.api.rest.action.RefSetMemberActionReso
 import com.b2international.snowowl.snomed.api.rest.action.RestAction;
 import com.b2international.snowowl.snomed.api.rest.domain.ChangeRequest;
 import com.b2international.snowowl.snomed.api.rest.domain.RestApiError;
+import com.b2international.snowowl.snomed.api.rest.domain.SnomedMemberRestUpdate;
 import com.b2international.snowowl.snomed.api.rest.domain.SnomedRefSetMemberRestInput;
 import com.b2international.snowowl.snomed.api.rest.util.DeferredResults;
 import com.b2international.snowowl.snomed.api.rest.util.Responses;
@@ -174,6 +175,43 @@ public class SnomedReferenceSetMemberRestService extends AbstractSnomedRestServi
 			.setBody(SnomedRequests.prepareDeleteMember(memberId))
 			.setCommitComment(String.format("Deleted reference set member '%s' from store.", memberId))
 			.build()
+			.executeSync(bus, 120L * 1000L);
+	}
+	
+	@ApiOperation(
+			value="Update Reference Set Member",
+			notes="Updates properties of the specified Reference Set Member."
+					+ "The following properties are allowed to change:"
+					+ "- activity status flag (active)")
+	@ApiResponses({
+		@ApiResponse(code = 204, message = "Update successful"),
+		@ApiResponse(code = 404, message = "Branch or member not found")
+	})
+	@RequestMapping(value="/{path:**}/members/{id}", method=RequestMethod.PUT, consumes={ AbstractRestService.SO_MEDIA_TYPE, MediaType.APPLICATION_JSON_VALUE })
+	@ResponseStatus(HttpStatus.NO_CONTENT)
+	public void update(
+			@ApiParam(value="The branch path")
+			@PathVariable(value="path")
+			final String branchPath,
+			
+			@ApiParam(value="The reference set member identifier")
+			@PathVariable(value="id")
+			final String memberId,
+			
+			@ApiParam(value="Updated Reference Set parameters")
+			@RequestBody 
+			final ChangeRequest<SnomedMemberRestUpdate> body,
+			
+			final Principal principal) {
+		
+		final String userId = principal.getName();
+		final SnomedMemberRestUpdate update = body.getChange();
+		
+		SnomedRequests
+			.prepareMemberUpdate()
+			.setMemberId(memberId)
+			.setSource(update.getSource())
+			.commit(userId, branchPath, body.getCommitComment())
 			.executeSync(bus, 120L * 1000L);
 	}
 	

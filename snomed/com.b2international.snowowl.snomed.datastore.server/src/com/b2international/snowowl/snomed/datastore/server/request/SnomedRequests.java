@@ -154,4 +154,8 @@ public abstract class SnomedRequests {
 		return new QueryRefSetUpdateRequestBuilder(REPOSITORY_ID);
 	}
 
+	public static SnomedRefSetMemberUpdateRequestBuilder prepareMemberUpdate() {
+		return new SnomedRefSetMemberUpdateRequestBuilder(REPOSITORY_ID);
+	}
+
 }
