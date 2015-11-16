@@ -51,7 +51,7 @@ public abstract class SearchRequestBuilder<B extends SearchRequestBuilder<B, R>,
 		return setLimit(Integer.MAX_VALUE);
 	}
 	
-	protected final B addOption(String key, String value) {
+	protected final B addOption(String key, Object value) {
 		options.put(key, value);
 		return getSelf();
 	}

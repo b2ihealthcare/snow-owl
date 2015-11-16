@@ -21,10 +21,30 @@ package com.b2international.snowowl.snomed.core.domain;
 public enum SearchKind {
 
 	/**
-	 * Search by concept label (a preferred term in a system-defined dialect)
+	 * Search by (preferred) fully specified name
 	 */
-	LABEL,
+	FSN,
+	
+	/**
+	 * Search by preferred term (synonym and subtypes)
+	 */
+	PT,
 
+	/**
+	 * Search by acceptable synonym and subtypes
+	 */
+	SYN,
+	
+	/**
+	 * Search by non-synonym description of any acceptability
+	 */
+	OTHER,
+
+	/**
+	 * Search by component status
+	 */
+	ACTIVE,
+	
 	/**
 	 * Search by ESCG expression
 	 */
