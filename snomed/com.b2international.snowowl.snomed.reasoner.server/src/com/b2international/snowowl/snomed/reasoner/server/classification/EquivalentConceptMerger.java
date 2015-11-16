@@ -20,6 +20,7 @@ import static com.google.common.collect.Lists.newArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 
 import org.eclipse.core.runtime.NullProgressMonitor;
@@ -36,6 +37,7 @@ import com.b2international.snowowl.core.api.SnowowlRuntimeException;
 import com.b2international.snowowl.datastore.BranchPathUtils;
 import com.b2international.snowowl.snomed.Concept;
 import com.b2international.snowowl.snomed.Relationship;
+import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.snomed.datastore.SnomedConceptLookupService;
 import com.b2international.snowowl.snomed.datastore.SnomedDeletionPlan;
 import com.b2international.snowowl.snomed.datastore.SnomedEditingContext;
@@ -43,6 +45,7 @@ import com.b2international.snowowl.snomed.datastore.SnomedInactivationPlan;
 import com.b2international.snowowl.snomed.datastore.SnomedInactivationPlan.InactivationReason;
 import com.b2international.snowowl.snomed.datastore.SnomedRefSetBrowser;
 import com.b2international.snowowl.snomed.datastore.SnomedRefSetEditingContext;
+import com.b2international.snowowl.snomed.datastore.id.IdManager;
 import com.b2international.snowowl.snomed.datastore.model.SnomedModelExtensions;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedAssociationRefSetMember;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedAttributeValueRefSetMember;
@@ -59,6 +62,7 @@ import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Ordering;
+import com.google.common.collect.Sets;
 
 
 /**
@@ -70,26 +74,32 @@ public class EquivalentConceptMerger {
 	private final List<LongSet> equivalenciesToFix;
 	private final SnomedConceptLookupService lookupService = new SnomedConceptLookupService();
 	private final SnomedRefSetBrowser refSetBrowser = ApplicationContext.getServiceForClass(SnomedRefSetBrowser.class);
+	private final IdManager idManager;
 	
-	public EquivalentConceptMerger(final SnomedEditingContext editingContext, final List<LongSet> equivalenciesToFix) {
+	public EquivalentConceptMerger(final SnomedEditingContext editingContext, final List<LongSet> equivalenciesToFix, final IdManager idManager) {
 		this.editingContext = editingContext;
 		this.equivalenciesToFix = equivalenciesToFix;
+		this.idManager = idManager;
 	}
 	
 	public void fixEquivalencies() {
 		// First resolve the equivalencies Map, to find the equivalent concept instances
 		final Multimap<Concept, Concept> equivalentConcepts = resolveEquivalencies();
+		// component IDs to release after deletion
+		final Collection<String> idsToRelease = Sets.newHashSet();
 		// iterate over the sorted concepts and switch to the equivalent using
 		// the resolved Map
 		final SnomedDeletionPlan deletionPlan = new SnomedDeletionPlan();
 		for (final Concept conceptToKeep : equivalentConcepts.keySet()) {
 			final Collection<Concept> conceptsToRemove = equivalentConcepts.get(conceptToKeep);
-			switchToEquivalentConcept(conceptToKeep, conceptsToRemove);
+			switchToEquivalentConcept(conceptToKeep, conceptsToRemove, idsToRelease);
 			removeOrDeactivate(conceptsToRemove, deletionPlan);
 		}
 		if (!deletionPlan.isEmpty()) {
 			if (!deletionPlan.isRejected()) {
 				this.editingContext.delete(deletionPlan);
+				addReleasableIdsFromDeletionPlan(deletionPlan, idsToRelease);
+				idManager.bulkRelease(idsToRelease);
 			} else {
 				throw new SnowowlRuntimeException(Joiner.on(",").join(deletionPlan.getRejectionReasons()));
 			}
@@ -147,16 +157,18 @@ public class EquivalentConceptMerger {
 		return processedEquivalencies;
 	}
 	
-	private void switchToEquivalentConcept(final Concept conceptToKeep, final Collection<Concept> conceptsToRemove) {
-		removeDeprecatedRelationships(conceptToKeep, conceptsToRemove);
+	private void switchToEquivalentConcept(final Concept conceptToKeep, final Collection<Concept> conceptsToRemove,
+			final Collection<String> idsToRelease) {
+		removeDeprecatedRelationships(conceptToKeep, conceptsToRemove, idsToRelease);
 		for (final Concept conceptToRemove : conceptsToRemove) {
-			switchInboundRelationships(conceptToKeep, conceptsToRemove, conceptToRemove);
-			switchOutboundRelationships(conceptToKeep, conceptsToRemove, conceptToRemove);
+			switchInboundRelationships(conceptToKeep, conceptsToRemove, conceptToRemove, idsToRelease);
+			switchOutboundRelationships(conceptToKeep, conceptsToRemove, conceptToRemove, idsToRelease);
 			switchRefSetMembers(conceptToKeep, conceptToRemove);
 		}
 	}
 	
-	private void switchOutboundRelationships(final Concept conceptToKeep, final Collection<Concept> conceptsToRemove, final Concept conceptToRemove) {
+	private void switchOutboundRelationships(final Concept conceptToKeep, final Collection<Concept> conceptsToRemove,
+			final Concept conceptToRemove, final Collection<String> idsToRelease) {
 		
 		for (final Relationship outboundRelationship : newArrayList(conceptToRemove.getOutboundRelationships())) {
 			
@@ -166,6 +178,8 @@ public class EquivalentConceptMerger {
 			
 			if (conceptsToRemove.contains(outboundRelationship.getDestination())) {
 				SnomedModelExtensions.removeOrDeactivate(outboundRelationship);
+				if (isReleasable(outboundRelationship))
+					idsToRelease.add(outboundRelationship.getId());
 				continue;
 			}
 				
@@ -182,6 +196,8 @@ public class EquivalentConceptMerger {
 
 			if (found) {
 				SnomedModelExtensions.removeOrDeactivate(outboundRelationship);
+				if (isReleasable(outboundRelationship))
+					idsToRelease.add(outboundRelationship.getId());
 			} else {
 				final Relationship relationshipToKeep = editingContext.buildDefaultRelationship(conceptToKeep, 
 						outboundRelationship.getType(), 
@@ -190,12 +206,13 @@ public class EquivalentConceptMerger {
 						outboundRelationship.getModule(),
 						editingContext.getNamespace()); // FIXME: get namespace from outbound relationship
 
-				switchRelationship(relationshipToKeep, outboundRelationship);
+				switchRelationship(relationshipToKeep, outboundRelationship, idsToRelease);
 			}
 		}
 	}
 
-	private void switchInboundRelationships(final Concept conceptToKeep, final Collection<Concept> conceptsToRemove, final Concept conceptToRemove) {
+	private void switchInboundRelationships(final Concept conceptToKeep, final Collection<Concept> conceptsToRemove,
+			final Concept conceptToRemove, final Collection<String> idsToRelease) {
 		
 		for (final Relationship inboundRelationship : newArrayList(conceptToRemove.getInboundRelationships())) {
 			
@@ -205,6 +222,7 @@ public class EquivalentConceptMerger {
 			
 			if (conceptsToRemove.contains(inboundRelationship.getSource())) {
 				SnomedModelExtensions.removeOrDeactivate(inboundRelationship);
+				idsToRelease.add(inboundRelationship.getId());
 				continue;
 			}
 			
@@ -221,6 +239,7 @@ public class EquivalentConceptMerger {
 
 			if (found) {
 				SnomedModelExtensions.removeOrDeactivate(inboundRelationship);
+				idsToRelease.add(inboundRelationship.getId());
 			} else {
 				final Relationship relationshipToKeep = editingContext.buildDefaultRelationship(inboundRelationship.getSource(), 
 						inboundRelationship.getType(), 
@@ -229,15 +248,17 @@ public class EquivalentConceptMerger {
 						inboundRelationship.getModule(),
 						editingContext.getNamespace()); // FIXME: get namespace from inbound relationship
 
-				switchRelationship(relationshipToKeep, inboundRelationship);
+				switchRelationship(relationshipToKeep, inboundRelationship, idsToRelease);
 			}
 		}
 	}
 
-	private void switchRelationship(Relationship relationshipToKeep, Relationship relationshipToRemove) {
+	private void switchRelationship(Relationship relationshipToKeep, Relationship relationshipToRemove, final Collection<String> idsToRelease) {
 		relationshipToKeep.setCharacteristicType(relationshipToRemove.getCharacteristicType());
 		switchConcreteDomains(relationshipToKeep, relationshipToRemove);
 		SnomedModelExtensions.removeOrDeactivate(relationshipToRemove);
+		if (isReleasable(relationshipToRemove))
+			idsToRelease.add(relationshipToRemove.getId());
 	}
 
 	private void switchConcreteDomains(Relationship relationshipToKeep, Relationship relationshipToRemove) {
@@ -323,18 +344,41 @@ public class EquivalentConceptMerger {
 		}
 	}
 	
-	private void removeDeprecatedRelationships(final Concept conceptToKeep, final Collection<Concept> conceptToRemove) {
+	private void removeDeprecatedRelationships(final Concept conceptToKeep, final Collection<Concept> conceptToRemove,
+			final Collection<String> idsToRelease) {
 
 		for (final Relationship inboundRelationship : newArrayList(conceptToKeep.getInboundRelationships())) {
 			if (conceptToRemove.contains(inboundRelationship.getSource())) {
 				SnomedModelExtensions.removeOrDeactivate(inboundRelationship);
+				if (isReleasable(inboundRelationship))
+					idsToRelease.add(inboundRelationship.getId());
 			}
 		}
 
 		for (final Relationship outboundRelationship : newArrayList(conceptToKeep.getOutboundRelationships())) {
 			if (conceptToRemove.contains(outboundRelationship.getDestination())) {
 				SnomedModelExtensions.removeOrDeactivate(outboundRelationship);
+				if (isReleasable(outboundRelationship))
+					idsToRelease.add(outboundRelationship.getId());
 			}
 		}
+	}
+	
+	private boolean isReleasable(final Relationship relationship) {
+		return ! relationship.isReleased();
+	}
+	
+	private void addReleasableIdsFromDeletionPlan(final SnomedDeletionPlan deletionPlan, final Collection<String> idsToRelease) {
+		final Set<ComponentIdentifierPair<String>> pairs = deletionPlan.getDeletedComponentIdentifiers();
+		for (final ComponentIdentifierPair<String> pair : pairs) {
+			if (isReleasable(pair.getTerminologyComponentId()))
+				idsToRelease.add(pair.getComponentId());
+		}
+	}
+
+	private boolean isReleasable(final String terminologyComponentId) {
+		return SnomedTerminologyComponentConstants.CONCEPT.equals(terminologyComponentId)
+				|| SnomedTerminologyComponentConstants.DESCRIPTION.equals(terminologyComponentId)
+				|| SnomedTerminologyComponentConstants.RELATIONSHIP.equals(terminologyComponentId);
 	}
 }

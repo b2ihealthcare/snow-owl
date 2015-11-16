@@ -47,6 +47,9 @@ import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 import com.b2international.snowowl.snomed.datastore.SnomedEditingContext;
 import com.b2international.snowowl.snomed.datastore.SnomedTerminologyBrowser;
+import com.b2international.snowowl.snomed.datastore.id.ISnomedIdentifierService;
+import com.b2international.snowowl.snomed.datastore.id.IdManager;
+import com.b2international.snowowl.snomed.datastore.id.IdManagerImpl;
 import com.b2international.snowowl.snomed.reasoner.server.SnomedReasonerServerActivator;
 import com.b2international.snowowl.snomed.reasoner.server.diff.OntologyChange;
 import com.b2international.snowowl.snomed.reasoner.server.diff.concretedomain.ConcreteDomainPersister;
@@ -90,7 +93,7 @@ public class PersistChangesRemoteJob extends AbstractRemoteJob {
 	private static SnomedTerminologyBrowser getTerminologyBrowser() {
 		return getServiceForClass(SnomedTerminologyBrowser.class);
 	}
-
+	
 	@Override
 	protected IStatus runWithListenableMonitor(final IProgressMonitor monitor) {
 
@@ -134,14 +137,23 @@ public class PersistChangesRemoteJob extends AbstractRemoteJob {
 		}
 		
 		final SubMonitor subMonitor = SubMonitor.convert(monitor, "Persisting changes", 6);
+		final IdManager idManager = new IdManagerImpl(getServiceForClass(ISnomedIdentifierService.class));
 
 		try (final SnomedEditingContext editingContext = new SnomedEditingContext(branchPath)) {
 
 			final InitialReasonerTaxonomyBuilder reasonerTaxonomyBuilder = new InitialReasonerTaxonomyBuilder(branchPath, Type.REASONER);
 
 			final RelationshipNormalFormGenerator relationshipGenerator = new RelationshipNormalFormGenerator(taxonomy, reasonerTaxonomyBuilder);
-			relationshipGenerator.collectNormalFormChanges(subMonitor.newChild(1), new RelationshipPersister(editingContext, OntologyChange.Nature.ADD));
-			relationshipGenerator.collectNormalFormChanges(subMonitor.newChild(1), new RelationshipPersister(editingContext, OntologyChange.Nature.REMOVE));
+			final RelationshipPersister relationshipAddPersister = new RelationshipPersister(editingContext, OntologyChange.Nature.ADD);
+			final RelationshipPersister relationshipRemovePersister = new RelationshipPersister(editingContext, OntologyChange.Nature.REMOVE);
+			
+			relationshipGenerator.collectNormalFormChanges(subMonitor.newChild(1), relationshipAddPersister);
+			relationshipGenerator.collectNormalFormChanges(subMonitor.newChild(1), relationshipRemovePersister);
+			
+			if (!relationshipAddPersister.getRelationshipIds().isEmpty())
+				idManager.bulkRegister(relationshipAddPersister.getRelationshipIds());
+			if (!relationshipRemovePersister.getRelationshipIds().isEmpty())
+				idManager.bulkRelease(relationshipRemovePersister.getRelationshipIds());
 
 			final ConceptConcreteDomainNormalFormGenerator conceptConcreteDomainGenerator = new ConceptConcreteDomainNormalFormGenerator(taxonomy, reasonerTaxonomyBuilder);
 			conceptConcreteDomainGenerator.collectNormalFormChanges(subMonitor.newChild(1), new ConcreteDomainPersister(editingContext, OntologyChange.Nature.ADD));
@@ -159,7 +171,7 @@ public class PersistChangesRemoteJob extends AbstractRemoteJob {
 				}
 			}
 
-			new EquivalentConceptMerger(editingContext, equivalenciesToFix).fixEquivalencies();
+			new EquivalentConceptMerger(editingContext, equivalenciesToFix, idManager).fixEquivalencies();
 
 			final CDOTransaction editingContextTransaction = editingContext.getTransaction();
 			editingContext.preCommit();
@@ -169,6 +181,9 @@ public class PersistChangesRemoteJob extends AbstractRemoteJob {
 				.commitOne(subMonitor.newChild(2));
 
 			return OK_STATUS;
+		} catch (CommitException e) {
+			idManager.rollback();
+			throw e;
 		}
 	}
 

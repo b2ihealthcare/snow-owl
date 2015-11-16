@@ -15,6 +15,7 @@
  */
 package com.b2international.snowowl.snomed.reasoner.server.diff.relationship;
 
+import java.util.Collection;
 import java.util.Map;
 
 import org.eclipse.emf.cdo.transaction.CDOTransaction;
@@ -35,6 +36,7 @@ import com.b2international.snowowl.snomed.reasoner.server.diff.OntologyChangePro
 import com.b2international.snowowl.snomed.snomedrefset.SnomedConcreteDataTypeRefSet;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedConcreteDataTypeRefSetMember;
 import com.google.common.collect.Maps;
+import com.google.common.collect.Sets;
 
 /**
  * Applies changes related to relationships using the specified SNOMED CT editing context.
@@ -50,6 +52,8 @@ public class RelationshipPersister extends OntologyChangeProcessor<StatementFrag
 	private final SnomedEditingContext context;
 	private final Map<Long, Concept> relationshipTypeConcepts;
 	private final Nature nature;
+	
+	private final Collection<String> relationshipIds = Sets.newHashSet();
 	
 	public RelationshipPersister(final SnomedEditingContext context, final Nature nature) {
 		this.context = context;
@@ -76,6 +80,8 @@ public class RelationshipPersister extends OntologyChangeProcessor<StatementFrag
 		
 		final Relationship relationship = (Relationship) context.lookup(removedEntry.getStorageKey());
 		SnomedModelExtensions.removeOrDeactivate(relationship);
+		if (!relationship.isReleased())
+			relationshipIds.add(relationship.getId());
 	}
 	
 	@Override
@@ -107,6 +113,8 @@ public class RelationshipPersister extends OntologyChangeProcessor<StatementFrag
 		final Concept destinationConcept = conceptLookupService.getComponent(Long.toString(addedEntry.getDestinationId()), transaction);
 		
 		final Relationship newRel = context.buildEmptyRelationship(namespace);
+		
+		relationshipIds.add(newRel.getId());
 
 		newRel.setType(typeConcept);
 		newRel.setActive(true);
@@ -142,5 +150,9 @@ public class RelationshipPersister extends OntologyChangeProcessor<StatementFrag
 				newRel.getConcreteDomainRefSetMembers().add(refSetMember);
 			}
 		}
+	}
+	
+	public Collection<String> getRelationshipIds() {
+		return relationshipIds;
 	}
 }
