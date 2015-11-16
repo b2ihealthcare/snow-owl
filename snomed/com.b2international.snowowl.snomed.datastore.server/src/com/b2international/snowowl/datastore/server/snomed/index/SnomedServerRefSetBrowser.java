@@ -839,7 +839,7 @@ public class SnomedServerRefSetBrowser extends AbstractSnomedIndexBrowser<Snomed
 		int i = 0;
 		for (final ScoreDoc scoreDoc : topDocs.scoreDocs) {
 			final Document doc = service.document(branchPath, scoreDoc.doc, null/*all fields*/);
-			members[i++] = SnomedRefSetMemberIndexEntry.create(doc, branchPath);
+			members[i++] = SnomedRefSetMemberIndexEntry.builder(doc).build();
 		}
 
 		return Collections.unmodifiableCollection(Arrays.asList(members));
@@ -992,10 +992,9 @@ public class SnomedServerRefSetBrowser extends AbstractSnomedIndexBrowser<Snomed
 		
 		for (final ScoreDoc scoreDoc : topDocs.scoreDocs) {
 			final Document doc = service.document(branchPath, scoreDoc.doc, null/*all fields*/);
-			members.add(SnomedRefSetMemberIndexEntry.create(doc, branchPath));
+			members.add(SnomedRefSetMemberIndexEntry.builder(doc).build());
 		}
 
 		return members;
 	}
-	
 }

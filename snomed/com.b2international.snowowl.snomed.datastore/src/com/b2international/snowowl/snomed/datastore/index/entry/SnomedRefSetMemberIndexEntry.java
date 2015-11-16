@@ -17,6 +17,7 @@ package com.b2international.snowowl.snomed.datastore.index.entry;
 
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
+import static com.google.common.collect.Maps.newHashMap;
 
 import java.io.Serializable;
 import java.math.BigDecimal;
@@ -119,11 +120,28 @@ public class SnomedRefSetMemberIndexEntry extends SnomedIndexEntry implements IC
 		
 		return builder;
 	}
+	
+	public static Builder builder(final SnomedRefSetMemberIndexEntry source) {
+		return builder()
+				.active(source.active)
+				.effectiveTimeLong(source.effectiveTimeLong)
+				.id(source.id)
+				.moduleId(source.moduleId)
+				.referencedComponentId(source.referencedComponentId)
+				.referencedComponentType(source.referencedComponentType)
+				.referenceSetId(source.getRefSetIdentifierId())
+				.referenceSetType(source.referenceSetType)
+				.released(source.released)
+				.storageKey(source.storageKey)
+				.score(source.score)
+				.mapTargetComponentType(source.mapTargetComponentType)
+				.additionalFields(source.additionalFields);
+	}
 
 	public static class Builder extends AbstractBuilder<Builder> {
 
 		private String referencedComponentId;
-		private final ImmutableMap.Builder<String, Object> additionalFieldsBuilder = ImmutableMap.builder();
+		private final Map<String, Object> additionalFields = newHashMap();
 
 		private String referenceSetId;
 		private SnomedRefSetType referenceSetType;
@@ -145,12 +163,12 @@ public class SnomedRefSetMemberIndexEntry extends SnomedIndexEntry implements IC
 		}
 
 		public Builder additionalField(final String fieldName, final Object fieldValue) {
-			this.additionalFieldsBuilder.put(fieldName, fieldValue);
+			this.additionalFields.put(fieldName, fieldValue);
 			return this;
 		}
 
 		public Builder additionalFields(final Map<String, Object> additionalFields) {
-			this.additionalFieldsBuilder.putAll(additionalFields);
+			this.additionalFields.putAll(additionalFields);
 			return this;
 		}
 
@@ -183,7 +201,7 @@ public class SnomedRefSetMemberIndexEntry extends SnomedIndexEntry implements IC
 					active, 
 					effectiveTimeLong, 
 					referencedComponentId, 
-					additionalFieldsBuilder.build(),
+					ImmutableMap.copyOf(additionalFields),
 					referenceSetId,
 					referenceSetType,
 					referencedComponentType,

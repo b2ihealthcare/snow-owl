@@ -22,6 +22,7 @@ import java.io.Serializable;
 
 import com.b2international.snowowl.core.api.IComponent;
 import com.b2international.snowowl.core.date.EffectiveTimes;
+import com.b2international.snowowl.datastore.cdo.CDOUtils;
 import com.b2international.snowowl.datastore.index.AbstractIndexEntry;
 import com.google.common.base.Objects;
 import com.google.common.base.Objects.ToStringHelper;
@@ -40,7 +41,7 @@ public abstract class SnomedIndexEntry extends AbstractIndexEntry implements ICo
 
 		protected String id;
 		protected String moduleId;
-		protected long storageKey;
+		protected long storageKey = CDOUtils.NO_STORAGE_KEY;
 		protected float score;
 		protected boolean active;
 		protected boolean released;
