@@ -37,6 +37,10 @@ public class BulkRequestBuilder<C extends ServiceProvider> implements RequestBui
 		return this;
 	}
 	
+	public BulkRequestBuilder<C> add(RequestBuilder<C, ?> req) {
+		return add(req.build());
+	}
+	
 	@Override
 	public Request<C, BulkResponse> build() {
 		return new BulkRequest<>(requests);
