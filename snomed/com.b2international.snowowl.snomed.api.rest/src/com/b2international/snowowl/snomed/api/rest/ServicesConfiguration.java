@@ -56,6 +56,7 @@ import com.b2international.snowowl.snomed.api.rest.domain.BranchMixin;
 import com.b2international.snowowl.snomed.api.rest.domain.BranchStateMixin;
 import com.b2international.snowowl.snomed.api.rest.domain.ISnomedComponentMixin;
 import com.b2international.snowowl.snomed.api.rest.domain.ReviewMixin;
+import com.b2international.snowowl.snomed.api.rest.util.CsvMessageConverter;
 import com.fasterxml.classmate.TypeResolver;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -200,6 +201,7 @@ public class ServicesConfiguration extends WebMvcConfigurerAdapter {
 
 		converters.add(new ByteArrayHttpMessageConverter());
 		converters.add(new ResourceHttpMessageConverter());
+		converters.add(new CsvMessageConverter());
 
 		final MappingJackson2HttpMessageConverter jacksonConverter = new MappingJackson2HttpMessageConverter();
 		jacksonConverter.setObjectMapper(objectMapper());

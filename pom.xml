@@ -388,6 +388,12 @@
 					<scope>provided</scope>
 				</dependency>
 				<dependency>
+    				<groupId>com.fasterxml.jackson.dataformat</groupId>
+    				<artifactId>jackson-dataformat-csv</artifactId>
+    				<version>${jackson.version}</version>
+					<scope>provided</scope>
+				</dependency>
+				<dependency>
 				    <groupId>com.fasterxml.jackson.module</groupId>
 				    <artifactId>jackson-module-afterburner</artifactId>
 				    <version>${jackson.version}</version>
