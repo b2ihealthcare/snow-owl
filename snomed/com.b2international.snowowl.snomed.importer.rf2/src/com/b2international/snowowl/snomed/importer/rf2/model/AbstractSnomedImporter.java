@@ -618,7 +618,18 @@ public abstract class AbstractSnomedImporter<T extends AbstractComponentRow, C e
 		final String reason = null != e.getMessage() ? " Reason: '" + e.getMessage() + "'" : "";
 		log("SNOMED CT import failed. Caught exception while import, aborting." + reason);
 		importContext.getLogger().warn("Caught exception while import, aborting.", e);
+		handleCommitException();
 		return ImportAction.BREAK;
+	}
+	
+	/**
+	 * During commit exception, clients may handle the exception (e.g. release
+	 * assigned IDs).
+	 * <p>
+	 * By default this method does nothing. Clients may override it.
+	 */
+	protected void handleCommitException() {
+		return;
 	}
 	
 	/**
