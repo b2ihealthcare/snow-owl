@@ -110,14 +110,11 @@ public class CisSnomedIdentfierServiceImpl extends AbstractSnomedIdentifierServi
 
 	@Override
 	public void register(final String componentId) {
-		if (contains(componentId)) {
-			final SctId sctId = getSctId(componentId);
-			if (sctId.getStatus() == IdentifierStatus.AVAILABLE.getSerializedName()
-					|| sctId.getStatus().equals(IdentifierStatus.RESERVED.getSerializedName())) {
-				LOGGER.warn(
-						String.format("Cannot register ID %s as it is already present with status %s.", componentId, sctId.getStatus()));
-				return;
-			}
+		final SctId sctId = getSctId(componentId);
+		if (!sctId.getStatus().equals(IdentifierStatus.AVAILABLE.getSerializedName())
+				&& !sctId.getStatus().equals(IdentifierStatus.RESERVED.getSerializedName())) {
+			LOGGER.warn(String.format("Cannot register ID %s as it is already present with status %s.", componentId, sctId.getStatus()));
+			return;
 		}
 
 		HttpPost request = null;
@@ -273,15 +270,13 @@ public class CisSnomedIdentfierServiceImpl extends AbstractSnomedIdentifierServi
 	@Override
 	public void bulkRegister(final Collection<String> componentIds) {
 		final Collection<String> componentIdsToRegister = Lists.newArrayList();
+		final Collection<SctId> sctIds = getSctIds(componentIds);
 
-		for (final String componentId : componentIds) {
-			if (contains(componentId)) {
-				// we want to register only the available or reserved IDs
-				final SctId sctId = getSctId(componentId);
-				if (sctId.getStatus() == IdentifierStatus.AVAILABLE.getSerializedName()
-						|| sctId.getStatus().equals(IdentifierStatus.RESERVED.getSerializedName()))
-					componentIdsToRegister.add(componentId);
-			}
+		for (final SctId sctId : sctIds) {
+			// we want to register only the available or reserved IDs
+			if (sctId.getStatus().equals(IdentifierStatus.AVAILABLE.getSerializedName())
+					|| sctId.getStatus().equals(IdentifierStatus.RESERVED.getSerializedName()))
+				componentIdsToRegister.add(sctId.getSctid());
 		}
 
 		if (componentIdsToRegister.isEmpty())
