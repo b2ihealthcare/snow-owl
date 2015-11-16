@@ -67,8 +67,8 @@ import com.b2international.snowowl.snomed.api.impl.domain.browser.SnomedBrowserR
 import com.b2international.snowowl.snomed.api.impl.domain.browser.SnomedBrowserRelationshipType;
 import com.b2international.snowowl.snomed.api.impl.domain.classification.ClassificationRun;
 import com.b2international.snowowl.snomed.core.domain.CharacteristicType;
-import com.b2international.snowowl.snomed.datastore.SnomedConceptIndexEntry;
 import com.b2international.snowowl.snomed.datastore.SnomedTerminologyBrowser;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptIndexEntry;
 import com.b2international.snowowl.snomed.reasoner.classification.AbstractResponse.Type;
 import com.b2international.snowowl.snomed.reasoner.classification.ClassificationRequest;
 import com.b2international.snowowl.snomed.reasoner.classification.GetResultResponse;
