@@ -7,13 +7,13 @@ All notable changes to this project will be documented in this file.
 - Support of MRCM rules import before/after SNOMED CT import (previously was part of the SNOMED CT import)
 - Few missing SNOMED CT Inactivation Indicators have been added
 
-### CHANGED
+### Changed
 - RF2 validation in SNOMED CT import validates content based on effective times (fixes invalid errors/warnings)
 - Concept inactivation rewires immediate children to immediate parent (keeping all STATED ISA relationships and inactivating all inferred relationships)
 - Hot backup script copies entire index folder of a repository instead of just the version indexes
 - IndexService inactivity default timeout value changed to 30 minutes
 
-### REMOVED
+### Removed
 - PostProcessing support has been completely removed
 - Stopwords in index services have been completely removed
 
