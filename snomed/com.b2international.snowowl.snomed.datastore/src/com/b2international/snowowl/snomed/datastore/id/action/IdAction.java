@@ -24,12 +24,24 @@ public abstract class IdAction<I extends Object> implements IIdAction<I> {
 
 	protected final ISnomedIdentifierService identifierService;
 
+	private boolean failed = false;
+
 	public IdAction(final ISnomedIdentifierService identifierService) {
 		this.identifierService = identifierService;
 	}
 
 	public ISnomedIdentifierService getIdentifierService() {
 		return identifierService;
+	}
+
+	@Override
+	public void setFailed(boolean failed) {
+		this.failed = failed;
+	}
+
+	@Override
+	public boolean isFailed() {
+		return failed;
 	}
 
 }

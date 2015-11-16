@@ -49,14 +49,16 @@ public class IdManagerImpl implements IdManager {
 	@Override
 	public void rollback() {
 		for (final IIdAction<?> action : actions) {
-			action.rollback();
+			if (!action.isFailed())
+				action.rollback();
 		}
 	}
 
 	@Override
 	public void commit() {
 		for (final IIdAction<?> action : actions) {
-			action.commit();
+			if (!action.isFailed())
+				action.commit();
 		}
 	}
 
@@ -141,8 +143,13 @@ public class IdManagerImpl implements IdManager {
 	}
 
 	private void executeAction(final IIdAction<?> action) {
-		actions.add(action);
-		action.execute();
+		try {
+			actions.add(action);
+			action.execute();
+		} catch (Exception e) {
+			action.setFailed(true);
+			throw e;
+		}
 	}
 
 }

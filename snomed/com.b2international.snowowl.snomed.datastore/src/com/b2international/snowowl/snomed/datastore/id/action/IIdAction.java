@@ -27,5 +27,9 @@ public interface IIdAction<I extends Object> {
 	void execute();
 
 	void commit();
+	
+	void setFailed(boolean failed);
+	
+	boolean isFailed();
 
 }
