@@ -23,6 +23,18 @@ All notable changes to this project will be documented in this file.
 - Removed tokenization of source field in IndexStore
 - Keep dirty indexes alive when running service inactivity checker
 
+### Merged pull requests
+- https://github.com/b2ihealthcare/snow-owl/pull/21
+- https://github.com/b2ihealthcare/snow-owl/pull/22
+- https://github.com/b2ihealthcare/snow-owl/pull/23
+- https://github.com/b2ihealthcare/snow-owl/pull/24
+- https://github.com/b2ihealthcare/snow-owl/pull/25
+- https://github.com/b2ihealthcare/snow-owl/pull/26
+- https://github.com/b2ihealthcare/snow-owl/pull/27
+- https://github.com/b2ihealthcare/snow-owl/pull/28
+- https://github.com/b2ihealthcare/snow-owl/pull/33
+- https://github.com/b2ihealthcare/snow-owl/pull/34
+
 ## 4.3.1
 
 ### Added
