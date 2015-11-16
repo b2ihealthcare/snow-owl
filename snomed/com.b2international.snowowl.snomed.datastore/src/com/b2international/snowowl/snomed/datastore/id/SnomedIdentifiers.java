@@ -76,13 +76,19 @@ public class SnomedIdentifiers {
 	 */
 	public static SnomedIdentifier of(String componentId) {
 		validate(componentId);
-		final int checkDigit = Character.getNumericValue(componentId.charAt(componentId.length() - 1));
-		final int componentIdentifier = getComponentIdentifier(componentId);
-		final int partitionIdentifier = Character.getNumericValue(componentId.charAt(componentId.length() - 3));
-		final String namespace = partitionIdentifier == 0 ? null : componentId.substring(componentId.length() - 10, componentId.length() - 3);
-		final long itemId = partitionIdentifier == 0 ? Long.parseLong(componentId.substring(0, componentId.length() - 3)) : Long
-				.parseLong(componentId.substring(0, componentId.length() - 10));
-		return new SnomedIdentifierImpl(itemId, namespace, partitionIdentifier, componentIdentifier, checkDigit);
+		
+		try {
+			final int checkDigit = Character.getNumericValue(componentId.charAt(componentId.length() - 1));
+			final int componentIdentifier = getComponentIdentifier(componentId);
+			final int partitionIdentifier = Character.getNumericValue(componentId.charAt(componentId.length() - 3));
+			final String namespace = partitionIdentifier == 0 ? null
+					: componentId.substring(componentId.length() - 10, componentId.length() - 3);
+			final long itemId = partitionIdentifier == 0 ? Long.parseLong(componentId.substring(0, componentId.length() - 3))
+					: Long.parseLong(componentId.substring(0, componentId.length() - 10));
+			return new SnomedIdentifierImpl(itemId, namespace, partitionIdentifier, componentIdentifier, checkDigit);
+		} catch (NumberFormatException e) {
+			throw new IllegalArgumentException(String.format("Invalid SNOMED identifier: %s.", componentId));
+		}
 	}
 
 	/**
