@@ -64,6 +64,9 @@ public class SnomedConceptSubResourcesController extends AbstractSnomedRestServi
 	@Autowired
 	protected ISnomedTerminologyBrowserService terminology;
 
+	@Autowired
+	protected SnomedResourceExpander relationshipExpander;
+
 	@ApiOperation(
 			value="Retrieve descriptions of a concept", 
 			notes="Returns all descriptions associated with the specified concept.",
@@ -107,20 +110,28 @@ public class SnomedConceptSubResourcesController extends AbstractSnomedRestServi
 			@PathVariable(value="conceptId")
 			final String conceptId,
 
+			@ApiParam(value="What parts of the response information to expand.")
+			@RequestParam(value="expand", defaultValue="", required=false)
+			final String[] expand,
+
 			@ApiParam(value="The starting offset in the list")
 			@RequestParam(value="offset", defaultValue="0", required=false) 
 			final int offset,
 
 			@ApiParam(value="The maximum number of items to return")
 			@RequestParam(value="limit", defaultValue="50", required=false) 
-			final int limit) {
+			final int limit,
+
+			final HttpServletRequest request) {
 
 		final IComponentRef conceptRef = createComponentRef(branchPath, conceptId);
 		final IComponentList<ISnomedRelationship> inboundEdges = statements.getInboundEdges(conceptRef, offset, limit);
 
 		final SnomedInboundRelationships result = new SnomedInboundRelationships();
 		result.setTotal(inboundEdges.getTotalMembers());
-		result.setInboundRelationships(inboundEdges.getMembers());
+		List<ISnomedRelationship> members = inboundEdges.getMembers();
+		members = relationshipExpander.expandRelationships(conceptRef, members, Collections.list(request.getLocales()), expand);
+		result.setInboundRelationships(members);
 		return result;
 	}
 
