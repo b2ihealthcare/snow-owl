@@ -22,6 +22,7 @@
 		<!-- Versioning -->
 		<forceContextQualifier>${maven.build.timestamp}</forceContextQualifier>
 		<customer>community</customer>
+		<target.platform.url>${nexus.url}/content/repositories/snapshots.unzip/com/b2international/snowowl/com.b2international.snowowl.ext.target.update/3.9.0-SNAPSHOT/com.b2international.snowowl.ext.target.update-3.9.0-SNAPSHOT.zip-unzip/</target.platform.url>
 	</properties>
 
 	<modules>
