@@ -25,6 +25,8 @@ import org.junit.Test;
 
 import com.b2international.snowowl.core.terminology.ComponentCategory;
 import com.b2international.snowowl.snomed.datastore.config.SnomedCoreConfiguration;
+import com.b2international.snowowl.snomed.datastore.id.reservations.ISnomedIdentiferReservationService;
+import com.b2international.snowowl.snomed.datastore.internal.id.reservations.SnomedIdentifierReservationServiceImpl;
 
 /**
  * @since 4.5
@@ -34,10 +36,11 @@ public class BulkCisSnomedIdentifierServiceImplTest {
 	private static final String B2I_NAMESPACE = "1000129";
 
 	private CisSnomedIdentfierServiceImpl service;
+	private final ISnomedIdentiferReservationService reservationService = new SnomedIdentifierReservationServiceImpl();
 
 	@Before
 	public void init() {
-		SnomedCoreConfiguration conf = new SnomedCoreConfiguration();
+		final SnomedCoreConfiguration conf = new SnomedCoreConfiguration();
 		conf.setCisUrl("http://107.170.101.181");
 		conf.setCisPort("3000");
 		conf.setCisContextRoot("api");
@@ -45,7 +48,7 @@ public class BulkCisSnomedIdentifierServiceImplTest {
 		conf.setCisUserName("snowowl-dev-b2i");
 		conf.setCisPassword("hAAYLYMX5gc98SDEz9cr");
 
-		service = new CisSnomedIdentfierServiceImpl(conf, null);
+		service = new CisSnomedIdentfierServiceImpl(conf, null, reservationService);
 	}
 
 	@Test
@@ -56,8 +59,7 @@ public class BulkCisSnomedIdentifierServiceImplTest {
 			componentIds = service.bulkGenerate(B2I_NAMESPACE, ComponentCategory.CONCEPT, 2);
 			final Collection<SctId> sctIds = service.getSctIds(componentIds);
 			for (final SctId sctId : sctIds) {
-				assertTrue("Status must be assigned",
-						IdentifierStatus.ASSIGNED.getSerializedName().equals(sctId.getStatus()));
+				assertTrue("Status must be assigned", IdentifierStatus.ASSIGNED.getSerializedName().equals(sctId.getStatus()));
 			}
 		} catch (Exception e) {
 			fail(String.format("Unexpected exception was thrown. Exception class: %s.", e.getClass()));
@@ -75,8 +77,7 @@ public class BulkCisSnomedIdentifierServiceImplTest {
 			componentIds = service.bulkReserve(B2I_NAMESPACE, ComponentCategory.CONCEPT, 2);
 			final Collection<SctId> sctIds = service.getSctIds(componentIds);
 			for (final SctId sctId : sctIds) {
-				assertTrue("Status must be reserved",
-						IdentifierStatus.RESERVED.getSerializedName().equals(sctId.getStatus()));
+				assertTrue("Status must be reserved", IdentifierStatus.RESERVED.getSerializedName().equals(sctId.getStatus()));
 			}
 		} catch (Exception e) {
 			fail(String.format("Unexpected exception was thrown. Exception class: %s.", e.getClass()));
@@ -95,8 +96,7 @@ public class BulkCisSnomedIdentifierServiceImplTest {
 			service.bulkRegister(componentIds);
 			final Collection<SctId> sctIds = service.getSctIds(componentIds);
 			for (final SctId sctId : sctIds) {
-				assertTrue("Status must be assigned",
-						IdentifierStatus.ASSIGNED.getSerializedName().equals(sctId.getStatus()));
+				assertTrue("Status must be assigned", IdentifierStatus.ASSIGNED.getSerializedName().equals(sctId.getStatus()));
 			}
 		} catch (Exception e) {
 			fail(String.format("Unexpected exception was thrown. Exception class: %s.", e.getClass()));
@@ -114,8 +114,7 @@ public class BulkCisSnomedIdentifierServiceImplTest {
 			service.bulkRelease(componentIds);
 			final Collection<SctId> sctIds = service.getSctIds(componentIds);
 			for (final SctId sctId : sctIds) {
-				assertTrue("Status must be available",
-						IdentifierStatus.AVAILABLE.getSerializedName().equals(sctId.getStatus()));
+				assertTrue("Status must be available", IdentifierStatus.AVAILABLE.getSerializedName().equals(sctId.getStatus()));
 			}
 		} catch (Exception e) {
 			fail(String.format("Unexpected exception was thrown. Exception class: %s.", e.getClass()));
@@ -129,8 +128,7 @@ public class BulkCisSnomedIdentifierServiceImplTest {
 			service.bulkPublish(componentIds);
 			final Collection<SctId> sctIds = service.getSctIds(componentIds);
 			for (final SctId sctId : sctIds) {
-				assertTrue("Status must be published",
-						IdentifierStatus.PUBLISHED.getSerializedName().equals(sctId.getStatus()));
+				assertTrue("Status must be published", IdentifierStatus.PUBLISHED.getSerializedName().equals(sctId.getStatus()));
 			}
 		} catch (Exception e) {
 			fail(String.format("Unexpected exception was thrown. Exception class: %s.", e.getClass()));
@@ -144,8 +142,7 @@ public class BulkCisSnomedIdentifierServiceImplTest {
 			service.bulkDeprecate(componentIds);
 			final Collection<SctId> sctIds = service.getSctIds(componentIds);
 			for (final SctId sctId : sctIds) {
-				assertTrue("Status must be deprecated",
-						IdentifierStatus.DEPRECATED.getSerializedName().equals(sctId.getStatus()));
+				assertTrue("Status must be deprecated", IdentifierStatus.DEPRECATED.getSerializedName().equals(sctId.getStatus()));
 			}
 		} catch (Exception e) {
 			fail(String.format("Unexpected exception was thrown. Exception class: %s.", e.getClass()));

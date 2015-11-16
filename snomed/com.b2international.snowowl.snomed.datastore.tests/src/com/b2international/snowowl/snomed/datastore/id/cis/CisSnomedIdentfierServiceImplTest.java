@@ -24,6 +24,8 @@ import org.junit.Test;
 import com.b2international.snowowl.core.exceptions.BadRequestException;
 import com.b2international.snowowl.core.terminology.ComponentCategory;
 import com.b2international.snowowl.snomed.datastore.config.SnomedCoreConfiguration;
+import com.b2international.snowowl.snomed.datastore.id.reservations.ISnomedIdentiferReservationService;
+import com.b2international.snowowl.snomed.datastore.internal.id.reservations.SnomedIdentifierReservationServiceImpl;
 
 /**
  * @since 4.5
@@ -32,10 +34,11 @@ public class CisSnomedIdentfierServiceImplTest {
 	private static final String B2I_NAMESPACE = "1000129";
 
 	private CisSnomedIdentfierServiceImpl service;
+	final ISnomedIdentiferReservationService reservationService = new SnomedIdentifierReservationServiceImpl();
 
 	@Before
 	public void init() {
-		SnomedCoreConfiguration conf = new SnomedCoreConfiguration();
+		final SnomedCoreConfiguration conf = new SnomedCoreConfiguration();
 		conf.setCisUrl("http://107.170.101.181");
 		conf.setCisPort("3000");
 		conf.setCisContextRoot("api");
@@ -43,7 +46,7 @@ public class CisSnomedIdentfierServiceImplTest {
 		conf.setCisUserName("snowowl-dev-b2i");
 		conf.setCisPassword("hAAYLYMX5gc98SDEz9cr");
 
-		service = new CisSnomedIdentfierServiceImpl(conf, null);
+		service = new CisSnomedIdentfierServiceImpl(conf, null, reservationService);
 	}
 
 	@Test
