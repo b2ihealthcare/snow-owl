@@ -13,35 +13,30 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.core.events;
+package com.b2international.snowowl.core.events.bulk;
 
-import static com.google.common.collect.Lists.newArrayList;
-
+import java.util.Collections;
 import java.util.List;
 
-import com.b2international.snowowl.core.ServiceProvider;
+import com.google.common.collect.FluentIterable;
 
 /**
  * @since 4.5
+ * @see BulkRequestBuilder
  */
-public class BulkRequestBuilder<C extends ServiceProvider> implements RequestBuilder<C, Void> {
-	
-	private List<Request<C, ?>> requests = newArrayList();
-	
-	BulkRequestBuilder() {}
+public final class BulkResponse {
 
-	public BulkRequestBuilder<C> add(Request<C, ?> req) {
-		this.requests.add(req);
-		return this;
-	}
-	
-	public BulkRequestBuilder<C> add(RequestBuilder<C, ?> req) {
-		return add(req.build());
-	}
-	
-	@Override
-	public Request<C, Void> build() {
-		return new BulkRequest<>(requests);
-	}
+	private final List<Object> responses;
 
+	BulkResponse(List<Object> responses) {
+		this.responses = responses == null ? Collections.emptyList() : responses;
+	}
+	
+	public List<Object> getResponses() {
+		return responses;
+	}
+	
+	public <T> FluentIterable<T> getResponses(final Class<T> type) {
+		return FluentIterable.from(responses).filter(type);
+	}
 }

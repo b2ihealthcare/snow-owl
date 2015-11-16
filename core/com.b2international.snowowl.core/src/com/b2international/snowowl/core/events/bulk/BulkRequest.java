@@ -13,20 +13,22 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.core.events;
+package com.b2international.snowowl.core.events.bulk;
+
+import static com.google.common.collect.Lists.newArrayList;
 
 import java.util.Collections;
 import java.util.List;
 
 import com.b2international.snowowl.core.ServiceProvider;
+import com.b2international.snowowl.core.events.BaseRequest;
+import com.b2international.snowowl.core.events.Request;
 
 /**
- * TODO BulkResponse???
- * 
  * @since 4.5
  * @see BulkRequestBuilder
  */
-public final class BulkRequest<C extends ServiceProvider> extends BaseRequest<C, Void> {
+public final class BulkRequest<C extends ServiceProvider> extends BaseRequest<C, BulkResponse> {
 
 	private List<Request<C, ?>> requests;
 
@@ -35,16 +37,19 @@ public final class BulkRequest<C extends ServiceProvider> extends BaseRequest<C,
 	}
 
 	@Override
-	public Void execute(C context) {
+	public BulkResponse execute(C context) {
+		final List<Object> responses = newArrayList();
+		
 		for (Request<C, ?> req : requests) {
-			req.execute(context);
+			responses.add(req.execute(context));
 		}
-		return null;
+		
+		return new BulkResponse(responses);
 	}
 
 	@Override
-	protected Class<Void> getReturnType() {
-		return Void.class;
+	protected Class<BulkResponse> getReturnType() {
+		return BulkResponse.class;
 	}
 
 	/**
@@ -55,5 +60,4 @@ public final class BulkRequest<C extends ServiceProvider> extends BaseRequest<C,
 	public static <C extends ServiceProvider> BulkRequestBuilder<C> create() {
 		return new BulkRequestBuilder<C>();
 	}
-
 }
