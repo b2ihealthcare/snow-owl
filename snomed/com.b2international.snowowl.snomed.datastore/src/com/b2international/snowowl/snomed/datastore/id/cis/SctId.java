@@ -28,13 +28,13 @@ public class SctId {
 
 	private String sctid;
 
-	private int sequence;
+	private long sequence;
 
-	private int namespace;
+	private long namespace;
 
 	private String partitionId;
 
-	private int checkDigit;
+	private long checkDigit;
 
 	private String systemId;
 
@@ -74,7 +74,7 @@ public class SctId {
 	/**
 	 * @return the sequence
 	 */
-	public int getSequence() {
+	public long getSequence() {
 		return sequence;
 	}
 
@@ -82,14 +82,14 @@ public class SctId {
 	 * @param sequence
 	 *            the sequence to set
 	 */
-	public void setSequence(int sequence) {
+	public void setSequence(long sequence) {
 		this.sequence = sequence;
 	}
 
 	/**
 	 * @return the namespace
 	 */
-	public int getNamespace() {
+	public long getNamespace() {
 		return namespace;
 	}
 
@@ -97,7 +97,7 @@ public class SctId {
 	 * @param namespace
 	 *            the namespace to set
 	 */
-	public void setNamespace(int namespace) {
+	public void setNamespace(long namespace) {
 		this.namespace = namespace;
 	}
 
@@ -119,7 +119,7 @@ public class SctId {
 	/**
 	 * @return the checkDigit
 	 */
-	public int getCheckDigit() {
+	public long getCheckDigit() {
 		return checkDigit;
 	}
 
@@ -127,7 +127,7 @@ public class SctId {
 	 * @param checkDigit
 	 *            the checkDigit to set
 	 */
-	public void setCheckDigit(int checkDigit) {
+	public void setCheckDigit(long checkDigit) {
 		this.checkDigit = checkDigit;
 	}
 
