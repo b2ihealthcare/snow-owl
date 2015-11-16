@@ -16,7 +16,6 @@
 package com.b2international.snowowl.datastore.server.snomed;
 
 import static com.b2international.commons.CompareUtils.isEmpty;
-import static com.b2international.commons.Pair.SerializablePair.of;
 import static com.b2international.commons.StringUtils.isEmpty;
 import static com.b2international.commons.pcj.LongSets.newLongSet;
 import static com.b2international.commons.pcj.LongSets.newLongSetWithMurMur3Hash;
@@ -1521,72 +1520,16 @@ public class SnomedComponentService implements ISnomedComponentService, IPostSto
 	}
 
 	@Override
+	@Deprecated
 	public Pair<String, String> getMemberLabel(final IBranchPath branchPath, final String uuid) {
-		
-		checkNotNull(branchPath, "branchPath");
-		checkNotNull(uuid, "uuid");
-		
-		final Query query = new TermQuery(new Term(REFERENCE_SET_MEMBER_UUID, uuid));
-		final TopDocs topDocs = getIndexServerService().search(branchPath, query, 1);
-		
-		if (IndexUtils.isEmpty(topDocs)) {
-			return null;
-		}
-		
-		final Document doc = getIndexServerService().document(branchPath, topDocs.scoreDocs[0].doc, MEMBER_LABEL_FIELDS_TO_LOAD);
-		return of(
-				Mappings.label().getValue(doc), 
-				doc.get(REFERENCE_SET_MEMBER_MAP_TARGET_COMPONENT_LABEL)
-			);
+		throw new UnsupportedOperationException("Can't retrieve reference set member labels.");		
 	}
 
 	
 	@Override
+	@Deprecated
 	public Set<Pair<String, String>> getReferenceSetMemberLabels(final IBranchPath branchPath, final String refSetId) {
-		
-		checkNotNull(branchPath, "branchPath");
-		checkNotNull(refSetId, "refSetId");
-		
-		final Query query = SnomedMappings.newQuery().memberRefSetId(refSetId).matchAll();
-		final int maxDoc = getIndexServerService().maxDoc(branchPath);
-		
-		ReferenceManager<IndexSearcher> manager = null;
-		IndexSearcher searcher = null;
-		
-		try {
-			
-			final Set<Pair<String, String>> labels = newHashSet();
-			final DocIdCollector collector = create(maxDoc);
-			getIndexServerService().search(branchPath, query, collector);
-			final DocIdsIterator itr = collector.getDocIDs().iterator();
-			
-			manager = getIndexServerService().getManager(branchPath);
-			searcher = manager.acquire();
-
-			while (itr.next()) {
-				final Document doc = searcher.doc(itr.getDocID(), MEMBER_LABEL_FIELDS_TO_LOAD);
-				labels.add(of(
-						Mappings.label().getValue(doc), 
-						doc.get(REFERENCE_SET_MEMBER_MAP_TARGET_COMPONENT_LABEL)
-					));
-			}
-			
-			return labels;
-			
-		} catch (final IOException e) {
-			LOGGER.error("Error while getting reference set member labels for reference set: " + refSetId);
-			throw new SnowowlRuntimeException(e);
-		} finally {
-			if (null != manager && null != searcher) {
-				try {
-					manager.release(searcher);
-				} catch (final IOException e) {
-					LOGGER.error("Error while releasing index searcher.");
-					throw new SnowowlRuntimeException(e);
-				}
-			}
-		}
-		
+		throw new UnsupportedOperationException("Can't retrieve reference set member labels.");		
 	}
 	
 	@Override

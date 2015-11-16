@@ -94,9 +94,9 @@ public class SnomedFuzzyQueryAdapter extends SnomedConceptIndexQueryAdapter impl
 		int tokenCount = 0;
 		
 		for (final String token : tokenSplitter.split(searchString)) {
-			final FuzzyQuery fuzzyQuery = new FuzzyQuery(new Term(SnomedIndexBrowserConstants.CONCEPT_SYNONYM, token), 
-					LevenshteinAutomata.MAXIMUM_SUPPORTED_DISTANCE, 1);
-			fuzzyQueryPart.add(fuzzyQuery, Occur.SHOULD);
+//			final FuzzyQuery fuzzyQuery = new FuzzyQuery(new Term(SnomedIndexBrowserConstants.CONCEPT_SYNONYM, token), 
+//					LevenshteinAutomata.MAXIMUM_SUPPORTED_DISTANCE, 1);
+//			fuzzyQueryPart.add(fuzzyQuery, Occur.SHOULD);
 			++tokenCount;
 		}
 

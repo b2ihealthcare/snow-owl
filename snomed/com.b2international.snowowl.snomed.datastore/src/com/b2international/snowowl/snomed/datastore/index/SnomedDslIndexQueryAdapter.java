@@ -15,9 +15,8 @@
  */
 package com.b2international.snowowl.snomed.datastore.index;
 
-import static com.google.common.collect.Sets.newHashSet;
-
 import java.io.Serializable;
+import java.util.Set;
 
 import javax.annotation.Nullable;
 
@@ -31,6 +30,7 @@ import com.b2international.snowowl.core.api.index.IIndexEntry;
 import com.b2international.snowowl.datastore.index.QueryDslIndexQueryAdapter;
 import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedMappings;
 import com.google.common.collect.FluentIterable;
+import com.google.common.collect.ImmutableSet;
 
 /**
  * Abstract index query adapter for retrieving SNOMED&nbsp;CT component from the index.
@@ -50,7 +50,8 @@ public abstract class SnomedDslIndexQueryAdapter<E extends IIndexEntry> extends 
 	@Override
 	public Filter createFilter() {
 		if (componentIds == null) return null;
-		final Long[] array = FluentIterable.from(newHashSet(componentIds)).transform(new StringToLongFunction()).toArray(Long.class);
-		return SnomedMappings.id().createFilter(array);
+		final Set<String> uniqueIds = ImmutableSet.copyOf(componentIds);
+		final Set<Long> uniqueIdsAsLong = FluentIterable.from(uniqueIds).transform(new StringToLongFunction()).toSet();
+		return SnomedMappings.id().createTermsFilter(uniqueIdsAsLong);
 	}
 }

@@ -33,8 +33,6 @@ import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.api.index.IIndexEntry;
 import com.b2international.snowowl.core.api.index.IIndexService;
 import com.google.common.base.Function;
-import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ImmutableMultimap;
 import com.google.common.collect.Multimap;
 
 /**
@@ -69,10 +67,6 @@ public interface InternalIndexService<E extends IIndexEntry> extends IIndexServi
 			String groupField, 
 			Set<String> valueFields,
 			Function<BytesRef, T> groupFieldConverter);
-
-	ImmutableMultimap<String, DocumentWithScore> multiSearch(IBranchPath branchPath, ImmutableMap<String, Query> namedQueries, 
-			Sort sort, 
-			int limit);
 
 	<T> T executeReadTransaction(IBranchPath branchPath, IndexRead<T> read);
 

@@ -120,7 +120,7 @@ public class SnomedRf1ConceptExporter implements SnomedRf1Exporter {
 								
 								_values[0] = conceptId;
 								_values[1] = 1 == SnomedMappings.active().getValue(doc) ? "1" : "0";
-								_values[2] = doc.get(CONCEPT_FULLY_SPECIFIED_NAME);
+								_values[2] = conceptId; // doc.get(CONCEPT_FULLY_SPECIFIED_NAME);
 								_values[3] = 1 == IndexUtils.getIntValue(doc.getField(CONCEPT_PRIMITIVE)) ? "1" : "0";
 								
 								if ("0".equals(String.valueOf(_values[1]))) {

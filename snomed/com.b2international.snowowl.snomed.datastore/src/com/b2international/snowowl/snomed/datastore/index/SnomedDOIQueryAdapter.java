@@ -87,19 +87,21 @@ public class SnomedDOIQueryAdapter extends SnomedConceptIndexQueryAdapter implem
 					.require(new IndexQueryBuilder()
 					.match(SnomedMappings.newQuery().id(parsedSearchStringOptional.get()).matchAll()).toQuery()).boost(10.0f)
 					.matchAllTokenizedTerms(Mappings.label().fieldName(), searchString).boost(5.0f)
-					.matchAllTokenizedTerms(SnomedIndexBrowserConstants.CONCEPT_SYNONYM, searchString).boost(4.0f)
+//					.matchAllTokenizedTerms(SnomedIndexBrowserConstants.CONCEPT_SYNONYM, searchString).boost(4.0f)
 					.matchAllTokenizedTermPrefixSequences(Mappings.label().fieldName(), searchString).boost(3.0f)
 					.matchTokenizedTermSequence(Mappings.label().fieldName(), searchString).boost(2.0f)
-					.matchAllTokenizedTermPrefixes(SnomedIndexBrowserConstants.CONCEPT_SYNONYM, searchString);
+//					.matchAllTokenizedTermPrefixes(SnomedIndexBrowserConstants.CONCEPT_SYNONYM, searchString);
+					;
 		} else {
 			return super.createIndexQueryBuilder()
 					.finishIf(StringUtils.isEmpty(searchString))
 					.require(new IndexQueryBuilder()
 					.matchAllTokenizedTerms(Mappings.label().fieldName(), searchString).boost(5.0f)
-					.matchAllTokenizedTerms(SnomedIndexBrowserConstants.CONCEPT_SYNONYM, searchString).boost(4.0f)
+//					.matchAllTokenizedTerms(SnomedIndexBrowserConstants.CONCEPT_SYNONYM, searchString).boost(4.0f)
 					.matchAllTokenizedTermPrefixSequences(Mappings.label().fieldName(), searchString).boost(3.0f)
-					.matchTokenizedTermSequence(Mappings.label().fieldName(), searchString).boost(2.0f)
-					.matchAllTokenizedTermPrefixes(SnomedIndexBrowserConstants.CONCEPT_SYNONYM, searchString));
+					.matchTokenizedTermSequence(Mappings.label().fieldName(), searchString).boost(2.0f))
+//					.matchAllTokenizedTermPrefixes(SnomedIndexBrowserConstants.CONCEPT_SYNONYM, searchString));
+					;
 		}
 	}
 
