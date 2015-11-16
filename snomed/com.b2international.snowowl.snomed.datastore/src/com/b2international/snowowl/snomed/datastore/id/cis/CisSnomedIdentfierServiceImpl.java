@@ -29,7 +29,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.b2international.commons.StringUtils;
-import com.b2international.snowowl.core.exceptions.BadRequestException;
+import com.b2international.snowowl.core.api.SnowowlRuntimeException;
 import com.b2international.snowowl.core.terminology.ComponentCategory;
 import com.b2international.snowowl.snomed.datastore.SnomedTerminologyBrowser;
 import com.b2international.snowowl.snomed.datastore.config.SnomedCoreConfiguration;
@@ -101,8 +101,7 @@ public class CisSnomedIdentfierServiceImpl extends AbstractSnomedIdentifierServi
 
 			return sctid;
 		} catch (IOException e) {
-			// TODO change exception
-			throw new RuntimeException("Exception while generating ID.", e);
+			throw new SnowowlRuntimeException("Exception while generating ID.", e);
 		} finally {
 			release(request);
 			logout(token);
@@ -111,9 +110,7 @@ public class CisSnomedIdentfierServiceImpl extends AbstractSnomedIdentifierServi
 
 	@Override
 	public void register(final String componentId) {
-		if (reservationService.isReserved(componentId)) {
-			throw new BadRequestException(String.format("Component with ID %s already exists in the system.", componentId));
-		} else if (contains(componentId)) {
+		if (contains(componentId)) {
 			final SctId sctId = getSctId(componentId);
 			if (sctId.getStatus() == IdentifierStatus.AVAILABLE.getSerializedName()
 					|| sctId.getStatus().equals(IdentifierStatus.RESERVED.getSerializedName())) {
@@ -132,8 +129,7 @@ public class CisSnomedIdentfierServiceImpl extends AbstractSnomedIdentifierServi
 			request = httpPost(String.format("sct/register?token=%s", token), registrationData(componentId));
 			execute(request);
 		} catch (IOException e) {
-			// TODO change exception
-			throw new RuntimeException("Exception while registering ID.", e);
+			throw new SnowowlRuntimeException("Exception while registering ID.", e);
 		} finally {
 			release(request);
 			logout(token);
@@ -154,8 +150,7 @@ public class CisSnomedIdentfierServiceImpl extends AbstractSnomedIdentifierServi
 
 			return sctid;
 		} catch (IOException e) {
-			// TODO change exception
-			throw new RuntimeException("Exception while reserving ID.", e);
+			throw new SnowowlRuntimeException("Exception while reserving ID.", e);
 		} finally {
 			release(request);
 			logout(token);
@@ -173,8 +168,7 @@ public class CisSnomedIdentfierServiceImpl extends AbstractSnomedIdentifierServi
 			request = httpPut(String.format("sct/deprecate?token=%s", token), deprecationData(componentId));
 			execute(request);
 		} catch (IOException e) {
-			// TODO change exception
-			throw new RuntimeException("Exception while deprecating ID.", e);
+			throw new SnowowlRuntimeException("Exception while deprecating ID.", e);
 		} finally {
 			release(request);
 			logout(token);
@@ -192,8 +186,7 @@ public class CisSnomedIdentfierServiceImpl extends AbstractSnomedIdentifierServi
 			request = httpPut(String.format("sct/release?token=%s", token), releaseData(componentId));
 			execute(request);
 		} catch (IOException e) {
-			// TODO change exception
-			throw new RuntimeException("Exception while releasing ID.", e);
+			throw new SnowowlRuntimeException("Exception while releasing ID.", e);
 		} finally {
 			release(request);
 			logout(token);
@@ -211,8 +204,7 @@ public class CisSnomedIdentfierServiceImpl extends AbstractSnomedIdentifierServi
 			request = httpPut(String.format("sct/publish?token=%s", token), publishData(componentId));
 			execute(request);
 		} catch (IOException e) {
-			// TODO change exception
-			throw new RuntimeException("Exception while publishing ID.", e);
+			throw new SnowowlRuntimeException("Exception while publishing ID.", e);
 		} finally {
 			release(request);
 			logout(token);
@@ -232,8 +224,7 @@ public class CisSnomedIdentfierServiceImpl extends AbstractSnomedIdentifierServi
 
 			return mapper.readValue(response, SctId.class);
 		} catch (IOException e) {
-			// TODO change exception
-			throw new RuntimeException("Exception while getting ID.", e);
+			throw new SnowowlRuntimeException("Exception while getting ID.", e);
 		} finally {
 			release(request);
 			logout(token);
@@ -262,7 +253,7 @@ public class CisSnomedIdentfierServiceImpl extends AbstractSnomedIdentifierServi
 			final int status = pollJob(jobId, token);
 
 			if (0 == status) {
-				throw new RuntimeException("Couldn't get records from bulk request.");
+				throw new SnowowlRuntimeException("Couldn't get records from bulk request.");
 			} else {
 				recordsRequest = httpGet(String.format("bulk/jobs/%s/records?token=%s", jobId, token));
 				final String recordsResponse = execute(recordsRequest);
@@ -271,8 +262,7 @@ public class CisSnomedIdentfierServiceImpl extends AbstractSnomedIdentifierServi
 				return getComponentIds(records);
 			}
 		} catch (IOException e) {
-			// TODO change exception
-			throw new RuntimeException("Exception while bulk generating IDs.", e);
+			throw new SnowowlRuntimeException("Exception while bulk generating IDs.", e);
 		} finally {
 			release(bulkRequest);
 			release(recordsRequest);
@@ -285,9 +275,7 @@ public class CisSnomedIdentfierServiceImpl extends AbstractSnomedIdentifierServi
 		final Collection<String> componentIdsToRegister = Lists.newArrayList();
 
 		for (final String componentId : componentIds) {
-			if (reservationService.isReserved(componentId)) {
-				throw new BadRequestException(String.format("Component with ID %s already exists in the system.", componentId));
-			} else if (contains(componentId)) {
+			if (contains(componentId)) {
 				// we want to register only the available or reserved IDs
 				final SctId sctId = getSctId(componentId);
 				if (sctId.getStatus() == IdentifierStatus.AVAILABLE.getSerializedName()
@@ -310,8 +298,7 @@ public class CisSnomedIdentfierServiceImpl extends AbstractSnomedIdentifierServi
 			bulkRequest = httpPost(String.format("sct/bulk/register?token=%s", token), bulkRegistrationData(componentIdsToRegister));
 			execute(bulkRequest);
 		} catch (IOException e) {
-			// TODO change exception
-			throw new RuntimeException("Exception while bulk reserving IDs.", e);
+			throw new SnowowlRuntimeException("Exception while bulk reserving IDs.", e);
 		} finally {
 			release(bulkRequest);
 			release(recordsRequest);
@@ -336,7 +323,7 @@ public class CisSnomedIdentfierServiceImpl extends AbstractSnomedIdentifierServi
 			final int status = pollJob(jobId, token);
 
 			if (0 == status) {
-				throw new RuntimeException("Couldn't get records from bulk request.");
+				throw new SnowowlRuntimeException("Couldn't get records from bulk request.");
 			} else {
 				recordsRequest = httpGet(String.format("bulk/jobs/%s/records?token=%s", jobId, token));
 				final String recordsResponse = execute(recordsRequest);
@@ -345,8 +332,7 @@ public class CisSnomedIdentfierServiceImpl extends AbstractSnomedIdentifierServi
 				return getComponentIds(records);
 			}
 		} catch (IOException e) {
-			// TODO change exception
-			throw new RuntimeException("Exception while bulk reserving IDs.", e);
+			throw new SnowowlRuntimeException("Exception while bulk reserving IDs.", e);
 		} finally {
 			release(bulkRequest);
 			release(recordsRequest);
@@ -365,8 +351,7 @@ public class CisSnomedIdentfierServiceImpl extends AbstractSnomedIdentifierServi
 			request = httpPut(String.format("sct/bulk/deprecate?token=%s", token), bulkDeprecationData(componentIds));
 			execute(request);
 		} catch (IOException e) {
-			// TODO change exception
-			throw new RuntimeException("Exception while bulk deprecating IDs.", e);
+			throw new SnowowlRuntimeException("Exception while bulk deprecating IDs.", e);
 		} finally {
 			release(request);
 			logout(token);
@@ -384,8 +369,7 @@ public class CisSnomedIdentfierServiceImpl extends AbstractSnomedIdentifierServi
 			request = httpPut(String.format("sct/bulk/release?token=%s", token), bulkReleaseData(componentIds));
 			execute(request);
 		} catch (IOException e) {
-			// TODO change exception
-			throw new RuntimeException("Exception while bulk releasing IDs.", e);
+			throw new SnowowlRuntimeException("Exception while bulk releasing IDs.", e);
 		} finally {
 			release(request);
 			logout(token);
@@ -403,8 +387,7 @@ public class CisSnomedIdentfierServiceImpl extends AbstractSnomedIdentifierServi
 			request = httpPut(String.format("sct/bulk/publish?token=%s", token), bulkPublishData(componentIds));
 			execute(request);
 		} catch (IOException e) {
-			// TODO change exception
-			throw new RuntimeException("Exception while bulk publishing IDs.", e);
+			throw new SnowowlRuntimeException("Exception while bulk publishing IDs.", e);
 		} finally {
 			release(request);
 			logout(token);
@@ -431,8 +414,7 @@ public class CisSnomedIdentfierServiceImpl extends AbstractSnomedIdentifierServi
 
 			return Lists.newArrayList(mapper.readValue(response, SctId[].class));
 		} catch (IOException e) {
-			// TODO change exception
-			throw new RuntimeException("Exception while getting IDs.", e);
+			throw new SnowowlRuntimeException("Exception while getting IDs.", e);
 		} finally {
 			release(request);
 			logout(token);
@@ -494,8 +476,7 @@ public class CisSnomedIdentfierServiceImpl extends AbstractSnomedIdentifierServi
 
 			return status;
 		} catch (Exception e) {
-			// TODO change exception
-			throw new RuntimeException("Exception while polling job status.", e);
+			throw new SnowowlRuntimeException("Exception while polling job status.", e);
 		} finally {
 			release(request);
 		}
