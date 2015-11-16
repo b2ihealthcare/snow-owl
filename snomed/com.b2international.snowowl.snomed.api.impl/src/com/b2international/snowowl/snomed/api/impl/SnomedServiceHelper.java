@@ -8,10 +8,7 @@ public class SnomedServiceHelper {
 	public static final String SNOMEDCT = "SNOMEDCT";
 
 	protected static IComponentRef createComponentRef(final String branchPath, final String componentId) {
-		final ComponentRef conceptRef = new ComponentRef();
-		conceptRef.setShortName(SNOMEDCT);
-		conceptRef.setBranchPath(branchPath);
-		conceptRef.setComponentId(componentId);
+		final ComponentRef conceptRef = new ComponentRef(SNOMEDCT, branchPath, componentId);
 		conceptRef.checkStorageExists();
 		return conceptRef;
 	}
