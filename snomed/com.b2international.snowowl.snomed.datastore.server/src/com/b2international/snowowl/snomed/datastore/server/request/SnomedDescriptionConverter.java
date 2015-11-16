@@ -55,7 +55,7 @@ public class SnomedDescriptionConverter extends AbstractSnomedComponentConverter
 		result.setLanguageCode(input.getLanguageCode());
 		result.setModuleId(input.getModuleId());
 		result.setReleased(input.isReleased());
-		result.setTerm(input.getLabel());
+		result.setTerm(input.getTerm());
 		result.setTypeId(input.getTypeId());
 		return result;
 	}

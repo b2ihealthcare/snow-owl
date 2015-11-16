@@ -72,7 +72,6 @@ import com.b2international.snowowl.snomed.datastore.index.SnomedIndexService;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptIndexEntry;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptIndexEntryWithChildFlag;
 import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedMappings;
-import com.b2international.snowowl.snomed.datastore.services.ISnomedRelationshipNameProvider;
 import com.b2international.snowowl.snomed.refset.core.services.SnomedRefSetMemberNameProvider;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.HashMultimap;
@@ -523,29 +522,20 @@ public class SnomedServerTerminologyBrowser extends AbstractIndexTerminologyBrow
 			
 		} else {
 			final String id = Long.toString(SnomedMappings.id().getValue(doc));
-			String label = doc.get(Mappings.label().fieldName());
+			final String label = id;
+//			String label = doc.get(Mappings.label().fieldName());
 			final String iconId = doc.get(Mappings.iconId().fieldName());
+			final short terminologyComponentId;
+			
 			if (types.size() == 1) {
 				// core SNOMED CT Component only
-				final short terminologyComponentId = types.get(0).shortValue();
-				if (null == label) {
-					if (SnomedTerminologyComponentConstants.RELATIONSHIP_NUMBER == terminologyComponentId) {
-						label = ApplicationContext.getServiceForClass(ISnomedRelationshipNameProvider.class).getComponentLabel(branchPath, id);
-					}
-				}
-				return new ExtendedComponentImpl(
-						id, 
-						label, 
-						iconId, 
-						terminologyComponentId);
+				terminologyComponentId = types.get(0).shortValue();
 			} else {
-				// refset + identifier concept component
-				return new ExtendedComponentImpl(
-						id, 
-						label, 
-						iconId, 
-						SnomedTerminologyComponentConstants.CONCEPT_NUMBER);
+				// concept + refset
+				terminologyComponentId = SnomedTerminologyComponentConstants.CONCEPT_NUMBER;
 			}
+		
+			return new ExtendedComponentImpl(id, label, iconId, terminologyComponentId);
 		}
 	}
 

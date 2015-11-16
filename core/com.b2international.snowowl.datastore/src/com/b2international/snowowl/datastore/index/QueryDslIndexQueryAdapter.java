@@ -79,7 +79,7 @@ public abstract class QueryDslIndexQueryAdapter<E extends IIndexEntry> extends A
 
 	@Nullable
 	protected Filter createFilter() {
-		return Mappings.id().createTermsFilter(ImmutableSet.copyOf(componentIds));
+		return (componentIds != null) ? Mappings.id().createTermsFilter(ImmutableSet.copyOf(componentIds)) : null;
 	}
 
 	/**
