@@ -20,7 +20,9 @@ import org.slf4j.LoggerFactory;
 
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.config.SnowOwlConfiguration;
+import com.b2international.snowowl.core.setup.DefaultBootstrapFragment;
 import com.b2international.snowowl.core.setup.Environment;
+import com.b2international.snowowl.core.setup.ModuleConfig;
 import com.b2international.snowowl.snomed.datastore.SnomedTerminologyBrowser;
 import com.b2international.snowowl.snomed.datastore.config.SnomedCoreConfiguration;
 import com.b2international.snowowl.snomed.datastore.config.SnomedCoreConfiguration.IdGenerationStrategy;
@@ -32,16 +34,16 @@ import com.b2international.snowowl.snomed.datastore.internal.id.reservations.Sno
 import com.google.inject.Provider;
 
 /**
- * Factory to create a Snomed CT identifier generator
- * 
  * @since 4.5
  */
-public class SnomedIdentifierServiceFactory {
-	private static final Logger LOGGER = LoggerFactory.getLogger(SnomedIdentifierServiceFactory.class);
+@ModuleConfig(fieldName = "snomed", type = SnomedCoreConfiguration.class)
+public class SnomedIdentifierBootstrap extends DefaultBootstrapFragment {
 
+	private static final Logger LOGGER = LoggerFactory.getLogger(SnomedIdentifierBootstrap.class);
 	private static final String IDENTIFIER_SERVICE_RESERVATIONS = "identifier_service_reservations";
 
-	public static void registerService(final SnowOwlConfiguration configuration, final Environment env) {
+	@Override
+	public void init(final SnowOwlConfiguration configuration, final Environment env) throws Exception {
 		checkIdGenerationSource(configuration);
 
 		final SnomedCoreConfiguration coreConfiguration = configuration.getModuleConfig(SnomedCoreConfiguration.class);
@@ -51,7 +53,7 @@ public class SnomedIdentifierServiceFactory {
 		registerSnomedIdentifierService(coreConfiguration, env, reservationService);
 	}
 
-	private static void checkIdGenerationSource(SnowOwlConfiguration configuration) {
+	private void checkIdGenerationSource(SnowOwlConfiguration configuration) {
 		final SnomedCoreConfiguration coreConfiguration = configuration.getModuleConfig(SnomedCoreConfiguration.class);
 		final IdGenerationStrategy idGenerationSource = coreConfiguration.getIdGenerationStrategy();
 
@@ -60,7 +62,7 @@ public class SnomedIdentifierServiceFactory {
 		}
 	}
 
-	private static void registerSnomedIdentifierService(final SnomedCoreConfiguration conf, final Environment env,
+	private void registerSnomedIdentifierService(final SnomedCoreConfiguration conf, final Environment env,
 			final ISnomedIdentiferReservationService reservationService) {
 		ISnomedIdentifierService identifierService = null;
 
@@ -83,7 +85,7 @@ public class SnomedIdentifierServiceFactory {
 		env.services().registerService(ISnomedIdentifierService.class, identifierService);
 	}
 
-	private static Provider<SnomedTerminologyBrowser> getTerminologyBrowserProvider() {
+	private Provider<SnomedTerminologyBrowser> getTerminologyBrowserProvider() {
 		return new Provider<SnomedTerminologyBrowser>() {
 			@Override
 			public SnomedTerminologyBrowser get() {
@@ -91,4 +93,5 @@ public class SnomedIdentifierServiceFactory {
 			}
 		};
 	}
+
 }
