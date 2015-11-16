@@ -73,7 +73,7 @@ public class SnomedIdentifierServiceFactory {
 			break;
 		case CIS:
 			LOGGER.info("Snow Owl is configured to use CIS based identifier serivce.");
-			identifierService = new CisSnomedIdentfierServiceImpl(conf, provider);
+			identifierService = new CisSnomedIdentfierServiceImpl(conf, provider, reservationService);
 			break;
 		default:
 			throw new IllegalStateException(String.format("Unknown ID generation source configured: %s. ", conf.getIdGenerationStrategy()));

@@ -20,6 +20,7 @@ import static com.google.common.base.Preconditions.checkArgument;
 import com.b2international.snowowl.core.terminology.ComponentCategory;
 import com.b2international.snowowl.datastore.BranchPathUtils;
 import com.b2international.snowowl.snomed.datastore.SnomedTerminologyBrowser;
+import com.b2international.snowowl.snomed.datastore.id.reservations.ISnomedIdentiferReservationService;
 import com.google.inject.Provider;
 
 /**
@@ -27,10 +28,12 @@ import com.google.inject.Provider;
  */
 public abstract class AbstractSnomedIdentifierServiceImpl implements ISnomedIdentifierService {
 
-	private Provider<SnomedTerminologyBrowser> browser;
+	private final Provider<SnomedTerminologyBrowser> browser;
+	protected final ISnomedIdentiferReservationService reservationService;
 
-	public AbstractSnomedIdentifierServiceImpl(final Provider<SnomedTerminologyBrowser> browser) {
+	public AbstractSnomedIdentifierServiceImpl(final Provider<SnomedTerminologyBrowser> browser, final ISnomedIdentiferReservationService reservationService) {
 		this.browser = browser;
+		this.reservationService = reservationService;
 	}
 
 	@Override

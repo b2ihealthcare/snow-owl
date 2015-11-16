@@ -47,7 +47,6 @@ public class InMemorySnomedIdentifierServiceImpl extends AbstractSnomedIdentifie
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(InMemorySnomedIdentifierServiceImpl.class);
 
-	private ISnomedIdentiferReservationService reservationService;
 	private ItemIdGenerationStrategy generationStrategy;
 
 	private MemStore<SctId> store = new MemStore<SctId>();
@@ -70,9 +69,8 @@ public class InMemorySnomedIdentifierServiceImpl extends AbstractSnomedIdentifie
 	public InMemorySnomedIdentifierServiceImpl(final ItemIdGenerationStrategy generationStrategy,
 			final Provider<SnomedTerminologyBrowser> provider,
 			final ISnomedIdentiferReservationService reservationService) {
-		super(provider);
+		super(provider, reservationService);
 		this.generationStrategy = generationStrategy;
-		this.reservationService = reservationService;
 	}
 
 	@Override

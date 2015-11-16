@@ -29,6 +29,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.b2international.commons.StringUtils;
+import com.b2international.snowowl.core.exceptions.BadRequestException;
 import com.b2international.snowowl.core.terminology.ComponentCategory;
 import com.b2international.snowowl.snomed.datastore.SnomedTerminologyBrowser;
 import com.b2international.snowowl.snomed.datastore.config.SnomedCoreConfiguration;
@@ -47,6 +48,7 @@ import com.b2international.snowowl.snomed.datastore.id.cis.request.Record;
 import com.b2international.snowowl.snomed.datastore.id.cis.request.RegistrationData;
 import com.b2international.snowowl.snomed.datastore.id.cis.request.ReleaseData;
 import com.b2international.snowowl.snomed.datastore.id.cis.request.ReservationData;
+import com.b2international.snowowl.snomed.datastore.id.reservations.ISnomedIdentiferReservationService;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Function;
@@ -74,9 +76,9 @@ public class CisSnomedIdentfierServiceImpl extends AbstractSnomedIdentifierServi
 
 	private final ObjectMapper mapper = new ObjectMapper();
 
-	public CisSnomedIdentfierServiceImpl(final SnomedCoreConfiguration conf,
-			final Provider<SnomedTerminologyBrowser> provider) {
-		super(provider);
+	public CisSnomedIdentfierServiceImpl(final SnomedCoreConfiguration conf, final Provider<SnomedTerminologyBrowser> provider,
+			final ISnomedIdentiferReservationService reservationService) {
+		super(provider, reservationService);
 		this.clientKey = conf.getCisClientSoftwareKey();
 		this.username = conf.getCisUserName();
 		this.password = conf.getCisPassword();
@@ -109,12 +111,16 @@ public class CisSnomedIdentfierServiceImpl extends AbstractSnomedIdentifierServi
 
 	@Override
 	public void register(final String componentId) {
-		final SctId sctId = getSctId(componentId);
-		if (sctId.getStatus() == IdentifierStatus.AVAILABLE.getSerializedName()
-				|| sctId.getStatus().equals(IdentifierStatus.RESERVED.getSerializedName())) {
-			LOGGER.warn(String.format("Cannot register ID %s as it is already present with status %s.", componentId,
-					sctId.getStatus()));
-			return;
+		if (reservationService.isReserved(componentId)) {
+			throw new BadRequestException(String.format("Component with ID %s already exists in the system.", componentId));
+		} else if (contains(componentId)) {
+			final SctId sctId = getSctId(componentId);
+			if (sctId.getStatus() == IdentifierStatus.AVAILABLE.getSerializedName()
+					|| sctId.getStatus().equals(IdentifierStatus.RESERVED.getSerializedName())) {
+				LOGGER.warn(
+						String.format("Cannot register ID %s as it is already present with status %s.", componentId, sctId.getStatus()));
+				return;
+			}
 		}
 
 		HttpPost request = null;
@@ -240,8 +246,7 @@ public class CisSnomedIdentfierServiceImpl extends AbstractSnomedIdentifierServi
 	}
 
 	@Override
-	public Collection<String> bulkGenerate(final String namespace, final ComponentCategory category,
-			final int quantity) {
+	public Collection<String> bulkGenerate(final String namespace, final ComponentCategory category, final int quantity) {
 		HttpPost bulkRequest = null;
 		HttpGet recordsRequest = null;
 
@@ -250,8 +255,7 @@ public class CisSnomedIdentfierServiceImpl extends AbstractSnomedIdentifierServi
 		try {
 			LOGGER.info(String.format("Sending %s ID bulk generation request.", category.getDisplayName()));
 
-			bulkRequest = httpPost(String.format("sct/bulk/generate?token=%s", token),
-					bulkGenerationData(namespace, category, quantity));
+			bulkRequest = httpPost(String.format("sct/bulk/generate?token=%s", token), bulkGenerationData(namespace, category, quantity));
 			final String bulkResponse = execute(bulkRequest);
 			final String jobId = mapper.readValue(bulkResponse, JsonNode.class).get("id").asText();
 
@@ -281,11 +285,15 @@ public class CisSnomedIdentfierServiceImpl extends AbstractSnomedIdentifierServi
 		final Collection<String> componentIdsToRegister = Lists.newArrayList();
 
 		for (final String componentId : componentIds) {
-			// we want to register only the available or reserved IDs
-			final SctId sctId = getSctId(componentId);
-			if (sctId.getStatus() == IdentifierStatus.AVAILABLE.getSerializedName()
-					|| sctId.getStatus().equals(IdentifierStatus.RESERVED.getSerializedName()))
-				componentIdsToRegister.add(componentId);
+			if (reservationService.isReserved(componentId)) {
+				throw new BadRequestException(String.format("Component with ID %s already exists in the system.", componentId));
+			} else if (contains(componentId)) {
+				// we want to register only the available or reserved IDs
+				final SctId sctId = getSctId(componentId);
+				if (sctId.getStatus() == IdentifierStatus.AVAILABLE.getSerializedName()
+						|| sctId.getStatus().equals(IdentifierStatus.RESERVED.getSerializedName()))
+					componentIdsToRegister.add(componentId);
+			}
 		}
 
 		if (componentIdsToRegister.isEmpty())
@@ -299,8 +307,7 @@ public class CisSnomedIdentfierServiceImpl extends AbstractSnomedIdentifierServi
 		try {
 			LOGGER.info("Sending bulk registration request.");
 
-			bulkRequest = httpPost(String.format("sct/bulk/register?token=%s", token),
-					bulkRegistrationData(componentIdsToRegister));
+			bulkRequest = httpPost(String.format("sct/bulk/register?token=%s", token), bulkRegistrationData(componentIdsToRegister));
 			execute(bulkRequest);
 		} catch (IOException e) {
 			// TODO change exception
@@ -322,8 +329,7 @@ public class CisSnomedIdentfierServiceImpl extends AbstractSnomedIdentifierServi
 		try {
 			LOGGER.info(String.format("Sending %s ID bulk reservation request.", category.getDisplayName()));
 
-			bulkRequest = httpPost(String.format("sct/bulk/reserve?token=%s", token),
-					bulkReservationData(namespace, category, quantity));
+			bulkRequest = httpPost(String.format("sct/bulk/reserve?token=%s", token), bulkReservationData(namespace, category, quantity));
 			final String bulkResponse = execute(bulkRequest);
 			final String jobId = mapper.readValue(bulkResponse, JsonNode.class).get("id").asText();
 
@@ -509,10 +515,8 @@ public class CisSnomedIdentfierServiceImpl extends AbstractSnomedIdentifierServi
 		return mapper.writeValueAsString(data);
 	}
 
-	private String bulkGenerationData(final String namespace, final ComponentCategory category, final int quantity)
-			throws IOException {
-		final BulkGenerationData data = new BulkGenerationData(convertNamesapce(namespace), clientKey, category,
-				quantity);
+	private String bulkGenerationData(final String namespace, final ComponentCategory category, final int quantity) throws IOException {
+		final BulkGenerationData data = new BulkGenerationData(convertNamesapce(namespace), clientKey, category, quantity);
 		return mapper.writeValueAsString(data);
 	}
 
@@ -526,8 +530,7 @@ public class CisSnomedIdentfierServiceImpl extends AbstractSnomedIdentifierServi
 		for (final String componentId : componentIds) {
 			records.add(new Record(componentId));
 		}
-		final BulkRegistrationData data = new BulkRegistrationData(getNamespace(componentIds.iterator().next()),
-				clientKey, records);
+		final BulkRegistrationData data = new BulkRegistrationData(getNamespace(componentIds.iterator().next()), clientKey, records);
 		return mapper.writeValueAsString(data);
 	}
 
@@ -537,21 +540,18 @@ public class CisSnomedIdentfierServiceImpl extends AbstractSnomedIdentifierServi
 	}
 
 	private String bulkDeprecationData(final Collection<String> componentIds) throws IOException {
-		final BulkDeprecationData data = new BulkDeprecationData(getNamespace(componentIds.iterator().next()),
-				clientKey, componentIds);
+		final BulkDeprecationData data = new BulkDeprecationData(getNamespace(componentIds.iterator().next()), clientKey, componentIds);
 		return mapper.writeValueAsString(data);
 	}
 
 	private String reservationData(final String namespace, final ComponentCategory category) throws IOException {
-		final ReservationData data = new ReservationData(convertNamesapce(namespace), clientKey, getExpirationDate(),
-				category);
+		final ReservationData data = new ReservationData(convertNamesapce(namespace), clientKey, getExpirationDate(), category);
 		return mapper.writeValueAsString(data);
 	}
 
-	private String bulkReservationData(final String namespace, final ComponentCategory category, final int quantity)
-			throws IOException {
-		final BulkReservationData data = new BulkReservationData(convertNamesapce(namespace), clientKey,
-				getExpirationDate(), category, quantity);
+	private String bulkReservationData(final String namespace, final ComponentCategory category, final int quantity) throws IOException {
+		final BulkReservationData data = new BulkReservationData(convertNamesapce(namespace), clientKey, getExpirationDate(), category,
+				quantity);
 		return mapper.writeValueAsString(data);
 	}
 
@@ -569,8 +569,7 @@ public class CisSnomedIdentfierServiceImpl extends AbstractSnomedIdentifierServi
 	}
 
 	private String bulkReleaseData(final Collection<String> componentIds) throws IOException {
-		final BulkReleaseData data = new BulkReleaseData(getNamespace(componentIds.iterator().next()), clientKey,
-				componentIds);
+		final BulkReleaseData data = new BulkReleaseData(getNamespace(componentIds.iterator().next()), clientKey, componentIds);
 		return mapper.writeValueAsString(data);
 	}
 
@@ -580,8 +579,7 @@ public class CisSnomedIdentfierServiceImpl extends AbstractSnomedIdentifierServi
 	}
 
 	private String bulkPublishData(final Collection<String> componentIds) throws IOException {
-		final BulkPublicationData data = new BulkPublicationData(getNamespace(componentIds.iterator().next()),
-				clientKey, componentIds);
+		final BulkPublicationData data = new BulkPublicationData(getNamespace(componentIds.iterator().next()), clientKey, componentIds);
 		return mapper.writeValueAsString(data);
 	}
 
