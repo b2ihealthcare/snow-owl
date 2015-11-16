@@ -20,7 +20,7 @@ import com.b2international.snowowl.snomed.datastore.id.ISnomedIdentifierService;
 /**
  * @since 4.5
  */
-public class ReleaseAction extends IdAction {
+public class ReleaseAction extends IdAction<String> {
 
 	private final String componentId;
 
@@ -45,7 +45,7 @@ public class ReleaseAction extends IdAction {
 	}
 
 	@Override
-	public String getComponentId() {
+	public String get() {
 		return componentId;
 	}
 

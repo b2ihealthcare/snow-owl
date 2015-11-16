@@ -21,7 +21,7 @@ import com.b2international.snowowl.snomed.datastore.id.ISnomedIdentifierService;
 /**
  * @since 4.5
  */
-public class GenerateAction extends IdAction {
+public class GenerateAction extends IdAction<String> {
 
 	private final String namespace;
 	private final ComponentCategory category;
@@ -50,7 +50,7 @@ public class GenerateAction extends IdAction {
 	}
 
 	@Override
-	public String getComponentId() {
+	public String get() {
 		return componentId;
 	}
 

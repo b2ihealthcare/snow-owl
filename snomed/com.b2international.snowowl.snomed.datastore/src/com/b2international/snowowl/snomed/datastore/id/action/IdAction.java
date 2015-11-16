@@ -20,7 +20,7 @@ import com.b2international.snowowl.snomed.datastore.id.ISnomedIdentifierService;
 /**
  * @since 4.5
  */
-public abstract class IdAction implements IIdAction {
+public abstract class IdAction<I extends Object> implements IIdAction<I> {
 
 	protected final ISnomedIdentifierService identifierService;
 

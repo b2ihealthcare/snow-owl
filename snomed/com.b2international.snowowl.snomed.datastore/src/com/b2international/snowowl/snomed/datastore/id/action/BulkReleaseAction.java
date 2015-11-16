@@ -15,43 +15,40 @@
  */
 package com.b2international.snowowl.snomed.datastore.id.action;
 
-import com.b2international.snowowl.core.terminology.ComponentCategory;
+import java.util.Collection;
+
 import com.b2international.snowowl.snomed.datastore.id.ISnomedIdentifierService;
 
 /**
  * @since 4.5
  */
-public class ReserveAction extends IdAction<String> {
+public class BulkReleaseAction extends IdAction<Collection<String>> {
 
-	private final String namespace;
-	private final ComponentCategory category;
+	private final Collection<String> componentIds;
 
-	private String componentId;
-
-	public ReserveAction(final String namespace, final ComponentCategory category, final ISnomedIdentifierService identifierService) {
+	public BulkReleaseAction(final Collection<String> componentIds, final ISnomedIdentifierService identifierService) {
 		super(identifierService);
-		this.namespace = namespace;
-		this.category = category;
+		this.componentIds = componentIds;
 	}
 
 	@Override
 	public void rollback() {
-		identifierService.release(componentId);
+		identifierService.bulkRegister(componentIds);
 	}
 
 	@Override
 	public void execute() {
-		identifierService.reserve(namespace, category);
+		identifierService.bulkRelease(componentIds);
 	}
 
 	@Override
 	public void commit() {
-		identifierService.register(componentId);
+		// do nothing
 	}
 
 	@Override
-	public String get() {
-		return componentId;
+	public Collection<String> get() {
+		return componentIds;
 	}
 
 }

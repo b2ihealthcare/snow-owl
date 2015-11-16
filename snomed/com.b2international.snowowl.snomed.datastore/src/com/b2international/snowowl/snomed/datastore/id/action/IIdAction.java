@@ -18,9 +18,9 @@ package com.b2international.snowowl.snomed.datastore.id.action;
 /**
  * @since 4.5
  */
-public interface IIdAction {
+public interface IIdAction<I extends Object> {
 
-	String getComponentId();
+	I get();
 
 	void rollback();
 
