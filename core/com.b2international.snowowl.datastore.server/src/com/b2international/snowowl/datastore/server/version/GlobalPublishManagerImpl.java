@@ -86,7 +86,7 @@ public class GlobalPublishManagerImpl implements GlobalPublishManager {
 
 	private static final Logger LOGGER = getLogger(GlobalPublishManagerImpl.class);
 	
-	private static final int TASK_WORK_STEP = 5;
+	private static final int TASK_WORK_STEP = 6;
 	private static final String NEW_VERSION_COMMIT_COMMENT_TEMPLATE = "Created new version ''{0}'' for {1}.";
 	private static final String ADJUST_EFFECTIVE_TIME_COMMIT_COMMENT_TEMPLATE = "Adjusted effective time to ''{0}'' for {1} version ''{2}''.";
 
@@ -116,6 +116,7 @@ public class GlobalPublishManagerImpl implements GlobalPublishManager {
 					doPublish(aggregator, subMonitor);
 					doCommitChanges(aggregator, subMonitor);
 					doTag(performTagPerToolingFeatures, subMonitor);
+					postCommit(aggregator, monitor);
 					
 					return OK_STATUS;
 				} catch (final SnowowlServiceException e) {
@@ -270,6 +271,21 @@ public class GlobalPublishManagerImpl implements GlobalPublishManager {
 				final ITagService tagService = getServiceForClass(ITagService.class);
 				final ITagConfiguration tagConfiguration = createTagConfiguration(toolingId);
 				tagService.tag(tagConfiguration);
+				monitor.worked(1);
+			}
+		}
+	}
+	
+	/*
+	 * Performs actions after the successful commit. 
+	 */
+	private void postCommit(final ICDOTransactionAggregator aggregator, final IProgressMonitor monitor) throws SnowowlServiceException {
+		final IPublishOperationConfiguration configuration = ConfigurationThreadLocal.getConfiguration();
+		for (final String toolingId : configuration) {
+			final IVersioningManager versioningManager = getVersionManager(toolingId);
+			versioningManager.postCommit();
+			
+			if (null != monitor) {
 				monitor.worked(1);
 			}
 		}

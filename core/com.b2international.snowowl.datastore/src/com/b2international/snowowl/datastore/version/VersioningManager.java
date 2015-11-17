@@ -34,4 +34,9 @@ public abstract class VersioningManager implements IVersioningManager {
 	
 	/**Returns with the {@link IPublishManager component publish manager} for the versioning manager.*/
 	protected abstract IPublishManager getPublishManager();
+	
+	@Override
+	public void postCommit() {
+		// do nothing by default
+	}
 }
