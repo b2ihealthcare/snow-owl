@@ -173,4 +173,9 @@ public interface ISnomedIdentifierService extends Reservation {
 	 */
 	Collection<SctId> getSctIds(Collection<String> componentIds);
 
+	/**
+	 * Gets all SNOMED identifiers stored in the system.
+	 */
+	Collection<SctId> getSctIds();
+
 }

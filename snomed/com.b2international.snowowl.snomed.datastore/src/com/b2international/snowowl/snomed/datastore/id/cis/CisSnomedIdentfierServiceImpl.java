@@ -424,6 +424,26 @@ public class CisSnomedIdentfierServiceImpl extends AbstractSnomedIdentifierServi
 			logout(token);
 		}
 	}
+	
+	@Override
+	public Collection<SctId> getSctIds() {
+		HttpGet request = null;
+		final String token = login();
+
+		try {
+			LOGGER.info("Sending component IDs get request.");
+
+			request = httpGet(String.format("sct/ids/?token=%s", token));
+			final String response = execute(request);
+
+			return Lists.newArrayList(mapper.readValue(response, SctId[].class));
+		} catch (IOException e) {
+			throw new SnowowlRuntimeException("Exception while getting IDs.", e);
+		} finally {
+			release(request);
+			logout(token);
+		}
+	}
 
 	private String login() {
 		return authenticator.login(username, password);

@@ -62,6 +62,7 @@ public class InMemorySnomedIdentifierServiceImpl extends AbstractSnomedIdentifie
 		}
 	}
 
+	@Override
 	public Collection<SctId> getSctIds() {
 		return store.values();
 	}
@@ -276,7 +277,7 @@ public class InMemorySnomedIdentifierServiceImpl extends AbstractSnomedIdentifie
 
 		return sctIds;
 	}
-
+	
 	private String generateId(final String namespace, final ComponentCategory category) {
 		return generateIds(namespace, category, 1).iterator().next();
 	}
