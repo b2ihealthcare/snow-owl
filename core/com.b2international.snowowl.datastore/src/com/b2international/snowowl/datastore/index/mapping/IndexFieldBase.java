@@ -105,7 +105,7 @@ public abstract class IndexFieldBase<T> implements IndexField<T> {
 	}
 	
 	@Override
-	public final Query toQuery(T value) {
+	public final TermQuery toQuery(T value) {
 		return new TermQuery(toTerm(value));
 	}
 	

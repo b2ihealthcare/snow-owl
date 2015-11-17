@@ -15,8 +15,10 @@
  */
 package com.b2international.snowowl.snomed.datastore.index.mapping;
 
+import com.b2international.commons.BooleanUtils;
 import com.b2international.snowowl.datastore.index.mapping.QueryBuilderBase;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
+import com.b2international.snowowl.snomed.datastore.snor.PredicateIndexEntry.PredicateType;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType;
 
 /**
@@ -52,11 +54,11 @@ public class SnomedQueryBuilder extends QueryBuilderBase<SnomedQueryBuilder> {
 	}
 	
 	public final SnomedQueryBuilder parent(String value, String characteristicTypeId) {
-		return field(SnomedMappings.parent(characteristicTypeId).fieldName(), Long.valueOf(value));
+		return addToQuery(SnomedMappings.parent(characteristicTypeId), Long.valueOf(value));
 	}
 	
 	public final SnomedQueryBuilder parent(Long value, String characteristicTypeId) {
-		return field(SnomedMappings.parent(characteristicTypeId).fieldName(), Long.valueOf(value));
+		return addToQuery(SnomedMappings.parent(characteristicTypeId), Long.valueOf(value));
 	}
 
 	public SnomedQueryBuilder ancestor(Long value) {
@@ -64,11 +66,11 @@ public class SnomedQueryBuilder extends QueryBuilderBase<SnomedQueryBuilder> {
 	}
 	
 	public final SnomedQueryBuilder ancestor(String value, String characteristicTypeId) {
-		return field(SnomedMappings.ancestor(characteristicTypeId).fieldName(), Long.valueOf(value));
+		return addToQuery(SnomedMappings.ancestor(characteristicTypeId), Long.valueOf(value));
 	}
 	
 	public final SnomedQueryBuilder ancestor(Long value, String characteristicTypeId) {
-		return field(SnomedMappings.ancestor(characteristicTypeId).fieldName(), Long.valueOf(value));
+		return addToQuery(SnomedMappings.ancestor(characteristicTypeId), Long.valueOf(value));
 	}
 
 	public SnomedQueryBuilder memberRefSetType(SnomedRefSetType type) {
@@ -173,5 +175,253 @@ public class SnomedQueryBuilder extends QueryBuilderBase<SnomedQueryBuilder> {
 
 	public SnomedQueryBuilder effectiveTime(Long value) {
 		return addToQuery(SnomedMappings.effectiveTime(), value);
+	}
+	
+	public SnomedQueryBuilder iconId(final Long iconId) {
+		return addToQuery(SnomedMappings.iconId(), iconId);
+	}
+
+	public SnomedQueryBuilder parent(final String fieldNameSuffix, final Long parentId) {
+		return addToQuery(SnomedMappings.parent(fieldNameSuffix), parentId);
+	}
+
+	public SnomedQueryBuilder ancestor(final String fieldNameSuffix, final Long parentId) {
+		return addToQuery(SnomedMappings.ancestor(fieldNameSuffix), parentId);
+	}
+
+	public SnomedQueryBuilder active(final boolean active) {
+		return addToQuery(SnomedMappings.active(), BooleanUtils.toInteger(active));
+	}
+
+	public SnomedQueryBuilder released(final boolean released) {
+		return addToQuery(SnomedMappings.released(), BooleanUtils.toInteger(released));
+	}
+
+	public SnomedQueryBuilder componentReferringPredicate(final String referringPredicateId) {
+		return addToQuery(SnomedMappings.componentReferringPredicate(), referringPredicateId);
+	}
+
+	public SnomedQueryBuilder primitive(final boolean primitive) {
+		return addToQuery(SnomedMappings.primitive(), BooleanUtils.toInteger(primitive));
+	}
+
+	public SnomedQueryBuilder exhaustive(final boolean exhaustive) {
+		return addToQuery(SnomedMappings.exhaustive(), BooleanUtils.toInteger(exhaustive));
+	}
+
+	public SnomedQueryBuilder conceptDegreeOfInterest(final Float conceptDoi) {
+		return addToQuery(SnomedMappings.conceptDegreeOfInterest(), conceptDoi);
+	}
+
+	public SnomedQueryBuilder conceptReferringRefSetId(final Long refSetId) {
+		return addToQuery(SnomedMappings.conceptReferringRefSetId(), refSetId);
+	}
+
+	public SnomedQueryBuilder conceptReferringMappingRefSetId(final Long mappingRefSetId) {
+		return addToQuery(SnomedMappings.conceptReferringMappingRefSetId(), mappingRefSetId);
+	}
+
+	public SnomedQueryBuilder conceptNamespaceId(final Long namespaceId) {
+		return addToQuery(SnomedMappings.conceptNamespaceId(), namespaceId);
+	}
+
+	public SnomedQueryBuilder descriptionCaseSignificance(final Long caseSignificanceId) {
+		return addToQuery(SnomedMappings.descriptionCaseSignificance(), caseSignificanceId);
+	}
+
+	public SnomedQueryBuilder relationshipSource(final Long sourceId) {
+		return addToQuery(SnomedMappings.relationshipSource(), sourceId);
+	}
+
+	public SnomedQueryBuilder relationshipDestination(final Long destinationId) {
+		return addToQuery(SnomedMappings.relationshipDestination(), destinationId);
+	}
+
+	public SnomedQueryBuilder relationshipGroup(final Integer group) {
+		return addToQuery(SnomedMappings.relationshipGroup(), group);
+	}
+
+	public SnomedQueryBuilder relationshipUnionGroup(final Integer unionGroup) {
+		return addToQuery(SnomedMappings.relationshipUnionGroup(), unionGroup);
+	}
+
+	public SnomedQueryBuilder relationshipInferred(final boolean inferred) {
+		return addToQuery(SnomedMappings.relationshipInferred(), BooleanUtils.toInteger(inferred));
+	}
+
+	public SnomedQueryBuilder relationshipUniversal(final boolean universal) {
+		return addToQuery(SnomedMappings.relationshipUniversal(), BooleanUtils.toInteger(universal));
+	}
+
+	public SnomedQueryBuilder relationshipDestinationNegated(final boolean destinationNegated) {
+		return addToQuery(SnomedMappings.relationshipDestinationNegated(), BooleanUtils.toInteger(destinationNegated));
+	}
+
+	public SnomedQueryBuilder predicateType(final PredicateType type) {
+		return addToQuery(SnomedMappings.predicateType(), type.name());
+	}
+
+	public SnomedQueryBuilder predicateDescriptionTypeId(final Long typeId) {
+		return addToQuery(SnomedMappings.predicateDescriptionTypeId(), typeId);
+	}
+
+	public SnomedQueryBuilder predicateDataTypeLabel(final String label) { // RF2 name, probably
+		return addToQuery(SnomedMappings.predicateDataTypeLabel(), label);
+	}
+
+	public SnomedQueryBuilder predicateDataTypeName(final String name) { // display name, probably
+		return addToQuery(SnomedMappings.predicateDataTypeName(), name);
+	}
+
+	public SnomedQueryBuilder predicateDataType(final com.b2international.snowowl.snomed.mrcm.DataType mrcmDataType) {
+		return addToQuery(SnomedMappings.predicateDataType(), mrcmDataType.name());
+	}
+
+	public SnomedQueryBuilder predicateRelationshipTypeExpression(final String expression) {
+		return addToQuery(SnomedMappings.predicateRelationshipTypeExpression(), expression);
+	}
+
+	public SnomedQueryBuilder predicateRelationshipValueExpression(final String expression) {
+		return addToQuery(SnomedMappings.predicateRelationshipValueExpression(), expression);
+	}
+
+	public SnomedQueryBuilder predicateCharacteristicTypeExpression(final String expression) {
+		return addToQuery(SnomedMappings.predicateCharacteristicTypeExpression(), expression);
+	}
+
+	public SnomedQueryBuilder predicateGroupRule(final String groupRule) {
+		return addToQuery(SnomedMappings.predicateGroupRule(), groupRule);
+	}
+
+	public SnomedQueryBuilder predicateQueryExpression(final String expression) {
+		return addToQuery(SnomedMappings.predicateQueryExpression(), expression);
+	}
+
+	public SnomedQueryBuilder predicateRequired(final boolean required) {
+		return addToQuery(SnomedMappings.predicateRequired(), BooleanUtils.toInteger(required));
+	}
+
+	public SnomedQueryBuilder predicateMultiple(final boolean multiple) {
+		return addToQuery(SnomedMappings.predicateMultiple(), BooleanUtils.toInteger(multiple));
+	}
+
+	public SnomedQueryBuilder refSetType(final SnomedRefSetType refSetType) {
+		return addToQuery(SnomedMappings.refSetType(), refSetType.ordinal());
+	}
+
+	public SnomedQueryBuilder refSetReferencedComponentType(final Integer referencedComponentType) {
+		return addToQuery(SnomedMappings.refSetReferencedComponentType(), referencedComponentType);
+	}
+
+	public SnomedQueryBuilder refSetStructural(final boolean structural) {
+		return addToQuery(SnomedMappings.refSetStructural(), BooleanUtils.toInteger(structural));
+	}
+
+	public SnomedQueryBuilder memberUuid(final String uuid) {
+		return addToQuery(SnomedMappings.memberUuid(), uuid);
+	}
+
+	public SnomedQueryBuilder memberRefSetId(final Long refSetId) {
+		return addToQuery(SnomedMappings.memberRefSetId(), refSetId);
+	}
+
+	public SnomedQueryBuilder memberReferencedComponentType(final Integer referencedComponentType) {
+		return addToQuery(SnomedMappings.memberReferencedComponentType(), referencedComponentType);
+	}
+
+	public SnomedQueryBuilder memberTargetComponentId(final String mapTargetComponentId) {
+		return addToQuery(SnomedMappings.memberTargetComponentId(), mapTargetComponentId);
+	}
+
+	public SnomedQueryBuilder memberValueId(final String valueId) {
+		return addToQuery(SnomedMappings.memberValueId(), valueId);
+	}
+
+	public SnomedQueryBuilder memberQuery(final String query) {
+		return addToQuery(SnomedMappings.memberQuery(), query);
+	}
+
+	public SnomedQueryBuilder memberMapTargetComponentId(final String mapTargetComponentId) {
+		return addToQuery(SnomedMappings.memberMapTargetComponentId(), mapTargetComponentId);
+	}
+
+	public SnomedQueryBuilder memberMapTargetComponentType(final Integer mapTargetComponentType) {
+		return addToQuery(SnomedMappings.memberMapTargetComponentType(), mapTargetComponentType);
+	}
+
+	public SnomedQueryBuilder memberMapTargetComponentDescription(final String mapTargetComponentDescription) {
+		return addToQuery(SnomedMappings.memberMapTargetComponentDescription(), mapTargetComponentDescription);
+	}
+
+	public SnomedQueryBuilder memberMapGroup(final Integer mapGroup) {
+		return addToQuery(SnomedMappings.memberMapGroup(), mapGroup);
+	}
+
+	public SnomedQueryBuilder memberMapPriority(final Integer mapPriority) {
+		return addToQuery(SnomedMappings.memberMapPriority(), mapPriority);
+	}
+
+	public SnomedQueryBuilder memberMapRule(final String mapRule) {
+		return addToQuery(SnomedMappings.memberMapRule(), mapRule);
+	}
+
+	public SnomedQueryBuilder memberMapAdvice(final String mapAdvice) {
+		return addToQuery(SnomedMappings.memberMapAdvice(), mapAdvice);
+	}
+
+	public SnomedQueryBuilder memberMapCategoryId(final Long mapCategoryId) {
+		return addToQuery(SnomedMappings.memberMapCategoryId(), mapCategoryId);
+	}
+
+	public SnomedQueryBuilder memberCorrelationId(final Long mapCorrelationId) {
+		return addToQuery(SnomedMappings.memberCorrelationId(), mapCorrelationId);
+	}
+
+	public SnomedQueryBuilder memberDescriptionFormatId(final Long descriptionFormatId) {
+		return addToQuery(SnomedMappings.memberDescriptionFormatId(), descriptionFormatId);
+	}
+
+	public SnomedQueryBuilder memberDescriptionLength(final Integer descriptionFormatLength) {
+		return addToQuery(SnomedMappings.memberDescriptionLength(), descriptionFormatLength);
+	}
+
+	public SnomedQueryBuilder memberAcceptabilityId(final Long acceptabilityId) {
+		return addToQuery(SnomedMappings.memberAcceptabilityId(), acceptabilityId);
+	}
+
+	public SnomedQueryBuilder memberOperatorId(final Long operatorId) {
+		return addToQuery(SnomedMappings.memberOperatorId(), operatorId);
+	}
+
+	public SnomedQueryBuilder memberContainerModuleId(final Long containerModuleId) {
+		return addToQuery(SnomedMappings.memberContainerModuleId(), containerModuleId);
+	}
+
+	public SnomedQueryBuilder memberUomId(final Long uomId) {
+		return addToQuery(SnomedMappings.memberUomId(), uomId);
+	}
+
+	public SnomedQueryBuilder memberDataTypeLabel(final String label) {
+		return addToQuery(SnomedMappings.memberDataTypeLabel(), label);
+	}
+
+	public SnomedQueryBuilder memberDataTypeOrdinal(final com.b2international.snowowl.snomed.snomedrefset.DataType refSetDataType) {
+		return addToQuery(SnomedMappings.memberDataTypeOrdinal(), refSetDataType.ordinal());
+	}
+
+	public SnomedQueryBuilder memberSerializedValue(final String serializedValue) {
+		return addToQuery(SnomedMappings.memberSerializedValue(), serializedValue);
+	}
+
+	public SnomedQueryBuilder memberCharacteristicTypeId(final Long characteristicTypeId) {
+		return addToQuery(SnomedMappings.memberCharacteristicTypeId(), characteristicTypeId);
+	}
+
+	public SnomedQueryBuilder memberSourceEffectiveTime(final Long sourceEffectiveTime) {
+		return addToQuery(SnomedMappings.memberSourceEffectiveTime(), sourceEffectiveTime);
+	}
+
+	public SnomedQueryBuilder memberTargetEffectiveTime(final Long targetEffectiveTime) {
+		return addToQuery(SnomedMappings.memberTargetEffectiveTime(), targetEffectiveTime);
 	}
 }

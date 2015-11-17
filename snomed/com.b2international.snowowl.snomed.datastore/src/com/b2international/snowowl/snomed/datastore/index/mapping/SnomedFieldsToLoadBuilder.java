@@ -26,59 +26,283 @@ public class SnomedFieldsToLoadBuilder extends FieldsToLoadBuilderBase<SnomedFie
 		super();
 	}
 
-	public SnomedFieldsToLoadBuilder parent(String characteristicTypeId) {
-		return field(SnomedMappings.parent(characteristicTypeId));
+	public SnomedFieldsToLoadBuilder parent(final String fieldNameSuffix) {
+		return field(SnomedMappings.parent(fieldNameSuffix));
 	}
-	
-	public SnomedFieldsToLoadBuilder ancestor(String characteristicTypeId) {
-		return field(SnomedMappings.ancestor(characteristicTypeId));
+
+	public SnomedFieldsToLoadBuilder ancestor(final String fieldNameSuffix) {
+		return field(SnomedMappings.ancestor(fieldNameSuffix));
 	}
-	
-	public SnomedFieldsToLoadBuilder memberReferencedComponentId() {
-		return field(SnomedMappings.memberReferencedComponentId());
-	}
-	
-	public SnomedFieldsToLoadBuilder memberReferenceSetId() {
-		return field(SnomedMappings.memberRefSetId());
-	}
-	
-	public SnomedFieldsToLoadBuilder memberReferenceSetType() {
-		return field(SnomedMappings.memberRefSetType());
-	}
-	
+
 	public SnomedFieldsToLoadBuilder module() {
 		return field(SnomedMappings.module());
+	}
+
+	public SnomedFieldsToLoadBuilder effectiveTime() {
+		return field(SnomedMappings.effectiveTime());
 	}
 
 	public SnomedFieldsToLoadBuilder active() {
 		return field(SnomedMappings.active());
 	}
-	
+
 	public SnomedFieldsToLoadBuilder released() {
 		return field(SnomedMappings.released());
+	}
+
+	public SnomedFieldsToLoadBuilder componentReferringPredicate() {
+		return field(SnomedMappings.componentReferringPredicate());
+	}
+
+	public SnomedFieldsToLoadBuilder primitive() {
+		return field(SnomedMappings.primitive());
+	}
+
+	public SnomedFieldsToLoadBuilder exhaustive() {
+		return field(SnomedMappings.exhaustive());
+	}
+
+	public SnomedFieldsToLoadBuilder conceptDegreeOfInterest() {
+		return field(SnomedMappings.conceptDegreeOfInterest());
+	}
+
+	public SnomedFieldsToLoadBuilder conceptReferringRefSetId() {
+		return field(SnomedMappings.conceptReferringRefSetId());
+	}
+
+	public SnomedFieldsToLoadBuilder conceptReferringMappingRefSetId() {
+		return field(SnomedMappings.conceptReferringMappingRefSetId());
+	}
+
+	public SnomedFieldsToLoadBuilder conceptNamespaceId() {
+		return field(SnomedMappings.conceptNamespaceId());
 	}
 
 	public SnomedFieldsToLoadBuilder descriptionType() {
 		return field(SnomedMappings.descriptionType());
 	}
-	
+
 	public SnomedFieldsToLoadBuilder descriptionConcept() {
 		return field(SnomedMappings.descriptionConcept());
+	}
+
+	public SnomedFieldsToLoadBuilder descriptionCaseSignificance() {
+		return field(SnomedMappings.descriptionCaseSignificance());
+	}
+
+	public SnomedFieldsToLoadBuilder relationshipSource() {
+		return field(SnomedMappings.relationshipSource());
 	}
 
 	public SnomedFieldsToLoadBuilder relationshipType() {
 		return field(SnomedMappings.relationshipType());
 	}
 
+	public SnomedFieldsToLoadBuilder relationshipDestination() {
+		return field(SnomedMappings.relationshipDestination());
+	}
+
+	public SnomedFieldsToLoadBuilder relationshipGroup() {
+		return field(SnomedMappings.relationshipGroup());
+	}
+
+	public SnomedFieldsToLoadBuilder relationshipUnionGroup() {
+		return field(SnomedMappings.relationshipUnionGroup());
+	}
+
+	public SnomedFieldsToLoadBuilder relationshipInferred() {
+		return field(SnomedMappings.relationshipInferred());
+	}
+
+	public SnomedFieldsToLoadBuilder relationshipUniversal() {
+		return field(SnomedMappings.relationshipUniversal());
+	}
+
+	public SnomedFieldsToLoadBuilder relationshipDestinationNegated() {
+		return field(SnomedMappings.relationshipDestinationNegated());
+	}
+
 	public SnomedFieldsToLoadBuilder relationshipCharacteristicType() {
 		return field(SnomedMappings.relationshipCharacteristicType());
+	}
+
+	public SnomedFieldsToLoadBuilder predicateType() {
+		return field(SnomedMappings.predicateType());
+	}
+
+	public SnomedFieldsToLoadBuilder predicateDescriptionTypeId() {
+		return field(SnomedMappings.predicateDescriptionTypeId());
+	}
+
+	public SnomedFieldsToLoadBuilder predicateDataTypeLabel() {
+		return field(SnomedMappings.predicateDataTypeLabel());
+	}
+
+	public SnomedFieldsToLoadBuilder predicateDataTypeName() {
+		return field(SnomedMappings.predicateDataTypeName());
+	}
+
+	public SnomedFieldsToLoadBuilder predicateDataType() {
+		return field(SnomedMappings.predicateDataType());
+	}
+
+	public SnomedFieldsToLoadBuilder predicateRelationshipTypeExpression() {
+		return field(SnomedMappings.predicateRelationshipTypeExpression());
+	}
+
+	public SnomedFieldsToLoadBuilder predicateRelationshipValueExpression() {
+		return field(SnomedMappings.predicateRelationshipValueExpression());
+	}
+
+	public SnomedFieldsToLoadBuilder predicateCharacteristicTypeExpression() {
+		return field(SnomedMappings.predicateCharacteristicTypeExpression());
+	}
+
+	public SnomedFieldsToLoadBuilder predicateGroupRule() {
+		return field(SnomedMappings.predicateGroupRule());
+	}
+
+	public SnomedFieldsToLoadBuilder predicateQueryExpression() {
+		return field(SnomedMappings.predicateQueryExpression());
+	}
+
+	public SnomedFieldsToLoadBuilder predicateRequired() {
+		return field(SnomedMappings.predicateRequired());
+	}
+
+	public SnomedFieldsToLoadBuilder predicateMultiple() {
+		return field(SnomedMappings.predicateMultiple());
+	}
+
+	public SnomedFieldsToLoadBuilder refSetType() {
+		return field(SnomedMappings.refSetType());
+	}
+
+	public SnomedFieldsToLoadBuilder refSetReferencedComponentType() {
+		return field(SnomedMappings.refSetReferencedComponentType());
+	}
+
+	public SnomedFieldsToLoadBuilder refSetStructural() {
+		return field(SnomedMappings.refSetStructural());
 	}
 
 	public SnomedFieldsToLoadBuilder refSetStorageKey() {
 		return field(SnomedMappings.refSetStorageKey());
 	}
 
-	public SnomedFieldsToLoadBuilder effectiveTime() {
-		return field(SnomedMappings.effectiveTime());
+	public SnomedFieldsToLoadBuilder memberUuid() {
+		return field(SnomedMappings.memberUuid());
+	}
+
+	public SnomedFieldsToLoadBuilder memberRefSetId() {
+		return field(SnomedMappings.memberRefSetId());
+	}
+
+	public SnomedFieldsToLoadBuilder memberRefSetType() {
+		return field(SnomedMappings.memberRefSetType());
+	}
+
+	public SnomedFieldsToLoadBuilder memberReferencedComponentId() {
+		return field(SnomedMappings.memberReferencedComponentId());
+	}
+
+	public SnomedFieldsToLoadBuilder memberReferencedComponentType() {
+		return field(SnomedMappings.memberReferencedComponentType());
+	}
+
+	public SnomedFieldsToLoadBuilder memberTargetComponentId() {
+		return field(SnomedMappings.memberTargetComponentId());
+	}
+
+	public SnomedFieldsToLoadBuilder memberValueId() {
+		return field(SnomedMappings.memberValueId());
+	}
+
+	public SnomedFieldsToLoadBuilder memberQuery() {
+		return field(SnomedMappings.memberQuery());
+	}
+
+	public SnomedFieldsToLoadBuilder memberMapTargetComponentId() {
+		return field(SnomedMappings.memberMapTargetComponentId());
+	}
+
+	public SnomedFieldsToLoadBuilder memberMapTargetComponentType() {
+		return field(SnomedMappings.memberMapTargetComponentType());
+	}
+
+	public SnomedFieldsToLoadBuilder memberMapTargetComponentDescription() {
+		return field(SnomedMappings.memberMapTargetComponentDescription());
+	}
+
+	public SnomedFieldsToLoadBuilder memberMapGroup() {
+		return field(SnomedMappings.memberMapGroup());
+	}
+
+	public SnomedFieldsToLoadBuilder memberMapPriority() {
+		return field(SnomedMappings.memberMapPriority());
+	}
+
+	public SnomedFieldsToLoadBuilder memberMapRule() {
+		return field(SnomedMappings.memberMapRule());
+	}
+
+	public SnomedFieldsToLoadBuilder memberMapAdvice() {
+		return field(SnomedMappings.memberMapAdvice());
+	}
+
+	public SnomedFieldsToLoadBuilder memberMapCategoryId() {
+		return field(SnomedMappings.memberMapCategoryId());
+	}
+
+	public SnomedFieldsToLoadBuilder memberCorrelationId() {
+		return field(SnomedMappings.memberCorrelationId());
+	}
+
+	public SnomedFieldsToLoadBuilder memberDescriptionFormatId() {
+		return field(SnomedMappings.memberDescriptionFormatId());
+	}
+
+	public SnomedFieldsToLoadBuilder memberDescriptionLength() {
+		return field(SnomedMappings.memberDescriptionLength());
+	}
+
+	public SnomedFieldsToLoadBuilder memberAcceptabilityId() {
+		return field(SnomedMappings.memberAcceptabilityId());
+	}
+
+	public SnomedFieldsToLoadBuilder memberOperatorId() {
+		return field(SnomedMappings.memberOperatorId());
+	}
+
+	public SnomedFieldsToLoadBuilder memberContainerModuleId() {
+		return field(SnomedMappings.memberContainerModuleId());
+	}
+
+	public SnomedFieldsToLoadBuilder memberUomId() {
+		return field(SnomedMappings.memberUomId());
+	}
+
+	public SnomedFieldsToLoadBuilder memberDataTypeLabel() {
+		return field(SnomedMappings.memberDataTypeLabel());
+	}
+
+	public SnomedFieldsToLoadBuilder memberDataTypeOrdinal() {
+		return field(SnomedMappings.memberDataTypeOrdinal());
+	}
+
+	public SnomedFieldsToLoadBuilder memberSerializedValue() {
+		return field(SnomedMappings.memberSerializedValue());
+	}
+
+	public SnomedFieldsToLoadBuilder memberCharacteristicTypeId() {
+		return field(SnomedMappings.memberCharacteristicTypeId());
+	}
+
+	public SnomedFieldsToLoadBuilder memberSourceEffectiveTime() {
+		return field(SnomedMappings.memberSourceEffectiveTime());
+	}
+
+	public SnomedFieldsToLoadBuilder memberTargetEffectiveTime() {
+		return field(SnomedMappings.memberTargetEffectiveTime());
 	}
 }

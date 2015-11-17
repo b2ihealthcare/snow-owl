@@ -22,6 +22,7 @@ import org.apache.lucene.index.Term;
 import org.apache.lucene.search.Filter;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.Sort;
+import org.apache.lucene.search.TermQuery;
 import org.apache.lucene.util.BytesRef;
 
 /**
@@ -41,7 +42,7 @@ public interface IndexField<T> {
 
 	List<String> getValuesAsString(Document doc);
 
-	Query toQuery(T value);
+	TermQuery toQuery(T value);
 
 	Query toExistsQuery();
 

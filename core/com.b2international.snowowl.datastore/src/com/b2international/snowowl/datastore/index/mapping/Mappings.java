@@ -141,7 +141,7 @@ public class Mappings {
 		return new DocValuesFloatIndexField(fieldName);
 	}
 	
-	public static IndexField<Integer> intDocValuesField(String fieldName) {
+	public static NumericDocValuesIndexField<Integer> intDocValuesField(String fieldName) {
 		return new DocValuesIntIndexField(fieldName);
 	}
 
