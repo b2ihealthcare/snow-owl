@@ -15,20 +15,18 @@
  */
 package com.b2international.snowowl.core.events.bulk;
 
-import static com.google.common.collect.Lists.newArrayList;
-
-import java.util.List;
-
 import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.core.events.RequestBuilder;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableList.Builder;
 
 /**
  * @since 4.5
  */
 public class BulkRequestBuilder<C extends ServiceProvider> implements RequestBuilder<C, BulkResponse> {
 	
-	private List<Request<C, ?>> requests = newArrayList();
+	private Builder<Request<C, ?>> requests = ImmutableList.builder();
 	
 	BulkRequestBuilder() {}
 
@@ -43,6 +41,6 @@ public class BulkRequestBuilder<C extends ServiceProvider> implements RequestBui
 	
 	@Override
 	public Request<C, BulkResponse> build() {
-		return new BulkRequest<>(requests);
+		return new BulkRequest<>(requests.build());
 	}
 }
