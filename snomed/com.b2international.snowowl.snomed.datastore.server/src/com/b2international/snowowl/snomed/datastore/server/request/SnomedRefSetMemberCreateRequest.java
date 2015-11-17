@@ -59,19 +59,20 @@ public class SnomedRefSetMemberCreateRequest extends SnomedRefSetMemberRequest<T
 	SnomedRefSetMemberCreateRequest() {
 	}
 	
-	public void setReferencedComponentId(String referencedComponentId) {
+	void setReferencedComponentId(String referencedComponentId) {
 		this.referencedComponentId = referencedComponentId;
 	}
 	
-	public void setReferenceSetId(String referenceSetId) {
+	void setReferenceSetId(String referenceSetId) {
 		this.referenceSetId = referenceSetId;
 	}
 	
-	public void setModuleId(String moduleId) {
+	void setModuleId(String moduleId) {
 		this.moduleId = moduleId;
 	}
 	
-	public void setProperties(Map<String, Object> properties) {
+	void setProperties(Map<String, Object> properties) {
+		
 		this.properties.putAll(properties);
 	}
 	
