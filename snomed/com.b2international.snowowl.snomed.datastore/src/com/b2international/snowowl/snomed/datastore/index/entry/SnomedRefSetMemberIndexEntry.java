@@ -212,6 +212,7 @@ public class SnomedRefSetMemberIndexEntry extends SnomedIndexEntry implements IC
 	private final String referencedComponentId;
 	private final ImmutableMap<String, Object> additionalFields;
 
+	private final String referenceSetId;
 	private final SnomedRefSetType referenceSetType;
 	private final short referencedComponentType;
 	private final short mapTargetComponentType;
@@ -244,6 +245,7 @@ public class SnomedRefSetMemberIndexEntry extends SnomedIndexEntry implements IC
 
 		this.referencedComponentId = checkNotNull(referencedComponentId, "Reference component identifier may not be null.");
 		this.additionalFields = checkNotNull(additionalFields, "Additional field map may not be null.");
+		this.referenceSetId = checkNotNull(referenceSetId, "Reference set identifier may not be null.");
 		this.referenceSetType = checkNotNull(referenceSetType, "Reference set type may not be null.");
 		this.referencedComponentType = referencedComponentType;
 		this.mapTargetComponentType = mapTargetComponentType;
@@ -607,7 +609,7 @@ public class SnomedRefSetMemberIndexEntry extends SnomedIndexEntry implements IC
 	 * @return the identifier of the member's reference set
 	 */
 	public String getRefSetIdentifierId() {
-		return getIconId(); // XXX: aliased to icon identifier in constructor
+		return referenceSetId;
 	}
 
 	/**
