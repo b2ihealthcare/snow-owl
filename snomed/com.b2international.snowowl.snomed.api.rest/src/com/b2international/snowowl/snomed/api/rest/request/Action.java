@@ -15,31 +15,22 @@
  */
 package com.b2international.snowowl.snomed.api.rest.request;
 
-import java.util.Map;
-
-import com.b2international.snowowl.core.domain.TransactionContext;
-import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.core.exceptions.BadRequestException;
-import com.b2international.snowowl.snomed.datastore.server.request.SnomedRequests;
 
 /**
  * @since 4.5
  */
-public class RefSetRequestResolver implements RequestResolver<TransactionContext> {
+public enum Action {
 
-	@Override
-	public Request<TransactionContext, ?> resolve(String action, Map<String, Object> source) {
-		switch (Action.get(action)) {
-		case SYNC: return toUpdateRequest(source);
-		default: throw new BadRequestException("Unsupported action '%s'", action);
+	SYNC;
+	
+	public static Action get(String action) {
+		for (Action type : values()) {
+			if (type.name().toLowerCase().equals(action)) {
+				return type;
+			}
 		}
+		throw new BadRequestException("Invalid action type '%s'.", action);
 	}
-
-	private Request<TransactionContext, ?> toUpdateRequest(Map<String, Object> source) {
-		return SnomedRequests
-				.prepareUpdateQueryRefSet()
-				.setSource(source)
-				.build();
-	}
-
+	
 }

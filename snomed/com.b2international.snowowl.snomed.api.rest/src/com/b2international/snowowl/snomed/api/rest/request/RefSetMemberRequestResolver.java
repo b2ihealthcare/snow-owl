@@ -29,9 +29,9 @@ public class RefSetMemberRequestResolver implements RequestResolver<TransactionC
 
 	@Override
 	public Request<TransactionContext, ?> resolve(String action, Map<String, Object> source) {
-		switch (action) {
-		case "update": return SnomedRequests.prepareUpdateQueryRefSetMember().setSource(source).build();
-		default: throw new BadRequestException("Invalid action type '%s'.", action); 
+		switch (Action.get(action)) {
+		case SYNC: return SnomedRequests.prepareUpdateQueryRefSetMember().setSource(source).build();
+		default: throw new BadRequestException("Unsupported action '%s'", action); 
 		}
 	}
 	

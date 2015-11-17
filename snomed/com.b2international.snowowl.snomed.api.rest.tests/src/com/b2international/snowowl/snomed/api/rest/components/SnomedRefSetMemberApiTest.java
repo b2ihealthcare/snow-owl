@@ -241,7 +241,7 @@ public class SnomedRefSetMemberApiTest extends AbstractSnomedApiTest {
 		assertComponentCreated(testBranchPath, SnomedComponentType.RELATIONSHIP, inferredIsaBody);
 		
 		// execute member update
-		final Map<?, ?> updateActionReq = ImmutableMap.of("action", "update", "moduleId", Concepts.MODULE_SCT_CORE, "commitComment", "Update query member: " + memberId);
+		final Map<?, ?> updateActionReq = ImmutableMap.of("action", "sync", "moduleId", Concepts.MODULE_SCT_CORE, "commitComment", "Update query member: " + memberId);
 		executeMemberAction(memberId, updateActionReq)
 			.then()
 			.statusCode(200);
