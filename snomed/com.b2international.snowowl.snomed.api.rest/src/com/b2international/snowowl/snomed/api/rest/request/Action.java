@@ -22,6 +22,9 @@ import com.b2international.snowowl.core.exceptions.BadRequestException;
  */
 public enum Action {
 
+	CREATE,
+	UPDATE,
+	DELETE,
 	SYNC;
 	
 	public static Action get(String action) {

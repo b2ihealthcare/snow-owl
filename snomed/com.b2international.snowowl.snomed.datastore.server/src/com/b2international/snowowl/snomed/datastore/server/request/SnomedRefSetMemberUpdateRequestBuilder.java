@@ -44,6 +44,10 @@ public final class SnomedRefSetMemberUpdateRequestBuilder implements RequestBuil
 	}
 	
 	public SnomedRefSetMemberUpdateRequestBuilder setSource(Map<String, Object> source) {
+		// try to set memberId if not set
+		if (memberId == null) {
+			setMemberId((String) source.get("memberId"));
+		}
 		this.source = source;
 		return this;
 	}

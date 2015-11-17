@@ -21,6 +21,7 @@ import java.net.URI;
 import java.security.Principal;
 import java.util.List;
 
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
@@ -30,6 +31,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.context.request.async.DeferredResult;
 
 import com.b2international.snowowl.core.domain.CollectionResource;
@@ -174,7 +176,15 @@ public class SnomedReferenceSetRestService extends AbstractSnomedRestService {
 				.executeSync(bus);
 	}
 	
+	@ApiOperation(
+			value="Executes multiple requests on the members of a single reference set",
+			notes="TODO write documentation in repo's doc folder")
+	@ApiResponses({
+		@ApiResponse(code = 204, message = "No content"),
+		@ApiResponse(code = 404, message = "Branch or reference set not found")
+	})
 	@RequestMapping(value="/{path:**}/refsets/{id}/members", method=RequestMethod.PUT)
+	@ResponseStatus(HttpStatus.NO_CONTENT)
 	public void updateMembers(
 			@ApiParam(value="The branch path")
 			@PathVariable(value="path")
@@ -185,6 +195,7 @@ public class SnomedReferenceSetRestService extends AbstractSnomedRestService {
 			final String refSetId,
 			
 			@ApiParam(value="The reference set member changes")
+			@RequestBody
 			final ChangeRequest<BulkRestRequest> request,
 			
 			final Principal principal) {
