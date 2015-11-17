@@ -102,6 +102,11 @@ public class SnomedClientTaxonomyServiceImpl extends ActiveBranchPathAwareServic
 	public Collection<String> getOutboundConcepts(final String conceptId, final String typeId) {
 		return delegate.getOutboundConcepts(getBranchPath(), conceptId, typeId);
 	}
+	
+	@Override
+	public Collection<String> getAllOutboundConcepts(final String conceptId) {
+		return delegate.getAllOutboundConcepts(getBranchPath(), conceptId);
+	}
 
 	@Override
 	public boolean hasOutboundRelationshipOfType(final String conceptId, final String typeId) {
@@ -121,6 +126,11 @@ public class SnomedClientTaxonomyServiceImpl extends ActiveBranchPathAwareServic
 	@Override
 	public Collection<String> getInboundConcepts(final String conceptId, final String typeId) {
 		return delegate.getInboundConcepts(getBranchPath(), conceptId, typeId);
+	}
+	
+	@Override
+	public Collection<String> getAllInboundConcepts(final String conceptId) {
+		return delegate.getAllInboundConcepts(getBranchPath(), conceptId);
 	}
 
 	@Override
