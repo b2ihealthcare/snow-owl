@@ -15,28 +15,22 @@
  */
 package com.b2international.snowowl.core.events.bulk;
 
-import java.util.Collections;
 import java.util.List;
 
+import com.b2international.snowowl.core.domain.CollectionResource;
 import com.google.common.collect.FluentIterable;
 
 /**
  * @since 4.5
  * @see BulkRequestBuilder
  */
-public final class BulkResponse {
-
-	private final List<Object> responses;
+public final class BulkResponse extends CollectionResource<Object> {
 
 	BulkResponse(List<Object> responses) {
-		this.responses = responses == null ? Collections.emptyList() : responses;
-	}
-	
-	public List<Object> getResponses() {
-		return responses;
+		super(responses);
 	}
 	
 	public <T> FluentIterable<T> getResponses(final Class<T> type) {
-		return FluentIterable.from(responses).filter(type);
+		return FluentIterable.from(getItems()).filter(type);
 	}
 }
