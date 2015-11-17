@@ -34,13 +34,13 @@ import org.springframework.web.context.request.async.DeferredResult;
 
 import com.b2international.snowowl.core.domain.CollectionResource;
 import com.b2international.snowowl.core.domain.TransactionContext;
-import com.b2international.snowowl.snomed.api.rest.action.RequestResolver;
-import com.b2international.snowowl.snomed.api.rest.action.BulkRestRequest;
-import com.b2international.snowowl.snomed.api.rest.action.RefSetRequestResolver;
-import com.b2international.snowowl.snomed.api.rest.action.RefSetMemberRequestResolver;
-import com.b2international.snowowl.snomed.api.rest.action.RestRequest;
 import com.b2international.snowowl.snomed.api.rest.domain.ChangeRequest;
 import com.b2international.snowowl.snomed.api.rest.domain.SnomedRefSetRestInput;
+import com.b2international.snowowl.snomed.api.rest.request.BulkRestRequest;
+import com.b2international.snowowl.snomed.api.rest.request.RefSetMemberRequestResolver;
+import com.b2international.snowowl.snomed.api.rest.request.RefSetRequestResolver;
+import com.b2international.snowowl.snomed.api.rest.request.RequestResolver;
+import com.b2international.snowowl.snomed.api.rest.request.RestRequest;
 import com.b2international.snowowl.snomed.api.rest.util.DeferredResults;
 import com.b2international.snowowl.snomed.api.rest.util.Responses;
 import com.b2international.snowowl.snomed.core.domain.SnomedReferenceSet;
@@ -184,7 +184,7 @@ public class SnomedReferenceSetRestService extends AbstractSnomedRestService {
 			@PathVariable(value="id")
 			final String refSetId,
 			
-			@ApiParam(value="The ")
+			@ApiParam(value="The reference set member changes")
 			final ChangeRequest<BulkRestRequest> request,
 			
 			final Principal principal) {

@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.snomed.api.rest.action;
+package com.b2international.snowowl.snomed.api.rest.request;
 
 import java.util.Map;
 
@@ -25,14 +25,21 @@ import com.b2international.snowowl.snomed.datastore.server.request.SnomedRequest
 /**
  * @since 4.5
  */
-public class RefSetMemberRequestResolver implements RequestResolver<TransactionContext> {
+public class RefSetRequestResolver implements RequestResolver<TransactionContext> {
 
 	@Override
 	public Request<TransactionContext, ?> resolve(String action, Map<String, Object> source) {
 		switch (action) {
-		case "update": return SnomedRequests.prepareUpdateQueryRefSetMember().setSource(source).build();
+		case "update": return toUpdateRequest(source);
 		default: throw new BadRequestException("Invalid action type '%s'.", action); 
 		}
 	}
-	
+
+	private Request<TransactionContext, ?> toUpdateRequest(Map<String, Object> source) {
+		return SnomedRequests
+				.prepareUpdateQueryRefSet()
+				.setSource(source)
+				.build();
+	}
+
 }

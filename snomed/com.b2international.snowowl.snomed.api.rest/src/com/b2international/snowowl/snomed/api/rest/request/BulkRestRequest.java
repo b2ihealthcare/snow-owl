@@ -13,46 +13,36 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.snomed.api.rest.action;
+package com.b2international.snowowl.snomed.api.rest.request;
 
-import static com.google.common.collect.Maps.newHashMap;
-
-import java.util.Map;
+import java.util.Collection;
 
 import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.events.Request;
-import com.fasterxml.jackson.annotation.JsonAnySetter;
+import com.b2international.snowowl.core.events.bulk.BulkRequest;
+import com.b2international.snowowl.core.events.bulk.BulkRequestBuilder;
+import com.b2international.snowowl.core.events.bulk.BulkResponse;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 /**
  * @since 4.5
  */
-public class RestRequest {
+public final class BulkRestRequest {
 
-	private String action;
-
-	private Map<String, Object> source = newHashMap();
+	private Collection<RestRequest> requests;
 
 	@JsonCreator
-	RestRequest(@JsonProperty("action") String action) {
-		this.action = action;
+	public BulkRestRequest(@JsonProperty("requests") Collection<RestRequest> requests) {
+		this.requests = requests;
 	}
-
-	@JsonAnySetter
-	public void setSource(String key, Object value) {
-		source.put(key, value);
-	}
-
-	/**
-	 * Converts this {@link RestRequest} to a {@link Request} with the given {@link RequestResolver} that can be executed.
-	 *
-	 * @param resolver
-	 *            - the resolver to use for {@link Request} resolution
-	 * @return
-	 */
-	public <C extends ServiceProvider> Request<C, ?> resolve(RequestResolver<C> resolver) {
-		return resolver.resolve(action, source);
+	
+	public <C extends ServiceProvider> Request<C, BulkResponse> resolve(RequestResolver<C> resolver) {
+		final BulkRequestBuilder<C> req = BulkRequest.create();
+		for (RestRequest request : requests) {
+			req.add(request.resolve(resolver));
+		}
+		return req.build();
 	}
 
 }
