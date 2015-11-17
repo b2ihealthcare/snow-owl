@@ -15,6 +15,8 @@
  */
 package com.b2international.snowowl.snomed.datastore.server.request;
 
+import java.util.Map;
+
 import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.domain.TransactionContext;
 import com.b2international.snowowl.core.events.Request;
@@ -52,6 +54,10 @@ public final class QueryRefSetMemberUpdateRequestBuilder implements RequestBuild
 
 	public Request<ServiceProvider, CommitInfo> build(String userId, String branch, String commitComment) {
 		return SnomedRequests.prepareCommit(userId, branch).setBody(build()).setCommitComment(commitComment).build();
+	}
+
+	public QueryRefSetMemberUpdateRequestBuilder setSource(Map<String, Object> source) {
+		return setModuleId((String) source.get("moduleId")).setMemberId((String) source.get("memberId"));
 	}
 
 }

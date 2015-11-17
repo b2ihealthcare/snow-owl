@@ -28,20 +28,20 @@ import com.b2international.snowowl.snomed.core.domain.SnomedReferenceSetMembers;
 public class QueryRefSetUpdateRequest extends BaseRequest<TransactionContext, Void> {
 
 	@NotEmpty
-	private final String refSetId;
+	private final String referenceSetId;
 	
 	@NotEmpty
 	private final String moduleId;
 	
 	QueryRefSetUpdateRequest(String refSetId, String moduleId) {
-		this.refSetId = refSetId;
+		this.referenceSetId = refSetId;
 		this.moduleId = moduleId;
 	}
 	
 	@Override
 	public Void execute(TransactionContext context) {
 		// GET all members of the reference set
-		final SnomedReferenceSetMembers members = SnomedRequests.prepareMemberSearch().all().filterByRefSet(refSetId).build().execute(context);
+		final SnomedReferenceSetMembers members = SnomedRequests.prepareMemberSearch().all().filterByRefSet(referenceSetId).build().execute(context);
 
 		// execute update on all of them
 		for (SnomedReferenceSetMember member : members.getItems()) {

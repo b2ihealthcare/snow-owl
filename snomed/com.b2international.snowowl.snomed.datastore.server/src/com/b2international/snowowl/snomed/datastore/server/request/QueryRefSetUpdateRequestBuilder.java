@@ -15,6 +15,8 @@
  */
 package com.b2international.snowowl.snomed.datastore.server.request;
 
+import java.util.Map;
+
 import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.domain.TransactionContext;
 import com.b2international.snowowl.core.events.Request;
@@ -28,7 +30,7 @@ public final class QueryRefSetUpdateRequestBuilder implements RequestBuilder<Tra
 
 	private final String repositoryId;
 	
-	private String refSetId;
+	private String referenceSetId;
 	private String moduleId;
 	
 	QueryRefSetUpdateRequestBuilder(String repositoryId) {
@@ -40,18 +42,24 @@ public final class QueryRefSetUpdateRequestBuilder implements RequestBuilder<Tra
 		return this;
 	}
 	
-	public QueryRefSetUpdateRequestBuilder setRefSetId(String refSetId) {
-		this.refSetId = refSetId;
+	public QueryRefSetUpdateRequestBuilder setReferenceSetId(String refSetId) {
+		this.referenceSetId = refSetId;
 		return this;
 	}
 
 	@Override
 	public Request<TransactionContext, Void> build() {
-		return new QueryRefSetUpdateRequest(refSetId, moduleId);
+		return new QueryRefSetUpdateRequest(referenceSetId, moduleId);
 	}
 	
 	public Request<ServiceProvider, CommitInfo> build(String userId, String branch, String commitComment) {
 		return SnomedRequests.prepareCommit(userId, branch).setBody(build()).setCommitComment(commitComment).build();
+	}
+
+	public QueryRefSetUpdateRequestBuilder setSource(Map<String, Object> source) {
+		setModuleId((String) source.get("moduleId"));
+		setReferenceSetId((String) source.get("referenceSetId"));
+		return this;
 	}
 
 }
