@@ -33,7 +33,7 @@ import com.b2international.snowowl.snomed.datastore.internal.id.reservations.Sno
 public class CisSnomedIdentfierServiceImplTest {
 	private static final String B2I_NAMESPACE = "1000129";
 
-	private CisSnomedIdentfierServiceImpl service;
+	private CisSnomedIdentifierServiceImpl service;
 	final ISnomedIdentiferReservationService reservationService = new SnomedIdentifierReservationServiceImpl();
 
 	@Before
@@ -46,7 +46,7 @@ public class CisSnomedIdentfierServiceImplTest {
 		conf.setCisUserName("snowowl-dev-b2i");
 		conf.setCisPassword("hAAYLYMX5gc98SDEz9cr");
 
-		service = new CisSnomedIdentfierServiceImpl(conf, null, reservationService);
+		service = new CisSnomedIdentifierServiceImpl(conf, null, reservationService);
 	}
 
 	@Test

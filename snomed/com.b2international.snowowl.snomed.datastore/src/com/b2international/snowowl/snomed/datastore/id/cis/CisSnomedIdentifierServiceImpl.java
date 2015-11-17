@@ -61,9 +61,9 @@ import com.google.inject.Provider;
  * 
  * @since 4.5
  */
-public class CisSnomedIdentfierServiceImpl extends AbstractSnomedIdentifierServiceImpl {
+public class CisSnomedIdentifierServiceImpl extends AbstractSnomedIdentifierServiceImpl {
 
-	private static final Logger LOGGER = LoggerFactory.getLogger(CisSnomedIdentfierServiceImpl.class);
+	private static final Logger LOGGER = LoggerFactory.getLogger(CisSnomedIdentifierServiceImpl.class);
 	private static final int BULK_LIMIT = 1000;
 
 	private static final int MAX_NUMBER_OF_POLL_TRY = 5;
@@ -77,7 +77,7 @@ public class CisSnomedIdentfierServiceImpl extends AbstractSnomedIdentifierServi
 
 	private final ObjectMapper mapper = new ObjectMapper();
 
-	public CisSnomedIdentfierServiceImpl(final SnomedCoreConfiguration conf, final Provider<SnomedTerminologyBrowser> provider,
+	public CisSnomedIdentifierServiceImpl(final SnomedCoreConfiguration conf, final Provider<SnomedTerminologyBrowser> provider,
 			final ISnomedIdentiferReservationService reservationService) {
 		super(provider, reservationService);
 		this.clientKey = conf.getCisClientSoftwareKey();

@@ -26,7 +26,7 @@ import com.b2international.snowowl.core.setup.ModuleConfig;
 import com.b2international.snowowl.snomed.datastore.SnomedTerminologyBrowser;
 import com.b2international.snowowl.snomed.datastore.config.SnomedCoreConfiguration;
 import com.b2international.snowowl.snomed.datastore.config.SnomedCoreConfiguration.IdGenerationStrategy;
-import com.b2international.snowowl.snomed.datastore.id.cis.CisSnomedIdentfierServiceImpl;
+import com.b2international.snowowl.snomed.datastore.id.cis.CisSnomedIdentifierServiceImpl;
 import com.b2international.snowowl.snomed.datastore.id.gen.ItemIdGenerationStrategy;
 import com.b2international.snowowl.snomed.datastore.id.memory.InMemorySnomedIdentifierServiceImpl;
 import com.b2international.snowowl.snomed.datastore.id.reservations.ISnomedIdentiferReservationService;
@@ -75,7 +75,7 @@ public class SnomedIdentifierBootstrap extends DefaultBootstrapFragment {
 			break;
 		case CIS:
 			LOGGER.info("Snow Owl is configured to use CIS based identifier serivce.");
-			identifierService = new CisSnomedIdentfierServiceImpl(conf, provider, reservationService);
+			identifierService = new CisSnomedIdentifierServiceImpl(conf, provider, reservationService);
 			break;
 		default:
 			throw new IllegalStateException(String.format("Unknown ID generation source configured: %s. ", conf.getIdGenerationStrategy()));
