@@ -64,6 +64,7 @@ import com.google.inject.Provider;
 public class CisSnomedIdentfierServiceImpl extends AbstractSnomedIdentifierServiceImpl {
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(CisSnomedIdentfierServiceImpl.class);
+	private static final int BULK_LIMIT = 1000;
 
 	private static final int MAX_NUMBER_OF_POLL_TRY = 5;
 
@@ -288,10 +289,12 @@ public class CisSnomedIdentfierServiceImpl extends AbstractSnomedIdentifierServi
 		final String token = login();
 
 		try {
-			LOGGER.info("Sending bulk registration request.");
+			for (final Collection<String> ids : Lists.partition(Lists.newArrayList(componentIds), BULK_LIMIT)) {
+				LOGGER.info(String.format("Sending bulk registration request with size %d.", ids.size()));
 
-			bulkRequest = httpPost(String.format("sct/bulk/register?token=%s", token), bulkRegistrationData(componentIdsToRegister));
-			execute(bulkRequest);
+				bulkRequest = httpPost(String.format("sct/bulk/register?token=%s", token), bulkRegistrationData(ids));
+				execute(bulkRequest);
+			}
 		} catch (IOException e) {
 			throw new SnowowlRuntimeException("Exception while bulk reserving IDs.", e);
 		} finally {
@@ -341,10 +344,12 @@ public class CisSnomedIdentfierServiceImpl extends AbstractSnomedIdentifierServi
 		final String token = login();
 
 		try {
-			LOGGER.info("Sending component ID bulk deprecation request.");
+			for (final Collection<String> ids : Lists.partition(Lists.newArrayList(componentIds), BULK_LIMIT)) {
+				LOGGER.info(String.format("Sending component ID bulk deprecation request with size %d.", ids.size()));
 
-			request = httpPut(String.format("sct/bulk/deprecate?token=%s", token), bulkDeprecationData(componentIds));
-			execute(request);
+				request = httpPut(String.format("sct/bulk/deprecate?token=%s", token), bulkDeprecationData(ids));
+				execute(request);
+			}
 		} catch (IOException e) {
 			throw new SnowowlRuntimeException("Exception while bulk deprecating IDs.", e);
 		} finally {
@@ -354,15 +359,17 @@ public class CisSnomedIdentfierServiceImpl extends AbstractSnomedIdentifierServi
 	}
 
 	@Override
-	public void bulkRelease(Collection<String> componentIds) {
+	public void bulkRelease(final Collection<String> componentIds) {
 		HttpPut request = null;
 		final String token = login();
 
 		try {
-			LOGGER.info("Sending component ID bulk release request.");
+			for (final Collection<String> ids : Lists.partition(Lists.newArrayList(componentIds), BULK_LIMIT)) {
+				LOGGER.info(String.format("Sending component ID bulk release request with size %d.", ids.size()));
 
-			request = httpPut(String.format("sct/bulk/release?token=%s", token), bulkReleaseData(componentIds));
-			execute(request);
+				request = httpPut(String.format("sct/bulk/release?token=%s", token), bulkReleaseData(ids));
+				execute(request);
+			}
 		} catch (IOException e) {
 			throw new SnowowlRuntimeException("Exception while bulk releasing IDs.", e);
 		} finally {
@@ -372,15 +379,17 @@ public class CisSnomedIdentfierServiceImpl extends AbstractSnomedIdentifierServi
 	}
 
 	@Override
-	public void bulkPublish(Collection<String> componentIds) {
+	public void bulkPublish(final Collection<String> componentIds) {
 		HttpPut request = null;
 		final String token = login();
 
 		try {
-			LOGGER.info("Sending component ID bulk publication request.");
+			for (final Collection<String> ids : Lists.partition(Lists.newArrayList(componentIds), BULK_LIMIT)) {
+				LOGGER.info(String.format("Sending component ID bulk publication request with size %d.", ids.size()));
 
-			request = httpPut(String.format("sct/bulk/publish?token=%s", token), bulkPublishData(componentIds));
-			execute(request);
+				request = httpPut(String.format("sct/bulk/publish?token=%s", token), bulkPublishData(ids));
+				execute(request);
+			}
 		} catch (IOException e) {
 			throw new SnowowlRuntimeException("Exception while bulk publishing IDs.", e);
 		} finally {
