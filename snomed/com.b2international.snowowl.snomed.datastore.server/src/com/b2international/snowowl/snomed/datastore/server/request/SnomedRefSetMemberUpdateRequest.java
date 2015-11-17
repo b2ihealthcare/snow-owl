@@ -71,8 +71,8 @@ public class SnomedRefSetMemberUpdateRequest extends BaseRequest<TransactionCont
 
 	private boolean updateActivityStatus(SnomedRefSetMember member) {
 		final Object activeValue = properties.get("active");
-		if (activeValue instanceof String) {
-			final Boolean newStatus = Boolean.valueOf((String) activeValue);
+		if (activeValue instanceof Boolean) {
+			final Boolean newStatus = (Boolean) activeValue;
 			if (!Objects.equals(member.isActive(), newStatus)) {
 				member.setActive(newStatus);
 				return true;

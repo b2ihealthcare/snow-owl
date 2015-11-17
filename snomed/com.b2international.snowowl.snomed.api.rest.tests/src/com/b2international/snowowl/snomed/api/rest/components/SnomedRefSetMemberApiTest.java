@@ -296,7 +296,7 @@ public class SnomedRefSetMemberApiTest extends AbstractSnomedApiTest {
 		assertComponentExists(testBranchPath, SnomedComponentType.MEMBER, memberId);
 		
 		// inactivate member by sending update with active flag set to false
-		final Map<?, ?> inactivationReq = ImmutableMap.of("active", "false", "moduleId", Concepts.MODULE_ROOT, "commitComment", "Inactivate member and move to root module: " + memberId);
+		final Map<?, ?> inactivationReq = ImmutableMap.of("active", false, "moduleId", Concepts.MODULE_ROOT, "commitComment", "Inactivate member and move to root module: " + memberId);
 		givenAuthenticatedRequest(SnomedApiTestConstants.SCT_API)
 			.with().contentType(ContentType.JSON)
 			.and().body(inactivationReq)
