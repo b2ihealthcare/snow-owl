@@ -15,6 +15,7 @@
  */
 package com.b2international.snowowl.snomed.datastore.server.request;
 
+import java.util.Collections;
 import java.util.Map;
 
 import com.b2international.snowowl.core.domain.TransactionContext;
@@ -31,7 +32,7 @@ public class RefSetMemberCreateRequestBuilder implements RequestBuilder<Transact
 	private String moduleId;
 	private String referenceSetId;
 	private String referencedComponentId;
-	private Map<String, Object> properties;
+	private Map<String, Object> properties = Collections.emptyMap();
 	
 	RefSetMemberCreateRequestBuilder() {}
 	
