@@ -23,8 +23,8 @@ import com.b2international.snowowl.core.events.Request;
 /**
  * @since 4.5
  */
-public interface ActionResolver {
+public interface RequestResolver<C extends ServiceProvider> {
 	
-	Request<ServiceProvider, ?> resolve(String action, Map<String, Object> source);
+	Request<C, ?> resolve(String action, Map<String, Object> source);
 
 }

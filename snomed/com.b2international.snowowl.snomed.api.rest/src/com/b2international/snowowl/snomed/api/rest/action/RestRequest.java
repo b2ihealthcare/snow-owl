@@ -28,30 +28,30 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 /**
  * @since 4.5
  */
-public final class RestAction {
+public class RestRequest {
 
 	private String action;
 
 	private Map<String, Object> source = newHashMap();
 
 	@JsonCreator
-	RestAction(@JsonProperty("action") String action) {
+	RestRequest(@JsonProperty("action") String action) {
 		this.action = action;
 	}
 
 	@JsonAnySetter
-	void setSource(String key, Object value) {
+	public void setSource(String key, Object value) {
 		source.put(key, value);
 	}
 
 	/**
-	 * Converts this {@link RestAction} to a {@link Request} with the given {@link ActionResolver} that can be executed.
+	 * Converts this {@link RestRequest} to a {@link Request} with the given {@link RequestResolver} that can be executed.
 	 *
 	 * @param resolver
 	 *            - the resolver to use for {@link Request} resolution
 	 * @return
 	 */
-	public Request<ServiceProvider, ?> resolve(ActionResolver resolver) {
+	public <C extends ServiceProvider> Request<C, ?> resolve(RequestResolver<C> resolver) {
 		return resolver.resolve(action, source);
 	}
 

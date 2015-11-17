@@ -38,9 +38,9 @@ import com.b2international.snowowl.core.domain.PageableCollectionResource;
 import com.b2international.snowowl.core.domain.TransactionContext;
 import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.eventbus.IEventBus;
-import com.b2international.snowowl.snomed.api.rest.action.ActionResolver;
-import com.b2international.snowowl.snomed.api.rest.action.RefSetMemberActionResolver;
-import com.b2international.snowowl.snomed.api.rest.action.RestAction;
+import com.b2international.snowowl.snomed.api.rest.action.RequestResolver;
+import com.b2international.snowowl.snomed.api.rest.action.RefSetMemberRequestResolver;
+import com.b2international.snowowl.snomed.api.rest.action.RestRequest;
 import com.b2international.snowowl.snomed.api.rest.domain.ChangeRequest;
 import com.b2international.snowowl.snomed.api.rest.domain.RestApiError;
 import com.b2international.snowowl.snomed.api.rest.domain.SnomedMemberRestUpdate;
@@ -235,11 +235,18 @@ public class SnomedReferenceSetMemberRestService extends AbstractSnomedRestServi
 			
 			@ApiParam(value="Reference set member action")
 			@RequestBody 
-			final RestAction action,
+			final ChangeRequest<RestRequest> body,
 			
 			final Principal principal) {
-		final ActionResolver resolver = new RefSetMemberActionResolver(principal.getName(), branchPath, memberId);
-		return action.resolve(resolver).executeSync(bus);
+		final RequestResolver<TransactionContext> resolver = new RefSetMemberRequestResolver();
+		final RestRequest change = body.getChange();
+		change.setSource("memberId", memberId);
+		return SnomedRequests
+				.prepareCommit(principal.getName(), branchPath)
+				.setBody(body.getChange().resolve(resolver))
+				.setCommitComment(body.getCommitComment())
+				.build()
+				.executeSync(bus);
 	}
 	
 	private URI getRefSetMemberLocationURI(String branchPath, SnomedReferenceSetMember refSetMember) {

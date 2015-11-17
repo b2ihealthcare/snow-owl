@@ -33,9 +33,12 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.context.request.async.DeferredResult;
 
 import com.b2international.snowowl.core.domain.CollectionResource;
-import com.b2international.snowowl.snomed.api.rest.action.ActionResolver;
-import com.b2international.snowowl.snomed.api.rest.action.RefSetActionResolver;
-import com.b2international.snowowl.snomed.api.rest.action.RestAction;
+import com.b2international.snowowl.core.domain.TransactionContext;
+import com.b2international.snowowl.snomed.api.rest.action.RequestResolver;
+import com.b2international.snowowl.snomed.api.rest.action.BulkRestRequest;
+import com.b2international.snowowl.snomed.api.rest.action.RefSetRequestResolver;
+import com.b2international.snowowl.snomed.api.rest.action.RefSetMemberRequestResolver;
+import com.b2international.snowowl.snomed.api.rest.action.RestRequest;
 import com.b2international.snowowl.snomed.api.rest.domain.ChangeRequest;
 import com.b2international.snowowl.snomed.api.rest.domain.SnomedRefSetRestInput;
 import com.b2international.snowowl.snomed.api.rest.util.DeferredResults;
@@ -155,11 +158,45 @@ public class SnomedReferenceSetRestService extends AbstractSnomedRestService {
 			
 			@ApiParam(value="Reference set action")
 			@RequestBody 
-			final RestAction action,
+			final ChangeRequest<RestRequest> body,
 			
 			final Principal principal) {
-		final ActionResolver resolver = new RefSetActionResolver(principal.getName(), branchPath, refSetId);
-		return action.resolve(resolver).executeSync(bus);
+		final RequestResolver<TransactionContext> resolver = new RefSetRequestResolver();
+		
+		final RestRequest change = body.getChange();
+		change.setSource("referenceSetId", refSetId);
+		
+		return SnomedRequests
+				.prepareCommit(principal.getName(), branchPath)
+				.setBody(body.getChange().resolve(resolver))
+				.setCommitComment(body.getCommitComment())
+				.build()
+				.executeSync(bus);
+	}
+	
+	@RequestMapping(value="/{path:**}/refsets/{id}/members", method=RequestMethod.PUT)
+	public void updateMembers(
+			@ApiParam(value="The branch path")
+			@PathVariable(value="path")
+			final String branchPath,
+			
+			@ApiParam(value="The reference set identifier")
+			@PathVariable(value="id")
+			final String refSetId,
+			
+			@ApiParam(value="The ")
+			final ChangeRequest<BulkRestRequest> request,
+			
+			final Principal principal) {
+		
+		final RequestResolver<TransactionContext> resolver = new RefSetMemberRequestResolver();
+		SnomedRequests
+			.prepareCommit(principal.getName(), branchPath)
+			.setBody(request.getChange().resolve(resolver))
+			.setCommitComment(request.getCommitComment())
+			.build()
+			.executeSync(bus);
+		
 	}
 	
 	private URI getRefSetLocationURI(String branchPath, SnomedReferenceSet refSet) {

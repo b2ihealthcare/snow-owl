@@ -17,7 +17,7 @@ package com.b2international.snowowl.snomed.api.rest.action;
 
 import java.util.Map;
 
-import com.b2international.snowowl.core.ServiceProvider;
+import com.b2international.snowowl.core.domain.TransactionContext;
 import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.core.exceptions.BadRequestException;
 import com.b2international.snowowl.snomed.datastore.server.request.SnomedRequests;
@@ -25,32 +25,14 @@ import com.b2international.snowowl.snomed.datastore.server.request.SnomedRequest
 /**
  * @since 4.5
  */
-public class RefSetMemberActionResolver implements ActionResolver {
+public class RefSetMemberRequestResolver implements RequestResolver<TransactionContext> {
 
-	private final String userId;
-	private final String branch;
-	private final String memberId;
-
-	public RefSetMemberActionResolver(String userId, String branch, String memberId) {
-		this.userId = userId;
-		this.branch = branch;
-		this.memberId = memberId;
-	}
-	
 	@Override
-	public Request<ServiceProvider, ?> resolve(String action, Map<String, Object> source) {
+	public Request<TransactionContext, ?> resolve(String action, Map<String, Object> source) {
 		switch (action) {
-		case "update": return toUpdateRequest(source);
+		case "update": return SnomedRequests.prepareUpdateQueryRefSetMember().setSource(source).build();
 		default: throw new BadRequestException("Invalid action type '%s'.", action); 
 		}
-	}
-	
-	private Request<ServiceProvider, ?> toUpdateRequest(Map<String, Object> source) {
-		return SnomedRequests
-				.prepareUpdateQueryRefSetMember()
-				.setMemberId(memberId)
-				.setModuleId((String) source.get("moduleId"))
-				.build(userId, branch, (String) source.get("commitComment"));
 	}
 	
 }
