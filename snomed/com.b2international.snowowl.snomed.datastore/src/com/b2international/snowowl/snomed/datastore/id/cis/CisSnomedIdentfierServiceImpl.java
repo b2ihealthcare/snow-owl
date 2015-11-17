@@ -474,6 +474,7 @@ public class CisSnomedIdentfierServiceImpl extends AbstractSnomedIdentifierServi
 				if (0 != status) {
 					break;
 				} else {
+					pollTry++;
 					Thread.sleep(1000);
 				}
 			}
