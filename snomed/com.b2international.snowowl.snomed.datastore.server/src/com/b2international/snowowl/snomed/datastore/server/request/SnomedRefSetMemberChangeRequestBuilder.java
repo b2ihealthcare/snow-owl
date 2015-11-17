@@ -18,7 +18,6 @@ package com.b2international.snowowl.snomed.datastore.server.request;
 import com.b2international.snowowl.core.domain.TransactionContext;
 import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.core.events.RequestBuilder;
-import com.b2international.snowowl.core.events.Requests;
 import com.b2international.snowowl.snomed.core.domain.refset.MemberChange;
 
 /**
@@ -40,7 +39,12 @@ public class SnomedRefSetMemberChangeRequestBuilder implements RequestBuilder<Tr
 	public Request<TransactionContext, Void> build() {
 		switch (change.getChangeKind()) {
 		case ADD:
-			return Requests.noContent(SnomedRequests.prepareNewMember(moduleId, change.getReferencedComponentId(), referenceSetId));
+			return SnomedRequests
+					.prepareNewMember()
+					.setModuleId(moduleId)
+					.setReferencedComponentId(change.getReferencedComponentId())
+					.setReferenceSetId(referenceSetId)
+					.buildNoContent();
 		case REMOVE:
 			// FIXME what happens when we remove a published member, currently we don't inactivate it
 			return SnomedRequests.prepareDeleteMember(change.getMemberId());

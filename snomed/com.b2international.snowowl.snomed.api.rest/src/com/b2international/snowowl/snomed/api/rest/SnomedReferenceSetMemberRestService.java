@@ -132,8 +132,13 @@ public class SnomedReferenceSetMemberRestService extends AbstractSnomedRestServi
 			final Principal principal) {
 		
 		final SnomedRefSetMemberRestInput change = body.getChange();
-		final Request<TransactionContext, SnomedReferenceSetMember> req = SnomedRequests.prepareNewMember(change.getModuleId(),
-				change.getReferencedComponentId(), change.getReferenceSetId(), change.getProperties());
+		final Request<TransactionContext, SnomedReferenceSetMember> req = SnomedRequests
+				.prepareNewMember()
+				.setModuleId(change.getModuleId())
+				.setReferencedComponentId(change.getReferencedComponentId())
+				.setReferenceSetId(change.getReferenceSetId())
+				.setProperties(change.getProperties())
+				.build();
 		
 		final SnomedReferenceSetMember createdRefSetMember = 
 				SnomedRequests
