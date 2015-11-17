@@ -13,20 +13,21 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.snomed.datastore.id.cis;
+package com.b2international.snowowl.snomed.datastore.id.cis.memory;
 
 import org.junit.Before;
 
-import com.b2international.snowowl.snomed.datastore.config.SnomedCoreConfiguration;
 import com.b2international.snowowl.snomed.datastore.id.AbstractBulkIdentifierServiceTest;
 import com.b2international.snowowl.snomed.datastore.id.ISnomedIdentifierService;
+import com.b2international.snowowl.snomed.datastore.id.gen.ItemIdGenerationStrategy;
+import com.b2international.snowowl.snomed.datastore.id.memory.InMemorySnomedIdentifierServiceImpl;
 import com.b2international.snowowl.snomed.datastore.id.reservations.ISnomedIdentiferReservationService;
 import com.b2international.snowowl.snomed.datastore.internal.id.reservations.SnomedIdentifierReservationServiceImpl;
 
 /**
  * @since 4.5
  */
-public class BulkCisSnomedIdentifierServiceImplTest extends AbstractBulkIdentifierServiceTest {
+public class BulkInMemorySnomedIdentifierServiceImplTest extends AbstractBulkIdentifierServiceTest {
 
 	private ISnomedIdentifierService service;
 
@@ -37,16 +38,8 @@ public class BulkCisSnomedIdentifierServiceImplTest extends AbstractBulkIdentifi
 
 	@Before
 	public void init() {
-		final SnomedCoreConfiguration conf = new SnomedCoreConfiguration();
-		conf.setCisUrl("http://107.170.101.181");
-		conf.setCisPort("3000");
-		conf.setCisContextRoot("api");
-		conf.setCisClientSoftwareKey("Snow Owl dev. tests");
-		conf.setCisUserName("snowowl-dev-b2i");
-		conf.setCisPassword("hAAYLYMX5gc98SDEz9cr");
-
 		final ISnomedIdentiferReservationService reservationService = new SnomedIdentifierReservationServiceImpl();
-		service = new CisSnomedIdentifierServiceImpl(conf, null, reservationService);
+		service = new InMemorySnomedIdentifierServiceImpl(ItemIdGenerationStrategy.RANDOM, null, reservationService);
 	}
 
 }
