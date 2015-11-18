@@ -15,6 +15,9 @@
  */
 package com.b2international.snowowl.snomed.datastore.server.converter;
 
+import java.util.Collections;
+import java.util.List;
+
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.snomed.datastore.services.SnomedBranchRefSetMembershipLookupService;
@@ -40,6 +43,14 @@ public class SnomedConverters {
 	
 	public static SnomedReferenceSetMemberConverter newMemberConverter(BranchContext context) {
 		return new SnomedReferenceSetMemberConverter();
+	}
+	
+	public static SnomedReferenceSetConverter newRefSetConverter(BranchContext context) {
+		return newRefSetConverter(context, Collections.<String>emptyList());
+	}
+	
+	public static SnomedReferenceSetConverter newRefSetConverter(BranchContext context, List<String> expansions) {
+		return new SnomedReferenceSetConverter(context, expansions);
 	}
 	
 	private static SnomedBranchRefSetMembershipLookupService createMembershipLookupService(BranchContext context) {

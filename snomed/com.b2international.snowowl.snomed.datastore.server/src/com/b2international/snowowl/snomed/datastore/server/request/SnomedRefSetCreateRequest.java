@@ -27,6 +27,7 @@ import com.b2international.snowowl.snomed.datastore.SnomedEditingContext;
 import com.b2international.snowowl.snomed.datastore.SnomedRefSetEditingContext;
 import com.b2international.snowowl.snomed.datastore.SnomedRefSetUtil;
 import com.b2international.snowowl.snomed.datastore.SnomedTerminologyBrowser;
+import com.b2international.snowowl.snomed.datastore.server.converter.SnomedConverters;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRegularRefSet;
 
@@ -73,7 +74,7 @@ public class SnomedRefSetCreateRequest extends SnomedRefSetRequest<TransactionCo
 			.build(context);
 		
 		refSetContext.add(refSet);
-		return new SnomedReferenceSetConverter(context).apply(refSet, identifierConcept);
+		return SnomedConverters.newRefSetConverter(context).apply(refSet, identifierConcept);
 	}
 	
 	private void checkParent(TransactionContext context) {

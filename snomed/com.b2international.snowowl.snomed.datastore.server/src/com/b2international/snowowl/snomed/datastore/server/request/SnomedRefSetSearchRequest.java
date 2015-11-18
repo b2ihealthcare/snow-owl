@@ -23,6 +23,8 @@ import com.b2international.snowowl.snomed.core.domain.SnomedReferenceSet;
 import com.b2international.snowowl.snomed.core.domain.SnomedReferenceSets;
 import com.b2international.snowowl.snomed.datastore.SnomedRefSetBrowser;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetIndexEntry;
+import com.b2international.snowowl.snomed.datastore.server.converter.SnomedConverters;
+import com.b2international.snowowl.snomed.datastore.server.converter.SnomedReferenceSetConverter;
 import com.google.common.collect.ImmutableList;
 
 /**
@@ -38,7 +40,7 @@ final class SnomedRefSetSearchRequest extends SearchRequest<SnomedReferenceSets>
 		final ImmutableList.Builder<SnomedReferenceSet> result = ImmutableList.builder();
 
 		final Collection<SnomedRefSetIndexEntry> referenceSets = browser.getAllReferenceSets(branchPath);
-		final SnomedReferenceSetConverter converter = new SnomedReferenceSetConverter(context);
+		final SnomedReferenceSetConverter converter = SnomedConverters.newRefSetConverter(context);
 		for (SnomedRefSetIndexEntry entry : referenceSets) {
 			result.add(converter.apply(entry));
 		}
