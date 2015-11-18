@@ -27,16 +27,18 @@ import javax.validation.constraints.NotNull;
 import org.hibernate.validator.constraints.NotEmpty;
 
 import com.b2international.snowowl.core.domain.TransactionContext;
+import com.b2international.snowowl.core.exceptions.AlreadyExistsException;
 import com.b2international.snowowl.core.exceptions.ComponentNotFoundException;
 import com.b2international.snowowl.snomed.Description;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.core.domain.Acceptability;
 import com.b2international.snowowl.snomed.core.domain.CaseSignificance;
 import com.b2international.snowowl.snomed.core.domain.ISnomedDescription;
+import com.b2international.snowowl.snomed.core.domain.UserIdGenerationStrategy;
 import com.b2international.snowowl.snomed.core.store.SnomedComponents;
 import com.b2international.snowowl.snomed.datastore.model.SnomedModelExtensions;
+import com.b2international.snowowl.snomed.datastore.server.converter.SnomedConverters;
 import com.b2international.snowowl.snomed.datastore.services.ISnomedComponentService;
-import com.b2international.snowowl.snomed.datastore.services.SnomedBranchRefSetMembershipLookupService;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedLanguageRefSetMember;
 import com.google.common.collect.ImmutableList;
 
@@ -115,6 +117,16 @@ public class SnomedDescriptionCreateRequest extends BaseSnomedComponentCreateReq
 
 	@Override
 	public ISnomedDescription execute(TransactionContext context) {
+		if (getIdGenerationStrategy() instanceof UserIdGenerationStrategy) {
+			try {
+				final String componentId = getIdGenerationStrategy().getId();
+				new SnomedDescriptionReadRequest(componentId).execute(context);
+				throw new AlreadyExistsException("Description", componentId);
+			} catch (ComponentNotFoundException e) {
+				// ignore
+			}
+		}
+		
 		try {
 			final Description description = SnomedComponents.newDescription()
 				.withId(getIdGenerationStrategy())
@@ -127,7 +139,7 @@ public class SnomedDescriptionCreateRequest extends BaseSnomedComponentCreateReq
 				.build(context);
 			
 			updateAcceptabilityMap(getAcceptability(), description, context);
-			return new SnomedDescriptionConverter(new SnomedBranchRefSetMembershipLookupService(context.branch().branchPath())).apply(description);
+			return SnomedConverters.newDescriptionConverter(context).apply(description);
 		} catch (ComponentNotFoundException e) {
 			throw e.toBadRequestException();
 		}

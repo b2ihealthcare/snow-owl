@@ -46,6 +46,7 @@ import com.b2international.snowowl.snomed.api.rest.AbstractSnomedApiTest;
 import com.b2international.snowowl.snomed.api.rest.SnomedApiTestConstants;
 import com.b2international.snowowl.snomed.api.rest.SnomedComponentType;
 import com.b2international.snowowl.snomed.datastore.id.SnomedIdentifiers;
+import com.google.common.collect.ImmutableMap;
 import com.jayway.restassured.response.Response;
 
 /**
@@ -166,4 +167,13 @@ public class SnomedConceptApiTest extends AbstractSnomedApiTest {
 		response.then().statusCode(204);
 		assertComponentHasProperty(testBranchPath, SnomedComponentType.CONCEPT, componentId, "active", false);
 	}
+	
+	@Test
+	public void createDuplicateConcept() throws Exception {
+		final Map<?, ?> requestBody = givenConceptRequestBody(null, ROOT_CONCEPT, MODULE_SCT_CORE, PREFERRED_ACCEPTABILITY_MAP, false);
+		final String conceptId = assertComponentCreated(createMainPath(), SnomedComponentType.CONCEPT, requestBody);
+		// component should not be created with duplicate ID
+		assertComponentCreatedWithStatus(createMainPath(), SnomedComponentType.CONCEPT, ImmutableMap.<Object, Object>builder().put("id", conceptId).putAll(requestBody).build(), 409);
+	}
+	
 }

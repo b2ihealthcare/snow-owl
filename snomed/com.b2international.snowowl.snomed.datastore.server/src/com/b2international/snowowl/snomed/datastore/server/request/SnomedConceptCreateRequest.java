@@ -30,6 +30,7 @@ import org.hibernate.validator.constraints.NotEmpty;
 
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.domain.TransactionContext;
+import com.b2international.snowowl.core.exceptions.AlreadyExistsException;
 import com.b2international.snowowl.core.exceptions.BadRequestException;
 import com.b2international.snowowl.core.exceptions.ComponentNotFoundException;
 import com.b2international.snowowl.snomed.Concept;
@@ -39,6 +40,7 @@ import com.b2international.snowowl.snomed.core.domain.Acceptability;
 import com.b2international.snowowl.snomed.core.domain.DefinitionStatus;
 import com.b2international.snowowl.snomed.core.domain.ISnomedConcept;
 import com.b2international.snowowl.snomed.core.domain.IdGenerationStrategy;
+import com.b2international.snowowl.snomed.core.domain.UserIdGenerationStrategy;
 import com.b2international.snowowl.snomed.core.store.SnomedComponents;
 import com.b2international.snowowl.snomed.datastore.services.ISnomedComponentService;
 import com.b2international.snowowl.snomed.datastore.services.SnomedBranchRefSetMembershipLookupService;
@@ -86,6 +88,16 @@ public class SnomedConceptCreateRequest extends BaseSnomedComponentCreateRequest
 	@Override
 	public ISnomedConcept execute(TransactionContext context) {
 		final IBranchPath branchPath = context.branch().branchPath();
+		
+		if (getIdGenerationStrategy() instanceof UserIdGenerationStrategy) {
+			try {
+				final String componentId = getIdGenerationStrategy().getId();
+				new SnomedConceptReadRequest(componentId).execute(context);
+				throw new AlreadyExistsException("Concept", componentId);
+			} catch (ComponentNotFoundException e) {
+				// ignore
+			}
+		}
 		
 		final Concept concept = convertConcept(context);
 		concept.getOutboundRelationships().add(convertParentIsARelationship(context));

@@ -130,6 +130,14 @@ public class SnomedDescriptionApiTest extends AbstractSnomedApiTest {
 		final String descriptionId = assertComponentCreated(createMainPath(), SnomedComponentType.DESCRIPTION, requestBody);
 		assertCaseSignificance(createMainPath(), descriptionId, CaseSignificance.INITIAL_CHARACTER_CASE_INSENSITIVE);
 	}
+	
+	@Test
+	public void createDuplicateDescription() {
+		final Map<?, ?> requestBody = createRequestBody(DISEASE, "Rare disease", Concepts.MODULE_SCT_CORE, Concepts.SYNONYM, "New description on MAIN");
+		final String descriptionId = assertComponentCreated(createMainPath(), SnomedComponentType.DESCRIPTION, requestBody);
+		final Map<?, ?> dupRequestBody = ImmutableMap.builder().putAll(requestBody).put("id", descriptionId).build();
+		assertComponentCreatedWithStatus(createMainPath(), SnomedComponentType.DESCRIPTION, dupRequestBody, 409);
+	}
 
 	@Test
 	public void createDescriptionCaseInsensitive() {
