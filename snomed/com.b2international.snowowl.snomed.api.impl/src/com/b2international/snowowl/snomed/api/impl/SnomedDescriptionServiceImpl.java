@@ -48,19 +48,14 @@ import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 import com.b2international.snowowl.snomed.datastore.SnomedDescriptionLookupService;
 import com.b2international.snowowl.snomed.datastore.SnomedEditingContext;
 import com.b2international.snowowl.snomed.datastore.SnomedRefSetEditingContext;
-import com.b2international.snowowl.snomed.datastore.index.SnomedDescriptionIndexQueryAdapter;
-import com.b2international.snowowl.snomed.datastore.index.SnomedIndexService;
-import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDescriptionIndexEntry;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetIndexEntry;
 import com.b2international.snowowl.snomed.datastore.model.SnomedModelExtensions;
-import com.b2international.snowowl.snomed.datastore.server.request.SnomedDescriptionConverter;
 import com.b2international.snowowl.snomed.datastore.server.request.SnomedDescriptionCreateRequest;
 import com.b2international.snowowl.snomed.datastore.services.ISnomedComponentService;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedAttributeValueRefSetMember;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedLanguageRefSetMember;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedStructuralRefSet;
-import com.google.common.collect.Collections2;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.ImmutableBiMap;
 import com.google.common.collect.ImmutableList;
@@ -70,10 +65,6 @@ import com.google.common.primitives.Longs;
 public class SnomedDescriptionServiceImpl 
 	extends AbstractSnomedComponentServiceImpl<ISnomedDescription, ISnomedDescriptionUpdate, Description> 
 	implements ISnomedDescriptionService {
-
-	private static SnomedIndexService getIndexService() {
-		return ApplicationContext.getServiceForClass(SnomedIndexService.class);
-	}
 
 	private static ISnomedComponentService getSnomedComponentService() {
 		return ApplicationContext.getServiceForClass(ISnomedComponentService.class);
@@ -85,10 +76,6 @@ public class SnomedDescriptionServiceImpl
 		super(SnomedDatastoreActivator.REPOSITORY_UUID, ComponentCategory.DESCRIPTION);
 	}
 
-	private SnomedDescriptionConverter getDescriptionConverter(final IBranchPath branchPath) {
-		return new SnomedDescriptionConverter(getMembershipLookupService(branchPath));
-	}
-
 	@Override
 	protected boolean componentExists(final IComponentRef ref) {
 		final InternalComponentRef internalRef = ClassUtils.checkAndCast(ref, InternalComponentRef.class);
@@ -98,24 +85,22 @@ public class SnomedDescriptionServiceImpl
 
 	@Override
 	protected ISnomedDescription doRead(final IComponentRef ref) {
-		final InternalComponentRef internalRef = ClassUtils.checkAndCast(ref, InternalComponentRef.class);
-		final IBranchPath branch = internalRef.getBranch().branchPath();
-		final SnomedDescriptionIndexEntry descriptionIndexEntry = snomedDescriptionLookupService.getComponent(branch, internalRef.getComponentId());
-		return getDescriptionConverter(branch).apply(descriptionIndexEntry);
+		throw new UnsupportedOperationException();
 	}
 
 	@Override
 	public List<ISnomedDescription> readConceptDescriptions(final IComponentRef conceptRef) {
+		throw new UnsupportedOperationException();
 		// TODO: check that concept exists?
 
-		final InternalComponentRef internalConceptRef = ClassUtils.checkAndCast(conceptRef, InternalComponentRef.class);
-		final SnomedDescriptionIndexQueryAdapter queryAdapter = SnomedDescriptionIndexQueryAdapter.findByConceptId(internalConceptRef.getComponentId());
-		final IBranchPath branch = internalConceptRef.getBranch().branchPath();
-		
-		final Collection<SnomedDescriptionIndexEntry> descriptionIndexEntries = getIndexService().searchUnsorted(branch, queryAdapter);
-		final Collection<ISnomedDescription> transformedDescriptions = Collections2.transform(descriptionIndexEntries, getDescriptionConverter(branch));
-
-		return SnomedComponentOrdering.id().immutableSortedCopy(transformedDescriptions);
+//		final InternalComponentRef internalConceptRef = ClassUtils.checkAndCast(conceptRef, InternalComponentRef.class);
+//		final SnomedDescriptionIndexQueryAdapter queryAdapter = SnomedDescriptionIndexQueryAdapter.findByConceptId(internalConceptRef.getComponentId());
+//		final IBranchPath branch = internalConceptRef.getBranch().branchPath();
+//		
+//		final Collection<SnomedDescriptionIndexEntry> descriptionIndexEntries = getIndexService().searchUnsorted(branch, queryAdapter);
+//		final Collection<ISnomedDescription> transformedDescriptions = Collections2.transform(descriptionIndexEntries, getDescriptionConverter(branch));
+//
+//		return SnomedComponentOrdering.id().immutableSortedCopy(transformedDescriptions);
 	}
 
 	private Description getDescription(final String descriptionId, final SnomedEditingContext editingContext) {

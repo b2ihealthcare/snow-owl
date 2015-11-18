@@ -17,8 +17,6 @@ package com.b2international.snowowl.snomed.datastore.server.converter;
 
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.domain.BranchContext;
-import com.b2international.snowowl.core.domain.TransactionContext;
-import com.b2international.snowowl.snomed.datastore.server.request.SnomedDescriptionConverter;
 import com.b2international.snowowl.snomed.datastore.server.request.SnomedRelationshipConverter;
 import com.b2international.snowowl.snomed.datastore.services.SnomedBranchRefSetMembershipLookupService;
 
@@ -38,11 +36,11 @@ public class SnomedConverters {
 		return new SnomedConceptConverter(createMembershipLookupService(branchPath));
 	}
 
-	public static SnomedDescriptionConverter newDescriptionConverter(TransactionContext context) {
+	public static SnomedDescriptionConverter newDescriptionConverter(BranchContext context) {
 		return new SnomedDescriptionConverter(createMembershipLookupService(context));
 	}
 	
-	public static SnomedRelationshipConverter newRelationshipConverter(TransactionContext context) {
+	public static SnomedRelationshipConverter newRelationshipConverter(BranchContext context) {
 		return new SnomedRelationshipConverter(createMembershipLookupService(context));
 	}
 	

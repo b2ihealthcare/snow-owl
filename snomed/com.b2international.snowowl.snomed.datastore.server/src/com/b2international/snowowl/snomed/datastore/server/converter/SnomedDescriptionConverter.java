@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.snomed.datastore.server.request;
+package com.b2international.snowowl.snomed.datastore.server.converter;
 
 import static com.b2international.snowowl.core.ApplicationContext.getServiceForClass;
 import static com.b2international.snowowl.snomed.core.domain.DescriptionInactivationIndicator.getInactivationIndicatorByValueId;
@@ -31,13 +31,14 @@ import com.b2international.snowowl.snomed.core.domain.ISnomedDescription;
 import com.b2international.snowowl.snomed.core.domain.SnomedDescription;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDescriptionIndexEntry;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry;
+import com.b2international.snowowl.snomed.datastore.server.request.AbstractSnomedComponentConverter;
 import com.b2international.snowowl.snomed.datastore.services.AbstractSnomedRefSetMembershipLookupService;
 import com.b2international.snowowl.snomed.datastore.services.ISnomedComponentService;
 import com.google.common.collect.ImmutableMap;
 
 public class SnomedDescriptionConverter extends AbstractSnomedComponentConverter<SnomedDescriptionIndexEntry, ISnomedDescription> {
 
-	public SnomedDescriptionConverter(final AbstractSnomedRefSetMembershipLookupService refSetMembershipLookupService) {
+	SnomedDescriptionConverter(final AbstractSnomedRefSetMembershipLookupService refSetMembershipLookupService) {
 		super(refSetMembershipLookupService);
 	}
 
