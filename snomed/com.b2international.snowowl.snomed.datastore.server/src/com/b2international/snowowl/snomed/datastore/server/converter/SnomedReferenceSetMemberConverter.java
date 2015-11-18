@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.snomed.datastore.server.request;
+package com.b2international.snowowl.snomed.datastore.server.converter;
 
 import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
@@ -30,8 +30,10 @@ import com.google.common.collect.ImmutableMap.Builder;
 /**
  * @since 4.5
  */
-class SnomedReferenceSetMemberConverter implements Function<SnomedRefSetMemberIndexEntry, SnomedReferenceSetMember> {
+public class SnomedReferenceSetMemberConverter implements Function<SnomedRefSetMemberIndexEntry, SnomedReferenceSetMember> {
 
+	SnomedReferenceSetMemberConverter() {}
+	
 	@Override
 	public SnomedReferenceSetMember apply(SnomedRefSetMemberIndexEntry input) {
 		final SnomedReferenceSetMemberImpl member = new SnomedReferenceSetMemberImpl();

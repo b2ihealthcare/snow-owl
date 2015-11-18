@@ -38,6 +38,10 @@ public class SnomedConverters {
 		return new SnomedRelationshipConverter(createMembershipLookupService(context));
 	}
 	
+	public static SnomedReferenceSetMemberConverter newMemberConverter(BranchContext context) {
+		return new SnomedReferenceSetMemberConverter();
+	}
+	
 	private static SnomedBranchRefSetMembershipLookupService createMembershipLookupService(BranchContext context) {
 		return createMembershipLookupService(context.branch().branchPath());
 	}

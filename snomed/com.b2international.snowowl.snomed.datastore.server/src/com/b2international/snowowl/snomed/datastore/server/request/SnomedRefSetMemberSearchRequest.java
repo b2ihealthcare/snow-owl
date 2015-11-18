@@ -27,6 +27,7 @@ import com.b2international.snowowl.snomed.core.domain.SnomedReferenceSetMembers;
 import com.b2international.snowowl.snomed.datastore.SnomedRefSetBrowser;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry;
 import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedMappings;
+import com.b2international.snowowl.snomed.datastore.server.converter.SnomedConverters;
 import com.google.common.base.Function;
 import com.google.common.base.Predicate;
 import com.google.common.collect.FluentIterable;
@@ -61,7 +62,7 @@ public class SnomedRefSetMemberSearchRequest extends SearchRequest<SnomedReferen
 			})
 			.skip(offset())
 			.limit(limit())
-			.transform(new SnomedReferenceSetMemberConverter()).toList();
+			.transform(SnomedConverters.newMemberConverter(context)).toList();
 		
 		return new SnomedReferenceSetMembers(members);
 	}

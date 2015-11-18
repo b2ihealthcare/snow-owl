@@ -35,6 +35,8 @@ import com.b2international.snowowl.snomed.core.domain.SnomedReferenceSet;
 import com.b2international.snowowl.snomed.core.domain.SnomedReferenceSetMember;
 import com.b2international.snowowl.snomed.core.store.SnomedComponents;
 import com.b2international.snowowl.snomed.datastore.id.SnomedIdentifiers;
+import com.b2international.snowowl.snomed.datastore.server.converter.SnomedConverters;
+import com.b2international.snowowl.snomed.datastore.server.converter.SnomedReferenceSetMemberConverter;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetMember;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType;
 import com.google.common.base.Strings;
@@ -104,7 +106,7 @@ public class SnomedRefSetMemberCreateRequest extends SnomedRefSetMemberRequest<T
 		default: throw new UnsupportedOperationException("Not implemented support for creation of '"+type+"' members");
 		}
 		
-		return new SnomedReferenceSetMemberConverter().apply(member);
+		return SnomedConverters.newMemberConverter(context).apply(member);
 	}
 
 	@Override
