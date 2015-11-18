@@ -15,11 +15,7 @@
  */
 package com.b2international.snowowl.snomed.exporter.server.sandbox;
 
-import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_MAP_TARGET_COMPONENT_DESCRIPTION;
-import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_MAP_TARGET_COMPONENT_ID;
 import static com.google.common.base.Preconditions.checkNotNull;
-import static com.google.common.collect.Sets.newHashSet;
-import static java.util.Collections.unmodifiableSet;
 import static com.google.common.base.Strings.nullToEmpty;
 
 import java.util.Set;
@@ -27,24 +23,21 @@ import java.util.Set;
 import org.apache.lucene.document.Document;
 
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
+import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedMappings;
 import com.b2international.snowowl.snomed.exporter.server.SnomedRfFileNameBuilder;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSet;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType;
 
 /**
- * SNOMED&nbsp;CT simple map type reference set exporter.
- *
+ * SNOMED CT simple map type reference set exporter (optionally with map target description).
  */
 public class SnomedSimpleMapRefSetExporter extends SnomedRefSetExporter {
 
-	private static final Set<String> FIELD_TO_LOAD;
-	
-	static {
-		final Set<String> fieldsToLoad = newHashSet(COMMON_FIELDS_TO_LOAD);
-		fieldsToLoad.add(REFERENCE_SET_MEMBER_MAP_TARGET_COMPONENT_ID);
-		fieldsToLoad.add(REFERENCE_SET_MEMBER_MAP_TARGET_COMPONENT_DESCRIPTION);
-		FIELD_TO_LOAD = unmodifiableSet(fieldsToLoad);
-	}
+	private static final Set<String> FIELD_TO_LOAD = SnomedMappings.fieldsToLoad()
+			.fields(COMMON_FIELDS_TO_LOAD)
+			.memberMapTargetComponentId()
+			.memberMapTargetComponentDescription()
+			.build();
 	
 	private final boolean includeMapTargetDescription;
 	
@@ -70,10 +63,10 @@ public class SnomedSimpleMapRefSetExporter extends SnomedRefSetExporter {
 		final StringBuilder sb = new StringBuilder();
 		sb.append(super.transform(doc));
 		sb.append(HT);
-		sb.append(doc.get(REFERENCE_SET_MEMBER_MAP_TARGET_COMPONENT_ID));
+		sb.append(SnomedMappings.memberMapTargetComponentId().getValue(doc));
 		if (includeMapTargetDescription) {
 			sb.append(HT);
-			sb.append(nullToEmpty(doc.get(REFERENCE_SET_MEMBER_MAP_TARGET_COMPONENT_DESCRIPTION)));
+			sb.append(nullToEmpty(SnomedMappings.memberMapTargetComponentDescription().getValue(doc)));
 		}
 		return sb.toString();
 	}
@@ -84,5 +77,4 @@ public class SnomedSimpleMapRefSetExporter extends SnomedRefSetExporter {
 			? SnomedRf2Headers.SIMPLE_MAP_TYPE_HEADER_WITH_DESCRIPTION
 			: SnomedRf2Headers.SIMPLE_MAP_TYPE_HEADER;
 	}
-	
 }

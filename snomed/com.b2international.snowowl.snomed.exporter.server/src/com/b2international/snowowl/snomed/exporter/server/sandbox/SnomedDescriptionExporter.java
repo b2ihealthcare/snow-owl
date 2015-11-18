@@ -16,7 +16,6 @@
 package com.b2international.snowowl.snomed.exporter.server.sandbox;
 
 import static com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants.DESCRIPTION_NUMBER;
-import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.DESCRIPTION_CASE_SIGNIFICANCE_ID;
 import static com.google.common.base.Preconditions.checkNotNull;
 
 import java.util.Set;
@@ -51,7 +50,7 @@ public class SnomedDescriptionExporter extends SnomedCoreExporter {
 				.descriptionConcept()
 				.descriptionType()
 				.label()
-				.field(DESCRIPTION_CASE_SIGNIFICANCE_ID)
+				.descriptionCaseSignificance()
 				.build();
 	}
 
@@ -74,7 +73,7 @@ public class SnomedDescriptionExporter extends SnomedCoreExporter {
 		sb.append(HT);
 		sb.append(Mappings.label().getValue(doc));
 		sb.append(HT);
-		sb.append(doc.get(DESCRIPTION_CASE_SIGNIFICANCE_ID));
+		sb.append(SnomedMappings.descriptionCaseSignificance().getValueAsString(doc));
 		return sb.toString();
 	}
 

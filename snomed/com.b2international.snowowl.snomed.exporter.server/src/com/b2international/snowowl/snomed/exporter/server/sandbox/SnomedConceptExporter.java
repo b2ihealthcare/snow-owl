@@ -15,17 +15,16 @@
  */
 package com.b2international.snowowl.snomed.exporter.server.sandbox;
 
-import static com.b2international.snowowl.datastore.index.IndexUtils.getIntValue;
 import static com.b2international.snowowl.snomed.SnomedConstants.Concepts.FULLY_DEFINED;
 import static com.b2international.snowowl.snomed.SnomedConstants.Concepts.PRIMITIVE;
 import static com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants.CONCEPT_NUMBER;
-import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.CONCEPT_PRIMITIVE;
 import static com.google.common.base.Preconditions.checkNotNull;
 
 import java.util.Set;
 
 import org.apache.lucene.document.Document;
 
+import com.b2international.commons.BooleanUtils;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
 import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedMappings;
 import com.b2international.snowowl.snomed.exporter.server.ComponentExportType;
@@ -41,7 +40,7 @@ public class SnomedConceptExporter extends SnomedCoreExporter {
 			.effectiveTime()
 			.active()
 			.module()
-			.field(CONCEPT_PRIMITIVE)
+			.primitive()
 			.build();
 	
 	public SnomedConceptExporter(final SnomedExportConfiguration configuration) {
@@ -84,8 +83,6 @@ public class SnomedConceptExporter extends SnomedCoreExporter {
 	}
 
 	private String getDefinitionStatusValue(final Document doc) {
-		return 1 == getIntValue(doc.getField(CONCEPT_PRIMITIVE)) 
-				? PRIMITIVE 
-				: FULLY_DEFINED;
+		return BooleanUtils.valueOf(SnomedMappings.primitive().getValue(doc)) ? PRIMITIVE : FULLY_DEFINED;
 	}
 }
