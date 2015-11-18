@@ -20,6 +20,8 @@ import static com.google.common.base.Preconditions.checkArgument;
 import com.b2international.snowowl.core.terminology.ComponentCategory;
 import com.b2international.snowowl.datastore.BranchPathUtils;
 import com.b2international.snowowl.snomed.datastore.SnomedTerminologyBrowser;
+import com.b2international.snowowl.snomed.datastore.id.cis.IdentifierStatus;
+import com.b2international.snowowl.snomed.datastore.id.cis.SctId;
 import com.b2international.snowowl.snomed.datastore.id.reservations.ISnomedIdentiferReservationService;
 import com.google.inject.Provider;
 
@@ -44,6 +46,17 @@ public abstract class AbstractSnomedIdentifierServiceImpl implements ISnomedIden
 	protected void checkCategory(ComponentCategory category) {
 		checkArgument(category == ComponentCategory.CONCEPT || category == ComponentCategory.DESCRIPTION
 				|| category == ComponentCategory.RELATIONSHIP, "Cannot generate ID for component category %s.", category);
+	}
+	
+	protected boolean hasStatus(final SctId sctId, final IdentifierStatus... status) {
+		for (final IdentifierStatus s : status) {
+			if (s.getSerializedName().equals(sctId.getStatus())) {
+				return true;
+			}
+
+		}
+
+		return false;
 	}
 
 }

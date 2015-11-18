@@ -179,10 +179,13 @@ public class CisSnomedIdentifierServiceImpl extends AbstractSnomedIdentifierServ
 		final String token = login();
 
 		try {
-			LOGGER.info(String.format("Sending component ID %s release request.", componentId));
-
-			request = httpPut(String.format("sct/release?token=%s", token), releaseData(componentId));
-			execute(request);
+			final SctId sctId = getSctId(componentId);
+			if (!hasStatus(sctId, IdentifierStatus.AVAILABLE)) {
+				LOGGER.info(String.format("Sending component ID %s release request.", componentId));
+				
+				request = httpPut(String.format("sct/release?token=%s", token), releaseData(componentId));
+				execute(request);
+			}
 		} catch (IOException e) {
 			throw new SnowowlRuntimeException("Exception while releasing ID.", e);
 		} finally {
@@ -360,11 +363,22 @@ public class CisSnomedIdentifierServiceImpl extends AbstractSnomedIdentifierServ
 
 	@Override
 	public void bulkRelease(final Collection<String> componentIds) {
+		final Collection<String> componentIdsToRelease = Lists.newArrayList();
+		final Collection<SctId> sctIds = getSctIds(componentIds);
+
+		for (final SctId sctId : sctIds) {
+			if (!hasStatus(sctId, IdentifierStatus.AVAILABLE))
+				componentIdsToRelease.add(sctId.getSctid());
+		}
+
+		if (componentIdsToRelease.isEmpty())
+			return;
+		
 		HttpPut request = null;
 		final String token = login();
 
 		try {
-			for (final Collection<String> ids : Lists.partition(Lists.newArrayList(componentIds), BULK_LIMIT)) {
+			for (final Collection<String> ids : Lists.partition(Lists.newArrayList(componentIdsToRelease), BULK_LIMIT)) {
 				LOGGER.info(String.format("Sending component ID bulk release request with size %d.", ids.size()));
 
 				request = httpPut(String.format("sct/bulk/release?token=%s", token), bulkReleaseData(ids));

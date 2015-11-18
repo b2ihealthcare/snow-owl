@@ -131,6 +131,8 @@ public class InMemorySnomedIdentifierServiceImpl extends AbstractSnomedIdentifie
 		final SctId sctId = getSctId(componentId);
 		if (hasStatus(sctId, IdentifierStatus.ASSIGNED, IdentifierStatus.RESERVED)) {
 			store.remove(componentId);
+		} else if (hasStatus(sctId, IdentifierStatus.AVAILABLE)) {
+			// do nothing
 		} else {
 			throw new BadRequestException(String.format("Cannot release ID in state %s.", sctId.getStatus()));
 		}
@@ -240,6 +242,8 @@ public class InMemorySnomedIdentifierServiceImpl extends AbstractSnomedIdentifie
 
 			if (hasStatus(sctId, IdentifierStatus.ASSIGNED, IdentifierStatus.RESERVED)) {
 				releasedComponentIds.add(componentId);
+			} else if (hasStatus(sctId, IdentifierStatus.AVAILABLE)) {
+				// do nothing
 			} else {
 				throw new BadRequestException(String.format("Cannot release ID in state %s.", sctId.getStatus()));
 			}
@@ -334,17 +338,6 @@ public class InMemorySnomedIdentifierServiceImpl extends AbstractSnomedIdentifie
 		// TODO set remaining attributes?
 
 		return sctId;
-	}
-
-	private boolean hasStatus(final SctId sctId, final IdentifierStatus... status) {
-		for (final IdentifierStatus s : status) {
-			if (s.getSerializedName().equals(sctId.getStatus())) {
-				return true;
-			}
-
-		}
-
-		return false;
 	}
 
 	private void putAll(final Collection<SctId> sctIds) {
