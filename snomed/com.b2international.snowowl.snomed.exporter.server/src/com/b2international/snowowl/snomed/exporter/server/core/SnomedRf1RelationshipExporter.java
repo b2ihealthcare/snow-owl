@@ -21,7 +21,6 @@ import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Suppliers.memoize;
 
 import java.io.IOException;
-import java.util.Collections;
 import java.util.Iterator;
 import java.util.Set;
 
@@ -39,7 +38,6 @@ import com.b2international.snowowl.datastore.server.index.IndexServerService;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.snomed.datastore.SnomedRefSetLookupService;
-import com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants;
 import com.b2international.snowowl.snomed.datastore.index.SnomedIndexService;
 import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedMappings;
 import com.b2international.snowowl.snomed.datastore.services.ISnomedComponentService;
@@ -53,7 +51,6 @@ import com.b2international.snowowl.snomed.exporter.server.sandbox.SnomedExportCo
 import com.google.common.base.Preconditions;
 import com.google.common.base.Supplier;
 import com.google.common.collect.AbstractIterator;
-import com.google.common.collect.Sets;
 
 /**
  * RF1 exporter for relationships.
@@ -64,11 +61,14 @@ public class SnomedRf1RelationshipExporter implements SnomedRf1Exporter {
 	private static final Set<String> RELATIONSHIP_FILEDS_TO_LOAD = SnomedMappings.fieldsToLoad()
 			.relationshipCharacteristicType()
 			.relationshipType()
-			.field(SnomedIndexBrowserConstants.RELATIONSHIP_OBJECT_ID)
-			.field(SnomedIndexBrowserConstants.RELATIONSHIP_VALUE_ID)
-			.field(SnomedIndexBrowserConstants.RELATIONSHIP_GROUP).build();
+			.relationshipSource()
+			.relationshipDestination()
+			.relationshipGroup()
+			.build();
 	
-	private static final Set<String> REFINABILITY_ID_FIELD_TO_LOAD = Collections.unmodifiableSet(Sets.newHashSet(SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_VALUE_ID));
+	private static final Set<String> REFINABILITY_ID_FIELD_TO_LOAD = SnomedMappings.fieldsToLoad()
+			.memberValueId()
+			.build();
 	
 	private final Id2Rf1PropertyMapper mapper;
 	private final SnomedExportConfiguration configuration;
@@ -121,18 +121,18 @@ public class SnomedRf1RelationshipExporter implements SnomedRf1Exporter {
 								final Document doc = searcher.doc(conceptTopDocs.scoreDocs[0].doc, RELATIONSHIP_FILEDS_TO_LOAD);
 								
 								_values[0] = relationshipId;
-								_values[1] = doc.get(SnomedIndexBrowserConstants.RELATIONSHIP_OBJECT_ID);
+								_values[1] = SnomedMappings.relationshipSource().getValueAsString(doc);
 								_values[2] = SnomedMappings.relationshipType().getValueAsString(doc);
-								_values[3] = doc.get(SnomedIndexBrowserConstants.RELATIONSHIP_VALUE_ID);
+								_values[3] = SnomedMappings.relationshipDestination().getValueAsString(doc);
 								_values[4] = SnomedMappings.relationshipCharacteristicType().getValueAsString(doc);
-								_values[6] = doc.get(SnomedIndexBrowserConstants.RELATIONSHIP_GROUP);
+								_values[6] = SnomedMappings.relationshipGroup().getValueAsString(doc);
 								
 								if (refinabilityExists) {
 									final Query inactivationQuery = SnomedMappings.newQuery().memberReferencedComponentId(relationshipId).memberRefSetId(Concepts.REFSET_RELATIONSHIP_REFINABILITY).matchAll();
 									final TopDocs inactivationTopDocs = indexService.search(getBranchPath(), inactivationQuery, 1);
 									
 									if (null != inactivationTopDocs && !CompareUtils.isEmpty(inactivationTopDocs.scoreDocs)) {
-										_values[5] = searcher.doc(inactivationTopDocs.scoreDocs[0].doc, REFINABILITY_ID_FIELD_TO_LOAD).get(SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_VALUE_ID);
+										_values[5] = SnomedMappings.memberValueId().getValueAsString(searcher.doc(inactivationTopDocs.scoreDocs[0].doc, REFINABILITY_ID_FIELD_TO_LOAD));
 									} 
 								}
 								

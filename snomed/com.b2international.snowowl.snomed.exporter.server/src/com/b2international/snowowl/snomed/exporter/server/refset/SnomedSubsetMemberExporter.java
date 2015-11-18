@@ -38,7 +38,6 @@ import com.b2international.snowowl.core.date.DateFormats;
 import com.b2international.snowowl.core.date.Dates;
 import com.b2international.snowowl.datastore.server.index.IndexServerService;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
-import com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants;
 import com.b2international.snowowl.snomed.datastore.index.SnomedIndexService;
 import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedFieldsToLoadBuilder;
 import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedMappings;
@@ -81,7 +80,7 @@ public class SnomedSubsetMemberExporter extends AbstractSnomedSubsetExporter {
 			.memberReferencedComponentId();
 			
 		NON_LANGUAGE_MEMBER_FIELD_TO_LOAD = commonFieldsToLoad.build();
-		LANGUAGE_MEMBER_FIELD_TO_LOAD = commonFieldsToLoad.field(SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_ACCEPTABILITY_ID).build();
+		LANGUAGE_MEMBER_FIELD_TO_LOAD = commonFieldsToLoad.memberAcceptabilityId().build();
 	}
 		
 	private Iterator<String> itr;
@@ -156,7 +155,7 @@ public class SnomedSubsetMemberExporter extends AbstractSnomedSubsetExporter {
 							
 						} else {
 							
-							final String acceptabilityId = doc.get(SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_ACCEPTABILITY_ID);
+							final String acceptabilityId = SnomedMappings.memberAcceptabilityId().getValueAsString(doc);
 							
 							if (Concepts.REFSET_DESCRIPTION_ACCEPTABILITY_PREFERRED.equals(acceptabilityId)) {
 								

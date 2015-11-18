@@ -36,7 +36,6 @@ import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.api.SnowowlRuntimeException;
 import com.b2international.snowowl.datastore.server.index.IndexServerService;
 import com.b2international.snowowl.snomed.datastore.SnomedMapSetSetting;
-import com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants;
 import com.b2international.snowowl.snomed.datastore.index.SnomedIndexService;
 import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedMappings;
 import com.b2international.snowowl.snomed.exporter.server.ComponentExportType;
@@ -56,15 +55,18 @@ import com.google.common.collect.Iterators;
  */
 public class SnomedCrossMapExporter extends AbstractSnomedCrossMapExporter {
 
-	private static final Set<String> MEMBER_FIELD_TO_LOAD = SnomedMappings.fieldsToLoad().memberReferencedComponentId().field(SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_MAP_TARGET_COMPONENT_ID).build();
+	private static final Set<String> MEMBER_FIELD_TO_LOAD = SnomedMappings.fieldsToLoad()
+			.memberReferencedComponentId()
+			.memberMapTargetComponentId()
+			.build();
 	
 	private static final Set<String> COMPLEX_MEMBER_FIELD_TO_LOAD = SnomedMappings.fieldsToLoad()
 			.memberReferencedComponentId()
-			.field(SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_MAP_TARGET_COMPONENT_ID)
-			.field(SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_MAP_PRIORITY)
-			.field(SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_MAP_GROUP)
-			.field(SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_MAP_RULE)
-			.field(SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_MAP_ADVICE)
+			.memberMapTargetComponentId()
+			.memberMapPriority()
+			.memberMapGroup()
+			.memberMapRule()
+			.memberMapAdvice()
 			.build();
 	
 	private boolean complex;
@@ -126,14 +128,14 @@ public class SnomedCrossMapExporter extends AbstractSnomedCrossMapExporter {
 						final Document doc = searcher.doc(topDocs.scoreDocs[i].doc, complex ? COMPLEX_MEMBER_FIELD_TO_LOAD : MEMBER_FIELD_TO_LOAD);
 						final MapTargetEntry entry = new MapTargetEntry();
 						entry.mapSource = SnomedMappings.memberReferencedComponentId().getValueAsString(doc);
-						entry.mapTarget = doc.get(SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_MAP_TARGET_COMPONENT_ID);
+						entry.mapTarget = SnomedMappings.memberMapTargetComponentId().getValue(doc);
 						
 						if (complex) {
 							
-							entry.rule = doc.get(SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_MAP_RULE);
-							entry.advice = doc.get(SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_MAP_ADVICE);
-							entry.group = doc.get(SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_MAP_GROUP);
-							entry.priority = doc.get(SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_MAP_PRIORITY); 
+							entry.rule = SnomedMappings.memberMapRule().getValue(doc);
+							entry.advice = SnomedMappings.memberMapAdvice().getValue(doc);
+							entry.group = SnomedMappings.memberMapGroup().getValueAsString(doc);
+							entry.priority = SnomedMappings.memberMapPriority().getValueAsString(doc); 
 							
 						}
 							
