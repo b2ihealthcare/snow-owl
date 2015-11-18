@@ -214,9 +214,6 @@ public class SnomedClassificationServiceImpl implements ISnomedClassificationSer
 	private SnomedBrowserService browserService;
 
 	@Resource
-	private SnomedConceptServiceImpl conceptService;
-
-	@Resource
 	private SnomedDescriptionServiceImpl descriptionService;
 
 	@PostConstruct
