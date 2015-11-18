@@ -17,7 +17,7 @@ package com.b2international.snowowl.snomed.datastore.id.cis;
 
 import org.junit.Before;
 
-import com.b2international.snowowl.snomed.datastore.config.SnomedCoreConfiguration;
+import com.b2international.snowowl.snomed.datastore.config.SnomedIdentifierConfiguration;
 import com.b2international.snowowl.snomed.datastore.id.AbstractIdentifierServiceTest;
 import com.b2international.snowowl.snomed.datastore.id.ISnomedIdentifierService;
 import com.b2international.snowowl.snomed.datastore.id.reservations.ISnomedIdentiferReservationService;
@@ -37,7 +37,7 @@ public class CisSnomedIdentfierServiceImplTest extends AbstractIdentifierService
 
 	@Before
 	public void init() {
-		final SnomedCoreConfiguration conf = new SnomedCoreConfiguration();
+		final SnomedIdentifierConfiguration conf = new SnomedIdentifierConfiguration();
 		conf.setCisUrl("http://107.170.101.181");
 		conf.setCisPort("3000");
 		conf.setCisContextRoot("api");

@@ -24,8 +24,8 @@ import com.b2international.snowowl.core.setup.DefaultBootstrapFragment;
 import com.b2international.snowowl.core.setup.Environment;
 import com.b2international.snowowl.core.setup.ModuleConfig;
 import com.b2international.snowowl.snomed.datastore.SnomedTerminologyBrowser;
-import com.b2international.snowowl.snomed.datastore.config.SnomedCoreConfiguration;
-import com.b2international.snowowl.snomed.datastore.config.SnomedCoreConfiguration.IdGenerationStrategy;
+import com.b2international.snowowl.snomed.datastore.config.SnomedIdentifierConfiguration;
+import com.b2international.snowowl.snomed.datastore.config.SnomedIdentifierConfiguration.IdGenerationStrategy;
 import com.b2international.snowowl.snomed.datastore.id.cis.CisSnomedIdentifierServiceImpl;
 import com.b2international.snowowl.snomed.datastore.id.gen.ItemIdGenerationStrategy;
 import com.b2international.snowowl.snomed.datastore.id.memory.InMemorySnomedIdentifierServiceImpl;
@@ -36,7 +36,7 @@ import com.google.inject.Provider;
 /**
  * @since 4.5
  */
-@ModuleConfig(fieldName = "snomed", type = SnomedCoreConfiguration.class)
+@ModuleConfig(fieldName = "snomed", type = SnomedIdentifierConfiguration.class)
 public class SnomedIdentifierBootstrap extends DefaultBootstrapFragment {
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(SnomedIdentifierBootstrap.class);
@@ -46,23 +46,23 @@ public class SnomedIdentifierBootstrap extends DefaultBootstrapFragment {
 	public void init(final SnowOwlConfiguration configuration, final Environment env) throws Exception {
 		checkIdGenerationSource(configuration);
 
-		final SnomedCoreConfiguration coreConfiguration = configuration.getModuleConfig(SnomedCoreConfiguration.class);
+		final SnomedIdentifierConfiguration conf = configuration.getModuleConfig(SnomedIdentifierConfiguration.class);
 		final ISnomedIdentiferReservationService reservationService = new SnomedIdentifierReservationServiceImpl();
 		env.services().registerService(ISnomedIdentiferReservationService.class, reservationService);
 
-		registerSnomedIdentifierService(coreConfiguration, env, reservationService);
+		registerSnomedIdentifierService(conf, env, reservationService);
 	}
 
-	private void checkIdGenerationSource(SnowOwlConfiguration configuration) {
-		final SnomedCoreConfiguration coreConfiguration = configuration.getModuleConfig(SnomedCoreConfiguration.class);
-		final IdGenerationStrategy idGenerationSource = coreConfiguration.getIdGenerationStrategy();
+	private void checkIdGenerationSource(final SnowOwlConfiguration configuration) {
+		final SnomedIdentifierConfiguration conf = configuration.getModuleConfig(SnomedIdentifierConfiguration.class);
+		final IdGenerationStrategy idGenerationSource = conf.getIdGenerationStrategy();
 
 		if (null == idGenerationSource) {
 			throw new IllegalStateException("ID generation source is not configured.");
 		}
 	}
 
-	private void registerSnomedIdentifierService(final SnomedCoreConfiguration conf, final Environment env,
+	private void registerSnomedIdentifierService(final SnomedIdentifierConfiguration conf, final Environment env,
 			final ISnomedIdentiferReservationService reservationService) {
 		ISnomedIdentifierService identifierService = null;
 

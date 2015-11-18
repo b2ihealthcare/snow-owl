@@ -32,7 +32,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.b2international.snowowl.core.exceptions.BadRequestException;
-import com.b2international.snowowl.snomed.datastore.config.SnomedCoreConfiguration;
+import com.b2international.snowowl.snomed.datastore.config.SnomedIdentifierConfiguration;
 
 /**
  * Client to communicate with the CIS.
@@ -49,7 +49,7 @@ public class ComponentIdentifierServiceClient {
 
 	private HttpClient client = new DefaultHttpClient();
 
-	public ComponentIdentifierServiceClient(final SnomedCoreConfiguration conf) {
+	public ComponentIdentifierServiceClient(final SnomedIdentifierConfiguration conf) {
 		this.url = conf.getCisUrl();
 		this.port = conf.getCisPort();
 		this.contextRoot = conf.getCisContextRoot();

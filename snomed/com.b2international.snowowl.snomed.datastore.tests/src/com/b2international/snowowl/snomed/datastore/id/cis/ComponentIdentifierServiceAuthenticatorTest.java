@@ -23,7 +23,7 @@ import org.junit.Test;
 
 import com.b2international.commons.StringUtils;
 import com.b2international.snowowl.core.exceptions.BadRequestException;
-import com.b2international.snowowl.snomed.datastore.config.SnomedCoreConfiguration;
+import com.b2international.snowowl.snomed.datastore.config.SnomedIdentifierConfiguration;
 
 /**
  * @since 4.5
@@ -37,7 +37,7 @@ public class ComponentIdentifierServiceAuthenticatorTest {
 
 	@Before
 	public void init() {
-		SnomedCoreConfiguration conf = new SnomedCoreConfiguration();
+		SnomedIdentifierConfiguration conf = new SnomedIdentifierConfiguration();
 		conf.setCisUrl("http://107.170.101.181");
 		conf.setCisPort("3000");
 		conf.setCisContextRoot("api");

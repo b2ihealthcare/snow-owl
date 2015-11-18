@@ -32,7 +32,7 @@ import com.b2international.commons.StringUtils;
 import com.b2international.snowowl.core.api.SnowowlRuntimeException;
 import com.b2international.snowowl.core.terminology.ComponentCategory;
 import com.b2international.snowowl.snomed.datastore.SnomedTerminologyBrowser;
-import com.b2international.snowowl.snomed.datastore.config.SnomedCoreConfiguration;
+import com.b2international.snowowl.snomed.datastore.config.SnomedIdentifierConfiguration;
 import com.b2international.snowowl.snomed.datastore.id.AbstractSnomedIdentifierServiceImpl;
 import com.b2international.snowowl.snomed.datastore.id.SnomedIdentifiers;
 import com.b2international.snowowl.snomed.datastore.id.cis.request.BulkDeprecationData;
@@ -77,7 +77,7 @@ public class CisSnomedIdentifierServiceImpl extends AbstractSnomedIdentifierServ
 
 	private final ObjectMapper mapper = new ObjectMapper();
 
-	public CisSnomedIdentifierServiceImpl(final SnomedCoreConfiguration conf, final Provider<SnomedTerminologyBrowser> provider,
+	public CisSnomedIdentifierServiceImpl(final SnomedIdentifierConfiguration conf, final Provider<SnomedTerminologyBrowser> provider,
 			final ISnomedIdentiferReservationService reservationService) {
 		super(provider, reservationService);
 		this.clientKey = conf.getCisClientSoftwareKey();

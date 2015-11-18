@@ -31,11 +31,6 @@ import com.fasterxml.jackson.annotation.JsonProperty;
  */
 public class SnomedCoreConfiguration {
 	
-	public enum IdGenerationStrategy {
-		MEMORY, // Snow Owl's internal random id generator
-		CIS // IHTSDO's external id generator
-	}
-
 	public static final String ELK_REASONER_ID = "org.semanticweb.elk.elk.reasoner.factory"; //$NON-NLS-1$
 	private static final String DEFAULT_REASONER = ELK_REASONER_ID;
 	public static final String DEFAULT_LANGUAGE = "en-gb"; //$NON-NLS-1$
@@ -63,22 +58,6 @@ public class SnomedCoreConfiguration {
 	
 	@NotEmpty
 	private String defaultModule = DEFAULT_MODULE;
-	
-	@JsonProperty(value = "idGenerationStrategy", required = false)
-	private IdGenerationStrategy idGenerationStrategy = IdGenerationStrategy.MEMORY;
-	@JsonProperty(value = "cisUrl", required = false)
-	private String cisUrl;
-	@JsonProperty(value = "cisPort", required = false)
-	private String cisPort;
-	@JsonProperty(value = "cisContextRoot", required = false)
-	private String cisContextRoot;
-	@JsonProperty(value = "cisUserName", required = false)
-	private String cisUserName;
-	@JsonProperty(value = "cisPassword", required = false)
-	private String cisPassword;
-	// the key to associate the client software within the external CIS service
-	@JsonProperty(value = "cisClientSoftwareKey", required = false)
-	private String cisClientSoftwareKey = "Snow Owl";
 	
 	private boolean concreteDomainSupport;
 	private boolean showReasonerUsageWarning = true;
@@ -199,60 +178,4 @@ public class SnomedCoreConfiguration {
 		this.showReasonerUsageWarning = showReasonerUsageWarning;
 	}
 	
-	public IdGenerationStrategy getIdGenerationStrategy() {
-		return idGenerationStrategy;
-	}
-	
-	public void setIdGenerationStrategy(IdGenerationStrategy idGenerationStrategy) {
-		this.idGenerationStrategy = idGenerationStrategy;
-	}
-	
-	public String getCisUrl() {
-		return cisUrl;
-	}
-	
-	public void setCisUrl(String cisUrl) {
-		this.cisUrl = cisUrl;
-	}
-	
-	public String getCisPort() {
-		return cisPort;
-	}
-	
-	public void setCisPort(String cisPort) {
-		this.cisPort = cisPort;
-	}
-	
-	public String getCisContextRoot() {
-		return cisContextRoot;
-	}
-	
-	public void setCisContextRoot(String cisContextRoot) {
-		this.cisContextRoot = cisContextRoot;
-	}
-	
-	public String getCisUserName() {
-		return cisUserName;
-	}
-	
-	public void setCisUserName(String cisUserName) {
-		this.cisUserName = cisUserName;
-	}
-	
-	public String getCisPassword() {
-		return cisPassword;
-	}
-	
-	public void setCisPassword(String cisPassword) {
-		this.cisPassword = cisPassword;
-	}
-	
-	public String getCisClientSoftwareKey() {
-		return cisClientSoftwareKey;
-	}
-	
-	public void setCisClientSoftwareKey(String cisClientSoftwareKey) {
-		this.cisClientSoftwareKey = cisClientSoftwareKey;
-	}
-
 }
