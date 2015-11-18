@@ -56,6 +56,7 @@ public class SnomedRefSetAdapterFactory extends TypeSafeAdapterFactory {
 			} else {
 				final Builder builder = SnomedRefSetIndexEntry.builder()
 						.id(refSet.getIdentifierId()) 
+						.iconId(refSet.getIdentifierId()) // XXX: An IconProvider might give an exact value here, but this is OK
 						.moduleId(identifierConcept.getModule().getId())
 						.storageKey(CDOIDUtils.asLongSafe(refSet.cdoID()))
 						.active(identifierConcept.isActive())

@@ -44,6 +44,7 @@ public class SnomedRefSetIndexEntry extends SnomedIndexEntry implements IRefSetC
 	public static Builder builder(final Document doc) {
 		return builder()
 				.id(SnomedMappings.id().getValueAsString(doc))
+				.iconId(SnomedMappings.iconId().getValueAsString(doc))
 				.moduleId(SnomedMappings.module().getValueAsString(doc))
 				.storageKey(SnomedMappings.refSetStorageKey().getValue(doc)) // XXX: This is different than the concept's storage key
 				.active(BooleanUtils.valueOf(SnomedMappings.active().getValue(doc).intValue())) 
@@ -55,6 +56,7 @@ public class SnomedRefSetIndexEntry extends SnomedIndexEntry implements IRefSetC
 
 	public static class Builder extends AbstractBuilder<Builder> {
 
+		private String iconId;
 		private SnomedRefSetType type;
 		private short referencedComponentType;
 		private boolean structural;
@@ -68,6 +70,11 @@ public class SnomedRefSetIndexEntry extends SnomedIndexEntry implements IRefSetC
 			return this;
 		}
 
+		public Builder iconId(final String iconId) {
+			this.iconId = iconId;
+			return getSelf();
+		}
+		
 		public Builder type(final SnomedRefSetType type) {
 			this.type = type;
 			return getSelf();
@@ -85,6 +92,7 @@ public class SnomedRefSetIndexEntry extends SnomedIndexEntry implements IRefSetC
 
 		public SnomedRefSetIndexEntry build() {
 			return new SnomedRefSetIndexEntry(id, 
+					iconId,
 					score, 
 					storageKey, 
 					moduleId, 
@@ -102,6 +110,7 @@ public class SnomedRefSetIndexEntry extends SnomedIndexEntry implements IRefSetC
 	private final boolean structural;
 
 	private SnomedRefSetIndexEntry(final String id, 
+			final String iconId,
 			final float score, 
 			final long storageKey, 
 			final String moduleId, 
@@ -113,7 +122,7 @@ public class SnomedRefSetIndexEntry extends SnomedIndexEntry implements IRefSetC
 			final boolean structural) {
 
 		super(id, 
-				id, // XXX: iconId is the same as the identifier ID; reference sets might have a specialized icon
+				iconId,
 				score, 
 				storageKey, 
 				moduleId, 
