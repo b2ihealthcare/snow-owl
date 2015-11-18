@@ -25,7 +25,6 @@ import java.util.Locale;
 
 import javax.servlet.http.HttpServletRequest;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -40,9 +39,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.context.request.async.DeferredResult;
 
-import com.b2international.snowowl.core.domain.IComponentRef;
 import com.b2international.snowowl.core.domain.PageableCollectionResource;
-import com.b2international.snowowl.snomed.api.ISnomedConceptService;
 import com.b2international.snowowl.snomed.api.rest.domain.ChangeRequest;
 import com.b2international.snowowl.snomed.api.rest.domain.RestApiError;
 import com.b2international.snowowl.snomed.api.rest.domain.SnomedConceptRestInput;
@@ -50,7 +47,6 @@ import com.b2international.snowowl.snomed.api.rest.domain.SnomedConceptRestUpdat
 import com.b2international.snowowl.snomed.api.rest.util.DeferredResults;
 import com.b2international.snowowl.snomed.api.rest.util.Responses;
 import com.b2international.snowowl.snomed.core.domain.ISnomedConcept;
-import com.b2international.snowowl.snomed.core.domain.ISnomedConceptUpdate;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcepts;
 import com.b2international.snowowl.snomed.datastore.server.request.SnomedConceptCreateRequestBuilder;
 import com.b2international.snowowl.snomed.datastore.server.request.SnomedRequests;
@@ -68,9 +64,6 @@ import com.wordnik.swagger.annotations.ApiResponses;
 @RequestMapping(produces={ AbstractRestService.SO_MEDIA_TYPE })
 public class SnomedConceptRestService extends AbstractSnomedRestService {
 
-	@Autowired
-	protected ISnomedConceptService delegate;
-	
 	@ApiOperation(
 			value="Retrieve Concepts from a branch", 
 			notes="Returns a list with all/filtered Concepts from a branch.")
@@ -200,7 +193,7 @@ public class SnomedConceptRestService extends AbstractSnomedRestService {
 		final SnomedConceptCreateRequestBuilder input = change.toComponentInput();
 		
 		final ISnomedConcept createdConcept = SnomedRequests
-			.<ISnomedConcept>prepareCommit(userId, branchPath)
+			.prepareCommit(userId, branchPath)
 			.setBody(input)
 			.setCommitComment(commitComment)
 			.build()
@@ -248,12 +241,25 @@ public class SnomedConceptRestService extends AbstractSnomedRestService {
 
 			final Principal principal) {
 
-		final IComponentRef conceptRef = createComponentRef(branchPath, conceptId);
-		final ISnomedConceptUpdate update = body.getChange().toComponentUpdate();
 		final String userId = principal.getName();
 		final String commitComment = body.getCommitComment();
+		final SnomedConceptRestUpdate update = body.getChange();
 
-		delegate.update(conceptRef, update, userId, commitComment);
+		SnomedRequests
+			.prepareCommit(userId, branchPath)
+			.setBody(
+				SnomedRequests
+					.prepareConceptUpdate(conceptId)
+					.setActive(update.isActive())
+					.setModuleId(update.getModuleId())
+					.setAssociationTargets(update.getAssociationTargets())
+					.setDefinitionStatus(update.getDefinitionStatus())
+					.setInactivationIndicator(update.getInactivationIndicator())
+					.setSubclassDefinitionStatus(update.getSubclassDefinitionStatus())
+					.build())
+			.setCommitComment(commitComment)
+			.build()
+			.executeSync(bus, 120L * 1000L);
 	}
 
 	@ApiOperation(
@@ -279,7 +285,7 @@ public class SnomedConceptRestService extends AbstractSnomedRestService {
 
 			final Principal principal) {
 		SnomedRequests
-			.<Void>prepareCommit(principal.getName(), branchPath)
+			.prepareCommit(principal.getName(), branchPath)
 			.setBody(SnomedRequests.prepareDeleteConcept(conceptId))
 			.setCommitComment(String.format("Deleted Concept '%s' from store.", conceptId))
 			.build()

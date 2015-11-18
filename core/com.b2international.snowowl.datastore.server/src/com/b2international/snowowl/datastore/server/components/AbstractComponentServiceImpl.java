@@ -85,17 +85,17 @@ public abstract class AbstractComponentServiceImpl<R extends IComponent, U, E ex
 //		}
 //	}
 
-	@Override
-	public R update(final IComponentRef ref, final U update, final String userId, final String commitComment) {
-		checkComponentExists(ref);
-		ApiValidation.checkInput(update);
-		
-		try (E editingContext = createEditingContext(ref)) {
-			doUpdate(ref, update, editingContext);
-			doCommit(userId, commitComment, editingContext);
-			return read(ref);
-		}
-	}
+//	@Override
+//	public R update(final IComponentRef ref, final U update, final String userId, final String commitComment) {
+//		checkComponentExists(ref);
+//		ApiValidation.checkInput(update);
+//		
+//		try (E editingContext = createEditingContext(ref)) {
+//			doUpdate(ref, update, editingContext);
+//			doCommit(userId, commitComment, editingContext);
+//			return read(ref);
+//		}
+//	}
 
 //	@Override
 //	public void delete(final IComponentRef ref, final String userId, final String commitComment) {

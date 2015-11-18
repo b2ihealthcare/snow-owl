@@ -46,7 +46,7 @@ public abstract class SnomedRequests {
 	private SnomedRequests() {
 	}
 	
-	public static <B> RepositoryCommitRequestBuilder prepareCommit(String userId, String branch) {
+	public static RepositoryCommitRequestBuilder prepareCommit(String userId, String branch) {
 		return RepositoryRequests.prepareCommit(userId, REPOSITORY_ID, branch);
 	}
 	
@@ -153,6 +153,18 @@ public abstract class SnomedRequests {
 
 	public static SnomedRefSetMemberUpdateRequestBuilder prepareMemberUpdate() {
 		return new SnomedRefSetMemberUpdateRequestBuilder(REPOSITORY_ID);
+	}
+
+	public static SnomedConceptUpdateRequestBuilder prepareConceptUpdate(String componentId) {
+		return new SnomedConceptUpdateRequestBuilder(REPOSITORY_ID, componentId);
+	}
+
+	public static SnomedDescriptionUpdateRequestBuilder prepareDescriptionUpdate(String componentId) {
+		return new SnomedDescriptionUpdateRequestBuilder(REPOSITORY_ID, componentId);
+	}
+
+	public static SnomedRelationshipUpdateRequestBuilder prepareRelationshipUpdate(String componentId) {
+		return new SnomedRelationshipUpdateRequestBuilder(REPOSITORY_ID, componentId);
 	}
 
 }

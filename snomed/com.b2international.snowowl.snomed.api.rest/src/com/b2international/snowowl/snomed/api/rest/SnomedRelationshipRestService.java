@@ -20,7 +20,6 @@ import static org.springframework.hateoas.mvc.ControllerLinkBuilder.linkTo;
 import java.net.URI;
 import java.security.Principal;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -32,8 +31,6 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.context.request.async.DeferredResult;
 
-import com.b2international.snowowl.core.domain.IComponentRef;
-import com.b2international.snowowl.snomed.api.ISnomedRelationshipService;
 import com.b2international.snowowl.snomed.api.rest.domain.ChangeRequest;
 import com.b2international.snowowl.snomed.api.rest.domain.RestApiError;
 import com.b2international.snowowl.snomed.api.rest.domain.SnomedRelationshipRestInput;
@@ -41,7 +38,6 @@ import com.b2international.snowowl.snomed.api.rest.domain.SnomedRelationshipRest
 import com.b2international.snowowl.snomed.api.rest.util.DeferredResults;
 import com.b2international.snowowl.snomed.api.rest.util.Responses;
 import com.b2international.snowowl.snomed.core.domain.ISnomedRelationship;
-import com.b2international.snowowl.snomed.core.domain.ISnomedRelationshipUpdate;
 import com.b2international.snowowl.snomed.datastore.server.request.SnomedRelationshipCreateRequestBuilder;
 import com.b2international.snowowl.snomed.datastore.server.request.SnomedRequests;
 import com.wordnik.swagger.annotations.Api;
@@ -58,9 +54,6 @@ import com.wordnik.swagger.annotations.ApiResponses;
 @RequestMapping(
 		produces={ AbstractRestService.SO_MEDIA_TYPE })
 public class SnomedRelationshipRestService extends AbstractSnomedRestService {
-
-	@Autowired
-	protected ISnomedRelationshipService delegate;
 
 	@ApiOperation(
 			value="Create Relationship", 
@@ -89,7 +82,7 @@ public class SnomedRelationshipRestService extends AbstractSnomedRestService {
 		final SnomedRelationshipCreateRequestBuilder req = body.getChange().toComponentInput();
 		
 		final ISnomedRelationship createdRelationship = SnomedRequests
-				.<ISnomedRelationship>prepareCommit(principal.getName(), branchPath)
+				.prepareCommit(principal.getName(), branchPath)
 				.setBody(req)
 				.setCommitComment(commitComment)
 				.build()
@@ -152,12 +145,25 @@ public class SnomedRelationshipRestService extends AbstractSnomedRestService {
 			
 			final Principal principal) {
 
-		final IComponentRef relationshipRef = createComponentRef(branchPath, relationshipId);
-		final ISnomedRelationshipUpdate update = body.getChange().toComponentUpdate();
 		final String userId = principal.getName();
 		final String commitComment = body.getCommitComment();
+		final SnomedRelationshipRestUpdate update = body.getChange();
 
-		delegate.update(relationshipRef, update, userId, commitComment);
+		SnomedRequests
+			.prepareCommit(userId, branchPath)
+			.setBody(
+				SnomedRequests
+					.prepareRelationshipUpdate(relationshipId)
+					.setActive(update.isActive())
+					.setModuleId(update.getModuleId())
+					.setCharacteristicType(update.getCharacteristicType())
+					.setGroup(update.getGroup())
+					.setUnionGroup(update.getUnionGroup())
+					.setModifier(update.getModifier())
+					.build())
+			.setCommitComment(commitComment)
+			.build()
+			.executeSync(bus, 120L * 1000L);
 	}
 
 	@ApiOperation(
@@ -184,7 +190,7 @@ public class SnomedRelationshipRestService extends AbstractSnomedRestService {
 			final Principal principal) {
 
 		SnomedRequests
-			.<Void>prepareCommit(principal.getName(), branchPath)
+			.prepareCommit(principal.getName(), branchPath)
 			.setBody(SnomedRequests.prepareDeleteRelationship(relationshipId))
 			.setCommitComment(String.format("Deleted Relationship '%s' from store.", relationshipId))
 			.build()

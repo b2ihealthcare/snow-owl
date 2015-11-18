@@ -94,7 +94,7 @@ public interface IComponentService<R extends IComponent, U> {
 	 * @throws ComponentValidationException       if the supplied update model fails validation
 	 * @throws ComponentUpdateException           if updating the component fails for any other reason
 	 */
-	R update(IComponentRef ref, U update, String userId, String commitComment);
+//	R update(IComponentRef ref, U update, String userId, String commitComment);
 
 	/**
 	 * Permanently deletes the specified component from the specified code system version and task.
