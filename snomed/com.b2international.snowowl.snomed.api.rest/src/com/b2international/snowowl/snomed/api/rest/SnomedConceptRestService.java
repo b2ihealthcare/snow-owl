@@ -163,9 +163,9 @@ public class SnomedConceptRestService extends AbstractSnomedRestService {
 
 		return DeferredResults.wrap(
 				SnomedRequests
-					.prepareGet(branchPath)
-					.setComponentId(conceptId)
-					.build()
+					.prepareGetConcept()
+					.setId(conceptId)
+					.build(branchPath)
 					.execute(bus));
 	}
 

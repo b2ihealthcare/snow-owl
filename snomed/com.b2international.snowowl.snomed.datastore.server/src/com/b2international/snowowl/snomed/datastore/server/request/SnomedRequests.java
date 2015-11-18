@@ -54,8 +54,16 @@ public abstract class SnomedRequests {
 		return new SnomedConceptSearchRequestBuilder(REPOSITORY_ID);
 	}
 	
-	public static SnomedConceptGetRequestBuilder prepareGet(String branch) {
-		return new SnomedConceptGetRequestBuilder(branch);
+	public static SnomedConceptGetRequestBuilder prepareGetConcept() {
+		return new SnomedConceptGetRequestBuilder(REPOSITORY_ID);
+	}
+	
+	public static SnomedDescriptionGetRequestBuilder prepareGetDescription() {
+		return new SnomedDescriptionGetRequestBuilder(REPOSITORY_ID);
+	}
+	
+	public static SnomedRelationshipGetRequestBuilder prepareGetRelationship() {
+		return new SnomedRelationshipGetRequestBuilder(REPOSITORY_ID);
 	}
 	
 	public static Request<TransactionContext, Void> prepareDeleteComponent(String componentId, Class<? extends EObject> type) {

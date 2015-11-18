@@ -57,11 +57,6 @@ public class SnomedConceptServiceImpl
 	}
 
 	@Override
-	protected ISnomedConcept doRead(final IComponentRef ref) {
-		throw new UnsupportedOperationException();
-	}
-
-	@Override
 	protected void doUpdate(final IComponentRef ref, final ISnomedConceptUpdate update, final SnomedEditingContext editingContext) {
 		final Concept concept = editingContext.getConcept(ref.getComponentId());
 

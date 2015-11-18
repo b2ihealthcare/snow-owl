@@ -107,10 +107,10 @@ public class SnomedTerminologyBrowserServiceImpl implements ISnomedTerminologyBr
 		return convertEntries(branch, entries);
 	}
 
-	@Override
-	public ISnomedConcept getNode(final IComponentRef nodeRef) {
-		return conceptService.read(nodeRef);
-	}
+//	@Override
+//	public ISnomedConcept getNode(final IComponentRef nodeRef) {
+//		return conceptService.read(nodeRef);
+//	}
 
 	@Override
 	public IComponentList<ISnomedConcept> getDescendants(final IComponentRef nodeRef, final boolean direct, final int offset, final int limit) {

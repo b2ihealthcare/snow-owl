@@ -84,11 +84,6 @@ public class SnomedDescriptionServiceImpl
 	}
 
 	@Override
-	protected ISnomedDescription doRead(final IComponentRef ref) {
-		throw new UnsupportedOperationException();
-	}
-
-	@Override
 	public List<ISnomedDescription> readConceptDescriptions(final IComponentRef conceptRef) {
 		throw new UnsupportedOperationException();
 		// TODO: check that concept exists?

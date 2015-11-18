@@ -47,11 +47,6 @@ public class SnomedRelationshipServiceImpl
 		return snomedRelationshipLookupService.exists(internalRef.getBranch().branchPath(), internalRef.getComponentId());
 	}
 
-	@Override
-	protected ISnomedRelationship doRead(final IComponentRef ref) {
-		throw new UnsupportedOperationException();
-	}
-
 	private Relationship getRelationship(final String relationshipId, final SnomedEditingContext editingContext) {
 		return snomedRelationshipLookupService.getComponent(relationshipId, editingContext.getTransaction());
 	}

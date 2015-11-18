@@ -30,6 +30,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.context.request.async.DeferredResult;
 
 import com.b2international.snowowl.core.domain.IComponentRef;
 import com.b2international.snowowl.snomed.api.ISnomedRelationshipService;
@@ -37,6 +38,7 @@ import com.b2international.snowowl.snomed.api.rest.domain.ChangeRequest;
 import com.b2international.snowowl.snomed.api.rest.domain.RestApiError;
 import com.b2international.snowowl.snomed.api.rest.domain.SnomedRelationshipRestInput;
 import com.b2international.snowowl.snomed.api.rest.domain.SnomedRelationshipRestUpdate;
+import com.b2international.snowowl.snomed.api.rest.util.DeferredResults;
 import com.b2international.snowowl.snomed.api.rest.util.Responses;
 import com.b2international.snowowl.snomed.core.domain.ISnomedRelationship;
 import com.b2international.snowowl.snomed.core.domain.ISnomedRelationshipUpdate;
@@ -106,7 +108,7 @@ public class SnomedRelationshipRestService extends AbstractSnomedRestService {
 		@ApiResponse(code = 404, message = "Branch or Relationship not found")
 	})
 	@RequestMapping(value="/{path:**}/relationships/{relationshipId}", method=RequestMethod.GET)
-	public ISnomedRelationship read(
+	public DeferredResult<ISnomedRelationship> read(
 			@ApiParam(value="The branch path")
 			@PathVariable("path") 
 			final String branchPath,
@@ -115,7 +117,12 @@ public class SnomedRelationshipRestService extends AbstractSnomedRestService {
 			@PathVariable("relationshipId") 
 			final String relationshipId) {
 
-		return delegate.read(createComponentRef(branchPath, relationshipId));
+		return DeferredResults.wrap(
+				SnomedRequests
+					.prepareGetRelationship()
+					.setId(relationshipId)
+					.build(branchPath)
+					.execute(bus));
 	}
 
 	@ApiOperation(

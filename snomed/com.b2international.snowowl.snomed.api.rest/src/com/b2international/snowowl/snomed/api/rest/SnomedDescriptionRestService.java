@@ -30,12 +30,14 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.context.request.async.DeferredResult;
 
 import com.b2international.snowowl.core.domain.IComponentRef;
 import com.b2international.snowowl.snomed.api.ISnomedDescriptionService;
 import com.b2international.snowowl.snomed.api.rest.domain.ChangeRequest;
 import com.b2international.snowowl.snomed.api.rest.domain.SnomedDescriptionRestInput;
 import com.b2international.snowowl.snomed.api.rest.domain.SnomedDescriptionRestUpdate;
+import com.b2international.snowowl.snomed.api.rest.util.DeferredResults;
 import com.b2international.snowowl.snomed.api.rest.util.Responses;
 import com.b2international.snowowl.snomed.core.domain.ISnomedDescription;
 import com.b2international.snowowl.snomed.core.domain.ISnomedDescriptionUpdate;
@@ -105,7 +107,7 @@ public class SnomedDescriptionRestService extends AbstractSnomedRestService {
 		@ApiResponse(code = 404, message = "Branch or Description not found")
 	})
 	@RequestMapping(value="/{path:**}/descriptions/{descriptionId}", method=RequestMethod.GET)
-	public ISnomedDescription read(
+	public DeferredResult<ISnomedDescription> read(
 			@ApiParam(value="The branch path")
 			@PathVariable(value="path")
 			final String branchPath,
@@ -113,8 +115,12 @@ public class SnomedDescriptionRestService extends AbstractSnomedRestService {
 			@ApiParam(value="The Description identifier")
 			@PathVariable(value="descriptionId")
 			final String descriptionId) {
-		final IComponentRef conceptRef = createComponentRef(branchPath, descriptionId);
-		return delegate.read(conceptRef);
+		return DeferredResults.wrap(
+				SnomedRequests
+					.prepareGetDescription()
+					.setId(descriptionId)
+					.build(branchPath)
+					.execute(bus));
 	}
 
 

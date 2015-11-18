@@ -71,7 +71,7 @@ public interface IComponentService<R extends IComponent, U> {
 	 *                                            is not registered
 	 * @throws ComponentNotFoundException         if the component identifier does not match any component on the given task
 	 */
-	R read(IComponentRef ref);
+//	R read(IComponentRef ref);
 
 	/**
 	 * Updates an existing component using the specified update model, if it exists.
