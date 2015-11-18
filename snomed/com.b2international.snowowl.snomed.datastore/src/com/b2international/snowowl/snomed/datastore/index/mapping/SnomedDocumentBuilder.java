@@ -517,7 +517,7 @@ public final class SnomedDocumentBuilder extends DocumentBuilderBase<SnomedDocum
 		return addToDoc(SnomedMappings.memberDataTypeLabel(), label);
 	}
 
-	public SnomedDocumentBuilder memberDataTypeOrdinal(final com.b2international.snowowl.snomed.snomedrefset.DataType refSetDataType) {
+	public SnomedDocumentBuilder memberDataType(final com.b2international.snowowl.snomed.snomedrefset.DataType refSetDataType) {
 		return addToDoc(SnomedMappings.memberDataTypeOrdinal(), refSetDataType.ordinal());
 	}
 

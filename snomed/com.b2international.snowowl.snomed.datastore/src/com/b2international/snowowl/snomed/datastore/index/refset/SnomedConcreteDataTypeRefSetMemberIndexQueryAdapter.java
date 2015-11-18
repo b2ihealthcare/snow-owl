@@ -16,18 +16,14 @@
 package com.b2international.snowowl.snomed.datastore.index.refset;
 
 
-import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_DATA_TYPE_VALUE;
-import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_SERIALIZED_VALUE;
-
 import java.io.Serializable;
 
 import org.apache.lucene.document.Document;
 
 import com.b2international.snowowl.core.api.IBranchPath;
-import com.b2international.snowowl.datastore.index.mapping.Mappings;
 import com.b2international.snowowl.snomed.datastore.SnomedRefSetUtil;
-import com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry;
+import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedMappings;
 import com.b2international.snowowl.snomed.snomedrefset.DataType;
 
 /**
@@ -60,12 +56,12 @@ public class SnomedConcreteDataTypeRefSetMemberIndexQueryAdapter extends SnomedR
 	
 	@Override
 	public SnomedRefSetMemberIndexEntry buildSearchResult(final Document doc, final IBranchPath branchPath, final float score) {
-		final DataType dataType = DataType.get(Mappings.intDocValuesField(REFERENCE_SET_MEMBER_DATA_TYPE_VALUE).getValue(doc));
-		final String serializedValue = Mappings.stringDocValuesField(REFERENCE_SET_MEMBER_SERIALIZED_VALUE).getValue(doc);
+		final DataType dataType = DataType.get(SnomedMappings.memberDataTypeOrdinal().getValue(doc));
+		final String serializedValue = SnomedMappings.memberSerializedValue().getValue(doc);
 		
 		return SnomedRefSetMemberIndexEntry.builder(doc)
 				.score(score)
-				.additionalField(SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_SERIALIZED_VALUE, SnomedRefSetUtil.deserializeValue(dataType, serializedValue))
+				.additionalField(SnomedMappings.memberSerializedValue().fieldName(), SnomedRefSetUtil.deserializeValue(dataType, serializedValue))
 				.build();
 	}
 }

@@ -18,7 +18,6 @@ package com.b2international.snowowl.snomed.datastore.index.refset;
 import org.eclipse.emf.cdo.common.id.CDOIDUtil;
 
 import com.b2international.snowowl.datastore.index.DocumentUpdaterBase;
-import com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants;
 import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedDocumentBuilder;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetMember;
 
@@ -38,11 +37,10 @@ public class RefSetMemberImmutablePropertyUpdater extends DocumentUpdaterBase<Sn
 	public void doUpdate(SnomedDocumentBuilder doc) {
 		doc
 			.storageKey(CDOIDUtil.getLong(member.cdoID()))
-			.field(SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_UUID, getComponentId())
-			.memberRefSetId(member.getRefSetIdentifierId())
+			.memberUuid(getComponentId())
+			.memberRefSetId(Long.valueOf(member.getRefSetIdentifierId()))
 			.memberRefSetType(member.getRefSet().getType())
-			.memberReferencedComponentId(member.getReferencedComponentId())
-			.memberReferencedComponentType(member.getReferencedComponentType());
+			.memberReferencedComponentId(Long.valueOf(member.getReferencedComponentId()))
+			.memberReferencedComponentType(Integer.valueOf(member.getReferencedComponentType()));
 	}
-
 }
