@@ -24,6 +24,7 @@ import org.hibernate.validator.constraints.NotEmpty;
 
 import com.b2international.commons.ClassUtils;
 import com.b2international.snowowl.core.domain.TransactionContext;
+import com.b2international.snowowl.core.events.BaseRequest;
 import com.b2international.snowowl.core.exceptions.BadRequestException;
 import com.b2international.snowowl.core.exceptions.ComponentNotFoundException;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
@@ -36,7 +37,6 @@ import com.b2international.snowowl.snomed.core.domain.SnomedReferenceSetMember;
 import com.b2international.snowowl.snomed.core.store.SnomedComponents;
 import com.b2international.snowowl.snomed.datastore.id.SnomedIdentifiers;
 import com.b2international.snowowl.snomed.datastore.server.converter.SnomedConverters;
-import com.b2international.snowowl.snomed.datastore.server.converter.SnomedReferenceSetMemberConverter;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetMember;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType;
 import com.google.common.base.Strings;
@@ -44,7 +44,7 @@ import com.google.common.base.Strings;
 /**
  * @since 4.5
  */
-public class SnomedRefSetMemberCreateRequest extends SnomedRefSetMemberRequest<TransactionContext, SnomedReferenceSetMember> {
+public class SnomedRefSetMemberCreateRequest extends BaseRequest<TransactionContext, SnomedReferenceSetMember> {
 
 	private static final String REFSET_DESCRIPTION = "refSetDescription";
 

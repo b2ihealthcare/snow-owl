@@ -19,6 +19,7 @@ import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 
 import com.b2international.snowowl.core.domain.TransactionContext;
+import com.b2international.snowowl.core.events.BaseRequest;
 import com.b2international.snowowl.core.exceptions.BadRequestException;
 import com.b2international.snowowl.snomed.core.domain.ISnomedConcept;
 import com.b2international.snowowl.snomed.core.domain.SnomedReferenceSet;
@@ -34,7 +35,7 @@ import com.b2international.snowowl.snomed.snomedrefset.SnomedRegularRefSet;
 /**
  * @since 4.5
  */
-public class SnomedRefSetCreateRequest extends SnomedRefSetRequest<TransactionContext, SnomedReferenceSet> {
+public class SnomedRefSetCreateRequest extends BaseRequest<TransactionContext, SnomedReferenceSet> {
 
 	@NotNull
 	private final SnomedRefSetType type;
