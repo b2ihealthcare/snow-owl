@@ -15,7 +15,6 @@
  */
 package com.b2international.snowowl.datastore.server.snomed.index;
 
-import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_CONTAINER_MODULE_ID;
 import static com.google.common.base.Preconditions.checkNotNull;
 
 import java.io.IOException;
@@ -23,9 +22,9 @@ import java.io.IOException;
 import org.apache.lucene.index.AtomicReader;
 import org.apache.lucene.index.NumericDocValues;
 
-import bak.pcj.LongCollection;
-
 import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedMappings;
+
+import bak.pcj.LongCollection;
 
 /**
  * Class for collecting module identifiers on concrete domains and their containers (concept or relationship).
@@ -43,7 +42,7 @@ public class ConcreteDataTypePropertyCollector extends ComponentPropertyCollecto
 	protected void initDocValues(final AtomicReader leafReader) throws IOException {
 		super.initDocValues(leafReader);
 		moduleIds = SnomedMappings.module().getDocValues(leafReader);
-		containerModuleIds = leafReader.getNumericDocValues(REFERENCE_SET_MEMBER_CONTAINER_MODULE_ID);
+		containerModuleIds = SnomedMappings.memberContainerModuleId().getDocValues(leafReader);
 	}
 
 	@Override

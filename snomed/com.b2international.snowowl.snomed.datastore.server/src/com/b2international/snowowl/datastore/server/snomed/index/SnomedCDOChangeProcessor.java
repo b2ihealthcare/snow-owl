@@ -98,7 +98,6 @@ import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.SnomedPackage;
 import com.b2international.snowowl.snomed.datastore.SnomedTerminologyBrowser;
 import com.b2international.snowowl.snomed.datastore.StatementCollectionMode;
-import com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants;
 import com.b2international.snowowl.snomed.datastore.index.SnomedIndexService;
 import com.b2international.snowowl.snomed.datastore.index.SnomedRelationshipIndexQueryAdapter;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptIndexEntry;
@@ -142,7 +141,7 @@ import bak.pcj.set.LongSet;
  */
 public class SnomedCDOChangeProcessor implements ICDOChangeProcessor {
 
-	private static final Set<String> MEMBER_FIELD_TO_LOAD = SnomedMappings.fieldsToLoad().active().memberReferencedComponentId().memberReferenceSetId().memberReferenceSetType().build();
+	private static final Set<String> MEMBER_FIELD_TO_LOAD = SnomedMappings.fieldsToLoad().active().memberReferencedComponentId().memberRefSetId().memberRefSetType().build();
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(SnomedCDOChangeProcessor.class);
 	
@@ -471,15 +470,15 @@ public class SnomedCDOChangeProcessor implements ICDOChangeProcessor {
 			deletedMemberIds = index.executeReadTransaction(branchPath, new IndexRead<Collection<String>>() {
 				@Override
 				public Collection<String> execute(IndexSearcher index) throws IOException {
-					final Query deletedMemberIdQuery = new FilteredQuery(new PrefixQuery(new Term(SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_UUID)), filter);
+					final Query deletedMemberIdQuery = new FilteredQuery(SnomedMappings.memberUuid().toExistsQuery(), filter);
 					final DocIdCollector collector = DocIdCollector.create(index.getIndexReader().maxDoc());
 					index.search(deletedMemberIdQuery, filter, collector);
 					final DocIdsIterator it = collector.getDocIDs().iterator();
 					final Collection<String> memberIds = newHashSet();
 					while (it.next()) {
 						final int docId = it.getDocID();
-						final Document doc = index.doc(docId, SnomedMappings.fieldsToLoad().field(SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_UUID).build());
-						memberIds.add(doc.get(SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_UUID));
+						final Document doc = index.doc(docId, SnomedMappings.fieldsToLoad().memberUuid().build());
+						memberIds.add(SnomedMappings.memberUuid().getValue(doc));
 					}
 					return memberIds;
 				}
@@ -520,7 +519,7 @@ public class SnomedCDOChangeProcessor implements ICDOChangeProcessor {
 				query.id(componentIdLong).storageKey(componentIdLong);
 			} catch (NumberFormatException e) {
 				// members are indexes with their UUID
-				query.field(SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_UUID, componentId);
+				query.memberUuid(componentId);
 			}
 			final Future<?> promise = executor.submit(new Runnable() {
 				@Override

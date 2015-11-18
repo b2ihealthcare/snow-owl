@@ -45,7 +45,7 @@ import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetPackage;
  */
 public class SnomedEClassProvider extends EClassProvider {
 
-	private static final Set<String> FIELDS_TO_LOAD = SnomedMappings.fieldsToLoad().type().memberReferenceSetType().storageKey().build();
+	private static final Set<String> FIELDS_TO_LOAD = SnomedMappings.fieldsToLoad().type().memberRefSetType().storageKey().build();
 	
 	@Override
 	protected EClass extractEClass(Document doc) {

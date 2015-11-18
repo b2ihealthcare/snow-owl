@@ -34,7 +34,6 @@ import com.b2international.snowowl.datastore.index.DocIdCollector.DocIdsIterator
 import com.b2international.snowowl.datastore.server.index.IndexServerService;
 import com.b2international.snowowl.datastore.server.snomed.index.init.ImportIndexServerService.TermType;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
-import com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants;
 import com.b2international.snowowl.snomed.datastore.index.SnomedIndexService;
 import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedMappings;
 import com.b2international.snowowl.snomed.datastore.services.ISnomedComponentService;
@@ -48,9 +47,9 @@ public class IndexBasedImportIndexServiceFeeder implements IImportIndexServiceFe
 	private static final Set<String> LANGUAGE_MEMBER_FIELDS_TO_LOAD = SnomedMappings.fieldsToLoad()
 			.active()
 			.memberReferencedComponentId()
-			.memberReferenceSetId()
-			.field(SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_UUID)
-			.field(SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_ACCEPTABILITY_ID)
+			.memberRefSetId()
+			.memberUuid()
+			.memberAcceptabilityId()
 			.build();
 	
 	@Override
@@ -90,10 +89,10 @@ public class IndexBasedImportIndexServiceFeeder implements IImportIndexServiceFe
 				
 				final Document doc = searcher.doc(itr.getDocID(), LANGUAGE_MEMBER_FIELDS_TO_LOAD);
 				
-				final String memberId = doc.get(SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_UUID);
+				final String memberId = SnomedMappings.memberUuid().getValue(doc);
 				final String refSetId = SnomedMappings.memberRefSetId().getValueAsString(doc);
 				final String descriptionId = SnomedMappings.memberReferencedComponentId().getValueAsString(doc);
-				final String acceptabilityId = doc.get(SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_ACCEPTABILITY_ID);
+				final String acceptabilityId = SnomedMappings.memberAcceptabilityId().getValueAsString(doc);
 				
 				final boolean preferred = Concepts.REFSET_DESCRIPTION_ACCEPTABILITY_PREFERRED.equals(acceptabilityId);
 				final boolean active = SnomedMappings.active().getValue(doc) == 1;

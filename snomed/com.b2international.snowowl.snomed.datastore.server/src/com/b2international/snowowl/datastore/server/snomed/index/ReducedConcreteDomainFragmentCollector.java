@@ -25,8 +25,7 @@ import org.apache.lucene.index.NumericDocValues;
 import org.apache.lucene.util.BytesRefHash;
 
 import com.b2international.snowowl.datastore.index.AbstractDocsOutOfOrderCollector;
-import com.b2international.snowowl.datastore.index.mapping.Mappings;
-import com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants;
+import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedMappings;
 import com.b2international.snowowl.snomed.mrcm.DataType;
 
 /**
@@ -46,8 +45,8 @@ public class ReducedConcreteDomainFragmentCollector extends AbstractDocsOutOfOrd
 
 	@Override
 	protected void initDocValues(final AtomicReader reader) throws IOException {
-		labelValues = Mappings.label().getDocValues(reader);
-		typeValues = reader.getNumericDocValues(SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_DATA_TYPE_VALUE);
+		labelValues = SnomedMappings.memberDataTypeLabel().getDocValues(reader);
+		typeValues = SnomedMappings.memberDataTypeOrdinal().getDocValues(reader);
 	}
 
 	@Override
