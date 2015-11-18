@@ -108,4 +108,9 @@ public class ComponentIdentifierServiceClient {
 		}
 	}
 
+	public void close() {
+		if (null != client)
+			client.getConnectionManager().shutdown();
+	}
+
 }

@@ -29,6 +29,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.b2international.commons.StringUtils;
+import com.b2international.snowowl.core.IDisposableService;
 import com.b2international.snowowl.core.api.SnowowlRuntimeException;
 import com.b2international.snowowl.core.terminology.ComponentCategory;
 import com.b2international.snowowl.snomed.datastore.SnomedTerminologyBrowser;
@@ -61,7 +62,7 @@ import com.google.inject.Provider;
  * 
  * @since 4.5
  */
-public class CisSnomedIdentifierServiceImpl extends AbstractSnomedIdentifierServiceImpl {
+public class CisSnomedIdentifierServiceImpl extends AbstractSnomedIdentifierServiceImpl implements IDisposableService {
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(CisSnomedIdentifierServiceImpl.class);
 	private static final int BULK_LIMIT = 1000;
@@ -75,6 +76,7 @@ public class CisSnomedIdentifierServiceImpl extends AbstractSnomedIdentifierServ
 	private final ComponentIdentifierServiceClient client;
 	private final ComponentIdentifierServiceAuthenticator authenticator;
 
+	private boolean disposed = false;
 	private final ObjectMapper mapper = new ObjectMapper();
 
 	public CisSnomedIdentifierServiceImpl(final SnomedIdentifierConfiguration conf, final Provider<SnomedTerminologyBrowser> provider,
@@ -610,6 +612,19 @@ public class CisSnomedIdentifierServiceImpl extends AbstractSnomedIdentifierServ
 	private int getNamespace(final String componentId) {
 		final String namespace = SnomedIdentifiers.of(componentId).getNamespace();
 		return null == namespace ? 0 : Integer.valueOf(namespace);
+	}
+
+	@Override
+	public void dispose() {
+		if (null != client) {
+			client.close();
+			disposed = true;
+		}
+	}
+
+	@Override
+	public boolean isDisposed() {
+		return disposed;
 	}
 
 }
