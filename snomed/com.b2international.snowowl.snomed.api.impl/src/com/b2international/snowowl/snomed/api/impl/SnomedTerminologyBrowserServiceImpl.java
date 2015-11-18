@@ -20,8 +20,6 @@ import static com.b2international.commons.pcj.LongSets.toStringSet;
 import java.util.Collection;
 import java.util.List;
 
-import javax.annotation.Resource;
-
 import org.apache.lucene.search.Sort;
 
 import com.b2international.commons.ClassUtils;
@@ -35,7 +33,6 @@ import com.b2international.snowowl.core.terminology.ComponentCategory;
 import com.b2international.snowowl.datastore.index.IndexQueryBuilder;
 import com.b2international.snowowl.datastore.server.domain.InternalComponentRef;
 import com.b2international.snowowl.datastore.server.domain.InternalStorageRef;
-import com.b2international.snowowl.snomed.api.ISnomedConceptService;
 import com.b2international.snowowl.snomed.api.ISnomedTerminologyBrowserService;
 import com.b2international.snowowl.snomed.api.impl.domain.SnomedConceptList;
 import com.b2international.snowowl.snomed.core.domain.ISnomedConcept;
@@ -52,13 +49,6 @@ import com.google.common.collect.Lists;
 /**
  */
 public class SnomedTerminologyBrowserServiceImpl implements ISnomedTerminologyBrowserService {
-
-	private ISnomedConceptService conceptService;
-
-	@Resource
-	public void setConceptService(final ISnomedConceptService conceptService) {
-		this.conceptService = conceptService;
-	}
 
 	private static SnomedIndexService getIndexService() {
 		return ApplicationContext.getServiceForClass(SnomedIndexService.class);

@@ -165,13 +165,7 @@ public class SnomedBrowserService implements ISnomedBrowserService {
 	private final InputFactory inputFactory;
 
 	@Resource
-	private SnomedConceptServiceImpl conceptService;
-
-	@Resource
 	private SnomedDescriptionServiceImpl descriptionService;
-
-	@Resource
-	private SnomedRelationshipServiceImpl relationshipService;
 
 	public SnomedBrowserService() {
 		inputFactory = new InputFactory();
