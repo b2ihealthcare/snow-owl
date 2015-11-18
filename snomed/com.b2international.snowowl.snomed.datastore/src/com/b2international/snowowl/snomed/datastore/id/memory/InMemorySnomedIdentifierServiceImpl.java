@@ -89,8 +89,7 @@ public class InMemorySnomedIdentifierServiceImpl extends AbstractSnomedIdentifie
 	public void register(final String componentId) {
 		if (contains(componentId)) {
 			final SctId sctId = getSctId(componentId);
-			if (sctId.getStatus().equals(IdentifierStatus.AVAILABLE.getSerializedName())
-					|| sctId.getStatus().equals(IdentifierStatus.RESERVED.getSerializedName())) {
+			if (hasStatus(sctId, IdentifierStatus.AVAILABLE, IdentifierStatus.RESERVED)) {
 				sctId.setStatus(IdentifierStatus.ASSIGNED.getSerializedName());
 				store.put(componentId, sctId);
 			} else {
@@ -176,8 +175,7 @@ public class InMemorySnomedIdentifierServiceImpl extends AbstractSnomedIdentifie
 			for (final String componentId : componentIds) {
 				if (contains(componentId)) {
 					final SctId sctId = getSctId(componentId);
-					if (sctId.getStatus().equals(IdentifierStatus.AVAILABLE.getSerializedName())
-							|| sctId.getStatus().equals(IdentifierStatus.RESERVED.getSerializedName())) {
+					if (hasStatus(sctId, IdentifierStatus.AVAILABLE, IdentifierStatus.RESERVED)) {
 						sctId.setStatus(IdentifierStatus.ASSIGNED.getSerializedName());
 						store.put(componentId, sctId);
 						registeredComponentIds.add(componentId);
