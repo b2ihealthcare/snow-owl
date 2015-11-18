@@ -17,42 +17,36 @@ package com.b2international.snowowl.datastore.server.snomed.version;
 
 import static com.b2international.snowowl.snomed.SnomedConstants.Concepts.REFSET_MODULE_DEPENDENCY_TYPE;
 
-import java.io.IOException;
 import java.util.Collection;
 
-import org.apache.lucene.document.Document;
-import org.apache.lucene.search.IndexSearcher;
-import org.apache.lucene.search.TopDocs;
 import org.eclipse.emf.ecore.EClass;
 import org.eclipse.emf.ecore.EStructuralFeature;
 
-import com.b2international.commons.ClassUtils;
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.datastore.CDOEditingContext;
-import com.b2international.snowowl.datastore.index.IndexRead;
-import com.b2international.snowowl.datastore.index.mapping.Mappings;
 import com.b2international.snowowl.datastore.server.snomed.SnomedModuleDependencyCollectorService;
-import com.b2international.snowowl.datastore.server.snomed.index.SnomedIndexServerService;
 import com.b2international.snowowl.datastore.server.version.PublishManager;
 import com.b2international.snowowl.snomed.SnomedFactory;
 import com.b2international.snowowl.snomed.SnomedPackage;
+import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 import com.b2international.snowowl.snomed.datastore.SnomedEditingContext;
 import com.b2international.snowowl.snomed.datastore.SnomedRefSetLookupService;
 import com.b2international.snowowl.snomed.datastore.id.ISnomedIdentifierService;
 import com.b2international.snowowl.snomed.datastore.id.IdManager;
 import com.b2international.snowowl.snomed.datastore.id.IdManagerImpl;
-import com.b2international.snowowl.snomed.datastore.index.SnomedIndexService;
-import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedMappings;
+import com.b2international.snowowl.snomed.datastore.services.ISnomedComponentService;
+import com.b2international.snowowl.snomed.datastore.services.ISnomedComponentService.IdStorageKeyPair;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedModuleDependencyRefSetMember;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetPackage;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRegularRefSet;
 import com.b2international.snowowl.terminologymetadata.CodeSystemVersion;
+import com.google.common.base.Predicate;
+import com.google.common.collect.Collections2;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 
-import bak.pcj.LongIterator;
 import bak.pcj.set.LongSet;
 
 /**
@@ -70,11 +64,11 @@ public class SnomedPublishManager extends PublishManager {
 	private final Collection<String> componentIdsToPublish = Sets.newHashSet();
 	
 	private final IdManager idManager;
-	private final SnomedIndexServerService indexService;
+	private final ISnomedComponentService componentService;
 	
 	public SnomedPublishManager() {
 		this.idManager = new IdManagerImpl(ApplicationContext.getInstance().getServiceChecked(ISnomedIdentifierService.class));
-		this.indexService = ClassUtils.checkAndCast(ApplicationContext.getInstance().getService(SnomedIndexService.class), SnomedIndexServerService.class);
+		this.componentService = ApplicationContext.getInstance().getServiceChecked(ISnomedComponentService.class);
 	}
 
 	@Override
@@ -135,30 +129,32 @@ public class SnomedPublishManager extends PublishManager {
 
 	private void collectComponentIdsToPublish(final LongSet storageKeys) {
 		LOGGER.info("Collecting component IDs for ID publication...");
-		componentIdsToPublish.addAll(getComponentIds(storageKeys));
+		final Collection<IdStorageKeyPair> idStorageKeyPairs = getIdStorageKeyPairs(storageKeys);
+		
+		for (final IdStorageKeyPair idStorageKeyPair : idStorageKeyPairs) {
+			componentIdsToPublish.add(idStorageKeyPair.getId());
+		}
+		
 		LOGGER.info("Collecting component IDs for ID publication successfully finished.");
 	}
 
-	private Collection<String> getComponentIds(final LongSet storageKeys) {
-		final Collection<String> componentIds = Lists.newArrayList();
-		final LongIterator iterator = storageKeys.iterator();
+	private Collection<IdStorageKeyPair> getIdStorageKeyPairs(LongSet storageKeys) {
+		final Collection<IdStorageKeyPair> pairs = Lists.newArrayList();
+		pairs.addAll(componentService.getAllComponentIdStorageKeys(getBranchPathForPublication(),
+				SnomedTerminologyComponentConstants.CONCEPT_NUMBER));
+		pairs.addAll(componentService.getAllComponentIdStorageKeys(getBranchPathForPublication(),
+				SnomedTerminologyComponentConstants.DESCRIPTION_NUMBER));
+		pairs.addAll(componentService.getAllComponentIdStorageKeys(getBranchPathForPublication(),
+				SnomedTerminologyComponentConstants.RELATIONSHIP_NUMBER));
 		
-		while (iterator.hasNext()) {
-			componentIds.add(getComponentId(iterator.next()));
-		}
-		
-		return componentIds;
-	}
-	
-	private String getComponentId(final Long storageKey) {
-		return indexService.executeReadTransaction(getBranchPathForPublication(), new IndexRead<String>() {
+		final Collection<IdStorageKeyPair> filteredPairs = Collections2.filter(pairs, new Predicate<IdStorageKeyPair>() {
 			@Override
-			public String execute(IndexSearcher index) throws IOException {
-				TopDocs topDocs = index.search(Mappings.newQuery().storageKey(storageKey).matchAll(), 1);
-				Document doc = index.doc(topDocs.scoreDocs[0].doc, SnomedMappings.fieldsToLoad().id().build());
-				return SnomedMappings.id().getValueAsString(doc);
+			public boolean apply(IdStorageKeyPair input) {
+				return storageKeys.contains(input.getStorageKey());
 			}
 		});
+		
+		return filteredPairs;
 	}
 
 	@Override
