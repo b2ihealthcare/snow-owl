@@ -174,17 +174,19 @@ public class CisSnomedIdentifierServiceImpl extends AbstractSnomedIdentifierServ
 
 	@Override
 	public void release(final String componentId) {
+		final SctId sctId = getSctId(componentId);
+		if (hasStatus(sctId, IdentifierStatus.AVAILABLE)) {
+			return;
+		}
+		
 		HttpPut request = null;
 		final String token = login();
 
 		try {
-			final SctId sctId = getSctId(componentId);
-			if (!hasStatus(sctId, IdentifierStatus.AVAILABLE)) {
-				LOGGER.info(String.format("Sending component ID %s release request.", componentId));
-				
-				request = httpPut(String.format("sct/release?token=%s", token), releaseData(componentId));
-				execute(request);
-			}
+			LOGGER.info(String.format("Sending component ID %s release request.", componentId));
+			
+			request = httpPut(String.format("sct/release?token=%s", token), releaseData(componentId));
+			execute(request);
 		} catch (IOException e) {
 			throw new SnowowlRuntimeException("Exception while releasing ID.", e);
 		} finally {
