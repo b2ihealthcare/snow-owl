@@ -84,5 +84,23 @@ public class SnomedComponents {
 	public static SnomedQueryReferenceSetMemberBuilder newQueryMember() {
 		return new SnomedQueryReferenceSetMemberBuilder();
 	}
+	
+	/**
+	 * Creates and returns a new {@link SnomedAssociationReferenceSetMemberBuilder SNOMED CT Association Reference set member builder}.
+	 * 
+	 * @return
+	 */
+	public static SnomedAssociationReferenceSetMemberBuilder newAssociationMember() {
+		return new SnomedAssociationReferenceSetMemberBuilder();
+	}
+
+	/**
+	 * Creates and returns a new {@link SnomedAttributeValueReferenceSetMemberBuilder SNOMED CT Attribute Reference set member builder}.
+	 * 
+	 * @return
+	 */
+	public static SnomedAttributeValueReferenceSetMemberBuilder newAttributeValueMember() {
+		return new SnomedAttributeValueReferenceSetMemberBuilder();
+	}
 
 }

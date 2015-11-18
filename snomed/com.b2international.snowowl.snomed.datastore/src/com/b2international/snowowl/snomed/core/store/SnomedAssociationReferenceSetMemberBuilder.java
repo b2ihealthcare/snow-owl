@@ -17,40 +17,34 @@ package com.b2international.snowowl.snomed.core.store;
 
 import com.b2international.snowowl.core.domain.TransactionContext;
 import com.b2international.snowowl.core.terminology.ComponentCategory;
-import com.b2international.snowowl.snomed.snomedrefset.SnomedQueryRefSetMember;
+import com.b2international.snowowl.snomed.snomedrefset.SnomedAssociationRefSetMember;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetFactory;
 
 /**
  * @since 4.5
  */
-public final class SnomedQueryReferenceSetMemberBuilder extends SnomedMemberBuilder<SnomedQueryReferenceSetMemberBuilder, SnomedQueryRefSetMember> {
+public class SnomedAssociationReferenceSetMemberBuilder extends SnomedMemberBuilder<SnomedAssociationReferenceSetMemberBuilder, SnomedAssociationRefSetMember> {
 
-	private String query;
-
-	SnomedQueryReferenceSetMemberBuilder() {
+	private String targetComponentId;
+	
+	SnomedAssociationReferenceSetMemberBuilder() {
 		super(ComponentCategory.SET_MEMBER);
 	}
 
-	/**
-	 * Specifies the query for the new SNOMED CT Query Reference Set Member.
-	 * 
-	 * @param query - the query, may not be <code>null</code>
-	 * @return
-	 */
-	public SnomedQueryReferenceSetMemberBuilder withQuery(String query) {
-		this.query = query;
+	public SnomedAssociationReferenceSetMemberBuilder withTargetComponentId(String targetComponentId) {
+		this.targetComponentId = targetComponentId;
 		return getSelf();
 	}
-
+	
 	@Override
-	protected SnomedQueryRefSetMember create() {
-		return SnomedRefSetFactory.eINSTANCE.createSnomedQueryRefSetMember();
+	protected SnomedAssociationRefSetMember create() {
+		return SnomedRefSetFactory.eINSTANCE.createSnomedAssociationRefSetMember();
 	}
-
+	
 	@Override
-	protected void init(SnomedQueryRefSetMember component, TransactionContext context) {
+	protected void init(SnomedAssociationRefSetMember component, TransactionContext context) {
 		super.init(component, context);
-		component.setQuery(query);
+		component.setTargetComponentId(targetComponentId);
 	}
 
 }
