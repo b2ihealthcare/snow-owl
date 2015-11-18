@@ -81,7 +81,6 @@ import com.b2international.snowowl.snomed.core.domain.RelationshipModifier;
 import com.b2international.snowowl.snomed.datastore.SnomedEditingContext;
 import com.b2international.snowowl.snomed.datastore.SnomedStatementBrowser;
 import com.b2international.snowowl.snomed.datastore.SnomedTerminologyBrowser;
-import com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants;
 import com.b2international.snowowl.snomed.datastore.index.SnomedConceptFullQueryAdapter;
 import com.b2international.snowowl.snomed.datastore.index.SnomedConceptIndexQueryAdapter;
 import com.b2international.snowowl.snomed.datastore.index.SnomedDescriptionReducedQueryAdapter;
@@ -140,7 +139,7 @@ public class SnomedBrowserService implements ISnomedBrowserService {
 					.relationship()
 					.active()
 					.relationshipCharacteristicType(characteristicTypeId)
-					.field(SnomedIndexBrowserConstants.RELATIONSHIP_VALUE_ID, Long.valueOf(searchString))
+					.relationshipDestination(Long.valueOf(searchString))
 					.relationshipType(Concepts.IS_A)
 					.matchAll();
 		}
