@@ -171,4 +171,7 @@ public class SnomedQueryBuilder extends QueryBuilderBase<SnomedQueryBuilder> {
 		return addToQuery(SnomedMappings.refSetStorageKey(), value);
 	}
 
+	public SnomedQueryBuilder effectiveTime(Long value) {
+		return addToQuery(SnomedMappings.effectiveTime(), value);
+	}
 }

@@ -5,7 +5,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>com.b2international.snowowl</groupId>
 	<artifactId>snowowl-parent</artifactId>
-	<version>4.4.0-SNAPSHOT</version>
+	<version>4.5.0-SNAPSHOT</version>
 	<packaging>pom</packaging>
 
 	<properties>
@@ -384,6 +384,12 @@
 				<dependency>
     				<groupId>com.fasterxml.jackson.dataformat</groupId>
     				<artifactId>jackson-dataformat-yaml</artifactId>
+    				<version>${jackson.version}</version>
+					<scope>provided</scope>
+				</dependency>
+				<dependency>
+    				<groupId>com.fasterxml.jackson.dataformat</groupId>
+    				<artifactId>jackson-dataformat-csv</artifactId>
     				<version>${jackson.version}</version>
 					<scope>provided</scope>
 				</dependency>

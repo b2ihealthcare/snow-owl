@@ -23,8 +23,7 @@ import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedMappings
 import com.b2international.snowowl.snomed.exporter.server.SnomedRf2Exporter;
 
 /**
- * Base exporter for SNOMED&nbsp;CT concepts, descriptions and relationships.
- *
+ * Base exporter for SNOMED CT concepts, descriptions and relationships.
  */
 public abstract class SnomedCoreExporter extends SnomedCompositeExporter implements SnomedRf2Exporter {
 
@@ -35,13 +34,7 @@ public abstract class SnomedCoreExporter extends SnomedCompositeExporter impleme
 	protected abstract int getTerminologyComponentType();
 	
 	@Override
-	protected Query getUnpublishedQuery(final long effectiveTime) {
-		return SnomedMappings.newQuery().field(getEffectiveTimeField(), effectiveTime).matchAll();
-	}
-	
-	@Override
 	protected Query getSnapshotQuery() {
 		return SnomedMappings.newQuery().type(getTerminologyComponentType()).matchAll();
 	}
-	
 }

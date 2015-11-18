@@ -45,7 +45,7 @@ import com.google.common.collect.ImmutableList;
  * Wraps a Lucene {@link Directory} instance, adding extra functionality primarily for manipulating 
  * index commits contained in the directory.
  */
-public class IndexDirectory {
+public class IndexDirectory implements AutoCloseable {
 
 	private static final IndexCommitFunction<Integer> GET_SEGMENT_COUNTER = new IndexCommitFunction<Integer>() {
 		@Override 
@@ -159,6 +159,7 @@ public class IndexDirectory {
 		return new SearcherManager(directory, null);
 	}
 
+	@Override
 	public void close() throws IOException {
 		directory.close();
 	}

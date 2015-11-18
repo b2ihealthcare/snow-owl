@@ -19,7 +19,6 @@ import static com.b2international.snowowl.datastore.index.IndexUtils.getIntValue
 import static com.b2international.snowowl.snomed.SnomedConstants.Concepts.EXISTENTIAL_RESTRICTION_MODIFIER;
 import static com.b2international.snowowl.snomed.SnomedConstants.Concepts.UNIVERSAL_RESTRICTION_MODIFIER;
 import static com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants.RELATIONSHIP_NUMBER;
-import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.RELATIONSHIP_EFFECTIVE_TIME;
 import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.RELATIONSHIP_GROUP;
 import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.RELATIONSHIP_OBJECT_ID;
 import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.RELATIONSHIP_UNIVERSAL;
@@ -44,11 +43,11 @@ public abstract class AbstractSnomedRelationshipExporter extends SnomedCoreExpor
 
 	private static final Set<String> FIELDS_TO_LOAD = SnomedMappings.fieldsToLoad()
 			.id()
+			.effectiveTime()
 			.active()
 			.module()
 			.relationshipType()
 			.relationshipCharacteristicType()
-			.field(RELATIONSHIP_EFFECTIVE_TIME)
 			.field(RELATIONSHIP_OBJECT_ID)
 			.field(RELATIONSHIP_VALUE_ID)
 			.field(RELATIONSHIP_GROUP)
@@ -71,7 +70,7 @@ public abstract class AbstractSnomedRelationshipExporter extends SnomedCoreExpor
 		final StringBuilder sb = new StringBuilder();
 		sb.append(SnomedMappings.id().getValueAsString(doc));
 		sb.append(HT);
-		sb.append(formatEffectiveTime(doc.getField(getEffectiveTimeField())));
+		sb.append(formatEffectiveTime(SnomedMappings.effectiveTime().getValue(doc)));
 		sb.append(HT);
 		sb.append(SnomedMappings.active().getValueAsString(doc));
 		sb.append(HT);
@@ -108,16 +107,10 @@ public abstract class AbstractSnomedRelationshipExporter extends SnomedCoreExpor
 		snapshotQuery.add(SnomedMappings.newQuery().relationship().relationshipCharacteristicType(Concepts.STATED_RELATIONSHIP).matchAll(), statedOccur);
 		return snapshotQuery;
 	}
-
-	@Override
-	protected String getEffectiveTimeField() {
-		return RELATIONSHIP_EFFECTIVE_TIME;
-	}
 	
 	private String getModifierValue(final Document doc) {
 		return 1 == getIntValue(doc.getField(RELATIONSHIP_UNIVERSAL)) 
 				? UNIVERSAL_RESTRICTION_MODIFIER 
 				: EXISTENTIAL_RESTRICTION_MODIFIER;
 	}
-
 }

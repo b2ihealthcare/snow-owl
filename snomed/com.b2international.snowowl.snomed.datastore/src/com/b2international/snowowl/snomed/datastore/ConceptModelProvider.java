@@ -22,6 +22,7 @@ import com.b2international.commons.concurrent.ConcurrentCollectionUtils;
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.snomed.datastore.escg.IEscgQueryEvaluatorClientService;
 import com.b2international.snowowl.snomed.datastore.index.SnomedClientIndexService;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptIndexEntry;
 import com.b2international.snowowl.snomed.datastore.services.ConceptSetProcessorFactory;
 import com.b2international.snowowl.snomed.datastore.snor.ConstraintFormIsApplicableForValidationPredicate;
 import com.b2international.snowowl.snomed.mrcm.AttributeConstraint;

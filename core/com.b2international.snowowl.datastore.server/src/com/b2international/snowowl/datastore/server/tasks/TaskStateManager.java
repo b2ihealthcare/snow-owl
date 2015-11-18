@@ -25,10 +25,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
-import java.util.Timer;
-import java.util.TimerTask;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicLong;
 
 import javax.annotation.Nullable;
 import javax.annotation.concurrent.GuardedBy;
@@ -54,13 +50,11 @@ import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.api.index.IIndexEntry;
 import com.b2international.snowowl.core.api.index.IIndexUpdater;
 import com.b2international.snowowl.core.api.index.IndexException;
-import com.b2international.snowowl.core.config.SnowOwlConfiguration;
 import com.b2international.snowowl.datastore.BranchPathUtils;
 import com.b2international.snowowl.datastore.IBranchPathMap;
 import com.b2international.snowowl.datastore.TaskBranchPathMap;
 import com.b2international.snowowl.datastore.UserBranchPathMap;
 import com.b2international.snowowl.datastore.cdo.ICDOConnectionManager;
-import com.b2international.snowowl.datastore.config.RepositoryConfiguration;
 import com.b2international.snowowl.datastore.index.IndexUtils;
 import com.b2international.snowowl.datastore.index.mapping.Mappings;
 import com.b2international.snowowl.datastore.net4j.push.PushServiceException;
@@ -73,17 +67,9 @@ import com.b2international.snowowl.datastore.tasks.Task;
 import com.b2international.snowowl.datastore.tasks.TaskChangeNotificationMessage;
 import com.b2international.snowowl.datastore.tasks.TaskClosedNotificationMessage;
 import com.b2international.snowowl.datastore.tasks.TaskContextManager;
-import com.b2international.snowowl.datastore.tasks.TaskHibernatedNotificationMessage;
 import com.b2international.snowowl.datastore.tasks.TaskScenario;
 import com.b2international.snowowl.eventbus.IEventBus;
 import com.google.common.base.Preconditions;
-import com.google.common.base.Supplier;
-import com.google.common.base.Suppliers;
-import com.google.common.cache.CacheBuilder;
-import com.google.common.cache.CacheLoader;
-import com.google.common.cache.LoadingCache;
-import com.google.common.cache.RemovalListener;
-import com.google.common.cache.RemovalNotification;
 import com.google.common.collect.ImmutableList;
 
 /**
@@ -92,104 +78,6 @@ import com.google.common.collect.ImmutableList;
 public class TaskStateManager extends SingleDirectoryIndexImpl implements ITaskStateManager {
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(TaskStateManager.class);
-
-	private final class UsageTimeLoader extends CacheLoader<String, AtomicLong> {
-		@Override 
-		public AtomicLong load(final String key) throws Exception {
-			return new AtomicLong();
-		}
-	}
-
-	private final class UsageTimeRemovalListener implements RemovalListener<String, AtomicLong> {
-
-		private static final String UNKNOWN_TIME_STRING = "a while";
-
-		@Override
-		public void onRemoval(final RemovalNotification<String, AtomicLong> notification) {
-
-			final String taskId = notification.getKey();
-			final AtomicLong usageTime = notification.getValue();
-
-			final TaskBranchPathMap taskBranchPathMap = getTaskBranchPathMap(taskId);
-			if (null != taskBranchPathMap) {
-				closeIndexServicesForTask(taskBranchPathMap);
-			}
-
-			final String message = MessageFormat.format("No modifications have happened on this task for {0}. "
-					+ "Snow Owl will now deactivate the task; to continue working on this task, "
-					+ "please reactivate it from the Task List view.", getTimeString(usageTime));
-
-			try {
-				PushServerService.INSTANCE.push(ITaskStateManager.PROTOCOL_NAME, new TaskHibernatedNotificationMessage(taskId, message));
-			} catch (final PushServiceException e) {
-				LOGGER.error("Could not push task inactivity notification to recipients.", e);
-			}
-		}
-
-		private String getTimeString(final AtomicLong elapsedMinutes) {
-
-			for (final TimeUnit unitToCheck : ImmutableList.of(TimeUnit.HOURS, TimeUnit.MINUTES, TimeUnit.SECONDS)) {
-				final long elapsedTimeInUnits = unitToCheck.convert(elapsedMinutes.get(), TimeUnit.MINUTES);
-
-				if (elapsedTimeInUnits > 0L) {
-					final String unitLabel = getUnitLabel(unitToCheck, elapsedTimeInUnits > 1L);
-					return elapsedTimeInUnits + " " + unitLabel; 
-				}
-			}
-
-			return UNKNOWN_TIME_STRING;
-		}
-
-		private String getUnitLabel(final TimeUnit timeUnit, final boolean plural) {
-
-			final String unitSingular;
-
-			switch (timeUnit) {
-			case HOURS:
-				unitSingular = "hour";
-				break;
-			case MINUTES:
-				unitSingular = "minute";
-				break;
-			case SECONDS:
-				unitSingular = "second";
-				break;
-			default:
-				throw new IllegalStateException("Unexpected time unit: " + timeUnit);
-			}
-
-			return unitSingular + (plural ? "s" : "");
-		}
-	}
-
-	private final class CleanupTimerTask extends TimerTask {
-
-		/*
-		 * (non-Javadoc)
-		 * @see java.util.TimerTask#run()
-		 */
-		@Override 
-		public void run() {
-			closeIndexServices();
-		}
-
-		private void closeIndexServices() {
-
-			for (final String taskId : usageTimeCache.asMap().keySet()) {
-
-				final AtomicLong usageTime = usageTimeCache.getIfPresent(taskId);
-
-				//expireTimeMinutes means infinite - do not invalidate the task index
-				if (null == usageTime || expireTimeMinutes == 0) {
-					continue;
-				}
-
-				if (usageTime.incrementAndGet() > expireTimeMinutes) {
-					usageTimeCache.invalidate(taskId);
-				}
-			}
-		}
-	}
 
 	private static final String FIELD_TASK_ID = "taskId";
 	private static final String FIELD_BRANCH_PATH_ENTRY = "branchPathEntry";
@@ -203,48 +91,13 @@ public class TaskStateManager extends SingleDirectoryIndexImpl implements ITaskS
 	
 	private final IEventBus eventBus;
 
-	private static Supplier<Timer> CLEANUP_TIMER = Suppliers.memoize(new Supplier<Timer>() { @Override public Timer get() {
-		return new Timer("Task cleanup timer", true);
-	}});
-
-	// Check every minute if there's something to be done
-	private static final long CLEANUP_INTERVAL_MILLIS = TimeUnit.MINUTES.toMillis(1L);
-	
-
-	private final LoadingCache<String, AtomicLong> usageTimeCache;
-	private final long expireTimeMinutes;
-	private final TimerTask cleanupTask;
-
 	/**
 	 * 
 	 * @param indexRootPath
 	 */
 	public TaskStateManager(final File indexRootPath) {
 		super(indexRootPath);
-
-		this.usageTimeCache = CacheBuilder.newBuilder()
-				.removalListener(new UsageTimeRemovalListener())
-				.build(new UsageTimeLoader());
-
-		final RepositoryConfiguration serverConfiguration = ApplicationContext.getInstance().getServiceChecked(SnowOwlConfiguration.class).getModuleConfig(RepositoryConfiguration.class);
-		this.expireTimeMinutes = serverConfiguration.getIndexTimeout();
-		this.cleanupTask = new CleanupTimerTask();
-		eventBus = ApplicationContext.getInstance().getServiceChecked(IEventBus.class);
-		CLEANUP_TIMER.get().schedule(cleanupTask, CLEANUP_INTERVAL_MILLIS, CLEANUP_INTERVAL_MILLIS);
-	}
-
-	/**
-	 * (non-API)
-	 * 
-	 * @param taskId the identifier of the task whose last access time should be updated
-	 */
-	public void touch(final String taskId) {
-
-		if (null == getTask(taskId)) {
-			return;
-		}
-		
-		usageTimeCache.getUnchecked(taskId).set(0);
+		this.eventBus = ApplicationContext.getInstance().getServiceChecked(IEventBus.class);
 	}
 
 	/*
@@ -626,13 +479,10 @@ public class TaskStateManager extends SingleDirectoryIndexImpl implements ITaskS
 	private void closeIndexServicesForTask(final TaskBranchPathMap branchPathMap) {
 
 		for (final Entry<String, IBranchPath> entry : branchPathMap.getLockedEntries().entrySet()) {
-			
 			final String repositoryUuid = entry.getKey();
 			final IIndexUpdater<IIndexEntry> indexService = IndexServerServiceManager.INSTANCE.getByUuid(repositoryUuid);
-			indexService.inactiveClose(branchPathMap.getBranchPath(repositoryUuid));
-			
+			indexService.inactiveClose(branchPathMap.getBranchPath(repositoryUuid), false);
 		}
-		
 	}
 
 	@Nullable private String getActiveTaskIdForUser(final String userId) {
@@ -732,19 +582,5 @@ public class TaskStateManager extends SingleDirectoryIndexImpl implements ITaskS
 
 	private String getVersionPath(final IBranchPath branchPath) {
 		return BranchPathUtils.isMain(branchPath) ? IBranchPath.MAIN_BRANCH : branchPath.getParentPath();
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * @see com.b2international.snowowl.datastore.server.index.SingleDirectoryIndexServerService#doDispose()
-	 */
-	@Override
-	protected void doDispose() {
-
-		cleanupTask.cancel();
-		usageTimeCache.invalidateAll();
-		usageTimeCache.cleanUp();
-
-		super.doDispose();
 	}
 }

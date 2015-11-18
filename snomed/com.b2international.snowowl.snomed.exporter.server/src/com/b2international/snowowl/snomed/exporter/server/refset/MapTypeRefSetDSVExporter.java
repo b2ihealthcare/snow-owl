@@ -28,19 +28,17 @@ import java.util.List;
 import org.eclipse.net4j.util.om.monitor.OMMonitor;
 
 import com.b2international.snowowl.core.ApplicationContext;
+import com.b2international.snowowl.core.CoreTerminologyBroker;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.api.SnowowlServiceException;
-import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.datastore.BranchPathUtils;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.datastore.SnomedClientStatementBrowser;
 import com.b2international.snowowl.snomed.datastore.SnomedRefSetBrowser;
 import com.b2international.snowowl.snomed.datastore.SnomedRefSetUtil;
-import com.b2international.snowowl.snomed.datastore.SnomedRelationshipIndexEntry;
 import com.b2international.snowowl.snomed.datastore.index.SnomedIndexService;
-import com.b2international.snowowl.snomed.datastore.index.refset.SnomedComplexMapRefSetMemberIndexEntry;
-import com.b2international.snowowl.snomed.datastore.index.refset.SnomedComplexMapRefSetMemberIndexQueryAdapter;
-import com.b2international.snowowl.snomed.datastore.index.refset.SnomedRefSetMemberIndexEntry;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRelationshipIndexEntry;
 import com.b2international.snowowl.snomed.datastore.index.refset.SnomedRefSetMemberIndexQueryAdapter;
 import com.b2international.snowowl.snomed.datastore.services.ISnomedConceptNameProvider;
 import com.b2international.snowowl.snomed.exporter.model.AbstractSnomedDsvExportItem;
@@ -114,11 +112,8 @@ public class MapTypeRefSetDSVExporter implements IRefSetDSVExporter {
 
 	private Collection<SnomedRefSetMemberIndexEntry> getMembers(final SnomedRefSetType refSetType, final IBranchPath branchPath) {
 		Collection<SnomedRefSetMemberIndexEntry> members = Lists.newArrayList();
-		if (SnomedRefSetType.SIMPLE_MAP.equals(refSetType)) {
+		if (SnomedRefSetUtil.isMapping(refSetType)) {
 			final SnomedRefSetMemberIndexQueryAdapter queryAdapter = new SnomedRefSetMemberIndexQueryAdapter(exportSetting.getRefSetId(), "");
-			members = ApplicationContext.getInstance().getService(SnomedIndexService.class).searchUnsorted(branchPath, queryAdapter);
-		} else if (SnomedRefSetUtil.isComplexMapping(refSetType)) {
-			final SnomedComplexMapRefSetMemberIndexQueryAdapter queryAdapter = new SnomedComplexMapRefSetMemberIndexQueryAdapter(exportSetting.getRefSetId(), "");
 			members = ApplicationContext.getInstance().getService(SnomedIndexService.class).searchUnsorted(branchPath, queryAdapter);
 		}
 		return members;
@@ -147,21 +142,18 @@ public class MapTypeRefSetDSVExporter implements IRefSetDSVExporter {
 	private String getExportItemForConcept(final SnomedRefSetMemberIndexEntry member, final SnomedDsvExportItemType type) {
 		switch (type) {
 			case REFERENCED_COMPONENT:
-				return member.getLabel();
+				return getComponentLabel(member.getReferencedComponentType(), member.getReferencedComponentId());
 			case REFERENCED_COMPONENT_ID:
 				return member.getReferencedComponentId();
 			case MAP_TARGET:
-				return member.getSpecialFieldLabel();
+				return getComponentLabel(member.getMapTargetComponentType(), member.getMapTargetComponentId());
 			case MAP_TARGET_ID:
-				return member.getSpecialFieldId();
+				return member.getMapTargetComponentId();
 			case STATUS_ID:
 				return String.valueOf(member.isActive() ? 1 : 0);
 			case STATUS_LABEL:
 				return member.isActive() ? "active" : "inactive";
 			case EFFECTIVE_TIME:
-				if (EffectiveTimes.UNSET_EFFECTIVE_TIME_LABEL.equals(member.getEffectiveTime())) {
-					return EffectiveTimes.UNSET_EFFECTIVE_TIME_LABEL;
-				}
 				return member.getEffectiveTime();
 			case MODULE_ID:
 				return member.getModuleId();
@@ -170,28 +162,28 @@ public class MapTypeRefSetDSVExporter implements IRefSetDSVExporter {
 			case MEMBER_ID:
 				return member.getId();
 			case MAP_GROUP:
-				if (member instanceof SnomedComplexMapRefSetMemberIndexEntry) {
-					final SnomedComplexMapRefSetMemberIndexEntry complexEntry = (SnomedComplexMapRefSetMemberIndexEntry) member;
+				if (member instanceof SnomedRefSetMemberIndexEntry) {
+					final SnomedRefSetMemberIndexEntry complexEntry = (SnomedRefSetMemberIndexEntry) member;
 					return String.valueOf(complexEntry.getMapGroup());
 				}
 			case MAP_PRIORITY:
-				if (member instanceof SnomedComplexMapRefSetMemberIndexEntry) {
-					final SnomedComplexMapRefSetMemberIndexEntry complexEntry = (SnomedComplexMapRefSetMemberIndexEntry) member;
+				if (member instanceof SnomedRefSetMemberIndexEntry) {
+					final SnomedRefSetMemberIndexEntry complexEntry = (SnomedRefSetMemberIndexEntry) member;
 					return String.valueOf(complexEntry.getMapPriority());
 				}
 			case MAP_RULE:
-				if (member instanceof SnomedComplexMapRefSetMemberIndexEntry) {
-					final SnomedComplexMapRefSetMemberIndexEntry complexEntry = (SnomedComplexMapRefSetMemberIndexEntry) member;
+				if (member instanceof SnomedRefSetMemberIndexEntry) {
+					final SnomedRefSetMemberIndexEntry complexEntry = (SnomedRefSetMemberIndexEntry) member;
 					return nullToEmpty(complexEntry.getMapRule());
 				}
 			case MAP_ADVICE:
-				if (member instanceof SnomedComplexMapRefSetMemberIndexEntry) {
-					final SnomedComplexMapRefSetMemberIndexEntry complexEntry = (SnomedComplexMapRefSetMemberIndexEntry) member;
+				if (member instanceof SnomedRefSetMemberIndexEntry) {
+					final SnomedRefSetMemberIndexEntry complexEntry = (SnomedRefSetMemberIndexEntry) member;
 					return nullToEmpty(complexEntry.getMapAdvice());
 				}
 			case CORRELATION:
-				if (member instanceof SnomedComplexMapRefSetMemberIndexEntry) {
-					final SnomedComplexMapRefSetMemberIndexEntry complexEntry = (SnomedComplexMapRefSetMemberIndexEntry) member;
+				if (member instanceof SnomedRefSetMemberIndexEntry) {
+					final SnomedRefSetMemberIndexEntry complexEntry = (SnomedRefSetMemberIndexEntry) member;
 					return getConceptLabel(complexEntry.getCorrelationId());
 				}
 			case SDD_CLASS:
@@ -203,8 +195,8 @@ public class MapTypeRefSetDSVExporter implements IRefSetDSVExporter {
 					}
 				}
 			case MAP_CATEGORY:
-				if (member instanceof SnomedComplexMapRefSetMemberIndexEntry) {
-					final SnomedComplexMapRefSetMemberIndexEntry complexMember = (SnomedComplexMapRefSetMemberIndexEntry) member;
+				if (member instanceof SnomedRefSetMemberIndexEntry) {
+					final SnomedRefSetMemberIndexEntry complexMember = (SnomedRefSetMemberIndexEntry) member;
 					final String mapCategoryId = complexMember.getMapCategoryId();
 					return isEmpty(mapCategoryId) ? nullToEmpty(mapCategoryId) : getConceptLabel(mapCategoryId);
 				}
@@ -213,6 +205,11 @@ public class MapTypeRefSetDSVExporter implements IRefSetDSVExporter {
 			default:
 				return "";
 		}
+	}
+
+	private String getComponentLabel(final String componentType, String componentId) {
+		// XXX: Which branch path to use for an external terminology?
+		return CoreTerminologyBroker.getInstance().getNameProviderFactory(componentType).getNameProvider().getComponentLabel(branchPath, componentId);
 	}
 
 	private String getConceptLabel(String conceptId) {

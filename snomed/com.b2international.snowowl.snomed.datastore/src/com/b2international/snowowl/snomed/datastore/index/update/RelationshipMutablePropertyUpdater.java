@@ -18,7 +18,6 @@ package com.b2international.snowowl.snomed.datastore.index.update;
 import static com.b2international.snowowl.snomed.SnomedConstants.Concepts.INFERRED_RELATIONSHIP;
 import static com.b2international.snowowl.snomed.SnomedConstants.Concepts.UNIVERSAL_RESTRICTION_MODIFIER;
 import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.RELATIONSHIP_DESTINATION_NEGATED;
-import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.RELATIONSHIP_EFFECTIVE_TIME;
 import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.RELATIONSHIP_GROUP;
 import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.RELATIONSHIP_INFERRED;
 import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.RELATIONSHIP_UNION_GROUP;
@@ -35,7 +34,7 @@ import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedDocument
 public class RelationshipMutablePropertyUpdater extends ComponentMutablePropertyUpdater {
 
 	public RelationshipMutablePropertyUpdater(Component component) {
-		super(component, RELATIONSHIP_EFFECTIVE_TIME);
+		super(component);
 	}
 	
 	@Override

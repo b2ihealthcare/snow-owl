@@ -24,9 +24,7 @@ import org.apache.lucene.document.Document;
 
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.datastore.index.IndexQueryBuilder;
-import com.b2international.snowowl.datastore.index.IndexUtils;
-import com.b2international.snowowl.datastore.index.mapping.Mappings;
-import com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDescriptionIndexEntry;
 import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedMappings;
 import com.google.common.collect.ImmutableSet;
 
@@ -99,19 +97,8 @@ public abstract class SnomedDescriptionIndexQueryAdapter extends SnomedDslIndexQ
 	
 	@Override
 	public SnomedDescriptionIndexEntry buildSearchResult(final Document doc, final IBranchPath branchPath, final float score) {
-		final SnomedDescriptionIndexEntry entry = new SnomedDescriptionIndexEntry(
-				SnomedMappings.id().getValueAsString(doc), 
-				Mappings.label().getValue(doc), 
-				SnomedMappings.module().getValueAsString(doc), 
-				score,
-				Mappings.storageKey().getValue(doc),
-				IndexUtils.getBooleanValue(doc.getField(SnomedIndexBrowserConstants.COMPONENT_RELEASED)), 
-				SnomedMappings.active().getValue(doc) == 1, 
-				SnomedMappings.descriptionType().getValueAsString(doc), 
-				doc.get(SnomedIndexBrowserConstants.DESCRIPTION_CASE_SIGNIFICANCE_ID), 
-				SnomedMappings.descriptionConcept().getValueAsString(doc),
-				IndexUtils.getLongValue(doc.getField(SnomedIndexBrowserConstants.DESCRIPTION_EFFECTIVE_TIME)));
-		
-		return entry;
+		return SnomedDescriptionIndexEntry.builder(doc)
+				.score(score)
+				.build();
 	}
 }

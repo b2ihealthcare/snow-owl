@@ -19,6 +19,7 @@ import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.collect.Lists.newArrayList;
 
 import java.util.List;
+import java.util.Set;
 
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.Field.Store;
@@ -40,6 +41,7 @@ import com.google.common.base.Functions;
 import com.google.common.collect.FluentIterable;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableList.Builder;
+import com.google.common.collect.ImmutableSet;
 
 /**
  * @since 4.3
@@ -148,23 +150,24 @@ public abstract class IndexFieldBase<T> implements IndexField<T> {
 	}
 	
 	@Override
-	public final Filter createFilter(final T...values) {
+	public final Filter createTermsFilter(final Iterable<T> values) {
 		if (CompareUtils.isEmpty(values)) {
 			return null;
 		} else {
-			return createFilter(FluentIterable.from(ImmutableList.copyOf(values)).transform(new Function<T, BytesRef>() {
-				@Override
-				public BytesRef apply(T input) {
-					return toBytesRef(input);
-				}
-			}).toList());
+			final Set<T> uniqueValues = ImmutableSet.copyOf(values);
+			final Set<BytesRef> uniqueBytesRefs = FluentIterable.from(uniqueValues)
+					.transform(new Function<T, BytesRef>() {
+						@Override public BytesRef apply(T input) { return toBytesRef(input); }
+					})
+					.toSet();
+			
+			return createBytesRefFilter(uniqueBytesRefs);
 		}
 	}
 
 	@Override
-	public final Filter createFilter(final List<BytesRef> bytesRefs) {
-		return new TermsFilter(fieldName(), newArrayList(bytesRefs));
+	public final Filter createBytesRefFilter(final Iterable<BytesRef> bytesRefs) {
+		final Set<BytesRef> uniqueBytesRefs = ImmutableSet.copyOf(bytesRefs);
+		return new TermsFilter(fieldName(), newArrayList(uniqueBytesRefs)); // TermsFilter wants to sort the list in-place
 	}
-
-	
 }

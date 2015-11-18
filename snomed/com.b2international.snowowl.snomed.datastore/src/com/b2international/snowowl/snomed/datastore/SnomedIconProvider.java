@@ -40,7 +40,7 @@ import com.b2international.snowowl.snomed.Relationship;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.SnomedPackage;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
-import com.b2international.snowowl.snomed.datastore.index.SnomedDescriptionIndexEntry;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDescriptionIndexEntry;
 import com.google.common.base.Supplier;
 import com.google.common.base.Suppliers;
 import com.google.common.collect.Iterables;
@@ -111,7 +111,7 @@ public class SnomedIconProvider extends ComponentIconProvider<String> {
 		} else if (source instanceof AbstractIndexEntry) {
 			// SNOMED Description entry sometimes contains false iconId (probably a bug in the indexing), so using the type
 			if (source instanceof SnomedDescriptionIndexEntry) {
-				return getIconComponentId(((SnomedDescriptionIndexEntry) source).getType(), branchPath);
+				return getIconComponentId(((SnomedDescriptionIndexEntry) source).getTypeId(), branchPath);
 			}
 			return ((AbstractIndexEntry) source).getIconId();
 		} else if (source instanceof IComponent<?>) {

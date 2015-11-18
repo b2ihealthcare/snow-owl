@@ -20,7 +20,6 @@ import static com.b2international.commons.pcj.LongSets.newLongSetWithMurMur3Hash
 import static com.b2international.commons.pcj.LongSets.parallelForEach;
 import static com.b2international.commons.pcj.LongSets.toSet;
 import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.COMPONENT_RELEASED;
-import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.CONCEPT_EFFECTIVE_TIME;
 import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.CONCEPT_EXHAUSTIVE;
 import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.CONCEPT_PRIMITIVE;
 import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_UUID;
@@ -44,7 +43,6 @@ import org.apache.lucene.search.Query;
 import org.apache.lucene.search.ReferenceManager;
 import org.apache.lucene.search.TopDocs;
 
-import com.b2international.commons.BooleanUtils;
 import com.b2international.commons.CompareUtils;
 import com.b2international.commons.graph.GraphUtils;
 import com.b2international.commons.pcj.LongSets;
@@ -65,17 +63,15 @@ import com.b2international.snowowl.datastore.server.snomed.filteredrefset.Filter
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.snomed.datastore.EscgExpressionConstants;
-import com.b2international.snowowl.snomed.datastore.SnomedConceptIndexEntry;
-import com.b2international.snowowl.snomed.datastore.SnomedConceptIndexEntryWithChildFlag;
 import com.b2international.snowowl.snomed.datastore.SnomedTerminologyBrowser;
-import com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants;
 import com.b2international.snowowl.snomed.datastore.escg.IEscgQueryEvaluatorService;
 import com.b2international.snowowl.snomed.datastore.filteredrefset.FilteredRefSetMemberBrowser2;
 import com.b2international.snowowl.snomed.datastore.filteredrefset.IRefSetMemberOperation;
 import com.b2international.snowowl.snomed.datastore.index.SnomedConceptReducedQueryAdapter;
 import com.b2international.snowowl.snomed.datastore.index.SnomedIndexService;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptIndexEntry;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptIndexEntryWithChildFlag;
 import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedMappings;
-import com.b2international.snowowl.snomed.datastore.services.ISnomedRelationshipNameProvider;
 import com.b2international.snowowl.snomed.refset.core.services.SnomedRefSetMemberNameProvider;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.HashMultimap;
@@ -98,8 +94,13 @@ import bak.pcj.set.LongSet;
 public class SnomedServerTerminologyBrowser extends AbstractIndexTerminologyBrowser<SnomedConceptIndexEntry> implements SnomedTerminologyBrowser {
 
 	private static final Set<String> CONCEPT_FIELDS_TO_LOAD = SnomedMappings.fieldsToLoad()
-			.id().label().iconId().storageKey().module().active()
-			.field(CONCEPT_EFFECTIVE_TIME)
+			.id()
+			.label()
+			.iconId()
+			.storageKey()
+			.module()
+			.active()
+			.effectiveTime()
 			.field(CONCEPT_PRIMITIVE)
 			.field(CONCEPT_EXHAUSTIVE)
 			.field(COMPONENT_RELEASED)
@@ -135,17 +136,7 @@ public class SnomedServerTerminologyBrowser extends AbstractIndexTerminologyBrow
 	
 	@Override
 	protected SnomedConceptIndexEntry createResultObject(final IBranchPath branchPath, final Document doc) {
-		return SnomedConceptIndexEntry.builder()
-				.id(SnomedMappings.id().getValueAsString(doc))
-				.moduleId(SnomedMappings.module().getValueAsString(doc))
-				.storageKey(Mappings.storageKey().getValue(doc))
-				.active(BooleanUtils.valueOf(SnomedMappings.active().getValue(doc).intValue())) 
-				.primitive(BooleanUtils.valueOf(SnomedMappings.primitive().getValue(doc).intValue()))
-				.exhaustive(BooleanUtils.valueOf(SnomedMappings.exhaustive().getValue(doc).intValue()))
-				.released(BooleanUtils.valueOf(SnomedMappings.released().getValue(doc).intValue()))
-				.iconId(Mappings.iconId().getValue(doc))
-				.effectiveTimeLong(Mappings.longField(SnomedIndexBrowserConstants.CONCEPT_EFFECTIVE_TIME).getValue(doc))
-				.build();
+		return SnomedConceptIndexEntry.builder(doc).build();
 	}
 
 	@Override
@@ -531,29 +522,20 @@ public class SnomedServerTerminologyBrowser extends AbstractIndexTerminologyBrow
 			
 		} else {
 			final String id = Long.toString(SnomedMappings.id().getValue(doc));
-			String label = doc.get(Mappings.label().fieldName());
+			final String label = id;
+//			String label = doc.get(Mappings.label().fieldName());
 			final String iconId = doc.get(Mappings.iconId().fieldName());
+			final short terminologyComponentId;
+			
 			if (types.size() == 1) {
 				// core SNOMED CT Component only
-				final short terminologyComponentId = types.get(0).shortValue();
-				if (null == label) {
-					if (SnomedTerminologyComponentConstants.RELATIONSHIP_NUMBER == terminologyComponentId) {
-						label = ApplicationContext.getServiceForClass(ISnomedRelationshipNameProvider.class).getComponentLabel(branchPath, id);
-					}
-				}
-				return new ExtendedComponentImpl(
-						id, 
-						label, 
-						iconId, 
-						terminologyComponentId);
+				terminologyComponentId = types.get(0).shortValue();
 			} else {
-				// refset + identifier concept component
-				return new ExtendedComponentImpl(
-						id, 
-						label, 
-						iconId, 
-						SnomedTerminologyComponentConstants.CONCEPT_NUMBER);
+				// concept + refset
+				terminologyComponentId = SnomedTerminologyComponentConstants.CONCEPT_NUMBER;
 			}
+		
+			return new ExtendedComponentImpl(id, label, iconId, terminologyComponentId);
 		}
 	}
 

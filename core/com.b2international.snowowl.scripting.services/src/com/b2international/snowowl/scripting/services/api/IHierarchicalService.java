@@ -18,8 +18,8 @@ package com.b2international.snowowl.scripting.services.api;
 import java.util.Collection;
 import java.util.List;
 
-import com.b2international.snowowl.snomed.datastore.SnomedConceptIndexEntry;
-import com.b2international.snowowl.snomed.datastore.SnomedRelationshipIndexEntry;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptIndexEntry;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRelationshipIndexEntry;
 
 /**
  * This service provides functionality to navigate the SNOMED&nbsp;CT ontology's

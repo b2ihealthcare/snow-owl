@@ -15,28 +15,44 @@
  */
 package com.b2international.commons;
 
+import java.util.Set;
+
 import org.eclipse.core.runtime.IAdapterFactory;
+
+import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Iterables;
 
 /**
  * Provides type-safe delegates of the methods described in {@link IAdapterFactory}. Can be used to avoid multiple
- * SuppressWarnings annotations.
- * 
+ * {@link SuppressWarnings} annotations.
  */
 public abstract class TypeSafeAdapterFactory implements IAdapterFactory {
 
+	private final Set<Class<?>> supportedClasses;
+
+	public TypeSafeAdapterFactory(final Class<?>... supportedClasses) {
+		this.supportedClasses = ImmutableSet.copyOf(supportedClasses);
+	}
+
 	@Override
 	@SuppressWarnings({ "unchecked", "rawtypes" })
-	public Object getAdapter(Object adaptableObject, Class adapterType) {
-		return getAdapterSafe(adaptableObject, adapterType);
+	public final Object getAdapter(final Object adaptableObject, final Class adapterType) {
+		if (null != adaptableObject && supportedClasses.contains(adapterType)) {
+			return getAdapterSafe(adaptableObject, adapterType);
+		} else {
+			return null;
+		}
 	}
-	
-	public abstract <T> T getAdapterSafe(Object adaptableObject, Class<T> adapterType);
+
+	protected abstract <T> T getAdapterSafe(Object adaptableObject, Class<T> adapterType);
 
 	@Override
 	@SuppressWarnings("rawtypes")
-	public Class[] getAdapterList() {
+	public final Class[] getAdapterList() {
 		return getAdapterListSafe();
 	}
 
-	public abstract Class<?>[] getAdapterListSafe();
+	private Class<?>[] getAdapterListSafe() {
+		return Iterables.toArray(supportedClasses, Class.class);
+	}
 }

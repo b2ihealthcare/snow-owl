@@ -24,7 +24,6 @@ import com.b2international.snowowl.datastore.index.ChangeSetProcessorBase;
 import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedDocumentBuilder;
 import com.b2international.snowowl.snomed.datastore.index.refset.RefSetMemberImmutablePropertyUpdater;
 import com.b2international.snowowl.snomed.datastore.index.refset.RefSetMemberMutablePropertyUpdater;
-import com.b2international.snowowl.snomed.datastore.index.update.ComponentLabelProvider;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetMember;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetPackage;
 
@@ -33,11 +32,8 @@ import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetPackage;
  */
 public class RefSetMemberChangeProcessor extends ChangeSetProcessorBase<SnomedDocumentBuilder> {
 
-	private ComponentLabelProvider labelProvider;
-
-	public RefSetMemberChangeProcessor(ComponentLabelProvider labelProvider) {
+	public RefSetMemberChangeProcessor() {
 		super("reference set member changes");
-		this.labelProvider = labelProvider;
 	}
 
 	@Override
@@ -71,7 +67,7 @@ public class RefSetMemberChangeProcessor extends ChangeSetProcessorBase<SnomedDo
 	}
 
 	private void registerMutablePropertyUpdates(SnomedRefSetMember member) {
-		registerUpdate(member.getUuid(), new RefSetMemberMutablePropertyUpdater(member, labelProvider));
+		registerUpdate(member.getUuid(), new RefSetMemberMutablePropertyUpdater(member));
 	}
 	
 	private void registerImmutablePropertyUpdates(SnomedRefSetMember member) {

@@ -41,11 +41,11 @@ import com.b2international.snowowl.datastore.index.IndexUtils;
 import com.b2international.snowowl.datastore.index.mapping.Mappings;
 import com.b2international.snowowl.datastore.server.index.IndexServerService;
 import com.b2international.snowowl.datastore.server.snomed.index.SnomedServerTerminologyBrowser;
-import com.b2international.snowowl.snomed.datastore.SnomedConceptIndexEntry;
 import com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants;
 import com.b2international.snowowl.snomed.datastore.filteredrefset.IRefSetMemberNode;
 import com.b2international.snowowl.snomed.datastore.filteredrefset.NewRefSetMemberNode;
 import com.b2international.snowowl.snomed.datastore.filteredrefset.RegularRefSetMemberNode;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptIndexEntry;
 import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedMappings;
 
 /**
@@ -57,10 +57,10 @@ public class CollectReferencedComponentMapRunnable implements Runnable {
 	
 	private static final Set<String> ACTIVE_MEMBER_FIELDS_TO_LOAD = SnomedMappings.fieldsToLoad()
 			.storageKey()
+			.effectiveTime()
 			.module()
 			.label()
 			.field(SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_UUID)
-			.field(SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_EFFECTIVE_TIME)
 			.build();
 	
 	private static final Set<String> ALL_MEMBER_FIELDS_TO_LOAD = SnomedMappings.fieldsToLoad().fields(ACTIVE_MEMBER_FIELDS_TO_LOAD).active().build();
@@ -123,7 +123,7 @@ public class CollectReferencedComponentMapRunnable implements Runnable {
 					doc = searcher.doc(docId, includeInactive ? ALL_MEMBER_FIELDS_TO_LOAD : ACTIVE_MEMBER_FIELDS_TO_LOAD);
 
 					final boolean active = includeInactive ? SnomedMappings.active().getValue(doc) == 1 : true;
-					final long effectiveTime = IndexUtils.getLongValue(doc.getField(SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_EFFECTIVE_TIME));
+					final long effectiveTime = SnomedMappings.effectiveTime().getValue(doc);
 					final boolean released = EffectiveTimes.UNSET_EFFECTIVE_TIME != effectiveTime;
 					final String uuid = doc.get(SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_UUID);
 					final String label = Mappings.label().getValue(doc);

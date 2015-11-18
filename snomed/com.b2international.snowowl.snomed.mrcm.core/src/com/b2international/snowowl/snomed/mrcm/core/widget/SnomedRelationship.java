@@ -17,7 +17,7 @@ package com.b2international.snowowl.snomed.mrcm.core.widget;
 
 import com.b2international.snowowl.snomed.Relationship;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
-import com.b2international.snowowl.snomed.datastore.SnomedRelationshipIndexEntry;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRelationshipIndexEntry;
 import com.google.common.base.Function;
 import com.google.common.base.Predicate;
 

@@ -90,10 +90,11 @@ public class SnomedConceptReducedQueryAdapter extends SnomedConceptIndexQueryAda
 		return builder.require(new IndexQueryBuilder()
 				.match(SnomedMappings.newQuery().id(id).matchAll())
 				.matchAllTokenizedTermsIf(anyFlagSet(SEARCH_BY_LABEL), Mappings.label().fieldName(), searchString.toLowerCase())
-				.matchAllTokenizedTermPrefixesIf(anyFlagSet(SEARCH_BY_LABEL), Mappings.label().fieldName(), searchString.toLowerCase())
-				.matchAllTokenizedTermPrefixesIf(anyFlagSet(SEARCH_BY_FSN), SnomedIndexBrowserConstants.CONCEPT_FULLY_SPECIFIED_NAME, searchString.toLowerCase())
-				.matchAllTokenizedTermPrefixesIf(anyFlagSet(SEARCH_BY_SYNONYM), SnomedIndexBrowserConstants.CONCEPT_SYNONYM, searchString.toLowerCase())
-				.matchAllTokenizedTermPrefixesIf(anyFlagSet(SEARCH_BY_OTHER), SnomedIndexBrowserConstants.CONCEPT_OTHER_DESCRIPTION, searchString.toLowerCase()));
+				.matchAllTokenizedTermPrefixesIf(anyFlagSet(SEARCH_BY_LABEL), Mappings.label().fieldName(), searchString.toLowerCase()))
+//				.matchAllTokenizedTermPrefixesIf(anyFlagSet(SEARCH_BY_FSN), SnomedIndexBrowserConstants.CONCEPT_FULLY_SPECIFIED_NAME, searchString.toLowerCase())
+//				.matchAllTokenizedTermPrefixesIf(anyFlagSet(SEARCH_BY_SYNONYM), SnomedIndexBrowserConstants.CONCEPT_SYNONYM, searchString.toLowerCase())
+//				.matchAllTokenizedTermPrefixesIf(anyFlagSet(SEARCH_BY_OTHER), SnomedIndexBrowserConstants.CONCEPT_OTHER_DESCRIPTION, searchString.toLowerCase()))
+				;
 	}
 
 	private IndexQueryBuilder createIndexQueryBuilderWithoutIdTerms(IndexQueryBuilder builder) {
@@ -102,9 +103,10 @@ public class SnomedConceptReducedQueryAdapter extends SnomedConceptIndexQueryAda
 				.finishIf(StringUtils.isEmpty(searchString))
 				.require(new IndexQueryBuilder()
 				.matchAllTokenizedTermsIf(anyFlagSet(SEARCH_BY_LABEL), Mappings.label().fieldName(), searchString.toLowerCase())
-				.matchAllTokenizedTermPrefixesIf(anyFlagSet(SEARCH_BY_LABEL), Mappings.label().fieldName(), searchString.toLowerCase())
-				.matchAllTokenizedTermPrefixesIf(anyFlagSet(SEARCH_BY_FSN), SnomedIndexBrowserConstants.CONCEPT_FULLY_SPECIFIED_NAME, searchString.toLowerCase())
-				.matchAllTokenizedTermPrefixesIf(anyFlagSet(SEARCH_BY_SYNONYM), SnomedIndexBrowserConstants.CONCEPT_SYNONYM, searchString.toLowerCase())
-				.matchAllTokenizedTermPrefixesIf(anyFlagSet(SEARCH_BY_OTHER), SnomedIndexBrowserConstants.CONCEPT_OTHER_DESCRIPTION, searchString.toLowerCase()));
+				.matchAllTokenizedTermPrefixesIf(anyFlagSet(SEARCH_BY_LABEL), Mappings.label().fieldName(), searchString.toLowerCase()))
+//				.matchAllTokenizedTermPrefixesIf(anyFlagSet(SEARCH_BY_FSN), SnomedIndexBrowserConstants.CONCEPT_FULLY_SPECIFIED_NAME, searchString.toLowerCase())
+//				.matchAllTokenizedTermPrefixesIf(anyFlagSet(SEARCH_BY_SYNONYM), SnomedIndexBrowserConstants.CONCEPT_SYNONYM, searchString.toLowerCase())
+//				.matchAllTokenizedTermPrefixesIf(anyFlagSet(SEARCH_BY_OTHER), SnomedIndexBrowserConstants.CONCEPT_OTHER_DESCRIPTION, searchString.toLowerCase()))
+				;
 	}
 }

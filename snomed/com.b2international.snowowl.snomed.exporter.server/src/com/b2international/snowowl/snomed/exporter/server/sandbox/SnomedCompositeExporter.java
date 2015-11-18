@@ -41,7 +41,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.lucene.index.IndexableField;
 import org.apache.lucene.search.BooleanQuery;
 import org.apache.lucene.search.Query;
 
@@ -51,9 +50,9 @@ import com.b2international.snowowl.core.date.DateFormats;
 import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.datastore.CodeSystemService;
 import com.b2international.snowowl.datastore.ICodeSystemVersion;
-import com.b2international.snowowl.datastore.index.IndexUtils;
 import com.b2international.snowowl.snomed.common.ContentSubType;
 import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
+import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedMappings;
 import com.b2international.snowowl.snomed.exporter.server.SnomedRf1Exporter;
 import com.b2international.snowowl.snomed.exporter.server.SnomedRf2Exporter;
 import com.b2international.snowowl.snomed.exporter.server.SnomedRfFileNameBuilder;
@@ -160,10 +159,12 @@ public abstract class SnomedCompositeExporter implements SnomedIndexExporter {
 			return query;
 		}
 		
+		final String effectiveTimeField = SnomedMappings.effectiveTime().fieldName();
+		
 		//end effective time is specified so we need everything 
 		//where the effective time is less or equal than the given end date one
 		if (null == startDate) {
-			query.add(newLongRange(getEffectiveTimeField(), UNSET_EFFECTIVE_TIME, endDate.getTime(), false, true), MUST);
+			query.add(newLongRange(effectiveTimeField, UNSET_EFFECTIVE_TIME, endDate.getTime(), false, true), MUST);
 			return query;
 		}
 		
@@ -172,23 +173,23 @@ public abstract class SnomedCompositeExporter implements SnomedIndexExporter {
 		if (null == endDate) {
 			final BooleanQuery effectiveTimeQuery = new BooleanQuery(true);
 			effectiveTimeQuery.add(getUnpublishedQuery(UNSET_EFFECTIVE_TIME), SHOULD);
-			effectiveTimeQuery.add(newLongRange(getEffectiveTimeField(), startDate.getTime(), null, true, true), SHOULD);
+			effectiveTimeQuery.add(newLongRange(effectiveTimeField, startDate.getTime(), null, true, true), SHOULD);
 			query.add(effectiveTimeQuery, MUST);
 			return query;
 		}
 		
 		//both start and end is specified. create a range
-		query.add(newLongRange(getEffectiveTimeField(), startDate.getTime(), endDate.getTime(), true, true), MUST);
+		query.add(newLongRange(effectiveTimeField, startDate.getTime(), endDate.getTime(), true, true), MUST);
 		
 		return query;
 	}
 	
-	protected abstract Query getUnpublishedQuery(final long effectiveTime);
-	
 	protected abstract Query getSnapshotQuery();
 	
-	protected abstract String getEffectiveTimeField();
-	
+	private Query getUnpublishedQuery(final long effectiveTime) {
+		return SnomedMappings.newQuery().effectiveTime(effectiveTime).matchAll();
+	}
+
 	protected SnomedSubExporter createSubExporter(final IBranchPath branchPath, final SnomedIndexExporter exporter) {
 		return createSubExporter(branchPath, exporter, Collections.<String>emptySet());
 	}
@@ -199,8 +200,8 @@ public abstract class SnomedCompositeExporter implements SnomedIndexExporter {
 		return subExporter;
 	}
 	
-	protected final String formatEffectiveTime(final IndexableField field) {
-		return EffectiveTimes.format(IndexUtils.getLongValue(field), DateFormats.SHORT, configuration.getUnsetEffectiveTimeLabel());
+	protected final String formatEffectiveTime(final Long effectiveTime) {
+		return EffectiveTimes.format(effectiveTime, DateFormats.SHORT, configuration.getUnsetEffectiveTimeLabel());
 	}
 	
 	/**

@@ -19,6 +19,11 @@ import static org.springframework.hateoas.mvc.ControllerLinkBuilder.linkTo;
 
 import java.net.URI;
 import java.security.Principal;
+import java.util.Collections;
+import java.util.List;
+import java.util.Locale;
+
+import javax.servlet.http.HttpServletRequest;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -27,6 +32,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -79,13 +85,29 @@ public class SnomedConceptRestService extends AbstractSnomedRestService {
 			@PathVariable(value="path")
 			final String branch,
 
-			@ApiParam(value="The label to match")
-			@RequestParam(value="label", defaultValue="", required=false) 
-			final String labelFilter,
+			@ApiParam(value="The preferred term to match")
+			@RequestParam(value="pt", defaultValue="", required=false) 
+			final String ptFilter,
 
-			@ApiParam(value="The ESCG filtering expression to apply")
+			@ApiParam(value="The (preferred) fully specified name to match")
+			@RequestParam(value="fsn", defaultValue="", required=false) 
+			final String fsnFilter,
+			
+			@ApiParam(value="The acceptable synonym to match")
+			@RequestParam(value="syn", defaultValue="", required=false) 
+			final String synFilter,
+			
+			@ApiParam(value="The acceptable non-synonym description to match")
+			@RequestParam(value="other", defaultValue="", required=false) 
+			final String otherFilter,
+
+			@ApiParam(value="The ESCG expression to match")
 			@RequestParam(value="escg", defaultValue="", required=false) 
 			final String escgFilter,
+			
+			@ApiParam(value="The status to match")
+			@RequestParam(value="active", required=false) 
+			final Boolean activeFilter,
 
 			@ApiParam(value="The starting offset in the list")
 			@RequestParam(value="offset", defaultValue="0", required=false) 
@@ -93,15 +115,31 @@ public class SnomedConceptRestService extends AbstractSnomedRestService {
 
 			@ApiParam(value="The maximum number of items to return")
 			@RequestParam(value="limit", defaultValue="50", required=false) 
-			final int limit) {
+			final int limit,
+			
+			@ApiParam(value="Expansion parameters")
+			@RequestParam(value="expand", required=false)
+			final List<String> expand,
+
+			@ApiParam(value="Language codes and reference sets, in order of preference")
+			@RequestHeader(value="Accept-Language", defaultValue="en-US;q=0.8,en-GB;q=0.6", required=false) 
+			final String languageSetting,
+
+			final HttpServletRequest request) {
 
 		return DeferredResults.wrap(
 				SnomedRequests
 					.prepareConceptSearch()
 					.setLimit(limit)
 					.setOffset(offset)
-					.filterByLabel(labelFilter)
+					.filterByFsn(fsnFilter)
+					.filterByPt(ptFilter)
+					.filterBySyn(synFilter)
+					.filterByOther(otherFilter)
 					.filterByEscg(escgFilter)
+					.filterByActive(activeFilter)
+					.setExpand(expand)
+					.setLocales(Collections.<Locale>list(request.getLocales()))
 					.build(branch)
 					.execute(bus));
 	}
@@ -153,7 +191,7 @@ public class SnomedConceptRestService extends AbstractSnomedRestService {
 			final ChangeRequest<SnomedConceptRestInput> body,
 
 			final Principal principal) {
-
+		
 		final String userId = principal.getName();
 		
 		final SnomedConceptRestInput change = body.getChange();

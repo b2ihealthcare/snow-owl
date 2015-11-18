@@ -16,7 +16,6 @@
 package com.b2international.snowowl.snomed.exporter.server.sandbox;
 
 import static com.b2international.snowowl.core.ApplicationContext.getServiceForClass;
-import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_EFFECTIVE_TIME;
 import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_UUID;
 import static com.google.common.base.Preconditions.checkNotNull;
 
@@ -50,11 +49,11 @@ public class SnomedRefSetExporter extends SnomedCompositeExporter implements Sno
 
 	protected static final Set<String> COMMON_FIELDS_TO_LOAD = SnomedMappings.fieldsToLoad()
 			.active()
+			.effectiveTime()
 			.module()
 			.memberReferenceSetId()
 			.memberReferencedComponentId()
 			.field(REFERENCE_SET_MEMBER_UUID)
-			.field(REFERENCE_SET_MEMBER_EFFECTIVE_TIME)
 			.build();
 	
 	private final String refSetId;
@@ -77,7 +76,7 @@ public class SnomedRefSetExporter extends SnomedCompositeExporter implements Sno
 		final StringBuilder sb = new StringBuilder();
 		sb.append(doc.get(REFERENCE_SET_MEMBER_UUID));
 		sb.append(HT);
-		sb.append(formatEffectiveTime(doc.getField(REFERENCE_SET_MEMBER_EFFECTIVE_TIME)));
+		sb.append(formatEffectiveTime(SnomedMappings.effectiveTime().getValue(doc)));
 		sb.append(HT);
 		sb.append(SnomedMappings.active().getValue(doc));
 		sb.append(HT);
@@ -138,25 +137,14 @@ public class SnomedRefSetExporter extends SnomedCompositeExporter implements Sno
 	protected String buildRefSetFileName(final String refSetName, final SnomedRefSet refSet) {
 		return SnomedRfFileNameBuilder.buildRefSetFileName(getConfiguration(), refSetName, refSet);
 	}
-	
-	@Override
-	protected Query getUnpublishedQuery(final long effectiveTime) {
-		return SnomedMappings.newQuery().field(getEffectiveTimeField(), effectiveTime).matchAll();
-	}
 
 	@Override
 	protected Query getSnapshotQuery() {
 		return SnomedMappings.newQuery().memberRefSetId(getRefSetId()).matchAll();
 	}
 	
-	@Override
-	protected String getEffectiveTimeField() {
-		return REFERENCE_SET_MEMBER_EFFECTIVE_TIME;
-	}
-	
 	/**Returns with the reference set identifier concept ID.*/
 	protected String getRefSetId() {
 		return refSetId;
 	}
-
 }

@@ -34,6 +34,7 @@ import com.b2international.snowowl.core.api.index.IIndexQueryAdapter;
 import com.b2international.snowowl.core.api.index.IIndexService;
 import com.b2international.snowowl.core.api.index.IndexException;
 import com.b2international.snowowl.datastore.index.mapping.Mappings;
+import com.google.common.collect.ImmutableSet;
 
 /**
  * Abstract base implementation of the {@link IIndexQueryAdapter} interface.
@@ -78,7 +79,7 @@ public abstract class QueryDslIndexQueryAdapter<E extends IIndexEntry> extends A
 
 	@Nullable
 	protected Filter createFilter() {
-		return Mappings.id().createFilter(componentIds);
+		return (componentIds != null) ? Mappings.id().createTermsFilter(ImmutableSet.copyOf(componentIds)) : null;
 	}
 
 	/**

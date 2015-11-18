@@ -15,13 +15,15 @@
  */
 package com.b2international.snowowl.snomed.api;
 
-import java.util.List;
-
 import com.b2international.snowowl.core.exceptions.NotFoundException;
+import com.b2international.snowowl.snomed.api.domain.browser.ISnomedBrowserConcept;
 import com.b2international.snowowl.snomed.api.domain.classification.ClassificationStatus;
 import com.b2international.snowowl.snomed.api.domain.classification.IClassificationRun;
 import com.b2international.snowowl.snomed.api.domain.classification.IEquivalentConceptSet;
 import com.b2international.snowowl.snomed.api.domain.classification.IRelationshipChangeList;
+
+import java.util.List;
+import java.util.Locale;
 
 /**
  * Implementations provide access to the SNOMED CT classification functionality of Snow Owl Server.
@@ -131,6 +133,8 @@ public interface ISnomedClassificationService {
 	 *             classification run not found with the specified parameters
 	 */
 	IRelationshipChangeList getRelationshipChanges(String branchPath, String classificationId, String userId, int offset, int limit);
+
+	ISnomedBrowserConcept getConceptPreview(String branchPath, String classificationId, String conceptId, List<Locale> locales, String principalName);
 
 	/**
 	 * Persists suggested changes for the specified classification run to the terminology store.

@@ -29,10 +29,10 @@ import com.b2international.snowowl.datastore.IBranchPathMap;
 import com.b2international.snowowl.datastore.quicksearch.AbstractQuickSearchContentProvider;
 import com.b2international.snowowl.datastore.quicksearch.IQuickSearchContentProvider;
 import com.b2international.snowowl.snomed.SnomedPackage;
-import com.b2international.snowowl.snomed.datastore.index.SnomedDescriptionIndexEntry;
 import com.b2international.snowowl.snomed.datastore.index.SnomedDescriptionIndexQueryAdapter;
 import com.b2international.snowowl.snomed.datastore.index.SnomedDescriptionReducedQueryAdapter;
 import com.b2international.snowowl.snomed.datastore.index.SnomedIndexService;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDescriptionIndexEntry;
 import com.google.common.base.Function;
 import com.google.common.collect.Lists;
 
@@ -55,7 +55,7 @@ public class SnomedDescriptionQuickSearchContentProvider extends AbstractQuickSe
 		@Override 
 		public QuickSearchElement apply(final SnomedDescriptionIndexEntry input) {
 			return new CompactQuickSearchElement(input.getId(), 
-					input.getType(), 
+					input.getTypeId(), 
 					input.getLabel(), 
 					false,
 					getMatchRegions(queryExpression, input.getLabel()),

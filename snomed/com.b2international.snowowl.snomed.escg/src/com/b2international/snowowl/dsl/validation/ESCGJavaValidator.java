@@ -32,12 +32,12 @@ import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.SnomedPackage;
 import com.b2international.snowowl.snomed.datastore.SnomedClientRefSetBrowser;
 import com.b2international.snowowl.snomed.datastore.SnomedClientTerminologyBrowser;
-import com.b2international.snowowl.snomed.datastore.SnomedConceptIndexEntry;
 import com.b2international.snowowl.snomed.datastore.index.SnomedClientIndexService;
 import com.b2international.snowowl.snomed.datastore.index.SnomedConceptFullQueryAdapter;
 import com.b2international.snowowl.snomed.datastore.index.SnomedConceptIndexQueryAdapter;
-import com.b2international.snowowl.snomed.datastore.index.SnomedDescriptionIndexEntry;
 import com.b2international.snowowl.snomed.datastore.index.SnomedDescriptionIndexQueryAdapter;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptIndexEntry;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDescriptionIndexEntry;
 import com.b2international.snowowl.snomed.datastore.services.ISnomedConceptNameProvider;
 
 /**
@@ -213,10 +213,10 @@ public class ESCGJavaValidator extends AbstractESCGJavaValidator {
 		List<SnomedDescriptionIndexEntry> result = indexSearcher.search(queryAdapter);
 		
 		for (SnomedDescriptionIndexEntry snomedDescriptionIndexEntry : result) {
-			if (snomedDescriptionIndexEntry.getLabel().equals(term) && Concepts.FULLY_SPECIFIED_NAME.equals(snomedDescriptionIndexEntry.getType())) {
+			if (snomedDescriptionIndexEntry.getLabel().equals(term) && Concepts.FULLY_SPECIFIED_NAME.equals(snomedDescriptionIndexEntry.getTypeId())) {
 				warning("This is the fully specified name, not the preferred term.", termAttribute, NON_MATCHING_TERM);
 				return;
-			} else if (snomedDescriptionIndexEntry.getLabel().equals(term) && Concepts.SYNONYM.equals(snomedDescriptionIndexEntry.getType())) {
+			} else if (snomedDescriptionIndexEntry.getLabel().equals(term) && Concepts.SYNONYM.equals(snomedDescriptionIndexEntry.getTypeId())) {
 				warning("This is a synonym, not the preferred term.", termAttribute, NON_MATCHING_TERM);
 				return;
 			}

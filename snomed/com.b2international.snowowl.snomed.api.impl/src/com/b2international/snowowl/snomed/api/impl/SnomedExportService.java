@@ -27,8 +27,6 @@ import java.util.Map;
 
 import org.eclipse.core.runtime.NullProgressMonitor;
 
-import bak.pcj.set.LongSet;
-
 import com.b2international.commons.StringUtils;
 import com.b2international.commons.pcj.LongSets;
 import com.b2international.snowowl.core.ApplicationContext;
@@ -48,6 +46,8 @@ import com.b2international.snowowl.snomed.core.domain.Rf2ReleaseType;
 import com.b2international.snowowl.snomed.datastore.SnomedTerminologyBrowser;
 import com.b2international.snowowl.snomed.exporter.model.SnomedRf2ExportModel;
 import com.google.common.collect.ImmutableMap;
+
+import bak.pcj.set.LongSet;
 
 /**
  * {@link ISnomedExportService export service} implementation for the SNOMED CT ontology.

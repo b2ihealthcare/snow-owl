@@ -21,6 +21,7 @@ import java.net.URI;
 import java.security.Principal;
 import java.util.List;
 
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
@@ -30,11 +31,18 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.context.request.async.DeferredResult;
 
 import com.b2international.snowowl.core.domain.CollectionResource;
+import com.b2international.snowowl.core.domain.TransactionContext;
 import com.b2international.snowowl.snomed.api.rest.domain.ChangeRequest;
 import com.b2international.snowowl.snomed.api.rest.domain.SnomedRefSetRestInput;
+import com.b2international.snowowl.snomed.api.rest.request.BulkRestRequest;
+import com.b2international.snowowl.snomed.api.rest.request.RefSetMemberRequestResolver;
+import com.b2international.snowowl.snomed.api.rest.request.RefSetRequestResolver;
+import com.b2international.snowowl.snomed.api.rest.request.RequestResolver;
+import com.b2international.snowowl.snomed.api.rest.request.RestRequest;
 import com.b2international.snowowl.snomed.api.rest.util.DeferredResults;
 import com.b2international.snowowl.snomed.api.rest.util.Responses;
 import com.b2international.snowowl.snomed.core.domain.SnomedReferenceSet;
@@ -130,6 +138,76 @@ public class SnomedReferenceSetRestService extends AbstractSnomedRestService {
 					.getResultAs(SnomedReferenceSet.class);
 		
 		return Responses.created(getRefSetLocationURI(branchPath, createdRefSet)).build();
+	}
+	
+	@ApiOperation(
+			value="Executes an action on a reference set",
+			notes="TODO write documentation in repo's doc folder")
+	@ApiResponses({
+		@ApiResponse(code = 200, message = "Action execution successful"),
+		@ApiResponse(code = 204, message = "No content"),
+		@ApiResponse(code = 404, message = "Branch or reference set not found")
+	})
+	@RequestMapping(value="/{path:**}/refsets/{id}/actions", method=RequestMethod.POST)
+	public @ResponseBody Object executeAction(
+			@ApiParam(value="The branch path")
+			@PathVariable(value="path")
+			final String branchPath,
+			
+			@ApiParam(value="The reference set identifier")
+			@PathVariable(value="id")
+			final String refSetId,
+			
+			@ApiParam(value="Reference set action")
+			@RequestBody 
+			final ChangeRequest<RestRequest> body,
+			
+			final Principal principal) {
+		final RequestResolver<TransactionContext> resolver = new RefSetRequestResolver();
+		
+		final RestRequest change = body.getChange();
+		change.setSource("referenceSetId", refSetId);
+		
+		return SnomedRequests
+				.prepareCommit(principal.getName(), branchPath)
+				.setBody(body.getChange().resolve(resolver))
+				.setCommitComment(body.getCommitComment())
+				.build()
+				.executeSync(bus);
+	}
+	
+	@ApiOperation(
+			value="Executes multiple requests on the members of a single reference set",
+			notes="TODO write documentation in repo's doc folder")
+	@ApiResponses({
+		@ApiResponse(code = 204, message = "No content"),
+		@ApiResponse(code = 404, message = "Branch or reference set not found")
+	})
+	@RequestMapping(value="/{path:**}/refsets/{id}/members", method=RequestMethod.PUT)
+	@ResponseStatus(HttpStatus.NO_CONTENT)
+	public void updateMembers(
+			@ApiParam(value="The branch path")
+			@PathVariable(value="path")
+			final String branchPath,
+			
+			@ApiParam(value="The reference set identifier")
+			@PathVariable(value="id")
+			final String refSetId,
+			
+			@ApiParam(value="The reference set member changes")
+			@RequestBody
+			final ChangeRequest<BulkRestRequest> request,
+			
+			final Principal principal) {
+		
+		final RequestResolver<TransactionContext> resolver = new RefSetMemberRequestResolver();
+		SnomedRequests
+			.prepareCommit(principal.getName(), branchPath)
+			.setBody(request.getChange().resolve(resolver))
+			.setCommitComment(request.getCommitComment())
+			.build()
+			.executeSync(bus);
+		
 	}
 	
 	private URI getRefSetLocationURI(String branchPath, SnomedReferenceSet refSet) {

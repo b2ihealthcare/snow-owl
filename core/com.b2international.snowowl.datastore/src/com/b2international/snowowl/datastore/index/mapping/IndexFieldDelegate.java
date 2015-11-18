@@ -103,13 +103,13 @@ public class IndexFieldDelegate<T> implements IndexField<T> {
 	}
 
 	@Override
-	public final Filter createFilter(T... values) {
-		return delegate.createFilter(values);
+	public final Filter createTermsFilter(Iterable<T> values) {
+		return delegate.createTermsFilter(values);
 	}
 	
 	@Override
-	public final Filter createFilter(List<BytesRef> bytesRefs) {
-		return delegate.createFilter(bytesRefs);
+	public final Filter createBytesRefFilter(Iterable<BytesRef> bytesRefs) {
+		return delegate.createBytesRefFilter(bytesRefs);
 	}
 	
 	protected IndexField<T> getDelegate() {

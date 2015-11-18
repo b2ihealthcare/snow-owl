@@ -40,11 +40,11 @@ import com.b2international.snowowl.datastore.index.IndexUtils;
 import com.b2international.snowowl.datastore.index.mapping.Mappings;
 import com.b2international.snowowl.snomed.datastore.index.SnomedDOIQueryAdapter;
 import com.b2international.snowowl.snomed.datastore.index.SnomedDslIndexQueryAdapter;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetIndexEntry;
 import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedMappings;
 import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedQueryBuilder;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType;
 import com.google.common.base.Optional;
-import com.google.common.base.Preconditions;
 
 /**
  * Index query adapter for retrieving search results from lightweight store and building 
@@ -105,7 +105,9 @@ public class SnomedRefSetIndexQueryAdapter extends SnomedDslIndexQueryAdapter<Sn
 
 	@Override
 	public SnomedRefSetIndexEntry buildSearchResult(final Document document, final IBranchPath branchPath, final float score) {
-		return new SnomedRefSetIndexEntry(document, score);
+		return SnomedRefSetIndexEntry.builder(document)
+				.score(score)
+				.build();
 	}
 
 	@Override

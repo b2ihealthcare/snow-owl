@@ -33,7 +33,7 @@ import com.b2international.snowowl.datastore.cdo.CDOCommitInfoProcessingJob;
 import com.b2international.snowowl.datastore.cdo.CDOIDUtils;
 import com.b2international.snowowl.snomed.Concept;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
-import com.b2international.snowowl.snomed.datastore.index.refset.SnomedRefSetMemberIndexEntry;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry;
 import com.b2international.snowowl.snomed.datastore.services.SnomedRefSetMembershipLookupService;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedLanguageRefSetMember;
 import com.google.common.base.Function;
@@ -113,7 +113,7 @@ public class SnomedConceptCommitInfoProcessingJob extends CDOCommitInfoProcessin
 			
 			Collection<SnomedRefSetMemberIndexEntry> newLanguageMembers = Collections2.filter(new SnomedRefSetMembershipLookupService().getLanguageMembers(getComponent()), new Predicate<SnomedRefSetMemberIndexEntry>() {
 				@Override public boolean apply(final SnomedRefSetMemberIndexEntry member) { //filter out not preferred language reference set members
-					return Concepts.REFSET_DESCRIPTION_ACCEPTABILITY_PREFERRED.equals(member.getSpecialFieldId());
+					return Concepts.REFSET_DESCRIPTION_ACCEPTABILITY_PREFERRED.equals(member.getAcceptabilityId());
 				}
 			});
 			

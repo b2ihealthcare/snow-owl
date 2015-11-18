@@ -38,6 +38,7 @@ public class SnomedMappings {
 	// common component fields
 	private static final String COMPONENT_MODULE_ID_FIELD_NAME = "component_module_id";
 	private static final String COMPONENT_ACTIVE_FIELD_NAME = "component_active";
+	private static final String COMPONENT_EFFECTIVE_TIME_FIELD_NAME = "component_effective_time";
 	
 	// relationship fields
 	private static final String RELATIONSHIP_ATTRIBUTE_ID_FIELD_NAME = "relationship_attribute_id";
@@ -65,6 +66,7 @@ public class SnomedMappings {
 	private static final NumericDocValuesIndexField<Long> REFERENCE_SET_MEMBER_REFERENCED_COMPONENT_ID = Mappings.longDocValuesField(REFERENCE_SET_MEMBER_REFERENCED_COMPONENT_ID_FIELD_NAME);
 	private static final NumericDocValuesIndexField<Long> REFERENCE_SET_MEMBER_REFERENCE_SET_ID = Mappings.longDocValuesField(REFERENCE_SET_MEMBER_REFERENCE_SET_ID_FIELD_NAME);
 	private static final NumericDocValuesIndexField<Long> COMPONENT_MODULE = Mappings.longDocValuesField(COMPONENT_MODULE_ID_FIELD_NAME);
+	private static final NumericDocValuesIndexField<Long> COMPONENT_EFFECTIVE_TIME = Mappings.longDocValuesField(COMPONENT_EFFECTIVE_TIME_FIELD_NAME);
 	private static final IndexField<Integer> COMPONENT_ACTIVE = Mappings.intField(COMPONENT_ACTIVE_FIELD_NAME);
 	private static final IntIndexField REFERENCE_SET_MEMBER_REFERENCE_SET_TYPE = Mappings.intField(REFERENCE_SET_MEMBER_REFERENCE_SET_TYPE_FIELD_NAME);
 	private static final IntIndexField REFERENCE_SET_MEMBER_REFERENCED_COMPONENT_TYPE = Mappings.intField(REFERENCE_SET_MEMBER_REFERENCED_COMPONENT_TYPE_FIELD_NAME);
@@ -179,4 +181,7 @@ public class SnomedMappings {
 		return Mappings.longField(SnomedIndexBrowserConstants.REFERENCE_SET_STORAGE_KEY);
 	}
 
+	public static NumericDocValuesIndexField<Long> effectiveTime() {
+		return COMPONENT_EFFECTIVE_TIME;
+	}
 }

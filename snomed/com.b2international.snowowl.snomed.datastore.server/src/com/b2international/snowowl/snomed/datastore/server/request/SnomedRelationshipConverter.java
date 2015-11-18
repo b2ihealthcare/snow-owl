@@ -24,8 +24,8 @@ import com.b2international.snowowl.snomed.core.domain.ISnomedRelationship;
 import com.b2international.snowowl.snomed.core.domain.RelationshipModifier;
 import com.b2international.snowowl.snomed.core.domain.RelationshipRefinability;
 import com.b2international.snowowl.snomed.core.domain.SnomedRelationship;
-import com.b2international.snowowl.snomed.datastore.SnomedRelationshipIndexEntry;
-import com.b2international.snowowl.snomed.datastore.index.refset.SnomedRefSetMemberIndexEntry;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRelationshipIndexEntry;
 import com.b2international.snowowl.snomed.datastore.services.AbstractSnomedRefSetMembershipLookupService;
 import com.google.common.collect.ImmutableSet;
 
@@ -95,7 +95,7 @@ public class SnomedRelationshipConverter extends AbstractSnomedComponentConverte
 
 		for (final SnomedRefSetMemberIndexEntry relationshipMember : relationshipMembers) {
 			if (relationshipMember.isActive()) {
-				return RelationshipRefinability.getByConceptId(relationshipMember.getSpecialFieldId());
+				return relationshipMember.getRefinability();
 			}
 		}
 

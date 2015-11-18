@@ -15,6 +15,7 @@
  */
 package com.b2international.snowowl.snomed.datastore.server;
 
+import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.datastore.server.index.AbstractIndexNameProvider;
 import com.b2international.snowowl.snomed.datastore.index.SnomedIndexService;
 import com.b2international.snowowl.snomed.datastore.services.ISnomedConceptNameProvider;
@@ -26,5 +27,10 @@ public class SnomedConceptNameProvider extends AbstractIndexNameProvider impleme
 
 	public SnomedConceptNameProvider(SnomedIndexService service) {
 		super(service);
+	}
+	
+	@Override
+	public String getComponentLabel(IBranchPath branchPath, String componentId) {
+		return componentId;
 	}
 }

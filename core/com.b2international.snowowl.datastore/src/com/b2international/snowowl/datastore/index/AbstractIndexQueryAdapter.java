@@ -17,17 +17,13 @@ package com.b2international.snowowl.datastore.index;
 
 import static com.google.common.collect.Lists.newArrayList;
 
-import java.lang.reflect.Array;
-import java.util.Arrays;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
 
 import javax.annotation.Nullable;
 
 import org.apache.lucene.document.Document;
 
-import com.b2international.commons.CompareUtils;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.api.index.IIndexEntry;
 import com.b2international.snowowl.core.api.index.IIndexQueryAdapter;
@@ -36,6 +32,7 @@ import com.google.common.base.Function;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
 import com.google.common.collect.Collections2;
+import com.google.common.collect.FluentIterable;
 
 public abstract class AbstractIndexQueryAdapter<E extends IIndexEntry> implements IIndexQueryAdapter<E> {
 
@@ -101,8 +98,16 @@ public abstract class AbstractIndexQueryAdapter<E extends IIndexEntry> implement
 	public abstract E buildSearchResult(final Document doc, final IBranchPath branchPath, float score);
 
 	private final class EntryConverterFunction implements Function<DocumentWithScore, E> {
-		@Override public E apply(@Nullable final DocumentWithScore input) {
-			return buildSearchResult(input.getDocument(), input.getBranchPath(), input.getScore());
+		
+		private final IBranchPath branchPath;
+		
+		public EntryConverterFunction(final IBranchPath branchPath) {
+			this.branchPath = branchPath;
+		}
+
+		@Override 
+		public E apply(@Nullable final DocumentWithScore input) {
+			return buildSearchResult(input.getDocument(), branchPath, input.getScore());
 		}
 	}
 
@@ -114,13 +119,13 @@ public abstract class AbstractIndexQueryAdapter<E extends IIndexEntry> implement
 	@Override
 	public final List<E> search(final IIndexService<? super E> indexService, final IBranchPath branchPath, final int limit) {
 		final List<DocumentWithScore> documents = doSearch(indexService, branchPath, limit);
-		return newArrayList(Collections2.transform(documents, new EntryConverterFunction()));
+		return newArrayList(Collections2.transform(documents, new EntryConverterFunction(branchPath)));
 	}
 	
 	@Override
 	public final List<E> search(final IIndexService<? super E> indexService, final IBranchPath branchPath, final int offset, final int limit) {
 		final List<DocumentWithScore> documents = doSearch(indexService, branchPath, offset, limit);
-		return newArrayList(Collections2.transform(documents, new EntryConverterFunction()));
+		return newArrayList(Collections2.transform(documents, new EntryConverterFunction(branchPath)));
 	}
 
 	/* (non-Javadoc)
@@ -141,21 +146,9 @@ public abstract class AbstractIndexQueryAdapter<E extends IIndexEntry> implement
 		Preconditions.checkNotNull(indexService, "Index service argument cannot be null.");
 		Preconditions.checkNotNull(branchPath, "Branch path argument cannot be null.");
 		
-		final Collection<DocumentWithScore> results = doSearchUnsorted(indexService, branchPath);
-		if (CompareUtils.isEmpty(results)) {
-			return Collections.emptySet();
-		}
-		
-		final EntryConverterFunction function = new EntryConverterFunction();
-		final Class<? extends IIndexEntry> type = function.apply(results.iterator().next()).getClass();
-		@SuppressWarnings("unchecked") final E[] indexEntries = (E[]) Array.newInstance(type, results.size());
-		
-		int i = 0;
-		for (final DocumentWithScore document : results) {
-			indexEntries[i++] = function.apply(document);
-		}
-		
-		return Arrays.asList(indexEntries);
+		return FluentIterable.from(doSearchUnsorted(indexService, branchPath))
+				.transform(new EntryConverterFunction(branchPath))
+				.toList();
 	}
 	
 	/* (non-Javadoc)

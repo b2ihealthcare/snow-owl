@@ -318,7 +318,7 @@ public abstract class SnomedRefSetUtil {
 			case EXTENDED_MAP:
 				return SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_MAP_TARGET_COMPONENT_ID;
 			case CONCRETE_DATA_TYPE:
-				return SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_DATA_TYPE_ID;
+				return SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_DATA_TYPE_VALUE;
 			case DESCRIPTION_TYPE:
 				return SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_DESCRIPTION_FORMAT_ID;
 			case LANGUAGE:
@@ -331,40 +331,6 @@ public abstract class SnomedRefSetUtil {
 				return SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_MAP_TARGET_COMPONENT_ID;
 			case MODULE_DEPENDENCY:
 				return null;
-			default: throw new IllegalArgumentException("Unknown SNOMED CT reference set type: " + type);
-		}
-	}
-
-	/**
-	 * Returns with the unique index field name of  the <i>special field</i> label.
-	 * <br>Returns with {@code null} in case of {@link SnomedRefSetType#SIMPLE}.
-	 * @param type the reference set type.
-	 * @return the unique index field name for storing the <i>special field</>i label.
-	 */
-	 @Nullable public static String getSpecialComponentLabelIndexField(final SnomedRefSetType type) {
-		Preconditions.checkNotNull(type, "SNOMED CT reference set type argument cannot be null.");
-		switch (type) {
-			case ASSOCIATION:
-				return SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_TARGET_COMPONENT_LABEL;
-			case ATTRIBUTE_VALUE:
-				return SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_VALUE_LABEL;
-			case EXTENDED_MAP: //$FALL-THROUGH$
-			case COMPLEX_MAP:
-				return SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_MAP_TARGET_COMPONENT_LABEL;
-			case CONCRETE_DATA_TYPE:
-				return SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_DATA_TYPE_LABEL;
-			case DESCRIPTION_TYPE:
-				return SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_DESCRIPTION_FORMAT_LABEL;
-			case LANGUAGE:
-				return SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_ACCEPTABILITY_LABEL;
-			case QUERY:
-				return SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_QUERY;
-			case SIMPLE:
-				return null; //intentionally null.
-			case SIMPLE_MAP:
-				return SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_MAP_TARGET_COMPONENT_LABEL;
-			case MODULE_DEPENDENCY:
-				return null; 
 			default: throw new IllegalArgumentException("Unknown SNOMED CT reference set type: " + type);
 		}
 	}

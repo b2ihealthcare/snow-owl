@@ -15,9 +15,7 @@
  */
 package com.b2international.snowowl.snomed.datastore.server.request;
 
-import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 
 import org.eclipse.emf.ecore.EObject;
 
@@ -34,6 +32,7 @@ import com.b2international.snowowl.snomed.Relationship;
 import com.b2international.snowowl.snomed.core.domain.SnomedReferenceSet;
 import com.b2international.snowowl.snomed.core.domain.SnomedReferenceSetMember;
 import com.b2international.snowowl.snomed.core.domain.SnomedReferenceSets;
+import com.b2international.snowowl.snomed.core.domain.refset.MemberChange;
 import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetMember;
 
@@ -63,33 +62,24 @@ public abstract class SnomedRequests {
 		return new SnomedComponentDeleteRequest(componentId, type);
 	}
 	
-	public static Request<TransactionContext, ?> prepareDeleteMember(String memberId) {
+	public static Request<TransactionContext, Void> prepareDeleteMember(String memberId) {
 		return prepareDeleteComponent(memberId, SnomedRefSetMember.class);
 	}
 	
-	public static Request<TransactionContext, ?> prepareDeleteConcept(String conceptId) {
+	public static Request<TransactionContext, Void> prepareDeleteConcept(String conceptId) {
 		return prepareDeleteComponent(conceptId, Concept.class);
 	}
 	
-	public static Request<TransactionContext, ?> prepareDeleteDescription(String descriptionId) {
+	public static Request<TransactionContext, Void> prepareDeleteDescription(String descriptionId) {
 		return prepareDeleteComponent(descriptionId, Description.class);
 	}
 	
-	public static Request<TransactionContext, ?> prepareDeleteRelationship(String relationshipId) {
+	public static Request<TransactionContext, Void> prepareDeleteRelationship(String relationshipId) {
 		return prepareDeleteComponent(relationshipId, Relationship.class);
 	}
 	
-	public static Request<TransactionContext, SnomedReferenceSetMember> prepareNewMember(String moduleId, String referencedComponentId, String referenceSetId) {
-		return prepareNewMember(moduleId, referencedComponentId, referenceSetId, Collections.<String, Object>emptyMap());
-	}
-	
-	public static Request<TransactionContext, SnomedReferenceSetMember> prepareNewMember(String moduleId, String referencedComponentId, String referenceSetId, Map<String, Object> properties) {
-		final SnomedRefSetMemberCreateRequest req = new SnomedRefSetMemberCreateRequest();
-		req.setModuleId(moduleId);
-		req.setReferencedComponentId(referencedComponentId);
-		req.setReferenceSetId(referenceSetId);
-		req.setProperties(properties);
-		return req;
+	public static RefSetMemberCreateRequestBuilder prepareNewMember() {
+		return new RefSetMemberCreateRequestBuilder();
 	}
 	
 	public static SnomedRefSetCreateRequestBuilder prepareNewRefSet() {
@@ -139,6 +129,22 @@ public abstract class SnomedRequests {
 	
 	public static QueryRefSetMemberEvaluationRequestBuilder prepareQueryRefSetMemberEvaluation(String memberId) {
 		return new QueryRefSetMemberEvaluationRequestBuilder(REPOSITORY_ID).setMemberId(memberId);
+	}
+
+	public static QueryRefSetMemberUpdateRequestBuilder prepareUpdateQueryRefSetMember() {
+		return new QueryRefSetMemberUpdateRequestBuilder(REPOSITORY_ID);
+	}
+
+	public static SnomedRefSetMemberChangeRequestBuilder prepareMemberChangeRequest(MemberChange change, String moduleId, String referenceSetId) {
+		return new SnomedRefSetMemberChangeRequestBuilder(change, moduleId, referenceSetId);
+	}
+
+	public static QueryRefSetUpdateRequestBuilder prepareUpdateQueryRefSet() {
+		return new QueryRefSetUpdateRequestBuilder(REPOSITORY_ID);
+	}
+
+	public static SnomedRefSetMemberUpdateRequestBuilder prepareMemberUpdate() {
+		return new SnomedRefSetMemberUpdateRequestBuilder(REPOSITORY_ID);
 	}
 
 }

@@ -16,8 +16,8 @@
 package com.b2international.snowowl.datastore.server.snomed.index;
 
 import com.b2international.snowowl.core.api.index.IIndexUpdater;
-import com.b2international.snowowl.snomed.datastore.index.SnomedIndexEntry;
 import com.b2international.snowowl.snomed.datastore.index.SnomedIndexService;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedIndexEntry;
 
 public interface SnomedIndexUpdater extends SnomedIndexService, IIndexUpdater<SnomedIndexEntry> {
 	// Empty interface body

@@ -16,7 +16,7 @@
 package com.b2international.snowowl.snomed.datastore;
 
 import com.b2international.snowowl.core.api.IComponent;
-import com.b2international.snowowl.snomed.datastore.index.refset.SnomedRefSetIndexEntry;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetIndexEntry;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType;
 
 /**

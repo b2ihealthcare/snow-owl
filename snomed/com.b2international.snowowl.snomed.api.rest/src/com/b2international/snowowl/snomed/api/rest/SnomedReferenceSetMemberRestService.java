@@ -40,7 +40,11 @@ import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.snomed.api.rest.domain.ChangeRequest;
 import com.b2international.snowowl.snomed.api.rest.domain.RestApiError;
+import com.b2international.snowowl.snomed.api.rest.domain.SnomedMemberRestUpdate;
 import com.b2international.snowowl.snomed.api.rest.domain.SnomedRefSetMemberRestInput;
+import com.b2international.snowowl.snomed.api.rest.request.RefSetMemberRequestResolver;
+import com.b2international.snowowl.snomed.api.rest.request.RequestResolver;
+import com.b2international.snowowl.snomed.api.rest.request.RestRequest;
 import com.b2international.snowowl.snomed.api.rest.util.DeferredResults;
 import com.b2international.snowowl.snomed.api.rest.util.Responses;
 import com.b2international.snowowl.snomed.core.domain.SnomedReferenceSetMember;
@@ -128,8 +132,13 @@ public class SnomedReferenceSetMemberRestService extends AbstractSnomedRestServi
 			final Principal principal) {
 		
 		final SnomedRefSetMemberRestInput change = body.getChange();
-		final Request<TransactionContext, SnomedReferenceSetMember> req = SnomedRequests.prepareNewMember(change.getModuleId(),
-				change.getReferencedComponentId(), change.getReferenceSetId(), change.getProperties());
+		final Request<TransactionContext, SnomedReferenceSetMember> req = SnomedRequests
+				.prepareNewMember()
+				.setModuleId(change.getModuleId())
+				.setReferencedComponentId(change.getReferencedComponentId())
+				.setReferenceSetId(change.getReferenceSetId())
+				.setProperties(change.getProperties())
+				.build();
 		
 		final SnomedReferenceSetMember createdRefSetMember = 
 				SnomedRequests
@@ -172,6 +181,77 @@ public class SnomedReferenceSetMemberRestService extends AbstractSnomedRestServi
 			.setCommitComment(String.format("Deleted reference set member '%s' from store.", memberId))
 			.build()
 			.executeSync(bus, 120L * 1000L);
+	}
+	
+	@ApiOperation(
+			value="Update Reference Set Member",
+			notes="Updates properties of the specified Reference Set Member."
+					+ "The following properties are allowed to change:"
+					+ "- activity status flag (active)")
+	@ApiResponses({
+		@ApiResponse(code = 204, message = "Update successful"),
+		@ApiResponse(code = 404, message = "Branch or member not found")
+	})
+	@RequestMapping(value="/{path:**}/members/{id}", method=RequestMethod.PUT, consumes={ AbstractRestService.SO_MEDIA_TYPE, MediaType.APPLICATION_JSON_VALUE })
+	@ResponseStatus(HttpStatus.NO_CONTENT)
+	public void update(
+			@ApiParam(value="The branch path")
+			@PathVariable(value="path")
+			final String branchPath,
+			
+			@ApiParam(value="The reference set member identifier")
+			@PathVariable(value="id")
+			final String memberId,
+			
+			@ApiParam(value="Updated Reference Set parameters")
+			@RequestBody 
+			final ChangeRequest<SnomedMemberRestUpdate> body,
+			
+			final Principal principal) {
+		
+		final String userId = principal.getName();
+		final SnomedMemberRestUpdate update = body.getChange();
+		
+		SnomedRequests
+			.prepareMemberUpdate()
+			.setMemberId(memberId)
+			.setSource(update.getSource())
+			.commit(userId, branchPath, body.getCommitComment())
+			.executeSync(bus, 120L * 1000L);
+	}
+	
+	@ApiOperation(
+			value="Executes an action",
+			notes="TODO write documentation in repo's doc folder")
+	@ApiResponses({
+		@ApiResponse(code = 200, message = "Action execution successful"),
+		@ApiResponse(code = 204, message = "No content"),
+		@ApiResponse(code = 404, message = "Branch or member not found")
+	})
+	@RequestMapping(value="/{path:**}/members/{id}/actions", method=RequestMethod.POST)
+	public @ResponseBody Object executeAction(
+			@ApiParam(value="The branch path")
+			@PathVariable(value="path")
+			final String branchPath,
+			
+			@ApiParam(value="The reference set member identifier")
+			@PathVariable(value="id")
+			final String memberId,
+			
+			@ApiParam(value="Reference set member action")
+			@RequestBody 
+			final ChangeRequest<RestRequest> body,
+			
+			final Principal principal) {
+		final RequestResolver<TransactionContext> resolver = new RefSetMemberRequestResolver();
+		final RestRequest change = body.getChange();
+		change.setSource("memberId", memberId);
+		return SnomedRequests
+				.prepareCommit(principal.getName(), branchPath)
+				.setBody(body.getChange().resolve(resolver))
+				.setCommitComment(body.getCommitComment())
+				.build()
+				.executeSync(bus);
 	}
 	
 	private URI getRefSetMemberLocationURI(String branchPath, SnomedReferenceSetMember refSetMember) {

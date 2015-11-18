@@ -18,7 +18,7 @@ package com.b2international.snowowl.snomed.reasoner.classification;
 import java.io.Serializable;
 import java.util.List;
 
-import com.b2international.snowowl.snomed.datastore.SnomedConceptIndexEntry;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptIndexEntry;
 
 /**
  * Represents an abstract equivalence set, covering both concepts equivalent with another one, and unsatisfiable concepts (equivalent to

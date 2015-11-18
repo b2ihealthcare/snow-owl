@@ -31,21 +31,16 @@ import org.apache.lucene.search.Query;
 import org.apache.lucene.search.ReferenceManager;
 import org.apache.lucene.search.TopDocs;
 
-import bak.pcj.map.LongKeyLongMap;
-import bak.pcj.map.LongKeyLongOpenHashMap;
-import bak.pcj.set.LongOpenHashSet;
-import bak.pcj.set.LongSet;
-
 import com.b2international.commons.CompareUtils;
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.api.SnowowlRuntimeException;
 import com.b2international.snowowl.core.date.DateFormats;
 import com.b2international.snowowl.core.date.Dates;
-import com.b2international.snowowl.datastore.index.IndexUtils;
 import com.b2international.snowowl.datastore.server.index.IndexServerService;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants;
 import com.b2international.snowowl.snomed.datastore.index.SnomedIndexService;
+import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedFieldsToLoadBuilder;
 import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedMappings;
 import com.b2international.snowowl.snomed.exporter.server.ComponentExportType;
 import com.b2international.snowowl.snomed.exporter.server.Id2Rf1PropertyMapper;
@@ -53,6 +48,11 @@ import com.b2international.snowowl.snomed.exporter.server.SnomedRf1Exporter;
 import com.b2international.snowowl.snomed.exporter.server.sandbox.SnomedExportConfiguration;
 import com.google.common.base.Function;
 import com.google.common.collect.Iterators;
+
+import bak.pcj.map.LongKeyLongMap;
+import bak.pcj.map.LongKeyLongOpenHashMap;
+import bak.pcj.set.LongOpenHashSet;
+import bak.pcj.set.LongSet;
 
 /**
  * Implementation of the SNOMED&nbsp;CT subset exporter. Supports RF1 output format. Used for simple type and language type reference sets.
@@ -70,13 +70,20 @@ public class SnomedSubsetMemberExporter extends AbstractSnomedSubsetExporter {
 	private final Id2Rf1PropertyMapper mapper;
 	private final LongSet distinctEffectiveTimeSet;
 	
-	private static final Set<String> NON_LANGUAGE_MEMBER_FIELD_TO_LOAD = SnomedMappings.fieldsToLoad().active().memberReferencedComponentId().field(SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_EFFECTIVE_TIME).build();
+	private static final Set<String> NON_LANGUAGE_MEMBER_FIELD_TO_LOAD;
+	private static final Set<String> LANGUAGE_MEMBER_FIELD_TO_LOAD;
 	
-	private static final Set<String> LANGUAGE_MEMBER_FIELD_TO_LOAD = SnomedMappings.fieldsToLoad()
-			.memberReferencedComponentId()
-			.field(SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_ACCEPTABILITY_ID)
-			.field(SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_EFFECTIVE_TIME).build();
-	
+	static {
+		
+		final SnomedFieldsToLoadBuilder commonFieldsToLoad = SnomedMappings.fieldsToLoad()
+			.active()
+			.effectiveTime()
+			.memberReferencedComponentId();
+			
+		NON_LANGUAGE_MEMBER_FIELD_TO_LOAD = commonFieldsToLoad.build();
+		LANGUAGE_MEMBER_FIELD_TO_LOAD = commonFieldsToLoad.field(SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_ACCEPTABILITY_ID).build();
+	}
+		
 	private Iterator<String> itr;
 	
 	public SnomedSubsetMemberExporter(final SnomedExportConfiguration configuration, final String refSetId) {
@@ -166,7 +173,7 @@ public class SnomedSubsetMemberExporter extends AbstractSnomedSubsetExporter {
 							}
 						}
 						
-						distinctEffectiveTimeSet.add(IndexUtils.getLongValue(doc.getField(SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_EFFECTIVE_TIME)));
+						distinctEffectiveTimeSet.add(SnomedMappings.effectiveTime().getValue(doc));
 						
 						$[i] = idStatus;
 						

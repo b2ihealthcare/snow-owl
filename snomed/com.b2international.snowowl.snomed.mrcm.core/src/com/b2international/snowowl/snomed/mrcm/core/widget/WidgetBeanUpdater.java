@@ -64,7 +64,7 @@ import com.b2international.snowowl.snomed.datastore.SnomedRefSetEditingContext;
 import com.b2international.snowowl.snomed.datastore.SnomedRefSetLookupService;
 import com.b2international.snowowl.snomed.datastore.SnomedRefSetUtil;
 import com.b2international.snowowl.snomed.datastore.SnomedRelationshipLookupService;
-import com.b2international.snowowl.snomed.datastore.index.refset.SnomedRefSetMemberIndexEntry;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry;
 import com.b2international.snowowl.snomed.datastore.model.SnomedModelExtensions;
 import com.b2international.snowowl.snomed.datastore.services.SnomedRefSetMembershipLookupService;
 import com.b2international.snowowl.snomed.mrcm.core.widget.bean.ConceptWidgetBean;
@@ -477,7 +477,7 @@ public class WidgetBeanUpdater implements IWidgetBeanUpdater {
 			if (!languageMember.isActive()) {
 				continue;
 			}
-			if (!acceptabilityId.equals(languageMember.getSpecialFieldId())) {
+			if (!acceptabilityId.equals(languageMember.getAcceptabilityId())) {
 				continue;
 			}
 			if (!languageRefSetId.equals(languageMember.getRefSetIdentifierId())) {

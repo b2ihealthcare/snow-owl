@@ -18,7 +18,7 @@ package com.b2international.snowowl.snomed.metadata;
 import java.util.Collection;
 
 import com.b2international.snowowl.core.api.IBranchPath;
-import com.b2international.snowowl.snomed.datastore.SnomedConceptIndexEntry;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptIndexEntry;
 
 /**
  * @since 4.3

@@ -35,8 +35,8 @@ import com.b2international.snowowl.snomed.datastore.IConceptModelProvider;
 import com.b2international.snowowl.snomed.datastore.MrcmEditingContext;
 import com.b2international.snowowl.snomed.datastore.SnomedClientRefSetBrowser;
 import com.b2international.snowowl.snomed.datastore.SnomedClientTerminologyBrowser;
-import com.b2international.snowowl.snomed.datastore.SnomedConceptIndexEntry;
 import com.b2international.snowowl.snomed.datastore.index.SnomedClientIndexService;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptIndexEntry;
 import com.b2international.snowowl.snomed.datastore.services.ConceptSetProcessorFactory;
 import com.b2international.snowowl.snomed.mrcm.AttributeConstraint;
 import com.b2international.snowowl.snomed.mrcm.CardinalityPredicate;
@@ -75,7 +75,7 @@ public class MrcmExpressionValidator {
 			final SnomedClientRefSetBrowser refSetBrowser = ApplicationContext.getInstance().getServiceChecked(SnomedClientRefSetBrowser.class);
 
 			context = new MrcmEditingContext();
-			conceptModel = context.getConceptModel();
+			conceptModel = context.getOrCreateConceptModel();
 
 			for (final String focusConceptId : focusConceptIdList) {
 				constraints.addAll(getConceptModelProvider().getConstraintsForValidation(conceptModel, focusConceptId, terminologyBrowser, refSetBrowser));

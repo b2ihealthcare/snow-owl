@@ -38,7 +38,7 @@ import com.b2international.snowowl.semanticengine.test.SnomedConcepts;
 import com.b2international.snowowl.snomed.datastore.RecursiveTerminologyBrowser;
 import com.b2international.snowowl.snomed.datastore.SnomedClientStatementBrowser;
 import com.b2international.snowowl.snomed.datastore.SnomedClientTerminologyBrowser;
-import com.b2international.snowowl.snomed.datastore.SnomedConceptIndexEntry;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptIndexEntry;
 
 public class AttributeNormalizerTest {
 

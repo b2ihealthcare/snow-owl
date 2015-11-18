@@ -17,7 +17,7 @@ package com.b2international.snowowl.snomed.reasoner.server.classification;
 
 import java.util.Comparator;
 
-import com.b2international.snowowl.snomed.datastore.SnomedConceptIndexEntry;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptIndexEntry;
 import com.google.common.primitives.Longs;
 
 /**

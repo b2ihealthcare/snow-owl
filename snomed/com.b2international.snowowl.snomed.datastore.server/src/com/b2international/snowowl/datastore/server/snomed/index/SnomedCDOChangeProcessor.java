@@ -16,6 +16,7 @@
 package com.b2international.snowowl.datastore.server.snomed.index;
 
 import static com.google.common.base.Preconditions.checkNotNull;
+import static com.google.common.base.Preconditions.checkState;
 import static com.google.common.collect.Lists.newArrayList;
 import static com.google.common.collect.Sets.newHashSet;
 import static com.google.common.collect.Sets.newHashSetWithExpectedSize;
@@ -97,21 +98,18 @@ import com.b2international.snowowl.snomed.Concept;
 import com.b2international.snowowl.snomed.Relationship;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.SnomedPackage;
-import com.b2international.snowowl.snomed.datastore.SnomedConceptIndexEntry;
-import com.b2international.snowowl.snomed.datastore.SnomedRelationshipIndexEntry;
 import com.b2international.snowowl.snomed.datastore.SnomedTerminologyBrowser;
 import com.b2international.snowowl.snomed.datastore.StatementCollectionMode;
 import com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants;
 import com.b2international.snowowl.snomed.datastore.id.ISnomedIdentifierService;
-import com.b2international.snowowl.snomed.datastore.index.SnomedConceptIndexQueryAdapter;
-import com.b2international.snowowl.snomed.datastore.index.SnomedConceptReducedQueryAdapter;
-import com.b2international.snowowl.snomed.datastore.index.SnomedIndexEntry;
 import com.b2international.snowowl.snomed.datastore.index.SnomedIndexService;
 import com.b2international.snowowl.snomed.datastore.index.SnomedRelationshipIndexQueryAdapter;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptIndexEntry;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedIndexEntry;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRelationshipIndexEntry;
 import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedDocumentBuilder;
 import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedMappings;
 import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedQueryBuilder;
-import com.b2international.snowowl.snomed.datastore.services.ISnomedComponentService;
 import com.b2international.snowowl.snomed.datastore.taxonomy.ISnomedTaxonomyBuilder;
 import com.b2international.snowowl.snomed.datastore.taxonomy.ISnomedTaxonomyBuilder.TaxonomyBuilderEdge;
 import com.b2international.snowowl.snomed.datastore.taxonomy.ISnomedTaxonomyBuilder.TaxonomyBuilderNode;
@@ -416,7 +414,6 @@ public class SnomedCDOChangeProcessor implements ICDOChangeProcessor {
 		}
 
 		// execute component/use case  base change processors
-		final Set<String> synonymIds = ApplicationContext.getInstance().getService(ISnomedComponentService.class).getSynonymAndDescendantIds(branchPath);
 		final LongCollection allIndexedConceptIds = getTerminologyBrowser().getAllConceptIds(branchPath);
 		final LongSet allConceptIds = LongSets.newLongSet(allIndexedConceptIds);
 		for (Concept newConcept : FluentIterable.from(commitChangeSet.getNewComponents()).filter(Concept.class)) {
@@ -432,19 +429,19 @@ public class SnomedCDOChangeProcessor implements ICDOChangeProcessor {
 		
 		final ComponentLabelChangeProcessor labelChangeProcessor = new ComponentLabelChangeProcessor(branchPath, index);
 		final List<ChangeSetProcessor<SnomedDocumentBuilder>> changeSetProcessors = ImmutableList.<ChangeSetProcessor<SnomedDocumentBuilder>>builder()
-				.add(new ConceptChangeProcessor(synonymIds))
+				.add(new ConceptChangeProcessor())
 				.add(new ConceptReferringMemberChangeProcessor(new Function<CDOID, Document>() {
 					@Override public Document apply(CDOID input) {
 						return getDocumentForDetachedMember(input);
 					}
 				}))
 				.add(new RelationshipChangeProcessor())
-				.add(new DescriptionChangeProcessor(synonymIds))
+				.add(new DescriptionChangeProcessor())
 				.add(new TaxonomyChangeProcessor(getAndCheckInferredNewTaxonomyBuilder(), getInferredPreviousTaxonomyBuilder(), inferredDifferenceSupplier,  ""))
 				.add(new TaxonomyChangeProcessor(getAndCheckStatedNewTaxonomyBuilder(), getStatedPreviousTaxonomyBuilder(), statedDifferenceSupplier, Concepts.STATED_RELATIONSHIP))
 				.add(new IconChangeProcessor(branchPath, getAndCheckInferredNewTaxonomyBuilder(), getInferredPreviousTaxonomyBuilder(), inferredDifferenceSupplier))
 				.add(labelChangeProcessor)
-				.add(new RefSetMemberChangeProcessor(labelChangeProcessor))
+				.add(new RefSetMemberChangeProcessor())
 				.add(new ConstraintChangeProcessor(branchPath, allConceptIds))
 				.build();
 		
@@ -473,7 +470,7 @@ public class SnomedCDOChangeProcessor implements ICDOChangeProcessor {
 		final LongList deletedComponentIds;
 		final Collection<String> deletedMemberIds;
 		if (!deletedStorageKeys.isEmpty()) {
-			final Filter filter = Mappings.storageKey().createFilter(deletedStorageKeys);
+			final Filter filter = Mappings.storageKey().createBytesRefFilter(deletedStorageKeys);
 			// query component IDs
 			final Query deletedComponentIdQuery = new FilteredQuery(new PrefixQuery(new Term(SnomedMappings.id().fieldName())), filter);
 			final ComponentIdCollector collector = new ComponentIdCollector(deletedStorageKeys.size());
@@ -724,13 +721,8 @@ public class SnomedCDOChangeProcessor implements ICDOChangeProcessor {
 					//consider the same as for relationship
 					//we have to decide if deletion is the 'stronger' modification or not
 					final long cdoId = CDOIDUtils.asLong(conceptCdoId);
-					final SnomedConceptIndexQueryAdapter queryAdapter = SnomedConceptReducedQueryAdapter.findByStorageKey(cdoId);
-					final Iterable<SnomedConceptIndexEntry> results = getIndexService().search(branchPath, queryAdapter, 2);
-					
-					Preconditions.checkState(!CompareUtils.isEmpty(results), "No concepts were found with unique storage key: " + cdoId);
-					Preconditions.checkState(Iterables.size(results) < 2, "More than one concepts were found with unique storage key: " + cdoId);
-					
-					final SnomedConceptIndexEntry concept = Iterables.getOnlyElement(results);
+					final ExtendedComponent concept = getTerminologyBrowser().getExtendedComponent(branchPath, cdoId);
+					checkState(concept != null, "No concepts were found with unique storage key: " + cdoId);
 					final String conceptId = concept.getId();
 					
 					//same concept as addition and deletion
@@ -743,7 +735,7 @@ public class SnomedCDOChangeProcessor implements ICDOChangeProcessor {
 					}
 					
 					//else delete it
-					taxonomyBuilder.removeNode(createNode(concept));
+					taxonomyBuilder.removeNode(createDeletedNode(concept));
 				}
 				for (final Concept dirtyConcept : dirtyConcepts) {
 					if (!dirtyConcept.isActive()) { //we do not need this concept. either it was deactivated now or sometime earlier.
@@ -831,6 +823,16 @@ public class SnomedCDOChangeProcessor implements ICDOChangeProcessor {
 			};
 		}
 		
+		private TaxonomyBuilderNode createDeletedNode(final ExtendedComponent concept) {
+			return new TaxonomyBuilderNode() {
+				@Override public boolean isCurrent() {
+					throw new UnsupportedOperationException("This method should not be called when removing taxonomy nodes.");
+				}
+				@Override public String getId() {
+					return concept.getId();
+				}
+			};
+		}
 	}
 
 	/*returns with the taxonomy builder instance representing the latest state of the current ontology*/

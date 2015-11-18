@@ -40,7 +40,6 @@ import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConst
 import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedDocumentBuilder;
 import com.b2international.snowowl.snomed.datastore.index.refset.RefSetMutablePropertyUpdater;
 import com.b2international.snowowl.snomed.datastore.index.update.ComponentModuleUpdater;
-import com.b2international.snowowl.snomed.datastore.index.update.ConceptDescriptionUpdater;
 import com.b2international.snowowl.snomed.datastore.index.update.ConceptDoiUpdater;
 import com.b2international.snowowl.snomed.datastore.index.update.ConceptMutablePropertyUpdater;
 import com.b2international.snowowl.snomed.datastore.index.update.ConceptNamespaceUpdater;
@@ -54,11 +53,8 @@ import com.google.common.collect.ImmutableSet;
  */
 public class ConceptChangeProcessor extends ChangeSetProcessorBase<SnomedDocumentBuilder> {
 	
-	private Set<String> synonymIds;
-
-	public ConceptChangeProcessor(Set<String> synonymIds) {
+	public ConceptChangeProcessor() {
 		super("concept changes");
-		this.synonymIds = synonymIds;
 	}
 	
 	@Override
@@ -102,7 +98,6 @@ public class ConceptChangeProcessor extends ChangeSetProcessorBase<SnomedDocumen
 		final String id = concept.getId();
 		registerUpdate(id, new ConceptMutablePropertyUpdater(concept));
 		registerUpdate(id, new ComponentModuleUpdater(concept));
-		registerUpdate(id, new ConceptDescriptionUpdater(concept, synonymIds));
 		registerUpdate(id, new ComponentCompareFieldsUpdater<SnomedDocumentBuilder>(id, CDOIDUtil.getLong(concept.cdoID())));
 	}
 	

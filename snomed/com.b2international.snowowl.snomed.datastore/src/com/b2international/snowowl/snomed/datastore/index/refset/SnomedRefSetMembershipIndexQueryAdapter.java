@@ -16,7 +16,6 @@
 package com.b2international.snowowl.snomed.datastore.index.refset;
 
 import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_ACCEPTABILITY_ID;
-import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_EFFECTIVE_TIME;
 import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_MAP_TARGET_COMPONENT_ID;
 import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_MAP_TARGET_COMPONENT_TYPE_ID;
 import static com.google.common.base.Preconditions.checkArgument;
@@ -44,6 +43,7 @@ import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.datastore.ILanguageConfigurationProvider;
 import com.b2international.snowowl.snomed.datastore.SnomedRefSetUtil;
 import com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry;
 import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedMappings;
 import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedQueryBuilder;
 import com.b2international.snowowl.snomed.datastore.services.SnomedRefSetMembershipLookupService;
@@ -193,7 +193,7 @@ public class SnomedRefSetMembershipIndexQueryAdapter extends SnomedRefSetMemberI
 			@Override public Query createQuery() {
 				return SnomedMappings.newQuery()
 						.and(createRefSetIdQuery(refSetIds))
-						.field(REFERENCE_SET_MEMBER_EFFECTIVE_TIME, EffectiveTimes.UNSET_EFFECTIVE_TIME_LABEL)
+						.effectiveTime(EffectiveTimes.UNSET_EFFECTIVE_TIME)
 						.matchAll();
 			}
 		};
@@ -269,11 +269,6 @@ public class SnomedRefSetMembershipIndexQueryAdapter extends SnomedRefSetMemberI
 	private static Query createSpecialFieldTypeQuery(final String terminologyComponentId, final String fieldName) {
 		final int componentTypeValue = CoreTerminologyBroker.getInstance().getTerminologyComponentIdAsInt(terminologyComponentId);
 		return SnomedMappings.newQuery().field(fieldName, componentTypeValue).matchAll();
-	}
-	
-	@Override
-	public SnomedRefSetMemberIndexEntry buildSearchResult(final Document doc, final IBranchPath branchPath, final float score) {
-		return new SnomedRefSetMemberIndexEntry(super.buildSearchResult(doc, branchPath, score));
 	}
 	
 	/**
@@ -359,14 +354,5 @@ public class SnomedRefSetMembershipIndexQueryAdapter extends SnomedRefSetMemberI
 				}
 			};
 		}
-		
-
-		@Override
-		public SnomedConcreteDataTypeRefSetMemberIndexEntry buildSearchResult(final Document doc, final IBranchPath branchPath, final float score) {
-			return com.b2international.snowowl.snomed.datastore.index.refset.SnomedConcreteDataTypeRefSetMemberIndexQueryAdapter.
-					buildSearchResult(new SnomedConcreteDataTypeRefSetMemberIndexEntry(super.buildSearchResult(doc, branchPath, score)), doc);
-		}
-		
 	}
-	
 }

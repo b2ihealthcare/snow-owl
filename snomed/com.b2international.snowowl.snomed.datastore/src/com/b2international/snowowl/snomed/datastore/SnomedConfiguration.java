@@ -94,7 +94,7 @@ public class SnomedConfiguration extends PreferenceBase {
 			
 			@Override
 			public ConfigNode<String, String> computeDefault() {
-				return new ConfigNode<String, String>(KEY_MODULE_IDS)
+				return new ConfigNode<String, String>(KEY_SNOMED_NAMESPACES)
 					.addChild("", "IHTSDO core")
 					.addChild("0000000", "IHTSDO model component")
 					.setDefaultChildKey("");

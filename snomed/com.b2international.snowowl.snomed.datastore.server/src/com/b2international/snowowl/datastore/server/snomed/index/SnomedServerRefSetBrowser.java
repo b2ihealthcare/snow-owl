@@ -78,16 +78,15 @@ import com.b2international.snowowl.datastore.index.IndexUtils;
 import com.b2international.snowowl.datastore.index.mapping.Mappings;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
-import com.b2international.snowowl.snomed.datastore.SnomedConceptIndexEntry;
 import com.b2international.snowowl.snomed.datastore.SnomedRefSetBrowser;
 import com.b2international.snowowl.snomed.datastore.SnomedRefSetUtil;
 import com.b2international.snowowl.snomed.datastore.SnomedTerminologyBrowser;
-import com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants;
 import com.b2international.snowowl.snomed.datastore.index.SnomedIndexService;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptIndexEntry;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetIndexEntry;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry;
 import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedMappings;
 import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedQueryBuilder;
-import com.b2international.snowowl.snomed.datastore.index.refset.SnomedRefSetIndexEntry;
-import com.b2international.snowowl.snomed.datastore.index.refset.SnomedRefSetMemberIndexEntry;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType;
 import com.google.common.base.Function;
 import com.google.common.base.Preconditions;
@@ -127,7 +126,7 @@ public class SnomedServerRefSetBrowser extends AbstractSnomedIndexBrowser<Snomed
 			.module()
 			.active()
 			.released()
-			.field(SnomedIndexBrowserConstants.CONCEPT_EFFECTIVE_TIME)
+			.effectiveTime()
 			.field(REFERENCE_SET_REFERENCED_COMPONENT_TYPE)
 			.field(REFERENCE_SET_TYPE)
 			.field(REFERENCE_SET_STRUCTURAL)
@@ -648,7 +647,7 @@ public class SnomedServerRefSetBrowser extends AbstractSnomedIndexBrowser<Snomed
 
 	@Override
 	protected SnomedRefSetIndexEntry createResultObject(final IBranchPath branchPath, final Document doc) {
-		return new SnomedRefSetIndexEntry(doc);
+		return SnomedRefSetIndexEntry.builder(doc).build();
 	}
 
 	@Override
@@ -840,7 +839,7 @@ public class SnomedServerRefSetBrowser extends AbstractSnomedIndexBrowser<Snomed
 		int i = 0;
 		for (final ScoreDoc scoreDoc : topDocs.scoreDocs) {
 			final Document doc = service.document(branchPath, scoreDoc.doc, null/*all fields*/);
-			members[i++] = SnomedRefSetMemberIndexEntry.create(doc, branchPath);
+			members[i++] = SnomedRefSetMemberIndexEntry.builder(doc).build();
 		}
 
 		return Collections.unmodifiableCollection(Arrays.asList(members));
@@ -993,10 +992,9 @@ public class SnomedServerRefSetBrowser extends AbstractSnomedIndexBrowser<Snomed
 		
 		for (final ScoreDoc scoreDoc : topDocs.scoreDocs) {
 			final Document doc = service.document(branchPath, scoreDoc.doc, null/*all fields*/);
-			members.add(SnomedRefSetMemberIndexEntry.create(doc, branchPath));
+			members.add(SnomedRefSetMemberIndexEntry.builder(doc).build());
 		}
 
 		return members;
 	}
-	
 }

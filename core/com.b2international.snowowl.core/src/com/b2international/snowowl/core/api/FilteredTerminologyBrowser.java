@@ -96,6 +96,10 @@ public class FilteredTerminologyBrowser<C extends IComponent<K>, K> implements I
 			}
 		}
 	}
+	
+	public boolean containsAncestors() {
+		return !superTypeMap.isEmpty();
+	}
 
 	/*
 	 * (non-Javadoc)
@@ -155,27 +159,33 @@ public class FilteredTerminologyBrowser<C extends IComponent<K>, K> implements I
 		return Lists.newArrayList(getSubTypes(concept));
 	}
 
+	@Override
 	public Collection<C> getAllSubTypes(final C concept) {
 		throw new UnsupportedOperationException("Not implemented.");
 	}
 
+	@Override
 	public Collection<C> getAllSuperTypes(final C concept) {
 		throw new UnsupportedOperationException("Not implemented.");
 	}
 
+	@Override
 	public int getAllSubTypeCount(final C concept) {
 		throw new UnsupportedOperationException("Not implemented.");
 	}
 
+	@Override
 	public int getSubTypeCount(final C concept) {
 		final Set<K> subtypes = subTypeMap.get(concept.getId());
 		return null == subtypes ? 0 : subtypes.size();
 	}
 
+	@Override
 	public int getAllSuperTypeCount(final C concept) {
 		throw new UnsupportedOperationException("Not implemented.");
 	}
 
+	@Override
 	public int getSuperTypeCount(final C concept) {
 		throw new UnsupportedOperationException("Not implemented.");
 	}

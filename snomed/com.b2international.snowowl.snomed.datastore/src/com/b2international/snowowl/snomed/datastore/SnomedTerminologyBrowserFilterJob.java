@@ -15,8 +15,11 @@
  */
 package com.b2international.snowowl.snomed.datastore;
 
+import com.b2international.snowowl.core.api.FilteredTerminologyBrowser;
+import com.b2international.snowowl.core.api.browser.IFilterClientTerminologyBrowser;
 import com.b2international.snowowl.datastore.TerminologyBrowserFilterJob;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptIndexEntry;
 
 /**
  * Job for creating a SNOMED&nbsp;CT concept hierarchy browser based on a subset of concepts.
@@ -30,6 +33,19 @@ public class SnomedTerminologyBrowserFilterJob extends TerminologyBrowserFilterJ
 	 */
 	public SnomedTerminologyBrowserFilterJob(final IFilterJobCallback... callbacks) {
 		super(SnomedTerminologyComponentConstants.CONCEPT, "SNOMED CT filtering...", callbacks);
+	}
+
+	@Override
+	protected boolean isEmpty(IFilterClientTerminologyBrowser<SnomedConceptIndexEntry, String> filteredTerminologyBrowser) {
+		if (super.isEmpty(filteredTerminologyBrowser)) {
+			return true;
+		} else if (filteredTerminologyBrowser instanceof FilteredTerminologyBrowser<?, ?>) {
+			FilteredTerminologyBrowser<?, ?> browser = (FilteredTerminologyBrowser<?, ?>) filteredTerminologyBrowser;
+			if (browser.size() > 0 && !browser.containsAncestors()) {
+				return true;
+			}
+		}
+		return false;
 	}
 	
 }

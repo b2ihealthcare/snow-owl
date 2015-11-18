@@ -17,7 +17,6 @@ package com.b2international.snowowl.snomed.exporter.server.sandbox;
 
 import static com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants.DESCRIPTION_NUMBER;
 import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.DESCRIPTION_CASE_SIGNIFICANCE_ID;
-import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.DESCRIPTION_EFFECTIVE_TIME;
 import static com.google.common.base.Preconditions.checkNotNull;
 
 import java.util.Set;
@@ -46,13 +45,14 @@ public class SnomedDescriptionExporter extends SnomedCoreExporter {
 	public Set<String> getFieldsToLoad() {
 		return SnomedMappings.fieldsToLoad()
 				.id()
-				.field(DESCRIPTION_EFFECTIVE_TIME)
+				.effectiveTime()
 				.active()
 				.module()
 				.descriptionConcept()
 				.descriptionType()
 				.label()
-				.field(DESCRIPTION_CASE_SIGNIFICANCE_ID).build();
+				.field(DESCRIPTION_CASE_SIGNIFICANCE_ID)
+				.build();
 	}
 
 	@Override
@@ -60,7 +60,7 @@ public class SnomedDescriptionExporter extends SnomedCoreExporter {
 		final StringBuilder sb = new StringBuilder();
 		sb.append(SnomedMappings.id().getValueAsString(doc));
 		sb.append(HT);
-		sb.append(formatEffectiveTime(doc.getField(getEffectiveTimeField())));
+		sb.append(formatEffectiveTime(SnomedMappings.effectiveTime().getValue(doc)));
 		sb.append(HT);
 		sb.append(SnomedMappings.active().getValue(doc));
 		sb.append(HT);
@@ -92,10 +92,4 @@ public class SnomedDescriptionExporter extends SnomedCoreExporter {
 	protected int getTerminologyComponentType() {
 		return DESCRIPTION_NUMBER;
 	}
-
-	@Override
-	protected String getEffectiveTimeField() {
-		return DESCRIPTION_EFFECTIVE_TIME;
-	}
-
 }
