@@ -17,7 +17,6 @@ package com.b2international.snowowl.snomed.datastore.server.converter;
 
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.domain.BranchContext;
-import com.b2international.snowowl.snomed.datastore.server.request.SnomedRelationshipConverter;
 import com.b2international.snowowl.snomed.datastore.services.SnomedBranchRefSetMembershipLookupService;
 
 /**
@@ -31,11 +30,6 @@ public class SnomedConverters {
 		return new SnomedConceptConverter(createMembershipLookupService(context));
 	}
 	
-	@Deprecated
-	public static SnomedConceptConverter newConceptConverter(IBranchPath branchPath) {
-		return new SnomedConceptConverter(createMembershipLookupService(branchPath));
-	}
-
 	public static SnomedDescriptionConverter newDescriptionConverter(BranchContext context) {
 		return new SnomedDescriptionConverter(createMembershipLookupService(context));
 	}
@@ -50,6 +44,16 @@ public class SnomedConverters {
 
 	private static SnomedBranchRefSetMembershipLookupService createMembershipLookupService(IBranchPath branchPath) {
 		return new SnomedBranchRefSetMembershipLookupService(branchPath);
+	}
+	
+	@Deprecated
+	public static SnomedConceptConverter newConceptConverter(IBranchPath branchPath) {
+		return new SnomedConceptConverter(createMembershipLookupService(branchPath));
+	}
+	
+	@Deprecated
+	public static SnomedRelationshipConverter newRelationshipConverter(IBranchPath branchPath) {
+		return new SnomedRelationshipConverter(createMembershipLookupService(branchPath));
 	}
 
 }

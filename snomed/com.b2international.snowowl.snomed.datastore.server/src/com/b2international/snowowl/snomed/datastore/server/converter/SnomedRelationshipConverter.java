@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.snomed.datastore.server.request;
+package com.b2international.snowowl.snomed.datastore.server.converter;
 
 import java.util.Collection;
 
@@ -26,12 +26,13 @@ import com.b2international.snowowl.snomed.core.domain.RelationshipRefinability;
 import com.b2international.snowowl.snomed.core.domain.SnomedRelationship;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRelationshipIndexEntry;
+import com.b2international.snowowl.snomed.datastore.server.request.AbstractSnomedComponentConverter;
 import com.b2international.snowowl.snomed.datastore.services.AbstractSnomedRefSetMembershipLookupService;
 import com.google.common.collect.ImmutableSet;
 
 public class SnomedRelationshipConverter extends AbstractSnomedComponentConverter<SnomedRelationshipIndexEntry, ISnomedRelationship> {
 
-	public SnomedRelationshipConverter(final AbstractSnomedRefSetMembershipLookupService refSetMembershipLookupService) {
+	SnomedRelationshipConverter(final AbstractSnomedRefSetMembershipLookupService refSetMembershipLookupService) {
 		super(refSetMembershipLookupService);
 	}
 
