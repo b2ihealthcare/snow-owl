@@ -15,9 +15,9 @@
  */
 package com.b2international.snowowl.snomed.datastore.server.converter;
 
+import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.domain.TransactionContext;
-import com.b2international.snowowl.snomed.datastore.server.request.SnomedConceptConverter;
 import com.b2international.snowowl.snomed.datastore.server.request.SnomedDescriptionConverter;
 import com.b2international.snowowl.snomed.datastore.server.request.SnomedRelationshipConverter;
 import com.b2international.snowowl.snomed.datastore.services.SnomedBranchRefSetMembershipLookupService;
@@ -30,19 +30,28 @@ public class SnomedConverters {
 	private SnomedConverters() {}
 	
 	public static SnomedConceptConverter newConceptConverter(BranchContext context) {
-		return new SnomedConceptConverter(createMemberShipLookupService(context));
+		return new SnomedConceptConverter(createMembershipLookupService(context));
+	}
+	
+	@Deprecated
+	public static SnomedConceptConverter newConceptConverter(IBranchPath branchPath) {
+		return new SnomedConceptConverter(createMembershipLookupService(branchPath));
 	}
 
 	public static SnomedDescriptionConverter newDescriptionConverter(TransactionContext context) {
-		return new SnomedDescriptionConverter(createMemberShipLookupService(context));
+		return new SnomedDescriptionConverter(createMembershipLookupService(context));
 	}
 	
 	public static SnomedRelationshipConverter newRelationshipConverter(TransactionContext context) {
-		return new SnomedRelationshipConverter(createMemberShipLookupService(context));
+		return new SnomedRelationshipConverter(createMembershipLookupService(context));
 	}
 	
-	private static SnomedBranchRefSetMembershipLookupService createMemberShipLookupService(BranchContext context) {
-		return new SnomedBranchRefSetMembershipLookupService(context.branch().branchPath());
+	private static SnomedBranchRefSetMembershipLookupService createMembershipLookupService(BranchContext context) {
+		return createMembershipLookupService(context.branch().branchPath());
+	}
+
+	private static SnomedBranchRefSetMembershipLookupService createMembershipLookupService(IBranchPath branchPath) {
+		return new SnomedBranchRefSetMembershipLookupService(branchPath);
 	}
 
 }

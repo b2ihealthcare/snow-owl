@@ -44,8 +44,8 @@ import com.b2international.snowowl.snomed.datastore.index.SnomedConceptIndexQuer
 import com.b2international.snowowl.snomed.datastore.index.SnomedIndexService;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptIndexEntry;
 import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedMappings;
-import com.b2international.snowowl.snomed.datastore.server.request.SnomedConceptConverter;
-import com.b2international.snowowl.snomed.datastore.services.SnomedBranchRefSetMembershipLookupService;
+import com.b2international.snowowl.snomed.datastore.server.converter.SnomedConceptConverter;
+import com.b2international.snowowl.snomed.datastore.server.converter.SnomedConverters;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 
@@ -172,7 +172,7 @@ public class SnomedTerminologyBrowserServiceImpl implements ISnomedTerminologyBr
 	}
 
 	private List<ISnomedConcept> convertEntries(final IBranchPath branchPath, final List<SnomedConceptIndexEntry> entries) {
-		final SnomedConceptConverter converter = new SnomedConceptConverter(new SnomedBranchRefSetMembershipLookupService(branchPath));
+		final SnomedConceptConverter converter = SnomedConverters.newConceptConverter(branchPath);
 		return ImmutableList.copyOf(Lists.transform(entries, converter));
 	}
 

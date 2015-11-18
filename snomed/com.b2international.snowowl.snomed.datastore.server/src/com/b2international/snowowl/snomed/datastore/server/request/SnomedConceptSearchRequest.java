@@ -34,6 +34,8 @@ import com.b2international.snowowl.snomed.datastore.index.SnomedConceptReducedQu
 import com.b2international.snowowl.snomed.datastore.index.SnomedDOIQueryAdapter;
 import com.b2international.snowowl.snomed.datastore.index.SnomedIndexService;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptIndexEntry;
+import com.b2international.snowowl.snomed.datastore.server.converter.SnomedConceptConverter;
+import com.b2international.snowowl.snomed.datastore.server.converter.SnomedConverters;
 import com.b2international.snowowl.snomed.datastore.services.SnomedBranchRefSetMembershipLookupService;
 import com.b2international.snowowl.snomed.dsl.query.SyntaxErrorException;
 import com.google.common.base.Function;
@@ -111,14 +113,9 @@ final class SnomedConceptSearchRequest extends SearchRequest<SnomedConcepts> {
 		final IIndexQueryAdapter<SnomedConceptIndexEntry> queryAdapter = getQuery(context, branchPath);
 		final int total = index.getHitCount(branchPath, queryAdapter);
 		final List<SnomedConceptIndexEntry> hits = index.search(branchPath, queryAdapter, offset(), limit());
-		return new SnomedConcepts(Lists.transform(hits, getConverter(branchPath)), offset(), limit(), total);
+		return new SnomedConcepts(Lists.transform(hits, SnomedConverters.newConceptConverter(context)), offset(), limit(), total);
 	}
 	
-	// TODO move this to SnomedComponentConverters factory class
-	protected final Function<SnomedConceptIndexEntry, ISnomedConcept> getConverter(final IBranchPath branchPath) {
-		return new SnomedConceptConverter(new SnomedBranchRefSetMembershipLookupService(branchPath));
-	}
-
 	private IIndexQueryAdapter<SnomedConceptIndexEntry> getQuery(RepositoryContext context, IBranchPath branch) {
 		if (options().isEmpty()) {
 			return new SnomedConceptReducedQueryAdapter();

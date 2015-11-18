@@ -15,16 +15,10 @@
  */
 package com.b2international.snowowl.snomed.api.impl;
 
-import static com.b2international.snowowl.core.ApplicationContext.getServiceForClass;
-
-import javax.annotation.Resource;
-
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.emf.common.util.EList;
 
 import com.b2international.commons.ClassUtils;
-import com.b2international.snowowl.core.ApplicationContext;
-import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.domain.IComponentRef;
 import com.b2international.snowowl.core.exceptions.BadRequestException;
 import com.b2international.snowowl.core.exceptions.ComponentStatusConflictException;
@@ -43,11 +37,7 @@ import com.b2international.snowowl.snomed.core.domain.SubclassDefinitionStatus;
 import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 import com.b2international.snowowl.snomed.datastore.SnomedEditingContext;
 import com.b2international.snowowl.snomed.datastore.SnomedInactivationPlan;
-import com.b2international.snowowl.snomed.datastore.escg.IEscgQueryEvaluatorService;
-import com.b2international.snowowl.snomed.datastore.index.SnomedIndexService;
-import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptIndexEntry;
 import com.b2international.snowowl.snomed.datastore.model.SnomedModelExtensions;
-import com.b2international.snowowl.snomed.datastore.server.request.SnomedConceptConverter;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedAssociationRefSetMember;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedAttributeValueRefSetMember;
 import com.google.common.collect.ImmutableList;
@@ -56,27 +46,8 @@ public class SnomedConceptServiceImpl
 	extends AbstractSnomedComponentServiceImpl<ISnomedConcept, ISnomedConceptUpdate, Concept>
 	implements ISnomedConceptService {
 
-	private SnomedDescriptionServiceImpl descriptionService;
-
 	public SnomedConceptServiceImpl() {
 		super(SnomedDatastoreActivator.REPOSITORY_UUID, ComponentCategory.CONCEPT);
-	}
-
-	@Resource
-	public void setDescriptionService(final SnomedDescriptionServiceImpl descriptionService) {
-		this.descriptionService = descriptionService;
-	}
-
-	private static SnomedIndexService getIndexService() {
-		return ApplicationContext.getServiceForClass(SnomedIndexService.class);
-	}
-
-	private static IEscgQueryEvaluatorService getQueryEvaluatorService() {
-		return getServiceForClass(IEscgQueryEvaluatorService.class);
-	}
-
-	private SnomedConceptConverter getConceptConverter(final IBranchPath branchPath) {
-		return new SnomedConceptConverter(getMembershipLookupService(branchPath));
 	}
 
 	@Override
@@ -87,10 +58,7 @@ public class SnomedConceptServiceImpl
 
 	@Override
 	protected ISnomedConcept doRead(final IComponentRef ref) {
-		final InternalComponentRef internalRef = ClassUtils.checkAndCast(ref, InternalComponentRef.class);
-		final IBranchPath branch = internalRef.getBranch().branchPath();
-		final SnomedConceptIndexEntry conceptIndexEntry = snomedConceptLookupService.getComponent(branch, internalRef.getComponentId());
-		return getConceptConverter(branch).apply(conceptIndexEntry); 
+		throw new UnsupportedOperationException();
 	}
 
 	@Override

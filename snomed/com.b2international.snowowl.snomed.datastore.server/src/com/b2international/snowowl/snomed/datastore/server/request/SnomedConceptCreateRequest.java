@@ -42,8 +42,8 @@ import com.b2international.snowowl.snomed.core.domain.ISnomedConcept;
 import com.b2international.snowowl.snomed.core.domain.IdGenerationStrategy;
 import com.b2international.snowowl.snomed.core.domain.UserIdGenerationStrategy;
 import com.b2international.snowowl.snomed.core.store.SnomedComponents;
+import com.b2international.snowowl.snomed.datastore.server.converter.SnomedConverters;
 import com.b2international.snowowl.snomed.datastore.services.ISnomedComponentService;
-import com.b2international.snowowl.snomed.datastore.services.SnomedBranchRefSetMembershipLookupService;
 import com.google.common.collect.HashMultiset;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Multiset;
@@ -141,7 +141,7 @@ public class SnomedConceptCreateRequest extends BaseSnomedComponentCreateRequest
 			}
 		}
 
-		return new SnomedConceptConverter(new SnomedBranchRefSetMembershipLookupService(branchPath)).apply(concept);
+		return SnomedConverters.newConceptConverter(context).apply(concept);
 	}
 	
 	private Concept convertConcept(final TransactionContext context) {
