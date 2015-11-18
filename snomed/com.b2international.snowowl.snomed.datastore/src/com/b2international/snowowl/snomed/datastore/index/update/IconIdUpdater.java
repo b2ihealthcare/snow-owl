@@ -43,7 +43,7 @@ public class IconIdUpdater extends SnomedDocumentUpdaterBase {
 	
 	@Override
 	public final void doUpdate(SnomedDocumentBuilder doc) {
-		final long iconIdLong = Long.parseLong(getIconId(getComponentId(), active));
+		final Long iconIdLong = Long.valueOf(getIconId(getComponentId(), active));
 		doc.iconId(iconIdLong);
 	}
 
@@ -79,5 +79,4 @@ public class IconIdUpdater extends SnomedDocumentUpdaterBase {
 		}
 		return getParentFrom(Long.toString(getTaxonomyBuilder().getAncestorNodeIds(conceptId).iterator().next()));
 	}
-		
 }

@@ -18,7 +18,6 @@ package com.b2international.snowowl.snomed.datastore.index.update;
 import static com.b2international.snowowl.snomed.SnomedConstants.Concepts.INFERRED_RELATIONSHIP;
 import static com.b2international.snowowl.snomed.SnomedConstants.Concepts.UNIVERSAL_RESTRICTION_MODIFIER;
 
-import com.b2international.snowowl.snomed.Component;
 import com.b2international.snowowl.snomed.Relationship;
 import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedDocumentBuilder;
 
@@ -27,8 +26,8 @@ import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedDocument
  */
 public class RelationshipMutablePropertyUpdater extends ComponentMutablePropertyUpdater {
 
-	public RelationshipMutablePropertyUpdater(Component component) {
-		super(component);
+	public RelationshipMutablePropertyUpdater(Relationship relationship) {
+		super(relationship);
 	}
 	
 	@Override

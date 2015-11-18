@@ -23,8 +23,8 @@ import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedDocument
  */
 public class DescriptionMutablePropertyUpdater extends ComponentMutablePropertyUpdater {
 
-	public DescriptionMutablePropertyUpdater(Description component) {
-		super(component);
+	public DescriptionMutablePropertyUpdater(Description description) {
+		super(description);
 	}
 	
 	@Override
@@ -32,14 +32,10 @@ public class DescriptionMutablePropertyUpdater extends ComponentMutablePropertyU
 		super.doUpdate(doc);
 		
 		doc
-			.descriptionCaseSignificance(getCaseSignificanceId())
-			.label(getComponent().getTerm());
+			.descriptionCaseSignificance(Long.valueOf(getComponent().getCaseSignificance().getId()))
+			.descriptionTerm(getComponent().getTerm());
 	}
 
-	private Long getCaseSignificanceId() {
-		return Long.valueOf(getComponent().getCaseSignificance().getId());
-	}
-	
 	@Override
 	protected Description getComponent() {
 		return (Description) super.getComponent();

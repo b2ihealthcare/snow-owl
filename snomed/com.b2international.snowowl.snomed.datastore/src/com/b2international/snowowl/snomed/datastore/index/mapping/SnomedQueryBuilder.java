@@ -109,6 +109,10 @@ public class SnomedQueryBuilder extends QueryBuilderBase<SnomedQueryBuilder> {
 		return addToQuery(SnomedMappings.active(), 0);
 	}
 
+	public SnomedQueryBuilder descriptionTerm(String value) {
+		return addToQuery(SnomedMappings.descriptionTerm(), value);
+	}
+	
 	public SnomedQueryBuilder descriptionType(String value) {
 		return descriptionType(Long.valueOf(value));
 	}

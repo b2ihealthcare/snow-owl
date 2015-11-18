@@ -271,7 +271,7 @@ public final class SnomedDocumentBuilder extends DocumentBuilderBase<SnomedDocum
 	}
 
 	public SnomedDocumentBuilder iconId(final Long iconId) {
-		return addToDoc(SnomedMappings.iconId(), iconId);
+		return update(SnomedMappings.iconId(), iconId);
 	}
 
 	public SnomedDocumentBuilder parent(final String fieldNameSuffix, final Long parentId) {
@@ -283,19 +283,19 @@ public final class SnomedDocumentBuilder extends DocumentBuilderBase<SnomedDocum
 	}
 
 	public SnomedDocumentBuilder module(final Long moduleId) {
-		return addToDoc(SnomedMappings.module(), moduleId);
+		return update(SnomedMappings.module(), moduleId);
 	}
 
 	public SnomedDocumentBuilder effectiveTime(final Long effectiveTime) {
-		return addToDoc(SnomedMappings.effectiveTime(), effectiveTime);
+		return update(SnomedMappings.effectiveTime(), effectiveTime);
 	}
 
 	public SnomedDocumentBuilder active(final boolean active) {
-		return addToDoc(SnomedMappings.active(), BooleanUtils.toInteger(active));
+		return update(SnomedMappings.active(), BooleanUtils.toInteger(active));
 	}
 
 	public SnomedDocumentBuilder released(final boolean released) {
-		return addToDoc(SnomedMappings.released(), BooleanUtils.toInteger(released));
+		return update(SnomedMappings.released(), BooleanUtils.toInteger(released));
 	}
 
 	public SnomedDocumentBuilder componentReferringPredicate(final String referringPredicateId) {
@@ -303,15 +303,15 @@ public final class SnomedDocumentBuilder extends DocumentBuilderBase<SnomedDocum
 	}
 
 	public SnomedDocumentBuilder primitive(final boolean primitive) {
-		return addToDoc(SnomedMappings.primitive(), BooleanUtils.toInteger(primitive));
+		return update(SnomedMappings.primitive(), BooleanUtils.toInteger(primitive));
 	}
 
 	public SnomedDocumentBuilder exhaustive(final boolean exhaustive) {
-		return addToDoc(SnomedMappings.exhaustive(), BooleanUtils.toInteger(exhaustive));
+		return update(SnomedMappings.exhaustive(), BooleanUtils.toInteger(exhaustive));
 	}
 
 	public SnomedDocumentBuilder conceptDegreeOfInterest(final Float conceptDoi) {
-		return addToDoc(SnomedMappings.conceptDegreeOfInterest(), conceptDoi);
+		return update(SnomedMappings.conceptDegreeOfInterest(), conceptDoi);
 	}
 
 	public SnomedDocumentBuilder conceptReferringRefSetId(final Long refSetId) {
@@ -323,13 +323,21 @@ public final class SnomedDocumentBuilder extends DocumentBuilderBase<SnomedDocum
 	}
 
 	public SnomedDocumentBuilder conceptNamespaceId(final Long namespaceId) {
-		return addToDoc(SnomedMappings.conceptNamespaceId(), namespaceId);
+		return update(SnomedMappings.conceptNamespaceId(), namespaceId);
 	}
 
 	public SnomedDocumentBuilder descriptionType(final Long typeId) {
 		return addToDoc(SnomedMappings.descriptionType(), typeId);
 	}
 
+	public SnomedDocumentBuilder descriptionTerm(final String term) {
+		return addToDoc(SnomedMappings.descriptionTerm(), term);
+	}
+	
+	public SnomedDocumentBuilder descriptionLanguageCode(final String languageCode) {
+		return addToDoc(SnomedMappings.descriptionLanguageCode(), languageCode);
+	}
+	
 	public SnomedDocumentBuilder descriptionConcept(final Long conceptId) {
 		return addToDoc(SnomedMappings.descriptionConcept(), conceptId);
 	}
@@ -351,27 +359,27 @@ public final class SnomedDocumentBuilder extends DocumentBuilderBase<SnomedDocum
 	}
 
 	public SnomedDocumentBuilder relationshipGroup(final Integer group) {
-		return addToDoc(SnomedMappings.relationshipGroup(), group);
+		return update(SnomedMappings.relationshipGroup(), group);
 	}
 
 	public SnomedDocumentBuilder relationshipUnionGroup(final Integer unionGroup) {
-		return addToDoc(SnomedMappings.relationshipUnionGroup(), unionGroup);
+		return update(SnomedMappings.relationshipUnionGroup(), unionGroup);
 	}
 
 	public SnomedDocumentBuilder relationshipInferred(final boolean inferred) {
-		return addToDoc(SnomedMappings.relationshipInferred(), BooleanUtils.toInteger(inferred));
+		return update(SnomedMappings.relationshipInferred(), BooleanUtils.toInteger(inferred));
 	}
 
 	public SnomedDocumentBuilder relationshipUniversal(final boolean universal) {
-		return addToDoc(SnomedMappings.relationshipUniversal(), BooleanUtils.toInteger(universal));
+		return update(SnomedMappings.relationshipUniversal(), BooleanUtils.toInteger(universal));
 	}
 
 	public SnomedDocumentBuilder relationshipDestinationNegated(final boolean destinationNegated) {
-		return addToDoc(SnomedMappings.relationshipDestinationNegated(), BooleanUtils.toInteger(destinationNegated));
+		return update(SnomedMappings.relationshipDestinationNegated(), BooleanUtils.toInteger(destinationNegated));
 	}
 
 	public SnomedDocumentBuilder relationshipCharacteristicType(final Long characteristicTypeId) {
-		return addToDoc(SnomedMappings.relationshipCharacteristicType(), characteristicTypeId);
+		return update(SnomedMappings.relationshipCharacteristicType(), characteristicTypeId);
 	}
 
 	public SnomedDocumentBuilder predicateType(final PredicateType type) {
@@ -459,98 +467,98 @@ public final class SnomedDocumentBuilder extends DocumentBuilderBase<SnomedDocum
 	}
 
 	public SnomedDocumentBuilder memberTargetComponentId(final String mapTargetComponentId) {
-		return addToDoc(SnomedMappings.memberTargetComponentId(), mapTargetComponentId);
+		return update(SnomedMappings.memberTargetComponentId(), mapTargetComponentId);
 	}
 
 	public SnomedDocumentBuilder memberValueId(final String valueId) {
-		return addToDoc(SnomedMappings.memberValueId(), valueId);
+		return update(SnomedMappings.memberValueId(), valueId);
 	}
 
 	public SnomedDocumentBuilder memberQuery(final String query) {
-		return addToDoc(SnomedMappings.memberQuery(), query);
+		return update(SnomedMappings.memberQuery(), query);
 	}
 
 	public SnomedDocumentBuilder memberMapTargetComponentId(final String mapTargetComponentId) {
-		return addToDoc(SnomedMappings.memberMapTargetComponentId(), mapTargetComponentId);
+		return update(SnomedMappings.memberMapTargetComponentId(), mapTargetComponentId);
 	}
 
 	public SnomedDocumentBuilder memberMapTargetComponentType(final Integer mapTargetComponentType) {
-		return addToDoc(SnomedMappings.memberMapTargetComponentType(), mapTargetComponentType);
+		return update(SnomedMappings.memberMapTargetComponentType(), mapTargetComponentType);
 	}
 
 	public SnomedDocumentBuilder memberMapTargetComponentDescription(final String mapTargetComponentDescription) {
-		return addToDoc(SnomedMappings.memberMapTargetComponentDescription(), mapTargetComponentDescription);
+		return update(SnomedMappings.memberMapTargetComponentDescription(), mapTargetComponentDescription);
 	}
 
 	public SnomedDocumentBuilder memberMapGroup(final Integer mapGroup) {
-		return addToDoc(SnomedMappings.memberMapGroup(), mapGroup);
+		return update(SnomedMappings.memberMapGroup(), mapGroup);
 	}
 
 	public SnomedDocumentBuilder memberMapPriority(final Integer mapPriority) {
-		return addToDoc(SnomedMappings.memberMapPriority(), mapPriority);
+		return update(SnomedMappings.memberMapPriority(), mapPriority);
 	}
 
 	public SnomedDocumentBuilder memberMapRule(final String mapRule) {
-		return addToDoc(SnomedMappings.memberMapRule(), mapRule);
+		return update(SnomedMappings.memberMapRule(), mapRule);
 	}
 
 	public SnomedDocumentBuilder memberMapAdvice(final String mapAdvice) {
-		return addToDoc(SnomedMappings.memberMapAdvice(), mapAdvice);
+		return update(SnomedMappings.memberMapAdvice(), mapAdvice);
 	}
 
 	public SnomedDocumentBuilder memberMapCategoryId(final Long mapCategoryId) {
-		return addToDoc(SnomedMappings.memberMapCategoryId(), mapCategoryId);
+		return update(SnomedMappings.memberMapCategoryId(), mapCategoryId);
 	}
 
 	public SnomedDocumentBuilder memberCorrelationId(final Long mapCorrelationId) {
-		return addToDoc(SnomedMappings.memberCorrelationId(), mapCorrelationId);
+		return update(SnomedMappings.memberCorrelationId(), mapCorrelationId);
 	}
 
 	public SnomedDocumentBuilder memberDescriptionFormatId(final Long descriptionFormatId) {
-		return addToDoc(SnomedMappings.memberDescriptionFormatId(), descriptionFormatId);
+		return update(SnomedMappings.memberDescriptionFormatId(), descriptionFormatId);
 	}
 
 	public SnomedDocumentBuilder memberDescriptionLength(final Integer descriptionFormatLength) {
-		return addToDoc(SnomedMappings.memberDescriptionLength(), descriptionFormatLength);
+		return update(SnomedMappings.memberDescriptionLength(), descriptionFormatLength);
 	}
 
 	public SnomedDocumentBuilder memberAcceptabilityId(final Long acceptabilityId) {
-		return addToDoc(SnomedMappings.memberAcceptabilityId(), acceptabilityId);
+		return update(SnomedMappings.memberAcceptabilityId(), acceptabilityId);
 	}
 
 	public SnomedDocumentBuilder memberOperatorId(final Long operatorId) {
-		return addToDoc(SnomedMappings.memberOperatorId(), operatorId);
+		return update(SnomedMappings.memberOperatorId(), operatorId);
 	}
 
 	public SnomedDocumentBuilder memberContainerModuleId(final Long containerModuleId) {
-		return addToDoc(SnomedMappings.memberContainerModuleId(), containerModuleId);
+		return update(SnomedMappings.memberContainerModuleId(), containerModuleId);
 	}
 
 	public SnomedDocumentBuilder memberUomId(final Long uomId) {
-		return addToDoc(SnomedMappings.memberUomId(), uomId);
+		return update(SnomedMappings.memberUomId(), uomId);
 	}
 
 	public SnomedDocumentBuilder memberDataTypeLabel(final String label) {
-		return addToDoc(SnomedMappings.memberDataTypeLabel(), label);
+		return update(SnomedMappings.memberDataTypeLabel(), label);
 	}
 
 	public SnomedDocumentBuilder memberDataType(final com.b2international.snowowl.snomed.snomedrefset.DataType refSetDataType) {
-		return addToDoc(SnomedMappings.memberDataTypeOrdinal(), refSetDataType.ordinal());
+		return update(SnomedMappings.memberDataTypeOrdinal(), refSetDataType.ordinal());
 	}
 
 	public SnomedDocumentBuilder memberSerializedValue(final String serializedValue) {
-		return addToDoc(SnomedMappings.memberSerializedValue(), serializedValue);
+		return update(SnomedMappings.memberSerializedValue(), serializedValue);
 	}
 
 	public SnomedDocumentBuilder memberCharacteristicTypeId(final Long characteristicTypeId) {
-		return addToDoc(SnomedMappings.memberCharacteristicTypeId(), characteristicTypeId);
+		return update(SnomedMappings.memberCharacteristicTypeId(), characteristicTypeId);
 	}
 
 	public SnomedDocumentBuilder memberSourceEffectiveTime(final Long sourceEffectiveTime) {
-		return addToDoc(SnomedMappings.memberSourceEffectiveTime(), sourceEffectiveTime);
+		return update(SnomedMappings.memberSourceEffectiveTime(), sourceEffectiveTime);
 	}
 
 	public SnomedDocumentBuilder memberTargetEffectiveTime(final Long targetEffectiveTime) {
-		return addToDoc(SnomedMappings.memberTargetEffectiveTime(), targetEffectiveTime);
+		return update(SnomedMappings.memberTargetEffectiveTime(), targetEffectiveTime);
 	}
 }
