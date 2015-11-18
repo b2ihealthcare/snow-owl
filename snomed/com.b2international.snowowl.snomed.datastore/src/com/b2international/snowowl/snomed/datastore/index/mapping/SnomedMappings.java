@@ -58,6 +58,9 @@ public class SnomedMappings {
 
 	// Description field instances
 	private static final DocValuesTextIndexField DESCRIPTION_TERM = new DocValuesTextIndexField("description_term");
+	private static final IndexField<String> DESCRIPTION_LANGUAGE_CODE = Mappings.stringField("description_language_code");
+	private static final LongIndexField DESCRIPTION_PREFERRED_REFERENCE_SET_ID = Mappings.longField("description_preferred_ref_set_id");
+	private static final LongIndexField DESCRIPTION_ACCEPTABLE_REFERENCE_SET_ID = Mappings.longField("description_acceptable_ref_set_id");
 	private static final NumericDocValuesIndexField<Long> DESCRIPTION_TYPE_ID = Mappings.longDocValuesField("description_type_id");
 	private static final NumericDocValuesIndexField<Long> DESCRIPTION_CONCEPT_ID = Mappings.longDocValuesField("description_concept_id");
 	private static final NumericDocValuesIndexField<Long> DESCRIPTION_CASE_SIGNIFICANCE_ID = Mappings.longDocValuesField("description_case_significance_id");
@@ -251,6 +254,18 @@ public class SnomedMappings {
 
 	public static DocValuesTextIndexField descriptionTerm() {
 		return DESCRIPTION_TERM;
+	}
+	
+	public static IndexField<String> descriptionLanguageCode() {
+		return DESCRIPTION_LANGUAGE_CODE;
+	}
+	
+	public static LongIndexField descriptionPreferredReferenceSetId() {
+		return DESCRIPTION_PREFERRED_REFERENCE_SET_ID;
+	}
+	
+	public static LongIndexField descriptionAcceptableReferenceSetId() {
+		return DESCRIPTION_ACCEPTABLE_REFERENCE_SET_ID;
 	}
 
 	public static NumericDocValuesIndexField<Long> descriptionType() {

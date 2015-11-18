@@ -132,6 +132,18 @@ public class SnomedQueryBuilder extends QueryBuilderBase<SnomedQueryBuilder> {
 	public SnomedQueryBuilder descriptionType(Long value) {
 		return addToQuery(SnomedMappings.descriptionType(), value);
 	}
+	
+	public SnomedQueryBuilder descriptionLanguageCode(String value) {
+		return addToQuery(SnomedMappings.descriptionLanguageCode(), value);
+	}
+	
+	public SnomedQueryBuilder descriptionPreferredReferenceSetId(Long value) {
+		return addToQuery(SnomedMappings.descriptionPreferredReferenceSetId(), value);
+	}
+	
+	public SnomedQueryBuilder descriptionAcceptableReferenceSetId(Long value) {
+		return addToQuery(SnomedMappings.descriptionAcceptableReferenceSetId(), value);
+	}
 
 	public SnomedQueryBuilder descriptionConcept(String value) {
 		return descriptionConcept(Long.valueOf(value));

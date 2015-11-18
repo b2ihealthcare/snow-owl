@@ -184,7 +184,10 @@ public final class SnomedDocumentBuilder extends DocumentBuilderBase<SnomedDocum
 				.add(SnomedMappings.descriptionTerm())
 				.add(SnomedMappings.descriptionCaseSignificance())
 				.add(SnomedMappings.descriptionConcept())
-				.add(SnomedMappings.descriptionType());
+				.add(SnomedMappings.descriptionType())
+				.add(SnomedMappings.descriptionLanguageCode())
+				.add(SnomedMappings.descriptionPreferredReferenceSetId())
+				.add(SnomedMappings.descriptionAcceptableReferenceSetId());
 				break;
 			case SnomedTerminologyComponentConstants.RELATIONSHIP_NUMBER:
 				fieldsToCopy

@@ -82,6 +82,18 @@ public class SnomedFieldsToLoadBuilder extends FieldsToLoadBuilderBase<SnomedFie
 		return field(SnomedMappings.descriptionType());
 	}
 
+	public SnomedFieldsToLoadBuilder descriptionLanguageCode() {
+		return field(SnomedMappings.descriptionLanguageCode());
+	}
+	
+	public SnomedFieldsToLoadBuilder descriptionPreferredReferenceSetId() {
+		return field(SnomedMappings.descriptionPreferredReferenceSetId());
+	}
+	
+	public SnomedFieldsToLoadBuilder descriptionAcceptableReferenceSetId() {
+		return field(SnomedMappings.descriptionAcceptableReferenceSetId());
+	}
+	
 	public SnomedFieldsToLoadBuilder descriptionConcept() {
 		return field(SnomedMappings.descriptionConcept());
 	}
