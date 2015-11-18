@@ -24,6 +24,7 @@ import com.b2international.snowowl.datastore.index.mapping.LongIndexField;
 import com.b2international.snowowl.datastore.index.mapping.Mappings;
 import com.b2international.snowowl.datastore.index.mapping.NumericDocValuesIndexField;
 import com.b2international.snowowl.datastore.index.mapping.StoredIndexField;
+import com.b2international.snowowl.datastore.index.mapping.StoredOnlyDocValuesLongIndexField;
 import com.google.common.base.Predicates;
 import com.google.common.base.Strings;
 
@@ -68,7 +69,7 @@ public class SnomedMappings {
 	private static final IndexField<Integer> RELATIONSHIP_GROUP = Mappings.storedOnlyIntFieldWithDocValues("relationship_group");
 	private static final IndexField<Integer> RELATIONSHIP_UNION_GROUP = Mappings.storedOnlyIntFieldWithDocValues("relationship_union_group");
 	private static final IndexField<Integer> RELATIONSHIP_INFERRED = Mappings.storedOnlyIntField("relationship_inferred");
-	private static final IndexField<Integer> RELATIONSHIP_UNIVERSAL = Mappings.storedOnlyIntFieldWithDocValues("relationship_universal");
+	private static final StoredOnlyDocValuesLongIndexField<Integer> RELATIONSHIP_UNIVERSAL = Mappings.storedOnlyIntFieldWithDocValues("relationship_universal");
 	private static final IndexField<Integer> RELATIONSHIP_DESTINATION_NEGATED = Mappings.storedOnlyIntFieldWithDocValues("relationship_destination_negated");
 	private static final NumericDocValuesIndexField<Long> RELATIONSHIP_CHARACTERISTIC_TYPE_ID = Mappings.longDocValuesField("relationship_characteristic_type_id");
 
@@ -288,7 +289,7 @@ public class SnomedMappings {
 		return RELATIONSHIP_INFERRED;
 	}
 
-	public static IndexField<Integer> relationshipUniversal() {
+	public static StoredOnlyDocValuesLongIndexField<Integer> relationshipUniversal() {
 		return RELATIONSHIP_UNIVERSAL;
 	}
 
