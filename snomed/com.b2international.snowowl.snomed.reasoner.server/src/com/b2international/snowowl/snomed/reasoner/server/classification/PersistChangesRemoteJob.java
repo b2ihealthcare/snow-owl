@@ -152,8 +152,6 @@ public class PersistChangesRemoteJob extends AbstractRemoteJob {
 			
 			if (!relationshipAddPersister.getRelationshipIds().isEmpty())
 				idManager.bulkRegister(relationshipAddPersister.getRelationshipIds());
-			if (!relationshipRemovePersister.getRelationshipIds().isEmpty())
-				idManager.bulkRelease(relationshipRemovePersister.getRelationshipIds());
 
 			final ConceptConcreteDomainNormalFormGenerator conceptConcreteDomainGenerator = new ConceptConcreteDomainNormalFormGenerator(taxonomy, reasonerTaxonomyBuilder);
 			conceptConcreteDomainGenerator.collectNormalFormChanges(subMonitor.newChild(1), new ConcreteDomainPersister(editingContext, OntologyChange.Nature.ADD));
@@ -171,7 +169,7 @@ public class PersistChangesRemoteJob extends AbstractRemoteJob {
 				}
 			}
 
-			new EquivalentConceptMerger(editingContext, equivalenciesToFix, idManager).fixEquivalencies();
+			new EquivalentConceptMerger(editingContext, equivalenciesToFix).fixEquivalencies();
 
 			final CDOTransaction editingContextTransaction = editingContext.getTransaction();
 			editingContext.preCommit();

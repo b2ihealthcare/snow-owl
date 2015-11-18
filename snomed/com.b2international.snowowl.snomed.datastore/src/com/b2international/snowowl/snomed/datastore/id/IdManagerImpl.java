@@ -22,14 +22,12 @@ import com.b2international.snowowl.snomed.datastore.id.action.BulkDeprecateActio
 import com.b2international.snowowl.snomed.datastore.id.action.BulkGenerateAction;
 import com.b2international.snowowl.snomed.datastore.id.action.BulkPublishAction;
 import com.b2international.snowowl.snomed.datastore.id.action.BulkRegisterAction;
-import com.b2international.snowowl.snomed.datastore.id.action.BulkReleaseAction;
 import com.b2international.snowowl.snomed.datastore.id.action.BulkReserveAction;
 import com.b2international.snowowl.snomed.datastore.id.action.DeprecateAction;
 import com.b2international.snowowl.snomed.datastore.id.action.GenerateAction;
 import com.b2international.snowowl.snomed.datastore.id.action.IIdAction;
 import com.b2international.snowowl.snomed.datastore.id.action.PublishAction;
 import com.b2international.snowowl.snomed.datastore.id.action.RegisterAction;
-import com.b2international.snowowl.snomed.datastore.id.action.ReleaseAction;
 import com.b2international.snowowl.snomed.datastore.id.action.ReserveAction;
 import com.google.common.collect.Lists;
 
@@ -91,12 +89,6 @@ public class IdManagerImpl implements IdManager {
 	}
 
 	@Override
-	public void release(final String identifier) {
-		final ReleaseAction action = new ReleaseAction(identifier, identifierService);
-		executeAction(action);
-	}
-
-	@Override
 	public void publish(final String identifier) {
 		final PublishAction action = new PublishAction(identifier, identifierService);
 		executeAction(action);
@@ -127,12 +119,6 @@ public class IdManagerImpl implements IdManager {
 	@Override
 	public void bulkDeprecate(final Collection<String> componentIds) {
 		final BulkDeprecateAction action = new BulkDeprecateAction(componentIds, identifierService);
-		executeAction(action);
-	}
-
-	@Override
-	public void bulkRelease(final Collection<String> componentIds) {
-		final BulkReleaseAction action = new BulkReleaseAction(componentIds, identifierService);
 		executeAction(action);
 	}
 

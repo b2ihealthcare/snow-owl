@@ -80,8 +80,6 @@ public class RelationshipPersister extends OntologyChangeProcessor<StatementFrag
 		
 		final Relationship relationship = (Relationship) context.lookup(removedEntry.getStorageKey());
 		SnomedModelExtensions.removeOrDeactivate(relationship);
-		if (!relationship.isReleased())
-			relationshipIds.add(relationship.getId());
 	}
 	
 	@Override

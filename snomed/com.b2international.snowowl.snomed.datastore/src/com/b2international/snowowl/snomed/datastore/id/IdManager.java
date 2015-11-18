@@ -71,14 +71,6 @@ public interface IdManager {
 	void deprecate(String componentId);
 
 	/**
-	 * Releases the given SNOMED identifier.
-	 * 
-	 * @param componentId
-	 *            the component ID to release.
-	 */
-	void release(String componentId);
-
-	/**
 	 * Publishes the given SNOMED identifier.
 	 * 
 	 * @param componentId
@@ -125,14 +117,6 @@ public interface IdManager {
 	 *            the component IDs to deprecate.
 	 */
 	void bulkDeprecate(Collection<String> componentIds);
-
-	/**
-	 * Releases the given SNOMED identifiers.
-	 * 
-	 * @param componentIds
-	 *            the component IDs to release.
-	 */
-	void bulkRelease(Collection<String> componentIds);
 
 	/**
 	 * Publishes the given SNOMED identifiers.
