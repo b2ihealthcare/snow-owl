@@ -238,6 +238,20 @@ public final class SnomedDocumentBuilder extends DocumentBuilderBase<SnomedDocum
 	public SnomedDocumentBuilder iconId(String iconId) {
 		return iconId(Long.valueOf(iconId));
 	}
+	
+	// Deprecated document builder methods
+	
+	@Override
+	@Deprecated
+	public SnomedDocumentBuilder label(String value) {
+		throw new UnsupportedOperationException("Labels in SNOMED CT are not supported.");
+	}
+	
+	@Override
+	@Deprecated
+	public SnomedDocumentBuilder labelWithSort(String value) {
+		throw new UnsupportedOperationException("Sort key fields in SNOMED CT are not supported.");
+	}
 
 	// Fields that should be added once, when creating the document 
 
