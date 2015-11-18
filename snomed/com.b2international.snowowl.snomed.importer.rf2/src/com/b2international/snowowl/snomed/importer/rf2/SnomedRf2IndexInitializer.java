@@ -15,7 +15,6 @@
  */
 package com.b2international.snowowl.snomed.importer.rf2;
 
-import static com.b2international.commons.pcj.LongSets.forEach;
 import static com.b2international.commons.pcj.LongSets.newLongSet;
 import static com.b2international.commons.pcj.LongSets.toStringList;
 import static com.b2international.snowowl.core.ApplicationContext.getServiceForClass;
@@ -36,21 +35,13 @@ import java.util.Map;
 import java.util.Set;
 
 import org.apache.lucene.document.Document;
-import org.apache.lucene.document.Field.Store;
-import org.apache.lucene.document.FloatDocValuesField;
-import org.apache.lucene.document.LongField;
-import org.apache.lucene.document.NumericDocValuesField;
-import org.apache.lucene.document.StoredField;
-import org.apache.lucene.document.StringField;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
-import org.eclipse.emf.cdo.CDOObject;
 import org.eclipse.emf.cdo.common.id.CDOIDUtil;
 import org.eclipse.emf.cdo.transaction.CDOTransaction;
-import org.eclipse.emf.cdo.view.CDOView;
 
 import com.b2international.commons.CompareUtils;
 import com.b2international.commons.StringUtils;
@@ -59,7 +50,6 @@ import com.b2international.commons.csv.CsvParser;
 import com.b2international.commons.csv.CsvSettings;
 import com.b2international.commons.csv.RecordParserCallback;
 import com.b2international.commons.pcj.LongSets;
-import com.b2international.commons.pcj.LongSets.LongCollectionProcedure;
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.CoreTerminologyBroker;
 import com.b2international.snowowl.core.api.IBranchPath;
@@ -69,13 +59,11 @@ import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.datastore.cdo.CDOIDUtils;
 import com.b2international.snowowl.datastore.cdo.CDOTransactionFunction;
 import com.b2international.snowowl.datastore.cdo.CDOUtils;
-import com.b2international.snowowl.datastore.cdo.CDOViewFunction;
 import com.b2international.snowowl.datastore.cdo.ICDOConnection;
 import com.b2international.snowowl.datastore.cdo.ICDOConnectionManager;
 import com.b2international.snowowl.datastore.index.ComponentCompareFieldsUpdater;
 import com.b2international.snowowl.datastore.index.DocumentCompositeUpdater;
 import com.b2international.snowowl.datastore.index.DocumentUpdaterBase;
-import com.b2international.snowowl.datastore.index.SortKeyMode;
 import com.b2international.snowowl.datastore.index.mapping.Mappings;
 import com.b2international.snowowl.datastore.server.snomed.index.NamespaceMapping;
 import com.b2international.snowowl.datastore.server.snomed.index.SnomedIndexServerService;
@@ -100,24 +88,20 @@ import com.b2international.snowowl.snomed.datastore.index.SnomedDescriptionIndex
 import com.b2international.snowowl.snomed.datastore.index.SnomedIndexService;
 import com.b2international.snowowl.snomed.datastore.index.SnomedRelationshipIndexMappingStrategy;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptIndexEntry;
-import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry;
 import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedDocumentBuilder;
 import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedMappings;
 import com.b2international.snowowl.snomed.datastore.index.refset.RefSetMemberImmutablePropertyUpdater;
 import com.b2international.snowowl.snomed.datastore.index.refset.RefSetMemberMutablePropertyUpdater;
 import com.b2international.snowowl.snomed.datastore.index.refset.RefSetMutablePropertyUpdater;
-import com.b2international.snowowl.snomed.datastore.index.update.ComponentLabelUpdater;
 import com.b2international.snowowl.snomed.datastore.index.update.RefSetIconIdUpdater;
 import com.b2international.snowowl.snomed.datastore.index.update.RefSetParentageUpdater;
 import com.b2international.snowowl.snomed.datastore.services.ISnomedComponentService;
-import com.b2international.snowowl.snomed.datastore.services.SnomedBranchRefSetMembershipLookupService;
 import com.b2international.snowowl.snomed.datastore.snor.ConstraintFormIsApplicableForValidationPredicate;
 import com.b2international.snowowl.snomed.datastore.taxonomy.ISnomedTaxonomyBuilder;
 import com.b2international.snowowl.snomed.importer.rf2.model.ComponentImportType;
 import com.b2international.snowowl.snomed.importer.rf2.model.ComponentImportUnit;
 import com.b2international.snowowl.snomed.mrcm.AttributeConstraint;
 import com.b2international.snowowl.snomed.mrcm.ConceptModel;
-import com.b2international.snowowl.snomed.snomedrefset.SnomedConcreteDataTypeRefSetMember;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedLanguageRefSetMember;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSet;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetMember;
@@ -126,6 +110,7 @@ import com.google.common.base.Objects;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.FluentIterable;
 import com.google.common.collect.HashMultimap;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Sets;
@@ -529,17 +514,7 @@ public class SnomedRf2IndexInitializer extends Job {
 			LOGGER.info("No unvisited concepts have been found.");
 		}
 		
-		if (!CompareUtils.isEmpty(visitedConceptsViaLanguageMemberships)) {
-			LOGGER.info("Reindexing reference set members on concepts where the preferred term changed...");
-			indexPreferredTermChangesOnMembers();
-			getSnomedIndexService().commit(branchPath);
-			LOGGER.info("Preferred term changes successfully updated on reference set members.");
-		} else {
-			LOGGER.info("No preferred term changes have been found.");
-		}
-		
 		LOGGER.info("Post-processing phase successfully finished.");
-		
 	}
 
 	private Set<String> getAllDescendants(final Set<String> union) {
@@ -551,7 +526,6 @@ public class SnomedRf2IndexInitializer extends Job {
 		}
 		return LongSets.toStringSet($);
 	}
-
 
 	private void indexRelationships(final String absolutePath) {
 		
@@ -602,23 +576,15 @@ public class SnomedRf2IndexInitializer extends Job {
 					.relationshipCharacteristicType(characteristicTypeConceptSctId)
 					.module(moduleConceptId)
 					.effectiveTime(effectiveTime)
-					.field(RELATIONSHIP_OBJECT_ID, sourceConceptId)
-					.field(RELATIONSHIP_VALUE_ID, destinationConceptId)
-					.storedOnly(COMPONENT_RELEASED, released ? 1 : 0)
-					.storedOnly(RELATIONSHIP_GROUP, group)
-					.storedOnly(RELATIONSHIP_UNION_GROUP, unionGroup)
-					.storedOnly(RELATIONSHIP_DESTINATION_NEGATED, destinationNegated ? 1 : 0)
-					.storedOnly(RELATIONSHIP_INFERRED, inferred ? 1 : 0)
-					.storedOnly(RELATIONSHIP_UNIVERSAL, universal ? 1 : 0)
+					.relationshipSource(sourceConceptId)
+					.relationshipDestination(destinationConceptId)
+					.released(released)
+					.relationshipGroup(group)
+					.relationshipUnionGroup(unionGroup)
+					.relationshipDestinationNegated(destinationNegated)
+					.relationshipInferred(inferred)
+					.relationshipUniversal(universal)
 					.build();
-				
-				doc.add(new NumericDocValuesField(RELATIONSHIP_VALUE_ID, destinationConceptId));
-				doc.add(new NumericDocValuesField(RELATIONSHIP_OBJECT_ID, sourceConceptId));
-				doc.add(new NumericDocValuesField(RELATIONSHIP_GROUP, group));
-				doc.add(new NumericDocValuesField(RELATIONSHIP_UNION_GROUP, unionGroup));
-				doc.add(new NumericDocValuesField(RELATIONSHIP_UNIVERSAL, universal ? 1 : 0));
-				doc.add(new NumericDocValuesField(RELATIONSHIP_DESTINATION_NEGATED, destinationNegated ? 1 : 0));
-				
 				
 				snomedIndexService.index(branchPath, doc, storageKey);
 			}
@@ -713,7 +679,7 @@ public class SnomedRf2IndexInitializer extends Job {
 								for (final Description description : concept.getDescriptions()) {
 									index.index(branchPath, new SnomedDescriptionIndexMappingStrategy(description));
 									for (final SnomedLanguageRefSetMember languageRefSetMember : description.getLanguageRefSetMembers()) {
-										indexRefSetMember(languageRefSetMember, null);
+										indexRefSetMember(languageRefSetMember);
 									}
 								}
 								
@@ -725,8 +691,14 @@ public class SnomedRf2IndexInitializer extends Job {
 							}
 						});
 					} else {
-						final Collection<DocumentUpdaterBase<SnomedDocumentBuilder>> updaters = newArrayList(updater, new ComponentCompareFieldsUpdater<SnomedDocumentBuilder>(refSetId, identifierConcept.getStorageKey()));
+						
+						final List<DocumentUpdaterBase<SnomedDocumentBuilder>> updaters = ImmutableList.<DocumentUpdaterBase<SnomedDocumentBuilder>>builder()
+								.add(updater)
+								.add(new ComponentCompareFieldsUpdater<SnomedDocumentBuilder>(refSetId, identifierConcept.getStorageKey()))
+								.build();
+						
 						final DocumentCompositeUpdater<SnomedDocumentBuilder> compositeUpdater = new DocumentCompositeUpdater<SnomedDocumentBuilder>(updaters);
+						
 						getSnomedIndexService().upsert(branchPath, 
 								SnomedMappings.newQuery().concept().id(refSetId).matchAll(), 
 								compositeUpdater, 
@@ -736,33 +708,12 @@ public class SnomedRf2IndexInitializer extends Job {
 					visitedRefSets.put(refSetId, refSet);
 				}
 				
-				
 				final SnomedRefSet refSet = visitedRefSets.get(refSetId);
 				final String uuid = record.get(0);
-				final String refComponentId = record.get(5);
-				final int refComponentType = refSet.getReferencedComponentType();
 				final long memberCdoId = importIndexService.getMemberCdoId(uuid);
-				
-				String label = null;
-				if (ComponentImportType.EXTENDED_CONCRETE_DOMAIN_REFSET == type) {
-					label = record.get(8);
-				}
-				
-				if (StringUtils.isEmpty(label)) {
-					if (SnomedTerminologyComponentConstants.CONCEPT_NUMBER == refComponentType
-							|| SnomedTerminologyComponentConstants.REFSET_NUMBER == refComponentType) {
-						label = importIndexService.getConceptLabel(refComponentId);
-					} else if (SnomedTerminologyComponentConstants.DESCRIPTION_NUMBER == refComponentType) {
-						label = importIndexService.getDescriptionLabel(refComponentId);
-					} else if (SnomedTerminologyComponentConstants.RELATIONSHIP_NUMBER == refComponentType) {
-						label = importIndexService.getRelationshipLabel(refComponentId);
-					} else {
-						label = refComponentId;
-					}
-				}
-				
 				final SnomedRefSetMember member = new Rf2RefSetMember(record, refSet, memberCdoId);
-				indexRefSetMember(member, label);
+				
+				indexRefSetMember(member);
 			}
 
 			private short getRefSetComponentType(final String representativeComponentId, final SnomedRefSetType refSetType) {
@@ -795,66 +746,18 @@ public class SnomedRf2IndexInitializer extends Job {
 		});
 	}
 	
-	private void indexRefSetMember(final SnomedRefSetMember member, final String label) {
+	private void indexRefSetMember(final SnomedRefSetMember member) {
 		final Document doc = SnomedMappings.doc()
 			.with(new RefSetMemberImmutablePropertyUpdater(member))
 			.with(new RefSetMemberMutablePropertyUpdater(member))
-			.with(new ComponentLabelUpdater<SnomedDocumentBuilder>(member.getUuid(), label) {
-				@Override
-				protected void updateLabelFields(SnomedDocumentBuilder doc, String label) {
-					super.updateLabelFields(doc, label);
-					if (SnomedRefSetType.CONCRETE_DATA_TYPE.equals(member.getRefSet().getType()) && label != null) {
-						SortKeyMode.INSTANCE.update(doc, label);
-					}
-				}
-			}).build();
+			.build();
+		
 		getSnomedIndexService().index(branchPath, doc, CDOIDUtil.getLong(member.cdoID()));
 	}
 	
 	protected void updateIconId(String conceptId, boolean active, SnomedDocumentBuilder doc, boolean withDocValues) {
 		final Collection<String> availableImages = SnomedIconProvider.getInstance().getAvailableIconIds();
 		new RefSetIconIdUpdater(inferredTaxonomyBuilder, conceptId, active, availableImages, identifierConceptIdsForNewRefSets).update(doc);		
-	}
-
-
-	private void indexPreferredTermChangesOnMembers() {
-		final SnomedBranchRefSetMembershipLookupService lookupService = new SnomedBranchRefSetMembershipLookupService(branchPath);
-		final ICDOConnection connection = ApplicationContext.getServiceForClass(ICDOConnectionManager.class).getByUuid(SnomedDatastoreActivator.REPOSITORY_UUID);
-		
-		CDOUtils.apply(new CDOViewFunction<Void, CDOView>(connection, branchPath) {
-			
-			@Override
-			protected Void apply(final CDOView view) {
-				
-				for (final String conceptId : visitedConceptsViaLanguageMemberships) {
-		
-					final Collection<SnomedRefSetMemberIndexEntry> referringMembers = lookupService.getReferringMembers(conceptId);
-					final String conceptLabel = getImportIndexService().getConceptLabel(conceptId);
-					final LongSet referringMemberStorageKeys = new LongOpenHashSet();
-					
-					for (final SnomedRefSetMemberIndexEntry referringMember : referringMembers) {
-						if (!visitedMembers.contains(referringMember.getId())) {
-							referringMemberStorageKeys.add(referringMember.getStorageKey());
-						}
-					}
-			
-					forEach(referringMemberStorageKeys, new LongCollectionProcedure() {
-						@Override
-						public void apply(final long referringMemberStorageKey) {
-							final CDOObject referringMember = CDOUtils.getObjectIfExists(view, referringMemberStorageKey);
-							if (referringMember instanceof SnomedConcreteDataTypeRefSetMember) {
-								final SnomedConcreteDataTypeRefSetMember cdtMember = (SnomedConcreteDataTypeRefSetMember) referringMember;
-								indexRefSetMember(cdtMember, cdtMember.getLabel());
-							} else if (referringMember instanceof SnomedRefSetMember) {
-								indexRefSetMember((SnomedRefSetMember) referringMember, conceptLabel);
-							}
-						}
-					});
-				}
-				
-				return null;
-			}
-		});
 	}
 
 	private void indexDescriptions(final String absolutePath) {
@@ -886,12 +789,11 @@ public class SnomedRf2IndexInitializer extends Job {
 						.descriptionType(typeId)
 						.descriptionConcept(containerConceptId)
 						.module(moduleId)
-						.storedOnly(DESCRIPTION_CASE_SIGNIFICANCE_ID, caseSignificanceId)
-						.storedOnly(COMPONENT_RELEASED, released ? 1 : 0)
+						.descriptionCaseSignificance(caseSignificanceId)
+						.released(released)
 						.effectiveTime(effectiveTime)
 						.build();
 				
-				doc.add(new NumericDocValuesField(DESCRIPTION_CASE_SIGNIFICANCE_ID, caseSignificanceId));
 				snomedIndexService.index(branchPath, doc, storageKey);
 			}
 		});
@@ -983,31 +885,29 @@ public class SnomedRf2IndexInitializer extends Job {
 				.type(SnomedTerminologyComponentConstants.CONCEPT_NUMBER)
 				.storageKey(conceptStorageKey)
 				.active(active)
-				.field(CONCEPT_EXHAUSTIVE, exhaustive ? 1 : 0)
-				.field(CONCEPT_PRIMITIVE, primitive ? 1 : 0)
-				.storedOnly(COMPONENT_RELEASED, released ? 1 : 0)
+				.exhaustive(exhaustive)
+				.primitive(primitive)
+				.released(released)
 				.effectiveTime(effectiveTime)
-				.searchOnlyField(CONCEPT_NAMESPACE_ID, NamespaceMapping.getExtensionNamespaceId(conceptId))
+				.conceptNamespaceId(NamespaceMapping.getExtensionNamespaceId(conceptId))
 				.module(moduleId)
 				.with(new ComponentCompareFieldsUpdater<SnomedDocumentBuilder>(conceptIdString, conceptStorageKey));
 
-		final Document doc = docBuilder.build(); 
-		
 		updateIconId(conceptIdString, active, docBuilder, true);
 
 		if (conceptIdToPredicateMap.containsKey(conceptId)) {
 			final Collection<String> predicateKeys = conceptIdToPredicateMap.get(conceptId);
 			for (final String predicateKey : predicateKeys) {
-				doc.add(new StringField(COMPONENT_REFERRING_PREDICATE, predicateKey, Store.YES));
+				docBuilder.componentReferringPredicate(predicateKey);
 			}
 		}
 		
 		// reference set membership information
 		for (final String refSetId : currentRefSetMemberships) {
-			doc.add(new LongField(CONCEPT_REFERRING_REFERENCE_SET_ID, Long.parseLong(refSetId), Store.YES));
+			docBuilder.conceptReferringRefSetId(Long.parseLong(refSetId));
 		}
 		for (final String mappingRefSetId : currentMappingMemberships) {
-			doc.add(new LongField(CONCEPT_REFERRING_MAPPING_REFERENCE_SET_ID, Long.parseLong(mappingRefSetId), Store.YES));
+			docBuilder.conceptReferringMappingRefSetId(Long.parseLong(mappingRefSetId));
 		}
 
 		// update parents and ancestors
@@ -1019,9 +919,8 @@ public class SnomedRf2IndexInitializer extends Job {
 			doi = DEFAULT_DOI;
 		}
 		
-		doc.add(new StoredField(CONCEPT_DEGREE_OF_INTEREST, doi));
-		doc.add(new FloatDocValuesField(CONCEPT_DEGREE_OF_INTEREST, doi));
-		return doc;
+		docBuilder.conceptDegreeOfInterest(doi);
+		return docBuilder.build();
 	}
 	
 	private Collection<String> getCurrentRefSetMemberships(final String sConceptId, final Multimap<String, String> newRefSetMemberships, final Multimap<String, String> detachedRefSetMemberships) {

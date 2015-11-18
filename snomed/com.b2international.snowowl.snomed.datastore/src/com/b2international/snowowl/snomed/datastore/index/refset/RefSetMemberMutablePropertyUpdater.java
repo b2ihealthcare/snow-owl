@@ -126,6 +126,7 @@ public class RefSetMemberMutablePropertyUpdater extends DocumentUpdaterBase<Snom
 			
 			doc.memberDataType(dataTypeMember.getDataType());
 			doc.memberSerializedValue(dataTypeMember.getSerializedValue());
+			doc.memberDataTypeLabel(dataTypeMember.getLabel());
 			
 			if (member.eContainer() instanceof Component) {
 				final String containerModuleId = ((Component) member.eContainer()).getModule().getId();
