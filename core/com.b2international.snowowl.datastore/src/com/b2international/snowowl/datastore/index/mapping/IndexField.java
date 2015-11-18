@@ -20,7 +20,7 @@ import java.util.List;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.index.Term;
 import org.apache.lucene.search.Filter;
-import org.apache.lucene.search.Query;
+import org.apache.lucene.search.PrefixQuery;
 import org.apache.lucene.search.Sort;
 import org.apache.lucene.search.TermQuery;
 import org.apache.lucene.util.BytesRef;
@@ -44,7 +44,7 @@ public interface IndexField<T> {
 
 	TermQuery toQuery(T value);
 
-	Query toExistsQuery();
+	PrefixQuery toExistsQuery();
 
 	Term toTerm(T value);
 

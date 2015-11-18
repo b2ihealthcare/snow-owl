@@ -28,7 +28,6 @@ import org.apache.lucene.index.Term;
 import org.apache.lucene.queries.TermsFilter;
 import org.apache.lucene.search.Filter;
 import org.apache.lucene.search.PrefixQuery;
-import org.apache.lucene.search.Query;
 import org.apache.lucene.search.Sort;
 import org.apache.lucene.search.SortField;
 import org.apache.lucene.search.SortField.Type;
@@ -110,7 +109,7 @@ public abstract class IndexFieldBase<T> implements IndexField<T> {
 	}
 	
 	@Override
-	public final Query toExistsQuery() {
+	public final PrefixQuery toExistsQuery() {
 		return new PrefixQuery(new Term(fieldName()));
 	}
 	
