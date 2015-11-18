@@ -27,7 +27,6 @@ import com.b2international.snowowl.snomed.datastore.SnomedConceptLookupService;
 import com.b2international.snowowl.snomed.datastore.SnomedRefSetLookupService;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetIndexEntry;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetIndexEntry.Builder;
-import com.b2international.snowowl.snomed.snomedrefset.SnomedMappingRefSet;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSet;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedStructuralRefSet;
 
@@ -65,10 +64,6 @@ public class SnomedRefSetAdapterFactory extends TypeSafeAdapterFactory {
 						.type(refSet.getType()) 
 						.referencedComponentType(refSet.getReferencedComponentType())
 						.structural(refSet instanceof SnomedStructuralRefSet);
-	
-				if (refSet instanceof SnomedMappingRefSet) {
-					builder.mapTargetComponentType(((SnomedMappingRefSet) refSet).getMapTargetComponentType());
-				}
 				
 				refSetIndexEntry = builder.build();
 			}

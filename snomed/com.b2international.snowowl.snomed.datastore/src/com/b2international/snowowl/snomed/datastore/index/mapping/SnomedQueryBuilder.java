@@ -109,22 +109,6 @@ public class SnomedQueryBuilder extends QueryBuilderBase<SnomedQueryBuilder> {
 		return addToQuery(SnomedMappings.active(), 0);
 	}
 
-	public SnomedQueryBuilder relationshipType(String value) {
-		return relationshipType(Long.valueOf(value));
-	}
-	
-	public SnomedQueryBuilder relationshipType(Long value) {
-		return addToQuery(SnomedMappings.relationshipType(), value);
-	}
-
-	public SnomedQueryBuilder relationshipCharacteristicType(String value) {
-		return relationshipCharacteristicType(Long.valueOf(value));
-	}
-	
-	public SnomedQueryBuilder relationshipCharacteristicType(Long value) {
-		return addToQuery(SnomedMappings.relationshipCharacteristicType(), value);
-	}
-
 	public SnomedQueryBuilder descriptionType(String value) {
 		return descriptionType(Long.valueOf(value));
 	}
@@ -241,12 +225,36 @@ public class SnomedQueryBuilder extends QueryBuilderBase<SnomedQueryBuilder> {
 		return addToQuery(SnomedMappings.descriptionCaseSignificance(), caseSignificanceId);
 	}
 
+	public SnomedQueryBuilder relationshipSource(final String sourceId) {
+		return relationshipSource(Long.valueOf(sourceId));
+	}
+	
 	public SnomedQueryBuilder relationshipSource(final Long sourceId) {
 		return addToQuery(SnomedMappings.relationshipSource(), sourceId);
 	}
 
+	public SnomedQueryBuilder relationshipDestination(final String destinationId) {
+		return relationshipDestination(Long.valueOf(destinationId));
+	}
+	
 	public SnomedQueryBuilder relationshipDestination(final Long destinationId) {
 		return addToQuery(SnomedMappings.relationshipDestination(), destinationId);
+	}
+
+	public SnomedQueryBuilder relationshipType(String value) {
+		return relationshipType(Long.valueOf(value));
+	}
+
+	public SnomedQueryBuilder relationshipType(Long value) {
+		return addToQuery(SnomedMappings.relationshipType(), value);
+	}
+
+	public SnomedQueryBuilder relationshipCharacteristicType(String value) {
+		return relationshipCharacteristicType(Long.valueOf(value));
+	}
+
+	public SnomedQueryBuilder relationshipCharacteristicType(Long value) {
+		return addToQuery(SnomedMappings.relationshipCharacteristicType(), value);
 	}
 
 	public SnomedQueryBuilder relationshipGroup(final Integer group) {

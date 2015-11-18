@@ -20,9 +20,7 @@ import java.util.Set;
 
 import org.apache.lucene.document.Document;
 
-import com.b2international.snowowl.datastore.index.mapping.Mappings;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
-import com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants;
 import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedMappings;
 import com.b2international.snowowl.snomed.mrcm.CardinalityPredicate;
 import com.b2international.snowowl.snomed.mrcm.CompositeConceptSetDefinition;
@@ -240,7 +238,7 @@ public abstract class PredicateUtils {
 		
 		public static ConstraintDomain of(Document conceptDoc) {
 			final Long componentId = SnomedMappings.id().getValue(conceptDoc);
-			final String predicateKey = Mappings.stringField(SnomedIndexBrowserConstants.COMPONENT_REFERRING_PREDICATE).getValue(conceptDoc);
+			final String predicateKey = SnomedMappings.componentReferringPredicate().getValue(conceptDoc);
 			final List<String> segments = Splitter.on(PREDICATE_SEPARATOR).limit(2).splitToList(predicateKey);
 			final long storageKey = Long.parseLong(segments.get(0));
 			final String predicateKeySuffix = segments.get(1);

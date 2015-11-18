@@ -25,10 +25,8 @@ import org.apache.lucene.document.Document;
 import com.b2international.commons.BooleanUtils;
 import com.b2international.snowowl.core.CoreTerminologyBroker;
 import com.b2international.snowowl.core.api.IComponent;
-import com.b2international.snowowl.datastore.index.mapping.Mappings;
 import com.b2international.snowowl.snomed.datastore.IRefSetComponent;
 import com.b2international.snowowl.snomed.datastore.SnomedRefSetUtil;
-import com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants;
 import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedMappings;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType;
 
@@ -51,16 +49,14 @@ public class SnomedRefSetIndexEntry extends SnomedIndexEntry implements IRefSetC
 				.active(BooleanUtils.valueOf(SnomedMappings.active().getValue(doc).intValue())) 
 				.released(BooleanUtils.valueOf(SnomedMappings.released().getValue(doc).intValue()))
 				.effectiveTimeLong(SnomedMappings.effectiveTime().getValue(doc))
-				.type(SnomedRefSetType.get(Mappings.intField(SnomedIndexBrowserConstants.REFERENCE_SET_TYPE).getValue(doc)))
-				.referencedComponentType(Mappings.intField(SnomedIndexBrowserConstants.REFERENCE_SET_REFERENCED_COMPONENT_TYPE).getShortValue(doc));
-				// TODO: .mapTargetComponentType(...) is not indexed yet
+				.type(SnomedRefSetType.get(SnomedMappings.refSetType().getValue(doc)))
+				.referencedComponentType(SnomedMappings.refSetReferencedComponentType().getShortValue(doc));
 	}
 
 	public static class Builder extends AbstractBuilder<Builder> {
 
 		private SnomedRefSetType type;
 		private short referencedComponentType;
-		private short mapTargetComponentType = CoreTerminologyBroker.UNSPECIFIED_NUMBER_SHORT;
 		private boolean structural;
 
 		private Builder() {
@@ -82,11 +78,6 @@ public class SnomedRefSetIndexEntry extends SnomedIndexEntry implements IRefSetC
 			return getSelf();
 		}
 
-		public Builder mapTargetComponentType(final short mapTargetComponentType) {
-			this.mapTargetComponentType = mapTargetComponentType;
-			return getSelf();
-		}
-
 		public Builder structural(final boolean structural) {
 			this.structural = structural;
 			return getSelf();
@@ -102,14 +93,12 @@ public class SnomedRefSetIndexEntry extends SnomedIndexEntry implements IRefSetC
 					effectiveTimeLong, 
 					type, 
 					referencedComponentType, 
-					mapTargetComponentType, 
 					structural);
 		}
 	}
 
 	private final SnomedRefSetType type;
 	private final short referencedComponentType;
-	private final short mapTargetComponentType;
 	private final boolean structural;
 
 	private SnomedRefSetIndexEntry(final String id, 
@@ -121,7 +110,6 @@ public class SnomedRefSetIndexEntry extends SnomedIndexEntry implements IRefSetC
 			final long effectiveTimeLong, 
 			final SnomedRefSetType type, 
 			final short referencedComponentType,
-			final short mapTargetComponentType, 
 			final boolean structural) {
 
 		super(id, 
@@ -134,11 +122,9 @@ public class SnomedRefSetIndexEntry extends SnomedIndexEntry implements IRefSetC
 				effectiveTimeLong);
 
 		checkArgument(referencedComponentType >= CoreTerminologyBroker.UNSPECIFIED_NUMBER_SHORT, "Referenced component type '%s' is invalid.", referencedComponentType);
-		checkArgument(mapTargetComponentType >= CoreTerminologyBroker.UNSPECIFIED_NUMBER_SHORT, "Map target component type '%s' is invalid.", referencedComponentType);
 
 		this.type = checkNotNull(type, "Reference set type may not be null.");
 		this.referencedComponentType = referencedComponentType;
-		this.mapTargetComponentType = mapTargetComponentType;
 		this.structural = structural;
 	}
 
@@ -154,16 +140,6 @@ public class SnomedRefSetIndexEntry extends SnomedIndexEntry implements IRefSetC
 	 */
 	public short getReferencedComponentType() {
 		return referencedComponentType;
-	}
-
-	/**
-	 * @return the terminology component identifier value for the map target, or
-	 *         {@link CoreTerminologyBroker#UNSPECIFIED_NUMBER_SHORT} if not known (or the reference set is not a map)
-	 * 
-	 * @see #isMapping()
-	 */
-	public short getMapTargetComponentType() {
-		return mapTargetComponentType;
 	}
 
 	/**
@@ -186,7 +162,6 @@ public class SnomedRefSetIndexEntry extends SnomedIndexEntry implements IRefSetC
 		return toStringHelper()
 				.add("type", type)
 				.add("referencedComponentType", referencedComponentType)
-				.add("mapTargetComponentType", mapTargetComponentType)
 				.add("structural", structural)
 				.toString();
 	}

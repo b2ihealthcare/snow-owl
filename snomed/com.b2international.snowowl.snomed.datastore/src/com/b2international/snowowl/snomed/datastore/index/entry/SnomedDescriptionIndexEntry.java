@@ -27,7 +27,6 @@ import com.b2international.snowowl.core.api.IComponent;
 import com.b2international.snowowl.core.api.index.IIndexEntry;
 import com.b2international.snowowl.datastore.index.mapping.Mappings;
 import com.b2international.snowowl.snomed.core.domain.Acceptability;
-import com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants;
 import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedMappings;
 import com.google.common.base.Objects;
 import com.google.common.collect.ImmutableMap;
@@ -49,11 +48,11 @@ public class SnomedDescriptionIndexEntry extends SnomedIndexEntry implements ICo
 				.term(Mappings.label().getValue(doc)) 
 				.moduleId(SnomedMappings.module().getValueAsString(doc)) 
 				.storageKey(Mappings.storageKey().getValue(doc))
-				.released(BooleanUtils.valueOf(doc.getField(SnomedIndexBrowserConstants.COMPONENT_RELEASED).numericValue().intValue()))
+				.released(BooleanUtils.valueOf(SnomedMappings.released().getValue(doc)))
 				.active(BooleanUtils.valueOf(SnomedMappings.active().getValue(doc)))
 				.typeId(SnomedMappings.descriptionType().getValueAsString(doc))
 				.conceptId(SnomedMappings.descriptionConcept().getValueAsString(doc))
-				.caseSignificanceId(doc.getField(SnomedIndexBrowserConstants.DESCRIPTION_CASE_SIGNIFICANCE_ID).stringValue())
+				.caseSignificanceId(SnomedMappings.descriptionCaseSignificance().getValueAsString(doc))
 				.effectiveTimeLong(SnomedMappings.effectiveTime().getValue(doc));
 	}
 

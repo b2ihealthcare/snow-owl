@@ -37,7 +37,6 @@ import com.b2international.snowowl.datastore.index.AbstractIndexService;
 import com.b2international.snowowl.datastore.index.DocumentWithScore;
 import com.b2international.snowowl.datastore.index.IndexQueryBuilder;
 import com.b2international.snowowl.datastore.index.IndexUtils;
-import com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptIndexEntry;
 import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedMappings;
 import com.google.common.base.Optional;
@@ -60,7 +59,7 @@ public class SnomedDOIQueryAdapter extends SnomedConceptIndexQueryAdapter implem
 	
 	private static final long serialVersionUID = -3044881906076704431L;
 
-	private static final ValueSource DOI_VALUE_SOURCE = new FloatFieldSource(SnomedIndexBrowserConstants.CONCEPT_DEGREE_OF_INTEREST);
+	private static final ValueSource DOI_VALUE_SOURCE = new FloatFieldSource(SnomedMappings.conceptDegreeOfInterest().fieldName());
 	
 	private final String userId;
 	@Nullable private final Query restrictionQuery;
