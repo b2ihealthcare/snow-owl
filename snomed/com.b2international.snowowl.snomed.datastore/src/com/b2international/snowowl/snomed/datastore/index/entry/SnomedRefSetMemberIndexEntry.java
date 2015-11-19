@@ -726,7 +726,7 @@ public class SnomedRefSetMemberIndexEntry extends SnomedIndexEntry implements IC
 	}
 	
 	public String getTargetComponentId() {
-		return getStringField(SnomedMappings.memberMapTargetComponentId().fieldName());
+		return getStringField(SnomedMappings.memberTargetComponentId().fieldName());
 	}
 
 	public RelationshipRefinability getRefinability() {

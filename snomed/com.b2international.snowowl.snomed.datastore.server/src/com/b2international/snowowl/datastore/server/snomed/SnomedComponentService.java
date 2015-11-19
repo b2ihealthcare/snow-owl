@@ -141,7 +141,6 @@ import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemb
 import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedMappings;
 import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedQueryBuilder;
 import com.b2international.snowowl.snomed.datastore.index.refset.SnomedRefSetMemberIndexQueryAdapter;
-import com.b2international.snowowl.snomed.datastore.index.refset.SnomedRefSetMemberIndexQueryAdapter;
 import com.b2international.snowowl.snomed.datastore.services.ISnomedComponentService;
 import com.b2international.snowowl.snomed.datastore.snor.PredicateIndexEntry;
 import com.b2international.snowowl.snomed.mrcm.DataType;
@@ -220,13 +219,17 @@ public class SnomedComponentService implements ISnomedComponentService, IPostSto
 			.relationshipDestinationNegated()
 			.build();
 	
-	private static final Set<String> DESCRIPTION_FIELDS_TO_LOAD = SnomedMappings.fieldsToLoad().descriptionType().descriptionConcept().label().build();
+	private static final Set<String> DESCRIPTION_FIELDS_TO_LOAD = SnomedMappings.fieldsToLoad()
+			.descriptionTerm()
+			.descriptionType()
+			.descriptionConcept()
+			.build();
 	
 	private static final Set<String> DESCRIPTION_EXTENDED_FIELDS_TO_LOAD = SnomedMappings.fieldsToLoad()
 			.id()
 			.effectiveTime()
 			.storageKey()
-			.label()
+			.descriptionTerm()
 			.descriptionConcept()
 			.descriptionType()
 			.build();
@@ -680,7 +683,7 @@ public class SnomedComponentService implements ISnomedComponentService, IPostSto
 				final Document descriptionDoc = searcher.doc(descriptionDocIdsItr.getDocID(), DESCRIPTION_EXTENDED_FIELDS_TO_LOAD);
 				descriptionProperties.add(new String[] {
 					SnomedMappings.id().getValueAsString(descriptionDoc),
-					Mappings.label().getValue(descriptionDoc),
+					SnomedMappings.descriptionTerm().getValue(descriptionDoc),
 					SnomedMappings.descriptionConcept().getValueAsString(descriptionDoc),
 					SnomedMappings.descriptionType().getValueAsString(descriptionDoc),
 					EffectiveTimes.format(SnomedMappings.effectiveTime().getValue(descriptionDoc))
@@ -785,7 +788,7 @@ public class SnomedComponentService implements ISnomedComponentService, IPostSto
 		final ScoreDoc scoreDoc = topDocs.scoreDocs[0];
 		final Document doc = getIndexServerService().document(branchPath, scoreDoc.doc, DESCRIPTION_FIELDS_TO_LOAD);
 		
-		final String label = Mappings.label().getValue(doc);
+		final String label = SnomedMappings.descriptionTerm().getValue(doc);
 		final String conceptId = SnomedMappings.descriptionConcept().getValueAsString(doc);
 		final String typeId = SnomedMappings.descriptionType().getValueAsString(doc);
 		return new String[] { conceptId, typeId, label };
@@ -812,7 +815,7 @@ public class SnomedComponentService implements ISnomedComponentService, IPostSto
 		for (final ScoreDoc scoreDoc : topDocs.scoreDocs) {
 			final Document doc = getIndexServerService().document(branchPath, scoreDoc.doc, DESCRIPTION_EXTENDED_FIELDS_TO_LOAD);
 			final String descriptionId = SnomedMappings.id().getValueAsString(doc);
-			final String label = Mappings.label().getValue(doc);
+			final String label = SnomedMappings.descriptionTerm().getValue(doc);
 			final String conceptId = SnomedMappings.descriptionConcept().getValueAsString(doc);
 			final String typeId = SnomedMappings.descriptionType().getValueAsString(doc);
 			final String storageKey = Mappings.storageKey().getValueAsString(doc);

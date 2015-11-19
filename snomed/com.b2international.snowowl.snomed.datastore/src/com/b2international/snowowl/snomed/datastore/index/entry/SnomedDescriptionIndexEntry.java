@@ -18,6 +18,7 @@ package com.b2international.snowowl.snomed.datastore.index.entry;
 import static com.google.common.base.Preconditions.checkNotNull;
 
 import java.io.Serializable;
+import java.util.List;
 import java.util.Map;
 
 import org.apache.lucene.document.Document;
@@ -43,10 +44,11 @@ public class SnomedDescriptionIndexEntry extends SnomedIndexEntry implements ICo
 	}
 	
 	public static Builder builder(final Document doc) {
-		return builder()
+		final Builder builder = builder()
 				.id(SnomedMappings.id().getValueAsString(doc)) 
-				.term(Mappings.label().getValue(doc)) 
-				.moduleId(SnomedMappings.module().getValueAsString(doc)) 
+				.term(SnomedMappings.descriptionTerm().getValue(doc)) 
+				.moduleId(SnomedMappings.module().getValueAsString(doc))
+				.languageCode(SnomedMappings.descriptionLanguageCode().getValue(doc))
 				.storageKey(Mappings.storageKey().getValue(doc))
 				.released(BooleanUtils.valueOf(SnomedMappings.released().getValue(doc)))
 				.active(BooleanUtils.valueOf(SnomedMappings.active().getValue(doc)))
@@ -54,13 +56,25 @@ public class SnomedDescriptionIndexEntry extends SnomedIndexEntry implements ICo
 				.conceptId(SnomedMappings.descriptionConcept().getValueAsString(doc))
 				.caseSignificanceId(SnomedMappings.descriptionCaseSignificance().getValueAsString(doc))
 				.effectiveTimeLong(SnomedMappings.effectiveTime().getValue(doc));
+		
+		final List<String> preferredRefSetIds = SnomedMappings.descriptionPreferredReferenceSetId().getValuesAsString(doc);
+		for (final String preferredRefSetId : preferredRefSetIds) {
+			builder.acceptability(preferredRefSetId, Acceptability.PREFERRED);
+		}
+		
+		final List<String> acceptableRefSetIds = SnomedMappings.descriptionAcceptableReferenceSetId().getValuesAsString(doc);
+		for (final String acceptableRefSetId : acceptableRefSetIds) {
+			builder.acceptability(acceptableRefSetId, Acceptability.ACCEPTABLE);
+		}
+		
+		return builder;
 	}
 
 	public static class Builder extends AbstractBuilder<Builder> {
 
 		private String term;
 		private String conceptId;
-		private String languageCode = "en"; // FIXME: Should not be optional once it is indexed
+		private String languageCode;
 		private String typeId;
 		private String caseSignificanceId;
 		private final ImmutableMap.Builder<String, Acceptability> acceptabilityMapBuilder = ImmutableMap.builder();

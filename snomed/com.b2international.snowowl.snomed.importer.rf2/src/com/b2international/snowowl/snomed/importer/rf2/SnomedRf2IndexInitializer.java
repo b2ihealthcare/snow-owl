@@ -221,14 +221,14 @@ public class SnomedRf2IndexInitializer extends Job {
 		acceptableMemberChanges = HashMultimap.create();
 		visitedRefSets = Maps.newHashMap();
 		skippedReferenceSets = Sets.newHashSet();
-		
-		delegateMonitor.setTaskName("Collecting reference set memberships...");
-		collectRefSetMembershipAndMapping(importUnits);
-		delegateMonitor.worked(1);
-		
+
 		LOGGER.info("Gathering mappings between descriptions and concepts...");
 		collectDescriptionToConceptIds(importUnits);
 		LOGGER.info("Description to concept mapping successfully finished.");
+
+		delegateMonitor.setTaskName("Collecting reference set memberships...");
+		collectRefSetMembershipAndMapping(importUnits);
+		delegateMonitor.worked(1);
 		
 		LOGGER.info("Pre-processing phase successfully finished.");
 		LOGGER.info("Indexing phase [2 of 3]...");
@@ -280,11 +280,11 @@ public class SnomedRf2IndexInitializer extends Job {
 					collectMembership(unit, mappingRefSetMemberChanges);
 					break;
 				case LANGUAGE_TYPE_REFSET:
-					LOGGER.info("Collecting language type reference set member changes.");
+					LOGGER.info("Collecting language type reference set membership changes.");
 					collectLanguageMembership(unit);
 					break;
 				default:
-					//ignored
+					break;
 			}
 		}
 		
@@ -373,11 +373,15 @@ public class SnomedRf2IndexInitializer extends Job {
 						
 						String conceptId = nonFsnIdToConceptIdMap.get(descriptionId);
 						if (StringUtils.isEmpty(conceptId)) {
+							// FIXME: This lookup can be avoided if the description is an FSN in the current RF2 file, and did not exist previously 
 							 final String[] descriptionProperties = ApplicationContext.getServiceForClass(ISnomedComponentService.class).getDescriptionProperties(branchPath, descriptionId);
-							 final String typeId = descriptionProperties[1];
 							 
-							 if (!Concepts.FULLY_SPECIFIED_NAME.equals(typeId) && !Concepts.TEXT_DEFINITION.equals(typeId)) { 
-								 conceptId = descriptionProperties[0];
+							 if (descriptionProperties != null) {
+								 final String typeId = descriptionProperties[1];
+								 
+								 if (!Concepts.FULLY_SPECIFIED_NAME.equals(typeId) && !Concepts.TEXT_DEFINITION.equals(typeId)) { 
+									 conceptId = descriptionProperties[0];
+								 }
 							 }
 						}
 						

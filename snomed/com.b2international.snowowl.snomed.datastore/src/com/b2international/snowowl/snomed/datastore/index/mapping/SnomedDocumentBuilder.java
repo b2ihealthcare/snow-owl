@@ -331,7 +331,7 @@ public final class SnomedDocumentBuilder extends DocumentBuilderBase<SnomedDocum
 	}
 
 	public SnomedDocumentBuilder descriptionTerm(final String term) {
-		return addToDoc(SnomedMappings.descriptionTerm(), term);
+		return update(SnomedMappings.descriptionTerm(), term);
 	}
 	
 	public SnomedDocumentBuilder descriptionLanguageCode(final String languageCode) {
@@ -343,7 +343,7 @@ public final class SnomedDocumentBuilder extends DocumentBuilderBase<SnomedDocum
 	}
 
 	public SnomedDocumentBuilder descriptionCaseSignificance(final Long caseSignificanceId) {
-		return addToDoc(SnomedMappings.descriptionCaseSignificance(), caseSignificanceId);
+		return update(SnomedMappings.descriptionCaseSignificance(), caseSignificanceId);
 	}
 
 	public SnomedDocumentBuilder descriptionPreferredReferenceSetId(final Long refSetId) {
