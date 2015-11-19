@@ -17,8 +17,10 @@ package com.b2international.snowowl.snomed.datastore.id.cis.memory;
 
 import org.junit.Before;
 
+import com.b2international.snowowl.datastore.store.MemStore;
 import com.b2international.snowowl.snomed.datastore.id.AbstractBulkIdentifierServiceTest;
 import com.b2international.snowowl.snomed.datastore.id.ISnomedIdentifierService;
+import com.b2international.snowowl.snomed.datastore.id.cis.SctId;
 import com.b2international.snowowl.snomed.datastore.id.gen.ItemIdGenerationStrategy;
 import com.b2international.snowowl.snomed.datastore.id.memory.DefaultSnomedIdentifierServiceImpl;
 import com.b2international.snowowl.snomed.datastore.id.reservations.ISnomedIdentiferReservationService;
@@ -30,6 +32,8 @@ import com.b2international.snowowl.snomed.datastore.internal.id.reservations.Sno
 public class BulkInMemorySnomedIdentifierServiceImplTest extends AbstractBulkIdentifierServiceTest {
 
 	private ISnomedIdentifierService service;
+	
+	private final MemStore<SctId> store = new MemStore<>();
 
 	@Override
 	protected ISnomedIdentifierService getIdentifierService() {
@@ -39,7 +43,7 @@ public class BulkInMemorySnomedIdentifierServiceImplTest extends AbstractBulkIde
 	@Before
 	public void init() {
 		final ISnomedIdentiferReservationService reservationService = new SnomedIdentifierReservationServiceImpl();
-		service = new DefaultSnomedIdentifierServiceImpl(ItemIdGenerationStrategy.RANDOM, null, reservationService);
+		service = new DefaultSnomedIdentifierServiceImpl(store, ItemIdGenerationStrategy.RANDOM, null, reservationService);
 	}
 
 }
