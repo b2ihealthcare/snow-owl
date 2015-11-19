@@ -15,12 +15,14 @@
  */
 package com.b2international.snowowl.snomed.datastore.id;
 
+import java.io.Serializable;
+
 import com.b2international.snowowl.core.terminology.ComponentCategory;
 
 /**
  * @since 4.0
  */
-public interface SnomedIdentifier {
+public interface SnomedIdentifier extends Serializable {
 
 	public long getItemId();
 
