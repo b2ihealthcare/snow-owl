@@ -112,7 +112,7 @@ public class SnomedIdentifierBootstrap extends DefaultBootstrapFragment {
 	private IndexStore<SctId> getIndexStore(final Environment env) {
 		final File dir = env.getDataDirectory()
 				.toPath()
-				.resolve(Paths.get("indexes", "identifiers", "snomed"))
+				.resolve(Paths.get("indexes", "snomed", "identifiers"))
 				.toFile();
 		return new IndexStore<>(dir, new ObjectMapper(), SctId.class);
 	}
