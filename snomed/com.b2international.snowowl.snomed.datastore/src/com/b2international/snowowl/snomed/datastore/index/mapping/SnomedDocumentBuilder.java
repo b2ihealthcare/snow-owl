@@ -120,6 +120,7 @@ public final class SnomedDocumentBuilder extends DocumentBuilderBase<SnomedDocum
 				.add(SnomedMappings.memberSerializedValue())
 				.add(SnomedMappings.memberUomId())
 				.add(SnomedMappings.memberCharacteristicTypeId())
+				.add(SnomedMappings.memberDataTypeLabel())
 				.add(SnomedMappings.memberDataTypeOrdinal())
 				.add(SnomedMappings.memberContainerModuleId());
 				break;
@@ -157,7 +158,6 @@ public final class SnomedDocumentBuilder extends DocumentBuilderBase<SnomedDocum
 			case SnomedTerminologyComponentConstants.CONCEPT_NUMBER:
 			case SnomedTerminologyComponentConstants.REFSET_NUMBER:
 				fieldsToCopy
-				.add(SnomedMappings.refSetStorageKey())
 				.add(SnomedMappings.ancestor())
 				.add(SnomedMappings.parent())
 				.add(SnomedMappings.iconId())
@@ -169,6 +169,9 @@ public final class SnomedDocumentBuilder extends DocumentBuilderBase<SnomedDocum
 				.add(SnomedMappings.exhaustive())
 				.add(SnomedMappings.conceptDegreeOfInterest())
 				.add(SnomedMappings.componentReferringPredicate())
+				.add(Mappings.compareUniqueKey())
+				.add(Mappings.compareIgnoreUniqueKey())
+				.add(SnomedMappings.refSetStorageKey())
 				.add(SnomedMappings.refSetType())
 				.add(SnomedMappings.refSetReferencedComponentType())
 				.add(SnomedMappings.refSetStructural())
@@ -474,8 +477,8 @@ public final class SnomedDocumentBuilder extends DocumentBuilderBase<SnomedDocum
 		return addToDoc(SnomedMappings.memberReferencedComponentType(), referencedComponentType);
 	}
 
-	public SnomedDocumentBuilder memberTargetComponentId(final String mapTargetComponentId) {
-		return update(SnomedMappings.memberTargetComponentId(), mapTargetComponentId);
+	public SnomedDocumentBuilder memberTargetComponentId(final String targetComponentId) {
+		return update(SnomedMappings.memberTargetComponentId(), targetComponentId);
 	}
 
 	public SnomedDocumentBuilder memberValueId(final String valueId) {

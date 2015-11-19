@@ -313,7 +313,8 @@ public abstract class SnomedRefSetUtil {
 			case EXTENDED_MAP:
 				return SnomedMappings.memberMapTargetComponentId().fieldName();
 			case CONCRETE_DATA_TYPE:
-				return SnomedMappings.memberSerializedValue().fieldName(); // FIXME: Ambiguous naming
+				// FIXME: The previous value was memberDataTypeOrdinal, but this seems to fit better
+				return SnomedMappings.memberSerializedValue().fieldName(); 
 			case DESCRIPTION_TYPE:
 				return SnomedMappings.memberDescriptionFormatId().fieldName();
 			case LANGUAGE:

@@ -149,7 +149,7 @@ public class SnomedServerStatementBrowser extends AbstractSnomedIndexBrowser<Sno
 		checkNotNull(conceptId, "SNOMED CT concept ID cannot be null.");
 		try {
 			final DocIdCollector collector = DocIdCollector.create(service.maxDoc(branchPath));
-			service.search(branchPath, getMatchRelationshipTypeOrValueQuery(conceptId), collector);
+			service.search(branchPath, getRelationshipSourceOrDestinationQuery(conceptId), collector);
 			return createResultObjects(branchPath, collector.getDocIDs().iterator());
 		} catch (final IOException e) {
 			throw new RuntimeException("Error when querying inbound statements of concept. ID: " + conceptId, e);
@@ -441,7 +441,7 @@ public class SnomedServerStatementBrowser extends AbstractSnomedIndexBrowser<Sno
 		checkNotNull(conceptId, "SNOMED CT concept ID cannot be null.");
 
 		final BooleanQuery query = new BooleanQuery(true);
-		query.add(getMatchRelationshipTypeOrValueQuery(conceptId), Occur.MUST);
+		query.add(getRelationshipSourceOrDestinationQuery(conceptId), Occur.MUST);
 		
 		final StatementIdCollector collector = new StatementIdCollector();
 		service.search(branchPath, query, collector);
@@ -478,7 +478,7 @@ public class SnomedServerStatementBrowser extends AbstractSnomedIndexBrowser<Sno
 		checkNotNull(conceptId, "SNOMED CT concept ID cannot be null.");
 
 		final BooleanQuery query = new BooleanQuery(true);
-		query.add(getMatchRelationshipTypeOrValueQuery(conceptId), Occur.MUST);
+		query.add(getRelationshipSourceOrDestinationQuery(conceptId), Occur.MUST);
 		
 		final StatementIdCollector collector = new StatementIdCollector();
 		service.search(branchPath, query, collector);
@@ -501,11 +501,11 @@ public class SnomedServerStatementBrowser extends AbstractSnomedIndexBrowser<Sno
 		}
 	}
 
-	private Query getMatchRelationshipTypeOrValueQuery(final String conceptId) {
+	private Query getRelationshipSourceOrDestinationQuery(final String conceptId) {
 		final Long longConceptId = Long.valueOf(conceptId);
 		return SnomedMappings.newQuery()
-				.relationshipDestination(longConceptId)
 				.relationshipSource(longConceptId)
+				.relationshipDestination(longConceptId)
 				.matchAny();
 	}
 

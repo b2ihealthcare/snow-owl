@@ -25,6 +25,12 @@ public class SnomedFieldsToLoadBuilder extends FieldsToLoadBuilderBase<SnomedFie
 	protected SnomedFieldsToLoadBuilder() {
 		super();
 	}
+	
+	@Override
+	@Deprecated
+	public SnomedFieldsToLoadBuilder label() {
+		throw new UnsupportedOperationException("Label field can not be retrieved for SNOMED CT documents.");
+	}
 
 	public SnomedFieldsToLoadBuilder parent(final String fieldNameSuffix) {
 		return field(SnomedMappings.parent(fieldNameSuffix));

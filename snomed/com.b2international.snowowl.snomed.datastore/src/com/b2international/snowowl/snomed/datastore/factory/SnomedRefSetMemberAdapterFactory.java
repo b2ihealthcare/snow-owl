@@ -100,6 +100,7 @@ public class SnomedRefSetMemberAdapterFactory extends TypeSafeAdapterFactory {
 			@Override
 			public Builder caseSnomedConcreteDataTypeRefSetMember(final SnomedConcreteDataTypeRefSetMember concreteDataTypeMember) {
 				builder.additionalField(SnomedMappings.memberDataTypeLabel().fieldName(), concreteDataTypeMember.getLabel())
+						.additionalField(SnomedMappings.memberDataTypeOrdinal().fieldName(), concreteDataTypeMember.getDataType().ordinal())
 						.additionalField(SnomedMappings.memberSerializedValue().fieldName(), SnomedRefSetUtil.deserializeValue(
 							concreteDataTypeMember.getDataType(), 
 							concreteDataTypeMember.getSerializedValue()))

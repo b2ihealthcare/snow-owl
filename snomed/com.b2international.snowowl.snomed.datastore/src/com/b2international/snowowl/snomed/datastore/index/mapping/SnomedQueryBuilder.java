@@ -353,8 +353,8 @@ public class SnomedQueryBuilder extends QueryBuilderBase<SnomedQueryBuilder> {
 		return addToQuery(SnomedMappings.memberReferencedComponentType(), referencedComponentType);
 	}
 
-	public SnomedQueryBuilder memberTargetComponentId(final String mapTargetComponentId) {
-		return addToQuery(SnomedMappings.memberTargetComponentId(), mapTargetComponentId);
+	public SnomedQueryBuilder memberTargetComponentId(final String targetComponentId) {
+		return addToQuery(SnomedMappings.memberTargetComponentId(), targetComponentId);
 	}
 
 	public SnomedQueryBuilder memberValueId(final String valueId) {

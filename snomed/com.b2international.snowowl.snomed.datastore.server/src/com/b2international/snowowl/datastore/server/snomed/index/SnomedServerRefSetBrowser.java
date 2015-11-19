@@ -593,7 +593,7 @@ public class SnomedServerRefSetBrowser extends AbstractSnomedIndexBrowser<Snomed
 	public boolean isRegularRefSet(final IBranchPath branchPath, final long storageKey) {
 		checkNotNull(branchPath, "branchPath");
 		checkArgument(storageKey > NO_STORAGE_KEY, "Storage key should be a positive integer.");
-		final Query query = SnomedMappings.newQuery().refSetStorageKey(storageKey).refSet().refSetStructural(true).matchAll();
+		final Query query = SnomedMappings.newQuery().refSetStorageKey(storageKey).refSet().refSetStructural(false).matchAll();
 		return service.getHitCount(branchPath, query, null) > 0;
 	}
 	

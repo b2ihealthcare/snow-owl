@@ -185,11 +185,11 @@ public class Mappings {
 		return new TextIndexField(fieldName, false);
 	}
 	
-	public static StoredOnlyDocValuesLongIndexField<Integer> storedOnlyIntFieldWithDocValues(String fieldName) {
+	public static NumericDocValuesIndexField<Integer> storedOnlyIntFieldWithDocValues(String fieldName) {
 		return new StoredOnlyDocValuesLongIndexField<>(Mappings.storedOnlyIntField(fieldName));
 	}
 
-	public static StoredOnlyDocValuesLongIndexField<Long> storedOnlyLongFieldWithDocValues(String fieldName) {
+	public static NumericDocValuesIndexField<Long> storedOnlyLongFieldWithDocValues(String fieldName) {
 		return new StoredOnlyDocValuesLongIndexField<>(Mappings.storedOnlyLongField(fieldName));
 	}
 	
