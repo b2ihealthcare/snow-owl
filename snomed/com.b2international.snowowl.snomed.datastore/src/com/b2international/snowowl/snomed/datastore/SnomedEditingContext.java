@@ -578,9 +578,12 @@ public class SnomedEditingContext extends BaseSnomedEditingContext {
 	}
 	
 	private void releaseIds() {
-		final IEventBus bus = ApplicationContext.getInstance().getServiceChecked(IEventBus.class);
-		SnomedIdentifierBulkReleaseRequest
-				.prepareBulkRelease(BranchPathUtils.createActivePath(SnomedPackage.eINSTANCE).getPath(), newComponentIds).executeSync(bus);
+		if (!newComponentIds.isEmpty()) {
+			final IEventBus bus = ApplicationContext.getInstance().getServiceChecked(IEventBus.class);
+			SnomedIdentifierBulkReleaseRequest
+					.prepareBulkRelease(BranchPathUtils.createActivePath(SnomedPackage.eINSTANCE).getPath(), newComponentIds)
+					.executeSync(bus);
+		}
 	}
 
 	/**
