@@ -42,16 +42,9 @@ public class RefSetMemberChange implements Comparable<RefSetMemberChange> {
 	public RefSetMemberChange(final long refSetId, final MemberChangeKind changeKind, final SnomedRefSetType type) {
 		this.type = Preconditions.checkNotNull(type, "SNOMED CT reference set type argument cannot be null.");
 		this.refSetId = Preconditions.checkNotNull(refSetId, "SNOMED CT reference set identifier concept ID argument cannot be null.");
-		this.changeKind = Preconditions.checkNotNull(changeKind, "Reference set member change king argument cannot be null.");
-		Preconditions.checkState(isValidType(type), "Unsupported reference set type: " + type);
+		this.changeKind = Preconditions.checkNotNull(changeKind, "Reference set member change kind argument cannot be null.");
 	}
 
-	public static boolean isValidType(final SnomedRefSetType type) {
-		return SnomedRefSetType.SIMPLE.equals(type)
-		|| SnomedRefSetType.ATTRIBUTE_VALUE.equals(type)
-		|| SnomedRefSetType.SIMPLE_MAP.equals(type);
-	}
-	
 	public MemberChangeKind getChangeKind() {
 		return changeKind;
 	}
@@ -88,5 +81,4 @@ public class RefSetMemberChange implements Comparable<RefSetMemberChange> {
 	public int compareTo(final RefSetMemberChange o) {
 		return changeKind.compareTo(o.changeKind);
 	}
-	
 }

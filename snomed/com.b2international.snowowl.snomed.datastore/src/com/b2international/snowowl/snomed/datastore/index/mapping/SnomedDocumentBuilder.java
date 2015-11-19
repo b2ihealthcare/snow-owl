@@ -346,6 +346,14 @@ public final class SnomedDocumentBuilder extends DocumentBuilderBase<SnomedDocum
 		return addToDoc(SnomedMappings.descriptionCaseSignificance(), caseSignificanceId);
 	}
 
+	public SnomedDocumentBuilder descriptionPreferredReferenceSetId(final Long refSetId) {
+		return addToDoc(SnomedMappings.descriptionPreferredReferenceSetId(), refSetId);
+	}
+	
+	public SnomedDocumentBuilder descriptionAcceptableReferenceSetId(final Long refSetId) {
+		return addToDoc(SnomedMappings.descriptionAcceptableReferenceSetId(), refSetId);
+	}
+	
 	public SnomedDocumentBuilder relationshipSource(final Long sourceId) {
 		return addToDoc(SnomedMappings.relationshipSource(), sourceId);
 	}
