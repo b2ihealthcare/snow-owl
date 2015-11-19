@@ -40,11 +40,11 @@ public abstract class BaseSnomedComponentCreateRequest<B> extends BaseRequest<Tr
 		return moduleId;
 	}
 
-	public void setIdGenerationStrategy(final IdGenerationStrategy idGenerationStrategy) {
+	void setIdGenerationStrategy(final IdGenerationStrategy idGenerationStrategy) {
 		this.idGenerationStrategy = idGenerationStrategy;
 	}
 
-	public void setModuleId(final String moduleId) {
+	void setModuleId(final String moduleId) {
 		this.moduleId = moduleId;
 	}
 	

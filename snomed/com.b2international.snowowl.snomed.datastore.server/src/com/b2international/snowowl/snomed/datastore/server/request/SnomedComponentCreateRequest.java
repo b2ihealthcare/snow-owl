@@ -19,7 +19,6 @@ import com.b2international.snowowl.snomed.core.domain.IdGenerationStrategy;
 
 /**
  * @since 4.0
- * @deprecated - will be unsupported in 4.5
  */
 public interface SnomedComponentCreateRequest {
 

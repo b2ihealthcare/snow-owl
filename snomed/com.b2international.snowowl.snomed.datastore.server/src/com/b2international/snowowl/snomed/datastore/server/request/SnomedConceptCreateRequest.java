@@ -48,7 +48,10 @@ import com.google.common.collect.HashMultiset;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Multiset;
 
-public class SnomedConceptCreateRequest extends BaseSnomedComponentCreateRequest<ISnomedConcept> {
+/**
+ * @since 4.5
+ */
+public final class SnomedConceptCreateRequest extends BaseSnomedComponentCreateRequest<ISnomedConcept> {
 
 	@Size(min = 2)
 	private List<SnomedDescriptionCreateRequest> descriptions = Collections.emptyList();
@@ -65,23 +68,23 @@ public class SnomedConceptCreateRequest extends BaseSnomedComponentCreateRequest
 	SnomedConceptCreateRequest() {
 	}
 	
-	public String getParentId() {
+	String getParentId() {
 		return parentId;
 	}
 	
-	public void setDefinitionStatus(DefinitionStatus definitionStatus) {
+	void setDefinitionStatus(DefinitionStatus definitionStatus) {
 		this.definitionStatus = definitionStatus;
 	}
 	
-	public void setParentId(final String parentId) {
+	void setParentId(final String parentId) {
 		this.parentId = parentId;
 	}
 
-	public void setIsAIdGenerationStrategy(final IdGenerationStrategy isAIdGenerationStrategy) {
+	void setIsAIdGenerationStrategy(final IdGenerationStrategy isAIdGenerationStrategy) {
 		this.isAIdGenerationStrategy = isAIdGenerationStrategy;
 	}
 
-	public void setDescriptions(final List<SnomedDescriptionCreateRequest> descriptions) {
+	void setDescriptions(final List<SnomedDescriptionCreateRequest> descriptions) {
 		this.descriptions = ImmutableList.copyOf(descriptions);
 	}
 
