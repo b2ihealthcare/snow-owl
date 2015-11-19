@@ -102,11 +102,10 @@ public class SnomedServerRefSetBrowser extends AbstractSnomedIndexBrowser<Snomed
 	private static final Set<String> REFERENCE_SET_ID_FIELD = SnomedMappings.fieldsToLoad().conceptReferringRefSetId().build();
 	private static final Set<String> COMPONENT_ID_FIELD = SnomedMappings.fieldsToLoad().id().build();
 	private static final Set<String> REFERENCE_SET_TYPE_FIELD = SnomedMappings.fieldsToLoad().refSetType().build();
-	private static final Set<String> FIELDS_TO_LOAD_FOR_EXTENDED_COMPONENT = SnomedMappings.fieldsToLoad().id().label().iconId().build();
+	private static final Set<String> FIELDS_TO_LOAD_FOR_EXTENDED_COMPONENT = SnomedMappings.fieldsToLoad().id().iconId().build();
 	
 	private static final Set<String> FIELD_NAMES_TO_LOAD = SnomedMappings.fieldsToLoad()
 			.id()
-			.label()
 			.refSetStorageKey()
 			.iconId()
 			.module()

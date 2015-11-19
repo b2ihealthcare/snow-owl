@@ -57,7 +57,6 @@ public class CollectReferencedComponentMapRunnable implements Runnable {
 			.storageKey()
 			.effectiveTime()
 			.module()
-			.label()
 			.memberUuid()
 			.build();
 	

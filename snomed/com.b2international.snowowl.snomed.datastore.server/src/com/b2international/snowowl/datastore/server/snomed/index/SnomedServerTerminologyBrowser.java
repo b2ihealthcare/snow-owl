@@ -92,7 +92,6 @@ public class SnomedServerTerminologyBrowser extends AbstractIndexTerminologyBrow
 
 	private static final Set<String> CONCEPT_FIELDS_TO_LOAD = SnomedMappings.fieldsToLoad()
 			.id()
-			.label()
 			.iconId()
 			.storageKey()
 			.module()

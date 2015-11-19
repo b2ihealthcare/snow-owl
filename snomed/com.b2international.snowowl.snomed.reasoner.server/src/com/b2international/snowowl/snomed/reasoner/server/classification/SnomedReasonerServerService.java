@@ -109,7 +109,7 @@ public class SnomedReasonerServerService extends CollectingService<Reasoner, Cla
 	
 	private static final Logger LOGGER = LoggerFactory.getLogger(SnomedReasonerServerService.class);
 	
-	private static final Set<String> FIELDS_TO_LOAD = SnomedMappings.fieldsToLoad().label().iconId().build();
+	private static final Set<String> FIELDS_TO_LOAD = SnomedMappings.fieldsToLoad().iconId().build();
 
 	private final IListener invalidationListener = new IListener() {
 		@Override 
