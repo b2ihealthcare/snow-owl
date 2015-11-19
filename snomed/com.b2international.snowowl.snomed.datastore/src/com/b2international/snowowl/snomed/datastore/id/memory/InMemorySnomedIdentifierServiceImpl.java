@@ -25,7 +25,7 @@ import org.slf4j.LoggerFactory;
 import com.b2international.commons.VerhoeffCheck;
 import com.b2international.snowowl.core.exceptions.BadRequestException;
 import com.b2international.snowowl.core.terminology.ComponentCategory;
-import com.b2international.snowowl.datastore.store.MemStore;
+import com.b2international.snowowl.datastore.store.Store;
 import com.b2international.snowowl.snomed.datastore.SnomedTerminologyBrowser;
 import com.b2international.snowowl.snomed.datastore.id.AbstractSnomedIdentifierServiceImpl;
 import com.b2international.snowowl.snomed.datastore.id.SnomedIdentifier;
@@ -39,7 +39,7 @@ import com.google.common.collect.Lists;
 import com.google.inject.Provider;
 
 /**
- * In memory implementation of the identifier service.
+ * {@link Store} based implementation of the identifier service.
  * 
  * @since 4.5
  */
@@ -47,9 +47,15 @@ public class InMemorySnomedIdentifierServiceImpl extends AbstractSnomedIdentifie
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(InMemorySnomedIdentifierServiceImpl.class);
 
-	private ItemIdGenerationStrategy generationStrategy;
+	private final Store<SctId> store;
+	private final ItemIdGenerationStrategy generationStrategy;
 
-	private MemStore<SctId> store = new MemStore<SctId>();
+	public InMemorySnomedIdentifierServiceImpl(final Store<SctId> store, final ItemIdGenerationStrategy generationStrategy,
+			final Provider<SnomedTerminologyBrowser> provider, final ISnomedIdentiferReservationService reservationService) {
+		super(provider, reservationService);
+		this.store = store;
+		this.generationStrategy = generationStrategy;
+	}
 
 	@Override
 	public SctId getSctId(final String componentId) {
@@ -67,16 +73,12 @@ public class InMemorySnomedIdentifierServiceImpl extends AbstractSnomedIdentifie
 		return store.values();
 	}
 
-	public InMemorySnomedIdentifierServiceImpl(final ItemIdGenerationStrategy generationStrategy,
-			final Provider<SnomedTerminologyBrowser> provider, final ISnomedIdentiferReservationService reservationService) {
-		super(provider, reservationService);
-		this.generationStrategy = generationStrategy;
-	}
-
 	@Override
 	public String generate(final String namespace, final ComponentCategory category) {
 		checkNotNull(category, "Component category must not be null.");
 		checkCategory(category);
+
+		LOGGER.info(String.format("Generating component ID for category %s.", category.getDisplayName()));
 
 		final String componentId = generateId(namespace, category);
 		final SctId sctId = buildSctId(componentId, IdentifierStatus.ASSIGNED);
@@ -87,6 +89,8 @@ public class InMemorySnomedIdentifierServiceImpl extends AbstractSnomedIdentifie
 
 	@Override
 	public void register(final String componentId) {
+		LOGGER.info(String.format("Registering component ID %s.", componentId));
+
 		if (contains(componentId)) {
 			final SctId sctId = getSctId(componentId);
 			if (hasStatus(sctId, IdentifierStatus.AVAILABLE, IdentifierStatus.RESERVED)) {
@@ -107,6 +111,8 @@ public class InMemorySnomedIdentifierServiceImpl extends AbstractSnomedIdentifie
 		checkNotNull(category, "Component category must not be null.");
 		checkCategory(category);
 
+		LOGGER.info(String.format("Reserving component ID for category %s.", category.getDisplayName()));
+
 		final String componentId = generateId(namespace, category);
 		final SctId sctId = buildSctId(componentId, IdentifierStatus.RESERVED);
 		store.put(componentId, sctId);
@@ -118,6 +124,8 @@ public class InMemorySnomedIdentifierServiceImpl extends AbstractSnomedIdentifie
 	public void deprecate(final String componentId) {
 		final SctId sctId = getSctId(componentId);
 		if (hasStatus(sctId, IdentifierStatus.ASSIGNED, IdentifierStatus.PUBLISHED)) {
+			LOGGER.info(String.format("Deprecating component ID %s.", componentId));
+
 			sctId.setStatus(IdentifierStatus.DEPRECATED.getSerializedName());
 			store.put(componentId, sctId);
 		} else {
@@ -129,6 +137,7 @@ public class InMemorySnomedIdentifierServiceImpl extends AbstractSnomedIdentifie
 	public void release(final String componentId) {
 		final SctId sctId = getSctId(componentId);
 		if (hasStatus(sctId, IdentifierStatus.ASSIGNED, IdentifierStatus.RESERVED)) {
+			LOGGER.info(String.format("Releasing component ID %s.", componentId));
 			store.remove(componentId);
 		} else if (hasStatus(sctId, IdentifierStatus.AVAILABLE)) {
 			// do nothing
@@ -141,6 +150,7 @@ public class InMemorySnomedIdentifierServiceImpl extends AbstractSnomedIdentifie
 	public void publish(final String componentId) {
 		final SctId sctId = getSctId(componentId);
 		if (hasStatus(sctId, IdentifierStatus.ASSIGNED)) {
+			LOGGER.info(String.format("publishing component ID %s.", componentId));
 			sctId.setStatus(IdentifierStatus.PUBLISHED.getSerializedName());
 			store.put(componentId, sctId);
 		} else {
@@ -158,6 +168,8 @@ public class InMemorySnomedIdentifierServiceImpl extends AbstractSnomedIdentifie
 		checkNotNull(category, "Component category must not be null.");
 		checkCategory(category);
 
+		LOGGER.info(String.format("Generating %d component IDs for category %s.", quantity, category.getDisplayName()));
+
 		final Collection<String> componentIds = generateIds(namespace, category, quantity);
 		for (final String componentId : componentIds) {
 			final SctId sctId = buildSctId(componentId, IdentifierStatus.ASSIGNED);
@@ -170,6 +182,8 @@ public class InMemorySnomedIdentifierServiceImpl extends AbstractSnomedIdentifie
 	@Override
 	public void bulkRegister(final Collection<String> componentIds) {
 		final Collection<String> registeredComponentIds = Lists.newArrayList();
+
+		LOGGER.info(String.format("Registering %d component IDs.", componentIds.size()));
 
 		try {
 			for (final String componentId : componentIds) {
@@ -204,6 +218,8 @@ public class InMemorySnomedIdentifierServiceImpl extends AbstractSnomedIdentifie
 		checkNotNull(category, "Component category must not be null.");
 		checkCategory(category);
 
+		LOGGER.info(String.format("Reserving %d component IDs for category %s.", quantity, category.getDisplayName()));
+
 		final Collection<String> componentIds = generateIds(namespace, category, quantity);
 		for (final String componentId : componentIds) {
 			final SctId sctId = buildSctId(componentId, IdentifierStatus.RESERVED);
@@ -216,6 +232,8 @@ public class InMemorySnomedIdentifierServiceImpl extends AbstractSnomedIdentifie
 	@Override
 	public void bulkDeprecate(final Collection<String> componentIds) {
 		final Collection<SctId> deprecatedSctIds = Lists.newArrayList();
+
+		LOGGER.info(String.format("Deprecating %d component IDs.", componentIds.size()));
 
 		for (final String componentId : componentIds) {
 			final SctId sctId = getSctId(componentId);
@@ -234,6 +252,8 @@ public class InMemorySnomedIdentifierServiceImpl extends AbstractSnomedIdentifie
 	@Override
 	public void bulkRelease(final Collection<String> componentIds) {
 		final Collection<String> releasedComponentIds = Lists.newArrayList();
+
+		LOGGER.info(String.format("Releasing %d component IDs.", componentIds.size()));
 
 		for (final String componentId : componentIds) {
 			final SctId sctId = getSctId(componentId);
@@ -256,6 +276,8 @@ public class InMemorySnomedIdentifierServiceImpl extends AbstractSnomedIdentifie
 	public void bulkPublish(final Collection<String> componentIds) {
 		final Collection<SctId> publishedSctIds = Lists.newArrayList();
 
+		LOGGER.info(String.format("Publishing %d component IDs.", componentIds.size()));
+
 		for (final String componentId : componentIds) {
 			final SctId sctId = getSctId(componentId);
 
@@ -272,6 +294,7 @@ public class InMemorySnomedIdentifierServiceImpl extends AbstractSnomedIdentifie
 
 	@Override
 	public Collection<SctId> getSctIds(final Collection<String> componentIds) {
+		LOGGER.info(String.format("Getting %d SctIds.", componentIds.size()));
 		final Collection<SctId> sctIds = Lists.newArrayList();
 		for (final String componentId : componentIds) {
 			sctIds.add(getSctId(componentId));
@@ -279,7 +302,7 @@ public class InMemorySnomedIdentifierServiceImpl extends AbstractSnomedIdentifie
 
 		return sctIds;
 	}
-	
+
 	private String generateId(final String namespace, final ComponentCategory category) {
 		return generateIds(namespace, category, 1).iterator().next();
 	}

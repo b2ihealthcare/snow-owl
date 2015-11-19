@@ -15,6 +15,9 @@
  */
 package com.b2international.snowowl.snomed.datastore.id;
 
+import java.io.File;
+import java.nio.file.Paths;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -23,14 +26,18 @@ import com.b2international.snowowl.core.config.SnowOwlConfiguration;
 import com.b2international.snowowl.core.setup.DefaultBootstrapFragment;
 import com.b2international.snowowl.core.setup.Environment;
 import com.b2international.snowowl.core.setup.ModuleConfig;
+import com.b2international.snowowl.datastore.store.IndexStore;
+import com.b2international.snowowl.datastore.store.MemStore;
 import com.b2international.snowowl.snomed.datastore.SnomedTerminologyBrowser;
 import com.b2international.snowowl.snomed.datastore.config.SnomedIdentifierConfiguration;
 import com.b2international.snowowl.snomed.datastore.config.SnomedIdentifierConfiguration.IdGenerationStrategy;
 import com.b2international.snowowl.snomed.datastore.id.cis.CisSnomedIdentifierServiceImpl;
+import com.b2international.snowowl.snomed.datastore.id.cis.SctId;
 import com.b2international.snowowl.snomed.datastore.id.gen.ItemIdGenerationStrategy;
 import com.b2international.snowowl.snomed.datastore.id.memory.InMemorySnomedIdentifierServiceImpl;
 import com.b2international.snowowl.snomed.datastore.id.reservations.ISnomedIdentiferReservationService;
 import com.b2international.snowowl.snomed.datastore.internal.id.reservations.SnomedIdentifierReservationServiceImpl;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.inject.Provider;
 
 /**
@@ -71,7 +78,15 @@ public class SnomedIdentifierBootstrap extends DefaultBootstrapFragment {
 		switch (conf.getIdGenerationStrategy()) {
 		case MEMORY:
 			LOGGER.info("Snow Owl is configured to use memory based identifier serivce.");
-			identifierService = new InMemorySnomedIdentifierServiceImpl(ItemIdGenerationStrategy.RANDOM, provider, reservationService);
+			final MemStore<SctId> memStore = new MemStore<SctId>();
+			identifierService = new InMemorySnomedIdentifierServiceImpl(memStore, ItemIdGenerationStrategy.RANDOM, provider,
+					reservationService);
+			break;
+		case INDEX:
+			LOGGER.info("Snow Owl is configured to use index based identifier serivce.");
+			final IndexStore<SctId> indexStore = getIndexStore(env);
+			identifierService = new InMemorySnomedIdentifierServiceImpl(indexStore, ItemIdGenerationStrategy.RANDOM, provider,
+					reservationService);
 			break;
 		case CIS:
 			LOGGER.info("Snow Owl is configured to use CIS based identifier serivce.");
@@ -92,6 +107,14 @@ public class SnomedIdentifierBootstrap extends DefaultBootstrapFragment {
 				return ApplicationContext.getInstance().getService(SnomedTerminologyBrowser.class);
 			}
 		};
+	}
+
+	private IndexStore<SctId> getIndexStore(final Environment env) {
+		final File dir = env.getDataDirectory()
+				.toPath()
+				.resolve(Paths.get("indexes", "identifiers", "snomed"))
+				.toFile();
+		return new IndexStore<>(dir, new ObjectMapper(), SctId.class);
 	}
 
 }

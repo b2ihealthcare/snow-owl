@@ -24,12 +24,13 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 public class SnomedIdentifierConfiguration {
 
 	public enum IdGenerationStrategy {
-		MEMORY, // Snow Owl's internal random id generator
-		CIS // IHTSDO's external id generator
+		MEMORY, // Memory based service
+		INDEX, // Index based service
+		CIS // Component Identifier Service (IHTSDO) based service
 	}
 
 	@JsonProperty(value = "idGenerationStrategy", required = false)
-	private IdGenerationStrategy idGenerationStrategy = IdGenerationStrategy.MEMORY;
+	private IdGenerationStrategy idGenerationStrategy = IdGenerationStrategy.INDEX;
 	@JsonProperty(value = "cisUrl", required = false)
 	private String cisUrl;
 	@JsonProperty(value = "cisPort", required = false)
