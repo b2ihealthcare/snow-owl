@@ -20,7 +20,7 @@ import org.junit.Before;
 import com.b2international.snowowl.snomed.datastore.id.AbstractIdentifierServiceTest;
 import com.b2international.snowowl.snomed.datastore.id.ISnomedIdentifierService;
 import com.b2international.snowowl.snomed.datastore.id.gen.ItemIdGenerationStrategy;
-import com.b2international.snowowl.snomed.datastore.id.memory.InMemorySnomedIdentifierServiceImpl;
+import com.b2international.snowowl.snomed.datastore.id.memory.DefaultSnomedIdentifierServiceImpl;
 import com.b2international.snowowl.snomed.datastore.id.reservations.ISnomedIdentiferReservationService;
 import com.b2international.snowowl.snomed.datastore.internal.id.reservations.SnomedIdentifierReservationServiceImpl;
 
@@ -39,7 +39,7 @@ public class InMemorySnomedIdentifierServiceImplTest extends AbstractIdentifierS
 	@Before
 	public void init() {
 		final ISnomedIdentiferReservationService reservationService = new SnomedIdentifierReservationServiceImpl();
-		service = new InMemorySnomedIdentifierServiceImpl(ItemIdGenerationStrategy.RANDOM, null, reservationService);
+		service = new DefaultSnomedIdentifierServiceImpl(ItemIdGenerationStrategy.RANDOM, null, reservationService);
 	}
 
 }

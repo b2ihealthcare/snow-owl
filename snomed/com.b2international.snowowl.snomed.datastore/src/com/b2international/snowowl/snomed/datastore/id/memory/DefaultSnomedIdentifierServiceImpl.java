@@ -43,14 +43,14 @@ import com.google.inject.Provider;
  * 
  * @since 4.5
  */
-public class InMemorySnomedIdentifierServiceImpl extends AbstractSnomedIdentifierServiceImpl {
+public class DefaultSnomedIdentifierServiceImpl extends AbstractSnomedIdentifierServiceImpl {
 
-	private static final Logger LOGGER = LoggerFactory.getLogger(InMemorySnomedIdentifierServiceImpl.class);
+	private static final Logger LOGGER = LoggerFactory.getLogger(DefaultSnomedIdentifierServiceImpl.class);
 
 	private final Store<SctId> store;
 	private final ItemIdGenerationStrategy generationStrategy;
 
-	public InMemorySnomedIdentifierServiceImpl(final Store<SctId> store, final ItemIdGenerationStrategy generationStrategy,
+	public DefaultSnomedIdentifierServiceImpl(final Store<SctId> store, final ItemIdGenerationStrategy generationStrategy,
 			final Provider<SnomedTerminologyBrowser> provider, final ISnomedIdentiferReservationService reservationService) {
 		super(provider, reservationService);
 		this.store = store;

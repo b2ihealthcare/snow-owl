@@ -34,7 +34,7 @@ import com.b2international.snowowl.snomed.datastore.config.SnomedIdentifierConfi
 import com.b2international.snowowl.snomed.datastore.id.cis.CisSnomedIdentifierServiceImpl;
 import com.b2international.snowowl.snomed.datastore.id.cis.SctId;
 import com.b2international.snowowl.snomed.datastore.id.gen.ItemIdGenerationStrategy;
-import com.b2international.snowowl.snomed.datastore.id.memory.InMemorySnomedIdentifierServiceImpl;
+import com.b2international.snowowl.snomed.datastore.id.memory.DefaultSnomedIdentifierServiceImpl;
 import com.b2international.snowowl.snomed.datastore.id.reservations.ISnomedIdentiferReservationService;
 import com.b2international.snowowl.snomed.datastore.internal.id.reservations.SnomedIdentifierReservationServiceImpl;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -79,13 +79,13 @@ public class SnomedIdentifierBootstrap extends DefaultBootstrapFragment {
 		case MEMORY:
 			LOGGER.info("Snow Owl is configured to use memory based identifier serivce.");
 			final MemStore<SctId> memStore = new MemStore<SctId>();
-			identifierService = new InMemorySnomedIdentifierServiceImpl(memStore, ItemIdGenerationStrategy.RANDOM, provider,
+			identifierService = new DefaultSnomedIdentifierServiceImpl(memStore, ItemIdGenerationStrategy.RANDOM, provider,
 					reservationService);
 			break;
 		case INDEX:
 			LOGGER.info("Snow Owl is configured to use index based identifier serivce.");
 			final IndexStore<SctId> indexStore = getIndexStore(env);
-			identifierService = new InMemorySnomedIdentifierServiceImpl(indexStore, ItemIdGenerationStrategy.RANDOM, provider,
+			identifierService = new DefaultSnomedIdentifierServiceImpl(indexStore, ItemIdGenerationStrategy.RANDOM, provider,
 					reservationService);
 			break;
 		case CIS:
