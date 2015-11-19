@@ -64,8 +64,8 @@ public class SnomedConceptFullQueryAdapter extends SnomedConceptIndexQueryAdapte
 		return builder
 				.finishIf(StringUtils.isEmpty(searchString))
 				.require(new IndexQueryBuilder()
-				.matchIf(anyFlagSet(SEARCH_BY_CONCEPT_ID), SnomedMappings.newQuery().id(id).matchAll())
-				.matchParsedTermIf(anyFlagSet(SEARCH_BY_LABEL), Mappings.label().fieldName(), searchString))
+				.matchIf(anyFlagSet(SEARCH_BY_CONCEPT_ID), SnomedMappings.newQuery().id(id).matchAll()))
+//				.matchParsedTermIf(anyFlagSet(SEARCH_BY_LABEL), Mappings.label().fieldName(), searchString)
 //				.matchParsedTermIf(anyFlagSet(SEARCH_BY_FSN), SnomedIndexBrowserConstants.CONCEPT_FULLY_SPECIFIED_NAME, searchString)
 //				.matchParsedTermIf(anyFlagSet(SEARCH_BY_SYNONYM), SnomedIndexBrowserConstants.CONCEPT_SYNONYM, searchString)
 //				.matchParsedTermIf(anyFlagSet(SEARCH_BY_OTHER), SnomedIndexBrowserConstants.CONCEPT_OTHER_DESCRIPTION, searchString))
@@ -75,8 +75,8 @@ public class SnomedConceptFullQueryAdapter extends SnomedConceptIndexQueryAdapte
 	private IndexQueryBuilder createIndexQueryBuilderWithoutIdTerms(IndexQueryBuilder builder) {
 		return builder
 				.finishIf(StringUtils.isEmpty(searchString))
-				.require(new IndexQueryBuilder()
-				.matchParsedTermIf(anyFlagSet(SEARCH_BY_LABEL), Mappings.label().fieldName(), searchString))
+//				.require(new IndexQueryBuilder()
+//				.matchParsedTermIf(anyFlagSet(SEARCH_BY_LABEL), Mappings.label().fieldName(), searchString))
 //				.matchParsedTermIf(anyFlagSet(SEARCH_BY_FSN), SnomedIndexBrowserConstants.CONCEPT_FULLY_SPECIFIED_NAME, searchString)
 //				.matchParsedTermIf(anyFlagSet(SEARCH_BY_SYNONYM), SnomedIndexBrowserConstants.CONCEPT_SYNONYM, searchString)
 //				.matchParsedTermIf(anyFlagSet(SEARCH_BY_OTHER), SnomedIndexBrowserConstants.CONCEPT_OTHER_DESCRIPTION, searchString))

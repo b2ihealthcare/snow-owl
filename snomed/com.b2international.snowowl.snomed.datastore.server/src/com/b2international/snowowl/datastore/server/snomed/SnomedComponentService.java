@@ -198,7 +198,7 @@ public class SnomedComponentService implements ISnomedComponentService, IPostSto
 	private static final Set<String> MEMBER_REFERENCED_COMPONENT_ID_FIELDS_TO_LOAD = SnomedMappings.fieldsToLoad().memberReferencedComponentId().build();
 	private static final Set<String> MEMBER_VALUE_ID_FIELDS_TO_LOAD = SnomedMappings.fieldsToLoad().memberValueId().build();
 	private static final Set<String> MEMBER_ID_FIELDS_TO_LOAD = SnomedMappings.fieldsToLoad().memberUuid().active().memberReferencedComponentId().build();
-	private static final Set<String> FSN_DESCRIPTION_FIELDS_TO_LOAD = SnomedMappings.fieldsToLoad().id().label().descriptionConcept().build();
+	private static final Set<String> FSN_DESCRIPTION_FIELDS_TO_LOAD = SnomedMappings.fieldsToLoad().id().descriptionTerm().descriptionConcept().build();
 	private static final Set<String> DATA_TYPE_VALUE_AND_REFERENCED_COMPONENT_FIELDS_TO_LOAD = SnomedMappings.fieldsToLoad().memberReferencedComponentId().memberSerializedValue().build();
 	private static final Set<String> MODULE_MEMBER_FIELDS_TO_LOAD = SnomedMappings.fieldsToLoad().storageKey().module().memberReferencedComponentId()
 			.memberSourceEffectiveTime().memberTargetEffectiveTime().build();
@@ -208,7 +208,7 @@ public class SnomedComponentService implements ISnomedComponentService, IPostSto
 	private static final Set<String> MEMBER_UUID_STORAGE_KEY_TO_LOAD = SnomedMappings.fieldsToLoad().storageKey().memberUuid().build();
 	private static final long DESCRIPTION_TYPE_ROOT_CONCEPT_ID = Long.valueOf(Concepts.DESCRIPTION_TYPE_ROOT_CONCEPT);
 	private static final long SYNONYM_CONCEPT_ID = Long.valueOf(Concepts.SYNONYM);
-	private static final Set<String> COMPONENT_LABEL_TO_LOAD = SnomedMappings.fieldsToLoad().label().build();
+	private static final Set<String> COMPONENT_LABEL_TO_LOAD = SnomedMappings.fieldsToLoad().descriptionTerm().build();
 	private static final Set<String> COMPONENT_STATUS_TO_LOAD = SnomedMappings.fieldsToLoad().active().build();
 	private static final Set<String> COMPONENT_ICON_ID_TO_LOAD = SnomedMappings.fieldsToLoad().iconId().build();
 	
@@ -1461,6 +1461,7 @@ public class SnomedComponentService implements ISnomedComponentService, IPostSto
 					final long conceptId = itr.next();
 					final Query descriptionQuery = SnomedMappings.newQuery()
 							.active()
+							.description()
 							.descriptionType(typeId)
 							.descriptionConcept(conceptId)
 							.matchAll();
@@ -1468,20 +1469,16 @@ public class SnomedComponentService implements ISnomedComponentService, IPostSto
 					if (!IndexUtils.isEmpty(topDocs)) {
 						
 						final Document doc = searcher.doc(topDocs.scoreDocs[0].doc, COMPONENT_LABEL_TO_LOAD);
-						final String label = Mappings.label().getValue(doc);
+						final String label = SnomedMappings.descriptionTerm().getValue(doc);
 						//XXX map key is lowercase on purpose
 						$.put(label.toLowerCase(), String.valueOf(conceptId));
-						
 					}
-					
 				}
 				
 				if (LOGGER.isDebugEnabled()) {
 					LOGGER.debug("Collecting additional description type terms. ID: '" + typeId + "'. [" + lapTimer + "]");
 					lapTimer.reset();
-					
 				}
-				
 			}
 			
 			if (LOGGER.isDebugEnabled()) {
@@ -1791,8 +1788,8 @@ public class SnomedComponentService implements ISnomedComponentService, IPostSto
 						final long conceptId = SnomedMappings.descriptionConcept().getValue(doc);
 						
 						if (activeConceptIds.contains(conceptId)) {
-							final String label = Mappings.label().getValue(doc);
-							fsnToIdsMapping.put(label, Long.toString(conceptId));
+							final String term = SnomedMappings.descriptionTerm().getValue(doc);
+							fsnToIdsMapping.put(term, Long.toString(conceptId));
 						}
 					}
 					

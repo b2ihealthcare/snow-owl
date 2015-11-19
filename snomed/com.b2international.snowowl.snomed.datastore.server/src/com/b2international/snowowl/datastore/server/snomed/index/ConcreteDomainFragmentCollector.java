@@ -72,7 +72,7 @@ public class ConcreteDomainFragmentCollector extends AbstractDocsOutOfOrderColle
 	protected void initDocValues(final AtomicReader leafReader) throws IOException {
 		uomValues = SnomedMappings.memberUomId().getDocValues(leafReader);
 		valueValues = SnomedMappings.memberSerializedValue().getDocValues(leafReader);
-		labelValues = Mappings.label().getDocValues(leafReader);
+		labelValues = SnomedMappings.memberDataTypeLabel().getDocValues(leafReader);
 		referencedIdValues = SnomedMappings.memberReferencedComponentId().getDocValues(leafReader);
 		typeValues = SnomedMappings.memberDataTypeOrdinal().getDocValues(leafReader);
 		storageKeyValues = Mappings.storageKey().getDocValues(leafReader);

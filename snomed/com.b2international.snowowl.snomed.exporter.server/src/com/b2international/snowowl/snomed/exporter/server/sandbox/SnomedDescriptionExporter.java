@@ -49,7 +49,7 @@ public class SnomedDescriptionExporter extends SnomedCoreExporter {
 				.module()
 				.descriptionConcept()
 				.descriptionType()
-				.label()
+				.descriptionTerm()
 				.descriptionCaseSignificance()
 				.build();
 	}
@@ -71,7 +71,7 @@ public class SnomedDescriptionExporter extends SnomedCoreExporter {
 		sb.append(HT);
 		sb.append(SnomedMappings.descriptionType().getValueAsString(doc));
 		sb.append(HT);
-		sb.append(Mappings.label().getValue(doc));
+		sb.append(SnomedMappings.descriptionTerm().getValue(doc));
 		sb.append(HT);
 		sb.append(SnomedMappings.descriptionCaseSignificance().getValueAsString(doc));
 		return sb.toString();

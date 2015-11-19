@@ -69,7 +69,7 @@ public class SnomedRf1DescriptionExporter implements SnomedRf1Exporter {
 	
 	private static final Set<String> DESCRIPTION_FILEDS_TO_LOAD = SnomedMappings.fieldsToLoad()
 			.active()
-			.label()
+			.descriptionTerm()
 			.descriptionConcept()
 			.descriptionType()
 			.descriptionCaseSignificance()
@@ -141,7 +141,7 @@ public class SnomedRf1DescriptionExporter implements SnomedRf1Exporter {
 								_values[0] = descriptionId;
 								_values[1] = BooleanUtils.valueOf(SnomedMappings.active().getValue(doc)) ? "1" : "0";
 								_values[2] = SnomedMappings.descriptionConcept().getValueAsString(doc);
-								_values[3] = Mappings.label().getValue(doc);
+								_values[3] = SnomedMappings.descriptionTerm().getValue(doc);
 								_values[4] = SnomedMappings.descriptionCaseSignificance().getValueAsString(doc);
 								_values[5] = SnomedMappings.descriptionType().getValueAsString(doc);
 								
