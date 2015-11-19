@@ -568,18 +568,6 @@ public class SnomedTaxonomyImpl implements SnomedTaxonomy {
 			}
 		};
 		
-		final Supplier<LongKeyMap> refSetMapSupplier = memoize(new Supplier<LongKeyMap>() {
-			@Override
-			public LongKeyMap get() {
-				return getServiceForClass(SnomedRefSetBrowser.class).getReferencedConceptIds(branchPath);
-		}});
-		
-		new Thread(new Runnable() {
-			@Override public void run() {
-				refSetMapSupplier.get();
-			}
-		}).start();
-		
 		ForkJoinUtils.runInParallel(initConceptsRunnable, initStatementsRunnable);
 		
 		final int conceptCount = concepts.size();
@@ -612,15 +600,15 @@ public class SnomedTaxonomyImpl implements SnomedTaxonomy {
 
 			final int sourceConceptInternalId = concepts.getInternalId(sourceId);
 			if (sourceConceptInternalId < 0) {
-				throw new IllegalStateException(String.format("Active relationship has an inactive source (%s)", sourceId));
+				throw new IllegalStateException(String.format("Active relationship has an inactive source (%s, branch: %s)", sourceId, branchPath));
 			}
 			final int destinationConceptInternalId = concepts.getInternalId(destinationId);
 			if (destinationConceptInternalId < 0) {
-				throw new IllegalStateException(String.format("Active relationship has an inactive destination (%s)", destinationId));
+				throw new IllegalStateException(String.format("Active relationship has an inactive destination (%s, branch: %s)", destinationId, branchPath));
 			}
 			final int typeConceptInternalId = concepts.getInternalId(typeId);
 			if (destinationConceptInternalId < 0) {
-				throw new IllegalStateException(String.format("Active relationship has an inactive type (%s)", typeId));
+				throw new IllegalStateException(String.format("Active relationship has an inactive type (%s, branch: %s)", typeId, branchPath));
 			}
 
 			incomingOtherHistorgram[destinationConceptInternalId]++;
@@ -638,6 +626,18 @@ public class SnomedTaxonomyImpl implements SnomedTaxonomy {
 			
 		}
 
+		final Supplier<LongKeyMap> refSetMapSupplier = memoize(new Supplier<LongKeyMap>() {
+			@Override
+			public LongKeyMap get() {
+				return getServiceForClass(SnomedRefSetBrowser.class).getReferencedConceptIds(branchPath);
+		}});
+		
+		new Thread(new Runnable() {
+			@Override public void run() {
+				refSetMapSupplier.get();
+			}
+		}).start();
+		
 		for (int i = 0; i < conceptCount; i++) {
 			descendants[i] = new int[incomingIsaHistogram[i]];
 			ancestors[i] = new int[outgoingIsaHistogram[i]];
