@@ -15,8 +15,11 @@
  */
 package com.b2international.snowowl.snomed.datastore.server.converter;
 
+import java.util.Collections;
+import java.util.List;
+
+import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.domain.BranchContext;
-import com.b2international.snowowl.snomed.datastore.server.request.SnomedConceptConverter;
 import com.b2international.snowowl.snomed.datastore.services.SnomedBranchRefSetMembershipLookupService;
 
 /**
@@ -27,7 +30,45 @@ public class SnomedConverters {
 	private SnomedConverters() {}
 	
 	public static SnomedConceptConverter newConceptConverter(BranchContext context) {
-		return new SnomedConceptConverter(new SnomedBranchRefSetMembershipLookupService(context.branch().branchPath()));
+		return new SnomedConceptConverter(createMembershipLookupService(context));
+	}
+	
+	public static SnomedDescriptionConverter newDescriptionConverter(BranchContext context) {
+		return new SnomedDescriptionConverter(createMembershipLookupService(context));
+	}
+	
+	public static SnomedRelationshipConverter newRelationshipConverter(BranchContext context) {
+		return new SnomedRelationshipConverter(createMembershipLookupService(context));
+	}
+	
+	public static SnomedReferenceSetMemberConverter newMemberConverter(BranchContext context) {
+		return new SnomedReferenceSetMemberConverter();
+	}
+	
+	public static SnomedReferenceSetConverter newRefSetConverter(BranchContext context) {
+		return newRefSetConverter(context, Collections.<String>emptyList());
+	}
+	
+	public static SnomedReferenceSetConverter newRefSetConverter(BranchContext context, List<String> expansions) {
+		return new SnomedReferenceSetConverter(context, expansions);
+	}
+	
+	private static SnomedBranchRefSetMembershipLookupService createMembershipLookupService(BranchContext context) {
+		return createMembershipLookupService(context.branch().branchPath());
+	}
+
+	private static SnomedBranchRefSetMembershipLookupService createMembershipLookupService(IBranchPath branchPath) {
+		return new SnomedBranchRefSetMembershipLookupService(branchPath);
+	}
+	
+	@Deprecated
+	public static SnomedConceptConverter newConceptConverter(IBranchPath branchPath) {
+		return new SnomedConceptConverter(createMembershipLookupService(branchPath));
+	}
+	
+	@Deprecated
+	public static SnomedRelationshipConverter newRelationshipConverter(IBranchPath branchPath) {
+		return new SnomedRelationshipConverter(createMembershipLookupService(branchPath));
 	}
 
 }

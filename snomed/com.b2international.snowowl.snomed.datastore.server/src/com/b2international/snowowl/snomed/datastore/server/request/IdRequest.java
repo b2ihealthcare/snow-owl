@@ -18,7 +18,7 @@ package com.b2international.snowowl.snomed.datastore.server.request;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.events.DelegatingRequest;
 import com.b2international.snowowl.core.events.Request;
-import com.b2international.snowowl.datastore.server.request.CommitInfo;
+import com.b2international.snowowl.datastore.request.CommitInfo;
 import com.b2international.snowowl.snomed.datastore.id.ISnomedIdentifierService;
 import com.b2international.snowowl.snomed.datastore.id.IdManager;
 import com.b2international.snowowl.snomed.datastore.id.IdManagerImpl;

@@ -22,10 +22,10 @@ import org.eclipse.emf.ecore.EObject;
 import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.domain.TransactionContext;
 import com.b2international.snowowl.core.events.Request;
-import com.b2international.snowowl.datastore.server.request.Branching;
-import com.b2international.snowowl.datastore.server.request.RepositoryCommitRequestBuilder;
-import com.b2international.snowowl.datastore.server.request.RepositoryRequests;
-import com.b2international.snowowl.datastore.server.request.Reviews;
+import com.b2international.snowowl.datastore.request.Branching;
+import com.b2international.snowowl.datastore.request.RepositoryCommitRequestBuilder;
+import com.b2international.snowowl.datastore.request.RepositoryRequests;
+import com.b2international.snowowl.datastore.request.Reviews;
 import com.b2international.snowowl.snomed.Concept;
 import com.b2international.snowowl.snomed.Description;
 import com.b2international.snowowl.snomed.Relationship;
@@ -46,7 +46,7 @@ public abstract class SnomedRequests {
 	private SnomedRequests() {
 	}
 	
-	public static <B> RepositoryCommitRequestBuilder prepareCommit(String userId, String branch) {
+	public static RepositoryCommitRequestBuilder prepareCommit(String userId, String branch) {
 		return new SnomedRepositoryCommitRequestBuilder(userId, REPOSITORY_ID, branch);
 	}
 	
@@ -54,8 +54,16 @@ public abstract class SnomedRequests {
 		return new SnomedConceptSearchRequestBuilder(REPOSITORY_ID);
 	}
 	
-	public static SnomedConceptGetRequestBuilder prepareGet(String branch) {
-		return new SnomedConceptGetRequestBuilder(branch);
+	public static SnomedConceptGetRequestBuilder prepareGetConcept() {
+		return new SnomedConceptGetRequestBuilder(REPOSITORY_ID);
+	}
+	
+	public static SnomedDescriptionGetRequestBuilder prepareGetDescription() {
+		return new SnomedDescriptionGetRequestBuilder(REPOSITORY_ID);
+	}
+	
+	public static SnomedRelationshipGetRequestBuilder prepareGetRelationship() {
+		return new SnomedRelationshipGetRequestBuilder(REPOSITORY_ID);
 	}
 	
 	public static Request<TransactionContext, Void> prepareDeleteComponent(String componentId, Class<? extends EObject> type) {
@@ -145,6 +153,18 @@ public abstract class SnomedRequests {
 
 	public static SnomedRefSetMemberUpdateRequestBuilder prepareMemberUpdate() {
 		return new SnomedRefSetMemberUpdateRequestBuilder(REPOSITORY_ID);
+	}
+
+	public static SnomedConceptUpdateRequestBuilder prepareConceptUpdate(String componentId) {
+		return new SnomedConceptUpdateRequestBuilder(REPOSITORY_ID, componentId);
+	}
+
+	public static SnomedDescriptionUpdateRequestBuilder prepareDescriptionUpdate(String componentId) {
+		return new SnomedDescriptionUpdateRequestBuilder(REPOSITORY_ID, componentId);
+	}
+
+	public static SnomedRelationshipUpdateRequestBuilder prepareRelationshipUpdate(String componentId) {
+		return new SnomedRelationshipUpdateRequestBuilder(REPOSITORY_ID, componentId);
 	}
 
 }

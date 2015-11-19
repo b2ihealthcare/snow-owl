@@ -46,10 +46,13 @@ public class ConceptReferringMemberChangeProcessor extends ChangeSetProcessorBas
 	private static final Predicate<SnomedRefSetMember> REFERRING_CONCEPT_MEMBER = new Predicate<SnomedRefSetMember>() {
 		@Override
 		public boolean apply(SnomedRefSetMember input) {
-			return SnomedTerminologyComponentConstants.CONCEPT_NUMBER == input.getReferencedComponentType()
-					&& RefSetMemberChange.isValidType(input.getRefSet().getType());
+			return SnomedTerminologyComponentConstants.CONCEPT_NUMBER == input.getReferencedComponentType() && isValidType(input.getRefSet().getType());
 		}
 	};
+	
+	private static boolean isValidType(final SnomedRefSetType type) {
+		return SnomedRefSetType.SIMPLE.equals(type) || SnomedRefSetType.ATTRIBUTE_VALUE.equals(type) || SnomedRefSetType.SIMPLE_MAP.equals(type);
+	}
 	
 	private Function<CDOID, Document> documentProvider;
 	
@@ -93,7 +96,7 @@ public class ConceptReferringMemberChangeProcessor extends ChangeSetProcessorBas
 			final Document doc = documentProvider.apply(cdoid);
 			final boolean active = SnomedMappings.active().getValue(doc) == 1;
 			final SnomedRefSetType type = SnomedRefSetType.get(SnomedMappings.memberRefSetType().getValue(doc)); 
-			if (active && RefSetMemberChange.isValidType(type)) {
+			if (active && isValidType(type)) {
 				final String referencedComponentId = SnomedMappings.memberReferencedComponentId().getValueAsString(doc);
 				final long refSetId = SnomedMappings.memberRefSetId().getValue(doc);
 				memberChanges.put(referencedComponentId, new RefSetMemberChange(refSetId, MemberChangeKind.REMOVED, type));
@@ -104,5 +107,4 @@ public class ConceptReferringMemberChangeProcessor extends ChangeSetProcessorBas
 			registerUpdate(conceptId, new ReferenceSetMembershipUpdater(conceptId, memberChanges.get(conceptId)));
 		}
 	}
-
 }

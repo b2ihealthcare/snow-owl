@@ -17,18 +17,20 @@ package com.b2international.snowowl.snomed.datastore.server.request;
 
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.domain.BranchContext;
+import com.b2international.snowowl.core.events.BaseRequest;
 import com.b2international.snowowl.core.exceptions.ComponentNotFoundException;
 import com.b2international.snowowl.core.terminology.ComponentCategory;
 import com.b2international.snowowl.snomed.core.domain.ISnomedConcept;
 import com.b2international.snowowl.snomed.datastore.SnomedConceptLookupService;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptIndexEntry;
+import com.b2international.snowowl.snomed.datastore.server.converter.SnomedConverters;
 
 /**
  * @since 4.5
  */
-final class SnomedConceptReadRequest extends SnomedConceptRequest<BranchContext, ISnomedConcept> {
+final class SnomedConceptReadRequest extends BaseRequest<BranchContext, ISnomedConcept> {
 
-	private String componentId;
+	private final String componentId;
 
 	SnomedConceptReadRequest(String componentId) {
 		this.componentId = componentId;
@@ -42,7 +44,7 @@ final class SnomedConceptReadRequest extends SnomedConceptRequest<BranchContext,
 			throw new ComponentNotFoundException(ComponentCategory.CONCEPT, componentId);
 		}
 		final SnomedConceptIndexEntry component = lookupService.getComponent(branchPath, componentId);
-		return getConverter(branchPath).apply(component);
+		return SnomedConverters.newConceptConverter(context).apply(component);
 	}
 
 	@Override

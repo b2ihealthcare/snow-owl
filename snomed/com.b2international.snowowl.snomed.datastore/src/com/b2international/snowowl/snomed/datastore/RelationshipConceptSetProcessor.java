@@ -18,8 +18,6 @@ package com.b2international.snowowl.snomed.datastore;
 import java.util.Iterator;
 
 import com.b2international.snowowl.datastore.index.IndexQueryBuilder;
-import com.b2international.snowowl.datastore.index.IndexUtils;
-import com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants;
 import com.b2international.snowowl.snomed.datastore.index.SnomedClientIndexService;
 import com.b2international.snowowl.snomed.datastore.index.SnomedRelationshipIndexQueryAdapter;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptIndexEntry;
@@ -50,8 +48,7 @@ public class RelationshipConceptSetProcessor extends ConceptSetProcessor<Relatio
 		@Override
 		protected IndexQueryBuilder createIndexQueryBuilder() {
 			return super.createIndexQueryBuilder()
-					.require(SnomedMappings.newQuery().relationshipType(typeId).matchAll())
-					.requireExactTerm(SnomedIndexBrowserConstants.RELATIONSHIP_VALUE_ID, IndexUtils.longToPrefixCoded(destinationId));
+					.require(SnomedMappings.newQuery().relationshipType(typeId).relationshipDestination(destinationId).matchAll());
 		}
 	}
 

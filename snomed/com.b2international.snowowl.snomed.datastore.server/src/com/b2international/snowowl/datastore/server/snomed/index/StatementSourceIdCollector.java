@@ -22,7 +22,7 @@ import org.apache.lucene.index.AtomicReader;
 import org.apache.lucene.index.NumericDocValues;
 
 import com.b2international.snowowl.datastore.index.AbstractDocsOutOfOrderCollector;
-import com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants;
+import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedMappings;
 
 /**
  * Collector class for collecting a single source ID from SNOMED CT relationships.
@@ -58,7 +58,7 @@ public class StatementSourceIdCollector extends AbstractDocsOutOfOrderCollector 
 
 	@Override
 	protected void initDocValues(final AtomicReader leafReader) throws IOException {
-		sourceIdsValue = leafReader.getNumericDocValues(SnomedIndexBrowserConstants.RELATIONSHIP_OBJECT_ID);
+		sourceIdsValue = SnomedMappings.relationshipSource().getDocValues(leafReader);
 	}
 
 	@Override

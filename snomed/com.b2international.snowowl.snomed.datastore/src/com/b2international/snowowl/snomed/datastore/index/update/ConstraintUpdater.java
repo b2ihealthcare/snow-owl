@@ -21,7 +21,6 @@ import com.b2international.snowowl.datastore.index.DocumentUpdaterBase;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.snomed.datastore.PredicateUtils;
-import com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants;
 import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedDocumentBuilder;
 import com.b2international.snowowl.snomed.datastore.snor.PredicateIndexEntry.PredicateType;
 import com.b2international.snowowl.snomed.mrcm.AttributeConstraint;
@@ -77,9 +76,9 @@ public class ConstraintUpdater extends DocumentUpdaterBase<SnomedDocumentBuilder
 			.clear()
 			.storageKey(CDOIDUtil.getLong(constraint.cdoID()))
 			.type(SnomedTerminologyComponentConstants.PREDICATE_TYPE_ID)
-			.storedOnly(SnomedIndexBrowserConstants.PREDICATE_QUERY_EXPRESSION, queryExpression)
-			.storedOnly(SnomedIndexBrowserConstants.PREDICATE_REQUIRED, required ? 1 : 0)
-			.storedOnly(SnomedIndexBrowserConstants.PREDICATE_MULTIPLE, multiple ? 1 : 0);
+			.predicateQueryExpression(queryExpression)
+			.predicateRequired(required)
+			.predicateMultiple(multiple);
 		
 		if (predicate instanceof DescriptionPredicate) {
 			createDescriptionPredicateDocument(doc, (DescriptionPredicate) predicate);
@@ -94,16 +93,16 @@ public class ConstraintUpdater extends DocumentUpdaterBase<SnomedDocumentBuilder
 	
 	public static void createConcreteDomainPredicateDocument(SnomedDocumentBuilder doc, ConcreteDomainElementPredicate predicate) {
 		doc
-			.storedOnly(SnomedIndexBrowserConstants.PREDICATE_TYPE, PredicateType.DATATYPE.name())
-			.storedOnly(SnomedIndexBrowserConstants.PREDICATE_DATA_TYPE_LABEL, predicate.getLabel())
-			.storedOnly(SnomedIndexBrowserConstants.PREDICATE_DATA_TYPE_NAME, predicate.getName())
-			.storedOnly(SnomedIndexBrowserConstants.PREDICATE_DATA_TYPE_TYPE, predicate.getType().name());
+			.predicateType(PredicateType.DATATYPE)
+			.predicateDataTypeLabel(predicate.getLabel())
+			.predicateDataTypeName(predicate.getName())
+			.predicateDataType(predicate.getType());
 	}
 
 	public static void createDescriptionPredicateDocument(SnomedDocumentBuilder doc, DescriptionPredicate predicate) {
 		doc
-			.storedOnly(SnomedIndexBrowserConstants.PREDICATE_TYPE, PredicateType.DESCRIPTION.name())
-			.storedOnly(SnomedIndexBrowserConstants.PREDICATE_DESCRIPTION_TYPE_ID, Long.valueOf(predicate.getTypeId()));
+			.predicateType(PredicateType.DESCRIPTION)
+			.predicateDescriptionTypeId(Long.valueOf(predicate.getTypeId()));
 	}
 
 	public static void createRelationshipPredicateDocument(SnomedDocumentBuilder doc, RelationshipPredicate predicate, GroupRule groupRule) {
@@ -113,11 +112,10 @@ public class ConstraintUpdater extends DocumentUpdaterBase<SnomedDocumentBuilder
 		final String characteristicType = Strings.isNullOrEmpty(characteristicTypeConceptId) ? "<" + Concepts.CHARACTERISTIC_TYPE : "<<" + characteristicTypeConceptId;
 
 		doc
-			.storedOnly(SnomedIndexBrowserConstants.PREDICATE_TYPE, PredicateType.RELATIONSHIP.name())
-			.storedOnly(SnomedIndexBrowserConstants.PREDICATE_RELATIONSHIP_TYPE_EXPRESSION, type)
-			.storedOnly(SnomedIndexBrowserConstants.PREDICATE_RELATIONSHIP_VALUE_EXPRESSION, valueType)
-			.storedOnly(SnomedIndexBrowserConstants.PREDICATE_CHARACTERISTIC_TYPE_EXPRESSION, characteristicType)
-			.storedOnly(SnomedIndexBrowserConstants.PREDICATE_GROUP_RULE, groupRule.name());
+			.predicateType(PredicateType.RELATIONSHIP)
+			.predicateRelationshipTypeExpression(type)
+			.predicateRelationshipValueExpression(valueType)
+			.predicateCharacteristicTypeExpression(characteristicType)
+			.predicateGroupRule(groupRule.name());
 	}
-
 }

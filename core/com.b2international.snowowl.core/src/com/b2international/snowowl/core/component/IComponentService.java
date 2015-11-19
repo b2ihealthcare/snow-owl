@@ -71,7 +71,7 @@ public interface IComponentService<R extends IComponent, U> {
 	 *                                            is not registered
 	 * @throws ComponentNotFoundException         if the component identifier does not match any component on the given task
 	 */
-	R read(IComponentRef ref);
+//	R read(IComponentRef ref);
 
 	/**
 	 * Updates an existing component using the specified update model, if it exists.
@@ -94,7 +94,7 @@ public interface IComponentService<R extends IComponent, U> {
 	 * @throws ComponentValidationException       if the supplied update model fails validation
 	 * @throws ComponentUpdateException           if updating the component fails for any other reason
 	 */
-	R update(IComponentRef ref, U update, String userId, String commitComment);
+//	R update(IComponentRef ref, U update, String userId, String commitComment);
 
 	/**
 	 * Permanently deletes the specified component from the specified code system version and task.

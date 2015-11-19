@@ -15,14 +15,11 @@
  */
 package com.b2international.snowowl.snomed.datastore.index.update;
 
-import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.COMPONENT_REFERRING_PREDICATE;
-
 import java.util.Collection;
 
 import com.b2international.snowowl.datastore.index.DocumentUpdaterBase;
-import com.b2international.snowowl.datastore.index.mapping.IndexField;
-import com.b2international.snowowl.datastore.index.mapping.Mappings;
 import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedDocumentBuilder;
+import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedMappings;
 
 /**
  * @since 4.3
@@ -38,11 +35,9 @@ public class ComponentConstraintUpdater extends DocumentUpdaterBase<SnomedDocume
 
 	@Override
 	public void doUpdate(SnomedDocumentBuilder doc) {
-		final IndexField<String> field = Mappings.stringField(COMPONENT_REFERRING_PREDICATE);
-		doc.removeAll(field);
+		doc.removeAll(SnomedMappings.componentReferringPredicate());
 		for (final String predicateKey : predicateKeys) {
-			doc.addToDoc(field, predicateKey);
+			doc.componentReferringPredicate(predicateKey);
 		}
 	}
-	
 }

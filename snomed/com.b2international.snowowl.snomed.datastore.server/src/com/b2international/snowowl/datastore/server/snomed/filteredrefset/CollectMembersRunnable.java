@@ -21,13 +21,12 @@ import org.apache.lucene.search.BooleanClause.Occur;
 import org.apache.lucene.search.BooleanQuery;
 import org.apache.lucene.search.Query;
 
-import bak.pcj.LongCollection;
-
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.datastore.index.LongDocValuesCollector;
 import com.b2international.snowowl.datastore.server.index.IndexServerService;
-import com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants;
 import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedMappings;
+
+import bak.pcj.LongCollection;
 
 public final class CollectMembersRunnable implements Runnable {
 	
@@ -56,7 +55,7 @@ public final class CollectMembersRunnable implements Runnable {
 		final BooleanQuery refSetMemberConceptQuery = (BooleanQuery) SnomedMappings.newQuery().concept().active().matchAll();
 
 		final Occur refSetOccur = (existingMembersOnly) ? Occur.MUST : Occur.MUST_NOT;
-		refSetMemberConceptQuery.add(SnomedMappings.newQuery().field(SnomedIndexBrowserConstants.CONCEPT_REFERRING_REFERENCE_SET_ID, refSetId).matchAll(), refSetOccur);
+		refSetMemberConceptQuery.add(SnomedMappings.newQuery().conceptReferringRefSetId(refSetId).matchAll(), refSetOccur);
 
 		//label
 		if (null != labelQuery) {

@@ -21,7 +21,7 @@ import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.domain.TransactionContext;
 import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.core.events.RequestBuilder;
-import com.b2international.snowowl.datastore.server.request.CommitInfo;
+import com.b2international.snowowl.datastore.request.CommitInfo;
 
 /**
  * @since 4.5

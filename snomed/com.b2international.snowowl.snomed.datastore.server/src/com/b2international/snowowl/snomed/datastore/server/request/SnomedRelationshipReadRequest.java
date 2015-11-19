@@ -17,16 +17,18 @@ package com.b2international.snowowl.snomed.datastore.server.request;
 
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.domain.BranchContext;
+import com.b2international.snowowl.core.events.BaseRequest;
 import com.b2international.snowowl.core.exceptions.ComponentNotFoundException;
 import com.b2international.snowowl.core.terminology.ComponentCategory;
 import com.b2international.snowowl.snomed.core.domain.ISnomedRelationship;
 import com.b2international.snowowl.snomed.datastore.SnomedRelationshipLookupService;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRelationshipIndexEntry;
+import com.b2international.snowowl.snomed.datastore.server.converter.SnomedConverters;
 
 /**
  * @since 4.5
  */
-final class SnomedRelationshipReadRequest extends SnomedRelationshipRequest<BranchContext, ISnomedRelationship> {
+final class SnomedRelationshipReadRequest extends BaseRequest<BranchContext, ISnomedRelationship> {
 
 	private String componentId;
 
@@ -42,7 +44,7 @@ final class SnomedRelationshipReadRequest extends SnomedRelationshipRequest<Bran
 			throw new ComponentNotFoundException(ComponentCategory.RELATIONSHIP, componentId);
 		}
 		final SnomedRelationshipIndexEntry relationship = lookupService.getComponent(branchPath, componentId);
-		return getConverter(branchPath).apply(relationship);
+		return SnomedConverters.newRelationshipConverter(context).apply(relationship);
 	}
 
 	@Override

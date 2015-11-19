@@ -59,6 +59,7 @@ public class ReferenceSetMembershipUpdater extends DocumentUpdaterBase<SnomedDoc
 		doc.removeAll(referringMappingRefSetId);
 		
 		// merge reference set membership with the changes extracted from the transaction, if any.
+		// FIXME: Maybe run the iteration twice to add everything, then remove everything?
 		for (final RefSetMemberChange change : memberChanges) {
 			switch (change.getChangeKind()) {
 				case ADDED:
@@ -89,5 +90,4 @@ public class ReferenceSetMembershipUpdater extends DocumentUpdaterBase<SnomedDoc
 			doc.conceptReferringMappingRefSetId(refSetId);
 		}
 	}
-
 }

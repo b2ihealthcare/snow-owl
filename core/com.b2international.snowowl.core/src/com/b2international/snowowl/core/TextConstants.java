@@ -32,15 +32,17 @@ public abstract class TextConstants {
 	 */
 	public static final String DELIMITERS = "()[]/,.:;%#&+-*~'^><=\"`";
 
+	private static final CharMatcher INTERNAL_DELIMITER_MATCHER = CharMatcher.anyOf(DELIMITERS);
+
 	/**
 	 * A {@link CharMatcher} that matches all characters in {@link #DELIMITERS}.
 	 */
-	public static final CharMatcher DELIMITER_MATCHER = CharMatcher.anyOf(DELIMITERS);
+	public static final CharMatcher DELIMITER_MATCHER = INTERNAL_DELIMITER_MATCHER.precomputed();
 
 	/**
 	 * A {@link CharMatcher} that matches all characters in {@link #DELIMITERS} as well as all whitespace characters.
 	 */
-	public static final CharMatcher WHITESPACE_OR_DELIMITER_MATCHER = CharMatcher.WHITESPACE.or(DELIMITER_MATCHER);
+	public static final CharMatcher WHITESPACE_OR_DELIMITER_MATCHER = INTERNAL_DELIMITER_MATCHER.or(CharMatcher.WHITESPACE).precomputed();
 
 	private TextConstants() {
 		throw new UnsupportedOperationException("This class is not supposed to be instantiated.");

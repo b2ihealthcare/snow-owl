@@ -30,6 +30,7 @@ import org.hibernate.validator.constraints.NotEmpty;
 
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.domain.TransactionContext;
+import com.b2international.snowowl.core.exceptions.AlreadyExistsException;
 import com.b2international.snowowl.core.exceptions.BadRequestException;
 import com.b2international.snowowl.core.exceptions.ComponentNotFoundException;
 import com.b2international.snowowl.snomed.Concept;
@@ -39,14 +40,18 @@ import com.b2international.snowowl.snomed.core.domain.Acceptability;
 import com.b2international.snowowl.snomed.core.domain.DefinitionStatus;
 import com.b2international.snowowl.snomed.core.domain.ISnomedConcept;
 import com.b2international.snowowl.snomed.core.domain.IdGenerationStrategy;
+import com.b2international.snowowl.snomed.core.domain.UserIdGenerationStrategy;
 import com.b2international.snowowl.snomed.core.store.SnomedComponents;
+import com.b2international.snowowl.snomed.datastore.server.converter.SnomedConverters;
 import com.b2international.snowowl.snomed.datastore.services.ISnomedComponentService;
-import com.b2international.snowowl.snomed.datastore.services.SnomedBranchRefSetMembershipLookupService;
 import com.google.common.collect.HashMultiset;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Multiset;
 
-public class SnomedConceptCreateRequest extends BaseSnomedComponentCreateRequest<ISnomedConcept> {
+/**
+ * @since 4.5
+ */
+public final class SnomedConceptCreateRequest extends BaseSnomedComponentCreateRequest<ISnomedConcept> {
 
 	@Size(min = 2)
 	private List<SnomedDescriptionCreateRequest> descriptions = Collections.emptyList();
@@ -63,29 +68,39 @@ public class SnomedConceptCreateRequest extends BaseSnomedComponentCreateRequest
 	SnomedConceptCreateRequest() {
 	}
 	
-	public String getParentId() {
+	String getParentId() {
 		return parentId;
 	}
 	
-	public void setDefinitionStatus(DefinitionStatus definitionStatus) {
+	void setDefinitionStatus(DefinitionStatus definitionStatus) {
 		this.definitionStatus = definitionStatus;
 	}
 	
-	public void setParentId(final String parentId) {
+	void setParentId(final String parentId) {
 		this.parentId = parentId;
 	}
 
-	public void setIsAIdGenerationStrategy(final IdGenerationStrategy isAIdGenerationStrategy) {
+	void setIsAIdGenerationStrategy(final IdGenerationStrategy isAIdGenerationStrategy) {
 		this.isAIdGenerationStrategy = isAIdGenerationStrategy;
 	}
 
-	public void setDescriptions(final List<SnomedDescriptionCreateRequest> descriptions) {
+	void setDescriptions(final List<SnomedDescriptionCreateRequest> descriptions) {
 		this.descriptions = ImmutableList.copyOf(descriptions);
 	}
 
 	@Override
 	public ISnomedConcept execute(TransactionContext context) {
 		final IBranchPath branchPath = context.branch().branchPath();
+		
+		if (getIdGenerationStrategy() instanceof UserIdGenerationStrategy) {
+			try {
+				final String componentId = getIdGenerationStrategy().generate(context);
+				new SnomedConceptReadRequest(componentId).execute(context);
+				throw new AlreadyExistsException("Concept", componentId);
+			} catch (ComponentNotFoundException e) {
+				// ignore
+			}
+		}
 		
 		final Concept concept = convertConcept(context);
 		concept.getOutboundRelationships().add(convertParentIsARelationship(context));
@@ -129,7 +144,7 @@ public class SnomedConceptCreateRequest extends BaseSnomedComponentCreateRequest
 			}
 		}
 
-		return new SnomedConceptConverter(new SnomedBranchRefSetMembershipLookupService(branchPath)).apply(concept);
+		return SnomedConverters.newConceptConverter(context).apply(concept);
 	}
 	
 	private Concept convertConcept(final TransactionContext context) {

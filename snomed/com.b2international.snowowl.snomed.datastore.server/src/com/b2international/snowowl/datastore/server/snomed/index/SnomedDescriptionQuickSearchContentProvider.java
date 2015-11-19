@@ -56,10 +56,10 @@ public class SnomedDescriptionQuickSearchContentProvider extends AbstractQuickSe
 		public QuickSearchElement apply(final SnomedDescriptionIndexEntry input) {
 			return new CompactQuickSearchElement(input.getId(), 
 					input.getTypeId(), 
-					input.getLabel(), 
+					input.getTerm(), 
 					false,
-					getMatchRegions(queryExpression, input.getLabel()),
-					getSuffixes(queryExpression, input.getLabel()));
+					getMatchRegions(queryExpression, input.getTerm()),
+					getSuffixes(queryExpression, input.getTerm()));
 		}
 	}
 

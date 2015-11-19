@@ -15,9 +15,6 @@
  */
 package com.b2international.snowowl.datastore.server.snomed.escg;
 
-import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.CONCEPT_REFERRING_MAPPING_REFERENCE_SET_ID;
-import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.CONCEPT_REFERRING_REFERENCE_SET_ID;
-
 import java.io.Serializable;
 
 import org.apache.lucene.index.Term;
@@ -166,11 +163,11 @@ public class IndexQueryQueryEvaluator implements Serializable, IQueryEvaluator<B
 	}
 	
 	private Term createRefSetTerm(String refSetId) {
-		return new Term(CONCEPT_REFERRING_REFERENCE_SET_ID, IndexUtils.longToPrefixCoded(refSetId));
+		return new Term(SnomedMappings.conceptReferringRefSetId().fieldName(), IndexUtils.longToPrefixCoded(refSetId));
 	}
 	
 	private Term createMappingRefSetTerm(String refSetId) {
-		return new Term(CONCEPT_REFERRING_MAPPING_REFERENCE_SET_ID, IndexUtils.longToPrefixCoded(refSetId));
+		return new Term(SnomedMappings.conceptReferringMappingRefSetId().fieldName(), IndexUtils.longToPrefixCoded(refSetId));
 	}
 	
 	private Query createRefSetQuery(String refSetId) {

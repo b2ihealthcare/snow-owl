@@ -15,12 +15,6 @@
  */
 package com.b2international.snowowl.snomed.datastore.index.entry;
 
-import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.RELATIONSHIP_DESTINATION_NEGATED;
-import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.RELATIONSHIP_GROUP;
-import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.RELATIONSHIP_OBJECT_ID;
-import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.RELATIONSHIP_UNION_GROUP;
-import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.RELATIONSHIP_UNIVERSAL;
-import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.RELATIONSHIP_VALUE_ID;
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
 
@@ -51,16 +45,16 @@ public class SnomedRelationshipIndexEntry extends SnomedIndexEntry implements IS
 	public static Builder builder(final Document doc) {
 		return builder()
 				.id(SnomedMappings.id().getValueAsString(doc))
-				.sourceId(doc.get(RELATIONSHIP_OBJECT_ID))
+				.sourceId(SnomedMappings.relationshipSource().getValueAsString(doc))
 				.typeId(SnomedMappings.relationshipType().getValueAsString(doc))
-				.destinationId(doc.get(RELATIONSHIP_VALUE_ID))
+				.destinationId(SnomedMappings.relationshipDestination().getValueAsString(doc))
 				.characteristicTypeId(SnomedMappings.relationshipCharacteristicType().getValueAsString(doc))
-				.group((byte) doc.getField(RELATIONSHIP_GROUP).numericValue().intValue())
-				.unionGroup((byte) doc.getField(RELATIONSHIP_UNION_GROUP).numericValue().intValue())
+				.group(SnomedMappings.relationshipGroup().getValue(doc).byteValue())
+				.unionGroup(SnomedMappings.relationshipUnionGroup().getValue(doc).byteValue())
 				.active(BooleanUtils.valueOf(SnomedMappings.active().getValue(doc)))
 				.released(BooleanUtils.valueOf(SnomedMappings.released().getValue(doc)))
-				.modifierId(BooleanUtils.valueOf(Mappings.intField(RELATIONSHIP_UNIVERSAL).getValue(doc)) ? Concepts.UNIVERSAL_RESTRICTION_MODIFIER : Concepts.EXISTENTIAL_RESTRICTION_MODIFIER)
-				.destinationNegated(BooleanUtils.valueOf(Mappings.intField(RELATIONSHIP_DESTINATION_NEGATED).getValue(doc)))
+				.modifierId(BooleanUtils.valueOf(SnomedMappings.relationshipUniversal().getValue(doc)) ? Concepts.UNIVERSAL_RESTRICTION_MODIFIER : Concepts.EXISTENTIAL_RESTRICTION_MODIFIER)
+				.destinationNegated(BooleanUtils.valueOf(SnomedMappings.relationshipDestinationNegated().getValue(doc)))
 				.moduleId(SnomedMappings.module().getValueAsString(doc))
 				.storageKey(Mappings.storageKey().getValue(doc))
 				.effectiveTimeLong(SnomedMappings.effectiveTime().getValue(doc));

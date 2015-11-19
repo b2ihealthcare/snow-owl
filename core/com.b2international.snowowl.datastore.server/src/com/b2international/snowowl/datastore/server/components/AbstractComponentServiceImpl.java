@@ -85,26 +85,17 @@ public abstract class AbstractComponentServiceImpl<R extends IComponent, U, E ex
 //		}
 //	}
 
-	@Override
-	public R read(final IComponentRef ref) {
-		checkNotNull(ref, "Component reference may not be null.");
-		checkComponentExists(ref);
-
-		final R result = doRead(ref);
-		return result;
-	}
-
-	@Override
-	public R update(final IComponentRef ref, final U update, final String userId, final String commitComment) {
-		checkComponentExists(ref);
-		ApiValidation.checkInput(update);
-		
-		try (E editingContext = createEditingContext(ref)) {
-			doUpdate(ref, update, editingContext);
-			doCommit(userId, commitComment, editingContext);
-			return read(ref);
-		}
-	}
+//	@Override
+//	public R update(final IComponentRef ref, final U update, final String userId, final String commitComment) {
+//		checkComponentExists(ref);
+//		ApiValidation.checkInput(update);
+//		
+//		try (E editingContext = createEditingContext(ref)) {
+//			doUpdate(ref, update, editingContext);
+//			doCommit(userId, commitComment, editingContext);
+//			return read(ref);
+//		}
+//	}
 
 //	@Override
 //	public void delete(final IComponentRef ref, final String userId, final String commitComment) {
@@ -174,7 +165,7 @@ public abstract class AbstractComponentServiceImpl<R extends IComponent, U, E ex
 
 	protected abstract String getComponentId(M component);
 
-	protected abstract R doRead(IComponentRef ref);
+//	protected abstract R doRead(IComponentRef ref);
 
 	protected abstract void doUpdate(IComponentRef ref, U update, E editingContext);
 

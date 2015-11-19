@@ -16,9 +16,6 @@
 package com.b2international.snowowl.snomed.datastore.index.refset;
 
 import static com.b2international.commons.StringUtils.isEmpty;
-import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.REFERENCE_SET_REFERENCED_COMPONENT_TYPE;
-import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.REFERENCE_SET_STRUCTURAL;
-import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.REFERENCE_SET_TYPE;
 
 import java.io.Serializable;
 import java.util.Iterator;
@@ -112,24 +109,23 @@ public class SnomedRefSetIndexQueryAdapter extends SnomedDslIndexQueryAdapter<Sn
 
 	@Override
 	public Query createQuery() {
-		final SnomedQueryBuilder query = SnomedMappings.newQuery()
-				.refSet();
+		final SnomedQueryBuilder query = SnomedMappings.newQuery().refSet();
 		
 		if (referencedComponentType != null) {
-			query.field(REFERENCE_SET_REFERENCED_COMPONENT_TYPE, referencedComponentType.intValue());
+			query.refSetReferencedComponentType(referencedComponentType.intValue());
 		}
 		
 		if (null != refSetTypes && refSetTypes.length > 0) {
 			final SnomedQueryBuilder refsetTypeQuery = SnomedMappings.newQuery();
 			for (final SnomedRefSetType refSetType : refSetTypes) {
-				refsetTypeQuery.field(REFERENCE_SET_TYPE, refSetType.getValue());
+				refsetTypeQuery.refSetType(refSetType);
 			}
 			// at least one type has to match
 			query.and(refsetTypeQuery.matchAny());
 		}
 
 		if ((searchFlags & SEARCH_REGULAR_ONLY) != 0) {
-			query.field(REFERENCE_SET_STRUCTURAL, 0);
+			query.refSetStructural(false);
 		}
 
 		// Shortcut for empty search terms: return all reference sets

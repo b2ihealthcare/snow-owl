@@ -27,7 +27,6 @@ import com.b2international.snowowl.snomed.datastore.SnomedConceptLookupService;
 import com.b2international.snowowl.snomed.datastore.SnomedRefSetLookupService;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetIndexEntry;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetIndexEntry.Builder;
-import com.b2international.snowowl.snomed.snomedrefset.SnomedMappingRefSet;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSet;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedStructuralRefSet;
 
@@ -57,6 +56,7 @@ public class SnomedRefSetAdapterFactory extends TypeSafeAdapterFactory {
 			} else {
 				final Builder builder = SnomedRefSetIndexEntry.builder()
 						.id(refSet.getIdentifierId()) 
+						.iconId(refSet.getIdentifierId()) // XXX: An IconProvider might give an exact value here, but this is OK
 						.moduleId(identifierConcept.getModule().getId())
 						.storageKey(CDOIDUtils.asLongSafe(refSet.cdoID()))
 						.active(identifierConcept.isActive())
@@ -65,10 +65,6 @@ public class SnomedRefSetAdapterFactory extends TypeSafeAdapterFactory {
 						.type(refSet.getType()) 
 						.referencedComponentType(refSet.getReferencedComponentType())
 						.structural(refSet instanceof SnomedStructuralRefSet);
-	
-				if (refSet instanceof SnomedMappingRefSet) {
-					builder.mapTargetComponentType(((SnomedMappingRefSet) refSet).getMapTargetComponentType());
-				}
 				
 				refSetIndexEntry = builder.build();
 			}

@@ -16,7 +16,6 @@
 package com.b2international.snowowl.snomed.exporter.server.sandbox;
 
 import static com.b2international.snowowl.core.ApplicationContext.getServiceForClass;
-import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_UUID;
 import static com.google.common.base.Preconditions.checkNotNull;
 
 import java.util.Set;
@@ -51,9 +50,9 @@ public class SnomedRefSetExporter extends SnomedCompositeExporter implements Sno
 			.active()
 			.effectiveTime()
 			.module()
-			.memberReferenceSetId()
+			.memberRefSetId()
 			.memberReferencedComponentId()
-			.field(REFERENCE_SET_MEMBER_UUID)
+			.memberUuid()
 			.build();
 	
 	private final String refSetId;
@@ -74,7 +73,7 @@ public class SnomedRefSetExporter extends SnomedCompositeExporter implements Sno
 	@Override
 	public String transform(final Document doc) {
 		final StringBuilder sb = new StringBuilder();
-		sb.append(doc.get(REFERENCE_SET_MEMBER_UUID));
+		sb.append(SnomedMappings.memberUuid().getValue(doc));
 		sb.append(HT);
 		sb.append(formatEffectiveTime(SnomedMappings.effectiveTime().getValue(doc)));
 		sb.append(HT);

@@ -68,7 +68,7 @@ public interface IComponentNodeService<N extends IComponentNode> {
 	 * @throws ComponentNotFoundException         if the component identifier does not match any component on the given
 	 * 											  version, task
 	 */
-	N getNode(IComponentRef ref);
+//	N getNode(IComponentRef ref);
 
 	/**
 	 * Returns the descendant nodes of the node with the specified component reference.

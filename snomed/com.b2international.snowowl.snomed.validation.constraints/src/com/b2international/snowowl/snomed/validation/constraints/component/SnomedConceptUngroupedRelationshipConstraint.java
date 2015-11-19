@@ -34,7 +34,6 @@ import com.b2international.snowowl.datastore.index.DocIdCollector;
 import com.b2international.snowowl.datastore.index.DocIdCollector.DocIdsIterator;
 import com.b2international.snowowl.datastore.server.snomed.index.SnomedIndexServerService;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
-import com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants;
 import com.b2international.snowowl.snomed.datastore.index.SnomedIndexService;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptIndexEntry;
 import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedMappings;
@@ -71,7 +70,7 @@ public class SnomedConceptUngroupedRelationshipConstraint extends ComponentValid
 		}
 		Query query = SnomedMappings.newQuery()
 				.active()
-				.field(SnomedIndexBrowserConstants.RELATIONSHIP_OBJECT_ID, Long.valueOf(component.getId()))
+				.relationshipSource(component.getId())
 				.and(relationshipTypeQuery.matchAny())
 				.matchAll();
 		indexService.search(branchPath, query, collector);
@@ -79,8 +78,8 @@ public class SnomedConceptUngroupedRelationshipConstraint extends ComponentValid
 			List<ComponentValidationDiagnostic> diagnostics = Lists.newArrayList();
 			DocIdsIterator iterator = collector.getDocIDs().iterator();
 			while (iterator.next()) {
-				final Document doc = indexService.document(branchPath, iterator.getDocID(), SnomedMappings.fieldsToLoad().id().relationshipType().field(SnomedIndexBrowserConstants.RELATIONSHIP_GROUP).build());
-				int relationshipGroup = doc.getField(SnomedIndexBrowserConstants.RELATIONSHIP_GROUP).numericValue().intValue();
+				final Document doc = indexService.document(branchPath, iterator.getDocID(), SnomedMappings.fieldsToLoad().id().relationshipType().relationshipGroup().build());
+				int relationshipGroup = SnomedMappings.relationshipGroup().getValue(doc);
 				if (relationshipGroup != 0) {
 					final long relationshipTypeId = SnomedMappings.relationshipType().getValue(doc);
 					final String relationshipTypeLabel = ApplicationContext.getServiceForClass(ISnomedConceptNameProvider.class).getComponentLabel(branchPath, String.valueOf(relationshipTypeId));

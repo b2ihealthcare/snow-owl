@@ -15,8 +15,6 @@
  */
 package com.b2international.snowowl.snomed.datastore.index.update;
 
-import static java.lang.Long.parseLong;
-
 import com.b2international.snowowl.datastore.index.DocumentUpdaterBase;
 import com.b2international.snowowl.snomed.Description;
 import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedDocumentBuilder;
@@ -35,11 +33,9 @@ public class DescriptionImmutablePropertyUpdater extends DocumentUpdaterBase<Sno
 	
 	@Override
 	public void doUpdate(SnomedDocumentBuilder doc) {
-		final long typeId = parseLong(description.getType().getId());
-		final long conceptId = parseLong(description.getConcept().getId());
 		doc
-			.descriptionConcept(conceptId)
-			.descriptionType(typeId);
+			.descriptionConcept(Long.valueOf(description.getConcept().getId()))
+			.descriptionType(Long.valueOf(description.getType().getId()))
+			.descriptionLanguageCode(description.getLanguageCode());
 	}
-
 }

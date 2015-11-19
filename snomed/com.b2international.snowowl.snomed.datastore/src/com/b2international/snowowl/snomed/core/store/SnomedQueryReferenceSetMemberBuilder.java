@@ -28,7 +28,7 @@ public final class SnomedQueryReferenceSetMemberBuilder extends SnomedMemberBuil
 	private String query;
 
 	SnomedQueryReferenceSetMemberBuilder() {
-		super(ComponentCategory.SET);
+		super(ComponentCategory.SET_MEMBER);
 	}
 
 	/**

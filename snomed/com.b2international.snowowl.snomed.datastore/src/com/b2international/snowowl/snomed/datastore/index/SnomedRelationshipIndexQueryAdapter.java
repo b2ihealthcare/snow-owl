@@ -15,9 +15,6 @@
  */
 package com.b2international.snowowl.snomed.datastore.index;
 
-import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.RELATIONSHIP_OBJECT_ID;
-import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.RELATIONSHIP_VALUE_ID;
-
 import org.apache.lucene.document.Document;
 
 import com.b2international.commons.StringUtils;
@@ -25,7 +22,6 @@ import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.datastore.index.IndexQueryBuilder;
 import com.b2international.snowowl.datastore.index.IndexUtils;
 import com.b2international.snowowl.datastore.index.QueryDslIndexQueryAdapter;
-import com.b2international.snowowl.datastore.index.mapping.LongIndexField;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRelationshipIndexEntry;
 import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedMappings;
 import com.google.common.base.Optional;
@@ -81,8 +77,8 @@ public class SnomedRelationshipIndexQueryAdapter extends QueryDslIndexQueryAdapt
 			final Long id = parsedSearchStringOptional.get();
 			return activeRelationshipsQuery
 			.finishIf(StringUtils.isEmpty(searchString))
-			.requireExactTermIf(anyFlagSet(SEARCH_SOURCE_ID), RELATIONSHIP_OBJECT_ID, LongIndexField._toBytesRef(id))
-			.requireExactTermIf(anyFlagSet(SEARCH_DESTINATION_ID), RELATIONSHIP_VALUE_ID, LongIndexField._toBytesRef(id))
+			.requireIf(anyFlagSet(SEARCH_SOURCE_ID), SnomedMappings.newQuery().relationshipSource(id).matchAll())
+			.requireIf(anyFlagSet(SEARCH_DESTINATION_ID), SnomedMappings.newQuery().relationshipDestination(id).matchAll())
 			.requireIf(anyFlagSet(SEARCH_STORAGE_KEY), SnomedMappings.newQuery().storageKey(id).matchAll())
 			.requireIf(anyFlagSet(SEARCH_RELATIONSHIP_ID), SnomedMappings.newQuery().id(id).matchAll());
 		} else {

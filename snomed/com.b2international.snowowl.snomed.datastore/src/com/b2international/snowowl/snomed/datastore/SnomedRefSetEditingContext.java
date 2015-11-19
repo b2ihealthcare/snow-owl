@@ -686,6 +686,7 @@ public class SnomedRefSetEditingContext extends BaseSnomedEditingContext {
 	 * @param refSet the parent reference set
 	 * 
 	 * @return the populated reference set member instance
+	 * @deprecated - use {@link SnomedComponents#newAttributeValueMember()} instead
 	 */
 	public SnomedAttributeValueRefSetMember createAttributeValueRefSetMember(final ComponentIdentifierPair<String> referencedComponentPair, 
 			@Nullable final ComponentIdentifierPair<String> valueComponentPair, 
@@ -714,6 +715,7 @@ public class SnomedRefSetEditingContext extends BaseSnomedEditingContext {
 	 * @param structuralRefSet the parent reference set
 	 * 
 	 * @return the populated reference set member instance
+	 * @deprecated - use {@link SnomedComponents#newAssociationMember()} instead
 	 */
 	public SnomedAssociationRefSetMember createAssociationRefSetMember(final ComponentIdentifierPair<String> referencedComponentPair, 
 			@Nullable final ComponentIdentifierPair<String> targetComponentPair, 

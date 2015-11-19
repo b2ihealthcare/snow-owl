@@ -34,8 +34,7 @@ import com.b2international.snowowl.snomed.datastore.index.SnomedIndexService;
 import com.b2international.snowowl.snomed.datastore.index.SnomedRelationshipIndexQueryAdapter;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRelationshipIndexEntry;
 import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedMappings;
-import com.b2international.snowowl.snomed.datastore.server.request.SnomedRelationshipConverter;
-import com.b2international.snowowl.snomed.datastore.services.SnomedBranchRefSetMembershipLookupService;
+import com.b2international.snowowl.snomed.datastore.server.converter.SnomedConverters;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 
@@ -86,13 +85,10 @@ public class SnomedStatementBrowserServiceImpl implements ISnomedStatementBrowse
 		result.setTotalMembers(getIndexService().getHitCount(branch, queryAdapter));
 
 		final List<SnomedRelationshipIndexEntry> indexEntries = getIndexService().search(branch, queryAdapter, offset, limit);
-		final List<ISnomedRelationship> relationships = Lists.transform(indexEntries, createConverter(branch));
+		final List<ISnomedRelationship> relationships = Lists.transform(indexEntries, SnomedConverters.newRelationshipConverter(branch));
 		result.setMembers(ImmutableList.copyOf(relationships));
 
 		return result;
 	}
 
-	private SnomedRelationshipConverter createConverter(final IBranchPath branchPath) {
-		return new SnomedRelationshipConverter(new SnomedBranchRefSetMembershipLookupService(branchPath));
-	}
 }

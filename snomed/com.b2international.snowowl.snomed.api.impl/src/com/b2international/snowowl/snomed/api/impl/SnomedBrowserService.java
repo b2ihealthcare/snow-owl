@@ -81,7 +81,6 @@ import com.b2international.snowowl.snomed.core.domain.RelationshipModifier;
 import com.b2international.snowowl.snomed.datastore.SnomedEditingContext;
 import com.b2international.snowowl.snomed.datastore.SnomedStatementBrowser;
 import com.b2international.snowowl.snomed.datastore.SnomedTerminologyBrowser;
-import com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants;
 import com.b2international.snowowl.snomed.datastore.index.SnomedConceptFullQueryAdapter;
 import com.b2international.snowowl.snomed.datastore.index.SnomedConceptIndexQueryAdapter;
 import com.b2international.snowowl.snomed.datastore.index.SnomedDescriptionReducedQueryAdapter;
@@ -140,7 +139,7 @@ public class SnomedBrowserService implements ISnomedBrowserService {
 					.relationship()
 					.active()
 					.relationshipCharacteristicType(characteristicTypeId)
-					.field(SnomedIndexBrowserConstants.RELATIONSHIP_VALUE_ID, Long.valueOf(searchString))
+					.relationshipDestination(Long.valueOf(searchString))
 					.relationshipType(Concepts.IS_A)
 					.matchAll();
 		}
@@ -165,13 +164,7 @@ public class SnomedBrowserService implements ISnomedBrowserService {
 	private final InputFactory inputFactory;
 
 	@Resource
-	private SnomedConceptServiceImpl conceptService;
-
-	@Resource
 	private SnomedDescriptionServiceImpl descriptionService;
-
-	@Resource
-	private SnomedRelationshipServiceImpl relationshipService;
 
 	public SnomedBrowserService() {
 		inputFactory = new InputFactory();
@@ -559,7 +552,7 @@ public class SnomedBrowserService implements ISnomedBrowserService {
 			final SnomedBrowserDescriptionResult descriptionResult = new SnomedBrowserDescriptionResult();
 
 			descriptionResult.setActive(descriptionIndexEntry.isActive());
-			descriptionResult.setTerm(descriptionIndexEntry.getLabel());
+			descriptionResult.setTerm(descriptionIndexEntry.getTerm());
 
 			final SnomedConceptIndexEntry conceptIndexEntry = conceptMap.get(descriptionIndexEntry.getConceptId());
 			final SnomedBrowserDescriptionResultDetails details;
@@ -575,7 +568,7 @@ public class SnomedBrowserService implements ISnomedBrowserService {
 						term = descriptionService.getFullySpecifiedName(conceptRef, locales).getTerm();
 						break;
 					default:
-						term = descriptionIndexEntry.getLabel();
+						term = descriptionIndexEntry.getTerm();
 						break;
 				}
 				details.setFsn(term);

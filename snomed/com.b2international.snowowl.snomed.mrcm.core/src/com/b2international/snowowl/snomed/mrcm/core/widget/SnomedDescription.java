@@ -54,7 +54,7 @@ public final class SnomedDescription {
 	}
 	
 	private final String id;
-	private final String label;
+	private final String term;
 	private final String typeId;
 	private final boolean active;
 	private final boolean released;
@@ -62,7 +62,7 @@ public final class SnomedDescription {
 	
 	public SnomedDescription(final Description description) {
 		id = CDOUtils.getAttribute(description, SnomedPackage.eINSTANCE.getComponent_Id(), String.class);
-		label = description.getTerm();
+		term = description.getTerm();
 		typeId = description.getType().getId();
 		active = description.isActive();
 		released = description.isReleased();
@@ -73,7 +73,7 @@ public final class SnomedDescription {
 	
 	public SnomedDescription(final SnomedDescriptionIndexEntry description) {
 		id = description.getId();
-		label = description.getLabel();
+		term = description.getTerm();
 		typeId = description.getTypeId();
 		active = description.isActive();
 		released = description.isReleased();
@@ -84,8 +84,8 @@ public final class SnomedDescription {
 		return id;
 	}
 
-	public String getLabel() {
-		return label;
+	public String getTerm() {
+		return term;
 	}
 
 	public String getTypeId() {

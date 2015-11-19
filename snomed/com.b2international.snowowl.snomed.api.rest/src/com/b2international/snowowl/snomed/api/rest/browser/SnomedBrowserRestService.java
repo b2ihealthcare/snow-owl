@@ -33,7 +33,6 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import com.b2international.snowowl.core.domain.IComponentRef;
 import com.b2international.snowowl.core.exceptions.BadRequestException;
 import com.b2international.snowowl.datastore.server.domain.StorageRef;
-import com.b2international.snowowl.snomed.api.ISnomedConceptService;
 import com.b2international.snowowl.snomed.api.browser.ISnomedBrowserService;
 import com.b2international.snowowl.snomed.api.domain.browser.ISnomedBrowserChildConcept;
 import com.b2international.snowowl.snomed.api.domain.browser.ISnomedBrowserConcept;
@@ -66,9 +65,6 @@ public class SnomedBrowserRestService extends AbstractSnomedRestService {
 
 	@Autowired
 	protected ISnomedBrowserService browserService;
-	
-	@Autowired
-	private ISnomedConceptService conceptService;
 	
 	@ApiOperation(
 			value="Retrieve single concept properties",

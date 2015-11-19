@@ -15,14 +15,9 @@
  */
 package com.b2international.snowowl.snomed.exporter.server.sandbox;
 
-import static com.b2international.snowowl.datastore.index.IndexUtils.getIntValue;
 import static com.b2international.snowowl.snomed.SnomedConstants.Concepts.EXISTENTIAL_RESTRICTION_MODIFIER;
 import static com.b2international.snowowl.snomed.SnomedConstants.Concepts.UNIVERSAL_RESTRICTION_MODIFIER;
 import static com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants.RELATIONSHIP_NUMBER;
-import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.RELATIONSHIP_GROUP;
-import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.RELATIONSHIP_OBJECT_ID;
-import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.RELATIONSHIP_UNIVERSAL;
-import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.RELATIONSHIP_VALUE_ID;
 import static com.google.common.base.Preconditions.checkNotNull;
 
 import java.util.Set;
@@ -32,6 +27,7 @@ import org.apache.lucene.search.BooleanClause.Occur;
 import org.apache.lucene.search.BooleanQuery;
 import org.apache.lucene.search.Query;
 
+import com.b2international.commons.BooleanUtils;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
 import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedMappings;
@@ -46,12 +42,13 @@ public abstract class AbstractSnomedRelationshipExporter extends SnomedCoreExpor
 			.effectiveTime()
 			.active()
 			.module()
+			.relationshipSource()
 			.relationshipType()
+			.relationshipDestination()
 			.relationshipCharacteristicType()
-			.field(RELATIONSHIP_OBJECT_ID)
-			.field(RELATIONSHIP_VALUE_ID)
-			.field(RELATIONSHIP_GROUP)
-			.field(RELATIONSHIP_UNIVERSAL).build();
+			.relationshipGroup()
+			.relationshipUniversal()
+			.build();
 	
 	private Occur statedOccur;
 	
@@ -76,11 +73,11 @@ public abstract class AbstractSnomedRelationshipExporter extends SnomedCoreExpor
 		sb.append(HT);
 		sb.append(SnomedMappings.module().getValueAsString(doc));
 		sb.append(HT);
-		sb.append(doc.get(RELATIONSHIP_OBJECT_ID));
+		sb.append(SnomedMappings.relationshipSource().getValueAsString(doc));
 		sb.append(HT);
-		sb.append(doc.get(RELATIONSHIP_VALUE_ID));
+		sb.append(SnomedMappings.relationshipDestination().getValueAsString(doc));
 		sb.append(HT);
-		sb.append(doc.get(RELATIONSHIP_GROUP));
+		sb.append(SnomedMappings.relationshipGroup().getValueAsString(doc));
 		sb.append(HT);
 		sb.append(SnomedMappings.relationshipType().getValueAsString(doc));
 		sb.append(HT);
@@ -109,7 +106,7 @@ public abstract class AbstractSnomedRelationshipExporter extends SnomedCoreExpor
 	}
 	
 	private String getModifierValue(final Document doc) {
-		return 1 == getIntValue(doc.getField(RELATIONSHIP_UNIVERSAL)) 
+		return BooleanUtils.valueOf(SnomedMappings.relationshipUniversal().getValue(doc)) 
 				? UNIVERSAL_RESTRICTION_MODIFIER 
 				: EXISTENTIAL_RESTRICTION_MODIFIER;
 	}

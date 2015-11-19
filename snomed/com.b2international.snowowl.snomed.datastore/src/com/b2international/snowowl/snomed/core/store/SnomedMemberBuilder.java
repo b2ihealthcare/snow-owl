@@ -38,7 +38,7 @@ public abstract class SnomedMemberBuilder<B extends SnomedMemberBuilder<B, T>, T
 	}
 	
 	/**
-	 * Specifies the referenced component ID of the new language reference set member.
+	 * Specifies the referenced component ID of the new reference set member.
 	 * 
 	 * @param referencedComponent
 	 *            - the referenced component to refer to
@@ -50,10 +50,10 @@ public abstract class SnomedMemberBuilder<B extends SnomedMemberBuilder<B, T>, T
 	}
 	
 	/**
-	 * Specifies the reference set this language reference set member belongs to.
+	 * Specifies the reference set where this reference set member belongs.
 	 * 
 	 * @param referenceSetId
-	 *            - the identifier concept ID of the Language reference set
+	 *            - the identifier concept ID of the reference set
 	 * @return
 	 */
 	public B withRefSet(String referenceSetId) {

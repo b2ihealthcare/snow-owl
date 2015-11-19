@@ -37,43 +37,42 @@ import com.b2international.snowowl.snomed.core.domain.Acceptability;
 import com.b2international.snowowl.snomed.core.domain.InactivationIndicator;
 import com.b2international.snowowl.snomed.core.domain.RelationshipRefinability;
 import com.b2international.snowowl.snomed.datastore.SnomedRefSetUtil;
-import com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants;
 import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedMappings;
 import com.b2international.snowowl.snomed.snomedrefset.DataType;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType;
 import com.google.common.base.Function;
 import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ImmutableSet;
 
 /**
  * Lightweight representation of a SNOMED CT reference set member.
  */
 public class SnomedRefSetMemberIndexEntry extends SnomedIndexEntry implements IComponent<String>, Serializable {
 
-	private static final Set<String> ADDITIONAL_FIELDS = ImmutableSet.<String>builder()
-			.add(SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_ACCEPTABILITY_ID)
-			.add(SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_VALUE_ID)
-			.add(SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_TARGET_COMPONENT_ID)
-			.add(SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_MAP_TARGET_COMPONENT_ID)
-			.add(SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_MAP_TARGET_COMPONENT_DESCRIPTION)
-			.add(SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_MAP_GROUP)
-			.add(SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_MAP_PRIORITY)
-			.add(SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_MAP_RULE)
-			.add(SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_MAP_ADVICE)
-			.add(SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_MAP_CATEGORY_ID)
-			.add(SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_CORRELATION_ID)
-			.add(SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_DESCRIPTION_FORMAT_ID)
-			.add(SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_DESCRIPTION_LENGTH)
-			.add(SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_OPERATOR_ID)
-			.add(SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_CONTAINER_MODULE_ID)
-			.add(SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_UOM_ID)
-			.add(SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_DATA_TYPE_LABEL)
-			.add(SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_DATA_TYPE_VALUE)
-			.add(SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_CHARACTERISTIC_TYPE_ID)
-			.add(SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_QUERY)
-			.add(SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_SOURCE_EFFECTIVE_TIME)
-			.add(SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_TARGET_EFFECTIVE_TIME)
+	private static final Set<String> ADDITIONAL_FIELDS = SnomedMappings.fieldsToLoad()
+			.memberAcceptabilityId()
+			.memberValueId()
+			.memberTargetComponentId()
+			.memberMapTargetComponentId()
+			.memberMapTargetComponentDescription()
+			.memberMapGroup()
+			.memberMapPriority()
+			.memberMapRule()
+			.memberMapAdvice()
+			.memberMapCategoryId()
+			.memberCorrelationId()
+			.memberDescriptionFormatId()
+			.memberDescriptionLength()
+			.memberOperatorId()
+			.memberContainerModuleId()
+			.memberUomId()
+			.memberDataTypeLabel()
+			.memberDataTypeOrdinal()
+			.memberSerializedValue()
+			.memberCharacteristicTypeId()
+			.memberQuery()
+			.memberSourceEffectiveTime()
+			.memberTargetEffectiveTime()
 			.build();
 
 	/**
@@ -95,7 +94,7 @@ public class SnomedRefSetMemberIndexEntry extends SnomedIndexEntry implements IC
 		final Builder builder = builder() 
 				.active(BooleanUtils.valueOf(SnomedMappings.active().getValue(doc)))
 				.effectiveTimeLong(SnomedMappings.effectiveTime().getValue(doc))
-				.id(Mappings.stringField(SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_UUID).getValue(doc))
+				.id(SnomedMappings.memberUuid().getValue(doc))
 				.moduleId(SnomedMappings.module().getValueAsString(doc))
 				.referencedComponentId(SnomedMappings.memberReferencedComponentId().getValueAsString(doc))
 				.referencedComponentType(SnomedMappings.memberReferencedComponentType().getShortValue(doc))
@@ -105,7 +104,7 @@ public class SnomedRefSetMemberIndexEntry extends SnomedIndexEntry implements IC
 				.storageKey(Mappings.storageKey().getValue(doc));
 		
 		if (SnomedRefSetUtil.isMapping(refSetType)) {
-			builder.mapTargetComponentType(Mappings.intField(SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_MAP_TARGET_COMPONENT_TYPE_ID).getShortValue(doc));
+			builder.mapTargetComponentType(SnomedMappings.memberMapTargetComponentType().getShortValue(doc));
 		}
 		
 		for (IndexableField storedField : doc) {
@@ -212,6 +211,7 @@ public class SnomedRefSetMemberIndexEntry extends SnomedIndexEntry implements IC
 	private final String referencedComponentId;
 	private final ImmutableMap<String, Object> additionalFields;
 
+	private final String referenceSetId;
 	private final SnomedRefSetType referenceSetType;
 	private final short referencedComponentType;
 	private final short mapTargetComponentType;
@@ -244,6 +244,7 @@ public class SnomedRefSetMemberIndexEntry extends SnomedIndexEntry implements IC
 
 		this.referencedComponentId = checkNotNull(referencedComponentId, "Reference component identifier may not be null.");
 		this.additionalFields = checkNotNull(additionalFields, "Additional field map may not be null.");
+		this.referenceSetId = checkNotNull(referenceSetId, "Reference set identifier may not be null.");
 		this.referenceSetType = checkNotNull(referenceSetType, "Reference set type may not be null.");
 		this.referencedComponentType = referencedComponentType;
 		this.mapTargetComponentType = mapTargetComponentType;
@@ -607,7 +608,7 @@ public class SnomedRefSetMemberIndexEntry extends SnomedIndexEntry implements IC
 	 * @return the identifier of the member's reference set
 	 */
 	public String getRefSetIdentifierId() {
-		return getIconId(); // XXX: aliased to icon identifier in constructor
+		return referenceSetId;
 	}
 
 	/**
@@ -651,33 +652,29 @@ public class SnomedRefSetMemberIndexEntry extends SnomedIndexEntry implements IC
 				.toString();
 	}
 
-	// -----------------------------------
-	// FIXME: Methods below should be replaced with field-based access(?)
-	// -----------------------------------
-
 	@SuppressWarnings("unchecked")
 	public <T> T getValue() {
-		return (T) getField(SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_SERIALIZED_VALUE); 
+		return (T) getField(SnomedMappings.memberSerializedValue().fieldName()); 
 	}
 
 	public DataType getRefSetPackageDataType() {
-		return DataType.get(getIntegerField(SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_DATA_TYPE_VALUE));
+		return DataType.get(getIntegerField(SnomedMappings.memberDataTypeOrdinal().fieldName()));
 	}
 
 	public String getUomComponentId() {
-		return getStringField(SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_UOM_ID);
+		return getStringField(SnomedMappings.memberUomId().fieldName());
 	}
 
 	public String getAttributeLabel() {
-		return getStringField(SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_DATA_TYPE_LABEL);
+		return getStringField(SnomedMappings.memberDataTypeLabel().fieldName());
 	}
 
 	public String getOperatorComponentId() {
-		return getStringField(SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_OPERATOR_ID);
+		return getStringField(SnomedMappings.memberOperatorId().fieldName());
 	}
 
 	public String getCharacteristicTypeId() {
-		return getStringField(SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_CHARACTERISTIC_TYPE_ID);
+		return getStringField(SnomedMappings.memberCharacteristicTypeId().fieldName());
 	}	
 
 	public Acceptability getAcceptability() {
@@ -685,51 +682,51 @@ public class SnomedRefSetMemberIndexEntry extends SnomedIndexEntry implements IC
 	}
 
 	public String getAcceptabilityId() {
-		return getStringField(SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_ACCEPTABILITY_ID);
+		return getStringField(SnomedMappings.memberAcceptabilityId().fieldName());
 	}
 
 	public Integer getDescriptionLength() {
-		return getIntegerField(SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_DESCRIPTION_LENGTH);
+		return getIntegerField(SnomedMappings.memberDescriptionLength().fieldName());
 	}
 
 	public String getMapTargetComponentId() {
-		return getStringField(SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_MAP_TARGET_COMPONENT_ID);
+		return getStringField(SnomedMappings.memberMapTargetComponentId().fieldName());
 	}
 
 	public int getMapGroup() {
-		return getIntegerField(SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_MAP_GROUP);
+		return getIntegerField(SnomedMappings.memberMapGroup().fieldName());
 	}
 
 	public int getMapPriority() {
-		return getIntegerField(SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_MAP_PRIORITY);
+		return getIntegerField(SnomedMappings.memberMapPriority().fieldName());
 	}
 
 	public String getMapRule() {
-		return getStringField(SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_MAP_RULE);
+		return getStringField(SnomedMappings.memberMapRule().fieldName());
 	}
 
 	public String getMapAdvice() {
-		return getStringField(SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_MAP_ADVICE);
+		return getStringField(SnomedMappings.memberMapAdvice().fieldName());
 	}
 	
 	public String getMapCategoryId() {
-		return getStringField(SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_MAP_CATEGORY_ID);
+		return getStringField(SnomedMappings.memberMapCategoryId().fieldName());
 	}
 	
 	public String getCorrelationId() {
-		return getStringField(SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_CORRELATION_ID);
+		return getStringField(SnomedMappings.memberCorrelationId().fieldName());
 	}
 
 	public String getMapTargetDescription() {
-		return getStringField(SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_MAP_TARGET_COMPONENT_DESCRIPTION);
+		return getStringField(SnomedMappings.memberMapTargetComponentDescription().fieldName());
 	}
 	
 	public String getQuery() {
-		return getStringField(SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_QUERY);
+		return getStringField(SnomedMappings.memberQuery().fieldName());
 	}
 	
 	public String getTargetComponentId() {
-		return getStringField(SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_TARGET_COMPONENT_ID);
+		return getStringField(SnomedMappings.memberTargetComponentId().fieldName());
 	}
 
 	public RelationshipRefinability getRefinability() {
@@ -741,7 +738,7 @@ public class SnomedRefSetMemberIndexEntry extends SnomedIndexEntry implements IC
 	}
 
 	public String getValueId() {
-		return getStringField(SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_VALUE_ID);
+		return getStringField(SnomedMappings.memberValueId().fieldName());
 	}
 
 	@Deprecated

@@ -24,9 +24,9 @@ import com.b2international.snowowl.datastore.BranchPathUtils;
 import com.b2international.snowowl.datastore.cdo.CDOIDUtils;
 import com.b2international.snowowl.snomed.datastore.SnomedRefSetMemberLookupService;
 import com.b2international.snowowl.snomed.datastore.SnomedRefSetUtil;
-import com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry.Builder;
+import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedMappings;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedAssociationRefSetMember;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedAttributeValueRefSetMember;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedConcreteDataTypeRefSetMember;
@@ -89,25 +89,26 @@ public class SnomedRefSetMemberAdapterFactory extends TypeSafeAdapterFactory {
 
 			@Override
 			public Builder caseSnomedAssociationRefSetMember(final SnomedAssociationRefSetMember associationMember) {
-				return builder.additionalField(SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_TARGET_COMPONENT_ID, associationMember.getTargetComponentId());
+				return builder.additionalField(SnomedMappings.memberTargetComponentId().fieldName(), associationMember.getTargetComponentId());
 			}
 
 			@Override
 			public Builder caseSnomedAttributeValueRefSetMember(final SnomedAttributeValueRefSetMember attributeValueMember) {
-				return builder.additionalField(SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_VALUE_ID, attributeValueMember.getValueId());
+				return builder.additionalField(SnomedMappings.memberValueId().fieldName(), attributeValueMember.getValueId());
 			}
 
 			@Override
 			public Builder caseSnomedConcreteDataTypeRefSetMember(final SnomedConcreteDataTypeRefSetMember concreteDataTypeMember) {
-				builder.additionalField(SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_DATA_TYPE_LABEL, concreteDataTypeMember.getLabel())
-				.additionalField(SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_DATA_TYPE_VALUE, SnomedRefSetUtil.deserializeValue(
-						concreteDataTypeMember.getDataType(), 
-						concreteDataTypeMember.getSerializedValue()))
-				.additionalField(SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_CHARACTERISTIC_TYPE_ID, concreteDataTypeMember.getCharacteristicTypeId())
-				.additionalField(SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_OPERATOR_ID, concreteDataTypeMember.getOperatorComponentId());
+				builder.additionalField(SnomedMappings.memberDataTypeLabel().fieldName(), concreteDataTypeMember.getLabel())
+						.additionalField(SnomedMappings.memberDataTypeOrdinal().fieldName(), concreteDataTypeMember.getDataType().ordinal())
+						.additionalField(SnomedMappings.memberSerializedValue().fieldName(), SnomedRefSetUtil.deserializeValue(
+							concreteDataTypeMember.getDataType(), 
+							concreteDataTypeMember.getSerializedValue()))
+						.additionalField(SnomedMappings.memberCharacteristicTypeId().fieldName(), concreteDataTypeMember.getCharacteristicTypeId())
+						.additionalField(SnomedMappings.memberOperatorId().fieldName(), concreteDataTypeMember.getOperatorComponentId());
 
 				if (concreteDataTypeMember.getUomComponentId() != null) {
-					builder.additionalField(SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_UOM_ID, concreteDataTypeMember.getUomComponentId());
+					builder.additionalField(SnomedMappings.memberUomId().fieldName(), concreteDataTypeMember.getUomComponentId());
 				}
 
 				return builder;
@@ -115,33 +116,35 @@ public class SnomedRefSetMemberAdapterFactory extends TypeSafeAdapterFactory {
 
 			@Override
 			public Builder caseSnomedDescriptionTypeRefSetMember(final SnomedDescriptionTypeRefSetMember descriptionTypeMember) {
-				return builder.additionalField(SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_DESCRIPTION_FORMAT_ID, descriptionTypeMember.getDescriptionFormat())
-						.additionalField(SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_DESCRIPTION_LENGTH, descriptionTypeMember.getDescriptionLength());
+				return builder
+						.additionalField(SnomedMappings.memberDescriptionFormatId().fieldName(), descriptionTypeMember.getDescriptionFormat())
+						.additionalField(SnomedMappings.memberDescriptionLength().fieldName(), descriptionTypeMember.getDescriptionLength());
 			}
 
 			@Override
 			public Builder caseSnomedLanguageRefSetMember(final SnomedLanguageRefSetMember languageMember) {
-				return builder.additionalField(SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_ACCEPTABILITY_ID, languageMember.getAcceptabilityId());
+				return builder.additionalField(SnomedMappings.memberAcceptabilityId().fieldName(), languageMember.getAcceptabilityId());
 			}
 
 			@Override
 			public Builder caseSnomedModuleDependencyRefSetMember(final SnomedModuleDependencyRefSetMember moduleDependencyMember) {
-				return builder.additionalField(SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_SOURCE_EFFECTIVE_TIME, EffectiveTimes.getEffectiveTime(moduleDependencyMember.getSourceEffectiveTime()))
-						.additionalField(SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_TARGET_EFFECTIVE_TIME, EffectiveTimes.getEffectiveTime(moduleDependencyMember.getTargetEffectiveTime()));
+				return builder
+						.additionalField(SnomedMappings.memberSourceEffectiveTime().fieldName(), EffectiveTimes.getEffectiveTime(moduleDependencyMember.getSourceEffectiveTime()))
+						.additionalField(SnomedMappings.memberTargetEffectiveTime().fieldName(), EffectiveTimes.getEffectiveTime(moduleDependencyMember.getTargetEffectiveTime()));
 			}
 
 			@Override
 			public Builder caseSnomedQueryRefSetMember(final SnomedQueryRefSetMember queryMember) {
-				return builder.additionalField(SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_QUERY, queryMember.getQuery());
+				return builder.additionalField(SnomedMappings.memberQuery().fieldName(), queryMember.getQuery());
 			}
 
 			@Override
 			public Builder caseSnomedSimpleMapRefSetMember(final SnomedSimpleMapRefSetMember mapRefSetMember) {
 				builder.mapTargetComponentType(mapRefSetMember.getMapTargetComponentType());
-				builder.additionalField(SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_MAP_TARGET_COMPONENT_ID, mapRefSetMember.getMapTargetComponentId());
+				builder.additionalField(SnomedMappings.memberMapTargetComponentId().fieldName(), mapRefSetMember.getMapTargetComponentId());
 
 				if (mapRefSetMember.getMapTargetComponentDescription() != null) {
-					builder.additionalField(SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_MAP_TARGET_COMPONENT_DESCRIPTION, mapRefSetMember.getMapTargetComponentDescription());
+					builder.additionalField(SnomedMappings.memberMapTargetComponentDescription().fieldName(), mapRefSetMember.getMapTargetComponentDescription());
 				}
 
 				return builder;

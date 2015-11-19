@@ -212,7 +212,7 @@ public abstract class WidgetBeanProviderStrategy {
 			
 			final String typeId = description.getTypeId();
 			final boolean preferred = descriptionPreferabilityMap.get(description.getId()).booleanValue() && !Concepts.FULLY_SPECIFIED_NAME.equals(typeId) && !Concepts.TEXT_DEFINITION.equals(typeId);
-			final String term = description.getLabel();
+			final String term = description.getTerm();
 			final long sctId = Long.valueOf(description.getId());
 			final boolean released = description.isReleased();
 			CaseSignificance caseSensitivity = description.getCaseSensitivity();
