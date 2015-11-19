@@ -10,6 +10,7 @@ import java.util.Set;
 import com.b2international.snowowl.snomed.api.domain.browser.ISnomedBrowserComponentWithId;
 import com.b2international.snowowl.snomed.api.domain.browser.ISnomedBrowserConcept;
 import com.b2international.snowowl.snomed.api.domain.browser.ISnomedBrowserConceptUpdate;
+import com.b2international.snowowl.snomed.core.domain.ISnomedComponent;
 import com.b2international.snowowl.snomed.core.domain.ISnomedComponentUpdate;
 import com.b2international.snowowl.snomed.datastore.server.request.SnomedComponentCreateRequest;
 import com.google.common.collect.Sets;
@@ -25,11 +26,11 @@ public class InputFactory {
 		creators.add(new RelationshipInputCreator());
 	}
 
-	public <I extends SnomedComponentCreateRequest> I createComponentInput(String branchPath, ISnomedBrowserComponentWithId component, Class<I> inputType) {
-		return (I) getInputDelegate(inputType).createInput(branchPath, component, this);
+	public <I extends SnomedComponentCreateRequest<R>, R extends ISnomedComponent> I createComponentInput(String branchPath, ISnomedBrowserComponentWithId component, Class<I> inputType) {
+		return getInputDelegate(inputType).createInput(branchPath, component, this);
 	}
 
-	public <I extends SnomedComponentCreateRequest> List<I> createComponentInputs(String branchPath,
+	public <I extends SnomedComponentCreateRequest<R>, R extends ISnomedComponent> List<I> createComponentInputs(String branchPath,
 			List<? extends ISnomedBrowserComponentWithId> newVersionComponents, Class<I> inputType) {
 		List<I> inputs = new ArrayList<>();
 		for (ISnomedBrowserComponentWithId component : newVersionComponents) {
@@ -41,7 +42,7 @@ public class InputFactory {
 	}
 
 	public <U extends ISnomedComponentUpdate> U createComponentUpdate(ISnomedBrowserConcept existingVersion, ISnomedBrowserConceptUpdate newVersion, Class<U> updateType) {
-		return (U) getUpdateDelegate(updateType).createUpdate(existingVersion, newVersion);
+		return updateType.cast(getUpdateDelegate(updateType).createUpdate(existingVersion, newVersion));
 	}
 
 	public <U extends ISnomedComponentUpdate> Map<String, U> createComponentUpdates(
@@ -75,7 +76,7 @@ public class InputFactory {
 		return ids;
 	}
 
-	private <T extends SnomedComponentCreateRequest> ComponentInputCreator getInputDelegate(Class<T> inputType) {
+	private <I extends SnomedComponentCreateRequest<R>, R extends ISnomedComponent> ComponentInputCreator<I, R, ISnomedComponentUpdate, ISnomedBrowserComponentWithId> getInputDelegate(Class<I> inputType) {
 		for (ComponentInputCreator creator : creators) {
 			if (creator.canCreateInput(inputType)) {
 				return creator;

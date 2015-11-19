@@ -3,25 +3,27 @@ package com.b2international.snowowl.snomed.api.impl.domain;
 import java.util.Map;
 
 import com.b2international.commons.ClassUtils;
-import com.b2international.snowowl.core.terminology.ComponentCategory;
 import com.b2international.snowowl.snomed.api.impl.domain.browser.SnomedBrowserDescription;
 import com.b2international.snowowl.snomed.core.domain.Acceptability;
 import com.b2international.snowowl.snomed.core.domain.ISnomedComponentUpdate;
+import com.b2international.snowowl.snomed.core.domain.ISnomedDescription;
 import com.b2international.snowowl.snomed.datastore.server.request.SnomedComponentCreateRequest;
 import com.b2international.snowowl.snomed.datastore.server.request.SnomedDescriptionCreateRequest;
+import com.b2international.snowowl.snomed.datastore.server.request.SnomedRequests;
 
-public class DescriptionInputCreator extends AbstractInputCreator implements ComponentInputCreator<SnomedDescriptionCreateRequest, SnomedDescriptionUpdate, SnomedBrowserDescription> {
+public class DescriptionInputCreator extends AbstractInputCreator implements ComponentInputCreator<SnomedDescriptionCreateRequest, ISnomedDescription, SnomedDescriptionUpdate, SnomedBrowserDescription> {
 
 	@Override
 	public SnomedDescriptionCreateRequest createInput(String branchPath, SnomedBrowserDescription description, InputFactory inputFactory) {
-		final SnomedDescriptionCreateRequest descriptionInput = new SnomedDescriptionCreateRequest();
-		setCommonComponentProperties(branchPath, description, descriptionInput, ComponentCategory.DESCRIPTION);
-		descriptionInput.setLanguageCode(description.getLang());
-		descriptionInput.setTypeId(description.getType().getConceptId());
-		descriptionInput.setTerm(description.getTerm());
-		descriptionInput.setAcceptability(description.getAcceptabilityMap());
-		descriptionInput.setCaseSignificance(description.getCaseSignificance());
-		return descriptionInput;
+		return (SnomedDescriptionCreateRequest) SnomedRequests
+				.prepareNewDescription()
+				.setModuleId(getModuleOrDefault(description))
+				.setLanguageCode(description.getLang())
+				.setTypeId(description.getType().getConceptId())
+				.setTerm(description.getTerm())
+				.setAcceptability(description.getAcceptabilityMap())
+				.setCaseSignificance(description.getCaseSignificance())
+				.build();
 	}
 
 	@Override
