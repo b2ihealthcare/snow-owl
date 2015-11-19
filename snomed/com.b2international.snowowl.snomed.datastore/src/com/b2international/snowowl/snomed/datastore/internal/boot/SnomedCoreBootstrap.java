@@ -21,10 +21,8 @@ import com.b2international.snowowl.core.config.SnowOwlConfiguration;
 import com.b2international.snowowl.core.setup.DefaultBootstrapFragment;
 import com.b2international.snowowl.core.setup.Environment;
 import com.b2international.snowowl.core.setup.ModuleConfig;
-import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.snomed.datastore.SnomedTerminologyBrowser;
 import com.b2international.snowowl.snomed.datastore.config.SnomedCoreConfiguration;
-import com.b2international.snowowl.snomed.datastore.id.ISnomedIdentifierService;
 import com.b2international.snowowl.snomed.metadata.SnomedMetadata;
 import com.b2international.snowowl.snomed.metadata.SnomedMetadataImpl;
 
@@ -42,12 +40,6 @@ public class SnomedCoreBootstrap extends DefaultBootstrapFragment {
 
 	@Override
 	public void run(SnowOwlConfiguration configuration, Environment env, IProgressMonitor monitor) throws Exception {
-		// TODO figure out how to properly register Handler to specific endpoints in core services,
-		// It would be nice to use a framework like reactor
-		// Also if we stick with the current IEventBus impl, we should definitely implement routers
-		if (env.isServer() || env.isEmbedded()) {
-			env.service(IEventBus.class).registerHandler("/snomed-ct/ids", new SnomedIdentifierServiceEventHandler(env.provider(ISnomedIdentifierService.class)));
-		}
 	}
 
 }
