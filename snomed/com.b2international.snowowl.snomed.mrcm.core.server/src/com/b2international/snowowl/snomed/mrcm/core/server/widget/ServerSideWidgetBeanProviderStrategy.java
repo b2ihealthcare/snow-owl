@@ -133,13 +133,13 @@ public class ServerSideWidgetBeanProviderStrategy extends WidgetBeanProviderStra
 		
 		for (final SnomedRefSetMemberIndexEntry entry : dataTypes) {
 			final com.b2international.snowowl.snomed.mrcm.DataType convertedDataType = WidgetBeanUtils.TYPE_CONVERSION_MAP.get(entry.getRefSetPackageDataType());
-			final DataTypeWidgetModel matchingModel = groupModel.getFirstMatching(entry.getLabel(), convertedDataType);
+			final DataTypeWidgetModel matchingModel = groupModel.getFirstMatching(entry.getAttributeLabel(), convertedDataType);
 			final DataTypeWidgetBean widgetBean = new DataTypeWidgetBean(cwb, matchingModel, entry.getReferencedComponentId(), entry.getId(), entry.isReleased());
 			if (entry.getUomComponentId() != null) {
 				widgetBean.setSelectedUom(entry.getUomComponentId());
 			}
 			widgetBean.setSelectedValue(SnomedRefSetUtil.serializeValue(entry.getRefSetPackageDataType(), entry.getValue()));
-			widgetBean.setSelectedLabel(entry.getLabel());
+			widgetBean.setSelectedLabel(entry.getAttributeLabel());
 			widgetBean.setCharacteristicTypeId(entry.getCharacteristicTypeId());
 			beans.add(widgetBean);
 		}
@@ -159,10 +159,10 @@ public class ServerSideWidgetBeanProviderStrategy extends WidgetBeanProviderStra
 		
 		for (final SnomedRefSetMemberIndexEntry entry : getConcreteDataTypes(conceptId)) {
 			final com.b2international.snowowl.snomed.mrcm.DataType convertedDataType = WidgetBeanUtils.TYPE_CONVERSION_MAP.get(entry.getRefSetPackageDataType());
-			final DataTypeWidgetModel matchingModel = dataTypeModel.getFirstMatching(entry.getLabel(), convertedDataType);
+			final DataTypeWidgetModel matchingModel = dataTypeModel.getFirstMatching(entry.getAttributeLabel(), convertedDataType);
 			final DataTypeWidgetBean widgetBean = new DataTypeWidgetBean(cwb, matchingModel, entry.getReferencedComponentId(), entry.getId(), entry.isReleased());
 			widgetBean.setSelectedValue(SnomedRefSetUtil.serializeValue(entry.getRefSetPackageDataType(), entry.getValue()));
-			widgetBean.setSelectedLabel(entry.getLabel());
+			widgetBean.setSelectedLabel(entry.getAttributeLabel());
 			widgetBean.setCharacteristicTypeId(entry.getCharacteristicTypeId());
 			beans.add(widgetBean);
 			unusedModels.remove(matchingModel);

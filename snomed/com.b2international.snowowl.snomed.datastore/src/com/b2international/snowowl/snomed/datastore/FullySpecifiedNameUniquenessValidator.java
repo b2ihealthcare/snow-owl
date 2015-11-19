@@ -74,7 +74,7 @@ public class FullySpecifiedNameUniquenessValidator implements IValidator, Serial
 		final Collection<SnomedDescriptionIndexEntry> results = getIndexService().searchUnsorted(branchPath, queryAdapter);
 		
 		for (final SnomedDescriptionIndexEntry indexEntry : results) {
-			if (indexEntry.getLabel().equals(fsn)) {
+			if (indexEntry.getTerm().equals(fsn)) {
 				return new ComponentValidationStatus(IStatus.ERROR, SnomedDatastoreActivator.PLUGIN_ID, "Fully specified name is not unique.");
 			}
 		}

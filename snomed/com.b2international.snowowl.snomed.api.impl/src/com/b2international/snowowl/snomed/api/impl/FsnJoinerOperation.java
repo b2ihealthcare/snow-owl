@@ -153,7 +153,7 @@ public abstract class FsnJoinerOperation<T> {
 			final String languageRefSetId = languageIdMap.get(locale);
 			for (final SnomedDescriptionIndexEntry indexEntry : fsnEntries) {
 				if (Acceptability.PREFERRED.equals(descriptionAcceptability.get(indexEntry.getId(), languageRefSetId))) {
-					return Optional.of(indexEntry.getLabel());
+					return Optional.of(indexEntry.getTerm());
 				}
 			}
 		}

@@ -552,7 +552,7 @@ public class SnomedBrowserService implements ISnomedBrowserService {
 			final SnomedBrowserDescriptionResult descriptionResult = new SnomedBrowserDescriptionResult();
 
 			descriptionResult.setActive(descriptionIndexEntry.isActive());
-			descriptionResult.setTerm(descriptionIndexEntry.getLabel());
+			descriptionResult.setTerm(descriptionIndexEntry.getTerm());
 
 			final SnomedConceptIndexEntry conceptIndexEntry = conceptMap.get(descriptionIndexEntry.getConceptId());
 			final SnomedBrowserDescriptionResultDetails details;
@@ -568,7 +568,7 @@ public class SnomedBrowserService implements ISnomedBrowserService {
 						term = descriptionService.getFullySpecifiedName(conceptRef, locales).getTerm();
 						break;
 					default:
-						term = descriptionIndexEntry.getLabel();
+						term = descriptionIndexEntry.getTerm();
 						break;
 				}
 				details.setFsn(term);

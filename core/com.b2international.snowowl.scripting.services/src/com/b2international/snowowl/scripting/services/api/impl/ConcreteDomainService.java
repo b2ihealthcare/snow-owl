@@ -67,7 +67,7 @@ public class ConcreteDomainService implements IConcreteDomainService {
 	public boolean isVaccine(final String conceptId) {
 		return 0 < Collections2.filter(getAllDataTypesForConcept(conceptId), new Predicate<SnomedRefSetMemberIndexEntry>() {
 			@Override public boolean apply(final SnomedRefSetMemberIndexEntry dataType) {
-				return IS_VACCINE.equals(dataType.getLabel()) && Boolean.parseBoolean(String.valueOf(dataType.getValue()));
+				return IS_VACCINE.equals(dataType.getAttributeLabel()) && Boolean.parseBoolean(String.valueOf(dataType.getValue()));
 			}
 		}).size();
 	}
@@ -76,7 +76,7 @@ public class ConcreteDomainService implements IConcreteDomainService {
 	public boolean isVitamin(final String conceptId) {
 		return 0 < Collections2.filter(getAllDataTypesForConcept(conceptId), new Predicate<SnomedRefSetMemberIndexEntry>() {
 			@Override public boolean apply(final SnomedRefSetMemberIndexEntry dataType) {
-				return IS_VITAMIN.equals(dataType.getLabel()) && Boolean.parseBoolean(String.valueOf(dataType.getValue()));
+				return IS_VITAMIN.equals(dataType.getAttributeLabel()) && Boolean.parseBoolean(String.valueOf(dataType.getValue()));
 			}
 		}).size();
 	}
