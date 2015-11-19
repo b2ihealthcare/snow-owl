@@ -13,6 +13,9 @@ systemUser: true
 
 auth:
   type: PROP_FILE
+  
+snomed:
+  idGenerationStrategy : MEMORY
 
 fileAuth:
   users:
