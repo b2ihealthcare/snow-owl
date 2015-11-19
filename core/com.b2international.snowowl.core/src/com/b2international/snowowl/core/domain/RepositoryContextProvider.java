@@ -13,27 +13,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.datastore.server.request;
+package com.b2international.snowowl.core.domain;
 
 import com.b2international.snowowl.core.ServiceProvider;
-import com.b2international.snowowl.core.branch.Branches;
-import com.b2international.snowowl.core.events.Request;
-import com.b2international.snowowl.datastore.events.SearchBranchRequest;
 
 /**
- * TODO filter them by date, deleted flag, path match etc.
  * @since 4.5
  */
-public final class BranchSearchRequestBuilder {
+public interface RepositoryContextProvider {
 
-	private String repositoryId;
-
-	public BranchSearchRequestBuilder(String repositoryId) {
-		this.repositoryId = repositoryId;
-	}
-	
-	public Request<ServiceProvider, Branches> build() {
-		return RepositoryRequests.wrap(repositoryId, new SearchBranchRequest());
-	}
+	RepositoryContext get(ServiceProvider context, String repositoryId);
 	
 }

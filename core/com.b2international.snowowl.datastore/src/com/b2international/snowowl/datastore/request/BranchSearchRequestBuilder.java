@@ -13,37 +13,27 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.datastore.server.request;
+package com.b2international.snowowl.datastore.request;
 
-import java.io.Serializable;
-
-import com.b2international.commons.ClassUtils;
+import com.b2international.snowowl.core.ServiceProvider;
+import com.b2international.snowowl.core.branch.Branches;
+import com.b2international.snowowl.core.events.Request;
+import com.b2international.snowowl.datastore.events.SearchBranchRequest;
 
 /**
+ * TODO filter them by date, deleted flag, path match etc.
  * @since 4.5
  */
-public final class CommitInfo implements Serializable {
+public final class BranchSearchRequestBuilder {
 
-	private static final long serialVersionUID = -7479022976959306232L;
-	
-	private final long commitTimestamp;
-	private final Object result;
+	private String repositoryId;
 
-	CommitInfo(long commitTimestamp, Object result) {
-		this.commitTimestamp = commitTimestamp;
-		this.result = result;
+	public BranchSearchRequestBuilder(String repositoryId) {
+		this.repositoryId = repositoryId;
 	}
 	
-	public long getCommitTimestamp() {
-		return commitTimestamp;
-	}
-	
-	public Object getResult() {
-		return result;
-	}
-
-	public <T> T getResultAs(Class<T> type) {
-		return ClassUtils.checkAndCast(result, type);
+	public Request<ServiceProvider, Branches> build() {
+		return RepositoryRequests.wrap(repositoryId, new SearchBranchRequest());
 	}
 	
 }

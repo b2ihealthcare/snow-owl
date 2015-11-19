@@ -19,7 +19,7 @@ import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.core.events.RequestBuilder;
-import com.b2international.snowowl.datastore.server.request.RepositoryRequests;
+import com.b2international.snowowl.datastore.request.RepositoryRequests;
 import com.b2international.snowowl.snomed.core.domain.ISnomedConcept;
 
 /**

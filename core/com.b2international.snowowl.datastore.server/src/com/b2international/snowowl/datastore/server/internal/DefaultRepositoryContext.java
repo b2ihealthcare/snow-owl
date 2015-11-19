@@ -13,12 +13,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.datastore.server.request;
+package com.b2international.snowowl.datastore.server.internal;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
 import com.b2international.snowowl.core.ServiceProvider;
+import com.b2international.snowowl.core.branch.Branch;
 import com.b2international.snowowl.core.config.SnowOwlConfiguration;
+import com.b2international.snowowl.core.domain.BranchContext;
+import com.b2international.snowowl.core.domain.BranchContextProvider;
 import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.datastore.cdo.ICDOConnection;
 import com.b2international.snowowl.datastore.cdo.ICDOConnectionManager;
@@ -29,7 +32,7 @@ import com.google.inject.Provider;
 /**
  * @since 4.5
  */
-public final class DefaultRepositoryContext implements RepositoryContext {
+public final class DefaultRepositoryContext implements RepositoryContext, BranchContextProvider {
 
 	private final ServiceProvider serviceProvider;
 	private final String id;
@@ -47,6 +50,9 @@ public final class DefaultRepositoryContext implements RepositoryContext {
 		if (ICDOConnection.class.isAssignableFrom(type)) {
 			return type.cast(service(ICDOConnectionManager.class).getByUuid(id));
 		}
+		if (BranchContextProvider.class.isAssignableFrom(type)) {
+			return type.cast(this);
+		}
 		return serviceProvider.service(type);
 	}
 
@@ -63,6 +69,11 @@ public final class DefaultRepositoryContext implements RepositoryContext {
 	@Override
 	public String id() {
 		return id;
+	}
+	
+	@Override
+	public BranchContext get(RepositoryContext context, Branch branch) {
+		return new CDOBranchContext(context, branch);
 	}
 
 }

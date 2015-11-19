@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.datastore.server.request;
+package com.b2international.snowowl.datastore.server.internal;
 
 import com.b2international.snowowl.core.branch.Branch;
 import com.b2international.snowowl.core.domain.BranchContext;
@@ -29,7 +29,7 @@ import com.b2international.snowowl.datastore.server.EditingContextFactory;
  */
 public class CDOBranchContext extends DefaultBranchContext implements TransactionContextProvider {
 	
-	protected CDOBranchContext(RepositoryContext context, Branch branch) {
+	CDOBranchContext(RepositoryContext context, Branch branch) {
 		super(context, branch);
 	}
 	

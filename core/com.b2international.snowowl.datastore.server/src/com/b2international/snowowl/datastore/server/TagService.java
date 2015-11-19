@@ -31,7 +31,7 @@ import com.b2international.snowowl.datastore.oplock.impl.DatastoreLockContext;
 import com.b2international.snowowl.datastore.oplock.impl.DatastoreLockContextDescriptions;
 import com.b2international.snowowl.datastore.oplock.impl.IDatastoreOperationLockManager;
 import com.b2international.snowowl.datastore.oplock.impl.SingleRepositoryAndBranchLockTarget;
-import com.b2international.snowowl.datastore.server.request.RepositoryRequests;
+import com.b2international.snowowl.datastore.request.RepositoryRequests;
 import com.b2international.snowowl.datastore.version.ITagConfiguration;
 import com.b2international.snowowl.datastore.version.ITagService;
 import com.b2international.snowowl.eventbus.IEventBus;

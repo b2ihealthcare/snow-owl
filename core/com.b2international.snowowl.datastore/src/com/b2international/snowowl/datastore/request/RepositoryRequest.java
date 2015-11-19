@@ -13,39 +13,39 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.datastore.server.request;
+package com.b2international.snowowl.datastore.request;
 
 import com.b2international.snowowl.core.ServiceProvider;
+import com.b2international.snowowl.core.domain.RepositoryContext;
+import com.b2international.snowowl.core.domain.RepositoryContextProvider;
+import com.b2international.snowowl.core.events.DelegatingRequest;
 import com.b2international.snowowl.core.events.Request;
-import com.b2international.snowowl.datastore.events.CreateReviewRequest;
-import com.b2international.snowowl.datastore.review.Review;
 
 /**
  * @since 4.5
  */
-public final class ReviewCreateRequestBuilder {
-	
-	private String sourceBranch;
-	private String targetBranch;
-	
+public final class RepositoryRequest<B> extends DelegatingRequest<ServiceProvider, RepositoryContext, B> {
+
 	private final String repositoryId;
 
-	ReviewCreateRequestBuilder(String repositoryId) {
+	RepositoryRequest(String repositoryId, Request<RepositoryContext, B> next) {
+		super(next);
 		this.repositoryId = repositoryId;
 	}
 	
-	public ReviewCreateRequestBuilder setSource(String source) {
-		this.sourceBranch = source;
-		return this;
+	@Override
+	public B execute(final ServiceProvider context) {
+		return next(context.service(RepositoryContextProvider.class).get(context, repositoryId));
 	}
 	
-	public ReviewCreateRequestBuilder setTarget(String target) {
-		this.targetBranch = target;
-		return this;
+	@Override
+	protected String getAddress() {
+		return "/"+repositoryId;
 	}
 	
-	public Request<ServiceProvider, Review> build() {
-		return RepositoryRequests.wrap(repositoryId, new CreateReviewRequest(sourceBranch, targetBranch));
+	@Override
+	public String toString() {
+		return String.format("{address:%s, next:%s}", getAddress(), next());
 	}
-
+	
 }

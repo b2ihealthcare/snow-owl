@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.datastore.server.request;
+package com.b2international.snowowl.datastore.request;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
@@ -22,6 +22,7 @@ import org.eclipse.emf.cdo.common.branch.CDOBranch;
 import com.b2international.snowowl.core.branch.Branch;
 import com.b2international.snowowl.core.branch.BranchManager;
 import com.b2international.snowowl.core.domain.BranchContext;
+import com.b2international.snowowl.core.domain.BranchContextProvider;
 import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.core.events.DelegatingRequest;
 import com.b2international.snowowl.core.events.Request;
@@ -45,7 +46,7 @@ public final class BranchRequest<B> extends DelegatingRequest<RepositoryContext,
 	@Override
 	public B execute(RepositoryContext context) {
 		final Branch branch = ensureAvailability(context);
-		return next(new CDOBranchContext(context, branch));
+		return next(context.service(BranchContextProvider.class).get(context, branch));
 	}
 	
 	private Branch ensureAvailability(RepositoryContext context) {

@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.datastore.server.request;
+package com.b2international.snowowl.datastore.request;
 
 import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.domain.BranchContext;
@@ -31,19 +31,19 @@ public class RepositoryRequests {
 	public static RepositoryCommitRequestBuilder prepareCommit(String userId, String repositoryId, String branch) {
 		return new RepositoryCommitRequestBuilder(userId, repositoryId, branch);
 	}
-
+	
+	public static <B> Request<RepositoryContext, B> toBranchRequest(String branch, Request<BranchContext, B> next) {
+		return new BranchRequest<>(branch, next);
+	}
+	
 	public static <B> Request<ServiceProvider, B> wrap(String repositoryId, Request<RepositoryContext, B> next) {
 		return new RepositoryRequest<>(repositoryId, next);
 	}
 	
-	public static <B> Request<RepositoryContext, B> toBranchReq(String branch, Request<BranchContext, B> next) {
-		return new BranchRequest<>(branch, next);
-	}
-	
 	public static <B> Request<ServiceProvider, B> wrap(String repositoryId, String branch, Request<BranchContext, B> next) {
-		return wrap(repositoryId, toBranchReq(branch, next));
+		return wrap(repositoryId, toBranchRequest(branch, next));
 	}
-	
+
 	public static Branching branching(String repositoryId) {
 		return new Branching(repositoryId);
 	}
@@ -51,5 +51,5 @@ public class RepositoryRequests {
 	public static Reviews reviews(String repositoryId) {
 		return new Reviews(repositoryId);
 	}
-
+	
 }

@@ -30,6 +30,8 @@ import com.b2international.snowowl.core.api.index.IIndexServerServiceManager;
 import com.b2international.snowowl.core.api.index.IIndexUpdater;
 import com.b2international.snowowl.core.branch.BranchManager;
 import com.b2international.snowowl.core.config.SnowOwlConfiguration;
+import com.b2international.snowowl.core.domain.RepositoryContext;
+import com.b2international.snowowl.core.domain.RepositoryContextProvider;
 import com.b2international.snowowl.core.events.util.ApiRequestHandler;
 import com.b2international.snowowl.core.setup.Environment;
 import com.b2international.snowowl.datastore.cdo.ICDOConnection;
@@ -60,7 +62,7 @@ import com.google.inject.Provider;
 /**
  * @since 4.1
  */
-public final class CDOBasedRepository implements InternalRepository {
+public final class CDOBasedRepository implements InternalRepository, RepositoryContextProvider {
 
 	private final String repositoryId;
 	private final Environment env;
@@ -149,6 +151,8 @@ public final class CDOBasedRepository implements InternalRepository {
 		
 		// register event bridge/pipe between events and handlers
 		events().registerHandler(address(), new Pipe(handlers(), address()));
+		// register RepositoryContextProvider
+		registry.put(RepositoryContextProvider.class, this);
 	}
 	
 	private ServiceProvider services() {
@@ -166,6 +170,11 @@ public final class CDOBasedRepository implements InternalRepository {
 				return env.provider(type);
 			}
 		};
+	}
+	
+	@Override
+	public RepositoryContext get(ServiceProvider context, String repositoryId) {
+		return new DefaultRepositoryContext(context, repositoryId);
 	}
 
 	private void initializeBranchingSupport() {
