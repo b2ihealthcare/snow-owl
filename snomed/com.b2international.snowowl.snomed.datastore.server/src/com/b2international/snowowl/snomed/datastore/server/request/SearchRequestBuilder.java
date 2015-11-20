@@ -57,7 +57,7 @@ public abstract class SearchRequestBuilder<B extends SearchRequestBuilder<B, R>,
 	}
 	
 	public final Request<ServiceProvider, R> build(String branch) {
-		return RepositoryRequests.wrap(repositoryId, branch, build());
+		return RepositoryRequests.wrap(repositoryId, branch, RepositoryRequests.toIndexReadRequest(build()));
 	}
 	
 	@Override

@@ -40,7 +40,7 @@ import com.google.common.collect.Multimap;
  * 
  * @param E the {@link IIndexEntry} subtype this index service uses
  */
-public interface InternalIndexService<E extends IIndexEntry> extends IIndexService<E> {
+public interface InternalIndexService<E extends IIndexEntry> extends IIndexService<E>, IndexTransactionProvider {
 
 	List<DocumentWithScore> search(IBranchPath branchPath, Query query, Filter filter, 
 			Sort sort, 
@@ -67,8 +67,6 @@ public interface InternalIndexService<E extends IIndexEntry> extends IIndexServi
 			String groupField, 
 			Set<String> valueFields,
 			Function<BytesRef, T> groupFieldConverter);
-
-	<T> T executeReadTransaction(IBranchPath branchPath, IndexRead<T> read);
 
 	boolean hasDocuments(IBranchPath branchPath);
 
