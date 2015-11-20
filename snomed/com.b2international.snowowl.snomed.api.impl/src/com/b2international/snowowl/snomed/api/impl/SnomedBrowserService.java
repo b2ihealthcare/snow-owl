@@ -44,7 +44,6 @@ import com.b2international.snowowl.core.domain.TransactionContext;
 import com.b2international.snowowl.core.events.bulk.BulkRequest;
 import com.b2international.snowowl.core.events.bulk.BulkRequestBuilder;
 import com.b2international.snowowl.core.exceptions.ComponentNotFoundException;
-import com.b2international.snowowl.core.exceptions.NotFoundException;
 import com.b2international.snowowl.core.terminology.ComponentCategory;
 import com.b2international.snowowl.datastore.index.AbstractIndexQueryAdapter;
 import com.b2international.snowowl.datastore.server.domain.ComponentRef;
@@ -633,7 +632,7 @@ public class SnomedBrowserService implements ISnomedBrowserService {
 				constant.setConceptId(conceptId);
 				constant.setFsn(descriptionService.getFullySpecifiedName(SnomedServiceHelper.createComponentRef(branch, conceptId), locales).getTerm());
 				resultBuilder.put(conceptEnum.name(), constant);
-			} catch (NotFoundException e) {
+			} catch (ComponentNotFoundException e) {
 				// ignore
 			}
 		}
