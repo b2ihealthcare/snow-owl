@@ -54,6 +54,10 @@ public abstract class SnomedRequests {
 		return new SnomedConceptSearchRequestBuilder(REPOSITORY_ID);
 	}
 	
+	public static SnomedDescriptionSearchRequestBuilder prepareDescriptionSearch() {
+		return new SnomedDescriptionSearchRequestBuilder(REPOSITORY_ID);
+	}
+	
 	public static SnomedConceptGetRequestBuilder prepareGetConcept() {
 		return new SnomedConceptGetRequestBuilder(REPOSITORY_ID);
 	}

@@ -15,10 +15,6 @@
  */
 package com.b2international.snowowl.snomed.datastore.server.request;
 
-import java.util.List;
-import java.util.Locale;
-
-import com.b2international.commons.CompareUtils;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcepts;
 import com.b2international.snowowl.snomed.datastore.server.request.SnomedConceptSearchRequest.OptionKey;
 
@@ -45,22 +41,6 @@ public final class SnomedConceptSearchRequestBuilder extends SearchRequestBuilde
 
 	public SnomedConceptSearchRequestBuilder filterByActive(Boolean active) {
 		return addOption(OptionKey.ACTIVE, active);
-	}
-
-	public SnomedConceptSearchRequestBuilder setExpand(List<String> expand) {
-		return addOption(OptionKey.EXPAND, expand);
-	}
-
-	public SnomedConceptSearchRequestBuilder setLocales(List<Locale> locales) {
-		return addOption(OptionKey.LOCALES, locales);
-	}
-
-	private SnomedConceptSearchRequestBuilder addOption(OptionKey key, Object value) {
-		if (!CompareUtils.isEmpty(value)) {
-			return addOption(key.name(), value);
-		} else {
-			return getSelf();
-		}
 	}
 
 	@Override

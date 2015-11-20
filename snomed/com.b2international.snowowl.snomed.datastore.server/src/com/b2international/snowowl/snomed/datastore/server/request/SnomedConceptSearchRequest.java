@@ -78,17 +78,7 @@ final class SnomedConceptSearchRequest extends SearchRequest<SnomedConcepts> {
 		/**
 		 * Namespace part of concept ID to match (?)
 		 */
-		NAMESPACE,
-		
-		/**
-		 * Properties to expand on returned object
-		 */
-		EXPAND,
-		
-		/**
-		 * List of accepted locales
-		 */
-		LOCALES;
+		NAMESPACE
 	}
 	
 	SnomedConceptSearchRequest() {}
@@ -98,34 +88,34 @@ final class SnomedConceptSearchRequest extends SearchRequest<SnomedConcepts> {
 		final IndexSearcher searcher = context.service(IndexSearcher.class);
 		final SnomedQueryBuilder queryBuilder = SnomedMappings.newQuery().concept();
 		
-		if (options().containsKey(OptionKey.ACTIVE.name())) {
-			queryBuilder.active(options().getBoolean(OptionKey.ACTIVE.name()));
+		if (containsKey(OptionKey.ACTIVE)) {
+			queryBuilder.active(getBoolean(OptionKey.ACTIVE));
 		}
 		
-		if (options().containsKey(OptionKey.ESCG.name())) {
+		if (containsKey(OptionKey.ESCG)) {
 			/* 
 			 * XXX: Not using IEscgQueryEvaluatorService, as it would add the equivalent of 
 			 * active() and concept() to escgQuery, which is not needed.
 			 */
 			final IndexQueryQueryEvaluator queryEvaluator = new IndexQueryQueryEvaluator();
 			try {
-				final BooleanQuery escgQuery = queryEvaluator.evaluate(EscgUtils.INSTANCE.parseRewrite(options().getString(OptionKey.ESCG.name())));
+				final BooleanQuery escgQuery = queryEvaluator.evaluate(EscgUtils.INSTANCE.parseRewrite(getString(OptionKey.ESCG)));
 				queryBuilder.and(escgQuery);
 			} catch (final SyntaxErrorException e) {
 				throw new IllegalQueryParameterException(e.getMessage());
 			}
 		}
 		
-		if (options().containsKey(OptionKey.MODULE.name())) {
-			queryBuilder.module(options().getString(OptionKey.MODULE.name()));
+		if (containsKey(OptionKey.MODULE)) {
+			queryBuilder.module(getString(OptionKey.MODULE));
 		}
 		
 		final Query conceptQuery = queryBuilder.matchAll();
 		final Query query;
 		final Sort sort;
 		
-		if (options().containsKey(OptionKey.TERM.name())) {
-			final LongKeyFloatMap conceptScoreMap = executeDescriptionSearch(context, options().getString(OptionKey.TERM.name()));
+		if (containsKey(OptionKey.TERM)) {
+			final LongKeyFloatMap conceptScoreMap = executeDescriptionSearch(context, getString(OptionKey.TERM));
 			final Filter descriptionFilter = SnomedMappings.id().createTermsFilter(new LongCollectionToCollectionAdapter(conceptScoreMap.keySet())); 
 			
 //			query = new CustomScoreQuery(new FilteredQuery(conceptQuery, descriptionFilter), ...);
@@ -139,13 +129,13 @@ final class SnomedConceptSearchRequest extends SearchRequest<SnomedConcepts> {
 		if (limit() == 0) {
 			final TotalHitCountCollector totalCollector = new TotalHitCountCollector();
 			searcher.search(new ConstantScoreQuery(query), totalCollector); 
-			return emptyResultSet(totalCollector.getTotalHits());
+			return new SnomedConcepts(offset(), limit(), totalCollector.getTotalHits());
 		}
 		
 		// TODO: track score only if it should be expanded
 		final TopDocs topDocs = searcher.search(query, null, offset() + limit(), sort, true, false);
 		if (IndexUtils.isEmpty(topDocs)) {
-			return emptyResultSet(topDocs.totalHits);
+			return new SnomedConcepts(offset(), limit(), topDocs.totalHits);
 		}
 		
 		final ScoreDoc[] scoreDocs = topDocs.scoreDocs;
@@ -159,10 +149,6 @@ final class SnomedConceptSearchRequest extends SearchRequest<SnomedConcepts> {
 		}
 
 		return new SnomedConcepts(conceptsBuilder.build(), offset(), limit(), topDocs.totalHits);
-	}
-
-	private SnomedConcepts emptyResultSet(final int total) {
-		return new SnomedConcepts(ImmutableList.<ISnomedConcept>of(), offset(), limit(), total);
 	}
 
 	private LongKeyFloatMap executeDescriptionSearch(BranchContext context, String term) {

@@ -23,13 +23,13 @@ import com.b2international.snowowl.core.domain.PageableCollectionResource;
 /**
  * @since 4.5
  */
-public final class SnomedConcepts extends PageableCollectionResource<ISnomedConcept> {
+public final class SnomedDescriptions extends PageableCollectionResource<ISnomedDescription> {
 
-	public SnomedConcepts(int offset, int limit, int total) {
-		super(Collections.<ISnomedConcept>emptyList(), offset, limit, total);
+	public SnomedDescriptions(int offset, int limit, int total) {
+		super(Collections.<ISnomedDescription>emptyList(), offset, limit, total);
 	}
-	
-	public SnomedConcepts(List<ISnomedConcept> items, int offset, int limit, int total) {
+
+	public SnomedDescriptions(List<ISnomedDescription> items, int offset, int limit, int total) {
 		super(items, offset, limit, total);
 	}
 
