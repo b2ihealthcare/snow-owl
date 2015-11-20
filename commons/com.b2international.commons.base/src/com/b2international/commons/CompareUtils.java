@@ -36,6 +36,10 @@ public class CompareUtils {
 		if (Primitives.isWrapperType(object.getClass())) {
 			return false;
 		}
+		
+		if (object instanceof Enum<?>) {
+			return false;
+		}
 
 		if (object instanceof String) {
 			return StringUtils.isEmpty((String) object);
