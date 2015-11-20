@@ -69,17 +69,23 @@ public class AcceptabilityMembershipUpdater extends DocumentUpdaterBase<SnomedDo
 	}
 
 	private void registerChanges(Collection<RefSetMemberChange> changes, LongSet refSetIds) {
-		// FIXME: Maybe run the iteration twice to add everything, then remove everything?
 		for (final RefSetMemberChange change : changes) {
 			switch (change.getChangeKind()) {
 				case ADDED:
 					refSetIds.add(change.getRefSetId());
 					break;
+				default:
+					break;
+			}
+		}
+		
+		for (final RefSetMemberChange change : changes) {
+			switch (change.getChangeKind()) {
 				case REMOVED:
 					refSetIds.remove(change.getRefSetId());
 					break;
 				default:
-					throw new IllegalArgumentException("Unknown reference set member change kind: " + change.getChangeKind());
+					break;
 			}
 		}
 	}
