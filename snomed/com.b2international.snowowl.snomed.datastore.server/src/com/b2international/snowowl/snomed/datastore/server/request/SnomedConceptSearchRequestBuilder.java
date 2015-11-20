@@ -19,9 +19,8 @@ import java.util.List;
 import java.util.Locale;
 
 import com.b2international.commons.CompareUtils;
-import com.b2international.snowowl.snomed.core.domain.SearchKind;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcepts;
-import com.google.common.collect.ImmutableList;
+import com.b2international.snowowl.snomed.datastore.server.request.SnomedConceptSearchRequest.OptionKey;
 
 /**
  * @since 4.5
@@ -32,49 +31,36 @@ public final class SnomedConceptSearchRequestBuilder extends SearchRequestBuilde
 		super(repositoryId);
 	}
 
-	public final SnomedConceptSearchRequestBuilder filterByPt(String term) {
-		return addSearchKind(SearchKind.PT, term);
-	}
-
-	public final SnomedConceptSearchRequestBuilder filterByFsn(String term) {
-		return addSearchKind(SearchKind.FSN, term);
-	}
-
-	public final SnomedConceptSearchRequestBuilder filterBySyn(String term) {
-		return addSearchKind(SearchKind.SYN, term);
-	}
-
-	public final SnomedConceptSearchRequestBuilder filterByOther(String term) {
-		return addSearchKind(SearchKind.OTHER, term);
+	public final SnomedConceptSearchRequestBuilder filterByTerm(String term) {
+		return addOption(OptionKey.TERM, term);
 	}
 
 	public final SnomedConceptSearchRequestBuilder filterByEscg(String expression) {
-		return addSearchKind(SearchKind.ESCG, expression);
+		return addOption(OptionKey.ESCG, expression);
+	}
+	
+	public final SnomedConceptSearchRequestBuilder filterByModule(String moduleId) {
+		return addOption(OptionKey.MODULE, moduleId);
 	}
 
 	public SnomedConceptSearchRequestBuilder filterByActive(Boolean active) {
-		return addSearchKind(SearchKind.ACTIVE, active);
+		return addOption(OptionKey.ACTIVE, active);
 	}
 
 	public SnomedConceptSearchRequestBuilder setExpand(List<String> expand) {
-		if (!CompareUtils.isEmpty(expand)) {
-			addOption(SnomedConceptSearchRequest.OPTION_EXPAND, ImmutableList.copyOf(expand));
-		}
-		return getSelf();
+		return addOption(OptionKey.EXPAND, expand);
 	}
 
 	public SnomedConceptSearchRequestBuilder setLocales(List<Locale> locales) {
-		if (!CompareUtils.isEmpty(locales)) {
-			addOption(SnomedConceptSearchRequest.OPTION_LOCALES, ImmutableList.copyOf(locales));
-		}
-		return getSelf();
+		return addOption(OptionKey.LOCALES, locales);
 	}
 
-	private SnomedConceptSearchRequestBuilder addSearchKind(SearchKind searchKind, Object value) {
+	private SnomedConceptSearchRequestBuilder addOption(OptionKey key, Object value) {
 		if (!CompareUtils.isEmpty(value)) {
-			addOption(searchKind.name(), value);
+			return addOption(key.name(), value);
+		} else {
+			return getSelf();
 		}
-		return getSelf();
 	}
 
 	@Override

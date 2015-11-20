@@ -78,27 +78,19 @@ public class SnomedConceptRestService extends AbstractSnomedRestService {
 			@PathVariable(value="path")
 			final String branch,
 
-			@ApiParam(value="The preferred term to match")
-			@RequestParam(value="pt", defaultValue="", required=false) 
-			final String ptFilter,
-
-			@ApiParam(value="The (preferred) fully specified name to match")
-			@RequestParam(value="fsn", defaultValue="", required=false) 
-			final String fsnFilter,
-			
-			@ApiParam(value="The acceptable synonym to match")
-			@RequestParam(value="syn", defaultValue="", required=false) 
-			final String synFilter,
-			
-			@ApiParam(value="The acceptable non-synonym description to match")
-			@RequestParam(value="other", defaultValue="", required=false) 
-			final String otherFilter,
+			@ApiParam(value="The description term to match")
+			@RequestParam(value="term", required=false) 
+			final String termFilter,
 
 			@ApiParam(value="The ESCG expression to match")
-			@RequestParam(value="escg", defaultValue="", required=false) 
+			@RequestParam(value="escg", required=false) 
 			final String escgFilter,
 			
-			@ApiParam(value="The status to match")
+			@ApiParam(value="The concept module identifier to match")
+			@RequestParam(value="module", required=false) 
+			final String moduleFilter,
+			
+			@ApiParam(value="The concept status to match")
 			@RequestParam(value="active", required=false) 
 			final Boolean activeFilter,
 
@@ -125,11 +117,9 @@ public class SnomedConceptRestService extends AbstractSnomedRestService {
 					.prepareConceptSearch()
 					.setLimit(limit)
 					.setOffset(offset)
-					.filterByFsn(fsnFilter)
-					.filterByPt(ptFilter)
-					.filterBySyn(synFilter)
-					.filterByOther(otherFilter)
+					.filterByTerm(termFilter)
 					.filterByEscg(escgFilter)
+					.filterByModule(moduleFilter)
 					.filterByActive(activeFilter)
 					.setExpand(expand)
 					.setLocales(Collections.<Locale>list(request.getLocales()))
