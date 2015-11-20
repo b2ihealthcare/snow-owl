@@ -31,7 +31,7 @@ import com.b2international.snowowl.core.exceptions.ComponentNotFoundException;
  * @param <R> the read model type (used when retrieving component details; must implement {@link IComponent})
  * @param <U> the update model type (used when updating an existing component)
  */
-public interface IComponentService<R extends IComponent, U> {
+public interface IComponentService<R extends IComponent> {
 
 	/**
 	 * Creates a new component using the specified input model, then commits changes with the given commit comment to

@@ -25,7 +25,6 @@ import com.b2international.snowowl.core.domain.exceptions.CodeSystemVersionNotFo
 import com.b2international.snowowl.snomed.api.exception.FullySpecifiedNameNotFoundException;
 import com.b2international.snowowl.snomed.api.exception.PreferredTermNotFoundException;
 import com.b2international.snowowl.snomed.core.domain.ISnomedDescription;
-import com.b2international.snowowl.snomed.core.domain.ISnomedDescriptionUpdate;
 import com.google.common.collect.BiMap;
 import com.google.common.collect.ImmutableBiMap;
 
@@ -33,8 +32,8 @@ import com.google.common.collect.ImmutableBiMap;
  * SNOMED CT relationship service implementations provide methods for <b>c</b>reating, <b>r</b>eading, <b>u</b>pdating
  * and <b>d</b>eleting individual descriptions, as well as collecting descriptions of a particular concept.
  */
-public interface ISnomedDescriptionService extends ISnomedComponentService<ISnomedDescription, ISnomedDescriptionUpdate> {
-
+public interface ISnomedDescriptionService extends ISnomedComponentService<ISnomedDescription> {
+	
 	/**
 	 * Returns all descriptions of the concept identified by the given {@link IComponentRef component reference}, if it exists.
 	 * <p>
