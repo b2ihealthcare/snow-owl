@@ -508,7 +508,7 @@ public class CisSnomedIdentifierServiceImpl extends AbstractSnomedIdentifierServ
 				final JsonNode node = mapper.readValue(response, JsonNode.class);
 				status = node.get("status").asInt();
 
-				if (1 < status) {
+				if (2 == status) {
 					break;
 				} else {
 					pollTry++;
