@@ -5,13 +5,15 @@ import java.util.Map;
 import com.b2international.commons.ClassUtils;
 import com.b2international.snowowl.snomed.api.impl.domain.browser.SnomedBrowserDescription;
 import com.b2international.snowowl.snomed.core.domain.Acceptability;
-import com.b2international.snowowl.snomed.core.domain.ISnomedComponentUpdate;
 import com.b2international.snowowl.snomed.core.domain.ISnomedDescription;
+import com.b2international.snowowl.snomed.datastore.server.request.BaseSnomedComponentUpdateRequest;
 import com.b2international.snowowl.snomed.datastore.server.request.SnomedComponentCreateRequest;
 import com.b2international.snowowl.snomed.datastore.server.request.SnomedDescriptionCreateRequest;
+import com.b2international.snowowl.snomed.datastore.server.request.SnomedDescriptionUpdateRequest;
+import com.b2international.snowowl.snomed.datastore.server.request.SnomedDescriptionUpdateRequestBuilder;
 import com.b2international.snowowl.snomed.datastore.server.request.SnomedRequests;
 
-public class DescriptionInputCreator extends AbstractInputCreator implements ComponentInputCreator<SnomedDescriptionCreateRequest, ISnomedDescription, SnomedDescriptionUpdate, SnomedBrowserDescription> {
+public class DescriptionInputCreator extends AbstractInputCreator implements ComponentInputCreator<SnomedDescriptionCreateRequest, ISnomedDescription, SnomedDescriptionUpdateRequest, SnomedBrowserDescription> {
 
 	@Override
 	public SnomedDescriptionCreateRequest createInput(String branchPath, SnomedBrowserDescription description, InputFactory inputFactory) {
@@ -27,8 +29,9 @@ public class DescriptionInputCreator extends AbstractInputCreator implements Com
 	}
 
 	@Override
-	public SnomedDescriptionUpdate createUpdate(SnomedBrowserDescription existingDesc, SnomedBrowserDescription newVersionDesc) {
-		final SnomedDescriptionUpdate update = new SnomedDescriptionUpdate();
+	public SnomedDescriptionUpdateRequest createUpdate(SnomedBrowserDescription existingDesc, SnomedBrowserDescription newVersionDesc) {
+		final SnomedDescriptionUpdateRequestBuilder update = SnomedRequests.prepareDescriptionUpdate(existingDesc.getDescriptionId());
+		
 		boolean change = false;
 		if (existingDesc.isActive() != newVersionDesc.isActive()) {
 			change = true;
@@ -47,7 +50,7 @@ public class DescriptionInputCreator extends AbstractInputCreator implements Com
 			change = true;
 			update.setCaseSignificance(newVersionDesc.getCaseSignificance());
 		}
-		return change ? update : null;
+		return change ? (SnomedDescriptionUpdateRequest) update.build() : null;
 	}
 
 	@Override
@@ -56,7 +59,7 @@ public class DescriptionInputCreator extends AbstractInputCreator implements Com
 	}
 
 	@Override
-	public boolean canCreateUpdate(Class<? extends ISnomedComponentUpdate> updateType) {
-		return ClassUtils.isClassAssignableFrom(SnomedDescriptionUpdate.class, updateType.getName());
+	public boolean canCreateUpdate(Class<? extends BaseSnomedComponentUpdateRequest> updateType) {
+		return ClassUtils.isClassAssignableFrom(SnomedDescriptionUpdateRequest.class, updateType.getName());
 	}
 }
