@@ -40,7 +40,7 @@ public class SnomedRefSetMemberSearchRequest extends SearchRequest<SnomedReferen
 	SnomedRefSetMemberSearchRequest() {}
 	
 	@Override
-	public SnomedReferenceSetMembers execute(BranchContext context) {
+	protected SnomedReferenceSetMembers doExecute(BranchContext context) {
 		final IBranchPath branchPath = context.branch().branchPath();
 		final SnomedRefSetBrowser browser = context.service(SnomedRefSetBrowser.class);
 		// TODO convert this to proper index query when index API is ready

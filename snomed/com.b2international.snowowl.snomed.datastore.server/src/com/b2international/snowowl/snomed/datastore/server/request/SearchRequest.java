@@ -15,10 +15,13 @@
  */
 package com.b2international.snowowl.snomed.datastore.server.request;
 
+import java.io.IOException;
+
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
 
 import com.b2international.commons.options.Options;
+import com.b2international.snowowl.core.api.index.IndexException;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.events.BaseRequest;
 
@@ -62,4 +65,14 @@ public abstract class SearchRequest<B> extends BaseRequest<BranchContext, B> {
 		return options;
 	}
 	
+	@Override
+	public final B execute(BranchContext context) {
+		try {
+			return doExecute(context);
+		} catch (IOException e) {
+			throw new IndexException("Caught exception while executing search request.", e);
+		}
+	}
+
+	protected abstract B doExecute(BranchContext context) throws IOException;
 }
