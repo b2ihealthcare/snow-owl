@@ -37,12 +37,14 @@ import com.b2international.commons.ClassUtils;
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.date.EffectiveTimes;
+import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.domain.IComponentRef;
 import com.b2international.snowowl.core.domain.IStorageRef;
 import com.b2international.snowowl.core.domain.TransactionContext;
 import com.b2international.snowowl.core.events.bulk.BulkRequest;
 import com.b2international.snowowl.core.events.bulk.BulkRequestBuilder;
 import com.b2international.snowowl.core.exceptions.ComponentNotFoundException;
+import com.b2international.snowowl.core.exceptions.NotFoundException;
 import com.b2international.snowowl.core.terminology.ComponentCategory;
 import com.b2international.snowowl.datastore.index.AbstractIndexQueryAdapter;
 import com.b2international.snowowl.datastore.server.domain.ComponentRef;
@@ -617,27 +619,23 @@ public class SnomedBrowserService implements ISnomedBrowserService {
 	}
 
 	@Override
-	public Map<String, ISnomedBrowserConstant> getConstants(final IStorageRef storageRef, final List<Locale> locales) {
-		checkNotNull(storageRef, "Storage reference may not be null.");
-		
-		final InternalStorageRef internalStorageRef = ClassUtils.checkAndCast(storageRef, InternalStorageRef.class);
-		internalStorageRef.checkStorageExists();
-
+	public Map<String, ISnomedBrowserConstant> getConstants(final String branch, final List<Locale> locales) {
 		final ImmutableMap.Builder<String, ISnomedBrowserConstant> resultBuilder = ImmutableMap.builder();
 		
+		final BulkRequestBuilder<BranchContext> bulk = BulkRequest.create();
+		
 		for (final ConceptEnum conceptEnum : CONCEPT_ENUMS) {
-			final String conceptId = conceptEnum.getConceptId();
-			final IComponentRef conceptRef = createConceptRef(storageRef, conceptId);
-			
-			if (!conceptService.componentExists(conceptRef)) {
-				continue;
+			try {
+				final String conceptId = conceptEnum.getConceptId();
+				// TODO exand FSN of the concept
+				final ISnomedConcept concept = SnomedRequests.prepareGetConcept().setId(conceptId).build(branch).executeSync(bus);
+				final SnomedBrowserConstant constant = new SnomedBrowserConstant();
+				constant.setConceptId(conceptId);
+				constant.setFsn(descriptionService.getFullySpecifiedName(SnomedServiceHelper.createComponentRef(branch, conceptId), locales).getTerm());
+				resultBuilder.put(conceptEnum.name(), constant);
+			} catch (NotFoundException e) {
+				// ignore
 			}
-			
-			final SnomedBrowserConstant constant = new SnomedBrowserConstant();
-			
-			constant.setConceptId(conceptId);
-			constant.setFsn(descriptionService.getFullySpecifiedName(conceptRef, locales).getTerm());
-			resultBuilder.put(conceptEnum.name(), constant);
 		}
 		
 		return resultBuilder.build();

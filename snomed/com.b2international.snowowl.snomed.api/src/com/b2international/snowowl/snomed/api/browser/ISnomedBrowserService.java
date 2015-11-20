@@ -94,7 +94,7 @@ public interface ISnomedBrowserService {
 	 * @throws CodeSystemVersionNotFoundException if a code system version for the code system with the given identifier is not registered
 	 * @return a map with keys as constant identifiers, and values as corresponding concept ID-FSN pairs
 	 */
-	Map<String, ISnomedBrowserConstant> getConstants(IStorageRef storageRef, List<Locale> locales);
+	Map<String, ISnomedBrowserConstant> getConstants(String branch, List<Locale> locales);
 
 	ISnomedBrowserConcept create(String branchPath, ISnomedBrowserConcept concept, String userId, List<Locale> locales);
 
