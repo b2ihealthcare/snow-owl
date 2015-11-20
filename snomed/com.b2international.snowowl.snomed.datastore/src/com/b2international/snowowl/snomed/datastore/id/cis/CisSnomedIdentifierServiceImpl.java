@@ -256,7 +256,7 @@ public class CisSnomedIdentifierServiceImpl extends AbstractSnomedIdentifierServ
 
 			final int status = pollJob(jobId, token);
 
-			if (0 == status) {
+			if (2 != status) {
 				throw new SnowowlRuntimeException("Couldn't get records from bulk request.");
 			} else {
 				recordsRequest = httpGet(String.format("bulk/jobs/%s/records?token=%s", jobId, token));
@@ -325,7 +325,7 @@ public class CisSnomedIdentifierServiceImpl extends AbstractSnomedIdentifierServ
 
 			final int status = pollJob(jobId, token);
 
-			if (0 == status) {
+			if (2 != status) {
 				throw new SnowowlRuntimeException("Couldn't get records from bulk request.");
 			} else {
 				recordsRequest = httpGet(String.format("bulk/jobs/%s/records?token=%s", jobId, token));
@@ -499,6 +499,7 @@ public class CisSnomedIdentifierServiceImpl extends AbstractSnomedIdentifierServ
 
 			request = httpGet(String.format("bulk/jobs/%s?token=%s", jobId, token));
 
+			// 0 - pending, 1 -running, 2- completed, 3 - error
 			int status = 0;
 			int pollTry = 0;
 
@@ -507,7 +508,7 @@ public class CisSnomedIdentifierServiceImpl extends AbstractSnomedIdentifierServ
 				final JsonNode node = mapper.readValue(response, JsonNode.class);
 				status = node.get("status").asInt();
 
-				if (0 != status) {
+				if (1 < status) {
 					break;
 				} else {
 					pollTry++;
