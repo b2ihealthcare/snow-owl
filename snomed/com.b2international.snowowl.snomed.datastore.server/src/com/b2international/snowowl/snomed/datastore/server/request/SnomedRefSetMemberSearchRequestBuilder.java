@@ -15,7 +15,7 @@
  */
 package com.b2international.snowowl.snomed.datastore.server.request;
 
-import com.b2international.snowowl.snomed.core.domain.SnomedReferenceSetMembers;
+import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMembers;
 import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedMappings;
 
 /**

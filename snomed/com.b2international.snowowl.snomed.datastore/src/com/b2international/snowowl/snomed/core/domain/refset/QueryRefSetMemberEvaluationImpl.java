@@ -13,12 +13,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.snomed.core.domain;
+package com.b2international.snowowl.snomed.core.domain.refset;
 
 import java.util.Collection;
-
-import com.b2international.snowowl.snomed.core.domain.refset.MemberChange;
-import com.b2international.snowowl.snomed.core.domain.refset.QueryRefSetMemberEvaluation;
 
 /**
  * @since 4.5

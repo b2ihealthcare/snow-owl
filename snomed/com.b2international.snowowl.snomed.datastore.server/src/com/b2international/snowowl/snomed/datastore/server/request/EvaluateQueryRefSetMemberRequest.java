@@ -26,12 +26,12 @@ import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.events.BaseRequest;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
 import com.b2international.snowowl.snomed.core.domain.ISnomedConcept;
-import com.b2international.snowowl.snomed.core.domain.MemberChangeImpl;
-import com.b2international.snowowl.snomed.core.domain.QueryRefSetMemberEvaluationImpl;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcepts;
-import com.b2international.snowowl.snomed.core.domain.SnomedReferenceSetMember;
 import com.b2international.snowowl.snomed.core.domain.refset.MemberChange;
+import com.b2international.snowowl.snomed.core.domain.refset.MemberChangeImpl;
 import com.b2international.snowowl.snomed.core.domain.refset.QueryRefSetMemberEvaluation;
+import com.b2international.snowowl.snomed.core.domain.refset.QueryRefSetMemberEvaluationImpl;
+import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMember;
 import com.google.common.collect.Maps;
 
 /**
