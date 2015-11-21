@@ -24,12 +24,12 @@ import com.b2international.snowowl.core.domain.BaseComponent;
  */
 public abstract class BaseSnomedComponent extends BaseComponent implements SnomedComponent {
 
-	private boolean active;
+	private Boolean active;
 	private Date effectiveTime;
 	private String moduleId;
 
 	@Override
-	public boolean isActive() {
+	public Boolean isActive() {
 		return active;
 	}
 
@@ -43,7 +43,7 @@ public abstract class BaseSnomedComponent extends BaseComponent implements Snome
 		return moduleId;
 	}
 
-	public void setActive(final boolean active) {
+	public void setActive(final Boolean active) {
 		this.active = active;
 	}
 

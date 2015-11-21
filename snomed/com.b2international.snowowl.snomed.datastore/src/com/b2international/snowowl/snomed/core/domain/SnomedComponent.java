@@ -29,7 +29,7 @@ public interface SnomedComponent extends IComponent {
 	 *  
 	 * @return {@code true} if the component is active, {@code false} if it is inactive
 	 */
-	boolean isActive();
+	Boolean isActive();
 
 	/**
 	 * Returns the date at which the current state of the component becomes effective.

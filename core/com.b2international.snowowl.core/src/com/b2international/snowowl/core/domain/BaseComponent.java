@@ -29,7 +29,7 @@ public abstract class BaseComponent implements IComponent {
 	}
 
 	@Override
-	public boolean isReleased() {
+	public Boolean isReleased() {
 		return released;
 	}
 
