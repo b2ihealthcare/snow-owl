@@ -16,8 +16,9 @@
 package com.b2international.snowowl.core.domain;
 
 /**
+ * @since 4.0
  */
-public abstract class AbstractComponent implements IComponent {
+public abstract class BaseComponent implements IComponent {
 
 	private String id;
 	private boolean released;

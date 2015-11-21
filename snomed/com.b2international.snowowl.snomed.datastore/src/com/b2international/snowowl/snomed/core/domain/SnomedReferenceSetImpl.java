@@ -20,7 +20,7 @@ import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType;
 /**
  * @since 4.5
  */
-public class SnomedReferenceSetImpl extends AbstractSnomedComponent implements SnomedReferenceSet {
+public class SnomedReferenceSetImpl extends BaseSnomedComponent implements SnomedReferenceSet {
 
 	private SnomedRefSetType type;
 	private String referencedComponent;

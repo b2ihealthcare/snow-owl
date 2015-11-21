@@ -23,7 +23,7 @@ import com.google.common.collect.Multimap;
  * Represents a SNOMED&nbsp;CT description.
  *
  */
-public class SnomedDescription extends AbstractSnomedComponent implements ISnomedDescription {
+public class SnomedDescription extends BaseSnomedComponent implements ISnomedDescription {
 
 	private String conceptId;
 	private String typeId;

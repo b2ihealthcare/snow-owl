@@ -20,7 +20,7 @@ import java.util.Map;
 /**
  * @since 4.5
  */
-public class SnomedReferenceSetMemberImpl extends AbstractSnomedComponent implements SnomedReferenceSetMember {
+public class SnomedReferenceSetMemberImpl extends BaseSnomedComponent implements SnomedReferenceSetMember {
 
 	private String referencedComponentId;
 	private String referenceSetId;

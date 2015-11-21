@@ -17,11 +17,12 @@ package com.b2international.snowowl.snomed.core.domain;
 
 import java.util.Date;
 
-import com.b2international.snowowl.core.domain.AbstractComponent;
+import com.b2international.snowowl.core.domain.BaseComponent;
 
 /**
+ * @since 4.0
  */
-public abstract class AbstractSnomedComponent extends AbstractComponent implements SnomedComponent {
+public abstract class BaseSnomedComponent extends BaseComponent implements SnomedComponent {
 
 	private boolean active;
 	private Date effectiveTime;
