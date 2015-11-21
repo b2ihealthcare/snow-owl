@@ -21,7 +21,7 @@ import com.b2international.snowowl.core.domain.AbstractComponent;
 
 /**
  */
-public abstract class AbstractSnomedComponent extends AbstractComponent implements ISnomedComponent {
+public abstract class AbstractSnomedComponent extends AbstractComponent implements SnomedComponent {
 
 	private boolean active;
 	private Date effectiveTime;

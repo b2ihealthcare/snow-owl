@@ -23,7 +23,7 @@ import com.b2international.snowowl.datastore.server.components.AbstractComponent
 import com.b2international.snowowl.datastore.server.domain.InternalStorageRef;
 import com.b2international.snowowl.snomed.Component;
 import com.b2international.snowowl.snomed.api.ISnomedComponentService;
-import com.b2international.snowowl.snomed.core.domain.ISnomedComponent;
+import com.b2international.snowowl.snomed.core.domain.SnomedComponent;
 import com.b2international.snowowl.snomed.datastore.SnomedConceptLookupService;
 import com.b2international.snowowl.snomed.datastore.SnomedEditingContext;
 import com.b2international.snowowl.snomed.datastore.SnomedRefSetLookupService;
@@ -31,7 +31,7 @@ import com.b2international.snowowl.snomed.datastore.services.AbstractSnomedRefSe
 import com.b2international.snowowl.snomed.datastore.services.SnomedBranchRefSetMembershipLookupService;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetMember;
 
-public abstract class AbstractSnomedComponentServiceImpl<R extends ISnomedComponent, M extends Component>
+public abstract class AbstractSnomedComponentServiceImpl<R extends SnomedComponent, M extends Component>
 extends AbstractComponentServiceImpl<R, SnomedEditingContext, M>
 implements ISnomedComponentService<R> {
 

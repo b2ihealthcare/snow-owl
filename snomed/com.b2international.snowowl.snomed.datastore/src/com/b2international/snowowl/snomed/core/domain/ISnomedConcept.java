@@ -24,7 +24,7 @@ import com.google.common.collect.Multimap;
  * If the component status is not active, additional information about the inactivation reason and associated concepts
  * can also be retrieved from this object.
  */
-public interface ISnomedConcept extends ISnomedComponent, IComponentNode, DefinitionStatusProvider {
+public interface ISnomedConcept extends SnomedComponent, IComponentNode, DefinitionStatusProvider {
 
 	/**
 	 * Returns the subclass definition status of the concept.

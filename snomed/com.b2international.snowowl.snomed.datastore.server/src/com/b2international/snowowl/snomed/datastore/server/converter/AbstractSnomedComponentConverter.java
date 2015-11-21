@@ -20,7 +20,7 @@ import java.util.Date;
 
 import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.snomed.core.domain.AssociationType;
-import com.b2international.snowowl.snomed.core.domain.ISnomedComponent;
+import com.b2international.snowowl.snomed.core.domain.SnomedComponent;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedIndexEntry;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry;
 import com.b2international.snowowl.snomed.datastore.services.AbstractSnomedRefSetMembershipLookupService;
@@ -29,7 +29,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMultimap;
 import com.google.common.collect.Multimap;
 
-public abstract class AbstractSnomedComponentConverter<F extends SnomedIndexEntry, T extends ISnomedComponent> implements Function<F, T> {
+public abstract class AbstractSnomedComponentConverter<F extends SnomedIndexEntry, T extends SnomedComponent> implements Function<F, T> {
 
 	private final AbstractSnomedRefSetMembershipLookupService refSetMembershipLookupService;
 

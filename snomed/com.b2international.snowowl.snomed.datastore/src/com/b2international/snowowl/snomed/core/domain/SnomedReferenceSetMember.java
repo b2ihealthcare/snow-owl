@@ -22,7 +22,7 @@ import com.fasterxml.jackson.annotation.JsonAnyGetter;
 /**
  * @since 4.5
  */
-public interface SnomedReferenceSetMember extends ISnomedComponent {
+public interface SnomedReferenceSetMember extends SnomedComponent {
 
 	/**
 	 * Returns the identifier of the component referenced by this SNOMED CT Reference Set Member.

@@ -20,7 +20,7 @@ import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType;
 /**
  * @since 4.5
  */
-public interface SnomedReferenceSet extends ISnomedComponent {
+public interface SnomedReferenceSet extends SnomedComponent {
 
 	/**
 	 * Returns the type of the reference set.

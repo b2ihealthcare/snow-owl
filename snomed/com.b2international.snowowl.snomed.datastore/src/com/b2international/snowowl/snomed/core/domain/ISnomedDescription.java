@@ -24,7 +24,7 @@ import com.google.common.collect.Multimap;
  * <p>
  * Information about the inactivation reason can also be retrieved from this object if applicable.
  */
-public interface ISnomedDescription extends ISnomedComponent {
+public interface ISnomedDescription extends SnomedComponent {
 
 	/**
 	 * Returns the associated concept's identifier, eg. "{@code 363698007}".

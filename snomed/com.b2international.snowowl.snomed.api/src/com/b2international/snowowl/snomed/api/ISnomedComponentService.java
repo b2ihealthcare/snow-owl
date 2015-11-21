@@ -16,16 +16,16 @@
 package com.b2international.snowowl.snomed.api;
 
 import com.b2international.snowowl.core.component.IComponentService;
-import com.b2international.snowowl.snomed.core.domain.ISnomedComponent;
+import com.b2international.snowowl.snomed.core.domain.SnomedComponent;
 
 /**
  * SNOMED CT component service implementations provide methods for <b>c</b>reating, <b>r</b>eading, <b>u</b>pdating and
  * <b>d</b>eleting a single item of a particular component type.
  * 
  * @param <C> the input model type (used when creating a new component; must implement {@link SnomedComponentCreateRequest})
- * @param <R> the read model type (used when retrieving component details; must implement {@link ISnomedComponent})
+ * @param <R> the read model type (used when retrieving component details; must implement {@link SnomedComponent})
  * @param <U> the update model type (used when updating an existing component; must implement {@link ISnomedComponentUpdate})
  */
-public interface ISnomedComponentService<R extends ISnomedComponent> extends IComponentService<R> {
+public interface ISnomedComponentService<R extends SnomedComponent> extends IComponentService<R> {
 	// Empty interface body
 }

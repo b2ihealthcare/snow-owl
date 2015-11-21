@@ -22,7 +22,7 @@ import com.b2international.snowowl.core.domain.IComponent;
 /**
  * Holds common properties of SNOMED CT components.
  */
-public interface ISnomedComponent extends IComponent {
+public interface SnomedComponent extends IComponent {
 
 	/**
 	 * Returns the component's current status as a boolean value.
