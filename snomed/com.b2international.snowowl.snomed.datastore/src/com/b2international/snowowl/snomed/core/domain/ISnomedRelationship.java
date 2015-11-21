@@ -22,7 +22,7 @@ import com.b2international.snowowl.core.domain.IComponentEdge;
  * <p>
  * Information about relationship refinability can also be retrieved from this object.
  */
-public interface ISnomedRelationship extends SnomedComponent, IComponentEdge {
+public interface ISnomedRelationship extends SnomedCoreComponent, IComponentEdge {
 
 	/**
 	 * Checks whether the destination concept's meaning should be negated ({@code ObjectComplementOf} semantics in OWL2).
