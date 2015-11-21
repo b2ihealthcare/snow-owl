@@ -16,6 +16,7 @@
 package com.b2international.commons.options;
 
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Set;
 
 /**
@@ -107,7 +108,9 @@ public interface Options {
 	String getString(String key);
 
 	/**
-	 * Returns a collection of values conform to the given class type found on the given key.
+	 * Returns a collection of values conform to the given class type found on the given key. If a single value (not a {@link Collection}) is mapped
+	 * to the given key, then it wraps the value in a {@link Collections#singleton(Object) singleton set} and returns it. Otherwise it tries to get
+	 * the value as a {@link Collection} and return it.
 	 * 
 	 * @param key
 	 *            - the key whose associated value is to be returned
@@ -118,22 +121,16 @@ public interface Options {
 	 *             - if the elements in the collection is not applicable to the given type.
 	 */
 	<T> Collection<T> getCollection(String key, Class<T> type);
-	
+
 	/**
-     * Returns a {@link Set} view of the keys contained in this map.
-     * The set is backed by the map, so changes to the map are
-     * reflected in the set, and vice-versa.  If the map is modified
-     * while an iteration over the set is in progress (except through
-     * the iterator's own <tt>remove</tt> operation), the results of
-     * the iteration are undefined.  The set supports element removal,
-     * which removes the corresponding mapping from the map, via the
-     * <tt>Iterator.remove</tt>, <tt>Set.remove</tt>,
-     * <tt>removeAll</tt>, <tt>retainAll</tt>, and <tt>clear</tt>
-     * operations.  It does not support the <tt>add</tt> or <tt>addAll</tt>
-     * operations.
-     *
-     * @return a set view of the keys contained in this map
-     */
-    Set<String> keySet();
+	 * Returns a {@link Set} view of the keys contained in this map. The set is backed by the map, so changes to the map are reflected in the set, and
+	 * vice-versa. If the map is modified while an iteration over the set is in progress (except through the iterator's own <tt>remove</tt>
+	 * operation), the results of the iteration are undefined. The set supports element removal, which removes the corresponding mapping from the map,
+	 * via the <tt>Iterator.remove</tt>, <tt>Set.remove</tt>, <tt>removeAll</tt>, <tt>retainAll</tt>, and <tt>clear</tt> operations. It does not
+	 * support the <tt>add</tt> or <tt>addAll</tt> operations.
+	 *
+	 * @return a set view of the keys contained in this map
+	 */
+	Set<String> keySet();
 
 }
