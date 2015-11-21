@@ -50,7 +50,7 @@ public class EvaluateQueryRefSetMemberRequest extends BaseRequest<BranchContext,
 		// TODO support pre-population???
 		final SnomedReferenceSetMember member = new SnomedRefSetMemberReadRequest(memberId).execute(context);
 		final String query = (String) member.getProperties().get(SnomedRf2Headers.FIELD_QUERY);
-		final String targetReferenceSet = member.getReferencedComponentId();
+		final String targetReferenceSet = member.getReferencedComponent().getId();
 
 		// GET matching members of a query
 		final SnomedConcepts matchingConcepts = SnomedRequests.prepareConceptSearch().filterByEscg(query).all().build().execute(context);
@@ -75,7 +75,7 @@ public class EvaluateQueryRefSetMemberRequest extends BaseRequest<BranchContext,
 					.getItems();
 		
 		for (SnomedReferenceSetMember currentMember : curretMembersOfTarget) {
-			final String referencedComponentId = currentMember.getReferencedComponentId();
+			final String referencedComponentId = currentMember.getReferencedComponent().getId();
 			if (conceptsToAdd.containsKey(referencedComponentId)) {
 				if (!currentMember.isActive()) {
 					// TODO fix label???
@@ -96,7 +96,7 @@ public class EvaluateQueryRefSetMemberRequest extends BaseRequest<BranchContext,
 
 		for (SnomedReferenceSetMember memberToRemove : membersToRemove) {
 			// TODO label???
-			changes.add(MemberChangeImpl.removed(memberToRemove.getReferencedComponentId(), memberToRemove.getId()));
+			changes.add(MemberChangeImpl.removed(memberToRemove.getReferencedComponent().getId(), memberToRemove.getId()));
 		}
 
 //		for (String id : conceptsToActivate.keySet()) {
