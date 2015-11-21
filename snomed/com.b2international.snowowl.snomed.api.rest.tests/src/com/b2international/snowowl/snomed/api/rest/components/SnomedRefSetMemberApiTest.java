@@ -19,7 +19,17 @@ import static com.b2international.snowowl.snomed.SnomedConstants.Concepts.MODULE
 import static com.b2international.snowowl.snomed.SnomedConstants.Concepts.ROOT_CONCEPT;
 import static com.b2international.snowowl.snomed.api.rest.SnomedApiTestConstants.PREFERRED_ACCEPTABILITY_MAP;
 import static com.b2international.snowowl.snomed.api.rest.SnomedBranchingApiAssert.givenBranchWithPath;
-import static com.b2international.snowowl.snomed.api.rest.SnomedComponentApiAssert.*;
+import static com.b2international.snowowl.snomed.api.rest.SnomedComponentApiAssert.assertComponentCanBeDeleted;
+import static com.b2international.snowowl.snomed.api.rest.SnomedComponentApiAssert.assertComponentCreated;
+import static com.b2international.snowowl.snomed.api.rest.SnomedComponentApiAssert.assertComponentExists;
+import static com.b2international.snowowl.snomed.api.rest.SnomedComponentApiAssert.assertComponentNotCreated;
+import static com.b2international.snowowl.snomed.api.rest.SnomedComponentApiAssert.assertComponentNotExists;
+import static com.b2international.snowowl.snomed.api.rest.SnomedComponentApiAssert.assertComponentReadWithStatus;
+import static com.b2international.snowowl.snomed.api.rest.SnomedComponentApiAssert.createRefSetMemberRequestBody;
+import static com.b2international.snowowl.snomed.api.rest.SnomedComponentApiAssert.createRefSetRequestBody;
+import static com.b2international.snowowl.snomed.api.rest.SnomedComponentApiAssert.getComponent;
+import static com.b2international.snowowl.snomed.api.rest.SnomedComponentApiAssert.givenConceptRequestBody;
+import static com.b2international.snowowl.snomed.api.rest.SnomedComponentApiAssert.givenRelationshipRequestBody;
 import static com.b2international.snowowl.test.commons.rest.RestExtensions.givenAuthenticatedRequest;
 
 import java.util.Map;
@@ -172,15 +182,18 @@ public class SnomedRefSetMemberApiTest extends AbstractSnomedApiTest {
 		response.then().assertThat()
 			.statusCode(200)
 			.and()
-			.body("query", CoreMatchers.equalTo(query));
+			.body("query", CoreMatchers.equalTo(query))
+			.and()
+			.body("referencedComponent.id", CoreMatchers.notNullValue());
 			
-		final String referencedComponentId = response.body().path("referencedComponentId");
+		final String referencedComponentId = response.body().path("referencedComponent.id");
 		getComponent(testBranchPath, SnomedComponentType.REFSET, referencedComponentId, "members")
 			.then()
+			.log().ifValidationFails()
 			.assertThat()
 			.statusCode(200)
 			.and()
-			.body("members.items.referencedComponentId", CoreMatchers.hasItems(Concepts.STATED_RELATIONSHIP, Concepts.INFERRED_RELATIONSHIP, Concepts.DEFINING_RELATIONSHIP));
+			.body("members.items.referencedComponent.id", CoreMatchers.hasItems(Concepts.STATED_RELATIONSHIP, Concepts.INFERRED_RELATIONSHIP, Concepts.DEFINING_RELATIONSHIP));
 	}
 	
 	@Test
@@ -246,13 +259,14 @@ public class SnomedRefSetMemberApiTest extends AbstractSnomedApiTest {
 			.then()
 			.statusCode(200);
 		// verify that the query type refset has 4 members now
-		final String referencedComponentId = getComponent(testBranchPath, SnomedComponentType.MEMBER, memberId).body().path("referencedComponentId");
+		final String referencedComponentId = getComponent(testBranchPath, SnomedComponentType.MEMBER, memberId).body().path("referencedComponent.id");
 		getComponent(testBranchPath, SnomedComponentType.REFSET, referencedComponentId, "members")
 			.then()
+			.log().ifValidationFails()
 			.assertThat()
 			.statusCode(200)
 			.and()
-			.body("members.items.referencedComponentId", CoreMatchers.hasItems(Concepts.STATED_RELATIONSHIP, Concepts.INFERRED_RELATIONSHIP, Concepts.DEFINING_RELATIONSHIP, newCharTypeConceptId));
+			.body("members.items.referencedComponent.id", CoreMatchers.hasItems(Concepts.STATED_RELATIONSHIP, Concepts.INFERRED_RELATIONSHIP, Concepts.DEFINING_RELATIONSHIP, newCharTypeConceptId));
 	}
 	
 	@Test
