@@ -56,7 +56,7 @@ public final class RepositoryCommitRequestBuilder implements RequestBuilder<Serv
 	@Override
 	public Request<ServiceProvider, CommitInfo> build() {
 		ApiValidation.checkInput(body);
-		return RepositoryRequests.wrap(repositoryId, branch, new TransactionalRequest(userId, commitComment, body));
+		return RepositoryRequests.wrap(repositoryId, branch, new IndexReadRequest<>(new TransactionalRequest(userId, commitComment, body)));
 	}
 
 }
