@@ -18,6 +18,7 @@ package com.b2international.snowowl.snomed.core.domain.refset;
 import java.util.Map;
 
 import com.b2international.snowowl.snomed.core.domain.SnomedComponent;
+import com.b2international.snowowl.snomed.core.domain.SnomedCoreComponent;
 import com.fasterxml.jackson.annotation.JsonAnyGetter;
 
 /**
@@ -26,11 +27,12 @@ import com.fasterxml.jackson.annotation.JsonAnyGetter;
 public interface SnomedReferenceSetMember extends SnomedComponent {
 
 	/**
-	 * Returns the identifier of the component referenced by this SNOMED CT Reference Set Member.
+	 * Returns the component referenced by this SNOMED CT Reference Set Member. It includes only the SNOMED CT ID property by default, see
+	 * {@link SnomedCoreComponent#getId()}.
 	 * 
 	 * @return
 	 */
-	String getReferencedComponentId();
+	SnomedCoreComponent getReferencedComponent();
 
 	/**
 	 * Returns the identifier of the SNOMED CT Reference Set this SNOMED CT Reference Set Member belongs to.
