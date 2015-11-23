@@ -298,7 +298,7 @@ public class DefaultSnomedIdentifierService extends AbstractSnomedIdentifierServ
 
 		while (componentIds.size() < quantity) {
 			String componentId = generateComponentId(namespace, category);
-			while (reservationService.isReserved(componentId) && !store.containsKey(componentId)) {
+			while (getReservationService().isReserved(componentId) && !store.containsKey(componentId)) {
 				componentId = generateComponentId(namespace, category);
 			}
 

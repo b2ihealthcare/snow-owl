@@ -25,7 +25,7 @@ import com.b2international.snowowl.snomed.datastore.id.reservations.ISnomedIdent
  */
 public abstract class AbstractSnomedIdentifierService implements ISnomedIdentifierService {
 
-	protected final ISnomedIdentiferReservationService reservationService;
+	private final ISnomedIdentiferReservationService reservationService;
 
 	public AbstractSnomedIdentifierService(final ISnomedIdentiferReservationService reservationService) {
 		this.reservationService = reservationService;
@@ -34,6 +34,10 @@ public abstract class AbstractSnomedIdentifierService implements ISnomedIdentifi
 	protected void checkCategory(ComponentCategory category) {
 		checkArgument(category == ComponentCategory.CONCEPT || category == ComponentCategory.DESCRIPTION
 				|| category == ComponentCategory.RELATIONSHIP, "Cannot generate ID for component category %s.", category);
+	}
+	
+	public ISnomedIdentiferReservationService getReservationService() {
+		return reservationService;
 	}
 
 }
