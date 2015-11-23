@@ -510,6 +510,8 @@ public class CisSnomedIdentifierServiceImpl extends AbstractSnomedIdentifierServ
 
 				if (2 == status) {
 					break;
+				} else if (3 == status) { 
+					throw new SnowowlRuntimeException("Bulk request has ended in error.");
 				} else {
 					pollTry++;
 					Thread.sleep(1000);
