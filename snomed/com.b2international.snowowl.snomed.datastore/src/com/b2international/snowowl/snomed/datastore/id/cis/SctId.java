@@ -100,6 +100,10 @@ public class SctId {
 	public void setNamespace(long namespace) {
 		this.namespace = namespace;
 	}
+	
+	public void setNamespace(String namespace) {
+		this.namespace = null == namespace ? 0 : Integer.valueOf(namespace);
+	}
 
 	/**
 	 * @return the partitionId
@@ -273,5 +277,5 @@ public class SctId {
 	public void setAdditionalIds(Collection<String> additionalIds) {
 		this.additionalIds = additionalIds;
 	}
-
+	
 }

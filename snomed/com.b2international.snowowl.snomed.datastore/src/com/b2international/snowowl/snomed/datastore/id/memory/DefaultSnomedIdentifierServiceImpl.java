@@ -301,9 +301,9 @@ public class DefaultSnomedIdentifierServiceImpl extends AbstractSnomedIdentifier
 		final Collection<String> componentIds = Lists.newArrayList();
 
 		while (componentIds.size() < quantity) {
-			String componentId = createComponentId(namespace, category);
+			String componentId = generateComponentId(namespace, category);
 			while (reservationService.isReserved(componentId) && !store.containsKey(componentId)) {
-				componentId = createComponentId(namespace, category);
+				componentId = generateComponentId(namespace, category);
 			}
 
 			componentIds.add(componentId);
@@ -312,7 +312,7 @@ public class DefaultSnomedIdentifierServiceImpl extends AbstractSnomedIdentifier
 		return componentIds;
 	}
 
-	private String createComponentId(final String namespace, final ComponentCategory category) {
+	private String generateComponentId(final String namespace, final ComponentCategory category) {
 		final StringBuilder builder = new StringBuilder();
 		// generate the SCT Item ID
 		builder.append(generationStrategy.generateItemId());
@@ -339,7 +339,7 @@ public class DefaultSnomedIdentifierServiceImpl extends AbstractSnomedIdentifier
 		final SctId sctId = new SctId();
 		sctId.setSctid(componentId);
 		sctId.setStatus(status.getSerializedName());
-		sctId.setNamespace(null == identifier.getNamespace() ? 0 : Integer.valueOf(identifier.getNamespace()));
+		sctId.setNamespace(identifier.getNamespace());
 		sctId.setPartitionId(String.valueOf(identifier.getPartitionIdentifier()));
 		sctId.setCheckDigit(identifier.getCheckDigit());
 
