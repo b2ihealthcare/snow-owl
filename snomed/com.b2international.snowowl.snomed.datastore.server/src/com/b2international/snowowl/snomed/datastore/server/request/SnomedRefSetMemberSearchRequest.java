@@ -16,11 +16,11 @@
 package com.b2international.snowowl.snomed.datastore.server.request;
 
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.domain.BranchContext;
-import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMember;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMembers;
 import com.b2international.snowowl.snomed.datastore.SnomedRefSetBrowser;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry;
@@ -44,7 +44,7 @@ public class SnomedRefSetMemberSearchRequest extends SearchRequest<SnomedReferen
 		// TODO convert this to proper index query when index API is ready
 		// TODO fix collection like parameters
 		final Collection<String> referenceSetIds = options().getCollection(SnomedMappings.memberRefSetId().fieldName(), String.class);
-		final List<SnomedReferenceSetMember> members = FluentIterable
+		final List<SnomedRefSetMemberIndexEntry> members = FluentIterable
 			.from(browser.getAllRefSetIds(branchPath))
 			.filter(new Predicate<String>() {
 				@Override
@@ -60,9 +60,9 @@ public class SnomedRefSetMemberSearchRequest extends SearchRequest<SnomedReferen
 			})
 			.skip(offset())
 			.limit(limit())
-			.transform(SnomedConverters.newMemberConverter(context)).toList();
+			.toList();
 		
-		return new SnomedReferenceSetMembers(members);
+		return SnomedConverters.newMemberConverter(context, Collections.<String>emptyList()).convert(members);
 	}
 
 	@Override

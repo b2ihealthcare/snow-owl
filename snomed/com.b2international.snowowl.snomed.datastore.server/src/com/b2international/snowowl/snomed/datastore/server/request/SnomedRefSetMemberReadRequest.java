@@ -15,6 +15,8 @@
  */
 package com.b2international.snowowl.snomed.datastore.server.request;
 
+import java.util.Collections;
+
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.events.BaseRequest;
 import com.b2international.snowowl.core.exceptions.ComponentNotFoundException;
@@ -40,7 +42,7 @@ final class SnomedRefSetMemberReadRequest extends BaseRequest<BranchContext, Sno
 		if (member == null) {
 			throw new ComponentNotFoundException("Reference Set Member", componentId);
 		} else {
-			return SnomedConverters.newMemberConverter(context).apply(member);
+			return SnomedConverters.newMemberConverter(context, Collections.<String>emptyList()).convert(member);
 		}
 	}
 	

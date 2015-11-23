@@ -106,7 +106,7 @@ public class SnomedRefSetMemberCreateRequest extends BaseRequest<TransactionCont
 		default: throw new UnsupportedOperationException("Not implemented support for creation of '"+type+"' members");
 		}
 		
-		return SnomedConverters.newMemberConverter(context).apply(member);
+		return SnomedConverters.newMemberConverter(context, Collections.<String>emptyList()).convert(member);
 	}
 
 	@Override
