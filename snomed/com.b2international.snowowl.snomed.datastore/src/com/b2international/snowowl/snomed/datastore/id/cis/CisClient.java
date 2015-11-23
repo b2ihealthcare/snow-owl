@@ -133,8 +133,7 @@ class CisClient {
 
 			return mapper.readValue(response, Token.class).getToken();
 		} catch (IOException e) {
-			// TODO change exception
-			throw new RuntimeException("Exception while logging in.", e);
+			throw new SnowowlRuntimeException("Exception while logging in.", e);
 		} finally {
 			if (null != request)
 				release(request);
@@ -150,8 +149,7 @@ class CisClient {
 			request = httpPost("logout", mapper.writeValueAsString(new Token(token)));
 			client.execute(request);
 		} catch (IOException e) {
-			// TODO change exception
-			throw new RuntimeException("Exception while logging out.", e);
+			throw new SnowowlRuntimeException("Exception while logging out.", e);
 		} finally {
 			if (null != request)
 				release(request);
