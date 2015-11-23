@@ -17,9 +17,12 @@ package com.b2international.snowowl.snomed.api.rest;
 
 import static org.springframework.hateoas.mvc.ControllerLinkBuilder.linkTo;
 
+import java.io.IOException;
+import java.io.StringReader;
 import java.net.URI;
 import java.security.Principal;
 import java.util.List;
+import java.util.Locale;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -35,8 +38,9 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.context.request.async.DeferredResult;
 
-import com.b2international.commons.StringUtils;
+import com.b2international.commons.http.AcceptHeader;
 import com.b2international.snowowl.core.domain.PageableCollectionResource;
+import com.b2international.snowowl.core.exceptions.BadRequestException;
 import com.b2international.snowowl.snomed.api.rest.domain.ChangeRequest;
 import com.b2international.snowowl.snomed.api.rest.domain.RestApiError;
 import com.b2international.snowowl.snomed.api.rest.domain.SnomedDescriptionRestInput;
@@ -113,11 +117,25 @@ public class SnomedDescriptionRestService extends AbstractSnomedRestService {
 			@RequestParam(value="expand", required=false)
 			final List<String> expand,
 
-			@ApiParam(value="Language codes and reference sets, in order of preference")
+			@ApiParam(value="Accepted language tags, in order of preference")
 			@RequestHeader(value="Accept-Language", defaultValue="en-US;q=0.8,en-GB;q=0.6", required=false) 
-			final String languageSetting) {
+			final String acceptLanguage,
+			
+			@ApiParam(value="Accepted language reference set identifiers, in order of preference")
+			@RequestHeader(value="X-Accept-Language-Refset", defaultValue="", required=false)
+			final String acceptLanguageRefset) {
 		
-		final List<String> locales = StringUtils.getQualityList(languageSetting);
+		final List<Locale> locales;
+		final List<Long> languageRefSets;
+		
+		try {
+			locales = AcceptHeader.parseLocales(new StringReader(acceptLanguage));
+			languageRefSets = AcceptHeader.parseLongs(new StringReader(acceptLanguageRefset));
+		} catch (IOException e) {
+			throw new BadRequestException(e.getMessage());
+		} catch (NumberFormatException e) {
+			throw new BadRequestException(e.getMessage());
+		}
 		
 		return DeferredResults.wrap(
 				SnomedRequests
@@ -132,6 +150,7 @@ public class SnomedDescriptionRestService extends AbstractSnomedRestService {
 					.setOffset(offset)
 					.setExpand(expand)
 					.setLocales(locales)
+					.setLanguageRefSetIds(languageRefSets)
 					.build(branch)
 					.execute(bus));
 	}

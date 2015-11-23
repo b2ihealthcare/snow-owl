@@ -18,6 +18,7 @@ package com.b2international.snowowl.snomed.datastore.server.request;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.List;
+import java.util.Locale;
 
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
@@ -45,7 +46,10 @@ public abstract class SearchRequest<B> extends BaseRequest<BranchContext, B> {
 	private List<String> expand;
 	
 	@NotNull
-	private List<String> locales;
+	private List<Locale> locales;
+	
+	@NotNull
+	private List<Long> languageRefSetIds;
 	
 	protected SearchRequest() {}
 	
@@ -65,8 +69,12 @@ public abstract class SearchRequest<B> extends BaseRequest<BranchContext, B> {
 		this.expand = expand;
 	}
 	
-	void setLocales(List<String> locales) {
+	void setLocales(List<Locale> locales) {
 		this.locales = locales;
+	}
+	
+	void setLanguageRefSetIds(List<Long> languageRefSetIds) {
+		this.languageRefSetIds = languageRefSetIds;
 	}
 	
 	protected final int offset() {
@@ -109,8 +117,12 @@ public abstract class SearchRequest<B> extends BaseRequest<BranchContext, B> {
 		return expand;
 	}
 	
-	protected final List<String> locales() {
+	protected final List<Locale> locales() {
 		return locales;
+	}
+	
+	protected List<Long> languageRefSetIds() {
+		return languageRefSetIds;
 	}
 	
 	@Override

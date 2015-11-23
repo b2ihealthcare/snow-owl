@@ -18,8 +18,9 @@ package com.b2international.snowowl.snomed.datastore.server.request;
 import static com.google.common.collect.Lists.newArrayList;
 
 import java.io.IOException;
-import java.util.Iterator;
+import java.util.Collections;
 import java.util.List;
+import java.util.Locale;
 
 import org.apache.lucene.document.Document;
 import org.apache.lucene.index.Term;
@@ -43,12 +44,17 @@ import org.apache.lucene.search.spans.SpanNearQuery;
 import org.apache.lucene.search.spans.SpanQuery;
 import org.apache.lucene.search.spans.SpanTermQuery;
 import org.apache.lucene.util.QueryBuilder;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
+import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.domain.BranchContext;
+import com.b2international.snowowl.core.exceptions.BadRequestException;
 import com.b2international.snowowl.datastore.index.IndexUtils;
 import com.b2international.snowowl.datastore.index.lucene.BookendTokenFilter;
 import com.b2international.snowowl.datastore.index.lucene.ComponentTermAnalyzer;
 import com.b2international.snowowl.datastore.index.mapping.IndexField;
+import com.b2international.snowowl.snomed.SnomedConstants.LanguageCodeReferenceSetIdentifierMapping;
 import com.b2international.snowowl.snomed.core.domain.Acceptability;
 import com.b2international.snowowl.snomed.core.domain.ISnomedDescription;
 import com.b2international.snowowl.snomed.core.domain.SnomedDescriptions;
@@ -71,6 +77,8 @@ import bak.pcj.adapter.LongCollectionToCollectionAdapter;
  */
 final class SnomedDescriptionSearchRequest extends SearchRequest<SnomedDescriptions> {
 
+	private static final Logger LOG = LoggerFactory.getLogger(SnomedDescriptionSearchRequest.class);
+	
 	enum OptionKey {
 		TERM,
 		CONCEPT,
@@ -87,46 +95,59 @@ final class SnomedDescriptionSearchRequest extends SearchRequest<SnomedDescripti
 		final IndexSearcher searcher = context.service(IndexSearcher.class);
 		
 		if (containsKey(OptionKey.ACCEPTABILITY)) {
-			final ImmutableMultimap.Builder<String, ISnomedDescription> buckets = ImmutableMultimap.builder();
 			
-			int offset = 0;
-			int results = 0;
-			int total = 0;
+			final List<Long> collectedRefSetIds;
 			
-			Iterator<String> itr = locales().iterator();
-			String current;
-
-			if (offset < offset()) {
-				while (itr.hasNext() && offset < offset()); {
-					current = itr.next();
-					SnomedDescriptions subResults = search(context, searcher, current, 0, 0);
-					offset += subResults.getTotal();
-					total += subResults.getTotal();
+			if (!languageRefSetIds().isEmpty()) {
+				collectedRefSetIds = languageRefSetIds();
+			} else if (!locales().isEmpty()) {
+				collectedRefSetIds = newArrayList();
+				for (Locale locale : locales()) {
+					String refSetId = LanguageCodeReferenceSetIdentifierMapping.getReferenceSetIdentifier(locale.toLanguageTag().toLowerCase());
+					if (refSetId != null) {
+						collectedRefSetIds.add(Long.valueOf(refSetId));
+					} else {
+						LOG.warn("Couldn't map language tag {} to a reference set identifier.", locale.toLanguageTag());
+					}
 				}
 			} else {
-				current = itr.next();
+				throw new BadRequestException("Either a list of locales or a list of language reference set identifiers must be specified if acceptability is set.");
 			}
 			
-			SnomedDescriptions subResults = search(context, searcher, current, offset - offset(), limit());
-			buckets.putAll(current, subResults.getItems());
-			results += subResults.getItems().size();
-			total += subResults.getTotal();
+			final ImmutableMultimap.Builder<Long, ISnomedDescription> buckets = ImmutableMultimap.builder();
+			
+			int position = 0;
+			int total = 0;
+			
+			for (final Long languageRefSetId : collectedRefSetIds) {
+				// Do a hitcount-only run for this language reference set first
+				SnomedDescriptions subResults = search(context, searcher, languageRefSetId, collectedRefSetIds, 0, 0);
+				int subTotal = subResults.getTotal();
 
-			while (itr.hasNext() && results >= limit()) {
-				subResults = search(context, searcher, itr.next(), 0, limit());
-				buckets.putAll(current, subResults.getItems());
-				results += subResults.getItems().size();
+				// Run actual search only if it is within the required range
+				if (position + subTotal > offset() && position < offset() + limit()) {
+					// Relative offset may not become negative
+					int subOffset = Math.max(0, offset() - position);
+					// Relative limit may not go over subTotal, or the number of remaining items to collect
+					int subLimit = Math.min(subTotal - subOffset, offset() + limit() - position);
+					
+					subResults = search(context, searcher, languageRefSetId, collectedRefSetIds, subOffset, subLimit);
+					buckets.putAll(languageRefSetId, subResults.getItems());
+				}
+				
+				total += subTotal;
+				position += subTotal;
 			}
 			
-			final List<ISnomedDescription> subList = buckets.build().values().asList().subList(0, Math.min(limit(), results));
-			return new SnomedDescriptions(subList, offset(), limit(), total);
+			List<ISnomedDescription> concatenatedList = buckets.build().values().asList();
+			return new SnomedDescriptions(concatenatedList, offset(), limit(), total);
 			
 		} else {
-			return search(context, searcher, "default", offset(), limit());
+			return search(context, searcher, -1L, Collections.<Long>emptyList(), offset(), limit());
 		}
 	}
 
-	private SnomedDescriptions search(BranchContext context, final IndexSearcher searcher, String locale, int offset, int limit) throws IOException {
+	private SnomedDescriptions search(BranchContext context, final IndexSearcher searcher, Long languageRefSetId, List<Long> collectedRefSetIds, int offset, int limit) throws IOException {
 		final SnomedQueryBuilder queryBuilder = SnomedMappings.newQuery().description();
 		
 		if (containsKey(OptionKey.ACTIVE)) {
@@ -174,17 +195,19 @@ final class SnomedDescriptionSearchRequest extends SearchRequest<SnomedDescripti
 			List<Filter> filters = newArrayList();
 			List<Integer> ops = newArrayList();
 			
-			addLocaleFilter(context, filters, ops, locale); 
+			// Add (presumably) most selective filters first
 			addEscgFilter(context, filters, ops, OptionKey.CONCEPT, SnomedMappings.descriptionConcept());
 			addEscgFilter(context, filters, ops, OptionKey.TYPE, SnomedMappings.descriptionType());
+			addLocaleFilter(context, filters, ops, languageRefSetId, collectedRefSetIds); 
 			
-			query = new FilteredQuery(queryBuilder.matchAll(), new ChainedFilter(Iterables.toArray(filters, Filter.class), Ints.toArray(ops)));
+			final ChainedFilter filter = new ChainedFilter(Iterables.toArray(filters, Filter.class), Ints.toArray(ops));
+			query = new FilteredQuery(queryBuilder.matchAll(), filter);
 
 		} else {
 			query = queryBuilder.matchAll();
 		}
 		
-		if (limit() == 0) {
+		if (limit == 0) {
 			final TotalHitCountCollector totalCollector = new TotalHitCountCollector();
 			searcher.search(new ConstantScoreQuery(query), totalCollector); 
 			return new SnomedDescriptions(offset, limit, totalCollector.getTotalHits());
@@ -211,33 +234,29 @@ final class SnomedDescriptionSearchRequest extends SearchRequest<SnomedDescripti
 
 	private void addEscgFilter(BranchContext context, final List<Filter> filters, final List<Integer> ops, OptionKey key, IndexField<Long> field) {
 		if (containsKey(key)) {
-			LongCollection conceptIds = context.service(IEscgQueryEvaluatorService.class).evaluateConceptIds(context.branch().branchPath(), getString(key));
+			IBranchPath branchPath = context.branch().branchPath();
+			LongCollection conceptIds = context.service(IEscgQueryEvaluatorService.class).evaluateConceptIds(branchPath, getString(key));
 			Filter conceptFilter = field.createTermsFilter(new LongCollectionToCollectionAdapter(conceptIds));
 			filters.add(conceptFilter);
 			ops.add(ChainedFilter.AND);
 		}
 	}
 
-	private void addLocaleFilter(BranchContext context, List<Filter> filters, List<Integer> ops, String positiveLocale) {
+	private void addLocaleFilter(BranchContext context, List<Filter> filters, List<Integer> ops, Long positiveRefSetId, List<Long> collectedRefSetIds) {
 		if (containsKey(OptionKey.ACCEPTABILITY)) {
-			for (String locale : locales()) {
-				// FIXME: Temporary parsing of extended language tag (longer than 8 characters per subtag)
-				int pos = locale.indexOf("-x-");
-				
-				if (pos != -1) {
-					final String extension = locale.substring(pos + 3);
-					final Term acceptabilityTerm = Acceptability.PREFERRED.equals(get(OptionKey.ACCEPTABILITY, Acceptability.class)) ?
-							SnomedMappings.descriptionPreferredReferenceSetId().toTerm(Long.valueOf(extension)) :
-							SnomedMappings.descriptionAcceptableReferenceSetId().toTerm(Long.valueOf(extension));
-						
-					filters.add(new TermFilter(acceptabilityTerm));
+			for (Long collectedRefSetId : collectedRefSetIds) {
+
+				final Term acceptabilityTerm = Acceptability.PREFERRED.equals(get(OptionKey.ACCEPTABILITY, Acceptability.class)) ?
+						SnomedMappings.descriptionPreferredReferenceSetId().toTerm(collectedRefSetId) :
+						SnomedMappings.descriptionAcceptableReferenceSetId().toTerm(collectedRefSetId);
 					
-					if (locale.equals(positiveLocale)) {
-						ops.add(ChainedFilter.AND);
-						break;
-					} else {
-						ops.add(ChainedFilter.ANDNOT);
-					}
+				filters.add(new TermFilter(acceptabilityTerm));
+				
+				if (collectedRefSetId.equals(positiveRefSetId)) {
+					ops.add(ChainedFilter.AND);
+					break;
+				} else {
+					ops.add(ChainedFilter.ANDNOT);
 				}
 			}
 		}
