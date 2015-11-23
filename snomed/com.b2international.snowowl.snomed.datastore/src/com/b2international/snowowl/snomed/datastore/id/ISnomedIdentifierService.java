@@ -100,14 +100,6 @@ public interface ISnomedIdentifierService extends Reservation {
 	SctId getSctId(String componentId);
 
 	/**
-	 * Checks if the component ID is present in the underlying store.
-	 * 
-	 * @param componentId
-	 *            the ID to check.
-	 */
-	boolean contains(String componentId);
-
-	/**
 	 * Generates multiple SNOMED CT IDs for the defined
 	 * {@link ComponentCategory} with the defined extension namespace.
 	 * 

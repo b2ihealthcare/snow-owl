@@ -16,7 +16,6 @@
 package com.b2international.snowowl.snomed.datastore.id.cis;
 
 import java.io.IOException;
-import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Collection;
 import java.util.Date;
@@ -31,6 +30,8 @@ import org.slf4j.LoggerFactory;
 import com.b2international.commons.StringUtils;
 import com.b2international.snowowl.core.IDisposableService;
 import com.b2international.snowowl.core.api.SnowowlRuntimeException;
+import com.b2international.snowowl.core.date.DateFormats;
+import com.b2international.snowowl.core.date.Dates;
 import com.b2international.snowowl.core.terminology.ComponentCategory;
 import com.b2international.snowowl.snomed.datastore.SnomedTerminologyBrowser;
 import com.b2international.snowowl.snomed.datastore.config.SnomedIdentifierConfiguration;
@@ -233,11 +234,6 @@ public class CisSnomedIdentifierServiceImpl extends AbstractSnomedIdentifierServ
 			release(request);
 			logout(token);
 		}
-	}
-
-	@Override
-	public boolean contains(final String componentId) {
-		return !hasStatus(getSctId(componentId), IdentifierStatus.AVAILABLE);
 	}
 
 	@Override
@@ -585,7 +581,7 @@ public class CisSnomedIdentifierServiceImpl extends AbstractSnomedIdentifierServ
 		calendar.add(Calendar.DATE, 1);
 		final Date expirationDate = calendar.getTime();
 
-		return new SimpleDateFormat("yyyy-MM-dd").format(expirationDate);
+		return Dates.formatByGmt(expirationDate, DateFormats.DEFAULT);
 	}
 
 	private String releaseData(final String componentId) throws IOException {

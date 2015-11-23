@@ -93,17 +93,11 @@ public class DefaultSnomedIdentifierServiceImpl extends AbstractSnomedIdentifier
 	public void register(final String componentId) {
 		LOGGER.info(String.format("Registering component ID %s.", componentId));
 
-		if (contains(componentId)) {
-			final SctId sctId = getSctId(componentId);
-			if (hasStatus(sctId, IdentifierStatus.AVAILABLE, IdentifierStatus.RESERVED)) {
-				sctId.setStatus(IdentifierStatus.ASSIGNED.getSerializedName());
-				store.put(componentId, sctId);
-			} else {
-				LOGGER.warn(
-						String.format("Cannot register ID %s as it is already present with status %s.", componentId, sctId.getStatus()));
-			}
+		final SctId sctId = getSctId(componentId);
+		if (!hasStatus(sctId, IdentifierStatus.AVAILABLE, IdentifierStatus.RESERVED)) {
+			LOGGER.warn(String.format("Cannot register ID %s as it is already present with status %s.", componentId, sctId.getStatus()));
 		} else {
-			final SctId sctId = buildSctId(componentId, IdentifierStatus.ASSIGNED);
+			sctId.setStatus(IdentifierStatus.ASSIGNED.getSerializedName());
 			store.put(componentId, sctId);
 		}
 	}
@@ -158,11 +152,6 @@ public class DefaultSnomedIdentifierServiceImpl extends AbstractSnomedIdentifier
 		} else {
 			throw new BadRequestException(String.format("Cannot publish ID in state %s.", sctId.getStatus()));
 		}
-	}
-
-	@Override
-	public boolean contains(final String componentId) {
-		return store.containsKey(componentId);
 	}
 
 	@Override
@@ -309,14 +298,11 @@ public class DefaultSnomedIdentifierServiceImpl extends AbstractSnomedIdentifier
 	}
 
 	private Collection<String> generateIds(final String namespace, final ComponentCategory category, final int quantity) {
-		int i = 0;
 		final Collection<String> componentIds = Lists.newArrayList();
 
-		while (i < quantity) {
-			i++;
-
+		while (componentIds.size() < quantity) {
 			String componentId = createComponentId(namespace, category);
-			while (reservationService.isReserved(componentId) && !contains(componentId)) {
+			while (reservationService.isReserved(componentId) && !store.containsKey(componentId)) {
 				componentId = createComponentId(namespace, category);
 			}
 
