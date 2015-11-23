@@ -21,14 +21,13 @@ import java.nio.file.Paths;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.config.SnowOwlConfiguration;
 import com.b2international.snowowl.core.setup.DefaultBootstrapFragment;
 import com.b2international.snowowl.core.setup.Environment;
-import com.b2international.snowowl.core.setup.ModuleConfig;
 import com.b2international.snowowl.datastore.store.IndexStore;
 import com.b2international.snowowl.datastore.store.MemStore;
 import com.b2international.snowowl.snomed.datastore.SnomedTerminologyBrowser;
+import com.b2international.snowowl.snomed.datastore.config.SnomedCoreConfiguration;
 import com.b2international.snowowl.snomed.datastore.config.SnomedIdentifierConfiguration;
 import com.b2international.snowowl.snomed.datastore.config.SnomedIdentifierConfiguration.IdGenerationStrategy;
 import com.b2international.snowowl.snomed.datastore.id.cis.CisSnomedIdentifierServiceImpl;
@@ -43,7 +42,6 @@ import com.google.inject.Provider;
 /**
  * @since 4.5
  */
-@ModuleConfig(fieldName = "snomed", type = SnomedIdentifierConfiguration.class)
 public class SnomedIdentifierBootstrap extends DefaultBootstrapFragment {
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(SnomedIdentifierBootstrap.class);
@@ -53,7 +51,7 @@ public class SnomedIdentifierBootstrap extends DefaultBootstrapFragment {
 	public void init(final SnowOwlConfiguration configuration, final Environment env) throws Exception {
 		checkIdGenerationSource(configuration);
 
-		final SnomedIdentifierConfiguration conf = configuration.getModuleConfig(SnomedIdentifierConfiguration.class);
+		final SnomedIdentifierConfiguration conf = configuration.getModuleConfig(SnomedCoreConfiguration.class).getIds();
 		final ISnomedIdentiferReservationService reservationService = new SnomedIdentifierReservationServiceImpl();
 		env.services().registerService(ISnomedIdentiferReservationService.class, reservationService);
 
@@ -73,7 +71,7 @@ public class SnomedIdentifierBootstrap extends DefaultBootstrapFragment {
 			final ISnomedIdentiferReservationService reservationService) {
 		ISnomedIdentifierService identifierService = null;
 
-		final Provider<SnomedTerminologyBrowser> provider = getTerminologyBrowserProvider();
+		final Provider<SnomedTerminologyBrowser> provider = env.provider(SnomedTerminologyBrowser.class);
 
 		switch (conf.getIdGenerationStrategy()) {
 		case MEMORY:
@@ -98,15 +96,6 @@ public class SnomedIdentifierBootstrap extends DefaultBootstrapFragment {
 
 		reservationService.create(IDENTIFIER_SERVICE_RESERVATIONS, identifierService);
 		env.services().registerService(ISnomedIdentifierService.class, identifierService);
-	}
-
-	private Provider<SnomedTerminologyBrowser> getTerminologyBrowserProvider() {
-		return new Provider<SnomedTerminologyBrowser>() {
-			@Override
-			public SnomedTerminologyBrowser get() {
-				return ApplicationContext.getInstance().getService(SnomedTerminologyBrowser.class);
-			}
-		};
 	}
 
 	private IndexStore<SctId> getIndexStore(final Environment env) {

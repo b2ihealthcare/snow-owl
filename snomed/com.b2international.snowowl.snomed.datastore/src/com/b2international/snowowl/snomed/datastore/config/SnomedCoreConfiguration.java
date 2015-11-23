@@ -15,6 +15,7 @@
  */
 package com.b2international.snowowl.snomed.datastore.config;
 
+import javax.validation.Valid;
 import javax.validation.constraints.Max;
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
@@ -58,6 +59,9 @@ public class SnomedCoreConfiguration {
 	
 	@NotEmpty
 	private String defaultModule = DEFAULT_MODULE;
+	
+	@Valid
+	private SnomedIdentifierConfiguration ids;
 	
 	private boolean concreteDomainSupport;
 	private boolean showReasonerUsageWarning = true;
@@ -176,6 +180,14 @@ public class SnomedCoreConfiguration {
 	@JsonProperty("showReasonerUsageWarning")
 	public void setShowReasonerUsageWarningEnabled(boolean showReasonerUsageWarning) {
 		this.showReasonerUsageWarning = showReasonerUsageWarning;
+	}
+	
+	public SnomedIdentifierConfiguration getIds() {
+		return ids;
+	}
+	
+	public void setIds(SnomedIdentifierConfiguration ids) {
+		this.ids = ids;
 	}
 	
 }
