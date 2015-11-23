@@ -48,6 +48,7 @@ import com.b2international.snowowl.snomed.datastore.id.cis.request.PublicationDa
 import com.b2international.snowowl.snomed.datastore.id.cis.request.Record;
 import com.b2international.snowowl.snomed.datastore.id.cis.request.RegistrationData;
 import com.b2international.snowowl.snomed.datastore.id.cis.request.ReleaseData;
+import com.b2international.snowowl.snomed.datastore.id.cis.request.RequestData;
 import com.b2international.snowowl.snomed.datastore.id.cis.request.ReservationData;
 import com.b2international.snowowl.snomed.datastore.id.reservations.ISnomedIdentiferReservationService;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -70,24 +71,18 @@ public class CisSnomedIdentifierServiceImpl extends AbstractSnomedIdentifierServ
 	private static final int MAX_NUMBER_OF_POLL_TRY = 5;
 
 	private String clientKey;
-	private final String username;
-	private final String password;
+	private final ObjectMapper mapper;
 
 	private final ComponentIdentifierServiceClient client;
-	private final ComponentIdentifierServiceAuthenticator authenticator;
 
 	private boolean disposed = false;
-	private final ObjectMapper mapper = new ObjectMapper();
 
 	public CisSnomedIdentifierServiceImpl(final SnomedIdentifierConfiguration conf, final Provider<SnomedTerminologyBrowser> provider,
-			final ISnomedIdentiferReservationService reservationService) {
+			final ISnomedIdentiferReservationService reservationService, final ObjectMapper mapper) {
 		super(provider, reservationService);
 		this.clientKey = conf.getCisClientSoftwareKey();
-		this.username = conf.getCisUserName();
-		this.password = conf.getCisPassword();
-
-		this.client = new ComponentIdentifierServiceClient(conf);
-		this.authenticator = new ComponentIdentifierServiceAuthenticator(client);
+		this.mapper = mapper;
+		this.client = new ComponentIdentifierServiceClient(conf, mapper);
 	}
 
 	@Override
@@ -180,13 +175,13 @@ public class CisSnomedIdentifierServiceImpl extends AbstractSnomedIdentifierServ
 		if (hasStatus(sctId, IdentifierStatus.AVAILABLE)) {
 			return;
 		}
-		
+
 		HttpPut request = null;
 		final String token = login();
 
 		try {
 			LOGGER.info(String.format("Sending component ID %s release request.", componentId));
-			
+
 			request = httpPut(String.format("sct/release?token=%s", token), releaseData(componentId));
 			execute(request);
 		} catch (IOException e) {
@@ -370,7 +365,7 @@ public class CisSnomedIdentifierServiceImpl extends AbstractSnomedIdentifierServ
 
 		if (componentIdsToRelease.isEmpty())
 			return;
-		
+
 		HttpPut request = null;
 		final String token = login();
 
@@ -435,7 +430,7 @@ public class CisSnomedIdentifierServiceImpl extends AbstractSnomedIdentifierServ
 			logout(token);
 		}
 	}
-	
+
 	@Override
 	public Collection<SctId> getSctIds() {
 		HttpGet request = null;
@@ -457,23 +452,23 @@ public class CisSnomedIdentifierServiceImpl extends AbstractSnomedIdentifierServ
 	}
 
 	private String login() {
-		return authenticator.login(username, password);
+		return client.login();
 	}
 
 	private void logout(final String token) {
 		if (null != token)
-			authenticator.logout(token);
+			client.logout(token);
 	}
 
 	private HttpGet httpGet(final String suffix) {
 		return client.httpGet(suffix);
 	}
 
-	private HttpPost httpPost(final String suffix, final String data) {
+	private HttpPost httpPost(final String suffix, final RequestData data) throws IOException {
 		return client.httpPost(suffix, data);
 	}
 
-	private HttpPut httpPut(final String suffix, final String data) {
+	private HttpPut httpPut(final String suffix, final RequestData data) throws IOException {
 		return client.httpPut(suffix, data);
 	}
 
@@ -505,7 +500,7 @@ public class CisSnomedIdentifierServiceImpl extends AbstractSnomedIdentifierServ
 
 				if (2 == status) {
 					break;
-				} else if (3 == status) { 
+				} else if (3 == status) {
 					throw new SnowowlRuntimeException("Bulk request has ended in error.");
 				} else {
 					pollTry++;
@@ -530,49 +525,43 @@ public class CisSnomedIdentifierServiceImpl extends AbstractSnomedIdentifierServ
 		});
 	}
 
-	private String generationData(final String namespace, final ComponentCategory category) throws IOException {
-		final GenerationData data = new GenerationData(namespace, clientKey, category);
-		return mapper.writeValueAsString(data);
+	private RequestData generationData(final String namespace, final ComponentCategory category) throws IOException {
+		return new GenerationData(namespace, clientKey, category);
 	}
 
-	private String bulkGenerationData(final String namespace, final ComponentCategory category, final int quantity) throws IOException {
-		final BulkGenerationData data = new BulkGenerationData(namespace, clientKey, category, quantity);
-		return mapper.writeValueAsString(data);
+	private RequestData bulkGenerationData(final String namespace, final ComponentCategory category, final int quantity)
+			throws IOException {
+		return new BulkGenerationData(namespace, clientKey, category, quantity);
 	}
 
-	private String registrationData(final String componentId) throws IOException {
-		final RegistrationData data = new RegistrationData(getNamespace(componentId), clientKey, componentId, "");
-		return mapper.writeValueAsString(data);
+	private RequestData registrationData(final String componentId) throws IOException {
+		return new RegistrationData(getNamespace(componentId), clientKey, componentId, "");
 	}
 
-	private String bulkRegistrationData(final Collection<String> componentIds) throws IOException {
+	private RequestData bulkRegistrationData(final Collection<String> componentIds) throws IOException {
 		final Collection<Record> records = Lists.newArrayList();
 		for (final String componentId : componentIds) {
 			records.add(new Record(componentId));
 		}
-		final BulkRegistrationData data = new BulkRegistrationData(getNamespace(componentIds.iterator().next()), clientKey, records);
-		return mapper.writeValueAsString(data);
+
+		return new BulkRegistrationData(getNamespace(componentIds.iterator().next()), clientKey, records);
 	}
 
-	private String deprecationData(final String componentId) throws IOException {
-		final DeprecationData data = new DeprecationData(getNamespace(componentId), clientKey, componentId);
-		return mapper.writeValueAsString(data);
+	private RequestData deprecationData(final String componentId) throws IOException {
+		return new DeprecationData(getNamespace(componentId), clientKey, componentId);
 	}
 
-	private String bulkDeprecationData(final Collection<String> componentIds) throws IOException {
-		final BulkDeprecationData data = new BulkDeprecationData(getNamespace(componentIds.iterator().next()), clientKey, componentIds);
-		return mapper.writeValueAsString(data);
+	private RequestData bulkDeprecationData(final Collection<String> componentIds) throws IOException {
+		return new BulkDeprecationData(getNamespace(componentIds.iterator().next()), clientKey, componentIds);
 	}
 
-	private String reservationData(final String namespace, final ComponentCategory category) throws IOException {
-		final ReservationData data = new ReservationData(namespace, clientKey, getExpirationDate(), category);
-		return mapper.writeValueAsString(data);
+	private RequestData reservationData(final String namespace, final ComponentCategory category) throws IOException {
+		return new ReservationData(namespace, clientKey, getExpirationDate(), category);
 	}
 
-	private String bulkReservationData(final String namespace, final ComponentCategory category, final int quantity) throws IOException {
-		final BulkReservationData data = new BulkReservationData(namespace, clientKey, getExpirationDate(), category,
-				quantity);
-		return mapper.writeValueAsString(data);
+	private RequestData bulkReservationData(final String namespace, final ComponentCategory category, final int quantity)
+			throws IOException {
+		return new BulkReservationData(namespace, clientKey, getExpirationDate(), category, quantity);
 	}
 
 	private String getExpirationDate() {
@@ -583,24 +572,20 @@ public class CisSnomedIdentifierServiceImpl extends AbstractSnomedIdentifierServ
 		return Dates.formatByGmt(expirationDate, DateFormats.DEFAULT);
 	}
 
-	private String releaseData(final String componentId) throws IOException {
-		final ReleaseData data = new ReleaseData(getNamespace(componentId), clientKey, componentId);
-		return mapper.writeValueAsString(data);
+	private RequestData releaseData(final String componentId) throws IOException {
+		return new ReleaseData(getNamespace(componentId), clientKey, componentId);
 	}
 
-	private String bulkReleaseData(final Collection<String> componentIds) throws IOException {
-		final BulkReleaseData data = new BulkReleaseData(getNamespace(componentIds.iterator().next()), clientKey, componentIds);
-		return mapper.writeValueAsString(data);
+	private RequestData bulkReleaseData(final Collection<String> componentIds) throws IOException {
+		return new BulkReleaseData(getNamespace(componentIds.iterator().next()), clientKey, componentIds);
 	}
 
-	private String publishData(final String componentId) throws IOException {
-		final PublicationData data = new PublicationData(getNamespace(componentId), clientKey, componentId);
-		return mapper.writeValueAsString(data);
+	private RequestData publishData(final String componentId) throws IOException {
+		return new PublicationData(getNamespace(componentId), clientKey, componentId);
 	}
 
-	private String bulkPublishData(final Collection<String> componentIds) throws IOException {
-		final BulkPublicationData data = new BulkPublicationData(getNamespace(componentIds.iterator().next()), clientKey, componentIds);
-		return mapper.writeValueAsString(data);
+	private RequestData bulkPublishData(final Collection<String> componentIds) throws IOException {
+		return new BulkPublicationData(getNamespace(componentIds.iterator().next()), clientKey, componentIds);
 	}
 
 	private String getNamespace(final String componentId) {

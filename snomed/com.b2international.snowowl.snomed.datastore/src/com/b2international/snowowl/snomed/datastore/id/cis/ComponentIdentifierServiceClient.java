@@ -31,8 +31,10 @@ import org.apache.http.util.EntityUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.b2international.snowowl.core.api.SnowowlRuntimeException;
 import com.b2international.snowowl.core.exceptions.BadRequestException;
 import com.b2international.snowowl.snomed.datastore.config.SnomedIdentifierConfiguration;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 /**
  * Client to communicate with the CIS.
@@ -40,35 +42,41 @@ import com.b2international.snowowl.snomed.datastore.config.SnomedIdentifierConfi
  * @since 4.5
  */
 public class ComponentIdentifierServiceClient {
-	
+
 	private static final Logger LOGGER = LoggerFactory.getLogger(ComponentIdentifierServiceClient.class);
 
 	private final String url;
 	private final String port;
 	private final String contextRoot;
+	private final String username;
+	private final String password;
+	private final ObjectMapper mapper;
 
 	private HttpClient client = new DefaultHttpClient();
 
-	public ComponentIdentifierServiceClient(final SnomedIdentifierConfiguration conf) {
+	public ComponentIdentifierServiceClient(final SnomedIdentifierConfiguration conf, final ObjectMapper mapper) {
 		this.url = conf.getCisUrl();
 		this.port = conf.getCisPort();
 		this.contextRoot = conf.getCisContextRoot();
+		this.username = conf.getCisUserName();
+		this.password = conf.getCisPassword();
+		this.mapper = mapper;
 	}
 
 	public HttpGet httpGet(final String suffix) {
 		return new HttpGet(String.format("%s/%s", getServiceUrl(), suffix));
 	}
 
-	public HttpPost httpPost(final String suffix, final String entity) {
+	public HttpPost httpPost(final String suffix, final Object data) throws IOException {
 		final HttpPost httpPost = new HttpPost(String.format("%s/%s", getServiceUrl(), suffix));
-		httpPost.setEntity(new StringEntity(entity, ContentType.create("application/json")));
+		httpPost.setEntity(new StringEntity(mapper.writeValueAsString(data), ContentType.create("application/json")));
 
 		return httpPost;
 	}
 
-	public HttpPut httpPut(final String suffix, final String entity) {
+	public HttpPut httpPut(final String suffix, final Object data) throws IOException {
 		final HttpPut httpPut = new HttpPut(String.format("%s/%s", getServiceUrl(), suffix));
-		httpPut.setEntity(new StringEntity(entity, ContentType.create("application/json")));
+		httpPut.setEntity(new StringEntity(mapper.writeValueAsString(data), ContentType.create("application/json")));
 
 		return httpPut;
 	}
@@ -82,8 +90,7 @@ public class ComponentIdentifierServiceClient {
 			return EntityUtils.toString(entity);
 		} catch (IOException e) {
 			LOGGER.error("Exception while executing HTTP request.", e);
-			// TODO change exception
-			throw new RuntimeException("Exception while executing HTTP request.", e);
+			throw new SnowowlRuntimeException("Exception while executing HTTP request.", e);
 		}
 	}
 
@@ -111,6 +118,44 @@ public class ComponentIdentifierServiceClient {
 	public void close() {
 		if (null != client)
 			client.getConnectionManager().shutdown();
+	}
+
+	public String login() {
+		LOGGER.info("Logging in to Component Identifier service.");
+
+		HttpPost request = null;
+
+		try {
+			final Credentials credentials = new Credentials(username, password);
+			request = httpPost("login", credentials);
+
+			final String response = execute(request);
+
+			return mapper.readValue(response, Token.class).getToken();
+		} catch (IOException e) {
+			// TODO change exception
+			throw new RuntimeException("Exception while logging in.", e);
+		} finally {
+			if (null != request)
+				release(request);
+		}
+	}
+
+	public void logout(final String token) {
+		LOGGER.info("Logging out from Component Identifier service.");
+
+		HttpPost request = null;
+
+		try {
+			request = httpPost("logout", mapper.writeValueAsString(new Token(token)));
+			client.execute(request);
+		} catch (IOException e) {
+			// TODO change exception
+			throw new RuntimeException("Exception while logging out.", e);
+		} finally {
+			if (null != request)
+				release(request);
+		}
 	}
 
 }

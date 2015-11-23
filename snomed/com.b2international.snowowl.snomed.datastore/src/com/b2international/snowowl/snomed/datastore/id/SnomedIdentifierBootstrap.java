@@ -71,6 +71,7 @@ public class SnomedIdentifierBootstrap extends DefaultBootstrapFragment {
 			final ISnomedIdentiferReservationService reservationService) {
 		ISnomedIdentifierService identifierService = null;
 
+		final ObjectMapper mapper = new ObjectMapper();
 		final Provider<SnomedTerminologyBrowser> provider = env.provider(SnomedTerminologyBrowser.class);
 
 		switch (conf.getIdGenerationStrategy()) {
@@ -88,7 +89,7 @@ public class SnomedIdentifierBootstrap extends DefaultBootstrapFragment {
 			break;
 		case CIS:
 			LOGGER.info("Snow Owl is configured to use CIS based identifier serivce.");
-			identifierService = new CisSnomedIdentifierServiceImpl(conf, provider, reservationService);
+			identifierService = new CisSnomedIdentifierServiceImpl(conf, provider, reservationService, mapper);
 			break;
 		default:
 			throw new IllegalStateException(String.format("Unknown ID generation source configured: %s. ", conf.getIdGenerationStrategy()));
