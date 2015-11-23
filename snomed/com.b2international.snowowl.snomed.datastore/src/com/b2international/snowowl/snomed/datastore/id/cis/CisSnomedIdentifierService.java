@@ -588,7 +588,7 @@ public class CisSnomedIdentifierService extends AbstractSnomedIdentifierService 
 	}
 
 	private String getNamespace(final String componentId) {
-		return SnomedIdentifiers.of(componentId).getNamespace();
+		return SnomedIdentifiers.create(componentId).getNamespace();
 	}
 
 	@Override

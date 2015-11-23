@@ -20,8 +20,7 @@ import com.b2international.snowowl.core.events.DelegatingRequest;
 import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.datastore.request.CommitInfo;
 import com.b2international.snowowl.snomed.datastore.id.ISnomedIdentifierService;
-import com.b2international.snowowl.snomed.datastore.id.IdManager;
-import com.b2international.snowowl.snomed.datastore.id.IdManagerImpl;
+import com.b2international.snowowl.snomed.datastore.id.SnomedIdentifiers;
 
 /**
  * @since 4.5
@@ -37,18 +36,18 @@ final class IdRequest extends DelegatingRequest<BranchContext, BranchContext, Co
 	@Override
 	public CommitInfo execute(BranchContext context) {
 		final ISnomedIdentifierService identifierService = context.service(ISnomedIdentifierService.class);
-		final IdManager idManager = new IdManagerImpl(identifierService);
-		final IdContext idContext = new IdContext(context, idManager);
+		final SnomedIdentifiers snomedIdentifiers = new SnomedIdentifiers(identifierService);
+		final IdContext idContext = new IdContext(context, snomedIdentifiers);
 
 		try {
 			final CommitInfo commitInfo = next(idContext);
 
-			idManager.commit();
+			snomedIdentifiers.commit();
 			return commitInfo;
 		} catch (Exception e) {
 			// TODO check exception type and decide what to do (e.g. rollback ID
 			// request or not)
-			idManager.rollback();
+			snomedIdentifiers.rollback();
 
 			throw e;
 		}

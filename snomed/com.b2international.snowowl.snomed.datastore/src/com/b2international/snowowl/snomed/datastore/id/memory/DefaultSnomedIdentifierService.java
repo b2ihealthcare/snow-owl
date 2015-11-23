@@ -331,7 +331,7 @@ public class DefaultSnomedIdentifierService extends AbstractSnomedIdentifierServ
 	}
 
 	private SctId buildSctId(final String componentId, final IdentifierStatus status) {
-		final SnomedIdentifier identifier = SnomedIdentifiers.of(componentId);
+		final SnomedIdentifier identifier = SnomedIdentifiers.create(componentId);
 		final SctId sctId = new SctId();
 		sctId.setSctid(componentId);
 		sctId.setStatus(status.getSerializedName());

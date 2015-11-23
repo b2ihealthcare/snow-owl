@@ -30,8 +30,6 @@ import org.eclipse.core.runtime.SubMonitor;
 import org.eclipse.emf.cdo.transaction.CDOTransaction;
 import org.eclipse.emf.cdo.util.CommitException;
 
-import bak.pcj.set.LongSet;
-
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.datastore.oplock.IOperationLockTarget;
 import com.b2international.snowowl.datastore.oplock.OperationLockException;
@@ -41,15 +39,14 @@ import com.b2international.snowowl.datastore.oplock.impl.IDatastoreOperationLock
 import com.b2international.snowowl.datastore.oplock.impl.SingleRepositoryAndBranchLockTarget;
 import com.b2international.snowowl.datastore.server.CDOServerCommitBuilder;
 import com.b2international.snowowl.datastore.server.remotejobs.AbstractRemoteJob;
-import com.b2international.snowowl.datastore.server.snomed.index.InitialReasonerTaxonomyBuilder;
 import com.b2international.snowowl.datastore.server.snomed.index.AbstractReasonerTaxonomyBuilder.Type;
+import com.b2international.snowowl.datastore.server.snomed.index.InitialReasonerTaxonomyBuilder;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 import com.b2international.snowowl.snomed.datastore.SnomedEditingContext;
 import com.b2international.snowowl.snomed.datastore.SnomedTerminologyBrowser;
 import com.b2international.snowowl.snomed.datastore.id.ISnomedIdentifierService;
-import com.b2international.snowowl.snomed.datastore.id.IdManager;
-import com.b2international.snowowl.snomed.datastore.id.IdManagerImpl;
+import com.b2international.snowowl.snomed.datastore.id.SnomedIdentifiers;
 import com.b2international.snowowl.snomed.reasoner.server.SnomedReasonerServerActivator;
 import com.b2international.snowowl.snomed.reasoner.server.diff.OntologyChange;
 import com.b2international.snowowl.snomed.reasoner.server.diff.concretedomain.ConcreteDomainPersister;
@@ -57,6 +54,8 @@ import com.b2international.snowowl.snomed.reasoner.server.diff.relationship.Rela
 import com.b2international.snowowl.snomed.reasoner.server.normalform.ConceptConcreteDomainNormalFormGenerator;
 import com.b2international.snowowl.snomed.reasoner.server.normalform.RelationshipNormalFormGenerator;
 import com.google.common.collect.Lists;
+
+import bak.pcj.set.LongSet;
 
 /**
  * Represents a remote job responsible for saving changes to the repository.
@@ -137,7 +136,7 @@ public class PersistChangesRemoteJob extends AbstractRemoteJob {
 		}
 		
 		final SubMonitor subMonitor = SubMonitor.convert(monitor, "Persisting changes", 6);
-		final IdManager idManager = new IdManagerImpl(getServiceForClass(ISnomedIdentifierService.class));
+		final SnomedIdentifiers snomedIdentifiers = new SnomedIdentifiers(getServiceForClass(ISnomedIdentifierService.class));
 
 		try (final SnomedEditingContext editingContext = new SnomedEditingContext(branchPath)) {
 
@@ -151,7 +150,7 @@ public class PersistChangesRemoteJob extends AbstractRemoteJob {
 			relationshipGenerator.collectNormalFormChanges(subMonitor.newChild(1), relationshipRemovePersister);
 			
 			if (!relationshipAddPersister.getRelationshipIds().isEmpty())
-				idManager.bulkRegister(relationshipAddPersister.getRelationshipIds());
+				snomedIdentifiers.register(relationshipAddPersister.getRelationshipIds());
 
 			final ConceptConcreteDomainNormalFormGenerator conceptConcreteDomainGenerator = new ConceptConcreteDomainNormalFormGenerator(taxonomy, reasonerTaxonomyBuilder);
 			conceptConcreteDomainGenerator.collectNormalFormChanges(subMonitor.newChild(1), new ConcreteDomainPersister(editingContext, OntologyChange.Nature.ADD));
@@ -180,7 +179,7 @@ public class PersistChangesRemoteJob extends AbstractRemoteJob {
 
 			return OK_STATUS;
 		} catch (CommitException e) {
-			idManager.rollback();
+			snomedIdentifiers.rollback();
 			throw e;
 		}
 	}

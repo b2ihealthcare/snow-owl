@@ -17,24 +17,24 @@ package com.b2international.snowowl.snomed.datastore.server.request;
 
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.domain.DelegatingBranchContext;
-import com.b2international.snowowl.snomed.datastore.id.IdManager;
+import com.b2international.snowowl.snomed.datastore.id.SnomedIdentifiers;
 
 /**
  * @since 4.5
  */
 public class IdContext extends DelegatingBranchContext {
 
-	private final IdManager idManager;
+	private final SnomedIdentifiers snomedIdentifiers;
 
-	public IdContext(final BranchContext context, final IdManager idManager) {
+	public IdContext(final BranchContext context, final SnomedIdentifiers snomedIdentifiers) {
 		super(context);
-		this.idManager = idManager;
+		this.snomedIdentifiers = snomedIdentifiers;
 	}
 
 	@Override
 	public <T> T service(Class<T> type) {
-		if (IdManager.class.isAssignableFrom(type)) {
-			return type.cast(idManager);
+		if (SnomedIdentifiers.class.isAssignableFrom(type)) {
+			return type.cast(snomedIdentifiers);
 		} else {
 			return super.service(type);
 		}

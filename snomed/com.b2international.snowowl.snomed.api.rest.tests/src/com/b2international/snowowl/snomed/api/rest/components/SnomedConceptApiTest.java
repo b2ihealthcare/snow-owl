@@ -42,9 +42,12 @@ import java.util.Map;
 
 import org.junit.Test;
 
+import com.b2international.snowowl.core.ApplicationContext;
+import com.b2international.snowowl.core.terminology.ComponentCategory;
 import com.b2international.snowowl.snomed.api.rest.AbstractSnomedApiTest;
 import com.b2international.snowowl.snomed.api.rest.SnomedApiTestConstants;
 import com.b2international.snowowl.snomed.api.rest.SnomedComponentType;
+import com.b2international.snowowl.snomed.datastore.id.ISnomedIdentifierService;
 import com.b2international.snowowl.snomed.datastore.id.SnomedIdentifiers;
 import com.google.common.collect.ImmutableMap;
 import com.jayway.restassured.response.Response;
@@ -101,7 +104,9 @@ public class SnomedConceptApiTest extends AbstractSnomedApiTest {
 
 	@Test
 	public void createConceptWithGeneratedId() {
-		final String conceptId = SnomedIdentifiers.generateConceptId();
+		final ISnomedIdentifierService identifierService = ApplicationContext.getInstance().getServiceChecked(ISnomedIdentifierService.class);
+		final SnomedIdentifiers snomedIdentifiers = new SnomedIdentifiers(identifierService);
+		final String conceptId = snomedIdentifiers.generate(null, ComponentCategory.CONCEPT);
 		final Map<?, ?> requestBody = givenConceptRequestBody(conceptId, ROOT_CONCEPT, MODULE_SCT_CORE, PREFERRED_ACCEPTABILITY_MAP, false);		
 		final String createdId = assertComponentCreated(createMainPath(), SnomedComponentType.CONCEPT, requestBody);
 		assertEquals("Pre-generated and returned concept ID should match.", conceptId, createdId);
@@ -117,7 +122,9 @@ public class SnomedConceptApiTest extends AbstractSnomedApiTest {
 	@Test
 	public void createConceptWithGeneratedIdOnBranch() {
 		givenBranchWithPath(testBranchPath);
-		final String conceptId = SnomedIdentifiers.generateConceptId();
+		final ISnomedIdentifierService identifierService = ApplicationContext.getInstance().getServiceChecked(ISnomedIdentifierService.class);
+		final SnomedIdentifiers snomedIdentifiers = new SnomedIdentifiers(identifierService);
+		final String conceptId = snomedIdentifiers.generate(null, ComponentCategory.CONCEPT);
 		final Map<?, ?> requestBody = givenConceptRequestBody(conceptId, ROOT_CONCEPT, MODULE_SCT_CORE, PREFERRED_ACCEPTABILITY_MAP, false);
 		final String createdId = assertComponentCreated(testBranchPath, SnomedComponentType.CONCEPT, requestBody);
 		assertEquals("Pre-generated and returned concept ID should match.", conceptId, createdId);

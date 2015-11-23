@@ -41,7 +41,7 @@ public class Reservations {
 	 * @return a {@link Reservation} instance for the given componentId.
 	 */
 	public static Reservation single(final String componentId) {
-		final SnomedIdentifier id = SnomedIdentifiers.of(componentId);
+		final SnomedIdentifier id = SnomedIdentifiers.create(componentId);
 		return new ReservationRangeImpl(id.getItemId(), id.getItemId(), id.getNamespace(), Collections.singleton(id.getComponentCategory()));
 	}
 

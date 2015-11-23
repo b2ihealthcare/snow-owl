@@ -27,8 +27,7 @@ import com.b2international.snowowl.core.api.SnowowlServiceException;
 import com.b2international.snowowl.importer.ImportAction;
 import com.b2international.snowowl.snomed.Component;
 import com.b2international.snowowl.snomed.datastore.id.ISnomedIdentifierService;
-import com.b2international.snowowl.snomed.datastore.id.IdManager;
-import com.b2international.snowowl.snomed.datastore.id.IdManagerImpl;
+import com.b2international.snowowl.snomed.datastore.id.SnomedIdentifiers;
 import com.b2international.snowowl.snomed.importer.rf2.csv.AbstractTerminologyComponentRow;
 import com.b2international.snowowl.snomed.importer.rf2.model.AbstractSnomedImporter;
 import com.b2international.snowowl.snomed.importer.rf2.model.SnomedImportConfiguration;
@@ -39,7 +38,7 @@ public abstract class AbstractSnomedTerminologyImporter<T extends AbstractTermin
 
 	protected final Collection<String> componentIdsToRegister = Sets.newHashSet();
 	
-	private final IdManager idManager;
+	private final SnomedIdentifiers snomedIdentifiers;
 
 	protected AbstractSnomedTerminologyImporter(final SnomedImportConfiguration<T> importConfiguration, 
 			final SnomedImportContext importContext, 
@@ -47,7 +46,7 @@ public abstract class AbstractSnomedTerminologyImporter<T extends AbstractTermin
 			final String releaseFileIdentifier) {
 		
 		super(importConfiguration, importContext, releaseFileStream, releaseFileIdentifier);
-		this.idManager = new IdManagerImpl(ApplicationContext.getInstance().getServiceChecked(ISnomedIdentifierService.class));
+		this.snomedIdentifiers = new SnomedIdentifiers(ApplicationContext.getInstance().getServiceChecked(ISnomedIdentifierService.class));
 	}
 
 	@Override
@@ -69,7 +68,7 @@ public abstract class AbstractSnomedTerminologyImporter<T extends AbstractTermin
 	@Override
 	protected void preCommit(final InternalCDOTransaction transaction) throws SnowowlServiceException {
 		if (!componentIdsToRegister.isEmpty()) {
-			idManager.bulkRegister(componentIdsToRegister);
+			snomedIdentifiers.register(componentIdsToRegister);
 			componentIdsToRegister.clear();
 		}
 
@@ -78,7 +77,7 @@ public abstract class AbstractSnomedTerminologyImporter<T extends AbstractTermin
 
 	@Override
 	protected void handleCommitException() {
-		idManager.rollback();
+		snomedIdentifiers.rollback();
 		super.handleCommitException();
 	}
 	

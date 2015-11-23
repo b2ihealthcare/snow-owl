@@ -32,7 +32,7 @@ public class SnomedIdentifierTest {
 
 	@Test
 	public void whenCreatingBasicConceptIdentifierInShortFormat_ThenItShouldBeCreated() throws Exception {
-		final SnomedIdentifier id = SnomedIdentifiers.of(Concepts.ROOT_CONCEPT);
+		final SnomedIdentifier id = SnomedIdentifiers.create(Concepts.ROOT_CONCEPT);
 		assertEquals(138875L, id.getItemId());
 		assertNull(id.getNamespace());
 		assertEquals(0, id.getPartitionIdentifier());
@@ -43,7 +43,7 @@ public class SnomedIdentifierTest {
 	
 	@Test
 	public void whenCreatingShortestConceptIdentifierInShortFormat_ThenItShouldBeCreated() throws Exception {
-		final SnomedIdentifier id = SnomedIdentifiers.of("100005");
+		final SnomedIdentifier id = SnomedIdentifiers.create("100005");
 		assertEquals(100L, id.getItemId());
 		assertNull(id.getNamespace());
 		assertEquals(0, id.getPartitionIdentifier());
@@ -54,7 +54,7 @@ public class SnomedIdentifierTest {
 	
 	@Test
 	public void whenCreatingLongestConceptIdentifierInShortFormat_ThenItShouldBeCreated() throws Exception {
-		final SnomedIdentifier id = SnomedIdentifiers.of(Concepts.DEFINITION_STATUS_ROOT);
+		final SnomedIdentifier id = SnomedIdentifiers.create(Concepts.DEFINITION_STATUS_ROOT);
 		assertEquals(900000000000444L, id.getItemId());
 		assertNull(id.getNamespace());
 		assertEquals(0, id.getPartitionIdentifier());
@@ -65,7 +65,7 @@ public class SnomedIdentifierTest {
 	
 	@Test
 	public void whenCreatingDescriptionIdentifierInShortFormat_ThenItShouldBeCreated() throws Exception {
-		final SnomedIdentifier id = SnomedIdentifiers.of("1290023401015");
+		final SnomedIdentifier id = SnomedIdentifiers.create("1290023401015");
 		assertEquals(1290023401L, id.getItemId());
 		assertNull(id.getNamespace());
 		assertEquals(0, id.getPartitionIdentifier());
@@ -76,7 +76,7 @@ public class SnomedIdentifierTest {
 	
 	@Test
 	public void whenCreatingRelationshipIdentifierInShortFormat_ThenItShouldBeCreated() throws Exception {
-		final SnomedIdentifier id = SnomedIdentifiers.of("9940000001029");
+		final SnomedIdentifier id = SnomedIdentifiers.create("9940000001029");
 		assertEquals(9940000001L, id.getItemId());
 		assertNull(id.getNamespace());
 		assertEquals(0, id.getPartitionIdentifier());
@@ -87,7 +87,7 @@ public class SnomedIdentifierTest {
 
 	@Test
 	public void whenCreatingDescriptionIdentifierInLongFormat_ThenItShouldBeCreated() throws Exception {
-		final SnomedIdentifier id = SnomedIdentifiers.of("1290000001117");
+		final SnomedIdentifier id = SnomedIdentifiers.create("1290000001117");
 		assertEquals(129L, id.getItemId());
 		assertEquals("0000001", id.getNamespace());
 		assertEquals(1, id.getPartitionIdentifier());
@@ -98,7 +98,7 @@ public class SnomedIdentifierTest {
 	
 	@Test
 	public void whenCreatingRelationshipIdentifierInLongFormat_ThenItShouldBeCreated() throws Exception {
-		final SnomedIdentifier id = SnomedIdentifiers.of("9940000001126");
+		final SnomedIdentifier id = SnomedIdentifiers.create("9940000001126");
 		assertEquals(994L, id.getItemId());
 		assertEquals("0000001", id.getNamespace());
 		assertEquals(1, id.getPartitionIdentifier());
@@ -109,7 +109,7 @@ public class SnomedIdentifierTest {
 	
 	@Test
 	public void whenCreatingSCTIdentifierInLongFormat_ThenItShouldBeCreated() throws Exception {
-		final SnomedIdentifier id = SnomedIdentifiers.of("999999990989121104");
+		final SnomedIdentifier id = SnomedIdentifiers.create("999999990989121104");
 		assertEquals(99999999L, id.getItemId());
 		assertEquals("0989121", id.getNamespace());
 		assertEquals(1, id.getPartitionIdentifier());

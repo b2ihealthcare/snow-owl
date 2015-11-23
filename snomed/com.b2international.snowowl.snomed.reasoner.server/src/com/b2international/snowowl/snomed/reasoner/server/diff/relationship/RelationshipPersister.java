@@ -91,7 +91,7 @@ public class RelationshipPersister extends OntologyChangeProcessor<StatementFrag
 
 		final String sourceConceptId = Long.toString(conceptId);
 		final Concept sourceConcept = conceptLookupService.getComponent(sourceConceptId, transaction);
-		final String namespace = SnomedIdentifiers.of(sourceConceptId).getNamespace();
+		final String namespace = SnomedIdentifiers.create(sourceConceptId).getNamespace();
 		final Concept module = sourceConcept.getModule();
 		
 		final Concept typeConcept;

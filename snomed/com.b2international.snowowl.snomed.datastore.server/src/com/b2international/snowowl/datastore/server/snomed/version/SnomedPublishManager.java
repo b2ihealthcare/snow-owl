@@ -34,8 +34,7 @@ import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 import com.b2international.snowowl.snomed.datastore.SnomedEditingContext;
 import com.b2international.snowowl.snomed.datastore.SnomedRefSetLookupService;
 import com.b2international.snowowl.snomed.datastore.id.ISnomedIdentifierService;
-import com.b2international.snowowl.snomed.datastore.id.IdManager;
-import com.b2international.snowowl.snomed.datastore.id.IdManagerImpl;
+import com.b2international.snowowl.snomed.datastore.id.SnomedIdentifiers;
 import com.b2international.snowowl.snomed.datastore.services.ISnomedComponentService;
 import com.b2international.snowowl.snomed.datastore.services.ISnomedComponentService.IdStorageKeyPair;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedModuleDependencyRefSetMember;
@@ -63,11 +62,11 @@ public class SnomedPublishManager extends PublishManager {
 	private final Collection<SnomedModuleDependencyRefSetMember> newModuleDependencyRefSetMembers = Sets.newHashSet();
 	private final Collection<String> componentIdsToPublish = Sets.newHashSet();
 	
-	private final IdManager idManager;
+	private final SnomedIdentifiers snomedIdentifiers;
 	private final ISnomedComponentService componentService;
 	
 	public SnomedPublishManager() {
-		this.idManager = new IdManagerImpl(ApplicationContext.getInstance().getServiceChecked(ISnomedIdentifierService.class));
+		this.snomedIdentifiers = new SnomedIdentifiers(ApplicationContext.getInstance().getServiceChecked(ISnomedIdentifierService.class));
 		this.componentService = ApplicationContext.getInstance().getServiceChecked(ISnomedComponentService.class);
 	}
 
@@ -167,7 +166,7 @@ public class SnomedPublishManager extends PublishManager {
 	@Override
 	public void postCommit() {
 		if (!componentIdsToPublish.isEmpty()) {
-			idManager.bulkPublish(componentIdsToPublish);
+			snomedIdentifiers.publish(componentIdsToPublish);
 		}
 		super.postCommit();
 	}
