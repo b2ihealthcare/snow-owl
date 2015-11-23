@@ -15,12 +15,15 @@
  */
 package com.b2international.snowowl.snomed.datastore.server.request;
 
+import com.b2international.snowowl.core.domain.TransactionContext;
+import com.b2international.snowowl.core.events.Request;
+import com.b2international.snowowl.snomed.core.domain.SnomedComponent;
 import com.b2international.snowowl.snomed.core.domain.IdGenerationStrategy;
 
 /**
  * @since 4.0
  */
-public interface SnomedComponentCreateRequest {
+public interface SnomedComponentCreateRequest<R extends SnomedComponent> extends Request<TransactionContext, R> {
 
 	IdGenerationStrategy getIdGenerationStrategy();
 

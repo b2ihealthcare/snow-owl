@@ -25,7 +25,6 @@ import static com.b2international.snowowl.snomed.api.rest.SnomedComponentApiAsse
 import static com.b2international.snowowl.snomed.api.rest.SnomedComponentApiAssert.getComponent;
 import static com.b2international.snowowl.snomed.api.rest.SnomedComponentApiAssert.givenConceptRequestBody;
 import static com.google.common.collect.Lists.newArrayList;
-import static org.junit.Assert.*;
 
 import java.util.Collection;
 import java.util.List;
@@ -41,7 +40,6 @@ import com.b2international.snowowl.snomed.api.rest.SnomedComponentType;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType;
 import com.b2international.snowowl.test.commons.rest.RestExtensions;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Iterables;
 import com.jayway.restassured.http.ContentType;
@@ -96,7 +94,7 @@ public class SnomedRefSetBulkApiTest extends AbstractSnomedApiTest {
 			.then()
 			.statusCode(200)
 			.and()
-			.body("members.items.referencedComponentId", CoreMatchers.hasItems(createdConcepts.toArray()));
+			.body("members.items.referencedComponent.id", CoreMatchers.hasItems(createdConcepts.toArray()));
 	}
 	
 	@Test

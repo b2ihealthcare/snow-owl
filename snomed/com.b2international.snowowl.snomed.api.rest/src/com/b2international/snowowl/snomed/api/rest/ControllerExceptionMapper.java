@@ -115,6 +115,7 @@ public class ControllerExceptionMapper {
 	@ExceptionHandler
 	@ResponseStatus(HttpStatus.BAD_REQUEST)
 	public @ResponseBody RestApiError handle(final IllegalArgumentException ex) {
+		ex.printStackTrace();
 		return RestApiError.of(ApiError.Builder.of(ex.getMessage()).build()).build(HttpStatus.BAD_REQUEST.value());
 	}
 	

@@ -15,33 +15,22 @@
  */
 package com.b2international.snowowl.snomed.core.domain;
 
-import java.util.Date;
+import java.util.Collections;
+import java.util.List;
 
-import com.b2international.snowowl.core.domain.IComponent;
+import com.b2international.snowowl.core.domain.PageableCollectionResource;
 
 /**
- * Holds common properties of SNOMED CT components.
+ * @since 4.5
  */
-public interface ISnomedComponent extends IComponent {
+public final class SnomedDescriptions extends PageableCollectionResource<ISnomedDescription> {
 
-	/**
-	 * Returns the component's current status as a boolean value.
-	 *  
-	 * @return {@code true} if the component is active, {@code false} if it is inactive
-	 */
-	boolean isActive();
+	public SnomedDescriptions(int offset, int limit, int total) {
+		super(Collections.<ISnomedDescription>emptyList(), offset, limit, total);
+	}
 
-	/**
-	 * Returns the date at which the current state of the component becomes effective.
-	 * 
-	 * @return the component's effective time
-	 */
-	Date getEffectiveTime();
+	public SnomedDescriptions(List<ISnomedDescription> items, int offset, int limit, int total) {
+		super(items, offset, limit, total);
+	}
 
-	/**
-	 * Returns the containing module's concept identifier.
-	 * 
-	 * @return the module identifier for the component
-	 */
-	String getModuleId();
 }

@@ -32,5 +32,5 @@ public interface IComponent {
 	 * 
 	 * @return {@code true} if the component has already been released as part of a version, {@code false} otherwise
 	 */
-	boolean isReleased();
+	Boolean isReleased();
 }

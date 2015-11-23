@@ -116,6 +116,7 @@ import com.google.common.base.Preconditions;
 import com.google.common.collect.FluentIterable;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMultimap;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Sets;
@@ -348,6 +349,7 @@ public class SnomedRf2IndexInitializer extends Job {
 	private void collectLanguageMembership(ComponentImportUnit unit) {
 		
 		final File unitFile = unit.getUnitFile();
+		
 		if (null != unitFile && unitFile.canRead() && unitFile.isFile()) {
 			parseFile(unitFile.getAbsolutePath(), 7, new RecordParserCallback<String>() {
 
@@ -360,16 +362,19 @@ public class SnomedRf2IndexInitializer extends Job {
 					final long refSetId = Long.parseLong(record.get(4));
 					final String descriptionId = record.get(5);
 					final String acceptabilityId = record.get(6);
-					final RefSetMemberChange change;
 					
-					if (ACTIVE_STATUS.equals(record.get(2))) {
-						change = new RefSetMemberChange(refSetId, MemberChangeKind.ADDED, SnomedRefSetType.LANGUAGE);
-					} else {
-						change = new RefSetMemberChange(refSetId, MemberChangeKind.REMOVED, SnomedRefSetType.LANGUAGE);
-					}
+					// TODO
+					final RefSetMemberChange positiveChange = new RefSetMemberChange(refSetId, MemberChangeKind.ADDED, SnomedRefSetType.LANGUAGE);
+					final RefSetMemberChange negativeChange = new RefSetMemberChange(refSetId, MemberChangeKind.REMOVED, SnomedRefSetType.LANGUAGE);
 					
 					if (Concepts.REFSET_DESCRIPTION_ACCEPTABILITY_PREFERRED.equals(acceptabilityId)) {
-						preferredMemberChanges.put(descriptionId, change);
+						
+						if (ACTIVE_STATUS.equals(record.get(2))) {
+							preferredMemberChanges.put(descriptionId, positiveChange);
+							acceptableMemberChanges.put(descriptionId, negativeChange);
+						} else {
+							preferredMemberChanges.put(descriptionId, negativeChange);
+						}
 						
 						String conceptId = nonFsnIdToConceptIdMap.get(descriptionId);
 						if (StringUtils.isEmpty(conceptId)) {
@@ -391,7 +396,13 @@ public class SnomedRf2IndexInitializer extends Job {
 						}
 						
 					} else {
-						acceptableMemberChanges.put(descriptionId, change);
+						
+						if (ACTIVE_STATUS.equals(record.get(2))) {
+							acceptableMemberChanges.put(descriptionId, positiveChange);
+							preferredMemberChanges.put(descriptionId, negativeChange);
+						} else {
+							acceptableMemberChanges.put(descriptionId, negativeChange);
+						}
 					}
 
 					// Collect the description for needing an acceptability field update
@@ -840,8 +851,23 @@ public class SnomedRf2IndexInitializer extends Job {
 				final long effectiveTime = getEffectiveTime(record);
 				final boolean released = isReleased(effectiveTime);
 
+				final SnomedDescriptionIndexEntry description = new SnomedDescriptionLookupService().getComponent(branchPath, descriptionId);
+				final Multimap<Acceptability, String> invertedAcceptabilityMap;
+				
+				if (description != null) {
+					invertedAcceptabilityMap = description.getAcceptabilityMap().asMultimap().inverse();
+				} else {
+					invertedAcceptabilityMap = ImmutableMultimap.of();
+				}
+				
+				final Collection<String> preferredRefSetIds = invertedAcceptabilityMap.get(Acceptability.PREFERRED);
+				final Collection<String> acceptableRefSetIds = invertedAcceptabilityMap.get(Acceptability.ACCEPTABLE);
+				
+				final Collection<String> updatedPreferredRefSetIds = getCurrentRefSetMemberships(preferredRefSetIds, preferredMemberChanges.get(descriptionId));
+				final Collection<String> updatedAcceptableRefSetIds = getCurrentRefSetMemberships(acceptableRefSetIds, acceptableMemberChanges.get(descriptionId));
+
 				// Create description document.
-				final Document doc = SnomedMappings.doc()
+				final SnomedDocumentBuilder builder = SnomedMappings.doc()
 						.id(descriptionId)
 						.storageKey(storageKey)
 						.type(SnomedTerminologyComponentConstants.DESCRIPTION_NUMBER)
@@ -853,10 +879,17 @@ public class SnomedRf2IndexInitializer extends Job {
 						.module(moduleId)
 						.descriptionCaseSignificance(caseSignificanceId)
 						.released(released)
-						.effectiveTime(effectiveTime)
-						.build();
+						.effectiveTime(effectiveTime);
+
+				for (String preferredRefSetId : updatedPreferredRefSetIds) {
+					builder.descriptionPreferredReferenceSetId(Long.valueOf(preferredRefSetId));
+				}
 				
-				snomedIndexService.index(branchPath, doc, storageKey);
+				for (String acceptableRefSetId : updatedAcceptableRefSetIds) {
+					builder.descriptionAcceptableReferenceSetId(Long.valueOf(acceptableRefSetId));
+				}
+				
+				snomedIndexService.index(branchPath, builder.build(), storageKey);
 				descriptionsInImportFile.add(descriptionId);
 			}
 		});
@@ -913,7 +946,7 @@ public class SnomedRf2IndexInitializer extends Job {
 				final Collection<String> updatedPreferredRefSetIds = getCurrentRefSetMemberships(preferredRefSetIds, preferredMemberChanges.get(descriptionIdString));
 				
 				final Collection<String> acceptableRefSetIds = invertedAcceptabilityMap.get(Acceptability.ACCEPTABLE);
-				final Collection<String> updatedAcceptableRefSetIds = getCurrentRefSetMemberships(acceptableRefSetIds, mappingRefSetMemberChanges.get(descriptionIdString));
+				final Collection<String> updatedAcceptableRefSetIds = getCurrentRefSetMemberships(acceptableRefSetIds, acceptableMemberChanges.get(descriptionIdString));
 				
 				final SnomedDocumentBuilder builder = SnomedMappings.doc()
 						.id(description.getId())

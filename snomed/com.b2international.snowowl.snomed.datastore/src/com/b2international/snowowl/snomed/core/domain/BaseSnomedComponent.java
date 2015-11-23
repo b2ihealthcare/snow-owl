@@ -13,30 +13,45 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.snomed.api.rest.domain;
+package com.b2international.snowowl.snomed.core.domain;
+
+import java.util.Date;
+
+import com.b2international.snowowl.core.domain.BaseComponent;
 
 /**
  * @since 4.0
  */
-public abstract class AbstractSnomedComponentRestUpdate {
+public abstract class BaseSnomedComponent extends BaseComponent implements SnomedComponent {
 
-	private String moduleId;
 	private Boolean active;
+	private Date effectiveTime;
+	private String moduleId;
 
+	@Override
 	public Boolean isActive() {
 		return active;
+	}
+
+	@Override
+	public Date getEffectiveTime() {
+		return effectiveTime;
+	}
+
+	@Override
+	public String getModuleId() {
+		return moduleId;
 	}
 
 	public void setActive(final Boolean active) {
 		this.active = active;
 	}
 
-	public String getModuleId() {
-		return moduleId;
+	public void setEffectiveTime(final Date effectiveTime) {
+		this.effectiveTime = effectiveTime;
 	}
 
 	public void setModuleId(final String moduleId) {
 		this.moduleId = moduleId;
 	}
-
 }

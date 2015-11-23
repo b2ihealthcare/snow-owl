@@ -15,32 +15,11 @@
  */
 package com.b2international.snowowl.snomed.core.domain;
 
-import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType;
-
 /**
+ * Marker interface to reference only SNOMED CT Core Component, aka Concepts, Descriptions and Relationships.
+ * 
  * @since 4.5
  */
-public interface SnomedReferenceSet extends ISnomedComponent {
-
-	/**
-	 * Returns the type of the reference set.
-	 * 
-	 * @return
-	 */
-	SnomedRefSetType getType();
-
-	/**
-	 * Returns the type of the referenced component.
-	 * 
-	 * @return
-	 */
-	String getReferencedComponentType();
-
-	/**
-	 * Returns all members of the reference set.
-	 * 
-	 * @return
-	 */
-	SnomedReferenceSetMembers getMembers();
+public interface SnomedCoreComponent extends SnomedComponent {
 
 }

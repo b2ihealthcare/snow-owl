@@ -16,7 +16,7 @@
 package com.b2international.snowowl.snomed.api.rest.domain;
 
 import com.b2international.snowowl.core.terminology.ComponentCategory;
-import com.b2international.snowowl.snomed.core.domain.ISnomedComponent;
+import com.b2international.snowowl.snomed.core.domain.SnomedComponent;
 import com.b2international.snowowl.snomed.core.domain.IdGenerationStrategy;
 import com.b2international.snowowl.snomed.core.domain.NamespaceIdGenerationStrategy;
 import com.b2international.snowowl.snomed.core.domain.UserIdGenerationStrategy;
@@ -25,7 +25,7 @@ import com.b2international.snowowl.snomed.datastore.server.request.SnomedCompone
 /**
  * @since 4.0
  */
-public abstract class AbstractSnomedComponentRestInput<I extends SnomedComponentCreateRequestBuilder<I, B>, B extends ISnomedComponent> {
+public abstract class AbstractSnomedComponentRestInput<I extends SnomedComponentCreateRequestBuilder<I, B>, B extends SnomedComponent> {
 
 	private String id;
 	private String moduleId;

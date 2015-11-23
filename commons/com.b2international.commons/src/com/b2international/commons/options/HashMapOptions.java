@@ -89,15 +89,20 @@ public class HashMapOptions extends HashMap<String, Object> implements Options {
 	@Override
 	@SuppressWarnings("unchecked")
 	public <T> Collection<T> getCollection(String key, Class<T> type) {
-		final Collection<Object> collection = get(key, Collection.class);
-		final Object first = collection != null ? Iterables.getFirst(collection, null) : null;
-		if (first != null) {
-			if (type.isInstance(first)) {
-				return (Collection<T>) collection;
+		final Object value = get(key);
+		if (type.isInstance(value)) {
+			return Collections.singleton(type.cast(value));
+		} else {
+			final Collection<Object> collection = get(key, Collection.class);
+			final Object first = collection != null ? Iterables.getFirst(collection, null) : null;
+			if (first != null) {
+				if (type.isInstance(first)) {
+					return (Collection<T>) collection;
+				}
+				throw new IllegalArgumentException(String.format("The elements (%s) in the collection are not the instance of the given type (%s)", first.getClass(), type));
 			}
-			throw new IllegalArgumentException(String.format("The elements (%s) in the collection are not the instance of the given type (%s)", first.getClass(), type));
+			return emptySet();
 		}
-		return emptySet();
 	}
 	
 	@Nonnull

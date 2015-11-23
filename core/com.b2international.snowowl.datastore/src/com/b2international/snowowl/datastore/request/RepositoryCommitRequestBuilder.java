@@ -61,7 +61,7 @@ public class RepositoryCommitRequestBuilder implements RequestBuilder<ServicePro
 	}
 	
 	protected Request<BranchContext, CommitInfo> createRequest() {
-		return new TransactionalRequest(userId, commitComment, body);
+		return new IndexReadRequest<>(new TransactionalRequest(userId, commitComment, body));
 	}
 
 }

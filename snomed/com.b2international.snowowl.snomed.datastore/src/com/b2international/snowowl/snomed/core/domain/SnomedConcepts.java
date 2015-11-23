@@ -15,6 +15,7 @@
  */
 package com.b2international.snowowl.snomed.core.domain;
 
+import java.util.Collections;
 import java.util.List;
 
 import com.b2international.snowowl.core.domain.PageableCollectionResource;
@@ -24,6 +25,10 @@ import com.b2international.snowowl.core.domain.PageableCollectionResource;
  */
 public final class SnomedConcepts extends PageableCollectionResource<ISnomedConcept> {
 
+	public SnomedConcepts(int offset, int limit, int total) {
+		super(Collections.<ISnomedConcept>emptyList(), offset, limit, total);
+	}
+	
 	public SnomedConcepts(List<ISnomedConcept> items, int offset, int limit, int total) {
 		super(items, offset, limit, total);
 	}

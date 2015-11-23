@@ -17,17 +17,13 @@ package com.b2international.snowowl.snomed.api.impl;
 
 import org.eclipse.emf.ecore.util.EcoreUtil;
 
-import com.b2international.commons.ClassUtils;
 import com.b2international.snowowl.core.api.IBranchPath;
-import com.b2international.snowowl.core.domain.IComponentRef;
 import com.b2international.snowowl.core.terminology.ComponentCategory;
 import com.b2international.snowowl.datastore.server.components.AbstractComponentServiceImpl;
-import com.b2international.snowowl.datastore.server.domain.InternalComponentRef;
 import com.b2international.snowowl.datastore.server.domain.InternalStorageRef;
 import com.b2international.snowowl.snomed.Component;
 import com.b2international.snowowl.snomed.api.ISnomedComponentService;
-import com.b2international.snowowl.snomed.core.domain.ISnomedComponent;
-import com.b2international.snowowl.snomed.core.domain.ISnomedComponentUpdate;
+import com.b2international.snowowl.snomed.core.domain.SnomedComponent;
 import com.b2international.snowowl.snomed.datastore.SnomedConceptLookupService;
 import com.b2international.snowowl.snomed.datastore.SnomedEditingContext;
 import com.b2international.snowowl.snomed.datastore.SnomedRefSetLookupService;
@@ -35,9 +31,9 @@ import com.b2international.snowowl.snomed.datastore.services.AbstractSnomedRefSe
 import com.b2international.snowowl.snomed.datastore.services.SnomedBranchRefSetMembershipLookupService;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetMember;
 
-public abstract class AbstractSnomedComponentServiceImpl<R extends ISnomedComponent, U extends ISnomedComponentUpdate, M extends Component>
-extends AbstractComponentServiceImpl<R, U, SnomedEditingContext, M>
-implements ISnomedComponentService<R, U> {
+public abstract class AbstractSnomedComponentServiceImpl<R extends SnomedComponent, M extends Component>
+extends AbstractComponentServiceImpl<R, SnomedEditingContext, M>
+implements ISnomedComponentService<R> {
 
 	protected final SnomedConceptLookupService snomedConceptLookupService = new SnomedConceptLookupService();
 	protected final SnomedRefSetLookupService snomedRefSetLookupService = new SnomedRefSetLookupService();
@@ -65,12 +61,6 @@ implements ISnomedComponentService<R, U> {
 //		checkState(input.getIdGenerationStrategy() instanceof UserIdGenerationStrategy);
 //		return new AlreadyExistsException(handledCategory.getDisplayName(), input.getIdGenerationStrategy().getId());
 //	}
-
-	@Override
-	protected SnomedEditingContext createEditingContext(final IComponentRef ref) {
-		final InternalComponentRef internalRef = ClassUtils.checkAndCast(ref, InternalComponentRef.class);
-		return new SnomedEditingContext(internalRef.getBranch().branchPath());
-	}
 
 	@Override
 	protected String getComponentId(final M component) {

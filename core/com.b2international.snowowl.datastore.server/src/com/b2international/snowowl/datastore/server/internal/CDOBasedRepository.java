@@ -38,6 +38,7 @@ import com.b2international.snowowl.datastore.cdo.ICDOConnection;
 import com.b2international.snowowl.datastore.cdo.ICDOConnectionManager;
 import com.b2international.snowowl.datastore.cdo.ICDORepository;
 import com.b2international.snowowl.datastore.cdo.ICDORepositoryManager;
+import com.b2international.snowowl.datastore.index.IndexTransactionProvider;
 import com.b2international.snowowl.datastore.review.ReviewManager;
 import com.b2international.snowowl.datastore.server.CDOServerUtils;
 import com.b2international.snowowl.datastore.server.RepositoryClassLoaderProviderRegistry;
@@ -153,6 +154,7 @@ public final class CDOBasedRepository implements InternalRepository, RepositoryC
 		events().registerHandler(address(), new Pipe(handlers(), address()));
 		// register RepositoryContextProvider
 		registry.put(RepositoryContextProvider.class, this);
+		registry.put(IndexTransactionProvider.class, getIndexUpdater());
 	}
 	
 	private ServiceProvider services() {

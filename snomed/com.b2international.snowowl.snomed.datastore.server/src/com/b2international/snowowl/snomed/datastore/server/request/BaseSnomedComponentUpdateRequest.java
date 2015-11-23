@@ -54,7 +54,11 @@ public abstract class BaseSnomedComponentUpdateRequest extends BaseRequest<Trans
 		this.moduleId = moduleId;
 	}
 	
-	protected Boolean isActive() {
+	/**
+	 * @deprecated - visibility will be reduced to protected in 4.6
+	 * @return
+	 */
+	public Boolean isActive() {
 		return active;
 	}
 	

@@ -13,30 +13,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.snomed.core.domain;
+package com.b2international.snowowl.snomed.core.domain.refset;
+
+import java.util.List;
+
+import com.b2international.snowowl.core.domain.CollectionResource;
 
 /**
+ * @since 4.5
  */
-public abstract class AbstractSnomedComponentUpdate implements ISnomedComponentUpdate {
+public class SnomedReferenceSetMembers extends CollectionResource<SnomedReferenceSetMember> {
 
-	private String moduleId;
-	private Boolean active;
-
-	@Override
-	public String getModuleId() {
-		return moduleId;
+	public SnomedReferenceSetMembers(List<SnomedReferenceSetMember> items) {
+		super(items);
 	}
 
-	public void setModuleId(final String moduleId) {
-		this.moduleId = moduleId;
-	}
-
-	@Override
-	public Boolean isActive() {
-		return active;
-	}
-
-	public void setActive(final Boolean active) {
-		this.active = active;
-	}
 }

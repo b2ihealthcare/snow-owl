@@ -29,10 +29,10 @@ import com.b2international.snowowl.datastore.request.Reviews;
 import com.b2international.snowowl.snomed.Concept;
 import com.b2international.snowowl.snomed.Description;
 import com.b2international.snowowl.snomed.Relationship;
-import com.b2international.snowowl.snomed.core.domain.SnomedReferenceSet;
-import com.b2international.snowowl.snomed.core.domain.SnomedReferenceSetMember;
-import com.b2international.snowowl.snomed.core.domain.SnomedReferenceSets;
 import com.b2international.snowowl.snomed.core.domain.refset.MemberChange;
+import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSet;
+import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMember;
+import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSets;
 import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetMember;
 
@@ -52,6 +52,10 @@ public abstract class SnomedRequests {
 	
 	public static SnomedConceptSearchRequestBuilder prepareConceptSearch() {
 		return new SnomedConceptSearchRequestBuilder(REPOSITORY_ID);
+	}
+	
+	public static SnomedDescriptionSearchRequestBuilder prepareDescriptionSearch() {
+		return new SnomedDescriptionSearchRequestBuilder(REPOSITORY_ID);
 	}
 	
 	public static SnomedConceptGetRequestBuilder prepareGetConcept() {

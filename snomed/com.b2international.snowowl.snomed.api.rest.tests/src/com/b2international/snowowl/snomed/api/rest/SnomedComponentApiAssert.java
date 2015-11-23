@@ -22,6 +22,7 @@ import static com.b2international.snowowl.test.commons.rest.RestExtensions.given
 import static com.b2international.snowowl.test.commons.rest.RestExtensions.lastPathSegment;
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.equalTo;
+import static org.junit.Assert.assertNotNull;
 
 import java.util.Collections;
 import java.util.Date;
@@ -128,6 +129,7 @@ public abstract class SnomedComponentApiAssert {
 	}
 
 	public static Response getComponent(final IBranchPath branchPath, final SnomedComponentType componentType, final String componentId, final String...expansions) {
+		assertNotNull(componentId);
 		String url = "/{path}/{componentType}/{id}";
 		if (expansions != null && expansions.length > 0) {
 			url = url.concat("?expand="+Joiner.on(",").join(expansions));

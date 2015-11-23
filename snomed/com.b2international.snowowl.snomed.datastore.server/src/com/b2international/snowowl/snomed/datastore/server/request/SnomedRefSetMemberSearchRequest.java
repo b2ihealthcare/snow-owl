@@ -15,15 +15,13 @@
  */
 package com.b2international.snowowl.snomed.datastore.server.request;
 
-import static com.google.common.collect.Lists.newArrayList;
-
 import java.util.Collection;
 import java.util.List;
 
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.domain.BranchContext;
-import com.b2international.snowowl.snomed.core.domain.SnomedReferenceSetMember;
-import com.b2international.snowowl.snomed.core.domain.SnomedReferenceSetMembers;
+import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMember;
+import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMembers;
 import com.b2international.snowowl.snomed.datastore.SnomedRefSetBrowser;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry;
 import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedMappings;
@@ -40,12 +38,12 @@ public class SnomedRefSetMemberSearchRequest extends SearchRequest<SnomedReferen
 	SnomedRefSetMemberSearchRequest() {}
 	
 	@Override
-	public SnomedReferenceSetMembers execute(BranchContext context) {
+	protected SnomedReferenceSetMembers doExecute(BranchContext context) {
 		final IBranchPath branchPath = context.branch().branchPath();
 		final SnomedRefSetBrowser browser = context.service(SnomedRefSetBrowser.class);
 		// TODO convert this to proper index query when index API is ready
 		// TODO fix collection like parameters
-		final Collection<String> referenceSetIds = newArrayList(options().getString(SnomedMappings.memberRefSetId().fieldName()));
+		final Collection<String> referenceSetIds = options().getCollection(SnomedMappings.memberRefSetId().fieldName(), String.class);
 		final List<SnomedReferenceSetMember> members = FluentIterable
 			.from(browser.getAllRefSetIds(branchPath))
 			.filter(new Predicate<String>() {

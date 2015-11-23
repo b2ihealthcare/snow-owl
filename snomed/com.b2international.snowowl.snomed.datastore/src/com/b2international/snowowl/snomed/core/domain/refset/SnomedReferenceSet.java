@@ -13,25 +13,35 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.snomed.core.domain;
+package com.b2international.snowowl.snomed.core.domain.refset;
+
+import com.b2international.snowowl.snomed.core.domain.SnomedComponent;
+import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType;
 
 /**
- * Holds common updatable properties of SNOMED CT components.
+ * @since 4.5
  */
-public interface ISnomedComponentUpdate {
+public interface SnomedReferenceSet extends SnomedComponent {
 
 	/**
-	 * Returns the identifier of the component's requested new module.
+	 * Returns the type of the reference set.
 	 * 
-	 * @return the requested new module identifier for the component
+	 * @return
 	 */
-	String getModuleId();
+	SnomedRefSetType getType();
 
 	/**
-	 * Returns the component's requested new status as a tri-state value.
+	 * Returns the type of the referenced component.
 	 * 
-	 * @return {@code true} if the component should be re-activated, {@code false} if it is about to be deactivated,
-	 * {@code null} if the component status should be unchanged
+	 * @return
 	 */
-	Boolean isActive();
+	String getReferencedComponentType();
+
+	/**
+	 * Returns all members of the reference set.
+	 * 
+	 * @return
+	 */
+	SnomedReferenceSetMembers getMembers();
+
 }

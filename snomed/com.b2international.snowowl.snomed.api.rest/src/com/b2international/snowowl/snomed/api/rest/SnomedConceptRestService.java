@@ -19,11 +19,7 @@ import static org.springframework.hateoas.mvc.ControllerLinkBuilder.linkTo;
 
 import java.net.URI;
 import java.security.Principal;
-import java.util.Collections;
 import java.util.List;
-import java.util.Locale;
-
-import javax.servlet.http.HttpServletRequest;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -39,6 +35,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.context.request.async.DeferredResult;
 
+import com.b2international.commons.StringUtils;
 import com.b2international.snowowl.core.domain.PageableCollectionResource;
 import com.b2international.snowowl.snomed.api.rest.domain.ChangeRequest;
 import com.b2international.snowowl.snomed.api.rest.domain.RestApiError;
@@ -78,27 +75,19 @@ public class SnomedConceptRestService extends AbstractSnomedRestService {
 			@PathVariable(value="path")
 			final String branch,
 
-			@ApiParam(value="The preferred term to match")
-			@RequestParam(value="pt", defaultValue="", required=false) 
-			final String ptFilter,
-
-			@ApiParam(value="The (preferred) fully specified name to match")
-			@RequestParam(value="fsn", defaultValue="", required=false) 
-			final String fsnFilter,
-			
-			@ApiParam(value="The acceptable synonym to match")
-			@RequestParam(value="syn", defaultValue="", required=false) 
-			final String synFilter,
-			
-			@ApiParam(value="The acceptable non-synonym description to match")
-			@RequestParam(value="other", defaultValue="", required=false) 
-			final String otherFilter,
+			@ApiParam(value="The description term to match")
+			@RequestParam(value="term", required=false) 
+			final String termFilter,
 
 			@ApiParam(value="The ESCG expression to match")
-			@RequestParam(value="escg", defaultValue="", required=false) 
+			@RequestParam(value="escg", required=false) 
 			final String escgFilter,
 			
-			@ApiParam(value="The status to match")
+			@ApiParam(value="The concept module identifier to match")
+			@RequestParam(value="module", required=false) 
+			final String moduleFilter,
+			
+			@ApiParam(value="The concept status to match")
 			@RequestParam(value="active", required=false) 
 			final Boolean activeFilter,
 
@@ -116,23 +105,21 @@ public class SnomedConceptRestService extends AbstractSnomedRestService {
 
 			@ApiParam(value="Language codes and reference sets, in order of preference")
 			@RequestHeader(value="Accept-Language", defaultValue="en-US;q=0.8,en-GB;q=0.6", required=false) 
-			final String languageSetting,
+			final String languageSetting) {
 
-			final HttpServletRequest request) {
-
+		final List<String> locales = StringUtils.getQualityList(languageSetting);
+		
 		return DeferredResults.wrap(
 				SnomedRequests
 					.prepareConceptSearch()
 					.setLimit(limit)
 					.setOffset(offset)
-					.filterByFsn(fsnFilter)
-					.filterByPt(ptFilter)
-					.filterBySyn(synFilter)
-					.filterByOther(otherFilter)
+					.filterByTerm(termFilter)
 					.filterByEscg(escgFilter)
+					.filterByModule(moduleFilter)
 					.filterByActive(activeFilter)
 					.setExpand(expand)
-					.setLocales(Collections.<Locale>list(request.getLocales()))
+					.setLocales(locales)
 					.build(branch)
 					.execute(bus));
 	}

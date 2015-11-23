@@ -37,14 +37,19 @@ import com.b2international.commons.ClassUtils;
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.date.EffectiveTimes;
+import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.domain.IComponentRef;
 import com.b2international.snowowl.core.domain.IStorageRef;
+import com.b2international.snowowl.core.domain.TransactionContext;
+import com.b2international.snowowl.core.events.bulk.BulkRequest;
+import com.b2international.snowowl.core.events.bulk.BulkRequestBuilder;
 import com.b2international.snowowl.core.exceptions.ComponentNotFoundException;
 import com.b2international.snowowl.core.terminology.ComponentCategory;
 import com.b2international.snowowl.datastore.index.AbstractIndexQueryAdapter;
 import com.b2international.snowowl.datastore.server.domain.ComponentRef;
 import com.b2international.snowowl.datastore.server.domain.InternalComponentRef;
 import com.b2international.snowowl.datastore.server.domain.InternalStorageRef;
+import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.api.browser.ISnomedBrowserService;
 import com.b2international.snowowl.snomed.api.domain.browser.ISnomedBrowserChildConcept;
@@ -73,12 +78,8 @@ import com.b2international.snowowl.snomed.core.domain.CharacteristicType;
 import com.b2international.snowowl.snomed.core.domain.ConceptEnum;
 import com.b2international.snowowl.snomed.core.domain.DefinitionStatus;
 import com.b2international.snowowl.snomed.core.domain.ISnomedConcept;
-import com.b2international.snowowl.snomed.core.domain.ISnomedConceptUpdate;
 import com.b2international.snowowl.snomed.core.domain.ISnomedDescription;
-import com.b2international.snowowl.snomed.core.domain.ISnomedDescriptionUpdate;
-import com.b2international.snowowl.snomed.core.domain.ISnomedRelationshipUpdate;
 import com.b2international.snowowl.snomed.core.domain.RelationshipModifier;
-import com.b2international.snowowl.snomed.datastore.SnomedEditingContext;
 import com.b2international.snowowl.snomed.datastore.SnomedStatementBrowser;
 import com.b2international.snowowl.snomed.datastore.SnomedTerminologyBrowser;
 import com.b2international.snowowl.snomed.datastore.index.SnomedConceptFullQueryAdapter;
@@ -91,8 +92,12 @@ import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDescriptio
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRelationshipIndexEntry;
 import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedMappings;
 import com.b2international.snowowl.snomed.datastore.server.request.SnomedConceptCreateRequest;
+import com.b2international.snowowl.snomed.datastore.server.request.SnomedConceptUpdateRequest;
 import com.b2international.snowowl.snomed.datastore.server.request.SnomedDescriptionCreateRequest;
+import com.b2international.snowowl.snomed.datastore.server.request.SnomedDescriptionUpdateRequest;
 import com.b2international.snowowl.snomed.datastore.server.request.SnomedRelationshipCreateRequest;
+import com.b2international.snowowl.snomed.datastore.server.request.SnomedRelationshipUpdateRequest;
+import com.b2international.snowowl.snomed.datastore.server.request.SnomedRequests;
 import com.google.common.base.Function;
 import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableList;
@@ -165,6 +170,9 @@ public class SnomedBrowserService implements ISnomedBrowserService {
 
 	@Resource
 	private SnomedDescriptionServiceImpl descriptionService;
+	
+	@Resource
+	private IEventBus bus;
 
 	public SnomedBrowserService() {
 		inputFactory = new InputFactory();
@@ -212,30 +220,34 @@ public class SnomedBrowserService implements ISnomedBrowserService {
 
 	@Override
 	public ISnomedBrowserConcept create(String branchPath, ISnomedBrowserConcept concept, String userId, List<Locale> locales) {
-		final SnomedConceptCreateRequest snomedConceptInput = inputFactory.createComponentInput(branchPath, concept, SnomedConceptCreateRequest.class);
+		final SnomedConceptCreateRequest req = inputFactory.createComponentInput(branchPath, concept, SnomedConceptCreateRequest.class);
 		String commitComment = getCommitComment(userId, concept, "creating");
-		final ISnomedConcept iSnomedConcept = conceptService.create(snomedConceptInput, userId, commitComment);
+		final ISnomedConcept iSnomedConcept = SnomedRequests
+				.prepareCommit(userId, branchPath)
+				.setCommitComment(commitComment)
+				.setBody(req)
+				.build()
+				.executeSync(bus)
+				.getResultAs(ISnomedConcept.class);
 		final IComponentRef componentRef = SnomedServiceHelper.createComponentRef(branchPath, iSnomedConcept.getId());
 		return getConceptDetails(componentRef, locales);
 	}
 
+	@Override
 	public ISnomedBrowserConcept update(String branchPath, ISnomedBrowserConceptUpdate newVersionConcept, String userId, ArrayList<Locale> locales) {
 		LOGGER.info("Update concept start {}", newVersionConcept.getFsn());
 		final IComponentRef componentRef = SnomedServiceHelper.createComponentRef(branchPath, newVersionConcept.getConceptId());
 
 		final ISnomedBrowserConcept existingVersionConcept = getConceptDetails(componentRef, locales);
 
-		final SnomedEditingContext editingContext = conceptService.createEditingContext(componentRef);
-		String commitComment = getCommitComment(userId, newVersionConcept, "updating");
-
 		// Concept update
-		final ISnomedConceptUpdate conceptUpdate = inputFactory.createComponentUpdate(existingVersionConcept, newVersionConcept, ISnomedConceptUpdate.class);
-
+		final SnomedConceptUpdateRequest conceptUpdate = inputFactory.createComponentUpdate(existingVersionConcept, newVersionConcept, SnomedConceptUpdateRequest.class);
+		
 		// Description updates
 		final List<ISnomedBrowserDescription> existingVersionDescriptions = existingVersionConcept.getDescriptions();
 		final List<ISnomedBrowserDescription> newVersionDescriptions = newVersionConcept.getDescriptions();
 		Set<String> descriptionDeletionIds = inputFactory.getComponentDeletions(existingVersionDescriptions, newVersionDescriptions);
-		Map<String, ISnomedDescriptionUpdate> descriptionUpdates = inputFactory.createComponentUpdates(existingVersionDescriptions, newVersionDescriptions, ISnomedDescriptionUpdate.class);
+		Map<String, SnomedDescriptionUpdateRequest> descriptionUpdates = inputFactory.createComponentUpdates(existingVersionDescriptions, newVersionDescriptions, SnomedDescriptionUpdateRequest.class);
 		List<SnomedDescriptionCreateRequest> descriptionInputs = inputFactory.createComponentInputs(branchPath, newVersionDescriptions, SnomedDescriptionCreateRequest.class);
 		LOGGER.info("Got description changes +{} -{} m{}, {}", descriptionInputs.size(), descriptionDeletionIds.size(), descriptionUpdates.size(), newVersionConcept.getFsn());
 
@@ -243,46 +255,56 @@ public class SnomedBrowserService implements ISnomedBrowserService {
 		final List<ISnomedBrowserRelationship> existingVersionRelationships = existingVersionConcept.getRelationships();
 		final List<ISnomedBrowserRelationship> newVersionRelationships = newVersionConcept.getRelationships();
 		Set<String> relationshipDeletionIds = inputFactory.getComponentDeletions(existingVersionRelationships, newVersionRelationships);
-		Map<String, ISnomedRelationshipUpdate> relationshipUpdates = inputFactory.createComponentUpdates(existingVersionRelationships, newVersionRelationships, ISnomedRelationshipUpdate.class);
+		Map<String, SnomedRelationshipUpdateRequest> relationshipUpdates = inputFactory.createComponentUpdates(existingVersionRelationships, newVersionRelationships, SnomedRelationshipUpdateRequest.class);
 		List<SnomedRelationshipCreateRequest> relationshipInputs = inputFactory.createComponentInputs(branchPath, newVersionRelationships, SnomedRelationshipCreateRequest.class);
 		LOGGER.info("Got relationship changes +{} -{} m{}, {}", relationshipInputs.size(), relationshipDeletionIds.size(), relationshipUpdates.size(), newVersionConcept.getFsn());
 
 		// In the case of inactivation, other updates seem to go more smoothly if this is done later
+		final BulkRequestBuilder<TransactionContext> commitReq = BulkRequest.create();
+		
+		
+		
 		boolean conceptInactivation = conceptUpdate != null && conceptUpdate.isActive() != null && Boolean.FALSE.equals(conceptUpdate.isActive());
 		if (conceptUpdate != null && !conceptInactivation) {
-			conceptService.doUpdate(componentRef, conceptUpdate, editingContext);
+			commitReq.add(conceptUpdate);
 		}
 		
 		for (String descriptionDeletionId : descriptionDeletionIds) {
-			descriptionService.doDelete(SnomedServiceHelper.createComponentRef(branchPath, descriptionDeletionId), editingContext);
+			commitReq.add(SnomedRequests.prepareDeleteDescription(descriptionDeletionId));
 		}
 		for (String descriptionId : descriptionUpdates.keySet()) {
-			descriptionService.doUpdate(SnomedServiceHelper.createComponentRef(branchPath, descriptionId), descriptionUpdates.get(descriptionId), editingContext);
+			commitReq.add(descriptionUpdates.get(descriptionId));
 		}
-		for (SnomedDescriptionCreateRequest descriptionInput : descriptionInputs) {
-			((SnomedDescriptionCreateRequest)descriptionInput).setConceptId(existingVersionConcept.getConceptId());
-			descriptionService.convertAndRegister(descriptionInput, editingContext);
+		for (SnomedDescriptionCreateRequest descriptionReq : descriptionInputs) {
+			descriptionReq.setConceptId(existingVersionConcept.getConceptId());
+			commitReq.add(descriptionReq);
 		}
 
 		for (String relationshipDeletionId : relationshipDeletionIds) {
-			relationshipService.doDelete(SnomedServiceHelper.createComponentRef(branchPath, relationshipDeletionId), editingContext);
+			commitReq.add(SnomedRequests.prepareDeleteRelationship(relationshipDeletionId));
 		}
 		for (String relationshipId : relationshipUpdates.keySet()) {
-			relationshipService.doUpdate(SnomedServiceHelper.createComponentRef(branchPath, relationshipId), relationshipUpdates.get(relationshipId), editingContext);
+			commitReq.add(relationshipUpdates.get(relationshipId));
 		}
-		for (SnomedRelationshipCreateRequest relationshipInput : relationshipInputs) {
-			relationshipService.convertAndRegister(relationshipInput, editingContext);
+		for (SnomedRelationshipCreateRequest relationshipReq : relationshipInputs) {
+			commitReq.add(relationshipReq);
 		}
 
 		// Inactivate concept last
 		if (conceptUpdate != null && conceptInactivation) {
-			conceptService.doUpdate(componentRef, conceptUpdate, editingContext);
+			commitReq.add(conceptUpdate);
 		}
 
 		// TODO - Add MRCM checks here
 
 		// Commit
-		conceptService.doCommit(userId, commitComment, editingContext);
+		final String commitComment = getCommitComment(userId, newVersionConcept, "updating");
+		SnomedRequests
+			.prepareCommit(userId, branchPath)
+			.setCommitComment(commitComment)
+			.setBody(commitReq)
+			.build()
+			.executeSync(bus);
 		LOGGER.info("Committed changes for concept {}", newVersionConcept.getFsn());
 
 		return getConceptDetails(componentRef, locales);
@@ -596,27 +618,23 @@ public class SnomedBrowserService implements ISnomedBrowserService {
 	}
 
 	@Override
-	public Map<String, ISnomedBrowserConstant> getConstants(final IStorageRef storageRef, final List<Locale> locales) {
-		checkNotNull(storageRef, "Storage reference may not be null.");
-		
-		final InternalStorageRef internalStorageRef = ClassUtils.checkAndCast(storageRef, InternalStorageRef.class);
-		internalStorageRef.checkStorageExists();
-
+	public Map<String, ISnomedBrowserConstant> getConstants(final String branch, final List<Locale> locales) {
 		final ImmutableMap.Builder<String, ISnomedBrowserConstant> resultBuilder = ImmutableMap.builder();
 		
+		final BulkRequestBuilder<BranchContext> bulk = BulkRequest.create();
+		
 		for (final ConceptEnum conceptEnum : CONCEPT_ENUMS) {
-			final String conceptId = conceptEnum.getConceptId();
-			final IComponentRef conceptRef = createConceptRef(storageRef, conceptId);
-			
-			if (!conceptService.componentExists(conceptRef)) {
-				continue;
+			try {
+				final String conceptId = conceptEnum.getConceptId();
+				// TODO exand FSN of the concept
+				final ISnomedConcept concept = SnomedRequests.prepareGetConcept().setId(conceptId).build(branch).executeSync(bus);
+				final SnomedBrowserConstant constant = new SnomedBrowserConstant();
+				constant.setConceptId(conceptId);
+				constant.setFsn(descriptionService.getFullySpecifiedName(SnomedServiceHelper.createComponentRef(branch, conceptId), locales).getTerm());
+				resultBuilder.put(conceptEnum.name(), constant);
+			} catch (ComponentNotFoundException e) {
+				// ignore
 			}
-			
-			final SnomedBrowserConstant constant = new SnomedBrowserConstant();
-			
-			constant.setConceptId(conceptId);
-			constant.setFsn(descriptionService.getFullySpecifiedName(conceptRef, locales).getTerm());
-			resultBuilder.put(conceptEnum.name(), constant);
 		}
 		
 		return resultBuilder.build();

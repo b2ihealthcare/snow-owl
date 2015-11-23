@@ -312,8 +312,7 @@ public class SnomedBrowserRestService extends AbstractSnomedRestService {
 			final String languageSetting,
 
 			final HttpServletRequest request) {
-		final StorageRef ref = new StorageRef(codeSystemShortName, branchPath);
-		return browserService.getConstants(ref, Collections.list(request.getLocales()));
+		return browserService.getConstants(branchPath, Collections.list(request.getLocales()));
 	}
 
 }

@@ -15,10 +15,16 @@
  */
 package com.b2international.snowowl.snomed.datastore.server.converter;
 
+import com.b2international.snowowl.core.CoreTerminologyBroker;
 import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
-import com.b2international.snowowl.snomed.core.domain.SnomedReferenceSetMember;
-import com.b2international.snowowl.snomed.core.domain.SnomedReferenceSetMemberImpl;
+import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
+import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
+import com.b2international.snowowl.snomed.core.domain.SnomedCoreComponent;
+import com.b2international.snowowl.snomed.core.domain.SnomedDescription;
+import com.b2international.snowowl.snomed.core.domain.SnomedRelationship;
+import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMember;
+import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMemberImpl;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedQueryRefSetMember;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetMember;
@@ -42,7 +48,6 @@ public class SnomedReferenceSetMemberConverter implements Function<SnomedRefSetM
 		member.setReleased(input.isReleased());
 		member.setActive(input.isActive());
 		member.setModuleId(input.getModuleId());
-		member.setReferencedComponentId(input.getReferencedComponentId());
 		member.setReferenceSetId(input.getRefSetIdentifierId());
 		if (SnomedRefSetType.QUERY == input.getRefSetType()) {
 			// in case of query type refset the actual ESCG query is stored in the specialFieldId prop
@@ -50,6 +55,7 @@ public class SnomedReferenceSetMemberConverter implements Function<SnomedRefSetM
 			props.put(SnomedRf2Headers.FIELD_QUERY, input.getQuery());
 			member.setProperties(props.build());
 		}
+		expandReferencedComponent(member, input.getReferencedComponentId(), input.getReferencedComponentType());
 		return member;
 	}
 
@@ -60,14 +66,41 @@ public class SnomedReferenceSetMemberConverter implements Function<SnomedRefSetM
 		member.setReleased(input.isReleased());
 		member.setActive(input.isActive());
 		member.setModuleId(input.getModuleId());
-		member.setReferencedComponentId(input.getReferencedComponentId());
 		member.setReferenceSetId(input.getRefSetIdentifierId());
 		if (input instanceof SnomedQueryRefSetMember) {
 			final Builder<String, Object> props = ImmutableMap.builder();
 			props.put(SnomedRf2Headers.FIELD_QUERY, ((SnomedQueryRefSetMember) input).getQuery());
 			member.setProperties(props.build());
 		}
+		expandReferencedComponent(member, input.getReferencedComponentId(), input.getReferencedComponentType());
 		return member;
+	}
+	
+	private void expandReferencedComponent(SnomedReferenceSetMemberImpl member, String referencedComponentId, String referencedComponentType) {
+		// TODO support referencedComponent expansion if required
+		final SnomedCoreComponent component; 
+		switch (referencedComponentType) {
+		// TODO support query type refset refcomp expansion, currently it's a concept
+		case SnomedTerminologyComponentConstants.REFSET:
+		case SnomedTerminologyComponentConstants.CONCEPT:
+			component = new SnomedConcept();
+			((SnomedConcept) component).setId(referencedComponentId);
+			break;
+		case SnomedTerminologyComponentConstants.DESCRIPTION:
+			component = new SnomedDescription();
+			((SnomedDescription) component).setId(referencedComponentId);
+			break;
+		case SnomedTerminologyComponentConstants.RELATIONSHIP:
+			component = new SnomedRelationship();
+			((SnomedRelationship) component).setId(referencedComponentId);
+			break;
+		default: throw new UnsupportedOperationException("UnsupportedReferencedComponentType");
+		}
+		member.setReferencedComponent(component);
+	}
+	
+	private void expandReferencedComponent(SnomedReferenceSetMemberImpl member, String referencedComponentId, short referencedComponentType) {
+		expandReferencedComponent(member, referencedComponentId, CoreTerminologyBroker.getInstance().getTerminologyComponentId(referencedComponentType));
 	}
 
 }

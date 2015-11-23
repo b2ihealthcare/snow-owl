@@ -1,29 +1,33 @@
 package com.b2international.snowowl.snomed.api.impl.domain;
 
 import com.b2international.commons.ClassUtils;
-import com.b2international.snowowl.core.terminology.ComponentCategory;
 import com.b2international.snowowl.snomed.api.impl.domain.browser.SnomedBrowserRelationship;
-import com.b2international.snowowl.snomed.core.domain.ISnomedComponentUpdate;
+import com.b2international.snowowl.snomed.core.domain.ISnomedRelationship;
+import com.b2international.snowowl.snomed.datastore.server.request.BaseSnomedComponentUpdateRequest;
 import com.b2international.snowowl.snomed.datastore.server.request.SnomedComponentCreateRequest;
 import com.b2international.snowowl.snomed.datastore.server.request.SnomedRelationshipCreateRequest;
+import com.b2international.snowowl.snomed.datastore.server.request.SnomedRelationshipUpdateRequest;
+import com.b2international.snowowl.snomed.datastore.server.request.SnomedRelationshipUpdateRequestBuilder;
+import com.b2international.snowowl.snomed.datastore.server.request.SnomedRequests;
 
-public class RelationshipInputCreator extends AbstractInputCreator implements ComponentInputCreator<SnomedRelationshipCreateRequest, SnomedRelationshipUpdate, SnomedBrowserRelationship> {
+public class RelationshipInputCreator extends AbstractInputCreator implements ComponentInputCreator<SnomedRelationshipCreateRequest, ISnomedRelationship, SnomedRelationshipUpdateRequest, SnomedBrowserRelationship> {
 	@Override
 	public SnomedRelationshipCreateRequest createInput(String branchPath, SnomedBrowserRelationship relationship, InputFactory inputFactory) {
-		final SnomedRelationshipCreateRequest relationshipInput = new SnomedRelationshipCreateRequest();
-		setCommonComponentProperties(branchPath, relationship, relationshipInput, ComponentCategory.RELATIONSHIP);
-		relationshipInput.setTypeId(relationship.getType().getConceptId());
-		relationshipInput.setCharacteristicType(relationship.getCharacteristicType());
-		relationshipInput.setSourceId(relationship.getSourceId());
-		relationshipInput.setDestinationId(relationship.getTarget().getConceptId());
-		relationshipInput.setGroup(relationship.getGroupId());
-		relationshipInput.setModifier(relationship.getModifier());
-		return relationshipInput;
+		return (SnomedRelationshipCreateRequest) SnomedRequests
+				.prepareNewRelationship()
+				.setModuleId(getModuleOrDefault(relationship))
+				.setTypeId(relationship.getType().getConceptId())
+				.setCharacteristicType(relationship.getCharacteristicType())
+				.setSourceId(relationship.getSourceId())
+				.setDestinationId(relationship.getTarget().getConceptId())
+				.setGroup(relationship.getGroupId())
+				.setModifier(relationship.getModifier())
+				.build();
 	}
 
 	@Override
-	public SnomedRelationshipUpdate createUpdate(SnomedBrowserRelationship existingVersion, SnomedBrowserRelationship newVersion) {
-		final SnomedRelationshipUpdate update = new SnomedRelationshipUpdate();
+	public SnomedRelationshipUpdateRequest createUpdate(SnomedBrowserRelationship existingVersion, SnomedBrowserRelationship newVersion) {
+		final SnomedRelationshipUpdateRequestBuilder update = SnomedRequests.prepareRelationshipUpdate(existingVersion.getRelationshipId());
 		boolean change = false;
 		if (!existingVersion.getModuleId().equals(newVersion.getModuleId())) {
 			change = true;
@@ -45,7 +49,7 @@ public class RelationshipInputCreator extends AbstractInputCreator implements Co
 			change = true;
 			update.setModifier(newVersion.getModifier());
 		}
-		return change ? update : null;
+		return change ? (SnomedRelationshipUpdateRequest) update.build() : null;
 	}
 
 	@Override
@@ -54,7 +58,7 @@ public class RelationshipInputCreator extends AbstractInputCreator implements Co
 	}
 
 	@Override
-	public boolean canCreateUpdate(Class<? extends ISnomedComponentUpdate> updateType) {
-		return ClassUtils.isClassAssignableFrom(SnomedRelationshipUpdate.class, updateType.getName());
+	public boolean canCreateUpdate(Class<? extends BaseSnomedComponentUpdateRequest> updateType) {
+		return ClassUtils.isClassAssignableFrom(SnomedRelationshipUpdateRequest.class, updateType.getName());
 	}
 }

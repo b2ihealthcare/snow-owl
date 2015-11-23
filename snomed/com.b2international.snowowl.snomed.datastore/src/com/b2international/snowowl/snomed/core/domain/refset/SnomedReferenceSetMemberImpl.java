@@ -13,22 +13,25 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.snomed.core.domain;
+package com.b2international.snowowl.snomed.core.domain.refset;
 
 import java.util.Map;
+
+import com.b2international.snowowl.snomed.core.domain.BaseSnomedComponent;
+import com.b2international.snowowl.snomed.core.domain.SnomedCoreComponent;
 
 /**
  * @since 4.5
  */
-public class SnomedReferenceSetMemberImpl extends AbstractSnomedComponent implements SnomedReferenceSetMember {
+public class SnomedReferenceSetMemberImpl extends BaseSnomedComponent implements SnomedReferenceSetMember {
 
-	private String referencedComponentId;
+	private SnomedCoreComponent referencedComponent;
 	private String referenceSetId;
 	private Map<String, Object> properties;
 	
 	@Override
-	public String getReferencedComponentId() {
-		return referencedComponentId;
+	public SnomedCoreComponent getReferencedComponent() {
+		return referencedComponent;
 	}
 
 	@Override
@@ -41,8 +44,8 @@ public class SnomedReferenceSetMemberImpl extends AbstractSnomedComponent implem
 		return properties;
 	}
 	
-	public void setReferencedComponentId(String referencedComponentId) {
-		this.referencedComponentId = referencedComponentId;
+	public void setReferencedComponent(SnomedCoreComponent referencedComponent) {
+		this.referencedComponent = referencedComponent;
 	}
 	
 	public void setReferenceSetId(String referenceSetId) {

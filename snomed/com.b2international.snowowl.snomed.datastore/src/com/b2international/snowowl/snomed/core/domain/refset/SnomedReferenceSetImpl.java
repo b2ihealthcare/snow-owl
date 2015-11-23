@@ -13,14 +13,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.snomed.core.domain;
+package com.b2international.snowowl.snomed.core.domain.refset;
 
+import com.b2international.snowowl.snomed.core.domain.BaseSnomedComponent;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType;
 
 /**
  * @since 4.5
  */
-public class SnomedReferenceSetImpl extends AbstractSnomedComponent implements SnomedReferenceSet {
+public class SnomedReferenceSetImpl extends BaseSnomedComponent implements SnomedReferenceSet {
 
 	private SnomedRefSetType type;
 	private String referencedComponent;

@@ -15,8 +15,6 @@
  */
 package com.b2international.snowowl.datastore.server.components;
 
-import static com.google.common.base.Preconditions.checkNotNull;
-
 import java.util.ConcurrentModificationException;
 
 import org.eclipse.emf.cdo.CDOObject;
@@ -27,7 +25,6 @@ import com.b2international.snowowl.core.api.SnowowlRuntimeException;
 import com.b2international.snowowl.core.component.IComponentService;
 import com.b2international.snowowl.core.domain.IComponent;
 import com.b2international.snowowl.core.domain.IComponentRef;
-import com.b2international.snowowl.core.exceptions.ApiValidation;
 import com.b2international.snowowl.core.exceptions.ComponentNotFoundException;
 import com.b2international.snowowl.core.exceptions.ConflictException;
 import com.b2international.snowowl.core.exceptions.CycleDetectedException;
@@ -43,8 +40,8 @@ import com.b2international.snowowl.datastore.server.domain.StorageRef;
  * TODO: validate misguided references (eg. when the incoming code system short name is ATC in SnomedConceptServiceImpl)?
  * 
  */
-public abstract class AbstractComponentServiceImpl<R extends IComponent, U, E extends CDOEditingContext, M extends CDOObject> 
-	implements IComponentService<R, U> {
+public abstract class AbstractComponentServiceImpl<R extends IComponent, E extends CDOEditingContext, M extends CDOObject> 
+	implements IComponentService<R> {
 
 	protected final String handledRepositoryUuid;
 	protected final ComponentCategory handledCategory;
@@ -159,7 +156,7 @@ public abstract class AbstractComponentServiceImpl<R extends IComponent, U, E ex
 
 //	protected abstract AlreadyExistsException createDuplicateComponentException(C input);
 
-	protected abstract E createEditingContext(IComponentRef ref);
+//	protected abstract E createEditingContext(IComponentRef ref);
 
 //	protected abstract M convertAndRegister(C input, E editingContext);
 
@@ -167,7 +164,7 @@ public abstract class AbstractComponentServiceImpl<R extends IComponent, U, E ex
 
 //	protected abstract R doRead(IComponentRef ref);
 
-	protected abstract void doUpdate(IComponentRef ref, U update, E editingContext);
+//	protected abstract void doUpdate(IComponentRef ref, U update, E editingContext);
 
 //	protected abstract void doDelete(IComponentRef ref, E editingContext);
 }

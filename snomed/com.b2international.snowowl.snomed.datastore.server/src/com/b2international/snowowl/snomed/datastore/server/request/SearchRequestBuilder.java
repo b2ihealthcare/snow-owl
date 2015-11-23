@@ -15,6 +15,10 @@
  */
 package com.b2international.snowowl.snomed.datastore.server.request;
 
+import java.util.Collections;
+import java.util.List;
+
+import com.b2international.commons.CompareUtils;
 import com.b2international.commons.options.OptionsBuilder;
 import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.domain.BranchContext;
@@ -31,7 +35,9 @@ public abstract class SearchRequestBuilder<B extends SearchRequestBuilder<B, R>,
 	
 	private int offset = 0;
 	private int limit = 50;
-	private final OptionsBuilder options = OptionsBuilder.newBuilder();
+	private List<String> expand = Collections.emptyList();
+	private List<String> locales = Collections.emptyList();
+	private final OptionsBuilder optionsBuilder = OptionsBuilder.newBuilder();
 	
 	protected SearchRequestBuilder(String repositoryId) {
 		this.repositoryId = repositoryId;
@@ -47,17 +53,34 @@ public abstract class SearchRequestBuilder<B extends SearchRequestBuilder<B, R>,
 		return getSelf();
 	}
 	
+	public final B setExpand(List<String> expand) {
+		this.expand = expand;
+		return getSelf();
+	}
+	
+	public final B setLocales(List<String> locales) {
+		this.locales = locales;
+		return getSelf();
+	}
+	
 	public final B all() {
 		return setLimit(Integer.MAX_VALUE);
 	}
 	
+	// XXX: Does not allow empty-ish values
 	protected final B addOption(String key, Object value) {
-		options.put(key, value);
+		if (!CompareUtils.isEmpty(value)) {
+			optionsBuilder.put(key, value);
+		}
 		return getSelf();
 	}
 	
+	protected final B addOption(Enum<?> key, Object value) {
+		return addOption(key.name(), value);
+	}
+	
 	public final Request<ServiceProvider, R> build(String branch) {
-		return RepositoryRequests.wrap(repositoryId, branch, build());
+		return RepositoryRequests.wrap(repositoryId, branch, RepositoryRequests.toIndexReadRequest(build()));
 	}
 	
 	@Override
@@ -65,7 +88,9 @@ public abstract class SearchRequestBuilder<B extends SearchRequestBuilder<B, R>,
 		final SearchRequest<R> req = create();
 		req.setLimit(limit);
 		req.setOffset(offset);
-		req.setOptions(options.build());
+		req.setExpand(expand);
+		req.setLocales(locales);
+		req.setOptions(optionsBuilder.build());
 		return req;
 	}
 	

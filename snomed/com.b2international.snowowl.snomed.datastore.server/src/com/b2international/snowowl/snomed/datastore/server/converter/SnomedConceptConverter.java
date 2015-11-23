@@ -32,6 +32,9 @@ import com.b2international.snowowl.snomed.datastore.services.AbstractSnomedRefSe
 import com.google.common.collect.FluentIterable;
 import com.google.common.collect.ImmutableList;
 
+/**
+ * @since 4.5
+ */
 public class SnomedConceptConverter extends AbstractSnomedComponentConverter<SnomedConceptIndexEntry, ISnomedConcept> {
 
 	SnomedConceptConverter(final AbstractSnomedRefSetMembershipLookupService refSetMembershipLookupService) {

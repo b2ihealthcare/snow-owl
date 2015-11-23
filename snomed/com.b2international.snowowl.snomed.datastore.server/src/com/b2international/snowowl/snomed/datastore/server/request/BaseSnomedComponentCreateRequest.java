@@ -19,12 +19,13 @@ import javax.validation.constraints.NotNull;
 
 import com.b2international.snowowl.core.domain.TransactionContext;
 import com.b2international.snowowl.core.events.BaseRequest;
+import com.b2international.snowowl.snomed.core.domain.SnomedComponent;
 import com.b2international.snowowl.snomed.core.domain.IdGenerationStrategy;
 
 /**
  * @since 4.0
  */
-public abstract class BaseSnomedComponentCreateRequest<B> extends BaseRequest<TransactionContext, B> implements SnomedComponentCreateRequest {
+public abstract class BaseSnomedComponentCreateRequest<R extends SnomedComponent> extends BaseRequest<TransactionContext, R> implements SnomedComponentCreateRequest<R> {
 
 	@NotNull
 	private IdGenerationStrategy idGenerationStrategy;

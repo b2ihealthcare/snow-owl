@@ -17,40 +17,31 @@ package com.b2international.snowowl.snomed.core.domain;
 
 import java.util.Date;
 
-import com.b2international.snowowl.core.domain.AbstractComponent;
+import com.b2international.snowowl.core.domain.IComponent;
 
 /**
+ * Holds common properties of SNOMED CT components.
  */
-public abstract class AbstractSnomedComponent extends AbstractComponent implements ISnomedComponent {
+public interface SnomedComponent extends IComponent {
 
-	private boolean active;
-	private Date effectiveTime;
-	private String moduleId;
+	/**
+	 * Returns the component's current status as a boolean value.
+	 *  
+	 * @return {@code true} if the component is active, {@code false} if it is inactive
+	 */
+	Boolean isActive();
 
-	@Override
-	public boolean isActive() {
-		return active;
-	}
+	/**
+	 * Returns the date at which the current state of the component becomes effective.
+	 * 
+	 * @return the component's effective time
+	 */
+	Date getEffectiveTime();
 
-	@Override
-	public Date getEffectiveTime() {
-		return effectiveTime;
-	}
-
-	@Override
-	public String getModuleId() {
-		return moduleId;
-	}
-
-	public void setActive(final boolean active) {
-		this.active = active;
-	}
-
-	public void setEffectiveTime(final Date effectiveTime) {
-		this.effectiveTime = effectiveTime;
-	}
-
-	public void setModuleId(final String moduleId) {
-		this.moduleId = moduleId;
-	}
+	/**
+	 * Returns the containing module's concept identifier.
+	 * 
+	 * @return the module identifier for the component
+	 */
+	String getModuleId();
 }

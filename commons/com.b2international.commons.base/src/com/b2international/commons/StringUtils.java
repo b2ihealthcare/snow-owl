@@ -20,9 +20,16 @@ import static com.google.common.base.Preconditions.checkNotNull;
 import java.text.Normalizer;
 import java.util.Collections;
 import java.util.Iterator;
+import java.util.List;
 
 import com.google.common.base.CharMatcher;
+import com.google.common.base.Optional;
 import com.google.common.base.Splitter;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.Ordering;
+import com.google.common.collect.SortedSetMultimap;
+import com.google.common.collect.TreeMultimap;
+import com.google.common.primitives.Floats;
 
 /**
  * Contains utility methods for manipulating strings. 
@@ -346,5 +353,30 @@ public class StringUtils {
 	 */
 	public static String valueOfOrEmptyString(final Object object) {
 		return null == object ? EMPTY_STRING : String.valueOf(object);
+	}
+	
+	public static List<String> getQualityList(final String header) {
+		if (isEmpty(header)) {
+			return ImmutableList.of();
+		}
+		
+		final SortedSetMultimap<Float, String> valuesByQuality = TreeMultimap.create(Ordering.natural(), Ordering.allEqual());
+		final Iterable<String> values = Splitter.on(',').omitEmptyStrings().trimResults().split(header);
+		
+		for (String value : values) {
+			int pos = value.lastIndexOf(";q=");
+			Float q;
+			if (pos == -1) {
+				q = 1.0f;
+				valuesByQuality.put(q, value);
+			} else if (pos < value.length() - 3) {
+				q = Optional.fromNullable(Floats.tryParse(value.substring(pos + 3))).or(0.0f);
+				valuesByQuality.put(q, value.substring(0, pos));
+			} else {
+				// value ends with ";q=", but no number
+			}
+		}
+		
+		return ImmutableList.copyOf(valuesByQuality.values());
 	}
 }

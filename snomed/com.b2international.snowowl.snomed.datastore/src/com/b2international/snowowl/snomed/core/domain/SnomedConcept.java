@@ -21,7 +21,7 @@ import com.google.common.collect.Multimap;
  * Represents a SNOMED&nbsp;CT concept.
  * 
  */
-public class SnomedConcept extends AbstractSnomedComponent implements ISnomedConcept {
+public class SnomedConcept extends BaseSnomedComponent implements ISnomedConcept {
 
 	private DefinitionStatus definitionStatus;
 	private SubclassDefinitionStatus subclassDefinitionStatus;

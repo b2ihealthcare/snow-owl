@@ -34,7 +34,7 @@ public class ExpandableSnomedRelationship implements ISnomedRelationship {
 	}
 
 	@Override
-	public boolean isActive() {
+	public Boolean isActive() {
 		return wrappedRelationship.isActive();
 	}
 
@@ -54,7 +54,7 @@ public class ExpandableSnomedRelationship implements ISnomedRelationship {
 	}
 
 	@Override
-	public boolean isReleased() {
+	public Boolean isReleased() {
 		return wrappedRelationship.isReleased();
 	}
 
