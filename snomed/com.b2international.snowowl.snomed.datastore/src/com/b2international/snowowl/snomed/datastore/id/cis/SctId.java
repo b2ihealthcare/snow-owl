@@ -17,6 +17,8 @@ package com.b2international.snowowl.snomed.datastore.id.cis;
 
 import java.util.Collection;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 /**
  * Bean to represent a SNOMED CT id used by IHTSDO's ID generation service.
  * Instances of this class are meant to be serialized and deserialized to and
@@ -101,6 +103,7 @@ public class SctId {
 		this.namespace = namespace;
 	}
 	
+	@JsonIgnore
 	public void setNamespace(String namespace) {
 		this.namespace = null == namespace ? 0 : Integer.valueOf(namespace);
 	}
@@ -276,6 +279,42 @@ public class SctId {
 
 	public void setAdditionalIds(Collection<String> additionalIds) {
 		this.additionalIds = additionalIds;
+	}
+	
+	@JsonIgnore
+	public boolean matches(final IdentifierStatus... status) {
+		for (final IdentifierStatus s : status) {
+			if (s.getSerializedName().equals(this.status)) {
+				return true;
+			}
+		}
+		
+		return false;
+	}
+	
+	@JsonIgnore
+	public boolean isAvailable() {
+		return IdentifierStatus.AVAILABLE.getSerializedName().equals(this.status);
+	}
+	
+	@JsonIgnore
+	public boolean isAssigned() {
+		return IdentifierStatus.ASSIGNED.getSerializedName().equals(this.status);
+	}
+	
+	@JsonIgnore
+	public boolean isReserved() {
+		return IdentifierStatus.RESERVED.getSerializedName().equals(this.status);
+	}
+	
+	@JsonIgnore
+	public boolean isPublished() {
+		return IdentifierStatus.PUBLISHED.getSerializedName().equals(this.status);
+	}
+	
+	@JsonIgnore
+	public boolean isDeprecated() {
+		return IdentifierStatus.DEPRECATED.getSerializedName().equals(this.status);
 	}
 	
 }

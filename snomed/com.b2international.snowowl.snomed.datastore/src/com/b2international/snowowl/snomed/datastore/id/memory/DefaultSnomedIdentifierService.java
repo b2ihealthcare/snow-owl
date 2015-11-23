@@ -94,7 +94,7 @@ public class DefaultSnomedIdentifierService extends AbstractSnomedIdentifierServ
 		LOGGER.info(String.format("Registering component ID %s.", componentId));
 
 		final SctId sctId = getSctId(componentId);
-		if (!hasStatus(sctId, IdentifierStatus.AVAILABLE, IdentifierStatus.RESERVED)) {
+		if (!sctId.matches(IdentifierStatus.AVAILABLE, IdentifierStatus.RESERVED)) {
 			LOGGER.warn(String.format("Cannot register ID %s as it is already present with status %s.", componentId, sctId.getStatus()));
 		} else {
 			sctId.setStatus(IdentifierStatus.ASSIGNED.getSerializedName());
@@ -119,7 +119,7 @@ public class DefaultSnomedIdentifierService extends AbstractSnomedIdentifierServ
 	@Override
 	public void deprecate(final String componentId) {
 		final SctId sctId = getSctId(componentId);
-		if (hasStatus(sctId, IdentifierStatus.ASSIGNED, IdentifierStatus.PUBLISHED)) {
+		if (sctId.matches(IdentifierStatus.ASSIGNED, IdentifierStatus.PUBLISHED)) {
 			LOGGER.info(String.format("Deprecating component ID %s.", componentId));
 
 			sctId.setStatus(IdentifierStatus.DEPRECATED.getSerializedName());
@@ -132,11 +132,10 @@ public class DefaultSnomedIdentifierService extends AbstractSnomedIdentifierServ
 	@Override
 	public void release(final String componentId) {
 		final SctId sctId = getSctId(componentId);
-		if (hasStatus(sctId, IdentifierStatus.ASSIGNED, IdentifierStatus.RESERVED)) {
+		if (sctId.matches(IdentifierStatus.ASSIGNED, IdentifierStatus.RESERVED)) {
 			LOGGER.info(String.format("Releasing component ID %s.", componentId));
 			store.remove(componentId);
-		} else if (hasStatus(sctId, IdentifierStatus.AVAILABLE)) {
-			// do nothing
+		} else if (sctId.isAvailable()) {
 		} else {
 			throw new BadRequestException(String.format("Cannot release ID in state %s.", sctId.getStatus()));
 		}
@@ -145,7 +144,7 @@ public class DefaultSnomedIdentifierService extends AbstractSnomedIdentifierServ
 	@Override
 	public void publish(final String componentId) {
 		final SctId sctId = getSctId(componentId);
-		if (hasStatus(sctId, IdentifierStatus.ASSIGNED)) {
+		if (sctId.isAssigned()) {
 			LOGGER.info(String.format("publishing component ID %s.", componentId));
 			sctId.setStatus(IdentifierStatus.PUBLISHED.getSerializedName());
 			store.put(componentId, sctId);
@@ -163,12 +162,12 @@ public class DefaultSnomedIdentifierService extends AbstractSnomedIdentifierServ
 
 		final Map<String, SctId> sctIds = Maps.newHashMap();
 		final Collection<String> componentIds = generateIds(namespace, category, quantity);
-		
+
 		for (final String componentId : componentIds) {
 			final SctId sctId = buildSctId(componentId, IdentifierStatus.ASSIGNED);
 			sctIds.put(componentId, sctId);
 		}
-		
+
 		store.putAll(sctIds);
 		return componentIds;
 	}
@@ -184,7 +183,7 @@ public class DefaultSnomedIdentifierService extends AbstractSnomedIdentifierServ
 			for (final String componentId : componentIds) {
 				final SctId sctId = getSctId(componentId);
 
-				if (!hasStatus(sctId, IdentifierStatus.AVAILABLE, IdentifierStatus.RESERVED)) {
+				if (!sctId.matches(IdentifierStatus.AVAILABLE, IdentifierStatus.RESERVED)) {
 					LOGGER.warn(String.format("Cannot register ID %s as it is already present with status %s.", componentId,
 							sctId.getStatus()));
 				} else {
@@ -211,12 +210,12 @@ public class DefaultSnomedIdentifierService extends AbstractSnomedIdentifierServ
 
 		final Map<String, SctId> sctIds = Maps.newHashMap();
 		final Collection<String> componentIds = generateIds(namespace, category, quantity);
-		
+
 		for (final String componentId : componentIds) {
 			final SctId sctId = buildSctId(componentId, IdentifierStatus.RESERVED);
 			sctIds.put(componentId, sctId);
 		}
-		
+
 		store.putAll(sctIds);
 		return componentIds;
 	}
@@ -230,7 +229,7 @@ public class DefaultSnomedIdentifierService extends AbstractSnomedIdentifierServ
 		for (final String componentId : componentIds) {
 			final SctId sctId = getSctId(componentId);
 
-			if (hasStatus(sctId, IdentifierStatus.ASSIGNED, IdentifierStatus.PUBLISHED)) {
+			if (sctId.matches(IdentifierStatus.ASSIGNED, IdentifierStatus.PUBLISHED)) {
 				sctId.setStatus(IdentifierStatus.DEPRECATED.getSerializedName());
 				deprecatedSctIds.put(componentId, sctId);
 			} else {
@@ -250,15 +249,14 @@ public class DefaultSnomedIdentifierService extends AbstractSnomedIdentifierServ
 		for (final String componentId : componentIds) {
 			final SctId sctId = getSctId(componentId);
 
-			if (hasStatus(sctId, IdentifierStatus.ASSIGNED, IdentifierStatus.RESERVED)) {
+			if (sctId.matches(IdentifierStatus.ASSIGNED, IdentifierStatus.RESERVED)) {
 				releasedComponentIds.add(componentId);
-			} else if (hasStatus(sctId, IdentifierStatus.AVAILABLE)) {
-				// do nothing
+			} else if (sctId.isAvailable()) {
 			} else {
 				throw new BadRequestException(String.format("Cannot release ID in state %s.", sctId.getStatus()));
 			}
 		}
-		
+
 		store.removeAll(releasedComponentIds);
 	}
 
@@ -271,7 +269,7 @@ public class DefaultSnomedIdentifierService extends AbstractSnomedIdentifierServ
 		for (final String componentId : componentIds) {
 			final SctId sctId = getSctId(componentId);
 
-			if (hasStatus(sctId, IdentifierStatus.ASSIGNED)) {
+			if (sctId.isAssigned()) {
 				sctId.setStatus(IdentifierStatus.PUBLISHED.getSerializedName());
 				publishedSctIds.put(componentId, sctId);
 			} else {

@@ -109,7 +109,7 @@ public class CisSnomedIdentifierService extends AbstractSnomedIdentifierService 
 	@Override
 	public void register(final String componentId) {
 		final SctId sctId = getSctId(componentId);
-		if (!hasStatus(sctId, IdentifierStatus.AVAILABLE, IdentifierStatus.RESERVED)) {
+		if (!sctId.matches(IdentifierStatus.AVAILABLE, IdentifierStatus.RESERVED)) {
 			LOGGER.warn(String.format("Cannot register ID %s as it is already present with status %s.", componentId, sctId.getStatus()));
 			return;
 		}
@@ -172,7 +172,7 @@ public class CisSnomedIdentifierService extends AbstractSnomedIdentifierService 
 	@Override
 	public void release(final String componentId) {
 		final SctId sctId = getSctId(componentId);
-		if (hasStatus(sctId, IdentifierStatus.AVAILABLE)) {
+		if (sctId.isAvailable()) {
 			return;
 		}
 
@@ -271,7 +271,7 @@ public class CisSnomedIdentifierService extends AbstractSnomedIdentifierService 
 
 		for (final SctId sctId : sctIds) {
 			// we want to register only the available or reserved IDs
-			if (hasStatus(sctId, IdentifierStatus.AVAILABLE, IdentifierStatus.RESERVED))
+			if (sctId.matches(IdentifierStatus.AVAILABLE, IdentifierStatus.RESERVED))
 				componentIdsToRegister.add(sctId.getSctid());
 		}
 
@@ -359,7 +359,7 @@ public class CisSnomedIdentifierService extends AbstractSnomedIdentifierService 
 		final Collection<SctId> sctIds = getSctIds(componentIds);
 
 		for (final SctId sctId : sctIds) {
-			if (!hasStatus(sctId, IdentifierStatus.AVAILABLE))
+			if (!sctId.isAvailable())
 				componentIdsToRelease.add(sctId.getSctid());
 		}
 
