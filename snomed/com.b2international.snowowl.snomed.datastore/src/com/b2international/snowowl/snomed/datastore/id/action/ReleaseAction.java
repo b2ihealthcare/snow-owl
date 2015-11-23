@@ -31,7 +31,8 @@ public class ReleaseAction extends IdAction<String> {
 
 	@Override
 	public void rollback() {
-		identifierService.register(componentId);
+		if (!isFailed())
+			identifierService.register(componentId);
 	}
 
 	@Override

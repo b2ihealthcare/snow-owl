@@ -33,7 +33,8 @@ public class BulkReleaseAction extends IdAction<Collection<String>> {
 
 	@Override
 	public void rollback() {
-		identifierService.bulkRegister(componentIds);
+		if (!isFailed())
+			identifierService.bulkRegister(componentIds);
 	}
 
 	@Override

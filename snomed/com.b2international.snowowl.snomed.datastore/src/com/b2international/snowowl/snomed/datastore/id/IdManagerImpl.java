@@ -36,7 +36,7 @@ import com.google.common.collect.Lists;
  */
 public class IdManagerImpl implements IdManager {
 
-	private final Collection<IIdAction<?>> actions = Lists.newArrayList();
+	private final Collection<IIdAction<?>> executedActions = Lists.newArrayList();
 
 	private final ISnomedIdentifierService identifierService;
 
@@ -46,17 +46,15 @@ public class IdManagerImpl implements IdManager {
 
 	@Override
 	public void rollback() {
-		for (final IIdAction<?> action : actions) {
-			if (!action.isFailed())
-				action.rollback();
+		for (final IIdAction<?> action : executedActions) {
+			action.rollback();
 		}
 	}
 
 	@Override
 	public void commit() {
-		for (final IIdAction<?> action : actions) {
-			if (!action.isFailed())
-				action.commit();
+		for (final IIdAction<?> action : executedActions) {
+			action.commit();
 		}
 	}
 
@@ -130,7 +128,7 @@ public class IdManagerImpl implements IdManager {
 
 	private void executeAction(final IIdAction<?> action) {
 		try {
-			actions.add(action);
+			executedActions.add(action);
 			action.execute();
 		} catch (Exception e) {
 			action.setFailed(true);

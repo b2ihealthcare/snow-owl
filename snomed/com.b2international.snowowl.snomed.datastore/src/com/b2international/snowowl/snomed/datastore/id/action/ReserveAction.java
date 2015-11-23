@@ -36,7 +36,8 @@ public class ReserveAction extends IdAction<String> {
 
 	@Override
 	public void rollback() {
-		identifierService.release(componentId);
+		if (!isFailed())
+			identifierService.release(componentId);
 	}
 
 	@Override
@@ -46,7 +47,8 @@ public class ReserveAction extends IdAction<String> {
 
 	@Override
 	public void commit() {
-		identifierService.register(componentId);
+		if (!isFailed())
+			identifierService.register(componentId);
 	}
 
 	@Override

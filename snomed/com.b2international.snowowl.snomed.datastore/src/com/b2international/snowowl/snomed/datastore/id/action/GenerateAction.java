@@ -36,7 +36,8 @@ public class GenerateAction extends IdAction<String> {
 
 	@Override
 	public void rollback() {
-		identifierService.release(componentId);
+		if (!isFailed())
+			identifierService.release(componentId);
 	}
 
 	@Override

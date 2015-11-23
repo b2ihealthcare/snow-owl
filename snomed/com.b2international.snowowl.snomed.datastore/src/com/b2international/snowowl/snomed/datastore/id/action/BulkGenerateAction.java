@@ -41,7 +41,8 @@ public class BulkGenerateAction extends IdAction<Collection<String>> {
 
 	@Override
 	public void rollback() {
-		identifierService.bulkRelease(componentIds);
+		if (!isFailed())
+			identifierService.bulkRelease(componentIds);
 	}
 
 	@Override
