@@ -41,7 +41,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
  * 
  * @since 4.5
  */
-public class CisClient {
+class CisClient {
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(CisClient.class);
 
