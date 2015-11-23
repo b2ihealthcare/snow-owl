@@ -33,8 +33,6 @@ public class SnomedIdentifierConfiguration {
 	private IdGenerationStrategy strategy = IdGenerationStrategy.INDEX;
 	@JsonProperty(value = "cisBaseUrl", required = false)
 	private String cisBaseUrl;
-	@JsonProperty(value = "cisPort", required = false)
-	private String cisPort;
 	@JsonProperty(value = "cisContextRoot", required = false)
 	private String cisContextRoot;
 	@JsonProperty(value = "cisUserName", required = false)
@@ -59,14 +57,6 @@ public class SnomedIdentifierConfiguration {
 
 	public void setCisBaseUrl(String cisBaseUrl) {
 		this.cisBaseUrl = cisBaseUrl;
-	}
-
-	public String getCisPort() {
-		return cisPort;
-	}
-
-	public void setCisPort(String cisPort) {
-		this.cisPort = cisPort;
 	}
 
 	public String getCisContextRoot() {

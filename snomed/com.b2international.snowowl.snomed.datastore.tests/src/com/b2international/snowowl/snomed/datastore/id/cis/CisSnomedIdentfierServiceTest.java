@@ -40,8 +40,7 @@ public class CisSnomedIdentfierServiceTest extends AbstractIdentifierServiceTest
 	@Before
 	public void init() {
 		final SnomedIdentifierConfiguration conf = new SnomedIdentifierConfiguration();
-		conf.setCisBaseUrl("http://107.170.101.181");
-		conf.setCisPort("3000");
+		conf.setCisBaseUrl("http://107.170.101.181:3000");
 		conf.setCisContextRoot("api");
 		conf.setCisClientSoftwareKey("Snow Owl dev. tests");
 		conf.setCisUserName("snowowl-dev-b2i");

@@ -34,7 +34,9 @@ import org.slf4j.LoggerFactory;
 import com.b2international.snowowl.core.api.SnowowlRuntimeException;
 import com.b2international.snowowl.core.exceptions.BadRequestException;
 import com.b2international.snowowl.snomed.datastore.config.SnomedIdentifierConfiguration;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 
 /**
  * Client to communicate with the CIS.
@@ -46,7 +48,6 @@ class CisClient {
 	private static final Logger LOGGER = LoggerFactory.getLogger(CisClient.class);
 
 	private final String baseUrl;
-	private final String port;
 	private final String contextRoot;
 	private final String username;
 	private final String password;
@@ -56,7 +57,6 @@ class CisClient {
 
 	public CisClient(final SnomedIdentifierConfiguration conf, final ObjectMapper mapper) {
 		this.baseUrl = conf.getCisBaseUrl();
-		this.port = conf.getCisPort();
 		this.contextRoot = conf.getCisContextRoot();
 		this.username = conf.getCisUserName();
 		this.password = conf.getCisPassword();
@@ -99,7 +99,7 @@ class CisClient {
 	}
 
 	private String getServiceUrl() {
-		return String.format("%s:%s/%s", baseUrl, port, contextRoot);
+		return String.format("%s/%s", baseUrl, contextRoot);
 	}
 
 	private void checkResponseStatus(final HttpResponse response) {
@@ -130,8 +130,9 @@ class CisClient {
 			request = httpPost("login", credentials);
 
 			final String response = execute(request);
-
-			return mapper.readValue(response, Token.class).getToken();
+			final JsonNode node = mapper.readValue(response, JsonNode.class);
+			
+			return node.get("token").asText();
 		} catch (IOException e) {
 			throw new SnowowlRuntimeException("Exception while logging in.", e);
 		} finally {
@@ -146,7 +147,10 @@ class CisClient {
 		HttpPost request = null;
 
 		try {
-			request = httpPost("logout", mapper.writeValueAsString(new Token(token)));
+			final JsonNodeFactory factory = JsonNodeFactory.instance;
+		    final JsonNode node = factory.objectNode().set("token", factory.textNode(token));
+		    
+			request = httpPost("logout", mapper.writeValueAsString(node));
 			client.execute(request);
 		} catch (IOException e) {
 			throw new SnowowlRuntimeException("Exception while logging out.", e);
