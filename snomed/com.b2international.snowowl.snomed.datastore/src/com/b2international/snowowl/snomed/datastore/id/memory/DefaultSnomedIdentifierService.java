@@ -28,7 +28,7 @@ import com.b2international.snowowl.core.exceptions.BadRequestException;
 import com.b2international.snowowl.core.terminology.ComponentCategory;
 import com.b2international.snowowl.datastore.store.Store;
 import com.b2international.snowowl.snomed.datastore.SnomedTerminologyBrowser;
-import com.b2international.snowowl.snomed.datastore.id.AbstractSnomedIdentifierServiceImpl;
+import com.b2international.snowowl.snomed.datastore.id.AbstractSnomedIdentifierService;
 import com.b2international.snowowl.snomed.datastore.id.SnomedIdentifier;
 import com.b2international.snowowl.snomed.datastore.id.SnomedIdentifiers;
 import com.b2international.snowowl.snomed.datastore.id.cis.IdentifierStatus;
@@ -45,14 +45,14 @@ import com.google.inject.Provider;
  * 
  * @since 4.5
  */
-public class DefaultSnomedIdentifierServiceImpl extends AbstractSnomedIdentifierServiceImpl {
+public class DefaultSnomedIdentifierService extends AbstractSnomedIdentifierService {
 
-	private static final Logger LOGGER = LoggerFactory.getLogger(DefaultSnomedIdentifierServiceImpl.class);
+	private static final Logger LOGGER = LoggerFactory.getLogger(DefaultSnomedIdentifierService.class);
 
 	private final Store<SctId> store;
 	private final ItemIdGenerationStrategy generationStrategy;
 
-	public DefaultSnomedIdentifierServiceImpl(final Store<SctId> store, final ItemIdGenerationStrategy generationStrategy,
+	public DefaultSnomedIdentifierService(final Store<SctId> store, final ItemIdGenerationStrategy generationStrategy,
 			final Provider<SnomedTerminologyBrowser> provider, final ISnomedIdentiferReservationService reservationService) {
 		super(provider, reservationService);
 		this.store = store;
@@ -155,7 +155,7 @@ public class DefaultSnomedIdentifierServiceImpl extends AbstractSnomedIdentifier
 	}
 
 	@Override
-	public Collection<String> bulkGenerate(final String namespace, final ComponentCategory category, final int quantity) {
+	public Collection<String> generate(final String namespace, final ComponentCategory category, final int quantity) {
 		checkNotNull(category, "Component category must not be null.");
 		checkCategory(category);
 
@@ -174,7 +174,7 @@ public class DefaultSnomedIdentifierServiceImpl extends AbstractSnomedIdentifier
 	}
 
 	@Override
-	public void bulkRegister(final Collection<String> componentIds) {
+	public void register(final Collection<String> componentIds) {
 		final Map<String, SctId> sctIds = Maps.newHashMap();
 		final Collection<String> registeredComponentIds = Lists.newArrayList();
 
@@ -203,7 +203,7 @@ public class DefaultSnomedIdentifierServiceImpl extends AbstractSnomedIdentifier
 	}
 
 	@Override
-	public Collection<String> bulkReserve(final String namespace, final ComponentCategory category, final int quantity) {
+	public Collection<String> reserve(final String namespace, final ComponentCategory category, final int quantity) {
 		checkNotNull(category, "Component category must not be null.");
 		checkCategory(category);
 
@@ -222,7 +222,7 @@ public class DefaultSnomedIdentifierServiceImpl extends AbstractSnomedIdentifier
 	}
 
 	@Override
-	public void bulkDeprecate(final Collection<String> componentIds) {
+	public void deprecate(final Collection<String> componentIds) {
 		final Map<String, SctId> deprecatedSctIds = Maps.newHashMap();
 
 		LOGGER.info(String.format("Deprecating %d component IDs.", componentIds.size()));
@@ -242,7 +242,7 @@ public class DefaultSnomedIdentifierServiceImpl extends AbstractSnomedIdentifier
 	}
 
 	@Override
-	public void bulkRelease(final Collection<String> componentIds) {
+	public void release(final Collection<String> componentIds) {
 		final Collection<String> releasedComponentIds = Lists.newArrayList();
 
 		LOGGER.info(String.format("Releasing %d component IDs.", componentIds.size()));
@@ -263,7 +263,7 @@ public class DefaultSnomedIdentifierServiceImpl extends AbstractSnomedIdentifier
 	}
 
 	@Override
-	public void bulkPublish(final Collection<String> componentIds) {
+	public void publish(final Collection<String> componentIds) {
 		final Map<String, SctId> publishedSctIds = Maps.newHashMap();
 
 		LOGGER.info(String.format("Publishing %d component IDs.", componentIds.size()));

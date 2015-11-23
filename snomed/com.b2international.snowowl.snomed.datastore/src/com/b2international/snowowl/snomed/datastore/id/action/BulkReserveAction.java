@@ -42,18 +42,18 @@ public class BulkReserveAction extends IdAction<Collection<String>> {
 	@Override
 	public void rollback() {
 		if (!isFailed())
-			identifierService.bulkRelease(componentIds);
+			identifierService.release(componentIds);
 	}
 
 	@Override
 	public void execute() {
-		identifierService.bulkReserve(namespace, category, quantity);
+		identifierService.reserve(namespace, category, quantity);
 	}
 
 	@Override
 	public void commit() {
 		if (!isFailed())
-			identifierService.bulkRegister(componentIds);
+			identifierService.register(componentIds);
 	}
 
 	@Override

@@ -28,12 +28,12 @@ import com.google.inject.Provider;
 /**
  * @since 4.5
  */
-public abstract class AbstractSnomedIdentifierServiceImpl implements ISnomedIdentifierService {
+public abstract class AbstractSnomedIdentifierService implements ISnomedIdentifierService {
 
 	private final Provider<SnomedTerminologyBrowser> browser;
 	protected final ISnomedIdentiferReservationService reservationService;
 
-	public AbstractSnomedIdentifierServiceImpl(final Provider<SnomedTerminologyBrowser> browser, final ISnomedIdentiferReservationService reservationService) {
+	public AbstractSnomedIdentifierService(final Provider<SnomedTerminologyBrowser> browser, final ISnomedIdentiferReservationService reservationService) {
 		this.browser = browser;
 		this.reservationService = reservationService;
 	}

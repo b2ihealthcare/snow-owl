@@ -34,7 +34,7 @@ import com.b2international.snowowl.core.date.Dates;
 import com.b2international.snowowl.core.terminology.ComponentCategory;
 import com.b2international.snowowl.snomed.datastore.SnomedTerminologyBrowser;
 import com.b2international.snowowl.snomed.datastore.config.SnomedIdentifierConfiguration;
-import com.b2international.snowowl.snomed.datastore.id.AbstractSnomedIdentifierServiceImpl;
+import com.b2international.snowowl.snomed.datastore.id.AbstractSnomedIdentifierService;
 import com.b2international.snowowl.snomed.datastore.id.SnomedIdentifiers;
 import com.b2international.snowowl.snomed.datastore.id.cis.request.BulkDeprecationData;
 import com.b2international.snowowl.snomed.datastore.id.cis.request.BulkGenerationData;
@@ -63,9 +63,9 @@ import com.google.inject.Provider;
  * 
  * @since 4.5
  */
-public class CisSnomedIdentifierServiceImpl extends AbstractSnomedIdentifierServiceImpl implements IDisposableService {
+public class CisSnomedIdentifierService extends AbstractSnomedIdentifierService implements IDisposableService {
 
-	private static final Logger LOGGER = LoggerFactory.getLogger(CisSnomedIdentifierServiceImpl.class);
+	private static final Logger LOGGER = LoggerFactory.getLogger(CisSnomedIdentifierService.class);
 	private static final int BULK_LIMIT = 1000;
 
 	private static final int MAX_NUMBER_OF_POLL_TRY = 5;
@@ -77,7 +77,7 @@ public class CisSnomedIdentifierServiceImpl extends AbstractSnomedIdentifierServ
 
 	private boolean disposed = false;
 
-	public CisSnomedIdentifierServiceImpl(final SnomedIdentifierConfiguration conf, final Provider<SnomedTerminologyBrowser> provider,
+	public CisSnomedIdentifierService(final SnomedIdentifierConfiguration conf, final Provider<SnomedTerminologyBrowser> provider,
 			final ISnomedIdentiferReservationService reservationService, final ObjectMapper mapper) {
 		super(provider, reservationService);
 		this.clientKey = conf.getCisClientSoftwareKey();
@@ -231,7 +231,7 @@ public class CisSnomedIdentifierServiceImpl extends AbstractSnomedIdentifierServ
 	}
 
 	@Override
-	public Collection<String> bulkGenerate(final String namespace, final ComponentCategory category, final int quantity) {
+	public Collection<String> generate(final String namespace, final ComponentCategory category, final int quantity) {
 		HttpPost bulkRequest = null;
 		HttpGet recordsRequest = null;
 
@@ -265,7 +265,7 @@ public class CisSnomedIdentifierServiceImpl extends AbstractSnomedIdentifierServ
 	}
 
 	@Override
-	public void bulkRegister(final Collection<String> componentIds) {
+	public void register(final Collection<String> componentIds) {
 		final Collection<String> componentIdsToRegister = Lists.newArrayList();
 		final Collection<SctId> sctIds = getSctIds(componentIds);
 
@@ -300,7 +300,7 @@ public class CisSnomedIdentifierServiceImpl extends AbstractSnomedIdentifierServ
 	}
 
 	@Override
-	public Collection<String> bulkReserve(String namespace, ComponentCategory category, int quantity) {
+	public Collection<String> reserve(String namespace, ComponentCategory category, int quantity) {
 		HttpPost bulkRequest = null;
 		HttpGet recordsRequest = null;
 
@@ -334,7 +334,7 @@ public class CisSnomedIdentifierServiceImpl extends AbstractSnomedIdentifierServ
 	}
 
 	@Override
-	public void bulkDeprecate(final Collection<String> componentIds) {
+	public void deprecate(final Collection<String> componentIds) {
 		HttpPut request = null;
 		final String token = login();
 
@@ -354,7 +354,7 @@ public class CisSnomedIdentifierServiceImpl extends AbstractSnomedIdentifierServ
 	}
 
 	@Override
-	public void bulkRelease(final Collection<String> componentIds) {
+	public void release(final Collection<String> componentIds) {
 		final Collection<String> componentIdsToRelease = Lists.newArrayList();
 		final Collection<SctId> sctIds = getSctIds(componentIds);
 
@@ -385,7 +385,7 @@ public class CisSnomedIdentifierServiceImpl extends AbstractSnomedIdentifierServ
 	}
 
 	@Override
-	public void bulkPublish(final Collection<String> componentIds) {
+	public void publish(final Collection<String> componentIds) {
 		HttpPut request = null;
 		final String token = login();
 

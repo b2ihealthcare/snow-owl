@@ -38,7 +38,7 @@ public class BulkDeprecateAction extends IdAction<Collection<String>> {
 
 	@Override
 	public void execute() {
-		identifierService.bulkDeprecate(componentIds);
+		identifierService.deprecate(componentIds);
 	}
 
 	@Override

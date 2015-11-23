@@ -42,12 +42,12 @@ public class BulkGenerateAction extends IdAction<Collection<String>> {
 	@Override
 	public void rollback() {
 		if (!isFailed())
-			identifierService.bulkRelease(componentIds);
+			identifierService.release(componentIds);
 	}
 
 	@Override
 	public void execute() {
-		this.componentIds = identifierService.bulkGenerate(namespace, category, quantity);
+		this.componentIds = identifierService.generate(namespace, category, quantity);
 	}
 
 	@Override

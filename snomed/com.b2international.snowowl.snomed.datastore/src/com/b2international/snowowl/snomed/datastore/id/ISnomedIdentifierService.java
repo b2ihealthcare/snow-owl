@@ -111,7 +111,7 @@ public interface ISnomedIdentifierService extends Reservation {
 	 *            the number of IDs to generate.
 	 * @return a collection of generated IDs.
 	 */
-	Collection<String> bulkGenerate(String namespace, ComponentCategory category, int quantity);
+	Collection<String> generate(String namespace, ComponentCategory category, int quantity);
 
 	/**
 	 * Registers multiple SNOMED CT IDs.
@@ -119,7 +119,7 @@ public interface ISnomedIdentifierService extends Reservation {
 	 * @param componnetIds
 	 *            the IDs to register.
 	 */
-	void bulkRegister(Collection<String> componentIds);
+	void register(Collection<String> componentIds);
 
 	/**
 	 * Reserves multiple SNOMED CT ID for the defined {@link ComponentCategory}
@@ -131,7 +131,7 @@ public interface ISnomedIdentifierService extends Reservation {
 	 *            the component type to generate ID for
 	 * @return a collection of reserved IDs.
 	 */
-	Collection<String> bulkReserve(String namespace, ComponentCategory category, int quantity);
+	Collection<String> reserve(String namespace, ComponentCategory category, int quantity);
 
 	/**
 	 * Releases the given SNOMED CT IDs.
@@ -139,7 +139,7 @@ public interface ISnomedIdentifierService extends Reservation {
 	 * @param componnetIds
 	 *            the IDs to release.
 	 */
-	void bulkRelease(Collection<String> componentIds);
+	void release(Collection<String> componentIds);
 
 	/**
 	 * Deprecates the given SNOMED CT IDs.
@@ -147,7 +147,7 @@ public interface ISnomedIdentifierService extends Reservation {
 	 * @param componentIds
 	 *            the IDs to deprecate.
 	 */
-	void bulkDeprecate(Collection<String> componentIds);
+	void deprecate(Collection<String> componentIds);
 
 	/**
 	 * Publishes the given SNOMED CT IDs.
@@ -155,7 +155,7 @@ public interface ISnomedIdentifierService extends Reservation {
 	 * @param componentIds
 	 *            the IDs to publish.
 	 */
-	void bulkPublish(Collection<String> componentIds);
+	void publish(Collection<String> componentIds);
 
 	/**
 	 * Gets the {@link SctId}s for the given component IDs.

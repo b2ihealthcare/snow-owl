@@ -38,7 +38,7 @@ public class SnomedIdentifierBulkReleaseRequest extends BaseRequest<BranchContex
 
 	@Override
 	public Void execute(BranchContext context) {
-		context.service(ISnomedIdentifierService.class).bulkRelease(componentIds);
+		context.service(ISnomedIdentifierService.class).release(componentIds);
 		return null;
 	}
 

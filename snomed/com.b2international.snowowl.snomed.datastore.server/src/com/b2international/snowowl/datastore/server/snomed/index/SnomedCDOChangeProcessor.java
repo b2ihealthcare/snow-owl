@@ -463,7 +463,7 @@ public class SnomedCDOChangeProcessor implements ICDOChangeProcessor {
 		}
 		
 		if (!releasableComponentIds.isEmpty()) {
-			getIdentifierService().bulkRelease(releasableComponentIds);
+			getIdentifierService().release(releasableComponentIds);
 		}
 		
 		final LongList deletedComponentIds;

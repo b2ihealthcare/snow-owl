@@ -38,7 +38,7 @@ public class BulkPublishAction extends IdAction<Collection<String>> {
 
 	@Override
 	public void execute() {
-		identifierService.bulkPublish(componentIds);
+		identifierService.publish(componentIds);
 	}
 
 	@Override

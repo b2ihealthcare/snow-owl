@@ -30,10 +30,10 @@ import com.b2international.snowowl.snomed.datastore.SnomedTerminologyBrowser;
 import com.b2international.snowowl.snomed.datastore.config.SnomedCoreConfiguration;
 import com.b2international.snowowl.snomed.datastore.config.SnomedIdentifierConfiguration;
 import com.b2international.snowowl.snomed.datastore.config.SnomedIdentifierConfiguration.IdGenerationStrategy;
-import com.b2international.snowowl.snomed.datastore.id.cis.CisSnomedIdentifierServiceImpl;
+import com.b2international.snowowl.snomed.datastore.id.cis.CisSnomedIdentifierService;
 import com.b2international.snowowl.snomed.datastore.id.cis.SctId;
 import com.b2international.snowowl.snomed.datastore.id.gen.ItemIdGenerationStrategy;
-import com.b2international.snowowl.snomed.datastore.id.memory.DefaultSnomedIdentifierServiceImpl;
+import com.b2international.snowowl.snomed.datastore.id.memory.DefaultSnomedIdentifierService;
 import com.b2international.snowowl.snomed.datastore.id.reservations.ISnomedIdentiferReservationService;
 import com.b2international.snowowl.snomed.datastore.internal.id.reservations.SnomedIdentifierReservationServiceImpl;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -78,18 +78,18 @@ public class SnomedIdentifierBootstrap extends DefaultBootstrapFragment {
 		case MEMORY:
 			LOGGER.info("Snow Owl is configured to use memory based identifier serivce.");
 			final MemStore<SctId> memStore = new MemStore<SctId>();
-			identifierService = new DefaultSnomedIdentifierServiceImpl(memStore, ItemIdGenerationStrategy.RANDOM, provider,
+			identifierService = new DefaultSnomedIdentifierService(memStore, ItemIdGenerationStrategy.RANDOM, provider,
 					reservationService);
 			break;
 		case INDEX:
 			LOGGER.info("Snow Owl is configured to use index based identifier serivce.");
 			final IndexStore<SctId> indexStore = getIndexStore(env);
-			identifierService = new DefaultSnomedIdentifierServiceImpl(indexStore, ItemIdGenerationStrategy.RANDOM, provider,
+			identifierService = new DefaultSnomedIdentifierService(indexStore, ItemIdGenerationStrategy.RANDOM, provider,
 					reservationService);
 			break;
 		case CIS:
 			LOGGER.info("Snow Owl is configured to use CIS based identifier serivce.");
-			identifierService = new CisSnomedIdentifierServiceImpl(conf, provider, reservationService, mapper);
+			identifierService = new CisSnomedIdentifierService(conf, provider, reservationService, mapper);
 			break;
 		default:
 			throw new IllegalStateException(String.format("Unknown ID generation source configured: %s. ", conf.getIdGenerationStrategy()));
