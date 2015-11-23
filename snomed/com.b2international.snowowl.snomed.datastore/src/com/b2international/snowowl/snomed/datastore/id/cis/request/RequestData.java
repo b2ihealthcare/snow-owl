@@ -27,7 +27,7 @@ public class RequestData {
 	private int namespace = 0;
 
 	private String software = "Snow Owl";
-	private String comment = "Requested by Snow Owl"; // TODO by software
+	private String comment = "";
 
 	public RequestData() {
 	}
@@ -35,6 +35,7 @@ public class RequestData {
 	public RequestData(final String namespace, final String software) {
 		this.namespace = convertNamesapce(namespace);
 		this.software = software;
+		this.comment = String.format("Requested by %s", software);
 	}
 
 	public int getNamespace() {
