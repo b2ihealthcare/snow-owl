@@ -13,27 +13,24 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.snomed.datastore.id.cis.memory;
+package com.b2international.snowowl.snomed.datastore.id.cis;
 
 import org.junit.Before;
 
-import com.b2international.snowowl.datastore.store.MemStore;
-import com.b2international.snowowl.snomed.datastore.id.AbstractBulkIdentifierServiceTest;
+import com.b2international.snowowl.snomed.datastore.config.SnomedIdentifierConfiguration;
+import com.b2international.snowowl.snomed.datastore.id.AbstractIdentifierServiceTest;
 import com.b2international.snowowl.snomed.datastore.id.ISnomedIdentifierService;
-import com.b2international.snowowl.snomed.datastore.id.cis.SctId;
-import com.b2international.snowowl.snomed.datastore.id.gen.ItemIdGenerationStrategy;
-import com.b2international.snowowl.snomed.datastore.id.memory.DefaultSnomedIdentifierServiceImpl;
 import com.b2international.snowowl.snomed.datastore.id.reservations.ISnomedIdentiferReservationService;
 import com.b2international.snowowl.snomed.datastore.internal.id.reservations.SnomedIdentifierReservationServiceImpl;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 /**
  * @since 4.5
  */
-public class BulkInMemorySnomedIdentifierServiceImplTest extends AbstractBulkIdentifierServiceTest {
+public class CisSnomedIdentfierServiceTest extends AbstractIdentifierServiceTest {
 
-	private ISnomedIdentifierService service;
-	
-	private final MemStore<SctId> store = new MemStore<>();
+	private CisSnomedIdentifierService service;
+	private final ObjectMapper mapper = new ObjectMapper();
 
 	@Override
 	protected ISnomedIdentifierService getIdentifierService() {
@@ -42,8 +39,16 @@ public class BulkInMemorySnomedIdentifierServiceImplTest extends AbstractBulkIde
 
 	@Before
 	public void init() {
+		final SnomedIdentifierConfiguration conf = new SnomedIdentifierConfiguration();
+		conf.setCisBaseUrl("http://107.170.101.181");
+		conf.setCisPort("3000");
+		conf.setCisContextRoot("api");
+		conf.setCisClientSoftwareKey("Snow Owl dev. tests");
+		conf.setCisUserName("snowowl-dev-b2i");
+		conf.setCisPassword("hAAYLYMX5gc98SDEz9cr");
+
 		final ISnomedIdentiferReservationService reservationService = new SnomedIdentifierReservationServiceImpl();
-		service = new DefaultSnomedIdentifierServiceImpl(store, ItemIdGenerationStrategy.RANDOM, null, reservationService);
+		service = new CisSnomedIdentifierService(conf, null, reservationService, mapper);
 	}
 
 }

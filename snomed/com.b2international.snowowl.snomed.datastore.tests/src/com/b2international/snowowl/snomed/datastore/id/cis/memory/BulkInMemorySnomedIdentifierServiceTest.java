@@ -13,22 +13,27 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.snomed.datastore.id.cis;
+package com.b2international.snowowl.snomed.datastore.id.cis.memory;
 
 import org.junit.Before;
 
-import com.b2international.snowowl.snomed.datastore.config.SnomedIdentifierConfiguration;
-import com.b2international.snowowl.snomed.datastore.id.AbstractIdentifierServiceTest;
+import com.b2international.snowowl.datastore.store.MemStore;
+import com.b2international.snowowl.snomed.datastore.id.AbstractBulkIdentifierServiceTest;
 import com.b2international.snowowl.snomed.datastore.id.ISnomedIdentifierService;
+import com.b2international.snowowl.snomed.datastore.id.cis.SctId;
+import com.b2international.snowowl.snomed.datastore.id.gen.ItemIdGenerationStrategy;
+import com.b2international.snowowl.snomed.datastore.id.memory.DefaultSnomedIdentifierService;
 import com.b2international.snowowl.snomed.datastore.id.reservations.ISnomedIdentiferReservationService;
 import com.b2international.snowowl.snomed.datastore.internal.id.reservations.SnomedIdentifierReservationServiceImpl;
 
 /**
  * @since 4.5
  */
-public class CisSnomedIdentfierServiceImplTest extends AbstractIdentifierServiceTest {
+public class BulkInMemorySnomedIdentifierServiceTest extends AbstractBulkIdentifierServiceTest {
 
-	private CisSnomedIdentifierServiceImpl service;
+	private ISnomedIdentifierService service;
+	
+	private final MemStore<SctId> store = new MemStore<>();
 
 	@Override
 	protected ISnomedIdentifierService getIdentifierService() {
@@ -37,16 +42,8 @@ public class CisSnomedIdentfierServiceImplTest extends AbstractIdentifierService
 
 	@Before
 	public void init() {
-		final SnomedIdentifierConfiguration conf = new SnomedIdentifierConfiguration();
-		conf.setCisUrl("http://107.170.101.181");
-		conf.setCisPort("3000");
-		conf.setCisContextRoot("api");
-		conf.setCisClientSoftwareKey("Snow Owl dev. tests");
-		conf.setCisUserName("snowowl-dev-b2i");
-		conf.setCisPassword("hAAYLYMX5gc98SDEz9cr");
-
 		final ISnomedIdentiferReservationService reservationService = new SnomedIdentifierReservationServiceImpl();
-		service = new CisSnomedIdentifierServiceImpl(conf, null, reservationService);
+		service = new DefaultSnomedIdentifierService(store, ItemIdGenerationStrategy.RANDOM, null, reservationService);
 	}
 
 }

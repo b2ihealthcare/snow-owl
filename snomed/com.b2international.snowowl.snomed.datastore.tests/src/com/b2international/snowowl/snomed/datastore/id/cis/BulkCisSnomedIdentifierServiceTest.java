@@ -22,13 +22,15 @@ import com.b2international.snowowl.snomed.datastore.id.AbstractBulkIdentifierSer
 import com.b2international.snowowl.snomed.datastore.id.ISnomedIdentifierService;
 import com.b2international.snowowl.snomed.datastore.id.reservations.ISnomedIdentiferReservationService;
 import com.b2international.snowowl.snomed.datastore.internal.id.reservations.SnomedIdentifierReservationServiceImpl;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 /**
  * @since 4.5
  */
-public class BulkCisSnomedIdentifierServiceImplTest extends AbstractBulkIdentifierServiceTest {
+public class BulkCisSnomedIdentifierServiceTest extends AbstractBulkIdentifierServiceTest {
 
 	private ISnomedIdentifierService service;
+	private final ObjectMapper mapper = new ObjectMapper();
 
 	@Override
 	protected ISnomedIdentifierService getIdentifierService() {
@@ -38,7 +40,7 @@ public class BulkCisSnomedIdentifierServiceImplTest extends AbstractBulkIdentifi
 	@Before
 	public void init() {
 		final SnomedIdentifierConfiguration conf = new SnomedIdentifierConfiguration();
-		conf.setCisUrl("http://107.170.101.181");
+		conf.setCisBaseUrl("http://107.170.101.181");
 		conf.setCisPort("3000");
 		conf.setCisContextRoot("api");
 		conf.setCisClientSoftwareKey("Snow Owl dev. tests");
@@ -46,7 +48,7 @@ public class BulkCisSnomedIdentifierServiceImplTest extends AbstractBulkIdentifi
 		conf.setCisPassword("hAAYLYMX5gc98SDEz9cr");
 
 		final ISnomedIdentiferReservationService reservationService = new SnomedIdentifierReservationServiceImpl();
-		service = new CisSnomedIdentifierServiceImpl(conf, null, reservationService);
+		service = new CisSnomedIdentifierService(conf, null, reservationService, mapper);
 	}
 
 }

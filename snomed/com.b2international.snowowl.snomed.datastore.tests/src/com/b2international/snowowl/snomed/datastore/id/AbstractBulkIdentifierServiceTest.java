@@ -40,7 +40,7 @@ public abstract class AbstractBulkIdentifierServiceTest {
 		Collection<String> componentIds = null;
 
 		try {
-			componentIds = getIdentifierService().bulkGenerate(B2I_NAMESPACE, ComponentCategory.CONCEPT, 2);
+			componentIds = getIdentifierService().generate(B2I_NAMESPACE, ComponentCategory.CONCEPT, 2);
 			final Collection<SctId> sctIds = getIdentifierService().getSctIds(componentIds);
 			for (final SctId sctId : sctIds) {
 				assertTrue("Status must be assigned", IdentifierStatus.ASSIGNED.getSerializedName().equals(sctId.getStatus()));
@@ -49,7 +49,7 @@ public abstract class AbstractBulkIdentifierServiceTest {
 			fail(String.format("Unexpected exception was thrown. Exception class: %s.", e.getClass()));
 		} finally {
 			if (!componentIds.isEmpty())
-				getIdentifierService().bulkRelease(componentIds);
+				getIdentifierService().release(componentIds);
 		}
 	}
 
@@ -58,7 +58,7 @@ public abstract class AbstractBulkIdentifierServiceTest {
 		Collection<String> componentIds = null;
 
 		try {
-			componentIds = getIdentifierService().bulkReserve(B2I_NAMESPACE, ComponentCategory.CONCEPT, 2);
+			componentIds = getIdentifierService().reserve(B2I_NAMESPACE, ComponentCategory.CONCEPT, 2);
 			final Collection<SctId> sctIds = getIdentifierService().getSctIds(componentIds);
 			for (final SctId sctId : sctIds) {
 				assertTrue("Status must be reserved", IdentifierStatus.RESERVED.getSerializedName().equals(sctId.getStatus()));
@@ -67,7 +67,7 @@ public abstract class AbstractBulkIdentifierServiceTest {
 			fail(String.format("Unexpected exception was thrown. Exception class: %s.", e.getClass()));
 		} finally {
 			if (!componentIds.isEmpty())
-				getIdentifierService().bulkRelease(componentIds);
+				getIdentifierService().release(componentIds);
 		}
 	}
 
@@ -76,8 +76,8 @@ public abstract class AbstractBulkIdentifierServiceTest {
 		Collection<String> componentIds = null;
 
 		try {
-			componentIds = getIdentifierService().bulkReserve(B2I_NAMESPACE, ComponentCategory.CONCEPT, 2);
-			getIdentifierService().bulkRegister(componentIds);
+			componentIds = getIdentifierService().reserve(B2I_NAMESPACE, ComponentCategory.CONCEPT, 2);
+			getIdentifierService().register(componentIds);
 			final Collection<SctId> sctIds = getIdentifierService().getSctIds(componentIds);
 			for (final SctId sctId : sctIds) {
 				assertTrue("Status must be assigned", IdentifierStatus.ASSIGNED.getSerializedName().equals(sctId.getStatus()));
@@ -86,16 +86,16 @@ public abstract class AbstractBulkIdentifierServiceTest {
 			fail(String.format("Unexpected exception was thrown. Exception class: %s.", e.getClass()));
 		} finally {
 			if (!componentIds.isEmpty())
-				getIdentifierService().bulkRelease(componentIds);
+				getIdentifierService().release(componentIds);
 		}
 	}
 
 	@Test
 	public void whenReleasingReservedIds_ThenTheyShouldBeAvailable() {
 		try {
-			final Collection<String> componentIds = getIdentifierService().bulkReserve(B2I_NAMESPACE, ComponentCategory.CONCEPT, 2);
-			getIdentifierService().bulkRegister(componentIds);
-			getIdentifierService().bulkRelease(componentIds);
+			final Collection<String> componentIds = getIdentifierService().reserve(B2I_NAMESPACE, ComponentCategory.CONCEPT, 2);
+			getIdentifierService().register(componentIds);
+			getIdentifierService().release(componentIds);
 			final Collection<SctId> sctIds = getIdentifierService().getSctIds(componentIds);
 			for (final SctId sctId : sctIds) {
 				assertTrue("Status must be available", IdentifierStatus.AVAILABLE.getSerializedName().equals(sctId.getStatus()));
@@ -108,8 +108,8 @@ public abstract class AbstractBulkIdentifierServiceTest {
 	@Test
 	public void whenPublishingAssignedIds_ThenTheyShouldBePublished() {
 		try {
-			final Collection<String> componentIds = getIdentifierService().bulkGenerate(B2I_NAMESPACE, ComponentCategory.CONCEPT, 2);
-			getIdentifierService().bulkPublish(componentIds);
+			final Collection<String> componentIds = getIdentifierService().generate(B2I_NAMESPACE, ComponentCategory.CONCEPT, 2);
+			getIdentifierService().publish(componentIds);
 			final Collection<SctId> sctIds = getIdentifierService().getSctIds(componentIds);
 			for (final SctId sctId : sctIds) {
 				assertTrue("Status must be published", IdentifierStatus.PUBLISHED.getSerializedName().equals(sctId.getStatus()));
@@ -122,8 +122,8 @@ public abstract class AbstractBulkIdentifierServiceTest {
 	@Test
 	public void whenDeprecatingAssignedIds_ThenTheyShouldBeDeprecated() {
 		try {
-			final Collection<String> componentIds = getIdentifierService().bulkGenerate(B2I_NAMESPACE, ComponentCategory.CONCEPT, 2);
-			getIdentifierService().bulkDeprecate(componentIds);
+			final Collection<String> componentIds = getIdentifierService().generate(B2I_NAMESPACE, ComponentCategory.CONCEPT, 2);
+			getIdentifierService().deprecate(componentIds);
 			final Collection<SctId> sctIds = getIdentifierService().getSctIds(componentIds);
 			for (final SctId sctId : sctIds) {
 				assertTrue("Status must be deprecated", IdentifierStatus.DEPRECATED.getSerializedName().equals(sctId.getStatus()));
