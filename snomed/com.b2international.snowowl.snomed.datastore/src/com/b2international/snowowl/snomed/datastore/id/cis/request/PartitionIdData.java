@@ -20,30 +20,35 @@ import com.b2international.snowowl.core.terminology.ComponentCategory;
 /**
  * @since 4.5
  */
-public class ReservationData extends PartitionIdData {
+abstract class PartitionIdData extends RequestData {
 
-	private String systemId = "";
-	private String expirationDate;
+	private String partitionId;
 
-	public ReservationData(final String namespace, final String software, final String expirationDate, final ComponentCategory category) {
-		super(namespace, software, category);
-		this.expirationDate = expirationDate;
+	public PartitionIdData(final String namespace, final String software, final ComponentCategory category) {
+		super(namespace, software);
+		setPartitionId(buildPartitionId(category));
 	}
 
-	public String getExpirationDate() {
-		return expirationDate;
+	private String buildPartitionId(final ComponentCategory category) {
+		final StringBuilder builder = new StringBuilder();
+
+		if (getNamespace() == 0) {
+			builder.append('0');
+		} else {
+			builder.append('1');
+		}
+
+		// append the second part of the partition-identifier
+		builder.append(category.ordinal());
+		return builder.toString();
 	}
 
-	public void setExpirationDate(String expirationDate) {
-		this.expirationDate = expirationDate;
+	public String getPartitionId() {
+		return partitionId;
 	}
 
-	public String getSystemId() {
-		return systemId;
-	}
-
-	public void setSystemId(String systemId) {
-		this.systemId = systemId;
+	public void setPartitionId(String partitionId) {
+		this.partitionId = partitionId;
 	}
 
 }

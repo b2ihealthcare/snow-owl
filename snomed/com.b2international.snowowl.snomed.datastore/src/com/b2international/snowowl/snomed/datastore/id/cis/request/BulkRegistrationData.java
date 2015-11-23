@@ -26,7 +26,7 @@ public class BulkRegistrationData extends RequestData {
 
 	private Collection<Record> records = Lists.newArrayList();
 
-	public BulkRegistrationData(final int namespace, final String software, final Collection<Record> records) {
+	public BulkRegistrationData(final String namespace, final String software, final Collection<Record> records) {
 		super(namespace, software);
 		this.records = records;
 	}

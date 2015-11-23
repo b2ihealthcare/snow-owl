@@ -27,7 +27,7 @@ public class BulkPublicationData extends RequestData {
 	@JsonProperty("sctids")
 	private Collection<String> componentIds;
 
-	public BulkPublicationData(final int namespace, final String software, final Collection<String> componentIds) {
+	public BulkPublicationData(final String namespace, final String software, final Collection<String> componentIds) {
 		super(namespace, software);
 		this.componentIds = componentIds;
 	}

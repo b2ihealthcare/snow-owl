@@ -15,23 +15,25 @@
  */
 package com.b2international.snowowl.snomed.datastore.id.cis.request;
 
+import com.b2international.commons.StringUtils;
+
 /**
  * Superclass to hold common bean properties for Json requests sent to the CIS.
  * 
  * @since 4.5
  */
-public class RequestData {
+class RequestData {
 
 	private int namespace = 0;
 
 	private String software = "Snow Owl";
-	private String comment = "Requested by Snow Owl";
+	private String comment = "Requested by Snow Owl"; // TODO by software
 
-	public RequestData() {
-	}
+//	public RequestData() {
+//	}
 
-	public RequestData(final int namespace, final String software) {
-		this.namespace = namespace;
+	public RequestData(final String namespace, final String software) {
+		this.namespace = convertNamesapce(namespace);
 		this.software = software;
 	}
 
@@ -57,5 +59,9 @@ public class RequestData {
 
 	public void setComment(String comment) {
 		this.comment = comment;
+	}
+	
+	private int convertNamesapce(final String namespace) {
+		return StringUtils.isEmpty(namespace) ? 0 : Integer.valueOf(namespace);
 	}
 }

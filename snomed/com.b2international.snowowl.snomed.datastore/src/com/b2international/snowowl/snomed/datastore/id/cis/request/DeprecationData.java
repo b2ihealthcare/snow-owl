@@ -25,7 +25,7 @@ public class DeprecationData extends RequestData {
 	@JsonProperty("sctid")
 	private String sctId;
 
-	public DeprecationData(final int namespace, final String software, final String sctId) {
+	public DeprecationData(final String namespace, final String software, final String sctId) {
 		super(namespace, software);
 		this.sctId = sctId;
 	}

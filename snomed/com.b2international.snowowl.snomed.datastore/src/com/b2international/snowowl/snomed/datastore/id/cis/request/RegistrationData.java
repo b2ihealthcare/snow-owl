@@ -26,7 +26,7 @@ public class RegistrationData extends RequestData {
 	private String sctId;
 	private String systemId;
 
-	public RegistrationData(final int namespace, final String software, final String sctId, final String systemId) {
+	public RegistrationData(final String namespace, final String software, final String sctId, final String systemId) {
 		super(namespace, software);
 		this.sctId = sctId;
 		this.systemId = systemId;

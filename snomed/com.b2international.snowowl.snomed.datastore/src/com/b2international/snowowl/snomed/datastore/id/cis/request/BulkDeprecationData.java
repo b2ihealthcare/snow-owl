@@ -27,7 +27,7 @@ public class BulkDeprecationData extends RequestData {
 	@JsonProperty("sctids")
 	private Collection<String> componentIds;
 
-	public BulkDeprecationData(final int namespace, final String software, final Collection<String> componentIds) {
+	public BulkDeprecationData(final String namespace, final String software, final Collection<String> componentIds) {
 		super(namespace, software);
 		this.componentIds = componentIds;
 	}

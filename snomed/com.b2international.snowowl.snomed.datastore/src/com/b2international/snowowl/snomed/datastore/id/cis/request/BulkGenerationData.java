@@ -23,33 +23,16 @@ import com.google.common.collect.Lists;
 /**
  * @since 4.5
  */
-public class BulkGenerationData extends RequestData {
+public class BulkGenerationData extends PartitionIdData {
 
 	private int quantity;
-	private String partitionId;
 	private String generateLegacyIds = "false";
 
 	private Collection<String> systemIds = Lists.newArrayList();
 
-	public BulkGenerationData(final int namespace, final String software, final ComponentCategory category, final int quantity) {
-		super(namespace, software);
+	public BulkGenerationData(final String namespace, final String software, final ComponentCategory category, final int quantity) {
+		super(namespace, software, category);
 		this.quantity = quantity;
-		buildPartitionId(category);
-	}
-
-	private void buildPartitionId(final ComponentCategory category) {
-		final StringBuilder builder = new StringBuilder();
-
-		if (getNamespace() == 0) {
-			builder.append('0');
-		} else {
-			builder.append('1');
-		}
-
-		// append the second part of the partition-identifier
-		builder.append(category.ordinal());
-
-		setPartitionId(builder.toString());
 	}
 
 	public int getQuantity() {
@@ -58,14 +41,6 @@ public class BulkGenerationData extends RequestData {
 
 	public void setQuantity(int quantity) {
 		this.quantity = quantity;
-	}
-
-	public String getPartitionId() {
-		return partitionId;
-	}
-
-	public void setPartitionId(String partitionId) {
-		this.partitionId = partitionId;
 	}
 
 	public String getGenerateLegacyIds() {

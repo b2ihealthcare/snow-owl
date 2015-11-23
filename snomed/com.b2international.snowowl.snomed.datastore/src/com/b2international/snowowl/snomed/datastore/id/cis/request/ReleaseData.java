@@ -25,7 +25,7 @@ public class ReleaseData extends RequestData {
 	@JsonProperty("sctid")
 	private String sctId;
 
-	public ReleaseData(final int namespace, final String software, final String sctId) {
+	public ReleaseData(final String namespace, final String software, final String sctId) {
 		super(namespace, software);
 		this.sctId = sctId;
 	}

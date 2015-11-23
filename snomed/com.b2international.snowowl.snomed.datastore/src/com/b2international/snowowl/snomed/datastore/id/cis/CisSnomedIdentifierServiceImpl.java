@@ -27,7 +27,6 @@ import org.apache.http.client.methods.HttpRequestBase;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.b2international.commons.StringUtils;
 import com.b2international.snowowl.core.IDisposableService;
 import com.b2international.snowowl.core.api.SnowowlRuntimeException;
 import com.b2international.snowowl.core.date.DateFormats;
@@ -532,12 +531,12 @@ public class CisSnomedIdentifierServiceImpl extends AbstractSnomedIdentifierServ
 	}
 
 	private String generationData(final String namespace, final ComponentCategory category) throws IOException {
-		final GenerationData data = new GenerationData(convertNamesapce(namespace), clientKey, category);
+		final GenerationData data = new GenerationData(namespace, clientKey, category);
 		return mapper.writeValueAsString(data);
 	}
 
 	private String bulkGenerationData(final String namespace, final ComponentCategory category, final int quantity) throws IOException {
-		final BulkGenerationData data = new BulkGenerationData(convertNamesapce(namespace), clientKey, category, quantity);
+		final BulkGenerationData data = new BulkGenerationData(namespace, clientKey, category, quantity);
 		return mapper.writeValueAsString(data);
 	}
 
@@ -566,12 +565,12 @@ public class CisSnomedIdentifierServiceImpl extends AbstractSnomedIdentifierServ
 	}
 
 	private String reservationData(final String namespace, final ComponentCategory category) throws IOException {
-		final ReservationData data = new ReservationData(convertNamesapce(namespace), clientKey, getExpirationDate(), category);
+		final ReservationData data = new ReservationData(namespace, clientKey, getExpirationDate(), category);
 		return mapper.writeValueAsString(data);
 	}
 
 	private String bulkReservationData(final String namespace, final ComponentCategory category, final int quantity) throws IOException {
-		final BulkReservationData data = new BulkReservationData(convertNamesapce(namespace), clientKey, getExpirationDate(), category,
+		final BulkReservationData data = new BulkReservationData(namespace, clientKey, getExpirationDate(), category,
 				quantity);
 		return mapper.writeValueAsString(data);
 	}
@@ -604,13 +603,8 @@ public class CisSnomedIdentifierServiceImpl extends AbstractSnomedIdentifierServ
 		return mapper.writeValueAsString(data);
 	}
 
-	private int convertNamesapce(final String namespace) {
-		return StringUtils.isEmpty(namespace) ? 0 : Integer.valueOf(namespace);
-	}
-
-	private int getNamespace(final String componentId) {
-		final String namespace = SnomedIdentifiers.of(componentId).getNamespace();
-		return null == namespace ? 0 : Integer.valueOf(namespace);
+	private String getNamespace(final String componentId) {
+		return SnomedIdentifiers.of(componentId).getNamespace();
 	}
 
 	@Override

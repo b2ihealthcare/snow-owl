@@ -20,38 +20,13 @@ import com.b2international.snowowl.core.terminology.ComponentCategory;
 /**
  * @since 4.5
  */
-public class GenerationData extends RequestData {
+public class GenerationData extends PartitionIdData {
 
 	private String systemId = "";
-	private String partitionId;
 	private String generateLegacyIds = "false";
 
-	public GenerationData(final int namespace, final String software, final ComponentCategory category) {
-		super(namespace, software);
-		buildPartitionId(category);
-	}
-
-	private void buildPartitionId(final ComponentCategory category) {
-		final StringBuilder builder = new StringBuilder();
-
-		if (getNamespace() == 0) {
-			builder.append('0');
-		} else {
-			builder.append('1');
-		}
-
-		// append the second part of the partition-identifier
-		builder.append(category.ordinal());
-
-		setPartitionId(builder.toString());
-	}
-
-	public String getPartitionId() {
-		return partitionId;
-	}
-
-	public void setPartitionId(String partitionId) {
-		this.partitionId = partitionId;
+	public GenerationData(final String namespace, final String software, final ComponentCategory category) {
+		super(namespace, software, category);
 	}
 
 	public String getSystemId() {

@@ -23,36 +23,19 @@ import com.google.common.collect.Lists;
 /**
  * @since 4.5
  */
-public class BulkReservationData extends RequestData {
+public class BulkReservationData extends PartitionIdData {
 
 	private int quantity;
-	private String partitionId;
 	private String expirationDate;
 	private String generateLegacyIds = "false";
 
 	private Collection<String> systemIds = Lists.newArrayList();
 
-	public BulkReservationData(final int namespace, final String software, final String expirationDate, final ComponentCategory category,
+	public BulkReservationData(final String namespace, final String software, final String expirationDate, final ComponentCategory category,
 			final int quantity) {
-		super(namespace, software);
+		super(namespace, software, category);
 		this.expirationDate = expirationDate;
 		this.quantity = quantity;
-		buildPartitionId(category);
-	}
-
-	private void buildPartitionId(final ComponentCategory category) {
-		final StringBuilder builder = new StringBuilder();
-
-		if (getNamespace() == 0) {
-			builder.append('0');
-		} else {
-			builder.append('1');
-		}
-
-		// append the second part of the partition-identifier
-		builder.append(category.ordinal());
-
-		setPartitionId(builder.toString());
 	}
 
 	public int getQuantity() {
@@ -61,14 +44,6 @@ public class BulkReservationData extends RequestData {
 
 	public void setQuantity(int quantity) {
 		this.quantity = quantity;
-	}
-
-	public String getPartitionId() {
-		return partitionId;
-	}
-
-	public void setPartitionId(String partitionId) {
-		this.partitionId = partitionId;
 	}
 
 	public String getExpirationDate() {
