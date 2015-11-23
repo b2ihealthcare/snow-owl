@@ -18,32 +18,22 @@ package com.b2international.snowowl.snomed.datastore.id;
 import static com.google.common.base.Preconditions.checkArgument;
 
 import com.b2international.snowowl.core.terminology.ComponentCategory;
-import com.b2international.snowowl.datastore.BranchPathUtils;
-import com.b2international.snowowl.snomed.datastore.SnomedTerminologyBrowser;
 import com.b2international.snowowl.snomed.datastore.id.reservations.ISnomedIdentiferReservationService;
-import com.google.inject.Provider;
 
 /**
  * @since 4.5
  */
 public abstract class AbstractSnomedIdentifierService implements ISnomedIdentifierService {
 
-	private final Provider<SnomedTerminologyBrowser> browser;
 	protected final ISnomedIdentiferReservationService reservationService;
 
-	public AbstractSnomedIdentifierService(final Provider<SnomedTerminologyBrowser> browser, final ISnomedIdentiferReservationService reservationService) {
-		this.browser = browser;
+	public AbstractSnomedIdentifierService(final ISnomedIdentiferReservationService reservationService) {
 		this.reservationService = reservationService;
-	}
-
-	@Override
-	public boolean includes(SnomedIdentifier identifier) {
-		return !browser.get().isUniqueId(BranchPathUtils.createMainPath(), identifier.toString());
 	}
 
 	protected void checkCategory(ComponentCategory category) {
 		checkArgument(category == ComponentCategory.CONCEPT || category == ComponentCategory.DESCRIPTION
 				|| category == ComponentCategory.RELATIONSHIP, "Cannot generate ID for component category %s.", category);
 	}
-	
+
 }

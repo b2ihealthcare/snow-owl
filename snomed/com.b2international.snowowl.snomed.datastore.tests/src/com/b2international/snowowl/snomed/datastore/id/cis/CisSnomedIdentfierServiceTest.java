@@ -47,7 +47,7 @@ public class CisSnomedIdentfierServiceTest extends AbstractIdentifierServiceTest
 		conf.setCisPassword("hAAYLYMX5gc98SDEz9cr");
 
 		final ISnomedIdentiferReservationService reservationService = new SnomedIdentifierReservationServiceImpl();
-		service = new CisSnomedIdentifierService(conf, null, reservationService, mapper);
+		service = new CisSnomedIdentifierService(conf, reservationService, mapper);
 	}
 
 }

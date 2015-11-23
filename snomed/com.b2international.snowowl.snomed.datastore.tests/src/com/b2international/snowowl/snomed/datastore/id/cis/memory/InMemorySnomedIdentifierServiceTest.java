@@ -32,7 +32,7 @@ import com.b2international.snowowl.snomed.datastore.internal.id.reservations.Sno
 public class InMemorySnomedIdentifierServiceTest extends AbstractIdentifierServiceTest {
 
 	private ISnomedIdentifierService service;
-	
+
 	private final MemStore<SctId> store = new MemStore<>();
 
 	@Override
@@ -43,7 +43,7 @@ public class InMemorySnomedIdentifierServiceTest extends AbstractIdentifierServi
 	@Before
 	public void init() {
 		final ISnomedIdentiferReservationService reservationService = new SnomedIdentifierReservationServiceImpl();
-		service = new DefaultSnomedIdentifierService(store, ItemIdGenerationStrategy.RANDOM, null, reservationService);
+		service = new DefaultSnomedIdentifierService(store, ItemIdGenerationStrategy.RANDOM, reservationService);
 	}
 
 }

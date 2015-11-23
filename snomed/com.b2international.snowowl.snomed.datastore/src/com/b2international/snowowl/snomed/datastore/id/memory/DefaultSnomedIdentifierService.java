@@ -27,7 +27,6 @@ import com.b2international.commons.VerhoeffCheck;
 import com.b2international.snowowl.core.exceptions.BadRequestException;
 import com.b2international.snowowl.core.terminology.ComponentCategory;
 import com.b2international.snowowl.datastore.store.Store;
-import com.b2international.snowowl.snomed.datastore.SnomedTerminologyBrowser;
 import com.b2international.snowowl.snomed.datastore.id.AbstractSnomedIdentifierService;
 import com.b2international.snowowl.snomed.datastore.id.SnomedIdentifier;
 import com.b2international.snowowl.snomed.datastore.id.SnomedIdentifiers;
@@ -38,7 +37,6 @@ import com.b2international.snowowl.snomed.datastore.id.reservations.ISnomedIdent
 import com.google.common.base.Strings;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
-import com.google.inject.Provider;
 
 /**
  * {@link Store} based implementation of the identifier service.
@@ -53,8 +51,8 @@ public class DefaultSnomedIdentifierService extends AbstractSnomedIdentifierServ
 	private final ItemIdGenerationStrategy generationStrategy;
 
 	public DefaultSnomedIdentifierService(final Store<SctId> store, final ItemIdGenerationStrategy generationStrategy,
-			final Provider<SnomedTerminologyBrowser> provider, final ISnomedIdentiferReservationService reservationService) {
-		super(provider, reservationService);
+			final ISnomedIdentiferReservationService reservationService) {
+		super(reservationService);
 		this.store = store;
 		this.generationStrategy = generationStrategy;
 	}

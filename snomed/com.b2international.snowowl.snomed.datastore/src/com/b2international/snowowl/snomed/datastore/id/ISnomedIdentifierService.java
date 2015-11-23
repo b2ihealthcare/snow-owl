@@ -19,7 +19,6 @@ import java.util.Collection;
 
 import com.b2international.snowowl.core.terminology.ComponentCategory;
 import com.b2international.snowowl.snomed.datastore.id.cis.SctId;
-import com.b2international.snowowl.snomed.datastore.id.reservations.Reservation;
 
 /**
  * SNOMED CT Identifier service interface. It is capable of generating valid
@@ -33,7 +32,7 @@ import com.b2international.snowowl.snomed.datastore.id.reservations.Reservation;
  * @since 4.0
  * @see www.snomed.org/tig?t=trg_app_sctid
  */
-public interface ISnomedIdentifierService extends Reservation {
+public interface ISnomedIdentifierService {
 
 	/**
 	 * Generates a single SNOMED CT ID for the defined {@link ComponentCategory}

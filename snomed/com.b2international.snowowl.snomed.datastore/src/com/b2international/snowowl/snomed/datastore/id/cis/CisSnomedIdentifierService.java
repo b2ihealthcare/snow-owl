@@ -32,7 +32,6 @@ import com.b2international.snowowl.core.api.SnowowlRuntimeException;
 import com.b2international.snowowl.core.date.DateFormats;
 import com.b2international.snowowl.core.date.Dates;
 import com.b2international.snowowl.core.terminology.ComponentCategory;
-import com.b2international.snowowl.snomed.datastore.SnomedTerminologyBrowser;
 import com.b2international.snowowl.snomed.datastore.config.SnomedIdentifierConfiguration;
 import com.b2international.snowowl.snomed.datastore.id.AbstractSnomedIdentifierService;
 import com.b2international.snowowl.snomed.datastore.id.SnomedIdentifiers;
@@ -56,7 +55,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Function;
 import com.google.common.collect.Collections2;
 import com.google.common.collect.Lists;
-import com.google.inject.Provider;
 
 /**
  * CIS (IHTSDO) based implementation of the identifier service.
@@ -77,9 +75,9 @@ public class CisSnomedIdentifierService extends AbstractSnomedIdentifierService 
 
 	private boolean disposed = false;
 
-	public CisSnomedIdentifierService(final SnomedIdentifierConfiguration conf, final Provider<SnomedTerminologyBrowser> provider,
-			final ISnomedIdentiferReservationService reservationService, final ObjectMapper mapper) {
-		super(provider, reservationService);
+	public CisSnomedIdentifierService(final SnomedIdentifierConfiguration conf, final ISnomedIdentiferReservationService reservationService,
+			final ObjectMapper mapper) {
+		super(reservationService);
 		this.clientKey = conf.getCisClientSoftwareKey();
 		this.mapper = mapper;
 		this.client = new CisClient(conf, mapper);
@@ -240,7 +238,8 @@ public class CisSnomedIdentifierService extends AbstractSnomedIdentifierService 
 		try {
 			LOGGER.info(String.format("Sending %s ID bulk generation request.", category.getDisplayName()));
 
-			bulkRequest = httpPost(String.format("sct/bulk/generate?token=%s", token), createBulkGenerationData(namespace, category, quantity));
+			bulkRequest = httpPost(String.format("sct/bulk/generate?token=%s", token),
+					createBulkGenerationData(namespace, category, quantity));
 			final String bulkResponse = execute(bulkRequest);
 			final String jobId = mapper.readValue(bulkResponse, JsonNode.class).get("id").asText();
 
@@ -309,7 +308,8 @@ public class CisSnomedIdentifierService extends AbstractSnomedIdentifierService 
 		try {
 			LOGGER.info(String.format("Sending %s ID bulk reservation request.", category.getDisplayName()));
 
-			bulkRequest = httpPost(String.format("sct/bulk/reserve?token=%s", token), createBulkReservationData(namespace, category, quantity));
+			bulkRequest = httpPost(String.format("sct/bulk/reserve?token=%s", token),
+					createBulkReservationData(namespace, category, quantity));
 			final String bulkResponse = execute(bulkRequest);
 			final String jobId = mapper.readValue(bulkResponse, JsonNode.class).get("id").asText();
 
