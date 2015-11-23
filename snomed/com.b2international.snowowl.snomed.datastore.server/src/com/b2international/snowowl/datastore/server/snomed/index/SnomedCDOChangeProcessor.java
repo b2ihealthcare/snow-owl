@@ -584,19 +584,18 @@ public class SnomedCDOChangeProcessor implements ICDOChangeProcessor {
 	}
 
 	private boolean releasable(final Long storageKey) {
-		boolean releasable = true;
 		IBranchPath currentBranchPath = getBranchPath();
 
-		while (!StringUtils.isEmpty(currentBranchPath.getParentPath()) && releasable) {
+		while (!StringUtils.isEmpty(currentBranchPath.getParentPath())) {
 			currentBranchPath = currentBranchPath.getParent();
 
 			final TopDocs topDocs = index.search(currentBranchPath, Mappings.newQuery().storageKey(storageKey).matchAll(), 1);
 			if (!IndexUtils.isEmpty(topDocs)) {
-				releasable = false;
+				return false;
 			}
 		}
 
-		return releasable;
+		return true;
 	}
 
 	private String getComponentId(final Long storageKey) {
