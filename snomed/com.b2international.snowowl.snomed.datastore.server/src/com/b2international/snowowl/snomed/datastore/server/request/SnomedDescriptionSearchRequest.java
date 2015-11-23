@@ -81,7 +81,8 @@ final class SnomedDescriptionSearchRequest extends SearchRequest<SnomedDescripti
 	
 	enum OptionKey {
 		TERM,
-		CONCEPT,
+		CONCEPT_ESCG,
+		CONCEPT_ID,
 		TYPE,
 		ACCEPTABILITY,
 		MODULE,
@@ -191,12 +192,13 @@ final class SnomedDescriptionSearchRequest extends SearchRequest<SnomedDescripti
 
 		final Query query;
 		
-		if (containsKey(OptionKey.CONCEPT) || containsKey(OptionKey.TYPE) || containsKey(OptionKey.ACCEPTABILITY)) {
+		if (containsKey(OptionKey.CONCEPT_ID) || containsKey(OptionKey.CONCEPT_ESCG) || containsKey(OptionKey.TYPE) || containsKey(OptionKey.ACCEPTABILITY)) {
 			List<Filter> filters = newArrayList();
 			List<Integer> ops = newArrayList();
 			
 			// Add (presumably) most selective filters first
-			addEscgFilter(context, filters, ops, OptionKey.CONCEPT, SnomedMappings.descriptionConcept());
+			addConceptIdsFilter(filters, ops);
+			addEscgFilter(context, filters, ops, OptionKey.CONCEPT_ESCG, SnomedMappings.descriptionConcept());
 			addEscgFilter(context, filters, ops, OptionKey.TYPE, SnomedMappings.descriptionType());
 			addLocaleFilter(context, filters, ops, languageRefSetId, collectedRefSetIds); 
 			
@@ -230,6 +232,13 @@ final class SnomedDescriptionSearchRequest extends SearchRequest<SnomedDescripti
 		}
 
 		return new SnomedDescriptions(descriptionBuilder.build(), offset, limit, topDocs.totalHits);
+	}
+
+	private void addConceptIdsFilter(List<Filter> filters, List<Integer> ops) {
+		if (containsKey(OptionKey.CONCEPT_ID)) {
+			filters.add(SnomedMappings.descriptionConcept().createTermsFilter(getCollection(OptionKey.CONCEPT_ID, Long.class)));
+			ops.add(ChainedFilter.AND);
+		}
 	}
 
 	private void addEscgFilter(BranchContext context, final List<Filter> filters, final List<Integer> ops, OptionKey key, IndexField<Long> field) {

@@ -75,8 +75,8 @@ public class SnomedDescriptionRestService extends AbstractSnomedRestService {
 		@ApiResponse(code = 400, message = "Invalid filter config", response = RestApiError.class),
 		@ApiResponse(code = 404, message = "Branch not found")
 	})
-	@RequestMapping(value="/{path:**}/descriptions", method=RequestMethod.GET)
-	public @ResponseBody DeferredResult<SnomedDescriptions> getDescriptions(
+//	@RequestMapping(value="/{path:**}/descriptions", method=RequestMethod.GET)
+	public @ResponseBody DeferredResult<SnomedDescriptions> search(
 			@ApiParam(value="The branch path")
 			@PathVariable(value="path")
 			final String branch,
@@ -141,7 +141,7 @@ public class SnomedDescriptionRestService extends AbstractSnomedRestService {
 				SnomedRequests
 					.prepareDescriptionSearch()
 					.filterByTerm(termFilter)
-					.filterByConcept(conceptFilter)
+					.filterByConceptEscg(conceptFilter)
 					.filterByType(typeFilter)
 					.filterByAcceptability(acceptabilityFilter)
 					.filterByModule(moduleFilter)

@@ -71,7 +71,11 @@ public abstract class SearchRequestBuilder<B extends SearchRequestBuilder<B, R>,
 	}
 	
 	public final B all() {
-		return setLimit(Integer.MAX_VALUE);
+		return setOffset(0).setLimit(Integer.MAX_VALUE);
+	}
+	
+	public final B one() {
+		return setOffset(0).setLimit(1);
 	}
 	
 	// XXX: Does not allow empty-ish values
