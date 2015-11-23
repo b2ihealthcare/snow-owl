@@ -16,6 +16,7 @@
 package com.b2international.snowowl.datastore.store;
 
 import java.util.Collection;
+import java.util.Map;
 
 import com.b2international.snowowl.datastore.store.query.Query;
 
@@ -29,9 +30,13 @@ public interface Store<T> {
 
 	void put(String key, T value);
 	
+	void putAll(Map<String, T> map);
+	
 	T get(String key);
 	
 	T remove(String key);
+	
+	Collection<T> removeAll(Collection<String> keys);
 	
 	boolean replace(String key, T oldValue, T newValue);
 	
