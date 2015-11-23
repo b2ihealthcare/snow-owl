@@ -1,57 +1,98 @@
 package com.b2international.snowowl.snomed.api.impl;
 
 import java.util.Collection;
-import java.util.HashMap;
-import java.util.HashSet;
+import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-import java.util.Set;
+import java.util.concurrent.ExecutionException;
 
 import javax.annotation.Resource;
 
-import com.b2international.commons.ClassUtils;
-import com.b2international.snowowl.core.ApplicationContext;
-import com.b2international.snowowl.core.api.IBranchPath;
+import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.domain.IComponentRef;
-import com.b2international.snowowl.datastore.server.domain.InternalComponentRef;
-import com.b2international.snowowl.snomed.datastore.SnomedTerminologyBrowser;
-import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptIndexEntry;
+import com.b2international.snowowl.core.events.Request;
+import com.b2international.snowowl.eventbus.IEventBus;
+import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
+import com.b2international.snowowl.snomed.core.domain.Acceptability;
+import com.b2international.snowowl.snomed.core.domain.ISnomedDescription;
+import com.b2international.snowowl.snomed.core.domain.SnomedDescriptions;
+import com.b2international.snowowl.snomed.datastore.server.request.SnomedRequests;
+import com.google.common.base.Function;
 import com.google.common.base.Optional;
+import com.google.common.collect.Iterables;
+import com.google.common.collect.Maps;
+import com.google.common.collect.Maps.EntryTransformer;
+import com.google.common.collect.Multimap;
+import com.google.common.collect.Multimaps;
 
 public class FsnService {
 	
 	@Resource
-	private SnomedDescriptionServiceImpl descriptionService;
+	protected IEventBus bus;
 
-	public Map<String, String> getConceptIdFsnMap(IComponentRef conceptRef, final Collection<String> conceptIds, final List<Locale> locales) {
-		final Map<String, String> conceptIdFsnMap = new HashMap<>();
+	public Map<String, String> getConceptIdFsnMap(IComponentRef conceptRef, final Collection<Long> conceptIds, final List<Locale> locales) throws InterruptedException, ExecutionException {
 		if (conceptIds.isEmpty()) {
-			return conceptIdFsnMap;
+			return Collections.emptyMap();
 		}
 		
-		final SnomedTerminologyBrowser terminologyBrowser = ApplicationContext.getServiceForClass(SnomedTerminologyBrowser.class);
-		final IBranchPath iBranchPath = ClassUtils.checkAndCast(conceptRef, InternalComponentRef.class).getBranch().branchPath();
+		Request<ServiceProvider, SnomedDescriptions> request = SnomedRequests.prepareDescriptionSearch()
+			.all()
+			.filterByActive(true)
+			.filterByConceptId(conceptIds)
+			.filterByType(Concepts.FULLY_SPECIFIED_NAME)
+			.filterByAcceptability(Acceptability.PREFERRED)
+			.setLocales(locales)
+			.build(conceptRef.getBranchPath());
 
-		new FsnJoinerOperation<SnomedConceptIndexEntry>(conceptRef, locales, descriptionService) {
-			@Override
-			protected Collection<SnomedConceptIndexEntry> getConceptEntries(String id) {
-				Set<SnomedConceptIndexEntry> indexEntries = new HashSet<>();
-				for (String conceptId : conceptIds) {
-					indexEntries.add(terminologyBrowser.getConcept(iBranchPath, conceptId));
-				}
-				return indexEntries;
-			}
-
-			@Override
-			protected SnomedConceptIndexEntry convertConceptEntry(SnomedConceptIndexEntry snomedConceptIndexEntry, Optional<String> optional) {
-				String conceptId = snomedConceptIndexEntry.getId();
-				conceptIdFsnMap.put(conceptId, optional.or(conceptId));
-				return snomedConceptIndexEntry;
-			}
-		}.run();
-
-		return conceptIdFsnMap;
+		return request.execute(bus)
+				.then(new Function<SnomedDescriptions, Multimap<String, ISnomedDescription>>() {
+					@Override public Multimap<String, ISnomedDescription> apply(SnomedDescriptions descriptions) {
+						return indexByConceptId(descriptions);
+					}
+				})
+				.then(new Function<Multimap<String,ISnomedDescription>, Map<String, ISnomedDescription>>() {
+					@Override public Map<String, ISnomedDescription> apply(Multimap<String, ISnomedDescription> descriptionMultimap) {
+						return extractFirstDescription(descriptionMultimap);
+					}
+				}).then(new Function<Map<String,ISnomedDescription>, Map<String, String>>() {
+					@Override public Map<String, String> apply(Map<String, ISnomedDescription> input) {
+						return extractTerm(input);
+					}
+				})
+				.get();
 	}
-
+	
+	private Multimap<String, ISnomedDescription> indexByConceptId(SnomedDescriptions descriptions) {
+		return Multimaps.index(descriptions.getItems(), new Function<ISnomedDescription, String>() {
+			@Override public String apply(ISnomedDescription description) {
+				return description.getConceptId();
+			}
+		});
+	}
+	
+	private Map<String, ISnomedDescription> extractFirstDescription(Multimap<String, ISnomedDescription> activeFsnsById) {
+		return Maps.transformValues(activeFsnsById.asMap(), new Function<Collection<ISnomedDescription>, ISnomedDescription>() {
+			@Override public ISnomedDescription apply(Collection<ISnomedDescription> descriptions) {
+				return Iterables.getFirst(descriptions, null);
+			}
+		});
+	}
+	
+	private Map<String, String> extractTerm(Map<String, ISnomedDescription> input) {
+		return Maps.transformEntries(input, new EntryTransformer<String, ISnomedDescription, String>() {
+			@Override public String transformEntry(String key, ISnomedDescription value) {
+				return getTermOrId(key, value);
+			}
+		});
+	}
+	
+	private String getTermOrId(String key, ISnomedDescription value) {
+		return Optional.fromNullable(value)
+				.transform(new Function<ISnomedDescription, String>() {
+					@Override public String apply(ISnomedDescription input) {
+						return input.getTerm();
+					}})
+				.or(key);
+	}
 }
