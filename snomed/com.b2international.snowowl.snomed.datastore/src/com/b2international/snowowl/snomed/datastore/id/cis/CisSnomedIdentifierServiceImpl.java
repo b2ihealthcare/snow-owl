@@ -244,9 +244,9 @@ public class CisSnomedIdentifierServiceImpl extends AbstractSnomedIdentifierServ
 			final String bulkResponse = execute(bulkRequest);
 			final String jobId = mapper.readValue(bulkResponse, JsonNode.class).get("id").asText();
 
-			final int status = pollJob(jobId, token);
+			final JobStatus status = pollJob(jobId, token);
 
-			if (2 != status) {
+			if (JobStatus.FINISHED != status) {
 				throw new SnowowlRuntimeException("Couldn't get records from bulk request.");
 			} else {
 				recordsRequest = httpGet(String.format("bulk/jobs/%s/records?token=%s", jobId, token));
@@ -313,9 +313,9 @@ public class CisSnomedIdentifierServiceImpl extends AbstractSnomedIdentifierServ
 			final String bulkResponse = execute(bulkRequest);
 			final String jobId = mapper.readValue(bulkResponse, JsonNode.class).get("id").asText();
 
-			final int status = pollJob(jobId, token);
+			final JobStatus status = pollJob(jobId, token);
 
-			if (2 != status) {
+			if (JobStatus.FINISHED != status) {
 				throw new SnowowlRuntimeException("Couldn't get records from bulk request.");
 			} else {
 				recordsRequest = httpGet(String.format("bulk/jobs/%s/records?token=%s", jobId, token));
@@ -481,7 +481,7 @@ public class CisSnomedIdentifierServiceImpl extends AbstractSnomedIdentifierServ
 			client.release(request);
 	}
 
-	private int pollJob(final String jobId, final String token) {
+	private JobStatus pollJob(final String jobId, final String token) {
 		HttpGet request = null;
 
 		try {
@@ -489,18 +489,17 @@ public class CisSnomedIdentifierServiceImpl extends AbstractSnomedIdentifierServ
 
 			request = httpGet(String.format("bulk/jobs/%s?token=%s", jobId, token));
 
-			// 0 - pending, 1 -running, 2- completed, 3 - error
-			int status = 0;
+			JobStatus status = JobStatus.PENDING;
 			int pollTry = 0;
 
 			while (pollTry < MAX_NUMBER_OF_POLL_TRY) {
 				final String response = execute(request);
 				final JsonNode node = mapper.readValue(response, JsonNode.class);
-				status = node.get("status").asInt();
+				status = JobStatus.get(node.get("status").asInt());
 
-				if (2 == status) {
+				if (JobStatus.FINISHED == status) {
 					break;
-				} else if (3 == status) {
+				} else if (JobStatus.ERROR == status) {
 					throw new SnowowlRuntimeException("Bulk request has ended in error.");
 				} else {
 					pollTry++;
