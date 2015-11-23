@@ -73,7 +73,7 @@ public class CisSnomedIdentifierService extends AbstractSnomedIdentifierService 
 	private String clientKey;
 	private final ObjectMapper mapper;
 
-	private final ComponentIdentifierServiceClient client;
+	private final CisClient client;
 
 	private boolean disposed = false;
 
@@ -82,7 +82,7 @@ public class CisSnomedIdentifierService extends AbstractSnomedIdentifierService 
 		super(provider, reservationService);
 		this.clientKey = conf.getCisClientSoftwareKey();
 		this.mapper = mapper;
-		this.client = new ComponentIdentifierServiceClient(conf, mapper);
+		this.client = new CisClient(conf, mapper);
 	}
 
 	@Override

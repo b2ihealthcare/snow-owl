@@ -41,11 +41,11 @@ import com.fasterxml.jackson.databind.ObjectMapper;
  * 
  * @since 4.5
  */
-public class ComponentIdentifierServiceClient {
+public class CisClient {
 
-	private static final Logger LOGGER = LoggerFactory.getLogger(ComponentIdentifierServiceClient.class);
+	private static final Logger LOGGER = LoggerFactory.getLogger(CisClient.class);
 
-	private final String url;
+	private final String baseUrl;
 	private final String port;
 	private final String contextRoot;
 	private final String username;
@@ -54,8 +54,8 @@ public class ComponentIdentifierServiceClient {
 
 	private HttpClient client = new DefaultHttpClient();
 
-	public ComponentIdentifierServiceClient(final SnomedIdentifierConfiguration conf, final ObjectMapper mapper) {
-		this.url = conf.getCisUrl();
+	public CisClient(final SnomedIdentifierConfiguration conf, final ObjectMapper mapper) {
+		this.baseUrl = conf.getCisBaseUrl();
 		this.port = conf.getCisPort();
 		this.contextRoot = conf.getCisContextRoot();
 		this.username = conf.getCisUserName();
@@ -99,7 +99,7 @@ public class ComponentIdentifierServiceClient {
 	}
 
 	private String getServiceUrl() {
-		return String.format("%s:%s/%s", url, port, contextRoot);
+		return String.format("%s:%s/%s", baseUrl, port, contextRoot);
 	}
 
 	private void checkResponseStatus(final HttpResponse response) {

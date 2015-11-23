@@ -60,7 +60,7 @@ public class SnomedIdentifierBootstrap extends DefaultBootstrapFragment {
 
 	private void checkIdGenerationSource(final SnowOwlConfiguration configuration) {
 		final SnomedIdentifierConfiguration conf = configuration.getModuleConfig(SnomedIdentifierConfiguration.class);
-		final IdGenerationStrategy idGenerationSource = conf.getIdGenerationStrategy();
+		final IdGenerationStrategy idGenerationSource = conf.getStrategy();
 
 		if (null == idGenerationSource) {
 			throw new IllegalStateException("ID generation source is not configured.");
@@ -74,7 +74,7 @@ public class SnomedIdentifierBootstrap extends DefaultBootstrapFragment {
 		final ObjectMapper mapper = new ObjectMapper();
 		final Provider<SnomedTerminologyBrowser> provider = env.provider(SnomedTerminologyBrowser.class);
 
-		switch (conf.getIdGenerationStrategy()) {
+		switch (conf.getStrategy()) {
 		case MEMORY:
 			LOGGER.info("Snow Owl is configured to use memory based identifier serivce.");
 			final MemStore<SctId> memStore = new MemStore<SctId>();
@@ -92,7 +92,7 @@ public class SnomedIdentifierBootstrap extends DefaultBootstrapFragment {
 			identifierService = new CisSnomedIdentifierService(conf, provider, reservationService, mapper);
 			break;
 		default:
-			throw new IllegalStateException(String.format("Unknown ID generation source configured: %s. ", conf.getIdGenerationStrategy()));
+			throw new IllegalStateException(String.format("Unknown ID generation source configured: %s. ", conf.getStrategy()));
 		}
 
 		reservationService.create(IDENTIFIER_SERVICE_RESERVATIONS, identifierService);

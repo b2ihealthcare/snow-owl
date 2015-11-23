@@ -29,10 +29,10 @@ public class SnomedIdentifierConfiguration {
 		CIS // Component Identifier Service (IHTSDO) based service
 	}
 
-	@JsonProperty(value = "idGenerationStrategy", required = false)
-	private IdGenerationStrategy idGenerationStrategy = IdGenerationStrategy.INDEX;
-	@JsonProperty(value = "cisUrl", required = false)
-	private String cisUrl;
+	@JsonProperty(value = "strategy", required = false)
+	private IdGenerationStrategy strategy = IdGenerationStrategy.INDEX;
+	@JsonProperty(value = "cisBaseUrl", required = false)
+	private String cisBaseUrl;
 	@JsonProperty(value = "cisPort", required = false)
 	private String cisPort;
 	@JsonProperty(value = "cisContextRoot", required = false)
@@ -45,20 +45,20 @@ public class SnomedIdentifierConfiguration {
 	@JsonProperty(value = "cisClientSoftwareKey", required = false)
 	private String cisClientSoftwareKey = "Snow Owl";
 
-	public IdGenerationStrategy getIdGenerationStrategy() {
-		return idGenerationStrategy;
+	public IdGenerationStrategy getStrategy() {
+		return strategy;
 	}
 
-	public void setIdGenerationStrategy(IdGenerationStrategy idGenerationStrategy) {
-		this.idGenerationStrategy = idGenerationStrategy;
+	public void setStrategy(IdGenerationStrategy strategy) {
+		this.strategy = strategy;
 	}
 
-	public String getCisUrl() {
-		return cisUrl;
+	public String getCisBaseUrl() {
+		return cisBaseUrl;
 	}
 
-	public void setCisUrl(String cisUrl) {
-		this.cisUrl = cisUrl;
+	public void setCisBaseUrl(String cisBaseUrl) {
+		this.cisBaseUrl = cisBaseUrl;
 	}
 
 	public String getCisPort() {
