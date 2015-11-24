@@ -34,14 +34,12 @@ import com.google.common.collect.ImmutableList;
  */
 public abstract class FsnJoinerOperation<T> {
 
-	private final String branch;
 	private final String conceptId;
 	private final List<ExtendedLocale> locales;
 	private final DescriptionService descriptionService;
 	
 	// Requires a BranchContext decorated with an IndexSearcher
-	protected FsnJoinerOperation(final String branch, final String conceptId, final List<ExtendedLocale> locales, final DescriptionService descriptionService) {
-		this.branch = branch;
+	protected FsnJoinerOperation(final String conceptId, final List<ExtendedLocale> locales, final DescriptionService descriptionService) {
 		this.conceptId = conceptId;
 		this.locales = locales;
 		this.descriptionService = descriptionService;
@@ -59,7 +57,7 @@ public abstract class FsnJoinerOperation<T> {
 
 	private Map<String, ISnomedDescription> initDescriptionsByConcept(Collection<SnomedConceptIndexEntry> conceptEntries) {
 		final Set<String> conceptIds = ComponentUtils.getIdSet(conceptEntries);
-		return descriptionService.getFullySpecifiedNames(branch, conceptIds, locales);
+		return descriptionService.getFullySpecifiedNames(conceptIds, locales);
 	}
 
 	private List<T> convertConceptEntries(Collection<SnomedConceptIndexEntry> conceptEntries, Map<String, ISnomedDescription> descriptionsByConcept) {

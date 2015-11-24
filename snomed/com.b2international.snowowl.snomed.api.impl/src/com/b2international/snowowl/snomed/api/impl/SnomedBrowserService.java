@@ -195,8 +195,8 @@ public class SnomedBrowserService implements ISnomedBrowserService {
 
 		final DescriptionService descriptionService = new DescriptionService(bus, conceptRef.getBranchPath());
 		
-		final ISnomedDescription fullySpecifiedName = descriptionService.getFullySpecifiedName(conceptRef.getBranchPath(), conceptId, locales);
-		final ISnomedDescription preferredSynonym = descriptionService.getPreferredTerm(conceptRef.getBranchPath(), conceptId, locales);
+		final ISnomedDescription fullySpecifiedName = descriptionService.getFullySpecifiedName(conceptId, locales);
+		final ISnomedDescription preferredSynonym = descriptionService.getPreferredTerm(conceptId, locales);
 		final List<SnomedRelationshipIndexEntry> relationships = getStatementBrowser().getOutboundStatements(branchPath, concept);
 
 		final SnomedBrowserConcept result = new SnomedBrowserConcept();
@@ -382,8 +382,7 @@ public class SnomedBrowserService implements ISnomedBrowserService {
 		
 		final Map<String, ISnomedBrowserRelationship> convertedRelationships = convertedRelationshipBuilder.build();
 		
-		final List<SnomedBrowserRelationshipType> types = new FsnJoinerOperation<SnomedBrowserRelationshipType>(sourceConceptRef.getBranchPath(), 
-				sourceConceptRef.getComponentId(), 
+		final List<SnomedBrowserRelationshipType> types = new FsnJoinerOperation<SnomedBrowserRelationshipType>(sourceConceptRef.getComponentId(), 
 				locales, 
 				descriptionService) {
 			
@@ -412,8 +411,7 @@ public class SnomedBrowserService implements ISnomedBrowserService {
 			}
 		});
 		
-		final List<SnomedBrowserRelationshipTarget> targets = new FsnJoinerOperation<SnomedBrowserRelationshipTarget>(sourceConceptRef.getBranchPath(), 
-				sourceConceptRef.getComponentId(), 
+		final List<SnomedBrowserRelationshipTarget> targets = new FsnJoinerOperation<SnomedBrowserRelationshipTarget>(sourceConceptRef.getComponentId(), 
 				locales, 
 				descriptionService) {
 			
@@ -467,7 +465,7 @@ public class SnomedBrowserService implements ISnomedBrowserService {
 		target.setEffectiveTime(new Date(destinationConcept.getEffectiveTimeAsLong()));
 		target.setModuleId(destinationConcept.getModuleId());
 
-		ISnomedDescription fullySpecifiedName = descriptionService.getFullySpecifiedName(branch, destinationConcept.getId(), locales);
+		ISnomedDescription fullySpecifiedName = descriptionService.getFullySpecifiedName(destinationConcept.getId(), locales);
 		if (fullySpecifiedName != null) {
 			target.setFsn(fullySpecifiedName.getTerm());
 		} else {
@@ -483,7 +481,7 @@ public class SnomedBrowserService implements ISnomedBrowserService {
 		final IBranchPath branchPath = internalConceptRef.getBranch().branchPath();
 		final DescriptionService descriptionService = new DescriptionService(bus, conceptRef.getBranchPath());
 
-		return new FsnJoinerOperation<ISnomedBrowserParentConcept>(conceptRef.getBranchPath(), conceptRef.getComponentId(), locales, descriptionService) {
+		return new FsnJoinerOperation<ISnomedBrowserParentConcept>(conceptRef.getComponentId(), locales, descriptionService) {
 			
 			@Override
 			protected Collection<SnomedConceptIndexEntry> getConceptEntries(String conceptId) {
@@ -511,7 +509,7 @@ public class SnomedBrowserService implements ISnomedBrowserService {
 		final IBranchPath branchPath = internalConceptRef.getBranch().branchPath();
 		final DescriptionService descriptionService = new DescriptionService(bus, conceptRef.getBranchPath());
 
-		return new FsnJoinerOperation<ISnomedBrowserChildConcept>(conceptRef.getBranchPath(), conceptRef.getComponentId(), locales, descriptionService) {
+		return new FsnJoinerOperation<ISnomedBrowserChildConcept>(conceptRef.getComponentId(), locales, descriptionService) {
 			
 			@Override
 			protected Collection<SnomedConceptIndexEntry> getConceptEntries(String conceptId) {
@@ -620,11 +618,11 @@ public class SnomedBrowserService implements ISnomedBrowserService {
 						final String term;
 						switch (resultConceptTermType) {
 							case FSN:
-								final ISnomedDescription fullySpecifiedName = descriptionService.getFullySpecifiedName(branchPath.getPath(), description.getConceptId(), locales);
+								final ISnomedDescription fullySpecifiedName = descriptionService.getFullySpecifiedName(description.getConceptId(), locales);
 								term = fullySpecifiedName.getTerm();
 								break;
 							default:
-								final ISnomedDescription preferredTerm = descriptionService.getPreferredTerm(branchPath.getPath(), description.getConceptId(), locales);
+								final ISnomedDescription preferredTerm = descriptionService.getPreferredTerm(description.getConceptId(), locales);
 								term = preferredTerm.getTerm();
 								break;
 						}
@@ -674,7 +672,7 @@ public class SnomedBrowserService implements ISnomedBrowserService {
 				final SnomedBrowserConstant constant = new SnomedBrowserConstant();
 				constant.setConceptId(conceptId);
 				
-				final ISnomedDescription fullySpecifiedName = descriptionService.getFullySpecifiedName(branch, conceptId, locales);
+				final ISnomedDescription fullySpecifiedName = descriptionService.getFullySpecifiedName(conceptId, locales);
 				if (fullySpecifiedName != null) {
 					constant.setFsn(fullySpecifiedName.getTerm());
 				} else {

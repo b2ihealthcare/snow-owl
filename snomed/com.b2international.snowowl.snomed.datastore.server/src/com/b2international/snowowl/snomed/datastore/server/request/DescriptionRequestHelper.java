@@ -60,7 +60,7 @@ public abstract class DescriptionRequestHelper {
 	 * @param locales		a list of {@link Locale}s to use, in order of preference
 	 * @return 				the preferred term for the concept, or {@code null} if no results could be retrieved
 	 */
-	public ISnomedDescription getPreferredTerm(final String branch, final String conceptId, final List<ExtendedLocale> locales) {
+	public ISnomedDescription getPreferredTerm(final String conceptId, final List<ExtendedLocale> locales) {
 		final SnomedDescriptionSearchRequestBuilder req = preparePtSearch(conceptId, locales);
 		return Iterables.getOnlyElement(execute(req).getItems(), null);
 	}
@@ -86,7 +86,7 @@ public abstract class DescriptionRequestHelper {
 	 * @param locales    a list of {@link Locale}s to use, in order of preference
 	 * @return the preferred term for the concept
 	 */
-	public ISnomedDescription getFullySpecifiedName(final String branch, final String conceptId, final List<ExtendedLocale> locales) {
+	public ISnomedDescription getFullySpecifiedName(final String conceptId, final List<ExtendedLocale> locales) {
 		final SnomedDescriptionSearchRequestBuilder req = prepareFsnSearchByAcceptability(conceptId, locales);
 		ISnomedDescription fsn = Iterables.getOnlyElement(execute(req).getItems(), null);
 		
@@ -108,7 +108,7 @@ public abstract class DescriptionRequestHelper {
 		return Iterables.getOnlyElement(execute(prepareFsnSearchDefault(conceptId)).getItems(), null);
 	}
 
-	public Map<String, ISnomedDescription> getFullySpecifiedNames(String branch, Set<String> conceptIds, List<ExtendedLocale> locales) {
+	public Map<String, ISnomedDescription> getFullySpecifiedNames(Set<String> conceptIds, List<ExtendedLocale> locales) {
 		if (conceptIds.isEmpty()) {
 			return Collections.emptyMap();
 		}
@@ -193,11 +193,11 @@ public abstract class DescriptionRequestHelper {
 				.filterByExtendedLocales(locales);
 	}
 	
-	private SnomedDescriptionSearchRequestBuilder preparePtSearch(final Collection<Long> conceptIds, final List<ExtendedLocale> locales) {
+	private SnomedDescriptionSearchRequestBuilder preparePtSearch(final Collection<String> conceptIds, final List<ExtendedLocale> locales) {
 		return SnomedRequests.prepareDescriptionSearch()
 				.all()
 				.filterByActive(true)
-				.filterByConceptId(conceptIds)
+				.filterByConceptId(Collections2.transform(conceptIds, new StringToLongFunction()))
 				.filterByType("<<" + Concepts.SYNONYM)
 				.filterByAcceptability(Acceptability.PREFERRED)
 				.filterByExtendedLocales(locales);
@@ -225,5 +225,12 @@ public abstract class DescriptionRequestHelper {
 	}
 	
 	protected abstract SnomedDescriptions execute(SnomedDescriptionSearchRequestBuilder req);
+
+	public Map<String, ISnomedDescription> getPreferredTerms(Set<String> conceptIds, List<ExtendedLocale> locales) {
+		if (conceptIds.isEmpty()) {
+			return Collections.emptyMap();
+		}
+		return convertToMap(execute(preparePtSearch(conceptIds, locales)));
+	}
 	
 }

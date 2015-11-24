@@ -46,7 +46,7 @@ public class SnomedResourceExpander {
 							}})
 						.toSet();
 				
-				Map<String, ISnomedDescription> fsnMap = descriptionService.getFullySpecifiedNames(conceptRef.getBranchPath(), conceptIds, extendedLocales);
+				Map<String, ISnomedDescription> fsnMap = descriptionService.getFullySpecifiedNames(conceptIds, extendedLocales);
 				for (ExpandableSnomedRelationship relationship : expandedMembers) {
 					String sourceId = relationship.getSourceId();
 					relationship.setSource(new SnomedConceptMini(sourceId, getFsn(fsnMap, sourceId)));
@@ -61,7 +61,7 @@ public class SnomedResourceExpander {
 							}})
 						.toSet();
 				
-				Map<String, ISnomedDescription> fsnMap = descriptionService.getFullySpecifiedNames(conceptRef.getBranchPath(), conceptIds, extendedLocales);
+				Map<String, ISnomedDescription> fsnMap = descriptionService.getFullySpecifiedNames(conceptIds, extendedLocales);
 				for (ExpandableSnomedRelationship relationship : expandedMembers) {
 					String typeId = relationship.getTypeId();
 					relationship.setType(new SnomedConceptMini(typeId, getFsn(fsnMap, typeId)));
