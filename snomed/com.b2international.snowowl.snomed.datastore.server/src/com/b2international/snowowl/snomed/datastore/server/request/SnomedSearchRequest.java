@@ -15,25 +15,34 @@
  */
 package com.b2international.snowowl.snomed.datastore.server.request;
 
-import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMembers;
-import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedMappings;
+import java.util.List;
 
 /**
  * @since 4.5
  */
-public final class SnomedRefSetMemberSearchRequestBuilder extends SnomedSearchRequestBuilder<SnomedRefSetMemberSearchRequestBuilder, SnomedReferenceSetMembers> {
+public abstract class SnomedSearchRequest<R> extends SearchRequest<R> {
 
-	SnomedRefSetMemberSearchRequestBuilder(String repositoryId) {
-		super(repositoryId);
+	enum OptionKey {
+		
+		/**
+		 * Language reference sets to use
+		 */
+		LANGUAGE_REFSET,
+		
+		/**
+		 * Concept status to match
+		 */
+		ACTIVE,
+		
+		/**
+		 * Concept module ID to match
+		 */
+		MODULE
 	}
 	
-	@Override
-	protected SearchRequest<SnomedReferenceSetMembers> create() {
-		return new SnomedRefSetMemberSearchRequest();
-	}
+	protected SnomedSearchRequest() {}
 	
-	public SnomedRefSetMemberSearchRequestBuilder filterByRefSet(String referenceSetId) {
-		return addOption(SnomedMappings.memberRefSetId().fieldName(), referenceSetId);
+	protected List<Long> languageRefSetIds() {
+		return getList(OptionKey.LANGUAGE_REFSET, Long.class);
 	}
-
 }

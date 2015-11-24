@@ -26,7 +26,7 @@ import com.google.common.collect.ImmutableSet;
 /**
  * @since 4.5
  */
-public final class SnomedDescriptionSearchRequestBuilder extends SearchRequestBuilder<SnomedDescriptionSearchRequestBuilder, SnomedDescriptions> {
+public final class SnomedDescriptionSearchRequestBuilder extends SnomedSearchRequestBuilder<SnomedDescriptionSearchRequestBuilder, SnomedDescriptions> {
 
 	SnomedDescriptionSearchRequestBuilder(String repositoryId) {
 		super(repositoryId);
@@ -63,14 +63,6 @@ public final class SnomedDescriptionSearchRequestBuilder extends SearchRequestBu
 	
 	public SnomedDescriptionSearchRequestBuilder filterByAcceptability(Acceptability acceptabilityFilter) {
 		return addOption(OptionKey.ACCEPTABILITY, acceptabilityFilter);
-	}
-
-	public SnomedDescriptionSearchRequestBuilder filterByModule(String moduleFilter) {
-		return addOption(OptionKey.MODULE, moduleFilter);
-	}
-
-	public SnomedDescriptionSearchRequestBuilder filterByActive(Boolean activeFilter) {
-		return addOption(OptionKey.ACTIVE, activeFilter);
 	}
 	
 	@Override

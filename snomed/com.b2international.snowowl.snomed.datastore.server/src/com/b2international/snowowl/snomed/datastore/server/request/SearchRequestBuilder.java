@@ -18,7 +18,6 @@ package com.b2international.snowowl.snomed.datastore.server.request;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
-import java.util.Locale;
 
 import com.b2international.commons.CompareUtils;
 import com.b2international.commons.options.OptionsBuilder;
@@ -39,8 +38,6 @@ public abstract class SearchRequestBuilder<B extends SearchRequestBuilder<B, R>,
 	private int limit = 50;
 	private Collection<String> componentIds;
 	private List<String> expand = Collections.emptyList();
-	private List<Locale> locales = Collections.emptyList();
-	private List<Long> languageRefSetIds = Collections.emptyList();
 	private final OptionsBuilder optionsBuilder = OptionsBuilder.newBuilder();
 	
 	protected SearchRequestBuilder(String repositoryId) {
@@ -59,16 +56,6 @@ public abstract class SearchRequestBuilder<B extends SearchRequestBuilder<B, R>,
 	
 	public final B setExpand(List<String> expand) {
 		this.expand = expand;
-		return getSelf();
-	}
-	
-	public final B setLocales(List<Locale> locales) {
-		this.locales = locales;
-		return getSelf();
-	}
-	
-	public final B setLanguageRefSetIds(List<Long> languageRefSetIds) {
-		this.languageRefSetIds = languageRefSetIds;
 		return getSelf();
 	}
 	
@@ -107,8 +94,6 @@ public abstract class SearchRequestBuilder<B extends SearchRequestBuilder<B, R>,
 		req.setLimit(limit);
 		req.setOffset(offset);
 		req.setExpand(expand);
-		req.setLocales(locales);
-		req.setLanguageRefSetIds(languageRefSetIds);
 		req.setComponentIds(componentIds);
 		req.setOptions(optionsBuilder.build());
 		return req;

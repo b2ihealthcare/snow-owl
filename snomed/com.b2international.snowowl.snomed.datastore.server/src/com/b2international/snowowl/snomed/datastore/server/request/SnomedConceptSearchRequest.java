@@ -51,7 +51,7 @@ import bak.pcj.map.LongKeyFloatOpenHashMap;
 /**
  * @since 4.5
  */
-final class SnomedConceptSearchRequest extends SearchRequest<SnomedConcepts> {
+final class SnomedConceptSearchRequest extends SnomedSearchRequest<SnomedConcepts> {
 
 	enum OptionKey {
 
@@ -61,19 +61,9 @@ final class SnomedConceptSearchRequest extends SearchRequest<SnomedConcepts> {
 		TERM,
 
 		/**
-		 * Concept status to match
-		 */
-		ACTIVE,
-		
-		/**
 		 * ESCG expression to match
 		 */
 		ESCG,
-
-		/**
-		 * Concept module ID to match
-		 */
-		MODULE,
 
 		/**
 		 * Namespace part of concept ID to match (?)
@@ -88,8 +78,8 @@ final class SnomedConceptSearchRequest extends SearchRequest<SnomedConcepts> {
 		final IndexSearcher searcher = context.service(IndexSearcher.class);
 		final SnomedQueryBuilder queryBuilder = SnomedMappings.newQuery().concept();
 		
-		if (containsKey(OptionKey.ACTIVE)) {
-			queryBuilder.active(getBoolean(OptionKey.ACTIVE));
+		if (containsKey(SnomedSearchRequest.OptionKey.ACTIVE)) {
+			queryBuilder.active(getBoolean(SnomedSearchRequest.OptionKey.ACTIVE));
 		}
 		
 		if (containsKey(OptionKey.ESCG)) {
@@ -106,8 +96,8 @@ final class SnomedConceptSearchRequest extends SearchRequest<SnomedConcepts> {
 			}
 		}
 		
-		if (containsKey(OptionKey.MODULE)) {
-			queryBuilder.module(getString(OptionKey.MODULE));
+		if (containsKey(SnomedSearchRequest.OptionKey.MODULE)) {
+			queryBuilder.module(getString(SnomedSearchRequest.OptionKey.MODULE));
 		}
 		
 		final Query conceptQuery = queryBuilder.matchAll();
@@ -152,7 +142,6 @@ final class SnomedConceptSearchRequest extends SearchRequest<SnomedConcepts> {
 	}
 
 	private LongKeyFloatMap executeDescriptionSearch(BranchContext context, String term) {
-		
 		return new LongKeyFloatOpenHashMap();
 	}
 

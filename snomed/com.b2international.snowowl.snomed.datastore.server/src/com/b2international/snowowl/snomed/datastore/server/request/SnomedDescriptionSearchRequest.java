@@ -18,14 +18,11 @@ package com.b2international.snowowl.snomed.datastore.server.request;
 import static com.google.common.collect.Lists.newArrayList;
 
 import java.io.IOException;
-import java.util.Collections;
 import java.util.List;
-import java.util.Locale;
 
 import org.apache.lucene.document.Document;
-import org.apache.lucene.index.Term;
+import org.apache.lucene.queries.BooleanFilter;
 import org.apache.lucene.queries.ChainedFilter;
-import org.apache.lucene.queries.TermFilter;
 import org.apache.lucene.search.BooleanClause.Occur;
 import org.apache.lucene.search.ConstantScoreQuery;
 import org.apache.lucene.search.DisjunctionMaxQuery;
@@ -44,8 +41,6 @@ import org.apache.lucene.search.spans.SpanNearQuery;
 import org.apache.lucene.search.spans.SpanQuery;
 import org.apache.lucene.search.spans.SpanTermQuery;
 import org.apache.lucene.util.QueryBuilder;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.domain.BranchContext;
@@ -54,7 +49,6 @@ import com.b2international.snowowl.datastore.index.IndexUtils;
 import com.b2international.snowowl.datastore.index.lucene.BookendTokenFilter;
 import com.b2international.snowowl.datastore.index.lucene.ComponentTermAnalyzer;
 import com.b2international.snowowl.datastore.index.mapping.IndexField;
-import com.b2international.snowowl.snomed.SnomedConstants.LanguageCodeReferenceSetIdentifierMapping;
 import com.b2international.snowowl.snomed.core.domain.Acceptability;
 import com.b2international.snowowl.snomed.core.domain.ISnomedDescription;
 import com.b2international.snowowl.snomed.core.domain.SnomedDescriptions;
@@ -75,18 +69,14 @@ import bak.pcj.adapter.LongCollectionToCollectionAdapter;
 /**
  * @since 4.5
  */
-final class SnomedDescriptionSearchRequest extends SearchRequest<SnomedDescriptions> {
+final class SnomedDescriptionSearchRequest extends SnomedSearchRequest<SnomedDescriptions> {
 
-	private static final Logger LOG = LoggerFactory.getLogger(SnomedDescriptionSearchRequest.class);
-	
 	enum OptionKey {
 		TERM,
 		CONCEPT_ESCG,
 		CONCEPT_ID,
 		TYPE,
 		ACCEPTABILITY,
-		MODULE,
-		ACTIVE, 
 		LANGUAGE;
 	}
 	
@@ -96,24 +86,10 @@ final class SnomedDescriptionSearchRequest extends SearchRequest<SnomedDescripti
 	protected SnomedDescriptions doExecute(BranchContext context) throws IOException {
 		final IndexSearcher searcher = context.service(IndexSearcher.class);
 		
-		if (containsKey(OptionKey.ACCEPTABILITY)) {
+		if (containsKey(OptionKey.ACCEPTABILITY) || !languageRefSetIds().isEmpty()) {
 			
-			final List<Long> collectedRefSetIds;
-			
-			if (!languageRefSetIds().isEmpty()) {
-				collectedRefSetIds = languageRefSetIds();
-			} else if (!locales().isEmpty()) {
-				collectedRefSetIds = newArrayList();
-				for (Locale locale : locales()) {
-					String refSetId = LanguageCodeReferenceSetIdentifierMapping.getReferenceSetIdentifier(locale.toLanguageTag().toLowerCase());
-					if (refSetId != null) {
-						collectedRefSetIds.add(Long.valueOf(refSetId));
-					} else {
-						LOG.warn("Couldn't map language tag {} to a reference set identifier.", locale.toLanguageTag());
-					}
-				}
-			} else {
-				throw new BadRequestException("Either a list of locales or a list of language reference set identifiers must be specified if acceptability is set.");
+			if (containsKey(OptionKey.ACCEPTABILITY) && languageRefSetIds().isEmpty()) {
+				throw new BadRequestException("A list of language reference set identifiers must be specified if acceptability is set.");
 			}
 			
 			final ImmutableMultimap.Builder<Long, ISnomedDescription> buckets = ImmutableMultimap.builder();
@@ -121,9 +97,9 @@ final class SnomedDescriptionSearchRequest extends SearchRequest<SnomedDescripti
 			int position = 0;
 			int total = 0;
 			
-			for (final Long languageRefSetId : collectedRefSetIds) {
+			for (final Long languageRefSetId : languageRefSetIds()) {
 				// Do a hitcount-only run for this language reference set first
-				SnomedDescriptions subResults = search(context, searcher, languageRefSetId, collectedRefSetIds, 0, 0);
+				SnomedDescriptions subResults = search(context, searcher, languageRefSetId, 0, 0);
 				int subTotal = subResults.getTotal();
 
 				// Run actual search only if it is within the required range
@@ -133,7 +109,7 @@ final class SnomedDescriptionSearchRequest extends SearchRequest<SnomedDescripti
 					// Relative limit may not go over subTotal, or the number of remaining items to collect
 					int subLimit = Math.min(subTotal - subOffset, offset() + limit() - position);
 					
-					subResults = search(context, searcher, languageRefSetId, collectedRefSetIds, subOffset, subLimit);
+					subResults = search(context, searcher, languageRefSetId, subOffset, subLimit);
 					buckets.putAll(languageRefSetId, subResults.getItems());
 				}
 				
@@ -145,19 +121,19 @@ final class SnomedDescriptionSearchRequest extends SearchRequest<SnomedDescripti
 			return new SnomedDescriptions(concatenatedList, offset(), limit(), total);
 			
 		} else {
-			return search(context, searcher, -1L, Collections.<Long>emptyList(), offset(), limit());
+			return search(context, searcher, -1L, offset(), limit());
 		}
 	}
 
-	private SnomedDescriptions search(BranchContext context, final IndexSearcher searcher, Long languageRefSetId, List<Long> collectedRefSetIds, int offset, int limit) throws IOException {
+	private SnomedDescriptions search(BranchContext context, final IndexSearcher searcher, Long languageRefSetId, int offset, int limit) throws IOException {
 		final SnomedQueryBuilder queryBuilder = SnomedMappings.newQuery().description();
 		
-		if (containsKey(OptionKey.ACTIVE)) {
-			queryBuilder.active(getBoolean(OptionKey.ACTIVE));
+		if (containsKey(SnomedSearchRequest.OptionKey.ACTIVE)) {
+			queryBuilder.active(getBoolean(SnomedSearchRequest.OptionKey.ACTIVE));
 		}
 		
-		if (containsKey(OptionKey.MODULE)) {
-			queryBuilder.module(getString(OptionKey.MODULE));
+		if (containsKey(SnomedSearchRequest.OptionKey.MODULE)) {
+			queryBuilder.module(getString(SnomedSearchRequest.OptionKey.MODULE));
 		}
 		
 		final Sort sort;
@@ -193,15 +169,16 @@ final class SnomedDescriptionSearchRequest extends SearchRequest<SnomedDescripti
 
 		final Query query;
 		
-		if (containsKey(OptionKey.CONCEPT_ID) || containsKey(OptionKey.CONCEPT_ESCG) || containsKey(OptionKey.TYPE) || containsKey(OptionKey.ACCEPTABILITY)) {
+		if (requiresFilter()) {
 			List<Filter> filters = newArrayList();
 			List<Integer> ops = newArrayList();
 			
 			// Add (presumably) most selective filters first
 			addConceptIdsFilter(filters, ops);
+			addLanguageFilter(filters, ops);
 			addEscgFilter(context, filters, ops, OptionKey.CONCEPT_ESCG, SnomedMappings.descriptionConcept());
 			addEscgFilter(context, filters, ops, OptionKey.TYPE, SnomedMappings.descriptionType());
-			addLocaleFilter(context, filters, ops, languageRefSetId, collectedRefSetIds); 
+			addLocaleFilter(context, filters, ops, languageRefSetId); 
 			
 			final ChainedFilter filter = new ChainedFilter(Iterables.toArray(filters, Filter.class), Ints.toArray(ops));
 			query = new FilteredQuery(queryBuilder.matchAll(), filter);
@@ -235,6 +212,15 @@ final class SnomedDescriptionSearchRequest extends SearchRequest<SnomedDescripti
 		return new SnomedDescriptions(descriptionBuilder.build(), offset, limit, topDocs.totalHits);
 	}
 
+	private boolean requiresFilter() {
+		return containsKey(OptionKey.CONCEPT_ID) 
+				|| containsKey(OptionKey.CONCEPT_ESCG) 
+				|| containsKey(OptionKey.TYPE) 
+				|| containsKey(OptionKey.ACCEPTABILITY) 
+				|| containsKey(OptionKey.LANGUAGE)
+				|| !languageRefSetIds().isEmpty();
+	}
+
 	private void addConceptIdsFilter(List<Filter> filters, List<Integer> ops) {
 		if (containsKey(OptionKey.CONCEPT_ID)) {
 			filters.add(SnomedMappings.descriptionConcept().createTermsFilter(getCollection(OptionKey.CONCEPT_ID, Long.class)));
@@ -251,23 +237,36 @@ final class SnomedDescriptionSearchRequest extends SearchRequest<SnomedDescripti
 			ops.add(ChainedFilter.AND);
 		}
 	}
+	
+	private void addLanguageFilter(List<Filter> filters, List<Integer> ops) {
+		if (containsKey(OptionKey.LANGUAGE)) {
+			filters.add(SnomedMappings.descriptionLanguageCode().createTermsFilter(getCollection(OptionKey.LANGUAGE, String.class)));
+			ops.add(ChainedFilter.AND);
+		}
+	}
 
-	private void addLocaleFilter(BranchContext context, List<Filter> filters, List<Integer> ops, Long positiveRefSetId, List<Long> collectedRefSetIds) {
-		if (containsKey(OptionKey.ACCEPTABILITY)) {
-			for (Long collectedRefSetId : collectedRefSetIds) {
+	private void addLocaleFilter(BranchContext context, List<Filter> filters, List<Integer> ops, Long positiveRefSetId) {
+		for (Long languageRefSetId : languageRefSetIds()) {
 
-				final Term acceptabilityTerm = Acceptability.PREFERRED.equals(get(OptionKey.ACCEPTABILITY, Acceptability.class)) ?
-						SnomedMappings.descriptionPreferredReferenceSetId().toTerm(collectedRefSetId) :
-						SnomedMappings.descriptionAcceptableReferenceSetId().toTerm(collectedRefSetId);
-					
-				filters.add(new TermFilter(acceptabilityTerm));
+			if (containsKey(OptionKey.ACCEPTABILITY)) {
+				final Filter acceptabilityFilter = Acceptability.PREFERRED.equals(get(OptionKey.ACCEPTABILITY, Acceptability.class)) ?
+						SnomedMappings.descriptionPreferredReferenceSetId().toTermFilter(languageRefSetId) :
+						SnomedMappings.descriptionAcceptableReferenceSetId().toTermFilter(languageRefSetId);
+						
+				filters.add(acceptabilityFilter);
+			} else {
+				final BooleanFilter anyAcceptabilityFilter = new BooleanFilter();
 				
-				if (collectedRefSetId.equals(positiveRefSetId)) {
-					ops.add(ChainedFilter.AND);
-					break;
-				} else {
-					ops.add(ChainedFilter.ANDNOT);
-				}
+				anyAcceptabilityFilter.add(SnomedMappings.descriptionPreferredReferenceSetId().toTermFilter(languageRefSetId), Occur.SHOULD);
+				anyAcceptabilityFilter.add(SnomedMappings.descriptionAcceptableReferenceSetId().toTermFilter(languageRefSetId), Occur.SHOULD);
+				filters.add(anyAcceptabilityFilter);
+			}
+			
+			if (languageRefSetId.equals(positiveRefSetId)) {
+				ops.add(ChainedFilter.AND);
+				break;
+			} else {
+				ops.add(ChainedFilter.ANDNOT);
 			}
 		}
 	}

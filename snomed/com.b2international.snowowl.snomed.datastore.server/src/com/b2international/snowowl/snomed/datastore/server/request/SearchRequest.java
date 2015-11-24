@@ -17,10 +17,9 @@ package com.b2international.snowowl.snomed.datastore.server.request;
 
 import java.io.IOException;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
-import java.util.Locale;
 
-import javax.annotation.Nullable;
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
 
@@ -47,13 +46,7 @@ public abstract class SearchRequest<B> extends BaseRequest<BranchContext, B> {
 	private List<String> expand;
 	
 	@NotNull
-	private List<Locale> locales;
-	
-	@NotNull
-	private List<Long> languageRefSetIds;
-
-	@Nullable
-	private Collection<String> componentIds;
+	private Collection<String> componentIds = Collections.emptyList();
 	
 	protected SearchRequest() {}
 	
@@ -71,14 +64,6 @@ public abstract class SearchRequest<B> extends BaseRequest<BranchContext, B> {
 	
 	void setExpand(List<String> expand) {
 		this.expand = expand;
-	}
-	
-	void setLocales(List<Locale> locales) {
-		this.locales = locales;
-	}
-	
-	void setLanguageRefSetIds(List<Long> languageRefSetIds) {
-		this.languageRefSetIds = languageRefSetIds;
 	}
 	
 	void setComponentIds(Collection<String> componentIds) {
@@ -121,18 +106,14 @@ public abstract class SearchRequest<B> extends BaseRequest<BranchContext, B> {
 		return options.getCollection(key.name(), type);
 	}
 	
+	protected final <T> List<T> getList(Enum<?> key, Class<T> type) {
+		return options.getList(key.name(), type);
+	}
+	
 	protected final List<String> expand() {
 		return expand;
 	}
 	
-	protected final List<Locale> locales() {
-		return locales;
-	}
-	
-	protected List<Long> languageRefSetIds() {
-		return languageRefSetIds;
-	}
-
 	protected Collection<String> componentIds() {
 		return componentIds;
 	}
@@ -147,5 +128,4 @@ public abstract class SearchRequest<B> extends BaseRequest<BranchContext, B> {
 	}
 
 	protected abstract B doExecute(BranchContext context) throws IOException;
-
 }

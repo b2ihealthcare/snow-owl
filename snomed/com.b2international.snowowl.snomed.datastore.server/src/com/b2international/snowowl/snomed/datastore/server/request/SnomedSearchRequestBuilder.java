@@ -15,28 +15,28 @@
  */
 package com.b2international.snowowl.snomed.datastore.server.request;
 
-import com.b2international.snowowl.snomed.core.domain.SnomedConcepts;
-import com.b2international.snowowl.snomed.datastore.server.request.SnomedConceptSearchRequest.OptionKey;
+import java.util.List;
+
+import com.b2international.snowowl.snomed.datastore.server.request.SnomedSearchRequest.OptionKey;
 
 /**
  * @since 4.5
  */
-public final class SnomedConceptSearchRequestBuilder extends SnomedSearchRequestBuilder<SnomedConceptSearchRequestBuilder, SnomedConcepts> {
+public abstract class SnomedSearchRequestBuilder<B extends SnomedSearchRequestBuilder<B, R>, R> extends SearchRequestBuilder<B, R> {
 
-	SnomedConceptSearchRequestBuilder(String repositoryId) {
+	protected SnomedSearchRequestBuilder(String repositoryId) {
 		super(repositoryId);
 	}
-
-	public final SnomedConceptSearchRequestBuilder filterByTerm(String term) {
-		return addOption(OptionKey.TERM, term);
-	}
-
-	public final SnomedConceptSearchRequestBuilder filterByEscg(String expression) {
-		return addOption(OptionKey.ESCG, expression);
-	}
 	
-	@Override
-	protected SearchRequest<SnomedConcepts> create() {
-		return new SnomedConceptSearchRequest();
+	public final B filterByModule(String moduleId) {
+		return addOption(OptionKey.MODULE, moduleId);
+	}
+
+	public final B filterByActive(boolean active) {
+		return addOption(OptionKey.ACTIVE, active);
+	}
+
+	public final B filterByLanguageRefSetIds(List<Long> languageRefSetIds) {
+		return addOption(OptionKey.LANGUAGE_REFSET, languageRefSetIds);
 	}
 }

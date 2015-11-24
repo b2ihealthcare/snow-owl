@@ -30,7 +30,7 @@ import com.google.common.collect.ImmutableList;
 /**
  * @since 4.5
  */
-final class SnomedRefSetSearchRequest extends SearchRequest<SnomedReferenceSets> {
+final class SnomedRefSetSearchRequest extends SnomedSearchRequest<SnomedReferenceSets> {
 
 	@Override
 	protected SnomedReferenceSets doExecute(BranchContext context) {
