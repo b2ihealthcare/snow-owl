@@ -857,7 +857,8 @@ snomed:
 
 ==== IHTSDO's SNOMED CT Component Identifier Service (CIS) integration
 
-Snow Owl can be configured to obtain valid SNOMED CT identifiers from IHTSDO's CIS service. The configuration needs to be placed within the *snomed* section. If omitted, Snow Owl's internal id generator service is used.
+Snow Owl can be configured to obtain valid SNOMED CT identifiers from IHTSDO's CIS service. The configuration needs to be placed within the *snomed/ids* section. 
+`Strategy` must be present in order to determine the generation service. If `strategy` is not `CIS`, then further configurations can be omitted.
 
 [cols="3*", options="header"]
 |===
@@ -865,44 +866,52 @@ Snow Owl can be configured to obtain valid SNOMED CT identifiers from IHTSDO's C
 |Default
 |Description
 
-|idGenerationSource
-|`INTERNAL`
-|`INTERNAL`, `CIS` - The source of the id generation.
-
-|externalIdGeneratorUrl
+|strategy
 |
-|The service's URL without port and context root.
+|`MEMORY`, `INDEX`, `CIS` - The source of the ID generation.
 
-|externalIdGeneratorPort
+|cisBaseUrl
 |
-|The id generation service's port.
+|The service's URL with port and without context root.
 
-|externalIdGeneratorContextRoot
+|cisContextRoot
 |
 |The context root of the id generation service.
 
-|externalIdGeneratorUserName
+|cisUserName
 |
 |The registered user name at the CIS site.
 
-|externalIdGeneratorPassword
+|cisPassword
 |
-|The registered user name at the CIS site.
+|The password for the registered user name at the CIS site.
 
-|externalIdGeneratorClientSoftwareKey
+|cisClientSoftwareKey
 |Snow Owl
 |The client software key to be persisted within CIS as reference.
+
+|cisNumberOfPollTries
+|1
+|The maximum number of tries when polling jobs of bulk requests.
+
+|cisTimeBetweenPollTries
+|1000
+|The time to wait between 2 job polling actions It is in milliseconds.
 |===
 
 --------------------------
 snomed:
-  idGenerationSource : CIS
-  externalIdGeneratorUrl : http://107.170.101.181
-  externalIdGeneratorPort : 3000
-  externalIdGeneratorContextRoot : api
-  externalIdGeneratorUserName : snowowl-dev-b2i
-  externalIdGeneratorPassword : hAAYLYMX5gc98SDEz9cr
-  externalIdGeneratorClientSoftwareKey : Snow Owl dev. deployment
+  ...
+  ids:
+    strategy : CIS
+    cisBaseUrl : http://107.170.101.181
+    cisContextRoot : api
+    cisUserName : snowowl-dev-b2i
+    cisPassword : hAAYLYMX5gc98SDEz9cr
+    cisClientSoftwareKey : Snow Owl dev. deployment
+    cisNumberOfPollTries : 1
+    cisTimeBetweenPollTries : 1000
+  ...
 --------------------------
 
 === Logging
