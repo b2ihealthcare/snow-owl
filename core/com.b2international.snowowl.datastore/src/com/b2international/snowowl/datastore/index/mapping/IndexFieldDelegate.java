@@ -19,6 +19,7 @@ import java.util.List;
 
 import org.apache.lucene.document.Document;
 import org.apache.lucene.index.Term;
+import org.apache.lucene.queries.TermFilter;
 import org.apache.lucene.search.Filter;
 import org.apache.lucene.search.PrefixQuery;
 import org.apache.lucene.search.Sort;
@@ -81,6 +82,11 @@ public class IndexFieldDelegate<T> implements IndexField<T> {
 	@Override
 	public final Term toTerm(T value) {
 		return delegate.toTerm(value);
+	}
+	
+	@Override
+	public final TermFilter toTermFilter(T value) {
+		return delegate.toTermFilter(value);
 	}
 
 	@Override
