@@ -77,7 +77,6 @@ import com.b2international.snowowl.snomed.core.domain.CaseSignificance;
 import com.b2international.snowowl.snomed.core.domain.CharacteristicType;
 import com.b2international.snowowl.snomed.core.domain.ConceptEnum;
 import com.b2international.snowowl.snomed.core.domain.DefinitionStatus;
-import com.b2international.snowowl.snomed.core.domain.ISnomedConcept;
 import com.b2international.snowowl.snomed.core.domain.ISnomedDescription;
 import com.b2international.snowowl.snomed.core.domain.RelationshipModifier;
 import com.b2international.snowowl.snomed.datastore.SnomedStatementBrowser;
@@ -235,14 +234,14 @@ public class SnomedBrowserService implements ISnomedBrowserService {
 	public ISnomedBrowserConcept create(String branchPath, ISnomedBrowserConcept concept, String userId, List<Locale> locales) {
 		final SnomedConceptCreateRequest req = inputFactory.createComponentInput(branchPath, concept, SnomedConceptCreateRequest.class);
 		String commitComment = getCommitComment(userId, concept, "creating");
-		final ISnomedConcept iSnomedConcept = SnomedRequests
+		final String createdConceptId = SnomedRequests
 				.prepareCommit(userId, branchPath)
 				.setCommitComment(commitComment)
 				.setBody(req)
 				.build()
 				.executeSync(bus)
-				.getResultAs(ISnomedConcept.class);
-		final IComponentRef componentRef = SnomedServiceHelper.createComponentRef(branchPath, iSnomedConcept.getId());
+				.getResultAs(String.class);
+		final IComponentRef componentRef = SnomedServiceHelper.createComponentRef(branchPath, createdConceptId);
 		return getConceptDetails(componentRef, locales);
 	}
 

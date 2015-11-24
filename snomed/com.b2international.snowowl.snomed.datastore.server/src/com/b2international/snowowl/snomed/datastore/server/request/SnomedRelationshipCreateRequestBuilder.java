@@ -17,13 +17,12 @@ package com.b2international.snowowl.snomed.datastore.server.request;
 
 import com.b2international.snowowl.core.terminology.ComponentCategory;
 import com.b2international.snowowl.snomed.core.domain.CharacteristicType;
-import com.b2international.snowowl.snomed.core.domain.ISnomedRelationship;
 import com.b2international.snowowl.snomed.core.domain.RelationshipModifier;
 
 /**
  * @since 4.5
  */
-public final class SnomedRelationshipCreateRequestBuilder extends SnomedComponentCreateRequestBuilder<SnomedRelationshipCreateRequestBuilder, ISnomedRelationship> {
+public final class SnomedRelationshipCreateRequestBuilder extends SnomedComponentCreateRequestBuilder<SnomedRelationshipCreateRequestBuilder> {
 
 	private CharacteristicType characteristicType = CharacteristicType.STATED_RELATIONSHIP;
 	private String destinationId;
@@ -79,7 +78,7 @@ public final class SnomedRelationshipCreateRequestBuilder extends SnomedComponen
 	}
 	
 	@Override
-	protected void init(BaseSnomedComponentCreateRequest<ISnomedRelationship> request) {
+	protected void init(BaseSnomedComponentCreateRequest request) {
 		final SnomedRelationshipCreateRequest req = (SnomedRelationshipCreateRequest) request;
 		req.setCharacteristicType(characteristicType);
 		req.setDestinationId(destinationId);
@@ -92,7 +91,7 @@ public final class SnomedRelationshipCreateRequestBuilder extends SnomedComponen
 	}
 
 	@Override
-	protected BaseSnomedComponentCreateRequest<ISnomedRelationship> createRequest() {
+	protected BaseSnomedComponentCreateRequest createRequest() {
 		return new SnomedRelationshipCreateRequest();
 	}
 

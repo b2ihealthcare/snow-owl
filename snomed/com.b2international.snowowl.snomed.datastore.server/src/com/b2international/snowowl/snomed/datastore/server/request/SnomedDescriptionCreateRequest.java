@@ -27,15 +27,13 @@ import com.b2international.snowowl.core.exceptions.ComponentNotFoundException;
 import com.b2international.snowowl.snomed.Description;
 import com.b2international.snowowl.snomed.core.domain.Acceptability;
 import com.b2international.snowowl.snomed.core.domain.CaseSignificance;
-import com.b2international.snowowl.snomed.core.domain.ISnomedDescription;
 import com.b2international.snowowl.snomed.core.domain.UserIdGenerationStrategy;
 import com.b2international.snowowl.snomed.core.store.SnomedComponents;
-import com.b2international.snowowl.snomed.datastore.server.converter.SnomedConverters;
 
 /**
  * @since 4.5
  */
-public class SnomedDescriptionCreateRequest extends BaseSnomedComponentCreateRequest<ISnomedDescription> {
+public class SnomedDescriptionCreateRequest extends BaseSnomedComponentCreateRequest {
 
 	private String conceptId;
 
@@ -106,7 +104,7 @@ public class SnomedDescriptionCreateRequest extends BaseSnomedComponentCreateReq
 	}
 
 	@Override
-	public ISnomedDescription execute(TransactionContext context) {
+	public String execute(TransactionContext context) {
 		if (getIdGenerationStrategy() instanceof UserIdGenerationStrategy) {
 			try {
 				final String componentId = getIdGenerationStrategy().getId();
@@ -133,15 +131,10 @@ public class SnomedDescriptionCreateRequest extends BaseSnomedComponentCreateReq
 			acceptabilityUpdate.setDescriptionId(description.getId());
 			acceptabilityUpdate.execute(context);
 			
-			return SnomedConverters.newDescriptionConverter(context).apply(description);
+			return description.getId();
 		} catch (ComponentNotFoundException e) {
 			throw e.toBadRequestException();
 		}
-	}
-	
-	@Override
-	protected Class<ISnomedDescription> getReturnType() {
-		return ISnomedDescription.class;
 	}
 	
 	@Override

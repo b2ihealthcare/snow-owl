@@ -19,14 +19,13 @@ import java.util.Collections;
 import java.util.List;
 
 import com.b2international.snowowl.core.terminology.ComponentCategory;
-import com.b2international.snowowl.snomed.core.domain.ISnomedConcept;
 import com.b2international.snowowl.snomed.datastore.server.request.SnomedConceptCreateRequestBuilder;
 import com.b2international.snowowl.snomed.datastore.server.request.SnomedRequests;
 
 /**
  * @since 1.0
  */
-public class SnomedConceptRestInput extends AbstractSnomedComponentRestInput<SnomedConceptCreateRequestBuilder, ISnomedConcept> {
+public class SnomedConceptRestInput extends AbstractSnomedComponentRestInput<SnomedConceptCreateRequestBuilder> {
 
 	private List<SnomedDescriptionRestInput> descriptions = Collections.emptyList();
 	private String isAId;

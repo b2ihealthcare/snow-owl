@@ -32,7 +32,7 @@ import com.b2international.snowowl.snomed.core.domain.UserIdGenerationStrategy;
  * @since 4.5
  * @param <B> - a subtype of {@link SnomedComponent} 
  */
-public abstract class SnomedComponentCreateRequestBuilder<B extends SnomedComponentCreateRequestBuilder<B, R>, R extends SnomedComponent> implements RequestBuilder<TransactionContext, R> {
+public abstract class SnomedComponentCreateRequestBuilder<B extends SnomedComponentCreateRequestBuilder<B>> implements RequestBuilder<TransactionContext, String> {
 	
 	private String moduleId;
 	private IdGenerationStrategy idGenerationStrategy;
@@ -67,8 +67,8 @@ public abstract class SnomedComponentCreateRequestBuilder<B extends SnomedCompon
 	}
 	
 	@Override
-	public final Request<TransactionContext, R> build() {
-		final BaseSnomedComponentCreateRequest<R> req = createRequest();
+	public final Request<TransactionContext, String> build() {
+		final BaseSnomedComponentCreateRequest req = createRequest();
 		// FIXME use default namespace???
 		req.setIdGenerationStrategy(idGenerationStrategy == null ? new NamespaceIdGenerationStrategy(category) : idGenerationStrategy);
 		req.setModuleId(moduleId);
@@ -77,8 +77,8 @@ public abstract class SnomedComponentCreateRequestBuilder<B extends SnomedCompon
 	}
 
 	@OverridingMethodsMustInvokeSuper
-	protected abstract void init(BaseSnomedComponentCreateRequest<R> req);
+	protected abstract void init(BaseSnomedComponentCreateRequest req);
 
-	protected abstract BaseSnomedComponentCreateRequest<R> createRequest();
+	protected abstract BaseSnomedComponentCreateRequest createRequest();
 	
 }

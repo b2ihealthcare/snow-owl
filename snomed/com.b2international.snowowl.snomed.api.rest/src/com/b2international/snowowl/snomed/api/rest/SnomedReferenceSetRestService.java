@@ -128,16 +128,16 @@ public class SnomedReferenceSetRestService extends AbstractSnomedRestService {
 			.setType(change.getType())
 			.setReferencedComponentType(change.getReferencedComponentType());
 		
-		final SnomedReferenceSet createdRefSet = 
+		final String createdRefSetId = 
 				SnomedRequests
 					.prepareCommit(principal.getName(), branchPath)
 					.setBody(req)
 					.setCommitComment(body.getCommitComment())
 					.build()
 					.executeSync(bus, 120L * 1000L)
-					.getResultAs(SnomedReferenceSet.class);
+					.getResultAs(String.class);
 		
-		return Responses.created(getRefSetLocationURI(branchPath, createdRefSet)).build();
+		return Responses.created(getRefSetLocationURI(branchPath, createdRefSetId)).build();
 	}
 	
 	@ApiOperation(
@@ -210,8 +210,8 @@ public class SnomedReferenceSetRestService extends AbstractSnomedRestService {
 		
 	}
 	
-	private URI getRefSetLocationURI(String branchPath, SnomedReferenceSet refSet) {
-		return linkTo(SnomedReferenceSetRestService.class).slash(branchPath).slash("refsets").slash(refSet.getId()).toUri();
+	private URI getRefSetLocationURI(String branchPath, String refSetId) {
+		return linkTo(SnomedReferenceSetRestService.class).slash(branchPath).slash("refsets").slash(refSetId).toUri();
 	}
 	
 }

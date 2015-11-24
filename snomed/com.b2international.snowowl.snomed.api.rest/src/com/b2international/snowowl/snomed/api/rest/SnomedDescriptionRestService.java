@@ -186,16 +186,16 @@ public class SnomedDescriptionRestService extends AbstractSnomedRestService {
 		final String commitComment = body.getCommitComment();
 		final SnomedDescriptionCreateRequestBuilder req = body.getChange().toComponentInput();
 		
-		final ISnomedDescription createdDescription = 
+		final String createdDescriptionId = 
 				SnomedRequests
 					.prepareCommit(principal.getName(), branchPath)
 					.setCommitComment(commitComment)
 					.setBody(req)
 					.build()
 					.executeSync(bus, 120L * 1000L)
-					.getResultAs(ISnomedDescription.class);
+					.getResultAs(String.class);
 		
-		return Responses.created(getDescriptionLocation(branchPath, createdDescription)).build();
+		return Responses.created(getDescriptionLocation(branchPath, createdDescriptionId)).build();
 	}
 
 	@ApiOperation(
@@ -299,7 +299,7 @@ public class SnomedDescriptionRestService extends AbstractSnomedRestService {
 			.executeSync(bus, 120L * 1000L);
 	}
 	
-	private URI getDescriptionLocation(final String branchPath, final ISnomedDescription createdDescription) {
-		return linkTo(SnomedDescriptionRestService.class).slash(branchPath).slash("descriptions").slash(createdDescription.getId()).toUri();
+	private URI getDescriptionLocation(final String branchPath, final String descriptionId) {
+		return linkTo(SnomedDescriptionRestService.class).slash(branchPath).slash("descriptions").slash(descriptionId).toUri();
 	}
 }

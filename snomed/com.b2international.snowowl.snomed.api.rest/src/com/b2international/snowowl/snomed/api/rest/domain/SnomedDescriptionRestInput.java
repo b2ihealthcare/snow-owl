@@ -20,14 +20,13 @@ import java.util.Map;
 import com.b2international.snowowl.core.terminology.ComponentCategory;
 import com.b2international.snowowl.snomed.core.domain.Acceptability;
 import com.b2international.snowowl.snomed.core.domain.CaseSignificance;
-import com.b2international.snowowl.snomed.core.domain.ISnomedDescription;
 import com.b2international.snowowl.snomed.datastore.server.request.SnomedDescriptionCreateRequestBuilder;
 import com.b2international.snowowl.snomed.datastore.server.request.SnomedRequests;
 
 /**
  * @since 1.0
  */
-public class SnomedDescriptionRestInput extends AbstractSnomedComponentRestInput<SnomedDescriptionCreateRequestBuilder, ISnomedDescription> {
+public class SnomedDescriptionRestInput extends AbstractSnomedComponentRestInput<SnomedDescriptionCreateRequestBuilder> {
 
 	private String typeId;
 	private String term;

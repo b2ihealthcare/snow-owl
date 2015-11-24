@@ -33,10 +33,8 @@ import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConst
 import com.b2international.snowowl.snomed.core.domain.ISnomedConcept;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcepts;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSet;
-import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMember;
 import com.b2international.snowowl.snomed.core.store.SnomedComponents;
 import com.b2international.snowowl.snomed.datastore.id.SnomedIdentifiers;
-import com.b2international.snowowl.snomed.datastore.server.converter.SnomedConverters;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetMember;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType;
 import com.google.common.base.Strings;
@@ -44,7 +42,7 @@ import com.google.common.base.Strings;
 /**
  * @since 4.5
  */
-public class SnomedRefSetMemberCreateRequest extends BaseRequest<TransactionContext, SnomedReferenceSetMember> {
+public class SnomedRefSetMemberCreateRequest extends BaseRequest<TransactionContext, String> {
 
 	private static final String REFSET_DESCRIPTION = "refSetDescription";
 
@@ -79,7 +77,7 @@ public class SnomedRefSetMemberCreateRequest extends BaseRequest<TransactionCont
 	}
 	
 	@Override
-	public SnomedReferenceSetMember execute(TransactionContext context) {
+	public String execute(TransactionContext context) {
 		final SnomedReferenceSet refSet;
 		// TODO convert this 404 -> 400 logic into an interceptor one level higher (like all create requests should work the same way)
 		try {
@@ -106,12 +104,12 @@ public class SnomedRefSetMemberCreateRequest extends BaseRequest<TransactionCont
 		default: throw new UnsupportedOperationException("Not implemented support for creation of '"+type+"' members");
 		}
 		
-		return SnomedConverters.newMemberConverter(context, Collections.<String>emptyList()).convert(member);
+		return member.getUuid();
 	}
 
 	@Override
-	protected Class<SnomedReferenceSetMember> getReturnType() {
-		return SnomedReferenceSetMember.class;
+	protected Class<String> getReturnType() {
+		return String.class;
 	}
 	
 	private String getQuery() {
@@ -180,7 +178,7 @@ public class SnomedRefSetMemberCreateRequest extends BaseRequest<TransactionCont
 					.preferredIn(Concepts.REFSET_LANGUAGE_TYPE_UK));
 		
 		// create new simple type reference set first
-		final SnomedReferenceSet memberRefSet = SnomedRequests
+		final String memberRefSetId = SnomedRequests
 			.prepareNewRefSet()
 			.setType(SnomedRefSetType.SIMPLE)
 			.setReferencedComponentType(SnomedTerminologyComponentConstants.CONCEPT)
@@ -195,7 +193,7 @@ public class SnomedRefSetMemberCreateRequest extends BaseRequest<TransactionCont
 				.newSimpleMember()
 				.withReferencedComponent(concept.getId())
 				.withModule(moduleId)
-				.withRefSet(memberRefSet.getId())
+				.withRefSet(memberRefSetId)
 				.addTo(context);
 		}
 		
@@ -203,7 +201,7 @@ public class SnomedRefSetMemberCreateRequest extends BaseRequest<TransactionCont
 			.newQueryMember()
 			.withModule(moduleId)
 			.withRefSet(referenceSetId)
-			.withReferencedComponent(memberRefSet.getId())
+			.withReferencedComponent(memberRefSetId)
 			.withQuery(getQuery())
 			.addTo(context);
 	}

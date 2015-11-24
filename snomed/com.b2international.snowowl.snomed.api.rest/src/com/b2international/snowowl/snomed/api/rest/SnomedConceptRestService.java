@@ -203,15 +203,15 @@ public class SnomedConceptRestService extends AbstractSnomedRestService {
 		
 		final SnomedConceptCreateRequestBuilder input = change.toComponentInput();
 		
-		final ISnomedConcept createdConcept = SnomedRequests
+		final String createdConceptId = SnomedRequests
 			.prepareCommit(userId, branchPath)
 			.setBody(input)
 			.setCommitComment(commitComment)
 			.build()
 			.executeSync(bus, 120L * 1000L)
-			.getResultAs(ISnomedConcept.class);
+			.getResultAs(String.class);
 		
-		return Responses.created(getConceptLocationURI(branchPath, createdConcept)).build();
+		return Responses.created(getConceptLocationURI(branchPath, createdConceptId)).build();
 	}
 
 	@ApiOperation(
@@ -303,7 +303,7 @@ public class SnomedConceptRestService extends AbstractSnomedRestService {
 			.executeSync(bus, 120L * 1000L);
 	}
 
-	private URI getConceptLocationURI(String branchPath, ISnomedConcept concept) {
-		return linkTo(SnomedConceptRestService.class).slash(branchPath).slash("concepts").slash(concept.getId()).toUri();
+	private URI getConceptLocationURI(String branchPath, String conceptId) {
+		return linkTo(SnomedConceptRestService.class).slash(branchPath).slash("concepts").slash(conceptId).toUri();
 	}
 }

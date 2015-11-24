@@ -17,7 +17,6 @@ package com.b2international.snowowl.snomed.api.rest.domain;
 
 import com.b2international.snowowl.core.terminology.ComponentCategory;
 import com.b2international.snowowl.snomed.core.domain.CharacteristicType;
-import com.b2international.snowowl.snomed.core.domain.ISnomedRelationship;
 import com.b2international.snowowl.snomed.core.domain.RelationshipModifier;
 import com.b2international.snowowl.snomed.datastore.server.request.SnomedRelationshipCreateRequestBuilder;
 import com.b2international.snowowl.snomed.datastore.server.request.SnomedRequests;
@@ -25,7 +24,7 @@ import com.b2international.snowowl.snomed.datastore.server.request.SnomedRequest
 /**
  * @since 1.0
  */
-public class SnomedRelationshipRestInput extends AbstractSnomedComponentRestInput<SnomedRelationshipCreateRequestBuilder, ISnomedRelationship> {
+public class SnomedRelationshipRestInput extends AbstractSnomedComponentRestInput<SnomedRelationshipCreateRequestBuilder> {
 
 	private CharacteristicType characteristicType = CharacteristicType.STATED_RELATIONSHIP;
 	private String destinationId;

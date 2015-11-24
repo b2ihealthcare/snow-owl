@@ -81,15 +81,15 @@ public class SnomedRelationshipRestService extends AbstractSnomedRestService {
 		final String commitComment = body.getCommitComment();
 		final SnomedRelationshipCreateRequestBuilder req = body.getChange().toComponentInput();
 		
-		final ISnomedRelationship createdRelationship = SnomedRequests
+		final String createdRelationshipId = SnomedRequests
 				.prepareCommit(principal.getName(), branchPath)
 				.setBody(req)
 				.setCommitComment(commitComment)
 				.build()
 				.executeSync(bus, 120L * 1000L)
-				.getResultAs(ISnomedRelationship.class);
+				.getResultAs(String.class);
 				
-		return Responses.created(getRelationshipLocation(branchPath, createdRelationship)).build();
+		return Responses.created(getRelationshipLocation(branchPath, createdRelationshipId)).build();
 	}
 
 	@ApiOperation(
@@ -197,7 +197,7 @@ public class SnomedRelationshipRestService extends AbstractSnomedRestService {
 			.executeSync(bus, 120L * 1000L);
 	}
 
-	private URI getRelationshipLocation(final String branchPath, final ISnomedRelationship createdRelationship) {
-		return linkTo(SnomedRelationshipRestService.class).slash(branchPath).slash("relationships").slash(createdRelationship.getId()).toUri();
+	private URI getRelationshipLocation(final String branchPath, final String relationshipId) {
+		return linkTo(SnomedRelationshipRestService.class).slash(branchPath).slash("relationships").slash(relationshipId).toUri();
 	}
 }
