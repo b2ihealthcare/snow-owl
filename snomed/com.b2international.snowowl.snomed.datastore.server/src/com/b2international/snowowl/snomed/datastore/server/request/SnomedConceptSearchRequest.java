@@ -74,7 +74,17 @@ final class SnomedConceptSearchRequest extends SnomedSearchRequest<SnomedConcept
 		/**
 		 * Namespace part of concept ID to match (?)
 		 */
-		NAMESPACE
+		NAMESPACE,
+		
+		/**
+		 * Parent concept ID
+		 */
+		PARENT,
+		
+		/**
+		 * Ancestor concept ID (includes direct parents)
+		 */
+		ANCESTOR
 	}
 	
 	SnomedConceptSearchRequest() {}
@@ -86,6 +96,18 @@ final class SnomedConceptSearchRequest extends SnomedSearchRequest<SnomedConcept
 		
 		if (containsKey(SnomedSearchRequest.OptionKey.ACTIVE)) {
 			queryBuilder.active(getBoolean(SnomedSearchRequest.OptionKey.ACTIVE));
+		}
+		
+		if (containsKey(OptionKey.PARENT)) {
+			queryBuilder.parent(getString(OptionKey.PARENT));
+		}
+		
+		if (containsKey(OptionKey.ANCESTOR)) {
+			final String ancestorId = getString(OptionKey.ANCESTOR);
+			queryBuilder.and(SnomedMappings.newQuery()
+					.parent(ancestorId)
+					.parent(ancestorId)
+					.matchAny());
 		}
 		
 		if (containsKey(OptionKey.ESCG)) {

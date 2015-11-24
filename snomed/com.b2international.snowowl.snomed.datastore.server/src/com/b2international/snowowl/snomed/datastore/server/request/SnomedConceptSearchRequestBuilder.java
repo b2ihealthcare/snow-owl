@@ -35,6 +35,14 @@ public final class SnomedConceptSearchRequestBuilder extends SnomedSearchRequest
 		return addOption(OptionKey.ESCG, expression);
 	}
 	
+	public final SnomedConceptSearchRequestBuilder filterByParent(String parentId) {
+		return addOption(OptionKey.PARENT, parentId);
+	}
+	
+	public final SnomedConceptSearchRequestBuilder filterByAncestor(String ancestorId) {
+		return addOption(OptionKey.ANCESTOR, ancestorId);
+	}
+	
 	@Override
 	protected SearchRequest<SnomedConcepts> create() {
 		return new SnomedConceptSearchRequest();
