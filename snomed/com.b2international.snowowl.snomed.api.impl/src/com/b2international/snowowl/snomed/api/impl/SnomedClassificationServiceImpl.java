@@ -213,9 +213,6 @@ public class SnomedClassificationServiceImpl implements ISnomedClassificationSer
 	@Resource
 	private SnomedBrowserService browserService;
 
-	@Resource
-	private SnomedDescriptionServiceImpl descriptionService;
-
 	@PostConstruct
 	protected void init() {
 		final File dir = new File(new File(SnowOwlApplication.INSTANCE.getEnviroment().getDataDirectory(), "indexes"), "classification_runs");
