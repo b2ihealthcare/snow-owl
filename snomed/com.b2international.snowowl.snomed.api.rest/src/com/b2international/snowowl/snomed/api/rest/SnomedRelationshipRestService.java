@@ -19,6 +19,7 @@ import static org.springframework.hateoas.mvc.ControllerLinkBuilder.linkTo;
 
 import java.net.URI;
 import java.security.Principal;
+import java.util.List;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -27,6 +28,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.context.request.async.DeferredResult;
@@ -108,12 +110,17 @@ public class SnomedRelationshipRestService extends AbstractSnomedRestService {
 			
 			@ApiParam(value="The Relationship identifier")
 			@PathVariable("relationshipId") 
-			final String relationshipId) {
+			final String relationshipId,
+			
+			@ApiParam(value="Expansion parameters")
+			@RequestParam(value="expand", required=false)
+			final List<String> expand) {
 
 		return DeferredResults.wrap(
 				SnomedRequests
 					.prepareGetRelationship()
-					.setId(relationshipId)
+					.setComponentId(relationshipId)
+					.setExpand(expand)
 					.build(branchPath)
 					.execute(bus));
 	}

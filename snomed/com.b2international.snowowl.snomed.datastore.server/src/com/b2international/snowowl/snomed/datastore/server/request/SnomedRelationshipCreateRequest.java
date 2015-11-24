@@ -131,7 +131,7 @@ public class SnomedRelationshipCreateRequest extends BaseSnomedComponentCreateRe
 		if (getIdGenerationStrategy() instanceof UserIdGenerationStrategy) {
 			try {
 				final String componentId = getIdGenerationStrategy().getId();
-				new SnomedRelationshipReadRequest(componentId).execute(context);
+				SnomedRequests.prepareGetRelationship().setComponentId(componentId).build().execute(context);
 				throw new AlreadyExistsException("Relationship", componentId);
 			} catch (ComponentNotFoundException e) {
 				// ignore
