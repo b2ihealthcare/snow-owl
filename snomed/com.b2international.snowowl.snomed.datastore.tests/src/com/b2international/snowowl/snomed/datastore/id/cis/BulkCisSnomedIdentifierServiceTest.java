@@ -45,6 +45,8 @@ public class BulkCisSnomedIdentifierServiceTest extends AbstractBulkIdentifierSe
 		conf.setCisClientSoftwareKey("Snow Owl dev. tests");
 		conf.setCisUserName("snowowl-dev-b2i");
 		conf.setCisPassword("hAAYLYMX5gc98SDEz9cr");
+		conf.setCisTimeBetweenPollTries(1000);
+		conf.setCisNumberOfPollTries(5);
 
 		final ISnomedIdentiferReservationService reservationService = new SnomedIdentifierReservationServiceImpl();
 		service = new CisSnomedIdentifierService(conf, reservationService, mapper);

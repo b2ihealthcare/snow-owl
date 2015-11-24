@@ -25,6 +25,7 @@ import org.junit.Test;
 import com.b2international.snowowl.core.terminology.ComponentCategory;
 import com.b2international.snowowl.snomed.datastore.id.cis.IdentifierStatus;
 import com.b2international.snowowl.snomed.datastore.id.cis.SctId;
+import com.google.common.collect.Lists;
 
 /**
  * @since 4.5
@@ -37,16 +38,18 @@ public abstract class AbstractBulkIdentifierServiceTest {
 
 	@Test
 	public void whenGeneratingIds_ThenItShouldReturnTheGeneratedIds() {
-		Collection<String> componentIds = null;
+		final Collection<String> componentIds = Lists.newArrayList();
 
 		try {
-			componentIds = getIdentifierService().generate(B2I_NAMESPACE, ComponentCategory.CONCEPT, 2);
+			componentIds.addAll(getIdentifierService().generate(B2I_NAMESPACE, ComponentCategory.CONCEPT, 2));
+			assertTrue(String.format("Component IDs size is %d instead of 2.", componentIds.size()), componentIds.size() == 2);
+
 			final Collection<SctId> sctIds = getIdentifierService().getSctIds(componentIds);
 			for (final SctId sctId : sctIds) {
 				assertTrue("Status must be assigned", IdentifierStatus.ASSIGNED.getSerializedName().equals(sctId.getStatus()));
 			}
 		} catch (Exception e) {
-			fail(String.format("Unexpected exception was thrown. Exception class: %s.", e.getClass()));
+			fail(String.format("Unexpected exception was thrown: %s.", e.getMessage()));
 		} finally {
 			if (!componentIds.isEmpty())
 				getIdentifierService().release(componentIds);
@@ -55,16 +58,18 @@ public abstract class AbstractBulkIdentifierServiceTest {
 
 	@Test
 	public void whenReservingIds_ThenItShouldReturnTheReservedIds() {
-		Collection<String> componentIds = null;
+		final Collection<String> componentIds = Lists.newArrayList();
 
 		try {
-			componentIds = getIdentifierService().reserve(B2I_NAMESPACE, ComponentCategory.CONCEPT, 2);
+			componentIds.addAll(getIdentifierService().reserve(B2I_NAMESPACE, ComponentCategory.CONCEPT, 2));
+			assertTrue(String.format("Component IDs size is %d instead of 2.", componentIds.size()), componentIds.size() == 2);
+
 			final Collection<SctId> sctIds = getIdentifierService().getSctIds(componentIds);
 			for (final SctId sctId : sctIds) {
 				assertTrue("Status must be reserved", IdentifierStatus.RESERVED.getSerializedName().equals(sctId.getStatus()));
 			}
 		} catch (Exception e) {
-			fail(String.format("Unexpected exception was thrown. Exception class: %s.", e.getClass()));
+			fail(String.format("Unexpected exception was thrown: %s.", e.getMessage()));
 		} finally {
 			if (!componentIds.isEmpty())
 				getIdentifierService().release(componentIds);
@@ -73,17 +78,18 @@ public abstract class AbstractBulkIdentifierServiceTest {
 
 	@Test
 	public void whenRegisteringReservedIds_ThenTheyShouldBeRegistered() {
-		Collection<String> componentIds = null;
+		final Collection<String> componentIds = Lists.newArrayList();
 
 		try {
-			componentIds = getIdentifierService().reserve(B2I_NAMESPACE, ComponentCategory.CONCEPT, 2);
+			componentIds.addAll(getIdentifierService().reserve(B2I_NAMESPACE, ComponentCategory.CONCEPT, 2));
+			assertTrue(String.format("Component IDs size is %d instead of 2.", componentIds.size()), componentIds.size() == 2);
 			getIdentifierService().register(componentIds);
 			final Collection<SctId> sctIds = getIdentifierService().getSctIds(componentIds);
 			for (final SctId sctId : sctIds) {
 				assertTrue("Status must be assigned", IdentifierStatus.ASSIGNED.getSerializedName().equals(sctId.getStatus()));
 			}
 		} catch (Exception e) {
-			fail(String.format("Unexpected exception was thrown. Exception class: %s.", e.getClass()));
+			fail(String.format("Unexpected exception was thrown: %s.", e.getMessage()));
 		} finally {
 			if (!componentIds.isEmpty())
 				getIdentifierService().release(componentIds);
@@ -101,7 +107,7 @@ public abstract class AbstractBulkIdentifierServiceTest {
 				assertTrue("Status must be available", IdentifierStatus.AVAILABLE.getSerializedName().equals(sctId.getStatus()));
 			}
 		} catch (Exception e) {
-			fail(String.format("Unexpected exception was thrown. Exception class: %s.", e.getClass()));
+			fail(String.format("Unexpected exception was thrown: %s.", e.getMessage()));
 		}
 	}
 
@@ -115,7 +121,7 @@ public abstract class AbstractBulkIdentifierServiceTest {
 				assertTrue("Status must be published", IdentifierStatus.PUBLISHED.getSerializedName().equals(sctId.getStatus()));
 			}
 		} catch (Exception e) {
-			fail(String.format("Unexpected exception was thrown. Exception class: %s.", e.getClass()));
+			fail(String.format("Unexpected exception was thrown: %s.", e.getMessage()));
 		}
 	}
 
@@ -129,7 +135,7 @@ public abstract class AbstractBulkIdentifierServiceTest {
 				assertTrue("Status must be deprecated", IdentifierStatus.DEPRECATED.getSerializedName().equals(sctId.getStatus()));
 			}
 		} catch (Exception e) {
-			fail(String.format("Unexpected exception was thrown. Exception class: %s.", e.getClass()));
+			fail(String.format("Unexpected exception was thrown: %s.", e.getMessage()));
 		}
 	}
 
