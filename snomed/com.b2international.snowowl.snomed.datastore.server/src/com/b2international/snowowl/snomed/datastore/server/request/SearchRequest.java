@@ -23,10 +23,13 @@ import java.util.List;
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
 
+import org.apache.lucene.search.Filter;
+
 import com.b2international.commons.options.Options;
 import com.b2international.snowowl.core.api.index.IndexException;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.events.BaseRequest;
+import com.b2international.snowowl.datastore.index.mapping.Mappings;
 
 /**
  * @since 4.5
@@ -116,6 +119,10 @@ public abstract class SearchRequest<B> extends BaseRequest<BranchContext, B> {
 	
 	protected Collection<String> componentIds() {
 		return componentIds;
+	}
+	
+	protected Filter createComponentIdFilter() {
+		return Mappings.id().createTermsFilter(componentIds);
 	}
 	
 	@Override

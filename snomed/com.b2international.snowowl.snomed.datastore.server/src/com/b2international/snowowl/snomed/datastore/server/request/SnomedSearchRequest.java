@@ -17,6 +17,11 @@ package com.b2international.snowowl.snomed.datastore.server.request;
 
 import java.util.List;
 
+import org.apache.lucene.search.Filter;
+
+import com.b2international.commons.functions.StringToLongFunction;
+import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedMappings;
+
 /**
  * @since 4.5
  */
@@ -44,5 +49,10 @@ public abstract class SnomedSearchRequest<R> extends SearchRequest<R> {
 	
 	protected List<Long> languageRefSetIds() {
 		return getList(OptionKey.LANGUAGE_REFSET, Long.class);
+	}
+	
+	@Override
+	protected Filter createComponentIdFilter() {
+		return SnomedMappings.id().createTermsFilter(StringToLongFunction.copyOf(componentIds()));
 	}
 }
