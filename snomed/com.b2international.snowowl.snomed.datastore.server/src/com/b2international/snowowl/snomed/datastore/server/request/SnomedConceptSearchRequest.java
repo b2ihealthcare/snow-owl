@@ -138,10 +138,10 @@ final class SnomedConceptSearchRequest extends SnomedSearchRequest<SnomedConcept
 				}
 			});
 			
-			query = new CustomScoreQuery(new FilteredQuery(conceptQuery, filter), functionQuery);
+			query = new CustomScoreQuery(createQuery(conceptQuery, filter), functionQuery);
 			sort = Sort.RELEVANCE;
 		} else {
-			query = new ConstantScoreQuery(new FilteredQuery(conceptQuery, filter));
+			query = new ConstantScoreQuery(createQuery(conceptQuery, filter));
 			sort = Sort.INDEXORDER;
 		}
 		
@@ -168,6 +168,13 @@ final class SnomedConceptSearchRequest extends SnomedSearchRequest<SnomedConcept
 		}
 
 		return new SnomedConcepts(conceptsBuilder.build(), offset(), limit(), topDocs.totalHits);
+	}
+
+	private Query createQuery(final Query query, final BooleanFilter filter) {
+		if (filter.clauses().size() > 0) {
+			return new FilteredQuery(query, filter);
+		}
+		return query;
 	}
 
 	private Map<String, Integer> executeDescriptionSearch(BranchContext context, String term) {

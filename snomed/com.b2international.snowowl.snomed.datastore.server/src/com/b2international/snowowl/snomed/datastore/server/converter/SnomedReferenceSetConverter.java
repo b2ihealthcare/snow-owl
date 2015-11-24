@@ -21,12 +21,10 @@ import java.util.List;
 import com.b2international.snowowl.core.CoreTerminologyBroker;
 import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.core.domain.BranchContext;
-import com.b2international.snowowl.snomed.core.domain.ISnomedConcept;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSet;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetImpl;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetIndexEntry;
 import com.b2international.snowowl.snomed.datastore.server.request.SnomedRequests;
-import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSet;
 import com.google.common.base.Function;
 
 /**
