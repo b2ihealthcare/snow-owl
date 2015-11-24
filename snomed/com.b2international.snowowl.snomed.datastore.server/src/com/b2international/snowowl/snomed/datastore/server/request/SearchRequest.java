@@ -20,6 +20,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Locale;
 
+import javax.annotation.Nullable;
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
 
@@ -50,6 +51,9 @@ public abstract class SearchRequest<B> extends BaseRequest<BranchContext, B> {
 	
 	@NotNull
 	private List<Long> languageRefSetIds;
+
+	@Nullable
+	private Collection<String> componentIds;
 	
 	protected SearchRequest() {}
 	
@@ -75,6 +79,10 @@ public abstract class SearchRequest<B> extends BaseRequest<BranchContext, B> {
 	
 	void setLanguageRefSetIds(List<Long> languageRefSetIds) {
 		this.languageRefSetIds = languageRefSetIds;
+	}
+	
+	void setComponentIds(Collection<String> componentIds) {
+		this.componentIds = componentIds;
 	}
 	
 	protected final int offset() {
@@ -124,6 +132,10 @@ public abstract class SearchRequest<B> extends BaseRequest<BranchContext, B> {
 	protected List<Long> languageRefSetIds() {
 		return languageRefSetIds;
 	}
+
+	protected Collection<String> componentIds() {
+		return componentIds;
+	}
 	
 	@Override
 	public final B execute(BranchContext context) {
@@ -135,4 +147,5 @@ public abstract class SearchRequest<B> extends BaseRequest<BranchContext, B> {
 	}
 
 	protected abstract B doExecute(BranchContext context) throws IOException;
+
 }
