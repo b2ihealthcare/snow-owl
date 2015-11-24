@@ -168,21 +168,20 @@ final class SnomedDescriptionSearchRequest extends SnomedSearchRequest<SnomedDes
 		}
 
 		final Query query;
+		final List<Filter> filters = newArrayList();
+		final List<Integer> ops = newArrayList();
 		
-		if (requiresFilter()) {
-			List<Filter> filters = newArrayList();
-			List<Integer> ops = newArrayList();
-			
-			// Add (presumably) most selective filters first
-			addConceptIdsFilter(filters, ops);
-			addLanguageFilter(filters, ops);
-			addEscgFilter(context, filters, ops, OptionKey.CONCEPT_ESCG, SnomedMappings.descriptionConcept());
-			addEscgFilter(context, filters, ops, OptionKey.TYPE, SnomedMappings.descriptionType());
-			addLocaleFilter(context, filters, ops, languageRefSetId); 
-			
+		// Add (presumably) most selective filters first
+		addComponentIdFilter(filters, ops);
+		addConceptIdsFilter(filters, ops);
+		addLanguageFilter(filters, ops);
+		addEscgFilter(context, filters, ops, OptionKey.CONCEPT_ESCG, SnomedMappings.descriptionConcept());
+		addEscgFilter(context, filters, ops, OptionKey.TYPE, SnomedMappings.descriptionType());
+		addLocaleFilter(context, filters, ops, languageRefSetId); 
+		
+		if (!filters.isEmpty()) {
 			final ChainedFilter filter = new ChainedFilter(Iterables.toArray(filters, Filter.class), Ints.toArray(ops));
 			query = new FilteredQuery(queryBuilder.matchAll(), filter);
-
 		} else {
 			query = queryBuilder.matchAll();
 		}
@@ -212,13 +211,11 @@ final class SnomedDescriptionSearchRequest extends SnomedSearchRequest<SnomedDes
 		return new SnomedDescriptions(descriptionBuilder.build(), offset, limit, topDocs.totalHits);
 	}
 
-	private boolean requiresFilter() {
-		return containsKey(OptionKey.CONCEPT_ID) 
-				|| containsKey(OptionKey.CONCEPT_ESCG) 
-				|| containsKey(OptionKey.TYPE) 
-				|| containsKey(OptionKey.ACCEPTABILITY) 
-				|| containsKey(OptionKey.LANGUAGE)
-				|| !languageRefSetIds().isEmpty();
+	private void addComponentIdFilter(final List<Filter> filters, final List<Integer> ops) {
+		if (!componentIds().isEmpty()) {
+			filters.add(createComponentIdFilter());
+			ops.add(ChainedFilter.AND);
+		}
 	}
 
 	private void addConceptIdsFilter(List<Filter> filters, List<Integer> ops) {
