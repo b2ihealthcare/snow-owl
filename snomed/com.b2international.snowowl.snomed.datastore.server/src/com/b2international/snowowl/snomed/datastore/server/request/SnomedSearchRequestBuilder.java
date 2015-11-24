@@ -32,7 +32,7 @@ public abstract class SnomedSearchRequestBuilder<B extends SnomedSearchRequestBu
 		return addOption(OptionKey.MODULE, moduleId);
 	}
 
-	public final B filterByActive(boolean active) {
+	public final B filterByActive(Boolean active) {
 		return addOption(OptionKey.ACTIVE, active);
 	}
 
