@@ -27,6 +27,9 @@ public class SnomedConcept extends BaseSnomedComponent implements ISnomedConcept
 	private SubclassDefinitionStatus subclassDefinitionStatus;
 	private InactivationIndicator inactivationIndicator;
 	private Multimap<AssociationType, String> associationTargets;
+	private ISnomedDescription fsn;
+	private ISnomedDescription pt;
+	private SnomedDescriptions descriptions;
 
 	@Override
 	public DefinitionStatus getDefinitionStatus() {
@@ -47,6 +50,21 @@ public class SnomedConcept extends BaseSnomedComponent implements ISnomedConcept
 	public Multimap<AssociationType, String> getAssociationTargets() {
 		return associationTargets;
 	}
+	
+	@Override
+	public SnomedDescriptions getDescriptions() {
+		return descriptions;
+	}
+
+	@Override
+	public ISnomedDescription getFsn() {
+		return fsn;
+	}
+	
+	@Override
+	public ISnomedDescription getPt() {
+		return pt;
+	}
 
 	public void setDefinitionStatus(final DefinitionStatus definitionStatus) {
 		this.definitionStatus = definitionStatus;
@@ -62,6 +80,18 @@ public class SnomedConcept extends BaseSnomedComponent implements ISnomedConcept
 
 	public void setAssociationTargets(final Multimap<AssociationType, String> associationTargets) {
 		this.associationTargets = associationTargets;
+	}
+	
+	public void setDescriptions(SnomedDescriptions descriptions) {
+		this.descriptions = descriptions;
+	}
+	
+	public void setFsn(ISnomedDescription fsn) {
+		this.fsn = fsn;
+	}
+	
+	public void setPt(ISnomedDescription pt) {
+		this.pt = pt;
 	}
 
 	@Override

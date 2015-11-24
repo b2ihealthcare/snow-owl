@@ -21,8 +21,8 @@ import com.google.common.collect.Multimap;
 /**
  * Represents a SNOMED CT concept.
  * <p>
- * If the component status is not active, additional information about the inactivation reason and associated concepts
- * can also be retrieved from this object.
+ * If the component status is not active, additional information about the inactivation reason and associated concepts can also be retrieved from this
+ * object.
  */
 public interface ISnomedConcept extends SnomedCoreComponent, IComponentNode, DefinitionStatusProvider {
 
@@ -30,7 +30,7 @@ public interface ISnomedConcept extends SnomedCoreComponent, IComponentNode, Def
 	 * Returns the subclass definition status of the concept.
 	 * 
 	 * @return {@link SubclassDefinitionStatus#DISJOINT_SUBCLASSES} if the subclasses form a disjoint union,
-	 * {@link SubclassDefinitionStatus#NON_DISJOINT_SUBCLASSES} otherwise
+	 *         {@link SubclassDefinitionStatus#NON_DISJOINT_SUBCLASSES} otherwise
 	 */
 	SubclassDefinitionStatus getSubclassDefinitionStatus();
 
@@ -47,4 +47,26 @@ public interface ISnomedConcept extends SnomedCoreComponent, IComponentNode, Def
 	 * @return related association targets, or {@code null} if the concept is still active
 	 */
 	Multimap<AssociationType, String> getAssociationTargets();
+
+	/**
+	 * Returns the fully specified name of the SNOMED CT Concept.
+	 * 
+	 * @return
+	 */
+	ISnomedDescription getFsn();
+	
+	/**
+	 * Returns the preferred term of the SNOMED CT Concept.
+	 * 
+	 * @return
+	 */
+	ISnomedDescription getPt();
+
+	/**
+	 * Returns the descriptions of the SNOMED CT Concept.
+	 * 
+	 * @return
+	 */
+	SnomedDescriptions getDescriptions();
+
 }
