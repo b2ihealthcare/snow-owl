@@ -21,7 +21,7 @@ package com.b2international.snowowl.core.domain;
 public abstract class BaseComponent implements IComponent {
 
 	private String id;
-	private boolean released;
+	private Boolean released;
 
 	@Override
 	public String getId() {
