@@ -86,7 +86,8 @@ final class SnomedDescriptionSearchRequest extends SearchRequest<SnomedDescripti
 		TYPE,
 		ACCEPTABILITY,
 		MODULE,
-		ACTIVE;
+		ACTIVE, 
+		LANGUAGE;
 	}
 	
 	SnomedDescriptionSearchRequest() {}

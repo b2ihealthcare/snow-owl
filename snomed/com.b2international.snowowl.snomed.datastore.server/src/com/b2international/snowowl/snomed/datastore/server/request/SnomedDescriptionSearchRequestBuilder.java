@@ -21,6 +21,7 @@ import com.b2international.snowowl.snomed.core.domain.Acceptability;
 import com.b2international.snowowl.snomed.core.domain.SnomedDescriptions;
 import com.b2international.snowowl.snomed.datastore.id.SnomedIdentifiers;
 import com.b2international.snowowl.snomed.datastore.server.request.SnomedDescriptionSearchRequest.OptionKey;
+import com.google.common.collect.ImmutableSet;
 
 /**
  * @since 4.5
@@ -49,13 +50,17 @@ public final class SnomedDescriptionSearchRequestBuilder extends SearchRequestBu
 	}
 	
 	public SnomedDescriptionSearchRequestBuilder filterByConceptId(Collection<Long> conceptIdFilter) {
-		return addOption(OptionKey.CONCEPT_ID, conceptIdFilter);
+		return addOption(OptionKey.CONCEPT_ID, ImmutableSet.copyOf(conceptIdFilter));
 	}
 
 	public SnomedDescriptionSearchRequestBuilder filterByType(String typeFilter) {
 		return addOption(OptionKey.TYPE, typeFilter);
 	}
 
+	public SnomedDescriptionSearchRequestBuilder filterByLanguageCodes(Collection<String> languageCodes) {
+		return addOption(OptionKey.LANGUAGE, ImmutableSet.copyOf(languageCodes));
+	}
+	
 	public SnomedDescriptionSearchRequestBuilder filterByAcceptability(Acceptability acceptabilityFilter) {
 		return addOption(OptionKey.ACCEPTABILITY, acceptabilityFilter);
 	}

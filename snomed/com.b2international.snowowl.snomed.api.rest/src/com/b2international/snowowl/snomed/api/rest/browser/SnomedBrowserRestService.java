@@ -253,7 +253,7 @@ public class SnomedBrowserRestService extends AbstractSnomedRestService {
 			final HttpServletRequest request) {
 
 		final StorageRef ref = new StorageRef(codeSystemShortName, branchPath);
-		return browserService.getDescriptions(ref, query, Collections.list(request.getLocales()), ISnomedBrowserDescriptionResult.TermType.FNS, offset, limit);
+		return browserService.getDescriptions(ref, query, Collections.list(request.getLocales()), ISnomedBrowserDescriptionResult.TermType.FSN, offset, limit);
 	}
 
 	@ApiOperation(

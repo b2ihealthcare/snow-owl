@@ -10,9 +10,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import com.b2international.snowowl.core.domain.IComponentRef;
 import com.b2international.snowowl.core.exceptions.BadRequestException;
-import com.b2international.snowowl.snomed.api.impl.FsnService;
+import com.b2international.snowowl.snomed.api.impl.DescriptionService;
 import com.b2international.snowowl.snomed.api.rest.domain.ExpandableSnomedRelationship;
 import com.b2international.snowowl.snomed.api.rest.domain.SnomedConceptMini;
+import com.b2international.snowowl.snomed.core.domain.ISnomedDescription;
 import com.b2international.snowowl.snomed.core.domain.ISnomedRelationship;
 import com.google.common.base.Function;
 import com.google.common.collect.FluentIterable;
@@ -20,7 +21,7 @@ import com.google.common.collect.FluentIterable;
 public class SnomedResourceExpander {
 
 	@Autowired
-	private FsnService fsnService;
+	private DescriptionService fsnService;
 	
 	public List<ISnomedRelationship> expandRelationships(IComponentRef conceptRef, List<ISnomedRelationship> members, final List<Locale> locales, String[] expandArray) {
 		if (expandArray.length == 0) {
@@ -35,32 +36,32 @@ public class SnomedResourceExpander {
 		for (String expand : expandArray) {
 			if (expand.equals("source.fsn")) {
 				
-				Set<Long> conceptIds = FluentIterable.from(expandedMembers)
-						.transform(new Function<ExpandableSnomedRelationship, Long>() {
-							@Override public Long apply(ExpandableSnomedRelationship input) {
-								return Long.valueOf(input.getSourceId());
+				Set<String> conceptIds = FluentIterable.from(expandedMembers)
+						.transform(new Function<ExpandableSnomedRelationship, String>() {
+							@Override public String apply(ExpandableSnomedRelationship input) {
+								return input.getSourceId();
 							}})
 						.toSet();
 				
-				Map<String, String> conceptIdFsnMap = fsnService.getConceptIdFsnMap(conceptRef, conceptIds, locales);
+				Map<String, ISnomedDescription> fsnMap = fsnService.getFullySpecifiedNames(conceptRef.getBranchPath(), conceptIds, locales);
 				for (ExpandableSnomedRelationship relationship : expandedMembers) {
 					String sourceId = relationship.getSourceId();
-					relationship.setSource(new SnomedConceptMini(sourceId, conceptIdFsnMap.get(sourceId)));
+					relationship.setSource(new SnomedConceptMini(sourceId, getFsn(fsnMap, sourceId)));
 				}
 				
 			} else if (expand.equals("type.fsn")) {
 				
-				Set<Long> conceptIds = FluentIterable.from(expandedMembers)
-						.transform(new Function<ExpandableSnomedRelationship, Long>() {
-							@Override public Long apply(ExpandableSnomedRelationship input) {
-								return Long.valueOf(input.getTypeId());
+				Set<String> conceptIds = FluentIterable.from(expandedMembers)
+						.transform(new Function<ExpandableSnomedRelationship, String>() {
+							@Override public String apply(ExpandableSnomedRelationship input) {
+								return input.getTypeId();
 							}})
 						.toSet();
 				
-				Map<String, String> conceptIdFsnMap = fsnService.getConceptIdFsnMap(conceptRef, conceptIds, locales);
+				Map<String, ISnomedDescription> fsnMap = fsnService.getFullySpecifiedNames(conceptRef.getBranchPath(), conceptIds, locales);
 				for (ExpandableSnomedRelationship relationship : expandedMembers) {
 					String typeId = relationship.getTypeId();
-					relationship.setType(new SnomedConceptMini(typeId, conceptIdFsnMap.get(typeId)));
+					relationship.setType(new SnomedConceptMini(typeId, getFsn(fsnMap, typeId)));
 				}
 				
 			} else {
@@ -69,5 +70,13 @@ public class SnomedResourceExpander {
 		}
 		
 		return new ArrayList<ISnomedRelationship>(expandedMembers);
+	}
+
+	private String getFsn(Map<String, ISnomedDescription> fsnMap, String conceptId) {
+		if (fsnMap.containsKey(conceptId)) {
+			return fsnMap.get(conceptId).getTerm();
+		} else {
+			return conceptId;
+		}
 	}
 }
