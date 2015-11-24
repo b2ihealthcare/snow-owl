@@ -202,11 +202,16 @@ public class SnomedDescriptionRestService extends AbstractSnomedRestService {
 			
 			@ApiParam(value="The Description identifier")
 			@PathVariable(value="descriptionId")
-			final String descriptionId) {
+			final String descriptionId,
+			
+			@ApiParam(value="Expansion parameters")
+			@RequestParam(value="expand", required=false)
+			final List<String> expand) {
 		return DeferredResults.wrap(
 				SnomedRequests
 					.prepareGetDescription()
-					.setId(descriptionId)
+					.setComponentId(descriptionId)
+					.setExpand(expand)
 					.build(branchPath)
 					.execute(bus));
 	}

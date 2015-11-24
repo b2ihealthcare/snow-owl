@@ -15,10 +15,14 @@
  */
 package com.b2international.snowowl.snomed.datastore.server.request;
 
-import com.b2international.snowowl.core.api.IBranchPath;
+import java.util.List;
+
+import org.eclipse.emf.cdo.CDOObject;
+import org.eclipse.emf.cdo.view.CDOView;
+
+import com.b2international.snowowl.core.api.IComponent;
+import com.b2international.snowowl.core.api.ILookupService;
 import com.b2international.snowowl.core.domain.BranchContext;
-import com.b2international.snowowl.core.events.BaseRequest;
-import com.b2international.snowowl.core.exceptions.ComponentNotFoundException;
 import com.b2international.snowowl.core.terminology.ComponentCategory;
 import com.b2international.snowowl.snomed.core.domain.ISnomedDescription;
 import com.b2international.snowowl.snomed.datastore.SnomedDescriptionLookupService;
@@ -28,25 +32,22 @@ import com.b2international.snowowl.snomed.datastore.server.converter.SnomedConve
 /**
  * @since 4.5
  */
-final class SnomedDescriptionReadRequest extends BaseRequest<BranchContext, ISnomedDescription> {
+final class SnomedDescriptionGetRequest extends GetRequest<ISnomedDescription> {
 
-	private String componentId;
+	protected SnomedDescriptionGetRequest() {
+		super(ComponentCategory.DESCRIPTION);
+	}
 
-	public SnomedDescriptionReadRequest(String componentId) {
-		this.componentId = componentId;
+	@Override
+	protected ILookupService<String, ? extends CDOObject, CDOView> getLookupService() {
+		return new SnomedDescriptionLookupService();
 	}
 	
 	@Override
-	public ISnomedDescription execute(BranchContext context) {
-		final IBranchPath branchPath = context.branch().branchPath();
-		final SnomedDescriptionLookupService lookupService = new SnomedDescriptionLookupService();
-		if (!lookupService.exists(branchPath, componentId)) {
-			throw new ComponentNotFoundException(ComponentCategory.DESCRIPTION, componentId);
-		}
-		final SnomedDescriptionIndexEntry descriptionIndexEntry = lookupService.getComponent(branchPath, componentId);
-		return SnomedConverters.newDescriptionConverter(context, null).convert(descriptionIndexEntry);
+	protected ISnomedDescription process(BranchContext context, IComponent<String> component, List<String> expand) {
+		return SnomedConverters.newDescriptionConverter(context, expand).convert((SnomedDescriptionIndexEntry) component);
 	}
-
+	
 	@Override
 	protected Class<ISnomedDescription> getReturnType() {
 		return ISnomedDescription.class;
