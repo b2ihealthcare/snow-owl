@@ -15,7 +15,8 @@ auth:
   type: PROP_FILE
   
 snomed:
-  idGenerationStrategy : MEMORY
+  ids:
+    strategy : MEMORY
 
 fileAuth:
   users:
