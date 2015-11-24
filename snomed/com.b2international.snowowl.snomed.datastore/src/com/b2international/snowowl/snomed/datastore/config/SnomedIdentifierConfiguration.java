@@ -49,8 +49,8 @@ public class SnomedIdentifierConfiguration {
 	private long cisNumberOfPollTries = 1;
 	@Min(1)
 	@JsonProperty(value = "cisTimeBetweenPollTries", required = false)
-	private long cisTimeBetweenPollTries = 1;
-
+	private long cisTimeBetweenPollTries = 1000;
+	
 	public IdGenerationStrategy getStrategy() {
 		return strategy;
 	}
