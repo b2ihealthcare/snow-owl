@@ -61,20 +61,6 @@ public class SnomedReferenceSetConverter implements Function<SnomedRefSetIndexEn
 		return refset;
 	}
 
-	public SnomedReferenceSet apply(SnomedRefSet refSet, ISnomedConcept concept) {
-		final SnomedReferenceSetImpl refset = new SnomedReferenceSetImpl();
-		refset.setId(concept.getId());
-		refset.setEffectiveTime(concept.getEffectiveTime());
-		refset.setActive(concept.isActive());
-		refset.setReleased(concept.isReleased());
-		refset.setModuleId(concept.getModuleId());
-		final short referencedComponentType = refSet.getReferencedComponentType();
-		refset.setReferencedComponent(getReferencedComponentType(referencedComponentType));
-		refset.setType(refSet.getType());
-		expand(refset);
-		return refset;
-	}
-
 	private String getReferencedComponentType(final short referencedComponentType) {
 		return CoreTerminologyBroker.getInstance().getComponentInformation(referencedComponentType).getId();
 	}

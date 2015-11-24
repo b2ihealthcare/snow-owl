@@ -24,7 +24,6 @@ import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetM
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMembers;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry;
 import com.b2international.snowowl.snomed.datastore.services.SnomedBranchRefSetMembershipLookupService;
-import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetMember;
 
 /**
  * @since 4.5
@@ -45,7 +44,7 @@ public class SnomedConverters {
 		return new SnomedRelationshipConverter(createMembershipLookupService(context));
 	}
 	
-	public static ResourceConverter<SnomedRefSetMemberIndexEntry, SnomedRefSetMember, SnomedReferenceSetMember, SnomedReferenceSetMembers> newMemberConverter(BranchContext context, List<String> expand) {
+	public static ResourceConverter<SnomedRefSetMemberIndexEntry, SnomedReferenceSetMember, SnomedReferenceSetMembers> newMemberConverter(BranchContext context, List<String> expand) {
 		return new SnomedReferenceSetMemberConverter(context, expand);
 	}
 	

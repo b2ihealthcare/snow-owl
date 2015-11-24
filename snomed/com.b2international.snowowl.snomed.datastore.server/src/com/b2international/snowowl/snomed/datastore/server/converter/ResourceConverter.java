@@ -17,8 +17,6 @@ package com.b2international.snowowl.snomed.datastore.server.converter;
 
 import java.util.Collection;
 
-import org.eclipse.emf.cdo.CDOObject;
-
 import com.b2international.snowowl.core.api.index.IIndexEntry;
 import com.b2international.snowowl.core.domain.CollectionResource;
 import com.b2international.snowowl.core.domain.IComponent;
@@ -26,7 +24,7 @@ import com.b2international.snowowl.core.domain.IComponent;
 /**
  * @since 4.5
  */
-public interface ResourceConverter<T extends IIndexEntry, O extends CDOObject, R extends IComponent, CR extends CollectionResource<R>> {
+public interface ResourceConverter<T extends IIndexEntry, R extends IComponent, CR extends CollectionResource<R>> {
 
 	/**
 	 * Convert a single internal index based entity to a resource based representation.
@@ -44,11 +42,4 @@ public interface ResourceConverter<T extends IIndexEntry, O extends CDOObject, R
 	 */
 	CR convert(Collection<T> components);
 
-	/**
-	 * Convert a {@link CDOObject} to a representation.
-	 * 
-	 * @return
-	 */
-	R convert(O object);
-
-}
+	}

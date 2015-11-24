@@ -19,7 +19,6 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
-import com.b2international.snowowl.core.CoreTerminologyBroker;
 import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.domain.CollectionResource;
@@ -37,8 +36,6 @@ import com.b2international.snowowl.snomed.datastore.id.SnomedIdentifiers;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry;
 import com.b2international.snowowl.snomed.datastore.server.request.SearchRequestBuilder;
 import com.b2international.snowowl.snomed.datastore.server.request.SnomedRequests;
-import com.b2international.snowowl.snomed.snomedrefset.SnomedQueryRefSetMember;
-import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetMember;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType;
 import com.google.common.base.Function;
 import com.google.common.collect.FluentIterable;
@@ -49,7 +46,7 @@ import com.google.common.collect.Multimap;
 /**
  * @since 4.5
  */
-public class SnomedReferenceSetMemberConverter implements ResourceConverter<SnomedRefSetMemberIndexEntry, SnomedRefSetMember, SnomedReferenceSetMember, SnomedReferenceSetMembers> {
+public class SnomedReferenceSetMemberConverter implements ResourceConverter<SnomedRefSetMemberIndexEntry, SnomedReferenceSetMember, SnomedReferenceSetMembers> {
 
 	private final BranchContext context;
 	private final List<String> expand;
@@ -62,24 +59,6 @@ public class SnomedReferenceSetMemberConverter implements ResourceConverter<Snom
 	@Override
 	public SnomedReferenceSetMember convert(SnomedRefSetMemberIndexEntry component) {
 		return convert(Collections.singleton(component)).getItems().iterator().next();
-	}
-	
-	@Override
-	public SnomedReferenceSetMember convert(SnomedRefSetMember object) {
-		final SnomedReferenceSetMemberImpl member = new SnomedReferenceSetMemberImpl();
-		member.setId(object.getUuid());
-		member.setEffectiveTime(object.getEffectiveTime());
-		member.setReleased(object.isReleased());
-		member.setActive(object.isActive());
-		member.setModuleId(object.getModuleId());
-		member.setReferenceSetId(object.getRefSetIdentifierId());
-		if (object instanceof SnomedQueryRefSetMember) {
-			final Builder<String, Object> props = ImmutableMap.builder();
-			props.put(SnomedRf2Headers.FIELD_QUERY, ((SnomedQueryRefSetMember) object).getQuery());
-			member.setProperties(props.build());
-		}
-		setReferencedComponent(member, object.getReferencedComponentId(), object.getReferencedComponentType());
-		return member;
 	}
 	
 	@Override
@@ -151,11 +130,11 @@ public class SnomedReferenceSetMemberConverter implements ResourceConverter<Snom
 			props.put(SnomedRf2Headers.FIELD_QUERY, entry.getQuery());
 			member.setProperties(props.build());
 		}
-		expandReferencedComponent(member, entry.getReferencedComponentId(), entry.getReferencedComponentType());
+		setReferencedComponent(member, entry.getReferencedComponentId(), entry.getReferencedComponentType());
 		return member;
 	}
 	
-	private void expandReferencedComponent(SnomedReferenceSetMemberImpl member, String referencedComponentId, String referencedComponentType) {
+	private void setReferencedComponent(SnomedReferenceSetMemberImpl member, String referencedComponentId, String referencedComponentType) {
 		final SnomedCoreComponent component;
 		switch (referencedComponentType) {
 		// TODO support query type refset refcomp expansion, currently it's a concept
@@ -177,8 +156,4 @@ public class SnomedReferenceSetMemberConverter implements ResourceConverter<Snom
 		member.setReferencedComponent(component);
 	}
 	
-	private void setReferencedComponent(SnomedReferenceSetMemberImpl member, String referencedComponentId, short referencedComponentType) {
-		expandReferencedComponent(member, referencedComponentId, CoreTerminologyBroker.getInstance().getTerminologyComponentId(referencedComponentType));
-	}
-
 }
