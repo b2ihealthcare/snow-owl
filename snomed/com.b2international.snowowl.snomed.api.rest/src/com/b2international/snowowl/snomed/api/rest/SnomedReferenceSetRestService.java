@@ -130,7 +130,7 @@ public class SnomedReferenceSetRestService extends AbstractSnomedRestService {
 		
 		final SnomedReferenceSet createdRefSet = 
 				SnomedRequests
-					.<SnomedReferenceSet>prepareCommit(principal.getName(), branchPath)
+					.prepareCommit(principal.getName(), branchPath)
 					.setBody(req)
 					.setCommitComment(body.getCommitComment())
 					.build()

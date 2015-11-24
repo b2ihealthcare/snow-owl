@@ -123,10 +123,6 @@ public abstract class SnomedRequests {
 		return new SnomedRefSetMemberSearchRequestBuilder(REPOSITORY_ID);
 	}
 	
-	public static Request<ServiceProvider, SnomedReferenceSetMember> prepareGetReferenceSetMember(String branch, String memberId) {
-		return RepositoryRequests.wrap(REPOSITORY_ID, branch, new SnomedRefSetMemberReadRequest(memberId));
-	}
-
 	public static Branching branching() {
 		return RepositoryRequests.branching(REPOSITORY_ID);
 	}
@@ -169,6 +165,10 @@ public abstract class SnomedRequests {
 
 	public static SnomedRelationshipUpdateRequestBuilder prepareRelationshipUpdate(String componentId) {
 		return new SnomedRelationshipUpdateRequestBuilder(REPOSITORY_ID, componentId);
+	}
+
+	public static SnomedRefSetMemberGetRequestBuilder prepareGetMember() {
+		return new SnomedRefSetMemberGetRequestBuilder(REPOSITORY_ID);
 	}
 
 }

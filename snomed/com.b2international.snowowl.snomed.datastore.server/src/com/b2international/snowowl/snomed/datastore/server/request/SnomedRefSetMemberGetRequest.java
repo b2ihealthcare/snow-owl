@@ -15,11 +15,14 @@
  */
 package com.b2international.snowowl.snomed.datastore.server.request;
 
-import java.util.Collections;
+import java.util.List;
 
+import org.eclipse.emf.cdo.CDOObject;
+import org.eclipse.emf.cdo.view.CDOView;
+
+import com.b2international.snowowl.core.api.IComponent;
+import com.b2international.snowowl.core.api.ILookupService;
 import com.b2international.snowowl.core.domain.BranchContext;
-import com.b2international.snowowl.core.events.BaseRequest;
-import com.b2international.snowowl.core.exceptions.ComponentNotFoundException;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMember;
 import com.b2international.snowowl.snomed.datastore.SnomedRefSetMemberLookupService;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry;
@@ -28,27 +31,26 @@ import com.b2international.snowowl.snomed.datastore.server.converter.SnomedConve
 /**
  * @since 4.5
  */
-final class SnomedRefSetMemberReadRequest extends BaseRequest<BranchContext, SnomedReferenceSetMember> {
+final class SnomedRefSetMemberGetRequest extends GetRequest<SnomedReferenceSetMember> {
 
-	private final String componentId;
-
-	SnomedRefSetMemberReadRequest(String id) {
-		this.componentId = id;
+	SnomedRefSetMemberGetRequest() {
+		super("Reference Set Member");
 	}
 	
 	@Override
-	public SnomedReferenceSetMember execute(BranchContext context) {
-		final SnomedRefSetMemberIndexEntry member = new SnomedRefSetMemberLookupService().getComponent(context.branch().branchPath(), componentId);
-		if (member == null) {
-			throw new ComponentNotFoundException("Reference Set Member", componentId);
-		} else {
-			return SnomedConverters.newMemberConverter(context, Collections.<String>emptyList()).convert(member);
-		}
+	protected SnomedReferenceSetMember process(BranchContext context, IComponent<String> component, List<String> expand) {
+		// FIXME class cast
+		return SnomedConverters.newMemberConverter(context, expand).convert((SnomedRefSetMemberIndexEntry) component);
 	}
 	
 	@Override
 	protected Class<SnomedReferenceSetMember> getReturnType() {
 		return SnomedReferenceSetMember.class;
+	}
+	
+	@Override
+	protected ILookupService<String, ? extends CDOObject, CDOView> getLookupService() {
+		return new SnomedRefSetMemberLookupService();
 	}
 	
 }

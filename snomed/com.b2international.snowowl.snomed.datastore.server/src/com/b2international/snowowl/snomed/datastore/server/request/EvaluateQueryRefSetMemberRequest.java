@@ -48,7 +48,11 @@ public class EvaluateQueryRefSetMemberRequest extends BaseRequest<BranchContext,
 	@Override
 	public QueryRefSetMemberEvaluation execute(BranchContext context) {
 		// TODO support pre-population???
-		final SnomedReferenceSetMember member = new SnomedRefSetMemberReadRequest(memberId).execute(context);
+		final SnomedReferenceSetMember member = SnomedRequests
+				.prepareGetMember()
+				.setComponentId(memberId)
+				.build()
+				.execute(context);
 		final String query = (String) member.getProperties().get(SnomedRf2Headers.FIELD_QUERY);
 		final String targetReferenceSet = member.getReferencedComponent().getId();
 

@@ -19,6 +19,7 @@ import static org.springframework.hateoas.mvc.ControllerLinkBuilder.linkTo;
 
 import java.net.URI;
 import java.security.Principal;
+import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -105,8 +106,17 @@ public class SnomedReferenceSetMemberRestService extends AbstractSnomedRestServi
 
 			@ApiParam(value="The reference set member identifier")
 			@PathVariable(value="id")
-			final String memberId) {
-		return DeferredResults.wrap(SnomedRequests.prepareGetReferenceSetMember(branchPath, memberId).execute(bus));
+			final String memberId,
+			
+			@ApiParam(value="Expansion parameters")
+			@RequestParam(value="expand", required=false)
+			final List<String> expand) {
+		return DeferredResults.wrap(SnomedRequests
+				.prepareGetMember()
+				.setComponentId(memberId)
+				.setExpand(expand)
+				.build(branchPath)
+				.execute(bus));
 	}
 	
 	@ApiOperation(
@@ -142,7 +152,7 @@ public class SnomedReferenceSetMemberRestService extends AbstractSnomedRestServi
 		
 		final SnomedReferenceSetMember createdRefSetMember = 
 				SnomedRequests
-					.<SnomedReferenceSetMember>prepareCommit(principal.getName(), branchPath)
+					.prepareCommit(principal.getName(), branchPath)
 					.setBody(req)
 					.setCommitComment(body.getCommitComment())
 					.build()
