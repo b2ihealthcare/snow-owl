@@ -16,31 +16,30 @@
 package com.b2international.snowowl.snomed.datastore.server.converter;
 
 import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 import com.b2international.commons.http.ExtendedLocale;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
-import com.b2international.snowowl.snomed.core.domain.Acceptability;
 import com.b2international.snowowl.snomed.core.domain.DefinitionStatus;
 import com.b2international.snowowl.snomed.core.domain.ISnomedConcept;
 import com.b2international.snowowl.snomed.core.domain.ISnomedDescription;
 import com.b2international.snowowl.snomed.core.domain.InactivationIndicator;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcepts;
+import com.b2international.snowowl.snomed.core.domain.SnomedDescriptions;
 import com.b2international.snowowl.snomed.core.domain.SubclassDefinitionStatus;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptIndexEntry;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry;
-import com.b2international.snowowl.snomed.datastore.server.request.SnomedRequests;
+import com.b2international.snowowl.snomed.datastore.server.request.DescriptionRequestHelper;
+import com.b2international.snowowl.snomed.datastore.server.request.SnomedDescriptionSearchRequestBuilder;
 import com.b2international.snowowl.snomed.datastore.services.AbstractSnomedRefSetMembershipLookupService;
 import com.google.common.base.Function;
 import com.google.common.collect.FluentIterable;
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.Iterables;
-import com.google.common.collect.Multimap;
-import com.google.common.collect.Multimaps;
 
 /**
  * @since 4.5
@@ -73,61 +72,34 @@ public class SnomedConceptConverter extends BaseSnomedComponentConverter<SnomedC
 	
 	@Override
 	protected void expand(List<ISnomedConcept> results) {
-		List<Long> conceptIds = Collections.emptyList();
-		
-		if (!expand().isEmpty()) {
-			conceptIds = FluentIterable.from(results).transform(new Function<ISnomedConcept, Long>() {
-				@Override
-				public Long apply(ISnomedConcept input) {
-					return Long.valueOf(input.getId());
-				}
-			}).toList();
+		if (expand().isEmpty()) {
+			return;
 		}
 		
+		final Set<String> conceptIds = FluentIterable.from(results).transform(new Function<ISnomedConcept, String>() {
+			@Override
+			public String apply(ISnomedConcept input) {
+				return input.getId();
+			}
+		}).toSet();
+		
+		final DescriptionRequestHelper helper = new DescriptionRequestHelper() {
+			@Override
+			protected SnomedDescriptions execute(SnomedDescriptionSearchRequestBuilder req) {
+				return req.build().execute(context());
+			}
+		};
+		
 		if (expand().contains("pt")) {
-			final Collection<ISnomedDescription> terms = SnomedRequests.prepareDescriptionSearch()
-				.all()
-				.filterByActive(true)
-				.filterByConceptId(conceptIds)
-				.filterByType("<<" + Concepts.SYNONYM)
-				.filterByAcceptability(Acceptability.PREFERRED)
-				.filterByExtendedLocales(locales())
-				.build()
-				.execute(context())
-				.getItems();
-			final Multimap<String,ISnomedDescription> termsByConceptId = Multimaps.index(terms, new Function<ISnomedDescription, String>() {
-				@Override
-				public String apply(ISnomedDescription input) {
-					return input.getConceptId();
-				}
-			});
-			
+			final Map<String, ISnomedDescription> terms = helper.getPreferredTerms(conceptIds, locales());
 			for (ISnomedConcept concept : results) {
-				final Collection<ISnomedDescription> conceptTerms = termsByConceptId.get(concept.getId());
-				((SnomedConcept) concept).setPt(Iterables.getFirst(conceptTerms, null));
+				((SnomedConcept) concept).setPt(terms.get(concept.getId()));
 			}
 		}
 		if (expand().contains("fsn")) {
-			final Collection<ISnomedDescription> terms = SnomedRequests.prepareDescriptionSearch()
-				.all()
-				.filterByActive(true)
-				.filterByConceptId(conceptIds)
-				.filterByType(Concepts.FULLY_SPECIFIED_NAME)
-				.filterByAcceptability(Acceptability.PREFERRED)
-				.filterByExtendedLocales(locales())
-				.build()
-				.execute(context())
-				.getItems();
-			final Multimap<String,ISnomedDescription> termsByConceptId = Multimaps.index(terms, new Function<ISnomedDescription, String>() {
-				@Override
-				public String apply(ISnomedDescription input) {
-					return input.getConceptId();
-				}
-			});
-			
+			final Map<String, ISnomedDescription> terms = helper.getFullySpecifiedNames(conceptIds, locales());
 			for (ISnomedConcept concept : results) {
-				final Collection<ISnomedDescription> conceptTerms = termsByConceptId.get(concept.getId());
-				((SnomedConcept) concept).setFsn(Iterables.getFirst(conceptTerms, null));
+				((SnomedConcept) concept).setFsn(terms.get(concept.getId()));
 			}
 		}
 	}
