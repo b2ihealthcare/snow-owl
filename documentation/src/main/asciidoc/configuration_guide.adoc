@@ -842,7 +842,6 @@ language's reference set will be used runtime.
 |maxReasonerCount
 |`2`
 |The maximum number of reasoners available in the system for consumption. Minimum `1`, maximum `3` is allowed.
-|===
 
 |defaultModule
 |`900000000000207008`
