@@ -20,6 +20,7 @@ import static com.b2international.snowowl.snomed.core.domain.DescriptionInactiva
 
 import java.util.List;
 
+import com.b2international.commons.http.ExtendedLocale;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
@@ -37,8 +38,8 @@ import com.b2international.snowowl.snomed.datastore.services.ISnomedComponentSer
  */
 public class SnomedDescriptionConverter extends BaseSnomedComponentConverter<SnomedDescriptionIndexEntry, ISnomedDescription, SnomedDescriptions> {
 
-	SnomedDescriptionConverter(BranchContext context, List<String> expand, final AbstractSnomedRefSetMembershipLookupService refSetMembershipLookupService) {
-		super(context, expand, refSetMembershipLookupService);
+	SnomedDescriptionConverter(BranchContext context, List<String> expand, List<ExtendedLocale> locales, final AbstractSnomedRefSetMembershipLookupService refSetMembershipLookupService) {
+		super(context, expand, locales, refSetMembershipLookupService);
 	}
 
 	@Override

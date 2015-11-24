@@ -18,6 +18,7 @@ package com.b2international.snowowl.snomed.datastore.server.converter;
 import java.util.Collections;
 import java.util.List;
 
+import com.b2international.commons.http.ExtendedLocale;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMember;
@@ -32,20 +33,20 @@ public class SnomedConverters {
 	
 	private SnomedConverters() {}
 	
-	public static SnomedConceptConverter newConceptConverter(BranchContext context, List<String> expand) {
-		return new SnomedConceptConverter(context, expand, createMembershipLookupService(context));
+	public static SnomedConceptConverter newConceptConverter(BranchContext context, List<String> expand, List<ExtendedLocale> locales) {
+		return new SnomedConceptConverter(context, expand, locales, createMembershipLookupService(context));
 	}
 	
-	public static SnomedDescriptionConverter newDescriptionConverter(BranchContext context, List<String> expand) {
-		return new SnomedDescriptionConverter(context, expand, createMembershipLookupService(context));
+	public static SnomedDescriptionConverter newDescriptionConverter(BranchContext context, List<String> expand, List<ExtendedLocale> locales) {
+		return new SnomedDescriptionConverter(context, expand, locales, createMembershipLookupService(context));
 	}
 	
-	public static SnomedRelationshipConverter newRelationshipConverter(BranchContext context, List<String> expand) {
-		return new SnomedRelationshipConverter(context, expand, createMembershipLookupService(context));
+	public static SnomedRelationshipConverter newRelationshipConverter(BranchContext context, List<String> expand, List<ExtendedLocale> locales) {
+		return new SnomedRelationshipConverter(context, expand, locales,createMembershipLookupService(context));
 	}
 	
-	public static ResourceConverter<SnomedRefSetMemberIndexEntry, SnomedReferenceSetMember, SnomedReferenceSetMembers> newMemberConverter(BranchContext context, List<String> expand) {
-		return new SnomedReferenceSetMemberConverter(context, expand, createMembershipLookupService(context));
+	public static ResourceConverter<SnomedRefSetMemberIndexEntry, SnomedReferenceSetMember, SnomedReferenceSetMembers> newMemberConverter(BranchContext context, List<String> expand, List<ExtendedLocale> locales) {
+		return new SnomedReferenceSetMemberConverter(context, expand, locales, createMembershipLookupService(context));
 	}
 	
 	public static SnomedReferenceSetConverter newRefSetConverter(BranchContext context) {

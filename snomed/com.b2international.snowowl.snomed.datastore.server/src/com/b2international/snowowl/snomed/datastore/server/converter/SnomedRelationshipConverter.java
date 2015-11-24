@@ -18,6 +18,7 @@ package com.b2international.snowowl.snomed.datastore.server.converter;
 import java.util.Collection;
 import java.util.List;
 
+import com.b2international.commons.http.ExtendedLocale;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.core.domain.CharacteristicType;
@@ -33,8 +34,8 @@ import com.google.common.collect.ImmutableSet;
 
 public class SnomedRelationshipConverter extends BaseSnomedComponentConverter<SnomedRelationshipIndexEntry, ISnomedRelationship, SnomedRelationships> {
 
-	SnomedRelationshipConverter(BranchContext context, List<String> expand, final AbstractSnomedRefSetMembershipLookupService refSetMembershipLookupService) {
-		super(context, expand, refSetMembershipLookupService);
+	SnomedRelationshipConverter(BranchContext context, List<String> expand, List<ExtendedLocale> locales, final AbstractSnomedRefSetMembershipLookupService refSetMembershipLookupService) {
+		super(context, expand, locales, refSetMembershipLookupService);
 	}
 
 	@Override

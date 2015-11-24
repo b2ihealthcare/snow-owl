@@ -18,6 +18,7 @@ package com.b2international.snowowl.snomed.datastore.server.request;
 import java.util.Collections;
 import java.util.List;
 
+import com.b2international.commons.http.ExtendedLocale;
 import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.events.Request;
@@ -33,6 +34,7 @@ public abstract class GetRequestBuilder<B extends GetRequestBuilder<B, R>, R> im
 	
 	private String componentId;
 	private List<String> expand = Collections.emptyList();
+	private List<ExtendedLocale> locales = Collections.emptyList();
 
 	protected GetRequestBuilder(String repositoryId) {
 		this.repositoryId = repositoryId;
@@ -48,6 +50,11 @@ public abstract class GetRequestBuilder<B extends GetRequestBuilder<B, R>, R> im
 		return getSelf();
 	}
 	
+	public final B setLocales(List<ExtendedLocale> locales) {
+		this.locales = locales;
+		return getSelf();
+	}
+	
 	public final Request<ServiceProvider, R> build(String branch) {
 		return RepositoryRequests.wrap(repositoryId, branch, RepositoryRequests.toIndexReadRequest(build()));
 	}
@@ -57,6 +64,7 @@ public abstract class GetRequestBuilder<B extends GetRequestBuilder<B, R>, R> im
 		final GetRequest<R> req = create();
 		req.setComponentId(componentId);
 		req.setExpand(expand);
+		req.setLocales(locales);
 		return req;
 	}
 	

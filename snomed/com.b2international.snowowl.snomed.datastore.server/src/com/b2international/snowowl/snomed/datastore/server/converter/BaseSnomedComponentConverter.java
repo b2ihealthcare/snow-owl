@@ -22,6 +22,7 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 
+import com.b2international.commons.http.ExtendedLocale;
 import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.domain.CollectionResource;
@@ -48,16 +49,12 @@ public abstract class BaseSnomedComponentConverter<T extends SnomedIndexEntry, R
 	private final BranchContext context;
 	private final List<String> expand;
 	private final AbstractSnomedRefSetMembershipLookupService refSetMembershipLookupService;
+	private final List<ExtendedLocale> locales;
 
-	protected BaseSnomedComponentConverter(BranchContext context, List<String> expand,
-			AbstractSnomedRefSetMembershipLookupService refSetMembershipLookupService) {
-		this(context, expand, 0, 0, 0, refSetMembershipLookupService);
-	}
-
-	protected BaseSnomedComponentConverter(BranchContext context, List<String> expand, int offset, int limit, int total,
-			AbstractSnomedRefSetMembershipLookupService refSetMembershipLookupService) {
+	protected BaseSnomedComponentConverter(BranchContext context, List<String> expand, List<ExtendedLocale> locales, AbstractSnomedRefSetMembershipLookupService refSetMembershipLookupService) {
 		this.context = checkNotNull(context, "context");
-		this.expand = expand = expand == null ? Collections.<String> emptyList() : expand;
+		this.expand = expand == null ? Collections.<String> emptyList() : expand;
+		this.locales = locales == null ? Collections.<ExtendedLocale>emptyList() : locales;
 		this.refSetMembershipLookupService = refSetMembershipLookupService;
 	}
 
@@ -67,6 +64,10 @@ public abstract class BaseSnomedComponentConverter<T extends SnomedIndexEntry, R
 
 	protected final BranchContext context() {
 		return context;
+	}
+	
+	protected final List<ExtendedLocale> locales() {
+		return locales;
 	}
 
 	@Override

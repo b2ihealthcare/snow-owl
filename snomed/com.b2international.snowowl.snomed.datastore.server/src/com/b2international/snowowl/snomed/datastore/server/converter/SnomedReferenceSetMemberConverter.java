@@ -18,6 +18,7 @@ package com.b2international.snowowl.snomed.datastore.server.converter;
 import java.util.Collection;
 import java.util.List;
 
+import com.b2international.commons.http.ExtendedLocale;
 import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.domain.CollectionResource;
@@ -48,8 +49,8 @@ import com.google.common.collect.Multimap;
  */
 public class SnomedReferenceSetMemberConverter extends BaseSnomedComponentConverter<SnomedRefSetMemberIndexEntry, SnomedReferenceSetMember, SnomedReferenceSetMembers> {
 
-	SnomedReferenceSetMemberConverter(BranchContext context, List<String> expand, AbstractSnomedRefSetMembershipLookupService membershipLookupService) {
-		super(context, expand, membershipLookupService);
+	SnomedReferenceSetMemberConverter(BranchContext context, List<String> expand, List<ExtendedLocale> locales, AbstractSnomedRefSetMembershipLookupService membershipLookupService) {
+		super(context, expand, locales, membershipLookupService);
 	}
 
 	@Override

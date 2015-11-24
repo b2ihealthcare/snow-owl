@@ -25,6 +25,7 @@ import org.eclipse.emf.cdo.CDOObject;
 import org.eclipse.emf.cdo.view.CDOView;
 import org.hibernate.validator.constraints.NotEmpty;
 
+import com.b2international.commons.http.ExtendedLocale;
 import com.b2international.snowowl.core.api.IComponent;
 import com.b2international.snowowl.core.api.ILookupService;
 import com.b2international.snowowl.core.domain.BranchContext;
@@ -47,6 +48,9 @@ public abstract class GetRequest<R> extends BaseRequest<BranchContext, R> {
 	@NotNull
 	private List<String> expand;
 	
+	@NotNull
+	private List<ExtendedLocale> locales;
+	
 	protected GetRequest(ComponentCategory category) {
 		this(category.getDisplayName());
 	}
@@ -63,6 +67,14 @@ public abstract class GetRequest<R> extends BaseRequest<BranchContext, R> {
 		this.expand = expand;
 	}
 	
+	protected final void setLocales(List<ExtendedLocale> locales) {
+		this.locales = locales;
+	}
+	
+	protected final List<ExtendedLocale> locales() {
+		return locales;
+	}
+	
 	@Override
 	public final R execute(BranchContext context) {
 		final IComponent<String> component = getLookupService().getComponent(context.branch().branchPath(), componentId);
@@ -76,5 +88,5 @@ public abstract class GetRequest<R> extends BaseRequest<BranchContext, R> {
 	protected abstract R process(BranchContext context, IComponent<String> component, List<String> expand);
 
 	protected abstract ILookupService<String, ? extends CDOObject, CDOView> getLookupService();
-	
+
 }

@@ -28,7 +28,7 @@ public final class SnomedConceptGetRequestBuilder extends GetRequestBuilder<Snom
 
 	@Override
 	protected GetRequest<ISnomedConcept> create() {
-		return new SnomedConceptReadRequest();
+		return new SnomedConceptGetRequest();
 	}
 	
 	@Override

@@ -32,9 +32,9 @@ import com.b2international.snowowl.snomed.datastore.server.converter.SnomedConve
 /**
  * @since 4.5
  */
-final class SnomedConceptReadRequest extends GetRequest<ISnomedConcept> {
+final class SnomedConceptGetRequest extends GetRequest<ISnomedConcept> {
 
-	SnomedConceptReadRequest() {
+	SnomedConceptGetRequest() {
 		super(ComponentCategory.CONCEPT);
 	}
 	
@@ -45,7 +45,7 @@ final class SnomedConceptReadRequest extends GetRequest<ISnomedConcept> {
 	
 	@Override
 	protected ISnomedConcept process(BranchContext context, IComponent<String> component, List<String> expand) {
-		return SnomedConverters.newConceptConverter(context, expand).convert((SnomedConceptIndexEntry) component);
+		return SnomedConverters.newConceptConverter(context, expand, locales()).convert((SnomedConceptIndexEntry) component);
 	}
 	
 	@Override
