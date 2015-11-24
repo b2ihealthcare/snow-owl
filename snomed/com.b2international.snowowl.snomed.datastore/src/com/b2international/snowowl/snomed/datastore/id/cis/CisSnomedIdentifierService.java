@@ -65,6 +65,7 @@ public class CisSnomedIdentifierService extends AbstractSnomedIdentifierService 
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(CisSnomedIdentifierService.class);
 	private static final int BULK_LIMIT = 1000;
+	private static final int BULK_GET_LIMIT = 3000;
 
 	private final long numberOfPollTries;
 	private final long timeBetweenPollTries;
@@ -413,18 +414,22 @@ public class CisSnomedIdentifierService extends AbstractSnomedIdentifierService 
 
 		try {
 			LOGGER.info("Sending bulk component ID get request.");
+			final Collection<SctId> sctIds = Lists.newArrayList();
 
-			final StringBuilder builder = new StringBuilder();
-			for (final String componentId : componentIds) {
-				if (0 != builder.length())
-					builder.append(",");
-				builder.append(componentId);
+			for (final Collection<String> ids : Lists.partition(Lists.newArrayList(componentIds), BULK_GET_LIMIT)) {
+				final StringBuilder builder = new StringBuilder();
+				for (final String componentId : ids) {
+					if (0 != builder.length())
+						builder.append(",");
+					builder.append(componentId);
+				}
+
+				request = httpGet(String.format("sct/bulk/ids/?token=%s&sctids=%s", token, builder.toString()));
+				final String response = execute(request);
+				sctIds.addAll(Lists.newArrayList(mapper.readValue(response, SctId[].class)));
 			}
 
-			request = httpGet(String.format("sct/bulk/ids/?token=%s&sctids=%s", token, builder.toString()));
-			final String response = execute(request);
-
-			return Lists.newArrayList(mapper.readValue(response, SctId[].class));
+			return sctIds;
 		} catch (IOException e) {
 			throw new SnowowlRuntimeException("Exception while getting IDs.", e);
 		} finally {
