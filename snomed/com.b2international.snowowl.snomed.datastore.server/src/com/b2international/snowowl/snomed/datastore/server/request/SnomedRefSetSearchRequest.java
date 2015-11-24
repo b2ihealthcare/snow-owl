@@ -40,7 +40,7 @@ final class SnomedRefSetSearchRequest extends SnomedSearchRequest<SnomedReferenc
 		final ImmutableList.Builder<SnomedReferenceSet> result = ImmutableList.builder();
 
 		final Collection<SnomedRefSetIndexEntry> referenceSets = browser.getAllReferenceSets(branchPath);
-		final SnomedReferenceSetConverter converter = SnomedConverters.newRefSetConverter(context);
+		final SnomedReferenceSetConverter converter = SnomedConverters.newRefSetConverter(context, expand());
 		for (SnomedRefSetIndexEntry entry : referenceSets) {
 			result.add(converter.apply(entry));
 		}
