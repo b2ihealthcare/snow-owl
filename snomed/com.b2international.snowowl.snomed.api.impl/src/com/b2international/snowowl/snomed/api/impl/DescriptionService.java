@@ -133,7 +133,6 @@ public class DescriptionService {
 				.getItems(), null);
 	}
 
-
 	public Map<String, ISnomedDescription> getFullySpecifiedNames(String branch, Set<String> conceptIds, List<Locale> locales) {
 		if (conceptIds.isEmpty()) {
 			return Collections.emptyMap();
@@ -158,7 +157,10 @@ public class DescriptionService {
 		}
 		
 		Set<String> conceptIdsNotInMap = Sets.difference(conceptIds, fsnMap.keySet());
-
+		if (conceptIdsNotInMap.isEmpty()) {
+			return fsnMap;
+		}
+		
 		final ImmutableSet.Builder<String> languageCodes = ImmutableSet.builder();
 		for (Locale locale : locales) {
 			languageCodes.add(locale.getLanguage().toLowerCase(Locale.ENGLISH));
@@ -180,7 +182,10 @@ public class DescriptionService {
 		}
 		
 		conceptIdsNotInMap = Sets.difference(conceptIds, fsnMap.keySet());
-		
+		if (conceptIdsNotInMap.isEmpty()) {
+			return fsnMap;
+		}
+
 		request = SnomedRequests.prepareDescriptionSearch()
 				.all()
 				.filterByActive(true)
