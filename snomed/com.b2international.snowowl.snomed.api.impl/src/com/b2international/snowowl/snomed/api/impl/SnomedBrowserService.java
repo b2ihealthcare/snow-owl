@@ -34,6 +34,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.b2international.commons.ClassUtils;
+import com.b2international.commons.functions.StringToLongFunction;
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.date.EffectiveTimes;
@@ -49,6 +50,7 @@ import com.b2international.snowowl.datastore.server.domain.InternalComponentRef;
 import com.b2international.snowowl.datastore.server.domain.InternalStorageRef;
 import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
+import com.b2international.snowowl.snomed.SnomedConstants.LanguageCodeReferenceSetIdentifierMapping;
 import com.b2international.snowowl.snomed.api.browser.ISnomedBrowserService;
 import com.b2international.snowowl.snomed.api.domain.browser.ISnomedBrowserChildConcept;
 import com.b2international.snowowl.snomed.api.domain.browser.ISnomedBrowserConcept;
@@ -193,7 +195,7 @@ public class SnomedBrowserService implements ISnomedBrowserService {
 		final List<ISnomedDescription> descriptions = ImmutableList.copyOf(SnomedRequests.prepareDescriptionSearch()
 				.all()
 				.filterByConceptId(conceptId)
-				.setLocales(locales)
+				.filterByLanguageRefSetIds(StringToLongFunction.copyOf(LanguageCodeReferenceSetIdentifierMapping.getReferenceSetIdentifiers(locales)))
 				.build(conceptRef.getBranchPath())
 				.executeSync(bus)
 				.getItems());

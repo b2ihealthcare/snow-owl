@@ -38,9 +38,11 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.context.request.async.DeferredResult;
 
+import com.b2international.commons.functions.StringToLongFunction;
 import com.b2international.commons.http.AcceptHeader;
 import com.b2international.snowowl.core.domain.PageableCollectionResource;
 import com.b2international.snowowl.core.exceptions.BadRequestException;
+import com.b2international.snowowl.snomed.SnomedConstants.LanguageCodeReferenceSetIdentifierMapping;
 import com.b2international.snowowl.snomed.api.rest.domain.ChangeRequest;
 import com.b2international.snowowl.snomed.api.rest.domain.RestApiError;
 import com.b2international.snowowl.snomed.api.rest.domain.SnomedConceptRestInput;
@@ -115,12 +117,16 @@ public class SnomedConceptRestService extends AbstractSnomedRestService {
 			@RequestHeader(value="X-Accept-Language-Refset", defaultValue="", required=false)
 			final String acceptLanguageRefset) {
 
-		final List<Locale> locales;
-		final List<Long> languageRefSets;
+		List<Long> languageRefSets;
 		
 		try {
-			locales = AcceptHeader.parseLocales(new StringReader(acceptLanguage));
 			languageRefSets = AcceptHeader.parseLongs(new StringReader(acceptLanguageRefset));
+			
+			if (languageRefSets.isEmpty()) {
+				final List<Locale> locales = AcceptHeader.parseLocales(new StringReader(acceptLanguage));
+				languageRefSets = StringToLongFunction.copyOf(LanguageCodeReferenceSetIdentifierMapping.getReferenceSetIdentifiers(locales));
+			}
+
 		} catch (IOException e) {
 			throw new BadRequestException(e.getMessage());
 		} catch (NumberFormatException e) {
@@ -137,8 +143,7 @@ public class SnomedConceptRestService extends AbstractSnomedRestService {
 					.filterByModule(moduleFilter)
 					.filterByActive(activeFilter)
 					.setExpand(expand)
-					.setLocales(locales)
-					.setLanguageRefSetIds(languageRefSets)
+					.filterByLanguageRefSetIds(languageRefSets)
 					.build(branch)
 					.execute(bus));
 	}

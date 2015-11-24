@@ -20,6 +20,7 @@ import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.core.events.util.Promise;
 import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
+import com.b2international.snowowl.snomed.SnomedConstants.LanguageCodeReferenceSetIdentifierMapping;
 import com.b2international.snowowl.snomed.core.domain.Acceptability;
 import com.b2international.snowowl.snomed.core.domain.ISnomedDescription;
 import com.b2international.snowowl.snomed.core.domain.SnomedDescriptions;
@@ -60,7 +61,7 @@ public class DescriptionService {
 				.filterByConceptId(conceptId)
 				.filterByType("<<" + Concepts.SYNONYM)
 				.filterByAcceptability(Acceptability.PREFERRED)
-				.setLocales(locales)
+				.filterByLanguageRefSetIds(StringToLongFunction.copyOf(LanguageCodeReferenceSetIdentifierMapping.getReferenceSetIdentifiers(locales)))
 				.build(branch)
 				.executeSync(bus)
 				.getItems(), null);
@@ -94,7 +95,7 @@ public class DescriptionService {
 				.filterByConceptId(conceptId)
 				.filterByType(Concepts.FULLY_SPECIFIED_NAME)
 				.filterByAcceptability(Acceptability.PREFERRED)
-				.setLocales(locales)
+				.filterByLanguageRefSetIds(StringToLongFunction.copyOf(LanguageCodeReferenceSetIdentifierMapping.getReferenceSetIdentifiers(locales)))
 				.build(branch)
 				.executeSync(bus)
 				.getItems(), null);
@@ -144,7 +145,7 @@ public class DescriptionService {
 			.filterByConceptId(Collections2.transform(conceptIds, new StringToLongFunction()))
 			.filterByType(Concepts.FULLY_SPECIFIED_NAME)
 			.filterByAcceptability(Acceptability.PREFERRED)
-			.setLocales(locales)
+			.filterByLanguageRefSetIds(StringToLongFunction.copyOf(LanguageCodeReferenceSetIdentifierMapping.getReferenceSetIdentifiers(locales)))
 			.build(branch);
 
 		final Map<String, ISnomedDescription> fsnMap = newHashMap();
