@@ -623,7 +623,8 @@ public class SnomedBrowserService implements ISnomedBrowserService {
 								term = fullySpecifiedName.getTerm();
 								break;
 							default:
-								term = description.getTerm();
+								final ISnomedDescription preferredTerm = descriptionService.getPreferredTerm(branchPath.getPath(), description.getConceptId(), locales);
+								term = preferredTerm.getTerm();
 								break;
 						}
 						
