@@ -66,11 +66,11 @@ public class CisSnomedIdentifierService extends AbstractSnomedIdentifierService 
 	private static final Logger LOGGER = LoggerFactory.getLogger(CisSnomedIdentifierService.class);
 	private static final int BULK_LIMIT = 1000;
 
-	private static final int MAX_NUMBER_OF_POLL_TRY = 5;
+	private final long numberOfPollTries;
+	private final long timeBetweenPollTries;
 
-	private String clientKey;
+	private final String clientKey;
 	private final ObjectMapper mapper;
-
 	private final CisClient client;
 
 	private boolean disposed = false;
@@ -79,6 +79,8 @@ public class CisSnomedIdentifierService extends AbstractSnomedIdentifierService 
 			final ObjectMapper mapper) {
 		super(reservationService);
 		this.clientKey = conf.getCisClientSoftwareKey();
+		this.numberOfPollTries = conf.getCisNumberOfPollTries();
+		this.timeBetweenPollTries = conf.getCisTimeBetweenPollTries();
 		this.mapper = mapper;
 		this.client = new CisClient(conf, mapper);
 	}
@@ -492,7 +494,7 @@ public class CisSnomedIdentifierService extends AbstractSnomedIdentifierService 
 			JobStatus status = JobStatus.PENDING;
 			int pollTry = 0;
 
-			while (pollTry < MAX_NUMBER_OF_POLL_TRY) {
+			while (pollTry < numberOfPollTries) {
 				final String response = execute(request);
 				final JsonNode node = mapper.readValue(response, JsonNode.class);
 				status = JobStatus.get(node.get("status").asInt());
@@ -503,7 +505,7 @@ public class CisSnomedIdentifierService extends AbstractSnomedIdentifierService 
 					throw new SnowowlRuntimeException("Bulk request has ended in error.");
 				} else {
 					pollTry++;
-					Thread.sleep(1000);
+					Thread.sleep(timeBetweenPollTries);
 				}
 			}
 

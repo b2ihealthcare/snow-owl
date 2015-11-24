@@ -14,6 +14,8 @@
  * limitations under the License.
  */package com.b2international.snowowl.snomed.datastore.config;
 
+import javax.validation.constraints.Min;
+
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 /**
@@ -42,6 +44,12 @@ public class SnomedIdentifierConfiguration {
 	// the key to associate the client software within the external CIS service
 	@JsonProperty(value = "cisClientSoftwareKey", required = false)
 	private String cisClientSoftwareKey = "Snow Owl";
+	@Min(1)
+	@JsonProperty(value = "cisNumberOfPollTries", required = false)
+	private long cisNumberOfPollTries = 1;
+	@Min(1)
+	@JsonProperty(value = "cisTimeBetweenPollTries", required = false)
+	private long cisTimeBetweenPollTries = 1;
 
 	public IdGenerationStrategy getStrategy() {
 		return strategy;
@@ -89,6 +97,22 @@ public class SnomedIdentifierConfiguration {
 
 	public void setCisClientSoftwareKey(String cisClientSoftwareKey) {
 		this.cisClientSoftwareKey = cisClientSoftwareKey;
+	}
+
+	public long getCisNumberOfPollTries() {
+		return cisNumberOfPollTries;
+	}
+
+	public void setCisNumberOfPollTries(long cisNumberOfPollTries) {
+		this.cisNumberOfPollTries = cisNumberOfPollTries;
+	}
+
+	public long getCisTimeBetweenPollTries() {
+		return cisTimeBetweenPollTries;
+	}
+
+	public void setCisTimeBetweenPollTries(long cisTimeBetweenPollTries) {
+		this.cisTimeBetweenPollTries = cisTimeBetweenPollTries;
 	}
 
 }
