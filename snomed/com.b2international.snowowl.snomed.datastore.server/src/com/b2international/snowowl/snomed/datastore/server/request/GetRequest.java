@@ -30,6 +30,7 @@ import com.b2international.snowowl.core.api.ILookupService;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.events.BaseRequest;
 import com.b2international.snowowl.core.exceptions.ComponentNotFoundException;
+import com.b2international.snowowl.core.terminology.ComponentCategory;
 
 /**
  * @since 4.5
@@ -46,15 +47,19 @@ public abstract class GetRequest<R> extends BaseRequest<BranchContext, R> {
 	@NotNull
 	private List<String> expand;
 	
+	protected GetRequest(ComponentCategory category) {
+		this(category.getDisplayName());
+	}
+	
 	protected GetRequest(String category) {
 		this.category = checkNotNull(category, "category");
 	}
 	
-	protected void setComponentId(String componentId) {
+	protected final void setComponentId(String componentId) {
 		this.componentId = componentId;
 	}
 	
-	protected void setExpand(List<String> expand) {
+	protected final void setExpand(List<String> expand) {
 		this.expand = expand;
 	}
 	

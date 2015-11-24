@@ -664,7 +664,7 @@ public class SnomedBrowserService implements ISnomedBrowserService {
 
 				// Check if the corresponding concept exists
 				SnomedRequests.prepareGetConcept()
-						.setId(conceptId)
+						.setComponentId(conceptId)
 						.build(branch)
 						.executeSync(bus);
 				

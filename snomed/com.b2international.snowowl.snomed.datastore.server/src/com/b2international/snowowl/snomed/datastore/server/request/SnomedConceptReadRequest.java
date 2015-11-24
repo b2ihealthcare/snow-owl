@@ -15,10 +15,14 @@
  */
 package com.b2international.snowowl.snomed.datastore.server.request;
 
-import com.b2international.snowowl.core.api.IBranchPath;
+import java.util.List;
+
+import org.eclipse.emf.cdo.CDOObject;
+import org.eclipse.emf.cdo.view.CDOView;
+
+import com.b2international.snowowl.core.api.IComponent;
+import com.b2international.snowowl.core.api.ILookupService;
 import com.b2international.snowowl.core.domain.BranchContext;
-import com.b2international.snowowl.core.events.BaseRequest;
-import com.b2international.snowowl.core.exceptions.ComponentNotFoundException;
 import com.b2international.snowowl.core.terminology.ComponentCategory;
 import com.b2international.snowowl.snomed.core.domain.ISnomedConcept;
 import com.b2international.snowowl.snomed.datastore.SnomedConceptLookupService;
@@ -28,25 +32,22 @@ import com.b2international.snowowl.snomed.datastore.server.converter.SnomedConve
 /**
  * @since 4.5
  */
-final class SnomedConceptReadRequest extends BaseRequest<BranchContext, ISnomedConcept> {
+final class SnomedConceptReadRequest extends GetRequest<ISnomedConcept> {
 
-	private final String componentId;
-
-	SnomedConceptReadRequest(String componentId) {
-		this.componentId = componentId;
+	SnomedConceptReadRequest() {
+		super(ComponentCategory.CONCEPT);
 	}
 	
 	@Override
-	public ISnomedConcept execute(BranchContext context) {
-		final IBranchPath branchPath = context.branch().branchPath();
-		final SnomedConceptLookupService lookupService = new SnomedConceptLookupService();
-		if (!lookupService.exists(branchPath, componentId)) {
-			throw new ComponentNotFoundException(ComponentCategory.CONCEPT, componentId);
-		}
-		final SnomedConceptIndexEntry component = lookupService.getComponent(branchPath, componentId);
-		return SnomedConverters.newConceptConverter(context, null).convert(component);
+	protected ILookupService<String, ? extends CDOObject, CDOView> getLookupService() {
+		return new SnomedConceptLookupService();
 	}
-
+	
+	@Override
+	protected ISnomedConcept process(BranchContext context, IComponent<String> component, List<String> expand) {
+		return SnomedConverters.newConceptConverter(context, expand).convert((SnomedConceptIndexEntry) component);
+	}
+	
 	@Override
 	protected Class<ISnomedConcept> getReturnType() {
 		return ISnomedConcept.class;

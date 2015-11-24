@@ -163,12 +163,17 @@ public class SnomedConceptRestService extends AbstractSnomedRestService {
 
 			@ApiParam(value="The Concept identifier")
 			@PathVariable(value="conceptId")
-			final String conceptId) {
+			final String conceptId,
+			
+			@ApiParam(value="Expansion parameters")
+			@RequestParam(value="expand", required=false)
+			final List<String> expand) {
 
 		return DeferredResults.wrap(
 				SnomedRequests
 					.prepareGetConcept()
-					.setId(conceptId)
+					.setComponentId(conceptId)
+					.setExpand(expand)
 					.build(branchPath)
 					.execute(bus));
 	}
