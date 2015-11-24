@@ -1,234 +1,41 @@
+/*
+ * Copyright 2011-2015 B2i Healthcare Pte Ltd, http://b2i.sg
+ * 
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package com.b2international.snowowl.snomed.api.impl;
 
-import static com.google.common.collect.Maps.newHashMap;
-
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.ExecutionException;
-
-import javax.annotation.Resource;
-
-import com.b2international.commons.functions.StringToLongFunction;
-import com.b2international.commons.http.ExtendedLocale;
-import com.b2international.snowowl.core.ServiceProvider;
-import com.b2international.snowowl.core.api.SnowowlRuntimeException;
-import com.b2international.snowowl.core.domain.IComponentRef;
-import com.b2international.snowowl.core.events.Request;
-import com.b2international.snowowl.core.events.util.Promise;
 import com.b2international.snowowl.eventbus.IEventBus;
-import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
-import com.b2international.snowowl.snomed.core.domain.Acceptability;
-import com.b2international.snowowl.snomed.core.domain.ISnomedDescription;
 import com.b2international.snowowl.snomed.core.domain.SnomedDescriptions;
-import com.b2international.snowowl.snomed.datastore.server.request.SnomedRequests;
-import com.google.common.base.Function;
-import com.google.common.collect.Collections2;
-import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.Iterables;
-import com.google.common.collect.Maps;
-import com.google.common.collect.Multimap;
-import com.google.common.collect.Multimaps;
-import com.google.common.collect.Sets;
+import com.b2international.snowowl.snomed.datastore.server.request.DescriptionRequestHelper;
+import com.b2international.snowowl.snomed.datastore.server.request.SnomedDescriptionSearchRequestBuilder;
 
-public class DescriptionService {
+/**
+ * @since 4.5
+ */
+public class DescriptionService extends DescriptionRequestHelper {
 	
-	@Resource
-	protected IEventBus bus;
-
-	/**
-	 * Retrieves the preferred term for the concept identified by the given {@link IComponentRef component reference}, if it exists. 
-	 * <p>
-	 * The first active description with "synonym" or descendant as the type will be returned, where all of the following conditions apply:
-	 * <ul>
-	 * <li>a matching well-known language reference set exists for the given {@code Locale} (eg. {@code "en-GB"});
-	 * <li>the description has a language reference set member in the reference set identified above with preferred acceptability.
-	 * </ul>
-	 * <p>
-	 * If no such description can be found, the process is repeated with the next {@code Locale} in the list.
-	 * 
-	 * @param conceptRef 	the reference to the concept for which the preferred term should be returned (may not be {@code null})
-	 * @param locales		a list of {@link Locale}s to use, in order of preference
-	 * @return 				the preferred term for the concept, or {@code null} if no results could be retrieved
-	 */
-	public ISnomedDescription getPreferredTerm(final String branch, final String conceptId, final List<ExtendedLocale> locales) {
-		return Iterables.getOnlyElement(SnomedRequests.prepareDescriptionSearch()
-				.one()
-				.filterByActive(true)
-				.filterByConceptId(conceptId)
-				.filterByType("<<" + Concepts.SYNONYM)
-				.filterByAcceptability(Acceptability.PREFERRED)
-				.filterByExtendedLocales(locales)
-				.build(branch)
-				.executeSync(bus)
-				.getItems(), null);
-	}
-
-	/**
-	 * Retrieves the fully specified name for the concept identified by the given {@link IComponentRef component reference}, if it exists. 
-	 * <p>
-	 * The first active description with "fully specified name" as the type will be returned, where all of the following conditions apply:
-	 * <ul>
-	 * <li>a matching well-known language reference set exists for the given {@code Locale} (eg. {@code "en-GB"});
-	 * <li>the description has a language reference set member in the reference set identified above with preferred acceptability.
-	 * </ul>
-	 * <p>
-	 * If no such description can be found, the search is repeated with the following conditions:
-	 * <ul>
-	 * <li>the description's language code matches the supplied {@code Locale}'s language (eg. {@code "en"} on description, {@code "en-US"} on {@code Locale});
-	 * </ul>
-	 * <p>
-	 * Failing that, the whole check starts from the beginning with the next {@link Locale} in the list.
-	 * The method falls back to the first active fully specified name if the language code does not match any of the specified {@code Locale}s.
-	 * 
-	 * @param conceptRef the reference to the concept for which the preferred term should be returned (may not be {@code null})
-	 * @param locales    a list of {@link Locale}s to use, in order of preference
-	 * @return the preferred term for the concept
-	 */
-	public ISnomedDescription getFullySpecifiedName(final String branch, final String conceptId, final List<ExtendedLocale> locales) {
-		ISnomedDescription fsn = Iterables.getOnlyElement(SnomedRequests.prepareDescriptionSearch()
-				.one()
-				.filterByActive(true)
-				.filterByConceptId(conceptId)
-				.filterByType(Concepts.FULLY_SPECIFIED_NAME)
-				.filterByAcceptability(Acceptability.PREFERRED)
-				.filterByExtendedLocales(locales)
-				.build(branch)
-				.executeSync(bus)
-				.getItems(), null);
-		
-		if (fsn != null) {
-			return fsn;
-		}
-		
-		final ImmutableSet.Builder<String> languageCodes = ImmutableSet.builder();
-		for (ExtendedLocale locale : locales) {
-			languageCodes.add(locale.getLanguage());
-		}
-		
-		fsn = Iterables.getOnlyElement(SnomedRequests.prepareDescriptionSearch()
-				.one()
-				.filterByActive(true)
-				.filterByConceptId(conceptId)
-				.filterByType(Concepts.FULLY_SPECIFIED_NAME)
-				.filterByLanguageCodes(languageCodes.build())
-				.build(branch)
-				.executeSync(bus)
-				.getItems(), null);
-		
-		if (fsn != null) {
-			return fsn;
-		}
-
-		return Iterables.getOnlyElement(SnomedRequests.prepareDescriptionSearch()
-				.one()
-				.filterByActive(true)
-				.filterByConceptId(conceptId)
-				.filterByType(Concepts.FULLY_SPECIFIED_NAME)
-				.build(branch)
-				.executeSync(bus)
-				.getItems(), null);
-	}
-
-	public Map<String, ISnomedDescription> getFullySpecifiedNames(String branch, Set<String> conceptIds, List<ExtendedLocale> locales) {
-		if (conceptIds.isEmpty()) {
-			return Collections.emptyMap();
-		}
-		
-		Request<ServiceProvider, SnomedDescriptions> request = SnomedRequests.prepareDescriptionSearch()
-			.all()
-			.filterByActive(true)
-			.filterByConceptId(Collections2.transform(conceptIds, new StringToLongFunction()))
-			.filterByType(Concepts.FULLY_SPECIFIED_NAME)
-			.filterByAcceptability(Acceptability.PREFERRED)
-			.filterByExtendedLocales(locales)
-			.build(branch);
-
-		final Map<String, ISnomedDescription> fsnMap = newHashMap();
-		
-		try {
-			Map<String, ISnomedDescription> preferredFsnMap = convertToMap(request.execute(bus)).get();
-			fsnMap.putAll(preferredFsnMap);
-		} catch (InterruptedException | ExecutionException e) {
-			throw SnowowlRuntimeException.wrap(e);
-		}
-		
-		Set<String> conceptIdsNotInMap = Sets.difference(conceptIds, fsnMap.keySet());
-		if (conceptIdsNotInMap.isEmpty()) {
-			return fsnMap;
-		}
-		
-		final ImmutableSet.Builder<String> languageCodes = ImmutableSet.builder();
-		for (ExtendedLocale locale : locales) {
-			languageCodes.add(locale.getLanguage());
-		}
-
-		request = SnomedRequests.prepareDescriptionSearch()
-				.all()
-				.filterByActive(true)
-				.filterByConceptId(Collections2.transform(conceptIdsNotInMap, new StringToLongFunction()))
-				.filterByType(Concepts.FULLY_SPECIFIED_NAME)
-				.filterByLanguageCodes(languageCodes.build())
-				.build(branch);
-
-		try {
-			Map<String, ISnomedDescription> preferredFsnMap = convertToMap(request.execute(bus)).get();
-			fsnMap.putAll(preferredFsnMap);
-		} catch (InterruptedException | ExecutionException e) {
-			throw SnowowlRuntimeException.wrap(e);
-		}
-		
-		conceptIdsNotInMap = Sets.difference(conceptIds, fsnMap.keySet());
-		if (conceptIdsNotInMap.isEmpty()) {
-			return fsnMap;
-		}
-
-		request = SnomedRequests.prepareDescriptionSearch()
-				.all()
-				.filterByActive(true)
-				.filterByConceptId(Collections2.transform(conceptIdsNotInMap, new StringToLongFunction()))
-				.filterByType(Concepts.FULLY_SPECIFIED_NAME)
-				.build(branch);
-
-		try {
-			Map<String, ISnomedDescription> preferredFsnMap = convertToMap(request.execute(bus)).get();
-			fsnMap.putAll(preferredFsnMap);
-		} catch (InterruptedException | ExecutionException e) {
-			throw SnowowlRuntimeException.wrap(e);
-		}
-
-		return fsnMap;
-	}
-
-	private Promise<Map<String, ISnomedDescription>> convertToMap(Promise<SnomedDescriptions> descriptionsPromise) {
-		return descriptionsPromise.then(new Function<SnomedDescriptions, Multimap<String, ISnomedDescription>>() {
-			@Override public Multimap<String, ISnomedDescription> apply(SnomedDescriptions descriptions) {
-				return indexByConceptId(descriptions);
-			}
-		})
-		.then(new Function<Multimap<String,ISnomedDescription>, Map<String, ISnomedDescription>>() {
-			@Override public Map<String, ISnomedDescription> apply(Multimap<String, ISnomedDescription> descriptionMultimap) {
-				return extractFirstDescription(descriptionMultimap);
-			}
-		});
-	}
+	private final IEventBus bus;
+	private final String branch;
 	
-	private Multimap<String, ISnomedDescription> indexByConceptId(SnomedDescriptions descriptions) {
-		return Multimaps.index(descriptions.getItems(), new Function<ISnomedDescription, String>() {
-			@Override public String apply(ISnomedDescription description) {
-				return description.getConceptId();
-			}
-		});
+	public DescriptionService(IEventBus bus, String branch) {
+		this.bus = bus;
+		this.branch = branch;
 	}
-	
-	private Map<String, ISnomedDescription> extractFirstDescription(Multimap<String, ISnomedDescription> activeFsnsById) {
-		return Maps.transformValues(activeFsnsById.asMap(), new Function<Collection<ISnomedDescription>, ISnomedDescription>() {
-			@Override public ISnomedDescription apply(Collection<ISnomedDescription> descriptions) {
-				return Iterables.getFirst(descriptions, null);
-			}
-		});
+
+	@Override
+	protected SnomedDescriptions execute(SnomedDescriptionSearchRequestBuilder req) {
+		return req.build(branch).executeSync(bus);
 	}
+
 }

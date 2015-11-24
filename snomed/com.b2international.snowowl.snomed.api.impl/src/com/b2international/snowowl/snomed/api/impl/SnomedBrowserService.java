@@ -165,9 +165,6 @@ public class SnomedBrowserService implements ISnomedBrowserService {
 	private final InputFactory inputFactory;
 
 	@Resource
-	private DescriptionService descriptionService;
-	
-	@Resource
 	private IEventBus bus;
 
 	public SnomedBrowserService() {
@@ -196,6 +193,8 @@ public class SnomedBrowserService implements ISnomedBrowserService {
 				.executeSync(bus)
 				.getItems());
 
+		final DescriptionService descriptionService = new DescriptionService(bus, conceptRef.getBranchPath());
+		
 		final ISnomedDescription fullySpecifiedName = descriptionService.getFullySpecifiedName(conceptRef.getBranchPath(), conceptId, locales);
 		final ISnomedDescription preferredSynonym = descriptionService.getPreferredTerm(conceptRef.getBranchPath(), conceptId, locales);
 		final List<SnomedRelationshipIndexEntry> relationships = getStatementBrowser().getOutboundStatements(branchPath, concept);
@@ -366,6 +365,7 @@ public class SnomedBrowserService implements ISnomedBrowserService {
 	private List<ISnomedBrowserRelationship> convertRelationships(final List<SnomedRelationshipIndexEntry> relationships, final IComponentRef sourceConceptRef, final List<ExtendedLocale> locales) {
 		final InternalComponentRef internalConceptRef = ClassUtils.checkAndCast(sourceConceptRef, InternalComponentRef.class);
 		final IBranchPath branchPath = internalConceptRef.getBranch().branchPath();
+		final DescriptionService descriptionService = new DescriptionService(bus, sourceConceptRef.getBranchPath());
 
 		final ImmutableMap.Builder<String, ISnomedBrowserRelationship> convertedRelationshipBuilder = ImmutableMap.builder();
 		for (final SnomedRelationshipIndexEntry relationship : relationships) {
@@ -458,6 +458,7 @@ public class SnomedBrowserService implements ISnomedBrowserService {
 	}
 
 	protected SnomedBrowserRelationshipTarget getSnomedBrowserRelationshipTarget(SnomedConceptIndexEntry destinationConcept, String branch, List<ExtendedLocale> locales) {
+		final DescriptionService descriptionService = new DescriptionService(bus, branch);
 		final SnomedBrowserRelationshipTarget target = new SnomedBrowserRelationshipTarget();
 
 		target.setActive(destinationConcept.isActive());
@@ -480,6 +481,7 @@ public class SnomedBrowserService implements ISnomedBrowserService {
 	public List<ISnomedBrowserParentConcept> getConceptParents(IComponentRef conceptRef, List<ExtendedLocale> locales) {
 		final InternalComponentRef internalConceptRef = ClassUtils.checkAndCast(conceptRef, InternalComponentRef.class);
 		final IBranchPath branchPath = internalConceptRef.getBranch().branchPath();
+		final DescriptionService descriptionService = new DescriptionService(bus, conceptRef.getBranchPath());
 
 		return new FsnJoinerOperation<ISnomedBrowserParentConcept>(conceptRef.getBranchPath(), conceptRef.getComponentId(), locales, descriptionService) {
 			
@@ -507,6 +509,7 @@ public class SnomedBrowserService implements ISnomedBrowserService {
 	public List<ISnomedBrowserChildConcept> getConceptChildren(final IComponentRef conceptRef, final List<ExtendedLocale> locales, final boolean stated) {
 		final InternalComponentRef internalConceptRef = ClassUtils.checkAndCast(conceptRef, InternalComponentRef.class);
 		final IBranchPath branchPath = internalConceptRef.getBranch().branchPath();
+		final DescriptionService descriptionService = new DescriptionService(bus, conceptRef.getBranchPath());
 
 		return new FsnJoinerOperation<ISnomedBrowserChildConcept>(conceptRef.getBranchPath(), conceptRef.getComponentId(), locales, descriptionService) {
 			
@@ -567,6 +570,8 @@ public class SnomedBrowserService implements ISnomedBrowserService {
 		internalStorageRef.checkStorageExists();
 
 		final IBranchPath branchPath = internalStorageRef.getBranch().branchPath();
+		final DescriptionService descriptionService = new DescriptionService(bus, storageRef.getBranchPath());
+		
 		final Collection<ISnomedDescription> descriptions = SnomedRequests.prepareDescriptionSearch()
 			.all()
 			.filterByTerm(query)
@@ -654,6 +659,7 @@ public class SnomedBrowserService implements ISnomedBrowserService {
 	@Override
 	public Map<String, ISnomedBrowserConstant> getConstants(final String branch, final List<ExtendedLocale> locales) {
 		final ImmutableMap.Builder<String, ISnomedBrowserConstant> resultBuilder = ImmutableMap.builder();
+		final DescriptionService descriptionService = new DescriptionService(bus, branch);
 		
 		for (final ConceptEnum conceptEnum : CONCEPT_ENUMS) {
 			try {

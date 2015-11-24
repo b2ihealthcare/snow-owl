@@ -173,5 +173,5 @@ public abstract class SnomedRequests {
 	public static SnomedRefSetMemberGetRequestBuilder prepareGetMember() {
 		return new SnomedRefSetMemberGetRequestBuilder(REPOSITORY_ID);
 	}
-
+	
 }
