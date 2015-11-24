@@ -100,9 +100,9 @@ public class SnomedReferenceSetMemberConverter implements ResourceConverter<Snom
 				case DESCRIPTION:
 					search = SnomedRequests.prepareDescriptionSearch();
 					break;
-//				case RELATIONSHIP:
-//					search = SnomedRequests.prepareRelationshipSearch();
-//					break;
+				case RELATIONSHIP:
+					search = SnomedRequests.prepareRelationshipSearch();
+					break;
 				default: throw new UnsupportedOperationException("Category is not supported in referenced component expansion");
 				}
 				// TODO paging in expansion
