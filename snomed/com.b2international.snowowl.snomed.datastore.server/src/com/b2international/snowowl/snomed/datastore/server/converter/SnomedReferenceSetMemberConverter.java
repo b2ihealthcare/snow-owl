@@ -78,7 +78,7 @@ public class SnomedReferenceSetMemberConverter implements ResourceConverter<Snom
 			props.put(SnomedRf2Headers.FIELD_QUERY, ((SnomedQueryRefSetMember) object).getQuery());
 			member.setProperties(props.build());
 		}
-		expandReferencedComponent(member, object.getReferencedComponentId(), object.getReferencedComponentType());
+		setReferencedComponent(member, object.getReferencedComponentId(), object.getReferencedComponentType());
 		return member;
 	}
 	
@@ -177,7 +177,7 @@ public class SnomedReferenceSetMemberConverter implements ResourceConverter<Snom
 		member.setReferencedComponent(component);
 	}
 	
-	private void expandReferencedComponent(SnomedReferenceSetMemberImpl member, String referencedComponentId, short referencedComponentType) {
+	private void setReferencedComponent(SnomedReferenceSetMemberImpl member, String referencedComponentId, short referencedComponentType) {
 		expandReferencedComponent(member, referencedComponentId, CoreTerminologyBroker.getInstance().getTerminologyComponentId(referencedComponentType));
 	}
 
