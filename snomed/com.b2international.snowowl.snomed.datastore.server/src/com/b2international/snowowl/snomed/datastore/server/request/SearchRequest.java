@@ -17,7 +17,6 @@ package com.b2international.snowowl.snomed.datastore.server.request;
 
 import java.io.IOException;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
 
 import javax.validation.constraints.Min;
@@ -49,7 +48,7 @@ public abstract class SearchRequest<B> extends BaseRequest<BranchContext, B> {
 	private List<String> expand;
 	
 	@NotNull
-	private Collection<String> componentIds = Collections.emptyList();
+	private Collection<String> componentIds;
 	
 	protected SearchRequest() {}
 	

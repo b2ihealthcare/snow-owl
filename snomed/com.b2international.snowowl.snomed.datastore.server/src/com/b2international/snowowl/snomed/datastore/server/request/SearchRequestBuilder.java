@@ -36,7 +36,7 @@ public abstract class SearchRequestBuilder<B extends SearchRequestBuilder<B, R>,
 	
 	private int offset = 0;
 	private int limit = 50;
-	private Collection<String> componentIds;
+	private Collection<String> componentIds = Collections.emptyList();
 	private List<String> expand = Collections.emptyList();
 	private final OptionsBuilder optionsBuilder = OptionsBuilder.newBuilder();
 	
