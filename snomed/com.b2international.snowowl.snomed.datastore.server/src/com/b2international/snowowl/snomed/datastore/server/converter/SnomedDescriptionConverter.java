@@ -18,24 +18,36 @@ package com.b2international.snowowl.snomed.datastore.server.converter;
 import static com.b2international.snowowl.core.ApplicationContext.getServiceForClass;
 import static com.b2international.snowowl.snomed.core.domain.DescriptionInactivationIndicator.getInactivationIndicatorByValueId;
 
+import java.util.List;
+
 import com.b2international.snowowl.core.api.IBranchPath;
+import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.snomed.core.domain.CaseSignificance;
 import com.b2international.snowowl.snomed.core.domain.DescriptionInactivationIndicator;
 import com.b2international.snowowl.snomed.core.domain.ISnomedDescription;
 import com.b2international.snowowl.snomed.core.domain.SnomedDescription;
+import com.b2international.snowowl.snomed.core.domain.SnomedDescriptions;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDescriptionIndexEntry;
 import com.b2international.snowowl.snomed.datastore.services.AbstractSnomedRefSetMembershipLookupService;
 import com.b2international.snowowl.snomed.datastore.services.ISnomedComponentService;
 
-public class SnomedDescriptionConverter extends AbstractSnomedComponentConverter<SnomedDescriptionIndexEntry, ISnomedDescription> {
+/**
+ * @since 4.0
+ */
+public class SnomedDescriptionConverter extends BaseSnomedComponentConverter<SnomedDescriptionIndexEntry, ISnomedDescription, SnomedDescriptions> {
 
-	SnomedDescriptionConverter(final AbstractSnomedRefSetMembershipLookupService refSetMembershipLookupService) {
-		super(refSetMembershipLookupService);
+	SnomedDescriptionConverter(BranchContext context, List<String> expand, final AbstractSnomedRefSetMembershipLookupService refSetMembershipLookupService) {
+		super(context, expand, refSetMembershipLookupService);
 	}
 
 	@Override
-	public ISnomedDescription apply(final SnomedDescriptionIndexEntry input) {
+	protected SnomedDescriptions createCollectionResource(List<ISnomedDescription> results, int offset, int limit, int total) {
+		return new SnomedDescriptions(results, offset, limit, total);
+	}
+	
+	@Override
+	protected ISnomedDescription toResource(final SnomedDescriptionIndexEntry input) {
 		final SnomedDescription result = new SnomedDescription();
 		result.setAcceptabilityMap(input.getAcceptabilityMap());
 		result.setActive(input.isActive());

@@ -16,26 +16,34 @@
 package com.b2international.snowowl.snomed.datastore.server.converter;
 
 import java.util.Collection;
+import java.util.List;
 
+import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.core.domain.CharacteristicType;
 import com.b2international.snowowl.snomed.core.domain.ISnomedRelationship;
 import com.b2international.snowowl.snomed.core.domain.RelationshipModifier;
 import com.b2international.snowowl.snomed.core.domain.RelationshipRefinability;
 import com.b2international.snowowl.snomed.core.domain.SnomedRelationship;
+import com.b2international.snowowl.snomed.core.domain.SnomedRelationships;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRelationshipIndexEntry;
 import com.b2international.snowowl.snomed.datastore.services.AbstractSnomedRefSetMembershipLookupService;
 import com.google.common.collect.ImmutableSet;
 
-public class SnomedRelationshipConverter extends AbstractSnomedComponentConverter<SnomedRelationshipIndexEntry, ISnomedRelationship> {
+public class SnomedRelationshipConverter extends BaseSnomedComponentConverter<SnomedRelationshipIndexEntry, ISnomedRelationship, SnomedRelationships> {
 
-	SnomedRelationshipConverter(final AbstractSnomedRefSetMembershipLookupService refSetMembershipLookupService) {
-		super(refSetMembershipLookupService);
+	SnomedRelationshipConverter(BranchContext context, List<String> expand, final AbstractSnomedRefSetMembershipLookupService refSetMembershipLookupService) {
+		super(context, expand, refSetMembershipLookupService);
 	}
 
 	@Override
-	public ISnomedRelationship apply(final SnomedRelationshipIndexEntry input) {
+	protected SnomedRelationships createCollectionResource(List<ISnomedRelationship> results, int offset, int limit, int total) {
+		return new SnomedRelationships(results, offset, limit, total);
+	}
+	
+	@Override
+	protected ISnomedRelationship toResource(final SnomedRelationshipIndexEntry input) {
 		final SnomedRelationship result = new SnomedRelationship();
 		result.setActive(input.isActive());
 		result.setCharacteristicType(toCharacteristicType(input.getCharacteristicTypeId()));
@@ -51,7 +59,6 @@ public class SnomedRelationshipConverter extends AbstractSnomedComponentConverte
 		result.setSourceId(input.getObjectId());
 		result.setTypeId(input.getAttributeId());
 		result.setUnionGroup(input.getUnionGroup());
-
 		return result;
 	}
 	

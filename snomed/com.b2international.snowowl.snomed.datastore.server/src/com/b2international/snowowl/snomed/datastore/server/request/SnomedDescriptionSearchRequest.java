@@ -57,7 +57,6 @@ import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDescriptio
 import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedMappings;
 import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedQueryBuilder;
 import com.b2international.snowowl.snomed.datastore.server.converter.SnomedConverters;
-import com.b2international.snowowl.snomed.datastore.server.converter.SnomedDescriptionConverter;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMultimap;
 import com.google.common.collect.Iterables;
@@ -199,16 +198,15 @@ final class SnomedDescriptionSearchRequest extends SnomedSearchRequest<SnomedDes
 		}
 		
 		final ScoreDoc[] scoreDocs = topDocs.scoreDocs;
-		final SnomedDescriptionConverter converter = SnomedConverters.newDescriptionConverter(context);
-		final ImmutableList.Builder<ISnomedDescription> descriptionBuilder = ImmutableList.builder();
+		final ImmutableList.Builder<SnomedDescriptionIndexEntry> descriptionBuilder = ImmutableList.builder();
 		
 		for (int i = offset; i < scoreDocs.length && i < offset + limit; i++) {
 			Document doc = searcher.doc(scoreDocs[i].doc); // TODO: should expand & filter drive fieldsToLoad? Pass custom fieldValueLoader?
 			SnomedDescriptionIndexEntry indexEntry = SnomedDescriptionIndexEntry.builder(doc).score(scoreDocs[i].score).build();
-			descriptionBuilder.add(converter.apply(indexEntry));
+			descriptionBuilder.add(indexEntry);
 		}
 
-		return new SnomedDescriptions(descriptionBuilder.build(), offset, limit, topDocs.totalHits);
+		return SnomedConverters.newDescriptionConverter(context, expand()).convert(descriptionBuilder.build(), offset, limit, topDocs.totalHits);
 	}
 
 	private void addComponentIdFilter(final List<Filter> filters, final List<Integer> ops) {

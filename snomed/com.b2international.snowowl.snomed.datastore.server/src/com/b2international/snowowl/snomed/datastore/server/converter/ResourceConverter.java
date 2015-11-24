@@ -40,6 +40,6 @@ public interface ResourceConverter<T extends IIndexEntry, R extends IComponent, 
 	 * @param components
 	 * @return
 	 */
-	CR convert(Collection<T> components);
-
-	}
+	CR convert(Collection<T> components, int offset, int limit, int total);
+	
+}

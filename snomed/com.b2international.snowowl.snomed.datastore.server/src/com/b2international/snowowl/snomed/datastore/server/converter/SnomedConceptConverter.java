@@ -18,30 +18,36 @@ package com.b2international.snowowl.snomed.datastore.server.converter;
 import java.util.Collection;
 import java.util.List;
 
+import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.snomed.core.domain.DefinitionStatus;
 import com.b2international.snowowl.snomed.core.domain.ISnomedConcept;
 import com.b2international.snowowl.snomed.core.domain.InactivationIndicator;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
+import com.b2international.snowowl.snomed.core.domain.SnomedConcepts;
 import com.b2international.snowowl.snomed.core.domain.SubclassDefinitionStatus;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptIndexEntry;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry;
 import com.b2international.snowowl.snomed.datastore.services.AbstractSnomedRefSetMembershipLookupService;
-import com.google.common.collect.FluentIterable;
 import com.google.common.collect.ImmutableList;
 
 /**
  * @since 4.5
  */
-public class SnomedConceptConverter extends AbstractSnomedComponentConverter<SnomedConceptIndexEntry, ISnomedConcept> {
+public class SnomedConceptConverter extends BaseSnomedComponentConverter<SnomedConceptIndexEntry, ISnomedConcept, SnomedConcepts> {
 
-	SnomedConceptConverter(final AbstractSnomedRefSetMembershipLookupService refSetMembershipLookupService) {
-		super(refSetMembershipLookupService);
+	SnomedConceptConverter(final BranchContext context, List<String> expand, final AbstractSnomedRefSetMembershipLookupService membershipLookupService) {
+		super(context, expand, membershipLookupService);
+	}
+	
+	@Override
+	protected SnomedConcepts createCollectionResource(List<ISnomedConcept> results, int offset, int limit, int total) {
+		return new SnomedConcepts(results, offset, limit, total);
 	}
 
 	@Override
-	public ISnomedConcept apply(final SnomedConceptIndexEntry input) {
+	protected SnomedConcept toResource(final SnomedConceptIndexEntry input) {
 		final SnomedConcept result = new SnomedConcept();
 		result.setActive(input.isActive());
 		result.setDefinitionStatus(toDefinitionStatus(input.isPrimitive()));
@@ -76,10 +82,6 @@ public class SnomedConceptConverter extends AbstractSnomedComponentConverter<Sno
 		}
 
 		return null;
-	}
-
-	public List<ISnomedConcept> convert(Collection<SnomedConceptIndexEntry> entries) {
-		return FluentIterable.from(entries).transform(this).toList();
 	}
 
 }

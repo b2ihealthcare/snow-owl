@@ -44,7 +44,7 @@ final class SnomedRelationshipReadRequest extends BaseRequest<BranchContext, ISn
 			throw new ComponentNotFoundException(ComponentCategory.RELATIONSHIP, componentId);
 		}
 		final SnomedRelationshipIndexEntry relationship = lookupService.getComponent(branchPath, componentId);
-		return SnomedConverters.newRelationshipConverter(context).apply(relationship);
+		return SnomedConverters.newRelationshipConverter(context, null).convert(relationship);
 	}
 
 	@Override

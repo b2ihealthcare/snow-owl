@@ -44,7 +44,7 @@ final class SnomedDescriptionReadRequest extends BaseRequest<BranchContext, ISno
 			throw new ComponentNotFoundException(ComponentCategory.DESCRIPTION, componentId);
 		}
 		final SnomedDescriptionIndexEntry descriptionIndexEntry = lookupService.getComponent(branchPath, componentId);
-		return SnomedConverters.newDescriptionConverter(context).apply(descriptionIndexEntry);
+		return SnomedConverters.newDescriptionConverter(context, null).convert(descriptionIndexEntry);
 	}
 
 	@Override

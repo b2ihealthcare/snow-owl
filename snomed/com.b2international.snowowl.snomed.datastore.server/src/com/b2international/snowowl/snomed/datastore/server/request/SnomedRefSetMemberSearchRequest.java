@@ -16,7 +16,6 @@
 package com.b2international.snowowl.snomed.datastore.server.request;
 
 import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
 
 import com.b2international.snowowl.core.api.IBranchPath;
@@ -62,7 +61,7 @@ public class SnomedRefSetMemberSearchRequest extends SnomedSearchRequest<SnomedR
 			.limit(limit())
 			.toList();
 		
-		return SnomedConverters.newMemberConverter(context, Collections.<String>emptyList()).convert(members);
+		return SnomedConverters.newMemberConverter(context, expand()).convert(members, offset(), limit(), -1);
 	}
 
 	@Override

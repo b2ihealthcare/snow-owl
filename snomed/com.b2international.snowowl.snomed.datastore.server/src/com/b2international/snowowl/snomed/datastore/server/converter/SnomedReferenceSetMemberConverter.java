@@ -16,7 +16,6 @@
 package com.b2international.snowowl.snomed.datastore.server.converter;
 
 import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
 
 import com.b2international.snowowl.core.date.EffectiveTimes;
@@ -36,6 +35,7 @@ import com.b2international.snowowl.snomed.datastore.id.SnomedIdentifiers;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry;
 import com.b2international.snowowl.snomed.datastore.server.request.SearchRequestBuilder;
 import com.b2international.snowowl.snomed.datastore.server.request.SnomedRequests;
+import com.b2international.snowowl.snomed.datastore.services.AbstractSnomedRefSetMembershipLookupService;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType;
 import com.google.common.base.Function;
 import com.google.common.collect.FluentIterable;
@@ -46,38 +46,21 @@ import com.google.common.collect.Multimap;
 /**
  * @since 4.5
  */
-public class SnomedReferenceSetMemberConverter implements ResourceConverter<SnomedRefSetMemberIndexEntry, SnomedReferenceSetMember, SnomedReferenceSetMembers> {
+public class SnomedReferenceSetMemberConverter extends BaseSnomedComponentConverter<SnomedRefSetMemberIndexEntry, SnomedReferenceSetMember, SnomedReferenceSetMembers> {
 
-	private final BranchContext context;
-	private final List<String> expand;
-
-	SnomedReferenceSetMemberConverter(BranchContext context, List<String> expand) {
-		this.context = context;
-		this.expand = expand == null ? Collections.<String>emptyList() : expand;
+	SnomedReferenceSetMemberConverter(BranchContext context, List<String> expand, AbstractSnomedRefSetMembershipLookupService membershipLookupService) {
+		super(context, expand, membershipLookupService);
 	}
 
 	@Override
-	public SnomedReferenceSetMember convert(SnomedRefSetMemberIndexEntry component) {
-		return convert(Collections.singleton(component)).getItems().iterator().next();
+	protected SnomedReferenceSetMembers createCollectionResource(List<SnomedReferenceSetMember> results, int offset, int limit, int total) {
+		return new SnomedReferenceSetMembers(results);
 	}
 	
 	@Override
-	public SnomedReferenceSetMembers convert(Collection<SnomedRefSetMemberIndexEntry> components) {
-		final List<SnomedReferenceSetMember> members = FluentIterable
-			.from(components)
-			.transform(new Function<SnomedRefSetMemberIndexEntry, SnomedReferenceSetMember>() {
-				@Override
-				public SnomedReferenceSetMember apply(SnomedRefSetMemberIndexEntry input) {
-					return toResource(input);
-				}
-			}).toList();
-		expand(members);
-		return new SnomedReferenceSetMembers(members);
-	}
-
-	private void expand(List<SnomedReferenceSetMember> members) {
-		if (expand.contains("referencedComponent")) {
-			final Multimap<String, SnomedReferenceSetMember> refCompToMembers = FluentIterable.from(members).index(new Function<SnomedReferenceSetMember, String>() {
+	protected void expand(List<SnomedReferenceSetMember> results) {
+		if (expand().contains("referencedComponent")) {
+			final Multimap<String, SnomedReferenceSetMember> refCompToMembers = FluentIterable.from(results).index(new Function<SnomedReferenceSetMember, String>() {
 				@Override
 				public String apply(SnomedReferenceSetMember input) {
 					return input.getReferencedComponent().getId();
@@ -107,7 +90,7 @@ public class SnomedReferenceSetMemberConverter implements ResourceConverter<Snom
 				}
 				// TODO paging in expansion
 				// TODO async execution with Promise.all()
-				for (SnomedCoreComponent component : search.setComponentIds(componentIds).setLimit(componentIds.size()).build().execute(context)) {
+				for (SnomedCoreComponent component : search.setComponentIds(componentIds).setLimit(componentIds.size()).build().execute(context())) {
 					for (SnomedReferenceSetMember member : refCompToMembers.get(component.getId())) {
 						((SnomedReferenceSetMemberImpl) member).setReferencedComponent(component);
 					}
@@ -116,7 +99,8 @@ public class SnomedReferenceSetMemberConverter implements ResourceConverter<Snom
 		}
 	}
 
-	private SnomedReferenceSetMember toResource(SnomedRefSetMemberIndexEntry entry) {
+	@Override
+	protected SnomedReferenceSetMember toResource(SnomedRefSetMemberIndexEntry entry) {
 		final SnomedReferenceSetMemberImpl member = new SnomedReferenceSetMemberImpl();
 		member.setId(entry.getId());
 		member.setEffectiveTime(EffectiveTimes.toDate(entry.getEffectiveTimeAsLong()));

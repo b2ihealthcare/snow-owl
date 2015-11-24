@@ -32,20 +32,20 @@ public class SnomedConverters {
 	
 	private SnomedConverters() {}
 	
-	public static SnomedConceptConverter newConceptConverter(BranchContext context) {
-		return new SnomedConceptConverter(createMembershipLookupService(context));
+	public static SnomedConceptConverter newConceptConverter(BranchContext context, List<String> expand) {
+		return new SnomedConceptConverter(context, expand, createMembershipLookupService(context));
 	}
 	
-	public static SnomedDescriptionConverter newDescriptionConverter(BranchContext context) {
-		return new SnomedDescriptionConverter(createMembershipLookupService(context));
+	public static SnomedDescriptionConverter newDescriptionConverter(BranchContext context, List<String> expand) {
+		return new SnomedDescriptionConverter(context, expand, createMembershipLookupService(context));
 	}
 	
-	public static SnomedRelationshipConverter newRelationshipConverter(BranchContext context) {
-		return new SnomedRelationshipConverter(createMembershipLookupService(context));
+	public static SnomedRelationshipConverter newRelationshipConverter(BranchContext context, List<String> expand) {
+		return new SnomedRelationshipConverter(context, expand, createMembershipLookupService(context));
 	}
 	
 	public static ResourceConverter<SnomedRefSetMemberIndexEntry, SnomedReferenceSetMember, SnomedReferenceSetMembers> newMemberConverter(BranchContext context, List<String> expand) {
-		return new SnomedReferenceSetMemberConverter(context, expand);
+		return new SnomedReferenceSetMemberConverter(context, expand, createMembershipLookupService(context));
 	}
 	
 	public static SnomedReferenceSetConverter newRefSetConverter(BranchContext context) {
@@ -64,14 +64,4 @@ public class SnomedConverters {
 		return new SnomedBranchRefSetMembershipLookupService(branchPath);
 	}
 	
-	@Deprecated
-	public static SnomedConceptConverter newConceptConverter(IBranchPath branchPath) {
-		return new SnomedConceptConverter(createMembershipLookupService(branchPath));
-	}
-	
-	@Deprecated
-	public static SnomedRelationshipConverter newRelationshipConverter(IBranchPath branchPath) {
-		return new SnomedRelationshipConverter(createMembershipLookupService(branchPath));
-	}
-
 }

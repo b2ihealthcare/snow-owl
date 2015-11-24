@@ -15,27 +15,88 @@
  */
 package com.b2international.snowowl.snomed.datastore.server.converter;
 
+import static com.google.common.base.Preconditions.checkNotNull;
+
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Date;
+import java.util.List;
 
 import com.b2international.snowowl.core.date.EffectiveTimes;
+import com.b2international.snowowl.core.domain.BranchContext;
+import com.b2international.snowowl.core.domain.CollectionResource;
 import com.b2international.snowowl.snomed.core.domain.AssociationType;
 import com.b2international.snowowl.snomed.core.domain.SnomedComponent;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedIndexEntry;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry;
 import com.b2international.snowowl.snomed.datastore.services.AbstractSnomedRefSetMembershipLookupService;
 import com.google.common.base.Function;
+import com.google.common.collect.FluentIterable;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMultimap;
 import com.google.common.collect.Multimap;
 
-public abstract class AbstractSnomedComponentConverter<F extends SnomedIndexEntry, T extends SnomedComponent> implements Function<F, T> {
+/**
+ * @since 4.0
+ * @param <T>
+ * @param <R>
+ * @param <CR>
+ */
+public abstract class BaseSnomedComponentConverter<T extends SnomedIndexEntry, R extends SnomedComponent, CR extends CollectionResource<R>>
+		implements ResourceConverter<T, R, CR> {
 
+	private final BranchContext context;
+	private final List<String> expand;
 	private final AbstractSnomedRefSetMembershipLookupService refSetMembershipLookupService;
 
-	public AbstractSnomedComponentConverter(AbstractSnomedRefSetMembershipLookupService refSetMembershipLookupService) {
+	protected BaseSnomedComponentConverter(BranchContext context, List<String> expand,
+			AbstractSnomedRefSetMembershipLookupService refSetMembershipLookupService) {
+		this(context, expand, 0, 0, 0, refSetMembershipLookupService);
+	}
+
+	protected BaseSnomedComponentConverter(BranchContext context, List<String> expand, int offset, int limit, int total,
+			AbstractSnomedRefSetMembershipLookupService refSetMembershipLookupService) {
+		this.context = checkNotNull(context, "context");
+		this.expand = expand = expand == null ? Collections.<String> emptyList() : expand;
 		this.refSetMembershipLookupService = refSetMembershipLookupService;
 	}
+
+	protected final List<String> expand() {
+		return expand;
+	}
+
+	protected final BranchContext context() {
+		return context;
+	}
+
+	@Override
+	public final R convert(T component) {
+		return convert(Collections.singleton(component), 0, 1, 1).getItems().iterator().next();
+	}
+
+	@Override
+	public final CR convert(Collection<T> components, int offset, int limit, int total) {
+		final List<R> results = FluentIterable.from(components).transform(new Function<T, R>() {
+			@Override
+			public R apply(T input) {
+				return toResource(input);
+			}
+		}).toList();
+		expand(results);
+		return createCollectionResource(results, offset, limit, total);
+	}
+
+	protected abstract CR createCollectionResource(List<R> results, int offset, int limit, int total);
+
+	/**
+	 * Subclasses may override to expand resources based on the {@link #expand()} list.
+	 * 
+	 * @param results
+	 */
+	protected void expand(List<R> results) {
+	}
+
+	protected abstract R toResource(T entry);
 
 	protected final Date toEffectiveTime(final long effectiveTimeAsLong) {
 		return EffectiveTimes.toDate(effectiveTimeAsLong);
@@ -44,17 +105,15 @@ public abstract class AbstractSnomedComponentConverter<F extends SnomedIndexEntr
 	protected final AbstractSnomedRefSetMembershipLookupService getRefSetMembershipLookupService() {
 		return refSetMembershipLookupService;
 	}
-	
+
 	protected final Multimap<AssociationType, String> toAssociationTargets(final String type, final String id) {
 		final ImmutableMultimap.Builder<AssociationType, String> resultBuilder = ImmutableMultimap.builder();
-	
+
 		for (final AssociationType associationType : AssociationType.values()) {
 			// TODO: it might be quicker to collect the refset IDs first and retrieve all members with a single call
-			final Collection<SnomedRefSetMemberIndexEntry> members = getRefSetMembershipLookupService().getMembers(
-					type,
-					ImmutableList.of(associationType.getConceptId()),
-					id);
-	
+			final Collection<SnomedRefSetMemberIndexEntry> members = getRefSetMembershipLookupService().getMembers(type,
+					ImmutableList.of(associationType.getConceptId()), id);
+
 			for (final SnomedRefSetMemberIndexEntry member : members) {
 				// FIXME: inactive inactivation indicators are shown in the desktop form UI
 				if (member.isActive()) {
@@ -62,7 +121,7 @@ public abstract class AbstractSnomedComponentConverter<F extends SnomedIndexEntr
 				}
 			}
 		}
-	
+
 		return resultBuilder.build();
 	}
 

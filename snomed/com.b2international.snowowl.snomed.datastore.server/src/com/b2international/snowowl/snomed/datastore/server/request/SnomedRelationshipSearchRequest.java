@@ -29,13 +29,11 @@ import org.apache.lucene.search.TotalHitCountCollector;
 
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.datastore.index.IndexUtils;
-import com.b2international.snowowl.snomed.core.domain.ISnomedRelationship;
 import com.b2international.snowowl.snomed.core.domain.SnomedRelationships;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRelationshipIndexEntry;
 import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedMappings;
 import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedQueryBuilder;
 import com.b2international.snowowl.snomed.datastore.server.converter.SnomedConverters;
-import com.b2international.snowowl.snomed.datastore.server.converter.SnomedRelationshipConverter;
 import com.google.common.collect.ImmutableList;
 
 /**
@@ -101,16 +99,15 @@ final class SnomedRelationshipSearchRequest extends SnomedSearchRequest<SnomedRe
 		}
 		
 		final ScoreDoc[] scoreDocs = topDocs.scoreDocs;
-		final SnomedRelationshipConverter converter = SnomedConverters.newRelationshipConverter(context);
-		final ImmutableList.Builder<ISnomedRelationship> relationshipsBuilder = ImmutableList.builder();
+		final ImmutableList.Builder<SnomedRelationshipIndexEntry> relationshipsBuilder = ImmutableList.builder();
 		
 		for (int i = offset(); i < scoreDocs.length && i < offset() + limit(); i++) {
 			Document doc = searcher.doc(scoreDocs[i].doc); // TODO: should expand & filter drive fieldsToLoad? Pass custom fieldValueLoader?
 			SnomedRelationshipIndexEntry indexEntry = SnomedRelationshipIndexEntry.builder(doc).score(scoreDocs[i].score).build();
-			relationshipsBuilder.add(converter.apply(indexEntry));
+			relationshipsBuilder.add(indexEntry);
 		}
 
-		return new SnomedRelationships(relationshipsBuilder.build(), offset(), limit(), topDocs.totalHits);
+		return SnomedConverters.newRelationshipConverter(context, expand()).convert(relationshipsBuilder.build(), offset(), limit(), topDocs.totalHits);
 	}
 
 	@Override

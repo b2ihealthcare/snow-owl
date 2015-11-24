@@ -44,7 +44,7 @@ final class SnomedConceptReadRequest extends BaseRequest<BranchContext, ISnomedC
 			throw new ComponentNotFoundException(ComponentCategory.CONCEPT, componentId);
 		}
 		final SnomedConceptIndexEntry component = lookupService.getComponent(branchPath, componentId);
-		return SnomedConverters.newConceptConverter(context).apply(component);
+		return SnomedConverters.newConceptConverter(context, null).convert(component);
 	}
 
 	@Override

@@ -45,13 +45,11 @@ import com.b2international.snowowl.core.exceptions.IllegalQueryParameterExceptio
 import com.b2international.snowowl.datastore.index.IndexUtils;
 import com.b2international.snowowl.datastore.server.snomed.escg.IndexQueryQueryEvaluator;
 import com.b2international.snowowl.dsl.escg.EscgUtils;
-import com.b2international.snowowl.snomed.core.domain.ISnomedConcept;
 import com.b2international.snowowl.snomed.core.domain.ISnomedDescription;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcepts;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptIndexEntry;
 import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedMappings;
 import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedQueryBuilder;
-import com.b2international.snowowl.snomed.datastore.server.converter.SnomedConceptConverter;
 import com.b2international.snowowl.snomed.datastore.server.converter.SnomedConverters;
 import com.b2international.snowowl.snomed.dsl.query.SyntaxErrorException;
 import com.google.common.collect.ImmutableList;
@@ -158,16 +156,15 @@ final class SnomedConceptSearchRequest extends SnomedSearchRequest<SnomedConcept
 		}
 		
 		final ScoreDoc[] scoreDocs = topDocs.scoreDocs;
-		final SnomedConceptConverter converter = SnomedConverters.newConceptConverter(context);
-		final ImmutableList.Builder<ISnomedConcept> conceptsBuilder = ImmutableList.builder();
+		final ImmutableList.Builder<SnomedConceptIndexEntry> conceptsBuilder = ImmutableList.builder();
 		
 		for (int i = offset(); i < scoreDocs.length && i < offset() + limit(); i++) {
 			Document doc = searcher.doc(scoreDocs[i].doc); // TODO: should expand & filter drive fieldsToLoad? Pass custom fieldValueLoader?
 			SnomedConceptIndexEntry indexEntry = SnomedConceptIndexEntry.builder(doc).score(scoreDocs[i].score).build();
-			conceptsBuilder.add(converter.apply(indexEntry));
+			conceptsBuilder.add(indexEntry);
 		}
 
-		return new SnomedConcepts(conceptsBuilder.build(), offset(), limit(), topDocs.totalHits);
+		return SnomedConverters.newConceptConverter(context, expand()).convert(conceptsBuilder.build(), offset(), limit(), topDocs.totalHits);
 	}
 
 	private Query createQuery(final Query query, final BooleanFilter filter) {
