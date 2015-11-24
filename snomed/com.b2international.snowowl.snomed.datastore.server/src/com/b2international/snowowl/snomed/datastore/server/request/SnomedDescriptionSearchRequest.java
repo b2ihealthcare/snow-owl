@@ -206,7 +206,7 @@ final class SnomedDescriptionSearchRequest extends SnomedSearchRequest<SnomedDes
 			descriptionBuilder.add(indexEntry);
 		}
 
-		return SnomedConverters.newDescriptionConverter(context, expand()).convert(descriptionBuilder.build(), offset, limit, topDocs.totalHits);
+		return SnomedConverters.newDescriptionConverter(context, expand(), locales()).convert(descriptionBuilder.build(), offset, limit, topDocs.totalHits);
 	}
 
 	private void addComponentIdFilter(final List<Filter> filters, final List<Integer> ops) {

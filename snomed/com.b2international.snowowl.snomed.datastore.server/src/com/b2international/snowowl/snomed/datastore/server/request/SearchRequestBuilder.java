@@ -20,6 +20,7 @@ import java.util.Collections;
 import java.util.List;
 
 import com.b2international.commons.CompareUtils;
+import com.b2international.commons.http.ExtendedLocale;
 import com.b2international.commons.options.OptionsBuilder;
 import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.domain.BranchContext;
@@ -38,6 +39,7 @@ public abstract class SearchRequestBuilder<B extends SearchRequestBuilder<B, R>,
 	private int limit = 50;
 	private Collection<String> componentIds = Collections.emptyList();
 	private List<String> expand = Collections.emptyList();
+	private List<ExtendedLocale> locales = Collections.emptyList();
 	private final OptionsBuilder optionsBuilder = OptionsBuilder.newBuilder();
 	
 	protected SearchRequestBuilder(String repositoryId) {
@@ -56,6 +58,11 @@ public abstract class SearchRequestBuilder<B extends SearchRequestBuilder<B, R>,
 	
 	public final B setExpand(List<String> expand) {
 		this.expand = expand;
+		return getSelf();
+	}
+	
+	public final B setLocales(List<ExtendedLocale> locales) {
+		this.locales = locales;
 		return getSelf();
 	}
 	
@@ -94,6 +101,7 @@ public abstract class SearchRequestBuilder<B extends SearchRequestBuilder<B, R>,
 		req.setLimit(limit);
 		req.setOffset(offset);
 		req.setExpand(expand);
+		req.setLocales(locales);
 		req.setComponentIds(componentIds);
 		req.setOptions(optionsBuilder.build());
 		return req;

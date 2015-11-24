@@ -45,7 +45,7 @@ final class SnomedDescriptionGetRequest extends GetRequest<ISnomedDescription> {
 	
 	@Override
 	protected ISnomedDescription process(BranchContext context, IComponent<String> component, List<String> expand) {
-		return SnomedConverters.newDescriptionConverter(context, expand).convert((SnomedDescriptionIndexEntry) component);
+		return SnomedConverters.newDescriptionConverter(context, expand, locales()).convert((SnomedDescriptionIndexEntry) component);
 	}
 	
 	@Override

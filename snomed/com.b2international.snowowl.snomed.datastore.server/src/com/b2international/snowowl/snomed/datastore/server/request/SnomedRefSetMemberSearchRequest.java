@@ -61,7 +61,7 @@ public class SnomedRefSetMemberSearchRequest extends SnomedSearchRequest<SnomedR
 			.limit(limit())
 			.toList();
 		
-		return SnomedConverters.newMemberConverter(context, expand()).convert(members, offset(), limit(), -1);
+		return SnomedConverters.newMemberConverter(context, expand(), locales()).convert(members, offset(), limit(), -1);
 	}
 
 	@Override

@@ -24,6 +24,7 @@ import javax.validation.constraints.NotNull;
 
 import org.apache.lucene.search.Filter;
 
+import com.b2international.commons.http.ExtendedLocale;
 import com.b2international.commons.options.Options;
 import com.b2international.snowowl.core.api.index.IndexException;
 import com.b2international.snowowl.core.domain.BranchContext;
@@ -48,6 +49,9 @@ public abstract class SearchRequest<B> extends BaseRequest<BranchContext, B> {
 	private List<String> expand;
 	
 	@NotNull
+	private List<ExtendedLocale> locales;
+	
+	@NotNull
 	private Collection<String> componentIds;
 	
 	protected SearchRequest() {}
@@ -66,6 +70,10 @@ public abstract class SearchRequest<B> extends BaseRequest<BranchContext, B> {
 	
 	void setExpand(List<String> expand) {
 		this.expand = expand;
+	}
+	
+	void setLocales(List<ExtendedLocale> locales) {
+		this.locales = locales;
 	}
 	
 	void setComponentIds(Collection<String> componentIds) {
@@ -116,8 +124,12 @@ public abstract class SearchRequest<B> extends BaseRequest<BranchContext, B> {
 		return expand;
 	}
 	
-	protected Collection<String> componentIds() {
+	protected final Collection<String> componentIds() {
 		return componentIds;
+	}
+	
+	protected final List<ExtendedLocale> locales() {
+		return locales;
 	}
 	
 	protected Filter createComponentIdFilter() {
@@ -134,4 +146,5 @@ public abstract class SearchRequest<B> extends BaseRequest<BranchContext, B> {
 	}
 
 	protected abstract B doExecute(BranchContext context) throws IOException;
+
 }

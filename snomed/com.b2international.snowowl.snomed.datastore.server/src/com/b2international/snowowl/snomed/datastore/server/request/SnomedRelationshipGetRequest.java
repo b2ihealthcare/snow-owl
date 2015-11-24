@@ -45,7 +45,7 @@ final class SnomedRelationshipGetRequest extends GetRequest<ISnomedRelationship>
 
 	@Override
 	protected ISnomedRelationship process(BranchContext context, IComponent<String> component, List<String> expand) {
-		return SnomedConverters.newRelationshipConverter(context, expand).convert((SnomedRelationshipIndexEntry) component);
+		return SnomedConverters.newRelationshipConverter(context, expand, locales()).convert((SnomedRelationshipIndexEntry) component);
 	}
 	
 	@Override

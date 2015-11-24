@@ -107,7 +107,7 @@ final class SnomedRelationshipSearchRequest extends SnomedSearchRequest<SnomedRe
 			relationshipsBuilder.add(indexEntry);
 		}
 
-		return SnomedConverters.newRelationshipConverter(context, expand()).convert(relationshipsBuilder.build(), offset(), limit(), topDocs.totalHits);
+		return SnomedConverters.newRelationshipConverter(context, expand(), locales()).convert(relationshipsBuilder.build(), offset(), limit(), topDocs.totalHits);
 	}
 
 	@Override

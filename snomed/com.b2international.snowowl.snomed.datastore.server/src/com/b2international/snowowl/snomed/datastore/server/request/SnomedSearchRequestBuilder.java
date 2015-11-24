@@ -45,9 +45,9 @@ public abstract class SnomedSearchRequestBuilder<B extends SnomedSearchRequestBu
 		return addOption(OptionKey.LANGUAGE_REFSET, languageRefSetIds);
 	}
 	
-	public final B filterByExtendedLocales(List<ExtendedLocale> extendedLocales) {
+	public final B filterByExtendedLocales(List<ExtendedLocale> locales) {
 		final List<Long> languageRefSetIds = newArrayList();
-		for (ExtendedLocale extendedLocale : extendedLocales) {
+		for (ExtendedLocale extendedLocale : locales) {
 			final String languageRefSetId;
 			
 			if (!extendedLocale.getLanguageRefSetId().isEmpty()) {
@@ -63,6 +63,6 @@ public abstract class SnomedSearchRequestBuilder<B extends SnomedSearchRequestBu
 			}
 		}
 		
-		return filterByLanguageRefSetIds(languageRefSetIds);
+		return filterByLanguageRefSetIds(languageRefSetIds).setLocales(locales);
 	}
 }

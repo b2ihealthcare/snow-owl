@@ -40,7 +40,7 @@ final class SnomedRefSetMemberGetRequest extends GetRequest<SnomedReferenceSetMe
 	@Override
 	protected SnomedReferenceSetMember process(BranchContext context, IComponent<String> component, List<String> expand) {
 		// FIXME class cast
-		return SnomedConverters.newMemberConverter(context, expand).convert((SnomedRefSetMemberIndexEntry) component);
+		return SnomedConverters.newMemberConverter(context, expand, locales()).convert((SnomedRefSetMemberIndexEntry) component);
 	}
 	
 	@Override

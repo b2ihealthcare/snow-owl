@@ -186,7 +186,7 @@ final class SnomedConceptSearchRequest extends SnomedSearchRequest<SnomedConcept
 			conceptsBuilder.add(indexEntry);
 		}
 
-		return SnomedConverters.newConceptConverter(context, expand()).convert(conceptsBuilder.build(), offset(), limit(), topDocs.totalHits);
+		return SnomedConverters.newConceptConverter(context, expand(), locales()).convert(conceptsBuilder.build(), offset(), limit(), topDocs.totalHits);
 	}
 
 	private Query createQuery(final Query query, final BooleanFilter filter) {
