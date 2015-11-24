@@ -16,10 +16,12 @@
 package com.b2international.commons.options;
 
 import static java.util.Collections.emptySet;
+import static java.util.Collections.emptyList;
 
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import javax.annotation.Nonnull;
@@ -102,6 +104,25 @@ public class HashMapOptions extends HashMap<String, Object> implements Options {
 				throw new IllegalArgumentException(String.format("The elements (%s) in the collection are not the instance of the given type (%s)", first.getClass(), type));
 			}
 			return emptySet();
+		}
+	}
+	
+	@Override
+	@SuppressWarnings("unchecked")
+	public <T> List<T> getList(String key, Class<T> type) {
+		final Object value = get(key);
+		if (type.isInstance(value)) {
+			return Collections.singletonList(type.cast(value));
+		} else {
+			final List<Object> List = get(key, List.class);
+			final Object first = List != null ? Iterables.getFirst(List, null) : null;
+			if (first != null) {
+				if (type.isInstance(first)) {
+					return (List<T>) List;
+				}
+				throw new IllegalArgumentException(String.format("The elements (%s) in the List are not the instance of the given type (%s)", first.getClass(), type));
+			}
+			return emptyList();
 		}
 	}
 	
