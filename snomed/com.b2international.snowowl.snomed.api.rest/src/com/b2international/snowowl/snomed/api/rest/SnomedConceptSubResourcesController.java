@@ -17,12 +17,8 @@ package com.b2international.snowowl.snomed.api.rest;
 
 import java.io.IOException;
 import java.io.StringReader;
-import java.util.Collections;
 import java.util.List;
-import java.util.Locale;
 import java.util.NoSuchElementException;
-
-import javax.servlet.http.HttpServletRequest;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -34,14 +30,13 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.context.request.async.DeferredResult;
 
-import com.b2international.commons.functions.StringToLongFunction;
 import com.b2international.commons.http.AcceptHeader;
+import com.b2international.commons.http.ExtendedLocale;
 import com.b2international.snowowl.core.domain.IComponentList;
 import com.b2international.snowowl.core.domain.IComponentRef;
 import com.b2international.snowowl.core.domain.PageableCollectionResource;
 import com.b2international.snowowl.core.exceptions.BadRequestException;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
-import com.b2international.snowowl.snomed.SnomedConstants.LanguageCodeReferenceSetIdentifierMapping;
 import com.b2international.snowowl.snomed.api.ISnomedStatementBrowserService;
 import com.b2international.snowowl.snomed.api.ISnomedTerminologyBrowserService;
 import com.b2international.snowowl.snomed.api.exception.FullySpecifiedNameNotFoundException;
@@ -148,15 +143,27 @@ public class SnomedConceptSubResourcesController extends AbstractSnomedRestServi
 			@RequestParam(value="limit", defaultValue="50", required=false) 
 			final int limit,
 
-			final HttpServletRequest request) {
+			@ApiParam(value="Language codes and reference sets, in order of preference")
+			@RequestHeader(value="Accept-Language", defaultValue="en-US;q=0.8,en-GB;q=0.6", required=false) 
+			final String languageSetting) {
 
+		final List<ExtendedLocale> extendedLocales;
+		
+		try {
+			extendedLocales = AcceptHeader.parseExtendedLocales(new StringReader(languageSetting));
+		} catch (IOException e) {
+			throw new BadRequestException(e.getMessage());
+		} catch (IllegalArgumentException e) {
+			throw new BadRequestException(e.getMessage());
+		}
+		
 		final IComponentRef conceptRef = createComponentRef(branchPath, conceptId);
 		final IComponentList<ISnomedRelationship> inboundEdges = statements.getInboundEdges(conceptRef, offset, limit);
 
 		final SnomedInboundRelationships result = new SnomedInboundRelationships();
 		result.setTotal(inboundEdges.getTotalMembers());
 		List<ISnomedRelationship> members = inboundEdges.getMembers();
-		members = relationshipExpander.expandRelationships(conceptRef, members, Collections.list(request.getLocales()), expand);
+		members = relationshipExpander.expandRelationships(conceptRef, members, extendedLocales, expand);
 		result.setInboundRelationships(members);
 		return result;
 	}
@@ -296,25 +303,15 @@ public class SnomedConceptSubResourcesController extends AbstractSnomedRestServi
 
 			@ApiParam(value="Accepted language tags, in order of preference")
 			@RequestHeader(value="Accept-Language", defaultValue="en-US;q=0.8,en-GB;q=0.6", required=false) 
-			final String acceptLanguage,
-			
-			@ApiParam(value="Accepted language reference set identifiers, in order of preference")
-			@RequestHeader(value="X-Accept-Language-Refset", defaultValue="", required=false)
-			final String acceptLanguageRefset) {
+			final String acceptLanguage) {
 		
-		List<Long> languageRefSets;
+		final List<ExtendedLocale> extendedLocales;
 		
 		try {
-			languageRefSets = AcceptHeader.parseLongs(new StringReader(acceptLanguageRefset));
-			
-			if (languageRefSets.isEmpty()) {
-				final List<Locale> locales = AcceptHeader.parseLocales(new StringReader(acceptLanguage));
-				languageRefSets = StringToLongFunction.copyOf(LanguageCodeReferenceSetIdentifierMapping.getReferenceSetIdentifiers(locales));
-			}
-
+			extendedLocales = AcceptHeader.parseExtendedLocales(new StringReader(acceptLanguage));
 		} catch (IOException e) {
 			throw new BadRequestException(e.getMessage());
-		} catch (NumberFormatException e) {
+		} catch (IllegalArgumentException e) {
 			throw new BadRequestException(e.getMessage());
 		}
 		
@@ -325,7 +322,7 @@ public class SnomedConceptSubResourcesController extends AbstractSnomedRestServi
 					.filterByConceptId(conceptId)
 					.filterByType("<<" + Concepts.SYNONYM)
 					.filterByAcceptability(Acceptability.PREFERRED)
-					.filterByLanguageRefSetIds(languageRefSets)
+					.filterByExtendedLocales(extendedLocales)
 					.build(branchPath)
 					.execute(bus)
 					.then(new Function<SnomedDescriptions, ISnomedDescription>() {
@@ -362,25 +359,15 @@ public class SnomedConceptSubResourcesController extends AbstractSnomedRestServi
 			
 			@ApiParam(value="Accepted language tags, in order of preference")
 			@RequestHeader(value="Accept-Language", defaultValue="en-US;q=0.8,en-GB;q=0.6", required=false) 
-			final String acceptLanguage,
-			
-			@ApiParam(value="Accepted language reference set identifiers, in order of preference")
-			@RequestHeader(value="X-Accept-Language-Refset", defaultValue="", required=false)
-			final String acceptLanguageRefset) {
+			final String acceptLanguage) {
 		
-		List<Long> languageRefSets;
+		List<ExtendedLocale> extendedLocales;
 		
 		try {
-			languageRefSets = AcceptHeader.parseLongs(new StringReader(acceptLanguageRefset));
-			
-			if (languageRefSets.isEmpty()) {
-				final List<Locale> locales = AcceptHeader.parseLocales(new StringReader(acceptLanguage));
-				languageRefSets = StringToLongFunction.copyOf(LanguageCodeReferenceSetIdentifierMapping.getReferenceSetIdentifiers(locales));
-			}
-
+			extendedLocales = AcceptHeader.parseExtendedLocales(new StringReader(acceptLanguage));
 		} catch (IOException e) {
 			throw new BadRequestException(e.getMessage());
-		} catch (NumberFormatException e) {
+		} catch (IllegalArgumentException e) {
 			throw new BadRequestException(e.getMessage());
 		}
 		
@@ -391,7 +378,7 @@ public class SnomedConceptSubResourcesController extends AbstractSnomedRestServi
 				.filterByConceptId(conceptId)
 				.filterByType(Concepts.FULLY_SPECIFIED_NAME)
 				.filterByAcceptability(Acceptability.PREFERRED)
-				.filterByLanguageRefSetIds(languageRefSets)
+				.filterByExtendedLocales(extendedLocales)
 				.build(branchPath)
 				.execute(bus)
 				.then(new Function<SnomedDescriptions, ISnomedDescription>() {

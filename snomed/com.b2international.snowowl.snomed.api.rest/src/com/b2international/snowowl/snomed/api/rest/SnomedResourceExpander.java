@@ -8,6 +8,7 @@ import java.util.Set;
 
 import org.springframework.beans.factory.annotation.Autowired;
 
+import com.b2international.commons.http.ExtendedLocale;
 import com.b2international.snowowl.core.domain.IComponentRef;
 import com.b2international.snowowl.core.exceptions.BadRequestException;
 import com.b2international.snowowl.snomed.api.impl.DescriptionService;
@@ -23,7 +24,7 @@ public class SnomedResourceExpander {
 	@Autowired
 	private DescriptionService fsnService;
 	
-	public List<ISnomedRelationship> expandRelationships(IComponentRef conceptRef, List<ISnomedRelationship> members, final List<Locale> locales, String[] expandArray) {
+	public List<ISnomedRelationship> expandRelationships(IComponentRef conceptRef, List<ISnomedRelationship> members, final List<ExtendedLocale> extendedLocales, String[] expandArray) {
 		if (expandArray.length == 0) {
 			return members;			
 		}
@@ -43,7 +44,7 @@ public class SnomedResourceExpander {
 							}})
 						.toSet();
 				
-				Map<String, ISnomedDescription> fsnMap = fsnService.getFullySpecifiedNames(conceptRef.getBranchPath(), conceptIds, locales);
+				Map<String, ISnomedDescription> fsnMap = fsnService.getFullySpecifiedNames(conceptRef.getBranchPath(), conceptIds, extendedLocales);
 				for (ExpandableSnomedRelationship relationship : expandedMembers) {
 					String sourceId = relationship.getSourceId();
 					relationship.setSource(new SnomedConceptMini(sourceId, getFsn(fsnMap, sourceId)));
@@ -58,7 +59,7 @@ public class SnomedResourceExpander {
 							}})
 						.toSet();
 				
-				Map<String, ISnomedDescription> fsnMap = fsnService.getFullySpecifiedNames(conceptRef.getBranchPath(), conceptIds, locales);
+				Map<String, ISnomedDescription> fsnMap = fsnService.getFullySpecifiedNames(conceptRef.getBranchPath(), conceptIds, extendedLocales);
 				for (ExpandableSnomedRelationship relationship : expandedMembers) {
 					String typeId = relationship.getTypeId();
 					relationship.setType(new SnomedConceptMini(typeId, getFsn(fsnMap, typeId)));

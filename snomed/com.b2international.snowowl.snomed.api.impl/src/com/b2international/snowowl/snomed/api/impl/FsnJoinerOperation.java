@@ -17,10 +17,10 @@ package com.b2international.snowowl.snomed.api.impl;
 
 import java.util.Collection;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 
+import com.b2international.commons.http.ExtendedLocale;
 import com.b2international.snowowl.core.api.ComponentUtils;
 import com.b2international.snowowl.snomed.core.domain.ISnomedDescription;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptIndexEntry;
@@ -36,11 +36,11 @@ public abstract class FsnJoinerOperation<T> {
 
 	private final String branch;
 	private final String conceptId;
-	private final List<Locale> locales;
+	private final List<ExtendedLocale> locales;
 	private final DescriptionService descriptionService;
 	
 	// Requires a BranchContext decorated with an IndexSearcher
-	protected FsnJoinerOperation(final String branch, final String conceptId, final List<Locale> locales, final DescriptionService descriptionService) {
+	protected FsnJoinerOperation(final String branch, final String conceptId, final List<ExtendedLocale> locales, final DescriptionService descriptionService) {
 		this.branch = branch;
 		this.conceptId = conceptId;
 		this.locales = locales;

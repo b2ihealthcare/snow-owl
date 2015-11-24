@@ -15,8 +15,13 @@
  */
 package com.b2international.snowowl.snomed.datastore.server.request;
 
+import static com.google.common.collect.Lists.newArrayList;
+
 import java.util.List;
 
+import com.b2international.commons.http.ExtendedLocale;
+import com.b2international.snowowl.core.exceptions.BadRequestException;
+import com.b2international.snowowl.snomed.SnomedConstants.LanguageCodeReferenceSetIdentifierMapping;
 import com.b2international.snowowl.snomed.datastore.server.request.SnomedSearchRequest.OptionKey;
 
 /**
@@ -38,5 +43,26 @@ public abstract class SnomedSearchRequestBuilder<B extends SnomedSearchRequestBu
 
 	public final B filterByLanguageRefSetIds(List<Long> languageRefSetIds) {
 		return addOption(OptionKey.LANGUAGE_REFSET, languageRefSetIds);
+	}
+	
+	public final B filterByExtendedLocales(List<ExtendedLocale> extendedLocales) {
+		final List<Long> languageRefSetIds = newArrayList();
+		for (ExtendedLocale extendedLocale : extendedLocales) {
+			final String languageRefSetId;
+			
+			if (!extendedLocale.getLanguageRefSetId().isEmpty()) {
+				languageRefSetId = extendedLocale.getLanguageRefSetId();
+			} else {
+				languageRefSetId = LanguageCodeReferenceSetIdentifierMapping.getReferenceSetIdentifier(extendedLocale.getLanguageTag());
+			}
+			
+			if (languageRefSetId == null) {
+				throw new BadRequestException("Don't know how to convert extended locale " + extendedLocale.toString() + " to a language reference set identifier.");
+			} else {
+				languageRefSetIds.add(Long.valueOf(languageRefSetId));
+			}
+		}
+		
+		return filterByLanguageRefSetIds(languageRefSetIds);
 	}
 }

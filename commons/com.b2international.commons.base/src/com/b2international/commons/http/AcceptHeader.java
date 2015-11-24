@@ -18,8 +18,6 @@ package com.b2international.commons.http;
 
 import java.io.IOException;
 import java.io.StringReader;
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
 
@@ -104,6 +102,15 @@ public class AcceptHeader<T> implements Comparable<AcceptHeader<T>> {
     		@Override
     		public Long apply(String input) {
     			return Long.valueOf(input);
+    		}
+		});
+    }
+    
+    public static List<ExtendedLocale> parseExtendedLocales(StringReader input) throws IOException {
+    	return parse(input, new Function<String, ExtendedLocale>() {
+    		@Override
+    		public ExtendedLocale apply(String input) {
+    			return ExtendedLocale.valueOf(input);
     		}
 		});
     }

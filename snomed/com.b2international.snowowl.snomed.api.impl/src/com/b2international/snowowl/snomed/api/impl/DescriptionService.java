@@ -13,6 +13,7 @@ import java.util.concurrent.ExecutionException;
 import javax.annotation.Resource;
 
 import com.b2international.commons.functions.StringToLongFunction;
+import com.b2international.commons.http.ExtendedLocale;
 import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.api.SnowowlRuntimeException;
 import com.b2international.snowowl.core.domain.IComponentRef;
@@ -20,7 +21,6 @@ import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.core.events.util.Promise;
 import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
-import com.b2international.snowowl.snomed.SnomedConstants.LanguageCodeReferenceSetIdentifierMapping;
 import com.b2international.snowowl.snomed.core.domain.Acceptability;
 import com.b2international.snowowl.snomed.core.domain.ISnomedDescription;
 import com.b2international.snowowl.snomed.core.domain.SnomedDescriptions;
@@ -54,14 +54,14 @@ public class DescriptionService {
 	 * @param locales		a list of {@link Locale}s to use, in order of preference
 	 * @return 				the preferred term for the concept, or {@code null} if no results could be retrieved
 	 */
-	public ISnomedDescription getPreferredTerm(final String branch, final String conceptId, final List<Locale> locales) {
+	public ISnomedDescription getPreferredTerm(final String branch, final String conceptId, final List<ExtendedLocale> locales) {
 		return Iterables.getOnlyElement(SnomedRequests.prepareDescriptionSearch()
 				.one()
 				.filterByActive(true)
 				.filterByConceptId(conceptId)
 				.filterByType("<<" + Concepts.SYNONYM)
 				.filterByAcceptability(Acceptability.PREFERRED)
-				.filterByLanguageRefSetIds(StringToLongFunction.copyOf(LanguageCodeReferenceSetIdentifierMapping.getReferenceSetIdentifiers(locales)))
+				.filterByExtendedLocales(locales)
 				.build(branch)
 				.executeSync(bus)
 				.getItems(), null);
@@ -88,14 +88,14 @@ public class DescriptionService {
 	 * @param locales    a list of {@link Locale}s to use, in order of preference
 	 * @return the preferred term for the concept
 	 */
-	public ISnomedDescription getFullySpecifiedName(final String branch, final String conceptId, final List<Locale> locales) {
+	public ISnomedDescription getFullySpecifiedName(final String branch, final String conceptId, final List<ExtendedLocale> locales) {
 		ISnomedDescription fsn = Iterables.getOnlyElement(SnomedRequests.prepareDescriptionSearch()
 				.one()
 				.filterByActive(true)
 				.filterByConceptId(conceptId)
 				.filterByType(Concepts.FULLY_SPECIFIED_NAME)
 				.filterByAcceptability(Acceptability.PREFERRED)
-				.filterByLanguageRefSetIds(StringToLongFunction.copyOf(LanguageCodeReferenceSetIdentifierMapping.getReferenceSetIdentifiers(locales)))
+				.filterByExtendedLocales(locales)
 				.build(branch)
 				.executeSync(bus)
 				.getItems(), null);
@@ -105,8 +105,8 @@ public class DescriptionService {
 		}
 		
 		final ImmutableSet.Builder<String> languageCodes = ImmutableSet.builder();
-		for (Locale locale : locales) {
-			languageCodes.add(locale.getLanguage().toLowerCase(Locale.ENGLISH));
+		for (ExtendedLocale locale : locales) {
+			languageCodes.add(locale.getLanguage());
 		}
 		
 		fsn = Iterables.getOnlyElement(SnomedRequests.prepareDescriptionSearch()
@@ -133,7 +133,7 @@ public class DescriptionService {
 				.getItems(), null);
 	}
 
-	public Map<String, ISnomedDescription> getFullySpecifiedNames(String branch, Set<String> conceptIds, List<Locale> locales) {
+	public Map<String, ISnomedDescription> getFullySpecifiedNames(String branch, Set<String> conceptIds, List<ExtendedLocale> locales) {
 		if (conceptIds.isEmpty()) {
 			return Collections.emptyMap();
 		}
@@ -144,7 +144,7 @@ public class DescriptionService {
 			.filterByConceptId(Collections2.transform(conceptIds, new StringToLongFunction()))
 			.filterByType(Concepts.FULLY_SPECIFIED_NAME)
 			.filterByAcceptability(Acceptability.PREFERRED)
-			.filterByLanguageRefSetIds(StringToLongFunction.copyOf(LanguageCodeReferenceSetIdentifierMapping.getReferenceSetIdentifiers(locales)))
+			.filterByExtendedLocales(locales)
 			.build(branch);
 
 		final Map<String, ISnomedDescription> fsnMap = newHashMap();
@@ -162,8 +162,8 @@ public class DescriptionService {
 		}
 		
 		final ImmutableSet.Builder<String> languageCodes = ImmutableSet.builder();
-		for (Locale locale : locales) {
-			languageCodes.add(locale.getLanguage().toLowerCase(Locale.ENGLISH));
+		for (ExtendedLocale locale : locales) {
+			languageCodes.add(locale.getLanguage());
 		}
 
 		request = SnomedRequests.prepareDescriptionSearch()

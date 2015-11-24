@@ -80,19 +80,6 @@ public abstract class SnomedConstants {
 		public static Collection<String> getSupportedLanguageIds() {
 			return Collections.unmodifiableCollection(CODE_IDENTIFIER_BIMAP.values());
 		}
-		
-		public static List<String> getReferenceSetIdentifiers(final List<Locale> locales) {
-			List<String> collectedRefSetIds = newArrayList();
-			for (Locale locale : locales) {
-				String refSetId = getReferenceSetIdentifier(locale.toLanguageTag().toLowerCase(Locale.ENGLISH));
-				if (refSetId != null) {
-					collectedRefSetIds.add(refSetId);
-				} else {
-					throw new IllegalArgumentException("Could not convert locale '" + locale.toLanguageTag() + "' to a language reference set.");
-				}
-			}
-			return collectedRefSetIds;
-		}
 	}
 	
 	/**
