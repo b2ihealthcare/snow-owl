@@ -26,7 +26,7 @@ import org.apache.lucene.index.NumericDocValues;
 import com.b2international.snowowl.datastore.index.AbstractDocsOutOfOrderCollector;
 import com.b2international.snowowl.snomed.datastore.IsAStatement;
 import com.b2international.snowowl.snomed.datastore.StatementCollectionMode;
-import com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants;
+import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedMappings;
 
 /**
  * Collector class for collecting SNOMED CT {@link IsAStatement IS_A relationship}s.
@@ -66,8 +66,8 @@ public class StatementCollector extends AbstractDocsOutOfOrderCollector {
 	@Override
 	protected void initDocValues(final AtomicReader leafReader) throws IOException {
 		idsValues = mode.getNumericDocValues(leafReader);
-		destinationIdsValues = leafReader.getNumericDocValues(SnomedIndexBrowserConstants.RELATIONSHIP_VALUE_ID);
-		sourceIdsValues = leafReader.getNumericDocValues(SnomedIndexBrowserConstants.RELATIONSHIP_OBJECT_ID);
+		destinationIdsValues = SnomedMappings.relationshipDestination().getDocValues(leafReader);
+		sourceIdsValues = SnomedMappings.relationshipSource().getDocValues(leafReader);
 	}
 
 	@Override

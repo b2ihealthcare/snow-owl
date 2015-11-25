@@ -17,14 +17,14 @@ package com.b2international.snowowl.datastore.server.snomed.jobs;
 
 import com.b2international.snowowl.datastore.server.snomed.SnomedDatastoreServerActivator;
 import com.b2international.snowowl.datastore.server.snomed.index.SnomedStatedServerTerminologyBrowser;
-import com.b2international.snowowl.datastore.serviceconfig.BrowserConfigJob;
+import com.b2international.snowowl.datastore.serviceconfig.IndexServiceTrackingConfigJob;
 import com.b2international.snowowl.snomed.datastore.SnomedStatedTerminologyBrowser;
 import com.b2international.snowowl.snomed.datastore.index.SnomedIndexService;
 
 /**
  * Server-side service config job for Stated SNOMED CT terminology browser
  */
-public class SnomedStatedServerTerminologyBrowserConfigJob extends BrowserConfigJob<SnomedStatedTerminologyBrowser, SnomedIndexService> {
+public class SnomedStatedServerTerminologyBrowserConfigJob extends IndexServiceTrackingConfigJob<SnomedStatedTerminologyBrowser, SnomedIndexService> {
 
 	private static final String NAME = "SNOMED CT stated server terminology browser configuration...";
 
@@ -33,7 +33,7 @@ public class SnomedStatedServerTerminologyBrowserConfigJob extends BrowserConfig
 	}
 
 	@Override
-	protected Class<SnomedStatedTerminologyBrowser> getBrowserClass() {
+	protected Class<SnomedStatedTerminologyBrowser> getTargetServiceClass() {
 		return SnomedStatedTerminologyBrowser.class;
 	}
 
@@ -43,7 +43,7 @@ public class SnomedStatedServerTerminologyBrowserConfigJob extends BrowserConfig
 	}
 
 	@Override
-	protected SnomedStatedTerminologyBrowser createBrowser(SnomedIndexService indexService) {
+	protected SnomedStatedTerminologyBrowser createServiceImplementation(SnomedIndexService indexService) {
 		return new SnomedStatedServerTerminologyBrowser(indexService);
 	}
 

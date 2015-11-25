@@ -29,6 +29,7 @@ import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.api.IComponent;
 import com.b2international.snowowl.core.markers.IDiagnostic;
 import com.b2international.snowowl.core.markers.IDiagnostic.DiagnosticSeverity;
+import com.b2international.snowowl.datastore.BranchPathUtils;
 import com.b2international.snowowl.dsl.expressionextractor.ExtractedSCGAttributeGroup;
 import com.b2international.snowowl.dsl.expressionextractor.SCGExpressionExtractor;
 import com.b2international.snowowl.dsl.scg.Attribute;
@@ -38,17 +39,18 @@ import com.b2international.snowowl.dsl.scg.Group;
 import com.b2international.snowowl.dsl.scg.ScgPackage;
 import com.b2international.snowowl.dsl.util.ScgAttributeFinderVisitor;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
+import com.b2international.snowowl.snomed.SnomedPackage;
 import com.b2international.snowowl.snomed.datastore.ConceptParentAdapter;
 import com.b2international.snowowl.snomed.datastore.NormalFormWrapper;
 import com.b2international.snowowl.snomed.datastore.NormalFormWrapper.AttributeConceptGroupWrapper;
 import com.b2international.snowowl.snomed.datastore.SnomedClientTerminologyBrowser;
-import com.b2international.snowowl.snomed.datastore.SnomedConceptIndexEntry;
 import com.b2international.snowowl.snomed.datastore.SnomedEditingContext;
 import com.b2international.snowowl.snomed.datastore.index.SnomedClientIndexService;
 import com.b2international.snowowl.snomed.datastore.index.SnomedConceptFullQueryAdapter;
-import com.b2international.snowowl.snomed.datastore.index.SnomedDescriptionIndexEntry;
 import com.b2international.snowowl.snomed.datastore.index.SnomedDescriptionIndexQueryAdapter;
-import com.b2international.snowowl.snomed.datastore.services.SnomedConceptNameProvider;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptIndexEntry;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDescriptionIndexEntry;
+import com.b2international.snowowl.snomed.datastore.services.ISnomedConceptNameProvider;
 import com.b2international.snowowl.snomed.mrcm.core.validator.MrcmConceptWidgetBeanValidator;
 import com.b2international.snowowl.snomed.mrcm.core.validator.WidgetBeanValidationDiagnostic;
 import com.b2international.snowowl.snomed.mrcm.core.widget.ClientWidgetBeanProviderFactory;
@@ -198,7 +200,7 @@ public class SCGJavaValidator extends AbstractSCGJavaValidator {
 			return;
 		}
 		
-		String conceptPreferredTerm = SnomedConceptNameProvider.INSTANCE.getText(concept.getId());
+		String conceptPreferredTerm = ApplicationContext.getServiceForClass(ISnomedConceptNameProvider.class).getComponentLabel(BranchPathUtils.createActivePath(SnomedPackage.eINSTANCE), concept.getId());
 		if (term.equals(conceptPreferredTerm)) {
 			return;
 		}
@@ -207,10 +209,10 @@ public class SCGJavaValidator extends AbstractSCGJavaValidator {
 		List<SnomedDescriptionIndexEntry> result = indexSearcher.search(queryAdapter);
 		
 		for (SnomedDescriptionIndexEntry snomedDescriptionIndexEntry : result) {
-			if (snomedDescriptionIndexEntry.getLabel().equals(term) && Concepts.FULLY_SPECIFIED_NAME.equals(snomedDescriptionIndexEntry.getType())) {
+			if (snomedDescriptionIndexEntry.getLabel().equals(term) && Concepts.FULLY_SPECIFIED_NAME.equals(snomedDescriptionIndexEntry.getTypeId())) {
 				warning("This is the fully specified name, not the preferred term.", ScgPackage.eINSTANCE.getConcept_Term(), NON_MATCHING_TERM);
 				return;
-			} else if (snomedDescriptionIndexEntry.getLabel().equals(term) && Concepts.SYNONYM.equals(snomedDescriptionIndexEntry.getType())) {
+			} else if (snomedDescriptionIndexEntry.getLabel().equals(term) && Concepts.SYNONYM.equals(snomedDescriptionIndexEntry.getTypeId())) {
 				warning("This is a synonym, not the preferred term.", ScgPackage.eINSTANCE.getConcept_Term(), NON_MATCHING_TERM);
 				return;
 			}

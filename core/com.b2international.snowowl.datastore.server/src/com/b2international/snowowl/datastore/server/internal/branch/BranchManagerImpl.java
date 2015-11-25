@@ -20,11 +20,11 @@ import java.util.Collection;
 import javax.annotation.OverridingMethodsMustInvokeSuper;
 
 import com.b2international.snowowl.core.Metadata;
+import com.b2international.snowowl.core.branch.Branch;
+import com.b2international.snowowl.core.branch.BranchManager;
 import com.b2international.snowowl.core.exceptions.AlreadyExistsException;
 import com.b2international.snowowl.core.exceptions.BadRequestException;
 import com.b2international.snowowl.core.exceptions.NotFoundException;
-import com.b2international.snowowl.datastore.branch.Branch;
-import com.b2international.snowowl.datastore.branch.BranchManager;
 import com.b2international.snowowl.datastore.store.Store;
 import com.b2international.snowowl.datastore.store.query.Query;
 import com.b2international.snowowl.datastore.store.query.QueryBuilder;

@@ -21,7 +21,7 @@ import com.b2international.snowowl.core.api.SnowowlRuntimeException;
 import com.b2international.snowowl.core.quicksearch.QuickSearchContentResult;
 import com.b2international.snowowl.datastore.IBranchPathMap;
 import com.b2international.snowowl.datastore.quicksearch.IQuickSearchService;
-import com.b2international.snowowl.datastore.quicksearch.QuickSearchResponse;
+import com.b2international.snowowl.datastore.quicksearch.QuickSearchServiceResult;
 import com.b2international.snowowl.datastore.server.jobs.ProcessQuickSearchItemsCallable;
 
 /**
@@ -31,7 +31,7 @@ import com.b2international.snowowl.datastore.server.jobs.ProcessQuickSearchItems
 public class QuickSearchServerService implements IQuickSearchService {
 
 	@Override
-	public QuickSearchResponse computeContents(IBranchPathMap branchPathMap, Map<String, Map<String, Object>> providerConfiguration, String queryExpression, int limit) {
+	public QuickSearchServiceResult getAllComponents(String queryExpression, IBranchPathMap branchPathMap, int limit, Map<String, Map<String, Object>> providerConfiguration) {
 		final ProcessQuickSearchItemsCallable callable = new ProcessQuickSearchItemsCallable(queryExpression, providerConfiguration, limit, branchPathMap);
 		final Map<String, QuickSearchContentResult> results;
 
@@ -41,6 +41,6 @@ public class QuickSearchServerService implements IQuickSearchService {
 			throw new SnowowlRuntimeException(e);
 		}
 		
-		return new QuickSearchResponse(results); 
+		return new QuickSearchServiceResult(results); 
 	}
 }

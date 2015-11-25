@@ -70,10 +70,12 @@ import com.b2international.snowowl.importer.Importer;
 import com.b2international.snowowl.snomed.SnomedPackage;
 import com.b2international.snowowl.snomed.common.ContentSubType;
 import com.b2international.snowowl.snomed.datastore.ISnomedImportPostProcessor;
+import com.b2international.snowowl.snomed.datastore.SnomedConceptLookupService;
 import com.b2international.snowowl.snomed.datastore.SnomedEditingContext;
 import com.b2international.snowowl.snomed.datastore.SnomedRefSetBrowser;
+import com.b2international.snowowl.snomed.datastore.SnomedRefSetLookupService;
 import com.b2international.snowowl.snomed.datastore.SnomedTerminologyBrowser;
-import com.b2international.snowowl.snomed.datastore.index.refset.SnomedRefSetIndexEntry;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetIndexEntry;
 import com.b2international.snowowl.snomed.importer.net4j.DefectType;
 import com.b2international.snowowl.snomed.importer.net4j.ImportConfiguration;
 import com.b2international.snowowl.snomed.importer.net4j.SnomedImportResult;
@@ -365,15 +367,15 @@ public final class ImportUtil {
 			// release specific post processing
 			postProcess(context);
 
-			final SnomedTerminologyBrowser terminologyBrowser = ApplicationContext.getInstance().getServiceChecked(SnomedTerminologyBrowser.class);
-
+			final SnomedConceptLookupService conceptLookupService = new SnomedConceptLookupService();
 			for (final long conceptId : context.getVisitedConcepts().toSortedArray()) {
-				result.getVisitedConcepts().add(terminologyBrowser.getConcept(branchPath, Long.toString(conceptId)));
+				result.getVisitedConcepts().add(conceptLookupService.getComponent(branchPath, Long.toString(conceptId)));
 			}
 
+			final SnomedRefSetLookupService refSetLookupService = new SnomedRefSetLookupService();
 			for (final long refSetId : context.getVisitedRefSets().toSortedArray()) {
 
-				final SnomedRefSetIndexEntry refSet = ApplicationContext.getInstance().getService(SnomedRefSetBrowser.class).getRefSet(branchPath, Long.toString(refSetId));
+				final SnomedRefSetIndexEntry refSet = refSetLookupService.getComponent(branchPath, Long.toString(refSetId));
 
 				// Check if the refset is structural (in which case no RefSetMini can be retrieved)
 				if (null != refSet) {
@@ -382,11 +384,8 @@ public final class ImportUtil {
 			}
 
 			return result;
-
 		} finally {
-
 			subMonitor.done();
-
 			if (!result.getVisitedConcepts().isEmpty() || !result.getVisitedRefSets().isEmpty()) {
 				LogUtils.logImportActivity(IMPORT_LOGGER, requestingUserId, branchPath, "SNOMED CT import successfully finished.");
 			} else {

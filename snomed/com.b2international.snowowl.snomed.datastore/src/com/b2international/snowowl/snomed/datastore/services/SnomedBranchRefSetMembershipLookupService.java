@@ -26,12 +26,12 @@ import com.b2international.snowowl.datastore.browser.BranchSpecificClientStateme
 import com.b2international.snowowl.datastore.browser.BranchSpecificClientTerminologyBrowser;
 import com.b2international.snowowl.datastore.index.AbstractClientIndexService;
 import com.b2international.snowowl.datastore.index.BranchSpecificClientIndexService;
-import com.b2international.snowowl.snomed.datastore.SnomedConceptIndexEntry;
-import com.b2international.snowowl.snomed.datastore.SnomedRelationshipIndexEntry;
 import com.b2international.snowowl.snomed.datastore.SnomedStatementBrowser;
 import com.b2international.snowowl.snomed.datastore.SnomedTerminologyBrowser;
-import com.b2international.snowowl.snomed.datastore.index.SnomedIndexEntry;
 import com.b2international.snowowl.snomed.datastore.index.SnomedIndexService;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptIndexEntry;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedIndexEntry;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRelationshipIndexEntry;
 
 /**
  * SNOMED CT terminology specific reference set membership lookup service implementation that uses client services wired for 

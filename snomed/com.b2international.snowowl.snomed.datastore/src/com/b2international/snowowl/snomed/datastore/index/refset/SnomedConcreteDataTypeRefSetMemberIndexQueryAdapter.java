@@ -16,17 +16,14 @@
 package com.b2international.snowowl.snomed.datastore.index.refset;
 
 
-import static com.b2international.snowowl.snomed.datastore.index.refset.SnomedConcreteDataTypeRefSetMemberIndexEntry.createFromIndexEntry;
-
 import java.io.Serializable;
 
 import org.apache.lucene.document.Document;
-import org.apache.lucene.index.IndexableField;
 
 import com.b2international.snowowl.core.api.IBranchPath;
-import com.b2international.snowowl.datastore.index.mapping.Mappings;
 import com.b2international.snowowl.snomed.datastore.SnomedRefSetUtil;
-import com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry;
+import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedMappings;
 import com.b2international.snowowl.snomed.snomedrefset.DataType;
 
 /**
@@ -57,32 +54,14 @@ public class SnomedConcreteDataTypeRefSetMemberIndexQueryAdapter extends SnomedR
 		super(refSetId, searchString, excludeInactive);
 	}
 	
-	
-	/*
-	 * (non-Javadoc)
-	 * @see com.b2international.snowowl.snomed.datastore.index.refset.SnomedRefSetMemberIndexQueryAdapter#buildSearchResultDTO(org.apache.lucene.document.Document, float)
-	 */
 	@Override
-	public SnomedConcreteDataTypeRefSetMemberIndexEntry buildSearchResult(final Document doc, final IBranchPath branchPath, final float score) {
-		final SnomedConcreteDataTypeRefSetMemberIndexEntry member = createFromIndexEntry(super.buildSearchResult(doc, branchPath, score));
-		return buildSearchResult(member, doc);
-	}
-
-	static SnomedConcreteDataTypeRefSetMemberIndexEntry buildSearchResult(final SnomedConcreteDataTypeRefSetMemberIndexEntry member, final Document doc) {
-		member.setOperatorComponentId(doc.getField(SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_OPERATOR_ID).stringValue());
-		final IndexableField uomFieldable = doc.getField(SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_UOM_ID);
-		//can happen for SG concrete data types
-		if (null != uomFieldable) {
-			member.setUomComponentId(uomFieldable.stringValue());
-		}
-		member.setAttributeLabel(Mappings.label().getValue(doc));
+	public SnomedRefSetMemberIndexEntry buildSearchResult(final Document doc, final IBranchPath branchPath, final float score) {
+		final DataType dataType = DataType.get(SnomedMappings.memberDataTypeOrdinal().getValue(doc));
+		final String serializedValue = SnomedMappings.memberSerializedValue().getValue(doc);
 		
-		DataType dataType = SnomedRefSetUtil.DATA_TYPE_BIMAP.get(SnomedRefSetUtil.getDataType(member.getRefSetIdentifierId()));
-		member.setDataType(dataType);
-		Object deserializeValue = SnomedRefSetUtil.deserializeValue(dataType, doc.get(SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_SERIALIZED_VALUE));
-		member.setValue(deserializeValue);
-		member.setCharacteristicTypeId(doc.getField(SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_CHARACTERISTIC_TYPE_ID).stringValue());
-		return member;
+		return SnomedRefSetMemberIndexEntry.builder(doc)
+				.score(score)
+				.additionalField(SnomedMappings.memberSerializedValue().fieldName(), SnomedRefSetUtil.deserializeValue(dataType, serializedValue))
+				.build();
 	}
-	
 }

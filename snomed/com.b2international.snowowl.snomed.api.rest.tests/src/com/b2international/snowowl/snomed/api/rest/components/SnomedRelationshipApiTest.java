@@ -38,10 +38,10 @@ import org.junit.Ignore;
 import org.junit.Test;
 
 import com.b2international.snowowl.core.api.IBranchPath;
-import com.b2international.snowowl.snomed.api.domain.CharacteristicType;
-import com.b2international.snowowl.snomed.api.domain.RelationshipModifier;
 import com.b2international.snowowl.snomed.api.rest.AbstractSnomedApiTest;
 import com.b2international.snowowl.snomed.api.rest.SnomedComponentType;
+import com.b2international.snowowl.snomed.core.domain.CharacteristicType;
+import com.b2international.snowowl.snomed.core.domain.RelationshipModifier;
 import com.google.common.collect.ImmutableMap;
 
 /**
@@ -87,12 +87,20 @@ public class SnomedRelationshipApiTest extends AbstractSnomedApiTest {
 	private void assertCharacteristicType(final IBranchPath branchPath, final String relationshipId, final CharacteristicType characteristicType) {
 		assertComponentHasProperty(branchPath, SnomedComponentType.RELATIONSHIP, relationshipId, "characteristicType", characteristicType.name());
 	}
-
+	
 	@Test
 	public void createRelationship() {
 		final Map<?, ?> requestBody = givenRelationshipRequestBody(DISEASE, TEMPORAL_CONTEXT, FINDING_CONTEXT, MODULE_SCT_CORE, "New relationship on MAIN");
 		final String relationshipId = assertComponentCreated(createMainPath(), SnomedComponentType.RELATIONSHIP, requestBody);
 		assertCharacteristicType(createMainPath(), relationshipId, CharacteristicType.STATED_RELATIONSHIP);
+	}
+	
+	@Test
+	public void createDuplicateRelationship() {
+		final Map<?, ?> requestBody = givenRelationshipRequestBody(DISEASE, TEMPORAL_CONTEXT, FINDING_CONTEXT, MODULE_SCT_CORE, "New relationship on MAIN");
+		final String relationshipId = assertComponentCreated(createMainPath(), SnomedComponentType.RELATIONSHIP, requestBody);
+		final Map<?, ?> dupRequestBody = ImmutableMap.builder().putAll(requestBody).put("id", relationshipId).build();
+		assertComponentCreatedWithStatus(createMainPath(), SnomedComponentType.RELATIONSHIP, dupRequestBody, 409);
 	}
 
 	@Test

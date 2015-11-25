@@ -22,7 +22,6 @@ import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Suppliers.memoize;
 
 import java.io.IOException;
-import java.util.Collections;
 import java.util.Iterator;
 import java.util.Set;
 
@@ -34,6 +33,7 @@ import org.apache.lucene.search.TopDocs;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.b2international.commons.BooleanUtils;
 import com.b2international.commons.CompareUtils;
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.api.IBranchPath;
@@ -42,7 +42,6 @@ import com.b2international.snowowl.datastore.index.mapping.Mappings;
 import com.b2international.snowowl.datastore.server.index.IndexServerService;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.datastore.ILanguageConfigurationProvider;
-import com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants;
 import com.b2international.snowowl.snomed.datastore.index.SnomedIndexService;
 import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedMappings;
 import com.b2international.snowowl.snomed.datastore.services.ISnomedComponentService;
@@ -70,19 +69,18 @@ public class SnomedRf1DescriptionExporter implements SnomedRf1Exporter {
 	
 	private static final Set<String> DESCRIPTION_FILEDS_TO_LOAD = SnomedMappings.fieldsToLoad()
 			.active()
-			.label()
+			.descriptionTerm()
 			.descriptionConcept()
 			.descriptionType()
-			.field(SnomedIndexBrowserConstants.DESCRIPTION_CASE_SIGNIFICANCE_ID)
+			.descriptionCaseSignificance()
 			.build();
 	
-	private static final Set<String> INACTIVATION_ID_FIELD_TO_LOAD = Collections.unmodifiableSet(Sets.newHashSet(
-			SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_VALUE_ID
-			));
+	private static final Set<String> INACTIVATION_ID_FIELD_TO_LOAD = SnomedMappings.fieldsToLoad()
+			.memberValueId()
+			.build();
 	
 	private final static Query INACTIVATION_QUERY = SnomedMappings.newQuery().memberRefSetId(Concepts.REFSET_DESCRIPTION_INACTIVITY_INDICATOR).matchAll();
-	private static final Query PREFERRED_MEMBER_QUERY = SnomedMappings.newQuery().field(SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_ACCEPTABILITY_ID, 
-			Long.parseLong(Concepts.REFSET_DESCRIPTION_ACCEPTABILITY_PREFERRED)).matchAll();
+	private static final Query PREFERRED_MEMBER_QUERY = SnomedMappings.newQuery().memberAcceptabilityId(Long.valueOf(Concepts.REFSET_DESCRIPTION_ACCEPTABILITY_PREFERRED)).matchAll();
 	
 	private final Id2Rf1PropertyMapper mapper;
 	private final SnomedExportConfiguration configuration;
@@ -141,10 +139,10 @@ public class SnomedRf1DescriptionExporter implements SnomedRf1Exporter {
 								final Document doc = searcher.doc(conceptTopDocs.scoreDocs[0].doc, DESCRIPTION_FILEDS_TO_LOAD);
 								
 								_values[0] = descriptionId;
-								_values[1] = 1 == SnomedMappings.active().getValue(doc) ? "1" : "0";
+								_values[1] = BooleanUtils.valueOf(SnomedMappings.active().getValue(doc)) ? "1" : "0";
 								_values[2] = SnomedMappings.descriptionConcept().getValueAsString(doc);
-								_values[3] = Mappings.label().getValue(doc);
-								_values[4] = doc.get(SnomedIndexBrowserConstants.DESCRIPTION_CASE_SIGNIFICANCE_ID);
+								_values[3] = SnomedMappings.descriptionTerm().getValue(doc);
+								_values[4] = SnomedMappings.descriptionCaseSignificance().getValueAsString(doc);
 								_values[5] = SnomedMappings.descriptionType().getValueAsString(doc);
 								
 								if ("0".equals(String.valueOf(_values[1]))) {
@@ -152,7 +150,7 @@ public class SnomedRf1DescriptionExporter implements SnomedRf1Exporter {
 									final TopDocs inactivationTopDocs = indexService.search(getBranchPath(), inactivationQuery, 1);
 									
 									if (null != inactivationTopDocs && !CompareUtils.isEmpty(inactivationTopDocs.scoreDocs)) {
-										_values[1] = searcher.doc(inactivationTopDocs.scoreDocs[0].doc, INACTIVATION_ID_FIELD_TO_LOAD).get(SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_VALUE_ID);
+										_values[1] = SnomedMappings.memberValueId().getValue(searcher.doc(inactivationTopDocs.scoreDocs[0].doc, INACTIVATION_ID_FIELD_TO_LOAD));
 									} 
 									
 								}

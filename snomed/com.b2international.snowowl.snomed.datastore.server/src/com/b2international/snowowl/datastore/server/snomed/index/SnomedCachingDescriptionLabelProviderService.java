@@ -18,19 +18,15 @@ package com.b2international.snowowl.datastore.server.snomed.index;
 import static com.google.common.base.Preconditions.checkNotNull;
 
 import com.b2international.snowowl.core.api.IBranchPath;
-import com.b2international.snowowl.snomed.datastore.SnomedDescriptionLabelProviderService;
 
 /**
  * Server-side caching component label provider service for SNOMED&nbsp;CT descriptions.
  *
  */
-public class SnomedCachingDescriptionLabelProviderService 
-	extends SnomedCachingComponentLabelProviderService<SnomedCachingDescriptionLabelProvider> 
-	implements SnomedDescriptionLabelProviderService {
+public class SnomedCachingDescriptionLabelProviderService extends SnomedCachingComponentLabelProviderService<SnomedCachingDescriptionLabelProvider> {
 
 	@Override
 	protected SnomedCachingDescriptionLabelProvider createCachingLabelProvider(final IBranchPath branchPath) {
 		return new SnomedCachingDescriptionLabelProvider(checkNotNull(branchPath, "branchPath"));
 	}
-
 }

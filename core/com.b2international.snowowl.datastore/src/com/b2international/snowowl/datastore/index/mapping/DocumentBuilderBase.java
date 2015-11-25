@@ -43,6 +43,10 @@ public abstract class DocumentBuilderBase<T extends DocumentBuilderBase<T>> {
 			super(doc);
 		}
 		
+		@Override
+		protected DocumentBuilder getSelf() {
+			return this;
+		}
 	}
 	
 	private Document doc;
@@ -227,9 +231,7 @@ public abstract class DocumentBuilderBase<T extends DocumentBuilderBase<T>> {
 		return addToDoc(Mappings.searchOnlyStringField(fieldName), value);
 	}
 	
-	protected T getSelf() {
-		return (T) this;
-	}
+	protected abstract T getSelf();
 	
 	public final T with(DocumentUpdater<T> updater) {
 		updater.update(getSelf());
@@ -239,5 +241,4 @@ public abstract class DocumentBuilderBase<T extends DocumentBuilderBase<T>> {
 	protected final int toIntValue(boolean value) {
 		return value ? 1 : 0;
 	}
-
 }

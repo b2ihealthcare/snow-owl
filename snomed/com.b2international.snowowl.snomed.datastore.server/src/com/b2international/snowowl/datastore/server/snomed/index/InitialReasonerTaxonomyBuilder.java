@@ -27,16 +27,6 @@ import org.apache.lucene.search.TermQuery;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import bak.pcj.LongIterator;
-import bak.pcj.list.LongArrayList;
-import bak.pcj.map.LongKeyIntOpenHashMap;
-import bak.pcj.map.LongKeyLongMap;
-import bak.pcj.map.LongKeyLongOpenHashMap;
-import bak.pcj.map.LongKeyMap;
-import bak.pcj.map.LongKeyMapIterator;
-import bak.pcj.set.LongOpenHashSet;
-import bak.pcj.set.LongSet;
-
 import com.b2international.commons.ClassUtils;
 import com.b2international.commons.concurrent.equinox.ForkJoinUtils;
 import com.b2international.snowowl.core.ApplicationContext;
@@ -49,13 +39,22 @@ import com.b2international.snowowl.snomed.datastore.ConcreteDomainFragment;
 import com.b2international.snowowl.snomed.datastore.IsAStatement;
 import com.b2international.snowowl.snomed.datastore.StatementCollectionMode;
 import com.b2international.snowowl.snomed.datastore.StatementFragment;
-import com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants;
 import com.b2international.snowowl.snomed.datastore.index.SnomedIndexService;
 import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedMappings;
 import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedQueryBuilder;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType;
 import com.google.common.base.Stopwatch;
 import com.google.common.collect.Iterables;
+
+import bak.pcj.LongIterator;
+import bak.pcj.list.LongArrayList;
+import bak.pcj.map.LongKeyIntOpenHashMap;
+import bak.pcj.map.LongKeyLongMap;
+import bak.pcj.map.LongKeyLongOpenHashMap;
+import bak.pcj.map.LongKeyMap;
+import bak.pcj.map.LongKeyMapIterator;
+import bak.pcj.set.LongOpenHashSet;
+import bak.pcj.set.LongSet;
 
 /**
  * Class for building the bare minimum representation of the state of the SNOMED&nbsp;CT ontology before processing changes.
@@ -454,11 +453,11 @@ public class InitialReasonerTaxonomyBuilder extends AbstractReasonerTaxonomyBuil
 		
 		final Runnable getExhaustiveConceptIdsRunnable = new GetConceptIdsRunnable(taskName,
 				exhaustiveConceptIdsReference, 
-				createIntTermQuery(SnomedIndexBrowserConstants.CONCEPT_EXHAUSTIVE, 1));
+				SnomedMappings.exhaustive().toQuery(1));
 
 		final Runnable getFullyDefinedConceptIdsRunnable = new GetConceptIdsRunnable(taskName,
 				fullyDefinedConceptIdsReference, 
-				createIntTermQuery(SnomedIndexBrowserConstants.CONCEPT_PRIMITIVE, 0));
+				SnomedMappings.primitive().toQuery(0));
 
 		ForkJoinUtils.runInParallel(
 				taxonomyBuilderRunnable,

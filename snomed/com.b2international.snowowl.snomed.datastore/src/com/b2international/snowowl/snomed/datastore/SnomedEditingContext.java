@@ -21,24 +21,7 @@ import static com.b2international.snowowl.datastore.BranchPathUtils.createPath;
 import static com.b2international.snowowl.datastore.cdo.CDOIDUtils.STORAGE_KEY_TO_CDO_ID_FUNCTION;
 import static com.b2international.snowowl.datastore.cdo.CDOUtils.getAttribute;
 import static com.b2international.snowowl.datastore.cdo.CDOUtils.getObjectIfExists;
-import static com.b2international.snowowl.snomed.SnomedConstants.Concepts.B2I_NAMESPACE;
-import static com.b2international.snowowl.snomed.SnomedConstants.Concepts.ENTIRE_TERM_CASE_INSENSITIVE;
-import static com.b2international.snowowl.snomed.SnomedConstants.Concepts.ENTIRE_TERM_CASE_SENSITIVE;
-import static com.b2international.snowowl.snomed.SnomedConstants.Concepts.EXISTENTIAL_RESTRICTION_MODIFIER;
-import static com.b2international.snowowl.snomed.SnomedConstants.Concepts.FULLY_SPECIFIED_NAME;
-import static com.b2international.snowowl.snomed.SnomedConstants.Concepts.INFERRED_RELATIONSHIP;
-import static com.b2international.snowowl.snomed.SnomedConstants.Concepts.IS_A;
-import static com.b2international.snowowl.snomed.SnomedConstants.Concepts.MODULE_B2I_EXTENSION;
-import static com.b2international.snowowl.snomed.SnomedConstants.Concepts.MODULE_SCT_CORE;
-import static com.b2international.snowowl.snomed.SnomedConstants.Concepts.PRIMITIVE;
-import static com.b2international.snowowl.snomed.SnomedConstants.Concepts.QUALIFIER_VALUE_TOPLEVEL_CONCEPT;
-import static com.b2international.snowowl.snomed.SnomedConstants.Concepts.QUALIFYING_RELATIONSHIP;
-import static com.b2international.snowowl.snomed.SnomedConstants.Concepts.REFSET_COMPLEX_MAP_TYPE;
-import static com.b2international.snowowl.snomed.SnomedConstants.Concepts.REFSET_DESCRIPTION_ACCEPTABILITY_ACCEPTABLE;
-import static com.b2international.snowowl.snomed.SnomedConstants.Concepts.REFSET_DESCRIPTION_ACCEPTABILITY_PREFERRED;
-import static com.b2international.snowowl.snomed.SnomedConstants.Concepts.REFSET_SIMPLE_TYPE;
-import static com.b2international.snowowl.snomed.SnomedConstants.Concepts.STATED_RELATIONSHIP;
-import static com.b2international.snowowl.snomed.SnomedConstants.Concepts.SYNONYM;
+import static com.b2international.snowowl.snomed.SnomedConstants.Concepts.*;
 import static com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants.CONCEPT;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.collect.Iterables.toArray;
@@ -80,9 +63,11 @@ import com.b2international.commons.Pair;
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.ComponentIdentifierPair;
 import com.b2international.snowowl.core.api.IBranchPath;
+import com.b2international.snowowl.core.api.ILookupService;
 import com.b2international.snowowl.core.api.SnowowlRuntimeException;
 import com.b2international.snowowl.core.api.browser.IClientTerminologyBrowser;
 import com.b2international.snowowl.core.api.index.IIndexEntry;
+import com.b2international.snowowl.core.exceptions.ComponentNotFoundException;
 import com.b2international.snowowl.core.terminology.ComponentCategory;
 import com.b2international.snowowl.datastore.BranchPathUtils;
 import com.b2international.snowowl.datastore.CDOEditingContext;
@@ -95,21 +80,25 @@ import com.b2international.snowowl.snomed.Relationship;
 import com.b2international.snowowl.snomed.SnomedConstants;
 import com.b2international.snowowl.snomed.SnomedFactory;
 import com.b2international.snowowl.snomed.SnomedPackage;
+import com.b2international.snowowl.snomed.core.preference.ModulePreference;
+import com.b2international.snowowl.snomed.core.store.SnomedComponentBuilder;
 import com.b2international.snowowl.snomed.datastore.NormalFormWrapper.AttributeConceptGroupWrapper;
 import com.b2international.snowowl.snomed.datastore.id.ISnomedIdentifierService;
 import com.b2international.snowowl.snomed.datastore.id.SnomedIdentifier;
 import com.b2international.snowowl.snomed.datastore.id.reservations.ISnomedIdentiferReservationService;
 import com.b2international.snowowl.snomed.datastore.id.reservations.Reservations;
 import com.b2international.snowowl.snomed.datastore.index.SnomedClientIndexService;
-import com.b2international.snowowl.snomed.datastore.index.SnomedDescriptionIndexEntry;
 import com.b2international.snowowl.snomed.datastore.index.SnomedDescriptionIndexQueryAdapter;
 import com.b2international.snowowl.snomed.datastore.index.SnomedDescriptionReducedQueryAdapter;
-import com.b2international.snowowl.snomed.datastore.index.refset.SnomedRefSetMemberIndexEntry;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptIndexEntry;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDescriptionIndexEntry;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry;
 import com.b2international.snowowl.snomed.datastore.services.IClientSnomedComponentService;
 import com.b2international.snowowl.snomed.datastore.services.ISnomedComponentService;
+import com.b2international.snowowl.snomed.datastore.services.ISnomedConceptNameProvider;
+import com.b2international.snowowl.snomed.datastore.services.ISnomedRelationshipNameProvider;
 import com.b2international.snowowl.snomed.datastore.services.SnomedModuleDependencyRefSetService;
 import com.b2international.snowowl.snomed.datastore.services.SnomedRefSetMembershipLookupService;
-import com.b2international.snowowl.snomed.datastore.services.SnomedRelationshipNameProvider;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedLanguageRefSetMember;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedMappingRefSet;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSet;
@@ -607,21 +596,24 @@ public class SnomedEditingContext extends BaseSnomedEditingContext {
 	/////////////////////////////////////////////////////////////////////////
 
 	/**
-	 * @param conceptId the concept identifier
-	 * @return the concept with the specified SCT ID
-	 * @throws IllegalArgumentException if the concept could not be retrieved
-	 * @deprecated use {@link SnomedConceptLookupService#getComponent(String, CDOView)} instead.
+	 * Returns a SNOMED CT Concept database object from the store by loading it, or from the transaction if previously added via {@link #add(EObject)}
+	 * or {@link #addAll(Collection)}, otherwise if not found throws a {@link ComponentNotFoundException}.
+	 * 
+	 * @param conceptId
+	 *            - the SNOMED CT identifier of the concept
+	 * @return the concept, never <code>null</code>
+	 * @throws ComponentNotFoundException
+	 *             if the concept could not be retrieved
 	 */
-	@Deprecated
+	public final Concept getConcept(String conceptId) {
+		return lookup(conceptId, Concept.class);
+	}
+	
+	/**
+	 * @deprecated - use and see {@link SnomedEditingContext#getConcept(String)}, will be removed in 4.6
+	 */
 	public Concept findConceptById(final String conceptId) {
-		
-		final Concept concept = new SnomedConceptLookupService().getComponent(conceptId, transaction);
-
-		if (null == concept) {
-			throw new IllegalArgumentException("Concept doesn't exist in the store with id: " + conceptId);
-		}
-		
-		return concept;
+		return getConcept(conceptId);
 	}
 
 	/**
@@ -631,8 +623,19 @@ public class SnomedEditingContext extends BaseSnomedEditingContext {
 	 * @return
 	 * @deprecated - will be removed in 4.4
 	 */
-	public Concept buildDefaultConcept(String fullySpecifiedName, String parentConceptId) {
-		return buildDefaultConcept(fullySpecifiedName, findConceptById(parentConceptId));
+	public Concept buildDefaultConcept(String conceptId, String fullySpecifiedName, String parentConceptId) {
+		return buildDefaultConcept(conceptId, fullySpecifiedName, findConceptById(parentConceptId));
+	}
+	
+	/**
+	 * Builds a new default SNOMED CT concept with a fully specified name description and ISA relationship to the specified parent concept with the given identifier. 
+	 * @param fullySpecifiedName
+	 * @param parentConcept
+	 * @return
+	 * @deprecated - will be removed in 4.5
+	 */
+	public Concept buildDefaultConcept(String fullySpecifiedName, Concept parentConcept) {
+		return buildDefaultConcept(generateComponentId(ComponentCategory.CONCEPT, getNamespace()), fullySpecifiedName, parentConcept);
 	}
 	
 	/**
@@ -641,7 +644,7 @@ public class SnomedEditingContext extends BaseSnomedEditingContext {
 	 * @return a valid concept populated with default values and the specified properties
 	 * @deprecated - will be replaced with new component builder API in 4.4
 	 */
-	public Concept buildDefaultConcept(String fullySpecifiedName, Concept parentConcept) {
+	public Concept buildDefaultConcept(String conceptId, String fullySpecifiedName, Concept parentConcept) {
 		
 		checkNotNull(parentConcept, "parentConcept");
 		
@@ -649,7 +652,7 @@ public class SnomedEditingContext extends BaseSnomedEditingContext {
 		add(concept);
 		
 		// set concept properties
-		concept.setId(generateComponentId(concept));
+		concept.setId(conceptId);
 		concept.setActive(true);
 		concept.setDefinitionStatus(findConceptById(PRIMITIVE));
 		concept.setModule(getDefaultModuleConcept());
@@ -1201,7 +1204,19 @@ public class SnomedEditingContext extends BaseSnomedEditingContext {
 		return (Concept) object; 
 	}
 	
-	public void delete(Concept concept) {
+	@Override
+	public void delete(EObject object) {
+		if (object instanceof Concept) {
+			delete((Concept) object);
+		} else if (object instanceof Description) {
+			delete((Description) object);
+		} else if (object instanceof Relationship) {
+			delete((Relationship) object);
+		}
+		super.delete(object);
+	}
+	
+	private void delete(Concept concept) {
 		
 		SnomedDeletionPlan deletionPlan = canDelete(concept, null);
 		if(deletionPlan.isRejected()) {
@@ -1284,25 +1299,22 @@ public class SnomedEditingContext extends BaseSnomedEditingContext {
 		return new SnomedDescriptionReducedQueryAdapter(conceptId, SnomedDescriptionReducedQueryAdapter.SEARCH_DESCRIPTION_CONCEPT_ID);
 	}
 
-	public void delete(Relationship relationship) {
-		
+	private void delete(Relationship relationship) {
 		SnomedDeletionPlan deletionPlan = canDelete(relationship, null);
 		if(deletionPlan.isRejected()) {
 			throw new IllegalArgumentException(deletionPlan.getRejectionReasons().toString());
 		}
-		
 		delete(deletionPlan);
 	}
 	
 	private String toString(final Component component) {
 		final String id = getAttribute(component, SnomedPackage.eINSTANCE.getComponent_Id(), String.class);
 		if (component instanceof Concept) {
-			final SnomedConceptLabelProviderService conceptLabelProviderService = getServiceForClass(SnomedConceptLabelProviderService.class);
-			return conceptLabelProviderService.getLabel(createPath(component), id);
+			return getServiceForClass(ISnomedConceptNameProvider.class).getComponentLabel(createPath(component), id);
 		} else if (component instanceof Description) {
 			return getAttribute(component, SnomedPackage.eINSTANCE.getDescription_Term(), String.class);
 		} else if (component instanceof Relationship) {
-			return SnomedRelationshipNameProvider.INSTANCE.getComponentLabel(createPath(component), id); 
+			return getServiceForClass(ISnomedRelationshipNameProvider.class).getComponentLabel(createPath(component), id); 
 		} else {
 			return id;
 		}
@@ -1356,14 +1368,11 @@ public class SnomedEditingContext extends BaseSnomedEditingContext {
 		return deletionPlan;
 	}
 	
-	public void delete(Description description) {
-		
+	private void delete(Description description) {
 		SnomedDeletionPlan deletionPlan = canDelete(description, null);
-
 		if(deletionPlan.isRejected()) {
 			throw new IllegalArgumentException(deletionPlan.getRejectionReasons().toString());
 		}
-		
 		delete(deletionPlan);
 	}
 	
@@ -1514,25 +1523,40 @@ public class SnomedEditingContext extends BaseSnomedEditingContext {
 	/**
 	 * @return the module concept specified in the preferences, or falls back to the <em>SNOMED CT core module</em>
 	 * concept if the specified concept is not found.
+	 * @deprecated - use {@link ModulePreference} instead to get the module ID on client side
 	 */
 	public Concept getDefaultModuleConcept() {
 		if (null == moduleConcept) {
-			final String moduleId = checkNotNull(
-					getSnomedConfiguration().getModuleIds().getDefaultChildKey(), 
-					"No default module configured.");
-			try {
-				moduleConcept = new SnomedConceptLookupService().getComponent(moduleId, transaction);
-			} catch (IllegalArgumentException e) {
-				LOGGER.info("Could not find default module concept with id " + moduleId + ", falling back to SNOMED CT core module");
+			for (String modulePreference : ModulePreference.getModulePreference()) {
+				try {
+					moduleConcept = getConcept(modulePreference);
+				} catch (ComponentNotFoundException e) {
+					// ignore and proceed to the next preference
+				}
 			}
 			if (null == moduleConcept) {
-				moduleConcept = new SnomedConceptLookupService().getComponent(MODULE_SCT_CORE, transaction);
+				LOGGER.warn("Error while loading and caching SNOMED CT module concept.");
 			}
 		}
-		if (null == moduleConcept)
-			LOGGER.warn("Error while loading and caching SNOMED CT module concept.");
-		
 		return moduleConcept;
+	}
+	
+	@Override
+	@SuppressWarnings("unchecked")
+	protected <T> ILookupService<String, T, CDOView> getComponentLookupService(Class<T> type) {
+		if (type == Concept.class) {
+			return (ILookupService<String, T, CDOView>) new SnomedConceptLookupService();
+		} else if (type == Description.class) {
+			return (ILookupService<String, T, CDOView>) new SnomedDescriptionLookupService();
+		} else if (type == Relationship.class) {
+			return (ILookupService<String, T, CDOView>) new SnomedRelationshipLookupService();
+		} else if (SnomedRefSet.class.isAssignableFrom(type)) {
+			return (ILookupService<String, T, CDOView>) new SnomedRefSetLookupService();
+		} else if (SnomedRefSetMember.class.isAssignableFrom(type)) {
+			return (ILookupService<String, T, CDOView>) new SnomedRefSetMemberLookupService();
+		} else {
+			return super.getComponentLookupService(type);
+		}
 	}
 	
 	/**
@@ -1696,7 +1720,11 @@ public class SnomedEditingContext extends BaseSnomedEditingContext {
 		throw new IllegalArgumentException(MessageFormat.format("Unexpected component class ''{0}''.", component));
 	}
 	
-	private String generateComponentId(final ComponentCategory componentNature, final String namespace) {
+	public String generateComponentId(final ComponentCategory componentNature) {
+		return identifiers.generateId(componentNature, getNamespace());
+	}
+	
+	public String generateComponentId(final ComponentCategory componentNature, final String namespace) {
 		return identifiers.generateId(componentNature, namespace);
 	}
 	

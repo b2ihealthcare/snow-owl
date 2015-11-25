@@ -2,10 +2,10 @@ package com.b2international.snowowl.snomed.api.rest.domain;
 
 import java.util.Date;
 
-import com.b2international.snowowl.snomed.api.domain.CharacteristicType;
-import com.b2international.snowowl.snomed.api.domain.ISnomedRelationship;
-import com.b2international.snowowl.snomed.api.domain.RelationshipModifier;
-import com.b2international.snowowl.snomed.api.domain.RelationshipRefinability;
+import com.b2international.snowowl.snomed.core.domain.CharacteristicType;
+import com.b2international.snowowl.snomed.core.domain.ISnomedRelationship;
+import com.b2international.snowowl.snomed.core.domain.RelationshipModifier;
+import com.b2international.snowowl.snomed.core.domain.RelationshipRefinability;
 
 public class ExpandableSnomedRelationship implements ISnomedRelationship {
 	
@@ -34,7 +34,7 @@ public class ExpandableSnomedRelationship implements ISnomedRelationship {
 	}
 
 	@Override
-	public boolean isActive() {
+	public Boolean isActive() {
 		return wrappedRelationship.isActive();
 	}
 
@@ -54,7 +54,7 @@ public class ExpandableSnomedRelationship implements ISnomedRelationship {
 	}
 
 	@Override
-	public boolean isReleased() {
+	public Boolean isReleased() {
 		return wrappedRelationship.isReleased();
 	}
 

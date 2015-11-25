@@ -16,6 +16,7 @@
 package com.b2international.snowowl.core.events.util;
 
 import com.b2international.commons.collections.Procedure;
+import com.google.common.base.Function;
 import com.google.common.util.concurrent.ListenableFuture;
 
 /**
@@ -31,7 +32,7 @@ public interface Promise<T> extends ListenableFuture<T> {
 	 * @param then
 	 * @return
 	 */
-	Promise<T> then(Procedure<T> then);
+	<U> Promise<U> then(Function<T, U> func);
 
 	/**
 	 * Define what to do when the promise becomes rejected.
@@ -40,5 +41,4 @@ public interface Promise<T> extends ListenableFuture<T> {
 	 * @return
 	 */
 	Promise<T> fail(Procedure<Throwable> fail);
-
 }

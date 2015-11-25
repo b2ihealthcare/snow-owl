@@ -15,64 +15,59 @@
  */
 package com.b2international.snowowl.snomed.datastore.factory;
 
+import org.eclipse.emf.spi.cdo.FSMUtil;
+
 import com.b2international.commons.TypeSafeAdapterFactory;
 import com.b2international.snowowl.core.api.IComponent;
 import com.b2international.snowowl.core.date.EffectiveTimes;
+import com.b2international.snowowl.datastore.BranchPathUtils;
 import com.b2international.snowowl.datastore.cdo.CDOUtils;
 import com.b2international.snowowl.snomed.Description;
-import com.b2international.snowowl.snomed.datastore.index.SnomedDescriptionIndexEntry;
+import com.b2international.snowowl.snomed.datastore.SnomedDescriptionLookupService;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDescriptionIndexEntry;
 
 /**
+ * Adapter factory implementation for SNOMED CT descriptions.
  */
 public class SnomedDescriptionAdapterFactory extends TypeSafeAdapterFactory {
 
-	/*
-	 * (non-Javadoc)
-	 * @see com.b2international.commons.TypeSafeAdapterFactory#getAdapterSafe(java.lang.Object, java.lang.Class)
-	 */
+	public SnomedDescriptionAdapterFactory() {
+		super(IComponent.class, SnomedDescriptionIndexEntry.class);
+	}
+
 	@Override
-	public <T> T getAdapterSafe(Object adaptableObject, Class<T> adapterType) {
-		
-		if (null == adaptableObject) {
-			return null;
-		}
-		
-		if (IComponent.class != adapterType) {
-			return null;
-		}
-		
+	protected <T> T getAdapterSafe(final Object adaptableObject, final Class<T> adapterType) {
+
 		if (adaptableObject instanceof SnomedDescriptionIndexEntry) {
 			return adapterType.cast(adaptableObject);
 		}
-		
+
 		if (adaptableObject instanceof Description) {
-			
+
 			final Description description = (Description) adaptableObject;
-			final SnomedDescriptionIndexEntry adaptedEntry = new SnomedDescriptionIndexEntry(
-					description.getId(), 
-					description.getTerm(), 
-					description.getModule().getId(),
-					0.0f,
-					CDOUtils.getStorageKey(description),
-					description.isReleased(), 
-					description.isActive(), 
-					description.getType().getId(), 
-					description.getCaseSignificance().getId(), 
-					description.getConcept().getId(),
-					null == description.getEffectiveTime() ? EffectiveTimes.UNSET_EFFECTIVE_TIME : description.getEffectiveTime().getTime());
+			final SnomedDescriptionIndexEntry adaptedEntry;
+
+			if (FSMUtil.isClean(description) && !description.cdoRevision().isHistorical()) {
+				adaptedEntry = new SnomedDescriptionLookupService().getComponent(BranchPathUtils.createPath(description), description.getId());
+			} else {
+				adaptedEntry = SnomedDescriptionIndexEntry.builder()
+						.id(description.getId()) 
+						.term(description.getTerm())
+						.moduleId(description.getModule().getId())
+						.storageKey(CDOUtils.getStorageKey(description))
+						.released(description.isReleased()) 
+						.active(description.isActive()) 
+						.typeId(description.getType().getId()) 
+						.caseSignificanceId(description.getCaseSignificance().getId()) 
+						.conceptId(description.getConcept().getId())
+						.languageCode(description.getLanguageCode())
+						.effectiveTimeLong(description.isSetEffectiveTime() ? description.getEffectiveTime().getTime() : EffectiveTimes.UNSET_EFFECTIVE_TIME)
+						.build();
+			}
 			
 			return adapterType.cast(adaptedEntry);
 		}
-	
-		return null;
-	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see com.b2international.commons.TypeSafeAdapterFactory#getAdapterListSafe()
-	 */
-	@Override
-	public Class<?>[] getAdapterListSafe() {
-		return new Class<?>[] { IComponent.class };
+		return null;
 	}
 }

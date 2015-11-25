@@ -28,15 +28,17 @@ import org.apache.lucene.search.BooleanClause;
 import org.apache.lucene.search.BooleanClause.Occur;
 import org.apache.lucene.search.BooleanQuery;
 import org.apache.lucene.search.MatchAllDocsQuery;
-import org.apache.lucene.search.PhraseQuery;
+import org.apache.lucene.search.MultiPhraseQuery;
 import org.apache.lucene.search.PrefixQuery;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.TermQuery;
 import org.apache.lucene.util.BytesRef;
+import org.apache.lucene.util.QueryBuilder;
 import org.apache.lucene.util.Version;
 
 import com.b2international.snowowl.core.TextConstants;
 import com.b2international.snowowl.core.api.index.IndexException;
+import com.b2international.snowowl.datastore.index.lucene.ComponentTermAnalyzer;
 import com.google.common.base.Splitter;
 
 /**
@@ -118,7 +120,7 @@ public class IndexQueryBuilder {
 	private boolean done = false;
 	
 	public IndexQueryBuilder() {
-		this(new DelimiterAnalyzer());
+		this(new ComponentTermAnalyzer());
 	}
 	
 	public IndexQueryBuilder(final Analyzer analyzer) {
@@ -131,26 +133,21 @@ public class IndexQueryBuilder {
 		return this;
 	}
 	
-	private PhrasePrefixQuery createPhrasePrefixQuery(final String fieldName, final String searchString) {
-		final PhrasePrefixQuery wrapper = new PhrasePrefixQuery();
-		// XXX: we need to keep stopwords in this case!
-		final Iterable<String> tokens = Splitter.on(TextConstants.WHITESPACE_OR_DELIMITER_MATCHER).split(searchString.toLowerCase()); 
-		
-		for (final String token : tokens) {
-			wrapper.add(new Term(fieldName, token));
-		}
-		
+	private Query createPhrasePrefixQuery(final String fieldName, final String searchString) {
+		// TODO: Use MultiPhraseQuery with leading bookend to pin it to the beginning of a term
+		final Query wrapper = new MultiPhraseQuery();
+
+//		final Iterable<String> tokens = Splitter.on(TextConstants.WHITESPACE_OR_DELIMITER_MATCHER).split(searchString.toLowerCase()); 
+//		
+//		for (final String token : tokens) {
+//			wrapper.add(new Term(fieldName, token));
+//		}
+//		
 		return wrapper;
 	}
 	
-	private PhraseQuery createPhraseQuery(final String fieldName, final String searchString) {
-		final PhraseQuery wrappedQuery = new PhraseQuery();
-		final List<String> tokens = IndexUtils.split(analyzer, searchString);
-		
-		for (final String token : tokens) {
-			wrappedQuery.add(new Term(fieldName, token));
-		}
-		return wrappedQuery;
+	private Query createPhraseQuery(final String fieldName, final String searchString) {
+		return new QueryBuilder(analyzer).createPhraseQuery(fieldName, searchString);
 	}
 	
 	public IndexQueryBuilder finishIf(final boolean condition) {
@@ -211,7 +208,7 @@ public class IndexQueryBuilder {
 	}
 	
 	public IndexQueryBuilder matchAllTokenizedTermPrefixSequences(final String fieldName, final String searchString) {
-		final PhrasePrefixQuery wrapper = createPhrasePrefixQuery(fieldName, searchString);
+		final Query wrapper = createPhrasePrefixQuery(fieldName, searchString);
 		builtQuery.add(wrapper, Occur.SHOULD);
 		return this;
 	}
@@ -226,14 +223,7 @@ public class IndexQueryBuilder {
 	 * @return
 	 */
 	public IndexQueryBuilder matchAllTokenizedTerms(final String fieldName, final String searchString) {
-		
-		final BooleanQuery wrapper = new BooleanQuery();
-		final List<String> tokens = IndexUtils.split(analyzer, searchString);
-		
-		for (final String token : tokens) {
-			wrapper.add(new BooleanClause(new TermQuery(new Term(fieldName, token)), Occur.MUST));
-		}
-		
+		final Query wrapper = new QueryBuilder(analyzer).createBooleanQuery(fieldName, searchString, Occur.MUST);
 		builtQuery.add(wrapper, Occur.SHOULD);
 		return this;
 	}
@@ -339,7 +329,7 @@ public class IndexQueryBuilder {
 	}
 
 	public IndexQueryBuilder matchTokenizedTermSequence(final String fieldName, final String searchString) {
-		final PhraseQuery wrappedQuery = createPhraseQuery(fieldName, searchString);
+		final Query wrappedQuery = createPhraseQuery(fieldName, searchString);
 		builtQuery.add(wrappedQuery, Occur.SHOULD);
 		return this;
 	}
@@ -379,7 +369,7 @@ public class IndexQueryBuilder {
 	}
 
 	public IndexQueryBuilder requireAllTokenizedTermPrefixSequences(final String fieldName, final String searchString) {
-		final PhrasePrefixQuery wrapper = createPhrasePrefixQuery(fieldName, searchString);
+		final Query wrapper = createPhrasePrefixQuery(fieldName, searchString);
 		builtQuery.add(wrapper, Occur.MUST);
 		return this;
 	}
@@ -450,7 +440,7 @@ public class IndexQueryBuilder {
 	}
 
 	public IndexQueryBuilder requireTokenizedTermSequence(final String fieldName, final String searchString) {
-		final PhraseQuery wrappedQuery = createPhraseQuery(fieldName, searchString);
+		final Query wrappedQuery = createPhraseQuery(fieldName, searchString);
 		builtQuery.add(wrappedQuery, Occur.MUST);
 		return this;
 	}

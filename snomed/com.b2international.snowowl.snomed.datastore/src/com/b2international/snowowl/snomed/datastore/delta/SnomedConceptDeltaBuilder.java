@@ -15,12 +15,14 @@
  */
 package com.b2international.snowowl.snomed.datastore.delta;
 
+import java.util.Collection;
 import java.util.Map;
 import java.util.Set;
 
 import org.eclipse.emf.cdo.CDOObject;
 import org.eclipse.emf.cdo.common.branch.CDOBranch;
 import org.eclipse.emf.cdo.common.branch.CDOBranchPoint;
+import org.eclipse.emf.cdo.common.commit.CDOChangeSetData;
 import org.eclipse.emf.cdo.common.id.CDOID;
 import org.eclipse.emf.cdo.common.revision.CDOIDAndVersion;
 import org.eclipse.emf.cdo.common.revision.CDORevision;
@@ -33,14 +35,16 @@ import org.eclipse.emf.cdo.spi.common.revision.InternalCDORevisionManager;
 import org.eclipse.emf.cdo.view.CDOView;
 import org.eclipse.emf.ecore.EClass;
 import org.eclipse.emf.spi.cdo.InternalCDOSession;
+import org.eclipse.net4j.util.AdapterUtil;
 
 import com.b2international.commons.ChangeKind;
 import com.b2international.commons.CompareUtils;
 import com.b2international.commons.StringUtils;
 import com.b2international.commons.pcj.LongSets;
 import com.b2international.snowowl.core.ApplicationContext;
-import com.b2international.snowowl.core.date.EffectiveTimes;
+import com.b2international.snowowl.core.api.ComponentTextProvider;
 import com.b2international.snowowl.datastore.BranchPointUtils;
+import com.b2international.snowowl.datastore.CdoViewComponentTextProvider;
 import com.b2international.snowowl.datastore.cdo.CDOIDUtils;
 import com.b2international.snowowl.datastore.cdo.CDOUtils;
 import com.b2international.snowowl.datastore.cdo.ICDOConnection;
@@ -56,12 +60,11 @@ import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.SnomedPackage;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.snomed.datastore.SnomedConceptIconIdProvider;
-import com.b2international.snowowl.snomed.datastore.SnomedConceptIndexEntry;
 import com.b2international.snowowl.snomed.datastore.SnomedConceptLookupService;
-import com.b2international.snowowl.snomed.datastore.SnomedIconProvider;
 import com.b2international.snowowl.snomed.datastore.SnomedTerminologyBrowser;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptIndexEntry;
 import com.b2international.snowowl.snomed.datastore.services.ISnomedComponentService;
-import com.b2international.snowowl.snomed.datastore.services.SnomedConceptNameProvider;
+import com.b2international.snowowl.snomed.datastore.services.ISnomedConceptNameProvider;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSet;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetMember;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetPackage;
@@ -96,6 +99,17 @@ public class SnomedConceptDeltaBuilder extends AbstractHierarchicalComponentDelt
 	 */
 	private final Map<String, Long> conceptIdStorageKeyIds = Maps.newHashMap();
 	
+	private ComponentTextProvider currentTextProvider;
+	
+	private ComponentTextProvider baseTextProvider;
+	
+	@Override
+	public Collection<HierarchicalComponentDelta> processChanges(CDOChangeSetData changeSetData, CDOView baseView, CDOView currentView) {
+		currentTextProvider = new CdoViewComponentTextProvider(ApplicationContext.getServiceForClass(ISnomedConceptNameProvider.class), currentView);
+		baseTextProvider = new CdoViewComponentTextProvider(ApplicationContext.getServiceForClass(ISnomedConceptNameProvider.class), baseView);
+		return super.processChanges(changeSetData, baseView, currentView);
+	}
+
 	/**
 	 * Tires to resolve as much CDO ID to SNOMED&nbsp;CT concept ID mapping as possible from the {@link InternalCDORevisionDelta changed deltas}
 	 * and the {@link InternalCDORevision new revisions}.
@@ -415,19 +429,9 @@ public class SnomedConceptDeltaBuilder extends AbstractHierarchicalComponentDelt
 
 		if (null == concept) {
 			return null;
+		} else {
+			return AdapterUtil.adapt(concept, SnomedConceptIndexEntry.class);
 		}
-		
-		/*
-		 * XXX: copied from SnomedConceptAdapterFactory, as there a client terminology browser lookup is performed first, which might
-		 * find a different result.
-		 */
-		return new SnomedConceptIndexEntry(concept.getId(), 
-				concept.getModule().getId(), 
-				SnomedConceptNameProvider.INSTANCE.getText(concept.getId(), concept.cdoView()), 
-				SnomedIconProvider.getInstance().getIconComponentId(concept.getId()), 
-				CDOUtils.getStorageKey(concept), 
-				SnomedConceptIndexEntry.generateFlags(concept.isActive(), concept.isPrimitive(), concept.isExhaustive(), concept.isReleased()),
-				null == concept.getEffectiveTime() ? EffectiveTimes.UNSET_EFFECTIVE_TIME : concept.getEffectiveTime().getTime());
 	}
 
 	/* (non-Javadoc)
@@ -575,6 +579,8 @@ public class SnomedConceptDeltaBuilder extends AbstractHierarchicalComponentDelt
 		Preconditions.checkNotNull(conceptId, "Concept ID argument cannot be null.");
 		CDOUtils.check(view);
 		
+		final ComponentTextProvider textProvider = (view == getBaseView()) ? baseTextProvider : currentTextProvider;
+		
 		//try to get object from already processed deltas (we can avoid one label lookup)
 		String label = null;
 
@@ -585,37 +591,27 @@ public class SnomedConceptDeltaBuilder extends AbstractHierarchicalComponentDelt
 			final HierarchicalComponentDelta delta = Iterables.get(deltas, 0);
 			
 			if (null != delta) {
-
 				label = delta.getLabel(); 
-				
 			}
-
 		}
 
 		//try to get preferred term from index
 		if (StringUtils.isEmpty(label)) {
-
 			final ISnomedComponentService service = getComponentService();
 			label = service.getLabels(getBranchPath(), conceptId)[0];
-
 		}
 
 		//fall back to CDO
 		if (StringUtils.isEmpty(label)) {
-
-			label = SnomedConceptNameProvider.INSTANCE.getText(conceptId, view);
-
+			label = textProvider.getText(conceptId);
 		}
 
 		//if still empty fall back to ID
 		if (StringUtils.isEmpty(label)) {
-
 			label = conceptId;
-
 		}
 
 		return label;
-
 	}
 	
 	/*returns with the component service for SNOMED&nbsp;CT with its branch aware API*/

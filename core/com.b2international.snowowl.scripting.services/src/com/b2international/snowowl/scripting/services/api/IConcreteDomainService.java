@@ -18,7 +18,7 @@ package com.b2international.snowowl.scripting.services.api;
 import java.util.Collection;
 import java.util.Map;
 
-import com.b2international.snowowl.snomed.datastore.index.refset.SnomedConcreteDataTypeRefSetMemberIndexEntry;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry;
 
 /**
  * Service interface for concrete domains.
@@ -46,21 +46,21 @@ public interface IConcreteDomainService {
 	 * @param conceptId the concept ID.
 	 * @return all concrete domain of the concept.
 	 */
-	Collection<SnomedConcreteDataTypeRefSetMemberIndexEntry> getAllDataTypesForConcept(final String conceptId);
+	Collection<SnomedRefSetMemberIndexEntry> getAllDataTypesForConcept(final String conceptId);
 	
 	/**
 	 * Returns with all active concrete domains associated with the concept.
 	 * @param conceptId the concept ID.
 	 * @return a collection of concrete domain associated with the concept.
 	 */
-	Collection<SnomedConcreteDataTypeRefSetMemberIndexEntry> getDataTypesForConcept(final String conceptId);
+	Collection<SnomedRefSetMemberIndexEntry> getDataTypesForConcept(final String conceptId);
 	
 	/**
 	 * Returns with all active concrete domains associated with the relationship.
 	 * @param relationshipId the relationship ID.
 	 * @return a collection of concrete domain associated with the relationship.
 	 */
-	Collection<SnomedConcreteDataTypeRefSetMemberIndexEntry> getDataTypesForRelationship(final String relationshipId);
+	Collection<SnomedRefSetMemberIndexEntry> getDataTypesForRelationship(final String relationshipId);
 	
 	/**
 	 * Returns with the human readable label of the concrete domain. 

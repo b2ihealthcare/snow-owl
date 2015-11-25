@@ -20,8 +20,8 @@ import static com.google.common.collect.Maps.unmodifiableBiMap;
 
 import java.util.EnumMap;
 
-import com.b2international.snowowl.snomed.api.domain.ISnomedImportConfiguration;
-import com.b2international.snowowl.snomed.api.domain.ISnomedImportConfiguration.ImportStatus;
+import com.b2international.snowowl.snomed.core.domain.ISnomedImportConfiguration;
+import com.b2international.snowowl.snomed.core.domain.ISnomedImportConfiguration.ImportStatus;
 import com.google.common.collect.BiMap;
 
 /**

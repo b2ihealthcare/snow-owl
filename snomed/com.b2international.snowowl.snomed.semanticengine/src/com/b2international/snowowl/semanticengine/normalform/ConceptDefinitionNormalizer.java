@@ -32,8 +32,8 @@ import com.b2international.snowowl.dsl.scg.ScgFactory;
 import com.b2international.snowowl.semanticengine.utils.SemanticUtils;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.datastore.SnomedClientStatementBrowser;
-import com.b2international.snowowl.snomed.datastore.SnomedConceptIndexEntry;
-import com.b2international.snowowl.snomed.datastore.SnomedRelationshipIndexEntry;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptIndexEntry;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRelationshipIndexEntry;
 
 /**
  * <b>5.3.3.1	The set of normalized definitions of each focus concept</b><br/>

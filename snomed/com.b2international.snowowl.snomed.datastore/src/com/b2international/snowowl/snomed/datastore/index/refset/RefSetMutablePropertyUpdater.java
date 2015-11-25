@@ -15,11 +15,6 @@
  */
 package com.b2international.snowowl.snomed.datastore.index.refset;
 
-import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.REFERENCE_SET_REFERENCED_COMPONENT_TYPE;
-import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.REFERENCE_SET_STORAGE_KEY;
-import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.REFERENCE_SET_STRUCTURAL;
-import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.REFERENCE_SET_TYPE;
-
 import org.eclipse.emf.cdo.common.id.CDOIDUtil;
 
 import com.b2international.snowowl.datastore.index.DocumentUpdaterBase;
@@ -43,10 +38,10 @@ public class RefSetMutablePropertyUpdater extends DocumentUpdaterBase<SnomedDocu
 	@Override
 	public void doUpdate(SnomedDocumentBuilder doc) {
 		doc
-			.field(REFERENCE_SET_TYPE, refSet.getType().getValue())
-			.field(REFERENCE_SET_REFERENCED_COMPONENT_TYPE, (int) refSet.getReferencedComponentType())
-			.field(REFERENCE_SET_STRUCTURAL, isStructural(refSet) ? 1 : 0)
-			.field(REFERENCE_SET_STORAGE_KEY, CDOIDUtil.getLong(refSet.cdoID()))
+			.refSetType(refSet.getType())
+			.refSetReferencedComponentType(Integer.valueOf(refSet.getReferencedComponentType()))
+			.refSetStructural(isStructural(refSet))
+			.refSetStorageKey(CDOIDUtil.getLong(refSet.cdoID()))
 			.type(SnomedTerminologyComponentConstants.REFSET_NUMBER);
 	}
 	

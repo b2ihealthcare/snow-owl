@@ -27,11 +27,8 @@ import java.util.Map;
 
 import org.eclipse.core.runtime.NullProgressMonitor;
 
-import bak.pcj.set.LongSet;
-
 import com.b2international.commons.StringUtils;
 import com.b2international.commons.pcj.LongSets;
-import com.b2international.snowowl.api.impl.domain.StorageRef;
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.api.SnowowlRuntimeException;
@@ -39,15 +36,18 @@ import com.b2international.snowowl.core.date.DateFormats;
 import com.b2international.snowowl.core.date.Dates;
 import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.core.exceptions.BadRequestException;
+import com.b2international.snowowl.datastore.server.domain.StorageRef;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.api.ISnomedExportService;
-import com.b2international.snowowl.snomed.api.domain.ISnomedExportConfiguration;
-import com.b2international.snowowl.snomed.api.domain.Rf2ReleaseType;
 import com.b2international.snowowl.snomed.api.exception.SnomedExportException;
 import com.b2international.snowowl.snomed.common.ContentSubType;
+import com.b2international.snowowl.snomed.core.domain.ISnomedExportConfiguration;
+import com.b2international.snowowl.snomed.core.domain.Rf2ReleaseType;
 import com.b2international.snowowl.snomed.datastore.SnomedTerminologyBrowser;
 import com.b2international.snowowl.snomed.exporter.model.SnomedRf2ExportModel;
 import com.google.common.collect.ImmutableMap;
+
+import bak.pcj.set.LongSet;
 
 /**
  * {@link ISnomedExportService export service} implementation for the SNOMED CT ontology.

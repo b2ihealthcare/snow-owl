@@ -187,8 +187,7 @@ public class ApplicationContext {
 			((IDisposableService)oldImplementation).dispose();
 		}
 		
-		LOGGER.info(MessageFormat.format("Registered service {0} for interface {1}.", implementation.getClass().getName(), serviceInterface.getName()));
-		
+		LOGGER.debug(MessageFormat.format("Registered service {0} for interface {1}.", implementation.getClass().getName(), serviceInterface.getName()));
 	}
 	
 	/**
@@ -204,7 +203,7 @@ public class ApplicationContext {
 		serviceMap.asMap().remove(serviceInterface);
 		exists.compareAndSet(true, null == serviceMap.getIfPresent(serviceInterface));
 		if (exists.get()) {
-			LOGGER.info(MessageFormat.format("Unregistered service for interface {0}", serviceInterface.getName()));
+			LOGGER.debug(MessageFormat.format("Unregistered service for interface {0}", serviceInterface.getName()));
 		} else {
 			LOGGER.warn("Failed to unregister service for " + serviceInterface.getSimpleName() + ".");
 		}

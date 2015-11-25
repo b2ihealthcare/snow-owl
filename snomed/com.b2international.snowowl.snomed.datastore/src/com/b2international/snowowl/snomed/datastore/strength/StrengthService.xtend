@@ -16,13 +16,13 @@
 package com.b2international.snowowl.snomed.datastore.strength
 
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts
-import com.b2international.snowowl.snomed.datastore.index.refset.SnomedConcreteDataTypeRefSetMemberIndexEntry
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry
 import com.google.common.collect.Multimaps
 import com.google.common.collect.Range
 import java.util.Collection
 
 /**
- * Service implementation for extracting strength information from {@link SnomedConcreteDataTypeRefSetMemberIndexEntry}s.
+ * Service implementation for extracting strength information from {@link SnomedRefSetMemberIndexEntry}s.
  */
 class StrengthService implements IStrengthService {
 	
@@ -40,12 +40,12 @@ class StrengthService implements IStrengthService {
 	]
 	
 	/**
-	 * Returns a collection of {@link StrengthEntry} for the specified collection of {@link SnomedConcreteDataTypeRefSetMemberIndexEntry}s
+	 * Returns a collection of {@link StrengthEntry} for the specified collection of {@link SnomedRefSetMemberIndexEntry}s
 	 * 
 	 * @param entries
 	 * @return
 	 */
-	override getStrengths(Collection<SnomedConcreteDataTypeRefSetMemberIndexEntry> entries) {
+	override getStrengths(Collection<SnomedRefSetMemberIndexEntry> entries) {
 		if (!entries.empty) {
 			val result = <StrengthEntry>newArrayList()
 			val map = Multimaps.index(entries)[removeStrengthSuffixes(it.attributeLabel)]
@@ -71,23 +71,23 @@ class StrengthService implements IStrengthService {
 		ALLOWED_STRENGTH_SUFFIXES.fold(label, [c,n | c.replace(n, '')])
 	}
 	
-	def private isSimpleType(Collection<SnomedConcreteDataTypeRefSetMemberIndexEntry> entries) {
+	def private isSimpleType(Collection<SnomedRefSetMemberIndexEntry> entries) {
 		entries.size == 1 && 
 		entries.head.attributeLabel.endsWith(CD_NUMERATOR_VALUE)
 	}
 	
-	def private isSimpleRangeType(Collection<SnomedConcreteDataTypeRefSetMemberIndexEntry> entries) {
+	def private isSimpleRangeType(Collection<SnomedRefSetMemberIndexEntry> entries) {
 		Range.closed(1,2).contains(entries.size) && 
 		entries.forall[attributeLabel.endsWithMinLabel || attributeLabel.endsWithMaxLabel]
 	}
 	
-	def private isRatioType(Collection<SnomedConcreteDataTypeRefSetMemberIndexEntry> entries) {
+	def private isRatioType(Collection<SnomedRefSetMemberIndexEntry> entries) {
 		Range.closed(2,3).contains(entries.size) && 
 		entries.exists[attributeLabel.endsWith(CD_NUMERATOR_VALUE)] && 
 		entries.exists[attributeLabel.endsWith(CD_DENOMINATOR_VALUE)]
 	}
 	
-	def private isRatioRangeType(Collection<SnomedConcreteDataTypeRefSetMemberIndexEntry> entries) {
+	def private isRatioRangeType(Collection<SnomedRefSetMemberIndexEntry> entries) {
 		Range.closed(2,4).contains(entries.size) && 
 		entries.exists[attributeLabel.endsWithMinLabel || attributeLabel.endsWithMaxLabel] && 
 		entries.exists[attributeLabel.endsWith(CD_DENOMINATOR_VALUE)]
@@ -101,19 +101,19 @@ class StrengthService implements IStrengthService {
 		endsWith(CD_NUMERATOR_MAX_VALUE) || endsWith(CD_RANGE_NUMERATOR_MAX_VALUE)
 	}
 	
-	def private StrengthEntry createSimpleStrength(String name, Collection<SnomedConcreteDataTypeRefSetMemberIndexEntry> entries) {
+	def private StrengthEntry createSimpleStrength(String name, Collection<SnomedRefSetMemberIndexEntry> entries) {
 		val numeratorEntry = entries.head
 		return new StrengthEntry(name, numeratorEntry.value, numeratorEntry.uomComponentId.toLong)
 	}
 	
-	def private StrengthEntry createSimpleRangeStrength(String name, Collection<SnomedConcreteDataTypeRefSetMemberIndexEntry> entries) {
+	def private StrengthEntry createSimpleRangeStrength(String name, Collection<SnomedRefSetMemberIndexEntry> entries) {
 		val numeratorMinEntry = entries.findFirst[attributeLabel.endsWithMinLabel]
 		val numeratorMaxEntry = entries.findFirst[attributeLabel.endsWithMaxLabel]
 		val numeratorUnit = if (numeratorMinEntry != null) numeratorMinEntry.uomComponentId.toLong else numeratorMaxEntry.uomComponentId.toLong 
 		return new StrengthEntry(name, numeratorMinEntry?.value, numeratorMaxEntry?.value, numeratorUnit) 
 	}
 	
-	def private StrengthEntry createRatioStrength(String name, Collection<SnomedConcreteDataTypeRefSetMemberIndexEntry> entries) {
+	def private StrengthEntry createRatioStrength(String name, Collection<SnomedRefSetMemberIndexEntry> entries) {
 		val numeratorEntry = entries.findFirst[attributeLabel.endsWith(CD_NUMERATOR_VALUE)]
 		val denominatorEntry = entries.findFirst[attributeLabel.endsWith(CD_DENOMINATOR_VALUE)]
 		val delimiterEntry = entries.findFirst[attributeLabel.endsWith(CD_DELIMITER)]
@@ -128,7 +128,7 @@ class StrengthService implements IStrengthService {
 		return new StrengthEntry(name, numeratorEntry.value, numeratorUnit, delimiter, denominatorEntry.value, denominatorUnit)
 	}
 	
-	def private StrengthEntry createRatioRangeStrength(String name, Collection<SnomedConcreteDataTypeRefSetMemberIndexEntry> entries) {
+	def private StrengthEntry createRatioRangeStrength(String name, Collection<SnomedRefSetMemberIndexEntry> entries) {
 		val numeratorMinEntry = entries.findFirst[attributeLabel.endsWithMinLabel]
 		val numeratorMaxEntry = entries.findFirst[attributeLabel.endsWithMaxLabel]
 		val denominatorEntry = entries.findFirst[attributeLabel.endsWith(CD_DENOMINATOR_VALUE)]

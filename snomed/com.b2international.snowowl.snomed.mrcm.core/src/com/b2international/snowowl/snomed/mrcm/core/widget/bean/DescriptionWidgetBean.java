@@ -22,10 +22,9 @@ import java.util.Set;
 import com.b2international.snowowl.core.api.IComponent;
 import com.b2international.snowowl.core.api.NullComponent;
 import com.b2international.snowowl.core.date.EffectiveTimes;
-import com.b2international.snowowl.snomed.SnomedConstants;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.datastore.CaseSignificance;
-import com.b2international.snowowl.snomed.datastore.SnomedConceptIndexEntry;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptIndexEntry;
 import com.b2international.snowowl.snomed.mrcm.core.widget.model.DescriptionWidgetModel;
 import com.google.common.collect.Iterables;
 
@@ -47,8 +46,16 @@ public class DescriptionWidgetBean extends LeafWidgetBean {
 	 * 
 	 * @deprecated
 	 */
-	public static final SnomedConceptIndexEntry PREFERRED_TERM_PLACEHOLDER = new SnomedConceptIndexEntry("225857101000154102", Concepts.MODULE_SCT_CORE, 
-			"Preferred term", SnomedConstants.Concepts.SYNONYM, 0L, SnomedConceptIndexEntry.generateFlags(true, true, false, true), EffectiveTimes.parse("2013-07-31").getTime());
+	public static final SnomedConceptIndexEntry PREFERRED_TERM_PLACEHOLDER = SnomedConceptIndexEntry.builder()
+			.id("225857101000154102") 
+			.iconId(Concepts.SYNONYM)
+			.moduleId(Concepts.MODULE_SCT_CORE)
+			.storageKey(0L)
+			.active(true)
+			.released(true)
+			.primitive(true)
+			.effectiveTimeLong(EffectiveTimes.parse("2013-07-31").getTime())
+			.build();
 
 	/** The property name of the {@link #getSelectedType() selectedType} property. */
 	public static final String PROP_SELECTED_TYPE = "selectedType";

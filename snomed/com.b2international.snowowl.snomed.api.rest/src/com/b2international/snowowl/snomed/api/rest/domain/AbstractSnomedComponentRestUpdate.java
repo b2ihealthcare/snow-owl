@@ -15,13 +15,10 @@
  */
 package com.b2international.snowowl.snomed.api.rest.domain;
 
-import com.b2international.snowowl.snomed.api.impl.domain.AbstractSnomedComponentUpdate;
-
-
 /**
- * @since 1.0
+ * @since 4.0
  */
-public abstract class AbstractSnomedComponentRestUpdate<U extends AbstractSnomedComponentUpdate> {
+public abstract class AbstractSnomedComponentRestUpdate {
 
 	private String moduleId;
 	private Boolean active;
@@ -34,10 +31,6 @@ public abstract class AbstractSnomedComponentRestUpdate<U extends AbstractSnomed
 		this.active = active;
 	}
 
-
-	/**
-	 * @return
-	 */
 	public String getModuleId() {
 		return moduleId;
 	}
@@ -46,12 +39,4 @@ public abstract class AbstractSnomedComponentRestUpdate<U extends AbstractSnomed
 		this.moduleId = moduleId;
 	}
 
-	protected abstract U createComponentUpdate();
-
-	public U toComponentUpdate() {
-		final U result = createComponentUpdate();
-		result.setModuleId(getModuleId());
-		result.setActive(isActive());
-		return result;
-	}
 }

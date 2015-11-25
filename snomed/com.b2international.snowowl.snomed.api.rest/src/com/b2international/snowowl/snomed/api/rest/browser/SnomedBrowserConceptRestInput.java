@@ -15,54 +15,49 @@
  */
 package com.b2international.snowowl.snomed.api.rest.browser;
 
-import com.b2international.snowowl.core.exceptions.BadRequestException;
-import com.b2international.snowowl.core.terminology.ComponentCategory;
-import com.b2international.snowowl.snomed.SnomedConstants;
-import com.b2international.snowowl.snomed.api.impl.domain.SnomedConceptInput;
-import com.b2international.snowowl.snomed.api.impl.domain.SnomedDescriptionInput;
-import com.b2international.snowowl.snomed.api.rest.domain.AbstractSnomedComponentRestInput;
-import com.b2international.snowowl.snomed.api.rest.domain.SnomedDescriptionRestInput;
-import com.b2international.snowowl.snomed.api.rest.domain.SnomedRelationshipRestInput;
-
 import java.util.Collections;
 import java.util.List;
 
-import static com.google.common.collect.Lists.newArrayList;
+import com.b2international.snowowl.core.exceptions.BadRequestException;
+import com.b2international.snowowl.core.terminology.ComponentCategory;
+import com.b2international.snowowl.snomed.SnomedConstants;
+import com.b2international.snowowl.snomed.api.rest.domain.AbstractSnomedComponentRestInput;
+import com.b2international.snowowl.snomed.api.rest.domain.SnomedDescriptionRestInput;
+import com.b2international.snowowl.snomed.api.rest.domain.SnomedRelationshipRestInput;
+import com.b2international.snowowl.snomed.datastore.server.request.SnomedConceptCreateRequestBuilder;
+import com.b2international.snowowl.snomed.datastore.server.request.SnomedRequests;
 
 /**
  * @since 1.0
  */
-public class SnomedBrowserConceptRestInput extends AbstractSnomedComponentRestInput<SnomedConceptInput> {
+public class SnomedBrowserConceptRestInput extends AbstractSnomedComponentRestInput<SnomedConceptCreateRequestBuilder> {
 
 	private List<SnomedDescriptionRestInput> descriptions = Collections.emptyList();
 	private List<SnomedRelationshipRestInput> relationships = Collections.emptyList();
 
 	@Override
-	protected SnomedConceptInput createComponentInput() {
-		return new SnomedConceptInput();
+	protected SnomedConceptCreateRequestBuilder createComponentInput() {
+		return SnomedRequests.prepareNewConcept();
 	}
 
 	@Override
-	public SnomedConceptInput toComponentInput(final String branchPath, final String codeSystemShortName) {
+	public SnomedConceptCreateRequestBuilder toComponentInput() {
 		final String parentRelationshipId = getParentId();
 
-		final SnomedConceptInput result = super.toComponentInput(branchPath,codeSystemShortName);
-		result.setIsAIdGenerationStrategy(createIdGenerationStrategy(parentRelationshipId));
+		final SnomedConceptCreateRequestBuilder req = super.toComponentInput();
+		req.setIsAId(createIdGenerationStrategy(parentRelationshipId));
 
-		final List<SnomedDescriptionInput> descriptionInputs = newArrayList();
 		for (SnomedDescriptionRestInput restDescription : getDescriptions()) {
 			// Propagate namespace from concept if present, and the description does not already have one
 			if (null == restDescription.getNamespaceId()) {
 				restDescription.setNamespaceId(getNamespaceId());
 			}
 			
-			descriptionInputs.add(restDescription.toComponentInput(branchPath,codeSystemShortName));
+			req.addDescription(restDescription.toComponentInput());
 		}
 
-		result.setDescriptions(descriptionInputs);
-		result.setParentId(parentRelationshipId);
-
-		return result;
+		req.setParent(parentRelationshipId);
+		return req;
 	}
 
 	private String getParentId() {

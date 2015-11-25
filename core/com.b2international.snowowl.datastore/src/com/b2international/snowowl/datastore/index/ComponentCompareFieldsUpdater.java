@@ -39,14 +39,12 @@ public class ComponentCompareFieldsUpdater<D extends DocumentBuilderBase<D>> ext
 
 	@Override
 	public void doUpdate(D doc) {
-		doc.removeAll(Mappings.compareUniqueKey());
-		doc.removeAll(Mappings.compareIgnoreUniqueKey());
 		if (relevant) {
-			doc.compareUniqueKey(storageKey);
+			doc.update(Mappings.compareUniqueKey(), storageKey);
+			doc.removeAll(Mappings.compareIgnoreUniqueKey());
 		} else {
-			doc.compareIgnoreUniqueKey(storageKey);
-			doc.compareUniqueKey(CDOUtils.NO_STORAGE_KEY);
+			doc.update(Mappings.compareUniqueKey(), CDOUtils.NO_STORAGE_KEY);
+			doc.update(Mappings.compareIgnoreUniqueKey(), storageKey);
 		}
 	}
-
 }

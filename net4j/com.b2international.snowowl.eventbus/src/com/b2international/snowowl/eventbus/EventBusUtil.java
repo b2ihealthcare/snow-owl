@@ -46,8 +46,8 @@ public class EventBusUtil {
 	 * 
 	 * @return
 	 */
-	public static final IEventBus getBus(String name) {
-		final EventBus bus = new EventBus(name);
+	public static final IEventBus getBus(String name, int numberOfWorkers) {
+		final EventBus bus = new EventBus(name, numberOfWorkers);
 		LifecycleUtil.activate(bus);
 		return bus;
 	}

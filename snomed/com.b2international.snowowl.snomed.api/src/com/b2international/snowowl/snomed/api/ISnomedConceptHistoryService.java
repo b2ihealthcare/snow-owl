@@ -15,7 +15,7 @@
  */
 package com.b2international.snowowl.snomed.api;
 
-import com.b2international.snowowl.api.history.IHistoryService;
+import com.b2international.snowowl.core.history.IHistoryService;
 
 /**
  * Implementations of this interface provide a list of past modifications for SNOMED CT concepts.  

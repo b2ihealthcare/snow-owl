@@ -19,7 +19,6 @@ import com.b2international.commons.StringUtils;
 import com.b2international.snowowl.datastore.index.IndexQueryBuilder;
 import com.b2international.snowowl.datastore.index.IndexUtils;
 import com.b2international.snowowl.datastore.index.mapping.Mappings;
-import com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants;
 import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedMappings;
 import com.google.common.base.Optional;
 
@@ -65,20 +64,22 @@ public class SnomedConceptFullQueryAdapter extends SnomedConceptIndexQueryAdapte
 		return builder
 				.finishIf(StringUtils.isEmpty(searchString))
 				.require(new IndexQueryBuilder()
-				.matchIf(anyFlagSet(SEARCH_BY_CONCEPT_ID), SnomedMappings.newQuery().id(id).matchAll())
-				.matchParsedTermIf(anyFlagSet(SEARCH_BY_LABEL), Mappings.label().fieldName(), searchString)
-				.matchParsedTermIf(anyFlagSet(SEARCH_BY_FSN), SnomedIndexBrowserConstants.CONCEPT_FULLY_SPECIFIED_NAME, searchString)
-				.matchParsedTermIf(anyFlagSet(SEARCH_BY_SYNONYM), SnomedIndexBrowserConstants.CONCEPT_SYNONYM, searchString)
-				.matchParsedTermIf(anyFlagSet(SEARCH_BY_OTHER), SnomedIndexBrowserConstants.CONCEPT_OTHER_DESCRIPTION, searchString));
+				.matchIf(anyFlagSet(SEARCH_BY_CONCEPT_ID), SnomedMappings.newQuery().id(id).matchAll()))
+//				.matchParsedTermIf(anyFlagSet(SEARCH_BY_LABEL), Mappings.label().fieldName(), searchString)
+//				.matchParsedTermIf(anyFlagSet(SEARCH_BY_FSN), SnomedIndexBrowserConstants.CONCEPT_FULLY_SPECIFIED_NAME, searchString)
+//				.matchParsedTermIf(anyFlagSet(SEARCH_BY_SYNONYM), SnomedIndexBrowserConstants.CONCEPT_SYNONYM, searchString)
+//				.matchParsedTermIf(anyFlagSet(SEARCH_BY_OTHER), SnomedIndexBrowserConstants.CONCEPT_OTHER_DESCRIPTION, searchString))
+				;
 	}
 
 	private IndexQueryBuilder createIndexQueryBuilderWithoutIdTerms(IndexQueryBuilder builder) {
 		return builder
 				.finishIf(StringUtils.isEmpty(searchString))
-				.require(new IndexQueryBuilder()
-				.matchParsedTermIf(anyFlagSet(SEARCH_BY_LABEL), Mappings.label().fieldName(), searchString)
-				.matchParsedTermIf(anyFlagSet(SEARCH_BY_FSN), SnomedIndexBrowserConstants.CONCEPT_FULLY_SPECIFIED_NAME, searchString)
-				.matchParsedTermIf(anyFlagSet(SEARCH_BY_SYNONYM), SnomedIndexBrowserConstants.CONCEPT_SYNONYM, searchString)
-				.matchParsedTermIf(anyFlagSet(SEARCH_BY_OTHER), SnomedIndexBrowserConstants.CONCEPT_OTHER_DESCRIPTION, searchString));
+//				.require(new IndexQueryBuilder()
+//				.matchParsedTermIf(anyFlagSet(SEARCH_BY_LABEL), Mappings.label().fieldName(), searchString))
+//				.matchParsedTermIf(anyFlagSet(SEARCH_BY_FSN), SnomedIndexBrowserConstants.CONCEPT_FULLY_SPECIFIED_NAME, searchString)
+//				.matchParsedTermIf(anyFlagSet(SEARCH_BY_SYNONYM), SnomedIndexBrowserConstants.CONCEPT_SYNONYM, searchString)
+//				.matchParsedTermIf(anyFlagSet(SEARCH_BY_OTHER), SnomedIndexBrowserConstants.CONCEPT_OTHER_DESCRIPTION, searchString))
+				;
 	}
 }

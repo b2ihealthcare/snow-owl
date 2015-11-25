@@ -1,31 +1,36 @@
 package com.b2international.snowowl.snomed.api.impl.domain;
 
-import com.b2international.commons.ClassUtils;
-import com.b2international.snowowl.core.terminology.ComponentCategory;
-import com.b2international.snowowl.snomed.api.domain.Acceptability;
-import com.b2international.snowowl.snomed.api.domain.ISnomedComponentInput;
-import com.b2international.snowowl.snomed.api.domain.ISnomedComponentUpdate;
-import com.b2international.snowowl.snomed.api.impl.domain.browser.SnomedBrowserDescription;
-
 import java.util.Map;
 
-public class DescriptionInputCreator extends AbstractInputCreator implements ComponentInputCreator<SnomedDescriptionInput, SnomedDescriptionUpdate, SnomedBrowserDescription> {
+import com.b2international.commons.ClassUtils;
+import com.b2international.snowowl.snomed.api.impl.domain.browser.SnomedBrowserDescription;
+import com.b2international.snowowl.snomed.core.domain.Acceptability;
+import com.b2international.snowowl.snomed.datastore.server.request.BaseSnomedComponentUpdateRequest;
+import com.b2international.snowowl.snomed.datastore.server.request.SnomedComponentCreateRequest;
+import com.b2international.snowowl.snomed.datastore.server.request.SnomedDescriptionCreateRequest;
+import com.b2international.snowowl.snomed.datastore.server.request.SnomedDescriptionUpdateRequest;
+import com.b2international.snowowl.snomed.datastore.server.request.SnomedDescriptionUpdateRequestBuilder;
+import com.b2international.snowowl.snomed.datastore.server.request.SnomedRequests;
+
+public class DescriptionInputCreator extends AbstractInputCreator implements ComponentInputCreator<SnomedDescriptionCreateRequest, SnomedDescriptionUpdateRequest, SnomedBrowserDescription> {
 
 	@Override
-	public SnomedDescriptionInput createInput(String branchPath, SnomedBrowserDescription description, InputFactory inputFactory) {
-		final SnomedDescriptionInput descriptionInput = new SnomedDescriptionInput();
-		setCommonComponentProperties(branchPath, description, descriptionInput, ComponentCategory.DESCRIPTION);
-		descriptionInput.setLanguageCode(description.getLang());
-		descriptionInput.setTypeId(description.getType().getConceptId());
-		descriptionInput.setTerm(description.getTerm());
-		descriptionInput.setAcceptability(description.getAcceptabilityMap());
-		descriptionInput.setCaseSignificance(description.getCaseSignificance());
-		return descriptionInput;
+	public SnomedDescriptionCreateRequest createInput(String branchPath, SnomedBrowserDescription description, InputFactory inputFactory) {
+		return (SnomedDescriptionCreateRequest) SnomedRequests
+				.prepareNewDescription()
+				.setModuleId(getModuleOrDefault(description))
+				.setLanguageCode(description.getLang())
+				.setTypeId(description.getType().getConceptId())
+				.setTerm(description.getTerm())
+				.setAcceptability(description.getAcceptabilityMap())
+				.setCaseSignificance(description.getCaseSignificance())
+				.build();
 	}
 
 	@Override
-	public SnomedDescriptionUpdate createUpdate(SnomedBrowserDescription existingDesc, SnomedBrowserDescription newVersionDesc) {
-		final SnomedDescriptionUpdate update = new SnomedDescriptionUpdate();
+	public SnomedDescriptionUpdateRequest createUpdate(SnomedBrowserDescription existingDesc, SnomedBrowserDescription newVersionDesc) {
+		final SnomedDescriptionUpdateRequestBuilder update = SnomedRequests.prepareDescriptionUpdate(existingDesc.getDescriptionId());
+		
 		boolean change = false;
 		if (existingDesc.isActive() != newVersionDesc.isActive()) {
 			change = true;
@@ -44,16 +49,16 @@ public class DescriptionInputCreator extends AbstractInputCreator implements Com
 			change = true;
 			update.setCaseSignificance(newVersionDesc.getCaseSignificance());
 		}
-		return change ? update : null;
+		return change ? (SnomedDescriptionUpdateRequest) update.build() : null;
 	}
 
 	@Override
-	public boolean canCreateInput(Class<? extends ISnomedComponentInput> inputType) {
-		return ClassUtils.isClassAssignableFrom(SnomedDescriptionInput.class, inputType.getName());
+	public boolean canCreateInput(Class<? extends SnomedComponentCreateRequest> inputType) {
+		return ClassUtils.isClassAssignableFrom(SnomedDescriptionCreateRequest.class, inputType.getName());
 	}
 
 	@Override
-	public boolean canCreateUpdate(Class<? extends ISnomedComponentUpdate> updateType) {
-		return ClassUtils.isClassAssignableFrom(SnomedDescriptionUpdate.class, updateType.getName());
+	public boolean canCreateUpdate(Class<? extends BaseSnomedComponentUpdateRequest> updateType) {
+		return ClassUtils.isClassAssignableFrom(SnomedDescriptionUpdateRequest.class, updateType.getName());
 	}
 }

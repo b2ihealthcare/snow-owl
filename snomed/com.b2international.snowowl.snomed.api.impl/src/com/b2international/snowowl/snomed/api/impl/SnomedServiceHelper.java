@@ -1,7 +1,7 @@
 package com.b2international.snowowl.snomed.api.impl;
 
-import com.b2international.snowowl.api.domain.IComponentRef;
-import com.b2international.snowowl.api.impl.domain.ComponentRef;
+import com.b2international.snowowl.core.domain.IComponentRef;
+import com.b2international.snowowl.datastore.server.domain.ComponentRef;
 
 public class SnomedServiceHelper {
 

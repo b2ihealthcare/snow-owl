@@ -38,10 +38,10 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.b2international.snowowl.snomed.api.ISnomedRf2ImportService;
-import com.b2international.snowowl.snomed.api.domain.ISnomedImportConfiguration;
 import com.b2international.snowowl.snomed.api.rest.domain.SnomedImportDetails;
 import com.b2international.snowowl.snomed.api.rest.domain.SnomedImportRestConfiguration;
 import com.b2international.snowowl.snomed.api.rest.util.Responses;
+import com.b2international.snowowl.snomed.core.domain.ISnomedImportConfiguration;
 import com.wordnik.swagger.annotations.Api;
 import com.wordnik.swagger.annotations.ApiOperation;
 import com.wordnik.swagger.annotations.ApiParam;

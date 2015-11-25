@@ -29,12 +29,11 @@ import com.b2international.snowowl.semanticengine.simpleast.utils.QueryAstUtils;
 import com.b2international.snowowl.snomed.Concept;
 import com.b2international.snowowl.snomed.datastore.SnomedClientStatementBrowser;
 import com.b2international.snowowl.snomed.datastore.SnomedClientTerminologyBrowser;
-import com.b2international.snowowl.snomed.datastore.SnomedConceptIndexEntry;
-import com.b2international.snowowl.snomed.datastore.SnomedRelationshipIndexEntry;
-import com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants;
 import com.b2international.snowowl.snomed.datastore.index.SnomedClientIndexService;
 import com.b2international.snowowl.snomed.datastore.index.SnomedHierarchy;
 import com.b2international.snowowl.snomed.datastore.index.SnomedRelationshipIndexQueryAdapter;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptIndexEntry;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRelationshipIndexEntry;
 import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedMappings;
 import com.b2international.snowowl.snomed.dsl.query.queryast.AttributeClause;
 import com.b2international.snowowl.snomed.dsl.query.queryast.AttributeClauseGroup;
@@ -541,6 +540,7 @@ public class SubsumptionTester {
 		return true;
 	}
 	
+	// FIXME: I think there are no relationships with SAME AS or REPLACED BY types any more
 	public static final class SnomedRelationshipReplacedByOrSameAsQueryAdapter extends SnomedRelationshipIndexQueryAdapter {
 		
 		private final long candidateId;
@@ -558,7 +558,7 @@ public class SubsumptionTester {
 			return SnomedMappings.newQuery()
 					.relationship()
 						.active()
-						.field(SnomedIndexBrowserConstants.RELATIONSHIP_OBJECT_ID, candidateId)
+						.relationshipSource(candidateId)
 						.and(types)
 					.matchAll();
 		};

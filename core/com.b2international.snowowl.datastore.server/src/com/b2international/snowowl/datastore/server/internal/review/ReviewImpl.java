@@ -17,10 +17,10 @@ package com.b2international.snowowl.datastore.server.internal.review;
 
 import java.util.Date;
 
-import com.b2international.snowowl.datastore.branch.Branch;
-import com.b2international.snowowl.datastore.server.review.BranchState;
-import com.b2international.snowowl.datastore.server.review.Review;
-import com.b2international.snowowl.datastore.server.review.ReviewStatus;
+import com.b2international.snowowl.core.branch.Branch;
+import com.b2international.snowowl.datastore.review.BranchState;
+import com.b2international.snowowl.datastore.review.Review;
+import com.b2international.snowowl.datastore.review.ReviewStatus;
 import com.fasterxml.jackson.databind.util.ISO8601Utils;
 
 /**

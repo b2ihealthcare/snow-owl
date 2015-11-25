@@ -61,7 +61,7 @@ public class NotFoundException extends ApiException {
 
 	@Override
 	protected String getDeveloperMessage() {
-		return String.format("The requested instance resource (id = %s, type = %s) is not exists and/or not yet created.", getKey(), getType());
+		return String.format("The requested instance resource (id = '%s', type = '%s') does not exist and/or not yet created.", getKey(), getType());
 	}
 	
 	/**
@@ -71,7 +71,7 @@ public class NotFoundException extends ApiException {
 	 * @return
 	 */
 	public BadRequestException toBadRequestException() {
-		return new BadRequestException("%s with identifier %s required, but it does not exist.", getType(), getKey());
+		return new BadRequestException("'%s' with identifier '%s' is required, but it does not exist.", getType(), getKey());
 	}
 
 }

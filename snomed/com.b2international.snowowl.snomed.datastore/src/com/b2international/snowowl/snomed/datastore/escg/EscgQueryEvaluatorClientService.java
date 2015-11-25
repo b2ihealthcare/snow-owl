@@ -25,7 +25,7 @@ import bak.pcj.LongCollection;
 import com.b2international.snowowl.core.annotations.Client;
 import com.b2international.snowowl.datastore.ActiveBranchPathAwareService;
 import com.b2international.snowowl.snomed.SnomedPackage;
-import com.b2international.snowowl.snomed.datastore.SnomedConceptIndexEntry;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptIndexEntry;
 
 /**
  * {@link IEscgQueryEvaluatorClientService ESCG query evaluator client service} implementation, which delegates calls 

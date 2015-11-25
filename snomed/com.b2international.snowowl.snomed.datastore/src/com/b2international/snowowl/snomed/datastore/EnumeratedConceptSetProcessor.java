@@ -18,6 +18,7 @@ package com.b2international.snowowl.snomed.datastore;
 import java.util.Iterator;
 
 import com.b2international.snowowl.core.api.browser.IClientTerminologyBrowser;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptIndexEntry;
 import com.b2international.snowowl.snomed.mrcm.EnumeratedConceptSetDefinition;
 import com.google.common.base.Function;
 import com.google.common.collect.Iterators;

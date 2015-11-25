@@ -19,9 +19,11 @@ import java.util.List;
 
 import org.apache.lucene.document.Document;
 import org.apache.lucene.index.Term;
+import org.apache.lucene.queries.TermFilter;
 import org.apache.lucene.search.Filter;
-import org.apache.lucene.search.Query;
+import org.apache.lucene.search.PrefixQuery;
 import org.apache.lucene.search.Sort;
+import org.apache.lucene.search.TermQuery;
 import org.apache.lucene.util.BytesRef;
 
 /**
@@ -41,11 +43,13 @@ public interface IndexField<T> {
 
 	List<String> getValuesAsString(Document doc);
 
-	Query toQuery(T value);
+	TermQuery toQuery(T value);
 
-	Query toExistsQuery();
+	PrefixQuery toExistsQuery();
 
 	Term toTerm(T value);
+
+	TermFilter toTermFilter(T value);
 
 	void addTo(Document doc, T value);
 
@@ -55,9 +59,9 @@ public interface IndexField<T> {
 
 	Sort createSort();
 
-	Filter createFilter(T... values);
+	Filter createTermsFilter(Iterable<T> values);
 
-	Filter createFilter(List<BytesRef> bytesRefs);
+	Filter createBytesRefFilter(Iterable<BytesRef> bytesRefs);
 
 	/**
 	 * Reads the value from the given source {@link Document} and adds it to the target {@link Document}.
@@ -66,5 +70,4 @@ public interface IndexField<T> {
 	 * @param target
 	 */
 	void copyTo(Document source, Document target);
-
 }

@@ -15,8 +15,8 @@
  */
 package com.b2international.snowowl.api.impl.history.domain;
 
-import com.b2international.snowowl.api.history.domain.ChangeType;
-import com.b2international.snowowl.api.history.domain.IHistoryInfoDetails;
+import com.b2international.snowowl.core.history.domain.ChangeType;
+import com.b2international.snowowl.core.history.domain.IHistoryInfoDetails;
 
 /**
  *

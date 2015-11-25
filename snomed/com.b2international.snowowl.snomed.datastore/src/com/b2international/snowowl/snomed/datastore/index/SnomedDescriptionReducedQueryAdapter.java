@@ -77,7 +77,7 @@ public class SnomedDescriptionReducedQueryAdapter extends SnomedDescriptionIndex
 		return getDescriptionTypeQuery(super.createIndexQueryBuilder())
 				.require(new IndexQueryBuilder()
 				.matchIf(anyFlagSet(SEARCH_DESCRIPTION_ID), SnomedMappings.newQuery().id(id).matchAll())
-				.matchParsedTermIf(anyFlagSet(SEARCH_DESCRIPTION_TERM), Mappings.label().fieldName(), searchString)
+				.matchParsedTermIf(anyFlagSet(SEARCH_DESCRIPTION_TERM), SnomedMappings.descriptionTerm().fieldName(), searchString)
 				.matchIf(anyFlagSet(SEARCH_DESCRIPTION_CONCEPT_ID), SnomedMappings.newQuery().descriptionConcept(id).matchAll()));
 	}
 
@@ -103,7 +103,7 @@ public class SnomedDescriptionReducedQueryAdapter extends SnomedDescriptionIndex
 				.requireIf(anyFlagSet(SEARCH_DESCRIPTION_ACTIVE_ONLY), SnomedMappings.newQuery().active().matchAll())
 				.requireIf(StringUtils.isEmpty(searchString), SnomedMappings.id().toExistsQuery())
 				.finishIf(StringUtils.isEmpty(searchString))
-				.require(new IndexQueryBuilder().matchParsedTerm(Mappings.label().fieldName(), searchString));
+				.require(new IndexQueryBuilder().matchParsedTerm(SnomedMappings.descriptionTerm().fieldName(), searchString));
 	}	
 	
 	private IndexQueryBuilder requireType(IndexQueryBuilder builder) {

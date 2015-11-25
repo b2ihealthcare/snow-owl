@@ -15,17 +15,12 @@
  */
 package com.b2international.snowowl.snomed.datastore.index.refset;
 
-import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_ACCEPTABILITY_ID;
-import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_EFFECTIVE_TIME;
-import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_MAP_TARGET_COMPONENT_ID;
-import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_MAP_TARGET_COMPONENT_TYPE_ID;
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
 
 import java.io.Serializable;
 import java.util.List;
 
-import org.apache.lucene.document.Document;
 import org.apache.lucene.queries.BooleanFilter;
 import org.apache.lucene.search.BooleanClause.Occur;
 import org.apache.lucene.search.Filter;
@@ -37,13 +32,12 @@ import com.b2international.commons.CompareUtils;
 import com.b2international.commons.StringUtils;
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.CoreTerminologyBroker;
-import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.api.index.IIndexQueryAdapter;
 import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.datastore.ILanguageConfigurationProvider;
 import com.b2international.snowowl.snomed.datastore.SnomedRefSetUtil;
-import com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry;
 import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedMappings;
 import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedQueryBuilder;
 import com.b2international.snowowl.snomed.datastore.services.SnomedRefSetMembershipLookupService;
@@ -75,7 +69,7 @@ public class SnomedRefSetMembershipIndexQueryAdapter extends SnomedRefSetMemberI
 		return new SnomedRefSetMembershipIndexQueryAdapter() {
 			private static final long serialVersionUID = -4427757769646167620L;
 			@Override public Query createQuery() {
-				return SnomedMappings.newQuery().field(SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_UUID, uuid).matchAll();
+				return SnomedMappings.newQuery().memberUuid(uuid).matchAll();
 			}
 		};
 	}
@@ -136,7 +130,7 @@ public class SnomedRefSetMembershipIndexQueryAdapter extends SnomedRefSetMemberI
 				return new FilteredQuery(SnomedMappings.newQuery()
 						.active()
 						.memberRefSetId(languageRefSetId)
-						.field(REFERENCE_SET_MEMBER_ACCEPTABILITY_ID, Long.valueOf(Concepts.REFSET_DESCRIPTION_ACCEPTABILITY_PREFERRED))
+						.memberAcceptabilityId(Long.valueOf(Concepts.REFSET_DESCRIPTION_ACCEPTABILITY_PREFERRED))
 						.matchAll(),
 						createMemberReferencedComponentIdFilter(descriptionIds));
 			}
@@ -193,7 +187,7 @@ public class SnomedRefSetMembershipIndexQueryAdapter extends SnomedRefSetMemberI
 			@Override public Query createQuery() {
 				return SnomedMappings.newQuery()
 						.and(createRefSetIdQuery(refSetIds))
-						.field(REFERENCE_SET_MEMBER_EFFECTIVE_TIME, EffectiveTimes.UNSET_EFFECTIVE_TIME_LABEL)
+						.effectiveTime(EffectiveTimes.UNSET_EFFECTIVE_TIME)
 						.matchAll();
 			}
 		};
@@ -222,8 +216,8 @@ public class SnomedRefSetMembershipIndexQueryAdapter extends SnomedRefSetMemberI
 				} catch (final NumberFormatException e) { /* ignore */ }
 				
 				final Query specialFieldQuery = SnomedMappings.newQuery()
-						.and(createSpecialFieldTypeQuery(componentType, REFERENCE_SET_MEMBER_MAP_TARGET_COMPONENT_TYPE_ID))
-						.field(REFERENCE_SET_MEMBER_MAP_TARGET_COMPONENT_ID, componentId)
+						.memberMapTargetComponentId(componentId)
+						.and(createMapTargetComponentTypeQuery(componentType))
 						.matchAll();
 
 				queryBuilder.and(specialFieldQuery);
@@ -266,14 +260,9 @@ public class SnomedRefSetMembershipIndexQueryAdapter extends SnomedRefSetMemberI
 		return SnomedMappings.newQuery().memberReferencedComponentType(componentTypeValue).matchAll();
 	}
 	
-	private static Query createSpecialFieldTypeQuery(final String terminologyComponentId, final String fieldName) {
+	private static Query createMapTargetComponentTypeQuery(final String terminologyComponentId) {
 		final int componentTypeValue = CoreTerminologyBroker.getInstance().getTerminologyComponentIdAsInt(terminologyComponentId);
-		return SnomedMappings.newQuery().field(fieldName, componentTypeValue).matchAll();
-	}
-	
-	@Override
-	public SnomedRefSetMemberIndexEntry buildSearchResult(final Document doc, final IBranchPath branchPath, final float score) {
-		return new SnomedRefSetMemberIndexEntry(super.buildSearchResult(doc, branchPath, score));
+		return SnomedMappings.newQuery().memberMapTargetComponentType(componentTypeValue).matchAll();
 	}
 	
 	/**
@@ -359,14 +348,5 @@ public class SnomedRefSetMembershipIndexQueryAdapter extends SnomedRefSetMemberI
 				}
 			};
 		}
-		
-
-		@Override
-		public SnomedConcreteDataTypeRefSetMemberIndexEntry buildSearchResult(final Document doc, final IBranchPath branchPath, final float score) {
-			return com.b2international.snowowl.snomed.datastore.index.refset.SnomedConcreteDataTypeRefSetMemberIndexQueryAdapter.
-					buildSearchResult(new SnomedConcreteDataTypeRefSetMemberIndexEntry(super.buildSearchResult(doc, branchPath, score)), doc);
-		}
-		
 	}
-	
 }

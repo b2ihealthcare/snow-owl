@@ -26,7 +26,9 @@ public enum SnomedComponentType {
 
 	CONCEPT,
 	DESCRIPTION,
-	RELATIONSHIP;
+	RELATIONSHIP, 
+	REFSET, 
+	MEMBER;
 
 	/**
 	 * @return the all-lower case plural form of this type

@@ -15,31 +15,47 @@
  */
 package com.b2international.snowowl.snomed.api.rest;
 
-import static com.google.common.collect.Maps.newHashMap;
 import static org.springframework.hateoas.mvc.ControllerLinkBuilder.linkTo;
 
+import java.io.IOException;
+import java.io.StringReader;
 import java.net.URI;
 import java.security.Principal;
-import java.util.Map;
+import java.util.List;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.ResponseStatus;
+import org.springframework.web.context.request.async.DeferredResult;
 
-import com.b2international.snowowl.api.domain.IComponentList;
-import com.b2international.snowowl.api.domain.IComponentRef;
-import com.b2international.snowowl.snomed.api.ISnomedConceptService;
-import com.b2international.snowowl.snomed.api.domain.ISnomedConcept;
-import com.b2international.snowowl.snomed.api.domain.ISnomedConceptInput;
-import com.b2international.snowowl.snomed.api.domain.ISnomedConceptUpdate;
-import com.b2international.snowowl.snomed.api.domain.SearchKind;
-import com.b2international.snowowl.snomed.api.rest.domain.*;
+import com.b2international.commons.http.AcceptHeader;
+import com.b2international.commons.http.ExtendedLocale;
+import com.b2international.snowowl.core.domain.PageableCollectionResource;
+import com.b2international.snowowl.core.exceptions.BadRequestException;
+import com.b2international.snowowl.snomed.api.rest.domain.ChangeRequest;
+import com.b2international.snowowl.snomed.api.rest.domain.RestApiError;
+import com.b2international.snowowl.snomed.api.rest.domain.SnomedConceptRestInput;
+import com.b2international.snowowl.snomed.api.rest.domain.SnomedConceptRestUpdate;
+import com.b2international.snowowl.snomed.api.rest.util.DeferredResults;
 import com.b2international.snowowl.snomed.api.rest.util.Responses;
-import com.google.common.base.Strings;
-import com.wordnik.swagger.annotations.*;
+import com.b2international.snowowl.snomed.core.domain.ISnomedConcept;
+import com.b2international.snowowl.snomed.core.domain.SnomedConcepts;
+import com.b2international.snowowl.snomed.datastore.server.request.SnomedConceptCreateRequestBuilder;
+import com.b2international.snowowl.snomed.datastore.server.request.SnomedRequests;
+import com.wordnik.swagger.annotations.Api;
+import com.wordnik.swagger.annotations.ApiOperation;
+import com.wordnik.swagger.annotations.ApiParam;
+import com.wordnik.swagger.annotations.ApiResponse;
+import com.wordnik.swagger.annotations.ApiResponses;
 
 /**
  * @since 1.0
@@ -48,9 +64,6 @@ import com.wordnik.swagger.annotations.*;
 @Controller
 @RequestMapping(produces={ AbstractRestService.SO_MEDIA_TYPE })
 public class SnomedConceptRestService extends AbstractSnomedRestService {
-
-	@Autowired
-	protected ISnomedConceptService delegate;
 
 	@ApiOperation(
 			value="Retrieve Concepts from a branch", 
@@ -61,18 +74,26 @@ public class SnomedConceptRestService extends AbstractSnomedRestService {
 		@ApiResponse(code = 404, message = "Branch not found")
 	})
 	@RequestMapping(value="/{path:**}/concepts", method=RequestMethod.GET)
-	public @ResponseBody PageableCollectionResource<ISnomedConcept> getConcepts(
+	public @ResponseBody DeferredResult<SnomedConcepts> search(
 			@ApiParam(value="The branch path")
 			@PathVariable(value="path")
-			final String branchPath,
+			final String branch,
 
-			@ApiParam(value="The label to match")
-			@RequestParam(value="label", defaultValue="", required=false) 
-			final String labelFilter,
+			@ApiParam(value="The description term to match")
+			@RequestParam(value="term", required=false) 
+			final String termFilter,
 
-			@ApiParam(value="The ESCG filtering expression to apply")
-			@RequestParam(value="escg", defaultValue="", required=false) 
+			@ApiParam(value="The ESCG expression to match")
+			@RequestParam(value="escg", required=false) 
 			final String escgFilter,
+			
+			@ApiParam(value="The concept module identifier to match")
+			@RequestParam(value="module", required=false) 
+			final String moduleFilter,
+			
+			@ApiParam(value="The concept status to match")
+			@RequestParam(value="active", required=false) 
+			final Boolean activeFilter,
 
 			@ApiParam(value="The starting offset in the list")
 			@RequestParam(value="offset", defaultValue="0", required=false) 
@@ -80,27 +101,39 @@ public class SnomedConceptRestService extends AbstractSnomedRestService {
 
 			@ApiParam(value="The maximum number of items to return")
 			@RequestParam(value="limit", defaultValue="50", required=false) 
-			final int limit) {
+			final int limit,
+			
+			@ApiParam(value="Expansion parameters")
+			@RequestParam(value="expand", required=false)
+			final List<String> expand,
 
-		final IComponentList<ISnomedConcept> concepts;
-		final Map<SearchKind, String> queryParams = newHashMap();
+			@ApiParam(value="Accepted language tags, in order of preference")
+			@RequestHeader(value="Accept-Language", defaultValue="en-US;q=0.8,en-GB;q=0.6", required=false) 
+			final String acceptLanguage) {
 
-		registerIfNotNull(SearchKind.LABEL, labelFilter, queryParams);
-		registerIfNotNull(SearchKind.ESCG, escgFilter, queryParams);
-
-		if (queryParams.isEmpty()) {
-			concepts = delegate.getAllConcepts(branchPath, offset, limit);
-		} else {
-			concepts = delegate.search(branchPath, queryParams, offset, limit);
+		final List<ExtendedLocale> extendedLocales;
+		
+		try {
+			extendedLocales = AcceptHeader.parseExtendedLocales(new StringReader(acceptLanguage));
+		} catch (IOException e) {
+			throw new BadRequestException(e.getMessage());
+		} catch (IllegalArgumentException e) {
+			throw new BadRequestException(e.getMessage());
 		}
-
-		return PageableCollectionResource.of(concepts.getMembers(), offset, limit, concepts.getTotalMembers());
-	}
-
-	private void registerIfNotNull(SearchKind kind, final String filterText, final Map<SearchKind, String> queryParams) {
-		if (!Strings.isNullOrEmpty(filterText)) {
-			queryParams.put(kind, filterText);
-		}
+		
+		return DeferredResults.wrap(
+				SnomedRequests
+					.prepareConceptSearch()
+					.setLimit(limit)
+					.setOffset(offset)
+					.filterByTerm(termFilter)
+					.filterByEscg(escgFilter)
+					.filterByModule(moduleFilter)
+					.filterByActive(activeFilter)
+					.setExpand(expand)
+					.filterByExtendedLocales(extendedLocales)
+					.build(branch)
+					.execute(bus));
 	}
 
 	@ApiOperation(
@@ -111,17 +144,26 @@ public class SnomedConceptRestService extends AbstractSnomedRestService {
 		@ApiResponse(code = 404, message = "Branch or Concept not found")
 	})
 	@RequestMapping(value="/{path:**}/concepts/{conceptId}", method=RequestMethod.GET)
-	public @ResponseBody ISnomedConcept read(
+	public @ResponseBody DeferredResult<ISnomedConcept> read(
 			@ApiParam(value="The branch path")
 			@PathVariable(value="path")
 			final String branchPath,
 
 			@ApiParam(value="The Concept identifier")
 			@PathVariable(value="conceptId")
-			final String conceptId) {
+			final String conceptId,
+			
+			@ApiParam(value="Expansion parameters")
+			@RequestParam(value="expand", required=false)
+			final List<String> expand) {
 
-		final IComponentRef conceptRef = createComponentRef(branchPath, conceptId);
-		return delegate.read(conceptRef);
+		return DeferredResults.wrap(
+				SnomedRequests
+					.prepareGetConcept()
+					.setComponentId(conceptId)
+					.setExpand(expand)
+					.build(branchPath)
+					.execute(bus));
 	}
 
 	@ApiOperation(
@@ -147,8 +189,22 @@ public class SnomedConceptRestService extends AbstractSnomedRestService {
 
 			final Principal principal) {
 		
-		final ISnomedConcept createdConcept = doCreate(branchPath, body, principal);
-		return Responses.created(getConceptLocationURI(branchPath, createdConcept)).build();
+		final String userId = principal.getName();
+		
+		final SnomedConceptRestInput change = body.getChange();
+		final String commitComment = body.getCommitComment();
+		
+		final SnomedConceptCreateRequestBuilder input = change.toComponentInput();
+		
+		final String createdConceptId = SnomedRequests
+			.prepareCommit(userId, branchPath)
+			.setBody(input)
+			.setCommitComment(commitComment)
+			.build()
+			.executeSync(bus, 120L * 1000L)
+			.getResultAs(String.class);
+		
+		return Responses.created(getConceptLocationURI(branchPath, createdConceptId)).build();
 	}
 
 	@ApiOperation(
@@ -189,12 +245,25 @@ public class SnomedConceptRestService extends AbstractSnomedRestService {
 
 			final Principal principal) {
 
-		final IComponentRef conceptRef = createComponentRef(branchPath, conceptId);
-		final ISnomedConceptUpdate update = body.getChange().toComponentUpdate();
 		final String userId = principal.getName();
 		final String commitComment = body.getCommitComment();
+		final SnomedConceptRestUpdate update = body.getChange();
 
-		delegate.update(conceptRef, update, userId, commitComment);
+		SnomedRequests
+			.prepareCommit(userId, branchPath)
+			.setBody(
+				SnomedRequests
+					.prepareConceptUpdate(conceptId)
+					.setActive(update.isActive())
+					.setModuleId(update.getModuleId())
+					.setAssociationTargets(update.getAssociationTargets())
+					.setDefinitionStatus(update.getDefinitionStatus())
+					.setInactivationIndicator(update.getInactivationIndicator())
+					.setSubclassDefinitionStatus(update.getSubclassDefinitionStatus())
+					.build())
+			.setCommitComment(commitComment)
+			.build()
+			.executeSync(bus, 120L * 1000L);
 	}
 
 	@ApiOperation(
@@ -219,19 +288,15 @@ public class SnomedConceptRestService extends AbstractSnomedRestService {
 			final String conceptId, 
 
 			final Principal principal) {
-		final IComponentRef conceptRef = createComponentRef(branchPath, conceptId);
-		final String userId = principal.getName();
-		delegate.delete(conceptRef, userId, String.format("Deleted Concept '%s' from store.", conceptId));
+		SnomedRequests
+			.prepareCommit(principal.getName(), branchPath)
+			.setBody(SnomedRequests.prepareDeleteConcept(conceptId))
+			.setCommitComment(String.format("Deleted Concept '%s' from store.", conceptId))
+			.build()
+			.executeSync(bus, 120L * 1000L);
 	}
 
-	private ISnomedConcept doCreate(final String branchPath, final ChangeRequest<SnomedConceptRestInput> body, final Principal principal) {
-		final ISnomedConceptInput input = body.getChange().toComponentInput(branchPath, codeSystemShortName);
-		final String userId = principal.getName();
-		final String commitComment = body.getCommitComment();
-		return delegate.create(input, userId, commitComment);
-	}
-
-	private URI getConceptLocationURI(String branchPath, ISnomedConcept concept) {
-		return linkTo(SnomedConceptRestService.class).slash(branchPath).slash("concepts").slash(concept.getId()).toUri();
+	private URI getConceptLocationURI(String branchPath, String conceptId) {
+		return linkTo(SnomedConceptRestService.class).slash(branchPath).slash("concepts").slash(conceptId).toUri();
 	}
 }

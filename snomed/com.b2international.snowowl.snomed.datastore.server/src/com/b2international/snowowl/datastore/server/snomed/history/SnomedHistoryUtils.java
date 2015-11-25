@@ -26,7 +26,7 @@ import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.datastore.cdo.ICDOConnectionManager;
 import com.b2international.snowowl.snomed.Concept;
 import com.b2international.snowowl.snomed.SnomedPackage;
-import com.b2international.snowowl.snomed.datastore.SnomedConceptLabelProviderService;
+import com.b2international.snowowl.snomed.datastore.services.ISnomedConceptNameProvider;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedAssociationRefSetMember;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedAttributeValueRefSetMember;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedComplexMapRefSetMember;
@@ -72,7 +72,7 @@ public abstract class SnomedHistoryUtils {
 				final CDOObject object = view.getObject((CDOID) newValue);
 				if (object instanceof Concept) {
 					final Concept concept = (Concept) object;
-					final String label = getServiceForClass(SnomedConceptLabelProviderService.class).getLabel(createPath(concept), concept.getId()); 
+					final String label = getServiceForClass(ISnomedConceptNameProvider.class).getComponentLabel(createPath(concept), concept.getId()); 
 					return label != null ? label : ((Concept) object).getFullySpecifiedName(); 
 				}
 			} finally {

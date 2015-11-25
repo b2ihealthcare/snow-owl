@@ -17,7 +17,7 @@ package com.b2international.snowowl.snomed.datastore.services;
 
 import com.b2international.snowowl.datastore.browser.AbstractClientTerminologyBrowserFactory;
 import com.b2international.snowowl.snomed.datastore.SnomedClientTerminologyBrowser;
-import com.b2international.snowowl.snomed.datastore.SnomedConceptIndexEntry;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptIndexEntry;
 
 /**
  * Factory for the terminology browser.

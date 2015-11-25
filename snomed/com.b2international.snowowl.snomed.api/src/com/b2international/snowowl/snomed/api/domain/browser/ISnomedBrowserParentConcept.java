@@ -15,9 +15,11 @@
  */
 package com.b2international.snowowl.snomed.api.domain.browser;
 
+import com.b2international.snowowl.snomed.core.domain.DefinitionStatusProvider;
+
 /**
  * Represents the response object for a concept, returned when requesting concept parents using the IHTSDO SNOMED CT Browser interface. 
  */
-public interface ISnomedBrowserParentConcept extends IConceptIdWithFsnProvider, IDefinitionStatusProvider {
+public interface ISnomedBrowserParentConcept extends IConceptIdWithFsnProvider, DefinitionStatusProvider {
 	// Empty interface body
 }

@@ -21,7 +21,7 @@ import java.util.List;
 import com.b2international.snowowl.core.api.IComponent;
 import com.b2international.snowowl.core.api.NullComponent;
 import com.b2international.snowowl.core.api.index.IIndexQueryAdapter;
-import com.b2international.snowowl.snomed.datastore.SnomedConceptIndexEntry;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptIndexEntry;
 
 /**
  * @since 3.1

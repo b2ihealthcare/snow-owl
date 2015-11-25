@@ -17,6 +17,10 @@ package com.b2international.snowowl.core.api;
 
 import java.io.Serializable;
 
+import com.b2international.snowowl.core.api.component.IconIdProvider;
+import com.b2international.snowowl.core.api.component.LabelProvider;
+import com.b2international.snowowl.core.api.component.TerminologyComponentIdProvider;
+
 /**
  * Serializable representation of an extended {@link IComponent component}. Beside all {@link IComponent component} 
  * properties the additional properties are also available:

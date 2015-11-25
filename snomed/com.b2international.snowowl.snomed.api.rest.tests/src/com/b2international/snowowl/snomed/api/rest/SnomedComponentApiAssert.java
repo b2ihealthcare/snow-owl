@@ -22,12 +22,17 @@ import static com.b2international.snowowl.test.commons.rest.RestExtensions.given
 import static com.b2international.snowowl.test.commons.rest.RestExtensions.lastPathSegment;
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.equalTo;
+import static org.junit.Assert.assertNotNull;
 
+import java.util.Collections;
 import java.util.Date;
 import java.util.Map;
 
 import com.b2international.snowowl.core.api.IBranchPath;
-import com.b2international.snowowl.snomed.api.domain.CharacteristicType;
+import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
+import com.b2international.snowowl.snomed.core.domain.CharacteristicType;
+import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType;
+import com.google.common.base.Joiner;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableMap.Builder;
@@ -60,10 +65,13 @@ public abstract class SnomedComponentApiAssert {
 				.build();
 
 		final ImmutableMap.Builder<String, Object> conceptBuilder = ImmutableMap.<String, Object>builder()
-				.put("parentId", parentId)
 				.put("moduleId", moduleId)
 				.put("descriptions", ImmutableList.of(fsnDescription, ptDescription));
 
+		if (parentId != null) {
+			conceptBuilder.put("parentId", parentId);
+		}
+		
 		if (conceptId != null) {
 			conceptBuilder.put("id", conceptId);
 		}
@@ -111,16 +119,24 @@ public abstract class SnomedComponentApiAssert {
 				.build();
 	}
 	
-	private static ValidatableResponse assertComponentReadWithStatus(final IBranchPath branchPath, 
+	public static ValidatableResponse assertComponentReadWithStatus(final IBranchPath branchPath, 
 			final SnomedComponentType componentType, 
 			final String componentId, 
 			final int statusCode) {
 
-		return givenAuthenticatedRequest(SnomedApiTestConstants.SCT_API)
-				.when().get("/{path}/{componentType}/{id}", branchPath.getPath(), componentType.toLowerCasePlural(), componentId)
+		return getComponent(branchPath, componentType, componentId)
 				.then().log().ifValidationFails().assertThat().statusCode(statusCode);
 	}
 
+	public static Response getComponent(final IBranchPath branchPath, final SnomedComponentType componentType, final String componentId, final String...expansions) {
+		assertNotNull(componentId);
+		String url = "/{path}/{componentType}/{id}";
+		if (expansions != null && expansions.length > 0) {
+			url = url.concat("?expand="+Joiner.on(",").join(expansions));
+		}
+		return givenAuthenticatedRequest(SnomedApiTestConstants.SCT_API).when().get(url, branchPath.getPath(), componentType.toLowerCasePlural(), componentId);
+	}
+	
 	/**
 	 * Asserts that the component with the given type and identifier exists on the given branch.
 	 *  
@@ -277,7 +293,7 @@ public abstract class SnomedComponentApiAssert {
 
 		givenAuthenticatedRequest(SnomedApiTestConstants.SCT_API)
 		.when().delete("/{path}/{componentType}/{id}", branchPath.getPath(), componentType.toLowerCasePlural(), componentId)
-		.then().assertThat().statusCode(204);
+		.then().log().ifValidationFails().assertThat().statusCode(204);
 	}
 
 	/**
@@ -358,4 +374,37 @@ public abstract class SnomedComponentApiAssert {
 	private SnomedComponentApiAssert() {
 		throw new UnsupportedOperationException("This class is not supposed to be instantiated.");
 	}
+	
+	public static Map<String, Object> createRefSetRequestBody(SnomedRefSetType type, String referencedComponentType, String parent) {
+		final Map<String, Object> conceptBody = (Map<String, Object>) givenConceptRequestBody(null, parent, Concepts.MODULE_SCT_CORE, SnomedApiTestConstants.PREFERRED_ACCEPTABILITY_MAP, true);
+		final Builder<String, Object> requestBody = ImmutableMap.builder();
+		requestBody.putAll(conceptBody);
+		requestBody.put("commitComment", String.format("New %s type reference set with %s members", type, referencedComponentType));
+		requestBody.put("type", type);
+		requestBody.put("referencedComponentType", referencedComponentType);
+		return requestBody.build();
+	}
+	
+	public static Map<String, Object> createRefSetMemberRequestBody(String referencedComponentId, String referenceSetId) {
+		return createRefSetMemberRequestBody(Concepts.MODULE_SCT_CORE, referencedComponentId, referenceSetId);
+	}
+	
+	public static Map<String, Object> createRefSetMemberRequestBody(String moduleId, String referencedComponentId, String referenceSetId) {
+		return createRefSetMemberRequestBody(moduleId, referencedComponentId, referenceSetId, Collections.<String, Object>emptyMap());
+	}
+	
+	public static Map<String, Object> createRefSetMemberRequestBody(String moduleId, String referencedComponentId, String referenceSetId, Map<String, Object> props) {
+		final Builder<String, Object> requestBody = ImmutableMap.builder();
+		requestBody.put("moduleId", moduleId);
+		requestBody.put("referenceSetId", referenceSetId);
+		if (referencedComponentId != null) {
+			requestBody.put("referencedComponentId", referencedComponentId);
+		}
+		requestBody.put("commitComment", String.format("New reference set member '%s' in refset '%s'", referencedComponentId, referenceSetId));
+		if (props != null) {
+			requestBody.putAll(props);
+		}
+		return requestBody.build();
+	}
+	
 }

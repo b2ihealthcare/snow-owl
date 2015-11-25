@@ -15,18 +15,17 @@
  */
 package com.b2international.snowowl.core.quicksearch;
 
-import java.util.List;
+import static com.google.common.collect.Lists.newArrayList;
 
-import com.google.common.collect.Lists;
+import java.util.List;
 
 /**
  * Implements the {@link IQuickSearchProviderResponse} interface.
- * 
  */
 public class QuickSearchProviderResponse implements IQuickSearchProviderResponse {
 	private final String providerName;
 	private final int totalHitCount;
-	private final List<IQuickSearchProviderResponseEntry> entries = Lists.newArrayList();
+	private final List<QuickSearchElement> entries = newArrayList();
 
 	public QuickSearchProviderResponse(String providerName, int totalHitCount) {
 		this.providerName = providerName;
@@ -43,7 +42,7 @@ public class QuickSearchProviderResponse implements IQuickSearchProviderResponse
 	}
 
 	@Override
-	public List<IQuickSearchProviderResponseEntry> getEntries() {
+	public List<QuickSearchElement> getEntries() {
 		return entries;
 	}
 }

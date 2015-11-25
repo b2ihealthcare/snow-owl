@@ -17,7 +17,7 @@ package com.b2international.snowowl.datastore.server.internal.review;
 
 import java.util.Set;
 
-import com.b2international.snowowl.datastore.server.review.ConceptChanges;
+import com.b2international.snowowl.datastore.review.ConceptChanges;
 
 /**
  * @since 4.2

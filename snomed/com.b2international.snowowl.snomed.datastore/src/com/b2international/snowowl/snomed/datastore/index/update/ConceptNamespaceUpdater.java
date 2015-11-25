@@ -15,12 +15,9 @@
  */
 package com.b2international.snowowl.snomed.datastore.index.update;
 
-import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.CONCEPT_NAMESPACE_ID;
-
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.datastore.BranchPathUtils;
 import com.b2international.snowowl.datastore.index.DocumentUpdaterBase;
-import com.b2international.snowowl.datastore.index.mapping.Mappings;
 import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedDocumentBuilder;
 import com.b2international.snowowl.snomed.datastore.services.ISnomedComponentService;
 
@@ -33,15 +30,14 @@ public class ConceptNamespaceUpdater extends DocumentUpdaterBase<SnomedDocumentB
 
 	public ConceptNamespaceUpdater(String componentId) {
 		super(componentId);
-		final ISnomedComponentService componentService = ApplicationContext.getInstance().getService(ISnomedComponentService.class);
+		
 		//XXX intentionally works on MAIN
+		final ISnomedComponentService componentService = ApplicationContext.getInstance().getService(ISnomedComponentService.class);
 		namespaceId = componentService.getExtensionConceptId(BranchPathUtils.createMainPath(), componentId);
 	}
 
 	@Override
 	public void doUpdate(SnomedDocumentBuilder doc) {
-		doc.removeAll(Mappings.longField(CONCEPT_NAMESPACE_ID));
-		doc.searchOnlyField(CONCEPT_NAMESPACE_ID, namespaceId);
+		doc.conceptNamespaceId(namespaceId);
 	}
-
 }

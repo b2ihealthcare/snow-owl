@@ -1,46 +1,45 @@
 package com.b2international.snowowl.snomed.api.impl.domain;
 
-import com.b2international.snowowl.core.terminology.ComponentCategory;
-import com.b2international.snowowl.snomed.api.domain.*;
 import com.b2international.snowowl.snomed.api.domain.browser.ISnomedBrowserDescription;
 import com.b2international.snowowl.snomed.api.impl.domain.browser.SnomedBrowserConcept;
 import com.b2international.snowowl.snomed.api.impl.domain.browser.SnomedBrowserConceptUpdate;
+import com.b2international.snowowl.snomed.core.domain.InactivationIndicator;
+import com.b2international.snowowl.snomed.datastore.server.request.BaseSnomedComponentUpdateRequest;
+import com.b2international.snowowl.snomed.datastore.server.request.SnomedComponentCreateRequest;
+import com.b2international.snowowl.snomed.datastore.server.request.SnomedConceptCreateRequest;
+import com.b2international.snowowl.snomed.datastore.server.request.SnomedConceptCreateRequestBuilder;
+import com.b2international.snowowl.snomed.datastore.server.request.SnomedConceptUpdateRequest;
+import com.b2international.snowowl.snomed.datastore.server.request.SnomedConceptUpdateRequestBuilder;
+import com.b2international.snowowl.snomed.datastore.server.request.SnomedDescriptionCreateRequest;
+import com.b2international.snowowl.snomed.datastore.server.request.SnomedRequests;
 
-import java.util.List;
-
-import static com.google.common.collect.Lists.newArrayList;
-
-public class ConceptInputCreator extends AbstractInputCreator implements ComponentInputCreator<SnomedConceptInput, SnomedConceptUpdate, SnomedBrowserConcept> {
+public class ConceptInputCreator extends AbstractInputCreator implements ComponentInputCreator<SnomedConceptCreateRequest, SnomedConceptUpdateRequest, SnomedBrowserConcept> {
+	
 	@Override
-	public SnomedConceptInput createInput(final String branchPath, SnomedBrowserConcept concept, InputFactory inputFactory) {
-		final SnomedConceptInput conceptInput = new SnomedConceptInput();
-		setCommonComponentProperties(branchPath, concept, conceptInput, ComponentCategory.CONCEPT);
+	public SnomedConceptCreateRequest createInput(final String branchPath, SnomedBrowserConcept concept, InputFactory inputFactory) {
+		final SnomedConceptCreateRequestBuilder builder = SnomedRequests
+				.prepareNewConcept()
+				.setModuleId(getModuleOrDefault(concept))
+				.setDefinitionStatus(concept.getDefinitionStatus())
+				.setParent(getParentId(concept));
 		
 		String conceptId = concept.getConceptId();
 		if (conceptId != null) {
-			conceptInput.setIdGenerationStrategy(new UserIdGenerationStrategy(conceptId));
+			builder.setId(conceptId);
 		}
-		
-		conceptInput.setDefinitionStatus(concept.getDefinitionStatus());
 
-		// Find a parent relationship
-		final String parentId = getParentId(concept);
-		conceptInput.setParentId(parentId);
-		conceptInput.setIsAIdGenerationStrategy(new NamespaceIdGenerationStrategy(ComponentCategory.RELATIONSHIP, null));
-
-		final List<ISnomedDescriptionInput> descriptionInputs = newArrayList();
 		for (ISnomedBrowserDescription description : concept.getDescriptions()) {
-			descriptionInputs.add(inputFactory.createComponentInput(branchPath, description, ISnomedDescriptionInput.class));
+			builder.addDescription(inputFactory.createComponentInput(branchPath, description, SnomedDescriptionCreateRequest.class));
 		}
 
-		conceptInput.setDescriptions(descriptionInputs);
-
-		return conceptInput;
+		// TODO remove cast, use only Request interfaces with proper type
+		return (SnomedConceptCreateRequest) builder.build();
 	}
 
 	@Override
-	public SnomedConceptUpdate createUpdate(SnomedBrowserConcept existingVersion, SnomedBrowserConcept newVersion) {
-		final SnomedConceptUpdate snomedConceptUpdate = new SnomedConceptUpdate();
+	public SnomedConceptUpdateRequest createUpdate(SnomedBrowserConcept existingVersion, SnomedBrowserConcept newVersion) {
+		final SnomedConceptUpdateRequestBuilder snomedConceptUpdate = SnomedRequests
+				.prepareConceptUpdate(existingVersion.getConceptId());
 		boolean anyDifference = false;
 
 		if (existingVersion.isActive() != newVersion.isActive()) {
@@ -68,20 +67,21 @@ public class ConceptInputCreator extends AbstractInputCreator implements Compone
 		}
 
 		if (anyDifference) {
-			return snomedConceptUpdate;
+			// TODO remove cast, use only Request interfaces with proper types
+			return (SnomedConceptUpdateRequest) snomedConceptUpdate.build();
 		} else {
 			return null;
 		}
 	}
 
 	@Override
-	public boolean canCreateInput(Class<? extends ISnomedComponentInput> inputType) {
-		return ISnomedConceptInput.class.isAssignableFrom(inputType);
+	public boolean canCreateInput(Class<? extends SnomedComponentCreateRequest> inputType) {
+		return SnomedConceptCreateRequest.class.isAssignableFrom(inputType);
 	}
 
 	@Override
-	public boolean canCreateUpdate(Class<? extends ISnomedComponentUpdate> updateType) {
-		return ISnomedConceptUpdate.class.isAssignableFrom(updateType);
+	public boolean canCreateUpdate(Class<? extends BaseSnomedComponentUpdateRequest> updateType) {
+		return SnomedConceptUpdateRequest.class.isAssignableFrom(updateType);
 	}
 
 }

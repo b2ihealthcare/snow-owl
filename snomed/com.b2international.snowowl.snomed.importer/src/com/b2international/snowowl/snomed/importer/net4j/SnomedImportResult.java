@@ -18,8 +18,8 @@ package com.b2international.snowowl.snomed.importer.net4j;
 import java.util.List;
 import java.util.Set;
 
-import com.b2international.snowowl.snomed.datastore.SnomedConceptIndexEntry;
-import com.b2international.snowowl.snomed.datastore.index.refset.SnomedRefSetIndexEntry;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptIndexEntry;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetIndexEntry;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 

@@ -36,20 +36,21 @@ import org.eclipse.core.runtime.jobs.JobChangeAdapter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.b2international.snowowl.core.branch.Branch;
+import com.b2international.snowowl.core.branch.Branch.BranchState;
 import com.b2international.snowowl.core.exceptions.BadRequestException;
 import com.b2international.snowowl.core.exceptions.NotFoundException;
 import com.b2international.snowowl.datastore.BranchPathUtils;
-import com.b2international.snowowl.datastore.branch.Branch;
-import com.b2international.snowowl.datastore.branch.Branch.BranchState;
+import com.b2international.snowowl.datastore.events.BranchChangedEvent;
 import com.b2international.snowowl.datastore.index.diff.CompareResult;
 import com.b2international.snowowl.datastore.index.diff.NodeDiff;
 import com.b2international.snowowl.datastore.index.diff.VersionCompareConfiguration;
-import com.b2international.snowowl.datastore.server.events.BranchChangedEvent;
-import com.b2international.snowowl.datastore.server.internal.IRepository;
-import com.b2international.snowowl.datastore.server.review.ConceptChanges;
-import com.b2international.snowowl.datastore.server.review.Review;
-import com.b2international.snowowl.datastore.server.review.ReviewManager;
-import com.b2international.snowowl.datastore.server.review.ReviewStatus;
+import com.b2international.snowowl.datastore.review.ConceptChanges;
+import com.b2international.snowowl.datastore.review.Review;
+import com.b2international.snowowl.datastore.review.ReviewManager;
+import com.b2international.snowowl.datastore.review.ReviewStatus;
+import com.b2international.snowowl.datastore.server.ReviewConfiguration;
+import com.b2international.snowowl.datastore.server.internal.InternalRepository;
 import com.b2international.snowowl.datastore.store.Store;
 import com.b2international.snowowl.datastore.store.query.Query;
 import com.b2international.snowowl.datastore.store.query.QueryBuilder;
@@ -175,17 +176,17 @@ public class ReviewManagerImpl implements ReviewManager {
 		private static final Timer CLEANUP_TIMER = new Timer("Review cleanup", true);
 	}
 
-	public ReviewManagerImpl(final IRepository repository, final Store<ReviewImpl> reviewStore, final Store<ConceptChangesImpl> conceptChangesStore) {
-		this(repository, reviewStore, conceptChangesStore, 15, 5);
+	public ReviewManagerImpl(final InternalRepository repository, final Store<ReviewImpl> reviewStore, final Store<ConceptChangesImpl> conceptChangesStore) {
+		this(repository, reviewStore, conceptChangesStore, new ReviewConfiguration());
 	}
 
-	public ReviewManagerImpl(final IRepository repository, 
+	public ReviewManagerImpl(final InternalRepository repository, 
 			final Store<ReviewImpl> reviewStore, final Store<ConceptChangesImpl> conceptChangesStore, 
-			final long keepCurrentMins, final int keepOtherMins) {
+			final ReviewConfiguration config) {
 
-		this.repositoryId = repository.getCdoRepositoryId();
-		this.keepCurrentMillis = TimeUnit.MINUTES.toMillis(keepCurrentMins);
-		this.keepOtherMillis = TimeUnit.MINUTES.toMillis(keepOtherMins);
+		this.repositoryId = repository.id();
+		this.keepCurrentMillis = TimeUnit.MINUTES.toMillis(config.getKeepCurrentMins());
+		this.keepOtherMillis = TimeUnit.MINUTES.toMillis(config.getKeepOtherMins());
 
 		this.reviewStore = reviewStore;
 		reviewStore.configureSearchable("status");

@@ -15,12 +15,12 @@
  */
 package com.b2international.snowowl.snomed.api.impl.domain.browser;
 
-import com.b2international.snowowl.snomed.api.domain.Acceptability;
-import com.b2international.snowowl.snomed.api.domain.CaseSignificance;
+import java.util.Map;
+
 import com.b2international.snowowl.snomed.api.domain.browser.ISnomedBrowserDescription;
 import com.b2international.snowowl.snomed.api.domain.browser.SnomedBrowserDescriptionType;
-
-import java.util.Map;
+import com.b2international.snowowl.snomed.core.domain.Acceptability;
+import com.b2international.snowowl.snomed.core.domain.CaseSignificance;
 
 public class SnomedBrowserDescription extends SnomedBrowserComponent implements ISnomedBrowserDescription {
 

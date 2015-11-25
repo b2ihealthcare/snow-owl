@@ -15,8 +15,8 @@
  */
 package com.b2international.snowowl.snomed.api.domain.browser;
 
-import com.b2international.snowowl.snomed.api.domain.CharacteristicType;
-import com.b2international.snowowl.snomed.api.domain.RelationshipModifier;
+import com.b2international.snowowl.snomed.core.domain.CharacteristicType;
+import com.b2international.snowowl.snomed.core.domain.RelationshipModifier;
 
 /**
  * Represents a specific SNOMED CT relationship, carrying information for use in the IHTSDO SNOMED CT Browser.

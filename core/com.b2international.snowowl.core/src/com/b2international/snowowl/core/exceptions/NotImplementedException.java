@@ -28,8 +28,8 @@ public class NotImplementedException extends ApiException {
 		this("Not implemented yet");
 	}
 	
-	public NotImplementedException(String message) {
-		super(message);
+	public NotImplementedException(String message, Object...args) {
+		super(message, args);
 	}
 	
 }

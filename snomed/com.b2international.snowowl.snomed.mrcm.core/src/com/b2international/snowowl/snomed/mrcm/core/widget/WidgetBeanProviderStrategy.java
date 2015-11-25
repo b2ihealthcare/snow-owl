@@ -29,7 +29,7 @@ import com.b2international.commons.functions.UncheckedCastFunction;
 import com.b2international.snowowl.core.api.NullComponent;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.datastore.CaseSignificance;
-import com.b2international.snowowl.snomed.datastore.SnomedConceptIndexEntry;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptIndexEntry;
 import com.b2international.snowowl.snomed.mrcm.core.widget.bean.ConceptWidgetBean;
 import com.b2international.snowowl.snomed.mrcm.core.widget.bean.DescriptionWidgetBean;
 import com.b2international.snowowl.snomed.mrcm.core.widget.bean.LeafWidgetBean;
@@ -212,7 +212,7 @@ public abstract class WidgetBeanProviderStrategy {
 			
 			final String typeId = description.getTypeId();
 			final boolean preferred = descriptionPreferabilityMap.get(description.getId()).booleanValue() && !Concepts.FULLY_SPECIFIED_NAME.equals(typeId) && !Concepts.TEXT_DEFINITION.equals(typeId);
-			final String term = description.getLabel();
+			final String term = description.getTerm();
 			final long sctId = Long.valueOf(description.getId());
 			final boolean released = description.isReleased();
 			CaseSignificance caseSensitivity = description.getCaseSensitivity();

@@ -15,15 +15,14 @@
  */
 package com.b2international.snowowl.snomed.api.rest.domain;
 
-import com.b2international.snowowl.snomed.api.domain.CharacteristicType;
-import com.b2international.snowowl.snomed.api.domain.RelationshipModifier;
-import com.b2international.snowowl.snomed.api.impl.domain.SnomedRelationshipUpdate;
+import com.b2international.snowowl.snomed.core.domain.CharacteristicType;
+import com.b2international.snowowl.snomed.core.domain.RelationshipModifier;
 
 
 /**
  * @since 1.0
  */
-public class SnomedRelationshipRestUpdate extends AbstractSnomedComponentRestUpdate<SnomedRelationshipUpdate> {
+public class SnomedRelationshipRestUpdate extends AbstractSnomedComponentRestUpdate {
 
 	private Integer group;
 	private Integer unionGroup;
@@ -62,18 +61,4 @@ public class SnomedRelationshipRestUpdate extends AbstractSnomedComponentRestUpd
 		this.modifier = modifier;
 	}
 
-	@Override
-	protected SnomedRelationshipUpdate createComponentUpdate() {
-		return new SnomedRelationshipUpdate();
-	}
-
-	@Override
-	public SnomedRelationshipUpdate toComponentUpdate() {
-		final SnomedRelationshipUpdate result = super.toComponentUpdate();
-		result.setGroup(getGroup());
-		result.setUnionGroup(getUnionGroup());
-		result.setCharacteristicType(getCharacteristicType());
-		result.setModifier(getModifier());
-		return result;
-	}
 }

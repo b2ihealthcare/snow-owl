@@ -22,7 +22,7 @@ import org.apache.lucene.search.BooleanQuery;
 import bak.pcj.LongCollection;
 
 import com.b2international.snowowl.core.api.IBranchPath;
-import com.b2international.snowowl.snomed.datastore.SnomedConceptIndexEntry;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptIndexEntry;
 
 /**
  * Service for evaluating ESCG query expressions.

@@ -15,31 +15,11 @@
  */
 package com.b2international.snowowl.core.api;
 
-import javax.annotation.Nullable;
-
-
 /**
- * Headless representation of a label provider. Provides a human readable 
- * name or label associated with a terminology independent component.
- * <p>
- * The following features are supported:
- * <ul>
- * <li>{@link IComponentNameProvider#getText(Object) Get component label}</li>
- * </ul>
- * </p>
- * @see #NOOP_NAME_PROVIDER
+ * Provides a human-readable label for a terminology component.
  */
 public interface IComponentNameProvider {
 
-	/**
-	 * Returns with a humane readable name or label of a terminology independent component specified by the argument.
-	 * @param object the terminology independent component by default. Clients may add functionality to accept identifiers as well.
-	 * @return the human readable label of the component. Or the String representation of the <b>object</b> argument.
-	 * Clients must ensure that this method does not return with {@code null}.
-	 * @see IComponentNameProvider
-	 */
-	String getText(final Object object);
-	
 	/**
 	 * Returns with the human readable label of a terminology independent component identified by its unique ID
 	 * from the given branch. This method may return with {@code null} if the component cannot be found on the 
@@ -48,15 +28,22 @@ public interface IComponentNameProvider {
 	 * @param componentId the terminology specific unique ID of the component.
 	 * @return the name/label of the component. Or {@code null} if the component cannot be found.
 	 */
-	@Nullable String getComponentLabel(final IBranchPath branchPath, final String componentId);
+	String getComponentLabel(IBranchPath branchPath, String componentId);
+
+	/**
+	 * Returns with the terminology dependent unique ID and the human readable label of a component specified by its unique storage key.
+	 * <br>This method could return with {@code null} if the component does not exist in the store on the specified branch.  
+	 * @param branchPath the branch path.
+	 * @param storageKey the primary storage key of the component
+	 * @return the {@link ComponentIdAndLabel ID and label pair} of a component. May return with {@code null} if the component does not exist in store.
+	 */
+	ComponentIdAndLabel getComponentIdAndLabel(IBranchPath branchPath, long storageKey);
 	
 	/**
 	 * No-operation name provider that always behaves as {@link String#valueOf(Object)} for any input.
-	 * @see IComponentNameProvider 
 	 */
-	public static final IComponentNameProvider NOOP_NAME_PROVIDER = new IComponentNameProvider() {
-		@Override public String getText(final Object object) { return String.valueOf(object); }
+	public static IComponentNameProvider NOOP_NAME_PROVIDER = new IComponentNameProvider() {
 		@Override public String getComponentLabel(final IBranchPath branchPath, final String componentId) { return String.valueOf(componentId);	}
+		@Override public ComponentIdAndLabel getComponentIdAndLabel(final IBranchPath branchPath, final long storageKey) { return null; }
 	}; 
-	
 }

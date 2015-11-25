@@ -25,7 +25,6 @@ import org.eclipse.emf.cdo.common.commit.CDOCommitInfo;
 
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.datastore.IPostStoreUpdateListener2;
-import com.b2international.snowowl.snomed.datastore.SnomedComponentLabelProviderService;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
 
@@ -33,8 +32,7 @@ import com.google.common.cache.LoadingCache;
  * Server-side caching component label provider service.
  *
  */
-public abstract class SnomedCachingComponentLabelProviderService<C extends SnomedCachingComponentLabelProvider> 
-	implements SnomedComponentLabelProviderService, IPostStoreUpdateListener2 {
+public abstract class SnomedCachingComponentLabelProviderService<C extends SnomedCachingComponentLabelProvider> implements IPostStoreUpdateListener2 {
 
 	private static final long FIVE = 5L;
 	
@@ -47,7 +45,6 @@ public abstract class SnomedCachingComponentLabelProviderService<C extends Snome
 				}
 			});
 	
-	@Override
 	public String getLabel(final IBranchPath branchPath, final String conceptId) {
 		return labelCache.getUnchecked(branchPath).getLabel(conceptId);
 	}

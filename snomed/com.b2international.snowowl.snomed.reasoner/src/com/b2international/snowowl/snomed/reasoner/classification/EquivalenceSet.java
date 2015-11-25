@@ -19,7 +19,7 @@ import java.io.Serializable;
 import java.text.MessageFormat;
 import java.util.List;
 
-import com.b2international.snowowl.snomed.datastore.SnomedConceptIndexEntry;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptIndexEntry;
 
 /**
  * Represents a regular equivalence set with one suggested concept as a replacement for the others.

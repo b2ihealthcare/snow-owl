@@ -26,10 +26,10 @@ import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.api.SnowowlServiceException;
 import com.b2international.snowowl.core.api.browser.IClientTerminologyBrowser;
 import com.b2international.snowowl.snomed.datastore.SnomedClientTerminologyBrowser;
-import com.b2international.snowowl.snomed.datastore.SnomedConceptIndexEntry;
 import com.b2international.snowowl.snomed.datastore.SnomedEditingContext;
 import com.b2international.snowowl.snomed.datastore.index.SnomedClientIndexService;
-import com.b2international.snowowl.snomed.datastore.index.refset.SnomedRefSetMemberIndexEntry;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptIndexEntry;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry;
 import com.b2international.snowowl.snomed.datastore.index.refset.SnomedRefSetMemberIndexQueryAdapter;
 import com.b2international.snowowl.snomed.refset.derivation.AbstractSnomedRefSetDerivator;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRegularRefSet;
@@ -90,7 +90,7 @@ public abstract class AbstractSnomedSimpleMappingRefSetDerivator {
 		final Set<String> conceptIds = Sets.newHashSet(Collections2.transform(results, new Function<SnomedRefSetMemberIndexEntry, String>() {
 			@Override
 			public String apply(SnomedRefSetMemberIndexEntry entry) {
-				return mapTargetToReferencedComponent ? entry.getSpecialFieldId() : entry.getReferencedComponentId();
+				return mapTargetToReferencedComponent ? entry.getMapTargetComponentId() : entry.getReferencedComponentId();
 			}
 		}));
 		

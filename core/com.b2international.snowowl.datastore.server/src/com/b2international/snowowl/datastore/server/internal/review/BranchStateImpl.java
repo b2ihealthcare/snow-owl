@@ -15,8 +15,8 @@
  */
 package com.b2international.snowowl.datastore.server.internal.review;
 
-import com.b2international.snowowl.datastore.branch.Branch;
-import com.b2international.snowowl.datastore.server.review.BranchState;
+import com.b2international.snowowl.core.branch.Branch;
+import com.b2international.snowowl.datastore.review.BranchState;
 
 /**
  * @since 4.2

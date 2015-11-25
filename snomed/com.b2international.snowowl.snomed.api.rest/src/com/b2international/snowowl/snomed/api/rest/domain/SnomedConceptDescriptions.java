@@ -17,7 +17,7 @@ package com.b2international.snowowl.snomed.api.rest.domain;
 
 import java.util.List;
 
-import com.b2international.snowowl.snomed.api.domain.ISnomedDescription;
+import com.b2international.snowowl.snomed.core.domain.ISnomedDescription;
 
 /**
  * @since 1.0

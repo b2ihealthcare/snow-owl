@@ -19,8 +19,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
-import javax.annotation.Nullable;
-
 import org.apache.lucene.search.Query;
 import org.eclipse.emf.ecore.EPackage;
 
@@ -36,8 +34,8 @@ import com.b2international.snowowl.datastore.quicksearch.AbstractQuickSearchCont
 import com.b2international.snowowl.datastore.quicksearch.IQuickSearchContentProvider;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.snomed.datastore.index.SnomedIndexService;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetIndexEntry;
 import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedMappings;
-import com.b2international.snowowl.snomed.datastore.index.refset.SnomedRefSetIndexEntry;
 import com.b2international.snowowl.snomed.datastore.index.refset.SnomedRefSetIndexQueryAdapter;
 import com.b2international.snowowl.snomed.datastore.quicksearch.SnomedRefSetQuickSearchProvider;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetPackage;
@@ -55,9 +53,22 @@ import com.google.common.collect.Lists;
  */
 public class SnomedRefSetQuickSearchContentProvider extends AbstractQuickSearchContentProvider implements IQuickSearchContentProvider {
 
-	private final class SnomedRefSetConverterFunction implements Function<SnomedRefSetIndexEntry, QuickSearchElement> {
-		@Override public QuickSearchElement apply(@Nullable SnomedRefSetIndexEntry input) {
-			return new CompactQuickSearchElement(input.getId(), input.getIconId(), input.getLabel(), false);
+	private static final class SnomedRefSetConverterFunction implements Function<SnomedRefSetIndexEntry, QuickSearchElement> {
+		
+		private final String queryExpression;
+
+		public SnomedRefSetConverterFunction(String queryExpression) {
+			this.queryExpression = queryExpression;
+		}
+
+		@Override 
+		public QuickSearchElement apply(final SnomedRefSetIndexEntry input) {
+			return new CompactQuickSearchElement(input.getId(), 
+					input.getIconId(), 
+					input.getLabel(), 
+					false,
+					getMatchRegions(queryExpression, input.getLabel()),
+					getSuffixes(queryExpression, input.getLabel()));
 		}
 	}
 
@@ -93,7 +104,7 @@ public class SnomedRefSetQuickSearchContentProvider extends AbstractQuickSearchC
 			
 		}
 
-		return new QuickSearchContentResult(totalHitCount, convertToDTO(refSets));
+		return new QuickSearchContentResult(totalHitCount, convertToDTO(queryExpression, refSets));
 	}
 
 	private boolean isInactiveConcept(final SnomedIndexServerService indexService, final IBranchPath branchPath, final Query query) {
@@ -105,8 +116,8 @@ public class SnomedRefSetQuickSearchContentProvider extends AbstractQuickSearchC
 		return SnomedRefSetPackage.eINSTANCE;
 	}
 	
-	private List<QuickSearchElement> convertToDTO(List<SnomedRefSetIndexEntry> searchResults) {
-		return Lists.transform(searchResults, new SnomedRefSetConverterFunction());
+	private List<QuickSearchElement> convertToDTO(String queryExpression, List<SnomedRefSetIndexEntry> searchResults) {
+		return Lists.transform(searchResults, new SnomedRefSetConverterFunction(queryExpression));
 	}
 	
 	/*extracts the reference set type from the configuration*/

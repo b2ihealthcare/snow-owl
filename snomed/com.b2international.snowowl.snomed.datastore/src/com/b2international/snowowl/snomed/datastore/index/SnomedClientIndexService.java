@@ -21,6 +21,7 @@ import com.b2international.snowowl.core.annotations.Client;
 import com.b2international.snowowl.core.api.index.IClientIndexService;
 import com.b2international.snowowl.datastore.index.ActiveBranchClientIndexService;
 import com.b2international.snowowl.snomed.SnomedPackage;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedIndexEntry;
 
 /**
  * An {@link IClientIndexService} implementation for the SNOMED CT terminology. 

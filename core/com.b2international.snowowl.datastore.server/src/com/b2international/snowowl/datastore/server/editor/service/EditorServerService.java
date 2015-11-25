@@ -24,7 +24,6 @@ import org.eclipse.core.runtime.IProgressMonitor;
 
 import com.b2international.snowowl.core.IDisposableService;
 import com.b2international.snowowl.core.api.SnowowlServiceException;
-import com.b2international.snowowl.datastore.CDOEditingContext;
 import com.b2international.snowowl.datastore.IBranchPathMap;
 import com.b2international.snowowl.datastore.editor.bean.IdentifiedBean;
 import com.b2international.snowowl.datastore.editor.notification.BroadcastNotificationMessage;
@@ -35,9 +34,9 @@ import com.b2international.snowowl.datastore.editor.operation.status.IOperationE
 import com.b2international.snowowl.datastore.editor.service.EditorSessionInitializationException;
 import com.b2international.snowowl.datastore.editor.service.IEditorService;
 import com.b2international.snowowl.datastore.net4j.push.PushConstants;
+import com.b2international.snowowl.datastore.server.EditingContextFactory;
 import com.b2international.snowowl.datastore.server.editor.operation.executor.AbstractOperationExecutor;
 import com.b2international.snowowl.datastore.server.editor.operation.executor.OperationExecutorFactory;
-import com.b2international.snowowl.datastore.server.editor.session.EditingContextFactory;
 import com.b2international.snowowl.datastore.server.editor.session.EditorSession;
 import com.b2international.snowowl.datastore.server.editor.session.EditorSessionLifecycleManager;
 import com.b2international.snowowl.datastore.server.net4j.push.PushServerService;
@@ -49,10 +48,10 @@ import com.b2international.snowowl.datastore.validation.SessionValidationResults
 public class EditorServerService implements IEditorService, IDisposableService {
 
 	private final EditorSessionLifecycleManager lifecycleManager;
-	private final EditingContextFactory<CDOEditingContext> contextFactory;
+	private final EditingContextFactory contextFactory;
 	private final OperationExecutorFactory operationExecutorFactory;
 
-	public EditorServerService(EditorSessionLifecycleManager lifecycleManager, EditingContextFactory<CDOEditingContext> contextFactory, OperationExecutorFactory executorFactory) {
+	public EditorServerService(EditorSessionLifecycleManager lifecycleManager, EditingContextFactory contextFactory, OperationExecutorFactory executorFactory) {
 		this.lifecycleManager = lifecycleManager;
 		this.contextFactory = contextFactory;
 		this.operationExecutorFactory = executorFactory;

@@ -23,6 +23,8 @@ import java.util.Set;
 
 import com.b2international.commons.CompareUtils;
 import com.b2international.snowowl.core.api.browser.IClientTerminologyBrowser;
+import com.b2international.snowowl.core.api.component.IdProvider;
+import com.b2international.snowowl.core.api.component.LabelProvider;
 import com.google.common.base.Function;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;

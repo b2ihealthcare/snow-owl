@@ -20,6 +20,7 @@ import org.osgi.service.prefs.PreferencesService;
 
 import com.b2international.commons.platform.PlatformUtil;
 import com.b2international.snowowl.core.CoreActivator;
+import com.b2international.snowowl.core.CoreTerminologyBroker;
 import com.b2international.snowowl.core.config.ClientPreferences;
 import com.b2international.snowowl.core.config.SnowOwlConfiguration;
 import com.b2international.snowowl.core.login.LoginConfiguration;
@@ -44,6 +45,8 @@ public class SnowOwlApplicationBootstrap implements BootstrapFragment {
 
 		final LoginConfiguration loginConfiguration = new LoginConfiguration(preferences);
 		env.services().registerService(LoginConfiguration.class, loginConfiguration);
+		
+		env.services().registerService(CoreTerminologyBroker.class, CoreTerminologyBroker.getInstance());
 	}
 
 	@Override

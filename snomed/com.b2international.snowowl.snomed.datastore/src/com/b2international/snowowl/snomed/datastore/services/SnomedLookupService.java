@@ -38,11 +38,13 @@ import com.b2international.commons.StringUtils;
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.CoreTerminologyBroker;
 import com.b2international.snowowl.core.IDisposableService;
+import com.b2international.snowowl.core.api.ComponentTextProvider;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.api.IComponent;
 import com.b2international.snowowl.core.api.ILookupService;
 import com.b2international.snowowl.core.terminology.ComponentCategory;
 import com.b2international.snowowl.datastore.BranchPathUtils;
+import com.b2international.snowowl.datastore.CdoViewComponentTextProvider;
 import com.b2international.snowowl.datastore.CodeSystemService;
 import com.b2international.snowowl.datastore.ICodeSystemVersion;
 import com.b2international.snowowl.datastore.cdo.ICDOConnectionManager;
@@ -63,9 +65,9 @@ import com.b2international.snowowl.snomed.datastore.SnomedDescriptionLookupServi
 import com.b2international.snowowl.snomed.datastore.SnomedEditingContext;
 import com.b2international.snowowl.snomed.datastore.id.ISnomedIdentifierService;
 import com.b2international.snowowl.snomed.datastore.index.SnomedClientIndexService;
-import com.b2international.snowowl.snomed.datastore.index.SnomedDescriptionIndexEntry;
 import com.b2international.snowowl.snomed.datastore.index.SnomedDescriptionIndexQueryAdapter;
-import com.b2international.snowowl.snomed.datastore.index.refset.SnomedRefSetMemberIndexEntry;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDescriptionIndexEntry;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry;
 import com.b2international.snowowl.snomed.datastore.index.refset.SnomedRefSetMembershipIndexQueryAdapter;
 import com.google.common.base.Function;
 import com.google.common.base.Preconditions;
@@ -118,12 +120,15 @@ public class SnomedLookupService implements IDisposableService, ISnomedLookupSer
 	//access to the db
 	private final CDOView cdoView;
 
+	private final ComponentTextProvider conceptTextProvider;
+	
 	/**
 	 * Constructor
 	 * @param cdoView to provide access to the db
 	 */
 	public SnomedLookupService(final CDOView cdoView) {
 		this.cdoView = cdoView;
+		conceptTextProvider = new CdoViewComponentTextProvider(ApplicationContext.getServiceForClass(ISnomedConceptNameProvider.class), cdoView);
 	}
 
 	/* (non-Javadoc)
@@ -339,7 +344,7 @@ public class SnomedLookupService implements IDisposableService, ISnomedLookupSer
 	 */
 	@Override
 	public String getPreferredTerm(final long conceptId) {
-		return SnomedConceptNameProvider.INSTANCE.getText(String.valueOf(conceptId));
+		return getPreferredTerm(String.valueOf(conceptId));
 	}
 	
 	/* (non-Javadoc)
@@ -347,7 +352,7 @@ public class SnomedLookupService implements IDisposableService, ISnomedLookupSer
 	 */
 	@Override
 	public String getPreferredTerm(final String conceptId) {
-		return SnomedConceptNameProvider.INSTANCE.getText(conceptId);
+		return conceptTextProvider.getText(conceptId);
 	}
 	
 	/* (non-Javadoc)
@@ -555,7 +560,7 @@ public class SnomedLookupService implements IDisposableService, ISnomedLookupSer
 		//we have to filter out FSN descriptions as it also associated with language reference set member with preferred acceptability
 		for (final Iterator<SnomedDescriptionIndexEntry> itr = descriptionMap.values().iterator(); itr.hasNext(); /* */) {
 			final SnomedDescriptionIndexEntry entry = itr.next();
-			if (Concepts.FULLY_SPECIFIED_NAME.equals(entry.getType())) { //remove FSNs from the map
+			if (Concepts.FULLY_SPECIFIED_NAME.equals(entry.getTypeId())) { //remove FSNs from the map
 				itr.remove();
 			}
 		}
@@ -596,7 +601,7 @@ public class SnomedLookupService implements IDisposableService, ISnomedLookupSer
 		
 		//add all the rest if description type ID equals with the specified one
 		for (final SnomedDescriptionIndexEntry otherDescription : descriptionMap.values()) {
-			if (descriptionTypeId.equals(otherDescription.getType())) {
+			if (descriptionTypeId.equals(otherDescription.getTypeId())) {
 				descriptions.add(otherDescription);
 			}
 		}
@@ -683,6 +688,10 @@ public class SnomedLookupService implements IDisposableService, ISnomedLookupSer
 		
 	}
 
+	private String getPreferredTerm(final IBranchPath branchPath, final String conceptId) {
+		return ApplicationContext.getServiceForClass(ISnomedConceptNameProvider.class).getComponentLabel(branchPath, conceptId);
+	}
+
 	private ISnomedComponentService getComponentService() {
 		return ApplicationContext.getInstance().getService(ISnomedComponentService.class);
 	}
@@ -691,10 +700,6 @@ public class SnomedLookupService implements IDisposableService, ISnomedLookupSer
 	private String generateNewComponsnetId(final ComponentCategory componentNature) {
 		Preconditions.checkNotNull(componentNature, "Component nature argument cannot be null.");
 		return ApplicationContext.getInstance().getServiceChecked(ISnomedIdentifierService.class).generateId(componentNature, SnomedEditingContext.getDefaultNamespace());
-	}
-	
-	private String getPreferredTerm(final IBranchPath branchPath, final String conceptId) {
-		return SnomedConceptNameProvider.INSTANCE.getComponentLabel(branchPath, conceptId);
 	}
 	
 	private ICodeSystemVersion getCurrentVersionForUser() {

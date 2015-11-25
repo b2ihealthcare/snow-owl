@@ -18,8 +18,8 @@ package com.b2international.snowowl.scripting.services.api;
 import java.util.Collection;
 import java.util.Map;
 
-import com.b2international.snowowl.snomed.datastore.index.refset.SnomedRefSetIndexEntry;
-import com.b2international.snowowl.snomed.datastore.index.refset.SnomedRefSetMemberIndexEntry;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetIndexEntry;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry;
 
 /**
  * Reference set service interface for SNOMED&nbsp;CT.

@@ -23,7 +23,6 @@ import org.eclipse.emf.cdo.view.CDOView;
 import org.eclipse.emf.ecore.EPackage;
 
 import com.b2international.snowowl.core.ApplicationContext;
-import com.b2international.snowowl.core.api.ComponentIdAndLabel;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.api.index.IIndexQueryAdapter;
 import com.b2international.snowowl.datastore.AbstractLookupService;
@@ -33,22 +32,17 @@ import com.b2international.snowowl.datastore.cdo.CDOUtils;
 import com.b2international.snowowl.datastore.utils.ComponentUtils2;
 import com.b2international.snowowl.snomed.Description;
 import com.b2international.snowowl.snomed.SnomedPackage;
-import com.b2international.snowowl.snomed.datastore.index.SnomedDescriptionIndexEntry;
 import com.b2international.snowowl.snomed.datastore.index.SnomedDescriptionReducedQueryAdapter;
 import com.b2international.snowowl.snomed.datastore.index.SnomedIndexService;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDescriptionIndexEntry;
 import com.b2international.snowowl.snomed.datastore.services.ISnomedComponentService;
 import com.google.common.collect.Iterables;
 
 /**
- * Service for looking up SNOMED&nbsp;CT descriptions.
- * 
+ * Lookup service implementation for SNOMED CT descriptions. 
  */
 public class SnomedDescriptionLookupService extends AbstractLookupService<String, Description, CDOView> {
 
-	/*
-	 * (non-Javadoc)
-	 * @see com.b2international.snowowl.core.api.ILookupService#getComponent(java.io.Serializable, java.lang.Object)
-	 */
 	@Override
 	public Description getComponent(final String descriptionId, final CDOView view) {
 
@@ -85,10 +79,6 @@ public class SnomedDescriptionLookupService extends AbstractLookupService<String
 		return (Description) cdoObject;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see com.b2international.snowowl.core.api.ILookupService#getComponent(com.b2international.snowowl.core.api.IBranchPath, java.io.Serializable)
-	 */
 	@Override
 	public SnomedDescriptionIndexEntry getComponent(final IBranchPath branchPath, final String id) {
 		final IIndexQueryAdapter<SnomedDescriptionIndexEntry> adapter = new SnomedDescriptionReducedQueryAdapter(id, SnomedDescriptionReducedQueryAdapter.SEARCH_DESCRIPTION_ID);
@@ -96,40 +86,19 @@ public class SnomedDescriptionLookupService extends AbstractLookupService<String
 		return Iterables.getOnlyElement(search, null);
 	}
 
-	/* 
-	 * (non-Javadoc)
-	 * @see com.b2international.snowowl.core.api.ILookupService#getStorageKey(com.b2international.snowowl.core.api.IBranchPath, java.io.Serializable)
-	 */
 	@Override
 	public long getStorageKey(final IBranchPath branchPath, final String id) {
 		return getComponentService().getDescriptionStorageKey(branchPath, id);
-	}
-
-	/* 
-	 * (non-Javadoc)
-	 * @see com.b2international.snowowl.core.api.ILookupService#getComponentIdAndLabel(com.b2international.snowowl.core.api.IBranchPath, long)
-	 */
-	@Override
-	public ComponentIdAndLabel getComponentIdAndLabel(final IBranchPath branchPath, final long storageKey) {
-		return getTerminologyBrowser().getComponentIdAndLabel(branchPath, storageKey);
 	}
 
 	private ISnomedComponentService getComponentService() {
 		return ApplicationContext.getInstance().getService(ISnomedComponentService.class);
 	}
 
-	private SnomedTerminologyBrowser getTerminologyBrowser() {
-		return ApplicationContext.getInstance().getService(SnomedTerminologyBrowser.class);
-	}
-
 	private SnomedIndexService getIndexService() {
 		return ApplicationContext.getInstance().getService(SnomedIndexService.class);
 	}
 	
-	/*
-	 * (non-Javadoc)
-	 * @see com.b2international.snowowl.datastore.AbstractLookupService#getEPackage()
-	 */
 	@Override
 	protected EPackage getEPackage() {
 		return SnomedPackage.eINSTANCE;

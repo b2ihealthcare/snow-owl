@@ -141,7 +141,7 @@ public class Mappings {
 		return new DocValuesFloatIndexField(fieldName);
 	}
 	
-	public static IndexField<Integer> intDocValuesField(String fieldName) {
+	public static NumericDocValuesIndexField<Integer> intDocValuesField(String fieldName) {
 		return new DocValuesIntIndexField(fieldName);
 	}
 
@@ -185,11 +185,11 @@ public class Mappings {
 		return new TextIndexField(fieldName, false);
 	}
 	
-	public static IndexField<Integer> storedOnlyIntFieldWithDocValues(String fieldName) {
+	public static NumericDocValuesIndexField<Integer> storedOnlyIntFieldWithDocValues(String fieldName) {
 		return new StoredOnlyDocValuesLongIndexField<>(Mappings.storedOnlyIntField(fieldName));
 	}
 
-	public static IndexField<Long> storedOnlyLongFieldWithDocValues(String fieldName) {
+	public static NumericDocValuesIndexField<Long> storedOnlyLongFieldWithDocValues(String fieldName) {
 		return new StoredOnlyDocValuesLongIndexField<>(Mappings.storedOnlyLongField(fieldName));
 	}
 	

@@ -56,12 +56,12 @@ Enter connection name, hostname, and port, then hit `Next >` to go to the next p
 
 image::ldap_new_connection_page1.png[role="text-center"]
 
-Set authentication method to `Simple Authentication`, enter Bind DN `uid=admin,ou=system` and password `secret`. Click 
+Set authentication method to `Simple Authentication`, enter Bind DN `uid=admin,ou=system` and password `secret`. Click
 `Check Authentication` to make sure the values are accepted, then dismiss the wizard with `Finish`:
 
 image::ldap_new_connection_page2.png[role="text-center"]
 
-After connecting, you are advised to change the default password for user `system`. In order to do so, expand node 
+After connecting, you are advised to change the default password for user `system`. In order to do so, expand node
 `ou=system` and select the person `admin`. The editor will now display related user information:
 
 image::ldap_admin_user_details.png[role="text-center"]
@@ -73,10 +73,10 @@ image::ldap_change_password.png[role="text-center"]
 
 To see if the password was changed successfully:
 
-* Close the connection using the third button on the lower left toolbar named `Close Connection`, 
+* Close the connection using the third button on the lower left toolbar named `Close Connection`,
 * Right-click the item representing the connection to open its properties with the context menu item at the bottom,
 * Change the previously entered default bind password to the updated value on the `Authentication` tab,
-* Re-connect to the server using `Open Connection`. 
+* Re-connect to the server using `Open Connection`.
 
 ==== Creating a partition for Snow Owl Server
 
@@ -106,7 +106,7 @@ schema.ldif:: LDAP schema to use for authorization (contains definitions for per
 permissions.ldif:: All available permissions in the system
 roles.ldif:: All available roles in the system
 pm.ldif:: Maps permissions to roles
-update.sh:: An update script using `ldapmodify` and `ldapadd` commands against a running LDAP instance to update it 
+update.sh:: An update script using `ldapmodify` and `ldapadd` commands against a running LDAP instance to update it
 based on the files above
 
 Optionally the assembly can contain two additional files:
@@ -122,11 +122,11 @@ Install the `openldap-clients` first to make use of the script:
 # yum install openldap-clients
 --------------------------
 
-Before updating the LDAP server, it is advised to shut down the service, and create a backup from the contents 
+Before updating the LDAP server, it is advised to shut down the service, and create a backup from the contents
 of folder `/var/lib/apacheds-2.0.0_M12/default`, so it can be restored easily if the script fails.
 
 Restart the server, then create a new ldif-<version> folder and unzip the contents of the LDIF archive into
-this folder. Finally, execute the script to update the contents of LDAP: 
+this folder. Finally, execute the script to update the contents of LDAP:
 
 --------------------------
 # chmod u+x update.sh
@@ -139,7 +139,7 @@ adding new entry "ou=attributeTypes, cn=permission, ou=schema"
 modifying entry...
 --------------------------
 
-In case an error occurs, the executed command and the error response will be displayed. Errors will also be logged 
+In case an error occurs, the executed command and the error response will be displayed. Errors will also be logged
 to a `{file_name}.errors` file, where the `{file_name}` refers to the file being processed (eg. `permissions.errors`).
 
 When executing the script it is possible to get the following errors:
@@ -152,8 +152,8 @@ This is expected as most of the time the LDAP instance will already contain an e
 schema entities. If you notice other errors (either during script execution or when using the LDAP), roll back your instance
 to a previous state from a backup.
 
-By default the update script will execute against the LDAP instance running locally at `ldap://localhost:10389`; if 
-you'd like to run the script against a remote LDAP server (or the LDAP is listening on a different port), you can do it by 
+By default the update script will execute against the LDAP instance running locally at `ldap://localhost:10389`; if
+you'd like to run the script against a remote LDAP server (or the LDAP is listening on a different port), you can do it by
 specifying the LDAP_URI parameter:
 
 --------------------------
@@ -279,7 +279,7 @@ the correct URL.
 
 Once Bugzilla has created its table structure, you can increase the maximum table size by executing the following commands:
 
--------------------------- 
+--------------------------
 mysql> USE bugzilla
 mysql> ALTER TABLE attachments
        AVG_ROW_LENGTH=1000000, MAX_ROWS=20000;
@@ -298,7 +298,7 @@ Core parameters can be set by selecting `Parameters` on the top left. The follow
 
 ===== Required Settings
 urlbase:: Set to the the common leading part of all URLs which are related to Bugzilla (ex.: http://server.domain/bugzilla/)
-cookiepath:: The common path segment of the URL under which Bugzilla cookies are allowed to be read; as noted in the description 
+cookiepath:: The common path segment of the URL under which Bugzilla cookies are allowed to be read; as noted in the description
 above the field, its value should begin with '/' (ex.: /bugzilla/)
 
 ===== General
@@ -307,9 +307,9 @@ suggested
 
 ===== User Authentication
 requirelogin:: Set to On if you want to limit access to registered users only (disabling anonymous browsing of bugs)
-emailregexp and emailregexpdesc:: Depending on requirements, the administrator may limit login names to values that are not actual 
+emailregexp and emailregexpdesc:: Depending on requirements, the administrator may limit login names to values that are not actual
 email addresses. In this case, set the fields as suggested in the description above, ie. `\^[^@]+` and `Local usernames, no @ allowed.`
-createemailregexp:: to disable user-initiated registration (requiring the administrator to create each user account by hand), clear 
+createemailregexp:: to disable user-initiated registration (requiring the administrator to create each user account by hand), clear
 the field's contents
 
 image::bugzilla_emailregexp.png[role="text-center"]
@@ -327,25 +327,25 @@ otherwise, set this value to `None` to disable sending mail altogether
 smtpserver:: Clear the field's contents if no SMTP server is used
 whinedays:: Set to 0 if mail delivery is not enabled and/or there's no need to send users regular notifications about
 their assigned bugs which remained in NEW state
-use-mailer-queue:: When set to `On`, e-mails are sent asynchronously; to use this feature, the jobqueue.pl daemon needs to be started. 
+use-mailer-queue:: When set to `On`, e-mails are sent asynchronously; to use this feature, the jobqueue.pl daemon needs to be started.
 For more information on this topic, please see http://www.bugzilla.org/docs/3.6/en/html/api/jobqueue.html.
 
 ==== Product setup
 
-Bugzilla tracks the authoring aspects of Snow Owl clients in multiple products. Per-product configuration is shown in the following 
+Bugzilla tracks the authoring aspects of Snow Owl clients in multiple products. Per-product configuration is shown in the following
 parts of the guide.
 
 Opening the preference page `Snow Owl > Bugzilla Products` displays the supported products in the client and their
 corresponding product names in Bugzilla. If you have different product names added in the issue tracker, you have to
-adjust the product name as shown in the image. Make sure to press Enter or click in the table to apply the change in 
-the field before hitting `Apply` or `OK` to apply the changes. Products which are not handled by contributed task 
+adjust the product name as shown in the image. Make sure to press Enter or click in the table to apply the change in
+the field before hitting `Apply` or `OK` to apply the changes. Products which are not handled by contributed task
 editors are displayed with an empty context view only:
 
 image::bugzilla_products.png[role="text-center"]
 
 To match the default value set in client preferences, create a product called `Snow Owl Collaborative Editing` by clicking `Products`
 on Bugzilla's administration page. Add a description, optionally set a version to discern individual releases, and keep `Open for bug entry`
-checked to allow users to file issues under this product. After creating the product, a warning will be issued by Bugzilla to create a 
+checked to allow users to file issues under this product. After creating the product, a warning will be issued by Bugzilla to create a
 component as well. Add the following components with the `Component`, `Component description` and `Default assignee` fields populated:
 
 [cols="2*", options="header"]
@@ -485,23 +485,23 @@ Add custom fields through the web interface (`Administration > Custom fields`):
 
 ==== Authentication against LDAP
 
-Bugzilla is capable to authenticate against the external LDAP server which Snow Owl Server will use. Setting it up 
+Bugzilla is capable to authenticate against the external LDAP server which Snow Owl Server will use. Setting it up
 requires the following steps to be taken:
 
 * Go to `Administration > Parameters > LDAP` and populate the following fields:
 
 LDAPserver:: hostname:port pair for contacting the server, eg. `localhost:10389`
-LDAPBaseDN:: set to `dc=snowowl,dc=b2international,dc=com` 
+LDAPBaseDN:: set to `dc=snowowl,dc=b2international,dc=com`
 LDAPuidattribute:: set to `uid`
 LDAPmailattribute:: set to `uid`
 
 * Click `Save Changes` to apply changes
-* Go to `Administration > Parameters > User Authentication`, scroll down to `user_verify_class` and make `LDAP` the top-most 
+* Go to `Administration > Parameters > User Authentication`, scroll down to `user_verify_class` and make `LDAP` the top-most
 item
 * Click `Save Changes` to finish
 
 
-To test, click the `Log Out` link at the top and try to log in with your bugzilla username and LDAP password. If it was sucessful, 
+To test, click the `Log Out` link at the top and try to log in with your bugzilla username and LDAP password. If it was sucessful,
 you should see bugzilla's landing page. If you see an error message about not able to connect to the LDAP server, then run the
 following command as root:
 
@@ -509,9 +509,9 @@ following command as root:
 # setsebool -P httpd_can_network_connect on
 --------------------------
 
-This will allow Apache to make network connections. 
+This will allow Apache to make network connections.
 
-If LDAP is still not working and you are being locked out from bugzilla, you can change back bugzilla to use its internal database for 
+If LDAP is still not working and you are being locked out from bugzilla, you can change back bugzilla to use its internal database for
 authentication, instead of LDAP. To do so, edit `/var/www/html/bugzilla/data/params`, deleting LDAP from the `user_verify_class` entry:
 
 ./var/www/html/bugzilla/data/params
@@ -521,7 +521,7 @@ authentication, instead of LDAP. To do so, edit `/var/www/html/bugzilla/data/par
 ...
 --------------------------
 
-If users are already entered in the LDAP server, it is important to synchronize Bugzilla's user database to contents of LDAP so tasks can be 
+If users are already entered in the LDAP server, it is important to synchronize Bugzilla's user database to contents of LDAP so tasks can be
 assigned to all users. Run the following script to perform synchronization:
 
 --------------------------
@@ -529,13 +529,13 @@ assigned to all users. Run the following script to perform synchronization:
 # ./contrib/syncLDAP.pl
 --------------------------
 
-For general questions and documentation, please refer to chapter 3.1.10. LDAP Authentication in the documentation: 
+For general questions and documentation, please refer to chapter 3.1.10. LDAP Authentication in the documentation:
 http://www.bugzilla.org/docs/3.6/en/html/parameters.html.
 
 == Snow Owl Server
 
 === DB connection
- 
+
 Create a MySQL user for the Snow Owl Server by connecting to the DBMS via the console:
 
 --------------------------
@@ -554,7 +554,7 @@ Save the following shell script to an executable file to create databases and gr
 include::scripts/snowowl_create_db.sh[]
 --------------------------
 
-B2i provided MySQL dumps (if present) can be found in `/opt/snowowl-community_{version}/resources/*.sql` files 
+B2i provided MySQL dumps (if present) can be found in `/opt/snowowl-community_{version}/resources/*.sql` files
 after unpacking the installation archive. To load terminology data, save and execute the following script:
 
 .snowowl_load_db.sh
@@ -567,7 +567,7 @@ Update `snowowl_config.yml` to use LDAP authentication and set the MySQL passwor
 --------------------------
 repository:
   ...
-  
+
   database:
     ...
     username: snowowl
@@ -607,7 +607,7 @@ JAVA_OPTS="$JAVA_OPTS \
     -Xmx10g \
     -XX:MaxPermSize=512m \
 --------------------------
-    
+
 `Xms` sets the minimum heap size, `Xmx` sets the maximum heap size, and `XX:MaxPermsize` sets the PermGen space used by the JVM.
 
 === OSGi console
@@ -625,7 +625,7 @@ ssh.port=2502
 ssh.host=localhost
 --------------------------
 
-Further information on how to enable/disable the OSGi console can be found here: 
+Further information on how to enable/disable the OSGi console can be found here:
 http://www.eclipse.org/virgo/documentation/virgo-documentation-3.6.1.RELEASE/docs/virgo-user-guide/html/ch08.html.
 
 For opening a telnet connection to the server, type:
@@ -635,14 +635,14 @@ $ telnet localhost 2501
 Trying ::1...
 Connected to localhost.
 Escape character is '^]'.
-osgi> 
+osgi>
 --------------------------
 
 === Web Server Configuration
 
 Snow Owl Server uses Tomcat as its built-in web server for administrative and RESTful services. The configuration
-settings for the web server can be found in `tomcat-server.xml`. Detailed information on configuring the different 
-elements can be found here: http://tomcat.apache.org/tomcat-7.0-doc/config/index.html. The most important settings 
+settings for the web server can be found in `tomcat-server.xml`. Detailed information on configuring the different
+elements can be found here: http://tomcat.apache.org/tomcat-7.0-doc/config/index.html. The most important settings
 are the port numbers for HTTP and HTTPS protocols:
 
 ./opt/snowowl-community_{version}/configuration/tomcat-server.xml
@@ -660,15 +660,15 @@ are the port numbers for HTTP and HTTPS protocols:
 
 === Web Server Administrative Console application
 
-The Admin Console is a web application for managing the Virgo Server instance powering Snow Owl Server. The default 
+The Admin Console is a web application for managing the Virgo Server instance powering Snow Owl Server. The default
 location of the admin console is at http://localhost:8080/admin.
 
-The Admin Console is a password-protected page; to configure users allowed to access the Admin Console, change settings 
+The Admin Console is a password-protected page; to configure users allowed to access the Admin Console, change settings
 in file `org.eclipse.virgo.kernel.users.properties`. The username-password pair configured by default is `user=admin, pwd=adminpwd`:
 
 ./opt/snowowl-community_{version}/configuration/org.eclipse.virgo.kernel.users.properties
 --------------------------
- ################## 
+ ##################
  # User definitions
  ##################
  user.admin=adminpwd
@@ -678,26 +678,26 @@ in file `org.eclipse.virgo.kernel.users.properties`. The username-password pair 
  ##################
  role.admin=admin
 --------------------------
- 
-More information on administrative user access control can be found on the following pages: 
-http://www.eclipse.org/virgo/documentation/virgo-documentation-3.6.1.RELEASE/docs/virgo-user-guide/html/ch09.html and 
+
+More information on administrative user access control can be found on the following pages:
+http://www.eclipse.org/virgo/documentation/virgo-documentation-3.6.1.RELEASE/docs/virgo-user-guide/html/ch09.html and
 http://www.eclipse.org/virgo/documentation/virgo-documentation-3.6.0.M04/docs/virgo-user-guide/html/ch13s06.html#configuring-authentication.
 
 === Configuration reference
 
-Snow Owl Server comes with a predefined default configuration file, which can be used to tweak various system parameters. 
-The configuration file is in YAML format, and located at `/opt/snowowl-community_{version}/snowowl_config.yml`. You 
+Snow Owl Server comes with a predefined default configuration file, which can be used to tweak various system parameters.
+The configuration file is in YAML format, and located at `/opt/snowowl-community_{version}/snowowl_config.yml`. You
 can read more about how to create/write such files here: http://en.wikipedia.org/wiki/YAML.
 
-The configuration file has a hierarchical structure, which is defined by modules. Different modules can have different 
-configurations, a module is defined by its name, which should start a line in the file. Configuration parameters in a 
+The configuration file has a hierarchical structure, which is defined by modules. Different modules can have different
+configurations, a module is defined by its name, which should start a line in the file. Configuration parameters in a
 module should be indented by two spaces following the module's name.
 
-The next section contains the reference of our currently supported configuration parameters. Each parameter should be 
+The next section contains the reference of our currently supported configuration parameters. Each parameter should be
 present in a module configuration as described above.
 
-Snow Owl Server refuses to start if the configuration file contains syntactical or structural errors. The cause of the 
-problem can be found in the `log.log` file, or in the console if you've redirected the output of the server's startup 
+Snow Owl Server refuses to start if the configuration file contains syntactical or structural errors. The cause of the
+problem can be found in the `log.log` file, or in the console if you've redirected the output of the server's startup
 process.
 
 ==== Authentication
@@ -836,12 +836,17 @@ Configuration of SNOMED CT terminology services.
 
 |language
 |`en-gb`
-|`en-gb`, `en-us`, `en-sg` - The language code to use for SNOMED CT Descriptions. Descriptions with membership of the chosen 
+|`en-gb`, `en-us`, `en-sg` - The language code to use for SNOMED CT Descriptions. Descriptions with membership of the chosen
 language's reference set will be used runtime.
 
 |maxReasonerCount
 |`2`
 |The maximum number of reasoners available in the system for consumption. Minimum `1`, maximum `3` is allowed.
+|===
+
+|defaultModule
+|`900000000000207008`
+|The default SNOMED CT Module to use when none is specified. The default module is SNOMED CT Core.
 |===
 
 --------------------------
@@ -862,11 +867,11 @@ Snow Owl can be configured to obtain valid SNOMED CT identifiers from IHTSDO's C
 
 |idGenerationSource
 |`INTERNAL`
-|`INTERNAL`, `CIS` - The source of the id generation. 
+|`INTERNAL`, `CIS` - The source of the id generation.
 
 |externalIdGeneratorUrl
 |
-|The service's URL without port and context root. 
+|The service's URL without port and context root.
 
 |externalIdGeneratorPort
 |
@@ -874,7 +879,7 @@ Snow Owl can be configured to obtain valid SNOMED CT identifiers from IHTSDO's C
 
 |externalIdGeneratorContextRoot
 |
-|The context root of the id generation service. 
+|The context root of the id generation service.
 
 |externalIdGeneratorUserName
 |
@@ -902,43 +907,43 @@ snomed:
 
 === Logging
 
-Log files are stored under `./opt/snowowl-community_{version}/serviceability` directory of the Snow Owl server. 
+Log files are stored under `./opt/snowowl-community_{version}/serviceability` directory of the Snow Owl server.
 The following log files are created:
 
-`logs/log.log`:: Generic system trace log file, all log messages are written into this file. In case the file reaches a 
-pre-defined maximum size, the system will create additional files named `log_1.log`, `log_2.log`, etc. This log serves 
+`logs/log.log`:: Generic system trace log file, all log messages are written into this file. In case the file reaches a
+pre-defined maximum size, the system will create additional files named `log_1.log`, `log_2.log`, etc. This log serves
 two main purposes:
 
-1. It provides global trace files that capture high-volume information regarding the Virgo’s internal events. The files 
-are intended for use by support personnel to diagnose runtime problems. 
+1. It provides global trace files that capture high-volume information regarding the Virgo’s internal events. The files
+are intended for use by support personnel to diagnose runtime problems.
 
-2. It provides application trace files that contain application-generated output. This includes output generated using 
-popular logging and tracing APIs including the OSGi LogService, as well as output generated by calls to `System.out` and 
-`System.err`. These files are intended for use by application developers and system administrators. An application is 
-defined as a scope so a single bundle will not get its own log file unless it is a Web application Bundle or is included 
+2. It provides application trace files that contain application-generated output. This includes output generated using
+popular logging and tracing APIs including the OSGi LogService, as well as output generated by calls to `System.out` and
+`System.err`. These files are intended for use by application developers and system administrators. An application is
+defined as a scope so a single bundle will not get its own log file unless it is a Web application Bundle or is included
 in a scoped plan or a par file.
 
-`logs/access/*.log`:: Web container access log files in the same format as those created by standard web servers. The log 
-files are prefixed with the string `localhost_access_log`, have a suffix of `.txt`, use a standard format for identifying 
+`logs/access/*.log`:: Web container access log files in the same format as those created by standard web servers. The log
+files are prefixed with the string `localhost_access_log`, have a suffix of `.txt`, use a standard format for identifying
 what should be logged, and do not include DNS lookups of the IP address of the remote host.
 
-`eventlogs/eventlog.log`:: The `EVENT_LOG_FILE` appender logs only important events and thus the volume of information is 
+`eventlogs/eventlog.log`:: The `EVENT_LOG_FILE` appender logs only important events and thus the volume of information is
 lower.
 
 `logs/snowowl/snowowl_user_audit.log`:: Events with business significance will be logged in this file.
 
-`logs/snowowl/snowowl_user_access.log`:: User access events are logged in this log file. Both authorized and unauthorized 
+`logs/snowowl/snowowl_user_access.log`:: User access events are logged in this log file. Both authorized and unauthorized
 access is logged.
 
 `logs/snowowl/snowowl_import.log`:: Import processes log into this file detailed information about import.
 
 `logs/snowowl/snowowl_export.log`:: Export processes log into this file detailed information about export.
 
-Detailed information on the configuration on the logging configuration can be found here: 
+Detailed information on the configuration on the logging configuration can be found here:
 http://www.eclipse.org/virgo/documentation/virgo-documentation-3.6.1.RELEASE/docs/virgo-user-guide/html/ch11.html.
 
 Currently, default logging appenders for the log targets above look like this:
- 
+
 --------------------------
 <appender name="LOG_FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
     <file>serviceability/logs/log.log</file>
@@ -955,8 +960,8 @@ Currently, default logging appenders for the log targets above look like this:
     </encoder>
 </appender>
 --------------------------
- 
-In this setting, the administrator can set the location of the log file, the maximum size of the log file and the 
+
+In this setting, the administrator can set the location of the log file, the maximum size of the log file and the
 total number of files rolling over. Documentation on the logging configuration settings can be found here: http://logback.qos.ch.
 
 === Virgo documentation

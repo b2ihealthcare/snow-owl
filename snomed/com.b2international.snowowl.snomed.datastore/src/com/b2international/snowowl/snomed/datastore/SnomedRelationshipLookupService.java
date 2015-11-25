@@ -21,7 +21,6 @@ import org.eclipse.emf.cdo.view.CDOView;
 import org.eclipse.emf.ecore.EPackage;
 
 import com.b2international.snowowl.core.ApplicationContext;
-import com.b2international.snowowl.core.api.ComponentIdAndLabel;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.datastore.AbstractLookupService;
 import com.b2international.snowowl.datastore.BranchPathUtils;
@@ -30,18 +29,14 @@ import com.b2international.snowowl.datastore.cdo.CDOUtils;
 import com.b2international.snowowl.datastore.utils.ComponentUtils2;
 import com.b2international.snowowl.snomed.Relationship;
 import com.b2international.snowowl.snomed.SnomedPackage;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRelationshipIndexEntry;
 import com.google.common.collect.Iterables;
 
 /**
- * Service for looking up SNOMED&nbsp;CT relationships.
- * 
+ * Lookup service implementation for SNOMED CT relationships. 
  */
 public class SnomedRelationshipLookupService extends AbstractLookupService<String, Relationship, CDOView> {
 
-	/*
-	 * (non-Javadoc)
-	 * @see com.b2international.snowowl.core.api.ILookupService#getComponent(java.io.Serializable, java.lang.Object)
-	 */
 	@Override
 	public Relationship getComponent(final String relationshipId, final CDOView view) {
 
@@ -77,41 +72,20 @@ public class SnomedRelationshipLookupService extends AbstractLookupService<Strin
 		return (Relationship) cdoObject;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see com.b2international.snowowl.core.api.ILookupService#getComponent(com.b2international.snowowl.core.api.IBranchPath, java.io.Serializable)
-	 */
 	@Override
 	public SnomedRelationshipIndexEntry getComponent(final IBranchPath branchPath, final String id) {
 		return getStatementBrowser().getStatement(branchPath, id);
 	}
 
-	/* 
-	 * (non-Javadoc)
-	 * @see com.b2international.snowowl.core.api.ILookupService#getStorageKey(com.b2international.snowowl.core.api.IBranchPath, java.io.Serializable)
-	 */
 	@Override
 	public long getStorageKey(final IBranchPath branchPath, final String id) {
 		return getStatementBrowser().getStorageKey(branchPath, id);
-	}
-
-	/* 
-	 * (non-Javadoc)
-	 * @see com.b2international.snowowl.core.api.ILookupService#getComponentIdAndLabel(com.b2international.snowowl.core.api.IBranchPath, long)
-	 */
-	@Override
-	public ComponentIdAndLabel getComponentIdAndLabel(final IBranchPath branchPath, final long storageKey) {
-		return ApplicationContext.getInstance().getService(SnomedTerminologyBrowser.class).getComponentIdAndLabel(branchPath, storageKey);
 	}
 
 	private SnomedStatementBrowser getStatementBrowser() {
 		return ApplicationContext.getInstance().getService(SnomedStatementBrowser.class);
 	}
 	
-	/*
-	 * (non-Javadoc)
-	 * @see com.b2international.snowowl.datastore.AbstractLookupService#getEPackage()
-	 */
 	@Override
 	protected EPackage getEPackage() {
 		return SnomedPackage.eINSTANCE;

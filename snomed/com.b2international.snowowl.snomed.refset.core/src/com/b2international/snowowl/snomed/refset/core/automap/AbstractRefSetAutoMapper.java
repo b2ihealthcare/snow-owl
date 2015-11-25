@@ -27,10 +27,10 @@ import com.b2international.snowowl.core.api.NullComponent;
 import com.b2international.snowowl.core.api.index.IIndexQueryAdapter;
 import com.b2international.snowowl.datastore.cdo.ICDOConnectionManager;
 import com.b2international.snowowl.snomed.datastore.SnomedClientTerminologyBrowser;
-import com.b2international.snowowl.snomed.datastore.SnomedConceptIndexEntry;
 import com.b2international.snowowl.snomed.datastore.index.SnomedClientIndexService;
 import com.b2international.snowowl.snomed.datastore.index.SnomedDOIQueryAdapter;
 import com.b2international.snowowl.snomed.datastore.index.SnomedDescriptionIndexQueryAdapter;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptIndexEntry;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Maps;
 

@@ -15,10 +15,7 @@
  */
 package com.b2international.snowowl.snomed.datastore.index.update;
 
-import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.CONCEPT_DEGREE_OF_INTEREST;
-
 import com.b2international.snowowl.datastore.index.DocumentUpdaterBase;
-import com.b2international.snowowl.datastore.index.mapping.Mappings;
 import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedDocumentBuilder;
 
 /**
@@ -40,8 +37,6 @@ public class ConceptDoiUpdater extends DocumentUpdaterBase<SnomedDocumentBuilder
 
 	@Override
 	public void doUpdate(SnomedDocumentBuilder doc) {
-		doc.removeAll(Mappings.floatDocValuesField(CONCEPT_DEGREE_OF_INTEREST));
-		doc.docValuesField(CONCEPT_DEGREE_OF_INTEREST, doi);
+		doc.conceptDegreeOfInterest(doi);
 	}
-
 }

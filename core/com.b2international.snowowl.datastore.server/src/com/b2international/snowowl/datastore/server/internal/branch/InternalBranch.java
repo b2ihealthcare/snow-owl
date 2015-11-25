@@ -15,7 +15,7 @@
  */
 package com.b2international.snowowl.datastore.server.internal.branch;
 
-import com.b2international.snowowl.datastore.branch.Branch;
+import com.b2international.snowowl.core.branch.Branch;
 
 
 /**

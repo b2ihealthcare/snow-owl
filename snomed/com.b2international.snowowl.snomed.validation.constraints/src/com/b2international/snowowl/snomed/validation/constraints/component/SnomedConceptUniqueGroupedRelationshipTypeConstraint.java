@@ -26,10 +26,10 @@ import com.b2international.snowowl.core.validation.ComponentValidationConstraint
 import com.b2international.snowowl.core.validation.ComponentValidationDiagnostic;
 import com.b2international.snowowl.core.validation.ComponentValidationDiagnosticImpl;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
-import com.b2international.snowowl.snomed.datastore.SnomedConceptIndexEntry;
-import com.b2international.snowowl.snomed.datastore.SnomedRelationshipIndexEntry;
 import com.b2international.snowowl.snomed.datastore.SnomedStatementBrowser;
-import com.b2international.snowowl.snomed.datastore.services.SnomedRelationshipNameProvider;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptIndexEntry;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRelationshipIndexEntry;
+import com.b2international.snowowl.snomed.datastore.services.ISnomedRelationshipNameProvider;
 import com.google.common.base.Predicate;
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.Lists;
@@ -113,7 +113,7 @@ public class SnomedConceptUniqueGroupedRelationshipTypeConstraint extends
 		final List<ComponentValidationDiagnostic> diagnostics = Lists.newArrayList();
 		for (final SnomedRelationshipIndexEntry relationship : groupToRelationshipMultimap.values()) {
 			if (relationship.isActive() && !isUniqueWithinGroupPredicate.apply(relationship)) {
-				final String relationshipLabel = SnomedRelationshipNameProvider.INSTANCE.getText(relationship.getId());
+				final String relationshipLabel = ApplicationContext.getServiceForClass(ISnomedRelationshipNameProvider.class).getComponentLabel(branchPath, relationship.getId());
 				final String message = "'" + component.getLabel() + "' has a relationship '" + relationshipLabel 
 						+ "', which has a non-unique type within its group '" + relationship.getGroup() + "'.";
 				diagnostics.add(new ComponentValidationDiagnosticImpl(component.getId(), message, ID, SnomedTerminologyComponentConstants.CONCEPT_NUMBER, error()));

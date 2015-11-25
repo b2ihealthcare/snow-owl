@@ -23,15 +23,13 @@ import org.slf4j.LoggerFactory;
 
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.LogUtils;
-import com.b2international.snowowl.core.MetadataImpl;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.api.index.IIndexEntry;
 import com.b2international.snowowl.core.api.index.IIndexUpdater;
 import com.b2international.snowowl.datastore.IBranchPathMap;
 import com.b2international.snowowl.datastore.cdo.ICDOConnection;
 import com.b2international.snowowl.datastore.oplock.impl.DatastoreLockContextDescriptions;
-import com.b2international.snowowl.datastore.server.events.BranchReply;
-import com.b2international.snowowl.datastore.server.events.CreateBranchEvent;
+import com.b2international.snowowl.datastore.request.RepositoryRequests;
 import com.b2international.snowowl.datastore.server.index.IndexServerServiceManager;
 import com.b2international.snowowl.eventbus.IEventBus;
 
@@ -67,8 +65,12 @@ public class PrepareBranchAction extends AbstractCDOBranchAction {
 			LogUtils.logUserEvent(LOGGER, getUserId(), parentBranchPath, message);
 
 			final IEventBus eventBus = ApplicationContext.getServiceForClass(IEventBus.class);
-			final CreateBranchEvent event = new CreateBranchEvent(repositoryId, parentBranchPath.getPath(), taskBranchPath.lastSegment(), new MetadataImpl());
-			event.send(eventBus, BranchReply.class).get();
+			RepositoryRequests.branching(repositoryId)
+				.prepareCreate()
+				.setParent(parentBranchPath.getPath())
+				.setName(taskBranchPath.lastSegment())
+				.build()
+				.execute(eventBus).get();
 		} else {
 
 			final String message = MessageFormat.format("Preparing branch {0} in ''{1}''...", taskBranchPath, connection.getRepositoryName());

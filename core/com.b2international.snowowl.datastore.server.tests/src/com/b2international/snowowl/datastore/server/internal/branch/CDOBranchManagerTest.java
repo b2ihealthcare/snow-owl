@@ -30,9 +30,9 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.runners.MockitoJUnitRunner;
 
-import com.b2international.snowowl.datastore.branch.Branch;
+import com.b2international.snowowl.core.branch.Branch;
 import com.b2international.snowowl.datastore.server.cdo.ICDOConflictProcessor;
-import com.b2international.snowowl.datastore.server.internal.IRepository;
+import com.b2international.snowowl.datastore.server.internal.InternalRepository;
 import com.b2international.snowowl.datastore.store.MemStore;
 
 /**
@@ -55,7 +55,7 @@ public class CDOBranchManagerTest {
 		cdoBranchManager.initMainBranch(false, clock.getTimeStamp());
 
 		final InternalCDOBranch mainBranch = cdoBranchManager.getMainBranch();
-		final IRepository repository = mock(IRepository.class, RETURNS_MOCKS);
+		final InternalRepository repository = mock(InternalRepository.class, RETURNS_MOCKS);
 		final ICDOConflictProcessor conflictProcessor = mock(ICDOConflictProcessor.class, RETURNS_DEFAULTS);
 
 		when(repository.getCdoBranchManager()).thenReturn(cdoBranchManager);

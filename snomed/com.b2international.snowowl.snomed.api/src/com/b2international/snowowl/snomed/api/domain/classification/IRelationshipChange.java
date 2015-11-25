@@ -15,7 +15,7 @@
  */
 package com.b2international.snowowl.snomed.api.domain.classification;
 
-import com.b2international.snowowl.snomed.api.domain.RelationshipModifier;
+import com.b2international.snowowl.snomed.core.domain.RelationshipModifier;
 
 /**
  * Contains a subset of relationship properties which makes it possible to identify an existing redundant relationship

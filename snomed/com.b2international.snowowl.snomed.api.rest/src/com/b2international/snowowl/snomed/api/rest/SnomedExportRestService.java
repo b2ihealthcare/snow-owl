@@ -44,16 +44,16 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.b2international.snowowl.api.codesystem.ICodeSystemVersionService;
-import com.b2international.snowowl.api.impl.domain.StorageRef;
 import com.b2international.snowowl.core.exceptions.ApiValidation;
 import com.b2international.snowowl.core.exceptions.BadRequestException;
+import com.b2international.snowowl.datastore.server.domain.StorageRef;
 import com.b2international.snowowl.snomed.api.ISnomedExportService;
-import com.b2international.snowowl.snomed.api.domain.Rf2ReleaseType;
 import com.b2international.snowowl.snomed.api.exception.ExportRunNotFoundException;
 import com.b2international.snowowl.snomed.api.impl.domain.SnomedExportConfiguration;
 import com.b2international.snowowl.snomed.api.rest.domain.SnomedExportRestConfiguration;
 import com.b2international.snowowl.snomed.api.rest.domain.SnomedExportRestRun;
 import com.b2international.snowowl.snomed.api.rest.util.Responses;
+import com.b2international.snowowl.snomed.core.domain.Rf2ReleaseType;
 import com.google.common.base.Strings;
 import com.google.common.collect.MapMaker;
 import com.wordnik.swagger.annotations.Api;

@@ -24,7 +24,7 @@ import java.util.concurrent.ExecutionException;
 import org.slf4j.Logger;
 
 import com.b2international.snowowl.core.CoreTerminologyBroker.ICoreTerminologyComponentInformation;
-import com.b2international.snowowl.core.api.TerminologyComponentIdProvider;
+import com.b2international.snowowl.core.api.component.TerminologyComponentIdProvider;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;

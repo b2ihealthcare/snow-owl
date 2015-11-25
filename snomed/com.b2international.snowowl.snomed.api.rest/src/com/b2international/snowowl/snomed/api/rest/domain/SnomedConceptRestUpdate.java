@@ -15,17 +15,16 @@
  */
 package com.b2international.snowowl.snomed.api.rest.domain;
 
-import com.b2international.snowowl.snomed.api.domain.AssociationType;
-import com.b2international.snowowl.snomed.api.domain.DefinitionStatus;
-import com.b2international.snowowl.snomed.api.domain.InactivationIndicator;
-import com.b2international.snowowl.snomed.api.domain.SubclassDefinitionStatus;
-import com.b2international.snowowl.snomed.api.impl.domain.SnomedConceptUpdate;
+import com.b2international.snowowl.snomed.core.domain.AssociationType;
+import com.b2international.snowowl.snomed.core.domain.DefinitionStatus;
+import com.b2international.snowowl.snomed.core.domain.InactivationIndicator;
+import com.b2international.snowowl.snomed.core.domain.SubclassDefinitionStatus;
 import com.google.common.collect.Multimap;
 
 /**
- * @since 1.0
+ * @since 4.0
  */
-public class SnomedConceptRestUpdate extends AbstractSnomedComponentRestUpdate<SnomedConceptUpdate> {
+public class SnomedConceptRestUpdate extends AbstractSnomedComponentRestUpdate {
 
 	private DefinitionStatus definitionStatus;
 	private SubclassDefinitionStatus subclassDefinitionStatus;
@@ -52,11 +51,6 @@ public class SnomedConceptRestUpdate extends AbstractSnomedComponentRestUpdate<S
 
 	public void setSubclassDefinitionStatus(final SubclassDefinitionStatus subclassDefinitionStatus) {
 		this.subclassDefinitionStatus = subclassDefinitionStatus;
-	}
-
-	@Override
-	protected SnomedConceptUpdate createComponentUpdate() {
-		return new SnomedConceptUpdate();
 	}
 
 	/**
@@ -97,16 +91,4 @@ public class SnomedConceptRestUpdate extends AbstractSnomedComponentRestUpdate<S
 		this.inactivationIndicator = inactivationIndicator;
 	}
 
-	/**
-	 * @return
-	 */
-	@Override
-	public SnomedConceptUpdate toComponentUpdate() {
-		final SnomedConceptUpdate result = super.toComponentUpdate();
-		result.setDefinitionStatus(getDefinitionStatus());
-		result.setSubclassDefinitionStatus(getSubclassDefinitionStatus());
-		result.setAssociationTargets(getAssociationTargets());
-		result.setInactivationIndicator(getInactivationIndicator());
-		return result;
-	}
 }

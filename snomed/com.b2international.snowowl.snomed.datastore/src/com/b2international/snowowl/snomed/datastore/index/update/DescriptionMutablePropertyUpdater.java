@@ -15,12 +15,7 @@
  */
 package com.b2international.snowowl.snomed.datastore.index.update;
 
-import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.DESCRIPTION_CASE_SIGNIFICANCE_ID;
-import static java.lang.Long.parseLong;
-
-import com.b2international.snowowl.datastore.index.mapping.Mappings;
 import com.b2international.snowowl.snomed.Description;
-import com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants;
 import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedDocumentBuilder;
 
 /**
@@ -28,24 +23,21 @@ import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedDocument
  */
 public class DescriptionMutablePropertyUpdater extends ComponentMutablePropertyUpdater {
 
-	public DescriptionMutablePropertyUpdater(Description component) {
-		super(component, SnomedIndexBrowserConstants.DESCRIPTION_EFFECTIVE_TIME);
+	public DescriptionMutablePropertyUpdater(Description description) {
+		super(description);
 	}
 	
 	@Override
 	public void doUpdate(SnomedDocumentBuilder doc) {
 		super.doUpdate(doc);
 		
-		final long caseSignificanceId = parseLong(getComponent().getCaseSignificance().getId());
 		doc
-			.removeAll(Mappings.storedOnlyLongFieldWithDocValues(DESCRIPTION_CASE_SIGNIFICANCE_ID));
-		doc
-			.storedOnlyWithDocValues(DESCRIPTION_CASE_SIGNIFICANCE_ID, caseSignificanceId);
+			.descriptionCaseSignificance(Long.valueOf(getComponent().getCaseSignificance().getId()))
+			.descriptionTerm(getComponent().getTerm());
 	}
-	
+
 	@Override
 	protected Description getComponent() {
 		return (Description) super.getComponent();
 	}
-
 }

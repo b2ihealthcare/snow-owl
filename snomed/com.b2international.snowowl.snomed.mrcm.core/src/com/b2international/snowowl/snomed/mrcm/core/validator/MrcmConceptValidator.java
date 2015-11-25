@@ -37,9 +37,9 @@ import com.b2international.snowowl.snomed.datastore.MrcmEditingContext;
 import com.b2international.snowowl.snomed.datastore.SnomedClientPredicateBrowser;
 import com.b2international.snowowl.snomed.datastore.SnomedClientRefSetBrowser;
 import com.b2international.snowowl.snomed.datastore.SnomedClientTerminologyBrowser;
-import com.b2international.snowowl.snomed.datastore.SnomedConceptIndexEntry;
 import com.b2international.snowowl.snomed.datastore.index.SnomedClientIndexService;
-import com.b2international.snowowl.snomed.datastore.index.refset.SnomedConcreteDataTypeRefSetMemberIndexEntry;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptIndexEntry;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry;
 import com.b2international.snowowl.snomed.datastore.services.ConceptSetProcessorFactory;
 import com.b2international.snowowl.snomed.datastore.services.SnomedRefSetMembershipLookupService;
 import com.b2international.snowowl.snomed.datastore.snor.PredicateIndexEntry;
@@ -229,12 +229,12 @@ public class MrcmConceptValidator {
 		} else if (predicate instanceof ConcreteDomainElementPredicate) {
 			final ConcreteDomainElementPredicate concreteDomainElementPredicate = (ConcreteDomainElementPredicate) predicate;
 			final SnomedRefSetMembershipLookupService service = new SnomedRefSetMembershipLookupService();
-			final Collection<SnomedConcreteDataTypeRefSetMemberIndexEntry> dataTypes = service.getConceptDataTypes(concept.getId());
+			final Collection<SnomedRefSetMemberIndexEntry> dataTypes = service.getConceptDataTypes(concept.getId());
 			System.out.println(concreteDomainElementPredicate);
 			boolean foundAtLeastOneMatch = false;
-			for (final SnomedConcreteDataTypeRefSetMemberIndexEntry dataTypeIndexEntry : dataTypes) {
+			for (final SnomedRefSetMemberIndexEntry dataTypeIndexEntry : dataTypes) {
 				System.out.println(dataTypeIndexEntry);
-				if (concreteDomainElementPredicate.getType().equals(mapModelDataTypeToMrcmDataType(dataTypeIndexEntry.getDataType()))
+				if (concreteDomainElementPredicate.getType().equals(mapModelDataTypeToMrcmDataType(dataTypeIndexEntry.getRefSetPackageDataType()))
 						&& concreteDomainElementPredicate.getName().equals(dataTypeIndexEntry.getAttributeLabel())) {
 					// add as many success markers as there are concrete domain elements satisfying the constraint
 					newDiagnostics.add(new MrcmPredicateDiagnostic(predicate.getUuid(), CONSTRAINT_VIOLATION_MESSAGE_PREFIX 

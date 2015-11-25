@@ -9,7 +9,6 @@ Import-Package: org.osgi.framework
 Bundle-ActivationPolicy: lazy
 Export-Package: com.b2international.snowowl.snomed.api,
  com.b2international.snowowl.snomed.api.browser,
- com.b2international.snowowl.snomed.api.domain,
  com.b2international.snowowl.snomed.api.domain.browser,
  com.b2international.snowowl.snomed.api.domain.classification,
  com.b2international.snowowl.snomed.api.domain.exception,

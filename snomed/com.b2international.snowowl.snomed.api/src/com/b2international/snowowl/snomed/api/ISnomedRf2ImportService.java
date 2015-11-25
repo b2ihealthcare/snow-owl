@@ -18,12 +18,12 @@ package com.b2international.snowowl.snomed.api;
 import java.io.InputStream;
 import java.util.UUID;
 
-import com.b2international.snowowl.api.codesystem.exception.CodeSystemNotFoundException;
-import com.b2international.snowowl.api.codesystem.exception.CodeSystemVersionNotFoundException;
+import com.b2international.snowowl.core.domain.exceptions.CodeSystemNotFoundException;
+import com.b2international.snowowl.core.domain.exceptions.CodeSystemVersionNotFoundException;
 import com.b2international.snowowl.core.exceptions.BadRequestException;
-import com.b2international.snowowl.snomed.api.domain.ISnomedImportConfiguration;
 import com.b2international.snowowl.snomed.api.domain.exception.SnomedImportConfigurationNotFoundException;
 import com.b2international.snowowl.snomed.api.domain.exception.SnomedImportException;
+import com.b2international.snowowl.snomed.core.domain.ISnomedImportConfiguration;
 
 /**
  * Implementations allow importing SNOMED CT content from RF2 release archives.

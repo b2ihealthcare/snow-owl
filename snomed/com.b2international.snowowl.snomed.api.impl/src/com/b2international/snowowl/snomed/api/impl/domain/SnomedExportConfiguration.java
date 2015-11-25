@@ -21,8 +21,8 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
 
-import com.b2international.snowowl.snomed.api.domain.ISnomedExportConfiguration;
-import com.b2international.snowowl.snomed.api.domain.Rf2ReleaseType;
+import com.b2international.snowowl.snomed.core.domain.ISnomedExportConfiguration;
+import com.b2international.snowowl.snomed.core.domain.Rf2ReleaseType;
 
 /**
  * @since 3.7

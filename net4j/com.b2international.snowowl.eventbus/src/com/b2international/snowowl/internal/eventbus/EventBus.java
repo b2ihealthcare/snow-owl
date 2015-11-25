@@ -53,35 +53,35 @@ public class EventBus extends Lifecycle implements IEventBus {
 	private ConcurrentMap<String, ChoosableList<Handler>> handlerMap = new ConcurrentHashMap<>();
 	private ChoosableList<ExecutorService> contexts = new ChoosableList<ExecutorService>();
 	private final String description;
+	private final int numberOfWorkers;
 
 	public EventBus() {
-		this(EventBusConstants.GLOBAL_BUS);
+		this(EventBusConstants.GLOBAL_BUS, Runtime.getRuntime().availableProcessors());
 	}
 	
-	public EventBus(String description) {
+	public EventBus(String description, int numberOfWorkers) {
 		CheckUtil.checkArg(description, "Description should be specified");
 		this.description = description;
+		CheckUtil.checkArg(numberOfWorkers > 0, "Number of workers must be greater than zero");
+		this.numberOfWorkers = numberOfWorkers;
 	}
 
 	@Override
 	protected void doActivate() throws Exception {
 		super.doActivate();
-		for (int i = 0; i < Runtime.getRuntime().availableProcessors(); i++) {
-			final String groupName = getClass().getSimpleName().toLowerCase().concat("-" + description + "-" + i);
-			final ThreadGroup group = new ThreadGroup(groupName);
+		final String groupName = getClass().getSimpleName().toLowerCase().concat("-" + description);
+		final ThreadGroup group = new ThreadGroup(groupName);
+		for (int i = 0; i < numberOfWorkers; i++) {
 			final ExecutorService context = Executors.newSingleThreadExecutor(new ThreadFactory() {
 				@Override
 				public Thread newThread(Runnable r) {
-					return new Thread(group, r);
+					final Thread thread = new Thread(group, r);
+					thread.setDaemon(true);
+					return thread;
 				}
 			});
 			contexts.list.add(context);
 		}
-	}
-	
-	@Override
-	protected void doDeactivate() throws Exception {
-		super.doDeactivate();
 	}
 	
 	@Override
@@ -265,7 +265,8 @@ public class EventBus extends Lifecycle implements IEventBus {
 
 		@Override
 		public Object create(String description) throws ProductCreationException {
-			return new EventBus(description);
+			final String[] values = description.split(":");
+			return new EventBus(values[0], Integer.parseInt(values[1]));
 		}
 
 	}

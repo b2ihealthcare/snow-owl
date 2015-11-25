@@ -21,7 +21,6 @@ import static com.google.common.collect.Sets.newHashSet;
 import java.text.MessageFormat;
 import java.util.List;
 import java.util.Set;
-import java.util.concurrent.ExecutionException;
 
 import org.eclipse.emf.cdo.common.branch.CDOBranch;
 import org.eclipse.emf.cdo.transaction.CDOMerger.ConflictException;
@@ -35,14 +34,14 @@ import com.b2international.commons.CompareUtils;
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.LogUtils;
 import com.b2international.snowowl.core.api.IBranchPath;
+import com.b2international.snowowl.core.branch.Branch;
 import com.b2international.snowowl.datastore.IBranchPathMap;
 import com.b2international.snowowl.datastore.cdo.ConflictWrapper;
 import com.b2international.snowowl.datastore.cdo.CustomConflictException;
 import com.b2international.snowowl.datastore.cdo.ICDOConnection;
 import com.b2international.snowowl.datastore.oplock.impl.DatastoreLockContextDescriptions;
+import com.b2international.snowowl.datastore.request.RepositoryRequests;
 import com.b2international.snowowl.datastore.server.CDOServerCommitBuilder;
-import com.b2international.snowowl.datastore.server.events.BranchReply;
-import com.b2international.snowowl.datastore.server.events.ReopenBranchEvent;
 import com.b2international.snowowl.datastore.server.internal.branch.CDOBranchMerger;
 import com.b2international.snowowl.eventbus.IEventBus;
 
@@ -97,18 +96,13 @@ public class SynchronizeBranchAction extends AbstractCDOBranchAction {
 		}
 		
 		final IEventBus eventBus = ApplicationContext.getServiceForClass(IEventBus.class);
-		final ReopenBranchEvent event = new ReopenBranchEvent(repositoryId, taskBranchPath.getPath());
-		final BranchReply reply;
-		try {
-			reply = event.send(eventBus, BranchReply.class).get();
-		} catch (InterruptedException e) {
-			throw e;
-		} catch (ExecutionException e) {
-			throw e.getCause();
-		}
+		final Branch branch = RepositoryRequests.branching(repositoryId)
+			.prepareReopen(taskBranchPath.getPath())
+			.execute(eventBus)
+			.get();
 		
 		// This transaction now holds the actual change set on the reopened child
-		final CDOTransaction syncTransaction = applyChangeSet(connection, taskBranch, reply.getBranch().branchPath());
+		final CDOTransaction syncTransaction = applyChangeSet(connection, taskBranch, branch.branchPath());
 		if (syncTransaction.isDirty()) {
 			transactions.add(syncTransaction);
 		} else {

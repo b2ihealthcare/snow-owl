@@ -15,48 +15,41 @@
  */
 package com.b2international.snowowl.snomed.reasoner.classification.entry;
 
-import com.b2international.snowowl.core.api.IComponentWithIconId;
+import com.google.common.base.Objects;
 
 /**
  * Abstract base class for relationship related reasoner response entries.
- * @see RelationshipChangeEntry
- * @see RelationshipConcreteDomainChangeEntry
  */
 public abstract class RelationshipChangeEntryBase extends AbstractChangeEntry {
 
 	private static final long serialVersionUID = 445232862733257314L;
 
-	private final IComponentWithIconId<Long> type;
-	private final IComponentWithIconId<Long> destination;
+	private final ChangeConcept type;
+	private final ChangeConcept destination;
 
-	protected RelationshipChangeEntryBase(final Nature nature, final IComponentWithIconId<Long> source, final IComponentWithIconId<Long> type,
-			final IComponentWithIconId<Long> destination) {
+	protected RelationshipChangeEntryBase(final Nature nature, 
+			final ChangeConcept source, 
+			final ChangeConcept type,
+			final ChangeConcept destination) {
+
 		super(nature, source);
+
 		this.type = type;
 		this.destination = destination;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see com.b2international.snowowl.snomed.reasoner.classification.entry.IChangeEntry#getType()
-	 */
-	@Override public IComponentWithIconId<Long> getType() {
+	@Override 
+	public ChangeConcept getType() {
 		return type;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see com.b2international.snowowl.snomed.reasoner.classification.entry.IChangeEntry#getDestination()
-	 */
-	@Override public IComponentWithIconId<Long> getDestination() {
+	@Override 
+	public ChangeConcept getDestination() {
 		return destination;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see com.b2international.snowowl.snomed.reasoner.classification.entry.AbstractChangeEntry#hashCode()
-	 */
-	@Override public int hashCode() {
+	@Override 
+	public int hashCode() {
 		final int prime = 31;
 		int result = super.hashCode();
 		result = prime * result + ((destination == null) ? 0 : destination.hashCode());
@@ -64,28 +57,16 @@ public abstract class RelationshipChangeEntryBase extends AbstractChangeEntry {
 		return result;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see com.b2international.snowowl.snomed.reasoner.classification.entry.AbstractChangeEntry#equals(java.lang.Object)
-	 */
-	@Override public boolean equals(final Object obj) {
-		if (this == obj)
-			return true;
-		if (!super.equals(obj))
-			return false;
-		if (getClass() != obj.getClass())
-			return false;
+	@Override 
+	public boolean equals(final Object obj) {
+		if (this == obj) { return true; }
+		if (!super.equals(obj)) { return false; }
+		if (getClass() != obj.getClass()) { return false; }
+
 		final RelationshipChangeEntryBase other = (RelationshipChangeEntryBase) obj;
-		if (destination == null) {
-			if (other.destination != null)
-				return false;
-		} else if (!destination.equals(other.destination))
-			return false;
-		if (type == null) {
-			if (other.type != null)
-				return false;
-		} else if (!type.equals(other.type))
-			return false;
+
+		if (!Objects.equal(destination, other.destination)) { return false; }
+		if (!Objects.equal(type, other.type)) { return false; }
 		return true;
 	}
 }

@@ -26,13 +26,13 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.context.request.async.DeferredResult;
 
-import com.b2international.commons.collections.Procedure;
 import com.b2international.snowowl.core.exceptions.ApiValidation;
-import com.b2international.snowowl.datastore.server.events.BranchReply;
 import com.b2international.snowowl.eventbus.IEventBus;
-import com.b2international.snowowl.snomed.api.rest.domain.MergeRequest;
+import com.b2international.snowowl.snomed.api.rest.domain.MergeRestRequest;
 import com.b2international.snowowl.snomed.api.rest.domain.RestApiError;
+import com.b2international.snowowl.snomed.api.rest.util.DeferredResults;
 import com.b2international.snowowl.snomed.api.rest.util.Responses;
+import com.b2international.snowowl.snomed.datastore.server.request.SnomedRequests;
 import com.wordnik.swagger.annotations.Api;
 import com.wordnik.swagger.annotations.ApiOperation;
 import com.wordnik.swagger.annotations.ApiResponse;
@@ -60,19 +60,19 @@ public class SnomedBranchMergingController extends AbstractRestService {
 		})
 	@RequestMapping(method = RequestMethod.POST)
 	@ResponseStatus(HttpStatus.NO_CONTENT)
-	public DeferredResult<ResponseEntity<Void>> merge(@RequestBody MergeRequest request) {
+	public DeferredResult<ResponseEntity<Void>> merge(@RequestBody MergeRestRequest request) {
 		ApiValidation.checkInput(request);
-		final ResponseEntity<Void> response = Responses.noContent().build();
-		final DeferredResult<ResponseEntity<Void>> result = new DeferredResult<>();
-		request.toEvent(repositoryId)
-			.send(bus, BranchReply.class)
-			.then(new Procedure<BranchReply>() { @Override protected void doApply(BranchReply reply) {
-				result.setResult(response);
-			}})
-			.fail(new Procedure<Throwable>() { @Override protected void doApply(Throwable throwable) {
-				result.setErrorResult(throwable);
-			}});
-		return result;
+		return DeferredResults.wrap(
+				SnomedRequests
+					.branching()
+					.prepareMerge()
+					.setSource(request.getSource())
+					.setTarget(request.getTarget())
+					.setReviewId(request.getReviewId())
+					.setCommitComment(request.getReviewId())
+					.build()
+					.execute(bus),
+				Responses.noContent().build());
 	}
 	
 }

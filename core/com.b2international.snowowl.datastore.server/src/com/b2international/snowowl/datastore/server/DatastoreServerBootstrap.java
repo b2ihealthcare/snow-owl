@@ -15,9 +15,6 @@
  */
 package com.b2international.snowowl.datastore.server;
 
-import java.io.File;
-import java.nio.file.Paths;
-
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.net4j.jvm.IJVMConnector;
 import org.eclipse.net4j.jvm.JVMUtil;
@@ -25,6 +22,7 @@ import org.eclipse.net4j.util.container.IManagedContainer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.b2international.snowowl.core.RepositoryManager;
 import com.b2international.snowowl.core.api.SnowowlRuntimeException;
 import com.b2international.snowowl.core.api.SnowowlServiceException;
 import com.b2international.snowowl.core.api.index.IIndexServerServiceManager;
@@ -34,30 +32,22 @@ import com.b2international.snowowl.core.setup.Environment;
 import com.b2international.snowowl.core.setup.ModuleConfig;
 import com.b2international.snowowl.core.setup.PreRunCapableBootstrapFragment;
 import com.b2international.snowowl.core.users.SpecialUserStore;
-import com.b2international.snowowl.datastore.branch.BranchManager;
 import com.b2international.snowowl.datastore.cdo.CDOConnectionFactoryProvider;
-import com.b2international.snowowl.datastore.cdo.ICDOConnectionManager;
 import com.b2international.snowowl.datastore.cdo.ICDORepositoryManager;
 import com.b2international.snowowl.datastore.net4j.Net4jUtils;
 import com.b2international.snowowl.datastore.server.index.IndexServerServiceManager;
 import com.b2international.snowowl.datastore.server.index.SingleDirectoryIndexManager;
 import com.b2international.snowowl.datastore.server.index.SingleDirectoryIndexManagerImpl;
-import com.b2international.snowowl.datastore.server.internal.RepositoryWrapper;
-import com.b2international.snowowl.datastore.server.internal.branch.BranchEventHandler;
+import com.b2international.snowowl.datastore.server.internal.DefaultRepositoryManager;
+import com.b2international.snowowl.datastore.server.internal.ExtensionBasedEditingContextFactoryProvider;
+import com.b2international.snowowl.datastore.server.internal.ExtensionBasedRepositoryClassLoaderProviderRegistry;
 import com.b2international.snowowl.datastore.server.internal.branch.BranchSerializer;
-import com.b2international.snowowl.datastore.server.internal.branch.CDOBranchManagerImpl;
-import com.b2international.snowowl.datastore.server.internal.branch.InternalBranch;
-import com.b2international.snowowl.datastore.server.internal.review.ConceptChangesImpl;
-import com.b2international.snowowl.datastore.server.internal.review.ReviewEventHandler;
-import com.b2international.snowowl.datastore.server.internal.review.ReviewImpl;
-import com.b2international.snowowl.datastore.server.internal.review.ReviewManagerImpl;
 import com.b2international.snowowl.datastore.server.internal.review.ReviewSerializer;
 import com.b2international.snowowl.datastore.server.session.ApplicationSessionManager;
 import com.b2international.snowowl.datastore.server.session.LogListener;
 import com.b2international.snowowl.datastore.server.session.VersionProcessor;
 import com.b2international.snowowl.datastore.serviceconfig.ServiceConfigJobManager;
 import com.b2international.snowowl.datastore.session.IApplicationSessionManager;
-import com.b2international.snowowl.datastore.store.IndexStore;
 import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.eventbus.net4j.EventBusNet4jUtil;
 import com.b2international.snowowl.rpc.RpcConfiguration;
@@ -74,21 +64,21 @@ public class DatastoreServerBootstrap implements PreRunCapableBootstrapFragment 
 	private static final Logger LOG = LoggerFactory.getLogger(DatastoreServerBootstrap.class);
 	
 	@Override
-	public void init(SnowOwlConfiguration configuration, Environment environment) throws Exception {
-		final IManagedContainer container = environment.container();
+	public void init(SnowOwlConfiguration configuration, Environment env) throws Exception {
+		final IManagedContainer container = env.container();
 		final RpcConfiguration rpcConfig = configuration.getModuleConfig(RpcConfiguration.class);
-		LOG.info("Preparing RPC communication with config {}", rpcConfig);
+		LOG.debug("Preparing RPC communication with config {}", rpcConfig);
 		RpcUtil.prepareContainer(container, rpcConfig);
-		LOG.info("Preparing EventBus communication");
+		LOG.debug("Preparing EventBus communication");
 		EventBusNet4jUtil.prepareContainer(container);
-		environment.services().registerService(IEventBus.class, EventBusNet4jUtil.getBus(container));
+		env.services().registerService(IEventBus.class, EventBusNet4jUtil.getBus(container));
 	}
 
 	@Override
-	public void preRun(SnowOwlConfiguration configuration, Environment environment) {
-		if (environment.isServer() || environment.isEmbedded()) {
-			LOG.info(">>> Starting server-side datastore bundle.");
-			final IManagedContainer container = environment.container();
+	public void preRun(SnowOwlConfiguration configuration, Environment env) {
+		if (env.isServer() || env.isEmbedded()) {
+			LOG.debug(">>> Starting server-side datastore bundle.");
+			final IManagedContainer container = env.container();
 			final Stopwatch serverStopwatch = Stopwatch.createStarted();
 			
 			RpcUtil.getInitialServerSession(container).registerServiceLookup(new RpcServerServiceLookup());
@@ -96,8 +86,8 @@ public class DatastoreServerBootstrap implements PreRunCapableBootstrapFragment 
 			manager.addListener(new LogListener());
 			manager.addListener(new VersionProcessor());
 			
-			environment.services().registerService(IApplicationSessionManager.class, manager);
-			environment.services().registerService(InternalApplicationSessionManager.class, manager);
+			env.services().registerService(IApplicationSessionManager.class, manager);
+			env.services().registerService(InternalApplicationSessionManager.class, manager);
 			
 			final ClassLoader managerClassLoader = manager.getClass().getClassLoader();
 			RpcUtil.getInitialServerSession(container).registerClassLoader(IApplicationSessionManager.class, managerClassLoader);
@@ -105,21 +95,25 @@ public class DatastoreServerBootstrap implements PreRunCapableBootstrapFragment 
 			
 			final ICDORepositoryManager cdoRepositoryManager = CDORepositoryManager.getInstance();
 			cdoRepositoryManager.activate();
-			environment.services().registerService(ICDORepositoryManager.class, cdoRepositoryManager);
+			env.services().registerService(ICDORepositoryManager.class, cdoRepositoryManager);
 			
 			// register index manager services, one for branching, one for single directory
 			// TODO would be nice to merge these into one single IndexManager
-			environment.services().registerService(IIndexServerServiceManager.class, IndexServerServiceManager.INSTANCE);
-			environment.services().registerService(SingleDirectoryIndexManager.class, new SingleDirectoryIndexManagerImpl());
+			env.services().registerService(IIndexServerServiceManager.class, IndexServerServiceManager.INSTANCE);
+			env.services().registerService(SingleDirectoryIndexManager.class, new SingleDirectoryIndexManagerImpl());
+
+			env.services().registerService(RepositoryManager.class, new DefaultRepositoryManager());
+			env.services().registerService(EditingContextFactoryProvider.class, new ExtensionBasedEditingContextFactoryProvider());
+			env.services().registerService(RepositoryClassLoaderProviderRegistry.class, new ExtensionBasedRepositoryClassLoaderProviderRegistry());
 			
-			LOG.info("<<< Server-side datastore bundle started. [{}]", serverStopwatch);
+			LOG.debug("<<< Server-side datastore bundle started. [{}]", serverStopwatch);
 		} else {
-			LOG.info("Snow Owl application is running in remote mode.");
-			LOG.info("Connecting to Snow Owl Terminology Server at {}", environment.service(ClientPreferences.class).getCDOUrl());
+			LOG.debug("Snow Owl application is running in remote mode.");
+			LOG.info("Connecting to Snow Owl Terminology Server at {}", env.service(ClientPreferences.class).getCDOUrl());
 		}
-		if (configuration.isSystemUserNeeded() || environment.isServer()) {
+		if (configuration.isSystemUserNeeded() || env.isServer()) {
 			try {
-				connectSystemUser(environment.container());
+				connectSystemUser(env.container());
 			} catch (SnowowlServiceException e) {
 				throw new SnowowlRuntimeException(e);
 			}
@@ -127,74 +121,29 @@ public class DatastoreServerBootstrap implements PreRunCapableBootstrapFragment 
 	}
 	
 	@Override
-	public void run(SnowOwlConfiguration configuration, Environment environment, IProgressMonitor monitor) throws Exception {
+	public void run(SnowOwlConfiguration configuration, Environment env, IProgressMonitor monitor) throws Exception {
 		ServiceConfigJobManager.INSTANCE.registerServices(monitor);
 		
-		if (environment.isServer() || environment.isEmbedded()) {
-			ReviewConfiguration reviewConfiguration = configuration.getModuleConfig(ReviewConfiguration.class);
-			initializeBranchingSupport(environment, reviewConfiguration);
+		if (env.isEmbedded() || env.isServer()) {
+			initializeRepositories(env);
 		}
 	}
 
-	private void initializeBranchingSupport(Environment environment, ReviewConfiguration reviewConfiguration) {
+	private void initializeRepositories(Environment env) {
 		final Stopwatch branchStopwatch = Stopwatch.createStarted();
-		LOG.info(">>> Initializing branch and review services.");
+		LOG.debug(">>> Initializing branch and review services.");
 		
-		final ICDOConnectionManager cdoConnectionManager = environment.service(ICDOConnectionManager.class);
-		final ICDORepositoryManager cdoRepositoryManager = environment.service(ICDORepositoryManager.class);
-		final IIndexServerServiceManager indexServerServiceManager = environment.service(IIndexServerServiceManager.class); 
-		final IEventBus eventBus = environment.service(IEventBus.class);
+		final DefaultRepositoryManager repositories = (DefaultRepositoryManager) env.service(RepositoryManager.class);
+		env.services().registerService(BranchSerializer.class, new BranchSerializer());
+		env.services().registerService(ReviewSerializer.class, new ReviewSerializer());
 		
-		final BranchSerializer branchSerializer = new BranchSerializer();
-		final ReviewSerializer reviewSerializer = new ReviewSerializer();
-		
-		for (String repositoryId : cdoRepositoryManager.uuidKeySet()) {
-			final RepositoryWrapper wrapper = new RepositoryWrapper(repositoryId, cdoConnectionManager, cdoRepositoryManager, indexServerServiceManager, eventBus);
-			initializeBranchingSupport(environment, wrapper, branchSerializer, reviewSerializer, reviewConfiguration);
+		for (String repositoryId : env.service(ICDORepositoryManager.class).uuidKeySet()) {
+			repositories.prepareCreate(repositoryId).build(env);
 		}
 		
-		LOG.info("<<< Branch and review services registered. [{}]", branchStopwatch);
+		LOG.debug("<<< Branch and review services registered. [{}]", branchStopwatch);
 	}
 
-	private void initializeBranchingSupport(Environment environment, RepositoryWrapper wrapper, BranchSerializer branchSerializer, 
-			ReviewSerializer reviewSerializer, ReviewConfiguration reviewConfiguration) {
-		
-		final String repositoryId = wrapper.getCdoRepositoryId();
-		final File branchIndexDirectory = environment.getDataDirectory()
-				.toPath()
-				.resolve(Paths.get("indexes", "branches", repositoryId))
-				.toFile();
-
-		final IndexStore<InternalBranch> branchStore = new IndexStore<InternalBranch>(branchIndexDirectory, branchSerializer, InternalBranch.class);
-		final BranchManager branchManager = new CDOBranchManagerImpl(wrapper, branchStore);
-		
-		final File reviewsIndexDirectory = environment.getDataDirectory()
-				.toPath()
-				.resolve(Paths.get("indexes", "reviews", repositoryId))
-				.toFile();
-		
-		final File conceptChangesIndexDirectory = environment.getDataDirectory()
-				.toPath()
-				.resolve(Paths.get("indexes", "concept_changes", repositoryId))
-				.toFile();
-		
-		final IndexStore<ReviewImpl> reviewStore = new IndexStore<ReviewImpl>(reviewsIndexDirectory, reviewSerializer, ReviewImpl.class);
-		final IndexStore<ConceptChangesImpl> conceptChangesStore = new IndexStore<ConceptChangesImpl>(conceptChangesIndexDirectory, reviewSerializer, ConceptChangesImpl.class);
-		
-		final ReviewManagerImpl reviewManager = new ReviewManagerImpl(wrapper, reviewStore, conceptChangesStore,
-				reviewConfiguration.getKeepCurrentMins(), reviewConfiguration.getKeepOtherMins());
-
-		environment.service(IEventBus.class).registerHandler("/" + repositoryId + "/branches" , new BranchEventHandler(branchManager, reviewManager));
-		environment.service(IEventBus.class).registerHandler("/" + repositoryId + "/branches/changes" , reviewManager.getStaleHandler());
-		environment.service(IEventBus.class).registerHandler("/" + repositoryId + "/reviews" , new ReviewEventHandler(branchManager, reviewManager));
-		
-		// register stores to index manager
-		final SingleDirectoryIndexManager indexManager = environment.service(SingleDirectoryIndexManager.class);
-		indexManager.registerIndex(branchStore);
-		indexManager.registerIndex(reviewStore);
-		indexManager.registerIndex(conceptChangesStore);
-	}
-	
 	private void connectSystemUser(IManagedContainer container) throws SnowowlServiceException {
 		// Normally this is done for us by CDOConnectionFactory
 		final IJVMConnector connector = JVMUtil.getConnector(container, Net4jUtils.NET_4_J_CONNECTOR_NAME);

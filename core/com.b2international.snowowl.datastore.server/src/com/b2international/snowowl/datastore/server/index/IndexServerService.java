@@ -355,7 +355,7 @@ public abstract class IndexServerService<E extends IIndexEntry> extends Abstract
 			final List<DocumentWithScore> result = Lists.newArrayListWithExpectedSize(topDocs.totalHits);
 
 			for (final ScoreDoc scoreDoc : topDocs.scoreDocs) {
-				result.add(new DocumentWithScore(searcher.doc(scoreDoc.doc), branchPath, scoreDoc.score));
+				result.add(new DocumentWithScore(searcher.doc(scoreDoc.doc), scoreDoc.score));
 			}
 
 			return result;
@@ -392,13 +392,14 @@ public abstract class IndexServerService<E extends IIndexEntry> extends Abstract
 			if (null == sort) {
 				sort = Sort.INDEXORDER;
 			}
-
+			
 			final TopDocs topDocs = searcher.search(query, filter, offset + limit, sort, true, false);
 			final ScoreDoc[] scoreDocs = topDocs.scoreDocs;
-			final List<DocumentWithScore> result = Lists.newArrayListWithExpectedSize(limit);
+			final int expectedSize = Math.max(0, scoreDocs.length - offset);
+			final List<DocumentWithScore> result = Lists.newArrayListWithExpectedSize(expectedSize);
 
 			for (int i = offset; i < offset + limit && i < scoreDocs.length; i++) {
-				result.add(new DocumentWithScore(searcher.doc(scoreDocs[i].doc), branchPath, scoreDocs[i].score));
+				result.add(new DocumentWithScore(searcher.doc(scoreDocs[i].doc), scoreDocs[i].score));
 			}
 
 			return result;
@@ -501,7 +502,7 @@ public abstract class IndexServerService<E extends IIndexEntry> extends Abstract
 
 			int size = 0;
 			while (itr.next()) {
-				documents[size++] = new DocumentWithScore(searcher.doc(itr.getDocID()), branchPath);
+				documents[size++] = new DocumentWithScore(searcher.doc(itr.getDocID()));
 			}
 			
 			return Arrays.asList(Arrays.copyOf(documents, size));
@@ -824,19 +825,6 @@ public abstract class IndexServerService<E extends IIndexEntry> extends Abstract
 	}
 	
 	@Override
-	public void addDocument(final IBranchPath branchPath, final Document document) {
-		checkNotNull(branchPath, "branchPath");
-		checkNotNull(document, "document");
-		checkNotDisposed();
-
-		try {
-			getBranchService(branchPath).addDocument(document);
-		} catch (final IOException e) {
-			throw new IndexException(e);
-		}		
-	}
-	
-	@Override
 	public IndexBranchService getBranchService(final IBranchPath branchPath) {
 		
 		// Record usage
@@ -891,6 +879,7 @@ public abstract class IndexServerService<E extends IIndexEntry> extends Abstract
 		}
 	}
 	
+	@Override
 	public <T> T executeReadTransaction(IBranchPath branchPath, IndexRead<T> read) {
 		final ReferenceManager<IndexSearcher> manager = getManager(branchPath);
 		IndexSearcher searcher = null;	

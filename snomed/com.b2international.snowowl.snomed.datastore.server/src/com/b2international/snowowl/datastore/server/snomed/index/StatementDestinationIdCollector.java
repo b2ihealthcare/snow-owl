@@ -20,11 +20,11 @@ import java.io.IOException;
 import org.apache.lucene.index.AtomicReader;
 import org.apache.lucene.index.NumericDocValues;
 
+import com.b2international.snowowl.datastore.index.AbstractDocsOutOfOrderCollector;
+import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedMappings;
+
 import bak.pcj.map.LongKeyLongMap;
 import bak.pcj.map.LongKeyLongOpenHashMap;
-
-import com.b2international.snowowl.datastore.index.AbstractDocsOutOfOrderCollector;
-import com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants;
 
 /**
  * Collects destination concept identifiers keyed by source concept identifiers for relationships of a particular type.
@@ -69,8 +69,8 @@ public class StatementDestinationIdCollector extends AbstractDocsOutOfOrderColle
 
 	@Override
 	protected void initDocValues(final AtomicReader leafReader) throws IOException {
-		sourceIdsValues = leafReader.getNumericDocValues(SnomedIndexBrowserConstants.RELATIONSHIP_OBJECT_ID);
-		destinationIdsValues = leafReader.getNumericDocValues(SnomedIndexBrowserConstants.RELATIONSHIP_VALUE_ID);
+		sourceIdsValues = SnomedMappings.relationshipSource().getDocValues(leafReader);
+		destinationIdsValues = SnomedMappings.relationshipDestination().getDocValues(leafReader);
 	}
 
 	@Override

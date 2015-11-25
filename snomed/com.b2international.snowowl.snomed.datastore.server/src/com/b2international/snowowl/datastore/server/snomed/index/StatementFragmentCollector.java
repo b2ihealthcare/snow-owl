@@ -23,14 +23,13 @@ import java.util.List;
 import org.apache.lucene.index.AtomicReader;
 import org.apache.lucene.index.NumericDocValues;
 
-import bak.pcj.map.LongKeyMap;
-import bak.pcj.map.LongKeyOpenHashMap;
-
 import com.b2international.snowowl.datastore.index.AbstractDocsOutOfOrderCollector;
 import com.b2international.snowowl.datastore.index.mapping.Mappings;
 import com.b2international.snowowl.snomed.datastore.StatementFragment;
-import com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants;
 import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedMappings;
+
+import bak.pcj.map.LongKeyMap;
+import bak.pcj.map.LongKeyOpenHashMap;
 
 /**
  * Collector for gathering SNOMED CT relationship representations after performing an index search.
@@ -107,13 +106,13 @@ public class StatementFragmentCollector extends AbstractDocsOutOfOrderCollector 
 	protected void initDocValues(final AtomicReader reader) throws IOException {
 		idValues = SnomedMappings.id().getDocValues(reader);
 		storageKeyValues = Mappings.storageKey().getDocValues(reader);
-		sourceIdValues = reader.getNumericDocValues(SnomedIndexBrowserConstants.RELATIONSHIP_OBJECT_ID);
-		destinationIdValues = reader.getNumericDocValues(SnomedIndexBrowserConstants.RELATIONSHIP_VALUE_ID);
+		sourceIdValues = SnomedMappings.relationshipSource().getDocValues(reader);
+		destinationIdValues = SnomedMappings.relationshipDestination().getDocValues(reader);
 		typeIdValues = SnomedMappings.relationshipType().getDocValues(reader);
-		groupValues = reader.getNumericDocValues(SnomedIndexBrowserConstants.RELATIONSHIP_GROUP);
-		unionGroupValues = reader.getNumericDocValues(SnomedIndexBrowserConstants.RELATIONSHIP_UNION_GROUP);
-		universalValues = reader.getNumericDocValues(SnomedIndexBrowserConstants.RELATIONSHIP_UNIVERSAL);
-		destinationNegatedValues = reader.getNumericDocValues(SnomedIndexBrowserConstants.RELATIONSHIP_DESTINATION_NEGATED);
+		groupValues = SnomedMappings.relationshipGroup().getDocValues(reader);
+		unionGroupValues = SnomedMappings.relationshipUnionGroup().getDocValues(reader);
+		universalValues = SnomedMappings.relationshipUniversal().getDocValues(reader);
+		destinationNegatedValues = SnomedMappings.relationshipDestinationNegated().getDocValues(reader);
 	}
 
 	@Override

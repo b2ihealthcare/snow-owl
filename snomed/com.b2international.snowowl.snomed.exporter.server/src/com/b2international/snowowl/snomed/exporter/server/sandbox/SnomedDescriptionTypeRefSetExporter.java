@@ -15,33 +15,26 @@
  */
 package com.b2international.snowowl.snomed.exporter.server.sandbox;
 
-import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_DESCRIPTION_FORMAT_ID;
-import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_DESCRIPTION_LENGTH;
 import static com.google.common.base.Preconditions.checkNotNull;
-import static com.google.common.collect.Sets.newHashSet;
-import static java.util.Collections.unmodifiableSet;
 
 import java.util.Set;
 
 import org.apache.lucene.document.Document;
 
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
+import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedMappings;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType;
 
 /**
- * SNOMED&nbsp;CT description format type reference set exporter.
- *
+ * SNOMED CT description format type reference set exporter.
  */
 public class SnomedDescriptionTypeRefSetExporter extends SnomedRefSetExporter {
 
-	private static final Set<String> FIELD_TO_LOAD;
-	
-	static {
-		final Set<String> fieldsToLoad = newHashSet(COMMON_FIELDS_TO_LOAD);
-		fieldsToLoad.add(REFERENCE_SET_MEMBER_DESCRIPTION_FORMAT_ID);
-		fieldsToLoad.add(REFERENCE_SET_MEMBER_DESCRIPTION_LENGTH);
-		FIELD_TO_LOAD = unmodifiableSet(fieldsToLoad);
-	}
+	private static final Set<String> FIELD_TO_LOAD = SnomedMappings.fieldsToLoad()
+			.fields(COMMON_FIELDS_TO_LOAD)
+			.memberDescriptionFormatId()
+			.memberDescriptionLength()
+			.build();
 	
 	public SnomedDescriptionTypeRefSetExporter(final SnomedExportConfiguration configuration, final String refSetId, final SnomedRefSetType type) {
 		super(checkNotNull(configuration, "configuration"), checkNotNull(refSetId, "refSetId"), checkNotNull(type, "type"));
@@ -57,9 +50,9 @@ public class SnomedDescriptionTypeRefSetExporter extends SnomedRefSetExporter {
 		final StringBuilder sb = new StringBuilder();
 		sb.append(super.transform(doc));
 		sb.append(HT);
-		sb.append(doc.get(REFERENCE_SET_MEMBER_DESCRIPTION_FORMAT_ID));
+		sb.append(SnomedMappings.memberDescriptionFormatId().getValueAsString(doc));
 		sb.append(HT);
-		sb.append(doc.get(REFERENCE_SET_MEMBER_DESCRIPTION_LENGTH));
+		sb.append(SnomedMappings.memberDescriptionLength().getValueAsString(doc));
 		return sb.toString();
 	}
 	
@@ -67,5 +60,4 @@ public class SnomedDescriptionTypeRefSetExporter extends SnomedRefSetExporter {
 	public String[] getColumnHeaders() {
 		return SnomedRf2Headers.DESCRIPTION_TYPE_HEADER;
 	}
-	
 }

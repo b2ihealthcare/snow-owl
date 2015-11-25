@@ -46,6 +46,4 @@ public class RefSetIconIdUpdater extends IconIdUpdater {
 		}
 		return originalIconId;
 	}
-	
-
 }

@@ -15,45 +15,32 @@
  */
 package com.b2international.snowowl.snomed.exporter.server.sandbox;
 
-import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_CORRELATION_ID;
-import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_MAP_ADVICE;
-import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_MAP_CATEGORY_ID;
-import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_MAP_GROUP;
-import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_MAP_PRIORITY;
-import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_MAP_RULE;
-import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_MAP_TARGET_COMPONENT_ID;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Strings.nullToEmpty;
-import static com.google.common.collect.Sets.newHashSet;
-import static java.util.Collections.unmodifiableSet;
 
 import java.util.Set;
 
 import org.apache.lucene.document.Document;
 
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
+import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedMappings;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType;
 
 /**
- * SNOMED&nbsp;CT complex and extended map type reference set exporter.
- *
+ * SNOMED CT complex and extended map type reference set exporter.
  */
 public class SnomedComplexMapRefSetExporter extends SnomedRefSetExporter {
 
-	private static final Set<String> FIELD_TO_LOAD;
-	
-	static {
-		final Set<String> fieldsToLoad = newHashSet(COMMON_FIELDS_TO_LOAD);
-		
-		fieldsToLoad.add(REFERENCE_SET_MEMBER_MAP_GROUP);
-		fieldsToLoad.add(REFERENCE_SET_MEMBER_MAP_PRIORITY);
-		fieldsToLoad.add(REFERENCE_SET_MEMBER_MAP_RULE);
-		fieldsToLoad.add(REFERENCE_SET_MEMBER_MAP_ADVICE);
-		fieldsToLoad.add(REFERENCE_SET_MEMBER_MAP_TARGET_COMPONENT_ID);
-		fieldsToLoad.add(REFERENCE_SET_MEMBER_CORRELATION_ID);
-		fieldsToLoad.add(REFERENCE_SET_MEMBER_MAP_CATEGORY_ID);
-		FIELD_TO_LOAD = unmodifiableSet(fieldsToLoad);
-	}
+	private static final Set<String> FIELD_TO_LOAD = SnomedMappings.fieldsToLoad()
+			.fields(COMMON_FIELDS_TO_LOAD)
+			.memberMapGroup()
+			.memberMapPriority()
+			.memberMapRule()
+			.memberMapAdvice()
+			.memberMapTargetComponentId()
+			.memberCorrelationId()
+			.memberMapCategoryId()
+			.build();
 	
 	private final boolean extended;
 	
@@ -74,20 +61,20 @@ public class SnomedComplexMapRefSetExporter extends SnomedRefSetExporter {
 		final StringBuilder sb = new StringBuilder();
 		sb.append(super.transform(doc));
 		sb.append(HT);
-		sb.append(doc.get(REFERENCE_SET_MEMBER_MAP_GROUP));
+		sb.append(SnomedMappings.memberMapGroup().getValueAsString(doc));
 		sb.append(HT);
-		sb.append(doc.get(REFERENCE_SET_MEMBER_MAP_PRIORITY));
+		sb.append(SnomedMappings.memberMapPriority().getValueAsString(doc));
 		sb.append(HT);
-		sb.append(nullToEmpty(doc.get(REFERENCE_SET_MEMBER_MAP_RULE)));
+		sb.append(nullToEmpty(SnomedMappings.memberMapRule().getValue(doc)));
 		sb.append(HT);
-		sb.append(nullToEmpty(doc.get(REFERENCE_SET_MEMBER_MAP_ADVICE)));
+		sb.append(nullToEmpty(SnomedMappings.memberMapAdvice().getValue(doc)));
 		sb.append(HT);
-		sb.append(nullToEmpty(doc.get(REFERENCE_SET_MEMBER_MAP_TARGET_COMPONENT_ID)));
+		sb.append(nullToEmpty(SnomedMappings.memberMapTargetComponentId().getValue(doc)));
 		sb.append(HT);
-		sb.append(doc.get(REFERENCE_SET_MEMBER_CORRELATION_ID));
+		sb.append(SnomedMappings.memberCorrelationId().getValueAsString(doc));
 		if (extended) {
 			sb.append(HT);
-			sb.append(nullToEmpty(doc.get(REFERENCE_SET_MEMBER_MAP_CATEGORY_ID)));
+			sb.append(nullToEmpty(SnomedMappings.memberMapCategoryId().getValueAsString(doc)));
 		}
 		return sb.toString();
 	}
@@ -96,5 +83,4 @@ public class SnomedComplexMapRefSetExporter extends SnomedRefSetExporter {
 	public String[] getColumnHeaders() {
 		return extended ? SnomedRf2Headers.EXTENDED_MAP_TYPE_HEADER : SnomedRf2Headers.COMPLEX_MAP_TYPE_HEADER;
 	}
-	
 }

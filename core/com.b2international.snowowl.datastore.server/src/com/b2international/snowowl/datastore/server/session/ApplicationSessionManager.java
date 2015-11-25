@@ -286,7 +286,7 @@ public class ApplicationSessionManager extends Notifier implements IApplicationS
 			throw new IllegalStateException("Current RPC session is not on the only local JVM connection.");
 		}
 
-		LogUtils.logUserAccess(LOGGER, SpecialUserStore.SYSTEM_USER_NAME, "System login via connectSystemUser on connector " + currentMultiplexer);
+//		LogUtils.logUserAccess(LOGGER, SpecialUserStore.SYSTEM_USER_NAME, "System login via connectSystemUser on connector " + currentMultiplexer);
 
 		// TODO: role name must be Administrator as checking permissions in AbstractTaskAwareContextHandler is expensive; all permissions were already granted. 
 		currentSession.put(KEY_USER_ROLES, Sets.newHashSet(SpecialRole.ADMINISTRATOR));

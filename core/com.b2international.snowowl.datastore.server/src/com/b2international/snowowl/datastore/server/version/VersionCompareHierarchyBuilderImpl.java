@@ -15,6 +15,7 @@
  */
 package com.b2international.snowowl.datastore.server.version;
 
+import static com.b2international.commons.ChangeKind.UNCHANGED;
 import static com.b2international.commons.collections.Collections3.toSet;
 import static com.b2international.snowowl.datastore.cdo.CDOUtils.NO_STORAGE_KEY;
 import static com.b2international.snowowl.datastore.version.DefaultNodeDiffFilter.DEFAULT;
@@ -33,10 +34,12 @@ import com.b2international.commons.Change;
 import com.b2international.snowowl.core.api.ComponentUtils;
 import com.b2international.snowowl.core.api.ExtendedComponent;
 import com.b2international.snowowl.core.api.IBranchPath;
-import com.b2international.snowowl.core.api.IdProvider;
-import com.b2international.snowowl.core.api.LabelProvider;
+import com.b2international.snowowl.core.api.IComponentIconIdProvider;
+import com.b2international.snowowl.core.api.IComponentNameProvider;
 import com.b2international.snowowl.core.api.browser.ExtendedComponentProvider;
 import com.b2international.snowowl.core.api.browser.SuperTypeIdProvider;
+import com.b2international.snowowl.core.api.component.IdProvider;
+import com.b2international.snowowl.core.api.component.LabelProvider;
 import com.b2international.snowowl.datastore.index.diff.CompareResult;
 import com.b2international.snowowl.datastore.index.diff.CompareResultImpl;
 import com.b2international.snowowl.datastore.index.diff.NodeDiff;
@@ -62,7 +65,6 @@ public abstract class VersionCompareHierarchyBuilderImpl implements VersionCompa
 	
 	@Override
 	public NodeDiff createNode(final IBranchPath branchPath, final long storageKey, final Change change) {
-		
 		checkNotNull(branchPath, "branchPath");
 		checkNotNull(change, "changeKind");
 		checkArgument(storageKey > NO_STORAGE_KEY, "Storage key should be a non negative long value.");
@@ -70,6 +72,22 @@ public abstract class VersionCompareHierarchyBuilderImpl implements VersionCompa
 		final ExtendedComponent component = getExtendedComponentProvider().getExtendedComponent(branchPath, storageKey);
 		return new NodeDiffImpl(storageKey, component, null, change);
 	}
+	
+	@Override
+	public NodeDiff createUnchangedNode(final IBranchPath branchPath, final String componentId) {
+		checkNotNull(branchPath, "branchPath");
+		checkNotNull(componentId, "componentId");
+		
+		final String iconId = getIconIdProvider().getIconId(branchPath, componentId);
+		final String label = getNameProvider().getComponentLabel(branchPath, componentId);
+		return new NodeDiffImpl(getTerminologyComponentId(), NO_STORAGE_KEY, componentId, label, iconId, null, UNCHANGED);
+	}
+
+	protected abstract IComponentIconIdProvider<String> getIconIdProvider();
+	
+	protected abstract IComponentNameProvider getNameProvider();
+	
+	protected abstract short getTerminologyComponentId();
 
 	@Override
 	public Set<String> getSuperTypeIds(final IBranchPath branchPath, final String componentId) {

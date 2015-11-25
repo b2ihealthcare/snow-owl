@@ -20,7 +20,6 @@ import static com.b2international.snowowl.core.ApplicationContext.getServiceForC
 import static com.b2international.snowowl.datastore.cdo.CDOUtils.NO_STORAGE_KEY;
 import static com.b2international.snowowl.snomed.SnomedConstants.Concepts.ROOT_CONCEPT;
 import static com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants.CONCEPT_NUMBER;
-import static com.b2international.snowowl.snomed.datastore.services.SnomedConceptNameProvider.INSTANCE;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Predicates.and;
 import static com.google.common.base.Predicates.not;
@@ -28,8 +27,8 @@ import static com.google.common.base.Predicates.not;
 import java.util.Collection;
 import java.util.Comparator;
 
-import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.api.IComponentIconIdProvider;
+import com.b2international.snowowl.core.api.IComponentNameProvider;
 import com.b2international.snowowl.core.api.browser.ExtendedComponentProvider;
 import com.b2international.snowowl.core.api.browser.SuperTypeIdProvider;
 import com.b2international.snowowl.datastore.index.diff.CompareResult;
@@ -41,6 +40,7 @@ import com.b2international.snowowl.datastore.version.NodeDiffPredicate;
 import com.b2international.snowowl.snomed.datastore.SnomedConceptIconIdProvider;
 import com.b2international.snowowl.snomed.datastore.SnomedTerminologyBrowser;
 import com.b2international.snowowl.snomed.datastore.index.SnomedCachingSuperTypeIdProvider;
+import com.b2international.snowowl.snomed.datastore.services.ISnomedConceptNameProvider;
 import com.google.common.base.Predicate;
 
 /**
@@ -69,18 +69,22 @@ public class SnomedVersionCompareHierarchyBuilder extends VersionCompareHierarch
 			return isTopLevel(checkNotNull(nodeDiff, "nodeDiff"));
 		}
 	};
+	
 	private final SuperTypeIdProvider<String> idProvider = new SnomedCachingSuperTypeIdProvider();
 	
 	@Override
-	public NodeDiff createUnchangedNode(final IBranchPath branchPath, final String componentId) {
-		
-		checkNotNull(branchPath, "branchPath");
-		checkNotNull(componentId, "componentId");
-		
-		final String iconId = ICON_ID_PROVIDER.getIconId(branchPath, componentId);
-		final String label = INSTANCE.getComponentLabel(branchPath, componentId);
-		
-		return new NodeDiffImpl(CONCEPT_NUMBER, NO_STORAGE_KEY, componentId, label, iconId, null, UNCHANGED);
+	protected IComponentIconIdProvider<String> getIconIdProvider() {
+		return ICON_ID_PROVIDER;
+	}
+	
+	@Override
+	protected IComponentNameProvider getNameProvider() {
+		return getServiceForClass(ISnomedConceptNameProvider.class);
+	}
+	
+	@Override
+	protected short getTerminologyComponentId() {
+		return CONCEPT_NUMBER;
 	}
 	
 	@Override

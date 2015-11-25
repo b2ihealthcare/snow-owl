@@ -18,14 +18,15 @@ package com.b2international.snowowl.snomed.api.rest.domain;
 import java.util.Map;
 
 import com.b2international.snowowl.core.terminology.ComponentCategory;
-import com.b2international.snowowl.snomed.api.domain.Acceptability;
-import com.b2international.snowowl.snomed.api.domain.CaseSignificance;
-import com.b2international.snowowl.snomed.api.impl.domain.SnomedDescriptionInput;
+import com.b2international.snowowl.snomed.core.domain.Acceptability;
+import com.b2international.snowowl.snomed.core.domain.CaseSignificance;
+import com.b2international.snowowl.snomed.datastore.server.request.SnomedDescriptionCreateRequestBuilder;
+import com.b2international.snowowl.snomed.datastore.server.request.SnomedRequests;
 
 /**
  * @since 1.0
  */
-public class SnomedDescriptionRestInput extends AbstractSnomedComponentRestInput<SnomedDescriptionInput> {
+public class SnomedDescriptionRestInput extends AbstractSnomedComponentRestInput<SnomedDescriptionCreateRequestBuilder> {
 
 	private String typeId;
 	private String term;
@@ -98,25 +99,22 @@ public class SnomedDescriptionRestInput extends AbstractSnomedComponentRestInput
 	}
 
 	@Override
-	protected SnomedDescriptionInput createComponentInput() {
-		return new SnomedDescriptionInput();
+	protected SnomedDescriptionCreateRequestBuilder createComponentInput() {
+		return SnomedRequests.prepareNewDescription();
 	}
 
 	/**
 	 * @return
 	 */
 	@Override
-	public SnomedDescriptionInput toComponentInput(final String branchPath, final String codeSystemShortName) {
-		final SnomedDescriptionInput result = super.toComponentInput(branchPath, codeSystemShortName);
-
-		result.setCaseSignificance(getCaseSignificance());
-		result.setConceptId(getConceptId());
-		result.setLanguageCode(getLanguageCode());
-		result.setTerm(getTerm());
-		result.setTypeId(getTypeId());
-		result.setAcceptability(getAcceptability());
-
-		return result;
+	public SnomedDescriptionCreateRequestBuilder toComponentInput() {
+		return super.toComponentInput()
+				.setCaseSignificance(getCaseSignificance())
+				.setConceptId(getConceptId())
+				.setLanguageCode(getLanguageCode())
+				.setTerm(getTerm())
+				.setTypeId(getTypeId())
+				.setAcceptability(getAcceptability());
 	}
 
 	@Override

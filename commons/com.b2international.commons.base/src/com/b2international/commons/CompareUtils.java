@@ -23,6 +23,7 @@ import java.util.Map;
 import java.util.Stack;
 
 import com.google.common.collect.Multimap;
+import com.google.common.primitives.Primitives;
 
 public class CompareUtils {
 
@@ -31,7 +32,15 @@ public class CompareUtils {
 		if (null == object) {
 			return true;
 		}
+
+		if (Primitives.isWrapperType(object.getClass())) {
+			return false;
+		}
 		
+		if (object instanceof Enum<?>) {
+			return false;
+		}
+
 		if (object instanceof String) {
 			return StringUtils.isEmpty((String) object);
 		}

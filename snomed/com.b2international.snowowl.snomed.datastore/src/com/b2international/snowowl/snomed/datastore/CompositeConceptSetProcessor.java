@@ -19,6 +19,7 @@ import java.util.Iterator;
 import java.util.List;
 
 import com.b2international.snowowl.snomed.datastore.index.SnomedClientIndexService;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptIndexEntry;
 import com.b2international.snowowl.snomed.datastore.services.ConceptSetProcessorFactory;
 import com.b2international.snowowl.snomed.mrcm.CompositeConceptSetDefinition;
 import com.b2international.snowowl.snomed.mrcm.ConceptSetDefinition;

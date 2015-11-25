@@ -18,8 +18,11 @@ package com.b2international.snowowl.core.events.util;
 import java.lang.reflect.Method;
 import java.util.Collections;
 
+import org.eclipse.emf.common.util.WrappedException;
 import org.eclipse.xtext.util.PolymorphicDispatcher;
 
+import com.b2international.snowowl.core.ClassLoaderProvider;
+import com.b2international.snowowl.core.events.Event;
 import com.b2international.snowowl.core.exceptions.ApiException;
 import com.b2international.snowowl.core.exceptions.NotImplementedException;
 import com.b2international.snowowl.eventbus.IHandler;
@@ -46,11 +49,21 @@ public abstract class ApiEventHandler implements IHandler<IMessage> {
 		}
 	});
 	
+	private final ClassLoaderProvider classLoaderProvider;
+	
+	protected ApiEventHandler(ClassLoaderProvider classLoaderProvider) {
+		this.classLoaderProvider = classLoaderProvider;
+	}
+	
 	@Override
 	public final void handle(IMessage message) {
 		try {
-			message.reply(handlerDispatcher.invoke(message.body()));
+			message.reply(handlerDispatcher.invoke(message.body(Event.class, classLoaderProvider.getClassLoader())));
+		} catch (WrappedException e) {
+			message.fail(e.getCause());
 		} catch (ApiException e) {
+			message.fail(e);
+		} catch (Throwable e) {
 			message.fail(e);
 		}
 	}

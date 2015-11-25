@@ -77,6 +77,7 @@ public interface IRefSetBrowser<R extends IComponent<K>, C extends IComponent<K>
 	 * @param branchPath the branch path reference limiting visibility to a particular branch.
 	 * @param refSetId
 	 * @return the specified reference set
+	 * @deprecated - use lookup services instead
 	 */
 	R getRefSet(final IBranchPath branchPath, final K refSetId);
 

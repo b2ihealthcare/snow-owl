@@ -21,6 +21,8 @@ import com.b2international.commons.StringUtils;
 import com.b2international.snowowl.core.CoreTerminologyBroker;
 import com.b2international.snowowl.core.api.IComponentNameProvider;
 import com.b2international.snowowl.core.api.INameProviderFactory;
+import com.b2international.snowowl.datastore.BranchPathUtils;
+import com.b2international.snowowl.snomed.SnomedPackage;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.snomed.mrcm.AttributeConstraint;
 import com.b2international.snowowl.snomed.mrcm.CardinalityPredicate;
@@ -196,7 +198,7 @@ public class ConceptModelComponentRenderer {
 		INameProviderFactory conceptNameProviderFactory = CoreTerminologyBroker.getInstance().getNameProviderFactory(SnomedTerminologyComponentConstants.CONCEPT);
 		IComponentNameProvider conceptNameProvider = conceptNameProviderFactory.getNameProvider();
 		if (!StringUtils.isEmpty(conceptId)) {
-			return conceptNameProvider.getText(conceptId);
+			return conceptNameProvider.getComponentLabel(BranchPathUtils.createActivePath(SnomedPackage.eINSTANCE), conceptId);
 		} else {
 			return "";
 		}

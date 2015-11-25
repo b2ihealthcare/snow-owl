@@ -19,7 +19,6 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.concurrent.ExecutionException;
 
 import com.b2international.snowowl.core.ApplicationContext;
-import com.b2international.snowowl.core.MetadataImpl;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.api.SnowowlRuntimeException;
 import com.b2international.snowowl.datastore.cdo.ICDORepository;
@@ -32,8 +31,7 @@ import com.b2international.snowowl.datastore.oplock.impl.DatastoreLockContext;
 import com.b2international.snowowl.datastore.oplock.impl.DatastoreLockContextDescriptions;
 import com.b2international.snowowl.datastore.oplock.impl.IDatastoreOperationLockManager;
 import com.b2international.snowowl.datastore.oplock.impl.SingleRepositoryAndBranchLockTarget;
-import com.b2international.snowowl.datastore.server.events.BranchReply;
-import com.b2international.snowowl.datastore.server.events.CreateBranchEvent;
+import com.b2international.snowowl.datastore.request.RepositoryRequests;
 import com.b2international.snowowl.datastore.version.ITagConfiguration;
 import com.b2international.snowowl.datastore.version.ITagService;
 import com.b2international.snowowl.eventbus.IEventBus;
@@ -64,24 +62,24 @@ public class TagService implements ITagService {
 				parentContextDescription);
 
 		try {
-			
 			final IDatastoreOperationLockManager lockManager = getLockManager();
 			
 			OperationLockRunner.with(lockManager).run(new Runnable() { @Override public void run() {
-
-				final IEventBus eventBus = ApplicationContext.getServiceForClass(IEventBus.class);
-				final CreateBranchEvent event = new CreateBranchEvent(uuid, branchPath.getPath(), versionId, new MetadataImpl());
-				
+				final IEventBus bus = ApplicationContext.getServiceForClass(IEventBus.class);
 				try {
-					event.send(eventBus, BranchReply.class).get();
+					RepositoryRequests
+						.branching(uuid)
+						.prepareCreate()
+						.setParent(branchPath.getPath())
+						.setName(versionId)
+						.build()
+						.execute(bus).get();
 				} catch (final InterruptedException e) {
 					throw new SnowowlRuntimeException(e);
 				} catch (final ExecutionException e) {
 					throw new SnowowlRuntimeException(e);
 				}
-					
 			}}, lockContext, IOperationLockManager.IMMEDIATE, lockTarget);
-			
 		} catch (final OperationLockException | InterruptedException e) {
 			throw new RepositoryLockException(e);
 		} catch (final InvocationTargetException e) {

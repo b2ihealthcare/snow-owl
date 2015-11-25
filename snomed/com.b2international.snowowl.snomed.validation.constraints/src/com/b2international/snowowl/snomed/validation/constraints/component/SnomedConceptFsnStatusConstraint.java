@@ -27,8 +27,8 @@ import com.b2international.snowowl.core.validation.ComponentValidationConstraint
 import com.b2international.snowowl.core.validation.ComponentValidationDiagnostic;
 import com.b2international.snowowl.core.validation.ComponentValidationDiagnosticImpl;
 import com.b2international.snowowl.datastore.server.snomed.index.SnomedIndexServerService;
-import com.b2international.snowowl.snomed.datastore.SnomedConceptIndexEntry;
 import com.b2international.snowowl.snomed.datastore.index.SnomedIndexService;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptIndexEntry;
 import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedMappings;
 
 /**

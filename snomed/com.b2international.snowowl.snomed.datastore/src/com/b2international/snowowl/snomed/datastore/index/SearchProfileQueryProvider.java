@@ -19,20 +19,15 @@ import java.util.Set;
 
 import javax.annotation.Nullable;
 
-import org.apache.lucene.index.Term;
 import org.apache.lucene.search.BooleanClause.Occur;
 import org.apache.lucene.search.BooleanQuery;
 import org.apache.lucene.search.Query;
-import org.apache.lucene.search.TermQuery;
-import org.apache.lucene.util.BytesRef;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.b2international.commons.CompareUtils;
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.api.IBranchPath;
-import com.b2international.snowowl.datastore.index.IndexUtils;
-import com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants;
 import com.b2international.snowowl.snomed.datastore.index.interest.ISearchProfileManager;
 import com.b2international.snowowl.snomed.datastore.index.interest.SearchProfile;
 import com.b2international.snowowl.snomed.datastore.index.interest.SearchProfileInterest;
@@ -89,12 +84,10 @@ public abstract class SearchProfileQueryProvider {
 			if (!SearchProfileInterest.AVERAGE.equals(interest)) {
 				
 				final String conceptId = rule.getContextId();
-				final BytesRef contextId = IndexUtils.longToPrefixCoded(conceptId);
+				final Long conceptIdLong = Long.valueOf(conceptId);
 				
 				if (null == searchProfileQuery) {
-					
 					searchProfileQuery = new BooleanQuery(true);
-					
 				}
 				
 				switch (rule.getDomain()) {
@@ -162,7 +155,7 @@ public abstract class SearchProfileQueryProvider {
 						
 					case MAPPING_SOURCE_CONCEPTS:
 						
-						final Query mappingQuery = new TermQuery(new Term(SnomedIndexBrowserConstants.CONCEPT_REFERRING_MAPPING_REFERENCE_SET_ID, contextId));
+						final Query mappingQuery = SnomedMappings.conceptReferringMappingRefSetId().toQuery(conceptIdLong);
 						
 						switch (interest) {
 							
@@ -193,7 +186,7 @@ public abstract class SearchProfileQueryProvider {
 						
 					case REFERENCE_SET_MEMBERS:
 						
-						final Query refSetQuery = new TermQuery(new Term(SnomedIndexBrowserConstants.CONCEPT_REFERRING_REFERENCE_SET_ID, contextId));
+						final Query refSetQuery = SnomedMappings.conceptReferringRefSetId().toQuery(conceptIdLong);
 						
 						switch (interest) {
 							
@@ -224,7 +217,7 @@ public abstract class SearchProfileQueryProvider {
 						
 					case WITHIN_A_NAMESPACE:
 						
-						final Query namespaceQuery = new TermQuery(new Term(SnomedIndexBrowserConstants.CONCEPT_NAMESPACE_ID, contextId));
+						final Query namespaceQuery = SnomedMappings.conceptNamespaceId().toQuery(conceptIdLong);
 						
 						switch (interest) {
 							
@@ -308,48 +301,46 @@ public abstract class SearchProfileQueryProvider {
 			//in case of average not much we can do
 			if (SearchProfileInterest.EXCLUDE.equals(interest)) {
 				
-				final BytesRef contextId = IndexUtils.longToPrefixCoded(rule.getContextId());
+				final String conceptId = rule.getContextId();
+				final Long conceptIdLong = Long.valueOf(conceptId);
 				
 				if (null == searchProfileQuery) {
-					
 					searchProfileQuery = new BooleanQuery(true);
-					
 				}
 				
 				switch (rule.getDomain()) {
 				
 					case DESCENDANTS_OF_CONCEPT:
 						
-						final Query descendantQuery = SnomedMappings.newQuery().parent(rule.getContextId()).ancestor(rule.getContextId()).matchAny();
+						final Query descendantQuery = SnomedMappings.newQuery().parent(conceptId).ancestor(conceptId).matchAny();
 						searchProfileQuery.add(descendantQuery, Occur.MUST_NOT);
 						
 						break; //break 'descendants of concept' domain
 						
 					case WITHIN_A_MODULE:
 	
-						final Query moduleQuery = SnomedMappings.newQuery().module(rule.getContextId()).matchAll();
+						final Query moduleQuery = SnomedMappings.newQuery().module(conceptId).matchAll();
 						searchProfileQuery.add(moduleQuery, Occur.MUST_NOT);
 						
 						break; //break 'within a module' domain
 						
 					case MAPPING_SOURCE_CONCEPTS:
 						
-						final Query mappingQuery = new TermQuery(new Term(SnomedIndexBrowserConstants.CONCEPT_REFERRING_MAPPING_REFERENCE_SET_ID, contextId));
+						final Query mappingQuery = SnomedMappings.conceptReferringMappingRefSetId().toQuery(conceptIdLong);
 						searchProfileQuery.add(mappingQuery, Occur.MUST_NOT);
 						
 						break; //break 'mapping source concept' domain
 						
 					case REFERENCE_SET_MEMBERS:
 						
-						final Query refSetQuery = new TermQuery(new Term(SnomedIndexBrowserConstants.CONCEPT_REFERRING_REFERENCE_SET_ID, contextId));
+						final Query refSetQuery = SnomedMappings.conceptReferringRefSetId().toQuery(conceptIdLong);
 						searchProfileQuery.add(refSetQuery, Occur.MUST_NOT);
 						
 						break; //break 'reference set members query' domain
 						
 					case WITHIN_A_NAMESPACE:
 						
-						final String conceptId = rule.getContextId();
-						final Query namespaceQuery = new TermQuery(new Term(SnomedIndexBrowserConstants.CONCEPT_NAMESPACE_ID, IndexUtils.longToPrefixCoded(conceptId)));
+						final Query namespaceQuery = SnomedMappings.conceptNamespaceId().toQuery(conceptIdLong);
 						searchProfileQuery.add(namespaceQuery, Occur.MUST_NOT);
 						
 						break; //break 'within a namespace' domain

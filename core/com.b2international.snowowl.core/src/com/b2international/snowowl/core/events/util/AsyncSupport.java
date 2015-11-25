@@ -44,9 +44,9 @@ public final class AsyncSupport<T> {
 			public void handle(IMessage message) {
 				try {
 					if (message.isSucceeded()) {
-						promise.resolve(clazz.cast(message.body()));
+						promise.resolve(message.body(clazz));
 					} else {
-						promise.reject((Throwable) message.body());
+						promise.reject(message.body(Throwable.class, AsyncSupport.class.getClassLoader()));
 					}
 				} catch (Throwable e) {
 					promise.reject(e);

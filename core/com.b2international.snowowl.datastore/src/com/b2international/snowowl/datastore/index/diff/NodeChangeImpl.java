@@ -29,7 +29,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.RandomAccess;
 
-import com.b2international.snowowl.core.api.LabelProvider;
+import com.b2international.snowowl.core.api.component.LabelProvider;
 import com.google.common.base.Predicate;
 
 /**

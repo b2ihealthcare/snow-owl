@@ -24,7 +24,10 @@ import java.util.Map;
 import java.util.Set;
 
 import com.b2international.commons.StringUtils;
-import com.b2international.snowowl.snomed.datastore.services.SnomedConceptNameProvider;
+import com.b2international.snowowl.core.ApplicationContext;
+import com.b2international.snowowl.datastore.BranchPathUtils;
+import com.b2international.snowowl.snomed.SnomedPackage;
+import com.b2international.snowowl.snomed.datastore.services.ISnomedConceptNameProvider;
 import com.thoughtworks.xstream.annotations.XStreamOmitField;
 
 /**
@@ -222,8 +225,12 @@ public class RefSetAutoMapperModel {
 				if (!mappedValues.contains(mappedValue)) {
 					mappedValues.add(mappedValue);
 				} else {
-					errorMessages.put(entry, SnomedConceptNameProvider.INSTANCE.getText(mappedValue)
-							+ " is redundant SNOMED CT equivalent component.");
+					
+					final String label = ApplicationContext
+							.getServiceForClass(ISnomedConceptNameProvider.class)
+							.getComponentLabel(BranchPathUtils.createActivePath(SnomedPackage.eINSTANCE), mappedValue);
+					
+					errorMessages.put(entry, label + " is redundant SNOMED CT equivalent component.");
 				}
 			}
 		}

@@ -19,15 +19,16 @@ import static com.b2international.snowowl.core.ApplicationContext.getServiceForC
 import static com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants.CONCEPT_NUMBER;
 import static com.google.common.base.Preconditions.checkNotNull;
 
+import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.validation.ComponentValidationConstraint;
 import com.b2international.snowowl.core.validation.ComponentValidationDiagnostic;
 import com.b2international.snowowl.core.validation.ComponentValidationDiagnosticImpl;
-import com.b2international.snowowl.snomed.datastore.SnomedConceptIndexEntry;
-import com.b2international.snowowl.snomed.datastore.SnomedRelationshipIndexEntry;
 import com.b2international.snowowl.snomed.datastore.SnomedStatementBrowser;
 import com.b2international.snowowl.snomed.datastore.SnomedTaxonomyService;
-import com.b2international.snowowl.snomed.datastore.services.SnomedRelationshipNameProvider;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptIndexEntry;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRelationshipIndexEntry;
+import com.b2international.snowowl.snomed.datastore.services.ISnomedRelationshipNameProvider;
 
 /**
  * A concept cannot be related to itself via an active relationship.
@@ -48,7 +49,7 @@ public class SnomedConceptNotRelatedToItselfConstraint extends ComponentValidati
 			final SnomedStatementBrowser statementBrowser = getServiceForClass(SnomedStatementBrowser.class);
 			for (final SnomedRelationshipIndexEntry statement : statementBrowser.getOutboundStatements(branchPath, component)) {
 				if (statement.isActive() && statement.getValueId().equals(conceptId)) {
-					final String relationshipLabel = SnomedRelationshipNameProvider.INSTANCE.getComponentLabel(branchPath, statement.getId());
+					final String relationshipLabel = ApplicationContext.getServiceForClass(ISnomedRelationshipNameProvider.class).getComponentLabel(branchPath, statement.getId());
 					final String message = "'" + component.getLabel() + "' has an active relationship '" + relationshipLabel + "' which points to itself.";
 					return new ComponentValidationDiagnosticImpl(conceptId, message, ID, CONCEPT_NUMBER, error());
 				}

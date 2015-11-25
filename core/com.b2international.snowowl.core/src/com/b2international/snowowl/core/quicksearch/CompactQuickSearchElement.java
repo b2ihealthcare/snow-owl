@@ -17,20 +17,21 @@ package com.b2international.snowowl.core.quicksearch;
 
 /**
  * A subclass of {@link QuickSearchElement} which relies on the parent provider to return terminology information. 
- *
  */
 public class CompactQuickSearchElement extends QuickSearchElement {
 
 	private static final long serialVersionUID = -6125703481742637914L;
 
-	public CompactQuickSearchElement(final String id, final String imageId, final String label, final boolean approximate) {
-		super(id, imageId, label, approximate);
+	public CompactQuickSearchElement(final String id, 
+			final String imageId, 
+			final String label, 
+			final boolean approximate, 
+			final int[][] matchRegions, 
+			final String[] suffixes) {
+
+		super(id, imageId, label, approximate, matchRegions, suffixes);
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see com.b2international.snowowl.core.quicksearch.QuickSearchElement#getTerminologyComponentId()
-	 */
 	@Override
 	public String getTerminologyComponentId() {
 		return getParentProvider().getTerminologyComponentId();

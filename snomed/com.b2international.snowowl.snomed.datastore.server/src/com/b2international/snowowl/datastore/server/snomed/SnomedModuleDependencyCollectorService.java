@@ -23,7 +23,6 @@ import static com.b2international.snowowl.datastore.server.snomed.ModuleCollecto
 import static com.b2international.snowowl.datastore.server.snomed.ModuleCollectorConfigurationThreadLocal.reset;
 import static com.b2international.snowowl.datastore.server.snomed.ModuleCollectorConfigurationThreadLocal.setConfiguration;
 import static com.b2international.snowowl.snomed.SnomedConstants.Concepts.REFSET_MODULE_DEPENDENCY_TYPE;
-import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_OPERATOR_ID;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Stopwatch.createStarted;
 import static com.google.common.collect.HashMultimap.create;
@@ -38,17 +37,10 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.HashSet;
 
-import org.apache.lucene.index.Term;
 import org.apache.lucene.search.MultiTermQuery;
-import org.apache.lucene.search.PrefixQuery;
 import org.apache.lucene.search.Query;
 import org.eclipse.emf.cdo.view.CDOView;
 import org.slf4j.Logger;
-
-import bak.pcj.LongCollection;
-import bak.pcj.map.LongKeyLongMap;
-import bak.pcj.map.LongKeyMapIterator;
-import bak.pcj.set.LongSet;
 
 import com.b2international.commons.pcj.LongSets.LongCollectionProcedure;
 import com.b2international.snowowl.core.api.IBranchPath;
@@ -63,10 +55,10 @@ import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.datastore.SnomedConceptLookupService;
 import com.b2international.snowowl.snomed.datastore.SnomedModuleDependencyRefSetMemberFragment;
 import com.b2international.snowowl.snomed.datastore.SnomedRefSetLookupService;
-import com.b2international.snowowl.snomed.datastore.SnomedRelationshipIndexEntry;
 import com.b2international.snowowl.snomed.datastore.SnomedStatementBrowser;
 import com.b2international.snowowl.snomed.datastore.SnomedTerminologyBrowser;
 import com.b2international.snowowl.snomed.datastore.index.SnomedIndexService;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRelationshipIndexEntry;
 import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedMappings;
 import com.b2international.snowowl.snomed.datastore.services.ISnomedComponentService;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedModuleDependencyRefSetMember;
@@ -75,6 +67,11 @@ import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetFactory;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRegularRefSet;
 import com.google.common.base.Stopwatch;
 import com.google.common.collect.Multimap;
+
+import bak.pcj.LongCollection;
+import bak.pcj.map.LongKeyLongMap;
+import bak.pcj.map.LongKeyMapIterator;
+import bak.pcj.set.LongSet;
 
 /**
  * Server side stateless singleton service for resolving SNOMED&nbsp;CT module dependencies.
@@ -98,7 +95,7 @@ public enum SnomedModuleDependencyCollectorService {
 	
 	static {
 		
-		final MultiTermQuery allCdtMembersQuery = new PrefixQuery(new Term(REFERENCE_SET_MEMBER_OPERATOR_ID));
+		final MultiTermQuery allCdtMembersQuery = SnomedMappings.memberOperatorId().toExistsQuery();
 		allCdtMembersQuery.setRewriteMethod(CONSTANT_SCORE_FILTER_REWRITE);
 		ALL_CDT_MEMBERS_QUERY = allCdtMembersQuery;
 
