@@ -53,7 +53,7 @@ public class SnomedConverters {
 	}
 	
 	public static ResourceConverter<SnomedRelationshipIndexEntry, ISnomedRelationship, SnomedRelationships> newRelationshipConverter(BranchContext context, List<String> expand, List<ExtendedLocale> locales) {
-		return new SnomedRelationshipConverter(context, expand, locales,createMembershipLookupService(context));
+		return new SnomedRelationshipConverter(context, expand, locales, createMembershipLookupService(context));
 	}
 	
 	public static ResourceConverter<SnomedRefSetMemberIndexEntry, SnomedReferenceSetMember, SnomedReferenceSetMembers> newMemberConverter(BranchContext context, List<String> expand, List<ExtendedLocale> locales) {
@@ -61,7 +61,7 @@ public class SnomedConverters {
 	}
 	
 	public static ResourceConverter<SnomedRefSetIndexEntry, SnomedReferenceSet, SnomedReferenceSets> newRefSetConverter(BranchContext context, List<String> expand, List<ExtendedLocale> locales) {
-		return newRefSetConverter(context, expand, locales);
+		return new SnomedReferenceSetConverter(context, expand, locales, createMembershipLookupService(context));
 	}
 	
 	private static SnomedBranchRefSetMembershipLookupService createMembershipLookupService(BranchContext context) {
@@ -71,5 +71,4 @@ public class SnomedConverters {
 	private static SnomedBranchRefSetMembershipLookupService createMembershipLookupService(IBranchPath branchPath) {
 		return new SnomedBranchRefSetMembershipLookupService(branchPath);
 	}
-	
 }
