@@ -8,7 +8,6 @@ import java.util.Set;
 import javax.annotation.Resource;
 
 import com.b2international.commons.http.ExtendedLocale;
-import com.b2international.snowowl.core.domain.IComponentRef;
 import com.b2international.snowowl.core.exceptions.BadRequestException;
 import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.snomed.api.impl.DescriptionService;
@@ -24,8 +23,8 @@ public class SnomedResourceExpander {
 	@Resource
 	protected IEventBus bus;
 	
-	public List<ISnomedRelationship> expandRelationships(IComponentRef conceptRef, List<ISnomedRelationship> members, final List<ExtendedLocale> extendedLocales, String[] expandArray) {
-		final DescriptionService descriptionService = new DescriptionService(bus, conceptRef.getBranchPath());
+	public List<ISnomedRelationship> expandRelationships(String branchPath, List<ISnomedRelationship> members, final List<ExtendedLocale> extendedLocales, String[] expandArray) {
+		final DescriptionService descriptionService = new DescriptionService(bus, branchPath);
 		
 		if (expandArray.length == 0) {
 			return members;			

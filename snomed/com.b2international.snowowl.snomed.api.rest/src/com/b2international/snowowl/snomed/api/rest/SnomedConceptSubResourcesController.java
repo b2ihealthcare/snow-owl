@@ -32,11 +32,8 @@ import org.springframework.web.context.request.async.DeferredResult;
 
 import com.b2international.commons.http.AcceptHeader;
 import com.b2international.commons.http.ExtendedLocale;
-import com.b2international.snowowl.core.domain.IComponentList;
-import com.b2international.snowowl.core.domain.IComponentRef;
 import com.b2international.snowowl.core.exceptions.BadRequestException;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
-import com.b2international.snowowl.snomed.api.ISnomedStatementBrowserService;
 import com.b2international.snowowl.snomed.api.exception.FullySpecifiedNameNotFoundException;
 import com.b2international.snowowl.snomed.api.exception.PreferredTermNotFoundException;
 import com.b2international.snowowl.snomed.api.rest.domain.SnomedConceptDescriptions;
@@ -49,6 +46,7 @@ import com.b2international.snowowl.snomed.core.domain.ISnomedDescription;
 import com.b2international.snowowl.snomed.core.domain.ISnomedRelationship;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcepts;
 import com.b2international.snowowl.snomed.core.domain.SnomedDescriptions;
+import com.b2international.snowowl.snomed.core.domain.SnomedRelationships;
 import com.b2international.snowowl.snomed.datastore.server.request.SnomedRequests;
 import com.google.common.base.Function;
 import com.google.common.collect.ImmutableList;
@@ -67,9 +65,6 @@ import com.wordnik.swagger.annotations.ApiResponses;
 @RequestMapping(
 		produces={ AbstractRestService.SO_MEDIA_TYPE })
 public class SnomedConceptSubResourcesController extends AbstractSnomedRestService {
-
-	@Autowired
-	protected ISnomedStatementBrowserService statements;
 
 	@Autowired
 	protected SnomedResourceExpander relationshipExpander;
@@ -118,7 +113,7 @@ public class SnomedConceptSubResourcesController extends AbstractSnomedRestServi
 		@ApiResponse(code = 404, message = "Branch or Concept not found")
 	})
 	@RequestMapping(value="/{path:**}/concepts/{conceptId}/inbound-relationships", method=RequestMethod.GET)
-	public SnomedInboundRelationships getInboundStatements(
+	public DeferredResult<SnomedInboundRelationships> getInboundStatements(
 			@ApiParam(value="The branch path")
 			@PathVariable(value="path")
 			final String branchPath,
@@ -153,15 +148,25 @@ public class SnomedConceptSubResourcesController extends AbstractSnomedRestServi
 			throw new BadRequestException(e.getMessage());
 		}
 		
-		final IComponentRef conceptRef = createComponentRef(branchPath, conceptId);
-		final IComponentList<ISnomedRelationship> inboundEdges = statements.getInboundEdges(conceptRef, offset, limit);
-
-		final SnomedInboundRelationships result = new SnomedInboundRelationships();
-		result.setTotal(inboundEdges.getTotalMembers());
-		List<ISnomedRelationship> members = inboundEdges.getMembers();
-		members = relationshipExpander.expandRelationships(conceptRef, members, extendedLocales, expand);
-		result.setInboundRelationships(members);
-		return result;
+		return DeferredResults.wrap(
+				SnomedRequests
+					.prepareRelationshipSearch()
+					.filterByDestination(conceptId)
+					.setOffset(offset)
+					.setLimit(limit)
+					.build(branchPath)
+					.execute(bus)
+					.then(new Function<SnomedRelationships, SnomedInboundRelationships>() {
+						@Override
+						public SnomedInboundRelationships apply(SnomedRelationships input) {
+							final SnomedInboundRelationships result = new SnomedInboundRelationships();
+							result.setTotal(input.getTotal());
+							List<ISnomedRelationship> members = input.getItems();
+							members = relationshipExpander.expandRelationships(branchPath, members, extendedLocales, expand);
+							result.setInboundRelationships(members);
+							return result;
+						};
+					}));
 	}
 
 	@ApiOperation(
@@ -173,7 +178,7 @@ public class SnomedConceptSubResourcesController extends AbstractSnomedRestServi
 		@ApiResponse(code = 404, message = "Branch or Concept not found")
 	})
 	@RequestMapping(value="/{path:**}/concepts/{conceptId}/outbound-relationships", method=RequestMethod.GET)
-	public SnomedOutboundRelationships getOutboundStatements(
+	public DeferredResult<SnomedOutboundRelationships> getOutboundStatements(
 			@ApiParam(value="The branch path")
 			@PathVariable(value="path")
 			final String branchPath,
@@ -190,13 +195,23 @@ public class SnomedConceptSubResourcesController extends AbstractSnomedRestServi
 			@RequestParam(value="limit", defaultValue="50", required=false) 
 			final int limit) {
 
-		final IComponentRef conceptRef = createComponentRef(branchPath, conceptId);
-		final IComponentList<ISnomedRelationship> outboundEdges = statements.getOutboundEdges(conceptRef, offset, limit);
-
-		final SnomedOutboundRelationships result = new SnomedOutboundRelationships();
-		result.setTotal(outboundEdges.getTotalMembers());
-		result.setOutboundRelationships(outboundEdges.getMembers());
-		return result;
+		return DeferredResults.wrap(
+				SnomedRequests
+					.prepareRelationshipSearch()
+					.filterBySource(conceptId)
+					.setOffset(offset)
+					.setLimit(limit)
+					.build(branchPath)
+					.execute(bus)
+					.then(new Function<SnomedRelationships, SnomedOutboundRelationships>() {
+						@Override
+						public SnomedOutboundRelationships apply(SnomedRelationships input) {
+							final SnomedOutboundRelationships result = new SnomedOutboundRelationships();
+							result.setTotal(input.getTotal());
+							result.setOutboundRelationships(input.getItems());
+							return result;
+						};
+					}));
 	}
 
 	@ApiOperation(
