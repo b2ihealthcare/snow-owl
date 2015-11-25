@@ -107,7 +107,7 @@ public class DescriptionAcceptabilityChangeProcessor extends ChangeSetProcessorB
 			}
 		}
 		
-		for (String descriptionId : preferredMemberChanges.keySet()) {
+		for (String descriptionId : Iterables.concat(preferredMemberChanges.keySet(), acceptableMemberChanges.keySet())) {
 			registerUpdate(descriptionId, new AcceptabilityMembershipUpdater(descriptionId, preferredMemberChanges.get(descriptionId), acceptableMemberChanges.get(descriptionId)));
 		}
 	}
