@@ -37,7 +37,6 @@ import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemb
 import com.b2international.snowowl.snomed.datastore.server.request.SearchRequestBuilder;
 import com.b2international.snowowl.snomed.datastore.server.request.SnomedRequests;
 import com.b2international.snowowl.snomed.datastore.services.AbstractSnomedRefSetMembershipLookupService;
-import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType;
 import com.google.common.base.Function;
 import com.google.common.collect.FluentIterable;
 import com.google.common.collect.ImmutableMap;
@@ -109,12 +108,23 @@ final class SnomedReferenceSetMemberConverter extends BaseSnomedComponentConvert
 		member.setActive(entry.isActive());
 		member.setModuleId(entry.getModuleId());
 		member.setReferenceSetId(entry.getRefSetIdentifierId());
-		if (SnomedRefSetType.QUERY == entry.getRefSetType()) {
-			// in case of query type refset the actual ESCG query is stored in the specialFieldId prop
-			final Builder<String, Object> props = ImmutableMap.builder();
-			props.put(SnomedRf2Headers.FIELD_QUERY, entry.getQuery());
-			member.setProperties(props.build());
+		
+		final Builder<String, Object> props = ImmutableMap.builder();
+		switch (entry.getRefSetType()) {
+			case QUERY:
+				props.put(SnomedRf2Headers.FIELD_QUERY, entry.getQuery());
+				break;
+			case ATTRIBUTE_VALUE:
+				props.put(SnomedRf2Headers.FIELD_VALUE_ID, entry.getValueId());
+				break;
+			case ASSOCIATION:
+				props.put(SnomedRf2Headers.FIELD_TARGET_COMPONENT_ID, entry.getTargetComponentId());
+				break;
+			default:
+				break;
 		}
+		member.setProperties(props.build());
+		
 		setReferencedComponent(member, entry.getReferencedComponentId(), entry.getReferencedComponentType());
 		return member;
 	}
