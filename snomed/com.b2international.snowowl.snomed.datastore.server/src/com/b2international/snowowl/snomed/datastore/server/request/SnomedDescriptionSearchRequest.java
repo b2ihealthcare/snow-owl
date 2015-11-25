@@ -230,28 +230,26 @@ final class SnomedDescriptionSearchRequest extends SnomedSearchRequest<SnomedDes
 	}
 
 	private void addLocaleFilter(BranchContext context, List<Filter> filters, List<Integer> ops, Long positiveRefSetId) {
-		if (containsKey(OptionKey.ACCEPTABILITY)) {
-			for (Long languageRefSetId : languageRefSetIds()) {
-				final Filter acceptabilityFilter = Acceptability.PREFERRED.equals(get(OptionKey.ACCEPTABILITY, Acceptability.class)) ?
-				SnomedMappings.descriptionPreferredReferenceSetId().toTermFilter(languageRefSetId) :
-					SnomedMappings.descriptionAcceptableReferenceSetId().toTermFilter(languageRefSetId);
+		for (Long languageRefSetId : languageRefSetIds()) {
+			if (containsKey(OptionKey.ACCEPTABILITY)) {
+				final Filter filter = Acceptability.PREFERRED.equals(get(OptionKey.ACCEPTABILITY, Acceptability.class)) ?
+						SnomedMappings.descriptionPreferredReferenceSetId().toTermFilter(languageRefSetId) :
+						SnomedMappings.descriptionAcceptableReferenceSetId().toTermFilter(languageRefSetId);
 				
-				filters.add(acceptabilityFilter);
+				filters.add(filter);
+			} else {
+				final BooleanFilter booleanFilter = new BooleanFilter();
+				booleanFilter.add(SnomedMappings.descriptionPreferredReferenceSetId().toTermFilter(languageRefSetId), Occur.SHOULD);
+				booleanFilter.add(SnomedMappings.descriptionAcceptableReferenceSetId().toTermFilter(languageRefSetId), Occur.SHOULD);					
 				
-				if (languageRefSetId.equals(positiveRefSetId)) {
-					ops.add(ChainedFilter.AND);
-					break;
-				} else {
-					ops.add(ChainedFilter.ANDNOT);
-				}
+				filters.add(booleanFilter);
 			}
-		} else {
-			if (!languageRefSetIds().isEmpty()) {
-				final BooleanFilter anyAcceptabilityFilter = new BooleanFilter();
-				anyAcceptabilityFilter.add(SnomedMappings.descriptionPreferredReferenceSetId().createTermsFilter(languageRefSetIds()), Occur.SHOULD);
-				anyAcceptabilityFilter.add(SnomedMappings.descriptionAcceptableReferenceSetId().createTermsFilter(languageRefSetIds()), Occur.SHOULD);
-				filters.add(anyAcceptabilityFilter);
+
+			if (languageRefSetId.equals(positiveRefSetId)) {
 				ops.add(ChainedFilter.AND);
+				break;
+			} else {
+				ops.add(ChainedFilter.ANDNOT);
 			}
 		}
 	}
