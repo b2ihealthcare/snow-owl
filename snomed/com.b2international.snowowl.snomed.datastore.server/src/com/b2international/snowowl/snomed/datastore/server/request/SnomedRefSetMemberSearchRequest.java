@@ -20,15 +20,13 @@ import java.util.Collection;
 import java.util.List;
 
 import org.apache.lucene.document.Document;
-import org.apache.lucene.search.ConstantScoreQuery;
-import org.apache.lucene.search.Filter;
-import org.apache.lucene.search.FilteredQuery;
+import org.apache.lucene.queries.BooleanFilter;
+import org.apache.lucene.search.BooleanClause.Occur;
 import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.ScoreDoc;
 import org.apache.lucene.search.Sort;
 import org.apache.lucene.search.TopDocs;
-import org.apache.lucene.search.TotalHitCountCollector;
 
 import com.b2international.commons.functions.StringToLongFunction;
 import com.b2international.snowowl.core.domain.BranchContext;
@@ -44,7 +42,6 @@ import com.google.common.collect.ImmutableList;
 final class SnomedRefSetMemberSearchRequest extends SnomedSearchRequest<SnomedReferenceSetMembers> {
 
 	enum OptionKey {
-		
 		/**
 		 * Filter by containing reference set
 		 */
@@ -56,25 +53,22 @@ final class SnomedRefSetMemberSearchRequest extends SnomedSearchRequest<SnomedRe
 	@Override
 	protected SnomedReferenceSetMembers doExecute(BranchContext context) throws IOException {
 		final IndexSearcher searcher = context.service(IndexSearcher.class);
-		final Query memberQuery = SnomedMappings.memberUuid().toExistsQuery();
-		final Query query;
-		
+
+		final BooleanFilter filter = new BooleanFilter();
 		final Collection<String> referenceSetIds = getCollection(OptionKey.REFSET, String.class);
 		
 		if (!referenceSetIds.isEmpty()) {
-			final Filter refSetFilter = SnomedMappings.memberRefSetId().createTermsFilter(StringToLongFunction.copyOf(referenceSetIds));
-			query = new ConstantScoreQuery(new FilteredQuery(memberQuery, refSetFilter));
-		} else {
-			query = new ConstantScoreQuery(memberQuery);
-		}
-
-		if (limit() == 0) {
-			final TotalHitCountCollector totalCollector = new TotalHitCountCollector();
-			searcher.search(new ConstantScoreQuery(query), totalCollector); 
-			return new SnomedReferenceSetMembers(offset(), limit(), totalCollector.getTotalHits());
+			filter.add(SnomedMappings.memberRefSetId().createTermsFilter(StringToLongFunction.copyOf(referenceSetIds)), Occur.MUST);
 		}
 		
-		final TopDocs topDocs = searcher.search(query, null, offset() + limit(), Sort.INDEXORDER, false, false);
+		final Query query = createConstantScoreQuery(createFilteredQuery(SnomedMappings.memberUuid().toExistsQuery(), filter));
+		final int totalHits = getTotalHits(searcher, query);
+
+		if (limit() < 1 || totalHits < 1) {
+			return new SnomedReferenceSetMembers(offset(), limit(), totalHits);
+		}
+		
+		final TopDocs topDocs = searcher.search(query, null, numDocsToRetrieve(searcher, totalHits), Sort.INDEXORDER, false, false);
 		if (topDocs.scoreDocs.length < 1) {
 			return new SnomedReferenceSetMembers(offset(), limit(), topDocs.totalHits);
 		}
@@ -82,7 +76,7 @@ final class SnomedRefSetMemberSearchRequest extends SnomedSearchRequest<SnomedRe
 		final ScoreDoc[] scoreDocs = topDocs.scoreDocs;
 		final ImmutableList.Builder<SnomedRefSetMemberIndexEntry> memberBuilder = ImmutableList.builder();
 		
-		for (int i = offset(); i < scoreDocs.length && i < offset() + limit(); i++) {
+		for (int i = offset(); i < scoreDocs.length; i++) {
 			Document doc = searcher.doc(scoreDocs[i].doc); // TODO: should expand & filter drive fieldsToLoad? Pass custom fieldValueLoader?
 			SnomedRefSetMemberIndexEntry indexEntry = SnomedRefSetMemberIndexEntry.builder(doc).build();
 			memberBuilder.add(indexEntry);

@@ -24,17 +24,14 @@ import org.apache.lucene.document.Document;
 import org.apache.lucene.queries.BooleanFilter;
 import org.apache.lucene.queries.ChainedFilter;
 import org.apache.lucene.search.BooleanClause.Occur;
-import org.apache.lucene.search.ConstantScoreQuery;
 import org.apache.lucene.search.DisjunctionMaxQuery;
 import org.apache.lucene.search.Filter;
-import org.apache.lucene.search.FilteredQuery;
 import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.PrefixQuery;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.ScoreDoc;
 import org.apache.lucene.search.Sort;
 import org.apache.lucene.search.TopDocs;
-import org.apache.lucene.search.TotalHitCountCollector;
 import org.apache.lucene.search.spans.SpanFirstQuery;
 import org.apache.lucene.search.spans.SpanMultiTermQueryWrapper;
 import org.apache.lucene.search.spans.SpanNearQuery;
@@ -60,7 +57,6 @@ import com.b2international.snowowl.snomed.datastore.server.converter.SnomedConve
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMultimap;
 import com.google.common.collect.Iterables;
-import com.google.common.primitives.Ints;
 
 import bak.pcj.LongCollection;
 import bak.pcj.adapter.LongCollectionToCollectionAdapter;
@@ -138,7 +134,6 @@ final class SnomedDescriptionSearchRequest extends SnomedSearchRequest<SnomedDes
 		final Sort sort;
 		
 		if (containsKey(OptionKey.TERM)) {
-			sort = Sort.RELEVANCE;
 			final String searchTerm = getString(OptionKey.TERM);
 			final QueryBuilder termQueryBuilder = new QueryBuilder(new ComponentTermAnalyzer(true, true));
 			final DisjunctionMaxQuery termDisjunctionQuery = new DisjunctionMaxQuery(0.0f);
@@ -162,11 +157,11 @@ final class SnomedDescriptionSearchRequest extends SnomedSearchRequest<SnomedDes
 			termDisjunctionQuery.add(matchAllTokenizedPrefixQuery);
 			
 			queryBuilder.and(termDisjunctionQuery);
+			sort = Sort.RELEVANCE;
 		} else {
 			sort = Sort.INDEXORDER;
 		}
 
-		final Query query;
 		final List<Filter> filters = newArrayList();
 		final List<Integer> ops = newArrayList();
 		
@@ -178,21 +173,15 @@ final class SnomedDescriptionSearchRequest extends SnomedSearchRequest<SnomedDes
 		addEscgFilter(context, filters, ops, OptionKey.TYPE, SnomedMappings.descriptionType());
 		addLocaleFilter(context, filters, ops, languageRefSetId); 
 		
-		if (!filters.isEmpty()) {
-			final ChainedFilter filter = new ChainedFilter(Iterables.toArray(filters, Filter.class), Ints.toArray(ops));
-			query = new FilteredQuery(queryBuilder.matchAll(), filter);
-		} else {
-			query = queryBuilder.matchAll();
+		final Query query = createFilteredQuery(queryBuilder.matchAll(), filters, ops);
+		final int totalHits = getTotalHits(searcher, query);
+		
+		if (limit < 1 || totalHits < 1) {
+			return new SnomedDescriptions(offset, limit, totalHits);
 		}
 		
-		if (limit == 0) {
-			final TotalHitCountCollector totalCollector = new TotalHitCountCollector();
-			searcher.search(new ConstantScoreQuery(query), totalCollector); 
-			return new SnomedDescriptions(offset, limit, totalCollector.getTotalHits());
-		}
-		
-		// TODO: track score only if it should be expanded
-		final TopDocs topDocs = searcher.search(query, null, offset + limit, sort, true, false);
+		// TODO: control score tracking
+		final TopDocs topDocs = searcher.search(query, null, numDocsToRetrieve(searcher, offset, limit, totalHits), sort, true, false);
 		if (topDocs.scoreDocs.length < 1) {
 			return new SnomedDescriptions(offset, limit, topDocs.totalHits);
 		}
@@ -200,9 +189,9 @@ final class SnomedDescriptionSearchRequest extends SnomedSearchRequest<SnomedDes
 		final ScoreDoc[] scoreDocs = topDocs.scoreDocs;
 		final ImmutableList.Builder<SnomedDescriptionIndexEntry> descriptionBuilder = ImmutableList.builder();
 		
-		for (int i = offset; i < scoreDocs.length && i < offset + limit; i++) {
+		for (int i = offset; i < scoreDocs.length; i++) {
 			Document doc = searcher.doc(scoreDocs[i].doc); // TODO: should expand & filter drive fieldsToLoad? Pass custom fieldValueLoader?
-			SnomedDescriptionIndexEntry indexEntry = SnomedDescriptionIndexEntry.builder(doc).score(scoreDocs[i].score).build();
+			SnomedDescriptionIndexEntry indexEntry = SnomedDescriptionIndexEntry.builder(doc).build();
 			descriptionBuilder.add(indexEntry);
 		}
 

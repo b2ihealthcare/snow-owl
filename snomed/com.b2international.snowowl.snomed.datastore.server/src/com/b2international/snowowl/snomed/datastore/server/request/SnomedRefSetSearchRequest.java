@@ -19,18 +19,17 @@ import java.io.IOException;
 import java.util.List;
 
 import org.apache.lucene.document.Document;
-import org.apache.lucene.search.ConstantScoreQuery;
 import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.ScoreDoc;
 import org.apache.lucene.search.Sort;
 import org.apache.lucene.search.TopDocs;
-import org.apache.lucene.search.TotalHitCountCollector;
 
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSets;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetIndexEntry;
 import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedMappings;
+import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedQueryBuilder;
 import com.b2international.snowowl.snomed.datastore.server.converter.SnomedConverters;
 import com.google.common.collect.ImmutableList;
 
@@ -42,15 +41,16 @@ final class SnomedRefSetSearchRequest extends SnomedSearchRequest<SnomedReferenc
 	@Override
 	protected SnomedReferenceSets doExecute(BranchContext context) throws IOException {
 		final IndexSearcher searcher = context.service(IndexSearcher.class);
-		final Query query = new ConstantScoreQuery(SnomedMappings.newQuery().refSet().matchAll());
+		final SnomedQueryBuilder queryBuilder = SnomedMappings.newQuery().refSet();
 		
-		if (limit() == 0) {
-			final TotalHitCountCollector totalCollector = new TotalHitCountCollector();
-			searcher.search(new ConstantScoreQuery(query), totalCollector); 
-			return new SnomedReferenceSets(offset(), limit(), totalCollector.getTotalHits());
+		final Query query = createConstantScoreQuery(queryBuilder.matchAll());
+		final int totalHits = getTotalHits(searcher, query);
+		
+		if (limit() < 1 || totalHits < 1) {
+			return new SnomedReferenceSets(offset(), limit(), totalHits);
 		}
 		
-		final TopDocs topDocs = searcher.search(query, null, offset() + limit(), Sort.INDEXORDER, false, false);
+		final TopDocs topDocs = searcher.search(query, null, numDocsToRetrieve(searcher, totalHits), Sort.INDEXORDER, false, false);
 		if (topDocs.scoreDocs.length < 1) {
 			return new SnomedReferenceSets(offset(), limit(), topDocs.totalHits);
 		}

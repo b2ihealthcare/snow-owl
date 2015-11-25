@@ -22,7 +22,14 @@ import java.util.List;
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
 
+import org.apache.lucene.queries.BooleanFilter;
+import org.apache.lucene.queries.ChainedFilter;
+import org.apache.lucene.search.ConstantScoreQuery;
 import org.apache.lucene.search.Filter;
+import org.apache.lucene.search.FilteredQuery;
+import org.apache.lucene.search.IndexSearcher;
+import org.apache.lucene.search.Query;
+import org.apache.lucene.search.TotalHitCountCollector;
 
 import com.b2international.commons.http.ExtendedLocale;
 import com.b2international.commons.options.Options;
@@ -30,6 +37,8 @@ import com.b2international.snowowl.core.api.SnowowlRuntimeException;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.events.BaseRequest;
 import com.b2international.snowowl.datastore.index.mapping.Mappings;
+import com.google.common.collect.Iterables;
+import com.google.common.primitives.Ints;
 
 /**
  * @since 4.5
@@ -136,6 +145,40 @@ public abstract class SearchRequest<B> extends BaseRequest<BranchContext, B> {
 		return Mappings.id().createTermsFilter(componentIds);
 	}
 	
+	protected Query createConstantScoreQuery(Query query) {
+		return (query instanceof ConstantScoreQuery) ? query : new ConstantScoreQuery(query);
+	}
+
+	protected Query createFilteredQuery(final Query query, final BooleanFilter filter) {
+		if (!filter.clauses().isEmpty()) {
+			return new FilteredQuery(query, filter);
+		} else {
+			return query;
+		}
+	}
+	
+	protected Query createFilteredQuery(final Query query, final List<Filter> filters, final List<Integer> ops) {
+		if (!filters.isEmpty()) {
+			return new FilteredQuery(query, new ChainedFilter(Iterables.toArray(filters, Filter.class), Ints.toArray(ops)));
+		} else {
+			return query;
+		}
+	}
+	
+	protected int getTotalHits(final IndexSearcher searcher, final Query query) throws IOException {
+		final TotalHitCountCollector totalCollector = new TotalHitCountCollector();
+		searcher.search(createConstantScoreQuery(query), totalCollector);
+		return totalCollector.getTotalHits();
+	}
+	
+	protected int numDocsToRetrieve(final IndexSearcher searcher, final int totalHits) {
+		return numDocsToRetrieve(searcher, offset(), limit(), totalHits);
+	}
+	
+	protected int numDocsToRetrieve(final IndexSearcher searcher, final int offset, final int limit, final int totalHits) {
+		return Ints.min(offset + limit, searcher.getIndexReader().maxDoc(), totalHits);
+	}
+
 	@Override
 	public final B execute(BranchContext context) {
 		try {

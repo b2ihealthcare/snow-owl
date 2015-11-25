@@ -18,17 +18,15 @@ package com.b2international.snowowl.snomed.datastore.server.request;
 import java.io.IOException;
 
 import org.apache.lucene.document.Document;
-import org.apache.lucene.search.ConstantScoreQuery;
-import org.apache.lucene.search.FilteredQuery;
+import org.apache.lucene.queries.BooleanFilter;
+import org.apache.lucene.search.BooleanClause.Occur;
 import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.ScoreDoc;
 import org.apache.lucene.search.Sort;
 import org.apache.lucene.search.TopDocs;
-import org.apache.lucene.search.TotalHitCountCollector;
 
 import com.b2international.snowowl.core.domain.BranchContext;
-import com.b2international.snowowl.datastore.index.IndexUtils;
 import com.b2international.snowowl.snomed.core.domain.SnomedRelationships;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRelationshipIndexEntry;
 import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedMappings;
@@ -79,31 +77,30 @@ final class SnomedRelationshipSearchRequest extends SnomedSearchRequest<SnomedRe
 			queryBuilder.relationshipCharacteristicType(getString(OptionKey.CHARACTERISTIC_TYPE));
 		}
 		
-		final Query query;
+		final BooleanFilter filter = new BooleanFilter();
 		
 		if (!componentIds().isEmpty()) {
-			query = new ConstantScoreQuery(new FilteredQuery(queryBuilder.matchAll(), createComponentIdFilter()));
-		} else {
-			query = new ConstantScoreQuery(queryBuilder.matchAll());
+			filter.add(createComponentIdFilter(), Occur.MUST);
 		}
 		
-		if (limit() == 0) {
-			final TotalHitCountCollector totalCollector = new TotalHitCountCollector();
-			searcher.search(query, totalCollector); 
-			return new SnomedRelationships(offset(), limit(), totalCollector.getTotalHits());
+		final Query query = createConstantScoreQuery(createFilteredQuery(queryBuilder.matchAll(), filter));
+		final int totalHits = getTotalHits(searcher, query);
+		
+		if (limit() < 1 || totalHits < 1) {
+			return new SnomedRelationships(offset(), limit(), totalHits);
 		}
 		
-		final TopDocs topDocs = searcher.search(query, null, offset() + limit(), Sort.INDEXORDER, false, false);
-		if (IndexUtils.isEmpty(topDocs)) {
+		final TopDocs topDocs = searcher.search(query, null, numDocsToRetrieve(searcher, totalHits), Sort.INDEXORDER, false, false);
+		if (topDocs.scoreDocs.length < 1) {
 			return new SnomedRelationships(offset(), limit(), topDocs.totalHits);
 		}
 		
 		final ScoreDoc[] scoreDocs = topDocs.scoreDocs;
 		final ImmutableList.Builder<SnomedRelationshipIndexEntry> relationshipsBuilder = ImmutableList.builder();
 		
-		for (int i = offset(); i < scoreDocs.length && i < offset() + limit(); i++) {
+		for (int i = offset(); i < scoreDocs.length; i++) {
 			Document doc = searcher.doc(scoreDocs[i].doc); // TODO: should expand & filter drive fieldsToLoad? Pass custom fieldValueLoader?
-			SnomedRelationshipIndexEntry indexEntry = SnomedRelationshipIndexEntry.builder(doc).score(scoreDocs[i].score).build();
+			SnomedRelationshipIndexEntry indexEntry = SnomedRelationshipIndexEntry.builder(doc).build();
 			relationshipsBuilder.add(indexEntry);
 		}
 

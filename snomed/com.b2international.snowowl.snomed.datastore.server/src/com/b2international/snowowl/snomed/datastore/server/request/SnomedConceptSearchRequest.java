@@ -30,14 +30,11 @@ import org.apache.lucene.queries.function.valuesource.LongFieldSource;
 import org.apache.lucene.queries.function.valuesource.SimpleFloatFunction;
 import org.apache.lucene.search.BooleanClause.Occur;
 import org.apache.lucene.search.BooleanQuery;
-import org.apache.lucene.search.ConstantScoreQuery;
-import org.apache.lucene.search.FilteredQuery;
 import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.ScoreDoc;
 import org.apache.lucene.search.Sort;
 import org.apache.lucene.search.TopDocs;
-import org.apache.lucene.search.TotalHitCountCollector;
 
 import com.b2international.commons.functions.StringToLongFunction;
 import com.b2international.snowowl.core.domain.BranchContext;
@@ -127,10 +124,9 @@ final class SnomedConceptSearchRequest extends SnomedSearchRequest<SnomedConcept
 			queryBuilder.module(getString(SnomedSearchRequest.OptionKey.MODULE));
 		}
 		
-		final Query conceptQuery = queryBuilder.matchAll();
+		final BooleanFilter filter = new BooleanFilter();
 		final Query query;
 		final Sort sort;
-		final BooleanFilter filter = new BooleanFilter();
 		
 		if (!componentIds().isEmpty()) {
 			filter.add(createComponentIdFilter(), Occur.MUST);
@@ -157,21 +153,20 @@ final class SnomedConceptSearchRequest extends SnomedSearchRequest<SnomedConcept
 				}
 			});
 			
-			query = new CustomScoreQuery(createQuery(conceptQuery, filter), functionQuery);
+			query = new CustomScoreQuery(createFilteredQuery(queryBuilder.matchAll(), filter), functionQuery);
 			sort = Sort.RELEVANCE;
 		} else {
-			query = new ConstantScoreQuery(createQuery(conceptQuery, filter));
+			query = createConstantScoreQuery(createFilteredQuery(queryBuilder.matchAll(), filter));
 			sort = Sort.INDEXORDER;
 		}
 		
-		if (limit() == 0) {
-			final TotalHitCountCollector totalCollector = new TotalHitCountCollector();
-			searcher.search(new ConstantScoreQuery(query), totalCollector); 
-			return new SnomedConcepts(offset(), limit(), totalCollector.getTotalHits());
+		final int totalHits = getTotalHits(searcher, query);
+		if (limit() < 1 || totalHits < 1) {
+			return new SnomedConcepts(offset(), limit(), totalHits);
 		}
 		
-		// TODO: track score only if it should be expanded
-		final TopDocs topDocs = searcher.search(query, null, offset() + limit(), sort, true, false);
+		// TODO: control score tracking
+		final TopDocs topDocs = searcher.search(query, null, numDocsToRetrieve(searcher, totalHits), sort, true, false);
 		if (topDocs.scoreDocs.length < 1) {
 			return new SnomedConcepts(offset(), limit(), topDocs.totalHits);
 		}
@@ -179,20 +174,13 @@ final class SnomedConceptSearchRequest extends SnomedSearchRequest<SnomedConcept
 		final ScoreDoc[] scoreDocs = topDocs.scoreDocs;
 		final ImmutableList.Builder<SnomedConceptIndexEntry> conceptsBuilder = ImmutableList.builder();
 		
-		for (int i = offset(); i < scoreDocs.length && i < offset() + limit(); i++) {
+		for (int i = offset(); i < scoreDocs.length; i++) {
 			Document doc = searcher.doc(scoreDocs[i].doc); // TODO: should expand & filter drive fieldsToLoad? Pass custom fieldValueLoader?
-			SnomedConceptIndexEntry indexEntry = SnomedConceptIndexEntry.builder(doc).score(scoreDocs[i].score).build();
+			SnomedConceptIndexEntry indexEntry = SnomedConceptIndexEntry.builder(doc).build();
 			conceptsBuilder.add(indexEntry);
 		}
 
 		return SnomedConverters.newConceptConverter(context, expand(), locales()).convert(conceptsBuilder.build(), offset(), limit(), topDocs.totalHits);
-	}
-
-	private Query createQuery(final Query query, final BooleanFilter filter) {
-		if (filter.clauses().size() > 0) {
-			return new FilteredQuery(query, filter);
-		}
-		return query;
 	}
 
 	private Map<String, Integer> executeDescriptionSearch(BranchContext context, String term) {
