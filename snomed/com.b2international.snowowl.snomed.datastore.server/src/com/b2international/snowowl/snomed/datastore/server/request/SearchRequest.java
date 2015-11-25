@@ -15,6 +15,8 @@
  */
 package com.b2international.snowowl.snomed.datastore.server.request;
 
+import static com.google.common.base.Preconditions.checkNotNull;
+
 import java.io.IOException;
 import java.util.Collection;
 import java.util.List;
@@ -24,6 +26,7 @@ import javax.validation.constraints.NotNull;
 
 import org.apache.lucene.queries.BooleanFilter;
 import org.apache.lucene.queries.ChainedFilter;
+import org.apache.lucene.search.BooleanClause.Occur;
 import org.apache.lucene.search.ConstantScoreQuery;
 import org.apache.lucene.search.Filter;
 import org.apache.lucene.search.FilteredQuery;
@@ -149,6 +152,14 @@ public abstract class SearchRequest<B> extends BaseRequest<BranchContext, B> {
 		return (query instanceof ConstantScoreQuery) ? query : new ConstantScoreQuery(query);
 	}
 
+	protected void addFilterClause(final BooleanFilter target, final Filter filter, final Occur occur) {
+		target.add(checkNotNull(filter, "Filter clause to add was null"), occur);
+	}
+	
+	protected void addFilterClause(final List<Filter> target, final Filter filter) {
+		target.add(checkNotNull(filter, "Filter clause to add was null"));
+	}
+	
 	protected Query createFilteredQuery(final Query query, final BooleanFilter filter) {
 		if (!filter.clauses().isEmpty()) {
 			return new FilteredQuery(query, filter);

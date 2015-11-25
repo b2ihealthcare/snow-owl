@@ -80,7 +80,7 @@ final class SnomedRelationshipSearchRequest extends SnomedSearchRequest<SnomedRe
 		final BooleanFilter filter = new BooleanFilter();
 		
 		if (!componentIds().isEmpty()) {
-			filter.add(createComponentIdFilter(), Occur.MUST);
+			addFilterClause(filter, createComponentIdFilter(), Occur.MUST);
 		}
 		
 		final Query query = createConstantScoreQuery(createFilteredQuery(queryBuilder.matchAll(), filter));

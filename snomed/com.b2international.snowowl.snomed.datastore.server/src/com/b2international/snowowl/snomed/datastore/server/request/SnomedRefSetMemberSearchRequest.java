@@ -58,7 +58,7 @@ final class SnomedRefSetMemberSearchRequest extends SnomedSearchRequest<SnomedRe
 		final Collection<String> referenceSetIds = getCollection(OptionKey.REFSET, String.class);
 		
 		if (!referenceSetIds.isEmpty()) {
-			filter.add(SnomedMappings.memberRefSetId().createTermsFilter(StringToLongFunction.copyOf(referenceSetIds)), Occur.MUST);
+			addFilterClause(filter, SnomedMappings.memberRefSetId().createTermsFilter(StringToLongFunction.copyOf(referenceSetIds)), Occur.MUST);
 		}
 		
 		final Query query = createConstantScoreQuery(createFilteredQuery(SnomedMappings.memberUuid().toExistsQuery(), filter));

@@ -129,12 +129,16 @@ final class SnomedConceptSearchRequest extends SnomedSearchRequest<SnomedConcept
 		final Sort sort;
 		
 		if (!componentIds().isEmpty()) {
-			filter.add(createComponentIdFilter(), Occur.MUST);
+			addFilterClause(filter, createComponentIdFilter(), Occur.MUST);
 		}
 		
 		if (containsKey(OptionKey.TERM)) {
 			final Map<String, Integer> conceptScoreMap = executeDescriptionSearch(context, getString(OptionKey.TERM));
-			filter.add(SnomedMappings.id().createTermsFilter(StringToLongFunction.copyOf(conceptScoreMap.keySet())), Occur.MUST); 
+			if (conceptScoreMap.isEmpty()) {
+				return new SnomedConcepts(offset(), limit(), 0);
+			}
+			
+			addFilterClause(filter, SnomedMappings.id().createTermsFilter(StringToLongFunction.copyOf(conceptScoreMap.keySet())), Occur.MUST); 
 			final FunctionQuery functionQuery = new FunctionQuery(new SimpleFloatFunction(new LongFieldSource(SnomedMappings.id().fieldName())) {
 				
 				@Override

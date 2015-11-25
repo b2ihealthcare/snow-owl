@@ -200,14 +200,14 @@ final class SnomedDescriptionSearchRequest extends SnomedSearchRequest<SnomedDes
 
 	private void addComponentIdFilter(final List<Filter> filters, final List<Integer> ops) {
 		if (!componentIds().isEmpty()) {
-			filters.add(createComponentIdFilter());
+			addFilterClause(filters, createComponentIdFilter());
 			ops.add(ChainedFilter.AND);
 		}
 	}
 
 	private void addConceptIdsFilter(List<Filter> filters, List<Integer> ops) {
 		if (containsKey(OptionKey.CONCEPT_ID)) {
-			filters.add(SnomedMappings.descriptionConcept().createTermsFilter(getCollection(OptionKey.CONCEPT_ID, Long.class)));
+			addFilterClause(filters, SnomedMappings.descriptionConcept().createTermsFilter(getCollection(OptionKey.CONCEPT_ID, Long.class)));
 			ops.add(ChainedFilter.AND);
 		}
 	}
@@ -217,14 +217,14 @@ final class SnomedDescriptionSearchRequest extends SnomedSearchRequest<SnomedDes
 			IBranchPath branchPath = context.branch().branchPath();
 			LongCollection conceptIds = context.service(IEscgQueryEvaluatorService.class).evaluateConceptIds(branchPath, getString(key));
 			Filter conceptFilter = field.createTermsFilter(new LongCollectionToCollectionAdapter(conceptIds));
-			filters.add(conceptFilter);
+			addFilterClause(filters, conceptFilter);
 			ops.add(ChainedFilter.AND);
 		}
 	}
 	
 	private void addLanguageFilter(List<Filter> filters, List<Integer> ops) {
 		if (containsKey(OptionKey.LANGUAGE)) {
-			filters.add(SnomedMappings.descriptionLanguageCode().createTermsFilter(getCollection(OptionKey.LANGUAGE, String.class)));
+			addFilterClause(filters, SnomedMappings.descriptionLanguageCode().createTermsFilter(getCollection(OptionKey.LANGUAGE, String.class)));
 			ops.add(ChainedFilter.AND);
 		}
 	}
@@ -236,13 +236,13 @@ final class SnomedDescriptionSearchRequest extends SnomedSearchRequest<SnomedDes
 						SnomedMappings.descriptionPreferredReferenceSetId().toTermFilter(languageRefSetId) :
 						SnomedMappings.descriptionAcceptableReferenceSetId().toTermFilter(languageRefSetId);
 				
-				filters.add(filter);
+				addFilterClause(filters, filter);
 			} else {
 				final BooleanFilter booleanFilter = new BooleanFilter();
-				booleanFilter.add(SnomedMappings.descriptionPreferredReferenceSetId().toTermFilter(languageRefSetId), Occur.SHOULD);
-				booleanFilter.add(SnomedMappings.descriptionAcceptableReferenceSetId().toTermFilter(languageRefSetId), Occur.SHOULD);					
+				addFilterClause(booleanFilter, SnomedMappings.descriptionPreferredReferenceSetId().toTermFilter(languageRefSetId), Occur.SHOULD);
+				addFilterClause(booleanFilter, SnomedMappings.descriptionAcceptableReferenceSetId().toTermFilter(languageRefSetId), Occur.SHOULD);					
 				
-				filters.add(booleanFilter);
+				addFilterClause(filters, booleanFilter);
 			}
 
 			if (languageRefSetId.equals(positiveRefSetId)) {
