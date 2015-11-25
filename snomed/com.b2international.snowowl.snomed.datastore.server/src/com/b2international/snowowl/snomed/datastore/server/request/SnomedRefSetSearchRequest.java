@@ -25,6 +25,7 @@ import org.apache.lucene.search.Query;
 import org.apache.lucene.search.ScoreDoc;
 import org.apache.lucene.search.Sort;
 import org.apache.lucene.search.TopDocs;
+import org.apache.lucene.search.TotalHitCountCollector;
 
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSets;
@@ -42,6 +43,12 @@ final class SnomedRefSetSearchRequest extends SnomedSearchRequest<SnomedReferenc
 	protected SnomedReferenceSets doExecute(BranchContext context) throws IOException {
 		final IndexSearcher searcher = context.service(IndexSearcher.class);
 		final Query query = new ConstantScoreQuery(SnomedMappings.newQuery().refSet().matchAll());
+		
+		if (limit() == 0) {
+			final TotalHitCountCollector totalCollector = new TotalHitCountCollector();
+			searcher.search(new ConstantScoreQuery(query), totalCollector); 
+			return new SnomedReferenceSets(offset(), limit(), totalCollector.getTotalHits());
+		}
 		
 		final TopDocs topDocs = searcher.search(query, null, offset() + limit(), Sort.INDEXORDER, false, false);
 		if (topDocs.scoreDocs.length < 1) {
