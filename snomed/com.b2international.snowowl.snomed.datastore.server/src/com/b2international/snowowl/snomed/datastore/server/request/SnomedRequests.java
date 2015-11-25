@@ -17,7 +17,6 @@ package com.b2international.snowowl.snomed.datastore.server.request;
 
 import org.eclipse.emf.ecore.EObject;
 
-import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.domain.TransactionContext;
 import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.datastore.request.Branching;
@@ -28,7 +27,6 @@ import com.b2international.snowowl.snomed.Concept;
 import com.b2international.snowowl.snomed.Description;
 import com.b2international.snowowl.snomed.Relationship;
 import com.b2international.snowowl.snomed.core.domain.refset.MemberChange;
-import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSets;
 import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetMember;
 
@@ -54,6 +52,14 @@ public abstract class SnomedRequests {
 		return new SnomedDescriptionSearchRequestBuilder(REPOSITORY_ID);
 	}
 	
+	public static SnomedRefSetSearchRequestBuilder prepareRefSetSearch() {
+		return new SnomedRefSetSearchRequestBuilder(REPOSITORY_ID);
+	}
+
+	public static SnomedRefSetMemberSearchRequestBuilder prepareMemberSearch() {
+		return new SnomedRefSetMemberSearchRequestBuilder(REPOSITORY_ID);
+	}
+
 	public static SnomedRelationshipSearchRequestBuilder prepareRelationshipSearch() {
 		return new SnomedRelationshipSearchRequestBuilder(REPOSITORY_ID);
 	}
@@ -112,15 +118,6 @@ public abstract class SnomedRequests {
 	
 	public static SnomedRefSetGetRequestBuilder prepareGetReferenceSet() {
 		return new SnomedRefSetGetRequestBuilder(REPOSITORY_ID);
-	}
-	
-	// TODO migrate initial API to builders
-	public static Request<ServiceProvider, SnomedReferenceSets> prepareRefSetSearch(String branch) {
-		return RepositoryRequests.wrap(REPOSITORY_ID, branch, new SnomedRefSetSearchRequest());
-	}
-	
-	public static SnomedRefSetMemberSearchRequestBuilder prepareMemberSearch() {
-		return new SnomedRefSetMemberSearchRequestBuilder(REPOSITORY_ID);
 	}
 	
 	public static Branching branching() {

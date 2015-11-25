@@ -15,14 +15,21 @@
  */
 package com.b2international.snowowl.snomed.datastore.server.request;
 
-import java.util.Collection;
+import java.io.IOException;
+import java.util.List;
 
-import com.b2international.snowowl.core.api.IBranchPath;
+import org.apache.lucene.document.Document;
+import org.apache.lucene.search.ConstantScoreQuery;
+import org.apache.lucene.search.IndexSearcher;
+import org.apache.lucene.search.Query;
+import org.apache.lucene.search.ScoreDoc;
+import org.apache.lucene.search.Sort;
+import org.apache.lucene.search.TopDocs;
+
 import com.b2international.snowowl.core.domain.BranchContext;
-import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSet;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSets;
-import com.b2international.snowowl.snomed.datastore.SnomedRefSetBrowser;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetIndexEntry;
+import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedMappings;
 import com.b2international.snowowl.snomed.datastore.server.converter.SnomedConverters;
 import com.google.common.collect.ImmutableList;
 
@@ -32,14 +39,26 @@ import com.google.common.collect.ImmutableList;
 final class SnomedRefSetSearchRequest extends SnomedSearchRequest<SnomedReferenceSets> {
 
 	@Override
-	protected SnomedReferenceSets doExecute(BranchContext context) {
-		final IBranchPath branchPath = context.branch().branchPath();
-		final SnomedRefSetBrowser browser = context.service(SnomedRefSetBrowser.class);
+	protected SnomedReferenceSets doExecute(BranchContext context) throws IOException {
+		final IndexSearcher searcher = context.service(IndexSearcher.class);
+		final Query query = new ConstantScoreQuery(SnomedMappings.newQuery().refSet().matchAll());
+		
+		final TopDocs topDocs = searcher.search(query, null, offset() + limit(), Sort.INDEXORDER, false, false);
+		if (topDocs.scoreDocs.length < 1) {
+			return new SnomedReferenceSets(offset(), limit(), topDocs.totalHits);
+		}
 
-		final ImmutableList.Builder<SnomedReferenceSet> result = ImmutableList.builder();
+		final ScoreDoc[] scoreDocs = topDocs.scoreDocs;
+		final ImmutableList.Builder<SnomedRefSetIndexEntry> refSetBuilder = ImmutableList.builder();
+		
+		for (int i = offset(); i < scoreDocs.length && i < offset() + limit(); i++) {
+			Document doc = searcher.doc(scoreDocs[i].doc); // TODO: should expand & filter drive fieldsToLoad? Pass custom fieldValueLoader?
+			SnomedRefSetIndexEntry indexEntry = SnomedRefSetIndexEntry.builder(doc).build();
+			refSetBuilder.add(indexEntry);
+		}
 
-		final Collection<SnomedRefSetIndexEntry> referenceSets = browser.getAllReferenceSets(branchPath);
-		return SnomedConverters.newRefSetConverter(context, expand(), locales()).convert(referenceSets, offset(), limit(), referenceSets.size());
+		List<SnomedRefSetIndexEntry> referenceSets = refSetBuilder.build();
+		return SnomedConverters.newRefSetConverter(context, expand(), locales()).convert(referenceSets, offset(), limit(), topDocs.totalHits);
 	}
 	
 	@Override

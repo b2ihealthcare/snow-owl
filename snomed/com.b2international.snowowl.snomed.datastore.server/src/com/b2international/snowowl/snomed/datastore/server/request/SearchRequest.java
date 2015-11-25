@@ -26,7 +26,7 @@ import org.apache.lucene.search.Filter;
 
 import com.b2international.commons.http.ExtendedLocale;
 import com.b2international.commons.options.Options;
-import com.b2international.snowowl.core.api.index.IndexException;
+import com.b2international.snowowl.core.api.SnowowlRuntimeException;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.events.BaseRequest;
 import com.b2international.snowowl.datastore.index.mapping.Mappings;
@@ -141,7 +141,7 @@ public abstract class SearchRequest<B> extends BaseRequest<BranchContext, B> {
 		try {
 			return doExecute(context);
 		} catch (IOException e) {
-			throw new IndexException("Caught exception while executing search request.", e);
+			throw new SnowowlRuntimeException("Caught exception while executing search request.", e);
 		}
 	}
 

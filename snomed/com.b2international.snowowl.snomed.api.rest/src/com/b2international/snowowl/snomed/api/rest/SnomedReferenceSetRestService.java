@@ -74,8 +74,21 @@ public class SnomedReferenceSetRestService extends AbstractSnomedRestService {
 	public @ResponseBody DeferredResult<SnomedReferenceSets> search(
 			@ApiParam(value="The branch path")
 			@PathVariable(value="path")
-			final String branchPath) {
-		return DeferredResults.wrap(SnomedRequests.prepareRefSetSearch(branchPath).execute(bus));
+			final String branchPath,
+			
+			@ApiParam(value="The starting offset in the list")
+			@RequestParam(value="offset", defaultValue="0", required=false) 
+			final int offset,
+
+			@ApiParam(value="The maximum number of items to return")
+			@RequestParam(value="limit", defaultValue="50", required=false) 
+			final int limit) {
+		
+		return DeferredResults.wrap(SnomedRequests.prepareRefSetSearch()
+				.setOffset(offset)
+				.setLimit(limit)
+				.build(branchPath)
+				.execute(bus));
 	}
 	
 	@ApiOperation(

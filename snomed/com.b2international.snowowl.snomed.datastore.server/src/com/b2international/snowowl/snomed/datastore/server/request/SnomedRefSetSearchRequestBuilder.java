@@ -13,24 +13,21 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.snomed.core.domain.refset;
+package com.b2international.snowowl.snomed.datastore.server.request;
 
-import java.util.Collections;
-import java.util.List;
-
-import com.b2international.snowowl.core.domain.PageableCollectionResource;
+import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSets;
 
 /**
  * @since 4.5
  */
-public final class SnomedReferenceSets extends PageableCollectionResource<SnomedReferenceSet> {
+public final class SnomedRefSetSearchRequestBuilder extends SnomedSearchRequestBuilder<SnomedRefSetSearchRequestBuilder, SnomedReferenceSets> {
 
-	public SnomedReferenceSets(int offset, int limit, int total) {
-		super(Collections.<SnomedReferenceSet>emptyList(), offset, limit, total);
-	}
-	
-	public SnomedReferenceSets(List<SnomedReferenceSet> items, int offset, int limit, int total) {
-		super(items, offset, limit, total);
+	SnomedRefSetSearchRequestBuilder(String repositoryId) {
+		super(repositoryId);
 	}
 
+	@Override
+	protected SearchRequest<SnomedReferenceSets> create() {
+		return new SnomedRefSetSearchRequest();
+	}
 }
