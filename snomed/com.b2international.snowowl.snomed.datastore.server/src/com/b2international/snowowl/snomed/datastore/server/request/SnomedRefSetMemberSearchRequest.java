@@ -33,6 +33,7 @@ import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMembers;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry;
 import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedMappings;
+import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedQueryBuilder;
 import com.b2international.snowowl.snomed.datastore.server.converter.SnomedConverters;
 import com.google.common.collect.ImmutableList;
 
@@ -45,7 +46,12 @@ final class SnomedRefSetMemberSearchRequest extends SnomedSearchRequest<SnomedRe
 		/**
 		 * Filter by containing reference set
 		 */
-		REFSET
+		REFSET,
+
+		/**
+		 * Filter by referenced component
+		 */
+		REFERENCED_COMPONENT
 	}
 	
 	SnomedRefSetMemberSearchRequest() {}
@@ -56,12 +62,23 @@ final class SnomedRefSetMemberSearchRequest extends SnomedSearchRequest<SnomedRe
 
 		final BooleanFilter filter = new BooleanFilter();
 		final Collection<String> referenceSetIds = getCollection(OptionKey.REFSET, String.class);
+		final Collection<String> referencedComponentIds = getCollection(OptionKey.REFERENCED_COMPONENT, String.class);
 		
 		if (!referenceSetIds.isEmpty()) {
 			addFilterClause(filter, SnomedMappings.memberRefSetId().createTermsFilter(StringToLongFunction.copyOf(referenceSetIds)), Occur.MUST);
 		}
 		
-		final Query query = createConstantScoreQuery(createFilteredQuery(SnomedMappings.memberUuid().toExistsQuery(), filter));
+		if (!referencedComponentIds.isEmpty()) {
+			addFilterClause(filter, SnomedMappings.memberReferencedComponentId().createTermsFilter(StringToLongFunction.copyOf(referencedComponentIds)), Occur.MUST);
+		}
+		
+		SnomedQueryBuilder queryBuilder = SnomedMappings.newQuery().and(SnomedMappings.memberReferencedComponentType().toExistsQuery());
+		
+		if (containsKey(SnomedSearchRequest.OptionKey.ACTIVE)) {
+			queryBuilder.active(getBoolean(SnomedSearchRequest.OptionKey.ACTIVE));
+		}
+		
+		final Query query = createConstantScoreQuery(createFilteredQuery(queryBuilder.matchAll(), filter));
 		final int totalHits = getTotalHits(searcher, query);
 
 		if (limit() < 1 || totalHits < 1) {
