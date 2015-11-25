@@ -30,6 +30,8 @@ public class SnomedConcept extends BaseSnomedComponent implements ISnomedConcept
 	private ISnomedDescription fsn;
 	private ISnomedDescription pt;
 	private SnomedDescriptions descriptions;
+	private SnomedConcepts ancestors;
+	private SnomedConcepts descendants;
 
 	@Override
 	public DefinitionStatus getDefinitionStatus() {
@@ -65,6 +67,16 @@ public class SnomedConcept extends BaseSnomedComponent implements ISnomedConcept
 	public ISnomedDescription getPt() {
 		return pt;
 	}
+	
+	@Override
+	public SnomedConcepts getAncestors() {
+		return ancestors;
+	}
+	
+	@Override
+	public SnomedConcepts getDescendants() {
+		return descendants;
+	}
 
 	public void setDefinitionStatus(final DefinitionStatus definitionStatus) {
 		this.definitionStatus = definitionStatus;
@@ -92,6 +104,14 @@ public class SnomedConcept extends BaseSnomedComponent implements ISnomedConcept
 	
 	public void setPt(ISnomedDescription pt) {
 		this.pt = pt;
+	}
+	
+	public void setAncestors(SnomedConcepts ancestors) {
+		this.ancestors = ancestors;
+	}
+	
+	public void setDescendants(SnomedConcepts descendants) {
+		this.descendants = descendants;
 	}
 
 	@Override

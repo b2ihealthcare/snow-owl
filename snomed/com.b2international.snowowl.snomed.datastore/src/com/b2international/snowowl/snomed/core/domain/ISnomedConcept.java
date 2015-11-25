@@ -69,4 +69,13 @@ public interface ISnomedConcept extends SnomedCoreComponent, IComponentNode, Def
 	 */
 	SnomedDescriptions getDescriptions();
 
+	/**
+	 * @return the ancestors of the SNOMED CT concept
+	 */
+	SnomedConcepts getAncestors();
+	
+	/**
+	 * @return the descendants of the SNOMED CT concept
+	 */
+	SnomedConcepts getDescendants();
 }

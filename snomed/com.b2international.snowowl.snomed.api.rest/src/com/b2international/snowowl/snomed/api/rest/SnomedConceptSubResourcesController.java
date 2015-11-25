@@ -34,11 +34,9 @@ import com.b2international.commons.http.AcceptHeader;
 import com.b2international.commons.http.ExtendedLocale;
 import com.b2international.snowowl.core.domain.IComponentList;
 import com.b2international.snowowl.core.domain.IComponentRef;
-import com.b2international.snowowl.core.domain.PageableCollectionResource;
 import com.b2international.snowowl.core.exceptions.BadRequestException;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.api.ISnomedStatementBrowserService;
-import com.b2international.snowowl.snomed.api.ISnomedTerminologyBrowserService;
 import com.b2international.snowowl.snomed.api.exception.FullySpecifiedNameNotFoundException;
 import com.b2international.snowowl.snomed.api.exception.PreferredTermNotFoundException;
 import com.b2international.snowowl.snomed.api.rest.domain.SnomedConceptDescriptions;
@@ -49,6 +47,7 @@ import com.b2international.snowowl.snomed.core.domain.Acceptability;
 import com.b2international.snowowl.snomed.core.domain.ISnomedConcept;
 import com.b2international.snowowl.snomed.core.domain.ISnomedDescription;
 import com.b2international.snowowl.snomed.core.domain.ISnomedRelationship;
+import com.b2international.snowowl.snomed.core.domain.SnomedConcepts;
 import com.b2international.snowowl.snomed.core.domain.SnomedDescriptions;
 import com.b2international.snowowl.snomed.datastore.server.request.SnomedRequests;
 import com.google.common.base.Function;
@@ -71,9 +70,6 @@ public class SnomedConceptSubResourcesController extends AbstractSnomedRestServi
 
 	@Autowired
 	protected ISnomedStatementBrowserService statements;
-
-	@Autowired
-	protected ISnomedTerminologyBrowserService terminology;
 
 	@Autowired
 	protected SnomedResourceExpander relationshipExpander;
@@ -214,7 +210,7 @@ public class SnomedConceptSubResourcesController extends AbstractSnomedRestServi
 	@RequestMapping(
 			value="/{path:**}/concepts/{conceptId}/descendants",
 			method = RequestMethod.GET)
-	public PageableCollectionResource<ISnomedConcept> getDescendants(
+	public DeferredResult<SnomedConcepts> getDescendants(
 			@ApiParam(value="The branch path")
 			@PathVariable(value="path")
 			final String branchPath,
@@ -234,10 +230,18 @@ public class SnomedConceptSubResourcesController extends AbstractSnomedRestServi
 			@ApiParam(value="Return direct descendants only")
 			@RequestParam(value="direct", defaultValue="false", required=false) 
 			final boolean direct) {
-
-		final IComponentRef ref = createComponentRef(branchPath, conceptId);
-		final IComponentList<ISnomedConcept> descendants = terminology.getDescendants(ref, direct, offset, limit);
-		return toPageable(descendants, offset, limit);
+	
+		return DeferredResults.wrap(SnomedRequests.prepareGetConcept()
+				.setComponentId(conceptId)
+				.setExpand(ImmutableList.of(String.format("descendants(direct:%s,offset:%d,limit:%d)", direct, offset, limit)))
+				.build(branchPath)
+				.execute(bus)
+				.then(new Function<ISnomedConcept, SnomedConcepts>() {
+					@Override
+					public SnomedConcepts apply(ISnomedConcept input) {
+						return input.getDescendants();
+					}
+				}));
 	}
 
 	@ApiOperation(
@@ -251,7 +255,7 @@ public class SnomedConceptSubResourcesController extends AbstractSnomedRestServi
 	@RequestMapping(
 			value="/{path:**}/concepts/{conceptId}/ancestors",
 			method = RequestMethod.GET)
-	public PageableCollectionResource<ISnomedConcept> getAncestors(
+	public DeferredResult<SnomedConcepts> getAncestors(
 			@ApiParam(value="The branch path")
 			@PathVariable(value="path")
 			final String branchPath,
@@ -272,13 +276,17 @@ public class SnomedConceptSubResourcesController extends AbstractSnomedRestServi
 			@RequestParam(value="direct", defaultValue="false", required=false) 
 			final boolean direct) {
 
-		final IComponentRef ref = createComponentRef(branchPath, conceptId);
-		final IComponentList<ISnomedConcept> ancestors = terminology.getAncestors(ref, direct, offset, limit);
-		return toPageable(ancestors, offset, limit);
-	}
-
-	private PageableCollectionResource<ISnomedConcept> toPageable(final IComponentList<ISnomedConcept> concepts, final int offset, final int limit) {
-		return PageableCollectionResource.of(concepts.getMembers(), offset, limit, concepts.getTotalMembers());
+		return DeferredResults.wrap(SnomedRequests.prepareGetConcept()
+				.setComponentId(conceptId)
+				.setExpand(ImmutableList.of(String.format("ancestors(direct:%s,offset:%d,limit:%d)", direct, offset, limit)))
+				.build(branchPath)
+				.execute(bus)
+				.then(new Function<ISnomedConcept, SnomedConcepts>() {
+					@Override
+					public SnomedConcepts apply(ISnomedConcept input) {
+						return input.getAncestors();
+					}
+				}));
 	}
 
 	@ApiOperation(
