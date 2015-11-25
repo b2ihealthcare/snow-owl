@@ -241,27 +241,28 @@ final class SnomedDescriptionSearchRequest extends SnomedSearchRequest<SnomedDes
 	}
 
 	private void addLocaleFilter(BranchContext context, List<Filter> filters, List<Integer> ops, Long positiveRefSetId) {
-		for (Long languageRefSetId : languageRefSetIds()) {
-
-			if (containsKey(OptionKey.ACCEPTABILITY)) {
+		if (containsKey(OptionKey.ACCEPTABILITY)) {
+			for (Long languageRefSetId : languageRefSetIds()) {
 				final Filter acceptabilityFilter = Acceptability.PREFERRED.equals(get(OptionKey.ACCEPTABILITY, Acceptability.class)) ?
-						SnomedMappings.descriptionPreferredReferenceSetId().toTermFilter(languageRefSetId) :
-						SnomedMappings.descriptionAcceptableReferenceSetId().toTermFilter(languageRefSetId);
-						
-				filters.add(acceptabilityFilter);
-			} else {
-				final BooleanFilter anyAcceptabilityFilter = new BooleanFilter();
+				SnomedMappings.descriptionPreferredReferenceSetId().toTermFilter(languageRefSetId) :
+					SnomedMappings.descriptionAcceptableReferenceSetId().toTermFilter(languageRefSetId);
 				
-				anyAcceptabilityFilter.add(SnomedMappings.descriptionPreferredReferenceSetId().toTermFilter(languageRefSetId), Occur.SHOULD);
-				anyAcceptabilityFilter.add(SnomedMappings.descriptionAcceptableReferenceSetId().toTermFilter(languageRefSetId), Occur.SHOULD);
-				filters.add(anyAcceptabilityFilter);
+				filters.add(acceptabilityFilter);
+				
+				if (languageRefSetId.equals(positiveRefSetId)) {
+					ops.add(ChainedFilter.AND);
+					break;
+				} else {
+					ops.add(ChainedFilter.ANDNOT);
+				}
 			}
-			
-			if (languageRefSetId.equals(positiveRefSetId)) {
+		} else {
+			if (!languageRefSetIds().isEmpty()) {
+				final BooleanFilter anyAcceptabilityFilter = new BooleanFilter();
+				anyAcceptabilityFilter.add(SnomedMappings.descriptionPreferredReferenceSetId().createTermsFilter(languageRefSetIds()), Occur.SHOULD);
+				anyAcceptabilityFilter.add(SnomedMappings.descriptionAcceptableReferenceSetId().createTermsFilter(languageRefSetIds()), Occur.SHOULD);
+				filters.add(anyAcceptabilityFilter);
 				ops.add(ChainedFilter.AND);
-				break;
-			} else {
-				ops.add(ChainedFilter.ANDNOT);
 			}
 		}
 	}
