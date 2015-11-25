@@ -44,7 +44,7 @@ public class CollectionResource<T> implements Serializable, Iterable<T> {
 	 * 
 	 * @return
 	 */
-	public final Collection<T> getItems() {
+	public final List<T> getItems() {
 		return items;
 	}
 	
