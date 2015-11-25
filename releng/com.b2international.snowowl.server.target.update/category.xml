@@ -113,6 +113,10 @@
    <bundle id="osgi.enterprise.source" version="4.2.0.v201108120515"/>
    <bundle id="org.dom4j" version="1.6.1.v201312101416"/>
    <bundle id="org.dom4j.source" version="1.6.1.v201312101416"/>
+   <bundle id="org.apache.httpcomponents.httpcore" version="4.2.5.v201311072007"/>
+   <bundle id="org.apache.httpcomponents.httpcore.source" version="4.2.5.v201311072007"/>
+   <bundle id="org.apache.httpcomponents.httpclient" version="4.2.6.v201311072007"/>
+   <bundle id="org.apache.httpcomponents.httpclient.source" version="4.2.6.v201311072007"/>
    <!-- Maven OSGi dependencies -->
    <bundle id="com.codahale.metrics.annotation" version="3.0.2"/>
    <bundle id="com.codahale.metrics.core" version="3.0.2"/>
