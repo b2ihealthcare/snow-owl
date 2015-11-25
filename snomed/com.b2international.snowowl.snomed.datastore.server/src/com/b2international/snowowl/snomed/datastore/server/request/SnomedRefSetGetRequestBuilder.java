@@ -13,14 +13,27 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.snomed.api;
+package com.b2international.snowowl.snomed.datastore.server.request;
 
-import com.b2international.snowowl.api.IComponentEdgeService;
-import com.b2international.snowowl.snomed.core.domain.ISnomedRelationship;
+import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSet;
 
 /**
- * Implementations of this interface allow browsing inbound and outbound SNOMED CT relationships that connect concepts.
+ * @since 4.5
  */
-public interface ISnomedStatementBrowserService extends IComponentEdgeService<ISnomedRelationship> {
-	// Empty interface body
+public final class SnomedRefSetGetRequestBuilder extends GetRequestBuilder<SnomedRefSetGetRequestBuilder, SnomedReferenceSet> {
+
+	protected SnomedRefSetGetRequestBuilder(String repositoryId) {
+		super(repositoryId);
+	}
+
+	@Override
+	protected GetRequest<SnomedReferenceSet> create() {
+		return new SnomedRefSetGetRequest();
+	}
+
+	@Override
+	protected SnomedRefSetGetRequestBuilder getSelf() {
+		return this;
+	}
+	
 }

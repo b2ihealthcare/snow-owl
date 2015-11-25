@@ -15,38 +15,25 @@
  */
 package com.b2international.snowowl.snomed.datastore.server.request;
 
-import com.b2international.snowowl.core.ServiceProvider;
-import com.b2international.snowowl.core.domain.BranchContext;
-import com.b2international.snowowl.core.events.Request;
-import com.b2international.snowowl.core.events.RequestBuilder;
-import com.b2international.snowowl.datastore.request.RepositoryRequests;
 import com.b2international.snowowl.snomed.core.domain.ISnomedRelationship;
 
 /**
  * @since 4.5
  */
-public final class SnomedRelationshipGetRequestBuilder implements RequestBuilder<BranchContext, ISnomedRelationship> {
-
-	private final String repositoryId;
-	
-	private String id;
+public final class SnomedRelationshipGetRequestBuilder extends GetRequestBuilder<SnomedRelationshipGetRequestBuilder, ISnomedRelationship> {
 
 	SnomedRelationshipGetRequestBuilder(String repositoryId) {
-		this.repositoryId = repositoryId;
-	}
-	
-	public SnomedRelationshipGetRequestBuilder setId(String id) {
-		this.id = id;
-		return this;
+		super(repositoryId);
 	}
 	
 	@Override
-	public Request<BranchContext, ISnomedRelationship> build() {
-		return new SnomedRelationshipReadRequest(id);
+	protected GetRequest<ISnomedRelationship> create() {
+		return new SnomedRelationshipGetRequest();
 	}
 	
-	public Request<ServiceProvider, ISnomedRelationship> build(String branch) {
-		return RepositoryRequests.wrap(repositoryId, branch, build());
+	@Override
+	protected SnomedRelationshipGetRequestBuilder getSelf() {
+		return this;
 	}
-
+	
 }

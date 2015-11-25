@@ -2,7 +2,6 @@ package com.b2international.snowowl.snomed.api.impl.domain;
 
 import com.b2international.commons.ClassUtils;
 import com.b2international.snowowl.snomed.api.impl.domain.browser.SnomedBrowserRelationship;
-import com.b2international.snowowl.snomed.core.domain.ISnomedRelationship;
 import com.b2international.snowowl.snomed.datastore.server.request.BaseSnomedComponentUpdateRequest;
 import com.b2international.snowowl.snomed.datastore.server.request.SnomedComponentCreateRequest;
 import com.b2international.snowowl.snomed.datastore.server.request.SnomedRelationshipCreateRequest;
@@ -10,7 +9,7 @@ import com.b2international.snowowl.snomed.datastore.server.request.SnomedRelatio
 import com.b2international.snowowl.snomed.datastore.server.request.SnomedRelationshipUpdateRequestBuilder;
 import com.b2international.snowowl.snomed.datastore.server.request.SnomedRequests;
 
-public class RelationshipInputCreator extends AbstractInputCreator implements ComponentInputCreator<SnomedRelationshipCreateRequest, ISnomedRelationship, SnomedRelationshipUpdateRequest, SnomedBrowserRelationship> {
+public class RelationshipInputCreator extends AbstractInputCreator implements ComponentInputCreator<SnomedRelationshipCreateRequest, SnomedRelationshipUpdateRequest, SnomedBrowserRelationship> {
 	@Override
 	public SnomedRelationshipCreateRequest createInput(String branchPath, SnomedBrowserRelationship relationship, InputFactory inputFactory) {
 		return (SnomedRelationshipCreateRequest) SnomedRequests

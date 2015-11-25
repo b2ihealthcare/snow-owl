@@ -10,7 +10,6 @@ import java.util.Set;
 import com.b2international.snowowl.snomed.api.domain.browser.ISnomedBrowserComponentWithId;
 import com.b2international.snowowl.snomed.api.domain.browser.ISnomedBrowserConcept;
 import com.b2international.snowowl.snomed.api.domain.browser.ISnomedBrowserConceptUpdate;
-import com.b2international.snowowl.snomed.core.domain.SnomedComponent;
 import com.b2international.snowowl.snomed.datastore.server.request.BaseSnomedComponentUpdateRequest;
 import com.b2international.snowowl.snomed.datastore.server.request.SnomedComponentCreateRequest;
 import com.google.common.collect.Sets;
@@ -26,11 +25,11 @@ public class InputFactory {
 		creators.add(new RelationshipInputCreator());
 	}
 
-	public <I extends SnomedComponentCreateRequest<R>, R extends SnomedComponent> I createComponentInput(String branchPath, ISnomedBrowserComponentWithId component, Class<I> inputType) {
+	public <I extends SnomedComponentCreateRequest> I createComponentInput(String branchPath, ISnomedBrowserComponentWithId component, Class<I> inputType) {
 		return getInputDelegate(inputType).createInput(branchPath, component, this);
 	}
 
-	public <I extends SnomedComponentCreateRequest<R>, R extends SnomedComponent> List<I> createComponentInputs(String branchPath,
+	public <I extends SnomedComponentCreateRequest> List<I> createComponentInputs(String branchPath,
 			List<? extends ISnomedBrowserComponentWithId> newVersionComponents, Class<I> inputType) {
 		List<I> inputs = new ArrayList<>();
 		for (ISnomedBrowserComponentWithId component : newVersionComponents) {
@@ -76,7 +75,7 @@ public class InputFactory {
 		return ids;
 	}
 
-	private <I extends SnomedComponentCreateRequest<R>, R extends SnomedComponent> ComponentInputCreator<I, R, BaseSnomedComponentUpdateRequest, ISnomedBrowserComponentWithId> getInputDelegate(Class<I> inputType) {
+	private <I extends SnomedComponentCreateRequest> ComponentInputCreator<I, BaseSnomedComponentUpdateRequest, ISnomedBrowserComponentWithId> getInputDelegate(Class<I> inputType) {
 		for (ComponentInputCreator creator : creators) {
 			if (creator.canCreateInput(inputType)) {
 				return creator;

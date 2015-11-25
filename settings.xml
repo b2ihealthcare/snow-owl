@@ -13,7 +13,6 @@
 				<nexus.url>url/to/local/nexus/instance</nexus.url>
 				<nexus.snapshots.url>${nexus.url}/content/repositories/snapshots</nexus.snapshots.url>
 				<nexus.releases.url>${nexus.url}/content/repositories/releases</nexus.releases.url>
-				<target.platform.url>${nexus.url}/content/unzip/snapshots.unzip/com/b2international/snowowl/com.b2international.snowowl.target.update/4.0.0-SNAPSHOT/com.b2international.snowowl.target.update-4.0.0-SNAPSHOT.zip-unzip/</target.platform.url>
 			</properties>
 		</profile>
 	</profiles>

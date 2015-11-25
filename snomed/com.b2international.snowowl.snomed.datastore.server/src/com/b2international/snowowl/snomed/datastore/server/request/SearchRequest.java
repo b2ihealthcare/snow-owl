@@ -22,10 +22,14 @@ import java.util.List;
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
 
+import org.apache.lucene.search.Filter;
+
+import com.b2international.commons.http.ExtendedLocale;
 import com.b2international.commons.options.Options;
 import com.b2international.snowowl.core.api.index.IndexException;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.events.BaseRequest;
+import com.b2international.snowowl.datastore.index.mapping.Mappings;
 
 /**
  * @since 4.5
@@ -45,7 +49,10 @@ public abstract class SearchRequest<B> extends BaseRequest<BranchContext, B> {
 	private List<String> expand;
 	
 	@NotNull
-	private List<String> locales;
+	private List<ExtendedLocale> locales;
+	
+	@NotNull
+	private Collection<String> componentIds;
 	
 	protected SearchRequest() {}
 	
@@ -65,8 +72,12 @@ public abstract class SearchRequest<B> extends BaseRequest<BranchContext, B> {
 		this.expand = expand;
 	}
 	
-	void setLocales(List<String> locales) {
+	void setLocales(List<ExtendedLocale> locales) {
 		this.locales = locales;
+	}
+	
+	void setComponentIds(Collection<String> componentIds) {
+		this.componentIds = componentIds;
 	}
 	
 	protected final int offset() {
@@ -105,12 +116,24 @@ public abstract class SearchRequest<B> extends BaseRequest<BranchContext, B> {
 		return options.getCollection(key.name(), type);
 	}
 	
+	protected final <T> List<T> getList(Enum<?> key, Class<T> type) {
+		return options.getList(key.name(), type);
+	}
+	
 	protected final List<String> expand() {
 		return expand;
 	}
 	
-	protected final List<String> locales() {
+	protected final Collection<String> componentIds() {
+		return componentIds;
+	}
+	
+	protected final List<ExtendedLocale> locales() {
 		return locales;
+	}
+	
+	protected Filter createComponentIdFilter() {
+		return Mappings.id().createTermsFilter(componentIds);
 	}
 	
 	@Override
@@ -123,4 +146,5 @@ public abstract class SearchRequest<B> extends BaseRequest<BranchContext, B> {
 	}
 
 	protected abstract B doExecute(BranchContext context) throws IOException;
+
 }

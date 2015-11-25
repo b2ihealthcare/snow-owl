@@ -19,6 +19,7 @@ import java.util.List;
 
 import org.apache.lucene.document.Document;
 import org.apache.lucene.index.Term;
+import org.apache.lucene.queries.TermFilter;
 import org.apache.lucene.search.Filter;
 import org.apache.lucene.search.PrefixQuery;
 import org.apache.lucene.search.Sort;
@@ -48,6 +49,8 @@ public interface IndexField<T> {
 
 	Term toTerm(T value);
 
+	TermFilter toTermFilter(T value);
+
 	void addTo(Document doc, T value);
 
 	void removeAll(Document doc);
@@ -67,5 +70,4 @@ public interface IndexField<T> {
 	 * @param target
 	 */
 	void copyTo(Document source, Document target);
-
 }

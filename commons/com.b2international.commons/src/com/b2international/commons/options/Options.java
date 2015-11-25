@@ -17,6 +17,7 @@ package com.b2international.commons.options;
 
 import java.util.Collection;
 import java.util.Collections;
+import java.util.List;
 import java.util.Set;
 
 /**
@@ -123,6 +124,21 @@ public interface Options {
 	<T> Collection<T> getCollection(String key, Class<T> type);
 
 	/**
+	 * Returns a list of values conform to the given class type found on the given key. If a single value (not a {@link List}) is mapped
+	 * to the given key, then it wraps the value in a {@link Collections#singletonList(Object) singleton list} and returns it. Otherwise it tries to get
+	 * the value as a {@link List} and return it.
+	 * 
+	 * @param key
+	 *            - the key whose associated value is to be returned
+	 * @param type
+	 *            - the type of the items if a list is mapped to the given key in this map
+	 * @return a {@link List} mapped to the given key, or an empty list if there was no mapping for the key, never <code>null</code>.
+	 * @throws IllegalArgumentException
+	 *             - if the elements in the list is not applicable to the given type.
+	 */
+	<T> List<T> getList(String key, Class<T> type);
+	
+	/**
 	 * Returns a {@link Set} view of the keys contained in this map. The set is backed by the map, so changes to the map are reflected in the set, and
 	 * vice-versa. If the map is modified while an iteration over the set is in progress (except through the iterator's own <tt>remove</tt>
 	 * operation), the results of the iteration are undefined. The set supports element removal, which removes the corresponding mapping from the map,
@@ -132,5 +148,4 @@ public interface Options {
 	 * @return a set view of the keys contained in this map
 	 */
 	Set<String> keySet();
-
 }

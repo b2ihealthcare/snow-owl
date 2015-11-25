@@ -15,14 +15,18 @@
  */
 package com.b2international.snowowl.snomed.datastore.server.request;
 
+import java.util.Collection;
+
 import com.b2international.snowowl.snomed.core.domain.Acceptability;
 import com.b2international.snowowl.snomed.core.domain.SnomedDescriptions;
+import com.b2international.snowowl.snomed.datastore.id.SnomedIdentifiers;
 import com.b2international.snowowl.snomed.datastore.server.request.SnomedDescriptionSearchRequest.OptionKey;
+import com.google.common.collect.ImmutableSet;
 
 /**
  * @since 4.5
  */
-public final class SnomedDescriptionSearchRequestBuilder extends SearchRequestBuilder<SnomedDescriptionSearchRequestBuilder, SnomedDescriptions> {
+public final class SnomedDescriptionSearchRequestBuilder extends SnomedSearchRequestBuilder<SnomedDescriptionSearchRequestBuilder, SnomedDescriptions> {
 
 	SnomedDescriptionSearchRequestBuilder(String repositoryId) {
 		super(repositoryId);
@@ -32,24 +36,33 @@ public final class SnomedDescriptionSearchRequestBuilder extends SearchRequestBu
 		return addOption(OptionKey.TERM, termFilter);
 	}
 
-	public SnomedDescriptionSearchRequestBuilder filterByConcept(String conceptFilter) {
-		return addOption(OptionKey.CONCEPT, conceptFilter);
+	public SnomedDescriptionSearchRequestBuilder filterByConceptEscg(String conceptEscgFilter) {
+		return addOption(OptionKey.CONCEPT_ESCG, conceptEscgFilter);
+	}
+	
+	public SnomedDescriptionSearchRequestBuilder filterByConceptId(String conceptIdFilter) {
+		SnomedIdentifiers.validate(conceptIdFilter);
+		return filterByConceptId(Long.valueOf(conceptIdFilter));
+	}
+	
+	public SnomedDescriptionSearchRequestBuilder filterByConceptId(Long conceptIdFilter) {
+		return addOption(OptionKey.CONCEPT_ID, conceptIdFilter);
+	}
+	
+	public SnomedDescriptionSearchRequestBuilder filterByConceptId(Collection<Long> conceptIdFilter) {
+		return addOption(OptionKey.CONCEPT_ID, ImmutableSet.copyOf(conceptIdFilter));
 	}
 
 	public SnomedDescriptionSearchRequestBuilder filterByType(String typeFilter) {
 		return addOption(OptionKey.TYPE, typeFilter);
 	}
 
+	public SnomedDescriptionSearchRequestBuilder filterByLanguageCodes(Collection<String> languageCodes) {
+		return addOption(OptionKey.LANGUAGE, ImmutableSet.copyOf(languageCodes));
+	}
+	
 	public SnomedDescriptionSearchRequestBuilder filterByAcceptability(Acceptability acceptabilityFilter) {
 		return addOption(OptionKey.ACCEPTABILITY, acceptabilityFilter);
-	}
-
-	public SnomedDescriptionSearchRequestBuilder filterByModule(String moduleFilter) {
-		return addOption(OptionKey.MODULE, moduleFilter);
-	}
-
-	public SnomedDescriptionSearchRequestBuilder filterByActive(Boolean activeFilter) {
-		return addOption(OptionKey.ACTIVE, activeFilter);
 	}
 	
 	@Override

@@ -38,11 +38,9 @@ import com.b2international.snowowl.snomed.Relationship;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.core.domain.Acceptability;
 import com.b2international.snowowl.snomed.core.domain.DefinitionStatus;
-import com.b2international.snowowl.snomed.core.domain.ISnomedConcept;
 import com.b2international.snowowl.snomed.core.domain.IdGenerationStrategy;
 import com.b2international.snowowl.snomed.core.domain.UserIdGenerationStrategy;
 import com.b2international.snowowl.snomed.core.store.SnomedComponents;
-import com.b2international.snowowl.snomed.datastore.server.converter.SnomedConverters;
 import com.b2international.snowowl.snomed.datastore.services.ISnomedComponentService;
 import com.google.common.collect.HashMultiset;
 import com.google.common.collect.ImmutableList;
@@ -51,7 +49,7 @@ import com.google.common.collect.Multiset;
 /**
  * @since 4.5
  */
-public final class SnomedConceptCreateRequest extends BaseSnomedComponentCreateRequest<ISnomedConcept> {
+public final class SnomedConceptCreateRequest extends BaseSnomedComponentCreateRequest {
 
 	@Size(min = 2)
 	private List<SnomedDescriptionCreateRequest> descriptions = Collections.emptyList();
@@ -89,13 +87,13 @@ public final class SnomedConceptCreateRequest extends BaseSnomedComponentCreateR
 	}
 
 	@Override
-	public ISnomedConcept execute(TransactionContext context) {
+	public String execute(TransactionContext context) {
 		final IBranchPath branchPath = context.branch().branchPath();
 		
 		if (getIdGenerationStrategy() instanceof UserIdGenerationStrategy) {
 			try {
 				final String componentId = getIdGenerationStrategy().generate(context);
-				new SnomedConceptReadRequest(componentId).execute(context);
+				SnomedRequests.prepareGetConcept().setComponentId(componentId).build().execute(context);
 				throw new AlreadyExistsException("Concept", componentId);
 			} catch (ComponentNotFoundException e) {
 				// ignore
@@ -144,7 +142,7 @@ public final class SnomedConceptCreateRequest extends BaseSnomedComponentCreateR
 			}
 		}
 
-		return SnomedConverters.newConceptConverter(context).apply(concept);
+		return concept.getId();
 	}
 	
 	private Concept convertConcept(final TransactionContext context) {
@@ -171,11 +169,6 @@ public final class SnomedConceptCreateRequest extends BaseSnomedComponentCreateR
 		} catch (final ComponentNotFoundException e) {
 			throw e.toBadRequestException();
 		}
-	}
-	
-	@Override
-	protected Class<ISnomedConcept> getReturnType() {
-		return ISnomedConcept.class;
 	}
 	
 	@Override

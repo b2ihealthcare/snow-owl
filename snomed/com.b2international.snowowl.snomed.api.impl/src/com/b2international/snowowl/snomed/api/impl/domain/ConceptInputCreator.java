@@ -3,7 +3,6 @@ package com.b2international.snowowl.snomed.api.impl.domain;
 import com.b2international.snowowl.snomed.api.domain.browser.ISnomedBrowserDescription;
 import com.b2international.snowowl.snomed.api.impl.domain.browser.SnomedBrowserConcept;
 import com.b2international.snowowl.snomed.api.impl.domain.browser.SnomedBrowserConceptUpdate;
-import com.b2international.snowowl.snomed.core.domain.ISnomedConcept;
 import com.b2international.snowowl.snomed.core.domain.InactivationIndicator;
 import com.b2international.snowowl.snomed.datastore.server.request.BaseSnomedComponentUpdateRequest;
 import com.b2international.snowowl.snomed.datastore.server.request.SnomedComponentCreateRequest;
@@ -14,7 +13,7 @@ import com.b2international.snowowl.snomed.datastore.server.request.SnomedConcept
 import com.b2international.snowowl.snomed.datastore.server.request.SnomedDescriptionCreateRequest;
 import com.b2international.snowowl.snomed.datastore.server.request.SnomedRequests;
 
-public class ConceptInputCreator extends AbstractInputCreator implements ComponentInputCreator<SnomedConceptCreateRequest, ISnomedConcept, SnomedConceptUpdateRequest, SnomedBrowserConcept> {
+public class ConceptInputCreator extends AbstractInputCreator implements ComponentInputCreator<SnomedConceptCreateRequest, SnomedConceptUpdateRequest, SnomedBrowserConcept> {
 	
 	@Override
 	public SnomedConceptCreateRequest createInput(final String branchPath, SnomedBrowserConcept concept, InputFactory inputFactory) {

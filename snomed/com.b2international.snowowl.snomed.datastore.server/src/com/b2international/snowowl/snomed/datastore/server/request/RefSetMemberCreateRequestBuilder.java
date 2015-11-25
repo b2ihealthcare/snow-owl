@@ -22,12 +22,11 @@ import com.b2international.snowowl.core.domain.TransactionContext;
 import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.core.events.RequestBuilder;
 import com.b2international.snowowl.core.events.Requests;
-import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMember;
 
 /**
  * @since 4.5
  */
-public class RefSetMemberCreateRequestBuilder implements RequestBuilder<TransactionContext, SnomedReferenceSetMember> {
+public class RefSetMemberCreateRequestBuilder implements RequestBuilder<TransactionContext, String> {
 
 	private String moduleId;
 	private String referenceSetId;
@@ -65,7 +64,7 @@ public class RefSetMemberCreateRequestBuilder implements RequestBuilder<Transact
 	}
 	
 	@Override
-	public Request<TransactionContext, SnomedReferenceSetMember> build() {
+	public Request<TransactionContext, String> build() {
 		final SnomedRefSetMemberCreateRequest req = new SnomedRefSetMemberCreateRequest();
 		req.setModuleId(moduleId);
 		req.setReferencedComponentId(referencedComponentId);

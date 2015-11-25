@@ -15,38 +15,25 @@
  */
 package com.b2international.snowowl.snomed.datastore.server.request;
 
-import com.b2international.snowowl.core.ServiceProvider;
-import com.b2international.snowowl.core.domain.BranchContext;
-import com.b2international.snowowl.core.events.Request;
-import com.b2international.snowowl.core.events.RequestBuilder;
-import com.b2international.snowowl.datastore.request.RepositoryRequests;
 import com.b2international.snowowl.snomed.core.domain.ISnomedConcept;
 
 /**
  * @since 4.5
  */
-public final class SnomedConceptGetRequestBuilder implements RequestBuilder<BranchContext, ISnomedConcept> {
-
-	private final String repositoryId;
-	
-	private String id;
+public final class SnomedConceptGetRequestBuilder extends GetRequestBuilder<SnomedConceptGetRequestBuilder, ISnomedConcept> {
 
 	SnomedConceptGetRequestBuilder(String repositoryId) {
-		this.repositoryId = repositoryId;
+		super(repositoryId);
 	}
-	
-	public SnomedConceptGetRequestBuilder setId(String id) {
-		this.id = id;
-		return this;
+
+	@Override
+	protected GetRequest<ISnomedConcept> create() {
+		return new SnomedConceptGetRequest();
 	}
 	
 	@Override
-	public Request<BranchContext, ISnomedConcept> build() {
-		return new SnomedConceptReadRequest(id);
-	}
-	
-	public Request<ServiceProvider, ISnomedConcept> build(String branch) {
-		return RepositoryRequests.wrap(repositoryId, branch, build()); 
+	protected SnomedConceptGetRequestBuilder getSelf() {
+		return this;
 	}
 	
 }

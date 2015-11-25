@@ -21,7 +21,7 @@ import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedMappings
 /**
  * @since 4.5
  */
-public final class SnomedRefSetMemberSearchRequestBuilder extends SearchRequestBuilder<SnomedRefSetMemberSearchRequestBuilder, SnomedReferenceSetMembers> {
+public final class SnomedRefSetMemberSearchRequestBuilder extends SnomedSearchRequestBuilder<SnomedRefSetMemberSearchRequestBuilder, SnomedReferenceSetMembers> {
 
 	SnomedRefSetMemberSearchRequestBuilder(String repositoryId) {
 		super(repositoryId);

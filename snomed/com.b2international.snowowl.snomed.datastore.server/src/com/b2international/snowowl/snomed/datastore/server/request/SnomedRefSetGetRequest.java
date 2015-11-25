@@ -17,38 +17,34 @@ package com.b2international.snowowl.snomed.datastore.server.request;
 
 import java.util.List;
 
-import com.b2international.snowowl.core.api.IBranchPath;
+import org.eclipse.emf.cdo.CDOObject;
+import org.eclipse.emf.cdo.view.CDOView;
+
+import com.b2international.snowowl.core.api.IComponent;
+import com.b2international.snowowl.core.api.ILookupService;
 import com.b2international.snowowl.core.domain.BranchContext;
-import com.b2international.snowowl.core.events.BaseRequest;
-import com.b2international.snowowl.core.exceptions.ComponentNotFoundException;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSet;
 import com.b2international.snowowl.snomed.datastore.SnomedRefSetLookupService;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetIndexEntry;
-import com.b2international.snowowl.snomed.datastore.server.converter.SnomedReferenceSetConverter;
+import com.b2international.snowowl.snomed.datastore.server.converter.SnomedConverters;
 
 /**
  * @since 4.5
  */
-final class SnomedRefSetReadRequest extends BaseRequest<BranchContext, SnomedReferenceSet> {
+final class SnomedRefSetGetRequest extends GetRequest<SnomedReferenceSet> {
 
-	private final String referenceSetId;
-	private final List<String> expansions;
-
-	protected SnomedRefSetReadRequest(String referenceSetId, List<String> expansions) {
-		this.referenceSetId = referenceSetId;
-		this.expansions = expansions;
+	protected SnomedRefSetGetRequest() {
+		super("Reference Set");
 	}
 
 	@Override
-	public SnomedReferenceSet execute(BranchContext context) {
-		final IBranchPath branch = context.branch().branchPath();
-		final SnomedRefSetLookupService lookupService = new SnomedRefSetLookupService();
-		final SnomedRefSetIndexEntry entry = lookupService.getComponent(branch, referenceSetId);
-		if (entry == null) {
-			throw new ComponentNotFoundException("Reference Set", referenceSetId);
-		} else {
-			return new SnomedReferenceSetConverter(context, expansions).apply(entry);
-		}
+	protected ILookupService<String, ? extends CDOObject, CDOView> getLookupService() {
+		return new SnomedRefSetLookupService();
+	}
+
+	@Override
+	protected SnomedReferenceSet process(BranchContext context, IComponent<String> component, List<String> expand) {
+		return SnomedConverters.newRefSetConverter(context, expand, locales()).convert((SnomedRefSetIndexEntry) component);
 	}
 	
 	@Override

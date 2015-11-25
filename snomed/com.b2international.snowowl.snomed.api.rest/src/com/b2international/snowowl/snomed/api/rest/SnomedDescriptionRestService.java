@@ -17,6 +17,8 @@ package com.b2international.snowowl.snomed.api.rest;
 
 import static org.springframework.hateoas.mvc.ControllerLinkBuilder.linkTo;
 
+import java.io.IOException;
+import java.io.StringReader;
 import java.net.URI;
 import java.security.Principal;
 import java.util.List;
@@ -35,8 +37,10 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.context.request.async.DeferredResult;
 
-import com.b2international.commons.StringUtils;
+import com.b2international.commons.http.AcceptHeader;
+import com.b2international.commons.http.ExtendedLocale;
 import com.b2international.snowowl.core.domain.PageableCollectionResource;
+import com.b2international.snowowl.core.exceptions.BadRequestException;
 import com.b2international.snowowl.snomed.api.rest.domain.ChangeRequest;
 import com.b2international.snowowl.snomed.api.rest.domain.RestApiError;
 import com.b2international.snowowl.snomed.api.rest.domain.SnomedDescriptionRestInput;
@@ -71,8 +75,9 @@ public class SnomedDescriptionRestService extends AbstractSnomedRestService {
 		@ApiResponse(code = 400, message = "Invalid filter config", response = RestApiError.class),
 		@ApiResponse(code = 404, message = "Branch not found")
 	})
-	@RequestMapping(value="/{path:**}/descriptions", method=RequestMethod.GET)
-	public @ResponseBody DeferredResult<SnomedDescriptions> getDescriptions(
+	// FIXME: Route clashes with path "/{path}/concepts/{id}/descriptions" -- Spring thinks "concepts/{id}" is part of "{path}"
+	// @RequestMapping(value="/{path:**}/descriptions", method=RequestMethod.GET)
+	public @ResponseBody DeferredResult<SnomedDescriptions> search(
 			@ApiParam(value="The branch path")
 			@PathVariable(value="path")
 			final String branch,
@@ -113,25 +118,33 @@ public class SnomedDescriptionRestService extends AbstractSnomedRestService {
 			@RequestParam(value="expand", required=false)
 			final List<String> expand,
 
-			@ApiParam(value="Language codes and reference sets, in order of preference")
+			@ApiParam(value="Accepted language tags, in order of preference")
 			@RequestHeader(value="Accept-Language", defaultValue="en-US;q=0.8,en-GB;q=0.6", required=false) 
-			final String languageSetting) {
+			final String acceptLanguage) {
 		
-		final List<String> locales = StringUtils.getQualityList(languageSetting);
+		final List<ExtendedLocale> extendedLocales;
+		
+		try {
+			extendedLocales = AcceptHeader.parseExtendedLocales(new StringReader(acceptLanguage));
+		} catch (IOException e) {
+			throw new BadRequestException(e.getMessage());
+		} catch (IllegalArgumentException e) {
+			throw new BadRequestException(e.getMessage());
+		}
 		
 		return DeferredResults.wrap(
 				SnomedRequests
 					.prepareDescriptionSearch()
 					.filterByTerm(termFilter)
-					.filterByConcept(conceptFilter)
+					.filterByConceptEscg(conceptFilter)
 					.filterByType(typeFilter)
 					.filterByAcceptability(acceptabilityFilter)
 					.filterByModule(moduleFilter)
 					.filterByActive(activeFilter)
+					.filterByExtendedLocales(extendedLocales)
 					.setLimit(limit)
 					.setOffset(offset)
 					.setExpand(expand)
-					.setLocales(locales)
 					.build(branch)
 					.execute(bus));
 	}
@@ -162,16 +175,16 @@ public class SnomedDescriptionRestService extends AbstractSnomedRestService {
 		final String commitComment = body.getCommitComment();
 		final SnomedDescriptionCreateRequestBuilder req = body.getChange().toComponentInput();
 		
-		final ISnomedDescription createdDescription = 
+		final String createdDescriptionId = 
 				SnomedRequests
 					.prepareCommit(principal.getName(), branchPath)
 					.setCommitComment(commitComment)
 					.setBody(req)
 					.build()
 					.executeSync(bus, 120L * 1000L)
-					.getResultAs(ISnomedDescription.class);
+					.getResultAs(String.class);
 		
-		return Responses.created(getDescriptionLocation(branchPath, createdDescription)).build();
+		return Responses.created(getDescriptionLocation(branchPath, createdDescriptionId)).build();
 	}
 
 	@ApiOperation(
@@ -189,11 +202,16 @@ public class SnomedDescriptionRestService extends AbstractSnomedRestService {
 			
 			@ApiParam(value="The Description identifier")
 			@PathVariable(value="descriptionId")
-			final String descriptionId) {
+			final String descriptionId,
+			
+			@ApiParam(value="Expansion parameters")
+			@RequestParam(value="expand", required=false)
+			final List<String> expand) {
 		return DeferredResults.wrap(
 				SnomedRequests
 					.prepareGetDescription()
-					.setId(descriptionId)
+					.setComponentId(descriptionId)
+					.setExpand(expand)
 					.build(branchPath)
 					.execute(bus));
 	}
@@ -275,7 +293,7 @@ public class SnomedDescriptionRestService extends AbstractSnomedRestService {
 			.executeSync(bus, 120L * 1000L);
 	}
 	
-	private URI getDescriptionLocation(final String branchPath, final ISnomedDescription createdDescription) {
-		return linkTo(SnomedDescriptionRestService.class).slash(branchPath).slash("descriptions").slash(createdDescription.getId()).toUri();
+	private URI getDescriptionLocation(final String branchPath, final String descriptionId) {
+		return linkTo(SnomedDescriptionRestService.class).slash(branchPath).slash("descriptions").slash(descriptionId).toUri();
 	}
 }

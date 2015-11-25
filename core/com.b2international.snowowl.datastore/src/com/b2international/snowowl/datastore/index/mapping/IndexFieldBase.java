@@ -25,6 +25,7 @@ import org.apache.lucene.document.Document;
 import org.apache.lucene.document.Field.Store;
 import org.apache.lucene.index.IndexableField;
 import org.apache.lucene.index.Term;
+import org.apache.lucene.queries.TermFilter;
 import org.apache.lucene.queries.TermsFilter;
 import org.apache.lucene.search.Filter;
 import org.apache.lucene.search.PrefixQuery;
@@ -118,6 +119,10 @@ public abstract class IndexFieldBase<T> implements IndexField<T> {
 		return new Term(fieldName(), toBytesRef(value));
 	}
 	
+	@Override
+	public final TermFilter toTermFilter(T value) {
+		return new TermFilter(toTerm(value));
+	}
 
 	@Override
 	public void addTo(Document doc, T value) {

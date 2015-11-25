@@ -15,8 +15,6 @@
  */
 package com.b2international.snowowl.snomed.datastore.server.request;
 
-import java.util.List;
-
 import org.eclipse.emf.ecore.EObject;
 
 import com.b2international.snowowl.core.ServiceProvider;
@@ -30,8 +28,6 @@ import com.b2international.snowowl.snomed.Concept;
 import com.b2international.snowowl.snomed.Description;
 import com.b2international.snowowl.snomed.Relationship;
 import com.b2international.snowowl.snomed.core.domain.refset.MemberChange;
-import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSet;
-import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMember;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSets;
 import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetMember;
@@ -56,6 +52,10 @@ public abstract class SnomedRequests {
 	
 	public static SnomedDescriptionSearchRequestBuilder prepareDescriptionSearch() {
 		return new SnomedDescriptionSearchRequestBuilder(REPOSITORY_ID);
+	}
+	
+	public static SnomedRelationshipSearchRequestBuilder prepareRelationshipSearch() {
+		return new SnomedRelationshipSearchRequestBuilder(REPOSITORY_ID);
 	}
 	
 	public static SnomedConceptGetRequestBuilder prepareGetConcept() {
@@ -110,23 +110,19 @@ public abstract class SnomedRequests {
 		return new SnomedRelationshipCreateRequestBuilder();
 	}
 	
+	public static SnomedRefSetGetRequestBuilder prepareGetReferenceSet() {
+		return new SnomedRefSetGetRequestBuilder(REPOSITORY_ID);
+	}
+	
 	// TODO migrate initial API to builders
 	public static Request<ServiceProvider, SnomedReferenceSets> prepareRefSetSearch(String branch) {
 		return RepositoryRequests.wrap(REPOSITORY_ID, branch, new SnomedRefSetSearchRequest());
-	}
-	
-	public static Request<ServiceProvider, SnomedReferenceSet> prepareGetReferenceSet(String branch, String referenceSetId, List<String> expansions) {
-		return RepositoryRequests.wrap(REPOSITORY_ID, branch, new SnomedRefSetReadRequest(referenceSetId, expansions));
 	}
 	
 	public static SnomedRefSetMemberSearchRequestBuilder prepareMemberSearch() {
 		return new SnomedRefSetMemberSearchRequestBuilder(REPOSITORY_ID);
 	}
 	
-	public static Request<ServiceProvider, SnomedReferenceSetMember> prepareGetReferenceSetMember(String branch, String memberId) {
-		return RepositoryRequests.wrap(REPOSITORY_ID, branch, new SnomedRefSetMemberReadRequest(memberId));
-	}
-
 	public static Branching branching() {
 		return RepositoryRequests.branching(REPOSITORY_ID);
 	}
@@ -171,4 +167,8 @@ public abstract class SnomedRequests {
 		return new SnomedRelationshipUpdateRequestBuilder(REPOSITORY_ID, componentId);
 	}
 
+	public static SnomedRefSetMemberGetRequestBuilder prepareGetMember() {
+		return new SnomedRefSetMemberGetRequestBuilder(REPOSITORY_ID);
+	}
+	
 }

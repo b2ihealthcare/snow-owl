@@ -15,10 +15,14 @@
  */
 package com.b2international.snowowl.snomed.datastore.server.request;
 
-import com.b2international.snowowl.core.api.IBranchPath;
+import java.util.List;
+
+import org.eclipse.emf.cdo.CDOObject;
+import org.eclipse.emf.cdo.view.CDOView;
+
+import com.b2international.snowowl.core.api.IComponent;
+import com.b2international.snowowl.core.api.ILookupService;
 import com.b2international.snowowl.core.domain.BranchContext;
-import com.b2international.snowowl.core.events.BaseRequest;
-import com.b2international.snowowl.core.exceptions.ComponentNotFoundException;
 import com.b2international.snowowl.core.terminology.ComponentCategory;
 import com.b2international.snowowl.snomed.core.domain.ISnomedRelationship;
 import com.b2international.snowowl.snomed.datastore.SnomedRelationshipLookupService;
@@ -28,25 +32,22 @@ import com.b2international.snowowl.snomed.datastore.server.converter.SnomedConve
 /**
  * @since 4.5
  */
-final class SnomedRelationshipReadRequest extends BaseRequest<BranchContext, ISnomedRelationship> {
+final class SnomedRelationshipGetRequest extends GetRequest<ISnomedRelationship> {
 
-	private String componentId;
+	protected SnomedRelationshipGetRequest() {
+		super(ComponentCategory.RELATIONSHIP);
+	}
 
-	public SnomedRelationshipReadRequest(String componentId) {
-		this.componentId = componentId;
+	@Override
+	protected ILookupService<String, ? extends CDOObject, CDOView> getLookupService() {
+		return new SnomedRelationshipLookupService();
+	}
+
+	@Override
+	protected ISnomedRelationship process(BranchContext context, IComponent<String> component, List<String> expand) {
+		return SnomedConverters.newRelationshipConverter(context, expand, locales()).convert((SnomedRelationshipIndexEntry) component);
 	}
 	
-	@Override
-	public ISnomedRelationship execute(BranchContext context) {
-		final IBranchPath branchPath = context.branch().branchPath();
-		final SnomedRelationshipLookupService lookupService = new SnomedRelationshipLookupService();
-		if (!lookupService.exists(branchPath, componentId)) {
-			throw new ComponentNotFoundException(ComponentCategory.RELATIONSHIP, componentId);
-		}
-		final SnomedRelationshipIndexEntry relationship = lookupService.getComponent(branchPath, componentId);
-		return SnomedConverters.newRelationshipConverter(context).apply(relationship);
-	}
-
 	@Override
 	protected Class<ISnomedRelationship> getReturnType() {
 		return ISnomedRelationship.class;

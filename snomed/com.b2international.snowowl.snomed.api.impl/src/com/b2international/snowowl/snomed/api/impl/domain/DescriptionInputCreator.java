@@ -5,7 +5,6 @@ import java.util.Map;
 import com.b2international.commons.ClassUtils;
 import com.b2international.snowowl.snomed.api.impl.domain.browser.SnomedBrowserDescription;
 import com.b2international.snowowl.snomed.core.domain.Acceptability;
-import com.b2international.snowowl.snomed.core.domain.ISnomedDescription;
 import com.b2international.snowowl.snomed.datastore.server.request.BaseSnomedComponentUpdateRequest;
 import com.b2international.snowowl.snomed.datastore.server.request.SnomedComponentCreateRequest;
 import com.b2international.snowowl.snomed.datastore.server.request.SnomedDescriptionCreateRequest;
@@ -13,7 +12,7 @@ import com.b2international.snowowl.snomed.datastore.server.request.SnomedDescrip
 import com.b2international.snowowl.snomed.datastore.server.request.SnomedDescriptionUpdateRequestBuilder;
 import com.b2international.snowowl.snomed.datastore.server.request.SnomedRequests;
 
-public class DescriptionInputCreator extends AbstractInputCreator implements ComponentInputCreator<SnomedDescriptionCreateRequest, ISnomedDescription, SnomedDescriptionUpdateRequest, SnomedBrowserDescription> {
+public class DescriptionInputCreator extends AbstractInputCreator implements ComponentInputCreator<SnomedDescriptionCreateRequest, SnomedDescriptionUpdateRequest, SnomedBrowserDescription> {
 
 	@Override
 	public SnomedDescriptionCreateRequest createInput(String branchPath, SnomedBrowserDescription description, InputFactory inputFactory) {

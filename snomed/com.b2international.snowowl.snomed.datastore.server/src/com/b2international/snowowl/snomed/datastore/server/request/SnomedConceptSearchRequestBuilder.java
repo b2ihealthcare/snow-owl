@@ -21,7 +21,7 @@ import com.b2international.snowowl.snomed.datastore.server.request.SnomedConcept
 /**
  * @since 4.5
  */
-public final class SnomedConceptSearchRequestBuilder extends SearchRequestBuilder<SnomedConceptSearchRequestBuilder, SnomedConcepts> {
+public final class SnomedConceptSearchRequestBuilder extends SnomedSearchRequestBuilder<SnomedConceptSearchRequestBuilder, SnomedConcepts> {
 
 	SnomedConceptSearchRequestBuilder(String repositoryId) {
 		super(repositoryId);
@@ -35,14 +35,14 @@ public final class SnomedConceptSearchRequestBuilder extends SearchRequestBuilde
 		return addOption(OptionKey.ESCG, expression);
 	}
 	
-	public final SnomedConceptSearchRequestBuilder filterByModule(String moduleId) {
-		return addOption(OptionKey.MODULE, moduleId);
+	public final SnomedConceptSearchRequestBuilder filterByParent(String parentId) {
+		return addOption(OptionKey.PARENT, parentId);
 	}
-
-	public SnomedConceptSearchRequestBuilder filterByActive(Boolean active) {
-		return addOption(OptionKey.ACTIVE, active);
+	
+	public final SnomedConceptSearchRequestBuilder filterByAncestor(String ancestorId) {
+		return addOption(OptionKey.ANCESTOR, ancestorId);
 	}
-
+	
 	@Override
 	protected SearchRequest<SnomedConcepts> create() {
 		return new SnomedConceptSearchRequest();

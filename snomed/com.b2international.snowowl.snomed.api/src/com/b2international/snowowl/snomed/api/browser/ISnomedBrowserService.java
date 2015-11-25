@@ -15,17 +15,21 @@
  */
 package com.b2international.snowowl.snomed.api.browser;
 
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 
+import com.b2international.commons.http.ExtendedLocale;
 import com.b2international.snowowl.core.domain.IComponentRef;
 import com.b2international.snowowl.core.domain.IStorageRef;
 import com.b2international.snowowl.core.domain.exceptions.CodeSystemNotFoundException;
 import com.b2international.snowowl.core.domain.exceptions.CodeSystemVersionNotFoundException;
 import com.b2international.snowowl.core.exceptions.ComponentNotFoundException;
-import com.b2international.snowowl.snomed.api.domain.browser.*;
+import com.b2international.snowowl.snomed.api.domain.browser.ISnomedBrowserChildConcept;
+import com.b2international.snowowl.snomed.api.domain.browser.ISnomedBrowserConcept;
+import com.b2international.snowowl.snomed.api.domain.browser.ISnomedBrowserConceptUpdate;
+import com.b2international.snowowl.snomed.api.domain.browser.ISnomedBrowserConstant;
+import com.b2international.snowowl.snomed.api.domain.browser.ISnomedBrowserDescriptionResult;
+import com.b2international.snowowl.snomed.api.domain.browser.ISnomedBrowserParentConcept;
 
 /**
  * The interface for the IHTSDO SNOMED CT Browser service.
@@ -36,46 +40,46 @@ public interface ISnomedBrowserService {
 	 * Retrieves information strongly connected to a concept in a single request.
 	 * 
 	 * @param conceptRef the component reference pointing to the concept to retrieve (may not be {@code null})
-	 * @param locales the {@link Locale}s to inspect when determining FSN and preferred synonym, in decreasing order of preference
+	 * @param extendedLocales the {@link ExtendedLocale}s to inspect when determining FSN and preferred synonym, in decreasing order of preference
 	 * @return the aggregated content for the requested concept
 	 * @throws CodeSystemNotFoundException if a code system with the given short name is not registered
 	 * @throws CodeSystemVersionNotFoundException if a code system version for the code system with the given identifier is not registered
 	 * @throws ComponentNotFoundException if the component identifier does not match any concept on the given task
 	 */
-	ISnomedBrowserConcept getConceptDetails(IComponentRef conceptRef, List<Locale> locales);
+	ISnomedBrowserConcept getConceptDetails(IComponentRef conceptRef, List<ExtendedLocale> extendedLocales);
 
 
 	/**
 	 * Retrieves a list of parent concepts for a single identifier.
 	 * 
 	 * @param conceptRef the component reference pointing to the concept whose parents should be retrieved (may not be {@code null})
-	 * @param locales the {@link Locale}s to inspect when determining FSN, in decreasing order of preference
+	 * @param extendedLocales the {@link ExtendedLocale}s to inspect when determining FSN, in decreasing order of preference
 	 * @return the parent concept list for the requested concept
 	 * @throws CodeSystemNotFoundException if a code system with the given short name is not registered
 	 * @throws CodeSystemVersionNotFoundException if a code system version for the code system with the given identifier is not registered
 	 * @throws ComponentNotFoundException if the component identifier does not match any concept on the given task
 	 */
-	List<ISnomedBrowserParentConcept> getConceptParents(IComponentRef conceptRef, List<Locale> locales);
+	List<ISnomedBrowserParentConcept> getConceptParents(IComponentRef conceptRef, List<ExtendedLocale> extendedLocales);
 	
 	/**
 	 * Retrieves a list of child concepts for a single identifier.
 	 * 
 	 * @param conceptRef the component reference pointing to the concept whose children should be retrieved (may not be {@code null})
-	 * @param locales the {@link Locale}s to inspect when determining FSN, in decreasing order of preference
+	 * @param extendedLocales the {@link ExtendedLocale}s to inspect when determining FSN, in decreasing order of preference
 	 * @param stated {@code true} if stated children should be returned, {@code false} if inferred
 	 * @return the child concept list for the requested concept
 	 * @throws CodeSystemNotFoundException if a code system with the given short name is not registered
 	 * @throws CodeSystemVersionNotFoundException if a code system version for the code system with the given identifier is not registered
 	 * @throws ComponentNotFoundException if the component identifier does not match any concept on the given task
 	 */
-	List<ISnomedBrowserChildConcept> getConceptChildren(IComponentRef conceptRef, List<Locale> locales, boolean stated);
+	List<ISnomedBrowserChildConcept> getConceptChildren(IComponentRef conceptRef, List<ExtendedLocale> extendedLocales, boolean stated);
 	
 	/**
 	 * Retrieves a list of descriptions matching the entered query string.
 	 * 
 	 * @param storageRef the storage reference locating the version and branch to search on (may not be {@code null})
 	 * @param query the query text (must be at least 3 characters long)
-	 * @param locales the {@link Locale}s to inspect when determining FSN, in decreasing order of preference
+	 * @param extendedLocales the {@link ExtendedLocale}s to inspect when determining FSN, in decreasing order of preference
 	 * @param offset the offset in the result set (may not be negative)
 	 * @param limit the maximal number of results to return
 	 * @return the search result list of descriptions
@@ -83,20 +87,20 @@ public interface ISnomedBrowserService {
 	 * @throws CodeSystemVersionNotFoundException if a code system version for the code system with the given identifier is not registered
 	 * @throws IllegalArgumentException if the query is {@code null} or too short
 	 */
-	List<ISnomedBrowserDescriptionResult> getDescriptions(IStorageRef storageRef, String query, List<Locale> locales, ISnomedBrowserDescriptionResult.TermType resultConceptTermType, int offset, int limit);
+	List<ISnomedBrowserDescriptionResult> getDescriptions(IStorageRef storageRef, String query, List<ExtendedLocale> extendedLocales, ISnomedBrowserDescriptionResult.TermType resultConceptTermType, int offset, int limit);
 
 	/**
 	 * Retrieves a map of enum constants and corresponding concepts.
 	 *
 	 * @param storageRef the storage reference locating the version and branch to inspect (may not be {@code null})
-	 * @param locales the {@link Locale}s to inspect when determining FSN, in decreasing order of preference
+	 * @param extendedLocales the {@link ExtendedLocale}s to inspect when determining FSN, in decreasing order of preference
 	 * @throws CodeSystemNotFoundException if a code system with the given short name is not registered
 	 * @throws CodeSystemVersionNotFoundException if a code system version for the code system with the given identifier is not registered
 	 * @return a map with keys as constant identifiers, and values as corresponding concept ID-FSN pairs
 	 */
-	Map<String, ISnomedBrowserConstant> getConstants(String branch, List<Locale> locales);
+	Map<String, ISnomedBrowserConstant> getConstants(String branch, List<ExtendedLocale> extendedLocales);
 
-	ISnomedBrowserConcept create(String branchPath, ISnomedBrowserConcept concept, String userId, List<Locale> locales);
+	ISnomedBrowserConcept create(String branchPath, ISnomedBrowserConcept concept, String userId, List<ExtendedLocale> extendedLocales);
 
-	ISnomedBrowserConcept update(String branchPath, ISnomedBrowserConceptUpdate concept, String userId, ArrayList<Locale> locales);
+	ISnomedBrowserConcept update(String branchPath, ISnomedBrowserConceptUpdate concept, String userId, List<ExtendedLocale> extendedLocales);
 }

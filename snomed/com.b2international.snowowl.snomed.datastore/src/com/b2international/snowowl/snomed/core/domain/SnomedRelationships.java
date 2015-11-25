@@ -13,16 +13,24 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.snomed.api;
+package com.b2international.snowowl.snomed.core.domain;
 
-import com.b2international.snowowl.api.IComponentNodeService;
-import com.b2international.snowowl.snomed.core.domain.ISnomedConcept;
+import java.util.Collections;
+import java.util.List;
+
+import com.b2international.snowowl.core.domain.PageableCollectionResource;
 
 /**
- * Implementations allow browsing SNOMED CT concepts as a directed, acyclic graph (DAG).
- * <p>
- * Concept representation in this service is the same as the one in {@link ISnomedConceptService}.
+ * @since 4.5
  */
-public interface ISnomedTerminologyBrowserService extends IComponentNodeService<ISnomedConcept> {
-	// Empty interface body
+public final class SnomedRelationships extends PageableCollectionResource<ISnomedRelationship> {
+
+	public SnomedRelationships(int offset, int limit, int total) {
+		super(Collections.<ISnomedRelationship>emptyList(), offset, limit, total);
+	}
+
+	public SnomedRelationships(List<ISnomedRelationship> items, int offset, int limit, int total) {
+		super(items, offset, limit, total);
+	}
+
 }

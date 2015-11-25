@@ -16,6 +16,7 @@
 package com.b2international.snowowl.core.events.util;
 
 import com.b2international.commons.collections.Procedure;
+import com.google.common.base.Function;
 import com.google.common.util.concurrent.AbstractFuture;
 import com.google.common.util.concurrent.FutureCallback;
 import com.google.common.util.concurrent.Futures;
@@ -24,21 +25,6 @@ import com.google.common.util.concurrent.Futures;
  * @since 4.1
  */
 class SettablePromise<T> extends AbstractFuture<T> implements Promise<T> {
-
-	@Override
-	public Promise<T> then(final Procedure<T> then) {
-		Futures.addCallback(this, new FutureCallback<T>() {
-			@Override
-			public void onSuccess(T result) {
-				then.apply(result);
-			}
-
-			@Override
-			public void onFailure(Throwable t) {
-			}
-		});
-		return this;
-	}
 
 	@Override
 	public Promise<T> fail(final Procedure<Throwable> fail) {
@@ -55,6 +41,27 @@ class SettablePromise<T> extends AbstractFuture<T> implements Promise<T> {
 
 		});
 		return null;
+	}
+
+	@Override
+	public <U> Promise<U> then(final Function<T, U> func) {
+		final SettablePromise<U> transformed = new SettablePromise<>();
+		Futures.addCallback(this, new FutureCallback<T>() {
+			@Override
+			public void onSuccess(T result) {
+				try {
+					transformed.set(func.apply(result));
+				} catch (Throwable t) {
+					onFailure(t);
+				}
+			}
+
+			@Override
+			public void onFailure(Throwable t) {
+				transformed.reject(t);
+			}
+		});
+		return transformed;
 	}
 
 	/**
@@ -75,5 +82,4 @@ class SettablePromise<T> extends AbstractFuture<T> implements Promise<T> {
 	protected void reject(Throwable throwable) {
 		setException(throwable);
 	}
-
 }

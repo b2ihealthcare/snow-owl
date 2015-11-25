@@ -24,13 +24,12 @@ import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSets
 import com.b2international.snowowl.snomed.datastore.SnomedRefSetBrowser;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetIndexEntry;
 import com.b2international.snowowl.snomed.datastore.server.converter.SnomedConverters;
-import com.b2international.snowowl.snomed.datastore.server.converter.SnomedReferenceSetConverter;
 import com.google.common.collect.ImmutableList;
 
 /**
  * @since 4.5
  */
-final class SnomedRefSetSearchRequest extends SearchRequest<SnomedReferenceSets> {
+final class SnomedRefSetSearchRequest extends SnomedSearchRequest<SnomedReferenceSets> {
 
 	@Override
 	protected SnomedReferenceSets doExecute(BranchContext context) {
@@ -40,12 +39,7 @@ final class SnomedRefSetSearchRequest extends SearchRequest<SnomedReferenceSets>
 		final ImmutableList.Builder<SnomedReferenceSet> result = ImmutableList.builder();
 
 		final Collection<SnomedRefSetIndexEntry> referenceSets = browser.getAllReferenceSets(branchPath);
-		final SnomedReferenceSetConverter converter = SnomedConverters.newRefSetConverter(context);
-		for (SnomedRefSetIndexEntry entry : referenceSets) {
-			result.add(converter.apply(entry));
-		}
-
-		return new SnomedReferenceSets(result.build());
+		return SnomedConverters.newRefSetConverter(context, expand(), locales()).convert(referenceSets, offset(), limit(), referenceSets.size());
 	}
 	
 	@Override

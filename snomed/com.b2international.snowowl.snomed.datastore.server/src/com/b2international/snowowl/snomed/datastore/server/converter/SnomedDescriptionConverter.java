@@ -18,31 +18,37 @@ package com.b2international.snowowl.snomed.datastore.server.converter;
 import static com.b2international.snowowl.core.ApplicationContext.getServiceForClass;
 import static com.b2international.snowowl.snomed.core.domain.DescriptionInactivationIndicator.getInactivationIndicatorByValueId;
 
-import java.util.Collection;
-import java.util.Map;
+import java.util.List;
 
+import com.b2international.commons.http.ExtendedLocale;
 import com.b2international.snowowl.core.api.IBranchPath;
-import com.b2international.snowowl.snomed.Description;
+import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
-import com.b2international.snowowl.snomed.core.domain.Acceptability;
 import com.b2international.snowowl.snomed.core.domain.CaseSignificance;
 import com.b2international.snowowl.snomed.core.domain.DescriptionInactivationIndicator;
 import com.b2international.snowowl.snomed.core.domain.ISnomedDescription;
 import com.b2international.snowowl.snomed.core.domain.SnomedDescription;
+import com.b2international.snowowl.snomed.core.domain.SnomedDescriptions;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDescriptionIndexEntry;
-import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry;
 import com.b2international.snowowl.snomed.datastore.services.AbstractSnomedRefSetMembershipLookupService;
 import com.b2international.snowowl.snomed.datastore.services.ISnomedComponentService;
-import com.google.common.collect.ImmutableMap;
 
-public class SnomedDescriptionConverter extends AbstractSnomedComponentConverter<SnomedDescriptionIndexEntry, ISnomedDescription> {
+/**
+ * @since 4.0
+ */
+final class SnomedDescriptionConverter extends BaseSnomedComponentConverter<SnomedDescriptionIndexEntry, ISnomedDescription, SnomedDescriptions> {
 
-	SnomedDescriptionConverter(final AbstractSnomedRefSetMembershipLookupService refSetMembershipLookupService) {
-		super(refSetMembershipLookupService);
+	SnomedDescriptionConverter(BranchContext context, List<String> expand, List<ExtendedLocale> locales, final AbstractSnomedRefSetMembershipLookupService refSetMembershipLookupService) {
+		super(context, expand, locales, refSetMembershipLookupService);
 	}
 
 	@Override
-	public ISnomedDescription apply(final SnomedDescriptionIndexEntry input) {
+	protected SnomedDescriptions createCollectionResource(List<ISnomedDescription> results, int offset, int limit, int total) {
+		return new SnomedDescriptions(results, offset, limit, total);
+	}
+	
+	@Override
+	protected ISnomedDescription toResource(final SnomedDescriptionIndexEntry input) {
 		final SnomedDescription result = new SnomedDescription();
 		result.setAcceptabilityMap(input.getAcceptabilityMap());
 		result.setActive(input.isActive());
@@ -60,24 +66,6 @@ public class SnomedDescriptionConverter extends AbstractSnomedComponentConverter
 		return result;
 	}
 	
-	public ISnomedDescription apply(Description input) {
-		final SnomedDescription result = new SnomedDescription();
-		result.setAcceptabilityMap(toAcceptabilityMap(input.getId()));
-		result.setActive(input.isActive());
-		result.setCaseSignificance(toCaseSignificance(input.getCaseSignificance().getId()));
-		result.setConceptId(input.getConcept().getId());
-		result.setEffectiveTime(input.getEffectiveTime());
-		result.setId(input.getId());
-		result.setDescriptionInactivationIndicator(getDescriptionInactivationIndicator(input.getId()));
-		result.setAssociationTargets(toAssociationTargets(SnomedTerminologyComponentConstants.DESCRIPTION, input.getId()));
-		result.setLanguageCode(input.getLanguageCode());
-		result.setModuleId(input.getModule().getId());
-		result.setReleased(input.isReleased());
-		result.setTerm(input.getTerm());
-		result.setTypeId(input.getType().getId());
-		return result;
-	}
-
 	private DescriptionInactivationIndicator getDescriptionInactivationIndicator(final String descriptionId) {
 		final String inactivationId = getServiceForClass(ISnomedComponentService.class).getDescriptionInactivationId(getBranchPath(), descriptionId);
 		return getInactivationIndicatorByValueId(inactivationId);
@@ -85,19 +73,6 @@ public class SnomedDescriptionConverter extends AbstractSnomedComponentConverter
 
 	private IBranchPath getBranchPath() {
 		return getRefSetMembershipLookupService().getBranchPath();
-	}
-
-	private Map<String, Acceptability> toAcceptabilityMap(final String descriptionId) {
-		final Collection<SnomedRefSetMemberIndexEntry> languageMembers = getRefSetMembershipLookupService().getLanguageMembersForDescription(descriptionId);
-		final ImmutableMap.Builder<String, Acceptability> resultsBuilder = ImmutableMap.builder();
-
-		for (final SnomedRefSetMemberIndexEntry languageMember : languageMembers) {
-			if (languageMember.isActive()) {
-				resultsBuilder.put(languageMember.getRefSetIdentifierId(), languageMember.getAcceptability());
-			}
-		}
-
-		return resultsBuilder.build();
 	}
 
 	private CaseSignificance toCaseSignificance(final String caseSignificanceId) {

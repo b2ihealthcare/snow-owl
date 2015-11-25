@@ -15,12 +15,22 @@
  */
 package com.b2international.snowowl.snomed.datastore.server.request;
 
+import static com.google.common.collect.Maps.newHashMap;
+
 import java.io.IOException;
+import java.util.Collection;
+import java.util.Map;
 
 import org.apache.lucene.document.Document;
+import org.apache.lucene.queries.BooleanFilter;
+import org.apache.lucene.queries.CustomScoreQuery;
+import org.apache.lucene.queries.function.FunctionQuery;
+import org.apache.lucene.queries.function.FunctionValues;
+import org.apache.lucene.queries.function.valuesource.LongFieldSource;
+import org.apache.lucene.queries.function.valuesource.SimpleFloatFunction;
+import org.apache.lucene.search.BooleanClause.Occur;
 import org.apache.lucene.search.BooleanQuery;
 import org.apache.lucene.search.ConstantScoreQuery;
-import org.apache.lucene.search.Filter;
 import org.apache.lucene.search.FilteredQuery;
 import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.Query;
@@ -29,29 +39,25 @@ import org.apache.lucene.search.Sort;
 import org.apache.lucene.search.TopDocs;
 import org.apache.lucene.search.TotalHitCountCollector;
 
+import com.b2international.commons.functions.StringToLongFunction;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.exceptions.IllegalQueryParameterException;
 import com.b2international.snowowl.datastore.index.IndexUtils;
 import com.b2international.snowowl.datastore.server.snomed.escg.IndexQueryQueryEvaluator;
 import com.b2international.snowowl.dsl.escg.EscgUtils;
-import com.b2international.snowowl.snomed.core.domain.ISnomedConcept;
+import com.b2international.snowowl.snomed.core.domain.ISnomedDescription;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcepts;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptIndexEntry;
 import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedMappings;
 import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedQueryBuilder;
-import com.b2international.snowowl.snomed.datastore.server.converter.SnomedConceptConverter;
 import com.b2international.snowowl.snomed.datastore.server.converter.SnomedConverters;
 import com.b2international.snowowl.snomed.dsl.query.SyntaxErrorException;
 import com.google.common.collect.ImmutableList;
 
-import bak.pcj.adapter.LongCollectionToCollectionAdapter;
-import bak.pcj.map.LongKeyFloatMap;
-import bak.pcj.map.LongKeyFloatOpenHashMap;
-
 /**
  * @since 4.5
  */
-final class SnomedConceptSearchRequest extends SearchRequest<SnomedConcepts> {
+final class SnomedConceptSearchRequest extends SnomedSearchRequest<SnomedConcepts> {
 
 	enum OptionKey {
 
@@ -61,24 +67,24 @@ final class SnomedConceptSearchRequest extends SearchRequest<SnomedConcepts> {
 		TERM,
 
 		/**
-		 * Concept status to match
-		 */
-		ACTIVE,
-		
-		/**
 		 * ESCG expression to match
 		 */
 		ESCG,
 
 		/**
-		 * Concept module ID to match
-		 */
-		MODULE,
-
-		/**
 		 * Namespace part of concept ID to match (?)
 		 */
-		NAMESPACE
+		NAMESPACE,
+		
+		/**
+		 * Parent concept ID
+		 */
+		PARENT,
+		
+		/**
+		 * Ancestor concept ID (includes direct parents)
+		 */
+		ANCESTOR
 	}
 	
 	SnomedConceptSearchRequest() {}
@@ -88,8 +94,20 @@ final class SnomedConceptSearchRequest extends SearchRequest<SnomedConcepts> {
 		final IndexSearcher searcher = context.service(IndexSearcher.class);
 		final SnomedQueryBuilder queryBuilder = SnomedMappings.newQuery().concept();
 		
-		if (containsKey(OptionKey.ACTIVE)) {
-			queryBuilder.active(getBoolean(OptionKey.ACTIVE));
+		if (containsKey(SnomedSearchRequest.OptionKey.ACTIVE)) {
+			queryBuilder.active(getBoolean(SnomedSearchRequest.OptionKey.ACTIVE));
+		}
+		
+		if (containsKey(OptionKey.PARENT)) {
+			queryBuilder.parent(getString(OptionKey.PARENT));
+		}
+		
+		if (containsKey(OptionKey.ANCESTOR)) {
+			final String ancestorId = getString(OptionKey.ANCESTOR);
+			queryBuilder.and(SnomedMappings.newQuery()
+					.parent(ancestorId)
+					.parent(ancestorId)
+					.matchAny());
 		}
 		
 		if (containsKey(OptionKey.ESCG)) {
@@ -106,23 +124,44 @@ final class SnomedConceptSearchRequest extends SearchRequest<SnomedConcepts> {
 			}
 		}
 		
-		if (containsKey(OptionKey.MODULE)) {
-			queryBuilder.module(getString(OptionKey.MODULE));
+		if (containsKey(SnomedSearchRequest.OptionKey.MODULE)) {
+			queryBuilder.module(getString(SnomedSearchRequest.OptionKey.MODULE));
 		}
 		
 		final Query conceptQuery = queryBuilder.matchAll();
 		final Query query;
 		final Sort sort;
+		final BooleanFilter filter = new BooleanFilter();
+		
+		if (!componentIds().isEmpty()) {
+			filter.add(createComponentIdFilter(), Occur.MUST);
+		}
 		
 		if (containsKey(OptionKey.TERM)) {
-			final LongKeyFloatMap conceptScoreMap = executeDescriptionSearch(context, getString(OptionKey.TERM));
-			final Filter descriptionFilter = SnomedMappings.id().createTermsFilter(new LongCollectionToCollectionAdapter(conceptScoreMap.keySet())); 
+			final Map<String, Integer> conceptScoreMap = executeDescriptionSearch(context, getString(OptionKey.TERM));
+			filter.add(SnomedMappings.id().createTermsFilter(StringToLongFunction.copyOf(conceptScoreMap.keySet())), Occur.MUST); 
+			final FunctionQuery functionQuery = new FunctionQuery(new SimpleFloatFunction(new LongFieldSource(SnomedMappings.id().fieldName())) {
+				
+				@Override
+				protected String name() {
+					return "ConceptScoreMap";
+				}
+				
+				@Override
+				protected float func(int doc, FunctionValues vals) {
+					final String conceptId = Long.toString(vals.longVal(doc));
+					if (conceptScoreMap.containsKey(conceptId)) {
+						return conceptScoreMap.get(conceptId);
+					} else {
+						return 0.0f;
+					}
+				}
+			});
 			
-//			query = new CustomScoreQuery(new FilteredQuery(conceptQuery, descriptionFilter), ...);
-			query = new FilteredQuery(conceptQuery, descriptionFilter);
+			query = new CustomScoreQuery(createQuery(conceptQuery, filter), functionQuery);
 			sort = Sort.RELEVANCE;
 		} else {
-			query = new ConstantScoreQuery(conceptQuery);
+			query = new ConstantScoreQuery(createQuery(conceptQuery, filter));
 			sort = Sort.INDEXORDER;
 		}
 		
@@ -139,21 +178,47 @@ final class SnomedConceptSearchRequest extends SearchRequest<SnomedConcepts> {
 		}
 		
 		final ScoreDoc[] scoreDocs = topDocs.scoreDocs;
-		final SnomedConceptConverter converter = SnomedConverters.newConceptConverter(context);
-		final ImmutableList.Builder<ISnomedConcept> conceptsBuilder = ImmutableList.builder();
+		final ImmutableList.Builder<SnomedConceptIndexEntry> conceptsBuilder = ImmutableList.builder();
 		
 		for (int i = offset(); i < scoreDocs.length && i < offset() + limit(); i++) {
 			Document doc = searcher.doc(scoreDocs[i].doc); // TODO: should expand & filter drive fieldsToLoad? Pass custom fieldValueLoader?
 			SnomedConceptIndexEntry indexEntry = SnomedConceptIndexEntry.builder(doc).score(scoreDocs[i].score).build();
-			conceptsBuilder.add(converter.apply(indexEntry));
+			conceptsBuilder.add(indexEntry);
 		}
 
-		return new SnomedConcepts(conceptsBuilder.build(), offset(), limit(), topDocs.totalHits);
+		return SnomedConverters.newConceptConverter(context, expand(), locales()).convert(conceptsBuilder.build(), offset(), limit(), topDocs.totalHits);
 	}
 
-	private LongKeyFloatMap executeDescriptionSearch(BranchContext context, String term) {
+	private Query createQuery(final Query query, final BooleanFilter filter) {
+		if (filter.clauses().size() > 0) {
+			return new FilteredQuery(query, filter);
+		}
+		return query;
+	}
+
+	private Map<String, Integer> executeDescriptionSearch(BranchContext context, String term) {
 		
-		return new LongKeyFloatOpenHashMap();
+		final Collection<ISnomedDescription> items = SnomedRequests.prepareDescriptionSearch()
+			.all()
+			.filterByActive(true)
+			.filterByTerm(term)
+			.filterByLanguageRefSetIds(languageRefSetIds())
+			.build()
+			.execute(context)
+			.getItems();
+
+		final Map<String, Integer> conceptMap = newHashMap();
+		int i = items.size();
+		
+		for (ISnomedDescription description : items) {
+			if (!conceptMap.containsKey(description.getConceptId())) {
+				conceptMap.put(description.getConceptId(), i);
+			}
+			
+			i--;
+		}
+
+		return conceptMap;
 	}
 
 	@Override

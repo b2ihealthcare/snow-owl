@@ -18,18 +18,16 @@ package com.b2international.snowowl.snomed.datastore.server.request;
 import com.b2international.snowowl.core.domain.TransactionContext;
 import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.core.events.RequestBuilder;
-import com.b2international.snowowl.snomed.core.domain.ISnomedConcept;
-import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSet;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType;
 
 /**
  * @since 4.5
  */
-public final class SnomedRefSetCreateRequestBuilder implements RequestBuilder<TransactionContext, SnomedReferenceSet> {
+public final class SnomedRefSetCreateRequestBuilder implements RequestBuilder<TransactionContext, String> {
 
 	private SnomedRefSetType type;
 	private String referencedComponentType;
-	private Request<TransactionContext, ISnomedConcept> conceptReq;
+	private Request<TransactionContext, String> conceptReq;
 
 	SnomedRefSetCreateRequestBuilder() {
 	}
@@ -49,13 +47,13 @@ public final class SnomedRefSetCreateRequestBuilder implements RequestBuilder<Tr
 		return this;
 	}
 	
-	public SnomedRefSetCreateRequestBuilder setIdentifierConcept(Request<TransactionContext, ISnomedConcept> conceptReq) {
+	public SnomedRefSetCreateRequestBuilder setIdentifierConcept(Request<TransactionContext, String> conceptReq) {
 		this.conceptReq = conceptReq;
 		return this;
 	}
 	
 	@Override
-	public Request<TransactionContext, SnomedReferenceSet> build() {
+	public Request<TransactionContext, String> build() {
 		return new SnomedRefSetCreateRequest(type, referencedComponentType, (SnomedConceptCreateRequest) conceptReq);
 	}
 	

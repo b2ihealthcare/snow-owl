@@ -17,11 +17,11 @@ package com.b2international.snowowl.snomed.api.rest;
 
 import static org.springframework.hateoas.mvc.ControllerLinkBuilder.linkTo;
 
+import java.io.IOException;
+import java.io.StringReader;
 import java.net.URI;
 import java.security.Principal;
-import java.util.Collections;
-
-import javax.servlet.http.HttpServletRequest;
+import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -37,9 +37,12 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
 
+import com.b2international.commons.http.AcceptHeader;
+import com.b2international.commons.http.ExtendedLocale;
 import com.b2international.snowowl.core.domain.CollectionResource;
 import com.b2international.snowowl.core.domain.PageableCollectionResource;
 import com.b2international.snowowl.core.exceptions.ApiValidation;
+import com.b2international.snowowl.core.exceptions.BadRequestException;
 import com.b2international.snowowl.snomed.api.ISnomedClassificationService;
 import com.b2international.snowowl.snomed.api.domain.browser.ISnomedBrowserConcept;
 import com.b2international.snowowl.snomed.api.domain.classification.ClassificationStatus;
@@ -217,11 +220,19 @@ public class SnomedClassificationRestService extends AbstractSnomedRestService {
 			@RequestHeader(value="Accept-Language", defaultValue="en-US;q=0.8,en-GB;q=0.6", required=false)
 			final String languageSetting,
 
-			final Principal principal,
+			final Principal principal) {
 
-			final HttpServletRequest request) {
-
-		return delegate.getConceptPreview(branchPath, classificationId, conceptId, Collections.list(request.getLocales()), principal.getName());
+		final List<ExtendedLocale> extendedLocales;
+		
+		try {
+			extendedLocales = AcceptHeader.parseExtendedLocales(new StringReader(languageSetting));
+		} catch (IOException e) {
+			throw new BadRequestException(e.getMessage());
+		} catch (IllegalArgumentException e) {
+			throw new BadRequestException(e.getMessage());
+		}
+		
+		return delegate.getConceptPreview(branchPath, classificationId, conceptId, extendedLocales, principal.getName());
 	}
 
 	@ApiOperation(

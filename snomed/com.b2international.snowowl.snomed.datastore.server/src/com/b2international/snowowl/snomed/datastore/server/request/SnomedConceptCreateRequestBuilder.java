@@ -21,14 +21,13 @@ import java.util.List;
 
 import com.b2international.snowowl.core.terminology.ComponentCategory;
 import com.b2international.snowowl.snomed.core.domain.DefinitionStatus;
-import com.b2international.snowowl.snomed.core.domain.ISnomedConcept;
 import com.b2international.snowowl.snomed.core.domain.IdGenerationStrategy;
 import com.b2international.snowowl.snomed.core.domain.NamespaceIdGenerationStrategy;
 
 /**
  * @since 4.5
  */
-public final class SnomedConceptCreateRequestBuilder extends SnomedComponentCreateRequestBuilder<SnomedConceptCreateRequestBuilder, ISnomedConcept> {
+public final class SnomedConceptCreateRequestBuilder extends SnomedComponentCreateRequestBuilder<SnomedConceptCreateRequestBuilder> {
 
 	private DefinitionStatus definitionStatus = DefinitionStatus.PRIMITIVE;
 	private String parentId;
@@ -64,12 +63,12 @@ public final class SnomedConceptCreateRequestBuilder extends SnomedComponentCrea
 	}
 	
 	@Override
-	protected BaseSnomedComponentCreateRequest<ISnomedConcept> createRequest() {
+	protected BaseSnomedComponentCreateRequest createRequest() {
 		return new SnomedConceptCreateRequest();
 	}
 
 	@Override
-	protected void init(BaseSnomedComponentCreateRequest<ISnomedConcept> request) {
+	protected void init(BaseSnomedComponentCreateRequest request) {
 		final SnomedConceptCreateRequest req = (SnomedConceptCreateRequest) request;
 		req.setDefinitionStatus(definitionStatus);
 		// TODO use default namespace???

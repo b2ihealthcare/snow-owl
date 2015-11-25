@@ -17,6 +17,8 @@ package com.b2international.snowowl.snomed.api.rest;
 
 import static org.springframework.hateoas.mvc.ControllerLinkBuilder.linkTo;
 
+import java.io.IOException;
+import java.io.StringReader;
 import java.net.URI;
 import java.security.Principal;
 import java.util.List;
@@ -35,8 +37,10 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.context.request.async.DeferredResult;
 
-import com.b2international.commons.StringUtils;
+import com.b2international.commons.http.AcceptHeader;
+import com.b2international.commons.http.ExtendedLocale;
 import com.b2international.snowowl.core.domain.PageableCollectionResource;
+import com.b2international.snowowl.core.exceptions.BadRequestException;
 import com.b2international.snowowl.snomed.api.rest.domain.ChangeRequest;
 import com.b2international.snowowl.snomed.api.rest.domain.RestApiError;
 import com.b2international.snowowl.snomed.api.rest.domain.SnomedConceptRestInput;
@@ -70,7 +74,7 @@ public class SnomedConceptRestService extends AbstractSnomedRestService {
 		@ApiResponse(code = 404, message = "Branch not found")
 	})
 	@RequestMapping(value="/{path:**}/concepts", method=RequestMethod.GET)
-	public @ResponseBody DeferredResult<SnomedConcepts> getConcepts(
+	public @ResponseBody DeferredResult<SnomedConcepts> search(
 			@ApiParam(value="The branch path")
 			@PathVariable(value="path")
 			final String branch,
@@ -103,11 +107,19 @@ public class SnomedConceptRestService extends AbstractSnomedRestService {
 			@RequestParam(value="expand", required=false)
 			final List<String> expand,
 
-			@ApiParam(value="Language codes and reference sets, in order of preference")
+			@ApiParam(value="Accepted language tags, in order of preference")
 			@RequestHeader(value="Accept-Language", defaultValue="en-US;q=0.8,en-GB;q=0.6", required=false) 
-			final String languageSetting) {
+			final String acceptLanguage) {
 
-		final List<String> locales = StringUtils.getQualityList(languageSetting);
+		final List<ExtendedLocale> extendedLocales;
+		
+		try {
+			extendedLocales = AcceptHeader.parseExtendedLocales(new StringReader(acceptLanguage));
+		} catch (IOException e) {
+			throw new BadRequestException(e.getMessage());
+		} catch (IllegalArgumentException e) {
+			throw new BadRequestException(e.getMessage());
+		}
 		
 		return DeferredResults.wrap(
 				SnomedRequests
@@ -119,7 +131,7 @@ public class SnomedConceptRestService extends AbstractSnomedRestService {
 					.filterByModule(moduleFilter)
 					.filterByActive(activeFilter)
 					.setExpand(expand)
-					.setLocales(locales)
+					.filterByExtendedLocales(extendedLocales)
 					.build(branch)
 					.execute(bus));
 	}
@@ -139,12 +151,17 @@ public class SnomedConceptRestService extends AbstractSnomedRestService {
 
 			@ApiParam(value="The Concept identifier")
 			@PathVariable(value="conceptId")
-			final String conceptId) {
+			final String conceptId,
+			
+			@ApiParam(value="Expansion parameters")
+			@RequestParam(value="expand", required=false)
+			final List<String> expand) {
 
 		return DeferredResults.wrap(
 				SnomedRequests
 					.prepareGetConcept()
-					.setId(conceptId)
+					.setComponentId(conceptId)
+					.setExpand(expand)
 					.build(branchPath)
 					.execute(bus));
 	}
@@ -179,15 +196,15 @@ public class SnomedConceptRestService extends AbstractSnomedRestService {
 		
 		final SnomedConceptCreateRequestBuilder input = change.toComponentInput();
 		
-		final ISnomedConcept createdConcept = SnomedRequests
+		final String createdConceptId = SnomedRequests
 			.prepareCommit(userId, branchPath)
 			.setBody(input)
 			.setCommitComment(commitComment)
 			.build()
 			.executeSync(bus, 120L * 1000L)
-			.getResultAs(ISnomedConcept.class);
+			.getResultAs(String.class);
 		
-		return Responses.created(getConceptLocationURI(branchPath, createdConcept)).build();
+		return Responses.created(getConceptLocationURI(branchPath, createdConceptId)).build();
 	}
 
 	@ApiOperation(
@@ -279,7 +296,7 @@ public class SnomedConceptRestService extends AbstractSnomedRestService {
 			.executeSync(bus, 120L * 1000L);
 	}
 
-	private URI getConceptLocationURI(String branchPath, ISnomedConcept concept) {
-		return linkTo(SnomedConceptRestService.class).slash(branchPath).slash("concepts").slash(concept.getId()).toUri();
+	private URI getConceptLocationURI(String branchPath, String conceptId) {
+		return linkTo(SnomedConceptRestService.class).slash(branchPath).slash("concepts").slash(conceptId).toUri();
 	}
 }

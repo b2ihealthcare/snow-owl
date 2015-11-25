@@ -537,7 +537,7 @@ public class SnomedTaxonomyImpl implements SnomedTaxonomy {
 		}
 	}
 	
-	private synchronized void build(final IBranchPath branchPath) {
+	private synchronized void build(final IBranchPath branchPath) throws IllegalStateException {
 		
 		if (!InitializationState.isUninitialized(state.get())) {
 			return;
@@ -567,18 +567,6 @@ public class SnomedTaxonomyImpl implements SnomedTaxonomy {
 				}
 			}
 		};
-		
-		final Supplier<LongKeyMap> refSetMapSupplier = memoize(new Supplier<LongKeyMap>() {
-			@Override
-			public LongKeyMap get() {
-				return getServiceForClass(SnomedRefSetBrowser.class).getReferencedConceptIds(branchPath);
-		}});
-		
-		new Thread(new Runnable() {
-			@Override public void run() {
-				refSetMapSupplier.get();
-			}
-		}).start();
 		
 		ForkJoinUtils.runInParallel(initConceptsRunnable, initStatementsRunnable);
 		
@@ -612,15 +600,15 @@ public class SnomedTaxonomyImpl implements SnomedTaxonomy {
 
 			final int sourceConceptInternalId = concepts.getInternalId(sourceId);
 			if (sourceConceptInternalId < 0) {
-				throw new IllegalStateException(String.format("Cannot find internal source concept ID for %s on branch: %s", sourceId, branchPath));
+				throw new IllegalStateException(String.format("Active relationship has an inactive source (%s, branch: %s)", sourceId, branchPath));
 			}
 			final int destinationConceptInternalId = concepts.getInternalId(destinationId);
 			if (destinationConceptInternalId < 0) {
-				throw new IllegalStateException(String.format("Cannot find internal destination concept ID for %s on branch: %s", destinationId, branchPath));
+				throw new IllegalStateException(String.format("Active relationship has an inactive destination (%s, branch: %s)", destinationId, branchPath));
 			}
 			final int typeConceptInternalId = concepts.getInternalId(typeId);
 			if (destinationConceptInternalId < 0) {
-				throw new IllegalStateException(String.format("Cannot find internal type concept ID for %s on branch: %s ", typeId, branchPath));
+				throw new IllegalStateException(String.format("Active relationship has an inactive type (%s, branch: %s)", typeId, branchPath));
 			}
 
 			incomingOtherHistorgram[destinationConceptInternalId]++;
@@ -638,6 +626,18 @@ public class SnomedTaxonomyImpl implements SnomedTaxonomy {
 			
 		}
 
+		final Supplier<LongKeyMap> refSetMapSupplier = memoize(new Supplier<LongKeyMap>() {
+			@Override
+			public LongKeyMap get() {
+				return getServiceForClass(SnomedRefSetBrowser.class).getReferencedConceptIds(branchPath);
+		}});
+		
+		new Thread(new Runnable() {
+			@Override public void run() {
+				refSetMapSupplier.get();
+			}
+		}).start();
+		
 		for (int i = 0; i < conceptCount; i++) {
 			descendants[i] = new int[incomingIsaHistogram[i]];
 			ancestors[i] = new int[outgoingIsaHistogram[i]];
@@ -671,7 +671,7 @@ public class SnomedTaxonomyImpl implements SnomedTaxonomy {
 		
 		state.set(state.get().nextState());
 
-		LOGGER.info("SNOMED CT taxonomy service has been successfully initialized on '{}'. [{}]", branchPath, TimeUtil.toString(stopwatch));
+		LOGGER.info("SNOMED CT taxonomy cache has been successfully initialized on '{}'. [{}]", branchPath, TimeUtil.toString(stopwatch));
 	}
 	
 	private IntSet evaluateInternalIds(final com.b2international.snowowl.snomed.dsl.query.RValue expression) {
@@ -903,7 +903,12 @@ public class SnomedTaxonomyImpl implements SnomedTaxonomy {
 			new Thread(new Runnable() {
 				@Override
 				public void run() {
-					build(branchPath);
+					try {
+						build(branchPath);
+					} catch (IllegalStateException e) {
+						state.compareAndSet(InitializationState.BUILDING, InitializationState.UNINITIALIZED);
+						LOGGER.info("SNOMED CT taxonomy cache initialization was unsuccessful. Reason: {}", e.getMessage());
+					}
 				}
 			}).start();
 		}

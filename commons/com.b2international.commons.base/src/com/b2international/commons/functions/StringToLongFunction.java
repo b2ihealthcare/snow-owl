@@ -16,14 +16,19 @@
 package com.b2international.commons.functions;
 
 import com.google.common.base.Function;
+import com.google.common.collect.FluentIterable;
+import com.google.common.collect.ImmutableList;
 
 /**
  */
 public class StringToLongFunction implements Function<String, Long> {
 
+	public static ImmutableList<Long> copyOf(Iterable<String> stringIterable) {
+		return FluentIterable.from(stringIterable).transform(new StringToLongFunction()).toList();
+	}
+	
 	@Override
 	public Long apply(String input) {
 		return Long.valueOf(input);
 	}
-
 }

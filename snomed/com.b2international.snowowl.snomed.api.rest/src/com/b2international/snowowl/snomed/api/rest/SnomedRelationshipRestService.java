@@ -19,6 +19,7 @@ import static org.springframework.hateoas.mvc.ControllerLinkBuilder.linkTo;
 
 import java.net.URI;
 import java.security.Principal;
+import java.util.List;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -27,6 +28,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.context.request.async.DeferredResult;
@@ -81,15 +83,15 @@ public class SnomedRelationshipRestService extends AbstractSnomedRestService {
 		final String commitComment = body.getCommitComment();
 		final SnomedRelationshipCreateRequestBuilder req = body.getChange().toComponentInput();
 		
-		final ISnomedRelationship createdRelationship = SnomedRequests
+		final String createdRelationshipId = SnomedRequests
 				.prepareCommit(principal.getName(), branchPath)
 				.setBody(req)
 				.setCommitComment(commitComment)
 				.build()
 				.executeSync(bus, 120L * 1000L)
-				.getResultAs(ISnomedRelationship.class);
+				.getResultAs(String.class);
 				
-		return Responses.created(getRelationshipLocation(branchPath, createdRelationship)).build();
+		return Responses.created(getRelationshipLocation(branchPath, createdRelationshipId)).build();
 	}
 
 	@ApiOperation(
@@ -108,12 +110,17 @@ public class SnomedRelationshipRestService extends AbstractSnomedRestService {
 			
 			@ApiParam(value="The Relationship identifier")
 			@PathVariable("relationshipId") 
-			final String relationshipId) {
+			final String relationshipId,
+			
+			@ApiParam(value="Expansion parameters")
+			@RequestParam(value="expand", required=false)
+			final List<String> expand) {
 
 		return DeferredResults.wrap(
 				SnomedRequests
 					.prepareGetRelationship()
-					.setId(relationshipId)
+					.setComponentId(relationshipId)
+					.setExpand(expand)
 					.build(branchPath)
 					.execute(bus));
 	}
@@ -197,7 +204,7 @@ public class SnomedRelationshipRestService extends AbstractSnomedRestService {
 			.executeSync(bus, 120L * 1000L);
 	}
 
-	private URI getRelationshipLocation(final String branchPath, final ISnomedRelationship createdRelationship) {
-		return linkTo(SnomedRelationshipRestService.class).slash(branchPath).slash("relationships").slash(createdRelationship.getId()).toUri();
+	private URI getRelationshipLocation(final String branchPath, final String relationshipId) {
+		return linkTo(SnomedRelationshipRestService.class).slash(branchPath).slash("relationships").slash(relationshipId).toUri();
 	}
 }

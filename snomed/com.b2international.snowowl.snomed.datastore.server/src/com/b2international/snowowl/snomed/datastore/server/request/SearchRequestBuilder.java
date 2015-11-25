@@ -15,10 +15,12 @@
  */
 package com.b2international.snowowl.snomed.datastore.server.request;
 
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
 import com.b2international.commons.CompareUtils;
+import com.b2international.commons.http.ExtendedLocale;
 import com.b2international.commons.options.OptionsBuilder;
 import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.domain.BranchContext;
@@ -35,8 +37,9 @@ public abstract class SearchRequestBuilder<B extends SearchRequestBuilder<B, R>,
 	
 	private int offset = 0;
 	private int limit = 50;
+	private Collection<String> componentIds = Collections.emptyList();
 	private List<String> expand = Collections.emptyList();
-	private List<String> locales = Collections.emptyList();
+	private List<ExtendedLocale> locales = Collections.emptyList();
 	private final OptionsBuilder optionsBuilder = OptionsBuilder.newBuilder();
 	
 	protected SearchRequestBuilder(String repositoryId) {
@@ -58,13 +61,22 @@ public abstract class SearchRequestBuilder<B extends SearchRequestBuilder<B, R>,
 		return getSelf();
 	}
 	
-	public final B setLocales(List<String> locales) {
+	public final B setLocales(List<ExtendedLocale> locales) {
 		this.locales = locales;
 		return getSelf();
 	}
 	
+	public final B setComponentIds(Collection<String> componentIds) {
+		this.componentIds = componentIds;
+		return getSelf();
+	}
+	
 	public final B all() {
-		return setLimit(Integer.MAX_VALUE);
+		return setOffset(0).setLimit(Integer.MAX_VALUE);
+	}
+	
+	public final B one() {
+		return setOffset(0).setLimit(1);
 	}
 	
 	// XXX: Does not allow empty-ish values
@@ -90,6 +102,7 @@ public abstract class SearchRequestBuilder<B extends SearchRequestBuilder<B, R>,
 		req.setOffset(offset);
 		req.setExpand(expand);
 		req.setLocales(locales);
+		req.setComponentIds(componentIds);
 		req.setOptions(optionsBuilder.build());
 		return req;
 	}
@@ -99,5 +112,4 @@ public abstract class SearchRequestBuilder<B extends SearchRequestBuilder<B, R>,
 	protected final B getSelf() {
 		return (B) this;
 	}
-	
 }

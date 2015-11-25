@@ -19,6 +19,7 @@ import static org.springframework.hateoas.mvc.ControllerLinkBuilder.linkTo;
 
 import java.net.URI;
 import java.security.Principal;
+import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -105,8 +106,17 @@ public class SnomedReferenceSetMemberRestService extends AbstractSnomedRestServi
 
 			@ApiParam(value="The reference set member identifier")
 			@PathVariable(value="id")
-			final String memberId) {
-		return DeferredResults.wrap(SnomedRequests.prepareGetReferenceSetMember(branchPath, memberId).execute(bus));
+			final String memberId,
+			
+			@ApiParam(value="Expansion parameters")
+			@RequestParam(value="expand", required=false)
+			final List<String> expand) {
+		return DeferredResults.wrap(SnomedRequests
+				.prepareGetMember()
+				.setComponentId(memberId)
+				.setExpand(expand)
+				.build(branchPath)
+				.execute(bus));
 	}
 	
 	@ApiOperation(
@@ -132,7 +142,7 @@ public class SnomedReferenceSetMemberRestService extends AbstractSnomedRestServi
 			final Principal principal) {
 		
 		final SnomedRefSetMemberRestInput change = body.getChange();
-		final Request<TransactionContext, SnomedReferenceSetMember> req = SnomedRequests
+		final Request<TransactionContext, String> req = SnomedRequests
 				.prepareNewMember()
 				.setModuleId(change.getModuleId())
 				.setReferencedComponentId(change.getReferencedComponentId())
@@ -140,16 +150,16 @@ public class SnomedReferenceSetMemberRestService extends AbstractSnomedRestServi
 				.setProperties(change.getProperties())
 				.build();
 		
-		final SnomedReferenceSetMember createdRefSetMember = 
+		final String createdRefSetMemberId = 
 				SnomedRequests
-					.<SnomedReferenceSetMember>prepareCommit(principal.getName(), branchPath)
+					.prepareCommit(principal.getName(), branchPath)
 					.setBody(req)
 					.setCommitComment(body.getCommitComment())
 					.build()
 					.executeSync(bus, 120L * 1000L)
-					.getResultAs(SnomedReferenceSetMember.class);
+					.getResultAs(String.class);
 		
-		return Responses.created(getRefSetMemberLocationURI(branchPath, createdRefSetMember)).build();
+		return Responses.created(getRefSetMemberLocationURI(branchPath, createdRefSetMemberId)).build();
 	}
 	
 	@ApiOperation(
@@ -254,8 +264,8 @@ public class SnomedReferenceSetMemberRestService extends AbstractSnomedRestServi
 				.executeSync(bus);
 	}
 	
-	private URI getRefSetMemberLocationURI(String branchPath, SnomedReferenceSetMember refSetMember) {
-		return linkTo(SnomedReferenceSetMemberRestService.class).slash(branchPath).slash("members").slash(refSetMember.getId()).toUri();
+	private URI getRefSetMemberLocationURI(String branchPath, String memberId) {
+		return linkTo(SnomedReferenceSetMemberRestService.class).slash(branchPath).slash("members").slash(memberId).toUri();
 	}
 	
 }

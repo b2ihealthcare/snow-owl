@@ -23,12 +23,11 @@ import com.b2international.snowowl.core.terminology.ComponentCategory;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.core.domain.Acceptability;
 import com.b2international.snowowl.snomed.core.domain.CaseSignificance;
-import com.b2international.snowowl.snomed.core.domain.ISnomedDescription;
 
 /**
  * @since 4.5
  */
-public final class SnomedDescriptionCreateRequestBuilder extends SnomedComponentCreateRequestBuilder<SnomedDescriptionCreateRequestBuilder, ISnomedDescription> {
+public final class SnomedDescriptionCreateRequestBuilder extends SnomedComponentCreateRequestBuilder<SnomedDescriptionCreateRequestBuilder> {
 
 	private CaseSignificance caseSignificance = CaseSignificance.INITIAL_CHARACTER_CASE_INSENSITIVE;
 	private String term;
@@ -82,12 +81,12 @@ public final class SnomedDescriptionCreateRequestBuilder extends SnomedComponent
 	}
 	
 	@Override
-	protected BaseSnomedComponentCreateRequest<ISnomedDescription> createRequest() {
+	protected BaseSnomedComponentCreateRequest createRequest() {
 		return new SnomedDescriptionCreateRequest();
 	}
 	
 	@Override
-	protected void init(BaseSnomedComponentCreateRequest<ISnomedDescription> request) {
+	protected void init(BaseSnomedComponentCreateRequest request) {
 		final SnomedDescriptionCreateRequest req = (SnomedDescriptionCreateRequest) request;
 		req.setCaseSignificance(caseSignificance);
 		req.setTerm(term);

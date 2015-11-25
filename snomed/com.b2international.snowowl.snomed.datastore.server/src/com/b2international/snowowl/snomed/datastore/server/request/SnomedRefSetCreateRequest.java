@@ -21,21 +21,18 @@ import javax.validation.constraints.NotNull;
 import com.b2international.snowowl.core.domain.TransactionContext;
 import com.b2international.snowowl.core.events.BaseRequest;
 import com.b2international.snowowl.core.exceptions.BadRequestException;
-import com.b2international.snowowl.snomed.core.domain.ISnomedConcept;
-import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSet;
 import com.b2international.snowowl.snomed.core.store.SnomedComponents;
 import com.b2international.snowowl.snomed.datastore.SnomedEditingContext;
 import com.b2international.snowowl.snomed.datastore.SnomedRefSetEditingContext;
 import com.b2international.snowowl.snomed.datastore.SnomedRefSetUtil;
 import com.b2international.snowowl.snomed.datastore.SnomedTerminologyBrowser;
-import com.b2international.snowowl.snomed.datastore.server.converter.SnomedConverters;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRegularRefSet;
 
 /**
  * @since 4.5
  */
-public class SnomedRefSetCreateRequest extends BaseRequest<TransactionContext, SnomedReferenceSet> {
+public class SnomedRefSetCreateRequest extends BaseRequest<TransactionContext, String> {
 
 	@NotNull
 	private final SnomedRefSetType type;
@@ -57,12 +54,12 @@ public class SnomedRefSetCreateRequest extends BaseRequest<TransactionContext, S
 	}
 	
 	@Override
-	public SnomedReferenceSet execute(TransactionContext context) {
+	public String execute(TransactionContext context) {
 		RefSetSupport.check(type);
 		RefSetSupport.checkType(type, referencedComponentType);
 		checkParent(context);
 		
-		final ISnomedConcept identifierConcept = this.conceptReq.execute(context);
+		final String identifierConceptId = this.conceptReq.execute(context);
 		
 		// FIXME due to different resource lists we need access to the specific editing context (which will be removed later)
 		final SnomedRefSetEditingContext refSetContext = context.service(SnomedEditingContext.class).getRefSetEditingContext();
@@ -71,11 +68,11 @@ public class SnomedRefSetCreateRequest extends BaseRequest<TransactionContext, S
 			.newReferenceSet()
 			.setType(type)
 			.setReferencedComponentType(referencedComponentType)
-			.setIdentifierConceptId(identifierConcept.getId())
+			.setIdentifierConceptId(identifierConceptId)
 			.build(context);
 		
 		refSetContext.add(refSet);
-		return SnomedConverters.newRefSetConverter(context).apply(refSet, identifierConcept);
+		return identifierConceptId;
 	}
 	
 	private void checkParent(TransactionContext context) {
@@ -87,8 +84,8 @@ public class SnomedRefSetCreateRequest extends BaseRequest<TransactionContext, S
 	}
 
 	@Override
-	protected Class<SnomedReferenceSet> getReturnType() {
-		return SnomedReferenceSet.class;
+	protected Class<String> getReturnType() {
+		return String.class;
 	}
 	
 }

@@ -26,16 +26,14 @@ import com.b2international.snowowl.core.exceptions.AlreadyExistsException;
 import com.b2international.snowowl.core.exceptions.ComponentNotFoundException;
 import com.b2international.snowowl.snomed.Relationship;
 import com.b2international.snowowl.snomed.core.domain.CharacteristicType;
-import com.b2international.snowowl.snomed.core.domain.ISnomedRelationship;
 import com.b2international.snowowl.snomed.core.domain.RelationshipModifier;
 import com.b2international.snowowl.snomed.core.domain.UserIdGenerationStrategy;
 import com.b2international.snowowl.snomed.core.store.SnomedComponents;
-import com.b2international.snowowl.snomed.datastore.server.converter.SnomedConverters;
 
 /**
  * @since 4.0
  */
-public class SnomedRelationshipCreateRequest extends BaseSnomedComponentCreateRequest<ISnomedRelationship> {
+public class SnomedRelationshipCreateRequest extends BaseSnomedComponentCreateRequest {
 
 	@NotEmpty
 	private String sourceId;
@@ -129,11 +127,11 @@ public class SnomedRelationshipCreateRequest extends BaseSnomedComponentCreateRe
 	}
 
 	@Override
-	public ISnomedRelationship execute(TransactionContext context) {
+	public String execute(TransactionContext context) {
 		if (getIdGenerationStrategy() instanceof UserIdGenerationStrategy) {
 			try {
 				final String componentId = getIdGenerationStrategy().generate(context);
-				new SnomedRelationshipReadRequest(componentId).execute(context);
+				SnomedRequests.prepareGetRelationship().setComponentId(componentId).build().execute(context);
 				throw new AlreadyExistsException("Relationship", componentId);
 			} catch (ComponentNotFoundException e) {
 				// ignore
@@ -155,15 +153,10 @@ public class SnomedRelationshipCreateRequest extends BaseSnomedComponentCreateRe
 					// TODO: add a refinability refset member here?
 					.build(context);
 
-			return SnomedConverters.newRelationshipConverter(context).apply(relationship);
+			return relationship.getId();
 		} catch (ComponentNotFoundException e) {
 			throw e.toBadRequestException();
 		}
-	}
-	
-	@Override
-	protected Class<ISnomedRelationship> getReturnType() {
-		return ISnomedRelationship.class;
 	}
 	
 	@Override
