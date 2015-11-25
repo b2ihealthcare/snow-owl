@@ -18,7 +18,6 @@ package com.b2international.snowowl.snomed.datastore.server.converter;
 import static com.google.common.collect.Maps.newHashMap;
 
 import java.io.IOException;
-import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -36,7 +35,7 @@ import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.exceptions.BadRequestException;
 import com.b2international.snowowl.datastore.index.IndexUtils;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
-import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
+import com.b2international.snowowl.snomed.core.domain.AssociationType;
 import com.b2international.snowowl.snomed.core.domain.DefinitionStatus;
 import com.b2international.snowowl.snomed.core.domain.ISnomedConcept;
 import com.b2international.snowowl.snomed.core.domain.ISnomedDescription;
@@ -46,7 +45,6 @@ import com.b2international.snowowl.snomed.core.domain.SnomedConcepts;
 import com.b2international.snowowl.snomed.core.domain.SnomedDescriptions;
 import com.b2international.snowowl.snomed.core.domain.SubclassDefinitionStatus;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptIndexEntry;
-import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry;
 import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedMappings;
 import com.b2international.snowowl.snomed.datastore.server.request.DescriptionRequestHelper;
 import com.b2international.snowowl.snomed.datastore.server.request.SnomedConceptSearchRequestBuilder;
@@ -57,9 +55,9 @@ import com.google.common.base.Function;
 import com.google.common.base.Optional;
 import com.google.common.base.Predicate;
 import com.google.common.collect.FluentIterable;
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
+import com.google.common.collect.Multimap;
 
 /**
  * @since 4.5
@@ -85,13 +83,24 @@ final class SnomedConceptConverter extends BaseSnomedComponentConverter<SnomedCo
 		result.setModuleId(input.getModuleId());
 		result.setReleased(input.isReleased());
 		result.setSubclassDefinitionStatus(toSubclassDefinitionStatus(input.isExhaustive()));
-		result.setInactivationIndicator(toInactivationIndicator(input.getId()));
-		result.setAssociationTargets(toAssociationTargets(SnomedTerminologyComponentConstants.CONCEPT, input.getId()));
 		return result;
 	}
 	
 	@Override
 	protected void expand(List<ISnomedConcept> results) {
+		// Always expand inactivation reason and association targets
+		new InactivationExpander<ISnomedConcept>(context(), Concepts.REFSET_CONCEPT_INACTIVITY_INDICATOR) {
+			@Override
+			protected void setAssociationTargets(ISnomedConcept result,Multimap<AssociationType, String> associationTargets) {
+				((SnomedConcept) result).setAssociationTargets(associationTargets);
+			}
+			
+			@Override
+			protected void setInactivationIndicator(ISnomedConcept result, String valueId) {
+				((SnomedConcept) result).setInactivationIndicator(InactivationIndicator.getByConceptId(valueId));				
+			}
+		}.expand(results);
+		
 		if (expand().isEmpty()) {
 			return;
 		}
@@ -258,20 +267,5 @@ final class SnomedConceptConverter extends BaseSnomedComponentConverter<SnomedCo
 
 	private SubclassDefinitionStatus toSubclassDefinitionStatus(final boolean exhaustive) {
 		return exhaustive ? SubclassDefinitionStatus.DISJOINT_SUBCLASSES : SubclassDefinitionStatus.NON_DISJOINT_SUBCLASSES;
-	}
-
-	private InactivationIndicator toInactivationIndicator(final String id) {
-		final Collection<SnomedRefSetMemberIndexEntry> members = getRefSetMembershipLookupService().getMembers(
-				SnomedTerminologyComponentConstants.CONCEPT,
-				ImmutableList.of(Concepts.REFSET_CONCEPT_INACTIVITY_INDICATOR),
-				id);
-
-		for (final SnomedRefSetMemberIndexEntry member : members) {
-			if (member.isActive()) {
-				return member.getInactivationIndicator();
-			}
-		}
-
-		return null;
 	}
 }
