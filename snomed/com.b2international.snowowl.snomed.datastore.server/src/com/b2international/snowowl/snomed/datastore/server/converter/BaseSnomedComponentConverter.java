@@ -26,6 +26,7 @@ import com.b2international.commons.http.ExtendedLocale;
 import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.domain.CollectionResource;
+import com.b2international.snowowl.core.domain.IComponent;
 import com.b2international.snowowl.snomed.core.domain.AssociationType;
 import com.b2international.snowowl.snomed.core.domain.SnomedComponent;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedIndexEntry;
@@ -43,9 +44,16 @@ import com.google.common.collect.Multimap;
  * @param <R>
  * @param <CR>
  */
-public abstract class BaseSnomedComponentConverter<T extends SnomedIndexEntry, R extends SnomedComponent, CR extends CollectionResource<R>>
+abstract class BaseSnomedComponentConverter<T extends SnomedIndexEntry, R extends SnomedComponent, CR extends CollectionResource<R>>
 		implements ResourceConverter<T, R, CR> {
 
+	protected static final Function<IComponent, String> ID_FUNCTION = new Function<IComponent, String>() {
+		@Override
+		public String apply(IComponent input) {
+			return input.getId();
+		}
+	};
+	
 	private final BranchContext context;
 	private final List<String> expand;
 	private final AbstractSnomedRefSetMembershipLookupService refSetMembershipLookupService;

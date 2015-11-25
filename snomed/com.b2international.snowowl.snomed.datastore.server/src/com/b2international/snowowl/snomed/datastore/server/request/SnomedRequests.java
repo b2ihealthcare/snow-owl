@@ -15,8 +15,6 @@
  */
 package com.b2international.snowowl.snomed.datastore.server.request;
 
-import java.util.List;
-
 import org.eclipse.emf.ecore.EObject;
 
 import com.b2international.snowowl.core.ServiceProvider;
@@ -30,7 +28,6 @@ import com.b2international.snowowl.snomed.Concept;
 import com.b2international.snowowl.snomed.Description;
 import com.b2international.snowowl.snomed.Relationship;
 import com.b2international.snowowl.snomed.core.domain.refset.MemberChange;
-import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSet;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSets;
 import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetMember;
@@ -113,13 +110,13 @@ public abstract class SnomedRequests {
 		return new SnomedRelationshipCreateRequestBuilder();
 	}
 	
+	public static SnomedRefSetGetRequestBuilder prepareGetReferenceSet() {
+		return new SnomedRefSetGetRequestBuilder(REPOSITORY_ID);
+	}
+	
 	// TODO migrate initial API to builders
 	public static Request<ServiceProvider, SnomedReferenceSets> prepareRefSetSearch(String branch) {
 		return RepositoryRequests.wrap(REPOSITORY_ID, branch, new SnomedRefSetSearchRequest());
-	}
-	
-	public static Request<ServiceProvider, SnomedReferenceSet> prepareGetReferenceSet(String branch, String referenceSetId, List<String> expansions) {
-		return RepositoryRequests.wrap(REPOSITORY_ID, branch, new SnomedRefSetReadRequest(referenceSetId, expansions));
 	}
 	
 	public static SnomedRefSetMemberSearchRequestBuilder prepareMemberSearch() {

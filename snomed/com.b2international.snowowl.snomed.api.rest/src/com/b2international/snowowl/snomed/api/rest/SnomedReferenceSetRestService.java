@@ -98,7 +98,12 @@ public class SnomedReferenceSetRestService extends AbstractSnomedRestService {
 			@ApiParam(value="Expansion parameters")
 			@RequestParam(value="expand", required=false)
 			final List<String> expand) {
-		return DeferredResults.wrap(SnomedRequests.prepareGetReferenceSet(branchPath, referenceSetId, expand).execute(bus));
+		return DeferredResults.wrap(SnomedRequests
+				.prepareGetReferenceSet()
+				.setComponentId(referenceSetId)
+				.setExpand(expand)
+				.build(branchPath)
+				.execute(bus));
 	}
 	
 	@ApiOperation(

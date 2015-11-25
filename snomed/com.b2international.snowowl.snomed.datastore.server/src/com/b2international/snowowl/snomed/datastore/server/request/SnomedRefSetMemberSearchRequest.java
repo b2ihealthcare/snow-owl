@@ -32,7 +32,7 @@ import com.google.common.collect.FluentIterable;
 /**
  * @since 4.5
  */
-public class SnomedRefSetMemberSearchRequest extends SnomedSearchRequest<SnomedReferenceSetMembers> {
+final class SnomedRefSetMemberSearchRequest extends SnomedSearchRequest<SnomedReferenceSetMembers> {
 
 	SnomedRefSetMemberSearchRequest() {}
 	

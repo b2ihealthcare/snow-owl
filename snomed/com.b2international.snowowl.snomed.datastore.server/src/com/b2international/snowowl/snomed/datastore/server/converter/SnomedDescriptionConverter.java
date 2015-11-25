@@ -36,7 +36,7 @@ import com.b2international.snowowl.snomed.datastore.services.ISnomedComponentSer
 /**
  * @since 4.0
  */
-public class SnomedDescriptionConverter extends BaseSnomedComponentConverter<SnomedDescriptionIndexEntry, ISnomedDescription, SnomedDescriptions> {
+final class SnomedDescriptionConverter extends BaseSnomedComponentConverter<SnomedDescriptionIndexEntry, ISnomedDescription, SnomedDescriptions> {
 
 	SnomedDescriptionConverter(BranchContext context, List<String> expand, List<ExtendedLocale> locales, final AbstractSnomedRefSetMembershipLookupService refSetMembershipLookupService) {
 		super(context, expand, locales, refSetMembershipLookupService);

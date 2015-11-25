@@ -17,7 +17,6 @@ package com.b2international.snowowl.snomed.datastore.server.request;
 
 import static com.google.common.collect.Maps.newHashMap;
 
-import java.util.Collections;
 import java.util.Map;
 
 import org.hibernate.validator.constraints.NotEmpty;
@@ -81,7 +80,7 @@ public class SnomedRefSetMemberCreateRequest extends BaseRequest<TransactionCont
 		final SnomedReferenceSet refSet;
 		// TODO convert this 404 -> 400 logic into an interceptor one level higher (like all create requests should work the same way)
 		try {
-			refSet = new SnomedRefSetReadRequest(referenceSetId, Collections.<String>emptyList()).execute(context);
+			refSet = SnomedRequests.prepareGetReferenceSet().setComponentId(referenceSetId).build().execute(context);
 		} catch (ComponentNotFoundException e) {
 			throw e.toBadRequestException();
 		}

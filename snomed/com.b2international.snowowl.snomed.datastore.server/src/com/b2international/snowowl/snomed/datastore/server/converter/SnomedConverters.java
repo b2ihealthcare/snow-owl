@@ -15,15 +15,26 @@
  */
 package com.b2international.snowowl.snomed.datastore.server.converter;
 
-import java.util.Collections;
 import java.util.List;
 
 import com.b2international.commons.http.ExtendedLocale;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.domain.BranchContext;
+import com.b2international.snowowl.snomed.core.domain.ISnomedConcept;
+import com.b2international.snowowl.snomed.core.domain.ISnomedDescription;
+import com.b2international.snowowl.snomed.core.domain.ISnomedRelationship;
+import com.b2international.snowowl.snomed.core.domain.SnomedConcepts;
+import com.b2international.snowowl.snomed.core.domain.SnomedDescriptions;
+import com.b2international.snowowl.snomed.core.domain.SnomedRelationships;
+import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSet;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMember;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMembers;
+import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSets;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptIndexEntry;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDescriptionIndexEntry;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetIndexEntry;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRelationshipIndexEntry;
 import com.b2international.snowowl.snomed.datastore.services.SnomedBranchRefSetMembershipLookupService;
 
 /**
@@ -33,15 +44,15 @@ public class SnomedConverters {
 	
 	private SnomedConverters() {}
 	
-	public static SnomedConceptConverter newConceptConverter(BranchContext context, List<String> expand, List<ExtendedLocale> locales) {
+	public static ResourceConverter<SnomedConceptIndexEntry, ISnomedConcept, SnomedConcepts> newConceptConverter(BranchContext context, List<String> expand, List<ExtendedLocale> locales) {
 		return new SnomedConceptConverter(context, expand, locales, createMembershipLookupService(context));
 	}
 	
-	public static SnomedDescriptionConverter newDescriptionConverter(BranchContext context, List<String> expand, List<ExtendedLocale> locales) {
+	public static ResourceConverter<SnomedDescriptionIndexEntry, ISnomedDescription, SnomedDescriptions> newDescriptionConverter(BranchContext context, List<String> expand, List<ExtendedLocale> locales) {
 		return new SnomedDescriptionConverter(context, expand, locales, createMembershipLookupService(context));
 	}
 	
-	public static SnomedRelationshipConverter newRelationshipConverter(BranchContext context, List<String> expand, List<ExtendedLocale> locales) {
+	public static ResourceConverter<SnomedRelationshipIndexEntry, ISnomedRelationship, SnomedRelationships> newRelationshipConverter(BranchContext context, List<String> expand, List<ExtendedLocale> locales) {
 		return new SnomedRelationshipConverter(context, expand, locales,createMembershipLookupService(context));
 	}
 	
@@ -49,12 +60,8 @@ public class SnomedConverters {
 		return new SnomedReferenceSetMemberConverter(context, expand, locales, createMembershipLookupService(context));
 	}
 	
-	public static SnomedReferenceSetConverter newRefSetConverter(BranchContext context) {
-		return newRefSetConverter(context, Collections.<String>emptyList());
-	}
-	
-	public static SnomedReferenceSetConverter newRefSetConverter(BranchContext context, List<String> expansions) {
-		return new SnomedReferenceSetConverter(context, expansions);
+	public static ResourceConverter<SnomedRefSetIndexEntry, SnomedReferenceSet, SnomedReferenceSets> newRefSetConverter(BranchContext context, List<String> expand, List<ExtendedLocale> locales) {
+		return newRefSetConverter(context, expand, locales);
 	}
 	
 	private static SnomedBranchRefSetMembershipLookupService createMembershipLookupService(BranchContext context) {

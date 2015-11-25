@@ -37,14 +37,13 @@ import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemb
 import com.b2international.snowowl.snomed.datastore.server.request.DescriptionRequestHelper;
 import com.b2international.snowowl.snomed.datastore.server.request.SnomedDescriptionSearchRequestBuilder;
 import com.b2international.snowowl.snomed.datastore.services.AbstractSnomedRefSetMembershipLookupService;
-import com.google.common.base.Function;
 import com.google.common.collect.FluentIterable;
 import com.google.common.collect.ImmutableList;
 
 /**
  * @since 4.5
  */
-public class SnomedConceptConverter extends BaseSnomedComponentConverter<SnomedConceptIndexEntry, ISnomedConcept, SnomedConcepts> {
+final class SnomedConceptConverter extends BaseSnomedComponentConverter<SnomedConceptIndexEntry, ISnomedConcept, SnomedConcepts> {
 
 	SnomedConceptConverter(final BranchContext context, List<String> expand, List<ExtendedLocale> locales, final AbstractSnomedRefSetMembershipLookupService membershipLookupService) {
 		super(context, expand, locales, membershipLookupService);
@@ -76,12 +75,7 @@ public class SnomedConceptConverter extends BaseSnomedComponentConverter<SnomedC
 			return;
 		}
 		
-		final Set<String> conceptIds = FluentIterable.from(results).transform(new Function<ISnomedConcept, String>() {
-			@Override
-			public String apply(ISnomedConcept input) {
-				return input.getId();
-			}
-		}).toSet();
+		final Set<String> conceptIds = FluentIterable.from(results).transform(ID_FUNCTION).toSet();
 		
 		final DescriptionRequestHelper helper = new DescriptionRequestHelper() {
 			@Override

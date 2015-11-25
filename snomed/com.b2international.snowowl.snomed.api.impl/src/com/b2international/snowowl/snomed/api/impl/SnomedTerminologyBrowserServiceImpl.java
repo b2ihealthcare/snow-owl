@@ -41,7 +41,6 @@ import com.b2international.snowowl.snomed.datastore.index.SnomedConceptIndexQuer
 import com.b2international.snowowl.snomed.datastore.index.SnomedIndexService;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptIndexEntry;
 import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedMappings;
-import com.b2international.snowowl.snomed.datastore.server.converter.SnomedConceptConverter;
 import com.b2international.snowowl.snomed.datastore.server.converter.SnomedConverters;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
