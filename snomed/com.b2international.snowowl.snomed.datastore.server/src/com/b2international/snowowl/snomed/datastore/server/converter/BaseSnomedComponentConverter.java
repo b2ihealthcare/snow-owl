@@ -27,16 +27,11 @@ import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.domain.CollectionResource;
 import com.b2international.snowowl.core.domain.IComponent;
-import com.b2international.snowowl.snomed.core.domain.AssociationType;
 import com.b2international.snowowl.snomed.core.domain.SnomedComponent;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedIndexEntry;
-import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry;
 import com.b2international.snowowl.snomed.datastore.services.AbstractSnomedRefSetMembershipLookupService;
 import com.google.common.base.Function;
 import com.google.common.collect.FluentIterable;
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMultimap;
-import com.google.common.collect.Multimap;
 
 /**
  * @since 4.0
@@ -114,24 +109,4 @@ abstract class BaseSnomedComponentConverter<T extends SnomedIndexEntry, R extend
 	protected final AbstractSnomedRefSetMembershipLookupService getRefSetMembershipLookupService() {
 		return refSetMembershipLookupService;
 	}
-
-	protected final Multimap<AssociationType, String> toAssociationTargets(final String type, final String id) {
-		final ImmutableMultimap.Builder<AssociationType, String> resultBuilder = ImmutableMultimap.builder();
-
-		for (final AssociationType associationType : AssociationType.values()) {
-			// TODO: it might be quicker to collect the refset IDs first and retrieve all members with a single call
-			final Collection<SnomedRefSetMemberIndexEntry> members = getRefSetMembershipLookupService().getMembers(type,
-					ImmutableList.of(associationType.getConceptId()), id);
-
-			for (final SnomedRefSetMemberIndexEntry member : members) {
-				// FIXME: inactive inactivation indicators are shown in the desktop form UI
-				if (member.isActive()) {
-					resultBuilder.put(associationType, member.getTargetComponentId());
-				}
-			}
-		}
-
-		return resultBuilder.build();
-	}
-
 }
