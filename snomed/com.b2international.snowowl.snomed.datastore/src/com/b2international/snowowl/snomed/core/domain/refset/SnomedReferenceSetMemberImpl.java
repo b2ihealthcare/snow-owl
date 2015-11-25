@@ -19,15 +19,22 @@ import java.util.Map;
 
 import com.b2international.snowowl.snomed.core.domain.BaseSnomedComponent;
 import com.b2international.snowowl.snomed.core.domain.SnomedCoreComponent;
+import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType;
 
 /**
  * @since 4.5
  */
 public class SnomedReferenceSetMemberImpl extends BaseSnomedComponent implements SnomedReferenceSetMember {
 
+	private SnomedRefSetType type;
 	private SnomedCoreComponent referencedComponent;
 	private String referenceSetId;
 	private Map<String, Object> properties;
+	
+	@Override
+	public SnomedRefSetType type() {
+		return type;
+	}
 	
 	@Override
 	public SnomedCoreComponent getReferencedComponent() {
@@ -44,6 +51,10 @@ public class SnomedReferenceSetMemberImpl extends BaseSnomedComponent implements
 		return properties;
 	}
 	
+	public void setType(SnomedRefSetType type) {
+		this.type = type;
+	}
+	
 	public void setReferencedComponent(SnomedCoreComponent referencedComponent) {
 		this.referencedComponent = referencedComponent;
 	}
@@ -55,5 +66,4 @@ public class SnomedReferenceSetMemberImpl extends BaseSnomedComponent implements
 	public void setProperties(Map<String, Object> properties) {
 		this.properties = properties;
 	}
-
 }

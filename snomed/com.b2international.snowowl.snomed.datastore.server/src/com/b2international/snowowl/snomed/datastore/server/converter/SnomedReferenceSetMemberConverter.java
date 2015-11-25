@@ -108,6 +108,7 @@ final class SnomedReferenceSetMemberConverter extends BaseSnomedComponentConvert
 		member.setActive(entry.isActive());
 		member.setModuleId(entry.getModuleId());
 		member.setReferenceSetId(entry.getRefSetIdentifierId());
+		member.setType(entry.getRefSetType());
 		
 		final Builder<String, Object> props = ImmutableMap.builder();
 		switch (entry.getRefSetType()) {
