@@ -61,7 +61,7 @@ public class SnomedCoreConfiguration {
 	private String defaultModule = DEFAULT_MODULE;
 	
 	@Valid
-	private SnomedIdentifierConfiguration ids;
+	private SnomedIdentifierConfiguration ids = new SnomedIdentifierConfiguration();
 	
 	private boolean concreteDomainSupport;
 	private boolean showReasonerUsageWarning = true;
