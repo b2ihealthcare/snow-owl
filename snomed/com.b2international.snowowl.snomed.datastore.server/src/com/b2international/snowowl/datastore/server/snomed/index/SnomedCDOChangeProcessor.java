@@ -87,6 +87,7 @@ import com.b2international.snowowl.datastore.server.snomed.index.change.Componen
 import com.b2international.snowowl.datastore.server.snomed.index.change.ConceptChangeProcessor;
 import com.b2international.snowowl.datastore.server.snomed.index.change.ConceptReferringMemberChangeProcessor;
 import com.b2international.snowowl.datastore.server.snomed.index.change.ConstraintChangeProcessor;
+import com.b2international.snowowl.datastore.server.snomed.index.change.DescriptionAcceptabilityChangeProcessor;
 import com.b2international.snowowl.datastore.server.snomed.index.change.DescriptionChangeProcessor;
 import com.b2international.snowowl.datastore.server.snomed.index.change.IconChangeProcessor;
 import com.b2international.snowowl.datastore.server.snomed.index.change.RefSetMemberChangeProcessor;
@@ -144,7 +145,7 @@ import bak.pcj.set.LongSet;
  */
 public class SnomedCDOChangeProcessor implements ICDOChangeProcessor {
 
-	private static final Set<String> MEMBER_FIELD_TO_LOAD = SnomedMappings.fieldsToLoad().active().memberReferencedComponentId().memberRefSetId().memberRefSetType().build();
+	private static final Set<String> MEMBER_FIELD_TO_LOAD = SnomedMappings.fieldsToLoad().active().memberReferencedComponentId().memberRefSetId().memberRefSetType().memberAcceptabilityId().build();
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(SnomedCDOChangeProcessor.class);
 	
@@ -427,15 +428,17 @@ public class SnomedCDOChangeProcessor implements ICDOChangeProcessor {
 		}
 		
 		final ComponentLabelChangeProcessor labelChangeProcessor = new ComponentLabelChangeProcessor(branchPath, index);
+		final Function<CDOID, Document> documentProvider = new Function<CDOID, Document>() {
+			@Override public Document apply(CDOID input) {
+				return getDocumentForDetachedMember(input);
+			}
+		};
 		final List<ChangeSetProcessor<SnomedDocumentBuilder>> changeSetProcessors = ImmutableList.<ChangeSetProcessor<SnomedDocumentBuilder>>builder()
 				.add(new ConceptChangeProcessor())
-				.add(new ConceptReferringMemberChangeProcessor(new Function<CDOID, Document>() {
-					@Override public Document apply(CDOID input) {
-						return getDocumentForDetachedMember(input);
-					}
-				}))
+				.add(new ConceptReferringMemberChangeProcessor(documentProvider))
 				.add(new RelationshipChangeProcessor())
 				.add(new DescriptionChangeProcessor())
+				.add(new DescriptionAcceptabilityChangeProcessor(documentProvider))
 				.add(new TaxonomyChangeProcessor(getAndCheckInferredNewTaxonomyBuilder(), getInferredPreviousTaxonomyBuilder(), inferredDifferenceSupplier,  ""))
 				.add(new TaxonomyChangeProcessor(getAndCheckStatedNewTaxonomyBuilder(), getStatedPreviousTaxonomyBuilder(), statedDifferenceSupplier, Concepts.STATED_RELATIONSHIP))
 				.add(new IconChangeProcessor(branchPath, getAndCheckInferredNewTaxonomyBuilder(), getInferredPreviousTaxonomyBuilder(), inferredDifferenceSupplier))

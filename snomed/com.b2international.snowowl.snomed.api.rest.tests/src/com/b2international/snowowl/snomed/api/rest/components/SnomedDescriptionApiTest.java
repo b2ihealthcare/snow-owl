@@ -272,7 +272,6 @@ public class SnomedDescriptionApiTest extends AbstractSnomedApiTest {
 	}
 
 	@Test
-	@Ignore("Preferred term lookup must be fixed first")
 	public void updateAcceptability() {
 		final Map<?, ?> createRequestBody = createRequestBody(DISEASE, "Rare disease", Concepts.MODULE_SCT_CORE, Concepts.SYNONYM, "New description on MAIN");
 		final String descriptionId = assertComponentCreated(createMainPath(), SnomedComponentType.DESCRIPTION, createRequestBody);
