@@ -19,7 +19,6 @@
 	<bean class="com.b2international.snowowl.snomed.api.impl.SnomedConceptHistoryServiceImpl" />
 	<bean class="com.b2international.snowowl.snomed.api.impl.SnomedReferenceSetHistoryServiceImpl" />
 	<bean class="com.b2international.snowowl.snomed.api.impl.SnomedStatementBrowserServiceImpl" />
-	<bean class="com.b2international.snowowl.snomed.api.impl.SnomedTerminologyBrowserServiceImpl" />
 	<bean class="com.b2international.snowowl.snomed.api.impl.SnomedExportService" />
 	<bean class="com.b2international.snowowl.snomed.api.impl.SnomedRf2ImportService" />
 	<bean class="com.b2international.snowowl.snomed.api.impl.SnomedClassificationServiceImpl" />
