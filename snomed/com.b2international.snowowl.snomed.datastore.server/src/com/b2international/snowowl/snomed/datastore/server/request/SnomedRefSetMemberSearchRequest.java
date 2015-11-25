@@ -15,58 +15,85 @@
  */
 package com.b2international.snowowl.snomed.datastore.server.request;
 
+import java.io.IOException;
 import java.util.Collection;
 import java.util.List;
 
-import com.b2international.snowowl.core.api.IBranchPath;
+import org.apache.lucene.document.Document;
+import org.apache.lucene.search.ConstantScoreQuery;
+import org.apache.lucene.search.Filter;
+import org.apache.lucene.search.FilteredQuery;
+import org.apache.lucene.search.IndexSearcher;
+import org.apache.lucene.search.Query;
+import org.apache.lucene.search.ScoreDoc;
+import org.apache.lucene.search.Sort;
+import org.apache.lucene.search.TopDocs;
+import org.apache.lucene.search.TotalHitCountCollector;
+
+import com.b2international.commons.functions.StringToLongFunction;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMembers;
-import com.b2international.snowowl.snomed.datastore.SnomedRefSetBrowser;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry;
 import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedMappings;
 import com.b2international.snowowl.snomed.datastore.server.converter.SnomedConverters;
-import com.google.common.base.Function;
-import com.google.common.base.Predicate;
-import com.google.common.collect.FluentIterable;
+import com.google.common.collect.ImmutableList;
 
 /**
  * @since 4.5
  */
 final class SnomedRefSetMemberSearchRequest extends SnomedSearchRequest<SnomedReferenceSetMembers> {
 
+	enum OptionKey {
+		
+		/**
+		 * Filter by containing reference set
+		 */
+		REFSET
+	}
+	
 	SnomedRefSetMemberSearchRequest() {}
 	
 	@Override
-	protected SnomedReferenceSetMembers doExecute(BranchContext context) {
-		final IBranchPath branchPath = context.branch().branchPath();
-		final SnomedRefSetBrowser browser = context.service(SnomedRefSetBrowser.class);
-		// TODO convert this to proper index query when index API is ready
-		// TODO fix collection like parameters
-		final Collection<String> referenceSetIds = options().getCollection(SnomedMappings.memberRefSetId().fieldName(), String.class);
-		final List<SnomedRefSetMemberIndexEntry> members = FluentIterable
-			.from(browser.getAllRefSetIds(branchPath))
-			.filter(new Predicate<String>() {
-				@Override
-				public boolean apply(String refSetId) {
-					return referenceSetIds.isEmpty() || referenceSetIds.contains(refSetId);
-				}
-			})
-			.transformAndConcat(new Function<String, Iterable<? extends SnomedRefSetMemberIndexEntry>>() {
-				@Override
-				public Iterable<? extends SnomedRefSetMemberIndexEntry> apply(String refSetId) {
-					return browser.getMembers(branchPath, refSetId);
-				}
-			})
-			.skip(offset())
-			.limit(limit())
-			.toList();
+	protected SnomedReferenceSetMembers doExecute(BranchContext context) throws IOException {
+		final IndexSearcher searcher = context.service(IndexSearcher.class);
+		final Query memberQuery = SnomedMappings.memberUuid().toExistsQuery();
+		final Query query;
 		
-		return SnomedConverters.newMemberConverter(context, expand(), locales()).convert(members, offset(), limit(), -1);
+		final Collection<String> referenceSetIds = getCollection(OptionKey.REFSET, String.class);
+		
+		if (!referenceSetIds.isEmpty()) {
+			final Filter refSetFilter = SnomedMappings.memberRefSetId().createTermsFilter(StringToLongFunction.copyOf(referenceSetIds));
+			query = new ConstantScoreQuery(new FilteredQuery(memberQuery, refSetFilter));
+		} else {
+			query = new ConstantScoreQuery(memberQuery);
+		}
+
+		if (limit() == 0) {
+			final TotalHitCountCollector totalCollector = new TotalHitCountCollector();
+			searcher.search(new ConstantScoreQuery(query), totalCollector); 
+			return new SnomedReferenceSetMembers(offset(), limit(), totalCollector.getTotalHits());
+		}
+		
+		final TopDocs topDocs = searcher.search(query, null, offset() + limit(), Sort.INDEXORDER, false, false);
+		if (topDocs.scoreDocs.length < 1) {
+			return new SnomedReferenceSetMembers(offset(), limit(), topDocs.totalHits);
+		}
+
+		final ScoreDoc[] scoreDocs = topDocs.scoreDocs;
+		final ImmutableList.Builder<SnomedRefSetMemberIndexEntry> memberBuilder = ImmutableList.builder();
+		
+		for (int i = offset(); i < scoreDocs.length && i < offset() + limit(); i++) {
+			Document doc = searcher.doc(scoreDocs[i].doc); // TODO: should expand & filter drive fieldsToLoad? Pass custom fieldValueLoader?
+			SnomedRefSetMemberIndexEntry indexEntry = SnomedRefSetMemberIndexEntry.builder(doc).build();
+			memberBuilder.add(indexEntry);
+		}
+
+		List<SnomedRefSetMemberIndexEntry> members = memberBuilder.build();
+		return SnomedConverters.newMemberConverter(context, expand(), locales()).convert(members, offset(), limit(), topDocs.totalHits);
 	}
 
 	@Override
 	protected Class<SnomedReferenceSetMembers> getReturnType() {
 		return SnomedReferenceSetMembers.class;
 	}
-
 }

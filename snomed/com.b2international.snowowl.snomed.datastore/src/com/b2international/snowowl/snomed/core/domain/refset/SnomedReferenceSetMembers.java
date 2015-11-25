@@ -15,17 +15,22 @@
  */
 package com.b2international.snowowl.snomed.core.domain.refset;
 
+import java.util.Collections;
 import java.util.List;
 
-import com.b2international.snowowl.core.domain.CollectionResource;
+import com.b2international.snowowl.core.domain.PageableCollectionResource;
 
 /**
  * @since 4.5
  */
-public class SnomedReferenceSetMembers extends CollectionResource<SnomedReferenceSetMember> {
+public class SnomedReferenceSetMembers extends PageableCollectionResource<SnomedReferenceSetMember> {
 
-	public SnomedReferenceSetMembers(List<SnomedReferenceSetMember> items) {
-		super(items);
+	public SnomedReferenceSetMembers(int offset, int limit, int total) {
+		super(Collections.<SnomedReferenceSetMember>emptyList(), offset, limit, total);
+	}
+	
+	public SnomedReferenceSetMembers(List<SnomedReferenceSetMember> items, int offset, int limit, int total) {
+		super(items, offset, limit, total);
 	}
 
 }

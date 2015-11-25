@@ -55,7 +55,7 @@ final class SnomedReferenceSetMemberConverter extends BaseSnomedComponentConvert
 
 	@Override
 	protected SnomedReferenceSetMembers createCollectionResource(List<SnomedReferenceSetMember> results, int offset, int limit, int total) {
-		return new SnomedReferenceSetMembers(results);
+		return new SnomedReferenceSetMembers(results, offset, limit, total);
 	}
 	
 	@Override
