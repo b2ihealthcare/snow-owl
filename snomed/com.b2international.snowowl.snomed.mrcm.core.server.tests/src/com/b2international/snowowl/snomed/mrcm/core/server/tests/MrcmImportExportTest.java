@@ -70,9 +70,11 @@ public class MrcmImportExportTest {
 	public void exportTest() throws Exception {
 		importTest();
 		
-		final Path exportedFile = Paths.get("target", "mrcm_" + Dates.now() + ".xmi");
+		final Path target = Paths.get("target");
+		target.toFile().mkdirs();
+		final Path exportedFile = target.resolve("mrcm_" + Dates.now() + ".xmi");
 		assertFalse(exportedFile.toFile().exists());
-		try (final OutputStream stream = Files.newOutputStream(exportedFile, StandardOpenOption.CREATE)) {
+		try (final OutputStream stream = Files.newOutputStream(exportedFile, StandardOpenOption.CREATE_NEW)) {
 			Services.service(MrcmExporter.class).doExport("test", stream);
 		}
 		assertTrue(exportedFile.toFile().exists());
