@@ -137,7 +137,7 @@ public class SnomedPublishManager extends PublishManager {
 		LOGGER.info("Collecting component IDs for ID publication successfully finished.");
 	}
 
-	private Collection<IdStorageKeyPair> getIdStorageKeyPairs(LongSet storageKeys) {
+	private Collection<IdStorageKeyPair> getIdStorageKeyPairs(final LongSet storageKeys) {
 		final Collection<IdStorageKeyPair> pairs = Lists.newArrayList();
 		pairs.addAll(componentService.getAllComponentIdStorageKeys(getBranchPathForPublication(),
 				SnomedTerminologyComponentConstants.CONCEPT_NUMBER));
