@@ -42,7 +42,6 @@ import org.apache.lucene.search.TotalHitCountCollector;
 import com.b2international.commons.functions.StringToLongFunction;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.exceptions.IllegalQueryParameterException;
-import com.b2international.snowowl.datastore.index.IndexUtils;
 import com.b2international.snowowl.datastore.server.snomed.escg.IndexQueryQueryEvaluator;
 import com.b2international.snowowl.dsl.escg.EscgUtils;
 import com.b2international.snowowl.snomed.core.domain.ISnomedDescription;
@@ -173,7 +172,7 @@ final class SnomedConceptSearchRequest extends SnomedSearchRequest<SnomedConcept
 		
 		// TODO: track score only if it should be expanded
 		final TopDocs topDocs = searcher.search(query, null, offset() + limit(), sort, true, false);
-		if (IndexUtils.isEmpty(topDocs)) {
+		if (topDocs.scoreDocs.length < 1) {
 			return new SnomedConcepts(offset(), limit(), topDocs.totalHits);
 		}
 		

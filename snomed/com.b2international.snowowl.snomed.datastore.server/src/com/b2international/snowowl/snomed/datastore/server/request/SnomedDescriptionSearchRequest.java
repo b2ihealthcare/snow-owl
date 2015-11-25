@@ -193,7 +193,7 @@ final class SnomedDescriptionSearchRequest extends SnomedSearchRequest<SnomedDes
 		
 		// TODO: track score only if it should be expanded
 		final TopDocs topDocs = searcher.search(query, null, offset + limit, sort, true, false);
-		if (IndexUtils.isEmpty(topDocs)) {
+		if (topDocs.scoreDocs.length < 1) {
 			return new SnomedDescriptions(offset, limit, topDocs.totalHits);
 		}
 		
