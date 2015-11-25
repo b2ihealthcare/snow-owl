@@ -240,35 +240,6 @@ public class SnomedIdentifiers {
 	public static ComponentCategory getComponentCategory(String componentId) {
 		return ComponentCategory.getByOrdinal(getComponentIdentifier(componentId));
 	}
-
-	/**
-	 * Generates a valid SNOMED CT Identifier from the given spec, which should be sufficient for a SNOMED CT Identifier.
-	 * 
-	 * @param itemId
-	 *            - the itemId to use for the newly created SNOMED CT Identifier
-	 * @param component
-	 *            - the component type to use
-	 * @return
-	 */
-	public SnomedIdentifier generateFrom(int itemId, ComponentCategory component) {
-		return generateFrom(itemId, null, component);
-	}
-
-	/**
-	 * Generates a valid SNOMED CT Identifier from the given spec, which should be sufficient for a SNOMED CT Identifier.
-	 * 
-	 * @param itemId
-	 *            - the itemId to use for the newly created SNOMED CT Identifier
-	 * @param namespace
-	 *            - the namespace to use
-	 * @param component
-	 *            - the component type to use
-	 * @return
-	 */
-	public SnomedIdentifier generateFrom(int itemId, String namespace, ComponentCategory component) {
-		final String id = generate(namespace, component);
-		return create(id);
-	}
 	
 	/**
 	 * Constructs a {@link SnomedIdentifierValidator} to validate IDs of the given {@link ComponentCategory}.
