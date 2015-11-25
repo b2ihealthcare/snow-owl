@@ -15,6 +15,7 @@
  */
 package com.b2international.snowowl.snomed.datastore.config;
 
+import javax.validation.Valid;
 import javax.validation.constraints.Max;
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
@@ -30,7 +31,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
  * @since 3.4
  */
 public class SnomedCoreConfiguration {
-
+	
 	public static final String ELK_REASONER_ID = "org.semanticweb.elk.elk.reasoner.factory"; //$NON-NLS-1$
 	private static final String DEFAULT_REASONER = ELK_REASONER_ID;
 	public static final String DEFAULT_LANGUAGE = "en-gb"; //$NON-NLS-1$
@@ -58,6 +59,9 @@ public class SnomedCoreConfiguration {
 	
 	@NotEmpty
 	private String defaultModule = DEFAULT_MODULE;
+	
+	@Valid
+	private SnomedIdentifierConfiguration ids;
 	
 	private boolean concreteDomainSupport;
 	private boolean showReasonerUsageWarning = true;
@@ -177,5 +181,13 @@ public class SnomedCoreConfiguration {
 	public void setShowReasonerUsageWarningEnabled(boolean showReasonerUsageWarning) {
 		this.showReasonerUsageWarning = showReasonerUsageWarning;
 	}
-
+	
+	public SnomedIdentifierConfiguration getIds() {
+		return ids;
+	}
+	
+	public void setIds(SnomedIdentifierConfiguration ids) {
+		this.ids = ids;
+	}
+	
 }

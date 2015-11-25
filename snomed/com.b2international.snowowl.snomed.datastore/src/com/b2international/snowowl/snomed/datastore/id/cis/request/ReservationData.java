@@ -13,37 +13,37 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.snomed.core.events;
-
-import static com.google.common.base.Preconditions.checkNotNull;
+package com.b2international.snowowl.snomed.datastore.id.cis.request;
 
 import com.b2international.snowowl.core.terminology.ComponentCategory;
 
 /**
- * New unique SNOMED CT Identifier generation request event.
- * 
- * @since 4.0
+ * @since 4.5
  */
-public class SnomedIdentifierRequestEvent {
+public class ReservationData extends PartitionIdData {
 
-	private ComponentCategory category;
-	private String namespace;
+	private String systemId = "";
+	private String expirationDate;
 
-	public SnomedIdentifierRequestEvent(ComponentCategory category) {
-		this(category, null);
-	}
-	
-	public SnomedIdentifierRequestEvent(ComponentCategory category, String namespace) {
-		this.category = checkNotNull(category, "category");
-		this.namespace = namespace;
+	public ReservationData(final String namespace, final String software, final String expirationDate, final ComponentCategory category) {
+		super(namespace, software, category);
+		this.expirationDate = expirationDate;
 	}
 
-	public ComponentCategory getCategory() {
-		return category;
+	public String getExpirationDate() {
+		return expirationDate;
 	}
 
-	public String getNamespace() {
-		return namespace;
+	public void setExpirationDate(String expirationDate) {
+		this.expirationDate = expirationDate;
+	}
+
+	public String getSystemId() {
+		return systemId;
+	}
+
+	public void setSystemId(String systemId) {
+		this.systemId = systemId;
 	}
 
 }

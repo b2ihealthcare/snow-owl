@@ -22,6 +22,8 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
 
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.Field;
@@ -52,6 +54,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
+import com.google.common.collect.Lists;
 
 /**
  * @since 4.1
@@ -90,6 +93,15 @@ public class IndexStore<T> extends SingleDirectoryIndexImpl implements Store<T> 
 			throw new StoreException("Failed to store value '%s' in key '%s'", value, key, e);
 		}
 	}
+	
+	@Override
+	public void putAll(Map<String, T> map) {
+		try {
+			doUpdate(map);
+		} catch (IOException e) {
+			throw new StoreException("Failed to store values.", e);
+		}
+	}
 
 	@Override
 	public T get(String key) {
@@ -108,6 +120,23 @@ public class IndexStore<T> extends SingleDirectoryIndexImpl implements Store<T> 
 			deleteDoc(key);
 			commit();
 			return t;
+		} catch (IOException e) {
+			throw new StoreException(e.getMessage(), e);
+		}
+	}
+	
+	@Override
+	public Collection<T> removeAll(Collection<String> keys) {
+		try {
+			final Collection<T> values = Lists.newArrayList();
+			
+			for (final String key : keys) {
+				values.add(get(key));
+				deleteDoc(key);
+			}
+			
+			commit();
+			return values;
 		} catch (IOException e) {
 			throw new StoreException(e.getMessage(), e);
 		}
@@ -131,6 +160,13 @@ public class IndexStore<T> extends SingleDirectoryIndexImpl implements Store<T> 
 
 	private void doUpdate(String key, T newValue) throws IOException {
 		updateDoc(key, newValue);
+		commit();
+	}
+	
+	private void doUpdate(Map<String, T> map) throws IOException {
+		for (final Entry<String, T> entry : map.entrySet()) {
+			updateDoc(entry.getKey(), entry.getValue());
+		}
 		commit();
 	}
 

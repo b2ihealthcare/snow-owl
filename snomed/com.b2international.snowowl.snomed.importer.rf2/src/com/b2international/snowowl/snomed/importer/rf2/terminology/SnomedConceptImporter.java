@@ -125,6 +125,7 @@ public class SnomedConceptImporter extends AbstractSnomedTerminologyImporter<Con
 		return false;
 	}
 	
+	
 	@Override
 	protected ImportAction commit(final SubMonitor subMonitor, final String formattedEffectiveTime) {
 		return ImportAction.CONTINUE;
@@ -185,6 +186,7 @@ public class SnomedConceptImporter extends AbstractSnomedTerminologyImporter<Con
 			//cause dangling reference exception on commit
 			getImportContext().getEditingContext().add(result);
 			getComponentLookup().addNewComponent(result, conceptSctId);
+			componentIdsToRegister.add(conceptSctId);
 		}
 		
 		conceptMap.put(conceptSctId, result);

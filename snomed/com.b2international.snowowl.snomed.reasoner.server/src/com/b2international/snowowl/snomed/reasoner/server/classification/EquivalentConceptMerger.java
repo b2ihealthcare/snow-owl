@@ -26,9 +26,6 @@ import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.emf.cdo.common.id.CDOIDUtil;
 import org.eclipse.emf.ecore.util.EcoreUtil;
 
-import bak.pcj.LongIterator;
-import bak.pcj.set.LongSet;
-
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.ComponentIdentifierPair;
 import com.b2international.snowowl.core.api.IBranchPath;
@@ -59,6 +56,9 @@ import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Ordering;
+
+import bak.pcj.LongIterator;
+import bak.pcj.set.LongSet;
 
 
 /**
@@ -156,7 +156,8 @@ public class EquivalentConceptMerger {
 		}
 	}
 	
-	private void switchOutboundRelationships(final Concept conceptToKeep, final Collection<Concept> conceptsToRemove, final Concept conceptToRemove) {
+	private void switchOutboundRelationships(final Concept conceptToKeep, final Collection<Concept> conceptsToRemove,
+			final Concept conceptToRemove) {
 		
 		for (final Relationship outboundRelationship : newArrayList(conceptToRemove.getOutboundRelationships())) {
 			
@@ -195,7 +196,8 @@ public class EquivalentConceptMerger {
 		}
 	}
 
-	private void switchInboundRelationships(final Concept conceptToKeep, final Collection<Concept> conceptsToRemove, final Concept conceptToRemove) {
+	private void switchInboundRelationships(final Concept conceptToKeep, final Collection<Concept> conceptsToRemove,
+			final Concept conceptToRemove) {
 		
 		for (final Relationship inboundRelationship : newArrayList(conceptToRemove.getInboundRelationships())) {
 			
@@ -337,4 +339,5 @@ public class EquivalentConceptMerger {
 			}
 		}
 	}
+	
 }

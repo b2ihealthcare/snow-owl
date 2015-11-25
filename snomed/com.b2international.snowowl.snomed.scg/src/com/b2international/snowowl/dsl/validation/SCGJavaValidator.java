@@ -125,56 +125,53 @@ public class SCGJavaValidator extends AbstractSCGJavaValidator {
 		SCGExpressionExtractor extractor = new SCGExpressionExtractor(expression);
 		NormalFormWrapper normalForm = new NormalFormWrapper(extractor.getFocusConceptIdList(), wrapRelationshipGroups(extractor.getGroupConcepts()));
 		
-
-		SnomedEditingContext editingContext = new SnomedEditingContext();
-		com.b2international.snowowl.snomed.Concept concept = SnomedEditingContext.buildDraftConceptFromNormalForm(
-				editingContext, normalForm);
-		concept.eAdapters().add(new ConceptParentAdapter(extractor.getFocusConceptIdList()));
-		IClientWidgetModelProvider widgetModelProvider = ApplicationContext.getInstance().getService(IClientWidgetModelProvider.class);
-		ConceptWidgetModel conceptWidgetModel = widgetModelProvider.createConceptWidgetModel(extractor.getFocusConceptIdList(), null);
-		IClientWidgetBeanProvider widgetBeanProvider = new ClientWidgetBeanProviderFactory().createProvider(conceptWidgetModel, concept, true);
-		ConceptWidgetBean conceptWidgetBean = widgetBeanProvider.createConceptWidgetBean(concept.getId(), conceptWidgetModel, null, true, new NullProgressMonitor());
-		IDiagnostic diagnostic = new MrcmConceptWidgetBeanValidator().validate(conceptWidgetBean);
-		Set<Attribute> markedAttributes = Sets.newHashSet();
-		for (IDiagnostic childDiagnostic : diagnostic.getChildren()) {
-			DiagnosticSeverity severity = childDiagnostic.getProblemMarkerSeverity();
-			switch (severity) {
-			case ERROR:
-				// find exact location for the error
-				WidgetBeanValidationDiagnostic widgetBeanDiagnostic = (WidgetBeanValidationDiagnostic) childDiagnostic;
-				ModeledWidgetBean widgetBean = widgetBeanDiagnostic.getWidgetBean();
-				if (widgetBean instanceof RelationshipWidgetBean) {
-					RelationshipWidgetBean relationshipWidgetBean = (RelationshipWidgetBean) widgetBean;
-					ScgAttributeFinderVisitor<SnomedConceptIndexEntry> attributeExtractingVisitor =	
-							new ScgAttributeFinderVisitor<SnomedConceptIndexEntry>(relationshipWidgetBean.getSelectedType().getId(), 
-									relationshipWidgetBean.getSelectedValue().getId(), Integer.MAX_VALUE, markedAttributes);
-					EObjectWalker extractorWalker = EObjectWalker.createContainmentWalker(attributeExtractingVisitor);
-					extractorWalker.walk(expression);
-					List<Attribute> matchingAttributes = attributeExtractingVisitor.getMatchingAttributes();
-					if (!CompareUtils.isEmpty(matchingAttributes)) {
-						final Attribute matchingAttribute = matchingAttributes.get(0);
-						if (matchingAttribute.eContainer() instanceof Expression) {
-							Expression containingExpression = (Expression) matchingAttribute.eContainer();
-							int index = containingExpression.getAttributes().indexOf(matchingAttribute);
-							error(childDiagnostic.getMessage(), containingExpression, ScgPackage.eINSTANCE.getExpression_Attributes(), index);
-						} else if (matchingAttribute.eContainer() instanceof Group) {
-							Group containingGroup = (Group) matchingAttribute.eContainer();
-							int index = containingGroup.getAttributes().indexOf(matchingAttribute);
-							error(childDiagnostic.getMessage(), containingGroup, ScgPackage.eINSTANCE.getGroup_Attributes(), index);
-						} else {
-							throw new IllegalStateException("Unexpected attribute container: " + matchingAttribute.eContainer());
+		try (SnomedEditingContext editingContext = new SnomedEditingContext()) {
+			com.b2international.snowowl.snomed.Concept concept = editingContext.buildDraftConceptFromNormalForm(normalForm);
+			concept.eAdapters().add(new ConceptParentAdapter(extractor.getFocusConceptIdList()));
+			IClientWidgetModelProvider widgetModelProvider = ApplicationContext.getInstance().getService(IClientWidgetModelProvider.class);
+			ConceptWidgetModel conceptWidgetModel = widgetModelProvider.createConceptWidgetModel(extractor.getFocusConceptIdList(), null);
+			IClientWidgetBeanProvider widgetBeanProvider = new ClientWidgetBeanProviderFactory().createProvider(conceptWidgetModel, concept, true);
+			ConceptWidgetBean conceptWidgetBean = widgetBeanProvider.createConceptWidgetBean(concept.getId(), conceptWidgetModel, null, true, new NullProgressMonitor());
+			IDiagnostic diagnostic = new MrcmConceptWidgetBeanValidator().validate(conceptWidgetBean);
+			Set<Attribute> markedAttributes = Sets.newHashSet();
+			for (IDiagnostic childDiagnostic : diagnostic.getChildren()) {
+				DiagnosticSeverity severity = childDiagnostic.getProblemMarkerSeverity();
+				switch (severity) {
+				case ERROR:
+					// find exact location for the error
+					WidgetBeanValidationDiagnostic widgetBeanDiagnostic = (WidgetBeanValidationDiagnostic) childDiagnostic;
+					ModeledWidgetBean widgetBean = widgetBeanDiagnostic.getWidgetBean();
+					if (widgetBean instanceof RelationshipWidgetBean) {
+						RelationshipWidgetBean relationshipWidgetBean = (RelationshipWidgetBean) widgetBean;
+						ScgAttributeFinderVisitor<SnomedConceptIndexEntry> attributeExtractingVisitor =	
+								new ScgAttributeFinderVisitor<SnomedConceptIndexEntry>(relationshipWidgetBean.getSelectedType().getId(), 
+										relationshipWidgetBean.getSelectedValue().getId(), Integer.MAX_VALUE, markedAttributes);
+						EObjectWalker extractorWalker = EObjectWalker.createContainmentWalker(attributeExtractingVisitor);
+						extractorWalker.walk(expression);
+						List<Attribute> matchingAttributes = attributeExtractingVisitor.getMatchingAttributes();
+						if (!CompareUtils.isEmpty(matchingAttributes)) {
+							final Attribute matchingAttribute = matchingAttributes.get(0);
+							if (matchingAttribute.eContainer() instanceof Expression) {
+								Expression containingExpression = (Expression) matchingAttribute.eContainer();
+								int index = containingExpression.getAttributes().indexOf(matchingAttribute);
+								error(childDiagnostic.getMessage(), containingExpression, ScgPackage.eINSTANCE.getExpression_Attributes(), index);
+							} else if (matchingAttribute.eContainer() instanceof Group) {
+								Group containingGroup = (Group) matchingAttribute.eContainer();
+								int index = containingGroup.getAttributes().indexOf(matchingAttribute);
+								error(childDiagnostic.getMessage(), containingGroup, ScgPackage.eINSTANCE.getGroup_Attributes(), index);
+							} else {
+								throw new IllegalStateException("Unexpected attribute container: " + matchingAttribute.eContainer());
+							}
+							markedAttributes.add(matchingAttribute);
 						}
-						markedAttributes.add(matchingAttribute);
 					}
+					break;
+					
+				default:
+					break;
 				}
-				break;
-
-			default:
-				break;
 			}
 		}
-	
-		
 	}
 
 	private Collection<AttributeConceptGroupWrapper> wrapRelationshipGroups(final Collection<ExtractedSCGAttributeGroup> groupConcepts) {

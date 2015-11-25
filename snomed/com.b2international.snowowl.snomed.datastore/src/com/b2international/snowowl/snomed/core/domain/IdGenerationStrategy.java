@@ -15,17 +15,20 @@
  */
 package com.b2international.snowowl.snomed.core.domain;
 
+import com.b2international.snowowl.core.domain.BranchContext;
+
 /**
- * Implementations allow clients to generate component identifiers conforming to the specified constraints.
+ * Implementations allow clients to generate component identifiers conforming to
+ * the specified constraints.
  */
 public interface IdGenerationStrategy {
 
 	/**
-	 * Generates a component identifier.
-	 * <p>
-	 * This method may return different results each time it is invoked. 
+	 * Generates a new ID.
 	 * 
-	 * @return the generated identifier
+	 * @param context
+	 *            the branch context.
 	 */
-	String getId();
+	String generate(BranchContext context);
+
 }

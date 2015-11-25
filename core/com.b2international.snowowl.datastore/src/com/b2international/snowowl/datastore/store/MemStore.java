@@ -18,6 +18,7 @@ package com.b2international.snowowl.datastore.store;
 import static com.google.common.base.Preconditions.checkArgument;
 
 import java.util.Collection;
+import java.util.Map;
 import java.util.concurrent.ConcurrentMap;
 
 import com.b2international.snowowl.datastore.store.query.Query;
@@ -26,6 +27,7 @@ import com.google.common.base.Function;
 import com.google.common.base.Predicate;
 import com.google.common.base.Predicates;
 import com.google.common.collect.FluentIterable;
+import com.google.common.collect.Lists;
 import com.google.common.collect.MapMaker;
 
 /**
@@ -38,6 +40,11 @@ public class MemStore<T> implements Store<T> {
 	@Override
 	public void put(String key, T value) {
 		values.put(key, value);
+	}
+	
+	@Override
+	public void putAll(Map<String, T> map) {
+		values.putAll(map);
 	}
 
 	@Override
@@ -53,6 +60,16 @@ public class MemStore<T> implements Store<T> {
 	@Override
 	public T remove(String key) {
 		return values.remove(key);
+	}
+	
+	@Override
+	public Collection<T> removeAll(Collection<String> keys) {
+		final Collection<T> values = Lists.newArrayList();
+		for (final String key : keys) {
+			values.add(remove(key));
+		}
+		
+		return values;
 	}
 
 	@Override

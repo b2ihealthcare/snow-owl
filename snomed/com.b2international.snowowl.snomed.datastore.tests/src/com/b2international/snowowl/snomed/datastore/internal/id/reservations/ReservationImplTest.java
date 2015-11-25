@@ -23,8 +23,10 @@ import java.util.Set;
 
 import org.junit.Test;
 
+import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.terminology.ComponentCategory;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
+import com.b2international.snowowl.snomed.datastore.id.ISnomedIdentifierService;
 import com.b2international.snowowl.snomed.datastore.id.SnomedIdentifiers;
 import com.b2international.snowowl.snomed.datastore.id.reservations.Reservation;
 import com.b2international.snowowl.snomed.datastore.id.reservations.Reservations;
@@ -37,17 +39,19 @@ public class ReservationImplTest {
 	@Test
 	public void whenReservingSingleID_ThenItShouldConflictWithThatIDOnly() throws Exception {
 		final Reservation single = Reservations.single(Concepts.ROOT_CONCEPT);
-		assertTrue(single.includes(SnomedIdentifiers.of(Concepts.ROOT_CONCEPT)));
-		assertFalse(single.includes(SnomedIdentifiers.of(Concepts.FULLY_DEFINED)));
-		assertFalse(single.includes(SnomedIdentifiers.of(Concepts.ADDITIONAL_RELATIONSHIP)));
+		assertTrue(single.includes(SnomedIdentifiers.create(Concepts.ROOT_CONCEPT)));
+		assertFalse(single.includes(SnomedIdentifiers.create(Concepts.FULLY_DEFINED)));
+		assertFalse(single.includes(SnomedIdentifiers.create(Concepts.ADDITIONAL_RELATIONSHIP)));
 	}
 	
 	@Test
 	public void whenReservingRangeOfIDs_ThenItShouldConflictWithAllIDsInThatRangeIncludingBoundaries() throws Exception {
+		final ISnomedIdentifierService identifierService = ApplicationContext.getInstance().getServiceChecked(ISnomedIdentifierService.class);
+		final SnomedIdentifiers snomedIdentifiers = new SnomedIdentifiers(identifierService);
 		final Set<ComponentCategory> components = Collections.singleton(ComponentCategory.CONCEPT);
 		final Reservation range = Reservations.range(200, 300, null, components);
 		for (int i = 200; i <= 300; i++) {
-			assertTrue(range.includes(SnomedIdentifiers.generateFrom(i, ComponentCategory.CONCEPT)));
+			assertTrue(range.includes(snomedIdentifiers.generateFrom(i, ComponentCategory.CONCEPT)));
 		}
 	}
 	

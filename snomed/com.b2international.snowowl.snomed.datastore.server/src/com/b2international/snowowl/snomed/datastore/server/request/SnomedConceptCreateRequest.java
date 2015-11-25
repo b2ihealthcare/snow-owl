@@ -92,7 +92,7 @@ public final class SnomedConceptCreateRequest extends BaseSnomedComponentCreateR
 		
 		if (getIdGenerationStrategy() instanceof UserIdGenerationStrategy) {
 			try {
-				final String componentId = getIdGenerationStrategy().getId();
+				final String componentId = getIdGenerationStrategy().generate(context);
 				SnomedRequests.prepareGetConcept().setComponentId(componentId).build().execute(context);
 				throw new AlreadyExistsException("Concept", componentId);
 			} catch (ComponentNotFoundException e) {

@@ -56,6 +56,7 @@ import org.slf4j.LoggerFactory;
 
 import com.b2international.commons.CompareUtils;
 import com.b2international.commons.Pair;
+import com.b2international.commons.StringUtils;
 import com.b2international.commons.concurrent.equinox.ForkJoinUtils;
 import com.b2international.commons.pcj.LongSets;
 import com.b2international.snowowl.core.ApplicationContext;
@@ -78,6 +79,7 @@ import com.b2international.snowowl.datastore.index.DocIdCollector.DocIdsIterator
 import com.b2international.snowowl.datastore.index.DocumentCompositeUpdater;
 import com.b2international.snowowl.datastore.index.DocumentUpdater;
 import com.b2international.snowowl.datastore.index.IndexRead;
+import com.b2international.snowowl.datastore.index.IndexUtils;
 import com.b2international.snowowl.datastore.index.mapping.LongIndexField;
 import com.b2international.snowowl.datastore.index.mapping.Mappings;
 import com.b2international.snowowl.datastore.server.CDOServerUtils;
@@ -98,6 +100,7 @@ import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.SnomedPackage;
 import com.b2international.snowowl.snomed.datastore.SnomedTerminologyBrowser;
 import com.b2international.snowowl.snomed.datastore.StatementCollectionMode;
+import com.b2international.snowowl.snomed.datastore.id.ISnomedIdentifierService;
 import com.b2international.snowowl.snomed.datastore.index.SnomedIndexService;
 import com.b2international.snowowl.snomed.datastore.index.SnomedRelationshipIndexQueryAdapter;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptIndexEntry;
@@ -448,15 +451,20 @@ public class SnomedCDOChangeProcessor implements ICDOChangeProcessor {
 		LOGGER.info("Updating indexes...");
 
 		final List<BytesRef> deletedStorageKeys = newArrayList();
+		final Collection<String> releasableComponentIds = newHashSet();
 		
 		for (ChangeSetProcessor<SnomedDocumentBuilder> processor : changeSetProcessors) {
 			for (Long storageKey : processor.getDeletedStorageKeys()) {
 				LOGGER.trace("Deleting document {}", storageKey);
 				index.delete(branchPath, storageKey);
 				deletedStorageKeys.add(LongIndexField._toBytesRef(storageKey));
+				releasableComponentIds.addAll(getReleasableComponentIds(processor, storageKey));
 			}
 		}
-
+		
+		if (!releasableComponentIds.isEmpty()) {
+			getIdentifierService().release(releasableComponentIds);
+		}
 		
 		final LongList deletedComponentIds;
 		final Collection<String> deletedMemberIds;
@@ -557,6 +565,48 @@ public class SnomedCDOChangeProcessor implements ICDOChangeProcessor {
 		}
 		
 		LOGGER.info("Processing and updating index changes successfully finished.");
+	}
+
+	private Collection<String> getReleasableComponentIds(final ChangeSetProcessor<SnomedDocumentBuilder> processor, final Long storageKey) {
+		final Collection<String> releasableComponentIds = newHashSet();
+
+		if (releaseSupported(processor) && releasable(storageKey)) {
+			final String id = getComponentId(storageKey);
+			releasableComponentIds.add(id);
+		}
+
+		return releasableComponentIds;
+	}
+
+	private boolean releaseSupported(final ChangeSetProcessor<SnomedDocumentBuilder> processor) {
+		return processor instanceof ConceptChangeProcessor || processor instanceof DescriptionChangeProcessor
+				|| processor instanceof RelationshipChangeProcessor;
+	}
+
+	private boolean releasable(final Long storageKey) {
+		IBranchPath currentBranchPath = getBranchPath();
+
+		while (!StringUtils.isEmpty(currentBranchPath.getParentPath())) {
+			currentBranchPath = currentBranchPath.getParent();
+
+			final TopDocs topDocs = index.search(currentBranchPath, Mappings.newQuery().storageKey(storageKey).matchAll(), 1);
+			if (!IndexUtils.isEmpty(topDocs)) {
+				return false;
+			}
+		}
+
+		return true;
+	}
+
+	private String getComponentId(final Long storageKey) {
+		return index.executeReadTransaction(branchPath, new IndexRead<String>() {
+			@Override
+			public String execute(IndexSearcher index) throws IOException {
+				TopDocs topDocs = index.search(Mappings.newQuery().storageKey(storageKey).matchAll(), 1);
+				Document doc = index.doc(topDocs.scoreDocs[0].doc, SnomedMappings.fieldsToLoad().id().build());
+				return SnomedMappings.id().getValueAsString(doc);
+			}
+		});
 	}
 
 	/**
@@ -851,6 +901,10 @@ public class SnomedCDOChangeProcessor implements ICDOChangeProcessor {
 	/*returns with index service for SNOMED CT ontology*/
 	private SnomedIndexService getIndexService() {
 		return ApplicationContext.getInstance().getService(SnomedIndexService.class);
+	}
+	
+	private ISnomedIdentifierService getIdentifierService() {
+		return ApplicationContext.getInstance().getService(ISnomedIdentifierService.class);
 	}
 
 	private void createLogEntry(final StringBuilder sb, final Set<ComponentIdAndLabel> logEntries) {

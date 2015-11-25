@@ -116,6 +116,11 @@ public abstract class PublishManager implements IPublishManager {
 
 	}
 	
+	@Override
+	public void postCommit() {
+		// do nothing by default
+	}
+	
 	/**
 	 * Create a terminology specific {@link CDOEditingContext} to use when publishing content in that terminology.
 	 * 

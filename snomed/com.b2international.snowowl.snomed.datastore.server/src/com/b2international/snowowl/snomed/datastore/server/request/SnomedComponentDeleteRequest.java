@@ -38,7 +38,7 @@ final class SnomedComponentDeleteRequest extends BaseRequest<TransactionContext,
 		context.delete(context.lookup(componentId, type));
 		return null;
 	}
-
+	
 	@Override
 	protected Class<Void> getReturnType() {
 		return Void.class;

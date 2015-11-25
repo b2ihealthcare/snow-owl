@@ -38,4 +38,9 @@ public interface IPublishManager {
 			final IPublishOperationConfiguration configuration, final IProgressMonitor monitor) 
 		throws SnowowlServiceException;
 	
+	/**
+	 * Performs terminology specific actions after the successful commit.
+	 */
+	void postCommit();
+	
 }

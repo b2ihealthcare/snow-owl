@@ -19,13 +19,11 @@ import java.util.Collection;
 import java.util.Collections;
 
 import com.b2international.snowowl.core.terminology.ComponentCategory;
-import com.b2international.snowowl.snomed.datastore.SnomedEditingContext;
 import com.b2international.snowowl.snomed.datastore.SnomedTerminologyBrowser;
 import com.b2international.snowowl.snomed.datastore.id.SnomedIdentifier;
 import com.b2international.snowowl.snomed.datastore.id.SnomedIdentifiers;
 import com.b2international.snowowl.snomed.datastore.internal.id.reservations.ReservationRangeImpl;
 import com.b2international.snowowl.snomed.datastore.internal.id.reservations.UniqueInStoreReservation;
-import com.b2international.snowowl.snomed.datastore.internal.id.reservations.UniqueInTransactionReservation;
 import com.google.inject.Provider;
 
 /**
@@ -43,7 +41,7 @@ public class Reservations {
 	 * @return a {@link Reservation} instance for the given componentId.
 	 */
 	public static Reservation single(final String componentId) {
-		final SnomedIdentifier id = SnomedIdentifiers.of(componentId);
+		final SnomedIdentifier id = SnomedIdentifiers.create(componentId);
 		return new ReservationRangeImpl(id.getItemId(), id.getItemId(), id.getNamespace(), Collections.singleton(id.getComponentCategory()));
 	}
 
@@ -62,17 +60,6 @@ public class Reservations {
 	 */
 	public static Reservation range(final long itemIdMin, final long itemIdMax, final String namespace, final Collection<ComponentCategory> components) {
 		return new ReservationRangeImpl(itemIdMin, itemIdMax, namespace, components);
-	}
-
-	/**
-	 * Creates a new {@link Reservation} instance for the given {@link SnomedEditingContext}. The returned {@link Reservation} will conflict with
-	 * {@link SnomedIdentifier} which are already taken by new components in the given {@link SnomedEditingContext}.
-	 * 
-	 * @param context
-	 * @return
-	 */
-	public static Reservation uniqueInTransaction(SnomedEditingContext context) {
-		return new UniqueInTransactionReservation(context);
 	}
 
 	/**

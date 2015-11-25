@@ -16,18 +16,29 @@
 package com.b2international.snowowl.snomed.importer.rf2.terminology;
 
 import java.io.InputStream;
+import java.util.Collection;
 import java.util.Date;
 
 import org.eclipse.core.runtime.SubMonitor;
+import org.eclipse.emf.spi.cdo.InternalCDOTransaction;
 
+import com.b2international.snowowl.core.ApplicationContext;
+import com.b2international.snowowl.core.api.SnowowlServiceException;
 import com.b2international.snowowl.importer.ImportAction;
 import com.b2international.snowowl.snomed.Component;
+import com.b2international.snowowl.snomed.datastore.id.ISnomedIdentifierService;
+import com.b2international.snowowl.snomed.datastore.id.SnomedIdentifiers;
 import com.b2international.snowowl.snomed.importer.rf2.csv.AbstractTerminologyComponentRow;
 import com.b2international.snowowl.snomed.importer.rf2.model.AbstractSnomedImporter;
 import com.b2international.snowowl.snomed.importer.rf2.model.SnomedImportConfiguration;
 import com.b2international.snowowl.snomed.importer.rf2.model.SnomedImportContext;
+import com.google.common.collect.Sets;
 
 public abstract class AbstractSnomedTerminologyImporter<T extends AbstractTerminologyComponentRow, C extends Component> extends AbstractSnomedImporter<T, C> {
+
+	protected final Collection<String> componentIdsToRegister = Sets.newHashSet();
+	
+	private final SnomedIdentifiers snomedIdentifiers;
 
 	protected AbstractSnomedTerminologyImporter(final SnomedImportConfiguration<T> importConfiguration, 
 			final SnomedImportContext importContext, 
@@ -35,6 +46,7 @@ public abstract class AbstractSnomedTerminologyImporter<T extends AbstractTermin
 			final String releaseFileIdentifier) {
 		
 		super(importConfiguration, importContext, releaseFileStream, releaseFileIdentifier);
+		this.snomedIdentifiers = new SnomedIdentifiers(ApplicationContext.getInstance().getServiceChecked(ISnomedIdentifierService.class));
 	}
 
 	@Override
@@ -52,4 +64,21 @@ public abstract class AbstractSnomedTerminologyImporter<T extends AbstractTermin
 	protected Date getComponentEffectiveTime(C editedComponent) {
 		return editedComponent.getEffectiveTime();
 	}
+	
+	@Override
+	protected void preCommit(final InternalCDOTransaction transaction) throws SnowowlServiceException {
+		if (!componentIdsToRegister.isEmpty()) {
+			snomedIdentifiers.register(componentIdsToRegister);
+			componentIdsToRegister.clear();
+		}
+
+		super.preCommit(transaction);
+	}
+
+	@Override
+	protected void handleCommitException() {
+		snomedIdentifiers.rollback();
+		super.handleCommitException();
+	}
+	
 }

@@ -35,7 +35,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 
 public class SnomedDescriptionImporter extends AbstractSnomedTerminologyImporter<DescriptionRow, Description> {
-
+	
 	private static final Map<String, CellProcessor> CELLPROCESSOR_MAPPING = ImmutableMap.<String, CellProcessor>builder()
 			.put(DescriptionRow.PROP_ID, NullObjectPattern.INSTANCE)
 			.put(DescriptionRow.PROP_EFFECTIVE_TIME, createEffectiveTimeCellProcessor())
@@ -103,8 +103,10 @@ public class SnomedDescriptionImporter extends AbstractSnomedTerminologyImporter
 			result.setId(descriptionSctId);
 			result.setConcept(getConceptSafe(conceptSctId, SnomedRf2Headers.FIELD_CONCEPT_ID, descriptionSctId));
 			getComponentLookup().addNewComponent(result, descriptionSctId);
+			componentIdsToRegister.add(descriptionSctId);
 		}
 		
 		return result;
 	}
+	
 }

@@ -15,6 +15,9 @@
  */
 package com.b2international.snowowl.snomed.core.domain;
 
+import com.b2international.snowowl.core.domain.BranchContext;
+import com.b2international.snowowl.snomed.datastore.id.SnomedIdentifiers;
+
 /**
  */
 public class UserIdGenerationStrategy implements IdGenerationStrategy {
@@ -29,7 +32,10 @@ public class UserIdGenerationStrategy implements IdGenerationStrategy {
 	}
 
 	@Override
-	public String getId() {
+	public String generate(final BranchContext context) {
+		final SnomedIdentifiers snomedIdentifiers = context.service(SnomedIdentifiers.class);
+		// XXX is the ID already registered at this point or not?
+		snomedIdentifiers.register(id);
 		return id;
 	}
 

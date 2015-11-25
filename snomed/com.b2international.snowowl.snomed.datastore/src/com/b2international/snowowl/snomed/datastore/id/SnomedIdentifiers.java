@@ -17,14 +17,25 @@ package com.b2international.snowowl.snomed.datastore.id;
 
 import static com.google.common.base.Preconditions.checkArgument;
 
+import java.util.Collection;
+
 import com.b2international.commons.VerhoeffCheck;
 import com.b2international.snowowl.core.terminology.ComponentCategory;
-import com.b2international.snowowl.snomed.datastore.id.gen.SingleItemIdGenerationStrategy;
+import com.b2international.snowowl.snomed.datastore.id.action.BulkDeprecateAction;
+import com.b2international.snowowl.snomed.datastore.id.action.BulkGenerateAction;
+import com.b2international.snowowl.snomed.datastore.id.action.BulkPublishAction;
+import com.b2international.snowowl.snomed.datastore.id.action.BulkRegisterAction;
+import com.b2international.snowowl.snomed.datastore.id.action.BulkReserveAction;
+import com.b2international.snowowl.snomed.datastore.id.action.DeprecateAction;
+import com.b2international.snowowl.snomed.datastore.id.action.GenerateAction;
+import com.b2international.snowowl.snomed.datastore.id.action.IIdAction;
+import com.b2international.snowowl.snomed.datastore.id.action.PublishAction;
+import com.b2international.snowowl.snomed.datastore.id.action.RegisterAction;
+import com.b2international.snowowl.snomed.datastore.id.action.ReserveAction;
 import com.b2international.snowowl.snomed.datastore.internal.id.SnomedComponentIdentifierValidator;
 import com.b2international.snowowl.snomed.datastore.internal.id.SnomedIdentifierImpl;
-import com.b2international.snowowl.snomed.datastore.internal.id.SnomedIdentifierServiceImpl;
-import com.b2international.snowowl.snomed.datastore.internal.id.reservations.SnomedIdentifierReservationServiceImpl;
 import com.google.common.base.Strings;
+import com.google.common.collect.Lists;
 
 /**
  * Shortcut methods to create SNOMED CT Identifiers.
@@ -34,40 +45,105 @@ import com.google.common.base.Strings;
  * @since 4.0
  */
 public class SnomedIdentifiers {
+	
+	private final ISnomedIdentifierService identifierService;
+	
+	private final Collection<IIdAction<?>> executedActions = Lists.newArrayList();
 
-	private SnomedIdentifiers() {
+	public SnomedIdentifiers(final ISnomedIdentifierService identifierService) {
+		this.identifierService = identifierService;
+	}
+	
+	public void rollback() {
+		for (final IIdAction<?> action : executedActions) {
+			action.rollback();
+		}
 	}
 
-	public static String generateConceptId() {
-		return generateConceptId(null);
+	public void commit() {
+		for (final IIdAction<?> action : executedActions) {
+			action.commit();
+		}
 	}
 
-	public static String generateConceptId(String namespace) {
-		return generateComponentId(ComponentCategory.CONCEPT, namespace);
+	public String generate(final String namespace, final ComponentCategory category) {
+		final GenerateAction action = new GenerateAction(namespace, category, identifierService);
+		executeAction(action);
+
+		return action.get();
 	}
 
-	public static String generateRelationshipId() {
-		return generateRelationshipId(null);
+	public void register(final String componentId) {
+		validate(componentId);
+		
+		final RegisterAction action = new RegisterAction(componentId, identifierService);
+		executeAction(action);
 	}
 
-	public static String generateRelationshipId(String namespace) {
-		return generateComponentId(ComponentCategory.RELATIONSHIP, namespace);
+	public String reserve(final String namespace, final ComponentCategory category) {
+		final ReserveAction action = new ReserveAction(namespace, category, identifierService);
+		executeAction(action);
+
+		return action.get();
 	}
 
-	public static String generateDescriptionId() {
-		return generateDescriptionId(null);
+	public void deprecate(final String componentId) {
+		validate(componentId);
+		
+		final DeprecateAction action = new DeprecateAction(componentId, identifierService);
+		executeAction(action);
 	}
 
-	public static String generateDescriptionId(String namespace) {
-		return generateComponentId(ComponentCategory.DESCRIPTION, namespace);
+	public void publish(final String componentId) {
+		validate(componentId);
+		
+		final PublishAction action = new PublishAction(componentId, identifierService);
+		executeAction(action);
 	}
 
-	private static String generateComponentId(ComponentCategory component, String namespace) {
-		return getSnomedIdentifierService().generateId(component, namespace);
+	public Collection<String> generate(final String namespace, final ComponentCategory category, final int quantity) {
+		final BulkGenerateAction action = new BulkGenerateAction(namespace, category, quantity, identifierService);
+		executeAction(action);
+
+		return action.get();
 	}
 
-	private static ISnomedIdentifierService getSnomedIdentifierService() {
-		return new SnomedIdentifierServiceImpl(new SnomedIdentifierReservationServiceImpl());
+	public void register(final Collection<String> componentIds) {
+		validate(componentIds);
+		
+		final BulkRegisterAction action = new BulkRegisterAction(componentIds, identifierService);
+		executeAction(action);
+	}
+
+	public Collection<String> reserve(final String namespace, final ComponentCategory category, final int quantity) {
+		final BulkReserveAction action = new BulkReserveAction(namespace, category, quantity, identifierService);
+		executeAction(action);
+
+		return action.get();
+	}
+
+	public void deprecate(final Collection<String> componentIds) {
+		validate(componentIds);
+		
+		final BulkDeprecateAction action = new BulkDeprecateAction(componentIds, identifierService);
+		executeAction(action);
+	}
+
+	public void publish(final Collection<String> componentIds) {
+		validate(componentIds);
+		
+		final BulkPublishAction action = new BulkPublishAction(componentIds, identifierService);
+		executeAction(action);
+	}
+
+	private void executeAction(final IIdAction<?> action) {
+		try {
+			executedActions.add(action);
+			action.execute();
+		} catch (Exception e) {
+			action.setFailed(true);
+			throw e;
+		}
 	}
 
 	/**
@@ -76,15 +152,44 @@ public class SnomedIdentifiers {
 	 * @param componentId
 	 * @return
 	 */
-	public static SnomedIdentifier of(String componentId) {
+	public static SnomedIdentifier create(String componentId) {
 		validate(componentId);
-		final int checkDigit = Character.getNumericValue(componentId.charAt(componentId.length() - 1));
-		final int componentIdentifier = getComponentIdentifier(componentId);
-		final int partitionIdentifier = Character.getNumericValue(componentId.charAt(componentId.length() - 3));
-		final String namespace = partitionIdentifier == 0 ? null : componentId.substring(componentId.length() - 10, componentId.length() - 3);
-		final long itemId = partitionIdentifier == 0 ? Long.parseLong(componentId.substring(0, componentId.length() - 3)) : Long
-				.parseLong(componentId.substring(0, componentId.length() - 10));
-		return new SnomedIdentifierImpl(itemId, namespace, partitionIdentifier, componentIdentifier, checkDigit);
+		
+		try {
+			final int checkDigit = Character.getNumericValue(componentId.charAt(componentId.length() - 1));
+			final int componentIdentifier = getComponentIdentifier(componentId);
+			final int partitionIdentifier = Character.getNumericValue(componentId.charAt(componentId.length() - 3));
+			final String namespace = partitionIdentifier == 0 ? null
+					: componentId.substring(componentId.length() - 10, componentId.length() - 3);
+			final long itemId = partitionIdentifier == 0 ? Long.parseLong(componentId.substring(0, componentId.length() - 3))
+					: Long.parseLong(componentId.substring(0, componentId.length() - 10));
+			return new SnomedIdentifierImpl(itemId, namespace, partitionIdentifier, componentIdentifier, checkDigit);
+		} catch (NumberFormatException e) {
+			throw new IllegalArgumentException(String.format("Invalid SNOMED identifier: %s.", componentId));
+		}
+	}
+	
+	/**
+	 * Validates the given collection of componentIds by using the rules defined
+	 * in the latest SNOMED CT Identifier specification, which are the following
+	 * constraints:
+	 * <ul>
+	 * <li>Can't start with leading zeros</li>
+	 * <li>Lengths should be between 6 and 18 characters</li>
+	 * <li>Should parse to a long value</li>
+	 * <li>Should pass the Verhoeff check-digit test</li>
+	 * </ul>
+	 * 
+	 * @param componentIds
+	 * @see VerhoeffCheck
+	 * @throws IllegalArgumentException
+	 *             - if the given collection contains a component ID which is
+	 *             invalid according to the SNOMED CT Identifier specification
+	 */
+	public static void validate(Collection<String> componentIds) {
+		for (final String componentId : componentIds) {
+			validate(componentId);
+		}
 	}
 
 	/**
@@ -118,7 +223,7 @@ public class SnomedIdentifiers {
 	 * @param componentId
 	 * @return
 	 */
-	public static int getComponentIdentifier(String componentId) {
+	private static int getComponentIdentifier(String componentId) {
 		final char ciChar = componentId.charAt(componentId.length() - 2);
 		final int ci = Character.digit(ciChar, 10);
 		if (ci == -1) {
@@ -145,7 +250,7 @@ public class SnomedIdentifiers {
 	 *            - the component type to use
 	 * @return
 	 */
-	public static SnomedIdentifier generateFrom(int itemId, ComponentCategory component) {
+	public SnomedIdentifier generateFrom(int itemId, ComponentCategory component) {
 		return generateFrom(itemId, null, component);
 	}
 
@@ -160,8 +265,9 @@ public class SnomedIdentifiers {
 	 *            - the component type to use
 	 * @return
 	 */
-	public static SnomedIdentifier generateFrom(int itemId, String namespace, ComponentCategory component) {
-		return of(new SnomedIdentifierServiceImpl(new SnomedIdentifierReservationServiceImpl(), new SingleItemIdGenerationStrategy(String.valueOf(itemId))).generateId(component, namespace));
+	public SnomedIdentifier generateFrom(int itemId, String namespace, ComponentCategory component) {
+		final String id = generate(namespace, component);
+		return create(id);
 	}
 	
 	/**
@@ -178,5 +284,5 @@ public class SnomedIdentifiers {
 		default: throw new UnsupportedOperationException("Can't create validator for category: " + category);
 		}
 	}
-
+	
 }

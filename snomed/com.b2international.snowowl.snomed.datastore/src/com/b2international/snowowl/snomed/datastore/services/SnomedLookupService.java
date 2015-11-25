@@ -699,7 +699,7 @@ public class SnomedLookupService implements IDisposableService, ISnomedLookupSer
 	/*generates and returns with a brand new, non-existing component ID based on the component nature argument.*/
 	private String generateNewComponsnetId(final ComponentCategory componentNature) {
 		Preconditions.checkNotNull(componentNature, "Component nature argument cannot be null.");
-		return ApplicationContext.getInstance().getServiceChecked(ISnomedIdentifierService.class).generateId(componentNature, SnomedEditingContext.getDefaultNamespace());
+		return ApplicationContext.getInstance().getServiceChecked(ISnomedIdentifierService.class).generate(SnomedEditingContext.getDefaultNamespace(), componentNature);
 	}
 	
 	private ICodeSystemVersion getCurrentVersionForUser() {

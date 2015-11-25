@@ -42,9 +42,12 @@ import java.util.Map;
 
 import org.junit.Test;
 
+import com.b2international.snowowl.core.ApplicationContext;
+import com.b2international.snowowl.core.terminology.ComponentCategory;
 import com.b2international.snowowl.snomed.api.rest.AbstractSnomedApiTest;
 import com.b2international.snowowl.snomed.api.rest.SnomedApiTestConstants;
 import com.b2international.snowowl.snomed.api.rest.SnomedComponentType;
+import com.b2international.snowowl.snomed.datastore.id.ISnomedIdentifierService;
 import com.b2international.snowowl.snomed.datastore.id.SnomedIdentifiers;
 import com.google.common.collect.ImmutableMap;
 import com.jayway.restassured.response.Response;
@@ -101,7 +104,9 @@ public class SnomedConceptApiTest extends AbstractSnomedApiTest {
 
 	@Test
 	public void createConceptWithGeneratedId() {
-		final String conceptId = SnomedIdentifiers.generateConceptId();
+		final ISnomedIdentifierService identifierService = ApplicationContext.getInstance().getServiceChecked(ISnomedIdentifierService.class);
+		final SnomedIdentifiers snomedIdentifiers = new SnomedIdentifiers(identifierService);
+		final String conceptId = snomedIdentifiers.generate(null, ComponentCategory.CONCEPT);
 		final Map<?, ?> requestBody = givenConceptRequestBody(conceptId, ROOT_CONCEPT, MODULE_SCT_CORE, PREFERRED_ACCEPTABILITY_MAP, false);		
 		final String createdId = assertComponentCreated(createMainPath(), SnomedComponentType.CONCEPT, requestBody);
 		assertEquals("Pre-generated and returned concept ID should match.", conceptId, createdId);
@@ -117,7 +122,9 @@ public class SnomedConceptApiTest extends AbstractSnomedApiTest {
 	@Test
 	public void createConceptWithGeneratedIdOnBranch() {
 		givenBranchWithPath(testBranchPath);
-		final String conceptId = SnomedIdentifiers.generateConceptId();
+		final ISnomedIdentifierService identifierService = ApplicationContext.getInstance().getServiceChecked(ISnomedIdentifierService.class);
+		final SnomedIdentifiers snomedIdentifiers = new SnomedIdentifiers(identifierService);
+		final String conceptId = snomedIdentifiers.generate(null, ComponentCategory.CONCEPT);
 		final Map<?, ?> requestBody = givenConceptRequestBody(conceptId, ROOT_CONCEPT, MODULE_SCT_CORE, PREFERRED_ACCEPTABILITY_MAP, false);
 		final String createdId = assertComponentCreated(testBranchPath, SnomedComponentType.CONCEPT, requestBody);
 		assertEquals("Pre-generated and returned concept ID should match.", conceptId, createdId);
@@ -133,25 +140,22 @@ public class SnomedConceptApiTest extends AbstractSnomedApiTest {
 	
 	@Test
 	public void createConceptISACycle_Simple() throws Exception {
-		final String newConceptId = "91559698001"; // randomly generated concept ID
-		final Map<?, ?> body = givenConceptRequestBody(newConceptId, DISEASE, MODULE_SCT_CORE, PREFERRED_ACCEPTABILITY_MAP, false);
-		assertComponentCreated(createMainPath(), SnomedComponentType.CONCEPT, body);
+		final Map<?, ?> body = givenConceptRequestBody(null, DISEASE, MODULE_SCT_CORE, PREFERRED_ACCEPTABILITY_MAP, false);
+		String conceptId = assertComponentCreated(createMainPath(), SnomedComponentType.CONCEPT, body);
 		// try creating a relationship between the ROOT_CONCEPT and the newConceptId
-		final Map<?, ?> newRelationshipBody = givenRelationshipRequestBody(DISEASE, IS_A, newConceptId, MODULE_SCT_CORE, "Trying to create a 1 long ISA cycle");
+		final Map<?, ?> newRelationshipBody = givenRelationshipRequestBody(DISEASE, IS_A, conceptId, MODULE_SCT_CORE, "Trying to create a 1 long ISA cycle");
 		assertComponentNotCreated(createMainPath(), SnomedComponentType.RELATIONSHIP, newRelationshipBody);
 	}
 	
 	@Test
 	public void createConceptISACycle_Long() throws Exception {
-		final String newConceptId = "80844557002"; // randomly generated concept ID
-		final Map<?, ?> body = givenConceptRequestBody(newConceptId, DISEASE, MODULE_SCT_CORE, PREFERRED_ACCEPTABILITY_MAP, false);
-		assertComponentCreated(createMainPath(), SnomedComponentType.CONCEPT, body);
+		final Map<?, ?> body = givenConceptRequestBody(null, DISEASE, MODULE_SCT_CORE, PREFERRED_ACCEPTABILITY_MAP, false);
+		final String conceptId = assertComponentCreated(createMainPath(), SnomedComponentType.CONCEPT, body);
 		
-		final String newConceptId2 = "45933887007"; // randomly generated concept ID
-		final Map<?, ?> body2 = givenConceptRequestBody(newConceptId2, newConceptId, MODULE_SCT_CORE, PREFERRED_ACCEPTABILITY_MAP, false);
+		final Map<?, ?> body2 = givenConceptRequestBody(null, conceptId, MODULE_SCT_CORE, PREFERRED_ACCEPTABILITY_MAP, false);
 		assertComponentCreated(createMainPath(), SnomedComponentType.CONCEPT, body2);
 		
-		final Map<?, ?> newRelationshipBody = givenRelationshipRequestBody(DISEASE, IS_A, newConceptId2, MODULE_SCT_CORE, "Trying to create a 2 long ISA cycle");
+		final Map<?, ?> newRelationshipBody = givenRelationshipRequestBody(DISEASE, IS_A, conceptId, MODULE_SCT_CORE, "Trying to create a 2 long ISA cycle");
 		assertComponentNotCreated(createMainPath(), SnomedComponentType.RELATIONSHIP, newRelationshipBody);
 	}
 	

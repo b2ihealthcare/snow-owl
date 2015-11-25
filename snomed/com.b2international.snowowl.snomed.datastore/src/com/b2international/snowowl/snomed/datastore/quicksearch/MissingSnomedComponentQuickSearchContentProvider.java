@@ -43,7 +43,7 @@ public class MissingSnomedComponentQuickSearchContentProvider extends AbstractQu
 	@Override
 	public QuickSearchContentResult getComponents(String queryExpression, IBranchPathMap branchPathMap, int limit, Map<String, Object> configuration) {
 		try {
-			final SnomedIdentifier identifier = SnomedIdentifiers.of(queryExpression);
+			final SnomedIdentifier identifier = SnomedIdentifiers.create(queryExpression);
 			if (ComponentCategory.CONCEPT.equals(identifier.getComponentCategory())) {
 				final IBranchPath branchPath = getBranchPath(branchPathMap);
 				final SnomedTerminologyBrowser terminologyBrowser = ApplicationContext.getInstance().getServiceChecked(SnomedTerminologyBrowser.class);

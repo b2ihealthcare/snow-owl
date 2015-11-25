@@ -107,7 +107,7 @@ public class SnomedDescriptionCreateRequest extends BaseSnomedComponentCreateReq
 	public String execute(TransactionContext context) {
 		if (getIdGenerationStrategy() instanceof UserIdGenerationStrategy) {
 			try {
-				final String componentId = getIdGenerationStrategy().getId();
+				final String componentId = getIdGenerationStrategy().generate(context);
 				SnomedRequests.prepareGetDescription().setComponentId(componentId).build().execute(context);
 				throw new AlreadyExistsException("Description", componentId);
 			} catch (ComponentNotFoundException e) {
