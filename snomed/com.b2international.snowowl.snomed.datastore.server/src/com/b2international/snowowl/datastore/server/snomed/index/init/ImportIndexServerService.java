@@ -18,7 +18,6 @@ package com.b2international.snowowl.datastore.server.snomed.index.init;
 import static com.b2international.snowowl.datastore.index.IndexUtils.TYPE_PRECISE_INT_STORED;
 import static com.google.common.collect.Lists.newArrayListWithCapacity;
 
-import java.io.File;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.Date;
@@ -52,6 +51,7 @@ import org.slf4j.LoggerFactory;
 import com.b2international.commons.CompareUtils;
 import com.b2international.commons.FileUtils;
 import com.b2international.snowowl.core.ApplicationContext;
+import com.b2international.snowowl.core.SnowOwlApplication;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.api.SnowowlRuntimeException;
 import com.b2international.snowowl.core.api.index.IndexException;
@@ -121,7 +121,7 @@ public class ImportIndexServerService extends SingleDirectoryIndexImpl {
 
     private static final Set<String> TERM_AND_TYPE_ONLY = ImmutableSet.of(TERM, TERM_TYPE);
 
-    private static final String DIRECTORY_PATH = "sct_import";
+    private static final String DIRECTORY_PATH_PREFIX = "sct_import";
 
     private final IBranchPath importTargetBranchPath;
     private final LongKeyMap pendingDescriptionDocuments = new LongKeyOpenHashMap();
@@ -147,19 +147,21 @@ public class ImportIndexServerService extends SingleDirectoryIndexImpl {
      * @param importTargetBranchPath
      */
     public ImportIndexServerService(final IBranchPath importTargetBranchPath) {
-        super(createPath(), true);
+        super(SnowOwlApplication.INSTANCE.getEnviroment().getDataDirectory().toPath()
+        		.resolve("indexes")
+        		.resolve(createPath())
+        		.toFile(), true);
         this.importTargetBranchPath = importTargetBranchPath;
     }
 
-    private static final File createPath() {
+    private static final String createPath() {
         final StringBuilder sb = new StringBuilder();
-        sb.append(DIRECTORY_PATH);
+        sb.append(DIRECTORY_PATH_PREFIX);
         sb.append("_");
         sb.append(Dates.formatByHostTimeZone(new Date(), DateFormats.FULL));
         sb.append("_");
         sb.append(UUID.randomUUID().toString());
-        
-        return new File(sb.toString());
+        return sb.toString();
     }
 
     @Override
