@@ -42,6 +42,7 @@ import org.apache.lucene.util.QueryBuilder;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.exceptions.BadRequestException;
+import com.b2international.snowowl.core.exceptions.IllegalQueryParameterException;
 import com.b2international.snowowl.datastore.index.IndexUtils;
 import com.b2international.snowowl.datastore.index.lucene.BookendTokenFilter;
 import com.b2international.snowowl.datastore.index.lucene.ComponentTermAnalyzer;
@@ -54,6 +55,7 @@ import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDescriptio
 import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedMappings;
 import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedQueryBuilder;
 import com.b2international.snowowl.snomed.datastore.server.converter.SnomedConverters;
+import com.b2international.snowowl.snomed.dsl.query.SyntaxErrorException;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMultimap;
 import com.google.common.collect.Iterables;
@@ -214,11 +216,15 @@ final class SnomedDescriptionSearchRequest extends SnomedSearchRequest<SnomedDes
 
 	private void addEscgFilter(BranchContext context, final List<Filter> filters, final List<Integer> ops, OptionKey key, IndexField<Long> field) {
 		if (containsKey(key)) {
-			IBranchPath branchPath = context.branch().branchPath();
-			LongCollection conceptIds = context.service(IEscgQueryEvaluatorService.class).evaluateConceptIds(branchPath, getString(key));
-			Filter conceptFilter = field.createTermsFilter(new LongCollectionToCollectionAdapter(conceptIds));
-			addFilterClause(filters, conceptFilter);
-			ops.add(ChainedFilter.AND);
+			try {
+				IBranchPath branchPath = context.branch().branchPath();
+				LongCollection conceptIds = context.service(IEscgQueryEvaluatorService.class).evaluateConceptIds(branchPath, getString(key));
+				Filter conceptFilter = field.createTermsFilter(new LongCollectionToCollectionAdapter(conceptIds));
+				addFilterClause(filters, conceptFilter);
+				ops.add(ChainedFilter.AND);
+			} catch (SyntaxErrorException e) {
+				throw new IllegalQueryParameterException(e.getMessage());
+			}
 		}
 	}
 	

@@ -39,10 +39,12 @@ import org.apache.lucene.search.TopDocs;
 import com.b2international.commons.functions.StringToLongFunction;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.exceptions.IllegalQueryParameterException;
+import com.b2international.snowowl.datastore.server.snomed.escg.EscgParseFailedException;
 import com.b2international.snowowl.datastore.server.snomed.escg.IndexQueryQueryEvaluator;
 import com.b2international.snowowl.dsl.escg.EscgUtils;
 import com.b2international.snowowl.snomed.core.domain.ISnomedDescription;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcepts;
+import com.b2international.snowowl.snomed.core.domain.UnsupportedEscgQueryParameterException;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptIndexEntry;
 import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedMappings;
 import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedQueryBuilder;
@@ -111,12 +113,15 @@ final class SnomedConceptSearchRequest extends SnomedSearchRequest<SnomedConcept
 			 * XXX: Not using IEscgQueryEvaluatorService, as it would add the equivalent of 
 			 * active() and concept() to escgQuery, which is not needed.
 			 */
-			final IndexQueryQueryEvaluator queryEvaluator = new IndexQueryQueryEvaluator();
+			final String escg = getString(OptionKey.ESCG);
 			try {
-				final BooleanQuery escgQuery = queryEvaluator.evaluate(EscgUtils.INSTANCE.parseRewrite(getString(OptionKey.ESCG)));
+				final IndexQueryQueryEvaluator queryEvaluator = new IndexQueryQueryEvaluator();
+				final BooleanQuery escgQuery = queryEvaluator.evaluate(EscgUtils.INSTANCE.parseRewrite(escg));
 				queryBuilder.and(escgQuery);
 			} catch (final SyntaxErrorException e) {
 				throw new IllegalQueryParameterException(e.getMessage());
+			} catch (EscgParseFailedException e) {
+				throw new UnsupportedEscgQueryParameterException(escg);
 			}
 		}
 		
