@@ -23,7 +23,7 @@ import com.b2international.snowowl.core.domain.PageableCollectionResource;
 /**
  * @since 4.5
  */
-public class SnomedReferenceSetMembers extends PageableCollectionResource<SnomedReferenceSetMember> {
+public final class SnomedReferenceSetMembers extends PageableCollectionResource<SnomedReferenceSetMember> {
 
 	public SnomedReferenceSetMembers(int offset, int limit, int total) {
 		super(Collections.<SnomedReferenceSetMember>emptyList(), offset, limit, total);
