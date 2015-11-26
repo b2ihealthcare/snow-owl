@@ -53,7 +53,9 @@ public abstract class SearchRequestBuilder<B extends SearchRequestBuilder<B, R>,
 	}
 	
 	public final B setExpand(String expand) {
-		addOption(OptionKey.EXPAND, ExpandParser.parse(expand));
+		if (!CompareUtils.isEmpty(expand)) {
+			addOption(OptionKey.EXPAND, ExpandParser.parse(expand));
+		}
 		return getSelf();
 	}
 	
