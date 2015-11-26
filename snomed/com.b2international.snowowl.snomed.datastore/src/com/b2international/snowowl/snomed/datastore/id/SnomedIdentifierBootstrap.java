@@ -91,7 +91,7 @@ public class SnomedIdentifierBootstrap extends DefaultBootstrapFragment {
 			break;
 		case INDEX:
 			LOGGER.info("Snow Owl is configured to use index based identifier serivce.");
-			final IndexStore<SctId> indexStore = getIndexStore(env);
+			final IndexStore<SctId> indexStore = getIndexStore(env, mapper);
 			identifierService = new DefaultSnomedIdentifierService(indexStore, ItemIdGenerationStrategy.RANDOM, reservationService);
 			break;
 		case CIS:
@@ -105,9 +105,9 @@ public class SnomedIdentifierBootstrap extends DefaultBootstrapFragment {
 		env.services().registerService(ISnomedIdentifierService.class, identifierService);
 	}
 
-	private IndexStore<SctId> getIndexStore(final Environment env) {
+	private IndexStore<SctId> getIndexStore(final Environment env, ObjectMapper mapper) {
 		final File dir = env.getDataDirectory().toPath().resolve(Paths.get("indexes", "snomed", "identifiers")).toFile();
-		return new IndexStore<>(dir, new ObjectMapper(), SctId.class);
+		return new IndexStore<>(dir, mapper, SctId.class);
 	}
 
 }
