@@ -24,7 +24,7 @@ import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 /**
  * @since 4.5
  */
-public class SnomedIdentifierGenerateRequestBuilder extends BaseBranchRequestBuilder<SnomedIdentifierGenerateRequestBuilder, String> {
+public final class SnomedIdentifierGenerateRequestBuilder extends BaseBranchRequestBuilder<SnomedIdentifierGenerateRequestBuilder, String> {
 
 	private ComponentCategory category;
 	private String namespace;

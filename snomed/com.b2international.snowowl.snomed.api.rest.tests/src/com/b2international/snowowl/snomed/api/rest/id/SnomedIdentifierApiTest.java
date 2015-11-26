@@ -132,8 +132,8 @@ public class SnomedIdentifierApiTest extends AbstractSnomedApiTest {
 				.and().body(requestBuilder.build())
 				.when().post("/ids")
 				.then().assertThat().statusCode(201)
-				.and().body(allOf(new CharAtMatcher(1, componentDigit), new CharAtMatcher(2, partitionDigit), new SegmentMatches(10, 3, namespaceId)))
-				.and().extract().response().asString();
+				.and().body("id", allOf(new CharAtMatcher(1, componentDigit), new CharAtMatcher(2, partitionDigit), new SegmentMatches(10, 3, namespaceId)))
+				.and().extract().body().path("id");
 	}
 
 	@Test

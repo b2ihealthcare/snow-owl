@@ -34,10 +34,6 @@ final class SnomedIdentifierGenerateRequest extends BaseRequest<BranchContext, S
 	
 	private final String namespace;
 
-	SnomedIdentifierGenerateRequest(ComponentCategory category) {
-		this(category, null);
-	}
-
 	SnomedIdentifierGenerateRequest(ComponentCategory category, String namespace) {
 		this.category = category;
 		this.namespace = namespace;
