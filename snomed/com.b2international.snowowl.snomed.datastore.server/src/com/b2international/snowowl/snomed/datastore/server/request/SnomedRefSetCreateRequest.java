@@ -47,10 +47,6 @@ public class SnomedRefSetCreateRequest extends BaseRequest<TransactionContext, S
 		this.type = type;
 		this.referencedComponentType = referencedComponentType;
 		this.conceptReq = conceptReq;
-		// FIXME create proper refset create request builder which wraps and create a snomed concept req as well
-		if (this.conceptReq.getParentId() == null) {
-			this.conceptReq.setParentId(SnomedRefSetUtil.getConceptId(type));
-		}
 	}
 	
 	@Override
