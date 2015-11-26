@@ -176,7 +176,11 @@ final class SnomedConceptConverter extends BaseSnomedComponentConverter<SnomedCo
 				throw new BadRequestException("Direct parameter required for descendants expansion");
 			}
 			
-			SnomedConceptSearchRequestBuilder req = SnomedRequests.prepareConceptSearch().filterByActive(true);
+			SnomedConceptSearchRequestBuilder req = SnomedRequests.prepareConceptSearch()
+					.filterByActive(true)
+					.setLocales(locales())
+					.setExpand(expandOptions.get("expand", Options.class));
+			
 			if (expandOptions.getBoolean("direct")) {
 				req.filterByParent(concept.getId());
 			} else {
@@ -246,6 +250,8 @@ final class SnomedConceptConverter extends BaseSnomedComponentConverter<SnomedCo
 				SnomedConcepts ancestors = SnomedRequests.prepareConceptSearch()
 						.filterByActive(true)
 						.setComponentIds(collectedIds.build())
+						.setLocales(locales())
+						.setExpand(expandOptions.get("expand", Options.class))
 						.setOffset(offset)
 						.setLimit(limit)
 						.build()

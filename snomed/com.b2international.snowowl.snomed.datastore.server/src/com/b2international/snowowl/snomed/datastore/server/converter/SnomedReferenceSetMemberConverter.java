@@ -101,11 +101,9 @@ final class SnomedReferenceSetMemberConverter extends BaseSnomedComponentConvert
 
 		search
 			.setComponentIds(componentIds)
-			.setLimit(componentIds.size());
-
-		if (expandOptions.containsKey("expand")) {
-			search.setExpand(expandOptions.get("expand", Options.class));
-		}
+			.setLimit(componentIds.size())
+			.setLocales(locales())
+			.setExpand(expandOptions.get("expand", Options.class));
 		
 		CollectionResource<? extends SnomedCoreComponent> components = search.build().execute(context());
 		
