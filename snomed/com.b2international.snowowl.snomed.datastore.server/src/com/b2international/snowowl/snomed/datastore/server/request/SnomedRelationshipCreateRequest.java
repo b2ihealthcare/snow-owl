@@ -33,7 +33,7 @@ import com.b2international.snowowl.snomed.core.store.SnomedComponents;
 /**
  * @since 4.0
  */
-public class SnomedRelationshipCreateRequest extends BaseSnomedComponentCreateRequest {
+public final class SnomedRelationshipCreateRequest extends BaseSnomedComponentCreateRequest {
 
 	@NotEmpty
 	private String sourceId;
@@ -157,32 +157,5 @@ public class SnomedRelationshipCreateRequest extends BaseSnomedComponentCreateRe
 		} catch (ComponentNotFoundException e) {
 			throw e.toBadRequestException();
 		}
-	}
-	
-	@Override
-	public String toString() {
-		final StringBuilder builder = new StringBuilder();
-		builder.append("SnomedRelationshipInput [getIdGenerationStrategy()=");
-		builder.append(getIdGenerationStrategy());
-		builder.append(", getModuleId()=");
-		builder.append(getModuleId());
-		builder.append(", getSourceId()=");
-		builder.append(getSourceId());
-		builder.append(", getDestinationId()=");
-		builder.append(getDestinationId());
-		builder.append(", isDestinationNegated()=");
-		builder.append(isDestinationNegated());
-		builder.append(", getTypeId()=");
-		builder.append(getTypeId());
-		builder.append(", getGroup()=");
-		builder.append(getGroup());
-		builder.append(", getUnionGroup()=");
-		builder.append(getUnionGroup());
-		builder.append(", getCharacteristicType()=");
-		builder.append(getCharacteristicType());
-		builder.append(", getModifier()=");
-		builder.append(getModifier());
-		builder.append("]");
-		return builder.toString();
-	}
+	}	
 }

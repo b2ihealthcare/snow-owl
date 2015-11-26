@@ -19,7 +19,6 @@ import javax.validation.constraints.NotNull;
 
 import com.b2international.snowowl.core.domain.TransactionContext;
 import com.b2international.snowowl.core.events.BaseRequest;
-import com.b2international.snowowl.snomed.core.domain.ISnomedDescription;
 import com.b2international.snowowl.snomed.core.domain.IdGenerationStrategy;
 
 /**

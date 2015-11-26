@@ -171,22 +171,4 @@ public final class SnomedConceptCreateRequest extends BaseSnomedComponentCreateR
 		}
 	}
 	
-	@Override
-	public String toString() {
-		final StringBuilder builder = new StringBuilder();
-		builder.append("SnomedConceptInput [getIdGenerationStrategy()=");
-		builder.append(getIdGenerationStrategy());
-		builder.append(", getModuleId()=");
-		builder.append(getModuleId());
-		builder.append(", getParentId()=");
-		builder.append(parentId);
-		builder.append(", getIsAIdGenerationStrategy()=");
-		builder.append(isAIdGenerationStrategy);
-		builder.append(", getDefinitionStatus()=");
-		builder.append(definitionStatus);
-		builder.append(", getDescriptions()=");
-		builder.append(descriptions);
-		builder.append("]");
-		return builder.toString();
-	}
 }
