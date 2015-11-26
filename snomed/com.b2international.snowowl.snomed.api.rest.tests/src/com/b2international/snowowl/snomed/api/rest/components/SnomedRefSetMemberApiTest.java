@@ -196,7 +196,7 @@ public class SnomedRefSetMemberApiTest extends AbstractSnomedApiTest {
 			.body("referencedComponent.id", CoreMatchers.notNullValue());
 			
 		final String referencedComponentId = response.body().path("referencedComponent.id");
-		getComponent(testBranchPath, SnomedComponentType.REFSET, referencedComponentId, "members")
+		getComponent(testBranchPath, SnomedComponentType.REFSET, referencedComponentId, "members()")
 			.then()
 			.log().ifValidationFails()
 			.assertThat()
@@ -269,7 +269,7 @@ public class SnomedRefSetMemberApiTest extends AbstractSnomedApiTest {
 			.statusCode(200);
 		// verify that the query type refset has 4 members now
 		final String referencedComponentId = getComponent(testBranchPath, SnomedComponentType.MEMBER, memberId).body().path("referencedComponent.id");
-		getComponent(testBranchPath, SnomedComponentType.REFSET, referencedComponentId, "members")
+		getComponent(testBranchPath, SnomedComponentType.REFSET, referencedComponentId, "members()")
 			.then()
 			.log().ifValidationFails()
 			.assertThat()

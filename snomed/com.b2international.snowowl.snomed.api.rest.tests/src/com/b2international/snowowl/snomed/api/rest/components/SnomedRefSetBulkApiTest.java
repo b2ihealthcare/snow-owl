@@ -90,7 +90,7 @@ public class SnomedRefSetBulkApiTest extends AbstractSnomedApiTest {
 			.statusCode(204);
 		
 		// verify that new refset has three members
-		getComponent(testBranchPath, SnomedComponentType.REFSET, refSetId, "members")
+		getComponent(testBranchPath, SnomedComponentType.REFSET, refSetId, "members()")
 			.then()
 			.statusCode(200)
 			.and()
@@ -102,7 +102,7 @@ public class SnomedRefSetBulkApiTest extends AbstractSnomedApiTest {
 		// create three members
 		bulkCreateSimpleMembers();
 		// get current members
-		final Collection<String> memberIds = getComponent(testBranchPath, SnomedComponentType.REFSET, refSetId, "members")
+		final Collection<String> memberIds = getComponent(testBranchPath, SnomedComponentType.REFSET, refSetId, "members()")
 			.body().path("members.items.id");
 		
 		final String firstMemberId = Iterables.get(memberIds, 0);
@@ -127,7 +127,7 @@ public class SnomedRefSetBulkApiTest extends AbstractSnomedApiTest {
 			.statusCode(204);
 		
 		// verify that new refset has only two members, and one is inactive
-		getComponent(testBranchPath, SnomedComponentType.REFSET, refSetId, "members")
+		getComponent(testBranchPath, SnomedComponentType.REFSET, refSetId, "members()")
 			.then()
 			.body("members.items.id", CoreMatchers.hasItems(memberIds.toArray()))
 			.and()
