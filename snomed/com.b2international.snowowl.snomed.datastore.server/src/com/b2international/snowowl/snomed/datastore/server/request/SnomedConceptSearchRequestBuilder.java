@@ -15,6 +15,7 @@
  */
 package com.b2international.snowowl.snomed.datastore.server.request;
 
+import com.b2international.snowowl.datastore.request.SearchRequest;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcepts;
 import com.b2international.snowowl.snomed.datastore.server.request.SnomedConceptSearchRequest.OptionKey;
 

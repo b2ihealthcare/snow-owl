@@ -40,7 +40,6 @@ import com.b2international.snowowl.snomed.api.rest.domain.SnomedRelationshipRest
 import com.b2international.snowowl.snomed.api.rest.util.DeferredResults;
 import com.b2international.snowowl.snomed.api.rest.util.Responses;
 import com.b2international.snowowl.snomed.core.domain.ISnomedRelationship;
-import com.b2international.snowowl.snomed.datastore.server.request.SnomedRelationshipCreateRequestBuilder;
 import com.b2international.snowowl.snomed.datastore.server.request.SnomedRequests;
 import com.wordnik.swagger.annotations.Api;
 import com.wordnik.swagger.annotations.ApiOperation;
@@ -81,13 +80,10 @@ public class SnomedRelationshipRestService extends AbstractSnomedRestService {
 			final Principal principal) {
 
 		final String commitComment = body.getCommitComment();
-		final SnomedRelationshipCreateRequestBuilder req = body.getChange().toComponentInput();
-		
-		final String createdRelationshipId = SnomedRequests
-				.prepareCommit(principal.getName(), branchPath)
-				.setBody(req)
-				.setCommitComment(commitComment)
-				.build()
+		final String createdRelationshipId = body
+				.getChange()
+				.toRequestBuilder()
+				.build(principal.getName(), branchPath, commitComment)
 				.executeSync(bus, 120L * 1000L)
 				.getResultAs(String.class);
 				
@@ -157,19 +153,14 @@ public class SnomedRelationshipRestService extends AbstractSnomedRestService {
 		final SnomedRelationshipRestUpdate update = body.getChange();
 
 		SnomedRequests
-			.prepareCommit(userId, branchPath)
-			.setBody(
-				SnomedRequests
-					.prepareRelationshipUpdate(relationshipId)
-					.setActive(update.isActive())
-					.setModuleId(update.getModuleId())
-					.setCharacteristicType(update.getCharacteristicType())
-					.setGroup(update.getGroup())
-					.setUnionGroup(update.getUnionGroup())
-					.setModifier(update.getModifier())
-					.build())
-			.setCommitComment(commitComment)
-			.build()
+			.prepareRelationshipUpdate(relationshipId)
+			.setActive(update.isActive())
+			.setModuleId(update.getModuleId())
+			.setCharacteristicType(update.getCharacteristicType())
+			.setGroup(update.getGroup())
+			.setUnionGroup(update.getUnionGroup())
+			.setModifier(update.getModifier())
+			.build(userId, branchPath, commitComment)
 			.executeSync(bus, 120L * 1000L);
 	}
 
@@ -197,10 +188,9 @@ public class SnomedRelationshipRestService extends AbstractSnomedRestService {
 			final Principal principal) {
 
 		SnomedRequests
-			.prepareCommit(principal.getName(), branchPath)
-			.setBody(SnomedRequests.prepareDeleteRelationship(relationshipId))
-			.setCommitComment(String.format("Deleted Relationship '%s' from store.", relationshipId))
-			.build()
+			.prepareDeleteRelationship()
+			.setComponentId(relationshipId)
+			.build(principal.getName(), branchPath, String.format("Deleted Relationship '%s' from store.", relationshipId))
 			.executeSync(bus, 120L * 1000L);
 	}
 

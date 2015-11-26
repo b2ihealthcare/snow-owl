@@ -21,23 +21,7 @@ import static com.b2international.snowowl.datastore.BranchPathUtils.createPath;
 import static com.b2international.snowowl.datastore.cdo.CDOIDUtils.STORAGE_KEY_TO_CDO_ID_FUNCTION;
 import static com.b2international.snowowl.datastore.cdo.CDOUtils.getAttribute;
 import static com.b2international.snowowl.datastore.cdo.CDOUtils.getObjectIfExists;
-import static com.b2international.snowowl.snomed.SnomedConstants.Concepts.B2I_NAMESPACE;
-import static com.b2international.snowowl.snomed.SnomedConstants.Concepts.ENTIRE_TERM_CASE_INSENSITIVE;
-import static com.b2international.snowowl.snomed.SnomedConstants.Concepts.ENTIRE_TERM_CASE_SENSITIVE;
-import static com.b2international.snowowl.snomed.SnomedConstants.Concepts.EXISTENTIAL_RESTRICTION_MODIFIER;
-import static com.b2international.snowowl.snomed.SnomedConstants.Concepts.FULLY_SPECIFIED_NAME;
-import static com.b2international.snowowl.snomed.SnomedConstants.Concepts.INFERRED_RELATIONSHIP;
-import static com.b2international.snowowl.snomed.SnomedConstants.Concepts.IS_A;
-import static com.b2international.snowowl.snomed.SnomedConstants.Concepts.MODULE_B2I_EXTENSION;
-import static com.b2international.snowowl.snomed.SnomedConstants.Concepts.PRIMITIVE;
-import static com.b2international.snowowl.snomed.SnomedConstants.Concepts.QUALIFIER_VALUE_TOPLEVEL_CONCEPT;
-import static com.b2international.snowowl.snomed.SnomedConstants.Concepts.QUALIFYING_RELATIONSHIP;
-import static com.b2international.snowowl.snomed.SnomedConstants.Concepts.REFSET_COMPLEX_MAP_TYPE;
-import static com.b2international.snowowl.snomed.SnomedConstants.Concepts.REFSET_DESCRIPTION_ACCEPTABILITY_ACCEPTABLE;
-import static com.b2international.snowowl.snomed.SnomedConstants.Concepts.REFSET_DESCRIPTION_ACCEPTABILITY_PREFERRED;
-import static com.b2international.snowowl.snomed.SnomedConstants.Concepts.REFSET_SIMPLE_TYPE;
-import static com.b2international.snowowl.snomed.SnomedConstants.Concepts.STATED_RELATIONSHIP;
-import static com.b2international.snowowl.snomed.SnomedConstants.Concepts.SYNONYM;
+import static com.b2international.snowowl.snomed.SnomedConstants.Concepts.*;
 import static com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants.CONCEPT;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.collect.Iterables.toArray;
@@ -96,8 +80,8 @@ import com.b2international.snowowl.snomed.Relationship;
 import com.b2international.snowowl.snomed.SnomedConstants;
 import com.b2international.snowowl.snomed.SnomedFactory;
 import com.b2international.snowowl.snomed.SnomedPackage;
-import com.b2international.snowowl.snomed.core.events.SnomedIdentifierBulkReleaseRequest;
-import com.b2international.snowowl.snomed.core.events.SnomedIdentifierGenerateRequest;
+import com.b2international.snowowl.snomed.core.events.SnomedIdentifierBulkReleaseRequestBuilder;
+import com.b2international.snowowl.snomed.core.events.SnomedIdentifierGenerateRequestBuilder;
 import com.b2international.snowowl.snomed.core.preference.ModulePreference;
 import com.b2international.snowowl.snomed.core.store.SnomedComponentBuilder;
 import com.b2international.snowowl.snomed.datastore.NormalFormWrapper.AttributeConceptGroupWrapper;
@@ -580,9 +564,11 @@ public class SnomedEditingContext extends BaseSnomedEditingContext {
 	private void releaseIds() {
 		if (!newComponentIds.isEmpty()) {
 			final IEventBus bus = ApplicationContext.getInstance().getServiceChecked(IEventBus.class);
-			SnomedIdentifierBulkReleaseRequest
-					.prepareBulkRelease(BranchPathUtils.createActivePath(SnomedPackage.eINSTANCE).getPath(), newComponentIds)
-					.executeSync(bus);
+			final String branch = BranchPathUtils.createPath(transaction).getPath();
+			new SnomedIdentifierBulkReleaseRequestBuilder()
+				.setComponentIds(newComponentIds)
+				.build(branch)
+				.executeSync(bus);
 		}
 	}
 
@@ -1744,11 +1730,13 @@ public class SnomedEditingContext extends BaseSnomedEditingContext {
 	
 	public String generateComponentId(final ComponentCategory componentNature, final String namespace) {
 		final IEventBus bus = ApplicationContext.getInstance().getServiceChecked(IEventBus.class);
-		final String generatedId = SnomedIdentifierGenerateRequest
-				.prepareNewId(BranchPathUtils.createActivePath(SnomedPackage.eINSTANCE).getPath(), ComponentCategory.CONCEPT, namespace)
+		final String branch = BranchPathUtils.createPath(transaction).getPath();
+		final String generatedId = new SnomedIdentifierGenerateRequestBuilder()
+				.setCategory(componentNature)
+				.setNamespace(namespace)
+				.build(branch)
 				.executeSync(bus);
 		newComponentIds.add(generatedId);
-		
 		return generatedId;
 	}
 	

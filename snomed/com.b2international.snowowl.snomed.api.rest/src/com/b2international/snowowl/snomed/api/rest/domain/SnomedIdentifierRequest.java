@@ -15,8 +15,6 @@
  */
 package com.b2international.snowowl.snomed.api.rest.domain;
 
-import javax.validation.constraints.NotNull;
-
 import com.b2international.snowowl.core.terminology.ComponentCategory;
 
 
@@ -25,7 +23,6 @@ import com.b2international.snowowl.core.terminology.ComponentCategory;
  */
 public class SnomedIdentifierRequest {
 
-	@NotNull
 	private ComponentCategory type;
 	private String namespace;
 	

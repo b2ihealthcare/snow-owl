@@ -20,20 +20,21 @@ import java.util.Map;
 
 import com.b2international.snowowl.core.domain.TransactionContext;
 import com.b2international.snowowl.core.events.Request;
-import com.b2international.snowowl.core.events.RequestBuilder;
 import com.b2international.snowowl.core.events.Requests;
 
 /**
  * @since 4.5
  */
-public class RefSetMemberCreateRequestBuilder implements RequestBuilder<TransactionContext, String> {
+public final class RefSetMemberCreateRequestBuilder extends BaseSnomedTransactionalRequestBuilder<RefSetMemberCreateRequestBuilder, String> {
 
 	private String moduleId;
 	private String referenceSetId;
 	private String referencedComponentId;
 	private Map<String, Object> properties = Collections.emptyMap();
 	
-	RefSetMemberCreateRequestBuilder() {}
+	RefSetMemberCreateRequestBuilder(String repositoryId) {
+		super(repositoryId);
+	}
 	
 	public RefSetMemberCreateRequestBuilder setReferencedComponentId(String referencedComponentId) {
 		this.referencedComponentId = referencedComponentId;
@@ -64,7 +65,7 @@ public class RefSetMemberCreateRequestBuilder implements RequestBuilder<Transact
 	}
 	
 	@Override
-	public Request<TransactionContext, String> build() {
+	public Request<TransactionContext, String> doBuild() {
 		final SnomedRefSetMemberCreateRequest req = new SnomedRefSetMemberCreateRequest();
 		req.setModuleId(moduleId);
 		req.setReferencedComponentId(referencedComponentId);

@@ -17,24 +17,20 @@ package com.b2international.snowowl.snomed.datastore.server.request;
 
 import java.util.Map;
 
-import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.domain.TransactionContext;
 import com.b2international.snowowl.core.events.Request;
-import com.b2international.snowowl.core.events.RequestBuilder;
-import com.b2international.snowowl.datastore.request.CommitInfo;
+import com.b2international.snowowl.datastore.request.BaseTransactionalRequestBuilder;
 
 /**
  * @since 4.5
  */
-public final class QueryRefSetUpdateRequestBuilder implements RequestBuilder<TransactionContext, Void> {
+public final class QueryRefSetUpdateRequestBuilder extends BaseTransactionalRequestBuilder<QueryRefSetUpdateRequestBuilder, Void> {
 
-	private final String repositoryId;
-	
 	private String referenceSetId;
 	private String moduleId;
 	
 	QueryRefSetUpdateRequestBuilder(String repositoryId) {
-		this.repositoryId = repositoryId;
+		super(repositoryId);
 	}
 	
 	public QueryRefSetUpdateRequestBuilder setModuleId(String moduleId) {
@@ -46,20 +42,14 @@ public final class QueryRefSetUpdateRequestBuilder implements RequestBuilder<Tra
 		this.referenceSetId = refSetId;
 		return this;
 	}
+	
+	public QueryRefSetUpdateRequestBuilder setSource(Map<String, Object> source) {
+		return setModuleId((String) source.get("moduleId")).setReferenceSetId((String) source.get("referenceSetId"));
+	}
 
 	@Override
-	public Request<TransactionContext, Void> build() {
+	protected Request<TransactionContext, Void> doBuild() {
 		return new QueryRefSetUpdateRequest(referenceSetId, moduleId);
 	}
 	
-	public Request<ServiceProvider, CommitInfo> build(String userId, String branch, String commitComment) {
-		return SnomedRequests.prepareCommit(userId, branch).setBody(build()).setCommitComment(commitComment).build();
-	}
-
-	public QueryRefSetUpdateRequestBuilder setSource(Map<String, Object> source) {
-		setModuleId((String) source.get("moduleId"));
-		setReferenceSetId((String) source.get("referenceSetId"));
-		return this;
-	}
-
 }

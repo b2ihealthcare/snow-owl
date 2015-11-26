@@ -32,7 +32,7 @@ public class RefSetMemberRequestResolver implements RequestResolver<TransactionC
 		switch (Action.get(action)) {
 		case CREATE: return SnomedRequests.prepareNewMember().setSource(source).build();
 		case UPDATE: return SnomedRequests.prepareMemberUpdate().setSource(source).build();
-		case DELETE: return SnomedRequests.prepareDeleteMember((String) source.get("memberId"));
+		case DELETE: return SnomedRequests.prepareDeleteMember().setComponentId((String) source.get("memberId")).build();
 		case SYNC: return SnomedRequests.prepareUpdateQueryRefSetMember().setSource(source).build();
 		default: throw new BadRequestException("Unsupported action '%s'", action); 
 		}

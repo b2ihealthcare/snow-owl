@@ -99,7 +99,7 @@ public class SnomedDescriptionRestInput extends AbstractSnomedComponentRestInput
 	}
 
 	@Override
-	protected SnomedDescriptionCreateRequestBuilder createComponentInput() {
+	protected SnomedDescriptionCreateRequestBuilder createRequestBuilder() {
 		return SnomedRequests.prepareNewDescription();
 	}
 
@@ -107,8 +107,8 @@ public class SnomedDescriptionRestInput extends AbstractSnomedComponentRestInput
 	 * @return
 	 */
 	@Override
-	public SnomedDescriptionCreateRequestBuilder toComponentInput() {
-		return super.toComponentInput()
+	public SnomedDescriptionCreateRequestBuilder toRequestBuilder() {
+		return super.toRequestBuilder()
 				.setCaseSignificance(getCaseSignificance())
 				.setConceptId(getConceptId())
 				.setLanguageCode(getLanguageCode())

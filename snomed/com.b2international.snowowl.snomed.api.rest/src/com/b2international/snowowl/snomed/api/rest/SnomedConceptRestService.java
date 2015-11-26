@@ -49,7 +49,6 @@ import com.b2international.snowowl.snomed.api.rest.util.DeferredResults;
 import com.b2international.snowowl.snomed.api.rest.util.Responses;
 import com.b2international.snowowl.snomed.core.domain.ISnomedConcept;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcepts;
-import com.b2international.snowowl.snomed.datastore.server.request.SnomedConceptCreateRequestBuilder;
 import com.b2international.snowowl.snomed.datastore.server.request.SnomedRequests;
 import com.wordnik.swagger.annotations.Api;
 import com.wordnik.swagger.annotations.ApiOperation;
@@ -194,15 +193,12 @@ public class SnomedConceptRestService extends AbstractSnomedRestService {
 		final SnomedConceptRestInput change = body.getChange();
 		final String commitComment = body.getCommitComment();
 		
-		final SnomedConceptCreateRequestBuilder input = change.toComponentInput();
-		
-		final String createdConceptId = SnomedRequests
-			.prepareCommit(userId, branchPath)
-			.setBody(input)
-			.setCommitComment(commitComment)
-			.build()
+		final String createdConceptId = change
+			.toRequestBuilder()
+			.build(userId, branchPath, commitComment)
 			.executeSync(bus, 120L * 1000L)
 			.getResultAs(String.class);
+		
 		
 		return Responses.created(getConceptLocationURI(branchPath, createdConceptId)).build();
 	}
@@ -250,19 +246,14 @@ public class SnomedConceptRestService extends AbstractSnomedRestService {
 		final SnomedConceptRestUpdate update = body.getChange();
 
 		SnomedRequests
-			.prepareCommit(userId, branchPath)
-			.setBody(
-				SnomedRequests
-					.prepareConceptUpdate(conceptId)
-					.setActive(update.isActive())
-					.setModuleId(update.getModuleId())
-					.setAssociationTargets(update.getAssociationTargets())
-					.setDefinitionStatus(update.getDefinitionStatus())
-					.setInactivationIndicator(update.getInactivationIndicator())
-					.setSubclassDefinitionStatus(update.getSubclassDefinitionStatus())
-					.build())
-			.setCommitComment(commitComment)
-			.build()
+			.prepareConceptUpdate(conceptId)
+			.setActive(update.isActive())
+			.setModuleId(update.getModuleId())
+			.setAssociationTargets(update.getAssociationTargets())
+			.setDefinitionStatus(update.getDefinitionStatus())
+			.setInactivationIndicator(update.getInactivationIndicator())
+			.setSubclassDefinitionStatus(update.getSubclassDefinitionStatus())
+			.build(userId, branchPath, commitComment)
 			.executeSync(bus, 120L * 1000L);
 	}
 
@@ -289,10 +280,9 @@ public class SnomedConceptRestService extends AbstractSnomedRestService {
 
 			final Principal principal) {
 		SnomedRequests
-			.prepareCommit(principal.getName(), branchPath)
-			.setBody(SnomedRequests.prepareDeleteConcept(conceptId))
-			.setCommitComment(String.format("Deleted Concept '%s' from store.", conceptId))
-			.build()
+			.prepareDeleteConcept()
+			.setComponentId(conceptId)
+			.build(principal.getName(), branchPath, String.format("Deleted Concept '%s' from store.", conceptId))
 			.executeSync(bus, 120L * 1000L);
 	}
 

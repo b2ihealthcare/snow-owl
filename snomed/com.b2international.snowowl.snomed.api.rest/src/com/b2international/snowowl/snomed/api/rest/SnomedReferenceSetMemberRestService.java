@@ -152,7 +152,7 @@ public class SnomedReferenceSetMemberRestService extends AbstractSnomedRestServi
 		
 		final String createdRefSetMemberId = 
 				SnomedRequests
-					.prepareCommit(principal.getName(), branchPath)
+					.prepareCommit()
 					.setBody(req)
 					.setCommitComment(body.getCommitComment())
 					.build()
@@ -184,12 +184,10 @@ public class SnomedReferenceSetMemberRestService extends AbstractSnomedRestServi
 			final String memberId,
 			
 			final Principal principal) {
-		
 		SnomedRequests
-			.prepareCommit(principal.getName(), branchPath)
-			.setBody(SnomedRequests.prepareDeleteMember(memberId))
-			.setCommitComment(String.format("Deleted reference set member '%s' from store.", memberId))
-			.build()
+			.prepareDeleteMember()
+			.setComponentId(memberId)
+			.build(principal.getName(), branchPath, String.format("Deleted reference set member '%s' from store.", memberId))
 			.executeSync(bus, 120L * 1000L);
 	}
 	
@@ -221,12 +219,11 @@ public class SnomedReferenceSetMemberRestService extends AbstractSnomedRestServi
 		
 		final String userId = principal.getName();
 		final SnomedMemberRestUpdate update = body.getChange();
-		
 		SnomedRequests
 			.prepareMemberUpdate()
 			.setMemberId(memberId)
 			.setSource(update.getSource())
-			.commit(userId, branchPath, body.getCommitComment())
+			.build(userId, branchPath, body.getCommitComment())
 			.executeSync(bus, 120L * 1000L);
 	}
 	
@@ -257,7 +254,9 @@ public class SnomedReferenceSetMemberRestService extends AbstractSnomedRestServi
 		final RestRequest change = body.getChange();
 		change.setSource("memberId", memberId);
 		return SnomedRequests
-				.prepareCommit(principal.getName(), branchPath)
+				.prepareCommit()
+				.setUserId(principal.getName())
+				.setBranch(branchPath)
 				.setBody(body.getChange().resolve(resolver))
 				.setCommitComment(body.getCommitComment())
 				.build()

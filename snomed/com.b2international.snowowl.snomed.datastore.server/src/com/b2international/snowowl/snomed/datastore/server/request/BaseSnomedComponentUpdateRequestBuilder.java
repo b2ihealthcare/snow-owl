@@ -19,21 +19,19 @@ import javax.annotation.OverridingMethodsMustInvokeSuper;
 
 import com.b2international.snowowl.core.domain.TransactionContext;
 import com.b2international.snowowl.core.events.Request;
-import com.b2international.snowowl.core.events.RequestBuilder;
 
 /**
  * @since 4.5
  */
-public abstract class BaseSnomedComponentUpdateRequestBuilder<B extends BaseSnomedComponentUpdateRequestBuilder<B, R>, R extends BaseSnomedComponentUpdateRequest> implements RequestBuilder<TransactionContext, Void> {
+public abstract class BaseSnomedComponentUpdateRequestBuilder<B extends BaseSnomedComponentUpdateRequestBuilder<B, R>, R extends BaseSnomedComponentUpdateRequest> extends BaseSnomedTransactionalRequestBuilder<B, Void> {
 
-	private final String repositoryId;
 	private final String componentId;
 	
 	private String moduleId;
 	private Boolean active;
 
-	public BaseSnomedComponentUpdateRequestBuilder(String repositoryId, String componentId) {
-		this.repositoryId = repositoryId;
+	protected BaseSnomedComponentUpdateRequestBuilder(String repositoryId, String componentId) {
+		super(repositoryId);
 		this.componentId = componentId;
 	}
 	
@@ -48,7 +46,7 @@ public abstract class BaseSnomedComponentUpdateRequestBuilder<B extends BaseSnom
 	}
 	
 	@Override
-	public final Request<TransactionContext, Void> build() {
+	protected final Request<TransactionContext, Void> doBuild() {
 		final R req = create(componentId);
 		init(req);
 		return req;
@@ -62,6 +60,4 @@ public abstract class BaseSnomedComponentUpdateRequestBuilder<B extends BaseSnom
 
 	protected abstract R create(String componentId);
 	
-	protected abstract B getSelf(); 
-
 }

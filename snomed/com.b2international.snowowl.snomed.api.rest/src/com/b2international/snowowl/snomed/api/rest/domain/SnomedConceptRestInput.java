@@ -65,13 +65,13 @@ public class SnomedConceptRestInput extends AbstractSnomedComponentRestInput<Sno
 	}
 
 	@Override
-	protected SnomedConceptCreateRequestBuilder createComponentInput() {
+	protected SnomedConceptCreateRequestBuilder createRequestBuilder() {
 		return SnomedRequests.prepareNewConcept();
 	}
 	
 	@Override
-	public SnomedConceptCreateRequestBuilder toComponentInput() {
-		final SnomedConceptCreateRequestBuilder req = super.toComponentInput();
+	public SnomedConceptCreateRequestBuilder toRequestBuilder() {
+		final SnomedConceptCreateRequestBuilder req = super.toRequestBuilder();
 		req.setIsAId(createIdGenerationStrategy(getIsAId(), ComponentCategory.RELATIONSHIP));
 		for (SnomedDescriptionRestInput restDescription : getDescriptions()) {
 			// Propagate namespace from concept if present, and the description does not already have one
@@ -79,7 +79,7 @@ public class SnomedConceptRestInput extends AbstractSnomedComponentRestInput<Sno
 				restDescription.setNamespaceId(getNamespaceId());
 			}
 			
-			req.addDescription(restDescription.toComponentInput());
+			req.addDescription(restDescription.toRequestBuilder());
 		}
 		req.setParent(getParentId());
 		return req;

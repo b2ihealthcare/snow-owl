@@ -26,7 +26,7 @@ import com.google.common.collect.Multimap;
 /**
  * @since 4.5
  */
-public class SnomedDescriptionUpdateRequestBuilder extends BaseSnomedComponentUpdateRequestBuilder<SnomedDescriptionUpdateRequestBuilder, SnomedDescriptionUpdateRequest> {
+public final class SnomedDescriptionUpdateRequestBuilder extends BaseSnomedComponentUpdateRequestBuilder<SnomedDescriptionUpdateRequestBuilder, SnomedDescriptionUpdateRequest> {
 
 	private Map<String, Acceptability> acceptability;
 	private Multimap<AssociationType, String> associationTargets;
@@ -69,11 +69,6 @@ public class SnomedDescriptionUpdateRequestBuilder extends BaseSnomedComponentUp
 		req.setAssociationTargets(associationTargets);
 		req.setCaseSignificance(caseSignificance);
 		req.setInactivationIndicator(inactivationIndicator);
-	}
-	
-	@Override
-	protected SnomedDescriptionUpdateRequestBuilder getSelf() {
-		return this;
 	}
 	
 }

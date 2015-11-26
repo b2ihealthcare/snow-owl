@@ -23,14 +23,14 @@ import java.util.Collection;
 import org.apache.lucene.search.BooleanClause.Occur;
 import org.apache.lucene.search.BooleanQuery;
 
-import bak.pcj.LongCollection;
-
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.dsl.escg.EscgUtils;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.snomed.datastore.escg.IEscgQueryEvaluatorService;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptIndexEntry;
 import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedMappings;
+
+import bak.pcj.LongCollection;
 
 public class EscgQueryEvaluatorService implements IEscgQueryEvaluatorService, Serializable {
 

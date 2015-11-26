@@ -17,30 +17,25 @@ package com.b2international.snowowl.snomed.datastore.server.request;
 
 import java.util.Map;
 
-import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.domain.TransactionContext;
 import com.b2international.snowowl.core.events.Request;
-import com.b2international.snowowl.core.events.RequestBuilder;
-import com.b2international.snowowl.datastore.request.CommitInfo;
-import com.b2international.snowowl.datastore.request.RepositoryRequests;
+import com.b2international.snowowl.datastore.request.BaseTransactionalRequestBuilder;
 
 /**
  * @since 4.5
  */
-public final class SnomedRefSetMemberUpdateRequestBuilder implements RequestBuilder<TransactionContext, Void> {
+public final class SnomedRefSetMemberUpdateRequestBuilder extends BaseTransactionalRequestBuilder<SnomedRefSetMemberUpdateRequestBuilder, Void> {
 
-	private final String repositoryId;
-	
 	private String memberId;
 	private Map<String, Object> source;
 	
 	SnomedRefSetMemberUpdateRequestBuilder(String repositoryId) {
-		this.repositoryId = repositoryId;
+		super(repositoryId);
 	}
 	
 	public SnomedRefSetMemberUpdateRequestBuilder setMemberId(String memberId) {
 		this.memberId = memberId;
-		return this;
+		return getSelf();
 	}
 	
 	public SnomedRefSetMemberUpdateRequestBuilder setSource(Map<String, Object> source) {
@@ -49,16 +44,12 @@ public final class SnomedRefSetMemberUpdateRequestBuilder implements RequestBuil
 			setMemberId((String) source.get("memberId"));
 		}
 		this.source = source;
-		return this;
+		return getSelf();
 	}
 	
 	@Override
-	public Request<TransactionContext, Void> build() {
+	protected Request<TransactionContext, Void> doBuild() {
 		return new SnomedRefSetMemberUpdateRequest(memberId, source);
-	}
-
-	public Request<ServiceProvider, CommitInfo> commit(String userId, String branchPath, String commitComment) {
-		return RepositoryRequests.prepareCommit(userId, repositoryId, branchPath).setCommitComment(commitComment).setBody(this).build();
 	}
 
 }

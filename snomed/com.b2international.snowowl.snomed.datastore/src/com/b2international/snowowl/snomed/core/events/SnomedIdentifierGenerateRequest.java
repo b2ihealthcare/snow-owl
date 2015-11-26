@@ -15,15 +15,11 @@
  */
 package com.b2international.snowowl.snomed.core.events;
 
-import static com.google.common.base.Preconditions.checkNotNull;
+import javax.validation.constraints.NotNull;
 
-import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.events.BaseRequest;
-import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.core.terminology.ComponentCategory;
-import com.b2international.snowowl.datastore.request.RepositoryRequests;
-import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 import com.b2international.snowowl.snomed.datastore.id.ISnomedIdentifierService;
 
 /**
@@ -31,9 +27,11 @@ import com.b2international.snowowl.snomed.datastore.id.ISnomedIdentifierService;
  * 
  * @since 4.0
  */
-public final class SnomedIdentifierGenerateRequest extends BaseRequest<BranchContext, String> {
+final class SnomedIdentifierGenerateRequest extends BaseRequest<BranchContext, String> {
 
+	@NotNull
 	private final ComponentCategory category;
+	
 	private final String namespace;
 
 	SnomedIdentifierGenerateRequest(ComponentCategory category) {
@@ -41,7 +39,7 @@ public final class SnomedIdentifierGenerateRequest extends BaseRequest<BranchCon
 	}
 
 	SnomedIdentifierGenerateRequest(ComponentCategory category, String namespace) {
-		this.category = checkNotNull(category, "category");
+		this.category = category;
 		this.namespace = namespace;
 	}
 
@@ -53,11 +51,6 @@ public final class SnomedIdentifierGenerateRequest extends BaseRequest<BranchCon
 	@Override
 	protected Class<String> getReturnType() {
 		return String.class;
-	}
-
-	public static Request<ServiceProvider, String> prepareNewId(String branch, ComponentCategory category, String namespace) {
-		return RepositoryRequests.wrap(SnomedDatastoreActivator.REPOSITORY_UUID, branch,
-				new SnomedIdentifierGenerateRequest(category, namespace));
 	}
 
 }

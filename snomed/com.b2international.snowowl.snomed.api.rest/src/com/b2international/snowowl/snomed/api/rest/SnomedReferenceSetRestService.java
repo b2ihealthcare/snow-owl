@@ -47,7 +47,6 @@ import com.b2international.snowowl.snomed.api.rest.util.DeferredResults;
 import com.b2international.snowowl.snomed.api.rest.util.Responses;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSet;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSets;
-import com.b2international.snowowl.snomed.datastore.server.request.SnomedRefSetCreateRequestBuilder;
 import com.b2international.snowowl.snomed.datastore.server.request.SnomedRequests;
 import com.wordnik.swagger.annotations.Api;
 import com.wordnik.swagger.annotations.ApiOperation;
@@ -140,20 +139,14 @@ public class SnomedReferenceSetRestService extends AbstractSnomedRestService {
 		
 		final SnomedRefSetRestInput change = body.getChange();
 		
-		final SnomedRefSetCreateRequestBuilder req = SnomedRequests
+		final String createdRefSetId = SnomedRequests
 			.prepareNewRefSet()
-			.setIdentifierConcept(change.toComponentInput())
+			.setIdentifierConcept(change.toRequestBuilder())
 			.setType(change.getType())
-			.setReferencedComponentType(change.getReferencedComponentType());
-		
-		final String createdRefSetId = 
-				SnomedRequests
-					.prepareCommit(principal.getName(), branchPath)
-					.setBody(req)
-					.setCommitComment(body.getCommitComment())
-					.build()
-					.executeSync(bus, 120L * 1000L)
-					.getResultAs(String.class);
+			.setReferencedComponentType(change.getReferencedComponentType())
+			.build(principal.getName(), branchPath, body.getCommitComment())
+			.executeSync(bus, 120L * 1000L)
+			.getResultAs(String.class);
 		
 		return Responses.created(getRefSetLocationURI(branchPath, createdRefSetId)).build();
 	}
@@ -187,9 +180,11 @@ public class SnomedReferenceSetRestService extends AbstractSnomedRestService {
 		change.setSource("referenceSetId", refSetId);
 		
 		return SnomedRequests
-				.prepareCommit(principal.getName(), branchPath)
+				.prepareCommit()
 				.setBody(body.getChange().resolve(resolver))
 				.setCommitComment(body.getCommitComment())
+				.setUserId(principal.getName())
+				.setBranch(branchPath)
 				.build()
 				.executeSync(bus);
 	}
@@ -220,8 +215,10 @@ public class SnomedReferenceSetRestService extends AbstractSnomedRestService {
 		
 		final RequestResolver<TransactionContext> resolver = new RefSetMemberRequestResolver();
 		SnomedRequests
-			.prepareCommit(principal.getName(), branchPath)
+			.prepareCommit()
 			.setBody(request.getChange().resolve(resolver))
+			.setUserId(principal.getName())
+			.setBranch(branchPath)
 			.setCommitComment(request.getCommitComment())
 			.build()
 			.executeSync(bus);

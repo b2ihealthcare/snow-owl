@@ -63,7 +63,7 @@ public abstract class AbstractSnomedComponentRestInput<I extends SnomedComponent
 		this.namespaceId = namespaceId;
 	}
 
-	protected abstract I createComponentInput();
+	protected abstract I createRequestBuilder();
 
 	/**
 	 * Returns with the component category for the concrete SNOMED&nbsp;CT component input.
@@ -71,8 +71,8 @@ public abstract class AbstractSnomedComponentRestInput<I extends SnomedComponent
 	 */
 	protected abstract ComponentCategory getComponentCategory();
 	
-	protected I toComponentInput() {
-		final I req = createComponentInput();
+	protected I toRequestBuilder() {
+		final I req = createRequestBuilder();
 		req.setId(createIdGenerationStrategy(getId()));
 		req.setModuleId(getModuleId());
 		return req;

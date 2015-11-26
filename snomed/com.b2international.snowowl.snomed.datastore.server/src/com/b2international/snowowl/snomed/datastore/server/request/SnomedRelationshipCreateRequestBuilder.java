@@ -33,8 +33,8 @@ public final class SnomedRelationshipCreateRequestBuilder extends SnomedComponen
 	private int unionGroup = 0;
 	private String typeId;
 
-	SnomedRelationshipCreateRequestBuilder() {
-		super(ComponentCategory.RELATIONSHIP);
+	SnomedRelationshipCreateRequestBuilder(String repositoryId) {
+		super(repositoryId, ComponentCategory.RELATIONSHIP);
 	}
 	
 	public SnomedRelationshipCreateRequestBuilder setDestinationId(String destinationId) {

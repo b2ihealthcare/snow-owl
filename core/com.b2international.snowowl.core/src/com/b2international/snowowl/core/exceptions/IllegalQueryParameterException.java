@@ -26,9 +26,10 @@ public class IllegalQueryParameterException extends BadRequestException {
 	 * Creates a new exception instance with the specified message.
 	 * 
 	 * @param message the exception message
+	 * @param args - the arguments of the message template
 	 */
-	public IllegalQueryParameterException(final String message) {
-		super(message);
+	public IllegalQueryParameterException(final String message, Object...args) {
+		super(message, args);
 	}
 	
 	@Override

@@ -20,6 +20,7 @@ import java.util.List;
 import org.apache.lucene.search.Filter;
 
 import com.b2international.commons.functions.StringToLongFunction;
+import com.b2international.snowowl.datastore.request.SearchRequest;
 import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedMappings;
 
 /**

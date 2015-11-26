@@ -231,9 +231,11 @@ public class SnomedBrowserService implements ISnomedBrowserService {
 		final SnomedConceptCreateRequest req = inputFactory.createComponentInput(branchPath, concept, SnomedConceptCreateRequest.class);
 		String commitComment = getCommitComment(userId, concept, "creating");
 		final String createdConceptId = SnomedRequests
-				.prepareCommit(userId, branchPath)
+				.prepareCommit()
 				.setCommitComment(commitComment)
 				.setBody(req)
+				.setUserId(userId)
+				.setBranch(branchPath)
 				.build()
 				.executeSync(bus)
 				.getResultAs(String.class);
@@ -276,7 +278,7 @@ public class SnomedBrowserService implements ISnomedBrowserService {
 		}
 		
 		for (String descriptionDeletionId : descriptionDeletionIds) {
-			commitReq.add(SnomedRequests.prepareDeleteDescription(descriptionDeletionId));
+			commitReq.add(SnomedRequests.prepareDeleteDescription().setComponentId(descriptionDeletionId).build());
 		}
 		for (String descriptionId : descriptionUpdates.keySet()) {
 			commitReq.add(descriptionUpdates.get(descriptionId));
@@ -287,7 +289,7 @@ public class SnomedBrowserService implements ISnomedBrowserService {
 		}
 
 		for (String relationshipDeletionId : relationshipDeletionIds) {
-			commitReq.add(SnomedRequests.prepareDeleteRelationship(relationshipDeletionId));
+			commitReq.add(SnomedRequests.prepareDeleteRelationship().setComponentId(relationshipDeletionId).build());
 		}
 		for (String relationshipId : relationshipUpdates.keySet()) {
 			commitReq.add(relationshipUpdates.get(relationshipId));
@@ -306,7 +308,9 @@ public class SnomedBrowserService implements ISnomedBrowserService {
 		// Commit
 		final String commitComment = getCommitComment(userId, newVersionConcept, "updating");
 		SnomedRequests
-			.prepareCommit(userId, branchPath)
+			.prepareCommit()
+			.setUserId(userId)
+			.setBranch(branchPath)
 			.setCommitComment(commitComment)
 			.setBody(commitReq)
 			.build()

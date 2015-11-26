@@ -34,8 +34,8 @@ public final class SnomedConceptCreateRequestBuilder extends SnomedComponentCrea
 	private IdGenerationStrategy isAIdGenerationStrategy;
 	private List<SnomedDescriptionCreateRequest> descriptions = newArrayList();
 	
-	SnomedConceptCreateRequestBuilder() {
-		super(ComponentCategory.CONCEPT);
+	SnomedConceptCreateRequestBuilder(String repositoryId) {
+		super(repositoryId, ComponentCategory.CONCEPT);
 	}
 
 	public SnomedConceptCreateRequestBuilder setParent(String parentId) {

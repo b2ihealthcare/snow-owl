@@ -15,22 +15,21 @@
  */
 package com.b2international.snowowl.snomed.datastore.server.request;
 
-import com.b2international.snowowl.datastore.request.GetRequest;
-import com.b2international.snowowl.datastore.request.GetRequestBuilder;
-import com.b2international.snowowl.snomed.core.domain.ISnomedDescription;
+import com.b2international.snowowl.datastore.request.BaseTransactionalRequestBuilder;
+import com.b2international.snowowl.datastore.request.RepositoryCommitRequestBuilder;
 
 /**
  * @since 4.5
  */
-public final class SnomedDescriptionGetRequestBuilder extends GetRequestBuilder<SnomedDescriptionGetRequestBuilder, ISnomedDescription> {
+public abstract class BaseSnomedTransactionalRequestBuilder<B extends BaseSnomedTransactionalRequestBuilder<B, R>, R> extends BaseTransactionalRequestBuilder<B, R> {
 
-	SnomedDescriptionGetRequestBuilder(String repositoryId) {
+	protected BaseSnomedTransactionalRequestBuilder(String repositoryId) {
 		super(repositoryId);
 	}
-
+	
 	@Override
-	protected GetRequest<ISnomedDescription> create() {
-		return new SnomedDescriptionGetRequest();
+	protected RepositoryCommitRequestBuilder createCommitBuilder(String repositoryId) {
+		return new SnomedRepositoryCommitRequestBuilder(repositoryId);
 	}
-
+	
 }

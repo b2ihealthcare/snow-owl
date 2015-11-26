@@ -23,6 +23,7 @@ import org.eclipse.emf.cdo.view.CDOView;
 import com.b2international.snowowl.core.api.IComponent;
 import com.b2international.snowowl.core.api.ILookupService;
 import com.b2international.snowowl.core.domain.BranchContext;
+import com.b2international.snowowl.datastore.request.GetRequest;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMember;
 import com.b2international.snowowl.snomed.datastore.SnomedRefSetMemberLookupService;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry;

@@ -17,6 +17,7 @@ package com.b2international.snowowl.snomed.datastore.server.request;
 
 import java.util.Collection;
 
+import com.b2international.snowowl.datastore.request.SearchRequest;
 import com.b2international.snowowl.snomed.core.domain.Acceptability;
 import com.b2international.snowowl.snomed.core.domain.SnomedDescriptions;
 import com.b2international.snowowl.snomed.datastore.id.SnomedIdentifiers;

@@ -15,6 +15,8 @@
  */
 package com.b2international.snowowl.snomed.datastore.server.request;
 
+import com.b2international.snowowl.datastore.request.GetRequest;
+import com.b2international.snowowl.datastore.request.GetRequestBuilder;
 import com.b2international.snowowl.snomed.core.domain.ISnomedConcept;
 
 /**
@@ -29,11 +31,6 @@ public final class SnomedConceptGetRequestBuilder extends GetRequestBuilder<Snom
 	@Override
 	protected GetRequest<ISnomedConcept> create() {
 		return new SnomedConceptGetRequest();
-	}
-	
-	@Override
-	protected SnomedConceptGetRequestBuilder getSelf() {
-		return this;
 	}
 	
 }

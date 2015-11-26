@@ -17,19 +17,19 @@ package com.b2international.snowowl.snomed.datastore.server.request;
 
 import com.b2international.snowowl.core.domain.TransactionContext;
 import com.b2international.snowowl.core.events.Request;
-import com.b2international.snowowl.core.events.RequestBuilder;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType;
 
 /**
  * @since 4.5
  */
-public final class SnomedRefSetCreateRequestBuilder implements RequestBuilder<TransactionContext, String> {
+public final class SnomedRefSetCreateRequestBuilder extends BaseSnomedTransactionalRequestBuilder<SnomedRefSetCreateRequestBuilder, String> {
 
 	private SnomedRefSetType type;
 	private String referencedComponentType;
 	private Request<TransactionContext, String> conceptReq;
 
-	SnomedRefSetCreateRequestBuilder() {
+	SnomedRefSetCreateRequestBuilder(String repositoryId) {
+		super(repositoryId);
 	}
 
 	public SnomedRefSetCreateRequestBuilder setType(SnomedRefSetType type) {
@@ -53,7 +53,7 @@ public final class SnomedRefSetCreateRequestBuilder implements RequestBuilder<Tr
 	}
 	
 	@Override
-	public Request<TransactionContext, String> build() {
+	public Request<TransactionContext, String> doBuild() {
 		return new SnomedRefSetCreateRequest(type, referencedComponentType, (SnomedConceptCreateRequest) conceptReq);
 	}
 	

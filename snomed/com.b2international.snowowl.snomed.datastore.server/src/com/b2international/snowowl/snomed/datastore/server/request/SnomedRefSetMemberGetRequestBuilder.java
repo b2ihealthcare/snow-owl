@@ -15,6 +15,8 @@
  */
 package com.b2international.snowowl.snomed.datastore.server.request;
 
+import com.b2international.snowowl.datastore.request.GetRequest;
+import com.b2international.snowowl.datastore.request.GetRequestBuilder;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMember;
 
 /**
@@ -31,9 +33,4 @@ public final class SnomedRefSetMemberGetRequestBuilder extends GetRequestBuilder
 		return new SnomedRefSetMemberGetRequest();
 	}
 	
-	@Override
-	protected SnomedRefSetMemberGetRequestBuilder getSelf() {
-		return this;
-	}
-
 }

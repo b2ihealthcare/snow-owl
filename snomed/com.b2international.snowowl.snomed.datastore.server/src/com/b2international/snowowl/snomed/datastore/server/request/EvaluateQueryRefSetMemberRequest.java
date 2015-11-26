@@ -22,6 +22,8 @@ import static com.google.common.collect.Sets.newHashSet;
 import java.util.Collection;
 import java.util.Map;
 
+import org.hibernate.validator.constraints.NotEmpty;
+
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.events.BaseRequest;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
@@ -39,6 +41,7 @@ import com.google.common.collect.Maps;
  */
 public class EvaluateQueryRefSetMemberRequest extends BaseRequest<BranchContext, QueryRefSetMemberEvaluation> {
 
+	@NotEmpty
 	private String memberId;
 
 	EvaluateQueryRefSetMemberRequest(String memberId) {

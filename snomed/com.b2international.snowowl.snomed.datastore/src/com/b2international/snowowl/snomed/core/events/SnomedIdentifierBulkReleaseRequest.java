@@ -17,22 +17,18 @@ package com.b2international.snowowl.snomed.core.events;
 
 import java.util.Collection;
 
-import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.events.BaseRequest;
-import com.b2international.snowowl.core.events.Request;
-import com.b2international.snowowl.datastore.request.RepositoryRequests;
-import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 import com.b2international.snowowl.snomed.datastore.id.ISnomedIdentifierService;
 
 /**
  * @since 4.5
  */
-public class SnomedIdentifierBulkReleaseRequest extends BaseRequest<BranchContext, Void> {
+class SnomedIdentifierBulkReleaseRequest extends BaseRequest<BranchContext, Void> {
 
 	private final Collection<String> componentIds;
 
-	public SnomedIdentifierBulkReleaseRequest(final Collection<String> componentIds) {
+	SnomedIdentifierBulkReleaseRequest(final Collection<String> componentIds) {
 		this.componentIds = componentIds;
 	}
 
@@ -45,11 +41,6 @@ public class SnomedIdentifierBulkReleaseRequest extends BaseRequest<BranchContex
 	@Override
 	protected Class<Void> getReturnType() {
 		return Void.class;
-	}
-
-	public static Request<ServiceProvider, Void> prepareBulkRelease(final String branch, final Collection<String> componentIds) {
-		return RepositoryRequests.wrap(SnomedDatastoreActivator.REPOSITORY_UUID, branch,
-				new SnomedIdentifierBulkReleaseRequest(componentIds));
 	}
 
 }

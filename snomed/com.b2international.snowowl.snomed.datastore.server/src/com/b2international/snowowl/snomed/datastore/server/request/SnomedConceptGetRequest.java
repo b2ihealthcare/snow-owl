@@ -24,6 +24,7 @@ import com.b2international.snowowl.core.api.IComponent;
 import com.b2international.snowowl.core.api.ILookupService;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.terminology.ComponentCategory;
+import com.b2international.snowowl.datastore.request.GetRequest;
 import com.b2international.snowowl.snomed.core.domain.ISnomedConcept;
 import com.b2international.snowowl.snomed.datastore.SnomedConceptLookupService;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptIndexEntry;

@@ -21,6 +21,7 @@ import java.util.List;
 
 import com.b2international.commons.http.ExtendedLocale;
 import com.b2international.snowowl.core.exceptions.BadRequestException;
+import com.b2international.snowowl.datastore.request.SearchRequestBuilder;
 import com.b2international.snowowl.snomed.SnomedConstants.LanguageCodeReferenceSetIdentifierMapping;
 import com.b2international.snowowl.snomed.datastore.server.request.SnomedSearchRequest.OptionKey;
 

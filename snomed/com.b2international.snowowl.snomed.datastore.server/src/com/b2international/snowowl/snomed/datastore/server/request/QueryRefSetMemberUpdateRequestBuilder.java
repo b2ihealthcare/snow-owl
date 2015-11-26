@@ -17,47 +17,39 @@ package com.b2international.snowowl.snomed.datastore.server.request;
 
 import java.util.Map;
 
-import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.domain.TransactionContext;
 import com.b2international.snowowl.core.events.Request;
-import com.b2international.snowowl.core.events.RequestBuilder;
-import com.b2international.snowowl.datastore.request.CommitInfo;
+import com.b2international.snowowl.datastore.request.BaseTransactionalRequestBuilder;
 
 /**
  * @since 4.5
  */
-public final class QueryRefSetMemberUpdateRequestBuilder implements RequestBuilder<TransactionContext, Void> {
+public final class QueryRefSetMemberUpdateRequestBuilder extends BaseTransactionalRequestBuilder<QueryRefSetMemberUpdateRequestBuilder, Void> {
 
-	private final String repositoryId;
-	
 	private String memberId;
 	private String moduleId;
 
 	QueryRefSetMemberUpdateRequestBuilder(String repositoryId) {
-		this.repositoryId = repositoryId;
+		super(repositoryId);
 	}
 	
 	public QueryRefSetMemberUpdateRequestBuilder setMemberId(String memberId) {
 		this.memberId = memberId;
-		return this;
+		return getSelf();
 	}
 	
 	public QueryRefSetMemberUpdateRequestBuilder setModuleId(String moduleId) {
 		this.moduleId = moduleId;
-		return this;
+		return getSelf();
+	}
+	
+	public QueryRefSetMemberUpdateRequestBuilder setSource(Map<String, Object> source) {
+		return setModuleId((String) source.get("moduleId")).setMemberId((String) source.get("memberId"));
 	}
 	
 	@Override
-	public Request<TransactionContext, Void> build() {
+	protected Request<TransactionContext, Void> doBuild() {
 		return new QueryRefSetMemberUpdateRequest(memberId, moduleId);
-	}
-
-	public Request<ServiceProvider, CommitInfo> build(String userId, String branch, String commitComment) {
-		return SnomedRequests.prepareCommit(userId, branch).setBody(build()).setCommitComment(commitComment).build();
-	}
-
-	public QueryRefSetMemberUpdateRequestBuilder setSource(Map<String, Object> source) {
-		return setModuleId((String) source.get("moduleId")).setMemberId((String) source.get("memberId"));
 	}
 
 }

@@ -23,6 +23,7 @@ import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.domain.CollectionResource;
 import com.b2international.snowowl.core.terminology.ComponentCategory;
+import com.b2international.snowowl.datastore.request.SearchRequestBuilder;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
@@ -34,7 +35,6 @@ import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetM
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMembers;
 import com.b2international.snowowl.snomed.datastore.id.SnomedIdentifiers;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry;
-import com.b2international.snowowl.snomed.datastore.server.request.SearchRequestBuilder;
 import com.b2international.snowowl.snomed.datastore.server.request.SnomedRequests;
 import com.b2international.snowowl.snomed.datastore.services.AbstractSnomedRefSetMembershipLookupService;
 import com.google.common.base.Function;

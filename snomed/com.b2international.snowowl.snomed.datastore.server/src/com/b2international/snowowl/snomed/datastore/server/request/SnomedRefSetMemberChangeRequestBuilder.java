@@ -16,14 +16,14 @@
 package com.b2international.snowowl.snomed.datastore.server.request;
 
 import com.b2international.snowowl.core.domain.TransactionContext;
+import com.b2international.snowowl.core.events.BaseRequestBuilder;
 import com.b2international.snowowl.core.events.Request;
-import com.b2international.snowowl.core.events.RequestBuilder;
 import com.b2international.snowowl.snomed.core.domain.refset.MemberChange;
 
 /**
  * @since 4.5
  */
-public class SnomedRefSetMemberChangeRequestBuilder implements RequestBuilder<TransactionContext, Void> {
+public final class SnomedRefSetMemberChangeRequestBuilder extends BaseRequestBuilder<SnomedRefSetMemberChangeRequestBuilder, TransactionContext, Void> {
 
 	private final MemberChange change;
 	private final String moduleId;
@@ -36,7 +36,7 @@ public class SnomedRefSetMemberChangeRequestBuilder implements RequestBuilder<Tr
 	}
 	
 	@Override
-	public Request<TransactionContext, Void> build() {
+	public Request<TransactionContext, Void> doBuild() {
 		switch (change.getChangeKind()) {
 		case ADD:
 			return SnomedRequests
@@ -47,7 +47,7 @@ public class SnomedRefSetMemberChangeRequestBuilder implements RequestBuilder<Tr
 					.buildNoContent();
 		case REMOVE:
 			// FIXME what happens when we remove a published member, currently we don't inactivate it
-			return SnomedRequests.prepareDeleteMember(change.getMemberId());
+			return SnomedRequests.prepareDeleteMember().setComponentId(change.getMemberId()).build();
 		default: throw new UnsupportedOperationException("Not implemented case: " + change.getChangeKind()); 
 		}
 	}

@@ -50,7 +50,6 @@ import com.b2international.snowowl.snomed.api.rest.util.Responses;
 import com.b2international.snowowl.snomed.core.domain.Acceptability;
 import com.b2international.snowowl.snomed.core.domain.ISnomedDescription;
 import com.b2international.snowowl.snomed.core.domain.SnomedDescriptions;
-import com.b2international.snowowl.snomed.datastore.server.request.SnomedDescriptionCreateRequestBuilder;
 import com.b2international.snowowl.snomed.datastore.server.request.SnomedRequests;
 import com.wordnik.swagger.annotations.Api;
 import com.wordnik.swagger.annotations.ApiOperation;
@@ -173,16 +172,13 @@ public class SnomedDescriptionRestService extends AbstractSnomedRestService {
 			final Principal principal) {
 		
 		final String commitComment = body.getCommitComment();
-		final SnomedDescriptionCreateRequestBuilder req = body.getChange().toComponentInput();
 		
-		final String createdDescriptionId = 
-				SnomedRequests
-					.prepareCommit(principal.getName(), branchPath)
-					.setCommitComment(commitComment)
-					.setBody(req)
-					.build()
-					.executeSync(bus, 120L * 1000L)
-					.getResultAs(String.class);
+		final String createdDescriptionId = body
+			.getChange()
+			.toRequestBuilder()
+			.build(principal.getName(), branchPath, commitComment)
+			.executeSync(bus, 120L * 1000L)
+			.getResultAs(String.class);
 		
 		return Responses.created(getDescriptionLocation(branchPath, createdDescriptionId)).build();
 	}
@@ -249,20 +245,16 @@ public class SnomedDescriptionRestService extends AbstractSnomedRestService {
 		final SnomedDescriptionRestUpdate update = body.getChange();
 
 		SnomedRequests
-			.prepareCommit(userId, branchPath)
-			.setBody(
-				SnomedRequests
-					.prepareDescriptionUpdate(descriptionId)
-					.setActive(update.isActive())
-					.setModuleId(update.getModuleId())
-					.setAssociationTargets(update.getAssociationTargets())
-					.setInactivationIndicator(update.getInactivationIndicator())
-					.setCaseSignificance(update.getCaseSignificance())
-					.setAcceptability(update.getAcceptability())
-					.build())
-			.setCommitComment(commitComment)
-			.build()
+			.prepareDescriptionUpdate(descriptionId)
+			.setActive(update.isActive())
+			.setModuleId(update.getModuleId())
+			.setAssociationTargets(update.getAssociationTargets())
+			.setInactivationIndicator(update.getInactivationIndicator())
+			.setCaseSignificance(update.getCaseSignificance())
+			.setAcceptability(update.getAcceptability())
+			.build(userId, branchPath, commitComment)
 			.executeSync(bus, 120L * 1000L);
+		
 	}
 
 	@ApiOperation(
@@ -286,10 +278,9 @@ public class SnomedDescriptionRestService extends AbstractSnomedRestService {
 			final Principal principal) {
 		
 		SnomedRequests
-			.prepareCommit(principal.getName(), branchPath)
-			.setBody(SnomedRequests.prepareDeleteDescription(descriptionId))
-			.setCommitComment(String.format("Deleted Description '%s' from store.", descriptionId))
-			.build()
+			.prepareDeleteDescription()
+			.setComponentId(descriptionId)
+			.build(principal.getName(), branchPath, String.format("Deleted Description '%s' from store.", descriptionId))
 			.executeSync(bus, 120L * 1000L);
 	}
 	

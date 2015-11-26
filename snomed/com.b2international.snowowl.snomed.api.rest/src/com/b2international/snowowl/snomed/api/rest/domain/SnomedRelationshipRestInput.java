@@ -100,13 +100,13 @@ public class SnomedRelationshipRestInput extends AbstractSnomedComponentRestInpu
 	}
 
 	@Override
-	protected SnomedRelationshipCreateRequestBuilder createComponentInput() {
+	protected SnomedRelationshipCreateRequestBuilder createRequestBuilder() {
 		return SnomedRequests.prepareNewRelationship();
 	}
 
 	@Override
-	public SnomedRelationshipCreateRequestBuilder toComponentInput() {
-		return super.toComponentInput()
+	public SnomedRelationshipCreateRequestBuilder toRequestBuilder() {
+		return super.toRequestBuilder()
 				.setCharacteristicType(getCharacteristicType())
 				.setDestinationId(getDestinationId())
 				.setDestinationNegated(isDestinationNegated())
@@ -146,7 +146,7 @@ public class SnomedRelationshipRestInput extends AbstractSnomedComponentRestInpu
 		builder.append(", getUnionGroup()=");
 		builder.append(getUnionGroup());
 		builder.append(", createComponentInput()=");
-		builder.append(createComponentInput());
+		builder.append(createRequestBuilder());
 		builder.append("]");
 		return builder.toString();
 	}

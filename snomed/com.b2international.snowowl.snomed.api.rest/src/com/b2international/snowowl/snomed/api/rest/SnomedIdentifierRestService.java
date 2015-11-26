@@ -26,11 +26,12 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.context.request.async.DeferredResult;
 
 import com.b2international.snowowl.core.branch.Branch;
-import com.b2international.snowowl.core.exceptions.ApiValidation;
 import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.snomed.api.rest.domain.SnomedIdentifierRequest;
+import com.b2international.snowowl.snomed.api.rest.domain.SnomedIdentifierResponse;
 import com.b2international.snowowl.snomed.api.rest.util.DeferredResults;
-import com.b2international.snowowl.snomed.core.events.SnomedIdentifierGenerateRequest;
+import com.b2international.snowowl.snomed.core.events.SnomedIdentifierGenerateRequestBuilder;
+import com.google.common.base.Function;
 import com.wordnik.swagger.annotations.Api;
 import com.wordnik.swagger.annotations.ApiOperation;
 import com.wordnik.swagger.annotations.ApiResponse;
@@ -56,16 +57,21 @@ public class SnomedIdentifierRestService extends AbstractRestService {
 	})
 	@RequestMapping(method = RequestMethod.POST, consumes = { AbstractRestService.SO_MEDIA_TYPE, MediaType.APPLICATION_JSON_VALUE })
 	@ResponseStatus(value = HttpStatus.CREATED)
-	public DeferredResult<String> generate(@RequestBody final SnomedIdentifierRequest request) {
-		ApiValidation.checkInput(request);
-		// TODO wrap String into the response object 
-//		final SnomedIdentifierResponse response = new SnomedIdentifierResponse();
-//		response.setId(message.body(String.class));
-//		result.setResult(response);
+	public DeferredResult<SnomedIdentifierResponse> generate(@RequestBody final SnomedIdentifierRequest request) {
 		return DeferredResults.wrap(
-				SnomedIdentifierGenerateRequest
-					.prepareNewId(Branch.MAIN_PATH, request.getType(), request.getNamespace())
-					.execute(bus));
+				new SnomedIdentifierGenerateRequestBuilder()
+					.setCategory(request.getType())
+					.setNamespace(request.getNamespace())
+					.build(Branch.MAIN_PATH)
+					.execute(bus)
+					.then(new Function<String, SnomedIdentifierResponse>() {
+						@Override
+						public SnomedIdentifierResponse apply(String input) {
+							final SnomedIdentifierResponse response = new SnomedIdentifierResponse();
+							response.setId(input);							
+							return response;
+						}
+					}));
 	}
 	
 }

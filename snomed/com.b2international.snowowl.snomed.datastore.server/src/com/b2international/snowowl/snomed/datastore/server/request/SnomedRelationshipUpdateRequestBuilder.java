@@ -21,7 +21,7 @@ import com.b2international.snowowl.snomed.core.domain.RelationshipModifier;
 /**
  * @since 4.5
  */
-public class SnomedRelationshipUpdateRequestBuilder extends BaseSnomedComponentUpdateRequestBuilder<SnomedRelationshipUpdateRequestBuilder, SnomedRelationshipUpdateRequest> {
+public final class SnomedRelationshipUpdateRequestBuilder extends BaseSnomedComponentUpdateRequestBuilder<SnomedRelationshipUpdateRequestBuilder, SnomedRelationshipUpdateRequest> {
 
 	private CharacteristicType characteristicType;
 	private Integer group;
@@ -64,11 +64,6 @@ public class SnomedRelationshipUpdateRequestBuilder extends BaseSnomedComponentU
 		req.setGroup(group);
 		req.setUnionGroup(unionGroup);
 		req.setModifier(modifier);
-	}
-
-	@Override
-	protected SnomedRelationshipUpdateRequestBuilder getSelf() {
-		return this;
 	}
 
 }

@@ -13,32 +13,34 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.snomed.datastore.server.request;
+package com.b2international.snowowl.snomed.core.events;
+
+import java.util.Collection;
 
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.datastore.request.BaseBranchRequestBuilder;
-import com.b2international.snowowl.snomed.core.domain.refset.QueryRefSetMemberEvaluation;
+import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 
 /**
  * @since 4.5
  */
-public final class QueryRefSetMemberEvaluationRequestBuilder extends BaseBranchRequestBuilder<QueryRefSetMemberEvaluationRequestBuilder, QueryRefSetMemberEvaluation> {
+public class SnomedIdentifierBulkReleaseRequestBuilder extends BaseBranchRequestBuilder<SnomedIdentifierBulkReleaseRequestBuilder, Void> {
 
-	private String memberId;
+	private Collection<String> componentIds;
 
-	QueryRefSetMemberEvaluationRequestBuilder(String repositoryId) {
-		super(repositoryId);
+	public SnomedIdentifierBulkReleaseRequestBuilder() {
+		super(SnomedDatastoreActivator.REPOSITORY_UUID);
 	}
-
-	public QueryRefSetMemberEvaluationRequestBuilder setMemberId(String memberId) {
-		this.memberId = memberId;
-		return this;
+	
+	public SnomedIdentifierBulkReleaseRequestBuilder setComponentIds(Collection<String> componentIds) {
+		this.componentIds = componentIds;
+		return getSelf();
 	}
 	
 	@Override
-	public Request<BranchContext, QueryRefSetMemberEvaluation> doBuild() {
-		return new EvaluateQueryRefSetMemberRequest(memberId);
+	protected Request<BranchContext, Void> doBuild() {
+		return new SnomedIdentifierBulkReleaseRequest(componentIds);
 	}
 
 }

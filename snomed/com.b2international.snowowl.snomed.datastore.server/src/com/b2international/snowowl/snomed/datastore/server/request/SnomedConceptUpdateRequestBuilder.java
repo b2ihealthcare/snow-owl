@@ -24,7 +24,7 @@ import com.google.common.collect.Multimap;
 /**
  * @since 4.5
  */
-public class SnomedConceptUpdateRequestBuilder extends BaseSnomedComponentUpdateRequestBuilder<SnomedConceptUpdateRequestBuilder, SnomedConceptUpdateRequest> {
+public final class SnomedConceptUpdateRequestBuilder extends BaseSnomedComponentUpdateRequestBuilder<SnomedConceptUpdateRequestBuilder, SnomedConceptUpdateRequest> {
 
 	private Multimap<AssociationType, String> associationTargets;
 	private DefinitionStatus definitionStatus;
@@ -69,9 +69,4 @@ public class SnomedConceptUpdateRequestBuilder extends BaseSnomedComponentUpdate
 		req.setSubclassDefinitionStatus(subclassDefinitionStatus);
 	}
 	
-	@Override
-	protected SnomedConceptUpdateRequestBuilder getSelf() {
-		return this;
-	}
-
 }

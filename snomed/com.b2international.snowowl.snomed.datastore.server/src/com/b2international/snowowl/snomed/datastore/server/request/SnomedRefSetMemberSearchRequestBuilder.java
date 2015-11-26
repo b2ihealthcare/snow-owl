@@ -17,6 +17,7 @@ package com.b2international.snowowl.snomed.datastore.server.request;
 
 import java.util.Collection;
 
+import com.b2international.snowowl.datastore.request.SearchRequest;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMembers;
 import com.b2international.snowowl.snomed.datastore.server.request.SnomedRefSetMemberSearchRequest.OptionKey;
 import com.google.common.collect.ImmutableSet;

@@ -21,24 +21,22 @@ import javax.annotation.OverridingMethodsMustInvokeSuper;
 
 import com.b2international.snowowl.core.domain.TransactionContext;
 import com.b2international.snowowl.core.events.Request;
-import com.b2international.snowowl.core.events.RequestBuilder;
 import com.b2international.snowowl.core.terminology.ComponentCategory;
-import com.b2international.snowowl.snomed.core.domain.SnomedComponent;
 import com.b2international.snowowl.snomed.core.domain.IdGenerationStrategy;
 import com.b2international.snowowl.snomed.core.domain.NamespaceIdGenerationStrategy;
 import com.b2international.snowowl.snomed.core.domain.UserIdGenerationStrategy;
 
 /**
  * @since 4.5
- * @param <B> - a subtype of {@link SnomedComponent} 
  */
-public abstract class SnomedComponentCreateRequestBuilder<B extends SnomedComponentCreateRequestBuilder<B>> implements RequestBuilder<TransactionContext, String> {
+public abstract class SnomedComponentCreateRequestBuilder<B extends SnomedComponentCreateRequestBuilder<B>> extends BaseSnomedTransactionalRequestBuilder<B, String> {
 	
 	private String moduleId;
 	private IdGenerationStrategy idGenerationStrategy;
 	private ComponentCategory category;
 	
-	protected SnomedComponentCreateRequestBuilder(ComponentCategory category) {
+	protected SnomedComponentCreateRequestBuilder(String repositoryId, ComponentCategory category) {
+		super(repositoryId);
 		this.category = checkNotNull(category);
 	}
 	
@@ -62,12 +60,8 @@ public abstract class SnomedComponentCreateRequestBuilder<B extends SnomedCompon
 		return getSelf();
 	}
 
-	protected final B getSelf() {
-		return (B) this;
-	}
-	
 	@Override
-	public final Request<TransactionContext, String> build() {
+	protected final Request<TransactionContext, String> doBuild() {
 		final BaseSnomedComponentCreateRequest req = createRequest();
 		// FIXME use default namespace???
 		req.setIdGenerationStrategy(idGenerationStrategy == null ? new NamespaceIdGenerationStrategy(category) : idGenerationStrategy);
