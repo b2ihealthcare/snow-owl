@@ -23,14 +23,16 @@ import java.util.Date;
 import java.util.List;
 
 import com.b2international.commons.http.ExtendedLocale;
+import com.b2international.commons.options.Options;
+import com.b2international.commons.options.OptionsBuilder;
 import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.domain.CollectionResource;
-import com.b2international.snowowl.core.domain.IComponent;
 import com.b2international.snowowl.snomed.core.domain.SnomedComponent;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedIndexEntry;
 import com.b2international.snowowl.snomed.datastore.services.AbstractSnomedRefSetMembershipLookupService;
 import com.google.common.base.Function;
+import com.google.common.base.Predicate;
 import com.google.common.collect.FluentIterable;
 
 /**
@@ -42,26 +44,33 @@ import com.google.common.collect.FluentIterable;
 abstract class BaseSnomedComponentConverter<T extends SnomedIndexEntry, R extends SnomedComponent, CR extends CollectionResource<R>>
 		implements ResourceConverter<T, R, CR> {
 
-	protected static final Function<IComponent, String> ID_FUNCTION = new Function<IComponent, String>() {
+	protected static final Function<SnomedComponent, String> ID_FUNCTION = new Function<SnomedComponent, String>() {
 		@Override
-		public String apply(IComponent input) {
+		public String apply(SnomedComponent input) {
 			return input.getId();
 		}
 	};
 	
+	protected static final Predicate<SnomedComponent> ACTIVE_PREDICATE = new Predicate<SnomedComponent>() {
+		@Override
+		public boolean apply(SnomedComponent input) {
+			return input.isActive();
+		}
+	};
+	
 	private final BranchContext context;
-	private final List<String> expand;
+	private final Options expand;
 	private final AbstractSnomedRefSetMembershipLookupService refSetMembershipLookupService;
 	private final List<ExtendedLocale> locales;
 
-	protected BaseSnomedComponentConverter(BranchContext context, List<String> expand, List<ExtendedLocale> locales, AbstractSnomedRefSetMembershipLookupService refSetMembershipLookupService) {
+	protected BaseSnomedComponentConverter(BranchContext context, Options expand, List<ExtendedLocale> locales, AbstractSnomedRefSetMembershipLookupService refSetMembershipLookupService) {
 		this.context = checkNotNull(context, "context");
-		this.expand = expand == null ? Collections.<String> emptyList() : expand;
+		this.expand = expand == null ? OptionsBuilder.newBuilder().build() : expand;
 		this.locales = locales == null ? Collections.<ExtendedLocale>emptyList() : locales;
 		this.refSetMembershipLookupService = refSetMembershipLookupService;
 	}
 
-	protected final List<String> expand() {
+	protected final Options expand() {
 		return expand;
 	}
 

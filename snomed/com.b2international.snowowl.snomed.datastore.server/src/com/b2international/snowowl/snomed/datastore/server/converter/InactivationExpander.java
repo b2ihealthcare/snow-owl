@@ -30,6 +30,7 @@ import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetM
 import com.b2international.snowowl.snomed.datastore.server.request.SnomedRequests;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType;
 import com.google.common.base.Function;
+import com.google.common.base.Predicates;
 import com.google.common.collect.FluentIterable;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Iterables;
@@ -48,7 +49,13 @@ public abstract class InactivationExpander<T extends SnomedComponent> {
 
 	void expand(List<T> results) {
 		
-		Set<String> componentIds = FluentIterable.from(results).transform(BaseSnomedComponentConverter.ID_FUNCTION).toSet();
+		final FluentIterable<T> inactiveResults = FluentIterable.from(results)
+				.filter(Predicates.not(BaseSnomedComponentConverter.ACTIVE_PREDICATE));
+
+		final Set<String> componentIds = inactiveResults
+				.transform(BaseSnomedComponentConverter.ID_FUNCTION)
+				.toSet();
+		
 		List<String> refSetIds = newArrayList();
 		for (final AssociationType associationType : AssociationType.values()) {
 			refSetIds.add(associationType.getConceptId());
@@ -71,7 +78,7 @@ public abstract class InactivationExpander<T extends SnomedComponent> {
 			}
 		});
 		
-		for (T result : results) {
+		for (T result : inactiveResults) {
 			final Collection<SnomedReferenceSetMember> descriptionMembers = membersByReferencedComponentId.get(result.getId());
 			final List<SnomedReferenceSetMember> associationMembers = newArrayList();
 			final List<SnomedReferenceSetMember> inactivationMembers = newArrayList(); 
