@@ -19,11 +19,13 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
+import com.b2international.commons.CompareUtils;
 import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.api.SnowowlRuntimeException;
 import com.b2international.snowowl.core.events.util.Promise;
 import com.b2international.snowowl.core.exceptions.RequestTimeoutException;
 import com.b2international.snowowl.eventbus.IEventBus;
+import com.google.common.base.Joiner;
 
 /**
  * @since 4.5
@@ -33,6 +35,8 @@ import com.b2international.snowowl.eventbus.IEventBus;
  */
 public abstract class BaseRequest<C extends ServiceProvider, B> extends BaseEvent implements Request<C, B> {
 
+	private static final Joiner COMMA_WITH_QUOTE_JOINER = Joiner.on("','").skipNulls();
+	
 	@Override
 	public final Promise<B> execute(IEventBus bus) {
 		return send(bus, getReturnType());
@@ -81,5 +85,24 @@ public abstract class BaseRequest<C extends ServiceProvider, B> extends BaseEven
 	 * @return
 	 */
 	protected abstract Class<B> getReturnType();
+	
+	@Override
+	public String toString() {
+		return getClass().getSimpleName();
+	}
+	
+	/**
+	 * To serialize an {@link Iterable} as a JSON array, return empty array string if the {@link Iterable} either <code>null</code> or empty.
+	 * 
+	 * @param parts
+	 * @return
+	 */
+	protected final String formatStringList(Iterable<? extends Object> parts) {
+		if (CompareUtils.isEmpty(parts)) {
+			return "[]";
+		} else {
+			return String.format("['%s']", COMMA_WITH_QUOTE_JOINER.join(parts)); 
+		}
+	}
 
 }

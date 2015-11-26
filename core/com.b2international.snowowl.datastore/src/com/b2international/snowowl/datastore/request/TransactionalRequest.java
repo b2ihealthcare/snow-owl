@@ -70,7 +70,7 @@ public final class TransactionalRequest extends BaseRequest<BranchContext, Commi
 	
 	@Override
 	public String toString() {
-		return String.format("{userId:%s, commitComment: %s, next: %s}", userId, commitComment, next);
+		return String.format("{userId:'%s', commitComment:'%s', request:%s}", userId, commitComment, next);
 	}
 	
 }

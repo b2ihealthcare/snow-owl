@@ -70,7 +70,7 @@ public final class BranchRequest<B> extends DelegatingRequest<RepositoryContext,
 	
 	@Override
 	public String toString() {
-		return String.format("{branch:%s, next: %s}", branchPath, next());
+		return String.format("{branch:'%s', request:%s", branchPath, next());
 	}
 
 }

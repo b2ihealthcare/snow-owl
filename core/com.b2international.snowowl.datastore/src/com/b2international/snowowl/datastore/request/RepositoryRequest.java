@@ -45,7 +45,7 @@ public final class RepositoryRequest<B> extends DelegatingRequest<ServiceProvide
 	
 	@Override
 	public String toString() {
-		return String.format("{address:%s, next:%s}", getAddress(), next());
+		return String.format("{repositoryId:%s, request:%s}", repositoryId, next());
 	}
 	
 }

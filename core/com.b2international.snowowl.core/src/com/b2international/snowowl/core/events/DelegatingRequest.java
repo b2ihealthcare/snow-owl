@@ -21,19 +21,23 @@ import com.b2international.commons.ClassUtils;
 import com.b2international.snowowl.core.ServiceProvider;
 
 /**
+ * Delegates execution of a {@link Request}. Can be used to decorate/wrap the incoming context within another context to meet the requirements of the
+ * next {@link Request} in the execution chain, or you can use it to decorate the execution of the request chain with additional functionality like
+ * logging, execution time measurement, authorization, authentication, etc.
+ * 
  * @since 4.5
  * @param <C>
  *            - the required context type for this {@link Request}
  * @param <T>
- *            - the required context type of the next {@link Request}
- * @param <B>
+ *            - the required context type of the delegate {@link Request}
+ * @param <R>
  *            - the type of the result
  */
-public abstract class DelegatingRequest<C extends ServiceProvider, T extends ServiceProvider, B> extends BaseRequest<C, B> {
+public abstract class DelegatingRequest<C extends ServiceProvider, T extends ServiceProvider, R> extends BaseRequest<C, R> {
 
-	private Request<T, B> next;
+	private final Request<T, R> next;
 
-	protected DelegatingRequest(Request<T, B> next) {
+	protected DelegatingRequest(Request<T, R> next) {
 		this.next = checkNotNull(next, "next");
 	}
 
@@ -44,18 +48,23 @@ public abstract class DelegatingRequest<C extends ServiceProvider, T extends Ser
 	 *            - a context suitable for the next {@link Request}
 	 * @return
 	 */
-	protected final B next(T context) {
+	protected final R next(T context) {
 		return next.execute(context);
 	}
-	
-	protected final Request<T, B> next() {
+
+	protected final Request<T, R> next() {
 		return next;
 	}
 
 	@Override
 	@SuppressWarnings("unchecked")
-	protected final Class<B> getReturnType() {
+	protected final Class<R> getReturnType() {
 		return ClassUtils.checkAndCast(next, BaseRequest.class).getReturnType();
+	}
+
+	@Override
+	public String toString() {
+		return next.toString();
 	}
 	
 }
