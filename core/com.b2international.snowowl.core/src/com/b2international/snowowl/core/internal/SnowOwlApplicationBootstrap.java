@@ -23,14 +23,19 @@ import com.b2international.snowowl.core.CoreActivator;
 import com.b2international.snowowl.core.CoreTerminologyBroker;
 import com.b2international.snowowl.core.config.ClientPreferences;
 import com.b2international.snowowl.core.config.SnowOwlConfiguration;
+import com.b2international.snowowl.core.events.metrics.Metrics;
+import com.b2international.snowowl.core.events.metrics.MetricsConfiguration;
+import com.b2international.snowowl.core.events.metrics.RequestMetrics;
 import com.b2international.snowowl.core.login.LoginConfiguration;
 import com.b2international.snowowl.core.markers.MarkerManager;
 import com.b2international.snowowl.core.setup.BootstrapFragment;
 import com.b2international.snowowl.core.setup.Environment;
+import com.b2international.snowowl.core.setup.ModuleConfig;
 
 /**
  * @since 3.3
  */
+@ModuleConfig(fieldName = "metrics", type = MetricsConfiguration.class)
 public class SnowOwlApplicationBootstrap implements BootstrapFragment {
 
 	@Override
@@ -47,6 +52,12 @@ public class SnowOwlApplicationBootstrap implements BootstrapFragment {
 		env.services().registerService(LoginConfiguration.class, loginConfiguration);
 		
 		env.services().registerService(CoreTerminologyBroker.class, CoreTerminologyBroker.getInstance());
+		
+		if (configuration.getModuleConfig(MetricsConfiguration.class).isEnabled()) {
+			env.services().registerService(Metrics.class, new RequestMetrics());
+		} else {
+			env.services().registerService(Metrics.class, Metrics.NOOP);
+		}
 	}
 
 	@Override
