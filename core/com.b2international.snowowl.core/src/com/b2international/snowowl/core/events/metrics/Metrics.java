@@ -1,6 +1,6 @@
 /*
  * Copyright 2011-2015 B2i Healthcare Pte Ltd, http://b2i.sg
- *
+ * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -13,30 +13,23 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.core.events.util;
+package com.b2international.snowowl.core.events.metrics;
 
-import com.b2international.snowowl.core.ClassLoaderProvider;
 import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.events.Request;
-import com.b2international.snowowl.core.events.metrics.Metrics;
 
 /**
- * Generic Request handler class that handles all requests by executing them immediately.
- * 
  * @since 4.5
  */
-public final class ApiRequestHandler extends ApiEventHandler {
+public interface Metrics {
 
-	private final ServiceProvider context;
-
-	public ApiRequestHandler(ServiceProvider context, ClassLoaderProvider classLoaderProvider) {
-		super(classLoaderProvider);
-		this.context = context;
-	}
+	<C extends ServiceProvider, R> Request<C, R> measure(Request<C, R> req);
 	
-	@Handler
-	public Object handle(Request<ServiceProvider, Object> req) {
-		return context.service(Metrics.class).measure(req).execute(context);
-	}
+	Metrics NOOP = new Metrics() {
+		@Override
+		public <C extends ServiceProvider, R> Request<C, R> measure(Request<C, R> req) {
+			return req;
+		}
+	};
 	
 }

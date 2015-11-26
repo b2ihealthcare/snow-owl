@@ -1,6 +1,6 @@
 /*
  * Copyright 2011-2015 B2i Healthcare Pte Ltd, http://b2i.sg
- *
+ * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -13,30 +13,42 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.core.events.util;
+package com.b2international.snowowl.core.events.metrics;
 
-import com.b2international.snowowl.core.ClassLoaderProvider;
+import static com.google.common.base.Preconditions.checkNotNull;
+
 import com.b2international.snowowl.core.ServiceProvider;
+import com.b2international.snowowl.core.events.DelegatingRequest;
 import com.b2international.snowowl.core.events.Request;
-import com.b2international.snowowl.core.events.metrics.Metrics;
 
 /**
- * Generic Request handler class that handles all requests by executing them immediately.
- * 
  * @since 4.5
  */
-public final class ApiRequestHandler extends ApiEventHandler {
+public final class MeteredRequest<C extends ServiceProvider, R> extends DelegatingRequest<C, C, R> {
 
-	private final ServiceProvider context;
+	private final RequestMeter meter;
 
-	public ApiRequestHandler(ServiceProvider context, ClassLoaderProvider classLoaderProvider) {
-		super(classLoaderProvider);
-		this.context = context;
+	public MeteredRequest(RequestMeter meter, Request<C, R> next) {
+		super(next);
+		this.meter = checkNotNull(meter, "meter");
 	}
-	
-	@Handler
-	public Object handle(Request<ServiceProvider, Object> req) {
-		return context.service(Metrics.class).measure(req).execute(context);
+
+	@Override
+	public R execute(C context) {
+		try {
+			meter.start(getMessage());
+			return next(context);
+		} finally {
+			meter.stop(getMessage());
+		}
 	}
-	
+
+	private String getMessage() {
+		try {
+			return toString();
+		} catch (Throwable e) {
+			return "Unable to get request description: " + e.getMessage();
+		}
+	}
+
 }
