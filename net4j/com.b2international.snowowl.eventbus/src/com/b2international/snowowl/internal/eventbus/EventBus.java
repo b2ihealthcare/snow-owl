@@ -114,7 +114,7 @@ public class EventBus extends Lifecycle implements IEventBus {
 	}
 	
 	private void receiveMessage(ChoosableList<Handler> handlers, BaseMessage message) {
-		LOG.trace("Received message: " + message);
+		LOG.trace("Received message: {}", message);
 		if (handlers != null) {
 			if (message.isSend()) {
 				final Handler handler = handlers.choose();
