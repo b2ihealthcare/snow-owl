@@ -21,9 +21,11 @@ import java.util.List;
 
 import com.b2international.commons.CompareUtils;
 import com.b2international.commons.http.ExtendedLocale;
+import com.b2international.commons.options.Options;
 import com.b2international.commons.options.OptionsBuilder;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.events.Request;
+import com.b2international.snowowl.datastore.request.SearchRequest.OptionKey;
 
 /**
  * @since 4.5
@@ -33,7 +35,6 @@ public abstract class SearchRequestBuilder<B extends SearchRequestBuilder<B, R>,
 	private int offset = 0;
 	private int limit = 50;
 	private Collection<String> componentIds = Collections.emptyList();
-	private List<String> expand = Collections.emptyList();
 	private List<ExtendedLocale> locales = Collections.emptyList();
 	private final OptionsBuilder optionsBuilder = OptionsBuilder.newBuilder();
 	
@@ -51,10 +52,13 @@ public abstract class SearchRequestBuilder<B extends SearchRequestBuilder<B, R>,
 		return getSelf();
 	}
 	
-	public final B setExpand(List<String> expand) {
-		if (!CompareUtils.isEmpty(expand)) {
-			this.expand = expand;
-		}
+	public final B setExpand(String expand) {
+		addOption(OptionKey.EXPAND, ExpandParser.parse(expand));
+		return getSelf();
+	}
+	
+	public final B setExpand(Options expand) {
+		addOption(OptionKey.EXPAND, expand);
 		return getSelf();
 	}
 	
@@ -100,7 +104,6 @@ public abstract class SearchRequestBuilder<B extends SearchRequestBuilder<B, R>,
 		final SearchRequest<R> req = create();
 		req.setLimit(limit);
 		req.setOffset(offset);
-		req.setExpand(expand);
 		req.setLocales(locales);
 		req.setComponentIds(componentIds);
 		req.setOptions(optionsBuilder.build());

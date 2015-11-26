@@ -20,6 +20,8 @@ import java.util.List;
 
 import com.b2international.commons.CompareUtils;
 import com.b2international.commons.http.ExtendedLocale;
+import com.b2international.commons.options.Options;
+import com.b2international.commons.options.OptionsBuilder;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.events.Request;
 
@@ -29,7 +31,7 @@ import com.b2international.snowowl.core.events.Request;
 public abstract class GetRequestBuilder<B extends GetRequestBuilder<B, R>, R> extends BaseBranchRequestBuilder<B, R> {
 
 	private String componentId;
-	private List<String> expand = Collections.emptyList();
+	private Options expand = OptionsBuilder.newBuilder().build();
 	private List<ExtendedLocale> locales = Collections.emptyList();
 
 	protected GetRequestBuilder(String repositoryId) {
@@ -41,9 +43,9 @@ public abstract class GetRequestBuilder<B extends GetRequestBuilder<B, R>, R> ex
 		return getSelf();
 	}
 	
-	public final B setExpand(List<String> expand) {
+	public final B setExpand(String expand) {
 		if (!CompareUtils.isEmpty(expand)) {
-			this.expand = expand;
+			this.expand = ExpandParser.parse(expand);
 		}
 		return getSelf();
 	}

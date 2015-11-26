@@ -48,6 +48,10 @@ import com.google.common.primitives.Ints;
  */
 public abstract class SearchRequest<B> extends BaseRequest<BranchContext, B> {
 
+	enum OptionKey {
+		EXPAND
+	}
+	
 	@Min(0)
 	private int offset;
 	
@@ -56,9 +60,6 @@ public abstract class SearchRequest<B> extends BaseRequest<BranchContext, B> {
 	
 	@NotNull
 	private Options options;
-	
-	@NotNull
-	private List<String> expand;
 	
 	@NotNull
 	private List<ExtendedLocale> locales;
@@ -78,10 +79,6 @@ public abstract class SearchRequest<B> extends BaseRequest<BranchContext, B> {
 	
 	void setOptions(Options options) {
 		this.options = options;
-	}
-	
-	void setExpand(List<String> expand) {
-		this.expand = expand;
 	}
 	
 	void setLocales(List<ExtendedLocale> locales) {
@@ -132,8 +129,8 @@ public abstract class SearchRequest<B> extends BaseRequest<BranchContext, B> {
 		return options.getList(key.name(), type);
 	}
 	
-	protected final List<String> expand() {
-		return expand;
+	protected final Options expand() {
+		return get(OptionKey.EXPAND, Options.class);
 	}
 	
 	protected final Collection<String> componentIds() {
@@ -208,7 +205,6 @@ public abstract class SearchRequest<B> extends BaseRequest<BranchContext, B> {
 				offset,
 				limit,
 				formatStringList(componentIds),
-				formatStringList(expand),
 				formatStringList(locales),
 				options);
 	}
