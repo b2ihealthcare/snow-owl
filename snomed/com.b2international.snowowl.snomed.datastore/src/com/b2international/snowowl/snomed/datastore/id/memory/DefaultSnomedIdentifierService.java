@@ -307,6 +307,11 @@ public class DefaultSnomedIdentifierService extends AbstractSnomedIdentifierServ
 
 		return componentIds;
 	}
+	
+	@Override
+	public boolean importSupported() {
+		return true;
+	}
 
 	private String generateComponentId(final String namespace, final ComponentCategory category) {
 		final StringBuilder builder = new StringBuilder();

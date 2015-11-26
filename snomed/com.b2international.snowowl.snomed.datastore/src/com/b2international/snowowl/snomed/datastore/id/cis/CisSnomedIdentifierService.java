@@ -457,6 +457,11 @@ public class CisSnomedIdentifierService extends AbstractSnomedIdentifierService 
 			logout(token);
 		}
 	}
+	
+	@Override
+	public boolean importSupported() {
+		return false;
+	}
 
 	private String login() {
 		return client.login();

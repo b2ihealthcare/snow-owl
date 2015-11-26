@@ -169,4 +169,9 @@ public interface ISnomedIdentifierService {
 	 */
 	Collection<SctId> getSctIds();
 
+	/**
+	 * Tells if the identifier service supports import related requests.
+	 */
+	boolean importSupported();
+
 }

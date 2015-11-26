@@ -256,4 +256,8 @@ public class SnomedIdentifiers {
 		}
 	}
 	
+	public boolean importSupported() {
+		return identifierService.importSupported();
+	}
+	
 }
