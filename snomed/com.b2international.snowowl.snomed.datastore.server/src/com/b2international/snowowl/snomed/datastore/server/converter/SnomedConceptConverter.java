@@ -29,6 +29,7 @@ import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.TopDocs;
 
+import com.b2international.commons.functions.StringToLongFunction;
 import com.b2international.commons.http.ExtendedLocale;
 import com.b2international.snowowl.core.api.SnowowlRuntimeException;
 import com.b2international.snowowl.core.domain.BranchContext;
@@ -55,9 +56,11 @@ import com.google.common.base.Function;
 import com.google.common.base.Optional;
 import com.google.common.base.Predicate;
 import com.google.common.collect.FluentIterable;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Multimap;
+import com.google.common.collect.Multimaps;
 
 /**
  * @since 4.5
@@ -124,6 +127,25 @@ final class SnomedConceptConverter extends BaseSnomedComponentConverter<SnomedCo
 			final Map<String, ISnomedDescription> terms = helper.getFullySpecifiedNames(conceptIds, locales());
 			for (ISnomedConcept concept : results) {
 				((SnomedConcept) concept).setFsn(terms.get(concept.getId()));
+			}
+		}
+		if (expand().contains("descriptions")) {
+			final SnomedDescriptions descriptions = SnomedRequests
+				.prepareDescriptionSearch()
+				.all()
+				.filterByConceptId(StringToLongFunction.copyOf(conceptIds))
+				.build()
+				.execute(context());
+			final Multimap<String, ISnomedDescription> descriptionsByConceptId = Multimaps.index(descriptions, new Function<ISnomedDescription, String>() {
+				@Override
+				public String apply(ISnomedDescription input) {
+					return input.getConceptId();
+				}
+				
+			});
+			for (ISnomedConcept concept : results) {
+				final List<ISnomedDescription> conceptDescriptions = ImmutableList.copyOf(descriptionsByConceptId.get(concept.getId()));
+				((SnomedConcept) concept).setDescriptions(new SnomedDescriptions(conceptDescriptions, 0, conceptDescriptions.size(), conceptDescriptions.size()));
 			}
 		}
 		
