@@ -575,7 +575,8 @@ public class SnomedBrowserService implements ISnomedBrowserService {
 		final DescriptionService descriptionService = new DescriptionService(bus, storageRef.getBranchPath());
 		
 		final Collection<ISnomedDescription> descriptions = SnomedRequests.prepareDescriptionSearch()
-			.all()
+			.setOffset(offset)
+			.setLimit(limit)
 			.filterByTerm(query)
 			.build(branchPath.getPath())
 			.executeSync(bus)
