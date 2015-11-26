@@ -52,12 +52,16 @@ public abstract class SearchRequestBuilder<B extends SearchRequestBuilder<B, R>,
 	}
 	
 	public final B setExpand(List<String> expand) {
-		this.expand = expand;
+		if (!CompareUtils.isEmpty(expand)) {
+			this.expand = expand;
+		}
 		return getSelf();
 	}
 	
 	public final B setLocales(List<ExtendedLocale> locales) {
-		this.locales = locales;
+		if (!CompareUtils.isEmpty(locales)) {
+			this.locales = locales;
+		}
 		return getSelf();
 	}
 	

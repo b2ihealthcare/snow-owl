@@ -18,6 +18,7 @@ package com.b2international.snowowl.datastore.request;
 import java.util.Collections;
 import java.util.List;
 
+import com.b2international.commons.CompareUtils;
 import com.b2international.commons.http.ExtendedLocale;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.events.Request;
@@ -41,12 +42,16 @@ public abstract class GetRequestBuilder<B extends GetRequestBuilder<B, R>, R> ex
 	}
 	
 	public final B setExpand(List<String> expand) {
-		this.expand = expand;
+		if (!CompareUtils.isEmpty(expand)) {
+			this.expand = expand;
+		}
 		return getSelf();
 	}
 	
 	public final B setLocales(List<ExtendedLocale> locales) {
-		this.locales = locales;
+		if (!CompareUtils.isEmpty(locales)) {
+			this.locales = locales;
+		}
 		return getSelf();
 	}
 	
