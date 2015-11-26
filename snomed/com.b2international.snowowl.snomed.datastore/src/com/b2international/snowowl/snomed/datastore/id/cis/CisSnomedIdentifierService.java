@@ -286,7 +286,7 @@ public class CisSnomedIdentifierService extends AbstractSnomedIdentifierService 
 		final String token = login();
 
 		try {
-			for (final Collection<String> ids : Lists.partition(Lists.newArrayList(componentIds), BULK_LIMIT)) {
+			for (final Collection<String> ids : Lists.partition(Lists.newArrayList(componentIdsToRegister), BULK_LIMIT)) {
 				LOGGER.info(String.format("Sending bulk registration request with size %d.", ids.size()));
 
 				bulkRequest = httpPost(String.format("sct/bulk/register?token=%s", token), createBulkRegistrationData(ids));
