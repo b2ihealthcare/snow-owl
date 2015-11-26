@@ -74,7 +74,7 @@ public class SnomedRelationshipImporter extends AbstractSnomedTerminologyImporte
 	@Override
 	protected void importRow(final RelationshipRow currentRow) {
 
-		final Relationship editedRelationship = getOrCreateRelationship(currentRow.getSourceId(), currentRow.getId());
+		final Relationship editedRelationship = getOrCreateComponent(currentRow.getSourceId(), currentRow.getId());
 		
 		if (skipCurrentRow(currentRow, editedRelationship)) {
 			return;
@@ -97,20 +97,19 @@ public class SnomedRelationshipImporter extends AbstractSnomedTerminologyImporte
 		
 		getImportContext().conceptVisited(currentRow.getSourceId());
 	}
-
-	private Relationship getOrCreateRelationship(final String conceptSctId, final String relationshipSctId) {
-
-		Relationship result = getRelationship(relationshipSctId);
+	
+	@Override
+	protected Relationship createComponent(final String containerId, final String componentId) {
+		final Relationship relationship = SnomedFactory.eINSTANCE.createRelationship();
+		relationship.setId(componentId);
+		relationship.setSource(getConceptSafe(containerId, SnomedRf2Headers.FIELD_SOURCE_ID, componentId));
 		
-		if (null == result) {
-			result = SnomedFactory.eINSTANCE.createRelationship();
-			result.setId(relationshipSctId);
-			result.setSource(getConceptSafe(conceptSctId, SnomedRf2Headers.FIELD_SOURCE_ID, relationshipSctId));
-			getComponentLookup().addNewComponent(result, relationshipSctId);
-			componentIdsToRegister.add(relationshipSctId);
-		}
-
-		return result;
+		return relationship;
+	}
+	
+	@Override
+	protected Relationship getComponent(final String componentId) {
+		return getRelationship(componentId);
 	}
 	
 }

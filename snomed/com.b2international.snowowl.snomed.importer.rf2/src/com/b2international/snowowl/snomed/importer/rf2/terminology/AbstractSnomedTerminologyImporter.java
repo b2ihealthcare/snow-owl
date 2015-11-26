@@ -18,6 +18,7 @@ package com.b2international.snowowl.snomed.importer.rf2.terminology;
 import java.io.InputStream;
 import java.util.Collection;
 import java.util.Date;
+import java.util.Map;
 
 import org.eclipse.core.runtime.SubMonitor;
 import org.eclipse.emf.spi.cdo.InternalCDOTransaction;
@@ -32,12 +33,13 @@ import com.b2international.snowowl.snomed.importer.rf2.csv.AbstractTerminologyCo
 import com.b2international.snowowl.snomed.importer.rf2.model.AbstractSnomedImporter;
 import com.b2international.snowowl.snomed.importer.rf2.model.SnomedImportConfiguration;
 import com.b2international.snowowl.snomed.importer.rf2.model.SnomedImportContext;
+import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 
 public abstract class AbstractSnomedTerminologyImporter<T extends AbstractTerminologyComponentRow, C extends Component> extends AbstractSnomedImporter<T, C> {
 
-	protected final Collection<String> componentIdsToRegister = Sets.newHashSet();
-	
+	private final Collection<String> componentIdsToRegister = Sets.newHashSet();
+	private final Map<String, C> componentById = Maps.newHashMap();
 	private final SnomedIdentifiers snomedIdentifiers;
 
 	protected AbstractSnomedTerminologyImporter(final SnomedImportConfiguration<T> importConfiguration, 
@@ -51,6 +53,7 @@ public abstract class AbstractSnomedTerminologyImporter<T extends AbstractTermin
 
 	@Override
 	protected ImportAction commit(final SubMonitor subMonitor, final String formattedEffectiveTime) {
+		componentById.clear();
 		final ImportAction action = super.commit(subMonitor, formattedEffectiveTime);
 		getComponentLookup().registerNewComponents();
 		return action;
@@ -67,7 +70,7 @@ public abstract class AbstractSnomedTerminologyImporter<T extends AbstractTermin
 	
 	@Override
 	protected void preCommit(final InternalCDOTransaction transaction) throws SnowowlServiceException {
-		if (!componentIdsToRegister.isEmpty()) {
+		if (snomedIdentifiers.importSupported() && !componentIdsToRegister.isEmpty()) {
 			snomedIdentifiers.register(componentIdsToRegister);
 			componentIdsToRegister.clear();
 		}
@@ -79,6 +82,31 @@ public abstract class AbstractSnomedTerminologyImporter<T extends AbstractTermin
 	protected void handleCommitException() {
 		snomedIdentifiers.rollback();
 		super.handleCommitException();
+	}
+	
+	protected abstract C createComponent(String containerId, String componentId);
+	
+	protected abstract C getComponent(String componentId);
+	
+	protected final C getOrCreateComponent(final String containerId, final String componentId) {
+		C result = componentById.get(componentId);
+
+		if (null != result) {
+			return result;
+		}
+
+		result = getComponent(componentId);
+		
+		if (null == result) {
+			result = createComponent(containerId, componentId);
+			getComponentLookup().addNewComponent(result, componentId);
+			if (snomedIdentifiers.importSupported()) {
+				componentIdsToRegister.add(componentId);
+			}
+		}
+		
+		componentById.put(componentId, result);
+		return result;
 	}
 	
 }
