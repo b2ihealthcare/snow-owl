@@ -17,6 +17,9 @@ auth:
 snomed:
   ids:
     strategy : MEMORY
+  
+metrics:
+  enabled: true
 
 fileAuth:
   users:
