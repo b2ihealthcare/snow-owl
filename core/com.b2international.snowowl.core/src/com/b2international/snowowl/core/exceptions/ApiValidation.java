@@ -31,12 +31,15 @@ public class ApiValidation {
 	/**
 	 * Validates the given object using the Bean Validation 1.1 spec
 	 * @param object - the object to validate
+	 * @return - the object if valid
 	 * @throws ValidationException - if there are validation constraint violations
 	 */
-	public static void checkInput(Object object) {
-		final Set<ConstraintViolation<Object>> violations = ValidationUtil.getValidator().validate(object);
+	public static <T> T checkInput(T object) {
+		final Set<ConstraintViolation<T>> violations = ValidationUtil.getValidator().validate(object);
 		if (!violations.isEmpty()) {
 			throw new ValidationException(violations);
+		} else {
+			return object;
 		}
 	}
 	

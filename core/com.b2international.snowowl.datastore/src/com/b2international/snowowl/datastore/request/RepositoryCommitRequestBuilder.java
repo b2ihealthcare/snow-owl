@@ -18,14 +18,14 @@ package com.b2international.snowowl.datastore.request;
 import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.domain.TransactionContext;
+import com.b2international.snowowl.core.events.BaseRequestBuilder;
 import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.core.events.RequestBuilder;
-import com.b2international.snowowl.core.exceptions.ApiValidation;
 
 /**
  * @since 4.5
  */
-public class RepositoryCommitRequestBuilder implements RequestBuilder<ServiceProvider, CommitInfo> {
+public class RepositoryCommitRequestBuilder extends BaseRequestBuilder<RepositoryCommitRequestBuilder, ServiceProvider, CommitInfo> {
 	
 	private String userId;
 	private String repositoryId;
@@ -33,35 +33,45 @@ public class RepositoryCommitRequestBuilder implements RequestBuilder<ServicePro
 	private String commitComment = "";
 	private Request<TransactionContext, ?> body;
 
-	protected RepositoryCommitRequestBuilder(String userId, String repositoryId, String branch) {
-		this.userId = userId;
+	protected RepositoryCommitRequestBuilder(String repositoryId) {
 		this.repositoryId = repositoryId;
+	}
+
+	public final RepositoryCommitRequestBuilder setBranch(String branch) {
 		this.branch = branch;
+		return getSelf();
 	}
 	
-	public RepositoryCommitRequestBuilder setBody(RequestBuilder<TransactionContext, ?> req) {
-		this.body = req.build();
-		return this;
+	public final RepositoryCommitRequestBuilder setUserId(String userId) {
+		this.userId = userId;
+		return getSelf();
 	}
 	
-	public RepositoryCommitRequestBuilder setBody(Request<TransactionContext, ?> body) {
-		this.body = body;
-		return this;
+	public final RepositoryCommitRequestBuilder setBody(RequestBuilder<TransactionContext, ?> req) {
+		return setBody(req.build());
 	}
 	
-	public RepositoryCommitRequestBuilder setCommitComment(String commitComment) {
+	public final RepositoryCommitRequestBuilder setBody(Request<TransactionContext, ?> req) {
+		this.body = req;
+		return getSelf();
+	}
+	
+	public final RepositoryCommitRequestBuilder setCommitComment(String commitComment) {
 		this.commitComment = commitComment;
-		return this;
+		return getSelf();
 	}
 
 	@Override
-	public Request<ServiceProvider, CommitInfo> build() {
-		ApiValidation.checkInput(body);
-		return RepositoryRequests.wrap(repositoryId, branch, createRequest());
+	protected final Request<ServiceProvider, CommitInfo> doBuild() {
+		return new RepositoryRequest<>(repositoryId, 
+				new BranchRequest<>(branch,
+					// additional functionality can be extended here after BranchRequest
+					extend(new IndexReadRequest<>(new TransactionalRequest(userId, commitComment, body)))
+				));
 	}
 	
-	protected Request<BranchContext, CommitInfo> createRequest() {
-		return new IndexReadRequest<>(new TransactionalRequest(userId, commitComment, body));
+	protected Request<BranchContext, CommitInfo> extend(Request<BranchContext, CommitInfo> req) {
+		return req;
 	}
 
 }

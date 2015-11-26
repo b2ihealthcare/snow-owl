@@ -15,32 +15,36 @@
  */
 package com.b2international.snowowl.datastore.request;
 
-import com.b2international.snowowl.core.ServiceProvider;
-import com.b2international.snowowl.core.domain.RepositoryContext;
+import org.eclipse.emf.ecore.EObject;
+
+import com.b2international.snowowl.core.domain.TransactionContext;
 import com.b2international.snowowl.core.events.Request;
 
 /**
  * @since 4.5
  */
-public class RepositoryRequests {
+public final class DeleteRequestBuilder extends BaseTransactionalRequestBuilder<DeleteRequestBuilder, Void> {
 
-	private RepositoryRequests() {
+	private String componentId;
+	private Class<? extends EObject> type;
+	
+	DeleteRequestBuilder(String repositoryId) {
+		super(repositoryId);
 	}
 	
-	public static <B> Request<ServiceProvider, B> wrap(String repositoryId, Request<RepositoryContext, B> next) {
-		return new RepositoryRequest<>(repositoryId, next);
+	public DeleteRequestBuilder setComponentId(String componentId) {
+		this.componentId = componentId;
+		return getSelf();
 	}
 	
-	public static Branching branching(String repositoryId) {
-		return new Branching(repositoryId);
+	public DeleteRequestBuilder setType(Class<? extends EObject> type) {
+		this.type = type;
+		return getSelf();
 	}
 	
-	public static Reviews reviews(String repositoryId) {
-		return new Reviews(repositoryId);
-	}
-
-	public static DeleteRequestBuilder prepareDelete(String repositoryId) {
-		return new DeleteRequestBuilder(repositoryId);
+	@Override
+	protected Request<TransactionContext, Void> doBuild() {
+		return new DeleteRequest(componentId, type);
 	}
 
 }

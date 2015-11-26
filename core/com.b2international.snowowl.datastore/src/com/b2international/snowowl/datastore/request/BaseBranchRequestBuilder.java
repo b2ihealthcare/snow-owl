@@ -15,32 +15,36 @@
  */
 package com.b2international.snowowl.datastore.request;
 
+import static com.google.common.base.Preconditions.checkNotNull;
+
 import com.b2international.snowowl.core.ServiceProvider;
-import com.b2international.snowowl.core.domain.RepositoryContext;
+import com.b2international.snowowl.core.domain.BranchContext;
+import com.b2international.snowowl.core.events.BaseRequestBuilder;
 import com.b2international.snowowl.core.events.Request;
 
 /**
  * @since 4.5
  */
-public class RepositoryRequests {
+public abstract class BaseBranchRequestBuilder<B extends BaseBranchRequestBuilder<B, R>, R> extends BaseRequestBuilder<B, BranchContext, R> {
 
-	private RepositoryRequests() {
-	}
-	
-	public static <B> Request<ServiceProvider, B> wrap(String repositoryId, Request<RepositoryContext, B> next) {
-		return new RepositoryRequest<>(repositoryId, next);
-	}
-	
-	public static Branching branching(String repositoryId) {
-		return new Branching(repositoryId);
-	}
-	
-	public static Reviews reviews(String repositoryId) {
-		return new Reviews(repositoryId);
+	private final String repositoryId;
+
+	protected BaseBranchRequestBuilder(String repositoryId) {
+		this.repositoryId = checkNotNull(repositoryId, "repositoryId");
 	}
 
-	public static DeleteRequestBuilder prepareDelete(String repositoryId) {
-		return new DeleteRequestBuilder(repositoryId);
+	public final Request<ServiceProvider, R> build(String branch) {
+		return new RepositoryRequest<>(repositoryId, new BranchRequest<>(branch, wrap(build())));
+	}
+
+	/**
+	 * Wraps the {@link Request} if required.
+	 * 
+	 * @param req
+	 * @return
+	 */
+	protected Request<BranchContext, R> wrap(Request<BranchContext, R> req) {
+		return req;
 	}
 
 }

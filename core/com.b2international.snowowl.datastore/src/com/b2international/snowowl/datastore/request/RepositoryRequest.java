@@ -15,6 +15,8 @@
  */
 package com.b2international.snowowl.datastore.request;
 
+import static com.google.common.base.Preconditions.checkNotNull;
+
 import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.core.domain.RepositoryContextProvider;
@@ -30,7 +32,7 @@ public final class RepositoryRequest<B> extends DelegatingRequest<ServiceProvide
 
 	RepositoryRequest(String repositoryId, Request<RepositoryContext, B> next) {
 		super(next);
-		this.repositoryId = repositoryId;
+		this.repositoryId = checkNotNull(repositoryId, "repositoryId");
 	}
 	
 	@Override

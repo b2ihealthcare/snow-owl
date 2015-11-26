@@ -13,31 +13,26 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.snomed.datastore.server.request;
+package com.b2international.snowowl.datastore.request;
 
 import java.util.Collections;
 import java.util.List;
 
 import com.b2international.commons.http.ExtendedLocale;
-import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.events.Request;
-import com.b2international.snowowl.core.events.RequestBuilder;
-import com.b2international.snowowl.datastore.request.RepositoryRequests;
 
 /**
  * @since 4.5
  */
-public abstract class GetRequestBuilder<B extends GetRequestBuilder<B, R>, R> implements RequestBuilder<BranchContext, R> {
+public abstract class GetRequestBuilder<B extends GetRequestBuilder<B, R>, R> extends BaseBranchRequestBuilder<B, R> {
 
-	private final String repositoryId;
-	
 	private String componentId;
 	private List<String> expand = Collections.emptyList();
 	private List<ExtendedLocale> locales = Collections.emptyList();
 
 	protected GetRequestBuilder(String repositoryId) {
-		this.repositoryId = repositoryId;
+		super(repositoryId);
 	}
 	
 	public final B setComponentId(String componentId) {
@@ -55,12 +50,13 @@ public abstract class GetRequestBuilder<B extends GetRequestBuilder<B, R>, R> im
 		return getSelf();
 	}
 	
-	public final Request<ServiceProvider, R> build(String branch) {
-		return RepositoryRequests.wrap(repositoryId, branch, RepositoryRequests.toIndexReadRequest(build()));
+	@Override
+	protected final Request<BranchContext, R> wrap(Request<BranchContext, R> req) {
+		return new IndexReadRequest<>(req);
 	}
 	
 	@Override
-	public final Request<BranchContext, R> build() {
+	protected final Request<BranchContext, R> doBuild() {
 		final GetRequest<R> req = create();
 		req.setComponentId(componentId);
 		req.setExpand(expand);
@@ -69,7 +65,5 @@ public abstract class GetRequestBuilder<B extends GetRequestBuilder<B, R>, R> im
 	}
 	
 	protected abstract GetRequest<R> create();
-	
-	protected abstract B getSelf();
 	
 }

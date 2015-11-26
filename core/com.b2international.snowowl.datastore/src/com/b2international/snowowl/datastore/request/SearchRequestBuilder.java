@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.snomed.datastore.server.request;
+package com.b2international.snowowl.datastore.request;
 
 import java.util.Collection;
 import java.util.Collections;
@@ -22,19 +22,14 @@ import java.util.List;
 import com.b2international.commons.CompareUtils;
 import com.b2international.commons.http.ExtendedLocale;
 import com.b2international.commons.options.OptionsBuilder;
-import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.events.Request;
-import com.b2international.snowowl.core.events.RequestBuilder;
-import com.b2international.snowowl.datastore.request.RepositoryRequests;
 
 /**
  * @since 4.5
  */
-public abstract class SearchRequestBuilder<B extends SearchRequestBuilder<B, R>, R> implements RequestBuilder<BranchContext, R> {
+public abstract class SearchRequestBuilder<B extends SearchRequestBuilder<B, R>, R> extends BaseBranchRequestBuilder<B, R> {
 
-	private final String repositoryId;
-	
 	private int offset = 0;
 	private int limit = 50;
 	private Collection<String> componentIds = Collections.emptyList();
@@ -43,7 +38,7 @@ public abstract class SearchRequestBuilder<B extends SearchRequestBuilder<B, R>,
 	private final OptionsBuilder optionsBuilder = OptionsBuilder.newBuilder();
 	
 	protected SearchRequestBuilder(String repositoryId) {
-		this.repositoryId = repositoryId;
+		super(repositoryId);
 	}
 	
 	public final B setOffset(int offset) {
@@ -91,12 +86,13 @@ public abstract class SearchRequestBuilder<B extends SearchRequestBuilder<B, R>,
 		return addOption(key.name(), value);
 	}
 	
-	public final Request<ServiceProvider, R> build(String branch) {
-		return RepositoryRequests.wrap(repositoryId, branch, RepositoryRequests.toIndexReadRequest(build()));
+	@Override
+	protected Request<BranchContext, R> wrap(Request<BranchContext, R> req) {
+		return new IndexReadRequest<>(super.wrap(req));
 	}
 	
 	@Override
-	public final Request<BranchContext, R> build() {
+	protected final Request<BranchContext, R> doBuild() {
 		final SearchRequest<R> req = create();
 		req.setLimit(limit);
 		req.setOffset(offset);
@@ -109,7 +105,4 @@ public abstract class SearchRequestBuilder<B extends SearchRequestBuilder<B, R>,
 	
 	protected abstract SearchRequest<R> create();
 
-	protected final B getSelf() {
-		return (B) this;
-	}
 }

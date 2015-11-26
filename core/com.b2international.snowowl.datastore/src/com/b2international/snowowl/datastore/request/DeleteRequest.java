@@ -13,7 +13,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.snomed.datastore.server.request;
+package com.b2international.snowowl.datastore.request;
+
+import javax.validation.constraints.NotNull;
 
 import org.eclipse.emf.ecore.EObject;
 
@@ -23,12 +25,15 @@ import com.b2international.snowowl.core.events.BaseRequest;
 /**
  * @since 4.5
  */
-final class SnomedComponentDeleteRequest extends BaseRequest<TransactionContext, Void> {
+final class DeleteRequest extends BaseRequest<TransactionContext, Void> {
 
+	@NotNull
 	private String componentId;
+	
+	@NotNull
 	private Class<? extends EObject> type;
 
-	public SnomedComponentDeleteRequest(String componentId, Class<? extends EObject> type) {
+	public DeleteRequest(String componentId, Class<? extends EObject> type) {
 		this.componentId = componentId;
 		this.type = type;
 	}

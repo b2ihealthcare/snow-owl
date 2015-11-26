@@ -17,45 +17,29 @@ package com.b2international.snowowl.datastore.request;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
-import com.b2international.snowowl.core.Metadata;
-import com.b2international.snowowl.core.MetadataImpl;
 import com.b2international.snowowl.core.ServiceProvider;
-import com.b2international.snowowl.core.branch.Branch;
+import com.b2international.snowowl.core.domain.TransactionContext;
+import com.b2international.snowowl.core.events.BaseRequestBuilder;
 import com.b2international.snowowl.core.events.Request;
-import com.b2international.snowowl.datastore.events.CreateBranchRequest;
 
 /**
  * @since 4.5
  */
-public final class BranchCreateRequestBuilder {
+public abstract class BaseTransactionalRequestBuilder<B extends BaseTransactionalRequestBuilder<B, R>, R>
+		extends BaseRequestBuilder<B, TransactionContext, R> {
 
-	private String parent;
-	private String name;
-	private Metadata metadata = new MetadataImpl();
-	
 	private final String repositoryId;
-	
-	BranchCreateRequestBuilder(String repositoryId) {
+
+	protected BaseTransactionalRequestBuilder(String repositoryId) {
 		this.repositoryId = checkNotNull(repositoryId, "repositoryId");
 	}
-	
-	public BranchCreateRequestBuilder setMetadata(Metadata metadata) {
-		this.metadata = metadata;
-		return this;
+
+	public final Request<ServiceProvider, CommitInfo> build(String userId, String branch, String commitComment) {
+		return createCommitBuilder(repositoryId).setUserId(userId).setBranch(branch).setCommitComment(commitComment).setBody(this).build();
 	}
-	
-	public BranchCreateRequestBuilder setName(String name) {
-		this.name = name;
-		return this;
+
+	protected RepositoryCommitRequestBuilder createCommitBuilder(String repositoryId) {
+		return new RepositoryCommitRequestBuilder(repositoryId);
 	}
-	
-	public BranchCreateRequestBuilder setParent(String parent) {
-		this.parent = parent;
-		return this;
-	}
-	
-	public Request<ServiceProvider, Branch> build() {
-		return RepositoryRequests.wrap(repositoryId, new CreateBranchRequest(parent, name, metadata));
-	}
-	
+
 }
