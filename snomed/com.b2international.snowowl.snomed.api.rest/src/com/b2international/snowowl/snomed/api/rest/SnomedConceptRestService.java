@@ -154,13 +154,28 @@ public class SnomedConceptRestService extends AbstractSnomedRestService {
 			
 			@ApiParam(value="Expansion parameters")
 			@RequestParam(value="expand", required=false)
-			final String expand) {
+			final String expand,
+			
+			@ApiParam(value="Accepted language tags, in order of preference")
+			@RequestHeader(value="Accept-Language", defaultValue="en-US;q=0.8,en-GB;q=0.6", required=false) 
+			final String acceptLanguage) {
+
+		final List<ExtendedLocale> extendedLocales;
+		
+		try {
+			extendedLocales = AcceptHeader.parseExtendedLocales(new StringReader(acceptLanguage));
+		} catch (IOException e) {
+			throw new BadRequestException(e.getMessage());
+		} catch (IllegalArgumentException e) {
+			throw new BadRequestException(e.getMessage());
+		}
 
 		return DeferredResults.wrap(
 				SnomedRequests
 					.prepareGetConcept()
 					.setComponentId(conceptId)
 					.setExpand(expand)
+					.setLocales(extendedLocales)
 					.build(branchPath)
 					.execute(bus));
 	}
