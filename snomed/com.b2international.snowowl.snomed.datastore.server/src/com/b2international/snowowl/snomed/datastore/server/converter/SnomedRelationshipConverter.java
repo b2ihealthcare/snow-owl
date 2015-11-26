@@ -19,6 +19,7 @@ import java.util.Collection;
 import java.util.List;
 
 import com.b2international.commons.http.ExtendedLocale;
+import com.b2international.commons.options.Options;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.core.domain.CharacteristicType;
@@ -34,7 +35,7 @@ import com.google.common.collect.ImmutableSet;
 
 final class SnomedRelationshipConverter extends BaseSnomedComponentConverter<SnomedRelationshipIndexEntry, ISnomedRelationship, SnomedRelationships> {
 
-	SnomedRelationshipConverter(BranchContext context, List<String> expand, List<ExtendedLocale> locales, final AbstractSnomedRefSetMembershipLookupService refSetMembershipLookupService) {
+	SnomedRelationshipConverter(BranchContext context, Options expand, List<ExtendedLocale> locales, final AbstractSnomedRefSetMembershipLookupService refSetMembershipLookupService) {
 		super(context, expand, locales, refSetMembershipLookupService);
 	}
 
@@ -85,5 +86,4 @@ final class SnomedRelationshipConverter extends BaseSnomedComponentConverter<Sno
 		// TODO: is this the proper fallback value?
 		return RelationshipRefinability.NOT_REFINABLE;
 	}
-
 }

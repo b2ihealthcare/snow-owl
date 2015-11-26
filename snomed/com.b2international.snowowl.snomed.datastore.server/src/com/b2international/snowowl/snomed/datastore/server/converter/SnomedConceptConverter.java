@@ -15,13 +15,10 @@
  */
 package com.b2international.snowowl.snomed.datastore.server.converter;
 
-import static com.google.common.collect.Maps.newHashMap;
-
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.StringTokenizer;
 
 import org.apache.lucene.document.Document;
 import org.apache.lucene.search.ConstantScoreQuery;
@@ -31,10 +28,10 @@ import org.apache.lucene.search.TopDocs;
 
 import com.b2international.commons.functions.StringToLongFunction;
 import com.b2international.commons.http.ExtendedLocale;
+import com.b2international.commons.options.Options;
 import com.b2international.snowowl.core.api.SnowowlRuntimeException;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.exceptions.BadRequestException;
-import com.b2international.snowowl.datastore.index.IndexUtils;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.core.domain.AssociationType;
 import com.b2international.snowowl.snomed.core.domain.DefinitionStatus;
@@ -53,8 +50,6 @@ import com.b2international.snowowl.snomed.datastore.server.request.SnomedDescrip
 import com.b2international.snowowl.snomed.datastore.server.request.SnomedRequests;
 import com.b2international.snowowl.snomed.datastore.services.AbstractSnomedRefSetMembershipLookupService;
 import com.google.common.base.Function;
-import com.google.common.base.Optional;
-import com.google.common.base.Predicate;
 import com.google.common.collect.FluentIterable;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
@@ -67,7 +62,7 @@ import com.google.common.collect.Multimaps;
  */
 final class SnomedConceptConverter extends BaseSnomedComponentConverter<SnomedConceptIndexEntry, ISnomedConcept, SnomedConcepts> {
 
-	SnomedConceptConverter(final BranchContext context, List<String> expand, List<ExtendedLocale> locales, final AbstractSnomedRefSetMembershipLookupService membershipLookupService) {
+	SnomedConceptConverter(final BranchContext context, Options expand, List<ExtendedLocale> locales, final AbstractSnomedRefSetMembershipLookupService membershipLookupService) {
 		super(context, expand, locales, membershipLookupService);
 	}
 	
@@ -91,7 +86,28 @@ final class SnomedConceptConverter extends BaseSnomedComponentConverter<SnomedCo
 	
 	@Override
 	protected void expand(List<ISnomedConcept> results) {
-		// Always expand inactivation reason and association targets
+		expandInactivationProperties(results);
+		
+		if (expand().isEmpty()) {
+			return;
+		}
+		
+		final Set<String> conceptIds = FluentIterable.from(results).transform(ID_FUNCTION).toSet();
+		final DescriptionRequestHelper helper = new DescriptionRequestHelper() {
+			@Override
+			protected SnomedDescriptions execute(SnomedDescriptionSearchRequestBuilder req) {
+				return req.build().execute(context());
+			}
+		};
+		
+		expandPreferredTerm(results, conceptIds, helper);
+		expandFullySpecifiedName(results, conceptIds, helper);
+		expandDescriptions(results, conceptIds);
+		expandDescendants(results);
+		expandAncestors(results);
+	}
+
+	private void expandInactivationProperties(List<ISnomedConcept> results) {
 		new InactivationExpander<ISnomedConcept>(context(), Concepts.REFSET_CONCEPT_INACTIVITY_INDICATOR) {
 			@Override
 			protected void setAssociationTargets(ISnomedConcept result,Multimap<AssociationType, String> associationTargets) {
@@ -103,109 +119,95 @@ final class SnomedConceptConverter extends BaseSnomedComponentConverter<SnomedCo
 				((SnomedConcept) result).setInactivationIndicator(InactivationIndicator.getByConceptId(valueId));				
 			}
 		}.expand(results);
-		
-		if (expand().isEmpty()) {
-			return;
-		}
-		
-		final Set<String> conceptIds = FluentIterable.from(results).transform(ID_FUNCTION).toSet();
-		
-		final DescriptionRequestHelper helper = new DescriptionRequestHelper() {
-			@Override
-			protected SnomedDescriptions execute(SnomedDescriptionSearchRequestBuilder req) {
-				return req.build().execute(context());
-			}
-		};
-		
-		if (expand().contains("pt")) {
+	}
+
+	private void expandPreferredTerm(List<ISnomedConcept> results, final Set<String> conceptIds, final DescriptionRequestHelper helper) {
+		if (expand().containsKey("pt")) {
 			final Map<String, ISnomedDescription> terms = helper.getPreferredTerms(conceptIds, locales());
 			for (ISnomedConcept concept : results) {
 				((SnomedConcept) concept).setPt(terms.get(concept.getId()));
 			}
 		}
-		if (expand().contains("fsn")) {
+	}
+
+	private void expandFullySpecifiedName(List<ISnomedConcept> results, final Set<String> conceptIds, final DescriptionRequestHelper helper) {
+		if (expand().containsKey("fsn")) {
 			final Map<String, ISnomedDescription> terms = helper.getFullySpecifiedNames(conceptIds, locales());
 			for (ISnomedConcept concept : results) {
 				((SnomedConcept) concept).setFsn(terms.get(concept.getId()));
 			}
 		}
-		if (expand().contains("descriptions")) {
+	}
+
+	private void expandDescriptions(List<ISnomedConcept> results, final Set<String> conceptIds) {
+		if (expand().containsKey("descriptions")) {
 			final SnomedDescriptions descriptions = SnomedRequests
 				.prepareDescriptionSearch()
 				.all()
 				.filterByConceptId(StringToLongFunction.copyOf(conceptIds))
 				.build()
 				.execute(context());
+			
 			final Multimap<String, ISnomedDescription> descriptionsByConceptId = Multimaps.index(descriptions, new Function<ISnomedDescription, String>() {
 				@Override
 				public String apply(ISnomedDescription input) {
 					return input.getConceptId();
 				}
-				
 			});
+			
 			for (ISnomedConcept concept : results) {
 				final List<ISnomedDescription> conceptDescriptions = ImmutableList.copyOf(descriptionsByConceptId.get(concept.getId()));
 				((SnomedConcept) concept).setDescriptions(new SnomedDescriptions(conceptDescriptions, 0, conceptDescriptions.size(), conceptDescriptions.size()));
 			}
 		}
-		
-		Optional<Map<String,String>> descendantParams = getExpandParamsForPrefix("descendants");
-		if (descendantParams.isPresent()) {
-			Map<String, String> paramMap = descendantParams.get();
+	}
+
+	private void expandDescendants(List<ISnomedConcept> results) {
+		if (expand().containsKey("descendants")) {
+			Options expandOptions = expand().get("descendants", Options.class);
 			
 			if (results.size() > 1) {
-				throw new BadRequestException("Unsupported expand parameter descendants");
+				throw new BadRequestException("Descendants can only be expanded for a single concept");
 			}
 			
 			final ISnomedConcept concept = Iterables.getOnlyElement(results);
-			
-			if (!paramMap.containsKey("direct")) {
+
+			if (!expandOptions.containsKey("direct")) {
 				throw new BadRequestException("Direct parameter required for descendants expansion");
 			}
 			
 			SnomedConceptSearchRequestBuilder req = SnomedRequests.prepareConceptSearch().filterByActive(true);
-			if (Boolean.parseBoolean(paramMap.get("direct"))) {
+			if (expandOptions.getBoolean("direct")) {
 				req.filterByParent(concept.getId());
 			} else {
 				req.filterByAncestor(concept.getId());
 			}
 			
-			if (paramMap.containsKey("offset")) {
-				req.setOffset(Integer.parseInt(paramMap.get("offset")));
+			if (expandOptions.containsKey("offset")) {
+				req.setOffset(expandOptions.get("offset", Integer.class));
 			}
 			
-			if (paramMap.containsKey("limit")) {
-				req.setLimit(Integer.parseInt(paramMap.get("limit")));
+			if (expandOptions.containsKey("limit")) {
+				req.setLimit(expandOptions.get("limit", Integer.class));
 			}
 			
 			final SnomedConcepts descendants = req.build().execute(context());
 			((SnomedConcept) concept).setDescendants(descendants);
 		}
-		
-		Optional<Map<String,String>> ancestorParams = getExpandParamsForPrefix("ancestors");
-		if (ancestorParams.isPresent()) {
-			Map<String, String> paramMap = ancestorParams.get();
+	}
+
+	private void expandAncestors(List<ISnomedConcept> results) {
+		if (expand().containsKey("ancestors")) {
+			Options expandOptions = expand().get("ancestors", Options.class);
 			
 			if (results.size() > 1) {
-				throw new BadRequestException("Unsupported expand parameter ancestors");
+				throw new BadRequestException("Ancestors can only be expanded for a single concept");
 			}
 			
 			final ISnomedConcept concept = Iterables.getOnlyElement(results);
 			
-			if (!paramMap.containsKey("direct")) {
+			if (!expandOptions.containsKey("direct")) {
 				throw new BadRequestException("Direct parameter required for ancestors expansion");
-			}
-			
-			final boolean direct = Boolean.parseBoolean(paramMap.get("direct"));
-			int offset = 0;
-			int limit = 50;
-			
-			if (paramMap.containsKey("offset")) {
-				offset = Integer.parseInt(paramMap.get("offset"));
-			}
-			
-			if (paramMap.containsKey("limit")) {
-				limit = Integer.parseInt(paramMap.get("limit"));
 			}
 			
 			Query conceptQuery = new ConstantScoreQuery(SnomedMappings.newQuery()
@@ -216,20 +218,31 @@ final class SnomedConceptConverter extends BaseSnomedComponentConverter<SnomedCo
 			
 			IndexSearcher searcher = context().service(IndexSearcher.class);
 			
+			int offset = 0;
+			int limit = 50;
+
+			if (expandOptions.containsKey("offset")) {
+				offset = expandOptions.get("offset", Integer.class);
+			}
+			
+			if (expandOptions.containsKey("limit")) {
+				limit = expandOptions.get("limit", Integer.class);
+			}
+			
 			try {
 				TopDocs search = searcher.search(conceptQuery, 1);
-				if (IndexUtils.isEmpty(search)) {
-					((SnomedConcept) concept).setAncestors(new SnomedConcepts(offset, limit, 0));	
+				if (search.scoreDocs.length < 1) {
+					((SnomedConcept) concept).setAncestors(new SnomedConcepts(offset, limit, search.totalHits));	
 				}
 				
 				final Document doc = searcher.doc(search.scoreDocs[0].doc, SnomedMappings.fieldsToLoad().parent().ancestor().build());
 				ImmutableSet.Builder<String> collectedIds = ImmutableSet.builder(); 
 				collectedIds.addAll(SnomedMappings.parent().getValuesAsString(doc));
-					
-				if (!direct) {
+
+				if (!expandOptions.getBoolean("direct")) {
 					collectedIds.addAll(SnomedMappings.ancestor().getValuesAsString(doc));	
 				}
-				
+
 				SnomedConcepts ancestors = SnomedRequests.prepareConceptSearch()
 						.filterByActive(true)
 						.setComponentIds(collectedIds.build())
@@ -237,7 +250,7 @@ final class SnomedConceptConverter extends BaseSnomedComponentConverter<SnomedCo
 						.setLimit(limit)
 						.build()
 						.execute(context());
-	
+				
 				((SnomedConcept) concept).setAncestors(ancestors);
 			} catch (IOException e) {
 				throw SnowowlRuntimeException.wrap(e);
@@ -245,44 +258,6 @@ final class SnomedConceptConverter extends BaseSnomedComponentConverter<SnomedCo
 		}
 	}
 
-	private Optional<Map<String,String>> getExpandParamsForPrefix(final String property) {
-		return Iterables.tryFind(expand(), new Predicate<String>() {
-			@Override
-			public boolean apply(String input) {
-				return input.startsWith(property);
-			}
-		}).transform(new Function<String, Map<String, String>>() {
-			@Override
-			public Map<String, String> apply(String input) {
-				StringTokenizer tok = new StringTokenizer(input, "():,");
-				Map<String, String> values = newHashMap(); 
-				String expand;
-				
-				if (tok.hasMoreTokens()) {
-					expand = tok.nextToken();
-					if (!expand.equals(property)) {
-						throw new BadRequestException("Unsupported expand parameter %s", expand);
-					}
-				} else {
-					throw new IllegalArgumentException("Expand parameter did not match prefix " + input);
-				}
-				
-				while (tok.hasMoreTokens()) {
-					String key = tok.nextToken();
-					
-					if (!tok.hasMoreTokens()) {
-						throw new BadRequestException("Missing value for key %s in parameter %s.", key, expand);
-					} else {
-						String value = tok.nextToken();
-						values.put(key, value);
-					}
-				}
-				
-				return values;
-			}
-		});
-	}
-	
 	private DefinitionStatus toDefinitionStatus(final boolean primitive) {
 		return primitive ? DefinitionStatus.PRIMITIVE : DefinitionStatus.FULLY_DEFINED;
 	}

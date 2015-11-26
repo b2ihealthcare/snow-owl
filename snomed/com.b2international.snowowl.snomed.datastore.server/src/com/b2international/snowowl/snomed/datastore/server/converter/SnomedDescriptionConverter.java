@@ -18,6 +18,7 @@ package com.b2international.snowowl.snomed.datastore.server.converter;
 import java.util.List;
 
 import com.b2international.commons.http.ExtendedLocale;
+import com.b2international.commons.options.Options;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.core.domain.AssociationType;
@@ -35,7 +36,7 @@ import com.google.common.collect.Multimap;
  */
 final class SnomedDescriptionConverter extends BaseSnomedComponentConverter<SnomedDescriptionIndexEntry, ISnomedDescription, SnomedDescriptions> {
 
-	SnomedDescriptionConverter(BranchContext context, List<String> expand, List<ExtendedLocale> locales, final AbstractSnomedRefSetMembershipLookupService refSetMembershipLookupService) {
+	SnomedDescriptionConverter(BranchContext context, Options expand, List<ExtendedLocale> locales, final AbstractSnomedRefSetMembershipLookupService refSetMembershipLookupService) {
 		super(context, expand, locales, refSetMembershipLookupService);
 	}
 
@@ -63,6 +64,10 @@ final class SnomedDescriptionConverter extends BaseSnomedComponentConverter<Snom
 	
 	@Override
 	protected void expand(List<ISnomedDescription> results) {
+		expandInactivationProperties(results);
+	}
+
+	private void expandInactivationProperties(List<ISnomedDescription> results) {
 		new InactivationExpander<ISnomedDescription>(context(), Concepts.REFSET_DESCRIPTION_INACTIVITY_INDICATOR) {
 			@Override
 			protected void setAssociationTargets(ISnomedDescription result,Multimap<AssociationType, String> associationTargets) {

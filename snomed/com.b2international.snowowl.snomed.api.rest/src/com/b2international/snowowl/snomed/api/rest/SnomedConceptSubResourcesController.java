@@ -248,7 +248,7 @@ public class SnomedConceptSubResourcesController extends AbstractSnomedRestServi
 	
 		return DeferredResults.wrap(SnomedRequests.prepareGetConcept()
 				.setComponentId(conceptId)
-				.setExpand(ImmutableList.of(String.format("descendants(direct:%s,offset:%d,limit:%d)", direct, offset, limit)))
+				.setExpand(String.format("descendants(direct:%s,offset:%d,limit:%d)", direct, offset, limit))
 				.build(branchPath)
 				.execute(bus)
 				.then(new Function<ISnomedConcept, SnomedConcepts>() {
@@ -293,7 +293,7 @@ public class SnomedConceptSubResourcesController extends AbstractSnomedRestServi
 
 		return DeferredResults.wrap(SnomedRequests.prepareGetConcept()
 				.setComponentId(conceptId)
-				.setExpand(ImmutableList.of(String.format("ancestors(direct:%s,offset:%d,limit:%d)", direct, offset, limit)))
+				.setExpand(String.format("ancestors(direct:%s,offset:%d,limit:%d)", direct, offset, limit))
 				.build(branchPath)
 				.execute(bus)
 				.then(new Function<ISnomedConcept, SnomedConcepts>() {

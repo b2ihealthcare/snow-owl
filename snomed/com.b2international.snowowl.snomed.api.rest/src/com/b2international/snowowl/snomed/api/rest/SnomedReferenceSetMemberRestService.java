@@ -110,7 +110,8 @@ public class SnomedReferenceSetMemberRestService extends AbstractSnomedRestServi
 			
 			@ApiParam(value="Expansion parameters")
 			@RequestParam(value="expand", required=false)
-			final List<String> expand) {
+			final String expand) {
+		
 		return DeferredResults.wrap(SnomedRequests
 				.prepareGetMember()
 				.setComponentId(memberId)

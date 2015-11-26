@@ -18,6 +18,7 @@ package com.b2international.commons.options;
 import static com.google.common.collect.Maps.newHashMap;
 
 import java.util.Map;
+import java.util.Map.Entry;
 
 /**
  * @since 4.5
@@ -30,6 +31,17 @@ public final class OptionsBuilder {
 	
 	public OptionsBuilder put(String key, Object value) {
 		options.put(key, value);
+		return this;
+	}
+	
+	public OptionsBuilder putAll(Map<String, Object> source) {
+		for (Entry<String, ?> entry : source.entrySet()) {
+			if (entry.getValue() instanceof Map<?, ?>) {
+				put(entry.getKey(), OptionsBuilder.newBuilder().putAll((Map<String, Object>) entry.getValue()).build());
+			} else {
+				put(entry.getKey(), entry.getValue());
+			}
+		}
 		return this;
 	}
 	

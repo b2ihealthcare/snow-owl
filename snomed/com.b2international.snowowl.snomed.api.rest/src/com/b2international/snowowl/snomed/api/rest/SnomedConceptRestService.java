@@ -104,7 +104,7 @@ public class SnomedConceptRestService extends AbstractSnomedRestService {
 			
 			@ApiParam(value="Expansion parameters")
 			@RequestParam(value="expand", required=false)
-			final List<String> expand,
+			final String expand,
 
 			@ApiParam(value="Accepted language tags, in order of preference")
 			@RequestHeader(value="Accept-Language", defaultValue="en-US;q=0.8,en-GB;q=0.6", required=false) 
@@ -154,7 +154,7 @@ public class SnomedConceptRestService extends AbstractSnomedRestService {
 			
 			@ApiParam(value="Expansion parameters")
 			@RequestParam(value="expand", required=false)
-			final List<String> expand) {
+			final String expand) {
 
 		return DeferredResults.wrap(
 				SnomedRequests

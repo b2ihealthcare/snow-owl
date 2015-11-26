@@ -18,6 +18,7 @@ package com.b2international.snowowl.snomed.datastore.server.converter;
 import java.util.List;
 
 import com.b2international.commons.http.ExtendedLocale;
+import com.b2international.commons.options.Options;
 import com.b2international.snowowl.core.CoreTerminologyBroker;
 import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.core.domain.BranchContext;
@@ -25,6 +26,7 @@ import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSet;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetImpl;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSets;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetIndexEntry;
+import com.b2international.snowowl.snomed.datastore.server.request.SnomedRefSetMemberSearchRequestBuilder;
 import com.b2international.snowowl.snomed.datastore.server.request.SnomedRequests;
 import com.b2international.snowowl.snomed.datastore.services.AbstractSnomedRefSetMembershipLookupService;
 
@@ -33,7 +35,7 @@ import com.b2international.snowowl.snomed.datastore.services.AbstractSnomedRefSe
  */
 final class SnomedReferenceSetConverter extends BaseSnomedComponentConverter<SnomedRefSetIndexEntry, SnomedReferenceSet, SnomedReferenceSets> {
 	
-	protected SnomedReferenceSetConverter(BranchContext context, List<String> expand, List<ExtendedLocale> locales, AbstractSnomedRefSetMembershipLookupService refSetMembershipLookupService) {
+	protected SnomedReferenceSetConverter(BranchContext context, Options expand, List<ExtendedLocale> locales, AbstractSnomedRefSetMembershipLookupService refSetMembershipLookupService) {
 		super(context, expand, locales, refSetMembershipLookupService);
 	}
 
@@ -44,9 +46,29 @@ final class SnomedReferenceSetConverter extends BaseSnomedComponentConverter<Sno
 	
 	@Override
 	protected void expand(List<SnomedReferenceSet> results) {
-		if (expand().contains("members")) {
+		expandMembers(results);
+	}
+
+	private void expandMembers(List<SnomedReferenceSet> results) {
+		if (expand().containsKey("members")) {
+			Options expandOptions = expand().get("member", Options.class);
+			
 			for (SnomedReferenceSet refSet : results) {
-				((SnomedReferenceSetImpl) refSet).setMembers(SnomedRequests.prepareMemberSearch().all().filterByRefSet(refSet.getId()).build().execute(context()));
+				SnomedRefSetMemberSearchRequestBuilder req = SnomedRequests.prepareMemberSearch().filterByRefSet(refSet.getId());
+				
+				if (expandOptions.containsKey("offset")) {
+					req.setOffset(expandOptions.get("offset", Integer.class));
+				}
+				
+				if (expandOptions.containsKey("limit")) {
+					req.setOffset(expandOptions.get("limit", Integer.class));
+				}
+				
+				if (expandOptions.containsKey("expand")) {
+					req.setExpand(expandOptions.get("expand", Options.class));
+				}
+
+				((SnomedReferenceSetImpl) refSet).setMembers(req.build().execute(context()));
 			}
 		}
 	}
@@ -68,5 +90,4 @@ final class SnomedReferenceSetConverter extends BaseSnomedComponentConverter<Sno
 	private String getReferencedComponentType(final short referencedComponentType) {
 		return CoreTerminologyBroker.getInstance().getComponentInformation(referencedComponentType).getId();
 	}
-	
 }
