@@ -28,6 +28,10 @@ repository:
     settings: ?useServerPrepStmts=true&useCursorFetch=true
     username: snowowl
     password: snowowl
+    
+# metrics:
+  # Enable Request execution metrics logging
+  # enabled: true | false
 
 # reviewManager:
   # Minutes to keep reviews in CURRENT state persisted in the index (default 15 minutes)
