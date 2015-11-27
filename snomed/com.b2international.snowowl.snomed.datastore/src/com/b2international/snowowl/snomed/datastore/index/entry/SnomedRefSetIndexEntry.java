@@ -51,7 +51,8 @@ public class SnomedRefSetIndexEntry extends SnomedIndexEntry implements IRefSetC
 				.released(BooleanUtils.valueOf(SnomedMappings.released().getValue(doc).intValue()))
 				.effectiveTimeLong(SnomedMappings.effectiveTime().getValue(doc))
 				.type(SnomedRefSetType.get(SnomedMappings.refSetType().getValue(doc)))
-				.referencedComponentType(SnomedMappings.refSetReferencedComponentType().getShortValue(doc));
+				.referencedComponentType(SnomedMappings.refSetReferencedComponentType().getShortValue(doc))
+				.structural(BooleanUtils.valueOf(SnomedMappings.refSetStructural().getValue(doc).intValue()));
 	}
 
 	public static class Builder extends AbstractBuilder<Builder> {
