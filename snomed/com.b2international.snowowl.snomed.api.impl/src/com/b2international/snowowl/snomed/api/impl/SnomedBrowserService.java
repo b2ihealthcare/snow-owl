@@ -598,6 +598,16 @@ public class SnomedBrowserService implements ISnomedBrowserService {
 			}
 		});
 		
+		final Map<String, ISnomedDescription> fsnPropertyMap; 
+		switch (resultConceptTermType) {
+		case FSN:
+			fsnPropertyMap = descriptionService.getFullySpecifiedNames(conceptIds, locales);
+			break;
+		default:
+			fsnPropertyMap = descriptionService.getPreferredTerms(conceptIds, locales);
+			break;
+		}
+		
 		final Cache<String, SnomedBrowserDescriptionResultDetails> detailCache = CacheBuilder.newBuilder().build();
 		final ImmutableList.Builder<ISnomedBrowserDescriptionResult> resultBuilder = ImmutableList.builder();
 		
@@ -618,30 +628,23 @@ public class SnomedBrowserService implements ISnomedBrowserService {
 					
 					@Override
 					public SnomedBrowserDescriptionResultDetails call() throws Exception {
-						SnomedBrowserDescriptionResultDetails details = new SnomedBrowserDescriptionResultDetails();
+						final String conceptId = description.getConceptId();
+						final SnomedConceptIndexEntry conceptIndexEntry = conceptMap.get(conceptId);
+						final SnomedBrowserDescriptionResultDetails details = new SnomedBrowserDescriptionResultDetails();
 						
-						final String term;
-						switch (resultConceptTermType) {
-							case FSN:
-								final ISnomedDescription fullySpecifiedName = descriptionService.getFullySpecifiedName(description.getConceptId(), locales);
-								term = fullySpecifiedName.getTerm();
-								break;
-							default:
-								final ISnomedDescription preferredTerm = descriptionService.getPreferredTerm(description.getConceptId(), locales);
-								term = preferredTerm.getTerm();
-								break;
-						}
-						
-						details.setFsn(term);
-						
-						final SnomedConceptIndexEntry conceptIndexEntry = conceptMap.get(description.getConceptId());
 						if (conceptIndexEntry != null) {
 							details.setActive(conceptIndexEntry.isActive());
 							details.setConceptId(conceptIndexEntry.getId());
 							details.setDefinitionStatus(conceptIndexEntry.isPrimitive() ? DefinitionStatus.PRIMITIVE : DefinitionStatus.FULLY_DEFINED);
 							details.setModuleId(conceptIndexEntry.getModuleId());
+							
+							if (fsnPropertyMap.containsKey(conceptId)) {
+								details.setFsn(fsnPropertyMap.get(conceptId).getTerm());
+							} else {
+								details.setFsn(conceptId);
+							}
 						} else {
-							LOGGER.warn("Concept {} not found in map, properties will not be set.", description.getConceptId());
+							LOGGER.warn("Concept {} not found in map, properties will not be set.", conceptId);
 						}
 						
 						return details;
