@@ -32,6 +32,8 @@ import com.b2international.snowowl.datastore.request.SearchRequest.OptionKey;
  */
 public abstract class SearchRequestBuilder<B extends SearchRequestBuilder<B, R>, R> extends BaseBranchRequestBuilder<B, R> {
 
+	private static final int MAX_LIMIT = Integer.MAX_VALUE - 1;
+	
 	private int offset = 0;
 	private int limit = 50;
 	private Collection<String> componentIds = Collections.emptyList();
@@ -77,7 +79,7 @@ public abstract class SearchRequestBuilder<B extends SearchRequestBuilder<B, R>,
 	}
 	
 	public final B all() {
-		return setOffset(0).setLimit(Integer.MAX_VALUE);
+		return setOffset(0).setLimit(MAX_LIMIT);
 	}
 	
 	public final B one() {
@@ -104,8 +106,8 @@ public abstract class SearchRequestBuilder<B extends SearchRequestBuilder<B, R>,
 	@Override
 	protected final Request<BranchContext, R> doBuild() {
 		final SearchRequest<R> req = create();
-		req.setLimit(limit);
 		req.setOffset(offset);
+		req.setLimit(Math.min(limit, MAX_LIMIT - offset));
 		req.setLocales(locales);
 		req.setComponentIds(componentIds);
 		req.setOptions(optionsBuilder.build());
