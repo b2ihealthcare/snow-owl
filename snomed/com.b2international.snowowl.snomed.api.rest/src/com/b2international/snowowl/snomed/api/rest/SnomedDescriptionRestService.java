@@ -72,7 +72,7 @@ public class SnomedDescriptionRestService extends AbstractSnomedRestService {
 	@ApiResponses({
 		@ApiResponse(code = 200, message = "OK", response = PageableCollectionResource.class),
 		@ApiResponse(code = 400, message = "Invalid filter config", response = RestApiError.class),
-		@ApiResponse(code = 404, message = "Branch not found")
+		@ApiResponse(code = 404, message = "Branch not found", response = RestApiError.class)
 	})
 	// FIXME: Route clashes with path "/{path}/concepts/{id}/descriptions" -- Spring thinks "concepts/{id}" is part of "{path}"
 	// @RequestMapping(value="/{path:**}/descriptions", method=RequestMethod.GET)
@@ -153,7 +153,7 @@ public class SnomedDescriptionRestService extends AbstractSnomedRestService {
 			notes="Creates a new Description directly on a version.")
 	@ApiResponses({
 		@ApiResponse(code = 201, message = "Created"),
-		@ApiResponse(code = 404, message = "Branch not found")
+		@ApiResponse(code = 404, message = "Branch not found", response = RestApiError.class)
 	})
 	@RequestMapping(
 			value="/{path:**}/descriptions", 
@@ -188,7 +188,7 @@ public class SnomedDescriptionRestService extends AbstractSnomedRestService {
 			notes="Returns all properties of the specified Description, including acceptability values by language reference set.")
 	@ApiResponses({
 		@ApiResponse(code = 200, message = "OK"),
-		@ApiResponse(code = 404, message = "Branch or Description not found")
+		@ApiResponse(code = 404, message = "Branch or Description not found", response = RestApiError.class)
 	})
 	@RequestMapping(value="/{path:**}/descriptions/{descriptionId}", method=RequestMethod.GET)
 	public DeferredResult<ISnomedDescription> read(
@@ -219,7 +219,7 @@ public class SnomedDescriptionRestService extends AbstractSnomedRestService {
 			notes="Updates properties of the specified Description, also managing language reference set membership.")
 	@ApiResponses({
 		@ApiResponse(code = 204, message = "Update successful"),
-		@ApiResponse(code = 404, message = "Branch or Description not found")
+		@ApiResponse(code = 404, message = "Branch or Description not found", response = RestApiError.class)
 	})
 	@RequestMapping(
 			value="/{path:**}/descriptions/{descriptionId}/updates", 
@@ -263,7 +263,7 @@ public class SnomedDescriptionRestService extends AbstractSnomedRestService {
 			notes="Permanently removes the specified unreleased Description and related components.")
 	@ApiResponses({
 		@ApiResponse(code = 204, message = "Delete successful"),
-		@ApiResponse(code = 404, message = "Branch or Description not found")
+		@ApiResponse(code = 404, message = "Branch or Description not found", response = RestApiError.class)
 	})
 	@RequestMapping(value="/{path:**}/descriptions/{descriptionId}", method=RequestMethod.DELETE)
 	@ResponseStatus(HttpStatus.NO_CONTENT)

@@ -26,9 +26,12 @@ import org.springframework.web.bind.annotation.RestController;
 import com.b2international.snowowl.core.domain.IComponentRef;
 import com.b2international.snowowl.core.history.domain.IHistoryInfo;
 import com.b2international.snowowl.snomed.api.ISnomedReferenceSetHistoryService;
+import com.b2international.snowowl.snomed.api.rest.domain.RestApiError;
 import com.b2international.snowowl.snomed.api.rest.domain.SnomedReferenceSetHistory;
 import com.wordnik.swagger.annotations.Api;
 import com.wordnik.swagger.annotations.ApiOperation;
+import com.wordnik.swagger.annotations.ApiResponse;
+import com.wordnik.swagger.annotations.ApiResponses;
 
 /**
  * @since 1.0
@@ -44,6 +47,10 @@ public class SnomedReferenceSetHistoryRestService extends AbstractSnomedRestServ
 	@ApiOperation(
 			value="Get history for a reference set", 
 			notes="Retrieves history for the specified SNOMED CT reference set.")
+	@ApiResponses({
+		@ApiResponse(code = 200, message = "OK", response = Void.class),
+		@ApiResponse(code = 404, message = "Branch or reference set not found", response = RestApiError.class)
+	})
 	@RequestMapping(value="/{path:**}/refsets/{id}/history", method=RequestMethod.GET)
 	public SnomedReferenceSetHistory getHistory(
 			@PathVariable(value="path") final String branchPath,

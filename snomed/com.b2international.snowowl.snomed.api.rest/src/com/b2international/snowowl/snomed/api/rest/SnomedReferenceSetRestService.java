@@ -43,6 +43,7 @@ import com.b2international.snowowl.core.domain.CollectionResource;
 import com.b2international.snowowl.core.domain.TransactionContext;
 import com.b2international.snowowl.core.exceptions.BadRequestException;
 import com.b2international.snowowl.snomed.api.rest.domain.ChangeRequest;
+import com.b2international.snowowl.snomed.api.rest.domain.RestApiError;
 import com.b2international.snowowl.snomed.api.rest.domain.SnomedRefSetRestInput;
 import com.b2international.snowowl.snomed.api.rest.request.BulkRestRequest;
 import com.b2international.snowowl.snomed.api.rest.request.RefSetMemberRequestResolver;
@@ -73,7 +74,7 @@ public class SnomedReferenceSetRestService extends AbstractSnomedRestService {
 			notes="Returns a list with all reference sets from a branch.")
 	@ApiResponses({
 		@ApiResponse(code = 200, message = "OK", response = CollectionResource.class),
-		@ApiResponse(code = 404, message = "Branch not found")
+		@ApiResponse(code = 404, message = "Branch not found", response = RestApiError.class)
 	})
 	@RequestMapping(value="/{path:**}/refsets", method=RequestMethod.GET)	
 	public @ResponseBody DeferredResult<SnomedReferenceSets> search(
@@ -101,7 +102,7 @@ public class SnomedReferenceSetRestService extends AbstractSnomedRestService {
 			notes="Returns all properties of the specified Reference set.")
 	@ApiResponses({
 		@ApiResponse(code = 200, message = "OK", response = Void.class),
-		@ApiResponse(code = 404, message = "Branch or Reference set not found")
+		@ApiResponse(code = 404, message = "Branch or Reference set not found", response = RestApiError.class)
 	})
 	@RequestMapping(value="/{path:**}/refsets/{id}", method=RequestMethod.GET)
 	public @ResponseBody DeferredResult<SnomedReferenceSet> get(
@@ -144,10 +145,11 @@ public class SnomedReferenceSetRestService extends AbstractSnomedRestService {
 			value="Create a reference set",
 			notes="Creates a new reference set directly on a branch. Creates the corresponding identifier concept.")
 	@ApiResponses({
-		@ApiResponse(code = 200, message = "OK", response = Void.class),
-		@ApiResponse(code = 404, message = "Branch not found")
+		@ApiResponse(code = 201, message = "Created", response = Void.class),
+		@ApiResponse(code = 404, message = "Branch not found", response = RestApiError.class)
 	})
-	@RequestMapping(value="/{path:**}/refsets", method=RequestMethod.POST)
+	@RequestMapping(value="/{path:**}/refsets", method=RequestMethod.POST, consumes={ AbstractRestService.SO_MEDIA_TYPE, MediaType.APPLICATION_JSON_VALUE })
+	@ResponseStatus(HttpStatus.CREATED)
 	public ResponseEntity<Void> create(
 			@ApiParam(value="The branch path")
 			@PathVariable(value="path")
@@ -179,9 +181,9 @@ public class SnomedReferenceSetRestService extends AbstractSnomedRestService {
 	@ApiResponses({
 		@ApiResponse(code = 200, message = "Action execution successful"),
 		@ApiResponse(code = 204, message = "No content"),
-		@ApiResponse(code = 404, message = "Branch or reference set not found")
+		@ApiResponse(code = 404, message = "Branch or reference set not found", response = RestApiError.class)
 	})
-	@RequestMapping(value="/{path:**}/refsets/{id}/actions", method=RequestMethod.POST)
+	@RequestMapping(value="/{path:**}/refsets/{id}/actions", method=RequestMethod.POST, consumes={ AbstractRestService.SO_MEDIA_TYPE, MediaType.APPLICATION_JSON_VALUE })
 	public @ResponseBody Object executeAction(
 			@ApiParam(value="The branch path")
 			@PathVariable(value="path")
@@ -216,7 +218,7 @@ public class SnomedReferenceSetRestService extends AbstractSnomedRestService {
 			notes="TODO write documentation in repo's doc folder")
 	@ApiResponses({
 		@ApiResponse(code = 204, message = "No content"),
-		@ApiResponse(code = 404, message = "Branch or reference set not found")
+		@ApiResponse(code = 404, message = "Branch or reference set not found", response = RestApiError.class)
 	})
 	@RequestMapping(value="/{path:**}/refsets/{id}/members", method=RequestMethod.PUT)
 	@ResponseStatus(HttpStatus.NO_CONTENT)

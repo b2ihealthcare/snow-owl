@@ -58,7 +58,7 @@ public class SnomedBranchMergingController extends AbstractRestService {
 			@ApiResponse(code = 404, message = "Source or Target branch is not found", response=RestApiError.class),
 			@ApiResponse(code = 409, message = "Merge conflict", response=RestApiError.class)
 		})
-	@RequestMapping(method = RequestMethod.POST)
+	@RequestMapping(method = RequestMethod.POST, consumes={AbstractRestService.SO_MEDIA_TYPE, MediaType.APPLICATION_JSON_VALUE})
 	@ResponseStatus(HttpStatus.NO_CONTENT)
 	public DeferredResult<ResponseEntity<Void>> merge(@RequestBody MergeRestRequest request) {
 		ApiValidation.checkInput(request);

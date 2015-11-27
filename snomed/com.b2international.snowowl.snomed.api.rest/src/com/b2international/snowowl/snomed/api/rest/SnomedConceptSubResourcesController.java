@@ -36,6 +36,7 @@ import com.b2international.snowowl.core.exceptions.BadRequestException;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.api.exception.FullySpecifiedNameNotFoundException;
 import com.b2international.snowowl.snomed.api.exception.PreferredTermNotFoundException;
+import com.b2international.snowowl.snomed.api.rest.domain.RestApiError;
 import com.b2international.snowowl.snomed.api.rest.domain.SnomedConceptDescriptions;
 import com.b2international.snowowl.snomed.api.rest.domain.SnomedInboundRelationships;
 import com.b2international.snowowl.snomed.api.rest.domain.SnomedOutboundRelationships;
@@ -75,7 +76,7 @@ public class SnomedConceptSubResourcesController extends AbstractSnomedRestServi
 			response=Void.class)
 	@ApiResponses({
 		@ApiResponse(code = 200, message = "OK"),
-		@ApiResponse(code = 404, message = "Branch or Concept not found")
+		@ApiResponse(code = 404, message = "Branch or Concept not found", response = RestApiError.class)
 	})
 	@RequestMapping(value="/{path:**}/concepts/{conceptId}/descriptions", method=RequestMethod.GET)
 	public @ResponseBody DeferredResult<SnomedConceptDescriptions> getConceptDescriptions(
@@ -110,7 +111,7 @@ public class SnomedConceptSubResourcesController extends AbstractSnomedRestServi
 			response=Void.class)
 	@ApiResponses({
 		@ApiResponse(code = 200, message = "OK"),
-		@ApiResponse(code = 404, message = "Branch or Concept not found")
+		@ApiResponse(code = 404, message = "Branch or Concept not found", response = RestApiError.class)
 	})
 	@RequestMapping(value="/{path:**}/concepts/{conceptId}/inbound-relationships", method=RequestMethod.GET)
 	public DeferredResult<SnomedInboundRelationships> getInboundStatements(
@@ -175,7 +176,7 @@ public class SnomedConceptSubResourcesController extends AbstractSnomedRestServi
 			response=Void.class)
 	@ApiResponses({
 		@ApiResponse(code = 200, message = "OK"),
-		@ApiResponse(code = 404, message = "Branch or Concept not found")
+		@ApiResponse(code = 404, message = "Branch or Concept not found", response = RestApiError.class)
 	})
 	@RequestMapping(value="/{path:**}/concepts/{conceptId}/outbound-relationships", method=RequestMethod.GET)
 	public DeferredResult<SnomedOutboundRelationships> getOutboundStatements(
@@ -220,7 +221,7 @@ public class SnomedConceptSubResourcesController extends AbstractSnomedRestServi
 			response=Void.class)
 	@ApiResponses({
 		@ApiResponse(code = 200, message = "OK"),
-		@ApiResponse(code = 404, message = "Branch or Concept not found")
+		@ApiResponse(code = 404, message = "Branch or Concept not found", response = RestApiError.class)
 	})
 	@RequestMapping(
 			value="/{path:**}/concepts/{conceptId}/descendants",
@@ -265,7 +266,7 @@ public class SnomedConceptSubResourcesController extends AbstractSnomedRestServi
 			response=Void.class)
 	@ApiResponses({
 		@ApiResponse(code = 200, message = "OK"),
-		@ApiResponse(code = 404, message = "Branch or Concept not found")
+		@ApiResponse(code = 404, message = "Branch or Concept not found", response = RestApiError.class)
 	})
 	@RequestMapping(
 			value="/{path:**}/concepts/{conceptId}/ancestors",
@@ -310,7 +311,7 @@ public class SnomedConceptSubResourcesController extends AbstractSnomedRestServi
 			response=Void.class)
 	@ApiResponses({
 		@ApiResponse(code = 200, message = "OK"),
-		@ApiResponse(code = 404, message = "Branch, Concept or Preferred Term not found")
+		@ApiResponse(code = 404, message = "Branch, Concept or Preferred Term not found", response = RestApiError.class)
 	})
 	@RequestMapping(
 			value="/{path:**}/concepts/{conceptId}/pt",
@@ -366,7 +367,7 @@ public class SnomedConceptSubResourcesController extends AbstractSnomedRestServi
 			response=Void.class)
 	@ApiResponses({
 		@ApiResponse(code = 200, message = "OK"),
-		@ApiResponse(code = 404, message = "Branch, Concept or FSN not found")
+		@ApiResponse(code = 404, message = "Branch, Concept or FSN not found", response = RestApiError.class)
 	})
 	@RequestMapping(
 			value="/{path:**}/concepts/{conceptId}/fsn",

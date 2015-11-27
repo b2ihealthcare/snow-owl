@@ -70,7 +70,7 @@ public class SnomedConceptRestService extends AbstractSnomedRestService {
 	@ApiResponses({
 		@ApiResponse(code = 200, message = "OK", response = PageableCollectionResource.class),
 		@ApiResponse(code = 400, message = "Invalid filter config", response = RestApiError.class),
-		@ApiResponse(code = 404, message = "Branch not found")
+		@ApiResponse(code = 404, message = "Branch not found", response = RestApiError.class)
 	})
 	@RequestMapping(value="/{path:**}/concepts", method=RequestMethod.GET)
 	public @ResponseBody DeferredResult<SnomedConcepts> search(
@@ -140,7 +140,7 @@ public class SnomedConceptRestService extends AbstractSnomedRestService {
 			notes="Returns all properties of the specified Concept, including a summary of inactivation indicator and association members.")
 	@ApiResponses({
 		@ApiResponse(code = 200, message = "OK", response = Void.class),
-		@ApiResponse(code = 404, message = "Branch or Concept not found")
+		@ApiResponse(code = 404, message = "Branch or Concept not found", response = RestApiError.class)
 	})
 	@RequestMapping(value="/{path:**}/concepts/{conceptId}", method=RequestMethod.GET)
 	public @ResponseBody DeferredResult<ISnomedConcept> read(
@@ -185,7 +185,7 @@ public class SnomedConceptRestService extends AbstractSnomedRestService {
 			notes="Creates a new Concept directly on a branch.")
 	@ApiResponses({
 		@ApiResponse(code = 201, message = "Concept created on task"),
-		@ApiResponse(code = 404, message = "Branch not found")
+		@ApiResponse(code = 404, message = "Branch not found", response = RestApiError.class)
 	})
 	@RequestMapping(
 			value="/{path:**}/concepts", 
@@ -234,7 +234,7 @@ public class SnomedConceptRestService extends AbstractSnomedRestService {
 					+ "&bull; inactivation indicator<br>")
 	@ApiResponses({
 		@ApiResponse(code = 204, message = "Update successful"),
-		@ApiResponse(code = 404, message = "Branch or Concept not found")
+		@ApiResponse(code = 404, message = "Branch or Concept not found", response = RestApiError.class)
 	})
 	@RequestMapping(
 			value="/{path:**}/concepts/{conceptId}/updates", 
@@ -279,8 +279,8 @@ public class SnomedConceptRestService extends AbstractSnomedRestService {
 					+ "status will be returned.")
 	@ApiResponses({
 		@ApiResponse(code = 204, message = "Deletion successful"),
-		@ApiResponse(code = 409, message = "Cannot be deleted if released", response = RestApiError.class),
-		@ApiResponse(code = 404, message = "Branch or Concept not found")
+		@ApiResponse(code = 404, message = "Branch or Concept not found", response = RestApiError.class),
+		@ApiResponse(code = 409, message = "Cannot be deleted if released", response = RestApiError.class)
 	})
 	@RequestMapping(value="/{path:**}/concepts/{conceptId}", method=RequestMethod.DELETE)
 	@ResponseStatus(HttpStatus.NO_CONTENT)

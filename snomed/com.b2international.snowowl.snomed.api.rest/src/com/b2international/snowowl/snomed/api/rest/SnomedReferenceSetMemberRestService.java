@@ -78,7 +78,7 @@ public class SnomedReferenceSetMemberRestService extends AbstractSnomedRestServi
 			notes="Returns a list with all reference set members from a branch.")
 	@ApiResponses({
 		@ApiResponse(code = 200, message = "OK", response = PageableCollectionResource.class),
-		@ApiResponse(code = 404, message = "Branch not found")
+		@ApiResponse(code = 404, message = "Branch not found", response = RestApiError.class)
 	})
 	@RequestMapping(value="/{path:**}/members", method=RequestMethod.GET)	
 	public @ResponseBody DeferredResult<SnomedReferenceSetMembers> search(
@@ -146,7 +146,7 @@ public class SnomedReferenceSetMemberRestService extends AbstractSnomedRestServi
 			notes="Returns all properties of the specified reference set member.")
 	@ApiResponses({
 		@ApiResponse(code = 200, message = "OK", response = Void.class),
-		@ApiResponse(code = 404, message = "Branch or reference set member not found")
+		@ApiResponse(code = 404, message = "Branch or reference set member not found", response = RestApiError.class)
 	})
 	@RequestMapping(value="/{path:**}/members/{id}", method=RequestMethod.GET)
 	public @ResponseBody DeferredResult<SnomedReferenceSetMember> get(
@@ -193,9 +193,9 @@ public class SnomedReferenceSetMemberRestService extends AbstractSnomedRestServi
 					+ "The _query_ parameter defines the ESCG query property of the new member, while the _refsetDescription_ used for the description of the new simple type reference set.")
 	@ApiResponses({
 		@ApiResponse(code = 200, message = "OK", response = Void.class),
-		@ApiResponse(code = 404, message = "Branch not found")
+		@ApiResponse(code = 404, message = "Branch not found", response = RestApiError.class)
 	})
-	@RequestMapping(value="/{path:**}/members", method=RequestMethod.POST)
+	@RequestMapping(value="/{path:**}/members", method=RequestMethod.POST, consumes={ AbstractRestService.SO_MEDIA_TYPE, MediaType.APPLICATION_JSON_VALUE })
 	public ResponseEntity<Void> create(
 			@ApiParam(value="The branch path")
 			@PathVariable(value="path")
@@ -228,7 +228,7 @@ public class SnomedReferenceSetMemberRestService extends AbstractSnomedRestServi
 					+ "status will be returned.")
 	@ApiResponses({
 		@ApiResponse(code = 204, message = "Delete successful"),
-		@ApiResponse(code = 404, message = "Branch or member not found"),
+		@ApiResponse(code = 404, message = "Branch or member not found", response = RestApiError.class),
 		@ApiResponse(code = 409, message = "Member cannot be deleted", response = RestApiError.class)
 	})
 	@RequestMapping(value="/{path:**}/members/{id}", method=RequestMethod.DELETE)
@@ -257,7 +257,7 @@ public class SnomedReferenceSetMemberRestService extends AbstractSnomedRestServi
 					+ "- activity status flag (active)")
 	@ApiResponses({
 		@ApiResponse(code = 204, message = "Update successful"),
-		@ApiResponse(code = 404, message = "Branch or member not found")
+		@ApiResponse(code = 404, message = "Branch or member not found", response = RestApiError.class)
 	})
 	@RequestMapping(value="/{path:**}/members/{id}", method=RequestMethod.PUT, consumes={ AbstractRestService.SO_MEDIA_TYPE, MediaType.APPLICATION_JSON_VALUE })
 	@ResponseStatus(HttpStatus.NO_CONTENT)
@@ -292,9 +292,9 @@ public class SnomedReferenceSetMemberRestService extends AbstractSnomedRestServi
 	@ApiResponses({
 		@ApiResponse(code = 200, message = "Action execution successful"),
 		@ApiResponse(code = 204, message = "No content"),
-		@ApiResponse(code = 404, message = "Branch or member not found")
+		@ApiResponse(code = 404, message = "Branch or member not found", response = RestApiError.class)
 	})
-	@RequestMapping(value="/{path:**}/members/{id}/actions", method=RequestMethod.POST)
+	@RequestMapping(value="/{path:**}/members/{id}/actions", method=RequestMethod.POST, consumes={ AbstractRestService.SO_MEDIA_TYPE, MediaType.APPLICATION_JSON_VALUE })
 	public @ResponseBody Object executeAction(
 			@ApiParam(value="The branch path")
 			@PathVariable(value="path")

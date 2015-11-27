@@ -43,13 +43,13 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.b2international.snowowl.api.codesystem.ICodeSystemVersionService;
 import com.b2international.snowowl.core.exceptions.ApiValidation;
 import com.b2international.snowowl.core.exceptions.BadRequestException;
 import com.b2international.snowowl.datastore.server.domain.StorageRef;
 import com.b2international.snowowl.snomed.api.ISnomedExportService;
 import com.b2international.snowowl.snomed.api.exception.ExportRunNotFoundException;
 import com.b2international.snowowl.snomed.api.impl.domain.SnomedExportConfiguration;
+import com.b2international.snowowl.snomed.api.rest.domain.RestApiError;
 import com.b2international.snowowl.snomed.api.rest.domain.SnomedExportRestConfiguration;
 import com.b2international.snowowl.snomed.api.rest.domain.SnomedExportRestRun;
 import com.b2international.snowowl.snomed.api.rest.util.Responses;
@@ -74,9 +74,6 @@ public class SnomedExportRestService extends AbstractSnomedRestService {
 	@Autowired
 	private ISnomedExportService exportService;
 	
-	@Autowired
-	private ICodeSystemVersionService codeSystemVersionService;
-	
 	private ConcurrentMap<UUID, SnomedExportRestRun> exports = new MapMaker().makeMap();
 	
 	@ApiOperation(
@@ -84,8 +81,7 @@ public class SnomedExportRestService extends AbstractSnomedRestService {
 			notes="Registers the specified export configuration and returns a location header pointing to the stored export run.")
 	@ApiResponses({
 		@ApiResponse(code=201, message="Created"),
-		@ApiResponse(code=400, message="Configuration object failed validation"),
-		@ApiResponse(code=404, message="Code system version and/or task not found")
+		@ApiResponse(code=404, message="Code system version and/or task not found", response = RestApiError.class)
 	})
 	@RequestMapping(method=RequestMethod.POST, consumes = { AbstractRestService.SO_MEDIA_TYPE, MediaType.APPLICATION_JSON_VALUE })
 	@ResponseStatus(HttpStatus.CREATED)
@@ -140,7 +136,7 @@ public class SnomedExportRestService extends AbstractSnomedRestService {
 			notes="Returns an export run resource by identifier.")
 	@ApiResponses({
 		@ApiResponse(code=200, message="OK"),
-		@ApiResponse(code=404, message="Export run not found")
+		@ApiResponse(code=404, message="Export run not found", response = RestApiError.class)
 	})
 	@RequestMapping(value="/{id}", method=RequestMethod.GET)
 	public SnomedExportRestRun getExport(
@@ -162,7 +158,7 @@ public class SnomedExportRestService extends AbstractSnomedRestService {
 			notes="Returns the export archive from a completed export run on the given version branch.")
 	@ApiResponses({
 		@ApiResponse(code=200, message="OK"),
-		@ApiResponse(code=404, message="Export run not found")
+		@ApiResponse(code=404, message="Export run not found", response = RestApiError.class)
 	})
 	@RequestMapping(value="/{id}/archive", method=RequestMethod.GET, produces = { AbstractRestService.SO_MEDIA_TYPE, MediaType.APPLICATION_OCTET_STREAM_VALUE })
 	public @ResponseBody ResponseEntity<?> getArchive(

@@ -199,7 +199,7 @@ public class SnomedClassificationRestService extends AbstractSnomedRestService {
 			notes="Retrieves a preview of single concept and related information on a branch with classification changes applied.")
 	@ApiResponses({
 			@ApiResponse(code = 200, message = "OK", response = Void.class),
-			@ApiResponse(code = 404, message = "Code system version or concept not found")
+			@ApiResponse(code = 404, message = "Code system version or concept not found", response = RestApiError.class)
 	})
 	@RequestMapping(value="/{path:**}/classifications/{classificationId}/concept-preview/{conceptId}", method=RequestMethod.GET)
 	public @ResponseBody

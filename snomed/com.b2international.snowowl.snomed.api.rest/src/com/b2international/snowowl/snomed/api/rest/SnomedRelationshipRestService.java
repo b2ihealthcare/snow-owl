@@ -19,7 +19,6 @@ import static org.springframework.hateoas.mvc.ControllerLinkBuilder.linkTo;
 
 import java.net.URI;
 import java.security.Principal;
-import java.util.List;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -61,7 +60,7 @@ public class SnomedRelationshipRestService extends AbstractSnomedRestService {
 			notes="Creates a new Relationship directly on a version branch.")
 	@ApiResponses({
 		@ApiResponse(code = 201, message = "Created"),
-		@ApiResponse(code = 404, message = "Branch not found")
+		@ApiResponse(code = 404, message = "Branch not found", response = RestApiError.class)
 	})
 	@RequestMapping(
 			value="/{path:**}/relationships", 
@@ -96,7 +95,7 @@ public class SnomedRelationshipRestService extends AbstractSnomedRestService {
 			response=Void.class)
 	@ApiResponses({
 		@ApiResponse(code = 200, message = "OK"),
-		@ApiResponse(code = 404, message = "Branch or Relationship not found")
+		@ApiResponse(code = 404, message = "Branch or Relationship not found", response = RestApiError.class)
 	})
 	@RequestMapping(value="/{path:**}/relationships/{relationshipId}", method=RequestMethod.GET)
 	public DeferredResult<ISnomedRelationship> read(
@@ -106,17 +105,12 @@ public class SnomedRelationshipRestService extends AbstractSnomedRestService {
 			
 			@ApiParam(value="The Relationship identifier")
 			@PathVariable("relationshipId") 
-			final String relationshipId,
-			
-			@ApiParam(value="Expansion parameters")
-			@RequestParam(value="expand", required=false)
-			final String expand) {
+			final String relationshipId) {
 
 		return DeferredResults.wrap(
 				SnomedRequests
 					.prepareGetRelationship()
 					.setComponentId(relationshipId)
-					.setExpand(expand)
 					.build(branchPath)
 					.execute(bus));
 	}
@@ -126,7 +120,7 @@ public class SnomedRelationshipRestService extends AbstractSnomedRestService {
 			notes="Updates properties of the specified Relationship.")
 	@ApiResponses({
 		@ApiResponse(code = 204, message = "Update successful"),
-		@ApiResponse(code = 404, message = "Branch or Relationship not found")
+		@ApiResponse(code = 404, message = "Branch or Relationship not found", response = RestApiError.class)
 	})
 	@RequestMapping(
 			value="/{path:**}/relationships/{relationshipId}/updates", 
@@ -171,7 +165,7 @@ public class SnomedRelationshipRestService extends AbstractSnomedRestService {
 					+ "status will be returned.")
 	@ApiResponses({
 		@ApiResponse(code = 204, message = "Delete successful"),
-		@ApiResponse(code = 404, message = "Branch or Relationship not found"),
+		@ApiResponse(code = 404, message = "Branch or Relationship not found", response = RestApiError.class),
 		@ApiResponse(code = 409, message = "Relationship cannot be deleted", response = RestApiError.class)
 	})
 	@RequestMapping(value="/{path:**}/relationships/{relationshipId}", method=RequestMethod.DELETE)
