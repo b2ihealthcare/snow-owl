@@ -24,6 +24,7 @@ import org.apache.lucene.document.Document;
 import org.apache.lucene.queries.BooleanFilter;
 import org.apache.lucene.queries.ChainedFilter;
 import org.apache.lucene.search.BooleanClause.Occur;
+import org.apache.lucene.search.BooleanQuery;
 import org.apache.lucene.search.DisjunctionMaxQuery;
 import org.apache.lucene.search.Filter;
 import org.apache.lucene.search.IndexSearcher;
@@ -82,6 +83,9 @@ final class SnomedDescriptionSearchRequest extends SnomedSearchRequest<SnomedDes
 	@Override
 	protected SnomedDescriptions doExecute(BranchContext context) throws IOException {
 		final IndexSearcher searcher = context.service(IndexSearcher.class);
+		if (containsKey(OptionKey.TERM) && getString(OptionKey.TERM).length() < 3) {
+			throw new BadRequestException("Description term must be at least 3 characters long.");
+		}
 		
 		if (containsKey(OptionKey.ACCEPTABILITY) || !languageRefSetIds().isEmpty()) {
 			
@@ -123,40 +127,27 @@ final class SnomedDescriptionSearchRequest extends SnomedSearchRequest<SnomedDes
 	}
 
 	private SnomedDescriptions search(BranchContext context, final IndexSearcher searcher, Long languageRefSetId, int offset, int limit) throws IOException {
+		
 		final SnomedQueryBuilder queryBuilder = SnomedMappings.newQuery().description();
-		
-		if (containsKey(SnomedSearchRequest.OptionKey.ACTIVE)) {
-			queryBuilder.active(getBoolean(SnomedSearchRequest.OptionKey.ACTIVE));
-		}
-		
-		if (containsKey(SnomedSearchRequest.OptionKey.MODULE)) {
-			queryBuilder.module(getString(SnomedSearchRequest.OptionKey.MODULE));
-		}
+		addActiveClause(queryBuilder);
+		addModuleClause(queryBuilder);
 		
 		final Sort sort;
 		
 		if (containsKey(OptionKey.TERM)) {
 			final String searchTerm = getString(OptionKey.TERM);
-			final QueryBuilder termQueryBuilder = new QueryBuilder(new ComponentTermAnalyzer(true, true));
+			final ComponentTermAnalyzer bookendAnalyzer = new ComponentTermAnalyzer(true, true);
+			final QueryBuilder termQueryBuilder = new QueryBuilder(bookendAnalyzer);
 			final DisjunctionMaxQuery termDisjunctionQuery = new DisjunctionMaxQuery(0.0f);
 			
-			// "absolutely exact match"
-			termDisjunctionQuery.add(termQueryBuilder.createPhraseQuery(SnomedMappings.descriptionTerm().fieldName(), searchTerm));
+			termDisjunctionQuery.add(createExactMatchQuery(searchTerm, termQueryBuilder));
+			termDisjunctionQuery.add(createAllTermsPresentQuery(searchTerm, termQueryBuilder));
 			
-			// "matchAllTokenizedTerms"
-			termDisjunctionQuery.add(termQueryBuilder.createBooleanQuery(SnomedMappings.descriptionTerm().fieldName(), searchTerm, Occur.MUST));
-			
-			// "matchAllTokenizedTermPrefixSequences"
-			final List<SpanQuery> clauses = newArrayList();
-			clauses.add(new SpanTermQuery(SnomedMappings.descriptionTerm().toTerm(Character.toString(BookendTokenFilter.LEADING_MARKER))));
-			
-			final List<String> prefixes = IndexUtils.split(new ComponentTermAnalyzer(false, false), searchTerm);
-			for (String prefix : prefixes) {
-				clauses.add(new SpanMultiTermQueryWrapper<>(new PrefixQuery(SnomedMappings.descriptionTerm().toTerm(prefix))));
-			}
-			
-			final SpanFirstQuery matchAllTokenizedPrefixQuery = new SpanFirstQuery(new SpanNearQuery(Iterables.toArray(clauses, SpanQuery.class), 0, true), prefixes.size() + 1);
-			termDisjunctionQuery.add(matchAllTokenizedPrefixQuery);
+			final ComponentTermAnalyzer nonBookendAnalyzer = new ComponentTermAnalyzer(false, false);
+			final List<String> prefixes = IndexUtils.split(nonBookendAnalyzer, searchTerm);
+
+			termDisjunctionQuery.add(createAllTermPrefixesPresentFromBeginningQuery(prefixes));
+			termDisjunctionQuery.add(createAllTermPrefixesPresentQuery(prefixes));
 			
 			queryBuilder.and(termDisjunctionQuery);
 			sort = Sort.RELEVANCE;
@@ -198,6 +189,35 @@ final class SnomedDescriptionSearchRequest extends SnomedSearchRequest<SnomedDes
 		}
 
 		return SnomedConverters.newDescriptionConverter(context, expand(), locales()).convert(descriptionBuilder.build(), offset, limit, topDocs.totalHits);
+	}
+
+	private Query createExactMatchQuery(final String searchTerm, final QueryBuilder termQueryBuilder) {
+		return termQueryBuilder.createPhraseQuery(SnomedMappings.descriptionTerm().fieldName(), searchTerm);
+	}
+
+	private Query createAllTermsPresentQuery(final String searchTerm, final QueryBuilder termQueryBuilder) {
+		return termQueryBuilder.createBooleanQuery(SnomedMappings.descriptionTerm().fieldName(), searchTerm, Occur.MUST);
+	}
+
+	private Query createAllTermPrefixesPresentFromBeginningQuery(List<String> prefixes) {
+		final List<SpanQuery> clauses = newArrayList();
+		clauses.add(new SpanTermQuery(SnomedMappings.descriptionTerm().toTerm(Character.toString(BookendTokenFilter.LEADING_MARKER))));
+		
+		for (String prefix : prefixes) {
+			clauses.add(new SpanMultiTermQueryWrapper<>(new PrefixQuery(SnomedMappings.descriptionTerm().toTerm(prefix))));
+		}
+		
+		return new SpanFirstQuery(new SpanNearQuery(Iterables.toArray(clauses, SpanQuery.class), 0, true), prefixes.size() + 1);
+	}
+
+	private Query createAllTermPrefixesPresentQuery(List<String> prefixes) {
+		final BooleanQuery query = new BooleanQuery(true);
+
+		for (String prefix : prefixes) {
+			query.add(new PrefixQuery(SnomedMappings.descriptionTerm().toTerm(prefix)), Occur.MUST);
+		}
+
+		return query;
 	}
 
 	private void addComponentIdFilter(final List<Filter> filters, final List<Integer> ops) {
