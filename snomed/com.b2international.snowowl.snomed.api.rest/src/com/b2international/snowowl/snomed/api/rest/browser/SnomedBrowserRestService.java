@@ -271,7 +271,7 @@ public class SnomedBrowserRestService extends AbstractSnomedRestService {
 	}
 
 	@ApiOperation(
-			value = "Retrieve descriptions matching a query (hits DB to fetch FSN in concept section)",
+			value = "Retrieve descriptions matching a query (sets FSN to property 'fsn' in concept section)",
 			notes = "Returns a list of descriptions which have a term matching the specified query string on a version.",
 			response=Void.class)
 	@ApiResponses({
@@ -317,7 +317,7 @@ public class SnomedBrowserRestService extends AbstractSnomedRestService {
 	}
 
 	@ApiOperation(
-			value = "Retrieve descriptions matching a query (returns indexed fields only - PT not FSN within concept section)",
+			value = "Retrieve descriptions matching a query (sets PT to property 'fsn' in concept section)",
 			notes = "Returns a list of descriptions which have a term matching the specified query string on a version.",
 			response=Void.class)
 	@ApiResponses({
