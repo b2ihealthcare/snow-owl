@@ -90,11 +90,10 @@ final class SnomedConceptSearchRequest extends SnomedSearchRequest<SnomedConcept
 	@Override
 	protected SnomedConcepts doExecute(BranchContext context) throws IOException {
 		final IndexSearcher searcher = context.service(IndexSearcher.class);
+
 		final SnomedQueryBuilder queryBuilder = SnomedMappings.newQuery().concept();
-		
-		if (containsKey(SnomedSearchRequest.OptionKey.ACTIVE)) {
-			queryBuilder.active(getBoolean(SnomedSearchRequest.OptionKey.ACTIVE));
-		}
+		addActiveClause(queryBuilder);
+		addModuleClause(queryBuilder);
 		
 		if (containsKey(OptionKey.PARENT)) {
 			queryBuilder.parent(getString(OptionKey.PARENT));
@@ -123,10 +122,6 @@ final class SnomedConceptSearchRequest extends SnomedSearchRequest<SnomedConcept
 			} catch (EscgParseFailedException e) {
 				throw new UnsupportedEscgQueryParameterException(escg);
 			}
-		}
-		
-		if (containsKey(SnomedSearchRequest.OptionKey.MODULE)) {
-			queryBuilder.module(getString(SnomedSearchRequest.OptionKey.MODULE));
 		}
 		
 		final BooleanFilter filter = new BooleanFilter();

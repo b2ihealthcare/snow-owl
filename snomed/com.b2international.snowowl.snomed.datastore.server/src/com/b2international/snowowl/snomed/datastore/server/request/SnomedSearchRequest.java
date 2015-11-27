@@ -22,6 +22,7 @@ import org.apache.lucene.search.Filter;
 import com.b2international.commons.functions.StringToLongFunction;
 import com.b2international.snowowl.datastore.request.SearchRequest;
 import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedMappings;
+import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedQueryBuilder;
 
 /**
  * @since 4.5
@@ -55,5 +56,17 @@ public abstract class SnomedSearchRequest<R> extends SearchRequest<R> {
 	@Override
 	protected Filter createComponentIdFilter() {
 		return SnomedMappings.id().createTermsFilter(StringToLongFunction.copyOf(componentIds()));
+	}
+	
+	protected final void addModuleClause(SnomedQueryBuilder queryBuilder) {
+		if (containsKey(OptionKey.MODULE)) {
+			queryBuilder.module(getString(OptionKey.MODULE));
+		}
+	}
+
+	protected final void addActiveClause(SnomedQueryBuilder queryBuilder) {
+		if (containsKey(OptionKey.ACTIVE)) {
+			queryBuilder.active(getBoolean(OptionKey.ACTIVE));
+		}
 	}
 }

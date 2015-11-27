@@ -51,15 +51,10 @@ final class SnomedRelationshipSearchRequest extends SnomedSearchRequest<SnomedRe
 	@Override
 	protected SnomedRelationships doExecute(BranchContext context) throws IOException {
 		final IndexSearcher searcher = context.service(IndexSearcher.class);
+		
 		final SnomedQueryBuilder queryBuilder = SnomedMappings.newQuery().relationship();
-		
-		if (containsKey(SnomedSearchRequest.OptionKey.ACTIVE)) {
-			queryBuilder.active(getBoolean(SnomedSearchRequest.OptionKey.ACTIVE));
-		}
-		
-		if (containsKey(SnomedSearchRequest.OptionKey.MODULE)) {
-			queryBuilder.module(getString(SnomedSearchRequest.OptionKey.MODULE));
-		}
+		addActiveClause(queryBuilder);
+		addModuleClause(queryBuilder);
 		
 		if (containsKey(OptionKey.SOURCE)) {
 			queryBuilder.relationshipSource(getString(OptionKey.SOURCE));
