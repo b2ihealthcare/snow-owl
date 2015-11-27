@@ -17,6 +17,8 @@ package com.b2international.snowowl.snomed.api.rest;
 
 import static org.springframework.hateoas.mvc.ControllerLinkBuilder.linkTo;
 
+import java.io.IOException;
+import java.io.StringReader;
 import java.net.URI;
 import java.security.Principal;
 import java.util.List;
@@ -28,6 +30,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -35,9 +38,11 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.context.request.async.DeferredResult;
 
+import com.b2international.commons.http.AcceptHeader;
+import com.b2international.commons.http.ExtendedLocale;
 import com.b2international.snowowl.core.domain.PageableCollectionResource;
 import com.b2international.snowowl.core.domain.TransactionContext;
-import com.b2international.snowowl.core.events.Request;
+import com.b2international.snowowl.core.exceptions.BadRequestException;
 import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.snomed.api.rest.domain.ChangeRequest;
 import com.b2international.snowowl.snomed.api.rest.domain.RestApiError;
@@ -80,6 +85,22 @@ public class SnomedReferenceSetMemberRestService extends AbstractSnomedRestServi
 			@ApiParam(value="The branch path")
 			@PathVariable(value="path")
 			final String branchPath,
+
+			@ApiParam(value="The reference set identifier to match")
+			@RequestParam(value="referenceSetId", required=false) 
+			final String referenceSetId,
+			
+			@ApiParam(value="The referenced component identifier to match")
+			@RequestParam(value="referencedComponentId", required=false) 
+			final String referencedComponentId,
+			
+			@ApiParam(value="The status to match")
+			@RequestParam(value="active", required=false) 
+			final Boolean activeFilter,
+			
+			@ApiParam(value="The module identifier to match")
+			@RequestParam(value="module", required=false) 
+			final String moduleFilter,
 			
 			@ApiParam(value="The starting offset in the list")
 			@RequestParam(value="offset", defaultValue="0", required=false) 
@@ -87,8 +108,37 @@ public class SnomedReferenceSetMemberRestService extends AbstractSnomedRestServi
 
 			@ApiParam(value="The maximum number of items to return")
 			@RequestParam(value="limit", defaultValue="50", required=false) 
-			final int limit) {
-		return DeferredResults.wrap(SnomedRequests.prepareMemberSearch().setLimit(limit).setOffset(offset).build(branchPath).execute(bus));
+			final int limit,
+			
+			@ApiParam(value="Expansion parameters")
+			@RequestParam(value="expand", required=false)
+			final String expand,
+
+			@ApiParam(value="Accepted language tags, in order of preference")
+			@RequestHeader(value="Accept-Language", defaultValue="en-US;q=0.8,en-GB;q=0.6", required=false) 
+			final String acceptLanguage) {
+
+		final List<ExtendedLocale> extendedLocales;
+		
+		try {
+			extendedLocales = AcceptHeader.parseExtendedLocales(new StringReader(acceptLanguage));
+		} catch (IOException e) {
+			throw new BadRequestException(e.getMessage());
+		} catch (IllegalArgumentException e) {
+			throw new BadRequestException(e.getMessage());
+		}
+		
+		return DeferredResults.wrap(SnomedRequests.prepareMemberSearch()
+				.setLimit(limit)
+				.setOffset(offset)
+				.filterByRefSet(referenceSetId)
+				.filterByReferencedComponent(referencedComponentId)
+				.filterByActive(activeFilter)
+				.filterByModule(moduleFilter)
+				.setExpand(expand)
+				.setLocales(extendedLocales)
+				.build(branchPath)
+				.execute(bus));
 	}
 	
 	@ApiOperation(
@@ -110,12 +160,27 @@ public class SnomedReferenceSetMemberRestService extends AbstractSnomedRestServi
 			
 			@ApiParam(value="Expansion parameters")
 			@RequestParam(value="expand", required=false)
-			final String expand) {
+			final String expand,
+
+			@ApiParam(value="Accepted language tags, in order of preference")
+			@RequestHeader(value="Accept-Language", defaultValue="en-US;q=0.8,en-GB;q=0.6", required=false) 
+			final String acceptLanguage) {
+
+		final List<ExtendedLocale> extendedLocales;
+		
+		try {
+			extendedLocales = AcceptHeader.parseExtendedLocales(new StringReader(acceptLanguage));
+		} catch (IOException e) {
+			throw new BadRequestException(e.getMessage());
+		} catch (IllegalArgumentException e) {
+			throw new BadRequestException(e.getMessage());
+		}
 		
 		return DeferredResults.wrap(SnomedRequests
 				.prepareGetMember()
 				.setComponentId(memberId)
 				.setExpand(expand)
+				.setLocales(extendedLocales)
 				.build(branchPath)
 				.execute(bus));
 	}
