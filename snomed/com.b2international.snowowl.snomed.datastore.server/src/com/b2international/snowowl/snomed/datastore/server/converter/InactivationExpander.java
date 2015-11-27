@@ -52,6 +52,10 @@ public abstract class InactivationExpander<T extends SnomedComponent> {
 				.transform(BaseSnomedComponentConverter.ID_FUNCTION)
 				.toSet();
 		
+		if (componentIds.isEmpty()) {
+			return;
+		}
+		
 		List<String> refSetIds = newArrayList();
 		for (final AssociationType associationType : AssociationType.values()) {
 			refSetIds.add(associationType.getConceptId());
@@ -75,15 +79,15 @@ public abstract class InactivationExpander<T extends SnomedComponent> {
 		});
 		
 		for (T result : results) {
-			final Collection<SnomedReferenceSetMember> descriptionMembers = membersByReferencedComponentId.get(result.getId());
+			final Collection<SnomedReferenceSetMember> referringMembers = membersByReferencedComponentId.get(result.getId());
 			final List<SnomedReferenceSetMember> associationMembers = newArrayList();
 			final List<SnomedReferenceSetMember> inactivationMembers = newArrayList(); 
 			
-			for (SnomedReferenceSetMember descriptionMember : descriptionMembers) {
-				if (SnomedRefSetType.ASSOCIATION.equals(descriptionMember.type())) {
-					associationMembers.add(descriptionMember);
-				} else if (SnomedRefSetType.ATTRIBUTE_VALUE.equals(descriptionMember.type())) {
-					inactivationMembers.add(descriptionMember);
+			for (SnomedReferenceSetMember referringMember : referringMembers) {
+				if (SnomedRefSetType.ASSOCIATION.equals(referringMember.type())) {
+					associationMembers.add(referringMember);
+				} else if (SnomedRefSetType.ATTRIBUTE_VALUE.equals(referringMember.type())) {
+					inactivationMembers.add(referringMember);
 				}
 			}
 			
