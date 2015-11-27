@@ -200,7 +200,7 @@ public abstract class SearchRequest<B> extends BaseRequest<BranchContext, B> {
 	
 	@Override
 	public String toString() {
-		return String.format("{type:'%s', offset:%s, limit:%s, componentIds:%s, expand:%s, locales:%s, options:%s}", 
+		return String.format("{type:'%s', offset:%s, limit:%s, componentIds:%s, locales:%s, options:%s}", 
 				getClass().getSimpleName(),
 				offset,
 				limit,
