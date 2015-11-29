@@ -90,7 +90,7 @@ public class SnomedReferenceSetRestService extends AbstractSnomedRestService {
 			@RequestParam(value="limit", defaultValue="50", required=false) 
 			final int limit) {
 		
-		return DeferredResults.wrap(SnomedRequests.prepareRefSetSearch()
+		return DeferredResults.wrap(SnomedRequests.prepareSearchRefSet()
 				.setOffset(offset)
 				.setLimit(limit)
 				.build(branchPath)
@@ -143,7 +143,10 @@ public class SnomedReferenceSetRestService extends AbstractSnomedRestService {
 	
 	@ApiOperation(
 			value="Create a reference set",
-			notes="Creates a new reference set directly on a branch. Creates the corresponding identifier concept.")
+			notes="Creates a new reference set directly on a branch. Creates the corresponding identifier concept as well based on the given JSON body."
+			+ "<p>Reference Set type and referenced component type properties are immutable and cannot be modified, "
+			+ "thus there is no update endpoint for reference sets. "
+			+ "To update the corresponding identifier concept properties, use the concept update endpoint.</p>")
 	@ApiResponses({
 		@ApiResponse(code = 201, message = "Created", response = Void.class),
 		@ApiResponse(code = 404, message = "Branch not found", response = RestApiError.class)
@@ -177,14 +180,17 @@ public class SnomedReferenceSetRestService extends AbstractSnomedRestService {
 	
 	@ApiOperation(
 			value="Executes an action on a reference set",
-			notes="TODO write documentation in repo's doc folder")
+			notes="Executes an action specified via the request body on the reference set identified by the given identifier."
+					+ "<p>Supported actions are:"
+					+ "&bull; 'sync' - Executes sync action on all members of this query reference set, see sync on /members/:id/actions endpoint"
+					+ "</p>")
 	@ApiResponses({
-		@ApiResponse(code = 200, message = "Action execution successful"),
 		@ApiResponse(code = 204, message = "No content"),
 		@ApiResponse(code = 404, message = "Branch or reference set not found", response = RestApiError.class)
 	})
 	@RequestMapping(value="/{path:**}/refsets/{id}/actions", method=RequestMethod.POST, consumes={ AbstractRestService.SO_MEDIA_TYPE, MediaType.APPLICATION_JSON_VALUE })
-	public @ResponseBody Object executeAction(
+	@ResponseStatus(HttpStatus.NO_CONTENT)
+	public void executeAction(
 			@ApiParam(value="The branch path")
 			@PathVariable(value="path")
 			final String branchPath,
@@ -203,19 +209,20 @@ public class SnomedReferenceSetRestService extends AbstractSnomedRestService {
 		final RestRequest change = body.getChange();
 		change.setSource("referenceSetId", refSetId);
 		
-		return SnomedRequests
-				.prepareCommit()
-				.setBody(body.getChange().resolve(resolver))
-				.setCommitComment(body.getCommitComment())
-				.setUserId(principal.getName())
-				.setBranch(branchPath)
-				.build()
-				.executeSync(bus);
+		SnomedRequests
+			.prepareCommit()
+			.setBody(body.getChange().resolve(resolver))
+			.setCommitComment(body.getCommitComment())
+			.setUserId(principal.getName())
+			.setBranch(branchPath)
+			.build()
+			.executeSync(bus);
 	}
 	
 	@ApiOperation(
-			value="Executes multiple requests on the members of a single reference set",
-			notes="TODO write documentation in repo's doc folder")
+			value="Executes multiple requests (bulk request) on the members of a single reference set.",
+			notes="Execute reference set member create, update, delete requests at once on a single reference set. "
+					+ "See bulk requests section for more details.")
 	@ApiResponses({
 		@ApiResponse(code = 204, message = "No content"),
 		@ApiResponse(code = 404, message = "Branch or reference set not found", response = RestApiError.class)
@@ -238,15 +245,20 @@ public class SnomedReferenceSetRestService extends AbstractSnomedRestService {
 			final Principal principal) {
 		
 		final RequestResolver<TransactionContext> resolver = new RefSetMemberRequestResolver();
+		final BulkRestRequest bulkRequest = request.getChange();
+		// FIXME setting referenceSetId even if defined??? 
+		// enforces that new members will be created in the defined refset
+		for (RestRequest req : bulkRequest.getRequests()) {
+			req.setSource("referenceSetId", refSetId);
+		}
 		SnomedRequests
 			.prepareCommit()
-			.setBody(request.getChange().resolve(resolver))
+			.setBody(bulkRequest.resolve(resolver))
 			.setUserId(principal.getName())
 			.setBranch(branchPath)
 			.setCommitComment(request.getCommitComment())
 			.build()
 			.executeSync(bus);
-		
 	}
 	
 	private URI getRefSetLocationURI(String branchPath, String refSetId) {

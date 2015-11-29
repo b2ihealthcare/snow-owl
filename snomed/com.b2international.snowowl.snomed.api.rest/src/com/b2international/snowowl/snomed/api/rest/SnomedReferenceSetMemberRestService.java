@@ -128,7 +128,7 @@ public class SnomedReferenceSetMemberRestService extends AbstractSnomedRestServi
 			throw new BadRequestException(e.getMessage());
 		}
 		
-		return DeferredResults.wrap(SnomedRequests.prepareMemberSearch()
+		return DeferredResults.wrap(SnomedRequests.prepareSearchMember()
 				.setLimit(limit)
 				.setOffset(offset)
 				.filterByRefSet(referenceSetId)
@@ -189,8 +189,8 @@ public class SnomedReferenceSetMemberRestService extends AbstractSnomedRestServi
 			value="Create a reference set member",
 			notes="Creates a new reference set member directly on a branch. "
 					+ "On top of the basic member properties you can include other properties relevant for specific reference set member types."
-					+ "For example, for query type reference set member we support _query_ and _refsetDescription_. "
-					+ "The _query_ parameter defines the ESCG query property of the new member, while the _refsetDescription_ used for the description of the new simple type reference set.")
+					+ "For example: query type reference set members support _query_ and _refsetDescription_ properties. "
+					+ "_Query_ defines the ESCG query of the new member, while the _refsetDescription_ will be used as the description of the new target simple type reference set.")
 	@ApiResponses({
 		@ApiResponse(code = 200, message = "OK", response = Void.class),
 		@ApiResponse(code = 404, message = "Branch not found", response = RestApiError.class)
@@ -253,8 +253,10 @@ public class SnomedReferenceSetMemberRestService extends AbstractSnomedRestServi
 	@ApiOperation(
 			value="Update Reference Set Member",
 			notes="Updates properties of the specified Reference Set Member."
-					+ "The following properties are allowed to change:"
-					+ "- activity status flag (active)")
+					+ "The following properties are allowed to change (other properties will be simply ignored):"
+					+ "- activity status flag (active)"
+					+ "- module Concept (moduleId)"
+					+ "- query field of query type reference set members")
 	@ApiResponses({
 		@ApiResponse(code = 204, message = "Update successful"),
 		@ApiResponse(code = 404, message = "Branch or member not found", response = RestApiError.class)
@@ -279,7 +281,7 @@ public class SnomedReferenceSetMemberRestService extends AbstractSnomedRestServi
 		final String userId = principal.getName();
 		final SnomedMemberRestUpdate update = body.getChange();
 		SnomedRequests
-			.prepareMemberUpdate()
+			.prepareUpdateMember()
 			.setMemberId(memberId)
 			.setSource(update.getSource())
 			.build(userId, branchPath, body.getCommitComment())
@@ -288,7 +290,11 @@ public class SnomedReferenceSetMemberRestService extends AbstractSnomedRestServi
 	
 	@ApiOperation(
 			value="Executes an action",
-			notes="TODO write documentation in repo's doc folder")
+			notes="Executes an action specified via the request body on a reference set member."
+					+ "<p>Supported actions are:"
+					+ "&bull; 'sync' - Executes sync action on a query type member"
+					+ "&bull; 'create|update|delete' - allowed (mainly resolved and used in bulk requests), but in case of single member action use the dedicated endpoints instead"
+					+ "</p>")
 	@ApiResponses({
 		@ApiResponse(code = 200, message = "Action execution successful"),
 		@ApiResponse(code = 204, message = "No content"),

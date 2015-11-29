@@ -44,6 +44,11 @@ This describes the resources that make up the official Snow Owl® SNOMED CT Term
 	You can specify further pages with the combination of offset and limit parameter.
 </p>
 
+
+<p>
+	<h2>Link/Resource expansion</h2>
+</p>
+
 <p>
 	<h2>Client Errors</h2>
 	<p>There are three possible types of client errors on API calls that receive request bodies:</p>
@@ -62,9 +67,9 @@ This describes the resources that make up the official Snow Owl® SNOMED CT Term
     	<pre><code class="json">Status: 400 Bad Request 
 {
   "status" : "400",
-  "message" : "1 Validation error",
+  "message" : "2 Validation errors",
   "developerMessage" : "Input representation syntax or validation errors. Check input values.",
-  "violations" : ["violation_message_1", "violation_message_1"]
+  "violations" : ["violation_message_1", "violation_message_2"]
 }</code></pre>
   	</li>
   	<li>
@@ -261,4 +266,57 @@ Location: http://localhost:8080/snowowl/snomed-ct/v2/reviews/b5e8cb6b-419e-4180-
 		<pre><code class="json">DELETE /reviews/:id</code></pre>
 		<p>Response</p>
 		<pre><code class="json">Status: 204 No content</code></pre>
+</div>
+
+<div>
+  <h1>Reference Set API</h1>
+  <p>Two categories make up Snow Owl's Reference Set API:</p>
+  <ol>
+    <li><b>Reference Sets</b> category to get, search, create and modify reference sets</li>
+    <li><b>Reference Set Members</b> category to get, search, create and modify reference set members</li>
+  </ol>
+  <p>Basic operations like create, update, delete are supported for both category.</p>
+  <h2>Actions API</h2>
+  <p>
+  	On top of the basic operations, reference sets and members support actions. 
+  	Actions have an <i>action</i> property to specify which action to execute, the rest of the JSON properties will be used as body for the Action.
+  </p>
+  <p>Supported reference set actions are:
+    <ol>
+      <li><b>sync</b> - synchronize all members of a query type reference set by executing their query and comparing the results with the current members of their referenced target reference set</li>
+    </ol>
+  </p>
+  <p>Supported reference set member actions are:
+    <ol>
+      <li><b>create</b> - create a reference set member (uses the same body as POST /members)</li>
+      <li><b>update</b> - update a reference set member (uses the same body as PUT /members)</li>
+      <li><b>delete</b> - delete a reference set member</li>
+      <li><b>sync</b> - synchronize a single member by executing the query and comparing the results with the current members of the referenced target reference set</li>
+    </ol>
+  </p>
+  <p>
+    For example the following will sync a query type reference set member's referenced component with the result of the reevaluated member's ESCG query 
+  	<pre><code class="json">POST /members/:id/actions
+{
+  "commitComment": "Sync member's target reference set",
+  "action": "sync"
+}</code></pre>
+  </p>
+  <h2>Bulk API</h2>
+  <p>Members list of a single reference set can be modified by using the following bulk-like update endpoint:</p> 
+  <pre><code class="json">PUT /:path/refsets/:id/members</code></pre>
+  <p>Input</p>
+  <pre><code class="json">{
+  "commitComment": "Updating members of my simple type reference set",
+  "requests": [
+  	{
+  	  "action": "create|update|delete|sync",
+  	  "action-specific-props": ...
+  	}
+  ]
+}</code></pre>
+  <p>The request body should contain the commitComment property and a request array. 
+  The request array must contain actions (see Actions API) that are enabled for the given set of reference set members.
+  Member create actions can omit the <i>referenceSetId</i> parameter, those will use the one defined as path parameter in the URL.
+  For example by using this endpoint you can create, update and delete members of a reference set at once in one single commit.</p>
 </div>
