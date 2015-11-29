@@ -36,23 +36,23 @@ public abstract class SnomedRequests {
 	private SnomedRequests() {
 	}
 	
-	public static SnomedConceptSearchRequestBuilder prepareConceptSearch() {
+	public static SnomedConceptSearchRequestBuilder prepareSearchConcept() {
 		return new SnomedConceptSearchRequestBuilder(REPOSITORY_ID);
 	}
 	
-	public static SnomedDescriptionSearchRequestBuilder prepareDescriptionSearch() {
+	public static SnomedDescriptionSearchRequestBuilder prepareSearchDescription() {
 		return new SnomedDescriptionSearchRequestBuilder(REPOSITORY_ID);
 	}
 	
-	public static SnomedRefSetSearchRequestBuilder prepareRefSetSearch() {
+	public static SnomedRefSetSearchRequestBuilder prepareSearchRefSet() {
 		return new SnomedRefSetSearchRequestBuilder(REPOSITORY_ID);
 	}
 
-	public static SnomedRefSetMemberSearchRequestBuilder prepareMemberSearch() {
+	public static SnomedRefSetMemberSearchRequestBuilder prepareSearchMember() {
 		return new SnomedRefSetMemberSearchRequestBuilder(REPOSITORY_ID);
 	}
 
-	public static SnomedRelationshipSearchRequestBuilder prepareRelationshipSearch() {
+	public static SnomedRelationshipSearchRequestBuilder prepareSearchRelationship() {
 		return new SnomedRelationshipSearchRequestBuilder(REPOSITORY_ID);
 	}
 	
@@ -88,8 +88,8 @@ public abstract class SnomedRequests {
 		return prepareDelete().setType(Relationship.class);
 	}
 	
-	public static RefSetMemberCreateRequestBuilder prepareNewMember() {
-		return new RefSetMemberCreateRequestBuilder(REPOSITORY_ID);
+	public static SnomedRefSetMemberCreateRequestBuilder prepareNewMember() {
+		return new SnomedRefSetMemberCreateRequestBuilder(REPOSITORY_ID);
 	}
 	
 	public static SnomedRefSetCreateRequestBuilder prepareNewRefSet() {
@@ -140,19 +140,19 @@ public abstract class SnomedRequests {
 		return new QueryRefSetUpdateRequestBuilder(REPOSITORY_ID);
 	}
 
-	public static SnomedRefSetMemberUpdateRequestBuilder prepareMemberUpdate() {
+	public static SnomedRefSetMemberUpdateRequestBuilder prepareUpdateMember() {
 		return new SnomedRefSetMemberUpdateRequestBuilder(REPOSITORY_ID);
 	}
 
-	public static SnomedConceptUpdateRequestBuilder prepareConceptUpdate(String componentId) {
+	public static SnomedConceptUpdateRequestBuilder prepareUpdateConcept(String componentId) {
 		return new SnomedConceptUpdateRequestBuilder(REPOSITORY_ID, componentId);
 	}
 
-	public static SnomedDescriptionUpdateRequestBuilder prepareDescriptionUpdate(String componentId) {
+	public static SnomedDescriptionUpdateRequestBuilder prepareUpdateDescription(String componentId) {
 		return new SnomedDescriptionUpdateRequestBuilder(REPOSITORY_ID, componentId);
 	}
 
-	public static SnomedRelationshipUpdateRequestBuilder prepareRelationshipUpdate(String componentId) {
+	public static SnomedRelationshipUpdateRequestBuilder prepareUpdateRelationship(String componentId) {
 		return new SnomedRelationshipUpdateRequestBuilder(REPOSITORY_ID, componentId);
 	}
 

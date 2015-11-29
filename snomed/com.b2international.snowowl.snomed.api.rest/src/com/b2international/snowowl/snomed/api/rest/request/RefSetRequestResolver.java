@@ -31,7 +31,7 @@ public class RefSetRequestResolver implements RequestResolver<TransactionContext
 	public Request<TransactionContext, ?> resolve(String action, Map<String, Object> source) {
 		switch (Action.get(action)) {
 		case SYNC: return toUpdateRequest(source);
-		default: throw new BadRequestException("Unsupported action '%s'", action);
+		default: throw new BadRequestException("Unsupported reference set action '%s'", action);
 		}
 	}
 

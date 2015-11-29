@@ -25,38 +25,38 @@ import com.b2international.snowowl.core.events.Requests;
 /**
  * @since 4.5
  */
-public final class RefSetMemberCreateRequestBuilder extends BaseSnomedTransactionalRequestBuilder<RefSetMemberCreateRequestBuilder, String> {
+public final class SnomedRefSetMemberCreateRequestBuilder extends BaseSnomedTransactionalRequestBuilder<SnomedRefSetMemberCreateRequestBuilder, String> {
 
 	private String moduleId;
 	private String referenceSetId;
 	private String referencedComponentId;
 	private Map<String, Object> properties = Collections.emptyMap();
 	
-	RefSetMemberCreateRequestBuilder(String repositoryId) {
+	SnomedRefSetMemberCreateRequestBuilder(String repositoryId) {
 		super(repositoryId);
 	}
 	
-	public RefSetMemberCreateRequestBuilder setReferencedComponentId(String referencedComponentId) {
+	public SnomedRefSetMemberCreateRequestBuilder setReferencedComponentId(String referencedComponentId) {
 		this.referencedComponentId = referencedComponentId;
 		return this;
 	}
 	
-	public RefSetMemberCreateRequestBuilder setModuleId(String moduleId) {
+	public SnomedRefSetMemberCreateRequestBuilder setModuleId(String moduleId) {
 		this.moduleId = moduleId;
 		return this;
 	}
 	
-	public RefSetMemberCreateRequestBuilder setReferenceSetId(String referenceSetId) {
+	public SnomedRefSetMemberCreateRequestBuilder setReferenceSetId(String referenceSetId) {
 		this.referenceSetId = referenceSetId;
 		return this;
 	}
 	
-	public RefSetMemberCreateRequestBuilder setProperties(Map<String, Object> properties) {
+	public SnomedRefSetMemberCreateRequestBuilder setProperties(Map<String, Object> properties) {
 		this.properties = properties;
 		return this;
 	}
 	
-	public RefSetMemberCreateRequestBuilder setSource(Map<String, Object> source) {
+	public SnomedRefSetMemberCreateRequestBuilder setSource(Map<String, Object> source) {
 		setModuleId((String) source.get("moduleId"));
 		setReferencedComponentId((String) source.get("referencedComponentId"));
 		setReferenceSetId((String) source.get("referenceSetId"));

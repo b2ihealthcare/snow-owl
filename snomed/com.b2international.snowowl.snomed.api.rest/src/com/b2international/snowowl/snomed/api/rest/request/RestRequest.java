@@ -28,7 +28,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 /**
  * @since 4.5
  */
-public class RestRequest {
+public final class RestRequest {
 
 	private String action;
 
@@ -43,7 +43,7 @@ public class RestRequest {
 	public void setSource(String key, Object value) {
 		source.put(key, value);
 	}
-
+	
 	/**
 	 * Converts this {@link RestRequest} to a {@link Request} with the given {@link RequestResolver} that can be executed.
 	 *

@@ -32,7 +32,7 @@ import com.google.common.collect.FluentIterable;
 /**
  * @since 4.5
  */
-public class EvaluateQueryRefSetRequest extends BaseRequest<BranchContext, QueryRefSetMemberEvaluations> {
+public final class EvaluateQueryRefSetRequest extends BaseRequest<BranchContext, QueryRefSetMemberEvaluations> {
 
 	private final String referenceSetId;
 
@@ -68,9 +68,9 @@ public class EvaluateQueryRefSetRequest extends BaseRequest<BranchContext, Query
 	
 	private Collection<SnomedReferenceSetMember> getQueryMembers(BranchContext context, SnomedReferenceSet referenceSet) {
 		if (!SnomedRefSetType.QUERY.equals(referenceSet.getType())) {
-			throw new BadRequestException("Cannot reevaluate reference set '%s'", referenceSet.getId());
+			throw new BadRequestException("Cannot evaluate non-query type reference set '%s'", referenceSet.getId());
 		}
-		return SnomedRequests.prepareMemberSearch()
+		return SnomedRequests.prepareSearchMember()
 				.all()
 				.filterByRefSet(referenceSet.getId())
 				.build()

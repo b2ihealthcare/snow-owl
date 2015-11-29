@@ -22,7 +22,7 @@ import com.b2international.snowowl.core.domain.RepositoryContext;
 /**
  * @since 4.1
  */
-public class DeleteBranchRequest extends BranchRequest<Branch> {
+public final class DeleteBranchRequest extends BranchRequest<Branch> {
 
 	public DeleteBranchRequest(final String branchPath) {
 		super(branchPath);

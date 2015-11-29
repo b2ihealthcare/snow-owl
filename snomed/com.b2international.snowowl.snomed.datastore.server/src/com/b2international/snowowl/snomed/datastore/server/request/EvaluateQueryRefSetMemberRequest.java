@@ -39,7 +39,7 @@ import com.google.common.collect.Maps;
 /**
  * @since 4.5
  */
-public class EvaluateQueryRefSetMemberRequest extends BaseRequest<BranchContext, QueryRefSetMemberEvaluation> {
+public final class EvaluateQueryRefSetMemberRequest extends BaseRequest<BranchContext, QueryRefSetMemberEvaluation> {
 
 	@NotEmpty
 	private String memberId;
@@ -60,7 +60,7 @@ public class EvaluateQueryRefSetMemberRequest extends BaseRequest<BranchContext,
 		final String targetReferenceSet = member.getReferencedComponent().getId();
 
 		// GET matching members of a query
-		final SnomedConcepts matchingConcepts = SnomedRequests.prepareConceptSearch().filterByEscg(query).all().build().execute(context);
+		final SnomedConcepts matchingConcepts = SnomedRequests.prepareSearchConcept().filterByEscg(query).all().build().execute(context);
 		
 		final Map<String, ISnomedConcept> conceptsToAdd = newHashMap();
 		final Collection<SnomedReferenceSetMember> membersToRemove = newHashSet();
@@ -74,7 +74,7 @@ public class EvaluateQueryRefSetMemberRequest extends BaseRequest<BranchContext,
 		}
 		
 		// then re-evaluate all current members of the target simple type reference set
-		final Collection<SnomedReferenceSetMember> curretMembersOfTarget = SnomedRequests.prepareMemberSearch()
+		final Collection<SnomedReferenceSetMember> curretMembersOfTarget = SnomedRequests.prepareSearchMember()
 					.all()
 					.filterByRefSet(targetReferenceSet)
 					.build()

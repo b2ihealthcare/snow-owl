@@ -24,7 +24,7 @@ import com.b2international.snowowl.datastore.review.ReviewManager;
  * 
  * @since 4.2
  */
-public class DeleteReviewRequest extends ReviewRequest<Review> {
+public final class DeleteReviewRequest extends ReviewRequest<Review> {
 
 	public DeleteReviewRequest(final String reviewId) {
 		super(reviewId);

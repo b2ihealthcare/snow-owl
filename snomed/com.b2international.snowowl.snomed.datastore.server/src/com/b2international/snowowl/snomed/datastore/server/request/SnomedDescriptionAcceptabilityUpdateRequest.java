@@ -36,7 +36,7 @@ import com.google.common.collect.ImmutableList;
 /**
  * @since 4.5
  */
-public class SnomedDescriptionAcceptabilityUpdateRequest extends BaseRequest<TransactionContext, Void> {
+public final class SnomedDescriptionAcceptabilityUpdateRequest extends BaseRequest<TransactionContext, Void> {
 
 	private String descriptionId;
 	private Map<String, Acceptability> acceptability;

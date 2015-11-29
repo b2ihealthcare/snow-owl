@@ -30,7 +30,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
  */
 public final class BulkRestRequest {
 
-	private Collection<RestRequest> requests;
+	private final Collection<RestRequest> requests;
 
 	@JsonCreator
 	public BulkRestRequest(@JsonProperty("requests") Collection<RestRequest> requests) {
@@ -43,6 +43,10 @@ public final class BulkRestRequest {
 			req.add(request.resolve(resolver));
 		}
 		return req.build();
+	}
+	
+	public Collection<RestRequest> getRequests() {
+		return requests;
 	}
 
 }

@@ -24,7 +24,7 @@ import com.b2international.snowowl.datastore.review.ReviewManager;
  * 
  * @since 4.2
  */
-public class ReadReviewRequest extends ReviewRequest<Review> {
+public final class ReadReviewRequest extends ReviewRequest<Review> {
 
 	public ReadReviewRequest(final String reviewId) {
 		super(reviewId);

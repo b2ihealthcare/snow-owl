@@ -90,7 +90,7 @@ public class SnomedConceptSubResourcesController extends AbstractSnomedRestServi
 		
 		return DeferredResults.wrap(
 				SnomedRequests
-					.prepareDescriptionSearch()
+					.prepareSearchDescription()
 					.all()
 					.filterByConceptId(conceptId)
 					.build(branchPath)
@@ -151,7 +151,7 @@ public class SnomedConceptSubResourcesController extends AbstractSnomedRestServi
 		
 		return DeferredResults.wrap(
 				SnomedRequests
-					.prepareRelationshipSearch()
+					.prepareSearchRelationship()
 					.filterByDestination(conceptId)
 					.setOffset(offset)
 					.setLimit(limit)
@@ -198,7 +198,7 @@ public class SnomedConceptSubResourcesController extends AbstractSnomedRestServi
 
 		return DeferredResults.wrap(
 				SnomedRequests
-					.prepareRelationshipSearch()
+					.prepareSearchRelationship()
 					.filterBySource(conceptId)
 					.setOffset(offset)
 					.setLimit(limit)
@@ -341,7 +341,7 @@ public class SnomedConceptSubResourcesController extends AbstractSnomedRestServi
 		
 		return DeferredResults.wrap(
 				SnomedRequests
-					.prepareDescriptionSearch()
+					.prepareSearchDescription()
 					.one()
 					.filterByConceptId(conceptId)
 					.filterByType("<<" + Concepts.SYNONYM)
@@ -397,7 +397,7 @@ public class SnomedConceptSubResourcesController extends AbstractSnomedRestServi
 		
 		return DeferredResults.wrap(
 				SnomedRequests
-				.prepareDescriptionSearch()
+				.prepareSearchDescription()
 				.one()
 				.filterByConceptId(conceptId)
 				.filterByType(Concepts.FULLY_SPECIFIED_NAME)

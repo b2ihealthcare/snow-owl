@@ -185,7 +185,7 @@ public class SnomedBrowserService implements ISnomedBrowserService {
 			throw new ComponentNotFoundException(ComponentCategory.CONCEPT, conceptId);
 		}
 		
-		final List<ISnomedDescription> descriptions = ImmutableList.copyOf(SnomedRequests.prepareDescriptionSearch()
+		final List<ISnomedDescription> descriptions = ImmutableList.copyOf(SnomedRequests.prepareSearchDescription()
 				.all()
 				.filterByConceptId(conceptId)
 				.filterByExtendedLocales(locales)
@@ -574,7 +574,7 @@ public class SnomedBrowserService implements ISnomedBrowserService {
 		final IBranchPath branchPath = internalStorageRef.getBranch().branchPath();
 		final DescriptionService descriptionService = new DescriptionService(bus, storageRef.getBranchPath());
 		
-		final Collection<ISnomedDescription> descriptions = SnomedRequests.prepareDescriptionSearch()
+		final Collection<ISnomedDescription> descriptions = SnomedRequests.prepareSearchDescription()
 			.setOffset(offset)
 			.setLimit(limit)
 			.filterByTerm(query)

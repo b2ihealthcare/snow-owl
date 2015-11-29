@@ -29,7 +29,7 @@ import com.b2international.snowowl.datastore.review.ReviewManager;
  * 
  * @since 4.2
  */
-public class CreateReviewRequest extends BaseRequest<RepositoryContext, Review> {
+public final class CreateReviewRequest extends BaseRequest<RepositoryContext, Review> {
 
 	private final String sourcePath;
 	private final String targetPath;

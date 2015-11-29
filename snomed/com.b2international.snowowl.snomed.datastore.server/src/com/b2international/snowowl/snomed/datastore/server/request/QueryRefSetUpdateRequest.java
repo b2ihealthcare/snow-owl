@@ -25,7 +25,7 @@ import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetM
 /**
  * @since 4.5
  */
-public class QueryRefSetUpdateRequest extends BaseRequest<TransactionContext, Void> {
+public final class QueryRefSetUpdateRequest extends BaseRequest<TransactionContext, Void> {
 
 	@NotEmpty
 	private final String referenceSetId;
@@ -41,7 +41,7 @@ public class QueryRefSetUpdateRequest extends BaseRequest<TransactionContext, Vo
 	@Override
 	public Void execute(TransactionContext context) {
 		// GET all members of the reference set
-		final SnomedReferenceSetMembers members = SnomedRequests.prepareMemberSearch().all().filterByRefSet(referenceSetId).build().execute(context);
+		final SnomedReferenceSetMembers members = SnomedRequests.prepareSearchMember().all().filterByRefSet(referenceSetId).build().execute(context);
 
 		// execute update on all of them
 		for (SnomedReferenceSetMember member : members.getItems()) {

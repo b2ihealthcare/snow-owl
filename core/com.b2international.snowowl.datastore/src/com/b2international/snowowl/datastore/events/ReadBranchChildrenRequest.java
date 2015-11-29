@@ -24,7 +24,7 @@ import com.google.common.collect.ImmutableList;
 /**
  * @since 4.1
  */
-public class ReadBranchChildrenRequest extends BranchRequest<Branches> {
+public final class ReadBranchChildrenRequest extends BranchRequest<Branches> {
 
 	public ReadBranchChildrenRequest(String branchPath) {
 		super(branchPath);

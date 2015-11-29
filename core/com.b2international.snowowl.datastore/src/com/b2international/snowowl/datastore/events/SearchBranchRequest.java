@@ -24,7 +24,7 @@ import com.google.common.collect.ImmutableList;
 /**
  * @since 4.1
  */
-public class SearchBranchRequest extends BaseRequest<RepositoryContext, Branches> {
+public final class SearchBranchRequest extends BaseRequest<RepositoryContext, Branches> {
 
 	@Override
 	public Branches execute(RepositoryContext context) {

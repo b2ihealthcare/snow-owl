@@ -87,13 +87,13 @@ final class SnomedReferenceSetMemberConverter extends BaseSnomedComponentConvert
 		
 		switch (category) {
 			case CONCEPT:
-				search = SnomedRequests.prepareConceptSearch();
+				search = SnomedRequests.prepareSearchConcept();
 				break;
 			case DESCRIPTION:
-				search = SnomedRequests.prepareDescriptionSearch();
+				search = SnomedRequests.prepareSearchDescription();
 				break;
 			case RELATIONSHIP:
-				search = SnomedRequests.prepareRelationshipSearch();
+				search = SnomedRequests.prepareSearchRelationship();
 				break;
 			default: 
 				throw new UnsupportedOperationException("Category is not supported in referenced component expansion");

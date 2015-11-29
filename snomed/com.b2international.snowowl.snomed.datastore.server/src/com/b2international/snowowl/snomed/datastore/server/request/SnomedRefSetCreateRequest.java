@@ -32,7 +32,7 @@ import com.b2international.snowowl.snomed.snomedrefset.SnomedRegularRefSet;
 /**
  * @since 4.5
  */
-public class SnomedRefSetCreateRequest extends BaseRequest<TransactionContext, String> {
+final class SnomedRefSetCreateRequest extends BaseRequest<TransactionContext, String> {
 
 	@NotNull
 	private final SnomedRefSetType type;

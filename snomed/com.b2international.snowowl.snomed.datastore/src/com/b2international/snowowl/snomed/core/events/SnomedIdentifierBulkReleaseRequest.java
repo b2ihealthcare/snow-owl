@@ -24,7 +24,7 @@ import com.b2international.snowowl.snomed.datastore.id.ISnomedIdentifierService;
 /**
  * @since 4.5
  */
-class SnomedIdentifierBulkReleaseRequest extends BaseRequest<BranchContext, Void> {
+final class SnomedIdentifierBulkReleaseRequest extends BaseRequest<BranchContext, Void> {
 
 	private final Collection<String> componentIds;
 

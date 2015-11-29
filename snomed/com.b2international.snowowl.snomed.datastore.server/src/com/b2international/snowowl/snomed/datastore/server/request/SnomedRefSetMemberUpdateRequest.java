@@ -29,7 +29,7 @@ import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType;
 /**
  * @since 4.5
  */
-public class SnomedRefSetMemberUpdateRequest extends BaseRequest<TransactionContext, Void> {
+final class SnomedRefSetMemberUpdateRequest extends BaseRequest<TransactionContext, Void> {
 
 	@NotEmpty
 	private final String memberId;

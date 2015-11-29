@@ -41,7 +41,7 @@ import com.google.common.base.Strings;
 /**
  * @since 4.5
  */
-public class SnomedRefSetMemberCreateRequest extends BaseRequest<TransactionContext, String> {
+final class SnomedRefSetMemberCreateRequest extends BaseRequest<TransactionContext, String> {
 
 	private static final String REFSET_DESCRIPTION = "refSetDescription";
 
@@ -186,7 +186,7 @@ public class SnomedRefSetMemberCreateRequest extends BaseRequest<TransactionCont
 			.execute(context);
 		
 		// then add all matching members 
-		final SnomedConcepts matchingEscgConcepts = SnomedRequests.prepareConceptSearch().filterByEscg(getQuery()).all().build().execute(context);
+		final SnomedConcepts matchingEscgConcepts = SnomedRequests.prepareSearchConcept().filterByEscg(getQuery()).all().build().execute(context);
 		for (ISnomedConcept concept : matchingEscgConcepts.getItems()) {
 			 SnomedComponents
 				.newSimpleMember()

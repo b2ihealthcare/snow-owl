@@ -39,7 +39,7 @@ public class ConceptInputCreator extends AbstractInputCreator implements Compone
 	@Override
 	public SnomedConceptUpdateRequest createUpdate(SnomedBrowserConcept existingVersion, SnomedBrowserConcept newVersion) {
 		final SnomedConceptUpdateRequestBuilder snomedConceptUpdate = SnomedRequests
-				.prepareConceptUpdate(existingVersion.getConceptId());
+				.prepareUpdateConcept(existingVersion.getConceptId());
 		boolean anyDifference = false;
 
 		if (existingVersion.isActive() != newVersion.isActive()) {

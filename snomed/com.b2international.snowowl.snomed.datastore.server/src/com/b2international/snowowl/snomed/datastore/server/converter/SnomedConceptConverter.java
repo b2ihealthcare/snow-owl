@@ -142,7 +142,7 @@ final class SnomedConceptConverter extends BaseSnomedComponentConverter<SnomedCo
 	private void expandDescriptions(List<ISnomedConcept> results, final Set<String> conceptIds) {
 		if (expand().containsKey("descriptions")) {
 			final SnomedDescriptions descriptions = SnomedRequests
-				.prepareDescriptionSearch()
+				.prepareSearchDescription()
 				.all()
 				.filterByConceptId(StringToLongFunction.copyOf(conceptIds))
 				.build()
@@ -176,7 +176,7 @@ final class SnomedConceptConverter extends BaseSnomedComponentConverter<SnomedCo
 				throw new BadRequestException("Direct parameter required for descendants expansion");
 			}
 			
-			SnomedConceptSearchRequestBuilder req = SnomedRequests.prepareConceptSearch()
+			SnomedConceptSearchRequestBuilder req = SnomedRequests.prepareSearchConcept()
 					.filterByActive(true)
 					.setLocales(locales())
 					.setExpand(expandOptions.get("expand", Options.class));
@@ -247,7 +247,7 @@ final class SnomedConceptConverter extends BaseSnomedComponentConverter<SnomedCo
 					collectedIds.addAll(SnomedMappings.ancestor().getValuesAsString(doc));	
 				}
 
-				SnomedConcepts ancestors = SnomedRequests.prepareConceptSearch()
+				SnomedConcepts ancestors = SnomedRequests.prepareSearchConcept()
 						.filterByActive(true)
 						.setComponentIds(collectedIds.build())
 						.setLocales(locales())

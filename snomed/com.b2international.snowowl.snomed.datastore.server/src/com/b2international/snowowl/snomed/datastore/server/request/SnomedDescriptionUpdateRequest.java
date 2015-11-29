@@ -35,7 +35,7 @@ import com.google.common.collect.Multimap;
 /**
  * @since 4.5
  */
-public class SnomedDescriptionUpdateRequest extends BaseSnomedComponentUpdateRequest {
+public final class SnomedDescriptionUpdateRequest extends BaseSnomedComponentUpdateRequest {
 
 	private CaseSignificance caseSignificance;
 	private Map<String, Acceptability> acceptability;

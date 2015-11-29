@@ -133,7 +133,7 @@ public class SnomedDescriptionRestService extends AbstractSnomedRestService {
 		
 		return DeferredResults.wrap(
 				SnomedRequests
-					.prepareDescriptionSearch()
+					.prepareSearchDescription()
 					.filterByTerm(termFilter)
 					.filterByConceptEscg(conceptFilter)
 					.filterByType(typeFilter)
@@ -246,7 +246,7 @@ public class SnomedDescriptionRestService extends AbstractSnomedRestService {
 		final SnomedDescriptionRestUpdate update = body.getChange();
 
 		SnomedRequests
-			.prepareDescriptionUpdate(descriptionId)
+			.prepareUpdateDescription(descriptionId)
 			.setActive(update.isActive())
 			.setModuleId(update.getModuleId())
 			.setAssociationTargets(update.getAssociationTargets())

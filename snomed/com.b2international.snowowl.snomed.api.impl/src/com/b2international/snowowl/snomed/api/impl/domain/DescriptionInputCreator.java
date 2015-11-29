@@ -29,7 +29,7 @@ public class DescriptionInputCreator extends AbstractInputCreator implements Com
 
 	@Override
 	public SnomedDescriptionUpdateRequest createUpdate(SnomedBrowserDescription existingDesc, SnomedBrowserDescription newVersionDesc) {
-		final SnomedDescriptionUpdateRequestBuilder update = SnomedRequests.prepareDescriptionUpdate(existingDesc.getDescriptionId());
+		final SnomedDescriptionUpdateRequestBuilder update = SnomedRequests.prepareUpdateDescription(existingDesc.getDescriptionId());
 		
 		boolean change = false;
 		if (existingDesc.isActive() != newVersionDesc.isActive()) {

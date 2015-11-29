@@ -27,7 +27,7 @@ import com.b2international.snowowl.snomed.core.domain.RelationshipModifier;
 /**
  * @since 4.5
  */
-public class SnomedRelationshipUpdateRequest extends BaseSnomedComponentUpdateRequest {
+public final class SnomedRelationshipUpdateRequest extends BaseSnomedComponentUpdateRequest {
 
 	@Min(0)
 	@Max(Byte.MAX_VALUE)

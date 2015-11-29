@@ -25,7 +25,7 @@ import com.b2international.snowowl.snomed.core.domain.refset.QueryRefSetMemberEv
 /**
  * @since 4.5
  */
-public class QueryRefSetMemberUpdateRequest extends BaseRequest<TransactionContext, Void> {
+public final class QueryRefSetMemberUpdateRequest extends BaseRequest<TransactionContext, Void> {
 
 	@NotEmpty
 	private final String memberId;

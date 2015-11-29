@@ -63,7 +63,7 @@ public abstract class InactivationExpander<T extends SnomedComponent> {
 		
 		refSetIds.add(inactivationIndicatorId);
 		
-		final SnomedReferenceSetMembers members = SnomedRequests.prepareMemberSearch()
+		final SnomedReferenceSetMembers members = SnomedRequests.prepareSearchMember()
 			.all()
 			.filterByRefSet(refSetIds)
 			.filterByReferencedComponent(componentIds)

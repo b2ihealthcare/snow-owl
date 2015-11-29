@@ -24,7 +24,7 @@ import com.b2international.snowowl.datastore.review.ReviewManager;
  * 
  * @since 4.2
  */
-public class ReadConceptChangesRequest extends ReviewRequest<ConceptChanges> {
+public final class ReadConceptChangesRequest extends ReviewRequest<ConceptChanges> {
 
 	public ReadConceptChangesRequest(final String reviewId) {
 		super(reviewId);

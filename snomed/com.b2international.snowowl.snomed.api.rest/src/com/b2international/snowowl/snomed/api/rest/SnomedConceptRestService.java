@@ -122,7 +122,7 @@ public class SnomedConceptRestService extends AbstractSnomedRestService {
 		
 		return DeferredResults.wrap(
 				SnomedRequests
-					.prepareConceptSearch()
+					.prepareSearchConcept()
 					.setLimit(limit)
 					.setOffset(offset)
 					.filterByTerm(termFilter)
@@ -261,7 +261,7 @@ public class SnomedConceptRestService extends AbstractSnomedRestService {
 		final SnomedConceptRestUpdate update = body.getChange();
 
 		SnomedRequests
-			.prepareConceptUpdate(conceptId)
+			.prepareUpdateConcept(conceptId)
 			.setActive(update.isActive())
 			.setModuleId(update.getModuleId())
 			.setAssociationTargets(update.getAssociationTargets())

@@ -54,7 +54,7 @@ final class SnomedReferenceSetConverter extends BaseSnomedComponentConverter<Sno
 			Options expandOptions = expand().get("members", Options.class);
 			
 			for (SnomedReferenceSet refSet : results) {
-				SnomedRefSetMemberSearchRequestBuilder req = SnomedRequests.prepareMemberSearch()
+				SnomedRefSetMemberSearchRequestBuilder req = SnomedRequests.prepareSearchMember()
 						.filterByRefSet(refSet.getId())
 						.setLocales(locales())
 						.setExpand(expandOptions.get("expand", Options.class));

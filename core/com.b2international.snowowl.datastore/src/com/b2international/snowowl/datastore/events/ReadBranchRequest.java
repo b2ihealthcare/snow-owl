@@ -22,7 +22,7 @@ import com.b2international.snowowl.core.domain.RepositoryContext;
 /**
  * @since 4.1
  */
-public class ReadBranchRequest extends BranchRequest<Branch> {
+public final class ReadBranchRequest extends BranchRequest<Branch> {
 
 	public ReadBranchRequest(final String branchPath) {
 		super(branchPath);

@@ -189,7 +189,7 @@ final class SnomedConceptSearchRequest extends SnomedSearchRequest<SnomedConcept
 
 	private Map<String, Integer> executeDescriptionSearch(BranchContext context, String term) {
 		
-		final Collection<ISnomedDescription> items = SnomedRequests.prepareDescriptionSearch()
+		final Collection<ISnomedDescription> items = SnomedRequests.prepareSearchDescription()
 			.all()
 			.filterByActive(true)
 			.filterByTerm(term)
