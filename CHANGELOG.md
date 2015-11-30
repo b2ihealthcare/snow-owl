@@ -1,6 +1,31 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
+## 4.5.0
+
+### Added
+- Support for simple and query type reference sets and members in RESTful API
+- Integration with Component Identifier Service (CIS), see configuration_guide.adoc for details on how to congire it
+- Indexing term, language code and acceptability values on SNOMED CT Description documents
+- Initial version of the resource expansion API is currently available (expand `fsn`, `pt`, `description` and other nested resources within a single request)
+- `numberOfWorkers` configuration parameter to tweak worker threads per repository (by default it will be set to `3 x number of cores`)
+
+### Changed
+- Fixed bug in `Accept-Language` header by introducing Extended Locales, they do support language reference set IDs properly (the original header spec. restricts the number of extension characters to `8`)
+- Increased `asyncTimeout` in Tomcat to 60 seconds
+- Performance improvements on some endpoints by utilizing the new resource expansion API
+- Marked a bunch of old APIs as deprecated, they will be removed in upcoming releases
+
+### Removed
+- Removed label indexing from SNOMED CT component indexing (using Description term index field to find a label)
+
+### Merged pull requests
+- https://github.com/b2ihealthcare/snow-owl/pull/35
+
+### Known issues
+- CIS is currently unsupported in SNOMED CT RF2 imports (manual synchronization is required)
+- Simple type mapping reference set membership is not tracked properly if there are multiple mappings for a single referenced component
+
 ## 4.4.0
 
 ### Added
