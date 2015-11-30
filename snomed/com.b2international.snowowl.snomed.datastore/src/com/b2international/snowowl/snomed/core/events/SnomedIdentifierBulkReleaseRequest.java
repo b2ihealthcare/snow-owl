@@ -24,7 +24,7 @@ import com.b2international.snowowl.snomed.datastore.id.ISnomedIdentifierService;
 /**
  * @since 4.5
  */
-final class SnomedIdentifierBulkReleaseRequest extends BaseRequest<BranchContext, Void> {
+final class SnomedIdentifierBulkReleaseRequest extends BaseRequest<BranchContext, Boolean> {
 
 	private final Collection<String> componentIds;
 
@@ -33,14 +33,14 @@ final class SnomedIdentifierBulkReleaseRequest extends BaseRequest<BranchContext
 	}
 
 	@Override
-	public Void execute(BranchContext context) {
+	public Boolean execute(BranchContext context) {
 		context.service(ISnomedIdentifierService.class).release(componentIds);
-		return null;
+		return Boolean.TRUE;
 	}
 
 	@Override
-	protected Class<Void> getReturnType() {
-		return Void.class;
+	protected Class<Boolean> getReturnType() {
+		return Boolean.class;
 	}
 
 }

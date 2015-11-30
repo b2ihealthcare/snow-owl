@@ -25,7 +25,7 @@ import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 /**
  * @since 4.5
  */
-public final class SnomedIdentifierBulkReleaseRequestBuilder extends BaseBranchRequestBuilder<SnomedIdentifierBulkReleaseRequestBuilder, Void> {
+public final class SnomedIdentifierBulkReleaseRequestBuilder extends BaseBranchRequestBuilder<SnomedIdentifierBulkReleaseRequestBuilder, Boolean> {
 
 	private Collection<String> componentIds;
 
@@ -39,7 +39,7 @@ public final class SnomedIdentifierBulkReleaseRequestBuilder extends BaseBranchR
 	}
 	
 	@Override
-	protected Request<BranchContext, Void> doBuild() {
+	protected Request<BranchContext, Boolean> doBuild() {
 		return new SnomedIdentifierBulkReleaseRequest(componentIds);
 	}
 
