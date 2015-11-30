@@ -149,9 +149,6 @@ public class PersistChangesRemoteJob extends AbstractRemoteJob {
 			relationshipGenerator.collectNormalFormChanges(subMonitor.newChild(1), relationshipAddPersister);
 			relationshipGenerator.collectNormalFormChanges(subMonitor.newChild(1), relationshipRemovePersister);
 			
-			if (!relationshipAddPersister.getRelationshipIds().isEmpty())
-				snomedIdentifiers.register(relationshipAddPersister.getRelationshipIds());
-
 			final ConceptConcreteDomainNormalFormGenerator conceptConcreteDomainGenerator = new ConceptConcreteDomainNormalFormGenerator(taxonomy, reasonerTaxonomyBuilder);
 			conceptConcreteDomainGenerator.collectNormalFormChanges(subMonitor.newChild(1), new ConcreteDomainPersister(editingContext, OntologyChange.Nature.ADD));
 			conceptConcreteDomainGenerator.collectNormalFormChanges(subMonitor.newChild(1), new ConcreteDomainPersister(editingContext, OntologyChange.Nature.REMOVE));
@@ -176,6 +173,8 @@ public class PersistChangesRemoteJob extends AbstractRemoteJob {
 			new CDOServerCommitBuilder(userId, "Classified ontology.", editingContextTransaction)
 				.parentContextDescription(SAVE_CLASSIFICATION_RESULTS)
 				.commitOne(subMonitor.newChild(2));
+			
+			editingContext.releaseIds();
 
 			return OK_STATUS;
 		} catch (CommitException e) {

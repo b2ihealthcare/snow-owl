@@ -39,7 +39,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 import javax.annotation.Nullable;
 
@@ -130,8 +129,6 @@ public class SnomedEditingContext extends BaseSnomedEditingContext {
 	private boolean uniquenessCheckEnabled = true;
 	private Set<String> newComponentIds = Collections.synchronizedSet(Sets.<String>newHashSet());
 	private LifecycleEventAdapter lifecycleListener;
-	private AtomicBoolean committed = new AtomicBoolean(false);
-
 	
 	/**
 	 * returns with a set of allowed concepts' ID. concept is allowed as preferred description type concept if 
@@ -534,10 +531,7 @@ public class SnomedEditingContext extends BaseSnomedEditingContext {
 		lifecycleListener = new LifecycleEventAdapter() {
 			@Override
 			protected void onAboutToDeactivate(ILifecycle lifecycle) {
-				if (!committed.get()) {
-					releaseIds();
-				}
-				newComponentIds.clear();
+				releaseIds();
 			}
 			
 			@Override
@@ -555,17 +549,14 @@ public class SnomedEditingContext extends BaseSnomedEditingContext {
 	@Override
 	public CDOCommitInfo commit(String commitMessage, IProgressMonitor monitor) throws SnowowlServiceException {
 		try {
-			final CDOCommitInfo commitInfo = super.commit(commitMessage, monitor);
-			committed.set(true);
-			
-			return commitInfo;
+			return super.commit(commitMessage, monitor);
 		} catch (Exception e) {
-			committed.set(false);
+			releaseIds();
 			throw e;
 		}
 	}
 	
-	private void releaseIds() {
+	public void releaseIds() {
 		if (!newComponentIds.isEmpty()) {
 			final IEventBus bus = ApplicationContext.getInstance().getServiceChecked(IEventBus.class);
 			final String branch = BranchPathUtils.createPath(transaction).getPath();
@@ -573,6 +564,8 @@ public class SnomedEditingContext extends BaseSnomedEditingContext {
 				.setComponentIds(newComponentIds)
 				.build(branch)
 				.executeSync(bus);
+			
+			newComponentIds.clear();
 		}
 	}
 
