@@ -533,12 +533,16 @@ public class SnomedEditingContext extends BaseSnomedEditingContext {
 		// register Unique In Transaction Restriction to identifier reservations
 		lifecycleListener = new LifecycleEventAdapter() {
 			@Override
-			protected void onDeactivated(ILifecycle lifecycle) {
-				getTransaction().removeListener(lifecycleListener);
+			protected void onAboutToDeactivate(ILifecycle lifecycle) {
 				if (!committed.get()) {
 					releaseIds();
 				}
 				newComponentIds.clear();
+			}
+			
+			@Override
+			protected void onDeactivated(ILifecycle lifecycle) {
+				getTransaction().removeListener(lifecycleListener);
 			}
 		};
 		getTransaction().addListener(lifecycleListener);
