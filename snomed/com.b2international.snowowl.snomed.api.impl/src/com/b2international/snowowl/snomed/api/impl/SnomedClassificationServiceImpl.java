@@ -15,12 +15,16 @@
  */
 package com.b2international.snowowl.snomed.api.impl;
 
+import static com.google.common.collect.Sets.newHashSet;
+
 import java.io.File;
 import java.io.IOException;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -58,6 +62,7 @@ import com.b2international.snowowl.snomed.api.domain.browser.ISnomedBrowserConce
 import com.b2international.snowowl.snomed.api.domain.browser.ISnomedBrowserRelationship;
 import com.b2international.snowowl.snomed.api.domain.classification.ClassificationStatus;
 import com.b2international.snowowl.snomed.api.domain.classification.IClassificationRun;
+import com.b2international.snowowl.snomed.api.domain.classification.IEquivalentConcept;
 import com.b2international.snowowl.snomed.api.domain.classification.IEquivalentConceptSet;
 import com.b2international.snowowl.snomed.api.domain.classification.IRelationshipChange;
 import com.b2international.snowowl.snomed.api.domain.classification.IRelationshipChangeList;
@@ -66,7 +71,9 @@ import com.b2international.snowowl.snomed.api.impl.domain.browser.SnomedBrowserR
 import com.b2international.snowowl.snomed.api.impl.domain.browser.SnomedBrowserRelationshipTarget;
 import com.b2international.snowowl.snomed.api.impl.domain.browser.SnomedBrowserRelationshipType;
 import com.b2international.snowowl.snomed.api.impl.domain.classification.ClassificationRun;
+import com.b2international.snowowl.snomed.api.impl.domain.classification.EquivalentConcept;
 import com.b2international.snowowl.snomed.core.domain.CharacteristicType;
+import com.b2international.snowowl.snomed.core.domain.ISnomedDescription;
 import com.b2international.snowowl.snomed.datastore.SnomedTerminologyBrowser;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptIndexEntry;
 import com.b2international.snowowl.snomed.reasoner.classification.AbstractResponse.Type;
@@ -212,6 +219,9 @@ public class SnomedClassificationServiceImpl implements ISnomedClassificationSer
 
 	@Resource
 	private SnomedBrowserService browserService;
+	
+	@Resource
+	private IEventBus bus;
 
 	@PostConstruct
 	protected void init() {
@@ -310,14 +320,35 @@ public class SnomedClassificationServiceImpl implements ISnomedClassificationSer
 	}
 
 	@Override
-	public List<IEquivalentConceptSet> getEquivalentConceptSets(final String branchPath, final String classificationId, final String userId) {
+	public List<IEquivalentConceptSet> getEquivalentConceptSets(final String branchPath, final String classificationId, final List<ExtendedLocale> locales, final String userId) {
 		// Check if it exists
 		getClassificationRun(branchPath, classificationId, userId);
-
 		final StorageRef storageRef = createStorageRef(branchPath);
 
 		try {
-			return indexService.getEquivalentConceptSets(storageRef, classificationId, userId);
+			final List<IEquivalentConceptSet> conceptSets = indexService.getEquivalentConceptSets(storageRef, classificationId, userId);
+			final Set<String> conceptIds = newHashSet();
+			
+			for (final IEquivalentConceptSet conceptSet : conceptSets) {
+				for (final IEquivalentConcept equivalentConcept : conceptSet.getEquivalentConcepts()) {
+					conceptIds.add(equivalentConcept.getId());
+				}
+			}
+
+			final Map<String, ISnomedDescription> fsnMap = new DescriptionService(bus, branchPath).getFullySpecifiedNames(conceptIds, locales);
+			for (final IEquivalentConceptSet conceptSet : conceptSets) {
+				for (final IEquivalentConcept equivalentConcept : conceptSet.getEquivalentConcepts()) {
+					final String equivalentConceptId = equivalentConcept.getId();
+					final ISnomedDescription fsn = fsnMap.get(equivalentConceptId);
+					if (fsn != null) {
+						((EquivalentConcept) equivalentConcept).setLabel(fsn.getTerm());
+					} else {
+						((EquivalentConcept) equivalentConcept).setLabel(equivalentConceptId);
+					}
+				}
+			}
+			
+			return conceptSets;
 		} catch (final IOException e) {
 			throw new RuntimeException(e);
 		}

@@ -86,8 +86,8 @@ public interface ISnomedClassificationService {
 	IClassificationRun getClassificationRun(String branchPath, String classificationId, String userId);
 
 	/**
-	 * Retrieves the list of equivalent concept sets found during classification. Concepts in an equivalence set were considered equivalent by the
-	 * reasoner based on their defining properties.
+	 * Retrieves the list of equivalent concept sets found during classification. Concepts in an equivalence set were considered
+	 * equivalent by the reasoner based on their defining properties.
 	 * <p>
 	 * Results are only available if the status of this run is set to {@link ClassificationStatus#COMPLETED COMPLETED}.
 	 * 
@@ -95,16 +95,18 @@ public interface ISnomedClassificationService {
 	 *            the branch path to match (may not be {@code null})
 	 * @param classificationId
 	 *            the classification identifier to match (may not be {@code null})
+	 * @param locales
+	 *            the list of locales to use, in order of preference
 	 * @param userId
 	 *            the requesting user's identifier to match (may not be {@code null})
 	 * 
 	 * @return a list of {@link IEquivalentConceptSet equivalent concept sets}, or an empty list if no such concept set exists
 	 * 
 	 * @throws NotFoundException
-	 *             - if SNOMED CT as a code system is not registered or the branch associated with the given branchPath is not found or the
-	 *             classification run not found with the specified parameters
+	 *             - if SNOMED CT as a code system is not registered or the branch associated with the given branchPath is not
+	 *             found or the classification run not found with the specified parameters
 	 */
-	List<IEquivalentConceptSet> getEquivalentConceptSets(String branchPath, String classificationId, String userId);
+	List<IEquivalentConceptSet> getEquivalentConceptSets(String branchPath, String classificationId, List<ExtendedLocale> locales, String userId);
 
 	/**
 	 * Retrieves the pageable list of suggested relationship changes found during classification.

@@ -156,10 +156,24 @@ public class SnomedClassificationRestService extends AbstractSnomedRestService {
 			@ApiParam(value="The classification identifier")
 			@PathVariable(value="classificationId") 
 			final String classificationId,
-
+			
+			@ApiParam(value="Accepted language tags, in order of preference")
+			@RequestHeader(value="Accept-Language", defaultValue="en-US;q=0.8,en-GB;q=0.6", required=false) 
+			final String acceptLanguage,
+			
 			final Principal principal) {
 
-		return CollectionResource.of(delegate.getEquivalentConceptSets(branchPath, classificationId, principal.getName()));
+		final List<ExtendedLocale> extendedLocales;
+		
+		try {
+			extendedLocales = AcceptHeader.parseExtendedLocales(new StringReader(acceptLanguage));
+		} catch (IOException e) {
+			throw new BadRequestException(e.getMessage());
+		} catch (IllegalArgumentException e) {
+			throw new BadRequestException(e.getMessage());
+		}
+		
+		return CollectionResource.of(delegate.getEquivalentConceptSets(branchPath, classificationId, extendedLocales, principal.getName()));
 	}
 
 	@ApiOperation(

@@ -239,8 +239,6 @@ public class ClassificationRunIndex extends SingleDirectoryIndexImpl {
 	private void addEquivalentConcept(final List<IEquivalentConcept> convertedEquivalentConcepts, final SnomedConceptIndexEntry equivalentEntry) {
 		final EquivalentConcept convertedConcept = new EquivalentConcept();
 		convertedConcept.setId(equivalentEntry.getId());
-		convertedConcept.setLabel(equivalentEntry.getLabel());
-
 		convertedEquivalentConcepts.add(convertedConcept);
 	}
 
