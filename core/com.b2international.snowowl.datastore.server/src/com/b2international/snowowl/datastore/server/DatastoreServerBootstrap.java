@@ -34,6 +34,7 @@ import com.b2international.snowowl.core.setup.PreRunCapableBootstrapFragment;
 import com.b2international.snowowl.core.users.SpecialUserStore;
 import com.b2international.snowowl.datastore.cdo.CDOConnectionFactoryProvider;
 import com.b2international.snowowl.datastore.cdo.ICDORepositoryManager;
+import com.b2international.snowowl.datastore.config.RepositoryConfiguration;
 import com.b2international.snowowl.datastore.net4j.Net4jUtils;
 import com.b2international.snowowl.datastore.server.index.IndexServerServiceManager;
 import com.b2international.snowowl.datastore.server.index.SingleDirectoryIndexManager;
@@ -125,11 +126,12 @@ public class DatastoreServerBootstrap implements PreRunCapableBootstrapFragment 
 		ServiceConfigJobManager.INSTANCE.registerServices(monitor);
 		
 		if (env.isEmbedded() || env.isServer()) {
-			initializeRepositories(env);
+			initializeRepositories(configuration, env);
 		}
 	}
 
-	private void initializeRepositories(Environment env) {
+	private void initializeRepositories(SnowOwlConfiguration configuration, Environment env) {
+		
 		final Stopwatch branchStopwatch = Stopwatch.createStarted();
 		LOG.debug(">>> Initializing branch and review services.");
 		
@@ -138,7 +140,10 @@ public class DatastoreServerBootstrap implements PreRunCapableBootstrapFragment 
 		env.services().registerService(ReviewSerializer.class, new ReviewSerializer());
 		
 		for (String repositoryId : env.service(ICDORepositoryManager.class).uuidKeySet()) {
-			repositories.prepareCreate(repositoryId).build(env);
+			repositories
+				.prepareCreate(repositoryId)
+				.setNumberOfWorkers(configuration.getModuleConfig(RepositoryConfiguration.class).getNumberOfWorkers())
+				.build(env);
 		}
 		
 		LOG.debug("<<< Branch and review services registered. [{}]", branchStopwatch);

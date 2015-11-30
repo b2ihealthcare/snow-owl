@@ -50,6 +50,10 @@ public class RepositoryConfiguration {
 	
 	@Min(0)
 	private long indexTimeout = 30L;
+
+	@Min(0)
+	@Max(100)
+	private int numberOfWorkers = 3 * Runtime.getRuntime().availableProcessors();
 	
 	/**
 	 * Returns whether the communication used by the persistance layer is done
@@ -132,6 +136,22 @@ public class RepositoryConfiguration {
 	@JsonProperty
 	public void setIndexTimeout(long indexTimeout) {
 		this.indexTimeout = indexTimeout;
+	}
+	
+	/**
+	 * @return the number of workers threads per repository
+	 */
+	@JsonProperty
+	public int getNumberOfWorkers() {
+		return numberOfWorkers;
+	}
+	
+	/**
+	 * @param numberOfWorkers the number of workers per repository to set
+	 */
+	@JsonProperty
+	public void setNumberOfWorkers(int numberOfWorkers) {
+		this.numberOfWorkers = numberOfWorkers;
 	}
 	
 	/**

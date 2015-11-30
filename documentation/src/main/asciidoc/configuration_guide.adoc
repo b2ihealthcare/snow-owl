@@ -732,6 +732,10 @@ authentication:
 |`2036`
 |The port of the chosen network interface to use when listening for connections.
 
+|numberOfWorkers
+|`3 x NumberOfCores`
+|The number of worker threads to assign to a repository during initialization.
+
 |indexTimeout
 |`240`
 |The timeout in minutes after indexes will be closed if they are not in use anymore.
@@ -856,7 +860,7 @@ snomed:
 
 ==== IHTSDO's SNOMED CT Component Identifier Service (CIS) integration
 
-Snow Owl can be configured to obtain valid SNOMED CT identifiers from IHTSDO's CIS service. The configuration needs to be placed within the *snomed/ids* section. 
+Snow Owl can be configured to obtain valid SNOMED CT identifiers from IHTSDO's CIS service. The configuration needs to be placed within the *snomed/ids* section.
 If omitted, then default strategy will be used.
 
 [cols="3*", options="header"]

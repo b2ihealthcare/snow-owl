@@ -24,7 +24,7 @@ import com.b2international.snowowl.core.setup.Environment;
 public final class RepositoryBuilder {
 	
 	private String repositoryId;
-	private int numberOfWorkers = 3 * Runtime.getRuntime().availableProcessors();
+	private int numberOfWorkers;
 
 	RepositoryBuilder(String repositoryId) {
 		this.repositoryId = repositoryId;
