@@ -19,6 +19,7 @@
 				<exclude>**/org.eclipse.virgo.kernel.users.properties</exclude>
 				<exclude>**/serviceability.xml</exclude>
 				<exclude>**/org.eclipse.virgo.web.properties</exclude>
+				<exclude>**/tomcat-server.xml</exclude>
 				<!-- Remove splash app -->
 				<exclude>**/org.eclipse.virgo.apps.splash_3.6.2.RELEASE.jar
 				</exclude>
