@@ -18,6 +18,7 @@ package com.b2international.snowowl.snomed.datastore.id;
 import java.io.File;
 import java.nio.file.Paths;
 
+import org.eclipse.core.runtime.IProgressMonitor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -53,19 +54,25 @@ public class SnomedIdentifierBootstrap extends DefaultBootstrapFragment {
 	public void init(final SnowOwlConfiguration configuration, final Environment env) throws Exception {
 		checkIdGenerationSource(configuration);
 
-		final SnomedIdentifierConfiguration conf = configuration.getModuleConfig(SnomedCoreConfiguration.class).getIds();
 		final ISnomedIdentiferReservationService reservationService = new SnomedIdentifierReservationServiceImpl();
 		env.services().registerService(ISnomedIdentiferReservationService.class, reservationService);
 
 		registerTerminologyBrowser(env, reservationService);
-		registerSnomedIdentifierService(conf, env, reservationService);
+	}
+
+	@Override
+	public void run(SnowOwlConfiguration configuration, Environment env, IProgressMonitor monitor) throws Exception {
+		if (env.isServer() || env.isEmbedded()) {
+			final ISnomedIdentiferReservationService reservationService = env.service(ISnomedIdentiferReservationService.class);
+			final SnomedIdentifierConfiguration conf = configuration.getModuleConfig(SnomedCoreConfiguration.class).getIds();
+			registerSnomedIdentifierService(conf, env, reservationService);
+		}
 	}
 
 	private void registerTerminologyBrowser(final Environment env, final ISnomedIdentiferReservationService reservationService) {
 		final Provider<SnomedTerminologyBrowser> provider = env.provider(SnomedTerminologyBrowser.class);
 		final UniqueInStoreReservation storeReservation = new UniqueInStoreReservation(provider);
 		reservationService.create(STORE_RESERVATIONS, storeReservation);
-
 	}
 
 	private void checkIdGenerationSource(final SnowOwlConfiguration configuration) {
