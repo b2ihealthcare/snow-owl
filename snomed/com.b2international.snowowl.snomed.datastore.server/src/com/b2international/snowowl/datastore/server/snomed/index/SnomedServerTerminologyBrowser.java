@@ -43,11 +43,9 @@ import com.b2international.commons.CompareUtils;
 import com.b2international.commons.graph.GraphUtils;
 import com.b2international.commons.pcj.LongSets;
 import com.b2international.snowowl.core.ApplicationContext;
-import com.b2international.snowowl.core.CoreTerminologyBroker;
 import com.b2international.snowowl.core.api.ExtendedComponent;
 import com.b2international.snowowl.core.api.ExtendedComponentImpl;
 import com.b2international.snowowl.core.api.IBranchPath;
-import com.b2international.snowowl.core.api.IComponentNameProvider;
 import com.b2international.snowowl.core.api.IComponentWithChildFlag;
 import com.b2international.snowowl.core.api.index.IndexException;
 import com.b2international.snowowl.datastore.index.DocIdCollector;
@@ -70,7 +68,6 @@ import com.b2international.snowowl.snomed.datastore.index.SnomedIndexService;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptIndexEntry;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptIndexEntryWithChildFlag;
 import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedMappings;
-import com.b2international.snowowl.snomed.refset.core.services.SnomedRefSetMemberNameProvider;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.ImmutableList;
@@ -513,7 +510,7 @@ public class SnomedServerTerminologyBrowser extends AbstractIndexTerminologyBrow
 			final String uuid = SnomedMappings.memberUuid().getValue(doc);
 			return new ExtendedComponentImpl(
 					uuid, 
-					SnomedRefSetMemberNameProvider.INSTANCE.getComponentLabel(branchPath, uuid),
+					uuid, // SnomedRefSetMemberNameProvider.INSTANCE.getComponentLabel(branchPath, uuid),
 					"",
 					SnomedTerminologyComponentConstants.REFSET_MEMBER_NUMBER);
 			
@@ -528,12 +525,12 @@ public class SnomedServerTerminologyBrowser extends AbstractIndexTerminologyBrow
 				// concept + refset
 				terminologyComponentId = SnomedTerminologyComponentConstants.CONCEPT_NUMBER;
 			}
+//			
+//			final String terminologyComponentIdAsString = CoreTerminologyBroker.getInstance().getTerminologyComponentId(terminologyComponentId);
+//			final IComponentNameProvider nameProvider = CoreTerminologyBroker.getInstance().getNameProviderFactory(terminologyComponentIdAsString).getNameProvider();
+//			final String label = nameProvider.getComponentLabel(branchPath, id);
 			
-			final String terminologyComponentIdAsString = CoreTerminologyBroker.getInstance().getTerminologyComponentId(terminologyComponentId);
-			final IComponentNameProvider nameProvider = CoreTerminologyBroker.getInstance().getNameProviderFactory(terminologyComponentIdAsString).getNameProvider();
-			final String label = nameProvider.getComponentLabel(branchPath, id);
-			
-			return new ExtendedComponentImpl(id, label, iconId, terminologyComponentId);
+			return new ExtendedComponentImpl(id, id, iconId, terminologyComponentId);
 		}
 	}
 

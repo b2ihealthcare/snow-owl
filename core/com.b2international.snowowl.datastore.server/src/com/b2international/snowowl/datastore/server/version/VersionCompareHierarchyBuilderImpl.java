@@ -79,7 +79,7 @@ public abstract class VersionCompareHierarchyBuilderImpl implements VersionCompa
 		checkNotNull(componentId, "componentId");
 		
 		final String iconId = getIconIdProvider().getIconId(branchPath, componentId);
-		final String label = getNameProvider().getComponentLabel(branchPath, componentId);
+		final String label = componentId; // getNameProvider().getComponentLabel(branchPath, componentId);
 		return new NodeDiffImpl(getTerminologyComponentId(), NO_STORAGE_KEY, componentId, label, iconId, null, UNCHANGED);
 	}
 
