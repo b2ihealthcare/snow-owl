@@ -857,7 +857,7 @@ snomed:
 ==== IHTSDO's SNOMED CT Component Identifier Service (CIS) integration
 
 Snow Owl can be configured to obtain valid SNOMED CT identifiers from IHTSDO's CIS service. The configuration needs to be placed within the *snomed/ids* section. 
-`Strategy` must be present in order to determine the generation service. If `strategy` is not `CIS`, then further configurations can be omitted.
+If omitted, then default strategy will be used.
 
 [cols="3*", options="header"]
 |===
@@ -866,7 +866,7 @@ Snow Owl can be configured to obtain valid SNOMED CT identifiers from IHTSDO's C
 |Description
 
 |strategy
-|
+|INDEX
 |`MEMORY`, `INDEX`, `CIS` - The source of the ID generation.
 
 |cisBaseUrl
