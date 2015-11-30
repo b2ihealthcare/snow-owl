@@ -45,8 +45,6 @@ import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 import com.b2international.snowowl.snomed.datastore.SnomedEditingContext;
 import com.b2international.snowowl.snomed.datastore.SnomedTerminologyBrowser;
-import com.b2international.snowowl.snomed.datastore.id.ISnomedIdentifierService;
-import com.b2international.snowowl.snomed.datastore.id.SnomedIdentifiers;
 import com.b2international.snowowl.snomed.reasoner.server.SnomedReasonerServerActivator;
 import com.b2international.snowowl.snomed.reasoner.server.diff.OntologyChange;
 import com.b2international.snowowl.snomed.reasoner.server.diff.concretedomain.ConcreteDomainPersister;
@@ -136,10 +134,11 @@ public class PersistChangesRemoteJob extends AbstractRemoteJob {
 		}
 		
 		final SubMonitor subMonitor = SubMonitor.convert(monitor, "Persisting changes", 6);
-		final SnomedIdentifiers snomedIdentifiers = new SnomedIdentifiers(getServiceForClass(ISnomedIdentifierService.class));
+		SnomedEditingContext editingContext = null;
+		
+		try {
 
-		try (final SnomedEditingContext editingContext = new SnomedEditingContext(branchPath)) {
-
+			editingContext = new SnomedEditingContext(branchPath);
 			final InitialReasonerTaxonomyBuilder reasonerTaxonomyBuilder = new InitialReasonerTaxonomyBuilder(branchPath, Type.REASONER);
 
 			final RelationshipNormalFormGenerator relationshipGenerator = new RelationshipNormalFormGenerator(taxonomy, reasonerTaxonomyBuilder);
@@ -173,13 +172,17 @@ public class PersistChangesRemoteJob extends AbstractRemoteJob {
 			new CDOServerCommitBuilder(userId, "Classified ontology.", editingContextTransaction)
 				.parentContextDescription(SAVE_CLASSIFICATION_RESULTS)
 				.commitOne(subMonitor.newChild(2));
-			
-			editingContext.releaseIds();
 
 			return OK_STATUS;
 		} catch (CommitException e) {
-			snomedIdentifiers.rollback();
+			if (editingContext != null) {
+				editingContext.releaseIds();
+			}
 			throw e;
+		} finally {
+			if (editingContext != null) {
+				editingContext.close();
+			}
 		}
 	}
 
