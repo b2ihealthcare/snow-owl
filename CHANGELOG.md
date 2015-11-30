@@ -5,17 +5,17 @@ All notable changes to this project will be documented in this file.
 
 ### Added
 - Support for simple and query type reference sets and members in RESTful API
- * GET /:path/refsets
- * GET /:path/refsets/:id
- * GET /:path/refsets/:id/history
- * POST /:path/refsets
- * POST /:path/refsets/:id/actions
- * GET /:path/members
- * GET /:path/members/:id
- * POST /:path/members
- * PUT /:path/members/:id
- * DELETE /:path/members/:id
- * POST /:path/members/:id/actions
+ * `GET` `/:path/refsets`
+ * `GET` `/:path/refsets/:id`
+ * `GET` `/:path/refsets/:id/history`
+ * `POST` `/:path/refsets`
+ * `POST` `/:path/refsets/:id/actions`
+ * `GET` `/:path/members`
+ * `GET` `/:path/members/:id`
+ * `POST` `/:path/members`
+ * `PUT` `/:path/members/:id`
+ * `DELETE` `/:path/members/:id`
+ * `POST` `/:path/members/:id/actions`
 - Integration with Component Identifier Service (CIS), see configuration_guide.adoc for details on how to configure it
 - Indexing term, language code and acceptability values on SNOMED CT Description documents
 - Initial version of the resource expansion API is currently available (expand `fsn`, `pt`, `description` and other nested resources within a single request)
