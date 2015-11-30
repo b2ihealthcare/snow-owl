@@ -99,7 +99,10 @@ public class SnomedReferenceSetRestService extends AbstractSnomedRestService {
 	
 	@ApiOperation(
 			value="Retrieve Reference Set",
-			notes="Returns all properties of the specified Reference set.")
+			notes="Returns all properties of the specified Reference set."
+					+ "<p>The following properties can be expanded:"
+					+ "<p>"
+					+ "&bull; members(offset:0,limit:50,expand(referencedComponent(expand(pt(),...))) &ndash; the reference set members, and any applicable nested expansions<br>")
 	@ApiResponses({
 		@ApiResponse(code = 200, message = "OK", response = Void.class),
 		@ApiResponse(code = 404, message = "Branch or Reference set not found", response = RestApiError.class)

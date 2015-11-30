@@ -66,7 +66,12 @@ public class SnomedConceptRestService extends AbstractSnomedRestService {
 
 	@ApiOperation(
 			value="Retrieve Concepts from a branch", 
-			notes="Returns a list with all/filtered Concepts from a branch.")
+			notes="Returns a list with all/filtered Concepts from a branch."
+					+ "<p>The following properties can be expanded:"
+					+ "<p>"
+					+ "&bull; pt() &ndash; the description representing the concept's preferred term in the given locale<br>"
+					+ "&bull; fsn() &ndash; the description representing the concept's fully specified name in the given locale<br>"
+					+ "&bull; descriptions() &ndash; the list of descriptions for the concept<br>")
 	@ApiResponses({
 		@ApiResponse(code = 200, message = "OK", response = PageableCollectionResource.class),
 		@ApiResponse(code = 400, message = "Invalid filter config", response = RestApiError.class),
@@ -137,7 +142,14 @@ public class SnomedConceptRestService extends AbstractSnomedRestService {
 
 	@ApiOperation(
 			value="Retrieve Concept properties",
-			notes="Returns all properties of the specified Concept, including a summary of inactivation indicator and association members.")
+			notes="Returns all properties of the specified Concept, including a summary of inactivation indicator and association members."
+					+ "<p>The following properties can be expanded:"
+					+ "<p>"
+					+ "&bull; pt() &ndash; the description representing the concept's preferred term in the given locale<br>"
+					+ "&bull; fsn() &ndash; the description representing the concept's fully specified name in the given locale<br>"
+					+ "&bull; descriptions() &ndash; the list of descriptions for the concept<br>"
+					+ "&bull; ancestors(offset:0,limit:50,direct:true,expand(pt(),...)) &ndash; the list of concept ancestors (parameter 'direct' is required)<br>"
+					+ "&bull; descendants(offset:0,limit:50,direct:true,expand(pt(),...)) &ndash; the list of concept descendants (parameter 'direct' is required)<br>")
 	@ApiResponses({
 		@ApiResponse(code = 200, message = "OK", response = Void.class),
 		@ApiResponse(code = 404, message = "Branch or Concept not found", response = RestApiError.class)

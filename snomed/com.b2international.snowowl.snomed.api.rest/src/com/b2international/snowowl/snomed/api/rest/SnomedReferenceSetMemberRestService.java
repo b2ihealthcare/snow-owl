@@ -75,7 +75,10 @@ public class SnomedReferenceSetMemberRestService extends AbstractSnomedRestServi
 	
 	@ApiOperation(
 			value="Retrieve reference set members from a branch", 
-			notes="Returns a list with all reference set members from a branch.")
+			notes="Returns a list with all reference set members from a branch."
+					+ "<p>The following properties can be expanded:"
+					+ "<p>"
+					+ "&bull; referencedComponent(expand(pt(),...)) &ndash; the referenced component, and any applicable nested expansions<br>")
 	@ApiResponses({
 		@ApiResponse(code = 200, message = "OK", response = PageableCollectionResource.class),
 		@ApiResponse(code = 404, message = "Branch not found", response = RestApiError.class)
@@ -143,7 +146,10 @@ public class SnomedReferenceSetMemberRestService extends AbstractSnomedRestServi
 	
 	@ApiOperation(
 			value="Retrieve a reference set member",
-			notes="Returns all properties of the specified reference set member.")
+			notes="Returns all properties of the specified reference set member."
+					+ "<p>The following properties can be expanded:"
+					+ "<p>"
+					+ "&bull; referencedComponent(expand(pt(),...)) &ndash; the referenced component, and any applicable nested expansions<br>")
 	@ApiResponses({
 		@ApiResponse(code = 200, message = "OK", response = Void.class),
 		@ApiResponse(code = 404, message = "Branch or reference set member not found", response = RestApiError.class)

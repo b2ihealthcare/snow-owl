@@ -47,6 +47,43 @@ This describes the resources that make up the official Snow Owl® SNOMED CT Term
 
 <p>
 	<h2>Link/Resource expansion</h2>
+	<p>Where applicable, the <code>expand</code> query parameter will include nested objects in the 
+	response, to avoid having to issue multiple requests to the server.</p>
+	<p>Expanded properties should be followed by parentheses and separated by commas; any options for 
+	the expanded property should be given within the parentheses, including properties to expand. 
+	Typical values for parameters are given in the "Implementation Notes" section of each endpoint.</p>
+	<pre><code class="json">GET /snowowl/snomed-ct/v2/MAIN/concepts?offset=0&limit=50&expand=fsn(),descriptions()</code></pre>
+	<p>Response:</p>
+	<pre><code class="json">{
+  "items": [
+    {
+      "id": "100005",
+      "released": true,
+      ...
+      "fsn": {
+        "id": "2709997016",
+        "term": "SNOMED RT Concept (special concept)",
+        ...
+      },
+      "descriptions": {
+        "items": [
+          {
+            "id": "208187016",
+            "released": true,
+            ...
+          },
+        ],
+        "offset": 0,
+        "limit": 5,
+        "total": 5
+      }
+    },
+    ...
+  ],
+  "offset": 0,
+  "limit": 50,
+  "total": 421657
+}</code></pre>
 </p>
 
 <p>

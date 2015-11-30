@@ -107,7 +107,11 @@ public class SnomedConceptSubResourcesController extends AbstractSnomedRestServi
 
 	@ApiOperation(
 			value="Retrieve inbound relationships of a concept",
-			notes="Returns a list of all inbound relationships of the specified concept.",
+			notes="Returns a list of all inbound relationships of the specified concept."
+					+ "<p>The following properties can be expanded:"
+					+ "<p>"
+					+ "&bull; source.fsn &ndash; the fully specified name of the relationship's source concept in the given locale<br>"
+					+ "&bull; type.fsn &ndash; the fully specified name of the relationships's type concept in the given locale<br>",
 			response=Void.class)
 	@ApiResponses({
 		@ApiResponse(code = 200, message = "OK"),
