@@ -78,7 +78,7 @@ public class DefaultSnomedIdentifierService extends AbstractSnomedIdentifierServ
 		checkNotNull(category, "Component category must not be null.");
 		checkCategory(category);
 
-		LOGGER.info(String.format("Generating component ID for category %s.", category.getDisplayName()));
+		LOGGER.debug(String.format("Generating component ID for category %s.", category.getDisplayName()));
 
 		final String componentId = generateId(namespace, category);
 		final SctId sctId = buildSctId(componentId, IdentifierStatus.ASSIGNED);
@@ -89,7 +89,7 @@ public class DefaultSnomedIdentifierService extends AbstractSnomedIdentifierServ
 
 	@Override
 	public void register(final String componentId) {
-		LOGGER.info(String.format("Registering component ID %s.", componentId));
+		LOGGER.debug(String.format("Registering component ID %s.", componentId));
 
 		final SctId sctId = getSctId(componentId);
 		if (!sctId.matches(IdentifierStatus.AVAILABLE, IdentifierStatus.RESERVED)) {
@@ -105,7 +105,7 @@ public class DefaultSnomedIdentifierService extends AbstractSnomedIdentifierServ
 		checkNotNull(category, "Component category must not be null.");
 		checkCategory(category);
 
-		LOGGER.info(String.format("Reserving component ID for category %s.", category.getDisplayName()));
+		LOGGER.debug(String.format("Reserving component ID for category %s.", category.getDisplayName()));
 
 		final String componentId = generateId(namespace, category);
 		final SctId sctId = buildSctId(componentId, IdentifierStatus.RESERVED);
@@ -118,7 +118,7 @@ public class DefaultSnomedIdentifierService extends AbstractSnomedIdentifierServ
 	public void deprecate(final String componentId) {
 		final SctId sctId = getSctId(componentId);
 		if (sctId.matches(IdentifierStatus.ASSIGNED, IdentifierStatus.PUBLISHED)) {
-			LOGGER.info(String.format("Deprecating component ID %s.", componentId));
+			LOGGER.debug(String.format("Deprecating component ID %s.", componentId));
 
 			sctId.setStatus(IdentifierStatus.DEPRECATED.getSerializedName());
 			store.put(componentId, sctId);
@@ -131,7 +131,7 @@ public class DefaultSnomedIdentifierService extends AbstractSnomedIdentifierServ
 	public void release(final String componentId) {
 		final SctId sctId = getSctId(componentId);
 		if (sctId.matches(IdentifierStatus.ASSIGNED, IdentifierStatus.RESERVED)) {
-			LOGGER.info(String.format("Releasing component ID %s.", componentId));
+			LOGGER.debug(String.format("Releasing component ID %s.", componentId));
 			store.remove(componentId);
 		} else if (sctId.isAvailable()) {
 		} else {
@@ -143,7 +143,7 @@ public class DefaultSnomedIdentifierService extends AbstractSnomedIdentifierServ
 	public void publish(final String componentId) {
 		final SctId sctId = getSctId(componentId);
 		if (sctId.isAssigned()) {
-			LOGGER.info(String.format("publishing component ID %s.", componentId));
+			LOGGER.debug(String.format("publishing component ID %s.", componentId));
 			sctId.setStatus(IdentifierStatus.PUBLISHED.getSerializedName());
 			store.put(componentId, sctId);
 		} else {
@@ -156,7 +156,7 @@ public class DefaultSnomedIdentifierService extends AbstractSnomedIdentifierServ
 		checkNotNull(category, "Component category must not be null.");
 		checkCategory(category);
 
-		LOGGER.info(String.format("Generating %d component IDs for category %s.", quantity, category.getDisplayName()));
+		LOGGER.debug(String.format("Generating %d component IDs for category %s.", quantity, category.getDisplayName()));
 
 		final Map<String, SctId> sctIds = Maps.newHashMap();
 		final Collection<String> componentIds = generateIds(namespace, category, quantity);
@@ -175,7 +175,7 @@ public class DefaultSnomedIdentifierService extends AbstractSnomedIdentifierServ
 		final Map<String, SctId> sctIds = Maps.newHashMap();
 		final Collection<String> registeredComponentIds = Lists.newArrayList();
 
-		LOGGER.info(String.format("Registering %d component IDs.", componentIds.size()));
+		LOGGER.debug(String.format("Registering %d component IDs.", componentIds.size()));
 
 		try {
 			for (final String componentId : componentIds) {
@@ -204,7 +204,7 @@ public class DefaultSnomedIdentifierService extends AbstractSnomedIdentifierServ
 		checkNotNull(category, "Component category must not be null.");
 		checkCategory(category);
 
-		LOGGER.info(String.format("Reserving %d component IDs for category %s.", quantity, category.getDisplayName()));
+		LOGGER.debug(String.format("Reserving %d component IDs for category %s.", quantity, category.getDisplayName()));
 
 		final Map<String, SctId> sctIds = Maps.newHashMap();
 		final Collection<String> componentIds = generateIds(namespace, category, quantity);
@@ -222,7 +222,7 @@ public class DefaultSnomedIdentifierService extends AbstractSnomedIdentifierServ
 	public void deprecate(final Collection<String> componentIds) {
 		final Map<String, SctId> deprecatedSctIds = Maps.newHashMap();
 
-		LOGGER.info(String.format("Deprecating %d component IDs.", componentIds.size()));
+		LOGGER.debug(String.format("Deprecating %d component IDs.", componentIds.size()));
 
 		for (final String componentId : componentIds) {
 			final SctId sctId = getSctId(componentId);
@@ -242,7 +242,7 @@ public class DefaultSnomedIdentifierService extends AbstractSnomedIdentifierServ
 	public void release(final Collection<String> componentIds) {
 		final Collection<String> releasedComponentIds = Lists.newArrayList();
 
-		LOGGER.info(String.format("Releasing %d component IDs.", componentIds.size()));
+		LOGGER.debug(String.format("Releasing %d component IDs.", componentIds.size()));
 
 		for (final String componentId : componentIds) {
 			final SctId sctId = getSctId(componentId);
@@ -262,7 +262,7 @@ public class DefaultSnomedIdentifierService extends AbstractSnomedIdentifierServ
 	public void publish(final Collection<String> componentIds) {
 		final Map<String, SctId> publishedSctIds = Maps.newHashMap();
 
-		LOGGER.info(String.format("Publishing %d component IDs.", componentIds.size()));
+		LOGGER.debug(String.format("Publishing %d component IDs.", componentIds.size()));
 
 		for (final String componentId : componentIds) {
 			final SctId sctId = getSctId(componentId);
@@ -280,7 +280,7 @@ public class DefaultSnomedIdentifierService extends AbstractSnomedIdentifierServ
 
 	@Override
 	public Collection<SctId> getSctIds(final Collection<String> componentIds) {
-		LOGGER.info(String.format("Getting %d SctIds.", componentIds.size()));
+		LOGGER.debug(String.format("Getting %d SctIds.", componentIds.size()));
 		final Collection<SctId> sctIds = Lists.newArrayList();
 		for (final String componentId : componentIds) {
 			sctIds.add(getSctId(componentId));

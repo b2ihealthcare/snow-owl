@@ -92,7 +92,7 @@ public class CisSnomedIdentifierService extends AbstractSnomedIdentifierService 
 		final String token = login();
 
 		try {
-			LOGGER.info(String.format("Sending %s ID generation request.", category.getDisplayName()));
+			LOGGER.debug(String.format("Sending %s ID generation request.", category.getDisplayName()));
 
 			request = httpPost(String.format("sct/generate?token=%s", token), createGenerationData(namespace, category));
 			final String response = execute(request);
@@ -119,7 +119,7 @@ public class CisSnomedIdentifierService extends AbstractSnomedIdentifierService 
 		final String token = login();
 
 		try {
-			LOGGER.info(String.format("Sending %s ID registration request.", componentId));
+			LOGGER.debug(String.format("Sending %s ID registration request.", componentId));
 
 			request = httpPost(String.format("sct/register?token=%s", token), createRegistrationData(componentId));
 			execute(request);
@@ -137,7 +137,7 @@ public class CisSnomedIdentifierService extends AbstractSnomedIdentifierService 
 		final String token = login();
 
 		try {
-			LOGGER.info(String.format("Sending %s ID reservation request.", category.getDisplayName()));
+			LOGGER.debug(String.format("Sending %s ID reservation request.", category.getDisplayName()));
 
 			request = httpPost(String.format("sct/reserve?token=%s", token), createReservationData(namespace, category));
 			final String response = execute(request);
@@ -158,7 +158,7 @@ public class CisSnomedIdentifierService extends AbstractSnomedIdentifierService 
 		final String token = login();
 
 		try {
-			LOGGER.info(String.format("Sending component ID %s deprecation request.", componentId));
+			LOGGER.debug(String.format("Sending component ID %s deprecation request.", componentId));
 
 			request = httpPut(String.format("sct/deprecate?token=%s", token), createDeprecationData(componentId));
 			execute(request);
@@ -181,7 +181,7 @@ public class CisSnomedIdentifierService extends AbstractSnomedIdentifierService 
 		final String token = login();
 
 		try {
-			LOGGER.info(String.format("Sending component ID %s release request.", componentId));
+			LOGGER.debug(String.format("Sending component ID %s release request.", componentId));
 
 			request = httpPut(String.format("sct/release?token=%s", token), createReleaseData(componentId));
 			execute(request);
@@ -199,7 +199,7 @@ public class CisSnomedIdentifierService extends AbstractSnomedIdentifierService 
 		final String token = login();
 
 		try {
-			LOGGER.info(String.format("Sending component ID %s publication request.", componentId));
+			LOGGER.debug(String.format("Sending component ID %s publication request.", componentId));
 
 			request = httpPut(String.format("sct/publish?token=%s", token), createPublishData(componentId));
 			execute(request);
@@ -217,7 +217,7 @@ public class CisSnomedIdentifierService extends AbstractSnomedIdentifierService 
 		final String token = login();
 
 		try {
-			LOGGER.info(String.format("Sending component ID %s get request.", componentId));
+			LOGGER.debug(String.format("Sending component ID %s get request.", componentId));
 
 			request = httpGet(String.format("sct/ids/%s?token=%s", componentId, token));
 			final String response = execute(request);
@@ -239,7 +239,7 @@ public class CisSnomedIdentifierService extends AbstractSnomedIdentifierService 
 		final String token = login();
 
 		try {
-			LOGGER.info(String.format("Sending %s ID bulk generation request.", category.getDisplayName()));
+			LOGGER.debug(String.format("Sending %s ID bulk generation request.", category.getDisplayName()));
 
 			bulkRequest = httpPost(String.format("sct/bulk/generate?token=%s", token),
 					createBulkGenerationData(namespace, category, quantity));
@@ -287,7 +287,7 @@ public class CisSnomedIdentifierService extends AbstractSnomedIdentifierService 
 
 		try {
 			for (final Collection<String> ids : Lists.partition(Lists.newArrayList(componentIdsToRegister), BULK_LIMIT)) {
-				LOGGER.info(String.format("Sending bulk registration request with size %d.", ids.size()));
+				LOGGER.debug(String.format("Sending bulk registration request with size %d.", ids.size()));
 
 				bulkRequest = httpPost(String.format("sct/bulk/register?token=%s", token), createBulkRegistrationData(ids));
 				execute(bulkRequest);
@@ -309,7 +309,7 @@ public class CisSnomedIdentifierService extends AbstractSnomedIdentifierService 
 		final String token = login();
 
 		try {
-			LOGGER.info(String.format("Sending %s ID bulk reservation request.", category.getDisplayName()));
+			LOGGER.debug(String.format("Sending %s ID bulk reservation request.", category.getDisplayName()));
 
 			bulkRequest = httpPost(String.format("sct/bulk/reserve?token=%s", token),
 					createBulkReservationData(namespace, category, quantity));
@@ -343,7 +343,7 @@ public class CisSnomedIdentifierService extends AbstractSnomedIdentifierService 
 
 		try {
 			for (final Collection<String> ids : Lists.partition(Lists.newArrayList(componentIds), BULK_LIMIT)) {
-				LOGGER.info(String.format("Sending component ID bulk deprecation request with size %d.", ids.size()));
+				LOGGER.debug(String.format("Sending component ID bulk deprecation request with size %d.", ids.size()));
 
 				request = httpPut(String.format("sct/bulk/deprecate?token=%s", token), createBulkDeprecationData(ids));
 				execute(request);
@@ -374,7 +374,7 @@ public class CisSnomedIdentifierService extends AbstractSnomedIdentifierService 
 
 		try {
 			for (final Collection<String> ids : Lists.partition(Lists.newArrayList(componentIdsToRelease), BULK_LIMIT)) {
-				LOGGER.info(String.format("Sending component ID bulk release request with size %d.", ids.size()));
+				LOGGER.debug(String.format("Sending component ID bulk release request with size %d.", ids.size()));
 
 				request = httpPut(String.format("sct/bulk/release?token=%s", token), createBulkReleaseData(ids));
 				execute(request);
@@ -394,7 +394,7 @@ public class CisSnomedIdentifierService extends AbstractSnomedIdentifierService 
 
 		try {
 			for (final Collection<String> ids : Lists.partition(Lists.newArrayList(componentIds), BULK_LIMIT)) {
-				LOGGER.info(String.format("Sending component ID bulk publication request with size %d.", ids.size()));
+				LOGGER.debug(String.format("Sending component ID bulk publication request with size %d.", ids.size()));
 
 				request = httpPut(String.format("sct/bulk/publish?token=%s", token), createBulkPublishData(ids));
 				execute(request);
@@ -413,7 +413,7 @@ public class CisSnomedIdentifierService extends AbstractSnomedIdentifierService 
 		final String token = login();
 
 		try {
-			LOGGER.info("Sending bulk component ID get request.");
+			LOGGER.debug("Sending bulk component ID get request.");
 			final Collection<SctId> sctIds = Lists.newArrayList();
 
 			for (final Collection<String> ids : Lists.partition(Lists.newArrayList(componentIds), BULK_GET_LIMIT)) {
@@ -444,7 +444,7 @@ public class CisSnomedIdentifierService extends AbstractSnomedIdentifierService 
 		final String token = login();
 
 		try {
-			LOGGER.info("Sending component IDs get request.");
+			LOGGER.debug("Sending component IDs get request.");
 
 			request = httpGet(String.format("sct/ids/?token=%s", token));
 			final String response = execute(request);
@@ -497,7 +497,7 @@ public class CisSnomedIdentifierService extends AbstractSnomedIdentifierService 
 		HttpGet request = null;
 
 		try {
-			LOGGER.info(String.format("Polling job status with ID %s.", jobId));
+			LOGGER.debug(String.format("Polling job status with ID %s.", jobId));
 
 			request = httpGet(String.format("bulk/jobs/%s?token=%s", jobId, token));
 
