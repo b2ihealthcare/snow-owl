@@ -52,8 +52,6 @@ import org.eclipse.emf.common.util.EList;
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.EPackage;
 import org.eclipse.emf.ecore.util.EcoreUtil;
-import org.eclipse.net4j.util.lifecycle.ILifecycle;
-import org.eclipse.net4j.util.lifecycle.LifecycleEventAdapter;
 
 import com.b2international.commons.CompareUtils;
 import com.b2international.commons.Pair;
@@ -128,7 +126,6 @@ public class SnomedEditingContext extends BaseSnomedEditingContext {
 	private String nameSpace;
 	private boolean uniquenessCheckEnabled = true;
 	private Set<String> newComponentIds = Collections.synchronizedSet(Sets.<String>newHashSet());
-	private LifecycleEventAdapter lifecycleListener;
 	
 	/**
 	 * returns with a set of allowed concepts' ID. concept is allowed as preferred description type concept if 
@@ -527,19 +524,6 @@ public class SnomedEditingContext extends BaseSnomedEditingContext {
 	private void init(final String namespace) {
 		this.refSetEditingContext = new SnomedRefSetEditingContext(this);
 		setNamespace(namespace);
-		// register Unique In Transaction Restriction to identifier reservations
-		lifecycleListener = new LifecycleEventAdapter() {
-			@Override
-			protected void onAboutToDeactivate(ILifecycle lifecycle) {
-				releaseIds();
-			}
-			
-			@Override
-			protected void onDeactivated(ILifecycle lifecycle) {
-				getTransaction().removeListener(lifecycleListener);
-			}
-		};
-		getTransaction().addListener(lifecycleListener);
 	}
 
 	private void setNamespace(String nameSpace) {
