@@ -10,12 +10,4 @@
   <artifactId>com.b2international.commons</artifactId>
   <packaging>eclipse-plugin</packaging>
   
-  <dependencies>
-  	<dependency>
-  		<groupId>com.b2international.snowowl</groupId>
-  		<artifactId>com.b2international.commons.base</artifactId>
-  		<version>4.5.0</version>
-  	</dependency>
-  </dependencies>
-  
 </project>
