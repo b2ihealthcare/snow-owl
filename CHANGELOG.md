@@ -5,7 +5,7 @@ All notable changes to this project will be documented in this file.
 
 ### Added
 - Support for simple and query type reference sets and members in RESTful API
-- Integration with Component Identifier Service (CIS), see configuration_guide.adoc for details on how to congire it
+- Integration with Component Identifier Service (CIS), see configuration_guide.adoc for details on how to configure it
 - Indexing term, language code and acceptability values on SNOMED CT Description documents
 - Initial version of the resource expansion API is currently available (expand `fsn`, `pt`, `description` and other nested resources within a single request)
 - `numberOfWorkers` configuration parameter to tweak worker threads per repository (by default it will be set to `3 x number of cores`)
