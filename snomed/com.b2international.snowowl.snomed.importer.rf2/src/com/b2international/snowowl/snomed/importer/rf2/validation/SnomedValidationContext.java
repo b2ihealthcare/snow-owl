@@ -236,8 +236,7 @@ public final class SnomedValidationContext {
 
 		final Collection<SnomedValidationDefect> validationResult = newHashSet();
 		
-		validationResult.addAll(new SnomedTaxonomyValidator(branchPath, configuration, StatementCollectionMode.INFERRED_ISA_ONLY).validate());
-		validationResult.addAll(new SnomedTaxonomyValidator(branchPath, configuration, StatementCollectionMode.STATED_ISA_ONLY).validate());
+		validationResult.addAll(new SnomedTaxonomyValidator(branchPath, configuration).validate());
 		
 		for (DefectType type : this.defects.keySet()) {
 			final Collection<String> messages = this.defects.get(type);
