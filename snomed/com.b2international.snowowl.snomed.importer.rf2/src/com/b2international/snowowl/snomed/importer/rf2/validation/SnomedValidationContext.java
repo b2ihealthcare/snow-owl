@@ -34,6 +34,8 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.SubMonitor;
 import org.slf4j.Logger;
 
+import bak.pcj.set.LongSet;
+
 import com.b2international.commons.StringUtils;
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.LogUtils;
@@ -46,7 +48,6 @@ import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
 import com.b2international.snowowl.snomed.datastore.SnomedConceptLookupService;
 import com.b2international.snowowl.snomed.datastore.SnomedDescriptionLookupService;
 import com.b2international.snowowl.snomed.datastore.SnomedRelationshipLookupService;
-import com.b2international.snowowl.snomed.datastore.StatementCollectionMode;
 import com.b2international.snowowl.snomed.datastore.id.SnomedIdentifierValidator;
 import com.b2international.snowowl.snomed.datastore.id.SnomedIdentifiers;
 import com.b2international.snowowl.snomed.datastore.services.IClientSnomedComponentService;
@@ -62,8 +63,6 @@ import com.google.common.collect.LinkedHashMultimap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Ordering;
-
-import bak.pcj.set.LongSet;
 
 /**
  * Provides utility methods for validating the release files.
@@ -114,14 +113,14 @@ public final class SnomedValidationContext {
 	private void doValidate(final SubMonitor monitor) {
 		final SubMonitor subMonitor = SubMonitor.convert(monitor, effectiveTimes.size());
 		for (String effectiveTime : Ordering.natural().immutableSortedCopy(effectiveTimes)) {
-			if (!"".equals(effectiveTime)) {
+			if (!AbstractSnomedValidator.SPECIAL_EFFECTIVE_TIME_KEY.equals(effectiveTime)) {
 				runValidators(effectiveTime, subMonitor);
 			}
 		}
 		
-		// validate Unpublished effective time last
-		if (effectiveTimes.contains("")) {
-			runValidators("", subMonitor.newChild(1));
+		// Validate an unpublished effective time layer, or a combined snapshot
+		if (effectiveTimes.contains(AbstractSnomedValidator.SPECIAL_EFFECTIVE_TIME_KEY)) {
+			runValidators(AbstractSnomedValidator.SPECIAL_EFFECTIVE_TIME_KEY, subMonitor.newChild(1));
 		}
 	}
 	
