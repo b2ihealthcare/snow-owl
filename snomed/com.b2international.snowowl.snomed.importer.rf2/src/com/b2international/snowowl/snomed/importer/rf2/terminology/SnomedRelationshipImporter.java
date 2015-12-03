@@ -36,7 +36,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 
 public class SnomedRelationshipImporter extends AbstractSnomedTerminologyImporter<RelationshipRow, Relationship> {
-	
+
 	private static final Map<String, CellProcessor> CELLPROCESSOR_MAPPING = ImmutableMap.<String, CellProcessor>builder()
 				.put(RelationshipRow.PROP_ID, NullObjectPattern.INSTANCE)
 				.put(RelationshipRow.PROP_EFFECTIVE_TIME, createEffectiveTimeCellProcessor())
@@ -58,17 +58,20 @@ public class SnomedRelationshipImporter extends AbstractSnomedTerminologyImporte
 			.add(new IndexConfiguration("SNOMED_RELATIONSHIP_IDX1004", "SNOMED_RELATIONSHIP", "DESTINATION", "ACTIVE", "CDO_VERSION"))
 			.build();
 
-	private static SnomedImportConfiguration<RelationshipRow> createImportConfiguration(final ComponentImportType type) {
+	private static SnomedImportConfiguration<RelationshipRow> createImportConfiguration(final ComponentImportType type, final boolean createIndexes) {
 		return new SnomedImportConfiguration<RelationshipRow>(
 				type, 
 				CELLPROCESSOR_MAPPING, 
 				RelationshipRow.class, 
 				SnomedRf2Headers.RELATIONSHIP_HEADER,
-				INDEXES);
+				createIndexes ? INDEXES : ImmutableList.<IndexConfiguration>of());
 	}
 
-	public SnomedRelationshipImporter(final SnomedImportContext importContext, final InputStream releaseFileStream, final String releaseFileIdentifier, final ComponentImportType type) {
-		super(createImportConfiguration(type), importContext, releaseFileStream, releaseFileIdentifier);
+	public SnomedRelationshipImporter(final SnomedImportContext importContext, final InputStream releaseFileStream, final String releaseFileIdentifier, 
+			final ComponentImportType type, 
+			final boolean createIndexes) {
+		
+		super(createImportConfiguration(type, createIndexes), importContext, releaseFileStream, releaseFileIdentifier);
 	}
 
 	@Override
