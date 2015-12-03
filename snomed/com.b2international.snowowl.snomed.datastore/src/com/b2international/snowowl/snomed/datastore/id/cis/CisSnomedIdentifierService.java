@@ -154,6 +154,11 @@ public class CisSnomedIdentifierService extends AbstractSnomedIdentifierService 
 
 	@Override
 	public void deprecate(final String componentId) {
+		final SctId sctId = getSctId(componentId);
+		if (sctId.isDeprecated()) {
+			return;
+		}
+		
 		HttpPut request = null;
 		final String token = login();
 
@@ -195,6 +200,11 @@ public class CisSnomedIdentifierService extends AbstractSnomedIdentifierService 
 
 	@Override
 	public void publish(final String componentId) {
+		final SctId sctId = getSctId(componentId);
+		if (sctId.isPublished()) {
+			return;
+		}
+		
 		HttpPut request = null;
 		final String token = login();
 
@@ -338,6 +348,17 @@ public class CisSnomedIdentifierService extends AbstractSnomedIdentifierService 
 
 	@Override
 	public void deprecate(final Collection<String> componentIds) {
+		final Collection<String> componentIdsToDeprecate = Lists.newArrayList();
+		final Collection<SctId> sctIds = getSctIds(componentIds);
+
+		for (final SctId sctId : sctIds) {
+			if (!sctId.isDeprecated())
+				componentIdsToDeprecate.add(sctId.getSctid());
+		}
+
+		if (componentIdsToDeprecate.isEmpty())
+			return;
+		
 		HttpPut request = null;
 		final String token = login();
 
@@ -389,6 +410,17 @@ public class CisSnomedIdentifierService extends AbstractSnomedIdentifierService 
 
 	@Override
 	public void publish(final Collection<String> componentIds) {
+		final Collection<String> componentIdsToPublish = Lists.newArrayList();
+		final Collection<SctId> sctIds = getSctIds(componentIds);
+
+		for (final SctId sctId : sctIds) {
+			if (!sctId.isPublished())
+				componentIdsToPublish.add(sctId.getSctid());
+		}
+
+		if (componentIdsToPublish.isEmpty())
+			return;
+		
 		HttpPut request = null;
 		final String token = login();
 

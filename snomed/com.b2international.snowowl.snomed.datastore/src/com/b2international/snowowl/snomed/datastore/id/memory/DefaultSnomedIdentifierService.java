@@ -122,7 +122,7 @@ public class DefaultSnomedIdentifierService extends AbstractSnomedIdentifierServ
 
 			sctId.setStatus(IdentifierStatus.DEPRECATED.getSerializedName());
 			store.put(componentId, sctId);
-		} else {
+		} else if (!sctId.isDeprecated()) {
 			throw new BadRequestException(String.format("Cannot deprecate ID in state %s.", sctId.getStatus()));
 		}
 	}
@@ -133,8 +133,7 @@ public class DefaultSnomedIdentifierService extends AbstractSnomedIdentifierServ
 		if (sctId.matches(IdentifierStatus.ASSIGNED, IdentifierStatus.RESERVED)) {
 			LOGGER.debug(String.format("Releasing component ID %s.", componentId));
 			store.remove(componentId);
-		} else if (sctId.isAvailable()) {
-		} else {
+		} else if (!sctId.isAvailable()) {
 			throw new BadRequestException(String.format("Cannot release ID in state %s.", sctId.getStatus()));
 		}
 	}
@@ -146,7 +145,7 @@ public class DefaultSnomedIdentifierService extends AbstractSnomedIdentifierServ
 			LOGGER.debug(String.format("publishing component ID %s.", componentId));
 			sctId.setStatus(IdentifierStatus.PUBLISHED.getSerializedName());
 			store.put(componentId, sctId);
-		} else {
+		} else if (!sctId.isPublished()) {
 			throw new BadRequestException(String.format("Cannot publish ID in state %s.", sctId.getStatus()));
 		}
 	}
@@ -230,7 +229,7 @@ public class DefaultSnomedIdentifierService extends AbstractSnomedIdentifierServ
 			if (sctId.matches(IdentifierStatus.ASSIGNED, IdentifierStatus.PUBLISHED)) {
 				sctId.setStatus(IdentifierStatus.DEPRECATED.getSerializedName());
 				deprecatedSctIds.put(componentId, sctId);
-			} else {
+			} else if (!sctId.isDeprecated()) {
 				throw new BadRequestException(String.format("Cannot deprecate ID in state %s.", sctId.getStatus()));
 			}
 		}
@@ -249,8 +248,7 @@ public class DefaultSnomedIdentifierService extends AbstractSnomedIdentifierServ
 
 			if (sctId.matches(IdentifierStatus.ASSIGNED, IdentifierStatus.RESERVED)) {
 				releasedComponentIds.add(componentId);
-			} else if (sctId.isAvailable()) {
-			} else {
+			} else if (!sctId.isAvailable()) {
 				throw new BadRequestException(String.format("Cannot release ID in state %s.", sctId.getStatus()));
 			}
 		}
@@ -270,7 +268,7 @@ public class DefaultSnomedIdentifierService extends AbstractSnomedIdentifierServ
 			if (sctId.isAssigned()) {
 				sctId.setStatus(IdentifierStatus.PUBLISHED.getSerializedName());
 				publishedSctIds.put(componentId, sctId);
-			} else {
+			} else if (!sctId.isPublished()) {
 				throw new BadRequestException(String.format("Cannot publish ID in state %s.", sctId.getStatus()));
 			}
 		}
