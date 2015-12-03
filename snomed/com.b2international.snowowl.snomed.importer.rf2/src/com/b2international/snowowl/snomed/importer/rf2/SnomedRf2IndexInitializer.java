@@ -120,6 +120,12 @@ import org.apache.lucene.document.NumericDocValuesField;
 import org.apache.lucene.document.StoredField;
 import org.apache.lucene.document.StringField;
 import org.apache.lucene.document.TextField;
+import org.apache.lucene.index.AtomicReader;
+import org.apache.lucene.index.NumericDocValues;
+import org.apache.lucene.index.Term;
+import org.apache.lucene.search.BooleanClause.Occur;
+import org.apache.lucene.search.BooleanQuery;
+import org.apache.lucene.search.TermQuery;
 import org.apache.lucene.util.BytesRef;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
@@ -130,6 +136,15 @@ import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.emf.cdo.CDOObject;
 import org.eclipse.emf.cdo.transaction.CDOTransaction;
 import org.eclipse.emf.cdo.view.CDOView;
+
+import bak.pcj.LongCollection;
+import bak.pcj.LongIterator;
+import bak.pcj.map.LongKeyFloatMap;
+import bak.pcj.map.LongKeyIntMap;
+import bak.pcj.map.LongKeyIntMapIterator;
+import bak.pcj.map.LongKeyIntOpenHashMap;
+import bak.pcj.set.LongOpenHashSet;
+import bak.pcj.set.LongSet;
 
 import com.b2international.commons.CompareUtils;
 import com.b2international.commons.StringUtils;
@@ -152,6 +167,7 @@ import com.b2international.snowowl.datastore.cdo.CDOUtils;
 import com.b2international.snowowl.datastore.cdo.CDOViewFunction;
 import com.b2international.snowowl.datastore.cdo.ICDOConnection;
 import com.b2international.snowowl.datastore.cdo.ICDOConnectionManager;
+import com.b2international.snowowl.datastore.index.AbstractDocsOutOfOrderCollector;
 import com.b2international.snowowl.datastore.index.IndexUtils;
 import com.b2international.snowowl.datastore.index.SortKeyMode;
 import com.b2international.snowowl.datastore.server.snomed.index.NamespaceMapping;
@@ -175,6 +191,8 @@ import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 import com.b2international.snowowl.snomed.datastore.SnomedIconProvider;
 import com.b2international.snowowl.snomed.datastore.SnomedRefSetBrowser;
 import com.b2international.snowowl.snomed.datastore.SnomedRefSetUtil;
+import com.b2international.snowowl.snomed.datastore.SnomedRelationshipIndexEntry;
+import com.b2international.snowowl.snomed.datastore.SnomedStatementBrowser;
 import com.b2international.snowowl.snomed.datastore.SnomedTerminologyBrowser;
 import com.b2international.snowowl.snomed.datastore.index.ISnomedTaxonomyBuilder;
 import com.b2international.snowowl.snomed.datastore.index.SnomedDescriptionIndexMappingStrategy;
@@ -196,12 +214,6 @@ import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Sets;
-
-import bak.pcj.LongCollection;
-import bak.pcj.LongIterator;
-import bak.pcj.map.LongKeyFloatMap;
-import bak.pcj.set.LongOpenHashSet;
-import bak.pcj.set.LongSet;
 
 /**
  * RF2 based incremental index initializer job.
@@ -517,6 +529,7 @@ public class SnomedRf2IndexInitializer extends Job {
 						LOGGER.info("Relationships have been successfully indexed.");
 						break;
 					case TERMINOLOGY_REGISTRY:
+					case RELATIONSHIP_UNION_GROUP:
 						//do nothing
 						break;
 					default:
@@ -598,6 +611,15 @@ public class SnomedRf2IndexInitializer extends Job {
 			LOGGER.info("Preferred term changes successfully updated on reference set members.");
 		} else {
 			LOGGER.info("No preferred term changes have been found.");
+		}
+		
+		if (!CompareUtils.isEmpty(visitedConcepts) || !CompareUtils.isEmpty(visitedConceptsViaOtherStatements)) {
+			LOGGER.info("Reindexing relationships where the union group might have changed...");
+			indexUnionGroupChanges();
+			getSnomedIndexService().commit(branchPath);
+			LOGGER.info("Union group successfully updated on relationships.");
+		} else {
+			LOGGER.info("No union group changes have been found.");
 		}
 		
 		LOGGER.info("Post-processing phase successfully finished.");
@@ -689,6 +711,106 @@ public class SnomedRf2IndexInitializer extends Job {
 			}
 		});
 	}
+
+	private void indexUnionGroupChanges() {
+		final BooleanQuery query = new BooleanQuery(true);
+		query.add(new TermQuery(new Term(COMPONENT_TYPE, IndexUtils.intToPrefixCoded(SnomedTerminologyComponentConstants.RELATIONSHIP_NUMBER))), Occur.MUST);
+		query.add(new TermQuery(new Term(COMPONENT_ACTIVE, IndexUtils.intToPrefixCoded(1))), Occur.MUST);
+		query.add(new TermQuery(new Term(RELATIONSHIP_ATTRIBUTE_ID, IndexUtils.longToPrefixCoded(Concepts.HAS_ACTIVE_INGREDIENT))), Occur.MUST);
+		// XXX: Unfortunately we can't filter by modifier here
+		
+		final LongKeyIntMap universalHaisBySourceId = new LongKeyIntOpenHashMap();
+		
+		getSnomedIndexService().search(branchPath, query, new AbstractDocsOutOfOrderCollector() {
+			
+			private NumericDocValues sourceIds;
+			private NumericDocValues modifierFlags;
+
+			@Override
+			public void collect(int doc) throws IOException {
+				long sourceId = sourceIds.get(doc);
+				boolean universal = modifierFlags.get(doc) == 1L;
+				
+				// XXX: We rely on PCJ to supply 0 as the return value if there was no key present previously
+				if (universal) {
+					universalHaisBySourceId.put(sourceId, universalHaisBySourceId.get(sourceId) + 1);
+				}
+			}
+			
+			@Override
+			protected boolean isLeafCollectible() {
+				return sourceIds != null && modifierFlags != null; 
+			}
+			
+			@Override
+			protected void initDocValues(AtomicReader leafReader) throws IOException {
+				sourceIds = leafReader.getNumericDocValues(RELATIONSHIP_OBJECT_ID);
+				modifierFlags = leafReader.getNumericDocValues(RELATIONSHIP_UNIVERSAL);		
+			}
+		});
+		
+		for (LongKeyIntMapIterator itr = universalHaisBySourceId.entries(); itr.hasNext(); /* empty */) {
+			itr.next();
+			
+			final int unionGroup = (universalHaisBySourceId.get(itr.getKey()) > 1) ? 1 : 0;
+			final List<SnomedRelationshipIndexEntry> relationships = getServiceForClass(SnomedStatementBrowser.class).getOutboundStatementsById(branchPath, Long.toString(itr.getKey()));
+			
+			for (SnomedRelationshipIndexEntry indexEntry : relationships) {
+				
+				if (indexEntry.isActive() 
+						&& indexEntry.getAttributeId().equals(Concepts.HAS_ACTIVE_INGREDIENT) 
+						&& indexEntry.isUniversal() 
+						&& indexEntry.getUnionGroup() != unionGroup) {
+					
+					final Document doc = new Document();
+					
+					final long storageKey = indexEntry.getStorageKey();
+					final long sctId = Long.parseLong(indexEntry.getId());
+					final long objectId = Long.parseLong(indexEntry.getObjectId());
+					final long attributeId = Long.parseLong(indexEntry.getAttributeId());
+					final long valueId = Long.parseLong(indexEntry.getValueId());
+					final long characteristicTypeId = Long.parseLong(indexEntry.getCharacteristicTypeId());
+					final byte group = indexEntry.getGroup();
+					final boolean universal = indexEntry.isUniversal();
+					final boolean destinationNegated = indexEntry.isDestinationNegated();
+					final long moduleId = Long.parseLong(indexEntry.getModuleId());
+					
+					doc.add(new LongField(COMPONENT_ID, sctId, Store.YES));
+					doc.add(new IntField(COMPONENT_TYPE, SnomedTerminologyComponentConstants.RELATIONSHIP_NUMBER, Store.YES));
+					doc.add(new StoredField(COMPONENT_RELEASED, indexEntry.isReleased() ? 1 : 0));
+					doc.add(new IntField(COMPONENT_ACTIVE, indexEntry.isActive() ? 1 : 0, Store.YES));
+					doc.add(new LongField(COMPONENT_STORAGE_KEY, storageKey, Store.YES));
+					doc.add(new LongField(RELATIONSHIP_OBJECT_ID, objectId, Store.YES));
+					doc.add(new LongField(RELATIONSHIP_ATTRIBUTE_ID, attributeId, Store.YES));
+					doc.add(new LongField(RELATIONSHIP_VALUE_ID, valueId, Store.YES));
+					doc.add(new LongField(RELATIONSHIP_CHARACTERISTIC_TYPE_ID, characteristicTypeId, Store.YES));
+					doc.add(new StoredField(RELATIONSHIP_GROUP, group));
+					doc.add(new StoredField(RELATIONSHIP_UNION_GROUP, unionGroup));
+					doc.add(new StoredField(RELATIONSHIP_DESTINATION_NEGATED, destinationNegated ? 1 : 0));
+					doc.add(new StoredField(RELATIONSHIP_INFERRED, indexEntry.isInferred() ? 1 : 0));
+					doc.add(new StoredField(RELATIONSHIP_UNIVERSAL, universal ? 1 : 0));
+					doc.add(new LongField(RELATIONSHIP_MODULE_ID, moduleId, Store.YES));
+					doc.add(new LongField(RELATIONSHIP_EFFECTIVE_TIME, indexEntry.getEffectiveTimeAsLong(), Store.YES));
+					
+					doc.add(new NumericDocValuesField(COMPONENT_STORAGE_KEY, storageKey));
+					doc.add(new NumericDocValuesField(COMPONENT_ID, sctId));
+					doc.add(new NumericDocValuesField(RELATIONSHIP_VALUE_ID, valueId));
+					doc.add(new NumericDocValuesField(RELATIONSHIP_OBJECT_ID, objectId));
+					doc.add(new NumericDocValuesField(RELATIONSHIP_ATTRIBUTE_ID, attributeId));
+					doc.add(new NumericDocValuesField(RELATIONSHIP_CHARACTERISTIC_TYPE_ID, characteristicTypeId));
+					doc.add(new NumericDocValuesField(RELATIONSHIP_GROUP, group));
+					doc.add(new NumericDocValuesField(RELATIONSHIP_UNION_GROUP, unionGroup));
+					doc.add(new NumericDocValuesField(RELATIONSHIP_UNIVERSAL, universal ? 1 : 0));
+					doc.add(new NumericDocValuesField(RELATIONSHIP_DESTINATION_NEGATED, destinationNegated ? 1 : 0));
+					doc.add(new NumericDocValuesField(RELATIONSHIP_MODULE_ID, moduleId));
+					
+					getSnomedIndexService().index(branchPath, doc, IndexUtils.getStorageKeyTerm(storageKey));
+				}
+
+			}
+		}
+	}
+
 
 	private void indexRefSets(final ComponentImportUnit unit) {
 		

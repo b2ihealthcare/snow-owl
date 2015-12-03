@@ -93,6 +93,7 @@ import com.b2international.snowowl.snomed.importer.rf2.refset.SnomedRefSetImport
 import com.b2international.snowowl.snomed.importer.rf2.terminology.SnomedConceptImporter;
 import com.b2international.snowowl.snomed.importer.rf2.terminology.SnomedDescriptionImporter;
 import com.b2international.snowowl.snomed.importer.rf2.terminology.SnomedRelationshipImporter;
+import com.b2international.snowowl.snomed.importer.rf2.terminology.SnomedUnionGroupImporter;
 import com.b2international.snowowl.snomed.importer.rf2.validation.SnomedTaxonomyValidator;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType;
 import com.google.common.base.Charsets;
@@ -269,14 +270,16 @@ public final class ImportUtil {
 			}
 
 			if (ImportConfiguration.isValidReleaseFile(configuration.getRelationshipsFile())) {
-				final URL url = configuration.toURL(configuration.getRelationshipsFile());
-
+				URL relationshipUrl = configuration.toURL(configuration.getRelationshipsFile());
+				
 				// XXX: even if we have a stated relationships file specified, this will still report as being imported from the inferred file
+				String relationshipPath = relationshipUrl.getPath();
 				if (ImportConfiguration.isValidReleaseFile(configuration.getStatedRelationshipsFile())) {
-					importers.add(new SnomedRelationshipImporter(context, createMergedRelationshipFile(configuration).openStream(), configuration.getMappedName(url.getPath())));
-				} else {
-					importers.add(new SnomedRelationshipImporter(context, url.openStream(), configuration.getMappedName(url.getPath())));
+					relationshipUrl = createMergedRelationshipFile(configuration);
 				}
+				
+				importers.add(new SnomedRelationshipImporter(context, relationshipUrl.openStream(), configuration.getMappedName(relationshipPath)));
+				importers.add(new SnomedUnionGroupImporter(context, relationshipUrl.openStream(), configuration.getMappedName(relationshipPath)));
 			}
 
 		} catch (final IOException e) {
