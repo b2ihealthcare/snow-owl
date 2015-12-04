@@ -200,6 +200,10 @@ public class ReviewManagerImpl implements ReviewManager {
 		Holder.CLEANUP_TIMER.schedule(cleanupTask, REFRESH_INTERVAL, REFRESH_INTERVAL);
 	}
 
+	public StaleHandler getStaleHandler() {
+		return staleHandler;
+	}
+	
 	@Override
 	public Review createReview(final Branch source, final Branch target) {
 
