@@ -6,7 +6,6 @@ package com.b2international.snowowl.index.diff.tests.mock;
 import com.b2international.snowowl.datastore.server.index.ICommitTimeProvider
 import com.b2international.snowowl.datastore.server.index.IDirectoryManager
 import com.b2international.snowowl.datastore.server.index.IIndexAccessUpdater
-import com.b2international.snowowl.datastore.server.index.IIndexPostProcessor
 import com.b2international.snowowl.datastore.server.index.IndexServerService
 import com.b2international.snowowl.datastore.server.index.RAMDirectoryManager
 
@@ -22,11 +21,6 @@ public class MockIndexServerService extends IndexServerService<MockIndexEntry> {
 	@Override
 	public String getRepositoryUuid() {
 		MockIndexServerService.class.getName()
-	}
-
-	@Override
-	protected IIndexPostProcessor getIndexPostProcessor() {
-		IIndexPostProcessor.NOOP
 	}
 
 	@Override
