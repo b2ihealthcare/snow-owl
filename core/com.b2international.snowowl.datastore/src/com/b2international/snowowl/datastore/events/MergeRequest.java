@@ -116,4 +116,14 @@ public final class MergeRequest extends BaseRequest<RepositoryContext, Branch> {
 	protected Class<Branch> getReturnType() {
 		return Branch.class;
 	}
+	
+	@Override
+	public String toString() {
+		return String.format("{type:%s, source:%s, target:%s, commitMessage:%s, reviewId:%s}", 
+				getClass().getSimpleName(),
+				source,
+				target,
+				commitMessage,
+				reviewId);
+	}
 }
