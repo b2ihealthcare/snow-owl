@@ -20,7 +20,9 @@ import java.util.concurrent.CountDownLatch;
 import org.eclipse.net4j.util.lifecycle.LifecycleUtil;
 import org.junit.Test;
 
+import com.b2international.snowowl.eventbus.EventBusUtil;
 import com.b2international.snowowl.eventbus.IEventBus;
+import com.b2international.snowowl.eventbus.IHandler;
 import com.b2international.snowowl.eventbus.IMessage;
 import com.b2international.snowowl.eventbus.Pipe;
 import com.b2international.snowowl.eventbus.util.CountDownHandler;
@@ -69,5 +71,44 @@ public class PipeTest extends AbstractEventBusTest {
 		wait(targetLatch);
 		wait(sourceLatch);
 	}
-	
+
+	@Test
+	public void pipeToWorker() throws Exception {
+		IEventBus target = EventBusUtil.getWorkerBus("worker", 2);
+		LifecycleUtil.activate(target);
+		
+		final CountDownLatch sourceLatch = new CountDownLatch(1);
+		final CountDownLatch targetLatch = new CountDownLatch(1);
+		
+		bus.registerHandler(ADDRESS, new Pipe(target, ADDRESS));
+
+		target.registerHandler("work-address", new IHandler<IMessage>() {
+			@Override
+			public void handle(IMessage message) {
+				try {
+					Thread.sleep(30_000L);
+				} catch (InterruptedException ignored) { }
+			}
+		});
+
+		target.registerHandler(ADDRESS, new CountDownHandler(SEND_MESSAGE, targetLatch) {
+			@Override
+			public void handle(IMessage message) {
+				super.handle(message);
+				message.reply(REPLY_MESSAGE);
+			}
+		});
+		
+		/* 
+		 * XXX: In a regular event bus, the third (reply) registered message handler would be queued after the 
+		 * long-running "work-address" handler, and would block.
+		 */
+		setWaitTime(1);
+		
+		target.send("work-address", new Object());
+		bus.send(ADDRESS, SEND_MESSAGE, new CountDownHandler(REPLY_MESSAGE, sourceLatch));
+		
+		wait(targetLatch);
+		wait(sourceLatch);
+	}
 }

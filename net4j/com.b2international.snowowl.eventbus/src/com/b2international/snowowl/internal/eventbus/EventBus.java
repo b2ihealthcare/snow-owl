@@ -24,8 +24,6 @@ import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.CopyOnWriteArraySet;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.eclipse.net4j.util.CheckUtil;
@@ -54,36 +52,31 @@ public class EventBus extends Lifecycle implements IEventBus {
 	private ChoosableList<ExecutorService> contexts = new ChoosableList<ExecutorService>();
 	private final String description;
 	private final int numberOfWorkers;
+	private final ExecutorServiceFactory executorServiceFactory;
 
 	public EventBus() {
 		this(EventBusConstants.GLOBAL_BUS, Runtime.getRuntime().availableProcessors());
 	}
 	
 	public EventBus(String description, int numberOfWorkers) {
+		this(description, numberOfWorkers, new DefaultExecutorServiceFactory());
+	}
+
+	public EventBus(String description, int numberOfWorkers, ExecutorServiceFactory executorServiceFactory) {
 		CheckUtil.checkArg(description, "Description should be specified");
-		this.description = description;
 		CheckUtil.checkArg(numberOfWorkers > 0, "Number of workers must be greater than zero");
+		this.description = description;
 		this.numberOfWorkers = numberOfWorkers;
+		this.executorServiceFactory = executorServiceFactory;
 	}
 
 	@Override
 	protected void doActivate() throws Exception {
 		super.doActivate();
 		final String groupName = getClass().getSimpleName().toLowerCase().concat("-" + description);
-		final ThreadGroup group = new ThreadGroup(groupName);
-		for (int i = 0; i < numberOfWorkers; i++) {
-			final ExecutorService context = Executors.newSingleThreadExecutor(new ThreadFactory() {
-				@Override
-				public Thread newThread(Runnable r) {
-					final Thread thread = new Thread(group, r);
-					thread.setDaemon(true);
-					return thread;
-				}
-			});
-			contexts.list.add(context);
-		}
+		contexts.list.addAll(executorServiceFactory.createExecutorServices(groupName, numberOfWorkers));
 	}
-	
+
 	@Override
 	public IEventBus send(String address, Object message) {
 		return send(address, message, null);

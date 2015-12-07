@@ -23,6 +23,7 @@ import org.eclipse.net4j.util.lifecycle.LifecycleUtil;
 
 import com.b2international.snowowl.eventbus.net4j.EventBusConstants;
 import com.b2international.snowowl.internal.eventbus.EventBus;
+import com.b2international.snowowl.internal.eventbus.WorkerExecutorServiceFactory;
 
 /**
  * @since 3.2
@@ -79,6 +80,15 @@ public class EventBusUtil {
 			e.printStackTrace();
 		}
 		return result.get();
+	}
+
+	/**
+	 * @return a work-stealing {@link EventBus} with the specified description and number of workers
+	 */
+	public static IEventBus getWorkerBus(String name, int numberOfWorkers) {
+		final IEventBus bus = new EventBus(name, numberOfWorkers, new WorkerExecutorServiceFactory());
+		LifecycleUtil.activate(bus);
+		return bus;
 	}
 
 }

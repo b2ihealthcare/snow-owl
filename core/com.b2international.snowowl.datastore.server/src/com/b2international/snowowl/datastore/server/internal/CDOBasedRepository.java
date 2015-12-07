@@ -78,7 +78,7 @@ public final class CDOBasedRepository implements InternalRepository, RepositoryC
 		checkArgument(numberOfWorkers > 0, "At least one worker thread must be specified");
 		this.numberOfWorkers = numberOfWorkers;
 		this.env = env;
-		this.handlers = EventBusUtil.getBus(repositoryId, numberOfWorkers);
+		this.handlers = EventBusUtil.getWorkerBus(repositoryId, numberOfWorkers);
 		initializeBranchingSupport();
 		initializeRequestSupport();
 	}
