@@ -376,6 +376,7 @@ public abstract class CDOCommitInfoUtils {
 		private long startTime = CDOBranchPoint.UNSPECIFIED_DATE;
 		private long endTime = CDOBranchPoint.UNSPECIFIED_DATE;
 		private boolean enableGrouping;
+		private boolean removeUuidFromComment = true;
 		private Predicate<ICDOConnection> connectionPredicate = Predicates.alwaysTrue();
 		private Predicate<String> excludedCommentsPredicate = EXCLUDED_COMMENTS_PREDICATE;
 		private Predicate<String> excludedUsersPredicate = EXCLUDED_USERS_PREDICATE;
@@ -411,6 +412,11 @@ public abstract class CDOCommitInfoUtils {
 		/**Enables or disables commit info grouping.*/
 		public CDOCommitInfoQuery setEnableGrouping(final boolean enableGrouping) {
 			this.enableGrouping = enableGrouping;
+			return this;
+		}
+		
+		public CDOCommitInfoQuery setRemoveUuidFromComment(final boolean removeUuidFromComment) {
+			this.removeUuidFromComment = removeUuidFromComment;
 			return this;
 		}
 		
@@ -482,7 +488,11 @@ public abstract class CDOCommitInfoUtils {
 						final String comment = info.getComment();
 						
 						if (excludedCommentsPredicate.apply(comment) && excludedUsersPredicate.apply(userId)) {
-							$[i.getAndIncrement()] = removeUuidFromComment(info);
+							if (removeUuidFromComment) {
+								$[i.getAndIncrement()] = removeUuidFromComment(info);
+							} else {
+								$[i.getAndIncrement()] = info;
+							}
 						}
 						
 					}
