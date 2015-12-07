@@ -83,12 +83,11 @@ public class EventBusUtil {
 	}
 
 	/**
-	 * @return a work-stealing {@link EventBus} with the specified description and number of workers
+	 * @return an {@link EventBus} with the specified description and number of workers, using a shared queue for distributing tasks
 	 */
 	public static IEventBus getWorkerBus(String name, int numberOfWorkers) {
 		final IEventBus bus = new EventBus(name, numberOfWorkers, new WorkerExecutorServiceFactory());
 		LifecycleUtil.activate(bus);
 		return bus;
 	}
-
 }
