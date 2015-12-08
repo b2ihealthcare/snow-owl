@@ -251,7 +251,7 @@ public class SnomedCDOChangeProcessor implements ICDOChangeProcessor {
 	private static final Iterable<SnomedRefSetType> REFERRING_MEMBER_TYPES = Lists.newArrayList(SnomedRefSetType.SIMPLE, SnomedRefSetType.ATTRIBUTE_VALUE);
 	private static final Iterable<SnomedRefSetType> MAPPING_MEMBER_TYPES = Lists.newArrayList(SnomedRefSetType.SIMPLE_MAP);
 	
-	private final Set<Concept> newConcepts = Sets.newHashSet();
+	private final Map<String, Concept> newConcepts = Maps.newHashMap();
 	private final Set<Entry<CDOID, EClass>> deletedConcepts = Sets.newHashSet();
 	private final Set<Concept> dirtyConcepts = Sets.newHashSet();
 
@@ -439,7 +439,12 @@ public class SnomedCDOChangeProcessor implements ICDOChangeProcessor {
 			this.commitChangeSet = commitChangeSet;
 			
 			// XXX: populate newConcepts from newComponents Iterable in advance, so related dirty concepts can check it
-			Iterables.addAll(newConcepts, Iterables.filter(commitChangeSet.getNewComponents(), Concept.class));
+			for (final Concept concept : Iterables.filter(commitChangeSet.getNewComponents(), Concept.class)) {
+				final Concept previousConcept = newConcepts.put(concept.getId(), concept);
+				if (null != previousConcept) {
+					LOGGER.warn("Concept already present with {}. New concept {}.", previousConcept.cdoID(), concept.cdoID());
+				}
+			}
 			
 			for (final CDOObject newObject : commitChangeSet.getNewComponents()) {
 				processNew(newObject);
@@ -692,7 +697,7 @@ public class SnomedCDOChangeProcessor implements ICDOChangeProcessor {
 		}
 		
 		//new concepts
-		ConcurrentCollectionUtils.forEach(newConcepts, new Procedure<Concept>() {
+		ConcurrentCollectionUtils.forEach(newConcepts.values(), new Procedure<Concept>() {
 
 			@Override protected void doApply(final Concept newConcept) {
 				//hierarchy changes cannot be updated for new concepts, as it is not persisted, yet
@@ -1047,6 +1052,10 @@ public class SnomedCDOChangeProcessor implements ICDOChangeProcessor {
 				final long conceptId = itr.getKey();
 				final Object value = itr.getValue();
 				
+				if (newConcepts.containsKey(String.valueOf(conceptId))) {
+					continue;
+				}
+				
 				if (value instanceof Set) {
 					
 					@SuppressWarnings("unchecked")
@@ -1282,7 +1291,7 @@ public class SnomedCDOChangeProcessor implements ICDOChangeProcessor {
 
 	/*returns with the IDs of all new active SNOMED&nbsp;CT concepts from the change set*/
 	private Collection<String> getActiveConceptIds() {
-		return Sets.newHashSet(Iterables.transform(Iterables.filter(newConcepts, ACTIVE_CONCEPT_PREDICATE), CONCEPT_ID_FUNCTION));
+		return Sets.newHashSet(Iterables.transform(Iterables.filter(newConcepts.values(), ACTIVE_CONCEPT_PREDICATE), CONCEPT_ID_FUNCTION));
 	}
 
 	/*returns with the reference set browser service. note: this contains the previous state of the ontology.*/
@@ -1345,9 +1354,6 @@ public class SnomedCDOChangeProcessor implements ICDOChangeProcessor {
 					//SCT ID - relationships
 					final Map<String, Relationship> _newRelationships = Maps.newHashMap(Maps.uniqueIndex(newRelationships, GET_SCT_ID_FUNCTION));
 
-					//SCT ID - concepts
-					final Map<String, Concept> _newConcepts = Maps.newHashMap(Maps.uniqueIndex(newConcepts, GET_SCT_ID_FUNCTION));
-					
 					for (final Relationship newRelationship : newRelationships) {
 						newBuilder.addEdge(createEdge(newRelationship));
 					}
@@ -1399,7 +1405,7 @@ public class SnomedCDOChangeProcessor implements ICDOChangeProcessor {
 						
 					}
 					
-					for (final Concept newConcept : newConcepts) {
+					for (final Concept newConcept : newConcepts.values()) {
 						newBuilder.addNode(createNode(newConcept));
 					}
 					
@@ -1418,9 +1424,9 @@ public class SnomedCDOChangeProcessor implements ICDOChangeProcessor {
 						final String conceptId = concept.getId();
 						
 						//same concept as addition and deletion
-						if (_newConcepts.containsKey(conceptId)) {
+						if (newConcepts.containsKey(conceptId)) {
 							
-							final Concept newConcept = _newConcepts.get(conceptId);
+							final Concept newConcept = newConcepts.get(conceptId);
 							
 							//check whether new concept has more recent (larger CDO ID) or not, ignore deletion
 							if (CDOIDUtils.asLong(newConcept.cdoID()) > cdoId) {
@@ -1532,24 +1538,30 @@ public class SnomedCDOChangeProcessor implements ICDOChangeProcessor {
 			final long sourceConceptId = parseLong(newTaxonomyBuilder.getSourceNodeId(Long.toString(relatonsipId)));
 			final long destinationConceptId = parseLong(newTaxonomyBuilder.getDestinationNodeId(Long.toString(relatonsipId)));
 			
-//			final long objectStorageKey = newTaxonomyBuilder.getStorageKey(sourceConceptId);
+			//	final long objectStorageKey = newTaxonomyBuilder.getStorageKey(sourceConceptId);
 			final LongSet ancestorIds = newTaxonomyBuilder.getSelfAndAllAncestorNodeIds(/*value ID*/destinationConceptId);
-			addTaxonomyField(sourceConceptId, destinationConceptId, SnomedIndexBrowserConstants.CONCEPT_PARENT);
-			addTaxonomyField(sourceConceptId, newTaxonomyBuilder.getAllAncestorNodeIds(Long.toString(destinationConceptId)), SnomedIndexBrowserConstants.CONCEPT_ANCESTOR);
+			
+			if (!newConcepts.containsKey(String.valueOf(sourceConceptId))) {
+				addTaxonomyField(sourceConceptId, destinationConceptId, SnomedIndexBrowserConstants.CONCEPT_PARENT);
+				addTaxonomyField(sourceConceptId, newTaxonomyBuilder.getAllAncestorNodeIds(Long.toString(destinationConceptId)), SnomedIndexBrowserConstants.CONCEPT_ANCESTOR);
+			}
 			
 			final LongSet objectAllSubTypeIds = newTaxonomyBuilder.getAllDescendantNodeIds(Long.toString(sourceConceptId));
 			for (final LongIterator itr = objectAllSubTypeIds.iterator(); itr.hasNext(); /* nothing */) {
 				
 				final LongOpenHashSet copyAncestorIds = new LongOpenHashSet(ancestorIds);
 				final long conceptId = itr.next();
+				
+				if (newConcepts.containsKey(String.valueOf(conceptId))) {
+					continue;
+				}
+				
 				if (previousTaxonomyBuilder.containsNode(Long.toString(conceptId))) {
 					copyAncestorIds.removeAll(previousTaxonomyBuilder.getSelfAndAllAncestorNodeIds(conceptId));
 				}
 				
 				addTaxonomyField(conceptId, copyAncestorIds, SnomedIndexBrowserConstants.CONCEPT_ANCESTOR); //consider multiple ancestor fields with same parent
 			}
-			
-			
 		}
 	}
 
@@ -1908,7 +1920,7 @@ public class SnomedCDOChangeProcessor implements ICDOChangeProcessor {
 							final Concept relatedConcept = description.getConcept();
 							
 							//if the concept is new we do not have to mark it as dirty. PT processing is done when processing new concept
-							if (!newConcepts.contains(relatedConcept)) {
+							if (!newConcepts.containsValue(relatedConcept)) {
 								dirtyConcepts.add(relatedConcept);
 								dirtyConceptIdsWithCompareUpdate.add(parseLong(relatedConcept.getId()));
 								
