@@ -30,5 +30,5 @@
       <string>SNOMED CT B2i extension</string>
     </entry>
   </children>
-  <defaultChildKey>195931000132109</defaultChildKey>
+  <defaultChildKey>900000000000207008</defaultChildKey>
 </com.b2international.snowowl.core.api.preferences.ConfigNode>

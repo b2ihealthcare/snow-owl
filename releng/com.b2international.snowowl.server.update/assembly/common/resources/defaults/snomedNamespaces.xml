@@ -42,5 +42,5 @@
       <string>Ministry of Health Holdings (National Extension)</string>
     </entry>
   </children>
-  <defaultChildKey>1000132</defaultChildKey>
+  <defaultChildKey></defaultChildKey>
 </com.b2international.snowowl.core.api.preferences.ConfigNode>
