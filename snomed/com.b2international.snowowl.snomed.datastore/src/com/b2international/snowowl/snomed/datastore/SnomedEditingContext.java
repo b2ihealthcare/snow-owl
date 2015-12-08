@@ -83,6 +83,7 @@ import com.b2international.snowowl.snomed.core.preference.ModulePreference;
 import com.b2international.snowowl.snomed.core.store.SnomedComponentBuilder;
 import com.b2international.snowowl.snomed.datastore.NormalFormWrapper.AttributeConceptGroupWrapper;
 import com.b2international.snowowl.snomed.datastore.id.ISnomedIdentifierService;
+import com.b2international.snowowl.snomed.datastore.id.SnomedIdentifiers;
 import com.b2international.snowowl.snomed.datastore.index.SnomedClientIndexService;
 import com.b2international.snowowl.snomed.datastore.index.SnomedDescriptionIndexQueryAdapter;
 import com.b2international.snowowl.snomed.datastore.index.SnomedDescriptionReducedQueryAdapter;
@@ -1134,12 +1135,12 @@ public class SnomedEditingContext extends BaseSnomedEditingContext {
 		
 		final Concept isAConcept = findConceptById(IS_A);
 		final Concept statedRelationshipTypeConcept = findConceptById(STATED_RELATIONSHIP);
-		final Concept defaultModuleConcept = getDefaultModuleConcept();
 		
 		// connect all former children to the former parents by stated IS_As
 		for (Concept parent : parents) {
 			for (Concept child : children) {
-				buildDefaultRelationship(child, isAConcept, parent, statedRelationshipTypeConcept, defaultModuleConcept, getDefaultNamespace());
+				final String namespace = SnomedIdentifiers.create(child.getId()).getNamespace();
+				buildDefaultRelationship(child, isAConcept, parent, statedRelationshipTypeConcept, child.getModule(), namespace);
 			}
 		}
 		
@@ -1574,6 +1575,7 @@ public class SnomedEditingContext extends BaseSnomedEditingContext {
 		return nameSpace;
 	}
 
+	@Deprecated
 	public static String getDefaultNamespace() {
 		return getSnomedConfiguration().getNamespaces().getDefaultChildKey();
 	}
