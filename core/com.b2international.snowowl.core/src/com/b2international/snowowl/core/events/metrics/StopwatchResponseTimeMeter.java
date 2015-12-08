@@ -36,6 +36,7 @@ public final class StopwatchResponseTimeMeter implements RequestMeter {
 	
 	@Override
 	public void start(String message) {
+		log.trace("Executing {}", message);
 		watch.start();
 	}
 
