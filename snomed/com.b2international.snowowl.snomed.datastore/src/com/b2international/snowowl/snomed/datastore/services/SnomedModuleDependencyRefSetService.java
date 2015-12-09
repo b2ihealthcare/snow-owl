@@ -86,7 +86,6 @@ public class SnomedModuleDependencyRefSetService {
 						member.setTargetEffectiveTime(null);
 					}
 					
-					member.setReleased(false);
 					member.unsetEffectiveTime();
 				}
 			}
