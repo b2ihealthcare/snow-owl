@@ -27,6 +27,8 @@ import org.eclipse.emf.cdo.common.branch.CDOBranch;
 import org.eclipse.emf.cdo.common.id.CDOID;
 import org.eclipse.emf.cdo.common.id.CDOIDUtil;
 import org.eclipse.emf.cdo.common.revision.CDORevision;
+import org.eclipse.emf.cdo.common.revision.delta.CDOFeatureDelta;
+import org.eclipse.emf.cdo.common.revision.delta.CDOFeatureDelta.Type;
 import org.eclipse.emf.cdo.spi.common.revision.InternalCDORevision;
 import org.eclipse.emf.cdo.transaction.CDOTransaction;
 import org.eclipse.emf.ecore.EAttribute;
@@ -109,6 +111,27 @@ public class SnomedCDOConflictProcessor extends AbstractCDOConflictProcessor imp
 		}
 		
 		return super.addedInSource(sourceRevision, targetMap);
+	}
+	
+	@Override
+	public CDOFeatureDelta changedInSourceAndTargetSingleValued(CDOFeatureDelta targetFeatureDelta, CDOFeatureDelta sourceFeatureDelta) {
+		final EStructuralFeature feature = targetFeatureDelta.getFeature();
+		
+		if (SnomedPackage.Literals.COMPONENT__EFFECTIVE_TIME.equals(feature) 
+				|| SnomedRefSetPackage.Literals.SNOMED_REF_SET_MEMBER__EFFECTIVE_TIME.equals(feature)
+				|| SnomedRefSetPackage.Literals.SNOMED_MODULE_DEPENDENCY_REF_SET_MEMBER__SOURCE_EFFECTIVE_TIME.equals(feature)
+				|| SnomedRefSetPackage.Literals.SNOMED_MODULE_DEPENDENCY_REF_SET_MEMBER__TARGET_EFFECTIVE_TIME.equals(feature)) {
+		
+			if (Type.UNSET.equals(targetFeatureDelta.getType())) {
+				return targetFeatureDelta;
+			} else if (Type.UNSET.equals(sourceFeatureDelta.getType())) {
+				return sourceFeatureDelta;
+			}
+			
+			// Fall-through
+		}
+		
+		return super.changedInSourceAndTargetSingleValued(targetFeatureDelta, sourceFeatureDelta);
 	}
 
 	private Conflict checkDuplicateComponentIds(final CDORevision sourceRevision, final Map<CDOID, Object> targetMap) {

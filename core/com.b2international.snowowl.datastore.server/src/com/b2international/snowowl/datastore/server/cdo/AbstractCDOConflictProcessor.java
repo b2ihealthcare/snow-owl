@@ -32,6 +32,7 @@ import org.eclipse.emf.cdo.transaction.CDOTransaction;
 import org.eclipse.emf.ecore.EAttribute;
 import org.eclipse.emf.ecore.EClass;
 import org.eclipse.emf.ecore.util.EcoreUtil;
+import org.eclipse.emf.spi.cdo.DefaultCDOMerger;
 import org.eclipse.emf.spi.cdo.DefaultCDOMerger.ChangedInSourceAndDetachedInTargetConflict;
 import org.eclipse.emf.spi.cdo.DefaultCDOMerger.Conflict;
 
@@ -118,6 +119,21 @@ public abstract class AbstractCDOConflictProcessor implements ICDOConflictProces
 		EcoreUtil.remove(object);
 	}
 
+	/**
+	 * {@inheritDoc}
+	 * <p>
+	 * The default case implements the same behavior as {@link DefaultCDOMerger.PerFeature}.
+	 */
+	@Override
+	public CDOFeatureDelta changedInSourceAndTargetSingleValued(CDOFeatureDelta targetFeatureDelta, CDOFeatureDelta sourceFeatureDelta) {
+		
+		if (targetFeatureDelta.isStructurallyEqual(sourceFeatureDelta)) {
+			return targetFeatureDelta;
+		}
+
+		return null;
+	}
+	
 	/**
 	 * {@inheritDoc}
 	 * <p>

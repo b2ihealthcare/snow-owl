@@ -16,8 +16,10 @@
 package com.b2international.snowowl.datastore.server.internal.branch;
 
 import org.eclipse.emf.cdo.common.revision.CDORevision;
+import org.eclipse.emf.cdo.common.revision.delta.CDOFeatureDelta;
 import org.eclipse.emf.cdo.common.revision.delta.CDORevisionDelta;
 import org.eclipse.emf.cdo.transaction.CDOTransaction;
+import org.eclipse.emf.ecore.EStructuralFeature;
 import org.eclipse.emf.spi.cdo.DefaultCDOMerger;
 
 import com.b2international.snowowl.core.branch.BranchMergeException;
@@ -55,6 +57,14 @@ public class CDOBranchMerger extends DefaultCDOMerger.PerFeature.ManyValued {
 	@Override
 	protected Object changedInTargetAndDetachedInSource(final CDORevisionDelta targetDelta) {
 		return delegate.changedInTargetAndDetachedInSource(targetDelta);
+	}
+	
+	@Override
+	protected CDOFeatureDelta changedInSourceAndTargetSingleValued(EStructuralFeature feature, 
+			CDOFeatureDelta targetFeatureDelta, 
+			CDOFeatureDelta sourceFeatureDelta) {
+
+		return delegate.changedInSourceAndTargetSingleValued(targetFeatureDelta, sourceFeatureDelta);
 	}
 
 	public void postProcess(final CDOTransaction transaction) {
