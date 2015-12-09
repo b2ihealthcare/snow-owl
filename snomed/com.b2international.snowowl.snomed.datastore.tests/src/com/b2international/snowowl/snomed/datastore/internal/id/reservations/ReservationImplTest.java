@@ -27,6 +27,7 @@ import com.b2international.snowowl.core.terminology.ComponentCategory;
 import com.b2international.snowowl.datastore.store.MemStore;
 import com.b2international.snowowl.datastore.store.Store;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
+import com.b2international.snowowl.snomed.datastore.config.SnomedIdentifierConfiguration;
 import com.b2international.snowowl.snomed.datastore.id.ISnomedIdentifierService;
 import com.b2international.snowowl.snomed.datastore.id.SnomedIdentifier;
 import com.b2international.snowowl.snomed.datastore.id.SnomedIdentifiers;
@@ -60,7 +61,7 @@ public class ReservationImplTest {
 			public String generateItemId() {
 				return String.valueOf(counter++);
 			}
-		}, reservations);
+		}, reservations, new SnomedIdentifierConfiguration());
 		final SnomedIdentifiers snomedIdentifiers = new SnomedIdentifiers(identifierService);
 		final Set<ComponentCategory> components = Collections.singleton(ComponentCategory.CONCEPT);
 		final Reservation range = Reservations.range(200, 300, null, components);

@@ -858,7 +858,7 @@ snomed:
   maxReasonerCount: 1
 --------------------------
 
-==== IHTSDO's SNOMED CT Component Identifier Service (CIS) integration
+==== SNOMED CT Component Identifier Configuration
 
 Snow Owl can be configured to obtain valid SNOMED CT identifiers from IHTSDO's CIS service. The configuration needs to be placed within the *snomed/ids* section.
 If omitted, then default strategy will be used.
@@ -902,6 +902,10 @@ If omitted, then default strategy will be used.
 |The time to wait between 2 job polling actions It is in milliseconds.
 |===
 
+|enforceNamespace
+|
+|A SNOMED CT namespace identifier to use when generating new SNOMED CT component IDs regardless of the user defined namespace. Use INT keyword to enforce international IDs.
+
 --------------------------
 snomed:
   ...
@@ -914,6 +918,7 @@ snomed:
     cisClientSoftwareKey : Snow Owl dev. deployment
     cisNumberOfPollTries : 1
     cisTimeBetweenPollTries : 1000
+    enforceNamespace: INT
   ...
 --------------------------
 

@@ -16,9 +16,12 @@
 package com.b2international.snowowl.snomed.datastore.id;
 
 import static com.google.common.base.Preconditions.checkArgument;
+import static com.google.common.base.Preconditions.checkNotNull;
 
 import com.b2international.snowowl.core.terminology.ComponentCategory;
+import com.b2international.snowowl.snomed.datastore.config.SnomedIdentifierConfiguration;
 import com.b2international.snowowl.snomed.datastore.id.reservations.ISnomedIdentiferReservationService;
+import com.google.common.base.Strings;
 
 /**
  * @since 4.5
@@ -26,18 +29,41 @@ import com.b2international.snowowl.snomed.datastore.id.reservations.ISnomedIdent
 public abstract class AbstractSnomedIdentifierService implements ISnomedIdentifierService {
 
 	private final ISnomedIdentiferReservationService reservationService;
+	private final SnomedIdentifierConfiguration config;
 
-	public AbstractSnomedIdentifierService(final ISnomedIdentiferReservationService reservationService) {
-		this.reservationService = reservationService;
+	protected AbstractSnomedIdentifierService(final ISnomedIdentiferReservationService reservationService, SnomedIdentifierConfiguration config) {
+		this.reservationService = checkNotNull(reservationService);
+		this.config = checkNotNull(config);
 	}
 
-	protected void checkCategory(ComponentCategory category) {
+	protected final void checkCategory(ComponentCategory category) {
 		checkArgument(category == ComponentCategory.CONCEPT || category == ComponentCategory.DESCRIPTION
 				|| category == ComponentCategory.RELATIONSHIP, "Cannot generate ID for component category %s.", category);
 	}
 	
-	public ISnomedIdentiferReservationService getReservationService() {
+	protected final ISnomedIdentiferReservationService getReservationService() {
 		return reservationService;
+	}
+	
+	protected final SnomedIdentifierConfiguration getConfig() {
+		return config;
+	}
+
+	/**
+	 * Method to enforce the namespace used for the new component ID if defined.
+	 * @param namespace
+	 * @return
+	 */
+	protected final String selectNamespace(final String namespace) {
+		final String enforceNamespace = getConfig().getEnforceNamespace();
+		if (!Strings.isNullOrEmpty(enforceNamespace)) {
+			if (SnomedIdentifiers.INT_NAMESPACE.equals(enforceNamespace)) {
+				return null;
+			} else {
+				return enforceNamespace;
+			}
+		}
+		return namespace;
 	}
 
 }

@@ -46,6 +46,8 @@ import com.google.common.collect.Lists;
  */
 public class SnomedIdentifiers {
 	
+	public static final String INT_NAMESPACE = "INT";
+
 	private final ISnomedIdentifierService identifierService;
 	
 	private final Collection<IIdAction<?>> executedActions = Lists.newArrayList();

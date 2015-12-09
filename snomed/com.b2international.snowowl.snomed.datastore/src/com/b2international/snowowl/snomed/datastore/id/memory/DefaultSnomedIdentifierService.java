@@ -27,6 +27,7 @@ import com.b2international.commons.VerhoeffCheck;
 import com.b2international.snowowl.core.exceptions.BadRequestException;
 import com.b2international.snowowl.core.terminology.ComponentCategory;
 import com.b2international.snowowl.datastore.store.Store;
+import com.b2international.snowowl.snomed.datastore.config.SnomedIdentifierConfiguration;
 import com.b2international.snowowl.snomed.datastore.id.AbstractSnomedIdentifierService;
 import com.b2international.snowowl.snomed.datastore.id.SnomedIdentifier;
 import com.b2international.snowowl.snomed.datastore.id.SnomedIdentifiers;
@@ -51,8 +52,8 @@ public class DefaultSnomedIdentifierService extends AbstractSnomedIdentifierServ
 	private final ItemIdGenerationStrategy generationStrategy;
 
 	public DefaultSnomedIdentifierService(final Store<SctId> store, final ItemIdGenerationStrategy generationStrategy,
-			final ISnomedIdentiferReservationService reservationService) {
-		super(reservationService);
+			final ISnomedIdentiferReservationService reservationService, final SnomedIdentifierConfiguration config) {
+		super(reservationService, config);
 		this.store = store;
 		this.generationStrategy = generationStrategy;
 	}
@@ -312,15 +313,16 @@ public class DefaultSnomedIdentifierService extends AbstractSnomedIdentifierServ
 	}
 
 	private String generateComponentId(final String namespace, final ComponentCategory category) {
+		final String selectedNamespace = selectNamespace(namespace);
 		final StringBuilder builder = new StringBuilder();
 		// generate the SCT Item ID
 		builder.append(generationStrategy.generateItemId());
 
 		// append namespace and the first part of the partition-identifier
-		if (Strings.isNullOrEmpty(namespace)) {
+		if (Strings.isNullOrEmpty(selectedNamespace)) {
 			builder.append('0');
 		} else {
-			builder.append(namespace);
+			builder.append(selectedNamespace);
 			builder.append('1');
 		}
 

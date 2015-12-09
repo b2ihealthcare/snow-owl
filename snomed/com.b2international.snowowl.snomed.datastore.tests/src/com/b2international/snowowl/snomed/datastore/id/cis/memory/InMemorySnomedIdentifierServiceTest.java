@@ -18,6 +18,7 @@ package com.b2international.snowowl.snomed.datastore.id.cis.memory;
 import org.junit.Before;
 
 import com.b2international.snowowl.datastore.store.MemStore;
+import com.b2international.snowowl.snomed.datastore.config.SnomedIdentifierConfiguration;
 import com.b2international.snowowl.snomed.datastore.id.AbstractIdentifierServiceTest;
 import com.b2international.snowowl.snomed.datastore.id.ISnomedIdentifierService;
 import com.b2international.snowowl.snomed.datastore.id.cis.SctId;
@@ -43,7 +44,7 @@ public class InMemorySnomedIdentifierServiceTest extends AbstractIdentifierServi
 	@Before
 	public void init() {
 		final ISnomedIdentiferReservationService reservationService = new SnomedIdentifierReservationServiceImpl();
-		service = new DefaultSnomedIdentifierService(store, ItemIdGenerationStrategy.RANDOM, reservationService);
+		service = new DefaultSnomedIdentifierService(store, ItemIdGenerationStrategy.RANDOM, reservationService, new SnomedIdentifierConfiguration());
 	}
 
 }

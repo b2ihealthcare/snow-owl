@@ -78,7 +78,7 @@ public class CisSnomedIdentifierService extends AbstractSnomedIdentifierService 
 
 	public CisSnomedIdentifierService(final SnomedIdentifierConfiguration conf, final ISnomedIdentiferReservationService reservationService,
 			final ObjectMapper mapper) {
-		super(reservationService);
+		super(reservationService, conf);
 		this.clientKey = conf.getCisClientSoftwareKey();
 		this.numberOfPollTries = conf.getCisNumberOfPollTries();
 		this.timeBetweenPollTries = conf.getCisTimeBetweenPollTries();
@@ -569,14 +569,14 @@ public class CisSnomedIdentifierService extends AbstractSnomedIdentifierService 
 	}
 
 	private RequestData createGenerationData(final String namespace, final ComponentCategory category) throws IOException {
-		return new GenerationData(namespace, clientKey, category);
+		return new GenerationData(selectNamespace(namespace), clientKey, category);
 	}
 
 	private RequestData createBulkGenerationData(final String namespace, final ComponentCategory category, final int quantity)
 			throws IOException {
-		return new BulkGenerationData(namespace, clientKey, category, quantity);
+		return new BulkGenerationData(selectNamespace(namespace), clientKey, category, quantity);
 	}
-
+	
 	private RequestData createRegistrationData(final String componentId) throws IOException {
 		return new RegistrationData(getNamespace(componentId), clientKey, componentId, "");
 	}
