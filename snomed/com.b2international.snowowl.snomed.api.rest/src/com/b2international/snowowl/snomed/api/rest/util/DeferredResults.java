@@ -15,6 +15,8 @@
  */
 package com.b2international.snowowl.snomed.api.rest.util;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.context.request.async.DeferredResult;
 
@@ -26,7 +28,63 @@ import com.b2international.snowowl.core.events.util.Promise;
  */
 public class DeferredResults {
 
+	private static final Logger LOG = LoggerFactory.getLogger(DeferredResults.class);
+	
+	private static final class ResultSetter<T> extends Procedure<T> {
+		private final DeferredResult<T> deferredResult;
+	
+		private ResultSetter(DeferredResult<T> deferredResult) {
+			this.deferredResult = deferredResult;
+		}
+	
+		@Override
+		protected void doApply(T input) {
+			if (deferredResult.isSetOrExpired()) {
+				LOG.warn("Deferred result is already set or expired, could not deliver result {}.", input);
+			} else { 
+				deferredResult.setResult(input);
+			}
+		}
+	}
+	
+	private static final class PredefinedValueSetter<C, T> extends Procedure<C> {
+		private final DeferredResult<T> deferredResult;
+		private final T value;
+		
+		private PredefinedValueSetter(DeferredResult<T> deferredResult, T value) {
+			this.deferredResult = deferredResult;
+			this.value = value;
+		}
+		
+		@Override
+		protected void doApply(C input) {
+			if (deferredResult.isSetOrExpired()) {
+				LOG.warn("Deferred result is already set or expired, could not deliver value {} for result {}.", value, input);
+			} else { 
+				deferredResult.setResult(value);
+			}
+		}
+	}
+
+	private static final class ThrowableSetter extends Procedure<Throwable> {
+		private final DeferredResult<?> deferredResult;
+
+		private ThrowableSetter(DeferredResult<?> deferredResult) {
+			this.deferredResult = deferredResult;
+		}
+
+		@Override
+		protected void doApply(Throwable err) {
+			if (deferredResult.isSetOrExpired()) {
+				LOG.warn("Deferred result is already set or expired, could not deliver Throwable.", err);
+			} else {
+				deferredResult.setErrorResult(err);
+			}
+		}
+	}
+
 	private DeferredResults() {
+		throw new UnsupportedOperationException("This class is not supposed to be instantiated.");
 	}
 
 	/**
@@ -38,17 +96,7 @@ public class DeferredResults {
 	 */
 	public static <T> DeferredResult<T> wrap(Promise<T> promise) {
 		final DeferredResult<T> result = new DeferredResult<>();
-		promise.then(new Procedure<T>() {
-			@Override
-			protected void doApply(T input) {
-				result.setResult(input);
-			}
-		}).fail(new Procedure<Throwable>() {
-			@Override
-			protected void doApply(Throwable err) {
-				result.setErrorResult(err);
-			}
-		});
+		promise.then(new ResultSetter<T>(result)).fail(new ThrowableSetter(result));
 		return result;
 	}
 
@@ -63,17 +111,7 @@ public class DeferredResults {
 	 */
 	public static <T extends ResponseEntity<B>, B, C> DeferredResult<T> wrap(Promise<C> promise, final T response) {
 		final DeferredResult<T> result = new DeferredResult<>();
-		promise.then(new Procedure<C>() {
-			@Override
-			protected void doApply(C input) {
-				result.setResult(response);
-			}
-		}).fail(new Procedure<Throwable>() {
-			@Override
-			protected void doApply(Throwable err) {
-				result.setErrorResult(err);
-			}
-		});
+		promise.then(new PredefinedValueSetter<C, T>(result, response)).fail(new ThrowableSetter(result));
 		return result;
 	}
 
