@@ -16,11 +16,14 @@
 package com.b2international.snowowl.datastore.server.internal.branch;
 
 import org.eclipse.emf.cdo.common.revision.CDORevision;
+import org.eclipse.emf.cdo.common.revision.delta.CDOFeatureDelta;
 import org.eclipse.emf.cdo.common.revision.delta.CDORevisionDelta;
 import org.eclipse.emf.cdo.transaction.CDOTransaction;
+import org.eclipse.emf.ecore.EStructuralFeature;
 import org.eclipse.emf.spi.cdo.DefaultCDOMerger;
 
-import com.b2international.snowowl.datastore.branch.BranchMergeException;
+import com.b2international.snowowl.datastore.server.cdo.AddedInSourceAndDetachedInTargetConflict;
+import com.b2international.snowowl.datastore.server.cdo.AddedInSourceAndTargetConflict;
 import com.b2international.snowowl.datastore.server.cdo.ICDOConflictProcessor;
 
 /**
@@ -54,10 +57,37 @@ public class CDOBranchMerger extends DefaultCDOMerger.PerFeature.ManyValued {
 	protected Object changedInTargetAndDetachedInSource(final CDORevisionDelta targetDelta) {
 		return delegate.changedInTargetAndDetachedInSource(targetDelta);
 	}
+	
+	@Override
+	protected CDOFeatureDelta changedInSourceAndTargetSingleValued(EStructuralFeature feature, 
+			CDOFeatureDelta targetFeatureDelta, 
+			CDOFeatureDelta sourceFeatureDelta) {
+
+		return delegate.changedInSourceAndTargetSingleValued(targetFeatureDelta, sourceFeatureDelta);
+	}
 
 	public void postProcess(final CDOTransaction transaction) {
-		if (delegate.postProcess(transaction) != null) {
-			throw new BranchMergeException("Conflicts detected while post-processing transaction on branch %s.", transaction.getBranch().getPathName());
+		Conflict conflict = delegate.postProcess(transaction);
+		if (conflict != null) {
+			String conflictDetails = getConflictDetails(conflict);
+			throw new com.b2international.snowowl.core.exceptions.ConflictException("Conflicts detected while post-processing transaction on branch %s: %s", transaction.getBranch().getPathName(), conflictDetails);
 		}
+	}
+
+	private String getConflictDetails(Conflict conflict) {
+		String details = conflict.getClass().getSimpleName() + " - ";
+		
+		if (conflict instanceof AddedInSourceAndDetachedInTargetConflict) {
+			AddedInSourceAndDetachedInTargetConflict detachedConflict = (AddedInSourceAndDetachedInTargetConflict) conflict;
+			details += " source: " + detachedConflict.getSourceId();
+			details += " target: " + detachedConflict.getTargetId();
+		} else if (conflict instanceof AddedInSourceAndTargetConflict) {
+			AddedInSourceAndTargetConflict addedConflict = (AddedInSourceAndTargetConflict)conflict;
+			details += " source: " + addedConflict.getSourceId();
+			details += " target: " + addedConflict.getTargetId();
+		} else {
+			details += " id: " + conflict.getID().toString();
+		}
+		return details;
 	}
 }
