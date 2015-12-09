@@ -10,7 +10,6 @@
  */
 package org.eclipse.emf.cdo.spi.server;
 
-import org.eclipse.emf.cdo.common.CDOCommonView;
 import org.eclipse.emf.cdo.common.branch.CDOBranch;
 import org.eclipse.emf.cdo.common.branch.CDOBranchPoint;
 import org.eclipse.emf.cdo.common.id.CDOID;
@@ -332,23 +331,6 @@ public abstract class Store extends Lifecycle implements InternalStore
     if (pool != null)
     {
       reader = pool.removeStoreAccessor(session);
-    }
-
-    if (reader == null && session != null)
-    {
-      CDOCommonView[] views = session.getViews();
-      for (CDOCommonView view : views)
-      {
-        pool = getWriterPool((IView)view, false);
-        if (pool != null)
-        {
-          reader = pool.removeStoreAccessor(view);
-          if (reader != null)
-          {
-            break;
-          }
-        }
-      }
     }
 
     if (reader == null)
