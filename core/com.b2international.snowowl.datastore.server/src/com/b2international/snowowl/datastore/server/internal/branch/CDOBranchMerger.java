@@ -22,7 +22,6 @@ import org.eclipse.emf.cdo.transaction.CDOTransaction;
 import org.eclipse.emf.ecore.EStructuralFeature;
 import org.eclipse.emf.spi.cdo.DefaultCDOMerger;
 
-import com.b2international.snowowl.core.branch.BranchMergeException;
 import com.b2international.snowowl.datastore.server.cdo.AddedInSourceAndDetachedInTargetConflict;
 import com.b2international.snowowl.datastore.server.cdo.AddedInSourceAndTargetConflict;
 import com.b2international.snowowl.datastore.server.cdo.ICDOConflictProcessor;
@@ -69,9 +68,9 @@ public class CDOBranchMerger extends DefaultCDOMerger.PerFeature.ManyValued {
 
 	public void postProcess(final CDOTransaction transaction) {
 		Conflict conflict = delegate.postProcess(transaction);
-		if ( conflict != null) {
+		if (conflict != null) {
 			String conflictDetails = getConflictDetails(conflict);
-			throw new BranchMergeException("Conflicts detected while post-processing transaction on branch %s: %s", transaction.getBranch().getPathName(), conflictDetails);
+			throw new com.b2international.snowowl.core.exceptions.ConflictException("Conflicts detected while post-processing transaction on branch %s: %s", transaction.getBranch().getPathName(), conflictDetails);
 		}
 	}
 
