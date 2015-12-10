@@ -3,6 +3,7 @@ package com.b2international.snowowl.snomed.api.rest.domain;
 import java.util.Date;
 
 import com.b2international.snowowl.snomed.core.domain.CharacteristicType;
+import com.b2international.snowowl.snomed.core.domain.ISnomedConcept;
 import com.b2international.snowowl.snomed.core.domain.ISnomedRelationship;
 import com.b2international.snowowl.snomed.core.domain.RelationshipModifier;
 import com.b2international.snowowl.snomed.core.domain.RelationshipRefinability;
@@ -13,8 +14,40 @@ public class ExpandableSnomedRelationship implements ISnomedRelationship {
 	private SnomedConceptMini source;
 	private SnomedConceptMini type;
 	
-	public ExpandableSnomedRelationship(ISnomedRelationship wrappedRelationship) {
+	public ExpandableSnomedRelationship(ISnomedRelationship wrappedRelationship, String[] expand) {
 		this.wrappedRelationship = wrappedRelationship;
+		final ISnomedConcept source = wrappedRelationship.getSourceConcept();
+		for (String expandParam : expand) {
+			if ("source.fsn".equals(expandParam)) {
+				if (source.getFsn() != null) {
+					setSource(new SnomedConceptMini(source.getId(), source.getFsn().getTerm()));
+				} else {
+					setSource(new SnomedConceptMini(source.getId()));
+				}
+			} else if ("type.fsn".equals(expandParam)) {
+				final ISnomedConcept type = wrappedRelationship.getTypeConcept();
+				if (type.getFsn() != null) {
+					setType(new SnomedConceptMini(type.getId(), type.getFsn().getTerm()));
+				} else {
+					setType(new SnomedConceptMini(type.getId()));
+				}
+			}
+		}
+	}
+	
+	@Override
+	public ISnomedConcept getDestinationConcept() {
+		return null;
+	}
+	
+	@Override
+	public ISnomedConcept getSourceConcept() {
+		return null;
+	}
+	
+	@Override
+	public ISnomedConcept getTypeConcept() {
+		return null;
 	}
 	
 	public void setSource(SnomedConceptMini source) {

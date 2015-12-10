@@ -33,6 +33,13 @@ public class SnomedConcept extends BaseSnomedComponent implements ISnomedConcept
 	private SnomedConcepts ancestors;
 	private SnomedConcepts descendants;
 
+	public SnomedConcept() {
+	}
+	
+	public SnomedConcept(String id) {
+		setId(id);
+	}
+	
 	@Override
 	public DefinitionStatus getDefinitionStatus() {
 		return definitionStatus;

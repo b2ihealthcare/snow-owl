@@ -6,7 +6,7 @@ public class SnomedConceptMini {
 	private String fsn;
 	
 	public SnomedConceptMini(String id) {
-		this.id = id;
+		this(id, id);
 	}
 	
 	public SnomedConceptMini(String id, String fsn) {

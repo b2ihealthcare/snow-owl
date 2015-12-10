@@ -152,8 +152,10 @@ public final class CDOBasedRepository implements InternalRepository, RepositoryC
 			handlers().registerHandler(address(), new ApiRequestHandler(services(), classLoaderProvider));
 		}
 		
-		// register event bridge/pipe between events and handlers
-		events().registerHandler(address(), new Pipe(handlers(), address()));
+		// register number of cores event bridge/pipe between events and handlers
+		for (int i = 0; i < Runtime.getRuntime().availableProcessors(); i++) {
+			events().registerHandler(address(), new Pipe(handlers(), address()));
+		}
 		// register RepositoryContextProvider
 		registry.put(RepositoryContextProvider.class, this);
 		registry.put(IndexTransactionProvider.class, getIndexUpdater());

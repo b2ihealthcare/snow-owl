@@ -21,24 +21,34 @@ package com.b2international.snowowl.snomed.core.domain;
  */
 public class SnomedRelationship extends BaseSnomedComponent implements ISnomedRelationship {
 
-	private String sourceId;
-	private String destinationId;
 	private boolean destinationNegated;
-	private String typeId;
 	private int group;
 	private int unionGroup;
 	private CharacteristicType characteristicType;
 	private RelationshipRefinability refinability;
 	private RelationshipModifier modifier;
+	private ISnomedConcept source;
+	private ISnomedConcept destination;
+	private ISnomedConcept type;
 
 	@Override
 	public String getSourceId() {
-		return sourceId;
+		return getSourceConcept().getId();
+	}
+	
+	@Override
+	public ISnomedConcept getSourceConcept() {
+		return source;
 	}
 
 	@Override
 	public String getDestinationId() {
-		return destinationId;
+		return getDestinationConcept().getId();
+	}
+	
+	@Override
+	public ISnomedConcept getDestinationConcept() {
+		return destination;
 	}
 
 	@Override
@@ -48,7 +58,12 @@ public class SnomedRelationship extends BaseSnomedComponent implements ISnomedRe
 
 	@Override
 	public String getTypeId() {
-		return typeId;
+		return getTypeConcept().getId();
+	}
+	
+	@Override
+	public ISnomedConcept getTypeConcept() {
+		return type;
 	}
 
 	@Override
@@ -76,20 +91,20 @@ public class SnomedRelationship extends BaseSnomedComponent implements ISnomedRe
 		return modifier;
 	}
 
-	public void setSourceId(final String sourceId) {
-		this.sourceId = sourceId;
+	public void setSource(ISnomedConcept source) {
+		this.source = source;
 	}
-
-	public void setDestinationId(final String destinationId) {
-		this.destinationId = destinationId;
+	
+	public void setDestination(ISnomedConcept destination) {
+		this.destination = destination;
 	}
-
+	
+	public void setType(ISnomedConcept type) {
+		this.type = type;
+	}
+	
 	public void setDestinationNegated(final boolean destinationNegated) {
 		this.destinationNegated = destinationNegated;
-	}
-
-	public void setTypeId(final String typeId) {
-		this.typeId = typeId;
 	}
 
 	public void setGroup(final int group) {

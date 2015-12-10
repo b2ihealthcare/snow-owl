@@ -15,12 +15,13 @@
  */
 package com.b2international.snowowl.snomed.api.rest;
 
+import static com.google.common.collect.Lists.newArrayList;
+
 import java.io.IOException;
 import java.io.StringReader;
 import java.util.List;
 import java.util.NoSuchElementException;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -36,6 +37,7 @@ import com.b2international.snowowl.core.exceptions.BadRequestException;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.api.exception.FullySpecifiedNameNotFoundException;
 import com.b2international.snowowl.snomed.api.exception.PreferredTermNotFoundException;
+import com.b2international.snowowl.snomed.api.rest.domain.ExpandableSnomedRelationship;
 import com.b2international.snowowl.snomed.api.rest.domain.RestApiError;
 import com.b2international.snowowl.snomed.api.rest.domain.SnomedConceptDescriptions;
 import com.b2international.snowowl.snomed.api.rest.domain.SnomedInboundRelationships;
@@ -66,9 +68,6 @@ import com.wordnik.swagger.annotations.ApiResponses;
 @RequestMapping(
 		produces={ AbstractRestService.SO_MEDIA_TYPE })
 public class SnomedConceptSubResourcesController extends AbstractSnomedRestService {
-
-	@Autowired
-	protected SnomedResourceExpander relationshipExpander;
 
 	@ApiOperation(
 			value="Retrieve descriptions of a concept", 
@@ -153,12 +152,26 @@ public class SnomedConceptSubResourcesController extends AbstractSnomedRestServi
 			throw new BadRequestException(e.getMessage());
 		}
 		
+		final StringBuilder newExpand = new StringBuilder();
+		for (String expandParam : expand) {
+			if (newExpand.length() > 0) {
+				newExpand.append(',');
+			}
+			if ("type.fsn".equals(expandParam)) {
+				newExpand.append("type(expand(fsn()))");
+			} else if ("source.fsn".equals(expandParam)) {
+				newExpand.append("source(expand(fsn()))");
+			}
+		}
+		
 		return DeferredResults.wrap(
 				SnomedRequests
 					.prepareSearchRelationship()
 					.filterByDestination(conceptId)
 					.setOffset(offset)
 					.setLimit(limit)
+					.setExpand(newExpand.toString())
+					.setLocales(extendedLocales)
 					.build(branchPath)
 					.execute(bus)
 					.then(new Function<SnomedRelationships, SnomedInboundRelationships>() {
@@ -166,8 +179,12 @@ public class SnomedConceptSubResourcesController extends AbstractSnomedRestServi
 						public SnomedInboundRelationships apply(SnomedRelationships input) {
 							final SnomedInboundRelationships result = new SnomedInboundRelationships();
 							result.setTotal(input.getTotal());
-							List<ISnomedRelationship> members = input.getItems();
-							members = relationshipExpander.expandRelationships(branchPath, members, extendedLocales, expand);
+							
+							final List<ISnomedRelationship> members = newArrayList();
+							for (ISnomedRelationship relationship : input) {
+								members.add(new ExpandableSnomedRelationship(relationship, expand));
+							}
+							
 							result.setInboundRelationships(members);
 							return result;
 						};

@@ -25,6 +25,20 @@ import com.b2international.snowowl.core.domain.IComponentEdge;
 public interface ISnomedRelationship extends SnomedCoreComponent, IComponentEdge {
 
 	/**
+	 * Returns the source concept of this relationship.
+	 * 
+	 * @return
+	 */
+	ISnomedConcept getSourceConcept();
+
+	/**
+	 * Returns the destination concept of this relationship.
+	 * 
+	 * @return
+	 */
+	ISnomedConcept getDestinationConcept();
+
+	/**
 	 * Checks whether the destination concept's meaning should be negated ({@code ObjectComplementOf} semantics in OWL2).
 	 * 
 	 * @return {@code true} if the destination concept is negated, {@code false} if it should be interpreted normally
@@ -39,16 +53,21 @@ public interface ISnomedRelationship extends SnomedCoreComponent, IComponentEdge
 	String getTypeId();
 
 	/**
+	 * Returns the type concept of this relationship.
+	 * 
+	 * @return
+	 */
+	ISnomedConcept getTypeConcept();
+
+	/**
 	 * Returns the relationship group number.
 	 * 
-	 * @return the relationship group, or 0 if this relationship can not be grouped, or is in an unnumbered, singleton
-	 * group
+	 * @return the relationship group, or 0 if this relationship can not be grouped, or is in an unnumbered, singleton group
 	 */
 	int getGroup();
 
 	/**
-	 * If multiple relationship destinations are to be taken as a disjunction, the relationships are assigned a
-	 * common, positive union group number.
+	 * If multiple relationship destinations are to be taken as a disjunction, the relationships are assigned a common, positive union group number.
 	 * 
 	 * @return the relationship union group, or 0 if this relationship is not part of a disjunction
 	 */
