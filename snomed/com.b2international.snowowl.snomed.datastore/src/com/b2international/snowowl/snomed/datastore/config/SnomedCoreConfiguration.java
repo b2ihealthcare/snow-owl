@@ -45,7 +45,7 @@ public class SnomedCoreConfiguration {
 	private int maxReasonerCount = DEFAULT_MAXIMUM_REASONER_COUNT;
 	
 	@Min(1)
-	@Max(10)
+	@Max(100)
 	private int maxReasonerResults = DEFAULT_MAXIMUM_REASONER_RESULTS;
 	
 	@NotEmpty
