@@ -1279,19 +1279,28 @@ public class SnomedRf2IndexInitializer extends Job {
 	private void indexUnvisitedConcepts(final Set<String> unvisitedConcepts, final Set<String> dirtyConceptsForCompareReindex) {
 		
 		final SnomedIndexServerService snomedIndexService = getSnomedIndexService();
-		for (final String sConceptId : unvisitedConcepts) {
+		for (final String unvisitedConcept : unvisitedConcepts) {
 			
-			final SnomedConceptIndexEntry concept = ApplicationContext.getInstance().getService(SnomedTerminologyBrowser.class).getConcept(branchPath, sConceptId);
+			final SnomedConceptIndexEntry concept = ApplicationContext.getInstance().getService(SnomedTerminologyBrowser.class).getConcept(branchPath, unvisitedConcept);
+			final long conceptId = Long.parseLong(unvisitedConcept);
+
+			// XXX: Handle MRCM predicates referring to a concept which is not imported currently
+			if (concept == null) {
+				if (conceptIdToPredicateMap.containsKey(conceptId)) {
+					continue;
+				} else {
+					throw new NullPointerException("Concept with identifier " + unvisitedConcept + " could not be reindexed.");
+				}
+			}
 			
-			final long conceptId = Long.parseLong(sConceptId);
 			final long conceptStorageKey = concept.getStorageKey();
 			final boolean active = concept.isActive(); 
 			final boolean released = concept.isReleased();
 			final boolean primitive = concept.isPrimitive();
 			final boolean exhaustive = concept.isExhaustive();
 			final long moduleId = Long.parseLong(concept.getModuleId());
-			final Collection<String> currentRefSetMemberships = getCurrentRefSetMemberships(sConceptId, newRefSetMemberships, detachedRefSetMemberships);
-			final Collection<String> currentMappingMemberships = getCurrentMappingMemberships(sConceptId, newMappingMemberships, detachedMappingMemberships);
+			final Collection<String> currentRefSetMemberships = getCurrentRefSetMemberships(unvisitedConcept, newRefSetMemberships, detachedRefSetMemberships);
+			final Collection<String> currentMappingMemberships = getCurrentMappingMemberships(unvisitedConcept, newMappingMemberships, detachedMappingMemberships);
 			
 			final Document doc = createConceptDocument(
 					conceptIdToPredicateMap, 
@@ -1305,12 +1314,10 @@ public class SnomedRf2IndexInitializer extends Job {
 					currentRefSetMemberships,
 					currentMappingMemberships,
 					concept.getEffectiveTimeAsLong(),
-					dirtyConceptsForCompareReindex.contains(sConceptId));
+					dirtyConceptsForCompareReindex.contains(unvisitedConcept));
 			
 			snomedIndexService.index(branchPath, doc, IndexUtils.getStorageKeyTerm(conceptStorageKey));
 		}
-		
-		
 	}
 	
 	private void indexConcepts(final String absolutePath) {

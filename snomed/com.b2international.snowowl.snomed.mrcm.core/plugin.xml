@@ -26,6 +26,28 @@
             id="com.b2international.snowowl.snomed.mrcm.core.concepteditor.IndexClientSnomedConceptEditorServiceConfigJob"
             terminologyId="com.b2international.snowowl.terminology.snomed">
       </serviceConfigJob>
+      <serviceConfigJob
+            class="com.b2international.snowowl.snomed.mrcm.core.boot.MrcmImporterClientConfigJob"
+            id="com.b2international.snowowl.snomed.mrcm.core.boot.MrcmImporterClientConfigJob"
+            terminologyId="com.b2international.snowowl.terminology.snomed">
+      </serviceConfigJob>
+      <serviceConfigJob
+            class="com.b2international.snowowl.snomed.mrcm.core.boot.MrcmExporterClientConfigJob"
+            id="com.b2international.snowowl.snomed.mrcm.core.boot.MrcmExporterClientConfigJob"
+            terminologyId="com.b2international.snowowl.terminology.snomed">
+      </serviceConfigJob>
+   </extension>
+   <extension
+         point="com.b2international.snowowl.core.terminologyComponent">
+      <terminologyComponent
+            decorator="icons/mrcm_editor.gif"
+            hierarchical="false"
+            icon="icons/mrcm_editor.gif"
+            id="com.b2international.snowowl.terminology.snomed.predicate"
+            intId="999"
+            name="MRCM Predicate"
+            terminologyId="com.b2international.snowowl.terminology.snomed">
+      </terminologyComponent>
    </extension>
 
 </plugin>

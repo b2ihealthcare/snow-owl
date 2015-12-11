@@ -58,6 +58,13 @@ public abstract class SnomedTerminologyComponentConstants {
 	public static final String DATA_TYPE_DATE = "com.b2international.snowowl.terminology.snomed.datatype.date";
 	public static final short DATA_TYPE_DATE_NUMBER = 109;
 	
+	/**
+	 * Fake terminology component type ID for predicates.
+	 * <br>ID: {@value}. 
+	 */
+	public static final String PREDICATE_TYPE = "com.b2international.snowowl.terminology.snomed.predicate";
+	public static final int PREDICATE_TYPE_ID = 999;
+	
 	private static final Pattern PATTERN = Pattern.compile("^\\d*$");
 
 	/**
@@ -184,5 +191,4 @@ public abstract class SnomedTerminologyComponentConstants {
 			throw new IllegalArgumentException("Unknown terminology component identifier: " + id);
 		}
 	}
-	
 }

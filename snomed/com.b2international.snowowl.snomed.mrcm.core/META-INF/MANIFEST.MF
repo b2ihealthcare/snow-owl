@@ -13,14 +13,17 @@ Require-Bundle: org.eclipse.core.runtime;bundle-version="3.8.0",
  com.b2international.snowowl.snomed.escg
 Bundle-RequiredExecutionEnvironment: JavaSE-1.7
 Bundle-ActivationPolicy: lazy
-Export-Package: com.b2international.snowowl.snomed.mrcm,com.b2internat
- ional.snowowl.snomed.mrcm.core,com.b2international.snowowl.snomed.mrc
- m.core.concepteditor,com.b2international.snowowl.snomed.mrcm.core.con
- figuration,com.b2international.snowowl.snomed.mrcm.core.extensions,co
- m.b2international.snowowl.snomed.mrcm.core.importer,com.b2internation
- al.snowowl.snomed.mrcm.core.renderer,com.b2international.snowowl.snom
- ed.mrcm.core.validator,com.b2international.snowowl.snomed.mrcm.core.v
- alidator.util,com.b2international.snowowl.snomed.mrcm.core.widget,com
- .b2international.snowowl.snomed.mrcm.core.widget.bean,com.b2internati
- onal.snowowl.snomed.mrcm.core.widget.model
+Export-Package: com.b2international.snowowl.snomed.mrcm,
+ com.b2international.snowowl.snomed.mrcm.core,
+ com.b2international.snowowl.snomed.mrcm.core.concepteditor,
+ com.b2international.snowowl.snomed.mrcm.core.configuration,
+ com.b2international.snowowl.snomed.mrcm.core.extensions,
+ com.b2international.snowowl.snomed.mrcm.core.importer,
+ com.b2international.snowowl.snomed.mrcm.core.io,
+ com.b2international.snowowl.snomed.mrcm.core.renderer,
+ com.b2international.snowowl.snomed.mrcm.core.validator,
+ com.b2international.snowowl.snomed.mrcm.core.validator.util,
+ com.b2international.snowowl.snomed.mrcm.core.widget,
+ com.b2international.snowowl.snomed.mrcm.core.widget.bean,
+ com.b2international.snowowl.snomed.mrcm.core.widget.model
 Import-Package: org.slf4j;version="1.7.2"

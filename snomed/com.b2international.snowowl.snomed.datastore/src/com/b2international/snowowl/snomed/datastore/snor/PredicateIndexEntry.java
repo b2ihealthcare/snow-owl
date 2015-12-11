@@ -25,7 +25,9 @@ import javax.annotation.Nullable;
 import javax.annotation.concurrent.Immutable;
 import javax.annotation.concurrent.ThreadSafe;
 
+import com.b2international.snowowl.core.api.ITerminologyComponentIdProvider;
 import com.b2international.snowowl.core.api.index.IIndexEntry;
+import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.snomed.mrcm.DataType;
 import com.b2international.snowowl.snomed.mrcm.GroupRule;
 import com.google.common.base.Objects;
@@ -38,7 +40,7 @@ import com.google.common.base.Preconditions;
  */
 @Immutable
 @ThreadSafe
-public class PredicateIndexEntry implements IIndexEntry, Serializable {
+public class PredicateIndexEntry implements IIndexEntry, Serializable, ITerminologyComponentIdProvider {
 
 	private static final long serialVersionUID = -3084452506109842527L;
 
@@ -378,5 +380,10 @@ public class PredicateIndexEntry implements IIndexEntry, Serializable {
 	@Override
 	public long getStorageKey() {
 		return storageKey;
+	}
+	
+	@Override
+	public String getTerminologyComponentId() {
+		return SnomedTerminologyComponentConstants.PREDICATE_TYPE;
 	}
 }

@@ -49,6 +49,7 @@
 		<!-- SNOMED CT MRCM Support -->
 		<module>com.b2international.snowowl.snomed.mrcm.core</module>
 		<module>com.b2international.snowowl.snomed.mrcm.core.server</module>
+		<module>com.b2international.snowowl.snomed.mrcm.core.server.tests</module>
 		<module>com.b2international.snowowl.snomed.mrcm.model</module>
 		
 		<!-- SNOMED CT Import-Export -->

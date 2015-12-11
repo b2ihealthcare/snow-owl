@@ -20,7 +20,7 @@ import org.eclipse.emf.ecore.EPackage;
 
 import com.b2international.snowowl.core.api.ILookupService;
 import com.b2international.snowowl.core.api.ILookupServiceProvider;
-import com.b2international.snowowl.datastore.tasks.ITerminologyComponentIdProvider;
+import com.b2international.snowowl.core.api.ITerminologyComponentIdProvider;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSet;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetPackage;
