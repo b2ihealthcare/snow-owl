@@ -193,6 +193,8 @@ import com.b2international.snowowl.snomed.datastore.SnomedRefSetUtil;
 import com.b2international.snowowl.snomed.datastore.SnomedTerminologyBrowser;
 import com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants;
 import com.b2international.snowowl.snomed.datastore.browser.SnomedIndexQueries;
+import com.b2international.snowowl.snomed.datastore.index.SnomedDescriptionIndexEntry;
+import com.b2international.snowowl.snomed.datastore.index.SnomedDescriptionIndexQueryAdapter;
 import com.b2international.snowowl.snomed.datastore.index.SnomedIndexService;
 import com.b2international.snowowl.snomed.datastore.index.refset.SnomedDescriptionTypeRefSetMemberIndexEntry;
 import com.b2international.snowowl.snomed.datastore.index.refset.SnomedDescriptionTypeRefSetMemberIndexQueryAdapter;
@@ -1600,6 +1602,12 @@ public class SnomedComponentService implements ISnomedComponentService, IPostSto
 			
 		}
 		
+	}
+	
+	@Override
+	public Collection<SnomedDescriptionIndexEntry> getAllActiveDescriptionEntry(IBranchPath branchPath) {
+		checkNotNull(branchPath, "Branch path argument cannot be null.");
+		return getIndexServerService().searchUnsorted(branchPath, SnomedDescriptionIndexQueryAdapter.createFindAllActiveDescriptionEntry());
 	}
 	
 	/* (non-Javadoc)

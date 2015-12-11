@@ -37,6 +37,7 @@ import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConst
 import com.b2international.snowowl.snomed.datastore.SnomedDescriptionFragment;
 import com.b2international.snowowl.snomed.datastore.SnomedModuleDependencyRefSetMemberFragment;
 import com.b2international.snowowl.snomed.datastore.SnomedRefSetMemberFragment;
+import com.b2international.snowowl.snomed.datastore.index.SnomedDescriptionIndexEntry;
 import com.b2international.snowowl.snomed.datastore.snor.PredicateIndexEntry;
 import com.b2international.snowowl.snomed.mrcm.DataType;
 import com.b2international.snowowl.snomed.mrcm.HierarchyInclusionType;
@@ -292,6 +293,14 @@ public interface ISnomedComponentService {
 	 * @return a set of IDs for all descriptions in the ontology.
 	 */
 	LongSet getAllDescriptionIds(final IBranchPath branchPath);
+	
+	/**
+	 * Returns with a collection of all active {@link SnomedDescriptionIndexEntry} for the specified branchPath.
+	 * 
+	 * @param branchPath the branch path
+	 * @return a collection of {@link SnomedDescriptionIndexEntry}
+	 */
+	Collection<SnomedDescriptionIndexEntry> getAllActiveDescriptionEntry(final IBranchPath branchPath);
 	
 	/**
 	 * Returns with a collection of the reference set member's referenced component storage keys.  

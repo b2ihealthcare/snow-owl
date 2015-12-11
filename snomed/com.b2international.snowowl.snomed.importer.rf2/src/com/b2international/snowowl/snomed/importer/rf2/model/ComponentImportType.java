@@ -27,6 +27,7 @@ public enum ComponentImportType {
 	CONCEPT("concept"),
 	DESCRIPTION("description"),
 	RELATIONSHIP("relationship"),
+	RELATIONSHIP_UNION_GROUP("relationship union group"),
 	LANGUAGE_TYPE_REFSET("language type reference set member"),
 	SIMPLE_TYPE_REFSET("simple type reference set member"),
 	ATTRIBUTE_VALUE_REFSET("attribute value type reference set member"),

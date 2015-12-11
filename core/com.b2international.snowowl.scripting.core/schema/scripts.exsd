@@ -67,6 +67,13 @@
                </appinfo>
             </annotation>
          </attribute>
+         <attribute name="open" type="boolean" use="default" value="false">
+            <annotation>
+               <documentation>
+                  Set to true if the specified script must be opened upon script project creation, set to false otherwise (default value).
+               </documentation>
+            </annotation>
+         </attribute>
       </complexType>
    </element>
 

@@ -549,7 +549,7 @@ public abstract class AbstractSnomedImporter<T extends AbstractComponentRow, C e
 		}
 	}
 
-	private String getCommitMessage(final String effectiveTimeKey) {
+	protected String getCommitMessage(final String effectiveTimeKey) {
 		if (!UNPUBLISHED_KEY.equals(effectiveTimeKey)) {
 			return MessageFormat.format("Imported SNOMED CT components with effective {0} from {1} release.", effectiveTimeKey, importContext.getContentSubType().getLowerCaseName());
 		} else {

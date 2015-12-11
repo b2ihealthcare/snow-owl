@@ -37,7 +37,7 @@ import com.google.common.collect.ImmutableMap;
 
 public class SnomedRelationshipImporter extends AbstractSnomedTerminologyImporter<RelationshipRow, Relationship> {
 
-	private static final Map<String, CellProcessor> CELLPROCESSOR_MAPPING = ImmutableMap.<String, CellProcessor>builder()
+	protected static final Map<String, CellProcessor> CELLPROCESSOR_MAPPING = ImmutableMap.<String, CellProcessor>builder()
 				.put(RelationshipRow.PROP_ID, NullObjectPattern.INSTANCE)
 				.put(RelationshipRow.PROP_EFFECTIVE_TIME, createEffectiveTimeCellProcessor())
 				.put(RelationshipRow.PROP_ACTIVE, new ParseBool("1", "0"))
@@ -66,7 +66,11 @@ public class SnomedRelationshipImporter extends AbstractSnomedTerminologyImporte
 			INDEXES);
 
 	public SnomedRelationshipImporter(final SnomedImportContext importContext, final InputStream releaseFileStream, final String releaseFileIdentifier) {
-		super(IMPORT_CONFIGURATION, importContext, releaseFileStream, releaseFileIdentifier);
+		this(IMPORT_CONFIGURATION, importContext, releaseFileStream, releaseFileIdentifier);
+	}
+
+	protected SnomedRelationshipImporter(SnomedImportConfiguration<RelationshipRow> importConfiguration, SnomedImportContext importContext, InputStream releaseFileStream, String releaseFileIdentifier) {
+		super(importConfiguration, importContext, releaseFileStream, releaseFileIdentifier);
 	}
 
 	@Override
