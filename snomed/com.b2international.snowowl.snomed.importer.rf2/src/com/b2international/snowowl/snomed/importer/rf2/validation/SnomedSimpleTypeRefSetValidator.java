@@ -16,13 +16,10 @@
 package com.b2international.snowowl.snomed.importer.rf2.validation;
 
 import java.net.URL;
-import java.util.Set;
 
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
 import com.b2international.snowowl.snomed.importer.net4j.ImportConfiguration;
-import com.b2international.snowowl.snomed.importer.net4j.SnomedValidationDefect;
 import com.b2international.snowowl.snomed.importer.rf2.model.ComponentImportType;
-import com.b2international.snowowl.snomed.importer.rf2.util.ValidationUtil;
 
 /**
  * Represents a release file validator that validates the simple type reference set.
@@ -30,8 +27,8 @@ import com.b2international.snowowl.snomed.importer.rf2.util.ValidationUtil;
  */
 public class SnomedSimpleTypeRefSetValidator extends SnomedRefSetValidator {
 	
-	public SnomedSimpleTypeRefSetValidator(final ImportConfiguration configuration, final URL releaseUrl, final Set<SnomedValidationDefect> defects, final ValidationUtil validationUtil) {
-		super(configuration, releaseUrl, ComponentImportType.SIMPLE_TYPE_REFSET, defects, validationUtil, SnomedRf2Headers.SIMPLE_TYPE_HEADER.length);
+	public SnomedSimpleTypeRefSetValidator(final ImportConfiguration configuration, final URL releaseUrl, final SnomedValidationContext context) {
+		super(configuration, releaseUrl, ComponentImportType.SIMPLE_TYPE_REFSET, context, SnomedRf2Headers.SIMPLE_TYPE_HEADER);
 	}
 
 	@Override
@@ -39,8 +36,4 @@ public class SnomedSimpleTypeRefSetValidator extends SnomedRefSetValidator {
 		return "simple type";
 	}
 	
-	@Override
-	protected String[] getExpectedHeader() {
-		return SnomedRf2Headers.SIMPLE_TYPE_HEADER;
-	}
 }

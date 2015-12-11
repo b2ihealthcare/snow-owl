@@ -20,6 +20,7 @@ import static com.google.common.base.Preconditions.checkArgument;
 import com.b2international.commons.VerhoeffCheck;
 import com.b2international.snowowl.core.terminology.ComponentCategory;
 import com.b2international.snowowl.snomed.datastore.id.gen.SingleItemIdGenerationStrategy;
+import com.b2international.snowowl.snomed.datastore.internal.id.SnomedComponentIdentifierValidator;
 import com.b2international.snowowl.snomed.datastore.internal.id.SnomedIdentifierImpl;
 import com.b2international.snowowl.snomed.datastore.internal.id.SnomedIdentifierServiceImpl;
 import com.b2international.snowowl.snomed.datastore.internal.id.reservations.SnomedIdentifierReservationServiceImpl;
@@ -78,7 +79,7 @@ public class SnomedIdentifiers {
 	public static SnomedIdentifier of(String componentId) {
 		validate(componentId);
 		final int checkDigit = Character.getNumericValue(componentId.charAt(componentId.length() - 1));
-		final int componentIdentifier = Character.getNumericValue(componentId.charAt(componentId.length() - 2));
+		final int componentIdentifier = getComponentIdentifier(componentId);
 		final int partitionIdentifier = Character.getNumericValue(componentId.charAt(componentId.length() - 3));
 		final String namespace = partitionIdentifier == 0 ? null : componentId.substring(componentId.length() - 10, componentId.length() - 3);
 		final long itemId = partitionIdentifier == 0 ? Long.parseLong(componentId.substring(0, componentId.length() - 3)) : Long
@@ -106,9 +107,33 @@ public class SnomedIdentifiers {
 		try {
 			Long.parseLong(componentId);
 		} catch (NumberFormatException e) {
-			throw new IllegalArgumentException("ComponentId should parse to a Long");
+			throw new IllegalArgumentException("ComponentId should be a number");
 		}
 		checkArgument(VerhoeffCheck.validateLastChecksumDigit(componentId), "ComponentId should pass Verhoeff check-digit test");
+	}
+	
+	/**
+	 * Extracts the component identifier from the given component ID.
+	 * 
+	 * @param componentId
+	 * @return
+	 */
+	public static int getComponentIdentifier(String componentId) {
+		final char ciChar = componentId.charAt(componentId.length() - 2);
+		final int ci = Character.digit(ciChar, 10);
+		if (ci == -1) {
+			throw new IllegalArgumentException("Invalid component identifier " + ciChar);
+		}
+		return ci;
+	}
+	
+	/**
+	 * Returns the component category for a SNOMED CT identifier, or <code>null</code> in case of invalid 
+	 * @param componentId
+	 * @return
+	 */
+	public static ComponentCategory getComponentCategory(String componentId) {
+		return ComponentCategory.getByOrdinal(getComponentIdentifier(componentId));
 	}
 
 	/**
@@ -137,6 +162,21 @@ public class SnomedIdentifiers {
 	 */
 	public static SnomedIdentifier generateFrom(int itemId, String namespace, ComponentCategory component) {
 		return of(new SnomedIdentifierServiceImpl(new SnomedIdentifierReservationServiceImpl(), new SingleItemIdGenerationStrategy(String.valueOf(itemId))).generateId(component, namespace));
+	}
+	
+	/**
+	 * Constructs a {@link SnomedIdentifierValidator} to validate IDs of the given {@link ComponentCategory}.
+	 * @param category
+	 * @return
+	 */
+	public static SnomedIdentifierValidator getIdentifierValidator(ComponentCategory category) {
+		switch (category) {
+		case CONCEPT:
+		case DESCRIPTION:
+		case RELATIONSHIP:
+			return new SnomedComponentIdentifierValidator(category);
+		default: throw new UnsupportedOperationException("Can't create validator for category: " + category);
+		}
 	}
 
 }
