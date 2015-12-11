@@ -30,7 +30,6 @@ import com.b2international.snowowl.snomed.Concept;
 import com.b2international.snowowl.snomed.Description;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
-import com.b2international.snowowl.snomed.datastore.SnomedConceptLookupService;
 import com.b2international.snowowl.snomed.datastore.SnomedEditingContext;
 import com.b2international.snowowl.snomed.datastore.SnomedRefSetEditingContext;
 import com.b2international.snowowl.snomed.datastore.SnomedRefSetLookupService;
@@ -122,7 +121,7 @@ public abstract class AbstractSnomedRefSetImporter<T extends AbstractRefSetRow, 
 			identifierConcept.getDescriptions().add( //add synonym
 					editingContext.buildDefaultDescription(
 							getUnindentifiedRefSetPT(identifierId), //PT 
-							new SnomedConceptLookupService().getComponent(Concepts.SYNONYM, editingContext.getTransaction()))); //synonym description type
+							Concepts.SYNONYM)); //synonym description type
 			
 			identifierConcept.setId(identifierId); //explicitly set ID as it is generated on the concept
 			

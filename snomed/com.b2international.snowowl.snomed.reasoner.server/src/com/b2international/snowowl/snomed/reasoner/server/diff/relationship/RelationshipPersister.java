@@ -34,7 +34,6 @@ import com.b2international.snowowl.snomed.reasoner.server.diff.OntologyChange.Na
 import com.b2international.snowowl.snomed.reasoner.server.diff.OntologyChangeProcessor;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedConcreteDataTypeRefSet;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedConcreteDataTypeRefSetMember;
-import com.google.common.base.Objects;
 import com.google.common.collect.Maps;
 
 /**
@@ -197,6 +196,9 @@ public class RelationshipPersister extends OntologyChangeProcessor<StatementFrag
 			final Relationship originalRel = relationshipLookupService.getComponent(Long.toString(addedEntry.getStatementId()), transaction);
 			
 			for (final SnomedConcreteDataTypeRefSetMember originalMember : originalRel.getConcreteDomainRefSetMembers()) {
+				if (Concepts.ADDITIONAL_RELATIONSHIP.equals(originalMember.getCharacteristicTypeId())) {
+					continue;
+				}
 				
 				final SnomedConcreteDataTypeRefSet concreteDataTypeRefSet = (SnomedConcreteDataTypeRefSet) originalMember.getRefSet();
 				
@@ -205,7 +207,7 @@ public class RelationshipPersister extends OntologyChangeProcessor<StatementFrag
 						originalMember.getUomComponentId(),
 						originalMember.getOperatorComponentId(),
 						originalMember.getSerializedValue(), 
-						getCharacteristicTypeId(originalMember, Concepts.DEFINING_RELATIONSHIP), 
+						Concepts.INFERRED_RELATIONSHIP, 
 						originalMember.getLabel(), 
 						module.getId(), 
 						concreteDataTypeRefSet);
@@ -214,8 +216,5 @@ public class RelationshipPersister extends OntologyChangeProcessor<StatementFrag
 			}
 		}
 	}
-
-	private String getCharacteristicTypeId(final SnomedConcreteDataTypeRefSetMember originalMember, final String defaultCharacteristicTypeId) {
-		return Objects.firstNonNull(originalMember.getCharacteristicTypeId(), defaultCharacteristicTypeId);
-	}
+	
 }
