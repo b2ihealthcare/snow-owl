@@ -57,34 +57,22 @@ public class DocIdCollector extends Collector {
 		docIds = new FixedBitSet(size);
 	}
 	
-	/* (non-Javadoc)
-	 * @see org.apache.lucene.search.Collector#setScorer(org.apache.lucene.search.Scorer)
-	 */
 	@Override
 	public void setScorer(Scorer scorer) throws IOException {
 		//intentionally ignored
 	}
 
-	/* (non-Javadoc)
-	 * @see org.apache.lucene.search.Collector#collect(int)
-	 */
 	@Override
 	public void collect(int doc) throws IOException {
 		docIds.set(docBase + doc);
 		++numDocIds;
 	}
 
-	/* (non-Javadoc)
-	 * @see org.apache.lucene.search.Collector#setNextReader(org.apache.lucene.index.AtomicReaderContext)
-	 */
 	@Override
 	public void setNextReader(AtomicReaderContext context) throws IOException {
 		docBase = Preconditions.checkNotNull(context, "Atomic reader context argument cannot be null.").docBase;
 	}
 
-	/* (non-Javadoc)
-	 * @see org.apache.lucene.search.Collector#acceptsDocsOutOfOrder()
-	 */
 	@Override
 	public boolean acceptsDocsOutOfOrder() {
 		return true;
@@ -170,6 +158,4 @@ public class DocIdCollector extends Collector {
 		int getDocID();
 		
 	}
-	
-
 }

@@ -29,6 +29,8 @@ public interface Event {
 
 	void send(IEventBus bus);
 	
+	void publish(IEventBus bus);
+	
 	void send(IEventBus bus, IHandler<IMessage> replyHandler);
 	
 	<T> Promise<T> send(IEventBus bus, Class<T> returnType);

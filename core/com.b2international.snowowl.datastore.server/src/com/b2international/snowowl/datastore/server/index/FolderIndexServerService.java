@@ -79,8 +79,8 @@ public abstract class FolderIndexServerService extends FSIndexServerService<Pare
 		}
 	};
 	
-	protected FolderIndexServerService(final File indexPath) {
-		super(indexPath);
+	protected FolderIndexServerService(final File indexPath, final long timeout) {
+		super(indexPath, timeout);
 		InternalTerminologyRegistryServiceRegistry.INSTANCE.register(getRepositoryUuid(), this);
 	}
 

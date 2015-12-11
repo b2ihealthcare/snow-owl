@@ -13,22 +13,30 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.datastore.server.index;
+package com.b2international.snowowl.datastore.server.events;
 
+import static com.google.common.base.Preconditions.checkNotNull;
+
+import com.b2international.snowowl.datastore.branch.Branch;
 
 /**
- * Represents an index post processor. Used to perform any arbitrary content modification.
+ * @since 4.3
  */
-public interface IIndexPostProcessor {
-
-	/**Performs the post processing on the given branch with the specified timestamp.*/
-	void postProcess(final IIndexPostProcessingConfiguration configuration);
-
-	/**Noop index post processor implementation. Does nothing.*/
-	IIndexPostProcessor NOOP = new IIndexPostProcessor() {
-		@Override public void postProcess(final IIndexPostProcessingConfiguration configuration) {
-			//intentionally ignored.
-		}
-	};
+public class BranchChangedEvent extends BaseBranchEvent {
 	
+	private final Branch branch;
+	
+	public BranchChangedEvent(final String repositoryId, final Branch branch) {
+		super(repositoryId);
+		this.branch = checkNotNull(branch, "branch");
+	}
+	
+	public Branch getBranch() {
+		return branch;
+	}
+
+	@Override
+	protected String getAddress() {
+		return super.getAddress() + "/changes";
+	}
 }

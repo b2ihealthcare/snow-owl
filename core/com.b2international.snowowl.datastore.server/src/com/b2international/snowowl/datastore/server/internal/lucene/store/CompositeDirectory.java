@@ -17,115 +17,176 @@ package com.b2international.snowowl.datastore.server.internal.lucene.store;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.util.Arrays;
+import java.nio.file.NoSuchFileException;
 import java.util.Collection;
-import java.util.HashSet;
 import java.util.Set;
 
-import org.apache.lucene.index.IndexCommit;
 import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.IOContext;
 import org.apache.lucene.store.IndexInput;
 import org.apache.lucene.store.IndexOutput;
 import org.apache.lucene.store.Lock;
 import org.apache.lucene.store.LockFactory;
+import org.apache.lucene.store.NoSuchDirectoryException;
 
+import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Iterables;
+import com.google.common.collect.Sets;
+import com.google.common.collect.Sets.SetView;
+
+/**
+ * Represents a composite directory, where files may be retrieved from one "base" instance and an additional "overlay" instance.
+ * <p>
+ * Files can typically be written to the overlay instance only. 
+ */
 public class CompositeDirectory extends Directory {
 
-	// The secondary directory will not be closed when the composite directory closes
-	private final Directory primaryDirectory;
-	private final IndexCommit parentCommit;
+	private final Directory baseDirectory;
+	private final Directory overlayDirectory;
 
-	public CompositeDirectory(final IndexCommit parentCommit, final Directory primaryDirectory) {
-		this.parentCommit = parentCommit;
-		this.primaryDirectory = primaryDirectory;
-	}
-
-	private void checkExists(final String name) throws IOException, FileNotFoundException {
-		if (!fileExists(name)) {
-			throw new FileNotFoundException(name);
-		}
+	public CompositeDirectory(final Directory baseDirectory, final Directory overlayDirectory) {
+		this.baseDirectory = baseDirectory;
+		this.overlayDirectory = overlayDirectory;
 	}
 
 	@Override
 	public String[] listAll() throws IOException {
-		final Set<String> files = new HashSet<String>(parentCommit.getFileNames());
-		// Files will be fetched from the primary directory in case file names overlap
-		files.addAll(Arrays.asList(primaryDirectory.listAll()));
-		return (String[]) files.toArray(new String[files.size()]);
+		final ImmutableSet.Builder<String> files = ImmutableSet.builder();
+		
+		files.add(baseDirectory.listAll());
+		
+		try {
+			files.add(overlayDirectory.listAll());
+		} catch (final NoSuchDirectoryException ignored) {
+			// Allow overlay directory to not exist
+		}
+				
+		return Iterables.toArray(files.build(), String.class);
 	}
 
 	@Override
+	@Deprecated
 	public boolean fileExists(final String name) throws IOException {
-		return primaryDirectory.fileExists(name) || parentCommit.getFileNames().contains(name);
+		return overlayDirectory.fileExists(name) || baseDirectory.fileExists(name);
 	}
 
 	@Override
 	public void deleteFile(final String name) throws IOException {
-		if (primaryDirectory.fileExists(name)) {
-			primaryDirectory.deleteFile(name);
-		}
+		overlayDirectory.deleteFile(name);
 	}
 
 	@Override
 	public long fileLength(final String name) throws IOException {
-		checkExists(name);
-		return primaryDirectory.fileExists(name) ? primaryDirectory.fileLength(name) : parentCommit.getDirectory().fileLength(name);
+		IOException notFoundException = null;
+
+		try {
+			return overlayDirectory.fileLength(name);
+		} catch (FileNotFoundException | NoSuchFileException e1) {
+			notFoundException = e1;
+		} catch (final IOException e2) {
+			throw e2;
+		}
+
+		try {
+			return baseDirectory.fileLength(name);
+		} catch (FileNotFoundException | NoSuchFileException e1) {
+			notFoundException.addSuppressed(e1);
+		} catch (final IOException e2) {
+			throw e2;
+		}
+
+		throw notFoundException;
 	}
 
 	@Override
 	public void sync(final Collection<String> names) throws IOException {
-		final Set<String> primaryNames = new HashSet<String>(names);
-		primaryNames.retainAll(Arrays.asList(primaryDirectory.listAll()));
-		primaryDirectory.sync(primaryNames);
+		final Set<String> allNames = ImmutableSet.copyOf(names);
+		final Set<String> overlayNames = ImmutableSet.copyOf(overlayDirectory.listAll());
+		final SetView<String> syncedNames = Sets.intersection(allNames, overlayNames);
+
+		overlayDirectory.sync(syncedNames.immutableCopy());
 	}
 
+	/**
+	 * {@inheritDoc}
+	 * <p>
+	 * The file will be read from the overlay directory if it exists both in base and in overlay.
+	 */
 	@Override
 	public IndexInput openInput(final String name, final IOContext context) throws IOException {
-		checkExists(name);
-		return primaryDirectory.fileExists(name) 
-				? primaryDirectory.openInput(name, context) 
-				: parentCommit.getDirectory().openInput(name, context);
+		IOException notFoundException = null;
+
+		try {
+			return overlayDirectory.openInput(name, context);
+		} catch (FileNotFoundException | NoSuchFileException e1) {
+			notFoundException = e1;
+		} catch (final IOException e2) {
+			throw e2;
+		}
+
+		try {
+			return baseDirectory.openInput(name, context);
+		} catch (FileNotFoundException | NoSuchFileException e1) {
+			notFoundException.addSuppressed(e1);
+		} catch (final IOException e2) {
+			throw e2;
+		}
+
+		throw notFoundException;
 	}
 
-	/* (non-Javadoc)
-	 * @see org.apache.lucene.store.Directory#createOutput(java.lang.String, org.apache.lucene.store.IOContext)
-	 */
 	@Override
 	public IndexOutput createOutput(final String name, final IOContext context) throws IOException {
-		return primaryDirectory.createOutput(name, context);
+		return overlayDirectory.createOutput(name, context);
 	}
 
-	/* (non-Javadoc)
-	 * @see org.apache.lucene.store.Directory#close()
-	 */
 	@Override
 	public void close() throws IOException {
-		primaryDirectory.close();
+		IOException closeException = null;
+
+		try {
+			overlayDirectory.close();
+		} catch (final IOException e) {
+			closeException = e;
+		}
+
+		try {
+			baseDirectory.close();
+		} catch (final IOException e) {
+			if (closeException != null) {
+				closeException.addSuppressed(e);
+			} else {
+				closeException = e;
+			}
+		}
+
+		if (closeException != null) {
+			throw closeException;
+		}
 	}
 
 	@Override
 	public String toString() {
-		return getClass().getSimpleName() + "(" + parentCommit + "," + primaryDirectory + ")";
+		return getClass().getSimpleName() + "(" + baseDirectory + "," + overlayDirectory + ")";
 	}
 
 	@Override
 	public Lock makeLock(final String name) {
-		return primaryDirectory.makeLock(name);
+		return overlayDirectory.makeLock(name);
 	}
 
 	@Override
 	public void clearLock(final String name) throws IOException {
-		primaryDirectory.clearLock(name);
+		overlayDirectory.clearLock(name);
 	}
 
 	@Override
 	public void setLockFactory(final LockFactory lockFactory) throws IOException {
-		primaryDirectory.setLockFactory(lockFactory);
+		overlayDirectory.setLockFactory(lockFactory);
 	}
 
 	@Override
 	public LockFactory getLockFactory() {
-		return primaryDirectory.getLockFactory();
+		return overlayDirectory.getLockFactory();
 	} 
 }

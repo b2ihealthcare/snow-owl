@@ -18,7 +18,9 @@ package com.b2international.snowowl.datastore.server.index;
 import static com.google.common.base.Preconditions.checkNotNull;
 
 import java.io.File;
+import java.nio.file.Path;
 
+import com.b2international.snowowl.core.SnowOwlApplication;
 import com.b2international.snowowl.core.api.index.IIndexEntry;
 import com.google.common.base.Supplier;
 import com.google.common.base.Suppliers;
@@ -30,20 +32,27 @@ public abstract class FSIndexServerService<E extends IIndexEntry> extends IndexS
 
 	private final Supplier<IDirectoryManager> directorySupplier = Suppliers.memoize(new Supplier<IDirectoryManager>() {
 		@Override public IDirectoryManager get() {
-			return new FSDirectoryManager(getRepositoryUuid(), indexPath, FSIndexServerService.this);
+			return new FSDirectoryManager(getRepositoryUuid(), getAbsoluteIndexRoot());
 		}
 	});
 
-	private final File indexPath;	
+	private final Path indexPath;	
 	
-	protected FSIndexServerService(final File indexPath) {
-		this.indexPath = checkNotNull(indexPath, "indexPath");
+	protected FSIndexServerService(final File indexPath, final long timeout) {
+		super(timeout);
+		this.indexPath = checkNotNull(indexPath, "indexPath").toPath();
+	}
+	
+	private File getAbsoluteIndexRoot() {
+		// ".../resources/indexes/snomed"
+		return SnowOwlApplication.INSTANCE.getEnviroment().getDataDirectory().toPath()
+				.resolve("indexes")
+				.resolve(indexPath)
+				.toFile();
 	}
 	
 	@Override
 	protected IDirectoryManager getDirectoryManager() {
 		return directorySupplier.get();
 	}
-
-
 }

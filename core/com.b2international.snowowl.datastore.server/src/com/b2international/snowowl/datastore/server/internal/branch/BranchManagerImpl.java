@@ -17,13 +17,14 @@ package com.b2international.snowowl.datastore.server.internal.branch;
 
 import java.util.Collection;
 
+import javax.annotation.OverridingMethodsMustInvokeSuper;
+
 import com.b2international.snowowl.core.Metadata;
 import com.b2international.snowowl.core.exceptions.AlreadyExistsException;
 import com.b2international.snowowl.core.exceptions.BadRequestException;
 import com.b2international.snowowl.core.exceptions.NotFoundException;
 import com.b2international.snowowl.datastore.branch.Branch;
 import com.b2international.snowowl.datastore.branch.BranchManager;
-import com.b2international.snowowl.datastore.branch.Branch.BranchState;
 import com.b2international.snowowl.datastore.store.Store;
 import com.b2international.snowowl.datastore.store.query.Query;
 import com.b2international.snowowl.datastore.store.query.QueryBuilder;
@@ -69,7 +70,7 @@ public abstract class BranchManagerImpl implements BranchManager {
 		if (getBranchFromStore(path) != null) {
 			throw new AlreadyExistsException(Branch.class.getSimpleName(), path);
 		}
-		return reopen(parent, name, metadata);
+		return sendChangeEvent(reopen(parent, name, metadata)); // Explicit notification (creation)
 	}
 
 	abstract InternalBranch reopen(InternalBranch parent, String name, Metadata metadata);
@@ -118,20 +119,20 @@ public abstract class BranchManagerImpl implements BranchManager {
 	}
 
 	final InternalBranch merge(final InternalBranch target, final InternalBranch source, final String commitMessage) {
-		final InternalBranch mergedTarget = applyChangeSet(target, source, false, commitMessage);
-		reopen((InternalBranch) source.parent(), source.name(), source.metadata());
+		final InternalBranch mergedTarget = applyChangeSet(target, source, false, commitMessage); // Implicit notification (commit)
+		final InternalBranch reopenedSource = reopen((InternalBranch) source.parent(), source.name(), source.metadata());
+		sendChangeEvent(reopenedSource); // Explicit notification (reopen)
 		return mergedTarget;
 	}
 
 	final InternalBranch rebase(final InternalBranch source, final InternalBranch target, final String commitMessage) {
-		InternalBranch parent = (InternalBranch) source.parent();
-		applyChangeSet(parent, source, true, commitMessage);
-		final InternalBranch rebasedSource = reopen(parent, source.name(), source.metadata());
+		applyChangeSet(target, source, true, commitMessage);
+		final InternalBranch reopenedSource = reopen(target, source.name(), source.metadata());
 		
-		if (source.state() == BranchState.DIVERGED) {
-			return applyChangeSet(rebasedSource, source, false, commitMessage);
+		if (source.headTimestamp() > source.baseTimestamp()) {
+			return applyChangeSet(reopenedSource, source, false, commitMessage); // Implicit notification (reopen & commit)
 		} else {
-			return rebasedSource;
+			return sendChangeEvent(reopenedSource); // Explicit notification (reopen)
 		}
 	}
 
@@ -147,13 +148,23 @@ public abstract class BranchManagerImpl implements BranchManager {
 	private InternalBranch doDelete(final InternalBranch branchImpl) {
 		final InternalBranch deleted = branchImpl.withDeleted();
 		branchStore.replace(branchImpl.path(), branchImpl, deleted);
-		return deleted;
+		return sendChangeEvent(deleted); // Explicit notification (delete)
 	}
 	
 	/*package*/ final InternalBranch handleCommit(final InternalBranch branch, final long timestamp) {
 		final InternalBranch branchAfterCommit = branch.withHeadTimestamp(timestamp);
 		registerBranch(branchAfterCommit);
-		return branchAfterCommit;
+		return sendChangeEvent(branchAfterCommit); // Explicit notification (commit)
+	}
+
+	/**
+	 * Subclasses should override this method if they want to broadcast notifications of changed branches.
+	 * @param branch the subject of the notification (may not be {@code null})
+	 * @return {@code branch} (for convenience)
+	 */
+	@OverridingMethodsMustInvokeSuper
+	InternalBranch sendChangeEvent(final InternalBranch branch) {
+		return branch;
 	}
 
 	/*package*/ final Collection<? extends Branch> getChildren(BranchImpl branchImpl) {

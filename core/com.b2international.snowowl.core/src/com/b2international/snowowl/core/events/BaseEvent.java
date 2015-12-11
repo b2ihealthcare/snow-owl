@@ -32,6 +32,11 @@ public abstract class BaseEvent implements Event {
 	}
 
 	@Override
+	public final void publish(IEventBus bus) {
+		bus.publish(getAddress(), this);
+	}
+	
+	@Override
 	public final void send(IEventBus bus, IHandler<IMessage> replyHandler) {
 		bus.send(getAddress(), this, replyHandler);
 	}
