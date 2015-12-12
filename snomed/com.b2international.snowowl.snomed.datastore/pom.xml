@@ -21,22 +21,6 @@
 		</resources>
 		<plugins>
 			<plugin>
-				<groupId>org.eclipse.xtend</groupId>
-				<artifactId>xtend-maven-plugin</artifactId>
-				<version>${xtend.compiler.version}</version>
-				<configuration>
-					<outputDirectory>${basedir}/xtend-gen</outputDirectory>
-				</configuration>
-				<executions>
-					<execution>
-						<goals>
-							<goal>compile</goal>
-						</goals>
-					</execution>
-				</executions>
-			</plugin>
-			<plugin>
-
 				<artifactId>maven-compiler-plugin</artifactId>
 				<executions>
 					<execution>
@@ -68,6 +52,21 @@
 				<artifactId>groovy-eclipse-compiler</artifactId>
 				<version>${groovy.compiler.version}</version>
 				<extensions>true</extensions>
+			</plugin>
+			<plugin>
+				<groupId>org.eclipse.xtend</groupId>
+				<artifactId>xtend-maven-plugin</artifactId>
+				<version>${xtend.compiler.version}</version>
+				<configuration>
+					<outputDirectory>${basedir}/xtend-gen</outputDirectory>
+				</configuration>
+				<executions>
+					<execution>
+						<goals>
+							<goal>compile</goal>
+						</goals>
+					</execution>
+				</executions>
 			</plugin>
 		</plugins>
 	</build>
