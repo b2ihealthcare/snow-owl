@@ -1554,8 +1554,8 @@ public class SnomedComponentService implements ISnomedComponentService, IPostSto
 			
 			manager = indexService.getManager(branchPath);
 			searcher = manager.acquire();
-			
-			indexService.search(branchPath, query, collector);
+
+			searcher.search(query, collector);
 			
 			final int hitCount = collector.getDocIDs().size();
 			
@@ -1572,7 +1572,7 @@ public class SnomedComponentService implements ISnomedComponentService, IPostSto
 			while (itr.next()) {
 				
 				final Document doc = searcher.doc(itr.getDocID(), COMPONENT_ID_KEY_TO_LOAD);
-				$.add(IndexUtils.getIntValue(doc.getField(COMPONENT_ID)));
+				$.add(IndexUtils.getLongValue(doc.getField(COMPONENT_ID)));
 				
 			}
 			
