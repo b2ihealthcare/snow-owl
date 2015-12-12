@@ -429,7 +429,7 @@ public final class ImportUtil {
 		return !Iterables.tryFind(result.getValidationDefects(), new Predicate<SnomedValidationDefect>() {
 			@Override
 			public boolean apply(SnomedValidationDefect input) {
-				return !DefectType.HEADER_DIFFERENCES.equals(input.getDefectType());
+				return input.getDefectType().isCritical();
 			}
 		}).isPresent();
 	}
