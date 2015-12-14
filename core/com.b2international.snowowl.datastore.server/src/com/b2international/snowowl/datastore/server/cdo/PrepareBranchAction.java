@@ -46,7 +46,7 @@ public class PrepareBranchAction extends AbstractCDOBranchAction {
 	}
 
 	@Override
-	protected boolean isApplicable(String repositoryId, IBranchPath taskBranchPath) {
+	protected boolean isApplicable(String repositoryId, IBranchPath taskBranchPath) throws Throwable {
 		if (!super.isApplicable(repositoryId, taskBranchPath)) {
 			return false;
 		}

@@ -95,7 +95,7 @@ public abstract class AbstractCDOBranchAction {
 		}
 	}
 
-	protected boolean shouldRunUnlocked() {
+	protected boolean shouldRunUnlocked() throws Throwable {
 		for (final Entry<String, IBranchPath> repositoryBranchPath : branchPathMap.getLockedEntries().entrySet()) {
 			final String repositoryId = repositoryBranchPath.getKey();
 			final IBranchPath taskBranchPath = repositoryBranchPath.getValue();
@@ -118,7 +118,11 @@ public abstract class AbstractCDOBranchAction {
 		return;
 	}
 
-	protected boolean isApplicable(String repositoryId, IBranchPath taskBranchPath) {
+	protected boolean isApplicable(String repositoryId, IBranchPath taskBranchPath) throws Throwable {
+		return shouldLock(taskBranchPath);
+	}
+
+	private boolean shouldLock(IBranchPath taskBranchPath) {
 		if (taskBranchPath == null) {
 			return false;
 		} else if (BranchPathUtils.isMain(taskBranchPath)) {
@@ -140,13 +144,12 @@ public abstract class AbstractCDOBranchAction {
 		return lockDescription;
 	}
 
-	private void acquireLocks() throws OperationLockException, InterruptedException {
+	private void acquireLocks() throws Throwable {
 
 		for (final Entry<String, IBranchPath> repositoryBranchPath : branchPathMap.getLockedEntries().entrySet()) {
-			final String repositoryId = repositoryBranchPath.getKey();
 			final IBranchPath branchPath = repositoryBranchPath.getValue();
 
-			if (isApplicable(repositoryId, branchPath)) {
+			if (shouldLock(branchPath)) {
 				lockTargets.add(createLockTarget(repositoryBranchPath.getKey(), branchPath));
 				lockTargets.add(createLockTarget(repositoryBranchPath.getKey(), branchPath.getParent()));	
 			}
