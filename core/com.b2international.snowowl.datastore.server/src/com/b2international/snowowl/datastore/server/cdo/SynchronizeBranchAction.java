@@ -36,15 +36,19 @@ import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.LogUtils;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.datastore.IBranchPathMap;
+import com.b2international.snowowl.datastore.branch.Branch.BranchState;
 import com.b2international.snowowl.datastore.cdo.ConflictWrapper;
 import com.b2international.snowowl.datastore.cdo.CustomConflictException;
 import com.b2international.snowowl.datastore.cdo.ICDOConnection;
 import com.b2international.snowowl.datastore.oplock.impl.DatastoreLockContextDescriptions;
 import com.b2international.snowowl.datastore.server.CDOServerCommitBuilder;
+import com.b2international.snowowl.datastore.server.events.BranchChangedEvent;
 import com.b2international.snowowl.datastore.server.events.BranchReply;
+import com.b2international.snowowl.datastore.server.events.ReadBranchEvent;
 import com.b2international.snowowl.datastore.server.events.ReopenBranchEvent;
 import com.b2international.snowowl.datastore.server.internal.branch.CDOBranchMerger;
 import com.b2international.snowowl.eventbus.IEventBus;
+import com.google.common.collect.ImmutableSet;
 
 /**
  * Synchronizes changes with the task branches' parents. 
@@ -52,6 +56,9 @@ import com.b2international.snowowl.eventbus.IEventBus;
 public class SynchronizeBranchAction extends AbstractCDOBranchAction {
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(SynchronizeBranchAction.class);
+
+	// XXX: STALE is not expected for "shallow" branching scenarios (MAIN-version-task, where version branches may not be rebased at all) 
+	private static final Set<BranchState> SYNCHRONIZABLE_STATES = ImmutableSet.of(BranchState.BEHIND, BranchState.DIVERGED, BranchState.STALE); 
 
 	private final List<CDOTransaction> transactions = newArrayList();
 
@@ -61,26 +68,36 @@ public class SynchronizeBranchAction extends AbstractCDOBranchAction {
 		super(branchPathMap, userId, DatastoreLockContextDescriptions.SYNCHRONIZE);
 		this.commitComment = commitComment;
 	}
+	
+	@Override
+	protected boolean isApplicable(String repositoryId, IBranchPath taskBranchPath) throws Throwable {
+		if (!super.isApplicable(repositoryId, taskBranchPath)) {
+			return false;
+		}
+		
+		final IEventBus eventBus = ApplicationContext.getServiceForClass(IEventBus.class);
+		final ReadBranchEvent event = new ReadBranchEvent(repositoryId, taskBranchPath.getPath());
+		final BranchReply reply;
+
+		try {
+			reply = event.send(eventBus, BranchReply.class).get();
+		} catch (InterruptedException e) {
+			throw e;
+		} catch (ExecutionException e) {
+			throw e.getCause();
+		}
+		
+		BranchState state = reply.getBranch().state();
+		return SYNCHRONIZABLE_STATES.contains(state);
+	}
 
 	@Override
 	protected void apply(final String repositoryId, final IBranchPath taskBranchPath) throws Throwable {
 
 		final ICDOConnection connection = getConnection(repositoryId);
 		final CDOBranch taskBranch = connection.getBranch(taskBranchPath);
-
-		// Does the task CDO branch exist?
-		if (null == taskBranch) {
-			return;
-		}
-		
 		final IBranchPath parentBranchPath = taskBranchPath.getParent();
-		final CDOBranch parentBranch = taskBranch.getBase().getBranch();
 
-		// Did someone set the main branch as taskBranch ("base of main branch is null")?
-		if (null == parentBranch) {
-			return;
-		}
-		
 		LOGGER.info(MessageFormat.format("Applying changes from ''{0}'' to ''{1}'' in ''{2}''...", 
 				parentBranchPath,
 				taskBranchPath, 
@@ -97,21 +114,25 @@ public class SynchronizeBranchAction extends AbstractCDOBranchAction {
 		}
 		
 		final IEventBus eventBus = ApplicationContext.getServiceForClass(IEventBus.class);
-		final ReopenBranchEvent event = new ReopenBranchEvent(repositoryId, taskBranchPath.getPath());
-		final BranchReply reply;
+		final ReopenBranchEvent reopenEvent = new ReopenBranchEvent(repositoryId, taskBranchPath.getPath());
+		final BranchReply reply; 
+		
 		try {
-			reply = event.send(eventBus, BranchReply.class).get();
+			reply = reopenEvent.send(eventBus, BranchReply.class).get();
 		} catch (InterruptedException e) {
 			throw e;
 		} catch (ExecutionException e) {
 			throw e.getCause();
 		}
 		
-		// This transaction now holds the actual change set on the reopened child
-		final CDOTransaction syncTransaction = applyChangeSet(connection, taskBranch, reply.getBranch().branchPath());
+		// This transaction now holds the actual change set on the reopened child, which has the same name as before
+		final CDOTransaction syncTransaction = applyChangeSet(connection, taskBranch, taskBranchPath);
 		if (syncTransaction.isDirty()) {
 			transactions.add(syncTransaction);
 		} else {
+			// Explicit notification, let listeners know the new state
+			final BranchChangedEvent changeEvent = new BranchChangedEvent(repositoryId, reply.getBranch());
+			changeEvent.publish(eventBus);
 			syncTransaction.close();
 		}
 	}
@@ -124,8 +145,9 @@ public class SynchronizeBranchAction extends AbstractCDOBranchAction {
 		try {
 			
 			transaction = connection.createTransaction(newTaskBranchPath);
-			transaction.merge(taskBranch.getHead(), branchMerger);
 
+			// XXX: specifying sourceBase instead of defaulting to the computed common ancestor point here
+			transaction.merge(taskBranch.getHead(), taskBranch.getBase(), branchMerger);
 			LOGGER.info(MessageFormat.format("Post-processing components in ''{0}''...", connection.getRepositoryName()));
 			branchMerger.postProcess(transaction);
 			
@@ -160,18 +182,18 @@ public class SynchronizeBranchAction extends AbstractCDOBranchAction {
 			return;
 		}
 
-		try {
-
-			new CDOServerCommitBuilder(getUserId(), commitComment, transactions)
-				.parentContextDescription(getLockDescription())
-				.commit();
-
-			LogUtils.logUserEvent(LOGGER, getUserId(), "Synchronizing changes finished successfully.");
-
-		} finally {
-			for (final CDOTransaction transaction : transactions) {
-				transaction.close();
-			}
+		// Implicit branch change notification via committing
+		new CDOServerCommitBuilder(getUserId(), commitComment, transactions)
+			.parentContextDescription(getLockDescription())
+			.commit();
+		
+		LogUtils.logUserEvent(LOGGER, getUserId(), "Synchronizing changes finished successfully.");
+	}
+	
+	@Override
+	protected void cleanUp() {
+		for (final CDOTransaction transaction : transactions) {
+			transaction.close();
 		}
 	}
 }

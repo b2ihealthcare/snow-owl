@@ -79,7 +79,7 @@ public class PrepareBranchAction extends AbstractCDOBranchAction {
 
 			final IEventBus eventBus = ApplicationContext.getServiceForClass(IEventBus.class);
 			final CreateBranchEvent event = new CreateBranchEvent(repositoryId, parentBranchPath.getPath(), taskBranchPath.lastSegment(), new MetadataImpl());
-			event.send(eventBus, BranchReply.class).get();
+			event.send(eventBus, BranchReply.class).get(); // Event bus notification sent as part of branch creation
 		}
 	}
 }
