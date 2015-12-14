@@ -101,10 +101,4 @@ public interface IIndexService<E extends IIndexEntry> {
 	 * @return the total number of index entries matching the specific query
 	 */
 	public <E2 extends E> int getHitCount(final IBranchPath branchPath, final IIndexQueryAdapter<E2> queryAdapter);
-	
-	/**
-	 * Runs a warm-up query for the index service of the specified branch path.
-	 * @param branchPath the branch path to use (may not be {@code null})
-	 */
-	public void prepare(final IBranchPath branchPath);
 }

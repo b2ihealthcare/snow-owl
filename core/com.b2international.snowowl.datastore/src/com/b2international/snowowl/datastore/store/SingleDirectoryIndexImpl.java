@@ -50,6 +50,7 @@ import com.b2international.snowowl.core.SnowOwlApplication;
 import com.b2international.snowowl.datastore.SingleDirectoryIndex;
 import com.b2international.snowowl.datastore.index.DelimiterStopAnalyzer;
 import com.b2international.snowowl.datastore.index.IndexUtils;
+import com.b2international.snowowl.datastore.index.SearchWarmerFactory;
 import com.google.common.collect.Lists;
 import com.google.common.collect.MapMaker;
 import com.google.common.collect.Ordering;
@@ -107,7 +108,7 @@ public abstract class SingleDirectoryIndexImpl implements SingleDirectoryIndex, 
 			config.setIndexDeletionPolicy(new SnapshotDeletionPolicy(config.getIndexDeletionPolicy()));
 			this.writer = new IndexWriter(directory, config);
 			this.writer.commit(); // Create index if it didn't exist
-			this.manager = new SearcherManager(directory, null);
+			this.manager = new SearcherManager(directory, new SearchWarmerFactory());
 		} catch (final IOException e) {
 			throw new StoreException(e.getMessage(), e);
 		}

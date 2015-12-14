@@ -58,7 +58,6 @@ import com.b2international.snowowl.core.api.IBaseBranchPath;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.api.index.CommonIndexConstants;
 import com.b2international.snowowl.core.api.index.IIndexEntry;
-import com.b2international.snowowl.core.api.index.IIndexQueryAdapter;
 import com.b2international.snowowl.core.api.index.IndexException;
 import com.b2international.snowowl.datastore.BranchPathUtils;
 import com.b2international.snowowl.datastore.cdo.CDOBranchPath;
@@ -68,7 +67,6 @@ import com.b2international.snowowl.datastore.index.AbstractIndexUpdater;
 import com.b2international.snowowl.datastore.index.DocIdCollector;
 import com.b2international.snowowl.datastore.index.DocIdCollector.DocIdsIterator;
 import com.b2international.snowowl.datastore.index.DocumentWithScore;
-import com.b2international.snowowl.datastore.index.FakeQueryAdapter;
 import com.b2international.snowowl.datastore.index.IndexUtils;
 import com.google.common.base.Function;
 import com.google.common.base.Preconditions;
@@ -218,7 +216,7 @@ public abstract class IndexServerService<E extends IIndexEntry> extends Abstract
 				final IndexBranchService baseBranchService = getBranchService(logicalPath.getParent());
 				baseBranchService.createIndexCommit(logicalPath, physicalPath);
 				inactiveClose(logicalPath, true);
-				prepare(logicalPath);
+				getBranchService(logicalPath);
 			}
 			
 		} catch (final IOException e) {
@@ -230,12 +228,6 @@ public abstract class IndexServerService<E extends IIndexEntry> extends Abstract
 		final ICDOConnection connection = ApplicationContext.getServiceForClass(ICDOConnectionManager.class).getByUuid(getRepositoryUuid());
 		final CDOBranch branch = connection.getBranch(logicalPath);
 		return new CDOBranchPath(branch);
-	}
-	
-	@SuppressWarnings("unchecked")
-	@Override
-	public void prepare(final IBranchPath branchPath) {
-		getHitCount(branchPath, (IIndexQueryAdapter<E>) FakeQueryAdapter.INSTANCE);
 	}
 	
 	/**

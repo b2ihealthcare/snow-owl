@@ -54,6 +54,7 @@ import com.b2international.snowowl.core.api.index.IndexException;
 import com.b2international.snowowl.datastore.index.DelimiterStopAnalyzer;
 import com.b2international.snowowl.datastore.index.IndexUtils;
 import com.b2international.snowowl.datastore.index.NullSearcherManager;
+import com.b2international.snowowl.datastore.index.SearchWarmerFactory;
 import com.b2international.snowowl.datastore.server.internal.lucene.index.FilteringMergePolicy;
 import com.b2international.snowowl.datastore.server.internal.lucene.store.ReadOnlyDirectory;
 import com.google.common.base.Stopwatch;
@@ -110,7 +111,7 @@ public class IndexBranchService implements Closeable {
 			} else {
 				this.indexWriter = null;
 				final IndexCommit baseCommit = directory.getLastBaseIndexCommit(logicalBranchPath);
-				this.manager = new SearcherManager(new ReadOnlyDirectory(baseCommit), null);
+				this.manager = new SearcherManager(new ReadOnlyDirectory(baseCommit), new SearchWarmerFactory());
 			}
 
 		} else {
@@ -121,7 +122,7 @@ public class IndexBranchService implements Closeable {
 			} else {
 				this.indexWriter = null;
 				final IndexCommit baseCommit = directory.getLastBaseIndexCommit(logicalBranchPath);
-				this.manager = new SearcherManager(new ReadOnlyDirectory(baseCommit), null);
+				this.manager = new SearcherManager(new ReadOnlyDirectory(baseCommit), new SearchWarmerFactory());
 			}
 		}
 	}
