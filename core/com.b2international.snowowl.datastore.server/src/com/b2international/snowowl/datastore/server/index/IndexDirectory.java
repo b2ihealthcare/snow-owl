@@ -37,6 +37,7 @@ import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.api.SnowowlRuntimeException;
 import com.b2international.snowowl.core.api.index.IndexException;
 import com.b2international.snowowl.datastore.index.IndexUtils;
+import com.b2international.snowowl.datastore.index.SearchWarmerFactory;
 import com.google.common.base.Predicate;
 import com.google.common.base.Predicates;
 import com.google.common.collect.ImmutableList;
@@ -156,7 +157,7 @@ public class IndexDirectory implements AutoCloseable {
 	}
 
 	public SearcherManager createSearcherManager() throws IOException {
-		return new SearcherManager(directory, null);
+		return new SearcherManager(directory, new SearchWarmerFactory());
 	}
 
 	@Override

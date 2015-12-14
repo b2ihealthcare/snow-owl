@@ -49,6 +49,7 @@ import com.b2international.snowowl.core.IDisposableService;
 import com.b2international.snowowl.core.SnowOwlApplication;
 import com.b2international.snowowl.datastore.SingleDirectoryIndex;
 import com.b2international.snowowl.datastore.index.IndexUtils;
+import com.b2international.snowowl.datastore.index.SearchWarmerFactory;
 import com.b2international.snowowl.datastore.index.lucene.ComponentTermAnalyzer;
 import com.google.common.collect.Lists;
 import com.google.common.collect.MapMaker;
@@ -93,8 +94,8 @@ public abstract class SingleDirectoryIndexImpl implements SingleDirectoryIndex, 
 	
 	protected SingleDirectoryIndexImpl(final File directory, final boolean clean) {
 		checkNotNull(directory, "indexDirectory");
+		checkArgument(directory.exists() || directory.mkdirs(), "Couldn't create directories for path '%s'", directory);
 		this.indexDirectory = directory;
-		checkArgument(this.indexDirectory.exists() || this.indexDirectory.mkdirs(), "Couldn't create directories for path '%s'", this.indexDirectory);
 		initLucene(indexDirectory, clean);
 	}
 
@@ -107,7 +108,7 @@ public abstract class SingleDirectoryIndexImpl implements SingleDirectoryIndex, 
 			config.setIndexDeletionPolicy(new SnapshotDeletionPolicy(config.getIndexDeletionPolicy()));
 			this.writer = new IndexWriter(directory, config);
 			this.writer.commit(); // Create index if it didn't exist
-			this.manager = new SearcherManager(directory, null);
+			this.manager = new SearcherManager(directory, new SearchWarmerFactory());
 		} catch (final IOException e) {
 			throw new StoreException(e.getMessage(), e);
 		}
