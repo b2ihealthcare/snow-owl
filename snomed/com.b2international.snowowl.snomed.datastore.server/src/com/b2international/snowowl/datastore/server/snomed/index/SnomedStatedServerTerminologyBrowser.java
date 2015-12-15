@@ -97,7 +97,7 @@ public class SnomedStatedServerTerminologyBrowser extends SnomedServerTerminolog
 		Set<String> fieldsToLoad = SnomedMappings.fieldsToLoad().parent(STATED_RELATIONSHIP).build();
 		final Document doc = service.document(branchPath, topDocs.scoreDocs[0].doc, fieldsToLoad); // direct parents
 		
-		return SnomedMappings.parent(STATED_RELATIONSHIP).getValuesAsString(doc);
+		return SnomedMappings.parent(STATED_RELATIONSHIP).getValuesAsStringList(doc);
 	}
 	
 	@Override

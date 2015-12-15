@@ -241,10 +241,10 @@ final class SnomedConceptConverter extends BaseSnomedComponentConverter<SnomedCo
 				
 				final Document doc = searcher.doc(search.scoreDocs[0].doc, SnomedMappings.fieldsToLoad().parent().ancestor().build());
 				ImmutableSet.Builder<String> collectedIds = ImmutableSet.builder(); 
-				collectedIds.addAll(SnomedMappings.parent().getValuesAsString(doc));
+				collectedIds.addAll(SnomedMappings.parent().getValuesAsStringList(doc));
 
 				if (!expandOptions.getBoolean("direct")) {
-					collectedIds.addAll(SnomedMappings.ancestor().getValuesAsString(doc));	
+					collectedIds.addAll(SnomedMappings.ancestor().getValuesAsStringList(doc));	
 				}
 
 				SnomedConcepts ancestors = SnomedRequests.prepareSearchConcept()

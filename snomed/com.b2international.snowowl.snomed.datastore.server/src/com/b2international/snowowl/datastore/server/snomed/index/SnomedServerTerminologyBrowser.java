@@ -566,7 +566,7 @@ public class SnomedServerTerminologyBrowser extends AbstractIndexTerminologyBrow
 		}
 		
 		final Document doc = service.document(branchPath, topDocs.scoreDocs[0].doc, SnomedMappings.fieldsToLoad().parent().build());
-		return SnomedMappings.parent().getValuesAsString(doc);
+		return SnomedMappings.parent().getValuesAsStringList(doc);
 	}
 
 	@Override
