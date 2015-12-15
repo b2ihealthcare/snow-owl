@@ -17,6 +17,7 @@ package com.b2international.snowowl.datastore.index.mapping;
 
 import org.apache.lucene.document.Document;
 
+import bak.pcj.list.LongList;
 import bak.pcj.set.LongSet;
 
 /**
@@ -25,5 +26,6 @@ import bak.pcj.set.LongSet;
 public interface LongCollectionIndexField extends IndexField<Long> {
 
 	LongSet getValueAsLongSet(Document doc);
-
+	
+	LongList getValueAsLongList(Document doc);
 }

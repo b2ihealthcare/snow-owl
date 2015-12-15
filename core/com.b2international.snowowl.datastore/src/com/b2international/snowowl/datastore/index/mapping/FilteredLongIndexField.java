@@ -18,10 +18,13 @@ package com.b2international.snowowl.datastore.index.mapping;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.index.IndexableField;
 
+import com.google.common.base.Predicate;
+
+import bak.pcj.LongCollection;
+import bak.pcj.list.LongArrayList;
+import bak.pcj.list.LongList;
 import bak.pcj.set.LongOpenHashSet;
 import bak.pcj.set.LongSet;
-
-import com.google.common.base.Predicate;
 
 /**
  * @since 4.3
@@ -36,18 +39,29 @@ public class FilteredLongIndexField extends FilteredIndexField<Long> implements 
 	public LongSet getValueAsLongSet(Document doc) {
 		final IndexableField[] fields = getDelegate().getFields(doc);
 		final LongSet longIds = new LongOpenHashSet(fields.length + 1);
+		addIdsToLongCollection(fields, longIds);
+		return longIds;
+	}
+
+	@Override
+	public LongList getValueAsLongList(Document doc) {
+		final IndexableField[] fields = getDelegate().getFields(doc);
+		final LongList longIds = new LongArrayList(fields.length + 1);
+		addIdsToLongCollection(fields, longIds);
+		return longIds;
+	}
+
+	private void addIdsToLongCollection(final IndexableField[] fields, final LongCollection longIds) {
 		for (final IndexableField field : fields) {
 			final Long value = getDelegate().getValue(field);
 			if (getPredicate().apply(value)) {
 				longIds.add(value);
 			}
 		}
-		return longIds;
 	}
-	
+
 	@Override
 	protected LongIndexField getDelegate() {
 		return (LongIndexField) super.getDelegate();
 	}
-	
 }
