@@ -94,7 +94,7 @@ public final class SnomedDescriptionAcceptabilityUpdateRequest extends BaseReque
 		}
 
 		for (final Entry<String, Acceptability> languageMemberEntry : languageMembersToCreate.entrySet()) {
-			if (Acceptability.PREFERRED.equals(languageMemberEntry.getValue())) {
+			if (description.isActive() && Acceptability.PREFERRED.equals(languageMemberEntry.getValue())) {
 				if (synonymAndDescendantIds.contains(description.getType().getId())) {
 					updateOtherPreferredDescriptions(description.getConcept().getDescriptions(), description, languageMemberEntry.getKey(), 
 							synonymAndDescendantIds, context);
