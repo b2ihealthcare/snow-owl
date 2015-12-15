@@ -15,10 +15,7 @@
  */
 package com.b2international.snowowl.snomed.datastore.index.update;
 
-import static com.google.common.collect.Sets.newHashSet;
-
 import java.util.Collection;
-import java.util.Set;
 
 import org.apache.lucene.document.Document;
 
@@ -28,6 +25,8 @@ import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedDocument
 import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedMappings;
 import com.b2international.snowowl.snomed.datastore.index.refset.RefSetMemberChange;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType;
+import com.google.common.collect.HashMultiset;
+import com.google.common.collect.Multiset;
 
 /**
  * @since 4.3
@@ -48,9 +47,9 @@ public class ReferenceSetMembershipUpdater extends DocumentUpdaterBase<SnomedDoc
 		final IndexField<Long> referringMappingRefSetId = SnomedMappings.conceptReferringMappingRefSetId();
 		
 		// get reference set membership fields
-		final Set<Long> referencingRefSetIds = newHashSet(referringRefSetId.getValues(document));
+		final Multiset<Long> referencingRefSetIds = HashMultiset.create(referringRefSetId.getValues(document));
 		// get reference set mapping membership fields
-		final Set<Long> mappingReferencingRefSetIds = newHashSet(referringMappingRefSetId.getValues(document));
+		final Multiset<Long> mappingReferencingRefSetIds = HashMultiset.create(referringMappingRefSetId.getValues(document));
 		
 		// remove all fields
 		doc.removeAll(referringRefSetId);
@@ -59,7 +58,6 @@ public class ReferenceSetMembershipUpdater extends DocumentUpdaterBase<SnomedDoc
 		doc.removeAll(referringMappingRefSetId);
 		
 		// merge reference set membership with the changes extracted from the transaction, if any.
-		// FIXME: Maybe run the iteration twice to add everything, then remove everything?
 		for (final RefSetMemberChange change : memberChanges) {
 			switch (change.getChangeKind()) {
 				case ADDED:
@@ -68,6 +66,17 @@ public class ReferenceSetMembershipUpdater extends DocumentUpdaterBase<SnomedDoc
 					} else if (SnomedRefSetType.SIMPLE_MAP.equals(change.getType())) {
 						mappingReferencingRefSetIds.add(change.getRefSetId());
 					}
+					break;
+				case REMOVED:
+					break;
+				default:
+					throw new IllegalArgumentException("Unknown reference set member change kind: " + change.getChangeKind());
+			}
+		}
+
+		for (final RefSetMemberChange change : memberChanges) {
+			switch (change.getChangeKind()) {
+				case ADDED:
 					break;
 				case REMOVED:
 					if (SnomedRefSetType.SIMPLE.equals(change.getType()) || SnomedRefSetType.ATTRIBUTE_VALUE.equals(change.getType())) {
@@ -85,6 +94,7 @@ public class ReferenceSetMembershipUpdater extends DocumentUpdaterBase<SnomedDoc
 		for (final long refSetId : referencingRefSetIds) {
 			doc.conceptReferringRefSetId(refSetId);
 		}
+		
 		// re-add mapping reference set membership fields
 		for (final long refSetId : mappingReferencingRefSetIds) {
 			doc.conceptReferringMappingRefSetId(refSetId);
