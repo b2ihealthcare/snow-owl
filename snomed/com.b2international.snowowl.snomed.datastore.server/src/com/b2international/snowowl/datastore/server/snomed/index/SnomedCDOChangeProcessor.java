@@ -145,7 +145,14 @@ import bak.pcj.set.LongSet;
  */
 public class SnomedCDOChangeProcessor implements ICDOChangeProcessor {
 
-	private static final Set<String> MEMBER_FIELD_TO_LOAD = SnomedMappings.fieldsToLoad().active().memberReferencedComponentId().memberRefSetId().memberRefSetType().memberAcceptabilityId().build();
+	private static final Set<String> MEMBER_FIELD_TO_LOAD = SnomedMappings.fieldsToLoad()
+			.active()
+			.memberReferencedComponentId()
+			.memberRefSetId()
+			.memberRefSetType()
+			.memberAcceptabilityId()
+			.memberUuid()
+			.build();
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(SnomedCDOChangeProcessor.class);
 	
