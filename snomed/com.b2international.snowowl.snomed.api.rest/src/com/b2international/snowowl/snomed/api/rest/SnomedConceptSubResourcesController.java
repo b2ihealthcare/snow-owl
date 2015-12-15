@@ -20,7 +20,6 @@ import static com.google.common.collect.Lists.newArrayList;
 import java.io.IOException;
 import java.io.StringReader;
 import java.util.List;
-import java.util.NoSuchElementException;
 
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestHeader;
@@ -34,16 +33,15 @@ import org.springframework.web.context.request.async.DeferredResult;
 import com.b2international.commons.http.AcceptHeader;
 import com.b2international.commons.http.ExtendedLocale;
 import com.b2international.snowowl.core.exceptions.BadRequestException;
-import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.api.exception.FullySpecifiedNameNotFoundException;
 import com.b2international.snowowl.snomed.api.exception.PreferredTermNotFoundException;
+import com.b2international.snowowl.snomed.api.impl.DescriptionService;
 import com.b2international.snowowl.snomed.api.rest.domain.ExpandableSnomedRelationship;
 import com.b2international.snowowl.snomed.api.rest.domain.RestApiError;
 import com.b2international.snowowl.snomed.api.rest.domain.SnomedConceptDescriptions;
 import com.b2international.snowowl.snomed.api.rest.domain.SnomedInboundRelationships;
 import com.b2international.snowowl.snomed.api.rest.domain.SnomedOutboundRelationships;
 import com.b2international.snowowl.snomed.api.rest.util.DeferredResults;
-import com.b2international.snowowl.snomed.core.domain.Acceptability;
 import com.b2international.snowowl.snomed.core.domain.ISnomedConcept;
 import com.b2international.snowowl.snomed.core.domain.ISnomedDescription;
 import com.b2international.snowowl.snomed.core.domain.ISnomedRelationship;
@@ -53,7 +51,6 @@ import com.b2international.snowowl.snomed.core.domain.SnomedRelationships;
 import com.b2international.snowowl.snomed.datastore.server.request.SnomedRequests;
 import com.google.common.base.Function;
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.Iterables;
 import com.wordnik.swagger.annotations.Api;
 import com.wordnik.swagger.annotations.ApiOperation;
 import com.wordnik.swagger.annotations.ApiParam;
@@ -337,7 +334,7 @@ public class SnomedConceptSubResourcesController extends AbstractSnomedRestServi
 	@RequestMapping(
 			value="/{path:**}/concepts/{conceptId}/pt",
 			method = RequestMethod.GET)
-	public @ResponseBody DeferredResult<ISnomedDescription> getPreferredTerm(
+	public @ResponseBody ISnomedDescription getPreferredTerm(
 			@ApiParam(value="The branch path")
 			@PathVariable(value="path")
 			final String branchPath,
@@ -360,26 +357,14 @@ public class SnomedConceptSubResourcesController extends AbstractSnomedRestServi
 			throw new BadRequestException(e.getMessage());
 		}
 		
-		return DeferredResults.wrap(
-				SnomedRequests
-					.prepareSearchDescription()
-					.one()
-					.filterByConceptId(conceptId)
-					.filterByType("<<" + Concepts.SYNONYM)
-					.filterByAcceptability(Acceptability.PREFERRED)
-					.filterByExtendedLocales(extendedLocales)
-					.build(branchPath)
-					.execute(bus)
-					.then(new Function<SnomedDescriptions, ISnomedDescription>() {
-						@Override
-						public ISnomedDescription apply(SnomedDescriptions input) {
-							try {
-								return Iterables.getOnlyElement(input.getItems());
-							} catch (NoSuchElementException e) {
-								throw new PreferredTermNotFoundException(conceptId);
-							}
-						};
-					}));
+		final DescriptionService descriptionService = new DescriptionService(bus, branchPath);
+		final ISnomedDescription pt = descriptionService.getPreferredTerm(conceptId, extendedLocales);
+		
+		if (pt == null) {
+			throw new PreferredTermNotFoundException(conceptId);
+		} else {
+			return pt;
+		}
 	}
 	
 	@ApiOperation(
@@ -393,7 +378,7 @@ public class SnomedConceptSubResourcesController extends AbstractSnomedRestServi
 	@RequestMapping(
 			value="/{path:**}/concepts/{conceptId}/fsn",
 			method = RequestMethod.GET)
-	public @ResponseBody DeferredResult<ISnomedDescription> getFullySpecifiedName(
+	public @ResponseBody ISnomedDescription getFullySpecifiedName(
 			@ApiParam(value="The branch path")
 			@PathVariable(value="path")
 			final String branchPath,
@@ -416,25 +401,13 @@ public class SnomedConceptSubResourcesController extends AbstractSnomedRestServi
 			throw new BadRequestException(e.getMessage());
 		}
 		
-		return DeferredResults.wrap(
-				SnomedRequests
-				.prepareSearchDescription()
-				.one()
-				.filterByConceptId(conceptId)
-				.filterByType(Concepts.FULLY_SPECIFIED_NAME)
-				.filterByAcceptability(Acceptability.PREFERRED)
-				.filterByExtendedLocales(extendedLocales)
-				.build(branchPath)
-				.execute(bus)
-				.then(new Function<SnomedDescriptions, ISnomedDescription>() {
-					@Override
-					public ISnomedDescription apply(SnomedDescriptions input) {
-						try {
-							return Iterables.getOnlyElement(input.getItems());
-						} catch (NoSuchElementException e) {
-							throw new FullySpecifiedNameNotFoundException(conceptId);
-						}
-					};
-				}));
+		final DescriptionService descriptionService = new DescriptionService(bus, branchPath);
+		final ISnomedDescription fsn = descriptionService.getFullySpecifiedName(conceptId, extendedLocales);
+		
+		if (fsn == null) {
+			throw new FullySpecifiedNameNotFoundException(conceptId);
+		} else {
+			return fsn;
+		}
 	}
 }
