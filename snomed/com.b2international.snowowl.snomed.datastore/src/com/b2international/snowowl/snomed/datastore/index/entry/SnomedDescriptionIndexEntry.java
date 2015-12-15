@@ -18,7 +18,6 @@ package com.b2international.snowowl.snomed.datastore.index.entry;
 import static com.google.common.base.Preconditions.checkNotNull;
 
 import java.io.Serializable;
-import java.util.List;
 import java.util.Map;
 
 import org.apache.lucene.document.Document;
@@ -57,12 +56,12 @@ public class SnomedDescriptionIndexEntry extends SnomedIndexEntry implements ICo
 				.caseSignificanceId(SnomedMappings.descriptionCaseSignificance().getValueAsString(doc))
 				.effectiveTimeLong(SnomedMappings.effectiveTime().getValue(doc));
 		
-		final List<String> preferredRefSetIds = SnomedMappings.descriptionPreferredReferenceSetId().getValuesAsString(doc);
+		final Iterable<String> preferredRefSetIds = SnomedMappings.descriptionPreferredReferenceSetId().getValuesAsStringList(doc);
 		for (final String preferredRefSetId : preferredRefSetIds) {
 			builder.acceptability(preferredRefSetId, Acceptability.PREFERRED);
 		}
 		
-		final List<String> acceptableRefSetIds = SnomedMappings.descriptionAcceptableReferenceSetId().getValuesAsString(doc);
+		final Iterable<String> acceptableRefSetIds = SnomedMappings.descriptionAcceptableReferenceSetId().getValuesAsStringList(doc);
 		for (final String acceptableRefSetId : acceptableRefSetIds) {
 			builder.acceptability(acceptableRefSetId, Acceptability.ACCEPTABLE);
 		}
