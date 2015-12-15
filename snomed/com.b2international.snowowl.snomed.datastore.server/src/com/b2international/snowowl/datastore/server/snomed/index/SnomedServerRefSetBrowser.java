@@ -40,6 +40,7 @@ import java.util.Set;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.search.BooleanClause.Occur;
 import org.apache.lucene.search.BooleanQuery;
+import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.PrefixQuery;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.ScoreDoc;
@@ -59,6 +60,7 @@ import com.b2international.snowowl.core.api.index.IndexException;
 import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.datastore.cdo.CDOUtils;
 import com.b2international.snowowl.datastore.index.DocIdCollector;
+import com.b2international.snowowl.datastore.index.IndexRead;
 import com.b2international.snowowl.datastore.index.DocIdCollector.DocIdsIterator;
 import com.b2international.snowowl.datastore.index.IndexUtils;
 import com.b2international.snowowl.datastore.index.mapping.Mappings;
@@ -98,8 +100,6 @@ import bak.pcj.set.LongSet;
  */
 public class SnomedServerRefSetBrowser extends AbstractSnomedIndexBrowser<SnomedRefSetIndexEntry> implements SnomedRefSetBrowser {
 
-	private static final Set<String> MAPPING_REFERENCE_SET_ID_FIELD = SnomedMappings.fieldsToLoad().conceptReferringMappingRefSetId().build();
-	private static final Set<String> REFERENCE_SET_ID_FIELD = SnomedMappings.fieldsToLoad().conceptReferringRefSetId().build();
 	private static final Set<String> COMPONENT_ID_FIELD = SnomedMappings.fieldsToLoad().id().build();
 	private static final Set<String> REFERENCE_SET_TYPE_FIELD = SnomedMappings.fieldsToLoad().refSetType().build();
 	private static final Set<String> FIELDS_TO_LOAD_FOR_EXTENDED_COMPONENT = SnomedMappings.fieldsToLoad().id().iconId().build();
@@ -424,22 +424,32 @@ public class SnomedServerRefSetBrowser extends AbstractSnomedIndexBrowser<Snomed
 		Preconditions.checkNotNull(conceptId, "SNOMED CT concept ID argument cannot be null.");
 		
 		//if not a concept ID, we do nothing.
-		if (SnomedTerminologyComponentConstants.CONCEPT_NUMBER != 
-				SnomedTerminologyComponentConstants.getTerminologyComponentIdValueSafe(conceptId)) {
+		if (SnomedTerminologyComponentConstants.CONCEPT_NUMBER != SnomedTerminologyComponentConstants.getTerminologyComponentIdValueSafe(conceptId)) {
 			return Collections.emptySet();
 		}
 		
-		final Query query = SnomedMappings.newQuery().active().type(CONCEPT_NUMBER).id(conceptId).matchAll();
-		
-		final TopDocs topDocs = service.search(branchPath, query, 1);
-		
-		if (IndexUtils.isEmpty(topDocs)) {
-			return Collections.emptySet();
-		}
-		
-		final ScoreDoc scoreDoc = topDocs.scoreDocs[0];
-		final Document doc = service.document(branchPath, scoreDoc.doc, REFERENCE_SET_ID_FIELD);
-		return SnomedMappings.conceptReferringRefSetId().getValuesAsString(doc);
+		return service.executeReadTransaction(branchPath, new IndexRead<Collection<String>>() {
+			@Override
+			public Collection<String> execute(IndexSearcher index) throws IOException {
+				final Query query = SnomedMappings.newQuery()
+						.active()
+						.type(CONCEPT_NUMBER)
+						.id(conceptId)
+						.matchAll();
+				
+				final TopDocs topDocs = index.search(query, 1);
+				if (IndexUtils.isEmpty(topDocs)) {
+					return Collections.emptySet();
+				}
+				
+				final ScoreDoc scoreDoc = topDocs.scoreDocs[0];
+				final Document doc = index.doc(scoreDoc.doc, SnomedMappings.fieldsToLoad()
+						.conceptReferringRefSetId()
+						.build());
+				
+				return SnomedMappings.conceptReferringRefSetId().getValuesAsStringSet(doc);
+			}
+		});
 	}
 	
 	@Override
@@ -449,23 +459,32 @@ public class SnomedServerRefSetBrowser extends AbstractSnomedIndexBrowser<Snomed
 		Preconditions.checkNotNull(conceptId, "SNOMED CT concept ID argument cannot be null.");
 		
 		//if not a concept ID, we do nothing.
-		if (SnomedTerminologyComponentConstants.CONCEPT_NUMBER != 
-				SnomedTerminologyComponentConstants.getTerminologyComponentIdValueSafe(conceptId)) {
+		if (SnomedTerminologyComponentConstants.CONCEPT_NUMBER != SnomedTerminologyComponentConstants.getTerminologyComponentIdValueSafe(conceptId)) {
 			return Collections.emptySet();
 		}
 		
-		final Query query = SnomedMappings.newQuery().active().type(CONCEPT_NUMBER).id(conceptId).matchAll();
-		final TopDocs topDocs = service.search(branchPath, query, 1);
-		
-		if (null == topDocs || CompareUtils.isEmpty(topDocs.scoreDocs)) {
-			return Collections.emptySet();
-		}
-		
-		final ScoreDoc scoreDoc = topDocs.scoreDocs[0];
-		
-		final Document doc = service.document(branchPath, scoreDoc.doc, MAPPING_REFERENCE_SET_ID_FIELD);
-		final List<String> refSetIds = SnomedMappings.conceptReferringMappingRefSetId().getValuesAsString(doc);
-		return refSetIds;
+		return service.executeReadTransaction(branchPath, new IndexRead<Collection<String>>() {
+			@Override
+			public Collection<String> execute(IndexSearcher index) throws IOException {
+				final Query query = SnomedMappings.newQuery()
+						.active()
+						.type(CONCEPT_NUMBER)
+						.id(conceptId)
+						.matchAll();
+				
+				final TopDocs topDocs = index.search(query, 1);
+				if (IndexUtils.isEmpty(topDocs)) {
+					return Collections.emptySet();
+				}
+				
+				final ScoreDoc scoreDoc = topDocs.scoreDocs[0];
+				final Document doc = index.doc(scoreDoc.doc, SnomedMappings.fieldsToLoad()
+						.conceptReferringMappingRefSetId()
+						.build());
+				
+				return SnomedMappings.conceptReferringMappingRefSetId().getValuesAsStringSet(doc);
+			}
+		});
 	}
 	
 	@Override
