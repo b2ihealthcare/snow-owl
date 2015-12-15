@@ -16,6 +16,7 @@
 package com.b2international.snowowl.datastore.index.mapping;
 
 import java.util.List;
+import java.util.Set;
 
 import org.apache.lucene.document.Document;
 import org.apache.lucene.index.Term;
@@ -60,8 +61,13 @@ public class IndexFieldDelegate<T> implements IndexField<T> {
 	}
 	
 	@Override
-	public List<String> getValuesAsString(Document doc) {
-		return delegate.getValuesAsString(doc);
+	public List<String> getValuesAsStringList(Document doc) {
+		return delegate.getValuesAsStringList(doc);
+	}
+	
+	@Override
+	public Set<String> getValuesAsStringSet(Document doc) {
+		return delegate.getValuesAsStringSet(doc);
 	}
 	
 	@Override

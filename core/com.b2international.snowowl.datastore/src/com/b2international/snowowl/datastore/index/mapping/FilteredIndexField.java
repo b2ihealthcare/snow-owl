@@ -18,6 +18,7 @@ package com.b2international.snowowl.datastore.index.mapping;
 import static com.google.common.base.Preconditions.checkNotNull;
 
 import java.util.List;
+import java.util.Set;
 
 import org.apache.lucene.document.Document;
 
@@ -56,8 +57,13 @@ public class FilteredIndexField<T> extends IndexFieldDelegate<T> {
 	}
 	
 	@Override
-	public List<String> getValuesAsString(Document doc) {
+	public List<String> getValuesAsStringList(Document doc) {
 		return FluentIterable.from(getValues(doc)).transform(Functions.toStringFunction()).toList();
+	}
+	
+	@Override
+	public Set<String> getValuesAsStringSet(Document doc) {
+		return FluentIterable.from(getValues(doc)).transform(Functions.toStringFunction()).toSet();
 	}
 	
 	protected final Predicate<? super T> getPredicate() {

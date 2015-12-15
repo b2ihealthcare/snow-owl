@@ -16,6 +16,7 @@
 package com.b2international.snowowl.datastore.index.mapping;
 
 import java.util.List;
+import java.util.Set;
 
 import org.apache.lucene.document.Document;
 import org.apache.lucene.index.Term;
@@ -41,8 +42,10 @@ public interface IndexField<T> {
 
 	List<T> getValues(Document doc);
 
-	List<String> getValuesAsString(Document doc);
+	List<String> getValuesAsStringList(Document doc);
 
+	Set<String> getValuesAsStringSet(Document doc);
+	
 	TermQuery toQuery(T value);
 
 	PrefixQuery toExistsQuery();

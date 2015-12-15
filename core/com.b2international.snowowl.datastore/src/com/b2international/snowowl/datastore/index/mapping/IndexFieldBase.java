@@ -100,8 +100,13 @@ public abstract class IndexFieldBase<T> implements IndexField<T> {
 	}
 	
 	@Override
-	public final List<String> getValuesAsString(Document doc) {
+	public final List<String> getValuesAsStringList(Document doc) {
 		return FluentIterable.from(getValues(doc)).transform(Functions.toStringFunction()).toList();
+	}
+	
+	@Override
+	public final Set<String> getValuesAsStringSet(Document doc) {
+		return FluentIterable.from(getValues(doc)).transform(Functions.toStringFunction()).toSet();
 	}
 	
 	@Override
