@@ -73,8 +73,7 @@ public class ConceptReferringMemberChangeProcessor extends ChangeSetProcessorBas
 		
 		for (SnomedRefSetMember member : newReferringMembers) {
 			if (member.isActive()) {
-				final long refSetId = Long.parseLong(member.getRefSetIdentifierId());
-				memberChanges.put(member.getReferencedComponentId(), new RefSetMemberChange(refSetId, MemberChangeKind.ADDED, member.getRefSet().getType()));
+				addChange(memberChanges, member, MemberChangeKind.ADDED);
 			}
 		}
 		
@@ -85,8 +84,7 @@ public class ConceptReferringMemberChangeProcessor extends ChangeSetProcessorBas
 		
 		for (SnomedRefSetMember member : dirtyReferringMembers) {
 			if (!member.isActive()) {
-				final long refSetId = Long.parseLong(member.getRefSetIdentifierId());
-				memberChanges.put(member.getReferencedComponentId(), new RefSetMemberChange(refSetId, MemberChangeKind.REMOVED, member.getRefSet().getType()));
+				addChange(memberChanges, member, MemberChangeKind.REMOVED);
 			}
 		}
 		
@@ -97,14 +95,22 @@ public class ConceptReferringMemberChangeProcessor extends ChangeSetProcessorBas
 			final boolean active = SnomedMappings.active().getValue(doc) == 1;
 			final SnomedRefSetType type = SnomedRefSetType.get(SnomedMappings.memberRefSetType().getValue(doc)); 
 			if (active && isValidType(type)) {
+				final String uuid = SnomedMappings.memberUuid().getValue(doc);
 				final String referencedComponentId = SnomedMappings.memberReferencedComponentId().getValueAsString(doc);
 				final long refSetId = SnomedMappings.memberRefSetId().getValue(doc);
-				memberChanges.put(referencedComponentId, new RefSetMemberChange(refSetId, MemberChangeKind.REMOVED, type));
+				memberChanges.put(referencedComponentId, new RefSetMemberChange(uuid, refSetId, MemberChangeKind.REMOVED, type));
 			}
 		}
 		
 		for (String conceptId : memberChanges.keySet()) {
 			registerUpdate(conceptId, new ReferenceSetMembershipUpdater(conceptId, memberChanges.get(conceptId)));
 		}
+	}
+
+	private void addChange(final Multimap<String, RefSetMemberChange> memberChanges, SnomedRefSetMember member, MemberChangeKind changeKind) {
+		final String uuid = member.getUuid();
+		final long refSetId = Long.parseLong(member.getRefSetIdentifierId());
+		final SnomedRefSetType refSetType = member.getRefSet().getType();
+		memberChanges.put(member.getReferencedComponentId(), new RefSetMemberChange(uuid, refSetId, changeKind, refSetType));
 	}
 }
