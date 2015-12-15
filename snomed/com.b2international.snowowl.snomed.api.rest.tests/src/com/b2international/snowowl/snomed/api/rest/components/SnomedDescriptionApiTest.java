@@ -18,13 +18,13 @@ package com.b2international.snowowl.snomed.api.rest.components;
 import static com.b2international.snowowl.datastore.BranchPathUtils.createMainPath;
 import static com.b2international.snowowl.datastore.BranchPathUtils.createPath;
 import static com.b2international.snowowl.snomed.api.rest.SnomedComponentApiAssert.*;
+import static com.b2international.snowowl.test.commons.rest.RestExtensions.givenAuthenticatedRequest;
 import static com.google.common.collect.Lists.newArrayList;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.hasItem;
 
 import java.util.Map;
 
-import org.junit.Ignore;
 import org.junit.Test;
 
 import com.b2international.snowowl.core.api.IBranchPath;
@@ -283,6 +283,26 @@ public class SnomedDescriptionApiTest extends AbstractSnomedApiTest {
 
 		assertDescriptionCanBeUpdated(createMainPath(), descriptionId, updateRequestBody);
 		assertPreferredTermEquals(createMainPath(), DISEASE, descriptionId);
+	}
+	
+	@Test
+	public void updateAcceptabilityAndInactivate() {
+		final String ptId = givenAuthenticatedRequest(SnomedApiTestConstants.SCT_API)
+				.with().header("Accept-Language", "en-GB")
+				.when().get("/{path}/concepts/{conceptId}/pt", createMainPath(), DISEASE)
+				.then().extract()
+				.body().path("id");
+
+		final Map<?, ?> createRequestBody = createRequestBody(DISEASE, "Rare disease 2", Concepts.MODULE_SCT_CORE, Concepts.SYNONYM, "New description on MAIN");
+		final String descriptionId = assertComponentCreated(createMainPath(), SnomedComponentType.DESCRIPTION, createRequestBody);
+		final Map<?, ?> updateRequestBody = ImmutableMap.builder()
+				.put("acceptability", SnomedApiTestConstants.PREFERRED_ACCEPTABILITY_MAP)
+				.put("active", false)
+				.put("commitComment", "Changed description acceptability and inactivated it at the same time")
+				.build();
+		
+		assertDescriptionCanBeUpdated(createMainPath(), descriptionId, updateRequestBody);
+		assertPreferredTermEquals(createMainPath(), DISEASE, ptId);
 	}
 
 	@Test
