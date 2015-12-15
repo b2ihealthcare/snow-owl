@@ -148,7 +148,6 @@ public class SnomedRf2IndexInitializer extends Job {
 	
 	private Set<String> conceptsInImportFile;
 	private Set<String> descriptionsInImportFile;
-	private Set<String> refSetMembersInImportFile;
 	
 	private Set<String> conceptsWithMembershipChanges;
 	private Set<String> conceptsWithTaxonomyChanges;
@@ -208,7 +207,6 @@ public class SnomedRf2IndexInitializer extends Job {
 		}
 		
 		conceptsInImportFile = Sets.newHashSet();
-		refSetMembersInImportFile = Sets.newHashSet();
 		descriptionsInImportFile = Sets.newHashSet();
 		
 		conceptsWithMembershipChanges = Sets.newHashSet();
@@ -322,8 +320,6 @@ public class SnomedRf2IndexInitializer extends Job {
 				public void handleRecord(final int recordCount, final List<String> record) {
 
 					final String uuid = record.get(0);
-					refSetMembersInImportFile.add(uuid);
-
 					final long refSetId = Long.parseLong(record.get(4));
 					final String conceptId = record.get(5);
 					
@@ -331,9 +327,9 @@ public class SnomedRf2IndexInitializer extends Job {
 						final RefSetMemberChange change;
 						
 						if (ACTIVE_STATUS.equals(record.get(2))) {
-							change = new RefSetMemberChange(refSetId, MemberChangeKind.ADDED, refSetType);
+							change = new RefSetMemberChange(uuid, refSetId, MemberChangeKind.ADDED, refSetType);
 						} else {
-							change = new RefSetMemberChange(refSetId, MemberChangeKind.REMOVED, refSetType);
+							change = new RefSetMemberChange(uuid, refSetId, MemberChangeKind.REMOVED, refSetType);
 						}
 						
 						memberChanges.put(conceptId, change);
@@ -357,33 +353,31 @@ public class SnomedRf2IndexInitializer extends Job {
 				public void handleRecord(final int recordCount, final List<String> record) {
 
 					final String uuid = record.get(0);
-					refSetMembersInImportFile.add(uuid);
-
 					final long refSetId = Long.parseLong(record.get(4));
 					final String descriptionId = record.get(5);
 					final String acceptabilityId = record.get(6);
 					
-					// TODO
-					final RefSetMemberChange positiveChange = new RefSetMemberChange(refSetId, MemberChangeKind.ADDED, SnomedRefSetType.LANGUAGE);
-					final RefSetMemberChange negativeChange = new RefSetMemberChange(refSetId, MemberChangeKind.REMOVED, SnomedRefSetType.LANGUAGE);
+					final RefSetMemberChange positiveChange = new RefSetMemberChange(uuid, refSetId, MemberChangeKind.ADDED, SnomedRefSetType.LANGUAGE);
+					final RefSetMemberChange negativeChange = new RefSetMemberChange(uuid, refSetId, MemberChangeKind.REMOVED, SnomedRefSetType.LANGUAGE);
 					
 					if (Concepts.REFSET_DESCRIPTION_ACCEPTABILITY_PREFERRED.equals(acceptabilityId)) {
 						
 						if (ACTIVE_STATUS.equals(record.get(2))) {
+							// Preferred field gains this member, acceptable field should lose this member if it was present previously
 							preferredMemberChanges.put(descriptionId, positiveChange);
 							acceptableMemberChanges.put(descriptionId, negativeChange);
 						} else {
+							// Both fields lose this member
 							preferredMemberChanges.put(descriptionId, negativeChange);
+							acceptableMemberChanges.put(descriptionId, negativeChange);
 						}
 						
 						String conceptId = nonFsnIdToConceptIdMap.get(descriptionId);
 						if (StringUtils.isEmpty(conceptId)) {
 							// FIXME: This lookup can be avoided if the description is an FSN in the current RF2 file, and did not exist previously 
 							 final String[] descriptionProperties = ApplicationContext.getServiceForClass(ISnomedComponentService.class).getDescriptionProperties(branchPath, descriptionId);
-							 
 							 if (descriptionProperties != null) {
 								 final String typeId = descriptionProperties[1];
-								 
 								 if (!Concepts.FULLY_SPECIFIED_NAME.equals(typeId) && !Concepts.TEXT_DEFINITION.equals(typeId)) { 
 									 conceptId = descriptionProperties[0];
 								 }
@@ -398,9 +392,12 @@ public class SnomedRf2IndexInitializer extends Job {
 					} else {
 						
 						if (ACTIVE_STATUS.equals(record.get(2))) {
-							acceptableMemberChanges.put(descriptionId, positiveChange);
+							// Acceptable field gains this member, preferred field should lose this member if it was present previously
 							preferredMemberChanges.put(descriptionId, negativeChange);
+							acceptableMemberChanges.put(descriptionId, positiveChange);
 						} else {
+							// Both fields lose this member
+							preferredMemberChanges.put(descriptionId, negativeChange);
 							acceptableMemberChanges.put(descriptionId, negativeChange);
 						}
 					}

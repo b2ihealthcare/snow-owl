@@ -62,26 +62,28 @@ public class DescriptionAcceptabilityChangeProcessor extends ChangeSetProcessorB
 
 		for (SnomedLanguageRefSetMember member : newAndDirtyMembers) {
 			if (member.isActive()) {
+				final String uuid = member.getUuid();
 				final long refSetId = Long.parseLong(member.getRefSetIdentifierId());
-				final RefSetMemberChange change = new RefSetMemberChange(refSetId, MemberChangeKind.ADDED, member.getRefSet().getType());
+				final RefSetMemberChange change = new RefSetMemberChange(uuid, refSetId, MemberChangeKind.ADDED, member.getRefSet().getType());
 				registerChange(preferredMemberChanges, acceptableMemberChanges, member.getAcceptabilityId(), member.getReferencedComponentId(), change);
 			}
 		}
 		
-		// remove dirty inactive (or changed in acceptability?) members
+		// remove dirty inactive (and/or changed in acceptability) members
 		final Iterable<SnomedLanguageRefSetMember> dirtyMembers = getDirtyComponents(commitChangeSet, SnomedLanguageRefSetMember.class);
 		
 		for (SnomedLanguageRefSetMember member : dirtyMembers) {
 			final Document beforeDocument = documentProvider.apply(member.cdoID());
-			
+			final String uuid = member.getUuid();
 			final long refSetId = Long.parseLong(member.getRefSetIdentifierId());
-			final RefSetMemberChange change = new RefSetMemberChange(refSetId, MemberChangeKind.REMOVED, member.getRefSet().getType());
+			final RefSetMemberChange change = new RefSetMemberChange(uuid, refSetId, MemberChangeKind.REMOVED, member.getRefSet().getType());
 			
 			if (beforeDocument != null) {
 				final String beforeAcceptabilityId = SnomedMappings.memberAcceptabilityId().getValueAsString(beforeDocument);
+				final boolean beforeActive = BooleanUtils.valueOf(SnomedMappings.active().getValue(beforeDocument));
 				final boolean acceptabilityChanged = !member.getAcceptabilityId().equals(beforeAcceptabilityId);
 				
-				if (acceptabilityChanged) {
+				if (beforeActive && acceptabilityChanged) {
 					registerChange(preferredMemberChanges, acceptableMemberChanges, beforeAcceptabilityId, member.getReferencedComponentId(), change);
 				}
 			}
@@ -98,10 +100,11 @@ public class DescriptionAcceptabilityChangeProcessor extends ChangeSetProcessorB
 			final boolean beforeActive = BooleanUtils.valueOf(SnomedMappings.active().getValue(beforeDocument));
 			
 			if (beforeActive) {
+				final String uuid = SnomedMappings.memberUuid().getValue(beforeDocument);
 				final long refSetId = SnomedMappings.memberRefSetId().getValue(beforeDocument);
 				final String referencedComponentId = SnomedMappings.memberReferencedComponentId().getValueAsString(beforeDocument);
 				final String beforeAcceptabilityId = SnomedMappings.memberAcceptabilityId().getValueAsString(beforeDocument);
-				final RefSetMemberChange change = new RefSetMemberChange(refSetId, MemberChangeKind.REMOVED, SnomedRefSetType.LANGUAGE);
+				final RefSetMemberChange change = new RefSetMemberChange(uuid, refSetId, MemberChangeKind.REMOVED, SnomedRefSetType.LANGUAGE);
 				
 				registerChange(preferredMemberChanges, acceptableMemberChanges, beforeAcceptabilityId, referencedComponentId, change);
 			}
