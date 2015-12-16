@@ -288,14 +288,14 @@ public class SnomedBrowserService implements ISnomedBrowserService {
 			commitReq.add(descriptionReq);
 		}
 
-		for (String relationshipDeletionId : relationshipDeletionIds) {
-			commitReq.add(SnomedRequests.prepareDeleteRelationship().setComponentId(relationshipDeletionId).build());
-		}
 		for (String relationshipId : relationshipUpdates.keySet()) {
 			commitReq.add(relationshipUpdates.get(relationshipId));
 		}
 		for (SnomedRelationshipCreateRequest relationshipReq : relationshipInputs) {
 			commitReq.add(relationshipReq);
+		}
+		for (String relationshipDeletionId : relationshipDeletionIds) {
+			commitReq.add(SnomedRequests.prepareDeleteRelationship().setComponentId(relationshipDeletionId).build());
 		}
 
 		// Inactivate concept last
