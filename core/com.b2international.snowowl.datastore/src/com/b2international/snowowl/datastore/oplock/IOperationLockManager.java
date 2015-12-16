@@ -60,7 +60,7 @@ public interface IOperationLockManager<C extends Serializable> {
 	 * @throws OperationLockException when one or more locks for the given targets can not be acquired for some reason
 	 * @throws InterruptedException if waiting for the requested locks to be acquired is interrupted
 	 */
-	void lock(C context, long timeoutMillis, Iterable<IOperationLockTarget> targets) throws OperationLockException, InterruptedException;
+	void lock(C context, long timeoutMillis, Iterable<? extends IOperationLockTarget> targets) throws OperationLockException, InterruptedException;
 
 	/**
 	 * Unlocks one or more {@link IOperationLockTarget targets} with the specified lock context.
@@ -79,5 +79,5 @@ public interface IOperationLockManager<C extends Serializable> {
 	 * @param targets the targets to unlock (may not be {@code null}; can be empty)
 	 * @throws OperationLockException when one or more locks for the given targets could not be released for some reason
 	 */
-	void unlock(C context, Iterable<IOperationLockTarget> targets) throws OperationLockException;
+	void unlock(C context, Iterable<? extends IOperationLockTarget> targets) throws OperationLockException;
 }

@@ -65,7 +65,7 @@ public abstract class AbstractOperationLockManager<C extends Serializable> imple
 	}
 
 	@Override
-	public void lock(final C context, final long timeoutMillis, final Iterable<IOperationLockTarget> targets) throws OperationLockException, InterruptedException {
+	public void lock(final C context, final long timeoutMillis, final Iterable<? extends IOperationLockTarget> targets) throws OperationLockException, InterruptedException {
 
 		final Map<IOperationLockTarget, C> alreadyLockedTargets = Maps.newHashMap();
 		final long startTimeMillis = getCurrentTimeMillis();
@@ -107,7 +107,7 @@ public abstract class AbstractOperationLockManager<C extends Serializable> imple
 	}
 
 	@Override
-	public void unlock(final C context, final Iterable<IOperationLockTarget> targets) throws OperationLockException {
+	public void unlock(final C context, final Iterable<? extends IOperationLockTarget> targets) throws OperationLockException {
 
 		final Map<IOperationLockTarget, C> notUnlockedTargets = Maps.newHashMap();
 
@@ -236,7 +236,7 @@ public abstract class AbstractOperationLockManager<C extends Serializable> imple
 	protected abstract OperationLockInfo<C> createLockInfo(final IOperationLock<C> existingLock);
 
 	@OverridingMethodsMustInvokeSuper
-	protected void canContextLockTargets(final C context, final Iterable<IOperationLockTarget> targets, final Map<IOperationLockTarget, C> alreadyLockedTargets) 
+	protected void canContextLockTargets(final C context, final Iterable<? extends IOperationLockTarget> targets, final Map<IOperationLockTarget, C> alreadyLockedTargets) 
 			throws DatastoreOperationLockException {
 		
 		for (final IOperationLockTarget newTarget : targets) {
