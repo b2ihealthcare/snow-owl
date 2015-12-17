@@ -15,18 +15,29 @@
  */
 package com.b2international.snowowl.datastore.server.cdo;
 
+import static com.b2international.commons.ChangeKind.DELETED;
+import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.collect.Lists.newArrayList;
 import static com.google.common.collect.Sets.newHashSet;
 
 import java.text.MessageFormat;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ExecutionException;
 
 import org.eclipse.emf.cdo.common.branch.CDOBranch;
+import org.eclipse.emf.cdo.common.revision.delta.CDOFeatureDelta;
+import org.eclipse.emf.cdo.common.revision.delta.CDORevisionDelta;
+import org.eclipse.emf.cdo.common.revision.delta.CDOSetFeatureDelta;
+import org.eclipse.emf.cdo.spi.common.revision.InternalCDORevisionDelta;
 import org.eclipse.emf.cdo.transaction.CDOMerger.ConflictException;
 import org.eclipse.emf.cdo.transaction.CDOTransaction;
 import org.eclipse.emf.cdo.util.CommitException;
+import org.eclipse.emf.ecore.EStructuralFeature;
+import org.eclipse.emf.spi.cdo.DefaultCDOMerger.ChangedInSourceAndDetachedInTargetConflict;
+import org.eclipse.emf.spi.cdo.DefaultCDOMerger.ChangedInSourceAndTargetConflict;
+import org.eclipse.emf.spi.cdo.DefaultCDOMerger.ChangedInTargetAndDetachedInSourceConflict;
 import org.eclipse.emf.spi.cdo.DefaultCDOMerger.Conflict;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -38,6 +49,7 @@ import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.datastore.IBranchPathMap;
 import com.b2international.snowowl.datastore.branch.Branch.BranchState;
 import com.b2international.snowowl.datastore.cdo.ConflictWrapper;
+import com.b2international.snowowl.datastore.cdo.ConflictingChange;
 import com.b2international.snowowl.datastore.cdo.CustomConflictException;
 import com.b2international.snowowl.datastore.cdo.ICDOConnection;
 import com.b2international.snowowl.datastore.oplock.impl.DatastoreLockContextDescriptions;
@@ -104,9 +116,9 @@ public class SynchronizeBranchAction extends AbstractCDOBranchAction {
 				connection.getRepositoryName()));
 
 		// Do a test run against the parent branch first
-		CDOTransaction testTransaction = null;
+		CDOTransaction testTransaction = connection.createTransaction(parentBranchPath);
 		try {
-			testTransaction = applyChangeSet(connection, taskBranch, parentBranchPath);
+			applyChangeSet(testTransaction, taskBranch);
 		} finally {
 			if (testTransaction != null) {
 				testTransaction.close();
@@ -126,7 +138,9 @@ public class SynchronizeBranchAction extends AbstractCDOBranchAction {
 		}
 		
 		// This transaction now holds the actual change set on the reopened child, which has the same name as before
-		final CDOTransaction syncTransaction = applyChangeSet(connection, taskBranch, taskBranchPath);
+		final CDOTransaction syncTransaction = connection.createTransaction(taskBranchPath); 
+		applyChangeSet(syncTransaction, taskBranch);
+		
 		if (syncTransaction.isDirty()) {
 			transactions.add(syncTransaction);
 		} else {
@@ -137,40 +151,88 @@ public class SynchronizeBranchAction extends AbstractCDOBranchAction {
 		}
 	}
 
-	private CDOTransaction applyChangeSet(final ICDOConnection connection, final CDOBranch taskBranch, IBranchPath newTaskBranchPath) throws CustomConflictException {
+	private void applyChangeSet(final CDOTransaction transaction, final CDOBranch taskBranch) throws CustomConflictException {
 		
-		final CDOBranchMerger branchMerger = new CDOBranchMerger(CDOConflictProcessorBroker.INSTANCE.getProcessor(connection.getUuid()));
-		CDOTransaction transaction = null;
+		final String repositoryUuid = transaction.getSession().getRepositoryInfo().getUUID();
+		final CDOBranchMerger branchMerger = new CDOBranchMerger(CDOConflictProcessorBroker.INSTANCE.getProcessor(repositoryUuid));
 
 		try {
 			
-			transaction = connection.createTransaction(newTaskBranchPath);
-
 			// XXX: specifying sourceBase instead of defaulting to the computed common ancestor point here
 			transaction.merge(taskBranch.getHead(), taskBranch.getBase(), branchMerger);
-			LOGGER.info(MessageFormat.format("Post-processing components in ''{0}''...", connection.getRepositoryName()));
+			LOGGER.info(MessageFormat.format("Post-processing components in ''{0}''...", repositoryUuid));
 			branchMerger.postProcess(transaction);
-			
-			return transaction;
 			
 		} catch (final ConflictException e) {
 
 			final Set<ConflictWrapper> conflictWrappers = newHashSet(); 
 
 			for (final Conflict cdoConflict : branchMerger.getConflicts().values()) {	
-				CDOConflictProcessorBroker.INSTANCE.processConflict(cdoConflict, conflictWrappers);
+				convertRepresentation(cdoConflict, conflictWrappers);
+			}
+			
+			throw new CustomConflictException("Conflicts detected while synchronizing task", conflictWrappers);
+		}
+	}
+
+	/**
+	 * Converts CDO conflict representations to application-specific ones, and appends them to the specified set if the
+	 * conversion was successful.
+	 * 
+	 * @param conflict the conflict to process (may not be {@code null})
+	 * @param conflictSet the set of conflicts to append to (may not be {@code null})
+	 */
+	private void convertRepresentation(final Conflict conflict, final Set<ConflictWrapper> conflictSet) {	
+		checkNotNull(conflict, "CDO conflict to process may not be null.");
+		checkNotNull(conflictSet, "Converted conflicts set may not be null.");
+
+		if (conflict instanceof ChangedInSourceAndTargetConflict) {
+
+			final CDORevisionDelta sourceDelta = ((ChangedInSourceAndTargetConflict) conflict).getSourceDelta();
+			final CDORevisionDelta targetDelta = ((ChangedInSourceAndTargetConflict) conflict).getTargetDelta();
+
+			final Map<EStructuralFeature, CDOFeatureDelta> sourceDeltaMap = ((InternalCDORevisionDelta) sourceDelta).getFeatureDeltaMap();
+			final Map<EStructuralFeature, CDOFeatureDelta> targetDeltaMap = ((InternalCDORevisionDelta) targetDelta).getFeatureDeltaMap();
+
+			for (final EStructuralFeature targetFeature : targetDeltaMap.keySet()) {
+				final CDOFeatureDelta sourceFeatureDelta = sourceDeltaMap.get(targetFeature);
+				final CDOFeatureDelta targetFeatureDelta = targetDeltaMap.get(targetFeature);
+
+				if (sourceFeatureDelta instanceof CDOSetFeatureDelta && targetFeatureDelta instanceof CDOSetFeatureDelta) {
+					final ConflictingChange changeOnSource = new ConflictingChange(sourceDelta.getID(), targetFeature, ((CDOSetFeatureDelta) sourceFeatureDelta).getValue());
+					final ConflictingChange changeOnTarget = new ConflictingChange(targetDelta.getID(), targetFeature, ((CDOSetFeatureDelta) targetFeatureDelta).getValue());
+					conflictSet.add(new ConflictWrapper(changeOnTarget, changeOnSource));
+				}
 			}
 
-			// TODO: Check if we rely on this functionality (ie. skipping certain CDO-level conflicts)
-			if (conflictWrappers.isEmpty()) {
-				LOGGER.warn("CDO conflicts are present, but were not converted: {}. Continuing.", branchMerger.getConflicts().values());
-				return transaction;
-			} else {
-				if (transaction != null) {
-					transaction.close();
+		} else if (conflict instanceof ChangedInSourceAndDetachedInTargetConflict){	
+
+			final CDORevisionDelta sourceDelta = ((ChangedInSourceAndDetachedInTargetConflict) conflict).getSourceDelta();
+			final Map<EStructuralFeature, CDOFeatureDelta> sourceDeltaMap = ((InternalCDORevisionDelta) sourceDelta).getFeatureDeltaMap();
+
+			for (final EStructuralFeature sourceFeature : sourceDeltaMap.keySet()) {
+				final CDOFeatureDelta sourceFeatureDelta = sourceDeltaMap.get(sourceFeature);
+
+				if (sourceFeatureDelta instanceof CDOSetFeatureDelta) {
+					final ConflictingChange changeOnSource = new ConflictingChange(sourceDelta.getID(), sourceFeature, ((CDOSetFeatureDelta) sourceFeatureDelta).getValue());
+					final ConflictingChange changeOnTarget = new ConflictingChange(DELETED, conflict.getID());
+					conflictSet.add(new ConflictWrapper(changeOnTarget, changeOnSource));
 				}
-				
-				throw new CustomConflictException("Conflicts detected while synchronizing task", conflictWrappers);
+			}
+
+		} else if (conflict instanceof ChangedInTargetAndDetachedInSourceConflict) {
+
+			final CDORevisionDelta targetDelta = ((ChangedInTargetAndDetachedInSourceConflict) conflict).getTargetDelta();
+			final Map<EStructuralFeature, CDOFeatureDelta> targetDeltaMap = ((InternalCDORevisionDelta) targetDelta).getFeatureDeltaMap();
+
+			for (final EStructuralFeature targetFeature : targetDeltaMap.keySet()) {
+				final CDOFeatureDelta targetFeatureDelta = targetDeltaMap.get(targetFeature);
+
+				if (targetFeatureDelta instanceof CDOSetFeatureDelta) {
+					final ConflictingChange changeOnSource = new ConflictingChange(DELETED, conflict.getID());
+					final ConflictingChange changeOnTarget = new ConflictingChange(targetDelta.getID(), targetFeature, ((CDOSetFeatureDelta) targetFeatureDelta).getValue());
+					conflictSet.add(new ConflictWrapper(changeOnTarget, changeOnSource));
+				}
 			}
 		}
 	}
