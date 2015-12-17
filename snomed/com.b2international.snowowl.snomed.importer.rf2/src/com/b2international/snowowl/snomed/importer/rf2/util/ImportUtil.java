@@ -76,7 +76,6 @@ import com.b2international.snowowl.snomed.datastore.SnomedEditingContext;
 import com.b2international.snowowl.snomed.datastore.SnomedRefSetBrowser;
 import com.b2international.snowowl.snomed.datastore.SnomedTerminologyBrowser;
 import com.b2international.snowowl.snomed.datastore.index.refset.SnomedRefSetIndexEntry;
-import com.b2international.snowowl.snomed.importer.net4j.DefectType;
 import com.b2international.snowowl.snomed.importer.net4j.ImportConfiguration;
 import com.b2international.snowowl.snomed.importer.net4j.SnomedImportResult;
 import com.b2international.snowowl.snomed.importer.net4j.SnomedValidationDefect;
@@ -92,8 +91,8 @@ import com.b2international.snowowl.snomed.importer.rf2.refset.SnomedRefSetImport
 import com.b2international.snowowl.snomed.importer.rf2.terminology.SnomedConceptImporter;
 import com.b2international.snowowl.snomed.importer.rf2.terminology.SnomedDescriptionImporter;
 import com.b2international.snowowl.snomed.importer.rf2.terminology.SnomedRelationshipImporter;
-import com.b2international.snowowl.snomed.importer.rf2.validation.SnomedValidationContext;
 import com.b2international.snowowl.snomed.importer.rf2.terminology.SnomedUnionGroupImporter;
+import com.b2international.snowowl.snomed.importer.rf2.validation.SnomedValidationContext;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType;
 import com.google.common.base.Charsets;
 import com.google.common.base.Function;
@@ -235,6 +234,7 @@ public final class ImportUtil {
 		LogUtils.logImportActivity(IMPORT_LOGGER, requestingUserId, branchPath, "SNOMED CT import started from RF2 release format.");
 		
 		if (!isContentValid(result, requestingUserId, configuration, branchPath, subMonitor)) {
+			LogUtils.logImportActivity(IMPORT_LOGGER, requestingUserId, branchPath, "SNOMED CT import failed due to invalid RF2 release file(s).");
 			return result;
 		}
 
@@ -418,20 +418,21 @@ public final class ImportUtil {
 					return input.getDefects();
 				}
 			});
-			final String message = String.format("Validation encountered %s error(s).", defects.size());
+			final String message = String.format("Validation encountered %s issue(s).", defects.size());
 			LogUtils.logImportActivity(IMPORT_LOGGER, requestingUserId, branchPath, message);
 			for (String defect : defects) {
 				LogUtils.logImportActivity(IMPORT_LOGGER, requestingUserId, branchPath, defect);
 			}
-			LogUtils.logImportActivity(IMPORT_LOGGER, requestingUserId, branchPath, "SNOMED CT import failed due to invalid RF2 release file(s).");
+			
+			return !Iterables.tryFind(result.getValidationDefects(), new Predicate<SnomedValidationDefect>() {
+				@Override
+				public boolean apply(SnomedValidationDefect input) {
+					return input.getDefectType().isCritical();
+				}
+			}).isPresent();
 		}
-
-		return !Iterables.tryFind(result.getValidationDefects(), new Predicate<SnomedValidationDefect>() {
-			@Override
-			public boolean apply(SnomedValidationDefect input) {
-				return input.getDefectType().isCritical();
-			}
-		}).isPresent();
+		
+		return true;
 	}
 
 	private URL createMergedRelationshipFile(final ImportConfiguration configuration) throws IOException {
