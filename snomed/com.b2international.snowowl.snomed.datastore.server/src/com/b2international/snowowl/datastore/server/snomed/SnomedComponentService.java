@@ -2113,38 +2113,39 @@ public class SnomedComponentService implements ISnomedComponentService, IPostSto
 	
 	/*returns with the label of the component if any. this method may return with null.*/
 	@Nullable private String getComponentLabel(final IBranchPath branchPath, final String componentId, final IndexServerService<?> service, final IndexSearcher searcher) throws IOException {
+		return componentId;
 		
-		Query labelQuery = null;
-		
-		final short componentType = SnomedTerminologyComponentConstants.getTerminologyComponentIdValueSafe(componentId);
-		switch (componentType) {
-			case SnomedTerminologyComponentConstants.CONCEPT_NUMBER: //$FALL-THROUGH$
-			case SnomedTerminologyComponentConstants.DESCRIPTION_NUMBER: //$FALL-THROUGH$
-				labelQuery = SnomedMappings.newQuery().type(componentType).id(componentId).matchAll();
-				break;
-				
-			case SnomedTerminologyComponentConstants.RELATIONSHIP_NUMBER:
-				final String[] properties = getRelationshipProperties(branchPath, componentId);
-				return isEmpty(properties) ? null : Joiner.on(" - ").join(getLabels(branchPath, properties[0], properties[1], properties[2]));
-				
-			default:
-				//no chance to find SNOMED CT core component label in index, fall back to CDO
-				return null;
-		}
-
-		final TopDocs topDocs = searcher.search(labelQuery, 1);
-		
-		//cannot found matching label for component
-		if (null == topDocs || CompareUtils.isEmpty(topDocs.scoreDocs)) {
-			
-			return null;
-			
-		}
-		
-		final Document doc = service.document(searcher, topDocs.scoreDocs[0].doc, COMPONENT_LABEL_TO_LOAD);
-		
-		//could be null
-		return Mappings.label().getValue(doc);
+//		Query labelQuery = null;
+//		
+//		final short componentType = SnomedTerminologyComponentConstants.getTerminologyComponentIdValueSafe(componentId);
+//		switch (componentType) {
+//			case SnomedTerminologyComponentConstants.CONCEPT_NUMBER: //$FALL-THROUGH$
+//			case SnomedTerminologyComponentConstants.DESCRIPTION_NUMBER: //$FALL-THROUGH$
+//				labelQuery = SnomedMappings.newQuery().type(componentType).id(componentId).matchAll();
+//				break;
+//				
+//			case SnomedTerminologyComponentConstants.RELATIONSHIP_NUMBER:
+//				final String[] properties = getRelationshipProperties(branchPath, componentId);
+//				return isEmpty(properties) ? null : Joiner.on(" - ").join(getLabels(branchPath, properties[0], properties[1], properties[2]));
+//				
+//			default:
+//				//no chance to find SNOMED CT core component label in index, fall back to CDO
+//				return null;
+//		}
+//
+//		final TopDocs topDocs = searcher.search(labelQuery, 1);
+//		
+//		//cannot found matching label for component
+//		if (null == topDocs || CompareUtils.isEmpty(topDocs.scoreDocs)) {
+//			
+//			return null;
+//			
+//		}
+//		
+//		final Document doc = service.document(searcher, topDocs.scoreDocs[0].doc, COMPONENT_LABEL_TO_LOAD);
+//		
+//		//could be null
+//		return Mappings.label().getValue(doc);
 	}
 	
 	private String getIconId(final String conceptId, final IndexSearcher searcher) throws IOException {
