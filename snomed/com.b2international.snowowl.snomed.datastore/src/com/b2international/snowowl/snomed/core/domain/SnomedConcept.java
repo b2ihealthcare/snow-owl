@@ -30,6 +30,7 @@ public class SnomedConcept extends BaseSnomedComponent implements ISnomedConcept
 	private ISnomedDescription fsn;
 	private ISnomedDescription pt;
 	private SnomedDescriptions descriptions;
+	private SnomedRelationships relationships;
 	private SnomedConcepts ancestors;
 	private SnomedConcepts descendants;
 
@@ -63,6 +64,11 @@ public class SnomedConcept extends BaseSnomedComponent implements ISnomedConcept
 	@Override
 	public SnomedDescriptions getDescriptions() {
 		return descriptions;
+	}
+	
+	@Override
+	public SnomedRelationships getRelationships() {
+		return relationships;
 	}
 
 	@Override
@@ -103,6 +109,10 @@ public class SnomedConcept extends BaseSnomedComponent implements ISnomedConcept
 	
 	public void setDescriptions(SnomedDescriptions descriptions) {
 		this.descriptions = descriptions;
+	}
+	
+	public void setRelationships(SnomedRelationships relationships) {
+		this.relationships = relationships;
 	}
 	
 	public void setFsn(ISnomedDescription fsn) {

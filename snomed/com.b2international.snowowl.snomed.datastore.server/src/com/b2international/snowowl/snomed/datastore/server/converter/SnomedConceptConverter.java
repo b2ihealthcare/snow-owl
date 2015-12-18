@@ -37,10 +37,12 @@ import com.b2international.snowowl.snomed.core.domain.AssociationType;
 import com.b2international.snowowl.snomed.core.domain.DefinitionStatus;
 import com.b2international.snowowl.snomed.core.domain.ISnomedConcept;
 import com.b2international.snowowl.snomed.core.domain.ISnomedDescription;
+import com.b2international.snowowl.snomed.core.domain.ISnomedRelationship;
 import com.b2international.snowowl.snomed.core.domain.InactivationIndicator;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcepts;
 import com.b2international.snowowl.snomed.core.domain.SnomedDescriptions;
+import com.b2international.snowowl.snomed.core.domain.SnomedRelationships;
 import com.b2international.snowowl.snomed.core.domain.SubclassDefinitionStatus;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptIndexEntry;
 import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedMappings;
@@ -103,6 +105,7 @@ final class SnomedConceptConverter extends BaseSnomedComponentConverter<SnomedCo
 		expandPreferredTerm(results, conceptIds, helper);
 		expandFullySpecifiedName(results, conceptIds, helper);
 		expandDescriptions(results, conceptIds);
+		expandRelationships(results, conceptIds);
 		expandDescendants(results);
 		expandAncestors(results);
 	}
@@ -158,6 +161,31 @@ final class SnomedConceptConverter extends BaseSnomedComponentConverter<SnomedCo
 			for (ISnomedConcept concept : results) {
 				final List<ISnomedDescription> conceptDescriptions = ImmutableList.copyOf(descriptionsByConceptId.get(concept.getId()));
 				((SnomedConcept) concept).setDescriptions(new SnomedDescriptions(conceptDescriptions, 0, conceptDescriptions.size(), conceptDescriptions.size()));
+			}
+		}
+	}
+	
+	private void expandRelationships(List<ISnomedConcept> results, final Set<String> conceptIds) {
+		if (expand().containsKey("relationships")) {
+			final Options expandOptions = expand().get("relationships", Options.class);
+			final SnomedRelationships relationships = SnomedRequests
+					.prepareSearchRelationship()
+					.all()
+					.setExpand(expandOptions.get("expand", Options.class))
+					.filterBySource(conceptIds)
+					.build()
+					.execute(context());
+			
+			final Multimap<String, ISnomedRelationship> relationshipsByConceptId = Multimaps.index(relationships, new Function<ISnomedRelationship, String>() {
+				@Override
+				public String apply(ISnomedRelationship input) {
+					return input.getSourceId();
+				}
+			});
+			
+			for (ISnomedConcept concept : results) {
+				final List<ISnomedRelationship> conceptRelationships = ImmutableList.copyOf(relationshipsByConceptId.get(concept.getId()));
+				((SnomedConcept) concept).setRelationships(new SnomedRelationships(conceptRelationships, 0, conceptRelationships.size(), conceptRelationships.size()));
 			}
 		}
 	}

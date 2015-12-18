@@ -16,16 +16,19 @@
 package com.b2international.snowowl.snomed.datastore.server.request;
 
 import java.io.IOException;
+import java.util.List;
 
 import org.apache.lucene.document.Document;
 import org.apache.lucene.queries.BooleanFilter;
 import org.apache.lucene.search.BooleanClause.Occur;
+import org.apache.lucene.search.Filter;
 import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.ScoreDoc;
 import org.apache.lucene.search.Sort;
 import org.apache.lucene.search.TopDocs;
 
+import com.b2international.commons.functions.StringToLongFunction;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.snomed.core.domain.SnomedRelationships;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRelationshipIndexEntry;
@@ -56,16 +59,8 @@ final class SnomedRelationshipSearchRequest extends SnomedSearchRequest<SnomedRe
 		addActiveClause(queryBuilder);
 		addModuleClause(queryBuilder);
 		
-		if (containsKey(OptionKey.SOURCE)) {
-			queryBuilder.relationshipSource(getString(OptionKey.SOURCE));
-		}
-		
 		if (containsKey(OptionKey.TYPE)) {
 			queryBuilder.relationshipType(getString(OptionKey.TYPE));
-		}
-		
-		if (containsKey(OptionKey.DESTINATION)) {
-			queryBuilder.relationshipDestination(getString(OptionKey.DESTINATION));
 		}
 		
 		if (containsKey(OptionKey.CHARACTERISTIC_TYPE)) {
@@ -77,7 +72,15 @@ final class SnomedRelationshipSearchRequest extends SnomedSearchRequest<SnomedRe
 		if (!componentIds().isEmpty()) {
 			addFilterClause(filter, createComponentIdFilter(), Occur.MUST);
 		}
+
+		if (containsKey(OptionKey.SOURCE)) {
+			addFilterClause(filter, createSourceIdFilter(), Occur.MUST);
+		}
 		
+		if (containsKey(OptionKey.DESTINATION)) {
+			addFilterClause(filter, createDestinationIdFilter(), Occur.MUST);
+		}
+
 		final Query query = createConstantScoreQuery(createFilteredQuery(queryBuilder.matchAll(), filter));
 		final int totalHits = getTotalHits(searcher, query);
 		
@@ -100,6 +103,16 @@ final class SnomedRelationshipSearchRequest extends SnomedSearchRequest<SnomedRe
 		}
 
 		return SnomedConverters.newRelationshipConverter(context, expand(), locales()).convert(relationshipsBuilder.build(), offset(), limit(), topDocs.totalHits);
+	}
+
+	private Filter createSourceIdFilter() {
+		final List<Long> sourceIds = StringToLongFunction.copyOf(getCollection(OptionKey.SOURCE, String.class));
+		return SnomedMappings.relationshipSource().createTermsFilter(sourceIds);
+	}
+	
+	private Filter createDestinationIdFilter() {
+		final List<Long> sourceIds = StringToLongFunction.copyOf(getCollection(OptionKey.DESTINATION, String.class));
+		return SnomedMappings.relationshipDestination().createTermsFilter(sourceIds);
 	}
 
 	@Override

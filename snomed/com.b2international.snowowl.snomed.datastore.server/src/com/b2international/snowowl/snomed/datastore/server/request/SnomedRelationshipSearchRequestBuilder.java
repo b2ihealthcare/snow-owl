@@ -15,9 +15,12 @@
  */
 package com.b2international.snowowl.snomed.datastore.server.request;
 
+import java.util.Collection;
+
 import com.b2international.snowowl.datastore.request.SearchRequest;
 import com.b2international.snowowl.snomed.core.domain.SnomedRelationships;
 import com.b2international.snowowl.snomed.datastore.server.request.SnomedRelationshipSearchRequest.OptionKey;
+import com.google.common.collect.ImmutableSet;
 
 /**
  * @since 4.5
@@ -28,16 +31,24 @@ public final class SnomedRelationshipSearchRequestBuilder extends SnomedSearchRe
 		super(repositoryId);
 	}
 
-	public SnomedRelationshipSearchRequestBuilder filterBySource(String termFilter) {
-		return addOption(OptionKey.SOURCE, termFilter);
+	public SnomedRelationshipSearchRequestBuilder filterBySource(String sourceId) {
+		return addOption(OptionKey.SOURCE, sourceId);
 	}
 
+	public SnomedRelationshipSearchRequestBuilder filterBySource(Collection<String> sourceIds) {
+		return addOption(OptionKey.SOURCE, ImmutableSet.copyOf(sourceIds));
+	}
+	
 	public SnomedRelationshipSearchRequestBuilder filterByType(String termFilter) {
 		return addOption(OptionKey.TYPE, termFilter);
 	}
 	
-	public SnomedRelationshipSearchRequestBuilder filterByDestination(String termFilter) {
-		return addOption(OptionKey.DESTINATION, termFilter);
+	public SnomedRelationshipSearchRequestBuilder filterByDestination(String destinationId) {
+		return addOption(OptionKey.DESTINATION, destinationId);
+	}
+
+	public SnomedRelationshipSearchRequestBuilder filterByDestination(Collection<String> destinationIds) {
+		return addOption(OptionKey.DESTINATION, ImmutableSet.copyOf(destinationIds));
 	}
 	
 	public SnomedRelationshipSearchRequestBuilder filterByCharacteristicType(String termFilter) {
