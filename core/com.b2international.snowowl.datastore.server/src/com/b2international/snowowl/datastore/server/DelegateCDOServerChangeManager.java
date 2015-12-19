@@ -217,9 +217,6 @@ public class DelegateCDOServerChangeManager {
 
 								//log changes
 								logUserActivity(processor);
-								
-								//perform after commit (if any)
-								processor.afterCommit();
 							}
 							
 							return Status.OK_STATUS;
@@ -239,6 +236,44 @@ public class DelegateCDOServerChangeManager {
 			
 		} catch (final Exception e) {
 			caughtException = new SnowowlRuntimeException("Error when committing change processors on branch: " + branchPath, e);
+		} finally {
+			cleanupAfterCommit(caughtException);
+		}
+	}
+
+	private void cleanupAfterCommit(RuntimeException caughtException) {
+		
+		try {
+			
+			final Collection<Job> cleanupJobs = Sets.newHashSetWithExpectedSize(changeProcessors.size());
+			
+			for (final ICDOChangeProcessor processor : changeProcessors) {
+				cleanupJobs.add(new Job("Cleaning up " + processor.getName()) {
+					@Override 
+					protected IStatus run(final IProgressMonitor monitor) {
+						try {
+							
+							//log if anything had changed
+							if (processor.hadChangesToProcess()) {
+								processor.afterCommit();
+							}
+							
+							return Status.OK_STATUS;
+						} catch (final RuntimeException e) {
+							return new Status(IStatus.ERROR, DatastoreServerActivator.PLUGIN_ID, "Error while cleaning up change processor with " + processor.getName() + " for branch: " + branchPath, e);
+						}
+					}
+				});
+			}
+			
+			ForkJoinUtils.runJobsInParallelWithErrorHandling(cleanupJobs, null);
+			
+		} catch (final Exception e) {
+			if (caughtException == null) {
+				caughtException = new SnowowlRuntimeException("Error when cleaning up change processors on branch: " + branchPath, e);
+			} else {
+				caughtException.addSuppressed(new SnowowlRuntimeException("Error when cleaning up change processors on branch: " + branchPath, e));
+			}
 		} finally {
 			unlockBranch(caughtException);
 		}
