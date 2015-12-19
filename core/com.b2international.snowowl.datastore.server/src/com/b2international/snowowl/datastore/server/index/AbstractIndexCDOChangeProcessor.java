@@ -92,7 +92,7 @@ public abstract class AbstractIndexCDOChangeProcessor<E extends IIndexEntry, T e
 	@Override
 	protected void populateChangedComponents() {
 		// XXX: This subclass may modify the change set before it is processed and committed to the database
-		for (final CodeSystemVersion dirtyCodeSystemVersion : Iterables.filter(dirtyComponents, CodeSystemVersion.class)) {
+		for (final CodeSystemVersion dirtyCodeSystemVersion : Iterables.filter(commitChangeSet.getDirtyComponents(), CodeSystemVersion.class)) {
 			checkAndSetCodeSystemLastUpdateTime(dirtyCodeSystemVersion);
 		}
 		
