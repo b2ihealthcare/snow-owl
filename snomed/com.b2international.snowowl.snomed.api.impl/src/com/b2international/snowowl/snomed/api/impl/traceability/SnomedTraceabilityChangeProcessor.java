@@ -26,9 +26,9 @@ import java.util.Set;
 import java.util.TimeZone;
 
 import org.apache.lucene.document.Document;
+import org.apache.lucene.search.Filter;
 import org.apache.lucene.search.FilteredQuery;
 import org.apache.lucene.search.IndexSearcher;
-import org.apache.lucene.search.MatchAllDocsQuery;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.Sort;
 import org.apache.lucene.search.TopDocs;
@@ -170,16 +170,24 @@ public class SnomedTraceabilityChangeProcessor extends AbstractCDOChangeProcesso
 			}
 		}
 		
+		if (detachedStorageKeys.isEmpty()) {
+			return;
+		}
+		
 		((IndexServerService<?>) indexService).executeReadTransaction(branchPath, new IndexRead<Void>() {
 			@Override
 			public Void execute(IndexSearcher index) throws IOException {
 				
-				final Query storageKeyQuery = SnomedMappings.newQuery()
-						.and(SnomedMappings.newQuery().concept().description().relationship().matchAny())
-						.and(new FilteredQuery(new MatchAllDocsQuery(), Mappings.storageKey().createTermsFilter(detachedStorageKeys)))
-						.matchAll();
+				final Query componentTypeQuery = SnomedMappings.newQuery()
+						.concept()
+						.description()
+						.relationship()
+						.matchAny();
 				
-				final TopDocs topDocs = index.search(storageKeyQuery, null, detachedComponents.size(), Sort.INDEXORDER, false, false);
+				final Filter storageKeyFilter = Mappings.storageKey().createTermsFilter(detachedStorageKeys); 
+				
+				// XXX: wrapping into FilteredQuery because we don't want to retrieve all components if detachedStorageKeys is null for some reason
+				final TopDocs topDocs = index.search(new FilteredQuery(componentTypeQuery, storageKeyFilter), null, detachedComponents.size(), Sort.INDEXORDER, false, false);
 				if (IndexUtils.isEmpty(topDocs)) {
 					return null;
 				}
