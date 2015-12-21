@@ -186,7 +186,7 @@ public class SnomedTraceabilityChangeProcessor extends AbstractCDOChangeProcesso
 				
 				final Filter storageKeyFilter = Mappings.storageKey().createTermsFilter(detachedStorageKeys); 
 				
-				// XXX: wrapping into FilteredQuery because we don't want to retrieve all components if detachedStorageKeys is null for some reason
+				// XXX: wrapping into FilteredQuery because we don't want to retrieve all components if storageKeyFilter is null for some reason
 				final TopDocs topDocs = index.search(new FilteredQuery(componentTypeQuery, storageKeyFilter), null, detachedComponents.size(), Sort.INDEXORDER, false, false);
 				if (IndexUtils.isEmpty(topDocs)) {
 					return null;
