@@ -20,6 +20,7 @@ import static com.google.common.collect.Maps.newHashMap;
 import java.util.Map;
 
 import com.b2international.snowowl.datastore.ICDOCommitChangeSet;
+import com.b2international.snowowl.datastore.cdo.CDOCommitInfoUtils;
 import com.b2international.snowowl.snomed.api.impl.domain.browser.SnomedBrowserConcept;
 
 /**
@@ -28,18 +29,24 @@ import com.b2international.snowowl.snomed.api.impl.domain.browser.SnomedBrowserC
 class TraceabilityEntry {
 	
 	private final String userId;
+	private final String commitComment;
 	private final String branchPath;
 	private final long commitTimestamp;
 	private final Map<String, ConceptWithChanges> changes = newHashMap();
 	
 	public TraceabilityEntry(final ICDOCommitChangeSet changeSet) {
 		this.userId = changeSet.getUserId();
+		this.commitComment = CDOCommitInfoUtils.removeUuidPrefix(changeSet.getCommitComment());
 		this.branchPath = changeSet.getView().getBranch().getPathName();
 		this.commitTimestamp = changeSet.getTimestamp();
 	}
 
 	public String getUserId() {
 		return userId;
+	}
+	
+	public String getCommitComment() {
+		return commitComment;
 	}
 
 	public String getBranchPath() {

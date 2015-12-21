@@ -63,7 +63,10 @@ public class SnomedCoreConfiguration {
 	@Valid
 	private SnomedIdentifierConfiguration ids = new SnomedIdentifierConfiguration();
 	
-	private boolean concreteDomainSupport;
+	private boolean collectSystemChanges = false;
+	
+	private boolean concreteDomainSupport = false;
+	
 	private boolean showReasonerUsageWarning = true;
 		
 	/**
@@ -180,6 +183,16 @@ public class SnomedCoreConfiguration {
 	@JsonProperty("showReasonerUsageWarning")
 	public void setShowReasonerUsageWarningEnabled(boolean showReasonerUsageWarning) {
 		this.showReasonerUsageWarning = showReasonerUsageWarning;
+	}
+	
+	@JsonProperty("collectSystemChanges")
+	public boolean isCollectSystemChanges() {
+		return collectSystemChanges;
+	}
+	
+	@JsonProperty("collectSystemChanges")
+	public void setCollectSystemChanges(boolean collectSystemChanges) {
+		this.collectSystemChanges = collectSystemChanges;
 	}
 	
 	public SnomedIdentifierConfiguration getIds() {

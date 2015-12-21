@@ -22,6 +22,7 @@ import com.b2international.snowowl.datastore.ICDOChangeProcessor;
 import com.b2international.snowowl.datastore.server.index.CDOChangeIndexProcessorFactory;
 import com.b2international.snowowl.datastore.server.snomed.index.SnomedIndexUpdater;
 import com.b2international.snowowl.datastore.server.snomed.index.init.ImportIndexServerService;
+import com.b2international.snowowl.snomed.datastore.config.SnomedCoreConfiguration;
 
 /**
  * CDO change processor factory responsible to create {@link SnomedTraceabilityChangeProcessor traceability change processors} for the SNOMED CT terminology.
@@ -36,8 +37,9 @@ public class SnomedTraceabilityChangeProcessorFactory extends CDOChangeIndexProc
 		if (ApplicationContext.getInstance().exists(ImportIndexServerService.class)) {
 			return ICDOChangeProcessor.NULL_IMPL; 
 		} else {
-			final SnomedIndexUpdater indexService = ApplicationContext.getInstance().getService(SnomedIndexUpdater.class);
-			return new SnomedTraceabilityChangeProcessor(indexService, branchPath);
+			final SnomedIndexUpdater indexService = ApplicationContext.getServiceForClass(SnomedIndexUpdater.class);
+			final boolean collectSystemChanges = ApplicationContext.getServiceForClass(SnomedCoreConfiguration.class).isCollectSystemChanges();
+			return new SnomedTraceabilityChangeProcessor(indexService, branchPath, collectSystemChanges);
 		}
 	}
 

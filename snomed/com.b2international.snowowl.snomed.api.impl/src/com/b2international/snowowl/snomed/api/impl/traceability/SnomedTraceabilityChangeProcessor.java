@@ -51,6 +51,7 @@ import com.b2international.snowowl.core.api.SnowowlRuntimeException;
 import com.b2international.snowowl.core.api.SnowowlServiceException;
 import com.b2international.snowowl.core.api.index.IIndexUpdater;
 import com.b2international.snowowl.core.events.Request;
+import com.b2international.snowowl.core.users.SpecialUserStore;
 import com.b2international.snowowl.datastore.ICDOCommitChangeSet;
 import com.b2international.snowowl.datastore.index.IndexRead;
 import com.b2international.snowowl.datastore.index.IndexUtils;
@@ -147,13 +148,22 @@ public class SnomedTraceabilityChangeProcessor extends AbstractCDOChangeProcesso
 
 	private TraceabilityEntry entry;
 
-	public SnomedTraceabilityChangeProcessor(final IIndexUpdater<SnomedIndexEntry> indexUpdater, final IBranchPath branchPath) {
+	private final boolean collectSystemChanges;
+
+	public SnomedTraceabilityChangeProcessor(final IIndexUpdater<SnomedIndexEntry> indexUpdater, final IBranchPath branchPath, final boolean collectSystemChanges) {
 		super(indexUpdater, branchPath, TRACKED_ECLASSES);
+		this.collectSystemChanges = collectSystemChanges;
 	}
 
 	@Override
 	public void process(ICDOCommitChangeSet commitChangeSet) throws SnowowlServiceException {
 		this.entry = new TraceabilityEntry(commitChangeSet);
+		
+		// No other details required for "System user" commits
+		if (isSystemCommit() && !collectSystemChanges) {
+			return;
+		}
+		
 		super.process(commitChangeSet);
 
 		if (detachedComponents.isEmpty()) {
@@ -214,6 +224,20 @@ public class SnomedTraceabilityChangeProcessor extends AbstractCDOChangeProcesso
 				return null;
 			}
 		});
+	}
+
+	private boolean isSystemCommit() {
+		return SpecialUserStore.SYSTEM_USER_NAME.equals(getUserId());
+	}
+	
+	@Override
+	public boolean hadChangesToProcess() {
+		return super.hadChangesToProcess() || isSystemCommit();
+	}
+	
+	@Override
+	public String getUserId() {
+		return entry.getUserId();
 	}
 	
 	@Override
@@ -288,37 +312,40 @@ public class SnomedTraceabilityChangeProcessor extends AbstractCDOChangeProcesso
 	
 	@Override
 	public void afterCommit() {
-		final Set<String> conceptIds = entry.getChanges().keySet();
-		final String branch = commitChangeSet.getView().getBranch().getPathName();
-		final IEventBus bus = ApplicationContext.getServiceForClass(IEventBus.class);
 		
-		final Request<ServiceProvider, SnomedConcepts> conceptSearchRequest = SnomedRequests.prepareSearchConcept()
-			.setComponentIds(conceptIds)
-			.setOffset(0)
-			.setLimit(entry.getChanges().size())
-			.setExpand("descriptions(),relationships(expand(destination()))")
-			.build(branch);
-		
-		final SnomedConcepts concepts = conceptSearchRequest.executeSync(bus);
-		final Set<String> hasChildrenStated = collectNonLeafs(conceptIds, branch, bus, Concepts.STATED_RELATIONSHIP);
-		final Set<String> hasChildrenInferred = collectNonLeafs(conceptIds, branch, bus, Concepts.INFERRED_RELATIONSHIP);
-		
-		for (ISnomedConcept concept : concepts) {
-			SnomedBrowserConcept convertedConcept = new SnomedBrowserConcept();
+		if (commitChangeSet != null) {
+			final Set<String> conceptIds = entry.getChanges().keySet();
+			final String branch = commitChangeSet.getView().getBranch().getPathName();
+			final IEventBus bus = ApplicationContext.getServiceForClass(IEventBus.class);
 			
-			convertedConcept.setActive(concept.isActive());
-			convertedConcept.setConceptId(concept.getId());
-			convertedConcept.setDefinitionStatus(concept.getDefinitionStatus());
-			convertedConcept.setDescriptions(convertDescriptions(concept.getDescriptions()));
-			convertedConcept.setEffectiveTime(concept.getEffectiveTime());
-			convertedConcept.setModuleId(concept.getModuleId());
-			convertedConcept.setRelationships(convertRelationships(concept.getRelationships()));
-			convertedConcept.setIsLeafStated(!hasChildrenStated.contains(concept.getId()));
-			convertedConcept.setIsLeafInferred(!hasChildrenInferred.contains(concept.getId()));
-			convertedConcept.setFsn(concept.getId());
+			final Request<ServiceProvider, SnomedConcepts> conceptSearchRequest = SnomedRequests.prepareSearchConcept()
+				.setComponentIds(conceptIds)
+				.setOffset(0)
+				.setLimit(entry.getChanges().size())
+				.setExpand("descriptions(),relationships(expand(destination()))")
+				.build(branch);
 			
-			// PT and SYN labels are not populated
-			entry.setConcept(convertedConcept.getId(), convertedConcept);
+			final SnomedConcepts concepts = conceptSearchRequest.executeSync(bus);
+			final Set<String> hasChildrenStated = collectNonLeafs(conceptIds, branch, bus, Concepts.STATED_RELATIONSHIP);
+			final Set<String> hasChildrenInferred = collectNonLeafs(conceptIds, branch, bus, Concepts.INFERRED_RELATIONSHIP);
+			
+			for (ISnomedConcept concept : concepts) {
+				SnomedBrowserConcept convertedConcept = new SnomedBrowserConcept();
+				
+				convertedConcept.setActive(concept.isActive());
+				convertedConcept.setConceptId(concept.getId());
+				convertedConcept.setDefinitionStatus(concept.getDefinitionStatus());
+				convertedConcept.setDescriptions(convertDescriptions(concept.getDescriptions()));
+				convertedConcept.setEffectiveTime(concept.getEffectiveTime());
+				convertedConcept.setModuleId(concept.getModuleId());
+				convertedConcept.setRelationships(convertRelationships(concept.getRelationships()));
+				convertedConcept.setIsLeafStated(!hasChildrenStated.contains(concept.getId()));
+				convertedConcept.setIsLeafInferred(!hasChildrenInferred.contains(concept.getId()));
+				convertedConcept.setFsn(concept.getId());
+				
+				// PT and SYN labels are not populated
+				entry.setConcept(convertedConcept.getId(), convertedConcept);
+			}
 		}
 		
 		try {
