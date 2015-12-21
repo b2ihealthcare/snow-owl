@@ -17,15 +17,14 @@ package com.b2international.snowowl.datastore.server;
 
 import static com.b2international.snowowl.datastore.BranchPathUtils.createPath;
 import static com.google.common.base.Preconditions.checkNotNull;
-import static com.google.common.collect.Maps.newHashMap;
 
 import java.text.MessageFormat;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.Map;
 import java.util.concurrent.ConcurrentMap;
 
+import org.eclipse.emf.cdo.CDOObject;
 import org.eclipse.emf.cdo.common.branch.CDOBranchPoint;
 import org.eclipse.emf.cdo.common.id.CDOID;
 import org.eclipse.emf.cdo.common.revision.CDORevision;
@@ -34,7 +33,6 @@ import org.eclipse.emf.cdo.common.revision.delta.CDORevisionDelta;
 import org.eclipse.emf.cdo.internal.server.TransactionCommitContext;
 import org.eclipse.emf.cdo.server.IRepository.WriteAccessHandler;
 import org.eclipse.emf.cdo.spi.common.revision.InternalCDORevision;
-import org.eclipse.emf.cdo.spi.common.revision.InternalCDORevisionDelta;
 import org.eclipse.emf.cdo.spi.server.InternalRepository;
 import org.eclipse.emf.cdo.spi.server.InternalSession;
 import org.eclipse.emf.cdo.spi.server.InternalTransaction;
@@ -47,7 +45,6 @@ import org.eclipse.net4j.util.om.monitor.OMMonitor.Async;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.b2international.commons.CompareUtils;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.api.SnowowlRuntimeException;
 import com.b2international.snowowl.core.exceptions.ApiException;
@@ -55,10 +52,11 @@ import com.b2international.snowowl.datastore.CDOCommitChangeSet;
 import com.b2international.snowowl.datastore.ICDOCommitChangeSet;
 import com.google.common.base.Function;
 import com.google.common.base.Objects;
-import com.google.common.base.Preconditions;
 import com.google.common.collect.Collections2;
+import com.google.common.collect.FluentIterable;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.MapMaker;
-import com.google.common.collect.Maps;
 
 /**
  * Delegates to a {@link DelegateCDOServerChangeManager} instance, based on the affected branch.
@@ -178,9 +176,6 @@ public class CDOServerChangeManager extends ObjectWriteAccessHandler {
 		LOGGER.info("Changes have been successfully discarded in semantic indexes. " + getCommitContextInfo(commitContext));
 	}
 
-	/* (non-Javadoc)
-	 * @see java.lang.Object#toString()
-	 */
 	@Override
 	public String toString() {
 		return Objects.toStringHelper(this)
@@ -188,9 +183,6 @@ public class CDOServerChangeManager extends ObjectWriteAccessHandler {
 				.toString();
 	}
 
-	/* (non-Javadoc)
-	 * @see org.eclipse.emf.cdo.spi.server.ObjectWriteAccessHandler#getView()
-	 */
 	@Override
 	protected CDOView getView(final TransactionCommitContext commitContext) {
 		
@@ -244,20 +236,30 @@ public class CDOServerChangeManager extends ObjectWriteAccessHandler {
 		final CDOView view = getView(commitContext);
 		return new CDOCommitChangeSet(
 				view,
-				commitContext.getUserID(), 
-				getNewObjects(commitContext, view), 
-				getDirtyObjects(commitContext, view), 
-				getDetachedObjectTypes(getBranchPath(commitContext), commitContext.getDetachedObjects()),
-				getRevisionDeltas(commitContext),
+				commitContext.getUserID(),
+				commitContext.getCommitComment(),
+				getCdoObjects(commitContext.getNewObjects(), view), 
+				getCdoObjects(commitContext.getDirtyObjects(), view), 
+				getDetachedObjectTypes(commitContext),
+				getRevisionDeltas(commitContext.getDirtyObjectDeltas()),
 				commitContext.getTimeStamp());
 	}
 
-	private Map<CDOID, CDORevisionDelta> getRevisionDeltas(final TransactionCommitContext commitContext) {
-		final Map<CDOID, CDORevisionDelta> revisionDeltas = newHashMap();
-		for (InternalCDORevisionDelta revisionDelta : commitContext.getDirtyObjectDeltas()) {
-			revisionDeltas.put(revisionDelta.getID(), revisionDelta);
-		}
-		return revisionDeltas;
+	private Collection<CDOObject> getCdoObjects(final CDORevision[] revisions, final CDOView view) {
+		return FluentIterable
+				.from(ImmutableList.copyOf(revisions))
+				.transform(new Function<CDORevision, CDOObject>() {
+					@Override public CDOObject apply(final CDORevision input) { return view.getObject(input.getID()); }
+				})
+				.toList();
+	}
+
+	private Map<CDOID, CDORevisionDelta> getRevisionDeltas(final CDORevisionDelta[] revisionDeltas) {
+		return FluentIterable
+				.from(ImmutableList.copyOf(revisionDeltas))
+				.uniqueIndex(new Function<CDORevisionDelta, CDOID>() {
+					@Override public CDOID apply(final CDORevisionDelta input) { return input.getID(); }
+				});
 	}
 	
 	/*creates a change manager instance from the underlying transaction commit context*/
@@ -271,39 +273,29 @@ public class CDOServerChangeManager extends ObjectWriteAccessHandler {
 	}
 
 	/*returns with a map of CDO IDs and class identifying the detached objects*/
-	private Map<CDOID, EClass> getDetachedObjectTypes(final IBranchPath branchPath, final CDOID[] detachedObjects) {
+	private Map<CDOID, EClass> getDetachedObjectTypes(final TransactionCommitContext commitContext) {
+		final IBranchPath branchPath = getBranchPath(commitContext);
+		final CDOID[] detachedObjects = commitContext.getDetachedObjects();
+		final ImmutableMap.Builder<CDOID, EClass> builder = ImmutableMap.builder();
 		
-		Preconditions.checkNotNull(branchPath, "Branch path argument cannot be null.");
-		
-		if (CompareUtils.isEmpty(detachedObjects)) {
-			return Collections.<CDOID, EClass>emptyMap();
-		}
-
-		final Map<CDOID, EClass> $ = Maps.newHashMap();
-		
-		for (final CDOID detachedId : detachedObjects) {
+		for (final CDOID detachedObject : detachedObjects) {
+			final EClass eClass = EClassProviderBroker.INSTANCE.getEClass(branchPath, detachedObject);
 			
-			final EClass eclass = EClassProviderBroker.INSTANCE.getEClass(branchPath, detachedId);
-
-			//this is not a real issue.
-			//eclass provider is not necessary for object's that changes are not tracked with any ICDOChangeProcessor instance while updating index.
-			if (null == eclass) {
-				
-				if (LOGGER.isDebugEnabled()) {
-					LOGGER.error("EClass cannot be found for CDO ID " + detachedId);
-				}
-				
+			if (eClass != null) {
+				builder.put(detachedObject, eClass);
 			} else {
-				$.put(detachedId, eclass);
+				// Not all EClasses can be retrieved via a detached object EClass provider, but log it regardless
+				if (LOGGER.isDebugEnabled()) {
+					LOGGER.debug("EClass cannot be found for CDO ID " + detachedObject);
+				}
 			}
-			
-		}
-		return $;
+		}			
+		
+		return builder.build();
 	}
 	
 	/**
 	 * CDO revision provider working from the specified repository.
-	 *
 	 */
 	private static class RepositoryRevisionProvider implements CDORevisionProvider {
 
@@ -315,9 +307,6 @@ public class CDOServerChangeManager extends ObjectWriteAccessHandler {
 			this.branchPoint = branchPoint;
 		}
 
-		/* (non-Javadoc)
-		 * @see org.eclipse.emf.cdo.common.revision.CDORevisionProvider#getRevision(org.eclipse.emf.cdo.common.id.CDOID)
-		 */
 		@Override
 		public CDORevision getRevision(final CDOID id) {
 			final InternalCDORevision revision = repository.getRevisionManager().getRevision(id, branchPoint, CDORevision.UNCHUNKED, 0, true);
