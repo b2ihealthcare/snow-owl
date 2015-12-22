@@ -15,6 +15,8 @@
  */
 package com.b2international.snowowl.datastore.server;
 
+import static com.google.common.collect.Sets.newConcurrentHashSet;
+
 import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
@@ -194,6 +196,7 @@ public class DelegateCDOServerChangeManager {
 		}
 		
 		RuntimeException caughtException = null;
+		final Collection<ICDOChangeProcessor> committedChangeProcessors = newConcurrentHashSet();
 		
 		try {
 			
@@ -218,8 +221,8 @@ public class DelegateCDOServerChangeManager {
 								//log changes
 								logUserActivity(processor);
 								
-								//perform after commit (if any)
-								processor.afterCommit();
+								// Add to set of change processors that committed changes successfully
+								committedChangeProcessors.add(processor);
 							}
 							
 							return Status.OK_STATUS;
@@ -239,6 +242,39 @@ public class DelegateCDOServerChangeManager {
 			
 		} catch (final Exception e) {
 			caughtException = new SnowowlRuntimeException("Error when committing change processors on branch: " + branchPath, e);
+		} finally {
+			cleanupAfterCommit(caughtException, committedChangeProcessors);
+		}
+	}
+
+	private void cleanupAfterCommit(RuntimeException caughtException, Collection<ICDOChangeProcessor> committedChangeProcessors) {
+		
+		try {
+			
+			final Collection<Job> cleanupJobs = Sets.newHashSetWithExpectedSize(committedChangeProcessors.size());
+			
+			for (final ICDOChangeProcessor processor : committedChangeProcessors) {
+				cleanupJobs.add(new Job("Cleaning up " + processor.getName()) {
+					@Override 
+					protected IStatus run(final IProgressMonitor monitor) {
+						try {
+							processor.afterCommit();
+							return Status.OK_STATUS;
+						} catch (final RuntimeException e) {
+							return new Status(IStatus.ERROR, DatastoreServerActivator.PLUGIN_ID, "Error while cleaning up change processor with " + processor.getName() + " for branch: " + branchPath, e);
+						}
+					}
+				});
+			}
+			
+			ForkJoinUtils.runJobsInParallelWithErrorHandling(cleanupJobs, null);
+			
+		} catch (final Exception e) {
+			if (caughtException == null) {
+				caughtException = new SnowowlRuntimeException("Error when cleaning up change processors on branch: " + branchPath, e);
+			} else {
+				caughtException.addSuppressed(new SnowowlRuntimeException("Error when cleaning up change processors on branch: " + branchPath, e));
+			}
 		} finally {
 			unlockBranch(caughtException);
 		}

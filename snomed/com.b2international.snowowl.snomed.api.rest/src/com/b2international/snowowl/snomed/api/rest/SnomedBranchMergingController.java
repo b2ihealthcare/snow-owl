@@ -69,7 +69,7 @@ public class SnomedBranchMergingController extends AbstractRestService {
 					.setSource(request.getSource())
 					.setTarget(request.getTarget())
 					.setReviewId(request.getReviewId())
-					.setCommitComment(request.getReviewId())
+					.setCommitComment(request.getCommitComment())
 					.build()
 					.execute(bus),
 				Responses.noContent().build());

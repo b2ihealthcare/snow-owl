@@ -36,10 +36,14 @@ public interface ICDOCommitChangeSet {
 	CDOView getView();
 	
 	/**
-	 * Returns with the user ID.
-	 * @return the user ID.
+	 * @return the user identifier
 	 */
 	String getUserId();
+	
+	/**
+	 * @return the commit message
+	 */
+	String getCommitComment();
 	
 	/**
 	 * Returns with the new components.
