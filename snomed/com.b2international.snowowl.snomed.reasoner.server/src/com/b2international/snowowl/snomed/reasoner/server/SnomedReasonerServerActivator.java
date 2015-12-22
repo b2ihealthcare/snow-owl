@@ -31,7 +31,7 @@ public class SnomedReasonerServerActivator extends Plugin {
 	 * Set to {@code true} on configurations where incremental reasoning can not be performed (maximum memory reported by the runtime is less than
 	 * 3GB), {@code false} on all other systems
 	 */
-	public static final boolean CONSTRAINED_HEAP = Runtime.getRuntime().maxMemory() < 3L * 1024L * 1024L * 1024L;
+	public static final boolean CONSTRAINED_HEAP = true;
 
 	private static SnomedReasonerServerActivator instance;
 
