@@ -47,7 +47,6 @@ import org.eclipse.emf.cdo.transaction.CDOTransaction;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.b2international.commons.CompareUtils;
 import com.b2international.commons.StringUtils;
 import com.b2international.commons.csv.CsvLexer.EOL;
 import com.b2international.commons.csv.CsvParser;
@@ -480,29 +479,28 @@ public class SnomedRf2IndexInitializer extends Job {
 				final String absolutePath = unit.getUnitFile().getAbsolutePath();
 				switch (unit.getType()) {
 	
-					//concept change processing (if any) should happen in the very end
 					case CONCEPT:
 						LOGGER.info("Indexing concepts...");
 						indexConcepts(absolutePath);
-						getSnomedIndexService().commit(branchPath);
 						LOGGER.info("Concepts have been successfully indexed.");
 						break;
 					case DESCRIPTION:
 					case TEXT_DEFINITION:
 						LOGGER.info("Indexing descriptions...");
 						indexDescriptions(absolutePath);
-						getSnomedIndexService().commit(branchPath);
 						LOGGER.info("Descriptions have been successfully indexed.");
 						break;
 					case RELATIONSHIP:
 					case STATED_RELATIONSHIP:
 						LOGGER.info("Indexing relationships...");
 						indexRelationships(absolutePath);
-						getSnomedIndexService().commit(branchPath);
 						LOGGER.info("Relationships have been successfully indexed.");
 						break;
-					case TERMINOLOGY_REGISTRY:
 					case RELATIONSHIP_UNION_GROUP:
+						LOGGER.info("Indexing relationship union groups...");
+						indexUnionGroupChanges();
+						LOGGER.info("Relationship union groups have been successfully indexed.");
+					case TERMINOLOGY_REGISTRY:
 						//do nothing
 						break;
 					default:
@@ -511,7 +509,6 @@ public class SnomedRf2IndexInitializer extends Job {
 							loggedReferenceSetImport = true;
 						}
 						indexRefSets(unit);
-						getSnomedIndexService().commit(branchPath);
 						break;
 				}
 				
@@ -588,13 +585,8 @@ public class SnomedRf2IndexInitializer extends Job {
 			LOGGER.info("No unvisited descriptions have been found.");
 		}
 		
-		if (!CompareUtils.isEmpty(universalHaisInImportFile)) {
-			LOGGER.info("Reindexing relationships where the union group might have changed...");
-			indexUnionGroupChanges();
+		if (!unvisitedConcepts.isEmpty() || !unvisitedDescriptions.isEmpty()) {
 			getSnomedIndexService().commit(branchPath);
-			LOGGER.info("Union group successfully updated on relationships.");
-		} else {
-			LOGGER.info("No union group changes have been found.");
 		}
 		
 		LOGGER.info("Post-processing phase successfully finished.");
