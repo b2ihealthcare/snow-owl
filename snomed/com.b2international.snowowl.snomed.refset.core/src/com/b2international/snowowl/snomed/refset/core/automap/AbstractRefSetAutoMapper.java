@@ -94,7 +94,7 @@ public abstract class AbstractRefSetAutoMapper {
 				
 				String validResultConceptId = getFirstValidResult(adapters, limit, entry.getKey());
 				
-				if (validResultConceptId != null && !resolvedValues.containsValue(validResultConceptId)) {
+				if (validResultConceptId != null) {
 					resolvedValues.put(entry.getKey(), validResultConceptId);
 					break;
 				}

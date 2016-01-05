@@ -218,7 +218,9 @@ public class RefSetAutoMapperModel {
 	 */
 	public Map<AutoMapEntry, String> validate() {
 		final Set<String> mappedValues = newHashSet();
+		
 		final Map<AutoMapEntry, String> errorMessages = newHashMap();
+		
 		for (AutoMapEntry entry : getContent()) {
 			final String mappedValue = entry.getAutoMappedId();
 			if (!mappedValue.isEmpty()) {
