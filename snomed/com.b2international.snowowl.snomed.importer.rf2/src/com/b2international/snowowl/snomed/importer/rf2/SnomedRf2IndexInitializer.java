@@ -157,7 +157,6 @@ public class SnomedRf2IndexInitializer extends Job {
 	
 	private Set<String> conceptsInImportFile;
 	private Set<String> descriptionsInImportFile;
-	private Set<String> universalHaisInImportFile;
 	
 	private Set<String> conceptsWithMembershipChanges;
 	private Set<String> conceptsWithTaxonomyChanges;
@@ -218,7 +217,6 @@ public class SnomedRf2IndexInitializer extends Job {
 		
 		conceptsInImportFile = Sets.newHashSet();
 		descriptionsInImportFile = Sets.newHashSet();
-		universalHaisInImportFile = Sets.newHashSet();
 		
 		conceptsWithMembershipChanges = Sets.newHashSet();
 		conceptsWithTaxonomyChanges = Sets.newHashSet();
@@ -626,15 +624,6 @@ public class SnomedRf2IndexInitializer extends Job {
 
 					// The concept will also need a compare unique key update
 					conceptsWithCompareUniqueKeyChanges.add(record.get(4));
-				}
-
-				if (!universalHaisInImportFile.contains(record.get(0))) {
-					if (Concepts.HAS_ACTIVE_INGREDIENT.equals(record.get(7))
-							&& ACTIVE_STATUS.equals(record.get(2))
-							&& Concepts.UNIVERSAL_RESTRICTION_MODIFIER.equals(record.get(9))) {
-						
-						universalHaisInImportFile.add(record.get(0));
-					}
 				}
 
 				final long characteristicTypeConceptSctId = Long.parseLong(record.get(8));
