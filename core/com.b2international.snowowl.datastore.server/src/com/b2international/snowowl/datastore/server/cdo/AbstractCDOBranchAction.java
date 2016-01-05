@@ -25,6 +25,7 @@ import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.datastore.BranchPathUtils;
 import com.b2international.snowowl.datastore.IBranchPathMap;
+import com.b2international.snowowl.datastore.cdo.ICDOConnection;
 import com.b2international.snowowl.datastore.cdo.ICDOConnectionManager;
 import com.b2international.snowowl.datastore.oplock.IOperationLockTarget;
 import com.b2international.snowowl.datastore.oplock.OperationLockException;
@@ -48,20 +49,30 @@ public abstract class AbstractCDOBranchAction {
 	private final String userId;
 	private final String lockDescription;
 	private final List<IOperationLockTarget> lockTargets = newArrayList();
+	private final long timeoutMillis;
 
 	public AbstractCDOBranchAction(final IBranchPathMap branchPathMap, final String userId, final String lockDescription) {
+		this(branchPathMap, userId, lockDescription, IDatastoreOperationLockManager.IMMEDIATE);
+	}
+
+	public AbstractCDOBranchAction(IBranchPathMap branchPathMap, String userId, String lockDescription, long timeoutMillis) {
 		checkNotNull(branchPathMap, "Branch path map may not be null.");
 		checkNotNull(userId, "User identifier may not be null.");
 
 		this.branchPathMap = branchPathMap;
 		this.userId = userId;
 		this.lockDescription = lockDescription;
+		this.timeoutMillis = timeoutMillis;
 	}
 
 	public Throwable run() {
 
 		try {
 
+			if (!shouldRunUnlocked()) {
+				return null;
+			}
+			
 			acquireLocks();
 
 			for (final Entry<String, IBranchPath> repositoryBranchPath : branchPathMap.getLockedEntries().entrySet()) {
@@ -79,53 +90,67 @@ public abstract class AbstractCDOBranchAction {
 		} catch (final Throwable t) {
 			return t;
 		} finally {
+			cleanUp();
 			releaseLocks();
 		}
 	}
 
-	protected abstract void apply(String repositoryId, IBranchPath taskBranchPath) throws Throwable;
-	
-	protected boolean isApplicable(String repositoryId, IBranchPath taskBranchPath) {
-		
-		if (taskBranchPath == null) {
-			return false;
-		} else if (BranchPathUtils.isMain(taskBranchPath)) {
-			return false;
-		} else {
-			return true;
+	protected boolean shouldRunUnlocked() throws Throwable {
+		for (final Entry<String, IBranchPath> repositoryBranchPath : branchPathMap.getLockedEntries().entrySet()) {
+			final String repositoryId = repositoryBranchPath.getKey();
+			final IBranchPath taskBranchPath = repositoryBranchPath.getValue();
+			
+			if (isApplicable(repositoryId, taskBranchPath)) {
+				return true;
+			}
 		}
+		
+		return false;
 	}
 
+	protected abstract void apply(String repositoryId, IBranchPath taskBranchPath) throws Throwable;
+	
+	protected void cleanUp() {
+		return;
+	}
+	
 	protected void postRun() throws Exception {
 		return;
 	}
 
-	protected ICDOConnectionManager getConnectionManager() {
-		return ApplicationContext.getServiceForClass(ICDOConnectionManager.class);
+	protected boolean isApplicable(String repositoryId, IBranchPath taskBranchPath) throws Throwable {
+		return shouldLock(taskBranchPath);
 	}
 
-	protected String getUserId() {
+	private boolean shouldLock(IBranchPath taskBranchPath) {
+		return taskBranchPath != null && !BranchPathUtils.isMain(taskBranchPath);
+	}
+
+	protected final ICDOConnection getConnection(final String repositoryId) {
+		return ApplicationContext.getServiceForClass(ICDOConnectionManager.class).getByUuid(repositoryId);
+	}
+
+	protected final String getUserId() {
 		return userId;
 	}
 
-	protected String getLockDescription() {
+	protected final String getLockDescription() {
 		return lockDescription;
 	}
 
-	private void acquireLocks() throws OperationLockException, InterruptedException {
+	private void acquireLocks() throws Throwable {
 
 		for (final Entry<String, IBranchPath> repositoryBranchPath : branchPathMap.getLockedEntries().entrySet()) {
-			final String repositoryId = repositoryBranchPath.getKey();
 			final IBranchPath branchPath = repositoryBranchPath.getValue();
 
-			if (isApplicable(repositoryId, branchPath)) {
+			if (shouldLock(branchPath)) {
 				lockTargets.add(createLockTarget(repositoryBranchPath.getKey(), branchPath));
 				lockTargets.add(createLockTarget(repositoryBranchPath.getKey(), branchPath.getParent()));	
 			}
 		}
 
 		try {
-			getDatastoreOperationLockManager().lock(createLockContext(), IDatastoreOperationLockManager.IMMEDIATE, lockTargets);
+			getDatastoreOperationLockManager().lock(createLockContext(), timeoutMillis, lockTargets);
 		} catch (OperationLockException | InterruptedException e) {
 			lockTargets.clear();
 			throw e;

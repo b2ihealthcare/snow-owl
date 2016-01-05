@@ -15,8 +15,6 @@
  */
 package com.b2international.snowowl.datastore.serviceconfig;
 
-import static com.b2international.snowowl.datastore.BranchPathUtils.createMainPath;
-
 import org.eclipse.net4j.util.container.IPluginContainer;
 
 import com.b2international.snowowl.core.ApplicationContext;
@@ -64,7 +62,6 @@ public abstract class IndexServiceConfigJob<U extends IIndexUpdater<?>> extends 
 		
 		// Register implementation for both reading and writing
 		final U implementation = createServiceImplementation();
-		implementation.prepare(createMainPath());
 		final Class<? super U> searcherClass = getSearcherClass();
 		final Class<U> updaterClass = getUpdaterClass();
 		

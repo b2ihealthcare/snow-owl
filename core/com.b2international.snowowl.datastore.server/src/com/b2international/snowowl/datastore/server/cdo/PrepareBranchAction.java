@@ -16,6 +16,7 @@
 package com.b2international.snowowl.datastore.server.cdo;
 
 import java.text.MessageFormat;
+import java.util.concurrent.TimeUnit;
 
 import org.eclipse.emf.cdo.common.branch.CDOBranch;
 import org.slf4j.Logger;
@@ -24,13 +25,10 @@ import org.slf4j.LoggerFactory;
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.LogUtils;
 import com.b2international.snowowl.core.api.IBranchPath;
-import com.b2international.snowowl.core.api.index.IIndexEntry;
-import com.b2international.snowowl.core.api.index.IIndexUpdater;
 import com.b2international.snowowl.datastore.IBranchPathMap;
 import com.b2international.snowowl.datastore.cdo.ICDOConnection;
 import com.b2international.snowowl.datastore.oplock.impl.DatastoreLockContextDescriptions;
 import com.b2international.snowowl.datastore.request.RepositoryRequests;
-import com.b2international.snowowl.datastore.server.index.IndexServerServiceManager;
 import com.b2international.snowowl.eventbus.IEventBus;
 
 /**
@@ -38,46 +36,53 @@ import com.b2international.snowowl.eventbus.IEventBus;
  */
 public class PrepareBranchAction extends AbstractCDOBranchAction {
 
+	// Allowing 10 seconds for simultaneous task activation
+	private static final long PREPARE_TIMEOUT = TimeUnit.SECONDS.toMillis(10L);
+	
 	private static final Logger LOGGER = LoggerFactory.getLogger(PrepareBranchAction.class);
 
 	public PrepareBranchAction(final IBranchPathMap branchPathMap, final String userId) {
-		super(branchPathMap, userId, DatastoreLockContextDescriptions.PREPARE);
+		super(branchPathMap, userId, DatastoreLockContextDescriptions.PREPARE, PREPARE_TIMEOUT);
 	}
 
 	@Override
-	protected void apply(final String repositoryId, final IBranchPath taskBranchPath) throws Throwable {
-
-		final ICDOConnection connection = getConnectionManager().getByUuid(repositoryId);
-		final IIndexUpdater<IIndexEntry> indexService = IndexServerServiceManager.INSTANCE.getByUuid(repositoryId);
+	protected boolean isApplicable(String repositoryId, IBranchPath taskBranchPath) throws Throwable {
+		if (!super.isApplicable(repositoryId, taskBranchPath)) {
+			return false;
+		}
+		
+		final ICDOConnection connection = getConnection(repositoryId);
 		final IBranchPath parentBranchPath = taskBranchPath.getParent();
 		final CDOBranch parentBranch = connection.getBranch(parentBranchPath);
-
+		
 		if (parentBranch == null) {
 			throw new IllegalStateException(MessageFormat.format("Parent branch ''{0}'' not found on connection ''{1}''.", parentBranchPath, connection.getUuid()));
 		}
 
-		CDOBranch taskBranch = connection.getBranch(taskBranchPath);
+		final CDOBranch taskBranch = connection.getBranch(taskBranchPath);
+		return (taskBranch == null);
+	}
+	
+	@Override
+	protected void apply(final String repositoryId, final IBranchPath taskBranchPath) throws Throwable {
+
+		final ICDOConnection connection = getConnection(repositoryId);
+		final IBranchPath parentBranchPath = taskBranchPath.getParent();
+		final CDOBranch taskBranch = connection.getBranch(taskBranchPath);
 
 		if (taskBranch == null) {
-
 			final String message = MessageFormat.format("Creating branch {0} in ''{1}''...", taskBranchPath, connection.getRepositoryName());
 			LOGGER.info(message);
 			LogUtils.logUserEvent(LOGGER, getUserId(), parentBranchPath, message);
 
 			final IEventBus eventBus = ApplicationContext.getServiceForClass(IEventBus.class);
+			
 			RepositoryRequests.branching(repositoryId)
-				.prepareCreate()
-				.setParent(parentBranchPath.getPath())
-				.setName(taskBranchPath.lastSegment())
-				.build()
-				.execute(eventBus).get();
-		} else {
-
-			final String message = MessageFormat.format("Preparing branch {0} in ''{1}''...", taskBranchPath, connection.getRepositoryName());
-			LOGGER.info(message);
-			LogUtils.logUserEvent(LOGGER, getUserId(), parentBranchPath, message);
-
-			indexService.prepare(taskBranchPath);
+					.prepareCreate()
+					.setParent(parentBranchPath.getPath())
+					.setName(taskBranchPath.lastSegment())
+					.build()
+					.executeSync(eventBus);
 		}
 	}
 }
