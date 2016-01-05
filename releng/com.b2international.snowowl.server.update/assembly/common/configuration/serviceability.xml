@@ -135,14 +135,18 @@
 	
 	<appender name="LOG_FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
 		<file>serviceability/logs/log.log</file>
-		<rollingPolicy class="ch.qos.logback.core.rolling.FixedWindowRollingPolicy">
-			<FileNamePattern>serviceability/logs/log_%i.log</FileNamePattern>
-			<MinIndex>1</MinIndex>
-			<MaxIndex>4</MaxIndex>
+		<rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+			<fileNamePattern>serviceability/logs/log_%d{yyyy-MM-dd}.log</fileNamePattern>
+			<!-- keep 90 days' worth of history -->
+      		<maxHistory>90</maxHistory>
 		</rollingPolicy>
-		<triggeringPolicy class="ch.qos.logback.core.rolling.SizeBasedTriggeringPolicy">
-			<MaxFileSize>10MB</MaxFileSize>
-		</triggeringPolicy>
+		<filter class="ch.qos.logback.core.filter.EvaluatorFilter">
+			<evaluator class="ch.qos.logback.classic.boolex.OnMarkerEvaluator">
+				<marker>SNOW_OWL_USER_ACCESS</marker>
+			</evaluator>
+			<onMismatch>ACCEPT</onMismatch>
+			<onMatch>DENY</onMatch>
+		</filter>
 		<encoder class="ch.qos.logback.classic.encoder.PatternLayoutEncoder">
 			<Pattern>[%d{yyyy-MM-dd HH:mm:ss.SSS}] %-5level %-28.28thread %-64.64logger{64} %X{medic.eventCode} %msg %ex%n</Pattern>
 		</encoder>
@@ -156,14 +160,11 @@
 
 	<appender name="EVENT_LOG_FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
 		<file>serviceability/eventlogs/eventlog.log</file>
-		<rollingPolicy class="ch.qos.logback.core.rolling.FixedWindowRollingPolicy">
-			<FileNamePattern>serviceability/eventlogs/eventlog_%i.log</FileNamePattern>
-			<MinIndex>1</MinIndex>
-			<MaxIndex>4</MaxIndex>
+		<rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+			<fileNamePattern>serviceability/eventlogs/eventlog_%d{yyyy-MM-dd}.log</fileNamePattern>
+			<!-- keep 90 days' worth of history -->
+      		<maxHistory>90</maxHistory>
 		</rollingPolicy>
-		<triggeringPolicy class="ch.qos.logback.core.rolling.SizeBasedTriggeringPolicy">
-			<MaxFileSize>10MB</MaxFileSize>
-		</triggeringPolicy>
 		<encoder class="ch.qos.logback.classic.encoder.PatternLayoutEncoder">
 			<Pattern>[%d{yyyy-MM-dd HH:mm:ss.SSS}] %-28.28thread &lt;%X{medic.eventCode}&gt; %msg %ex%n</Pattern>
 		</encoder>
