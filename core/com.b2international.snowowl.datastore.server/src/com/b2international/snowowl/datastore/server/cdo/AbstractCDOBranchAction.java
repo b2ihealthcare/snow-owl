@@ -123,13 +123,7 @@ public abstract class AbstractCDOBranchAction {
 	}
 
 	private boolean shouldLock(IBranchPath taskBranchPath) {
-		if (taskBranchPath == null) {
-			return false;
-		} else if (BranchPathUtils.isMain(taskBranchPath)) {
-			return false;
-		} else {
-			return true;
-		}
+		return taskBranchPath != null && !BranchPathUtils.isMain(taskBranchPath);
 	}
 
 	protected final ICDOConnection getConnection(final String repositoryId) {
