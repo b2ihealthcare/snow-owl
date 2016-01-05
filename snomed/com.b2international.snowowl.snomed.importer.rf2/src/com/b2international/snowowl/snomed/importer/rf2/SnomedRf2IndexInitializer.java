@@ -583,9 +583,9 @@ public class SnomedRf2IndexInitializer extends Job {
 		if (!unvisitedDescriptions.isEmpty()) {
 			LOGGER.info("Reindexing unvisited descriptions...");
 			indexUnvisitedDescriptions(unvisitedDescriptions);
-			LOGGER.info("Unvisited concepts have been successfully reindexed.");
+			LOGGER.info("Unvisited descriptions have been successfully reindexed.");
 		} else {
-			LOGGER.info("No preferred term changes have been found.");
+			LOGGER.info("No unvisited descriptions have been found.");
 		}
 		
 		if (!CompareUtils.isEmpty(universalHaisInImportFile)) {
