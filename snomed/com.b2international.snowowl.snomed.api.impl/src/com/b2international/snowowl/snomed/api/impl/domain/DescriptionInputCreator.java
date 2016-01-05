@@ -45,6 +45,12 @@ public class DescriptionInputCreator extends AbstractInputCreator implements Com
 			change = true;
 			update.setAcceptability(newAcceptabilityMap);
 		}
+		// If the description is inactive make sure the acceptability map is empty to make the language reference set entries inactive
+		if (!newVersionDesc.isActive() && !newAcceptabilityMap.isEmpty()) {
+			change = true;
+			newAcceptabilityMap.clear();
+			update.setAcceptability(newAcceptabilityMap);
+		}
 		if (existingDesc.getCaseSignificance() != newVersionDesc.getCaseSignificance()) {
 			change = true;
 			update.setCaseSignificance(newVersionDesc.getCaseSignificance());
