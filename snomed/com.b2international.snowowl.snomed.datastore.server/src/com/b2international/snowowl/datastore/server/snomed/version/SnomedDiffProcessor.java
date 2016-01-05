@@ -609,6 +609,7 @@ public class SnomedDiffProcessor extends NodeDeltaDiffProcessor {
 			return getConceptLabel(getBranchPath(component), ((Concept) component).getId());
 		} else if (component instanceof Relationship) {
 			final Relationship relationship = (Relationship) component;
+			
 			final String negation = relationship.isDestinationNegated() ? " NOT " : "";
 			final String[] labels = getRelationshipLabels(component, relationship);
 			final StringBuilder sb = new StringBuilder();
@@ -616,6 +617,12 @@ public class SnomedDiffProcessor extends NodeDeltaDiffProcessor {
 			sb.append(" - ");
 			sb.append(negation);
 			sb.append(labels[1]);
+			
+			//indicate relationship characteristic type to distinguish between different types
+			sb.append(" (");
+			String characteristicTypeLabel = getComponentLabel(relationship.getCharacteristicType());
+			sb.append(characteristicTypeLabel);
+			sb.append(") ");
 			sb.append(" - ");
 			sb.append(labels[2]);
 			return sb.toString();
