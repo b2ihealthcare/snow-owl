@@ -161,7 +161,8 @@ public class SnomedRf2IndexInitializer extends Job {
 	private Set<String> conceptsWithMembershipChanges;
 	private Set<String> conceptsWithTaxonomyChanges;
 	private Set<String> conceptsWithCompareUniqueKeyChanges;
-	private Set<String> descriptionsWithAcceptabilityChanges;
+	
+	private boolean requiresUnionGroupUpdate;
 	
 	// refset ID to fake SnomedRefSet EObject
 	private Map<String, SnomedRefSet> visitedRefSets;
@@ -221,7 +222,6 @@ public class SnomedRf2IndexInitializer extends Job {
 		conceptsWithMembershipChanges = Sets.newHashSet();
 		conceptsWithTaxonomyChanges = Sets.newHashSet();
 		conceptsWithCompareUniqueKeyChanges = Sets.newHashSet();
-		descriptionsWithAcceptabilityChanges = Sets.newHashSet();
 		
 		refSetMemberChanges = HashMultimap.create();
 		mappingRefSetMemberChanges = HashMultimap.create();
@@ -410,9 +410,6 @@ public class SnomedRf2IndexInitializer extends Job {
 							acceptableMemberChanges.put(descriptionId, negativeChange);
 						}
 					}
-
-					// Collect the description for needing an acceptability field update
-					descriptionsWithAcceptabilityChanges.add(descriptionId);
 				}
 			});
 		}
@@ -480,25 +477,25 @@ public class SnomedRf2IndexInitializer extends Job {
 					case CONCEPT:
 						LOGGER.info("Indexing concepts...");
 						indexConcepts(absolutePath);
+						getSnomedIndexService().commit(branchPath);
 						LOGGER.info("Concepts have been successfully indexed.");
 						break;
 					case DESCRIPTION:
 					case TEXT_DEFINITION:
 						LOGGER.info("Indexing descriptions...");
 						indexDescriptions(absolutePath);
+						getSnomedIndexService().commit(branchPath);
 						LOGGER.info("Descriptions have been successfully indexed.");
 						break;
 					case RELATIONSHIP:
 					case STATED_RELATIONSHIP:
 						LOGGER.info("Indexing relationships...");
 						indexRelationships(absolutePath);
+						getSnomedIndexService().commit(branchPath);
 						LOGGER.info("Relationships have been successfully indexed.");
 						break;
-					case RELATIONSHIP_UNION_GROUP:
-						LOGGER.info("Indexing relationship union groups...");
-						indexUnionGroupChanges();
-						LOGGER.info("Relationship union groups have been successfully indexed.");
 					case TERMINOLOGY_REGISTRY:
+					case RELATIONSHIP_UNION_GROUP:
 						//do nothing
 						break;
 					default:
@@ -507,11 +504,11 @@ public class SnomedRf2IndexInitializer extends Job {
 							loggedReferenceSetImport = true;
 						}
 						indexRefSets(unit);
+						getSnomedIndexService().commit(branchPath);
 						break;
 				}
 				
 			} finally {
-				getSnomedIndexService().commit(branchPath);
 				delegateMonitor.worked(1);
 			}
 		}
@@ -583,7 +580,14 @@ public class SnomedRf2IndexInitializer extends Job {
 			LOGGER.info("No unvisited descriptions have been found.");
 		}
 		
-		if (!unvisitedConcepts.isEmpty() || !unvisitedDescriptions.isEmpty()) {
+		if (requiresUnionGroupUpdate) {
+			LOGGER.info("Reindexing union groups...");
+			indexUnionGroupChanges(Concepts.STATED_RELATIONSHIP);
+			indexUnionGroupChanges(Concepts.INFERRED_RELATIONSHIP);
+			LOGGER.info("Union groups have been successfully reindexed.");
+		}
+
+		if (!unvisitedConcepts.isEmpty() || !unvisitedDescriptions.isEmpty() || requiresUnionGroupUpdate) {
 			getSnomedIndexService().commit(branchPath);
 		}
 		
@@ -625,7 +629,15 @@ public class SnomedRf2IndexInitializer extends Job {
 					// The concept will also need a compare unique key update
 					conceptsWithCompareUniqueKeyChanges.add(record.get(4));
 				}
+				
+				if (!requiresUnionGroupUpdate 
+						&& Concepts.HAS_ACTIVE_INGREDIENT.equals(record.get(7))
+						&& (Concepts.STATED_RELATIONSHIP.equals(record.get(8)) || Concepts.INFERRED_RELATIONSHIP.equals(record.get(8)))
+						&& Concepts.UNIVERSAL_RESTRICTION_MODIFIER.equals(record.get(9))) {
 
+					requiresUnionGroupUpdate = true;
+				}
+				
 				final long characteristicTypeConceptSctId = Long.parseLong(record.get(8));
 				final boolean active = ACTIVE_STATUS.equals(record.get(2));
 				final int group = Integer.parseInt(record.get(6));
@@ -637,6 +649,7 @@ public class SnomedRf2IndexInitializer extends Job {
 				
 				final long effectiveTime = getEffectiveTime(record);
 				final boolean released = isReleased(effectiveTime);
+
 				
 				// Create relationship document
 				final Document doc = SnomedMappings.doc()
@@ -663,12 +676,13 @@ public class SnomedRf2IndexInitializer extends Job {
 		});
 	}
 
-	private void indexUnionGroupChanges() {
+	private void indexUnionGroupChanges(final String characteristicTypeId) {
 		final SnomedIndexServerService indexService = getSnomedIndexService();
 		final Query query = SnomedMappings.newQuery()
 				.relationship()
 				.active(true)
 				.relationshipType(Concepts.HAS_ACTIVE_INGREDIENT)
+				.relationshipCharacteristicType(characteristicTypeId)
 				.relationshipUniversal(true)
 				.matchAll();
 		
@@ -706,7 +720,8 @@ public class SnomedRf2IndexInitializer extends Job {
 			for (SnomedRelationshipIndexEntry indexEntry : relationships) {
 				
 				if (indexEntry.isActive() 
-						&& indexEntry.getAttributeId().equals(Concepts.HAS_ACTIVE_INGREDIENT) 
+						&& indexEntry.getAttributeId().equals(Concepts.HAS_ACTIVE_INGREDIENT)
+						&& indexEntry.getCharacteristicTypeId().equals(characteristicTypeId)
 						&& indexEntry.isUniversal() 
 						&& indexEntry.getUnionGroup() != unionGroup) {
 					
@@ -715,7 +730,7 @@ public class SnomedRf2IndexInitializer extends Job {
 					final long objectId = Long.parseLong(indexEntry.getObjectId());
 					final long attributeId = Long.parseLong(indexEntry.getAttributeId());
 					final long valueId = Long.parseLong(indexEntry.getValueId());
-					final long characteristicTypeId = Long.parseLong(indexEntry.getCharacteristicTypeId());
+					final long characteristicType = Long.parseLong(indexEntry.getCharacteristicTypeId());
 					final int group = indexEntry.getGroup();
 					final boolean universal = indexEntry.isUniversal();
 					final boolean destinationNegated = indexEntry.isDestinationNegated();
@@ -728,7 +743,7 @@ public class SnomedRf2IndexInitializer extends Job {
 						.storageKey(storageKey)
 						.active(indexEntry.isActive())
 						.relationshipType(attributeId)
-						.relationshipCharacteristicType(characteristicTypeId)
+						.relationshipCharacteristicType(characteristicType)
 						.module(moduleId)
 						.effectiveTime(indexEntry.getEffectiveTimeAsLong())
 						.relationshipSource(objectId)

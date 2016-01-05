@@ -37,6 +37,23 @@ import com.google.common.collect.Sets;
  * Updates relationship union groups on universal has active ingredient relationships.
  */
 public class SnomedUnionGroupImporter extends SnomedRelationshipImporter {
+	
+	private static class UniversalActiveIngredientFilter implements Predicate<Relationship> {
+		private final String characteristicTypeId;
+
+		private UniversalActiveIngredientFilter(String characteristicTypeId) {
+			this.characteristicTypeId = characteristicTypeId;
+		}
+
+		@Override
+		public boolean apply(Relationship input) {
+			return input.isActive()
+					&& input.getType().getId().equals(Concepts.HAS_ACTIVE_INGREDIENT) 
+					&& input.getModifier().getId().equals(Concepts.UNIVERSAL_RESTRICTION_MODIFIER)
+					&& input.getCharacteristicType().getId().equals(characteristicTypeId);
+		}
+	}
+
 	private final Set<String> conceptIds = Sets.newHashSet();
 	
 	public SnomedUnionGroupImporter(SnomedImportContext importContext, InputStream releaseFileStream, String releaseFileIdentifier) {
@@ -45,42 +62,58 @@ public class SnomedUnionGroupImporter extends SnomedRelationshipImporter {
 	
 	@Override
 	protected void importRow(RelationshipRow currentRow) {
-		if (currentRow.getTypeId().equals(Concepts.HAS_ACTIVE_INGREDIENT) && currentRow.getModifierId().equals(Concepts.UNIVERSAL_RESTRICTION_MODIFIER)) {
+		/* 
+		 * XXX: Not testing status here, as an inactive relationship may mean that the union group has 
+		 * to be updated on remaining active HAI relationships.
+		 */
+		if (hasActiveIngredientType(currentRow) && isUniversal(currentRow) && isStatedOrInferred(currentRow)) {
 			conceptIds.add(currentRow.getSourceId());
 		}
+	}
+
+	private boolean hasActiveIngredientType(RelationshipRow currentRow) {
+		return Concepts.HAS_ACTIVE_INGREDIENT.equals(currentRow.getTypeId());
+	}
+
+	private boolean isUniversal(RelationshipRow currentRow) {
+		return Concepts.UNIVERSAL_RESTRICTION_MODIFIER.equals(currentRow.getModifierId());
+	}
+
+	private boolean isStatedOrInferred(RelationshipRow currentRow) {
+		return Concepts.STATED_RELATIONSHIP.equals(currentRow.getCharacteristicTypeId()) || Concepts.INFERRED_RELATIONSHIP.equals(currentRow.getCharacteristicTypeId());
 	}
 
 	@Override
 	protected ImportAction commit(SubMonitor subMonitor, String formattedEffectiveTime) {
 		for (String conceptId : conceptIds) {
-			final Concept concept = getConcept(conceptId);
-			final List<Relationship> activeUniversalHAI = FluentIterable.from(concept.getOutboundRelationships())
-					.filter(new Predicate<Relationship>() {
-						@Override
-						public boolean apply(Relationship input) {
-							return input.isActive()
-									&& input.getType().getId().equals(Concepts.HAS_ACTIVE_INGREDIENT) 
-									&& input.getModifier().getId().equals(Concepts.UNIVERSAL_RESTRICTION_MODIFIER);
-						}
-					})
-					.toList();
-			
-			if (activeUniversalHAI.isEmpty()) {
-				continue;
-			}
-			
-			// If there is more than a single universal HAI relationship on the concept, set the union group number 
-			final int unionGroup = activeUniversalHAI.size() > 1 ? 1 : 0;
-			
-			for (Relationship relationship : activeUniversalHAI) {
-				if (relationship.getUnionGroup() != unionGroup) {
-					relationship.setUnionGroup(unionGroup);
-				}
-			}
+			updateUnionGroup(conceptId, Concepts.STATED_RELATIONSHIP);
+			updateUnionGroup(conceptId, Concepts.INFERRED_RELATIONSHIP);
 		}
 		
 		conceptIds.clear();
 		return super.commit(subMonitor, formattedEffectiveTime);
+	}
+
+	private void updateUnionGroup(final String conceptId, final String characteristicTypeId) {
+		final Concept concept = getConcept(conceptId);
+		final List<Relationship> activeUniversalHAI = FluentIterable.from(concept.getOutboundRelationships())
+				.filter(new UniversalActiveIngredientFilter(characteristicTypeId))
+				.toList();
+		
+		if (activeUniversalHAI.isEmpty()) {
+			return;
+		}
+		
+		// If there is more than a single universal HAI relationship on the concept, set the union group number 
+		final int unionGroup = activeUniversalHAI.size() > 1 ? 1 : 0;
+		
+		for (Relationship relationship : activeUniversalHAI) {
+			if (relationship.getUnionGroup() != unionGroup) {
+				relationship.setUnionGroup(unionGroup);
+			}
+		}
+		
+		return;
 	}
 	
 	
