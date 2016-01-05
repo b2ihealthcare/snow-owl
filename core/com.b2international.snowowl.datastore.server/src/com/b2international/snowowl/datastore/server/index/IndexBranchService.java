@@ -284,8 +284,8 @@ public class IndexBranchService implements Closeable {
 		if (null != indexWriter) {
 			indexWriter.setCommitData(Collections.<String, String>emptyMap()); //override snapshot commit data
 			indexWriter.commit();
-			clearDirty();
 			manager.maybeRefreshBlocking();
+			clearDirty();
 		}
 	}
 
