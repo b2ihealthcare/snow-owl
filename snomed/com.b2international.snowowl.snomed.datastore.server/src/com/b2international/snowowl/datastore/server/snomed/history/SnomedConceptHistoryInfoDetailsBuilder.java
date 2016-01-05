@@ -154,7 +154,7 @@ public class SnomedConceptHistoryInfoDetailsBuilder extends AbstractHistoryInfoD
 		} else if (cdoObject instanceof Relationship) {
 			final Relationship relationship = (Relationship) cdoObject;
 			if (null != relationship.getSource() && null != relationship.getType() && null != relationship.getDestination())
-				return change + "relationship: " +  getLabel(relationship) + ".";
+				return change + getPreferredTerm(relationship.getCharacteristicType()).toLowerCase() + ": " + getLabel(relationship) + ".";
 		} else if (cdoObject instanceof SnomedConcreteDataTypeRefSetMember) {
 			return change + "concrete domain element: \"" + getConcreteDataTypeItem((SnomedConcreteDataTypeRefSetMember) cdoObject) + "\".";
 		} else if (cdoObject instanceof SnomedRefSetMember) {
