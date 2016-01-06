@@ -15,10 +15,12 @@
  */
 package com.b2international.snowowl.core.domain;
 
+import java.io.Serializable;
+
 /**
  * Represents an identifiable component of a code system.
  */
-public interface IComponent {
+public interface IComponent extends Serializable {
 
 	/**
 	 * Returns the component identifier.
