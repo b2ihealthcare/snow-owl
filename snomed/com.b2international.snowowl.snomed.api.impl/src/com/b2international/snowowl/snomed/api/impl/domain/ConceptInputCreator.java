@@ -4,14 +4,14 @@ import com.b2international.snowowl.snomed.api.domain.browser.ISnomedBrowserDescr
 import com.b2international.snowowl.snomed.api.impl.domain.browser.SnomedBrowserConcept;
 import com.b2international.snowowl.snomed.api.impl.domain.browser.SnomedBrowserConceptUpdate;
 import com.b2international.snowowl.snomed.core.domain.InactivationIndicator;
-import com.b2international.snowowl.snomed.datastore.server.request.BaseSnomedComponentUpdateRequest;
-import com.b2international.snowowl.snomed.datastore.server.request.SnomedComponentCreateRequest;
-import com.b2international.snowowl.snomed.datastore.server.request.SnomedConceptCreateRequest;
-import com.b2international.snowowl.snomed.datastore.server.request.SnomedConceptCreateRequestBuilder;
-import com.b2international.snowowl.snomed.datastore.server.request.SnomedConceptUpdateRequest;
-import com.b2international.snowowl.snomed.datastore.server.request.SnomedConceptUpdateRequestBuilder;
-import com.b2international.snowowl.snomed.datastore.server.request.SnomedDescriptionCreateRequest;
-import com.b2international.snowowl.snomed.datastore.server.request.SnomedRequests;
+import com.b2international.snowowl.snomed.datastore.request.BaseSnomedComponentUpdateRequest;
+import com.b2international.snowowl.snomed.datastore.request.SnomedComponentCreateRequest;
+import com.b2international.snowowl.snomed.datastore.request.SnomedConceptCreateRequest;
+import com.b2international.snowowl.snomed.datastore.request.SnomedConceptCreateRequestBuilder;
+import com.b2international.snowowl.snomed.datastore.request.SnomedConceptUpdateRequest;
+import com.b2international.snowowl.snomed.datastore.request.SnomedConceptUpdateRequestBuilder;
+import com.b2international.snowowl.snomed.datastore.request.SnomedDescriptionCreateRequest;
+import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 
 public class ConceptInputCreator extends AbstractInputCreator implements ComponentInputCreator<SnomedConceptCreateRequest, SnomedConceptUpdateRequest, SnomedBrowserConcept> {
 	

@@ -5,12 +5,12 @@ import java.util.Map;
 import com.b2international.commons.ClassUtils;
 import com.b2international.snowowl.snomed.api.impl.domain.browser.SnomedBrowserDescription;
 import com.b2international.snowowl.snomed.core.domain.Acceptability;
-import com.b2international.snowowl.snomed.datastore.server.request.BaseSnomedComponentUpdateRequest;
-import com.b2international.snowowl.snomed.datastore.server.request.SnomedComponentCreateRequest;
-import com.b2international.snowowl.snomed.datastore.server.request.SnomedDescriptionCreateRequest;
-import com.b2international.snowowl.snomed.datastore.server.request.SnomedDescriptionUpdateRequest;
-import com.b2international.snowowl.snomed.datastore.server.request.SnomedDescriptionUpdateRequestBuilder;
-import com.b2international.snowowl.snomed.datastore.server.request.SnomedRequests;
+import com.b2international.snowowl.snomed.datastore.request.BaseSnomedComponentUpdateRequest;
+import com.b2international.snowowl.snomed.datastore.request.SnomedComponentCreateRequest;
+import com.b2international.snowowl.snomed.datastore.request.SnomedDescriptionCreateRequest;
+import com.b2international.snowowl.snomed.datastore.request.SnomedDescriptionUpdateRequest;
+import com.b2international.snowowl.snomed.datastore.request.SnomedDescriptionUpdateRequestBuilder;
+import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 
 public class DescriptionInputCreator extends AbstractInputCreator implements ComponentInputCreator<SnomedDescriptionCreateRequest, SnomedDescriptionUpdateRequest, SnomedBrowserDescription> {
 

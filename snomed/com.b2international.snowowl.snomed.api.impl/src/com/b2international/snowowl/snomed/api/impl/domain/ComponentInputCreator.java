@@ -1,8 +1,8 @@
 package com.b2international.snowowl.snomed.api.impl.domain;
 
 import com.b2international.snowowl.snomed.api.domain.browser.ISnomedBrowserComponentWithId;
-import com.b2international.snowowl.snomed.datastore.server.request.BaseSnomedComponentUpdateRequest;
-import com.b2international.snowowl.snomed.datastore.server.request.SnomedComponentCreateRequest;
+import com.b2international.snowowl.snomed.datastore.request.BaseSnomedComponentUpdateRequest;
+import com.b2international.snowowl.snomed.datastore.request.SnomedComponentCreateRequest;
 
 public interface ComponentInputCreator<I extends SnomedComponentCreateRequest, U extends BaseSnomedComponentUpdateRequest, T extends ISnomedBrowserComponentWithId> {
 
