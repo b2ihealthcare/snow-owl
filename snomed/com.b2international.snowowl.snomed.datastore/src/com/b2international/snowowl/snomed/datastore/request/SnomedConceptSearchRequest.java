@@ -103,7 +103,7 @@ final class SnomedConceptSearchRequest extends SnomedSearchRequest<SnomedConcept
 			final String ancestorId = getString(OptionKey.ANCESTOR);
 			queryBuilder.and(SnomedMappings.newQuery()
 					.parent(ancestorId)
-					.parent(ancestorId)
+					.ancestor(ancestorId)
 					.matchAny());
 		}
 		
