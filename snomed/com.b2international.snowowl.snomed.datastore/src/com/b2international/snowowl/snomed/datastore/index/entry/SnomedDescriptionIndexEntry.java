@@ -124,6 +124,7 @@ public class SnomedDescriptionIndexEntry extends SnomedIndexEntry implements ICo
 
 		public SnomedDescriptionIndexEntry build() {
 			return new SnomedDescriptionIndexEntry(id,
+					label,
 					score,
 					storageKey, 
 					moduleId,
@@ -146,7 +147,8 @@ public class SnomedDescriptionIndexEntry extends SnomedIndexEntry implements ICo
 	private final String caseSignificanceId;
 	private final ImmutableMap<String, Acceptability> acceptabilityMap;
 
-	private SnomedDescriptionIndexEntry(final String id, 
+	private SnomedDescriptionIndexEntry(final String id,
+			final String label,
 			final float score, 
 			final long storageKey, 
 			final String moduleId, 
@@ -160,7 +162,8 @@ public class SnomedDescriptionIndexEntry extends SnomedIndexEntry implements ICo
 			final String caseSignificanceId,
 			final ImmutableMap<String, Acceptability> acceptabilityMap) {
 
-		super(id, 
+		super(id,
+				label,
 				typeId, // XXX: iconId is the same as typeId 
 				score, 
 				storageKey, 

@@ -29,6 +29,7 @@ public class SnomedConceptIndexEntryWithChildFlag extends SnomedConceptIndexEntr
 	public SnomedConceptIndexEntryWithChildFlag(final SnomedConceptIndexEntry conceptIndexEntry, final boolean hasChildren) {
 
 		super(conceptIndexEntry.getId(), 
+				conceptIndexEntry.getLabel(),
 				conceptIndexEntry.getIconId(), 
 				conceptIndexEntry.getScore(), 
 				conceptIndexEntry.getStorageKey(),

@@ -192,7 +192,8 @@ public class SnomedRefSetMemberIndexEntry extends SnomedIndexEntry implements IC
 		}
 
 		public SnomedRefSetMemberIndexEntry build() {
-			return new SnomedRefSetMemberIndexEntry(id, 
+			return new SnomedRefSetMemberIndexEntry(id,
+					label,
 					score, 
 					storageKey, 
 					moduleId, 
@@ -217,6 +218,7 @@ public class SnomedRefSetMemberIndexEntry extends SnomedIndexEntry implements IC
 	private final short mapTargetComponentType;
 
 	private SnomedRefSetMemberIndexEntry(final String id,
+			final String label,
 			final float score, 
 			final long storageKey, 
 			final String moduleId, 
@@ -231,6 +233,7 @@ public class SnomedRefSetMemberIndexEntry extends SnomedIndexEntry implements IC
 			final short mapTargetComponentType) {
 
 		super(id, 
+				label,
 				referenceSetId, // XXX: iconId is the reference set identifier
 				score, 
 				storageKey, 

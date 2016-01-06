@@ -80,7 +80,8 @@ public class SnomedConceptIndexEntry extends SnomedIndexEntry implements ICompon
 		}
 
 		public SnomedConceptIndexEntry build() {
-			return new SnomedConceptIndexEntry(id, 
+			return new SnomedConceptIndexEntry(id,
+					label,
 					iconId, 
 					score, 
 					storageKey,
@@ -96,7 +97,8 @@ public class SnomedConceptIndexEntry extends SnomedIndexEntry implements ICompon
 	private final boolean primitive;
 	private final boolean exhaustive;
 
-	protected SnomedConceptIndexEntry(final String id, 
+	protected SnomedConceptIndexEntry(final String id,
+			final String label,
 			final String iconId, 
 			final float score, 
 			final long storageKey, 
@@ -108,6 +110,7 @@ public class SnomedConceptIndexEntry extends SnomedIndexEntry implements ICompon
 			final boolean exhaustive) {
 
 		super(id, 
+				label,
 				iconId,
 				score, 
 				storageKey, 

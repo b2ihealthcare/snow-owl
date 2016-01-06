@@ -123,7 +123,8 @@ public class SnomedRelationshipIndexEntry extends SnomedIndexEntry implements IS
 		}
 
 		public SnomedRelationshipIndexEntry build() {
-			return new SnomedRelationshipIndexEntry(id, 
+			return new SnomedRelationshipIndexEntry(id,
+					label,
 					score, 
 					storageKey, 
 					moduleId, 
@@ -150,6 +151,7 @@ public class SnomedRelationshipIndexEntry extends SnomedIndexEntry implements IS
 	private final boolean destinationNegated;
 
 	private SnomedRelationshipIndexEntry(final String id, 
+			final String label,
 			final float score, 
 			final long storageKey, 
 			final String moduleId, 
@@ -166,6 +168,7 @@ public class SnomedRelationshipIndexEntry extends SnomedIndexEntry implements IS
 			final boolean destinationNegated) {
 
 		super(id, 
+				label,
 				typeId, // XXX: iconId is the same as typeId 
 				score, 
 				storageKey, 

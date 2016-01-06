@@ -38,6 +38,7 @@ public abstract class SnomedIndexEntry extends AbstractIndexEntry implements ICo
 	protected static abstract class AbstractBuilder<B extends AbstractBuilder<B>> {
 
 		protected String id;
+		protected String label;
 		protected String moduleId;
 		protected long storageKey = CDOUtils.NO_STORAGE_KEY;
 		protected float score;
@@ -47,6 +48,11 @@ public abstract class SnomedIndexEntry extends AbstractIndexEntry implements ICo
 
 		public B id(final String id) {
 			this.id = id;
+			return getSelf();
+		}
+		
+		public B label(final String label) {
+			this.label = label;
 			return getSelf();
 		}
 
@@ -90,7 +96,8 @@ public abstract class SnomedIndexEntry extends AbstractIndexEntry implements ICo
 	
 	private final String effectiveTimeString;
 
-	protected SnomedIndexEntry(final String id, 
+	protected SnomedIndexEntry(final String id,
+			final String label,
 			final String iconId, 
 			final float score, 
 			final long storageKey, 
@@ -100,7 +107,7 @@ public abstract class SnomedIndexEntry extends AbstractIndexEntry implements ICo
 			final long effectiveTimeLong) {
 
 		super(id, 
-				id, // XXX: As there are no definitive labels for SnomedIndexEntries, it is set to the identifier 
+				label == null ? String.format("!!!%s!!!", id) : label, // XXX use ID with markers to indicate problems when fetching entries without label on the client side
 				iconId, 
 				score, 
 				storageKey);
@@ -112,12 +119,6 @@ public abstract class SnomedIndexEntry extends AbstractIndexEntry implements ICo
 		this.active = active;
 		this.effectiveTimeLong = effectiveTimeLong;
 		this.effectiveTimeString = EffectiveTimes.format(effectiveTimeLong);
-	}
-
-	@Override
-	@Deprecated
-	public String getLabel() {
-		return "!!!" + id + "!!!"; 
 	}
 
 	/**

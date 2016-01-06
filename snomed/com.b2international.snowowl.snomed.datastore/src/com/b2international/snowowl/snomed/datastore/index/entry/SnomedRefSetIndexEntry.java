@@ -92,7 +92,8 @@ public class SnomedRefSetIndexEntry extends SnomedIndexEntry implements IRefSetC
 		}
 
 		public SnomedRefSetIndexEntry build() {
-			return new SnomedRefSetIndexEntry(id, 
+			return new SnomedRefSetIndexEntry(id,
+					label,
 					iconId,
 					score, 
 					storageKey, 
@@ -110,7 +111,8 @@ public class SnomedRefSetIndexEntry extends SnomedIndexEntry implements IRefSetC
 	private final short referencedComponentType;
 	private final boolean structural;
 
-	private SnomedRefSetIndexEntry(final String id, 
+	private SnomedRefSetIndexEntry(final String id,
+			final String label,
 			final String iconId,
 			final float score, 
 			final long storageKey, 
@@ -123,6 +125,7 @@ public class SnomedRefSetIndexEntry extends SnomedIndexEntry implements IRefSetC
 			final boolean structural) {
 
 		super(id, 
+				label,
 				iconId,
 				score, 
 				storageKey, 
