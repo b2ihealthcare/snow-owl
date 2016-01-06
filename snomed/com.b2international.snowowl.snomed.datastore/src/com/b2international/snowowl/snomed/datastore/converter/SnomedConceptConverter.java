@@ -15,13 +15,19 @@
  */
 package com.b2international.snowowl.snomed.datastore.converter;
 
+import static com.google.common.collect.Sets.newHashSet;
+
 import java.io.IOException;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
 import org.apache.lucene.document.Document;
+import org.apache.lucene.queries.BooleanFilter;
+import org.apache.lucene.search.BooleanClause.Occur;
 import org.apache.lucene.search.ConstantScoreQuery;
+import org.apache.lucene.search.FilteredQuery;
 import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.TopDocs;
@@ -47,17 +53,19 @@ import com.b2international.snowowl.snomed.core.domain.SubclassDefinitionStatus;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptIndexEntry;
 import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedMappings;
 import com.b2international.snowowl.snomed.datastore.request.DescriptionRequestHelper;
-import com.b2international.snowowl.snomed.datastore.request.SnomedConceptSearchRequestBuilder;
 import com.b2international.snowowl.snomed.datastore.request.SnomedDescriptionSearchRequestBuilder;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.b2international.snowowl.snomed.datastore.services.AbstractSnomedRefSetMembershipLookupService;
 import com.google.common.base.Function;
+import com.google.common.base.Functions;
 import com.google.common.collect.FluentIterable;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
+import com.google.common.collect.Maps;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Multimaps;
+import com.google.common.collect.TreeMultimap;
 
 /**
  * @since 4.5
@@ -81,6 +89,7 @@ final class SnomedConceptConverter extends BaseSnomedComponentConverter<SnomedCo
 		result.setEffectiveTime(toEffectiveTime(input.getEffectiveTimeAsLong()));
 		result.setId(input.getId());
 		result.setModuleId(input.getModuleId());
+		result.setIconId(input.getIconId());
 		result.setReleased(input.isReleased());
 		result.setSubclassDefinitionStatus(toSubclassDefinitionStatus(input.isExhaustive()));
 		return result;
@@ -106,8 +115,8 @@ final class SnomedConceptConverter extends BaseSnomedComponentConverter<SnomedCo
 		expandFullySpecifiedName(results, conceptIds, helper);
 		expandDescriptions(results, conceptIds);
 		expandRelationships(results, conceptIds);
-		expandDescendants(results);
-		expandAncestors(results);
+		expandDescendants(results, conceptIds);
+		expandAncestors(results, conceptIds);
 	}
 
 	private void expandInactivationProperties(List<ISnomedConcept> results) {
@@ -190,45 +199,81 @@ final class SnomedConceptConverter extends BaseSnomedComponentConverter<SnomedCo
 		}
 	}
 
-	private void expandDescendants(List<ISnomedConcept> results) {
+	private void expandDescendants(List<ISnomedConcept> results, final Set<String> conceptIds) {
 		if (expand().containsKey("descendants")) {
-			Options expandOptions = expand().get("descendants", Options.class);
+			final Options expandOptions = expand().get("descendants", Options.class);
 			
-			if (results.size() > 1) {
-				throw new BadRequestException("Descendants can only be expanded for a single concept");
-			}
-			
-			final ISnomedConcept concept = Iterables.getOnlyElement(results);
-
 			if (!expandOptions.containsKey("direct")) {
 				throw new BadRequestException("Direct parameter required for descendants expansion");
 			}
 			
-			SnomedConceptSearchRequestBuilder req = SnomedRequests.prepareSearchConcept()
-					.filterByActive(true)
-					.setLocales(locales())
-					.setExpand(expandOptions.get("expand", Options.class));
-			
-			if (expandOptions.getBoolean("direct")) {
-				req.filterByParent(concept.getId());
-			} else {
-				req.filterByAncestor(concept.getId());
+			try {
+				final Query conceptQuery = new ConstantScoreQuery(SnomedMappings.newQuery()
+						.concept()
+						.active()
+						.matchAll());
+				final BooleanFilter filter = new BooleanFilter();
+				filter.add(SnomedMappings.parent().createTermsFilter(StringToLongFunction.copyOf(conceptIds)), Occur.SHOULD);
+				if (!expandOptions.getBoolean("direct")) {
+					filter.add(SnomedMappings.ancestor().createTermsFilter(StringToLongFunction.copyOf(conceptIds)), Occur.SHOULD);
+				}
+				final FilteredQuery query = new FilteredQuery(conceptQuery, filter);
+				
+				final IndexSearcher searcher = context().service(IndexSearcher.class);
+				final TopDocs search = searcher.search(query, searcher.getIndexReader().maxDoc());
+				if (search.scoreDocs.length < 1) {
+					return;
+				}
+				
+				final Multimap<String, String> descendantsByAncestor = TreeMultimap.create();
+				for (int i = 0; i < search.scoreDocs.length; i++) {
+					final Document doc = searcher.doc(search.scoreDocs[i].doc, SnomedMappings.fieldsToLoad().id().parent().ancestor().build());
+					final String descendantConceptId = SnomedMappings.id().getValueAsString(doc);
+					
+					final Set<String> parentsAndAncestors = newHashSet();
+					parentsAndAncestors.addAll(SnomedMappings.parent().getValuesAsStringList(doc));
+					if (!expandOptions.getBoolean("direct")) {
+						parentsAndAncestors.addAll(SnomedMappings.ancestor().getValuesAsStringList(doc));
+					}
+					
+					parentsAndAncestors.retainAll(conceptIds);
+					for (String pa : parentsAndAncestors) {
+						descendantsByAncestor.put(pa, descendantConceptId);
+					}
+				}
+				
+				final int offset = expandOptions.containsKey("offset") ? expandOptions.get("offset", Integer.class) : 0;
+				final int limit = expandOptions.containsKey("limit") ? expandOptions.get("limit", Integer.class) : 50;
+				
+				if (limit > 0) {
+					final SnomedConcepts descendants = SnomedRequests.prepareSearchConcept()
+							.all()
+							.filterByActive(true)
+							.setComponentIds(descendantsByAncestor.values())
+							.setLocales(locales())
+							.setExpand(expandOptions.get("expand", Options.class))
+							.build()
+							.execute(context());
+					final Map<String, ISnomedConcept> descendantsById = Maps.uniqueIndex(descendants, ID_FUNCTION);
+					for (ISnomedConcept concept : results) {
+						final Collection<String> descendantIds = descendantsByAncestor.get(concept.getId());
+						final List<ISnomedConcept> currentDescendants = FluentIterable.from(descendantIds).skip(offset).limit(limit).transform(Functions.forMap(descendantsById)).toList();
+						((SnomedConcept) concept).setDescendants(new SnomedConcepts(currentDescendants, 0, limit, descendantIds.size()));
+					}
+				} else {
+					for (ISnomedConcept concept : results) {
+						final Collection<String> descendantIds = descendantsByAncestor.get(concept.getId());
+						((SnomedConcept) concept).setDescendants(new SnomedConcepts(0, limit, descendantIds.size()));
+					}
+				}
+				
+			} catch (IOException e) {
+				throw SnowowlRuntimeException.wrap(e);
 			}
-			
-			if (expandOptions.containsKey("offset")) {
-				req.setOffset(expandOptions.get("offset", Integer.class));
-			}
-			
-			if (expandOptions.containsKey("limit")) {
-				req.setLimit(expandOptions.get("limit", Integer.class));
-			}
-			
-			final SnomedConcepts descendants = req.build().execute(context());
-			((SnomedConcept) concept).setDescendants(descendants);
 		}
 	}
 
-	private void expandAncestors(List<ISnomedConcept> results) {
+	private void expandAncestors(List<ISnomedConcept> results, Set<String> conceptIds) {
 		if (expand().containsKey("ancestors")) {
 			Options expandOptions = expand().get("ancestors", Options.class);
 			

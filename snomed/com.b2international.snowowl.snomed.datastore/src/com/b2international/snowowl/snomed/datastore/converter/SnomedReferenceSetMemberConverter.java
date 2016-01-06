@@ -144,6 +144,7 @@ final class SnomedReferenceSetMemberConverter extends BaseSnomedComponentConvert
 		member.setReleased(entry.isReleased());
 		member.setActive(entry.isActive());
 		member.setModuleId(entry.getModuleId());
+		member.setIconId(entry.getIconId());
 		member.setReferenceSetId(entry.getRefSetIdentifierId());
 		member.setType(entry.getRefSetType());
 		
