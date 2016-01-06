@@ -20,7 +20,6 @@ import static com.b2international.commons.graph.GraphUtils.getLongestPath;
 import static com.b2international.commons.pcj.LongSets.newLongSet;
 import static com.b2international.commons.pcj.LongSets.toStringList;
 import static com.b2international.snowowl.core.ApplicationContext.getServiceForClass;
-import static com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator.REPOSITORY_UUID;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Strings.nullToEmpty;
 import static com.google.common.base.Suppliers.memoize;
@@ -42,27 +41,11 @@ import java.util.concurrent.atomic.AtomicReference;
 
 import org.slf4j.Logger;
 
-import bak.pcj.IntCollection;
-import bak.pcj.IntIterator;
-import bak.pcj.LongCollection;
-import bak.pcj.LongIterator;
-import bak.pcj.list.IntArrayDeque;
-import bak.pcj.list.IntArrayList;
-import bak.pcj.list.LongArrayList;
-import bak.pcj.map.LongKeyMap;
-import bak.pcj.map.LongKeyMapIterator;
-import bak.pcj.set.IntBitSet;
-import bak.pcj.set.IntOpenHashSet;
-import bak.pcj.set.IntSet;
-import bak.pcj.set.LongSet;
-
 import com.b2international.commons.CompareUtils;
 import com.b2international.commons.arrays.LongBidiMapWithInternalId;
 import com.b2international.commons.concurrent.equinox.ForkJoinUtils;
 import com.b2international.commons.time.TimeUtil;
 import com.b2international.snowowl.core.api.IBranchPath;
-import com.b2international.snowowl.datastore.tasks.TaskManager;
-import com.b2international.snowowl.dsl.escg.EscgUtils;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.datastore.IsAStatement.Statement;
 import com.b2international.snowowl.snomed.datastore.SnomedRefSetBrowser;
@@ -70,6 +53,7 @@ import com.b2international.snowowl.snomed.datastore.SnomedStatementBrowser;
 import com.b2international.snowowl.snomed.datastore.SnomedTaxonomy;
 import com.b2international.snowowl.snomed.datastore.SnomedTerminologyBrowser;
 import com.b2international.snowowl.snomed.datastore.StatementCollectionMode;
+import com.b2international.snowowl.snomed.datastore.escg.EscgRewriter;
 import com.b2international.snowowl.snomed.datastore.escg.IEscgQueryEvaluatorService;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRelationshipIndexEntry;
 import com.b2international.snowowl.snomed.dsl.query.ast.AndClause;
@@ -92,6 +76,20 @@ import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
 import com.google.common.collect.Multimap;
 
+import bak.pcj.IntCollection;
+import bak.pcj.IntIterator;
+import bak.pcj.LongCollection;
+import bak.pcj.LongIterator;
+import bak.pcj.list.IntArrayDeque;
+import bak.pcj.list.IntArrayList;
+import bak.pcj.list.LongArrayList;
+import bak.pcj.map.LongKeyMap;
+import bak.pcj.map.LongKeyMapIterator;
+import bak.pcj.set.IntBitSet;
+import bak.pcj.set.IntOpenHashSet;
+import bak.pcj.set.IntSet;
+import bak.pcj.set.LongSet;
+
 /**
  * Highly customized taxonomy for supplying an ephemeral
  * semantic store when evaluating ESCG expressions.
@@ -110,6 +108,7 @@ public class SnomedTaxonomyImpl implements SnomedTaxonomy {
 	private static final long IS_A = Long.parseLong(Concepts.IS_A); 
 	
 	private final IBranchPath branchPath;
+	private final EscgRewriter rewriter;
 
 	private int descendants[][];
 	private int ancestors[][];
@@ -124,15 +123,12 @@ public class SnomedTaxonomyImpl implements SnomedTaxonomy {
 			.build(new CacheLoader<String, Collection<String>>() {
 				@Override
 				public Collection<String> load(final String expression) throws Exception {
-					return getIds(evaluateInternalIds(EscgUtils.INSTANCE.parseRewrite(expression)));
+					return getIds(evaluateInternalIds(rewriter.parseRewrite(expression)));
 				}
 			});
 
-	public SnomedTaxonomyImpl() {
-		this(getServiceForClass(TaskManager.class).getActiveBranch(REPOSITORY_UUID));
-	}
-	
-	public SnomedTaxonomyImpl(final IBranchPath branchPath) {
+	public SnomedTaxonomyImpl(final IBranchPath branchPath, EscgRewriter rewriter) {
+		this.rewriter = checkNotNull(rewriter, "rewriter");
 		this.branchPath = checkNotNull(branchPath, "branchPath");
 	}
 
@@ -501,7 +497,7 @@ public class SnomedTaxonomyImpl implements SnomedTaxonomy {
 				return expressionCache.get(expression);
 			} catch (final ExecutionException e) {
 				LOGGER.error("Error while evaluating expression: " + expression);
-				return getIds(evaluateInternalIds(EscgUtils.INSTANCE.parseRewrite(expression)));
+				return getIds(evaluateInternalIds(rewriter.parseRewrite(expression)));
 			}
 		} else {
 			initializeTaxonomyInBackgroud();

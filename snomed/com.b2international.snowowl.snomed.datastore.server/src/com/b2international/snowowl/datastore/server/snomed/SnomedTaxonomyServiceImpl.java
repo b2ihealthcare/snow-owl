@@ -31,6 +31,7 @@ import com.b2international.snowowl.datastore.IPostStoreUpdateListener2;
 import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 import com.b2international.snowowl.snomed.datastore.SnomedTaxonomy;
 import com.b2international.snowowl.snomed.datastore.SnomedTaxonomyService;
+import com.b2international.snowowl.snomed.datastore.escg.EscgRewriter;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
@@ -62,10 +63,16 @@ public class SnomedTaxonomyServiceImpl implements SnomedTaxonomyService, IPostSt
 				@Override
 				public SnomedTaxonomy load(final IBranchPath branchPath) throws Exception {
 					LOGGER.info("Initializing SNOMED CT taxonomy service for '{}' branch...", branchPath);
-					final SnomedTaxonomy taxonomy = new SnomedTaxonomyImpl(branchPath);
+					final SnomedTaxonomy taxonomy = new SnomedTaxonomyImpl(branchPath, rewriter);
 					return taxonomy;
 				}
 			});
+
+	private final EscgRewriter rewriter;
+	
+	public SnomedTaxonomyServiceImpl(EscgRewriter rewriter) {
+		this.rewriter = rewriter;
+	}
 	
 	@Override
 	public boolean isActive(final IBranchPath branchPath, final String conceptId) {

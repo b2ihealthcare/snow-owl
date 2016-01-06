@@ -20,6 +20,7 @@ import com.b2international.snowowl.datastore.server.snomed.escg.EscgQueryEvaluat
 import com.b2international.snowowl.datastore.serviceconfig.AbstractServerServiceConfigJob;
 import com.b2international.snowowl.datastore.serviceconfig.ServiceConfigJob;
 import com.b2international.snowowl.dsl.escg.service.DslEscgCoreActivator;
+import com.b2international.snowowl.snomed.datastore.escg.EscgRewriter;
 import com.b2international.snowowl.snomed.datastore.escg.IEscgQueryEvaluatorService;
 
 /**
@@ -48,6 +49,6 @@ public class EscgQueryEvaluatorServiceConfigJob extends AbstractServerServiceCon
 	 */
 	@Override
 	protected EscgQueryEvaluatorService createServiceImplementation() throws SnowowlServiceException {
-		return new EscgQueryEvaluatorService();
+		return new EscgQueryEvaluatorService(getEnvironment().service(EscgRewriter.class));
 	}
 }
