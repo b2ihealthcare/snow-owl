@@ -27,6 +27,7 @@ public abstract class BaseSnomedComponent extends BaseComponent implements Snome
 	private Boolean active;
 	private Date effectiveTime;
 	private String moduleId;
+	private String iconId;
 
 	@Override
 	public Boolean isActive() {
@@ -42,6 +43,11 @@ public abstract class BaseSnomedComponent extends BaseComponent implements Snome
 	public String getModuleId() {
 		return moduleId;
 	}
+	
+	@Override
+	public String getIconId() {
+		return iconId;
+	}
 
 	public void setActive(final Boolean active) {
 		this.active = active;
@@ -54,4 +60,9 @@ public abstract class BaseSnomedComponent extends BaseComponent implements Snome
 	public void setModuleId(final String moduleId) {
 		this.moduleId = moduleId;
 	}
+	
+	public void setIconId(String iconId) {
+		this.iconId = iconId;
+	}
+	
 }

@@ -135,5 +135,10 @@ public class ExpandableSnomedRelationship implements ISnomedRelationship {
 	public RelationshipModifier getModifier() {
 		return wrappedRelationship.getModifier();
 	}
+	
+	@Override
+	public String getIconId() {
+		return wrappedRelationship.getIconId();
+	}
 
 }
