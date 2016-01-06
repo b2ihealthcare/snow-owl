@@ -15,6 +15,8 @@
  */
 package com.b2international.snowowl.snomed.datastore;
 
+import static com.google.common.base.Preconditions.checkNotNull;
+
 import java.util.Collection;
 import java.util.List;
 
@@ -22,19 +24,29 @@ import javax.annotation.Nullable;
 
 import org.eclipse.emf.ecore.EPackage;
 
-import bak.pcj.LongCollection;
-import bak.pcj.map.LongKeyLongMap;
-import bak.pcj.set.LongSet;
-
+import com.b2international.commons.http.ExtendedLocale;
 import com.b2international.snowowl.core.annotations.Client;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.api.IComponentWithChildFlag;
 import com.b2international.snowowl.datastore.browser.AbstractClientTerminologyBrowser;
 import com.b2international.snowowl.datastore.browser.ActiveBranchClientTerminologyBrowser;
+import com.b2international.snowowl.eventbus.IEventBus;
+import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.SnomedPackage;
+import com.b2international.snowowl.snomed.core.domain.ISnomedConcept;
+import com.b2international.snowowl.snomed.core.domain.SnomedConcepts;
 import com.b2international.snowowl.snomed.datastore.filteredrefset.FilteredRefSetMemberBrowser2;
 import com.b2international.snowowl.snomed.datastore.filteredrefset.IRefSetMemberOperation;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptIndexEntry;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptIndexEntryWithChildFlag;
+import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
+import com.google.common.base.Function;
+import com.google.common.collect.FluentIterable;
+import com.google.common.collect.ImmutableList;
+
+import bak.pcj.LongCollection;
+import bak.pcj.map.LongKeyLongMap;
+import bak.pcj.set.LongSet;
 
 /**
  * Concept hierarchy browser service for the SNOMED&nbsp;CT ontology.
@@ -43,12 +55,39 @@ import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptInd
 @Client
 public class SnomedClientTerminologyBrowser extends ActiveBranchClientTerminologyBrowser<SnomedConceptIndexEntry, String> {
 
+	private static final List<ExtendedLocale> LOCALES = ImmutableList.of(new ExtendedLocale("en", "sg", Concepts.REFSET_LANGUAGE_TYPE_SG), new ExtendedLocale("en", "gb", Concepts.REFSET_LANGUAGE_TYPE_UK));
+	
+	private final IEventBus bus;
+
 	/**
 	 * Creates a new service instance based on the wrapped server side service.
 	 * @param wrappedBrowser the wrapped server side service.
 	 */
-	public SnomedClientTerminologyBrowser(final SnomedTerminologyBrowser wrappedBrowser) {
+	public SnomedClientTerminologyBrowser(final SnomedTerminologyBrowser wrappedBrowser, final IEventBus bus) {
 		super(wrappedBrowser);
+		this.bus = checkNotNull(bus, "bus");
+	}
+	
+	@Override
+	public Collection<IComponentWithChildFlag<String>> getSubTypesWithChildFlag(SnomedConceptIndexEntry concept) {
+		final SnomedConcepts concepts = SnomedRequests
+			.prepareSearchConcept()
+			.all()
+			.filterByParent(concept.getId())
+			.setExpand("pt(),descendants(direct:true,limit:0)")
+			.setLocales(LOCALES)
+			.build(getBranchPath().getPath())
+			.executeSync(bus);
+		return FluentIterable.from(concepts).transform(new Function<ISnomedConcept, IComponentWithChildFlag<String>>() {
+			@Override
+			public IComponentWithChildFlag<String> apply(ISnomedConcept input) {
+				final SnomedConceptIndexEntry entry = SnomedConceptIndexEntry
+					.builder(input)
+					.label(input.getPt().getTerm())
+					.build();
+				return new SnomedConceptIndexEntryWithChildFlag(entry, input.getDescendants().getTotal() > 0);
+			}
+		}).toList();
 	}
 
 	/**

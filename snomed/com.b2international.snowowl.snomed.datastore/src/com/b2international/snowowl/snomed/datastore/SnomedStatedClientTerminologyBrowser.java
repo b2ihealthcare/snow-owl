@@ -15,14 +15,15 @@
  */
 package com.b2international.snowowl.snomed.datastore;
 
+import com.b2international.snowowl.eventbus.IEventBus;
 
 /**
  * Client version of the SNOMED CT terminology browser using only stated IS_A relationships
  */
 public class SnomedStatedClientTerminologyBrowser extends SnomedClientTerminologyBrowser {
 
-	public SnomedStatedClientTerminologyBrowser(SnomedStatedTerminologyBrowser wrappedBrowser) {
-		super(wrappedBrowser);
+	public SnomedStatedClientTerminologyBrowser(SnomedStatedTerminologyBrowser wrappedBrowser, IEventBus bus) {
+		super(wrappedBrowser, bus);
 	}
 	
 }
