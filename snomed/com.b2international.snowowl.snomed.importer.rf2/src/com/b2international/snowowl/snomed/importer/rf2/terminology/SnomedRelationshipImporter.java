@@ -26,6 +26,7 @@ import org.supercsv.cellprocessor.ift.CellProcessor;
 
 import com.b2international.snowowl.snomed.Relationship;
 import com.b2international.snowowl.snomed.SnomedFactory;
+import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
 import com.b2international.snowowl.snomed.importer.rf2.csv.RelationshipRow;
 import com.b2international.snowowl.snomed.importer.rf2.model.ComponentImportType;
@@ -58,20 +59,21 @@ public class SnomedRelationshipImporter extends AbstractSnomedTerminologyImporte
 			.add(new IndexConfiguration("SNOMED_RELATIONSHIP_IDX1004", "SNOMED_RELATIONSHIP", "DESTINATION", "ACTIVE", "CDO_VERSION"))
 			.build();
 
-	private static SnomedImportConfiguration<RelationshipRow> createImportConfiguration(final ComponentImportType type, final boolean createIndexes) {
+	private static SnomedImportConfiguration<RelationshipRow> createImportConfiguration(final ComponentImportType type) {
 		return new SnomedImportConfiguration<RelationshipRow>(
 				type, 
 				CELLPROCESSOR_MAPPING, 
 				RelationshipRow.class, 
 				SnomedRf2Headers.RELATIONSHIP_HEADER,
-				createIndexes ? INDEXES : ImmutableList.<IndexConfiguration>of());
+				INDEXES);
 	}
 
-	public SnomedRelationshipImporter(final SnomedImportContext importContext, final InputStream releaseFileStream, final String releaseFileIdentifier, 
-			final ComponentImportType type, 
-			final boolean createIndexes) {
+	public SnomedRelationshipImporter(final SnomedImportContext importContext, 
+			final InputStream releaseFileStream, 
+			final String releaseFileIdentifier, 
+			final ComponentImportType type) {
 		
-		super(createImportConfiguration(type, createIndexes), importContext, releaseFileStream, releaseFileIdentifier);
+		super(createImportConfiguration(type), importContext, releaseFileStream, releaseFileIdentifier);
 	}
 
 	@Override
@@ -97,6 +99,14 @@ public class SnomedRelationshipImporter extends AbstractSnomedTerminologyImporte
 		editedRelationship.setCharacteristicType(getConceptSafe(currentRow.getCharacteristicTypeId(), SnomedRf2Headers.FIELD_CHARACTERISTIC_TYPE_ID, currentRow.getId()));
 		editedRelationship.setModifier(getConceptSafe(currentRow.getModifierId(), SnomedRf2Headers.FIELD_MODIFIER_ID, currentRow.getId()));
 		editedRelationship.setGroup(currentRow.getRelationshipGroup());
+		
+		// Universal "has active ingredient" relationships should be put into a union group
+		if (Concepts.HAS_ACTIVE_INGREDIENT.equals(currentRow.getTypeId()) 
+				&& Concepts.UNIVERSAL_RESTRICTION_MODIFIER.equals(currentRow.getModifierId())
+				&& editedRelationship.getUnionGroup() != 1) {
+			
+			editedRelationship.setUnionGroup(1);
+		}
 		
 		getImportContext().conceptVisited(currentRow.getSourceId());
 	}

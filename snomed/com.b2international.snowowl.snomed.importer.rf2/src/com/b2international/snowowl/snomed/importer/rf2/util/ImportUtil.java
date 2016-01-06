@@ -91,7 +91,6 @@ import com.b2international.snowowl.snomed.importer.rf2.refset.SnomedRefSetImport
 import com.b2international.snowowl.snomed.importer.rf2.terminology.SnomedConceptImporter;
 import com.b2international.snowowl.snomed.importer.rf2.terminology.SnomedDescriptionImporter;
 import com.b2international.snowowl.snomed.importer.rf2.terminology.SnomedRelationshipImporter;
-import com.b2international.snowowl.snomed.importer.rf2.terminology.SnomedUnionGroupImporter;
 import com.b2international.snowowl.snomed.importer.rf2.validation.SnomedValidationContext;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType;
 import com.google.common.base.Function;
@@ -269,14 +268,12 @@ public final class ImportUtil {
 
 			if (ImportConfiguration.isValidReleaseFile(configuration.getRelationshipsFile())) {
 				final URL url = configuration.toURL(configuration.getRelationshipsFile());
-				importers.add(new SnomedRelationshipImporter(context, url.openStream(), configuration.getMappedName(url.getPath()), ComponentImportType.RELATIONSHIP, true));
-				importers.add(new SnomedUnionGroupImporter(context, url.openStream(), configuration.getMappedName(url.getPath())));
+				importers.add(new SnomedRelationshipImporter(context, url.openStream(), configuration.getMappedName(url.getPath()), ComponentImportType.RELATIONSHIP));
 			}
 
 			if (ImportConfiguration.isValidReleaseFile(configuration.getStatedRelationshipsFile())) {
 				final URL url = configuration.toURL(configuration.getStatedRelationshipsFile());
-				importers.add(new SnomedRelationshipImporter(context, url.openStream(), configuration.getMappedName(url.getPath()), ComponentImportType.STATED_RELATIONSHIP, true));
-				importers.add(new SnomedUnionGroupImporter(context, url.openStream(), configuration.getMappedName(url.getPath())));
+				importers.add(new SnomedRelationshipImporter(context, url.openStream(), configuration.getMappedName(url.getPath()), ComponentImportType.STATED_RELATIONSHIP));
 			}
 
 		} catch (final IOException e) {

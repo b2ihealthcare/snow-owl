@@ -34,9 +34,6 @@ import java.util.Map;
 import java.util.Set;
 
 import org.apache.lucene.document.Document;
-import org.apache.lucene.index.AtomicReader;
-import org.apache.lucene.index.NumericDocValues;
-import org.apache.lucene.search.Query;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.NullProgressMonitor;
@@ -64,7 +61,6 @@ import com.b2international.snowowl.datastore.cdo.CDOTransactionFunction;
 import com.b2international.snowowl.datastore.cdo.CDOUtils;
 import com.b2international.snowowl.datastore.cdo.ICDOConnection;
 import com.b2international.snowowl.datastore.cdo.ICDOConnectionManager;
-import com.b2international.snowowl.datastore.index.AbstractDocsOutOfOrderCollector;
 import com.b2international.snowowl.datastore.index.ComponentCompareFieldsUpdater;
 import com.b2international.snowowl.datastore.index.DocumentCompositeUpdater;
 import com.b2international.snowowl.datastore.index.DocumentUpdaterBase;
@@ -89,14 +85,12 @@ import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 import com.b2international.snowowl.snomed.datastore.SnomedDescriptionLookupService;
 import com.b2international.snowowl.snomed.datastore.SnomedIconProvider;
 import com.b2international.snowowl.snomed.datastore.SnomedRefSetBrowser;
-import com.b2international.snowowl.snomed.datastore.SnomedStatementBrowser;
 import com.b2international.snowowl.snomed.datastore.SnomedTerminologyBrowser;
 import com.b2international.snowowl.snomed.datastore.index.SnomedDescriptionIndexMappingStrategy;
 import com.b2international.snowowl.snomed.datastore.index.SnomedIndexService;
 import com.b2international.snowowl.snomed.datastore.index.SnomedRelationshipIndexMappingStrategy;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptIndexEntry;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDescriptionIndexEntry;
-import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRelationshipIndexEntry;
 import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedDocumentBuilder;
 import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedMappings;
 import com.b2international.snowowl.snomed.datastore.index.refset.RefSetMemberChange;
@@ -128,9 +122,6 @@ import com.google.common.collect.Multimap;
 import com.google.common.collect.Sets;
 
 import bak.pcj.map.LongKeyFloatMap;
-import bak.pcj.map.LongKeyIntMap;
-import bak.pcj.map.LongKeyIntMapIterator;
-import bak.pcj.map.LongKeyIntOpenHashMap;
 import bak.pcj.set.LongOpenHashSet;
 import bak.pcj.set.LongSet;
 
@@ -161,8 +152,6 @@ public class SnomedRf2IndexInitializer extends Job {
 	private Set<String> conceptsWithMembershipChanges;
 	private Set<String> conceptsWithTaxonomyChanges;
 	private Set<String> conceptsWithCompareUniqueKeyChanges;
-	
-	private boolean requiresUnionGroupUpdate;
 	
 	// refset ID to fake SnomedRefSet EObject
 	private Map<String, SnomedRefSet> visitedRefSets;
@@ -580,14 +569,7 @@ public class SnomedRf2IndexInitializer extends Job {
 			LOGGER.info("No unvisited descriptions have been found.");
 		}
 		
-		if (requiresUnionGroupUpdate) {
-			LOGGER.info("Reindexing union groups...");
-			indexUnionGroupChanges(Concepts.STATED_RELATIONSHIP);
-			indexUnionGroupChanges(Concepts.INFERRED_RELATIONSHIP);
-			LOGGER.info("Union groups have been successfully reindexed.");
-		}
-
-		if (!unvisitedConcepts.isEmpty() || !unvisitedDescriptions.isEmpty() || requiresUnionGroupUpdate) {
+		if (!unvisitedConcepts.isEmpty() || !unvisitedDescriptions.isEmpty()) {
 			getSnomedIndexService().commit(branchPath);
 		}
 		
@@ -630,18 +612,9 @@ public class SnomedRf2IndexInitializer extends Job {
 					conceptsWithCompareUniqueKeyChanges.add(record.get(4));
 				}
 				
-				if (!requiresUnionGroupUpdate 
-						&& Concepts.HAS_ACTIVE_INGREDIENT.equals(record.get(7))
-						&& (Concepts.STATED_RELATIONSHIP.equals(record.get(8)) || Concepts.INFERRED_RELATIONSHIP.equals(record.get(8)))
-						&& Concepts.UNIVERSAL_RESTRICTION_MODIFIER.equals(record.get(9))) {
-
-					requiresUnionGroupUpdate = true;
-				}
-				
 				final long characteristicTypeConceptSctId = Long.parseLong(record.get(8));
 				final boolean active = ACTIVE_STATUS.equals(record.get(2));
 				final int group = Integer.parseInt(record.get(6));
-				final int unionGroup = 0;
 				final boolean destinationNegated = false;
 				final long moduleConceptId = Long.parseLong(record.get(3));
 				final boolean inferred = Concepts.INFERRED_RELATIONSHIP.equals(record.get(8));
@@ -650,6 +623,12 @@ public class SnomedRf2IndexInitializer extends Job {
 				final long effectiveTime = getEffectiveTime(record);
 				final boolean released = isReleased(effectiveTime);
 
+				final int unionGroup;
+				if (Concepts.HAS_ACTIVE_INGREDIENT.equals(record.get(7)) && universal) {
+					unionGroup = 1;
+				} else {
+					unionGroup = 0;
+				}
 				
 				// Create relationship document
 				final Document doc = SnomedMappings.doc()
@@ -675,94 +654,6 @@ public class SnomedRf2IndexInitializer extends Job {
 			}
 		});
 	}
-
-	private void indexUnionGroupChanges(final String characteristicTypeId) {
-		final SnomedIndexServerService indexService = getSnomedIndexService();
-		final Query query = SnomedMappings.newQuery()
-				.relationship()
-				.active(true)
-				.relationshipType(Concepts.HAS_ACTIVE_INGREDIENT)
-				.relationshipCharacteristicType(characteristicTypeId)
-				.relationshipUniversal(true)
-				.matchAll();
-		
-		final LongKeyIntMap universalHaisBySourceId = new LongKeyIntOpenHashMap();
-		
-		indexService.search(branchPath, query, new AbstractDocsOutOfOrderCollector() {
-			
-			private NumericDocValues sourceIds;
-			private NumericDocValues modifierFlags;
-
-			@Override
-			public void collect(int doc) throws IOException {
-				long sourceId = sourceIds.get(doc);
-				// XXX: We rely on PCJ to supply 0 as the return value if there was no key present previously
-				universalHaisBySourceId.put(sourceId, universalHaisBySourceId.get(sourceId) + 1);
-			}
-			
-			@Override
-			protected boolean isLeafCollectible() {
-				return sourceIds != null && modifierFlags != null; 
-			}
-			
-			@Override
-			protected void initDocValues(AtomicReader leafReader) throws IOException {
-				sourceIds = SnomedMappings.relationshipSource().getDocValues(leafReader);
-			}
-		});
-		
-		for (LongKeyIntMapIterator itr = universalHaisBySourceId.entries(); itr.hasNext(); /* empty */) {
-			itr.next();
-			
-			final int unionGroup = (universalHaisBySourceId.get(itr.getKey()) > 1) ? 1 : 0;
-			final List<SnomedRelationshipIndexEntry> relationships = getServiceForClass(SnomedStatementBrowser.class).getOutboundStatementsById(branchPath, Long.toString(itr.getKey()));
-			
-			for (SnomedRelationshipIndexEntry indexEntry : relationships) {
-				
-				if (indexEntry.isActive() 
-						&& indexEntry.getAttributeId().equals(Concepts.HAS_ACTIVE_INGREDIENT)
-						&& indexEntry.getCharacteristicTypeId().equals(characteristicTypeId)
-						&& indexEntry.isUniversal() 
-						&& indexEntry.getUnionGroup() != unionGroup) {
-					
-					final long storageKey = indexEntry.getStorageKey();
-					final long sctId = Long.parseLong(indexEntry.getId());
-					final long objectId = Long.parseLong(indexEntry.getObjectId());
-					final long attributeId = Long.parseLong(indexEntry.getAttributeId());
-					final long valueId = Long.parseLong(indexEntry.getValueId());
-					final long characteristicType = Long.parseLong(indexEntry.getCharacteristicTypeId());
-					final int group = indexEntry.getGroup();
-					final boolean universal = indexEntry.isUniversal();
-					final boolean destinationNegated = indexEntry.isDestinationNegated();
-					final long moduleId = Long.parseLong(indexEntry.getModuleId());
-					
-					// Create relationship document
-					final Document doc = SnomedMappings.doc()
-						.id(sctId)
-						.type(SnomedTerminologyComponentConstants.RELATIONSHIP_NUMBER)
-						.storageKey(storageKey)
-						.active(indexEntry.isActive())
-						.relationshipType(attributeId)
-						.relationshipCharacteristicType(characteristicType)
-						.module(moduleId)
-						.effectiveTime(indexEntry.getEffectiveTimeAsLong())
-						.relationshipSource(objectId)
-						.relationshipDestination(valueId)
-						.released(indexEntry.isReleased())
-						.relationshipGroup(group)
-						.relationshipUnionGroup(unionGroup)
-						.relationshipDestinationNegated(destinationNegated)
-						.relationshipInferred(indexEntry.isInferred())
-						.relationshipUniversal(universal)
-						.build();
-					
-					indexService.index(branchPath, doc, storageKey);
-				}
-
-			}
-		}
-	}
-
 
 	private void indexRefSets(final ComponentImportUnit unit) {
 		
