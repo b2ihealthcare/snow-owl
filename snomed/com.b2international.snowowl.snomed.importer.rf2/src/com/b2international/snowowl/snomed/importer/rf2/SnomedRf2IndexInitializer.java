@@ -484,7 +484,6 @@ public class SnomedRf2IndexInitializer extends Job {
 						LOGGER.info("Relationships have been successfully indexed.");
 						break;
 					case TERMINOLOGY_REGISTRY:
-					case RELATIONSHIP_UNION_GROUP:
 						//do nothing
 						break;
 					default:
