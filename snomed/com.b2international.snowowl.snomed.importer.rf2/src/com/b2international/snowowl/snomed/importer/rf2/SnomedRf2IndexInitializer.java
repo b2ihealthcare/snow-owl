@@ -152,7 +152,6 @@ public class SnomedRf2IndexInitializer extends Job {
 	private Set<String> conceptsWithMembershipChanges;
 	private Set<String> conceptsWithTaxonomyChanges;
 	private Set<String> conceptsWithCompareUniqueKeyChanges;
-	private Set<String> descriptionsWithAcceptabilityChanges;
 	
 	// refset ID to fake SnomedRefSet EObject
 	private Map<String, SnomedRefSet> visitedRefSets;
@@ -212,7 +211,6 @@ public class SnomedRf2IndexInitializer extends Job {
 		conceptsWithMembershipChanges = Sets.newHashSet();
 		conceptsWithTaxonomyChanges = Sets.newHashSet();
 		conceptsWithCompareUniqueKeyChanges = Sets.newHashSet();
-		descriptionsWithAcceptabilityChanges = Sets.newHashSet();
 		
 		refSetMemberChanges = HashMultimap.create();
 		mappingRefSetMemberChanges = HashMultimap.create();
@@ -401,9 +399,6 @@ public class SnomedRf2IndexInitializer extends Job {
 							acceptableMemberChanges.put(descriptionId, negativeChange);
 						}
 					}
-
-					// Collect the description for needing an acceptability field update
-					descriptionsWithAcceptabilityChanges.add(descriptionId);
 				}
 			});
 		}
@@ -468,7 +463,6 @@ public class SnomedRf2IndexInitializer extends Job {
 				final String absolutePath = unit.getUnitFile().getAbsolutePath();
 				switch (unit.getType()) {
 	
-					//concept change processing (if any) should happen in the very end
 					case CONCEPT:
 						LOGGER.info("Indexing concepts...");
 						indexConcepts(absolutePath);
@@ -503,7 +497,6 @@ public class SnomedRf2IndexInitializer extends Job {
 				}
 				
 			} finally {
-				getSnomedIndexService().commit(branchPath);
 				delegateMonitor.worked(1);
 			}
 		}
@@ -570,11 +563,11 @@ public class SnomedRf2IndexInitializer extends Job {
 		if (!unvisitedDescriptions.isEmpty()) {
 			LOGGER.info("Reindexing unvisited descriptions...");
 			indexUnvisitedDescriptions(unvisitedDescriptions);
-			LOGGER.info("Unvisited concepts have been successfully reindexed.");
+			LOGGER.info("Unvisited descriptions have been successfully reindexed.");
 		} else {
-			LOGGER.info("No unvisited concepts have been found.");
+			LOGGER.info("No unvisited descriptions have been found.");
 		}
-
+		
 		if (!unvisitedConcepts.isEmpty() || !unvisitedDescriptions.isEmpty()) {
 			getSnomedIndexService().commit(branchPath);
 		}
@@ -621,7 +614,6 @@ public class SnomedRf2IndexInitializer extends Job {
 				final long characteristicTypeConceptSctId = Long.parseLong(record.get(8));
 				final boolean active = ACTIVE_STATUS.equals(record.get(2));
 				final int group = Integer.parseInt(record.get(6));
-				final int unionGroup = 0;
 				final boolean destinationNegated = false;
 				final long moduleConceptId = Long.parseLong(record.get(3));
 				final boolean inferred = Concepts.INFERRED_RELATIONSHIP.equals(record.get(8));
@@ -629,6 +621,13 @@ public class SnomedRf2IndexInitializer extends Job {
 				
 				final long effectiveTime = getEffectiveTime(record);
 				final boolean released = isReleased(effectiveTime);
+
+				final int unionGroup;
+				if (Concepts.HAS_ACTIVE_INGREDIENT.equals(record.get(7)) && universal) {
+					unionGroup = 1;
+				} else {
+					unionGroup = 0;
+				}
 				
 				// Create relationship document
 				final Document doc = SnomedMappings.doc()
