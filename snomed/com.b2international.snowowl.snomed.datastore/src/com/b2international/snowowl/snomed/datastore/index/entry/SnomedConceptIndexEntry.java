@@ -22,7 +22,9 @@ import org.apache.lucene.document.Document;
 import com.b2international.commons.BooleanUtils;
 import com.b2international.snowowl.core.api.IComponent;
 import com.b2international.snowowl.core.api.index.IIndexEntry;
+import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.datastore.index.mapping.Mappings;
+import com.b2international.snowowl.snomed.core.domain.ISnomedConcept;
 import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedMappings;
 
 /**
@@ -47,6 +49,18 @@ public class SnomedConceptIndexEntry extends SnomedIndexEntry implements ICompon
 				.iconId(Mappings.iconId().getValue(doc))
 				.primitive(BooleanUtils.valueOf(SnomedMappings.primitive().getValue(doc).intValue()))
 				.exhaustive(BooleanUtils.valueOf(SnomedMappings.exhaustive().getValue(doc).intValue()));
+	}
+	
+	public static Builder builder(ISnomedConcept input) {
+		return builder()
+				.id(input.getId())
+				.moduleId(input.getModuleId())
+				.active(input.isActive())
+				.released(input.isReleased())
+				.effectiveTimeLong(EffectiveTimes.getEffectiveTime(input.getEffectiveTime()))
+				.iconId(input.getIconId())
+				.primitive(input.getDefinitionStatus().isPrimitive())
+				.exhaustive(input.getSubclassDefinitionStatus().isExhaustive());
 	}
 
 	public static class Builder extends AbstractBuilder<Builder> {
@@ -144,5 +158,6 @@ public class SnomedConceptIndexEntry extends SnomedIndexEntry implements ICompon
 				.add("exhaustive", exhaustive)
 				.toString();
 	}
+
 }
 

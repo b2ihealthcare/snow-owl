@@ -16,6 +16,7 @@
 package com.b2international.snowowl.snomed.core.domain;
 
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 /**
  * Enumerates allowed concept definition status values and their corresponding concept identifiers.
@@ -51,4 +52,10 @@ public enum DefinitionStatus implements ConceptEnum {
 	public String getConceptId() {
 		return conceptId;
 	}
+
+	@JsonIgnore
+	public boolean isPrimitive() {
+		return PRIMITIVE.equals(this);
+	}
+	
 }
