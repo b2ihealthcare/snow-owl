@@ -79,7 +79,7 @@ public class ClassificationRunIndex extends SingleDirectoryIndexImpl {
 	private final ObjectMapper objectMapper;
 
 	public ClassificationRunIndex(final File directory) {
-		super(directory, true);
+		super(directory);
 		objectMapper = new ObjectMapper();
 	}
 
