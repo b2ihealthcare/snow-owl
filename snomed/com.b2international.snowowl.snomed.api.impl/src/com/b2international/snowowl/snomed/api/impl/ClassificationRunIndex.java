@@ -142,8 +142,11 @@ public class ClassificationRunIndex extends SingleDirectoryIndexImpl {
 			final int totalHits = collector.getTotalHits();
 			
 			final int docsToRetrieve = Ints.min(searcher.getIndexReader().maxDoc(), totalHits);
+			if (docsToRetrieve < 1) {
+				return;
+			}
 			
-			final TopDocs docs = searcher.search(query, null, docsToRetrieve, null, false, false);
+			final TopDocs docs = searcher.search(query, null, docsToRetrieve, Sort.INDEXORDER, false, false);
 			final ScoreDoc[] scoreDocs = docs.scoreDocs;
 
 			for (int i = 0; i < scoreDocs.length; i++) {
@@ -434,10 +437,14 @@ public class ClassificationRunIndex extends SingleDirectoryIndexImpl {
 			final int totalHits = collector.getTotalHits();
 			
 			final int docsToRetrieve = Ints.min(offset + limit, searcher.getIndexReader().maxDoc(), totalHits);
+			final ImmutableList.Builder<T> resultBuilder = ImmutableList.builder();
+			
+			if (docsToRetrieve < 1) {
+				return resultBuilder.build();
+			}
 			
 			final TopDocs docs = searcher.search(query, null, docsToRetrieve, sort, false, false);
 			final ScoreDoc[] scoreDocs = docs.scoreDocs;
-			final ImmutableList.Builder<T> resultBuilder = ImmutableList.builder();
 
 			for (int i = offset; i < offset + limit && i < scoreDocs.length; i++) {
 				final Document sourceDocument = searcher.doc(scoreDocs[i].doc, ImmutableSet.of(FIELD_SOURCE));
