@@ -89,6 +89,8 @@ public class SnomedClassificationServiceImpl implements ISnomedClassificationSer
 
 	private static final Logger LOG = LoggerFactory.getLogger(SnomedClassificationServiceImpl.class);
 	
+	private static final int MAX_INDEXED_RESULTS = 1000;
+	
 	private final class PersistenceCompletionHandler implements IHandler<IMessage> {
 
 		private final UUID uuid;
@@ -199,7 +201,7 @@ public class SnomedClassificationServiceImpl implements ISnomedClassificationSer
 								indexService.updateClassificationRunStatus(remoteJobId, ClassificationStatus.STALE);
 								break;
 							case SUCCESS:
-								indexService.updateClassificationRunStatusAndIndexChanges(remoteJobId, ClassificationStatus.COMPLETED, result.getChanges());
+								indexService.updateClassificationRunStatus(remoteJobId, ClassificationStatus.COMPLETED, result.getChanges());
 								break;
 							default:
 								throw new IllegalStateException(MessageFormat.format("Unexpected response type ''{0}''.", responseType));
@@ -229,11 +231,17 @@ public class SnomedClassificationServiceImpl implements ISnomedClassificationSer
 		indexService = new ClassificationRunIndex(dir);
 		ApplicationContext.getInstance().getServiceChecked(SingleDirectoryIndexManager.class).registerIndex(indexService);
 
+		try {
+			indexService.trimIndex(MAX_INDEXED_RESULTS);
+			indexService.invalidateClassificationRuns();
+		} catch (final IOException e) {
+			LOG.error("Failed to run housekeeping tasks for the classification index.", e);
+		}
+
 		// TODO: common ExecutorService for asynchronous work?
 		executorService = Executors.newCachedThreadPool(); 
 		changeHandler = new RemoteJobChangeHandler();
 		getEventBus().registerHandler(IRemoteJobManager.ADDRESS_REMOTE_JOB_CHANGED, changeHandler);
-		
 	}
 
 	@PreDestroy
