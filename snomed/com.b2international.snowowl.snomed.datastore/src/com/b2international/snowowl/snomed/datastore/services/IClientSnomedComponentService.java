@@ -22,18 +22,19 @@ import java.util.Set;
 
 import javax.annotation.Nullable;
 
-import bak.pcj.set.LongSet;
-
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.snomed.Description;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.snomed.datastore.SnomedDescriptionFragment;
 import com.b2international.snowowl.snomed.datastore.SnomedModuleDependencyRefSetMemberFragment;
 import com.b2international.snowowl.snomed.datastore.SnomedRefSetMemberFragment;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDescriptionIndexEntry;
 import com.b2international.snowowl.snomed.datastore.services.ISnomedComponentService.IdStorageKeyPair;
 import com.b2international.snowowl.snomed.mrcm.DataType;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType;
 import com.google.common.collect.Multimap;
+
+import bak.pcj.set.LongSet;
 
 /**
  * Interface for retrieving information about SNOMED&nbsp;CT core components on the client side.
@@ -181,9 +182,14 @@ public interface IClientSnomedComponentService {
 	LongSet getAllDescriptionIds();
 	
 	/**
+	 * Returns with a collection of all active {@link SnomedDescriptionIndexEntry} for the current branch.
+	 * @return a collection of {@link SnomedDescriptionIndexEntry}
+	 */
+	Collection<SnomedDescriptionIndexEntry> getAllActiveDescriptionEntry();
+	
+	/**
 	 * Returns with a collection of active {@link SnomedDescriptionFragment description}s for a concept which are belongs to the 
 	 * given language.
-	 * @param branchPath branch path.
 	 * @param conceptId the container concept ID.
 	 * @param languageRefSetId the unique language reference set concept identifier.
 	 * @return a collection of active descriptions for a concept in a given language.

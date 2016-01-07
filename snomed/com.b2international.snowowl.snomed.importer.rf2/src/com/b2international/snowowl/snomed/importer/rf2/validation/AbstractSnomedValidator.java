@@ -173,8 +173,8 @@ public abstract class AbstractSnomedValidator {
 		return ContentSubType.SNAPSHOT.equals(configuration.getVersion()) ? SPECIAL_EFFECTIVE_TIME_KEY : effectiveTime;
 	}
 	
-	private Path getEffectiveTimeFile(String effectiveTime) {
-		return componentStagingDirectory.toPath().resolve(effectiveTime + "_"+ releaseFileName);
+	private Path getEffectiveTimeFile(String effectiveTimeKey) {
+		return componentStagingDirectory.toPath().resolve(effectiveTimeKey + "_"+ releaseFileName);
 	}
 
 	/**

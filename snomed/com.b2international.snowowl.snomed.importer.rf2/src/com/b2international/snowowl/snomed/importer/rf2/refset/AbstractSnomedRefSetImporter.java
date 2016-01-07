@@ -116,7 +116,7 @@ public abstract class AbstractSnomedRefSetImporter<T extends AbstractRefSetRow, 
 			final SnomedEditingContext editingContext = getImportContext().getEditingContext();
 			identifierConcept = editingContext.buildDefaultConcept(
 					getUnindentifiedRefSetFSN(identifierId), 
-					identiferParentConcept);
+					identifierId);
 			
 			identifierConcept.getDescriptions().add( //add synonym
 					editingContext.buildDefaultDescription(

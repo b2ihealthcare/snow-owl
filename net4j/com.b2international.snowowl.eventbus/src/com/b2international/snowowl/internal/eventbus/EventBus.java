@@ -121,7 +121,7 @@ public class EventBus extends Lifecycle implements IEventBus {
 			}
 		} else {
 			// TODO send reply to indicate that there is no handler
-			LOG.warn("No event handler registered to handle message: {}", message);
+			LOG.trace("No event handler registered to handle message: {}", message);
 		}
 	}
 	

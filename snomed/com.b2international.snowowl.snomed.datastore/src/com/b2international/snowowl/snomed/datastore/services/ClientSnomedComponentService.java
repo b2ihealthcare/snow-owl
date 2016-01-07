@@ -24,8 +24,6 @@ import java.util.Set;
 
 import org.eclipse.emf.ecore.EPackage;
 
-import bak.pcj.set.LongSet;
-
 import com.b2international.snowowl.core.annotations.Client;
 import com.b2international.snowowl.datastore.ActiveBranchPathAwareService;
 import com.b2international.snowowl.snomed.Description;
@@ -33,9 +31,12 @@ import com.b2international.snowowl.snomed.SnomedPackage;
 import com.b2international.snowowl.snomed.datastore.SnomedDescriptionFragment;
 import com.b2international.snowowl.snomed.datastore.SnomedModuleDependencyRefSetMemberFragment;
 import com.b2international.snowowl.snomed.datastore.SnomedRefSetMemberFragment;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDescriptionIndexEntry;
 import com.b2international.snowowl.snomed.datastore.services.ISnomedComponentService.IdStorageKeyPair;
 import com.b2international.snowowl.snomed.mrcm.DataType;
 import com.google.common.collect.Multimap;
+
+import bak.pcj.set.LongSet;
 
 /**
  * Client side SNOMED CT component service implementation.
@@ -134,6 +135,11 @@ public class ClientSnomedComponentService extends ActiveBranchPathAwareService i
 		return wrappedService.getAllDescriptionIds(getBranchPath());
 	}
 
+	@Override
+	public Collection<SnomedDescriptionIndexEntry> getAllActiveDescriptionEntry() {
+		return wrappedService.getAllActiveDescriptionEntry(getBranchPath());
+	}
+	
 	@Override
 	public Collection<SnomedDescriptionFragment> getDescriptionFragmentsForConcept(final String conceptId, final String languageRefSetId) {
 		return wrappedService.getDescriptionFragmentsForConcept(getBranchPath(), conceptId, languageRefSetId);
