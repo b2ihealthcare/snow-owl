@@ -45,6 +45,8 @@ public interface IClientTerminologyBrowser<C, K> {
 	 */
 	public C getConcept(final K id);
 	
+	public Iterable<C> getComponents(Iterable<K> ids);
+	
 	/**
 	 * Returns the parent concepts for the specified concept.
 	 * @param concept

@@ -215,7 +215,8 @@ public class SnomedClientTerminologyBrowser extends ActiveBranchClientTerminolog
 	 * @param ids the unique IDs for the collection.
 	 * @return a collection of concepts.
 	 */
-	public Collection<SnomedConceptIndexEntry> getConcepts(final Iterable<String> ids) {
+	@Override
+	public Collection<SnomedConceptIndexEntry> getComponents(final Iterable<String> ids) {
 		return getWrappedService().getConcepts(getBranchPath(), ids);
 	}
 	

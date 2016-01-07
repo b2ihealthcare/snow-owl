@@ -192,7 +192,7 @@ public class ConceptWidgetBean extends ModeledWidgetBean implements Serializable
 					}
 				}
 
-				for (final IComponent<String> concept : getServiceForClass(SnomedClientTerminologyBrowser.class).getConcepts(unresolvedComponentIds)) {
+				for (final IComponent<String> concept : getServiceForClass(SnomedClientTerminologyBrowser.class).getComponents(unresolvedComponentIds)) {
 					componentMap.put(concept.getId(), concept);
 				}
 

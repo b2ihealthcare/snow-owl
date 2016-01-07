@@ -48,6 +48,11 @@ public class ClientTerminologyBrowserAdapter<C, K> implements IClientTerminology
 	public C getConcept(final K id) {
 		return (C) NullComponent.<C>getNullImplementation();
 	}
+	
+	@Override
+	public Iterable<C> getComponents(Iterable<K> ids) {
+		return Collections.emptyList();
+	}
 
 	@Override
 	public Collection<C> getSuperTypes(final C concept) {

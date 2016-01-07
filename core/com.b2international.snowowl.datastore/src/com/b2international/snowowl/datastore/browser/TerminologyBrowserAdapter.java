@@ -42,6 +42,11 @@ public class TerminologyBrowserAdapter<C, K> implements IClientTerminologyBrowse
 	public C getConcept(final K key) {
 		return delegate.getConcept(key);
 	}
+	
+	@Override
+	public Iterable<C> getComponents(Iterable<K> ids) {
+		return delegate.getComponents(ids);
+	}
 
 	@Override
 	public Collection<C> getSuperTypes(final C concept) {
