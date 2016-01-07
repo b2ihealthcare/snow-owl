@@ -80,6 +80,11 @@ public abstract class AbstractClientRefSetBrowser<R extends IComponent<K>, C ext
 	public C getConcept(final K id) {
 		return wrapperService.getConcept(getBranchPath(), id);
 	}
+	
+	@Override
+	public Iterable<C> getComponents(Iterable<K> ids) {
+		throw new UnsupportedOperationException("Not implemented");
+	}
 
 	/* (non-Javadoc)
 	 * @see com.b2international.snowowl.core.api.browser.IClientTerminologyBrowser#getSuperTypes(java.lang.Object)
