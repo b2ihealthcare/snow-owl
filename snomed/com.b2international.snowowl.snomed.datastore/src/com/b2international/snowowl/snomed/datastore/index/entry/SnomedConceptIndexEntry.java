@@ -16,6 +16,7 @@
 package com.b2international.snowowl.snomed.datastore.index.entry;
 
 import java.io.Serializable;
+import java.util.List;
 
 import org.apache.lucene.document.Document;
 
@@ -26,6 +27,8 @@ import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.datastore.index.mapping.Mappings;
 import com.b2international.snowowl.snomed.core.domain.ISnomedConcept;
 import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedMappings;
+import com.google.common.base.Function;
+import com.google.common.collect.FluentIterable;
 
 /**
  * A transfer object representing a SNOMED CT concept.
@@ -61,6 +64,15 @@ public class SnomedConceptIndexEntry extends SnomedIndexEntry implements ICompon
 				.iconId(input.getIconId())
 				.primitive(input.getDefinitionStatus().isPrimitive())
 				.exhaustive(input.getSubclassDefinitionStatus().isExhaustive());
+	}
+	
+	public static List<SnomedConceptIndexEntry> fromConcepts(Iterable<ISnomedConcept> concepts) {
+		return FluentIterable.from(concepts).transform(new Function<ISnomedConcept, SnomedConceptIndexEntry>() {
+			@Override
+			public SnomedConceptIndexEntry apply(ISnomedConcept input) {
+				return SnomedConceptIndexEntry.builder(input).label(input.getPt().getTerm()).build();
+			}
+		}).toList();
 	}
 
 	public static class Builder extends AbstractBuilder<Builder> {

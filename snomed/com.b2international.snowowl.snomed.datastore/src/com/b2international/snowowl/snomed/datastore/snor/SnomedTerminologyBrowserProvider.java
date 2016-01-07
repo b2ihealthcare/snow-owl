@@ -28,6 +28,7 @@ import org.slf4j.LoggerFactory;
 
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.CoreTerminologyBroker;
+import com.b2international.snowowl.core.SnowOwlApplication;
 import com.b2international.snowowl.datastore.cdo.CDOUtils;
 import com.b2international.snowowl.datastore.utils.ComponentUtils2;
 import com.b2international.snowowl.eventbus.IEventBus;
@@ -367,7 +368,9 @@ public class SnomedTerminologyBrowserProvider extends SnomedClientTerminologyBro
 		 * @param wrapperService
 		 */
 		private SnomedRefSetBrowserProvider(final Concept concept) {
-			super(ApplicationContext.getInstance().getService(SnomedRefSetBrowser.class));
+			super(ApplicationContext.getInstance().getService(SnomedRefSetBrowser.class), 
+					SnowOwlApplication.INSTANCE.getEnviroment().provider(SnomedClientTerminologyBrowser.class),
+					ApplicationContext.getInstance().getService(IEventBus.class));
 			this.refSetIds = Sets.newHashSet();
 			Preconditions.checkNotNull(concept, "SNOMED CT concept argument cannot be null.");
 			this.conceptId = Preconditions.checkNotNull(concept.getId(), "SNOMED CT concept ID cannot be null.");

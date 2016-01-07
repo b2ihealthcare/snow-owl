@@ -28,6 +28,7 @@ import com.b2international.commons.http.ExtendedLocale;
 import com.b2international.snowowl.core.annotations.Client;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.api.IComponentWithChildFlag;
+import com.b2international.snowowl.core.exceptions.NotFoundException;
 import com.b2international.snowowl.datastore.browser.AbstractClientTerminologyBrowser;
 import com.b2international.snowowl.datastore.browser.ActiveBranchClientTerminologyBrowser;
 import com.b2international.snowowl.eventbus.IEventBus;
@@ -39,10 +40,12 @@ import com.b2international.snowowl.snomed.datastore.filteredrefset.FilteredRefSe
 import com.b2international.snowowl.snomed.datastore.filteredrefset.IRefSetMemberOperation;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptIndexEntry;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptIndexEntryWithChildFlag;
+import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedMappings;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.google.common.base.Function;
 import com.google.common.collect.FluentIterable;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 
 import bak.pcj.LongCollection;
 import bak.pcj.map.LongKeyLongMap;
@@ -55,7 +58,7 @@ import bak.pcj.set.LongSet;
 @Client
 public class SnomedClientTerminologyBrowser extends ActiveBranchClientTerminologyBrowser<SnomedConceptIndexEntry, String> {
 
-	private static final List<ExtendedLocale> LOCALES = ImmutableList.of(new ExtendedLocale("en", "sg", Concepts.REFSET_LANGUAGE_TYPE_SG), new ExtendedLocale("en", "gb", Concepts.REFSET_LANGUAGE_TYPE_UK));
+	public static final List<ExtendedLocale> LOCALES = ImmutableList.of(new ExtendedLocale("en", "sg", Concepts.REFSET_LANGUAGE_TYPE_SG), new ExtendedLocale("en", "gb", Concepts.REFSET_LANGUAGE_TYPE_UK));
 	
 	private final IEventBus bus;
 
@@ -88,6 +91,48 @@ public class SnomedClientTerminologyBrowser extends ActiveBranchClientTerminolog
 				return new SnomedConceptIndexEntryWithChildFlag(entry, input.getDescendants().getTotal() > 0);
 			}
 		}).toList();
+	}
+	
+	@Override
+	public Collection<SnomedConceptIndexEntry> getRootConcepts() {
+		final SnomedConcepts roots = SnomedRequests.prepareSearchConcept()
+				.all()
+				.filterByActive(true)
+				.filterByParent(Long.toString(SnomedMappings.ROOT_ID))
+				.setLocales(LOCALES)
+				.setExpand("pt()")
+				.build(getBranchPath().getPath())
+				.executeSync(bus);
+		return SnomedConceptIndexEntry.fromConcepts(roots);
+	}
+	
+	@Override
+	public SnomedConceptIndexEntry getConcept(String id) {
+		try {
+			final ISnomedConcept concept = SnomedRequests
+					.prepareGetConcept()
+					.setComponentId(id)
+					.setExpand("pt()")
+					.setLocales(LOCALES)
+					.build(getBranchPath().getPath())
+					.executeSync(bus);
+			return SnomedConceptIndexEntry.builder(concept).label(concept.getPt().getTerm()).build();
+		} catch (NotFoundException e) {
+			return null;
+		}
+	}
+	
+	@Override
+	public Collection<SnomedConceptIndexEntry> getSubTypesById(String id) {
+		final SnomedConcepts concepts = SnomedRequests
+				.prepareSearchConcept()
+				.all()
+				.filterByParent(id)
+				.setExpand("pt()")
+				.setLocales(LOCALES)
+				.build(getBranchPath().getPath())
+				.executeSync(bus);
+		return SnomedConceptIndexEntry.fromConcepts(concepts);
 	}
 
 	/**
@@ -255,7 +300,14 @@ public class SnomedClientTerminologyBrowser extends ActiveBranchClientTerminolog
 	 * @return a collection of concepts.
 	 */
 	public Collection<SnomedConceptIndexEntry> getConcepts(final Iterable<String> ids) {
-		return getWrappedService().getConcepts(getBranchPath(), ids);
+		final SnomedConcepts concepts = SnomedRequests.prepareSearchConcept()
+				.all()
+				.setComponentIds(ImmutableSet.copyOf(ids))
+				.setLocales(LOCALES)
+				.setExpand("pt()")
+				.build(getBranchPath().getPath())
+				.executeSync(bus);
+		return SnomedConceptIndexEntry.fromConcepts(concepts);
 	}
 	
 	/**
