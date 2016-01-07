@@ -31,16 +31,18 @@ import org.apache.lucene.document.StoredField;
 import org.apache.lucene.document.StringField;
 import org.apache.lucene.index.Term;
 import org.apache.lucene.search.IndexSearcher;
+import org.apache.lucene.search.NumericRangeQuery;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.ScoreDoc;
 import org.apache.lucene.search.Sort;
+import org.apache.lucene.search.SortField;
+import org.apache.lucene.search.SortField.Type;
 import org.apache.lucene.search.TopDocs;
+import org.apache.lucene.search.TotalHitCountCollector;
 
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.datastore.BranchPathUtils;
-import com.b2international.snowowl.datastore.index.DocIdCollector;
-import com.b2international.snowowl.datastore.index.DocIdCollector.DocIdsIterator;
 import com.b2international.snowowl.datastore.index.mapping.Mappings;
 import com.b2international.snowowl.datastore.index.mapping.QueryBuilderBase.QueryBuilder;
 import com.b2international.snowowl.datastore.server.domain.StorageRef;
@@ -73,14 +75,40 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
+import com.google.common.primitives.Ints;
 
 public class ClassificationRunIndex extends SingleDirectoryIndexImpl {
 
 	private final ObjectMapper objectMapper;
 
-	public ClassificationRunIndex(final File directory) {
+	public ClassificationRunIndex(final File directory, final int maximumResultsToKeep) throws IOException {
 		super(directory);
 		objectMapper = new ObjectMapper();
+		
+		trimIndex(maximumResultsToKeep);
+	}
+
+	private void trimIndex(int maximumResultsToKeep) throws IOException {
+		final Query query = Mappings.newQuery()
+				.field("class", ClassificationRun.class.getSimpleName())
+				.matchAll();
+		
+		// Sort by decreasing document order
+		final Sort sort = new Sort(new SortField(null, Type.DOC, true));
+		
+		final ClassificationRun lastRunToKeep = Iterables.getFirst(search(query, ClassificationRun.class, sort, maximumResultsToKeep, 1), null);
+		if (lastRunToKeep == null) {
+			return;
+		}
+		
+		final Date lastCreationDate = lastRunToKeep.getCreationDate();
+		final Query trimmingQuery = Mappings.newQuery()
+				.field("class", ClassificationRun.class.getSimpleName())
+				.and(NumericRangeQuery.newLongRange("creationDate", null, lastCreationDate.getTime(), false, false))
+				.matchAll();
+		
+		writer.deleteDocuments(trimmingQuery);
+		commit();
 	}
 
 	public List<IClassificationRun> getAllClassificationRuns(final StorageRef storageRef, final String userId) throws IOException {
@@ -110,6 +138,7 @@ public class ClassificationRunIndex extends SingleDirectoryIndexImpl {
 				.searchOnlyField("id", classificationRun.getId())
 				.field("userId", classificationRun.getUserId())
 				.field("branchPath", branchPath.getPath())
+				.field("creationDate", classificationRun.getCreationDate().getTime())
 				.storedOnly("source", objectMapper.writer().writeValueAsString(classificationRun))
 				.build();
 
@@ -124,10 +153,10 @@ public class ClassificationRunIndex extends SingleDirectoryIndexImpl {
 	}
 
 	public void updateClassificationRunStatus(final UUID id, final ClassificationStatus newStatus) throws IOException {
-		updateClassificationRunStatusAndIndexChanges(id, newStatus, null);
+		updateClassificationRunStatus(id, newStatus, null);
 	}
 
-	public void updateClassificationRunStatusAndIndexChanges(final UUID id, final ClassificationStatus newStatus, final GetResultResponseChanges changes) throws IOException {
+	public void updateClassificationRunStatus(final UUID id, final ClassificationStatus newStatus, final GetResultResponseChanges changes) throws IOException {
 
 		final Document sourceDocument = getClassificationRunDocument(id);
 		if (null == sourceDocument) {
@@ -144,10 +173,12 @@ public class ClassificationRunIndex extends SingleDirectoryIndexImpl {
 		classificationRun.setStatus(newStatus);
 
 		if (ClassificationStatus.COMPLETED.equals(newStatus)) {
-			if(null == classificationRun.getCompletionDate()) {
+			checkNotNull(changes, "GetResultResponseChanges are required to update a completed classification.");
+
+			if (null == classificationRun.getCompletionDate()) {
 				classificationRun.setCompletionDate(new Date());
 			}
-			checkNotNull(changes, "GetResultResponseChanges are required to update a completed classification.");
+			
 			final ClassificationIssueFlags issueFlags = indexChanges(sourceDocument, changes);
 			classificationRun.setRedundantStatedRelationshipsFound(issueFlags.isRedundantStatedFound());
 			classificationRun.setEquivalentConceptsFound(issueFlags.isEquivalentConceptsFound());
@@ -317,13 +348,23 @@ public class ClassificationRunIndex extends SingleDirectoryIndexImpl {
 	}
 
 	private <T> List<T> search(final Query query, final Class<? extends T> sourceClass, final int offset, final int limit) throws IOException {
+		return search(query, sourceClass, Sort.INDEXORDER, offset, limit);
+	}
+
+	private <T> List<T> search(final Query query, final Class<? extends T> sourceClass, Sort sort, final int offset, final int limit) throws IOException {
 		IndexSearcher searcher = null;
 
 		try {
 
 			searcher = manager.acquire();
 
-			final TopDocs docs = searcher.search(query, null, offset + limit, Sort.INDEXORDER, false, false);
+			final TotalHitCountCollector collector = new TotalHitCountCollector();
+			searcher.search(query, collector);
+			final int totalHits = collector.getTotalHits();
+			
+			final int docsToRetrieve = Ints.min(offset + limit, searcher.getIndexReader().maxDoc(), totalHits);
+			
+			final TopDocs docs = searcher.search(query, null, docsToRetrieve, sort, false, false);
 			final ScoreDoc[] scoreDocs = docs.scoreDocs;
 			final ImmutableList.Builder<T> resultBuilder = ImmutableList.builder();
 
@@ -373,18 +414,9 @@ public class ClassificationRunIndex extends SingleDirectoryIndexImpl {
 		try {
 
 			searcher = manager.acquire();
-			final int expectedSize = searcher.getIndexReader().maxDoc();
-			final DocIdCollector collector = DocIdCollector.create(expectedSize);
-
+			final TotalHitCountCollector collector = new TotalHitCountCollector();
 			searcher.search(query, collector);
-
-			int totalHits = 0;
-			final DocIdsIterator itr = collector.getDocIDs().iterator();
-			while (itr.next()) {
-				totalHits++;
-			}
-			
-			return totalHits;
+			return collector.getTotalHits();
 
 		} finally {
 
