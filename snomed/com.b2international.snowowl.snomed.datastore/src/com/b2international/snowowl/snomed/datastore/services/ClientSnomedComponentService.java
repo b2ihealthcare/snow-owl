@@ -90,11 +90,6 @@ public class ClientSnomedComponentService extends ActiveBranchPathAwareService i
 	}
 
 	@Override
-	public String[] getLabels(final String... componentIds) {
-		return wrappedService.getLabels(getBranchPath(), componentIds);
-	}
-
-	@Override
 	public String[] getIconId(final String... conceptId) {
 		return wrappedService.getIconId(getBranchPath(), conceptId);
 	}
