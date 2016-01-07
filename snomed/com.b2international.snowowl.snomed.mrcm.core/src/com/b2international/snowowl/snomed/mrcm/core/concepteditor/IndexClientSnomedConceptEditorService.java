@@ -40,11 +40,6 @@ public class IndexClientSnomedConceptEditorService extends ActiveBranchPathAware
 	}
 
 	@Override
-	public SnomedConceptLabelAndIconIdMappings getConceptMappings(final long conceptId, final boolean active) {
-		return wrappedService.getConceptMappings(getBranchPath(), conceptId, active);
-	}
-	
-	@Override
 	protected EPackage getEPackage() {
 		return SnomedPackage.eINSTANCE;
 	}

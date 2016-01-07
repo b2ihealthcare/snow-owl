@@ -20,11 +20,11 @@ import static com.google.common.collect.Lists.newArrayList;
 import java.io.Serializable;
 import java.util.Collection;
 
-import bak.pcj.set.LongSet;
-
 import com.b2international.snowowl.snomed.datastore.snor.PredicateIndexEntry;
 import com.b2international.snowowl.snomed.mrcm.core.configuration.SnomedSimpleTypeRefSetAttributeConfiguration;
 import com.b2international.snowowl.snomed.mrcm.core.widget.bean.ConceptWidgetBean;
+
+import bak.pcj.set.LongSet;
 
 /**
  * POJO containing all data required for opening an existing SNOMED CT concept
@@ -40,11 +40,9 @@ public class SnomedConceptDetailsBean implements Serializable {
 	private final String label;
 	private final Collection<PredicateIndexEntry> predicates;
 	private final LongSet synonymAndDescendantIds;
-	private final SnomedConceptLabelAndIconIdMappings conceptMappings;
 	private final SnomedSimpleTypeRefSetAttributeConfiguration configuration;
-
+	
 	public SnomedConceptDetailsBean(String label, long iconId, ConceptWidgetBean conceptWidgetBean, 
-			SnomedConceptLabelAndIconIdMappings conceptMappings, 
 			LongSet synonymAndDescendantIds, 
 			SnomedSimpleTypeRefSetAttributeConfiguration configuration, 
 			Collection<PredicateIndexEntry> predicates) {
@@ -52,7 +50,6 @@ public class SnomedConceptDetailsBean implements Serializable {
 		this.conceptWidgetBean = conceptWidgetBean;
 		this.iconId = iconId;
 		this.label = label;
-		this.conceptMappings = conceptMappings;
 		this.synonymAndDescendantIds = synonymAndDescendantIds;
 		this.configuration = configuration;
 		this.predicates = newArrayList(predicates);
@@ -76,10 +73,6 @@ public class SnomedConceptDetailsBean implements Serializable {
 	
 	public LongSet getSynonymAndDescendantIds() {
 		return synonymAndDescendantIds;
-	}
-	
-	public SnomedConceptLabelAndIconIdMappings getConceptMappings() {
-		return conceptMappings;
 	}
 	
 	public SnomedSimpleTypeRefSetAttributeConfiguration getConfiguration() {
