@@ -25,6 +25,8 @@ import org.apache.lucene.document.Document;
 import com.b2international.commons.BooleanUtils;
 import com.b2international.snowowl.core.CoreTerminologyBroker;
 import com.b2international.snowowl.core.api.IComponent;
+import com.b2international.snowowl.core.date.EffectiveTimes;
+import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSet;
 import com.b2international.snowowl.snomed.datastore.IRefSetComponent;
 import com.b2international.snowowl.snomed.datastore.SnomedRefSetUtil;
 import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedMappings;
@@ -53,6 +55,36 @@ public class SnomedRefSetIndexEntry extends SnomedIndexEntry implements IRefSetC
 				.type(SnomedRefSetType.get(SnomedMappings.refSetType().getValue(doc)))
 				.referencedComponentType(SnomedMappings.refSetReferencedComponentType().getShortValue(doc))
 				.structural(BooleanUtils.valueOf(SnomedMappings.refSetStructural().getValue(doc).intValue()));
+	}
+	
+	public static Builder builder(SnomedReferenceSet refSet) {
+		final short terminologyComponentIdAsShort = CoreTerminologyBroker.getInstance().getTerminologyComponentIdAsShort(refSet.getReferencedComponentType());
+		return builder()
+				.id(refSet.getId())
+				.iconId(refSet.getIconId())
+				.moduleId(refSet.getModuleId())
+				.active(refSet.isActive())
+				.released(refSet.isReleased())
+				.effectiveTimeLong(EffectiveTimes.getEffectiveTime(refSet.getEffectiveTime()))
+				.type(refSet.getType())
+				.referencedComponentType(terminologyComponentIdAsShort)
+				.structural(SnomedRefSetUtil.isStructural(refSet.getId(), refSet.getType()));
+	}
+	
+	public static Builder builder(SnomedRefSetIndexEntry entry) {
+		return builder()
+				.id(entry.getId())
+				.iconId(entry.getIconId())
+				.moduleId(entry.getModuleId())
+				.active(entry.isActive())
+				.released(entry.isReleased())
+				.effectiveTimeLong(entry.getEffectiveTimeAsLong())
+				.type(entry.getType())
+				.referencedComponentType(entry.getReferencedComponentType())
+				.structural(entry.isStructural())
+				.label(entry.getLabel())
+				.score(entry.getScore())
+				.storageKey(entry.getStorageKey());
 	}
 
 	public static class Builder extends AbstractBuilder<Builder> {
@@ -178,4 +210,5 @@ public class SnomedRefSetIndexEntry extends SnomedIndexEntry implements IRefSetC
 				.add("structural", structural)
 				.toString();
 	}
+
 }

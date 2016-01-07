@@ -23,15 +23,22 @@ import java.util.Map;
 
 import org.eclipse.emf.ecore.EPackage;
 
-import bak.pcj.set.LongSet;
-
 import com.b2international.snowowl.core.annotations.Client;
+import com.b2international.snowowl.core.exceptions.NotFoundException;
+import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
+import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSet;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptIndexEntry;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetIndexEntry;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry;
+import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetPackage;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType;
+import com.google.common.base.Function;
+import com.google.common.collect.FluentIterable;
+import com.google.inject.Provider;
+
+import bak.pcj.set.LongSet;
 
 /**
  * Reference set hierarchy browser service for the SNOMED&nbsp;CT ontology.
@@ -40,21 +47,48 @@ import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType;
 @Client
 public class SnomedClientRefSetBrowser extends AbstractClientRefSetBrowser<SnomedRefSetIndexEntry, SnomedConceptIndexEntry, String> {
 
+	private final Provider<SnomedClientTerminologyBrowser> browser;
+	private final IEventBus bus;
+
 	/**
 	 * Creates a new service instance based on the wrapped server side reference set browser service.
 	 * @param wrappedBrowser the wrapped server side service.
 	 */
-	public SnomedClientRefSetBrowser(final SnomedRefSetBrowser wrapperService) {
+	public SnomedClientRefSetBrowser(final SnomedRefSetBrowser wrapperService, final Provider<SnomedClientTerminologyBrowser> browser, final IEventBus bus) {
 		super(wrapperService);
+		this.browser = browser;
+		this.bus = bus;
 	}
 	
-	/*
-	 * (non-Javadoc)
-	 * @see com.b2international.snowowl.datastore.BranchPathAwareService#getEPackage()
-	 */
 	@Override
 	protected EPackage getEPackage() {
 		return SnomedRefSetPackage.eINSTANCE;
+	}
+	
+	@Override
+	public Collection<SnomedConceptIndexEntry> getRootConcepts() {
+		final Iterable<String> refSetTypeConceptIds = FluentIterable.from(SnomedRefSetUtil.getTypesForUI()).transform(new Function<SnomedRefSetType, String>() {
+			@Override
+			public String apply(SnomedRefSetType input) {
+				return SnomedRefSetUtil.getConceptId(input);
+			}
+		});
+		return browser.get().getConcepts(refSetTypeConceptIds);
+	}
+	
+	@Override
+	public SnomedRefSetIndexEntry getRefSet(String refSetId) {
+		try {
+			final SnomedReferenceSet refset = SnomedRequests
+					.prepareGetReferenceSet()
+					.setComponentId(refSetId)
+					.setLocales(SnomedClientTerminologyBrowser.LOCALES)
+					.build(getBranchPath().getPath())
+					.executeSync(bus);
+			return SnomedRefSetIndexEntry.builder(refset).build();
+		} catch (NotFoundException e) {
+			return null;
+		}
 	}
 	
 	/**
