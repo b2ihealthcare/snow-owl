@@ -1,5 +1,7 @@
 package com.b2international.snowowl.snomed.api.impl.domain;
 
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.Map;
 
 import com.b2international.commons.ClassUtils;
@@ -40,15 +42,16 @@ public class DescriptionInputCreator extends AbstractInputCreator implements Com
 			change = true;
 			update.setModuleId(newVersionDesc.getModuleId());
 		}
-		final Map<String, Acceptability> newAcceptabilityMap = newVersionDesc.getAcceptabilityMap();
-		if (!existingDesc.getAcceptabilityMap().equals(newAcceptabilityMap)) {
-			change = true;
-			update.setAcceptability(newAcceptabilityMap);
+		Map<String, Acceptability> newAcceptabilityMap = newVersionDesc.getAcceptabilityMap();
+		if (newAcceptabilityMap == null) {
+			newAcceptabilityMap = Collections.emptyMap();
 		}
 		// If the description is inactive make sure the acceptability map is empty to make the language reference set entries inactive
-		if (!newVersionDesc.isActive() && !newAcceptabilityMap.isEmpty()) {
-			change = true;
+		if (!newVersionDesc.isActive()) {
 			newAcceptabilityMap.clear();
+		}
+		if (!existingDesc.getAcceptabilityMap().equals(newAcceptabilityMap)) {
+			change = true;
 			update.setAcceptability(newAcceptabilityMap);
 		}
 		if (existingDesc.getCaseSignificance() != newVersionDesc.getCaseSignificance()) {
