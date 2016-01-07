@@ -449,13 +449,25 @@ public class SnomedClassificationServiceImpl implements ISnomedClassificationSer
 		if (!Type.SUCCESS.equals(persistChanges.getType())) {
 			// We will never get a reply, unregister immediately
 			getEventBus().unregisterHandler(address, handler);
-		} else {
-			// Set a flag to indicate that saving is under way
-			try {
-				indexService.updateClassificationRunStatus(uuid, ClassificationStatus.SAVING_IN_PROGRESS);
-			} catch (final IOException e) {
-				throw new RuntimeException(e);
-			}
+		} 
+		
+		final ClassificationStatus saveStatus;
+		switch (persistChanges.getType()) {
+			case NOT_AVAILABLE:
+			case STALE:
+				saveStatus = ClassificationStatus.STALE;
+				break;
+			case SUCCESS:
+				saveStatus = ClassificationStatus.SAVING_IN_PROGRESS;
+				break;
+			default:
+				throw new IllegalStateException(MessageFormat.format("Unhandled persist change response type ''{0}''.", persistChanges.getType()));
+		}
+		
+		try {
+			indexService.updateClassificationRunStatus(uuid, saveStatus);
+		} catch (final IOException e) {
+			throw new RuntimeException(e);
 		}
 	}
 
