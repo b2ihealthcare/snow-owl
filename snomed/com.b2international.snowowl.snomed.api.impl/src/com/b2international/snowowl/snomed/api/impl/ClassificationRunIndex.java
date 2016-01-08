@@ -102,7 +102,7 @@ public class ClassificationRunIndex extends SingleDirectoryIndexImpl {
 		// Sort by decreasing document order
 		final Sort sort = new Sort(new SortField(null, Type.DOC, true));
 		
-		final ClassificationRun lastRunToKeep = Iterables.getFirst(search(query, ClassificationRun.class, sort, maximumResultsToKeep, 1), null);
+		final ClassificationRun lastRunToKeep = Iterables.getFirst(search(query, ClassificationRun.class, sort, maximumResultsToKeep - 1, 1), null);
 		if (lastRunToKeep == null) {
 			return;
 		}
