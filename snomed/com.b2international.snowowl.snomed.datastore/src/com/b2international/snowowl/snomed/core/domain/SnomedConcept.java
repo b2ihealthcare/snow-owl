@@ -33,6 +33,8 @@ public class SnomedConcept extends BaseSnomedComponent implements ISnomedConcept
 	private SnomedRelationships relationships;
 	private SnomedConcepts ancestors;
 	private SnomedConcepts descendants;
+	private long[] ancestorIds;
+	private long[] parentIds;
 
 	public SnomedConcept() {
 	}
@@ -91,6 +93,16 @@ public class SnomedConcept extends BaseSnomedComponent implements ISnomedConcept
 		return descendants;
 	}
 
+	@Override
+	public long[] getAncestorIds() {
+		return ancestorIds;
+	}
+	
+	@Override
+	public long[] getParentIds() {
+		return parentIds;
+	}
+	
 	public void setDefinitionStatus(final DefinitionStatus definitionStatus) {
 		this.definitionStatus = definitionStatus;
 	}
@@ -129,6 +141,14 @@ public class SnomedConcept extends BaseSnomedComponent implements ISnomedConcept
 	
 	public void setDescendants(SnomedConcepts descendants) {
 		this.descendants = descendants;
+	}
+	
+	public void setAncestorIds(final long[] ancestorIds) {
+		this.ancestorIds = ancestorIds;
+	}
+	
+	public void setParentIds(final long[] parentIds) {
+		this.parentIds = parentIds;
 	}
 
 	@Override

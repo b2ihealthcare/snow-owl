@@ -16,6 +16,7 @@
 package com.b2international.snowowl.snomed.core.domain;
 
 import com.b2international.snowowl.core.domain.IComponentNode;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.google.common.collect.Multimap;
 
 /**
@@ -85,4 +86,17 @@ public interface ISnomedConcept extends SnomedCoreComponent, IComponentNode, Def
 	 * @return the descendants of the SNOMED CT concept
 	 */
 	SnomedConcepts getDescendants();
+
+	/**
+	 * @return the concept IDs of the ancestors
+	 */
+	@JsonIgnore
+	long[] getAncestorIds();
+	
+	/**
+	 * @return the concept IDs of the parents
+	 */
+	@JsonIgnore
+	long[] getParentIds();
+
 }

@@ -37,6 +37,7 @@ import org.apache.lucene.search.Sort;
 import org.apache.lucene.search.TopDocs;
 
 import com.b2international.commons.functions.StringToLongFunction;
+import com.b2international.commons.options.Options;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.exceptions.IllegalQueryParameterException;
 import com.b2international.snowowl.snomed.core.domain.ISnomedDescription;
@@ -47,6 +48,7 @@ import com.b2international.snowowl.snomed.datastore.escg.EscgParseFailedExceptio
 import com.b2international.snowowl.snomed.datastore.escg.EscgRewriter;
 import com.b2international.snowowl.snomed.datastore.escg.IndexQueryQueryEvaluator;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptIndexEntry;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptIndexEntry.Builder;
 import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedMappings;
 import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedQueryBuilder;
 import com.b2international.snowowl.snomed.dsl.query.SyntaxErrorException;
@@ -178,13 +180,23 @@ final class SnomedConceptSearchRequest extends SnomedSearchRequest<SnomedConcept
 		final ScoreDoc[] scoreDocs = topDocs.scoreDocs;
 		final ImmutableList.Builder<SnomedConceptIndexEntry> conceptsBuilder = ImmutableList.builder();
 		
+		final Options expand = expand();
 		for (int i = offset(); i < scoreDocs.length; i++) {
 			Document doc = searcher.doc(scoreDocs[i].doc); // TODO: should expand & filter drive fieldsToLoad? Pass custom fieldValueLoader?
-			SnomedConceptIndexEntry indexEntry = SnomedConceptIndexEntry.builder(doc).build();
-			conceptsBuilder.add(indexEntry);
+			final Builder builder = SnomedConceptIndexEntry.builder(doc);
+			
+			if (expand.containsKey("parentIds")) {
+				builder.parents(SnomedMappings.parent().getValueAsLongSet(doc));
+			}
+			
+			if (expand.containsKey("ancestorIds")) {
+				builder.ancestors(SnomedMappings.ancestor().getValueAsLongSet(doc));
+			}
+			
+			conceptsBuilder.add(builder.build());
 		}
 
-		return SnomedConverters.newConceptConverter(context, expand(), locales()).convert(conceptsBuilder.build(), offset(), limit(), topDocs.totalHits);
+		return SnomedConverters.newConceptConverter(context, expand, locales()).convert(conceptsBuilder.build(), offset(), limit(), topDocs.totalHits);
 	}
 
 	private Map<String, Integer> executeDescriptionSearch(BranchContext context, String term) {

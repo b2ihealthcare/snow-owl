@@ -25,6 +25,8 @@ import com.b2international.snowowl.core.api.index.IIndexEntry;
 import com.b2international.snowowl.datastore.index.mapping.Mappings;
 import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedMappings;
 
+import bak.pcj.LongCollection;
+
 /**
  * A transfer object representing a SNOMED CT concept.
  */
@@ -54,6 +56,8 @@ public class SnomedConceptIndexEntry extends SnomedIndexEntry implements ICompon
 		private String iconId;
 		private boolean primitive;
 		private boolean exhaustive;
+		private LongCollection parents;
+		private LongCollection ancestors;
 
 		private Builder() {
 			// Disallow instantiation outside static method
@@ -78,9 +82,19 @@ public class SnomedConceptIndexEntry extends SnomedIndexEntry implements ICompon
 			this.exhaustive = exhaustive;
 			return getSelf();
 		}
+		
+		public Builder parents(final LongCollection parents) {
+			this.parents = parents;
+			return getSelf();
+		}
+		
+		public Builder ancestors(final LongCollection ancestors) {
+			this.ancestors = ancestors;
+			return getSelf();
+		}
 
 		public SnomedConceptIndexEntry build() {
-			return new SnomedConceptIndexEntry(id,
+			final SnomedConceptIndexEntry entry = new SnomedConceptIndexEntry(id,
 					label,
 					iconId, 
 					score, 
@@ -91,11 +105,23 @@ public class SnomedConceptIndexEntry extends SnomedIndexEntry implements ICompon
 					effectiveTimeLong, 
 					primitive, 
 					exhaustive);
+			
+			if (parents != null) {
+				entry.setParents(parents);
+			}
+			
+			if (ancestors != null) {
+				entry.setAncestors(ancestors);
+			}
+			
+			return entry;
 		}
 	}
 
 	private final boolean primitive;
 	private final boolean exhaustive;
+	private LongCollection parents;
+	private LongCollection ancestors;
 
 	protected SnomedConceptIndexEntry(final String id,
 			final String label,
@@ -135,6 +161,22 @@ public class SnomedConceptIndexEntry extends SnomedIndexEntry implements ICompon
 	 */
 	public boolean isExhaustive() {
 		return exhaustive;
+	}
+	
+	private void setParents(LongCollection parents) {
+		this.parents = parents;
+	}
+	
+	public LongCollection getParents() {
+		return parents;
+	}
+	
+	private void setAncestors(LongCollection ancestors) {
+		this.ancestors = ancestors;
+	}
+	
+	public LongCollection getAncestors() {
+		return ancestors;
 	}
 
 	@Override
