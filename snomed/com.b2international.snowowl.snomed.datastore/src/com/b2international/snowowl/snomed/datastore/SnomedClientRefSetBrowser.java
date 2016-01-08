@@ -73,7 +73,7 @@ public class SnomedClientRefSetBrowser extends AbstractClientRefSetBrowser<Snome
 				return SnomedRefSetUtil.getConceptId(input);
 			}
 		});
-		return browser.get().getConcepts(refSetTypeConceptIds);
+		return browser.get().getComponents(refSetTypeConceptIds);
 	}
 	
 	@Override
