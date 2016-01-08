@@ -40,13 +40,14 @@ import com.b2international.snowowl.snomed.datastore.index.SnomedDslIndexQueryAda
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetIndexEntry;
 import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedMappings;
 import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedQueryBuilder;
+import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType;
 import com.google.common.base.Optional;
 
 /**
  * Index query adapter for retrieving search results from lightweight store and building 
  * {@link SnomedRefSetIndexEntry reference sets}.
- * 
+ * @deprecated - UNSUPPORTED, label is not part of the refset document anymore, use {@link SnomedRequests#prepareSearchConcept()} or {@link SnomedRequests#prepareSearchRefSet()} instead
  */
 public class SnomedRefSetIndexQueryAdapter extends SnomedDslIndexQueryAdapter<SnomedRefSetIndexEntry> implements Serializable {
 
