@@ -90,10 +90,11 @@ public class SnomedConceptQuickSearchContentProvider extends AbstractQuickSearch
 			.prepareSearchConcept()
 			.filterByActive(true)
 			.filterByTerm(queryExpression)
-			.setExpand("pt()")
-			.setLimit(limit)
 			// TODO replace fixed LOCALES with configurable one
-			.setLocales(SnomedClientTerminologyBrowser.LOCALES);
+			.filterByExtendedLocales(SnomedClientTerminologyBrowser.LOCALES)
+			.withDoi()
+			.setExpand("pt()")
+			.setLimit(limit);
 		
 		if (configuration.containsKey(SnomedConceptQuickSearchProvider.CONFIGURATION_PARENT_ID)) {
 			req.filterByAncestor((String) configuration.get(SnomedConceptQuickSearchProvider.CONFIGURATION_PARENT_ID));

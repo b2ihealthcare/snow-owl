@@ -26,6 +26,10 @@ public final class SnomedConceptSearchRequestBuilder extends SnomedSearchRequest
 	SnomedConceptSearchRequestBuilder(String repositoryId) {
 		super(repositoryId);
 	}
+	
+	public final SnomedConceptSearchRequestBuilder withDoi() {
+		return addOption(SnomedConceptSearchRequest.OptionKey.USE_DOI, true);
+	}
 
 	public final SnomedConceptSearchRequestBuilder filterByTerm(String term) {
 		return addOption(SnomedConceptSearchRequest.OptionKey.TERM, term);
