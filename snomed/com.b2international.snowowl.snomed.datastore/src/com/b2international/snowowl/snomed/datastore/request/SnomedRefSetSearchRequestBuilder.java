@@ -15,8 +15,14 @@
  */
 package com.b2international.snowowl.snomed.datastore.request;
 
+import java.util.Collection;
+import java.util.Collections;
+
+import com.b2international.snowowl.core.CoreTerminologyBroker;
 import com.b2international.snowowl.datastore.request.SearchRequest;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSets;
+import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType;
+import com.google.common.base.Strings;
 
 /**
  * @since 4.5
@@ -31,4 +37,31 @@ public final class SnomedRefSetSearchRequestBuilder extends SnomedSearchRequestB
 	protected SearchRequest<SnomedReferenceSets> create() {
 		return new SnomedRefSetSearchRequest();
 	}
+
+	public SnomedRefSetSearchRequestBuilder filterByTypes(Collection<SnomedRefSetType> refSetTypes) {
+		return addOption(SnomedRefSetSearchRequest.OptionKey.TYPE, refSetTypes);
+	}
+
+	public SnomedRefSetSearchRequestBuilder filterByReferencedComponentTypes(String referencedComponentType) {
+		if (Strings.isNullOrEmpty(referencedComponentType)) {
+			return getSelf();
+		}
+		if (CoreTerminologyBroker.UNSPECIFIED.equals(referencedComponentType)) {
+			return getSelf();
+		}
+		final int referencedComponentTypeAsInt = (int) CoreTerminologyBroker.getInstance().getTerminologyComponentIdAsShort(referencedComponentType);
+		return filterByReferencedComponentTypes(referencedComponentTypeAsInt);
+	}
+	
+	public SnomedRefSetSearchRequestBuilder filterByReferencedComponentTypes(Integer referencedComponentType) {
+		if (referencedComponentType == null) {
+			return getSelf();
+		}
+		return filterByReferencedComponentTypes(Collections.singleton(referencedComponentType));
+	}
+	
+	public SnomedRefSetSearchRequestBuilder filterByReferencedComponentTypes(Collection<Integer> referencedComponentTypes) {
+		return addOption(SnomedRefSetSearchRequest.OptionKey.REFERENCED_COMPONENT_TYPE, referencedComponentTypes);
+	}
+	
 }
