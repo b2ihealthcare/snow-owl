@@ -79,7 +79,7 @@ final class SnomedRefSetSearchRequest extends SnomedSearchRequest<SnomedReferenc
 			addFilterClause(filter, SnomedMappings.refSetReferencedComponentType().createTermsFilter(getCollection(OptionKey.REFERENCED_COMPONENT_TYPE, Integer.class)), Occur.MUST);
 		}
 		
-		final Query query = createFilteredQuery(createConstantScoreQuery(queryBuilder.matchAll()), filter);
+		final Query query = createConstantScoreQuery(createFilteredQuery(queryBuilder.matchAll(), filter));
 		final int totalHits = getTotalHits(searcher, query);
 		
 		if (limit() < 1 || totalHits < 1) {

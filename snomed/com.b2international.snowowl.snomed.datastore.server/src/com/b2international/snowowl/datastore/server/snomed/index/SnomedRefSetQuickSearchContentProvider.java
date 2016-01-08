@@ -26,6 +26,7 @@ import com.b2international.commons.http.ExtendedLocale;
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.quicksearch.CompactQuickSearchElement;
+import com.b2international.snowowl.core.quicksearch.IQuickSearchProvider;
 import com.b2international.snowowl.core.quicksearch.QuickSearchContentResult;
 import com.b2international.snowowl.core.quicksearch.QuickSearchElement;
 import com.b2international.snowowl.datastore.IBranchPathMap;
@@ -45,6 +46,7 @@ import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetPackage;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType;
 import com.google.common.base.Function;
 import com.google.common.collect.FluentIterable;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Lists;
 
@@ -89,17 +91,22 @@ public class SnomedRefSetQuickSearchContentProvider extends AbstractQuickSearchC
 		// TODO provide this via the configuration object from the client side
 		final List<ExtendedLocale> locales = SnomedClientTerminologyBrowser.LOCALES;
 		
+		final List<String> componentIds = configuration.containsKey(IQuickSearchProvider.CONFIGURATION_VALUE_ID_SET) ? ImmutableList.copyOf(getComponentIds(configuration)) : Collections.<String>emptyList();
+		
 		final SnomedConceptSearchRequestBuilder req = SnomedRequests
 			.prepareSearchConcept()
 			.filterByActive(true)
 			.filterByTerm(queryExpression)
 			.setLimit(limit)
 			.setExpand("pt()")
-			.setLocales(locales);
-		
-		// TODO add component ID filter 
+			.setLocales(locales)
+			.setComponentIds(componentIds);
 		
 		final SnomedConcepts matchingConcepts = req.build(branchPath.getPath()).executeSync(bus);
+		
+		if (matchingConcepts.getTotal() <= 0) {
+			return new QuickSearchContentResult();
+		}
 		
 		final Map<String, ISnomedConcept> matchingConceptsById = FluentIterable.from(matchingConcepts).uniqueIndex(new Function<ISnomedConcept, String>() {
 			@Override
