@@ -21,7 +21,10 @@ import javax.annotation.Nullable;
 
 import com.b2international.snowowl.datastore.oplock.IOperationLockTarget;
 import com.b2international.snowowl.datastore.oplock.OperationLockException;
+import com.google.common.base.Optional;
 import com.google.common.base.Preconditions;
+import com.google.common.base.Predicate;
+import com.google.common.collect.FluentIterable;
 import com.google.common.collect.ImmutableMap;
 
 /**
@@ -65,5 +68,29 @@ public class DatastoreOperationLockException extends OperationLockException {
 	public DatastoreLockContext getContext(final IOperationLockTarget target) {
 		Preconditions.checkNotNull(target, "Lock target to check may not be null.");
 		return targetMap.get(target);
+	}
+	
+	@Override
+	public String getMessage() {
+		final FluentIterable<DatastoreLockContext> contexts = FluentIterable.from(targetMap.values());
+		final Optional<DatastoreLockContext> rootContext = contexts.firstMatch(new Predicate<DatastoreLockContext>() {
+			@Override
+			public boolean apply(DatastoreLockContext input) {
+				return DatastoreLockContextDescriptions.ROOT.equals(input.getParentDescription());
+			}
+		});
+		
+		DatastoreLockContext context = null;
+		if (rootContext.isPresent()) {
+			context = rootContext.get();
+		} else {
+			if (contexts.first().isPresent()) {
+				context = contexts.first().get();
+			} else {
+				return super.getMessage();
+			}
+		}
+		
+		return String.format("%s %s is %s.", super.getMessage(), context.getUserId(), context.getDescription());
 	}
 }

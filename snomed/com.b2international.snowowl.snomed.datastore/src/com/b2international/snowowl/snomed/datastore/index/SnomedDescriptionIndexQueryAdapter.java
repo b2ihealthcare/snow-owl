@@ -85,6 +85,10 @@ public abstract class SnomedDescriptionIndexQueryAdapter extends SnomedDslIndexQ
 				SnomedDescriptionContainerQueryAdapter.SEARCH_DEFAULT);
 	}
 	
+	public static final SnomedDescriptionIndexQueryAdapter createFindAllActiveDescriptionEntry() {
+		return new SnomedDescriptionReducedQueryAdapter(null, SnomedDescriptionReducedQueryAdapter.SEARCH_DEFAULT);
+	}
+	
 	protected SnomedDescriptionIndexQueryAdapter(final String searchString, final int searchFlags, final String[] componentIds) {
 		super(searchString, searchFlags, componentIds);
 	}

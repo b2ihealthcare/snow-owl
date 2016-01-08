@@ -403,7 +403,7 @@ public class LongSets {
 	 */
 	public static List<String> toStringList(final LongCollection collection) {
 		checkNotNull(collection, "Long collection argument cannot be null.");
-		return Arrays.asList(toStringArray(collection));
+		return Lists.newArrayList(toStringArray(collection));
 	}
 	
 	/**

@@ -54,6 +54,11 @@ public abstract class AbstractClientTerminologyBrowser<C extends IComponent<K>, 
 	public C getConcept(K id) {
 		return wrappedBrowser.getConcept(getBranchPath(), id);
 	}
+	
+	@Override
+	public Iterable<C> getComponents(Iterable<K> ids) {
+		throw new UnsupportedOperationException("Not implemented.");
+	}
 
 	@Override
 	public Collection<C> getSuperTypes(C concept) {

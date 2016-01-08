@@ -54,7 +54,7 @@ public class DatastoreOperationLockManager extends ReentrantOperationLockManager
 	}
 	
 	@Override
-	protected void canContextLockTargets(final DatastoreLockContext context, final Iterable<IOperationLockTarget> targets, final Map<IOperationLockTarget, DatastoreLockContext> alreadyLockedTargets) 
+	protected void canContextLockTargets(final DatastoreLockContext context, final Iterable<? extends IOperationLockTarget> targets, final Map<IOperationLockTarget, DatastoreLockContext> alreadyLockedTargets) 
 			throws DatastoreOperationLockException {
 
 		if (!isDisposed()) {

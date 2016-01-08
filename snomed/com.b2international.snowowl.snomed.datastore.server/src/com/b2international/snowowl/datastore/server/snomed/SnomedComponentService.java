@@ -135,8 +135,10 @@ import com.b2international.snowowl.snomed.datastore.SnomedPredicateBrowser;
 import com.b2international.snowowl.snomed.datastore.SnomedRefSetMemberFragment;
 import com.b2international.snowowl.snomed.datastore.SnomedRefSetUtil;
 import com.b2international.snowowl.snomed.datastore.SnomedTerminologyBrowser;
+import com.b2international.snowowl.snomed.datastore.index.SnomedDescriptionIndexQueryAdapter;
 import com.b2international.snowowl.snomed.datastore.index.SnomedIndexService;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptIndexEntry;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDescriptionIndexEntry;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry;
 import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedMappings;
 import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedQueryBuilder;
@@ -149,7 +151,6 @@ import com.b2international.snowowl.snomed.snomedrefset.SnomedLanguageRefSetMembe
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType;
 import com.google.common.base.CharMatcher;
 import com.google.common.base.Function;
-import com.google.common.base.Joiner;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Predicate;
 import com.google.common.base.Stopwatch;
@@ -795,6 +796,12 @@ public class SnomedComponentService implements ISnomedComponentService, IPostSto
 	}
 	
 	@Override
+	public Collection<SnomedDescriptionIndexEntry> getAllActiveDescriptionEntry(IBranchPath branchPath) {
+		checkNotNull(branchPath, "Branch path argument cannot be null.");
+		return getIndexServerService().searchUnsorted(branchPath, SnomedDescriptionIndexQueryAdapter.createFindAllActiveDescriptionEntry());
+	}
+
+	@Override
 	public String[][] getAllDescriptionProperties(final IBranchPath branchPath) {
 		checkNotNull(branchPath, "Branch path argument cannot be null.");
 		final int maxDoc = getIndexServerService().maxDoc(branchPath);
@@ -1196,8 +1203,6 @@ public class SnomedComponentService implements ISnomedComponentService, IPostSto
 		@SuppressWarnings("rawtypes")
 		final IndexServerService indexService = getIndexServerService();
 		
-		final int maxDoc = indexService.maxDoc(branchPath);
-		final DocIdCollector collector = DocIdCollector.create(maxDoc);
 		
 		ReferenceManager<IndexSearcher> manager = null;
 		IndexSearcher searcher = null;
@@ -1205,8 +1210,10 @@ public class SnomedComponentService implements ISnomedComponentService, IPostSto
 		try {
 			manager = indexService.getManager(branchPath);
 			searcher = manager.acquire();
-			
-			indexService.search(branchPath, SnomedMappings.newQuery().type(SnomedTerminologyComponentConstants.DESCRIPTION_NUMBER).matchAll(), collector);
+
+			final int maxDoc = searcher.getIndexReader().maxDoc();
+			final DocIdCollector collector = DocIdCollector.create(maxDoc);
+			searcher.search(SnomedMappings.newQuery().type(SnomedTerminologyComponentConstants.DESCRIPTION_NUMBER).matchAll(), collector);
 			
 			final int hitCount = collector.getDocIDs().size();
 			

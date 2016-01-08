@@ -114,7 +114,10 @@ public abstract class AbstractSnomedRefSetImporter<T extends AbstractRefSetRow, 
 			}
 
 			final SnomedEditingContext editingContext = getImportContext().getEditingContext();
+			
+			// Create identifier concept with explicit ID
 			identifierConcept = editingContext.buildDefaultConcept(
+					identifierId,
 					getUnindentifiedRefSetFSN(identifierId), 
 					identiferParentConcept);
 			
@@ -122,8 +125,6 @@ public abstract class AbstractSnomedRefSetImporter<T extends AbstractRefSetRow, 
 					editingContext.buildDefaultDescription(
 							getUnindentifiedRefSetPT(identifierId), //PT 
 							Concepts.SYNONYM)); //synonym description type
-			
-			identifierConcept.setId(identifierId); //explicitly set ID as it is generated on the concept
 			
 			//attempt to create proper language type reference set members for the concept
 			final String languageRefSetId = getImportContext().getLanguageRefSetId();

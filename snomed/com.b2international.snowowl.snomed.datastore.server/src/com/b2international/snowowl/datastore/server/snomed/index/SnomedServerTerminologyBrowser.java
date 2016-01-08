@@ -106,7 +106,7 @@ public class SnomedServerTerminologyBrowser extends AbstractIndexTerminologyBrow
 	public SnomedServerTerminologyBrowser(final SnomedIndexService indexService) {
 		super(indexService);
 	}
-	
+
 	@Override
 	public boolean isTerminologyAvailable(IBranchPath branchPath) {
 		return exists(branchPath, Concepts.ROOT_CONCEPT);

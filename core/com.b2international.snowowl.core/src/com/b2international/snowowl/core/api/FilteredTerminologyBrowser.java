@@ -78,6 +78,11 @@ public class FilteredTerminologyBrowser<C extends IComponent<K>, K> implements I
 	public C getConcept(final K key) {
 		return componentMap.get(key);
 	}
+	
+	@Override
+	public Iterable<C> getComponents(Iterable<K> ids) {
+		throw new UnsupportedOperationException("Not implemented");
+	}
 
 	/*
 	 * (non-Javadoc)

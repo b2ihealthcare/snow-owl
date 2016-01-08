@@ -175,7 +175,7 @@ public class CDOBranchManagerImpl extends BranchManagerImpl {
     
     @Override
     InternalBranch sendChangeEvent(final InternalBranch branch) {
-		new BranchChangedEvent(repository.id(), branch).publish(repository.events());
+    	new BranchChangedEvent(repository.id(), branch).publish(repository.events());
 		return super.sendChangeEvent(branch);
     }
 }

@@ -26,6 +26,7 @@ import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConst
 import com.b2international.snowowl.snomed.datastore.SnomedDescriptionFragment;
 import com.b2international.snowowl.snomed.datastore.SnomedModuleDependencyRefSetMemberFragment;
 import com.b2international.snowowl.snomed.datastore.SnomedRefSetMemberFragment;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDescriptionIndexEntry;
 import com.b2international.snowowl.snomed.datastore.services.ISnomedComponentService.IdStorageKeyPair;
 import com.b2international.snowowl.snomed.mrcm.DataType;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType;
@@ -166,9 +167,14 @@ public interface IClientSnomedComponentService {
 	LongSet getAllDescriptionIds();
 	
 	/**
+	 * Returns with a collection of all active {@link SnomedDescriptionIndexEntry} for the current branch.
+	 * @return a collection of {@link SnomedDescriptionIndexEntry}
+	 */
+	Collection<SnomedDescriptionIndexEntry> getAllActiveDescriptionEntry();
+	
+	/**
 	 * Returns with a collection of active {@link SnomedDescriptionFragment description}s for a concept which are belongs to the 
 	 * given language.
-	 * @param branchPath branch path.
 	 * @param conceptId the container concept ID.
 	 * @param languageRefSetId the unique language reference set concept identifier.
 	 * @return a collection of active descriptions for a concept in a given language.

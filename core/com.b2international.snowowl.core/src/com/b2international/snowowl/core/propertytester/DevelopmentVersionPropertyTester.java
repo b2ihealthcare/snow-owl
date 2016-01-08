@@ -30,7 +30,8 @@ public class DevelopmentVersionPropertyTester extends PropertyTester {
 
 	@Override
 	public boolean test(final Object receiver, final String property, final Object[] args, final Object expectedValue) {
-		return PlatformUtil.isDevVersion(CoreActivator.PLUGIN_ID);
+		String bundle = args.length > 0 ? (String) args[0] : CoreActivator.PLUGIN_ID;
+		return PlatformUtil.isDevVersion(bundle);
 	}
 
 }

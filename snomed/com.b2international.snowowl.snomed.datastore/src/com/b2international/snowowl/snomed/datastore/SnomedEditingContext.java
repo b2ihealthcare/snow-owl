@@ -620,8 +620,8 @@ public class SnomedEditingContext extends BaseSnomedEditingContext {
 	 * @return
 	 * @deprecated - will be removed in 4.5
 	 */
-	public Concept buildDefaultConcept(String fullySpecifiedName, Concept parentConcept) {
-		return buildDefaultConcept(generateComponentId(ComponentCategory.CONCEPT, getNamespace()), fullySpecifiedName, parentConcept);
+	public Concept buildDefaultConcept(String fullySpecifiedName, String parentConceptId) {
+		return buildDefaultConcept(generateComponentId(ComponentCategory.CONCEPT, getNamespace()), fullySpecifiedName, findConceptById(parentConceptId));
 	}
 	
 	/**
