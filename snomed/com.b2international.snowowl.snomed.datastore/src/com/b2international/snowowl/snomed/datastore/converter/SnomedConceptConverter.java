@@ -222,6 +222,9 @@ final class SnomedConceptConverter extends BaseSnomedComponentConverter<SnomedCo
 				final IndexSearcher searcher = context().service(IndexSearcher.class);
 				final TopDocs search = searcher.search(query, searcher.getIndexReader().maxDoc());
 				if (search.scoreDocs.length < 1) {
+					for (ISnomedConcept concept : results) {
+						((SnomedConcept) concept).setDescendants(new SnomedConcepts(0, 0, 0));
+					}
 					return;
 				}
 				
@@ -309,7 +312,8 @@ final class SnomedConceptConverter extends BaseSnomedComponentConverter<SnomedCo
 			try {
 				TopDocs search = searcher.search(conceptQuery, 1);
 				if (search.scoreDocs.length < 1) {
-					((SnomedConcept) concept).setAncestors(new SnomedConcepts(offset, limit, search.totalHits));	
+					((SnomedConcept) concept).setAncestors(new SnomedConcepts(offset, limit, search.totalHits));
+					return;
 				}
 				
 				final Document doc = searcher.doc(search.scoreDocs[0].doc, SnomedMappings.fieldsToLoad().parent().ancestor().build());
