@@ -26,9 +26,6 @@ import java.util.NoSuchElementException;
 import java.util.UUID;
 
 import org.apache.lucene.document.Document;
-import org.apache.lucene.document.Field.Store;
-import org.apache.lucene.document.StoredField;
-import org.apache.lucene.document.StringField;
 import org.apache.lucene.index.Term;
 import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.NumericRangeQuery;
@@ -109,11 +106,7 @@ public class ClassificationRunIndex extends SingleDirectoryIndexImpl {
 		}
 		
 		final Date lastCreationDate = lastRunToKeep.getCreationDate();
-		final Query trimmingQuery = Mappings.newQuery()
-				.field(FIELD_CLASS, ClassificationRun.class.getSimpleName())
-				.and(NumericRangeQuery.newLongRange(FIELD_CREATION_DATE, null, lastCreationDate.getTime(), false, false))
-				.matchAll();
-		
+		final Query trimmingQuery = NumericRangeQuery.newLongRange(FIELD_CREATION_DATE, null, lastCreationDate.getTime(), false, false);
 		writer.deleteDocuments(trimmingQuery);
 		commit();
 	}
@@ -201,8 +194,8 @@ public class ClassificationRunIndex extends SingleDirectoryIndexImpl {
 		final Document updatedDocument = Mappings.doc()
 				.searchOnlyField(FIELD_CLASS, ClassificationRun.class.getSimpleName())
 				.searchOnlyField(FIELD_ID, classificationRun.getId())
-				.searchOnlyField(FIELD_CREATION_DATE, classificationRun.getCreationDate().getTime())
 				.searchOnlyField(FIELD_STATUS, classificationRun.getStatus().name())
+				.field(FIELD_CREATION_DATE, classificationRun.getCreationDate().getTime())
 				.field(FIELD_USER_ID, classificationRun.getUserId())
 				.field(FIELD_BRANCH_PATH, branchPath.getPath())
 				.storedOnly(FIELD_SOURCE, objectMapper.writer().writeValueAsString(classificationRun))
@@ -276,6 +269,7 @@ public class ClassificationRunIndex extends SingleDirectoryIndexImpl {
 		final UUID id = changes.getClassificationId();
 		final IBranchPath branchPath = BranchPathUtils.createPath(sourceDocument.get(FIELD_BRANCH_PATH));
 		final String userId = sourceDocument.get(FIELD_USER_ID);
+		final long creationDate = sourceDocument.getField(FIELD_CREATION_DATE).numericValue().longValue();
 		final ClassificationIssueFlags classificationIssueFlags = new ClassificationIssueFlags();
 
 		final List<AbstractEquivalenceSet> equivalenceSets = changes.getEquivalenceSets();
@@ -295,7 +289,7 @@ public class ClassificationRunIndex extends SingleDirectoryIndexImpl {
 			convertedEquivalenceSet.setUnsatisfiable(equivalenceSet.isUnsatisfiable());
 			convertedEquivalenceSet.setEquivalentConcepts(convertedEquivalentConcepts);
 
-			indexResult(id, branchPath, userId, EquivalentConceptSet.class, equivalenceSet.getConcepts().get(0).getId(), convertedEquivalenceSet);
+			indexResult(id, branchPath, userId, creationDate, EquivalentConceptSet.class, equivalenceSet.getConcepts().get(0).getId(), convertedEquivalenceSet);
 		}
 
 		for (final RelationshipChangeEntry relationshipChange : changes.getRelationshipEntries()) {
@@ -325,7 +319,7 @@ public class ClassificationRunIndex extends SingleDirectoryIndexImpl {
 			convertedRelationshipChange.setTypeId(Long.toString(relationshipChange.getType().getId()));
 			convertedRelationshipChange.setUnionGroup(relationshipChange.getUnionGroup());
 
-			indexResult(id, branchPath, userId, RelationshipChange.class, convertedRelationshipChange.getSourceId(), convertedRelationshipChange);
+			indexResult(id, branchPath, userId, creationDate, RelationshipChange.class, convertedRelationshipChange.getSourceId(), convertedRelationshipChange);
 		}
 
 		commit();
@@ -370,16 +364,18 @@ public class ClassificationRunIndex extends SingleDirectoryIndexImpl {
 		return result;
 	}
 
-	private <T> void indexResult(final UUID id, final IBranchPath branchPath, final String userId,
+	private <T> void indexResult(final UUID id, final IBranchPath branchPath, final String userId, final long creationDate,
 			final Class<T> clazz, String componentId, final T value) throws IOException {
 
-		final Document updateDocument = new Document();
-		updateDocument.add(new StringField(FIELD_CLASS, clazz.getSimpleName(), Store.NO));
-		updateDocument.add(new StringField(FIELD_ID, id.toString(), Store.NO));
-		updateDocument.add(new StringField(FIELD_USER_ID, userId, Store.NO));
-		updateDocument.add(new StringField(FIELD_BRANCH_PATH, branchPath.getPath(), Store.NO));
-		updateDocument.add(new StringField(FIELD_COMPONENT_ID, componentId, Store.NO));
-		updateDocument.add(new StoredField(FIELD_SOURCE, objectMapper.writer().writeValueAsString(value)));
+		final Document updateDocument = Mappings.doc()
+				.searchOnlyField(FIELD_CLASS, clazz.getSimpleName())
+				.searchOnlyField(FIELD_ID, id.toString())
+				.searchOnlyField(FIELD_USER_ID, userId)
+				.searchOnlyField(FIELD_CREATION_DATE, creationDate)
+				.searchOnlyField(FIELD_BRANCH_PATH, branchPath.getPath())
+				.searchOnlyField(FIELD_COMPONENT_ID, componentId)
+				.storedOnly(FIELD_SOURCE, objectMapper.writer().writeValueAsString(value))
+				.build();
 
 		writer.addDocument(updateDocument);
 	}
@@ -427,7 +423,8 @@ public class ClassificationRunIndex extends SingleDirectoryIndexImpl {
 			searcher.search(query, collector);
 			final int totalHits = collector.getTotalHits();
 			
-			final int docsToRetrieve = Ints.min(offset + limit, searcher.getIndexReader().maxDoc(), totalHits);
+			final int saturatedSum = Ints.saturatedCast((long) offset + limit);
+			final int docsToRetrieve = Ints.min(saturatedSum, searcher.getIndexReader().maxDoc(), totalHits);
 			final ImmutableList.Builder<T> resultBuilder = ImmutableList.builder();
 			
 			if (docsToRetrieve < 1) {
@@ -437,7 +434,7 @@ public class ClassificationRunIndex extends SingleDirectoryIndexImpl {
 			final TopDocs docs = searcher.search(query, null, docsToRetrieve, sort, false, false);
 			final ScoreDoc[] scoreDocs = docs.scoreDocs;
 
-			for (int i = offset; i < offset + limit && i < scoreDocs.length; i++) {
+			for (int i = offset; i < docsToRetrieve && i < scoreDocs.length; i++) {
 				final Document sourceDocument = searcher.doc(scoreDocs[i].doc, ImmutableSet.of(FIELD_SOURCE));
 				final String source = sourceDocument.get(FIELD_SOURCE);
 				final T deserializedSource = objectMapper.reader(sourceClass).readValue(source);
