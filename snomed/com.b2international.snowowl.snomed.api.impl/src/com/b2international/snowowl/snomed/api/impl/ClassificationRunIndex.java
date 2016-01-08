@@ -86,6 +86,7 @@ public class ClassificationRunIndex extends SingleDirectoryIndexImpl {
 	private static final String FIELD_CREATION_DATE = "creationDate";
 	private static final String FIELD_STATUS = "status";
 	private static final String FIELD_SOURCE = "source";
+	private static final String FIELD_COMPONENT_ID = "componentId";
 	
 	private final ObjectMapper objectMapper;
 
@@ -377,7 +378,7 @@ public class ClassificationRunIndex extends SingleDirectoryIndexImpl {
 		updateDocument.add(new StringField(FIELD_ID, id.toString(), Store.NO));
 		updateDocument.add(new StringField(FIELD_USER_ID, userId, Store.NO));
 		updateDocument.add(new StringField(FIELD_BRANCH_PATH, branchPath.getPath(), Store.NO));
-		updateDocument.add(new StringField("componentId", componentId, Store.NO));
+		updateDocument.add(new StringField(FIELD_COMPONENT_ID, componentId, Store.NO));
 		updateDocument.add(new StoredField(FIELD_SOURCE, objectMapper.writer().writeValueAsString(value)));
 
 		writer.addDocument(updateDocument);
@@ -398,7 +399,7 @@ public class ClassificationRunIndex extends SingleDirectoryIndexImpl {
 				.field(FIELD_USER_ID, userId)
 				.field(FIELD_BRANCH_PATH, storageRef.getBranchPath());
 		if (componentId != null) {
-			query.field("componentId", componentId);
+			query.field(FIELD_COMPONENT_ID, componentId);
 		}
 		return query.matchAll();
 	}
