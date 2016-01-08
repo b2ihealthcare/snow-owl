@@ -209,4 +209,10 @@ public abstract class SearchRequest<B> extends BaseRequest<BranchContext, B> {
 				options);
 	}
 
+	protected void addComponentIdFilter(BooleanFilter filter) {
+		if (!componentIds().isEmpty()) {
+			addFilterClause(filter, createComponentIdFilter(), Occur.MUST);
+		}		
+	}
+
 }

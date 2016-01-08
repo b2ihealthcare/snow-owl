@@ -69,9 +69,7 @@ final class SnomedRelationshipSearchRequest extends SnomedSearchRequest<SnomedRe
 		
 		final BooleanFilter filter = new BooleanFilter();
 		
-		if (!componentIds().isEmpty()) {
-			addFilterClause(filter, createComponentIdFilter(), Occur.MUST);
-		}
+		addComponentIdFilter(filter);
 
 		if (containsKey(OptionKey.SOURCE)) {
 			addFilterClause(filter, createSourceIdFilter(), Occur.MUST);

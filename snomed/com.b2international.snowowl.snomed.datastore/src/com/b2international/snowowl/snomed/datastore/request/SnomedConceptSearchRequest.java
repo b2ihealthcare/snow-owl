@@ -128,9 +128,7 @@ final class SnomedConceptSearchRequest extends SnomedSearchRequest<SnomedConcept
 		final Query query;
 		final Sort sort;
 		
-		if (!componentIds().isEmpty()) {
-			addFilterClause(filter, createComponentIdFilter(), Occur.MUST);
-		}
+		addComponentIdFilter(filter);
 		
 		if (containsKey(OptionKey.TERM)) {
 			final Map<String, Integer> conceptScoreMap = executeDescriptionSearch(context, getString(OptionKey.TERM));
