@@ -151,37 +151,23 @@ public class ClassificationRunIndex extends SingleDirectoryIndexImpl {
 
 			for (int i = 0; i < scoreDocs.length; i++) {
 				final Document sourceDocument = searcher.doc(scoreDocs[i].doc, ImmutableSet.of(FIELD_BRANCH_PATH, FIELD_SOURCE));
+				
+				final String branchPath = sourceDocument.get(FIELD_BRANCH_PATH);
 				final String source = sourceDocument.get(FIELD_SOURCE);
 				final ClassificationRun run = objectMapper.reader(ClassificationRun.class).readValue(source);
 				
 				run.setStatus(ClassificationStatus.STALE);
 				
-				final Document updatedDocument = Mappings.doc()
-						.searchOnlyField(FIELD_CLASS, ClassificationRun.class.getSimpleName())
-						.searchOnlyField(FIELD_ID, run.getId())
-						.searchOnlyField(FIELD_CREATION_DATE, run.getCreationDate().getTime())
-						.field(FIELD_USER_ID, run.getUserId())
-						.field(FIELD_BRANCH_PATH, sourceDocument.get(FIELD_BRANCH_PATH))
-						.storedOnly(FIELD_SOURCE, objectMapper.writer().writeValueAsString(run))
-						.build();
-
-				final Query updateQuery = Mappings.newQuery()
-						.field(FIELD_CLASS, ClassificationRun.class.getSimpleName())
-						.field(FIELD_ID, run.getId())
-						.matchAll();
-
-				writer.deleteDocuments(updateQuery);
-				writer.addDocument(updatedDocument);
+				upsertClassificationRunNoCommit(BranchPathUtils.createPath(branchPath), run);
 			}
 
+			commit();
+			
 		} finally {
-
 			if (null != searcher) {
 				manager.release(searcher);
 			}
 		}
-
-		commit();
 	}
 
 	public List<IClassificationRun> getAllClassificationRuns(final StorageRef storageRef, final String userId) throws IOException {
@@ -204,8 +190,13 @@ public class ClassificationRunIndex extends SingleDirectoryIndexImpl {
 		}
 	}
 
-	public void insertOrUpdateClassificationRun(final IBranchPath branchPath, final ClassificationRun classificationRun) throws IOException {
+	public void upsertClassificationRun(final IBranchPath branchPath, final ClassificationRun classificationRun) throws IOException {
+		upsertClassificationRunNoCommit(branchPath, classificationRun);
+		commit();
+	}
 
+	private void upsertClassificationRunNoCommit(final IBranchPath branchPath, final ClassificationRun classificationRun) throws IOException {
+		
 		final Document updatedDocument = Mappings.doc()
 				.searchOnlyField(FIELD_CLASS, ClassificationRun.class.getSimpleName())
 				.searchOnlyField(FIELD_ID, classificationRun.getId())
@@ -223,7 +214,6 @@ public class ClassificationRunIndex extends SingleDirectoryIndexImpl {
 
 		writer.deleteDocuments(query);
 		writer.addDocument(updatedDocument);
-		commit();
 	}
 
 	public void updateClassificationRunStatus(final UUID id, final ClassificationStatus newStatus) throws IOException {
@@ -258,7 +248,7 @@ public class ClassificationRunIndex extends SingleDirectoryIndexImpl {
 			classificationRun.setEquivalentConceptsFound(issueFlags.isEquivalentConceptsFound());
 		}
 
-		insertOrUpdateClassificationRun(branchPath, classificationRun);
+		upsertClassificationRun(branchPath, classificationRun);
 	}
 
 	private SnomedRelationshipIndexEntry getSnomedRelationshipIndexEntry(IBranchPath branchPath, RelationshipChangeEntry relationshipChange) {
