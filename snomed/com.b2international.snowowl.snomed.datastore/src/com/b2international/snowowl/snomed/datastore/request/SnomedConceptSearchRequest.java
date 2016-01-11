@@ -185,12 +185,14 @@ final class SnomedConceptSearchRequest extends SnomedSearchRequest<SnomedConcept
 			Document doc = searcher.doc(scoreDocs[i].doc); // TODO: should expand & filter drive fieldsToLoad? Pass custom fieldValueLoader?
 			final Builder builder = SnomedConceptIndexEntry.builder(doc);
 			
-			if (expand.containsKey("parentIds")) {
-				builder.parents(SnomedMappings.parent().getValueAsLongSet(doc));
-			}
-			
-			if (expand.containsKey("ancestorIds")) {
-				builder.ancestors(SnomedMappings.ancestor().getValueAsLongSet(doc));
+			if (expand != null) {
+				if (expand.containsKey("parentIds")) {
+					builder.parents(SnomedMappings.parent().getValueAsLongSet(doc));
+				}
+				
+				if (expand.containsKey("ancestorIds")) {
+					builder.ancestors(SnomedMappings.ancestor().getValueAsLongSet(doc));
+				}
 			}
 			
 			conceptsBuilder.add(builder.build());
