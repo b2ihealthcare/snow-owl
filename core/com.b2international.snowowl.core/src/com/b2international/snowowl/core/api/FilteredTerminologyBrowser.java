@@ -24,14 +24,14 @@ import java.util.Set;
 
 import org.eclipse.core.runtime.IProgressMonitor;
 
+import com.b2international.commons.CompareUtils;
 import com.b2international.snowowl.core.api.browser.FilterTerminologyBrowserType;
 import com.b2international.snowowl.core.api.browser.IFilterClientTerminologyBrowser;
 import com.google.common.base.Function;
 import com.google.common.base.Preconditions;
-import com.google.common.collect.Iterables;
+import com.google.common.collect.FluentIterable;
 import com.google.common.collect.Lists;
 import com.google.common.collect.SetMultimap;
-import com.google.common.collect.Sets;
 
 public class FilteredTerminologyBrowser<C extends IComponent<K>, K> implements IFilterClientTerminologyBrowser<C, K>, Serializable {
 
@@ -61,19 +61,12 @@ public class FilteredTerminologyBrowser<C extends IComponent<K>, K> implements I
 		this.filteredComponents = Preconditions.checkNotNull(filteredComponents, "Filtered components argument cannot be null.");
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see com.b2international.snowowl.core.api.TerminologyBrowser#getRootConcepts()
-	 */
 	@Override
 	public Collection<C> getRootConcepts() {
-		return FilterTerminologyBrowserType.FLAT.equals(type) ? getComponents(filteredComponents) : getComponents(subTypeMap.get(null));
+		final Collection<K> selectedComponents = FilterTerminologyBrowserType.FLAT.equals(type) ? filteredComponents : subTypeMap.get(null);  
+		return (Collection<C>)getComponents(selectedComponents);
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see com.b2international.snowowl.core.api.TerminologyBrowser#getConcept(java.lang.Object)
-	 */
 	@Override
 	public C getConcept(final K key) {
 		return componentMap.get(key);
@@ -81,24 +74,22 @@ public class FilteredTerminologyBrowser<C extends IComponent<K>, K> implements I
 	
 	@Override
 	public Iterable<C> getComponents(Iterable<K> ids) {
-		throw new UnsupportedOperationException("Not implemented");
+		if (CompareUtils.isEmpty(ids)) {
+			return Collections.emptySet();
+		}
+		return FluentIterable.from(ids).transform(new Function<K, C>() {
+			@Override public C apply(final K componentId) {
+				return getConcept(componentId);
+			}
+		}).toSet();
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see com.b2international.snowowl.core.api.TerminologyBrowser#getSuperTypes(java.lang.Object)
-	 */
 	@Override
 	public Collection<C> getSuperTypes(final C concept) {
 		if (FilterTerminologyBrowserType.FLAT.equals(type)) {
 			return Collections.emptyList();
 		} else {
-			final Collection<C> superTypes = null == superTypeMap.get(concept.getId()) ? null : getComponents(superTypeMap.get(concept.getId()));
-			if (superTypes == null) {
-				return Collections.emptyList();
-			} else {
-				return superTypes;
-			}
+			return (Collection<C>) getComponents(superTypeMap.get(concept.getId()));
 		}
 	}
 	
@@ -106,21 +97,12 @@ public class FilteredTerminologyBrowser<C extends IComponent<K>, K> implements I
 		return !superTypeMap.isEmpty();
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see com.b2international.snowowl.core.api.TerminologyBrowser#getSubTypes(java.lang.Object)
-	 */
 	@Override
 	public Collection<C> getSubTypes(final C concept) {
 		if (FilterTerminologyBrowserType.FLAT.equals(type)) {
 			return Collections.emptyList();
 		} else {
-			final Collection<C> subTypes = null == subTypeMap.get(concept.getId()) ? null : getComponents(subTypeMap.get(concept.getId()));
-			if (subTypes == null) {
-				return Collections.emptyList();
-			} else {
-				return subTypes;
-			}
+			return (Collection<C>) getComponents(subTypeMap.get(concept.getId()));
 		}
 	}
 
@@ -253,14 +235,6 @@ public class FilteredTerminologyBrowser<C extends IComponent<K>, K> implements I
 	@Override
 	public IFilterClientTerminologyBrowser<C, K> filterTerminologyBrowser(final String expression, final IProgressMonitor monitor) {
 		return this;
-	}
-
-	private Collection<C> getComponents(final Collection<K> ids) {
-		return Sets.newHashSet(Iterables.transform(ids, new Function<K, C>() {
-			@Override public C apply(final K componentId) {
-				return componentMap.get(componentId);
-			}
-		}));
 	}
 
 	@Override
