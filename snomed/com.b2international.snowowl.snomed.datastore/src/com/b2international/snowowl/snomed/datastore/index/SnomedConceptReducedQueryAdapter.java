@@ -15,11 +15,13 @@
  */
 package com.b2international.snowowl.snomed.datastore.index;
 
+import org.apache.lucene.search.Query;
+
 import com.b2international.commons.StringUtils;
 import com.b2international.snowowl.datastore.index.IndexQueryBuilder;
 import com.b2international.snowowl.datastore.index.IndexUtils;
-import com.b2international.snowowl.datastore.index.mapping.Mappings;
 import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedMappings;
+import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.google.common.base.Optional;
 
 /**
@@ -29,33 +31,12 @@ import com.google.common.base.Optional;
  * It uses <i>AND</i> operator within the same terms and <i>OR</i> operator between different terms.
  * 
  * <b>Note</b> it uses an additional query clause to filter out all the inactive concepts from the result.
- * 
+ * @deprecated - UNSUPPORTED, use {@link SnomedRequests#prepareSearchConcept()} instead
  */
 public class SnomedConceptReducedQueryAdapter extends SnomedConceptIndexQueryAdapter {
 	
 	private static final long serialVersionUID = 2760532104678762360L;
 
-	public static SnomedConceptIndexQueryAdapter findByStorageKey(final long storageKey) {
-		return new SnomedConceptReducedQueryAdapter(String.valueOf(storageKey), SEARCH_STORAGE_KEY) {
-			private static final long serialVersionUID = 8790511308540662874L;
-			@Override protected IndexQueryBuilder createIndexQueryBuilder() {
-				IndexQueryBuilder builder = super.createIndexQueryBuilder();
-				final Long storageKey = Long.valueOf(searchString);
-				return builder.requireIf(anyFlagSet(SEARCH_STORAGE_KEY), SnomedMappings.newQuery().storageKey(storageKey).matchAll());
-			}
-		};
-	} 
-	
-	public static SnomedConceptIndexQueryAdapter findConceptId(final String conceptId) {
-		return new SnomedConceptReducedQueryAdapter(conceptId, SEARCH_BY_CONCEPT_ID) {
-			private static final long serialVersionUID = 2045863595340360998L;
-			@Override protected IndexQueryBuilder createIndexQueryBuilder() {
-				IndexQueryBuilder builder = super.createIndexQueryBuilder();
-				return builder.requireIf(anyFlagSet(SEARCH_BY_CONCEPT_ID), SnomedMappings.newQuery().id(searchString).matchAll());
-			}
-		};
-	} 
-	
 	public SnomedConceptReducedQueryAdapter() {
 		this("", SEARCH_DEFAULT);
 	}
@@ -66,6 +47,11 @@ public class SnomedConceptReducedQueryAdapter extends SnomedConceptIndexQueryAda
 	
 	public SnomedConceptReducedQueryAdapter(final String searchString, final int searchFlags, final String[] componentIds) {
 		super(searchString, searchFlags, componentIds);
+	}
+	
+	@Override
+	public Query createQuery() {
+		throw new UnsupportedOperationException();
 	}
 
 	@Override

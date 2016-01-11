@@ -97,7 +97,7 @@ public class SnomedServerTerminologyBrowser extends AbstractIndexTerminologyBrow
 			.primitive()
 			.exhaustive()
 			.released()
-			.build(); 
+			.build();
 	
 	/**
 	 * Class constructor.
@@ -124,7 +124,7 @@ public class SnomedServerTerminologyBrowser extends AbstractIndexTerminologyBrow
 	
 	@Override
 	protected Query createFilterTerminologyBrowserQuery(final String expression) {
-		return new SnomedConceptReducedQueryAdapter(expression, SnomedConceptReducedQueryAdapter.SEARCH_EVERYTHING).createQuery();
+		throw new UnsupportedOperationException();
 	}
 	
 	@Override
