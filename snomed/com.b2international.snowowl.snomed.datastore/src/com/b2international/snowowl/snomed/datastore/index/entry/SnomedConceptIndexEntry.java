@@ -21,6 +21,7 @@ import java.util.List;
 import org.apache.lucene.document.Document;
 
 import com.b2international.commons.BooleanUtils;
+import com.b2international.commons.pcj.LongSets;
 import com.b2international.snowowl.core.api.IComponent;
 import com.b2international.snowowl.core.api.index.IIndexEntry;
 import com.b2international.snowowl.core.date.EffectiveTimes;
@@ -65,7 +66,9 @@ public class SnomedConceptIndexEntry extends SnomedIndexEntry implements ICompon
 				.effectiveTimeLong(EffectiveTimes.getEffectiveTime(input.getEffectiveTime()))
 				.iconId(input.getIconId())
 				.primitive(input.getDefinitionStatus().isPrimitive())
-				.exhaustive(input.getSubclassDefinitionStatus().isExhaustive());
+				.exhaustive(input.getSubclassDefinitionStatus().isExhaustive())
+				.parents(LongSets.newLongSet(input.getParentIds()))
+				.ancestors(LongSets.newLongSet(input.getAncestorIds()));
 	}
 	
 	public static List<SnomedConceptIndexEntry> fromConcepts(Iterable<ISnomedConcept> concepts) {
