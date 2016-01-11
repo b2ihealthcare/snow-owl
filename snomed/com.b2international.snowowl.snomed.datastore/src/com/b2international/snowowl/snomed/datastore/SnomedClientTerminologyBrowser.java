@@ -16,18 +16,32 @@
 package com.b2international.snowowl.snomed.datastore;
 
 import static com.google.common.base.Preconditions.checkNotNull;
+import static com.google.common.collect.Maps.newHashMap;
+import static com.google.common.collect.Sets.newHashSet;
 
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 import javax.annotation.Nullable;
 
+import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.emf.ecore.EPackage;
 
+import com.b2international.commons.AlphaNumericComparator;
+import com.b2international.commons.CompareUtils;
 import com.b2international.commons.http.ExtendedLocale;
+import com.b2international.commons.pcj.LongSets;
 import com.b2international.snowowl.core.annotations.Client;
+import com.b2international.snowowl.core.api.ComponentUtils;
+import com.b2international.snowowl.core.api.EmptyTerminologyBrowser;
+import com.b2international.snowowl.core.api.FilteredTerminologyBrowser;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.api.IComponentWithChildFlag;
+import com.b2international.snowowl.core.api.browser.FilterTerminologyBrowserType;
+import com.b2international.snowowl.core.api.browser.IFilterClientTerminologyBrowser;
 import com.b2international.snowowl.core.exceptions.NotFoundException;
 import com.b2international.snowowl.datastore.browser.AbstractClientTerminologyBrowser;
 import com.b2international.snowowl.datastore.browser.ActiveBranchClientTerminologyBrowser;
@@ -44,8 +58,11 @@ import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedMappings
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.google.common.base.Function;
 import com.google.common.collect.FluentIterable;
+import com.google.common.collect.HashMultimap;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Ordering;
+import com.google.common.collect.SetMultimap;
 
 import bak.pcj.LongCollection;
 import bak.pcj.map.LongKeyLongMap;
@@ -69,6 +86,157 @@ public class SnomedClientTerminologyBrowser extends ActiveBranchClientTerminolog
 	public SnomedClientTerminologyBrowser(final SnomedTerminologyBrowser wrappedBrowser, final IEventBus bus) {
 		super(wrappedBrowser);
 		this.bus = checkNotNull(bus, "bus");
+	}
+	
+	@Override
+	public IFilterClientTerminologyBrowser<SnomedConceptIndexEntry, String> filterTerminologyBrowser(String expression, IProgressMonitor monitor) {
+		final String branch = getBranchPath().getPath();
+		final SnomedConcepts matches = SnomedRequests
+			.prepareSearchConcept()
+			.all()
+			.filterByActive(true)
+			.filterByTerm(expression)
+			.filterByExtendedLocales(LOCALES)
+			// expand parent and ancestorIds to get all possible treepaths to the top
+			.setExpand("pt(),parentIds(),ancestorIds()")
+			.build(branch)
+			.executeSync(bus);
+		
+		if (matches.getItems().isEmpty()) {
+			return EmptyTerminologyBrowser.getInstance();
+		}
+		
+		final FluentIterable<SnomedConceptIndexEntry> matchingConcepts = FluentIterable.from(SnomedConceptIndexEntry.fromConcepts(matches));
+		final Map<String, SnomedConceptIndexEntry> treeItemsById = newHashMap();
+		
+		// all matching concepts should be in the componentMap
+		treeItemsById.putAll(matchingConcepts.uniqueIndex(ComponentUtils.<String>getIdFunction()));
+		
+		final Set<String> matchingConceptIds = ImmutableSet.copyOf(treeItemsById.keySet());
+
+		// fetch required ROOT and TOP level concepts
+		final List<SnomedConceptIndexEntry> requiredTopLevelConcepts = getRequiredTopLevelConcepts();
+		final Collection<String> requiredTopLevelConceptIds = ComponentUtils.getIdSet(requiredTopLevelConcepts);
+		
+		// compute subType and superType maps for the tree
+		final SetMultimap<String, String> superTypeMap = HashMultimap.create();
+		final SetMultimap<String, String> subTypeMap = HashMultimap.create();
+		
+		for (SnomedConceptIndexEntry entry : matchingConcepts) {
+			if (entry.getParents() != null) {
+				final Collection<String> parents = LongSets.toStringSet(entry.getParents());
+				final Collection<String> selectedParents = newHashSet();
+				// if the parent is not a match or TOP level
+				for (String parent : parents) {
+					if (treeItemsById.containsKey(parent) || requiredTopLevelConceptIds.contains(parent)) {
+						selectedParents.add(parent);
+					}
+				}
+				if (selectedParents.isEmpty()) {
+					findParentInAncestors(entry, treeItemsById, requiredTopLevelConceptIds, subTypeMap, superTypeMap);
+				} else {
+					for (String parent : selectedParents) {
+						subTypeMap.put(parent, entry.getId());
+						superTypeMap.put(entry.getId(), parent);
+					}
+				}
+			} else if (entry.getAncestors() != null) {
+				findParentInAncestors(entry, treeItemsById, requiredTopLevelConceptIds, subTypeMap, superTypeMap);
+			} else {
+				// no parents or ancestors, root element
+				subTypeMap.put(null, entry.getId());
+			}
+		}
+
+		// add TOP levels
+		for (SnomedConceptIndexEntry entry : requiredTopLevelConcepts) {
+			if (!Concepts.ROOT_CONCEPT.equals(entry.getId()) && !treeItemsById.containsKey(entry.getId())) {
+				if (subTypeMap.containsKey(entry.getId())) {
+					treeItemsById.put(entry.getId(), entry);
+				}
+			}
+		}
+		
+		
+		for (SnomedConceptIndexEntry entry : requiredTopLevelConcepts) {
+			if (Concepts.ROOT_CONCEPT.equals(entry.getId())) {
+				// find all top level child and connect them with the root
+				for (SnomedConceptIndexEntry tl : requiredTopLevelConcepts) {
+					if (!Concepts.ROOT_CONCEPT.equals(tl.getId()) && treeItemsById.containsKey(tl.getId())) {
+						subTypeMap.put(entry.getId(), tl.getId());
+						superTypeMap.put(tl.getId(), entry.getId());
+					}
+				}
+				treeItemsById.put(entry.getId(), entry);
+				subTypeMap.put(null, entry.getId());
+				break;
+			}
+		}
+		
+		// fetch all missing components to build the remaining part of the FULL tree
+		final Set<String> allRequiredComponents = newHashSet();
+		allRequiredComponents.addAll(superTypeMap.keySet());
+		allRequiredComponents.addAll(subTypeMap.keySet());
+		allRequiredComponents.removeAll(treeItemsById.keySet());
+		allRequiredComponents.remove(null);
+		
+		// fetch required data for all unknown items
+		for (SnomedConceptIndexEntry entry : getComponents(allRequiredComponents)) {
+			treeItemsById.put(entry.getId(), entry);
+		}
+		
+		return new FilteredTerminologyBrowser<SnomedConceptIndexEntry, String>(treeItemsById, subTypeMap, superTypeMap, FilterTerminologyBrowserType.HIERARCHICAL, matchingConceptIds);
+	}
+
+	private void findParentInAncestors(final SnomedConceptIndexEntry entry, final Map<String, SnomedConceptIndexEntry> treeItemsById,
+			final Collection<String> requiredTopLevelConceptIds, final SetMultimap<String, String> subTypeMap, final SetMultimap<String, String> superTypeMap) {
+		// try to find a single matching ancestor and hook into that, otherwise we will require additional parentage info about the ancestors
+		final Collection<String> ancestors = LongSets.toStringSet(entry.getAncestors());
+		final Collection<String> selectedAncestors = newHashSet();
+		for (String ancestor : ancestors) {
+			if (!requiredTopLevelConceptIds.contains(ancestor) && treeItemsById.containsKey(ancestor)) {
+				selectedAncestors.add(ancestor);
+			}
+		}
+		if (selectedAncestors.isEmpty()) {
+			// no matching ancestor, try to find the TOP level and hook into that
+			for (String ancestor : ancestors) {
+				if (requiredTopLevelConceptIds.contains(ancestor) && !Concepts.ROOT_CONCEPT.equals(ancestor)) {
+					selectedAncestors.add(ancestor);
+				}
+			}
+			// still no matching ancestor hook into the ROOT if it's in the ancestor list
+			if (selectedAncestors.isEmpty() && ancestors.contains(Concepts.ROOT_CONCEPT)) {
+				selectedAncestors.add(Concepts.ROOT_CONCEPT);
+			}
+		}
+		
+		if (selectedAncestors.isEmpty()) {
+			subTypeMap.put(null, entry.getId());
+		} else if (selectedAncestors.size() == 1) {
+			final String singleAncestor = selectedAncestors.iterator().next();
+			subTypeMap.put(singleAncestor, entry.getId());
+			superTypeMap.put(entry.getId(), singleAncestor);
+		} else {
+			final String firstAncestor = Ordering.from(new AlphaNumericComparator()).min(selectedAncestors);
+			subTypeMap.put(firstAncestor, entry.getId());
+			superTypeMap.put(entry.getId(), firstAncestor);
+		}
+	}
+
+	private List<SnomedConceptIndexEntry> getRequiredTopLevelConcepts() {
+		final ISnomedConcept root = SnomedRequests
+				.prepareGetConcept()
+				.setComponentId(Concepts.ROOT_CONCEPT)
+				.setExpand("pt(),descendants(direct:true,expand(pt()))")
+				.setLocales(LOCALES)
+				.build(getBranchPath().getPath())
+				.executeSync(bus);
+		
+		final Collection<ISnomedConcept> requiredTreeItemConcepts = newHashSet();
+		requiredTreeItemConcepts.add(root);
+		requiredTreeItemConcepts.addAll(root.getDescendants().getItems());
+		return SnomedConceptIndexEntry.fromConcepts(requiredTreeItemConcepts);
 	}
 	
 	@Override
@@ -301,11 +469,14 @@ public class SnomedClientTerminologyBrowser extends ActiveBranchClientTerminolog
 	 */
 	@Override
 	public Collection<SnomedConceptIndexEntry> getComponents(final Iterable<String> ids) {
+		if (CompareUtils.isEmpty(ids)) {
+			return Collections.emptySet();
+		}
 		final SnomedConcepts concepts = SnomedRequests.prepareSearchConcept()
 				.all()
 				.setComponentIds(ImmutableSet.copyOf(ids))
 				.setLocales(LOCALES)
-				.setExpand("pt()")
+				.setExpand("pt(),parentIds()")
 				.build(getBranchPath().getPath())
 				.executeSync(bus);
 		return SnomedConceptIndexEntry.fromConcepts(concepts);
