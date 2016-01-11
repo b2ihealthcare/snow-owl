@@ -33,6 +33,7 @@ import javax.annotation.Nullable;
 
 import org.apache.lucene.document.Document;
 import org.apache.lucene.search.BooleanClause.Occur;
+import org.eclipse.core.runtime.IProgressMonitor;
 import org.apache.lucene.search.BooleanQuery;
 import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.Query;
@@ -47,6 +48,7 @@ import com.b2international.snowowl.core.api.ExtendedComponent;
 import com.b2international.snowowl.core.api.ExtendedComponentImpl;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.api.IComponentWithChildFlag;
+import com.b2international.snowowl.core.api.browser.IFilterClientTerminologyBrowser;
 import com.b2international.snowowl.core.api.index.IndexException;
 import com.b2international.snowowl.datastore.index.DocIdCollector;
 import com.b2international.snowowl.datastore.index.DocIdCollector.DocIdsIterator;
@@ -107,6 +109,13 @@ public class SnomedServerTerminologyBrowser extends AbstractIndexTerminologyBrow
 		super(indexService);
 	}
 
+	@Deprecated
+	@Override
+	public IFilterClientTerminologyBrowser<SnomedConceptIndexEntry, String> filterTerminologyBrowser(IBranchPath branchPath, String expression,
+			IProgressMonitor monitor) {
+		throw new UnsupportedOperationException();
+	}
+	
 	@Override
 	public boolean isTerminologyAvailable(IBranchPath branchPath) {
 		return exists(branchPath, Concepts.ROOT_CONCEPT);
