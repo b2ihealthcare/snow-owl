@@ -111,6 +111,7 @@ public class SnomedDescriptionIndexEntry extends SnomedIndexEntry implements ICo
 
 		public Builder term(final String term) {
 			this.term = term;
+			label(term);
 			return getSelf();
 		}
 
