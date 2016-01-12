@@ -15,12 +15,19 @@
  */
 package com.b2international.commons.functions;
 
+import java.util.List;
+
 import com.google.common.base.Function;
+import com.google.common.collect.FluentIterable;
 
 /**
  */
 public class LongToStringFunction implements Function<Long, String> {
 
+	public static List<String> copyOf(Iterable<Long> stringIterable) {
+		return FluentIterable.from(stringIterable).transform(new LongToStringFunction()).toList();
+	}
+	
 	@Override
 	public String apply(Long input) {
 		return String.valueOf(input);
