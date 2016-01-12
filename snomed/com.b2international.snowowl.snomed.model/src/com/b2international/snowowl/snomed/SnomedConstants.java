@@ -311,9 +311,6 @@ public abstract class SnomedConstants {
 		public static final String DEFAULT_UNIT = "258666001";
 		
 		public static final String NAMESPACE_ROOT = "370136006";
-		public static final String SINGAPORE_NATIONAL_EXTENSION = "443855003";
-		public static final String SINGAPORE_DRUG_DICTIONARY_EXTENSION = "443856002";
-		public static final String B2I_NAMESPACE = "583597791000154100";
 		
 		public static final String ACCEPTABILITY = "900000000000511003";
 		public static final String REFINABILITY_VALUE = "900000000000226000";
