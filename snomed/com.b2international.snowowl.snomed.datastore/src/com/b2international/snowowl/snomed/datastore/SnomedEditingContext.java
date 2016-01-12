@@ -21,14 +21,12 @@ import static com.b2international.snowowl.datastore.BranchPathUtils.createPath;
 import static com.b2international.snowowl.datastore.cdo.CDOIDUtils.STORAGE_KEY_TO_CDO_ID_FUNCTION;
 import static com.b2international.snowowl.datastore.cdo.CDOUtils.getAttribute;
 import static com.b2international.snowowl.datastore.cdo.CDOUtils.getObjectIfExists;
-import static com.b2international.snowowl.snomed.SnomedConstants.Concepts.B2I_NAMESPACE;
 import static com.b2international.snowowl.snomed.SnomedConstants.Concepts.ENTIRE_TERM_CASE_INSENSITIVE;
 import static com.b2international.snowowl.snomed.SnomedConstants.Concepts.ENTIRE_TERM_CASE_SENSITIVE;
 import static com.b2international.snowowl.snomed.SnomedConstants.Concepts.EXISTENTIAL_RESTRICTION_MODIFIER;
 import static com.b2international.snowowl.snomed.SnomedConstants.Concepts.FULLY_SPECIFIED_NAME;
 import static com.b2international.snowowl.snomed.SnomedConstants.Concepts.INFERRED_RELATIONSHIP;
 import static com.b2international.snowowl.snomed.SnomedConstants.Concepts.IS_A;
-import static com.b2international.snowowl.snomed.SnomedConstants.Concepts.MODULE_B2I_EXTENSION;
 import static com.b2international.snowowl.snomed.SnomedConstants.Concepts.MODULE_SCT_CORE;
 import static com.b2international.snowowl.snomed.SnomedConstants.Concepts.PRIMITIVE;
 import static com.b2international.snowowl.snomed.SnomedConstants.Concepts.QUALIFIER_VALUE_TOPLEVEL_CONCEPT;
@@ -780,97 +778,6 @@ public class SnomedEditingContext extends BaseSnomedEditingContext {
 		buildDefaultIsARelationship(parentConcept, concept);
 		
 		return concept;
-	}
-	
-	/**
-	 * @deprecated - unused, will be removed in 4.4
-	 */
-	public Concept buildB2iExtensionNamespaceConcept(final Concept parentConcept, final String languageRefSetId, final String languageCode) {
-		
-		if (parentConcept == null) {
-			throw new NullPointerException("Parent concept was null");
-		}
-		
-		Concept b2iNamespaceConcept = SnomedFactory.eINSTANCE.createConcept();
-		add(b2iNamespaceConcept);
-		
-		// set concept properties
-		b2iNamespaceConcept.setId(B2I_NAMESPACE);
-		b2iNamespaceConcept.setActive(true);
-		b2iNamespaceConcept.setDefinitionStatus(new SnomedConceptLookupService().getComponent(PRIMITIVE, transaction));
-		Concept b2iModule = findConceptById(MODULE_B2I_EXTENSION);
-		if (null == b2iModule) {
-			b2iModule = getDefaultModuleConcept();
-		}
-		
-		b2iNamespaceConcept.setModule(b2iModule);
-		
-		//B2i Healthcare namespace 1000154
-		// add FSN
-		Description fsn = buildDefaultDescription("Extension Namespace {1000154} (namespace concept)", "1000154", 
-				new SnomedConceptLookupService().getComponent(FULLY_SPECIFIED_NAME, transaction), b2iModule, languageCode);
-		b2iNamespaceConcept.getDescriptions().add(fsn);
-		Description pt = buildDefaultDescription("SNOMED CT B2i extension namespace", "1000154", new SnomedConceptLookupService().getComponent(SYNONYM, transaction), 
-				b2iModule, languageCode);
-
-		b2iNamespaceConcept.getDescriptions().add(pt);
-		
-		buildDefaultRelationship(b2iNamespaceConcept, findConceptById(IS_A), parentConcept, new SnomedConceptLookupService().getComponent(STATED_RELATIONSHIP, transaction), 
-				b2iModule, "1000154");
-		
-		SnomedStructuralRefSet languageRefSet = (SnomedStructuralRefSet) new SnomedRefSetLookupService().getComponent(languageRefSetId, transaction);
-		
-		for (final Description description : b2iNamespaceConcept.getDescriptions()) {
-			final ComponentIdentifierPair<String> acceptabilityPair = SnomedRefSetEditingContext.createConceptTypePair(REFSET_DESCRIPTION_ACCEPTABILITY_PREFERRED);
-			final ComponentIdentifierPair<String> referencedComponentPair = SnomedRefSetEditingContext.createDescriptionTypePair(description.getId());
-			final SnomedLanguageRefSetMember member = getRefSetEditingContext().createLanguageRefSetMember(referencedComponentPair, acceptabilityPair, getDefaultModuleConcept().getId(), languageRefSet);
-			description.getLanguageRefSetMembers().add(member);
-		}
-		
-		return b2iNamespaceConcept;
-	}
-	
-	/**
-	 * @deprecated - unused, will be removed in 4.4
-	 */
-	public Concept buildB2iModuleConcept(Concept parentConcept, final String languageRefSetId, final String languageCode) {
-		
-		if (parentConcept == null) {
-			throw new NullPointerException("Parent concept was null");
-		}
-		
-		Concept b2iModuleConcept = SnomedFactory.eINSTANCE.createConcept();
-		add(b2iModuleConcept);
-		
-		// set concept properties
-		b2iModuleConcept.setId(MODULE_B2I_EXTENSION);
-		b2iModuleConcept.setActive(true);
-		b2iModuleConcept.setDefinitionStatus(new SnomedConceptLookupService().getComponent(PRIMITIVE, transaction));
-		b2iModuleConcept.setModule(b2iModuleConcept);
-		
-		//B2i Healthcare namespace 1000154
-		// add FSN
-		Description fsn = buildDefaultDescription("SNOMED CT B2i extension (core metadata concept)", "1000154", 
-				new SnomedConceptLookupService().getComponent(FULLY_SPECIFIED_NAME, transaction), b2iModuleConcept, languageCode);
-		b2iModuleConcept.getDescriptions().add(fsn);
-		Description pt = buildDefaultDescription("SNOMED CT B2i extension", "1000154", new SnomedConceptLookupService().getComponent(SYNONYM, transaction), 
-				b2iModuleConcept, languageCode);
-
-		b2iModuleConcept.getDescriptions().add(pt);
-		
-		buildDefaultRelationship(b2iModuleConcept, findConceptById(IS_A), parentConcept, new SnomedConceptLookupService().getComponent(STATED_RELATIONSHIP, transaction), 
-				b2iModuleConcept, "1000154");
-		
-		SnomedStructuralRefSet languageRefSet = (SnomedStructuralRefSet) new SnomedRefSetLookupService().getComponent(languageRefSetId, transaction);
-		
-		for (final Description description : b2iModuleConcept.getDescriptions()) {
-			final ComponentIdentifierPair<String> acceptabilityPair = SnomedRefSetEditingContext.createConceptTypePair(REFSET_DESCRIPTION_ACCEPTABILITY_PREFERRED);
-			final ComponentIdentifierPair<String> referencedComponentPair = SnomedRefSetEditingContext.createDescriptionTypePair(description.getId());
-			final SnomedLanguageRefSetMember member = getRefSetEditingContext().createLanguageRefSetMember(referencedComponentPair, acceptabilityPair, getDefaultModuleConcept().getId(), languageRefSet);
-			description.getLanguageRefSetMembers().add(member);
-		}
-		
-		return b2iModuleConcept;
 	}
 	
 	/**
