@@ -268,7 +268,7 @@ public class SnomedClientTerminologyBrowser extends ActiveBranchClientTerminolog
 				.filterByActive(true)
 				.filterByParent(Long.toString(SnomedMappings.ROOT_ID))
 				.setLocales(LOCALES)
-				.setExpand("pt()")
+				.setExpand("pt(),parentIds()")
 				.build(getBranchPath().getPath())
 				.executeSync(bus);
 		return SnomedConceptIndexEntry.fromConcepts(roots);
@@ -280,7 +280,7 @@ public class SnomedClientTerminologyBrowser extends ActiveBranchClientTerminolog
 			final ISnomedConcept concept = SnomedRequests
 					.prepareGetConcept()
 					.setComponentId(id)
-					.setExpand("pt()")
+					.setExpand("pt(),parentIds()")
 					.setLocales(LOCALES)
 					.build(getBranchPath().getPath())
 					.executeSync(bus);
@@ -296,11 +296,28 @@ public class SnomedClientTerminologyBrowser extends ActiveBranchClientTerminolog
 				.prepareSearchConcept()
 				.all()
 				.filterByParent(id)
-				.setExpand("pt()")
+				.setExpand("pt(),parentIds()")
 				.setLocales(LOCALES)
 				.build(getBranchPath().getPath())
 				.executeSync(bus);
 		return SnomedConceptIndexEntry.fromConcepts(concepts);
+	}
+	
+	@Override
+	public Collection<SnomedConceptIndexEntry> getSuperTypes(SnomedConceptIndexEntry concept) {
+		return getSuperTypesById(concept.getId());
+	}
+	
+	@Override
+	public Collection<SnomedConceptIndexEntry> getSuperTypesById(String id) {
+		final ISnomedConcept concept = SnomedRequests
+				.prepareGetConcept()
+				.setComponentId(id)
+				.setExpand("ancestors(direct:true,expand(pt(),parentIds()))")
+				.setLocales(LOCALES)
+				.build(getBranchPath().getPath())
+				.executeSync(bus);
+		return SnomedConceptIndexEntry.fromConcepts(concept.getAncestors());
 	}
 
 	/**
