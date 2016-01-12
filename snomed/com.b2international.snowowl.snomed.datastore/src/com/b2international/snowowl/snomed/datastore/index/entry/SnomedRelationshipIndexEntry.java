@@ -26,9 +26,11 @@ import com.b2international.commons.BooleanUtils;
 import com.b2international.snowowl.core.api.IComponent;
 import com.b2international.snowowl.core.api.IStatement;
 import com.b2international.snowowl.core.api.index.IIndexEntry;
+import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.datastore.index.mapping.Mappings;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.core.domain.CharacteristicType;
+import com.b2international.snowowl.snomed.core.domain.ISnomedRelationship;
 import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedMappings;
 
 /**
@@ -58,6 +60,23 @@ public class SnomedRelationshipIndexEntry extends SnomedIndexEntry implements IS
 				.moduleId(SnomedMappings.module().getValueAsString(doc))
 				.storageKey(Mappings.storageKey().getValue(doc))
 				.effectiveTimeLong(SnomedMappings.effectiveTime().getValue(doc));
+	}
+	
+	public static Builder builder(final ISnomedRelationship input) {
+		return builder()
+				.id(input.getId())
+				.sourceId(input.getSourceId())
+				.typeId(input.getTypeId())
+				.destinationId(input.getDestinationId())
+				.characteristicTypeId(input.getCharacteristicType().getConceptId())
+				.group(Integer.valueOf(input.getGroup()).byteValue())
+				.unionGroup(Integer.valueOf(input.getUnionGroup()).byteValue())
+				.active(input.isActive())
+				.released(input.isReleased())
+				.modifierId(input.getModifier().getConceptId())
+				.destinationNegated(input.isDestinationNegated())
+				.moduleId(input.getModuleId())
+				.effectiveTimeLong(EffectiveTimes.getEffectiveTime(input.getEffectiveTime()));
 	}
 
 	public static class Builder extends AbstractBuilder<Builder> {

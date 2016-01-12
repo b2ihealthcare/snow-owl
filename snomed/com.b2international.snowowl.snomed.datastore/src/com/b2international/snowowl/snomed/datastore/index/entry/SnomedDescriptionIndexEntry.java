@@ -25,8 +25,10 @@ import org.apache.lucene.document.Document;
 import com.b2international.commons.BooleanUtils;
 import com.b2international.snowowl.core.api.IComponent;
 import com.b2international.snowowl.core.api.index.IIndexEntry;
+import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.datastore.index.mapping.Mappings;
 import com.b2international.snowowl.snomed.core.domain.Acceptability;
+import com.b2international.snowowl.snomed.core.domain.ISnomedDescription;
 import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedMappings;
 import com.google.common.base.Objects;
 import com.google.common.collect.ImmutableMap;
@@ -66,6 +68,26 @@ public class SnomedDescriptionIndexEntry extends SnomedIndexEntry implements ICo
 			builder.acceptability(acceptableRefSetId, Acceptability.ACCEPTABLE);
 		}
 		
+		return builder;
+	}
+	
+	public static Builder builder(final ISnomedDescription input) {
+		final Builder builder = builder()
+				.id(input.getId())
+				.term(input.getTerm()) 
+				.moduleId(input.getModuleId())
+				.languageCode(input.getLanguageCode())
+				.released(input.isReleased())
+				.active(input.isActive())
+				.typeId(input.getTypeId())
+				.conceptId(input.getConceptId())
+				.caseSignificanceId(input.getCaseSignificance().getConceptId())
+				.effectiveTimeLong(EffectiveTimes.getEffectiveTime(input.getEffectiveTime()));
+		
+		for (final String refSetId : input.getAcceptabilityMap().keySet()) {
+			builder.acceptability(refSetId, input.getAcceptabilityMap().get(refSetId));
+		}
+	
 		return builder;
 	}
 
