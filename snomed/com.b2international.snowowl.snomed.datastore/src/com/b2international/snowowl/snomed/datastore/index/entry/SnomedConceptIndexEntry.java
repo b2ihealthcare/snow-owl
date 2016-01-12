@@ -23,6 +23,7 @@ import org.apache.lucene.document.Document;
 import com.b2international.commons.BooleanUtils;
 import com.b2international.commons.pcj.LongSets;
 import com.b2international.snowowl.core.api.IComponent;
+import com.b2international.snowowl.core.api.ITreeComponent;
 import com.b2international.snowowl.core.api.index.IIndexEntry;
 import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.datastore.index.mapping.Mappings;
@@ -36,7 +37,7 @@ import bak.pcj.LongCollection;
 /**
  * A transfer object representing a SNOMED CT concept.
  */
-public class SnomedConceptIndexEntry extends SnomedIndexEntry implements IComponent<String>, IIndexEntry, Serializable {
+public class SnomedConceptIndexEntry extends SnomedIndexEntry implements IComponent<String>, IIndexEntry, Serializable, ITreeComponent {
 
 	private static final long serialVersionUID = -824286402410205210L;
 
@@ -196,6 +197,7 @@ public class SnomedConceptIndexEntry extends SnomedIndexEntry implements ICompon
 		this.parents = parents;
 	}
 	
+	@Override
 	public LongCollection getParents() {
 		return parents;
 	}
@@ -204,6 +206,7 @@ public class SnomedConceptIndexEntry extends SnomedIndexEntry implements ICompon
 		this.ancestors = ancestors;
 	}
 	
+	@Override
 	public LongCollection getAncestors() {
 		return ancestors;
 	}
