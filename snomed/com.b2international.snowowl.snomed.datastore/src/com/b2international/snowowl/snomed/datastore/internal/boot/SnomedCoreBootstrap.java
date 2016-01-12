@@ -21,6 +21,7 @@ import com.b2international.snowowl.core.config.SnowOwlConfiguration;
 import com.b2international.snowowl.core.setup.DefaultBootstrapFragment;
 import com.b2international.snowowl.core.setup.Environment;
 import com.b2international.snowowl.core.setup.ModuleConfig;
+import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.snomed.datastore.SnomedTerminologyBrowser;
 import com.b2international.snowowl.snomed.datastore.config.SnomedCoreConfiguration;
 import com.b2international.snowowl.snomed.metadata.SnomedMetadata;
@@ -35,7 +36,8 @@ public class SnomedCoreBootstrap extends DefaultBootstrapFragment {
 	@Override
 	public void init(SnowOwlConfiguration configuration, Environment env) throws Exception {
 		env.services().registerService(SnomedCoreConfiguration.class, configuration.getModuleConfig(SnomedCoreConfiguration.class));
-		env.services().registerService(SnomedMetadata.class, new SnomedMetadataImpl(env.provider(SnomedTerminologyBrowser.class)));
+		env.services().registerService(SnomedMetadata.class,
+				new SnomedMetadataImpl(env.provider(IEventBus.class), env.provider(SnomedTerminologyBrowser.class)));
 	}
 
 	@Override
