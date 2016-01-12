@@ -215,11 +215,11 @@ final class SnomedConceptSearchRequest extends SnomedSearchRequest<SnomedConcept
 			Document doc = searcher.doc(scoreDocs[i].doc); // TODO: should expand & filter drive fieldsToLoad? Pass custom fieldValueLoader?
 			final Builder builder = SnomedConceptIndexEntry.builder(doc);
 			
-			if (expand.containsKey("parentIds")) {
+			if (expand.containsKey("parentIds") || expand.containsKey("ancestors")) {
 				builder.parents(SnomedMappings.parent().getValueAsLongSet(doc));
 			}
 			
-			if (expand.containsKey("ancestorIds")) {
+			if (expand.containsKey("ancestorIds") || expand.containsKey("ancestors")) {
 				builder.ancestors(SnomedMappings.ancestor().getValueAsLongSet(doc));
 			}
 			
