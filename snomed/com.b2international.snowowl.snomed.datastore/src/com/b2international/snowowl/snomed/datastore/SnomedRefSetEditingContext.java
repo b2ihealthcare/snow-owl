@@ -932,28 +932,13 @@ public class SnomedRefSetEditingContext extends BaseSnomedEditingContext {
 		
 	} 
 
+	private void createIdentifierAndAddRefSet(final SnomedRefSet snomedRefSet, final String parentConceptId, final String name) {
+		createIdentifierAndAddRefSet(snomedRefSet, getSnomedEditingContext().generateComponentId(ComponentCategory.CONCEPT), parentConceptId, name);
+	}
+	
 	// create identifier concept with the given arguments, save it locally
-	private void createIdentifierAndAddRefSet(final SnomedRefSet snomedRefSet, final String parentRefSetTypeConceptId, final String name) {
-		final SnomedEditingContext context = getSnomedEditingContext();
-		
-		// FIXME replace with proper builder, 
-		// create identifier concept with one FSN
-		final Concept identifier = context.buildDefaultConcept(name, parentRefSetTypeConceptId);
-		final Description synonym = context.buildDefaultDescription(name, Concepts.SYNONYM);
-		synonym.setConcept(identifier);
-		
-		// create language reference set members for the descriptions, one FSN and PT both should be preferred
-		final SnomedStructuralRefSet languageRefSet = getLanguageRefSet();
-		for (final Description description : identifier.getDescriptions()) {
-			if (description.isActive()) { //this point all description should be active
-				final ComponentIdentifierPair<String> acceptabilityPair = createConceptTypePair(Concepts.REFSET_DESCRIPTION_ACCEPTABILITY_PREFERRED);
-				//create language reference set membership
-				final ComponentIdentifierPair<String> referencedComponentPair = SnomedRefSetEditingContext.createDescriptionTypePair(description.getId());
-				final SnomedLanguageRefSetMember member = createLanguageRefSetMember(referencedComponentPair, acceptabilityPair, context.getDefaultModuleConcept().getId(), languageRefSet);
-				description.getLanguageRefSetMembers().add(member);
-			}
-		}
-		
+	private void createIdentifierAndAddRefSet(final SnomedRefSet snomedRefSet, final String conceptId, final String parentConceptId, final String name) {
+		final Concept identifier = createIdentifierConcept(conceptId, parentConceptId, name);
 		snomedRefSet.setIdentifierId(identifier.getId());
 		add(snomedRefSet);
 	}
