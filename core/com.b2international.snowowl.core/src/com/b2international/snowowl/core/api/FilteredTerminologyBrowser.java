@@ -31,15 +31,15 @@ import com.google.common.base.Function;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.FluentIterable;
 import com.google.common.collect.Lists;
-import com.google.common.collect.SetMultimap;
+import com.google.common.collect.Multimap;
 
 public class FilteredTerminologyBrowser<C extends IComponent<K>, K> implements IFilterClientTerminologyBrowser<C, K>, Serializable {
 
 	private static final long serialVersionUID = -8406487265076249122L;
 
 	private Map<K, C> componentMap;
-	private SetMultimap<K, K> subTypeMap;
-	private SetMultimap<K, K> superTypeMap;
+	private Multimap<K, K> subTypeMap;
+	private Multimap<K, K> superTypeMap;
 	private Set<K> filteredComponents;
 
 	private FilterTerminologyBrowserType type = FilterTerminologyBrowserType.HIERARCHICAL;
@@ -51,8 +51,8 @@ public class FilteredTerminologyBrowser<C extends IComponent<K>, K> implements I
 		
 	}
 	
-	public FilteredTerminologyBrowser(final Map<K, C> componentMap, final SetMultimap<K, K> subTypeMap, 
-			final SetMultimap<K, K> superTypeMap, final FilterTerminologyBrowserType type, final Set<K> filteredComponents) {
+	public FilteredTerminologyBrowser(final Map<K, C> componentMap, final Multimap<K, K> subTypeMap, 
+			final Multimap<K, K> superTypeMap, final FilterTerminologyBrowserType type, final Set<K> filteredComponents) {
 		
 		
 		this.componentMap = Preconditions.checkNotNull(componentMap, "Component map argument cannot be null.");
@@ -163,7 +163,7 @@ public class FilteredTerminologyBrowser<C extends IComponent<K>, K> implements I
 
 	@Override
 	public int getSubTypeCount(final C concept) {
-		final Set<K> subtypes = subTypeMap.get(concept.getId());
+		final Collection<K> subtypes = subTypeMap.get(concept.getId());
 		return null == subtypes ? 0 : subtypes.size();
 	}
 
