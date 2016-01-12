@@ -99,6 +99,7 @@ public class SnomedServerTerminologyBrowser extends AbstractIndexTerminologyBrow
 			.primitive()
 			.exhaustive()
 			.released()
+			.parent()
 			.build();
 	
 	/**
@@ -138,7 +139,9 @@ public class SnomedServerTerminologyBrowser extends AbstractIndexTerminologyBrow
 	
 	@Override
 	protected SnomedConceptIndexEntry createResultObject(final IBranchPath branchPath, final Document doc) {
-		return SnomedConceptIndexEntry.builder(doc).build();
+		final com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptIndexEntry.Builder builder = SnomedConceptIndexEntry.builder(doc);
+		builder.parents(SnomedMappings.parent().getValueAsLongList(doc));
+		return builder.build();
 	}
 
 	@Override
