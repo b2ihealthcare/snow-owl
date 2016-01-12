@@ -118,4 +118,12 @@ abstract class BaseSnomedComponentConverter<T extends SnomedIndexEntry, R extend
 	protected final AbstractSnomedRefSetMembershipLookupService getRefSetMembershipLookupService() {
 		return refSetMembershipLookupService;
 	}
+	
+	protected final int getLimit(final Options expandOptions) {
+		return expandOptions.containsKey("limit") ? expandOptions.get("limit", Integer.class) : 50;
+	}
+
+	protected final int getOffset(final Options expandOptions) {
+		return expandOptions.containsKey("offset") ? expandOptions.get("offset", Integer.class) : 0;
+	}
 }
