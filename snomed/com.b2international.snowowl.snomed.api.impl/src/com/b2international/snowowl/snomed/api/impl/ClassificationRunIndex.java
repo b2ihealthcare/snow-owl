@@ -26,21 +26,20 @@ import java.util.NoSuchElementException;
 import java.util.UUID;
 
 import org.apache.lucene.document.Document;
-import org.apache.lucene.document.Field.Store;
-import org.apache.lucene.document.StoredField;
-import org.apache.lucene.document.StringField;
 import org.apache.lucene.index.Term;
 import org.apache.lucene.search.IndexSearcher;
+import org.apache.lucene.search.NumericRangeQuery;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.ScoreDoc;
 import org.apache.lucene.search.Sort;
+import org.apache.lucene.search.SortField;
+import org.apache.lucene.search.SortField.Type;
 import org.apache.lucene.search.TopDocs;
+import org.apache.lucene.search.TotalHitCountCollector;
 
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.datastore.BranchPathUtils;
-import com.b2international.snowowl.datastore.index.DocIdCollector;
-import com.b2international.snowowl.datastore.index.DocIdCollector.DocIdsIterator;
 import com.b2international.snowowl.datastore.index.mapping.Mappings;
 import com.b2international.snowowl.datastore.index.mapping.QueryBuilderBase.QueryBuilder;
 import com.b2international.snowowl.datastore.server.domain.StorageRef;
@@ -73,21 +72,103 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
+import com.google.common.primitives.Ints;
 
 public class ClassificationRunIndex extends SingleDirectoryIndexImpl {
 
+	private static final String FIELD_ID = "id";
+	private static final String FIELD_CLASS = "class";
+	private static final String FIELD_BRANCH_PATH = "branchPath";
+	private static final String FIELD_USER_ID = "userId";
+	private static final String FIELD_CREATION_DATE = "creationDate";
+	private static final String FIELD_STATUS = "status";
+	private static final String FIELD_SOURCE = "source";
+	private static final String FIELD_COMPONENT_ID = "componentId";
+	
 	private final ObjectMapper objectMapper;
 
 	public ClassificationRunIndex(final File directory) {
-		super(directory, true);
+		super(directory);
 		objectMapper = new ObjectMapper();
+	}
+
+	public void trimIndex(int maximumResultsToKeep) throws IOException {
+		final Query query = Mappings.newQuery()
+				.field(FIELD_CLASS, ClassificationRun.class.getSimpleName())
+				.matchAll();
+		
+		// Sort by decreasing document order
+		final Sort sort = new Sort(new SortField(null, Type.DOC, true));
+		
+		final ClassificationRun lastRunToKeep = Iterables.getFirst(search(query, ClassificationRun.class, sort, maximumResultsToKeep - 1, 1), null);
+		if (lastRunToKeep == null) {
+			return;
+		}
+		
+		final Date lastCreationDate = lastRunToKeep.getCreationDate();
+		final Query trimmingQuery = NumericRangeQuery.newLongRange(FIELD_CREATION_DATE, null, lastCreationDate.getTime(), false, false);
+		writer.deleteDocuments(trimmingQuery);
+		commit();
+	}
+	
+	public void invalidateClassificationRuns() throws IOException {
+		
+		final Query statusQuery = Mappings.newQuery()
+				.field(FIELD_STATUS, ClassificationStatus.COMPLETED.name())
+				.field(FIELD_STATUS, ClassificationStatus.RUNNING.name())
+				.field(FIELD_STATUS, ClassificationStatus.SAVING_IN_PROGRESS.name())
+				.field(FIELD_STATUS, ClassificationStatus.SCHEDULED.name())
+				.matchAny();
+		
+		final Query query = Mappings.newQuery()
+				.field(FIELD_CLASS, ClassificationRun.class.getSimpleName())
+				.and(statusQuery)
+				.matchAll();
+		
+		IndexSearcher searcher = null;
+
+		try {
+
+			searcher = manager.acquire();
+
+			final TotalHitCountCollector collector = new TotalHitCountCollector();
+			searcher.search(query, collector);
+			final int totalHits = collector.getTotalHits();
+			
+			final int docsToRetrieve = Ints.min(searcher.getIndexReader().maxDoc(), totalHits);
+			if (docsToRetrieve < 1) {
+				return;
+			}
+			
+			final TopDocs docs = searcher.search(query, null, docsToRetrieve, Sort.INDEXORDER, false, false);
+			final ScoreDoc[] scoreDocs = docs.scoreDocs;
+
+			for (int i = 0; i < scoreDocs.length; i++) {
+				final Document sourceDocument = searcher.doc(scoreDocs[i].doc, ImmutableSet.of(FIELD_BRANCH_PATH, FIELD_SOURCE));
+				
+				final String branchPath = sourceDocument.get(FIELD_BRANCH_PATH);
+				final String source = sourceDocument.get(FIELD_SOURCE);
+				final ClassificationRun run = objectMapper.reader(ClassificationRun.class).readValue(source);
+				
+				run.setStatus(ClassificationStatus.STALE);
+				
+				upsertClassificationRunNoCommit(BranchPathUtils.createPath(branchPath), run);
+			}
+
+			commit();
+			
+		} finally {
+			if (null != searcher) {
+				manager.release(searcher);
+			}
+		}
 	}
 
 	public List<IClassificationRun> getAllClassificationRuns(final StorageRef storageRef, final String userId) throws IOException {
 		final Query query = Mappings.newQuery()
-				.field("class", ClassificationRun.class.getSimpleName())
-				.field("userId", userId)
-				.field("branchPath", storageRef.getBranchPath())
+				.field(FIELD_CLASS, ClassificationRun.class.getSimpleName())
+				.field(FIELD_USER_ID, userId)
+				.field(FIELD_BRANCH_PATH, storageRef.getBranchPath())
 				.matchAll();
 		
 		return this.<IClassificationRun>search(query, ClassificationRun.class);
@@ -103,39 +184,45 @@ public class ClassificationRunIndex extends SingleDirectoryIndexImpl {
 		}
 	}
 
-	public void insertOrUpdateClassificationRun(final IBranchPath branchPath, final ClassificationRun classificationRun) throws IOException {
+	public void upsertClassificationRun(final IBranchPath branchPath, final ClassificationRun classificationRun) throws IOException {
+		upsertClassificationRunNoCommit(branchPath, classificationRun);
+		commit();
+	}
 
+	private void upsertClassificationRunNoCommit(final IBranchPath branchPath, final ClassificationRun classificationRun) throws IOException {
+		
 		final Document updatedDocument = Mappings.doc()
-				.searchOnlyField("class", ClassificationRun.class.getSimpleName())
-				.searchOnlyField("id", classificationRun.getId())
-				.field("userId", classificationRun.getUserId())
-				.field("branchPath", branchPath.getPath())
-				.storedOnly("source", objectMapper.writer().writeValueAsString(classificationRun))
+				.searchOnlyField(FIELD_CLASS, ClassificationRun.class.getSimpleName())
+				.searchOnlyField(FIELD_ID, classificationRun.getId())
+				.searchOnlyField(FIELD_STATUS, classificationRun.getStatus().name())
+				.field(FIELD_CREATION_DATE, classificationRun.getCreationDate().getTime())
+				.field(FIELD_USER_ID, classificationRun.getUserId())
+				.field(FIELD_BRANCH_PATH, branchPath.getPath())
+				.storedOnly(FIELD_SOURCE, objectMapper.writer().writeValueAsString(classificationRun))
 				.build();
 
 		final Query query = Mappings.newQuery()
-				.field("class", ClassificationRun.class.getSimpleName())
-				.field("id", classificationRun.getId())
+				.field(FIELD_CLASS, ClassificationRun.class.getSimpleName())
+				.field(FIELD_ID, classificationRun.getId())
 				.matchAll();
 
 		writer.deleteDocuments(query);
 		writer.addDocument(updatedDocument);
-		commit();
 	}
 
 	public void updateClassificationRunStatus(final UUID id, final ClassificationStatus newStatus) throws IOException {
-		updateClassificationRunStatusAndIndexChanges(id, newStatus, null);
+		updateClassificationRunStatus(id, newStatus, null);
 	}
 
-	public void updateClassificationRunStatusAndIndexChanges(final UUID id, final ClassificationStatus newStatus, final GetResultResponseChanges changes) throws IOException {
+	public void updateClassificationRunStatus(final UUID id, final ClassificationStatus newStatus, final GetResultResponseChanges changes) throws IOException {
 
 		final Document sourceDocument = getClassificationRunDocument(id);
 		if (null == sourceDocument) {
 			return;
 		}
 
-		final IBranchPath branchPath = BranchPathUtils.createPath(sourceDocument.get("branchPath"));
-		final ClassificationRun classificationRun = objectMapper.reader(ClassificationRun.class).readValue(sourceDocument.get("source"));
+		final IBranchPath branchPath = BranchPathUtils.createPath(sourceDocument.get(FIELD_BRANCH_PATH));
+		final ClassificationRun classificationRun = objectMapper.reader(ClassificationRun.class).readValue(sourceDocument.get(FIELD_SOURCE));
 
 		if (newStatus.equals(classificationRun.getStatus())) {
 			return;
@@ -144,16 +231,18 @@ public class ClassificationRunIndex extends SingleDirectoryIndexImpl {
 		classificationRun.setStatus(newStatus);
 
 		if (ClassificationStatus.COMPLETED.equals(newStatus)) {
-			if(null == classificationRun.getCompletionDate()) {
+			checkNotNull(changes, "GetResultResponseChanges are required to update a completed classification.");
+
+			if (null == classificationRun.getCompletionDate()) {
 				classificationRun.setCompletionDate(new Date());
 			}
-			checkNotNull(changes, "GetResultResponseChanges are required to update a completed classification.");
+			
 			final ClassificationIssueFlags issueFlags = indexChanges(sourceDocument, changes);
 			classificationRun.setRedundantStatedRelationshipsFound(issueFlags.isRedundantStatedFound());
 			classificationRun.setEquivalentConceptsFound(issueFlags.isEquivalentConceptsFound());
 		}
 
-		insertOrUpdateClassificationRun(branchPath, classificationRun);
+		upsertClassificationRun(branchPath, classificationRun);
 	}
 
 	private SnomedRelationshipIndexEntry getSnomedRelationshipIndexEntry(IBranchPath branchPath, RelationshipChangeEntry relationshipChange) {
@@ -172,14 +261,15 @@ public class ClassificationRunIndex extends SingleDirectoryIndexImpl {
 
 	public void deleteClassificationData(final UUID id) throws IOException {
 		// Removes all documents, not just the classification run document
-		writer.deleteDocuments(new Term("id", id.toString()));
+		writer.deleteDocuments(new Term(FIELD_ID, id.toString()));
 		commit();
 	}
 
 	private ClassificationIssueFlags indexChanges(Document sourceDocument, final GetResultResponseChanges changes) throws IOException {
 		final UUID id = changes.getClassificationId();
-		final IBranchPath branchPath = BranchPathUtils.createPath(sourceDocument.get("branchPath"));
-		final String userId = sourceDocument.get("userId");
+		final IBranchPath branchPath = BranchPathUtils.createPath(sourceDocument.get(FIELD_BRANCH_PATH));
+		final String userId = sourceDocument.get(FIELD_USER_ID);
+		final long creationDate = sourceDocument.getField(FIELD_CREATION_DATE).numericValue().longValue();
 		final ClassificationIssueFlags classificationIssueFlags = new ClassificationIssueFlags();
 
 		final List<AbstractEquivalenceSet> equivalenceSets = changes.getEquivalenceSets();
@@ -199,7 +289,7 @@ public class ClassificationRunIndex extends SingleDirectoryIndexImpl {
 			convertedEquivalenceSet.setUnsatisfiable(equivalenceSet.isUnsatisfiable());
 			convertedEquivalenceSet.setEquivalentConcepts(convertedEquivalentConcepts);
 
-			indexResult(id, branchPath, userId, EquivalentConceptSet.class, equivalenceSet.getConcepts().get(0).getId(), convertedEquivalenceSet);
+			indexResult(id, branchPath, userId, creationDate, EquivalentConceptSet.class, equivalenceSet.getConcepts().get(0).getId(), convertedEquivalenceSet);
 		}
 
 		for (final RelationshipChangeEntry relationshipChange : changes.getRelationshipEntries()) {
@@ -229,7 +319,7 @@ public class ClassificationRunIndex extends SingleDirectoryIndexImpl {
 			convertedRelationshipChange.setTypeId(Long.toString(relationshipChange.getType().getId()));
 			convertedRelationshipChange.setUnionGroup(relationshipChange.getUnionGroup());
 
-			indexResult(id, branchPath, userId, RelationshipChange.class, convertedRelationshipChange.getSourceId(), convertedRelationshipChange);
+			indexResult(id, branchPath, userId, creationDate, RelationshipChange.class, convertedRelationshipChange.getSourceId(), convertedRelationshipChange);
 		}
 
 		commit();
@@ -274,36 +364,38 @@ public class ClassificationRunIndex extends SingleDirectoryIndexImpl {
 		return result;
 	}
 
-	private <T> void indexResult(final UUID id, final IBranchPath branchPath, final String userId,
+	private <T> void indexResult(final UUID id, final IBranchPath branchPath, final String userId, final long creationDate,
 			final Class<T> clazz, String componentId, final T value) throws IOException {
 
-		final Document updateDocument = new Document();
-		updateDocument.add(new StringField("class", clazz.getSimpleName(), Store.NO));
-		updateDocument.add(new StringField("id", id.toString(), Store.NO));
-		updateDocument.add(new StringField("userId", userId, Store.NO));
-		updateDocument.add(new StringField("branchPath", branchPath.getPath(), Store.NO));
-		updateDocument.add(new StringField("componentId", componentId, Store.NO));
-		updateDocument.add(new StoredField("source", objectMapper.writer().writeValueAsString(value)));
+		final Document updateDocument = Mappings.doc()
+				.searchOnlyField(FIELD_CLASS, clazz.getSimpleName())
+				.searchOnlyField(FIELD_ID, id.toString())
+				.searchOnlyField(FIELD_USER_ID, userId)
+				.searchOnlyField(FIELD_CREATION_DATE, creationDate)
+				.searchOnlyField(FIELD_BRANCH_PATH, branchPath.getPath())
+				.searchOnlyField(FIELD_COMPONENT_ID, componentId)
+				.storedOnly(FIELD_SOURCE, objectMapper.writer().writeValueAsString(value))
+				.build();
 
 		writer.addDocument(updateDocument);
 	}
 
 	private Document getClassificationRunDocument(final UUID id) throws IOException {
 		final Query query = Mappings.newQuery()
-				.field("class", ClassificationRun.class.getSimpleName())
-				.field("id", id.toString())
+				.field(FIELD_CLASS, ClassificationRun.class.getSimpleName())
+				.field(FIELD_ID, id.toString())
 				.matchAll();
 		return Iterables.getFirst(search(query, 1), null);
 	}
 
 	private Query createClassQuery(final String className, final String classificationId, final StorageRef storageRef, String componentId, final String userId) {
 		final QueryBuilder query = Mappings.newQuery()
-				.field("class", className)
-				.field("id", classificationId)
-				.field("userId", userId)
-				.field("branchPath", storageRef.getBranchPath());
+				.field(FIELD_CLASS, className)
+				.field(FIELD_ID, classificationId)
+				.field(FIELD_USER_ID, userId)
+				.field(FIELD_BRANCH_PATH, storageRef.getBranchPath());
 		if (componentId != null) {
-			query.field("componentId", componentId);
+			query.field(FIELD_COMPONENT_ID, componentId);
 		}
 		return query.matchAll();
 	}
@@ -317,19 +409,34 @@ public class ClassificationRunIndex extends SingleDirectoryIndexImpl {
 	}
 
 	private <T> List<T> search(final Query query, final Class<? extends T> sourceClass, final int offset, final int limit) throws IOException {
+		return search(query, sourceClass, Sort.INDEXORDER, offset, limit);
+	}
+
+	private <T> List<T> search(final Query query, final Class<? extends T> sourceClass, Sort sort, final int offset, final int limit) throws IOException {
 		IndexSearcher searcher = null;
 
 		try {
 
 			searcher = manager.acquire();
 
-			final TopDocs docs = searcher.search(query, null, offset + limit, Sort.INDEXORDER, false, false);
-			final ScoreDoc[] scoreDocs = docs.scoreDocs;
+			final TotalHitCountCollector collector = new TotalHitCountCollector();
+			searcher.search(query, collector);
+			final int totalHits = collector.getTotalHits();
+			
+			final int saturatedSum = Ints.saturatedCast((long) offset + limit);
+			final int docsToRetrieve = Ints.min(saturatedSum, searcher.getIndexReader().maxDoc(), totalHits);
 			final ImmutableList.Builder<T> resultBuilder = ImmutableList.builder();
+			
+			if (docsToRetrieve < 1) {
+				return resultBuilder.build();
+			}
+			
+			final TopDocs docs = searcher.search(query, null, docsToRetrieve, sort, false, false);
+			final ScoreDoc[] scoreDocs = docs.scoreDocs;
 
-			for (int i = offset; i < offset + limit && i < scoreDocs.length; i++) {
-				final Document sourceDocument = searcher.doc(scoreDocs[i].doc, ImmutableSet.of("source"));
-				final String source = sourceDocument.get("source");
+			for (int i = offset; i < docsToRetrieve && i < scoreDocs.length; i++) {
+				final Document sourceDocument = searcher.doc(scoreDocs[i].doc, ImmutableSet.of(FIELD_SOURCE));
+				final String source = sourceDocument.get(FIELD_SOURCE);
 				final T deserializedSource = objectMapper.reader(sourceClass).readValue(source);
 				resultBuilder.add(deserializedSource);
 			}
@@ -373,18 +480,9 @@ public class ClassificationRunIndex extends SingleDirectoryIndexImpl {
 		try {
 
 			searcher = manager.acquire();
-			final int expectedSize = searcher.getIndexReader().maxDoc();
-			final DocIdCollector collector = DocIdCollector.create(expectedSize);
-
+			final TotalHitCountCollector collector = new TotalHitCountCollector();
 			searcher.search(query, collector);
-
-			int totalHits = 0;
-			final DocIdsIterator itr = collector.getDocIDs().iterator();
-			while (itr.next()) {
-				totalHits++;
-			}
-			
-			return totalHits;
+			return collector.getTotalHits();
 
 		} finally {
 
