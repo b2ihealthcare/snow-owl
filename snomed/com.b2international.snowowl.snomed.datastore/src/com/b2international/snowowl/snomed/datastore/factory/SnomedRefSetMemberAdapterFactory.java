@@ -149,6 +149,10 @@ public class SnomedRefSetMemberAdapterFactory extends TypeSafeAdapterFactory {
 
 				return builder;
 			}
+			
+			public Builder caseSnomedRefSetMember(SnomedRefSetMember object) {
+				return builder;
+			};
 
 		}.doSwitch(refSetMember);
 
