@@ -15,12 +15,14 @@
  */
 package com.b2international.snowowl.snomed.datastore.index.entry;
 
+import static com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants.CONCEPT_NUMBER;
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.collect.Maps.newHashMap;
 
 import java.io.Serializable;
 import java.math.BigDecimal;
+import java.util.Collection;
 import java.util.Date;
 import java.util.Map;
 import java.util.Set;
@@ -32,16 +34,23 @@ import com.b2international.commons.BooleanUtils;
 import com.b2international.commons.functions.UncheckedCastFunction;
 import com.b2international.snowowl.core.CoreTerminologyBroker;
 import com.b2international.snowowl.core.api.IComponent;
+import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.datastore.index.mapping.Mappings;
 import com.b2international.snowowl.snomed.core.domain.Acceptability;
 import com.b2international.snowowl.snomed.core.domain.InactivationIndicator;
 import com.b2international.snowowl.snomed.core.domain.RelationshipRefinability;
+import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
+import com.b2international.snowowl.snomed.core.domain.SnomedCoreComponent;
+import com.b2international.snowowl.snomed.core.domain.SnomedDescription;
+import com.b2international.snowowl.snomed.core.domain.SnomedRelationship;
+import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMember;
 import com.b2international.snowowl.snomed.datastore.SnomedRefSetUtil;
 import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedMappings;
 import com.b2international.snowowl.snomed.snomedrefset.DataType;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType;
 import com.google.common.base.Function;
 import com.google.common.base.Optional;
+import com.google.common.collect.FluentIterable;
 import com.google.common.collect.ImmutableMap;
 
 /**
@@ -136,6 +145,32 @@ public class SnomedRefSetMemberIndexEntry extends SnomedIndexEntry implements IC
 				.mapTargetComponentType(source.mapTargetComponentType)
 				.additionalFields(source.additionalFields);
 	}
+	
+	public static final Builder builder(final SnomedReferenceSetMember input) {
+		final Object mapTargetComponentType = input.getProperties().get(SnomedMappings.memberMapTargetComponentType().fieldName());
+		
+		return builder()
+				.active(input.isActive())
+				.effectiveTimeLong(EffectiveTimes.getEffectiveTime(input.getEffectiveTime()))
+				.id(input.getId())
+				.moduleId(input.getModuleId())
+				.referencedComponentId(input.getReferencedComponent().getId())
+				.referencedComponentType(input.getReferencedComponent())
+				.referenceSetId(input.getReferenceSetId())
+				.referenceSetType(input.type())
+				.released(input.isReleased())
+				.mapTargetComponentType(mapTargetComponentType == null ? -1 : (short) mapTargetComponentType)
+				.additionalFields(input.getProperties());
+	}
+	
+	public static Collection<SnomedRefSetMemberIndexEntry> from(final Collection<SnomedReferenceSetMember> refSetMembers) {
+		return FluentIterable.from(refSetMembers).transform(new Function<SnomedReferenceSetMember, SnomedRefSetMemberIndexEntry>() {
+			@Override
+			public SnomedRefSetMemberIndexEntry apply(final SnomedReferenceSetMember refSetMember) {
+				return builder(refSetMember).label(refSetMember.getReferencedComponent()).build();
+			}
+		}).toList();
+	}
 
 	public static class Builder extends AbstractBuilder<Builder> {
 
@@ -185,9 +220,37 @@ public class SnomedRefSetMemberIndexEntry extends SnomedIndexEntry implements IC
 			this.referencedComponentType = referencedComponentType;
 			return this;
 		}
+		
+		public Builder referencedComponentType(final SnomedCoreComponent component) {
+			if (component instanceof SnomedConcept) {
+				this.referencedComponentType = CONCEPT_NUMBER;
+			} else if (component instanceof SnomedDescription) {
+				this.referencedComponentType = CONCEPT_NUMBER;
+			} else if (component instanceof SnomedRelationship) {
+				this.referencedComponentType = CONCEPT_NUMBER;
+			} else {
+				this.referencedComponentType = -1;
+			}
+			
+			return this;
+		}
 
 		public Builder mapTargetComponentType(final short mapTargetComponentType) {
 			this.mapTargetComponentType = mapTargetComponentType;
+			return this;
+		}
+		
+		public Builder label(final SnomedCoreComponent component) {
+			if (component instanceof SnomedConcept) {
+				this.label = ((SnomedConcept) component).getPt().getTerm();
+			} else if (component instanceof SnomedDescription) {
+				this.label = ((SnomedDescription) component).getTerm();
+			} else if (component instanceof SnomedRelationship) {
+				this.label = ((SnomedRelationship) component).getId();
+			} else {
+				this.label = component.getId();
+			}
+			
 			return this;
 		}
 
