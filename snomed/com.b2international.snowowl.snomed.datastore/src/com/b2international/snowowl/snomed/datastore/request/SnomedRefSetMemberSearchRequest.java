@@ -35,6 +35,9 @@ import com.b2international.snowowl.snomed.datastore.converter.SnomedConverters;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry;
 import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedMappings;
 import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedQueryBuilder;
+import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType;
+import com.google.common.base.Function;
+import com.google.common.collect.FluentIterable;
 import com.google.common.collect.ImmutableList;
 
 /**
@@ -51,7 +54,12 @@ final class SnomedRefSetMemberSearchRequest extends SnomedSearchRequest<SnomedRe
 		/**
 		 * Filter by referenced component
 		 */
-		REFERENCED_COMPONENT
+		REFERENCED_COMPONENT,
+		
+		/**
+		 * Filter by refset type
+		 */
+		REFSET_TYPE
 	}
 	
 	SnomedRefSetMemberSearchRequest() {}
@@ -63,6 +71,7 @@ final class SnomedRefSetMemberSearchRequest extends SnomedSearchRequest<SnomedRe
 		final BooleanFilter filter = new BooleanFilter();
 		final Collection<String> referenceSetIds = getCollection(OptionKey.REFSET, String.class);
 		final Collection<String> referencedComponentIds = getCollection(OptionKey.REFERENCED_COMPONENT, String.class);
+		final Collection<SnomedRefSetType> refSetTypes = getCollection(OptionKey.REFSET_TYPE, SnomedRefSetType.class);
 		
 		if (!referenceSetIds.isEmpty()) {
 			addFilterClause(filter, SnomedMappings.memberRefSetId().createTermsFilter(StringToLongFunction.copyOf(referenceSetIds)), Occur.MUST);
@@ -70,6 +79,17 @@ final class SnomedRefSetMemberSearchRequest extends SnomedSearchRequest<SnomedRe
 		
 		if (!referencedComponentIds.isEmpty()) {
 			addFilterClause(filter, SnomedMappings.memberReferencedComponentId().createTermsFilter(StringToLongFunction.copyOf(referencedComponentIds)), Occur.MUST);
+		}
+		
+		if (!refSetTypes.isEmpty()) {
+			final ImmutableList<Integer> types = FluentIterable.from(refSetTypes).transform(new Function<SnomedRefSetType, Integer>() {
+				@Override
+				public Integer apply(SnomedRefSetType input) {
+					return input.getValue();
+				}
+			}).toList();
+			
+			addFilterClause(filter, SnomedMappings.memberRefSetType().createTermsFilter(types), Occur.MUST);
 		}
 		
 		SnomedQueryBuilder queryBuilder = SnomedMappings.newQuery().and(SnomedMappings.memberReferencedComponentType().toExistsQuery());
