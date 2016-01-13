@@ -91,6 +91,10 @@ public class SnomedDescriptionIndexEntry extends SnomedIndexEntry implements ICo
 			builder.score(input.getScore());
 		}
 		
+		if (input.getType() != null && input.getType().getPt() != null) {
+			builder.typeLabel(input.getType().getPt().getTerm());
+		}
+		
 		for (final String refSetId : input.getAcceptabilityMap().keySet()) {
 			builder.acceptability(refSetId, input.getAcceptabilityMap().get(refSetId));
 		}
@@ -113,6 +117,7 @@ public class SnomedDescriptionIndexEntry extends SnomedIndexEntry implements ICo
 		private String conceptId;
 		private String languageCode;
 		private String typeId;
+		private String typeLabel;
 		private String caseSignificanceId;
 		private final ImmutableMap.Builder<String, Acceptability> acceptabilityMapBuilder = ImmutableMap.builder();
 
@@ -145,6 +150,11 @@ public class SnomedDescriptionIndexEntry extends SnomedIndexEntry implements ICo
 			this.typeId = typeId;
 			return getSelf();
 		}
+		
+		public Builder typeLabel(final String typeLabel) {
+			this.typeLabel = typeLabel;
+			return getSelf();
+		}
 
 		public Builder caseSignificanceId(final String caseSignificanceId) {
 			this.caseSignificanceId = caseSignificanceId;
@@ -174,6 +184,7 @@ public class SnomedDescriptionIndexEntry extends SnomedIndexEntry implements ICo
 					languageCode,
 					term,
 					typeId,
+					typeLabel == null ? typeId : typeLabel,
 					caseSignificanceId,
 					acceptabilityMapBuilder.build());
 		}
@@ -185,6 +196,7 @@ public class SnomedDescriptionIndexEntry extends SnomedIndexEntry implements ICo
 	private final String typeId;
 	private final String caseSignificanceId;
 	private final ImmutableMap<String, Acceptability> acceptabilityMap;
+	private final String typeLabel;
 
 	private SnomedDescriptionIndexEntry(final String id,
 			final String label,
@@ -197,7 +209,8 @@ public class SnomedDescriptionIndexEntry extends SnomedIndexEntry implements ICo
 			final String conceptId,
 			final String languageCode,
 			final String term,
-			final String typeId, 
+			final String typeId,
+			final String typeLabel,
 			final String caseSignificanceId,
 			final ImmutableMap<String, Acceptability> acceptabilityMap) {
 
@@ -215,6 +228,7 @@ public class SnomedDescriptionIndexEntry extends SnomedIndexEntry implements ICo
 		this.languageCode = checkNotNull(languageCode, "Description language code may not be null.");
 		this.term = checkNotNull(term, "Description term may not be null.");
 		this.typeId = checkNotNull(typeId, "Description type identifier may not be null.");
+		this.typeLabel = typeLabel;
 		this.caseSignificanceId = checkNotNull(caseSignificanceId, "Description case significance identifier may not be null.");
 		this.acceptabilityMap = checkNotNull(acceptabilityMap, "Description acceptability map may not be null."); 
 	}
@@ -245,6 +259,13 @@ public class SnomedDescriptionIndexEntry extends SnomedIndexEntry implements ICo
 	 */
 	public String getTypeId() {
 		return typeId;
+	}
+	
+	/**
+	 * @return the label of the description type concept
+	 */
+	public String getTypeLabel() {
+		return typeLabel;
 	}
 
 	/**
