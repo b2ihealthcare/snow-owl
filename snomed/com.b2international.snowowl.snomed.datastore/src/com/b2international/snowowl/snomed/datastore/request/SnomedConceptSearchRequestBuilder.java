@@ -26,7 +26,7 @@ public final class SnomedConceptSearchRequestBuilder extends SnomedSearchRequest
 	SnomedConceptSearchRequestBuilder(String repositoryId) {
 		super(repositoryId);
 	}
-	
+
 	public final SnomedConceptSearchRequestBuilder withDoi() {
 		return addOption(SnomedConceptSearchRequest.OptionKey.USE_DOI, true);
 	}
@@ -38,15 +38,27 @@ public final class SnomedConceptSearchRequestBuilder extends SnomedSearchRequest
 	public final SnomedConceptSearchRequestBuilder filterByEscg(String expression) {
 		return addOption(SnomedConceptSearchRequest.OptionKey.ESCG, expression);
 	}
-	
+
+	/**
+	 * Filter matches to have the specified parent a direct super type.
+	 * 
+	 * @param parentId
+	 * @return
+	 */
 	public final SnomedConceptSearchRequestBuilder filterByParent(String parentId) {
 		return addOption(SnomedConceptSearchRequest.OptionKey.PARENT, parentId);
 	}
-	
+
+	/**
+	 * Filter matches to have the specified ancestor identifier in their super type hierarchy (including direct parents).
+	 * 
+	 * @param ancestorId
+	 * @return
+	 */
 	public final SnomedConceptSearchRequestBuilder filterByAncestor(String ancestorId) {
 		return addOption(SnomedConceptSearchRequest.OptionKey.ANCESTOR, ancestorId);
 	}
-	
+
 	@Override
 	protected SearchRequest<SnomedConcepts> create() {
 		return new SnomedConceptSearchRequest();
