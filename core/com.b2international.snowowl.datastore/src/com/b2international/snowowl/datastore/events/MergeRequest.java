@@ -17,6 +17,9 @@ package com.b2international.snowowl.datastore.events;
 
 import java.util.Set;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.b2international.snowowl.core.branch.Branch;
 import com.b2international.snowowl.core.branch.BranchManager;
 import com.b2international.snowowl.core.branch.BranchMergeException;
@@ -76,6 +79,8 @@ public final class MergeRequest extends BaseRequest<RepositoryContext, Branch> {
 
 		protected abstract Branch execute(Branch source, Branch target, String commitMessage);
 	}
+
+	private static final Logger LOG = LoggerFactory.getLogger(MergeRequest.class);
 	
 	private final String sourcePath;
 	private final String targetPath;
@@ -145,7 +150,11 @@ public final class MergeRequest extends BaseRequest<RepositoryContext, Branch> {
 			try {
 				return type.execute(source, target, commitMessage);
 			} finally {
-				lockManager.unlock(lockContext, lockTargets);
+				try {
+					lockManager.unlock(lockContext, lockTargets);
+				} catch (OperationLockException e) {
+					LOG.error("Failed to unlock locked targets in MergeRequest.", e);
+				}
 			}
 			
 		} catch (NotFoundException e) {
