@@ -16,6 +16,8 @@
 package com.b2international.snowowl.snomed.datastore.index.entry;
 
 import static com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants.CONCEPT_NUMBER;
+import static com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants.DESCRIPTION_NUMBER;
+import static com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants.RELATIONSHIP_NUMBER;
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.collect.Maps.newHashMap;
@@ -167,7 +169,7 @@ public class SnomedRefSetMemberIndexEntry extends SnomedIndexEntry implements IC
 		return FluentIterable.from(refSetMembers).transform(new Function<SnomedReferenceSetMember, SnomedRefSetMemberIndexEntry>() {
 			@Override
 			public SnomedRefSetMemberIndexEntry apply(final SnomedReferenceSetMember refSetMember) {
-				return builder(refSetMember).label(refSetMember.getReferencedComponent()).build();
+				return builder(refSetMember).build();
 			}
 		}).toList();
 	}
@@ -225,9 +227,9 @@ public class SnomedRefSetMemberIndexEntry extends SnomedIndexEntry implements IC
 			if (component instanceof SnomedConcept) {
 				this.referencedComponentType = CONCEPT_NUMBER;
 			} else if (component instanceof SnomedDescription) {
-				this.referencedComponentType = CONCEPT_NUMBER;
+				this.referencedComponentType = DESCRIPTION_NUMBER;
 			} else if (component instanceof SnomedRelationship) {
-				this.referencedComponentType = CONCEPT_NUMBER;
+				this.referencedComponentType = RELATIONSHIP_NUMBER;
 			} else {
 				this.referencedComponentType = -1;
 			}
@@ -240,20 +242,6 @@ public class SnomedRefSetMemberIndexEntry extends SnomedIndexEntry implements IC
 			return this;
 		}
 		
-		public Builder label(final SnomedCoreComponent component) {
-			if (component instanceof SnomedConcept) {
-				this.label = ((SnomedConcept) component).getPt().getTerm();
-			} else if (component instanceof SnomedDescription) {
-				this.label = ((SnomedDescription) component).getTerm();
-			} else if (component instanceof SnomedRelationship) {
-				this.label = ((SnomedRelationship) component).getId();
-			} else {
-				this.label = component.getId();
-			}
-			
-			return this;
-		}
-
 		public SnomedRefSetMemberIndexEntry build() {
 			return new SnomedRefSetMemberIndexEntry(id,
 					label,
