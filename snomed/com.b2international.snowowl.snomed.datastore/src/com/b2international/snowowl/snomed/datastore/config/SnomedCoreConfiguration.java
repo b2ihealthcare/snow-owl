@@ -21,6 +21,7 @@ import javax.validation.constraints.NotNull;
 
 import org.hibernate.validator.constraints.NotEmpty;
 
+import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 /**
@@ -53,6 +54,24 @@ public class SnomedCoreConfiguration {
 	
 	@NotNull
 	private String defaultNamespace = DEFAULT_NAMESPACE;
+	
+	@NotEmpty
+	private String concreteDomainTypeRefsetIdentifier = Concepts.REFSET_CONCRETE_DOMAIN_TYPE;
+	
+	@NotEmpty
+	private String stringDatatypeRefsetIdentifier = Concepts.REFSET_STRING_DATATYPE;
+	
+	@NotEmpty
+	private String booleanDatatypeRefsetIdentifier = Concepts.REFSET_BOOLEAN_DATATYPE;
+	
+	@NotEmpty
+	private String floatDatatypeRefsetIdentifier = Concepts.REFSET_FLOAT_DATATYPE;
+	
+	@NotEmpty
+	private String integerDatatypeRefsetIdentifier = Concepts.REFSET_INTEGER_DATATYPE;
+	
+	@NotEmpty
+	private String datetimeDatatypeRefsetIdentifier = Concepts.REFSET_DATETIME_DATATYPE;
 	
 	private boolean concreteDomainSupport;
 	private boolean showReasonerUsageWarning = true;
@@ -156,5 +175,124 @@ public class SnomedCoreConfiguration {
 	public void setShowReasonerUsageWarningEnabled(boolean showReasonerUsageWarning) {
 		this.showReasonerUsageWarning = showReasonerUsageWarning;
 	}
-	
+
+	/**
+	 * The ID of the concrete domain type reference set identifier concept
+	 * 
+	 * @return the concreteDomainTypeRefsetIdentifier
+	 */
+	@JsonProperty("concreteDomainTypeRefsetIdentifier")
+	public String getConcreteDomainTypeRefsetIdentifier() {
+		return concreteDomainTypeRefsetIdentifier;
+	}
+
+	/**
+	 * Sets the ID of the concrete domain type reference set identifier concept
+	 * 
+	 * @param concreteDomainTypeRefsetIdentifier the concreteDomainTypeRefsetIdentifier to set
+	 */
+	@JsonProperty("concreteDomainTypeRefsetIdentifier")
+	public void setConcreteDomainTypeRefsetIdentifier(String concreteDomainTypeRefsetIdentifier) {
+		this.concreteDomainTypeRefsetIdentifier = concreteDomainTypeRefsetIdentifier;
+	}
+
+	/**
+	 * The ID of the string datatype reference set identifier concept
+	 * 
+	 * @return the stringDatatypeRefsetIdentifier
+	 */
+	@JsonProperty("stringDataTypeRefsetIdentifier")
+	public String getStringDatatypeRefsetIdentifier() {
+		return stringDatatypeRefsetIdentifier;
+	}
+
+	/**
+	 * Sets the ID of the string datatype reference set identifier concept
+	 * 
+	 * @param stringDatatypeRefsetIdentifier the stringDatatypeRefsetIdentifier to set
+	 */
+	@JsonProperty("stringDataTypeRefsetIdentifier")
+	public void setStringDatatypeRefsetIdentifier(String stringDatatypeRefsetIdentifier) {
+		this.stringDatatypeRefsetIdentifier = stringDatatypeRefsetIdentifier;
+	}
+
+	/**
+	 * The ID of the boolean datatype reference set identifier concept
+	 * 
+	 * @return the booleanDatatypeRefsetIdentifier
+	 */
+	@JsonProperty("booleanDataTypeRefsetIdentifier")
+	public String getBooleanDatatypeRefsetIdentifier() {
+		return booleanDatatypeRefsetIdentifier;
+	}
+
+	/**
+	 * Sets the ID of the boolean datatype reference set identifier concept
+	 * 
+	 * @param booleanDatatypeRefsetIdentifier the booleanDatatypeRefsetIdentifier to set
+	 */
+	@JsonProperty("booleanDataTypeRefsetIdentifier")
+	public void setBooleanDatatypeRefsetIdentifier(String booleanDatatypeRefsetIdentifier) {
+		this.booleanDatatypeRefsetIdentifier = booleanDatatypeRefsetIdentifier;
+	}
+
+	/**
+	 * The ID of the float datatype reference set identifier concept
+	 * 
+	 * @return the floatDatatypeRefsetIdentifier
+	 */
+	@JsonProperty("floatDataTypeRefsetIdentifier")
+	public String getFloatDatatypeRefsetIdentifier() {
+		return floatDatatypeRefsetIdentifier;
+	}
+
+	/**
+	 * Sets the ID of the float datatype reference set identifier concept
+	 * 
+	 * @param floatDatatypeRefsetIdentifier the floatDatatypeRefsetIdentifier to set
+	 */
+	@JsonProperty("floatDataTypeRefsetIdentifier")
+	public void setFloatDatatypeRefsetIdentifier(String floatDatatypeRefsetIdentifier) {
+		this.floatDatatypeRefsetIdentifier = floatDatatypeRefsetIdentifier;
+	}
+
+	/**
+	 * The ID of the integer datatype reference set identifier concept
+	 * 
+	 * @return the integerDatatypeRefsetIdentifier
+	 */
+	@JsonProperty("integerDataTypeRefsetIdentifier")
+	public String getIntegerDatatypeRefsetIdentifier() {
+		return integerDatatypeRefsetIdentifier;
+	}
+
+	/**
+	 * Sets the ID of the integer datatype reference set identifier concept
+	 * 
+	 * @param integerDatatypeRefsetIdentifier the integerDatatypeRefsetIdentifier to set
+	 */
+	@JsonProperty("integerDataTypeRefsetIdentifier")
+	public void setIntegerDatatypeRefsetIdentifier(String integerDatatypeRefsetIdentifier) {
+		this.integerDatatypeRefsetIdentifier = integerDatatypeRefsetIdentifier;
+	}
+
+	/**
+	 * The ID of the datetime datatype reference set identifier concept
+	 * 
+	 * @return the datetimeDatatypeRefsetIdentifier
+	 */
+	@JsonProperty("datetimeDataTypeRefsetIdentifier")
+	public String getDatetimeDatatypeRefsetIdentifier() {
+		return datetimeDatatypeRefsetIdentifier;
+	}
+
+	/**
+	 * Sets the ID of the datetime datatype reference set identifier concept
+	 * 
+	 * @param datetimeDatatypeRefsetIdentifier the datetimeDatatypeRefsetIdentifier to set
+	 */
+	@JsonProperty("datetimeDataTypeRefsetIdentifier")
+	public void setDatetimeDatatypeRefsetIdentifier(String datetimeDatatypeRefsetIdentifier) {
+		this.datetimeDatatypeRefsetIdentifier = datetimeDatatypeRefsetIdentifier;
+	}
 }

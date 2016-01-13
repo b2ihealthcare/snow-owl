@@ -200,6 +200,13 @@ public abstract class SnomedConstants {
 		public static final String REFSET_FLOAT_TYPE = "20041000132109";
 		public static final String REFSET_STRING_TYPE = "20021000132103";
 		public static final String REFSET_CONCRETE_DOMAIN_TYPE_SG = "20051000132107";
+		
+		public static final String REFSET_BOOLEAN_DATATYPE = "759160691000154109";
+		public static final String REFSET_DATETIME_DATATYPE = "492980241000154105";
+		public static final String REFSET_INTEGER_DATATYPE = "373998411000154109";
+		public static final String REFSET_FLOAT_DATATYPE = "744104701000154109";
+		public static final String REFSET_STRING_DATATYPE = "513945551000154100";
+		public static final String REFSET_CONCRETE_DOMAIN_TYPE = "289191171000154104";
 
 		public static final String REFSET_DRUG_TO_SOURCE_DRUG_SIMPLE_MAP = "776245861000133102";
 		public static final String REFSET_DRUG_TO_GROUPER_SIMPLE_MAP = "499896751000133109";
