@@ -25,6 +25,7 @@ import static com.b2international.snowowl.snomed.api.rest.SnomedBranchingApiAsse
 import static com.b2international.snowowl.snomed.api.rest.SnomedBranchingApiAssert.givenBranchWithPath;
 import static com.b2international.snowowl.snomed.api.rest.SnomedComponentApiAssert.assertComponentHasProperty;
 import static com.google.common.collect.Maps.newHashMap;
+import static org.junit.Assert.fail;
 
 import java.util.Date;
 import java.util.Map;
@@ -32,6 +33,7 @@ import java.util.Map;
 import org.junit.Test;
 
 import com.b2international.snowowl.core.api.IBranchPath;
+import com.b2international.snowowl.datastore.BranchPathUtils;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.api.rest.AbstractSnomedApiTest;
 import com.b2international.snowowl.snomed.api.rest.SnomedApiTestConstants;
@@ -457,6 +459,68 @@ public class SnomedMergeApiTest extends AbstractSnomedApiTest {
 		assertConceptCanBeUpdated(testBranchPath, "C1", changeOnBranch);
 
 		assertBranchConflicts(testBranchPath.getParent(), testBranchPath, "Rebase conflicting concept deletion");
+	}
+
+	@Test
+	public void noRebaseLockedBranch() {
+		final IBranchPath siblingA = BranchPathUtils.createPath(testBranchPath, "A");
+		final IBranchPath siblingB = BranchPathUtils.createPath(testBranchPath, "B");
+		
+		givenBranchWithPath(testBranchPath);
+		givenBranchWithPath(siblingA);
+		givenBranchWithPath(siblingB);
+		
+		assertConceptCreated(testBranchPath, "C1");
+		assertConceptExists(testBranchPath, "C1");
+		assertConceptNotExists(siblingA, "C1");
+		assertConceptNotExists(siblingB, "C1");
+		
+		// XXX: RestAssured doesn't support parallel requests, test may fail spuriously
+		new Thread() {
+			@Override
+			public void run() {
+				try {
+					Thread.sleep(100L);
+				} catch (InterruptedException e) {
+					fail("Interrupted while waiting in the asynchronous request thread.");
+				}
+				
+				assertBranchConflicts(testBranchPath, siblingB, "Rebase sibling B");
+			}
+		}.start();
+		
+		assertBranchCanBeRebased(siblingA, "Rebase sibling A");
+		
+		assertConceptExists(testBranchPath, "C1");
+		assertConceptExists(siblingA, "C1");
+		assertConceptNotExists(siblingB, "C1");
+	}
+	
+	@Test
+	public void noRebaseSameBranch() {
+		final IBranchPath siblingA = createNestedBranch("A");
+		
+		assertConceptCreated(testBranchPath, "C1");
+		assertConceptExists(testBranchPath, "C1");
+		assertConceptNotExists(siblingA, "C1");
+		
+		new Thread() {
+			@Override
+			public void run() {
+				try {
+					Thread.sleep(100L);
+				} catch (InterruptedException e) {
+					fail("Interrupted while waiting in the asynchronous request thread.");
+				}
+
+				assertBranchConflicts(testBranchPath, siblingA, "Rebase sibling A (again)");
+			}
+		}.start();
+		
+		assertBranchCanBeRebased(siblingA, "Rebase sibling A");
+		
+		assertConceptExists(testBranchPath, "C1");
+		assertConceptExists(siblingA, "C1");
 	}
 
 	@Test

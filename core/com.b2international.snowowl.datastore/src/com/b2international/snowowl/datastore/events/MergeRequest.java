@@ -15,6 +15,8 @@
  */
 package com.b2international.snowowl.datastore.events;
 
+import java.util.Set;
+
 import com.b2international.snowowl.core.branch.Branch;
 import com.b2international.snowowl.core.branch.BranchManager;
 import com.b2international.snowowl.core.branch.BranchMergeException;
@@ -23,57 +25,82 @@ import com.b2international.snowowl.core.events.BaseRequest;
 import com.b2international.snowowl.core.exceptions.BadRequestException;
 import com.b2international.snowowl.core.exceptions.ConflictException;
 import com.b2international.snowowl.core.exceptions.NotFoundException;
+import com.b2international.snowowl.core.users.SpecialUserStore;
+import com.b2international.snowowl.datastore.oplock.IOperationLockTarget;
+import com.b2international.snowowl.datastore.oplock.OperationLockException;
+import com.b2international.snowowl.datastore.oplock.impl.DatastoreLockContext;
+import com.b2international.snowowl.datastore.oplock.impl.DatastoreLockContextDescriptions;
+import com.b2international.snowowl.datastore.oplock.impl.DatastoreOperationLockException;
+import com.b2international.snowowl.datastore.oplock.impl.IDatastoreOperationLockManager;
+import com.b2international.snowowl.datastore.oplock.impl.SingleRepositoryAndBranchLockTarget;
 import com.b2international.snowowl.datastore.review.BranchState;
 import com.b2international.snowowl.datastore.review.Review;
 import com.b2international.snowowl.datastore.review.ReviewManager;
 import com.google.common.base.Strings;
+import com.google.common.collect.Sets;
 
 /**
  * @since 4.1
  */
 public final class MergeRequest extends BaseRequest<RepositoryContext, Branch> {
 
-	private final String source;
-	private final String target;
+	private enum Type {
+		
+		/**
+		 * Merge source into target (only if target is the most recent version of source's parent).
+		 */
+		MERGE {
+			@Override
+			protected Branch execute(Branch source, Branch target, String commitMessage) {
+				try {
+					return target.merge(source, commitMessage);
+				} catch (BranchMergeException e) {
+					throw new ConflictException("Cannot merge source '%s' into target '%s'.", source.path(), target.path(), e);
+				}
+			}
+		}, 
+		
+		/**
+		 * Rebase target on source (also allow STALE targets on not the most recent source branches).
+		 */
+		REBASE {
+			@Override
+			protected Branch execute(Branch source, Branch target, String commitMessage) {
+				try {
+					return target.rebase(source, commitMessage);
+				} catch (BranchMergeException e) {
+					throw new ConflictException("Cannot rebase target '%s' with source '%s'.", target.path(), source.path(), e);
+				}
+			}
+		};
+
+		protected abstract Branch execute(Branch source, Branch target, String commitMessage);
+	}
+	
+	private final String sourcePath;
+	private final String targetPath;
 	private final String commitMessage;
 	private final String reviewId;
 
-	public MergeRequest(final String source, final String target, final String commitMessage, String reviewId) {
-		this.source = source;
-		this.target = target;
-		this.commitMessage = Strings.isNullOrEmpty(commitMessage) ? defaultMessage() : commitMessage;
+	private static String defaultMessage(final String sourcePath, final String targetPath) {
+		return String.format("Merge branch '%s' into '%s'", sourcePath, targetPath);
+	}
+
+	public MergeRequest(final String sourcePath, final String targetPath, final String commitMessage, String reviewId) {
+		this.sourcePath = sourcePath;
+		this.targetPath = targetPath;
+		this.commitMessage = Strings.isNullOrEmpty(commitMessage) ? defaultMessage(sourcePath, targetPath) : commitMessage;
 		this.reviewId = reviewId;
 	}
 
-	private String defaultMessage() {
-		return String.format("Merge branch '%s' into '%s'", getSource(), getTarget());
-	}
-
-	public String getCommitMessage() {
-		return commitMessage;
-	}
-
-	public String getSource() {
-		return source;
-	}
-
-	public String getTarget() {
-		return target;
-	}
-	
-	public String getReviewId() {
-		return reviewId;
-	}
-	
 	@Override
 	public Branch execute(RepositoryContext context) {
 		try {
 			final BranchManager branchManager = context.service(BranchManager.class);
 			final ReviewManager reviewManager = context.service(ReviewManager.class);
 			
-			final String reviewId = getReviewId();
-			final Branch source = branchManager.getBranch(getSource());
-			final Branch target = branchManager.getBranch(getTarget());
+			final Branch source = branchManager.getBranch(sourcePath);
+			final Branch target = branchManager.getBranch(targetPath);
 			
 			if (reviewId != null) {
 				Review review = reviewManager.getReview(reviewId);
@@ -89,24 +116,38 @@ public final class MergeRequest extends BaseRequest<RepositoryContext, Branch> {
 				}
 			}
 			
+			final Type type;
+			
 			if (source.parent().equals(target)) {
-				// merge source into target (only if target is the most recent version of source's parent)
-				try {
-					return target.merge(source, getCommitMessage());
-				} catch (BranchMergeException e) {
-					throw new ConflictException("Cannot merge source '%s' into target '%s'.", source.path(), target.path(), e);
-				}
-				
+				type = Type.MERGE;
 			} else if (target.parent().equals(source)) {
-				// rebase target on source (also allow STALE targets on not the most recent source branches)
-				try {
-					return target.rebase(source, getCommitMessage());
-				} catch (BranchMergeException e) {
-					throw new ConflictException("Cannot rebase target '%s' with source '%s'.", target.path(), source.path(), e);
-				}
+				type = Type.REBASE;
+			} else {
+				throw new BadRequestException("Cannot merge source '%s' into target '%s', because there is no relation between them.", source.path(), target.path());
 			}
 			
-			throw new BadRequestException("Cannot merge source '%s' into target '%s', because there is no relation between them.", source.path(), target.path());
+			final String repositoryId = context.id();
+			final IDatastoreOperationLockManager lockManager = context.service(IDatastoreOperationLockManager.class);
+			// FIXME: Using "System" user and "synchronize" description until a more suitable pair can be specified here
+			final DatastoreLockContext lockContext = new DatastoreLockContext(SpecialUserStore.SYSTEM_USER_NAME, DatastoreLockContextDescriptions.SYNCHRONIZE);
+			final Set<IOperationLockTarget> lockTargets = Sets.<IOperationLockTarget>newHashSet(
+					new SingleRepositoryAndBranchLockTarget(repositoryId, source.branchPath()),
+					new SingleRepositoryAndBranchLockTarget(repositoryId, target.branchPath()));
+			
+			try {
+				lockManager.lock(lockContext, IDatastoreOperationLockManager.IMMEDIATE, lockTargets);
+			} catch (DatastoreOperationLockException e) {
+				throw new ConflictException("Cannot merge source '%s' into target '%s'. %s", source.path(), target.path(), e.getMessage());
+			} catch (InterruptedException e) {
+				throw new ConflictException("Cannot merge source '%s' into target '%s', the lock obtaining process was interrupted.", source.path(), target.path());
+			}
+
+			try {
+				return type.execute(source, target, commitMessage);
+			} finally {
+				lockManager.unlock(lockContext, lockTargets);
+			}
+			
 		} catch (NotFoundException e) {
 			throw e.toBadRequestException();
 		}
@@ -121,8 +162,8 @@ public final class MergeRequest extends BaseRequest<RepositoryContext, Branch> {
 	public String toString() {
 		return String.format("{type:%s, source:%s, target:%s, commitMessage:%s, reviewId:%s}", 
 				getClass().getSimpleName(),
-				source,
-				target,
+				sourcePath,
+				targetPath,
 				commitMessage,
 				reviewId);
 	}

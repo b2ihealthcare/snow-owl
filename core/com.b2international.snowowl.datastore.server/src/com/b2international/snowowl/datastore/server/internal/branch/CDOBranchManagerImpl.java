@@ -32,11 +32,14 @@ import com.b2international.snowowl.core.Metadata;
 import com.b2international.snowowl.core.branch.Branch;
 import com.b2international.snowowl.core.branch.BranchManager;
 import com.b2international.snowowl.core.branch.BranchMergeException;
+import com.b2international.snowowl.core.users.SpecialUserStore;
 import com.b2international.snowowl.datastore.BranchPathUtils;
 import com.b2international.snowowl.datastore.cdo.CDOBranchPath;
 import com.b2international.snowowl.datastore.cdo.ICDOConnection;
 import com.b2international.snowowl.datastore.cdo.ICDORepository;
 import com.b2international.snowowl.datastore.events.BranchChangedEvent;
+import com.b2international.snowowl.datastore.oplock.impl.DatastoreLockContextDescriptions;
+import com.b2international.snowowl.datastore.server.CDOServerCommitBuilder;
 import com.b2international.snowowl.datastore.server.internal.InternalRepository;
 import com.b2international.snowowl.datastore.store.Store;
 import com.b2international.snowowl.datastore.store.query.QueryBuilder;
@@ -122,7 +125,11 @@ public class CDOBranchManagerImpl extends BranchManagerImpl {
             targetTransaction.setCommitComment(commitMessage);
 
             if (!dryRun) {
-	            CDOCommitInfo commitInfo = targetTransaction.commit();
+    			// FIXME: Using "System" user and "synchronize" description until a more suitable pair can be specified here
+            	CDOCommitInfo commitInfo = new CDOServerCommitBuilder(SpecialUserStore.SYSTEM_USER_NAME, commitMessage, targetTransaction)
+            			.parentContextDescription(DatastoreLockContextDescriptions.SYNCHRONIZE)
+            			.commitOne();
+            	
 	            return target.withHeadTimestamp(commitInfo.getTimeStamp());
             } else {
             	return target;
