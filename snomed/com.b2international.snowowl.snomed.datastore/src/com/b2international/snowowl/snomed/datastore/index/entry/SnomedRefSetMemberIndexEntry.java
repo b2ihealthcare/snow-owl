@@ -33,6 +33,7 @@ import org.apache.lucene.document.Document;
 import org.apache.lucene.index.IndexableField;
 
 import com.b2international.commons.BooleanUtils;
+import com.b2international.commons.StringUtils;
 import com.b2international.commons.functions.UncheckedCastFunction;
 import com.b2international.snowowl.core.CoreTerminologyBroker;
 import com.b2international.snowowl.core.api.IComponent;
@@ -606,6 +607,15 @@ public class SnomedRefSetMemberIndexEntry extends SnomedIndexEntry implements IC
 	public Integer getIntegerField(final String fieldName) {
 		return getField(fieldName, Integer.class);
 	}
+	/**
+	 * @param fieldName the name of the additional field
+	 * @return the {@code Long} value stored for the field
+	 * @throws IllegalStateException if no value was set for the field
+	 * @throws ClassCastException if the value is not of type {@code Long}
+	 */	
+	public Long getLongField(final String fieldName) {
+		return getField(fieldName, Long.class);
+	}
 
 	/**
 	 * @param fieldName the name of the additional field
@@ -736,7 +746,7 @@ public class SnomedRefSetMemberIndexEntry extends SnomedIndexEntry implements IC
 	}
 
 	public String getAcceptabilityId() {
-		return getStringField(SnomedMappings.memberAcceptabilityId().fieldName());
+		return StringUtils.valueOfOrEmptyString(getLongField(SnomedMappings.memberAcceptabilityId().fieldName()));
 	}
 
 	public Integer getDescriptionLength() {
