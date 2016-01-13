@@ -28,6 +28,7 @@ import com.b2international.snowowl.core.api.index.IIndexEntry;
 import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.datastore.index.mapping.Mappings;
 import com.b2international.snowowl.snomed.core.domain.ISnomedConcept;
+import com.b2international.snowowl.snomed.core.domain.ISnomedDescription;
 import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedMappings;
 import com.google.common.base.Function;
 import com.google.common.collect.FluentIterable;
@@ -76,7 +77,9 @@ public class SnomedConceptIndexEntry extends SnomedIndexEntry implements ICompon
 		return FluentIterable.from(concepts).transform(new Function<ISnomedConcept, SnomedConceptIndexEntry>() {
 			@Override
 			public SnomedConceptIndexEntry apply(ISnomedConcept input) {
-				return SnomedConceptIndexEntry.builder(input).label(input.getPt().getTerm()).build();
+				final ISnomedDescription pt = input.getPt();
+				final String preferredTerm = pt == null ? input.getId() : pt.getTerm();
+				return SnomedConceptIndexEntry.builder(input).label(preferredTerm).build();
 			}
 		}).toList();
 	}
