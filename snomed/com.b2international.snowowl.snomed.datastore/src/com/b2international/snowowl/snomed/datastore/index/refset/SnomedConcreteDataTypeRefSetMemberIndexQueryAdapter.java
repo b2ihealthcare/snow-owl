@@ -77,7 +77,7 @@ public class SnomedConcreteDataTypeRefSetMemberIndexQueryAdapter extends SnomedR
 		}
 		member.setAttributeLabel(Mappings.label().getValue(doc));
 		
-		DataType dataType = SnomedRefSetUtil.DATA_TYPE_BIMAP.get(SnomedRefSetUtil.getDataType(member.getRefSetIdentifierId()));
+		DataType dataType = SnomedRefSetUtil.DATATYPE_TO_REFSET_MAP.inverse().get(member.getRefSetIdentifierId());
 		member.setDataType(dataType);
 		Object deserializeValue = SnomedRefSetUtil.deserializeValue(dataType, doc.get(SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_SERIALIZED_VALUE));
 		member.setValue(deserializeValue);

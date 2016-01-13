@@ -19,7 +19,6 @@ import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
 
 import java.util.Date;
-import java.util.Map;
 
 import javax.annotation.Nonnull;
 
@@ -43,13 +42,13 @@ import com.b2international.snowowl.scripting.services.api.IAuthoringService;
 import com.b2international.snowowl.snomed.Annotatable;
 import com.b2international.snowowl.snomed.Concept;
 import com.b2international.snowowl.snomed.Relationship;
-import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.SnomedPackage;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.snomed.datastore.SnomedConceptLookupService;
 import com.b2international.snowowl.snomed.datastore.SnomedEditingContext;
 import com.b2international.snowowl.snomed.datastore.SnomedRefSetEditingContext;
 import com.b2international.snowowl.snomed.datastore.SnomedRefSetLookupService;
+import com.b2international.snowowl.snomed.datastore.SnomedRefSetUtil;
 import com.b2international.snowowl.snomed.datastore.SnomedRelationshipLookupService;
 import com.b2international.snowowl.snomed.snomedrefset.DataType;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedConcreteDataTypeRefSet;
@@ -59,7 +58,6 @@ import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
 import com.google.common.collect.BiMap;
 import com.google.common.collect.ImmutableBiMap;
-import com.google.common.collect.ImmutableMap;
 
 /**
  * Authoring service singleton implementation.
@@ -77,18 +75,14 @@ public enum AuthoringService implements IAuthoringService {
 	 * Map for navigating between the {@link ConcreteDomainDataType} and the
 	 * {@link DataType} enumerations.
 	 */
-	public static final BiMap<ConcreteDomainDataType, DataType> DATA_TYPE_BIMAP = ImmutableBiMap
-			.<ConcreteDomainDataType, DataType> builder().put(ConcreteDomainDataType.BOOLEAN, DataType.BOOLEAN)
-			.put(ConcreteDomainDataType.DATE, DataType.DATE).put(ConcreteDomainDataType.DECIMAL, DataType.DECIMAL)
-			.put(ConcreteDomainDataType.INTEGER, DataType.INTEGER).put(ConcreteDomainDataType.STRING, DataType.STRING).build();
-
-	/**
-	 * Map for looking up the concrete data type reference set identifier
-	 * concept IDs based on the associated concrete domain data types.
-	 */
-	private static final Map<DataType, String> TYPE_TO_REFSET_MAP = ImmutableMap.of(DataType.BOOLEAN, Concepts.REFSET_BOOLEAN_TYPE,
-			DataType.DATE, Concepts.REFSET_DATETIME_TYPE, DataType.DECIMAL, Concepts.REFSET_FLOAT_TYPE, DataType.INTEGER,
-			Concepts.REFSET_INTEGER_TYPE, DataType.STRING, Concepts.REFSET_STRING_TYPE);
+	public static final BiMap<ConcreteDomainDataType, DataType> CONCRETE_DOMAIN_DATATYPE_TO_DATATYPE_BIMAP = ImmutableBiMap
+			.<ConcreteDomainDataType, DataType> builder()
+			.put(ConcreteDomainDataType.BOOLEAN, DataType.BOOLEAN)
+			.put(ConcreteDomainDataType.DATE, DataType.DATE)
+			.put(ConcreteDomainDataType.DECIMAL, DataType.DECIMAL)
+			.put(ConcreteDomainDataType.INTEGER, DataType.INTEGER)
+			.put(ConcreteDomainDataType.STRING, DataType.STRING)
+			.build();
 
 	/** Logger instance for the {@link AuthoringService authoring service}. */
 	private static final Logger LOGGER = LoggerFactory.getLogger(AuthoringService.class);
@@ -379,8 +373,7 @@ public enum AuthoringService implements IAuthoringService {
 	 */
 	@Nonnull
 	private String getIdentifierConceptId(final DataType dataType) {
-		return checkNotNull(TYPE_TO_REFSET_MAP.get(dataType),
-				"Error while getting identifier concept ID for concrete data type reference set. Type: " + dataType);
+		return checkNotNull(SnomedRefSetUtil.DATATYPE_TO_REFSET_MAP.get(dataType), "Error while getting identifier concept ID for concrete data type reference set. Type: " + dataType);
 	}
 
 	/* returns with the unique ID of the default SNOMED CT module concept. */
@@ -464,7 +457,7 @@ public enum AuthoringService implements IAuthoringService {
 	 */
 	@Nonnull
 	private DataType getDataType(final ConcreteDomainDataType concreteDomainDataType) {
-		return checkNotNull(DATA_TYPE_BIMAP.get(concreteDomainDataType), "Error while getting data type for concrete domain data type: "
+		return checkNotNull(CONCRETE_DOMAIN_DATATYPE_TO_DATATYPE_BIMAP.get(concreteDomainDataType), "Error while getting data type for concrete domain data type: "
 				+ concreteDomainDataType);
 	}
 

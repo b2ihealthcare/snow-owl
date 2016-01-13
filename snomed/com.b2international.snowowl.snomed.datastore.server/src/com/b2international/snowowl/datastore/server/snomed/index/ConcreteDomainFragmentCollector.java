@@ -103,7 +103,7 @@ public class ConcreteDomainFragmentCollector extends AbstractDocsOutOfOrderColle
 		// FIXME: Consolidate the two DataType enums
 		final byte type = (byte) typeValues.get(docId);
 		final com.b2international.snowowl.snomed.mrcm.DataType dataType = com.b2international.snowowl.snomed.mrcm.DataType.get(type);
-		final com.b2international.snowowl.snomed.snomedrefset.DataType convertedDataType = SnomedRefSetUtil.DATA_TYPE_BIMAP.get(dataType);
+		final com.b2international.snowowl.snomed.snomedrefset.DataType convertedDataType = SnomedRefSetUtil.MRCM_DATATYPE_TO_DATATYPE_MAP.get(dataType);
 
 		final long id = referencedIdValues.get(docId);
 		final long storageKey = storageKeyValues.get(docId);

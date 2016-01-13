@@ -43,7 +43,6 @@ import com.b2international.snowowl.snomed.datastore.services.SnomedRefSetMembers
 import com.b2international.snowowl.snomed.mrcm.core.widget.SnomedDescription;
 import com.b2international.snowowl.snomed.mrcm.core.widget.SnomedRelationship;
 import com.b2international.snowowl.snomed.mrcm.core.widget.WidgetBeanProviderStrategy;
-import com.b2international.snowowl.snomed.mrcm.core.widget.WidgetBeanUtils;
 import com.b2international.snowowl.snomed.mrcm.core.widget.bean.ConceptWidgetBean;
 import com.b2international.snowowl.snomed.mrcm.core.widget.bean.DataTypeWidgetBean;
 import com.b2international.snowowl.snomed.mrcm.core.widget.bean.LeafWidgetBean;
@@ -132,7 +131,7 @@ public class ServerSideWidgetBeanProviderStrategy extends WidgetBeanProviderStra
 		final RelationshipGroupWidgetModel groupModel = conceptWidgetModel.getRelationshipGroupContainerModel().getFirstMatching(GroupFlag.GROUPED);
 		
 		for (final SnomedConcreteDataTypeRefSetMemberIndexEntry entry : dataTypes) {
-			final com.b2international.snowowl.snomed.mrcm.DataType convertedDataType = WidgetBeanUtils.TYPE_CONVERSION_MAP.get(entry.getDataType());
+			final com.b2international.snowowl.snomed.mrcm.DataType convertedDataType = SnomedRefSetUtil.MRCM_DATATYPE_TO_DATATYPE_MAP.inverse().get(entry.getDataType());
 			final DataTypeWidgetModel matchingModel = groupModel.getFirstMatching(entry.getLabel(), convertedDataType);
 			final DataTypeWidgetBean widgetBean = new DataTypeWidgetBean(cwb, matchingModel, entry.getReferencedComponentId(), entry.getId(), entry.isReleased());
 			if (entry.getUomComponentId() != null) {
@@ -158,7 +157,7 @@ public class ServerSideWidgetBeanProviderStrategy extends WidgetBeanProviderStra
 				Lists.transform(dataTypeModel.getChildren(), new UncheckedCastFunction<WidgetModel, DataTypeWidgetModel>(DataTypeWidgetModel.class)));
 		
 		for (final SnomedConcreteDataTypeRefSetMemberIndexEntry entry : getConcreteDataTypes(conceptId)) {
-			final com.b2international.snowowl.snomed.mrcm.DataType convertedDataType = WidgetBeanUtils.TYPE_CONVERSION_MAP.get(entry.getDataType());
+			final com.b2international.snowowl.snomed.mrcm.DataType convertedDataType = SnomedRefSetUtil.MRCM_DATATYPE_TO_DATATYPE_MAP.inverse().get(entry.getDataType());
 			final DataTypeWidgetModel matchingModel = dataTypeModel.getFirstMatching(entry.getLabel(), convertedDataType);
 			final DataTypeWidgetBean widgetBean = new DataTypeWidgetBean(cwb, matchingModel, entry.getReferencedComponentId(), entry.getId(), entry.isReleased());
 			widgetBean.setSelectedValue(SnomedRefSetUtil.serializeValue(entry.getDataType(), entry.getValue()));

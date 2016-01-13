@@ -36,7 +36,6 @@ import static com.b2international.snowowl.snomed.common.SnomedTerminologyCompone
 import static com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants.DESCRIPTION_NUMBER;
 import static com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants.RELATIONSHIP_NUMBER;
 import static com.b2international.snowowl.snomed.datastore.SnomedRefSetUtil.deserializeValue;
-import static com.b2international.snowowl.snomed.datastore.SnomedRefSetUtil.getDataType;
 import static com.b2international.snowowl.snomed.datastore.SnomedRefSetUtil.isMapping;
 import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.CONCEPT_EFFECTIVE_TIME;
 import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.CONCEPT_REFERRING_REFERENCE_SET_ID;
@@ -1775,8 +1774,7 @@ public class SnomedComponentService implements ISnomedComponentService, IPostSto
 			searcher.set(manager.acquire());
 			
 			final Document dataTypeDoc = searcher.get().doc(topDocs.scoreDocs[0].doc, MEMBER_REF_SET_ID_FILDS_TO_LOAD);
-			final com.b2international.snowowl.snomed.snomedrefset.DataType dataType = // 
-					SnomedRefSetUtil.DATA_TYPE_BIMAP.get(getDataType(SnomedMappings.memberRefSetId().getValueAsString(dataTypeDoc)));
+			final com.b2international.snowowl.snomed.snomedrefset.DataType dataType = SnomedRefSetUtil.DATATYPE_TO_REFSET_MAP.inverse().get(SnomedMappings.memberRefSetId().getValueAsString(dataTypeDoc));
 			
 			getIndexServerService().search(branchPath, query, collector);
 

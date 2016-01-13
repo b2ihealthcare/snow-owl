@@ -176,7 +176,7 @@ public class RefSetMemberMutablePropertyUpdater extends DocumentUpdaterBase<Snom
 				doc.update(REFERENCE_SET_MEMBER_CHARACTERISTIC_TYPE_ID, Long.valueOf(dataTypeMember.getCharacteristicTypeId()));
 			}
 			
-			final DataType dataType = SnomedRefSetUtil.getDataType(member.getRefSetIdentifierId());
+			final DataType dataType = SnomedRefSetUtil.MRCM_DATATYPE_TO_REFSET_MAP.inverse().get(member.getRefSetIdentifierId());
 			doc.update(Mappings.intDocValuesField(REFERENCE_SET_MEMBER_DATA_TYPE_VALUE), dataType.ordinal());
 			doc.update(Mappings.stringDocValuesField(REFERENCE_SET_MEMBER_SERIALIZED_VALUE), dataTypeMember.getSerializedValue());
 			
