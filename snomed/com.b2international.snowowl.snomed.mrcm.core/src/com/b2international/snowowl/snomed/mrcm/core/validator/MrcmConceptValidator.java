@@ -37,6 +37,7 @@ import com.b2international.snowowl.snomed.datastore.MrcmEditingContext;
 import com.b2international.snowowl.snomed.datastore.SnomedClientPredicateBrowser;
 import com.b2international.snowowl.snomed.datastore.SnomedClientRefSetBrowser;
 import com.b2international.snowowl.snomed.datastore.SnomedClientTerminologyBrowser;
+import com.b2international.snowowl.snomed.datastore.SnomedRefSetUtil;
 import com.b2international.snowowl.snomed.datastore.index.SnomedClientIndexService;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptIndexEntry;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry;
@@ -343,15 +344,13 @@ public class MrcmConceptValidator {
 	}
 	
 	private DataType mapModelDataTypeToMrcmDataType(final com.b2international.snowowl.snomed.snomedrefset.DataType modelDataType) {
-		switch (modelDataType) {
-		case BOOLEAN: return DataType.BOOLEAN;
-		case DATE: return DataType.DATE;
-		case DECIMAL: return DataType.FLOAT;
-		case INTEGER: return DataType.INTEGER;
-		case STRING: return DataType.STRING;
-		default:
-			throw new IllegalArgumentException("Unexpected datatype: " + modelDataType);
+		DataType mrcmDataType = SnomedRefSetUtil.MRCM_DATATYPE_TO_DATATYPE_MAP.inverse().get(modelDataType);
+		
+		if (mrcmDataType != null) {
+			return mrcmDataType;
 		}
+
+		throw new IllegalArgumentException("Unexpected datatype: " + modelDataType);
 	}
 	
 	/**
