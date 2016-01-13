@@ -54,7 +54,6 @@ import com.b2international.snowowl.snomed.mrcm.core.widget.model.RelationshipGro
 import com.b2international.snowowl.snomed.mrcm.core.widget.model.WidgetModel;
 import com.google.common.base.Predicate;
 import com.google.common.collect.Collections2;
-import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 
@@ -185,9 +184,9 @@ public class ServerSideWidgetBeanProviderStrategy extends WidgetBeanProviderStra
 
 	private Iterable<SnomedConcreteDataTypeRefSetMemberIndexEntry> getConcreteDataTypes(final String id) {
 		final IIndexQueryAdapter<SnomedConcreteDataTypeRefSetMemberIndexEntry> createFindByRefSetTypeQuery = 
-				SnomedConcreteDataTypeRefSetMembershipIndexQueryAdapter.createFindByReferencedComponentIdsQuery(
+				SnomedConcreteDataTypeRefSetMembershipIndexQueryAdapter.createFindActivesByReferencedComponentIdQuery(
 						CONCEPT, 
-						ImmutableSet.of(id));
+						id);
 		//XXX we maximum 100 CDT is associated with a concept
 		return ApplicationContext.getInstance().getService(SnomedIndexService.class).search(branchPath, createFindByRefSetTypeQuery, 100);
 	}

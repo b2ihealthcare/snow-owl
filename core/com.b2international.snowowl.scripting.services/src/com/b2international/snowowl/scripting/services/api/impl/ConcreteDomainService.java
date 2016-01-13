@@ -52,7 +52,7 @@ public class ConcreteDomainService implements IConcreteDomainService {
 	public Collection<SnomedConcreteDataTypeRefSetMemberIndexEntry> getAllDataTypesForConcept(final String conceptId) {
 		
 		final Collection<SnomedConcreteDataTypeRefSetMemberIndexEntry> $ = Lists.newArrayList();
-		$.addAll(new SnomedRefSetMembershipLookupService().getConceptDataTypes(conceptId));
+		$.addAll(new SnomedRefSetMembershipLookupService().getActiveConceptDataTypes(conceptId));
 		final Collection<SnomedRelationshipIndexEntry> sourceRelationships = ApplicationContext.getInstance().getService(SnomedClientStatementBrowser.class).getActiveOutboundStatementsById(conceptId);
 		final String[] activeSourceIds = Iterables.toArray(Iterables.transform(sourceRelationships, new Function<SnomedRelationshipIndexEntry, String>() {
 			@Override public String apply(final SnomedRelationshipIndexEntry relationship) {
@@ -83,7 +83,7 @@ public class ConcreteDomainService implements IConcreteDomainService {
 	
 	@Override
 	public Collection<SnomedConcreteDataTypeRefSetMemberIndexEntry> getDataTypesForConcept(final String conceptId) {
-		return Lists.newArrayList(new SnomedRefSetMembershipLookupService().getConceptDataTypes(conceptId));
+		return Lists.newArrayList(new SnomedRefSetMembershipLookupService().getActiveConceptDataTypes(conceptId));
 	}
 
 	@Override
