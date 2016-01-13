@@ -36,15 +36,26 @@ import static org.slf4j.LoggerFactory.getLogger;
 import java.util.Collection;
 import java.util.Date;
 import java.util.HashSet;
+import java.util.Set;
 
+import org.apache.lucene.search.Filter;
+import org.apache.lucene.search.FilteredQuery;
+import org.apache.lucene.search.MatchAllDocsQuery;
 import org.apache.lucene.search.MultiTermQuery;
 import org.apache.lucene.search.Query;
 import org.eclipse.emf.cdo.view.CDOView;
 import org.slf4j.Logger;
 
+import bak.pcj.LongCollection;
+import bak.pcj.map.LongKeyLongMap;
+import bak.pcj.map.LongKeyLongOpenHashMap;
+import bak.pcj.map.LongKeyMapIterator;
+import bak.pcj.set.LongSet;
+
 import com.b2international.commons.pcj.LongSets.LongCollectionProcedure;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.datastore.server.index.IndexServerService;
+import com.b2international.snowowl.datastore.server.snomed.index.ComponentModuleCollector;
 import com.b2international.snowowl.datastore.server.snomed.index.ConcreteDataTypePropertyCollector;
 import com.b2international.snowowl.datastore.server.snomed.index.DescriptionPropertyCollector;
 import com.b2international.snowowl.datastore.server.snomed.index.RelationshipPropertyCollector;
@@ -67,11 +78,6 @@ import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetFactory;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRegularRefSet;
 import com.google.common.base.Stopwatch;
 import com.google.common.collect.Multimap;
-
-import bak.pcj.LongCollection;
-import bak.pcj.map.LongKeyLongMap;
-import bak.pcj.map.LongKeyMapIterator;
-import bak.pcj.set.LongSet;
 
 /**
  * Server side stateless singleton service for resolving SNOMED&nbsp;CT module dependencies.
@@ -227,14 +233,31 @@ public enum SnomedModuleDependencyCollectorService {
 		final ConcreteDataTypePropertyCollector collector = new ConcreteDataTypePropertyCollector(getUnpublishedStorageKeys());
 		getIndexServerService().search(getBranchPath(), ALL_CDT_MEMBERS_QUERY, collector);
 		
+		Set<Long> referencedComponentIds = newHashSet();
+		
+		for (Object value : collector.getMapping().values()) {
+			final long[] properties = (long[]) value;
+			referencedComponentIds.add(properties[1]);
+		}
+		
+		Filter filter = SnomedMappings.id().createTermsFilter(referencedComponentIds);
+		FilteredQuery filteredQuery = new FilteredQuery(new MatchAllDocsQuery(), filter);
+		
+		ComponentModuleCollector componentModuleCollector = new ComponentModuleCollector();
+		getIndexServerService().search(getBranchPath(), filteredQuery, componentModuleCollector);
+		
+		LongKeyLongOpenHashMap idToModuleMap = componentModuleCollector.getIdToModuleMap();
+		
 		for (final LongKeyMapIterator itr = collector.getMapping().entries(); itr.hasNext(); /**/) {
 			itr.next();
 			
 			final long[] properties = (long[]) itr.getValue();
 			final long moduleId = properties[0];
-			final long containerModuleId = properties[1];
+			final long referencedComponentId = properties[1];
 			
-			tryCreateMember(moduleId, containerModuleId);
+			if (idToModuleMap.containsKey(referencedComponentId)) {
+				tryCreateMember(moduleId, idToModuleMap.get(referencedComponentId));
+			}
 		}
 	}
 

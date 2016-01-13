@@ -17,7 +17,6 @@ package com.b2international.snowowl.snomed.datastore.index.refset;
 
 import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.datastore.index.DocumentUpdaterBase;
-import com.b2international.snowowl.snomed.Component;
 import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedDocumentBuilder;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedAssociationRefSetMember;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedAttributeValueRefSetMember;
@@ -128,10 +127,6 @@ public class RefSetMemberMutablePropertyUpdater extends DocumentUpdaterBase<Snom
 			doc.memberSerializedValue(dataTypeMember.getSerializedValue());
 			doc.memberDataTypeLabel(dataTypeMember.getLabel());
 			
-			if (member.eContainer() instanceof Component) {
-				final String containerModuleId = ((Component) member.eContainer()).getModule().getId();
-				doc.memberContainerModuleId(Long.valueOf(containerModuleId));	
-			}
 			break;
 			
 		case SIMPLE_MAP:

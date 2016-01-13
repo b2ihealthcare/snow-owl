@@ -76,7 +76,6 @@ public class SnomedRefSetMemberIndexEntry extends SnomedIndexEntry implements IC
 			.memberDescriptionFormatId()
 			.memberDescriptionLength()
 			.memberOperatorId()
-			.memberContainerModuleId()
 			.memberUomId()
 			.memberDataTypeLabel()
 			.memberDataTypeOrdinal()

@@ -297,10 +297,6 @@ public class SnomedFieldsToLoadBuilder extends FieldsToLoadBuilderBase<SnomedFie
 		return field(SnomedMappings.memberOperatorId());
 	}
 
-	public SnomedFieldsToLoadBuilder memberContainerModuleId() {
-		return field(SnomedMappings.memberContainerModuleId());
-	}
-
 	public SnomedFieldsToLoadBuilder memberUomId() {
 		return field(SnomedMappings.memberUomId());
 	}
