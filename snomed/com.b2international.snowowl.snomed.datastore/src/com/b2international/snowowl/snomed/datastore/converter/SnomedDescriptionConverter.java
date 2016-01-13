@@ -16,6 +16,10 @@
 package com.b2international.snowowl.snomed.datastore.converter;
 
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
+import javax.swing.text.html.Option;
 
 import com.b2international.commons.http.ExtendedLocale;
 import com.b2international.commons.options.Options;
@@ -24,11 +28,18 @@ import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.core.domain.AssociationType;
 import com.b2international.snowowl.snomed.core.domain.CaseSignificance;
 import com.b2international.snowowl.snomed.core.domain.DescriptionInactivationIndicator;
+import com.b2international.snowowl.snomed.core.domain.ISnomedConcept;
 import com.b2international.snowowl.snomed.core.domain.ISnomedDescription;
+import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
+import com.b2international.snowowl.snomed.core.domain.SnomedConcepts;
 import com.b2international.snowowl.snomed.core.domain.SnomedDescription;
 import com.b2international.snowowl.snomed.core.domain.SnomedDescriptions;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDescriptionIndexEntry;
+import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.b2international.snowowl.snomed.datastore.services.AbstractSnomedRefSetMembershipLookupService;
+import com.google.common.base.Function;
+import com.google.common.collect.FluentIterable;
+import com.google.common.collect.Maps;
 import com.google.common.collect.Multimap;
 
 /**
@@ -60,6 +71,7 @@ final class SnomedDescriptionConverter extends BaseSnomedComponentConverter<Snom
 		result.setReleased(input.isReleased());
 		result.setTerm(input.getTerm());
 		result.setTypeId(input.getTypeId());
+		result.setType(new SnomedConcept(input.getTypeId()));
 		result.setScore(input.getScore());
 		return result;
 	}
@@ -67,6 +79,35 @@ final class SnomedDescriptionConverter extends BaseSnomedComponentConverter<Snom
 	@Override
 	protected void expand(List<ISnomedDescription> results) {
 		expandInactivationProperties(results);
+		expandType(results);
+	}
+
+	private void expandType(List<ISnomedDescription> results) {
+		if (expand().containsKey("type")) {
+			final Options expandOptions = expand().get("type", Options.class);
+			final Set<String> typeIds = FluentIterable.from(results).transform(new Function<ISnomedDescription, String>() {
+				@Override
+				public String apply(ISnomedDescription input) {
+					return input.getTypeId();
+				}
+			}).toSet();
+			
+			final SnomedConcepts types = SnomedRequests
+				.prepareSearchConcept()
+				.setLimit(typeIds.size())
+				.setComponentIds(typeIds)
+				.setLocales(locales())
+				.setExpand(expandOptions.get("expand", Options.class))
+				.build()
+				.execute(context());
+			
+			final Map<String, ISnomedConcept> typesById = Maps.uniqueIndex(types, ID_FUNCTION);
+			
+			for (ISnomedDescription description : results) {
+				final ISnomedConcept type = typesById.get(description.getTypeId());
+				((SnomedDescription) description).setType(type);
+			}
+		}
 	}
 
 	private void expandInactivationProperties(List<ISnomedDescription> results) {
