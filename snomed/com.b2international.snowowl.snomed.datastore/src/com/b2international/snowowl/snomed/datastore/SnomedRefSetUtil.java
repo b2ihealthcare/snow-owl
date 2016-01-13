@@ -41,8 +41,10 @@ import org.apache.lucene.document.Document;
 import org.eclipse.emf.ecore.EClass;
 
 import com.b2international.snowowl.core.CoreTerminologyBroker;
+import com.b2international.snowowl.core.SnowOwlApplication;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
+import com.b2international.snowowl.snomed.datastore.config.SnomedCoreConfiguration;
 import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedMappings;
 import com.b2international.snowowl.snomed.snomedrefset.DataType;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSet;
@@ -85,38 +87,40 @@ public abstract class SnomedRefSetUtil {
 			.put(Concepts.REFSET_SIMILAR_TO_ASSOCIATION, "Similar to")
 			.put(Concepts.REFSET_WAS_A_ASSOCIATION, "Was a")
 			.build();
-		
 	
 	/**
-	 * Map for looking up the concrete data type reference set identifier
-	 * concept IDs based on the associated concrete domain data types.
+	 * Map for looking up the concrete data type reference set identifier concept IDs based on the associated concrete domain data types.
 	 */
-	private static final BiMap<com.b2international.snowowl.snomed.mrcm.DataType, String> TYPE_TO_REFSET_MAP = ImmutableBiMap.<com.b2international.snowowl.snomed.mrcm.DataType, String>builder()
-			.put(com.b2international.snowowl.snomed.mrcm.DataType.BOOLEAN, Concepts.REFSET_BOOLEAN_TYPE)
-			.put(com.b2international.snowowl.snomed.mrcm.DataType.DATE, Concepts.REFSET_DATETIME_TYPE)
-			.put(com.b2international.snowowl.snomed.mrcm.DataType.FLOAT, Concepts.REFSET_FLOAT_TYPE)
-			.put(com.b2international.snowowl.snomed.mrcm.DataType.INTEGER, Concepts.REFSET_INTEGER_TYPE)
-			.put(com.b2international.snowowl.snomed.mrcm.DataType.STRING, Concepts.REFSET_STRING_TYPE)
+	public static final BiMap<com.b2international.snowowl.snomed.mrcm.DataType, String> MRCM_DATATYPE_TO_REFSET_MAP = ImmutableBiMap.<com.b2international.snowowl.snomed.mrcm.DataType, String>builder()
+			.put(com.b2international.snowowl.snomed.mrcm.DataType.BOOLEAN, getCoreConfiguration().getBooleanDatatypeRefsetIdentifier())
+			.put(com.b2international.snowowl.snomed.mrcm.DataType.DATE, getCoreConfiguration().getDatetimeDatatypeRefsetIdentifier())
+			.put(com.b2international.snowowl.snomed.mrcm.DataType.FLOAT, getCoreConfiguration().getFloatDatatypeRefsetIdentifier())
+			.put(com.b2international.snowowl.snomed.mrcm.DataType.INTEGER, getCoreConfiguration().getIntegerDatatypeRefsetIdentifier())
+			.put(com.b2international.snowowl.snomed.mrcm.DataType.STRING, getCoreConfiguration().getStringDatatypeRefsetIdentifier())
 			.build();
 	
+	public static final BiMap<DataType, String> DATATYPE_TO_REFSET_MAP = ImmutableBiMap.<DataType, String>builder()
+			.put(DataType.BOOLEAN, getCoreConfiguration().getBooleanDatatypeRefsetIdentifier())
+			.put(DataType.DATE, getCoreConfiguration().getDatetimeDatatypeRefsetIdentifier())
+			.put(DataType.DECIMAL, getCoreConfiguration().getFloatDatatypeRefsetIdentifier())
+			.put(DataType.INTEGER, getCoreConfiguration().getIntegerDatatypeRefsetIdentifier())
+			.put(DataType.STRING, getCoreConfiguration().getStringDatatypeRefsetIdentifier())
+			.build();
+
 	/**
-	 * Map for looking up MRCM datatype enum values for AU concrete domain reference set identifiers.
+	 * Map for navigating between the {@link com.b2international.snowowl.snomed.mrcm.DataType} and the {@link DataType} enumerations.
 	 */
-	private static final Map<String, com.b2international.snowowl.snomed.mrcm.DataType> AU_REFSET_TO_TYPE_MAP = ImmutableMap.<String, com.b2international.snowowl.snomed.mrcm.DataType>builder()
-			.put(Concepts.REFSET_STRENGTH, com.b2international.snowowl.snomed.mrcm.DataType.FLOAT)
-			.put(Concepts.REFSET_UNIT_OF_USE_QUANTITY, com.b2international.snowowl.snomed.mrcm.DataType.FLOAT)
-			.put(Concepts.REFSET_UNIT_OF_USE_SIZE, com.b2international.snowowl.snomed.mrcm.DataType.FLOAT)
-			.put(Concepts.REFSET_SUBPACK_QUANTITY, com.b2international.snowowl.snomed.mrcm.DataType.INTEGER)
+	public static final BiMap<com.b2international.snowowl.snomed.mrcm.DataType, DataType> MRCM_DATATYPE_TO_DATATYPE_MAP = ImmutableBiMap.<com.b2international.snowowl.snomed.mrcm.DataType, DataType> builder()
+			.put(com.b2international.snowowl.snomed.mrcm.DataType.BOOLEAN, DataType.BOOLEAN)
+			.put(com.b2international.snowowl.snomed.mrcm.DataType.DATE, DataType.DATE)
+			.put(com.b2international.snowowl.snomed.mrcm.DataType.FLOAT, DataType.DECIMAL)
+			.put(com.b2international.snowowl.snomed.mrcm.DataType.INTEGER, DataType.INTEGER)
+			.put(com.b2international.snowowl.snomed.mrcm.DataType.STRING, DataType.STRING)
 			.build();
 	
-	/**
-	 * Map for navigating between the {@link com.b2international.snowowl.snomed.mrcm.DataType} and the
-	 * {@link DataType} enumerations.
-	 */
-	public static final BiMap<com.b2international.snowowl.snomed.mrcm.DataType, DataType> DATA_TYPE_BIMAP = ImmutableBiMap
-			.<com.b2international.snowowl.snomed.mrcm.DataType, DataType> builder().put(com.b2international.snowowl.snomed.mrcm.DataType.BOOLEAN, DataType.BOOLEAN)
-			.put(com.b2international.snowowl.snomed.mrcm.DataType.DATE, DataType.DATE).put(com.b2international.snowowl.snomed.mrcm.DataType.FLOAT, DataType.DECIMAL)
-			.put(com.b2international.snowowl.snomed.mrcm.DataType.INTEGER, DataType.INTEGER).put(com.b2international.snowowl.snomed.mrcm.DataType.STRING, DataType.STRING).build();
+	private static SnomedCoreConfiguration getCoreConfiguration() {
+		return SnowOwlApplication.INSTANCE.getConfiguration().getModuleConfig(SnomedCoreConfiguration.class);
+	}
 	
 	public static EClass getRefSetMemberClass(final SnomedRefSetType type) {
 		
@@ -206,7 +210,7 @@ public abstract class SnomedRefSetUtil {
 	 * @return the identifier concept ID of the SNOMED&nbsp;CT concrete data type reference set.
 	 */
 	public static String getRefSetId(final com.b2international.snowowl.snomed.mrcm.DataType dataType) {
-		return TYPE_TO_REFSET_MAP.get(dataType);
+		return MRCM_DATATYPE_TO_REFSET_MAP.get(dataType);
 	}
 	
 	/**
@@ -216,22 +220,7 @@ public abstract class SnomedRefSetUtil {
 	 * @return the identifier concept ID of the SNOMED&nbsp;CT concrete data type reference set.
 	 */
 	public static String getRefSetId(final DataType dataType) {
-		return getRefSetId(DATA_TYPE_BIMAP.inverse().get(dataType));
-	}
-	
-	/**
-	 * Returns with the data type enumeration associated with the SNOMED&nbsp;CT concrete data type reference set.
-	 * @param identifierConceptId the identifier concept ID of the concrete data type reference set.
-	 * @return the data type enumeration for the reference set.
-	 */
-	public static com.b2international.snowowl.snomed.mrcm.DataType getDataType(final String identifierConceptId) {
-		com.b2international.snowowl.snomed.mrcm.DataType dataType = TYPE_TO_REFSET_MAP.inverse().get(identifierConceptId);
-		
-		if (null == dataType) {
-			dataType = AU_REFSET_TO_TYPE_MAP.get(identifierConceptId);
-		}
-		
-		return dataType;
+		return DATATYPE_TO_REFSET_MAP.get(dataType);
 	}
 	
 	/**
@@ -443,7 +432,7 @@ public abstract class SnomedRefSetUtil {
 			case DESCRIPTION_TYPE:
 				return Concepts.REFSET_DESCRIPTION_TYPE;
 			case CONCRETE_DATA_TYPE:
-				return Concepts.REFSET_CONCRETE_DOMAIN_TYPE_SG;
+				return getCoreConfiguration().getConcreteDomainTypeRefsetIdentifier();
 			case ASSOCIATION:
 				return Concepts.REFSET_ASSOCIATION_TYPE;
 			case MODULE_DEPENDENCY:

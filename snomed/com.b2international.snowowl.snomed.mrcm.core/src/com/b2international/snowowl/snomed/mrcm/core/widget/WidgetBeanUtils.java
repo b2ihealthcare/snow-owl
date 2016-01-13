@@ -18,9 +18,6 @@ package com.b2international.snowowl.snomed.mrcm.core.widget;
 import java.util.Set;
 
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
-import com.b2international.snowowl.snomed.snomedrefset.DataType;
-import com.google.common.collect.BiMap;
-import com.google.common.collect.ImmutableBiMap;
 import com.google.common.collect.ImmutableSet;
 
 /**
@@ -29,13 +26,6 @@ import com.google.common.collect.ImmutableSet;
  */
 final public class WidgetBeanUtils {
 
-	public static final BiMap<DataType, com.b2international.snowowl.snomed.mrcm.DataType> TYPE_CONVERSION_MAP = ImmutableBiMap.of(
-			DataType.BOOLEAN, com.b2international.snowowl.snomed.mrcm.DataType.BOOLEAN,
-			DataType.DATE, com.b2international.snowowl.snomed.mrcm.DataType.DATE,
-			DataType.DECIMAL, com.b2international.snowowl.snomed.mrcm.DataType.FLOAT,
-			DataType.INTEGER, com.b2international.snowowl.snomed.mrcm.DataType.INTEGER,
-			DataType.STRING, com.b2international.snowowl.snomed.mrcm.DataType.STRING);
-	
 	/** Relationships of this type should never appear in non-zero groups. */
 	public static final Set<String> NEVER_GROUPED_RELATIONSHIP_TYPE_IDS = ImmutableSet.<String>builder()
 			.add(Concepts.IS_A)

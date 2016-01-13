@@ -15,12 +15,7 @@
  */
 package com.b2international.snowowl.snomed.datastore;
 
-import static com.b2international.snowowl.snomed.SnomedConstants.Concepts.REFSET_BOOLEAN_TYPE;
-import static com.b2international.snowowl.snomed.SnomedConstants.Concepts.REFSET_DATETIME_TYPE;
-import static com.b2international.snowowl.snomed.SnomedConstants.Concepts.REFSET_FLOAT_TYPE;
-import static com.b2international.snowowl.snomed.SnomedConstants.Concepts.REFSET_INTEGER_TYPE;
 import static com.b2international.snowowl.snomed.SnomedConstants.Concepts.REFSET_STRENGTH;
-import static com.b2international.snowowl.snomed.SnomedConstants.Concepts.REFSET_STRING_TYPE;
 import static com.b2international.snowowl.snomed.SnomedConstants.Concepts.REFSET_SUBPACK_QUANTITY;
 import static com.b2international.snowowl.snomed.SnomedConstants.Concepts.REFSET_UNIT_OF_USE_QUANTITY;
 import static com.b2international.snowowl.snomed.SnomedConstants.Concepts.REFSET_UNIT_OF_USE_SIZE;
@@ -31,6 +26,8 @@ import static com.b2international.snowowl.snomed.snomedrefset.DataType.INTEGER;
 import static com.b2international.snowowl.snomed.snomedrefset.DataType.STRING;
 
 import com.b2international.snowowl.core.ApplicationContext;
+import com.b2international.snowowl.core.SnowOwlApplication;
+import com.b2international.snowowl.snomed.datastore.config.SnomedCoreConfiguration;
 import com.b2international.snowowl.snomed.snomedrefset.DataType;
 import com.google.common.base.Preconditions;
 
@@ -47,11 +44,11 @@ public enum SnomedConcreteDataTypes {
 	SUBPACK_QUANTITY("subpackQuantity", "Subpack quantity", REFSET_SUBPACK_QUANTITY, INTEGER, ""),
 	
 	//for SNOMED CT SG extension
-	BOOLEAN_TYPE("", "", REFSET_BOOLEAN_TYPE, BOOLEAN, ""),
-	DATETIME_TYPE("", "", REFSET_DATETIME_TYPE, DATE, ""),
-	INTEGER_TYPE("", "", REFSET_INTEGER_TYPE, INTEGER, ""),
-	FLOAT_TYPE("", "", REFSET_FLOAT_TYPE, DECIMAL, ""),
-	STRING_TYPE("", "", REFSET_STRING_TYPE, STRING, "");
+	BOOLEAN_TYPE("", "", getCoreConfiguration().getBooleanDatatypeRefsetIdentifier(), BOOLEAN, ""),
+	DATETIME_TYPE("", "", getCoreConfiguration().getDatetimeDatatypeRefsetIdentifier(), DATE, ""),
+	INTEGER_TYPE("", "", getCoreConfiguration().getIntegerDatatypeRefsetIdentifier(), INTEGER, ""),
+	FLOAT_TYPE("", "", getCoreConfiguration().getFloatDatatypeRefsetIdentifier(), DECIMAL, ""),
+	STRING_TYPE("", "", getCoreConfiguration().getStringDatatypeRefsetIdentifier(), STRING, "");
 	
 	private final String owlLabel;
 	private final String refSetId;
@@ -65,6 +62,10 @@ public enum SnomedConcreteDataTypes {
 		this.refSetId = refSetId;
 		this.dataType = dataType;
 		this.parentConceptId = parentConceptId; 
+	}
+	
+	private static SnomedCoreConfiguration getCoreConfiguration() {
+		return SnowOwlApplication.INSTANCE.getConfiguration().getModuleConfig(SnomedCoreConfiguration.class);
 	}
 	
 	/**
