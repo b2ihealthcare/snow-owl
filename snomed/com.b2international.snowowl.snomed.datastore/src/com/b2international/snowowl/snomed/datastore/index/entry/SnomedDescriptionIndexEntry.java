@@ -18,6 +18,7 @@ package com.b2international.snowowl.snomed.datastore.index.entry;
 import static com.google.common.base.Preconditions.checkNotNull;
 
 import java.io.Serializable;
+import java.util.List;
 import java.util.Map;
 
 import org.apache.lucene.document.Document;
@@ -30,7 +31,9 @@ import com.b2international.snowowl.datastore.index.mapping.Mappings;
 import com.b2international.snowowl.snomed.core.domain.Acceptability;
 import com.b2international.snowowl.snomed.core.domain.ISnomedDescription;
 import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedMappings;
+import com.google.common.base.Function;
 import com.google.common.base.Objects;
+import com.google.common.collect.FluentIterable;
 import com.google.common.collect.ImmutableMap;
 
 /**
@@ -89,6 +92,15 @@ public class SnomedDescriptionIndexEntry extends SnomedIndexEntry implements ICo
 		}
 	
 		return builder;
+	}
+	
+	public static List<SnomedDescriptionIndexEntry> fromDescriptions(Iterable<ISnomedDescription> descriptions) {
+		return FluentIterable.from(descriptions).transform(new Function<ISnomedDescription, SnomedDescriptionIndexEntry>() {
+			@Override
+			public SnomedDescriptionIndexEntry apply(ISnomedDescription input) {
+				return builder(input).build();
+			}
+		}).toList();
 	}
 
 	public static class Builder extends AbstractBuilder<Builder> {
@@ -265,4 +277,5 @@ public class SnomedDescriptionIndexEntry extends SnomedIndexEntry implements ICo
 				.add("acceptabilityMap", acceptabilityMap)
 				.toString();
 	}
+
 }
