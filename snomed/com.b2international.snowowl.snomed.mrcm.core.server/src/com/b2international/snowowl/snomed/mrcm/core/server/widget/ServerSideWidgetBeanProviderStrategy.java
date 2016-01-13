@@ -54,7 +54,6 @@ import com.b2international.snowowl.snomed.mrcm.core.widget.model.RelationshipGro
 import com.b2international.snowowl.snomed.mrcm.core.widget.model.WidgetModel;
 import com.google.common.base.Predicate;
 import com.google.common.collect.Collections2;
-import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 
@@ -184,11 +183,9 @@ public class ServerSideWidgetBeanProviderStrategy extends WidgetBeanProviderStra
 	}
 
 	private Iterable<SnomedRefSetMemberIndexEntry> getConcreteDataTypes(final String id) {
-		final IIndexQueryAdapter<SnomedRefSetMemberIndexEntry> createFindByRefSetTypeQuery = 
-				SnomedConcreteDataTypeRefSetMembershipIndexQueryAdapter.createFindByReferencedComponentIdsQuery(
-						CONCEPT, 
-						ImmutableSet.of(id));
-		//XXX we maximum 100 CDT is associated with a concept
+		final IIndexQueryAdapter<SnomedRefSetMemberIndexEntry> createFindByRefSetTypeQuery = SnomedConcreteDataTypeRefSetMembershipIndexQueryAdapter
+				.createFindActivesByReferencedComponentIdQuery(CONCEPT, id);
+		// XXX The number of allowed concrete domain datatypes are maximized in 100 for a concept
 		return ApplicationContext.getInstance().getService(SnomedIndexService.class).search(branchPath, createFindByRefSetTypeQuery, 100);
 	}
 

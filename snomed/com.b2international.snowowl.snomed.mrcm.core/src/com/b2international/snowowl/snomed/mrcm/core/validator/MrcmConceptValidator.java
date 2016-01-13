@@ -230,7 +230,7 @@ public class MrcmConceptValidator {
 		} else if (predicate instanceof ConcreteDomainElementPredicate) {
 			final ConcreteDomainElementPredicate concreteDomainElementPredicate = (ConcreteDomainElementPredicate) predicate;
 			final SnomedRefSetMembershipLookupService service = new SnomedRefSetMembershipLookupService();
-			final Collection<SnomedRefSetMemberIndexEntry> dataTypes = service.getConceptDataTypes(concept.getId());
+			final Collection<SnomedRefSetMemberIndexEntry> dataTypes = service.getActiveConceptDataTypes(concept.getId());
 			System.out.println(concreteDomainElementPredicate);
 			boolean foundAtLeastOneMatch = false;
 			for (final SnomedRefSetMemberIndexEntry dataTypeIndexEntry : dataTypes) {

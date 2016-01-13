@@ -344,52 +344,62 @@ public abstract class AbstractSnomedRefSetMembershipLookupService implements IRe
 	}
 
 	/**
-	 * Returns with a collection of data type {@link SnomedRefSetMemberIndexEntry reference set members} referencing the
-	 * given SNOMED&nbsp;CT concept.
+	 * Returns with a collection of active data type {@link SnomedRefSetMemberIndexEntry reference set members} referencing the given SNOMED CT
+	 * concept.
+	 * 
 	 * @param conceptId the unique ID of the concept.
 	 * @return a collection of data type reference set members.
 	 */
-	public Collection<SnomedRefSetMemberIndexEntry> getConceptDataTypes(final String conceptId) {
-		final IIndexQueryAdapter<SnomedRefSetMemberIndexEntry> createFindByRefSetTypeQuery = 
-				SnomedConcreteDataTypeRefSetMembershipIndexQueryAdapter.createFindByReferencedComponentIdsQuery(
-						CONCEPT, 
-						wrapArguments(conceptId));
-		//XXX we maximum 100 CDT is associated with a concept
+	public Collection<SnomedRefSetMemberIndexEntry> getActiveConceptDataTypes(final String conceptId) {
+		final IIndexQueryAdapter<SnomedRefSetMemberIndexEntry> createFindByRefSetTypeQuery = SnomedConcreteDataTypeRefSetMembershipIndexQueryAdapter
+				.createFindActivesByReferencedComponentIdQuery(CONCEPT, conceptId);
+		// XXX The number of allowed concrete domain datatypes are maximized in 100 for a concept
 		return getIndexService().search(createFindByRefSetTypeQuery, 100);
 	}
 
 	/**
-	 * Returns with a collection of data type {@link SnomedRefSetMemberIndexEntry reference set members} where the referenced relationships 
-	 * are given as the relationship ID argument.
+	 * Returns with a collection of data type {@link SnomedRefSetMemberIndexEntry reference set members} referencing the given SNOMED CT concept.
+	 * 
+	 * @param conceptId the unique ID of the concept.
+	 * @return a collection of data type reference set members.
+	 */
+	public Collection<SnomedRefSetMemberIndexEntry> getConceptDataTypes(final String conceptId) {
+		final IIndexQueryAdapter<SnomedRefSetMemberIndexEntry> createFindByRefSetTypeQuery = SnomedConcreteDataTypeRefSetMembershipIndexQueryAdapter
+				.createFindByReferencedComponentIdQuery(CONCEPT, conceptId);
+		// XXX The number of allowed concrete domain datatypes are maximized in 100 for a concept
+		return getIndexService().search(createFindByRefSetTypeQuery, 100);
+	}
+
+	/**
+	 * Returns with a collection of data type {@link SnomedRefSetMemberIndexEntry reference set members} where the referenced relationships are given
+	 * as the relationship ID argument.
+	 * 
 	 * @param relationshipIds the relationship IDs.
 	 * @return a collection of data type reference set members referencing the given relationships.
 	 */
 	public Collection<SnomedRefSetMemberIndexEntry> getRelationshipDataTypes(final String... relationshipIds) {
-		if (0 == relationshipIds.length)
-			return Lists.newArrayList();
-
-		final IIndexQueryAdapter<SnomedRefSetMemberIndexEntry> createFindByRefSetTypeQuery = 
-				SnomedConcreteDataTypeRefSetMembershipIndexQueryAdapter.createFindByReferencedComponentIdsQuery(
-						RELATIONSHIP, 
-						wrapArguments(relationshipIds));
+		if (0 == relationshipIds.length) {
+			return Collections.<SnomedRefSetMemberIndexEntry> emptyList();
+		}
+		final IIndexQueryAdapter<SnomedRefSetMemberIndexEntry> createFindByRefSetTypeQuery = SnomedConcreteDataTypeRefSetMembershipIndexQueryAdapter
+				.createFindActivesByReferencedComponentIdsQuery(RELATIONSHIP, wrapArguments(relationshipIds));
 		return getIndexService().searchUnsorted(createFindByRefSetTypeQuery);
 	}
 
 	/**
-	 * Returns with a collection of data type {@link SnomedRefSetMemberIndexEntry reference set members} where the referenced components
-	 * are either source or destination relationship of a particular concept given via its unique SNOMED&nbsp;CT identifier.
+	 * Returns with a collection of data type {@link SnomedRefSetMemberIndexEntry reference set members} where the referenced components are either
+	 * source or destination relationship of a particular concept given via its unique SNOMED&nbsp;CT identifier.
+	 * 
 	 * @param conceptId the unique ID of the concept.
 	 * @return a collection of data type reference set members.
 	 */
 	public Collection<SnomedRefSetMemberIndexEntry> getRelationshipDataTypesForConcept(final String conceptId) {
 		final Set<String> relationshipIds = Sets.newHashSet(getRelationshipIds(conceptId));
-		if (relationshipIds.isEmpty())
-			return Collections.<SnomedRefSetMemberIndexEntry>emptyList();
-
-		final IIndexQueryAdapter<SnomedRefSetMemberIndexEntry> createFindByRefSetTypeQuery = 
-				SnomedConcreteDataTypeRefSetMembershipIndexQueryAdapter.createFindByReferencedComponentIdsQuery(
-						RELATIONSHIP, 
-						relationshipIds);
+		if (relationshipIds.isEmpty()) {
+			return Collections.<SnomedRefSetMemberIndexEntry> emptyList();
+		}
+		final IIndexQueryAdapter<SnomedRefSetMemberIndexEntry> createFindByRefSetTypeQuery = SnomedConcreteDataTypeRefSetMembershipIndexQueryAdapter
+				.createFindActivesByReferencedComponentIdsQuery(RELATIONSHIP, relationshipIds);
 		return getIndexService().searchUnsorted(createFindByRefSetTypeQuery);
 	}
 
