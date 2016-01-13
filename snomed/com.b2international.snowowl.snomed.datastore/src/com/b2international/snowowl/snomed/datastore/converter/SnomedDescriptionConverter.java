@@ -60,6 +60,7 @@ final class SnomedDescriptionConverter extends BaseSnomedComponentConverter<Snom
 		result.setReleased(input.isReleased());
 		result.setTerm(input.getTerm());
 		result.setTypeId(input.getTypeId());
+		result.setScore(input.getScore());
 		return result;
 	}
 	

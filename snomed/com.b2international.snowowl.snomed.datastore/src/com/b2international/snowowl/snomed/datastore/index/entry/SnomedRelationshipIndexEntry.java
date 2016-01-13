@@ -63,7 +63,7 @@ public class SnomedRelationshipIndexEntry extends SnomedIndexEntry implements IS
 	}
 	
 	public static Builder builder(final ISnomedRelationship input) {
-		return builder()
+		final Builder builder = builder()
 				.id(input.getId())
 				.sourceId(input.getSourceId())
 				.typeId(input.getTypeId())
@@ -77,6 +77,12 @@ public class SnomedRelationshipIndexEntry extends SnomedIndexEntry implements IS
 				.destinationNegated(input.isDestinationNegated())
 				.moduleId(input.getModuleId())
 				.effectiveTimeLong(EffectiveTimes.getEffectiveTime(input.getEffectiveTime()));
+		
+		if (input.getScore() != null) {
+			builder.score(input.getScore());
+		}
+		
+		return builder;
 	}
 
 	public static class Builder extends AbstractBuilder<Builder> {

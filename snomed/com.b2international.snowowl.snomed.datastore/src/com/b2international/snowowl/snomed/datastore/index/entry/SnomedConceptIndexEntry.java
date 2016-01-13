@@ -60,7 +60,7 @@ public class SnomedConceptIndexEntry extends SnomedIndexEntry implements ICompon
 	}
 	
 	public static Builder builder(ISnomedConcept input) {
-		return builder()
+		final Builder builder = builder()
 				.id(input.getId())
 				.moduleId(input.getModuleId())
 				.active(input.isActive())
@@ -71,6 +71,12 @@ public class SnomedConceptIndexEntry extends SnomedIndexEntry implements ICompon
 				.exhaustive(input.getSubclassDefinitionStatus().isExhaustive())
 				.parents(LongSets.newLongSet(input.getParentIds()))
 				.ancestors(LongSets.newLongSet(input.getAncestorIds()));
+		
+		if (input.getScore() != null) {
+			builder.score(input.getScore());
+		}
+		
+		return builder;
 	}
 	
 	public static List<SnomedConceptIndexEntry> fromConcepts(Iterable<ISnomedConcept> concepts) {

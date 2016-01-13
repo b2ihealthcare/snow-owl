@@ -140,5 +140,10 @@ public class ExpandableSnomedRelationship implements ISnomedRelationship {
 	public String getIconId() {
 		return wrappedRelationship.getIconId();
 	}
+	
+	@Override
+	public Float getScore() {
+		return wrappedRelationship.getScore();
+	}
 
 }

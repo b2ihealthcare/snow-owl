@@ -193,7 +193,7 @@ final class SnomedDescriptionSearchRequest extends SnomedSearchRequest<SnomedDes
 		
 		for (int i = offset; i < scoreDocs.length; i++) {
 			Document doc = searcher.doc(scoreDocs[i].doc); // TODO: should expand & filter drive fieldsToLoad? Pass custom fieldValueLoader?
-			SnomedDescriptionIndexEntry indexEntry = SnomedDescriptionIndexEntry.builder(doc).build();
+			final SnomedDescriptionIndexEntry indexEntry = SnomedDescriptionIndexEntry.builder(doc).score(scoreDocs[i].score).build();
 			descriptionBuilder.add(indexEntry);
 		}
 

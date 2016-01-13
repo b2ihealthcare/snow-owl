@@ -213,7 +213,7 @@ final class SnomedConceptSearchRequest extends SnomedSearchRequest<SnomedConcept
 		final Options expand = expand();
 		for (int i = offset(); i < scoreDocs.length; i++) {
 			Document doc = searcher.doc(scoreDocs[i].doc); // TODO: should expand & filter drive fieldsToLoad? Pass custom fieldValueLoader?
-			final Builder builder = SnomedConceptIndexEntry.builder(doc);
+			final Builder builder = SnomedConceptIndexEntry.builder(doc).score(scoreDocs[i].score);
 			
 			if (expand != null) {
 				if (expand.containsKey("parentIds") || expand.containsKey("ancestors")) {

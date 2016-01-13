@@ -62,7 +62,6 @@ import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.b2international.snowowl.snomed.datastore.services.AbstractSnomedRefSetMembershipLookupService;
 import com.google.common.base.Function;
 import com.google.common.base.Functions;
-import com.google.common.base.Stopwatch;
 import com.google.common.collect.FluentIterable;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Maps;
@@ -95,6 +94,7 @@ final class SnomedConceptConverter extends BaseSnomedComponentConverter<SnomedCo
 		result.setIconId(input.getIconId());
 		result.setReleased(input.isReleased());
 		result.setSubclassDefinitionStatus(toSubclassDefinitionStatus(input.isExhaustive()));
+		result.setScore(input.getScore());
 		
 		if (input.getAncestors() != null) {
 			result.setAncestorIds(input.getAncestors().toArray());

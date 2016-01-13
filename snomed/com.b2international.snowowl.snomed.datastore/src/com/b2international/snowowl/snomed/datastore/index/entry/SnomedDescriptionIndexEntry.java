@@ -87,6 +87,10 @@ public class SnomedDescriptionIndexEntry extends SnomedIndexEntry implements ICo
 				.caseSignificanceId(input.getCaseSignificance().getConceptId())
 				.effectiveTimeLong(EffectiveTimes.getEffectiveTime(input.getEffectiveTime()));
 		
+		if (input.getScore() != null) {
+			builder.score(input.getScore());
+		}
+		
 		for (final String refSetId : input.getAcceptabilityMap().keySet()) {
 			builder.acceptability(refSetId, input.getAcceptabilityMap().get(refSetId));
 		}
