@@ -18,7 +18,6 @@ package com.b2international.snowowl.snomed.datastore.index.refset;
 import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_ACCEPTABILITY_ID;
 import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_ACCEPTABILITY_LABEL;
 import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_CHARACTERISTIC_TYPE_ID;
-import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_CONTAINER_MODULE_ID;
 import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_CORRELATION_ID;
 import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_DATA_TYPE_VALUE;
 import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_DESCRIPTION_FORMAT_ID;
@@ -51,7 +50,6 @@ import com.b2international.snowowl.datastore.BranchPathUtils;
 import com.b2international.snowowl.datastore.index.DocumentUpdaterBase;
 import com.b2international.snowowl.datastore.index.IndexUtils;
 import com.b2international.snowowl.datastore.index.mapping.Mappings;
-import com.b2international.snowowl.snomed.Component;
 import com.b2international.snowowl.snomed.datastore.SnomedRefSetUtil;
 import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedDocumentBuilder;
 import com.b2international.snowowl.snomed.datastore.index.update.ComponentLabelProvider;
@@ -179,11 +177,6 @@ public class RefSetMemberMutablePropertyUpdater extends DocumentUpdaterBase<Snom
 			final DataType dataType = SnomedRefSetUtil.MRCM_DATATYPE_TO_REFSET_MAP.inverse().get(member.getRefSetIdentifierId());
 			doc.update(Mappings.intDocValuesField(REFERENCE_SET_MEMBER_DATA_TYPE_VALUE), dataType.ordinal());
 			doc.update(Mappings.stringDocValuesField(REFERENCE_SET_MEMBER_SERIALIZED_VALUE), dataTypeMember.getSerializedValue());
-			
-			if (member.eContainer() instanceof Component) {
-				final String containerModuleId = ((Component) member.eContainer()).getModule().getId();
-				doc.update(Mappings.longDocValuesField(REFERENCE_SET_MEMBER_CONTAINER_MODULE_ID), Long.valueOf(containerModuleId));	
-			}
 			break;
 			
 		case SIMPLE_MAP:

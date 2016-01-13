@@ -15,7 +15,6 @@
  */
 package com.b2international.snowowl.datastore.server.snomed.index;
 
-import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_CONTAINER_MODULE_ID;
 import static com.google.common.base.Preconditions.checkNotNull;
 
 import java.io.IOException;
@@ -33,7 +32,7 @@ import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedMappings
 public class ConcreteDataTypePropertyCollector extends ComponentPropertyCollector {
 
 	private NumericDocValues moduleIds;
-	private NumericDocValues containerModuleIds;
+	private NumericDocValues referencedComponentId;
 
 	public ConcreteDataTypePropertyCollector(final LongCollection acceptedIds) {
 		super(checkNotNull(acceptedIds, "acceptedIds"));
@@ -43,21 +42,21 @@ public class ConcreteDataTypePropertyCollector extends ComponentPropertyCollecto
 	protected void initDocValues(final AtomicReader leafReader) throws IOException {
 		super.initDocValues(leafReader);
 		moduleIds = SnomedMappings.module().getDocValues(leafReader);
-		containerModuleIds = leafReader.getNumericDocValues(REFERENCE_SET_MEMBER_CONTAINER_MODULE_ID);
+		referencedComponentId = SnomedMappings.memberReferencedComponentId().getDocValues(leafReader);
 	}
 
 	@Override
 	protected boolean isLeafCollectible() {
 		return super.isLeafCollectible() 
 				&& moduleIds != null 
-				&& containerModuleIds != null;
+				&& referencedComponentId != null;
 	}
 
 	@Override
 	protected long[] collectProperties(final int docId) {
 		return new long[] { 
 				moduleIds.get(docId), 
-				containerModuleIds.get(docId) 
+				referencedComponentId.get(docId) 
 		};
 	}
 }

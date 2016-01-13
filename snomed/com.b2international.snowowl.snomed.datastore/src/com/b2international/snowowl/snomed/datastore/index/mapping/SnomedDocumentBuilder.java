@@ -24,7 +24,6 @@ import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBr
 import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_ACCEPTABILITY_ID;
 import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_ACCEPTABILITY_LABEL;
 import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_CHARACTERISTIC_TYPE_ID;
-import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_CONTAINER_MODULE_ID;
 import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_CORRELATION_ID;
 import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_DATA_TYPE_VALUE;
 import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_DESCRIPTION_FORMAT_ID;
@@ -161,8 +160,7 @@ public class SnomedDocumentBuilder extends DocumentBuilderBase<SnomedDocumentBui
 						.add(Mappings.stringDocValuesField(REFERENCE_SET_MEMBER_SERIALIZED_VALUE))
 						.add(Mappings.longDocValuesField(REFERENCE_SET_MEMBER_UOM_ID))
 						.add(Mappings.longField(REFERENCE_SET_MEMBER_CHARACTERISTIC_TYPE_ID))
-						.add(Mappings.intDocValuesField(REFERENCE_SET_MEMBER_DATA_TYPE_VALUE))
-						.add(Mappings.longDocValuesField(REFERENCE_SET_MEMBER_CONTAINER_MODULE_ID));
+						.add(Mappings.intDocValuesField(REFERENCE_SET_MEMBER_DATA_TYPE_VALUE));
 					SortKeyMode.INSTANCE.update(newDocBuilder, label.getValue(doc));
 					break;
 				case SIMPLE_MAP:

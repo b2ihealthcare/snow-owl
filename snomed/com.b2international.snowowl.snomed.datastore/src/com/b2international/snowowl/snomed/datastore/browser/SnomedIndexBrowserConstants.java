@@ -86,7 +86,6 @@ public abstract class SnomedIndexBrowserConstants {
 	public static final String REFERENCE_SET_MEMBER_DESCRIPTION_LENGTH = "ref_set_member_description_length";
 	public static final String REFERENCE_SET_MEMBER_OPERATOR_ID = "ref_set_member_operator_id";
 	public static final String REFERENCE_SET_MEMBER_SERIALIZED_VALUE = "ref_set_member_serialized_value";
-	public static final String REFERENCE_SET_MEMBER_CONTAINER_MODULE_ID = "ref_set_member_container_module_ID";
 	public static final String REFERENCE_SET_MEMBER_UOM_ID = "ref_set_member_uom_id";
 	public static final String REFERENCE_SET_MEMBER_DATA_TYPE_LABEL = "ref_set_member_data_type_label"; //data type value serialized form: e.g.: false
 	public static final String REFERENCE_SET_MEMBER_DATA_TYPE_ID = "ref_set_member_data_type_id";  //data type enumeration literal. e.g.: integer
