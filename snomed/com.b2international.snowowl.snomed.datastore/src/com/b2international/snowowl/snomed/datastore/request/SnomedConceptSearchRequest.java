@@ -167,7 +167,7 @@ final class SnomedConceptSearchRequest extends SnomedSearchRequest<SnomedConcept
 		addComponentIdFilter(filter);
 		
 		if (containsKey(OptionKey.TERM)) {
-			final BooleanQuery bq = (BooleanQuery) queryBuilder.matchAll();
+			final BooleanQuery bq = buildBooleanQuery(queryBuilder.matchAll(), Occur.MUST);
 			
 			final String term = getString(OptionKey.TERM);
 			final Map<String, Integer> conceptScoreMap = executeDescriptionSearch(context, term);
@@ -253,6 +253,16 @@ final class SnomedConceptSearchRequest extends SnomedSearchRequest<SnomedConcept
 			conceptsBuilder.add(builder.build());
 		}
 		return SnomedConverters.newConceptConverter(context, expand, locales()).convert(conceptsBuilder.build(), offset(), limit(), topDocs.totalHits);
+	}
+
+	private BooleanQuery buildBooleanQuery(final Query query, final Occur occur) {
+		if (query instanceof BooleanQuery) {
+			return (BooleanQuery) query;
+		} else {
+			final BooleanQuery booleanQuery = new BooleanQuery(true);
+			booleanQuery.add(query, occur);
+			return booleanQuery;
+		}
 	}
 
 	private Map<String, Integer> executeDescriptionSearch(BranchContext context, String term) {
