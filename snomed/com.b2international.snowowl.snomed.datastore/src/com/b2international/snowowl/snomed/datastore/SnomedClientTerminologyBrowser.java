@@ -63,23 +63,15 @@ import bak.pcj.map.LongKeyLongMap;
 import bak.pcj.set.LongSet;
 
 /**
- * Concept hierarchy browser service for the SNOMED&nbsp;CT ontology.
- * @see AbstractClientTerminologyBrowser
+ * @since 1.0
  */
 @Client
-public class SnomedClientTerminologyBrowser extends ActiveBranchClientTerminologyBrowser<SnomedConceptIndexEntry, String> {
+public class SnomedClientTerminologyBrowser extends BaseSnomedClientTerminologyBrowser {
 
 	public static final List<ExtendedLocale> LOCALES = ImmutableList.of(new ExtendedLocale("en", "sg", Concepts.REFSET_LANGUAGE_TYPE_SG), new ExtendedLocale("en", "gb", Concepts.REFSET_LANGUAGE_TYPE_UK));
 	
-	private final IEventBus bus;
-
-	/**
-	 * Creates a new service instance based on the wrapped server side service.
-	 * @param wrappedBrowser the wrapped server side service.
-	 */
 	public SnomedClientTerminologyBrowser(final SnomedTerminologyBrowser wrappedBrowser, final IEventBus bus) {
-		super(wrappedBrowser);
-		this.bus = checkNotNull(bus, "bus");
+		super(wrappedBrowser, bus);
 	}
 	
 	@Override
@@ -94,7 +86,7 @@ public class SnomedClientTerminologyBrowser extends ActiveBranchClientTerminolog
 			// expand parent and ancestorIds to get all possible treepaths to the top
 			.setExpand("pt(),parentIds(),ancestorIds()")
 			.build(branch)
-			.executeSync(bus);
+			.executeSync(getBus());
 		
 		if (matches.getItems().isEmpty()) {
 			return EmptyTerminologyBrowser.getInstance();
@@ -104,7 +96,7 @@ public class SnomedClientTerminologyBrowser extends ActiveBranchClientTerminolog
 		final Set<String> matchingConceptIds = matchingConcepts.transform(ComponentUtils.<String>getIdFunction()).toSet();
 		
 		final TerminologyTree tree = InferredTreeBuilder
-			.newBuilder(getBranchPath().getPath(), LOCALES, this, bus)
+			.newBuilder(getBranchPath().getPath(), LOCALES, this, getBus())
 			.build(matchingConcepts);
 
 		return new FilteredTerminologyBrowser<SnomedConceptIndexEntry, String>(tree.getItems(), tree.getSubTypes(), tree.getSuperTypes(), FilterTerminologyBrowserType.HIERARCHICAL, matchingConceptIds);
@@ -119,7 +111,7 @@ public class SnomedClientTerminologyBrowser extends ActiveBranchClientTerminolog
 			.setExpand("pt(),descendants(direct:true,limit:0)")
 			.setLocales(LOCALES)
 			.build(getBranchPath().getPath())
-			.executeSync(bus);
+			.executeSync(getBus());
 		return FluentIterable.from(concepts).transform(new Function<ISnomedConcept, IComponentWithChildFlag<String>>() {
 			@Override
 			public IComponentWithChildFlag<String> apply(ISnomedConcept input) {
@@ -141,7 +133,7 @@ public class SnomedClientTerminologyBrowser extends ActiveBranchClientTerminolog
 				.setLocales(LOCALES)
 				.setExpand("pt(),parentIds()")
 				.build(getBranchPath().getPath())
-				.executeSync(bus);
+				.executeSync(getBus());
 		return SnomedConceptIndexEntry.fromConcepts(roots);
 	}
 	
@@ -154,7 +146,7 @@ public class SnomedClientTerminologyBrowser extends ActiveBranchClientTerminolog
 					.setExpand("pt(),parentIds()")
 					.setLocales(LOCALES)
 					.build(getBranchPath().getPath())
-					.executeSync(bus);
+					.executeSync(getBus());
 			return SnomedConceptIndexEntry.builder(concept).label(concept.getPt().getTerm()).build();
 		} catch (NotFoundException e) {
 			return null;
@@ -170,7 +162,7 @@ public class SnomedClientTerminologyBrowser extends ActiveBranchClientTerminolog
 				.setExpand("pt(),parentIds()")
 				.setLocales(LOCALES)
 				.build(getBranchPath().getPath())
-				.executeSync(bus);
+				.executeSync(getBus());
 		return SnomedConceptIndexEntry.fromConcepts(concepts);
 	}
 	
@@ -187,7 +179,7 @@ public class SnomedClientTerminologyBrowser extends ActiveBranchClientTerminolog
 				.setExpand("ancestors(direct:true,expand(pt(),parentIds()))")
 				.setLocales(LOCALES)
 				.build(getBranchPath().getPath())
-				.executeSync(bus);
+				.executeSync(getBus());
 		return SnomedConceptIndexEntry.fromConcepts(concept.getAncestors());
 	}
 
@@ -366,7 +358,7 @@ public class SnomedClientTerminologyBrowser extends ActiveBranchClientTerminolog
 				.setLocales(LOCALES)
 				.setExpand("pt(),parentIds()")
 				.build(getBranchPath().getPath())
-				.executeSync(bus);
+				.executeSync(getBus());
 		return SnomedConceptIndexEntry.fromConcepts(concepts);
 	}
 	
@@ -396,12 +388,4 @@ public class SnomedClientTerminologyBrowser extends ActiveBranchClientTerminolog
 		return (SnomedTerminologyBrowser) getWrappedBrowser();
 	}
 	
-	/*
-	 * (non-Javadoc)
-	 * @see com.b2international.snowowl.datastore.BranchPathAwareService#getEPackage()
-	 */
-	@Override
-	protected EPackage getEPackage() {
-		return SnomedPackage.eINSTANCE;
-	}
 }

@@ -20,10 +20,10 @@ import com.b2international.snowowl.eventbus.IEventBus;
 /**
  * Client version of the SNOMED CT terminology browser using only stated IS_A relationships
  */
-public class SnomedStatedClientTerminologyBrowser extends SnomedClientTerminologyBrowser {
+public class SnomedStatedClientTerminologyBrowser extends BaseSnomedClientTerminologyBrowser {
 
 	public SnomedStatedClientTerminologyBrowser(SnomedStatedTerminologyBrowser wrappedBrowser, IEventBus bus) {
 		super(wrappedBrowser, bus);
 	}
-	
+
 }
