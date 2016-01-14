@@ -41,6 +41,7 @@ import com.b2international.commons.options.Options;
 import com.b2international.snowowl.core.api.SnowowlRuntimeException;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.exceptions.BadRequestException;
+import com.b2international.snowowl.datastore.index.mapping.IndexField;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.core.domain.AssociationType;
 import com.b2international.snowowl.snomed.core.domain.DefinitionStatus;
@@ -74,6 +75,9 @@ import com.google.common.collect.TreeMultimap;
  */
 final class SnomedConceptConverter extends BaseSnomedComponentConverter<SnomedConceptIndexEntry, ISnomedConcept, SnomedConcepts> {
 
+	private static final String STATED_FORM = "stated";
+	private static final String INFERRED_FORM = "inferred";
+	
 	SnomedConceptConverter(final BranchContext context, Options expand, List<ExtendedLocale> locales, final AbstractSnomedRefSetMembershipLookupService membershipLookupService) {
 		super(context, expand, locales, membershipLookupService);
 	}
@@ -102,6 +106,14 @@ final class SnomedConceptConverter extends BaseSnomedComponentConverter<SnomedCo
 		
 		if (input.getParents() != null) { 
 			result.setParentIds(input.getParents().toArray());
+		}
+		
+		if (input.getStatedParents() != null) {
+			result.setStatedParentIds(input.getStatedParents().toArray());
+		}
+		
+		if (input.getStatedAncestors() != null) {
+			result.setStatedAncestorIds(input.getStatedAncestors().toArray());
 		}
 			
 		return result;
@@ -218,9 +230,10 @@ final class SnomedConceptConverter extends BaseSnomedComponentConverter<SnomedCo
 		if (expand().containsKey("descendants")) {
 			final Options expandOptions = expand().get("descendants", Options.class);
 			
-			if (!expandOptions.containsKey("direct")) {
-				throw new BadRequestException("Direct parameter required for descendants expansion");
-			}
+			final boolean direct = checkDirect(expandOptions);
+			final boolean stated = checkForm(expandOptions);
+			final IndexField<Long> parentField = stated ? SnomedMappings.statedParent() : SnomedMappings.parent();
+			final IndexField<Long> ancestorField = stated ? SnomedMappings.statedAncestor() : SnomedMappings.ancestor();
 			
 			try {
 				final Query conceptQuery = new ConstantScoreQuery(SnomedMappings.newQuery()
@@ -228,9 +241,9 @@ final class SnomedConceptConverter extends BaseSnomedComponentConverter<SnomedCo
 						.active()
 						.matchAll());
 				final BooleanFilter filter = new BooleanFilter();
-				filter.add(SnomedMappings.parent().createTermsFilter(StringToLongFunction.copyOf(conceptIds)), Occur.SHOULD);
-				if (!expandOptions.getBoolean("direct")) {
-					filter.add(SnomedMappings.ancestor().createTermsFilter(StringToLongFunction.copyOf(conceptIds)), Occur.SHOULD);
+				filter.add(parentField.createTermsFilter(StringToLongFunction.copyOf(conceptIds)), Occur.SHOULD);
+				if (!direct) {
+					filter.add(ancestorField.createTermsFilter(StringToLongFunction.copyOf(conceptIds)), Occur.SHOULD);
 				}
 				final Query query = new ConstantScoreQuery(new FilteredQuery(conceptQuery, filter));
 				
@@ -249,9 +262,18 @@ final class SnomedConceptConverter extends BaseSnomedComponentConverter<SnomedCo
 				
 				final TopDocs search = searcher.search(query, totalHits);
 				
-				final SnomedFieldsToLoadBuilder fieldsToLoadBuilder = SnomedMappings.fieldsToLoad().id().parent();
-				if (!expandOptions.getBoolean("direct")) {
-					fieldsToLoadBuilder.ancestor();
+				final SnomedFieldsToLoadBuilder fieldsToLoadBuilder = SnomedMappings.fieldsToLoad().id();
+				if (stated) {
+					fieldsToLoadBuilder.statedParent();
+				} else {
+					fieldsToLoadBuilder.parent();
+				}
+				if (!direct) {
+					if (stated) {
+						fieldsToLoadBuilder.statedAncestor();
+					} else {
+						fieldsToLoadBuilder.ancestor();
+					}
 				}
 				final Set<String> fieldsToLoad = fieldsToLoadBuilder.build();
 				
@@ -261,9 +283,9 @@ final class SnomedConceptConverter extends BaseSnomedComponentConverter<SnomedCo
 					final String descendantConceptId = SnomedMappings.id().getValueAsString(doc);
 					
 					final Set<String> parentsAndAncestors = newHashSet();
-					parentsAndAncestors.addAll(SnomedMappings.parent().getValuesAsStringSet(doc));
-					if (!expandOptions.getBoolean("direct")) {
-						parentsAndAncestors.addAll(SnomedMappings.ancestor().getValuesAsStringSet(doc));
+					parentsAndAncestors.addAll(parentField.getValuesAsStringSet(doc));
+					if (!direct) {
+						parentsAndAncestors.addAll(ancestorField.getValuesAsStringSet(doc));
 					}
 					
 					parentsAndAncestors.retainAll(conceptIds);
@@ -309,26 +331,44 @@ final class SnomedConceptConverter extends BaseSnomedComponentConverter<SnomedCo
 		}
 	}
 
+	private boolean checkDirect(final Options expandOptions) {
+		if (!expandOptions.containsKey("direct")) {
+			throw new BadRequestException("Direct parameter required for descendants expansion");
+		}
+		return expandOptions.getBoolean("direct");
+	}
+
+	private boolean checkForm(final Options expandOptions) {
+		final String form = expandOptions.getString("form");
+		if (!STATED_FORM.equals(form) && !INFERRED_FORM.equals(form)) {
+			throw new BadRequestException("Form parameter required for descendants expansion, it should be either 'stated' or 'inferred'");
+		}
+		return STATED_FORM.equals(form);
+	}
+
 	private void expandAncestors(List<ISnomedConcept> results, Set<String> conceptIds) {
 		if (expand().containsKey("ancestors")) {
 			final Options expandOptions = expand().get("ancestors", Options.class);
 			
-			if (!expandOptions.containsKey("direct")) {
-				throw new BadRequestException("Direct parameter required for ancestors expansion");
-			}
+			final boolean direct = checkDirect(expandOptions);
+			final boolean stated = checkForm(expandOptions);
 			
 			final Multimap<String, String> ancestorsByDescendant = TreeMultimap.create();
 			
 			final LongToStringFunction toString = new LongToStringFunction();
 			for (ISnomedConcept concept : results) {
-				if (concept.getParentIds() != null) {
-					for (long parent : concept.getParentIds()) {
+				final long[] parentIds = stated ? concept.getStatedParentIds() : concept.getParentIds();
+				if (parentIds != null) {
+					for (long parent : parentIds) {
 						ancestorsByDescendant.put(concept.getId(), toString.apply(parent));
 					}
 				}
-				if (expandOptions.containsKey("ancestors")) {
-					for (long ancestor : concept.getAncestorIds()) {
-						ancestorsByDescendant.put(concept.getId(), toString.apply(ancestor));
+				if (!direct) {
+					final long[] ancestorIds = stated ? concept.getStatedAncestorIds() : concept.getAncestorIds();
+					if (ancestorIds != null) {
+						for (long ancestor : ancestorIds) {
+							ancestorsByDescendant.put(concept.getId(), toString.apply(ancestor));
+						}
 					}
 				}
 			}
