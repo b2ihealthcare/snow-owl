@@ -244,6 +244,10 @@ public enum SnomedModuleDependencyCollectorService {
 			referencedComponentIds.add(properties[1]);
 		}
 		
+		if (referencedComponentIds.isEmpty()) {
+			return;
+		}
+
 		Filter filter = SnomedMappings.id().createFilter(Iterables.toArray(referencedComponentIds, Long.class));
 		FilteredQuery filteredQuery = new FilteredQuery(new MatchAllDocsQuery(), filter);
 		
