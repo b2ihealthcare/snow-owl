@@ -181,7 +181,7 @@ public class InferredTreeBuilder implements TreeBuilder {
 		final ISnomedConcept root = SnomedRequests
 				.prepareGetConcept()
 				.setComponentId(Concepts.ROOT_CONCEPT)
-				.setExpand("pt(),descendants(direct:true,expand(pt()))")
+				.setExpand("pt(),descendants(form:\"inferred\",direct:true,expand(pt()))")
 				.setLocales(locales)
 				.build(branch)
 				.executeSync(bus);

@@ -108,7 +108,7 @@ public class SnomedClientTerminologyBrowser extends BaseSnomedClientTerminologyB
 			.prepareSearchConcept()
 			.all()
 			.filterByParent(concept.getId())
-			.setExpand("pt(),descendants(direct:true,limit:0)")
+			.setExpand("pt(),descendants(form:\"inferred\",direct:true,limit:0)")
 			.setLocales(LOCALES)
 			.build(getBranchPath().getPath())
 			.executeSync(getBus());
@@ -176,7 +176,7 @@ public class SnomedClientTerminologyBrowser extends BaseSnomedClientTerminologyB
 		final ISnomedConcept concept = SnomedRequests
 				.prepareGetConcept()
 				.setComponentId(id)
-				.setExpand("ancestors(direct:true,expand(pt(),parentIds()))")
+				.setExpand("ancestors(form:\"inferred\",direct:true,expand(pt(),parentIds()))")
 				.setLocales(LOCALES)
 				.build(getBranchPath().getPath())
 				.executeSync(getBus());
