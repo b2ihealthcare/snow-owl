@@ -70,7 +70,9 @@ public class SnomedConceptIndexEntry extends SnomedIndexEntry implements ICompon
 				.primitive(input.getDefinitionStatus().isPrimitive())
 				.exhaustive(input.getSubclassDefinitionStatus().isExhaustive())
 				.parents(LongSets.newLongSet(input.getParentIds()))
-				.ancestors(LongSets.newLongSet(input.getAncestorIds()));
+				.ancestors(LongSets.newLongSet(input.getAncestorIds()))
+				.statedParents(LongSets.newLongSet(input.getStatedParentIds()))
+				.statedAncestors(LongSets.newLongSet(input.getStatedAncestorIds()));
 		
 		if (input.getScore() != null) {
 			builder.score(input.getScore());
@@ -97,6 +99,8 @@ public class SnomedConceptIndexEntry extends SnomedIndexEntry implements ICompon
 		private boolean exhaustive;
 		private LongCollection parents;
 		private LongCollection ancestors;
+		private LongCollection statedParents;
+		private LongCollection statedAncestors;
 
 		private Builder() {
 			// Disallow instantiation outside static method
@@ -127,8 +131,18 @@ public class SnomedConceptIndexEntry extends SnomedIndexEntry implements ICompon
 			return getSelf();
 		}
 		
+		public Builder statedParents(final LongCollection statedParents) {
+			this.statedParents = statedParents;
+			return getSelf();
+		}
+		
 		public Builder ancestors(final LongCollection ancestors) {
 			this.ancestors = ancestors;
+			return getSelf();
+		}
+		
+		public Builder statedAncestors(final LongCollection statedAncestors) {
+			this.statedAncestors = statedAncestors;
 			return getSelf();
 		}
 
@@ -149,8 +163,16 @@ public class SnomedConceptIndexEntry extends SnomedIndexEntry implements ICompon
 				entry.setParents(parents);
 			}
 			
+			if (statedParents != null) {
+				entry.setStatedParents(statedParents);
+			}
+			
 			if (ancestors != null) {
 				entry.setAncestors(ancestors);
+			}
+			
+			if (statedAncestors != null) {
+				entry.setStatedAncestors(statedAncestors);
 			}
 			
 			return entry;
@@ -161,6 +183,8 @@ public class SnomedConceptIndexEntry extends SnomedIndexEntry implements ICompon
 	private final boolean exhaustive;
 	private LongCollection parents;
 	private LongCollection ancestors;
+	private LongCollection statedParents;
+	private LongCollection statedAncestors;
 
 	protected SnomedConceptIndexEntry(final String id,
 			final String label,
@@ -206,18 +230,34 @@ public class SnomedConceptIndexEntry extends SnomedIndexEntry implements ICompon
 		this.parents = parents;
 	}
 	
+	private void setStatedParents(LongCollection statedParents) {
+		this.statedParents = statedParents;
+	}
+	
 	@Override
 	public LongCollection getParents() {
 		return parents;
+	}
+	
+	public LongCollection getStatedParents() {
+		return statedParents;
 	}
 	
 	private void setAncestors(LongCollection ancestors) {
 		this.ancestors = ancestors;
 	}
 	
+	private void setStatedAncestors(LongCollection statedAncestors) {
+		this.statedAncestors = statedAncestors;
+	}
+	
 	@Override
 	public LongCollection getAncestors() {
 		return ancestors;
+	}
+	
+	public LongCollection getStatedAncestors() {
+		return statedAncestors;
 	}
 
 	@Override

@@ -99,4 +99,16 @@ public interface ISnomedConcept extends SnomedCoreComponent, IComponentNode, Def
 	@JsonIgnore
 	long[] getParentIds();
 
+	/**
+	 * @return the concept IDs of the stated parents
+	 */
+	@JsonIgnore
+	long[] getStatedParentIds();
+	
+	/**
+	 * @return the concept IDs of the stated ancestors
+	 */
+	@JsonIgnore
+	long[] getStatedAncestorIds();
+
 }

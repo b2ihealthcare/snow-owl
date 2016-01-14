@@ -241,10 +241,12 @@ final class SnomedConceptSearchRequest extends SnomedSearchRequest<SnomedConcept
 			if (expand != null) {
 				if (expand.containsKey("parentIds") || expand.containsKey("ancestors")) {
 					builder.parents(SnomedMappings.parent().getValueAsLongSet(doc));
+					builder.statedParents(SnomedMappings.statedParent().getValueAsLongSet(doc));
 				}
 				
 				if (expand.containsKey("ancestorIds") || expand.containsKey("ancestors")) {
 					builder.ancestors(SnomedMappings.ancestor().getValueAsLongSet(doc));
+					builder.statedAncestors(SnomedMappings.statedAncestor().getValueAsLongSet(doc));
 				}
 			}
 			
