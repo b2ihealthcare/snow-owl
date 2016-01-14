@@ -33,12 +33,12 @@ import javax.annotation.Nullable;
 
 import org.apache.lucene.document.Document;
 import org.apache.lucene.search.BooleanClause.Occur;
-import org.eclipse.core.runtime.IProgressMonitor;
 import org.apache.lucene.search.BooleanQuery;
 import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.ReferenceManager;
 import org.apache.lucene.search.TopDocs;
+import org.eclipse.core.runtime.IProgressMonitor;
 
 import com.b2international.commons.CompareUtils;
 import com.b2international.commons.graph.GraphUtils;
@@ -65,7 +65,6 @@ import com.b2international.snowowl.snomed.datastore.escg.EscgParseFailedExceptio
 import com.b2international.snowowl.snomed.datastore.escg.IEscgQueryEvaluatorService;
 import com.b2international.snowowl.snomed.datastore.filteredrefset.FilteredRefSetMemberBrowser2;
 import com.b2international.snowowl.snomed.datastore.filteredrefset.IRefSetMemberOperation;
-import com.b2international.snowowl.snomed.datastore.index.SnomedConceptReducedQueryAdapter;
 import com.b2international.snowowl.snomed.datastore.index.SnomedIndexService;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptIndexEntry;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptIndexEntryWithChildFlag;
@@ -100,6 +99,7 @@ public class SnomedServerTerminologyBrowser extends AbstractIndexTerminologyBrow
 			.exhaustive()
 			.released()
 			.parent()
+			.statedParent()
 			.build();
 	
 	/**
@@ -139,9 +139,11 @@ public class SnomedServerTerminologyBrowser extends AbstractIndexTerminologyBrow
 	
 	@Override
 	protected SnomedConceptIndexEntry createResultObject(final IBranchPath branchPath, final Document doc) {
-		final com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptIndexEntry.Builder builder = SnomedConceptIndexEntry.builder(doc);
-		builder.parents(SnomedMappings.parent().getValueAsLongList(doc));
-		return builder.build();
+		return SnomedConceptIndexEntry
+				.builder(doc)
+				.parents(SnomedMappings.parent().getValueAsLongList(doc))
+				.statedParents(SnomedMappings.statedParent().getValueAsLongList(doc))
+				.build();
 	}
 
 	@Override
