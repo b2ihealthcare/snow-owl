@@ -63,7 +63,6 @@ import com.b2international.snowowl.snomed.datastore.SnomedConceptIconIdProvider;
 import com.b2international.snowowl.snomed.datastore.SnomedConceptLookupService;
 import com.b2international.snowowl.snomed.datastore.SnomedTerminologyBrowser;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptIndexEntry;
-import com.b2international.snowowl.snomed.datastore.services.ISnomedComponentService;
 import com.b2international.snowowl.snomed.datastore.services.ISnomedConceptNameProvider;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSet;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetMember;
@@ -450,6 +449,12 @@ public class SnomedConceptDeltaBuilder extends AbstractHierarchicalComponentDelt
 		return SnomedTerminologyComponentConstants.CONCEPT_NUMBER;
 	}
 	
+	@Override
+	protected AbstractIndexEntry getIndexEntryFromTerminologyBrowser(final String id) {
+		final SnomedConceptIndexEntry concept = (SnomedConceptIndexEntry) super.getIndexEntryFromTerminologyBrowser(id);
+		return SnomedConceptIndexEntry.builder(concept).label(getConceptLabel(id, getCurrentView())).build();
+	}
+	
 	/**
 	 * Creates and returns with a brand new component delta instance based on the specified values. 
 	 * @param conceptId the unique SNOMED&nbsp;CT concept ID.
@@ -595,12 +600,6 @@ public class SnomedConceptDeltaBuilder extends AbstractHierarchicalComponentDelt
 			}
 		}
 
-		//try to get preferred term from index
-		if (StringUtils.isEmpty(label)) {
-			final ISnomedComponentService service = getComponentService();
-			label = service.getLabels(getBranchPath(), conceptId)[0];
-		}
-
 		//fall back to CDO
 		if (StringUtils.isEmpty(label)) {
 			label = textProvider.getText(conceptId);
@@ -612,11 +611,6 @@ public class SnomedConceptDeltaBuilder extends AbstractHierarchicalComponentDelt
 		}
 
 		return label;
-	}
-	
-	/*returns with the component service for SNOMED&nbsp;CT with its branch aware API*/
-	private ISnomedComponentService getComponentService() {
-		return ApplicationContext.getInstance().getService(ISnomedComponentService.class);
 	}
 	
 	/*returns with the revision manager*/
