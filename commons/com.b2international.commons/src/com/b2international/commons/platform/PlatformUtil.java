@@ -175,5 +175,13 @@ public class PlatformUtil {
 		final Bundle bundle = checkNotNull(FrameworkUtil.getBundle(contextClass), "Bundle not found for %s", contextClass);
 		return toAbsoluteBundlePath(checkNotNull(bundle.getEntry(path), "Bundle entry not found at %s in bundle %s", path, bundle.getSymbolicName()));
 	}
+	
+	/**
+	 * Returns <code>true</code> if the underlying system is a Mac OS X, <code>false</code> otherwise. 
+	 * @return
+	 */
+	public static boolean isOSX() {
+		return Platform.OS_MACOSX.equals(Platform.getOS());
+	}
 
 }
