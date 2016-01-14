@@ -240,7 +240,12 @@ public enum SnomedModuleDependencyCollectorService {
 			referencedComponentIds.add(properties[1]);
 		}
 		
+		if (referencedComponentIds.isEmpty()) {
+			return;
+		}
+		
 		Filter filter = SnomedMappings.id().createTermsFilter(referencedComponentIds);
+
 		FilteredQuery filteredQuery = new FilteredQuery(new MatchAllDocsQuery(), filter);
 		
 		ComponentModuleCollector componentModuleCollector = new ComponentModuleCollector();
