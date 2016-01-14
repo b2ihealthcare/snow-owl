@@ -296,9 +296,9 @@ final class SnomedConceptConverter extends BaseSnomedComponentConverter<SnomedCo
 				
 				final int offset = getOffset(expandOptions);
 				final int limit = getLimit(expandOptions);
+				final Collection<String> componentIds = newHashSet(descendantsByAncestor.values());
 				
-				if (limit > 0) {
-					final Collection<String> componentIds = newHashSet(descendantsByAncestor.values());
+				if (limit > 0 && !componentIds.isEmpty()) {
 					// remove any already known concept definition
 					componentIds.removeAll(conceptIds);
 					
@@ -376,8 +376,9 @@ final class SnomedConceptConverter extends BaseSnomedComponentConverter<SnomedCo
 			final int offset = getOffset(expandOptions);
 			final int limit = getLimit(expandOptions);
 
-			if (limit > 0) {
-				final Collection<String> componentIds = newHashSet(ancestorsByDescendant.values());
+			final Collection<String> componentIds = newHashSet(ancestorsByDescendant.values());
+			
+			if (limit > 0 && !componentIds.isEmpty()) {
 				// remove any already known concept definitions
 				componentIds.removeAll(conceptIds);
 				
