@@ -29,11 +29,14 @@ import com.b2international.snowowl.datastore.index.IndexAdapterBase;
 import com.b2international.snowowl.datastore.index.IndexUtils;
 import com.b2international.snowowl.datastore.index.mapping.Mappings;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry;
-import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry.Builder;
 import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedMappings;
 import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedQueryBuilder;
+import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.google.common.base.Optional;
 
+/**
+ * @deprecated - UNSUPPORTED, use {@link SnomedRequests#prepareSearchMember()} and {@link SnomedRequests#prepareSearchConcept()} instead
+ */
 public class SnomedRefSetMemberIndexQueryAdapter extends IndexAdapterBase<SnomedRefSetMemberIndexEntry> implements Serializable {
 
 	private static final long serialVersionUID = 3095110912042606627L;
@@ -62,7 +65,6 @@ public class SnomedRefSetMemberIndexQueryAdapter extends IndexAdapterBase<Snomed
 				.build();
 	}
 	
-	@SuppressWarnings("deprecation")
 	@Override
 	protected Query buildQuery() throws ParseException {
 		final SnomedQueryBuilder main = SnomedMappings.newQuery()
