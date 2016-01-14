@@ -83,19 +83,30 @@ final class SnomedConceptSearchRequest extends SnomedSearchRequest<SnomedConcept
 		NAMESPACE,
 		
 		/**
-		 * Parent concept ID
+		 * Parent concept ID that can be found in the inferred direct super type hierarchy
 		 */
 		PARENT,
 		
 		/**
-		 * Ancestor concept ID (includes direct parents)
+		 * Ancestor concept ID that can be found in the inferred super type hierarchy (includes direct parents)
 		 */
 		ANCESTOR, 
 		
 		/**
-		 * 
+		 * Parent concept ID that can be found in the stated direct super type hierarchy
+		 */
+		STATED_PARENT,
+		
+		/**
+		 * Ancestor concept ID that can be found in the stated super type hierarchy (includes direct stated parents as well)
+		 */
+		STATED_ANCESTOR,
+		
+		/**
+		 * Enable score boosting using DOI field
 		 */
 		USE_DOI
+
 	}
 	
 	SnomedConceptSearchRequest() {}
@@ -112,11 +123,23 @@ final class SnomedConceptSearchRequest extends SnomedSearchRequest<SnomedConcept
 			queryBuilder.parent(getString(OptionKey.PARENT));
 		}
 		
+		if (containsKey(OptionKey.STATED_PARENT)) {
+			queryBuilder.statedParent(getString(OptionKey.STATED_PARENT));
+		}
+		
 		if (containsKey(OptionKey.ANCESTOR)) {
 			final String ancestorId = getString(OptionKey.ANCESTOR);
 			queryBuilder.and(SnomedMappings.newQuery()
 					.parent(ancestorId)
 					.ancestor(ancestorId)
+					.matchAny());
+		}
+		
+		if (containsKey(OptionKey.STATED_ANCESTOR)) {
+			final String ancestorId = getString(OptionKey.STATED_ANCESTOR);
+			queryBuilder.and(SnomedMappings.newQuery()
+					.statedParent(ancestorId)
+					.statedAncestor(ancestorId)
 					.matchAny());
 		}
 		
