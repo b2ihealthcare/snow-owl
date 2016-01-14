@@ -54,6 +54,7 @@ import com.google.common.base.Preconditions;
 import com.google.common.collect.BiMap;
 import com.google.common.collect.ImmutableBiMap;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
 
 /** 
  * Utility class collecting commons operations related to SNOMED CT reference sets. 
@@ -117,6 +118,9 @@ public abstract class SnomedRefSetUtil {
 			.put(com.b2international.snowowl.snomed.mrcm.DataType.INTEGER, DataType.INTEGER)
 			.put(com.b2international.snowowl.snomed.mrcm.DataType.STRING, DataType.STRING)
 			.build();
+	
+	public static final ImmutableSet<com.b2international.snowowl.snomed.mrcm.DataType> UNSUPPORTED_DATATYPES = ImmutableSet
+			.<com.b2international.snowowl.snomed.mrcm.DataType> of(com.b2international.snowowl.snomed.mrcm.DataType.DATE);
 	
 	private static SnomedCoreConfiguration getCoreConfiguration() {
 		return SnowOwlApplication.INSTANCE.getConfiguration().getModuleConfig(SnomedCoreConfiguration.class);
