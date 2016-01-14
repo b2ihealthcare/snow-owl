@@ -37,7 +37,11 @@ public final class SnomedRefSetSearchRequestBuilder extends SnomedSearchRequestB
 	protected SearchRequest<SnomedReferenceSets> create() {
 		return new SnomedRefSetSearchRequest();
 	}
-
+	
+	public SnomedRefSetSearchRequestBuilder filterByType(SnomedRefSetType type) {
+		return filterByTypes(Collections.singleton(type));
+	}
+	
 	public SnomedRefSetSearchRequestBuilder filterByTypes(Collection<SnomedRefSetType> refSetTypes) {
 		return addOption(SnomedRefSetSearchRequest.OptionKey.TYPE, refSetTypes);
 	}
@@ -63,5 +67,5 @@ public final class SnomedRefSetSearchRequestBuilder extends SnomedSearchRequestB
 	public SnomedRefSetSearchRequestBuilder filterByReferencedComponentTypes(Collection<Integer> referencedComponentTypes) {
 		return addOption(SnomedRefSetSearchRequest.OptionKey.REFERENCED_COMPONENT_TYPE, referencedComponentTypes);
 	}
-	
+
 }
