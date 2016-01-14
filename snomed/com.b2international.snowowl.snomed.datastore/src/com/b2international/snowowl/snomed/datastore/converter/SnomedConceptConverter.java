@@ -54,6 +54,7 @@ import com.b2international.snowowl.snomed.core.domain.SnomedConcepts;
 import com.b2international.snowowl.snomed.core.domain.SnomedDescriptions;
 import com.b2international.snowowl.snomed.core.domain.SnomedRelationships;
 import com.b2international.snowowl.snomed.core.domain.SubclassDefinitionStatus;
+import com.b2international.snowowl.snomed.core.tree.Trees;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptIndexEntry;
 import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedFieldsToLoadBuilder;
 import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedMappings;
@@ -75,9 +76,6 @@ import com.google.common.collect.TreeMultimap;
  */
 final class SnomedConceptConverter extends BaseSnomedComponentConverter<SnomedConceptIndexEntry, ISnomedConcept, SnomedConcepts> {
 
-	private static final String STATED_FORM = "stated";
-	private static final String INFERRED_FORM = "inferred";
-	
 	SnomedConceptConverter(final BranchContext context, Options expand, List<ExtendedLocale> locales, final AbstractSnomedRefSetMembershipLookupService membershipLookupService) {
 		super(context, expand, locales, membershipLookupService);
 	}
@@ -340,10 +338,10 @@ final class SnomedConceptConverter extends BaseSnomedComponentConverter<SnomedCo
 
 	private boolean checkForm(final Options expandOptions) {
 		final String form = expandOptions.getString("form");
-		if (!STATED_FORM.equals(form) && !INFERRED_FORM.equals(form)) {
+		if (!Trees.STATED_FORM.equals(form) && !Trees.INFERRED_FORM.equals(form)) {
 			throw new BadRequestException("Form parameter required for descendants expansion, it should be either 'stated' or 'inferred'");
 		}
-		return STATED_FORM.equals(form);
+		return Trees.STATED_FORM.equals(form);
 	}
 
 	private void expandAncestors(List<ISnomedConcept> results, Set<String> conceptIds) {

@@ -28,10 +28,11 @@ import com.b2international.commons.AlphaNumericComparator;
 import com.b2international.commons.http.ExtendedLocale;
 import com.b2international.commons.pcj.LongSets;
 import com.b2international.snowowl.core.api.ComponentUtils;
+import com.b2international.snowowl.core.exceptions.NotImplementedException;
 import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.core.domain.ISnomedConcept;
-import com.b2international.snowowl.snomed.datastore.SnomedClientTerminologyBrowser;
+import com.b2international.snowowl.snomed.datastore.BaseSnomedClientTerminologyBrowser;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptIndexEntry;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.google.common.collect.FluentIterable;
@@ -39,27 +40,34 @@ import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Ordering;
 import com.google.common.collect.SetMultimap;
 
+import bak.pcj.LongCollection;
+
 /**
  * @since 4.6
  */
-public class InferredTreeBuilder implements TreeBuilder {
+final class TreeBuilderImpl implements TreeBuilder {
 
 	private final String branch;
 	private final List<ExtendedLocale> locales;
-	private final SnomedClientTerminologyBrowser browser;
+	private final BaseSnomedClientTerminologyBrowser browser;
 	private final IEventBus bus;
+	private final String form;
 
-	private InferredTreeBuilder(String branch, List<ExtendedLocale> locales, SnomedClientTerminologyBrowser browser, IEventBus bus) {
+	TreeBuilderImpl(String form, String branch, List<ExtendedLocale> locales, BaseSnomedClientTerminologyBrowser browser, IEventBus bus) {
+		switch (form) {
+		case Trees.INFERRED_FORM: 
+		case Trees.STATED_FORM:
+			break;
+		default:
+			throw new NotImplementedException("Tree Form is unsupported: %s", form);
+		}
+		this.form = form;
 		this.bus = checkNotNull(bus);
 		this.browser = checkNotNull(browser);
 		this.branch = checkNotNull(branch);
 		this.locales = checkNotNull(locales);
 	}
 	
-	public static TreeBuilder newBuilder(String branch, List<ExtendedLocale> locales, SnomedClientTerminologyBrowser browser, IEventBus bus) {
-		return new InferredTreeBuilder(branch, locales, browser, bus);
-	}
-
 	@Override
 	public TerminologyTree build(Iterable<SnomedConceptIndexEntry> nodes) {
 		final Map<String, SnomedConceptIndexEntry> treeItemsById = newHashMap();
@@ -76,8 +84,10 @@ public class InferredTreeBuilder implements TreeBuilder {
 		final SetMultimap<String, String> subTypeMap = HashMultimap.create();
 		
 		for (SnomedConceptIndexEntry entry : nodes) {
-			if (entry.getParents() != null) {
-				final Collection<String> parents = LongSets.toStringSet(entry.getParents());
+			final LongCollection parentIds = getParents(entry);
+			final LongCollection ancestorIds = getAncestors(entry);
+			if (parentIds != null) {
+				final Collection<String> parents = LongSets.toStringSet(parentIds);
 				final Collection<String> selectedParents = newHashSet();
 				// if the parent is not a match or TOP level
 				for (String parent : parents) {
@@ -93,7 +103,7 @@ public class InferredTreeBuilder implements TreeBuilder {
 						superTypeMap.put(entry.getId(), parent);
 					}
 				}
-			} else if (entry.getAncestors() != null) {
+			} else if (ancestorIds != null) {
 				findParentInAncestors(entry, treeItemsById, requiredTopLevelConceptIds, subTypeMap, superTypeMap);
 			} else {
 				// no parents or ancestors, root element
@@ -140,11 +150,27 @@ public class InferredTreeBuilder implements TreeBuilder {
 		
 		return new TerminologyTree(treeItemsById, subTypeMap, superTypeMap);
 	}
+
+	private LongCollection getParents(SnomedConceptIndexEntry entry) {
+		switch (form) {
+		case Trees.INFERRED_FORM: return entry.getParents();
+		case Trees.STATED_FORM: return entry.getStatedParents();
+		default: return null;
+		}
+	}
+	
+	private LongCollection getAncestors(SnomedConceptIndexEntry entry) {
+		switch (form) {
+		case Trees.INFERRED_FORM: return entry.getAncestors();
+		case Trees.STATED_FORM: return entry.getStatedAncestors();
+		default: return null;
+		}
+	}
 	
 	private void findParentInAncestors(final SnomedConceptIndexEntry entry, final Map<String, SnomedConceptIndexEntry> treeItemsById,
 			final Collection<String> requiredTopLevelConceptIds, final SetMultimap<String, String> subTypeMap, final SetMultimap<String, String> superTypeMap) {
 		// try to find a single matching ancestor and hook into that, otherwise we will require additional parentage info about the ancestors
-		final Collection<String> ancestors = LongSets.toStringSet(entry.getAncestors());
+		final Collection<String> ancestors = LongSets.toStringSet(getAncestors(entry));
 		final Collection<String> selectedAncestors = newHashSet();
 		for (String ancestor : ancestors) {
 			if (!requiredTopLevelConceptIds.contains(ancestor) && treeItemsById.containsKey(ancestor)) {
