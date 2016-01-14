@@ -23,6 +23,8 @@ import java.util.Set;
 import org.eclipse.emf.cdo.common.id.CDOID;
 import org.eclipse.emf.cdo.common.id.CDOIDUtil;
 
+import bak.pcj.set.LongSet;
+
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.datastore.ICDOCommitChangeSet;
@@ -41,10 +43,11 @@ import com.b2international.snowowl.snomed.mrcm.core.ConceptModelUtils;
 import com.google.common.base.Function;
 import com.google.common.collect.FluentIterable;
 import com.google.common.collect.HashMultimap;
+import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Multimap;
-
-import bak.pcj.set.LongSet;
+import com.google.common.collect.Multimaps;
+import com.google.common.collect.Sets;
 
 /**
  * @since 4.3
@@ -88,39 +91,55 @@ public class ConstraintChangeProcessor extends ChangeSetProcessorBase<SnomedDocu
 	}
 
 	/* marks the proper concepts and reference sets if the transaction contains attribute constraint changes */
-	private void processAttributeConstraints(Iterable<AttributeConstraint> newAndDirtyConstraints, Iterable<CDOID> deletedConstraints) {
-		final Multimap<String, ConstraintDomain> conceptToPredicateKeys = HashMultimap.create();
+	private void processAttributeConstraints(final Iterable<AttributeConstraint> newAndDirtyConstraints, final Iterable<CDOID> deletedConstraints) {
 		
-		for (AttributeConstraint constraint : newAndDirtyConstraints) {
-			final Set<ConstraintDomain> newDomains = PredicateUtils.processConstraintDomain(CDOIDUtil.getLong(constraint.cdoID()), constraint.getDomain());
-			for (ConstraintDomain domain : newDomains) {
-				conceptToPredicateKeys.put(Long.toString(domain.getComponentId()), domain);
-			}
+		final Multimap<Long, ConstraintDomain> constraintToDomainKeys = HashMultimap.<Long, PredicateUtils.ConstraintDomain>create();
+		
+		final Set<ConstraintDomain> allConstraintDomains = constraintService.getAllConstraintDomains(branchPath);
+		
+		for (final ConstraintDomain constraintDomain : allConstraintDomains) {
+			constraintToDomainKeys.put(constraintDomain.getStorageKey(), constraintDomain);
 		}
 		
-		for (AttributeConstraint constraint : newAndDirtyConstraints) {
-			final Set<ConstraintDomain> previousDomains = constraintService.getConstraintDomains(branchPath, CDOIDUtil.getLong(constraint.cdoID()));
-			for (ConstraintDomain domain : previousDomains) {
-				conceptToPredicateKeys.put(Long.toString(domain.getComponentId()), domain);
+		final Set<Long> conceptIds = FluentIterable.from(allConstraintDomains).transform(new Function<ConstraintDomain, Long>() {
+			@Override public Long apply(final ConstraintDomain input) {
+				return input.getComponentId();
 			}
+		}).copyInto(Sets.<Long>newHashSet());
+		
+		for (final AttributeConstraint constraint : newAndDirtyConstraints) {
+			final long constraintStoragekey = CDOIDUtil.getLong(constraint.cdoID());
+			
+			final Set<ConstraintDomain> newDomains = PredicateUtils.processConstraintDomain(constraintStoragekey, constraint.getDomain());
+			
+			for (final ConstraintDomain domain : newDomains) {
+				conceptIds.add(domain.getComponentId());
+			}
+			
+			constraintToDomainKeys.replaceValues(constraintStoragekey, newDomains);
 		}
 		
-		for (CDOID cdoId : deletedConstraints) {
-			final Set<ConstraintDomain> previousDomains = constraintService.getConstraintDomains(branchPath, CDOIDUtil.getLong(cdoId));
-			for (ConstraintDomain domain : previousDomains) {
-				conceptToPredicateKeys.remove(Long.toString(domain.getComponentId()), domain);
-			}
+		for (final CDOID cdoId : deletedConstraints) {
+			final long constraintStoragekey = CDOIDUtil.getLong(cdoId);
+			constraintToDomainKeys.removeAll(constraintStoragekey);
 		}
 		
-		for (String conceptId : conceptToPredicateKeys.keySet()) {
-			if (allConceptIds.contains(Long.parseLong(conceptId))) {
-				final Collection<String> predicateKeys = FluentIterable.from(conceptToPredicateKeys.get(conceptId)).transform(new Function<ConstraintDomain, String>() {
-					@Override
-					public String apply(ConstraintDomain input) {
+		final ImmutableListMultimap<Long, ConstraintDomain> conceptIdToDomainKeys = Multimaps.index(constraintToDomainKeys.values(), new Function<ConstraintDomain, Long>() {
+			@Override public Long apply(final ConstraintDomain input) {
+				return input.getComponentId();
+			}
+		});
+		
+		for (final Long conceptId : conceptIds) {
+			if (allConceptIds.contains(conceptId)) {
+				
+				final Collection<String> predicateKeys = FluentIterable.from(conceptIdToDomainKeys.get(conceptId)).transform(new Function<ConstraintDomain, String>() {
+					@Override public String apply(final ConstraintDomain input) {
 						return input.getPredicateKey();
 					}
 				}).toSet();
-				registerUpdate(conceptId, new ComponentConstraintUpdater(conceptId, predicateKeys));
+				
+				registerUpdate(String.valueOf(conceptId), new ComponentConstraintUpdater(String.valueOf(conceptId), predicateKeys));
 			}
 		}
 	}

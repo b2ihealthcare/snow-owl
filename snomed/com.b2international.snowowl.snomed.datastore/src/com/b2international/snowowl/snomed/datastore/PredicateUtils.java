@@ -15,6 +15,7 @@
  */
 package com.b2international.snowowl.snomed.datastore;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 
@@ -32,7 +33,9 @@ import com.b2international.snowowl.snomed.mrcm.HierarchyConceptSetDefinition;
 import com.b2international.snowowl.snomed.mrcm.HierarchyInclusionType;
 import com.b2international.snowowl.snomed.mrcm.ReferenceSetConceptSetDefinition;
 import com.b2international.snowowl.snomed.mrcm.RelationshipConceptSetDefinition;
+import com.google.common.base.Function;
 import com.google.common.base.Splitter;
+import com.google.common.collect.FluentIterable;
 import com.google.common.collect.Sets;
 
 /**
@@ -238,13 +241,18 @@ public abstract class PredicateUtils {
 			return true;
 		}
 		
-		public static ConstraintDomain of(Document conceptDoc) {
+		public static Collection<ConstraintDomain> of(final Document conceptDoc) {
 			final Long componentId = SnomedMappings.id().getValue(conceptDoc);
-			final String predicateKey = Mappings.stringField(SnomedIndexBrowserConstants.COMPONENT_REFERRING_PREDICATE).getValue(conceptDoc);
-			final List<String> segments = Splitter.on(PREDICATE_SEPARATOR).limit(2).splitToList(predicateKey);
-			final long storageKey = Long.parseLong(segments.get(0));
-			final String predicateKeySuffix = segments.get(1);
-			return new ConstraintDomain(componentId, predicateKeySuffix, storageKey);
+			final List<String> values = Mappings.stringField(SnomedIndexBrowserConstants.COMPONENT_REFERRING_PREDICATE).getValues(conceptDoc);
+			return FluentIterable.from(values).transform(new Function<String, ConstraintDomain>() {
+				@Override 
+				public ConstraintDomain apply(final String predicateKey) {
+					final List<String> segments = Splitter.on(PREDICATE_SEPARATOR).limit(2).splitToList(predicateKey);
+					final long storageKey = Long.parseLong(segments.get(0));
+					final String predicateKeySuffix = segments.get(1);
+					return new ConstraintDomain(componentId, predicateKeySuffix, storageKey);
+				}
+			}).toList();
 		}
 		
 	}

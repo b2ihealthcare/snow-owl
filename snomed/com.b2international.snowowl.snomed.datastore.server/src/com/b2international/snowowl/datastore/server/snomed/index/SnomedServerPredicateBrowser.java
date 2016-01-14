@@ -25,6 +25,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 
@@ -91,11 +92,12 @@ public class SnomedServerPredicateBrowser extends AbstractIndexBrowser<Predicate
 	}
 
 	@Override
-	public Set<ConstraintDomain> getConstraintDomains(IBranchPath branchPath, final long storageKey) {
+	public Set<ConstraintDomain> getConstraintDomains(final IBranchPath branchPath, final long storageKey) {
 		return service.executeReadTransaction(branchPath, new IndexRead<Set<ConstraintDomain>>() {
 			@Override
-			public Set<ConstraintDomain> execute(IndexSearcher index) throws IOException {
-				final Query query = SnomedMappings.newQuery().concept().and(new PrefixQuery(new Term(SnomedIndexBrowserConstants.COMPONENT_REFERRING_PREDICATE, String.format("%s%s", storageKey, PredicateUtils.PREDICATE_SEPARATOR)))).matchAll();
+			public Set<ConstraintDomain> execute(final IndexSearcher index) throws IOException {
+				final String predicateKeyPrefix = String.format("%s%s", storageKey, PredicateUtils.PREDICATE_SEPARATOR);
+				final Query query = SnomedMappings.newQuery().concept().and(new PrefixQuery(new Term(SnomedIndexBrowserConstants.COMPONENT_REFERRING_PREDICATE, predicateKeyPrefix))).matchAll();
 				final DocIdCollector collector = DocIdCollector.create(index.getIndexReader().maxDoc());
 				index.search(query, collector);
 				final DocIds docs = collector.getDocIDs();
@@ -104,7 +106,37 @@ public class SnomedServerPredicateBrowser extends AbstractIndexBrowser<Predicate
 					final DocIdsIterator iterator = docs.iterator();
 					while (iterator.next()) {
 						final Document doc = index.doc(iterator.getDocID(), SnomedMappings.fieldsToLoad().id().field(SnomedIndexBrowserConstants.COMPONENT_REFERRING_PREDICATE).build());
-						result.add(ConstraintDomain.of(doc));
+						for (final Iterator<IndexableField> itr = doc.iterator(); itr.hasNext();) {
+							final IndexableField indexableField = itr.next();
+							if (indexableField.name().equals(SnomedIndexBrowserConstants.COMPONENT_REFERRING_PREDICATE) && !indexableField.stringValue().startsWith(predicateKeyPrefix)) {
+								itr.remove();
+							}
+						}
+						result.addAll(ConstraintDomain.of(doc));
+					}
+					return result;
+				}
+				return Collections.emptySet();
+			}
+		});
+	}
+	
+	@Override
+	public Set<ConstraintDomain> getAllConstraintDomains(final IBranchPath branchPath) {
+		checkNotNull(branchPath, "branchPath");
+		return service.executeReadTransaction(branchPath, new IndexRead<Set<ConstraintDomain>>() {
+			@Override
+			public Set<ConstraintDomain> execute(final IndexSearcher index) throws IOException {
+				final Query query = SnomedMappings.newQuery().concept().and(new PrefixQuery(new Term(SnomedIndexBrowserConstants.COMPONENT_REFERRING_PREDICATE))).matchAll();
+				final DocIdCollector collector = DocIdCollector.create(index.getIndexReader().maxDoc());
+				index.search(query, collector);
+				final DocIds docs = collector.getDocIDs();
+				if (docs.size() > 0) {
+					final Set<ConstraintDomain> result = newHashSet();
+					final DocIdsIterator iterator = docs.iterator();
+					while (iterator.next()) {
+						final Document doc = index.doc(iterator.getDocID(), SnomedMappings.fieldsToLoad().id().field(SnomedIndexBrowserConstants.COMPONENT_REFERRING_PREDICATE).build());
+						result.addAll(ConstraintDomain.of(doc));
 					}
 					return result;
 				}
