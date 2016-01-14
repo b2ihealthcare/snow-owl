@@ -59,6 +59,26 @@ public class SnomedConceptIndexEntry extends SnomedIndexEntry implements ICompon
 				.exhaustive(BooleanUtils.valueOf(SnomedMappings.exhaustive().getValue(doc).intValue()));
 	}
 	
+	public static Builder builder(final SnomedConceptIndexEntry input) {
+		final Builder builder = builder()
+				.id(input.getId())
+				.storageKey(input.getStorageKey())
+				.score(input.getScore())
+				.moduleId(input.getModuleId())
+				.active(input.isActive())
+				.released(input.isReleased())
+				.effectiveTimeLong(input.getEffectiveTimeAsLong())
+				.iconId(input.getIconId())
+				.primitive(input.isPrimitive())
+				.exhaustive(input.isExhaustive())
+				.parents(input.getParents())
+				.ancestors(input.getAncestors())
+				.statedParents(input.getStatedParents())
+				.statedAncestors(input.getStatedAncestors());
+		
+		return builder;
+	}
+	
 	public static Builder builder(ISnomedConcept input) {
 		final Builder builder = builder()
 				.id(input.getId())
