@@ -32,7 +32,6 @@ import com.b2international.snowowl.snomed.core.domain.SnomedComponent;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedIndexEntry;
 import com.b2international.snowowl.snomed.datastore.services.AbstractSnomedRefSetMembershipLookupService;
 import com.google.common.base.Function;
-import com.google.common.base.Predicate;
 import com.google.common.collect.FluentIterable;
 
 /**
@@ -44,20 +43,6 @@ import com.google.common.collect.FluentIterable;
 abstract class BaseSnomedComponentConverter<T extends SnomedIndexEntry, R extends SnomedComponent, CR extends CollectionResource<R>>
 		implements ResourceConverter<T, R, CR> {
 
-	protected static final Function<SnomedComponent, String> ID_FUNCTION = new Function<SnomedComponent, String>() {
-		@Override
-		public String apply(SnomedComponent input) {
-			return input.getId();
-		}
-	};
-	
-	protected static final Predicate<SnomedComponent> ACTIVE_PREDICATE = new Predicate<SnomedComponent>() {
-		@Override
-		public boolean apply(SnomedComponent input) {
-			return input.isActive();
-		}
-	};
-	
 	private final BranchContext context;
 	private final Options expand;
 	private final AbstractSnomedRefSetMembershipLookupService refSetMembershipLookupService;

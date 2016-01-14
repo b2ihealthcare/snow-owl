@@ -17,10 +17,24 @@ package com.b2international.snowowl.core.domain;
 
 import java.io.Serializable;
 
+import com.google.common.base.Function;
+
 /**
  * Represents an identifiable component of a code system.
  */
 public interface IComponent extends Serializable {
+
+	/**
+	 * Function to extract the ID from an {@link IComponent} instance.
+	 * 
+	 * @since 4.6
+	 */
+	Function<IComponent, String> ID_FUNCTION = new Function<IComponent, String>() {
+		@Override
+		public String apply(IComponent input) {
+			return input.getId();
+		}
+	};
 
 	/**
 	 * Returns the component identifier.

@@ -17,6 +17,7 @@ package com.b2international.snowowl.snomed.datastore.converter;
 
 import static com.google.common.collect.Maps.newHashMap;
 import static com.google.common.collect.Sets.newHashSet;
+import static com.b2international.snowowl.core.domain.IComponent.ID_FUNCTION;
 
 import java.io.IOException;
 import java.util.Collection;

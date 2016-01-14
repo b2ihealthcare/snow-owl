@@ -15,11 +15,11 @@
  */
 package com.b2international.snowowl.snomed.datastore.converter;
 
+import static com.b2international.snowowl.core.domain.IComponent.ID_FUNCTION;
+
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-
-import javax.swing.text.html.Option;
 
 import com.b2international.commons.http.ExtendedLocale;
 import com.b2international.commons.options.Options;

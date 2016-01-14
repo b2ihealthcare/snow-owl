@@ -15,6 +15,8 @@
  */
 package com.b2international.snowowl.snomed.datastore.converter;
 
+import static com.b2international.snowowl.core.domain.IComponent.ID_FUNCTION;
+
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
