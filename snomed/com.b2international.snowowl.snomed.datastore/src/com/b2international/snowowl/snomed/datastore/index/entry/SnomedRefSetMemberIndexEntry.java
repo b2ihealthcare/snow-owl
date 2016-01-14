@@ -774,11 +774,11 @@ public class SnomedRefSetMemberIndexEntry extends SnomedIndexEntry implements IC
 	}
 	
 	public String getMapCategoryId() {
-		return getStringField(SnomedMappings.memberMapCategoryId().fieldName());
+		return StringUtils.valueOfOrEmptyString(getLongField(SnomedMappings.memberMapCategoryId().fieldName()));
 	}
 	
 	public String getCorrelationId() {
-		return getStringField(SnomedMappings.memberCorrelationId().fieldName());
+		return StringUtils.valueOfOrEmptyString(getLongField(SnomedMappings.memberCorrelationId().fieldName()));
 	}
 
 	public String getMapTargetDescription() {
