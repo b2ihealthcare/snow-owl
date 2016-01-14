@@ -18,11 +18,18 @@ package com.b2international.snowowl.snomed.datastore;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 
+import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.emf.ecore.EPackage;
 
 import com.b2international.commons.CompareUtils;
 import com.b2international.commons.http.ExtendedLocale;
+import com.b2international.snowowl.core.api.ComponentUtils;
+import com.b2international.snowowl.core.api.EmptyTerminologyBrowser;
+import com.b2international.snowowl.core.api.FilteredTerminologyBrowser;
+import com.b2international.snowowl.core.api.browser.FilterTerminologyBrowserType;
+import com.b2international.snowowl.core.api.browser.IFilterClientTerminologyBrowser;
 import com.b2international.snowowl.core.api.browser.ITerminologyBrowser;
 import com.b2international.snowowl.core.api.browser.TreeContentProvider;
 import com.b2international.snowowl.core.exceptions.NotFoundException;
@@ -32,8 +39,11 @@ import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.SnomedPackage;
 import com.b2international.snowowl.snomed.core.domain.ISnomedConcept;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcepts;
+import com.b2international.snowowl.snomed.core.tree.TerminologyTree;
+import com.b2international.snowowl.snomed.core.tree.TreeBuilder;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptIndexEntry;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
+import com.google.common.collect.FluentIterable;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 
@@ -66,6 +76,30 @@ public abstract class BaseSnomedClientTerminologyBrowser extends ActiveBranchCli
 	}
 	
 	@Override
+	public final IFilterClientTerminologyBrowser<SnomedConceptIndexEntry, String> filterTerminologyBrowser(String expression, IProgressMonitor monitor) {
+		final String branch = getBranchPath().getPath();
+		final SnomedConcepts matches = SnomedRequests
+			.prepareSearchConcept()
+			.all()
+			.filterByActive(true)
+			.filterByTerm(expression)
+			.filterByExtendedLocales(LOCALES)
+			// expand parent and ancestorIds to get all possible treepaths to the top
+			.setExpand("pt(),parentIds(),ancestorIds()")
+			.build(branch)
+			.executeSync(getBus());
+		
+		if (matches.getItems().isEmpty()) {
+			return EmptyTerminologyBrowser.getInstance();
+		}
+		
+		final FluentIterable<SnomedConceptIndexEntry> matchingConcepts = FluentIterable.from(SnomedConceptIndexEntry.fromConcepts(matches));
+		final Set<String> matchingConceptIds = matchingConcepts.transform(ComponentUtils.<String>getIdFunction()).toSet();
+		final TerminologyTree tree = newTree(branch, LOCALES).build(matchingConcepts);
+		return new FilteredTerminologyBrowser<SnomedConceptIndexEntry, String>(tree.getItems(), tree.getSubTypes(), tree.getSuperTypes(), FilterTerminologyBrowserType.HIERARCHICAL, matchingConceptIds);
+	}
+	
+	@Override
 	public SnomedConceptIndexEntry getConcept(String id) {
 		try {
 			final ISnomedConcept concept = SnomedRequests
@@ -80,6 +114,14 @@ public abstract class BaseSnomedClientTerminologyBrowser extends ActiveBranchCli
 			return null;
 		}
 	}
+	
+	/**
+	 * Create a {@link TreeBuilder} for a filtered tree.
+	 * @param branch
+	 * @param locales
+	 * @return
+	 */
+	protected abstract TreeBuilder newTree(String branch, List<ExtendedLocale> locales);
 	
 	/**
 	 * Returns with a collection of concepts given with the concept unique IDs.
