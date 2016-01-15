@@ -121,6 +121,19 @@ public abstract class BaseSnomedClientTerminologyBrowser extends ActiveBranchCli
 		}
 	}
 	
+	@Override
+	public Collection<SnomedConceptIndexEntry> getAllSubTypes(final SnomedConceptIndexEntry concept) {
+		final SnomedConcepts snomedConcepts = SnomedRequests.prepareSearchConcept()
+				.all()
+				.setLocales(getLocales())
+				.filterByAncestor(concept.getId())
+				.setExpand("pt()")
+				.build(getBranchPath().getPath())
+				.executeSync(getBus());
+				
+		return SnomedConceptIndexEntry.fromConcepts(snomedConcepts);
+	}
+	
 	/**
 	 * Create a {@link TreeBuilder} for a filtered tree.
 	 * @param branch
