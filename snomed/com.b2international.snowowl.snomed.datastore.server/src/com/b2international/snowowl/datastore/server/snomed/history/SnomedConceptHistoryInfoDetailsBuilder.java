@@ -64,6 +64,7 @@ import org.eclipse.emf.spi.cdo.CDOStore;
 
 import com.b2international.commons.ChangeKind;
 import com.b2international.commons.Pair;
+import com.b2international.commons.http.ExtendedLocale;
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.CoreTerminologyBroker;
 import com.b2international.snowowl.core.api.IBranchPath;
@@ -72,13 +73,16 @@ import com.b2international.snowowl.datastore.BranchPathUtils;
 import com.b2international.snowowl.datastore.cdo.CDOUtils;
 import com.b2international.snowowl.datastore.history.HistoryInfoDetails;
 import com.b2international.snowowl.datastore.server.history.AbstractHistoryInfoDetailsBuilder;
+import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.snomed.Concept;
 import com.b2international.snowowl.snomed.Description;
 import com.b2international.snowowl.snomed.Relationship;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
+import com.b2international.snowowl.snomed.core.domain.ISnomedRelationship;
+import com.b2international.snowowl.snomed.core.lang.LanguageSetting;
+import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.b2international.snowowl.snomed.datastore.services.ISnomedConceptNameProvider;
-import com.b2international.snowowl.snomed.datastore.services.ISnomedDescriptionNameProvider;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedAttributeValueRefSetMember;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedComplexMapRefSetMember;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedConcreteDataTypeRefSetMember;
@@ -559,22 +563,43 @@ public class SnomedConceptHistoryInfoDetailsBuilder extends AbstractHistoryInfoD
 	
 	private String getReferencedComponentLabel(final SnomedRefSetMember member) {
 
+		final IEventBus eventBus = getEventBus();
 		final InternalCDORevision revision = (InternalCDORevision) member.cdoRevision();
 		final IBranchPath branchPath = createPath(member);
 		final String id = String.valueOf(revision.get(SnomedRefSetPackage.eINSTANCE.getSnomedRefSetMember_ReferencedComponentId(), CDOStore.NO_INDEX));
 		final short referencedComponentType = SnomedTerminologyComponentConstants.getTerminologyComponentIdValue(id);
+		final List<ExtendedLocale> locales = getLocales();
+		
 		switch (referencedComponentType) {
 			case SnomedTerminologyComponentConstants.CONCEPT_NUMBER: //$FALL-THROUGH$
 			case SnomedTerminologyComponentConstants.REFSET_MEMBER_NUMBER:
 				return getPreferredTerm(branchPath, id);
 			case SnomedTerminologyComponentConstants.DESCRIPTION_NUMBER: //$FALL-THROUGH$
-				return getServiceForClass(ISnomedDescriptionNameProvider.class).getComponentLabel(branchPath, id);
+				return SnomedRequests.prepareGetDescription()
+						.setLocales(locales)
+						.setComponentId(id)
+						.build(branchPath.getPath())
+						.executeSync(eventBus).getTerm();
 			case SnomedTerminologyComponentConstants.RELATIONSHIP_NUMBER:
-				final String terminologyComponentId = CoreTerminologyBroker.getInstance().getTerminologyComponentId(referencedComponentType);
-				return CoreTerminologyBroker.getInstance().getNameProviderFactory(terminologyComponentId).getNameProvider().getComponentLabel(createPath(member), id);
+				final ISnomedRelationship relationship = SnomedRequests.prepareGetRelationship()
+						.setLocales(locales)
+						.setComponentId(id)
+						.setExpand("source(expand(pt())),type(expand(pt())),destination(expand(pt()))")
+						.build(branchPath.getPath())
+						.executeSync(eventBus);
+				return String.format("%s %s %s", relationship.getSourceConcept().getPt().getTerm(),
+						relationship.getTypeConcept().getPt().getTerm(), relationship.getDestinationConcept().getPt().getTerm());
 			default:
 				throw new IllegalArgumentException("Unexpected or unknown terminology component type: " + referencedComponentType);
 		}
+	}
+
+	private IEventBus getEventBus() {
+		return ApplicationContext.getInstance().getService(IEventBus.class);
+	}
+
+	private List<ExtendedLocale> getLocales() {
+		return ApplicationContext.getInstance().getService(LanguageSetting.class).getLanguagePreference();
 	}
 
 	private String getLabel(final SnomedRefSet refSet) {
