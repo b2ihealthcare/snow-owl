@@ -208,6 +208,7 @@ public interface SnomedTerminologyBrowser extends ITerminologyBrowser<SnomedConc
 	 * @param branchPath the branch path
 	 * @param concept the concept
 	 * @return the sub types with additional child flag
+	 * @deprecated - unused, will be removed in 4.6
 	 */
 	public Collection<IComponentWithChildFlag<String>> getSubTypesWithChildFlag(final IBranchPath branchPath, final SnomedConceptIndexEntry concept);
 	

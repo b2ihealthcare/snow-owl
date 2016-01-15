@@ -25,7 +25,9 @@ import com.b2international.commons.options.Options;
 import com.b2international.commons.options.OptionsBuilder;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.events.Request;
+import com.b2international.snowowl.core.exceptions.BadRequestException;
 import com.b2international.snowowl.datastore.request.SearchRequest.OptionKey;
+import com.google.common.base.Strings;
 
 /**
  * @since 4.5
@@ -109,6 +111,12 @@ public abstract class SearchRequestBuilder<B extends SearchRequestBuilder<B, R>,
 		req.setOffset(offset);
 		req.setLimit(Math.min(limit, MAX_LIMIT - offset));
 		req.setLocales(locales);
+		// validate componentIds, do NOT allow null or empty strings
+		for (String componentId : componentIds) {
+			if (Strings.isNullOrEmpty(componentId)) {
+				throw new BadRequestException("Component ID filter cannot contain empty values");
+			}
+		}
 		req.setComponentIds(componentIds);
 		req.setOptions(optionsBuilder.build());
 		return req;

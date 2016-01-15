@@ -524,4 +524,26 @@ public abstract class SnomedRefSetUtil {
 	private SnomedRefSetUtil() {
 		// Suppress instantiation
 	}
+
+	/**
+	 * Computes whether a reference set is structural or not.
+	 * @param refSetId
+	 * @param type
+	 * @return
+	 */
+	public static boolean isStructural(final String refSetId, final SnomedRefSetType type) {
+		switch (type) {
+			case LANGUAGE: //$FALL-THROUGH$
+			case CONCRETE_DATA_TYPE: //$FALL-THROUGH$
+			case ASSOCIATION: //$FALL-THROUGH$
+			case MODULE_DEPENDENCY: //$FALL-THROUGH$
+				return true;
+			case ATTRIBUTE_VALUE:
+				return 
+						Concepts.REFSET_DESCRIPTION_INACTIVITY_INDICATOR.equals(refSetId) 
+						|| Concepts.REFSET_CONCEPT_INACTIVITY_INDICATOR.equals(refSetId) 
+						|| Concepts.REFSET_RELATIONSHIP_REFINABILITY.equals(refSetId);
+			default: return false;
+		}
+	}
 }

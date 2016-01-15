@@ -136,12 +136,10 @@ public class CDOClientSnomedConceptEditorService implements IClientSnomedConcept
 		// Use extended terminology browser for creating an index entry
 		final SnomedClientTerminologyBrowser terminologyBrowser = SnomedTerminologyBrowserProvider.getTerminologyBrowser(concept);
 		final SnomedConceptIndexEntry conceptIndexEntry = terminologyBrowser.getConcept(conceptIdString);
-		final SnomedConceptLabelAndIconIdMappings conceptMappings = getConceptMappings(conceptId, conceptIndexEntry.isActive());
 		
 		final SnomedConceptDetailsBean conceptDetailsBean = new SnomedConceptDetailsBean(conceptIndexEntry.getLabel(), 
 				Long.parseLong(conceptIndexEntry.getIconId()), 
 				widgetBean, 
-				conceptMappings, 
 				synonymAndDescendantIds, 
 				configuration,
 				predicates);
@@ -149,9 +147,4 @@ public class CDOClientSnomedConceptEditorService implements IClientSnomedConcept
 		return conceptDetailsBean;
 	}
 
-	@Override
-	public SnomedConceptLabelAndIconIdMappings getConceptMappings(final long conceptId, final boolean active) {
-		final IClientSnomedConceptEditorService conceptEditorService = ApplicationContext.getServiceForClass(IClientSnomedConceptEditorService.class);
-		return conceptEditorService.getConceptMappings(conceptId, active);
-	}
 }

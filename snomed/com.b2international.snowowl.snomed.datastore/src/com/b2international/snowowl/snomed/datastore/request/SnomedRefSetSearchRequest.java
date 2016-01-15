@@ -16,9 +16,12 @@
 package com.b2international.snowowl.snomed.datastore.request;
 
 import java.io.IOException;
+import java.util.Collection;
 import java.util.List;
 
 import org.apache.lucene.document.Document;
+import org.apache.lucene.queries.BooleanFilter;
+import org.apache.lucene.search.BooleanClause.Occur;
 import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.ScoreDoc;
@@ -31,6 +34,9 @@ import com.b2international.snowowl.snomed.datastore.converter.SnomedConverters;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetIndexEntry;
 import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedMappings;
 import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedQueryBuilder;
+import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType;
+import com.google.common.base.Function;
+import com.google.common.collect.FluentIterable;
 import com.google.common.collect.ImmutableList;
 
 /**
@@ -38,12 +44,42 @@ import com.google.common.collect.ImmutableList;
  */
 final class SnomedRefSetSearchRequest extends SnomedSearchRequest<SnomedReferenceSets> {
 
+	enum OptionKey {
+		/**
+		 * A collection of {@link SnomedRefSetType reference set types} to use
+		 */
+		TYPE,
+		
+		/**
+		 * A collection of referenced component types to use
+		 */
+		REFERENCED_COMPONENT_TYPE
+	};
+
 	@Override
 	protected SnomedReferenceSets doExecute(BranchContext context) throws IOException {
 		final IndexSearcher searcher = context.service(IndexSearcher.class);
 		final SnomedQueryBuilder queryBuilder = SnomedMappings.newQuery().refSet();
 		
-		final Query query = createConstantScoreQuery(queryBuilder.matchAll());
+		final BooleanFilter filter = new BooleanFilter();
+
+		addComponentIdFilter(filter);
+		
+		if (containsKey(OptionKey.TYPE)) {
+			final Collection<Integer> values = FluentIterable.from(getCollection(OptionKey.TYPE, SnomedRefSetType.class)).transform(new Function<SnomedRefSetType, Integer>() {
+				@Override
+				public Integer apply(SnomedRefSetType input) {
+					return input.ordinal();
+				}
+			}).toSet();
+			addFilterClause(filter, SnomedMappings.refSetType().createTermsFilter(values), Occur.MUST);
+		}
+		
+		if (containsKey(OptionKey.REFERENCED_COMPONENT_TYPE)) {
+			addFilterClause(filter, SnomedMappings.refSetReferencedComponentType().createTermsFilter(getCollection(OptionKey.REFERENCED_COMPONENT_TYPE, Integer.class)), Occur.MUST);
+		}
+		
+		final Query query = createConstantScoreQuery(createFilteredQuery(queryBuilder.matchAll(), filter));
 		final int totalHits = getTotalHits(searcher, query);
 		
 		if (limit() < 1 || totalHits < 1) {

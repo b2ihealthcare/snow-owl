@@ -38,15 +38,19 @@ import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.ReferenceManager;
 import org.apache.lucene.search.TopDocs;
+import org.eclipse.core.runtime.IProgressMonitor;
 
 import com.b2international.commons.CompareUtils;
 import com.b2international.commons.graph.GraphUtils;
 import com.b2international.commons.pcj.LongSets;
 import com.b2international.snowowl.core.ApplicationContext;
+import com.b2international.snowowl.core.CoreTerminologyBroker;
 import com.b2international.snowowl.core.api.ExtendedComponent;
 import com.b2international.snowowl.core.api.ExtendedComponentImpl;
 import com.b2international.snowowl.core.api.IBranchPath;
+import com.b2international.snowowl.core.api.IComponentNameProvider;
 import com.b2international.snowowl.core.api.IComponentWithChildFlag;
+import com.b2international.snowowl.core.api.browser.IFilterClientTerminologyBrowser;
 import com.b2international.snowowl.core.api.index.IndexException;
 import com.b2international.snowowl.datastore.index.DocIdCollector;
 import com.b2international.snowowl.datastore.index.DocIdCollector.DocIdsIterator;
@@ -63,7 +67,6 @@ import com.b2international.snowowl.snomed.datastore.escg.EscgParseFailedExceptio
 import com.b2international.snowowl.snomed.datastore.escg.IEscgQueryEvaluatorService;
 import com.b2international.snowowl.snomed.datastore.filteredrefset.FilteredRefSetMemberBrowser2;
 import com.b2international.snowowl.snomed.datastore.filteredrefset.IRefSetMemberOperation;
-import com.b2international.snowowl.snomed.datastore.index.SnomedConceptReducedQueryAdapter;
 import com.b2international.snowowl.snomed.datastore.index.SnomedIndexService;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptIndexEntry;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptIndexEntryWithChildFlag;
@@ -97,7 +100,9 @@ public class SnomedServerTerminologyBrowser extends AbstractIndexTerminologyBrow
 			.primitive()
 			.exhaustive()
 			.released()
-			.build(); 
+			.parent()
+			.statedParent()
+			.build();
 	
 	/**
 	 * Class constructor.
@@ -107,6 +112,13 @@ public class SnomedServerTerminologyBrowser extends AbstractIndexTerminologyBrow
 		super(indexService);
 	}
 
+	@Deprecated
+	@Override
+	public IFilterClientTerminologyBrowser<SnomedConceptIndexEntry, String> filterTerminologyBrowser(IBranchPath branchPath, String expression,
+			IProgressMonitor monitor) {
+		throw new UnsupportedOperationException();
+	}
+	
 	@Override
 	public boolean isTerminologyAvailable(IBranchPath branchPath) {
 		return exists(branchPath, Concepts.ROOT_CONCEPT);
@@ -124,12 +136,16 @@ public class SnomedServerTerminologyBrowser extends AbstractIndexTerminologyBrow
 	
 	@Override
 	protected Query createFilterTerminologyBrowserQuery(final String expression) {
-		return new SnomedConceptReducedQueryAdapter(expression, SnomedConceptReducedQueryAdapter.SEARCH_EVERYTHING).createQuery();
+		throw new UnsupportedOperationException();
 	}
 	
 	@Override
 	protected SnomedConceptIndexEntry createResultObject(final IBranchPath branchPath, final Document doc) {
-		return SnomedConceptIndexEntry.builder(doc).build();
+		return SnomedConceptIndexEntry
+				.builder(doc)
+				.parents(SnomedMappings.parent().getValueAsLongList(doc))
+				.statedParents(SnomedMappings.statedParent().getValueAsLongList(doc))
+				.build();
 	}
 
 	@Override
@@ -496,7 +512,7 @@ public class SnomedServerTerminologyBrowser extends AbstractIndexTerminologyBrow
 
 	@Override
 	protected Set<String> getExtendedComponentFieldsToLoad() {
-		return SnomedMappings.fieldsToLoad().fields(super.getExtendedComponentFieldsToLoad()).memberUuid().build();
+		return SnomedMappings.fieldsToLoad().fields(super.getExtendedComponentFieldsToLoad()).memberUuid().memberReferencedComponentId().memberReferencedComponentType().build();
 	}
 	
 	@Override
@@ -504,33 +520,34 @@ public class SnomedServerTerminologyBrowser extends AbstractIndexTerminologyBrow
 		// if type field is null, then we are processing a reference set _member_
 		final String iconId = doc.get(Mappings.iconId().fieldName());
 		final List<Integer> types = Mappings.type().getValues(doc);
+		final String id;
 		
 		if (types.isEmpty()) {
-
-			final String uuid = SnomedMappings.memberUuid().getValue(doc);
-			return new ExtendedComponentImpl(
-					uuid, 
-					uuid, // SnomedRefSetMemberNameProvider.INSTANCE.getComponentLabel(branchPath, uuid),
-					"",
-					SnomedTerminologyComponentConstants.REFSET_MEMBER_NUMBER);
-			
+			id = Long.toString(SnomedMappings.memberReferencedComponentId().getValue(doc));
 		} else {
-			final String id = Long.toString(SnomedMappings.id().getValue(doc));
-			final short terminologyComponentId;
-			
-			if (types.size() == 1) {
-				// core SNOMED CT Component only
-				terminologyComponentId = types.get(0).shortValue();
-			} else {
-				// concept + refset
-				terminologyComponentId = SnomedTerminologyComponentConstants.CONCEPT_NUMBER;
-			}
-//			
-//			final String terminologyComponentIdAsString = CoreTerminologyBroker.getInstance().getTerminologyComponentId(terminologyComponentId);
-//			final IComponentNameProvider nameProvider = CoreTerminologyBroker.getInstance().getNameProviderFactory(terminologyComponentIdAsString).getNameProvider();
-//			final String label = nameProvider.getComponentLabel(branchPath, id);
-			
-			return new ExtendedComponentImpl(id, id, iconId, terminologyComponentId);
+			id = Long.toString(SnomedMappings.id().getValue(doc));
+		}
+		
+		final short terminologyComponentId;
+		
+		if (types.isEmpty()) {
+			terminologyComponentId = SnomedMappings.memberReferencedComponentType().getShortValue(doc);
+		} else if (types.size() == 1) {
+			// core SNOMED CT Component only
+			terminologyComponentId = types.get(0).shortValue();
+		} else {
+			// concept + refset
+			terminologyComponentId = SnomedTerminologyComponentConstants.CONCEPT_NUMBER;
+		}
+		
+		final String terminologyComponentIdAsString = CoreTerminologyBroker.getInstance().getTerminologyComponentId(terminologyComponentId);
+		final IComponentNameProvider nameProvider = CoreTerminologyBroker.getInstance().getNameProviderFactory(terminologyComponentIdAsString).getNameProvider();
+		final String label = nameProvider.getComponentLabel(branchPath, id);
+		
+		if (types.isEmpty()) {
+			return new ExtendedComponentImpl(SnomedMappings.memberUuid().getValue(doc), label, iconId, SnomedTerminologyComponentConstants.REFSET_MEMBER_NUMBER);
+		} else {
+			return new ExtendedComponentImpl(id, label, iconId, terminologyComponentId);
 		}
 	}
 

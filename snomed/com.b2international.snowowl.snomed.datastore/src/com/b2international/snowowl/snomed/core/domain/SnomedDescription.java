@@ -33,6 +33,7 @@ public class SnomedDescription extends BaseSnomedComponent implements ISnomedDes
 	private DescriptionInactivationIndicator descriptionInactivationIndicator;
 	private Map<String, Acceptability> acceptabilityMap;
 	private Multimap<AssociationType, String> associationTargets;
+	private ISnomedConcept type;
 
 	@Override
 	public String getConceptId() {
@@ -42,6 +43,11 @@ public class SnomedDescription extends BaseSnomedComponent implements ISnomedDes
 	@Override
 	public String getTypeId() {
 		return typeId;
+	}
+	
+	@Override
+	public ISnomedConcept getType() {
+		return type;
 	}
 
 	@Override
@@ -80,6 +86,10 @@ public class SnomedDescription extends BaseSnomedComponent implements ISnomedDes
 
 	public void setTypeId(final String typeId) {
 		this.typeId = typeId;
+	}
+	
+	public void setType(ISnomedConcept type) {
+		this.type = type;
 	}
 
 	public void setTerm(final String term) {

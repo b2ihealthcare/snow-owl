@@ -22,6 +22,7 @@ import java.util.List;
 import java.util.Set;
 
 import com.b2international.snowowl.core.domain.BranchContext;
+import com.b2international.snowowl.core.domain.IComponent;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
 import com.b2international.snowowl.snomed.core.domain.AssociationType;
 import com.b2international.snowowl.snomed.core.domain.SnomedComponent;
@@ -49,7 +50,7 @@ public abstract class InactivationExpander<T extends SnomedComponent> {
 	void expand(List<T> results) {
 		
 		final Set<String> componentIds = FluentIterable.from(results)
-				.transform(BaseSnomedComponentConverter.ID_FUNCTION)
+				.transform(IComponent.ID_FUNCTION)
 				.toSet();
 		
 		if (componentIds.isEmpty()) {

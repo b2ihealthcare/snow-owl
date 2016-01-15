@@ -111,17 +111,6 @@ public class SnomedClientStatementBrowser extends ActiveBranchClientStatementBro
 	}
 
 	/**
-	 * Returns a map of concept IDs and the associated preferred terms for the concepts. The concept IDs are a set of
-	 * object, value and attribute concept IDs of all source and destination relationships of the concept identifier by
-	 * the specified unique SNOMED&nbsp;CT ID.
-	 * @param conceptId the concept ID.
-	 * @return a map of concept IDs and concept preferred terms.
-	 */
-	public Map<String, String> getAllStatementLabelsById(final String conceptId) {
-		return ((SnomedStatementBrowser) getDelegateBrowser()).getAllStatementLabelsById(getBranchPath(), conceptId);
-	}
-
-	/**
 	 * Returns a map of concept IDs and the associated image concept IDs for the concepts. The concept IDs are a set of
 	 * object, value and attribute concept IDs of all source and destination relationships of the concept identifier by
 	 * the specified unique SNOMED&nbsp;CT ID.

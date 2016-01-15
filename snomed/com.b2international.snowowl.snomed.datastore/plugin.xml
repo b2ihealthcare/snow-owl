@@ -283,6 +283,9 @@
          <adapter
                type="com.b2international.snowowl.core.api.IComponent">
          </adapter>
+         <adapter
+               type="com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry">
+         </adapter>
       </factory>
    </extension>
    <extension

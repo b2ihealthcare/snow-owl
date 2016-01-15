@@ -76,7 +76,6 @@ public class SnomedRefSetMemberAdapterFactory extends TypeSafeAdapterFactory {
 		final Builder builder = SnomedRefSetMemberIndexEntry.builder()
 				.id(refSetMember.getUuid()) 
 				.moduleId(refSetMember.getModuleId())
-				.storageKey(CDOIDUtils.asLongSafe(refSetMember.cdoID()))
 				.active(refSetMember.isActive())
 				.released(refSetMember.isReleased())
 				.effectiveTimeLong(refSetMember.isSetEffectiveTime() ? refSetMember.getEffectiveTime().getTime() : EffectiveTimes.UNSET_EFFECTIVE_TIME)
@@ -85,6 +84,10 @@ public class SnomedRefSetMemberAdapterFactory extends TypeSafeAdapterFactory {
 				.referencedComponentType(refSetMember.getReferencedComponentType())
 				.referencedComponentId(refSetMember.getReferencedComponentId());
 
+		if (!FSMUtil.isTransient(refSetMember)) {
+			builder.storageKey(CDOIDUtils.asLongSafe(refSetMember.cdoID()));
+		}
+		
 		final Builder specializedBuilder = new SnomedRefSetSwitch<Builder>() {
 
 			@Override
@@ -149,6 +152,10 @@ public class SnomedRefSetMemberAdapterFactory extends TypeSafeAdapterFactory {
 
 				return builder;
 			}
+			
+			public Builder caseSnomedRefSetMember(SnomedRefSetMember object) {
+				return builder;
+			};
 
 		}.doSwitch(refSetMember);
 

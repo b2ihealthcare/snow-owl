@@ -47,6 +47,7 @@ import com.b2international.snowowl.core.exceptions.IllegalQueryParameterExceptio
 import com.b2international.snowowl.datastore.index.IndexUtils;
 import com.b2international.snowowl.datastore.index.lucene.BookendTokenFilter;
 import com.b2international.snowowl.datastore.index.lucene.ComponentTermAnalyzer;
+import com.b2international.snowowl.datastore.index.lucene.MultiPhrasePrefixQuery;
 import com.b2international.snowowl.datastore.index.mapping.IndexField;
 import com.b2international.snowowl.snomed.core.domain.Acceptability;
 import com.b2international.snowowl.snomed.core.domain.ISnomedDescription;
@@ -140,13 +141,21 @@ final class SnomedDescriptionSearchRequest extends SnomedSearchRequest<SnomedDes
 			final QueryBuilder termQueryBuilder = new QueryBuilder(bookendAnalyzer);
 			final DisjunctionMaxQuery termDisjunctionQuery = new DisjunctionMaxQuery(0.0f);
 			
-			termDisjunctionQuery.add(createExactMatchQuery(searchTerm, termQueryBuilder));
-			termDisjunctionQuery.add(createAllTermsPresentQuery(searchTerm, termQueryBuilder));
+			final Query emq = createExactMatchQuery(searchTerm, termQueryBuilder);
+			emq.setBoost(10.0f);
+			termDisjunctionQuery.add(emq);
+			final Query atp = createAllTermsPresentQuery(searchTerm, termQueryBuilder);
+			atp.setBoost(4.0f);
+			termDisjunctionQuery.add(atp);
 			
 			final ComponentTermAnalyzer nonBookendAnalyzer = new ComponentTermAnalyzer(false, false);
 			final List<String> prefixes = IndexUtils.split(nonBookendAnalyzer, searchTerm);
 
-			termDisjunctionQuery.add(createAllTermPrefixesPresentFromBeginningQuery(prefixes));
+			// XXX testing new prefix query from ES
+//			final Query atpfb = createAllTermPrefixesPresentFromBeginningQueryOld(prefixes);
+			final Query atpfb = createAllTermPrefixesPresentFromBeginningQuery(prefixes);
+			atpfb.setBoost(3.0f);
+			termDisjunctionQuery.add(atpfb);
 			termDisjunctionQuery.add(createAllTermPrefixesPresentQuery(prefixes));
 			
 			queryBuilder.and(termDisjunctionQuery);
@@ -184,7 +193,7 @@ final class SnomedDescriptionSearchRequest extends SnomedSearchRequest<SnomedDes
 		
 		for (int i = offset; i < scoreDocs.length; i++) {
 			Document doc = searcher.doc(scoreDocs[i].doc); // TODO: should expand & filter drive fieldsToLoad? Pass custom fieldValueLoader?
-			SnomedDescriptionIndexEntry indexEntry = SnomedDescriptionIndexEntry.builder(doc).build();
+			final SnomedDescriptionIndexEntry indexEntry = SnomedDescriptionIndexEntry.builder(doc).score(scoreDocs[i].score).build();
 			descriptionBuilder.add(indexEntry);
 		}
 
@@ -199,7 +208,7 @@ final class SnomedDescriptionSearchRequest extends SnomedSearchRequest<SnomedDes
 		return termQueryBuilder.createBooleanQuery(SnomedMappings.descriptionTerm().fieldName(), searchTerm, Occur.MUST);
 	}
 
-	private Query createAllTermPrefixesPresentFromBeginningQuery(List<String> prefixes) {
+	private Query createAllTermPrefixesPresentFromBeginningQueryOld(List<String> prefixes) {
 		final List<SpanQuery> clauses = newArrayList();
 		clauses.add(new SpanTermQuery(SnomedMappings.descriptionTerm().toTerm(Character.toString(BookendTokenFilter.LEADING_MARKER))));
 		
@@ -208,6 +217,16 @@ final class SnomedDescriptionSearchRequest extends SnomedSearchRequest<SnomedDes
 		}
 		
 		return new SpanFirstQuery(new SpanNearQuery(Iterables.toArray(clauses, SpanQuery.class), 0, true), prefixes.size() + 1);
+	}
+	
+	private Query createAllTermPrefixesPresentFromBeginningQuery(List<String> prefixes) {
+		final MultiPhrasePrefixQuery query = new MultiPhrasePrefixQuery();
+		query.setMaxExpansions(2000);
+		query.add(SnomedMappings.descriptionTerm().toTerm(Character.toString(BookendTokenFilter.LEADING_MARKER)));
+		for (String prefix : prefixes) {
+			query.add(SnomedMappings.descriptionTerm().toTerm(prefix));
+		}
+		return query;
 	}
 
 	private Query createAllTermPrefixesPresentQuery(List<String> prefixes) {

@@ -95,7 +95,11 @@ public class LongSets {
 	
 	/**Creates and returns with a new long hash set with the same element as the given array argument.*/
 	public static LongSet newLongSet(final long[] items) {
-		return new LongOpenHashSet(checkNotNull(items, "items"));
+		if (items == null) {
+			return new LongOpenHashSet(1);
+		} else {
+			return new LongOpenHashSet(items);
+		}
 	}
 	
 	/**Creates a long hash set with the given long values.*/

@@ -18,6 +18,7 @@ package com.b2international.snowowl.snomed.core.domain;
 import java.util.Date;
 
 import com.b2international.snowowl.core.domain.IComponent;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 /**
  * Holds common properties of SNOMED CT components.
@@ -44,4 +45,18 @@ public interface SnomedComponent extends IComponent {
 	 * @return the module identifier for the component
 	 */
 	String getModuleId();
+	
+	/**
+	 * @beta - this method is subject to changes or even removal in future releases.  
+	 * @return - the icon ID associated with this component
+	 */
+	@JsonIgnore
+	String getIconId();
+	
+	/**
+	 * @beta - this method is subject to changes or even removal in future releases.
+	 * @return - the score associated with this component if it's a match in a query, can be <code>null</code>
+	 */
+	@JsonIgnore
+	Float getScore();
 }

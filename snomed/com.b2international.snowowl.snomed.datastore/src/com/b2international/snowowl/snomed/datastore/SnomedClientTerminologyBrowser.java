@@ -20,35 +20,118 @@ import java.util.List;
 
 import javax.annotation.Nullable;
 
-import org.eclipse.emf.ecore.EPackage;
+import com.b2international.commons.http.ExtendedLocale;
+import com.b2international.snowowl.core.annotations.Client;
+import com.b2international.snowowl.core.api.IBranchPath;
+import com.b2international.snowowl.core.api.IComponentWithChildFlag;
+import com.b2international.snowowl.eventbus.IEventBus;
+import com.b2international.snowowl.snomed.core.domain.ISnomedConcept;
+import com.b2international.snowowl.snomed.core.domain.SnomedConcepts;
+import com.b2international.snowowl.snomed.core.lang.LanguageSetting;
+import com.b2international.snowowl.snomed.core.tree.TreeBuilder;
+import com.b2international.snowowl.snomed.core.tree.Trees;
+import com.b2international.snowowl.snomed.datastore.filteredrefset.FilteredRefSetMemberBrowser2;
+import com.b2international.snowowl.snomed.datastore.filteredrefset.IRefSetMemberOperation;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptIndexEntry;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptIndexEntryWithChildFlag;
+import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedMappings;
+import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
+import com.google.common.base.Function;
+import com.google.common.collect.FluentIterable;
+import com.google.inject.Provider;
 
 import bak.pcj.LongCollection;
 import bak.pcj.map.LongKeyLongMap;
 import bak.pcj.set.LongSet;
 
-import com.b2international.snowowl.core.annotations.Client;
-import com.b2international.snowowl.core.api.IBranchPath;
-import com.b2international.snowowl.core.api.IComponentWithChildFlag;
-import com.b2international.snowowl.datastore.browser.AbstractClientTerminologyBrowser;
-import com.b2international.snowowl.datastore.browser.ActiveBranchClientTerminologyBrowser;
-import com.b2international.snowowl.snomed.SnomedPackage;
-import com.b2international.snowowl.snomed.datastore.filteredrefset.FilteredRefSetMemberBrowser2;
-import com.b2international.snowowl.snomed.datastore.filteredrefset.IRefSetMemberOperation;
-import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptIndexEntry;
-
 /**
- * Concept hierarchy browser service for the SNOMED&nbsp;CT ontology.
- * @see AbstractClientTerminologyBrowser
+ * @since 1.0
  */
 @Client
-public class SnomedClientTerminologyBrowser extends ActiveBranchClientTerminologyBrowser<SnomedConceptIndexEntry, String> {
+public class SnomedClientTerminologyBrowser extends BaseSnomedClientTerminologyBrowser {
+	
+	public SnomedClientTerminologyBrowser(final SnomedTerminologyBrowser wrappedBrowser, final IEventBus bus, final Provider<LanguageSetting> languageSetting) {
+		super(wrappedBrowser, bus, languageSetting);
+	}
+	
+	@Override
+	public String getForm() {
+		return Trees.INFERRED_FORM;
+	}
+	
+	@Override
+	public boolean hasChildren(SnomedConceptIndexEntry element) {
+		return getSubTypeCount(element) > 0;
+	}
+	
+	@Override
+	public boolean hasParents(SnomedConceptIndexEntry element) {
+		return !element.getParents().isEmpty();
+	}
 
-	/**
-	 * Creates a new service instance based on the wrapped server side service.
-	 * @param wrappedBrowser the wrapped server side service.
-	 */
-	public SnomedClientTerminologyBrowser(final SnomedTerminologyBrowser wrappedBrowser) {
-		super(wrappedBrowser);
+	@Override
+	protected TreeBuilder newTree(String branch, List<ExtendedLocale> locales) {
+		return Trees.newInferredTree(branch, locales, this, getBus());
+	}
+	
+	@Override
+	public Collection<IComponentWithChildFlag<String>> getSubTypesWithChildFlag(SnomedConceptIndexEntry concept) {
+		final SnomedConcepts concepts = SnomedRequests
+			.prepareSearchConcept()
+			.all()
+			.filterByParent(concept.getId())
+			.setExpand("pt(),descendants(form:\"inferred\",direct:true,limit:0)")
+			.setLocales(getLocales())
+			.build(getBranchPath().getPath())
+			.executeSync(getBus());
+		return FluentIterable.from(concepts).transform(new Function<ISnomedConcept, IComponentWithChildFlag<String>>() {
+			@Override
+			public IComponentWithChildFlag<String> apply(ISnomedConcept input) {
+				final SnomedConceptIndexEntry entry = SnomedConceptIndexEntry
+					.builder(input)
+					.label(input.getPt().getTerm())
+					.build();
+				return new SnomedConceptIndexEntryWithChildFlag(entry, input.getDescendants().getTotal() > 0);
+			}
+		}).toList();
+	}
+	
+	@Override
+	public Collection<SnomedConceptIndexEntry> getRootConcepts() {
+		final SnomedConcepts roots = SnomedRequests.prepareSearchConcept()
+				.all()
+				.filterByActive(true)
+				.filterByParent(Long.toString(SnomedMappings.ROOT_ID))
+				.setLocales(getLocales())
+				.setExpand("pt(),parentIds()")
+				.build(getBranchPath().getPath())
+				.executeSync(getBus());
+		return SnomedConceptIndexEntry.fromConcepts(roots);
+	}
+	
+	@Override
+	public Collection<SnomedConceptIndexEntry> getSubTypesById(String id) {
+		final SnomedConcepts concepts = SnomedRequests
+				.prepareSearchConcept()
+				.all()
+				.filterByParent(id)
+				.setExpand("pt(),parentIds()")
+				.setLocales(getLocales())
+				.build(getBranchPath().getPath())
+				.executeSync(getBus());
+		return SnomedConceptIndexEntry.fromConcepts(concepts);
+	}
+	
+	@Override
+	public Collection<SnomedConceptIndexEntry> getSuperTypesById(String id) {
+		final ISnomedConcept concept = SnomedRequests
+				.prepareGetConcept()
+				.setComponentId(id)
+				.setExpand("ancestors(form:\"inferred\",direct:true,expand(pt(),parentIds()))")
+				.setLocales(getLocales())
+				.build(getBranchPath().getPath())
+				.executeSync(getBus());
+		return SnomedConceptIndexEntry.fromConcepts(concept.getAncestors());
 	}
 
 	/**
@@ -209,18 +292,6 @@ public class SnomedClientTerminologyBrowser extends ActiveBranchClientTerminolog
 	}
 
 	/**
-	 * Returns with a collection of concepts given with the concept unique IDs.
-	 * <p>If the IDs argument references a non existing concept, then that concept will
-	 * be omitted from the result set, instead of populating its value as {@code null}.  
-	 * @param ids the unique IDs for the collection.
-	 * @return a collection of concepts.
-	 */
-	@Override
-	public Collection<SnomedConceptIndexEntry> getComponents(final Iterable<String> ids) {
-		return getWrappedService().getConcepts(getBranchPath(), ids);
-	}
-	
-	/**
 	 * Returns with the depth of the current concept from the taxonomy.
 	 * The depth of a node is the number of edges from the node to the tree's root node.
 	 * <br>A root node will have a depth of 0.
@@ -246,12 +317,4 @@ public class SnomedClientTerminologyBrowser extends ActiveBranchClientTerminolog
 		return (SnomedTerminologyBrowser) getWrappedBrowser();
 	}
 	
-	/*
-	 * (non-Javadoc)
-	 * @see com.b2international.snowowl.datastore.BranchPathAwareService#getEPackage()
-	 */
-	@Override
-	protected EPackage getEPackage() {
-		return SnomedPackage.eINSTANCE;
-	}
 }

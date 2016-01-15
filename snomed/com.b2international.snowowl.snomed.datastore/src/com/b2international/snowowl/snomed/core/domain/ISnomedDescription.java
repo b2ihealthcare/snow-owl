@@ -39,6 +39,13 @@ public interface ISnomedDescription extends SnomedCoreComponent {
 	 * @return the type identifier
 	 */
 	String getTypeId();
+	
+	/**
+	 * Returns the type concept of the description.
+	 *  
+	 * @return the type concept
+	 */
+	ISnomedConcept getType();
 
 	/**
 	 * Returns the description term, eg. "{@code Finding site}".

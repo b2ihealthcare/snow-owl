@@ -20,6 +20,7 @@ import java.util.Collection;
 import com.b2international.snowowl.datastore.request.SearchRequest;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMembers;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRefSetMemberSearchRequest.OptionKey;
+import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType;
 import com.google.common.collect.ImmutableSet;
 
 /**
@@ -50,5 +51,9 @@ public final class SnomedRefSetMemberSearchRequestBuilder extends SnomedSearchRe
 	
 	public SnomedRefSetMemberSearchRequestBuilder filterByReferencedComponent(Collection<String> referencedComponentIds) {
 		return addOption(OptionKey.REFERENCED_COMPONENT, ImmutableSet.copyOf(referencedComponentIds));
+	}
+	
+	public SnomedRefSetMemberSearchRequestBuilder filterByRefSetType(final Iterable<SnomedRefSetType> refSetTypes) {
+		return addOption(OptionKey.REFSET_TYPE, ImmutableSet.copyOf(refSetTypes));
 	}
 }

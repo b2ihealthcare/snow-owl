@@ -53,26 +53,26 @@ public class SnomedQueryBuilder extends QueryBuilderBase<SnomedQueryBuilder> {
 		return addToQuery(SnomedMappings.parent(), value);
 	}
 	
-	public final SnomedQueryBuilder parent(String value, String characteristicTypeId) {
-		return addToQuery(SnomedMappings.parent(characteristicTypeId), Long.valueOf(value));
+	public SnomedQueryBuilder statedParent(Long id) {
+		return addToQuery(SnomedMappings.statedParent(), id);
 	}
 	
-	public final SnomedQueryBuilder parent(Long value, String characteristicTypeId) {
-		return addToQuery(SnomedMappings.parent(characteristicTypeId), Long.valueOf(value));
+	public SnomedQueryBuilder statedParent(String id) {
+		return statedParent(Long.valueOf(id));
 	}
-
+	
+	public SnomedQueryBuilder statedAncestor(Long id) {
+		return addToQuery(SnomedMappings.statedAncestor(), id);
+	}
+	
+	public SnomedQueryBuilder statedAncestor(String id) {
+		return statedAncestor(Long.valueOf(id));
+	}
+	
 	public SnomedQueryBuilder ancestor(Long value) {
 		return addToQuery(SnomedMappings.ancestor(), value);
 	}
 	
-	public final SnomedQueryBuilder ancestor(String value, String characteristicTypeId) {
-		return addToQuery(SnomedMappings.ancestor(characteristicTypeId), Long.valueOf(value));
-	}
-	
-	public final SnomedQueryBuilder ancestor(Long value, String characteristicTypeId) {
-		return addToQuery(SnomedMappings.ancestor(characteristicTypeId), Long.valueOf(value));
-	}
-
 	public SnomedQueryBuilder memberRefSetType(SnomedRefSetType type) {
 		return memberRefSetType(type.getValue());
 	}
@@ -448,4 +448,5 @@ public class SnomedQueryBuilder extends QueryBuilderBase<SnomedQueryBuilder> {
 	public SnomedQueryBuilder memberTargetEffectiveTime(final Long targetEffectiveTime) {
 		return addToQuery(SnomedMappings.memberTargetEffectiveTime(), targetEffectiveTime);
 	}
+
 }

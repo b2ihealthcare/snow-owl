@@ -18,8 +18,8 @@ package com.b2international.snowowl.snomed.datastore.index;
 import com.b2international.commons.StringUtils;
 import com.b2international.snowowl.datastore.index.IndexQueryBuilder;
 import com.b2international.snowowl.datastore.index.IndexUtils;
-import com.b2international.snowowl.datastore.index.mapping.Mappings;
 import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedMappings;
+import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.google.common.base.Optional;
 
 /**
@@ -27,8 +27,7 @@ import com.google.common.base.Optional;
  * It uses queryparser for parsing user input. Wildcard and fuzzy search is available.
  * 
  * It uses <i>AND</i> operator within the same terms and <i>OR</i> operator between different terms.
- * 
- *
+ * @deprecated - UNSUPPORTED, use {@link SnomedRequests#prepareSearchConcept()} and friends instead
  */
 public class SnomedConceptFullQueryAdapter extends SnomedConceptIndexQueryAdapter {
 	

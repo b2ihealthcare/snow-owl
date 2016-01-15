@@ -15,32 +15,39 @@
  */
 package com.b2international.snowowl.datastore.server.snomed.index;
 
-import java.util.Iterator;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.lucene.search.Query;
 import org.eclipse.emf.ecore.EPackage;
 
-import com.b2international.commons.StringUtils;
+import com.b2international.commons.http.ExtendedLocale;
 import com.b2international.snowowl.core.ApplicationContext;
-import com.b2international.snowowl.core.CoreTerminologyBroker;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.quicksearch.CompactQuickSearchElement;
+import com.b2international.snowowl.core.quicksearch.IQuickSearchProvider;
 import com.b2international.snowowl.core.quicksearch.QuickSearchContentResult;
 import com.b2international.snowowl.core.quicksearch.QuickSearchElement;
 import com.b2international.snowowl.datastore.IBranchPathMap;
 import com.b2international.snowowl.datastore.quicksearch.AbstractQuickSearchContentProvider;
 import com.b2international.snowowl.datastore.quicksearch.IQuickSearchContentProvider;
-import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
-import com.b2international.snowowl.snomed.datastore.index.SnomedIndexService;
-import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetIndexEntry;
-import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedMappings;
-import com.b2international.snowowl.snomed.datastore.index.refset.SnomedRefSetIndexQueryAdapter;
+import com.b2international.snowowl.eventbus.IEventBus;
+import com.b2international.snowowl.snomed.core.domain.ISnomedConcept;
+import com.b2international.snowowl.snomed.core.domain.SnomedConcepts;
+import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSet;
+import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSets;
+import com.b2international.snowowl.snomed.core.lang.LanguageSetting;
 import com.b2international.snowowl.snomed.datastore.quicksearch.SnomedRefSetQuickSearchProvider;
+import com.b2international.snowowl.snomed.datastore.request.SnomedConceptSearchRequestBuilder;
+import com.b2international.snowowl.snomed.datastore.request.SnomedRefSetSearchRequestBuilder;
+import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetPackage;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType;
 import com.google.common.base.Function;
+import com.google.common.collect.FluentIterable;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Lists;
 
 /**
@@ -53,71 +60,81 @@ import com.google.common.collect.Lists;
  */
 public class SnomedRefSetQuickSearchContentProvider extends AbstractQuickSearchContentProvider implements IQuickSearchContentProvider {
 
-	private static final class SnomedRefSetConverterFunction implements Function<SnomedRefSetIndexEntry, QuickSearchElement> {
+	private static final class RefSetToQuickSearchElementConverter implements Function<SnomedReferenceSet, QuickSearchElement> {
 		
 		private final String queryExpression;
+		private final Map<String, ISnomedConcept> identifierConceptMap;
 
-		public SnomedRefSetConverterFunction(String queryExpression) {
+		public RefSetToQuickSearchElementConverter(String queryExpression, Map<String, ISnomedConcept> identifierConceptMap) {
+			this.identifierConceptMap = identifierConceptMap;
 			this.queryExpression = queryExpression;
 		}
 
 		@Override 
-		public QuickSearchElement apply(final SnomedRefSetIndexEntry input) {
+		public QuickSearchElement apply(final SnomedReferenceSet input) {
+			final ISnomedConcept concept = identifierConceptMap.get(input.getId());
+			final String label = concept.getPt() == null ? concept.getId() : concept.getPt().getTerm();
 			return new CompactQuickSearchElement(input.getId(), 
 					input.getIconId(), 
-					input.getLabel(), 
+					label, 
 					false,
-					getMatchRegions(queryExpression, input.getLabel()),
-					getSuffixes(queryExpression, input.getLabel()));
+					getMatchRegions(queryExpression, label),
+					getSuffixes(queryExpression, label));
 		}
 	}
 
 	@Override
 	public QuickSearchContentResult getComponents(final String queryExpression, final IBranchPathMap branchPathMap, final int limit, final Map<String, Object> configuration) {
-		
-		final int searchFlags = SnomedRefSetIndexQueryAdapter.SEARCH_BY_ID 
-				| SnomedRefSetIndexQueryAdapter.SEARCH_BY_LABEL 
-				| SnomedRefSetIndexQueryAdapter.SEARCH_PREFIXED_TERM
-				| SnomedRefSetIndexQueryAdapter.SEARCH_REGULAR_ONLY;
-		
-		final SnomedRefSetType[] refSetTypes = getRefSetType(configuration);
-		final SnomedRefSetIndexQueryAdapter queryAdapter = new SnomedRefSetIndexQueryAdapter(searchFlags, queryExpression, getReferencedComponentTypeValue(configuration), 
-				getComponentIds(configuration), refSetTypes);
-		final SnomedIndexServerService indexService = (SnomedIndexServerService) ApplicationContext.getInstance().getService(SnomedIndexService.class);
+		final IEventBus bus = ApplicationContext.getInstance().getServiceChecked(IEventBus.class);
 		final IBranchPath branchPath = getBranchPath(branchPathMap);
-		final int totalHitCount = indexService.getHitCount(branchPath, queryAdapter);
 		
-		if (totalHitCount < 1) {
+		// TODO provide this via the configuration object from the client side
+		final List<ExtendedLocale> locales = ApplicationContext.getInstance().getService(LanguageSetting.class).getLanguagePreference();
+		
+		final List<String> componentIds = configuration.containsKey(IQuickSearchProvider.CONFIGURATION_VALUE_ID_SET) ? ImmutableList.copyOf(getComponentIds(configuration)) : Collections.<String>emptyList();
+		
+		final SnomedConceptSearchRequestBuilder req = SnomedRequests
+			.prepareSearchConcept()
+			.filterByActive(true)
+			.filterByTerm(queryExpression)
+			.setLimit(limit)
+			.setExpand("pt()")
+			.setLocales(locales)
+			.setComponentIds(componentIds);
+		
+		final SnomedConcepts matchingConcepts = req.build(branchPath.getPath()).executeSync(bus);
+		
+		if (matchingConcepts.getTotal() <= 0) {
 			return new QuickSearchContentResult();
 		}
 		
-		final List<SnomedRefSetIndexEntry> refSets = indexService.search(branchPath, queryAdapter, limit);
-		for (final Iterator<SnomedRefSetIndexEntry> itr = refSets.iterator(); itr.hasNext(); /**/) {
-			
-			final SnomedRefSetIndexEntry refSet = itr.next();
-
-			final Query activeConceptQuery = SnomedMappings.newQuery().active().type(SnomedTerminologyComponentConstants.CONCEPT_NUMBER).id(refSet.getId()).matchAll();
-			
-			if (isInactiveConcept(indexService, branchPath, activeConceptQuery)) {
-				itr.remove();
+		final Map<String, ISnomedConcept> matchingConceptsById = FluentIterable.from(matchingConcepts).uniqueIndex(new Function<ISnomedConcept, String>() {
+			@Override
+			public String apply(ISnomedConcept input) {
+				return input.getId();
 			}
-			
-		}
-
-		return new QuickSearchContentResult(totalHitCount, convertToDTO(queryExpression, refSets));
+		});
+		
+		final Collection<SnomedRefSetType> refSetTypes = configuration.containsKey(SnomedRefSetQuickSearchProvider.REFSET_TYPE_CONFIG_ID)
+				? ImmutableSet.copyOf(getRefSetType(configuration)) : Collections.<SnomedRefSetType> emptySet();
+		
+		final SnomedRefSetSearchRequestBuilder refSetReq = SnomedRequests
+			.prepareSearchRefSet()
+			.filterByActive(true)
+			.filterByTypes(refSetTypes)
+			.filterByReferencedComponentType(getReferencedComponentType(configuration))
+			.setComponentIds(ImmutableSet.copyOf(matchingConceptsById.keySet()))
+			.setLimit(limit);
+		
+		final SnomedReferenceSets matchingRefSets = refSetReq.build(branchPath.getPath()).executeSync(bus);
+		
+		// TODO how to compute the total hit count
+		return new QuickSearchContentResult(matchingRefSets.getTotal(), Lists.transform(matchingRefSets.getItems(), new RefSetToQuickSearchElementConverter(queryExpression, matchingConceptsById)));
 	}
 
-	private boolean isInactiveConcept(final SnomedIndexServerService indexService, final IBranchPath branchPath, final Query query) {
-		return 1 > indexService.getHitCount(branchPath, query, null);
-	}
-	
 	@Override
 	protected EPackage getEPackage() {
 		return SnomedRefSetPackage.eINSTANCE;
-	}
-	
-	private List<QuickSearchElement> convertToDTO(String queryExpression, List<SnomedRefSetIndexEntry> searchResults) {
-		return Lists.transform(searchResults, new SnomedRefSetConverterFunction(queryExpression));
 	}
 	
 	/*extracts the reference set type from the configuration*/
@@ -148,20 +165,4 @@ public class SnomedRefSetQuickSearchContentProvider extends AbstractQuickSearchC
 		return null == configuration ? null : (String) configuration.get(SnomedRefSetQuickSearchProvider.REFERENCED_COMPONENT_TYPE_CONFIG_ID);
 	}
 
-	/*
-	 * returns with the referenced component type as a Short. May return with null if the referenced component is
-	 * unspecified or null or empty string. If null terminology component ID returned then the index query will not check the referenced component type 
-	 * of the SNOMED CT concept.  
-	 * */
-	private Short getReferencedComponentTypeValue(final Map<String, Object> configuration) {
-		if (StringUtils.isEmpty(getReferencedComponentType(configuration))) {
-			return null;
-		}
-		
-		if (CoreTerminologyBroker.UNSPECIFIED.equals(getReferencedComponentType(configuration))) {
-			return null;
-		}
-		
-		return CoreTerminologyBroker.getInstance().getTerminologyComponentIdAsShort(getReferencedComponentType(configuration));
-	}
 }

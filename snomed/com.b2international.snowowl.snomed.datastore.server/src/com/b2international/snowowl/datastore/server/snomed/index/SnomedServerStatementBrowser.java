@@ -57,7 +57,6 @@ import com.google.common.collect.Maps;
 import bak.pcj.map.LongKeyLongMap;
 import bak.pcj.map.LongKeyLongMapIterator;
 import bak.pcj.map.LongKeyMap;
-import bak.pcj.map.LongKeyMapIterator;
 import bak.pcj.set.LongSet;
 
 /**
@@ -435,43 +434,6 @@ public class SnomedServerStatementBrowser extends AbstractSnomedIndexBrowser<Sno
 		}
 	}
 	
-	@Override
-	public Map<String, String> getAllStatementLabelsById(final IBranchPath branchPath, final String conceptId) {
-		checkNotNull(branchPath, "Branch path argument cannot be null.");
-		checkNotNull(conceptId, "SNOMED CT concept ID cannot be null.");
-
-		final BooleanQuery query = new BooleanQuery(true);
-		query.add(getRelationshipSourceOrDestinationQuery(conceptId), Occur.MUST);
-		
-		final StatementIdCollector collector = new StatementIdCollector();
-		service.search(branchPath, query, collector);
-
-		final LongSet idsSet = collector.getIds();
-		final Map<String, String> $ = Maps.newHashMapWithExpectedSize(idsSet.size());
-
-		if (idsSet.size() > 1000) {
-			final SnomedComponentLabelCollector labelCollector = new SnomedComponentLabelCollector(idsSet);
-			service.search(branchPath, SnomedMappings.newQuery().concept().matchAll(), labelCollector);
-			final LongKeyMap idLabelMapping = labelCollector.getIdLabelMapping();
-
-			for (final LongKeyMapIterator itr = idLabelMapping.entries(); itr.hasNext(); /**/) {
-				itr.next();
-				$.put(
-						Long.toString(itr.getKey()), //ID
-						String.valueOf(itr.getValue())); //label
-			}
-		} else {
-			final String[] ids = LongSets.toStringArray(collector.getIds());
-			final String[] labels = ApplicationContext.getInstance().getService(ISnomedComponentService.class).getLabels(branchPath, ids);
-
-			for (int i = 0; i < ids.length; i++) {
-				$.put(ids[i], labels[i]);
-			}
-		}
-
-		return $;
-	}
-
 	@Override
 	public Map<String, String> getAllStatementImageIdsById(final IBranchPath branchPath, final String conceptId) {
 		checkNotNull(branchPath, "Branch path argument cannot be null.");

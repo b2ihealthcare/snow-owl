@@ -16,23 +16,33 @@
 package com.b2international.snowowl.snomed.metadata;
 
 import java.util.Collection;
+import java.util.List;
 
+import com.b2international.commons.http.ExtendedLocale;
 import com.b2international.commons.pcj.LongSets;
 import com.b2international.snowowl.core.api.IBranchPath;
+import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
+import com.b2international.snowowl.snomed.core.domain.SnomedConcepts;
+import com.b2international.snowowl.snomed.core.lang.LanguageSetting;
 import com.b2international.snowowl.snomed.datastore.SnomedTerminologyBrowser;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptIndexEntry;
+import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.google.inject.Provider;
 
 /**
  * @since 4.3
  */
-public class SnomedMetadataImpl implements SnomedMetadata {
+public final class SnomedMetadataImpl implements SnomedMetadata {
 
-	private Provider<SnomedTerminologyBrowser> browser;
+	private final Provider<IEventBus> eventBus;
+	private final Provider<SnomedTerminologyBrowser> browser;
+	private final Provider<LanguageSetting> languageSetting;
 
-	public SnomedMetadataImpl(Provider<SnomedTerminologyBrowser> browser) {
+	public SnomedMetadataImpl(final Provider<IEventBus> eventBus, final Provider<SnomedTerminologyBrowser> browser, final Provider<LanguageSetting> languageSetting) {
+		this.eventBus = eventBus;
 		this.browser = browser;
+		this.languageSetting = languageSetting;
 	}
 	
 	@Override
@@ -42,7 +52,22 @@ public class SnomedMetadataImpl implements SnomedMetadata {
 
 	@Override
 	public Collection<SnomedConceptIndexEntry> getCharacteristicTypes(IBranchPath branchPath) {
-		return getTerminologyBrowser().getAllSubTypesById(branchPath, Concepts.CHARACTERISTIC_TYPE);
+		final SnomedConcepts concepts = SnomedRequests.prepareSearchConcept()
+				.setLocales(getLocales())
+				.filterByAncestor(Concepts.CHARACTERISTIC_TYPE)
+				.setExpand("pt()")
+				.build(branchPath.getPath())
+				.executeSync(getEventBus());
+		
+		return SnomedConceptIndexEntry.fromConcepts(concepts);
+	}
+	
+	private final List<ExtendedLocale> getLocales() {
+		return languageSetting.get().getLanguagePreference();
+	}
+	
+	private IEventBus getEventBus() {
+		return eventBus.get();
 	}
 
 	private SnomedTerminologyBrowser getTerminologyBrowser() {

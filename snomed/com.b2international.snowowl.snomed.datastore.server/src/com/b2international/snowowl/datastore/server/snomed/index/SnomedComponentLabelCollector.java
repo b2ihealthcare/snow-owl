@@ -31,6 +31,7 @@ import com.b2international.snowowl.core.api.index.CommonIndexConstants;
 import com.b2international.snowowl.datastore.index.AbstractDocsOutOfOrderCollector;
 import com.b2international.snowowl.datastore.index.mapping.Mappings;
 import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedMappings;
+import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 
 /**
  * Collector for gathering SNOMED CT component IDs and a human readable label for the component.
@@ -40,6 +41,7 @@ import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedMappings
  * This collector can be used if the component label is stored as the
  * {@link CommonIndexConstants#COMPONENT_LABEL_SINGLE} field and the component ID is stored as a numeric doc value field
  * called {@link CommonIndexConstants#COMPONENT_ID}.
+ * @deprecated - UNSUPPORTED, will be removed in 4.6, label is not indexed anymore, use the {@link SnomedRequests SCT Request API} to fetch labels
  */
 public class SnomedComponentLabelCollector extends AbstractDocsOutOfOrderCollector {
 

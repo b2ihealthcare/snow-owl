@@ -20,8 +20,6 @@ import java.util.Date;
 import java.util.Map;
 import java.util.Set;
 
-import javax.annotation.Nullable;
-
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.snomed.Description;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
@@ -103,19 +101,6 @@ public interface IClientSnomedComponentService {
 	 */
 	long getExtensionConceptId(final String componentId);
 	
-	/**
-	 * Returns with an array of labels for components identified by their unique SNOMED&nbsp;CT core component ID.
-	 * <br>The component type will be identified from the core component ID.
-	 * <p>Clients can make sure that the order of the specified component IDs will be the same as the returning array of label.
-	 * <p>The returning array may contain {@code null}s. Clients must take care of them.
-	 * <p>If the specified component ID is *NOT* a valid SNOMED&nbsp;CT core component ID, it will be ignored and the associated
-	 * label will be {@code null}.
-	 * @param componentIds the unique ID of a SNOMED&nbsp;CT core components.
-	 * @return an array of labels.
-	 * @expert
-	 */
-	@Nullable String[] getLabels(final String... componentIds);
-
 	/**
 	* Returns with an array of SNOMED&nbsp;CT concept icon IDs for
 	* a bunch of SNOMED&nbsp;CT concepts given by their unique SNOMED&nbsp;CT concept ID.

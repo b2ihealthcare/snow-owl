@@ -16,6 +16,7 @@
 package com.b2international.snowowl.snomed.datastore.index.mapping;
 
 import com.b2international.snowowl.datastore.index.mapping.FieldsToLoadBuilderBase;
+import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 
 /**
  * @since 4.3
@@ -32,12 +33,12 @@ public class SnomedFieldsToLoadBuilder extends FieldsToLoadBuilderBase<SnomedFie
 		throw new UnsupportedOperationException("Label field can not be retrieved for SNOMED CT documents.");
 	}
 
-	public SnomedFieldsToLoadBuilder parent(final String fieldNameSuffix) {
-		return field(SnomedMappings.parent(fieldNameSuffix));
+	public SnomedFieldsToLoadBuilder statedParent() {
+		return field(SnomedMappings.parent(Concepts.STATED_RELATIONSHIP));
 	}
 
-	public SnomedFieldsToLoadBuilder ancestor(final String fieldNameSuffix) {
-		return field(SnomedMappings.ancestor(fieldNameSuffix));
+	public SnomedFieldsToLoadBuilder statedAncestor() {
+		return field(SnomedMappings.ancestor(Concepts.STATED_RELATIONSHIP));
 	}
 
 	public SnomedFieldsToLoadBuilder module() {

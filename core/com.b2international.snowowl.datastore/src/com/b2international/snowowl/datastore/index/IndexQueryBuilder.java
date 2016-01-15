@@ -224,7 +224,9 @@ public class IndexQueryBuilder {
 	 */
 	public IndexQueryBuilder matchAllTokenizedTerms(final String fieldName, final String searchString) {
 		final Query wrapper = new QueryBuilder(analyzer).createBooleanQuery(fieldName, searchString, Occur.MUST);
-		builtQuery.add(wrapper, Occur.SHOULD);
+		if (wrapper != null) {
+			builtQuery.add(wrapper, Occur.SHOULD);
+		}
 		return this;
 	}
 	
@@ -330,7 +332,9 @@ public class IndexQueryBuilder {
 
 	public IndexQueryBuilder matchTokenizedTermSequence(final String fieldName, final String searchString) {
 		final Query wrappedQuery = createPhraseQuery(fieldName, searchString);
-		builtQuery.add(wrappedQuery, Occur.SHOULD);
+		if (wrappedQuery != null) {
+			builtQuery.add(wrappedQuery, Occur.SHOULD);
+		}
 		return this;
 	}
 
@@ -441,7 +445,9 @@ public class IndexQueryBuilder {
 
 	public IndexQueryBuilder requireTokenizedTermSequence(final String fieldName, final String searchString) {
 		final Query wrappedQuery = createPhraseQuery(fieldName, searchString);
-		builtQuery.add(wrappedQuery, Occur.MUST);
+		if (wrappedQuery != null) {
+			builtQuery.add(wrappedQuery, Occur.MUST);
+		}
 		return this;
 	}
 

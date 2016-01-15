@@ -263,11 +263,15 @@ public class SnomedConceptSubResourcesController extends AbstractSnomedRestServi
 
 			@ApiParam(value="Return direct descendants only")
 			@RequestParam(value="direct", defaultValue="false", required=false) 
-			final boolean direct) {
+			final boolean direct,
+			
+			@ApiParam(value="Return stated or inferred descendants")
+			@RequestParam(value="form", defaultValue="inferred", required=false)
+			final String form) {
 	
 		return DeferredResults.wrap(SnomedRequests.prepareGetConcept()
 				.setComponentId(conceptId)
-				.setExpand(String.format("descendants(direct:%s,offset:%d,limit:%d)", direct, offset, limit))
+				.setExpand(String.format("descendants(form:\"%s\",direct:%s,offset:%d,limit:%d)", form, direct, offset, limit))
 				.build(branchPath)
 				.execute(bus)
 				.then(new Function<ISnomedConcept, SnomedConcepts>() {
@@ -306,13 +310,17 @@ public class SnomedConceptSubResourcesController extends AbstractSnomedRestServi
 			@RequestParam(value="limit", defaultValue="50", required=false) 
 			final int limit,
 
-			@ApiParam(value="Return direct descendants only")
+			@ApiParam(value="Return direct ancestors only")
 			@RequestParam(value="direct", defaultValue="false", required=false) 
-			final boolean direct) {
+			final boolean direct,
+			
+			@ApiParam(value="Return stated or inferred ancestors")
+			@RequestParam(value="form", defaultValue="inferred", required=false)
+			final String form) {
 
 		return DeferredResults.wrap(SnomedRequests.prepareGetConcept()
 				.setComponentId(conceptId)
-				.setExpand(String.format("ancestors(direct:%s,offset:%d,limit:%d)", direct, offset, limit))
+				.setExpand(String.format("ancestors(form:\"%s\",direct:%s,offset:%d,limit:%d)", form, direct, offset, limit))
 				.build(branchPath)
 				.execute(bus)
 				.then(new Function<ISnomedConcept, SnomedConcepts>() {

@@ -15,6 +15,8 @@
  */
 package com.b2international.snowowl.snomed.datastore.converter;
 
+import static com.b2international.snowowl.core.domain.IComponent.ID_FUNCTION;
+
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
@@ -64,12 +66,14 @@ final class SnomedRelationshipConverter extends BaseSnomedComponentConverter<Sno
 		result.setId(input.getId());
 		result.setModifier(toRelationshipModifier(input.isUniversal()));
 		result.setModuleId(input.getModuleId());
+		result.setIconId(input.getIconId());
 		result.setRefinability(getRelationshipRefinability(input.getId()));
 		result.setReleased(input.isReleased());
 		result.setUnionGroup(input.getUnionGroup());
 		result.setDestination(new SnomedConcept(input.getValueId()));
 		result.setSource(new SnomedConcept(input.getObjectId()));
 		result.setType(new SnomedConcept(input.getAttributeId()));
+		result.setScore(input.getScore());
 		return result;
 	}
 	

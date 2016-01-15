@@ -60,8 +60,8 @@ import com.b2international.snowowl.core.api.index.IndexException;
 import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.datastore.cdo.CDOUtils;
 import com.b2international.snowowl.datastore.index.DocIdCollector;
-import com.b2international.snowowl.datastore.index.IndexRead;
 import com.b2international.snowowl.datastore.index.DocIdCollector.DocIdsIterator;
+import com.b2international.snowowl.datastore.index.IndexRead;
 import com.b2international.snowowl.datastore.index.IndexUtils;
 import com.b2international.snowowl.datastore.index.mapping.Mappings;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
@@ -362,7 +362,10 @@ public class SnomedServerRefSetBrowser extends AbstractSnomedIndexBrowser<Snomed
 		final Document doc = service.document(branchPath, scoreDoc.doc, COMPONENT_ID_FIELD);
 		return SnomedMappings.id().getValueAsString(doc);
 	}
-	
+
+	/**
+	 * @deprecated - don't use it anymore, will be removed in 4.6
+	 */
 	@Override
 	public Collection<SnomedConceptIndexEntry> getRootConcepts(final IBranchPath branchPath) {
 		final int size = SnomedRefSetType.values().length;

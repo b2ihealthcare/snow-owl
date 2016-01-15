@@ -24,6 +24,7 @@ import com.b2international.snowowl.datastore.index.mapping.LongIndexField;
 import com.b2international.snowowl.datastore.index.mapping.Mappings;
 import com.b2international.snowowl.datastore.index.mapping.NumericDocValuesIndexField;
 import com.b2international.snowowl.datastore.index.mapping.StoredIndexField;
+import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.google.common.base.Predicates;
 import com.google.common.base.Strings;
 
@@ -48,6 +49,9 @@ public class SnomedMappings {
 	// Concept field instances
 	private static final LongCollectionIndexField CONCEPT_PARENT = parent("");
 	private static final LongCollectionIndexField CONCEPT_ANCESTOR = ancestor("");
+	private static final LongCollectionIndexField CONCEPT_STATED_PARENT = parent(Concepts.STATED_RELATIONSHIP);
+	private static final LongCollectionIndexField CONCEPT_STATED_ANCESTOR = ancestor(Concepts.STATED_RELATIONSHIP);
+	
 	private static final IndexField<Integer> CONCEPT_PRIMITIVE = Mappings.intDocValuesField("concept_primitive");
 	private static final IndexField<Integer> CONCEPT_EXHAUSTIVE = Mappings.intDocValuesField("concept_exhaustive");
 	private static final IndexField<Float> CONCEPT_DEGREE_OF_INTEREST = Mappings.floatDocValuesField("concept_degree_of_interest");
@@ -171,6 +175,10 @@ public class SnomedMappings {
 	public static LongCollectionIndexField parent() {
 		return CONCEPT_PARENT;
 	}
+	
+	public static LongCollectionIndexField statedParent() {
+		return CONCEPT_STATED_PARENT;
+	}
 
 	public static LongCollectionIndexField parent(final String fieldNameSuffix) {
 		final LongIndexField field = Mappings.longField(concatIfNotNullOrEmpty(Mappings.parent().fieldName(), fieldNameSuffix));
@@ -179,6 +187,10 @@ public class SnomedMappings {
 
 	public static LongCollectionIndexField ancestor() {
 		return CONCEPT_ANCESTOR;
+	}
+	
+	public static LongCollectionIndexField statedAncestor() {
+		return CONCEPT_STATED_ANCESTOR;
 	}
 
 	public static LongCollectionIndexField ancestor(final String fieldNameSuffix) {

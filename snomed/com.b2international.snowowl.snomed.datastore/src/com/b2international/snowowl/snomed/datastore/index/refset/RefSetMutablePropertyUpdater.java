@@ -18,8 +18,8 @@ package com.b2international.snowowl.snomed.datastore.index.refset;
 import org.eclipse.emf.cdo.common.id.CDOIDUtil;
 
 import com.b2international.snowowl.datastore.index.DocumentUpdaterBase;
-import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
+import com.b2international.snowowl.snomed.datastore.SnomedRefSetUtil;
 import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedDocumentBuilder;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSet;
 
@@ -40,26 +40,9 @@ public class RefSetMutablePropertyUpdater extends DocumentUpdaterBase<SnomedDocu
 		doc
 			.refSetType(refSet.getType())
 			.refSetReferencedComponentType(Integer.valueOf(refSet.getReferencedComponentType()))
-			.refSetStructural(isStructural(refSet))
+			.refSetStructural(SnomedRefSetUtil.isStructural(refSet.getIdentifierId(), refSet.getType()))
 			.refSetStorageKey(CDOIDUtil.getLong(refSet.cdoID()))
 			.type(SnomedTerminologyComponentConstants.REFSET_NUMBER);
 	}
 	
-	private boolean isStructural(final SnomedRefSet refSet) {
-		switch (refSet.getType()) {
-			case LANGUAGE: //$FALL-THROUGH$
-			case CONCRETE_DATA_TYPE: //$FALL-THROUGH$
-			case ASSOCIATION: //$FALL-THROUGH$
-			case MODULE_DEPENDENCY: //$FALL-THROUGH$
-				return true;
-			case ATTRIBUTE_VALUE:
-				final String refSetId = refSet.getIdentifierId();
-				return 
-						Concepts.REFSET_DESCRIPTION_INACTIVITY_INDICATOR.equals(refSetId) 
-						|| Concepts.REFSET_CONCEPT_INACTIVITY_INDICATOR.equals(refSetId) 
-						|| Concepts.REFSET_RELATIONSHIP_REFINABILITY.equals(refSetId);
-			default: return false;
-		}
-	}
-
 }

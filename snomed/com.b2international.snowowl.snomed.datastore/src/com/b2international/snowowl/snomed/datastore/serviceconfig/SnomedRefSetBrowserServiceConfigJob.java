@@ -16,7 +16,10 @@
 package com.b2international.snowowl.snomed.datastore.serviceconfig;
 
 import com.b2international.snowowl.datastore.serviceconfig.ClientServiceConfigJob;
+import com.b2international.snowowl.eventbus.IEventBus;
+import com.b2international.snowowl.snomed.core.lang.LanguageSetting;
 import com.b2international.snowowl.snomed.datastore.SnomedClientRefSetBrowser;
+import com.b2international.snowowl.snomed.datastore.SnomedClientTerminologyBrowser;
 import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 import com.b2international.snowowl.snomed.datastore.SnomedRefSetBrowser;
 
@@ -35,27 +38,21 @@ public class SnomedRefSetBrowserServiceConfigJob<S> extends ClientServiceConfigJ
 		super(JOB_NAME, SnomedDatastoreActivator.PLUGIN_ID);
 	}
 	
-	/* (non-Javadoc)
-	 * @see com.b2international.snowowl.datastore.serviceconfig.ClientServiceConfigJob#getBranchAwareClass()
-	 */
 	@Override
 	protected Class<SnomedRefSetBrowser> getServiceClass() {
 		return SnomedRefSetBrowser.class;
 	}
 
-	/* (non-Javadoc)
-	 * @see com.b2international.snowowl.datastore.serviceconfig.ClientServiceConfigJob#getTrackingClass()
-	 */
 	@Override
 	protected Class<SnomedClientRefSetBrowser> getTrackingClass() {
 		return SnomedClientRefSetBrowser.class;
 	}
 
-	/* (non-Javadoc)
-	 * @see com.b2international.snowowl.datastore.serviceconfig.ClientServiceConfigJob#createTrackingService(java.lang.Object)
-	 */
 	@Override
 	protected SnomedClientRefSetBrowser createTrackingService(final SnomedRefSetBrowser branchAwareService) {
-		return new SnomedClientRefSetBrowser(branchAwareService);
+		return new SnomedClientRefSetBrowser(branchAwareService, 
+				getEnvironment().provider(SnomedClientTerminologyBrowser.class), 
+				getEnvironment().service(IEventBus.class),
+				getEnvironment().provider(LanguageSetting.class));
 	}
 }

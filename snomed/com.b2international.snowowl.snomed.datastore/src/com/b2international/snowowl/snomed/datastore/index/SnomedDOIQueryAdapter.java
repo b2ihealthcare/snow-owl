@@ -39,6 +39,7 @@ import com.b2international.snowowl.datastore.index.IndexQueryBuilder;
 import com.b2international.snowowl.datastore.index.IndexUtils;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptIndexEntry;
 import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedMappings;
+import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.google.common.base.Optional;
 import com.google.common.base.Strings;
 
@@ -53,7 +54,7 @@ import com.google.common.base.Strings;
  * <p> 
  * bl p st sy  
  * <pre>+conceptStatus:1 label:"bl p st sy"^3.0 ((synonym:bl synonym:p synonym:st synonym:sy)^2.0) +(+synonym:bl* +synonym:p* +synonym:st* +synonym:sy*)</pre>
- * 
+ * @deprecated - UNSUPPORTED, use {@link SnomedRequests#prepareSearchConcept()} instead
  */
 public class SnomedDOIQueryAdapter extends SnomedConceptIndexQueryAdapter implements Serializable {
 	

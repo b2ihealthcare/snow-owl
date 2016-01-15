@@ -36,6 +36,7 @@ import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetM
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMembers;
 import com.b2international.snowowl.snomed.datastore.id.SnomedIdentifiers;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry;
+import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedMappings;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.b2international.snowowl.snomed.datastore.services.AbstractSnomedRefSetMembershipLookupService;
 import com.google.common.base.Function;
@@ -144,6 +145,7 @@ final class SnomedReferenceSetMemberConverter extends BaseSnomedComponentConvert
 		member.setReleased(entry.isReleased());
 		member.setActive(entry.isActive());
 		member.setModuleId(entry.getModuleId());
+		member.setIconId(entry.getIconId());
 		member.setReferenceSetId(entry.getRefSetIdentifierId());
 		member.setType(entry.getRefSetType());
 		
@@ -157,6 +159,11 @@ final class SnomedReferenceSetMemberConverter extends BaseSnomedComponentConvert
 				break;
 			case ASSOCIATION:
 				props.put(SnomedRf2Headers.FIELD_TARGET_COMPONENT_ID, entry.getTargetComponentId());
+				break;
+			case SIMPLE_MAP:
+			case COMPLEX_MAP:
+				props.put(SnomedMappings.memberMapTargetComponentId().fieldName(), entry.getMapTargetComponentId());
+				props.put(SnomedMappings.memberMapTargetComponentType().fieldName(), entry.getMapTargetComponentTypeAsShort());
 				break;
 			default:
 				break;

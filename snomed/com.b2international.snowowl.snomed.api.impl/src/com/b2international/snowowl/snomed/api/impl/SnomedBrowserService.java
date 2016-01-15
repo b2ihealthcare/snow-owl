@@ -44,6 +44,7 @@ import com.b2international.snowowl.core.events.bulk.BulkRequestBuilder;
 import com.b2international.snowowl.core.exceptions.ComponentNotFoundException;
 import com.b2international.snowowl.core.terminology.ComponentCategory;
 import com.b2international.snowowl.datastore.index.AbstractIndexQueryAdapter;
+import com.b2international.snowowl.datastore.index.mapping.LongCollectionIndexField;
 import com.b2international.snowowl.datastore.server.domain.InternalComponentRef;
 import com.b2international.snowowl.datastore.server.domain.InternalStorageRef;
 import com.b2international.snowowl.eventbus.IEventBus;
@@ -106,11 +107,11 @@ public class SnomedBrowserService implements ISnomedBrowserService {
 		
 		private static final long serialVersionUID = 1L;
 		
-		private final String parentFieldSuffix;
+		private final LongCollectionIndexField field;
 
-		private ConceptSubTypesAdapter(String conceptId, String parentFieldSuffix) {
+		private ConceptSubTypesAdapter(String conceptId, boolean stated) {
 			super(conceptId, AbstractIndexQueryAdapter.SEARCH_DEFAULT, null);
-			this.parentFieldSuffix = parentFieldSuffix;
+			this.field = stated ? SnomedMappings.statedParent() : SnomedMappings.parent();
 		}
 
 		@Override
@@ -118,7 +119,7 @@ public class SnomedBrowserService implements ISnomedBrowserService {
 			return SnomedMappings.newQuery()
 				.concept()
 				.active()
-				.field(SnomedMappings.parent(parentFieldSuffix).fieldName(), Long.valueOf(searchString))
+				.field(field.fieldName(), Long.valueOf(searchString))
 				.matchAll();
 		}
 	}
@@ -516,13 +517,7 @@ public class SnomedBrowserService implements ISnomedBrowserService {
 			
 			@Override
 			protected Collection<SnomedConceptIndexEntry> getConceptEntries(String conceptId) {
-				final SnomedConceptIndexQueryAdapter queryAdapter;
-				if (!stated) {
-					queryAdapter = new ConceptSubTypesAdapter(conceptId, "");
-				} else {
-					queryAdapter = new ConceptSubTypesAdapter(conceptId, Concepts.STATED_RELATIONSHIP);
-				}
-				
+				final SnomedConceptIndexQueryAdapter queryAdapter = new ConceptSubTypesAdapter(conceptId, stated);
 				return getIndexService().searchUnsorted(branchPath, queryAdapter);
 			}
 
