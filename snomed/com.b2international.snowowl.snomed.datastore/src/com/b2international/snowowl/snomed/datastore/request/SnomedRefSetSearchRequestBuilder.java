@@ -16,7 +16,6 @@
 package com.b2international.snowowl.snomed.datastore.request;
 
 import java.util.Collection;
-import java.util.Collections;
 
 import com.b2international.snowowl.core.CoreTerminologyBroker;
 import com.b2international.snowowl.datastore.request.SearchRequest;
@@ -38,15 +37,15 @@ public final class SnomedRefSetSearchRequestBuilder extends SnomedSearchRequestB
 		return new SnomedRefSetSearchRequest();
 	}
 	
-	public SnomedRefSetSearchRequestBuilder filterByType(SnomedRefSetType type) {
-		return filterByTypes(Collections.singleton(type));
+	public SnomedRefSetSearchRequestBuilder filterByType(SnomedRefSetType refSetType) {
+		return addOption(SnomedRefSetSearchRequest.OptionKey.TYPE, refSetType);
 	}
 	
 	public SnomedRefSetSearchRequestBuilder filterByTypes(Collection<SnomedRefSetType> refSetTypes) {
 		return addOption(SnomedRefSetSearchRequest.OptionKey.TYPE, refSetTypes);
 	}
 
-	public SnomedRefSetSearchRequestBuilder filterByReferencedComponentTypes(String referencedComponentType) {
+	public SnomedRefSetSearchRequestBuilder filterByReferencedComponentType(String referencedComponentType) {
 		if (Strings.isNullOrEmpty(referencedComponentType)) {
 			return getSelf();
 		}
@@ -54,14 +53,14 @@ public final class SnomedRefSetSearchRequestBuilder extends SnomedSearchRequestB
 			return getSelf();
 		}
 		final int referencedComponentTypeAsInt = (int) CoreTerminologyBroker.getInstance().getTerminologyComponentIdAsShort(referencedComponentType);
-		return filterByReferencedComponentTypes(referencedComponentTypeAsInt);
+		return filterByReferencedComponentType(referencedComponentTypeAsInt);
 	}
 	
-	public SnomedRefSetSearchRequestBuilder filterByReferencedComponentTypes(Integer referencedComponentType) {
+	public SnomedRefSetSearchRequestBuilder filterByReferencedComponentType(Integer referencedComponentType) {
 		if (referencedComponentType == null) {
 			return getSelf();
 		}
-		return filterByReferencedComponentTypes(Collections.singleton(referencedComponentType));
+		return addOption(SnomedRefSetSearchRequest.OptionKey.REFERENCED_COMPONENT_TYPE, referencedComponentType);
 	}
 	
 	public SnomedRefSetSearchRequestBuilder filterByReferencedComponentTypes(Collection<Integer> referencedComponentTypes) {

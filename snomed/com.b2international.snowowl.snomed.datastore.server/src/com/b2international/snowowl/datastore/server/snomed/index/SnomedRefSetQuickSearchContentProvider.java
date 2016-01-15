@@ -122,7 +122,7 @@ public class SnomedRefSetQuickSearchContentProvider extends AbstractQuickSearchC
 			.prepareSearchRefSet()
 			.filterByActive(true)
 			.filterByTypes(refSetTypes)
-			.filterByReferencedComponentTypes(getReferencedComponentType(configuration))
+			.filterByReferencedComponentType(getReferencedComponentType(configuration))
 			.setComponentIds(ImmutableSet.copyOf(matchingConceptsById.keySet()))
 			.setLimit(limit);
 		
