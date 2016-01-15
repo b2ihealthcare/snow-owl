@@ -32,6 +32,7 @@ import static com.google.common.collect.Sets.newHashSet;
 import static java.util.Collections.emptyList;
 
 import java.util.Collection;
+import java.util.List;
 import java.util.Set;
 
 import org.eclipse.emf.cdo.CDOObject;
@@ -40,6 +41,7 @@ import org.eclipse.emf.cdo.view.CDOView;
 import com.b2international.commons.Pair;
 import com.b2international.commons.StringUtils;
 import com.b2international.commons.collections.SetDifference;
+import com.b2international.commons.http.ExtendedLocale;
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.CoreTerminologyBroker;
 import com.b2international.snowowl.core.CoreTerminologyBroker.ICoreTerminologyComponentInformation;
@@ -59,7 +61,7 @@ import com.b2international.snowowl.snomed.core.domain.ISnomedRelationship;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSet;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMember;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMembers;
-import com.b2international.snowowl.snomed.datastore.SnomedClientTerminologyBrowser;
+import com.b2international.snowowl.snomed.core.lang.LanguageSetting;
 import com.b2international.snowowl.snomed.datastore.SnomedRefSetBrowser;
 import com.b2international.snowowl.snomed.datastore.SnomedRefSetMemberFragment;
 import com.b2international.snowowl.snomed.datastore.SnomedTerminologyBrowser;
@@ -247,7 +249,7 @@ public class SnomedNodeTransformer extends NodeTransformerImpl {
 	
 	private ImmutableList<String> getRefSetMemberLabels(final String refSetId, final IBranchPath branchPath) {
 		final SnomedReferenceSet refSet = SnomedRequests.prepareGetReferenceSet()
-				.setLocales(SnomedClientTerminologyBrowser.LOCALES)
+				.setLocales(getLocales())
 				.setComponentId(refSetId)
 				.build(branchPath.getPath())
 				.executeSync(ApplicationContext.getInstance().getService(IEventBus.class));
@@ -283,11 +285,16 @@ public class SnomedNodeTransformer extends NodeTransformerImpl {
 	private SnomedReferenceSetMembers getRefSetMembers(final String refSetId, final String expansion, final IBranchPath branchPath) {
 		return SnomedRequests.prepareSearchMember()
 				.all()
-				.setLocales(SnomedClientTerminologyBrowser.LOCALES)
+				.setLocales(getLocales())
 				.setExpand(expansion)
 				.filterByRefSet(refSetId)
 				.build(branchPath.getPath())
 				.executeSync(ApplicationContext.getInstance().getService(IEventBus.class));
+	}
+
+	private List<ExtendedLocale> getLocales() {
+		final List<ExtendedLocale> locales = ApplicationContext.getInstance().getService(LanguageSetting.class).getLanguagePreference();
+		return locales;
 	}
 
 	private Collection<NodeDelta> compareRefSetByMapTarget(final CDOView sourceView, final CDOView targetView, final NodeDiff diff) {
