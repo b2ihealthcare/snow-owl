@@ -29,6 +29,12 @@ import static org.junit.Assert.fail;
 
 import java.util.Date;
 import java.util.Map;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 import org.junit.Test;
 
@@ -462,7 +468,7 @@ public class SnomedMergeApiTest extends AbstractSnomedApiTest {
 	}
 
 	@Test
-	public void noRebaseLockedBranch() {
+	public void noRebaseLockedBranch() throws InterruptedException, TimeoutException, ExecutionException {
 		final IBranchPath siblingA = BranchPathUtils.createPath(testBranchPath, "A");
 		final IBranchPath siblingB = BranchPathUtils.createPath(testBranchPath, "B");
 		
@@ -475,8 +481,12 @@ public class SnomedMergeApiTest extends AbstractSnomedApiTest {
 		assertConceptNotExists(siblingA, "C1");
 		assertConceptNotExists(siblingB, "C1");
 		
-		// XXX: RestAssured doesn't support parallel requests, test may fail spuriously
-		new Thread() {
+		/* 
+		 * XXX: RestAssured doesn't support parallel requests. Test may fail spuriously, or the request dump may not 
+		 * correspond to the actual cause of the failure (stack trace is preserved, though).
+		 */
+		final ExecutorService executor = Executors.newSingleThreadExecutor();
+		final Future<?> future = executor.submit(new Runnable() {
 			@Override
 			public void run() {
 				try {
@@ -484,27 +494,44 @@ public class SnomedMergeApiTest extends AbstractSnomedApiTest {
 				} catch (InterruptedException e) {
 					fail("Interrupted while waiting in the asynchronous request thread.");
 				}
-				
+
 				assertBranchConflicts(testBranchPath, siblingB, "Rebase sibling B");
 			}
-		}.start();
+		});
 		
 		assertBranchCanBeRebased(siblingA, "Rebase sibling A");
 		
 		assertConceptExists(testBranchPath, "C1");
 		assertConceptExists(siblingA, "C1");
 		assertConceptNotExists(siblingB, "C1");
+		
+		try {
+			future.get(100L, TimeUnit.MILLISECONDS);
+		} catch (ExecutionException e) {
+			if (e.getCause() instanceof AssertionError) {
+				throw (AssertionError) e.getCause();
+			} else {
+				throw e;
+			}
+		} finally {
+			executor.shutdownNow();
+		}
 	}
 	
 	@Test
-	public void noRebaseSameBranch() {
+	public void noRebaseSameBranch() throws InterruptedException, TimeoutException, ExecutionException {
 		final IBranchPath siblingA = createNestedBranch("A");
 		
 		assertConceptCreated(testBranchPath, "C1");
 		assertConceptExists(testBranchPath, "C1");
 		assertConceptNotExists(siblingA, "C1");
-		
-		new Thread() {
+
+		/* 
+		 * XXX: RestAssured doesn't support parallel requests. Test may fail spuriously, or the request dump may not 
+		 * correspond to the actual cause of the failure (stack trace is preserved, though).
+		 */
+		final ExecutorService executor = Executors.newSingleThreadExecutor();
+		final Future<?> future = executor.submit(new Runnable() {
 			@Override
 			public void run() {
 				try {
@@ -515,12 +542,24 @@ public class SnomedMergeApiTest extends AbstractSnomedApiTest {
 
 				assertBranchConflicts(testBranchPath, siblingA, "Rebase sibling A (again)");
 			}
-		}.start();
+		});
 		
 		assertBranchCanBeRebased(siblingA, "Rebase sibling A");
 		
 		assertConceptExists(testBranchPath, "C1");
 		assertConceptExists(siblingA, "C1");
+		
+		try {
+			future.get(100L, TimeUnit.MILLISECONDS);
+		} catch (ExecutionException e) {
+			if (e.getCause() instanceof AssertionError) {
+				throw (AssertionError) e.getCause();
+			} else {
+				throw e;
+			}
+		} finally {
+			executor.shutdownNow();
+		}
 	}
 
 	@Test
