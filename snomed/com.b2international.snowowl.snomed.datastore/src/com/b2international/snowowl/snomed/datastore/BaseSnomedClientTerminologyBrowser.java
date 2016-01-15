@@ -61,6 +61,8 @@ public abstract class BaseSnomedClientTerminologyBrowser extends ActiveBranchCli
 		this.languageSetting = languageSetting;
 	}
 	
+	public abstract String getForm();
+	
 	protected final IEventBus getBus() {
 		return bus;
 	}

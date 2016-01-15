@@ -44,6 +44,11 @@ public final class SnomedStatedClientTerminologyBrowser extends BaseSnomedClient
 	}
 	
 	@Override
+	public String getForm() {
+		return Trees.STATED_FORM;
+	}
+	
+	@Override
 	public boolean hasChildren(SnomedConceptIndexEntry element) {
 		// TODO fix implementation, if required (this uses inferred tree instead of stated)
 		return getSubTypeCount(element) > 0;

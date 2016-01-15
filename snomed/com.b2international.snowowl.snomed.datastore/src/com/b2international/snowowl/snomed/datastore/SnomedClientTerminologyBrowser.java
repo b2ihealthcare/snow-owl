@@ -55,6 +55,11 @@ public class SnomedClientTerminologyBrowser extends BaseSnomedClientTerminologyB
 	}
 	
 	@Override
+	public String getForm() {
+		return Trees.INFERRED_FORM;
+	}
+	
+	@Override
 	public boolean hasChildren(SnomedConceptIndexEntry element) {
 		return getSubTypeCount(element) > 0;
 	}
