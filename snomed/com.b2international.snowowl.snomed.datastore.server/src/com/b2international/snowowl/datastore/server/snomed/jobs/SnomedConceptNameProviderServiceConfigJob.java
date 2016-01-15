@@ -15,17 +15,13 @@
  */
 package com.b2international.snowowl.datastore.server.snomed.jobs;
 
-import java.util.List;
-
-import com.b2international.commons.http.ExtendedLocale;
 import com.b2international.snowowl.datastore.server.snomed.SnomedDatastoreServerActivator;
 import com.b2international.snowowl.datastore.serviceconfig.IndexServiceTrackingConfigJob;
 import com.b2international.snowowl.eventbus.IEventBus;
-import com.b2international.snowowl.snomed.datastore.config.SnomedCoreConfiguration;
+import com.b2international.snowowl.snomed.core.lang.LanguageSetting;
 import com.b2international.snowowl.snomed.datastore.index.SnomedIndexService;
 import com.b2international.snowowl.snomed.datastore.server.SnomedConceptNameProvider;
 import com.b2international.snowowl.snomed.datastore.services.ISnomedConceptNameProvider;
-import com.google.common.collect.ImmutableList;
 
 /**
  * Job for initializing and configuring the SNOMED CT concept name provider.
@@ -51,11 +47,9 @@ public class SnomedConceptNameProviderServiceConfigJob extends IndexServiceTrack
 
 	@Override
 	protected ISnomedConceptNameProvider createServiceImplementation(final SnomedIndexService indexService) {
-		return new SnomedConceptNameProvider(indexService, getEnvironment().provider(IEventBus.class), getExtendedLocales());
+		return new SnomedConceptNameProvider(indexService, 
+				getEnvironment().provider(IEventBus.class), 
+				getEnvironment().service(LanguageSetting.class).getLanguagePreference());
 	}
 
-	private List<ExtendedLocale> getExtendedLocales() {
-		SnomedCoreConfiguration coreConfiguration = getSnowOwlConfiguration().getModuleConfig(SnomedCoreConfiguration.class);
-		return ImmutableList.of(ExtendedLocale.valueOf(coreConfiguration.getLanguage()));
-	}
 }
