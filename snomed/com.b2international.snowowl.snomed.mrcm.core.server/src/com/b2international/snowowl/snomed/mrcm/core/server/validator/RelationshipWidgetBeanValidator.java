@@ -18,12 +18,15 @@ package com.b2international.snowowl.snomed.mrcm.core.server.validator;
 import java.util.Collection;
 import java.util.List;
 
-import bak.pcj.set.LongSet;
-
+import com.b2international.commons.http.ExtendedLocale;
+import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.api.IBranchPath;
+import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
+import com.b2international.snowowl.snomed.core.lang.LanguageSetting;
 import com.b2international.snowowl.snomed.datastore.SnomedTerminologyBrowser;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptIndexEntry;
+import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.b2international.snowowl.snomed.mrcm.core.widget.bean.ConceptWidgetBean;
 import com.b2international.snowowl.snomed.mrcm.core.widget.bean.ModeledWidgetBean;
 import com.b2international.snowowl.snomed.mrcm.core.widget.bean.RelationshipGroupWidgetBean;
@@ -31,6 +34,8 @@ import com.b2international.snowowl.snomed.mrcm.core.widget.bean.RelationshipWidg
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Multimap;
+
+import bak.pcj.set.LongSet;
 
 /**
  * @since 4.3
@@ -67,7 +72,7 @@ public class RelationshipWidgetBeanValidator implements ModeledWidgetBeanValidat
 				final String destinationId = relationship.getSelectedValue().getId();
 				if (relationship.isIsA()) {
 					final String characteristicTypeId = relationship.getSelectedCharacteristicType().getId();
-					final String characteristicTypeLabel = browser.getConcept(branch, characteristicTypeId).getLabel();
+					final String characteristicTypeLabel = getLabel(characteristicTypeId, branch);
 					final Collection<String> parents = isaTypeToParentIdMap.get(characteristicTypeId);
 					if (parents.contains(destinationId)) {
 						reporter.error(relationship, "The concept has duplicate (%s) Is-a relationships.", characteristicTypeLabel);
@@ -107,6 +112,23 @@ public class RelationshipWidgetBeanValidator implements ModeledWidgetBeanValidat
 		if (!hasActiveIsA && !Concepts.ROOT_CONCEPT.equals(concept.getConceptId()) && concept.isActive()) {
 			reporter.error(concept, "Concept must have at least one active ungrouped 'Is a' relationship.");
 		}
+	}
+	
+	private String getLabel(final String id, final IBranchPath branchPath) {
+		return SnomedRequests.prepareGetConcept()
+				.setLocales(getLocales())
+				.setComponentId(id)
+				.setExpand("pt()")
+				.build(branchPath.getPath())
+				.executeSync(getEventBus()).getPt().getTerm();
+	}
+
+	private List<ExtendedLocale> getLocales() {
+		return ApplicationContext.getInstance().getService(LanguageSetting.class).getLanguagePreference();
+	}
+
+	private IEventBus getEventBus() {
+		return ApplicationContext.getInstance().getService(IEventBus.class);
 	}
 
 }
