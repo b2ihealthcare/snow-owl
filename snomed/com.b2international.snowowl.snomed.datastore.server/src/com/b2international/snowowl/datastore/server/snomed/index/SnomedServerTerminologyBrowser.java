@@ -512,7 +512,7 @@ public class SnomedServerTerminologyBrowser extends AbstractIndexTerminologyBrow
 
 	@Override
 	protected Set<String> getExtendedComponentFieldsToLoad() {
-		return SnomedMappings.fieldsToLoad().fields(super.getExtendedComponentFieldsToLoad()).memberUuid().build();
+		return SnomedMappings.fieldsToLoad().fields(super.getExtendedComponentFieldsToLoad()).memberUuid().memberReferencedComponentId().memberReferencedComponentType().build();
 	}
 	
 	@Override
@@ -530,7 +530,9 @@ public class SnomedServerTerminologyBrowser extends AbstractIndexTerminologyBrow
 		
 		final short terminologyComponentId;
 		
-		if (types.size() == 1) {
+		if (types.isEmpty()) {
+			terminologyComponentId = SnomedMappings.memberReferencedComponentType().getShortValue(doc);
+		} else if (types.size() == 1) {
 			// core SNOMED CT Component only
 			terminologyComponentId = types.get(0).shortValue();
 		} else {
@@ -542,7 +544,11 @@ public class SnomedServerTerminologyBrowser extends AbstractIndexTerminologyBrow
 		final IComponentNameProvider nameProvider = CoreTerminologyBroker.getInstance().getNameProviderFactory(terminologyComponentIdAsString).getNameProvider();
 		final String label = nameProvider.getComponentLabel(branchPath, id);
 		
-		return new ExtendedComponentImpl(id, label, iconId, terminologyComponentId);
+		if (types.isEmpty()) {
+			return new ExtendedComponentImpl(SnomedMappings.memberUuid().getValue(doc), label, iconId, SnomedTerminologyComponentConstants.REFSET_MEMBER_NUMBER);
+		} else {
+			return new ExtendedComponentImpl(id, label, iconId, terminologyComponentId);
+		}
 	}
 
 	@Override
