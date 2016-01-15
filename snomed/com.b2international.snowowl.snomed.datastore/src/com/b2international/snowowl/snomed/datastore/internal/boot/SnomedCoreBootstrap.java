@@ -22,6 +22,8 @@ import com.b2international.snowowl.core.setup.DefaultBootstrapFragment;
 import com.b2international.snowowl.core.setup.Environment;
 import com.b2international.snowowl.core.setup.ModuleConfig;
 import com.b2international.snowowl.eventbus.IEventBus;
+import com.b2international.snowowl.snomed.core.lang.LanguageSetting;
+import com.b2international.snowowl.snomed.core.lang.StaticLanguageSetting;
 import com.b2international.snowowl.snomed.datastore.SnomedTerminologyBrowser;
 import com.b2international.snowowl.snomed.datastore.config.SnomedCoreConfiguration;
 import com.b2international.snowowl.snomed.metadata.SnomedMetadata;
@@ -35,9 +37,11 @@ public class SnomedCoreBootstrap extends DefaultBootstrapFragment {
 
 	@Override
 	public void init(SnowOwlConfiguration configuration, Environment env) throws Exception {
-		env.services().registerService(SnomedCoreConfiguration.class, configuration.getModuleConfig(SnomedCoreConfiguration.class));
+		final SnomedCoreConfiguration coreConfig = configuration.getModuleConfig(SnomedCoreConfiguration.class);
+		env.services().registerService(SnomedCoreConfiguration.class, coreConfig);
 		env.services().registerService(SnomedMetadata.class,
-				new SnomedMetadataImpl(env.provider(IEventBus.class), env.provider(SnomedTerminologyBrowser.class)));
+				new SnomedMetadataImpl(env.provider(IEventBus.class), env.provider(SnomedTerminologyBrowser.class), env.provider(LanguageSetting.class)));
+		env.services().registerService(LanguageSetting.class, new StaticLanguageSetting(coreConfig.getLanguage(), SnomedCoreConfiguration.DEFAULT_LANGUAGE));
 	}
 
 	@Override
