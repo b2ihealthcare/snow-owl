@@ -17,7 +17,6 @@ package com.b2international.snowowl.snomed.datastore.index.mapping;
 
 import com.b2international.commons.BooleanUtils;
 import com.b2international.snowowl.datastore.index.mapping.QueryBuilderBase;
-import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.snomed.datastore.snor.PredicateIndexEntry.PredicateType;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType;
@@ -55,7 +54,7 @@ public class SnomedQueryBuilder extends QueryBuilderBase<SnomedQueryBuilder> {
 	}
 	
 	public SnomedQueryBuilder statedParent(Long id) {
-		return addToQuery(SnomedMappings.parent(Concepts.STATED_RELATIONSHIP), id);
+		return addToQuery(SnomedMappings.statedParent(), id);
 	}
 	
 	public SnomedQueryBuilder statedParent(String id) {
@@ -63,7 +62,7 @@ public class SnomedQueryBuilder extends QueryBuilderBase<SnomedQueryBuilder> {
 	}
 	
 	public SnomedQueryBuilder statedAncestor(Long id) {
-		return addToQuery(SnomedMappings.ancestor(Concepts.STATED_RELATIONSHIP), id);
+		return addToQuery(SnomedMappings.statedAncestor(), id);
 	}
 	
 	public SnomedQueryBuilder statedAncestor(String id) {
@@ -74,14 +73,6 @@ public class SnomedQueryBuilder extends QueryBuilderBase<SnomedQueryBuilder> {
 		return addToQuery(SnomedMappings.ancestor(), value);
 	}
 	
-	public final SnomedQueryBuilder ancestor(String value, String characteristicTypeId) {
-		return addToQuery(SnomedMappings.ancestor(characteristicTypeId), Long.valueOf(value));
-	}
-	
-	public final SnomedQueryBuilder ancestor(Long value, String characteristicTypeId) {
-		return addToQuery(SnomedMappings.ancestor(characteristicTypeId), Long.valueOf(value));
-	}
-
 	public SnomedQueryBuilder memberRefSetType(SnomedRefSetType type) {
 		return memberRefSetType(type.getValue());
 	}
