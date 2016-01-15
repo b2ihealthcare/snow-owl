@@ -19,15 +19,18 @@ import static com.google.common.base.Preconditions.checkNotNull;
 
 import java.util.Collection;
 import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 
 import org.eclipse.emf.ecore.EPackage;
 
+import com.b2international.commons.http.ExtendedLocale;
 import com.b2international.snowowl.core.annotations.Client;
 import com.b2international.snowowl.core.exceptions.NotFoundException;
 import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSet;
+import com.b2international.snowowl.snomed.core.lang.LanguageSetting;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptIndexEntry;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetIndexEntry;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry;
@@ -49,15 +52,21 @@ public class SnomedClientRefSetBrowser extends AbstractClientRefSetBrowser<Snome
 
 	private final Provider<SnomedClientTerminologyBrowser> browser;
 	private final IEventBus bus;
+	private final Provider<LanguageSetting> languageSetting;
 
 	/**
 	 * Creates a new service instance based on the wrapped server side reference set browser service.
 	 * @param wrappedBrowser the wrapped server side service.
 	 */
-	public SnomedClientRefSetBrowser(final SnomedRefSetBrowser wrapperService, final Provider<SnomedClientTerminologyBrowser> browser, final IEventBus bus) {
+	public SnomedClientRefSetBrowser(final SnomedRefSetBrowser wrapperService, final Provider<SnomedClientTerminologyBrowser> browser, final IEventBus bus, final Provider<LanguageSetting> languageSetting) {
 		super(wrapperService);
 		this.browser = browser;
 		this.bus = bus;
+		this.languageSetting = languageSetting;
+	}
+	
+	protected final List<ExtendedLocale> getLocales() {
+		return languageSetting.get().getLanguagePreference();
 	}
 	
 	@Override
@@ -82,7 +91,7 @@ public class SnomedClientRefSetBrowser extends AbstractClientRefSetBrowser<Snome
 			final SnomedReferenceSet refset = SnomedRequests
 					.prepareGetReferenceSet()
 					.setComponentId(refSetId)
-					.setLocales(SnomedClientTerminologyBrowser.LOCALES)
+					.setLocales(getLocales())
 					.build(getBranchPath().getPath())
 					.executeSync(bus);
 			return SnomedRefSetIndexEntry.builder(refset).build();

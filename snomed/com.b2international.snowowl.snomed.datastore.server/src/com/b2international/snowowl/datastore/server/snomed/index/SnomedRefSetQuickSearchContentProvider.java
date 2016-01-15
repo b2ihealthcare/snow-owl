@@ -37,7 +37,7 @@ import com.b2international.snowowl.snomed.core.domain.ISnomedConcept;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcepts;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSet;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSets;
-import com.b2international.snowowl.snomed.datastore.SnomedClientTerminologyBrowser;
+import com.b2international.snowowl.snomed.core.lang.LanguageSetting;
 import com.b2international.snowowl.snomed.datastore.quicksearch.SnomedRefSetQuickSearchProvider;
 import com.b2international.snowowl.snomed.datastore.request.SnomedConceptSearchRequestBuilder;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRefSetSearchRequestBuilder;
@@ -89,7 +89,7 @@ public class SnomedRefSetQuickSearchContentProvider extends AbstractQuickSearchC
 		final IBranchPath branchPath = getBranchPath(branchPathMap);
 		
 		// TODO provide this via the configuration object from the client side
-		final List<ExtendedLocale> locales = SnomedClientTerminologyBrowser.LOCALES;
+		final List<ExtendedLocale> locales = ApplicationContext.getInstance().getService(LanguageSetting.class).getLanguagePreference();
 		
 		final List<String> componentIds = configuration.containsKey(IQuickSearchProvider.CONFIGURATION_VALUE_ID_SET) ? ImmutableList.copyOf(getComponentIds(configuration)) : Collections.<String>emptyList();
 		

@@ -16,11 +16,13 @@
 package com.b2international.snowowl.datastore.server.snomed.index;
 
 import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
 import org.eclipse.emf.ecore.EPackage;
 
+import com.b2international.commons.http.ExtendedLocale;
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.quicksearch.CompactQuickSearchElement;
@@ -34,8 +36,8 @@ import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.snomed.SnomedPackage;
 import com.b2international.snowowl.snomed.core.domain.ISnomedConcept;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcepts;
+import com.b2international.snowowl.snomed.core.lang.LanguageSetting;
 import com.b2international.snowowl.snomed.datastore.EscgExpressionConstants;
-import com.b2international.snowowl.snomed.datastore.SnomedClientTerminologyBrowser;
 import com.b2international.snowowl.snomed.datastore.quicksearch.SnomedConceptQuickSearchProvider;
 import com.b2international.snowowl.snomed.datastore.request.SnomedConceptSearchRequestBuilder;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
@@ -83,6 +85,8 @@ public class SnomedConceptQuickSearchContentProvider extends AbstractQuickSearch
 		
 		// TODO reintroduce search profiles in concept search
 		final String userId = String.valueOf(configuration.get(IQuickSearchProvider.CONFIGURATION_USER_ID));
+		// TODO replace server-side LOCALES with client side one via configuration
+		final List<ExtendedLocale> locales = ApplicationContext.getInstance().getService(LanguageSetting.class).getLanguagePreference();
 		
 		final IBranchPath branchPath = getBranchPath(branchPathMap);
 		
@@ -90,8 +94,7 @@ public class SnomedConceptQuickSearchContentProvider extends AbstractQuickSearch
 			.prepareSearchConcept()
 			.filterByActive(true)
 			.filterByTerm(queryExpression)
-			// TODO replace fixed LOCALES with configurable one
-			.filterByExtendedLocales(SnomedClientTerminologyBrowser.LOCALES)
+			.filterByExtendedLocales(locales)
 			.withDoi()
 			.setExpand("pt()")
 			.setLimit(limit);

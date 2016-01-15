@@ -35,34 +35,38 @@ import com.b2international.snowowl.core.api.browser.TreeContentProvider;
 import com.b2international.snowowl.core.exceptions.NotFoundException;
 import com.b2international.snowowl.datastore.browser.ActiveBranchClientTerminologyBrowser;
 import com.b2international.snowowl.eventbus.IEventBus;
-import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.SnomedPackage;
 import com.b2international.snowowl.snomed.core.domain.ISnomedConcept;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcepts;
+import com.b2international.snowowl.snomed.core.lang.LanguageSetting;
 import com.b2international.snowowl.snomed.core.tree.TerminologyTree;
 import com.b2international.snowowl.snomed.core.tree.TreeBuilder;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptIndexEntry;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.google.common.collect.FluentIterable;
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
+import com.google.inject.Provider;
 
 /**
  * @since 4.6
  */
 public abstract class BaseSnomedClientTerminologyBrowser extends ActiveBranchClientTerminologyBrowser<SnomedConceptIndexEntry, String> implements TreeContentProvider<SnomedConceptIndexEntry> {
 
-	public static final List<ExtendedLocale> LOCALES = ImmutableList.of(new ExtendedLocale("en", "sg", Concepts.REFSET_LANGUAGE_TYPE_SG), new ExtendedLocale("en", "gb", Concepts.REFSET_LANGUAGE_TYPE_UK));
-	
 	private final IEventBus bus;
+	private final Provider<LanguageSetting> languageSetting;
 
-	protected BaseSnomedClientTerminologyBrowser(ITerminologyBrowser<SnomedConceptIndexEntry, String> wrappedBrowser, IEventBus bus) {
+	protected BaseSnomedClientTerminologyBrowser(ITerminologyBrowser<SnomedConceptIndexEntry, String> wrappedBrowser, IEventBus bus, Provider<LanguageSetting> languageSetting) {
 		super(wrappedBrowser);
 		this.bus = bus;
+		this.languageSetting = languageSetting;
 	}
 	
 	protected final IEventBus getBus() {
 		return bus;
+	}
+	
+	protected final List<ExtendedLocale> getLocales() {
+		return languageSetting.get().getLanguagePreference();
 	}
 	
 	@Override
@@ -83,7 +87,7 @@ public abstract class BaseSnomedClientTerminologyBrowser extends ActiveBranchCli
 			.all()
 			.filterByActive(true)
 			.filterByTerm(expression)
-			.filterByExtendedLocales(LOCALES)
+			.filterByExtendedLocales(getLocales())
 			// expand parent and ancestorIds to get all possible treepaths to the top
 			.setExpand("pt(),parentIds(),ancestorIds()")
 			.build(branch)
@@ -95,7 +99,7 @@ public abstract class BaseSnomedClientTerminologyBrowser extends ActiveBranchCli
 		
 		final FluentIterable<SnomedConceptIndexEntry> matchingConcepts = FluentIterable.from(SnomedConceptIndexEntry.fromConcepts(matches));
 		final Set<String> matchingConceptIds = matchingConcepts.transform(ComponentUtils.<String>getIdFunction()).toSet();
-		final TerminologyTree tree = newTree(branch, LOCALES).build(matchingConcepts);
+		final TerminologyTree tree = newTree(branch, getLocales()).build(matchingConcepts);
 		return new FilteredTerminologyBrowser<SnomedConceptIndexEntry, String>(tree.getItems(), tree.getSubTypes(), tree.getSuperTypes(), FilterTerminologyBrowserType.HIERARCHICAL, matchingConceptIds);
 	}
 	
@@ -106,7 +110,7 @@ public abstract class BaseSnomedClientTerminologyBrowser extends ActiveBranchCli
 					.prepareGetConcept()
 					.setComponentId(id)
 					.setExpand("pt(),parentIds()")
-					.setLocales(LOCALES)
+					.setLocales(getLocales())
 					.build(getBranchPath().getPath())
 					.executeSync(getBus());
 			return SnomedConceptIndexEntry.builder(concept).label(concept.getPt().getTerm()).build();
@@ -138,7 +142,7 @@ public abstract class BaseSnomedClientTerminologyBrowser extends ActiveBranchCli
 		final SnomedConcepts concepts = SnomedRequests.prepareSearchConcept()
 				.all()
 				.setComponentIds(ImmutableSet.copyOf(ids))
-				.setLocales(LOCALES)
+				.setLocales(getLocales())
 				.setExpand("pt(),parentIds()")
 				.build(getBranchPath().getPath())
 				.executeSync(getBus());

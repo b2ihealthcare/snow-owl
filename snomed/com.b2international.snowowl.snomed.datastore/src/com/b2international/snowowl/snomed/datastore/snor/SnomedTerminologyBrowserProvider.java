@@ -35,6 +35,7 @@ import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.snomed.Concept;
 import com.b2international.snowowl.snomed.SnomedPackage;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
+import com.b2international.snowowl.snomed.core.lang.LanguageSetting;
 import com.b2international.snowowl.snomed.datastore.ConceptParentAdapter;
 import com.b2international.snowowl.snomed.datastore.SnomedClientRefSetBrowser;
 import com.b2international.snowowl.snomed.datastore.SnomedClientTerminologyBrowser;
@@ -246,7 +247,9 @@ public class SnomedTerminologyBrowserProvider extends SnomedClientTerminologyBro
 	}
 
 	private SnomedTerminologyBrowserProvider(final Concept concept, final Set<String> parentIds) {
-		super(ApplicationContext.getInstance().getService(SnomedTerminologyBrowser.class), ApplicationContext.getInstance().getServiceChecked(IEventBus.class));
+		super(ApplicationContext.getInstance().getService(SnomedTerminologyBrowser.class), 
+				ApplicationContext.getInstance().getServiceChecked(IEventBus.class),
+				SnowOwlApplication.INSTANCE.getEnviroment().provider(LanguageSetting.class));
 		this.concept = Preconditions.checkNotNull(concept, "SNOMED CT concept argument cannot be null.");
 		this.parentIds = Preconditions.checkNotNull(parentIds, "Parent concept ID cannot be null.");
 		conceptId = Preconditions.checkNotNull(concept.getId(), "SNOMED CT concept ID cannot be null.");
@@ -370,7 +373,8 @@ public class SnomedTerminologyBrowserProvider extends SnomedClientTerminologyBro
 		private SnomedRefSetBrowserProvider(final Concept concept) {
 			super(ApplicationContext.getInstance().getService(SnomedRefSetBrowser.class), 
 					SnowOwlApplication.INSTANCE.getEnviroment().provider(SnomedClientTerminologyBrowser.class),
-					ApplicationContext.getInstance().getService(IEventBus.class));
+					ApplicationContext.getInstance().getService(IEventBus.class),
+					SnowOwlApplication.INSTANCE.getEnviroment().provider(LanguageSetting.class));
 			this.refSetIds = Sets.newHashSet();
 			Preconditions.checkNotNull(concept, "SNOMED CT concept argument cannot be null.");
 			this.conceptId = Preconditions.checkNotNull(concept.getId(), "SNOMED CT concept ID cannot be null.");

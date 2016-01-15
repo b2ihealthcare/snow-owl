@@ -23,6 +23,7 @@ import com.b2international.snowowl.core.api.IComponentWithChildFlag;
 import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.snomed.core.domain.ISnomedConcept;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcepts;
+import com.b2international.snowowl.snomed.core.lang.LanguageSetting;
 import com.b2international.snowowl.snomed.core.tree.TreeBuilder;
 import com.b2international.snowowl.snomed.core.tree.Trees;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptIndexEntry;
@@ -31,14 +32,15 @@ import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedMappings
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.google.common.base.Function;
 import com.google.common.collect.FluentIterable;
+import com.google.inject.Provider;
 
 /**
  * Client version of the SNOMED CT terminology browser using only stated IS_A relationships
  */
 public final class SnomedStatedClientTerminologyBrowser extends BaseSnomedClientTerminologyBrowser {
 
-	public SnomedStatedClientTerminologyBrowser(SnomedStatedTerminologyBrowser wrappedBrowser, IEventBus bus) {
-		super(wrappedBrowser, bus);
+	public SnomedStatedClientTerminologyBrowser(final SnomedStatedTerminologyBrowser wrappedBrowser, final IEventBus bus, final Provider<LanguageSetting> languageSetting) {
+		super(wrappedBrowser, bus, languageSetting);
 	}
 	
 	@Override
@@ -64,7 +66,7 @@ public final class SnomedStatedClientTerminologyBrowser extends BaseSnomedClient
 			.all()
 			.filterByStatedParent(concept.getId())
 			.setExpand("pt(),descendants(form:\"stated\",direct:true,limit:0)")
-			.setLocales(LOCALES)
+			.setLocales(getLocales())
 			.build(getBranchPath().getPath())
 			.executeSync(getBus());
 		return FluentIterable.from(concepts).transform(new Function<ISnomedConcept, IComponentWithChildFlag<String>>() {
@@ -85,7 +87,7 @@ public final class SnomedStatedClientTerminologyBrowser extends BaseSnomedClient
 				.all()
 				.filterByActive(true)
 				.filterByStatedParent(Long.toString(SnomedMappings.ROOT_ID))
-				.setLocales(LOCALES)
+				.setLocales(getLocales())
 				.setExpand("pt(),parentIds()")
 				.build(getBranchPath().getPath())
 				.executeSync(getBus());
@@ -99,7 +101,7 @@ public final class SnomedStatedClientTerminologyBrowser extends BaseSnomedClient
 				.all()
 				.filterByStatedParent(id)
 				.setExpand("pt(),parentIds()")
-				.setLocales(LOCALES)
+				.setLocales(getLocales())
 				.build(getBranchPath().getPath())
 				.executeSync(getBus());
 		return SnomedConceptIndexEntry.fromConcepts(concepts);
@@ -111,7 +113,7 @@ public final class SnomedStatedClientTerminologyBrowser extends BaseSnomedClient
 				.prepareGetConcept()
 				.setComponentId(id)
 				.setExpand("ancestors(form:\"stated\",direct:true,expand(pt(),parentIds()))")
-				.setLocales(LOCALES)
+				.setLocales(getLocales())
 				.build(getBranchPath().getPath())
 				.executeSync(getBus());
 		return SnomedConceptIndexEntry.fromConcepts(concept.getAncestors());

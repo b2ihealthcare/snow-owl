@@ -17,6 +17,7 @@ package com.b2international.snowowl.snomed.datastore.serviceconfig;
 
 import com.b2international.snowowl.datastore.serviceconfig.ClientServiceConfigJob;
 import com.b2international.snowowl.eventbus.IEventBus;
+import com.b2international.snowowl.snomed.core.lang.LanguageSetting;
 import com.b2international.snowowl.snomed.datastore.SnomedClientRefSetBrowser;
 import com.b2international.snowowl.snomed.datastore.SnomedClientTerminologyBrowser;
 import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
@@ -49,6 +50,9 @@ public class SnomedRefSetBrowserServiceConfigJob<S> extends ClientServiceConfigJ
 
 	@Override
 	protected SnomedClientRefSetBrowser createTrackingService(final SnomedRefSetBrowser branchAwareService) {
-		return new SnomedClientRefSetBrowser(branchAwareService, getEnvironment().provider(SnomedClientTerminologyBrowser.class), getEnvironment().service(IEventBus.class));
+		return new SnomedClientRefSetBrowser(branchAwareService, 
+				getEnvironment().provider(SnomedClientTerminologyBrowser.class), 
+				getEnvironment().service(IEventBus.class),
+				getEnvironment().provider(LanguageSetting.class));
 	}
 }
