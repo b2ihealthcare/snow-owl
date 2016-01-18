@@ -50,19 +50,8 @@ public abstract class SnomedComponentApiAssert {
 	public static Map<?, ?> givenConceptRequestBody(final String conceptId, final String parentId, final String moduleId, final Map<?, ?> fsnAcceptabilityMap, final boolean skipComment) {
 
 		final Date creationDate = new Date();
-		final Map<?, ?> fsnDescription = ImmutableMap.<String, Object>builder()
-				.put("typeId", FULLY_SPECIFIED_NAME)
-				.put("term", "New FSN at " + creationDate)
-				.put("languageCode", "en")
-				.put("acceptability", fsnAcceptabilityMap)
-				.build();
-
-		final Map<?, ?> ptDescription = ImmutableMap.<String, Object>builder()
-				.put("typeId", SYNONYM)
-				.put("term", "New PT at " + creationDate)
-				.put("languageCode", "en")
-				.put("acceptability", PREFERRED_ACCEPTABILITY_MAP)
-				.build();
+		final Map<?, ?> fsnDescription = givenDescriptionRequestBody(creationDate, "New FSN at ", fsnAcceptabilityMap, FULLY_SPECIFIED_NAME);
+		final Map<?, ?> ptDescription = givenDescriptionRequestBody(creationDate, "New PT at ", PREFERRED_ACCEPTABILITY_MAP, SYNONYM);
 
 		final ImmutableMap.Builder<String, Object> conceptBuilder = ImmutableMap.<String, Object>builder()
 				.put("moduleId", moduleId)
@@ -81,6 +70,19 @@ public abstract class SnomedComponentApiAssert {
 		}
 
 		return conceptBuilder.build();
+	}
+
+	public static ImmutableMap<String, Object> givenDescriptionRequestBody(String termPrefix, Map<?, ?> acceptabilityMap, String typeId) {
+		return givenDescriptionRequestBody(new Date(), termPrefix, acceptabilityMap, typeId);
+	}
+	
+	private static ImmutableMap<String, Object> givenDescriptionRequestBody(final Date creationDate, String termPrefix, Map<?, ?> acceptabilityMap, String typeId) {
+		return ImmutableMap.<String, Object>builder()
+				.put("typeId", typeId)
+				.put("term", termPrefix + creationDate)
+				.put("languageCode", "en")
+				.put("acceptability", acceptabilityMap)
+				.build();
 	}
 	
 	private static Builder<Object, Object> createRelationshipRequestBuilder(final String sourceId, 
