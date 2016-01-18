@@ -35,6 +35,8 @@ import com.b2international.snowowl.datastore.index.ChangeSetProcessorBase;
 import com.b2international.snowowl.datastore.index.ComponentBaseUpdater;
 import com.b2international.snowowl.datastore.index.ComponentCompareFieldsUpdater;
 import com.b2international.snowowl.snomed.Concept;
+import com.b2international.snowowl.snomed.Description;
+import com.b2international.snowowl.snomed.Relationship;
 import com.b2international.snowowl.snomed.SnomedPackage;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedDocumentBuilder;
@@ -62,6 +64,7 @@ public class ConceptChangeProcessor extends ChangeSetProcessorBase<SnomedDocumen
 		for (final Concept concept : getNewComponents(commitChangeSet, Concept.class)) {
 			registerImmutablePropertyUpdates(concept);
 			registerMutablePropertyUpdates(concept);
+			registerCompareFieldUpdate(concept);
 		}
 		
 		// index/store reference set properties on concept document
@@ -84,6 +87,15 @@ public class ConceptChangeProcessor extends ChangeSetProcessorBase<SnomedDocumen
 		
 		for (final Concept concept : dirtyConcepts) {
 			registerMutablePropertyUpdates(concept);
+			registerCompareFieldUpdate(concept);
+		}
+		
+		for (final Description description : getDirtyComponents(commitChangeSet, Description.class)) {
+			registerCompareFieldUpdate(description.getConcept());
+		}
+		
+		for (final Relationship relationship : getDirtyComponents(commitChangeSet, Relationship.class)) {
+			registerCompareFieldUpdate(relationship.getSource());
 		}
 	}
 	
@@ -98,6 +110,10 @@ public class ConceptChangeProcessor extends ChangeSetProcessorBase<SnomedDocumen
 		final String id = concept.getId();
 		registerUpdate(id, new ConceptMutablePropertyUpdater(concept));
 		registerUpdate(id, new ComponentModuleUpdater(concept));
+	}
+
+	private void registerCompareFieldUpdate(final Concept concept) {
+		final String id = concept.getId();
 		registerUpdate(id, new ComponentCompareFieldsUpdater<SnomedDocumentBuilder>(id, CDOIDUtil.getLong(concept.cdoID())));
 	}
 	

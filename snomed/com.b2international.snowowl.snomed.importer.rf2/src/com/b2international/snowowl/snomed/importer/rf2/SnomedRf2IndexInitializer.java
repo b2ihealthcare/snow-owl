@@ -847,6 +847,11 @@ public class SnomedRf2IndexInitializer extends Job {
 				final long effectiveTime = getEffectiveTime(record);
 				final boolean released = isReleased(effectiveTime);
 
+				// Mark description changes received via RF2 as a relevant change on the concept
+				if (!conceptsInImportFile.contains(record.get(4))) {
+					conceptsWithCompareUniqueKeyChanges.add(record.get(4));
+				}
+				
 				final SnomedDescriptionIndexEntry description = new SnomedDescriptionLookupService().getComponent(branchPath, descriptionId);
 				final Multimap<Acceptability, String> invertedAcceptabilityMap;
 				
