@@ -78,7 +78,7 @@ public class InitialReasonerTaxonomyBuilder extends AbstractReasonerTaxonomyBuil
 
 		@Override
 		public void run() {
-			final Query allowedCharacteristicTypeQuery = createAllowedCharacteristicTypeQuery(getAllowedCharacteristicTypes());
+			final Query allowedCharacteristicTypeQuery = createRelationshipCharacteristicTypeQuery(getAllowedCharacteristicTypes());
 			final Query statementsQuery = SnomedMappings.newQuery()
 					.active()
 					.type(SnomedTerminologyComponentConstants.RELATIONSHIP_NUMBER)
@@ -261,7 +261,7 @@ public class InitialReasonerTaxonomyBuilder extends AbstractReasonerTaxonomyBuil
 					.active()
 					.memberRefSetType(SnomedRefSetType.CONCRETE_DATA_TYPE)
 					.memberReferencedComponentType(referencedComponentType)
-					.and(createAllowedCharacteristicTypeQuery(characteristicTypes))
+					.and(createMemberCharacteristicTypeQuery(characteristicTypes))
 					.matchAll();
 
 			final int hitCount = getIndexServerService().getHitCount(branchPath, getConceptConcreteDomainQuery, null);
@@ -333,7 +333,7 @@ public class InitialReasonerTaxonomyBuilder extends AbstractReasonerTaxonomyBuil
 			if (characteristicTypes.size() == 1) {
 				qb.relationshipCharacteristicType(Iterables.getOnlyElement(characteristicTypes));
 			} else {
-				qb.and(createAllowedCharacteristicTypeQuery(characteristicTypes));
+				qb.and(createRelationshipCharacteristicTypeQuery(characteristicTypes));
 			}
 			final Query statementQuery = qb.matchAll();
 			final StatementFragmentCollector collector = new StatementFragmentCollector();
@@ -523,10 +523,18 @@ public class InitialReasonerTaxonomyBuilder extends AbstractReasonerTaxonomyBuil
 		return result;
 	}
 	
-	private Query createAllowedCharacteristicTypeQuery(Collection<String> characteristicTypes) {
+	private Query createRelationshipCharacteristicTypeQuery(Collection<String> characteristicTypes) {
 		final SnomedQueryBuilder qb = SnomedMappings.newQuery();
 		for (String characteristicType : characteristicTypes) {
 			qb.relationshipCharacteristicType(characteristicType);
+		}
+		return qb.matchAny();
+	}
+	
+	private Query createMemberCharacteristicTypeQuery(Collection<String> characteristicTypes) {
+		final SnomedQueryBuilder qb = SnomedMappings.newQuery();
+		for (String characteristicType : characteristicTypes) {
+			qb.field(SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_CHARACTERISTIC_TYPE_ID, Long.valueOf(characteristicType));
 		}
 		return qb.matchAny();
 	}
