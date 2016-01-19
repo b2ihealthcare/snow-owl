@@ -533,7 +533,7 @@ public class InitialReasonerTaxonomyBuilder extends AbstractReasonerTaxonomyBuil
 	private Query createMemberCharacteristicTypeQuery(Collection<String> characteristicTypes) {
 		final SnomedQueryBuilder qb = SnomedMappings.newQuery();
 		for (String characteristicType : characteristicTypes) {
-			qb.field(SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_CHARACTERISTIC_TYPE_ID, Long.valueOf(characteristicType));
+			qb.memberCharacteristicTypeId(Long.valueOf(characteristicType));
 		}
 		return qb.matchAny();
 	}
