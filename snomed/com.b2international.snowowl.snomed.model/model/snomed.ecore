@@ -55,9 +55,10 @@
     <eStructuralFeatures xsi:type="ecore:EReference" name="definitionStatus" lowerBound="1"
         eType="#//Concept"/>
     <eStructuralFeatures xsi:type="ecore:EReference" name="outboundRelationships"
-        upperBound="-1" eType="#//Relationship" containment="true" eOpposite="#//Relationship/source"/>
-    <eStructuralFeatures xsi:type="ecore:EReference" name="inboundRelationships" upperBound="-1"
-        eType="#//Relationship" eOpposite="#//Relationship/destination"/>
+        ordered="false" upperBound="-1" eType="#//Relationship" containment="true"
+        eOpposite="#//Relationship/source"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="inboundRelationships" ordered="false"
+        upperBound="-1" eType="#//Relationship" eOpposite="#//Relationship/destination"/>
     <eStructuralFeatures xsi:type="ecore:EReference" name="descriptions" upperBound="-1"
         eType="#//Description" containment="true" eOpposite="#//Description/concept"/>
     <eStructuralFeatures xsi:type="ecore:EAttribute" name="exhaustive" lowerBound="1"

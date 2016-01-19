@@ -122,6 +122,7 @@ import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.Collections2;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
+import com.google.common.collect.Multimap;
 import com.google.common.collect.Ordering;
 import com.google.common.collect.Sets;
 
@@ -1414,7 +1415,7 @@ public class SnomedEditingContext extends BaseSnomedEditingContext {
 		
 		
 		// organize elements regarding their index
-		ArrayListMultimap<Integer, EObject> itemMap = ArrayListMultimap.create();
+		final Multimap<Integer, EObject> itemMap = ArrayListMultimap.create();
 		
 		for (EObject item : deletionPlan.getDeletedItems()) {
 			
@@ -1446,7 +1447,9 @@ public class SnomedEditingContext extends BaseSnomedEditingContext {
 						throw new RuntimeException("Unknown reference set type");
 					}
 				}
-			} 
+			} else if (item instanceof Relationship) {
+				index = getIndexFromDatabase(item, "SNOMED_CONCEPT_INBOUNDRELATIONSHIPS_LIST");
+			}
 			
 			itemMap.put(index, item);
 		}
@@ -1459,8 +1462,8 @@ public class SnomedEditingContext extends BaseSnomedEditingContext {
 			}
 
 		}).reverse().sortedCopy(itemMap.entries())) {
-			EObject eObject = toDelete.getValue();
-			int index = toDelete.getKey();
+			final EObject eObject = toDelete.getValue();
+			final int index = toDelete.getKey();
 			
 			if(eObject instanceof Concept) {
 				final Concepts concepts = (Concepts) eObject.eContainer();
@@ -1489,8 +1492,7 @@ public class SnomedEditingContext extends BaseSnomedEditingContext {
 			} else if (eObject instanceof Relationship) {
 				Relationship relationship = (Relationship) eObject;
 				relationship.setSource(null);
-				relationship.setDestination(null);
-			
+				relationship.getDestination().getInboundRelationships().remove(index);
 			} else if (eObject instanceof Description) {
 				Description description = (Description) eObject;
 				// maybe description was already removed before save, so the delete is reflected on the ui
