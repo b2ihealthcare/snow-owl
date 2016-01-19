@@ -18,7 +18,7 @@ import org.eclipse.emf.cdo.server.IView;
 import org.eclipse.net4j.util.lifecycle.LifecycleUtil;
 import org.eclipse.net4j.util.om.log.OMLogger;
 
-import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.LinkedList;
 
 /**
  * @author Eike Stepper
@@ -26,6 +26,11 @@ import java.util.concurrent.ConcurrentLinkedQueue;
  */
 public class StoreAccessorPool
 {
+  /**
+   * @since 4.2
+   */
+  public static final int DEFAULT_CAPACITY = 15;
+
   /**
    * The {@link IStore store} instance that manages this pool.
    */
@@ -37,7 +42,9 @@ public class StoreAccessorPool
    */
   private Object context;
 
-  private ConcurrentLinkedQueue<StoreAccessorBase> accessors = new ConcurrentLinkedQueue<StoreAccessorBase>();
+  private int capacity = DEFAULT_CAPACITY;
+
+  private LinkedList<StoreAccessorBase> accessors = new LinkedList<StoreAccessorBase>();
 
   public StoreAccessorPool(IStore store, Object context)
   {
@@ -56,8 +63,26 @@ public class StoreAccessorPool
   }
 
   /**
-   * Passivates the given {@link StoreAccessor store accessor} and adds it to this pool.
-   * 
+   * @since 4.2
+   */
+  public int getCapacity()
+  {
+    return capacity;
+  }
+
+  /**
+   * @since 4.2
+   */
+  public void setCapacity(int capacity)
+  {
+    this.capacity = capacity;
+    retainStoreAccessors(capacity);
+  }
+
+  /**
+   * Passivates the given {@link StoreAccessor store accessor} and adds it to this pool if the pool size is smaller than the {@link #getCapacity() capacity},
+   * or disposes of the store accessor otherwise.
+   *
    * @since 4.0
    */
   public void addStoreAccessor(StoreAccessorBase storeAccessor)
@@ -65,7 +90,24 @@ public class StoreAccessorPool
     try
     {
       storeAccessor.doPassivate();
-      accessors.add(storeAccessor);
+
+      boolean full = false;
+      synchronized (accessors)
+      {
+        if (accessors.size() >= capacity)
+        {
+          full = true;
+        }
+        else
+        {
+          accessors.addFirst(storeAccessor);
+        }
+      }
+
+      if (full)
+      {
+        disposeStoreAccessor(storeAccessor);
+      }
     }
     catch (Exception ex)
     {
@@ -76,12 +118,17 @@ public class StoreAccessorPool
   /**
    * Returns a {@link StoreAccessor store accessor} from this pool if one is available, or <code>null</code> otherwise.
    * If a store accessor is available it is removed from this pool and its unpassivate method is called.
-   * 
+   *
    * @since 4.0
    */
   public StoreAccessorBase removeStoreAccessor(Object context)
   {
-    StoreAccessorBase accessor = accessors.poll();
+    StoreAccessorBase accessor;
+    synchronized (accessors)
+    {
+      accessor = accessors.poll();
+    }
+
     if (accessor != null)
     {
       try
@@ -104,18 +151,32 @@ public class StoreAccessorPool
    */
   public void dispose()
   {
-    for (;;)
-    {
-      StoreAccessorBase accessor = accessors.poll();
-      if (accessor == null)
-      {
-        break;
-      }
-
-      LifecycleUtil.deactivate(accessor, OMLogger.Level.WARN);
-    }
+    retainStoreAccessors(0);
 
     context = null;
     store = null;
+  }
+
+  /**
+   * @since 4.2
+   */
+  protected void retainStoreAccessors(int targetSize)
+  {
+    synchronized (accessors)
+    {
+      while (accessors.size() > targetSize)
+      {
+        StoreAccessorBase accessor = accessors.removeLast();
+        disposeStoreAccessor(accessor);
+      }
+    }
+  }
+
+  /**
+   * @since 4.2
+   */
+  protected void disposeStoreAccessor(StoreAccessorBase accessor)
+  {
+    LifecycleUtil.deactivate(accessor, OMLogger.Level.WARN);
   }
 }
