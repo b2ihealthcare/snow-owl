@@ -970,4 +970,9 @@ public class SnomedServerRefSetBrowser extends AbstractSnomedIndexBrowser<Snomed
 
 		return members;
 	}
+
+	@Override
+	public Map<String, Boolean> exist(IBranchPath branchPath, Collection<String> componentIds) {
+		throw new UnsupportedOperationException("Not implemented.");
+	}
 }

@@ -19,6 +19,7 @@ import static com.google.common.base.Preconditions.checkNotNull;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 
 import org.eclipse.core.runtime.IProgressMonitor;
 
@@ -186,6 +187,11 @@ public abstract class AbstractClientTerminologyBrowser<C extends IComponent<K>, 
 	@Override
 	public boolean exists(String componentId) {
 		return wrappedBrowser.exists(getBranchPath(), componentId);
+	}
+	
+	@Override
+	public Map<String, Boolean> exist(final Collection<String> componentIds) {
+		return wrappedBrowser.exist(getBranchPath(), componentIds);
 	}
 	
 	/**

@@ -295,6 +295,11 @@ public class SnomedClientRefSetBrowser extends AbstractClientRefSetBrowser<Snome
 		return getWrapperService().getAllSubTypesWithActiveMembers(getBranchPath(), refsetId, excludedIds);
 	}
 	
+	@Override
+	public Map<String, Boolean> exist(Collection<String> componentIds) {
+		throw new UnsupportedOperationException("Not implemented.");
+	}
+	
 	/* (non-Javadoc)
 	 * @see com.b2international.snowowl.snomed.datastore.AbstractClientRefSetBrowser#getWrapperService()
 	 */

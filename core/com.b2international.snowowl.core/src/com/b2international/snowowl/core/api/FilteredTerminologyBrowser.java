@@ -246,4 +246,9 @@ public class FilteredTerminologyBrowser<C extends IComponent<K>, K> implements I
 	public boolean exists(String componentId) {
 		return filteredComponents.contains(componentId);
 	}
+	
+	@Override
+	public Map<String, Boolean> exist(Collection<String> componentIds) {
+		throw new UnsupportedOperationException("Not implemented.");
+	}
 }

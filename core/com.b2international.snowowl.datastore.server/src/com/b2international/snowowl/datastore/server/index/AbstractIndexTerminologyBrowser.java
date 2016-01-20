@@ -23,6 +23,7 @@ import java.io.IOException;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import javax.annotation.Nullable;
@@ -55,6 +56,7 @@ import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableList.Builder;
 import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 
 /**
@@ -312,6 +314,15 @@ public abstract class AbstractIndexTerminologyBrowser<E extends IIndexEntry> ext
 
 	protected boolean exists(final IBranchPath branchPath, final Query query) {
 		return service.getTotalHitCount(branchPath, query) > 0;
+	}
+	
+	@Override
+	public Map<String, Boolean> exist(final IBranchPath branchPath, final Collection<String> componentIds) {
+		final Map<String, Boolean> result = Maps.newHashMap();
+		for (final String componentId : componentIds) {
+			result.put(componentId, exists(branchPath, componentId));
+		}
+		return result;
 	}
 
 	// Even when we accept multiple component types, we only want to display root concepts from a particular type -- see Icd10AmServerTerminologyBrowser

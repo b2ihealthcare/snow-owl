@@ -17,6 +17,7 @@ package com.b2international.snowowl.datastore.browser;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 
 import org.eclipse.core.runtime.IProgressMonitor;
 
@@ -165,5 +166,10 @@ public class TerminologyBrowserAdapter<C, K> implements IClientTerminologyBrowse
 	@Override
 	public boolean exists(String componentId) {
 		return delegate.exists(componentId);
+	}
+	
+	@Override
+	public Map<String, Boolean> exist(Collection<String> componentIds) {
+		throw new UnsupportedOperationException("Not implemented.");
 	}
 }
