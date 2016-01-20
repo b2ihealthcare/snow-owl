@@ -19,7 +19,9 @@ import static com.b2international.snowowl.core.ApplicationContext.getServiceForC
 import static com.b2international.snowowl.datastore.BranchPathUtils.createVersionPath;
 import static com.b2international.snowowl.datastore.BranchPathUtils.isMain;
 
+import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 
 import org.eclipse.emf.cdo.CDOObject;
 import org.eclipse.emf.cdo.common.branch.CDOBranch;
@@ -40,6 +42,7 @@ import com.b2international.snowowl.datastore.cdo.CDOViewFunction;
 import com.b2international.snowowl.datastore.cdo.ICDOConnection;
 import com.b2international.snowowl.datastore.cdo.ICDOConnectionManager;
 import com.google.common.base.Preconditions;
+import com.google.common.collect.Maps;
 
 /**
  * Component container code system version provider to pin down the version
@@ -64,6 +67,31 @@ public abstract class CodeSystemVersionProvider implements ICodeSystemVersionPro
 				return lastVersionId;
 			}
 		}
+	}
+	
+	@Override
+	public Map<String, String> getVersions(final String terminologyComponentId, final Collection<String> componentIds,
+			final IBranchPath branchPath) {
+		final List<ICodeSystemVersion> allTagsWithHead = getAllTagsWithHead(terminologyComponentId);
+		final Map<String, String> result = Maps.newHashMap();
+		
+		if (existsOnlyOnMain(allTagsWithHead)) {
+			for (final String componentId : componentIds) {
+				result.put(componentId, ICodeSystemVersion.UNVERSIONED);
+			}
+		} else {
+			final String lastVersionId = getLastVersionId(branchPath, allTagsWithHead);
+			for (final String componentId : componentIds) {
+				final CDOObject lastVersion = tryLoadSpecificVersion(componentId, branchPath, lastVersionId);
+				if (isCreatedAfterLastVersion(lastVersion) || hasChangedSinceLastVersion(componentId, branchPath, lastVersion)) {
+					result.put(componentId, ICodeSystemVersion.UNVERSIONED);
+				} else {
+					result.put(componentId, lastVersionId);
+				}
+			}
+		}
+		
+		return result;
 	}
 
 	private List<ICodeSystemVersion> getAllTagsWithHead(String terminologyComponentId) {

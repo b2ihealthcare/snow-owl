@@ -15,6 +15,9 @@
  */
 package com.b2international.snowowl.terminologyregistry.core.util;
 
+import java.util.Collection;
+import java.util.Map;
+
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.datastore.ICodeSystemVersion;
 
@@ -52,4 +55,27 @@ public interface ICodeSystemVersionProvider {
 	 * @return the container code system's last version, or {@link ICodeSystemVersion#UNVERSIONED} if the version can not be determined
 	 */
 	String getVersion(String terminologyComponentId, String componentId, IBranchPath branchPath);
+	
+	/**
+	 * Returns a map where the keys are the component IDs and the values are the
+	 * component's container code system's last version.
+	 * <p>
+	 * Please note, that the last version depends on the currently active
+	 * version of the component's container code system.
+	 * 
+	 * @param terminologyComponentId
+	 *            the terminology component identifier, eg.
+	 *            SnomedTerminologyComponentConstant.CONCEPT
+	 * @param componentId
+	 *            the identifier of the component for which the latest version
+	 *            should be computed
+	 * @param branchPath
+	 *            the branch to inspect
+	 * 
+	 * @return a map where the keys are the component IDs and the values are
+	 *         container code system's last version, or
+	 *         {@link ICodeSystemVersion#UNVERSIONED} if the version can not be
+	 *         determined
+	 */
+	Map<String, String> getVersions(String terminologyComponentId, Collection<String> componentIds, IBranchPath branchPath);
 }
