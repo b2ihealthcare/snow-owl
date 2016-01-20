@@ -127,10 +127,10 @@ public class DBStore extends Store implements IDBStore, CDOAllRevisionsProvider
   };
 
   @ExcludeFromDump
-  private transient StoreAccessorPool readerPool = new StoreAccessorPool(this, null);
+  private transient StoreAccessorPool readerPool;
 
   @ExcludeFromDump
-  private transient StoreAccessorPool writerPool = new StoreAccessorPool(this, null);
+  private transient StoreAccessorPool writerPool;
 
   @ExcludeFromDump
   private transient Timer connectionKeepAliveTimer;
@@ -140,6 +140,12 @@ public class DBStore extends Store implements IDBStore, CDOAllRevisionsProvider
     super(TYPE, null, set(ChangeFormat.REVISION, ChangeFormat.DELTA), //
         set(RevisionTemporality.AUDITING, RevisionTemporality.NONE), //
         set(RevisionParallelism.NONE, RevisionParallelism.BRANCHING));
+    
+    readerPool = new StoreAccessorPool(this, null);
+    readerPool.setCapacity(7);
+    
+    writerPool = new StoreAccessorPool(this, null);
+    writerPool.setCapacity(3);
   }
 
   public IMappingStrategy getMappingStrategy()

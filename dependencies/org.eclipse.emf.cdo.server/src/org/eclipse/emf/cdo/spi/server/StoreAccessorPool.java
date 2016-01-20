@@ -29,7 +29,7 @@ public class StoreAccessorPool
   /**
    * @since 4.2
    */
-  public static final int DEFAULT_CAPACITY = 15;
+  public static final int DEFAULT_CAPACITY = 5;
 
   /**
    * The {@link IStore store} instance that manages this pool.
