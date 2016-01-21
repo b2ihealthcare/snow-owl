@@ -30,7 +30,7 @@ import com.b2international.snowowl.snomed.mrcm.DataType;
 
 /**
  * Collector gathering concrete domains with distinct labels. The gathered labels will be grouped by {@link DataType
- * concrete data type}.
+ * concrete domain}.
  */
 public class ReducedConcreteDomainFragmentCollector extends AbstractDocsOutOfOrderCollector {
 

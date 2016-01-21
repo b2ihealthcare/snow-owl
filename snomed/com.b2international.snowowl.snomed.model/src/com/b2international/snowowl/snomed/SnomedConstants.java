@@ -126,7 +126,7 @@ public abstract class SnomedConstants {
 		public static final String FOUNDATION_METADATA_CONCEPTS = "900000000000454005";
 		public static final String CASE_SIGNIFICANCE_ROOT_CONCEPT = "900000000000447004";
 		
-		//TODO: These are substitutes for concrete data type operational concepts that WILL be 
+		//TODO: These are substitutes for concrete domain operational concepts that WILL be 
 		//under the metadata hierarchy.  These need to be replaced once available.  bbanfai - 2012.09.11
 		public static final String CD_EQUAL = "276136004";  // =
 		public static final String CD_LESS = "276139006";  // <
@@ -194,13 +194,13 @@ public abstract class SnomedConstants {
 		public static final String SDD_UNIT_OF_MEASURE_REFERENCE_SET = "62111000133108";
 		public static final String SDD_SIMPLE_TYPE_REFERENCE_SET = "69511000133108";
 
-		//concrete data type
-		public static final String REFSET_BOOLEAN_TYPE = "20001000132106";
-		public static final String REFSET_DATETIME_TYPE = "20011000132108";
-		public static final String REFSET_INTEGER_TYPE = "20031000132101";
-		public static final String REFSET_FLOAT_TYPE = "20041000132109";
-		public static final String REFSET_STRING_TYPE = "20021000132103";
-		public static final String REFSET_CONCRETE_DOMAIN_TYPE_SG = "20051000132107";
+		//concrete domain
+		public static final String REFSET_BOOLEAN_DATATYPE = "759160691000154109";
+		public static final String REFSET_DATETIME_DATATYPE = "492980241000154105";
+		public static final String REFSET_INTEGER_DATATYPE = "373998411000154109";
+		public static final String REFSET_FLOAT_DATATYPE = "744104701000154109";
+		public static final String REFSET_STRING_DATATYPE = "513945551000154100";
+		public static final String REFSET_CONCRETE_DOMAIN_TYPE = "289191171000154104";
 
 		public static final String REFSET_DRUG_TO_SOURCE_DRUG_SIMPLE_MAP = "776245861000133102";
 		public static final String REFSET_DRUG_TO_GROUPER_SIMPLE_MAP = "499896751000133109";
@@ -312,9 +312,6 @@ public abstract class SnomedConstants {
 		public static final String DEFAULT_UNIT = "258666001";
 		
 		public static final String NAMESPACE_ROOT = "370136006";
-		public static final String SINGAPORE_NATIONAL_EXTENSION = "443855003";
-		public static final String SINGAPORE_DRUG_DICTIONARY_EXTENSION = "443856002";
-		public static final String B2I_NAMESPACE = "583597791000154100";
 		
 		public static final String ACCEPTABILITY = "900000000000511003";
 		public static final String REFINABILITY_VALUE = "900000000000226000";

@@ -32,7 +32,7 @@ public abstract class ErroneousAustralianReleaseFileNames {
 	public static final String ERRONEOUS_AU_20110531_SNOMED_LANGUAGE_REFSET_NAME = "der2_cRefset_LanguageSnapshot-en-AU_AU1000036_20110531.txt";
 	public static final String ERRONEOUS_AU_20120229_SNOMED_LANGUAGE_REFSET_NAME = "xder2_cRefset_LanguageFull-en-AU_AU1000036_20120229.txt";
 	
-	// same with all concrete data type reference sets  
+	// same with all concrete domain reference sets  
 	public static final String ERRONEOUS_AU_20120229_STRENGTH_REFSET_NAME = "xder2_ccsRefset_StrengthFull_AU1000036_20120229.txt";
 	public static final String ERRONEOUS_AU_20120229_SUBPACK_QUANTITY_FULL_REFSET_NAME = "xder2_ccsRefset_SubpackQuantityFull_AU1000036_20120229.txt";
 	public static final String ERRONEOUS_AU_20120229_UNIT_OF_USE_QUANTITY_REFSET_NAME = "xder2_ccsRefset_UnitOfUseQuantityFull_AU1000036_20120229.txt";

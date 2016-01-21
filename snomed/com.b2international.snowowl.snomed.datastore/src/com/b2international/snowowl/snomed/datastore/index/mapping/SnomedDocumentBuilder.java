@@ -121,8 +121,7 @@ public final class SnomedDocumentBuilder extends DocumentBuilderBase<SnomedDocum
 				.add(SnomedMappings.memberUomId())
 				.add(SnomedMappings.memberCharacteristicTypeId())
 				.add(SnomedMappings.memberDataTypeLabel())
-				.add(SnomedMappings.memberDataTypeOrdinal())
-				.add(SnomedMappings.memberContainerModuleId());
+				.add(SnomedMappings.memberDataTypeOrdinal());
 				break;
 			case SIMPLE_MAP:
 				fieldsToCopy
@@ -539,10 +538,6 @@ public final class SnomedDocumentBuilder extends DocumentBuilderBase<SnomedDocum
 
 	public SnomedDocumentBuilder memberOperatorId(final Long operatorId) {
 		return update(SnomedMappings.memberOperatorId(), operatorId);
-	}
-
-	public SnomedDocumentBuilder memberContainerModuleId(final Long containerModuleId) {
-		return update(SnomedMappings.memberContainerModuleId(), containerModuleId);
 	}
 
 	public SnomedDocumentBuilder memberUomId(final Long uomId) {

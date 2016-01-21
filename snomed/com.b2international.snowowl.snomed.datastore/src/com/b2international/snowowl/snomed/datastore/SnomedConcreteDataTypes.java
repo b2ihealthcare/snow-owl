@@ -15,12 +15,7 @@
  */
 package com.b2international.snowowl.snomed.datastore;
 
-import static com.b2international.snowowl.snomed.SnomedConstants.Concepts.REFSET_BOOLEAN_TYPE;
-import static com.b2international.snowowl.snomed.SnomedConstants.Concepts.REFSET_DATETIME_TYPE;
-import static com.b2international.snowowl.snomed.SnomedConstants.Concepts.REFSET_FLOAT_TYPE;
-import static com.b2international.snowowl.snomed.SnomedConstants.Concepts.REFSET_INTEGER_TYPE;
 import static com.b2international.snowowl.snomed.SnomedConstants.Concepts.REFSET_STRENGTH;
-import static com.b2international.snowowl.snomed.SnomedConstants.Concepts.REFSET_STRING_TYPE;
 import static com.b2international.snowowl.snomed.SnomedConstants.Concepts.REFSET_SUBPACK_QUANTITY;
 import static com.b2international.snowowl.snomed.SnomedConstants.Concepts.REFSET_UNIT_OF_USE_QUANTITY;
 import static com.b2international.snowowl.snomed.SnomedConstants.Concepts.REFSET_UNIT_OF_USE_SIZE;
@@ -31,6 +26,8 @@ import static com.b2international.snowowl.snomed.snomedrefset.DataType.INTEGER;
 import static com.b2international.snowowl.snomed.snomedrefset.DataType.STRING;
 
 import com.b2international.snowowl.core.ApplicationContext;
+import com.b2international.snowowl.core.SnowOwlApplication;
+import com.b2international.snowowl.snomed.datastore.config.SnomedCoreConfiguration;
 import com.b2international.snowowl.snomed.snomedrefset.DataType;
 import com.google.common.base.Preconditions;
 
@@ -47,11 +44,11 @@ public enum SnomedConcreteDataTypes {
 	SUBPACK_QUANTITY("subpackQuantity", "Subpack quantity", REFSET_SUBPACK_QUANTITY, INTEGER, ""),
 	
 	//for SNOMED CT SG extension
-	BOOLEAN_TYPE("", "", REFSET_BOOLEAN_TYPE, BOOLEAN, ""),
-	DATETIME_TYPE("", "", REFSET_DATETIME_TYPE, DATE, ""),
-	INTEGER_TYPE("", "", REFSET_INTEGER_TYPE, INTEGER, ""),
-	FLOAT_TYPE("", "", REFSET_FLOAT_TYPE, DECIMAL, ""),
-	STRING_TYPE("", "", REFSET_STRING_TYPE, STRING, "");
+	BOOLEAN_TYPE("", "", getCoreConfiguration().getBooleanDatatypeRefsetIdentifier(), BOOLEAN, ""),
+	DATETIME_TYPE("", "", getCoreConfiguration().getDatetimeDatatypeRefsetIdentifier(), DATE, ""),
+	INTEGER_TYPE("", "", getCoreConfiguration().getIntegerDatatypeRefsetIdentifier(), INTEGER, ""),
+	FLOAT_TYPE("", "", getCoreConfiguration().getFloatDatatypeRefsetIdentifier(), DECIMAL, ""),
+	STRING_TYPE("", "", getCoreConfiguration().getStringDatatypeRefsetIdentifier(), STRING, "");
 	
 	private final String owlLabel;
 	private final String refSetId;
@@ -65,6 +62,10 @@ public enum SnomedConcreteDataTypes {
 		this.refSetId = refSetId;
 		this.dataType = dataType;
 		this.parentConceptId = parentConceptId; 
+	}
+	
+	private static SnomedCoreConfiguration getCoreConfiguration() {
+		return SnowOwlApplication.INSTANCE.getConfiguration().getModuleConfig(SnomedCoreConfiguration.class);
 	}
 	
 	/**
@@ -108,9 +109,9 @@ public enum SnomedConcreteDataTypes {
 	}
 	
 	/**
-	 * Returns {@code true} if creating is a concrete data type associated with a SNOMED&nbsp;CT relationship is supported. Otherwise returns {@code false}.
+	 * Returns {@code true} if creating is a concrete domain associated with a SNOMED&nbsp;CT relationship is supported. Otherwise returns {@code false}.
 	 * This method check if the measurement type reference set concept identifiers are exists. If not this method returns with {@code false}.
-	 * @return {@code true} if creating is a concrete data type associated with a SNOMED&nbsp;CT relationship is supported
+	 * @return {@code true} if creating is a concrete domain associated with a SNOMED&nbsp;CT relationship is supported
 	 */
 	public static boolean isRelationshipConcreteDataTypeSupported() {
 		SnomedClientTerminologyBrowser browser = getTerminologyBrowser();
@@ -132,7 +133,7 @@ public enum SnomedConcreteDataTypes {
 	/**
 	 * Method for getting the data type of the concrete domain element specified with the unique reference set identifier.
 	 * @param refSetId the unique identifier of the reference set.
-	 * @return the data type of the concrete data type reference set members.
+	 * @return the data type of the concrete domain reference set members.
 	 */
 	public static DataType getDataTypeByRefSetId(final String refSetId) {
 		for (final SnomedConcreteDataTypes type : values()) {
@@ -158,9 +159,9 @@ public enum SnomedConcreteDataTypes {
 	}
 	
 	/**
-	 * Method for getting the OWL 2 label of the SNOMED&nbsp;CT concrete data type element identified by the ID of the reference set identifier concept.
+	 * Method for getting the OWL 2 label of the SNOMED&nbsp;CT concrete domain element identified by the ID of the reference set identifier concept.
 	 * @param refSetId the identifier concept ID of the SNOMED&nbsp;CT reference set. 
-	 * @return the name of the concrete data type.
+	 * @return the name of the concrete domain.
 	 */
 	public static String getOwlLabel(final String refSetId) {
 		for (final SnomedConcreteDataTypes type : values()) {
@@ -172,9 +173,9 @@ public enum SnomedConcreteDataTypes {
 	}
 	
 	/**
-	 * Method for getting the human readable name of the SNOMED&nbsp;CT concrete data type element identified by the ID of the reference set identifier concept.
+	 * Method for getting the human readable name of the SNOMED&nbsp;CT concrete domain element identified by the ID of the reference set identifier concept.
 	 * @param refSetId the identifier concept ID of the SNOMED&nbsp;CT reference set. 
-	 * @return the name of the concrete data type.
+	 * @return the name of the concrete domain.
 	 */
 	public static String getName(final String refSetId) {
 		for (final SnomedConcreteDataTypes type : values()) {

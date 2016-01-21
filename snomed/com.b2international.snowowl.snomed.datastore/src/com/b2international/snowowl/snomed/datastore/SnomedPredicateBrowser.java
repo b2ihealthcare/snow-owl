@@ -49,4 +49,12 @@ public interface SnomedPredicateBrowser extends IPredicateBrowser<PredicateIndex
 	 * @return
 	 */
 	Set<ConstraintDomain> getConstraintDomains(IBranchPath branchPath, long storageKey);
+	
+	/**
+	 * Returns all constraint domain definitions for the specified branchPath.
+	 * 
+	 * @param branchPath
+	 * @return
+	 */
+	Set<ConstraintDomain> getAllConstraintDomains(IBranchPath branchPath);
 }

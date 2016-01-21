@@ -19,6 +19,7 @@ import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
 
 import java.io.Serializable;
+import java.util.Collections;
 import java.util.List;
 
 import org.apache.lucene.queries.BooleanFilter;
@@ -266,7 +267,7 @@ public class SnomedRefSetMembershipIndexQueryAdapter extends SnomedRefSetMemberI
 	}
 	
 	/**
-	 * Lucene specific query adapter for retrieving information about SNOMED&nbsp;CT concrete data type reference set members and memberships.
+	 * Lucene specific query adapter for retrieving information about SNOMED&nbsp;CT concrete domain reference set members and memberships.
 	 * @see SnomedRefSetMembershipLookupService
 	 * @see SnomedRefSetMembershipIndexQueryAdapter
 	 */
@@ -286,10 +287,24 @@ public class SnomedRefSetMembershipIndexQueryAdapter extends SnomedRefSetMemberI
 			};
 		}
 		
-		@SuppressWarnings("unchecked")
-		public static <T extends SnomedRefSetMemberIndexEntry> IIndexQueryAdapter<T> createFindByReferencedComponentIdsQuery(
-				final String componentType, final Iterable<String> referencedComponentIds) { // FIXME: variable naming!
-
+		public static <T extends SnomedRefSetMemberIndexEntry> IIndexQueryAdapter<T> createFindActivesByReferencedComponentIdsQuery(final String componentType, final Iterable<String> referencedComponentIds) {
+			return createFindByReferencedComponentIdsQuery(componentType, true, referencedComponentIds);
+		}
+		
+		public static <T extends SnomedRefSetMemberIndexEntry> IIndexQueryAdapter<T> createFindActivesByReferencedComponentIdQuery(final String componentType, final String referencedComponentId) {
+			return createFindByReferencedComponentIdsQuery(componentType, true, Collections.singleton(referencedComponentId));
+		}
+		
+		public static <T extends SnomedRefSetMemberIndexEntry> IIndexQueryAdapter<T> createFindByReferencedComponentIdsQuery(final String componentType, final Iterable<String> referencedComponentIds) {
+			return createFindByReferencedComponentIdsQuery(componentType, false, referencedComponentIds);
+		}
+		
+		public static <T extends SnomedRefSetMemberIndexEntry> IIndexQueryAdapter<T> createFindByReferencedComponentIdQuery(final String componentType, final String referencedComponentId) {
+			return createFindByReferencedComponentIdsQuery(componentType, false, Collections.singleton(referencedComponentId));
+		}
+		
+		@SuppressWarnings("unchecked")		
+		private static <T extends SnomedRefSetMemberIndexEntry> IIndexQueryAdapter<T> createFindByReferencedComponentIdsQuery(final String componentType, final boolean onlyActives, final Iterable<String> referencedComponentIds) {
 			checkArgument(!CompareUtils.isEmpty(referencedComponentIds), "Referenced component identifiers argument cannot be empty.");
 			checkNotNull(componentType, "Referenced component type argument cannot be null.");
 			
@@ -298,9 +313,12 @@ public class SnomedRefSetMembershipIndexQueryAdapter extends SnomedRefSetMemberI
 				@Override public Query createQuery() {
 					final int componentTypeValue = CoreTerminologyBroker.getInstance().getTerminologyComponentIdAsInt(componentType);
 					final SnomedQueryBuilder query = SnomedMappings.newQuery()
-							.active()
 							.memberRefSetType(SnomedRefSetType.CONCRETE_DATA_TYPE)
 							.memberReferencedComponentType(componentTypeValue);
+					
+					if (onlyActives) {
+						query.active();
+					}
 					
 					final List<String> ids = Lists.newArrayList(referencedComponentIds);
 					if (ids.size() > 1) {
@@ -312,7 +330,6 @@ public class SnomedRefSetMembershipIndexQueryAdapter extends SnomedRefSetMemberI
 			};
 		}
 		
-
 		@SuppressWarnings("unchecked")
 		public static <T extends SnomedRefSetMemberIndexEntry> IIndexQueryAdapter<T> createFindByRefSetTypeQuery() {
 

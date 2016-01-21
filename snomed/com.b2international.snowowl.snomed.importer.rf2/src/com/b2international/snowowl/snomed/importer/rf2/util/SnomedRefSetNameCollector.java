@@ -36,10 +36,12 @@ import com.b2international.commons.csv.CsvParser;
 import com.b2international.commons.csv.CsvSettings;
 import com.b2international.commons.csv.RecordParserCallback;
 import com.b2international.snowowl.core.ApplicationContext;
+import com.b2international.snowowl.core.SnowOwlApplication;
 import com.b2international.snowowl.snomed.SnomedConstants;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
 import com.b2international.snowowl.snomed.datastore.SnomedClientTerminologyBrowser;
+import com.b2international.snowowl.snomed.datastore.config.SnomedCoreConfiguration;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptIndexEntry;
 import com.b2international.snowowl.snomed.importer.net4j.ImportConfiguration;
 import com.b2international.snowowl.snomed.importer.rf2.refset.ErroneousAustralianReleaseFileNames;
@@ -88,6 +90,8 @@ public class SnomedRefSetNameCollector {
 	private static final int DESCRIPTION_TERM_COLUMN = 7;
 	private static final int STATUS_COLUMN = 2;
 	private static final int DESCRIPTION_TYPE_COLUMN = 6;
+	
+	private static final String CONCRETE_DOMAIN_TYPE_REFSET_ID = SnowOwlApplication.INSTANCE.getConfiguration().getModuleConfig(SnomedCoreConfiguration.class).getConcreteDomainTypeRefsetIdentifier();
 	
 	private ImportConfiguration configuration;
 	private SubMonitor convertedMonitor;
@@ -290,7 +294,7 @@ public class SnomedRefSetNameCollector {
 		} else if (lastColumnName.equalsIgnoreCase(SnomedRf2Headers.FIELD_DESCRIPTION_LENGTH)) {
 			return Concepts.REFSET_DESCRIPTION_TYPE;
 		} else if (lastColumnName.equalsIgnoreCase(SnomedRf2Headers.FIELD_CHARACTERISTIC_TYPE_ID)) {
-			return Concepts.REFSET_CONCRETE_DOMAIN_TYPE_SG;
+			return CONCRETE_DOMAIN_TYPE_REFSET_ID;
 		} else if (lastColumnName.equalsIgnoreCase(SnomedRf2Headers.FIELD_VALUE)) {
 			return Concepts.REFSET_CONCRETE_DOMAIN_TYPE_AU;
 		} else if (lastColumnName.equalsIgnoreCase(SnomedRf2Headers.FIELD_TARGET_EFFECTIVE_TIME)) {

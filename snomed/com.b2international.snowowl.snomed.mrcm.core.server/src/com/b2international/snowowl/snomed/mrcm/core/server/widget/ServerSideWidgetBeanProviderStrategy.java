@@ -43,7 +43,6 @@ import com.b2international.snowowl.snomed.datastore.services.SnomedRefSetMembers
 import com.b2international.snowowl.snomed.mrcm.core.widget.SnomedDescription;
 import com.b2international.snowowl.snomed.mrcm.core.widget.SnomedRelationship;
 import com.b2international.snowowl.snomed.mrcm.core.widget.WidgetBeanProviderStrategy;
-import com.b2international.snowowl.snomed.mrcm.core.widget.WidgetBeanUtils;
 import com.b2international.snowowl.snomed.mrcm.core.widget.bean.ConceptWidgetBean;
 import com.b2international.snowowl.snomed.mrcm.core.widget.bean.DataTypeWidgetBean;
 import com.b2international.snowowl.snomed.mrcm.core.widget.bean.LeafWidgetBean;
@@ -55,7 +54,6 @@ import com.b2international.snowowl.snomed.mrcm.core.widget.model.RelationshipGro
 import com.b2international.snowowl.snomed.mrcm.core.widget.model.WidgetModel;
 import com.google.common.base.Predicate;
 import com.google.common.collect.Collections2;
-import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 
@@ -132,7 +130,7 @@ public class ServerSideWidgetBeanProviderStrategy extends WidgetBeanProviderStra
 		final RelationshipGroupWidgetModel groupModel = conceptWidgetModel.getRelationshipGroupContainerModel().getFirstMatching(GroupFlag.GROUPED);
 		
 		for (final SnomedRefSetMemberIndexEntry entry : dataTypes) {
-			final com.b2international.snowowl.snomed.mrcm.DataType convertedDataType = WidgetBeanUtils.TYPE_CONVERSION_MAP.get(entry.getRefSetPackageDataType());
+			final com.b2international.snowowl.snomed.mrcm.DataType convertedDataType = SnomedRefSetUtil.MRCM_DATATYPE_TO_DATATYPE_MAP.inverse().get(entry.getRefSetPackageDataType());
 			final DataTypeWidgetModel matchingModel = groupModel.getFirstMatching(entry.getAttributeLabel(), convertedDataType);
 			final DataTypeWidgetBean widgetBean = new DataTypeWidgetBean(cwb, matchingModel, entry.getReferencedComponentId(), entry.getId(), entry.isReleased());
 			if (entry.getUomComponentId() != null) {
@@ -158,7 +156,7 @@ public class ServerSideWidgetBeanProviderStrategy extends WidgetBeanProviderStra
 				Lists.transform(dataTypeModel.getChildren(), new UncheckedCastFunction<WidgetModel, DataTypeWidgetModel>(DataTypeWidgetModel.class)));
 		
 		for (final SnomedRefSetMemberIndexEntry entry : getConcreteDataTypes(conceptId)) {
-			final com.b2international.snowowl.snomed.mrcm.DataType convertedDataType = WidgetBeanUtils.TYPE_CONVERSION_MAP.get(entry.getRefSetPackageDataType());
+			final com.b2international.snowowl.snomed.mrcm.DataType convertedDataType = SnomedRefSetUtil.MRCM_DATATYPE_TO_DATATYPE_MAP.inverse().get(entry.getRefSetPackageDataType());
 			final DataTypeWidgetModel matchingModel = dataTypeModel.getFirstMatching(entry.getAttributeLabel(), convertedDataType);
 			final DataTypeWidgetBean widgetBean = new DataTypeWidgetBean(cwb, matchingModel, entry.getReferencedComponentId(), entry.getId(), entry.isReleased());
 			widgetBean.setSelectedValue(SnomedRefSetUtil.serializeValue(entry.getRefSetPackageDataType(), entry.getValue()));
@@ -185,11 +183,9 @@ public class ServerSideWidgetBeanProviderStrategy extends WidgetBeanProviderStra
 	}
 
 	private Iterable<SnomedRefSetMemberIndexEntry> getConcreteDataTypes(final String id) {
-		final IIndexQueryAdapter<SnomedRefSetMemberIndexEntry> createFindByRefSetTypeQuery = 
-				SnomedConcreteDataTypeRefSetMembershipIndexQueryAdapter.createFindByReferencedComponentIdsQuery(
-						CONCEPT, 
-						ImmutableSet.of(id));
-		//XXX we maximum 100 CDT is associated with a concept
+		final IIndexQueryAdapter<SnomedRefSetMemberIndexEntry> createFindByRefSetTypeQuery = SnomedConcreteDataTypeRefSetMembershipIndexQueryAdapter
+				.createFindActivesByReferencedComponentIdQuery(CONCEPT, id);
+		// XXX The number of allowed concrete domain datatypes are maximized in 100 for a concept
 		return ApplicationContext.getInstance().getService(SnomedIndexService.class).search(branchPath, createFindByRefSetTypeQuery, 100);
 	}
 

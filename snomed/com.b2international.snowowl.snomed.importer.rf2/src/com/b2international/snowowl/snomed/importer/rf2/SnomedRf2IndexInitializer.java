@@ -44,6 +44,10 @@ import org.eclipse.emf.cdo.transaction.CDOTransaction;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import bak.pcj.map.LongKeyFloatMap;
+import bak.pcj.set.LongOpenHashSet;
+import bak.pcj.set.LongSet;
+
 import com.b2international.commons.StringUtils;
 import com.b2international.commons.csv.CsvLexer.EOL;
 import com.b2international.commons.csv.CsvParser;
@@ -120,10 +124,6 @@ import com.google.common.collect.ImmutableMultimap;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Sets;
-
-import bak.pcj.map.LongKeyFloatMap;
-import bak.pcj.set.LongOpenHashSet;
-import bak.pcj.set.LongSet;
 
 /**
  * RF2 based incremental index initializer job.
@@ -831,6 +831,7 @@ public class SnomedRf2IndexInitializer extends Job {
 		final SnomedIndexServerService snomedIndexService = getSnomedIndexService();
 		
 		parseFile(absolutePath, 9, new RecordParserCallback<String>() {
+			@Override
 			public void handleRecord(final int recordCount, final java.util.List<String> record) { 
 				
 				final long storageKey = getImportIndexService().getComponentCdoId(record.get(0));
@@ -1034,7 +1035,7 @@ public class SnomedRf2IndexInitializer extends Job {
 				.primitive(primitive)
 				.released(released)
 				.effectiveTime(effectiveTime)
-				.conceptNamespaceId(NamespaceMapping.getExtensionNamespaceId(conceptId))
+				.conceptNamespaceId(NamespaceMapping.getExtensionNamespaceId(conceptIdString))
 				.module(moduleId)
 				.with(new ComponentCompareFieldsUpdater<SnomedDocumentBuilder>(conceptIdString, conceptStorageKey));
 

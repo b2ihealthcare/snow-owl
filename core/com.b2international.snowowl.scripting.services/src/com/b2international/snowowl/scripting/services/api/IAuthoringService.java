@@ -45,7 +45,7 @@ public interface IAuthoringService {
 	 * @param concreteDomainAttributeType
 	 *            the type of the attribute. Cannot be {@code null}.
 	 * @param value
-	 *            the value associated with the concrete data type. Cannot be {@code null}.
+	 *            the value associated with the concrete domain. Cannot be {@code null}.
 	 * @param characteristicTypeId the characteristic type SNOMED CT id of the concrete domain element (Defining, etc.)           
 	 * @param taskId
 	 *            the unique identifier of the task where the changes should be performed. Can be {@code null}. If task identifier is {@code null} the changes will be performed on the MAIN branch.
@@ -61,7 +61,7 @@ public interface IAuthoringService {
 	 * @param concreteDomainAttributeName
 	 *            the name of the attribute. The format should be camelcase. Cannot be {@code null}.
 	 *            Example: {@code isVaccine}.
-	 * @param booleanValue boolean value of the concrete data type.
+	 * @param booleanValue boolean value of the concrete domain.
 	 * @param characteristicTypeId the characteristic type SNOMED CT id of the concrete domain element (Defining, etc.)
 	 * @param taskId
 	 *            the unique identifier of the task where the changes should be performed. Can be {@code null}. If task identifier is {@code null} the changes will be performed on the MAIN branch.
@@ -77,7 +77,7 @@ public interface IAuthoringService {
 	 * @param concreteDomainAttributeName
 	 *            the name of the attribute. The format should be camelcase. Cannot be {@code null}
 	 *            Example: {@code numberOfTablets}.
-	 * @param intValue the integer value of the concrete data type.
+	 * @param intValue the integer value of the concrete domain.
 	 * @param characteristicTypeId the characteristic type SNOMED CT id of the concrete domain element (Defining, etc.)
 	 * @param taskId
 	 *            the unique identifier of the task where the changes should be performed. Can be {@code null}. If task identifier is {@code null} the changes will be performed on the MAIN branch.
@@ -93,7 +93,7 @@ public interface IAuthoringService {
 	 * @param concreteDomainAttributeName
 	 *            the name of the attribute. The format should be camelcase. Cannot be {@code null}
 	 *            Example: {@code stengthInFractions}.
-	 * @param floatValue decimal value of the concrete data type.
+	 * @param floatValue decimal value of the concrete domain.
 	 * @param characteristicTypeId the characteristic type SNOMED CT id of the concrete domain element (Defining, etc.)	
 	 * @param taskId
 	 *            the unique identifier of the task where the changes should be performed. Can be {@code null}. If task identifier is {@code null} the changes will be performed on the MAIN branch.
@@ -109,7 +109,7 @@ public interface IAuthoringService {
 	 * @param concreteDomainAttributeName
 	 *            the name of the attribute. The format should be camelcase. Cannot be {@code null}
 	 *            Example: {@code startDate}.
-	 * @param dateValue datetime value of the concrete data type.
+	 * @param dateValue datetime value of the concrete domain.
 	 * @param characteristicTypeId the characteristic type SNOMED CT id of the concrete domain element (Defining, etc.)	
 	 * @param taskId
 	 *            the unique identifier of the task where the changes should be performed. Can be {@code null}. If task identifier is {@code null} the changes will be performed on the MAIN branch.
@@ -125,7 +125,7 @@ public interface IAuthoringService {
 	 * @param concreteDomainAttributeName
 	 *            the name of the attribute. The format should be camelcase. Cannot be {@code null}
 	 *            Example: {@code startDate}.
-	 * @param stringValue string value of the concrete data type.
+	 * @param stringValue string value of the concrete domain.
 	 * @param characteristicTypeId the characteristic type SNOMED CT id of the concrete domain element (Defining, etc.)	
 	 * @param taskId
 	 *            the unique identifier of the task where the changes should be performed. Can be {@code null}. If task identifier is {@code null} the changes will be performed on the MAIN branch.
@@ -144,7 +144,7 @@ public interface IAuthoringService {
 	 * @param concreteDomainAttributeType
 	 *            the type of the attribute. Cannot be {@code null}.
 	 * @param value
-	 *            the value associated with the concrete data type. Cannot be {@code null}.
+	 *            the value associated with the concrete domain. Cannot be {@code null}.
 	 * @param characteristicTypeId the characteristic type SNOMED CT id of the concrete domain element (Defining, etc.)	
 	 * @param taskId
 	 *            the unique identifier of the task where the changes should be performed. Can be {@code null}. If task identifier is {@code null} the changes will be performed on the MAIN branch.
@@ -160,7 +160,7 @@ public interface IAuthoringService {
 	 * @param concreteDomainAttributeName
 	 *            the name of the attribute. The format should be camelcase. Cannot be {@code null}.
 	 *            Example: {@code isVaccine}.
-	 * @param booleanValue boolean value of the concrete data type.
+	 * @param booleanValue boolean value of the concrete domain.
 	 * @param characteristicTypeId the characteristic type SNOMED CT id of the concrete domain element (Defining, etc.)	
 	 * @param taskId
 	 *            the unique identifier of the task where the changes should be performed. Can be {@code null}. If task identifier is {@code null} the changes will be performed on the MAIN branch.
@@ -176,7 +176,7 @@ public interface IAuthoringService {
 	 * @param concreteDomainAttributeName
 	 *            the name of the attribute. The format should be camelcase. Cannot be {@code null}
 	 *            Example: {@code numberOfTablets}.
-	 * @param intValue the integer value of the concrete data type.
+	 * @param intValue the integer value of the concrete domain.
 	 * @param characteristicTypeId the characteristic type SNOMED CT id of the concrete domain element (Defining, etc.)	
 	 * @param taskId
 	 *            the unique identifier of the task where the changes should be performed. Can be {@code null}. If task identifier is {@code null} the changes will be performed on the MAIN branch.
@@ -192,7 +192,7 @@ public interface IAuthoringService {
 	 * @param concreteDomainAttributeName
 	 *            the name of the attribute. The format should be camelcase. Cannot be {@code null}
 	 *            Example: {@code stengthInFractions}.
-	 * @param floatValue decimal value of the concrete data type.
+	 * @param floatValue decimal value of the concrete domain.
 	 * @param characteristicTypeId the characteristic type SNOMED CT id of the concrete domain element (Defining, etc.) 
 	 * @param taskId
 	 *            the unique identifier of the task where the changes should be performed. Can be {@code null}. If task identifier is {@code null} the changes will be performed on the MAIN branch.
@@ -208,7 +208,7 @@ public interface IAuthoringService {
 	 * @param concreteDomainAttributeName
 	 *            the name of the attribute. The format should be camelcase. Cannot be {@code null}
 	 *            Example: {@code startDate}.
-	 * @param dateValue datetime value of the concrete data type.
+	 * @param dateValue datetime value of the concrete domain.
 	 * @param characteristicTypeId the characteristic type SNOMED CT id of the concrete domain element (Defining, etc.)	
 	 * @param taskId
 	 *            the unique identifier of the task where the changes should be performed. Can be {@code null}. If task identifier is {@code null} the changes will be performed on the MAIN branch.
@@ -224,7 +224,7 @@ public interface IAuthoringService {
 	 * @param concreteDomainAttributeName
 	 *            the name of the attribute. The format should be camelcase. Cannot be {@code null}
 	 *            Example: {@code startDate}.
-	 * @param stringValue string value of the concrete data type.
+	 * @param stringValue string value of the concrete domain.
 	 * @param characteristicTypeId the characteristic type SNOMED CT id of the concrete domain element (Defining, etc.)	
 	 * @param taskId
 	 *            the unique identifier of the task where the changes should be performed. Can be {@code null}. If task identifier is {@code null} the changes will be performed on the MAIN branch.
@@ -246,7 +246,7 @@ public interface IAuthoringService {
 	 * @param concreteDomainAttributeName the name of the attribute. The format should be camelcase. Cannot be
 	 * {@code null} Example: {@code startDate}.
 	 * @param concreteDomainAttributeType the concrete domain type, see {@link ConcreteDomainDataType}
-	 * @param value value of the concrete data type
+	 * @param value value of the concrete domain
 	 * @param characteristicTypeId the characteristic type SNOMED CT id of the concrete domain element (Defining, etc.)	
 	 */
 	void addConcreteDomainDataTypeToConcept(SnomedEditingContext editingContext, final Concept concept,
@@ -265,7 +265,7 @@ public interface IAuthoringService {
 	 * @param concreteDomainAttributeName the name of the attribute. The format should be camelcase. Cannot be
 	 * {@code null} Example: {@code startDate}.
 	 * @param concreteDomainAttributeType the concrete domain type, see {@link ConcreteDomainDataType}
-	 * @param value value of the concrete data type
+	 * @param value value of the concrete domain
 	 * @param moduleId the SNOMED&nbsp;CT ID of the module concept to use
 	 * @param characteristicTypeId the characteristic type SNOMED CT id of the concrete domain element (Defining, etc.)	
 	 */

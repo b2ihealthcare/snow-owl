@@ -27,7 +27,7 @@ import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedMappings
 import com.b2international.snowowl.snomed.snomedrefset.DataType;
 
 /**
- * Lucene specific query adapter for SNOMED&nbsp;CT concrete data type reference set members.
+ * Lucene specific query adapter for SNOMED&nbsp;CT concrete domain reference set members.
  * @see SnomedRefSetMemberIndexQueryAdapter
  */
 public class SnomedConcreteDataTypeRefSetMemberIndexQueryAdapter extends SnomedRefSetMemberIndexQueryAdapter implements Serializable {

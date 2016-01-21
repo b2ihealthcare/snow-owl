@@ -137,7 +137,6 @@ public class SnomedMappings {
 
 	// Concrete domain member field instances
 	private static final LongIndexField REFERENCE_SET_MEMBER_OPERATOR_ID = Mappings.longField("ref_set_member_operator_id");
-	private static final NumericDocValuesIndexField<Long> REFERENCE_SET_MEMBER_CONTAINER_MODULE_ID = Mappings.longDocValuesField("ref_set_member_container_module_id");
 	private static final NumericDocValuesIndexField<Long> REFERENCE_SET_MEMBER_UOM_ID = Mappings.longDocValuesField("ref_set_member_uom_id");
 	private static final BinaryDocValuesIndexField REFERENCE_SET_MEMBER_DATA_TYPE_LABEL = Mappings.stringDocValuesField("ref_set_member_data_type_label"); // data type label ("isVitamin")
 	private static final NumericDocValuesIndexField<Integer> REFERENCE_SET_MEMBER_DATA_TYPE_ORDINAL = Mappings.intDocValuesField("ref_set_member_data_type_ordinal");  //data type enumeration ordinal (1 for decimal) 
@@ -473,10 +472,6 @@ public class SnomedMappings {
 
 	public static LongIndexField memberOperatorId() {
 		return REFERENCE_SET_MEMBER_OPERATOR_ID;
-	}
-
-	public static NumericDocValuesIndexField<Long> memberContainerModuleId() {
-		return REFERENCE_SET_MEMBER_CONTAINER_MODULE_ID;
 	}
 
 	public static NumericDocValuesIndexField<Long> memberUomId() {

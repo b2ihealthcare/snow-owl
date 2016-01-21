@@ -33,7 +33,6 @@ import static com.b2international.snowowl.snomed.common.SnomedTerminologyCompone
 import static com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants.DESCRIPTION_NUMBER;
 import static com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants.RELATIONSHIP_NUMBER;
 import static com.b2international.snowowl.snomed.datastore.SnomedRefSetUtil.deserializeValue;
-import static com.b2international.snowowl.snomed.datastore.SnomedRefSetUtil.getDataType;
 import static com.b2international.snowowl.snomed.datastore.SnomedRefSetUtil.isMapping;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.collect.Collections2.filter;
@@ -454,21 +453,19 @@ public class SnomedComponentService implements ISnomedComponentService, IPostSto
 	@Override
 	public long getExtensionConceptId(final IBranchPath branchPath, final String componentId) {
 		
-		final short componentType = SnomedTerminologyComponentConstants.getTerminologyComponentIdValueSafe(componentId);
-		
-		if (componentType != SnomedTerminologyComponentConstants.CONCEPT_NUMBER
-				&& componentType != SnomedTerminologyComponentConstants.DESCRIPTION_NUMBER
-				&& componentType != SnomedTerminologyComponentConstants.RELATIONSHIP_NUMBER) {
-			
+		if (!SnomedTerminologyComponentConstants.isCoreComponentId(componentId)) {
 			return -1L;
 		}
 		
 		final char format = componentId.charAt(componentId.length() - 3);
-		long namespaceId;
 		
-		LongKeyLongMap nameSpaceIds;
+		long namespaceId = -1L;
+		
 		try {
-			nameSpaceIds = (LongKeyLongMap) cache.get(branchPath).get(CacheKeyType.NAMESPACE_IDS);
+
+			// get namespace -> namespace identifier concept ID cache based on the current state of the dataset
+			LongKeyLongMap nameSpaceIds = (LongKeyLongMap) cache.get(branchPath).get(CacheKeyType.NAMESPACE_IDS);
+			
 			if ('0' == format) {
 				namespaceId = nameSpaceIds.get(0L);
 			} else {
@@ -476,18 +473,19 @@ public class SnomedComponentService implements ISnomedComponentService, IPostSto
 			}
 			
 			if (namespaceId < 1) {
-				final long extensionNamespaceIdFromMapping = NamespaceMapping.getExtensionNamespaceId(Long.valueOf(componentId));
-				if (extensionNamespaceIdFromMapping < 1) {
-					if (LOGGER.isTraceEnabled()) {
-						LOGGER.trace("Cannot find extension namespace concept ID for SNOMED CT component: " + componentId);
-					}
+
+				// try to get the namespace identifier concept ID from a predefined map (regardless of the dataset state)
+				final long namespaceConceptIdFromInternalMap = NamespaceMapping.getExtensionNamespaceId(componentId);
+				if (namespaceConceptIdFromInternalMap < 1) {
+					LOGGER.trace("Cannot find extension namespace concept ID for SNOMED CT component: " + componentId);
 					return -1L;
-				} else {
-					return extensionNamespaceIdFromMapping;
 				}
+
+				return namespaceConceptIdFromInternalMap;
 			}
 			
 			return namespaceId;
+			
 		} catch (final ExecutionException e) {
 			throw new SnowowlRuntimeException(e);
 		}
@@ -1702,8 +1700,7 @@ public class SnomedComponentService implements ISnomedComponentService, IPostSto
 			searcher.set(manager.acquire());
 			
 			final Document dataTypeDoc = searcher.get().doc(topDocs.scoreDocs[0].doc, MEMBER_REF_SET_ID_FILDS_TO_LOAD);
-			final com.b2international.snowowl.snomed.snomedrefset.DataType dataType = // 
-					SnomedRefSetUtil.DATA_TYPE_BIMAP.get(getDataType(SnomedMappings.memberRefSetId().getValueAsString(dataTypeDoc)));
+			final com.b2international.snowowl.snomed.snomedrefset.DataType dataType = SnomedRefSetUtil.DATATYPE_TO_REFSET_MAP.inverse().get(SnomedMappings.memberRefSetId().getValueAsString(dataTypeDoc));
 			
 			getIndexServerService().search(branchPath, query, collector);
 
@@ -2366,7 +2363,7 @@ public class SnomedComponentService implements ISnomedComponentService, IPostSto
 		return dataTypeLabelMap;
 	}
 
-	/*initialize a map of namspace IDs and the associated extension namespance concept IDs*/
+	/* initialize a map of namespace IDs and the associated extension namespace concept IDs */
 	private LongKeyLongMap getNameSpaceIds(/*ignored*/final IBranchPath branchPath) {
 		
 		final LongKeyLongMap map = new LongKeyLongOpenHashMap();
@@ -2375,24 +2372,8 @@ public class SnomedComponentService implements ISnomedComponentService, IPostSto
 			
 			String namespaceId = null;
 			
-			//XXX SG extension namespace concept PTs does not contain namespace IDs
-			if (Concepts.SINGAPORE_NATIONAL_EXTENSION.equals(concept.getId())) {
-				
-				namespaceId = "1000132";
-				
-			} else if (Concepts.SINGAPORE_DRUG_DICTIONARY_EXTENSION.equals(concept.getId())) {
-				
-				namespaceId = "1000133";
-
-			} else if (Concepts.B2I_NAMESPACE.equals(concept.getId())) {
-
-				namespaceId = "1000154";
-				
-			} else {
-
-				namespaceId = CharMatcher.DIGIT.retainFrom(concept.getLabel());
-				
-			}
+			// as of 20160112 the SG namespace identifier concepts have their namespace in the PT
+			namespaceId = CharMatcher.DIGIT.retainFrom(concept.getLabel());
 			
 			if (StringUtils.isEmpty(namespaceId)) {
 				namespaceId = "0"; //represents the core IHTSDO namespace

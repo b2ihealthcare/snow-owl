@@ -22,9 +22,9 @@ import java.io.IOException;
 import org.apache.lucene.index.AtomicReader;
 import org.apache.lucene.index.NumericDocValues;
 
-import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedMappings;
-
 import bak.pcj.LongCollection;
+
+import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedMappings;
 
 /**
  * Class for collecting module identifiers on concrete domains and their containers (concept or relationship).
@@ -32,7 +32,7 @@ import bak.pcj.LongCollection;
 public class ConcreteDataTypePropertyCollector extends ComponentPropertyCollector {
 
 	private NumericDocValues moduleIds;
-	private NumericDocValues containerModuleIds;
+	private NumericDocValues referencedComponentId;
 
 	public ConcreteDataTypePropertyCollector(final LongCollection acceptedIds) {
 		super(checkNotNull(acceptedIds, "acceptedIds"));
@@ -42,21 +42,21 @@ public class ConcreteDataTypePropertyCollector extends ComponentPropertyCollecto
 	protected void initDocValues(final AtomicReader leafReader) throws IOException {
 		super.initDocValues(leafReader);
 		moduleIds = SnomedMappings.module().getDocValues(leafReader);
-		containerModuleIds = SnomedMappings.memberContainerModuleId().getDocValues(leafReader);
+		referencedComponentId = SnomedMappings.memberReferencedComponentId().getDocValues(leafReader);
 	}
 
 	@Override
 	protected boolean isLeafCollectible() {
 		return super.isLeafCollectible() 
 				&& moduleIds != null 
-				&& containerModuleIds != null;
+				&& referencedComponentId != null;
 	}
 
 	@Override
 	protected long[] collectProperties(final int docId) {
 		return new long[] { 
 				moduleIds.get(docId), 
-				containerModuleIds.get(docId) 
+				referencedComponentId.get(docId) 
 		};
 	}
 }

@@ -45,7 +45,7 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableMap.Builder;
 
 /**
- * SNOMED&nbsp;CT concrete data type reference set importer.
+ * SNOMED&nbsp;CT concrete domain reference set importer.
  * @see AbstractSnomedRefSetImporter
  */
 public class SnomedConcreteDataTypeRefSetImporter extends AbstractSnomedRefSetImporter<ConcreteDomainRefSetRow, SnomedConcreteDataTypeRefSetMember> {

@@ -417,10 +417,6 @@ public class SnomedQueryBuilder extends QueryBuilderBase<SnomedQueryBuilder> {
 		return addToQuery(SnomedMappings.memberOperatorId(), operatorId);
 	}
 
-	public SnomedQueryBuilder memberContainerModuleId(final Long containerModuleId) {
-		return addToQuery(SnomedMappings.memberContainerModuleId(), containerModuleId);
-	}
-
 	public SnomedQueryBuilder memberUomId(final Long uomId) {
 		return addToQuery(SnomedMappings.memberUomId(), uomId);
 	}
