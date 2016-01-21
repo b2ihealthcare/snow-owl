@@ -133,6 +133,19 @@ public class SnomedClientTerminologyBrowser extends BaseSnomedClientTerminologyB
 				.executeSync(getBus());
 		return SnomedConceptIndexEntry.fromConcepts(concept.getAncestors());
 	}
+	
+	@Override
+	public Collection<SnomedConceptIndexEntry> getAllSubTypesById(final String id) {
+		final SnomedConcepts concepts = SnomedRequests.prepareSearchConcept()
+				.all()
+				.setLocales(getLocales())
+				.setExpand("pt()")
+				.filterByAncestor(id)
+				.build(getBranchPath().getPath())
+				.executeSync(getBus());
+
+		return SnomedConceptIndexEntry.fromConcepts(concepts);
+	}
 
 	/**
 	 * Returns with an iterable of all SNOMED&nbsp;CT concepts for the currently active branch. 
