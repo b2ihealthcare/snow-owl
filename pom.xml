@@ -231,6 +231,49 @@
 								<versionRange>[1.0.7,1.0.8)</versionRange>
 							</restrictTo>
 						</filter>
+						<!-- Restrict Jackson bundles to the selected version -->
+						<filter>
+							<type>p2-installable-unit</type>
+							<id>com.fasterxml.jackson.core.jackson-annotations</id>
+							<restrictTo>
+								<version>${jackson.version}</version>
+							</restrictTo>
+						</filter>
+						<filter>
+							<type>p2-installable-unit</type>
+							<id>com.fasterxml.jackson.core.jackson-core</id>
+							<restrictTo>
+								<version>${jackson.version}</version>
+							</restrictTo>
+						</filter>
+						<filter>
+							<type>p2-installable-unit</type>
+							<id>com.fasterxml.jackson.core.jackson-databind</id>
+							<restrictTo>
+								<version>${jackson.version}</version>
+							</restrictTo>
+						</filter>
+						<filter>
+							<type>p2-installable-unit</type>
+							<id>com.fasterxml.jackson.dataformat.jackson-dataformat-yaml</id>
+							<restrictTo>
+								<version>${jackson.version}</version>
+							</restrictTo>
+						</filter>
+						<filter>
+							<type>p2-installable-unit</type>
+							<id>com.fasterxml.jackson.dataformat.jackson-dataformat-csv</id>
+							<restrictTo>
+								<version>${jackson.version}</version>
+							</restrictTo>
+						</filter>
+						<filter>
+							<type>p2-installable-unit</type>
+							<id>com.fasterxml.jackson.dataformat.jackson-dataformat-afterburner</id>
+							<restrictTo>
+								<version>${jackson.version}</version>
+							</restrictTo>
+						</filter>
 					</filters>
 					<environments>
 						<environment>
@@ -526,7 +569,7 @@
 				</repository>
 				<repository>
 					<id>emfjson</id>
-					<url>http://ghillairet.github.com/p2</url>
+					<url>http://ghillairet.github.io/p2/releases/emfjson/0.10.0/</url>
 					<layout>p2</layout>
 				</repository>
 				<repository>
