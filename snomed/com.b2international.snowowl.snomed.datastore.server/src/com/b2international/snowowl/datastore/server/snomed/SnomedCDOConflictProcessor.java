@@ -152,7 +152,9 @@ public class SnomedCDOConflictProcessor extends AbstractCDOConflictProcessor imp
 
 		final CDOID conflictingNewInTarget = newComponentIdsInTarget.get(newComponentIdInSource);
 		if (null != conflictingNewInTarget) {
-			return new AddedInSourceAndTargetConflict(sourceRevision.getID(), conflictingNewInTarget);
+			final String sourceType = sourceRevision.getEClass().getName();
+			return new AddedInSourceAndTargetConflict(sourceRevision.getID(), conflictingNewInTarget,
+					"Two SNOMED CT %ss are using the same '%s' identifier.", sourceType, newComponentIdInSource);
 		} else {
 			return null;
 		}
@@ -307,11 +309,17 @@ public class SnomedCDOConflictProcessor extends AbstractCDOConflictProcessor imp
 							membersToRemove.add(newLanguageRefSetMember);
 							continue label;
 						} else if (Concepts.REFSET_DESCRIPTION_ACCEPTABILITY_PREFERRED.equals(acceptabilityId)) {
-							return new AddedInSourceAndTargetConflict(newLanguageRefSetMember.cdoID(), conceptDescriptionMember.cdoID()); 
+							return new AddedInSourceAndTargetConflict(newLanguageRefSetMember.cdoID(), 
+									conceptDescriptionMember.cdoID(),
+									"Two SNOMED CT Descriptions selected as preferred terms. %s <-> %s",
+									description.getId(), conceptDescription.getId());
 						}
 					} else {
 						if (description.equals(conceptDescription)) {
-							return new AddedInSourceAndTargetConflict(newLanguageRefSetMember.cdoID(), conceptDescriptionMember.cdoID());
+							return new AddedInSourceAndTargetConflict(
+									newLanguageRefSetMember.cdoID(), 
+									conceptDescriptionMember.cdoID(),
+									"Different acceptability selected for the same description, %s", description.getId());
 						}
 					}
 				}

@@ -27,12 +27,18 @@ public class AddedInSourceAndTargetConflict extends Conflict {
 
 	private final CDOID sourceId;
 	private final CDOID targetId;
+	private final String message;
 
-	public AddedInSourceAndTargetConflict(final CDOID sourceId, final CDOID targetId) {
+	public AddedInSourceAndTargetConflict(final CDOID sourceId, final CDOID targetId, final String message, Object...args) {
 		this.sourceId = sourceId;
 		this.targetId = targetId;
+		this.message = String.format(message, args);
 	}
 
+	public String getMessage() {
+		return message;
+	}
+	
 	@Override
 	public CDOID getID() {
 		return sourceId;
@@ -47,8 +53,7 @@ public class AddedInSourceAndTargetConflict extends Conflict {
 	}
 
 	@Override
-	public String toString()
-	{
+	public String toString() {
 		return MessageFormat.format("AddedInSourceAndTarget[source={0}, target={1}]", sourceId, targetId);
 	}
 }
