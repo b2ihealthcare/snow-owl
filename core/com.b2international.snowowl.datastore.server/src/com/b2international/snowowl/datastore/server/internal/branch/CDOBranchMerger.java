@@ -82,9 +82,7 @@ public class CDOBranchMerger extends DefaultCDOMerger.PerFeature.ManyValued {
 			details += " source: " + detachedConflict.getSourceId();
 			details += " target: " + detachedConflict.getTargetId();
 		} else if (conflict instanceof AddedInSourceAndTargetConflict) {
-			AddedInSourceAndTargetConflict addedConflict = (AddedInSourceAndTargetConflict)conflict;
-			details += " source: " + addedConflict.getSourceId();
-			details += " target: " + addedConflict.getTargetId();
+			details += ((AddedInSourceAndTargetConflict) conflict).getMessage();
 		} else {
 			details += " id: " + conflict.getID().toString();
 		}
