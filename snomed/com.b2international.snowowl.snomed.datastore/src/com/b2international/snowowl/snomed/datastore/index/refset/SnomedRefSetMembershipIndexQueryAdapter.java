@@ -267,7 +267,7 @@ public class SnomedRefSetMembershipIndexQueryAdapter extends SnomedRefSetMemberI
 	}
 	
 	/**
-	 * Lucene specific query adapter for retrieving information about SNOMED&nbsp;CT concrete data type reference set members and memberships.
+	 * Lucene specific query adapter for retrieving information about SNOMED&nbsp;CT concrete domain reference set members and memberships.
 	 * @see SnomedRefSetMembershipLookupService
 	 * @see SnomedRefSetMembershipIndexQueryAdapter
 	 */

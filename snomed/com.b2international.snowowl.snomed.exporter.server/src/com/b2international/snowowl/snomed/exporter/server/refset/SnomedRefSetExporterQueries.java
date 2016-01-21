@@ -168,7 +168,7 @@ public abstract class SnomedRefSetExporterQueries {
 			+ "FROM SNOMEDREFSET_SNOMEDDESCRIPTIONTYPEREFSETMEMBER member "
 			+ "WHERE member.REFSET = ? ";
 	
-	// concrete data type reference sets
+	// concrete domain reference sets
 	public static final String SQL_CONCRETE_DATA_TYPE_REFSET_EXPORT_QUERY = "SELECT "
 			+ "member.CDO_ID, "
 			+ "member.CDO_CREATED, "
@@ -186,7 +186,7 @@ public abstract class SnomedRefSetExporterQueries {
 			+ "FROM SNOMEDREFSET_SNOMEDCONCRETEDATATYPEREFSETMEMBER  member "
 			+ "WHERE member.REFSET = ? ";
 	
-	// concrete data type reference sets
+	// concrete domain reference sets
 	public static final String SQL_ASSOCIATION_TYPE_REFSET_EXPORT_QUERY = "SELECT "
 			+ "member.CDO_ID, "
 			+ "member.CDO_CREATED, "

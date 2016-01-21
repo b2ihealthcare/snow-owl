@@ -30,7 +30,7 @@ import com.b2international.snowowl.snomed.importer.release.ReleaseFileSet.Releas
 import com.b2international.snowowl.snomed.importer.rf2.model.ComponentImportType;
 
 /**
- * Represents a release file validator that validates the concrete data type reference set.
+ * Represents a release file validator that validates the concrete domain reference set.
  * 
  */
 public class SnomedConcreteDataTypeRefSetValidator extends SnomedRefSetValidator {

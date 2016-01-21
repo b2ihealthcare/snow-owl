@@ -90,7 +90,7 @@ public abstract class SnomedRefSetUtil {
 			.build();
 	
 	/**
-	 * Map for looking up the concrete data type reference set identifier concept IDs based on the associated concrete domain data types.
+	 * Map for looking up the concrete domain reference set identifier concept IDs based on the associated concrete domain data types.
 	 */
 	public static final BiMap<com.b2international.snowowl.snomed.mrcm.DataType, String> MRCM_DATATYPE_TO_REFSET_MAP = ImmutableBiMap.<com.b2international.snowowl.snomed.mrcm.DataType, String>builder()
 			.put(com.b2international.snowowl.snomed.mrcm.DataType.BOOLEAN, getCoreConfiguration().getBooleanDatatypeRefsetIdentifier())
@@ -208,20 +208,20 @@ public abstract class SnomedRefSetUtil {
 	}
 	
 	/**
-	 * Returns with the identifier concept ID of the concrete data type reference set specified by the data type enumeration.
+	 * Returns with the identifier concept ID of the concrete domain reference set specified by the data type enumeration.
 	 * <br>May return with {@code null}.
 	 * @param dataType the data type.
-	 * @return the identifier concept ID of the SNOMED&nbsp;CT concrete data type reference set.
+	 * @return the identifier concept ID of the SNOMED&nbsp;CT concrete domain reference set.
 	 */
 	public static String getRefSetId(final com.b2international.snowowl.snomed.mrcm.DataType dataType) {
 		return MRCM_DATATYPE_TO_REFSET_MAP.get(dataType);
 	}
 	
 	/**
-	 * Returns with the identifier concept ID of the concrete data type reference set specified by the data type enumeration.
+	 * Returns with the identifier concept ID of the concrete domain reference set specified by the data type enumeration.
 	 * <br>May return with {@code null}.
 	 * @param dataType the data type.
-	 * @return the identifier concept ID of the SNOMED&nbsp;CT concrete data type reference set.
+	 * @return the identifier concept ID of the SNOMED&nbsp;CT concrete domain reference set.
 	 */
 	public static String getRefSetId(final DataType dataType) {
 		return DATATYPE_TO_REFSET_MAP.get(dataType);
@@ -324,7 +324,7 @@ public abstract class SnomedRefSetUtil {
 		}
 	}
 	
-	// concrete data type reference set members should not be shown in the UI.
+	// concrete domain reference set members should not be shown in the UI.
 	public static SnomedRefSetType getByConceptId(String conceptId) {
 		
 		if (conceptId == null) {
@@ -392,7 +392,7 @@ public abstract class SnomedRefSetUtil {
 	 * @param type SnomedRefSetType
 	 * @return String tab item text
 	 */
-	//concrete data type reference set members should not be shown in the UI.
+	//concrete domain reference set members should not be shown in the UI.
 	public static String getPreferencePageTabItemText(SnomedRefSetType type) {
 		
 		switch (type) {
@@ -417,7 +417,7 @@ public abstract class SnomedRefSetUtil {
 		}
 	}
 
-	//concrete data type reference set members should not be shown in the UI.
+	//concrete domain reference set members should not be shown in the UI.
 	public static String getConceptId(SnomedRefSetType type) {
 		
 		switch (type) {

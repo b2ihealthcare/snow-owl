@@ -109,9 +109,9 @@ public enum SnomedConcreteDataTypes {
 	}
 	
 	/**
-	 * Returns {@code true} if creating is a concrete data type associated with a SNOMED&nbsp;CT relationship is supported. Otherwise returns {@code false}.
+	 * Returns {@code true} if creating is a concrete domain associated with a SNOMED&nbsp;CT relationship is supported. Otherwise returns {@code false}.
 	 * This method check if the measurement type reference set concept identifiers are exists. If not this method returns with {@code false}.
-	 * @return {@code true} if creating is a concrete data type associated with a SNOMED&nbsp;CT relationship is supported
+	 * @return {@code true} if creating is a concrete domain associated with a SNOMED&nbsp;CT relationship is supported
 	 */
 	public static boolean isRelationshipConcreteDataTypeSupported() {
 		SnomedClientTerminologyBrowser browser = getTerminologyBrowser();
@@ -133,7 +133,7 @@ public enum SnomedConcreteDataTypes {
 	/**
 	 * Method for getting the data type of the concrete domain element specified with the unique reference set identifier.
 	 * @param refSetId the unique identifier of the reference set.
-	 * @return the data type of the concrete data type reference set members.
+	 * @return the data type of the concrete domain reference set members.
 	 */
 	public static DataType getDataTypeByRefSetId(final String refSetId) {
 		for (final SnomedConcreteDataTypes type : values()) {
@@ -159,9 +159,9 @@ public enum SnomedConcreteDataTypes {
 	}
 	
 	/**
-	 * Method for getting the OWL 2 label of the SNOMED&nbsp;CT concrete data type element identified by the ID of the reference set identifier concept.
+	 * Method for getting the OWL 2 label of the SNOMED&nbsp;CT concrete domain element identified by the ID of the reference set identifier concept.
 	 * @param refSetId the identifier concept ID of the SNOMED&nbsp;CT reference set. 
-	 * @return the name of the concrete data type.
+	 * @return the name of the concrete domain.
 	 */
 	public static String getOwlLabel(final String refSetId) {
 		for (final SnomedConcreteDataTypes type : values()) {
@@ -173,9 +173,9 @@ public enum SnomedConcreteDataTypes {
 	}
 	
 	/**
-	 * Method for getting the human readable name of the SNOMED&nbsp;CT concrete data type element identified by the ID of the reference set identifier concept.
+	 * Method for getting the human readable name of the SNOMED&nbsp;CT concrete domain element identified by the ID of the reference set identifier concept.
 	 * @param refSetId the identifier concept ID of the SNOMED&nbsp;CT reference set. 
-	 * @return the name of the concrete data type.
+	 * @return the name of the concrete domain.
 	 */
 	public static String getName(final String refSetId) {
 		for (final SnomedConcreteDataTypes type : values()) {

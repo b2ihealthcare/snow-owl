@@ -126,7 +126,7 @@ public abstract class SnomedConstants {
 		public static final String FOUNDATION_METADATA_CONCEPTS = "900000000000454005";
 		public static final String CASE_SIGNIFICANCE_ROOT_CONCEPT = "900000000000447004";
 		
-		//TODO: These are substitutes for concrete data type operational concepts that WILL be 
+		//TODO: These are substitutes for concrete domain operational concepts that WILL be 
 		//under the metadata hierarchy.  These need to be replaced once available.  bbanfai - 2012.09.11
 		public static final String CD_EQUAL = "276136004";  // =
 		public static final String CD_LESS = "276139006";  // <
@@ -194,7 +194,7 @@ public abstract class SnomedConstants {
 		public static final String SDD_UNIT_OF_MEASURE_REFERENCE_SET = "62111000133108";
 		public static final String SDD_SIMPLE_TYPE_REFERENCE_SET = "69511000133108";
 
-		//concrete data type
+		//concrete domain
 		public static final String REFSET_BOOLEAN_DATATYPE = "759160691000154109";
 		public static final String REFSET_DATETIME_DATATYPE = "492980241000154105";
 		public static final String REFSET_INTEGER_DATATYPE = "373998411000154109";

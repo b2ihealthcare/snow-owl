@@ -495,7 +495,7 @@ public class SnomedRefSetEditingContext extends BaseSnomedEditingContext {
 	 * added to the reference set's members list.
 	 * 
 	 * @param referencedComponentPair the component identifier - terminology identifier pair for the referenced component
-	 * @param type the concrete data type of the reference set member
+	 * @param type the concrete domain of the reference set member
 	 * @param value the value of the reference set member
 	 * @param label the label of the reference set member
 	 * @param moduleId the module ID for the reference set member
@@ -530,7 +530,7 @@ public class SnomedRefSetEditingContext extends BaseSnomedEditingContext {
 	 * @param uomComponentId the unit of measurement component identifier
 	 * @param operatorComponentId the comparison operator component identifier
 	 * @param value the value of the reference set member
-	 * @param attrLabel the label of the concrete data type. Can be {@code null}. If {@code null}, the label is specified by the referenced component.
+	 * @param attrLabel the label of the concrete domain. Can be {@code null}. If {@code null}, the label is specified by the referenced component.
 	 * @param moduleId the module ID for the reference set member
 	 * @param concreteDataTypeRefSet the parent reference set
 	 * 

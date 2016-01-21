@@ -198,7 +198,7 @@ public enum AuthoringService implements IAuthoringService {
 				characteristicTypeId,
 				concreteDomainAttributeName, 
 				moduleId, 
-				refSet), "Error while creating concrete data type for "
+				refSet), "Error while creating concrete domain for "
 				+ componentType + ": " + relationship.getId() + " with value " + value);
 
 		// attach it to the relationship
@@ -233,7 +233,7 @@ public enum AuthoringService implements IAuthoringService {
 				characteristicTypeId,
 				concreteDomainAttributeName,
 				moduleId,
-				refSet), "Error while creating concrete data type for " + componentType + ": " + relationship.getId() + " with value " + value);
+				refSet), "Error while creating concrete domain for " + componentType + ": " + relationship.getId() + " with value " + value);
 		
 		// attach it to the relationship
 		relationship.getConcreteDomainRefSetMembers().add(member);
@@ -324,7 +324,7 @@ public enum AuthoringService implements IAuthoringService {
 					componentType.getComponentIdentifierPair(componentId), dataType, value, 
 					characteristicTypeId,
 					concreteDomainAttributeName,
-					getModuleId(context), refSet), "Error while creating concrete data type for " + componentType + ": " + componentId
+					getModuleId(context), refSet), "Error while creating concrete domain for " + componentType + ": " + componentId
 					+ "on task " + taskId + " with value " + value);
 			componentType.getComponent(context.getTransaction(), componentId).getConcreteDomainRefSetMembers().add(member);
 			context.commit("", new ConsoleProgressMonitor());
@@ -360,7 +360,7 @@ public enum AuthoringService implements IAuthoringService {
 		final SnomedConcreteDataTypeRefSetMember member = checkNotNull(context.createConcreteDataTypeRefSetMember(
 				componentType.getComponentIdentifierPair(Long.valueOf(concept.getId())), dataType, value, 
 				characteristicTypeId, concreteDomainAttributeName,
-				moduleId, refSet), "Error while creating concrete data type for " + componentType + ": " + concept.getId()
+				moduleId, refSet), "Error while creating concrete domain for " + componentType + ": " + concept.getId()
 				+ " with value " + value);
 
 		// attach it to the concept
@@ -368,12 +368,12 @@ public enum AuthoringService implements IAuthoringService {
 	}
 
 	/*
-	 * returns with the proper identifier concept ID of the concrete data type
+	 * returns with the proper identifier concept ID of the concrete domain
 	 * reference set based on the specified data type.
 	 */
 	@Nonnull
 	private String getIdentifierConceptId(final DataType dataType) {
-		return checkNotNull(SnomedRefSetUtil.DATATYPE_TO_REFSET_MAP.get(dataType), "Error while getting identifier concept ID for concrete data type reference set. Type: " + dataType);
+		return checkNotNull(SnomedRefSetUtil.DATATYPE_TO_REFSET_MAP.get(dataType), "Error while getting identifier concept ID for concrete domain reference set. Type: " + dataType);
 	}
 
 	/* returns with the unique ID of the default SNOMED CT module concept. */
@@ -428,7 +428,7 @@ public enum AuthoringService implements IAuthoringService {
 	}
 
 	/*
-	 * returns with the concrete data type reference set identified by the
+	 * returns with the concrete domain reference set identified by the
 	 * unique identifier concept ID.
 	 */
 	@Nonnull
@@ -438,7 +438,7 @@ public enum AuthoringService implements IAuthoringService {
 		if (refSet instanceof SnomedConcreteDataTypeRefSet) {
 			return (SnomedConcreteDataTypeRefSet) refSet;
 		} else {
-			throw new IllegalStateException("SNOMED CT reference set was not a concrete data type reference set but "
+			throw new IllegalStateException("SNOMED CT reference set was not a concrete domain reference set but "
 					+ refSet.getClass().getName());
 		}
 	}
