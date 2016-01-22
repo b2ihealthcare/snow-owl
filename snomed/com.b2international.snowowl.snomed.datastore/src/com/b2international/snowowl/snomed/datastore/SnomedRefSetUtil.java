@@ -227,6 +227,15 @@ public abstract class SnomedRefSetUtil {
 	}
 	
 	/**
+	 * Returns the proper {@link DataType} for the specified reference set id. The mapping is based on the IDs provided by the configuration.
+	 * @param refsetId the id of the concrete domain reference set
+	 * @return the proper datatype for the specified reference set id
+	 */
+	public static DataType getDataType(String refsetId) {
+		return DATATYPE_TO_REFSET_MAP.inverse().get(refsetId);
+	}
+	
+	/**
 	 * Returns with the unique terminology component ID as a short for the <i>special field</i> of a 
 	 * SNOMED&nbsp;CT reference set member given as a {@link Document}.
 	 * @param document the document representing a SNOMED&nbsp;CT reference set member.
