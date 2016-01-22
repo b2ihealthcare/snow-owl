@@ -77,7 +77,6 @@ public abstract class SnomedRefSetUtil {
 	 * their CAPITAL CASE preferred terms.
 	 */
 	public static final Map<String, String> ASSOCIATION_REFSETS = ImmutableMap.<String, String>builder()
-			.put(Concepts.REFSET_CONCEPT_INACTIVITY_INDICATOR, "Inactivity status")
 			.put(Concepts.REFSET_ALTERNATIVE_ASSOCIATION, "Alternative concept")
 			.put(Concepts.REFSET_MOVED_FROM_ASSOCIATION, "Moved from")
 			.put(Concepts.REFSET_MOVED_TO_ASSOCIATION, "Moved to")
