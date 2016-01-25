@@ -98,6 +98,11 @@ public class CoreTerminologyBroker {
 	public static final String UNSPECIFIED = "UNSPECIFIED";
 	public static final int UNSPECIFIED_NUMBER = -1;
 	public static final short UNSPECIFIED_NUMBER_SHORT = -1;
+	
+	private static final ICoreTerminologyComponentInformation UNSPECIFIED_COMPONENT = new ICoreTerminologyComponentInformation() {
+		@Override public String getName() {	return UNSPECIFIED;	}
+		@Override public String getId() { return UNSPECIFIED; }
+	};
 
 	public static final String TERMINOLOGY_COMPONENT_EXTENSION_POINT_ID = "com.b2international.snowowl.core.terminologyComponent";
 	public static final String TERMINOLOGY_EXTENSION_POINT_ID = "com.b2international.snowowl.core.terminology";
@@ -715,7 +720,7 @@ public class CoreTerminologyBroker {
 	
 	public ICoreTerminologyComponentInformation getComponentInformation(final String terminologyComponentId) {
 		Preconditions.checkNotNull(terminologyComponentId, "Terminology component identifier argument cannot be null.");
-		return internalGetRegisteredComponents().get(terminologyComponentId);
+		return UNSPECIFIED.equals(terminologyComponentId) ? UNSPECIFIED_COMPONENT : internalGetRegisteredComponents().get(terminologyComponentId);
 	}
 
 	private String getTerminologyAttributeValueByOid(final String attribute, final String oid) {

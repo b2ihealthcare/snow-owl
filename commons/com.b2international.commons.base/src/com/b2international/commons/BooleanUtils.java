@@ -68,4 +68,42 @@ public final class BooleanUtils {
 		}
 		return bool.booleanValue() ? Integer.valueOf(1) : Integer.valueOf(0);
 	}
+	
+	/**
+	 * Converts a {@link String} object to {@link Boolean} by assuming '0' is false and '1' is true. If the parameter is
+	 * <code>null</code> or something else than ['0', '1'] then it returns <code>null</code>.
+	 * 
+	 * @param value
+	 * @return <code>null</code> if the parameter is <code>null</code> or the value is neither '0' nor '1', <code>true</code> or <code>false</code> otherwise.
+	 */
+	public static Boolean valueOf(String value) {
+		if (null == value) {
+			return null;
+		}
+		return "0".equals(value) ? Boolean.FALSE : "1".equals(value) ? Boolean.TRUE : null;
+	}
+	
+	/**
+	 * Converts a {@link Boolean} object to {@link String} by assuming '0' is false and '1' is true. If the parameter is
+	 * <code>null</code> then it returns <code>null</code>.
+	 * 
+	 * @param bool
+	 * @return <code>null</code> if the parameter is <code>null</code>, '0' if false, '1' if true.
+	 */
+	public static String toString(Boolean bool) {
+		if (null == bool) {
+			return null;
+		}
+		return toString(bool.booleanValue());
+	}
+	
+	/**
+	 * Converts a primitive boolean to {@link String} by assuming '0' is false and '1' is true.
+	 * 
+	 * @param bool
+	 * @return '0' if the parameter is false, '1' otherwise.
+	 */
+	public static String toString(boolean bool) {
+		return bool ? "1" : "0";
+	}
 }
