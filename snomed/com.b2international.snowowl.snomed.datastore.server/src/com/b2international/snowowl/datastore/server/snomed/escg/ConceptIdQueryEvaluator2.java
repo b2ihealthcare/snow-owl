@@ -28,6 +28,7 @@ import com.b2international.commons.ClassUtils;
 import com.b2international.commons.pcj.LongSets;
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.api.IBranchPath;
+import com.b2international.snowowl.core.exceptions.NotImplementedException;
 import com.b2international.snowowl.datastore.index.IndexUtils;
 import com.b2international.snowowl.datastore.index.LongDocValuesCollector;
 import com.b2international.snowowl.datastore.server.snomed.SnomedComponentService;
@@ -183,19 +184,13 @@ public class ConceptIdQueryEvaluator2 implements Serializable, IQueryEvaluator<L
 			}
 			
 		} else if (expression instanceof NumericDataClause) {
-			
 			final NumericDataClause clause = (NumericDataClause) expression;
 			return getByNumericalAttributes(evaluate(clause.getConcepts()), clause);
-			
 		} else if (expression instanceof NumericDataGroupClause) {
-			
 			final NumericDataGroupClause clause = (NumericDataGroupClause) expression;
 			return getByNumericalAttributesGroup(evaluate(clause.getConcepts()), clause.getNumericData(), evaluate(clause.getSubstances()));
-			
 		} else if (expression instanceof NotClause) {
-			
-			throw new UnsupportedOperationException("Cannot NOT yet: " + expression);
-			
+			throw new NotImplementedException("Can't start expression with NOT: %s", expression);
 		}
 	
 		throw new IllegalArgumentException("Don't know how to expand: " + expression);
@@ -203,7 +198,7 @@ public class ConceptIdQueryEvaluator2 implements Serializable, IQueryEvaluator<L
 
 	private LongSet handleAndNot(final RValue notNegated, final NotClause negated) {
 		if (notNegated instanceof NotClause) {
-			throw new UnsupportedOperationException("Cannot AND two NOT clauses yet");
+			throw new NotImplementedException("Cannot AND two NOT clauses yet");
 		}
 		
 		final LongSet notNegatedIds = evaluate(notNegated);
