@@ -170,12 +170,12 @@ final class SnomedConceptSearchRequest extends SnomedSearchRequest<SnomedConcept
 			final BooleanQuery bq = buildBooleanQuery(queryBuilder.matchAll(), Occur.MUST);
 			
 			final String term = getString(OptionKey.TERM);
-			final Map<String, Integer> conceptScoreMap = executeDescriptionSearch(context, term);
+			final Map<String, Float> conceptScoreMap = executeDescriptionSearch(context, term);
 			
 			try {
 				final ComponentCategory category = SnomedIdentifiers.getComponentCategory(term);
 				if (category == ComponentCategory.CONCEPT) {
-					conceptScoreMap.put(term, Integer.MAX_VALUE);
+					conceptScoreMap.put(term, Float.MAX_VALUE);
 					bq.add(SnomedMappings.id().toQuery(Long.valueOf(term)), Occur.SHOULD);
 				}
 			} catch (IllegalArgumentException e) {
@@ -265,7 +265,7 @@ final class SnomedConceptSearchRequest extends SnomedSearchRequest<SnomedConcept
 		}
 	}
 
-	private Map<String, Integer> executeDescriptionSearch(BranchContext context, String term) {
+	private Map<String, Float> executeDescriptionSearch(BranchContext context, String term) {
 		final Collection<ISnomedDescription> items = SnomedRequests.prepareSearchDescription()
 			.all()
 			.filterByActive(true)
@@ -276,15 +276,12 @@ final class SnomedConceptSearchRequest extends SnomedSearchRequest<SnomedConcept
 			.execute(context)
 			.getItems();
 		
-		final Map<String, Integer> conceptMap = newHashMap();
-		int i = items.size();
+		final Map<String, Float> conceptMap = newHashMap();
 		
 		for (ISnomedDescription description : items) {
 			if (!conceptMap.containsKey(description.getConceptId())) {
-				conceptMap.put(description.getConceptId(), i);
+				conceptMap.put(description.getConceptId(), description.getScore());
 			}
-			
-			i--;
 		}
 		
 		return conceptMap;
