@@ -17,7 +17,9 @@ package com.b2international.snowowl.snomed.datastore.request;
 
 import java.util.List;
 
+import org.apache.lucene.queries.BooleanFilter;
 import org.apache.lucene.search.Filter;
+import org.apache.lucene.search.BooleanClause.Occur;
 
 import com.b2international.commons.functions.StringToLongFunction;
 import com.b2international.snowowl.datastore.request.SearchRequest;
@@ -63,10 +65,22 @@ public abstract class SnomedSearchRequest<R> extends SearchRequest<R> {
 			queryBuilder.module(getString(OptionKey.MODULE));
 		}
 	}
+	
+	protected final void addModuleClause(final BooleanFilter filter) {
+		if (containsKey(OptionKey.MODULE)) {
+			addFilterClause(filter, SnomedMappings.module().toTermFilter(Long.valueOf(getString(OptionKey.MODULE))), Occur.MUST);
+		}
+	}
 
 	protected final void addActiveClause(SnomedQueryBuilder queryBuilder) {
 		if (containsKey(OptionKey.ACTIVE)) {
 			queryBuilder.active(getBoolean(OptionKey.ACTIVE));
+		}
+	}
+	
+	protected final void addActiveClause(final BooleanFilter filter) {
+		if (containsKey(OptionKey.ACTIVE)) {
+			addFilterClause(filter, SnomedMappings.active().toTermFilter(getBoolean(OptionKey.ACTIVE) ? 1 : 0), Occur.MUST);
 		}
 	}
 }
