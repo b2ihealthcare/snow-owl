@@ -27,9 +27,9 @@ import org.apache.lucene.queries.CustomScoreQuery;
 import org.apache.lucene.queries.function.FunctionQuery;
 import org.apache.lucene.queries.function.FunctionValues;
 import org.apache.lucene.queries.function.ValueSource;
+import org.apache.lucene.queries.function.valuesource.DualFloatFunction;
 import org.apache.lucene.queries.function.valuesource.FloatFieldSource;
 import org.apache.lucene.queries.function.valuesource.LongFieldSource;
-import org.apache.lucene.queries.function.valuesource.SimpleFloatFunction;
 import org.apache.lucene.search.BooleanClause.Occur;
 import org.apache.lucene.search.BooleanQuery;
 import org.apache.lucene.search.IndexSearcher;
@@ -186,37 +186,37 @@ final class SnomedConceptSearchRequest extends SnomedSearchRequest<SnomedConcept
 				return new SnomedConcepts(offset(), limit(), 0);
 			}
 			
-			addFilterClause(filter, SnomedMappings.id().createTermsFilter(StringToLongFunction.copyOf(conceptScoreMap.keySet())), Occur.MUST); 
-			final FunctionQuery functionQuery = new FunctionQuery(new SimpleFloatFunction(new LongFieldSource(SnomedMappings.id().fieldName())) {
-				
-				@Override
-				protected String name() {
-					return "ConceptScoreMap";
-				}
-				
-				@Override
-				protected float func(int doc, FunctionValues vals) {
-					final String conceptId = Long.toString(vals.longVal(doc));
-					if (conceptScoreMap.containsKey(conceptId)) {
-						return conceptScoreMap.get(conceptId);
-					} else {
-						return 0.0f;
-					}
-				}
-			});
+			addFilterClause(filter, SnomedMappings.id().createTermsFilter(StringToLongFunction.copyOf(conceptScoreMap.keySet())), Occur.MUST);
 			
+			final FunctionQuery functionQuery = new FunctionQuery(
+					new DualFloatFunction(new LongFieldSource(SnomedMappings.id().fieldName()), DOI_VALUE_SOURCE) {
+						@Override
+						protected String name() {
+							return "ConceptScoreMap";
+						}
+
+						@Override
+						protected float func(int doc, FunctionValues conceptIdValues, FunctionValues interestValues) {
+							final String conceptId = Long.toString(conceptIdValues.longVal(doc));
+							float interest = containsKey(OptionKey.USE_DOI) ? interestValues.floatVal(doc) : 0.0f;
+							
+							if (conceptScoreMap.containsKey(conceptId)) {
+								return conceptScoreMap.get(conceptId) + interest;
+							} else {
+								return interest;
+							}
+						}
+					});
 						
 			query = new CustomScoreQuery(createFilteredQuery(bq, filter), functionQuery);
 			sort = Sort.RELEVANCE;
-			
+		} else if (containsKey(OptionKey.USE_DOI)) {
+			query = new CustomScoreQuery(createConstantScoreQuery(createFilteredQuery(queryBuilder.matchAll(), filter)),
+					new FunctionQuery(DOI_VALUE_SOURCE));
+			sort = Sort.RELEVANCE;
 		} else {
 			query = createConstantScoreQuery(createFilteredQuery(queryBuilder.matchAll(), filter));
 			sort = Sort.INDEXORDER;
-		}
-		
-		if (containsKey(OptionKey.USE_DOI)) {
-			query = new CustomScoreQuery(query, new FunctionQuery(DOI_VALUE_SOURCE));
-			sort = Sort.RELEVANCE;
 		}
 		
 		final int totalHits = getTotalHits(searcher, query);
