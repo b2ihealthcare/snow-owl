@@ -22,6 +22,7 @@ import com.b2international.commons.http.ExtendedLocale;
 import com.b2international.snowowl.core.api.IComponentWithChildFlag;
 import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.snomed.core.domain.ISnomedConcept;
+import com.b2international.snowowl.snomed.core.domain.ISnomedDescription;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcepts;
 import com.b2international.snowowl.snomed.core.lang.LanguageSetting;
 import com.b2international.snowowl.snomed.core.tree.TreeBuilder;
@@ -77,9 +78,11 @@ public final class SnomedStatedClientTerminologyBrowser extends BaseSnomedClient
 		return FluentIterable.from(concepts).transform(new Function<ISnomedConcept, IComponentWithChildFlag<String>>() {
 			@Override
 			public IComponentWithChildFlag<String> apply(ISnomedConcept input) {
+				final ISnomedDescription pt = input.getPt();
+				final String label = pt != null ? pt.getTerm() : input.getId();
 				final SnomedConceptIndexEntry entry = SnomedConceptIndexEntry
 					.builder(input)
-					.label(input.getPt().getTerm())
+					.label(label)
 					.build();
 				return new SnomedConceptIndexEntryWithChildFlag(entry, input.getDescendants().getTotal() > 0);
 			}

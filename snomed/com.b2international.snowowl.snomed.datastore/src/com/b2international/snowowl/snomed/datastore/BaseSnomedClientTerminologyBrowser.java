@@ -37,6 +37,7 @@ import com.b2international.snowowl.datastore.browser.ActiveBranchClientTerminolo
 import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.snomed.SnomedPackage;
 import com.b2international.snowowl.snomed.core.domain.ISnomedConcept;
+import com.b2international.snowowl.snomed.core.domain.ISnomedDescription;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcepts;
 import com.b2international.snowowl.snomed.core.lang.LanguageSetting;
 import com.b2international.snowowl.snomed.core.tree.TerminologyTree;
@@ -115,7 +116,9 @@ public abstract class BaseSnomedClientTerminologyBrowser extends ActiveBranchCli
 					.setLocales(getLocales())
 					.build(getBranchPath().getPath())
 					.executeSync(getBus());
-			return SnomedConceptIndexEntry.builder(concept).label(concept.getPt().getTerm()).build();
+			final ISnomedDescription pt = concept.getPt();
+			final String label = pt != null ? pt.getTerm() : id;
+			return SnomedConceptIndexEntry.builder(concept).label(label).build();
 		} catch (NotFoundException e) {
 			return null;
 		}
