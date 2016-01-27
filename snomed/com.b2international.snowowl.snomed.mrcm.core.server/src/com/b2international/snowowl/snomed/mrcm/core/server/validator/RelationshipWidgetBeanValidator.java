@@ -31,6 +31,9 @@ import com.b2international.snowowl.snomed.mrcm.core.widget.bean.ConceptWidgetBea
 import com.b2international.snowowl.snomed.mrcm.core.widget.bean.ModeledWidgetBean;
 import com.b2international.snowowl.snomed.mrcm.core.widget.bean.RelationshipGroupWidgetBean;
 import com.b2international.snowowl.snomed.mrcm.core.widget.bean.RelationshipWidgetBean;
+import com.google.common.cache.CacheBuilder;
+import com.google.common.cache.CacheLoader;
+import com.google.common.cache.LoadingCache;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Multimap;
@@ -49,12 +52,19 @@ public class RelationshipWidgetBeanValidator implements ModeledWidgetBeanValidat
 	}
 
 	@Override
-	public void validate(IBranchPath branch, ConceptWidgetBean concept, ValidationStatusReporter reporter) {
+	public void validate(final IBranchPath branch, ConceptWidgetBean concept, ValidationStatusReporter reporter) {
 		final List<ModeledWidgetBean> groups = concept.getProperties().getElements();
 
 		boolean hasActiveIsA = false;
 		final Multimap<String, String> isaTypeToParentIdMap = HashMultimap.create();
 
+		final LoadingCache<String, String> conceptToLabelMap = CacheBuilder.newBuilder().build(new CacheLoader<String, String>() {
+			@Override
+			public String load(String key) throws Exception {
+				return getLabel(key, branch);
+			}
+		});
+		
 		for (final RelationshipGroupWidgetBean group : Iterables.filter(groups, RelationshipGroupWidgetBean.class)) {
 
 			final List<ModeledWidgetBean> relationships = group.getElements();
@@ -72,7 +82,7 @@ public class RelationshipWidgetBeanValidator implements ModeledWidgetBeanValidat
 				final String destinationId = relationship.getSelectedValue().getId();
 				if (relationship.isIsA()) {
 					final String characteristicTypeId = relationship.getSelectedCharacteristicType().getId();
-					final String characteristicTypeLabel = getLabel(characteristicTypeId, branch);
+					final String characteristicTypeLabel = conceptToLabelMap.getUnchecked(characteristicTypeId);
 					final Collection<String> parents = isaTypeToParentIdMap.get(characteristicTypeId);
 					if (parents.contains(destinationId)) {
 						reporter.error(relationship, "The concept has duplicate (%s) Is-a relationships.", characteristicTypeLabel);
