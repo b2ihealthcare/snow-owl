@@ -28,7 +28,6 @@ import org.apache.lucene.search.BooleanQuery;
 import org.apache.lucene.search.DisjunctionMaxQuery;
 import org.apache.lucene.search.Filter;
 import org.apache.lucene.search.IndexSearcher;
-import org.apache.lucene.search.MatchAllDocsQuery;
 import org.apache.lucene.search.PrefixQuery;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.ScoreDoc;
@@ -50,8 +49,6 @@ import com.b2international.snowowl.datastore.index.lucene.BookendTokenFilter;
 import com.b2international.snowowl.datastore.index.lucene.ComponentTermAnalyzer;
 import com.b2international.snowowl.datastore.index.lucene.MultiPhrasePrefixQuery;
 import com.b2international.snowowl.datastore.index.mapping.IndexField;
-import com.b2international.snowowl.datastore.index.mapping.Mappings;
-import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.snomed.core.domain.Acceptability;
 import com.b2international.snowowl.snomed.core.domain.ISnomedDescription;
 import com.b2international.snowowl.snomed.core.domain.SnomedDescriptions;
@@ -131,13 +128,10 @@ final class SnomedDescriptionSearchRequest extends SnomedSearchRequest<SnomedDes
 	}
 
 	private SnomedDescriptions search(BranchContext context, final IndexSearcher searcher, Long languageRefSetId, int offset, int limit) throws IOException {
-		Query query = new MatchAllDocsQuery();
-		final BooleanFilter filter = new BooleanFilter();
 		
-		addFilterClause(filter, Mappings.type().toTermFilter((int) SnomedTerminologyComponentConstants.DESCRIPTION_NUMBER), Occur.MUST);
-		
-		addActiveClause(filter);
-		addModuleClause(filter);
+		final SnomedQueryBuilder queryBuilder = SnomedMappings.newQuery().description();
+		addActiveClause(queryBuilder);
+		addModuleClause(queryBuilder);
 		
 		final Sort sort;
 		
@@ -164,7 +158,7 @@ final class SnomedDescriptionSearchRequest extends SnomedSearchRequest<SnomedDes
 			termDisjunctionQuery.add(atpfb);
 			termDisjunctionQuery.add(createAllTermPrefixesPresentQuery(prefixes));
 			
-			query = termDisjunctionQuery;
+			queryBuilder.and(termDisjunctionQuery);
 			sort = Sort.RELEVANCE;
 		} else {
 			sort = Sort.INDEXORDER;
@@ -181,7 +175,7 @@ final class SnomedDescriptionSearchRequest extends SnomedSearchRequest<SnomedDes
 		addEscgFilter(context, filters, ops, OptionKey.TYPE, SnomedMappings.descriptionType());
 		addLocaleFilter(context, filters, ops, languageRefSetId); 
 		
-		query = createFilteredQuery(query, filters, ops);
+		final Query query = createFilteredQuery(queryBuilder.matchAll(), filters, ops);
 		final int totalHits = getTotalHits(searcher, query);
 		
 		if (limit < 1 || totalHits < 1) {
