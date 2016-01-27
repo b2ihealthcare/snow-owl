@@ -24,6 +24,7 @@ import java.text.MessageFormat;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 
@@ -42,6 +43,7 @@ import org.slf4j.LoggerFactory;
 
 import com.b2international.commons.ClassUtils;
 import com.b2international.commons.CompareUtils;
+import com.b2international.commons.pcj.LongSets;
 import com.b2international.commons.status.SerializableStatus;
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.IDisposableService;
@@ -64,12 +66,17 @@ import com.b2international.snowowl.rpc.RpcSession;
 import com.b2international.snowowl.rpc.RpcThreadLocal;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.SnomedPackage;
+import com.b2international.snowowl.snomed.core.domain.ISnomedDescription;
+import com.b2international.snowowl.snomed.core.domain.SnomedDescriptions;
+import com.b2international.snowowl.snomed.core.lang.LanguageSetting;
 import com.b2international.snowowl.snomed.datastore.ConcreteDomainFragment;
 import com.b2international.snowowl.snomed.datastore.SnomedTerminologyBrowser;
 import com.b2international.snowowl.snomed.datastore.StatementFragment;
 import com.b2international.snowowl.snomed.datastore.index.SnomedIndexService;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptIndexEntry;
 import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedMappings;
+import com.b2international.snowowl.snomed.datastore.request.DescriptionRequestHelper;
+import com.b2international.snowowl.snomed.datastore.request.SnomedDescriptionSearchRequestBuilder;
 import com.b2international.snowowl.snomed.reasoner.classification.AbstractEquivalenceSet;
 import com.b2international.snowowl.snomed.reasoner.classification.AbstractResponse.Type;
 import com.b2international.snowowl.snomed.reasoner.classification.ClassificationRequest;
@@ -450,6 +457,15 @@ public class SnomedReasonerServerService extends CollectingService<Reasoner, Cla
 	}
 
 	private List<SnomedConceptIndexEntry> convertIdsToIndexEntries(final IBranchPath branchPath, final SnomedTerminologyBrowser terminologyBrowser, final LongSet conceptIds) {
+		final Set<String> conceptIdFilter = LongSets.toStringSet(conceptIds);
+		final DescriptionRequestHelper helper = new DescriptionRequestHelper() {
+			@Override
+			protected SnomedDescriptions execute(SnomedDescriptionSearchRequestBuilder req) {
+				return req.build(branchPath.getPath()).executeSync(ApplicationContext.getInstance().getService(IEventBus.class));
+			}
+		};
+		final Map<String, ISnomedDescription> preferredTerms = helper.getPreferredTerms(conceptIdFilter, ApplicationContext.getInstance().getService(LanguageSetting.class).getLanguagePreference());
+		
 		final List<SnomedConceptIndexEntry> convertedSet = newArrayList();
 		for (final LongIterator itr = conceptIds.iterator(); itr.hasNext(); /* empty */) {
 			final String conceptId = String.valueOf(itr.next());
@@ -457,11 +473,16 @@ public class SnomedReasonerServerService extends CollectingService<Reasoner, Cla
 			if (null == conceptIndexEntry) {
 				conceptIndexEntry = SnomedConceptIndexEntry.builder()
 						.id(conceptId)
+						.label(conceptId + " (unresolved)")
 						.iconId(Concepts.ROOT_CONCEPT) 
 						.moduleId(Concepts.MODULE_ROOT)
 						.storageKey(Long.MAX_VALUE) // XXX: set Long.MAX_VALUE storage key to never suggest it as a replacement	
 						.effectiveTimeLong(EffectiveTimes.UNSET_EFFECTIVE_TIME)
 						.build();
+			} else {
+				final ISnomedDescription description = preferredTerms.get(conceptId);
+				final String label = description == null ? conceptId : description.getTerm();
+				conceptIndexEntry = SnomedConceptIndexEntry.builder(conceptIndexEntry).label(label).build();
 			}
 			
 			convertedSet.add(conceptIndexEntry);
