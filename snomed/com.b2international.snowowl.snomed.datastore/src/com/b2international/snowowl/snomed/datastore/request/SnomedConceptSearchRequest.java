@@ -201,7 +201,7 @@ final class SnomedConceptSearchRequest extends SnomedSearchRequest<SnomedConcept
 							if (conceptScoreMap.containsKey(conceptId)) {
 								return conceptScoreMap.get(conceptId) + interest;
 							} else {
-								return interest;
+								return 0.0f;
 							}
 						}
 					});
