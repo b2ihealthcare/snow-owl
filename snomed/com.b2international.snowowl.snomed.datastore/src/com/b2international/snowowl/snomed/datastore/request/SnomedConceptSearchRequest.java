@@ -271,12 +271,19 @@ final class SnomedConceptSearchRequest extends SnomedSearchRequest<SnomedConcept
 	}
 
 	private Map<String, Float> executeDescriptionSearch(BranchContext context, String term) {
-		final Collection<ISnomedDescription> items = SnomedRequests.prepareSearchDescription()
+		final SnomedDescriptionSearchRequestBuilder requestBuilder = SnomedRequests.prepareSearchDescription()
 			.all()
 			.filterByActive(true)
 			.filterByTerm(term)
 			.filterByLanguageRefSetIds(languageRefSetIds())
-			.filterByConceptId(StringToLongFunction.copyOf(componentIds()))
+			.filterByConceptId(StringToLongFunction.copyOf(componentIds()));
+		
+		if (containsKey(OptionKey.DESCRIPTION_TYPE)) {
+			final String type = getString(OptionKey.DESCRIPTION_TYPE);
+			requestBuilder.filterByType(type);
+		}
+		
+		final Collection<ISnomedDescription> items = requestBuilder
 			.build()
 			.execute(context)
 			.getItems();
