@@ -27,9 +27,9 @@ import org.apache.lucene.queries.CustomScoreQuery;
 import org.apache.lucene.queries.function.FunctionQuery;
 import org.apache.lucene.queries.function.FunctionValues;
 import org.apache.lucene.queries.function.ValueSource;
+import org.apache.lucene.queries.function.valuesource.DualFloatFunction;
 import org.apache.lucene.queries.function.valuesource.FloatFieldSource;
 import org.apache.lucene.queries.function.valuesource.LongFieldSource;
-import org.apache.lucene.queries.function.valuesource.SimpleFloatFunction;
 import org.apache.lucene.search.BooleanClause.Occur;
 import org.apache.lucene.search.BooleanQuery;
 import org.apache.lucene.search.IndexSearcher;
@@ -67,6 +67,9 @@ import bak.pcj.LongCollection;
 final class SnomedConceptSearchRequest extends SnomedSearchRequest<SnomedConcepts> {
 
 	private static final ValueSource DOI_VALUE_SOURCE = new FloatFieldSource(SnomedMappings.conceptDegreeOfInterest().fieldName());
+
+	private static final float MIN_DOI_VALUE = 1.05f;
+	private static final float MAX_DOI_VALUE = 10288.383f;
 	
 	enum OptionKey {
 
@@ -74,6 +77,11 @@ final class SnomedConceptSearchRequest extends SnomedSearchRequest<SnomedConcept
 		 * Description term to (smart) match
 		 */
 		TERM,
+		
+		/**
+		 * Description type to match
+		 */
+		DESCRIPTION_TYPE,
 
 		/**
 		 * ESCG expression to match
@@ -175,12 +183,12 @@ final class SnomedConceptSearchRequest extends SnomedSearchRequest<SnomedConcept
 			final BooleanQuery bq = buildBooleanQuery(queryBuilder.matchAll(), Occur.MUST);
 			
 			final String term = getString(OptionKey.TERM);
-			final Map<String, Integer> conceptScoreMap = executeDescriptionSearch(context, term);
+			final Map<String, Float> conceptScoreMap = executeDescriptionSearch(context, term);
 			
 			try {
 				final ComponentCategory category = SnomedIdentifiers.getComponentCategory(term);
 				if (category == ComponentCategory.CONCEPT) {
-					conceptScoreMap.put(term, Integer.MAX_VALUE);
+					conceptScoreMap.put(term, Float.MAX_VALUE);
 					bq.add(SnomedMappings.id().toQuery(Long.valueOf(term)), Occur.SHOULD);
 				}
 			} catch (IllegalArgumentException e) {
@@ -191,37 +199,42 @@ final class SnomedConceptSearchRequest extends SnomedSearchRequest<SnomedConcept
 				return new SnomedConcepts(offset(), limit(), 0);
 			}
 			
-			addFilterClause(filter, SnomedMappings.id().createTermsFilter(StringToLongFunction.copyOf(conceptScoreMap.keySet())), Occur.MUST); 
-			final FunctionQuery functionQuery = new FunctionQuery(new SimpleFloatFunction(new LongFieldSource(SnomedMappings.id().fieldName())) {
-				
-				@Override
-				protected String name() {
-					return "ConceptScoreMap";
-				}
-				
-				@Override
-				protected float func(int doc, FunctionValues vals) {
-					final String conceptId = Long.toString(vals.longVal(doc));
-					if (conceptScoreMap.containsKey(conceptId)) {
-						return conceptScoreMap.get(conceptId);
-					} else {
-						return 0.0f;
-					}
-				}
-			});
+			addFilterClause(filter, SnomedMappings.id().createTermsFilter(StringToLongFunction.copyOf(conceptScoreMap.keySet())), Occur.MUST);
 			
+			final FunctionQuery functionQuery = new FunctionQuery(
+					new DualFloatFunction(new LongFieldSource(SnomedMappings.id().fieldName()), DOI_VALUE_SOURCE) {
+						@Override
+						protected String name() {
+							return "ConceptScoreMap";
+						}
+
+						@Override
+						protected float func(int doc, FunctionValues conceptIdValues, FunctionValues interestValues) {
+							final String conceptId = Long.toString(conceptIdValues.longVal(doc));
+							float interest = containsKey(OptionKey.USE_DOI) ? interestValues.floatVal(doc) : 0.0f;
+							
+							// TODO move this normalization to index initializer.
+							if (interest != 0.0f) {
+								interest = (interest - MIN_DOI_VALUE) / (MAX_DOI_VALUE / MIN_DOI_VALUE);
+							}
+							
+							if (conceptScoreMap.containsKey(conceptId)) {
+								return conceptScoreMap.get(conceptId) + interest;
+							} else {
+								return 0.0f;
+							}
+						}
+					});
 						
 			query = new CustomScoreQuery(createFilteredQuery(bq, filter), functionQuery);
 			sort = Sort.RELEVANCE;
-			
+		} else if (containsKey(OptionKey.USE_DOI)) {
+			query = new CustomScoreQuery(createConstantScoreQuery(createFilteredQuery(queryBuilder.matchAll(), filter)),
+					new FunctionQuery(DOI_VALUE_SOURCE));
+			sort = Sort.RELEVANCE;
 		} else {
 			query = createConstantScoreQuery(createFilteredQuery(queryBuilder.matchAll(), filter));
 			sort = Sort.INDEXORDER;
-		}
-		
-		if (containsKey(OptionKey.USE_DOI)) {
-			query = new CustomScoreQuery(query, new FunctionQuery(DOI_VALUE_SOURCE));
-			sort = Sort.RELEVANCE;
 		}
 		
 		final int totalHits = getTotalHits(searcher, query);
@@ -270,26 +283,30 @@ final class SnomedConceptSearchRequest extends SnomedSearchRequest<SnomedConcept
 		}
 	}
 
-	private Map<String, Integer> executeDescriptionSearch(BranchContext context, String term) {
-		final Collection<ISnomedDescription> items = SnomedRequests.prepareSearchDescription()
+	private Map<String, Float> executeDescriptionSearch(BranchContext context, String term) {
+		final SnomedDescriptionSearchRequestBuilder requestBuilder = SnomedRequests.prepareSearchDescription()
 			.all()
 			.filterByActive(true)
 			.filterByTerm(term)
 			.filterByLanguageRefSetIds(languageRefSetIds())
-			.filterByConceptId(StringToLongFunction.copyOf(componentIds()))
+			.filterByConceptId(StringToLongFunction.copyOf(componentIds()));
+		
+		if (containsKey(OptionKey.DESCRIPTION_TYPE)) {
+			final String type = getString(OptionKey.DESCRIPTION_TYPE);
+			requestBuilder.filterByType(type);
+		}
+		
+		final Collection<ISnomedDescription> items = requestBuilder
 			.build()
 			.execute(context)
 			.getItems();
 		
-		final Map<String, Integer> conceptMap = newHashMap();
-		int i = items.size();
+		final Map<String, Float> conceptMap = newHashMap();
 		
 		for (ISnomedDescription description : items) {
 			if (!conceptMap.containsKey(description.getConceptId())) {
-				conceptMap.put(description.getConceptId(), i);
+				conceptMap.put(description.getConceptId(), description.getScore());
 			}
-			
-			i--;
 		}
 		
 		return conceptMap;

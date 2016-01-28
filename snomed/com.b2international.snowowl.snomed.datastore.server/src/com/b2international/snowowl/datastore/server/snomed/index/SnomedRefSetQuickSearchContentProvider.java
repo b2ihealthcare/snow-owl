@@ -33,6 +33,7 @@ import com.b2international.snowowl.datastore.IBranchPathMap;
 import com.b2international.snowowl.datastore.quicksearch.AbstractQuickSearchContentProvider;
 import com.b2international.snowowl.datastore.quicksearch.IQuickSearchContentProvider;
 import com.b2international.snowowl.eventbus.IEventBus;
+import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.core.domain.ISnomedConcept;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcepts;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSet;
@@ -97,6 +98,7 @@ public class SnomedRefSetQuickSearchContentProvider extends AbstractQuickSearchC
 			.prepareSearchConcept()
 			.filterByActive(true)
 			.filterByTerm(queryExpression)
+			.filterByDescriptionType("<<" + Concepts.SYNONYM)
 			.setLimit(limit)
 			.setExpand("pt()")
 			.setLocales(locales)
