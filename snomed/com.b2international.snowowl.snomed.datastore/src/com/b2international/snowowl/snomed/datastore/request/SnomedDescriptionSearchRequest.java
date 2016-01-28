@@ -142,10 +142,10 @@ final class SnomedDescriptionSearchRequest extends SnomedSearchRequest<SnomedDes
 			final DisjunctionMaxQuery termDisjunctionQuery = new DisjunctionMaxQuery(0.0f);
 			
 			final Query emq = createExactMatchQuery(searchTerm, termQueryBuilder);
-			emq.setBoost(10.0f);
+//			emq.setBoost(10.0f);
 			termDisjunctionQuery.add(emq);
 			final Query atp = createAllTermsPresentQuery(searchTerm, termQueryBuilder);
-			atp.setBoost(4.0f);
+//			atp.setBoost(4.0f);
 			termDisjunctionQuery.add(atp);
 			
 			final ComponentTermAnalyzer nonBookendAnalyzer = new ComponentTermAnalyzer(false, false);
@@ -154,8 +154,8 @@ final class SnomedDescriptionSearchRequest extends SnomedSearchRequest<SnomedDes
 			// XXX testing new prefix query from ES
 //			final Query atpfb = createAllTermPrefixesPresentFromBeginningQueryOld(prefixes);
 			final Query atpfb = createAllTermPrefixesPresentFromBeginningQuery(prefixes);
-			atpfb.setBoost(3.0f);
-			termDisjunctionQuery.add(atpfb);
+//			atpfb.setBoost(3.0f);
+//			termDisjunctionQuery.add(atpfb);
 			termDisjunctionQuery.add(createAllTermPrefixesPresentQuery(prefixes));
 			
 			queryBuilder.and(termDisjunctionQuery);
