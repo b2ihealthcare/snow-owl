@@ -37,8 +37,8 @@ public final class AsyncSupport<T> {
 		this.clazz = checkNotNull(clazz, "clazz");
 	}
 
-	public Promise<T> send(Event event) {
-		final SettablePromise<T> promise = new SettablePromise<>();
+	public Promise<T> send(final Event event) {
+		final Promise<T> promise = new Promise<>();
 		event.send(bus, new IHandler<IMessage>() {
 			@Override
 			public void handle(IMessage message) {

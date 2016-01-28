@@ -27,14 +27,14 @@ import com.b2international.commons.collections.Procedure;
 /**
  * @since 4.2
  */
-public class SettablePromiseTest {
+public class PromiseTest {
 
 	Object resolution = new Object();
 	Exception rejection = new Exception();
 	
 	@Test
 	public void resolveBeforeThenHandlerAdded() throws Exception {
-		final SettablePromise<Object> p = new SettablePromise<>();
+		final Promise<Object> p = new Promise<>();
 		p.resolve(resolution);
 		final CountDownLatch latch = new CountDownLatch(1);
 		p.then(new Procedure<Object>() {
@@ -49,7 +49,7 @@ public class SettablePromiseTest {
 	
 	@Test
 	public void rejectBeforeFailHandlerAdded() throws Exception {
-		final SettablePromise<Object> p = new SettablePromise<>();
+		final Promise<Object> p = new Promise<>();
 		p.reject(rejection);
 		final CountDownLatch latch = new CountDownLatch(1);
 		p.fail(new Procedure<Throwable>() {
@@ -64,7 +64,7 @@ public class SettablePromiseTest {
 	
 	@Test
 	public void resolveAfterThenHandlerAdded() throws Exception {
-		final SettablePromise<Object> p = new SettablePromise<>();
+		final Promise<Object> p = new Promise<>();
 		final CountDownLatch latch = new CountDownLatch(1);
 		p.then(new Procedure<Object>() {
 			@Override
@@ -79,7 +79,7 @@ public class SettablePromiseTest {
 	
 	@Test
 	public void rejectAfterFailHandlerAdded() throws Exception {
-		final SettablePromise<Object> p = new SettablePromise<>();
+		final Promise<Object> p = new Promise<>();
 		final CountDownLatch latch = new CountDownLatch(1);
 		p.fail(new Procedure<Throwable>() {
 			@Override
