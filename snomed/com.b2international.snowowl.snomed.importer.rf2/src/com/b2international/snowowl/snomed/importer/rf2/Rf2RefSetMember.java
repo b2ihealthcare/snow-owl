@@ -22,6 +22,8 @@ import com.b2international.snowowl.core.CoreTerminologyBroker;
 import com.b2international.snowowl.core.date.DateFormats;
 import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
+import com.b2international.snowowl.snomed.datastore.SnomedRefSetUtil;
+import com.b2international.snowowl.snomed.snomedrefset.DataType;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSet;
 import com.google.common.base.Strings;
 
@@ -203,6 +205,16 @@ public class Rf2RefSetMember extends UnsupportedRf2RefSetMember {
 	@Override
 	public String getSerializedValue() {
 		return record.size() > 10 ? record.get(9) : record.get(8);
+	}
+	
+	@Override
+	public DataType getDataType() {
+		return SnomedRefSetUtil.getDataType(getRefSetIdentifierId());
+	}
+	
+	@Override
+	public String getLabel() {
+		return record.get(8);
 	}
 
 	private Date getEffectiveTime(int index) {

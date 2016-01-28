@@ -25,14 +25,13 @@ import org.apache.lucene.index.BinaryDocValues;
 import org.apache.lucene.index.NumericDocValues;
 import org.apache.lucene.util.BytesRef;
 
+import bak.pcj.map.LongKeyMap;
+import bak.pcj.map.LongKeyOpenHashMap;
+
 import com.b2international.snowowl.datastore.index.AbstractDocsOutOfOrderCollector;
 import com.b2international.snowowl.datastore.index.mapping.Mappings;
 import com.b2international.snowowl.snomed.datastore.ConcreteDomainFragment;
-import com.b2international.snowowl.snomed.datastore.SnomedRefSetUtil;
 import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedMappings;
-
-import bak.pcj.map.LongKeyMap;
-import bak.pcj.map.LongKeyOpenHashMap;
 
 /**
  * Custom collector for getting the bare minimum of a data type for the classification process.
@@ -99,10 +98,7 @@ public class ConcreteDomainFragmentCollector extends AbstractDocsOutOfOrderColle
 			uomId = ConcreteDomainFragment.UNSET_UOM_ID;
 		}
 
-		// FIXME: Consolidate the two DataType enums
 		final byte type = (byte) typeValues.get(docId);
-		final com.b2international.snowowl.snomed.mrcm.DataType dataType = com.b2international.snowowl.snomed.mrcm.DataType.get(type);
-		final com.b2international.snowowl.snomed.snomedrefset.DataType convertedDataType = SnomedRefSetUtil.MRCM_DATATYPE_TO_DATATYPE_MAP.get(dataType);
 
 		final long id = referencedIdValues.get(docId);
 		final long storageKey = storageKeyValues.get(docId);
@@ -115,7 +111,7 @@ public class ConcreteDomainFragmentCollector extends AbstractDocsOutOfOrderColle
 		final ConcreteDomainFragment fragment = new ConcreteDomainFragment(
 				value, 
 				label, 
-				(byte) convertedDataType.ordinal(), 
+				type, 
 				uomId, 
 				storageKey,
 				refSetId);

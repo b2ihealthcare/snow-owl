@@ -90,6 +90,20 @@ import org.eclipse.emf.cdo.common.id.CDOIDUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import bak.pcj.LongCollection;
+import bak.pcj.LongIterator;
+import bak.pcj.list.LongArrayList;
+import bak.pcj.list.LongList;
+import bak.pcj.list.LongListIterator;
+import bak.pcj.map.LongKeyLongMap;
+import bak.pcj.map.LongKeyLongOpenHashMap;
+import bak.pcj.map.LongKeyMap;
+import bak.pcj.map.LongKeyMapIterator;
+import bak.pcj.set.LongChainedHashSet;
+import bak.pcj.set.LongOpenHashSet;
+import bak.pcj.set.LongSet;
+import bak.pcj.set.UnmodifiableLongSet;
+
 import com.b2international.commons.CompareUtils;
 import com.b2international.commons.Pair;
 import com.b2international.commons.StringUtils;
@@ -144,8 +158,8 @@ import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedQueryBui
 import com.b2international.snowowl.snomed.datastore.index.refset.SnomedRefSetMemberIndexQueryAdapter;
 import com.b2international.snowowl.snomed.datastore.services.ISnomedComponentService;
 import com.b2international.snowowl.snomed.datastore.snor.PredicateIndexEntry;
-import com.b2international.snowowl.snomed.mrcm.DataType;
 import com.b2international.snowowl.snomed.mrcm.HierarchyInclusionType;
+import com.b2international.snowowl.snomed.snomedrefset.DataType;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedLanguageRefSetMember;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType;
 import com.google.common.base.CharMatcher;
@@ -156,6 +170,7 @@ import com.google.common.base.Stopwatch;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
+import com.google.common.collect.FluentIterable;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.ImmutableMultimap;
 import com.google.common.collect.ImmutableSet;
@@ -166,20 +181,6 @@ import com.google.common.collect.Multimap;
 import com.google.common.collect.Multimaps;
 import com.google.common.collect.Sets;
 import com.google.common.util.concurrent.UncheckedExecutionException;
-
-import bak.pcj.LongCollection;
-import bak.pcj.LongIterator;
-import bak.pcj.list.LongArrayList;
-import bak.pcj.list.LongList;
-import bak.pcj.list.LongListIterator;
-import bak.pcj.map.LongKeyLongMap;
-import bak.pcj.map.LongKeyLongOpenHashMap;
-import bak.pcj.map.LongKeyMap;
-import bak.pcj.map.LongKeyMapIterator;
-import bak.pcj.set.LongChainedHashSet;
-import bak.pcj.set.LongOpenHashSet;
-import bak.pcj.set.LongSet;
-import bak.pcj.set.UnmodifiableLongSet;
 
 /**
  * Service singleton for the SNOMED&nbsp;CT core components.
@@ -193,13 +194,11 @@ import bak.pcj.set.UnmodifiableLongSet;
 @SuppressWarnings("unchecked")
 public class SnomedComponentService implements ISnomedComponentService, IPostStoreUpdateListener2 {
 
-	private static final Set<String> MEMBER_REF_SET_ID_FILDS_TO_LOAD = SnomedMappings.fieldsToLoad().memberRefSetId().build();
 	private static final Set<String> COMPONENT_ID_MODULE_FIELDS_TO_LOAD = SnomedMappings.fieldsToLoad().id().module().build();
 	private static final Set<String> MEMBER_REFERENCED_COMPONENT_ID_FIELDS_TO_LOAD = SnomedMappings.fieldsToLoad().memberReferencedComponentId().build();
 	private static final Set<String> MEMBER_VALUE_ID_FIELDS_TO_LOAD = SnomedMappings.fieldsToLoad().memberValueId().build();
 	private static final Set<String> MEMBER_ID_FIELDS_TO_LOAD = SnomedMappings.fieldsToLoad().memberUuid().active().memberReferencedComponentId().build();
 	private static final Set<String> FSN_DESCRIPTION_FIELDS_TO_LOAD = SnomedMappings.fieldsToLoad().id().descriptionTerm().descriptionConcept().build();
-	private static final Set<String> DATA_TYPE_VALUE_AND_REFERENCED_COMPONENT_FIELDS_TO_LOAD = SnomedMappings.fieldsToLoad().memberReferencedComponentId().memberSerializedValue().build();
 	private static final Set<String> MODULE_MEMBER_FIELDS_TO_LOAD = SnomedMappings.fieldsToLoad().storageKey().module().memberReferencedComponentId()
 			.memberSourceEffectiveTime().memberTargetEffectiveTime().build();
 	
@@ -365,10 +364,10 @@ public class SnomedComponentService implements ISnomedComponentService, IPostSto
 	 * @return a set of concrete domain data type labels for a specified data type.
 	 */
 	@Override
-	public Set<String> getAvailableDataTypeLabels(final IBranchPath branchPath, final DataType dataType) {
+	public Set<String> getAvailableDataTypeLabels(final IBranchPath branchPath, final com.b2international.snowowl.snomed.mrcm.DataType dataType) {
 		checkAndJoin(branchPath, null);
 		try {
-			return ((Map<DataType, Set<String>>) cache.get(branchPath).get(CacheKeyType.DATA_TYPE_LABELS)).get(dataType);
+			return ((Map<com.b2international.snowowl.snomed.mrcm.DataType, Set<String>>) cache.get(branchPath).get(CacheKeyType.DATA_TYPE_LABELS)).get(dataType);
 		} catch (final ExecutionException e) {
 			LOGGER.error("Error while getting available concrete domain data type labels for " + dataType, e);
 			throw new UncheckedExecutionException(e);
@@ -1682,42 +1681,43 @@ public class SnomedComponentService implements ISnomedComponentService, IPostSto
 		checkNotNull(branchPath, "branchPath");
 		checkNotNull(concreteDomainName, "concreteDomainName");
 		
-		final Query query = SnomedMappings.newQuery().active().memberDataTypeLabel(concreteDomainName).matchAll();
 		final AtomicReference<IndexSearcher> searcher = new AtomicReference<IndexSearcher>();
-		final DocIdCollector collector = DocIdCollector.create(getIndexServerService().maxDoc(branchPath));
-
 		ReferenceManager<IndexSearcher> manager = null;
 
 		try {
 
-			//we have to determine the type of the concrete domain first
+			final Query query = SnomedMappings.newQuery().active().memberDataTypeLabel(concreteDomainName).matchAll();
+			
+			// determine the type of the concrete domain -> query the first doc and extract the type
 			final TopDocs topDocs = getIndexServerService().search(branchPath, query, 1);
 			if (isEmpty(topDocs)) {
 				return ImmutableMultimap.<String, V>of();
 			}
-
 			manager = getIndexServerService().getManager(branchPath);
 			searcher.set(manager.acquire());
 			
-			final Document dataTypeDoc = searcher.get().doc(topDocs.scoreDocs[0].doc, MEMBER_REF_SET_ID_FILDS_TO_LOAD);
-			final com.b2international.snowowl.snomed.snomedrefset.DataType dataType = SnomedRefSetUtil.DATATYPE_TO_REFSET_MAP.inverse().get(SnomedMappings.memberRefSetId().getValueAsString(dataTypeDoc));
+			final Document dataTypeDoc = searcher.get().doc(topDocs.scoreDocs[0].doc, SnomedMappings.fieldsToLoad().memberDataTypeOrdinal().build());
+			final DataType dataType = DataType.get(SnomedMappings.memberDataTypeOrdinal().getValue(dataTypeDoc));
 			
+			// collect all values for the specified concrete domain label
+			final DocIdCollector collector = DocIdCollector.create(getIndexServerService().maxDoc(branchPath));
 			getIndexServerService().search(branchPath, query, collector);
 
 			final Multimap<String, V> componentsToDataTypeValues = synchronizedMultimap(HashMultimap.<String, V>create());
 			IndexUtils.parallelForEachDocId(collector.getDocIDs(), new IndexUtils.DocIdProcedure() {
 				@Override
 				public void apply(final int docId) throws IOException {
-					final Document doc = searcher.get().doc(docId, DATA_TYPE_VALUE_AND_REFERENCED_COMPONENT_FIELDS_TO_LOAD);
-					final String componentId = SnomedMappings.memberReferencedComponentId().getValueAsString(doc);
-					final List<String> serializedValues = SnomedMappings.memberSerializedValue().getValues(doc);
-					final V[] values = (V[]) new Object[serializedValues.size()];
-					int i = 0;
-					for (final String serializedValue : serializedValues) {
-						values[i++] = deserializeValue(dataType, serializedValue); 
-					}
+					final Document doc = searcher.get().doc(docId, SnomedMappings.fieldsToLoad().memberReferencedComponentId().memberSerializedValue().build());
+					final String memberReferencedComponentId = SnomedMappings.memberReferencedComponentId().getValueAsString(doc);
 					
-					componentsToDataTypeValues.putAll(componentId, Arrays.asList(values));
+					final List<String> serializedValues = SnomedMappings.memberSerializedValue().getValues(doc);
+					List<V> values = FluentIterable.from(serializedValues).transform(new Function<String, V>() {
+						@Override public V apply(String input) {
+							return deserializeValue(dataType, input);
+						}
+					}).toList();
+					
+					componentsToDataTypeValues.putAll(memberReferencedComponentId, values);
 				}
 			});
 
@@ -1739,8 +1739,6 @@ public class SnomedComponentService implements ISnomedComponentService, IPostSto
 				}
 			}
 		}
-		
-		
 	}
 	
 	@Override
@@ -2322,9 +2320,9 @@ public class SnomedComponentService implements ISnomedComponentService, IPostSto
 	}
 	
 	/*initialize and returns with of map of data types and the available concrete domain data type labels.*/
-	private Map<DataType, Set<String>> getDataTypeLabels(final IBranchPath branchPath) {
+	private Map<com.b2international.snowowl.snomed.mrcm.DataType, Set<String>> getDataTypeLabels(final IBranchPath branchPath) {
 	
-		final Map<DataType, Set<String>> dataTypeLabelMap = Maps.newHashMapWithExpectedSize(DataType.values().length);
+		final Map<com.b2international.snowowl.snomed.mrcm.DataType, Set<String>> dataTypeLabelMap = Maps.newHashMapWithExpectedSize(DataType.values().length);
 		
 		@SuppressWarnings("rawtypes")
 		final IndexServerService service = (IndexServerService) getRefSetIndexService();
@@ -2332,10 +2330,10 @@ public class SnomedComponentService implements ISnomedComponentService, IPostSto
 		final ReducedConcreteDomainFragmentCollector collector = new ReducedConcreteDomainFragmentCollector();
 		service.search(branchPath, SnomedMappings.newQuery().memberRefSetType(SnomedRefSetType.CONCRETE_DATA_TYPE).matchAll(), collector);
 
-		for (final DataType  type : DataType.VALUES) {
+		for (final com.b2international.snowowl.snomed.mrcm.DataType  type : com.b2international.snowowl.snomed.mrcm.DataType.values()) {
 			
 			dataTypeLabelMap.put(type, Sets.<String>newHashSet());
-			final BytesRefHash labelRefHash = collector.getLabels(type);
+			final BytesRefHash labelRefHash = collector.getLabels(SnomedRefSetUtil.MRCM_DATATYPE_TO_DATATYPE_MAP.get(type));
 			
 			if (labelRefHash.size() < 1) {
 				continue;

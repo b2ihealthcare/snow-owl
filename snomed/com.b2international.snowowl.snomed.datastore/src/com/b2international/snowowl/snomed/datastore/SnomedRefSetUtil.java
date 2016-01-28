@@ -25,6 +25,7 @@ import static com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType.Q
 import static com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType.SIMPLE;
 import static com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType.SIMPLE_MAP;
 import static com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType.get;
+import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.collect.Sets.newHashSet;
 import static java.util.Collections.unmodifiableSet;
 
@@ -40,6 +41,7 @@ import javax.annotation.Nullable;
 import org.apache.lucene.document.Document;
 import org.eclipse.emf.ecore.EClass;
 
+import com.b2international.commons.BooleanUtils;
 import com.b2international.snowowl.core.CoreTerminologyBroker;
 import com.b2international.snowowl.core.SnowOwlApplication;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
@@ -224,6 +226,15 @@ public abstract class SnomedRefSetUtil {
 	 */
 	public static String getRefSetId(final DataType dataType) {
 		return DATATYPE_TO_REFSET_MAP.get(dataType);
+	}
+	
+	/**
+	 * Returns the proper {@link DataType} for the specified reference set id. The mapping is based on the IDs provided by the configuration.
+	 * @param refsetId the id of the concrete domain reference set
+	 * @return the proper datatype for the specified reference set id
+	 */
+	public static DataType getDataType(String refsetId) {
+		return DATATYPE_TO_REFSET_MAP.inverse().get(refsetId);
 	}
 	
 	/**
@@ -450,19 +461,14 @@ public abstract class SnomedRefSetUtil {
 	
 	@SuppressWarnings("unchecked")
 	public static <T> T deserializeValue(final DataType dataType, final String serializedValue) {
-		if (null == dataType)
-			throw new IllegalArgumentException("Datatype argument cannot be null.");
-		if (null == serializedValue)
-			throw new IllegalArgumentException("Serialized value argument cannot be null.");
+		checkArgument(null != dataType, "Datatype argument cannot be null.");
+		checkArgument(null != serializedValue, "Serialized value argument cannot be null.");
+		
 		switch (dataType) {
 			case BOOLEAN: 
-				if ("0".equals(serializedValue)) {
-					return (T) Boolean.FALSE;
-				} else if ("1".equals(serializedValue)) {
-					return (T) Boolean.TRUE;
-				} else {
-					throw new IllegalArgumentException("Illegal serialized form of a boolean value. Expected either '0' or '1'. Was: '" + serializedValue + "'.");
-				}
+				Boolean booleanValue = BooleanUtils.valueOf(serializedValue);
+				checkArgument(booleanValue != null, String.format("Illegal serialized form of a boolean value. Expected either '0' or '1'. Was: '%s'", serializedValue));
+				return (T) booleanValue;
 			case DECIMAL: return (T) new BigDecimal(serializedValue);
 			case INTEGER: return (T) Integer.valueOf(serializedValue);
 			case DATE: return (T) new Date(Long.valueOf(serializedValue));
@@ -472,12 +478,11 @@ public abstract class SnomedRefSetUtil {
 	}
 	
 	public static <T> String serializeValue(final DataType dataType, final T value) {
-		if (null == dataType)
-			throw new IllegalArgumentException("Datatype argument cannot be null.");
-		if (null == value)
-			throw new IllegalArgumentException("Value argument cannot be null.");
+		checkArgument(null != dataType, "Datatype argument cannot be null.");
+		checkArgument(null != value, "Value argument cannot be null.");
+		
 		switch (dataType) {
-			case BOOLEAN: return ((Boolean) value).booleanValue() ? "1" : "0";
+			case BOOLEAN: return BooleanUtils.toString((Boolean) value);
 			case DECIMAL: return ((BigDecimal) value).toPlainString();
 			case INTEGER: return Integer.toString(((Integer) value).intValue());
 			case DATE: return Long.toString(((Date) value).getTime());

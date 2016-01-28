@@ -29,6 +29,8 @@ import java.util.Date;
 import java.util.Map;
 import java.util.Set;
 
+import javax.annotation.Nullable;
+
 import org.apache.lucene.document.Document;
 import org.apache.lucene.index.IndexableField;
 
@@ -717,7 +719,7 @@ public class SnomedRefSetMemberIndexEntry extends SnomedIndexEntry implements IC
 
 	@SuppressWarnings("unchecked")
 	public <T> T getValue() {
-		return (T) getField(SnomedMappings.memberSerializedValue().fieldName()); 
+		return (T) SnomedRefSetUtil.deserializeValue(getRefSetPackageDataType(), getStringField(SnomedMappings.memberSerializedValue().fieldName())); 
 	}
 
 	public DataType getRefSetPackageDataType() {
@@ -725,7 +727,7 @@ public class SnomedRefSetMemberIndexEntry extends SnomedIndexEntry implements IC
 	}
 
 	public String getUomComponentId() {
-		return getStringField(SnomedMappings.memberUomId().fieldName());
+		return StringUtils.valueOfOrEmptyString(getOptionalField(SnomedMappings.memberUomId().fieldName()).orNull());
 	}
 
 	public String getAttributeLabel() {
@@ -733,11 +735,11 @@ public class SnomedRefSetMemberIndexEntry extends SnomedIndexEntry implements IC
 	}
 
 	public String getOperatorComponentId() {
-		return getStringField(SnomedMappings.memberOperatorId().fieldName());
+		return StringUtils.valueOfOrEmptyString(getLongField(SnomedMappings.memberOperatorId().fieldName()));
 	}
 
 	public String getCharacteristicTypeId() {
-		return getStringField(SnomedMappings.memberCharacteristicTypeId().fieldName());
+		return StringUtils.valueOfOrEmptyString(getLongField(SnomedMappings.memberCharacteristicTypeId().fieldName()));
 	}	
 
 	public Acceptability getAcceptability() {

@@ -26,7 +26,7 @@ import org.apache.lucene.util.BytesRefHash;
 
 import com.b2international.snowowl.datastore.index.AbstractDocsOutOfOrderCollector;
 import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedMappings;
-import com.b2international.snowowl.snomed.mrcm.DataType;
+import com.b2international.snowowl.snomed.snomedrefset.DataType;
 
 /**
  * Collector gathering concrete domains with distinct labels. The gathered labels will be grouped by {@link DataType
@@ -73,10 +73,10 @@ public class ReducedConcreteDomainFragmentCollector extends AbstractDocsOutOfOrd
 	private BytesRefHash getBytesRefHash(final byte dataTypeOrdinal) {
 
 		switch (dataTypeOrdinal) {
-			case 0: return booleanLabels;
-			case 1: return dateLabels;
-			case 2: return floatLabels;
-			case 3: return integerLabels;
+			case 0: return integerLabels;
+			case 1: return floatLabels;
+			case 2: return booleanLabels;
+			case 3: return dateLabels;
 			case 4: return stringLabels;
 
 			default: throw new IllegalArgumentException("Cannot specify MRCM data type based on its ordinal: " + dataTypeOrdinal);
