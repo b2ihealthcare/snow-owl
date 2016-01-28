@@ -29,8 +29,6 @@ import java.util.Date;
 import java.util.Map;
 import java.util.Set;
 
-import javax.annotation.Nullable;
-
 import org.apache.lucene.document.Document;
 import org.apache.lucene.index.IndexableField;
 
@@ -755,7 +753,7 @@ public class SnomedRefSetMemberIndexEntry extends SnomedIndexEntry implements IC
 	}
 
 	public String getMapTargetComponentId() {
-		return getStringField(SnomedMappings.memberMapTargetComponentId().fieldName());
+		return getOptionalField(SnomedMappings.memberMapTargetComponentId().fieldName()).transform(new UncheckedCastFunction<>(String.class)).orNull();
 	}
 
 	public int getMapGroup() {
