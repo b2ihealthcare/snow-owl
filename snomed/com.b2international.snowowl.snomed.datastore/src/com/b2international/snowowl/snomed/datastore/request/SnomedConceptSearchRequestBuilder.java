@@ -34,6 +34,10 @@ public final class SnomedConceptSearchRequestBuilder extends SnomedSearchRequest
 	public final SnomedConceptSearchRequestBuilder filterByTerm(String term) {
 		return addOption(SnomedConceptSearchRequest.OptionKey.TERM, term);
 	}
+	
+	public final SnomedConceptSearchRequestBuilder filterByDescriptionType(String type) {
+		return addOption(SnomedConceptSearchRequest.OptionKey.DESCRIPTION_TYPE, type);
+	}
 
 	public final SnomedConceptSearchRequestBuilder filterByEscg(String expression) {
 		return addOption(SnomedConceptSearchRequest.OptionKey.ESCG, expression);

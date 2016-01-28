@@ -71,6 +71,11 @@ final class SnomedConceptSearchRequest extends SnomedSearchRequest<SnomedConcept
 		 * Description term to (smart) match
 		 */
 		TERM,
+		
+		/**
+		 * Description type to match
+		 */
+		DESCRIPTION_TYPE,
 
 		/**
 		 * ESCG expression to match
