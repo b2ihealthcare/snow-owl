@@ -109,6 +109,10 @@ public abstract class CDOEditingContext implements AutoCloseable {
 		this.transaction = CDOUtils.check(cdoTransaction);
 	}
 	
+	public final String getBranch() {
+		return BranchPathUtils.createPath(getTransaction()).getPath();
+	}
+	
 	/*
 	 * get the index from the database for an EObject on the given table.
 	 * If the object is not in the database, a RTE will be thrown.

@@ -16,8 +16,8 @@
 package com.b2international.snowowl.snomed.mrcm.core.renderer;
 
 import java.util.Iterator;
+import java.util.Map;
 
-import com.b2international.commons.StringUtils;
 import com.b2international.snowowl.core.CoreTerminologyBroker;
 import com.b2international.snowowl.core.api.IComponentNameProvider;
 import com.b2international.snowowl.core.api.INameProviderFactory;
@@ -38,20 +38,37 @@ import com.b2international.snowowl.snomed.mrcm.HierarchyConceptSetDefinition;
 import com.b2international.snowowl.snomed.mrcm.ReferenceSetConceptSetDefinition;
 import com.b2international.snowowl.snomed.mrcm.RelationshipConceptSetDefinition;
 import com.b2international.snowowl.snomed.mrcm.RelationshipPredicate;
+import com.google.common.base.Strings;
+import com.google.common.cache.CacheBuilder;
+import com.google.common.cache.CacheLoader;
+import com.google.common.cache.LoadingCache;
 
 /**
  * Utility class to render MRCM objects into a more-or-less human readable String.
- * 
  */
 public class ConceptModelComponentRenderer {
 	
 	private static int HUMAN_READABLE_RENDERING_LENGTH_LIMIT = 60;
 	
+	private final LoadingCache<String, String> componentLabelMap;
+	
+	public ConceptModelComponentRenderer(Map<String, String> componentLabelMap) {
+		this.componentLabelMap = CacheBuilder.newBuilder().build(new CacheLoader<String, String>() {
+			@Override
+			public String load(String id) throws Exception {
+				final INameProviderFactory conceptNameProviderFactory = CoreTerminologyBroker.getInstance().getNameProviderFactory(SnomedTerminologyComponentConstants.CONCEPT);
+				final IComponentNameProvider conceptNameProvider = conceptNameProviderFactory.getNameProvider();
+				return conceptNameProvider.getComponentLabel(BranchPathUtils.createActivePath(SnomedPackage.eINSTANCE), id);
+			}
+		});
+		this.componentLabelMap.putAll(componentLabelMap);
+	}
+	
 	/**
 	 * @param component the component to render
 	 * @return the human-readable rendering of the MRCM component
 	 */
-	public static <T extends ConceptModelComponent> String getHumanReadableRendering(T component) {
+	public <T extends ConceptModelComponent> String getHumanReadableRendering(T component) {
 		String fullText = "";
 		if (component instanceof ReferenceSetConceptSetDefinition) {
 			fullText = getHumanReadableRendering((ReferenceSetConceptSetDefinition)component);
@@ -87,19 +104,19 @@ public class ConceptModelComponentRenderer {
 		return stringBuilder.toString();
 	}
 	
-	private static String getHumanReadableRendering(ReferenceSetConceptSetDefinition referenceSetConceptSetDefinition) {
-		return "^" + renderConcept(referenceSetConceptSetDefinition.getRefSetIdentifierConceptId());
+	private String getHumanReadableRendering(ReferenceSetConceptSetDefinition referenceSetConceptSetDefinition) {
+		return "^" + getLabel(referenceSetConceptSetDefinition.getRefSetIdentifierConceptId());
 	}
 	
-	private static String getHumanReadableRendering(RelationshipConceptSetDefinition relationshipConceptSetDefinition) {
+	private String getHumanReadableRendering(RelationshipConceptSetDefinition relationshipConceptSetDefinition) {
 		StringBuilder builder = new StringBuilder();
-		builder.append(renderConcept(relationshipConceptSetDefinition.getTypeConceptId()));
+		builder.append(getLabel(relationshipConceptSetDefinition.getTypeConceptId()));
 		builder.append(" ");
-		builder.append(renderConcept(relationshipConceptSetDefinition.getDestinationConceptId()));
+		builder.append(getLabel(relationshipConceptSetDefinition.getDestinationConceptId()));
 		return builder.toString();
 	}
 	
-	private static String getHumanReadableRendering(HierarchyConceptSetDefinition hierarchyConceptSetDefinition) {
+	private String getHumanReadableRendering(HierarchyConceptSetDefinition hierarchyConceptSetDefinition) {
 		StringBuilder builder = new StringBuilder();
 		switch (hierarchyConceptSetDefinition.getInclusionType()) {
 		case SELF:
@@ -114,23 +131,23 @@ public class ConceptModelComponentRenderer {
 		default:
 			break;
 		}
-		builder.append(renderConcept(hierarchyConceptSetDefinition.getFocusConceptId()));
+		builder.append(getLabel(hierarchyConceptSetDefinition.getFocusConceptId()));
 		return builder.toString();
 	}
 	
-	private static String getHumanReadableRendering(EnumeratedConceptSetDefinition enumeratedConceptSetDefinition) {
+	private String getHumanReadableRendering(EnumeratedConceptSetDefinition enumeratedConceptSetDefinition) {
 		StringBuilder builder = new StringBuilder();
 		Iterator<String> iterator = enumeratedConceptSetDefinition.getConceptIds().iterator();
 		while (iterator.hasNext()) {
 			String next = iterator.next();
-			builder.append(renderConcept(next));
+			builder.append(getLabel(next));
 			if (iterator.hasNext())
 				builder.append(", ");
 		}
 		return builder.toString();
 	}
 	
-	private static String getHumanReadableRendering(CompositeConceptSetDefinition compositeConceptSetDefinition) {
+	private String getHumanReadableRendering(CompositeConceptSetDefinition compositeConceptSetDefinition) {
 		StringBuilder builder = new StringBuilder();
 		Iterator<ConceptSetDefinition> iterator = compositeConceptSetDefinition.getChildren().iterator();
 		while (iterator.hasNext()) {
@@ -142,7 +159,7 @@ public class ConceptModelComponentRenderer {
 		return builder.toString();
 	}
 	
-	private static String getHumanReadableRendering(RelationshipPredicate relationshipPredicate) {
+	private String getHumanReadableRendering(RelationshipPredicate relationshipPredicate) {
 		StringBuilder builder = new StringBuilder();
 		builder.append(getHumanReadableRendering(relationshipPredicate.getAttribute()));
 		builder.append(" ");
@@ -150,11 +167,11 @@ public class ConceptModelComponentRenderer {
 		return builder.toString();
 	}
 	
-	private static String getHumanReadableRendering(DescriptionPredicate descriptionPredicate) {
-		return renderConcept(descriptionPredicate.getTypeId());
+	private String getHumanReadableRendering(DescriptionPredicate descriptionPredicate) {
+		return getLabel(descriptionPredicate.getTypeId());
 	}
 	
-	private static String getHumanReadableRendering(ConcreteDomainElementPredicate concreteDomainElementPredicate) {
+	private String getHumanReadableRendering(ConcreteDomainElementPredicate concreteDomainElementPredicate) {
 		StringBuilder builder = new StringBuilder();
 		
 		builder.append(concreteDomainElementPredicate.getName());
@@ -164,7 +181,7 @@ public class ConceptModelComponentRenderer {
 		return builder.toString();
 	}
 	
-	private static String getHumanReadableRendering(CardinalityPredicate cardinalityPredicate) {
+	private String getHumanReadableRendering(CardinalityPredicate cardinalityPredicate) {
 		StringBuilder builder = new StringBuilder();
 		builder.append(cardinalityPredicate.getMinCardinality());
 		builder.append("...");
@@ -174,7 +191,7 @@ public class ConceptModelComponentRenderer {
 		return builder.toString();
 	}
 	
-	private static String getHumanReadableRendering(DependencyPredicate dependencyPredicate) {
+	private String getHumanReadableRendering(DependencyPredicate dependencyPredicate) {
 		StringBuilder builder = new StringBuilder();
 		Iterator<ConceptModelPredicate> iterator = dependencyPredicate.getChildren().iterator();
 		while (iterator.hasNext()) {
@@ -186,25 +203,19 @@ public class ConceptModelComponentRenderer {
 		return builder.toString();
 	}
 	
-	private static String getHumanReadableRendering(AttributeConstraint attributeConstraint) {
-		StringBuilder builder = new StringBuilder();
-		builder.append(getHumanReadableRendering(attributeConstraint.getDomain()));
-		builder.append(" ");
-		builder.append(getHumanReadableRendering(attributeConstraint.getPredicate()));
-		return builder.toString();
+	private String getHumanReadableRendering(AttributeConstraint attributeConstraint) {
+		return String.format("%s %s", getHumanReadableRendering(attributeConstraint.getDomain()), getHumanReadableRendering(attributeConstraint.getPredicate()));
 	}
 	
-	private static String renderConcept(String conceptId) {
-		INameProviderFactory conceptNameProviderFactory = CoreTerminologyBroker.getInstance().getNameProviderFactory(SnomedTerminologyComponentConstants.CONCEPT);
-		IComponentNameProvider conceptNameProvider = conceptNameProviderFactory.getNameProvider();
-		if (!StringUtils.isEmpty(conceptId)) {
-			return conceptNameProvider.getComponentLabel(BranchPathUtils.createActivePath(SnomedPackage.eINSTANCE), conceptId);
-		} else {
+	private String getLabel(String conceptId) {
+		if (Strings.isNullOrEmpty(conceptId)) {
 			return "";
+		} else {
+			return componentLabelMap.getUnchecked(conceptId);
 		}
 	}
 	
-	private static String renderMaxCardinality(int max) {
+	private String renderMaxCardinality(int max) {
 		return max == -1 ? "*" : Integer.toString(max);
 	}
 }
