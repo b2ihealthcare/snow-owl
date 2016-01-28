@@ -64,6 +64,9 @@ import com.google.common.collect.ImmutableList;
 final class SnomedConceptSearchRequest extends SnomedSearchRequest<SnomedConcepts> {
 
 	private static final ValueSource DOI_VALUE_SOURCE = new FloatFieldSource(SnomedMappings.conceptDegreeOfInterest().fieldName());
+
+	private static final float MIN_DOI_VALUE = 1.05f;
+	private static final float MAX_DOI_VALUE = 10288.383f;
 	
 	enum OptionKey {
 
@@ -204,6 +207,11 @@ final class SnomedConceptSearchRequest extends SnomedSearchRequest<SnomedConcept
 						protected float func(int doc, FunctionValues conceptIdValues, FunctionValues interestValues) {
 							final String conceptId = Long.toString(conceptIdValues.longVal(doc));
 							float interest = containsKey(OptionKey.USE_DOI) ? interestValues.floatVal(doc) : 0.0f;
+							
+							// TODO move this normalization to index initializer.
+							if (interest != 0.0f) {
+								interest = (interest - MIN_DOI_VALUE) / (MAX_DOI_VALUE / MIN_DOI_VALUE);
+							}
 							
 							if (conceptScoreMap.containsKey(conceptId)) {
 								return conceptScoreMap.get(conceptId) + interest;
