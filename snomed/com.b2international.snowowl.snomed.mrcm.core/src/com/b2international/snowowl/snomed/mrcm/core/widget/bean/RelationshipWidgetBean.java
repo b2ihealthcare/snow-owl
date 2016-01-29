@@ -24,6 +24,7 @@ import java.util.Set;
 import com.b2international.snowowl.core.api.IComponent;
 import com.b2international.snowowl.core.api.NullComponent;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
+import com.b2international.snowowl.snomed.core.domain.CharacteristicTypePredicates;
 import com.b2international.snowowl.snomed.mrcm.core.widget.model.RelationshipWidgetModel;
 import com.google.common.base.Strings;
 
@@ -274,11 +275,23 @@ public class RelationshipWidgetBean extends LeafWidgetBean implements Characteri
 		return !isEmpty(selectedType) && !isEmpty(selectedValue);
 	}
 
+	
+	
+	@Override
+	protected boolean canBeCloned() {
+		return super.canBeCloned() && CharacteristicTypePredicates.manuallyCreatableCharacteristicTypesIDsPredicate().apply(getSelectedCharacteristicTypeId());
+	}
+	
 	@Override
 	protected boolean canBeRetired() {
 		return super.canBeRetired() && !hasAssociatedMembers();
 	}
 
+	@Override
+	protected boolean canBeClonedAndRetired() {
+		return super.canBeClonedAndRetired() && CharacteristicTypePredicates.manuallyCreatableCharacteristicTypesIDsPredicate().apply(getSelectedCharacteristicTypeId());
+	}
+	
 	public boolean hasAssociatedMembers() {
 
 		if (null == getParent()) {

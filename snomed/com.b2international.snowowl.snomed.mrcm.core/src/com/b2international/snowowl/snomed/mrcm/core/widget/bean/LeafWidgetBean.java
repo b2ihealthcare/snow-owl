@@ -57,7 +57,7 @@ public abstract class LeafWidgetBean extends ModeledWidgetBean implements Serial
 			final boolean newRetireActionEnabled = isPopulated() && canBeRetired();
 			setRetireActionEnabled(newRetireActionEnabled);
 			
-			final boolean newCloneAndRetireActionEnabled = isReleased();
+			final boolean newCloneAndRetireActionEnabled = canBeClonedAndRetired();
 			setCloneAndRetireActionEnabled(newCloneAndRetireActionEnabled);
 		}
 
@@ -181,6 +181,10 @@ public abstract class LeafWidgetBean extends ModeledWidgetBean implements Serial
 		return hasParent() && !parent.isLastInstance(LeafWidgetBean.this); // either optional or not the last instance of its kind
 	}
 	
+	protected boolean canBeClonedAndRetired() {
+		return isReleased();
+	}
+
 	protected boolean hasParent() {
 		return null != parent;
 	}
