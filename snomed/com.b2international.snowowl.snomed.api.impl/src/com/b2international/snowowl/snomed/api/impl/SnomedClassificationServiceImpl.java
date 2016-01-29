@@ -422,10 +422,13 @@ public class SnomedClassificationServiceImpl implements ISnomedClassificationSer
 
 	private ISnomedBrowserRelationship findRelationship(List<ISnomedBrowserRelationship> relationships, IRelationshipChange relationshipChange) {
 		for (ISnomedBrowserRelationship relationship : relationships) {
-			if (relationship.getType().getConceptId().equals(relationshipChange.getTypeId())
+			if (relationship.isActive()
 					&& relationship.getSourceId().equals(relationshipChange.getSourceId())
+					&& relationship.getType().getConceptId().equals(relationshipChange.getTypeId())
 					&& relationship.getTarget().getConceptId().equals(relationshipChange.getDestinationId())
-					&& relationship.getGroupId() == relationshipChange.getGroup()) {
+					&& relationship.getGroupId() == relationshipChange.getGroup()
+					&& relationship.getCharacteristicType().equals(CharacteristicType.INFERRED_RELATIONSHIP)
+					&& relationship.getModifier().equals(relationshipChange.getModifier())) {					
 				return relationship;
 			}
 		}
