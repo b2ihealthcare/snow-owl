@@ -23,9 +23,9 @@ import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
+import com.b2international.snowowl.snomed.core.domain.ISnomedConcept;
 import com.b2international.snowowl.snomed.core.lang.LanguageSetting;
 import com.b2international.snowowl.snomed.datastore.SnomedTerminologyBrowser;
-import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptIndexEntry;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.b2international.snowowl.snomed.mrcm.core.widget.bean.ConceptWidgetBean;
 import com.b2international.snowowl.snomed.mrcm.core.widget.bean.ModeledWidgetBean;
@@ -36,9 +36,8 @@ import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Iterables;
+import com.google.common.collect.Lists;
 import com.google.common.collect.Multimap;
-
-import bak.pcj.set.LongSet;
 
 /**
  * @since 4.3
@@ -99,17 +98,22 @@ public class RelationshipWidgetBeanValidator implements ModeledWidgetBeanValidat
 					if (destinationId.equals(snomedConceptId)) {
 						reporter.error(relationship, "For Is-a relationships, the destination should not be the same as the edited concept.");
 					} else {
-						final SnomedConceptIndexEntry snomedConceptMini = browser.getConcept(branch, snomedConceptId);
-						final Long snomedConceptIdLong = Long.valueOf(snomedConceptId);
-						final LongSet allSubTypesAndSelfIds = browser.getAllSubTypeIds(branch, snomedConceptIdLong);
-						allSubTypesAndSelfIds.add(snomedConceptIdLong);
-
-						if (null == snomedConceptMini) { // new concept. it does not exist in store. cannot cause cycle.
-							continue;
+						if (browser.getConcept(branch, snomedConceptId) == null) {
+							continue; // new concept. it does not exist in store. cannot cause cycle.
 						}
-
-						// the IS_A relationship destination cannot be in the subtype set
-						if (allSubTypesAndSelfIds.contains(Long.valueOf(destinationId))) {
+						
+						final ApplicationContext context = ApplicationContext.getInstance();
+						final List<ISnomedConcept> snomedConcepts = SnomedRequests.prepareSearchConcept()
+								.all()
+								.filterByActive(true)
+								.filterByAncestor(snomedConceptId)
+								.setComponentIds(Lists.newArrayList(destinationId))
+								.setLocales(context.getService(LanguageSetting.class).getLanguagePreference())
+								.build(branch.getPath())
+								.executeSync(context.getService(IEventBus.class))
+								.getItems();
+						
+						if (snomedConcepts.size() != 0) {
 							reporter.error(relationship,
 									"For Is-a relationships, the destination should not be the descendant of the edited concept.");
 						}
