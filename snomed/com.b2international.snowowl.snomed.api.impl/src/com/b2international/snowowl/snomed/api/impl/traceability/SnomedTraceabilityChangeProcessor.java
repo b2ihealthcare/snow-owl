@@ -20,6 +20,7 @@ import static com.google.common.collect.Sets.newHashSetWithExpectedSize;
 
 import java.io.IOException;
 import java.util.Collection;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map.Entry;
 import java.util.Set;
@@ -50,7 +51,12 @@ import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.api.SnowowlRuntimeException;
 import com.b2international.snowowl.core.api.SnowowlServiceException;
 import com.b2international.snowowl.core.api.index.IIndexUpdater;
+import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.events.Request;
+import com.b2international.snowowl.core.events.RequestBuilder;
+import com.b2international.snowowl.core.events.bulk.BulkRequest;
+import com.b2international.snowowl.core.events.bulk.BulkRequestBuilder;
+import com.b2international.snowowl.core.events.bulk.BulkResponse;
 import com.b2international.snowowl.core.users.SpecialUserStore;
 import com.b2international.snowowl.datastore.ICDOCommitChangeSet;
 import com.b2international.snowowl.datastore.index.IndexRead;
@@ -314,7 +320,7 @@ public class SnomedTraceabilityChangeProcessor extends AbstractCDOChangeProcesso
 	public void afterCommit() {
 		
 		if (commitChangeSet != null) {
-			final Set<String> conceptIds = entry.getChanges().keySet();
+			final ImmutableSet<String> conceptIds = ImmutableSet.copyOf(entry.getChanges().keySet());
 			final String branch = commitChangeSet.getView().getBranch().getPathName();
 			final IEventBus bus = ApplicationContext.getServiceForClass(IEventBus.class);
 			
@@ -357,19 +363,34 @@ public class SnomedTraceabilityChangeProcessor extends AbstractCDOChangeProcesso
 		super.afterCommit();
 	}
 
-	private Set<String> collectNonLeafs(final Set<String> conceptIds, final String branch, final IEventBus bus, String characteristicTypeId) {
+	private Set<String> collectNonLeafs(final ImmutableSet<String> conceptIds, final String branch, final IEventBus bus, String characteristicTypeId) {
 		final Set<String> hasChildren = newHashSet();
-		final Request<ServiceProvider, SnomedRelationships> hasChildrenSearchRequest = SnomedRequests.prepareSearchRelationship()
-			.filterByDestination(conceptIds)
-			.filterByActive(true)
-			.filterByCharacteristicType(characteristicTypeId)
-			.all()
-			.build(branch);
+		final BulkRequestBuilder<BranchContext> hasChildrenBulkRequest = BulkRequest.create();
 		
-		final SnomedRelationships relationships = hasChildrenSearchRequest.executeSync(bus);
+		for (String conceptId : conceptIds) {
+			
+			final RequestBuilder<BranchContext, SnomedRelationships> hasChildrenSearchRequest = SnomedRequests.prepareSearchRelationship()
+					.filterByDestination(conceptId)
+					.filterByActive(true)
+					.filterByCharacteristicType(characteristicTypeId)
+					.filterByType(Concepts.IS_A)
+					.setLimit(0);
+			
+			hasChildrenBulkRequest.add(hasChildrenSearchRequest);
+		}
 		
-		for (ISnomedRelationship relationship : relationships) {
-			hasChildren.add(relationship.getDestinationId());
+		final BulkResponse relationshipResponses = SnomedRequests.prepareBulkRead()
+			.setBody(hasChildrenBulkRequest)
+			.build(branch)
+			.executeSync(bus);
+
+		final Iterator<SnomedRelationships> responseIterator = relationshipResponses.getResponses(SnomedRelationships.class).iterator();
+		
+		for (String conceptId : conceptIds) {
+			final SnomedRelationships relationships = responseIterator.next();
+			if (relationships.getTotal() > 0) {
+				hasChildren.add(conceptId);
+			}
 		}
 		
 		return hasChildren;
