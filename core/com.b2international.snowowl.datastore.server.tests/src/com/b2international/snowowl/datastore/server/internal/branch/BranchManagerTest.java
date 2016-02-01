@@ -23,6 +23,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.when;
 
@@ -33,12 +34,19 @@ import org.junit.Test;
 
 import com.b2international.snowowl.core.Metadata;
 import com.b2international.snowowl.core.MetadataImpl;
+import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.branch.Branch;
-import com.b2international.snowowl.core.branch.BranchMergeException;
 import com.b2international.snowowl.core.branch.Branch.BranchState;
+import com.b2international.snowowl.core.branch.BranchManager;
+import com.b2international.snowowl.core.branch.BranchMergeException;
+import com.b2international.snowowl.core.domain.RepositoryContext;
+import com.b2international.snowowl.core.domain.RepositoryContextProvider;
 import com.b2international.snowowl.core.exceptions.AlreadyExistsException;
 import com.b2international.snowowl.core.exceptions.BadRequestException;
 import com.b2international.snowowl.core.exceptions.NotFoundException;
+import com.b2international.snowowl.datastore.oplock.impl.IDatastoreOperationLockManager;
+import com.b2international.snowowl.datastore.request.RepositoryRequests;
+import com.b2international.snowowl.datastore.review.ReviewManager;
 import com.b2international.snowowl.datastore.store.MemStore;
 import com.b2international.snowowl.datastore.store.Store;
 
@@ -73,6 +81,7 @@ public class BranchManagerTest {
 	private InternalBranch main;
 	private InternalBranch a;
 	private MemStore<InternalBranch> store;
+	private ServiceProvider context;
 
 	@Before
 	public void givenBranchManager() {
@@ -82,6 +91,20 @@ public class BranchManagerTest {
 		
 		main = (InternalBranch) manager.getMainBranch();
 		a = (InternalBranch) main.createChild("a");
+		
+		context = mock(ServiceProvider.class);
+		final RepositoryContextProvider repositoryContextProvider = mock(RepositoryContextProvider.class);
+		final RepositoryContext repositoryContext = mock(RepositoryContext.class);
+		
+		final IDatastoreOperationLockManager lockManager = mock(IDatastoreOperationLockManager.class);
+		final ReviewManager reviewManager = mock(ReviewManager.class);
+		
+		when(repositoryContext.service(IDatastoreOperationLockManager.class)).thenReturn(lockManager);
+		when(repositoryContext.service(ReviewManager.class)).thenReturn(reviewManager);
+		when(repositoryContext.service(BranchManager.class)).thenReturn(manager);
+		
+		when(repositoryContextProvider.get(context, "")).thenReturn(repositoryContext);
+		when(context.service(RepositoryContextProvider.class)).thenReturn(repositoryContextProvider);
 	}
 	
 	@Test
@@ -340,11 +363,17 @@ public class BranchManagerTest {
 		return target.merge(source, "Message");
 	}
 
-	private Branch rebase(Branch source) {
-		return source.rebase("Message");
+	private Branch rebase(Branch branch) {
+		return rebase(branch, branch.parent());
 	}
 	
-	private Branch rebase(Branch source, Branch target) {
-		return source.rebase(target, "Message");
+	private Branch rebase(Branch branch, Branch onto) {
+		return RepositoryRequests.branching("")
+			.prepareMerge()
+			.setSource(onto.path())
+			.setTarget(branch.path())
+			.setCommitComment("Message")
+			.build()
+			.execute(context);
 	}
 }
