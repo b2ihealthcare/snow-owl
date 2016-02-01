@@ -116,11 +116,6 @@ public final class MergeRequest extends BaseRequest<RepositoryContext, Branch> {
 			@Override
 			protected Branch executeLocked(Branch source, Branch target, LockWrapper lockWrapper, String commitMessage) {
 				try {
-					
-					if (target.parent().equals(target)) {
-						throw new BadRequestException(target.path() + " cannot be rebased");
-					}
-					
 					final BranchState targetState = target.state(source);
 
 					if (targetState == BranchState.BEHIND || targetState == BranchState.DIVERGED || targetState == BranchState.STALE) {
