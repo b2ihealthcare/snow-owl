@@ -90,20 +90,6 @@ import org.eclipse.emf.cdo.common.id.CDOIDUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import bak.pcj.LongCollection;
-import bak.pcj.LongIterator;
-import bak.pcj.list.LongArrayList;
-import bak.pcj.list.LongList;
-import bak.pcj.list.LongListIterator;
-import bak.pcj.map.LongKeyLongMap;
-import bak.pcj.map.LongKeyLongOpenHashMap;
-import bak.pcj.map.LongKeyMap;
-import bak.pcj.map.LongKeyMapIterator;
-import bak.pcj.set.LongChainedHashSet;
-import bak.pcj.set.LongOpenHashSet;
-import bak.pcj.set.LongSet;
-import bak.pcj.set.UnmodifiableLongSet;
-
 import com.b2international.commons.CompareUtils;
 import com.b2international.commons.Pair;
 import com.b2international.commons.StringUtils;
@@ -181,6 +167,20 @@ import com.google.common.collect.Multimap;
 import com.google.common.collect.Multimaps;
 import com.google.common.collect.Sets;
 import com.google.common.util.concurrent.UncheckedExecutionException;
+
+import bak.pcj.LongCollection;
+import bak.pcj.LongIterator;
+import bak.pcj.list.LongArrayList;
+import bak.pcj.list.LongList;
+import bak.pcj.list.LongListIterator;
+import bak.pcj.map.LongKeyLongMap;
+import bak.pcj.map.LongKeyLongOpenHashMap;
+import bak.pcj.map.LongKeyMap;
+import bak.pcj.map.LongKeyMapIterator;
+import bak.pcj.set.LongChainedHashSet;
+import bak.pcj.set.LongOpenHashSet;
+import bak.pcj.set.LongSet;
+import bak.pcj.set.UnmodifiableLongSet;
 
 /**
  * Service singleton for the SNOMED&nbsp;CT core components.
@@ -364,10 +364,10 @@ public class SnomedComponentService implements ISnomedComponentService, IPostSto
 	 * @return a set of concrete domain data type labels for a specified data type.
 	 */
 	@Override
-	public Set<String> getAvailableDataTypeLabels(final IBranchPath branchPath, final com.b2international.snowowl.snomed.mrcm.DataType dataType) {
+	public Set<String> getAvailableDataTypeLabels(final IBranchPath branchPath, final DataType dataType) {
 		checkAndJoin(branchPath, null);
 		try {
-			return ((Map<com.b2international.snowowl.snomed.mrcm.DataType, Set<String>>) cache.get(branchPath).get(CacheKeyType.DATA_TYPE_LABELS)).get(dataType);
+			return ((Map<DataType, Set<String>>) cache.get(branchPath).get(CacheKeyType.DATA_TYPE_LABELS)).get(dataType);
 		} catch (final ExecutionException e) {
 			LOGGER.error("Error while getting available concrete domain data type labels for " + dataType, e);
 			throw new UncheckedExecutionException(e);
@@ -2320,9 +2320,9 @@ public class SnomedComponentService implements ISnomedComponentService, IPostSto
 	}
 	
 	/*initialize and returns with of map of data types and the available concrete domain data type labels.*/
-	private Map<com.b2international.snowowl.snomed.mrcm.DataType, Set<String>> getDataTypeLabels(final IBranchPath branchPath) {
+	private Map<DataType, Set<String>> getDataTypeLabels(final IBranchPath branchPath) {
 	
-		final Map<com.b2international.snowowl.snomed.mrcm.DataType, Set<String>> dataTypeLabelMap = Maps.newHashMapWithExpectedSize(DataType.values().length);
+		final Map<DataType, Set<String>> dataTypeLabelMap = Maps.newHashMapWithExpectedSize(DataType.values().length);
 		
 		@SuppressWarnings("rawtypes")
 		final IndexServerService service = (IndexServerService) getRefSetIndexService();
@@ -2330,10 +2330,10 @@ public class SnomedComponentService implements ISnomedComponentService, IPostSto
 		final ReducedConcreteDomainFragmentCollector collector = new ReducedConcreteDomainFragmentCollector();
 		service.search(branchPath, SnomedMappings.newQuery().memberRefSetType(SnomedRefSetType.CONCRETE_DATA_TYPE).matchAll(), collector);
 
-		for (final com.b2international.snowowl.snomed.mrcm.DataType  type : com.b2international.snowowl.snomed.mrcm.DataType.values()) {
+		for (final DataType  type : DataType.values()) {
 			
 			dataTypeLabelMap.put(type, Sets.<String>newHashSet());
-			final BytesRefHash labelRefHash = collector.getLabels(SnomedRefSetUtil.MRCM_DATATYPE_TO_DATATYPE_MAP.get(type));
+			final BytesRefHash labelRefHash = collector.getLabels(type);
 			
 			if (labelRefHash.size() < 1) {
 				continue;

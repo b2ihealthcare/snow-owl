@@ -785,8 +785,7 @@ public class WidgetBeanUpdater implements IWidgetBeanUpdater {
 
 	private void addDataType(final SnomedEditingContext context, final Concept concept, final DataTypeWidgetBean dataTypeBean, final String moduleId) {
 		
-		final com.b2international.snowowl.snomed.mrcm.DataType mrcmDataType = dataTypeBean.getAllowedType();
-		final DataType ecoreDataType = SnomedRefSetUtil.MRCM_DATATYPE_TO_DATATYPE_MAP.get(mrcmDataType);
+		final DataType ecoreDataType = dataTypeBean.getAllowedType();
 		
 		final Object serializedValue = SnomedRefSetUtil.deserializeValue(ecoreDataType, 
 				dataTypeBean.getSelectedValue());

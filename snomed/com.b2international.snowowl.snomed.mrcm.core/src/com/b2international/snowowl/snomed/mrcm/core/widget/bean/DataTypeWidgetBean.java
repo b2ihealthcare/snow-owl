@@ -22,8 +22,8 @@ import java.util.Set;
 
 import com.b2international.snowowl.core.api.IComponent;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
-import com.b2international.snowowl.snomed.mrcm.DataType;
 import com.b2international.snowowl.snomed.mrcm.core.widget.model.DataTypeWidgetModel;
+import com.b2international.snowowl.snomed.snomedrefset.DataType;
 import com.google.common.base.Strings;
 import com.google.common.collect.Iterables;
 

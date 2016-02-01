@@ -19,6 +19,7 @@ import com.b2international.commons.BooleanUtils;
 import com.b2international.snowowl.datastore.index.mapping.QueryBuilderBase;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.snomed.datastore.snor.PredicateIndexEntry.PredicateType;
+import com.b2international.snowowl.snomed.snomedrefset.DataType;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType;
 
 /**
@@ -297,7 +298,7 @@ public class SnomedQueryBuilder extends QueryBuilderBase<SnomedQueryBuilder> {
 		return addToQuery(SnomedMappings.predicateDataTypeName(), name);
 	}
 
-	public SnomedQueryBuilder predicateDataType(final com.b2international.snowowl.snomed.mrcm.DataType mrcmDataType) {
+	public SnomedQueryBuilder predicateDataType(final DataType mrcmDataType) {
 		return addToQuery(SnomedMappings.predicateDataType(), mrcmDataType.name());
 	}
 

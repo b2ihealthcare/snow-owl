@@ -22,7 +22,7 @@ import java.text.MessageFormat;
 import java.util.List;
 
 import com.b2international.commons.StringUtils;
-import com.b2international.snowowl.snomed.mrcm.DataType;
+import com.b2international.snowowl.snomed.snomedrefset.DataType;
 import com.google.common.collect.Iterables;
 
 /**

@@ -35,7 +35,7 @@ import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConst
 import com.b2international.snowowl.snomed.datastore.DataTypeUtils;
 import com.b2international.snowowl.snomed.datastore.quicksearch.DataTypeLabelQuickSearchProvider;
 import com.b2international.snowowl.snomed.datastore.snor.PredicateIndexEntry;
-import com.b2international.snowowl.snomed.mrcm.DataType;
+import com.b2international.snowowl.snomed.snomedrefset.DataType;
 import com.google.common.base.Function;
 import com.google.common.base.Predicate;
 import com.google.common.collect.FluentIterable;
@@ -110,8 +110,8 @@ public class DataTypeLabelQuickSearchContentProvider extends AbstractQuickSearch
 			return SnomedTerminologyComponentConstants.DATA_TYPE_BOOLEAN;
 		case DATE:
 			return SnomedTerminologyComponentConstants.DATA_TYPE_DATE;
-		case FLOAT:
-			return SnomedTerminologyComponentConstants.DATA_TYPE_FLOAT;
+		case DECIMAL:
+			return SnomedTerminologyComponentConstants.DATA_TYPE_DECIMAL;
 		case INTEGER:
 			return SnomedTerminologyComponentConstants.DATA_TYPE_INTEGER;
 		case STRING:

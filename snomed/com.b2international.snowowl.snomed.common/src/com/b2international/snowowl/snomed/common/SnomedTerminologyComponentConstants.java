@@ -51,8 +51,8 @@ public abstract class SnomedTerminologyComponentConstants {
 	public static final short DATA_TYPE_STRING_NUMBER = 105;
 	public static final String DATA_TYPE_INTEGER = "com.b2international.snowowl.terminology.snomed.datatype.integer";
 	public static final short DATA_TYPE_INTEGER_NUMBER = 106;
-	public static final String DATA_TYPE_FLOAT= "com.b2international.snowowl.terminology.snomed.datatype.float";
-	public static final short DATA_TYPE_FLOAT_NUMBER = 107;
+	public static final String DATA_TYPE_DECIMAL= "com.b2international.snowowl.terminology.snomed.datatype.decimal";
+	public static final short DATA_TYPE_DECIMAL_NUMBER = 107;
 	public static final String DATA_TYPE_BOOLEAN = "com.b2international.snowowl.terminology.snomed.datatype.boolean";
 	public static final short DATA_TYPE_BOOLEAN_NUMBER = 108;
 	public static final String DATA_TYPE_DATE = "com.b2international.snowowl.terminology.snomed.datatype.date";
@@ -154,7 +154,7 @@ public abstract class SnomedTerminologyComponentConstants {
 			case REFSET_MEMBER_NUMBER: return REFSET_MEMBER;
 			case DATA_TYPE_BOOLEAN_NUMBER: return DATA_TYPE_BOOLEAN;
 			case DATA_TYPE_DATE_NUMBER: return DATA_TYPE_DATE;
-			case DATA_TYPE_FLOAT_NUMBER: return DATA_TYPE_FLOAT;
+			case DATA_TYPE_DECIMAL_NUMBER: return DATA_TYPE_DECIMAL;
 			case DATA_TYPE_INTEGER_NUMBER: return DATA_TYPE_INTEGER;
 			case DATA_TYPE_STRING_NUMBER: return DATA_TYPE_STRING;
 			default: throw new IllegalArgumentException("Unknown terminology component identifier value: " + value);
@@ -181,8 +181,8 @@ public abstract class SnomedTerminologyComponentConstants {
 			return DATA_TYPE_BOOLEAN_NUMBER;
 		} else if (DATA_TYPE_DATE.equals(id)) {
 			return DATA_TYPE_DATE_NUMBER;
-		} else if (DATA_TYPE_FLOAT.equals(id)) {
-			return DATA_TYPE_FLOAT_NUMBER;
+		} else if (DATA_TYPE_DECIMAL.equals(id)) {
+			return DATA_TYPE_DECIMAL_NUMBER;
 		} else if (DATA_TYPE_INTEGER.equals(id)) {
 			return DATA_TYPE_INTEGER_NUMBER;
 		} else if (DATA_TYPE_STRING.equals(id)) {
