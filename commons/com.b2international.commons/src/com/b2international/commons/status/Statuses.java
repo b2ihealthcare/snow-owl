@@ -54,6 +54,14 @@ public final class Statuses {
 	public static IStatus ok() {
 		return Status.OK_STATUS;
 	}
+	
+	/**
+	 * Returns an {@link IStatus} instance representing pending status.
+	 * @return
+	 */
+	public static IStatus pending() {
+		return info("Pending...");
+	}
 
 	/**
 	 * Returns a new {@link IStatus} instance with {@link IStatus#ERROR}
