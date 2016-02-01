@@ -1203,16 +1203,6 @@ public interface MrcmPackage extends EPackage {
 	int GROUP_RULE = 16;
 
 	/**
-	 * The meta object id for the '{@link com.b2international.snowowl.snomed.mrcm.DataType <em>Data Type</em>}' enum.
-	 * <!-- begin-user-doc -->
-	 * <!-- end-user-doc -->
-	 * @see com.b2international.snowowl.snomed.mrcm.DataType
-	 * @see com.b2international.snowowl.snomed.mrcm.impl.MrcmPackageImpl#getDataType()
-	 * @generated
-	 */
-	int DATA_TYPE = 17;
-
-	/**
 	 * The meta object id for the '{@link com.b2international.snowowl.snomed.mrcm.DependencyOperator <em>Dependency Operator</em>}' enum.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
@@ -1220,7 +1210,7 @@ public interface MrcmPackage extends EPackage {
 	 * @see com.b2international.snowowl.snomed.mrcm.impl.MrcmPackageImpl#getDependencyOperator()
 	 * @generated
 	 */
-	int DEPENDENCY_OPERATOR = 18;
+	int DEPENDENCY_OPERATOR = 17;
 
 	/**
 	 * The meta object id for the '{@link com.b2international.snowowl.snomed.mrcm.HierarchyInclusionType <em>Hierarchy Inclusion Type</em>}' enum.
@@ -1230,7 +1220,7 @@ public interface MrcmPackage extends EPackage {
 	 * @see com.b2international.snowowl.snomed.mrcm.impl.MrcmPackageImpl#getHierarchyInclusionType()
 	 * @generated
 	 */
-	int HIERARCHY_INCLUSION_TYPE = 19;
+	int HIERARCHY_INCLUSION_TYPE = 18;
 
 	/**
 	 * The meta object id for the '{@link com.b2international.snowowl.snomed.mrcm.ConstraintStrength <em>Constraint Strength</em>}' enum.
@@ -1240,7 +1230,7 @@ public interface MrcmPackage extends EPackage {
 	 * @see com.b2international.snowowl.snomed.mrcm.impl.MrcmPackageImpl#getConstraintStrength()
 	 * @generated
 	 */
-	int CONSTRAINT_STRENGTH = 20;
+	int CONSTRAINT_STRENGTH = 19;
 
 	/**
 	 * The meta object id for the '{@link com.b2international.snowowl.snomed.mrcm.ConstraintForm <em>Constraint Form</em>}' enum.
@@ -1250,7 +1240,7 @@ public interface MrcmPackage extends EPackage {
 	 * @see com.b2international.snowowl.snomed.mrcm.impl.MrcmPackageImpl#getConstraintForm()
 	 * @generated
 	 */
-	int CONSTRAINT_FORM = 21;
+	int CONSTRAINT_FORM = 20;
 
 
 	/**
@@ -1776,16 +1766,6 @@ public interface MrcmPackage extends EPackage {
 	EEnum getGroupRule();
 
 	/**
-	 * Returns the meta object for enum '{@link com.b2international.snowowl.snomed.mrcm.DataType <em>Data Type</em>}'.
-	 * <!-- begin-user-doc -->
-	 * <!-- end-user-doc -->
-	 * @return the meta object for enum '<em>Data Type</em>'.
-	 * @see com.b2international.snowowl.snomed.mrcm.DataType
-	 * @generated
-	 */
-	EEnum getDataType();
-
-	/**
 	 * Returns the meta object for enum '{@link com.b2international.snowowl.snomed.mrcm.DependencyOperator <em>Dependency Operator</em>}'.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
@@ -2272,16 +2252,6 @@ public interface MrcmPackage extends EPackage {
 		 * @generated
 		 */
 		EEnum GROUP_RULE = eINSTANCE.getGroupRule();
-
-		/**
-		 * The meta object literal for the '{@link com.b2international.snowowl.snomed.mrcm.DataType <em>Data Type</em>}' enum.
-		 * <!-- begin-user-doc -->
-		 * <!-- end-user-doc -->
-		 * @see com.b2international.snowowl.snomed.mrcm.DataType
-		 * @see com.b2international.snowowl.snomed.mrcm.impl.MrcmPackageImpl#getDataType()
-		 * @generated
-		 */
-		EEnum DATA_TYPE = eINSTANCE.getDataType();
 
 		/**
 		 * The meta object literal for the '{@link com.b2international.snowowl.snomed.mrcm.DependencyOperator <em>Dependency Operator</em>}' enum.

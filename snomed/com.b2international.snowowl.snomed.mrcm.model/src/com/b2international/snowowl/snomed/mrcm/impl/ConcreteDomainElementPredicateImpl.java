@@ -19,8 +19,8 @@ import org.eclipse.emf.ecore.EClass;
 
 import com.b2international.commons.StringUtils;
 import com.b2international.snowowl.snomed.mrcm.ConcreteDomainElementPredicate;
-import com.b2international.snowowl.snomed.mrcm.DataType;
 import com.b2international.snowowl.snomed.mrcm.MrcmPackage;
+import com.b2international.snowowl.snomed.snomedrefset.DataType;
 
 /**
  * <!-- begin-user-doc -->
