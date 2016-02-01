@@ -34,7 +34,7 @@ public enum DataType implements Enumerator {
 	 * @generated
 	 * @ordered
 	 */
-	INTEGER(0, "INTEGER", "INTEGER"),
+	INTEGER(0, "INTEGER", "Integer"),
 
 	/**
 	 * Decimal.
@@ -42,7 +42,7 @@ public enum DataType implements Enumerator {
 	 * @generated
 	 * @ordered
 	 */
-	DECIMAL(1, "DECIMAL", "DECIMAL"),
+	DECIMAL(1, "DECIMAL", "Decimal"),
 
 	/**
 	 * Boolean.
@@ -50,7 +50,7 @@ public enum DataType implements Enumerator {
 	 * @generated
 	 * @ordered
 	 */
-	BOOLEAN(2, "BOOLEAN", "BOOLEAN"),
+	BOOLEAN(2, "BOOLEAN", "Boolean"),
 
 	/**
 	 * Date.
@@ -58,7 +58,7 @@ public enum DataType implements Enumerator {
 	 * @generated
 	 * @ordered
 	 */
-	DATE(3, "DATE", "DATE"),
+	DATE(3, "DATE", "Datetime"),
 
 	/**
 	 * String.
@@ -66,7 +66,7 @@ public enum DataType implements Enumerator {
 	 * @generated
 	 * @ordered
 	 */
-	STRING(4, "STRING", "STRING");
+	STRING(4, "STRING", "String");
 
 	/**
 	 * The '<em><b>INTEGER</b></em>' literal value.
