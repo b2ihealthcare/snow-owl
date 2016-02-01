@@ -136,6 +136,16 @@ public class BranchImpl extends MetadataHolderImpl implements Branch, InternalBr
 	}
 
 	@Override
+	public Branch applyChangeSet(Branch source, boolean dryRun, String commitMessage) {
+		return branchManager.applyChangeSet(this, (InternalBranch) source, dryRun, commitMessage);
+	}
+	
+	@Override
+	public Branch notifyChanged() {
+		return branchManager.sendChangeEvent(this);
+	}
+
+	@Override
 	public Branch createChild(String name) {
 		return createChild(name, null);
 	}

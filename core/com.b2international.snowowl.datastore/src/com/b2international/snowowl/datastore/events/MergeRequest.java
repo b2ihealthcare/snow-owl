@@ -15,12 +15,15 @@
  */
 package com.b2international.snowowl.datastore.events;
 
-import java.util.Set;
+import static com.google.common.collect.Maps.newHashMap;
+
+import java.util.Map;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.b2international.snowowl.core.branch.Branch;
+import com.b2international.snowowl.core.branch.Branch.BranchState;
 import com.b2international.snowowl.core.branch.BranchManager;
 import com.b2international.snowowl.core.branch.BranchMergeException;
 import com.b2international.snowowl.core.domain.RepositoryContext;
@@ -36,17 +39,53 @@ import com.b2international.snowowl.datastore.oplock.impl.DatastoreLockContextDes
 import com.b2international.snowowl.datastore.oplock.impl.DatastoreOperationLockException;
 import com.b2international.snowowl.datastore.oplock.impl.IDatastoreOperationLockManager;
 import com.b2international.snowowl.datastore.oplock.impl.SingleRepositoryAndBranchLockTarget;
-import com.b2international.snowowl.datastore.review.BranchState;
 import com.b2international.snowowl.datastore.review.Review;
 import com.b2international.snowowl.datastore.review.ReviewManager;
 import com.google.common.base.Strings;
-import com.google.common.collect.Sets;
 
 /**
  * @since 4.1
  */
 public final class MergeRequest extends BaseRequest<RepositoryContext, Branch> {
 
+	private static class LockWrapper {
+
+		private final String repositoryId;
+		private final IDatastoreOperationLockManager lockManager;
+		private final DatastoreLockContext lockContext;
+		private final Map<String, IOperationLockTarget> lockTargets;
+		
+		private LockWrapper(RepositoryContext context, Branch source, Branch target) {
+			repositoryId = context.id();
+			lockManager = context.service(IDatastoreOperationLockManager.class);
+			
+			// FIXME: Using "System" user and "synchronize" description until a more suitable pair can be specified here
+			lockContext = new DatastoreLockContext(SpecialUserStore.SYSTEM_USER_NAME, DatastoreLockContextDescriptions.SYNCHRONIZE);
+		
+			lockTargets = newHashMap();
+			lockTargets.put(source.path(), new SingleRepositoryAndBranchLockTarget(repositoryId, source.branchPath()));
+			lockTargets.put(target.path(), new SingleRepositoryAndBranchLockTarget(repositoryId, target.branchPath()));
+		}
+
+		public void lock() throws OperationLockException, InterruptedException {
+			lockManager.lock(lockContext, IDatastoreOperationLockManager.IMMEDIATE, lockTargets.values());			
+		}
+		
+		public void unlock(String path) {
+			if (lockTargets.containsKey(path)) {
+				lockManager.unlock(lockContext, lockTargets.get(path));
+				lockTargets.remove(path); // Not reached if an exception is thrown above
+			}
+		}
+
+		public void unlockAll() {
+			if (!lockTargets.isEmpty()) {
+				lockManager.unlock(lockContext, lockTargets.values());
+				lockTargets.clear(); // Not reached if an exception is thrown above
+			}
+		}
+	}
+	
 	private enum Type {
 		
 		/**
@@ -54,7 +93,7 @@ public final class MergeRequest extends BaseRequest<RepositoryContext, Branch> {
 		 */
 		MERGE {
 			@Override
-			protected Branch execute(Branch source, Branch target, String commitMessage) {
+			protected Branch executeLocked(Branch source, Branch target, LockWrapper lockWrapper, String commitMessage) {
 				try {
 					return target.merge(source, commitMessage);
 				} catch (BranchMergeException e) {
@@ -68,16 +107,46 @@ public final class MergeRequest extends BaseRequest<RepositoryContext, Branch> {
 		 */
 		REBASE {
 			@Override
-			protected Branch execute(Branch source, Branch target, String commitMessage) {
+			protected Branch executeLocked(Branch source, Branch target, LockWrapper lockWrapper, String commitMessage) {
 				try {
-					return target.rebase(source, commitMessage);
+					final BranchState targetState = target.state(source);
+
+					if (targetState == BranchState.BEHIND || targetState == BranchState.DIVERGED || targetState == BranchState.STALE) {
+						checkParentConflicts(source, target, commitMessage);
+						final Branch reopenedTarget = target.reopen();
+						releaseLockOnSource(source, lockWrapper);
+						return applyChangesOnReopenedTarget(reopenedTarget, target, commitMessage);
+					} else {
+						return target;
+					}
+
 				} catch (BranchMergeException e) {
 					throw new ConflictException("Cannot rebase target '%s' with source '%s'.", target.path(), source.path(), e);
 				}
 			}
+
+			private void checkParentConflicts(Branch source, Branch target, String commitMessage) {
+				source.applyChangeSet(target, true, commitMessage);
+			}
+
+			private void releaseLockOnSource(Branch source, LockWrapper lockWrapper) {
+				try {
+					lockWrapper.unlock(source.path());
+				} catch (OperationLockException e) {
+					LOG.warn("Failed to unlock source branch in MergeRequest; continuing.", e);
+				}
+			}
+
+			private Branch applyChangesOnReopenedTarget(final Branch reopenedTarget, Branch target, String commitMessage) {
+				if (target.headTimestamp() > target.baseTimestamp()) {
+					return reopenedTarget.applyChangeSet(target, false, commitMessage); // Implicit notification (reopen & commit)
+				} else {
+					return reopenedTarget.notifyChanged(); // Explicit notification (reopen)
+				}
+			}
 		};
 
-		protected abstract Branch execute(Branch source, Branch target, String commitMessage);
+		protected abstract Branch executeLocked(Branch source, Branch target, LockWrapper wrapper, String commitMessage);
 	}
 
 	private static final Logger LOG = LoggerFactory.getLogger(MergeRequest.class);
@@ -109,8 +178,8 @@ public final class MergeRequest extends BaseRequest<RepositoryContext, Branch> {
 			
 			if (reviewId != null) {
 				Review review = reviewManager.getReview(reviewId);
-				BranchState sourceState = review.source();
-				BranchState targetState = review.target();
+				com.b2international.snowowl.datastore.review.BranchState sourceState = review.source();
+				com.b2international.snowowl.datastore.review.BranchState targetState = review.target();
 				
 				if (!sourceState.matches(source)) {
 					throw new ConflictException("Source branch '%s' did not match with stored state on review identifier '%s'.", source.path(), reviewId);
@@ -131,16 +200,10 @@ public final class MergeRequest extends BaseRequest<RepositoryContext, Branch> {
 				throw new BadRequestException("Cannot merge source '%s' into target '%s', because there is no relation between them.", source.path(), target.path());
 			}
 			
-			final String repositoryId = context.id();
-			final IDatastoreOperationLockManager lockManager = context.service(IDatastoreOperationLockManager.class);
-			// FIXME: Using "System" user and "synchronize" description until a more suitable pair can be specified here
-			final DatastoreLockContext lockContext = new DatastoreLockContext(SpecialUserStore.SYSTEM_USER_NAME, DatastoreLockContextDescriptions.SYNCHRONIZE);
-			final Set<IOperationLockTarget> lockTargets = Sets.<IOperationLockTarget>newHashSet(
-					new SingleRepositoryAndBranchLockTarget(repositoryId, source.branchPath()),
-					new SingleRepositoryAndBranchLockTarget(repositoryId, target.branchPath()));
+			final LockWrapper lockWrapper = new LockWrapper(context, source, target);
 			
 			try {
-				lockManager.lock(lockContext, IDatastoreOperationLockManager.IMMEDIATE, lockTargets);
+				lockWrapper.lock();
 			} catch (DatastoreOperationLockException e) {
 				throw new ConflictException("Cannot merge source '%s' into target '%s'. %s", source.path(), target.path(), e.getMessage());
 			} catch (InterruptedException e) {
@@ -148,10 +211,10 @@ public final class MergeRequest extends BaseRequest<RepositoryContext, Branch> {
 			}
 
 			try {
-				return type.execute(source, target, commitMessage);
+				return type.executeLocked(source, target, lockWrapper, commitMessage);
 			} finally {
 				try {
-					lockManager.unlock(lockContext, lockTargets);
+					lockWrapper.unlockAll();
 				} catch (OperationLockException e) {
 					LOG.error("Failed to unlock locked targets in MergeRequest.", e);
 				}
