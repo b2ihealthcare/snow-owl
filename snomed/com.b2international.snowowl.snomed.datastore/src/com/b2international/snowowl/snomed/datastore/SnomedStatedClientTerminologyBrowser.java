@@ -15,11 +15,14 @@
  */
 package com.b2international.snowowl.snomed.datastore;
 
+import static java.util.Collections.emptyList;
+
 import java.util.Collection;
 import java.util.List;
 
 import com.b2international.commons.http.ExtendedLocale;
 import com.b2international.snowowl.core.api.IComponentWithChildFlag;
+import com.b2international.snowowl.core.exceptions.NotFoundException;
 import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.snomed.core.domain.ISnomedConcept;
 import com.b2international.snowowl.snomed.core.domain.ISnomedDescription;
@@ -117,14 +120,18 @@ public final class SnomedStatedClientTerminologyBrowser extends BaseSnomedClient
 	
 	@Override
 	public Collection<SnomedConceptIndexEntry> getSuperTypesById(String id) {
-		final ISnomedConcept concept = SnomedRequests
-				.prepareGetConcept()
-				.setComponentId(id)
-				.setExpand("ancestors(form:\"stated\",direct:true,expand(pt(),parentIds()))")
-				.setLocales(getLocales())
-				.build(getBranchPath().getPath())
-				.executeSync(getBus());
-		return SnomedConceptIndexEntry.fromConcepts(concept.getAncestors());
+		try {
+			final ISnomedConcept concept = SnomedRequests
+					.prepareGetConcept()
+					.setComponentId(id)
+					.setExpand("ancestors(form:\"stated\",direct:true,expand(pt(),parentIds()))")
+					.setLocales(getLocales())
+					.build(getBranchPath().getPath())
+					.executeSync(getBus());
+			return SnomedConceptIndexEntry.fromConcepts(concept.getAncestors());
+		} catch (NotFoundException e) {
+			return emptyList();
+		}
 	}
 	
 }
