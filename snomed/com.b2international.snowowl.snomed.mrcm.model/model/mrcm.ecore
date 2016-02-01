@@ -47,7 +47,7 @@
     <eStructuralFeatures xsi:type="ecore:EAttribute" name="name" lowerBound="1" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
     <eStructuralFeatures xsi:type="ecore:EAttribute" name="label" lowerBound="1" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"
         defaultValueLiteral=""/>
-    <eStructuralFeatures xsi:type="ecore:EAttribute" name="type" lowerBound="1" eType="#//DataType"/>
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="type" lowerBound="1" eType="ecore:EEnum ../../com.b2international.snowowl.snomed.refset.model/model/snomedrefset.ecore#//DataType"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="DependencyPredicate" eSuperTypes="#//ConceptModelPredicate">
     <eAnnotations source="http://www.eclipse.org/emf/2002/GenModel">
@@ -175,16 +175,6 @@
         <details key="documentation" value="Test cardinality or interdependency between relationship groups that match the predicates in the referenced dependency predicate."/>
       </eAnnotations>
     </eLiterals>
-  </eClassifiers>
-  <eClassifiers xsi:type="ecore:EEnum" name="DataType">
-    <eAnnotations source="http://www.eclipse.org/emf/2002/GenModel">
-      <details key="documentation" value="Indicates the data type of a concrete domain element.&#xD;&#xA;&#xD;&#xA;@author zstorok"/>
-    </eAnnotations>
-    <eLiterals name="BOOLEAN" literal="Boolean"/>
-    <eLiterals name="DATE" value="1" literal="DateTime"/>
-    <eLiterals name="FLOAT" value="2" literal="Decimal"/>
-    <eLiterals name="INTEGER" value="3" literal="Integer"/>
-    <eLiterals name="STRING" value="4" literal="String"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EEnum" name="DependencyOperator">
     <eAnnotations source="http://www.eclipse.org/emf/2002/GenModel">
