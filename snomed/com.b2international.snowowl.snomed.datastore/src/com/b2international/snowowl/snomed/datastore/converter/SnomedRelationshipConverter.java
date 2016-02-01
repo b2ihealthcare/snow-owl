@@ -26,6 +26,7 @@ import com.b2international.commons.http.ExtendedLocale;
 import com.b2international.commons.options.Options;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
+import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
 import com.b2international.snowowl.snomed.core.domain.CharacteristicType;
 import com.b2international.snowowl.snomed.core.domain.ISnomedConcept;
 import com.b2international.snowowl.snomed.core.domain.ISnomedRelationship;
@@ -35,19 +36,21 @@ import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcepts;
 import com.b2international.snowowl.snomed.core.domain.SnomedRelationship;
 import com.b2international.snowowl.snomed.core.domain.SnomedRelationships;
-import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry;
+import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMember;
+import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMembers;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRelationshipIndexEntry;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
-import com.b2international.snowowl.snomed.datastore.services.AbstractSnomedRefSetMembershipLookupService;
 import com.google.common.base.Function;
 import com.google.common.collect.FluentIterable;
-import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Iterables;
 import com.google.common.collect.Maps;
+import com.google.common.collect.Multimap;
+import com.google.common.collect.Multimaps;
 
 final class SnomedRelationshipConverter extends BaseSnomedComponentConverter<SnomedRelationshipIndexEntry, ISnomedRelationship, SnomedRelationships> {
 
-	SnomedRelationshipConverter(BranchContext context, Options expand, List<ExtendedLocale> locales, final AbstractSnomedRefSetMembershipLookupService refSetMembershipLookupService) {
-		super(context, expand, locales, refSetMembershipLookupService);
+	SnomedRelationshipConverter(BranchContext context, Options expand, List<ExtendedLocale> locales) {
+		super(context, expand, locales);
 	}
 
 	@Override
@@ -67,7 +70,8 @@ final class SnomedRelationshipConverter extends BaseSnomedComponentConverter<Sno
 		result.setModifier(toRelationshipModifier(input.isUniversal()));
 		result.setModuleId(input.getModuleId());
 		result.setIconId(input.getIconId());
-		result.setRefinability(getRelationshipRefinability(input.getId()));
+		// XXX using optional refinability as default, will be expanded to the proper refinability if supported in expand
+		result.setRefinability(RelationshipRefinability.OPTIONAL);
 		result.setReleased(input.isReleased());
 		result.setUnionGroup(input.getUnionGroup());
 		result.setDestination(new SnomedConcept(input.getValueId()));
@@ -79,6 +83,8 @@ final class SnomedRelationshipConverter extends BaseSnomedComponentConverter<Sno
 	
 	@Override
 	protected void expand(List<ISnomedRelationship> results) {
+		final Set<String> relationshipIds = FluentIterable.from(results).transform(ID_FUNCTION).toSet();
+		expandRefinability(results, relationshipIds);
 		if (expand().containsKey("source")) {
 			final Options sourceOptions = expand().get("source", Options.class);
 			final Set<String> sourceConceptIds = FluentIterable.from(results).transform(new Function<ISnomedRelationship, String>() {
@@ -156,6 +162,35 @@ final class SnomedRelationshipConverter extends BaseSnomedComponentConverter<Sno
 		}
 	}
 	
+	private void expandRefinability(List<ISnomedRelationship> results, Set<String> relationshipIds) {
+		final SnomedReferenceSetMembers matchingMembers = SnomedRequests
+			.prepareSearchMember()
+			.all()
+			.filterByActive(true)
+			.filterByReferencedComponent(relationshipIds)
+			.filterByRefSet(Concepts.REFSET_RELATIONSHIP_REFINABILITY)
+			.setLocales(locales())
+			.build()
+			.execute(context());
+		
+		final Multimap<String, SnomedReferenceSetMember> membersByReferencedComponentIds = Multimaps.index(matchingMembers, new Function<SnomedReferenceSetMember, String>() {
+			@Override
+			public String apply(SnomedReferenceSetMember input) {
+				return input.getReferencedComponent().getId();
+			}
+		});
+		
+		for (ISnomedRelationship relationship : results) {
+			final Collection<SnomedReferenceSetMember> refinabilityMembers = membersByReferencedComponentIds.get(relationship.getId());
+			if (!refinabilityMembers.isEmpty()) {
+				final SnomedReferenceSetMember first = Iterables.getFirst(refinabilityMembers, null);
+				final String refinabilityId = (String) first.getProperties().get(SnomedRf2Headers.FIELD_VALUE_ID);
+				((SnomedRelationship) relationship).setRefinability(RelationshipRefinability.getByConceptId(refinabilityId));
+			}
+		}
+		
+	}
+
 	private CharacteristicType toCharacteristicType(final String characteristicTypeId) {
 		return CharacteristicType.getByConceptId(characteristicTypeId);
 	}
@@ -164,18 +199,4 @@ final class SnomedRelationshipConverter extends BaseSnomedComponentConverter<Sno
 		return universal ? RelationshipModifier.UNIVERSAL : RelationshipModifier.EXISTENTIAL;
 	}
 
-	private RelationshipRefinability getRelationshipRefinability(final String relationshipId) {
-		final Collection<SnomedRefSetMemberIndexEntry> relationshipMembers = getRefSetMembershipLookupService().getRelationshipMembers(
-				ImmutableSet.of(Concepts.REFSET_RELATIONSHIP_REFINABILITY),
-				ImmutableSet.of(relationshipId));
-
-		for (final SnomedRefSetMemberIndexEntry relationshipMember : relationshipMembers) {
-			if (relationshipMember.isActive()) {
-				return relationshipMember.getRefinability();
-			}
-		}
-
-		// TODO: is this the proper fallback value?
-		return RelationshipRefinability.NOT_REFINABLE;
-	}
 }

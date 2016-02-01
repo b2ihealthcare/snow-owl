@@ -15,9 +15,9 @@
  */
 package com.b2international.snowowl.snomed.datastore.converter;
 
+import static com.b2international.snowowl.core.domain.IComponent.ID_FUNCTION;
 import static com.google.common.collect.Maps.newHashMap;
 import static com.google.common.collect.Sets.newHashSet;
-import static com.b2international.snowowl.core.domain.IComponent.ID_FUNCTION;
 
 import java.io.IOException;
 import java.util.Collection;
@@ -62,7 +62,6 @@ import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedMappings
 import com.b2international.snowowl.snomed.datastore.request.DescriptionRequestHelper;
 import com.b2international.snowowl.snomed.datastore.request.SnomedDescriptionSearchRequestBuilder;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
-import com.b2international.snowowl.snomed.datastore.services.AbstractSnomedRefSetMembershipLookupService;
 import com.google.common.base.Function;
 import com.google.common.base.Functions;
 import com.google.common.collect.FluentIterable;
@@ -77,8 +76,8 @@ import com.google.common.collect.TreeMultimap;
  */
 final class SnomedConceptConverter extends BaseSnomedComponentConverter<SnomedConceptIndexEntry, ISnomedConcept, SnomedConcepts> {
 
-	SnomedConceptConverter(final BranchContext context, Options expand, List<ExtendedLocale> locales, final AbstractSnomedRefSetMembershipLookupService membershipLookupService) {
-		super(context, expand, locales, membershipLookupService);
+	SnomedConceptConverter(final BranchContext context, Options expand, List<ExtendedLocale> locales) {
+		super(context, expand, locales);
 	}
 	
 	@Override
