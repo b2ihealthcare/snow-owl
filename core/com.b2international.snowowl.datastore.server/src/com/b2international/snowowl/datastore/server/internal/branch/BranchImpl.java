@@ -108,21 +108,6 @@ public class BranchImpl extends MetadataHolderImpl implements Branch, InternalBr
 	}
 
 	@Override
-	public Branch rebase(String commitMessage) {
-		return rebase(parent(), commitMessage);
-	}
-
-	@Override
-	public Branch rebase(Branch target, String commitMessage) {
-		final BranchState state = state(target);
-		if (state == BranchState.BEHIND || state == BranchState.DIVERGED || state == BranchState.STALE) {
-			return branchManager.rebase(this, (BranchImpl) target, commitMessage);
-		} else {
-			return this;
-		}
-	}
-
-	@Override
 	public Branch merge(Branch source, String commitMessage) throws BranchMergeException {
 		if (path().equals(source.path())) {
 			throw new BadRequestException("Can't merge branch '%s' onto itself.", path());

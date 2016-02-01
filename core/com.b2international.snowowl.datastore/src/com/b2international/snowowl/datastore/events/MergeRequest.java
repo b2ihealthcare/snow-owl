@@ -103,12 +103,24 @@ public final class MergeRequest extends BaseRequest<RepositoryContext, Branch> {
 		}, 
 		
 		/**
-		 * Rebase target on source (also allow STALE targets on not the most recent source branches).
+		 * Rebases {@code target} on {@code source}.
+		 * <p>
+		 * The branch represented by {@code target} is not modified; instead, a new branch representing the rebased {@code target} will be created on
+		 * top of {@code source}, preserving {@code target}'s path. This ensures that any changes that were made to {@code source} in the meantime
+		 * will be visible on the rebased target branch.
+		 * <p>
+		 * Commits available on the previous instance of {@code target}, if present, will also be visible on the resulting {@link Branch} after a
+		 * successful rebase.
 		 */
 		REBASE {
 			@Override
 			protected Branch executeLocked(Branch source, Branch target, LockWrapper lockWrapper, String commitMessage) {
 				try {
+					
+					if (target.parent().equals(target)) {
+						throw new BadRequestException(target.path() + " cannot be rebased");
+					}
+					
 					final BranchState targetState = target.state(source);
 
 					if (targetState == BranchState.BEHIND || targetState == BranchState.DIVERGED || targetState == BranchState.STALE) {

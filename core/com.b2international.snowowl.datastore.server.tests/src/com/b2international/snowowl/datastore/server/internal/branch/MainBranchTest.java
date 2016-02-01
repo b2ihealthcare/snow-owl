@@ -98,11 +98,6 @@ public class MainBranchTest {
 		}
 		return branch;
 	}
-
-	@Test(expected = BadRequestException.class)
-	public void rebaseMainBranch() throws Exception {
-		main.rebase("Commit");
-	}
 	
 	@Test(expected = BadRequestException.class)
 	public void deleteMainBranch() throws Exception {

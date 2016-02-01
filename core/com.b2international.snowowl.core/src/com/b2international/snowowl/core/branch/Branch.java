@@ -168,28 +168,6 @@ public interface Branch extends Deletable, MetadataHolder {
 	BranchState state(Branch target);
 
 	/**
-	 * Rebases the {@link Branch} with its {@link #parent()}. Rebasing this branch does not actually modify this {@link Branch} state, instead it will
-	 * create a new {@link Branch} representing the rebased form of this {@link Branch} and returns it. Commits available on the {@link #parent()}
-	 * will be available on the resulting rebased {@link Branch} after successful rebase.
-	 * 
-	 * @param commitMessage
-	 * @return
-	 * @see #rebase(Branch)
-	 */
-	Branch rebase(String commitMessage);
-
-	/**
-	 * Rebases the {@link Branch} with the given target {@link Branch}. Rebasing this branch does not actually modify this {@link Branch} state,
-	 * instead it will create a new {@link Branch} representing the rebased form of this {@link Branch} and returns it. Commits available on the
-	 * target {@link Branch} will be available on the resulting {@link Branch} after successful rebase.
-	 * 
-	 * @param target
-	 * @param commitMessage
-	 * @return
-	 */
-	Branch rebase(Branch target, String commitMessage);
-
-	/**
 	 * @param source
 	 *            - the branch to merge onto this branch
 	 * @param commitMessage
