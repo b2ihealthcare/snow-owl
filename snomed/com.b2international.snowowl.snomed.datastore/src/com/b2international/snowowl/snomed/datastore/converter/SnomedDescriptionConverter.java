@@ -24,6 +24,7 @@ import java.util.Set;
 import com.b2international.commons.http.ExtendedLocale;
 import com.b2international.commons.options.Options;
 import com.b2international.snowowl.core.domain.BranchContext;
+import com.b2international.snowowl.core.domain.IComponent;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.core.domain.AssociationType;
 import com.b2international.snowowl.snomed.core.domain.CaseSignificance;
@@ -77,11 +78,18 @@ final class SnomedDescriptionConverter extends BaseSnomedComponentConverter<Snom
 	
 	@Override
 	protected void expand(List<ISnomedDescription> results) {
-		expandInactivationProperties(results);
-		expandType(results);
+		if (expand().isEmpty()) {
+			return;
+		}
+		
+		final Set<String> descriptionIds = FluentIterable.from(results).transform(IComponent.ID_FUNCTION).toSet();
+		
+		new MembersExpander(context(), expand(), locales()).expand(results, descriptionIds);
+		expandInactivationProperties(results, descriptionIds);
+		expandType(results, descriptionIds);
 	}
 
-	private void expandType(List<ISnomedDescription> results) {
+	private void expandType(List<ISnomedDescription> results, final Set<String> descriptionIds) {
 		if (expand().containsKey("type")) {
 			final Options expandOptions = expand().get("type", Options.class);
 			final Set<String> typeIds = FluentIterable.from(results).transform(new Function<ISnomedDescription, String>() {
@@ -109,7 +117,7 @@ final class SnomedDescriptionConverter extends BaseSnomedComponentConverter<Snom
 		}
 	}
 
-	private void expandInactivationProperties(List<ISnomedDescription> results) {
+	private void expandInactivationProperties(List<ISnomedDescription> results, final Set<String> descriptionIds) {
 		new InactivationExpander<ISnomedDescription>(context(), Concepts.REFSET_DESCRIPTION_INACTIVITY_INDICATOR) {
 			@Override
 			protected void setAssociationTargets(ISnomedDescription result,Multimap<AssociationType, String> associationTargets) {
@@ -120,7 +128,7 @@ final class SnomedDescriptionConverter extends BaseSnomedComponentConverter<Snom
 			protected void setInactivationIndicator(ISnomedDescription result, String valueId) {
 				((SnomedDescription) result).setDescriptionInactivationIndicator(DescriptionInactivationIndicator.getInactivationIndicatorByValueId(valueId));				
 			}
-		}.expand(results);
+		}.expand(results, descriptionIds);
 	}
 
 	private CaseSignificance toCaseSignificance(final String caseSignificanceId) {

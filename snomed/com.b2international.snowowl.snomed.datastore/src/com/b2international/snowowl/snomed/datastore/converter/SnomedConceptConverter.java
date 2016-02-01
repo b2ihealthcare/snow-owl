@@ -119,13 +119,16 @@ final class SnomedConceptConverter extends BaseSnomedComponentConverter<SnomedCo
 	
 	@Override
 	protected void expand(List<ISnomedConcept> results) {
-		expandInactivationProperties(results);
+		final Set<String> conceptIds = FluentIterable.from(results).transform(ID_FUNCTION).toSet();
+		expandInactivationProperties(results, conceptIds);
 		
 		if (expand().isEmpty()) {
 			return;
 		}
 		
-		final Set<String> conceptIds = FluentIterable.from(results).transform(ID_FUNCTION).toSet();
+		
+		new MembersExpander(context(), expand(), locales()).expand(results, conceptIds);
+		
 		final DescriptionRequestHelper helper = new DescriptionRequestHelper() {
 			@Override
 			protected SnomedDescriptions execute(SnomedDescriptionSearchRequestBuilder req) {
@@ -141,7 +144,7 @@ final class SnomedConceptConverter extends BaseSnomedComponentConverter<SnomedCo
 		expandAncestors(results, conceptIds);
 	}
 
-	private void expandInactivationProperties(List<ISnomedConcept> results) {
+	private void expandInactivationProperties(List<ISnomedConcept> results, Set<String> conceptIds) {
 		new InactivationExpander<ISnomedConcept>(context(), Concepts.REFSET_CONCEPT_INACTIVITY_INDICATOR) {
 			@Override
 			protected void setAssociationTargets(ISnomedConcept result,Multimap<AssociationType, String> associationTargets) {
@@ -152,7 +155,7 @@ final class SnomedConceptConverter extends BaseSnomedComponentConverter<SnomedCo
 			protected void setInactivationIndicator(ISnomedConcept result, String valueId) {
 				((SnomedConcept) result).setInactivationIndicator(InactivationIndicator.getByConceptId(valueId));				
 			}
-		}.expand(results);
+		}.expand(results, conceptIds);
 	}
 
 	private void expandPreferredTerm(List<ISnomedConcept> results, final Set<String> conceptIds, final DescriptionRequestHelper helper) {

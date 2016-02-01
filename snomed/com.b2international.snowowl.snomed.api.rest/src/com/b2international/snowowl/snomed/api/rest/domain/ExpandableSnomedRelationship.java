@@ -7,6 +7,7 @@ import com.b2international.snowowl.snomed.core.domain.ISnomedConcept;
 import com.b2international.snowowl.snomed.core.domain.ISnomedRelationship;
 import com.b2international.snowowl.snomed.core.domain.RelationshipModifier;
 import com.b2international.snowowl.snomed.core.domain.RelationshipRefinability;
+import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMembers;
 
 public class ExpandableSnomedRelationship implements ISnomedRelationship {
 	
@@ -33,6 +34,11 @@ public class ExpandableSnomedRelationship implements ISnomedRelationship {
 				}
 			}
 		}
+	}
+	
+	@Override
+	public SnomedReferenceSetMembers getMembers() {
+		return null;
 	}
 	
 	@Override

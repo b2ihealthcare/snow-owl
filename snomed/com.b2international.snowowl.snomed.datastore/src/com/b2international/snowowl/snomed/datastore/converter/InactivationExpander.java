@@ -22,7 +22,6 @@ import java.util.List;
 import java.util.Set;
 
 import com.b2international.snowowl.core.domain.BranchContext;
-import com.b2international.snowowl.core.domain.IComponent;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
 import com.b2international.snowowl.snomed.core.domain.AssociationType;
 import com.b2international.snowowl.snomed.core.domain.SnomedComponent;
@@ -31,7 +30,6 @@ import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetM
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType;
 import com.google.common.base.Function;
-import com.google.common.collect.FluentIterable;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Multimap;
@@ -47,11 +45,7 @@ public abstract class InactivationExpander<T extends SnomedComponent> {
 		this.inactivationIndicatorId = inactivationIndicatorId;
 	}
 
-	void expand(List<T> results) {
-		
-		final Set<String> componentIds = FluentIterable.from(results)
-				.transform(IComponent.ID_FUNCTION)
-				.toSet();
+	void expand(List<T> results, Set<String> componentIds) {
 		
 		if (componentIds.isEmpty()) {
 			return;

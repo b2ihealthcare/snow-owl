@@ -85,6 +85,12 @@ final class SnomedRelationshipConverter extends BaseSnomedComponentConverter<Sno
 	protected void expand(List<ISnomedRelationship> results) {
 		final Set<String> relationshipIds = FluentIterable.from(results).transform(ID_FUNCTION).toSet();
 		expandRefinability(results, relationshipIds);
+		
+		if (expand().isEmpty()) {
+			return;
+		}
+		
+		new MembersExpander(context(), expand(), locales()).expand(results, relationshipIds);
 		if (expand().containsKey("source")) {
 			final Options sourceOptions = expand().get("source", Options.class);
 			final Set<String> sourceConceptIds = FluentIterable.from(results).transform(new Function<ISnomedRelationship, String>() {
