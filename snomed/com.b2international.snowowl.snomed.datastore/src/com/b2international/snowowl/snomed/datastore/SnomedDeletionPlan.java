@@ -47,8 +47,6 @@ import com.google.common.collect.Sets;
  */
 public class SnomedDeletionPlan {
 
-	public static final String REJECT_MESSAGE_FORMAT = "The %s '%s' has been released, and cannot be deleted.";
-	
 	private final List<String> rejectionReasons = new ArrayList<String>();
 	
 	//	deleting concepts that are member of description type refset may affect concept descriptions.

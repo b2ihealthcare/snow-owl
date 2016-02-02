@@ -42,15 +42,19 @@ import com.google.common.base.Strings;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
+import com.google.common.collect.ImmutableMap;
 
 /**
  * Utility class to render MRCM objects into a more-or-less human readable String.
  */
 public class ConceptModelComponentRenderer {
-	
-	private static int HUMAN_READABLE_RENDERING_LENGTH_LIMIT = 60;
+	private static int DEFAULT_LENGTH_LIMIT = 60;
 	
 	private final LoadingCache<String, String> componentLabelMap;
+	
+	public ConceptModelComponentRenderer() {
+		this(ImmutableMap.<String, String>of());
+	}
 	
 	public ConceptModelComponentRenderer(Map<String, String> componentLabelMap) {
 		this.componentLabelMap = CacheBuilder.newBuilder().build(new CacheLoader<String, String>() {
@@ -61,6 +65,7 @@ public class ConceptModelComponentRenderer {
 				return conceptNameProvider.getComponentLabel(BranchPathUtils.createActivePath(SnomedPackage.eINSTANCE), id);
 			}
 		});
+		
 		this.componentLabelMap.putAll(componentLabelMap);
 	}
 	
@@ -69,46 +74,52 @@ public class ConceptModelComponentRenderer {
 	 * @return the human-readable rendering of the MRCM component
 	 */
 	public <T extends ConceptModelComponent> String getHumanReadableRendering(T component) {
+		return getHumanReadableRendering(component, DEFAULT_LENGTH_LIMIT);
+	}
+
+	public <T extends ConceptModelComponent> String getHumanReadableRendering(T component, int limit) {
 		String fullText = "";
+		
 		if (component instanceof ReferenceSetConceptSetDefinition) {
-			fullText = getHumanReadableRendering((ReferenceSetConceptSetDefinition)component);
+			fullText = getReferenceSetConceptSetDefinitionRendering((ReferenceSetConceptSetDefinition)component);
 		} else if (component instanceof RelationshipConceptSetDefinition) {
-			fullText = getHumanReadableRendering((RelationshipConceptSetDefinition)component);
+			fullText = getRelationshipConceptSetDefinitionRendering((RelationshipConceptSetDefinition)component);
 		} else if (component instanceof HierarchyConceptSetDefinition) {
-			fullText = getHumanReadableRendering((HierarchyConceptSetDefinition)component);
+			fullText = getHierarchyConceptSetDefinitionRendering((HierarchyConceptSetDefinition)component);
 		} else if (component instanceof EnumeratedConceptSetDefinition) {
-			fullText = getHumanReadableRendering((EnumeratedConceptSetDefinition)component);
+			fullText = getEnumeratedConceptSetDefinitionRendering((EnumeratedConceptSetDefinition)component);
 		} else if (component instanceof CompositeConceptSetDefinition) {
-			fullText = getHumanReadableRendering((CompositeConceptSetDefinition)component);
+			fullText = getCompositeConceptSetDefinitionRendering((CompositeConceptSetDefinition)component, limit);
 		} else if (component instanceof RelationshipPredicate) {
-			fullText = getHumanReadableRendering((RelationshipPredicate)component);
+			fullText = getRelationshipPredicateRendering((RelationshipPredicate)component, limit);
 		} else if (component instanceof ConcreteDomainElementPredicate) {
-			fullText = getHumanReadableRendering((ConcreteDomainElementPredicate)component); 
+			fullText = getConcreteDomainElementPredicateRendering((ConcreteDomainElementPredicate)component); 
 		} else if (component instanceof CardinalityPredicate) {
-			fullText = getHumanReadableRendering((CardinalityPredicate)component);
+			fullText = getCardinalityPredicateRendering((CardinalityPredicate)component, limit);
 		} else if (component instanceof DependencyPredicate) {
-			fullText = getHumanReadableRendering((DependencyPredicate)component);
+			fullText = getDependencyPredicateRendering((DependencyPredicate)component, limit);
 		} else if (component instanceof DescriptionPredicate) {
-			fullText = getHumanReadableRendering((DescriptionPredicate)component);
+			fullText = getDescriptionPredicateRendering((DescriptionPredicate)component);
 		} else if (component instanceof AttributeConstraint) {
-			fullText = getHumanReadableRendering((AttributeConstraint)component);
+			fullText = getAttributeConstraintRendering((AttributeConstraint)component, limit);
 		}
 		
 		StringBuilder stringBuilder = new StringBuilder();
-		if (fullText.length() > HUMAN_READABLE_RENDERING_LENGTH_LIMIT) {
-			stringBuilder.append(fullText.substring(0, HUMAN_READABLE_RENDERING_LENGTH_LIMIT - 3));
+		if (fullText.length() > limit) {
+			stringBuilder.append(fullText.substring(0, limit - 3));
 			stringBuilder.append("...");
 		} else {
 			stringBuilder.append(fullText);
 		}
+		
 		return stringBuilder.toString();
 	}
 	
-	private String getHumanReadableRendering(ReferenceSetConceptSetDefinition referenceSetConceptSetDefinition) {
+	private String getReferenceSetConceptSetDefinitionRendering(ReferenceSetConceptSetDefinition referenceSetConceptSetDefinition) {
 		return "^" + getLabel(referenceSetConceptSetDefinition.getRefSetIdentifierConceptId());
 	}
 	
-	private String getHumanReadableRendering(RelationshipConceptSetDefinition relationshipConceptSetDefinition) {
+	private String getRelationshipConceptSetDefinitionRendering(RelationshipConceptSetDefinition relationshipConceptSetDefinition) {
 		StringBuilder builder = new StringBuilder();
 		builder.append(getLabel(relationshipConceptSetDefinition.getTypeConceptId()));
 		builder.append(" ");
@@ -116,7 +127,7 @@ public class ConceptModelComponentRenderer {
 		return builder.toString();
 	}
 	
-	private String getHumanReadableRendering(HierarchyConceptSetDefinition hierarchyConceptSetDefinition) {
+	private String getHierarchyConceptSetDefinitionRendering(HierarchyConceptSetDefinition hierarchyConceptSetDefinition) {
 		StringBuilder builder = new StringBuilder();
 		switch (hierarchyConceptSetDefinition.getInclusionType()) {
 		case SELF:
@@ -135,7 +146,7 @@ public class ConceptModelComponentRenderer {
 		return builder.toString();
 	}
 	
-	private String getHumanReadableRendering(EnumeratedConceptSetDefinition enumeratedConceptSetDefinition) {
+	private String getEnumeratedConceptSetDefinitionRendering(EnumeratedConceptSetDefinition enumeratedConceptSetDefinition) {
 		StringBuilder builder = new StringBuilder();
 		Iterator<String> iterator = enumeratedConceptSetDefinition.getConceptIds().iterator();
 		while (iterator.hasNext()) {
@@ -147,31 +158,31 @@ public class ConceptModelComponentRenderer {
 		return builder.toString();
 	}
 	
-	private String getHumanReadableRendering(CompositeConceptSetDefinition compositeConceptSetDefinition) {
+	private String getCompositeConceptSetDefinitionRendering(CompositeConceptSetDefinition compositeConceptSetDefinition, int limit) {
 		StringBuilder builder = new StringBuilder();
 		Iterator<ConceptSetDefinition> iterator = compositeConceptSetDefinition.getChildren().iterator();
 		while (iterator.hasNext()) {
 			ConceptSetDefinition next = iterator.next();
-			builder.append(getHumanReadableRendering(next));
+			builder.append(getHumanReadableRendering(next, limit));
 			if (iterator.hasNext())
 				builder.append(", ");
 		}
 		return builder.toString();
 	}
 	
-	private String getHumanReadableRendering(RelationshipPredicate relationshipPredicate) {
+	private String getRelationshipPredicateRendering(RelationshipPredicate relationshipPredicate, int limit) {
 		StringBuilder builder = new StringBuilder();
-		builder.append(getHumanReadableRendering(relationshipPredicate.getAttribute()));
+		builder.append(getHumanReadableRendering(relationshipPredicate.getAttribute(), limit));
 		builder.append(" ");
-		builder.append(getHumanReadableRendering(relationshipPredicate.getRange()));
+		builder.append(getHumanReadableRendering(relationshipPredicate.getRange(), limit));
 		return builder.toString();
 	}
 	
-	private String getHumanReadableRendering(DescriptionPredicate descriptionPredicate) {
+	private String getDescriptionPredicateRendering(DescriptionPredicate descriptionPredicate) {
 		return getLabel(descriptionPredicate.getTypeId());
 	}
 	
-	private String getHumanReadableRendering(ConcreteDomainElementPredicate concreteDomainElementPredicate) {
+	private String getConcreteDomainElementPredicateRendering(ConcreteDomainElementPredicate concreteDomainElementPredicate) {
 		StringBuilder builder = new StringBuilder();
 		
 		builder.append(concreteDomainElementPredicate.getName());
@@ -181,30 +192,32 @@ public class ConceptModelComponentRenderer {
 		return builder.toString();
 	}
 	
-	private String getHumanReadableRendering(CardinalityPredicate cardinalityPredicate) {
+	private String getCardinalityPredicateRendering(CardinalityPredicate cardinalityPredicate, int limit) {
 		StringBuilder builder = new StringBuilder();
 		builder.append(cardinalityPredicate.getMinCardinality());
-		builder.append("...");
+		builder.append("..");
 		builder.append(renderMaxCardinality(cardinalityPredicate.getMaxCardinality()));
 		builder.append(" ");
-		builder.append(getHumanReadableRendering(cardinalityPredicate.getPredicate()));
+		builder.append(getHumanReadableRendering(cardinalityPredicate.getPredicate(), limit));
 		return builder.toString();
 	}
 	
-	private String getHumanReadableRendering(DependencyPredicate dependencyPredicate) {
+	private String getDependencyPredicateRendering(DependencyPredicate dependencyPredicate, int limit) {
 		StringBuilder builder = new StringBuilder();
 		Iterator<ConceptModelPredicate> iterator = dependencyPredicate.getChildren().iterator();
 		while (iterator.hasNext()) {
 			ConceptModelPredicate next = iterator.next();
-			builder.append(getHumanReadableRendering(next));
+			builder.append(getHumanReadableRendering(next, limit));
 			if (iterator.hasNext())
 				builder.append(", ");
 		}
 		return builder.toString();
 	}
 	
-	private String getHumanReadableRendering(AttributeConstraint attributeConstraint) {
-		return String.format("%s %s", getHumanReadableRendering(attributeConstraint.getDomain()), getHumanReadableRendering(attributeConstraint.getPredicate()));
+	private String getAttributeConstraintRendering(AttributeConstraint attributeConstraint, int limit) {
+		return String.format("%s %s", 
+				getHumanReadableRendering(attributeConstraint.getDomain(), limit), 
+				getHumanReadableRendering(attributeConstraint.getPredicate(), limit));
 	}
 	
 	private String getLabel(String conceptId) {

@@ -36,7 +36,7 @@ import org.apache.lucene.search.TermQuery;
 import org.apache.lucene.util.BytesRef;
 
 import com.b2international.commons.CompareUtils;
-import com.google.common.base.Function;
+import com.b2international.snowowl.datastore.index.lucene.MatchNoDocsFilter;
 import com.google.common.base.Functions;
 import com.google.common.collect.FluentIterable;
 import com.google.common.collect.ImmutableList;
@@ -161,22 +161,28 @@ public abstract class IndexFieldBase<T> implements IndexField<T> {
 	@Override
 	public final Filter createTermsFilter(final Iterable<T> values) {
 		if (CompareUtils.isEmpty(values)) {
-			return null;
+			return new MatchNoDocsFilter(); 
 		} else {
+			// Converted BytesRef values should be unique, but TermsFilter requires a writable list for sorting
 			final Set<T> uniqueValues = ImmutableSet.copyOf(values);
-			final Set<BytesRef> uniqueBytesRefs = FluentIterable.from(uniqueValues)
-					.transform(new Function<T, BytesRef>() {
-						@Override public BytesRef apply(T input) { return toBytesRef(input); }
-					})
-					.toSet();
+
+			final List<BytesRef> uniqueBytesRefs = newArrayList();
+			for (T value : uniqueValues) {
+				uniqueBytesRefs.add(toBytesRef(value));
+			}
 			
-			return createBytesRefFilter(uniqueBytesRefs);
+			return new TermsFilter(fieldName(), uniqueBytesRefs);
 		}
 	}
 
 	@Override
 	public final Filter createBytesRefFilter(final Iterable<BytesRef> bytesRefs) {
-		final Set<BytesRef> uniqueBytesRefs = ImmutableSet.copyOf(bytesRefs);
-		return new TermsFilter(fieldName(), newArrayList(uniqueBytesRefs)); // TermsFilter wants to sort the list in-place
+		if (CompareUtils.isEmpty(bytesRefs)) {
+			return new MatchNoDocsFilter();
+		} else {
+			// BytesRef values should be unique, but TermsFilter requires a writable list for sorting
+			final List<BytesRef> uniqueBytesRefs = newArrayList(ImmutableSet.copyOf(bytesRefs));
+			return new TermsFilter(fieldName(), newArrayList(uniqueBytesRefs));
+		}
 	}
 }

@@ -20,6 +20,7 @@ import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
 
 import java.util.Collections;
+import java.util.EnumSet;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -32,6 +33,9 @@ import org.eclipse.emf.cdo.util.CommitException;
 import org.eclipse.emf.cdo.view.CDOView;
 import org.eclipse.emf.ecore.EPackage;
 import org.eclipse.emf.spi.cdo.FSMUtil;
+
+import bak.pcj.LongIterator;
+import bak.pcj.set.LongSet;
 
 import com.b2international.commons.StringUtils;
 import com.b2international.snowowl.core.ApplicationContext;
@@ -76,9 +80,6 @@ import com.b2international.snowowl.snomed.snomedrefset.SnomedStructuralRefSet;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 
-import bak.pcj.LongIterator;
-import bak.pcj.set.LongSet;
-
 /**
  * SNOMED CT reference set editing context. Delegates to {@link SnomedEditingContext} to persist the identifier concept when persisting a
  * new reference set. On the other hand, removing a reference set doesn't automatically remove its identifier concept.
@@ -111,6 +112,27 @@ public class SnomedRefSetEditingContext extends BaseSnomedEditingContext {
 			.put("Skin Respiratory", Concepts.SKIN_RESPIRATORY_REFERENCE_SET)
 			.put("KP Problem List", Concepts.KP_PROBLEM_LIST_REFERENCE_SET)
 			.build();
+	
+	private static final EnumSet<SnomedRefSetType> CONCEPT_REFERRING_MEMBER_TYPES = EnumSet.of(
+			SnomedRefSetType.ATTRIBUTE_VALUE,
+			SnomedRefSetType.ASSOCIATION, 
+			SnomedRefSetType.CONCRETE_DATA_TYPE, 
+			SnomedRefSetType.SIMPLE, 
+			SnomedRefSetType.SIMPLE_MAP,
+			SnomedRefSetType.COMPLEX_MAP, 
+			SnomedRefSetType.EXTENDED_MAP,
+			SnomedRefSetType.QUERY);
+	
+	private static final EnumSet<SnomedRefSetType> RELATIONSHIP_REFERRING_MEMBER_TYPES = EnumSet.of(
+			SnomedRefSetType.ATTRIBUTE_VALUE,
+			SnomedRefSetType.ASSOCIATION, 
+			SnomedRefSetType.CONCRETE_DATA_TYPE);
+	
+	private static final EnumSet<SnomedRefSetType> DESCRIPTION_REFERRING_MEMBER_TYPES = EnumSet.of(
+			SnomedRefSetType.ATTRIBUTE_VALUE,
+			SnomedRefSetType.ASSOCIATION,
+			SnomedRefSetType.LANGUAGE,
+			SnomedRefSetType.SIMPLE_MAP);
 	
 	protected final SnomedEditingContext snomedEditingContext;
 
@@ -795,11 +817,11 @@ public class SnomedRefSetEditingContext extends BaseSnomedEditingContext {
 		return deletionPlan;
 	}
 
-	protected List<SnomedRefSetMember> getReferringMembers(final Component component, final SnomedRefSetType type, final SnomedRefSetType... others) {
+	protected List<SnomedRefSetMember> getReferringMembers(final Component component, final SnomedRefSetType... additionalTypes) {
 		
 		checkNotNull(component, "Component argument cannot be null.");
 		
-		//already detached. nothing to do
+		// already detached. nothing to do
 		if (FSMUtil.isTransient(component)) {
 			return Collections.emptyList();
 		}
@@ -808,15 +830,14 @@ public class SnomedRefSetEditingContext extends BaseSnomedEditingContext {
 
 		final String id = checkNotNull(component.getId(), "Component ID was null for component. [" + component + "]");
 		
-		//process new referring members from the transaction.
+		// process new referring members from the transaction.
 		if (CDOState.NEW.equals(component.cdoState())) {
-			
 			
 			final Iterable<SnomedRefSetMember> newMembers = ComponentUtils2.getNewObjects(transaction, SnomedRefSetMember.class);
 			
 			for (final SnomedRefSetMember member : newMembers) {
 				
-				//member is referencing to the investigated component. mark for deletion.
+				// member is referencing to the investigated component. mark for deletion.
 				if (id.equals(member.getReferencedComponentId())) {
 					
 					$.add(member);
@@ -833,17 +854,21 @@ public class SnomedRefSetEditingContext extends BaseSnomedEditingContext {
 				
 			}
 			
-		//persistent component. check for referring members in index
+		// persistent component. check for referring members in index
 		} else {
 			
 			final IClientSnomedComponentService componentService = ApplicationContext.getInstance().getService(IClientSnomedComponentService.class);
 			
-			final int[] ordinals = new int[others.length];
-			for (int i = 0; i < others.length; i++) {
-				ordinals[i] = others[i].ordinal();
+			LongSet ids;
+			if (additionalTypes.length < 1) {
+				ids = componentService.getAllReferringMembersStorageKey(id, getReferringMemberTypes(component));
+			} else {
+				EnumSet<SnomedRefSetType> types = EnumSet.<SnomedRefSetType>noneOf(SnomedRefSetType.class);
+				for (SnomedRefSetType type : additionalTypes) {
+					types.add(type);
+				}
+				ids = componentService.getAllReferringMembersStorageKey(id, types);
 			}
-			
-			final LongSet ids = componentService.getAllReferringMembersStorageKey(id, type.ordinal(), ordinals);
 			
 			for (final LongIterator itr = ids.iterator(); itr.hasNext(); /* */) {
 				
@@ -859,9 +884,18 @@ public class SnomedRefSetEditingContext extends BaseSnomedEditingContext {
 			
 		}
 		
-		
 		return $;
-		
+	}
+	
+	private EnumSet<SnomedRefSetType> getReferringMemberTypes(final Component component) {
+		if (component instanceof Concept) {
+			return CONCEPT_REFERRING_MEMBER_TYPES;
+		} else if (component instanceof Relationship) {
+			return RELATIONSHIP_REFERRING_MEMBER_TYPES;
+		} else if (component instanceof Description) {
+			return DESCRIPTION_REFERRING_MEMBER_TYPES;
+		}
+		throw new IllegalArgumentException("Invalid component type: " + component.getClass());
 	}
 	
 	/* (non-Javadoc)

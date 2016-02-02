@@ -92,17 +92,17 @@ public class SnomedIdentifierBootstrap extends DefaultBootstrapFragment {
 
 		switch (conf.getStrategy()) {
 		case MEMORY:
-			LOGGER.info("Snow Owl is configured to use memory based identifier serivce.");
+			LOGGER.info("Snow Owl is configured to use memory based identifier service.");
 			final MemStore<SctId> memStore = new MemStore<SctId>();
 			identifierService = new DefaultSnomedIdentifierService(memStore, ItemIdGenerationStrategy.RANDOM, reservationService, conf);
 			break;
 		case INDEX:
-			LOGGER.info("Snow Owl is configured to use index based identifier serivce.");
+			LOGGER.info("Snow Owl is configured to use index based identifier service.");
 			final IndexStore<SctId> indexStore = getIndexStore(env, mapper);
 			identifierService = new DefaultSnomedIdentifierService(indexStore, ItemIdGenerationStrategy.RANDOM, reservationService, conf);
 			break;
 		case CIS:
-			LOGGER.info("Snow Owl is configured to use CIS based identifier serivce.");
+			LOGGER.info("Snow Owl is configured to use CIS based identifier service.");
 			identifierService = new CisSnomedIdentifierService(conf, reservationService, mapper);
 			break;
 		default:

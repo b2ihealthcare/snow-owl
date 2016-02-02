@@ -45,7 +45,7 @@ public interface IndexField<T> {
 	List<String> getValuesAsStringList(Document doc);
 
 	Set<String> getValuesAsStringSet(Document doc);
-	
+
 	TermQuery toQuery(T value);
 
 	PrefixQuery toExistsQuery();
@@ -62,8 +62,25 @@ public interface IndexField<T> {
 
 	Sort createSort();
 
+	/**
+	 * Creates a {@link Filter} accepting documents where any of the specified values appear in the indexed content for this field.
+	 * <p>
+	 * If the specified {@code Iterable} is empty, the returned filter will match no documents.
+	 * 
+	 * @param values the values to use (may not be {@code null})
+	 * @return the {@code Filter} accepting any of the specified values for this field
+	 */
 	Filter createTermsFilter(Iterable<T> values);
 
+	/**
+	 * <i>Expert</i>: creates a {@link Filter} accepting documents where any of the specified {@link BytesRef}s appear in the indexed content for this
+	 * field (term values need to be converted by the caller).
+	 * <p>
+	 * If the specified {@code Iterable} is empty, the returned filter will match no documents.
+	 * 
+	 * @param bytesRefs the {@code BytesRef}s to use (may not be {@code null})
+	 * @return the {@code Filter} accepting any of the specified values for this field
+	 */
 	Filter createBytesRefFilter(Iterable<BytesRef> bytesRefs);
 
 	/**
