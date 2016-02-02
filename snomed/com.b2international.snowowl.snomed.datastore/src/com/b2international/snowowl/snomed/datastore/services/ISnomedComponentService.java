@@ -19,12 +19,17 @@ import java.io.Serializable;
 import java.util.BitSet;
 import java.util.Collection;
 import java.util.Date;
+import java.util.EnumSet;
 import java.util.Map;
 import java.util.Set;
 
 import javax.annotation.Nullable;
 
 import org.eclipse.emf.cdo.common.id.CDOID;
+
+import bak.pcj.list.LongList;
+import bak.pcj.map.LongKeyLongMap;
+import bak.pcj.set.LongSet;
 
 import com.b2international.commons.Pair;
 import com.b2international.snowowl.core.api.IBranchPath;
@@ -41,10 +46,6 @@ import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType;
 import com.google.common.base.Function;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Multimap;
-
-import bak.pcj.list.LongList;
-import bak.pcj.map.LongKeyLongMap;
-import bak.pcj.set.LongSet;
 
 /**
  * Interface for retrieving information about SNOMED&nbsp;CT core components on the server side.
@@ -277,15 +278,14 @@ public interface ISnomedComponentService {
 	
 	/**
 	 * Returns with a collection of reference set member storage keys (CDO IDs) where a component given its unique {@code componentId}
-	 * is either the referenced component or depending on the {@link SnomedRefSetType type ordinal} is the target component.
+	 * is either the referenced component or depending on the {@link SnomedRefSetType type} is the target component.
 	 * <br>(e.g.: map target for simple map reference set member, value in case of attribute value type, etc.)  
 	 * @param branchPath the branch path.
 	 * @param componentId the component ID.
-	 * @param typeOrdinal the ordinal of the SNOMED&nbsp;CT reference set {@link SnomedRefSetType type}.
-	 * @param otherTypeOrdinal additional reference set types.
+	 * @param types the set of the SNOMED CT reference set {@link SnomedRefSetType types}.
 	 * @return a collection of reference set member storage keys.
 	 */
-	LongSet getAllReferringMembersStorageKey(final IBranchPath branchPath, final String componentId, final int typeOrdinal, final int... otherTypeOrdinal);
+	LongSet getAllReferringMembersStorageKey(final IBranchPath branchPath, final String componentId, final EnumSet<SnomedRefSetType> types);
 	
 	/**
 	 * Returns with the a set of SNOMED CT IDs for all description.

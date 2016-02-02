@@ -142,7 +142,7 @@ public class SnomedEditingContext extends BaseSnomedEditingContext {
 	private String nameSpace;
 	private boolean uniquenessCheckEnabled = true;
 	private Set<String> newComponentIds = Collections.synchronizedSet(Sets.<String>newHashSet());
-	
+
 	/**
 	 * returns with a set of allowed concepts' ID. concept is allowed as preferred description type concept if 
 	 * has an associated active description type reference set member and is synonym or descendant of the synonym
@@ -1129,7 +1129,7 @@ public class SnomedEditingContext extends BaseSnomedEditingContext {
 	private void delete(Concept concept) {
 		
 		SnomedDeletionPlan deletionPlan = canDelete(concept, null);
-		if(deletionPlan.isRejected()) {
+		if (deletionPlan.isRejected()) {
 			throw new IllegalArgumentException(deletionPlan.getRejectionReasons().toString());
 		}
 		
@@ -1138,21 +1138,21 @@ public class SnomedEditingContext extends BaseSnomedEditingContext {
 	
 	public SnomedDeletionPlan canDelete(Concept concept, SnomedDeletionPlan deletionPlan) {
 		
-		if(deletionPlan == null) {
+		if (deletionPlan == null) {
 			deletionPlan = new SnomedDeletionPlan();
 		}
 		
 		// unreleased -> effective time must be in the future
-		if(concept.isReleased()) {
+		if (concept.isReleased()) {
 			deletionPlan.addRejectionReason(String.format(SnomedDeletionPlan.REJECT_MESSAGE_FORMAT, "concept", toString(concept)));
 			return deletionPlan;
 		}
 		
 		// check sub-concepts
-		for(Relationship relationship: concept.getInboundRelationships()) {
-			if(IS_A.equals(relationship.getType().getId())) {
+		for (Relationship relationship: concept.getInboundRelationships()) {
+			if (IS_A.equals(relationship.getType().getId())) {
 				deletionPlan = canDelete(relationship, deletionPlan);
-				if(deletionPlan.isRejected()) {
+				if (deletionPlan.isRejected()) {
 					deletionPlan.addRejectionReason("Cannot delete concept: '" + toString(concept) + "'.");
 					return deletionPlan;
 				}
@@ -1168,17 +1168,13 @@ public class SnomedEditingContext extends BaseSnomedEditingContext {
 		
 		// concept is a refset identifier
 		SnomedRefSet refSet = new SnomedRefSetLookupService().getComponent(concept.getId(), transaction);
-		if(refSet != null) {
+		if (refSet != null) {
 			deletionPlan = refSetEditingContext.deleteRefSet(refSet, deletionPlan);
 		}
 		
 		// a released refset member cannot be deleted. however, since a released refset member can
 		// only contain released concepts, we would not have made it this far if anyway
-		deletionPlan.markForDeletion(refSetEditingContext.getReferringMembers(concept, 
-				SnomedRefSetType.ATTRIBUTE_VALUE,
-				SnomedRefSetType.SIMPLE_MAP,
-				SnomedRefSetType.SIMPLE
-		));
+		deletionPlan.markForDeletion(refSetEditingContext.getReferringMembers(concept));
 		
 		//	concept deletion may affect (other) concept descriptions because the concept is being deleted is a member of description type reference set
 		List<SnomedRefSetMember> descriptionTypeRefSetMembers = refSetEditingContext.getReferringMembers(concept, SnomedRefSetType.DESCRIPTION_TYPE);
@@ -1191,7 +1187,6 @@ public class SnomedEditingContext extends BaseSnomedEditingContext {
 				deletionPlan.addDirtyDescription(description);
 			}
 		}
-		
 		deletionPlan.markForDeletion(descriptionTypeRefSetMembers);
 		
 		deletionPlan.markForDeletion(concept);
@@ -1200,7 +1195,7 @@ public class SnomedEditingContext extends BaseSnomedEditingContext {
 		
 		return deletionPlan;
 	}
-
+	
 	private Collection<SnomedDescriptionIndexEntry> getRelatedDescriptions(String conceptId) {
 		return getIndexService().searchUnsorted(createQuery(conceptId));
 	}
@@ -1211,7 +1206,7 @@ public class SnomedEditingContext extends BaseSnomedEditingContext {
 
 	private void delete(Relationship relationship) {
 		SnomedDeletionPlan deletionPlan = canDelete(relationship, null);
-		if(deletionPlan.isRejected()) {
+		if (deletionPlan.isRejected()) {
 			throw new IllegalArgumentException(deletionPlan.getRejectionReasons().toString());
 		}
 		delete(deletionPlan);
@@ -1232,34 +1227,34 @@ public class SnomedEditingContext extends BaseSnomedEditingContext {
 	
 	public SnomedDeletionPlan canDelete(Relationship relationship, SnomedDeletionPlan deletionPlan) {
 		
-		if(deletionPlan == null) {
+		if (deletionPlan == null) {
 			deletionPlan = new SnomedDeletionPlan();
 		}
 		
 		// unreleased -> effective time must be in the future
-		if(relationship.isReleased()) {
+		if (relationship.isReleased()) {
 			deletionPlan.addRejectionReason(String.format(SnomedDeletionPlan.REJECT_MESSAGE_FORMAT, "relationship", toString(relationship)));
 			return deletionPlan;
 		}
 		
-		if(IS_A.equals(relationship.getType().getId())) {
+		if (IS_A.equals(relationship.getType().getId())) {
 			
 			// don't delete relationship if it is the only only parent relationship of a concept that can't be deleted
 			// otherwise the relationship can still be deleted without deleting that concept
 			boolean hasOtherParent = false;
-			for(Relationship otherPotentialIsa: relationship.getSource().getOutboundRelationships()) {
+			for (Relationship otherPotentialIsa: relationship.getSource().getOutboundRelationships()) {
 				// This condition also considers relationships which still exist in CDO, but have already been marked for deletion.
 				// See: https://github.com/b2ihealthcare/snowowl/issues/631
-				if(relationship != otherPotentialIsa && IS_A.equals(otherPotentialIsa.getType().getId()) && otherPotentialIsa.isActive()
+				if (relationship != otherPotentialIsa && IS_A.equals(otherPotentialIsa.getType().getId()) && otherPotentialIsa.isActive()
 						&& !deletionPlan.getDeletedItems().contains(otherPotentialIsa)) {
 					hasOtherParent = true;
 					break;
 				}
 			}
 			
-			if(!hasOtherParent) {
+			if (!hasOtherParent) {
 				deletionPlan = canDelete(relationship.getSource(), deletionPlan);
-				if(deletionPlan.isRejected()) {
+				if (deletionPlan.isRejected()) {
 					deletionPlan.addRejectionReason("Concept '" + toString(relationship.getSource()) + "' would be deleted when the last active 'Is a' relationship is deleted.");
 					deletionPlan.addRejectionReason("Cannot delete relationship: '" + toString(relationship) + "'.");
 					return deletionPlan;
@@ -1269,9 +1264,7 @@ public class SnomedEditingContext extends BaseSnomedEditingContext {
 		
 		// a released refset member cannot be deleted. however, since a released refset member can
 		// only contain released relationships, we would not have made it this far if anyway
-		deletionPlan.markForDeletion(refSetEditingContext.getReferringMembers(relationship,
-				SnomedRefSetType.ATTRIBUTE_VALUE
-		));		
+		deletionPlan.markForDeletion(refSetEditingContext.getReferringMembers(relationship));		
 		
 		deletionPlan.markForDeletion(relationship);
 		
@@ -1280,7 +1273,7 @@ public class SnomedEditingContext extends BaseSnomedEditingContext {
 	
 	private void delete(Description description) {
 		SnomedDeletionPlan deletionPlan = canDelete(description, null);
-		if(deletionPlan.isRejected()) {
+		if (deletionPlan.isRejected()) {
 			throw new IllegalArgumentException(deletionPlan.getRejectionReasons().toString());
 		}
 		delete(deletionPlan);
@@ -1293,19 +1286,18 @@ public class SnomedEditingContext extends BaseSnomedEditingContext {
 			deletionPlan = new SnomedDeletionPlan();
 			
 			// unreleased -> effective time must be in the future
-			if(description.isReleased()) {
+			if (description.isReleased()) {
 				deletionPlan.addRejectionReason(String.format(SnomedDeletionPlan.REJECT_MESSAGE_FORMAT, "description", toString(description)));
 				return deletionPlan;
 			}
 			
 			// not the only fully specified name
-			if(FULLY_SPECIFIED_NAME.equals(description.getType().getId())) {
+			if (FULLY_SPECIFIED_NAME.equals(description.getType().getId())) {
 				boolean hasOtherFullySpecifiedName = false;
 				final List<Description> otherDescriptions = description.getConcept().getDescriptions();
 				for (Description otherDescription: otherDescriptions) {
 					// another fully specified name exinsts that is not this description
-					if (FULLY_SPECIFIED_NAME.equals(otherDescription.getType().getId())
-							&& description != otherDescription) {
+					if (FULLY_SPECIFIED_NAME.equals(otherDescription.getType().getId()) && description != otherDescription) {
 						hasOtherFullySpecifiedName = true;
 						break;
 					}
@@ -1319,12 +1311,7 @@ public class SnomedEditingContext extends BaseSnomedEditingContext {
 		
 		// a released refset member cannot be deleted. however, since a released refset member can
 		// only contain released descriptions, we would not have made it this far if anyway
-		deletionPlan.markForDeletion(refSetEditingContext.getReferringMembers(description,
-				SnomedRefSetType.ATTRIBUTE_VALUE,
-				SnomedRefSetType.LANGUAGE,
-				SnomedRefSetType.SIMPLE
-		));		
-		
+		deletionPlan.markForDeletion(refSetEditingContext.getReferringMembers(description));
 		
 		deletionPlan.markForDeletion(description);
 		return deletionPlan;
@@ -1391,7 +1378,7 @@ public class SnomedEditingContext extends BaseSnomedEditingContext {
 			final EObject eObject = toDelete.getValue();
 			final int index = toDelete.getKey();
 			
-			if(eObject instanceof Concept) {
+			if (eObject instanceof Concept) {
 				final Concepts concepts = (Concepts) eObject.eContainer();
 				concepts.getConcepts().remove(index);
 			} 
@@ -1422,7 +1409,7 @@ public class SnomedEditingContext extends BaseSnomedEditingContext {
 			} else if (eObject instanceof Description) {
 				Description description = (Description) eObject;
 				// maybe description was already removed before save, so the delete is reflected on the ui
-				if(description.getConcept() != null) {
+				if (description.getConcept() != null) {
 					description.getConcept().getDescriptions().remove(description);
 				}
 			}  else {
@@ -1605,8 +1592,7 @@ public class SnomedEditingContext extends BaseSnomedEditingContext {
 	 *             - if the given concept is <code>null</code>
 	 */
 	public Collection<SnomedRefSetMember> getReferringMembers(Concept concept) {
-		return getRefSetEditingContext().getReferringMembers(concept, SnomedRefSetType.ATTRIBUTE_VALUE,
-				SnomedRefSetType.SIMPLE_MAP, SnomedRefSetType.SIMPLE);
+		return getRefSetEditingContext().getReferringMembers(concept);
 	}
 
 	/**
