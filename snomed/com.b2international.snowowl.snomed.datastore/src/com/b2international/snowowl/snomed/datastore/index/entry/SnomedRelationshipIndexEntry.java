@@ -28,7 +28,9 @@ import com.b2international.snowowl.core.api.IComponent;
 import com.b2international.snowowl.core.api.IStatement;
 import com.b2international.snowowl.core.api.index.IIndexEntry;
 import com.b2international.snowowl.core.date.EffectiveTimes;
+import com.b2international.snowowl.datastore.cdo.CDOUtils;
 import com.b2international.snowowl.datastore.index.mapping.Mappings;
+import com.b2international.snowowl.snomed.Relationship;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.core.domain.CharacteristicType;
 import com.b2international.snowowl.snomed.core.domain.ISnomedRelationship;
@@ -86,6 +88,24 @@ public class SnomedRelationshipIndexEntry extends SnomedIndexEntry implements IS
 		}
 		
 		return builder;
+	}
+	
+	public static Builder builder(Relationship relationship) {
+		return builder()
+				.id(relationship.getId())
+				.storageKey(CDOUtils.getStorageKey(relationship))
+				.active(relationship.isActive())
+				.sourceId(relationship.getSource().getId())
+				.typeId(relationship.getType().getId())
+				.destinationId(relationship.getDestination().getId())
+				.characteristicTypeId(relationship.getCharacteristicType().getId())
+				.group(Integer.valueOf(relationship.getGroup()).byteValue())
+				.unionGroup(Integer.valueOf(relationship.getUnionGroup()).byteValue())
+				.released(relationship.isReleased())
+				.modifierId(relationship.getModifier().getId())
+				.destinationNegated(relationship.isDestinationNegated())
+				.moduleId(relationship.getModule().getId())
+				.effectiveTimeLong(relationship.isSetEffectiveTime() ? relationship.getEffectiveTime().getTime() : EffectiveTimes.UNSET_EFFECTIVE_TIME);
 	}
 	
 	public static Collection<SnomedRelationshipIndexEntry> fromRelationships(Iterable<ISnomedRelationship> relationships) {
@@ -338,4 +358,5 @@ public class SnomedRelationshipIndexEntry extends SnomedIndexEntry implements IS
 				.add("destinationNegated", destinationNegated)
 				.toString();
 	}
+
 }
