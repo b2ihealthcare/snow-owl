@@ -116,6 +116,10 @@ public final class Promise<T> extends AbstractFuture<T> {
 		setException(throwable);
 	}
 
+	public static Promise<List<Object>> all(Iterable<? extends Promise<?>> promises) {
+		return Promise.wrap(Futures.allAsList(promises));
+	}
+	
 	public static Promise<List<Object>> all(Promise<?>...promises) {
 		return Promise.wrap(Futures.allAsList(promises));
 	}
