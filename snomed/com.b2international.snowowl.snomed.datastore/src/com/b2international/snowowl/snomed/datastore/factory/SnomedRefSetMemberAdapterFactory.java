@@ -107,8 +107,8 @@ public class SnomedRefSetMemberAdapterFactory extends TypeSafeAdapterFactory {
 						.additionalField(SnomedMappings.memberSerializedValue().fieldName(), SnomedRefSetUtil.deserializeValue(
 							concreteDataTypeMember.getDataType(), 
 							concreteDataTypeMember.getSerializedValue()))
-						.additionalField(SnomedMappings.memberCharacteristicTypeId().fieldName(), concreteDataTypeMember.getCharacteristicTypeId())
-						.additionalField(SnomedMappings.memberOperatorId().fieldName(), concreteDataTypeMember.getOperatorComponentId());
+						.additionalField(SnomedMappings.memberCharacteristicTypeId().fieldName(), Long.valueOf(concreteDataTypeMember.getCharacteristicTypeId()))
+						.additionalField(SnomedMappings.memberOperatorId().fieldName(), Long.valueOf(concreteDataTypeMember.getOperatorComponentId()));
 
 				if (concreteDataTypeMember.getUomComponentId() != null) {
 					builder.additionalField(SnomedMappings.memberUomId().fieldName(), concreteDataTypeMember.getUomComponentId());
@@ -120,13 +120,13 @@ public class SnomedRefSetMemberAdapterFactory extends TypeSafeAdapterFactory {
 			@Override
 			public Builder caseSnomedDescriptionTypeRefSetMember(final SnomedDescriptionTypeRefSetMember descriptionTypeMember) {
 				return builder
-						.additionalField(SnomedMappings.memberDescriptionFormatId().fieldName(), descriptionTypeMember.getDescriptionFormat())
+						.additionalField(SnomedMappings.memberDescriptionFormatId().fieldName(), Long.valueOf(descriptionTypeMember.getDescriptionFormat()))
 						.additionalField(SnomedMappings.memberDescriptionLength().fieldName(), descriptionTypeMember.getDescriptionLength());
 			}
 
 			@Override
 			public Builder caseSnomedLanguageRefSetMember(final SnomedLanguageRefSetMember languageMember) {
-				return builder.additionalField(SnomedMappings.memberAcceptabilityId().fieldName(), languageMember.getAcceptabilityId());
+				return builder.additionalField(SnomedMappings.memberAcceptabilityId().fieldName(), Long.valueOf(languageMember.getAcceptabilityId()));
 			}
 
 			@Override
