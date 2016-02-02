@@ -20,6 +20,7 @@ import static com.b2international.snowowl.snomed.common.SnomedTerminologyCompone
 import static com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants.RELATIONSHIP_NUMBER;
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
+import static com.google.common.base.Preconditions.checkState;
 import static com.google.common.collect.Maps.newHashMap;
 
 import java.io.Serializable;
@@ -27,6 +28,7 @@ import java.math.BigDecimal;
 import java.util.Collection;
 import java.util.Date;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 
 import org.apache.lucene.document.Document;
@@ -39,6 +41,7 @@ import com.b2international.snowowl.core.CoreTerminologyBroker;
 import com.b2international.snowowl.core.api.IComponent;
 import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.datastore.index.mapping.Mappings;
+import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
 import com.b2international.snowowl.snomed.core.domain.Acceptability;
 import com.b2international.snowowl.snomed.core.domain.InactivationIndicator;
 import com.b2international.snowowl.snomed.core.domain.RelationshipRefinability;
@@ -151,7 +154,7 @@ public class SnomedRefSetMemberIndexEntry extends SnomedIndexEntry implements IC
 	public static final Builder builder(final SnomedReferenceSetMember input) {
 		final Object mapTargetComponentType = input.getProperties().get(SnomedMappings.memberMapTargetComponentType().fieldName());
 		
-		return builder()
+		final Builder builder = builder()
 				.active(input.isActive())
 				.effectiveTimeLong(EffectiveTimes.getEffectiveTime(input.getEffectiveTime()))
 				.id(input.getId())
@@ -161,10 +164,31 @@ public class SnomedRefSetMemberIndexEntry extends SnomedIndexEntry implements IC
 				.referenceSetId(input.getReferenceSetId())
 				.referenceSetType(input.type())
 				.released(input.isReleased())
-				.mapTargetComponentType(mapTargetComponentType == null ? -1 : (short) mapTargetComponentType)
-				.additionalFields(input.getProperties());
+				.mapTargetComponentType(mapTargetComponentType == null ? -1 : (short) mapTargetComponentType);
+		
+		for (Entry<String, Object> entry : input.getProperties().entrySet()) {
+			final Object value = entry.getValue();
+			if (value instanceof SnomedCoreComponent) {
+				builder.additionalField(getIndexFieldName(entry.getKey()), ((SnomedCoreComponent) value).getId());
+			} else {
+				builder.additionalField(getIndexFieldName(entry.getKey()), value);
+			}
+		}
+		
+		return builder;
 	}
 	
+	/*Converts RF2 field names to their index field equivalents*/
+	private static String getIndexFieldName(String rf2Field) {
+		switch (rf2Field) {
+		case SnomedRf2Headers.FIELD_QUERY: return SnomedMappings.memberQuery().fieldName();
+		case SnomedRf2Headers.FIELD_VALUE_ID: return SnomedMappings.memberValueId().fieldName();
+		case SnomedRf2Headers.FIELD_TARGET_COMPONENT: return SnomedMappings.memberTargetComponentId().fieldName();
+		case SnomedRf2Headers.FIELD_MAP_TARGET: return SnomedMappings.memberMapTargetComponentId().fieldName();
+		default: return rf2Field;
+		}
+	}
+
 	public static Collection<SnomedRefSetMemberIndexEntry> from(final Collection<SnomedReferenceSetMember> refSetMembers) {
 		return FluentIterable.from(refSetMembers).transform(new Function<SnomedReferenceSetMember, SnomedRefSetMemberIndexEntry>() {
 			@Override
@@ -664,7 +688,9 @@ public class SnomedRefSetMemberIndexEntry extends SnomedIndexEntry implements IC
 	}
 
 	private <T> T getField(final String fieldName, Function<Object, T> transformFunction) {
-		return getOptionalField(fieldName).transform(transformFunction).get();
+		final Optional<T> field = getOptionalField(fieldName).transform(transformFunction);
+		checkState(field.isPresent(), "Field '%s' is missing from this member", fieldName);
+		return field.get();
 	}
 
 	/**
