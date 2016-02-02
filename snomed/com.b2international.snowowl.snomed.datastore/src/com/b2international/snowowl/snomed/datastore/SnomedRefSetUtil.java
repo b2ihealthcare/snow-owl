@@ -98,6 +98,16 @@ public abstract class SnomedRefSetUtil {
 			.put(DataType.INTEGER, getCoreConfiguration().getIntegerDatatypeRefsetIdentifier())
 			.put(DataType.STRING, getCoreConfiguration().getStringDatatypeRefsetIdentifier())
 			.build();
+	
+	// NEHTA AMT SNOMED CT extension
+	// TODO refactor extension data type handling
+	@Deprecated
+	public static final Map<String, DataType> AMT_REFSET_TO_DATATYPE_MAP = ImmutableMap.<String, DataType>builder()
+			.put(Concepts.REFSET_STRENGTH, DataType.DECIMAL)
+			.put(Concepts.REFSET_UNIT_OF_USE_QUANTITY, DataType.DECIMAL)
+			.put(Concepts.REFSET_UNIT_OF_USE_SIZE, DataType.DECIMAL)
+			.put(Concepts.REFSET_SUBPACK_QUANTITY, DataType.INTEGER)
+			.build();
 
 	public static final ImmutableSet<DataType> UNSUPPORTED_DATATYPES = ImmutableSet.<DataType> of(DataType.DATE);
 	
@@ -202,7 +212,11 @@ public abstract class SnomedRefSetUtil {
 	 * @return the proper datatype for the specified reference set id
 	 */
 	public static DataType getDataType(String refsetId) {
-		return DATATYPE_TO_REFSET_MAP.inverse().get(refsetId);
+		if (DATATYPE_TO_REFSET_MAP.inverse().containsKey(refsetId)) {
+			return DATATYPE_TO_REFSET_MAP.inverse().get(refsetId);
+		} else {
+			return AMT_REFSET_TO_DATATYPE_MAP.get(refsetId);
+		}
 	}
 	
 	/**
