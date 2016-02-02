@@ -89,6 +89,7 @@ public class ConceptModelConstraintToWidgetModelConverter {
 		dataTypeWidgetModels.add(DataTypeWidgetModel.createUnsanctionedModel(branchPath, DataType.BOOLEAN));
 		dataTypeWidgetModels.add(DataTypeWidgetModel.createUnsanctionedModel(branchPath, DataType.STRING));
 		dataTypeWidgetModels.add(DataTypeWidgetModel.createUnsanctionedModel(branchPath, DataType.DECIMAL));
+		dataTypeWidgetModels.add(DataTypeWidgetModel.createUnsanctionedModel(branchPath, DataType.INTEGER));
 		
 		ForkJoinUtils.runInParallel(
 				new Runnable() { @Override public void run() { createSingleGroupModels(singleGroupRelationshipWidgetModels, branchPath); }},
