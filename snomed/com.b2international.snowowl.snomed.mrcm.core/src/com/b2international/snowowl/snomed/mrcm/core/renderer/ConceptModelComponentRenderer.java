@@ -42,15 +42,19 @@ import com.google.common.base.Strings;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
+import com.google.common.collect.ImmutableMap;
 
 /**
  * Utility class to render MRCM objects into a more-or-less human readable String.
  */
 public class ConceptModelComponentRenderer {
-	
-	private static int HUMAN_READABLE_RENDERING_LENGTH_LIMIT = 60;
+	private static int DEFAULT_LENGTH_LIMIT = 60;
 	
 	private final LoadingCache<String, String> componentLabelMap;
+	
+	public ConceptModelComponentRenderer() {
+		this(ImmutableMap.<String, String>of());
+	}
 	
 	public ConceptModelComponentRenderer(Map<String, String> componentLabelMap) {
 		this.componentLabelMap = CacheBuilder.newBuilder().build(new CacheLoader<String, String>() {
@@ -61,6 +65,7 @@ public class ConceptModelComponentRenderer {
 				return conceptNameProvider.getComponentLabel(BranchPathUtils.createActivePath(SnomedPackage.eINSTANCE), id);
 			}
 		});
+		
 		this.componentLabelMap.putAll(componentLabelMap);
 	}
 	
@@ -69,7 +74,12 @@ public class ConceptModelComponentRenderer {
 	 * @return the human-readable rendering of the MRCM component
 	 */
 	public <T extends ConceptModelComponent> String getHumanReadableRendering(T component) {
+		return getHumanReadableRendering(component, DEFAULT_LENGTH_LIMIT);
+	}
+
+	public <T extends ConceptModelComponent> String getHumanReadableRendering(T component, int lengthLimit) {
 		String fullText = "";
+		
 		if (component instanceof ReferenceSetConceptSetDefinition) {
 			fullText = getHumanReadableRendering((ReferenceSetConceptSetDefinition)component);
 		} else if (component instanceof RelationshipConceptSetDefinition) {
@@ -95,12 +105,13 @@ public class ConceptModelComponentRenderer {
 		}
 		
 		StringBuilder stringBuilder = new StringBuilder();
-		if (fullText.length() > HUMAN_READABLE_RENDERING_LENGTH_LIMIT) {
-			stringBuilder.append(fullText.substring(0, HUMAN_READABLE_RENDERING_LENGTH_LIMIT - 3));
+		if (fullText.length() > lengthLimit) {
+			stringBuilder.append(fullText.substring(0, lengthLimit - 3));
 			stringBuilder.append("...");
 		} else {
 			stringBuilder.append(fullText);
 		}
+		
 		return stringBuilder.toString();
 	}
 	
