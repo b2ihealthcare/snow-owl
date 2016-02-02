@@ -31,6 +31,13 @@ public class SnomedRelationship extends BaseSnomedCoreComponent implements ISnom
 	private ISnomedConcept destination;
 	private ISnomedConcept type;
 
+	public SnomedRelationship() {
+	}
+	
+	public SnomedRelationship(String id) {
+		setId(id);
+	}
+
 	@Override
 	public String getSourceId() {
 		return getSourceConcept().getId();

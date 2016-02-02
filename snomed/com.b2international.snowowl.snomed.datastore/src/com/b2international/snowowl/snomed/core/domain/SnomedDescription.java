@@ -35,6 +35,13 @@ public class SnomedDescription extends BaseSnomedCoreComponent implements ISnome
 	private Multimap<AssociationType, String> associationTargets;
 	private ISnomedConcept type;
 
+	public SnomedDescription() {
+	}
+	
+	public SnomedDescription(String id) {
+		setId(id);
+	}
+
 	@Override
 	public String getConceptId() {
 		return conceptId;
