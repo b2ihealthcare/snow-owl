@@ -19,7 +19,6 @@ import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.Executors;
 
-import com.b2international.commons.collections.Procedure;
 import com.google.common.annotations.Beta;
 import com.google.common.base.Function;
 import com.google.common.util.concurrent.AbstractFuture;
@@ -55,20 +54,26 @@ public final class Promise<T> extends AbstractFuture<T> {
 	 * @param then
 	 * @return
 	 */
-	public final Promise<T> fail(final Procedure<Throwable> fail) {
+	public final Promise<T> fail(final Function<Throwable, T> fail) {
+		final Promise<T> promise = new Promise<>();
 		Futures.addCallback(this, new FutureCallback<T>() {
 
 			@Override
 			public void onSuccess(T result) {
+				promise.resolve(result);
 			}
 
 			@Override
 			public void onFailure(Throwable t) {
-				fail.apply(t);
+				try {
+					promise.resolve(fail.apply(t));
+				} catch (Throwable e) {
+					promise.reject(e);
+				}
 			}
 
 		});
-		return null;
+		return promise;
 	}
 
 	/**
