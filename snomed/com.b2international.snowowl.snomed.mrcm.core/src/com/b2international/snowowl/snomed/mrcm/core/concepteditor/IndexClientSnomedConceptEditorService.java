@@ -19,7 +19,6 @@ import org.eclipse.emf.ecore.EPackage;
 
 import com.b2international.snowowl.datastore.ActiveBranchPathAwareService;
 import com.b2international.snowowl.snomed.SnomedPackage;
-import com.b2international.snowowl.snomed.mrcm.core.configuration.SnomedSimpleTypeRefSetAttributeConfiguration;
 
 /**
  * Client-side implementation of the SNOMED CT concept editor service.
@@ -35,8 +34,7 @@ public class IndexClientSnomedConceptEditorService extends ActiveBranchPathAware
 
 	@Override
 	public SnomedConceptDetailsBean getConceptDetailsBean(long conceptId, final boolean includeUnsanctioned) {
-		final SnomedSimpleTypeRefSetAttributeConfiguration configuration = SnomedSimpleTypeRefSetAttributeConfiguration.getConfiguration(String.valueOf(conceptId));
-		return wrappedService.getConceptDetailsBean(getBranchPath(), conceptId, configuration, includeUnsanctioned);
+		return wrappedService.getConceptDetailsBean(getBranchPath(), conceptId, null, includeUnsanctioned);
 	}
 
 	@Override

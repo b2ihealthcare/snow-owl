@@ -23,8 +23,6 @@ import java.util.Set;
 
 import org.eclipse.core.runtime.NullProgressMonitor;
 
-import bak.pcj.set.LongOpenHashSet;
-
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.datastore.utils.ComponentUtils2;
 import com.b2international.snowowl.snomed.Concept;
@@ -37,7 +35,6 @@ import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptInd
 import com.b2international.snowowl.snomed.datastore.services.IClientSnomedComponentService;
 import com.b2international.snowowl.snomed.datastore.snor.PredicateIndexEntry;
 import com.b2international.snowowl.snomed.datastore.snor.SnomedTerminologyBrowserProvider;
-import com.b2international.snowowl.snomed.mrcm.core.configuration.SnomedSimpleTypeRefSetAttributeConfiguration;
 import com.b2international.snowowl.snomed.mrcm.core.extensions.IConceptModelExtension;
 import com.b2international.snowowl.snomed.mrcm.core.extensions.IConceptModelExtensionProvider;
 import com.b2international.snowowl.snomed.mrcm.core.widget.CDOClientWidgetBeanProvider;
@@ -45,6 +42,8 @@ import com.b2international.snowowl.snomed.mrcm.core.widget.IClientWidgetModelPro
 import com.b2international.snowowl.snomed.mrcm.core.widget.bean.ConceptWidgetBean;
 import com.b2international.snowowl.snomed.mrcm.core.widget.model.ConceptWidgetModel;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetMember;
+
+import bak.pcj.set.LongOpenHashSet;
 
 /**
  * Client-side SNOMED concept editor service implementation, which uses CDO and RPC calls.
@@ -114,8 +113,7 @@ public class CDOClientSnomedConceptEditorService implements IClientSnomedConcept
 		
 		// Create widget bean
 		final CDOClientWidgetBeanProvider widgetBeanProvider = new CDOClientWidgetBeanProvider(widgetModel, concept, includeUnsanctioned);
-		final SnomedSimpleTypeRefSetAttributeConfiguration configuration = SnomedSimpleTypeRefSetAttributeConfiguration.getConfiguration(concept);
-		final ConceptWidgetBean widgetBean = widgetBeanProvider.createConceptWidgetBean(conceptIdString, widgetModel, configuration, includeUnsanctioned, new NullProgressMonitor());
+		final ConceptWidgetBean widgetBean = widgetBeanProvider.createConceptWidgetBean(conceptIdString, widgetModel, null, includeUnsanctioned, new NullProgressMonitor());
 		
 		// Retrieve synonym and descendant type IDs
 		final Set<String> synonymAndDescendants = ApplicationContext.getServiceForClass(IClientSnomedComponentService.class).getSynonymAndDescendantIds();
@@ -141,7 +139,7 @@ public class CDOClientSnomedConceptEditorService implements IClientSnomedConcept
 				Long.parseLong(conceptIndexEntry.getIconId()), 
 				widgetBean, 
 				synonymAndDescendantIds, 
-				configuration,
+				null,
 				predicates);
 
 		return conceptDetailsBean;
