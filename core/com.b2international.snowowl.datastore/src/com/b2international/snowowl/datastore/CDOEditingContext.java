@@ -67,6 +67,7 @@ import com.b2international.snowowl.datastore.cdo.ICDOConnection;
 import com.b2international.snowowl.datastore.cdo.ICDOConnectionManager;
 import com.b2international.snowowl.datastore.exception.RepositoryLockException;
 import com.b2international.snowowl.datastore.tasks.TaskManager;
+import com.b2international.snowowl.datastore.utils.ComponentUtils2;
 import com.b2international.snowowl.terminologymetadata.CodeSystemVersionGroup;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
@@ -111,6 +112,18 @@ public abstract class CDOEditingContext implements AutoCloseable {
 	
 	public final String getBranch() {
 		return BranchPathUtils.createPath(getTransaction()).getPath();
+	}
+	
+	public final <T extends CDOObject> Iterable<T> getNewObjects(Class<T> type) {
+		return ComponentUtils2.getNewObjects(getTransaction(), type);
+	}
+	
+	public final <T extends CDOObject> Iterable<T> getDetachedObjects(Class<T> type) {
+		return ComponentUtils2.getDetachedObjects(getTransaction(), type);
+	}
+	
+	public final <T extends CDOObject> Iterable<T> getChangedObjects(Class<T> type) {
+		return ComponentUtils2.getDirtyObjects(getTransaction(), type);
 	}
 	
 	/*
