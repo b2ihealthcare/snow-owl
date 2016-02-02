@@ -37,6 +37,11 @@ import static com.b2international.snowowl.snomed.SnomedConstants.Concepts.REFSET
 import static com.b2international.snowowl.snomed.SnomedConstants.Concepts.STATED_RELATIONSHIP;
 import static com.b2international.snowowl.snomed.SnomedConstants.Concepts.SYNONYM;
 import static com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants.CONCEPT;
+import static com.b2international.snowowl.snomed.datastore.SnomedDeletionPlanMessages.COMPONENT_IS_RELEASED_MESSAGE;
+import static com.b2international.snowowl.snomed.datastore.SnomedDeletionPlanMessages.UNABLE_TO_DELETE_CONCEPT_DUE_TO_ISA_RSHIP_MESSAGE;
+import static com.b2international.snowowl.snomed.datastore.SnomedDeletionPlanMessages.UNABLE_TO_DELETE_CONCEPT_MESSAGE;
+import static com.b2international.snowowl.snomed.datastore.SnomedDeletionPlanMessages.UNABLE_TO_DELETE_ONLY_FSN_DESCRIPTION_MESSAGE;
+import static com.b2international.snowowl.snomed.datastore.SnomedDeletionPlanMessages.UNABLE_TO_DELETE_RELATIONSHIP_MESSAGE;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.collect.Iterables.toArray;
 import static com.google.common.collect.Sets.newHashSet;
@@ -1144,7 +1149,7 @@ public class SnomedEditingContext extends BaseSnomedEditingContext {
 		
 		// unreleased -> effective time must be in the future
 		if (concept.isReleased()) {
-			deletionPlan.addRejectionReason(String.format(SnomedDeletionPlan.REJECT_MESSAGE_FORMAT, "concept", toString(concept)));
+			deletionPlan.addRejectionReason(String.format(COMPONENT_IS_RELEASED_MESSAGE, "concept", toString(concept)));
 			return deletionPlan;
 		}
 		
@@ -1153,7 +1158,7 @@ public class SnomedEditingContext extends BaseSnomedEditingContext {
 			if (IS_A.equals(relationship.getType().getId())) {
 				deletionPlan = canDelete(relationship, deletionPlan);
 				if (deletionPlan.isRejected()) {
-					deletionPlan.addRejectionReason("Cannot delete concept: '" + toString(concept) + "'.");
+					deletionPlan.addRejectionReason(String.format(UNABLE_TO_DELETE_CONCEPT_MESSAGE, toString(concept)));
 					return deletionPlan;
 				}
 			}
@@ -1233,7 +1238,7 @@ public class SnomedEditingContext extends BaseSnomedEditingContext {
 		
 		// unreleased -> effective time must be in the future
 		if (relationship.isReleased()) {
-			deletionPlan.addRejectionReason(String.format(SnomedDeletionPlan.REJECT_MESSAGE_FORMAT, "relationship", toString(relationship)));
+			deletionPlan.addRejectionReason(String.format(COMPONENT_IS_RELEASED_MESSAGE, "relationship", toString(relationship)));
 			return deletionPlan;
 		}
 		
@@ -1255,8 +1260,8 @@ public class SnomedEditingContext extends BaseSnomedEditingContext {
 			if (!hasOtherParent) {
 				deletionPlan = canDelete(relationship.getSource(), deletionPlan);
 				if (deletionPlan.isRejected()) {
-					deletionPlan.addRejectionReason("Concept '" + toString(relationship.getSource()) + "' would be deleted when the last active 'Is a' relationship is deleted.");
-					deletionPlan.addRejectionReason("Cannot delete relationship: '" + toString(relationship) + "'.");
+					deletionPlan.addRejectionReason(String.format(UNABLE_TO_DELETE_CONCEPT_DUE_TO_ISA_RSHIP_MESSAGE, toString(relationship.getSource())));
+					deletionPlan.addRejectionReason(String.format(UNABLE_TO_DELETE_RELATIONSHIP_MESSAGE, toString(relationship)));
 					return deletionPlan;
 				}
 			}
@@ -1287,7 +1292,7 @@ public class SnomedEditingContext extends BaseSnomedEditingContext {
 			
 			// unreleased -> effective time must be in the future
 			if (description.isReleased()) {
-				deletionPlan.addRejectionReason(String.format(SnomedDeletionPlan.REJECT_MESSAGE_FORMAT, "description", toString(description)));
+				deletionPlan.addRejectionReason(String.format(COMPONENT_IS_RELEASED_MESSAGE, "description", toString(description)));
 				return deletionPlan;
 			}
 			
@@ -1303,7 +1308,7 @@ public class SnomedEditingContext extends BaseSnomedEditingContext {
 					}
 				}
 				if (!hasOtherFullySpecifiedName) {
-					deletionPlan.addRejectionReason("Cannot delete a description if it is the only fully specified name of a concept.");
+					deletionPlan.addRejectionReason(UNABLE_TO_DELETE_ONLY_FSN_DESCRIPTION_MESSAGE);
 					return deletionPlan;
 				}
 			}
