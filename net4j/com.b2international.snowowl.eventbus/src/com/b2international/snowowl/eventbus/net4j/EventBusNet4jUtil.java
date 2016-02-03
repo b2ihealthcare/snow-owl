@@ -20,7 +20,6 @@ import org.eclipse.spi.net4j.ClientProtocolFactory;
 
 import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.internal.eventbus.EventBus;
-import com.b2international.snowowl.internal.eventbus.net4j.EventBusAwareElementInjector;
 import com.b2international.snowowl.internal.eventbus.net4j.EventBusProtocol;
 import com.b2international.snowowl.internal.eventbus.net4j.EventBusProtocolInjector;
 
@@ -39,7 +38,6 @@ public class EventBusNet4jUtil {
 		container.registerFactory(new EventBusProtocol.ClientFactory());
 		container.registerFactory(new EventBusProtocol.ServerFactory());
 		container.registerFactory(new EventBus.Factory());
-		container.addPostProcessor(new EventBusAwareElementInjector());
 		container.addPostProcessor(new EventBusProtocolInjector());
 	}
 
