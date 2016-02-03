@@ -19,6 +19,7 @@ import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
 
 import java.io.Serializable;
+import java.util.Collection;
 
 import org.apache.lucene.document.Document;
 
@@ -32,6 +33,8 @@ import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.core.domain.CharacteristicType;
 import com.b2international.snowowl.snomed.core.domain.ISnomedRelationship;
 import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedMappings;
+import com.google.common.base.Function;
+import com.google.common.collect.FluentIterable;
 
 /**
  * A transfer object representing a SNOMED CT description.
@@ -83,6 +86,15 @@ public class SnomedRelationshipIndexEntry extends SnomedIndexEntry implements IS
 		}
 		
 		return builder;
+	}
+	
+	public static Collection<SnomedRelationshipIndexEntry> fromRelationships(Iterable<ISnomedRelationship> relationships) {
+		return FluentIterable.from(relationships).transform(new Function<ISnomedRelationship, SnomedRelationshipIndexEntry>() {
+			@Override
+			public SnomedRelationshipIndexEntry apply(ISnomedRelationship input) {
+				return builder(input).build();
+			}
+		}).toSet();
 	}
 
 	public static class Builder extends AbstractBuilder<Builder> {

@@ -15,15 +15,22 @@
  */
 package com.b2international.snowowl.snomed.datastore;
 
+import static java.util.Collections.emptyList;
+
 import java.util.Collection;
 import java.util.List;
 
 import javax.annotation.Nullable;
 
+import bak.pcj.LongCollection;
+import bak.pcj.map.LongKeyLongMap;
+import bak.pcj.set.LongSet;
+
 import com.b2international.commons.http.ExtendedLocale;
 import com.b2international.snowowl.core.annotations.Client;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.api.IComponentWithChildFlag;
+import com.b2international.snowowl.core.exceptions.NotFoundException;
 import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.snomed.core.domain.ISnomedConcept;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcepts;
@@ -39,10 +46,6 @@ import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.google.common.base.Function;
 import com.google.common.collect.FluentIterable;
 import com.google.inject.Provider;
-
-import bak.pcj.LongCollection;
-import bak.pcj.map.LongKeyLongMap;
-import bak.pcj.set.LongSet;
 
 /**
  * @since 1.0
@@ -124,14 +127,18 @@ public class SnomedClientTerminologyBrowser extends BaseSnomedClientTerminologyB
 	
 	@Override
 	public Collection<SnomedConceptIndexEntry> getSuperTypesById(String id) {
-		final ISnomedConcept concept = SnomedRequests
-				.prepareGetConcept()
-				.setComponentId(id)
-				.setExpand("ancestors(form:\"inferred\",direct:true,expand(pt(),parentIds()))")
-				.setLocales(getLocales())
-				.build(getBranchPath().getPath())
-				.executeSync(getBus());
-		return SnomedConceptIndexEntry.fromConcepts(concept.getAncestors());
+		try {
+			final ISnomedConcept concept = SnomedRequests
+					.prepareGetConcept()
+					.setComponentId(id)
+					.setExpand("ancestors(form:\"inferred\",direct:true,expand(pt(),parentIds()))")
+					.setLocales(getLocales())
+					.build(getBranchPath().getPath())
+					.executeSync(getBus());
+			return SnomedConceptIndexEntry.fromConcepts(concept.getAncestors());
+		} catch (NotFoundException e) {
+			return emptyList();
+		}
 	}
 	
 	@Override
@@ -262,6 +269,7 @@ public class SnomedClientTerminologyBrowser extends BaseSnomedClientTerminologyB
 	 * @param conceptId the unique ID of the concept.
 	 * @return {@code true} if the component exists, otherwise returns with {@code false}.
 	 */
+	@Override
 	public boolean exists(final String conceptId) {
 		return getWrappedService().exists(getBranchPath(), conceptId);
 	}

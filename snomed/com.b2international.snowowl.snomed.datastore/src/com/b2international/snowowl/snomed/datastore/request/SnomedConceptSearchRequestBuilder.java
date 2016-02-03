@@ -30,6 +30,10 @@ public final class SnomedConceptSearchRequestBuilder extends SnomedSearchRequest
 	public final SnomedConceptSearchRequestBuilder withDoi() {
 		return addOption(SnomedConceptSearchRequest.OptionKey.USE_DOI, true);
 	}
+	
+	public final SnomedConceptSearchRequestBuilder withSearchProfile(final String userId) {
+		return addOption(SnomedConceptSearchRequest.OptionKey.SEARCH_PROFILE, userId);
+	}
 
 	public final SnomedConceptSearchRequestBuilder filterByTerm(String term) {
 		return addOption(SnomedConceptSearchRequest.OptionKey.TERM, term);

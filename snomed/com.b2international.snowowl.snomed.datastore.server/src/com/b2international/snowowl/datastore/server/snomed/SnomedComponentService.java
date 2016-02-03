@@ -34,6 +34,7 @@ import static com.b2international.snowowl.snomed.common.SnomedTerminologyCompone
 import static com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants.RELATIONSHIP_NUMBER;
 import static com.b2international.snowowl.snomed.datastore.SnomedRefSetUtil.deserializeValue;
 import static com.b2international.snowowl.snomed.datastore.SnomedRefSetUtil.isMapping;
+import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.collect.Collections2.filter;
 import static com.google.common.collect.Iterables.isEmpty;
@@ -947,23 +948,17 @@ public class SnomedComponentService implements ISnomedComponentService, IPostSto
 	}
 	
 	@Override
-	public LongSet getAllReferringMembersStorageKey(final IBranchPath branchPath, final String componentId, final int typeOrdinal, final int... otherTypeOrdinal) {
+	public LongSet getAllReferringMembersStorageKey(final IBranchPath branchPath, final String componentId, final EnumSet<SnomedRefSetType> types) {
 		
 		checkNotNull(branchPath, "Branch path argument cannot be null.");
 		checkNotNull(componentId, "SNOMED CT component ID argument cannot be null.");
+		checkArgument(!types.isEmpty(), "At least one reference set type must be specified.");
+	
+		final SnomedQueryBuilder typeQuery = SnomedMappings.newQuery();
 		
-		final Set<SnomedRefSetType> types = EnumSet.noneOf(SnomedRefSetType.class);
-
-		
-
-		final SnomedQueryBuilder typeQuery = SnomedMappings.newQuery().memberRefSetType(typeOrdinal);
-		types.add(SnomedRefSetType.get(typeOrdinal));
-		
-		for (final int otherType : otherTypeOrdinal) {
-			typeQuery.memberRefSetType(otherType);
-			types.add(SnomedRefSetType.get(otherType));
+		for (final SnomedRefSetType type : types) {
+			typeQuery.memberRefSetType(type);
 		}
-		
 		
 		final SnomedQueryBuilder idQuery = SnomedMappings.newQuery();
 		idQuery.memberReferencedComponentId(componentId);

@@ -134,4 +134,11 @@ public final class Promise<T> extends AbstractFuture<T> {
 		});
 		return promise;
 	}
+	
+	public static final <T> Promise<T> immediate(T value) {
+		final Promise<T> promise = new Promise<>();
+		promise.resolve(value);
+		return promise;
+	}
+	
 }
