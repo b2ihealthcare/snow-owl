@@ -17,12 +17,8 @@ package com.b2international.snowowl.core.api;
 
 import java.io.Serializable;
 import java.util.Collection;
-import java.util.Collections;
-import java.util.Set;
 
-import com.b2international.snowowl.core.CoreTerminologyBroker;
 import com.b2international.snowowl.core.api.index.IIndexEntry;
-import com.google.common.collect.Sets;
 
 /**
  * Terminology independent reference set membership lookup service.
@@ -56,16 +52,18 @@ public interface IRefSetMembershipLookupService<K extends Serializable> {
 		 * @param terminologyComponentId the terminology component identifier of the component.
 		 * @param componentId the identifier of the component.
 		 * @return a collection of reference set members with their globally unique storage key referencing to the component.
+		 * @deprecated - UNSUPPORTED API
 		 */
 		public Collection<IIndexEntry> getRefSetMembers(final String terminologyComponentId, final String componentId) {
-			final Set<IIndexEntry> result = Sets.newHashSet();
-			final Collection<IRefSetMembershipLookupService<String>> lookupServices = 
-					CoreTerminologyBroker.getInstance().getRefSetMembershipLookupServices();
-			
-			for (final IRefSetMembershipLookupService<String> service : lookupServices) {
-				result.addAll(service.getMembers(terminologyComponentId, componentId));
-			}
-			return Collections.unmodifiableSet(result);
+			throw new UnsupportedOperationException();
+//			final Set<IIndexEntry> result = Sets.newHashSet();
+//			final Collection<IRefSetMembershipLookupService<String>> lookupServices = 
+//					CoreTerminologyBroker.getInstance().getRefSetMembershipLookupServices();
+//			
+//			for (final IRefSetMembershipLookupService<String> service : lookupServices) {
+//				result.addAll(service.getMembers(terminologyComponentId, componentId));
+//			}
+//			return Collections.unmodifiableSet(result);
 		}
 		
 		
