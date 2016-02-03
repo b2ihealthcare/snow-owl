@@ -26,6 +26,7 @@ import com.b2international.snowowl.datastore.index.mapping.Mappings;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.snomed.datastore.snor.PredicateIndexEntry.PredicateType;
+import com.b2international.snowowl.snomed.snomedrefset.DataType;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSet.Builder;
@@ -408,7 +409,7 @@ public final class SnomedDocumentBuilder extends DocumentBuilderBase<SnomedDocum
 		return addToDoc(SnomedMappings.predicateDataTypeName(), name);
 	}
 
-	public SnomedDocumentBuilder predicateDataType(final com.b2international.snowowl.snomed.mrcm.DataType mrcmDataType) {
+	public SnomedDocumentBuilder predicateDataType(final DataType mrcmDataType) {
 		return addToDoc(SnomedMappings.predicateDataType(), mrcmDataType.name());
 	}
 

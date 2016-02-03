@@ -25,8 +25,6 @@ import java.util.Set;
 
 import org.eclipse.emf.ecore.EPackage;
 
-import bak.pcj.set.LongSet;
-
 import com.b2international.snowowl.core.annotations.Client;
 import com.b2international.snowowl.datastore.ActiveBranchPathAwareService;
 import com.b2international.snowowl.snomed.Description;
@@ -36,9 +34,11 @@ import com.b2international.snowowl.snomed.datastore.SnomedModuleDependencyRefSet
 import com.b2international.snowowl.snomed.datastore.SnomedRefSetMemberFragment;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDescriptionIndexEntry;
 import com.b2international.snowowl.snomed.datastore.services.ISnomedComponentService.IdStorageKeyPair;
-import com.b2international.snowowl.snomed.mrcm.DataType;
+import com.b2international.snowowl.snomed.snomedrefset.DataType;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType;
 import com.google.common.collect.Multimap;
+
+import bak.pcj.set.LongSet;
 
 /**
  * Client side SNOMED CT component service implementation.

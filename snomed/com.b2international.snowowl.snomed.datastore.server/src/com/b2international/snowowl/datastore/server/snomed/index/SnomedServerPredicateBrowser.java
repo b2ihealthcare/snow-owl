@@ -58,9 +58,9 @@ import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedQueryBui
 import com.b2international.snowowl.snomed.datastore.services.ISnomedComponentService;
 import com.b2international.snowowl.snomed.datastore.snor.PredicateIndexEntry;
 import com.b2international.snowowl.snomed.datastore.snor.PredicateIndexEntry.PredicateType;
-import com.b2international.snowowl.snomed.mrcm.DataType;
 import com.b2international.snowowl.snomed.mrcm.GroupRule;
 import com.b2international.snowowl.snomed.mrcm.HierarchyInclusionType;
+import com.b2international.snowowl.snomed.snomedrefset.DataType;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;

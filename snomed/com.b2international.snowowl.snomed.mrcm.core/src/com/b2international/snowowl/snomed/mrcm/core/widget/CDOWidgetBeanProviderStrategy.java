@@ -35,7 +35,6 @@ import com.b2international.snowowl.snomed.Description;
 import com.b2international.snowowl.snomed.Relationship;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.datastore.SnomedClientTerminologyBrowser;
-import com.b2international.snowowl.snomed.datastore.SnomedRefSetUtil;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptIndexEntry;
 import com.b2international.snowowl.snomed.mrcm.core.widget.bean.ConceptWidgetBean;
 import com.b2international.snowowl.snomed.mrcm.core.widget.bean.DataTypeWidgetBean;
@@ -149,8 +148,7 @@ public class CDOWidgetBeanProviderStrategy extends WidgetBeanProviderStrategy {
 				continue;
 			}
 			
-			final com.b2international.snowowl.snomed.mrcm.DataType convertedDataType = SnomedRefSetUtil.MRCM_DATATYPE_TO_DATATYPE_MAP.inverse().get(entry.getDataType());
-			final DataTypeWidgetModel matchingModel = groupModel.getFirstMatching(entry.getLabel(), convertedDataType);
+			final DataTypeWidgetModel matchingModel = groupModel.getFirstMatching(entry.getLabel(), entry.getDataType());
 			final DataTypeWidgetBean widgetBean = new DataTypeWidgetBean(cwb, matchingModel, entry.getReferencedComponentId(), entry.getUuid(), member.isReleased());
 			widgetBean.setSelectedValue(entry.getSerializedValue());
 			widgetBean.setSelectedLabel(entry.getLabel());
@@ -183,8 +181,7 @@ public class CDOWidgetBeanProviderStrategy extends WidgetBeanProviderStrategy {
 				continue;
 			}
 			
-			final com.b2international.snowowl.snomed.mrcm.DataType convertedDataType = SnomedRefSetUtil.MRCM_DATATYPE_TO_DATATYPE_MAP.inverse().get(entry.getDataType());
-			final DataTypeWidgetModel matchingModel = dataTypeModel.getFirstMatching(entry.getLabel(), convertedDataType);
+			final DataTypeWidgetModel matchingModel = dataTypeModel.getFirstMatching(entry.getLabel(), entry.getDataType());
 			final DataTypeWidgetBean widgetBean = new DataTypeWidgetBean(cwb, matchingModel, entry.getReferencedComponentId(), entry.getUuid(), member.isReleased());
 			widgetBean.setSelectedValue(entry.getSerializedValue());
 			widgetBean.setSelectedLabel(entry.getLabel());

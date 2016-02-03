@@ -15,6 +15,7 @@
  */
 package com.b2international.snowowl.snomed.mrcm;
 
+import com.b2international.snowowl.snomed.snomedrefset.DataType;
 
 /**
  * <!-- begin-user-doc -->
@@ -95,7 +96,7 @@ public interface ConcreteDomainElementPredicate extends ConceptModelPredicate {
 
 	/**
 	 * Returns the value of the '<em><b>Type</b></em>' attribute.
-	 * The literals are from the enumeration {@link com.b2international.snowowl.snomed.mrcm.DataType}.
+	 * The literals are from the enumeration {@link snomedrefset.DataType}.
 	 * <!-- begin-user-doc -->
 	 * <p>
 	 * If the meaning of the '<em>Type</em>' attribute isn't clear,

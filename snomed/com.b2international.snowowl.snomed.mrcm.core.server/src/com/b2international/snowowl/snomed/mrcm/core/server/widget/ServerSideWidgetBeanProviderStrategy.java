@@ -130,8 +130,7 @@ public class ServerSideWidgetBeanProviderStrategy extends WidgetBeanProviderStra
 		final RelationshipGroupWidgetModel groupModel = conceptWidgetModel.getRelationshipGroupContainerModel().getFirstMatching(GroupFlag.GROUPED);
 		
 		for (final SnomedRefSetMemberIndexEntry entry : dataTypes) {
-			final com.b2international.snowowl.snomed.mrcm.DataType convertedDataType = SnomedRefSetUtil.MRCM_DATATYPE_TO_DATATYPE_MAP.inverse().get(entry.getRefSetPackageDataType());
-			final DataTypeWidgetModel matchingModel = groupModel.getFirstMatching(entry.getAttributeLabel(), convertedDataType);
+			final DataTypeWidgetModel matchingModel = groupModel.getFirstMatching(entry.getAttributeLabel(), entry.getRefSetPackageDataType());
 			final DataTypeWidgetBean widgetBean = new DataTypeWidgetBean(cwb, matchingModel, entry.getReferencedComponentId(), entry.getId(), entry.isReleased());
 			if (entry.getUomComponentId() != null) {
 				widgetBean.setSelectedUom(entry.getUomComponentId());
@@ -156,8 +155,7 @@ public class ServerSideWidgetBeanProviderStrategy extends WidgetBeanProviderStra
 				Lists.transform(dataTypeModel.getChildren(), new UncheckedCastFunction<WidgetModel, DataTypeWidgetModel>(DataTypeWidgetModel.class)));
 		
 		for (final SnomedRefSetMemberIndexEntry entry : getConcreteDataTypes(conceptId)) {
-			final com.b2international.snowowl.snomed.mrcm.DataType convertedDataType = SnomedRefSetUtil.MRCM_DATATYPE_TO_DATATYPE_MAP.inverse().get(entry.getRefSetPackageDataType());
-			final DataTypeWidgetModel matchingModel = dataTypeModel.getFirstMatching(entry.getAttributeLabel(), convertedDataType);
+			final DataTypeWidgetModel matchingModel = dataTypeModel.getFirstMatching(entry.getAttributeLabel(), entry.getRefSetPackageDataType());
 			final DataTypeWidgetBean widgetBean = new DataTypeWidgetBean(cwb, matchingModel, entry.getReferencedComponentId(), entry.getId(), entry.isReleased());
 			widgetBean.setSelectedValue(SnomedRefSetUtil.serializeValue(entry.getRefSetPackageDataType(), entry.getValue()));
 			widgetBean.setSelectedLabel(entry.getAttributeLabel());

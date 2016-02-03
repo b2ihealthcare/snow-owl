@@ -20,6 +20,7 @@ import java.util.Date;
 import com.b2international.snowowl.snomed.Concept;
 import com.b2international.snowowl.snomed.Relationship;
 import com.b2international.snowowl.snomed.datastore.SnomedEditingContext;
+import com.b2international.snowowl.snomed.snomedrefset.DataType;
 
 /**
  * This service provides limited access to Snow Owl's authoring capabilities.
@@ -51,7 +52,7 @@ public interface IAuthoringService {
 	 *            the unique identifier of the task where the changes should be performed. Can be {@code null}. If task identifier is {@code null} the changes will be performed on the MAIN branch.
 	 *            Also for performing the concrete domain data type creation on the MAIN branch, {@link #MAIN_TASK_ID} can be used as the MAIN task ID.
 	 */
-	void addConcreteDomainDataTypeToConcept(final long conceptId, final String concreteDomainAttributeName, final ConcreteDomainDataType concreteDomainAttributeType, 
+	void addConcreteDomainDataTypeToConcept(final long conceptId, final String concreteDomainAttributeName, final DataType concreteDomainAttributeType, 
 			final Object value, final String characteristicTypeId, final String taskId);
 
 	/**
@@ -150,7 +151,7 @@ public interface IAuthoringService {
 	 *            the unique identifier of the task where the changes should be performed. Can be {@code null}. If task identifier is {@code null} the changes will be performed on the MAIN branch.
 	 *            Also for performing the concrete domain data type creation on the MAIN branch, {@link #MAIN_TASK_ID} can be used as the MAIN task ID.
 	 */
-	void addConcreteDomainDataTypeToRelationship(final long relationshipId, final String concreteDomainAttributeName, final ConcreteDomainDataType concreteDomainAttributeType, final Object value, 
+	void addConcreteDomainDataTypeToRelationship(final long relationshipId, final String concreteDomainAttributeName, final DataType concreteDomainAttributeType, final Object value, 
 			final String characteristicTypeId, final String taskId);
 
 	/**
@@ -250,7 +251,7 @@ public interface IAuthoringService {
 	 * @param characteristicTypeId the characteristic type SNOMED CT id of the concrete domain element (Defining, etc.)	
 	 */
 	void addConcreteDomainDataTypeToConcept(SnomedEditingContext editingContext, final Concept concept,
-			final String concreteDomainAttributeName, final ConcreteDomainDataType concreteDomainAttributeType, 
+			final String concreteDomainAttributeName, final DataType concreteDomainAttributeType, 
 			final Object value, final String characteristicTypeId);
 	
 	/**
@@ -270,7 +271,7 @@ public interface IAuthoringService {
 	 * @param characteristicTypeId the characteristic type SNOMED CT id of the concrete domain element (Defining, etc.)	
 	 */
 	void addConcreteDomainDataTypeToConcept(SnomedEditingContext editingContext, final Concept concept,
-			final String concreteDomainAttributeName, final ConcreteDomainDataType concreteDomainAttributeType, 
+			final String concreteDomainAttributeName, final DataType concreteDomainAttributeType, 
 			final Object value, final String moduleId, final String characteristicTypeId);
 		
 	/**
@@ -293,7 +294,7 @@ public interface IAuthoringService {
 	 * 
 	 */
 	void addConcreteDomainDataTypeToRelationship(SnomedEditingContext editingContext, final Relationship relationship,
-			final String concreteDomainAttributeName, final ConcreteDomainDataType concreteDomainAttributeType, final Object value,
+			final String concreteDomainAttributeName, final DataType concreteDomainAttributeType, final Object value,
 			final String characteristicTypeId);
 
 	/**
@@ -317,7 +318,7 @@ public interface IAuthoringService {
 	 * 
 	 */
 	void addConcreteDomainDataTypeToRelationship(SnomedEditingContext editingContext, final Relationship relationship,
-			final String concreteDomainAttributeName, final ConcreteDomainDataType concreteDomainAttributeType, final Object value,
+			final String concreteDomainAttributeName, final DataType concreteDomainAttributeType, final Object value,
 			final String moduleId, final String characteristicTypeId);
 
 	/**
@@ -344,7 +345,7 @@ public interface IAuthoringService {
 	 * 
 	 */
 	void addConcreteDomainDataTypeToRelationship(SnomedEditingContext editingContext, final Relationship relationship,
-			final String concreteDomainAttributeName, final ConcreteDomainDataType concreteDomainAttributeType, final Object value,
+			final String concreteDomainAttributeName, final DataType concreteDomainAttributeType, final Object value,
 			final String uomId, final String operatorId, final String characteristicTypeId);
 
 	/**
@@ -373,7 +374,7 @@ public interface IAuthoringService {
 	 * 
 	 */
 	void addConcreteDomainDataTypeToRelationship(SnomedEditingContext editingContext, final Relationship relationship,
-			final String concreteDomainAttributeName, final ConcreteDomainDataType concreteDomainAttributeType, final Object value,
+			final String concreteDomainAttributeName, final DataType concreteDomainAttributeType, final Object value,
 			final String uomId, final String operatorId, final String moduleId, final String characteristicTypeId);
 	
 }

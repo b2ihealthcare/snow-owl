@@ -23,7 +23,7 @@ import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.datastore.utils.UnrestrictedStringSet;
 import com.b2international.snowowl.snomed.datastore.services.ISnomedComponentService;
-import com.b2international.snowowl.snomed.mrcm.DataType;
+import com.b2international.snowowl.snomed.snomedrefset.DataType;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Sets;
 

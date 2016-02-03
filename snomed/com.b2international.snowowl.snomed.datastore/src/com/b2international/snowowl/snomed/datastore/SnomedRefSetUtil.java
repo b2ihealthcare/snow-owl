@@ -90,16 +90,6 @@ public abstract class SnomedRefSetUtil {
 			.put(Concepts.REFSET_WAS_A_ASSOCIATION, "Was a")
 			.build();
 	
-	/**
-	 * Map for looking up the concrete domain reference set identifier concept IDs based on the associated concrete domain data types.
-	 */
-	public static final BiMap<com.b2international.snowowl.snomed.mrcm.DataType, String> MRCM_DATATYPE_TO_REFSET_MAP = ImmutableBiMap.<com.b2international.snowowl.snomed.mrcm.DataType, String>builder()
-			.put(com.b2international.snowowl.snomed.mrcm.DataType.BOOLEAN, getCoreConfiguration().getBooleanDatatypeRefsetIdentifier())
-			.put(com.b2international.snowowl.snomed.mrcm.DataType.DATE, getCoreConfiguration().getDatetimeDatatypeRefsetIdentifier())
-			.put(com.b2international.snowowl.snomed.mrcm.DataType.FLOAT, getCoreConfiguration().getFloatDatatypeRefsetIdentifier())
-			.put(com.b2international.snowowl.snomed.mrcm.DataType.INTEGER, getCoreConfiguration().getIntegerDatatypeRefsetIdentifier())
-			.put(com.b2international.snowowl.snomed.mrcm.DataType.STRING, getCoreConfiguration().getStringDatatypeRefsetIdentifier())
-			.build();
 	
 	public static final BiMap<DataType, String> DATATYPE_TO_REFSET_MAP = ImmutableBiMap.<DataType, String>builder()
 			.put(DataType.BOOLEAN, getCoreConfiguration().getBooleanDatatypeRefsetIdentifier())
@@ -108,20 +98,18 @@ public abstract class SnomedRefSetUtil {
 			.put(DataType.INTEGER, getCoreConfiguration().getIntegerDatatypeRefsetIdentifier())
 			.put(DataType.STRING, getCoreConfiguration().getStringDatatypeRefsetIdentifier())
 			.build();
-
-	/**
-	 * Map for navigating between the {@link com.b2international.snowowl.snomed.mrcm.DataType} and the {@link DataType} enumerations.
-	 */
-	public static final BiMap<com.b2international.snowowl.snomed.mrcm.DataType, DataType> MRCM_DATATYPE_TO_DATATYPE_MAP = ImmutableBiMap.<com.b2international.snowowl.snomed.mrcm.DataType, DataType> builder()
-			.put(com.b2international.snowowl.snomed.mrcm.DataType.BOOLEAN, DataType.BOOLEAN)
-			.put(com.b2international.snowowl.snomed.mrcm.DataType.DATE, DataType.DATE)
-			.put(com.b2international.snowowl.snomed.mrcm.DataType.FLOAT, DataType.DECIMAL)
-			.put(com.b2international.snowowl.snomed.mrcm.DataType.INTEGER, DataType.INTEGER)
-			.put(com.b2international.snowowl.snomed.mrcm.DataType.STRING, DataType.STRING)
-			.build();
 	
-	public static final ImmutableSet<com.b2international.snowowl.snomed.mrcm.DataType> UNSUPPORTED_DATATYPES = ImmutableSet
-			.<com.b2international.snowowl.snomed.mrcm.DataType> of(com.b2international.snowowl.snomed.mrcm.DataType.DATE);
+	// NEHTA AMT SNOMED CT extension
+	// TODO refactor extension data type handling
+	@Deprecated
+	public static final Map<String, DataType> AMT_REFSET_TO_DATATYPE_MAP = ImmutableMap.<String, DataType>builder()
+			.put(Concepts.REFSET_STRENGTH, DataType.DECIMAL)
+			.put(Concepts.REFSET_UNIT_OF_USE_QUANTITY, DataType.DECIMAL)
+			.put(Concepts.REFSET_UNIT_OF_USE_SIZE, DataType.DECIMAL)
+			.put(Concepts.REFSET_SUBPACK_QUANTITY, DataType.INTEGER)
+			.build();
+
+	public static final ImmutableSet<DataType> UNSUPPORTED_DATATYPES = ImmutableSet.<DataType> of(DataType.DATE);
 	
 	private static SnomedCoreConfiguration getCoreConfiguration() {
 		return SnowOwlApplication.INSTANCE.getConfiguration().getModuleConfig(SnomedCoreConfiguration.class);
@@ -214,16 +202,6 @@ public abstract class SnomedRefSetUtil {
 	 * @param dataType the data type.
 	 * @return the identifier concept ID of the SNOMED&nbsp;CT concrete domain reference set.
 	 */
-	public static String getRefSetId(final com.b2international.snowowl.snomed.mrcm.DataType dataType) {
-		return MRCM_DATATYPE_TO_REFSET_MAP.get(dataType);
-	}
-	
-	/**
-	 * Returns with the identifier concept ID of the concrete domain reference set specified by the data type enumeration.
-	 * <br>May return with {@code null}.
-	 * @param dataType the data type.
-	 * @return the identifier concept ID of the SNOMED&nbsp;CT concrete domain reference set.
-	 */
 	public static String getRefSetId(final DataType dataType) {
 		return DATATYPE_TO_REFSET_MAP.get(dataType);
 	}
@@ -234,7 +212,11 @@ public abstract class SnomedRefSetUtil {
 	 * @return the proper datatype for the specified reference set id
 	 */
 	public static DataType getDataType(String refsetId) {
-		return DATATYPE_TO_REFSET_MAP.inverse().get(refsetId);
+		if (DATATYPE_TO_REFSET_MAP.inverse().containsKey(refsetId)) {
+			return DATATYPE_TO_REFSET_MAP.inverse().get(refsetId);
+		} else {
+			return AMT_REFSET_TO_DATATYPE_MAP.get(refsetId);
+		}
 	}
 	
 	/**
