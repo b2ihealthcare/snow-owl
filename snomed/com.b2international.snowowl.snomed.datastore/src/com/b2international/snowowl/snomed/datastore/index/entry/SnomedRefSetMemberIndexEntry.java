@@ -189,7 +189,7 @@ public class SnomedRefSetMemberIndexEntry extends SnomedIndexEntry implements IC
 		}
 	}
 
-	public static Collection<SnomedRefSetMemberIndexEntry> from(final Collection<SnomedReferenceSetMember> refSetMembers) {
+	public static Collection<SnomedRefSetMemberIndexEntry> from(final Iterable<SnomedReferenceSetMember> refSetMembers) {
 		return FluentIterable.from(refSetMembers).transform(new Function<SnomedReferenceSetMember, SnomedRefSetMemberIndexEntry>() {
 			@Override
 			public SnomedRefSetMemberIndexEntry apply(final SnomedReferenceSetMember refSetMember) {
