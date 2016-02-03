@@ -86,7 +86,6 @@ public class SnomedConceptQuickSearchContentProvider extends AbstractQuickSearch
 			configuration = Collections.emptyMap();
 		}
 		
-		// TODO reintroduce search profiles in concept search
 		final String userId = String.valueOf(configuration.get(IQuickSearchProvider.CONFIGURATION_USER_ID));
 		// TODO replace server-side LOCALES with client side one via configuration
 		final List<ExtendedLocale> locales = ApplicationContext.getInstance().getService(LanguageSetting.class).getLanguagePreference();
@@ -99,6 +98,7 @@ public class SnomedConceptQuickSearchContentProvider extends AbstractQuickSearch
 			.filterByTerm(queryExpression)
 			.filterByExtendedLocales(locales)
 			.filterByDescriptionType("<<" + Concepts.SYNONYM)
+			.withSearchProfile(userId)
 			.withDoi()
 			.setExpand("pt()")
 			.setLimit(limit);
