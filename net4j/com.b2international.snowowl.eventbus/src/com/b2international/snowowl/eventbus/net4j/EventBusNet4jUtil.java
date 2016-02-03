@@ -69,8 +69,8 @@ public class EventBusNet4jUtil {
 	 * @param numberOfWorkers
 	 * @return
 	 */
-	public static IEventBus getBus(IManagedContainer container, int numberOfWorkers) {
-		return getBus(container, EventBusConstants.GLOBAL_BUS, numberOfWorkers);
+	private static IEventBus getBus(IManagedContainer container, int numberOfWorkers) {
+		return getBus(container, EventBusConstants.GLOBAL_BUS, numberOfWorkers, true);
 	}
 
 	/**
@@ -81,9 +81,9 @@ public class EventBusNet4jUtil {
 	 * @param numberOfWorkers
 	 * @return
 	 */
-	public static IEventBus getBus(IManagedContainer container, String name, int numberOfWorkers) {
+	private static IEventBus getBus(IManagedContainer container, String name, int numberOfWorkers, boolean worker) {
 		return (IEventBus) container.getElement(EventBusConstants.EVENT_BUS_PRODUCT_GROUP,
-				EventBusConstants.PROTOCOL_NAME, String.format("%s:%s", name, numberOfWorkers), true);
+				EventBusConstants.PROTOCOL_NAME, String.format("%s:%s:%s", name, numberOfWorkers, worker), true);
 	}
 
 }
