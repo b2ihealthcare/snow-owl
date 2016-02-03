@@ -52,6 +52,7 @@ import com.b2international.snowowl.snomed.datastore.escg.EscgRewriter;
 import com.b2international.snowowl.snomed.datastore.escg.IEscgQueryEvaluatorService;
 import com.b2international.snowowl.snomed.datastore.escg.IndexQueryQueryEvaluator;
 import com.b2international.snowowl.snomed.datastore.id.SnomedIdentifiers;
+import com.b2international.snowowl.snomed.datastore.index.SearchProfileQueryProvider;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptIndexEntry;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptIndexEntry.Builder;
 import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedMappings;
@@ -181,7 +182,12 @@ final class SnomedConceptSearchRequest extends SnomedSearchRequest<SnomedConcept
 			}
 		}
 		
-		
+		BooleanQuery searchProfileQuery = null;
+		if (containsKey(OptionKey.SEARCH_PROFILE)) {
+			final String userId = getString(OptionKey.SEARCH_PROFILE);
+			searchProfileQuery = SearchProfileQueryProvider.provideQuery(context.branch().branchPath(), userId);
+		}
+
 		addComponentIdFilter(filter);
 		
 		if (containsKey(OptionKey.TERM)) {
@@ -230,15 +236,20 @@ final class SnomedConceptSearchRequest extends SnomedSearchRequest<SnomedConcept
 							}
 						}
 					});
-						
-			query = new CustomScoreQuery(createFilteredQuery(bq, filter), functionQuery);
+
+			final Query filteredQuery = createFilteredQuery(bq, filter);
+			final Query q = addSearchProfile(searchProfileQuery, filteredQuery);
+			query = new CustomScoreQuery(q, functionQuery);
 			sort = Sort.RELEVANCE;
 		} else if (containsKey(OptionKey.USE_DOI)) {
-			query = new CustomScoreQuery(createConstantScoreQuery(createFilteredQuery(queryBuilder.matchAll(), filter)),
-					new FunctionQuery(DOI_VALUE_SOURCE));
+			final Query filteredQuery = createFilteredQuery(queryBuilder.matchAll(), filter);
+			final Query q = addSearchProfile(searchProfileQuery, filteredQuery);
+			query = new CustomScoreQuery(createConstantScoreQuery(q), new FunctionQuery(DOI_VALUE_SOURCE));
 			sort = Sort.RELEVANCE;
 		} else {
-			query = createConstantScoreQuery(createFilteredQuery(queryBuilder.matchAll(), filter));
+			final Query filteredQuery = createFilteredQuery(queryBuilder.matchAll(), filter);
+			final Query q = addSearchProfile(searchProfileQuery, filteredQuery);
+			query = createConstantScoreQuery(q);
 			sort = Sort.INDEXORDER;
 		}
 		
@@ -287,7 +298,16 @@ final class SnomedConceptSearchRequest extends SnomedSearchRequest<SnomedConcept
 			return booleanQuery;
 		}
 	}
-
+	
+	private Query addSearchProfile(final BooleanQuery searchProfileQuery, final Query query) {
+		if (searchProfileQuery == null) {
+			return query;
+		} else {
+			searchProfileQuery.add(query, Occur.MUST);
+			return searchProfileQuery;
+		}
+	}
+	
 	private Map<String, Float> executeDescriptionSearch(BranchContext context, String term) {
 		final SnomedDescriptionSearchRequestBuilder requestBuilder = SnomedRequests.prepareSearchDescription()
 			.all()
