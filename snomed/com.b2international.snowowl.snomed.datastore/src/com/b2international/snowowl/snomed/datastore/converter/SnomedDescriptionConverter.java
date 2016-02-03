@@ -78,14 +78,14 @@ final class SnomedDescriptionConverter extends BaseSnomedComponentConverter<Snom
 	
 	@Override
 	protected void expand(List<ISnomedDescription> results) {
+		final Set<String> descriptionIds = FluentIterable.from(results).transform(IComponent.ID_FUNCTION).toSet();
+		expandInactivationProperties(results, descriptionIds);
+
 		if (expand().isEmpty()) {
 			return;
 		}
 		
-		final Set<String> descriptionIds = FluentIterable.from(results).transform(IComponent.ID_FUNCTION).toSet();
-		
 		new MembersExpander(context(), expand(), locales()).expand(results, descriptionIds);
-		expandInactivationProperties(results, descriptionIds);
 		expandType(results, descriptionIds);
 	}
 
