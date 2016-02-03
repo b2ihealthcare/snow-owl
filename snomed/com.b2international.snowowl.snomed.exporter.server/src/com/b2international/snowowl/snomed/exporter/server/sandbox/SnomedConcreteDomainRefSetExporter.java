@@ -51,10 +51,13 @@ public class SnomedConcreteDomainRefSetExporter extends SnomedRefSetExporter {
 
 	@Override
 	public String transform(Document doc) {
+		
+		String memberUomId = null != doc.getField(SnomedMappings.memberUomId().fieldName()) ? nullToEmpty(SnomedMappings.memberUomId().getValueAsString(doc)) : "";
+		
 		final StringBuilder sb = new StringBuilder();
 		sb.append(super.transform(doc));
 		sb.append(HT);
-		sb.append(nullToEmpty(SnomedMappings.memberUomId().getValueAsString(doc)));
+		sb.append(memberUomId);
 		sb.append(HT);
 		sb.append(SnomedMappings.memberOperatorId().getValueAsString(doc));
 		sb.append(HT);
