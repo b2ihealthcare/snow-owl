@@ -116,7 +116,12 @@ final class SnomedConceptSearchRequest extends SnomedSearchRequest<SnomedConcept
 		/**
 		 * Enable score boosting using DOI field
 		 */
-		USE_DOI
+		USE_DOI,
+		
+		/**
+		 * Use search profile of the user
+		 */
+		SEARCH_PROFILE
 
 	}
 	
