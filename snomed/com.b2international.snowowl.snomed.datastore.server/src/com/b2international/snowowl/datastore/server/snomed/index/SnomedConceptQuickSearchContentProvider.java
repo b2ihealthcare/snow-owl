@@ -33,8 +33,8 @@ import com.b2international.snowowl.datastore.IBranchPathMap;
 import com.b2international.snowowl.datastore.quicksearch.AbstractQuickSearchContentProvider;
 import com.b2international.snowowl.datastore.quicksearch.IQuickSearchContentProvider;
 import com.b2international.snowowl.eventbus.IEventBus;
-import com.b2international.snowowl.snomed.SnomedPackage;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
+import com.b2international.snowowl.snomed.SnomedPackage;
 import com.b2international.snowowl.snomed.core.domain.ISnomedConcept;
 import com.b2international.snowowl.snomed.core.domain.ISnomedDescription;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcepts;
@@ -45,6 +45,7 @@ import com.b2international.snowowl.snomed.datastore.request.SnomedConceptSearchR
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.google.common.base.Function;
 import com.google.common.collect.FluentIterable;
+import com.google.common.collect.Lists;
 
 /**
  * Server side, Net4j independent service for providing the SNOMED&nbsp;CT concepts as the content of quick search provider.
@@ -119,22 +120,23 @@ public class SnomedConceptQuickSearchContentProvider extends AbstractQuickSearch
 			}
 		}
 		
-		final SnomedConcepts matches = req.build(branchPath.getPath()).executeSync(ApplicationContext.getInstance().getService(IEventBus.class));
+		final List<QuickSearchElement> results = Lists.newArrayList();
+
+		final SnomedConcepts matches = req.build(branchPath.getPath()).executeSync(getEventBus());
+		results.addAll(FluentIterable.from(matches).transform(new SnomedConceptConverterFunction(queryExpression, false)).toList());
+
+		if (matches.getTotal() < limit) {
+			req.withFuzzySearch();
+			
+			final SnomedConcepts fuzzyMatches = req.build(branchPath.getPath()).executeSync(getEventBus());
+			results.addAll(FluentIterable.from(fuzzyMatches).transform(new SnomedConceptConverterFunction(queryExpression, true)).toList());
+		}
 		
-		// TODO reintroduce fuzzy search
-//		final List<SnomedConceptIndexEntry> approximateResults = newArrayList();
-//		
-//		if (results.size() < limit) {
-//			final SnomedFuzzyQueryAdapter fuzzyAdapter = null == conceptIdSupplier
-//					? new SnomedFuzzyQueryAdapter(queryExpression, userId, restrictionQuery)
-//					: new SnomedFuzzyQueryAdapter(queryExpression, userId, conceptIdSupplier.get());
-//							
-//			approximateResults.addAll(searcher.search(branchPath, fuzzyAdapter, limit));
-//		}
-		
-		
-		
-		return new QuickSearchContentResult(matches.getTotal(), FluentIterable.from(matches).transform(new SnomedConceptConverterFunction(queryExpression, false)).toList());
+		return new QuickSearchContentResult(matches.getTotal(), results);
+	}
+
+	private IEventBus getEventBus() {
+		return ApplicationContext.getInstance().getService(IEventBus.class);
 	}
 
 	@Override
