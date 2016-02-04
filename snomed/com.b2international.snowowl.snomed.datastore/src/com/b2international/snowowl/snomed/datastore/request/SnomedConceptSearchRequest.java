@@ -80,6 +80,11 @@ final class SnomedConceptSearchRequest extends SnomedSearchRequest<SnomedConcept
 		TERM,
 		
 		/**
+		 * Parse the term for query syntax search
+		 */
+		PARSED_TERM,
+		
+		/**
 		 * Description type to match
 		 */
 		DESCRIPTION_TYPE,
@@ -328,6 +333,10 @@ final class SnomedConceptSearchRequest extends SnomedSearchRequest<SnomedConcept
 		
 		if (containsKey(OptionKey.USE_FUZZY)) {
 			requestBuilder.withFuzzySearch();
+		}
+		
+		if (containsKey(OptionKey.PARSED_TERM)) {
+			requestBuilder.withParsedTerm();
 		}
 		
 		final Collection<ISnomedDescription> items = requestBuilder

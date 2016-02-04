@@ -24,6 +24,9 @@ import org.apache.lucene.document.Document;
 import org.apache.lucene.index.Term;
 import org.apache.lucene.queries.BooleanFilter;
 import org.apache.lucene.queries.ChainedFilter;
+import org.apache.lucene.queryparser.classic.ParseException;
+import org.apache.lucene.queryparser.classic.QueryParser;
+import org.apache.lucene.queryparser.classic.QueryParser.Operator;
 import org.apache.lucene.search.BooleanClause.Occur;
 import org.apache.lucene.search.BooleanQuery;
 import org.apache.lucene.search.DisjunctionMaxQuery;
@@ -41,6 +44,7 @@ import org.apache.lucene.search.spans.SpanNearQuery;
 import org.apache.lucene.search.spans.SpanQuery;
 import org.apache.lucene.search.spans.SpanTermQuery;
 import org.apache.lucene.util.QueryBuilder;
+import org.apache.lucene.util.Version;
 import org.apache.lucene.util.automaton.LevenshteinAutomata;
 
 import com.b2international.snowowl.core.TextConstants;
@@ -82,7 +86,8 @@ final class SnomedDescriptionSearchRequest extends SnomedSearchRequest<SnomedDes
 		TYPE,
 		ACCEPTABILITY,
 		LANGUAGE,
-		USE_FUZZY;
+		USE_FUZZY,
+		PARSED_TERM;
 	}
 	
 	SnomedDescriptionSearchRequest() {}
@@ -190,30 +195,110 @@ final class SnomedDescriptionSearchRequest extends SnomedSearchRequest<SnomedDes
 	}
 	
 	private void addDescriptionTermQuery(final SnomedQueryBuilder queryBuilder) {
+		final Query query;
 		final String searchTerm = getString(OptionKey.TERM);
+
+		if (!containsKey(OptionKey.PARSED_TERM)) {
+			query = createTermDisjunctionQuery(searchTerm);
+		} else {
+			final Query termDisjunctionQuery = createTermDisjunctionQuery(searchTerm);
+			final Query parsedTermQuery = createParsedTermQuery(searchTerm);
+			
+			final BooleanQuery bq = new BooleanQuery(true);
+			bq.add(termDisjunctionQuery, Occur.SHOULD);
+			bq.add(parsedTermQuery, Occur.SHOULD);
+			
+			query = bq;
+		}
+		
+		queryBuilder.and(query);
+	}
+	
+	private Query createTermDisjunctionQuery(final String searchTerm) {
 		final ComponentTermAnalyzer bookendAnalyzer = new ComponentTermAnalyzer(true, true);
 		final QueryBuilder termQueryBuilder = new QueryBuilder(bookendAnalyzer);
 		final DisjunctionMaxQuery termDisjunctionQuery = new DisjunctionMaxQuery(0.0f);
-
+		
 		final Query emq = createExactMatchQuery(searchTerm, termQueryBuilder);
 		// emq.setBoost(10.0f);
 		termDisjunctionQuery.add(emq);
 		final Query atp = createAllTermsPresentQuery(searchTerm, termQueryBuilder);
 		// atp.setBoost(4.0f);
 		termDisjunctionQuery.add(atp);
-
+		
 		final ComponentTermAnalyzer nonBookendAnalyzer = new ComponentTermAnalyzer(false, false);
 		final List<String> prefixes = IndexUtils.split(nonBookendAnalyzer, searchTerm);
-
+		
 		// XXX testing new prefix query from ES
-		// final Query atpfb =
-		// createAllTermPrefixesPresentFromBeginningQueryOld(prefixes);
+		// final Query atpfb = createAllTermPrefixesPresentFromBeginningQueryOld(prefixes);
 		final Query atpfb = createAllTermPrefixesPresentFromBeginningQuery(prefixes);
 		// atpfb.setBoost(3.0f);
 		// termDisjunctionQuery.add(atpfb);
 		termDisjunctionQuery.add(createAllTermPrefixesPresentQuery(prefixes));
+		
+		return termDisjunctionQuery;
+	}
 
-		queryBuilder.and(termDisjunctionQuery);
+	private Query createParsedTermQuery(final String searchTerm) {
+		final ComponentTermAnalyzer analyzer = new ComponentTermAnalyzer(true, true);
+		final QueryParser parser = new QueryParser(Version.LUCENE_4_9, SnomedMappings.descriptionTerm().fieldName(), analyzer);
+		parser.setDefaultOperator(Operator.AND);
+		parser.setAllowLeadingWildcard(true);
+		
+		try {
+			return parser.parse(escape(searchTerm));
+		} catch (ParseException e) {
+			throw new IllegalQueryParameterException(e.getMessage());
+		}		
+	}
+	
+	// copied from IndexQueryBuilder
+	private String escape(final String searchTerm) {
+		final StringBuilder sb = new StringBuilder();
+		for (int i = 0; i < searchTerm.length(); i++) {
+			final char c = searchTerm.charAt(i);
+			outerLoop: {
+				switch (c) {
+				case '\\':
+					if (i != searchTerm.length() - 1) {
+						final char charAt = searchTerm.charAt(i + 1);
+						switch (charAt) {
+						case '^':
+						case '?':
+						case '~':
+						case '*':
+							break outerLoop;
+						}
+					}
+				case '+':
+				case '-':
+				case '!':
+				case '(':
+				case ')':
+				case ':':
+				case '[':
+				case ']':
+				case '\"':
+				case '{':
+				case '}':
+				case '|':
+				case '&':
+				case '/':
+					sb.append('\\');
+					break;
+				}
+			}
+
+			sb.append(c);
+
+			switch (c) {
+			case '~':
+				sb.append(' ');
+				break;
+			}
+		}
+
+		return sb.toString();
 	}
 
 	private void addFuzzyQuery(final SnomedQueryBuilder queryBuilder) {

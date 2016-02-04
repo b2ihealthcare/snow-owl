@@ -38,6 +38,10 @@ public final class SnomedConceptSearchRequestBuilder extends SnomedSearchRequest
 	public final SnomedConceptSearchRequestBuilder withFuzzySearch() {
 		return addOption(SnomedConceptSearchRequest.OptionKey.USE_FUZZY, true);
 	}
+	
+	public final SnomedConceptSearchRequestBuilder withParsedTerm() {
+		return addOption(SnomedConceptSearchRequest.OptionKey.PARSED_TERM, true);
+	}
 
 	public final SnomedConceptSearchRequestBuilder filterByTerm(String term) {
 		return addOption(SnomedConceptSearchRequest.OptionKey.TERM, term);
