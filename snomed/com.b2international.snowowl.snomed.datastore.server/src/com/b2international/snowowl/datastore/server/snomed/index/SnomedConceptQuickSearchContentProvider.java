@@ -44,7 +44,9 @@ import com.b2international.snowowl.snomed.datastore.quicksearch.SnomedConceptQui
 import com.b2international.snowowl.snomed.datastore.request.SnomedConceptSearchRequestBuilder;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.google.common.base.Function;
+import com.google.common.base.Predicate;
 import com.google.common.collect.FluentIterable;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 
 /**
@@ -120,19 +122,40 @@ public class SnomedConceptQuickSearchContentProvider extends AbstractQuickSearch
 			}
 		}
 		
-		final List<QuickSearchElement> results = Lists.newArrayList();
+		final List<QuickSearchElement> quickSearchElements = Lists.newArrayList();
 
 		final SnomedConcepts matches = req.build(branchPath.getPath()).executeSync(getEventBus());
-		results.addAll(FluentIterable.from(matches).transform(new SnomedConceptConverterFunction(queryExpression, false)).toList());
+		final ImmutableList<QuickSearchElement> results = FluentIterable.from(matches)
+				.transform(new SnomedConceptConverterFunction(queryExpression, false))
+				.toList();
+
+		quickSearchElements.addAll(results);
 
 		if (matches.getTotal() < limit) {
 			req.withFuzzySearch();
-			
+
 			final SnomedConcepts fuzzyMatches = req.build(branchPath.getPath()).executeSync(getEventBus());
-			results.addAll(FluentIterable.from(fuzzyMatches).transform(new SnomedConceptConverterFunction(queryExpression, true)).toList());
+
+			final FluentIterable<String> conceptIds = FluentIterable.from(matches).transform(new Function<ISnomedConcept, String>() {
+				@Override
+				public String apply(ISnomedConcept input) {
+					return input.getId();
+				}
+			});
+
+			final ImmutableList<QuickSearchElement> approximateResults = FluentIterable.from(fuzzyMatches)
+					.filter(new Predicate<ISnomedConcept>() {
+						@Override
+						public boolean apply(ISnomedConcept input) {
+							return !conceptIds.contains(input.getId());
+						}
+					}).transform(new SnomedConceptConverterFunction(queryExpression, true))
+					.toList();
+
+			quickSearchElements.addAll(approximateResults);
 		}
-		
-		return new QuickSearchContentResult(matches.getTotal(), results);
+
+		return new QuickSearchContentResult(matches.getTotal(), quickSearchElements);
 	}
 
 	private IEventBus getEventBus() {
