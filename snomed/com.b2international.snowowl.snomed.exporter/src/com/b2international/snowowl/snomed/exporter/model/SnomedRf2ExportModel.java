@@ -140,7 +140,6 @@ public final class SnomedRf2ExportModel extends SnomedExportModel {
 		refSetIds = StringUtils.isEmpty(refSetId) ? Sets.<String> newHashSet() : Sets.newHashSet(refSetId);
 		singleRefSetExport = !refSetIds.isEmpty();
 		coreComponentsToExport = !singleRefSetExport;
-		setExportPath(initExportPath());
 		releaseType = ContentSubType.SNAPSHOT;
 		settings = Sets.newHashSet();
 		refSetsToExport = true;
@@ -149,6 +148,7 @@ public final class SnomedRf2ExportModel extends SnomedExportModel {
 		clientBranch = BranchPathUtils.createActivePath(connection.getUuid());
 		userId = ApplicationContext.getInstance().getService(ICDOConnectionManager.class).getUserId();
 		unsetEffectiveTimeLabel = "";
+		setExportPath(initExportPath());
 	}
 
 	public Set<String> getRefSetIds() {
