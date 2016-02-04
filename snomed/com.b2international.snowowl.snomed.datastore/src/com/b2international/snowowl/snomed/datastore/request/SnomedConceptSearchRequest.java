@@ -122,7 +122,12 @@ final class SnomedConceptSearchRequest extends SnomedSearchRequest<SnomedConcept
 		/**
 		 * Use search profile of the user
 		 */
-		SEARCH_PROFILE
+		SEARCH_PROFILE,
+		
+		/**
+		 * Use fuzzy query in the search
+		 */
+		USE_FUZZY
 
 	}
 	
@@ -319,6 +324,10 @@ final class SnomedConceptSearchRequest extends SnomedSearchRequest<SnomedConcept
 		if (containsKey(OptionKey.DESCRIPTION_TYPE)) {
 			final String type = getString(OptionKey.DESCRIPTION_TYPE);
 			requestBuilder.filterByType(type);
+		}
+		
+		if (containsKey(OptionKey.USE_FUZZY)) {
+			requestBuilder.withFuzzySearch();
 		}
 		
 		final Collection<ISnomedDescription> items = requestBuilder
