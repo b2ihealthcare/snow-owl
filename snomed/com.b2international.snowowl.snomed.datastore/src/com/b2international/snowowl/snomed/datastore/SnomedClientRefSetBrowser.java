@@ -21,14 +21,17 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.eclipse.emf.ecore.EPackage;
 
 import com.b2international.commons.http.ExtendedLocale;
 import com.b2international.snowowl.core.annotations.Client;
+import com.b2international.snowowl.core.domain.IComponent;
 import com.b2international.snowowl.core.exceptions.NotFoundException;
 import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
+import com.b2international.snowowl.snomed.core.domain.ISnomedConcept;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSet;
 import com.b2international.snowowl.snomed.core.lang.LanguageSetting;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptIndexEntry;
@@ -39,6 +42,8 @@ import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetPackage;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType;
 import com.google.common.base.Function;
 import com.google.common.collect.FluentIterable;
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Lists;
 import com.google.inject.Provider;
 
 import bak.pcj.set.LongSet;
@@ -98,6 +103,49 @@ public class SnomedClientRefSetBrowser extends AbstractClientRefSetBrowser<Snome
 		} catch (NotFoundException e) {
 			return null;
 		}
+	}
+	
+	@Override
+	public Iterable<SnomedRefSetIndexEntry> getRefsSets() {
+		final List<SnomedReferenceSet> refSets = SnomedRequests.prepareSearchRefSet()
+				.all()
+				.setLocales(getLocales())
+				.build(getBranchPath().getPath())
+				.executeSync(bus)
+				.getItems();
+
+		final Set<String> matchingRefSetIds = FluentIterable.from(refSets).transform(IComponent.ID_FUNCTION).toSet();
+		final Iterable<SnomedConceptIndexEntry> identifierConcepts = getComponents(matchingRefSetIds);
+		final ImmutableMap<String, SnomedConceptIndexEntry> identifierConceptMap = FluentIterable.from(identifierConcepts)
+				.uniqueIndex(new Function<SnomedConceptIndexEntry, String>() {
+					@Override
+					public String apply(SnomedConceptIndexEntry input) {
+						return input.getId();
+					}
+				});
+
+		return FluentIterable.from(refSets).transform(new Function<SnomedReferenceSet, SnomedRefSetIndexEntry>() {
+			@Override
+			public SnomedRefSetIndexEntry apply(SnomedReferenceSet input) {
+				final String label = identifierConceptMap.containsKey(input.getId()) ? identifierConceptMap.get(input.getId()).getLabel()
+						: input.getId();
+				return SnomedRefSetIndexEntry.builder(input).label(label).build();
+			}
+		}).toList();
+	}
+
+	@Override
+	public Iterable<SnomedConceptIndexEntry> getComponents(final Iterable<String> ids) {
+		final List<ISnomedConcept> concepts = SnomedRequests.prepareSearchConcept()
+				.all()
+				.setComponentIds(Lists.newArrayList(ids))
+				.setLocales(getLocales())
+				.setExpand("pt()")
+				.build(getBranchPath().getPath())
+				.executeSync(bus)
+				.getItems();
+
+		return SnomedConceptIndexEntry.fromConcepts(concepts);
 	}
 	
 	/**
