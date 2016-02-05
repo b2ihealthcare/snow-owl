@@ -47,6 +47,8 @@ import org.apache.lucene.util.QueryBuilder;
 import org.apache.lucene.util.Version;
 import org.apache.lucene.util.automaton.LevenshteinAutomata;
 
+import com.b2international.commons.collections.primitive.LongCollection;
+import com.b2international.commons.pcj.PrimitiveCollections;
 import com.b2international.snowowl.core.TextConstants;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.domain.BranchContext;
@@ -70,9 +72,6 @@ import com.google.common.base.Splitter;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMultimap;
 import com.google.common.collect.Iterables;
-
-import bak.pcj.LongCollection;
-import bak.pcj.adapter.LongCollectionToCollectionAdapter;
 
 /**
  * @since 4.5
@@ -377,7 +376,7 @@ final class SnomedDescriptionSearchRequest extends SnomedSearchRequest<SnomedDes
 			try {
 				IBranchPath branchPath = context.branch().branchPath();
 				LongCollection conceptIds = context.service(IEscgQueryEvaluatorService.class).evaluateConceptIds(branchPath, getString(key));
-				Filter conceptFilter = field.createTermsFilter(new LongCollectionToCollectionAdapter(conceptIds));
+				Filter conceptFilter = field.createTermsFilter(PrimitiveCollections.newLongCollectionToCollectionAdapter(conceptIds));
 				addFilterClause(filters, conceptFilter);
 				ops.add(ChainedFilter.AND);
 			} catch (SyntaxErrorException e) {

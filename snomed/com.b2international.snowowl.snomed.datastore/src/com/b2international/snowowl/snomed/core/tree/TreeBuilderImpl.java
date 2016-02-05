@@ -40,7 +40,7 @@ import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Ordering;
 import com.google.common.collect.SetMultimap;
 
-import bak.pcj.LongCollection;
+import com.b2international.commons.collections.primitive.LongCollection;
 
 /**
  * @since 4.6

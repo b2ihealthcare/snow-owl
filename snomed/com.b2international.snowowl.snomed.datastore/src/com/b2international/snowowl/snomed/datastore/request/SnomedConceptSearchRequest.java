@@ -60,7 +60,7 @@ import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedQueryBui
 import com.b2international.snowowl.snomed.dsl.query.SyntaxErrorException;
 import com.google.common.collect.ImmutableList;
 
-import bak.pcj.LongCollection;
+import com.b2international.commons.collections.primitive.LongCollection;
 
 /**
  * @since 4.5

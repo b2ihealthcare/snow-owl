@@ -20,9 +20,9 @@ import java.util.List;
 
 import javax.annotation.Nullable;
 
-import bak.pcj.LongCollection;
-import bak.pcj.map.LongKeyLongMap;
-import bak.pcj.set.LongSet;
+import com.b2international.commons.collections.primitive.LongCollection;
+import com.b2international.commons.collections.primitive.map.LongKeyLongMap;
+import com.b2international.commons.collections.primitive.set.LongSet;
 
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.api.IComponentWithChildFlag;

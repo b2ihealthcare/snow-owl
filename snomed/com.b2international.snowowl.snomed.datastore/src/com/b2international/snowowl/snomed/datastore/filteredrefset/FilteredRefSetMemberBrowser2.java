@@ -22,9 +22,9 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
-import bak.pcj.IntIterator;
-import bak.pcj.map.IntKeyMap;
-import bak.pcj.set.IntSet;
+import com.b2international.commons.collections.primitive.IntIterator;
+import com.b2international.commons.collections.primitive.map.IntKeyMap;
+import com.b2international.commons.collections.primitive.set.IntSet;
 
 import com.b2international.commons.arrays.BidiMapWithInternalId;
 import com.b2international.snowowl.core.ClientTerminologyBrowserAdapter;

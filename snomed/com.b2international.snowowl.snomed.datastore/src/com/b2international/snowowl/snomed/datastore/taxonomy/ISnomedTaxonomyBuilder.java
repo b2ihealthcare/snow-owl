@@ -17,7 +17,7 @@ package com.b2international.snowowl.snomed.datastore.taxonomy;
 
 import java.util.BitSet;
 
-import bak.pcj.set.LongSet;
+import com.b2international.commons.collections.primitive.set.LongSet;
 
 import com.b2international.commons.Pair;
 

@@ -27,7 +27,7 @@ import static java.lang.Long.parseLong;
 
 import java.util.Collection;
 
-import bak.pcj.set.LongSet;
+import com.b2international.commons.collections.primitive.set.LongSet;
 
 import com.b2international.commons.pcj.LongCollections;
 import com.b2international.snowowl.core.api.IBranchPath;

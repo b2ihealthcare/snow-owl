@@ -33,7 +33,7 @@ import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedMappings
 import com.google.common.base.Function;
 import com.google.common.collect.FluentIterable;
 
-import bak.pcj.LongCollection;
+import com.b2international.commons.collections.primitive.LongCollection;
 
 /**
  * A transfer object representing a SNOMED CT concept.

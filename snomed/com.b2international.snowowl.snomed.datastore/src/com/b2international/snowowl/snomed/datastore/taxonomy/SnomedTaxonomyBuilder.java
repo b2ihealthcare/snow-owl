@@ -15,20 +15,19 @@
  */
 package com.b2international.snowowl.snomed.datastore.taxonomy;
 
-import bak.pcj.LongCollection;
-import bak.pcj.LongIterator;
-import bak.pcj.map.LongKeyMap;
-
 import com.b2international.commons.arrays.Arrays2;
 import com.b2international.commons.arrays.LongBidiMapWithInternalId;
+import com.b2international.commons.collections.primitive.LongCollection;
+import com.b2international.commons.collections.primitive.LongIterator;
+import com.b2international.commons.collections.primitive.map.LongKeyMap;
 import com.b2international.commons.concurrent.equinox.ForkJoinUtils;
+import com.b2international.commons.pcj.PrimitiveCollections;
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.snomed.datastore.IsAStatementWithId;
 import com.b2international.snowowl.snomed.datastore.SnomedStatementBrowser;
 import com.b2international.snowowl.snomed.datastore.SnomedTerminologyBrowser;
 import com.b2international.snowowl.snomed.datastore.StatementCollectionMode;
-import com.b2international.snowowl.snomed.datastore.index.StatementMap;
 import com.google.common.base.Preconditions;
 
 /**
@@ -47,7 +46,7 @@ public class SnomedTaxonomyBuilder extends AbstractSnomedTaxonomyBuilder {
 		final SnomedTaxonomyBuilder $ = new SnomedTaxonomyBuilder();
 		$.branchPath = builder.branchPath;
 		$.nodes = new LongBidiMapWithInternalId( builder.nodes);
-		$.edges = (StatementMap) ((StatementMap) builder.edges).clone();
+		$.edges = builder.edges.dup();
 		$.setDirty(builder.isDirty());
 		$.descendants = Arrays2.copy(builder.descendants);
 		$.ancestors = Arrays2.copy(builder.ancestors);
@@ -66,7 +65,7 @@ public class SnomedTaxonomyBuilder extends AbstractSnomedTaxonomyBuilder {
 	 * Map for storing active IS_A type SNOMED CT relationship representations. Keys are the unique relationship identifiers.
 	 * <br>For values see: {@link IsAStatementWithId}.
 	 */
-	private LongKeyMap edges;
+	private LongKeyMap<long[]> edges;
 
 	private SnomedTaxonomyBuilder() {}
 	
@@ -76,12 +75,13 @@ public class SnomedTaxonomyBuilder extends AbstractSnomedTaxonomyBuilder {
 		final Runnable initStatementsRunnable = new Runnable() {
 			@Override public void run() {
 				
-				edges = isAStatements.length < 1 ? new StatementMap() : new StatementMap(isAStatements.length);
+				edges = isAStatements.length < 1 
+						? PrimitiveCollections.<long[]>newLongKeyOpenHashMap() 
+						: PrimitiveCollections.<long[]>newLongKeyOpenHashMap(isAStatements.length);
 				
 				for (final IsAStatementWithId statement : isAStatements) {
 					edges.put(statement.getRelationshipId(), new long[] { statement.getDestinationId(), statement.getSourceId() });
 				}
-				
 			}
 		};
 		
@@ -105,14 +105,14 @@ public class SnomedTaxonomyBuilder extends AbstractSnomedTaxonomyBuilder {
 			@Override public void run() {
 				
 				final IsAStatementWithId[] isAStatements = getStatementBrowser().getActiveStatements(branchPath, mode);
-				edges = 0 < isAStatements.length ? new StatementMap(isAStatements.length) : new StatementMap();
+				edges = isAStatements.length < 1
+						? PrimitiveCollections.<long[]>newLongKeyOpenHashMap() 
+						: PrimitiveCollections.<long[]>newLongKeyOpenHashMap(isAStatements.length);
 				
 				for (final IsAStatementWithId statement : isAStatements) {
 					edges.put(statement.getRelationshipId(), new long[] { statement.getDestinationId(), statement.getSourceId() });
 				}
-				
 			}
-
 		};
 
 		final Runnable initConceptsRunnable = new Runnable() {
@@ -139,7 +139,7 @@ public class SnomedTaxonomyBuilder extends AbstractSnomedTaxonomyBuilder {
 	}
 
 	@Override
-	public LongKeyMap getEdges() {
+	public LongKeyMap<long[]> getEdges() {
 		return edges;
 	}
 

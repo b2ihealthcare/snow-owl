@@ -17,7 +17,7 @@ package com.b2international.snowowl.snomed.datastore.index.update;
 
 import java.util.Map;
 
-import bak.pcj.LongCollection;
+import com.b2international.commons.collections.primitive.LongCollection;
 
 import com.b2international.commons.pcj.LongCollections;
 import com.b2international.snowowl.snomed.datastore.SnomedRefSetUtil;

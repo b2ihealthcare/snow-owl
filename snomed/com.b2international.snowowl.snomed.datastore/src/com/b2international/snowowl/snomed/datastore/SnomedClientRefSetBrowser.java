@@ -46,7 +46,7 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import com.google.inject.Provider;
 
-import bak.pcj.set.LongSet;
+import com.b2international.commons.collections.primitive.set.LongSet;
 
 /**
  * Reference set hierarchy browser service for the SNOMED&nbsp;CT ontology.

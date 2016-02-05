@@ -72,7 +72,7 @@ import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.EPackage;
 import org.eclipse.emf.ecore.util.EcoreUtil;
 
-import bak.pcj.set.LongSet;
+import com.b2international.commons.collections.primitive.set.LongSet;
 
 import com.b2international.commons.CompareUtils;
 import com.b2international.commons.Pair;

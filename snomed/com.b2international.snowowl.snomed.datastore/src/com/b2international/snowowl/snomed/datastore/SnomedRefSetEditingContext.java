@@ -34,8 +34,8 @@ import org.eclipse.emf.cdo.view.CDOView;
 import org.eclipse.emf.ecore.EPackage;
 import org.eclipse.emf.spi.cdo.FSMUtil;
 
-import bak.pcj.LongIterator;
-import bak.pcj.set.LongSet;
+import com.b2international.commons.collections.primitive.LongIterator;
+import com.b2international.commons.collections.primitive.set.LongSet;
 
 import com.b2international.commons.StringUtils;
 import com.b2international.snowowl.core.ApplicationContext;

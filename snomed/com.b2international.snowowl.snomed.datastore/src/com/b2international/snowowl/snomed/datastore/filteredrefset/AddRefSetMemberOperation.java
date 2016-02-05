@@ -17,8 +17,8 @@ package com.b2international.snowowl.snomed.datastore.filteredrefset;
 
 import java.io.Serializable;
 
-import bak.pcj.LongCollection;
-import bak.pcj.set.LongSet;
+import com.b2international.commons.collections.primitive.LongCollection;
+import com.b2international.commons.collections.primitive.set.LongSet;
 
 import com.b2international.snowowl.snomed.datastore.index.SnomedHierarchy;
 
