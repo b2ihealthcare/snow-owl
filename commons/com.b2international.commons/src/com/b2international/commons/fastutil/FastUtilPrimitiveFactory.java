@@ -39,6 +39,14 @@ import com.b2international.commons.collections.primitive.map.LongValueMap;
 import com.b2international.commons.collections.primitive.set.ByteSet;
 import com.b2international.commons.collections.primitive.set.IntSet;
 import com.b2international.commons.collections.primitive.set.LongSet;
+import com.b2international.commons.fastutil.list.ByteArrayListWrapper;
+import com.b2international.commons.fastutil.list.IntArrayDequeWrapper;
+import com.b2international.commons.fastutil.list.IntArrayListWrapper;
+import com.b2international.commons.fastutil.list.LongArrayDequeWrapper;
+import com.b2international.commons.fastutil.list.LongArrayListWrapper;
+import com.b2international.commons.fastutil.set.ByteOpenHashSetWrapper;
+import com.b2international.commons.fastutil.set.IntOpenHashSetWrapper;
+import com.b2international.commons.fastutil.set.LongOpenHashSetWrapper;
 import com.google.common.hash.HashFunction;
 
 /**
@@ -48,20 +56,17 @@ public class FastUtilPrimitiveFactory implements PrimitiveFactory {
 
 	@Override
 	public ByteList newByteArrayList(byte[] source) {
-		// TODO Auto-generated method stub
-		return null;
+		return ByteArrayListWrapper.create(source);
 	}
 
 	@Override
 	public ByteList newByteArrayList(ByteCollection source) {
-		// TODO Auto-generated method stub
-		return null;
+		return ByteArrayListWrapper.create(source);
 	}
 
 	@Override
 	public ByteList newByteArrayList(int expectedSize) {
-		// TODO Auto-generated method stub
-		return null;
+		return ByteArrayListWrapper.create(expectedSize);
 	}
 
 	@Override
@@ -78,26 +83,22 @@ public class FastUtilPrimitiveFactory implements PrimitiveFactory {
 
 	@Override
 	public ByteSet newByteOpenHashSet(ByteCollection source) {
-		// TODO Auto-generated method stub
-		return null;
+		return ByteOpenHashSetWrapper.create(source);
 	}
 
 	@Override
 	public IntDeque newIntArrayDeque(int[] source) {
-		// TODO Auto-generated method stub
-		return null;
+		return IntArrayDequeWrapper.create(source);
 	}
 
 	@Override
 	public IntList newIntArrayList() {
-		// TODO Auto-generated method stub
-		return null;
+		return IntArrayListWrapper.create();
 	}
 
 	@Override
 	public IntList newIntArrayList(int[] source) {
-		// TODO Auto-generated method stub
-		return null;
+		return IntArrayListWrapper.create(source);
 	}
 
 	@Override
@@ -138,44 +139,37 @@ public class FastUtilPrimitiveFactory implements PrimitiveFactory {
 
 	@Override
 	public IntSet newIntOpenHashSet() {
-		// TODO Auto-generated method stub
-		return null;
+		return IntOpenHashSetWrapper.create();
 	}
 
 	@Override
 	public IntSet newIntOpenHashSet(int expectedSize) {
-		// TODO Auto-generated method stub
-		return null;
+		return IntOpenHashSetWrapper.create(expectedSize);
 	}
 
 	@Override
 	public LongDeque newLongArrayDeque() {
-		// TODO Auto-generated method stub
-		return null;
+		return LongArrayDequeWrapper.create();
 	}
 
 	@Override
 	public LongList newLongArrayList() {
-		// TODO Auto-generated method stub
-		return null;
+		return LongArrayListWrapper.create();
 	}
 
 	@Override
 	public LongList newLongArrayList(int expectedSize) {
-		// TODO Auto-generated method stub
-		return null;
+		return LongArrayListWrapper.create(expectedSize);
 	}
 
 	@Override
 	public LongList newLongArrayList(long[] source) {
-		// TODO Auto-generated method stub
-		return null;
+		return LongArrayListWrapper.create(source);
 	}
 
 	@Override
 	public LongList newLongArrayList(LongCollection source) {
-		// TODO Auto-generated method stub
-		return null;
+		return LongArrayListWrapper.create(source);
 	}
 
 	@Override
@@ -246,38 +240,32 @@ public class FastUtilPrimitiveFactory implements PrimitiveFactory {
 
 	@Override
 	public LongSet newLongOpenHashSet() {
-		// TODO Auto-generated method stub
-		return null;
+		return LongOpenHashSetWrapper.create();
 	}
 
 	@Override
 	public LongSet newLongOpenHashSet(HashFunction hashFunction) {
-		// TODO Auto-generated method stub
-		return null;
+		return LongOpenHashSetWrapper.create(hashFunction);
 	}
 
 	@Override
 	public LongSet newLongOpenHashSet(int expectedSize) {
-		// TODO Auto-generated method stub
-		return null;
+		return LongOpenHashSetWrapper.create(expectedSize);
 	}
 
 	@Override
 	public LongSet newLongOpenHashSet(int expectedSize, double fillFactor) {
-		// TODO Auto-generated method stub
-		return null;
+		return LongOpenHashSetWrapper.create(expectedSize, fillFactor);
 	}
 
 	@Override
 	public LongSet newLongOpenHashSet(long[] source) {
-		// TODO Auto-generated method stub
-		return null;
+		return LongOpenHashSetWrapper.create(source);
 	}
 
 	@Override
 	public LongSet newLongOpenHashSet(LongCollection source) {
-		// TODO Auto-generated method stub
-		return null;
+		return LongOpenHashSetWrapper.create(source);
 	}
 
 	@Override
@@ -315,5 +303,4 @@ public class FastUtilPrimitiveFactory implements PrimitiveFactory {
 		// TODO Auto-generated method stub
 		return null;
 	}
-
 }
