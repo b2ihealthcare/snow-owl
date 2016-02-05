@@ -20,14 +20,13 @@ import static com.google.common.base.Preconditions.checkNotNull;
 
 import java.io.Serializable;
 
-import bak.pcj.LongCollection;
-import bak.pcj.LongIterator;
-import bak.pcj.set.LongSet;
-import bak.pcj.set.UnmodifiableLongSet;
-
 import com.b2international.commons.Change;
 import com.b2international.commons.ChangeKind;
+import com.b2international.commons.collections.primitive.LongCollection;
+import com.b2international.commons.collections.primitive.LongIterator;
+import com.b2international.commons.collections.primitive.set.LongSet;
 import com.b2international.commons.pcj.LongSets;
+import com.b2international.commons.pcj.PrimitiveCollections;
 import com.b2international.commons.pcj.LongSets.LongPredicate;
 import com.b2international.snowowl.index.diff.IndexDiff;
 import com.google.common.base.Objects;
@@ -54,17 +53,17 @@ public class IndexDiffImpl implements IndexDiff, Serializable {
 
 	@Override
 	public LongSet getNewIds() {
-		return new UnmodifiableLongSet(newIds);
+		return PrimitiveCollections.newUnmodifiableLongSet(newIds);
 	}
 
 	@Override
 	public LongSet getChangedIds() {
-		return new UnmodifiableLongSet(changedIds);
+		return PrimitiveCollections.newUnmodifiableLongSet(changedIds);
 	}
 
 	@Override
 	public LongSet getDetachedIds() {
-		return new UnmodifiableLongSet(detachedIds);
+		return PrimitiveCollections.newUnmodifiableLongSet(detachedIds);
 	}
 	
 	@Override
