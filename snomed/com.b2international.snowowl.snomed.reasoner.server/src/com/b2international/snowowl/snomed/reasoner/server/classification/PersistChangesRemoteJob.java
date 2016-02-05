@@ -53,7 +53,7 @@ import com.b2international.snowowl.snomed.reasoner.server.normalform.ConceptConc
 import com.b2international.snowowl.snomed.reasoner.server.normalform.RelationshipNormalFormGenerator;
 import com.google.common.collect.Lists;
 
-import bak.pcj.set.LongSet;
+import com.b2international.commons.collections.primitive.set.LongSet;
 
 /**
  * Represents a remote job responsible for saving changes to the repository.

@@ -103,8 +103,8 @@ import com.b2international.snowowl.snomed.reasoner.server.normalform.Relationshi
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Ordering;
 
-import bak.pcj.LongIterator;
-import bak.pcj.set.LongSet;
+import com.b2international.commons.collections.primitive.LongIterator;
+import com.b2international.commons.collections.primitive.set.LongSet;
 
 /**
  * Manages reasoners that operate on the OWL representation of a SNOMED&nbsp;CT repository branch path. 

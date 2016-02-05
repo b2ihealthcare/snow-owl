@@ -102,8 +102,8 @@ import org.semanticweb.owlapi.model.UnknownOWLOntologyException;
 import org.semanticweb.owlapi.util.DefaultPrefixManager;
 
 import uk.ac.manchester.cs.owl.owlapi.OWLObjectImpl;
-import bak.pcj.LongIterator;
-import bak.pcj.set.LongSet;
+import com.b2international.commons.collections.primitive.LongIterator;
+import com.b2international.commons.collections.primitive.set.LongSet;
 
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.datastore.server.snomed.index.AbstractReasonerTaxonomyBuilder.Type;

@@ -21,8 +21,8 @@ import java.util.Collection;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.SubMonitor;
 
-import bak.pcj.LongIterator;
-import bak.pcj.list.LongList;
+import com.b2international.commons.collections.primitive.LongIterator;
+import com.b2international.commons.collections.primitive.list.LongList;
 
 import com.b2international.snowowl.datastore.server.snomed.index.InitialReasonerTaxonomyBuilder;
 import com.b2international.snowowl.snomed.reasoner.server.classification.ReasonerTaxonomy;

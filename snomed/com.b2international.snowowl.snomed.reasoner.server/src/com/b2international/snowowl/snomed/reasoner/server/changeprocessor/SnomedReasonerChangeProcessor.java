@@ -29,18 +29,17 @@ import org.semanticweb.owlapi.model.OWLOntologyChange;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import bak.pcj.LongIterator;
-import bak.pcj.set.LongOpenHashSet;
-import bak.pcj.set.LongSet;
-
+import com.b2international.commons.collections.primitive.LongIterator;
+import com.b2international.commons.collections.primitive.set.LongSet;
+import com.b2international.commons.pcj.PrimitiveCollections;
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.api.SnowowlServiceException;
 import com.b2international.snowowl.datastore.ICDOChangeProcessor;
 import com.b2international.snowowl.datastore.ICDOCommitChangeSet;
+import com.b2international.snowowl.datastore.server.snomed.index.AbstractReasonerTaxonomyBuilder.Type;
 import com.b2international.snowowl.datastore.server.snomed.index.DeltaReasonerTaxonomyBuilder;
 import com.b2international.snowowl.datastore.server.snomed.index.InitialReasonerTaxonomyBuilder;
-import com.b2international.snowowl.datastore.server.snomed.index.AbstractReasonerTaxonomyBuilder.Type;
 import com.b2international.snowowl.snomed.datastore.ConcreteDomainFragment;
 import com.b2international.snowowl.snomed.datastore.StatementFragment;
 import com.b2international.snowowl.snomed.reasoner.model.ConceptDefinition;
@@ -115,7 +114,7 @@ public class SnomedReasonerChangeProcessor implements ICDOChangeProcessor {
 		final LongSet disjointUnionIds;
 
 		if (exhaustive) {
-			disjointUnionIds = new LongOpenHashSet(oldReasonerTaxonomy.getSubTypeIds(conceptId));
+			disjointUnionIds = PrimitiveCollections.newLongOpenHashSet(oldReasonerTaxonomy.getSubTypeIds(conceptId));
 		} else {
 			disjointUnionIds = null;
 		}
@@ -163,7 +162,7 @@ public class SnomedReasonerChangeProcessor implements ICDOChangeProcessor {
 		final LongSet disjointUnionIds;
 
 		if (exhaustive) {
-			disjointUnionIds = new LongOpenHashSet(newReasonerTaxonomy.getSubTypeIds(conceptId));
+			disjointUnionIds = PrimitiveCollections.newLongOpenHashSet(newReasonerTaxonomy.getSubTypeIds(conceptId));
 		} else {
 			disjointUnionIds = null;
 		}

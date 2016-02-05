@@ -34,7 +34,14 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.b2international.commons.collections.primitive.LongIterator;
+import com.b2international.commons.collections.primitive.map.ByteKeyMap;
+import com.b2international.commons.collections.primitive.map.ByteValueMap;
+import com.b2international.commons.collections.primitive.map.ByteValueMapIterator;
+import com.b2international.commons.collections.primitive.map.LongKeyMap;
+import com.b2international.commons.collections.primitive.set.LongSet;
 import com.b2international.commons.pcj.LongSets;
+import com.b2international.commons.pcj.PrimitiveCollections;
 import com.b2international.commons.pcj.LongSets.InverseLongFunction;
 import com.b2international.snowowl.datastore.server.snomed.index.InitialReasonerTaxonomyBuilder;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
@@ -57,17 +64,6 @@ import com.google.common.collect.Maps;
 import com.google.common.collect.Maps.EntryTransformer;
 import com.google.common.collect.Multimaps;
 import com.google.common.collect.Sets;
-
-import bak.pcj.LongIterator;
-import bak.pcj.map.ByteKeyMap;
-import bak.pcj.map.ByteKeyOpenHashMap;
-import bak.pcj.map.LongKeyMap;
-import bak.pcj.map.LongKeyOpenHashMap;
-import bak.pcj.map.ObjectKeyByteMap;
-import bak.pcj.map.ObjectKeyByteMapIterator;
-import bak.pcj.map.ObjectKeyByteOpenHashMap;
-import bak.pcj.set.LongOpenHashSet;
-import bak.pcj.set.LongSet;
 
 /**
  * Transforms a subsumption hierarchy and a set of non-ISA relationships into
@@ -203,12 +199,12 @@ public final class RelationshipNormalFormGenerator extends NormalFormGenerator<S
 				return;
 			}
 
-			final ByteKeyMap oldNumberMap = new ByteKeyOpenHashMap(unionGroups.size());
+			final ByteKeyMap oldNumberMap = PrimitiveCollections.newByteKeyOpenHashMap(unionGroups.size());
 			for (final UnionGroup unionGroup : unionGroups) {
 				oldNumberMap.put(unionGroup.getUnionGroupNumber(), unionGroup);
 			}
 
-			final ObjectKeyByteMap newNumberMap = new ObjectKeyByteOpenHashMap(unionGroups.size());
+			final ByteValueMap newNumberMap = PrimitiveCollections.newObjectKeyByteOpenHashMap(unionGroups.size());
 			for (final UnionGroup unionGroup : unionGroups) {
 				final Optional<UnionGroup> otherUnionGroup = Iterables.tryFind(other.unionGroups, Predicates.equalTo(unionGroup));
 				if (otherUnionGroup.isPresent()) {
@@ -221,7 +217,7 @@ public final class RelationshipNormalFormGenerator extends NormalFormGenerator<S
 				}
 			}
 
-			final ObjectKeyByteMapIterator itr = newNumberMap.entries();
+			final ByteValueMapIterator itr = newNumberMap.mapIterator();
 			while (itr.hasNext()) {
 				itr.next();
 
@@ -519,10 +515,10 @@ public final class RelationshipNormalFormGenerator extends NormalFormGenerator<S
 		private LongSet getConceptAndAllSuperTypes(final long conceptId) {
 			final LongSet ancestors = reasonerTaxonomy.getAncestors(conceptId);
 			final LongSet conceptAndAncestors;
-			if (ancestors instanceof LongOpenHashSet) {
-				conceptAndAncestors = (LongSet) ((LongOpenHashSet) ancestors).clone();
+			if (ancestors instanceof LongSet) {
+				conceptAndAncestors = ancestors.dup();
 			} else {
-				conceptAndAncestors = new LongOpenHashSet(ancestors);
+				conceptAndAncestors = PrimitiveCollections.newLongOpenHashSet(ancestors);
 			}
 			conceptAndAncestors.add(conceptId);
 			return conceptAndAncestors;
@@ -616,12 +612,12 @@ public final class RelationshipNormalFormGenerator extends NormalFormGenerator<S
 				return;
 			}
 
-			final ByteKeyMap oldNumberMap = new ByteKeyOpenHashMap(groups.size());
+			final ByteKeyMap oldNumberMap = PrimitiveCollections.newByteKeyOpenHashMap(groups.size());
 			for (final Group group : groups) {
 				oldNumberMap.put(group.getGroupNumber(), group);
 			}
 
-			final ObjectKeyByteMap newNumberMap = new ObjectKeyByteOpenHashMap(groups.size());
+			final ByteValueMap newNumberMap = PrimitiveCollections.newObjectKeyByteOpenHashMap(groups.size());
 			for (final Group group : groups) {
 				final Optional<Group> otherGroup = Iterables.tryFind(other.groups, Predicates.equalTo(group));
 				if (otherGroup.isPresent()) {
@@ -635,7 +631,7 @@ public final class RelationshipNormalFormGenerator extends NormalFormGenerator<S
 				}
 			}
 
-			final ObjectKeyByteMapIterator itr = newNumberMap.entries();
+			final ByteValueMapIterator itr = newNumberMap.mapIterator();
 			while (itr.hasNext()) {
 				itr.next();
 
@@ -685,7 +681,7 @@ public final class RelationshipNormalFormGenerator extends NormalFormGenerator<S
 
 	private static final byte ZERO_GROUP = 0;
 
-	private final LongKeyMap generatedNonIsACache = new LongKeyOpenHashMap();
+	private final LongKeyMap generatedNonIsACache = PrimitiveCollections.newLongKeyOpenHashMap();
 
 	/**
 	 * Creates a new distribution normal form generator instance.
@@ -737,7 +733,7 @@ public final class RelationshipNormalFormGenerator extends NormalFormGenerator<S
 		final Iterable<StatementFragment> inferredIsAFragments = getInferredIsAFragments(conceptId, directSuperTypes);
 
 		// Step 2: get all non IS-A relationships from ancestors and remove redundancy, then cache the results for later use
-		final LongKeyMap otherNonIsAFragments = new LongKeyOpenHashMap();
+		final LongKeyMap otherNonIsAFragments = PrimitiveCollections.newLongKeyOpenHashMap();
 
 		/* 
 		 * We can rely on the fact that the tree is processed in breadth-first order, so the parents' non-IS A relationships
