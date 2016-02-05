@@ -18,7 +18,7 @@ package com.b2international.snowowl.datastore.server.version;
 import org.eclipse.emf.ecore.EClass;
 import org.eclipse.emf.ecore.EStructuralFeature;
 
-import bak.pcj.set.LongSet;
+import com.b2international.commons.collections.primitive.set.LongSet;
 
 import com.b2international.snowowl.datastore.version.INoopPublishManager;
 
