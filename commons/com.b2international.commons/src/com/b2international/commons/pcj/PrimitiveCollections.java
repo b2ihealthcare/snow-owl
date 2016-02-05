@@ -39,6 +39,7 @@ import com.b2international.commons.collections.primitive.map.LongValueMap;
 import com.b2international.commons.collections.primitive.set.ByteSet;
 import com.b2international.commons.collections.primitive.set.IntSet;
 import com.b2international.commons.collections.primitive.set.LongSet;
+import com.b2international.commons.fastutil.FastUtilPrimitiveFactory;
 import com.google.common.hash.HashFunction;
 
 /**
@@ -46,7 +47,8 @@ import com.google.common.hash.HashFunction;
  */
 public class PrimitiveCollections {
 
-	private static final PrimitiveFactory FACTORY = null;
+	// TODO: Make this configurable?
+	private static final PrimitiveFactory FACTORY = new FastUtilPrimitiveFactory();
 
 	public static ByteList newByteArrayList(byte[] source) {
 		return FACTORY.newByteArrayList(source);
