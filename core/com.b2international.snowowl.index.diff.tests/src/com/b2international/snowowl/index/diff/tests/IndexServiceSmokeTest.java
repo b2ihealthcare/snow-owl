@@ -26,6 +26,8 @@ import org.apache.lucene.index.IndexCommit;
 import org.junit.Before;
 import org.junit.Test;
 
+import com.b2international.commons.collections.primitive.set.LongSet;
+import com.b2international.commons.pcj.PrimitiveCollections;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.datastore.BranchPathUtils;
 import com.b2international.snowowl.datastore.cdo.CDOBranchPath;
@@ -37,9 +39,6 @@ import com.b2international.snowowl.index.diff.tests.mock.DiffIndexServerService;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Iterators;
-
-import bak.pcj.set.LongOpenHashSet;
-import bak.pcj.set.LongSet;
 
 /**
  * @since 4.3
@@ -467,7 +466,7 @@ public class IndexServiceSmokeTest {
 
 	private void assertIdsExactly(final LongSet actual, final long... expected) {
 		assertEquals("Number of expected IDs did not match.", expected.length, actual.size());
-		assertTrue("Expected concept identifiers did not match.", actual.containsAll(new LongOpenHashSet(expected)));
+		assertTrue("Expected concept identifiers did not match.", actual.containsAll(PrimitiveCollections.newLongOpenHashSet(expected)));
 	}
 
 	private void assertConceptIdsExactly(final IBranchPath branchPath, final String... conceptIds) {

@@ -47,8 +47,8 @@ import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
 import com.google.common.collect.FluentIterable;
-
-import bak.pcj.list.IntArrayList;
+import com.b2international.commons.collections.primitive.list.IntList;
+import com.b2international.commons.pcj.PrimitiveCollections;
 
 /**
  * @since 4.3
@@ -104,7 +104,7 @@ public class DiffIndexServerService extends IndexServerService<DiffConceptIndexE
 	
 	@Override
 	protected BranchPath getMostRecentPhysicalPath(IBranchPath logicalPath) {
-		final IntArrayList segments = new IntArrayList();
+		final IntList segments = PrimitiveCollections.newIntArrayList();
 		final Iterator<IBranchPath> branchPrefixIterator = BranchPathUtils.topToBottomIterator(logicalPath);
 		while (branchPrefixIterator.hasNext()) {
 			final IBranchPath currentBranchPath = branchPrefixIterator.next();
