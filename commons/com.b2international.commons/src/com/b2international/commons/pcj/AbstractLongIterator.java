@@ -19,8 +19,7 @@ import static com.google.common.base.Preconditions.checkState;
 
 import java.util.NoSuchElementException;
 
-import bak.pcj.LongIterator;
-import bak.pcj.map.MapDefaults;
+import com.b2international.commons.collections.primitive.LongIterator;
 
 /**
  * Skeleton unmodifiable implementation of the {@link LongIterator}.
@@ -51,7 +50,7 @@ public abstract class AbstractLongIterator extends UnmodifiableLongIterator {
 	 * Implementations of {@code computeNext} <b>must</b> invoke this method when
 	 * there are no elements left in the iteration.
 	 *
-	 * @return {@link MapDefaults#defaultLong()}; a convenience so your {@link #computeNext} implementation 
+	 * @return {@link Long#MIN_VALUE}; a convenience so your {@link #computeNext} implementation 
 	 * can use the simple statement {@code return endOfData();}
 	 */
 	protected final long endOfData() {

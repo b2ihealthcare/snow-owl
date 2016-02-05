@@ -15,99 +15,62 @@
  */
 package com.b2international.commons.pcj;
 
-import static com.b2international.commons.pcj.LongCollections.emptySet;
-import static com.b2international.commons.pcj.LongHashFunctionAdapter.hashOf;
-import static com.b2international.commons.pcj.LongSets.newLongSet;
-import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.hash.Hashing.murmur3_32;
-import static java.lang.Boolean.valueOf;
-import static java.lang.Long.parseLong;
 
 import java.util.Collection;
 
-import bak.pcj.map.AbstractLongKeyMap;
-import bak.pcj.map.LongKeyOpenHashMap;
-import bak.pcj.set.LongSet;
+import com.b2international.commons.collections.primitive.map.LongKeyMap;
+import com.b2international.commons.collections.primitive.map.LongKeyMapIterator;
+import com.b2international.commons.collections.primitive.set.LongSet;
 
 /**
  * A long key long value set multimap implementation.
- *
  */
-public class LongKeyLongSetMultimap extends AbstractLongKeyMap {
+public class LongKeyLongSetMultimap {
 
-	private final LongKeyOpenHashMap delegate;
+	private final LongKeyMap<LongSet> map;
 
 	public LongKeyLongSetMultimap() {
-		delegate = new LongKeyOpenHashMap(hashOf(murmur3_32()));
+		this(PrimitiveCollections.<LongSet>newLongKeyOpenHashMap(murmur3_32()));
 	}
 
-	@Override
-	public LongKeyLongSetMultimapIterator entries() {
-		return new LongKeyLongSetMultimapIterator(delegate.entries());
+	public LongKeyLongSetMultimap(LongKeyMap<LongSet> map) {
+		this.map = map;
 	}
 
-	@Override
+	public LongKeyMapIterator<LongSet> mapIterator() {
+		return map.mapIterator();
+	}
+
 	public LongSet keySet() {
-		return delegate.keySet();
+		return map.keySet();
 	}
 
-	/**
-	 * Stores a primitive long key-value pair in the set multimap.           
-	 * @param key key to store in the set multimap.                          
-	 * @param value value to store in the set multimap.                      
-	 * @return {@code true} if the method increased the size of the multimap,
-	 * or {@code false} if the multimap already contained the key-value pair.
-	 */
-	public boolean put(final long key, final long value) {
-		final Object object = delegate.get(key);
-		if (object instanceof LongSet) {
-			return ((LongSet) object).add(value);
-		} else {
-			delegate.put(key, newLongSet(value));
-			return true;
-		}
-	}
-	
-	/**
-	 * Described at {@link #put(long, long)}.                                                   
-	 * <p>Note: for values only {@link Number} or {@link String} that can                       
-	 * be parsed as a long are accepted.                                                        
-	 * @param key key to store in the set multimap.                                             
-	 * @param value value to store in the set multimap. Can be a {@link Number} or              
-	 * a {@link String} that can be parsed into a long value via {@link Long#parseLong(String)}.
-	 * @return {@code true} if the method increased the size of the multimap,                   
-	 * or {@code false} if the multimap already contained the key-value pair.                   
-	 */
-	@Override
-	public Boolean put(final long key, final Object value) {
-		checkNotNull(value, "value");
-		final long longValue;
-		if (value instanceof Number) {
-			longValue = ((Number) value).longValue();
-		} else if (value instanceof String) {
-			longValue = parseLong(String.valueOf(value));
-		} else {
-			longValue = handleUnexpectedValueType();
-		}
-		return valueOf(put(key, longValue));
-	}
-
-	@Override
-	@SuppressWarnings("unchecked")
 	public Collection<LongSet> values() {
-		return delegate.values();
+		return map.values();
 	}
 
-	@Override
+	public boolean put(final long key, final long value) {
+		LongSet values = delegateGet(key);
+		
+		if (values == null) {
+			values = PrimitiveCollections.newLongOpenHashSet();
+			delegatePut(key, values);
+		}
+		
+		return values.add(value);
+	}
+
 	public LongSet get(final long key) {
-		final Object value = delegate.get(key);
-		return value instanceof LongSet ? (LongSet) value : emptySet();
+		final LongSet value = delegateGet(key);
+		return (value != null) ? value : LongCollections.emptySet();
 	}
-	
-	private long handleUnexpectedValueType() {
-		throw new IllegalArgumentException("Unexpected value type. Only long "
-				+ "values and strings that can be parsed to a long value are allowed.");
-	}
-	
 
+	private void delegatePut(long key, LongSet values) {
+		map.put(key, values);
+	}
+
+	private LongSet delegateGet(final long key) {
+		return map.get(key);
+	}
 }

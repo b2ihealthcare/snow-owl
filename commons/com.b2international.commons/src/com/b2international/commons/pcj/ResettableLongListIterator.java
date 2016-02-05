@@ -15,7 +15,7 @@
  */
 package com.b2international.commons.pcj;
 
-import bak.pcj.list.LongListIterator;
+import com.b2international.commons.collections.primitive.list.LongListIterator;
 
 /**
  * Defines a {@link LongListIterator list iterator} that can be reset back to an initial state. 

@@ -20,13 +20,11 @@ import static com.google.common.base.Preconditions.checkPositionIndexes;
 
 import java.util.NoSuchElementException;
 
-import bak.pcj.ByteCollection;
-import bak.pcj.ByteIterator;
-import bak.pcj.list.ByteArrayList;
-import bak.pcj.list.ByteList;
-import bak.pcj.list.ByteListIterator;
-import bak.pcj.set.ByteOpenHashSet;
-import bak.pcj.set.ByteSet;
+import com.b2international.commons.collections.primitive.ByteCollection;
+import com.b2international.commons.collections.primitive.ByteIterator;
+import com.b2international.commons.collections.primitive.list.ByteList;
+import com.b2international.commons.collections.primitive.list.ByteListIterator;
+import com.b2international.commons.collections.primitive.set.ByteSet;
 
 /**
  * Utility class for {@link ByteCollection}s.
@@ -72,7 +70,7 @@ public class ByteCollections {
 		checkNotNull(unfiltered, "unfiltered");
 		checkNotNull(predicate, "predicate");
 		
-		final ByteCollection copy = unfiltered instanceof ByteSet ? new ByteOpenHashSet(unfiltered) : new ByteArrayList(unfiltered);
+		final ByteCollection copy = unfiltered instanceof ByteSet ? PrimitiveCollections.newByteOpenHashSet(unfiltered) : PrimitiveCollections.newByteArrayList(unfiltered);
 		for (final ByteIterator itr = copy.iterator(); itr.hasNext(); /* */) {
 			final byte input = itr.next();
 			if (!predicate.apply(input)) {
@@ -110,7 +108,7 @@ public class ByteCollections {
 		final byte[] array = list.toArray();
 		final byte[] copy = new byte[toIndex - fromIndex];
 		System.arraycopy(array, fromIndex, copy, 0, toIndex - fromIndex);
-		return new ByteArrayList(copy);
+		return PrimitiveCollections.newByteArrayList(copy);
 	}
 	
 	/**

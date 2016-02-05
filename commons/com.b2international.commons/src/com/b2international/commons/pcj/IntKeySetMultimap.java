@@ -15,78 +15,92 @@
  */
 package com.b2international.commons.pcj;
 
-import static com.google.common.base.Preconditions.checkArgument;
-import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.collect.Sets.newHashSet;
-import static java.util.Collections.unmodifiableSet;
 
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Set;
 
-import bak.pcj.map.AbstractIntKeyMap;
-import bak.pcj.map.IntKeyMapIterator;
-import bak.pcj.map.IntKeyOpenHashMap;
-import bak.pcj.set.IntSet;
+import com.b2international.commons.collections.primitive.map.IntKeyMap;
+import com.b2international.commons.collections.primitive.map.IntKeyMapIterator;
+import com.b2international.commons.collections.primitive.set.IntSet;
 
 /**
  * Type safe set multimap implementation using primitive integer keys. 
- *
  */
-public class IntKeySetMultimap<T> extends AbstractIntKeyMap {
+public class IntKeySetMultimap<V> {
 
-	private final Class<? extends T> valueClass;
-	private final IntKeyOpenHashMap map;
+	private final IntKeyMap<Set<V>> map;
 
-	public IntKeySetMultimap(final Class<? extends T> valueClass) {
-		this.valueClass = checkNotNull(valueClass, "valueClass");
-		map = new IntKeyOpenHashMap();
-	} 
-	
-	@Override
-	public IntKeyMapIterator entries() {
-		return map.entries();
+	public IntKeySetMultimap() {
+		this(PrimitiveCollections.<Set<V>>newIntKeyOpenHashMap());
 	}
 
-	@Override
+	public IntKeySetMultimap(IntKeyMap<Set<V>> map) {
+		this.map = map;
+	}
+
+	public void clear() {
+		map.clear();
+	}
+
+	public boolean isEmpty() {
+		return map.isEmpty();
+	}
+
+	public int size() {
+		return map.size();
+	}
+
+	public void trimToSize() {
+		map.trimToSize();
+	}
+
+	public boolean containsKey(int key) {
+		return map.containsKey(key);
+	}
+
+	public IntKeySetMultimap<V> dup() {
+		return new IntKeySetMultimap<V>(map.dup());
+	}
+
 	public IntSet keySet() {
 		return map.keySet();
 	}
 
-	@Override
-	@SuppressWarnings({ "unchecked", "rawtypes" })
-	public Boolean put(final int key, final Object value) {
-		checkValue(value);
-		final Object values = map.get(key);
-		if (values instanceof Set) {
-			return Boolean.valueOf(((Set) values).add(value));
-		} else {
-			map.put(key, newHashSet(value));
-			return Boolean.TRUE;
-		}
+	public IntKeyMapIterator<Set<V>> mapIterator() {
+		return map.mapIterator();
 	}
 
-	@Override
-	@SuppressWarnings("unchecked")
-	public Collection<Collection<T>> values() {
+	public Set<V> remove(int key) {
+		return map.remove(key);
+	}
+
+	public Collection<Set<V>> values() {
 		return map.values();
 	}
 	
-	@Override
-	@SuppressWarnings("unchecked")
-	public Set<T> get(final int key) {
-		final Object values = map.get(key);
-		return values instanceof Set ? unmodifiableSet((Set<T>) values) : Collections.<T>emptySet();
+	public boolean put(final int key, final V value) {
+		Set<V> values = delegateGet(key);
+		
+		if (values == null) {
+			values = newHashSet();
+			delegatePut(key, values);
+		}
+		
+		return values.add(value);
 	}
 	
-	private void checkValue(final Object value) {
-		checkNotNull(value, "value");
-		checkArgument(valueClass.isAssignableFrom(value.getClass()), new StringBuilder()
-			.append("Expected a type of ")
-			.append(valueClass.getSimpleName())
-			.append(" but was a ")
-			.append(value.getClass().getSimpleName())
-			.toString());
+	public Set<V> get(final int key) {
+		Set<V> values = delegateGet(key);
+		return (values != null) ? Collections.<V>unmodifiableSet(values) : Collections.<V>emptySet();
+	}
+	
+	private Set<V> delegatePut(int key, Set<V> value) {
+		return map.put(key, value);
 	}
 
+	private Set<V> delegateGet(int key) {
+		return map.get(key);
+	}
 }

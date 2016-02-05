@@ -19,10 +19,9 @@ import static com.google.common.base.Preconditions.checkNotNull;
 
 import java.util.NoSuchElementException;
 
-import bak.pcj.LongIterator;
-import bak.pcj.list.LongArrayList;
-import bak.pcj.list.LongList;
-import bak.pcj.list.LongListIterator;
+import com.b2international.commons.collections.primitive.LongIterator;
+import com.b2international.commons.collections.primitive.list.LongList;
+import com.b2international.commons.collections.primitive.list.LongListIterator;
 
 /**
  * Converts an {@link LongIterator iterator} into a {@link LongListIterator list iterator} by caching the returned entries.
@@ -31,7 +30,7 @@ import bak.pcj.list.LongListIterator;
 public class LongListIteratorWrapper implements ResettableLongListIterator {
 
     private final LongIterator delegate;
-    private final LongList list = new LongArrayList();
+    private final LongList list = PrimitiveCollections.newLongArrayList();
 
     private int currentIndex = 0;
     private int wrappedIteratorIndex = 0;

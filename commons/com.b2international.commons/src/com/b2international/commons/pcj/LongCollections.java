@@ -18,25 +18,39 @@ package com.b2international.commons.pcj;
 import java.io.Serializable;
 import java.util.NoSuchElementException;
 
-import bak.pcj.LongCollection;
-import bak.pcj.LongIterator;
-import bak.pcj.set.AbstractLongSet;
-import bak.pcj.set.LongSet;
+import com.b2international.commons.collections.primitive.LongIterator;
+import com.b2international.commons.collections.primitive.set.AbstractLongSet;
+import com.b2international.commons.collections.primitive.set.LongSet;
 
 /**
- * Utility methods related to pcj collections.
- * 
+ * Utility methods related to primitive long collections.
  */
 public abstract class LongCollections {
 
-	protected static final long[] EMPTY_ARRAY = new long[0];
-
-	private static final LongIterator EMPTY_ITERATOR = new EmptyLongIterator();
+	private static class EmptyLongSet extends AbstractLongSet implements Serializable {
 	
+		private static final EmptyLongSet INSTANCE = new EmptyLongSet();
+		
+		@Override
+		public LongIterator iterator() {
+			return EmptyLongIterator.INSTANCE;
+		}
+		
+		@Override
+		public EmptyLongSet dup() {
+			return this;
+		}
+	
+		@Override
+		public boolean add(long value) {
+			throw new UnsupportedOperationException("Can't add value " + value + " to a SingletonLongSet.");
+		}
+	}
+
 	private static class EmptyLongIterator implements LongIterator, Serializable {
 
-		private static final long serialVersionUID = 1L;
-
+		private static final EmptyLongIterator INSTANCE = new EmptyLongIterator();
+		
 		@Override
 		public boolean hasNext() {
 			return false;
@@ -53,115 +67,57 @@ public abstract class LongCollections {
 		}
 	}
 	
-	private static final LongSet EMPTY_SET = new EmptyLongSet();
+	private static class SingletonLongSet extends AbstractLongSet implements Serializable {
 	
-	/**Returns with a immutable set containing the one and only primitive long argument.*/
-	public static final LongSet singletonSet(final long v) {
-		return new AbstractLongSet() {
-			private final long value = v;
-			@Override
-			public LongIterator iterator() {
-				return getSingletonIterator(value);
-			}
-			@Override
-			public int size() {
-				return 1;
-			}
-			@Override
-			public boolean contains(long v) {
-				return value == v;
-			}
-		};
-	}
+		private final long value;
 	
-	/**Returns with a single element unmodifiable iterator.*/
-	public static final LongIterator getSingletonIterator(final long v) {
-		return new AbstractLongIterator() {
-			private boolean hasNext = true;
-			private final long value = v;
-			@Override
-			protected long computeNext() {
-				if (hasNext) {
-					hasNext = false;
-					return value;
-				}
-				return endOfData();
-			}
-		};
-	}
+		private SingletonLongSet(long value) {
+			this.value = value;
+		}
 	
-	private static class EmptyLongSet implements LongSet, Serializable {
-
-		private static final long serialVersionUID = 1L;
-
-		@Override
-		public boolean add(final long v) {
-			throw new UnsupportedOperationException();
-		}
-
-		@Override
-		public boolean addAll(final LongCollection c) {
-			throw new UnsupportedOperationException();
-		}
-
-		@Override
-		public boolean remove(final long v) {
-			throw new UnsupportedOperationException();
-		}
-
-		@Override
-		public boolean removeAll(final LongCollection c) {
-			throw new UnsupportedOperationException();
-		}
-
-		@Override
-		public boolean retainAll(final LongCollection c) {
-			throw new UnsupportedOperationException();
-		}
-
-		@Override
-		public void clear() {
-			throw new UnsupportedOperationException();
-		}
-
-		@Override
-		public boolean contains(final long v) {
-			return false;
-		}
-
-		@Override
-		public boolean containsAll(final LongCollection c) {
-			return c.isEmpty();
-		}
-
-		@Override
-		public boolean isEmpty() {
-			return true;
-		}
-
 		@Override
 		public LongIterator iterator() {
-			return EMPTY_ITERATOR;
+			return singletonIterator(value);
+		}
+	
+		@Override
+		public LongSet dup() {
+			return this;
+		}
+	
+		@Override
+		public boolean add(long value) {
+			throw new UnsupportedOperationException("Can't add value " + value + " to a SingletonLongSet.");
+		}
+	}
+
+	private static class SingletonLongIterator implements LongIterator, Serializable {
+
+		private final long value;
+		private boolean visited;
+
+		public SingletonLongIterator(long value) {
+			this.value = value;
 		}
 
 		@Override
-		public int size() {
-			return 0;
+		public boolean hasNext() {
+			return !visited;
 		}
 
 		@Override
-		public long[] toArray() {
-			return EMPTY_ARRAY;
+		public long next() {
+			if (hasNext()) {
+				visited = true;
+				return value;
+			} else {
+				throw new NoSuchElementException();
+			}
 		}
 
 		@Override
-		public long[] toArray(final long[] array) {
-			return array;
-		}
-
-		@Override
-		public void trimToSize() {
-			// Nothing to do
+		public void remove() {
+			throw new UnsupportedOperationException();
 		}
 	}
 	
@@ -169,17 +125,25 @@ public abstract class LongCollections {
 	 * @return an unmodifiable, empty {@link LongSet}
 	 */
 	public static final LongSet emptySet() {
-		return EMPTY_SET;
+		return EmptyLongSet.INSTANCE;
 	}
-	
+
 	/**
 	 * @return an unmodifiable, empty {@link LongIterator}
 	 */
 	public static final LongIterator emptyIterator() {
-		return EMPTY_ITERATOR;
+		return EmptyLongIterator.INSTANCE;
+	}
+
+	public static final LongSet singletonSet(final long value) {
+		return new SingletonLongSet(value);
+	}
+	
+	public static final LongIterator singletonIterator(final long value) {
+		return new SingletonLongIterator(value);
 	}
 	
 	private LongCollections() {
-		// Prevent instantiation
+		throw new UnsupportedOperationException(LongCollections.class.getSimpleName() + " is not supposed to be instantiated.");
 	}
 }
