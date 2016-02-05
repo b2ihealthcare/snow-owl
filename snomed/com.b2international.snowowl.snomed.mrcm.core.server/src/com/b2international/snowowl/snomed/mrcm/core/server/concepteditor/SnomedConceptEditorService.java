@@ -23,6 +23,8 @@ import java.util.Set;
 
 import org.eclipse.core.runtime.NullProgressMonitor;
 
+import com.b2international.commons.collections.primitive.set.LongSet;
+import com.b2international.commons.pcj.PrimitiveCollections;
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.snomed.datastore.SnomedPredicateBrowser;
@@ -40,9 +42,6 @@ import com.b2international.snowowl.snomed.mrcm.core.server.widget.WidgetBeanProv
 import com.b2international.snowowl.snomed.mrcm.core.widget.IWidgetModelProvider;
 import com.b2international.snowowl.snomed.mrcm.core.widget.bean.ConceptWidgetBean;
 import com.b2international.snowowl.snomed.mrcm.core.widget.model.ConceptWidgetModel;
-
-import bak.pcj.set.LongOpenHashSet;
-import bak.pcj.set.LongSet;
 
 /**
  * Server-side implementation of the SNOMED CT concept editor service.
@@ -75,7 +74,7 @@ public class SnomedConceptEditorService implements ISnomedConceptEditorService {
 
 		// Retrieve synonym and descendant type IDs
 		final Set<String> synonymAndDescendants = ApplicationContext.getServiceForClass(ISnomedComponentService.class).getSynonymAndDescendantIds(branchPath);
-		final LongSet synonymAndDescendantIds = new LongOpenHashSet();
+		final LongSet synonymAndDescendantIds = PrimitiveCollections.newLongOpenHashSet();
 		for (final String synonymAndDescendantId : synonymAndDescendants) {
 			synonymAndDescendantIds.add(Long.parseLong(synonymAndDescendantId));
 		}
@@ -103,8 +102,8 @@ public class SnomedConceptEditorService implements ISnomedConceptEditorService {
 //	@Override
 //	public SnomedConceptLabelAndIconIdMappings getConceptMappings(final IBranchPath branchPath, final long conceptId, final boolean active) {
 //		
-//		final LongKeyMap conceptIdToLabelMap = new LongKeyOpenHashMap();
-//		final LongKeyLongMap conceptIdToIconIdMap = new LongKeyLongOpenHashMap();
+//		final LongKeyMap conceptIdToLabelMap = PrimitiveCollections.newLongKeyOpenHashMap();
+//		final LongKeyLongMap conceptIdToIconIdMap = PrimitiveCollections.newLongKeyLongOpenHashMap();
 //		final SnomedTerminologyBrowser terminologyBrowser = ApplicationContext.getServiceForClass(SnomedTerminologyBrowser.class);
 //		
 //		// Self 
