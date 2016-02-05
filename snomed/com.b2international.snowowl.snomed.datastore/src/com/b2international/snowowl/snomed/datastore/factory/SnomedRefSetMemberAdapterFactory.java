@@ -29,6 +29,7 @@ import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemb
 import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedMappings;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedAssociationRefSetMember;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedAttributeValueRefSetMember;
+import com.b2international.snowowl.snomed.snomedrefset.SnomedComplexMapRefSetMember;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedConcreteDataTypeRefSetMember;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedDescriptionTypeRefSetMember;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedLanguageRefSetMember;
@@ -153,6 +154,21 @@ public class SnomedRefSetMemberAdapterFactory extends TypeSafeAdapterFactory {
 				return builder;
 			}
 			
+			@Override
+			public Builder caseSnomedComplexMapRefSetMember(final SnomedComplexMapRefSetMember mapRefSetMember) {
+				builder.mapTargetComponentType(mapRefSetMember.getMapTargetComponentType());
+				builder.additionalField(SnomedMappings.memberMapTargetComponentId().fieldName(), mapRefSetMember.getMapTargetComponentId());
+				builder.additionalField(SnomedMappings.memberCorrelationId().fieldName(), mapRefSetMember.getCorrelationId());
+
+				addAdditionalFieldIfNotNull(builder, SnomedMappings.memberMapGroup().fieldName(), Integer.valueOf(mapRefSetMember.getMapGroup()));
+				addAdditionalFieldIfNotNull(builder, SnomedMappings.memberMapCategoryId().fieldName(), mapRefSetMember.getMapCategoryId());
+				addAdditionalFieldIfNotNull(builder, SnomedMappings.memberMapAdvice().fieldName(), mapRefSetMember.getMapAdvice());
+				addAdditionalFieldIfNotNull(builder, SnomedMappings.memberMapPriority().fieldName(), Integer.valueOf(mapRefSetMember.getMapPriority()));
+				addAdditionalFieldIfNotNull(builder, SnomedMappings.memberMapRule().fieldName(), mapRefSetMember.getMapRule());
+
+				return builder;
+			}
+			
 			public Builder caseSnomedRefSetMember(SnomedRefSetMember object) {
 				return builder;
 			};
@@ -160,5 +176,11 @@ public class SnomedRefSetMemberAdapterFactory extends TypeSafeAdapterFactory {
 		}.doSwitch(refSetMember);
 
 		return specializedBuilder.build();
+	}
+	
+	private void addAdditionalFieldIfNotNull(final Builder builder, final String fieldName, final Object value) {
+		if (value != null) {
+			builder.additionalField(fieldName, value);
+		}
 	}
 }
