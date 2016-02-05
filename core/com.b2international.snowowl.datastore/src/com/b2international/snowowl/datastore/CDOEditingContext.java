@@ -108,25 +108,25 @@ public abstract class CDOEditingContext implements AutoCloseable {
 	 * get the index from the database for an EObject on the given table.
 	 * If the object is not in the database, a RTE will be thrown.
 	 */
-	public int getIndexFromDatabase(final EObject object, final String tableName)  {
-			
+	public int getIndexFromDatabase(final CDOObject cdoObject, final CDOObject container, final String tableName)  {
 		// the object must be a cdoObject, otherwise the database cannot contain it
-		if (!(object instanceof CDOObject)) {
-			throw new RuntimeException("The removable object is not a CDOObject.");
-		}
 		if (tableName == null) {
 			throw new RuntimeException("Argument tableName must not be null.");
 		}
-		final CDOObject cdoObject = (CDOObject) object;
-		 		
-		// query the resources table, to get the index directly
-		final CDOObject container = object.eContainer()== null ? cdoObject.cdoResource() : (CDOObject) object.eContainer();
+		
+		// params
+		final long cdoId = CDOIDUtil.getLong(cdoObject.cdoID());
+		final long containerId = CDOIDUtil.getLong(container.cdoID());
 		final int version = container.cdoRevision().getVersion();
+		
+		// query the resources table, to get the index directly
 		final String sqlGetIndexFormatted = DatastoreQueries.SQL_GET_INDEX_AND_BRANCH_FOR_VALUE.getQuery(tableName);
 		final CDOQuery query = transaction.createQuery("sql", sqlGetIndexFormatted);
 		query.setParameter(CDOQueryUtils.CDO_OBJECT_QUERY, false);
-		query.setParameter("cdoId", CDOIDUtil.getLong(cdoObject.cdoID()));
+		query.setParameter("cdoId", cdoId);
+		query.setParameter("containerId", containerId);
 		query.setParameter("versionMaxAdded", version);
+		// exec query
 		final List<Object[]> result = query.getResult(Object[].class);
 		// neither 0 nor more than 1 results are acceptable
 		if (result.size() <= 0) {			

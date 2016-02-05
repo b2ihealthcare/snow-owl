@@ -517,18 +517,18 @@ public final class CDOStoreImpl implements CDOStore
         {
           clear(eObject, feature);
         }
-        else
-        {
-          /*
-           * In unordered lists, move the last item only if the removed item was not the last item, or the item before
-           * the last item. Note that list.size() returns the size of the list after the remove at this point.
-           */
-          int lastIndexAfterRemove = revision.size(feature) - 1;
-          if (!feature.isOrdered() && index < lastIndexAfterRemove)
-          {
-            move(eObject, feature, index, lastIndexAfterRemove);
-          }
-        }
+//        else
+//        {
+//          /*
+//           * In unordered lists, move the last item only if the removed item was not the last item, or the item before
+//           * the last item. Note that list.size() returns the size of the list after the remove at this point.
+//           */
+//          int lastIndexAfterRemove = revision.size(feature) - 1;
+//          if (!feature.isOrdered() && index < lastIndexAfterRemove)
+//          {
+//            move(eObject, feature, index, lastIndexAfterRemove);
+//          }
+//        }
       }
 
       return oldValue;

@@ -26,17 +26,17 @@ public class CDOListWithElementProxiesImpl extends CDOListImpl
 {
   public static final CDOListFactory FACTORY = new CDOListFactory()
   {
-    public CDOList createList(int initialCapacity, int size, int initialChunk)
+    public CDOList createList(int initialCapacity, int size, int initialChunk, boolean ordered)
     {
-      return new CDOListWithElementProxiesImpl(initialCapacity, size, initialChunk);
+      return new CDOListWithElementProxiesImpl(initialCapacity, size, initialChunk, ordered);
     }
   };
 
   private static final long serialVersionUID = 1L;
 
-  public CDOListWithElementProxiesImpl(int initialCapacity, int size, int initialChunk)
+  public CDOListWithElementProxiesImpl(int initialCapacity, int size, int initialChunk, boolean ordered)
   {
-    super(initialCapacity, initialChunk);
+    super(initialCapacity, initialChunk, ordered);
     for (int j = initialChunk; j < size; j++)
     {
       this.add(new CDOElementProxyImpl(j));
@@ -70,7 +70,7 @@ public class CDOListWithElementProxiesImpl extends CDOListImpl
   {
     CDOType type = CDOModelUtil.getType(classifier);
     int size = size();
-    InternalCDOList list = new CDOListWithElementProxiesImpl(size, 0, 0);
+    InternalCDOList list = new CDOListWithElementProxiesImpl(size, 0, 0, isOrdered());
     for (int j = 0; j < size; j++)
     {
       Object value = this.get(j);
