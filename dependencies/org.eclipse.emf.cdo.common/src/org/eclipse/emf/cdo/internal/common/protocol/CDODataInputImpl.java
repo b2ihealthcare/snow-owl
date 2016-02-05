@@ -452,7 +452,7 @@ public abstract class CDODataInputImpl extends ExtendedDataInput.Delegating impl
       type = CDOModelUtil.getType(feature.getEType());
     }
 
-    InternalCDOList list = (InternalCDOList)getListFactory().createList(size, size, referenceChunk);
+    InternalCDOList list = (InternalCDOList)getListFactory().createList(size, size, referenceChunk, feature.isOrdered());
     for (int j = 0; j < referenceChunk; j++)
     {
       if (isFeatureMap)

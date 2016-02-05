@@ -680,7 +680,7 @@ public abstract class BaseCDORevision extends AbstractCDORevision
     CDOList list = (CDOList)getValue(featureIndex);
     if (list == null && size != -1)
     {
-      list = CDOListFactory.DEFAULT.createList(size, 0, 0);
+      list = CDOListFactory.DEFAULT.createList(size, 0, 0, feature.isOrdered());
 
       synchronized (this)
       {

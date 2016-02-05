@@ -214,6 +214,9 @@ public class CDOListFeatureDeltaImpl extends CDOFeatureDeltaImpl implements CDOL
   private boolean cleanupWithNewDelta(CDOFeatureDelta featureDelta)
   {
     EStructuralFeature feature = getFeature();
+    if (!feature.isOrdered()) {
+    	return true;
+    }
     if ((feature instanceof EReference || FeatureMapUtil.isFeatureMap(feature))
         && featureDelta instanceof CDORemoveFeatureDelta)
     {

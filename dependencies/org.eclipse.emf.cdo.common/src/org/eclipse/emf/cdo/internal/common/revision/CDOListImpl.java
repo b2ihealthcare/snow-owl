@@ -30,9 +30,9 @@ public class CDOListImpl extends MoveableArrayList<Object> implements InternalCD
 {
   public static final CDOListFactory FACTORY = new CDOListFactory()
   {
-    public CDOList createList(int initialCapacity, int size, int initialChunk)
+    public CDOList createList(int initialCapacity, int size, int initialChunk, boolean ordered)
     {
-      return new CDOListImpl(initialCapacity, size);
+      return new CDOListImpl(initialCapacity, size, ordered);
     }
   };
 
@@ -40,20 +40,27 @@ public class CDOListImpl extends MoveableArrayList<Object> implements InternalCD
 
   private transient boolean frozen;
 
-  public CDOListImpl(int initialCapacity, int size)
+  private final boolean ordered;
+
+  public CDOListImpl(int initialCapacity, int size, boolean ordered)
   {
     super(initialCapacity);
+	this.ordered = ordered;
     for (int j = 0; j < size; j++)
     {
       this.add(UNINITIALIZED);
     }
+  }
+  
+  protected final boolean isOrdered() {
+	return ordered;
   }
 
   public InternalCDOList clone(EClassifier classifier)
   {
     CDOType type = CDOModelUtil.getType(classifier);
     int size = size();
-    InternalCDOList list = new CDOListImpl(size, 0);
+    InternalCDOList list = new CDOListImpl(size, 0, ordered);
     for (int j = 0; j < size; j++)
     {
       Object value = this.get(j);
@@ -175,11 +182,17 @@ public class CDOListImpl extends MoveableArrayList<Object> implements InternalCD
   public Object remove(int index)
   {
     checkFrozen();
-    return super.remove(index);
+    boolean canMove = index < size() - 2; 
+    Object removed = super.remove(index);
+    if (!ordered && canMove) {
+    	move(index, size() - 1);
+    }
+	return removed;
   }
 
   public void setWithoutFrozenCheck(int index, Object element)
   {
     super.set(index, element);
   }
+  
 }

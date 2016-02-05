@@ -60,7 +60,7 @@ public abstract class CDOEditingContextWithDeletion extends CDOEditingContext {
 	 */
 	protected Collection<Entry<Integer,EObject>> getOrderedToDeleteIndexes(ComponentDeletionPlan deletionPlan) {
 		final Multimap<Integer, EObject> itemMap = ArrayListMultimap.create();
-		for (EObject item : deletionPlan.getDeletedItems()) {
+		for (CDOObject item : deletionPlan.getDeletedItems()) {
 			final int index = getIndex(item);
 			if (index >= 0) {
 				itemMap.put(index, item);
@@ -79,10 +79,10 @@ public abstract class CDOEditingContextWithDeletion extends CDOEditingContext {
 	 * @param item
 	 * @return
 	 */
-	protected int getIndex(EObject item) {
+	protected int getIndex(CDOObject item) {
 		if (item instanceof IComponent<?>) {
-			return getIndexFromDatabase(item, "ERESOURCE_CDORESOURCE_CONTENTS_LIST");
-		} else if (item instanceof CDOObject) {
+			return getIndexFromDatabase(item, item.cdoResource(), "ERESOURCE_CDORESOURCE_CONTENTS_LIST");
+		} else {
 			// if the item has eContainer then get the index from the eContainment feature
 			if (null != item.eContainer()) {
 				final EObject eContainer = item.eContainer();
