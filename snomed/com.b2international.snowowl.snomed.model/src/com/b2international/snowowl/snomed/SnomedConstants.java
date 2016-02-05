@@ -15,12 +15,8 @@
  */
 package com.b2international.snowowl.snomed;
 
-import static com.google.common.collect.Lists.newArrayList;
-
 import java.util.Collection;
 import java.util.Collections;
-import java.util.List;
-import java.util.Locale;
 import java.util.Set;
 
 import com.google.common.collect.BiMap;
@@ -201,6 +197,8 @@ public abstract class SnomedConstants {
 		public static final String REFSET_FLOAT_DATATYPE = "744104701000154109";
 		public static final String REFSET_STRING_DATATYPE = "513945551000154100";
 		public static final String REFSET_CONCRETE_DOMAIN_TYPE = "289191171000154104";
+		public static final String REFSET_DEFINING_TYPE = "384696201000154108";
+		public static final String REFSET_MEASUREMENT_TYPE = "945726341000154109";
 
 		public static final String REFSET_DRUG_TO_SOURCE_DRUG_SIMPLE_MAP = "776245861000133102";
 		public static final String REFSET_DRUG_TO_GROUPER_SIMPLE_MAP = "499896751000133109";

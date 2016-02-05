@@ -102,5 +102,23 @@ public class SnomedComponents {
 	public static SnomedAttributeValueReferenceSetMemberBuilder newAttributeValueMember() {
 		return new SnomedAttributeValueReferenceSetMemberBuilder();
 	}
+	
+	/**
+	 * Creates and returns a new {@link SnomedConcreteDomainReferenceSetBuilder SNOMED CT Concrete Domain Reference set builder}.
+	 * 
+	 * @return
+	 */
+	public static SnomedConcreteDomainReferenceSetBuilder newConcreteDomainReferenceSet() {
+		return new SnomedConcreteDomainReferenceSetBuilder();
+	}
+	
+	/**
+	 * Creates and returns a new {@link SnomedConcreteDomainReferenceSetMemberBuilder SNOMED CT Concrete Domain Reference set member builder}.
+	 * 
+	 * @return
+	 */
+	public static SnomedConcreteDomainReferenceSetMemberBuilder newConcreteDomainReferenceSetMember() {
+		return new SnomedConcreteDomainReferenceSetMemberBuilder();
+	}
 
 }
