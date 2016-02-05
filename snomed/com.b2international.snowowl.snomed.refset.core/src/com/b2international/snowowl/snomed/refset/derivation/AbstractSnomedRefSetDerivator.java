@@ -28,7 +28,7 @@ import org.apache.lucene.search.BooleanQuery;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.SubMonitor;
 
-import bak.pcj.map.LongKeyMap;
+import com.b2international.commons.collections.primitive.map.LongKeyMap;
 
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.ComponentIdentifierPair;

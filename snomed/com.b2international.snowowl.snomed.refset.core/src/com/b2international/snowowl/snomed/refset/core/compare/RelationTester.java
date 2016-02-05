@@ -18,10 +18,9 @@ package com.b2international.snowowl.snomed.refset.core.compare;
 import java.util.List;
 import java.util.Set;
 
-import bak.pcj.map.LongKeyMap;
-import bak.pcj.set.LongOpenHashSet;
-import bak.pcj.set.LongSet;
-
+import com.b2international.commons.collections.primitive.map.LongKeyMap;
+import com.b2international.commons.collections.primitive.set.LongSet;
+import com.b2international.commons.pcj.PrimitiveCollections;
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.datastore.SnomedClientStatementBrowser;
@@ -102,7 +101,7 @@ public class RelationTester {
 	
 	public static boolean isRelated(long predicateId, long candidateId, final LongKeyMap statements) {
 		
-		final LongSet visited = new LongOpenHashSet();
+		final LongSet visited = PrimitiveCollections.newLongOpenHashSet();
 		visited.add(candidateId);
 		
 		for (final StatementFragment relationship : getStatements(candidateId, statements)) {
@@ -125,7 +124,7 @@ public class RelationTester {
 			// Ignore 'Is a' relationships, they are in the subsumption category.
 			if (relationshipTypeId == relationship.getTypeId()) {
 				
-				final LongSet visited = new LongOpenHashSet();
+				final LongSet visited = PrimitiveCollections.newLongOpenHashSet();
 				visited.add(candidateId);
 				
 				if (predicateId == relationship.getDestinationId()) {
