@@ -20,9 +20,8 @@ import static com.google.common.collect.Sets.newHashSet;
 import java.util.List;
 import java.util.Set;
 
-import bak.pcj.set.LongOpenHashSet;
-import bak.pcj.set.LongSet;
-
+import com.b2international.commons.collections.primitive.set.LongSet;
+import com.b2international.commons.pcj.PrimitiveCollections;
 import com.b2international.snowowl.snomed.Concept;
 import com.b2international.snowowl.snomed.Relationship;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
@@ -50,7 +49,7 @@ public class ConceptDefinitionBuilder {
 		final LongSet disjointUnionIds;
 
 		if (exhaustive) {
-			disjointUnionIds = new LongOpenHashSet();
+			disjointUnionIds = PrimitiveCollections.newLongOpenHashSet();
 			for (final Relationship relationship : concept.getInboundRelationships()) {
 				if (relationship.isActive()
 						&& Concepts.IS_A.equals(relationship.getType().getId())
