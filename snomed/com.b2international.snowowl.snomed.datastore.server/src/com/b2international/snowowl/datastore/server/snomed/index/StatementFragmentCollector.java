@@ -27,9 +27,8 @@ import com.b2international.snowowl.datastore.index.AbstractDocsOutOfOrderCollect
 import com.b2international.snowowl.datastore.index.mapping.Mappings;
 import com.b2international.snowowl.snomed.datastore.StatementFragment;
 import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedMappings;
-
-import bak.pcj.map.LongKeyMap;
-import bak.pcj.map.LongKeyOpenHashMap;
+import com.b2international.commons.collections.primitive.map.LongKeyMap;
+import com.b2international.commons.pcj.PrimitiveCollections;
 
 /**
  * Collector for gathering SNOMED CT relationship representations after performing an index search.
@@ -48,7 +47,7 @@ public class StatementFragmentCollector extends AbstractDocsOutOfOrderCollector 
 	 * <li>Value: list of outbound statement fragments</li>
 	 * </ul>
 	 */
-	private final LongKeyOpenHashMap statementMap;
+	private final LongKeyMap statementMap;
 
 	private NumericDocValues idValues;
 	private NumericDocValues storageKeyValues;
@@ -73,7 +72,7 @@ public class StatementFragmentCollector extends AbstractDocsOutOfOrderCollector 
 	 * @param expectedSize the expected number of source concept identifiers, or <= 0 to use the built-in default hash map size
 	 */
 	public StatementFragmentCollector(final int expectedSize) {
-		statementMap = (0 > expectedSize) ? new LongKeyOpenHashMap(expectedSize) : new LongKeyOpenHashMap();
+		statementMap = (0 > expectedSize) ? PrimitiveCollections.newLongKeyOpenHashMap(expectedSize) : PrimitiveCollections.newLongKeyOpenHashMap();
 	}
 
 	@Override

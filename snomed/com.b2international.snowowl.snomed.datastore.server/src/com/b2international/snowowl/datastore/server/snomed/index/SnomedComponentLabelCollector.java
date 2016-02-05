@@ -21,11 +21,10 @@ import org.apache.lucene.index.AtomicReader;
 import org.apache.lucene.index.BinaryDocValues;
 import org.apache.lucene.index.NumericDocValues;
 
-import bak.pcj.LongCollection;
-import bak.pcj.map.LongKeyMap;
-import bak.pcj.map.LongKeyOpenHashMap;
-
+import com.b2international.commons.collections.primitive.LongCollection;
+import com.b2international.commons.collections.primitive.map.LongKeyMap;
 import com.b2international.commons.pcj.LongSets;
+import com.b2international.commons.pcj.PrimitiveCollections;
 import com.b2international.commons.pcj.LongSets.LongPredicate;
 import com.b2international.snowowl.core.api.index.CommonIndexConstants;
 import com.b2international.snowowl.datastore.index.AbstractDocsOutOfOrderCollector;
@@ -60,7 +59,7 @@ public class SnomedComponentLabelCollector extends AbstractDocsOutOfOrderCollect
 	 * results.
 	 */
 	public SnomedComponentLabelCollector() {
-		this(LongPredicate.ALL_PREDICATE, new LongKeyOpenHashMap());
+		this(LongPredicate.ALL_PREDICATE, PrimitiveCollections.newLongKeyOpenHashMap());
 	}
 
 	/**
@@ -70,7 +69,7 @@ public class SnomedComponentLabelCollector extends AbstractDocsOutOfOrderCollect
 	 * @param componentIds the component identifiers to accept
 	 */
 	public SnomedComponentLabelCollector(final LongCollection componentIds) {
-		this(LongSets.in(componentIds), new LongKeyOpenHashMap(getExpectedSize(componentIds)));
+		this(LongSets.in(componentIds), PrimitiveCollections.newLongKeyOpenHashMap(getExpectedSize(componentIds)));
 	}
 
 	private SnomedComponentLabelCollector(final LongPredicate componentIdsPredicate, final LongKeyMap idLabelMapping) {

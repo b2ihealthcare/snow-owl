@@ -19,8 +19,8 @@ import static com.google.common.collect.Sets.newHashSet;
 
 import java.util.Set;
 
-import bak.pcj.LongIterator;
-import bak.pcj.set.LongSet;
+import com.b2international.commons.collections.primitive.LongIterator;
+import com.b2international.commons.collections.primitive.set.LongSet;
 
 import com.b2international.commons.Pair;
 import com.b2international.commons.pcj.LongSets;

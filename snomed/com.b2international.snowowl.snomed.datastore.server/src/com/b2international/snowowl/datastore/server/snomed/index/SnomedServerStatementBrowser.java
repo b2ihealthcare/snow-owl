@@ -54,10 +54,10 @@ import com.b2international.snowowl.snomed.datastore.services.ISnomedComponentSer
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Maps;
 
-import bak.pcj.map.LongKeyLongMap;
-import bak.pcj.map.LongKeyLongMapIterator;
-import bak.pcj.map.LongKeyMap;
-import bak.pcj.set.LongSet;
+import com.b2international.commons.collections.primitive.map.LongKeyLongMap;
+import com.b2international.commons.collections.primitive.map.LongKeyLongMapIterator;
+import com.b2international.commons.collections.primitive.map.LongKeyMap;
+import com.b2international.commons.collections.primitive.set.LongSet;
 
 /**
  * Index based statement browser implementation.
@@ -483,7 +483,7 @@ public class SnomedServerStatementBrowser extends AbstractSnomedIndexBrowser<Sno
 		service.search(branchPath, query, collector);
 
 		final LongKeyLongMap idsSet = collector.getIds();
-		final LongKeyLongMapIterator iter = idsSet.entries();
+		final LongKeyLongMapIterator iter = idsSet.mapIterator();
 		while (iter.hasNext()) {
 			iter.next();
 			if (!sourceIds.contains(String.valueOf(iter.getKey()))) {

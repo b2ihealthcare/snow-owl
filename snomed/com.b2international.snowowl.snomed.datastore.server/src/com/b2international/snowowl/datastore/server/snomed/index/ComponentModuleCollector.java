@@ -20,8 +20,8 @@ import java.io.IOException;
 import org.apache.lucene.index.AtomicReader;
 import org.apache.lucene.index.NumericDocValues;
 
-import bak.pcj.map.LongKeyLongOpenHashMap;
-
+import com.b2international.commons.collections.primitive.map.LongKeyLongMap;
+import com.b2international.commons.pcj.PrimitiveCollections;
 import com.b2international.snowowl.datastore.index.AbstractDocsOutOfOrderCollector;
 import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedMappings;
 
@@ -32,10 +32,10 @@ public class ComponentModuleCollector extends AbstractDocsOutOfOrderCollector {
 	
 	private NumericDocValues componentId;
 	private NumericDocValues moduleId;
-	private LongKeyLongOpenHashMap idToModuleMap;
+	private LongKeyLongMap idToModuleMap;
 
 	public ComponentModuleCollector() {
-		idToModuleMap = new LongKeyLongOpenHashMap();
+		idToModuleMap = PrimitiveCollections.newLongKeyLongOpenHashMap();
 	}
 	
 	@Override
@@ -54,7 +54,7 @@ public class ComponentModuleCollector extends AbstractDocsOutOfOrderCollector {
 		idToModuleMap.put(componentId.get(doc), moduleId.get(doc));
 	}
 
-	public LongKeyLongOpenHashMap getIdToModuleMap() {
+	public LongKeyLongMap getIdToModuleMap() {
 		return idToModuleMap;
 	}
 }

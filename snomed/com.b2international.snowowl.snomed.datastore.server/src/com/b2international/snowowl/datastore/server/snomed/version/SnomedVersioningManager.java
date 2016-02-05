@@ -23,7 +23,7 @@ import com.b2international.snowowl.datastore.version.IPublishManager;
 import com.b2international.snowowl.datastore.version.VersioningManager;
 import com.b2international.snowowl.snomed.datastore.services.ISnomedComponentService;
 
-import bak.pcj.set.LongSet;
+import com.b2international.commons.collections.primitive.set.LongSet;
 
 /**
  * {@link ISnomedUnversionedComponentProvider} implementation.

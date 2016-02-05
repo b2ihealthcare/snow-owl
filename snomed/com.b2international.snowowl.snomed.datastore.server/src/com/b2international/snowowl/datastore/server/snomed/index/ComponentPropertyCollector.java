@@ -22,11 +22,9 @@ import java.io.IOException;
 import org.apache.lucene.index.AtomicReader;
 import org.apache.lucene.index.NumericDocValues;
 
-import bak.pcj.LongCollection;
-import bak.pcj.map.LongKeyMap;
-import bak.pcj.map.LongKeyOpenHashMap;
-
-import com.b2international.commons.pcj.LongHashFunctionAdapter;
+import com.b2international.commons.collections.primitive.LongCollection;
+import com.b2international.commons.collections.primitive.map.LongKeyMap;
+import com.b2international.commons.pcj.PrimitiveCollections;
 import com.b2international.snowowl.datastore.index.AbstractDocsOutOfOrderCollector;
 import com.b2international.snowowl.datastore.index.mapping.Mappings;
 import com.google.common.hash.Hashing;
@@ -37,12 +35,12 @@ import com.google.common.hash.Hashing;
 public abstract class ComponentPropertyCollector extends AbstractDocsOutOfOrderCollector {
 
 	protected LongCollection acceptedStorageKeys;
-	protected LongKeyOpenHashMap mapping;
+	protected LongKeyMap mapping;
 	protected NumericDocValues storageKeys;
 
 	public ComponentPropertyCollector(final LongCollection acceptedStorageKeys) {
 		this.acceptedStorageKeys = checkNotNull(acceptedStorageKeys, "acceptedStorageKeys");
-		this.mapping = new LongKeyOpenHashMap(LongHashFunctionAdapter.hashOf(Hashing.murmur3_32()));
+		this.mapping = PrimitiveCollections.newLongKeyOpenHashMap(Hashing.murmur3_32());
 	}
 
 	@Override

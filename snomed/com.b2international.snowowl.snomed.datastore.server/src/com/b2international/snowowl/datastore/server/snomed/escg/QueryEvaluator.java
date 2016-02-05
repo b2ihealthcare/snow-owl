@@ -19,8 +19,8 @@ import java.io.Serializable;
 import java.util.Arrays;
 import java.util.Collection;
 
-import bak.pcj.LongIterator;
-import bak.pcj.set.LongSet;
+import com.b2international.commons.collections.primitive.LongIterator;
+import com.b2international.commons.collections.primitive.set.LongSet;
 
 import com.b2international.snowowl.snomed.dsl.query.RValue;
 import com.b2international.commons.pcj.LongSets;

@@ -30,10 +30,9 @@ import org.eclipse.emf.cdo.CDOObject;
 import org.eclipse.emf.cdo.common.id.CDOID;
 import org.eclipse.emf.ecore.EClass;
 
-import bak.pcj.map.LongKeyMap;
-import bak.pcj.set.LongOpenHashSet;
-import bak.pcj.set.LongSet;
-
+import com.b2international.commons.collections.primitive.map.LongKeyMap;
+import com.b2international.commons.collections.primitive.set.LongSet;
+import com.b2international.commons.pcj.PrimitiveCollections;
 import com.b2international.snowowl.datastore.ICDOCommitChangeSet;
 import com.b2international.snowowl.datastore.cdo.CDOIDUtils;
 import com.b2international.snowowl.snomed.Concept;
@@ -58,8 +57,8 @@ public final class DeltaReasonerTaxonomyBuilder extends AbstractReasonerTaxonomy
 			SnomedPackage.Literals.RELATIONSHIP,
 			SnomedPackage.Literals.CONCEPT);
 
-	private final LongSet conceptIdsToRemove = new LongOpenHashSet();
-	private final LongSet conceptIdsToAdd = new LongOpenHashSet();
+	private final LongSet conceptIdsToRemove = PrimitiveCollections.newLongOpenHashSet();
+	private final LongSet conceptIdsToAdd = PrimitiveCollections.newLongOpenHashSet();
 	
 	/**
 	 * Creates a new {@link DeltaReasonerTaxonomyBuilder} instance with the specified arguments.

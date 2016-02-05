@@ -50,6 +50,9 @@ import org.slf4j.LoggerFactory;
 
 import com.b2international.commons.CompareUtils;
 import com.b2international.commons.FileUtils;
+import com.b2international.commons.collections.primitive.map.LongKeyMap;
+import com.b2international.commons.collections.primitive.map.LongKeyMapIterator;
+import com.b2international.commons.pcj.PrimitiveCollections;
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.SnowOwlApplication;
 import com.b2international.snowowl.core.api.IBranchPath;
@@ -72,10 +75,6 @@ import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
 import com.google.common.collect.ImmutableSet;
-
-import bak.pcj.map.LongKeyMap;
-import bak.pcj.map.LongKeyMapIterator;
-import bak.pcj.map.LongKeyOpenHashMap;
 
 /**
  * Index service for improving performance for SNOMED CT import.
@@ -124,7 +123,7 @@ public class ImportIndexServerService extends SingleDirectoryIndexImpl {
     private static final String DIRECTORY_PATH_PREFIX = "sct_import";
 
     private final IBranchPath importTargetBranchPath;
-    private final LongKeyMap pendingDescriptionDocuments = new LongKeyOpenHashMap();
+    private final LongKeyMap pendingDescriptionDocuments = PrimitiveCollections.newLongKeyOpenHashMap();
 	
 	private LoadingCache<String, Filter> preferredFilters = CacheBuilder.newBuilder().build(new CacheLoader<String, Filter>() {
 		@Override
@@ -467,7 +466,7 @@ public class ImportIndexServerService extends SingleDirectoryIndexImpl {
 
     @Override
     public void commit() {
-    	for (final LongKeyMapIterator itr = pendingDescriptionDocuments.entries(); itr.hasNext(); /* empty */) {
+    	for (final LongKeyMapIterator itr = pendingDescriptionDocuments.mapIterator(); itr.hasNext(); /* empty */) {
     		itr.next();
     		
     		final long descriptionId = itr.getKey();

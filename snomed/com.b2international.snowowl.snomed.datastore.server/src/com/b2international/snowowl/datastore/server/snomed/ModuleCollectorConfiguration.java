@@ -27,8 +27,8 @@ import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Sets;
 
-import bak.pcj.LongCollection;
-import bak.pcj.map.LongKeyLongMap;
+import com.b2international.commons.collections.primitive.LongCollection;
+import com.b2international.commons.collections.primitive.map.LongKeyLongMap;
 
 /**
  * POJO used for collecting SNOMED CT module dependencies.

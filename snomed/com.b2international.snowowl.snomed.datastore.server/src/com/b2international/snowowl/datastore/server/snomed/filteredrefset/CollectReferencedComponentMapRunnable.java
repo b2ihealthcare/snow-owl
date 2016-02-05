@@ -26,6 +26,11 @@ import org.apache.lucene.search.Query;
 import org.apache.lucene.search.ReferenceManager;
 
 import com.b2international.commons.arrays.BidiMapWithInternalId;
+import com.b2international.commons.collections.primitive.LongCollection;
+import com.b2international.commons.collections.primitive.LongIterator;
+import com.b2international.commons.collections.primitive.map.LongKeyMap;
+import com.b2international.commons.collections.primitive.set.LongSet;
+import com.b2international.commons.pcj.PrimitiveCollections;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.api.index.IndexException;
 import com.b2international.snowowl.core.date.EffectiveTimes;
@@ -39,12 +44,6 @@ import com.b2international.snowowl.snomed.datastore.filteredrefset.NewRefSetMemb
 import com.b2international.snowowl.snomed.datastore.filteredrefset.RegularRefSetMemberNode;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptIndexEntry;
 import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedMappings;
-
-import bak.pcj.LongCollection;
-import bak.pcj.LongIterator;
-import bak.pcj.map.LongKeyMap;
-import bak.pcj.set.LongOpenHashSet;
-import bak.pcj.set.LongSet;
 
 /**
  * 
@@ -98,7 +97,7 @@ public class CollectReferencedComponentMapRunnable implements Runnable {
 			memberQuery = SnomedMappings.newQuery().and(memberQuery).active().matchAll();
 		}
 
-		final LongSet visitedIds = new LongOpenHashSet();
+		final LongSet visitedIds = PrimitiveCollections.newLongOpenHashSet();
 		final DocIdCollector docIdCollector = DocIdCollector.create(maxDoc);
 		IndexSearcher searcher = null;
 		ReferenceManager<IndexSearcher> manager = null;

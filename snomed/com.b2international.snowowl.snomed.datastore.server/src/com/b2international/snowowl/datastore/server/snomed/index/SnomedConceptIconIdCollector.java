@@ -24,12 +24,11 @@ import java.util.Map;
 import org.apache.lucene.index.AtomicReader;
 import org.apache.lucene.index.NumericDocValues;
 
-import bak.pcj.LongCollection;
-import bak.pcj.map.LongKeyLongMap;
-import bak.pcj.map.LongKeyLongMapIterator;
-import bak.pcj.map.LongKeyLongOpenHashMap;
-
+import com.b2international.commons.collections.primitive.LongCollection;
+import com.b2international.commons.collections.primitive.map.LongKeyLongMap;
+import com.b2international.commons.collections.primitive.map.LongKeyLongMapIterator;
 import com.b2international.commons.pcj.LongSets;
+import com.b2international.commons.pcj.PrimitiveCollections;
 import com.b2international.snowowl.datastore.index.AbstractDocsOutOfOrderCollector;
 import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedMappings;
 
@@ -51,7 +50,7 @@ public class SnomedConceptIconIdCollector extends AbstractDocsOutOfOrderCollecto
 	 */
 	public SnomedConceptIconIdCollector(final LongCollection conceptIds) {
 		this.conceptIds = checkNotNull(conceptIds, "Concept identifier collection may not be null.");
-		this.idIconIdMapping = new LongKeyLongOpenHashMap(LongSets.isEmpty(conceptIds) ? 1 : conceptIds.size());
+		this.idIconIdMapping = PrimitiveCollections.newLongKeyLongOpenHashMap(LongSets.isEmpty(conceptIds) ? 1 : conceptIds.size());
 	}
 
 	@Override
@@ -92,7 +91,7 @@ public class SnomedConceptIconIdCollector extends AbstractDocsOutOfOrderCollecto
 	public Map<String, String> getIdIconIdStringMapping() {
 		final Map<String, String> result = newHashMapWithExpectedSize(idIconIdMapping.size());
 
-		for (final LongKeyLongMapIterator itr = idIconIdMapping.entries(); itr.hasNext(); /**/) {
+		for (final LongKeyLongMapIterator itr = idIconIdMapping.mapIterator(); itr.hasNext(); /**/) {
 			itr.next();
 			result.put(Long.toString(itr.getKey()), Long.toString(itr.getValue()));
 		}

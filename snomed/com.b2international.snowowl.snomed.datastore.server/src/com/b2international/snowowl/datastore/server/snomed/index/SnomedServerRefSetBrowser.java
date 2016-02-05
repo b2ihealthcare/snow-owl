@@ -49,7 +49,12 @@ import org.apache.lucene.search.TotalHitCountCollector;
 import org.eclipse.core.runtime.IProgressMonitor;
 
 import com.b2international.commons.CompareUtils;
+import com.b2international.commons.collections.primitive.LongIterator;
+import com.b2international.commons.collections.primitive.list.LongList;
+import com.b2international.commons.collections.primitive.map.LongKeyMap;
+import com.b2international.commons.collections.primitive.set.LongSet;
 import com.b2international.commons.pcj.LongSets;
+import com.b2international.commons.pcj.PrimitiveCollections;
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.api.ExtendedComponent;
 import com.b2international.snowowl.core.api.ExtendedComponentImpl;
@@ -85,14 +90,6 @@ import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import com.google.common.primitives.Ints;
-
-import bak.pcj.LongIterator;
-import bak.pcj.list.LongArrayList;
-import bak.pcj.list.LongList;
-import bak.pcj.map.LongKeyMap;
-import bak.pcj.map.LongKeyOpenHashMap;
-import bak.pcj.set.LongOpenHashSet;
-import bak.pcj.set.LongSet;
 
 /**
  * Lucene based reference set browser implementation.
@@ -510,7 +507,7 @@ public class SnomedServerRefSetBrowser extends AbstractSnomedIndexBrowser<Snomed
 		final DocIdCollector collector = DocIdCollector.create(service.maxDoc(branchPath));
 		service.search(branchPath, query, collector);
 		
-		final LongSet storageKeys = new LongOpenHashSet();
+		final LongSet storageKeys = PrimitiveCollections.newLongOpenHashSet();
 
 		try {
 			final DocIdsIterator iterator = collector.getDocIDs().iterator();
@@ -706,7 +703,7 @@ public class SnomedServerRefSetBrowser extends AbstractSnomedIndexBrowser<Snomed
 						.matchAny())
 				.matchAll();
 		
-		final LongKeyMap refSetIdReferencedConceptIds = new LongKeyOpenHashMap();
+		final LongKeyMap refSetIdReferencedConceptIds = PrimitiveCollections.newLongKeyOpenHashMap();
 		
 		final DocIdCollector collector = DocIdCollector.create(service.maxDoc(branchPath));
 		service.search(branchPath, query, collector);
@@ -714,7 +711,7 @@ public class SnomedServerRefSetBrowser extends AbstractSnomedIndexBrowser<Snomed
 		try {
 			
 			final DocIdsIterator iterator = collector.getDocIDs().iterator();
-			final LongList docIds = new LongArrayList(collector.getDocIDs().size());
+			final LongList docIds = PrimitiveCollections.newLongArrayList(collector.getDocIDs().size());
 			
 			//calculate doc IDs for parallel lookup
 			while (iterator.next()) {
@@ -730,7 +727,7 @@ public class SnomedServerRefSetBrowser extends AbstractSnomedIndexBrowser<Snomed
 					final Document doc = service.document(branchPath, Ints.checkedCast(docId), REF_SET_MEMBERSHIP_FIELDS_TO_LOAD);
 					final long conceptId = SnomedMappings.id().getValue(doc);
 					
-					final LongSet refSetIds = new LongOpenHashSet(); 
+					final LongSet refSetIds = PrimitiveCollections.newLongOpenHashSet(); 
 				    refSetIds.addAll(SnomedMappings.conceptReferringRefSetId().getValueAsLongSet(doc));
 					refSetIds.addAll(SnomedMappings.conceptReferringMappingRefSetId().getValueAsLongSet(doc));
 					

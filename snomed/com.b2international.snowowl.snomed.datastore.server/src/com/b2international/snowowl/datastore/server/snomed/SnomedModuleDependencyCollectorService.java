@@ -46,11 +46,10 @@ import org.apache.lucene.search.Query;
 import org.eclipse.emf.cdo.view.CDOView;
 import org.slf4j.Logger;
 
-import bak.pcj.LongCollection;
-import bak.pcj.map.LongKeyLongMap;
-import bak.pcj.map.LongKeyLongOpenHashMap;
-import bak.pcj.map.LongKeyMapIterator;
-import bak.pcj.set.LongSet;
+import com.b2international.commons.collections.primitive.LongCollection;
+import com.b2international.commons.collections.primitive.map.LongKeyLongMap;
+import com.b2international.commons.collections.primitive.map.LongKeyMapIterator;
+import com.b2international.commons.collections.primitive.set.LongSet;
 
 import com.b2international.commons.pcj.LongSets.LongCollectionProcedure;
 import com.b2international.snowowl.core.api.IBranchPath;
@@ -191,7 +190,7 @@ public enum SnomedModuleDependencyCollectorService {
 		final DescriptionPropertyCollector collector = new DescriptionPropertyCollector(getUnpublishedStorageKeys());
 		getIndexServerService().search(getBranchPath(), SnomedMappings.newQuery().description().matchAll(), collector);
 		
-		for (final LongKeyMapIterator itr = collector.getMapping().entries(); itr.hasNext(); /**/) {
+		for (final LongKeyMapIterator itr = collector.getMapping().mapIterator(); itr.hasNext(); /**/) {
 			itr.next();
 			
 			final long[] properties = (long[]) itr.getValue();
@@ -210,7 +209,7 @@ public enum SnomedModuleDependencyCollectorService {
 		final RelationshipPropertyCollector collector = new RelationshipPropertyCollector(getUnpublishedStorageKeys());
 		getIndexServerService().search(getBranchPath(), SnomedMappings.newQuery().relationship().matchAll(), collector);
 		
-		for (final LongKeyMapIterator itr = collector.getMapping().entries(); itr.hasNext(); /**/) {
+		for (final LongKeyMapIterator itr = collector.getMapping().mapIterator(); itr.hasNext(); /**/) {
 			itr.next();
 			
 			final long[] properties = (long[]) itr.getValue();
@@ -251,9 +250,9 @@ public enum SnomedModuleDependencyCollectorService {
 		ComponentModuleCollector componentModuleCollector = new ComponentModuleCollector();
 		getIndexServerService().search(getBranchPath(), filteredQuery, componentModuleCollector);
 		
-		LongKeyLongOpenHashMap idToModuleMap = componentModuleCollector.getIdToModuleMap();
+		LongKeyLongMap idToModuleMap = componentModuleCollector.getIdToModuleMap();
 		
-		for (final LongKeyMapIterator itr = collector.getMapping().entries(); itr.hasNext(); /**/) {
+		for (final LongKeyMapIterator itr = collector.getMapping().mapIterator(); itr.hasNext(); /**/) {
 			itr.next();
 			
 			final long[] properties = (long[]) itr.getValue();

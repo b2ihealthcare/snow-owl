@@ -31,7 +31,9 @@ import org.apache.lucene.search.ReferenceManager;
 import org.apache.lucene.search.TopDocs;
 
 import com.b2international.commons.CompareUtils;
+import com.b2international.commons.collections.primitive.set.LongSet;
 import com.b2international.commons.graph.GraphUtils;
+import com.b2international.commons.pcj.PrimitiveCollections;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.api.index.IndexException;
 import com.b2international.snowowl.datastore.index.DocIdCollector;
@@ -42,9 +44,6 @@ import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedMappings
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Multimaps;
-
-import bak.pcj.set.LongOpenHashSet;
-import bak.pcj.set.LongSet;
 
 /**
  * Server-side terminology browser implementation for SNOMED CT which uses only the STATED relationships when computing parent-child relationships.
@@ -104,7 +103,7 @@ public class SnomedStatedServerTerminologyBrowser extends SnomedServerTerminolog
 		final TopDocs topDocs = service.search(branchPath, getConceptByIdQueryBuilder(String.valueOf(conceptId)), 1); // concept
 		
 		if (CompareUtils.isEmpty(topDocs.scoreDocs)) {
-			return new LongOpenHashSet();
+			return PrimitiveCollections.newLongOpenHashSet();
 		}
 		
 		final Set<String> fieldsToLoad = SnomedMappings.fieldsToLoad().statedParent().build();
@@ -118,7 +117,7 @@ public class SnomedStatedServerTerminologyBrowser extends SnomedServerTerminolog
 		final TopDocs topDocs = service.search(branchPath, getConceptByIdQueryBuilder(String.valueOf(conceptId)), 1); // concept
 		
 		if (CompareUtils.isEmpty(topDocs.scoreDocs)) {
-			return new LongOpenHashSet();
+			return PrimitiveCollections.newLongOpenHashSet();
 		}
 		
 		final Set<String> fieldsToLoad = SnomedMappings.fieldsToLoad().statedParent().statedAncestor().build(); // all parents

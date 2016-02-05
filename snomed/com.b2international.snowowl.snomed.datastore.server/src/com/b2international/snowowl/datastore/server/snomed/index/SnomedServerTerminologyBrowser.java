@@ -41,8 +41,12 @@ import org.apache.lucene.search.TopDocs;
 import org.eclipse.core.runtime.IProgressMonitor;
 
 import com.b2international.commons.CompareUtils;
+import com.b2international.commons.collections.primitive.LongCollection;
+import com.b2international.commons.collections.primitive.map.LongKeyLongMap;
+import com.b2international.commons.collections.primitive.set.LongSet;
 import com.b2international.commons.graph.GraphUtils;
 import com.b2international.commons.pcj.LongSets;
+import com.b2international.commons.pcj.PrimitiveCollections;
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.CoreTerminologyBroker;
 import com.b2international.snowowl.core.api.ExtendedComponent;
@@ -78,12 +82,6 @@ import com.google.common.collect.ImmutableList.Builder;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Multimaps;
-
-import bak.pcj.LongCollection;
-import bak.pcj.map.LongKeyLongMap;
-import bak.pcj.map.LongKeyLongOpenHashMap;
-import bak.pcj.set.LongOpenHashSet;
-import bak.pcj.set.LongSet;
 
 /**
  * Index-based SNOMED CT Terminology browser implementation.
@@ -340,7 +338,7 @@ public class SnomedServerTerminologyBrowser extends AbstractIndexTerminologyBrow
 		final TopDocs topDocs = service.search(branchPath, getConceptByIdQueryBuilder(Long.toString(conceptId)), 1);
 		
 		if (CompareUtils.isEmpty(topDocs.scoreDocs)) {
-			return new LongOpenHashSet();
+			return PrimitiveCollections.newLongOpenHashSet();
 		}
 		
 		final Document document = service.document(branchPath, topDocs.scoreDocs[0].doc, SnomedMappings.fieldsToLoad().parent().build());
@@ -352,7 +350,7 @@ public class SnomedServerTerminologyBrowser extends AbstractIndexTerminologyBrow
 		final TopDocs topDocs = service.search(branchPath, getConceptByIdQueryBuilder(Long.toString(conceptId)), 1);
 		
 		if (CompareUtils.isEmpty(topDocs.scoreDocs)) {
-			return new LongOpenHashSet();
+			return PrimitiveCollections.newLongOpenHashSet();
 		}
 		
 		final Document doc = service.document(branchPath, topDocs.scoreDocs[0].doc, SnomedMappings.fieldsToLoad().parent().ancestor().build());
@@ -381,10 +379,10 @@ public class SnomedServerTerminologyBrowser extends AbstractIndexTerminologyBrow
 			final int resultSize = service.getTotalHitCount(branchPath, query);
 			
 			if (0 == resultSize) {
-				return new LongOpenHashSet(); // guard against lower bound cannot be negative: 0
+				return PrimitiveCollections.newLongOpenHashSet(); // guard against lower bound cannot be negative: 0
 			}
 			
-			final LongSet ids = new LongOpenHashSet(resultSize, 1.0D); //optimized load factor
+			final LongSet ids = PrimitiveCollections.newLongOpenHashSet(resultSize, 1.0D); //optimized load factor
 	
 			final DocIdCollector collector = DocIdCollector.create(service.maxDoc(branchPath));
 			service.search(branchPath, query, collector);
@@ -556,10 +554,10 @@ public class SnomedServerTerminologyBrowser extends AbstractIndexTerminologyBrow
 		final long[][] idPairs = getAllActiveConceptIdsStorageKeys(branchPath);
 		
 		if (CompareUtils.isEmpty(idPairs)) {
-			return new LongKeyLongOpenHashMap();
+			return PrimitiveCollections.newLongKeyLongOpenHashMap();
 		}
 		
-		final LongKeyLongOpenHashMap $ = new LongKeyLongOpenHashMap(idPairs.length);
+		final LongKeyLongMap $ = PrimitiveCollections.newLongKeyLongOpenHashMap(idPairs.length);
 		for (int i = 0; i < idPairs.length; i++) {
 			$.put(idPairs[i][0], idPairs[i][1]);
 		}

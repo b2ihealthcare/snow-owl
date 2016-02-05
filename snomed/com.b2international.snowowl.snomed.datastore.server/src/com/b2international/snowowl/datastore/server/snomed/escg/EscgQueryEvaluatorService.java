@@ -31,7 +31,7 @@ import com.b2international.snowowl.snomed.datastore.escg.IndexQueryQueryEvaluato
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptIndexEntry;
 import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedMappings;
 
-import bak.pcj.LongCollection;
+import com.b2international.commons.collections.primitive.LongCollection;
 
 public class EscgQueryEvaluatorService implements IEscgQueryEvaluatorService, Serializable {
 

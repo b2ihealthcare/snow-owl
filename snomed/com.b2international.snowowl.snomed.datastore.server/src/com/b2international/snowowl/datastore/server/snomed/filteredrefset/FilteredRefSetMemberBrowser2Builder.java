@@ -25,21 +25,18 @@ import java.util.concurrent.atomic.AtomicReference;
 
 import org.apache.lucene.search.Query;
 
-import bak.pcj.IntIterator;
-import bak.pcj.LongCollection;
-import bak.pcj.LongIterator;
-import bak.pcj.map.IntKeyMap;
-import bak.pcj.map.IntKeyOpenHashMap;
-import bak.pcj.map.LongKeyMap;
-import bak.pcj.map.LongKeyOpenHashMap;
-import bak.pcj.set.IntOpenHashSet;
-import bak.pcj.set.IntSet;
-import bak.pcj.set.LongSet;
-
 import com.b2international.commons.StopWatch;
 import com.b2international.commons.StringUtils;
 import com.b2international.commons.arrays.BidiMapWithInternalId;
+import com.b2international.commons.collections.primitive.IntIterator;
+import com.b2international.commons.collections.primitive.LongCollection;
+import com.b2international.commons.collections.primitive.LongIterator;
+import com.b2international.commons.collections.primitive.map.IntKeyMap;
+import com.b2international.commons.collections.primitive.map.LongKeyMap;
+import com.b2international.commons.collections.primitive.set.IntSet;
+import com.b2international.commons.collections.primitive.set.LongSet;
 import com.b2international.commons.concurrent.equinox.ForkJoinUtils;
+import com.b2international.commons.pcj.PrimitiveCollections;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.datastore.server.index.IndexServerService;
 import com.b2international.snowowl.datastore.server.snomed.index.SnomedServerTerminologyBrowser;
@@ -151,7 +148,7 @@ public class FilteredRefSetMemberBrowser2Builder {
 		}
 
 		final BidiMapWithInternalId<IRefSetMemberNode, IRefSetMemberNode> refSetMemberNodes = new BidiMapWithInternalId<IRefSetMemberNode, IRefSetMemberNode>(EXPECTED_REFERENCE_SET_SIZE);
-		final LongKeyMap referencedComponentToNodeMap = new LongKeyOpenHashMap(EXPECTED_REFERENCE_SET_SIZE);
+		final LongKeyMap referencedComponentToNodeMap = PrimitiveCollections.newLongKeyOpenHashMap(EXPECTED_REFERENCE_SET_SIZE);
 		
 		final Runnable collectReferencedComponentMapRunnable = new CollectReferencedComponentMapRunnable(maxDoc, 
 				filteredMemberConceptIds.get(), 
@@ -184,8 +181,8 @@ public class FilteredRefSetMemberBrowser2Builder {
 			final BidiMapWithInternalId<IRefSetMemberNode, IRefSetMemberNode> refSetMemberNodes, 
 			final LongKeyMap referencedComponentToNodeMap) {
 		
-		final IntKeyMap subTypeMap = new IntKeyOpenHashMap(refSetMemberNodes.size());
-		final IntKeyMap superTypeMap = new IntKeyOpenHashMap(refSetMemberNodes.size());
+		final IntKeyMap subTypeMap = PrimitiveCollections.newIntKeyOpenHashMap(refSetMemberNodes.size());
+		final IntKeyMap superTypeMap = PrimitiveCollections.newIntKeyOpenHashMap(refSetMemberNodes.size());
 
 		addTopLevels(hierarchy,
 				refSetMemberNodes,
@@ -283,7 +280,7 @@ public class FilteredRefSetMemberBrowser2Builder {
 		IntSet values = (IntSet) map.get(key);
 
 		if (values == null) {
-			values = new IntOpenHashSet();
+			values = PrimitiveCollections.newIntOpenHashSet();
 			map.put(key, values);
 		}
 		

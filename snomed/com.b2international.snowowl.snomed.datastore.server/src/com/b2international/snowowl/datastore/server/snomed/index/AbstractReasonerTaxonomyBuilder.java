@@ -21,21 +21,16 @@ import java.util.BitSet;
 import java.util.Collection;
 import java.util.Collections;
 
-import bak.pcj.IntIterator;
-import bak.pcj.list.LongArrayList;
-import bak.pcj.list.LongList;
-import bak.pcj.map.LongKeyIntMap;
-import bak.pcj.map.LongKeyIntOpenHashMap;
-import bak.pcj.map.LongKeyLongMap;
-import bak.pcj.map.LongKeyLongOpenHashMap;
-import bak.pcj.map.LongKeyMap;
-import bak.pcj.map.LongKeyOpenHashMap;
-import bak.pcj.set.LongOpenHashSet;
-import bak.pcj.set.LongSet;
-
 import com.b2international.commons.CompareUtils;
+import com.b2international.commons.collections.primitive.IntIterator;
+import com.b2international.commons.collections.primitive.list.LongList;
+import com.b2international.commons.collections.primitive.map.LongKeyIntMap;
+import com.b2international.commons.collections.primitive.map.LongKeyLongMap;
+import com.b2international.commons.collections.primitive.map.LongKeyMap;
+import com.b2international.commons.collections.primitive.set.LongSet;
 import com.b2international.commons.pcj.ArrayIntIterator;
 import com.b2international.commons.pcj.BitSetIntIterator;
+import com.b2international.commons.pcj.PrimitiveCollections;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.datastore.ConcreteDomainFragment;
 import com.b2international.snowowl.snomed.datastore.StatementFragment;
@@ -114,15 +109,15 @@ public abstract class AbstractReasonerTaxonomyBuilder {
 		this.superTypes = null; 
 		this.subTypes = null;
 		
-		this.exhaustiveConceptIds = (LongOpenHashSet) ((LongOpenHashSet) source.exhaustiveConceptIds).clone();
-		this.fullyDefinedConceptIds = (LongOpenHashSet) ((LongOpenHashSet) source.fullyDefinedConceptIds).clone();
-		this.conceptIdToStatements = (LongKeyOpenHashMap) ((LongKeyOpenHashMap) source.conceptIdToStatements).clone();
-		this.conceptIdToConcreteDomain = (LongKeyOpenHashMap) ((LongKeyOpenHashMap) source.conceptIdToConcreteDomain).clone();
-		this.statementIdToConcreteDomain = (LongKeyOpenHashMap) ((LongKeyOpenHashMap) source.statementIdToConcreteDomain).clone();
-		this.internalIdToconceptId = (LongArrayList) ((LongArrayList) source.internalIdToconceptId).clone();
-		this.conceptIdToInternalId = (LongKeyIntOpenHashMap) ((LongKeyIntOpenHashMap) source.conceptIdToInternalId).clone();
+		this.exhaustiveConceptIds = source.exhaustiveConceptIds.dup();
+		this.fullyDefinedConceptIds = source.fullyDefinedConceptIds.dup();
+		this.conceptIdToStatements = source.conceptIdToStatements.dup();
+		this.conceptIdToConcreteDomain = source.conceptIdToConcreteDomain.dup();
+		this.statementIdToConcreteDomain = source.statementIdToConcreteDomain.dup();
+		this.internalIdToconceptId = source.internalIdToconceptId.dup();
+		this.conceptIdToInternalId = source.conceptIdToInternalId.dup();
 		
-		this.componentStorageKeyToConceptId = (LongKeyLongOpenHashMap) ((LongKeyLongOpenHashMap) source.componentStorageKeyToConceptId).clone();
+		this.componentStorageKeyToConceptId = source.componentStorageKeyToConceptId.dup();
 	}
 	
 	protected boolean isReasonerMode() {
@@ -237,7 +232,7 @@ public abstract class AbstractReasonerTaxonomyBuilder {
 	public LongSet getSubTypeIds(final long conceptId) {
 
 		if (!isActive(conceptId)) {
-			return new LongOpenHashSet();
+			return PrimitiveCollections.newLongOpenHashSet();
 		}
 
 		final int id = getInternalId(conceptId);
@@ -245,7 +240,7 @@ public abstract class AbstractReasonerTaxonomyBuilder {
 		final int[] subtypes = subTypes[id];
 
 		if (CompareUtils.isEmpty(subtypes)) { //guard against lower bound cannot be negative: 0
-			return new LongOpenHashSet();
+			return PrimitiveCollections.newLongOpenHashSet();
 		}
 
 		return convertToConceptIds(new ArrayIntIterator(subtypes));
@@ -259,7 +254,7 @@ public abstract class AbstractReasonerTaxonomyBuilder {
 	public LongSet getSuperTypeIds(final long conceptId) {
 
 		if (!isActive(conceptId)) {
-			return new LongOpenHashSet();
+			return PrimitiveCollections.newLongOpenHashSet();
 		}
 
 		final int id = getInternalId(conceptId);
@@ -267,7 +262,7 @@ public abstract class AbstractReasonerTaxonomyBuilder {
 		final int[] supertypes = superTypes[id];
 
 		if (CompareUtils.isEmpty(supertypes)) { //guard against lower bound cannot be negative: 0
-			return new LongOpenHashSet();
+			return PrimitiveCollections.newLongOpenHashSet();
 		}
 
 		return convertToConceptIds(new ArrayIntIterator(supertypes));
@@ -281,7 +276,7 @@ public abstract class AbstractReasonerTaxonomyBuilder {
 	public LongSet getAllSubTypesIds(final long conceptId) {
 
 		if (!isActive(conceptId)) {
-			return new LongOpenHashSet();
+			return PrimitiveCollections.newLongOpenHashSet();
 		}
 
 		final int conceptCount = internalIdToconceptId.size();
@@ -301,7 +296,7 @@ public abstract class AbstractReasonerTaxonomyBuilder {
 	public LongSet getAllSuperTypeIds(final long conceptId) {
 
 		if (!isActive(conceptId)) {
-			return new LongOpenHashSet();
+			return PrimitiveCollections.newLongOpenHashSet();
 		}
 
 		final int conceptCount = internalIdToconceptId.size();
@@ -349,7 +344,7 @@ public abstract class AbstractReasonerTaxonomyBuilder {
 	}
 
 	private LongSet convertToConceptIds(final IntIterator it) {
-		final LongSet result = new LongOpenHashSet();
+		final LongSet result = PrimitiveCollections.newLongOpenHashSet();
 
 		while (it.hasNext()) {
 			result.add(getConceptId(it.next()));

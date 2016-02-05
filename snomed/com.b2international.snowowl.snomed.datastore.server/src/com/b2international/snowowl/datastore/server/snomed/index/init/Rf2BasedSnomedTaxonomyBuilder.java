@@ -25,11 +25,11 @@ import java.io.Reader;
 import java.text.MessageFormat;
 import java.util.List;
 
-import bak.pcj.map.LongKeyMap;
-
 import com.b2international.commons.arrays.Arrays2;
 import com.b2international.commons.arrays.LongBidiMapWithInternalId;
+import com.b2international.commons.collections.primitive.map.LongKeyMap;
 import com.b2international.commons.csv.CsvLexer.EOL;
+import com.b2international.commons.pcj.PrimitiveCollections;
 import com.b2international.commons.csv.CsvParser;
 import com.b2international.commons.csv.CsvSettings;
 import com.b2international.commons.csv.RecordParserCallback;
@@ -37,7 +37,6 @@ import com.b2international.snowowl.core.api.SnowowlRuntimeException;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.datastore.IsAStatementWithId;
 import com.b2international.snowowl.snomed.datastore.SnomedTaxonomyBuilderMode;
-import com.b2international.snowowl.snomed.datastore.index.StatementMap;
 import com.b2international.snowowl.snomed.datastore.taxonomy.AbstractSnomedTaxonomyBuilder;
 import com.google.common.base.Preconditions;
 
@@ -75,7 +74,7 @@ public class Rf2BasedSnomedTaxonomyBuilder extends AbstractSnomedTaxonomyBuilder
 		
 		final Rf2BasedSnomedTaxonomyBuilder $ = new Rf2BasedSnomedTaxonomyBuilder(mode, characteristicTypeId);
 		$.nodes = new LongBidiMapWithInternalId(builder.getNodes());
-		$.edges = (StatementMap) ((StatementMap) builder.getEdges()).clone();
+		$.edges = builder.getEdges().dup();
 		$.setDirty(builder.isDirty());
 		$.descendants = Arrays2.copy(builder.getDescendants());
 		$.ancestors = Arrays2.copy(builder.getAncestors());
@@ -92,7 +91,7 @@ public class Rf2BasedSnomedTaxonomyBuilder extends AbstractSnomedTaxonomyBuilder
 	 * Map for storing active IS_A type SNOMED CT relationship representations. Keys are the unique relationship identifiers.
 	 * <br>For values see: {@link IsAStatementWithId}.
 	 */
-	private LongKeyMap edges;
+	private LongKeyMap<long[]> edges;
 	private SnomedTaxonomyBuilderMode mode;
 	private String characteristicTypeId;
 	
@@ -100,7 +99,7 @@ public class Rf2BasedSnomedTaxonomyBuilder extends AbstractSnomedTaxonomyBuilder
 		this.mode = mode;
 		this.characteristicTypeId = characteristicTypeId;
 		this.nodes = new LongBidiMapWithInternalId(EXPECTED_SIZE);
-		this.edges = new StatementMap();
+		this.edges = PrimitiveCollections.newLongKeyOpenHashMap();
 	}
 
 	@Override

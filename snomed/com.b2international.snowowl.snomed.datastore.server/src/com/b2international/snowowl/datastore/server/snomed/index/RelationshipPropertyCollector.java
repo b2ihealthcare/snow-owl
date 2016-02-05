@@ -25,7 +25,7 @@ import org.apache.lucene.index.NumericDocValues;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedMappings;
 
-import bak.pcj.LongCollection;
+import com.b2international.commons.collections.primitive.LongCollection;
 
 /**
  * Class for collecting SNOMED CT relationship properties.

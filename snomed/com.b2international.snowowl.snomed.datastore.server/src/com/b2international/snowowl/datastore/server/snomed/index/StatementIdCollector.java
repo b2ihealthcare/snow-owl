@@ -20,11 +20,10 @@ import java.io.IOException;
 import org.apache.lucene.index.AtomicReader;
 import org.apache.lucene.index.NumericDocValues;
 
+import com.b2international.commons.collections.primitive.set.LongSet;
+import com.b2international.commons.pcj.PrimitiveCollections;
 import com.b2international.snowowl.datastore.index.AbstractDocsOutOfOrderCollector;
 import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedMappings;
-
-import bak.pcj.set.LongOpenHashSet;
-import bak.pcj.set.LongSet;
 
 /**
  * Collector for gathering all source, type and destination concept IDs referenced in matching SNOMED CT relationships.
@@ -55,7 +54,7 @@ public class StatementIdCollector extends AbstractDocsOutOfOrderCollector {
 	 * @param expectedSize the expected number of collected identifiers, or <= 0 if the built-in default should be used
 	 */
 	public StatementIdCollector(final int expectedSize) {
-		this.ids = (0 > expectedSize) ? new LongOpenHashSet(expectedSize) : new LongOpenHashSet();
+		this.ids = (0 > expectedSize) ? PrimitiveCollections.newLongOpenHashSet(expectedSize) : PrimitiveCollections.newLongOpenHashSet();
 	}
 
 	@Override
