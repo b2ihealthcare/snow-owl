@@ -54,11 +54,10 @@ import org.apache.lucene.util.BytesRef;
 import org.apache.lucene.util.Constants;
 import org.apache.lucene.util.NumericUtils;
 
-import bak.pcj.list.LongArrayList;
-
 import com.b2international.commons.CompareUtils;
 import com.b2international.commons.StringUtils;
 import com.b2international.commons.pcj.LongSets;
+import com.b2international.commons.pcj.PrimitiveCollections;
 import com.b2international.snowowl.core.TextConstants;
 import com.b2international.snowowl.core.api.index.CommonIndexConstants;
 import com.b2international.snowowl.core.api.index.IndexException;
@@ -415,7 +414,7 @@ public abstract class IndexUtils {
 			ids[i++] = itr.getDocID();
 		}
 
-		parallelForEach(new LongArrayList(ids), new LongSets.LongCollectionProcedure() {
+		parallelForEach(PrimitiveCollections.newLongArrayList(ids), new LongSets.LongCollectionProcedure() {
 			@Override
 			public void apply(final long docId) {
 				try {

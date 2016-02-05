@@ -19,12 +19,10 @@ import java.io.Serializable;
 
 import org.eclipse.emf.cdo.common.id.CDOID;
 
-import bak.pcj.set.LongOpenHashSet;
-import bak.pcj.set.LongSet;
-import bak.pcj.set.UnmodifiableLongSet;
-
+import com.b2international.commons.collections.primitive.set.LongSet;
 import com.b2international.commons.pcj.LongCollections;
 import com.b2international.commons.pcj.LongSets;
+import com.b2international.commons.pcj.PrimitiveCollections;
 import com.google.common.base.Preconditions;
 
 /**
@@ -70,10 +68,10 @@ public interface IChangedComponentCDOIDs extends Serializable {
 			return new IChangedComponentCDOIDs() {
 				private static final long serialVersionUID = 6133179031856682715L;
 				@Override public LongSet getRelatedCdoIds() {
-					final LongSet $ = new LongOpenHashSet();
+					final LongSet $ = PrimitiveCollections.newLongOpenHashSet();
 					$.addAll(relatedCdoIds);
 					$.add(cdoId);
-					return new UnmodifiableLongSet($); 
+					return PrimitiveCollections.newUnmodifiableLongSet($); 
 				}
 				@Override public long getCdoId() { return cdoId; }
 			};

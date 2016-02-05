@@ -20,10 +20,8 @@ import java.io.Reader;
 import org.apache.lucene.analysis.util.CharTokenizer;
 import org.apache.lucene.util.Version;
 
-import bak.pcj.set.IntOpenHashSet;
-import bak.pcj.set.IntSet;
-import bak.pcj.set.UnmodifiableIntSet;
-
+import com.b2international.commons.collections.primitive.set.IntSet;
+import com.b2international.commons.pcj.PrimitiveCollections;
 import com.b2international.snowowl.core.TextConstants;
 
 /**
@@ -46,7 +44,7 @@ public class DelimiterTokenizer extends CharTokenizer {
 	
 	static {
 		
-		final IntSet set = new IntOpenHashSet();
+		final IntSet set = PrimitiveCollections.newIntOpenHashSet();
 		
 		char[] charArray = TextConstants.DELIMITERS.toCharArray();
 		for (int i = 0; i < charArray.length; i++) {
@@ -72,7 +70,7 @@ public class DelimiterTokenizer extends CharTokenizer {
 		
 		set.trimToSize();
 		
-		TOKEN_CHARS = new UnmodifiableIntSet(set);
+		TOKEN_CHARS = PrimitiveCollections.newUnmodifiableIntSet(set);
 		
 	}
 	

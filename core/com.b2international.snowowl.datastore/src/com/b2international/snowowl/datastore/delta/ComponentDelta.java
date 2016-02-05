@@ -32,7 +32,7 @@ import com.b2international.snowowl.core.api.component.TerminologyComponentIdProv
 import com.google.common.base.Objects;
 import com.google.common.base.Preconditions;
 
-import bak.pcj.set.LongSet;
+import com.b2international.commons.collections.primitive.set.LongSet;
 
 /**
  * Abstract representation of a component modification.

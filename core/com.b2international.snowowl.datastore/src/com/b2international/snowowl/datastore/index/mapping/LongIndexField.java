@@ -24,11 +24,10 @@ import org.apache.lucene.search.SortField.Type;
 import org.apache.lucene.util.BytesRef;
 import org.apache.lucene.util.NumericUtils;
 
-import bak.pcj.LongCollection;
-import bak.pcj.list.LongArrayList;
-import bak.pcj.list.LongList;
-import bak.pcj.set.LongOpenHashSet;
-import bak.pcj.set.LongSet;
+import com.b2international.commons.collections.primitive.LongCollection;
+import com.b2international.commons.collections.primitive.list.LongList;
+import com.b2international.commons.collections.primitive.set.LongSet;
+import com.b2international.commons.pcj.PrimitiveCollections;
 
 /**
  * @since 4.3
@@ -68,7 +67,7 @@ public class LongIndexField extends IndexFieldBase<Long> implements LongCollecti
 	@Override
 	public final LongSet getValueAsLongSet(Document doc) {
 		final IndexableField[] fields = getFields(doc);
-		final LongSet longIds = new LongOpenHashSet(fields.length + 1);
+		final LongSet longIds = PrimitiveCollections.newLongOpenHashSet(fields.length + 1);
 		addIdsToLongCollection(fields, longIds);
 		return longIds;
 	}
@@ -76,7 +75,7 @@ public class LongIndexField extends IndexFieldBase<Long> implements LongCollecti
 	@Override
 	public final LongList getValueAsLongList(Document doc) {
 		final IndexableField[] fields = getFields(doc);
-		final LongList longIds = new LongArrayList(fields.length + 1);
+		final LongList longIds = PrimitiveCollections.newLongArrayList(fields.length + 1);
 		addIdsToLongCollection(fields, longIds);
 		return longIds;
 	}

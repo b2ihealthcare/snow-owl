@@ -15,7 +15,7 @@
  */
 package com.b2international.snowowl.datastore.version;
 
-import bak.pcj.set.LongSet;
+import com.b2international.commons.collections.primitive.set.LongSet;
 
 import com.b2international.snowowl.core.api.IBranchPath;
 

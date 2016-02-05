@@ -27,8 +27,8 @@ import org.eclipse.emf.cdo.common.id.CDOID;
 import org.eclipse.emf.cdo.common.id.CDOIDUtil;
 import org.eclipse.emf.cdo.common.revision.CDOIDAndVersion;
 
-import bak.pcj.LongCollection;
-import bak.pcj.LongIterator;
+import com.b2international.commons.collections.primitive.LongCollection;
+import com.b2international.commons.collections.primitive.LongIterator;
 
 import com.b2international.commons.pcj.LongSets.InverseLongFunction;
 import com.google.common.base.Function;

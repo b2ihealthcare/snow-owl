@@ -19,7 +19,7 @@ import static com.b2international.commons.pcj.LongCollections.emptySet;
 
 import org.eclipse.emf.ecore.EPackage;
 
-import bak.pcj.set.LongSet;
+import com.b2international.commons.collections.primitive.set.LongSet;
 
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.datastore.delta.HierarchicalComponentDelta;
