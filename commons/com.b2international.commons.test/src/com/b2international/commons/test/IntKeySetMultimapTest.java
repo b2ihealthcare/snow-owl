@@ -23,36 +23,34 @@ import java.util.Set;
 
 import org.junit.Test;
 
-import bak.pcj.map.IntKeyMapIterator;
-
+import com.b2international.commons.collections.primitive.map.IntKeyMapIterator;
 import com.b2international.commons.pcj.IntKeySetMultimap;
 
 /**
  * Test for {@link IntKeySetMultimap}.
- *
  */
 public class IntKeySetMultimapTest {
 
 	@Test(expected = NullPointerException.class)
 	public void putNullValueTest() {
-		new IntKeySetMultimap<>(Object.class).put(0, null);
+		new IntKeySetMultimap<>().put(0, null);
 	}
 	
 	@Test(expected = IllegalArgumentException.class)
 	public void putInvalidValueTest() {
-		new IntKeySetMultimap<>(String.class).put(0, Integer.valueOf(111));
+		new IntKeySetMultimap<>().put(0, Integer.valueOf(111));
 	}
 	
 	@Test
 	public void putValidValueTest() {
-		new IntKeySetMultimap<>(Object.class).put(0, Integer.valueOf(111));
-		new IntKeySetMultimap<>(Number.class).put(0, Integer.valueOf(111));
-		new IntKeySetMultimap<>(Integer.class).put(0, Integer.valueOf(111));
+		new IntKeySetMultimap<>().put(0, Integer.valueOf(111));
+		new IntKeySetMultimap<>().put(0, Integer.valueOf(111));
+		new IntKeySetMultimap<>().put(0, Integer.valueOf(111));
 	}
 	
 	@Test
 	public void putAndCheckDistinctValues() {
-		final IntKeySetMultimap<String> multimap = new IntKeySetMultimap<>(String.class);
+		final IntKeySetMultimap<String> multimap = new IntKeySetMultimap<>();
 		multimap.put(1, "One_1");
 		multimap.put(2, "Two_1");
 		multimap.put(2, "Two_2");
@@ -69,20 +67,20 @@ public class IntKeySetMultimapTest {
 	
 	@Test
 	public void checkNotExistingValues() {
-		final IntKeySetMultimap<String> multimap = new IntKeySetMultimap<>(String.class);
+		final IntKeySetMultimap<String> multimap = new IntKeySetMultimap<>();
 		assertTrue(multimap.get(-1) instanceof Set);
 	}
 	
 	@Test(expected = UnsupportedOperationException.class)
 	public void checkViewOfValues() {
-		final IntKeySetMultimap<String> multimap = new IntKeySetMultimap<>(String.class);
+		final IntKeySetMultimap<String> multimap = new IntKeySetMultimap<>();
 		multimap.put(1, "One_1");
 		multimap.get(1).add("Must fail");
 	}
 	
 	@Test
 	public void putAndCheckValues() {
-		final IntKeySetMultimap<String> multimap = new IntKeySetMultimap<>(String.class);
+		final IntKeySetMultimap<String> multimap = new IntKeySetMultimap<>();
 		multimap.put(1, "One_1");
 		multimap.put(2, "Two_1");
 		multimap.put(2, "Two_2");
@@ -97,7 +95,7 @@ public class IntKeySetMultimapTest {
 	
 	@Test
 	public void putAndCheckFlatValues() {
-		final IntKeySetMultimap<String> multimap = new IntKeySetMultimap<>(String.class);
+		final IntKeySetMultimap<String> multimap = new IntKeySetMultimap<>();
 		multimap.put(1, "One_1");
 		multimap.put(2, "Two_1");
 		multimap.put(2, "Two_2");
@@ -112,7 +110,7 @@ public class IntKeySetMultimapTest {
 	
 	@Test
 	public void putAndCheckSize() {
-		final IntKeySetMultimap<String> multimap = new IntKeySetMultimap<>(String.class);
+		final IntKeySetMultimap<String> multimap = new IntKeySetMultimap<>();
 		multimap.put(1, "One_1");
 		multimap.put(2, "Two_1");
 		multimap.put(2, "Two_2");
@@ -127,7 +125,7 @@ public class IntKeySetMultimapTest {
 	
 	@Test
 	public void putAndCheckIterator() {
-		final IntKeySetMultimap<String> multimap = new IntKeySetMultimap<>(String.class);
+		final IntKeySetMultimap<String> multimap = new IntKeySetMultimap<>();
 		multimap.put(1, "One_1");
 		multimap.put(2, "Two_1");
 		multimap.put(2, "Two_2");
@@ -137,9 +135,9 @@ public class IntKeySetMultimapTest {
 		multimap.put(3, "Three_1");
 		multimap.put(3, "Three_2");
 		multimap.put(3, "Three_3");
-		for (IntKeyMapIterator itr = multimap.entries(); itr.hasNext(); /**/) {
+		for (IntKeyMapIterator<Set<String>> itr = multimap.mapIterator(); itr.hasNext(); /**/) {
 			itr.next();
-			assertTrue(itr.getValue() instanceof Set);
+			itr.getValue();
 			itr.remove();
 		}
 		assertTrue(multimap.size() == 0);
