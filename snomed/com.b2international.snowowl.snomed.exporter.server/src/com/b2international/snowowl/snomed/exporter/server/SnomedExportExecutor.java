@@ -32,7 +32,7 @@ import java.nio.charset.Charset;
 import java.util.Collection;
 import java.util.Set;
 
-import bak.pcj.map.LongKeyLongMap;
+import com.b2international.commons.collections.primitive.map.LongKeyLongMap;
 
 import com.b2international.snowowl.core.api.SnowowlRuntimeException;
 import com.b2international.snowowl.snomed.datastore.services.ISnomedComponentService;

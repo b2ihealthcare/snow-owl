@@ -55,7 +55,7 @@ import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 
-import bak.pcj.set.LongSet;
+import com.b2international.commons.collections.primitive.set.LongSet;
 
 /**
  * Exporter class to export simple type reference sets to Excel format where the 
