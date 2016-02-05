@@ -664,7 +664,7 @@ public class SnomedRefSetMemberIndexEntry extends SnomedIndexEntry implements IC
 	}
 
 	private <T> T getField(final String fieldName, Function<Object, T> transformFunction) {
-		return getOptionalField(fieldName).transform(transformFunction).get();
+		return getOptionalField(fieldName).transform(transformFunction).orNull();
 	}
 
 	/**
@@ -777,7 +777,7 @@ public class SnomedRefSetMemberIndexEntry extends SnomedIndexEntry implements IC
 	}
 	
 	public String getCorrelationId() {
-		return StringUtils.valueOfOrEmptyString(getLongField(SnomedMappings.memberCorrelationId().fieldName()));
+		return getStringField(SnomedMappings.memberCorrelationId().fieldName());
 	}
 
 	public String getMapTargetDescription() {
