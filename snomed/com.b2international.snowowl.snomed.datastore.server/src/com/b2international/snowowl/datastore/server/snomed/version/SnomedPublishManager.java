@@ -25,6 +25,7 @@ import org.eclipse.emf.ecore.EStructuralFeature;
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.datastore.CDOEditingContext;
+import com.b2international.snowowl.datastore.cdo.CDOUtils;
 import com.b2international.snowowl.datastore.server.snomed.SnomedModuleDependencyCollectorService;
 import com.b2international.snowowl.datastore.server.version.PublishManager;
 import com.b2international.snowowl.snomed.SnomedFactory;
@@ -183,7 +184,11 @@ public class SnomedPublishManager extends PublishManager {
 
 	/**Updates all new module dependency reference set members.*/
 	private void adjustNewModuleDependencyRefSetMembers() {
-		for (final SnomedModuleDependencyRefSetMember member : newModuleDependencyRefSetMembers) {
+		for (SnomedModuleDependencyRefSetMember member : newModuleDependencyRefSetMembers) {
+			
+			if (member.cdoView().isClosed())
+				member = CDOUtils.getObjectIfExists(getTransaction(), member.cdoID());
+
 			adjustRelased(member);
 			adjustEffectiveTime(member);
 			processNewModuleDependencyMember(member);
