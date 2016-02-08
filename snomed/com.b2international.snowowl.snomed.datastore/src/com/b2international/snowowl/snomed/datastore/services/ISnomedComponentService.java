@@ -220,6 +220,7 @@ public interface ISnomedComponentService {
 	* @param branchPath the branch path.
 	* @param conceptId the concept IDs.
 	* @return a map concept concept IDs and associated image concept IDs.
+	* @deprecated - will be removed in 4.7
 	*/
 	@Nullable String[] getIconId(final IBranchPath branchPath, final String... conceptId);
 	
