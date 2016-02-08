@@ -17,13 +17,13 @@ package com.b2international.snowowl.snomed.datastore.request;
 
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.events.Request;
-import com.b2international.snowowl.datastore.request.BaseBranchRequestBuilder;
+import com.b2international.snowowl.datastore.request.BaseIndexReadRequestBuilder;
 import com.b2international.snowowl.snomed.core.domain.refset.QueryRefSetMemberEvaluations;
 
 /**
  * @since 4.5
  */
-public final class QueryRefSetEvaluationRequestBuilder extends BaseBranchRequestBuilder<QueryRefSetEvaluationRequestBuilder, QueryRefSetMemberEvaluations> {
+public final class QueryRefSetEvaluationRequestBuilder extends BaseIndexReadRequestBuilder<QueryRefSetEvaluationRequestBuilder, QueryRefSetMemberEvaluations> {
 
 	private String referenceSetId;
 

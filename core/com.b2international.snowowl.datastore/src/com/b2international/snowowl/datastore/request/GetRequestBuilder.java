@@ -28,7 +28,7 @@ import com.b2international.snowowl.core.events.Request;
 /**
  * @since 4.5
  */
-public abstract class GetRequestBuilder<B extends GetRequestBuilder<B, R>, R> extends BaseBranchRequestBuilder<B, R> {
+public abstract class GetRequestBuilder<B extends GetRequestBuilder<B, R>, R> extends BaseIndexReadRequestBuilder<B, R> {
 
 	private String componentId;
 	private Options expand = OptionsBuilder.newBuilder().build();
@@ -55,11 +55,6 @@ public abstract class GetRequestBuilder<B extends GetRequestBuilder<B, R>, R> ex
 			this.locales = locales;
 		}
 		return getSelf();
-	}
-	
-	@Override
-	protected final Request<BranchContext, R> wrap(Request<BranchContext, R> req) {
-		return new IndexReadRequest<>(req);
 	}
 	
 	@Override

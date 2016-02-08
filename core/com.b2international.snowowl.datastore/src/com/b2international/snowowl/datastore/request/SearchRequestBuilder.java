@@ -32,7 +32,7 @@ import com.google.common.base.Strings;
 /**
  * @since 4.5
  */
-public abstract class SearchRequestBuilder<B extends SearchRequestBuilder<B, R>, R> extends BaseBranchRequestBuilder<B, R> {
+public abstract class SearchRequestBuilder<B extends SearchRequestBuilder<B, R>, R> extends BaseIndexReadRequestBuilder<B, R> {
 
 	private static final int MAX_LIMIT = Integer.MAX_VALUE - 1;
 	
@@ -98,11 +98,6 @@ public abstract class SearchRequestBuilder<B extends SearchRequestBuilder<B, R>,
 	
 	protected final B addOption(Enum<?> key, Object value) {
 		return addOption(key.name(), value);
-	}
-	
-	@Override
-	protected Request<BranchContext, R> wrap(Request<BranchContext, R> req) {
-		return new IndexReadRequest<>(super.wrap(req));
 	}
 	
 	@Override
