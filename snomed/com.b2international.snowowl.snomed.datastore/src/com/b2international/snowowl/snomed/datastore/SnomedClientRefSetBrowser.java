@@ -99,10 +99,24 @@ public class SnomedClientRefSetBrowser extends AbstractClientRefSetBrowser<Snome
 					.setLocales(getLocales())
 					.build(getBranchPath().getPath())
 					.executeSync(bus);
-			return SnomedRefSetIndexEntry.builder(refset).build();
+			
+			final SnomedConceptIndexEntry concept = getConcept(refSetId);
+			return SnomedRefSetIndexEntry.builder(refset).label(concept.getLabel()).build();
 		} catch (NotFoundException e) {
 			return null;
 		}
+	}
+	
+	@Override
+	public SnomedConceptIndexEntry getConcept(final String id) {
+		final ISnomedConcept concept = SnomedRequests.prepareGetConcept()
+				.setComponentId(id)
+				.setLocales(getLocales())
+				.setExpand("pt()")
+				.build(getBranchPath().getPath())
+				.executeSync(bus);
+		
+		return SnomedConceptIndexEntry.builder(concept).label(concept.getPt().getTerm()).build();
 	}
 	
 	@Override
