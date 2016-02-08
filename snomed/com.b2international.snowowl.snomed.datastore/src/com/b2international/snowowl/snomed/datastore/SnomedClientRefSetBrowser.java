@@ -32,7 +32,9 @@ import com.b2international.snowowl.core.exceptions.NotFoundException;
 import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.snomed.core.domain.ISnomedConcept;
+import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSet;
+import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMember;
 import com.b2international.snowowl.snomed.core.lang.LanguageSetting;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptIndexEntry;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetIndexEntry;
@@ -42,6 +44,7 @@ import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetPackage;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType;
 import com.google.common.base.Function;
 import com.google.common.collect.FluentIterable;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import com.google.inject.Provider;
@@ -159,6 +162,28 @@ public class SnomedClientRefSetBrowser extends AbstractClientRefSetBrowser<Snome
 				.executeSync(bus)
 				.getItems();
 
+		return SnomedConceptIndexEntry.fromConcepts(concepts);
+	}
+	
+	@Override
+	public Collection<SnomedConceptIndexEntry> getMemberConcepts(final String refsetId) {
+		final List<SnomedReferenceSetMember> members = SnomedRequests.prepareSearchMember()
+				.all()
+				.filterByRefSet(refsetId)
+				.setLocales(getLocales())
+				.setExpand("referencedComponent(expand(pt()))")
+				.build(getBranchPath().getPath())
+				.executeSync(bus)
+				.getItems();
+		
+		final ImmutableList<ISnomedConcept> concepts = FluentIterable.from(members)
+				.transform(new Function<SnomedReferenceSetMember, ISnomedConcept>() {
+					@Override
+					public SnomedConcept apply(SnomedReferenceSetMember input) {
+						return (SnomedConcept) input.getReferencedComponent();
+					}
+				}).toList();
+		
 		return SnomedConceptIndexEntry.fromConcepts(concepts);
 	}
 	
