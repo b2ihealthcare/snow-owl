@@ -26,6 +26,7 @@ import com.b2international.snowowl.datastore.cdo.CDOUtils;
 import com.b2international.snowowl.datastore.index.AbstractIndexEntry;
 import com.google.common.base.Objects;
 import com.google.common.base.Objects.ToStringHelper;
+import com.google.common.base.Predicate;
 
 /**
  * Common superclass for SNOMED CT transfer objects.
@@ -33,6 +34,12 @@ import com.google.common.base.Objects.ToStringHelper;
 public abstract class SnomedIndexEntry extends AbstractIndexEntry implements IComponent<String>, Serializable {
 
 	private static final long serialVersionUID = 1158021444792053062L;
+	public static final Predicate<SnomedIndexEntry> ACTIVE_PREDICATE = new Predicate<SnomedIndexEntry>() {
+		@Override
+		public boolean apply(SnomedIndexEntry input) {
+			return input.isActive();
+		}
+	};
 
 	// XXX: Type parameter reveals subclass to AbstractBuilder for fluent API
 	protected static abstract class AbstractBuilder<B extends AbstractBuilder<B>> {
