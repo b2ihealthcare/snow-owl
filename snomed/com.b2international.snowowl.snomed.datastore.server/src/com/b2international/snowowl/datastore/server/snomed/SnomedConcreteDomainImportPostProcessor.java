@@ -56,7 +56,7 @@ import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSet;
 /**
  * @since 4.6
  */
-public class SnomedImportPostProcessor implements ISnomedImportPostProcessor {
+public class SnomedConcreteDomainImportPostProcessor implements ISnomedImportPostProcessor {
 
 	private static final String B2I_NAMESPACE = "1000154";
 	
