@@ -118,23 +118,23 @@ public class SnomedConcreteDomainImportPostProcessor implements ISnomedImportPos
 			} 
 			
 			if (!isConcreteDomainRefsetExists(snomedCoreConfiguration.getBooleanDatatypeRefsetIdentifier(), context)) {
-				createRefSetAndFakeMember(REFSET_BOOLEAN_DATATYPE, "boolean", "0", context);
+				createRefSet(REFSET_BOOLEAN_DATATYPE, context);
 			}
 			
 			if (!isConcreteDomainRefsetExists(snomedCoreConfiguration.getDatetimeDatatypeRefsetIdentifier(), context)) {
-				createRefSetAndFakeMember(REFSET_DATETIME_DATATYPE, "datetime", "1", context);
+				createRefSet(REFSET_DATETIME_DATATYPE, context);
 			}
 			
 			if (!isConcreteDomainRefsetExists(snomedCoreConfiguration.getFloatDatatypeRefsetIdentifier(), context)) {
-				createRefSetAndFakeMember(REFSET_FLOAT_DATATYPE, "float", "0.0", context);
+				createRefSet(REFSET_FLOAT_DATATYPE, context);
 			}
 			
 			if (!isConcreteDomainRefsetExists(snomedCoreConfiguration.getIntegerDatatypeRefsetIdentifier(), context)) {
-				createRefSetAndFakeMember(REFSET_INTEGER_DATATYPE, "integer", "0", context);
+				createRefSet(REFSET_INTEGER_DATATYPE, context);
 			}
 			
 			if (!isConcreteDomainRefsetExists(snomedCoreConfiguration.getStringDatatypeRefsetIdentifier(), context)) {
-				createRefSetAndFakeMember(REFSET_STRING_DATATYPE, "string", "string", context);
+				createRefSet(REFSET_STRING_DATATYPE, context);
 			}
 			
 			if (context.getEditingContext().isDirty()) {
@@ -153,27 +153,15 @@ public class SnomedConcreteDomainImportPostProcessor implements ISnomedImportPos
 		return exists(refsetId, SnomedRefSet.class, context);
 	}
 
-	private void createRefSetAndFakeMember(final String referenceSetId, final String label, final String value, final FakeSnomedTransactionContext context) {
+	private void createRefSet(final String referenceSetId, final FakeSnomedTransactionContext context) {
 		
 		final SnomedConcreteDataTypeRefSet refSet = SnomedComponents.newConcreteDomainReferenceSet()
-			.withIdentifierConceptId(referenceSetId)
-			.withDataType(SnomedRefSetUtil.DATATYPE_TO_REFSET_MAP.inverse().get(referenceSetId))
+			.setIdentifierConceptId(referenceSetId)
+			.setDataType(SnomedRefSetUtil.DATATYPE_TO_REFSET_MAP.inverse().get(referenceSetId))
 			.build(context);
 		
 		context.getEditingContext().getRefSetEditingContext().add(refSet);
 		
-		SnomedComponents.newConcreteDomainReferenceSetMember()
-			.withActive(false)
-			.withModule(getModuleFromContext(context))
-			.withRefSet(referenceSetId)
-			.withReferencedComponent(referenceSetId)
-			.withAttributeLabel(label)
-			.withSerializedValue(value)
-			.addTo(context);
-	}
-
-	private String getModuleFromContext(final FakeSnomedTransactionContext context) {
-		return isDefaultConcreteDomainConfiguration(context.getSnomedCoreConfig()) ? MODULE_B2I_EXTENSION : context.getSnomedCoreConfig().getDefaultModule();
 	}
 
 	private void createConcept(final String identifierConceptId, final String fsnTerm, final String ptTerm, final String parent, final FakeSnomedTransactionContext context) {
