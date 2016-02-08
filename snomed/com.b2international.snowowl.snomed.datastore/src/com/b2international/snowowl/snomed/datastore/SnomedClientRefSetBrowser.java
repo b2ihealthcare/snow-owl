@@ -26,15 +26,14 @@ import java.util.Set;
 import org.eclipse.emf.ecore.EPackage;
 
 import com.b2international.commons.http.ExtendedLocale;
+import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.annotations.Client;
 import com.b2international.snowowl.core.domain.IComponent;
 import com.b2international.snowowl.core.exceptions.NotFoundException;
 import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.snomed.core.domain.ISnomedConcept;
-import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSet;
-import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMember;
 import com.b2international.snowowl.snomed.core.lang.LanguageSetting;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptIndexEntry;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetIndexEntry;
@@ -44,7 +43,6 @@ import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetPackage;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType;
 import com.google.common.base.Function;
 import com.google.common.collect.FluentIterable;
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import com.google.inject.Provider;
@@ -103,23 +101,12 @@ public class SnomedClientRefSetBrowser extends AbstractClientRefSetBrowser<Snome
 					.build(getBranchPath().getPath())
 					.executeSync(bus);
 			
-			final SnomedConceptIndexEntry concept = getConcept(refSetId);
+			final SnomedConceptIndexEntry concept = ApplicationContext.getServiceForClass(SnomedClientTerminologyBrowser.class)
+					.getConcept(refSetId);
 			return SnomedRefSetIndexEntry.builder(refset).label(concept.getLabel()).build();
 		} catch (NotFoundException e) {
 			return null;
 		}
-	}
-	
-	@Override
-	public SnomedConceptIndexEntry getConcept(final String id) {
-		final ISnomedConcept concept = SnomedRequests.prepareGetConcept()
-				.setComponentId(id)
-				.setLocales(getLocales())
-				.setExpand("pt()")
-				.build(getBranchPath().getPath())
-				.executeSync(bus);
-		
-		return SnomedConceptIndexEntry.builder(concept).label(concept.getPt().getTerm()).build();
 	}
 	
 	@Override
@@ -167,22 +154,14 @@ public class SnomedClientRefSetBrowser extends AbstractClientRefSetBrowser<Snome
 	
 	@Override
 	public Collection<SnomedConceptIndexEntry> getMemberConcepts(final String refsetId) {
-		final List<SnomedReferenceSetMember> members = SnomedRequests.prepareSearchMember()
+		final List<ISnomedConcept> concepts = SnomedRequests.prepareSearchConcept()
 				.all()
-				.filterByRefSet(refsetId)
+				.filterByEscg("^" + refsetId)
 				.setLocales(getLocales())
-				.setExpand("referencedComponent(expand(pt()))")
+				.setExpand("pt()")
 				.build(getBranchPath().getPath())
 				.executeSync(bus)
 				.getItems();
-		
-		final ImmutableList<ISnomedConcept> concepts = FluentIterable.from(members)
-				.transform(new Function<SnomedReferenceSetMember, ISnomedConcept>() {
-					@Override
-					public SnomedConcept apply(SnomedReferenceSetMember input) {
-						return (SnomedConcept) input.getReferencedComponent();
-					}
-				}).toList();
 		
 		return SnomedConceptIndexEntry.fromConcepts(concepts);
 	}
