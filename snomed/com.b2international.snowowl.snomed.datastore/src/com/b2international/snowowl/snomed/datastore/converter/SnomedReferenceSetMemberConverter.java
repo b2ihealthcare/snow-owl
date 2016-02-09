@@ -202,6 +202,7 @@ final class SnomedReferenceSetMemberConverter extends BaseSnomedComponentConvert
 		member.setReferenceSetId(entry.getRefSetIdentifierId());
 		member.setType(entry.getRefSetType());
 		
+		// XXX would be nice to refactor this switch
 		final Builder<String, Object> props = ImmutableMap.builder();
 		switch (entry.getRefSetType()) {
 			case QUERY:
@@ -213,11 +214,33 @@ final class SnomedReferenceSetMemberConverter extends BaseSnomedComponentConvert
 			case ASSOCIATION:
 				props.put(SnomedRf2Headers.FIELD_TARGET_COMPONENT, convertToResource(entry.getTargetComponentId()));
 				break;
-			case SIMPLE_MAP:
+			case EXTENDED_MAP:
+				props.put(SnomedRf2Headers.FIELD_MAP_CATEGORY_ID, entry.getMapCategoryId());
 			case COMPLEX_MAP:
+				props.put(SnomedRf2Headers.FIELD_MAP_GROUP, entry.getMapGroup());
+				props.put(SnomedRf2Headers.FIELD_MAP_PRIORITY, entry.getMapPriority());
+				props.put(SnomedRf2Headers.FIELD_MAP_RULE, entry.getMapRule());
+				props.put(SnomedRf2Headers.FIELD_MAP_ADVICE, entry.getMapAdvice());
+				props.put(SnomedRf2Headers.FIELD_CORRELATION_ID, entry.getCorrelationId());
+			case SIMPLE_MAP:
 				props.put(SnomedRf2Headers.FIELD_MAP_TARGET, entry.getMapTargetComponentId());
 				props.put(SnomedMappings.memberMapTargetComponentType().fieldName(), entry.getMapTargetComponentTypeAsShort());
 				break;
+			case CONCRETE_DATA_TYPE:
+				props.put(SnomedRf2Headers.FIELD_ATTRIBUTE_NAME, entry.getAttributeLabel());
+				props.put(SnomedRf2Headers.FIELD_CHARACTERISTIC_TYPE_ID, entry.getCharacteristicTypeId());
+				props.put(SnomedRf2Headers.FIELD_VALUE, entry.getValue());
+				props.put(SnomedRf2Headers.FIELD_UNIT_ID, entry.getUomComponentId());
+				props.put(SnomedRf2Headers.FIELD_OPERATOR_ID, entry.getOperatorComponentId());
+				break;
+			case LANGUAGE:
+				props.put(SnomedRf2Headers.FIELD_ACCEPTABILITY_ID, entry.getAcceptabilityId());
+				break;
+			case DESCRIPTION_TYPE:
+				// XXX description format???
+				props.put(SnomedRf2Headers.FIELD_DESCRIPTION_LENGTH, entry.getDescriptionLength());
+				break;
+			// TODO module dependency refset
 			default:
 				break;
 		}
