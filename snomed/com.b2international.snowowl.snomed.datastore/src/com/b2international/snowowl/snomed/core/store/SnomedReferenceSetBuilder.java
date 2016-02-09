@@ -17,33 +17,32 @@ package com.b2international.snowowl.snomed.core.store;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
-import javax.annotation.OverridingMethodsMustInvokeSuper;
-
-import org.eclipse.emf.cdo.CDOObject;
-
 import com.b2international.snowowl.core.CoreTerminologyBroker;
 import com.b2international.snowowl.core.domain.TransactionContext;
-import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSet;
+import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
+import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetFactory;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType;
+import com.b2international.snowowl.snomed.snomedrefset.SnomedRegularRefSet;
 
 /**
  * @since 4.5
  */
-public abstract class SnomedReferenceSetBuilder<B extends SnomedReferenceSetBuilder<B, T>, T extends CDOObject> extends SnomedBaseComponentBuilder<B, T> {
+public final class SnomedReferenceSetBuilder extends SnomedBaseComponentBuilder<SnomedReferenceSetBuilder, SnomedRegularRefSet> {
 
+	private String referencedComponentType = SnomedTerminologyComponentConstants.CONCEPT;
 	private String identifierConceptId;
-	protected String referencedComponentType;
-	protected SnomedRefSetType type;
+	private SnomedRefSetType type;
 
-	protected SnomedReferenceSetBuilder() {}
+	protected SnomedReferenceSetBuilder() {
+	}
 
 	/**
-	 * Specifies the component type referenced by the created SNOMED CT Reference Set.
+	 * Specifies the component type referenced by the created SNOMED CT Reference Set. It is CONCEPT by default.
 	 * 
 	 * @param referencedComponentType
 	 * @return
 	 */
-	public B setReferencedComponentType(final String referencedComponentType) {
+	public SnomedReferenceSetBuilder setReferencedComponentType(String referencedComponentType) {
 		this.referencedComponentType = referencedComponentType;
 		return getSelf();
 	}
@@ -54,7 +53,7 @@ public abstract class SnomedReferenceSetBuilder<B extends SnomedReferenceSetBuil
 	 * @param identifierConceptId
 	 * @return
 	 */
-	public B setIdentifierConceptId(final String identifierConceptId) {
+	public SnomedReferenceSetBuilder setIdentifierConceptId(String identifierConceptId) {
 		this.identifierConceptId = identifierConceptId;
 		return getSelf();
 	}
@@ -65,25 +64,24 @@ public abstract class SnomedReferenceSetBuilder<B extends SnomedReferenceSetBuil
 	 * @param type - the type of the refset
 	 * @return
 	 */
-	public B setType(final SnomedRefSetType type) {
+	public SnomedReferenceSetBuilder setType(SnomedRefSetType type) {
 		this.type = type;
 		return getSelf();
 	}
 
 	@Override
-	@OverridingMethodsMustInvokeSuper
-	protected void init(final T component, final TransactionContext context) {
+	protected SnomedRegularRefSet create() {
+		return SnomedRefSetFactory.eINSTANCE.createSnomedRegularRefSet();
+	}
+
+	@Override
+	protected void init(SnomedRegularRefSet component, TransactionContext context) {
 		checkNotNull(identifierConceptId, "Specify the identifier concept ID");
 		checkNotNull(referencedComponentType, "Specify the referenced component type");
-		checkNotNull(type, "Specify the reference set type");
-
-		if (component instanceof SnomedRefSet) {
-			final SnomedRefSet refSet = (SnomedRefSet) component;
-			
-			final CoreTerminologyBroker terminologies = context.service(CoreTerminologyBroker.class);
-			refSet.setType(type);
-			refSet.setReferencedComponentType(terminologies.getTerminologyComponentIdAsShort(referencedComponentType));
-			refSet.setIdentifierId(identifierConceptId);
-		}
+		final CoreTerminologyBroker terminologies = context.service(CoreTerminologyBroker.class);
+		component.setType(type);
+		component.setReferencedComponentType(terminologies.getTerminologyComponentIdAsShort(referencedComponentType));
+		component.setIdentifierId(identifierConceptId);
 	}
+
 }

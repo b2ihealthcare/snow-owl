@@ -54,8 +54,8 @@ public class SnomedComponents {
 	 * 
 	 * @return
 	 */
-	public static SnomedRegularReferenceSetBuilder newReferenceSet() {
-		return new SnomedRegularReferenceSetBuilder();
+	public static SnomedReferenceSetBuilder newReferenceSet() {
+		return new SnomedReferenceSetBuilder();
 	}
 
 	/**
