@@ -26,7 +26,6 @@ import java.util.Set;
 import org.eclipse.emf.ecore.EPackage;
 
 import com.b2international.commons.http.ExtendedLocale;
-import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.annotations.Client;
 import com.b2international.snowowl.core.domain.IComponent;
 import com.b2international.snowowl.core.exceptions.NotFoundException;
@@ -101,8 +100,7 @@ public class SnomedClientRefSetBrowser extends AbstractClientRefSetBrowser<Snome
 					.build(getBranchPath().getPath())
 					.executeSync(bus);
 			
-			final SnomedConceptIndexEntry concept = ApplicationContext.getServiceForClass(SnomedClientTerminologyBrowser.class)
-					.getConcept(refSetId);
+			final SnomedConceptIndexEntry concept = browser.get().getConcept(refSetId);
 			return SnomedRefSetIndexEntry.builder(refset).label(concept.getLabel()).build();
 		} catch (NotFoundException e) {
 			return null;
