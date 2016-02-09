@@ -913,6 +913,10 @@ public class SnomedRefSetMemberIndexEntry extends SnomedIndexEntry implements IC
 	public Integer getDescriptionLength() {
 		return getIntegerField(SnomedMappings.memberDescriptionLength().fieldName());
 	}
+	
+	public String getDescriptionFormat() {
+		return StringUtils.valueOfOrEmptyString(getLongField(SnomedMappings.memberDescriptionFormatId().fieldName()));
+	}
 
 	public String getMapTargetComponentId() {
 		return getOptionalField(SnomedMappings.memberMapTargetComponentId().fieldName()).transform(new UncheckedCastFunction<>(String.class)).orNull();

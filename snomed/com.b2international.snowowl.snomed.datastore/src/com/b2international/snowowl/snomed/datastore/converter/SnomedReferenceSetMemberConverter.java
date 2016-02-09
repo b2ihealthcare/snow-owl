@@ -237,7 +237,7 @@ final class SnomedReferenceSetMemberConverter extends BaseSnomedComponentConvert
 				props.put(SnomedRf2Headers.FIELD_ACCEPTABILITY_ID, entry.getAcceptabilityId());
 				break;
 			case DESCRIPTION_TYPE:
-				// XXX description format???
+				props.put(SnomedRf2Headers.FIELD_DESCRIPTION_FORMAT, entry.getDescriptionFormat());
 				props.put(SnomedRf2Headers.FIELD_DESCRIPTION_LENGTH, entry.getDescriptionLength());
 				break;
 			// TODO module dependency refset
