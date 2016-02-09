@@ -15,7 +15,6 @@
  */
 package com.b2international.snowowl.snomed.mrcm.impl;
 
-import com.b2international.snowowl.snomed.mrcm.*;
 import org.eclipse.emf.ecore.EClass;
 import org.eclipse.emf.ecore.EDataType;
 import org.eclipse.emf.ecore.EObject;
@@ -31,7 +30,6 @@ import com.b2international.snowowl.snomed.mrcm.ConceptModelComponent;
 import com.b2international.snowowl.snomed.mrcm.ConcreteDomainElementPredicate;
 import com.b2international.snowowl.snomed.mrcm.ConstraintForm;
 import com.b2international.snowowl.snomed.mrcm.ConstraintStrength;
-import com.b2international.snowowl.snomed.mrcm.DataType;
 import com.b2international.snowowl.snomed.mrcm.DependencyOperator;
 import com.b2international.snowowl.snomed.mrcm.DependencyPredicate;
 import com.b2international.snowowl.snomed.mrcm.DescriptionPredicate;
@@ -42,6 +40,7 @@ import com.b2international.snowowl.snomed.mrcm.HierarchyInclusionType;
 import com.b2international.snowowl.snomed.mrcm.MrcmFactory;
 import com.b2international.snowowl.snomed.mrcm.MrcmPackage;
 import com.b2international.snowowl.snomed.mrcm.ReferenceSetConceptSetDefinition;
+import com.b2international.snowowl.snomed.mrcm.RelationshipConceptSetDefinition;
 import com.b2international.snowowl.snomed.mrcm.RelationshipPredicate;
 
 /**
@@ -116,8 +115,6 @@ public class MrcmFactoryImpl extends EFactoryImpl implements MrcmFactory {
 		switch (eDataType.getClassifierID()) {
 			case MrcmPackage.GROUP_RULE:
 				return createGroupRuleFromString(eDataType, initialValue);
-			case MrcmPackage.DATA_TYPE:
-				return createDataTypeFromString(eDataType, initialValue);
 			case MrcmPackage.DEPENDENCY_OPERATOR:
 				return createDependencyOperatorFromString(eDataType, initialValue);
 			case MrcmPackage.HIERARCHY_INCLUSION_TYPE:
@@ -141,8 +138,6 @@ public class MrcmFactoryImpl extends EFactoryImpl implements MrcmFactory {
 		switch (eDataType.getClassifierID()) {
 			case MrcmPackage.GROUP_RULE:
 				return convertGroupRuleToString(eDataType, instanceValue);
-			case MrcmPackage.DATA_TYPE:
-				return convertDataTypeToString(eDataType, instanceValue);
 			case MrcmPackage.DEPENDENCY_OPERATOR:
 				return convertDependencyOperatorToString(eDataType, instanceValue);
 			case MrcmPackage.HIERARCHY_INCLUSION_TYPE:
@@ -303,26 +298,6 @@ public class MrcmFactoryImpl extends EFactoryImpl implements MrcmFactory {
 	 * @generated
 	 */
 	public String convertGroupRuleToString(EDataType eDataType, Object instanceValue) {
-		return instanceValue == null ? null : instanceValue.toString();
-	}
-
-	/**
-	 * <!-- begin-user-doc -->
-	 * <!-- end-user-doc -->
-	 * @generated
-	 */
-	public DataType createDataTypeFromString(EDataType eDataType, String initialValue) {
-		DataType result = DataType.get(initialValue);
-		if (result == null) throw new IllegalArgumentException("The value '" + initialValue + "' is not a valid enumerator of '" + eDataType.getName() + "'");
-		return result;
-	}
-
-	/**
-	 * <!-- begin-user-doc -->
-	 * <!-- end-user-doc -->
-	 * @generated
-	 */
-	public String convertDataTypeToString(EDataType eDataType, Object instanceValue) {
 		return instanceValue == null ? null : instanceValue.toString();
 	}
 

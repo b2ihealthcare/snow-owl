@@ -27,8 +27,8 @@ import javax.annotation.concurrent.ThreadSafe;
 import com.b2international.snowowl.core.api.ITerminologyComponentIdProvider;
 import com.b2international.snowowl.core.api.index.IIndexEntry;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
-import com.b2international.snowowl.snomed.mrcm.DataType;
 import com.b2international.snowowl.snomed.mrcm.GroupRule;
+import com.b2international.snowowl.snomed.snomedrefset.DataType;
 import com.google.common.base.Objects;
 import com.google.common.base.Preconditions;
 

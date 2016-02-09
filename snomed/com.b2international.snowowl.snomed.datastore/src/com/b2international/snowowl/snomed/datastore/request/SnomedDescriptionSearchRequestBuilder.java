@@ -32,7 +32,15 @@ public final class SnomedDescriptionSearchRequestBuilder extends SnomedSearchReq
 	SnomedDescriptionSearchRequestBuilder(String repositoryId) {
 		super(repositoryId);
 	}
+	
+	public SnomedDescriptionSearchRequestBuilder withFuzzySearch() {
+		return addOption(OptionKey.USE_FUZZY, true);
+	}
 
+	public SnomedDescriptionSearchRequestBuilder withParsedTerm() {
+		return addOption(OptionKey.PARSED_TERM, true);
+	}
+	
 	public SnomedDescriptionSearchRequestBuilder filterByTerm(String termFilter) {
 		return addOption(OptionKey.TERM, termFilter);
 	}

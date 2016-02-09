@@ -52,6 +52,7 @@ import com.b2international.snowowl.snomed.datastore.escg.EscgRewriter;
 import com.b2international.snowowl.snomed.datastore.escg.IEscgQueryEvaluatorService;
 import com.b2international.snowowl.snomed.datastore.escg.IndexQueryQueryEvaluator;
 import com.b2international.snowowl.snomed.datastore.id.SnomedIdentifiers;
+import com.b2international.snowowl.snomed.datastore.index.SearchProfileQueryProvider;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptIndexEntry;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptIndexEntry.Builder;
 import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedMappings;
@@ -77,6 +78,11 @@ final class SnomedConceptSearchRequest extends SnomedSearchRequest<SnomedConcept
 		 * Description term to (smart) match
 		 */
 		TERM,
+		
+		/**
+		 * Parse the term for query syntax search
+		 */
+		PARSED_TERM,
 		
 		/**
 		 * Description type to match
@@ -116,7 +122,17 @@ final class SnomedConceptSearchRequest extends SnomedSearchRequest<SnomedConcept
 		/**
 		 * Enable score boosting using DOI field
 		 */
-		USE_DOI
+		USE_DOI,
+		
+		/**
+		 * Use search profile of the user
+		 */
+		SEARCH_PROFILE,
+		
+		/**
+		 * Use fuzzy query in the search
+		 */
+		USE_FUZZY
 
 	}
 	
@@ -176,7 +192,12 @@ final class SnomedConceptSearchRequest extends SnomedSearchRequest<SnomedConcept
 			}
 		}
 		
-		
+		BooleanQuery searchProfileQuery = null;
+		if (containsKey(OptionKey.SEARCH_PROFILE)) {
+			final String userId = getString(OptionKey.SEARCH_PROFILE);
+			searchProfileQuery = SearchProfileQueryProvider.provideQuery(context.branch().branchPath(), userId);
+		}
+
 		addComponentIdFilter(filter);
 		
 		if (containsKey(OptionKey.TERM)) {
@@ -225,15 +246,20 @@ final class SnomedConceptSearchRequest extends SnomedSearchRequest<SnomedConcept
 							}
 						}
 					});
-						
-			query = new CustomScoreQuery(createFilteredQuery(bq, filter), functionQuery);
+
+			final Query filteredQuery = createFilteredQuery(bq, filter);
+			final Query q = addSearchProfile(searchProfileQuery, filteredQuery);
+			query = new CustomScoreQuery(q, functionQuery);
 			sort = Sort.RELEVANCE;
 		} else if (containsKey(OptionKey.USE_DOI)) {
-			query = new CustomScoreQuery(createConstantScoreQuery(createFilteredQuery(queryBuilder.matchAll(), filter)),
-					new FunctionQuery(DOI_VALUE_SOURCE));
+			final Query filteredQuery = createFilteredQuery(queryBuilder.matchAll(), filter);
+			final Query q = addSearchProfile(searchProfileQuery, filteredQuery);
+			query = new CustomScoreQuery(createConstantScoreQuery(q), new FunctionQuery(DOI_VALUE_SOURCE));
 			sort = Sort.RELEVANCE;
 		} else {
-			query = createConstantScoreQuery(createFilteredQuery(queryBuilder.matchAll(), filter));
+			final Query filteredQuery = createFilteredQuery(queryBuilder.matchAll(), filter);
+			final Query q = addSearchProfile(searchProfileQuery, filteredQuery);
+			query = createConstantScoreQuery(q);
 			sort = Sort.INDEXORDER;
 		}
 		
@@ -282,7 +308,16 @@ final class SnomedConceptSearchRequest extends SnomedSearchRequest<SnomedConcept
 			return booleanQuery;
 		}
 	}
-
+	
+	private Query addSearchProfile(final BooleanQuery searchProfileQuery, final Query query) {
+		if (searchProfileQuery == null) {
+			return query;
+		} else {
+			searchProfileQuery.add(query, Occur.MUST);
+			return searchProfileQuery;
+		}
+	}
+	
 	private Map<String, Float> executeDescriptionSearch(BranchContext context, String term) {
 		final SnomedDescriptionSearchRequestBuilder requestBuilder = SnomedRequests.prepareSearchDescription()
 			.all()
@@ -294,6 +329,14 @@ final class SnomedConceptSearchRequest extends SnomedSearchRequest<SnomedConcept
 		if (containsKey(OptionKey.DESCRIPTION_TYPE)) {
 			final String type = getString(OptionKey.DESCRIPTION_TYPE);
 			requestBuilder.filterByType(type);
+		}
+		
+		if (containsKey(OptionKey.USE_FUZZY)) {
+			requestBuilder.withFuzzySearch();
+		}
+		
+		if (containsKey(OptionKey.PARSED_TERM)) {
+			requestBuilder.withParsedTerm();
 		}
 		
 		final Collection<ISnomedDescription> items = requestBuilder

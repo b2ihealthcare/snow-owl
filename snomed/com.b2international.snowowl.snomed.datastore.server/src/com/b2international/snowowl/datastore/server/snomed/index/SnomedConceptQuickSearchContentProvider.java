@@ -33,8 +33,8 @@ import com.b2international.snowowl.datastore.IBranchPathMap;
 import com.b2international.snowowl.datastore.quicksearch.AbstractQuickSearchContentProvider;
 import com.b2international.snowowl.datastore.quicksearch.IQuickSearchContentProvider;
 import com.b2international.snowowl.eventbus.IEventBus;
-import com.b2international.snowowl.snomed.SnomedPackage;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
+import com.b2international.snowowl.snomed.SnomedPackage;
 import com.b2international.snowowl.snomed.core.domain.ISnomedConcept;
 import com.b2international.snowowl.snomed.core.domain.ISnomedDescription;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcepts;
@@ -44,7 +44,10 @@ import com.b2international.snowowl.snomed.datastore.quicksearch.SnomedConceptQui
 import com.b2international.snowowl.snomed.datastore.request.SnomedConceptSearchRequestBuilder;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.google.common.base.Function;
+import com.google.common.base.Predicate;
 import com.google.common.collect.FluentIterable;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.Lists;
 
 /**
  * Server side, Net4j independent service for providing the SNOMED&nbsp;CT concepts as the content of quick search provider.
@@ -86,7 +89,6 @@ public class SnomedConceptQuickSearchContentProvider extends AbstractQuickSearch
 			configuration = Collections.emptyMap();
 		}
 		
-		// TODO reintroduce search profiles in concept search
 		final String userId = String.valueOf(configuration.get(IQuickSearchProvider.CONFIGURATION_USER_ID));
 		// TODO replace server-side LOCALES with client side one via configuration
 		final List<ExtendedLocale> locales = ApplicationContext.getInstance().getService(LanguageSetting.class).getLanguagePreference();
@@ -99,6 +101,7 @@ public class SnomedConceptQuickSearchContentProvider extends AbstractQuickSearch
 			.filterByTerm(queryExpression)
 			.filterByExtendedLocales(locales)
 			.filterByDescriptionType("<<" + Concepts.SYNONYM)
+			.withSearchProfile(userId)
 			.withDoi()
 			.setExpand("pt()")
 			.setLimit(limit);
@@ -119,22 +122,44 @@ public class SnomedConceptQuickSearchContentProvider extends AbstractQuickSearch
 			}
 		}
 		
-		final SnomedConcepts matches = req.build(branchPath.getPath()).executeSync(ApplicationContext.getInstance().getService(IEventBus.class));
-		
-		// TODO reintroduce fuzzy search
-//		final List<SnomedConceptIndexEntry> approximateResults = newArrayList();
-//		
-//		if (results.size() < limit) {
-//			final SnomedFuzzyQueryAdapter fuzzyAdapter = null == conceptIdSupplier
-//					? new SnomedFuzzyQueryAdapter(queryExpression, userId, restrictionQuery)
-//					: new SnomedFuzzyQueryAdapter(queryExpression, userId, conceptIdSupplier.get());
-//							
-//			approximateResults.addAll(searcher.search(branchPath, fuzzyAdapter, limit));
-//		}
-		
-		
-		
-		return new QuickSearchContentResult(matches.getTotal(), FluentIterable.from(matches).transform(new SnomedConceptConverterFunction(queryExpression, false)).toList());
+		final List<QuickSearchElement> quickSearchElements = Lists.newArrayList();
+
+		final SnomedConcepts matches = req.build(branchPath.getPath()).executeSync(getEventBus());
+		final ImmutableList<QuickSearchElement> results = FluentIterable.from(matches)
+				.transform(new SnomedConceptConverterFunction(queryExpression, false))
+				.toList();
+
+		quickSearchElements.addAll(results);
+
+		if (matches.getTotal() < limit) {
+			req.withFuzzySearch();
+
+			final SnomedConcepts fuzzyMatches = req.build(branchPath.getPath()).executeSync(getEventBus());
+
+			final FluentIterable<String> conceptIds = FluentIterable.from(matches).transform(new Function<ISnomedConcept, String>() {
+				@Override
+				public String apply(ISnomedConcept input) {
+					return input.getId();
+				}
+			});
+
+			final ImmutableList<QuickSearchElement> approximateResults = FluentIterable.from(fuzzyMatches)
+					.filter(new Predicate<ISnomedConcept>() {
+						@Override
+						public boolean apply(ISnomedConcept input) {
+							return !conceptIds.contains(input.getId());
+						}
+					}).transform(new SnomedConceptConverterFunction(queryExpression, true))
+					.toList();
+
+			quickSearchElements.addAll(approximateResults);
+		}
+
+		return new QuickSearchContentResult(matches.getTotal(), quickSearchElements);
+	}
+
+	private IEventBus getEventBus() {
+		return ApplicationContext.getInstance().getService(IEventBus.class);
 	}
 
 	@Override

@@ -15,12 +15,12 @@
  */
 package com.b2international.snowowl.snomed.mrcm.mini;
 
-import static com.b2international.snowowl.snomed.mrcm.DataType.BOOLEAN;
-import static com.b2international.snowowl.snomed.mrcm.DataType.FLOAT;
-import static com.b2international.snowowl.snomed.mrcm.DataType.STRING;
+import static com.b2international.snowowl.snomed.snomedrefset.DataType.BOOLEAN;
+import static com.b2international.snowowl.snomed.snomedrefset.DataType.DECIMAL;
+import static com.b2international.snowowl.snomed.snomedrefset.DataType.STRING;
 import static com.b2international.snowowl.snomed.mrcm.mini.SectionType.PROPERTY_SECTION;
 
-import com.b2international.snowowl.snomed.mrcm.DataType;
+import com.b2international.snowowl.snomed.snomedrefset.DataType;
 
 /**
  * Collects known data type labels associated with SNOMED CT concepts in the
@@ -57,9 +57,9 @@ public enum DataTypeConstants {
 	USE_MPF_ODI("useMpfOdi", "Use MPF ODI", PROPERTY_SECTION, BOOLEAN),
 	
 	//MPQ
-	PREFERRED_STRENGTH1_NUMERATOR_VALUE("preferredStrength1NumeratorValue", "Preferred strength numerator value", PROPERTY_SECTION, FLOAT),
+	PREFERRED_STRENGTH1_NUMERATOR_VALUE("preferredStrength1NumeratorValue", "Preferred strength numerator value", PROPERTY_SECTION, DECIMAL),
 	HIDE_SINGLE_CONTAINER_TOTAL_QUANTITY("hideSingleContainerTotalQuantityInPt", "Hide single container total quantity in PT", PROPERTY_SECTION, BOOLEAN),
-	SUPERPACK_TOTAL_QUANTITY_VALUE("superpackTotalQuantityValue", "Total quantity value", PROPERTY_SECTION, FLOAT),
+	SUPERPACK_TOTAL_QUANTITY_VALUE("superpackTotalQuantityValue", "Total quantity value", PROPERTY_SECTION, DECIMAL),
 	
 	/*
 	 * String typed elements
@@ -77,7 +77,7 @@ public enum DataTypeConstants {
 	/*
 	 * Decimal typed elements
 	 */
-	CONVERSION_FACTOR("conversionFactor", "Conversion factor", PROPERTY_SECTION, FLOAT);
+	CONVERSION_FACTOR("conversionFactor", "Conversion factor", PROPERTY_SECTION, DECIMAL);
 	
 	/**
 	 * Returns with the data type constant enumeration identified by its ordinal.

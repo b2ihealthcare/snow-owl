@@ -20,7 +20,6 @@ import static com.b2international.snowowl.snomed.common.SnomedTerminologyCompone
 import static com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants.RELATIONSHIP_NUMBER;
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
-import static com.google.common.base.Preconditions.checkState;
 import static com.google.common.collect.Maps.newHashMap;
 
 import java.io.Serializable;
@@ -57,6 +56,7 @@ import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedMappings
 import com.b2international.snowowl.snomed.snomedrefset.DataType;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedAssociationRefSetMember;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedAttributeValueRefSetMember;
+import com.b2international.snowowl.snomed.snomedrefset.SnomedComplexMapRefSetMember;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedConcreteDataTypeRefSetMember;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedDescriptionTypeRefSetMember;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedLanguageRefSetMember;
@@ -272,11 +272,32 @@ public class SnomedRefSetMemberIndexEntry extends SnomedIndexEntry implements IC
 				return builder;
 			}
 			
+			@Override
+			public Builder caseSnomedComplexMapRefSetMember(final SnomedComplexMapRefSetMember mapRefSetMember) {
+				builder.mapTargetComponentType(mapRefSetMember.getMapTargetComponentType());
+				builder.additionalField(SnomedMappings.memberMapTargetComponentId().fieldName(), mapRefSetMember.getMapTargetComponentId());
+				builder.additionalField(SnomedMappings.memberCorrelationId().fieldName(), Long.valueOf(mapRefSetMember.getCorrelationId()));
+
+				addAdditionalFieldIfNotNull(builder, SnomedMappings.memberMapGroup().fieldName(), Integer.valueOf(mapRefSetMember.getMapGroup()));
+				addAdditionalFieldIfNotNull(builder, SnomedMappings.memberMapCategoryId().fieldName(), mapRefSetMember.getMapCategoryId());
+				addAdditionalFieldIfNotNull(builder, SnomedMappings.memberMapAdvice().fieldName(), mapRefSetMember.getMapAdvice());
+				addAdditionalFieldIfNotNull(builder, SnomedMappings.memberMapPriority().fieldName(), Integer.valueOf(mapRefSetMember.getMapPriority()));
+				addAdditionalFieldIfNotNull(builder, SnomedMappings.memberMapRule().fieldName(), mapRefSetMember.getMapRule());
+
+				return builder;
+			}
+			
 			public Builder caseSnomedRefSetMember(SnomedRefSetMember object) {
 				return builder;
 			};
 
 		}.doSwitch(refSetMember);
+	}
+	
+	private static void addAdditionalFieldIfNotNull(final Builder builder, final String fieldName, final Object value) {
+		if (value != null) {
+			builder.additionalField(fieldName, value);
+		}
 	}
 	
 	/*Converts RF2 field names to their index field equivalents*/
@@ -445,7 +466,7 @@ public class SnomedRefSetMemberIndexEntry extends SnomedIndexEntry implements IC
 
 		super(id, 
 				label,
-				referenceSetId, // XXX: iconId is the reference set identifier
+				referencedComponentId, // XXX: iconId is the referenced component identifier
 				score, 
 				storageKey, 
 				moduleId, 
@@ -824,9 +845,7 @@ public class SnomedRefSetMemberIndexEntry extends SnomedIndexEntry implements IC
 	}
 
 	private <T> T getField(final String fieldName, Function<Object, T> transformFunction) {
-		final Optional<T> field = getOptionalField(fieldName).transform(transformFunction);
-		checkState(field.isPresent(), "Field '%s' is missing from this member", fieldName);
-		return field.get();
+		return getOptionalField(fieldName).transform(transformFunction).orNull();
 	}
 
 	/**

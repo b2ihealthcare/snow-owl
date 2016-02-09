@@ -34,7 +34,6 @@ import com.b2international.snowowl.snomed.datastore.config.SnomedCoreConfigurati
 import com.b2international.snowowl.snomed.datastore.services.IClientSnomedComponentService;
 import com.b2international.snowowl.snomed.datastore.snor.PredicateIndexEntry;
 import com.b2international.snowowl.snomed.datastore.snor.PredicateIndexEntry.PredicateType;
-import com.b2international.snowowl.snomed.mrcm.DataType;
 import com.b2international.snowowl.snomed.mrcm.core.widget.model.ConceptWidgetModel;
 import com.b2international.snowowl.snomed.mrcm.core.widget.model.DataTypeContainerWidgetModel;
 import com.b2international.snowowl.snomed.mrcm.core.widget.model.DataTypeWidgetModel;
@@ -46,6 +45,7 @@ import com.b2international.snowowl.snomed.mrcm.core.widget.model.RelationshipWid
 import com.b2international.snowowl.snomed.mrcm.core.widget.model.WidgetModel;
 import com.b2international.snowowl.snomed.mrcm.core.widget.model.WidgetModel.LowerBound;
 import com.b2international.snowowl.snomed.mrcm.core.widget.model.WidgetModel.UpperBound;
+import com.b2international.snowowl.snomed.snomedrefset.DataType;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Lists;
 
@@ -88,7 +88,8 @@ public class ConceptModelConstraintToWidgetModelConverter {
 		
 		dataTypeWidgetModels.add(DataTypeWidgetModel.createUnsanctionedModel(branchPath, DataType.BOOLEAN));
 		dataTypeWidgetModels.add(DataTypeWidgetModel.createUnsanctionedModel(branchPath, DataType.STRING));
-		dataTypeWidgetModels.add(DataTypeWidgetModel.createUnsanctionedModel(branchPath, DataType.FLOAT));
+		dataTypeWidgetModels.add(DataTypeWidgetModel.createUnsanctionedModel(branchPath, DataType.DECIMAL));
+		dataTypeWidgetModels.add(DataTypeWidgetModel.createUnsanctionedModel(branchPath, DataType.INTEGER));
 		
 		ForkJoinUtils.runInParallel(
 				new Runnable() { @Override public void run() { createSingleGroupModels(singleGroupRelationshipWidgetModels, branchPath); }},

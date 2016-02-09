@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2015 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2016 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,28 +17,19 @@ package com.b2international.snowowl.datastore.request;
 
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.events.Request;
-import com.b2international.snowowl.core.events.bulk.BulkRequestBuilder;
-import com.b2international.snowowl.core.events.bulk.BulkResponse;
 
 /**
- * @since 4.5
+ * @since 4.6
  */
-public class RepositoryBulkReadRequestBuilder extends BaseIndexReadRequestBuilder<RepositoryBulkReadRequestBuilder, BulkResponse> {
-	
-	private Request<BranchContext, BulkResponse> body;
+public abstract class BaseIndexReadRequestBuilder<B extends BaseIndexReadRequestBuilder<B, R>, R> extends BaseBranchRequestBuilder<B, R> {
 
-	protected RepositoryBulkReadRequestBuilder(String repositoryId) {
+	protected BaseIndexReadRequestBuilder(final String repositoryId) {
 		super(repositoryId);
 	}
 
-	public final RepositoryBulkReadRequestBuilder setBody(BulkRequestBuilder<BranchContext> req) {
-		body = req.build();
-		return getSelf();
+	@Override
+	protected Request<BranchContext, R> wrap(Request<BranchContext, R> req) {
+		return new IndexReadRequest<>(super.wrap(req));
 	}
 
-	@Override
-	protected Request<BranchContext, BulkResponse> doBuild() {
-		return body;
-	}
-	
 }

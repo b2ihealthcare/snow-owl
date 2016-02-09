@@ -130,8 +130,13 @@ final class TreeBuilderImpl implements TreeBuilder {
 						superTypeMap.put(tl.getId(), entry.getId());
 					}
 				}
-				treeItemsById.put(entry.getId(), entry);
-				subTypeMap.put(null, entry.getId());
+				
+				// only add root concept if the tree contains top level concepts
+				if (subTypeMap.containsKey(Concepts.ROOT_CONCEPT)) {
+					treeItemsById.put(entry.getId(), entry);
+					subTypeMap.put(null, entry.getId());
+				}
+				
 				break;
 			}
 		}
