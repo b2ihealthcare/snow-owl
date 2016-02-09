@@ -75,6 +75,11 @@ final class SnomedConceptSearchRequest extends SnomedSearchRequest<SnomedConcept
 	enum OptionKey {
 
 		/**
+		 * Concept ID to match
+		 */
+		ID,
+		
+		/**
 		 * Description term to (smart) match
 		 */
 		TERM,
@@ -208,7 +213,7 @@ final class SnomedConceptSearchRequest extends SnomedSearchRequest<SnomedConcept
 			
 			try {
 				final ComponentCategory category = SnomedIdentifiers.getComponentCategory(term);
-				if (category == ComponentCategory.CONCEPT) {
+				if (category == ComponentCategory.CONCEPT && containsKey(OptionKey.ID)) {
 					conceptScoreMap.put(term, Float.MAX_VALUE);
 					bq.add(SnomedMappings.id().toQuery(Long.valueOf(term)), Occur.SHOULD);
 				}

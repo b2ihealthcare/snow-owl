@@ -43,6 +43,10 @@ public final class SnomedConceptSearchRequestBuilder extends SnomedSearchRequest
 		return addOption(SnomedConceptSearchRequest.OptionKey.PARSED_TERM, true);
 	}
 
+	public final SnomedConceptSearchRequestBuilder byId() {
+		return addOption(SnomedConceptSearchRequest.OptionKey.ID, true);
+	}
+	
 	public final SnomedConceptSearchRequestBuilder filterByTerm(String term) {
 		return addOption(SnomedConceptSearchRequest.OptionKey.TERM, term);
 	}
