@@ -54,6 +54,8 @@ import org.eclipse.emf.ecore.EClass;
 import org.eclipse.emf.ecore.EStructuralFeature;
 import org.slf4j.Logger;
 
+import bak.pcj.set.LongSet;
+
 import com.b2international.snowowl.core.CoreTerminologyBroker;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.api.SnowowlServiceException;
@@ -69,11 +71,8 @@ import com.b2international.snowowl.terminologymetadata.CodeSystem;
 import com.b2international.snowowl.terminologymetadata.CodeSystemVersion;
 import com.b2international.snowowl.terminologymetadata.CodeSystemVersionGroup;
 import com.google.common.base.Function;
-import com.google.common.cache.CacheBuilder;
-import com.google.common.cache.CacheLoader;
-import com.google.common.cache.LoadingCache;
-
-import bak.pcj.set.LongSet;
+import com.google.common.base.Supplier;
+import com.google.common.base.Suppliers;
 
 /**
  * Abstract component publish manager implementation.
@@ -87,11 +86,9 @@ public abstract class PublishManager implements IPublishManager {
 
 	private static final String NEW_VERSION_CREATED_TEMPLATE = "New version ''{0}'' has been successfully created for {1}.";
 
-	private static final String FAKE_CACHE_KEY = "";
-	
-	private LoadingCache<String, CDOEditingContext> editingContextCache = CacheBuilder.newBuilder().build(new CacheLoader<String, CDOEditingContext>() {
+	private Supplier<CDOEditingContext> editingContextSupplier = Suppliers.memoize(new Supplier<CDOEditingContext>() {
 		@Override
-		public CDOEditingContext load(String key) throws Exception {
+		public CDOEditingContext get() {
 			return createEditingContext(getBranchPathForPublication());
 		}
 	});
@@ -148,10 +145,7 @@ public abstract class PublishManager implements IPublishManager {
 
 	/** Returns with the CDO editing context for the update process. */
 	protected final CDOEditingContext getEditingContext() {
-		if (editingContextCache.getUnchecked(FAKE_CACHE_KEY).isClosed()) {
-			editingContextCache.invalidate(FAKE_CACHE_KEY); // transaction has been closed, new CDOView is needed.
-		}
-		return editingContextCache.getUnchecked(FAKE_CACHE_KEY);
+		return editingContextSupplier.get();
 	}
 
 	/** Creates and returns with the new code systems version. */
