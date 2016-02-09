@@ -306,7 +306,8 @@ final class SnomedDescriptionSearchRequest extends SnomedSearchRequest<SnomedDes
 		final BooleanQuery bq = new BooleanQuery();
 		int tokenCount = 0;
 
-		for (final String token : tokenSplitter.split(getString(OptionKey.TERM))) {
+		final String term = getString(OptionKey.TERM).toLowerCase();
+		for (final String token : tokenSplitter.split(term)) {
 			final FuzzyQuery fuzzyQuery = new FuzzyQuery(new Term(SnomedMappings.descriptionTerm().fieldName(), token),
 					LevenshteinAutomata.MAXIMUM_SUPPORTED_DISTANCE, 1);
 			bq.add(fuzzyQuery, Occur.SHOULD);
