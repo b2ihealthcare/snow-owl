@@ -64,8 +64,15 @@ public abstract class SnomedRf2Headers {
 	public static final String FIELD_VALUE = "value";
 	
 	// Field names introduced in SG concrete domain reference set files
+	/**
+	 * @deprecated - replaced by {@link #FIELD_UNIT_ID}
+	 */
 	public static final String FIELD_UOM_ID = "uomId";
 	public static final String FIELD_ATTRIBUTE_NAME = "attributeName";
+	
+	/**
+	 * @deprecated - replaced by {@link #FIELD_VALUE}
+	 */
 	public static final String FIELD_DATA_VALUE = "dataValue";
 	
 	// Field names introduced in attribute value type reference set files
