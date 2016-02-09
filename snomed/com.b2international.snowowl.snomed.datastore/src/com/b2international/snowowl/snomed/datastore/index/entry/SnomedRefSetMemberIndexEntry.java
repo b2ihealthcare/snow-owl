@@ -777,7 +777,7 @@ public class SnomedRefSetMemberIndexEntry extends SnomedIndexEntry implements IC
 	}
 	
 	public String getCorrelationId() {
-		return getStringField(SnomedMappings.memberCorrelationId().fieldName());
+		return StringUtils.valueOfOrEmptyString(getLongField(SnomedMappings.memberCorrelationId().fieldName()));
 	}
 
 	public String getMapTargetDescription() {

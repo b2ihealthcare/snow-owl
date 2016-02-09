@@ -158,7 +158,7 @@ public class SnomedRefSetMemberAdapterFactory extends TypeSafeAdapterFactory {
 			public Builder caseSnomedComplexMapRefSetMember(final SnomedComplexMapRefSetMember mapRefSetMember) {
 				builder.mapTargetComponentType(mapRefSetMember.getMapTargetComponentType());
 				builder.additionalField(SnomedMappings.memberMapTargetComponentId().fieldName(), mapRefSetMember.getMapTargetComponentId());
-				builder.additionalField(SnomedMappings.memberCorrelationId().fieldName(), mapRefSetMember.getCorrelationId());
+				builder.additionalField(SnomedMappings.memberCorrelationId().fieldName(), Long.valueOf(mapRefSetMember.getCorrelationId()));
 
 				addAdditionalFieldIfNotNull(builder, SnomedMappings.memberMapGroup().fieldName(), Integer.valueOf(mapRefSetMember.getMapGroup()));
 				addAdditionalFieldIfNotNull(builder, SnomedMappings.memberMapCategoryId().fieldName(), mapRefSetMember.getMapCategoryId());
