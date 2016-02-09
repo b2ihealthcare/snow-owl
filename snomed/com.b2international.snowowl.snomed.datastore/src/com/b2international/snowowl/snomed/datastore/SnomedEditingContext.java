@@ -738,7 +738,7 @@ public class SnomedEditingContext extends BaseSnomedEditingContext {
 		return (SnomedStructuralRefSet) snomedRefSetLookupService.getComponent(languageRefSetId, transaction);
 	}
 
-	private String getLanguageRefSetId() {
+	public String getLanguageRefSetId() {
 		return ApplicationContext.getInstance().getServiceChecked(ILanguageConfigurationProvider.class).getLanguageConfiguration().getLanguageRefSetId(BranchPathUtils.createPath(transaction));
 	}
 	

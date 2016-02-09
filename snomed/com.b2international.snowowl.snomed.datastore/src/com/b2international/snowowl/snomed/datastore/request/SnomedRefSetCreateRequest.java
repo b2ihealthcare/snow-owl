@@ -61,10 +61,10 @@ final class SnomedRefSetCreateRequest extends BaseRequest<TransactionContext, St
 		final SnomedRefSetEditingContext refSetContext = context.service(SnomedEditingContext.class).getRefSetEditingContext();
 		
 		final SnomedRegularRefSet refSet = SnomedComponents
-			.newReferenceSet()
-			.setType(type)
-			.setReferencedComponentType(referencedComponentType)
-			.setIdentifierConceptId(identifierConceptId)
+			.newRegularReferenceSet()
+			.withType(type)
+			.withReferencedComponentType(referencedComponentType)
+			.withIdentifierConceptId(identifierConceptId)
 			.build(context);
 		
 		refSetContext.add(refSet);

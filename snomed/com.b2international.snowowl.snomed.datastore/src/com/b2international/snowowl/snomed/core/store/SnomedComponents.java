@@ -50,12 +50,12 @@ public class SnomedComponents {
 	}
 
 	/**
-	 * Creates and returns a new {@link SnomedReferenceSetBuilder SNOMED CT Reference Set builder}.
+	 * Creates and returns a new {@link SnomedRegularReferenceSetBuilder SNOMED CT Reference Set builder}.
 	 * 
 	 * @return
 	 */
-	public static SnomedReferenceSetBuilder newReferenceSet() {
-		return new SnomedReferenceSetBuilder();
+	public static SnomedRegularReferenceSetBuilder newRegularReferenceSet() {
+		return new SnomedRegularReferenceSetBuilder();
 	}
 
 	/**
@@ -101,6 +101,24 @@ public class SnomedComponents {
 	 */
 	public static SnomedAttributeValueReferenceSetMemberBuilder newAttributeValueMember() {
 		return new SnomedAttributeValueReferenceSetMemberBuilder();
+	}
+	
+	/**
+	 * Creates and returns a new {@link SnomedConcreteDomainReferenceSetBuilder SNOMED CT Concrete Domain Reference set builder}.
+	 * 
+	 * @return
+	 */
+	public static SnomedConcreteDomainReferenceSetBuilder newConcreteDomainReferenceSet() {
+		return new SnomedConcreteDomainReferenceSetBuilder();
+	}
+	
+	/**
+	 * Creates and returns a new {@link SnomedConcreteDomainReferenceSetMemberBuilder SNOMED CT Concrete Domain Reference set member builder}.
+	 * 
+	 * @return
+	 */
+	public static SnomedConcreteDomainReferenceSetMemberBuilder newConcreteDomainReferenceSetMember() {
+		return new SnomedConcreteDomainReferenceSetMemberBuilder();
 	}
 
 }
