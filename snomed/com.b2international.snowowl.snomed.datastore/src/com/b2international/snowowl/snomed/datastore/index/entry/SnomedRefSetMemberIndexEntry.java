@@ -285,7 +285,7 @@ public class SnomedRefSetMemberIndexEntry extends SnomedIndexEntry implements IC
 
 		super(id, 
 				label,
-				referenceSetId, // XXX: iconId is the reference set identifier
+				referencedComponentId, // XXX: iconId is the referenced component identifier
 				score, 
 				storageKey, 
 				moduleId, 
