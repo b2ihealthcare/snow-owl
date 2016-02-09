@@ -27,16 +27,30 @@ import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType;
 /**
  * @since 4.6
  */
-public class SnomedConcreteDomainReferenceSetBuilder extends SnomedBaseComponentBuilder<SnomedConcreteDomainReferenceSetBuilder, SnomedConcreteDataTypeRefSet> {
+public final class SnomedConcreteDomainReferenceSetBuilder extends SnomedBaseComponentBuilder<SnomedConcreteDomainReferenceSetBuilder, SnomedConcreteDataTypeRefSet> {
 
 	private String identifierConceptId;
 	private DataType dataType;
 	
+	protected SnomedConcreteDomainReferenceSetBuilder() {}
+	
+	/**
+	 * Specifies the SNOMED CT Identifier Concept ID of this SNOMED CT Concrete Domain Reference Set.
+	 * 
+	 * @param identifierConceptId
+	 * @return
+	 */
 	public SnomedConcreteDomainReferenceSetBuilder withIdentifierConceptId(final String identifierConceptId) {
 		this.identifierConceptId = identifierConceptId;
 		return getSelf();
 	}
 	
+	/**
+	 * Specifies the {@link DataType type} of the SNOMED CT Concrete Domain Reference Set
+	 * 
+	 * @param dataType
+	 * @return
+	 */
 	public SnomedConcreteDomainReferenceSetBuilder withDataType(final DataType dataType) {
 		this.dataType = dataType;
 		return getSelf();
@@ -51,8 +65,10 @@ public class SnomedConcreteDomainReferenceSetBuilder extends SnomedBaseComponent
 	protected void init(final SnomedConcreteDataTypeRefSet component, final TransactionContext context) {
 		checkNotNull(identifierConceptId, "Specify the identifier concept ID");
 		checkNotNull(dataType, "Datatype must be specified");
+		
 		component.setType(SnomedRefSetType.CONCRETE_DATA_TYPE);
 		component.setReferencedComponentType(CoreTerminologyBroker.UNSPECIFIED_NUMBER_SHORT);
+		
 		component.setIdentifierId(identifierConceptId);
 		component.setDataType(dataType);
 	}

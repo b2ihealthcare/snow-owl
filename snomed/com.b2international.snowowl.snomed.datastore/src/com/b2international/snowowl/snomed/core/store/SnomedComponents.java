@@ -50,12 +50,12 @@ public class SnomedComponents {
 	}
 
 	/**
-	 * Creates and returns a new {@link SnomedReferenceSetBuilder SNOMED CT Reference Set builder}.
+	 * Creates and returns a new {@link SnomedRegularReferenceSetBuilder SNOMED CT Reference Set builder}.
 	 * 
 	 * @return
 	 */
-	public static SnomedReferenceSetBuilder newReferenceSet() {
-		return new SnomedReferenceSetBuilder();
+	public static SnomedRegularReferenceSetBuilder newRegularReferenceSet() {
+		return new SnomedRegularReferenceSetBuilder();
 	}
 
 	/**

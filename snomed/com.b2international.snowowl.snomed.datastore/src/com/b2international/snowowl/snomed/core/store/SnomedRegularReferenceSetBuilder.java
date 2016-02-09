@@ -27,14 +27,13 @@ import com.b2international.snowowl.snomed.snomedrefset.SnomedRegularRefSet;
 /**
  * @since 4.5
  */
-public final class SnomedReferenceSetBuilder extends SnomedBaseComponentBuilder<SnomedReferenceSetBuilder, SnomedRegularRefSet> {
+public final class SnomedRegularReferenceSetBuilder extends SnomedBaseComponentBuilder<SnomedRegularReferenceSetBuilder, SnomedRegularRefSet> {
 
 	private String referencedComponentType = SnomedTerminologyComponentConstants.CONCEPT;
 	private String identifierConceptId;
 	private SnomedRefSetType type;
 
-	protected SnomedReferenceSetBuilder() {
-	}
+	protected SnomedRegularReferenceSetBuilder() {}
 
 	/**
 	 * Specifies the component type referenced by the created SNOMED CT Reference Set. It is CONCEPT by default.
@@ -42,7 +41,7 @@ public final class SnomedReferenceSetBuilder extends SnomedBaseComponentBuilder<
 	 * @param referencedComponentType
 	 * @return
 	 */
-	public SnomedReferenceSetBuilder setReferencedComponentType(String referencedComponentType) {
+	public SnomedRegularReferenceSetBuilder withReferencedComponentType(final String referencedComponentType) {
 		this.referencedComponentType = referencedComponentType;
 		return getSelf();
 	}
@@ -53,7 +52,7 @@ public final class SnomedReferenceSetBuilder extends SnomedBaseComponentBuilder<
 	 * @param identifierConceptId
 	 * @return
 	 */
-	public SnomedReferenceSetBuilder setIdentifierConceptId(String identifierConceptId) {
+	public SnomedRegularReferenceSetBuilder withIdentifierConceptId(final String identifierConceptId) {
 		this.identifierConceptId = identifierConceptId;
 		return getSelf();
 	}
@@ -64,7 +63,7 @@ public final class SnomedReferenceSetBuilder extends SnomedBaseComponentBuilder<
 	 * @param type - the type of the refset
 	 * @return
 	 */
-	public SnomedReferenceSetBuilder setType(SnomedRefSetType type) {
+	public SnomedRegularReferenceSetBuilder withType(final SnomedRefSetType type) {
 		this.type = type;
 		return getSelf();
 	}
@@ -75,7 +74,7 @@ public final class SnomedReferenceSetBuilder extends SnomedBaseComponentBuilder<
 	}
 
 	@Override
-	protected void init(SnomedRegularRefSet component, TransactionContext context) {
+	protected void init(final SnomedRegularRefSet component, final TransactionContext context) {
 		checkNotNull(identifierConceptId, "Specify the identifier concept ID");
 		checkNotNull(referencedComponentType, "Specify the referenced component type");
 		final CoreTerminologyBroker terminologies = context.service(CoreTerminologyBroker.class);
