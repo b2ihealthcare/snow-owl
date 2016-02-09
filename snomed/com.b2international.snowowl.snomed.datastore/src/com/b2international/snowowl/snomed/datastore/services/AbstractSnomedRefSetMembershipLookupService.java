@@ -59,6 +59,7 @@ import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemb
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRelationshipIndexEntry;
 import com.b2international.snowowl.snomed.datastore.index.refset.SnomedRefSetMembershipIndexQueryAdapter;
 import com.b2international.snowowl.snomed.datastore.index.refset.SnomedRefSetMembershipIndexQueryAdapter.SnomedConcreteDataTypeRefSetMembershipIndexQueryAdapter;
+import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Predicate;
@@ -68,6 +69,7 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 
 /**
+ * @deprecated - UNSUPPORTED API, please use {@link SnomedRequests#prepareSearchMember()} instead
  */
 public abstract class AbstractSnomedRefSetMembershipLookupService implements IRefSetMembershipLookupService<String> {
 

@@ -20,7 +20,6 @@ import org.eclipse.spi.net4j.ClientProtocolFactory;
 
 import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.internal.eventbus.EventBus;
-import com.b2international.snowowl.internal.eventbus.net4j.EventBusAwareElementInjector;
 import com.b2international.snowowl.internal.eventbus.net4j.EventBusProtocol;
 import com.b2international.snowowl.internal.eventbus.net4j.EventBusProtocolInjector;
 
@@ -39,7 +38,6 @@ public class EventBusNet4jUtil {
 		container.registerFactory(new EventBusProtocol.ClientFactory());
 		container.registerFactory(new EventBusProtocol.ServerFactory());
 		container.registerFactory(new EventBus.Factory());
-		container.addPostProcessor(new EventBusAwareElementInjector());
 		container.addPostProcessor(new EventBusProtocolInjector());
 	}
 
@@ -71,8 +69,8 @@ public class EventBusNet4jUtil {
 	 * @param numberOfWorkers
 	 * @return
 	 */
-	public static IEventBus getBus(IManagedContainer container, int numberOfWorkers) {
-		return getBus(container, EventBusConstants.GLOBAL_BUS, numberOfWorkers);
+	private static IEventBus getBus(IManagedContainer container, int numberOfWorkers) {
+		return getBus(container, EventBusConstants.GLOBAL_BUS, numberOfWorkers, true);
 	}
 
 	/**
@@ -83,9 +81,9 @@ public class EventBusNet4jUtil {
 	 * @param numberOfWorkers
 	 * @return
 	 */
-	public static IEventBus getBus(IManagedContainer container, String name, int numberOfWorkers) {
+	private static IEventBus getBus(IManagedContainer container, String name, int numberOfWorkers, boolean worker) {
 		return (IEventBus) container.getElement(EventBusConstants.EVENT_BUS_PRODUCT_GROUP,
-				EventBusConstants.PROTOCOL_NAME, String.format("%s:%s", name, numberOfWorkers), true);
+				EventBusConstants.PROTOCOL_NAME, String.format("%s:%s:%s", name, numberOfWorkers, worker), true);
 	}
 
 }

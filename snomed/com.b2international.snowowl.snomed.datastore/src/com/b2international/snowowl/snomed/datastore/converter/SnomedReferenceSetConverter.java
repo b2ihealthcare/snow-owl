@@ -28,15 +28,14 @@ import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSets
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetIndexEntry;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRefSetMemberSearchRequestBuilder;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
-import com.b2international.snowowl.snomed.datastore.services.AbstractSnomedRefSetMembershipLookupService;
 
 /**
  * @since 4.5
  */
 final class SnomedReferenceSetConverter extends BaseSnomedComponentConverter<SnomedRefSetIndexEntry, SnomedReferenceSet, SnomedReferenceSets> {
 	
-	protected SnomedReferenceSetConverter(BranchContext context, Options expand, List<ExtendedLocale> locales, AbstractSnomedRefSetMembershipLookupService refSetMembershipLookupService) {
-		super(context, expand, locales, refSetMembershipLookupService);
+	protected SnomedReferenceSetConverter(BranchContext context, Options expand, List<ExtendedLocale> locales) {
+		super(context, expand, locales);
 	}
 
 	@Override

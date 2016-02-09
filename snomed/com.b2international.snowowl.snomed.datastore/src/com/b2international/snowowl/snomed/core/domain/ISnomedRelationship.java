@@ -84,6 +84,7 @@ public interface ISnomedRelationship extends SnomedCoreComponent, IComponentEdge
 	 * Returns the relationship's refinability reference set member value.
 	 * 
 	 * @return the refinability value for this relationship
+	 * @deprecated - will be removed in 4.7
 	 */
 	RelationshipRefinability getRefinability();
 

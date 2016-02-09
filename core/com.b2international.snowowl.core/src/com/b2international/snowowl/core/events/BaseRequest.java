@@ -15,15 +15,11 @@
  */
 package com.b2international.snowowl.core.events;
 
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
 
 import com.b2international.commons.CompareUtils;
 import com.b2international.snowowl.core.ServiceProvider;
-import com.b2international.snowowl.core.api.SnowowlRuntimeException;
 import com.b2international.snowowl.core.events.util.Promise;
-import com.b2international.snowowl.core.exceptions.RequestTimeoutException;
 import com.b2international.snowowl.eventbus.IEventBus;
 import com.google.common.base.Joiner;
 
@@ -44,34 +40,12 @@ public abstract class BaseRequest<C extends ServiceProvider, B> extends BaseEven
 
 	@Override
 	public final B executeSync(IEventBus bus) {
-		try {
-			return execute(bus).get();
-		} catch (InterruptedException e) {
-			throw new SnowowlRuntimeException(e);
-		} catch (ExecutionException e) {
-			final Throwable cause = e.getCause();
-			if (cause instanceof RuntimeException) {
-				throw (RuntimeException) cause;
-			}
-			throw new SnowowlRuntimeException(cause);
-		}
+		return execute(bus).getSync();
 	}
 
 	@Override
 	public final B executeSync(IEventBus bus, long timeout) {
-		try {
-			return execute(bus).get(timeout, TimeUnit.MILLISECONDS);
-		} catch (TimeoutException e) {
-			throw new RequestTimeoutException(e);
-		} catch (InterruptedException e) {
-			throw new SnowowlRuntimeException(e);
-		} catch (ExecutionException e) {
-			final Throwable cause = e.getCause();
-			if (cause instanceof RuntimeException) {
-				throw (RuntimeException) cause;
-			}
-			throw new SnowowlRuntimeException(cause);
-		}
+		return execute(bus).getSync(timeout, TimeUnit.MILLISECONDS);
 	}
 
 	@Override

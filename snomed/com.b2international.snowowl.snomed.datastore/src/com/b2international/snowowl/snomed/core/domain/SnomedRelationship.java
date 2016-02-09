@@ -19,7 +19,7 @@ package com.b2international.snowowl.snomed.core.domain;
  * Represents a SNOMEd&nbsp;CT relationship.
  * 
  */
-public class SnomedRelationship extends BaseSnomedComponent implements ISnomedRelationship {
+public class SnomedRelationship extends BaseSnomedCoreComponent implements ISnomedRelationship {
 
 	private boolean destinationNegated;
 	private int group;
@@ -30,6 +30,13 @@ public class SnomedRelationship extends BaseSnomedComponent implements ISnomedRe
 	private ISnomedConcept source;
 	private ISnomedConcept destination;
 	private ISnomedConcept type;
+
+	public SnomedRelationship() {
+	}
+	
+	public SnomedRelationship(String id) {
+		setId(id);
+	}
 
 	@Override
 	public String getSourceId() {

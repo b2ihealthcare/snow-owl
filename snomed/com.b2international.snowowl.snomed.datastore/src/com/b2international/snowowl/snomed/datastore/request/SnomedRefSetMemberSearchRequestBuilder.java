@@ -53,6 +53,10 @@ public final class SnomedRefSetMemberSearchRequestBuilder extends SnomedSearchRe
 		return addOption(OptionKey.REFERENCED_COMPONENT, ImmutableSet.copyOf(referencedComponentIds));
 	}
 	
+	public SnomedRefSetMemberSearchRequestBuilder filterByRefSetType(final SnomedRefSetType...refSetTypes) {
+		return addOption(OptionKey.REFSET_TYPE, ImmutableSet.copyOf(refSetTypes));
+	}
+	
 	public SnomedRefSetMemberSearchRequestBuilder filterByRefSetType(final Iterable<SnomedRefSetType> refSetTypes) {
 		return addOption(OptionKey.REFSET_TYPE, ImmutableSet.copyOf(refSetTypes));
 	}
