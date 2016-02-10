@@ -54,8 +54,6 @@ import org.eclipse.emf.ecore.EClass;
 import org.eclipse.emf.ecore.EStructuralFeature;
 import org.slf4j.Logger;
 
-import bak.pcj.set.LongSet;
-
 import com.b2international.snowowl.core.CoreTerminologyBroker;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.api.SnowowlServiceException;
@@ -65,14 +63,14 @@ import com.b2international.snowowl.datastore.cdo.ICDOTransactionAggregator;
 import com.b2international.snowowl.datastore.server.index.InternalTerminologyRegistryServiceRegistry;
 import com.b2international.snowowl.datastore.version.IPublishManager;
 import com.b2international.snowowl.datastore.version.IPublishOperationConfiguration;
-import com.b2international.snowowl.datastore.version.IVersioningManager;
-import com.b2international.snowowl.datastore.version.VersioningManagerBroker;
 import com.b2international.snowowl.terminologymetadata.CodeSystem;
 import com.b2international.snowowl.terminologymetadata.CodeSystemVersion;
 import com.b2international.snowowl.terminologymetadata.CodeSystemVersionGroup;
 import com.google.common.base.Function;
 import com.google.common.base.Supplier;
 import com.google.common.base.Suppliers;
+
+import bak.pcj.set.LongSet;
 
 /**
  * Abstract component publish manager implementation.
@@ -272,19 +270,15 @@ public abstract class PublishManager implements IPublishManager {
 	/** Processes all changes for the given terminology as a part of the publication. */
 	private void processTerminologyChanges() {
 		checkNotNull(getConfiguration(), "Publish operation configuration was null.");
-		final LongSet storageKeys = collectUnversionedComponentStorageKeys();
+		LOGGER.info("Collecting unversioned components...");
+		final LongSet storageKeys = getUnversionedComponentStorageKeys(getBranchPathForPublication());
+		LOGGER.info("Unversioned components have been successfully collected.");
 		preProcess(storageKeys);
 		adjustComponents(storageKeys);
 		postProcess();
 	}
 
-	private LongSet collectUnversionedComponentStorageKeys() {
-		LOGGER.info("Collecting unversioned components...");
-		final IVersioningManager versioningManager = VersioningManagerBroker.INSTANCE.getVersioningManager(getToolingId());
-		final LongSet storageKeys = versioningManager.getUnversionedComponentStorageKeys(getBranchPathForPublication());
-		LOGGER.info("Unversioned components have been successfully collected.");
-		return storageKeys;
-	}
+	protected abstract LongSet getUnversionedComponentStorageKeys(IBranchPath branchPath);
 
 	private boolean couldCreateVersion(final IPublishOperationConfiguration configuration) {
 		return !newHashSet(transform(getAllVersions(createMainPath()), new Function<ICodeSystemVersion, String>() {

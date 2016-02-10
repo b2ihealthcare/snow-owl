@@ -20,6 +20,8 @@ import org.eclipse.emf.ecore.EStructuralFeature;
 
 import bak.pcj.set.LongSet;
 
+import com.b2international.commons.pcj.LongCollections;
+import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.datastore.version.INoopPublishManager;
 
 /**
@@ -29,6 +31,11 @@ import com.b2international.snowowl.datastore.version.INoopPublishManager;
  */
 public abstract class NoopPublishManager extends PublishManager implements INoopPublishManager {
 
+	@Override
+	protected LongSet getUnversionedComponentStorageKeys(IBranchPath branchPath) {
+		return LongCollections.emptySet();
+	}
+	
 	@Override
 	protected EStructuralFeature getEffectiveTimeFeature(final EClass eClass) {
 		throw new UnsupportedOperationException();
