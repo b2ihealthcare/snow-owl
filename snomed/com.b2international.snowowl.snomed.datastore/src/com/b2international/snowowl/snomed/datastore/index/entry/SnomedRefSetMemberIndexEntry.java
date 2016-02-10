@@ -339,7 +339,7 @@ public class SnomedRefSetMemberIndexEntry extends SnomedIndexEntry implements IC
 		case SnomedRf2Headers.FIELD_SOURCE_EFFECTIVE_TIME:
 		case SnomedRf2Headers.FIELD_TARGET_EFFECTIVE_TIME:
 		case SnomedRf2Headers.FIELD_UNIT_ID:
-			if (value instanceof String) {
+			if (value instanceof String && !StringUtils.isEmpty((String) value)) {
 				return Long.valueOf((String) value);
 			}
 		default: return value;
