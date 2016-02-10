@@ -39,11 +39,6 @@
             id="com.b2international.snowowl.datastore.version.TagServiceClientConfigJob"
             terminologyId="UNSPECIFIED">
       </serviceConfigJob>
-            <serviceConfigJob
-            class="com.b2international.snowowl.datastore.version.VersioningManagerClientConfigJob"
-            id="com.b2international.snowowl.datastore.version.UnversionedComponentProviderClientConfigJob"
-            terminologyId="UNSPECIFIED">
-      </serviceConfigJob>
       <serviceConfigJob
             class="com.b2international.snowowl.datastore.oplock.impl.DatastoreLockManagerClientConfigJob"
             id="com.b2international.snowowl.datastore.oplock.impl.DatastoreLockManagerClientConfigJob"

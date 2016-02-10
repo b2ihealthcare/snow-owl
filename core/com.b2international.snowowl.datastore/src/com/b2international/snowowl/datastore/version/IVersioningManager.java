@@ -15,17 +15,9 @@
  */
 package com.b2international.snowowl.datastore.version;
 
-import bak.pcj.set.LongSet;
-
-import com.b2international.snowowl.core.api.IBranchPath;
-
 /**
  * Service interface for collecting unpublished components and publishing them
  * by setting properties on it such as effective time and/or released flag.
  */
 public interface IVersioningManager extends IPublishManager {
-
-	/**Returns with a set of unversioned component storage keys from the given {@link IBranchPath branch}.*/
-	LongSet getUnversionedComponentStorageKeys(final IBranchPath branchPath);
-	
 }

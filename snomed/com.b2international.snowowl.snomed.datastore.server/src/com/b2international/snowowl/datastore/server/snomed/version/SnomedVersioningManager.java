@@ -15,15 +15,9 @@
  */
 package com.b2international.snowowl.datastore.server.snomed.version;
 
-import static com.b2international.snowowl.core.ApplicationContext.getServiceForClass;
-
-import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.datastore.server.snomed.ISnomedVersioningManager;
 import com.b2international.snowowl.datastore.version.IPublishManager;
 import com.b2international.snowowl.datastore.version.VersioningManager;
-import com.b2international.snowowl.snomed.datastore.services.ISnomedComponentService;
-
-import bak.pcj.set.LongSet;
 
 /**
  * {@link ISnomedUnversionedComponentProvider} implementation.
@@ -32,12 +26,6 @@ import bak.pcj.set.LongSet;
 public class SnomedVersioningManager extends VersioningManager implements ISnomedVersioningManager {
 	
 	private SnomedPublishManager publishManager;
-
-	@Override
-	public LongSet getUnversionedComponentStorageKeys(final IBranchPath branchPath) {
-		final ISnomedComponentService componentService = getServiceForClass(ISnomedComponentService.class);
-		return componentService.getAllUnpublishedComponentStorageKeys(branchPath);
-	}
 
 	@Override
 	protected IPublishManager getPublishManager() {

@@ -15,13 +15,8 @@
  */
 package com.b2international.snowowl.datastore.version;
 
-import static com.b2international.commons.pcj.LongCollections.emptySet;
-
 import org.eclipse.emf.ecore.EPackage;
 
-import bak.pcj.set.LongSet;
-
-import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.datastore.delta.HierarchicalComponentDelta;
 import com.b2international.snowowl.datastore.delta.IComponentDeltaProvider;
 
@@ -30,11 +25,6 @@ import com.b2international.snowowl.datastore.delta.IComponentDeltaProvider;
  *
  */
 public abstract class NoopVersioningManager extends VersioningManager {
-
-	@Override
-	public LongSet getUnversionedComponentStorageKeys(final IBranchPath branchPath) {
-		return emptySet();
-	}
 
 	@Override
 	protected abstract INoopPublishManager getPublishManager();
