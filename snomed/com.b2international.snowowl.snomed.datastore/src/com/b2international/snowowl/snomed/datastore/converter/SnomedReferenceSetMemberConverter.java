@@ -232,6 +232,7 @@ final class SnomedReferenceSetMemberConverter extends BaseSnomedComponentConvert
 				props.put(SnomedRf2Headers.FIELD_VALUE, entry.getValue());
 				props.put(SnomedRf2Headers.FIELD_UNIT_ID, entry.getUomComponentId());
 				props.put(SnomedRf2Headers.FIELD_OPERATOR_ID, entry.getOperatorComponentId());
+				props.put(SnomedMappings.memberDataTypeOrdinal().fieldName(), entry.getRefSetPackageDataType().ordinal());
 				break;
 			case LANGUAGE:
 				props.put(SnomedRf2Headers.FIELD_ACCEPTABILITY_ID, entry.getAcceptabilityId());
