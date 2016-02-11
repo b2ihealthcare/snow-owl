@@ -44,6 +44,7 @@ import com.b2international.commons.pcj.LongSets;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.exceptions.IllegalQueryParameterException;
 import com.b2international.snowowl.core.terminology.ComponentCategory;
+import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.core.domain.ISnomedDescription;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcepts;
 import com.b2international.snowowl.snomed.datastore.converter.SnomedConverters;
@@ -100,6 +101,11 @@ final class SnomedConceptSearchRequest extends SnomedSearchRequest<SnomedConcept
 		NAMESPACE,
 		
 		/**
+		 * The definition status to match
+		 */
+		DEFINITION_STATUS,
+		
+		/**
 		 * Parent concept ID that can be found in the inferred direct super type hierarchy
 		 */
 		PARENT,
@@ -145,6 +151,10 @@ final class SnomedConceptSearchRequest extends SnomedSearchRequest<SnomedConcept
 		final SnomedQueryBuilder queryBuilder = SnomedMappings.newQuery().concept();
 		addActiveClause(queryBuilder);
 		addModuleClause(queryBuilder);
+		
+		if (containsKey(OptionKey.DEFINITION_STATUS)) {
+			queryBuilder.primitive(Concepts.PRIMITIVE.equals(getString(OptionKey.DEFINITION_STATUS)));
+		}
 		
 		if (containsKey(OptionKey.PARENT)) {
 			queryBuilder.parent(getString(OptionKey.PARENT));

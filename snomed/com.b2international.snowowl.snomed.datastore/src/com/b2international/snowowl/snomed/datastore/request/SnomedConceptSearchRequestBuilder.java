@@ -30,15 +30,15 @@ public final class SnomedConceptSearchRequestBuilder extends SnomedSearchRequest
 	public final SnomedConceptSearchRequestBuilder withDoi() {
 		return addOption(SnomedConceptSearchRequest.OptionKey.USE_DOI, true);
 	}
-	
+
 	public final SnomedConceptSearchRequestBuilder withSearchProfile(final String userId) {
 		return addOption(SnomedConceptSearchRequest.OptionKey.SEARCH_PROFILE, userId);
 	}
-	
+
 	public final SnomedConceptSearchRequestBuilder withFuzzySearch() {
 		return addOption(SnomedConceptSearchRequest.OptionKey.USE_FUZZY, true);
 	}
-	
+
 	public final SnomedConceptSearchRequestBuilder withParsedTerm() {
 		return addOption(SnomedConceptSearchRequest.OptionKey.PARSED_TERM, true);
 	}
@@ -46,7 +46,7 @@ public final class SnomedConceptSearchRequestBuilder extends SnomedSearchRequest
 	public final SnomedConceptSearchRequestBuilder filterByTerm(String term) {
 		return addOption(SnomedConceptSearchRequest.OptionKey.TERM, term);
 	}
-	
+
 	public final SnomedConceptSearchRequestBuilder filterByDescriptionType(String type) {
 		return addOption(SnomedConceptSearchRequest.OptionKey.DESCRIPTION_TYPE, type);
 	}
@@ -64,7 +64,7 @@ public final class SnomedConceptSearchRequestBuilder extends SnomedSearchRequest
 	public final SnomedConceptSearchRequestBuilder filterByParent(String parentId) {
 		return addOption(SnomedConceptSearchRequest.OptionKey.PARENT, parentId);
 	}
-	
+
 	/**
 	 * Filter matches to have the specified parent identifier amongst the direct stated super types.
 	 * 
@@ -84,7 +84,7 @@ public final class SnomedConceptSearchRequestBuilder extends SnomedSearchRequest
 	public final SnomedConceptSearchRequestBuilder filterByAncestor(String ancestorId) {
 		return addOption(SnomedConceptSearchRequest.OptionKey.ANCESTOR, ancestorId);
 	}
-	
+
 	/**
 	 * Filter matches to have the specified ancestor identifier amongst the stated super types (including direct as well).
 	 * 
@@ -95,8 +95,19 @@ public final class SnomedConceptSearchRequestBuilder extends SnomedSearchRequest
 		return addOption(SnomedConceptSearchRequest.OptionKey.STATED_ANCESTOR, ancestorId);
 	}
 
+	/**
+	 * Filter matches to have the specified definition status set.
+	 * 
+	 * @param definitionStatusId
+	 * @return
+	 */
+	public final SnomedConceptSearchRequestBuilder filterByDefinitionStatus(String definitionStatusId) {
+		return addOption(SnomedConceptSearchRequest.OptionKey.DEFINITION_STATUS, definitionStatusId);
+	}
+
 	@Override
 	protected SearchRequest<SnomedConcepts> create() {
 		return new SnomedConceptSearchRequest();
 	}
+
 }
