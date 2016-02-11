@@ -57,6 +57,7 @@ import com.google.common.collect.BiMap;
 import com.google.common.collect.ImmutableBiMap;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.ImmutableSet.Builder;
 
 /** 
  * Utility class collecting commons operations related to SNOMED CT reference sets. 
@@ -379,31 +380,25 @@ public abstract class SnomedRefSetUtil {
 	}
 
 	/**
-	 * Get the type dependent preference page tab item text
+	 * Get the type dependent label
 	 * 
 	 * @param type SnomedRefSetType
-	 * @return String tab item text
+	 * @return
 	 */
-	//concrete domain reference set members should not be shown in the UI.
-	public static String getPreferencePageTabItemText(SnomedRefSetType type) {
+	public static String getTypeLabel(SnomedRefSetType type) {
 		
 		switch (type) {
-			case ATTRIBUTE_VALUE:
-				return "Attribute value type reference set";
-			case LANGUAGE:
-				return "Language type reference set"; // not used at preferences
-			case QUERY:
-				return "Query type reference set";
-			case SIMPLE_MAP:
-				return "Simple map type reference set";
-			case SIMPLE:
-				return "Simple type reference set";
-			case COMPLEX_MAP:
-				return "Complex map type reference set";
-			case EXTENDED_MAP:
-				return "Extended map type reference set";
-			case DESCRIPTION_TYPE:
-				return "Description type reference set";
+			case ATTRIBUTE_VALUE: return "Attribute value type reference set";
+			case LANGUAGE: return "Language type reference set";
+			case QUERY: return "Query type reference set";
+			case SIMPLE_MAP: return "Simple map type reference set";
+			case SIMPLE: return "Simple type reference set";
+			case COMPLEX_MAP: return "Complex map type reference set";
+			case EXTENDED_MAP: return "Extended map type reference set";
+			case DESCRIPTION_TYPE: return "Description type reference set";
+			case ASSOCIATION: return "Association type reference set";
+			case CONCRETE_DATA_TYPE: return "Concrete domain type reference set";
+			case MODULE_DEPENDENCY: return "Module dependency type reference set";
 			default:
 				throw new IllegalArgumentException("Unexpected reference set type: " + type);
 		}
@@ -440,6 +435,17 @@ public abstract class SnomedRefSetUtil {
 		}
 	}
 	
+	/**
+	 * Returns concept IDs of the currently known and handled reference set types.
+	 * @return
+	 */
+	public static Collection<String> getRefSetTypeConceptIds() {
+		final Builder<String> ids = ImmutableSet.builder();
+		for (SnomedRefSetType type : SnomedRefSetType.values()) {
+			ids.add(getConceptId(type));
+		}
+		return ids.build();
+	}
 	
 	@SuppressWarnings("unchecked")
 	public static <T> T deserializeValue(final DataType dataType, final String serializedValue) {
