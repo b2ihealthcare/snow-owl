@@ -152,6 +152,10 @@ final class SnomedConceptSearchRequest extends SnomedSearchRequest<SnomedConcept
 		addActiveClause(queryBuilder);
 		addModuleClause(queryBuilder);
 		
+		if (containsKey(OptionKey.NAMESPACE)) {
+			queryBuilder.conceptNamespaceId(Long.valueOf(getString(OptionKey.NAMESPACE)));
+		}
+		
 		if (containsKey(OptionKey.DEFINITION_STATUS)) {
 			queryBuilder.primitive(Concepts.PRIMITIVE.equals(getString(OptionKey.DEFINITION_STATUS)));
 		}
