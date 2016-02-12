@@ -94,6 +94,7 @@ import org.slf4j.LoggerFactory;
 import com.b2international.commons.CompareUtils;
 import com.b2international.commons.Pair;
 import com.b2international.commons.StringUtils;
+import com.b2international.commons.http.ExtendedLocale;
 import com.b2international.commons.pcj.LongCollections;
 import com.b2international.commons.pcj.LongSets;
 import com.b2international.snowowl.core.ApplicationContext;
@@ -117,12 +118,18 @@ import com.b2international.snowowl.datastore.server.index.IndexServerService;
 import com.b2international.snowowl.datastore.server.snomed.index.NamespaceMapping;
 import com.b2international.snowowl.datastore.server.snomed.index.ReducedConcreteDomainFragmentCollector;
 import com.b2international.snowowl.datastore.server.snomed.index.SnomedComponentLabelCollector;
+import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.snomed.Concept;
 import com.b2international.snowowl.snomed.Description;
 import com.b2international.snowowl.snomed.Relationship;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.SnomedPackage;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
+import com.b2international.snowowl.snomed.core.domain.ISnomedConcept;
+import com.b2international.snowowl.snomed.core.domain.ISnomedDescription;
+import com.b2international.snowowl.snomed.core.domain.ISnomedRelationship;
+import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMember;
+import com.b2international.snowowl.snomed.core.lang.LanguageSetting;
 import com.b2international.snowowl.snomed.datastore.ILanguageConfigurationProvider;
 import com.b2international.snowowl.snomed.datastore.PredicateUtils;
 import com.b2international.snowowl.snomed.datastore.SnomedConceptInactivationIdCollector;
@@ -143,6 +150,7 @@ import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemb
 import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedMappings;
 import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedQueryBuilder;
 import com.b2international.snowowl.snomed.datastore.index.refset.SnomedRefSetMemberIndexQueryAdapter;
+import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.b2international.snowowl.snomed.datastore.services.ISnomedComponentService;
 import com.b2international.snowowl.snomed.datastore.snor.PredicateIndexEntry;
 import com.b2international.snowowl.snomed.mrcm.HierarchyInclusionType;
@@ -1505,7 +1513,40 @@ public class SnomedComponentService implements ISnomedComponentService, IPostSto
 	@Override
 	@Deprecated
 	public Pair<String, String> getMemberLabel(final IBranchPath branchPath, final String uuid) {
-		throw new UnsupportedOperationException("Can't retrieve reference set member labels.");		
+		
+		IEventBus eventBus = ApplicationContext.getInstance().getService(IEventBus.class);
+		List<ExtendedLocale> languagePreference = ApplicationContext.getInstance().getService(LanguageSetting.class).getLanguagePreference();
+		
+		SnomedReferenceSetMember member = SnomedRequests.prepareGetMember()
+				.setComponentId(uuid)
+				.setLocales(languagePreference)
+			.build(branchPath.getPath())
+			.executeSync(eventBus);
+		
+		
+		String referencedComponentId = member.getReferencedComponent().getId();
+		short referencedComponentType = SnomedTerminologyComponentConstants.getTerminologyComponentIdValue(referencedComponentId);
+		
+		String term = "";
+		switch (referencedComponentType) {
+			case SnomedTerminologyComponentConstants.CONCEPT_NUMBER:
+				ISnomedConcept concept = SnomedRequests.prepareGetConcept().setComponentId(referencedComponentId).setExpand("pt()").build(branchPath.getPath()).executeSync(eventBus);
+				term = concept.getPt().getTerm();
+				break;
+				
+			case SnomedTerminologyComponentConstants.DESCRIPTION_NUMBER:
+				ISnomedDescription description = SnomedRequests.prepareGetDescription()
+						.setComponentId(member.getReferencedComponent().getId())
+					.build(branchPath.getPath())
+					.executeSync(eventBus);
+				
+				term = description.getTerm();
+				break;
+		}
+		
+		
+		
+		return Pair.<String, String>of(term, ""); //XXX: previous implementation added back the member's target.
 	}
 
 	
@@ -2110,7 +2151,50 @@ public class SnomedComponentService implements ISnomedComponentService, IPostSto
 	
 	/*returns with the label of the component if any. this method may return with null.*/
 	@Nullable private String getComponentLabel(final IBranchPath branchPath, final String componentId, final IndexServerService<?> service, final IndexSearcher searcher) throws IOException {
-		return componentId;
+		
+		
+		
+		IEventBus eventBus = ApplicationContext.getInstance().getService(IEventBus.class);
+		List<ExtendedLocale> languagePreference = ApplicationContext.getInstance().getService(LanguageSetting.class).getLanguagePreference();
+		
+		
+		short referencedComponentType = SnomedTerminologyComponentConstants.getTerminologyComponentIdValue(componentId);
+		
+		String componentLabel = componentId;
+		switch (referencedComponentType) {
+			case SnomedTerminologyComponentConstants.CONCEPT_NUMBER:
+				ISnomedConcept concept = SnomedRequests.prepareGetConcept()
+						.setComponentId(componentId)
+						.setExpand("pt()")
+						.setLocales(languagePreference)
+					.build(branchPath.getPath())
+					.executeSync(eventBus);
+				componentLabel = concept.getPt().getTerm();
+				break;
+				
+			case SnomedTerminologyComponentConstants.DESCRIPTION_NUMBER:
+				ISnomedDescription description = SnomedRequests.prepareGetDescription()
+						.setComponentId(componentId)
+						.setLocales(languagePreference)
+					.build(branchPath.getPath())
+					.executeSync(eventBus);
+				
+				componentLabel = description.getTerm();
+				break;
+			case RELATIONSHIP_NUMBER:
+				ISnomedRelationship relationship = SnomedRequests.prepareGetRelationship()
+						.setComponentId(componentId)
+						.setLocales(languagePreference)
+					.build(branchPath.getPath())
+					.executeSync(eventBus);
+				componentLabel = relationship.getSourceConcept().getPt().getTerm() + " " +  relationship.getTypeConcept().getPt().getTerm() + " " +  relationship.getDestinationConcept().getPt().getTerm();
+				break;
+			
+		}
+		
+		
+		
+		return componentLabel;
 		
 //		Query labelQuery = null;
 //		
