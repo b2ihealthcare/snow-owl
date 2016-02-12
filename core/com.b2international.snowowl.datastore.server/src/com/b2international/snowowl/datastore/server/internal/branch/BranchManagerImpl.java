@@ -16,15 +16,25 @@
 package com.b2international.snowowl.datastore.server.internal.branch;
 
 import java.util.Collection;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 import javax.annotation.OverridingMethodsMustInvokeSuper;
 
+import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.Metadata;
 import com.b2international.snowowl.core.branch.Branch;
 import com.b2international.snowowl.core.branch.BranchManager;
 import com.b2international.snowowl.core.exceptions.AlreadyExistsException;
 import com.b2international.snowowl.core.exceptions.BadRequestException;
 import com.b2international.snowowl.core.exceptions.NotFoundException;
+import com.b2international.snowowl.datastore.oplock.IOperationLockTarget;
+import com.b2international.snowowl.datastore.oplock.impl.DatastoreLockContext;
+import com.b2international.snowowl.datastore.oplock.impl.IDatastoreOperationLockManager;
+import com.b2international.snowowl.datastore.oplock.impl.SingleRepositoryAndBranchLockTarget;
+import com.b2international.snowowl.datastore.server.oplock.OperationLockInfo;
+import com.b2international.snowowl.datastore.server.oplock.impl.DatastoreOperationLockManager;
 import com.b2international.snowowl.datastore.store.Store;
 import com.b2international.snowowl.datastore.store.query.Query;
 import com.b2international.snowowl.datastore.store.query.QueryBuilder;
@@ -86,6 +96,22 @@ public abstract class BranchManagerImpl implements BranchManager {
 		if (branch == null) {
 			throw new NotFoundException(Branch.class.getSimpleName(), path);
 		}
+		
+		final IDatastoreOperationLockManager lockManager = ApplicationContext.getInstance().getService(IDatastoreOperationLockManager.class);
+		final List<OperationLockInfo<DatastoreLockContext>> locks = ((DatastoreOperationLockManager) lockManager).getLocks();
+		for (OperationLockInfo<DatastoreLockContext> operationLockInfo : locks) {
+			final IOperationLockTarget target = operationLockInfo.getTarget();
+			if (target instanceof SingleRepositoryAndBranchLockTarget) {
+				SingleRepositoryAndBranchLockTarget lockTarget = (SingleRepositoryAndBranchLockTarget) target;
+				if (lockTarget.getBranchPath().equals(branch.branchPath())) {
+					Map<String, Object> lockInfo = new HashMap<>();
+					lockInfo.put("creationDate", operationLockInfo.getCreationDate());
+					lockInfo.put("context", operationLockInfo.getContext());
+					branch.metadata().put("lock", lockInfo);
+				}
+			}
+		}
+		
 		return branch;
 	}
 
