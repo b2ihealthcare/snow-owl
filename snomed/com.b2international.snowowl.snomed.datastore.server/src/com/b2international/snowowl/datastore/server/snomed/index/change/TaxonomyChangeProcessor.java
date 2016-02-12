@@ -22,6 +22,7 @@ import bak.pcj.set.LongSet;
 import com.b2international.commons.Pair;
 import com.b2international.snowowl.datastore.ICDOCommitChangeSet;
 import com.b2international.snowowl.datastore.index.ChangeSetProcessorBase;
+import com.b2international.snowowl.snomed.Concept;
 import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedDocumentBuilder;
 import com.b2international.snowowl.snomed.datastore.index.update.ParentageUpdater;
 import com.b2international.snowowl.snomed.datastore.taxonomy.ISnomedTaxonomyBuilder;
@@ -58,6 +59,10 @@ public class TaxonomyChangeProcessor extends ChangeSetProcessorBase<SnomedDocume
 
 	@Override
 	public void process(ICDOCommitChangeSet commitChangeSet) {
+		for (Concept concept : getNewComponents(commitChangeSet, Concept.class)) {
+			registerConcept(concept.getId());
+		}
+		
 		registerConceptAndDescendants(getNewIsARelationshipIds(), newTaxonomy);
 		registerConceptAndDescendants(getDetachedIsARelationshipIds(), previousTaxonomy);
 	}
