@@ -286,6 +286,7 @@ public abstract class SnomedConstants {
 		public static final String MODULE_ROOT = "900000000000443000";
 		public static final String MODULE_SCT_CORE = "900000000000207008";
 		public static final String MODULE_B2I_EXTENSION = "636635721000154103";
+		public static final String B2I_NAMESPACE = "1000154";
 
 		// SG specific concepts
 		public static final String GENERATED_SINGAPORE_MEDICINAL_PRODUCT = "551000991000133100";

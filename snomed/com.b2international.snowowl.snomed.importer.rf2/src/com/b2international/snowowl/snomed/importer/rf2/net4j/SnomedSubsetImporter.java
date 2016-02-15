@@ -277,7 +277,7 @@ public class SnomedSubsetImporter {
 				subsetInformation.setNameSpace(namespace);
 			} else {
 				// default namespace is 1000154
-				subsetInformation.setNameSpace("1000154");
+				subsetInformation.setNameSpace(Concepts.B2I_NAMESPACE);
 			}
 			if (!CompareUtils.isEmpty(effectiveTime)) {
 				subsetInformation.setEffectiveTime(EffectiveTimes.parse(effectiveTime, DateFormats.SHORT));
@@ -309,7 +309,7 @@ public class SnomedSubsetImporter {
 	private void createConcept(final TransactionContext context, final String parentConceptId, final String conceptId, final String moduleId, final String label) {
 		// TODO remove lang refset ID from here, and use hard coded one for these custom concepts to be reproducible
 		final String languageRefSetId = context.service(SnomedEditingContext.class).getLanguageRefSetId();
-		SnomedRequests
+		final String createdConceptId = SnomedRequests
 			.prepareNewConcept()
 			.setId(conceptId)
 			.setParent(parentConceptId)
@@ -318,12 +318,23 @@ public class SnomedSubsetImporter {
 					.prepareNewDescription()
 					.setTerm(label)
 					.setTypeId(Concepts.FULLY_SPECIFIED_NAME)
-					.acceptableIn(languageRefSetId))
+					.preferredIn(languageRefSetId))
 			.addDescription(SnomedRequests
 					.prepareNewDescription()
 					.setTerm(label)
 					.setTypeId(Concepts.SYNONYM)
-					.acceptableIn(languageRefSetId))
+					.preferredIn(languageRefSetId))
+			.build()
+			.execute(context);
+		
+		SnomedRequests
+			.prepareNewRelationship()
+			.setIdFromNamespace(Concepts.B2I_NAMESPACE)
+			.setModuleId(moduleId)
+			.setSourceId(createdConceptId)
+			.setTypeId(Concepts.IS_A)
+			.setDestinationId(parentConceptId)
+			.setCharacteristicType(CharacteristicType.INFERRED_RELATIONSHIP)
 			.build()
 			.execute(context);
 		
@@ -414,6 +425,7 @@ public class SnomedSubsetImporter {
 			this.idColumnNumber = idColumnNumber;
 			this.hasHeader = hasHeader; 
 			this.moduleId = context.lookup(refSetType, Concept.class).getModule().getId();
+			final String languageReferenceSetId = context.service(SnomedEditingContext.class).getLanguageRefSetId();
 			
 			SnomedConceptCreateRequestBuilder identifierConceptReq = SnomedRequests
 					.prepareNewConcept()
@@ -421,20 +433,22 @@ public class SnomedSubsetImporter {
 					.setParent(refSetType)
 					.addDescription(SnomedRequests
 							.prepareNewDescription()
-							.setIdFromNamespace("1000154")
+							.setIdFromNamespace(Concepts.B2I_NAMESPACE)
 							.setTerm(label)
-							.setTypeId(Concepts.FULLY_SPECIFIED_NAME))
+							.setTypeId(Concepts.FULLY_SPECIFIED_NAME)
+							.preferredIn(languageReferenceSetId))
 					.addDescription(SnomedRequests
 							.prepareNewDescription()
-							.setIdFromNamespace("1000154")
+							.setIdFromNamespace(Concepts.B2I_NAMESPACE)
 							.setTerm(label)
-							.setTypeId(Concepts.SYNONYM));
+							.setTypeId(Concepts.SYNONYM)
+							.preferredIn(languageReferenceSetId));
 			
 			// replace ID if it is a known refset
 			final String cmtRefSetIdId = getIdIfCMTConcept(label);
 			if (cmtRefSetIdId == null) {
 				// XXX hardcoded B2i namespace???
-				identifierConceptReq.setIdFromNamespace("1000154");
+				identifierConceptReq.setIdFromNamespace(Concepts.B2I_NAMESPACE);
 			} else {
 				identifierConceptReq.setId(cmtRefSetIdId);
 			}
@@ -454,7 +468,7 @@ public class SnomedSubsetImporter {
 				.setDestinationId(refSetType)
 				.setTypeId(Concepts.IS_A)
 				.setCharacteristicType(CharacteristicType.INFERRED_RELATIONSHIP)
-				.setIdFromNamespace("1000154")
+				.setIdFromNamespace(Concepts.B2I_NAMESPACE)
 				.setModuleId(moduleId)
 				.build().execute(context);
 		}
