@@ -338,7 +338,6 @@ public class SnomedConceptServiceImpl
 		}
 		
 		reactivateRelationships(concept.getOutboundRelationships());
-		reactivateRelationships(concept.getInboundRelationships());
 	}
 
 	private void reactivateRelationships(EList<Relationship> relationships) {

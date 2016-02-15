@@ -1098,9 +1098,6 @@ public class SnomedEditingContext extends BaseSnomedEditingContext {
 				return SnomedInactivationPlan.NULL_IMPL;
 			}
 			
-			//destination relationships
-			plan.markForInactivation(Iterables.toArray(concept.getInboundRelationships(), Relationship.class));
-			
 			if (monitor.isCanceled()) {
 				return SnomedInactivationPlan.NULL_IMPL;
 			}
@@ -1146,20 +1143,13 @@ public class SnomedEditingContext extends BaseSnomedEditingContext {
 		final Concept isAConcept = findConceptById(IS_A);
 		final Concept statedRelationshipTypeConcept = findConceptById(STATED_RELATIONSHIP);
 		
+		Collection<SnomedConceptIndexEntry> children = ApplicationContext.getInstance().getServiceChecked(SnomedTerminologyBrowser.class).getSubTypesById(BranchPathUtils.createPath(getTransaction()), concept.getId());
 		for (final Concept parent : parents) {
-			for (final Concept child : getChildren(concept)) {
-				buildDefaultRelationship(child, isAConcept, parent, statedRelationshipTypeConcept);
+			// TODO index search required
+			for (final SnomedConceptIndexEntry child : children) {
+				buildDefaultRelationship((Concept) lookup(child.getStorageKey()), isAConcept, parent, statedRelationshipTypeConcept);
 			}
 		}
-	}
-	
-	/*returns with all the children concept of the specified concept specified with an active inbound IS_A relationship*/
-	private Iterable<Concept> getChildren(final Concept concept) {
-		return Iterables.transform(getAllInboundIsA(concept), new Function<Relationship, Concept>() {
-			@Override public Concept apply(Relationship relationship) {
-				return relationship.getSource();
-			}
-		});
 	}
 	
 	/*returns with all the parent concept of the specified concept specified with an active outbound IS_A relationship*/
@@ -1169,11 +1159,6 @@ public class SnomedEditingContext extends BaseSnomedEditingContext {
 				return relationship.getDestination();
 			}
 		});
-	}
-	
-	/*returns all the active in-bound (destination) IS_A relationship of the concept.*/
-	private Iterable<Relationship> getAllInboundIsA(final Concept concept) {
-		return getAllIsA(concept.getInboundRelationships());
 	}
 	
 	/*returns all the active out-bound (source) IS_A relationship of the concept.*/
@@ -1216,16 +1201,17 @@ public class SnomedEditingContext extends BaseSnomedEditingContext {
 			return deletionPlan;
 		}
 		
-		// check sub-concepts
-		for(Relationship relationship: concept.getInboundRelationships()) {
-			if(IS_A.equals(relationship.getType().getId())) {
-				deletionPlan = canDelete(relationship, deletionPlan);
-				if(deletionPlan.isRejected()) {
-					deletionPlan.addRejectionReason("Cannot delete concept: '" + toString(concept) + "'.");
-					return deletionPlan;
-				}
-			}
-		}
+		// TODO check sub-concepts
+		
+//		for (Relationship relationship: concept.getInboundRelationships()) {
+//			if(IS_A.equals(relationship.getType().getId())) {
+//				deletionPlan = canDelete(relationship, deletionPlan);
+//				if(deletionPlan.isRejected()) {
+//					deletionPlan.addRejectionReason("Cannot delete concept: '" + toString(concept) + "'.");
+//					return deletionPlan;
+//				}
+//			}
+//		}
 		
 		// check descriptions. If the deletion is not legit, we cannot reach this point, hence a check would be meaningless
 		for (Description description : concept.getDescriptions()) {
@@ -1263,7 +1249,6 @@ public class SnomedEditingContext extends BaseSnomedEditingContext {
 		deletionPlan.markForDeletion(descriptionTypeRefSetMembers);
 		
 		deletionPlan.markForDeletion(concept);
-		deletionPlan.markForDeletion(concept.getInboundRelationships());
 		deletionPlan.markForDeletion(concept.getOutboundRelationships());
 		
 		return deletionPlan;
@@ -1447,8 +1432,6 @@ public class SnomedEditingContext extends BaseSnomedEditingContext {
 						throw new RuntimeException("Unknown reference set type");
 					}
 				}
-			} else if (item instanceof Relationship) {
-				index = getIndexFromDatabase(item, ((Relationship) item).getDestination(), "SNOMED_CONCEPT_INBOUNDRELATIONSHIPS_LIST");
 			}
 			
 			itemMap.put(index, item);
@@ -1491,8 +1474,8 @@ public class SnomedEditingContext extends BaseSnomedEditingContext {
 				//in case of relationship or description an index lookup is not necessary 
 			} else if (eObject instanceof Relationship) {
 				Relationship relationship = (Relationship) eObject;
-				relationship.getDestination().getInboundRelationships().remove(index);
 				relationship.setSource(null);
+				relationship.setDestination(null);
 			} else if (eObject instanceof Description) {
 				Description description = (Description) eObject;
 				// maybe description was already removed before save, so the delete is reflected on the ui

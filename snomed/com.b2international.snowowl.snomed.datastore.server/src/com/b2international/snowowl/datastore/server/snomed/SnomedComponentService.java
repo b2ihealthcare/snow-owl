@@ -175,7 +175,6 @@ import com.b2international.snowowl.datastore.server.snomed.index.ReducedConcrete
 import com.b2international.snowowl.datastore.server.snomed.index.SnomedComponentLabelCollector;
 import com.b2international.snowowl.snomed.Concept;
 import com.b2international.snowowl.snomed.Description;
-import com.b2international.snowowl.snomed.Relationship;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.SnomedPackage;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
@@ -594,12 +593,6 @@ public class SnomedComponentService implements ISnomedComponentService, IPostSto
 				
 				if (null == root ) { //SNOMED CT is not available
 					return;
-				}
-				
-				for (final Relationship destinationRelationship : root.getInboundRelationships()) {
-					
-					//just warm top level concepts
-					destinationRelationship.getSource().getFullySpecifiedName();
 				}
 				
 				LOGGER.info("The cache warming for SNOMED CT component service successfully finished.");

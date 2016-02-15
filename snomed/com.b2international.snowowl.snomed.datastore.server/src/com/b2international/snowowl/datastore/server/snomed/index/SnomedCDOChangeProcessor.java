@@ -51,7 +51,6 @@ import org.eclipse.emf.cdo.common.branch.CDOBranchPoint;
 import org.eclipse.emf.cdo.common.id.CDOID;
 import org.eclipse.emf.cdo.common.revision.CDORevision;
 import org.eclipse.emf.cdo.common.revision.delta.CDOFeatureDelta;
-import org.eclipse.emf.cdo.common.revision.delta.CDORevisionDelta;
 import org.eclipse.emf.cdo.server.IStoreAccessor;
 import org.eclipse.emf.cdo.server.StoreThreadLocal;
 import org.eclipse.emf.cdo.spi.common.revision.InternalCDORevision;
@@ -2130,9 +2129,7 @@ public class SnomedCDOChangeProcessor implements ICDOChangeProcessor {
 		} else if (SnomedPackage.eINSTANCE.getConcept().equals(component.eClass())) {
 			final Concept concept = (Concept) component;
 			dirtyConcepts.add(concept);
-			if (!hasOnlyInboundRelationshipChanges(concept)) {
-				dirtyConceptIdsWithCompareUpdate.add(parseLong(concept.getId()));
-			}
+			dirtyConceptIdsWithCompareUpdate.add(parseLong(concept.getId()));
 			
 			final String conceptId = concept.getId();
 			if (allRefSetIdsSupplier.get().contains(conceptId)) {
@@ -2271,18 +2268,6 @@ public class SnomedCDOChangeProcessor implements ICDOChangeProcessor {
 		}		
 	}
 
-	private boolean hasOnlyInboundRelationshipChanges(final Concept concept) {
-		final CDORevisionDelta revisionDelta = commitChangeSet.getRevisionDeltas().get(concept.cdoID());
-		if (null == revisionDelta) {
-			return false;
-		}
-		final CDOFeatureDelta featureDelta = revisionDelta.getFeatureDelta(SnomedPackage.eINSTANCE.getConcept_InboundRelationships());
-		if (null == featureDelta) {
-			return false;
-		}
-		return 1 == revisionDelta.getFeatureDeltas().size();
-	}
-	
 	private boolean isStructural(final SnomedRefSet refSet) {
 		return refSet instanceof SnomedStructuralRefSet;
 	}

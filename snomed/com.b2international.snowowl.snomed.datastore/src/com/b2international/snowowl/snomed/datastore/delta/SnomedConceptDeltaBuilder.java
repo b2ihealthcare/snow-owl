@@ -24,8 +24,6 @@ import org.eclipse.emf.cdo.common.branch.CDOBranchPoint;
 import org.eclipse.emf.cdo.common.id.CDOID;
 import org.eclipse.emf.cdo.common.revision.CDOIDAndVersion;
 import org.eclipse.emf.cdo.common.revision.CDORevision;
-import org.eclipse.emf.cdo.common.revision.delta.CDOFeatureDelta;
-import org.eclipse.emf.cdo.common.revision.delta.CDOListFeatureDelta;
 import org.eclipse.emf.cdo.common.revision.delta.CDORevisionDelta;
 import org.eclipse.emf.cdo.spi.common.revision.InternalCDORevision;
 import org.eclipse.emf.cdo.spi.common.revision.InternalCDORevisionDelta;
@@ -298,31 +296,6 @@ public class SnomedConceptDeltaBuilder extends AbstractHierarchicalComponentDelt
 			//reference set cannot change
 			
 			return;
-		}
-		
-
-		//this point we could filter out changes which are changes in the object graph in EMF level
-		//but should not be included in SNOMED CT level. E.g.: concept inbound/destination relationship changes
-		if (idAndVersion instanceof InternalCDORevisionDelta) {
-			
-			final InternalCDORevisionDelta delta = (InternalCDORevisionDelta) idAndVersion;
-			//if the delta contains exactly one change
-			if (!CompareUtils.isEmpty(delta.getFeatureDeltas()) && 1 == delta.getFeatureDeltas().size()) {
-				
-				final CDOFeatureDelta featureDelta = Iterables.get(delta.getFeatureDeltas(), 0);
-				
-				if (featureDelta instanceof CDOListFeatureDelta) {
-					
-						//filter out destination relationship changes
-						if (SnomedPackage.eINSTANCE.getConcept_InboundRelationships().equals(featureDelta.getFeature())) {
-							return;
-						}
-					
-				}
-				
-				
-			}
-			
 		}
 		
 		final CDOObject object = CDOUtils.getObjectIfExists(view, idAndVersion.getID());

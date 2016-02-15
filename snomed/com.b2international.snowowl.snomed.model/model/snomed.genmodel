@@ -34,7 +34,6 @@
     <genClasses ecoreClass="snomed.ecore#//Concept">
       <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference snomed.ecore#//Concept/definitionStatus"/>
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference snomed.ecore#//Concept/outboundRelationships"/>
-      <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference snomed.ecore#//Concept/inboundRelationships"/>
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference snomed.ecore#//Concept/descriptions"/>
       <genFeatures createChild="false" ecoreFeature="ecore:EAttribute snomed.ecore#//Concept/exhaustive"/>
       <genFeatures property="Readonly" createChild="false" ecoreFeature="ecore:EAttribute snomed.ecore#//Concept/fullySpecifiedName"/>
