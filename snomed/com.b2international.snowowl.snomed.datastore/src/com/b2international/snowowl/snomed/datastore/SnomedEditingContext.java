@@ -1006,9 +1006,6 @@ public class SnomedEditingContext extends BaseSnomedEditingContext {
 				return SnomedInactivationPlan.NULL_IMPL;
 			}
 			
-			//destination relationships
-			plan.markForInactivation(Iterables.toArray(concept.getInboundRelationships(), Relationship.class));
-			
 			if (monitor.isCanceled()) {
 				return SnomedInactivationPlan.NULL_IMPL;
 			}
@@ -1139,7 +1136,7 @@ public class SnomedEditingContext extends BaseSnomedEditingContext {
 			return deletionPlan;
 		}
 		
-		// check sub-concepts
+		// TODO check sub-concepts
 		for (Relationship relationship: concept.getInboundRelationships()) {
 			if (IS_A.equals(relationship.getType().getId())) {
 				deletionPlan = canDelete(relationship, deletionPlan);
@@ -1181,7 +1178,6 @@ public class SnomedEditingContext extends BaseSnomedEditingContext {
 		deletionPlan.markForDeletion(descriptionTypeRefSetMembers);
 		
 		deletionPlan.markForDeletion(concept);
-		deletionPlan.markForDeletion(concept.getInboundRelationships());
 		deletionPlan.markForDeletion(concept.getOutboundRelationships());
 		
 		return deletionPlan;
@@ -1351,8 +1347,6 @@ public class SnomedEditingContext extends BaseSnomedEditingContext {
 						throw new RuntimeException("Unknown reference set type");
 					}
 				}
-			} else if (item instanceof Relationship) {
-				index = getIndexFromDatabase(item, ((Relationship) item).getDestination(), "SNOMED_CONCEPT_INBOUNDRELATIONSHIPS_LIST");
 			}
 			
 			itemMap.put(index, item);
@@ -1395,8 +1389,8 @@ public class SnomedEditingContext extends BaseSnomedEditingContext {
 				//in case of relationship or description an index lookup is not necessary 
 			} else if (eObject instanceof Relationship) {
 				Relationship relationship = (Relationship) eObject;
-				relationship.getDestination().getInboundRelationships().remove(index);
 				relationship.setSource(null);
+				relationship.setDestination(null);
 			} else if (eObject instanceof Description) {
 				Description description = (Description) eObject;
 				// maybe description was already removed before save, so the delete is reflected on the ui

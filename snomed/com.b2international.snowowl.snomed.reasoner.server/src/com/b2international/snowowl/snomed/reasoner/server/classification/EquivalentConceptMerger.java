@@ -150,7 +150,7 @@ public class EquivalentConceptMerger {
 	private void switchToEquivalentConcept(final Concept conceptToKeep, final Collection<Concept> conceptsToRemove) {
 		removeDeprecatedRelationships(conceptToKeep, conceptsToRemove);
 		for (final Concept conceptToRemove : conceptsToRemove) {
-			switchInboundRelationships(conceptToKeep, conceptsToRemove, conceptToRemove);
+//			switchInboundRelationships(conceptToKeep, conceptsToRemove, conceptToRemove);
 			switchOutboundRelationships(conceptToKeep, conceptsToRemove, conceptToRemove);
 			switchRefSetMembers(conceptToKeep, conceptToRemove);
 		}
@@ -196,45 +196,44 @@ public class EquivalentConceptMerger {
 		}
 	}
 
-	private void switchInboundRelationships(final Concept conceptToKeep, final Collection<Concept> conceptsToRemove,
-			final Concept conceptToRemove) {
-		
-		for (final Relationship inboundRelationship : newArrayList(conceptToRemove.getInboundRelationships())) {
-			
-			if (!inboundRelationship.isActive()) {
-				continue;
-			}
-			
-			if (conceptsToRemove.contains(inboundRelationship.getSource())) {
-				SnomedModelExtensions.removeOrDeactivate(inboundRelationship);
-				continue;
-			}
-			
-			boolean found = false;
-			for (final Relationship replacementInboundRelationship : conceptToKeep.getInboundRelationships()) {
-				if (replacementInboundRelationship.isActive()
-						&& inboundRelationship.getType().equals(replacementInboundRelationship.getType())
-						&& inboundRelationship.getSource().equals(replacementInboundRelationship.getSource())
-						&& inboundRelationship.getModifier().equals(replacementInboundRelationship.getModifier())) {
-					found = true;
-					break;
-				}
-			}
-
-			if (found) {
-				SnomedModelExtensions.removeOrDeactivate(inboundRelationship);
-			} else {
-				final Relationship relationshipToKeep = editingContext.buildDefaultRelationship(inboundRelationship.getSource(), 
-						inboundRelationship.getType(), 
-						conceptToKeep,
-						inboundRelationship.getCharacteristicType(),
-						inboundRelationship.getModule(),
-						editingContext.getNamespace()); // FIXME: get namespace from inbound relationship
-
-				switchRelationship(relationshipToKeep, inboundRelationship);
-			}
-		}
-	}
+//	private void switchInboundRelationships(final Concept conceptToKeep, final Collection<Concept> conceptsToRemove, final Concept conceptToRemove) {
+//		
+//		for (final Relationship inboundRelationship : newArrayList(conceptToRemove.getInboundRelationships())) {
+//			
+//			if (!inboundRelationship.isActive()) {
+//				continue;
+//			}
+//			
+//			if (conceptsToRemove.contains(inboundRelationship.getSource())) {
+//				SnomedModelExtensions.removeOrDeactivate(inboundRelationship);
+//				continue;
+//			}
+//			
+//			boolean found = false;
+//			for (final Relationship replacementInboundRelationship : conceptToKeep.getInboundRelationships()) {
+//				if (replacementInboundRelationship.isActive()
+//						&& inboundRelationship.getType().equals(replacementInboundRelationship.getType())
+//						&& inboundRelationship.getSource().equals(replacementInboundRelationship.getSource())
+//						&& inboundRelationship.getModifier().equals(replacementInboundRelationship.getModifier())) {
+//					found = true;
+//					break;
+//				}
+//			}
+//
+//			if (found) {
+//				SnomedModelExtensions.removeOrDeactivate(inboundRelationship);
+//			} else {
+//				final Relationship relationshipToKeep = editingContext.buildDefaultRelationship(inboundRelationship.getSource(), 
+//						inboundRelationship.getType(), 
+//						conceptToKeep,
+//						inboundRelationship.getCharacteristicType(),
+//						inboundRelationship.getModule(),
+//						editingContext.getNamespace()); // FIXME: get namespace from inbound relationship
+//
+//				switchRelationship(relationshipToKeep, inboundRelationship);
+//			}
+//		}
+//	}
 
 	private void switchRelationship(Relationship relationshipToKeep, Relationship relationshipToRemove) {
 		relationshipToKeep.setCharacteristicType(relationshipToRemove.getCharacteristicType());
@@ -327,11 +326,11 @@ public class EquivalentConceptMerger {
 	
 	private void removeDeprecatedRelationships(final Concept conceptToKeep, final Collection<Concept> conceptToRemove) {
 
-		for (final Relationship inboundRelationship : newArrayList(conceptToKeep.getInboundRelationships())) {
-			if (conceptToRemove.contains(inboundRelationship.getSource())) {
-				SnomedModelExtensions.removeOrDeactivate(inboundRelationship);
-			}
-		}
+//		for (final Relationship inboundRelationship : newArrayList(conceptToKeep.getInboundRelationships())) {
+//			if (conceptToRemove.contains(inboundRelationship.getSource())) {
+//				SnomedModelExtensions.removeOrDeactivate(inboundRelationship);
+//			}
+//		}
 
 		for (final Relationship outboundRelationship : newArrayList(conceptToKeep.getOutboundRelationships())) {
 			if (conceptToRemove.contains(outboundRelationship.getDestination())) {

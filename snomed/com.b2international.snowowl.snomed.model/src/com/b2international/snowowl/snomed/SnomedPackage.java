@@ -435,22 +435,13 @@ public interface SnomedPackage extends EPackage {
 	int CONCEPT__OUTBOUND_RELATIONSHIPS = COMPONENT_FEATURE_COUNT + 4;
 
 	/**
-	 * The feature id for the '<em><b>Inbound Relationships</b></em>' reference list.
-	 * <!-- begin-user-doc -->
-	 * <!-- end-user-doc -->
-	 * @generated
-	 * @ordered
-	 */
-	int CONCEPT__INBOUND_RELATIONSHIPS = COMPONENT_FEATURE_COUNT + 5;
-
-	/**
 	 * The feature id for the '<em><b>Descriptions</b></em>' containment reference list.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
 	 * @generated
 	 * @ordered
 	 */
-	int CONCEPT__DESCRIPTIONS = COMPONENT_FEATURE_COUNT + 6;
+	int CONCEPT__DESCRIPTIONS = COMPONENT_FEATURE_COUNT + 5;
 
 	/**
 	 * The feature id for the '<em><b>Exhaustive</b></em>' attribute.
@@ -459,7 +450,7 @@ public interface SnomedPackage extends EPackage {
 	 * @generated
 	 * @ordered
 	 */
-	int CONCEPT__EXHAUSTIVE = COMPONENT_FEATURE_COUNT + 7;
+	int CONCEPT__EXHAUSTIVE = COMPONENT_FEATURE_COUNT + 6;
 
 	/**
 	 * The feature id for the '<em><b>Fully Specified Name</b></em>' attribute.
@@ -468,7 +459,7 @@ public interface SnomedPackage extends EPackage {
 	 * @generated
 	 * @ordered
 	 */
-	int CONCEPT__FULLY_SPECIFIED_NAME = COMPONENT_FEATURE_COUNT + 8;
+	int CONCEPT__FULLY_SPECIFIED_NAME = COMPONENT_FEATURE_COUNT + 7;
 
 	/**
 	 * The feature id for the '<em><b>Primitive</b></em>' attribute.
@@ -477,7 +468,7 @@ public interface SnomedPackage extends EPackage {
 	 * @generated
 	 * @ordered
 	 */
-	int CONCEPT__PRIMITIVE = COMPONENT_FEATURE_COUNT + 9;
+	int CONCEPT__PRIMITIVE = COMPONENT_FEATURE_COUNT + 8;
 
 	/**
 	 * The number of structural features of the '<em>Concept</em>' class.
@@ -486,7 +477,7 @@ public interface SnomedPackage extends EPackage {
 	 * @generated
 	 * @ordered
 	 */
-	int CONCEPT_FEATURE_COUNT = COMPONENT_FEATURE_COUNT + 10;
+	int CONCEPT_FEATURE_COUNT = COMPONENT_FEATURE_COUNT + 9;
 
 	/**
 	 * The meta object id for the '{@link com.b2international.snowowl.snomed.impl.RelationshipImpl <em>Relationship</em>}' class.
@@ -1102,17 +1093,6 @@ public interface SnomedPackage extends EPackage {
 	EReference getConcept_OutboundRelationships();
 
 	/**
-	 * Returns the meta object for the reference list '{@link com.b2international.snowowl.snomed.Concept#getInboundRelationships <em>Inbound Relationships</em>}'.
-	 * <!-- begin-user-doc -->
-	 * <!-- end-user-doc -->
-	 * @return the meta object for the reference list '<em>Inbound Relationships</em>'.
-	 * @see com.b2international.snowowl.snomed.Concept#getInboundRelationships()
-	 * @see #getConcept()
-	 * @generated
-	 */
-	EReference getConcept_InboundRelationships();
-
-	/**
 	 * Returns the meta object for the containment reference list '{@link com.b2international.snowowl.snomed.Concept#getDescriptions <em>Descriptions</em>}'.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
@@ -1515,14 +1495,6 @@ public interface SnomedPackage extends EPackage {
 		 * @generated
 		 */
 		EReference CONCEPT__OUTBOUND_RELATIONSHIPS = eINSTANCE.getConcept_OutboundRelationships();
-
-		/**
-		 * The meta object literal for the '<em><b>Inbound Relationships</b></em>' reference list feature.
-		 * <!-- begin-user-doc -->
-		 * <!-- end-user-doc -->
-		 * @generated
-		 */
-		EReference CONCEPT__INBOUND_RELATIONSHIPS = eINSTANCE.getConcept_InboundRelationships();
 
 		/**
 		 * The meta object literal for the '<em><b>Descriptions</b></em>' containment reference list feature.
