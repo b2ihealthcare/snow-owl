@@ -31,9 +31,9 @@ import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.snomed.core.domain.ISnomedConcept;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcepts;
-import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSet;
 import com.b2international.snowowl.snomed.core.store.SnomedComponents;
 import com.b2international.snowowl.snomed.datastore.id.SnomedIdentifiers;
+import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSet;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetMember;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType;
 import com.google.common.base.Strings;
@@ -77,10 +77,10 @@ final class SnomedRefSetMemberCreateRequest extends BaseRequest<TransactionConte
 	
 	@Override
 	public String execute(TransactionContext context) {
-		final SnomedReferenceSet refSet;
+		final SnomedRefSet refSet;
 		// TODO convert this 404 -> 400 logic into an interceptor one level higher (like all create requests should work the same way)
 		try {
-			refSet = SnomedRequests.prepareGetReferenceSet().setComponentId(referenceSetId).build().execute(context);
+			refSet = context.lookup(referenceSetId, SnomedRefSet.class);
 		} catch (ComponentNotFoundException e) {
 			throw e.toBadRequestException();
 		}
@@ -119,7 +119,7 @@ final class SnomedRefSetMemberCreateRequest extends BaseRequest<TransactionConte
 		return ClassUtils.checkAndCast(properties.get(REFSET_DESCRIPTION), String.class);
 	}
 	
-	private void checkInput(final SnomedReferenceSet refSet, final SnomedRefSetType type) {
+	private void checkInput(final SnomedRefSet refSet, final SnomedRefSetType type) {
 		RefSetSupport.check(type);
 		if (!Strings.isNullOrEmpty(referencedComponentId)) {
 			if (SnomedRefSetType.QUERY == type) {
@@ -128,9 +128,9 @@ final class SnomedRefSetMemberCreateRequest extends BaseRequest<TransactionConte
 			// XXX referenced component ID for query type reference set cannot be defined, validate only if defined
 			// TODO support other terminologies when enabling mappings
 			SnomedIdentifiers.validate(referencedComponentId);
-			final String referencedComponentType = SnomedTerminologyComponentConstants.getTerminologyComponentId(referencedComponentId);
-			if (!refSet.getReferencedComponentType().equals(referencedComponentType)) {
-				throw new BadRequestException("'%s' reference set can't reference '%s | %s' component. Only '%s' components are allowed.", refSet.getId(), referencedComponentId, referencedComponentType, refSet.getReferencedComponentType());
+			short referencedComponentType = SnomedTerminologyComponentConstants.getTerminologyComponentIdValue(referencedComponentId);
+			if (refSet.getReferencedComponentType() != referencedComponentType) {
+				throw new BadRequestException("'%s' reference set can't reference '%s | %s' component. Only '%s' components are allowed.", refSet.getIdentifierId(), referencedComponentId, referencedComponentType, refSet.getReferencedComponentType());
 			}
 		} else if (SnomedRefSetType.QUERY != type) {
 			throw new BadRequestException("'%s' cannot be null or empty for '%s' type reference sets.", SnomedRf2Headers.FIELD_REFERENCED_COMPONENT_ID, type);

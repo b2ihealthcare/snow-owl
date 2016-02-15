@@ -39,6 +39,7 @@ import com.b2international.snowowl.core.api.browser.ITerminologyBrowser;
 import com.b2international.snowowl.core.date.DateFormats;
 import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.core.domain.TransactionContext;
+import com.b2international.snowowl.core.terminology.ComponentCategory;
 import com.b2international.snowowl.datastore.BranchPathUtils;
 import com.b2international.snowowl.datastore.cdo.ICDOConnection;
 import com.b2international.snowowl.datastore.cdo.ICDOConnectionManager;
@@ -49,6 +50,7 @@ import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.SnomedPackage;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.snomed.core.domain.CharacteristicType;
+import com.b2international.snowowl.snomed.core.domain.NamespaceIdGenerationStrategy;
 import com.b2international.snowowl.snomed.datastore.SnomedEditingContext;
 import com.b2international.snowowl.snomed.datastore.SnomedTerminologyBrowser;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptIndexEntry;
@@ -301,10 +303,6 @@ public class SnomedSubsetImporter {
 		}
 	}
 
-	// FSN ID: 250928901000154112
-	// PT ID: 94920731000154113
-	// IS_A ID: 864454871000154127
-
 	// Creates a concept
 	private void createConcept(final TransactionContext context, final String parentConceptId, final String conceptId, final String moduleId, final String label) {
 		// TODO remove lang refset ID from here, and use hard coded one for these custom concepts to be reproducible
@@ -312,15 +310,20 @@ public class SnomedSubsetImporter {
 		final String createdConceptId = SnomedRequests
 			.prepareNewConcept()
 			.setId(conceptId)
-			.setParent(parentConceptId)
 			.setModuleId(moduleId)
+			.setParent(parentConceptId)
+			.setIsAId(new NamespaceIdGenerationStrategy(ComponentCategory.RELATIONSHIP, Concepts.B2I_NAMESPACE))
 			.addDescription(SnomedRequests
 					.prepareNewDescription()
+					.setIdFromNamespace(Concepts.B2I_NAMESPACE)
+					.setModuleId(moduleId)
 					.setTerm(label)
 					.setTypeId(Concepts.FULLY_SPECIFIED_NAME)
 					.preferredIn(languageRefSetId))
 			.addDescription(SnomedRequests
 					.prepareNewDescription()
+					.setIdFromNamespace(Concepts.B2I_NAMESPACE)
+					.setModuleId(moduleId)
 					.setTerm(label)
 					.setTypeId(Concepts.SYNONYM)
 					.preferredIn(languageRefSetId))
@@ -332,8 +335,8 @@ public class SnomedSubsetImporter {
 			.setIdFromNamespace(Concepts.B2I_NAMESPACE)
 			.setModuleId(moduleId)
 			.setSourceId(createdConceptId)
-			.setTypeId(Concepts.IS_A)
 			.setDestinationId(parentConceptId)
+			.setTypeId(Concepts.IS_A)
 			.setCharacteristicType(CharacteristicType.INFERRED_RELATIONSHIP)
 			.build()
 			.execute(context);
@@ -431,15 +434,18 @@ public class SnomedSubsetImporter {
 					.prepareNewConcept()
 					.setModuleId(moduleId)
 					.setParent(refSetType)
+					.setIsAId(new NamespaceIdGenerationStrategy(ComponentCategory.RELATIONSHIP, Concepts.B2I_NAMESPACE))
 					.addDescription(SnomedRequests
 							.prepareNewDescription()
 							.setIdFromNamespace(Concepts.B2I_NAMESPACE)
+							.setModuleId(moduleId)
 							.setTerm(label)
 							.setTypeId(Concepts.FULLY_SPECIFIED_NAME)
 							.preferredIn(languageReferenceSetId))
 					.addDescription(SnomedRequests
 							.prepareNewDescription()
 							.setIdFromNamespace(Concepts.B2I_NAMESPACE)
+							.setModuleId(moduleId)
 							.setTerm(label)
 							.setTypeId(Concepts.SYNONYM)
 							.preferredIn(languageReferenceSetId));
@@ -453,7 +459,6 @@ public class SnomedSubsetImporter {
 				identifierConceptReq.setId(cmtRefSetIdId);
 			}
 			
-			// This will only create a stated ISA to the parent
 			this.refSetId = SnomedRequests
 				.prepareNewRefSet()
 				.setType(SnomedRefSetType.SIMPLE)
@@ -464,12 +469,12 @@ public class SnomedSubsetImporter {
 			
 			// We create an inferred ISA manually to the same parent
 			SnomedRequests.prepareNewRelationship()
+				.setIdFromNamespace(Concepts.B2I_NAMESPACE)
+				.setModuleId(moduleId)
 				.setSourceId(refSetId)
 				.setDestinationId(refSetType)
 				.setTypeId(Concepts.IS_A)
 				.setCharacteristicType(CharacteristicType.INFERRED_RELATIONSHIP)
-				.setIdFromNamespace(Concepts.B2I_NAMESPACE)
-				.setModuleId(moduleId)
 				.build().execute(context);
 		}
 		

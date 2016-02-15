@@ -27,10 +27,12 @@ import com.b2international.snowowl.core.branch.Branch;
 import com.b2international.snowowl.core.config.SnowOwlConfiguration;
 import com.b2international.snowowl.core.domain.TransactionContext;
 import com.b2international.snowowl.datastore.server.CDOServerUtils;
+import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.snomed.datastore.SnomedEditingContext;
 import com.b2international.snowowl.snomed.datastore.config.SnomedCoreConfiguration;
 import com.b2international.snowowl.snomed.datastore.id.ISnomedIdentifierService;
 import com.b2international.snowowl.snomed.datastore.id.SnomedIdentifiers;
+import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.google.inject.Provider;
 
 /**
@@ -40,6 +42,7 @@ public class ImportOnlySnomedTransactionContext implements TransactionContext {
 
 	private final SnomedEditingContext editingContext;
 	private final SnomedIdentifiers snomedIdentifiers;
+	private Branch branch;
 
 	public ImportOnlySnomedTransactionContext(final SnomedEditingContext editingContext) {
 		this.editingContext = editingContext;
@@ -49,7 +52,13 @@ public class ImportOnlySnomedTransactionContext implements TransactionContext {
 	
 	@Override
 	public Branch branch() {
-		throw new UnsupportedOperationException();
+		if (null == branch) {
+			branch = SnomedRequests
+						.branching()
+						.prepareGet(editingContext.getBranch())
+						.executeSync(ApplicationContext.getServiceForClass(IEventBus.class));
+		}
+		return branch;
 	}
 
 	@Override
@@ -66,6 +75,8 @@ public class ImportOnlySnomedTransactionContext implements TransactionContext {
 	public <T> T service(final Class<T> type) {
 		if (type.isAssignableFrom(SnomedIdentifiers.class)) {
 			return type.cast(snomedIdentifiers);
+		} else if (type.isAssignableFrom(SnomedEditingContext.class)) {
+			return type.cast(editingContext);
 		}
 		return ApplicationContext.getInstance().getServiceChecked(type);
 	}
@@ -77,7 +88,7 @@ public class ImportOnlySnomedTransactionContext implements TransactionContext {
 
 	@Override
 	public void close() throws Exception {
-		throw new UnsupportedOperationException();
+		editingContext.close();
 	}
 
 	@Override
@@ -100,7 +111,7 @@ public class ImportOnlySnomedTransactionContext implements TransactionContext {
 		try {
 			final CDOCommitInfo info = CDOServerUtils.commit(editingContext.getTransaction(), userId, commitComment, new NullProgressMonitor());
 			return info.getTimeStamp();
-		} catch (CommitException e) {
+		} catch (final CommitException e) {
 			throw new SnowowlRuntimeException(e);
 		}
 	}
