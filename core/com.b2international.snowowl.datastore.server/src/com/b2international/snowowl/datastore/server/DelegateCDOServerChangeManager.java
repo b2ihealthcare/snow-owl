@@ -122,7 +122,7 @@ public class DelegateCDOServerChangeManager {
 							try {
 								processor.process(commitChangeSet);
 								return Status.OK_STATUS;
-							} catch (final SnowowlServiceException e) {
+							} catch (final Exception e) {
 								return new Status(IStatus.ERROR, DatastoreServerActivator.PLUGIN_ID, "Error while processing changes with " + processor.getName() + " for branch: " + branchPath, e);
 							}
 							
@@ -156,6 +156,8 @@ public class DelegateCDOServerChangeManager {
 			if (e instanceof RuntimeException) {
 				if (e.getCause() instanceof ApiException) {
 					throw (ApiException) e.getCause();
+				} else {
+					throw new SnowowlRuntimeException("Error when executing change processors on branch: " + branchPath, e);
 				}
 			} else {
 				throw new SnowowlRuntimeException("Error when executing change processors on branch: " + branchPath, e);
