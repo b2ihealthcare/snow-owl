@@ -451,12 +451,12 @@ public class SnomedSubsetImporter {
 							.preferredIn(languageReferenceSetId));
 			
 			// replace ID if it is a known refset
-			final String cmtRefSetIdId = getIdIfCMTConcept(label);
-			if (cmtRefSetIdId == null) {
+			final String cmtRefSetId = getIdIfCMTConcept(label);
+			if (cmtRefSetId == null) {
 				// XXX hardcoded B2i namespace???
 				identifierConceptReq.setIdFromNamespace(Concepts.B2I_NAMESPACE);
 			} else {
-				identifierConceptReq.setId(cmtRefSetIdId);
+				identifierConceptReq.setId(cmtRefSetId);
 			}
 			
 			this.refSetId = SnomedRequests
