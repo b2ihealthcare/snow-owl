@@ -44,7 +44,6 @@ import com.b2international.snowowl.snomed.core.domain.CaseSignificance;
 import com.b2international.snowowl.snomed.core.domain.CharacteristicType;
 import com.b2international.snowowl.snomed.core.domain.RelationshipModifier;
 import com.b2international.snowowl.snomed.core.store.SnomedComponents;
-import com.b2international.snowowl.snomed.datastore.FakeSnomedTransactionContext;
 import com.b2international.snowowl.snomed.datastore.ISnomedImportPostProcessor;
 import com.b2international.snowowl.snomed.datastore.ISnomedPostProcessorContext;
 import com.b2international.snowowl.snomed.datastore.SnomedRefSetUtil;
@@ -84,7 +83,7 @@ public class SnomedConcreteDomainImportPostProcessor implements ISnomedImportPos
 	@Override
 	public void postProcess(final ISnomedPostProcessorContext postProcessorContext) {
 		
-		final FakeSnomedTransactionContext context = new FakeSnomedTransactionContext(postProcessorContext.getEditingContext());
+		final ImportOnlySnomedTransactionContext context = new ImportOnlySnomedTransactionContext(postProcessorContext.getEditingContext());
 		final SnomedCoreConfiguration snomedCoreConfiguration = context.getSnomedCoreConfig();
 		
 		if (snomedCoreConfiguration.isConcreteDomainSupported()) {
@@ -149,11 +148,11 @@ public class SnomedConcreteDomainImportPostProcessor implements ISnomedImportPos
 		}
 	}
 
-	private boolean isConcreteDomainRefsetExists(final String refsetId, final FakeSnomedTransactionContext context) {
+	private boolean isConcreteDomainRefsetExists(final String refsetId, final ImportOnlySnomedTransactionContext context) {
 		return exists(refsetId, SnomedRefSet.class, context);
 	}
 
-	private void createRefSet(final String referenceSetId, final FakeSnomedTransactionContext context) {
+	private void createRefSet(final String referenceSetId, final ImportOnlySnomedTransactionContext context) {
 		
 		final SnomedConcreteDataTypeRefSet refSet = SnomedComponents.newConcreteDomainReferenceSet()
 			.withIdentifierConceptId(referenceSetId)
@@ -164,7 +163,7 @@ public class SnomedConcreteDomainImportPostProcessor implements ISnomedImportPos
 		
 	}
 
-	private void createConcept(final String identifierConceptId, final String fsnTerm, final String ptTerm, final String parent, final FakeSnomedTransactionContext context) {
+	private void createConcept(final String identifierConceptId, final String fsnTerm, final String ptTerm, final String parent, final ImportOnlySnomedTransactionContext context) {
 		
 		final Concept concept = SnomedComponents.newConcept()
 				.withId(identifierConceptId)
@@ -194,7 +193,7 @@ public class SnomedConcreteDomainImportPostProcessor implements ISnomedImportPos
 		concept.getOutboundRelationships().add(inferredIsa);
 	}
 
-	private Relationship createIsaRelationship(final String source, final String destination, final CharacteristicType characteristicType, final FakeSnomedTransactionContext context) {
+	private Relationship createIsaRelationship(final String source, final String destination, final CharacteristicType characteristicType, final ImportOnlySnomedTransactionContext context) {
 		return SnomedComponents.newRelationship()
 			.withIdFromNamespace(B2I_NAMESPACE)
 			.withActive(true)
@@ -207,7 +206,7 @@ public class SnomedConcreteDomainImportPostProcessor implements ISnomedImportPos
 			.build(context);
 	}
 
-	private Description createDescription(final String conceptId, final String term, final String type, final Acceptability acceptability, final String languageCode, final String languageRefsetId, final FakeSnomedTransactionContext context) {
+	private Description createDescription(final String conceptId, final String term, final String type, final Acceptability acceptability, final String languageCode, final String languageRefsetId, final ImportOnlySnomedTransactionContext context) {
 		
 		final Description description = SnomedComponents.newDescription()
 			.withIdFromNamespace(B2I_NAMESPACE)
@@ -242,7 +241,7 @@ public class SnomedConcreteDomainImportPostProcessor implements ISnomedImportPos
 				&& REFSET_STRING_DATATYPE.equals(config.getStringDatatypeRefsetIdentifier());
 	}
 
-	private boolean isConcreteDomainRefsetIdentifierConceptsExist(final FakeSnomedTransactionContext context) {
+	private boolean isConcreteDomainRefsetIdentifierConceptsExist(final ImportOnlySnomedTransactionContext context) {
 		return exists(context.getSnomedCoreConfig().getBooleanDatatypeRefsetIdentifier(), Concept.class, context) &&
 				exists(context.getSnomedCoreConfig().getDatetimeDatatypeRefsetIdentifier(), Concept.class, context) &&
 				exists(context.getSnomedCoreConfig().getFloatDatatypeRefsetIdentifier(), Concept.class, context) &&
@@ -250,7 +249,7 @@ public class SnomedConcreteDomainImportPostProcessor implements ISnomedImportPos
 				exists(context.getSnomedCoreConfig().getStringDatatypeRefsetIdentifier(), Concept.class, context);
 	}
 	
-	private <T extends EObject> boolean exists(final String componentId, final Class<T> componentClass, final FakeSnomedTransactionContext context) {
+	private <T extends EObject> boolean exists(final String componentId, final Class<T> componentClass, final ImportOnlySnomedTransactionContext context) {
 		try {
 			context.getEditingContext().lookup(componentId, componentClass);
 		} catch (final NotFoundException e) {

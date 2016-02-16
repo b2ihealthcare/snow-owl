@@ -13,29 +13,39 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.snomed.datastore;
+package com.b2international.snowowl.datastore.server.snomed;
 
+import org.eclipse.core.runtime.NullProgressMonitor;
+import org.eclipse.emf.cdo.common.commit.CDOCommitInfo;
+import org.eclipse.emf.cdo.util.CommitException;
 import org.eclipse.emf.ecore.EObject;
 
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.SnowOwlApplication;
+import com.b2international.snowowl.core.api.SnowowlRuntimeException;
 import com.b2international.snowowl.core.branch.Branch;
 import com.b2international.snowowl.core.config.SnowOwlConfiguration;
 import com.b2international.snowowl.core.domain.TransactionContext;
+import com.b2international.snowowl.datastore.server.CDOServerUtils;
+import com.b2international.snowowl.eventbus.IEventBus;
+import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
+import com.b2international.snowowl.snomed.datastore.SnomedEditingContext;
 import com.b2international.snowowl.snomed.datastore.config.SnomedCoreConfiguration;
 import com.b2international.snowowl.snomed.datastore.id.ISnomedIdentifierService;
 import com.b2international.snowowl.snomed.datastore.id.SnomedIdentifiers;
+import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.google.inject.Provider;
 
 /**
  * @since 4.6
  */
-public class FakeSnomedTransactionContext implements TransactionContext {
+public class ImportOnlySnomedTransactionContext implements TransactionContext {
 
 	private final SnomedEditingContext editingContext;
 	private final SnomedIdentifiers snomedIdentifiers;
+	private Branch branch;
 
-	public FakeSnomedTransactionContext(final SnomedEditingContext editingContext) {
+	public ImportOnlySnomedTransactionContext(final SnomedEditingContext editingContext) {
 		this.editingContext = editingContext;
 		final ISnomedIdentifierService identifierService = ApplicationContext.getInstance().getServiceChecked(ISnomedIdentifierService.class);
 		snomedIdentifiers = new SnomedIdentifiers(identifierService);
@@ -43,7 +53,13 @@ public class FakeSnomedTransactionContext implements TransactionContext {
 	
 	@Override
 	public Branch branch() {
-		throw new UnsupportedOperationException();
+		if (null == branch) {
+			branch = SnomedRequests
+						.branching()
+						.prepareGet(editingContext.getBranch())
+						.executeSync(ApplicationContext.getServiceForClass(IEventBus.class));
+		}
+		return branch;
 	}
 
 	@Override
@@ -53,13 +69,16 @@ public class FakeSnomedTransactionContext implements TransactionContext {
 
 	@Override
 	public String id() {
-		throw new UnsupportedOperationException();
+		// FIXME hardcoded ID
+		return SnomedDatastoreActivator.REPOSITORY_UUID;
 	}
 
 	@Override
 	public <T> T service(final Class<T> type) {
 		if (type.isAssignableFrom(SnomedIdentifiers.class)) {
 			return type.cast(snomedIdentifiers);
+		} else if (type.isAssignableFrom(SnomedEditingContext.class)) {
+			return type.cast(editingContext);
 		}
 		return ApplicationContext.getInstance().getServiceChecked(type);
 	}
@@ -71,7 +90,7 @@ public class FakeSnomedTransactionContext implements TransactionContext {
 
 	@Override
 	public void close() throws Exception {
-		throw new UnsupportedOperationException();
+		editingContext.close();
 	}
 
 	@Override
@@ -81,22 +100,27 @@ public class FakeSnomedTransactionContext implements TransactionContext {
 
 	@Override
 	public void delete(final EObject o) {
-		throw new UnsupportedOperationException();
+		editingContext.delete(o);
 	}
 
 	@Override
 	public void preCommit() {
-		throw new UnsupportedOperationException();
+		editingContext.preCommit();
 	}
 
 	@Override
 	public long commit(final String userId, final String commitComment) {
-		throw new UnsupportedOperationException();
+		try {
+			final CDOCommitInfo info = CDOServerUtils.commit(editingContext.getTransaction(), userId, commitComment, new NullProgressMonitor());
+			return info.getTimeStamp();
+		} catch (final CommitException e) {
+			throw new SnowowlRuntimeException(e);
+		}
 	}
 
 	@Override
 	public void rollback() {
-		throw new UnsupportedOperationException();
+		editingContext.rollback();
 	}
 
 	@Override
