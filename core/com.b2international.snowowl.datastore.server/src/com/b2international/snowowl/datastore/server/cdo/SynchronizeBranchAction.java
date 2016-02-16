@@ -54,6 +54,7 @@ import com.b2international.snowowl.datastore.cdo.CustomConflictException;
 import com.b2international.snowowl.datastore.cdo.ICDOConnection;
 import com.b2international.snowowl.datastore.events.BranchChangedEvent;
 import com.b2international.snowowl.datastore.oplock.impl.DatastoreLockContextDescriptions;
+import com.b2international.snowowl.datastore.oplock.impl.SingleRepositoryAndBranchLockTarget;
 import com.b2international.snowowl.datastore.request.RepositoryRequests;
 import com.b2international.snowowl.datastore.server.CDOServerCommitBuilder;
 import com.b2international.snowowl.datastore.server.internal.branch.CDOBranchMerger;
@@ -120,6 +121,9 @@ public class SynchronizeBranchAction extends AbstractCDOBranchAction {
 		final Branch reopenedBranch = RepositoryRequests.branching(repositoryId)
 				.prepareReopen(taskBranchPath.getPath())
 				.executeSync(eventBus);
+
+		// At this point, others are free to make changes to the parent after reopening the task branch
+		releaseLock(new SingleRepositoryAndBranchLockTarget(repositoryId, parentBranchPath));
 		
 		// This transaction now holds the actual change set on the reopened child, which has the same name as before
 		final CDOTransaction syncTransaction = connection.createTransaction(taskBranchPath); 
