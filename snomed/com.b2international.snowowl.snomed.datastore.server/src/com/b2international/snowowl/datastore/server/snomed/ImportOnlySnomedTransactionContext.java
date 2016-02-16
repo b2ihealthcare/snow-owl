@@ -28,6 +28,7 @@ import com.b2international.snowowl.core.config.SnowOwlConfiguration;
 import com.b2international.snowowl.core.domain.TransactionContext;
 import com.b2international.snowowl.datastore.server.CDOServerUtils;
 import com.b2international.snowowl.eventbus.IEventBus;
+import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 import com.b2international.snowowl.snomed.datastore.SnomedEditingContext;
 import com.b2international.snowowl.snomed.datastore.config.SnomedCoreConfiguration;
 import com.b2international.snowowl.snomed.datastore.id.ISnomedIdentifierService;
@@ -68,7 +69,8 @@ public class ImportOnlySnomedTransactionContext implements TransactionContext {
 
 	@Override
 	public String id() {
-		throw new UnsupportedOperationException();
+		// FIXME hardcoded ID
+		return SnomedDatastoreActivator.REPOSITORY_UUID;
 	}
 
 	@Override
@@ -98,12 +100,12 @@ public class ImportOnlySnomedTransactionContext implements TransactionContext {
 
 	@Override
 	public void delete(final EObject o) {
-		throw new UnsupportedOperationException();
+		editingContext.delete(o);
 	}
 
 	@Override
 	public void preCommit() {
-		throw new UnsupportedOperationException();
+		editingContext.preCommit();
 	}
 
 	@Override
@@ -118,7 +120,7 @@ public class ImportOnlySnomedTransactionContext implements TransactionContext {
 
 	@Override
 	public void rollback() {
-		throw new UnsupportedOperationException();
+		editingContext.rollback();
 	}
 
 	@Override
