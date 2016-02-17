@@ -92,9 +92,12 @@ import com.b2international.snowowl.snomed.datastore.id.SnomedIdentifiers;
 import com.b2international.snowowl.snomed.datastore.index.SnomedClientIndexService;
 import com.b2international.snowowl.snomed.datastore.index.SnomedDescriptionIndexQueryAdapter;
 import com.b2international.snowowl.snomed.datastore.index.SnomedDescriptionReducedQueryAdapter;
+import com.b2international.snowowl.snomed.datastore.index.SnomedIndexService;
+import com.b2international.snowowl.snomed.datastore.index.SnomedRelationshipIndexQueryAdapter;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptIndexEntry;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDescriptionIndexEntry;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRelationshipIndexEntry;
 import com.b2international.snowowl.snomed.datastore.services.IClientSnomedComponentService;
 import com.b2international.snowowl.snomed.datastore.services.ISnomedComponentService;
 import com.b2international.snowowl.snomed.datastore.services.ISnomedConceptNameProvider;
@@ -1135,14 +1138,19 @@ public class SnomedEditingContext extends BaseSnomedEditingContext {
 			deletionPlan.addRejectionReason(String.format(COMPONENT_IS_RELEASED_MESSAGE, "concept", toString(concept)));
 			return deletionPlan;
 		}
+
+		final List<SnomedRelationshipIndexEntry> inboundRelationships = ApplicationContext.getInstance().getService(SnomedIndexService.class)
+				.search(BranchPathUtils.createPath(getTransaction()), SnomedRelationshipIndexQueryAdapter.findByDestinationId(concept.getId()));
 		
-		// TODO check sub-concepts
-		for (Relationship relationship: concept.getInboundRelationships()) {
-			if (IS_A.equals(relationship.getType().getId())) {
-				deletionPlan = canDelete(relationship, deletionPlan);
-				if (deletionPlan.isRejected()) {
-					deletionPlan.addRejectionReason(String.format(UNABLE_TO_DELETE_CONCEPT_MESSAGE, toString(concept)));
-					return deletionPlan;
+		for (SnomedRelationshipIndexEntry relationshipEntry: inboundRelationships) {
+			if (IS_A.equals(relationshipEntry.getAttributeId())) {
+				final Relationship relationship = (Relationship) lookupIfExists(relationshipEntry.getStorageKey());
+				if (relationship != null) {
+					deletionPlan = canDelete(relationship, deletionPlan);
+					if(deletionPlan.isRejected()) {
+						deletionPlan.addRejectionReason(String.format(UNABLE_TO_DELETE_CONCEPT_MESSAGE, toString(concept)));
+						return deletionPlan;
+					}
 				}
 			}
 		}
