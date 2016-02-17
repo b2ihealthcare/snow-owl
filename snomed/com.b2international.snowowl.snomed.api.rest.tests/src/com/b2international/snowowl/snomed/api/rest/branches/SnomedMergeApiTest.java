@@ -622,8 +622,13 @@ public class SnomedMergeApiTest extends AbstractSnomedApiTest {
 		assertDescriptionCanBeDeleted(testBranchPath, "D1");
 		assertDescriptionCanBeDeleted(testBranchPath.getParent(), "D1");
 
+		/* 
+		 * The rebase sees that the same thing has already happened on the parent branch, and does not 
+		 * add an empty commit to the new instance of the child; it will be in UP_TO_DATE state and can 
+		 * not be promoted.
+		 */
 		assertBranchCanBeRebased(testBranchPath, "Rebase description dual deletion");
-		assertBranchCanBeMerged(testBranchPath, "Merge description dual deletion");
+		assertBranchConflicts(testBranchPath, testBranchPath.getParent(), "Merge description dual deletion");
 
 		assertDescriptionNotExists(testBranchPath, "D1");
 		assertDescriptionNotExists(testBranchPath.getParent(), "D1");
