@@ -16,9 +16,13 @@
 package com.b2international.snowowl.datastore.request;
 
 import com.b2international.snowowl.core.ServiceProvider;
+import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.branch.Branch;
+import com.b2international.snowowl.core.domain.RepositoryContext;
+import com.b2international.snowowl.core.events.BaseRequest;
 import com.b2international.snowowl.core.events.Request;
-import com.b2international.snowowl.datastore.events.MergeRequest;
+import com.b2international.snowowl.core.exceptions.BadRequestException;
+import com.b2international.snowowl.datastore.BranchPathUtils;
 
 /**
  * @since 4.5
@@ -57,7 +61,18 @@ public final class BranchMergeRequestBuilder {
 	}
 	
 	public Request<ServiceProvider, Branch> build() {
-		return RepositoryRequests.wrap(repositoryId, new MergeRequest(source, target, commitComment, reviewId));
+		final IBranchPath sourcePath = BranchPathUtils.createPath(source);
+		final IBranchPath targetPath = BranchPathUtils.createPath(target);
+		final BaseRequest<RepositoryContext, Branch> next;
+		
+		if (sourcePath.getParent().equals(targetPath)) {
+			next = new BranchMergeRequest(source, target, commitComment, reviewId);
+		} else if (targetPath.getParent().equals(sourcePath)) {
+			next = new BranchRebaseRequest(source, target, commitComment, reviewId);
+		} else {
+			throw new BadRequestException("Branches '%s' and '%s' can only be merged or rebased if one branch is the direct parent of the other.", source, target);
+		}
+		
+		return RepositoryRequests.wrap(repositoryId, next);
 	}
-	
 }

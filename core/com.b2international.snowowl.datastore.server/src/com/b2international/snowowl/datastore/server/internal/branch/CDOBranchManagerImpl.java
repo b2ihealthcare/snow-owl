@@ -124,7 +124,7 @@ public class CDOBranchManagerImpl extends BranchManagerImpl {
 
             targetTransaction.setCommitComment(commitMessage);
 
-            if (!dryRun) {
+            if (!dryRun && targetTransaction.isDirty()) {
     			// FIXME: Using "System" user and "synchronize" description until a more suitable pair can be specified here
             	CDOCommitInfo commitInfo = new CDOServerCommitBuilder(SpecialUserStore.SYSTEM_USER_NAME, commitMessage, targetTransaction)
             			.parentContextDescription(DatastoreLockContextDescriptions.SYNCHRONIZE)
