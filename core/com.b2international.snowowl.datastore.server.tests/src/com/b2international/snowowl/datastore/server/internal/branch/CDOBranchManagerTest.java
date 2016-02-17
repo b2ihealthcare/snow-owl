@@ -30,7 +30,14 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.runners.MockitoJUnitRunner;
 
+import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.branch.Branch;
+import com.b2international.snowowl.core.branch.BranchManager;
+import com.b2international.snowowl.core.domain.RepositoryContext;
+import com.b2international.snowowl.core.domain.RepositoryContextProvider;
+import com.b2international.snowowl.datastore.oplock.impl.IDatastoreOperationLockManager;
+import com.b2international.snowowl.datastore.request.RepositoryRequests;
+import com.b2international.snowowl.datastore.review.ReviewManager;
 import com.b2international.snowowl.datastore.server.cdo.ICDOConflictProcessor;
 import com.b2international.snowowl.datastore.server.internal.InternalRepository;
 import com.b2international.snowowl.datastore.store.MemStore;
@@ -48,22 +55,39 @@ public class CDOBranchManagerTest {
 	private CDOMainBranchImpl main;
 	private Branch branchA;
 	
+	private InternalRepository repository;
+	private ServiceProvider context;
+	
 	@Before
 	public void givenCDOBranchManager() {
 		clock = new AtomicLongTimestampAuthority();
 		cdoBranchManager = new MockInternalCDOBranchManager(clock);
 		cdoBranchManager.initMainBranch(false, clock.getTimeStamp());
 
-		final InternalCDOBranch mainBranch = cdoBranchManager.getMainBranch();
-		final InternalRepository repository = mock(InternalRepository.class, RETURNS_MOCKS);
+		repository = mock(InternalRepository.class, RETURNS_MOCKS);
 		final ICDOConflictProcessor conflictProcessor = mock(ICDOConflictProcessor.class, RETURNS_DEFAULTS);
-
+		final InternalCDOBranch mainBranch = cdoBranchManager.getMainBranch();
+		
 		when(repository.getCdoBranchManager()).thenReturn(cdoBranchManager);
 		when(repository.getCdoMainBranch()).thenReturn(mainBranch);
 		when(repository.getConflictProcessor()).thenReturn(conflictProcessor);
 		
 		manager = new CDOBranchManagerImpl(repository, new MemStore<InternalBranch>());
 		main = (CDOMainBranchImpl) manager.getMainBranch();
+		
+		context = mock(ServiceProvider.class);
+		final RepositoryContextProvider repositoryContextProvider = mock(RepositoryContextProvider.class);
+		final RepositoryContext repositoryContext = mock(RepositoryContext.class);
+		
+		final IDatastoreOperationLockManager lockManager = mock(IDatastoreOperationLockManager.class);
+		final ReviewManager reviewManager = mock(ReviewManager.class);
+		
+		when(repositoryContext.service(IDatastoreOperationLockManager.class)).thenReturn(lockManager);
+		when(repositoryContext.service(ReviewManager.class)).thenReturn(reviewManager);
+		when(repositoryContext.service(BranchManager.class)).thenReturn(manager);
+		
+		when(repositoryContextProvider.get(context, repository.id())).thenReturn(repositoryContext);
+		when(context.service(RepositoryContextProvider.class)).thenReturn(repositoryContextProvider);
 	}
 	
 	@Test
@@ -102,7 +126,15 @@ public class CDOBranchManagerTest {
 		final CDOBranch cdoBranchA = manager.getCDOBranch(branchA);
 		// commit and rebase
 		manager.handleCommit(main, clock.getTimeStamp());
-		final Branch rebasedBranchA = branchA.rebase("Rebase");
+		
+		final Branch rebasedBranchA = RepositoryRequests.branching(repository.id())
+			.prepareMerge()
+			.setSource(main.path())
+			.setTarget(branchA.path())
+			.setCommitComment("Rebase")
+			.build()
+			.execute(context);
+		
 		final CDOBranch rebasedCdoBranchA = manager.getCDOBranch(rebasedBranchA);
 		assertNotEquals(rebasedCdoBranchA.getID(), cdoBranchA.getID());
 	}

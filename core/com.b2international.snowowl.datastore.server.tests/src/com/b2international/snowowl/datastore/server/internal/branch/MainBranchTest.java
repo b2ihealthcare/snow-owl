@@ -18,12 +18,20 @@ package com.b2international.snowowl.datastore.server.internal.branch;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 import org.junit.Before;
 import org.junit.Test;
 
+import com.b2international.snowowl.core.ServiceProvider;
+import com.b2international.snowowl.core.branch.BranchManager;
 import com.b2international.snowowl.core.branch.Branch.BranchState;
+import com.b2international.snowowl.core.domain.RepositoryContext;
+import com.b2international.snowowl.core.domain.RepositoryContextProvider;
 import com.b2international.snowowl.core.exceptions.BadRequestException;
+import com.b2international.snowowl.datastore.oplock.impl.IDatastoreOperationLockManager;
+import com.b2international.snowowl.datastore.request.RepositoryRequests;
+import com.b2international.snowowl.datastore.review.ReviewManager;
 
 /**
  * @since 4.1
@@ -34,6 +42,7 @@ public class MainBranchTest {
 	private MainBranchImpl main;
 	private MainBranchImpl mainWithTimestamp;
 	private BranchSerializer serializer;
+	private ServiceProvider context;
 
 	@Before
 	public void before() {
@@ -43,6 +52,22 @@ public class MainBranchTest {
 		mainWithTimestamp = new MainBranchImpl(5L);
 		mainWithTimestamp.setBranchManager(manager);
 		serializer = new BranchSerializer();
+		
+		context = mock(ServiceProvider.class);
+		final RepositoryContextProvider repositoryContextProvider = mock(RepositoryContextProvider.class);
+		final RepositoryContext repositoryContext = mock(RepositoryContext.class);
+		
+		final IDatastoreOperationLockManager lockManager = mock(IDatastoreOperationLockManager.class);
+		final ReviewManager reviewManager = mock(ReviewManager.class);
+		
+		when(repositoryContext.service(IDatastoreOperationLockManager.class)).thenReturn(lockManager);
+		when(repositoryContext.service(ReviewManager.class)).thenReturn(reviewManager);
+		when(repositoryContext.service(BranchManager.class)).thenReturn(manager);
+		
+		when(repositoryContextProvider.get(context, "")).thenReturn(repositoryContext);
+		when(context.service(RepositoryContextProvider.class)).thenReturn(repositoryContextProvider);
+		
+		when(manager.getBranch(main.path())).thenReturn(main);
 	}
 
 	@Test
@@ -98,15 +123,21 @@ public class MainBranchTest {
 		}
 		return branch;
 	}
-
-	@Test(expected = BadRequestException.class)
-	public void rebaseMainBranch() throws Exception {
-		main.rebase("Commit");
-	}
 	
 	@Test(expected = BadRequestException.class)
 	public void deleteMainBranch() throws Exception {
 		main.delete();
+	}
+
+	@Test(expected = BadRequestException.class)
+	public void rebaseMainBranch() throws Exception {
+		RepositoryRequests.branching("")
+				.prepareMerge()
+				.setSource(main.path())
+				.setTarget(main.path())
+				.setCommitComment("Message")
+				.build()
+				.execute(context);
 	}
 	
 	@Test
@@ -128,5 +159,4 @@ public class MainBranchTest {
 		assertEquals(false, value.isDeleted());
 		assertEquals("value", value.metadata().get("key"));
 	}
-	
 }

@@ -73,9 +73,4 @@ public class MainBranchImpl extends BranchImpl {
 	public BranchState state(Branch target) {
 		throw new UnsupportedOperationException(path() + " cannot compute state compared to target " + target.path());
 	}
-	
-	@Override
-	public Branch rebase(Branch target, String commitMessage) {
-		throw new BadRequestException(path() + " cannot be rebased");
-	}
 }
