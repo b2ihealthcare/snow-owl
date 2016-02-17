@@ -122,6 +122,7 @@ import com.google.common.base.Preconditions;
 import com.google.common.base.Predicate;
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.Collections2;
+import com.google.common.collect.FluentIterable;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Multimap;
@@ -1100,6 +1101,13 @@ public class SnomedEditingContext extends BaseSnomedEditingContext {
 				return SnomedInactivationPlan.NULL_IMPL;
 			}
 			
+			plan.markForInactivation(FluentIterable.from(getInboundRelationshipsFromIndex(concept.getId())).transform(new Function<SnomedRelationshipIndexEntry, Long>() {
+				@Override
+				public Long apply(SnomedRelationshipIndexEntry input) {
+					return input.getStorageKey();
+				}
+			}).toSet());
+			
 			if (monitor.isCanceled()) {
 				return SnomedInactivationPlan.NULL_IMPL;
 			}
@@ -1203,12 +1211,8 @@ public class SnomedEditingContext extends BaseSnomedEditingContext {
 			return deletionPlan;
 		}
 		
-		final List<SnomedRelationshipIndexEntry> inboundRelationships = ApplicationContext.getInstance().getService(SnomedIndexService.class)
-				.search(BranchPathUtils.createPath(getTransaction()), SnomedRelationshipIndexQueryAdapter.findByDestinationId(concept.getId()));
-		
-		for (SnomedRelationshipIndexEntry relationshipEntry: inboundRelationships) {
-			if (IS_A.equals(relationshipEntry.getAttributeId())) {
-				final Relationship relationship = (Relationship) lookupIfExists(relationshipEntry.getStorageKey());
+		for (Relationship relationship : getInboundRelationships(concept.getId())) {
+			if (IS_A.equals(relationship.getType().getId())) {
 				if (relationship != null) {
 					deletionPlan = canDelete(relationship, deletionPlan);
 					if(deletionPlan.isRejected()) {
@@ -1258,6 +1262,20 @@ public class SnomedEditingContext extends BaseSnomedEditingContext {
 		deletionPlan.markForDeletion(concept.getOutboundRelationships());
 		
 		return deletionPlan;
+	}
+
+	private List<Relationship> getInboundRelationships(String conceptId) {
+		return FluentIterable.from(getInboundRelationshipsFromIndex(conceptId)).transform(new Function<SnomedRelationshipIndexEntry, Relationship>() {
+			@Override
+			public Relationship apply(SnomedRelationshipIndexEntry input) {
+				return (Relationship) lookup(input.getStorageKey());
+			}
+		}).toList();
+	}
+
+	private List<SnomedRelationshipIndexEntry> getInboundRelationshipsFromIndex(String conceptId) {
+		final SnomedIndexService index = ApplicationContext.getInstance().getService(SnomedIndexService.class);
+		return index.search(BranchPathUtils.createPath(getTransaction()), SnomedRelationshipIndexQueryAdapter.findByDestinationId(conceptId));
 	}
 
 	private Collection<SnomedDescriptionIndexEntry> getRelatedDescriptions(String conceptId) {
