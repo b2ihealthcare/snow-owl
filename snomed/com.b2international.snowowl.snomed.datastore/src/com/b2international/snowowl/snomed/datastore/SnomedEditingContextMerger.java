@@ -26,10 +26,7 @@ import org.eclipse.emf.cdo.CDOState;
 import org.eclipse.emf.cdo.common.id.CDOID;
 import org.eclipse.emf.cdo.common.id.CDOIDUtil;
 import org.eclipse.emf.cdo.common.revision.CDORevisionKey;
-import org.eclipse.emf.cdo.common.revision.delta.CDOAddFeatureDelta;
 import org.eclipse.emf.cdo.common.revision.delta.CDOFeatureDelta;
-import org.eclipse.emf.cdo.common.revision.delta.CDOListFeatureDelta;
-import org.eclipse.emf.cdo.common.revision.delta.CDORemoveFeatureDelta;
 import org.eclipse.emf.cdo.common.revision.delta.CDOSetFeatureDelta;
 import org.eclipse.emf.cdo.common.revision.delta.CDOUnsetFeatureDelta;
 import org.eclipse.emf.cdo.spi.common.revision.InternalCDORevisionDelta;
@@ -44,7 +41,6 @@ import org.eclipse.emf.ecore.util.EcoreUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.b2international.commons.CompareUtils;
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.ComponentIdentifierPair;
 import com.b2international.snowowl.core.CoreTerminologyBroker;
@@ -429,39 +425,10 @@ public class SnomedEditingContextMerger extends AbstractCDOEditingContextMerger<
 									final CDOObject newCdoObjectValue = getObjectFromTransaction(((CDOID) newValue), newEditingContext);
 									changedObject.eSet(feature, newCdoObjectValue);
 								} else {
-
 									if (null == newValue && featureDelta.getOldValue() instanceof SnomedStructuralRefSet) {
 										//ignore as we merged the preferred language member
 									} else {
 										LOGGER.warn("Unknown value type: " + newValue);
-									}
-
-								}
-							} else if (entry.getValue() instanceof CDOListFeatureDelta) {
-								final CDOListFeatureDelta featureDelta = (CDOListFeatureDelta) entry.getValue();
-								if (CompareUtils.isEmpty(featureDelta.getListChanges())) {
-									continue; //attaching - detaching concept from CDO root resource does not destroy the feature delta, just cleans up
-									//e.g.: CDORevisionDelta[CDOResource@OID2:0v31 --> [CDOFeatureDelta[contents, LIST, list=[]]]]
-								} else {
-									//concept inbound relationship is not registered properly by concept attachment - detachment from CDO root resource
-									for (final CDOFeatureDelta listChanges : featureDelta.getListChanges()) {
-										if (SnomedPackage.eINSTANCE.getConcept_InboundRelationships().equals(listChanges.getFeature())) {
-											final Concept destinationConcept = (Concept) changedObject;
-											if (listChanges instanceof CDOAddFeatureDelta) {
-												destinationConcept.getInboundRelationships().add((Relationship) ((CDOAddFeatureDelta) listChanges).getValue());
-											} else if (listChanges instanceof CDORemoveFeatureDelta) {
-												final int index = ((CDORemoveFeatureDelta) listChanges).getIndex();
-
-												if (index < destinationConcept.getInboundRelationships().size()) {
-
-													destinationConcept.getInboundRelationships().remove(index);
-
-												}
-
-											} else {
-												LOGGER.warn("Unprocessed reference changes. Revisions: " + revisionKey + "\nFeature with delta: " + entry + "\n");
-											}
-										}
 									}
 								}
 							} else {
