@@ -75,7 +75,7 @@ public final class BranchRebaseRequest extends AbstractBranchChangeRequest {
 				try {
 					locks.unlock(source.path());
 				} catch (OperationLockException e) {
-					LOG.warn("Failed to unlock source branch in MergeRequest; continuing.", e);
+					LOG.warn("Failed to unlock source branch in BranchRebaseRequest; continuing.", e);
 				}
 				
 				// Copy changes on old target to reopened target
