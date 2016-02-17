@@ -16,7 +16,6 @@
 package com.b2international.snowowl.snomed.datastore.request;
 
 import org.eclipse.core.runtime.NullProgressMonitor;
-import org.eclipse.emf.common.util.EList;
 
 import com.b2international.snowowl.core.domain.TransactionContext;
 import com.b2international.snowowl.core.exceptions.BadRequestException;
@@ -168,10 +167,10 @@ public final class SnomedConceptUpdateRequest extends BaseSnomedComponentUpdateR
 		}
 		
 		reactivateRelationships(concept.getOutboundRelationships());
-		reactivateRelationships(concept.getInboundRelationships());
+		reactivateRelationships(context.service(SnomedEditingContext.class).getInboundRelationships(concept.getId()));
 	}
 
-	private void reactivateRelationships(EList<Relationship> relationships) {
+	private void reactivateRelationships(Iterable<Relationship> relationships) {
 		for (final Relationship relationship : relationships) {
 			if (!relationship.isActive()) {
 				relationship.setActive(true);

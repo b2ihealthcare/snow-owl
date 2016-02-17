@@ -1090,7 +1090,7 @@ public class SnomedEditingContext extends BaseSnomedEditingContext {
 	}
 	
 	private Iterable<Concept> getStatedChildren(Concept conceptToInactivate) {
-		Iterable<Relationship> statedActiveInboundIsaRelationships = filterActiveStatedIsaRelationships(conceptToInactivate.getInboundRelationships());
+		Iterable<Relationship> statedActiveInboundIsaRelationships = filterActiveStatedIsaRelationships(getInboundRelationships(conceptToInactivate.getId()));
 		Iterable<Concept> children = Iterables.transform(statedActiveInboundIsaRelationships, new Function<Relationship, Concept>() {
 			@Override public Concept apply(Relationship input) {
 				return input.getSource();
@@ -1195,7 +1195,7 @@ public class SnomedEditingContext extends BaseSnomedEditingContext {
 		return deletionPlan;
 	}
 
-	private List<Relationship> getInboundRelationships(String conceptId) {
+	public final List<Relationship> getInboundRelationships(String conceptId) {
 		return FluentIterable.from(getInboundRelationshipsFromIndex(conceptId)).transform(new Function<SnomedRelationshipIndexEntry, Relationship>() {
 			@Override
 			public Relationship apply(SnomedRelationshipIndexEntry input) {
