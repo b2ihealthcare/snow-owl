@@ -102,6 +102,8 @@ import com.b2international.snowowl.snomed.datastore.index.SnomedClientIndexServi
 import com.b2international.snowowl.snomed.datastore.index.SnomedDescriptionIndexEntry;
 import com.b2international.snowowl.snomed.datastore.index.SnomedDescriptionIndexQueryAdapter;
 import com.b2international.snowowl.snomed.datastore.index.SnomedDescriptionReducedQueryAdapter;
+import com.b2international.snowowl.snomed.datastore.index.SnomedIndexService;
+import com.b2international.snowowl.snomed.datastore.index.SnomedRelationshipIndexQueryAdapter;
 import com.b2international.snowowl.snomed.datastore.index.refset.SnomedRefSetMemberIndexEntry;
 import com.b2international.snowowl.snomed.datastore.services.IClientSnomedComponentService;
 import com.b2international.snowowl.snomed.datastore.services.ISnomedComponentService;
@@ -1201,17 +1203,21 @@ public class SnomedEditingContext extends BaseSnomedEditingContext {
 			return deletionPlan;
 		}
 		
-		// TODO check sub-concepts
+		final List<SnomedRelationshipIndexEntry> inboundRelationships = ApplicationContext.getInstance().getService(SnomedIndexService.class)
+				.search(BranchPathUtils.createPath(getTransaction()), SnomedRelationshipIndexQueryAdapter.findByDestinationId(concept.getId()));
 		
-//		for (Relationship relationship: concept.getInboundRelationships()) {
-//			if(IS_A.equals(relationship.getType().getId())) {
-//				deletionPlan = canDelete(relationship, deletionPlan);
-//				if(deletionPlan.isRejected()) {
-//					deletionPlan.addRejectionReason("Cannot delete concept: '" + toString(concept) + "'.");
-//					return deletionPlan;
-//				}
-//			}
-//		}
+		for (SnomedRelationshipIndexEntry relationshipEntry: inboundRelationships) {
+			if (IS_A.equals(relationshipEntry.getAttributeId())) {
+				final Relationship relationship = (Relationship) lookupIfExists(relationshipEntry.getStorageKey());
+				if (relationship != null) {
+					deletionPlan = canDelete(relationship, deletionPlan);
+					if(deletionPlan.isRejected()) {
+						deletionPlan.addRejectionReason("Cannot delete concept: '" + toString(concept) + "'.");
+						return deletionPlan;
+					}
+				}
+			}
+		}
 		
 		// check descriptions. If the deletion is not legit, we cannot reach this point, hence a check would be meaningless
 		for (Description description : concept.getDescriptions()) {
