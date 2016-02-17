@@ -25,6 +25,7 @@ import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.core.exceptions.BadRequestException;
 import com.b2international.snowowl.core.exceptions.ConflictException;
 import com.b2international.snowowl.datastore.oplock.OperationLockException;
+import com.google.common.base.Strings;
 
 /**
  * Rebases {@code target} on {@code source}.
@@ -42,8 +43,14 @@ public final class BranchRebaseRequest extends AbstractBranchChangeRequest {
 
 	private static final Logger LOG = LoggerFactory.getLogger(BranchRebaseRequest.class);
 
+	private static String commitMessageOrDefault(final String sourcePath, final String targetPath, final String commitMessage) {
+		return !Strings.isNullOrEmpty(commitMessage) 
+				? commitMessage 
+				: String.format("Rebase branch '%s' on '%s'", targetPath, sourcePath);
+	}
+
 	BranchRebaseRequest(final String sourcePath, final String targetPath, final String commitMessage, String reviewId) {
-		super(sourcePath, targetPath, commitMessage, "Rebase branch '%s' on '%s'", reviewId);
+		super(sourcePath, targetPath, commitMessageOrDefault(sourcePath, targetPath, commitMessage), reviewId);
 	}
 
 	@Override

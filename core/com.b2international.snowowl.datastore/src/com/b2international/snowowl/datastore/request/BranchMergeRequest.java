@@ -21,6 +21,7 @@ import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.core.exceptions.BadRequestException;
 import com.b2international.snowowl.core.exceptions.ConflictException;
 import com.b2international.snowowl.datastore.oplock.impl.DatastoreOperationLockException;
+import com.google.common.base.Strings;
 
 /**
  * Merges {@code source} into {@code target} (only if {@code target} is the most recent version of {@code source}'s parent).
@@ -29,8 +30,14 @@ import com.b2international.snowowl.datastore.oplock.impl.DatastoreOperationLockE
  */
 public final class BranchMergeRequest extends AbstractBranchChangeRequest {
 
+	private static String commitMessageOrDefault(final String sourcePath, final String targetPath, final String commitMessage) {
+		return !Strings.isNullOrEmpty(commitMessage) 
+				? commitMessage 
+				: String.format("Merge branch '%s' into '%s'", sourcePath, targetPath);
+	}
+
 	BranchMergeRequest(final String sourcePath, final String targetPath, final String commitMessage, String reviewId) {
-		super(sourcePath, targetPath, commitMessage, "Merge branch '%s' into '%s'", reviewId);
+		super(sourcePath, targetPath, commitMessageOrDefault(sourcePath, targetPath, commitMessage), reviewId);
 	}
 
 	@Override

@@ -30,19 +30,15 @@ import com.google.common.base.Strings;
  */
 public abstract class AbstractBranchChangeRequest extends BaseRequest<RepositoryContext, Branch> {
 
-	private static String defaultMessage(final String sourcePath, final String targetPath, final String defaultMessageTemplate) {
-		return String.format(defaultMessageTemplate, sourcePath, targetPath);
-	}
-
 	protected final String sourcePath;
 	protected final String targetPath;
 	protected final String commitMessage;
 	protected final String reviewId;
 
-	protected AbstractBranchChangeRequest(String sourcePath, String targetPath, String commitMessage, String defaultMessageTemplate, String reviewId) {
+	protected AbstractBranchChangeRequest(String sourcePath, String targetPath, String commitMessage, String reviewId) {
 		this.sourcePath = sourcePath;
 		this.targetPath = targetPath;
-		this.commitMessage = Strings.isNullOrEmpty(commitMessage) ? defaultMessage(sourcePath, targetPath, defaultMessageTemplate) : commitMessage;
+		this.commitMessage = commitMessage;
 		this.reviewId = reviewId;
 	}
 
