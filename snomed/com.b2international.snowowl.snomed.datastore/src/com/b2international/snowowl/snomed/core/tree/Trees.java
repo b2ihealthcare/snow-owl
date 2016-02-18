@@ -15,26 +15,89 @@
  */
 package com.b2international.snowowl.snomed.core.tree;
 
+import static com.google.common.collect.Sets.newHashSet;
+
+import java.util.Collection;
 import java.util.List;
 
 import com.b2international.commons.http.ExtendedLocale;
+import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.eventbus.IEventBus;
+import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
+import com.b2international.snowowl.snomed.core.domain.ISnomedConcept;
+import com.b2international.snowowl.snomed.core.lang.LanguageSetting;
 import com.b2international.snowowl.snomed.datastore.BaseSnomedClientTerminologyBrowser;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptIndexEntry;
+import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 
 /**
  * @since 4.6
  */
 public class Trees {
-	
+
 	public static final String STATED_FORM = "stated";
 	public static final String INFERRED_FORM = "inferred";
-	
-	public static TreeBuilder newInferredTree(String branch, List<ExtendedLocale> locales, BaseSnomedClientTerminologyBrowser browser, IEventBus bus) {
-		return new TreeBuilderImpl(INFERRED_FORM, branch, locales, browser, bus);
+
+	private String form;
+	private BaseSnomedClientTerminologyBrowser browser;
+	private Collection<SnomedConceptIndexEntry> topLevelConcepts;
+
+	public final Trees withInferredForm() {
+		this.form = INFERRED_FORM;
+		return this;
 	}
-	
-	public static TreeBuilder newStatedTree(String branch, List<ExtendedLocale> locales, BaseSnomedClientTerminologyBrowser browser, IEventBus bus) {
-		return new TreeBuilderImpl(STATED_FORM, branch, locales, browser, bus);
+
+	public final Trees withStatedForm() {
+		this.form = STATED_FORM;
+		return this;
+	}
+
+	public final Trees setBrowser(final BaseSnomedClientTerminologyBrowser browser) {
+		this.browser = browser;
+		return this;
+	}
+
+	public final Trees setTopLevelConcepts(final Collection<SnomedConceptIndexEntry> topLevelConcepts) {
+		this.topLevelConcepts = topLevelConcepts;
+		return this;
+	}
+
+	public final Trees withDefaultTopLevelConcepts(final String branch) {
+		setTopLevelConcepts(getDefaultTopLevelConcepts(branch));
+		return this;
+	}
+
+	private List<SnomedConceptIndexEntry> getDefaultTopLevelConcepts(final String branch) {
+		final ISnomedConcept root = SnomedRequests
+				.prepareGetConcept()
+				.setComponentId(Concepts.ROOT_CONCEPT)
+				.setExpand("pt(),descendants(form:\"inferred\",direct:true,expand(pt()))")
+				.setLocales(getLocales())
+				.build(branch)
+				.executeSync(getBus());
+
+		final Collection<ISnomedConcept> requiredTreeItemConcepts = newHashSet();
+		requiredTreeItemConcepts.add(root);
+		requiredTreeItemConcepts.addAll(root.getDescendants().getItems());
+
+		return SnomedConceptIndexEntry.fromConcepts(requiredTreeItemConcepts);
+	}
+
+	private List<ExtendedLocale> getLocales() {
+		return ApplicationContext.getInstance().getService(LanguageSetting.class).getLanguagePreference();
+	}
+
+	private IEventBus getBus() {
+		return ApplicationContext.getInstance().getService(IEventBus.class);
+	}
+
+	public final TreeBuilder createTreeBuilder() {
+		final TreeBuilderImpl treeBuilder = new TreeBuilderImpl();
+		treeBuilder.setForm(form);
+		treeBuilder.setBrowser(browser);
+		treeBuilder.setTopLevelConcepts(topLevelConcepts);
+
+		return treeBuilder;
 	}
 
 }
