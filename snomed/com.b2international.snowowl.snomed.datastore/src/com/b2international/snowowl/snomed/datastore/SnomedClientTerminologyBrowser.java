@@ -22,10 +22,6 @@ import java.util.List;
 
 import javax.annotation.Nullable;
 
-import bak.pcj.LongCollection;
-import bak.pcj.map.LongKeyLongMap;
-import bak.pcj.set.LongSet;
-
 import com.b2international.commons.http.ExtendedLocale;
 import com.b2international.snowowl.core.annotations.Client;
 import com.b2international.snowowl.core.api.IBranchPath;
@@ -46,6 +42,10 @@ import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.google.common.base.Function;
 import com.google.common.collect.FluentIterable;
 import com.google.inject.Provider;
+
+import bak.pcj.LongCollection;
+import bak.pcj.map.LongKeyLongMap;
+import bak.pcj.set.LongSet;
 
 /**
  * @since 1.0
@@ -74,7 +74,11 @@ public class SnomedClientTerminologyBrowser extends BaseSnomedClientTerminologyB
 
 	@Override
 	protected TreeBuilder newTree(String branch, List<ExtendedLocale> locales) {
-		return Trees.newInferredTree(branch, locales, this, getBus());
+		return new Trees()
+			.withInferredForm()
+			.withDefaultTopLevelConcepts(branch)
+			.setBrowser(this)
+			.createTreeBuilder();
 	}
 	
 	@Override

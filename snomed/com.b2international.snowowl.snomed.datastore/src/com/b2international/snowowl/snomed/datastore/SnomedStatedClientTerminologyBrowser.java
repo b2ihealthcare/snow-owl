@@ -65,7 +65,11 @@ public final class SnomedStatedClientTerminologyBrowser extends BaseSnomedClient
 	
 	@Override
 	protected TreeBuilder newTree(String branch, List<ExtendedLocale> locales) {
-		return Trees.newStatedTree(branch, locales, this, getBus());
+		return new Trees()
+			.withStatedForm()
+			.withDefaultTopLevelConcepts(branch)
+			.setBrowser(this)
+			.createTreeBuilder();
 	}
 	
 	@Override
