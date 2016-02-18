@@ -47,6 +47,9 @@ import org.apache.lucene.util.QueryBuilder;
 import org.apache.lucene.util.Version;
 import org.apache.lucene.util.automaton.LevenshteinAutomata;
 
+import bak.pcj.LongCollection;
+import bak.pcj.adapter.LongCollectionToCollectionAdapter;
+
 import com.b2international.snowowl.core.TextConstants;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.domain.BranchContext;
@@ -71,9 +74,6 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMultimap;
 import com.google.common.collect.Iterables;
 
-import bak.pcj.LongCollection;
-import bak.pcj.adapter.LongCollectionToCollectionAdapter;
-
 /**
  * @since 4.5
  */
@@ -95,8 +95,8 @@ final class SnomedDescriptionSearchRequest extends SnomedSearchRequest<SnomedDes
 	@Override
 	protected SnomedDescriptions doExecute(BranchContext context) throws IOException {
 		final IndexSearcher searcher = context.service(IndexSearcher.class);
-		if (containsKey(OptionKey.TERM) && getString(OptionKey.TERM).length() < 3) {
-			throw new BadRequestException("Description term must be at least 3 characters long.");
+		if (containsKey(OptionKey.TERM) && getString(OptionKey.TERM).length() < 2) {
+			throw new BadRequestException("Description term must be at least 2 characters long.");
 		}
 		
 		if (containsKey(OptionKey.ACCEPTABILITY) || !languageRefSetIds().isEmpty()) {
