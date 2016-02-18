@@ -15,19 +15,22 @@
  */
 package com.b2international.snowowl.snomed.datastore.request;
 
+import static com.google.common.collect.Lists.newArrayList;
+
 import org.eclipse.core.runtime.NullProgressMonitor;
 
 import com.b2international.snowowl.core.domain.TransactionContext;
-import com.b2international.snowowl.core.exceptions.BadRequestException;
 import com.b2international.snowowl.core.exceptions.ComponentStatusConflictException;
 import com.b2international.snowowl.snomed.Concept;
 import com.b2international.snowowl.snomed.Description;
 import com.b2international.snowowl.snomed.Inactivatable;
 import com.b2international.snowowl.snomed.Relationship;
+import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.core.domain.AssociationType;
 import com.b2international.snowowl.snomed.core.domain.DefinitionStatus;
 import com.b2international.snowowl.snomed.core.domain.InactivationIndicator;
 import com.b2international.snowowl.snomed.core.domain.SubclassDefinitionStatus;
+import com.b2international.snowowl.snomed.core.store.SnomedComponents;
 import com.b2international.snowowl.snomed.datastore.SnomedEditingContext;
 import com.b2international.snowowl.snomed.datastore.SnomedInactivationPlan;
 import com.b2international.snowowl.snomed.datastore.model.SnomedModelExtensions;
@@ -116,28 +119,47 @@ public final class SnomedConceptUpdateRequest extends BaseSnomedComponentUpdateR
 		}
 	}
 
-	private boolean processInactivation(final TransactionContext context, final Concept concept, final Boolean newActive, final InactivationIndicator newInactivationIndicator) {
-
-		if (null != newInactivationIndicator) {
-			
-			if (null == newActive || !newActive) {
+	// TODO merge with SnomedDescriptionUpdateRequest.updateInactivationIndicator
+	private boolean processInactivation(final TransactionContext context, final Concept concept, final Boolean newStatus, final InactivationIndicator newInactivationIndicator) {
+		if (newInactivationIndicator != null && !InactivationIndicator.RETIRED.equals(newInactivationIndicator)) {
+			if (concept.isActive() && (null == newStatus || !newStatus)) {
 				inactivateConcept(context, concept, newInactivationIndicator);
-			} else {
-				throw new BadRequestException("Bad");
+				return true;
+			} else if (!concept.isActive()) {
+				// if the concept is already inactive, then check the current inactivation members
+				boolean found = false;
+				for (SnomedAttributeValueRefSetMember member : newArrayList(concept.getInactivationIndicatorRefSetMembers())) {
+					if (member.isActive()) {
+						if (newInactivationIndicator.getConceptId().equals(member.getValueId())) {
+							found = true;
+							break;
+						} else {
+							SnomedModelExtensions.removeOrDeactivate(member);
+						}
+					}
+				}
+				// add a new member if not found
+				if (!found) {
+					final SnomedAttributeValueRefSetMember member = SnomedComponents
+							.newAttributeValueMember()
+							.withReferencedComponent(concept.getId())
+							.withRefSet(Concepts.REFSET_CONCEPT_INACTIVITY_INDICATOR)
+							.withModule(concept.getModule().getId())
+							.withValueId(newInactivationIndicator.getConceptId())
+							.addTo(context);
+					concept.getInactivationIndicatorRefSetMembers().add(member);
+				}
 			}
-			
-		} else {
-			
-			if (null == newActive) {
-				return false;
-			} else if (!newActive) {
+		} else if (newStatus != null) {
+			if (!newStatus && concept.isActive()) {
 				inactivateConcept(context, concept, InactivationIndicator.RETIRED);
-			} else {
+				return true;
+			} else if (newStatus && !concept.isActive()) {
 				reactivateConcept(context, concept);
+				return true;
 			}
 		}
-
-		return true;
+		return false;
 	}
 
 	private void inactivateConcept(final TransactionContext context, final Concept concept, final InactivationIndicator newInactivationIndicator) {
