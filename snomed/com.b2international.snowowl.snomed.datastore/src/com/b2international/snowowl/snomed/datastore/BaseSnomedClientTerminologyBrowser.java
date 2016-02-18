@@ -161,7 +161,7 @@ public abstract class BaseSnomedClientTerminologyBrowser extends ActiveBranchCli
 				.all()
 				.setComponentIds(ImmutableSet.copyOf(ids))
 				.setLocales(getLocales())
-				.setExpand("pt(),parentIds()")
+				.setExpand("pt(),parentIds(),ancestorIds()")
 				.build(getBranchPath().getPath())
 				.executeSync(getBus());
 		return SnomedConceptIndexEntry.fromConcepts(concepts);
