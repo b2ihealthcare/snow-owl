@@ -17,7 +17,9 @@ package com.b2international.snowowl.snomed.datastore.request;
 
 import java.io.IOException;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.lucene.document.Document;
 import org.apache.lucene.queries.BooleanFilter;
@@ -31,6 +33,7 @@ import org.apache.lucene.search.TopDocs;
 import com.b2international.commons.functions.StringToLongFunction;
 import com.b2international.commons.pcj.LongSets;
 import com.b2international.snowowl.core.domain.BranchContext;
+import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMembers;
 import com.b2international.snowowl.snomed.datastore.converter.SnomedConverters;
 import com.b2international.snowowl.snomed.datastore.escg.IEscgQueryEvaluatorService;
@@ -64,7 +67,12 @@ final class SnomedRefSetMemberSearchRequest extends SnomedSearchRequest<SnomedRe
 		/**
 		 * Filter by refset type
 		 */
-		REFSET_TYPE
+		REFSET_TYPE,
+		
+		/**
+		 * Filter by member specific props, the value should be a {@link Map} of RF2 headers and their corresponding values.
+		 */
+		PROPS
 	}
 	
 	SnomedRefSetMemberSearchRequest() {}
@@ -77,6 +85,7 @@ final class SnomedRefSetMemberSearchRequest extends SnomedSearchRequest<SnomedRe
 		final Collection<String> referenceSetIds = getCollection(OptionKey.REFSET, String.class);
 		final Collection<String> referencedComponentIds = getCollection(OptionKey.REFERENCED_COMPONENT, String.class);
 		final Collection<SnomedRefSetType> refSetTypes = getCollection(OptionKey.REFSET_TYPE, SnomedRefSetType.class);
+		final Map<String, Object> props = get(OptionKey.PROPS, Map.class);
 		
 		if (!referenceSetIds.isEmpty()) {
 			// if only one refset ID is defined, check if it's an ESCG expression and expand it, otherwise use as is
@@ -104,6 +113,13 @@ final class SnomedRefSetMemberSearchRequest extends SnomedSearchRequest<SnomedRe
 			}).toList();
 			
 			addFilterClause(filter, SnomedMappings.memberRefSetType().createTermsFilter(types), Occur.MUST);
+		}
+		
+		if (!props.isEmpty()) {
+			if (props.containsKey(SnomedRf2Headers.FIELD_TARGET_COMPONENT)) {
+				final Collection<String> targetComponentIds = Collections.singleton((String) props.get(SnomedRf2Headers.FIELD_TARGET_COMPONENT));
+				addFilterClause(filter, SnomedMappings.memberTargetComponentId().createTermsFilter(targetComponentIds), Occur.MUST);
+			}
 		}
 		
 		SnomedQueryBuilder queryBuilder = SnomedMappings.newQuery().and(SnomedMappings.memberReferencedComponentType().toExistsQuery());

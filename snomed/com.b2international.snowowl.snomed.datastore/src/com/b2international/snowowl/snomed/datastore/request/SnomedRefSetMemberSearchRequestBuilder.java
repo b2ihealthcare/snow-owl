@@ -16,6 +16,7 @@
 package com.b2international.snowowl.snomed.datastore.request;
 
 import java.util.Collection;
+import java.util.Map;
 
 import com.b2international.snowowl.datastore.request.SearchRequest;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMembers;
@@ -60,4 +61,9 @@ public final class SnomedRefSetMemberSearchRequestBuilder extends SnomedSearchRe
 	public SnomedRefSetMemberSearchRequestBuilder filterByRefSetType(final Iterable<SnomedRefSetType> refSetTypes) {
 		return addOption(OptionKey.REFSET_TYPE, ImmutableSet.copyOf(refSetTypes));
 	}
+	
+	public SnomedRefSetMemberSearchRequestBuilder filterByProps(Map<String, Object> memberProps) {
+		return addOption(OptionKey.PROPS, memberProps);
+	}
+
 }
