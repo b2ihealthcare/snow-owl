@@ -29,9 +29,11 @@ import org.apache.lucene.search.Sort;
 import org.apache.lucene.search.TopDocs;
 
 import com.b2international.commons.functions.StringToLongFunction;
+import com.b2international.commons.pcj.LongSets;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMembers;
 import com.b2international.snowowl.snomed.datastore.converter.SnomedConverters;
+import com.b2international.snowowl.snomed.datastore.escg.IEscgQueryEvaluatorService;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry;
 import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedMappings;
 import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedQueryBuilder;
@@ -39,6 +41,9 @@ import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType;
 import com.google.common.base.Function;
 import com.google.common.collect.FluentIterable;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.Iterables;
+
+import bak.pcj.LongCollection;
 
 /**
  * @since 4.5
@@ -74,7 +79,16 @@ final class SnomedRefSetMemberSearchRequest extends SnomedSearchRequest<SnomedRe
 		final Collection<SnomedRefSetType> refSetTypes = getCollection(OptionKey.REFSET_TYPE, SnomedRefSetType.class);
 		
 		if (!referenceSetIds.isEmpty()) {
-			addFilterClause(filter, SnomedMappings.memberRefSetId().createTermsFilter(StringToLongFunction.copyOf(referenceSetIds)), Occur.MUST);
+			// if only one refset ID is defined, check if it's an ESCG expression and expand it, otherwise use as is
+			final List<Long> selectedRefSetIds;
+			if (referenceSetIds.size() == 1) {
+				final String escg = Iterables.get(referenceSetIds, 0);
+				final LongCollection matchingConceptIds = context.service(IEscgQueryEvaluatorService.class).evaluateConceptIds(context.branch().branchPath(), escg);
+				selectedRefSetIds = LongSets.toList(matchingConceptIds);
+			} else {
+				selectedRefSetIds = StringToLongFunction.copyOf(referenceSetIds);
+			}
+			addFilterClause(filter, SnomedMappings.memberRefSetId().createTermsFilter(selectedRefSetIds), Occur.MUST);
 		}
 		
 		if (!referencedComponentIds.isEmpty()) {
